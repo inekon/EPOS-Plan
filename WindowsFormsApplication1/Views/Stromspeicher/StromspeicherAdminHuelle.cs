@@ -156,13 +156,9 @@ namespace WindowsFormsApplication1
                 m_Leistung = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldLeistung),
                 m_Degradation = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldDegradation),
                 m_Ladezustand = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldLadezustand),
-                m_Modulkosten = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldModulkosten),
 
                 m_WirkungsgradRT = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldWirkungsgradRt),
                 m_ZyklenZugesichert = ModulKatalogHuelle.Ganzzahl(felder, ModulKatalogProfil.FeldZyklen),
-                m_Verschleisskosten = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldVerschleisskosten),
-                m_Leistungskosten = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldLeistungskosten),
-                m_InvestitionFix = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldInvestitionFix),
                 m_StandbyVerbrauch = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldStandby),
                 m_Selbstentladung = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldSelbstentladung)
             };

@@ -25,10 +25,13 @@ namespace WindowsFormsApplication1
 
             // KWN-0: die Art nur, wenn der Schritt KaelteArtSchema steht - vorher heisst jede Zeile Raum.
             bool mitArt = KaelteArtSchema.ProfilLesbar();
+            // KBP-2: die Eingabeart nur, wenn der Schritt KaeltebedarfsprofilVorlagenSchema steht - vorher heisst jede Zeile 'jahr'.
+            bool mitEingabeart = KaeltebedarfsprofilVorlagenSchema.EingabeartLesbar();
             string sql =
                 "SELECT z.ID, z.ID_Kaeltebedarf, k.Bezeichner, z.Summe, z.ID_Betriebskalender, z.Deckung, z.Split_EER_Weg, " +
                 "z.Split_EER_1, z.Split_Taussen_1, z.Split_EER_2, z.Split_Taussen_2, z.Kuehl_ID_Carrier, z.Kuehl_EigenerZaehler, " +
                 (mitArt ? "z.Kaelte_Art, " : "") +
+                (mitEingabeart ? "z.Eingabeart, " : "") +
                 "k.Vorlauf, k.Ruecklauf " +
                 "FROM Z_Projekt_Kaeltebedarf z INNER JOIN Tab_Kaeltebedarf k ON z.ID_Kaeltebedarf = k.ID " +
                 "WHERE z.ID_Projekt = ? ORDER BY z.ID";
@@ -53,6 +56,9 @@ namespace WindowsFormsApplication1
                     KuehlIdCarrier = Ganz(r["Kuehl_ID_Carrier"]),
                     KuehlEigenerZaehler = (Ganz(r["Kuehl_EigenerZaehler"]) ?? 0) != 0,
                     KaelteArt = mitArt ? KaelteArtSchema.Normal(r[KaelteArtSchema.SPALTE]) : KaelteArtSchema.RAUM,
+                    Eingabeart = mitEingabeart
+                        ? KaeltebedarfsprofilVorlagenSchema.Eingabeart(r[KaeltebedarfsprofilVorlagenSchema.SPALTE_EINGABEART])
+                        : KaeltebedarfsprofilVorlagenSchema.EINGABE_JAHR,
                     Vorlauf = Zahl(r["Vorlauf"]),
                     Ruecklauf = Zahl(r["Ruecklauf"]),
                 });

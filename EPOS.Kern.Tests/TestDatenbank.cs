@@ -1068,6 +1068,12 @@ namespace EPOS.Kern.Tests
                 // Schritt GeraetekostenEntfallSchema.SCHRITT (KB-4): Investitionsverweis und Saat am Wechselrichter,
                 // dann Entfall der 32 Kostenspalten der acht Investitionsgewerke. Wiederholbar, ergebnisneutral.
                 GeraetekostenEntfallSchema.Ausfuehren(null);
+                // Schritt StromspeicherKostenSchema.SCHRITT (KB-5): Sicherheitslauf der Saat und Entfall der vier
+                // Kostenspalten des Stromspeichers. Wiederholbar, ergebnisgleich.
+                StromspeicherKostenSchema.Ausfuehren(null);
+                // Schritt KaeltebedarfsprofilVorlagenSchema.SCHRITT (KBP-2): Eingabeart der Kaeltebedarfszuordnung, Art-Vorschlag am
+                // Kaeltekatalog und Saat der Vorlagen 7-16. Wiederholbar, ergebnisneutral.
+                KaeltebedarfsprofilVorlagenSchema.Ausfuehren(null);
                 // Schritt RaumnutzungDinWerteSchema.SCHRITT (DA-6, E135): die 45 DIN-Nutzungsprofile mit den Werten der
                 // Saat, nur wo kein Wert steht. Wiederholbar, ergebnisneutral.
                 RaumnutzungDinWerteSchema.Ausfuehren(null);

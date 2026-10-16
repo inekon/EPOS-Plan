@@ -143,6 +143,29 @@ public sealed class BedarfsProfileKiSicht
         set => KaelteArtSetzen?.Invoke(value);
     }
 
+    // ---- KBP-3a: die Eingabeart der markierten Kältezeile (Konzept Kältebedarfsprofile 3) ---------------------------
+
+    public Func<int?>? EingabeartLesen { get; init; }
+    public Action<int?>? EingabeartSetzen { get; init; }
+
+    /// <summary>Liefert die Eingabearten der Wahl (0 Jahressumme, 1 Monatswerte, 2 Wochenprofil; Typtage gesperrt).</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? EingabeartEintraege { get; init; }
+
+    /// <summary>Die Eingabearten der Wahl (KBP-3a).</summary>
+    public IReadOnlyList<KiWahleintrag> EingabeartWahl
+        => EingabeartEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>
+    /// Die Eingabeart der markierten Kältezeile in der Bearbeiten-Überlagerung; leer ohne offene Überlagerung oder außerhalb
+    /// der Kältebedarfsprofile. Derselbe Weg wie die Wahl, geschrieben mit OK. Monatswerte und Wochenprofil setzt der
+    /// Assistent nicht (Editoren, bewusst draußen).
+    /// </summary>
+    public int? Eingabeart
+    {
+        get => EingabeartLesen?.Invoke();
+        set => EingabeartSetzen?.Invoke(value);
+    }
+
     // ---- K5b: die Feldgruppe „Deckung“ der markierten Kältezeile (Konzept Kältebedarf 3.4) ----------------------
 
     /// <summary>Der Feldsatz „Deckung“ der markierten Kältezeile; <c>null</c> außerhalb einer Projektzeile der Art Kälte.</summary>

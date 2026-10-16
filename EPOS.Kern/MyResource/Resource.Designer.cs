@@ -56411,6 +56411,483 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältelast [kW] ähnelt.
+        /// </summary>
+        public static string KBP_ACHSE_LEISTUNG {
+            get {
+                return ResourceManager.GetString("KBP_ACHSE_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden im Jahr, absteigend sortiert ähnelt.
+        /// </summary>
+        public static string KBP_ACHSE_RANG {
+            get {
+                return ResourceManager.GetString("KBP_ACHSE_RANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunde der Woche ab Montag 0 Uhr ähnelt.
+        /// </summary>
+        public static string KBP_ACHSE_WOCHENSTUNDE {
+            get {
+                return ResourceManager.GetString("KBP_ACHSE_WOCHENSTUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 168 h ähnelt.
+        /// </summary>
+        public static string KBP_ANSICHT_168 {
+            get {
+                return ResourceManager.GetString("KBP_ANSICHT_168", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werktag | Samstag | Sonntag ähnelt.
+        /// </summary>
+        public static string KBP_ANSICHT_DREI {
+            get {
+                return ResourceManager.GetString("KBP_ANSICHT_DREI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tag einfügen ähnelt.
+        /// </summary>
+        public static string KBP_BTN_TAG_EINFUEGEN {
+            get {
+                return ResourceManager.GetString("KBP_BTN_TAG_EINFUEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tag kopieren ähnelt.
+        /// </summary>
+        public static string KBP_BTN_TAG_KOPIEREN {
+            get {
+                return ResourceManager.GetString("KBP_BTN_TAG_KOPIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahressumme mit Vorlage ähnelt.
+        /// </summary>
+        public static string KBP_EINGABE_JAHR {
+            get {
+                return ResourceManager.GetString("KBP_EINGABE_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monatswerte ähnelt.
+        /// </summary>
+        public static string KBP_EINGABE_MONAT {
+            get {
+                return ResourceManager.GetString("KBP_EINGABE_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typtage (folgt) ähnelt.
+        /// </summary>
+        public static string KBP_EINGABE_TYPTAG {
+            get {
+                return ResourceManager.GetString("KBP_EINGABE_TYPTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenprofil ähnelt.
+        /// </summary>
+        public static string KBP_EINGABE_WOCHE {
+            get {
+                return ResourceManager.GetString("KBP_EINGABE_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die % der Jahressumme ähnelt.
+        /// </summary>
+        public static string KBP_EINHEIT_PROZENT {
+            get {
+                return ResourceManager.GetString("KBP_EINHEIT_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grafik der markierten Kältezeile: Jahresgang, Monate, Woche und Dauerlinie samt Kennzahlen (nur Anzeige). ähnelt.
+        /// </summary>
+        public static string KBP_GRAFIK_ERL {
+            get {
+                return ResourceManager.GetString("KBP_GRAFIK_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grafik der markierten Zeile ähnelt.
+        /// </summary>
+        public static string KBP_GRAFIK_GRUPPE {
+            get {
+                return ResourceManager.GetString("KBP_GRAFIK_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresgang, Woche und Dauerlinie zeigen die markierte Zeile mit der Jahressumme dieses Dialogs; die Monate stapeln alle Zeilen. ähnelt.
+        /// </summary>
+        public static string KBP_GRAFIK_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("KBP_GRAFIK_HERLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für die markierte Zeile liegt kein Profil vor. ähnelt.
+        /// </summary>
+        public static string KBP_GRAFIK_OHNE {
+            get {
+                return ResourceManager.GetString("KBP_GRAFIK_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabeart ähnelt.
+        /// </summary>
+        public static string KBP_GRUPPE_EINGABEART {
+            get {
+                return ResourceManager.GetString("KBP_GRUPPE_EINGABEART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monatswerte ähnelt.
+        /// </summary>
+        public static string KBP_GRUPPE_MONATE {
+            get {
+                return ResourceManager.GetString("KBP_GRUPPE_MONATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochenprofil ähnelt.
+        /// </summary>
+        public static string KBP_GRUPPE_WOCHE {
+            get {
+                return ResourceManager.GetString("KBP_GRUPPE_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monatswerte und Wochenprofil ändern die Projektkopie dieser Zuordnung, nie den Katalog. Teilen sich zwei Zuordnungen eine Kopie, erhält die bearbeitete beim OK eine eigene. ähnelt.
+        /// </summary>
+        public static string KBP_HINW_EINGABEART {
+            get {
+                return ResourceManager.GetString("KBP_HINW_EINGABEART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typtage folgen in einer späteren Fassung. ähnelt.
+        /// </summary>
+        public static string KBP_HINW_TYPTAG_FOLGT {
+            get {
+                return ResourceManager.GetString("KBP_HINW_TYPTAG_FOLGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werktage unterscheiden sich — 168-h-Ansicht ähnelt.
+        /// </summary>
+        public static string KBP_HINW_WERKTAGE_UNGLEICH {
+            get {
+                return ResourceManager.GetString("KBP_HINW_WERKTAGE_UNGLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Relative Werte wie im Typkatalog; die Monatswerte bestimmen die Menge. Mit einem Betriebskalender zählen Feiertage wie Sonntag. ähnelt.
+        /// </summary>
+        public static string KBP_HINW_WOCHE {
+            get {
+                return ResourceManager.GetString("KBP_HINW_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabeart der markierten Kältezeile: Jahressumme mit Vorlage, Monatswerte oder Wochenprofil; Typtage folgen. ähnelt.
+        /// </summary>
+        public static string KBP_KI_EINGABEART_ERL {
+            get {
+                return ResourceManager.GetString("KBP_KI_EINGABEART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grundlast-Anteil ähnelt.
+        /// </summary>
+        public static string KBP_KZ_GRUNDLAST {
+            get {
+                return ResourceManager.GetString("KBP_KZ_GRUNDLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spitze ähnelt.
+        /// </summary>
+        public static string KBP_KZ_SPITZE {
+            get {
+                return ResourceManager.GetString("KBP_KZ_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahressumme ähnelt.
+        /// </summary>
+        public static string KBP_KZ_SUMME {
+            get {
+                return ResourceManager.GetString("KBP_KZ_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vollbenutzungsstunden ähnelt.
+        /// </summary>
+        public static string KBP_KZ_VBH {
+            get {
+                return ResourceManager.GetString("KBP_KZ_VBH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ansicht: ähnelt.
+        /// </summary>
+        public static string KBP_LBL_ANSICHT {
+            get {
+                return ResourceManager.GetString("KBP_LBL_ANSICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabeart: ähnelt.
+        /// </summary>
+        public static string KBP_LBL_EINGABEART {
+            get {
+                return ResourceManager.GetString("KBP_LBL_EINGABEART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe in: ähnelt.
+        /// </summary>
+        public static string KBP_LBL_MONATSEINHEIT {
+            get {
+                return ResourceManager.GetString("KBP_LBL_MONATSEINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tag: ähnelt.
+        /// </summary>
+        public static string KBP_LBL_TAG {
+            get {
+                return ResourceManager.GetString("KBP_LBL_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Januar;Februar;März;April;Mai;Juni;Juli;August;September;Oktober;November;Dezember ähnelt.
+        /// </summary>
+        public static string KBP_MONATE {
+            get {
+                return ResourceManager.GetString("KBP_MONATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Monatswerte ergeben zusammen 0 – mindestens ein Monat muss Bedarf tragen. ähnelt.
+        /// </summary>
+        public static string KBP_MSG_MONATE_NULL {
+            get {
+                return ResourceManager.GetString("KBP_MSG_MONATE_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jeder Monatswert muss eine Zahl ab 0 sein. ähnelt.
+        /// </summary>
+        public static string KBP_MSG_MONAT_NEGATIV {
+            get {
+                return ResourceManager.GetString("KBP_MSG_MONAT_NEGATIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Monatsanteile ergeben {0} %, zusammen müssen sie 100 % ergeben. ähnelt.
+        /// </summary>
+        public static string KBP_MSG_SUMME_PROZENT {
+            get {
+                return ResourceManager.GetString("KBP_MSG_SUMME_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Wochenprofil braucht Werte ab 0 und mindestens eine Stunde mit Bedarf. ähnelt.
+        /// </summary>
+        public static string KBP_MSG_WOCHE {
+            get {
+                return ResourceManager.GetString("KBP_MSG_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferientag ähnelt.
+        /// </summary>
+        public static string KBP_REIHE_FERIEN {
+            get {
+                return ResourceManager.GetString("KBP_REIHE_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf ähnelt.
+        /// </summary>
+        public static string KBP_REIHE_KAELTE {
+            get {
+                return ResourceManager.GetString("KBP_REIHE_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werktag, Samstag, Sonntag bzw. Feiertag ähnelt.
+        /// </summary>
+        public static string KBP_REIHE_WOCHE {
+            get {
+                return ResourceManager.GetString("KBP_REIHE_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dauerlinie ähnelt.
+        /// </summary>
+        public static string KBP_REITER_DAUERLINIE {
+            get {
+                return ResourceManager.GetString("KBP_REITER_DAUERLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresgang ähnelt.
+        /// </summary>
+        public static string KBP_REITER_JAHRESGANG {
+            get {
+                return ResourceManager.GetString("KBP_REITER_JAHRESGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monate ähnelt.
+        /// </summary>
+        public static string KBP_REITER_MONATE {
+            get {
+                return ResourceManager.GetString("KBP_REITER_MONATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woche ähnelt.
+        /// </summary>
+        public static string KBP_REITER_WOCHE {
+            get {
+                return ResourceManager.GetString("KBP_REITER_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Uhr ähnelt.
+        /// </summary>
+        public static string KBP_STUNDE {
+            get {
+                return ResourceManager.GetString("KBP_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahressumme aus den Monaten: {0} MWh ähnelt.
+        /// </summary>
+        public static string KBP_SUMME_MWH {
+            get {
+                return ResourceManager.GetString("KBP_SUMME_MWH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe der Anteile: {0} % (Jahressumme {1} MWh) ähnelt.
+        /// </summary>
+        public static string KBP_SUMME_PROZENT {
+            get {
+                return ResourceManager.GetString("KBP_SUMME_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werktag (Mo–Fr);Samstag;Sonntag ähnelt.
+        /// </summary>
+        public static string KBP_TAGE_DREI {
+            get {
+                return ResourceManager.GetString("KBP_TAGE_DREI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresdauerlinie des Kältebedarfs ähnelt.
+        /// </summary>
+        public static string KBP_TITEL_DAUERLINIE {
+            get {
+                return ResourceManager.GetString("KBP_TITEL_DAUERLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf im Jahresgang ähnelt.
+        /// </summary>
+        public static string KBP_TITEL_JAHRESGANG {
+            get {
+                return ResourceManager.GetString("KBP_TITEL_JAHRESGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf je Monat ähnelt.
+        /// </summary>
+        public static string KBP_TITEL_MONATE {
+            get {
+                return ResourceManager.GetString("KBP_TITEL_MONATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typische Woche nach Tagesarten ähnelt.
+        /// </summary>
+        public static string KBP_TITEL_WOCHE {
+            get {
+                return ResourceManager.GetString("KBP_TITEL_WOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Montag;Dienstag;Mittwoch;Donnerstag;Freitag;Samstag;Sonntag ähnelt.
+        /// </summary>
+        public static string KBP_WOCHENTAGE {
+            get {
+                return ResourceManager.GetString("KBP_WOCHENTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
         /// </summary>
         public static string KBROW_BTN_LOESCHEN {
@@ -68764,24 +69241,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der feste Anteil der Investition je Speicher, unabhängig von Größe und Leistung. ähnelt.
-        /// </summary>
-        public static string KI_DLG_MODK_INVEST_FIX_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_MODK_INVEST_FIX_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die kapazitätsbezogenen Modulkosten des Speichers. ähnelt.
-        /// </summary>
-        public static string KI_DLG_MODK_KOSTEN_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_MODK_KOSTEN_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der nutzbare Anteil der Kapazität; er begrenzt die Entladetiefe. ähnelt.
         /// </summary>
         public static string KI_DLG_MODK_LADEZUSTAND_ERL {
@@ -68796,15 +69255,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MODK_LAENGE_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_MODK_LAENGE_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der leistungsbezogene Anteil der Investition; leer heißt nicht gepflegt. ähnelt.
-        /// </summary>
-        public static string KI_DLG_MODK_LEISTUNGSKOSTEN_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_MODK_LEISTUNGSKOSTEN_ERL", resourceCulture);
             }
         }
         
@@ -68904,15 +69354,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MODK_UMPP_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_MODK_UMPP_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Verschleißkosten je umgesetzter Kilowattstunde; leer heißt nicht gepflegt. ähnelt.
-        /// </summary>
-        public static string KI_DLG_MODK_VERSCHLEISS_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_MODK_VERSCHLEISS_ERL", resourceCulture);
             }
         }
         
@@ -91502,6 +91943,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Verschleiß des Stromspeichers ist eine Betriebsposition „je entladener kWh“: Sie ist die Quelle des Verschleißsatzes, gebucht wird sie vom Simulationslauf — die Kostenrechnung zählt sie nicht ein zweites Mal. ähnelt.
+        /// </summary>
+        public static string KOSTEN_BETRIEB_SPEICHER_VERSCHLEISS_QUELLE {
+            get {
+                return ResourceManager.GetString("KOSTEN_BETRIEB_SPEICHER_VERSCHLEISS_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ⚙ Betriebskosten VDI 2067… ähnelt.
         /// </summary>
         public static string KOSTEN_BTN_VDI2067 {
@@ -93871,15 +94321,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string MODK_LBL_LEISTUNG {
             get {
                 return ResourceManager.GetString("MODK_LBL_LEISTUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Modulkosten ähnelt.
-        /// </summary>
-        public static string MODK_LBL_MODULKOSTEN {
-            get {
-                return ResourceManager.GetString("MODK_LBL_MODULKOSTEN", resourceCulture);
             }
         }
         
@@ -127444,15 +127885,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die €/(kWh·Zyklus) ähnelt.
-        /// </summary>
-        public static string SP_EINHEIT_ZYKLUSKOSTEN {
-            get {
-                return ResourceManager.GetString("SP_EINHEIT_ZYKLUSKOSTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Amortisation dynamisch ähnelt.
         /// </summary>
         public static string SP_ERG_AMORT_DYNAMISCH {
@@ -128317,29 +128749,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Investition (fix) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostensatz [€/kWh]: ähnelt.
         /// </summary>
-        public static string SP_LABEL_INVESTITION_FIX {
+        public static string SP_LABEL_KOSTENSATZ {
             get {
-                return ResourceManager.GetString("SP_LABEL_INVESTITION_FIX", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungskosten ähnelt.
-        /// </summary>
-        public static string SP_LABEL_LEISTUNGSKOSTEN {
-            get {
-                return ResourceManager.GetString("SP_LABEL_LEISTUNGSKOSTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Modulkosten [€/kWh]: ähnelt.
-        /// </summary>
-        public static string SP_LABEL_MODULKOSTEN {
-            get {
-                return ResourceManager.GetString("SP_LABEL_MODULKOSTEN", resourceCulture);
+                return ResourceManager.GetString("SP_LABEL_KOSTENSATZ", resourceCulture);
             }
         }
         
@@ -128358,15 +128772,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SP_LABEL_STANDBY {
             get {
                 return ResourceManager.GetString("SP_LABEL_STANDBY", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Verschleißkosten ähnelt.
-        /// </summary>
-        public static string SP_LABEL_VERSCHLEISSKOSTEN {
-            get {
-                return ResourceManager.GetString("SP_LABEL_VERSCHLEISSKOSTEN", resourceCulture);
             }
         }
         

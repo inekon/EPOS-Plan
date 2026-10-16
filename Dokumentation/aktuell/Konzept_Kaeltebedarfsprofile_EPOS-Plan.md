@@ -155,24 +155,42 @@ Je Vorlage ein Kopf (`Tab_Kaeltebedarf_STAMM`, zwölf Monatsanteile, Temperaturp
 (`Tab_Kaeltetyp_STAMM`, 168 Stunden). Die IDs vergibt die Saat fortlaufend hinter dem Bestand (heute höchste ID 6). Neutrale
 Namen, keine Hersteller- oder Produktdaten.
 
-**Belegquellen.** Nutzungszeiten und Nutzungstage nach den Nutzungsprofilen der **DIN V 18599-10** (Nichtwohngebäude);
+**Belegquellen.** Nutzungszeiten und Nutzungstage nach den Nutzungsprofilen der **DIN/TS 18599-10:2025-10**, Tab. 6/7 (Tabelle der Nutzungsprofile aus DIN/TS 18599-10:2025-10, vom Anwender bereitgestellt am 14.10.2026);
 Kühllastgang qualitativ nach **VDI 2078** (Kühllastberechnung, Verlauf aus inneren und äußeren Lasten); Raumnutzungsdaten
 nach **SIA 2024**; Kennwerte des Verbrauchs zur Plausibilisierung nach **VDI 3807**. Wo eine Zahl nicht unmittelbar aus
 diesen Quellen folgt, steht **„Richtwert, Quelle prüfen“** — die Welle KBP-2 belegt oder ersetzt diese Werte vor der Saat
-und hält sie mit einer Saatwache. Die Nutzungszeiten nach DIN V 18599-10 sind bei der Saat gegen die gültige Ausgabe zu prüfen.
+und hält sie mit einer Saatwache.
 
 | Nr. | Vorlage | Art | Nutzungszeit · Nutzungstage | Wochen- und Tagesgang (Typ) | Monatsverteilung (Kopf) | Grundlast-Anteil | Quelle |
 |---|---|---|---|---|---|---|---|
-| 7 | Krankenhaus | Raum | 0–24 h · 365 d (Bettenzimmer) | ganztägig; Tag 7–20 Uhr Faktor 1,0, Nacht 0,6; Wochenende wie Werktag | Grundlast ganzjährig, Spitze Juni–August | 40 % | Nutzungszeit DIN V 18599-10; Gang, Monate, Grundlast: Richtwert, Quelle prüfen |
-| 8 | Industrie Prozesskälte einschichtig | Prozess | Mo–Fr 6–14 Uhr | Mo–Fr 6–14 Uhr 1,0; sonst Grundlast; Sa/So Grundlast | zwölf Monate fast gleich, leichter Sommeranstieg (+10 % Juli/August) | 10 % | Richtwert, Quelle prüfen (Schichtbild wie Prozesswärme „Einschicht 5 Tage“) |
-| 9 | Industrie Prozesskälte zweischichtig | Prozess | Mo–Fr 6–22 Uhr | Mo–Fr 6–22 Uhr 1,0; sonst Grundlast | wie Nr. 8 | 15 % | Richtwert, Quelle prüfen (wie „Zweischicht 5 Tage“) |
-| 10 | Industrie Prozesskälte dreischichtig | Prozess | Mo–Fr 0–24 Uhr | Mo–Fr ganztägig 1,0; Sa/So Grundlast | wie Nr. 8 | 20 % | Richtwert, Quelle prüfen (wie „Dreischicht 5 Tage“) |
-| 11 | Rechenzentrum | Prozess | 0–24 h · 365 d | IT-Last nahezu gleich; Mo–Fr 8–18 Uhr Aufschlag 15 % | zwölf Monate gleich | 85 % | Nutzungszeit DIN V 18599-10 (Rechenzentrum); Aufschlag und Grundlast: Richtwert, Quelle prüfen |
-| 12 | Büro/Verwaltung | Raum | 7–18 Uhr · 250 d | Mo–Fr 7–18 Uhr, Spitze 13–16 Uhr; Wochenende Grundlast | April–Oktober, Spitze Juli/August | 10 % (Serverräume, Technik) | Nutzungszeit DIN V 18599-10 (Einzel-/Gruppenbüro); Gang qualitativ VDI 2078; Monate, Grundlast: Richtwert, Quelle prüfen |
-| 13 | Hotel | Raum | Zimmer 21–8 Uhr, Allgemeinflächen tags · 365 d | ganztägig; Spitze 17–23 Uhr; Wochenende wie Werktag | Mai–September | 25 % (Küche, Kühlräume) | Nutzungszeit DIN V 18599-10 (Hotelzimmer); Spitze, Monate, Grundlast: Richtwert, Quelle prüfen |
-| 14 | Lebensmitteleinzelhandel mit Gewerbekälte | Prozess | Mo–Sa 7–21 Uhr (Verkauf), Kühlmöbel 0–24 h | 168 h Grundlast der Kühlmöbel; Öffnungszeit Mo–Sa Aufschlag 1,0; Sonntag Grundlast | ganzjährig, Sommeranstieg (+20 % Juli/August) | 60 % | Nutzungszeit DIN V 18599-10 (Einzelhandel); Gewerbekälte, Monate, Grundlast: Richtwert, Quelle prüfen |
-| 15 | Schule/Hochschule | Raum | 8–15 Uhr (Klassenraum, 200 d), Hörsaal 8–18 Uhr | Mo–Fr 8–16 Uhr; Wochenende 0 | Mai–September **ohne** Ferienabzug — Ferien kommen über den Betriebskalender | 5 % | Nutzungszeiten DIN V 18599-10 (Klassenzimmer, Hörsaal); Monate, Grundlast: Richtwert, Quelle prüfen |
-| 16 | Labor | Raum | 7–18 Uhr · 250 d | Mo–Fr 7–18 Uhr 1,0; sonst Grundlast (Abzüge, Geräte) | ganzjährig mit Sommerspitze | 40 % | Nutzungszeit DIN V 18599-10 (Labor); Grundlast, Monate: Richtwert, Quelle prüfen |
+| 7 | Krankenhaus | Raum | 0–24 h · 365 d (Profil 10 Bettenzimmer) | ganztägig; Tag 7–20 Uhr Faktor 1,0, Nacht 0,6; Wochenende wie Werktag | Grundlast ganzjährig, Spitze Juni–August | 40 % | Nutzungszeit DIN/TS 18599-10:2025-10, Tab. 6/7, Profil 10 Bettenzimmer; Gang, Monate, Grundlast: Richtwert, Quelle prüfen |
+| 8 | Industrie Prozesskälte einschichtig | Prozess | Mo–Fr 7–16 Uhr · 230 d | Mo–Fr 7–16 Uhr 1,0; sonst Grundlast; Sa/So Grundlast | zwölf Monate fast gleich, leichter Sommeranstieg (+10 % Juli/August) | 10 % | Nutzungszeit DIN/TS 18599-10:2025-10, Tab. 6/7, Hallenprofile 22–24 (gewerbliche und industrielle Hallen); gewählt Mo–Fr; Gang, Monate, Grundlast: Richtwert, Quelle prüfen |
+| 9 | Industrie Prozesskälte zweischichtig | Prozess | Mo–Fr 6–22 Uhr | Mo–Fr 6–22 Uhr 1,0; sonst Grundlast | wie Nr. 8 | 15 % | Richtwert, Quelle prüfen (die Norm kennt keinen Mehrschichtbetrieb; Tagesgrenzen auf Grundlage der Hallenprofile 22–24) |
+| 10 | Industrie Prozesskälte dreischichtig | Prozess | Mo–Fr 0–24 Uhr | Mo–Fr ganztägig 1,0; Sa/So Grundlast | wie Nr. 8 | 20 % | Richtwert, Quelle prüfen (die Norm kennt keinen Mehrschichtbetrieb; Tagesgrenzen auf Grundlage der Hallenprofile 22–24) |
+| 11 | Rechenzentrum | Prozess | 0–24 h · 365 d (Profil 21) | IT-Last nahezu gleich; Mo–Fr 8–18 Uhr Aufschlag 15 % | zwölf Monate gleich | 85 % | Nutzungszeit DIN/TS 18599-10:2025-10, Tab. 6/7, Profil 21 Rechenzentrum; Aufschlag und Grundlast: Richtwert, Quelle prüfen |
+| 12 | Büro/Verwaltung | Raum | 7–18 Uhr · 250 d (Profile 1/2) | Mo–Fr 7–18 Uhr, Spitze 13–16 Uhr; Wochenende Grundlast | April–Oktober, Spitze Juli/August | 10 % (Serverräume, Technik) | Nutzungszeit DIN/TS 18599-10:2025-10, Tab. 6/7, Profile 1/2 Einzel-/Gruppenbüro; Gang qualitativ VDI 2078; Monate, Grundlast: Richtwert, Quelle prüfen |
+| 13 | Hotel | Raum | Zimmer 21–8 Uhr (Profil 11), Allgemeinflächen tags · 365 d | ganztägig; Spitze 17–23 Uhr; Wochenende wie Werktag | Mai–September | 25 % (Küche, Kühlräume) | Nutzungszeit DIN/TS 18599-10:2025-10, Tab. 6/7, Profil 11 Hotelzimmer; Spitze, Monate, Grundlast: Richtwert, Quelle prüfen |
+| 14 | Lebensmitteleinzelhandel mit Gewerbekälte | Prozess | Mo–Sa 8–20 Uhr · 300 d (Verkauf, Profil 7), Kühlmöbel 0–24 h | 168 h Grundlast der Kühlmöbel; Öffnungszeit Mo–Sa Aufschlag 1,0; Sonntag Grundlast | ganzjährig, Sommeranstieg (+20 % Juli/August) | 60 % | Nutzungszeit DIN/TS 18599-10:2025-10, Tab. 6/7, Profil 7 Einzelhandel mit Kühlprodukten; Gewerbekälte, Monate, Grundlast: Richtwert, Quelle prüfen |
+| 15 | Schule/Hochschule | Raum | 8–15 Uhr (Klassenraum, 200 d), Hörsaal 8–18 Uhr | Mo–Fr 8–16 Uhr; Wochenende 0 | Mai–September **ohne** Ferienabzug — Ferien kommen über den Betriebskalender | 5 % | Nutzungszeiten DIN/TS 18599-10:2025-10, Tab. 6/7, Profile 8 Klassenzimmer, 9 Hörsaal; Monate, Grundlast: Richtwert, Quelle prüfen |
+| 16 | Labor | Raum | 7–18 Uhr · 250 d (Profil 38; Lüftung nach der Norm 24 h/d) | Mo–Fr 7–18 Uhr 1,0; sonst Grundlast (Abzüge, Geräte) | ganzjährig mit Sommerspitze | 40 % | Nutzungszeit DIN/TS 18599-10:2025-10, Tab. 6/7, Profil 38 Labor; Grundlast, Monate: Richtwert, Quelle prüfen |
+
+**Belegstand der Saat (Welle KBP-2).** Die Saat (`KaeltevorlagenSaat`, Schritt `KaeltebedarfsprofilVorlagenSchema`) führt die Werte
+der Tafel mit IDs 7–16 und vermerkt je Vorlage ihre Quelle im Kommentar und in der Eigenschaft `Quelle`. Belegt sind allein
+die Nutzungszeiten und Nutzungstage: Sie folgen den Nutzungsprofilen der DIN/TS 18599-10:2025-10, Tab. 6/7 — Profil 10 Bettenzimmer
+(0–24 Uhr, 365 d), 21 Rechenzentrum (0–24 Uhr, 365 d), 1/2 Einzel- und Gruppenbüro (7–18 Uhr, 250 d), 11 Hotelzimmer
+(21–8 Uhr, 365 d), 7 Einzelhandel mit Kühlprodukten (8–20 Uhr, 300 d), 8 Klassenzimmer (8–15 Uhr, 200 d), 9 Hörsaal
+(8–18 Uhr, 150 d), 38 Labor (7–18 Uhr, 250 d; die Lüftung läuft nach der Norm 24 h/d) und die Hallenprofile 22–24 für die
+Prozesskälte einschichtig (7–16 Uhr, 230 d). Die Norm kennt keinen Mehrschichtbetrieb: Die Nutzungszeit der Prozesskälte
+zwei- und dreischichtig (Nr. 9, 10) bleibt Richtwert, die Hallenprofile sind Grundlage der Tagesgrenzen. Abweichend von der
+Tafel nimmt Nr. 14 die Normzeit 8–20 Uhr statt 7–21 Uhr. Tagesgänge,
+Monatsverteilungen und Grundlasten folgen keiner Normtabelle: VDI 2078 trägt nur den qualitativen Verlauf (Büro, Spitze
+nachmittags), VDI 3807 nur die Plausibilisierung des Jahresverbrauchs, SIA 2024 wurde nicht herangezogen. Diese Werte bleiben
+ausgewiesene **Richtwerte** mit der Kennung „Richtwert, Quelle prüfen“; bei der Prozesskälte der Schichtbetriebe (Nr. 8–10) sind
+Gang, Monate und Grundlast Richtwert, bei Nr. 9 und 10 auch die Nutzungszeit. Der Grundlast-Anteil ist der Wochenwert außerhalb der Nutzungszeit relativ zur Spitze; beim Krankenhaus
+(Nachtwert 0,6) und bei den Raumkühlungen mit Jahresgang steht er zugleich als Faktor der Wintermonate. Den Art-Vorschlag
+trägt die Katalogspalte `Kaelte_Art` (Werte wie an der Zuordnung, `RAUM`/`PROZESS`; leer an den Zeilen 1–6). Die
+Saatwache `KaeltebedarfsprofilVorlagenSchemaTests` hält Zeilen, Monatssummen 100, vollständige Tagesgänge, die Quelle je Vorlage und die
+Zeilen 1–6 bytegleich gegen einen eingefrorenen Abdruck.
 
 Temperaturpaare der neuen Köpfe bleiben Angabe ohne Wirkung (E-K3): Raumkühlung 16/19 °C, Prozesskälte 6/12 °C,
 Rechenzentrum 18/24 °C, Gewerbekälte −2/+4 °C — runde Ordnungswerte wie im Bestand.

@@ -68,7 +68,7 @@ namespace EPOS.Kern.Tests
                          Feld(false, k, ModulKatalogProfil.FeldBezeichner));
             // Welle KB-4: Das Satzbild fuehrt den KOSTENSATZ der Satzvorlage, keine Kostenspalte.
             Assert.True(PhotovoltaikStammCtrl.SatzAnzeige(true, KOPIE_1046).ContainsKey(ModulKatalogProfil.FeldKostensatz));
-            Assert.False(PhotovoltaikStammCtrl.SatzAnzeige(true, KOPIE_1046).ContainsKey(ModulKatalogProfil.FeldModulkosten));
+            Assert.False(PhotovoltaikStammCtrl.SatzAnzeige(true, KOPIE_1046).ContainsKey("MODULKOSTEN"));
             PhotovoltaikStammCtrl.ModulDetail d = PhotovoltaikStammCtrl.SatzDetail(true, KOPIE_1046);
             Assert.Equal(Zahl("Tab_PV", KOPIE_1046, "alpha_SC"), d.AlphaSc!.Value, 12);
             Assert.Null(PhotovoltaikStammCtrl.SatzAnzeige(true, 987654));

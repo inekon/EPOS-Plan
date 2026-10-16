@@ -1566,8 +1566,7 @@ Position führt, ihr Katalogsatz aber eine Satzvorlage, steht in der Wertzelle s
 **„Satzvorlage vorhanden"**. Beide
 Wege zeigen vor dem Schreiben dieselbe Vorschau in derselben Rückfrage.
 
-**Grenzen des Abgleichs.** Der Stromspeicher gleicht wie jedes Gewerk ab, seine eigene
-Speicherrechnung liest aber noch seine Gerätespalten. Kältemaschine und Rückkühlwerk tragen
+**Grenzen des Abgleichs.** Kältemaschine und Rückkühlwerk tragen
 ihre Satzvorlage, führen aber keinen Ursprung an der Anlage — für sie ist der Abgleich erst möglich,
 wenn der Rückweg sie aufnimmt.
 
@@ -1578,6 +1577,17 @@ Kältemaschine), die Saat aller acht Gewerke läuft noch einmal, und danach fall
 **32 Kostenspalten** an Katalog und Projektkopie. Mit `Kosten_Modul` fällt auch die daraus
 abgeleitete `Investition_kwel`; mit `Wartungskosten` fällt `Wartungskosten_Einheit`, denn ihren
 Zeitbezug trägt die **Bemessung** der Position.
+
+**Der Stromspeicher wie die übrigen Gewerke.** Auch der Stromspeicher führt keine Kostenspalten
+(Modulkosten, Leistungskosten, Investition fix, Verschleißkosten). Jeder Katalogsatz trägt je einen
+Verweis auf eine Satzvorlage: die Investition mit bis zu drei Positionen — je kWh Kapazität, je kW
+Leistung, fester Betrag — und den Betrieb mit dem Verschleiß je entladener kWh (dieselbe Größe wie
+€ je kWh Nennkapazität und Vollzyklus). Der Katalogdialog zeigt die Kosten als gesperrten Lesewert
+mit Vermerk auf die Kostenverwaltung. Der Verschleiß wird genau einmal gebucht, vom Simulationslauf;
+der feste Investitionsanteil geht nicht in die Speicherauslegung ein. Die Speicherflotte liest die
+Kosten ihrer Einheiten aus der Satzvorlage und schreibt bei der Übernahme einer Flotte
+Kostenpositionen der Anlage nur, wenn die Einheit „eigene Kosten“ hat. Der Abgleich zwischen Katalog
+und Kostenverwaltung geschieht nie automatisch. Umsetzungsvermerk: KB-5, Schritt 229.
 
 - **Eine Wache vor dem Entfall.** Trägt nach der Saat noch eine Zeile einen Kostenwert ohne
   Satzvorlage, bricht der Schritt **benannt** ab und lässt die Spalten stehen. Das trifft auch den

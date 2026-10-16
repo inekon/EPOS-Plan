@@ -470,6 +470,14 @@ namespace WindowsFormsApplication1
             // Schritt sät die fehlenden Satzvorlagen an der Zieldatenbank und entfernt die Spalten danach.
             new Stufe(GeraetekostenEntfallSchema.SCHRITT, Art.Ddl,
                       "Satzvorlage am Wechselrichter, Entfall der 32 Kostenspalten der Investitionsgewerke (KB-4)"),
+            // KB-5: Ein älteres Paket bringt seine Stromspeicher samt Projektkopien noch mit den vier Kostenspalten;
+            // der Schritt sät die fehlenden Satzvorlagen an der Zieldatenbank und entfernt die Spalten danach.
+            new Stufe(StromspeicherKostenSchema.SCHRITT, Art.Ddl,
+                      "Entfall der vier Kostenspalten des Stromspeichers, Kosten in der Satzvorlage (KB-5)"),
+            // KBP-2: Ein älteres Paket bringt seine Kältebedarfszuordnungen ohne Eingabeart und seine Projektkopien ohne
+            // Art-Vorschlag; der Schritt legt die Spalten am Ziel an (Vorgabe 'jahr' bzw. leer).
+            new Stufe(KaeltebedarfsprofilVorlagenSchema.SCHRITT, Art.Ddl,
+                      "Eingabeart der Kältebedarfszuordnung, Art-Vorschlag und Vorlagen 7–16 des Kältekatalogs (KBP-2)"),
             // Ein Paket führt keinen Katalog der Nutzungsprofile (er bleibt im Ziel); der Schritt sät die DIN-Profile am Ziel.
             new Stufe(RaumnutzungDinWerteSchema.SCHRITT, Art.Katalog,
                       "Werte der DIN-Nutzungsprofile nach DIN/TS 18599-10:2025-10 (DA-6, E135)"),

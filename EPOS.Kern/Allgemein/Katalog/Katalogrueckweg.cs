@@ -72,6 +72,14 @@ namespace WindowsFormsApplication1
             Array.Empty<(string, string, string)>();
         /// <summary>Prüfregel einer Zeile der Kopie; leer = in Ordnung. Läuft vor dem Vorgang.</summary>
         public Func<DataRow, string> Pruefung { get; init; }
+        /// <summary>
+        /// <b>Die Satzvorlagen der Kopie gehen mit</b> (Welle KB-5, Stromspeicher): Ein Gewerk, dessen Kosten nur in den
+        /// Satzvorlagen stehen, verlöre sonst seine Kosten, wenn die Anlage keine eigene Kostenposition führt. Je Kategorie
+        /// ohne Position der Anlage übernimmt der Katalogsatz deshalb den Verweis der Kopie (<c>ID_KostenVorlage</c>,
+        /// <c>ID_KostenVorlageInvestition</c>) — derselbe Verweis, den die Übernahme Katalog → Kopie mitkopiert (Muster
+        /// Wechselrichter, KB-4b). Positionen der Anlage gehen weiterhin vor.
+        /// </summary>
+        public bool KostenverweisMitnehmen { get; init; }
     }
 
     /// <summary>Eine Zeile der Rückfrage: die Kopie, ihr Ursprung, ob er überschrieben werden kann, der Namensvorschlag.</summary>
@@ -356,7 +364,11 @@ namespace WindowsFormsApplication1
             object anlage = v.Skalar("SELECT MIN(\"ID\") FROM \"Tab_Energieanlagen\" WHERE \"ID_Projekt\" = ? AND \"" +
                                      g.Anlagenverweis + "\" = ?", new DbParam("@p", idProjekt),
                                      new DbParam("@k", Convert.ToInt32(kopie["ID"], CultureInfo.InvariantCulture)));
-            if (anlage == null || anlage == DBNull.Value) return 0;
+            if (anlage == null || anlage == DBNull.Value)
+            {
+                VerweiseDerKopieMitnehmen(v, g, kopie, idKatalog);
+                return 0;
+            }
             int idAnlage = Convert.ToInt32(anlage, CultureInfo.InvariantCulture);
             var positionen = new Dictionary<int, DataTable>();
             foreach (int kategorie in KATEGORIEN)
@@ -370,7 +382,11 @@ namespace WindowsFormsApplication1
                         new DbParam("@c", g.KomponentenId), new DbParam("@k", kategorie))
                     : null;
             int gesamt = positionen.Values.Sum(t => t?.Rows.Count ?? 0);
-            if (gesamt == 0) return 0;
+            if (gesamt == 0)
+            {
+                VerweiseDerKopieMitnehmen(v, g, kopie, idKatalog);
+                return 0;
+            }
 
             string bemerkung = F(MyResource.Resource.KATRUECK_BEMERKUNG_VORLAGE, Projektname(v, idProjekt), heute);
             string vorlagenname = name.Length > NAME_VORLAGE_MAX ? name.Substring(0, NAME_VORLAGE_MAX) : name;
@@ -387,6 +403,15 @@ namespace WindowsFormsApplication1
 
                 if (!hatPositionen)
                 {
+                    int? ausKopie = g.KostenverweisMitnehmen ? VerweisDerKopie(kopie, spalte) : null;
+                    if (ausKopie.HasValue)
+                    {
+                        if (alt == ausKopie) continue;
+                        v.Ausfuehren("UPDATE \"" + g.Katalogtabelle + "\" SET \"" + spalte + "\" = ? WHERE \"ID\" = ?",
+                                     new DbParam("@v", ausKopie.Value), new DbParam("@id", idKatalog));
+                        if (idVorlage > 0) Abraeumen(v, idVorlage);
+                        continue;
+                    }
                     if (!alt.HasValue) continue;
                     v.Ausfuehren("UPDATE \"" + g.Katalogtabelle + "\" SET \"" + spalte + "\" = NULL WHERE \"ID\" = ?",
                                  new DbParam("@id", idKatalog));
@@ -414,6 +439,35 @@ namespace WindowsFormsApplication1
                              new DbParam("@v", idVorlage), new DbParam("@id", idKatalog));
             }
             return gesamt;
+        }
+
+        /// <summary>
+        /// Führt die Anlage keine Kostenposition (oder gibt es keine Anlage), übernimmt ein Gewerk mit
+        /// <see cref="Rueckweggewerk.KostenverweisMitnehmen"/> je Kategorie den Verweis der Kopie — nur, wo die Kopie einen
+        /// führt; ein Verweis des Katalogsatzes ohne Gegenstück an der Kopie bleibt stehen.
+        /// </summary>
+        private static void VerweiseDerKopieMitnehmen(DbVorgang v, Rueckweggewerk g, DataRow kopie, int idKatalog)
+        {
+            if (!g.KostenverweisMitnehmen) return;
+            foreach (int kategorie in KATEGORIEN)
+            {
+                if (!VerweisLesbar(g.Katalogtabelle, kategorie)) continue;
+                string spalte = Verweisspalte(kategorie);
+                int? ausKopie = VerweisDerKopie(kopie, spalte);
+                if (!ausKopie.HasValue || Verweis(v, g.Katalogtabelle, spalte, idKatalog) == ausKopie) continue;
+                v.Ausfuehren("UPDATE \"" + g.Katalogtabelle + "\" SET \"" + spalte + "\" = ? WHERE \"ID\" = ?",
+                             new DbParam("@v", ausKopie.Value), new DbParam("@id", idKatalog));
+            }
+        }
+
+        /// <summary>Der Verweis der Kopie auf ihre Satzvorlage der Spalte <paramref name="spalte"/>; <c>null</c>, wenn leer.</summary>
+        private static int? VerweisDerKopie(DataRow kopie, string spalte)
+        {
+            if (!kopie.Table.Columns.Contains(spalte)) return null;
+            object o = kopie[spalte];
+            if (o == null || o == DBNull.Value) return null;
+            int id = Convert.ToInt32(o, CultureInfo.InvariantCulture);
+            return id > 0 ? id : (int?)null;
         }
 
         /// <summary>Die Kategorien der Satzvorlagen: Betrieb, Investition.</summary>

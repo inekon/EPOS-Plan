@@ -18,10 +18,10 @@ namespace WindowsFormsApplication1
     /// neu anlegt oder entfernt, schließt erst OK ab (<see cref="Projektkopievormerkung"/>).</para>
     ///
     /// <para><b>Zwei Beschriftungen kommen aus dem Ressourcenkatalog</b>, nicht aus dem
-    /// Designer: <c>SP_LABEL_ENERGIE</c> und <c>SP_LABEL_MODULKOSTEN</c>. Der Designer
-    /// trug „Energie [kW]" und „Modulkosten" — beides fachlich falsch (Abnahmebefund 1
-    /// zum ersten App-Start; <c>Tab_Stromspeicher.Energie</c> ist die nutzbare
-    /// Nennkapazität in kWh, <c>Modulkosten</c> der kapazitätsbezogene Satz in €/kWh).
+    /// Designer: <c>SP_LABEL_ENERGIE</c> und <c>SP_LABEL_KOSTENSATZ</c>. Der Designer
+    /// trug „Energie [kW]" — fachlich falsch (Abnahmebefund 1 zum ersten App-Start;
+    /// <c>Tab_Stromspeicher.Energie</c> ist die nutzbare Nennkapazität in kWh). Der
+    /// Kostensatz ist der kapazitätsbezogene Satz der Satzvorlage in €/kWh (Welle KB-5).
     /// Der Vorläufer korrigierte sie im Code (<c>EinheitenBeschriftungKorrigieren</c>);
     /// hier setzt sie die Hülle ein.</para>
     /// </summary>
@@ -116,11 +116,11 @@ namespace WindowsFormsApplication1
                 ["Katalogzeilen"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
                     StromspeicherStammCtrl.Katalogfilterzeilen),
                 ["KatalogDetail"] = new Func<string, ErzeugerDetail>(
-                    name => { var c = new StromspeicherStammCtrl(); c.ReadSingle(name); return DetailZu(c.rows == 0 ? null : c.items[0]); }),
+                    name => { var c = new StromspeicherStammCtrl(); c.ReadSingle(name); return DetailZu(c.rows == 0 ? null : c.items[0], false); }),
                 // Die Projektzeile liest ihre Projektkopie ueber die Geraete-ID: Varianten desselben Speichers tragen
                 // eigene Namen. Im Assistenten zeigt die ID auf den Katalog.
                 ["ProjektDetail"] = new Func<ErzeugerZeile, ErzeugerDetail>(
-                    zeile => DetailZu(StromspeicherStammCtrl.Satz(mitKopie, zeile.GeraetId))),
+                    zeile => DetailZu(StromspeicherStammCtrl.Satz(mitKopie, zeile.GeraetId), mitKopie)),
 
                 ["Aufnehmen"] = new Func<int, AufnahmeErgebnis>(
                     stammId => Aufnehmen(projektId, idType, mitKopie, modelle, zuModell, zaehler, stammId, vormerkung)),
@@ -174,9 +174,9 @@ namespace WindowsFormsApplication1
                 // Sie kommen aus derselben Quelle, aus der auch der Modulkatalog hinter
                 // "Bearbeiten..." seine Felder bekommt; der Aufklapper IST sein Raster.
                 // Uebersetzt wird zwischen den zwei Feldtypen in der
-                // ModulFeldwertBruecke. Erst damit sind die sechs AP3-Geraetewerte
-                // (Wirkungsgrad, Zyklen, Verschleiss- und Leistungskosten, Investition
-                // fix, Standby) aus dem Projektdialog heraus ueberhaupt zu sehen.
+                // ModulFeldwertBruecke. Erst damit sind die AP3-Geraetewerte
+                // (Wirkungsgrad, Zyklen, Standby) und der Kostensatz der Satzvorlage
+                // aus dem Projektdialog heraus ueberhaupt zu sehen.
                 // SCHLOSS SETZEN / AUFHEBEN an der Katalogliste (AD-Q15) - derselbe Weg wie in
                 // der Verwaltung. Die Verwendung im Projekt sperrt nichts (eigene Kopie).
                 ["Schloss"] = Schlosswege.Aus(StromspeicherStammCtrl.SchlossSetzen),
@@ -373,7 +373,7 @@ namespace WindowsFormsApplication1
         /// Der Detailblock (<c>listBox_SP_SelectedIndexChanged</c>, Z. 206) eines Katalogsatzes oder einer
         /// Projektkopie; <c>null</c> = leerer Block.
         /// </summary>
-        private static ErzeugerDetail DetailZu(StromspeicherModel s)
+        private static ErzeugerDetail DetailZu(StromspeicherModel s, bool projektkopie)
         {
             if (s == null) return new ErzeugerDetail("", "", new List<(string, string)>());
 
@@ -384,7 +384,8 @@ namespace WindowsFormsApplication1
                 (MyResource.Resource.SP_LABEL_ENERGIE, s.m_Energie.ToString()),
                 (Text_("SPD_LBL_DEGRADATION", "Degradation [%/a]:"), s.m_Degradation.ToString()),
                 (Text_("SPD_LBL_LADEZUSTAND", "Ladezustand [%]:"), s.m_Ladezustand.ToString()),
-                (MyResource.Resource.SP_LABEL_MODULKOSTEN, s.m_Modulkosten.ToString())
+                // Welle KB-5: der Kostensatz aus der Satzvorlage - ein Lesewert, gepflegt in der Kostenverwaltung.
+                (MyResource.Resource.SP_LABEL_KOSTENSATZ, StromspeicherStammCtrl.KostensatzText(projektkopie, s.m_ID))
             };
 
             // UeS2b: die Zahlwerte fuer die Zusammenfassung der Detailzeile - nicht ueber die Beschriftungen.

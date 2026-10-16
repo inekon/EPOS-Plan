@@ -1082,6 +1082,17 @@ namespace WindowsFormsApplication1
         /// dieser Gewerke liest eine der Spalten; Planwert, Dialoge und Berichte lesen die Satzvorlage.
         /// <b>Neue Katalogfassung:</b> Die Prüfsumme jedes Satzes der acht Kataloge ändert sich, der Schritt
         /// bildet sie für unveränderte Sätze neu.
+        /// Danach, mit dem ENTFALL DER STROMSPEICHER-KOSTENSPALTEN (KB-5), steht das Ziel auf
+        /// <see cref="StromspeicherKostenSchema.SCHRITT"/>: Sicherheitslauf der Saat, dann der Entfall von
+        /// <c>Modulkosten</c>, <c>Leistungskosten</c>, <c>Investition_Fix</c> und <c>Verschleisskosten</c> an
+        /// Katalog und Projektkopie (<see cref="StromspeicherKostenSchema"/>). <b>Ergebnisgleich:</b> Der Rechenweg
+        /// liest dieselben Sätze aus Position und Satzvorlage. <b>Neue Katalogfassung:</b> Die Prüfsumme jedes
+        /// Stromspeichers ändert sich, der Schritt bildet sie für unveränderte Sätze neu.
+        /// Danach, mit SCHEMASCHRITT A DER KÄLTEBEDARFSPROFILE (KBP-2), steht das Ziel auf
+        /// <see cref="KaeltebedarfsprofilVorlagenSchema.SCHRITT"/>: <c>Z_Projekt_Kaeltebedarf.Eingabeart</c> (Vorgabe 'jahr'), der
+        /// Art-Vorschlag <c>Kaelte_Art</c> an <c>Tab_Kaeltebedarf_STAMM</c> und <c>Tab_Kaeltebedarf</c> und die Saat der
+        /// Vorlagen 7–16 (<see cref="KaeltebedarfsprofilVorlagenSchema"/>). <b>Ergebnisneutral:</b> Jede Zuordnung rechnet weiter mit
+        /// der Jahressumme, die Zeilen 1–6 bleiben bytegleich samt Prüfsumme.
         /// Danach, mit der SAAT DER DIN-NUTZUNGSPROFILE (DA-6, E135), steht das Ziel auf <see cref="RaumnutzungDinWerteSchema.SCHRITT"/>:
         /// Die 45 ausgelieferten Profile der Kategorie DIN/TS 18599-10 tragen die Werte der Fassung 2025-10
         /// (<see cref="RaumnutzungDinSaat"/>), nur wo kein Wert stand. <b>Ergebnisneutral:</b> Kein Referenzprojekt nutzt ein
