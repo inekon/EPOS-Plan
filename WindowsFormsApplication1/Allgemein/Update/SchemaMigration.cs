@@ -5636,6 +5636,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_BAUTEIL_STRAHLUNG = BauteilStrahlungSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="KlimaRohwerteSchema.SCHRITT"/> — <b>Rohwerte des Klimaimports</b> (KD-4): eigene Tabelle
+        /// <c>Tab_Klimastunde_STAMM</c> und die Herkunftsspalten der Klimaregion. KETTE: geparkt, noch nicht in
+        /// <c>SCHRITTE_SQLITE</c>.
+        /// </summary>
+        public const int SCHRITT_KLIMA_ROHWERTE = KlimaRohwerteSchema.SCHRITT;
+
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -8316,6 +8324,11 @@ namespace WindowsFormsApplication1
                         "Absorptions- und Emissionsgrad der Aussenflaechen liessen sich weder je Bauteil eintragen noch aus gbXML oder " +
                         "IFC uebernehmen. KEIN Rechenergebnis aendert sich - die Spalten bleiben leer, leer heisst Festwert.",
                         Schritt_BauteilStrahlung),
+            // KD-4, KETTE: GEPARKT auf 238 - der Eintrag folgt mit dem Umhaengen hinter 237 (BauteilStrahlungSchema):
+            //   Konstante SCHRITT_KLIMA_ROHWERTE, Methode Schritt_KlimaRohwerte; Titel "Tab_Klimastunde_STAMM (neu): Rohwerte
+            //   des Klimaimports; Tab_Klimaregion(_STAMM): Standorthoehe, Bezugspunkt, Ausfuehrung; Tab_Klimaregion_STAMM:
+            //   Zeitbezug, Rohdaten", Anlass "Der Import verwarf Luftdruck, Wind, Wasserdampfgehalt, Ausstrahlung und
+            //   Qualitaetskennung. KEIN Rechenergebnis aendert sich - Bestandsregionen bleiben ohne Rohwerte."
         };
 
         /// <summary>
@@ -16743,6 +16756,60 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Absorptionsgrad_Solar und Emissionsgrad an Aufbau und Bauteil - " +
                     (handgriffe == 0 ? "stand bereits." : "Spalten angelegt.") + " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Rohwerte des Klimaimports" (KD-4, Schritt <see cref="KlimaRohwerteSchema.SCHRITT"/>) — die
+        /// Anweisungen bei <see cref="KlimaRohwerteSchema"/>. <b>Wiederholbar, ergebnisneutral.</b> KETTE: geparkt.
+        /// </summary>
+        private static bool Schritt_KlimaRohwerte(Lauf l)
+        {
+            string nr = KlimaRohwerteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KlimaRohwerteSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int angelegt;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    angelegt = KlimaRohwerteSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!KlimaRohwerteSchema.SchemaVollstaendig())
+            {
+                l.LetzterFehler = "Rohtabelle oder Herkunftsspalten der Klimaregion fehlen nach dem Schritt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Rohwerte des Klimaimports - " +
+                    (angelegt == 0 ? "Spalten standen bereits." : angelegt + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
             return true;
         }
 

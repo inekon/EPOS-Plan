@@ -138,6 +138,20 @@ namespace WindowsFormsApplication1
         [JsonPropertyName("WS10m")]
         public double WindSpeed { get; set; } // Windgeschwindigkeit [m/s]
 
+        /// <summary>
+        /// Windrichtung [Grad] — PVGIS <c>WD10m</c> (Auftrag KD-4). Allein Rohwert für
+        /// die Rohtabelle des Klimaimports; kein Rechenweg liest ihn. <c>null</c> = nicht geliefert.
+        /// </summary>
+        [JsonPropertyName("WD10m")]
+        public double? Windrichtung { get; set; }
+
+        /// <summary>
+        /// Luftdruck am Boden [Pa] — PVGIS <c>SP</c> (Auftrag KD-4). Allein Rohwert (gespeichert in hPa);
+        /// kein Rechenweg liest ihn. <c>null</c> = nicht geliefert.
+        /// </summary>
+        [JsonPropertyName("SP")]
+        public double? Luftdruck_Pa { get; set; }
+
         public double Sol_sued;
         public double Sol_ost;
         public double Sol_nord;

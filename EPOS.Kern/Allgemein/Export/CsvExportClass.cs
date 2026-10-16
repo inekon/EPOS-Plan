@@ -155,7 +155,12 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Dateiwahl beider Exporte: gemerkter Ordner, sonst „Dokumente“; der gewählte Ordner
         /// wird für den nächsten Export gemerkt. <c>null</c> bei Abbruch.
+        /// <para>Öffentlich als Naht für den Klimaexport (Auftrag KD-5), der seinen Text selbst schreibt.</para>
         /// </summary>
+        public static Task<string> DateiWaehlenFuerExportAsync(string vorschlagDateiname)
+            => DateiWaehlenAsync(vorschlagDateiname);
+
+        /// <summary>Siehe <see cref="DateiWaehlenFuerExportAsync"/> — der eine Weg mit gemerktem Ordner.</summary>
         private static async Task<string> DateiWaehlenAsync(string vorschlagDateiname)
         {
             // Zuletzt verwendeten Export-Ordner vorschlagen, sonst "Dokumente"

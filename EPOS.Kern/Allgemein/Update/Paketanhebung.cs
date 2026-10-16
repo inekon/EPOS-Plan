@@ -502,6 +502,9 @@ namespace WindowsFormsApplication1
             // Ein älteres Paket bringt Aufbauten und Bauteile ohne Strahlungswerte; der Schritt legt die Spalten leer an.
             new Stufe(BauteilStrahlungSchema.SCHRITT, Art.Ddl,
                       "Absorptions- und Emissionsgrad je Aufbau und Bauteil (DA-8)"),
+            // KD-4 (KlimaRohwerteSchema), KETTE: GEPARKT auf 238 - die Stufe folgt mit dem Umhaengen hinter 237:
+            //   new Stufe(KlimaRohwerteSchema.SCHRITT, Art.Ddl,
+            //             "Rohwerte des Klimaimports und Herkunft der Klimaregion (KD-4)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

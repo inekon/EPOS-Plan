@@ -1096,6 +1096,10 @@ namespace EPOS.Kern.Tests
                 // Schritt BauteilStrahlungSchema.SCHRITT (DA-8): Absorptionsgrad_Solar und Emissionsgrad an Aufbau und Bauteil,
                 // leer, reines DDL. Wiederholbar, ergebnisneutral.
                 BauteilStrahlungSchema.Ausfuehren(null);
+                // Schritt KlimaRohwerteSchema.SCHRITT (KD-4, GEPARKT auf 238): Tab_Klimastunde_STAMM (leer) und die
+                // Herkunftsspalten der Klimaregion. Wiederholbar, ergebnisneutral.
+                // KETTE: steht hinter 235 bis 237, sobald diese hier eingetragen sind.
+                KlimaRohwerteSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

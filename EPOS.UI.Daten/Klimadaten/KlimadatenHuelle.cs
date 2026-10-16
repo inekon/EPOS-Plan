@@ -126,8 +126,54 @@ namespace WindowsFormsApplication1
                 // AD-Q15: das Schloss laesst sich nach Rueckfrage umschalten.
                 ["Schloss"] = Schlosswege.Aus(KlimaregionStammCtrl.SchlossSetzen),
                 ["Ortsvorschlaege"] = Ortsvorschlaege(),
-                ["DateiWaehlen"] = new Func<string, Task<string>>(DateiWaehlen)
+                ["DateiWaehlen"] = new Func<string, Task<string>>(DateiWaehlen),
+                // KD-5: der CSV-Export einer Region (Handlung „Exportieren…" der Auswahlleiste).
+                ["ExportLesen"] = new Func<string, Task<KlimaExportDaten>>(ExportLesen),
+                ["ExportSpeichern"] = new Func<string, string, Task<EPOS.UI.Dialoge.Export.KlimaExportErgebnis>>(
+                    (inhalt, vorschlag) => ExportSpeichern(inhalt, vorschlag, OperatingSystem.IsIOS()))
             };
+        }
+
+        // =====================================================================
+        // CSV-Export einer Region (Auftrag KD-5)
+        // =====================================================================
+
+        /// <summary>Liest die Region abseits des Oberflächenfadens (<see cref="KlimaExportCtrl.Lesen(string)"/>).</summary>
+        private static Task<KlimaExportDaten> ExportLesen(string region)
+            => Kulturweitergabe.Starten(() => KlimaExportCtrl.Lesen(region));
+
+        /// <summary>
+        /// Der Speicherweg des Exports über die vorhandene Naht <see cref="CsvExportClass.DateiWaehlenFuerExportAsync"/>
+        /// (Dateiwahl über <c>Dienste.Datei</c>, gemerkter Ordner): Schreiben als UTF-8 mit BOM — ganz oder gar nicht —,
+        /// auf iOS danach das Teilen. Eine abgebrochene Dateiwahl meldet <see cref="EPOS.UI.Dialoge.Export.KlimaExportErgebnis.Abgebrochen"/>.
+        /// </summary>
+        internal static async Task<EPOS.UI.Dialoge.Export.KlimaExportErgebnis> ExportSpeichern(string inhalt, string vorschlag, bool ios)
+        {
+            string pfad = await CsvExportClass.DateiWaehlenFuerExportAsync(vorschlag).ConfigureAwait(true);
+            if (string.IsNullOrWhiteSpace(pfad)) return EPOS.UI.Dialoge.Export.KlimaExportErgebnis.Abgebrochen;
+            try
+            {
+                await Kulturweitergabe.Starten(() =>
+                {
+                    File.WriteAllText(pfad, inhalt ?? "", new System.Text.UTF8Encoding(true));
+                    return true;
+                });
+            }
+            catch (Exception ex)
+            {
+                return new EPOS.UI.Dialoge.Export.KlimaExportErgebnis(false, false,
+                    string.Format(System.Globalization.CultureInfo.CurrentCulture, MyResource.Resource.KEXP_MSG_FEHLER, ex.Message));
+            }
+            string text = string.Format(System.Globalization.CultureInfo.CurrentCulture, MyResource.Resource.KEXP_MSG_GESPEICHERT, pfad);
+            if (ios)
+            {
+                bool geteilt;
+                try { geteilt = Dienste.Datei.MitSystemOeffnen(pfad); }
+                catch (Exception) { geteilt = false; }
+                if (!geteilt)
+                    text = string.Format(System.Globalization.CultureInfo.CurrentCulture, MyResource.Resource.KEXP_MSG_TEILEN_FEHLER, pfad);
+            }
+            return new EPOS.UI.Dialoge.Export.KlimaExportErgebnis(true, false, text);
         }
 
         // =====================================================================

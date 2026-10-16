@@ -180,19 +180,30 @@ Spalte, damit Referenzlauf und Basis unberührt bleiben. Damit gilt auch die Hau
 ohne Leser“ (Umsetzungskonzept Gebäudesimulation F-S3, Klimakonzept KL-Q3) weiter **für die
 Rechentabellen**. Die Rohwerte bekommen eine **eigene Tabelle**, deren Leser der Export ist.
 
-**Ein Schemaschritt.** Die Nummer meldet die bauende Sitzung vor dem Bau an (Statusdatei, Zeile
-„Schemaschritt angemeldet“).
+**Ein Schemaschritt** (`KlimaRohwerteSchema`). Er legt die Rohtabelle leer an und ergänzt die
+Regionsspalten; er schreibt keine Zeile um und lädt nichts nach.
 
 | Tabelle | Spalte | Typ | Bedeutung |
 |---|---|---|---|
 | `Tab_Klimastunde_STAMM` (neu, `STRICT`) | `ID_Klimaregion` | INTEGER, FK → `Tab_Klimaregion_STAMM`, `ON DELETE CASCADE` | Region |
-| | `Stunde` | INTEGER `CHECK (Stunde BETWEEN 0 AND 8759)` | Index im Raster der Quelle, Primärschlüssel mit `ID_Klimaregion` |
-| | `Temperatur`, `Luftfeuchte`, `Globalstrahlung`, `Direkt_Horizontal`, `Direkt_Normal`, `Diffusstrahlung`, `Gegenstrahlung`, `Ausstrahlung`, `Bedeckungsgrad`, `Luftdruck_hPa`, `Wind_Geschwindigkeit`, `Wind_Richtung`, `Wasserdampfgehalt`, `Qualitaet_Strahlung` | REAL bzw. INTEGER, **alle nullbar** | Rohwert der Quelle in Hauseinheit. NULL heißt „Quelle führt die Größe nicht“, nie 0. |
-| `Tab_Klimaregion(_STAMM)` | `Bezugspunkt_Latitude`, `Bezugspunkt_Longitude` | REAL, nullbar | Station, Rasterpunkt oder PVGIS-Punkt; `Longitude/Latitude` bleiben der Rechenstandort |
-| | `Bezugspunkt_Hoehe_m`, `Standort_Hoehe_m` | REAL, nullbar | aus Kopf bzw. Antwort; der Standort nur, wenn bekannt |
-| | `Entfernung_km` | REAL, nullbar | nur Regionalweg |
-| | `Zeitbezug` | TEXT `CHECK (Zeitbezug IN ('UTC','MEZ'))`, nullbar | Raster der Rohtabelle: PVGIS `UTC`, TRY `MEZ` (ohne Sommerzeit) |
-| | `Rohdaten` | INTEGER `CHECK (Rohdaten IN (0,1))`, Vorgabe 0 | 1 = `Tab_Klimastunde_STAMM` ist gefüllt |
+| | `Stunde` | INTEGER `CHECK (Stunde BETWEEN 1 AND 8760)` | Stunde im Raster der Quelle, Primärschlüssel mit `ID_Klimaregion` |
+| | `Temperatur_C`, `Luftdruck_hPa`, `Windrichtung_Grad`, `Windgeschwindigkeit_m_s`, `Bedeckungsgrad_Achtel`, `Wasserdampfgehalt_g_kg`, `Luftfeuchte_Prozent`, `Direkt_Horizontal_W_m2`, `Direkt_Normal_W_m2`, `Diffus_Horizontal_W_m2`, `Global_Horizontal_W_m2`, `Gegenstrahlung_W_m2`, `Ausstrahlung_W_m2` | REAL, **alle nullbar** | Rohwert der Quelle in Hauseinheit, Einheit im Namen. NULL heißt „Quelle führt die Größe nicht“, nie 0. Prüfklauseln nur, wo sie sicher sind: Luftdruck > 0, Windrichtung 0 bis 360, Windgeschwindigkeit, Wasserdampfgehalt und Feuchte ≥ 0 |
+| | `Qualitaet_Strahlung` | INTEGER, nullbar | TRY `IL` |
+| `Tab_Klimaregion(_STAMM)` | `Standort_Hoehe_m` | REAL, nullbar | Höhe des Standorts, soweit bekannt (Eingabe, PVGIS, TRY-Kopf als Standort) |
+| | `Bezugspunkt_Art` | TEXT `CHECK IN ('station','datei','pvgis')`, nullbar | Repräsentanzstation, Dateistandort oder PVGIS-Punkt |
+| | `Bezugspunkt_Name`, `Bezugspunkt_Latitude`, `Bezugspunkt_Longitude`, `Bezugspunkt_Hoehe_m`, `Entfernung_km` | TEXT bzw. REAL, nullbar | Station, Rasterpunkt oder PVGIS-Punkt; `Longitude/Latitude` bleiben der Rechenstandort |
+| | `Ausfuehrung` | TEXT, nullbar | gelesener Datensatz: TRY-Datei, Eintrag im Regionalpaket, PVGIS-Datenbanken |
+| `Tab_Klimaregion_STAMM` | `Zeitbezug` | TEXT `CHECK (Zeitbezug IN ('UTC','MEZ'))`, nullbar | Raster der Rohtabelle: PVGIS `UTC`, TRY `MEZ` (ohne Sommerzeit, ungedreht) |
+| | `Rohdaten` | INTEGER `NOT NULL DEFAULT 0 CHECK (Rohdaten IN (0,1))` | 1 = `Tab_Klimastunde_STAMM` ist gefüllt |
+
+**Belegung je Quelle.** TRY (Datei wie Regionalpaket) füllt alle Felder außer `Direkt_Normal_W_m2`
+und `Global_Horizontal_W_m2` — beide sind gerechnet, nicht geführt. PVGIS füllt Temperatur, Feuchte,
+Global-, Direkt-normal- und Diffusstrahlung, Gegenstrahlung, Wind (Geschwindigkeit und Richtung) und
+Luftdruck (`SP` in Pa, gespeichert in hPa); Bedeckungsgrad, Wasserdampfgehalt, Ausstrahlung,
+Qualitätskennung und Direktstrahlung horizontal bleiben NULL. Der Import schreibt Rohwerte und
+Herkunft nur, wenn der Schemaschritt steht; sonst überspringt er sie benannt, und die
+Rechenspalten entstehen gleich. Der Herkunftsvermerk in `Details` sagt dann „alle Felder als
+Rohwerte gespeichert“ statt der Liste der nicht übernommenen Größen.
 
 - **Rohdaten gibt es nur im Katalog**, nicht in der Projektkopie (KD-Q4). Der Export liest den
   Katalogsatz. Eine Projektregion ohne Katalogsatz exportiert die Rechenspalten aus `Tab_Solar`.
@@ -201,9 +212,13 @@ Rechentabellen**. Die Rohwerte bekommen eine **eigene Tabelle**, deren Leser der
   still (KD-Q7).
 - **Größe:** Eine Region braucht rund 8 760 Zeilen × 16 Spalten, etwa 1,5 bis 2 MB. Die
   Auslieferungsvorlage führt Rohdaten nur, wenn KD-Q7 das so entscheidet.
-- **SQL:** `DataRepository` mit `?`-Parametern, danach `SqlDialektPruefer`. Die neuen Spalten
-  kommen in `SchemaKatalog` und ins Katalogregister (Ausschluss oder eigener Datenblock, Schritt
-  KD-4).
+- **Katalog:** Die Rohtabelle ist wie der übrige Klimakatalog von der Katalogfassung ausgenommen
+  und kein Datenblock des Registers; die Herkunftsspalten stehen im Ausschluss des Eintrags
+  `KLIMAREGION` und ändern keine Prüfsumme. Die Auslieferungsvorlage führt die Rohtabelle als
+  Kindkatalog der Region (Kaskade); ob ausgelieferte Regionen Rohwerte tragen, entscheidet KD-Q7
+  — die Testdatenbank und die heutige Auslieferung tragen keine.
+- **Projektkopie:** Die Herkunftsspalten wandern mit, die Rohwerte nicht (KD-Q4).
+- **SQL:** `DataRepository` mit `?`-Parametern, danach `SqlDialektPruefer`.
 
 ---
 
@@ -304,7 +319,7 @@ Region) und öffnet eine Überlagerung:
 | Parameter | Kästchen je Größe, gruppiert nach Temperatur und Feuchte, Strahlung, Wind und Druck, abgeleitet (Taupunkt), Fassadenwerte. Nicht verfügbare Größen sind weich gesperrt mit Grund („Quelle führt die Größe nicht“, „Region ohne Rohdaten importiert“). „Alle“ und „Keine“ | Temperatur, Feuchte, Global-, Direkt- und Diffusstrahlung |
 | Trennzeichen | Semikolon · Komma · Tabulator | Semikolon |
 | Dezimalzeichen | Komma · Punkt. Komma neben Trennzeichen Komma ist weich gesperrt | Komma |
-| Zeitspalte | laufende Stunde 1…8 760 · Datum und Uhrzeit `TT.MM. hh:00` · ISO 8601 mit Bezugsjahr · keine | laufende Stunde |
+| Zeitspalte | laufende Stunde 1…8 760 · Datum und Uhrzeit `TT.MM. hh:00` (Beginn der Stunde) · Stunde und Datum · ISO 8601 mit Bezugsjahr (Gemeinjahr, sonst 2025) und Versatz · keine | laufende Stunde |
 | Zeitbezug | MEZ ohne Sommerzeit · UTC | MEZ (KD-Q8) |
 | Kopf | „Name [Einheit]“ in einer Zeile · Name und Einheitenzeile · ohne Kopf; dazu Herkunftsblock mit `#`-Zeilen (Region, Quelle, Bezugspunkt, Lizenzvermerk) ja/nein | eine Zeile, Herkunft ja |
 | Vorlagen | „Haus (wie CSV am Bild)“ und „International (Komma, Punkt, ISO)“ setzen die Formatfelder | – |
@@ -349,8 +364,8 @@ Jeder Schritt umfasst höchstens rund 150 Werkzeugaufrufe, Bau mit `WP-Plan.Kern
 | **KD-1** Schlussleiste — *umgesetzt 16.10.2026* | Haftregel der Überlagerung auf die Leiste mit Primärknopf in `.epos-einlesen` erweitern (oder Leiste mit Statusspanne), Fenstermaß Klimadaten über `Fenstermass.MitUeberlagerung`, kein Schemaschritt | `StilblattTests`, `FensterrahmenTests`, neuer Fall in `fensterprobe.mjs` mit Gegenprobe, Bau der Windows-Schale mit `EnableWindowsTargeting=true` |
 | **KD-2** Vorschau Kern — *umgesetzt 16.10.2026* | `KlimaVorschauErgebnis` erweitern, Vorschau liest den Datensatz für alle drei Quellen, `AusfuehrungGefunden`, `KlimaKennzahlen`, Höhe aus Kopf bzw. PVGIS, Hinweis nach KD-Q1, Import übernimmt den Vorschausatz | `TryPaketLeserTests`, `KlimaImportAblaufTests` mit lokaler Probe-`data.zip`, Gegenprobe Szenario fehlt, Nachrechnung Stuttgart-Vaihingen (56 km, Stötten) als fester Fall |
 | **KD-3** Vorschau Dialog — *umgesetzt 16.10.2026* | Vorschaukarte, Felder befüllen, Grafik, Kennzeichen, Parameterbestand, Ressourcen in beiden Sprachen, KI-Feldliste (`KiDialoge`) nachziehen | `KlimadatenDialogTests` (Treffer, kein Treffer, Verfall bei Eingabe, Import ohne Vorschau weich gesperrt), `KiMaskenabdeckungWacheTests`, `designer_neu.py` |
-| **KD-4** Rohdaten | Schemaschritt (Nummer anmelden): `Tab_Klimastunde_STAMM`, Spalten an `Tab_Klimaregion(_STAMM)`; `DwdTryLeser` und PVGIS-Leser liefern alle Felder, Schreibweg füllt sie, `SchemaKatalog`, Katalogregister | `SqlDialektPruefer`, Schematests, Wache „Rechenweg liest Rohtabelle nicht“, Referenzlauf 18 Projekte `PASS` |
-| **KD-5** Export | `KlimaCsv`, `KlimaExportOptionen`, Exportdialog, Handlung in der Auswahlleiste, Taupunkt abgeleitet | Kern-Tests (Trennzeichen × Dezimal × Zeitspalte, Einheitenzeile, Altbestand ohne Rohdaten), bunit Exportdialog, `CsvAmBildWacheTests` unberührt |
+| **KD-4** Rohdaten — *umgesetzt 16.10.2026, Schemaschritt geparkt bis zum Umhängen in die Kette* | Schemaschritt `KlimaRohwerteSchema`: `Tab_Klimastunde_STAMM`, Spalten an `Tab_Klimaregion(_STAMM)`; `DwdTryLeser` und PVGIS-Leser liefern alle Felder, Schreibweg füllt sie, Katalogregister und Katalogfassung, Projektkopie ohne Rohwerte; Nachzüge aus KD-3: Bezeichnung auf dem Ortsweg, Parameterbestand mit „wird gespeichert“ | `SqlDialektPruefer`, `KlimaRohwerteTests` (Schritt, Leser, Schreibweg mit und ohne Rohtabelle, Projektkopie, Ortsweg, Wache „Rechenweg liest Rohtabelle nicht“), Referenzlauf 18 Projekte `PASS` |
+| **KD-5** Export — *umgesetzt 16.10.2026* | `KlimaCsv`, `KlimaExportOptionen` und `KlimaExportCtrl` im Kern (eine Katalogregion je Datei; zwölf Rechenspalten aus `Tab_Solar_STAMM`, die 14 Rohspalten nur bei `Rohdaten = 1`, Taupunkt nach Magnus gerechnet und gekennzeichnet; Zeitspalte zusätzlich „Stunde und Datum“; Rechenwerte stehen in UTC, Rohwerte im Raster der Region, die Ausgabe wird zyklisch im Gemeinjahr auf MEZ oder UTC gedreht, `mez[j] = utc[(j − 1) mod 8760]`; volle Genauigkeit als Schalter des Kerns für KD-6), `KlimaExportDialog` als Überlagerung hinter „Exportieren…“ der Auswahlleiste, Speicherweg über `CsvExportClass.DateiWaehlenFuerExportAsync`, KI-Maske `KlimaExport`; der Text auf die Rohtabelle ist bis zur Hebung von Schritt 238 dynamisch | `KlimaCsvTests` (Trennzeichen × Dezimal × Zeitspalte, Einheitenzeile, Kopf, Altbestand ohne Rohdaten, UTC↔MEZ, Taupunkt, Rundlauf bitgleich), `KlimaExportDialogTests`, `CsvAmBildWacheTests` unberührt, `fensterprobe.mjs` Fall `klimaexport` mit Gegenprobe |
 | **KD-6** CSV-Import (nur nach KD-Q5) | vierte Quelle mit Spaltenzuordnung über `GanglinienImportOptionen` | Rundlauf Export → Import bitgleich in den Rechenspalten |
 | **KD-7** Doku | Konzept Klimadatenquellen §§ 1, 2, 6, 7, 10, 12 nachziehen, Wiki-Quelle „Programm Dokumentation/Klimadaten“, Logbuch-Entwurf, dieses Papier nach `ueberholt/` | `DokumentationLinkWacheTests`, `WikiProduktdatenWacheTests` |
 

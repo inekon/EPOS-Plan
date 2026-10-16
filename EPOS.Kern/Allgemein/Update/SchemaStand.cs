@@ -1122,6 +1122,8 @@ namespace WindowsFormsApplication1
         /// (<see cref="BauteilStrahlungSchema"/>). <b>Ergebnisneutral:</b> Die Spalten entstehen leer, leer heißt Festwert. Das Ziel
         /// ist das Ende der Kette; umgehängt wird allein am Vorgänger <see cref="KaeltetyptagSchema.SCHRITT"/>.
         /// </summary>
+        // KETTE: KlimaRohwerteSchema (KD-4) ist auf 238 GEPARKT; das Ziel wandert erst dorthin, wenn 235 bis 237 in der
+        // Kette stehen und der Schritt umgehaengt ist (BauteilStrahlungSchema.SCHRITT + 1).
         public const int Zielversion = BauteilStrahlungSchema.SCHRITT;
 
         /// <summary>

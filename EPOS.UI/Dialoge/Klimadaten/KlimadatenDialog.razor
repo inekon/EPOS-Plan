@@ -477,7 +477,7 @@
                                         @foreach (KlimaParameterEintrag p in _vorschau.Parameterbestand)
                                         {
                                             <li class="@("epos-klimavorschau-stand--" + p.Stand.ToString().ToLowerInvariant())">
-                                                @Parametername(p.Parameter) <span>(@Standtext(p.Stand))</span>
+                                                @Parametername(p.Parameter) <span>(@Standtext(p.Stand)@Speichertext(p))</span>
                                             </li>
                                         }
                                     </ul>
@@ -524,6 +524,20 @@
                              FarbwahlErlaubt="@FarbwahlMoeglich"
                              FarbeGewaehlt="FarbeUebernehmen"
                              FarbeZurueckgesetzt="FarbeVerwerfen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- KD-5: der CSV-Export der markierten Region (Handlung "Exportieren..." der Auswahlleiste).
+           Die Ueberlagerung traegt Titel und Kreuz, der Dialog darin keinen eigenen Kopf. *@
+    <Ueberlagerung Offen="@(_exportRegion is not null)" Titel="@Resource.KEXP_TITEL"
+                   Geschlossen="() => ExportFertig(null)">
+        <KindInhalt>
+            @if (_exportRegion is not null)
+            {
+                <EPOS.UI.Dialoge.Export.KlimaExportDialog @key="_exportRegion" Lesen="@ExportLesenFuer(_exportRegion)"
+                                                          Speichern="@ExportSpeichern" TitelAnzeigen="false"
+                                                          Geschlossen="ExportFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -652,6 +666,15 @@
     /// in der Auswahlleiste.
     /// </summary>
     [Parameter] public Func<string, Task<bool>>? Loeschen { get; set; }
+
+    /// <summary>
+    /// KD-5: liest eine Katalogregion für den CSV-Export (<c>KlimaExportCtrl.Lesen</c>). Ohne ihn — oder ohne
+    /// <see cref="ExportSpeichern"/> — steht „Exportieren…" nicht in der Auswahlleiste.
+    /// </summary>
+    [Parameter] public Func<string, Task<KlimaExportDaten?>>? ExportLesen { get; set; }
+
+    /// <summary>KD-5: der Speicherweg des Exports (Inhalt, Dateivorschlag) — Dateiwahl der Plattform, Schreiben, Teilen.</summary>
+    [Parameter] public Func<string, string, Task<EPOS.UI.Dialoge.Export.KlimaExportErgebnis>>? ExportSpeichern { get; set; }
 
     /// <summary>
     /// <b>„Schloss setzen…" / „Schloss aufheben…"</b> (Entscheid AD-Q15): das
@@ -791,6 +814,8 @@
     [Parameter] public string BestandText { get; set; } = Resource.KLIMA_VK_BESTAND;
     [Parameter] public string GefuehrtText { get; set; } = Resource.KLIMA_VK_GEFUEHRT;
     [Parameter] public string GerechnetText { get; set; } = Resource.KLIMA_VK_GERECHNET;
+    [Parameter] public string GespeichertText { get; set; } = Resource.KLIMA_VK_GESPEICHERT;
+    [Parameter] public string NichtGespeichertText { get; set; } = Resource.KLIMA_VK_NICHT_GESPEICHERT;
     [Parameter] public string FehltText { get; set; } = Resource.KLIMA_VK_FEHLT;
     [Parameter] public string VerfallenText { get; set; } = Resource.KLIMA_VK_VERFALLEN;
     [Parameter] public string ErstSuchenText { get; set; } = Resource.KLIMA_VK_ERST_SUCHEN;
@@ -864,6 +889,33 @@
 
     private EventCallback _vergleichen;
     private EventCallback _loeschenWeg;
+    private EventCallback _exportWeg;
+
+    // =====================================================================
+    // „Exportieren…" (Auftrag KD-5): eine Region je Datei (KD-Q6)
+    // =====================================================================
+
+    /// <summary>Die Region, deren Export offen ist; <c>null</c> = keine Überlagerung.</summary>
+    private string? _exportRegion;
+
+    /// <summary>Öffnet die Überlagerung für die eine Zielregion (Kästchen oder Fokuszeile).</summary>
+    private void ExportOeffnen()
+    {
+        IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+        if (ziele.Count != 1) { Warnen(Resource.KEXP_HANDLUNG_GRUND); return; }
+        _exportRegion = ziele[0];
+    }
+
+    /// <summary>Schließt den Export; eine Rückmeldung (Pfad) steht danach als Hinweis.</summary>
+    private void ExportFertig(string? rueckmeldung)
+    {
+        _exportRegion = null;
+        if (!string.IsNullOrEmpty(rueckmeldung)) Melden(rueckmeldung, WarnStufe.Hinweis);
+    }
+
+    /// <summary>Der Leseweg der Überlagerung für die offene Region.</summary>
+    private Func<Task<KlimaExportDaten?>>? ExportLesenFuer(string region)
+        => ExportLesen is null ? null : () => ExportLesen(region);
     private EventCallback _schlossHandlung;
 
     /// <summary>„Schloss setzen…" / „Schloss aufheben…" (AD-Q15) — Rückfrage und die in dieser Sitzung entsperrten Sätze.</summary>
@@ -1174,6 +1226,9 @@
         // AD-Q15: die Beschriftung folgt der Auswahl; hart gesperrt, solange eingelesen wird.
         if (_schloss.Handlung(Schloss, _schlossHandlung, SchlossZiele, _laeuft) is { } schloss)
             liste.Add(schloss);
+        // KD-5: Exportieren gilt für genau eine Region (KD-Q6); ohne beide Gaben steht die Handlung nicht da.
+        if (ExportLesen is not null && ExportSpeichern is not null)
+            liste.Add(new(Resource.KEXP_HANDLUNG, _exportWeg) { Hoechstens = 1, ZahlGrund = Resource.KEXP_HANDLUNG_GRUND, Aus = _laeuft });
         if (Loeschen is not null)
             liste.Add(new(LoeschenText, _loeschenWeg) { Sperrgrund = LoeschSperrgrund, Aus = _laeuft });
         return liste;
@@ -1283,6 +1338,7 @@
     {
         _vergleichen = EventCallback.Factory.Create(this, BeiVergleichen);
         _loeschenWeg = EventCallback.Factory.Create(this, BeiLoeschen);
+        _exportWeg = EventCallback.Factory.Create(this, ExportOeffnen);
         _schlossHandlung = EventCallback.Factory.Create(this, BeiSchloss);
         _blattOeffnen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = true);
         _blattSchliessen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = false);
@@ -1793,6 +1849,13 @@
 
     private static string Koordinate(double lat, double lon) => Zahl(lat, 4) + "° / " + Zahl(lon, 4) + "°";
 
+    /// <summary>
+    /// KD-4: Steht die Rohtabelle, sagt die Karte je Größe, ob der Import sie speichert (Rechenspalte oder Rohwert);
+    /// ohne Rohtabelle bleibt die Zeile wie zuvor.
+    /// </summary>
+    private string Speichertext(KlimaParameterEintrag p) =>
+        _vorschau is { RohwerteGespeichert: true } ? " · " + (p.Gespeichert ? GespeichertText : NichtGespeichertText) : "";
+
     private string Standtext(KlimaParameterStand s) => s switch
     {
         KlimaParameterStand.Gefuehrt => GefuehrtText,
@@ -2009,7 +2072,7 @@
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
-        if (_loeschfrageOffen || _schloss.FrageOffen || _laeuft || _importOffen || _grossOffen)
+        if (_loeschfrageOffen || _schloss.FrageOffen || _laeuft || _importOffen || _grossOffen || _exportRegion is not null)
             return Task.CompletedTask;
 
         if (_auswahl.BlattOffen)

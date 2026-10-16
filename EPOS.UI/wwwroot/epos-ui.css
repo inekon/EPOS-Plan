@@ -19322,6 +19322,48 @@ td.epos-vorlage-katalogbeschreibung {
 .epos-klimavorschau-bestand li span { color: var(--epos-text-leise); }
 .epos-klimavorschau-stand--fehlt { color: var(--epos-text-sehr-leise); }
 
+/* DER KLIMAEXPORT (Auftrag KD-5): eine Ueberlagerung im Katalogdialog der Klimadaten. Links die
+   Parameter in vier Gruppen, rechts das Format; nebeneinander, sobald beide Spalten 340 px finden,
+   sonst untereinander (ohne Medienabfrage: es zaehlt die Breite der Ueberlagerung, nicht des Fensters).
+   Die Vorschau zeigt die ersten Zeilen der Datei in fester Laufweite und rollt quer, statt die
+   Ueberlagerung aufzuspreizen. Die Schlussleiste haftet ueber die Regel des eingebetteten
+   .epos-dialog (Statusspanne der SpeichernLeiste). */
+.epos-klimaexport-spalten {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+    gap: 12px 24px;
+}
+.epos-klimaexport-parameter,
+.epos-klimaexport-format {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+.epos-klimaexport-vorlagen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.epos-klimaexport-region { font-weight: 600; }
+.epos-klimaexport-vorschaukopf {
+    margin: 12px 0 4px;
+    font-size: var(--epos-schriftgroesse);
+}
+.epos-klimaexport-vorschau {
+    margin: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 8px;
+    font-family: ui-monospace, "Consolas", "Courier New", monospace;
+    font-size: var(--epos-schriftgroesse);
+    white-space: pre;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-flaeche);
+    color: var(--epos-text);
+}
+
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
 /* "Verbessere die Darstellung der Dialoge, insbesondere der Parameter   */

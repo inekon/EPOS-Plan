@@ -1799,6 +1799,23 @@
         internal static string GexpBestaetigtName => MyResource.Resource.GEXP_BESTAETIGEN;
         internal static string GexpBestaetigtErl => MyResource.Resource.KI_DLG_GEXP_BESTAETIGT_ERL;
 
+        // Klimaexport (Auftrag KD-5): Namen aus den Beschriftungen des Dialogs, Erlaeuterungen eigen.
+        internal static string MaskeKlimaExport => MyResource.Resource.KI_DLG_MASKE_KLIMAEXPORT;
+        internal static string KexpTrennzeichenName => MyResource.Resource.KEXP_TRENNZEICHEN;
+        internal static string KexpTrennzeichenErl => MyResource.Resource.KEXP_KI_TZ_ERL;
+        internal static string KexpDezimalName => MyResource.Resource.KEXP_DEZIMALZEICHEN;
+        internal static string KexpDezimalErl => MyResource.Resource.KEXP_KI_DZ_ERL;
+        internal static string KexpZeitspalteName => MyResource.Resource.KEXP_ZEITSPALTE;
+        internal static string KexpZeitspalteErl => MyResource.Resource.KEXP_KI_ZS_ERL;
+        internal static string KexpZeitbezugName => MyResource.Resource.KEXP_ZEITBEZUG;
+        internal static string KexpZeitbezugErl => MyResource.Resource.KEXP_KI_ZB_ERL;
+        internal static string KexpKopfartName => MyResource.Resource.KEXP_KOPFART;
+        internal static string KexpKopfartErl => MyResource.Resource.KEXP_KI_KA_ERL;
+        internal static string KexpHerkunftName => MyResource.Resource.KEXP_HERKUNFT;
+        internal static string KexpHerkunftErl => MyResource.Resource.KEXP_KI_HK_ERL;
+        internal static string KexpParameterName => MyResource.Resource.KEXP_GRP_PARAMETER;
+        internal static string KexpParameterErl => MyResource.Resource.KEXP_KI_PAR_ERL;
+
         /// <summary>Einheit des Volumenstroms — Symbol, keine Uebersetzung.</summary>
         internal const string EINHEIT_M3_H = "m³/h";
 

@@ -3896,6 +3896,28 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt KlimaRohwerteSchema.SCHRITT (KD-4): Tab_Klimastunde_STAMM (leer, STRICT, Kaskade an der
+            //      Region) und die Herkunftsspalten an Tab_Klimaregion(_STAMM). Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_KlimaRohwerte. Wiederholbar.
+            //      KETTE: GEPARKT auf 238 - dieser Block bleibt HINTER den Bloecken von 235 bis 237; die Hebung der
+            //      Testdatenbank folgt erst nach dem Umhaengen (BauteilStrahlungSchema.SCHRITT + 1).
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Testregionen bleiben ohne Rohwerte (Rohdaten = 0), kein Rechenweg liest
+            //      die Rohtabelle.
+            string nrKd4 = KlimaRohwerteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKd4 + " - Rohwerte des Klimaimports: " +
+                              (KlimaRohwerteSchema.SchemaVollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKd4 = new List<string>();
+                angelegt += KlimaRohwerteSchema.Ausfuehren(berichtKd4);
+                foreach (string zeile in berichtKd4)
+                    Console.WriteLine("Schritt " + nrKd4 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKd4 + " - vollstaendig: " + KlimaRohwerteSchema.SchemaVollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 
