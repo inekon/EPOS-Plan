@@ -301,6 +301,12 @@
         kz.Monatsreihen[WindowsFormsApplication1.KlimaReihenkatalog.R_DIFFUS] = kz.MonatssummeGlobalstrahlungKwhM2.Select(w => w * 0.4).ToArray();
         kz.Monatsreihen[WindowsFormsApplication1.KlimaReihenkatalog.R_GEGENSTRAHLUNG] = Enumerable.Repeat(220.0, 12).ToArray();
         kz.Monatsreihen[WindowsFormsApplication1.KlimaReihenkatalog.R_BEDECKUNG] = Enumerable.Repeat(5.0, 12).ToArray();
+        // KD-8 Teil B: die Rohwert-Reihen der Vorschau (Marke "R") - der Satz speichert sie (Schritt 238 steht).
+        kz.Monatsreihen[WindowsFormsApplication1.KlimaReihenkatalog.ROH_PREFIX + WindowsFormsApplication1.KlimaRohwerteSchema.SPALTE_LUFTDRUCK] = Enumerable.Repeat(1013.0, 12).ToArray();
+        kz.Monatsreihen[WindowsFormsApplication1.KlimaReihenkatalog.ROH_PREFIX + WindowsFormsApplication1.KlimaRohwerteSchema.SPALTE_WINDGESCHWINDIGKEIT] = Enumerable.Repeat(3.2, 12).ToArray();
+        kz.Monatsreihen[WindowsFormsApplication1.KlimaReihenkatalog.ROH_PREFIX + WindowsFormsApplication1.KlimaRohwerteSchema.SPALTE_WASSERDAMPF] = Enumerable.Repeat(5.5, 12).ToArray();
+        kz.Monatsreihen[WindowsFormsApplication1.KlimaReihenkatalog.ROH_PREFIX + WindowsFormsApplication1.KlimaRohwerteSchema.SPALTE_AUSSTRAHLUNG] = Enumerable.Repeat(60.0, 12).ToArray();
+        kz.Monatsreihen[WindowsFormsApplication1.KlimaReihenkatalog.ROH_PREFIX + WindowsFormsApplication1.KlimaRohwerteSchema.SPALTE_DIREKT_HORIZONTAL] = kz.MonatssummeGlobalstrahlungKwhM2.Select(w => w * 0.5).ToArray();
         var bestand = new List<WindowsFormsApplication1.KlimaParameterEintrag>();
         foreach (WindowsFormsApplication1.KlimaParameter p in Enum.GetValues<WindowsFormsApplication1.KlimaParameter>())
             bestand.Add(new() { Parameter = p, Stand = WindowsFormsApplication1.KlimaParameterStand.Gefuehrt });
@@ -322,6 +328,7 @@
             },
             HoehenunterschiedM = 284,
             Kennzahlen = kz,
+            RohwerteGespeichert = true,
             Parameterbestand = bestand,
             Repraesentanzhinweis = true,
             Ortshinweis = true
@@ -347,8 +354,26 @@
             "TRY-Datensatz " + name + ", Quelle 1, Bezugsjahr 2015", 9.18, 48.77, null, null, "")
         {
             Jahresmittel = 9.9, Tiefstwert = -12.4, Hoechstwert = 34.3,
+            // KD-8 Teil B: dahinter die Rohwert-Reihen (Marke "R"); zwei davon fuehrt die Region nicht (weich gesperrt).
             Reihenbestand = WindowsFormsApplication1.KlimaReihenkatalog.AusRechenspalten(zeilen)
+                .Concat(WindowsFormsApplication1.KlimaReihenkatalog.AusRohwerten(KlimaRohwerteProbe())).ToList()
         });
+    }
+
+    /// <summary>
+    /// KD-8 Teil B: die Rohwerte der Probe-Region - Luftdruck, Wind und Wasserdampf gefuehrt, Ausstrahlung und
+    /// Direktstrahlung horizontal nicht (NULL in jeder Stunde, wie bei einer PVGIS-Region; ihre Chips sind weich gesperrt).
+    /// </summary>
+    private static WindowsFormsApplication1.KlimaExportDaten KlimaRohwerteProbe()
+    {
+        var d = new WindowsFormsApplication1.KlimaExportDaten { IdRegion = 1, Rohdaten = true };
+        d.Rohwerte[WindowsFormsApplication1.KlimaRohwerteSchema.SPALTE_LUFTDRUCK] =
+            Enumerable.Range(0, 8760).Select(i => 1000.0 + 15 * Math.Sin(2 * Math.PI * i / 720.0)).ToArray();
+        d.Rohwerte[WindowsFormsApplication1.KlimaRohwerteSchema.SPALTE_WINDGESCHWINDIGKEIT] =
+            Enumerable.Range(0, 8760).Select(i => 3.0 + 2 * Math.Sin(2 * Math.PI * i / 24.0)).ToArray();
+        d.Rohwerte[WindowsFormsApplication1.KlimaRohwerteSchema.SPALTE_WASSERDAMPF] =
+            Enumerable.Range(0, 8760).Select(i => 5.0 + 3 * Math.Sin(2 * Math.PI * i / 8760.0)).ToArray();
+        return d;
     }
 
     /// <summary>VG1 (KA-E-24): eine kleine Parameterliste für „Vergleichen…" über beide Listen — neutrale Werte.</summary>

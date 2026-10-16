@@ -1092,7 +1092,8 @@ namespace WindowsFormsApplication1
                 foreach (TmyHourlyData h in satz.Stunden) direktNormal.Add(h.Kopie());
                 DwdTryLeser.DirektNormal(direktNormal, satz.Lon, satz.Lat);
             }
-            erg.Kennzahlen = KlimaKennzahlen.Rechnen(satz.Stunden, direktNormal);
+            // KD-8 Teil B: die Rohwert-Groessen der Vorschau aus derselben Rohreihe, die der Import schreibt.
+            erg.Kennzahlen = KlimaKennzahlen.Rechnen(satz.Stunden, direktNormal, RohreiheBilden(auftrag.Quelle, satz));
             erg.RohwerteGespeichert = KlimaRohwerteSchema.SchemaVollstaendig();
             erg.Parameterbestand = KlimaParameterbestand.Fuer(auftrag.Quelle, satz.Stunden, erg.RohwerteGespeichert);
 

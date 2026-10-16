@@ -57388,5 +57388,8 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="KLIMA_RW_NAME_QUALITAET" xml:space="preserve">
     <value>Radiation quality flag</value>
   </data>
+  <data name="KLIMA_RW_ROHWERT_MARKE" xml:space="preserve">
+    <value>Raw value of the source from the raw-value table (R)</value>
+  </data>
 </root>
 

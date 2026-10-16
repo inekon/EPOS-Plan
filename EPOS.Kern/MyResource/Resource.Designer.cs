@@ -85350,6 +85350,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rohwert der Quelle aus der Rohwerttabelle (R) ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_ROHWERT_MARKE {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_ROHWERT_MARKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} Stunden mit Wert ähnelt.
         /// </summary>
         public static string KLIMA_RW_TEILFUELLUNG {

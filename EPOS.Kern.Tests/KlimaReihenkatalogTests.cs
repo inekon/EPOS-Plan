@@ -12,7 +12,9 @@ namespace EPOS.Kern.Tests
     /// <b>Der Reihenkatalog des Klimadatenimports</b> (Auftrag KD-8 Teil A, Konzept Klimadatenimport
     /// § 4a): Katalogwache, Monatsreihen der Vorschau (Summe gegen Mittel, Monatsgrenzen,
     /// Teilfüllung, fehlende Größe), Achsenregel des Monatsbilds, Regel des Jahresverlaufs und die
-    /// Erkennung „Quelle führt die Größe nicht“ (NULL oder durchgehend 0).
+    /// Erkennung „Quelle führt die Größe nicht“ (NULL oder durchgehend 0). Teil B: die Rohwert-Reihen
+    /// aus der Rohreihe (Vorschau) und aus <see cref="KlimaExportDaten"/> (Jahresverlauf), die
+    /// Sichtbarkeit aus dem Datenstand und der Export als Alias des Katalogs.
     /// </summary>
     public class KlimaReihenkatalogTests : IDisposable
     {
@@ -100,10 +102,16 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Teil_A_schaltet_nur_die_Spalten_von_Tab_Solar_frei()
+        public void Rechen_und_gerechnete_Spalten_immer_sichtbar_Rohwerte_nur_freigeschaltet()
         {
+            // Teil B: Die Freischaltung kommt aus dem Datenstand (Schritt 238); der Katalog kennt nur die Regel.
             foreach (KlimaReihe r in KlimaReihenkatalog.Reihen)
-                Assert.Equal(r.Herkunft != KlimaReihenherkunft.Rohwert, r.Freigeschaltet);
+            {
+                Assert.Equal(r.Herkunft == KlimaReihenherkunft.Rohwert, r.IstRohwert);
+                Assert.Equal(!r.IstRohwert, KlimaReihenkatalog.Sichtbar(r, false));
+                Assert.True(KlimaReihenkatalog.Sichtbar(r, true));
+            }
+            Assert.False(KlimaReihenkatalog.Sichtbar(null, true));
             // Temperatur und Sonnenwinkel haben ihre eigenen Reiter.
             Assert.False(KlimaReihenkatalog.Reihe(KlimaReihenkatalog.R_TEMPERATUR).ImJahresverlauf);
             Assert.False(KlimaReihenkatalog.Reihe(KlimaReihenkatalog.F_SONNENWINKEL).ImJahresverlauf);
@@ -111,7 +119,7 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Rohwerte_sind_bis_zur_Freischaltung_verborgen_Gegenprobe_frei()
+        public void Fuenf_Rohwerte_mit_Bild_Spalten_der_Rohwerttabelle()
         {
             string[] erwartet =
             {
@@ -119,22 +127,105 @@ namespace EPOS.Kern.Tests
                 "ROH_Luftdruck_hPa", "ROH_Windgeschwindigkeit_m_s"
             };
             // Windrichtung und Qualitätskennung haben kein Bild (KD-Q12) und stehen in keiner Wahl.
-            var mitBild = KlimaReihenkatalog.Reihen.Where(r => r.Herkunft == KlimaReihenherkunft.Rohwert && r.InVorschau).ToList();
+            var mitBild = KlimaReihenkatalog.Reihen.Where(r => r.IstRohwert && r.InVorschau).ToList();
             Assert.Equal(erwartet, mitBild.Select(r => r.Schluessel));
             Assert.All(mitBild, r => Assert.True(r.ImJahresverlauf));
-            Assert.False(KlimaReihenkatalog.RohwerteFreigeschaltet);
-            Assert.All(mitBild, r => Assert.False(r.Freigeschaltet));
+            foreach (KlimaReihe r in KlimaReihenkatalog.Reihen.Where(r => r.IstRohwert))
+            {
+                Assert.Contains(r.Spalte, KlimaRohwerteSchema.ROHSPALTEN);
+                Assert.Equal(KlimaReihenkatalog.ROH_PREFIX + r.Spalte, r.Schluessel);
+            }
+            Assert.Equal("", KlimaReihenkatalog.SperrgrundMonatsbild("ROH_Luftdruck_hPa", new[] { KlimaReihenkatalog.R_GLOBAL }));
+        }
 
-            KlimaReihenkatalog.RohwerteFreigeschaltet = true;
-            try
+        [Fact]
+        public void Export_nimmt_Schluessel_Spalte_und_Einheit_aus_dem_Katalog()
+        {
+            Assert.Equal(KlimaReihenkatalog.ROH_PREFIX, KlimaExportOptionen.ROH_PREFIX);
+            Assert.Equal(KlimaReihenkatalog.R_GLOBAL, KlimaExportOptionen.R_GLOBAL);
+            Assert.Equal(KlimaReihenkatalog.F_SONNENWINKEL, KlimaExportOptionen.F_SONNENWINKEL);
+            foreach (KlimaReihe r in KlimaReihenkatalog.Reihen)
             {
-                Assert.All(mitBild, r => Assert.True(r.Freigeschaltet));
-                Assert.Equal("", KlimaReihenkatalog.SperrgrundMonatsbild("ROH_Luftdruck_hPa", new[] { KlimaReihenkatalog.R_GLOBAL }));
+                KlimaExportGroesse g = KlimaExportOptionen.Groesse(r.Schluessel);
+                Assert.NotNull(g);
+                Assert.Equal(r.Spalte, g.Spalte);
+                Assert.Equal(r.Einheit, g.Einheit);
+                Assert.Equal(r.IstRohwert, g.Art == KlimaWertart.Rohwert);
+                Assert.Equal(r.Herkunft == KlimaReihenherkunft.Gerechnet, g.Gerechnet);
             }
-            finally
-            {
-                KlimaReihenkatalog.RohwerteFreigeschaltet = false;
-            }
+        }
+
+        [Fact]
+        public void MonatVonStunde_folgt_dem_Gemeinjahr()
+        {
+            Assert.Equal(0, KlimaReihenkatalog.MonatVonStunde(1));
+            Assert.Equal(0, KlimaReihenkatalog.MonatVonStunde(744));
+            Assert.Equal(1, KlimaReihenkatalog.MonatVonStunde(745));
+            Assert.Equal(2, KlimaReihenkatalog.MonatVonStunde(1417));
+            Assert.Equal(11, KlimaReihenkatalog.MonatVonStunde(8017));
+            Assert.Equal(11, KlimaReihenkatalog.MonatVonStunde(8760));
+            Assert.Equal(-1, KlimaReihenkatalog.MonatVonStunde(0));
+            Assert.Equal(-1, KlimaReihenkatalog.MonatVonStunde(8761));
+            // Dieselben Grenzen wie der Zeitstempel der Rechenspalten: Stunde h liegt am 1.1. + (h − 1) h.
+            var t = new DateTime(2021, 1, 1);
+            for (int h = 1; h <= 8760; h += 97)
+                Assert.Equal(t.AddHours(h - 1).Month - 1, KlimaReihenkatalog.MonatVonStunde(h));
+        }
+
+        [Fact]
+        public void Monatsreihen_der_Rohwerte_aus_der_Rohreihe_Mittel_und_Summe()
+        {
+            // Stunden mit Temperatur, dazu die Rohreihe: Luftdruck 1000 + Monat (Mittel), Ausstrahlung 100 W/m² je
+            // Stunde (Summe in kWh/m²), Wind nur im Januar (Teilfüllung), Wasserdampf nie (die Quelle führt ihn nicht).
+            List<TmyHourlyData> stunden = Jahr((s, m) => s.Temperature = 5);
+            var roh = new KlimaRohreihe { Zeitbezug = KlimaRohwerteSchema.ZEITBEZUG_MEZ };
+            for (int h = 1; h <= 8760; h++)
+                roh.Stunden.Add(new KlimaRohstunde
+                {
+                    Stunde = h, Luftdruck_hPa = 1000 + KlimaReihenkatalog.MonatVonStunde(h), Ausstrahlung = 100,
+                    Windgeschwindigkeit_m_s = h <= 744 ? 2.0 : (double?)null
+                });
+            KlimaKennzahlen k = KlimaKennzahlen.Rechnen(stunden, null, roh);
+            double[] druck = k.Monatsreihe("ROH_Luftdruck_hPa");
+            Assert.NotNull(druck);
+            for (int m = 0; m < 12; m++) Assert.Equal(1000 + m, druck[m], 9);
+            double[] aus = k.Monatsreihe("ROH_Ausstrahlung_W_m2");
+            Assert.Equal(TAGE[0] * 24 * 100 / 1000.0, aus[0], 9);
+            Assert.Equal(TAGE[1] * 24 * 100 / 1000.0, aus[1], 9);
+            Assert.Equal(8760, k.Reihenstunden["ROH_Ausstrahlung_W_m2"]);
+            double[] wind = k.Monatsreihe("ROH_Windgeschwindigkeit_m_s");
+            Assert.Equal(2.0, wind[0], 9);
+            Assert.True(double.IsNaN(wind[1]));
+            Assert.Equal(744, k.Reihenstunden["ROH_Windgeschwindigkeit_m_s"]);
+            Assert.Null(k.Monatsreihe("ROH_Wasserdampfgehalt_g_kg"));
+            Assert.Null(k.Monatsreihe("ROH_Direkt_Horizontal_W_m2"));
+            // Die Rechenspalten bleiben, wie ohne Rohreihe; ohne Rohreihe gibt es keine Rohwert-Reihe.
+            KlimaKennzahlen ohne = KlimaKennzahlen.Rechnen(stunden);
+            Assert.Equal(ohne.Monatsreihe(KlimaReihenkatalog.R_TEMPERATUR), k.Monatsreihe(KlimaReihenkatalog.R_TEMPERATUR));
+            Assert.DoesNotContain(ohne.Monatsreihen.Keys, s => s.StartsWith(KlimaReihenkatalog.ROH_PREFIX, StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void AusRohwerten_Region_ohne_Rohdaten_oder_leere_Spalte_fuehrt_nicht()
+        {
+            var daten = new KlimaExportDaten { IdRegion = 1, Rohdaten = true };
+            daten.Rohwerte[KlimaRohwerteSchema.SPALTE_LUFTDRUCK] = Enumerable.Range(0, 8760).Select(i => 1000.0 + i % 24).ToArray();
+            daten.Rohwerte[KlimaRohwerteSchema.SPALTE_WASSERDAMPF] = Enumerable.Repeat(double.NaN, 8760).ToArray();
+            IReadOnlyList<KlimaReihenwerte> reihen = KlimaReihenkatalog.AusRohwerten(daten);
+            Assert.Equal(new[] { "ROH_Wasserdampfgehalt_g_kg", "ROH_Direkt_Horizontal_W_m2", "ROH_Ausstrahlung_W_m2",
+                                 "ROH_Luftdruck_hPa", "ROH_Windgeschwindigkeit_m_s" },
+                         reihen.Select(w => w.Reihe.Schluessel));
+            Assert.All(reihen, w => Assert.Equal(8760, w.Werte.Length));
+            Assert.All(reihen, w => Assert.True(w.Reihe.IstRohwert));
+            KlimaReihenwerte druck = reihen.Single(w => w.Reihe.Schluessel == "ROH_Luftdruck_hPa");
+            Assert.True(druck.Gefuehrt);
+            Assert.Equal(1001.0, druck.Werte[1]);
+            Assert.False(reihen.Single(w => w.Reihe.Schluessel == "ROH_Wasserdampfgehalt_g_kg").Gefuehrt);   // nur NULL
+            Assert.False(reihen.Single(w => w.Reihe.Schluessel == "ROH_Ausstrahlung_W_m2").Gefuehrt);       // keine Spalte
+            // Altbestand (KD-Q7): Rohdaten = 0 - keine Reihe führt, auch nicht mit Werten im Satz.
+            daten.Rohdaten = false;
+            Assert.All(KlimaReihenkatalog.AusRohwerten(daten), w => Assert.False(w.Gefuehrt));
+            Assert.Empty(KlimaReihenkatalog.AusRohwerten(null));
         }
 
         // =====================================================================

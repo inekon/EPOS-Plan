@@ -289,9 +289,24 @@ namespace WindowsFormsApplication1
                 Tiefstwert = werteTemperatur.Min(),
                 Hoechstwert = werteTemperatur.Max(),
                 // KD-8 Teil A: die gespeicherten Rechenspalten für „Weitere Reihen“ —
-                // dieselben Zeilen (SolardatenCtrl.ReadAllStamm, ?-Parameter).
-                Reihenbestand = KlimaReihenkatalog.AusRechenspalten(solar.items)
+                // dieselben Zeilen (SolardatenCtrl.ReadAllStamm, ?-Parameter); Teil B: dahinter die
+                // Rohwert-Reihen aus Tab_Klimastunde_STAMM, sobald der Schritt 238 steht (Datenstand).
+                Reihenbestand = ReihenbestandLesen(region.m_ID_Klimaregion, solar.items)
             });
+        }
+
+        /// <summary>
+        /// Der Reihenbestand einer Katalogregion (KD-8): die Rechenspalten (Teil A) und, freigeschaltet aus dem
+        /// Datenstand (Schritt 238, <c>KlimaReihenkatalog.RohwerteFreigeschaltet</c>), die Rohwert-Reihen (Teil B,
+        /// Leser <c>KlimaExportCtrl.RohwerteLesen</c>); eine Region ohne Rohwerte führt sie als „führt nicht“, der
+        /// Chip bleibt weich gesperrt.
+        /// </summary>
+        private static IReadOnlyList<KlimaReihenwerte> ReihenbestandLesen(int idStamm, IReadOnlyList<SolardatenModel> zeilen)
+        {
+            var liste = new List<KlimaReihenwerte>(KlimaReihenkatalog.AusRechenspalten(zeilen));
+            if (KlimaReihenkatalog.RohwerteFreigeschaltet())
+                liste.AddRange(KlimaReihenkatalog.AusRohwerten(KlimaExportCtrl.RohwerteLesen(idStamm)));
+            return liste;
         }
 
         // =====================================================================

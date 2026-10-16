@@ -9,8 +9,8 @@ namespace WindowsFormsApplication1
     /// <c>Tab_Klimaregion_STAMM</c>, die Rechenspalten aus <c>Tab_Solar_STAMM</c> und, nur bei <c>Rohdaten = 1</c>, die
     /// Rohwerte aus <see cref="KlimaRohwerteSchema.TAB_ROH"/> (KD-Q4: Rohwerte gibt es nur im Katalog). Alle Texte mit
     /// <c>?</c>-Parametern. Die Herkunftsspalten des Schritts 238 werden nur gelesen, wenn sie stehen —
-    /// darum <c>SELECT *</c> auf die Region; die Rohtabelle nur, wenn sie besteht (bis zur Hebung ein dynamischer Text
-    /// für den <c>SqlDialektPruefer</c>).
+    /// darum <c>SELECT *</c> auf die Region; die Rohtabelle nur, wenn sie besteht (ein Datenstand vor der Migration).
+    /// <see cref="RohwerteLesen"/> liefert allein die Rohwerte für den Reiter „Weitere Reihen“ (KD-8 Teil B).
     /// </summary>
     public static class KlimaExportCtrl
     {
@@ -22,16 +22,8 @@ namespace WindowsFormsApplication1
 
         private const string SQL_REGION = "SELECT * FROM Tab_Klimaregion_STAMM WHERE ID_Klimaregion = ?";
 
-        /// <summary>
-        /// Die Rohtabelle des Schritts 238: aus den Namen von <see cref="KlimaRohwerteSchema"/> gebildet (kein
-        /// Wert im Text) — bis zur Hebung der Testdatenbank fuer den <c>SqlDialektPruefer</c> ein dynamischer Text.
-        /// </summary>
-        private static readonly string SQL_ROH =
-            "SELECT * FROM " + Q(KlimaRohwerteSchema.TAB_ROH) + " WHERE " + Q(KlimaRohwerteSchema.SPALTE_REGION) +
-            " = ? ORDER BY " + Q(KlimaRohwerteSchema.SPALTE_STUNDE);
-
-        /// <summary>Ein Bezeichner in Anführungszeichen (wie im Schreibweg von <see cref="KlimaRohwerteSchema"/>).</summary>
-        private static string Q(string name) => "\"" + name + "\"";
+        /// <summary>Die Rohtabelle des Schritts 238 (Spalten wie <see cref="KlimaRohwerteSchema.ROHSPALTEN"/>), über die Stunde geordnet.</summary>
+        private const string SQL_ROH = "SELECT * FROM Tab_Klimastunde_STAMM WHERE ID_Klimaregion = ? ORDER BY Stunde";
 
         /// <summary>Die Daten einer Region über ihren Namen; <c>null</c>, wenn es sie im Katalog nicht gibt.</summary>
         public static KlimaExportDaten Lesen(string regionsname)
@@ -63,8 +55,6 @@ namespace WindowsFormsApplication1
                 BezugspunktLongitude = Zahl(r, KlimaRohwerteSchema.SPALTE_BEZUG_LON),
                 BezugspunktHoeheM = Zahl(r, KlimaRohwerteSchema.SPALTE_BEZUG_HOEHE)
             };
-            string zb = Text(r, KlimaRohwerteSchema.SPALTE_ZEITBEZUG);
-            if (zb.Length > 0) d.RohZeitbezug = zb;
 
             // Rechenspalten (UTC-Raster der Rechentabelle).
             DataTable rechen = DataRepository.GetDataTable(SQL_RECHEN, new DbParam("@id", idStamm));
@@ -72,20 +62,39 @@ namespace WindowsFormsApplication1
                 foreach (DataColumn c in rechen.Columns)
                     d.Rechenwerte[c.ColumnName] = Spalte(rechen, c.ColumnName);
 
-            // Rohwerte nur mit Kennzeichen UND bestehender Rohtabelle; sonst bleibt der Export bei den Rechenspalten.
-            bool kennzeichen = Ganz(r, KlimaRohwerteSchema.SPALTE_ROHDATEN) == 1;
-            if (kennzeichen && KlimaRohwerteSchema.RohtabelleVorhanden())
-            {
-                DataTable roh = DataRepository.GetDataTable(SQL_ROH, new DbParam("@id", idStamm));
-                if (roh != null && roh.Rows.Count > 0)
-                {
-                    foreach (string spalte in KlimaRohwerteSchema.ROHSPALTEN)
-                        if (roh.Columns.Contains(spalte))
-                            d.Rohwerte[spalte] = RohSpalte(roh, spalte);
-                    d.Rohdaten = d.Rohwerte.Count > 0;
-                }
-            }
+            RohwerteEinlesen(d, r);
             return d;
+        }
+
+        /// <summary>
+        /// Allein die Rohwerte einer Katalogregion (KD-8 Teil B, Reiter „Weitere Reihen“): <see cref="KlimaExportDaten.Rohdaten"/>,
+        /// <see cref="KlimaExportDaten.RohZeitbezug"/> und <see cref="KlimaExportDaten.Rohwerte"/> — ohne die Rechenspalten, die
+        /// die Hülle schon über <c>SolardatenCtrl</c> hält. <c>null</c>, wenn es die Id nicht gibt; ohne Rohtabelle oder mit
+        /// <c>Rohdaten = 0</c> (Altbestand, KD-Q7) bleibt <see cref="KlimaExportDaten.Rohwerte"/> leer.
+        /// </summary>
+        public static KlimaExportDaten RohwerteLesen(int idStamm)
+        {
+            DataTable region = DataRepository.GetDataTable(SQL_REGION, new DbParam("@id", idStamm));
+            if (region == null || region.Rows.Count == 0) return null;
+            var d = new KlimaExportDaten { IdRegion = idStamm, Name = Text(region.Rows[0], "Name") };
+            RohwerteEinlesen(d, region.Rows[0]);
+            return d;
+        }
+
+        /// <summary>Zeitbezug und Rohwerte einer Region: nur mit Kennzeichen <c>Rohdaten = 1</c> UND bestehender Rohtabelle.</summary>
+        private static void RohwerteEinlesen(KlimaExportDaten d, DataRow r)
+        {
+            string zb = Text(r, KlimaRohwerteSchema.SPALTE_ZEITBEZUG);
+            if (zb.Length > 0) d.RohZeitbezug = zb;
+
+            bool kennzeichen = Ganz(r, KlimaRohwerteSchema.SPALTE_ROHDATEN) == 1;
+            if (!kennzeichen || !KlimaRohwerteSchema.RohtabelleVorhanden()) return;
+            DataTable roh = DataRepository.GetDataTable(SQL_ROH, new DbParam("@id", d.IdRegion));
+            if (roh == null || roh.Rows.Count == 0) return;
+            foreach (string spalte in KlimaRohwerteSchema.ROHSPALTEN)
+                if (roh.Columns.Contains(spalte))
+                    d.Rohwerte[spalte] = RohSpalte(roh, spalte);
+            d.Rohdaten = d.Rohwerte.Count > 0;
         }
 
         /// <summary>Eine Rechenspalte in Zeilenfolge; NULL = NaN.</summary>

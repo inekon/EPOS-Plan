@@ -129,21 +129,23 @@ namespace WindowsFormsApplication1
 
         // ---------------------------------------------------------------------------------------------------
 
-        // Schlüssel der Größen. R_ = Rechenwert, F_ = Fassadenwert/Sonnenwinkel, ROH_ = Rohwert, A_ = abgeleitet.
-        public const string R_TEMPERATUR = "R_TEMPERATUR";
-        public const string R_LUFTFEUCHTE = "R_LUFTFEUCHTE";
-        public const string R_GLOBAL = "R_GLOBAL";
-        public const string R_DIREKT_NORMAL = "R_DIREKT_NORMAL";
-        public const string R_DIFFUS = "R_DIFFUS";
-        public const string R_GEGENSTRAHLUNG = "R_GEGENSTRAHLUNG";
-        public const string R_BEDECKUNG = "R_BEDECKUNG";
-        public const string F_NORD = "F_NORD";
-        public const string F_OST = "F_OST";
-        public const string F_SUED = "F_SUED";
-        public const string F_WEST = "F_WEST";
-        public const string F_SONNENWINKEL = "F_SONNENWINKEL";
+        // Schlüssel der Größen - EINE Quelle: der Reihenkatalog (KlimaReihenkatalog, KD-8), hier als Aliasse, damit
+        // Export und Reihenwahl dieselben Schlüssel schreiben und lesen. R_ = Rechenwert, F_ = Fassadenwert/
+        // Sonnenwinkel, ROH_ = Rohwert; A_ = abgeleitet (nur im Export).
+        public const string R_TEMPERATUR = KlimaReihenkatalog.R_TEMPERATUR;
+        public const string R_LUFTFEUCHTE = KlimaReihenkatalog.R_LUFTFEUCHTE;
+        public const string R_GLOBAL = KlimaReihenkatalog.R_GLOBAL;
+        public const string R_DIREKT_NORMAL = KlimaReihenkatalog.R_DIREKT_NORMAL;
+        public const string R_DIFFUS = KlimaReihenkatalog.R_DIFFUS;
+        public const string R_GEGENSTRAHLUNG = KlimaReihenkatalog.R_GEGENSTRAHLUNG;
+        public const string R_BEDECKUNG = KlimaReihenkatalog.R_BEDECKUNG;
+        public const string F_NORD = KlimaReihenkatalog.F_NORD;
+        public const string F_OST = KlimaReihenkatalog.F_OST;
+        public const string F_SUED = KlimaReihenkatalog.F_SUED;
+        public const string F_WEST = KlimaReihenkatalog.F_WEST;
+        public const string F_SONNENWINKEL = KlimaReihenkatalog.F_SONNENWINKEL;
         public const string A_TAUPUNKT = "A_TAUPUNKT";
-        public const string ROH_PREFIX = "ROH_";
+        public const string ROH_PREFIX = KlimaReihenkatalog.ROH_PREFIX;
 
         /// <summary>Vorgabe: Temperatur, Feuchte, Global-, Direkt- und Diffusstrahlung (Konzept § 5).</summary>
         public static readonly IReadOnlyList<string> VORGABE_PARAMETER = new[]
@@ -155,24 +157,24 @@ namespace WindowsFormsApplication1
         public const int ISO_JAHR_VORGABE = 2025;
 
         /// <summary>
-        /// <b>Der Katalog der Größen</b> in Schreibreihenfolge: die Rechenspalten von <c>Tab_Solar(_STAMM)</c>, die
-        /// Fassadenwerte samt Sonnenwinkel, die 14 Rohspalten von <see cref="KlimaRohwerteSchema.ROHSPALTEN"/> und der
-        /// abgeleitete Taupunkt.
+        /// <b>Der Katalog der Größen</b> in Schreibreihenfolge: die Rechenspalten von <c>Tab_Solar(_STAMM)</c> und die
+        /// Fassadenwerte samt Sonnenwinkel (Spalte und Einheit aus dem <see cref="KlimaReihenkatalog"/>), die 14 Rohspalten
+        /// von <see cref="KlimaRohwerteSchema.ROHSPALTEN"/> und der abgeleitete Taupunkt.
         /// </summary>
         public static readonly IReadOnlyList<KlimaExportGroesse> Groessen = new List<KlimaExportGroesse>
         {
-            new(R_TEMPERATUR, () => R.KEXP_G_TEMPERATUR, "°C", KlimaWertart.Rechenwert, KlimaGroessengruppe.Rechenwerte, "Temperatur"),
-            new(R_LUFTFEUCHTE, () => R.KEXP_G_LUFTFEUCHTE, "%", KlimaWertart.Rechenwert, KlimaGroessengruppe.Rechenwerte, "Luftfeuchte"),
-            new(R_GLOBAL, () => R.KEXP_G_GLOBAL, "W/m²", KlimaWertart.Rechenwert, KlimaGroessengruppe.Rechenwerte, "Globalstrahlung"),
-            new(R_DIREKT_NORMAL, () => R.KEXP_G_DIREKT_NORMAL, "W/m²", KlimaWertart.Rechenwert, KlimaGroessengruppe.Rechenwerte, "Direktstrahlung"),
-            new(R_DIFFUS, () => R.KEXP_G_DIFFUS, "W/m²", KlimaWertart.Rechenwert, KlimaGroessengruppe.Rechenwerte, "Diffusstrahlung"),
-            new(R_GEGENSTRAHLUNG, () => R.KEXP_G_GEGENSTRAHLUNG, "W/m²", KlimaWertart.Rechenwert, KlimaGroessengruppe.Rechenwerte, "Gegenstrahlung"),
-            new(R_BEDECKUNG, () => R.KEXP_G_BEDECKUNG, "Achtel", KlimaWertart.Rechenwert, KlimaGroessengruppe.Rechenwerte, "Bedeckungsgrad"),
-            new(F_NORD, () => R.KEXP_G_SOL_NORD, "W/m²", KlimaWertart.Rechenwert, KlimaGroessengruppe.Fassadenwerte, "Sol_Nord", true),
-            new(F_OST, () => R.KEXP_G_SOL_OST, "W/m²", KlimaWertart.Rechenwert, KlimaGroessengruppe.Fassadenwerte, "Sol_Ost", true),
-            new(F_SUED, () => R.KEXP_G_SOL_SUED, "W/m²", KlimaWertart.Rechenwert, KlimaGroessengruppe.Fassadenwerte, "Sol_Sued", true),
-            new(F_WEST, () => R.KEXP_G_SOL_WEST, "W/m²", KlimaWertart.Rechenwert, KlimaGroessengruppe.Fassadenwerte, "Sol_West", true),
-            new(F_SONNENWINKEL, () => R.KEXP_G_SONNENWINKEL, "°", KlimaWertart.Rechenwert, KlimaGroessengruppe.Fassadenwerte, "Sonnenwinkel", true),
+            Rechen(R_TEMPERATUR, () => R.KEXP_G_TEMPERATUR, KlimaGroessengruppe.Rechenwerte),
+            Rechen(R_LUFTFEUCHTE, () => R.KEXP_G_LUFTFEUCHTE, KlimaGroessengruppe.Rechenwerte),
+            Rechen(R_GLOBAL, () => R.KEXP_G_GLOBAL, KlimaGroessengruppe.Rechenwerte),
+            Rechen(R_DIREKT_NORMAL, () => R.KEXP_G_DIREKT_NORMAL, KlimaGroessengruppe.Rechenwerte),
+            Rechen(R_DIFFUS, () => R.KEXP_G_DIFFUS, KlimaGroessengruppe.Rechenwerte),
+            Rechen(R_GEGENSTRAHLUNG, () => R.KEXP_G_GEGENSTRAHLUNG, KlimaGroessengruppe.Rechenwerte),
+            Rechen(R_BEDECKUNG, () => R.KEXP_G_BEDECKUNG, KlimaGroessengruppe.Rechenwerte),
+            Rechen(F_NORD, () => R.KEXP_G_SOL_NORD, KlimaGroessengruppe.Fassadenwerte, true),
+            Rechen(F_OST, () => R.KEXP_G_SOL_OST, KlimaGroessengruppe.Fassadenwerte, true),
+            Rechen(F_SUED, () => R.KEXP_G_SOL_SUED, KlimaGroessengruppe.Fassadenwerte, true),
+            Rechen(F_WEST, () => R.KEXP_G_SOL_WEST, KlimaGroessengruppe.Fassadenwerte, true),
+            Rechen(F_SONNENWINKEL, () => R.KEXP_G_SONNENWINKEL, KlimaGroessengruppe.Fassadenwerte, true),
             Roh(KlimaRohwerteSchema.SPALTE_TEMPERATUR, () => R.KEXP_G_TEMPERATUR, "°C"),
             Roh(KlimaRohwerteSchema.SPALTE_LUFTFEUCHTE, () => R.KEXP_G_LUFTFEUCHTE, "%"),
             Roh(KlimaRohwerteSchema.SPALTE_LUFTDRUCK, () => R.KEXP_G_LUFTDRUCK, "hPa"),
@@ -192,6 +194,14 @@ namespace WindowsFormsApplication1
 
         private static KlimaExportGroesse Roh(string spalte, Func<string> name, string einheit, bool ganzzahl = false)
             => new(ROH_PREFIX + spalte, name, einheit, KlimaWertart.Rohwert, KlimaGroessengruppe.Rohwerte, spalte, false, ganzzahl);
+
+        /// <summary>Eine Rechenspalte: Spalte und Einheit aus dem Reihenkatalog (eine Quelle), der Name aus dem Export.</summary>
+        private static KlimaExportGroesse Rechen(string schluessel, Func<string> name, KlimaGroessengruppe gruppe, bool gerechnet = false)
+        {
+            KlimaReihe r = KlimaReihenkatalog.Reihe(schluessel)
+                ?? throw new InvalidOperationException("Der Reihenkatalog kennt den Schlüssel " + schluessel + " nicht.");
+            return new(schluessel, name, r.Einheit, KlimaWertart.Rechenwert, gruppe, r.Spalte, gerechnet);
+        }
 
         /// <summary>Die Größe zu einem Schlüssel; <c>null</c> = unbekannt.</summary>
         public static KlimaExportGroesse Groesse(string schluessel)

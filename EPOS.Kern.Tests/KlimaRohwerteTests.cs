@@ -308,6 +308,49 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
+        //  Leser des Reiters „Weitere Reihen“ (KD-8 Teil B)
+        // =====================================================================
+
+        /// <summary>
+        /// Teil B: Mit dem Schritt 238 sind die Rohwerte freigeschaltet (Datenstand). Der Leser
+        /// <see cref="KlimaExportCtrl.RohwerteLesen"/> liefert allein die Rohwerte einer Katalogregion — leer für den
+        /// Altbestand (<c>Rohdaten = 0</c>, KD-Q7) —, und <see cref="KlimaReihenkatalog.AusRohwerten"/> macht daraus die fünf
+        /// Reihen des Jahresverlaufs, geführt oder weich gesperrt.
+        /// </summary>
+        [Fact]
+        public void RohwerteLesen_und_Reihen_des_Jahresverlaufs_folgen_dem_Datenstand()
+        {
+            if (!_db.Vorhanden) return;
+            Assert.True(KlimaReihenkatalog.RohwerteFreigeschaltet());
+
+            long id = Zahl("SELECT MIN(ID_Klimaregion) FROM Tab_Klimaregion_STAMM");
+            KlimaExportDaten ohne = KlimaExportCtrl.RohwerteLesen((int)id);
+            Assert.NotNull(ohne);
+            Assert.False(ohne.Rohdaten);                       // Altbestand (KD-Q7): nichts nachgeladen
+            Assert.Empty(ohne.Rohwerte);
+            Assert.Empty(ohne.Rechenwerte);                   // allein die Rohwerte, die Rechenspalten hat die Hülle
+            IReadOnlyList<KlimaReihenwerte> gesperrt = KlimaReihenkatalog.AusRohwerten(ohne);
+            Assert.Equal(5, gesperrt.Count);
+            Assert.All(gesperrt, w => Assert.False(w.Gefuehrt));
+
+            // Eine Region mit Rohwerten: 24 Stunden Luftdruck, Kennzeichen und Zeitbezug gesetzt.
+            for (int h = 1; h <= 24; h++)
+                Ausfuehren("INSERT INTO Tab_Klimastunde_STAMM (ID_Klimaregion, Stunde, Luftdruck_hPa) VALUES (" + id + ", " +
+                           h + ", " + (1000 + h) + ")");
+            Ausfuehren("UPDATE Tab_Klimaregion_STAMM SET Rohdaten = 1, Zeitbezug = 'MEZ' WHERE ID_Klimaregion = " + id);
+            KlimaExportDaten mit = KlimaExportCtrl.RohwerteLesen((int)id);
+            Assert.True(mit.Rohdaten);
+            Assert.Equal(KlimaRohwerteSchema.ZEITBEZUG_MEZ, mit.RohZeitbezug);
+            Assert.Equal(1001.0, mit.Rohwerte[KlimaRohwerteSchema.SPALTE_LUFTDRUCK][0]);
+            Assert.True(double.IsNaN(mit.Rohwerte[KlimaRohwerteSchema.SPALTE_LUFTDRUCK][24]));
+            IReadOnlyList<KlimaReihenwerte> reihen = KlimaReihenkatalog.AusRohwerten(mit);
+            Assert.True(reihen.Single(w => w.Reihe.Schluessel == "ROH_Luftdruck_hPa").Gefuehrt);
+            Assert.False(reihen.Single(w => w.Reihe.Schluessel == "ROH_Wasserdampfgehalt_g_kg").Gefuehrt);
+            Assert.Equal(mit.Rohdaten, KlimaExportCtrl.Lesen((int)id).Rohdaten);   // der Export liest dieselbe Auskunft
+            Assert.Null(KlimaExportCtrl.RohwerteLesen(987654));
+        }
+
+        // =====================================================================
         //  Wache: der Rechenweg liest die Rohtabelle nicht
         // =====================================================================
 

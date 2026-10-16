@@ -228,6 +228,7 @@
                                                                 Kopf="@KopfJahrText"
                                                                 Kopfhinweis="@string.Format(CultureInfo.CurrentCulture, HinweisJahrText, JahrEinheit)"
                                                                 Leise="@GleicheEinheitText"
+                                                                RohwertText="@RohwertMarkeText"
                                                                 Chips="@JahrChips" Umschalten="JahrUmschalten" />
                                                 }
                                                 <DiagrammSvg Modell="@_modellReihen" Kennung="klima-reihen"
@@ -500,6 +501,7 @@
                                    Einheiten, eine dritte ist weich gesperrt (KD-Q10). *@
                                 <Reihenwahl Kennung="klima-vorschau" Bezeichnung="@WahlVorschauText"
                                             Kopf="@KopfVorschauText" Kopfhinweis="@HinweisVorschauText"
+                                            RohwertText="@RohwertMarkeText"
                                             Chips="@VorschauChips(kz)" Umschalten="VorschauUmschalten"
                                             Vorgabe="VorschauVorgabe" />
                             }
@@ -863,6 +865,8 @@
     [Parameter] public string BildBezeichnungText { get; set; } = Resource.KLIMA_VK_BILD_BEZEICHNUNG;
     [Parameter] public string BestandText { get; set; } = Resource.KLIMA_VK_BESTAND;
     [Parameter] public string GefuehrtText { get; set; } = Resource.KLIMA_VK_GEFUEHRT;
+    /// <summary>KD-8 Teil B: der Titel der Marke „R“ an einem Rohwert-Chip (KLIMA_RW_ROHWERT_MARKE).</summary>
+    [Parameter] public string RohwertMarkeText { get; set; } = Resource.KLIMA_RW_ROHWERT_MARKE;
     [Parameter] public string GerechnetText { get; set; } = Resource.KLIMA_VK_GERECHNET;
     [Parameter] public string GespeichertText { get; set; } = Resource.KLIMA_VK_GESPEICHERT;
     [Parameter] public string NichtGespeichertText { get; set; } = Resource.KLIMA_VK_NICHT_GESPEICHERT;
@@ -2166,7 +2170,9 @@
     {
         var fehlt = new HashSet<KlimaParameter>((_vorschau?.Parameterbestand ?? Array.Empty<KlimaParameterEintrag>())
             .Where(p => p.Stand == KlimaParameterStand.Fehlt).Select(p => p.Parameter));
-        return KlimaReihenkatalog.Reihen.Where(r => r.InVorschau && r.Freigeschaltet &&
+        // KD-8 Teil B: Rohwerte nur, wenn der gelesene Satz sie auch speichert (Schritt 238 steht - Datenstand).
+        bool rohwerte = _vorschau?.RohwerteGespeichert == true;
+        return KlimaReihenkatalog.Reihen.Where(r => r.InVorschau && KlimaReihenkatalog.Sichtbar(r, rohwerte) &&
                                                     kz.Monatsreihe(r.Schluessel) != null &&
                                                     !(r.Parameter is { } p && fehlt.Contains(p)));
     }
@@ -2191,7 +2197,7 @@
                 Sperrgrund = KlimaReihenkatalog.SperrgrundMonatsbild(r.Schluessel, _vorschauWahl),
                 Titel = titel,
                 Zusatz = zusatz,
-                Rohwert = r.Herkunft == KlimaReihenherkunft.Rohwert,
+                Rohwert = r.IstRohwert,
                 Farbe = Chipfarbe(r)
             });
         }
@@ -2237,10 +2243,11 @@
     }
 
     /// <summary>
-    /// Die Reihen der Region, die diese Fassung zeigt: Rohwerte erst nach ihrer Freischaltung
-    /// (<c>KlimaReihenkatalog.RohwerteFreigeschaltet</c>, Teil B) — vorher ohne Chip (§ 4a.3).
+    /// Die Reihen der Region, wie die Hülle sie liefert: die Rechenspalten (Teil A) und, sobald der Schritt 238
+    /// steht, die Rohwert-Reihen (Teil B, aus dem Datenstand, § 4a.3) — eine Rohwert-Reihe ohne Werte ist
+    /// weich gesperrt („führt nicht“), die Marke „R“ nennt den Rohwert.
     /// </summary>
-    private IEnumerable<KlimaReihenwerte> SichtbarerBestand => _reihenbestand.Where(w => w.Reihe.Freigeschaltet);
+    private IReadOnlyList<KlimaReihenwerte> SichtbarerBestand => _reihenbestand;
 
     /// <summary>Die Einheit des Bildes „Weitere Reihen“ (die der ersten gewählten Reihe).</summary>
     private string JahrEinheit => _jahrWahl.Count > 0 ? KlimaReihenkatalog.Reihe(_jahrWahl[0])?.Einheit ?? "" : "";
@@ -2270,7 +2277,7 @@
                     Gewaehlt = an,
                     Sperrgrund = grund,
                     Titel = titel,
-                    Rohwert = r.Herkunft == KlimaReihenherkunft.Rohwert,
+                    Rohwert = r.IstRohwert,
                     Farbe = Chipfarbe(r)
                 });
             }

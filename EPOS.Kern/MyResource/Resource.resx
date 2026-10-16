@@ -57395,5 +57395,8 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="KLIMA_RW_NAME_QUALITAET" xml:space="preserve">
     <value>Qualitätskennung der Strahlung</value>
   </data>
+  <data name="KLIMA_RW_ROHWERT_MARKE" xml:space="preserve">
+    <value>Rohwert der Quelle aus der Rohwerttabelle (R)</value>
+  </data>
 </root>
 
