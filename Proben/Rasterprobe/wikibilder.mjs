@@ -54,6 +54,14 @@ const BILDER = [
   ['konditionierung', 'Konditionierung', { seite: '/konditionierungsprobe?fall=vorlagen', reiter: 'Konditionierung', hoehe: 2600 }],
   ['zonen', 'Zonen', { seite: '/konditionierungsprobe?fall=projekt', reiter: 'Zonen', hoehe: 1000 }],
   ['zonendialog', 'Zonendialog', { seite: '/konditionierungsprobe?fall=projekt', reiter: 'Zonen', klick: 'Öffnen…', hoehe: 3000 }],
+  // Weitere Dialoge aus den Probeseiten des Wirtes (wahl = der aufgenommene Dialog, bild = was ein Klick oeffnet).
+  ['klimadaten', 'Klimadaten', { seite: '/katalogprobe?maske=klima&zeilen=8&bilder=1', wahl: '.epos-dialog', hoehe: 800 }],
+  ['kaeltebedarf', 'Kaeltebedarf', { seite: '/fensterprobe?fall=kaelteprofile', wahl: '.epos-dialog', hoehe: 800 }],
+  ['betriebskalender', 'Betriebskalender', { seite: '/fensterprobe?fall=kaelteprofile', wahl: '.epos-dialog', klick: 'Betriebskalender', bild: '.epos-ueberlagerung', hoehe: 900 }],
+  ['waermebedarf', 'Waermebedarf', { seite: '/rollbereichprobe?fall=waermebedarf&projekt=2&zeilen=8', wahl: '.epos-dialog', hoehe: 800 }],
+  ['strombedarf', 'Strombedarf', { seite: '/rollbereichprobe?fall=stromganglinie&projekt=2&zeilen=8', wahl: '.epos-dialog', hoehe: 800 }],
+  ['zapfprofil', 'Zapfprofil', { seite: '/katalogprobe?maske=wohnungen', wahl: '.epos-dialog', hoehe: 1400 }],
+  ['baustoffe', 'Baustoffe', { seite: '/katalogprobe?maske=baustoff&zeilen=12', wahl: '.epos-dialog', hoehe: 800 }],
 ];
 
 // Bei diesen Bildern steht der Bereich "Gewaehlter Satz" aufgeklappt - die Wiki-Seite
@@ -78,21 +86,31 @@ try {
     // Brauchwasser, Prozesswaerme, Waermepumpe, Stromspeicher: die Kopfzeile der Katalogliste (Titel, Suchfeld, Zaehler,
     // Spalten..., Vergleichen, Uebernehmen) steht erst ab rund 1380 px ungekuerzt; die Seite
     // /wikibild laesst den Dialog dafuer breiter werden (Bildbreite bleibt <= 1400 px).
-    const fenster = fremd ? [[1280, fremd.hoehe], [1100, fremd.hoehe]]
+    const fenster = fremd ? [[fremd.breite ?? 1280, fremd.hoehe], [1100, fremd.hoehe]]
       : BREIT.has(name) ? [[1400, 800]] : [[1280, 800], [1100, 720]];
     for (const [w, h] of fenster) {
       const kontext = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1, locale: 'de-DE' });
       const seite = await kontext.newPage();
       const adresse = fremd ? `${WURZEL}${fremd.seite}&kultur=de-DE` : `${WURZEL}/wikibild?bild=${name}&kultur=de-DE`;
       await seite.goto(adresse, { waitUntil: 'networkidle' });
-      const dialog = seite.locator(fremd ? '.epos-ueberlagerung' : '.epos-wikibild .epos-dialog').first();
+      let dialog = seite.locator(fremd ? (fremd.wahl ?? '.epos-ueberlagerung') : '.epos-wikibild .epos-dialog').first();
       await dialog.waitFor({ state: 'visible', timeout: 15000 });
       if (fremd) {
         await seite.waitForTimeout(800);
-        await dialog.locator('[role=tab]', { hasText: new RegExp('^' + fremd.reiter + '$') }).first().click();
+        if (fremd.reiter) await dialog.locator('[role=tab]', { hasText: new RegExp('^' + fremd.reiter + '$') }).first().click();
+        if (fremd.zeile) {
+          // Eine Zeile der Liste waehlen (Text der Zeile), damit Satz und Bild dazu stehen.
+          await seite.waitForTimeout(500);
+          await dialog.locator(fremd.zeile[0], { hasText: fremd.zeile[1] }).first().click();
+        }
         if (fremd.klick) {
           await seite.waitForTimeout(500);
           await dialog.locator('button', { hasText: fremd.klick }).first().click();
+        }
+        if (fremd.bild) {
+          // Aufgenommen wird, was der Klick geoeffnet hat (z. B. das Blatt ueber dem Dialog).
+          dialog = seite.locator(fremd.bild).last();
+          await dialog.waitFor({ state: 'visible', timeout: 15000 });
         }
       }
       if (SATZ_OFFEN.has(name)) {
