@@ -74,7 +74,14 @@ oder das Vorheizen eines Gebäudes mit Heizkreis; der Lauf dauert rund 2 s, der 
   Vorheizschlüssel gegen R57.
 - Landschaft um 1073 ergänzt: `ZonenReferenzprojektWacheTests` (`Zonenbestand`), `ZonenKuehlkurveReferenzprojektWacheTests`,
   `ZonenUebergabeTests`, `KonditionierungReferenzprojektWacheTests`, `VorheizReferenzprojektWacheTests`,
-  `VorheizenSchemaTests`, `SchnellaufheizungSchemaTests`.
+  `VorheizenSchemaTests`, `SchnellaufheizungSchemaTests`, `Ak3KReferenzprojektWacheTests`, `AnlagenkopplungSchemaTests`,
+  `AufheizSchemaTests`, `BaualtersklassenSchemaTests` (Gebäudekopie H7), `ErgebnisansichtTests` (199/192 Positionen,
+  41 von 48, 14 Hinweise), `GebaeudeG3SchemaTests`, `GebaeudeZonenRundlaufTests`, `PreisbasisSchrittTests`,
+  `KesselBrennwertNachzugTests`, `GebaeudeKatalogverweisTests` (53 Gebäude).
+- Läufe (`EPOS.Kern.Tests`, gefiltert, ohne Parallelität): Referenzprojekt-Wachen, Schnellaufheizung, Vorheizen,
+  Aufheizen, Zonen, Konditionierung, Schema, Testdatenbank, Wiki, Dokumentations- und Ordnungswache 2 332 Fälle, dazu 649
+  Fälle der Klassen mit Projektlandschaft und 428 Fälle Anlagenkopplung, AK3, Heizkreis, Übergabe — nach den Nachzügen alle
+  grün. SQL-Dialekt-Prüfer: 3 034 Texte, 0 Fundstellen.
 
 ## Wiki
 
