@@ -1008,7 +1008,16 @@ namespace WindowsFormsApplication1
                 : (double?)null;
 
             // ---- Kennzahlen und Parameterbestand -----------------------------
-            erg.Kennzahlen = KlimaKennzahlen.Rechnen(satz.Stunden);
+            // KD-8: Die TRY-Datei führt die Direktstrahlung horizontal; die Monatsreihe
+            // „Direkt normal“ rechnet auf einer Kopie wie der Import (DirektNormal).
+            List<TmyHourlyData> direktNormal = null;
+            if (auftrag.Quelle != KlimaQuelle.PvgisTmy && satz.Stunden != null)
+            {
+                direktNormal = new List<TmyHourlyData>(satz.Stunden.Count);
+                foreach (TmyHourlyData h in satz.Stunden) direktNormal.Add(h.Kopie());
+                DwdTryLeser.DirektNormal(direktNormal, satz.Lon, satz.Lat);
+            }
+            erg.Kennzahlen = KlimaKennzahlen.Rechnen(satz.Stunden, direktNormal);
             erg.Parameterbestand = KlimaParameterbestand.Fuer(auftrag.Quelle, satz.Stunden);
 
             // ---- Hinweise (KD-Q1, KD-Q9) -------------------------------------

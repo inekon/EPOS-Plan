@@ -279,6 +279,12 @@
 
                 <Reiterblatt Schluessel="STROM" Titel="@Resource.SIMERG_TAB_WP_STROM">
                     <KindInhalt>
+                        @* Welle RZ: Wärmepumpe und Heizstab getrennt — ab Werk aus, dann bleibt es die eine
+                           Linie der Summe. An: beide als Stapel, die Summe als Kontur darüber. *@
+                        <div class="epos-simerg-schalter">
+                            <Schalter Bezeichnung="@Resource.SIMERG_CHK_WP_STROM_GETRENNT"
+                                      Wert="@_stromGetrennt" WertChanged="@(w => _stromGetrennt = w)" />
+                        </div>
                         <DiagrammSvg Modell="@ModellStrom" Kennung="simerg-wp-strom" CsvExport="Csv"
                                      Vorlagenfeld="stand.bild.waermepumpe_strom" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
                                      VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
@@ -295,6 +301,21 @@
                 {
                     <Reiterblatt Schluessel="TEMPERATUREN" Titel="@Resource.SIM_TAB_SPEICHERTEMPERATUR">
                         <KindInhalt>
+                            @* Welle RZ (Teil b): je Speicher ein Schalter - dieselbe Bauart wie die
+                               Reihen der Jahresganglinie (W11b‑B‑17). Ab Werk alle an; erst ab zwei
+                               Speichern, denn mit einem gibt es nichts zu waehlen. *@
+                            @if (Speicherwahl.Count >= 2)
+                            {
+                                <div class="epos-simerg-schalter">
+                                    @foreach (var sp in Speicherwahl)
+                                    {
+                                        string schluessel = sp.Schluessel;
+                                        <Schalter @key="schluessel" Bezeichnung="@sp.Name"
+                                                  Wert="@(!_speicherAus.Contains(schluessel))"
+                                                  WertChanged="@(w => SpeicherSchalten(schluessel, w))" />
+                                    }
+                                </div>
+                            }
                             <DiagrammSvg Modell="@ModellTemperaturen"
                                          Kennung="simerg-wp-temperaturen"
                                          Bezeichnung="@Resource.CHART_TITEL_SPEICHERTEMPERATUR"
@@ -408,6 +429,13 @@
     [Parameter] public bool Speichertemperaturen { get; set; }
 
     /// <summary>
+    /// Welle RZ (Teil b): die Speicher des Temperaturbilds zur Auswahl (Schlüssel, Name); ab zwei
+    /// Speichern steht je Speicher ein Schalter. Leer = keine Wahl.
+    /// </summary>
+    [Parameter] public IReadOnlyList<(string Schluessel, string Name)> Speicherwahl { get; set; }
+        = Array.Empty<(string Schluessel, string Name)>();
+
+    /// <summary>
     /// BV-E6: der Platzhalter des Temperaturbilds (<c>stamm.bild.speichertemperaturen</c>, nur beim
     /// Stammprojekt, „ähnlich im Bericht“); leer = keine Marke. Die Hülle setzt ihn.
     /// </summary>
@@ -433,6 +461,9 @@
     /// <summary>Die gewaehlten Reihen der Jahresganglinie (Pruefhilfe).</summary>
     public IReadOnlyList<string> GewaehlteReihenProduktion => ReihenProduktion();
 
+    /// <summary>Die Reihenwahl des Stromverbrauchsbilds; <c>null</c> = die Vorgabe, eine Linie (Pruefhilfe).</summary>
+    public IReadOnlyList<string>? GewaehlteReihenStrom => ReihenStrom();
+
     private Reiter? _reiter;
     private string _blatt = "";
     private bool _sortiert;
@@ -445,6 +476,9 @@
     private bool _pgWarmwasser = true;
     private bool _pgProduktion = true;
     private bool _pgHeizstab = true;
+
+    // Welle RZ: Strom von Wärmepumpe und Heizstab getrennt - ab Werk AUS.
+    private bool _stromGetrennt;
 
     // Die Spalte JAZ der Modultabelle: Vorgabe OHNE Heizstab; nur fuer die Ansicht.
     private bool _jazMitHeizstab;
@@ -483,11 +517,44 @@
     private Zeichenmodell? ModellProduktion =>
         Modell?.Invoke(new Bildauftrag(Bilder.WpProduktion, _sortiert, -1, ReihenProduktion()));
 
+    /// <summary>
+    /// Welle RZ: die Reihen des Stromverbrauchsbilds. Ohne „getrennt" KEINE Liste (<c>null</c>) — derselbe
+    /// Auftrag wie bisher, das Bild bleibt die eine Linie.
+    /// </summary>
+    private IReadOnlyList<string>? ReihenStrom()
+        => _stromGetrennt ? new[] { "WP_STROM", "HEIZSTAB_STROM", "WP_STROM_SUMME" } : null;
+
     private Zeichenmodell? ModellStrom =>
-        Modell?.Invoke(new Bildauftrag(Bilder.WpStromverbrauch));
+        Modell?.Invoke(new Bildauftrag(Bilder.WpStromverbrauch, false, -1, ReihenStrom()));
 
     private Zeichenmodell? ModellTemperaturen =>
-        Modell?.Invoke(new Bildauftrag(Bilder.Speichertemperaturen));
+        Modell?.Invoke(new Bildauftrag(Bilder.Speichertemperaturen, false, -1, ReihenTemperaturen()));
+
+    /// <summary>Welle RZ: die abgewählten Speicher des Temperaturbilds; ab Werk keiner.</summary>
+    private readonly HashSet<string> _speicherAus = new(StringComparer.Ordinal);
+
+    private void SpeicherSchalten(string schluessel, bool an)
+    {
+        if (an) _speicherAus.Remove(schluessel);
+        else _speicherAus.Add(schluessel);
+    }
+
+    /// <summary>Die gewählten Speicher des Temperaturbilds (Prüfhilfe); <c>null</c> = alle.</summary>
+    public IReadOnlyList<string>? GewaehlteReihenTemperaturen => ReihenTemperaturen();
+
+    /// <summary>
+    /// Welle RZ: die Speicherschlüssel des Temperaturbilds. Sind ALLE gewählt (ab Werk), bleibt die
+    /// Liste <c>null</c> — dann zeichnet die Hülle wie zuvor; eine leere Liste heißt „kein Speicher"
+    /// (die Quelltemperaturen bleiben).
+    /// </summary>
+    private IReadOnlyList<string>? ReihenTemperaturen()
+    {
+        if (_speicherAus.Count == 0) return null;
+        var liste = new List<string>();
+        foreach (var sp in Speicherwahl)
+            if (!_speicherAus.Contains(sp.Schluessel)) liste.Add(sp.Schluessel);
+        return liste;
+    }
 
     /// <summary>
     /// Eine Zahl der Kennzahlenliste. „N2" statt „F2" seit dem Anwenderwunsch
@@ -578,6 +645,9 @@
                                  w => _pgProduktion = w));
             liste.Add(Umschalter(Resource.CHART_SEGMENT_HEIZSTAB, () => _pgHeizstab, w => _pgHeizstab = w));
         }
+        if (AktivesBlatt == "STROM")
+            liste.Add(Umschalter(Resource.SIMERG_CHK_WP_STROM_GETRENNT, () => _stromGetrennt,
+                                 w => _stromGetrennt = w));
         return liste;
     }
 }

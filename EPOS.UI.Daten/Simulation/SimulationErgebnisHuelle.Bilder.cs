@@ -502,10 +502,52 @@ namespace WindowsFormsApplication1
             double[] gesamt = _strombedarf.AddVectors(sim.simulation_wp.WP_Strombedarf_stuendlich,
                                                      sim.simulation_wp.Heizstab_stuendlich);
 
+            // Welle RZ: „Wärmepumpe und Heizstab getrennt" - die beiden Summanden als Stapel, ihre Summe als
+            // Kontur darüber, dieselbe Bauart wie der Stromgang. Ohne Reihenwahl (der Schalter steht ab Werk
+            // aus) bleibt es die EINE Linie, das Bild byte-gleich.
+            if (WpStromGetrennt(a))
+            {
+                var stapel = new List<ChartRenderer.Reihe>();
+                if (a.Reihen.Contains(REIHE_WP_STROM))
+                    stapel.Add(Reihe(MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE,
+                                     sim.simulation_wp.WP_Strombedarf_stuendlich, Farbrolle.WAERME_WP,
+                                     ChartRenderer.Stapelart.Saeule));
+                if (a.Reihen.Contains(REIHE_HEIZSTAB_STROM))
+                    stapel.Add(Reihe(MyResource.Resource.CHART_SEGMENT_HEIZSTAB,
+                                     sim.simulation_wp.Heizstab_stuendlich, Farbrolle.HEIZSTAB,
+                                     ChartRenderer.Stapelart.Saeule));
+                ChartRenderer.Reihe kontur = a.Reihen.Contains(REIHE_WP_STROM_SUMME)
+                    ? new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_SUMME_STROM_WP, Kopie(gesamt),
+                                              Farbrolle.VERBRAUCH_GESAMT, ChartRenderer.Stapelart.Keine,
+                                              ChartRenderer.Strichart.Durchgezogen, 2f)
+                    : null;
+                return ChartRenderer.ErzeugerStapelModell(
+                    MyResource.Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE,
+                    stapel, new List<ChartRenderer.Reihe>(), kontur,
+                    MyResource.Resource.CHART_ACHSE_STROMBEDARF, ChartRenderer.Achse.Monate, false);
+            }
+
             return ChartRenderer.JahresverlaufModell(
                 MyResource.Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE,
                 Kopie(gesamt), MyResource.Resource.CHART_ACHSE_STROMBEDARF, Farbrolle.BEDARF);
         }
+
+        /// <summary>Welle RZ: die Reihe „Strom Wärmepumpe" im getrennten Stromverbrauchsbild.</summary>
+        internal const string REIHE_WP_STROM = "WP_STROM";
+
+        /// <summary>Welle RZ: die Reihe „Heizstab" im getrennten Stromverbrauchsbild.</summary>
+        internal const string REIHE_HEIZSTAB_STROM = "HEIZSTAB_STROM";
+
+        /// <summary>Welle RZ: die Summenkontur „Wärmepumpe und Heizstab" im getrennten Bild.</summary>
+        internal const string REIHE_WP_STROM_SUMME = "WP_STROM_SUMME";
+
+        /// <summary>
+        /// Zeigt der Auftrag das Stromverbrauchsbild GETRENNT? Nur mit einer Reihenwahl, die eine der drei
+        /// Reihen nennt — ohne Wahl (<c>null</c>) gilt die Vorgabe, die eine Linie.
+        /// </summary>
+        internal static bool WpStromGetrennt(Bildauftrag a)
+            => a?.Reihen != null && (a.Reihen.Contains(REIHE_WP_STROM) || a.Reihen.Contains(REIHE_HEIZSTAB_STROM)
+                                     || a.Reihen.Contains(REIHE_WP_STROM_SUMME));
 
         /// <summary>
         /// B4 — die Streuwolke „Leistung über Außentemperatur". Die drei Reihen sind
@@ -573,12 +615,19 @@ namespace WindowsFormsApplication1
         /// </summary>
         private Zeichenmodell ModellTemperaturen(Bildauftrag a)
         {
+            // Welle RZ (Teil b): die Auswahl je Speicher. Ohne Reihenliste (ab Werk) alle Speicher;
+            // mit Liste nur die genannten - die Farbrolle bleibt die des Speichers (vergeben über ALLE),
+            // und die Quelltemperaturen sind keine Speicher und bleiben stehen.
+            bool alle = Alle(a);
             var reihen = new List<ChartRenderer.Reihe>();
             foreach (Temperaturreihe r in Temperaturreihen())
+            {
+                if (r.Speicher != null && !Gewaehlt(a, alle, r.Speicher)) continue;
                 reihen.Add(new ChartRenderer.Reihe(r.Legende, Kopie(r.Werte), r.Rolle,
                                                    ChartRenderer.Stapelart.Keine,
                                                    r.Gestrichelt ? ChartRenderer.Strichart.Gestrichelt
                                                                  : ChartRenderer.Strichart.Durchgezogen));
+            }
 
             return ChartRenderer.TemperaturverlaufModell(
                 MyResource.Resource.CHART_TITEL_SPEICHERTEMPERATUR, reihen, true);
@@ -1127,6 +1176,12 @@ namespace WindowsFormsApplication1
         /// <summary>K6b: der Reihenschlüssel des Postens „Kühlung dezentral“ im Stromgang (Bild und CSV).</summary>
         internal const string REIHE_KUEHLUNG_DEZENTRAL = "KUEHLUNG_DEZENTRAL";
 
+        /// <summary>Welle RZ: der Netzbezug im Stromgang — zuschaltbar, ab Werk aus.</summary>
+        internal const string REIHE_NETZBEZUG = "NETZBEZUG";
+
+        /// <summary>Welle RZ: die Netzeinspeisung im Stromgang — zuschaltbar, ab Werk aus.</summary>
+        internal const string REIHE_NETZEINSPEISUNG = "NETZEINSPEISUNG";
+
         internal static double[] StromverbrauchKessel(SimulationControl sim)
             => sim.simulation_spk.Stromverbrauch_stuendlich;
 
@@ -1165,6 +1220,19 @@ namespace WindowsFormsApplication1
             if (wahl.Contains("PV"))
                 linien.Add(Reihe(MyResource.Resource.SIM_PHOTOVOLTAIK,
                                  sim.simulation_pv.Stromproduktion_viertelstunde, Farbrolle.STROM_PV));
+
+            // Welle RZ: „woher kommt der Strom" samt Netz - Bezug und Einspeisung als Linien, nur gewählt. Ohne
+            // Wahl bleibt die Linienliste, wie sie war (das Bild byte-gleich).
+            if (wahl.Contains(REIHE_NETZBEZUG) || wahl.Contains(REIHE_NETZEINSPEISUNG))
+            {
+                SimulationErgebnisCtrl.Netzreihen netz = SimulationErgebnisCtrl.NetzreihenViertelstunde(sim);
+                if (wahl.Contains(REIHE_NETZBEZUG) && netz?.NetzbezugKw != null)
+                    linien.Add(Reihe(MyResource.Resource.CHART_LEGENDE_NETZBEZUG, netz.NetzbezugKw,
+                                     Farbrolle.STROM_NETZ));
+                if (wahl.Contains(REIHE_NETZEINSPEISUNG) && netz?.EinspeisungKw != null)
+                    linien.Add(Reihe(MyResource.Resource.CHART_LEGENDE_NETZEINSPEISUNG, netz.EinspeisungKw,
+                                     Farbrolle.UEBERSCHUSS));
+            }
 
             // „GESAMT" ist die Kontrolllinie über allem (:220-221). Sie addiert
             // Lastgang, Wärmepumpe, Heizstab und Heizkessel - das ist der

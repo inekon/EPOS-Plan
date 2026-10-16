@@ -1014,6 +1014,16 @@ public sealed class SimulationErgebnisDaten
     public bool Speichertemperaturen;
 
     /// <summary>
+    /// Welle RZ (Teil b): die Speicher des Temperaturbilds zur AUSWAHL — Schlüssel (der Speicher-
+    /// schlüssel des Laufs, <c>PUFFER_…</c>) und Anzeigename, in der Reihenfolge des Bildes. Der
+    /// Reiter gibt die gewählten Schlüssel als <see cref="Bildauftrag.Reihen"/> weiter; sind alle
+    /// gewählt (ab Werk), bleibt die Liste <c>null</c> und das Bild wie zuvor. Die Quelltemperaturen
+    /// sind keine Speicher und stehen immer im Bild. Leer = keine Wahl.
+    /// </summary>
+    public IReadOnlyList<(string Schluessel, string Name)> Speicherwahl =
+        Array.Empty<(string Schluessel, string Name)>();
+
+    /// <summary>
     /// BV-E6: der Platzhalter des Speichertemperaturbilds — nur beim Stammprojekt
     /// (<c>stamm.bild.speichertemperaturen</c>, „ähnlich“); leer = keine Marke.
     /// </summary>
@@ -1100,6 +1110,18 @@ public static class Bilder
 
     /// <summary>Die Kälteproduktion des Ergebnisreiters — nur, wenn das Projekt Kälte rechnet.</summary>
     public const string Kaeltegang = "KAELTEGANG";
+}
+
+/// <summary>
+/// Welle RZ (Teil b): die sprachneutralen Schlüssel der ZUSCHALTBAREN Reihen in
+/// <see cref="Bildauftrag.Reihen"/> und in den Reihenlisten der Bilddelegaten von Gebäude- und
+/// Quellprofildialog. Eine Zusatzreihe ist ab Werk AUS: Ohne sie im Auftrag zeichnet jedes Bild
+/// wie zuvor.
+/// </summary>
+public static class Zusatzreihen
+{
+    /// <summary>Die Außentemperatur des Klimakalenders — Orientierung neben Raum- und Quelltemperatur.</summary>
+    public const string Aussentemperatur = "AUSSENTEMPERATUR";
 }
 
 // Das Ergebnis eines Schreib- oder Rechenwegs meldet der Datensatz

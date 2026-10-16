@@ -13,10 +13,10 @@ nennt die Etappen.
 
 Mockups (statisch, 1 280 px, Token aus dem Stilblatt epos-ui.css des Hauses):
 [A — Reiterzeile](../aktuell/Mockups/BerichteKosten_Navigation_A.html) ·
-[B — schlanke Seitenleiste](../aktuell/Mockups/BerichteKosten_Navigation_B.html) ·
-[C — Kachelstart](../aktuell/Mockups/BerichteKosten_Navigation_C.html);
-Bilder: [A](../aktuell/Mockups/BerichteKosten_Navigation_A.png), [B](../aktuell/Mockups/BerichteKosten_Navigation_B.png),
-[C](../aktuell/Mockups/BerichteKosten_Navigation_C.png).
+[B — schlanke Seitenleiste](../ueberholt/Mockups/BerichteKosten_Navigation_B.html) ·
+[C — Kachelstart](../ueberholt/Mockups/BerichteKosten_Navigation_C.html);
+Bilder: [A](../aktuell/Mockups/BerichteKosten_Navigation_A.png), [B](../ueberholt/Mockups/BerichteKosten_Navigation_B.png),
+[C](../ueberholt/Mockups/BerichteKosten_Navigation_C.png).
 
 Bild 3 jedes Mockups zeigt den Bereich *Wirtschaftlichkeit* mit dem Knopf **„Zum Bericht ›“**
 anstelle von „Bericht erzeugen“ (entschieden am 26.09.2026, Umsetzung in eigenem Auftrag):

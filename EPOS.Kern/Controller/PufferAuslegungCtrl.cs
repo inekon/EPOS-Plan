@@ -1437,9 +1437,13 @@ namespace WindowsFormsApplication1
         /// Übernimmt die Empfehlung in den Projektpuffer (<paramref name="idPuffer"/>) bzw. legt einen
         /// neuen an (<c>null</c>), über <see cref="PufferSpCtrl.ProjektPufferAendern"/> und
         /// <see cref="PufferSpCtrl.ProjektPufferAnlegen"/>: Volumen = Empfehlung, Bereitschaftsverlust aus
-        /// dem Katalogvorschlag, sonst aus der Kennzahl, Klassen-Set aus den gerechneten Zonen, beim
-        /// Kombipuffer Schichtung mit mindestens zwei Schichten und den Zonenanteilen als Entnahmehöhen.
-        /// Schwellen, Temperaturpaar, Hersteller, Speichertyp und Kosten bleiben beim Ändern unverändert
+        /// dem Katalogvorschlag, sonst aus der Kennzahl, Klassen-Set aus den gerechneten Zonen. Beim
+        /// Kombipuffer (Heiz- und Brauchwasserzone, auch mit Prozesszone) setzt sie die Schichtung
+        /// vollständig (<see cref="KombiSchichtung"/>): mindestens zwei Schichten, die Zonenanteile von oben
+        /// mit der Brauchwasserzone oben in ihrem Volumen nach Auslegung, die Entnahme des Brauchwassers
+        /// ganz oben und die Entnahme von Heizung (und Prozesswärme) in der Mitte der obersten Zone darunter
+        /// — so erreicht die Heizung die Brauchwasserzone nicht. Höhe, λ, Nutztemperatur, Leistungsgrenzen
+        /// und die übrigen Pufferoptionen bleiben, wie sie gepflegt sind. Schwellen, Temperaturpaar, Hersteller, Speichertyp und Kosten bleiben beim Ändern unverändert
         /// (eine leere Schwelle wird mit ihrer Vorgabe geschrieben, mit der die Simulation sie ohnehin
         /// liest); beim Neuanlegen gelten die Vorgaben. Mit <paramref name="katalogsatz"/> und einem
         /// Katalogvorschlag merkt der Puffer den Katalogsatz (<c>Tab_Pufferspeicher.ID_Stamm</c>, Welle P4c),
@@ -1470,9 +1474,17 @@ namespace WindowsFormsApplication1
             {
                 if (!anteilH.HasValue) return null;
                 PufferSpCtrl.Schichtdaten s = alt ?? new PufferSpCtrl.Schichtdaten();
-                s.Schichten = PufferSpCtrl.SchichtenKlemmen(Math.Max(s.Schichten, Math.Max(2, ergebnis.Kennzahlen.SchichtenMindest)));
-                s.EntnahmeHeizung = anteilH.Value;
+                int n = PufferSpCtrl.SchichtenKlemmen(Math.Max(s.Schichten, Math.Max(2, ergebnis.Kennzahlen.SchichtenMindest)));
+                // Die Brauchwasserzone behält oben ihr Volumen nach Auslegung; ein aufgerundeter Nenninhalt
+                // geht an die Zonen darunter, eine gekappte Empfehlung teilt nach den Zonen der Auslegung.
+                double vB = ergebnis.Zone(PufferZone.Brauchwasser)?.VolumenL ?? 0;
+                double bezug = Math.Max(volumen, ergebnis.Zonen?.Sum(z => z.VolumenL) ?? 0);
+                (double[] anteile, double entnahmeUnten) = KombiSchichtung(n, bezug > 0 ? vB / bezug : 1.0 - anteilH.Value);
+                s.Schichten = n;
+                s.SchichtAnteile = PufferOptionen.AnteileText(anteile);
+                s.EntnahmeHeizung = entnahmeUnten;
                 s.EntnahmeBW = 1.0;
+                if (p) s.EntnahmeProzess = entnahmeUnten;
                 return s;
             }
 
@@ -1508,6 +1520,40 @@ namespace WindowsFormsApplication1
             if (neu > 0 && DataRepository.TabelleVorhanden(PufferAuslegungSchema.TAB))
                 DataRepository.ExecuteNonQuery(SQL_ZEILE_UMHAENGEN, P("@puffer", neu), P("@projekt", idProjekt));
             return neu;
+        }
+
+        /// <summary>
+        /// Die Zonenteilung eines Kombipuffers mit <paramref name="schichten"/> Zonen (≥ 2): Die oberen
+        /// Zonen bilden die Brauchwasserzone mit dem Volumenanteil <paramref name="anteilBrauchwasser"/>,
+        /// die übrigen teilen den Rest darunter gleich. Die Zahl der Brauchwasserzonen folgt dem Anteil
+        /// (mindestens eine, höchstens <c>schichten − 1</c>). Die Anteile stehen auf vier Nachkommastellen
+        /// mit der Summe 1, damit Text und Lauf dieselbe Grenze sehen. Die Entnahmehöhe der unteren Kanäle
+        /// liegt in der Mitte der obersten Zone unter der Brauchwasserzone — nie auf einer Zonengrenze, die
+        /// der Lauf nur einer der beiden Zonen zuschlägt.
+        /// </summary>
+        /// <returns>Die Anteile von oben und die Entnahmehöhe (0…1, 1 = oben) für Heizung und Prozesswärme.</returns>
+        internal static (double[] Anteile, double EntnahmeUnten) KombiSchichtung(int schichten, double anteilBrauchwasser)
+        {
+            const double KORN = 1e-4;
+            int n = Math.Max(2, PufferSpCtrl.SchichtenKlemmen(schichten));
+            double aB = double.IsNaN(anteilBrauchwasser) ? 0.5 : anteilBrauchwasser;
+            int kB = Math.Min(n - 1, Math.Max(1, (int)Math.Round(n * aB, MidpointRounding.AwayFromZero)));
+            aB = Math.Min(1.0 - KORN * (n - kB), Math.Max(KORN * kB, aB));
+
+            var anteile = new double[n];
+            double summe = 0;
+            for (int i = 0; i < n - 1; i++)
+            {
+                double a = i < kB ? aB / kB : (1.0 - aB) / (n - kB);
+                anteile[i] = Math.Max(KORN, Math.Round(a, 4, MidpointRounding.AwayFromZero));
+                summe += anteile[i];
+            }
+            anteile[n - 1] = Math.Round(1.0 - summe, 4, MidpointRounding.AwayFromZero);
+
+            double oben = 0;
+            for (int i = 0; i < kB; i++) oben += anteile[i];
+            double entnahme = Math.Round(1.0 - oben - anteile[kB] / 2.0, 4, MidpointRounding.AwayFromZero);
+            return (anteile, entnahme);
         }
 
         /// <summary>

@@ -44,11 +44,25 @@ else
   if dotnet test EPOS.Kern.Tests -c Release --no-build --filter "$F" --logger "console;verbosity=minimal" $XU >> "$LOG" 2>&1; then ergebnis "6 Kern-Tests gefiltert" "PASS ($(grep -E '^(Passed|Failed)!' "$LOG" | tail -n 1 | cut -c1-90))"; else ergebnis "6 Kern-Tests gefiltert" "FAIL ($(grep -E '^(Passed|Failed)!' "$LOG" | tail -n 1 | cut -c1-90))"; fi
 fi
 
+# Projektliste der CI-Auswahl: genau die Zeile „--projekte … --ziel artifacts/reflauf/…_kern“ des
+# Referenzlauf-Schritts in kern.yml (der gestörte Lauf mit „_stoerung“ zählt nicht mit).
+ci_projekte() {
+  local ky=.github/workflows/kern.yml zeilen n
+  zeilen=$(grep -E -- '--projekte [0-9,]+ --ziel artifacts/reflauf/.*_kern([[:space:]]|$)' "$ky" 2>/dev/null)
+  n=$(printf '%s' "$zeilen" | grep -c .)
+  if [ "$n" != 1 ]; then echo "Projektliste der CI-Auswahl nicht eindeutig: $n Fundstellen in $ky (erwartet genau eine)" >&2; return 1; fi
+  printf '%s\n' "$zeilen" | sed -E 's/.*--projekte ([0-9,]+).*/\1/'
+}
+
 if [ "${REF:-0}" = 1 ]; then
-  schritt "7 Referenzlauf 12 CI-Projekte gegen $(basename "$REFBASIS")"
+ if ! PROJEKTE=$(ci_projekte 2>> "$LOG"); then
+  schritt "7 Referenzlauf"; ergebnis "7 Referenzlauf" "FAIL (Projektliste der CI-Auswahl nicht ermittelbar, siehe Log)"
+ else
+  schritt "7 Referenzlauf $(printf '%s' "$PROJEKTE" | tr ',' '\n' | grep -c .) CI-Projekte gegen $(basename "$REFBASIS")"
+  echo "Projekte: $PROJEKTE" >> "$LOG"
   ZIEL="${ZIEL:-${TMPDIR:-/tmp}/referenzlauf_nachgate}"; rm -rf "$ZIEL"; mkdir -p "$ZIEL"
   if dotnet build EPOS.Referenzlauf -c Release -nologo -v q -clp:ErrorsOnly >> "$LOG" 2>&1 \
-     && dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite --projekte 1030,1007,1017,1045,1046,1047,1049,1051,1058,1060,1063,1065 --ziel "$ZIEL" >> "$LOG" 2>&1 \
+     && dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite --projekte "$PROJEKTE" --ziel "$ZIEL" >> "$LOG" 2>&1 \
      && { dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich "$REFBASIS" "$ZIEL" > "$ZIEL/vergleich.txt" 2>&1 || true; } && grep -q 'Projekt_[0-9]*: PASS' "$ZIEL/vergleich.txt"; then
     cat "$ZIEL/vergleich.txt" >> "$LOG"
     echt=$(grep -E '^Projekt_[0-9]+: FAIL' "$ZIEL/vergleich.txt" | grep -vc 'nicht vorhanden')
@@ -56,6 +70,7 @@ if [ "${REF:-0}" = 1 ]; then
   else
     cat "$ZIEL/vergleich.txt" >> "$LOG" 2>/dev/null; ergebnis "7 Referenzlauf" "FAIL"
   fi
+ fi
 fi
 
 schritt "ZUSAMMENFASSUNG"
