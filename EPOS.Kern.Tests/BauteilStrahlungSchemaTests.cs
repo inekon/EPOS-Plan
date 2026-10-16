@@ -19,12 +19,13 @@ namespace EPOS.Kern.Tests
             => Convert.ToInt64(DataRepository.ExecuteScalar(sql, p), CultureInfo.InvariantCulture);
 
         [Fact]
-        public void Die_Nummer_haengt_an_der_Kette_und_ist_das_Ziel()
+        public void Die_Nummer_haengt_an_der_Kette_und_das_Ziel_liegt_nicht_davor()
         {
             // KETTE: 237 haengt ueber + 1 an 236 (KaeltetyptagSchema, KBP-4a).
             Assert.Equal(237, BauteilStrahlungSchema.SCHRITT);
             Assert.Equal(KaeltetyptagSchema.SCHRITT + 1, BauteilStrahlungSchema.SCHRITT);
-            Assert.Equal(BauteilStrahlungSchema.SCHRITT, SchemaStand.Zielversion);
+            // Das Ziel liegt auf oder hinter 237 - seit 238 (KlimaRohwerteSchema, KD-4) dahinter.
+            Assert.True(SchemaStand.Zielversion >= BauteilStrahlungSchema.SCHRITT);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == BauteilStrahlungSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, s.Wirkung);
             Assert.Equal(new[] { "Absorptionsgrad_Solar", "Emissionsgrad" }, BauteilStrahlungSchema.SPALTEN.Select(x => x.Name));

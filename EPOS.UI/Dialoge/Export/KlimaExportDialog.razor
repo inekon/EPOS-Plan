@@ -1,0 +1,346 @@
+﻿@* KLIMAEXPORT (Auftrag KD-5, Konzept Klimadatenimport Abschnitt 5) - die Stundenwerte EINER Region als
+   CSV-Datei (Entscheid KD-Q6: eine Region je Datei). Ueberlagerung im Katalogdialog der Klimadaten hinter
+   der Handlung "Exportieren..." der Auswahlleiste; Muster GebaeudeExportDialog.
+
+   DIE DATEN liest die Huelle einmal beim Oeffnen (Gabe Lesen, KlimaExportCtrl im Kern). Die Parameterliste
+   steht in vier Gruppen (Rechenwerte, Fassadenwerte und Sonnenwinkel, Rohwerte der Quelle, Abgeleitet) als
+   Mehrfachauswahl; gerechnete Groessen tragen den Zusatz "gerechnet". Was die Region nicht fuehrt, ist WEICH
+   gesperrt und nennt seinen Grund ("Region ohne Rohdaten importiert", "Die Quelle fuehrt die Groesse nicht");
+   der Klick meldet ihn. Eine Region ohne Rohdaten nennt den Grund ausserdem in einer leisen Zeile.
+
+   DAS FORMAT: Trennzeichen, Dezimalzeichen (Komma neben dem Trennzeichen Komma weich gesperrt), Zeitspalte,
+   Zeitbezug (Vorgabe MEZ ohne Sommerzeit, KD-Q8), Kopf und Herkunftsblock; zwei Vorlagen setzen die
+   Formatfelder. DIE VORSCHAU zeigt Herkunftsblock, Kopf und die ersten fuenf Datenzeilen - derselbe Schreiber
+   wie die Datei (KlimaCsv.Vorschau), ohne Datenbank, je Eingabe neu.
+
+   GESCHRIEBEN WIRD NUR IM OK-WEG ("Exportieren..."): Der Dialog bildet den Text (KlimaCsv.Text) und gibt ihn
+   mit dem Dateivorschlag an den Speicherweg der Huelle (Dateiwahl der Plattform, Schreiben, auf iOS Teilen).
+   Eine abgebrochene Dateiwahl laesst den Dialog offen und still, ein Fehler steht im Banner, ein Erfolg
+   schliesst mit der Rueckmeldung. Abbrechen, Esc und das Kreuz geben null und rufen den Speicherweg nie.
+
+   TASTATUR: Esc schliesst wie Abbrechen. Enter ist nicht belegt. *@
+
+@namespace EPOS.UI.Dialoge.Export
+@using WindowsFormsApplication1
+@implements IDisposable
+
+<div class="epos-dialog epos-klimaexport-dialog" tabindex="-1" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Texte.Titel</h1>
+        }
+        <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@Texte.Titel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="Abbrechen" />
+        }
+    </div>
+
+    @if (_meldung.Length > 0)
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+
+    @if (!_gelesen)
+    {
+        <p class="epos-leisezeile epos-klimaexport-lesen">@Texte.Lesen</p>
+    }
+    else if (_daten is null || !_daten.HatStunden)
+    {
+        <p class="epos-leisezeile epos-klimaexport-keinedaten">@Texte.KeineDaten</p>
+    }
+    else
+    {
+        <p class="epos-leisezeile epos-klimaexport-region">@_daten.Name</p>
+        @if (!_daten.Rohdaten)
+        {
+            <p class="epos-leisezeile epos-klimaexport-ohneroh">@Texte.OhneRohdaten</p>
+        }
+
+        <div class="epos-klimaexport-spalten">
+            <section class="epos-klimaexport-parameter" aria-label="@Texte.Parameter">
+                @foreach (KlimaGroessengruppe gruppe in Gruppen)
+                {
+                    <div class="epos-klimaexport-gruppe" data-gruppe="@gruppe">
+                        <Mehrfachauswahl Bezeichnung="@Gruppentext(gruppe)" Eintraege="@Eintraege(gruppe)"
+                                         Gewaehlt="@Gewaehlt(gruppe)" GewaehltChanged="@(ids => BeiWahl(gruppe, ids))"
+                                         Sperrgrund="Sperrgrund" GesperrtVersucht="BeiGesperrt"
+                                         AlleText="@Texte.Alle" KeineText="@Texte.Keine" />
+                    </div>
+                }
+            </section>
+
+            <section class="epos-klimaexport-format" aria-label="@Texte.Format">
+                <div class="epos-klimaexport-vorlagen">
+                    <button type="button" class="epos-knopf epos-klimaexport-haus" @onclick="HausSetzen">@Texte.VorlageHaus</button>
+                    <button type="button" class="epos-knopf epos-klimaexport-international" @onclick="InternationalSetzen">@Texte.VorlageInternational</button>
+                </div>
+                <Optionsgruppe Bezeichnung="@Texte.Trennzeichen" Gruppenname="klimaexport-trennzeichen" Waagerecht="true"
+                               Eintraege="@(new[] { (0, Texte.TzSemikolon), (1, Texte.TzKomma), (2, Texte.TzTabulator) })"
+                               Auswahl="@((int)_o.Trennzeichen)" AuswahlChanged="@(w => Setzen(o => o.Trennzeichen = (KlimaTrennzeichen)(w ?? 0)))" />
+                <Optionsgruppe Bezeichnung="@Texte.Dezimalzeichen" Gruppenname="klimaexport-dezimal" Waagerecht="true"
+                               Eintraege="@(new[] { (0, Texte.DzKomma), (1, Texte.DzPunkt) })"
+                               WeichGesperrt="@DezimalSperre" Verweigert="@(_ => Melden(Texte.Konflikt, WarnStufe.Hinweis))"
+                               Auswahl="@((int)_o.Dezimalzeichen)" AuswahlChanged="@(w => Setzen(o => o.Dezimalzeichen = (KlimaDezimalzeichen)(w ?? 0)))" />
+                <Optionsgruppe Bezeichnung="@Texte.Zeitspalte" Gruppenname="klimaexport-zeitspalte"
+                               Eintraege="@(new[] { (0, Texte.ZsStunde), (1, Texte.ZsDatum), (2, Texte.ZsBeides), (3, Texte.ZsIso), (4, Texte.ZsKeine) })"
+                               Auswahl="@((int)_o.Zeitspalte)" AuswahlChanged="@(w => Setzen(o => o.Zeitspalte = (KlimaZeitspalte)(w ?? 0)))" />
+                <Optionsgruppe Bezeichnung="@Texte.Zeitbezug" Gruppenname="klimaexport-zeitbezug" Waagerecht="true"
+                               Eintraege="@(new[] { (0, Texte.ZbMez), (1, Texte.ZbUtc) })"
+                               Auswahl="@((int)_o.Zeitbezug)" AuswahlChanged="@(w => Setzen(o => o.Zeitbezug = (KlimaZeitbezug)(w ?? 0)))" />
+                <Optionsgruppe Bezeichnung="@Texte.Kopfart" Gruppenname="klimaexport-kopf"
+                               Eintraege="@(new[] { (0, Texte.KaEine), (1, Texte.KaZwei), (2, Texte.KaOhne) })"
+                               Auswahl="@((int)_o.Kopfart)" AuswahlChanged="@(w => Setzen(o => o.Kopfart = (KlimaKopfart)(w ?? 0)))" />
+                <Schalter Bezeichnung="@Texte.Herkunft" Wert="@_o.Herkunft" WertChanged="@(w => Setzen(o => o.Herkunft = w))" />
+            </section>
+        </div>
+
+        <section class="epos-klimaexport-vorschaublock" aria-label="@Texte.Vorschau">
+            <h2 class="epos-klimaexport-vorschaukopf">@Texte.Vorschau</h2>
+            @if (_vorschauFehler.Length > 0)
+            {
+                <p class="epos-leisezeile epos-klimaexport-vorschaufehler">@_vorschauFehler</p>
+            }
+            else
+            {
+                <pre class="epos-klimaexport-vorschau">@_vorschau</pre>
+            }
+        </section>
+    }
+
+    <SpeichernLeiste OkText="@Texte.Exportieren" AbbrechenText="@Texte.Abbrechen"
+                     OkErlaubt="@(_daten is not null && _daten.HatStunden && !_speichertGerade)" OkSperrgrund="@OkSperrgrund"
+                     Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    // =====================================================================
+    // Gaben - die Datenseite liegt in der Huelle (KlimadatenHuelle)
+    // =====================================================================
+
+    /// <summary>Liest die Region (Herkunft, Rechen- und Rohwerte) einmal beim Öffnen. Kein Delegat = keine Daten, Exportieren gesperrt.</summary>
+    [Parameter] public Func<Task<KlimaExportDaten?>>? Lesen { get; set; }
+
+    /// <summary>
+    /// Der Speicherweg: Dateiwahl der Plattform mit dem Vorschlag, Schreiben (UTF-8 mit BOM), auf iOS Teilen.
+    /// Gerufen NUR im OK-Weg mit dem fertigen Inhalt und dem Dateivorschlag.
+    /// </summary>
+    [Parameter] public Func<string, string, Task<KlimaExportErgebnis>>? Speichern { get; set; }
+
+    /// <summary>Das Ergebnis: die Rückmeldung nach dem Schreiben; <c>null</c> bei Abbrechen, Esc und dem Kreuz.</summary>
+    [Parameter] public EventCallback<string?> Geschlossen { get; set; }
+
+    /// <summary>Die Anzeigetexte (ein Bündel).</summary>
+    [Parameter] public KlimaExportTexte Texte { get; set; } = new();
+
+    /// <summary>Zeigt der Dialog seinen eigenen Kopf — Titel UND Schließkreuz?</summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt (Klimadaten).</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Klimadaten.btn_Help";
+
+    // --- Stand -----------------------------------------------------------------
+
+    private KlimaExportDaten? _daten;
+    private bool _gelesen;
+    private KlimaExportOptionen _o = new();
+    private string _vorschau = "";
+    private string _vorschauFehler = "";
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Hinweis;
+    private bool _speichertGerade;
+    private KiMaskenanmeldung? _kiMaske;
+
+    private static readonly KlimaGroessengruppe[] Gruppen =
+    {
+        KlimaGroessengruppe.Rechenwerte, KlimaGroessengruppe.Fassadenwerte, KlimaGroessengruppe.Rohwerte, KlimaGroessengruppe.Abgeleitet
+    };
+
+    /// <summary>Die Wahl (Prüfhilfe für die Tests).</summary>
+    public KlimaExportOptionen Optionen => _o;
+
+    /// <summary>Die Vorschau, wie sie steht (Prüfhilfe für die Tests).</summary>
+    public string Vorschautext => _vorschau;
+
+    /// <summary>Die stehende Meldung (Prüfhilfe für die Tests).</summary>
+    public string Meldung => _meldung;
+
+    protected override void OnInitialized()
+    {
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.KLIMA_EXPORT, () => KiSicht(), KiHaken());
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Lesen is not null)
+        {
+            try { _daten = await Lesen(); }
+            catch (Exception ex) { _daten = null; Melden(ex.Message, WarnStufe.Fehler); }
+        }
+        _gelesen = true;
+        // Was die Region nicht führt, fällt aus der Vorgabewahl (Altbestand ohne Rohdaten bleibt bei den Rechenwerten).
+        if (_daten is not null)
+            _o.Parameter = _o.Parameter.Where(s => _daten.Sperrgrund(KlimaExportOptionen.Groesse(s)).Length == 0).ToList();
+        VorschauBilden();
+    }
+
+    // --- Parameterwahl ------------------------------------------------------------
+
+    /// <summary>Id eines Eintrags = Position im Katalog der Größen.</summary>
+    private static int IdVon(KlimaExportGroesse g) => IndexVon(g);
+
+    private static int IndexVon(KlimaExportGroesse g)
+    {
+        for (int i = 0; i < KlimaExportOptionen.Groessen.Count; i++)
+            if (ReferenceEquals(KlimaExportOptionen.Groessen[i], g)) return i;
+        return -1;
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Eintraege(KlimaGroessengruppe gruppe)
+        => KlimaExportOptionen.Groessen.Where(g => g.Gruppe == gruppe)
+            .Select(g => (IdVon(g), Anzeige(g))).ToList();
+
+    private string Anzeige(KlimaExportGroesse g)
+    {
+        string text = g.Einheit.Length > 0 ? g.Name() + " [" + g.Einheit + "]" : g.Name();
+        return g.Gerechnet ? text + " · " + Texte.Gerechnet : text;
+    }
+
+    private IReadOnlyList<int> Gewaehlt(KlimaGroessengruppe gruppe)
+        => KlimaExportOptionen.Groessen.Where(g => g.Gruppe == gruppe && _o.Parameter.Contains(g.Schluessel))
+            .Select(IdVon).ToList();
+
+    private void BeiWahl(KlimaGroessengruppe gruppe, IReadOnlyList<int> ids)
+    {
+        // Die Wahl der Gruppe ersetzen, die übrigen behalten; gesperrte Einträge nimmt „Alle" nicht auf.
+        var andere = _o.Parameter.Where(s => KlimaExportOptionen.Groesse(s)?.Gruppe != gruppe);
+        var neu = ids.Where(i => i >= 0 && i < KlimaExportOptionen.Groessen.Count)
+                     .Select(i => KlimaExportOptionen.Groessen[i])
+                     .Where(g => g.Gruppe == gruppe && Sperrgrund(IdVon(g)).Length == 0)
+                     .Select(g => g.Schluessel);
+        _o.Parameter = andere.Concat(neu).Distinct().ToList();
+        _meldung = "";
+        VorschauBilden();
+    }
+
+    private string Sperrgrund(int id)
+        => _daten is null || id < 0 || id >= KlimaExportOptionen.Groessen.Count ? ""
+            : _daten.Sperrgrund(KlimaExportOptionen.Groessen[id]);
+
+    private void BeiGesperrt(int id) => Melden(Sperrgrund(id), WarnStufe.Hinweis);
+
+    private string Gruppentext(KlimaGroessengruppe g) => g switch
+    {
+        KlimaGroessengruppe.Rechenwerte => Texte.GruppeRechenwerte,
+        KlimaGroessengruppe.Fassadenwerte => Texte.GruppeFassadenwerte,
+        KlimaGroessengruppe.Rohwerte => Texte.GruppeRohwerte,
+        _ => Texte.GruppeAbgeleitet
+    };
+
+    // --- Format -------------------------------------------------------------------
+
+    private IReadOnlyDictionary<int, string>? DezimalSperre
+        => _o.Trennzeichen == KlimaTrennzeichen.Komma ? new Dictionary<int, string> { [0] = Texte.Konflikt } : null;
+
+    private void Setzen(Action<KlimaExportOptionen> aenderung)
+    {
+        aenderung(_o);
+        // Komma als Trennzeichen zieht das Dezimalzeichen auf Punkt nach — sonst stünde eine unlesbare Wahl.
+        if (_o.Widerspruechlich) _o.Dezimalzeichen = KlimaDezimalzeichen.Punkt;
+        _meldung = "";
+        VorschauBilden();
+    }
+
+    private void HausSetzen() => Setzen(o => o.HausSetzen());
+
+    private void InternationalSetzen() => Setzen(o => o.InternationalSetzen());
+
+    private void VorschauBilden()
+    {
+        _vorschau = "";
+        _vorschauFehler = "";
+        if (_daten is null || !_daten.HatStunden) return;
+        try { _vorschau = KlimaCsv.Vorschau(_daten, _o); }
+        catch (ArgumentException ex) { _vorschauFehler = Erster(ex.Message); }
+    }
+
+    /// <summary>Die Meldung einer <see cref="ArgumentException"/> ohne den angehängten Parameternamen.</summary>
+    private static string Erster(string text)
+    {
+        int i = text.IndexOf(" (Parameter", StringComparison.Ordinal);
+        return i > 0 ? text[..i] : text;
+    }
+
+    private string? Pruefen()
+    {
+        if (_daten is null || !_daten.HatStunden) return Texte.KeineDaten;
+        if (_o.Widerspruechlich) return Texte.Konflikt;
+        if (KlimaCsv.Spalten(_daten, _o).Count == 0) return Texte.KeineParameter;
+        return null;
+    }
+
+    private string? OkSperrgrund => _daten is null || !_daten.HatStunden ? Texte.KeineDaten : null;
+
+    // --- OK-Weg ---------------------------------------------------------------------
+
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (!ok) { await Abbrechen(); return; }
+        if (_speichertGerade || _daten is null) return;
+        string? fehler = Pruefen();
+        if (fehler is not null) { Melden(fehler, WarnStufe.Hinweis); return; }
+        if (Speichern is null) return;
+
+        _speichertGerade = true;
+        try
+        {
+            string inhalt = KlimaCsv.Text(_daten, _o);
+            KlimaExportErgebnis e = await Speichern(inhalt, KlimaCsv.Dateiname(_daten));
+            if (e.Abbruch) return;
+            if (!e.Erfolg) { Melden(e.Text, WarnStufe.Fehler); return; }
+            await Geschlossen.InvokeAsync(e.Text);
+        }
+        catch (Exception ex)
+        {
+            Melden(Erster(ex.Message), WarnStufe.Fehler);
+        }
+        finally
+        {
+            _speichertGerade = false;
+        }
+    }
+
+    private void Melden(string text, WarnStufe stufe)
+    {
+        _meldung = text ?? "";
+        _meldungStufe = stufe;
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+        => e.Key == "Escape" && !_speichertGerade ? Abbrechen() : Task.CompletedTask;
+
+    /// <summary>Abbrechen — von Esc und vom Schliesskreuz gleichermaßen gerufen. Ruft den Speicherweg nie.</summary>
+    private Task Abbrechen() => Geschlossen.InvokeAsync(null);
+
+    // --- Hilfe-Assistent ---------------------------------------------------------------
+
+    private KlimaExportKiSicht? _kiSicht;
+
+    private KlimaExportKiSicht KiSicht() => _kiSicht ??= new KlimaExportKiSicht
+    {
+        Lesen = () => _o,
+        Aendern = a => _ = InvokeAsync(() => { Setzen(a); StateHasChanged(); })
+    };
+
+    /// <summary><c>Pruefen</c> ist dieselbe Prüfung wie am Knopf „Exportieren…“; Exportieren bleibt ein Klick des Anwenders.</summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = () => Pruefen() ?? ""
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
+}

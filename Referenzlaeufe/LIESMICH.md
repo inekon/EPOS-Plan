@@ -1488,6 +1488,20 @@ Projekt 1072 und `EPOS.Kern.Tests/SchnellaufheizungReferenzprojektWacheTests` di
 > 1073“). Die Testdatenbank steht auf **237** (`integrity_check` ok, `foreign_key_check` leer): **109 617 152 Byte,
 > LFS-SHA-256 `75fb0a61eca6bfad163e5ca3581d2e7bb6a29937169b19c2cb4b8252a0f9d15e`**.
 
+> **Nachtrag — Schema 238 (KD-4 Rohwerte des Klimadatenimports, 16.10.2026, hängt an 237
+> `BauteilStrahlungSchema`), Basis R57 unverändert.** `KlimaRohwerteSchema` (238 = `BauteilStrahlungSchema.SCHRITT + 1`) legt
+> `Tab_Klimastunde_STAMM` leer an (`STRICT`, Primärschlüssel Region und Stunde 1 … 8760, Fremdschlüssel auf
+> `Tab_Klimaregion_STAMM` mit Kaskade, vierzehn nullbare Rohspalten mit der Einheit im Namen) und ergänzt zehn nullbare Spalten
+> an `Tab_Klimaregion_STAMM` und acht an `Tab_Klimaregion` (Standorthöhe, Bezugspunkt, Ausführung; am Katalog dazu `Zeitbezug`
+> und `Rohdaten`, Vorgabe 0); kein DML, kein Nachladen (KD-Q7): alle 32 Katalogregionen tragen `Rohdaten = 0`, die Rohtabelle
+> bleibt leer, auch die Auslieferungsvorlage führt sie leer (198 `STRICT`-Tabellen). Gehoben aus der origin-Fassung 237
+> (`75fb0a61…`) mit `Werkzeuge/Testdatenbankschema` (18 Spalten, 1 Tabelle angelegt); die Zeilenzahl jeder Bestandstabelle
+> bleibt gleich. Kein Rechenweg liest die Rohtabelle oder die neuen Regionsspalten (Wache in `KlimaRohwerteTests`); Leser sind
+> der Import (Schreibweg), der Export (KD-5) und der Reiter „Weitere Reihen“ (KD-8 Teil B). Die Testdatenbank steht auf **238**
+> (`integrity_check` ok, `foreign_key_check` leer): **109 604 864 Byte, LFS-SHA-256
+> `20c0a3fe4d7a399fe18ed20fc11725639c50b3eba10eb0ba704b8900399ebe35`**. Der Referenzlauf der 38 Projekte gegen R57 bleibt
+> PASS.
+
 ### Die Vorgängerbasis R56 (Wasserkosten)
 
 Siebenunddreißig Projekte, 1 205 CSV, 8 261 Skalare, auf Linux eingefroren gegen die Testdatenbank `3478881f…`

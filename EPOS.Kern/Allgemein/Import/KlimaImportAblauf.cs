@@ -49,6 +49,9 @@ namespace WindowsFormsApplication1
         /// <summary>Zahl der geschriebenen Tageswerte.</summary>
         public int Tageswerte;
 
+        /// <summary>Geschriebene Stunden der Rohtabelle (KD-4); 0 ohne Schemaschritt.</summary>
+        public int Rohstunden;
+
         /// <summary>Der fertige Meldungstext; leer heißt: nichts zu melden.</summary>
         public string Meldung = "";
 
@@ -110,6 +113,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Welche Größen die Quelle führt.</summary>
         public IReadOnlyList<KlimaParameterEintrag> Parameterbestand = new List<KlimaParameterEintrag>();
+
+        /// <summary>Steht die Rohtabelle (KD-4)? Dann sagt der Parameterbestand je Größe, ob sie gespeichert wird.</summary>
+        public bool RohwerteGespeichert;
 
         /// <summary>Regionalweg: „nächste Repräsentanzstation, nicht die amtliche Klimaregion" (KD-Q1).</summary>
         public bool Repraesentanzhinweis;
@@ -396,7 +402,9 @@ namespace WindowsFormsApplication1
                     lon = antwort.Lon;
                     details = antwort.DisplayName ?? "";
                 }
-                bezeichner = ort;
+                // KD-4 (Nachzug KD-3): Eine eingegebene Bezeichnung wird der Regionsname; leer bleibt es der Ortsname.
+                string bezeichnung = (auftrag.Bezeichnung ?? "").Trim();
+                bezeichner = bezeichnung.Length > 0 ? bezeichnung : ort;
             }
             else
             {
@@ -475,6 +483,12 @@ namespace WindowsFormsApplication1
 
             if (abbruch.IsCancellationRequested) return Abbruch(erg);
 
+            // KD-4: Rohwerte und Herkunft nur, wenn der Schemaschritt steht - die Auskunft VOR dem Vorgang (eigene
+            // Verbindung). Sonst benannt uebersprungen: Die Rechenspalten entstehen in beiden Faellen gleich.
+            bool rohwerte = KlimaRohwerteSchema.SchemaVollstaendig();
+            KlimaRohreihe rohreihe = rohwerte ? RohreiheBilden(auftrag.Quelle, satz) : null;
+            KlimaRegionsherkunft herkunftSatz = rohwerte ? HerkunftBilden(auftrag, satz) : null;
+
             // ---- Schritte 4 bis 6: EINE Transaktion ------------------------
             var ctrl = new KlimaregionStammCtrl();
             var repo = new AccessRepository();
@@ -509,6 +523,12 @@ namespace WindowsFormsApplication1
 
                     // A-11 (Befund W14c-B31): der Listbezeichner, nicht comboBox_Ort.Text.
                     repo.SaveTmyData(tage, bezeichner, "Tab_Klimadaten_STAMM", id, v);
+
+                    if (rohwerte)
+                    {
+                        KlimaRohwerteSchema.HerkunftSchreiben(v, id, herkunftSatz);
+                        erg.Rohstunden = KlimaRohwerteSchema.RohwerteSchreiben(v, id, rohreihe);
+                    }
 
                     v.Commit();
                     erg.Id = id;
@@ -716,8 +736,7 @@ namespace WindowsFormsApplication1
                     satz.Dateiname,
                     DateTime.Now.ToString("d", CultureInfo.CurrentCulture),
                     MyResource.Resource.KLIMA_TRY_LIZENZ,
-                    string.Format(CultureInfo.CurrentCulture,
-                                  MyResource.Resource.KLIMA_TRY_VERWORFEN, kopf.VerworfenText))
+                    VerworfenTeil(kopf))
                     + " · " + standort;
 
                 // Der Bezugszeitraum WOERTLICH im Herkunftsvermerk: Das Bezugsjahr
@@ -815,9 +834,7 @@ namespace WindowsFormsApplication1
                 quelle,
                 DateTime.Now.ToString("d", CultureInfo.CurrentCulture),
                 MyResource.Resource.KLIMA_TRY_LIZENZ,
-                string.Format(CultureInfo.CurrentCulture,
-                              MyResource.Resource.KLIMA_TRY_VERWORFEN,
-                              paketErg.Kopf.VerworfenText));
+                VerworfenTeil(paketErg.Kopf));
 
             // Schemaschritt 97: Bei den Regionaldaten steht beides im AUFTRAG -
             // der Anwender hat Jahr und Szenario gewaehlt, und genau danach ist
@@ -825,6 +842,96 @@ namespace WindowsFormsApplication1
             satz.Szenario = Szenarioschluessel(auftrag.Szenario);
             satz.Bezugsjahr = auftrag.TryJahr;
             return satz;
+        }
+
+        /// <summary>
+        /// Der Teil des Herkunftsvermerks zu den Feldern ohne Rechenspalte: Steht die Rohtabelle (KD-4), heißt er
+        /// „alle Felder als Rohwerte gespeichert“; sonst nennt er die nicht übernommenen Größen wie bisher.
+        /// </summary>
+        internal static string VerworfenTeil(TryKopf kopf)
+        {
+            if (KlimaRohwerteSchema.SchemaVollstaendig()) return MyResource.Resource.KLIMA_TRY_ROHWERTE_GESPEICHERT;
+            return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KLIMA_TRY_VERWORFEN,
+                                 (kopf ?? new TryKopf()).VerworfenText);
+        }
+
+        /// <summary>
+        /// Der Bezugspunkt eines gelesenen Satzes (Station, Dateistandort oder PVGIS-Punkt) — EINE Stelle für Vorschau
+        /// und Import (KD-4). <paramref name="standortHoehe"/> wird ergänzt, wo die Quelle die Höhe des Standorts
+        /// selbst nennt (TRY-Kopf als Standort, PVGIS).
+        /// </summary>
+        internal static KlimaBezugspunkt BezugspunktBilden(KlimaQuelle quelle, Lesesatz satz, ref double? standortHoehe)
+        {
+            var bezug = new KlimaBezugspunkt();
+            double? kopfHoehe = satz.Kopf != null ? KlimaVorschauFestwerte.HoeheAusText(satz.Kopf.Hoehe) : null;
+
+            if (quelle == KlimaQuelle.TryRegional)
+            {
+                TryRegion region = satz.Paket.Region;
+                bezug.Art = KlimaBezugspunktArt.Repraesentanzstation;
+                bezug.Name = region.Bezeichnung;
+                bezug.Latitude = region.Latitude;
+                bezug.Longitude = region.Longitude;
+                bezug.EntfernungKm = region.EntfernungKm;
+                bezug.HoeheM = kopfHoehe;
+            }
+            else if (quelle == KlimaQuelle.TryDatei)
+            {
+                bezug.Art = KlimaBezugspunktArt.Dateistandort;
+                bezug.Name = satz.Dateiname;
+                bezug.Latitude = satz.Kopf?.Breite;
+                bezug.Longitude = satz.Kopf?.Laenge;
+                bezug.HoeheM = kopfHoehe;
+                if (satz.StandortAusKopf && !standortHoehe.HasValue)
+                    standortHoehe = kopfHoehe;
+            }
+            else
+            {
+                PvgisOrt ort = satz.Pvgis?.Ort;
+                bezug.Art = KlimaBezugspunktArt.PvgisPunkt;
+                bezug.Name = (satz.Pvgis?.MeteoDatenbank ?? "").Trim(' ', '-');
+                bezug.Latitude = ort?.Latitude ?? satz.Lat;
+                bezug.Longitude = ort?.Longitude ?? satz.Lon;
+                bezug.HoeheM = ort?.Elevation;
+                // PVGIS rechnet AM Standort: Seine Hoehe ist die des Standorts.
+                if (!standortHoehe.HasValue) standortHoehe = ort?.Elevation;
+            }
+
+            if (!bezug.EntfernungKm.HasValue && bezug.Latitude.HasValue && bezug.Longitude.HasValue)
+                bezug.EntfernungKm = TryPaketLeser.EntfernungKm(
+                    satz.Lat, satz.Lon, bezug.Latitude.Value, bezug.Longitude.Value);
+            return bezug;
+        }
+
+        /// <summary>
+        /// Die Herkunft einer Region aus dem gelesenen Satz (KD-4): Standorthöhe, Bezugspunkt und Ausführung — die
+        /// TRY-Datei bzw. der Paketeintrag, bei PVGIS die Datenbanken der Antwort.
+        /// </summary>
+        internal static KlimaRegionsherkunft HerkunftBilden(KlimaImportAuftrag auftrag, Lesesatz satz)
+        {
+            double? hoehe = auftrag.StandortHoeheM;
+            KlimaBezugspunkt b = BezugspunktBilden(auftrag.Quelle, satz, ref hoehe);
+            string ausfuehrung = auftrag.Quelle == KlimaQuelle.TryRegional ? satz.Paket?.Eintrag
+                               : auftrag.Quelle == KlimaQuelle.TryDatei ? satz.Dateiname
+                               : (satz.Pvgis?.MeteoDatenbank ?? "").Trim(' ', '-');
+            return new KlimaRegionsherkunft
+            {
+                StandortHoeheM = hoehe,
+                BezugspunktArt = KlimaRohwerteSchema.Artschluessel(b.Art),
+                BezugspunktName = b.Name,
+                BezugspunktLatitude = b.Latitude,
+                BezugspunktLongitude = b.Longitude,
+                BezugspunktHoeheM = b.HoeheM,
+                EntfernungKm = b.EntfernungKm,
+                Ausfuehrung = ausfuehrung ?? ""
+            };
+        }
+
+        /// <summary>Die Rohreihe eines gelesenen Satzes: TRY aus dem Kopf (MEZ), PVGIS aus der Antwort (UTC).</summary>
+        internal static KlimaRohreihe RohreiheBilden(KlimaQuelle quelle, Lesesatz satz)
+        {
+            if (quelle == KlimaQuelle.PvgisTmy) return KlimaRohreihe.AusPvgis(satz.Stunden);
+            return satz.Kopf?.Rohwerte ?? new KlimaRohreihe { Zeitbezug = KlimaRohwerteSchema.ZEITBEZUG_MEZ };
         }
 
         private static Lesesatz SatzFehler(Lesesatz satz, KlimaImportAusgang ausgang, string meldung)
@@ -961,46 +1068,14 @@ namespace WindowsFormsApplication1
             };
 
             // ---- Bezugspunkt -------------------------------------------------
-            var bezug = new KlimaBezugspunkt();
-            double? kopfHoehe = satz.Kopf != null ? KlimaVorschauFestwerte.HoeheAusText(satz.Kopf.Hoehe) : null;
-
             if (auftrag.Quelle == KlimaQuelle.TryRegional)
             {
-                TryRegion region = satz.Paket.Region;
-                erg.Region = region;
+                erg.Region = satz.Paket.Region;
                 erg.Ausfuehrungen = satz.Paket.Ausfuehrungen;
-                bezug.Art = KlimaBezugspunktArt.Repraesentanzstation;
-                bezug.Name = region.Bezeichnung;
-                bezug.Latitude = region.Latitude;
-                bezug.Longitude = region.Longitude;
-                bezug.EntfernungKm = region.EntfernungKm;
-                bezug.HoeheM = kopfHoehe;
             }
-            else if (auftrag.Quelle == KlimaQuelle.TryDatei)
-            {
-                bezug.Art = KlimaBezugspunktArt.Dateistandort;
-                bezug.Name = satz.Dateiname;
-                bezug.Latitude = satz.Kopf.Breite;
-                bezug.Longitude = satz.Kopf.Laenge;
-                bezug.HoeheM = kopfHoehe;
-                if (satz.StandortAusKopf && !erg.Standort.HoeheM.HasValue)
-                    erg.Standort.HoeheM = kopfHoehe;
-            }
-            else
-            {
-                PvgisOrt ort = satz.Pvgis?.Ort;
-                bezug.Art = KlimaBezugspunktArt.PvgisPunkt;
-                bezug.Name = (satz.Pvgis?.MeteoDatenbank ?? "").Trim(' ', '-');
-                bezug.Latitude = ort?.Latitude ?? satz.Lat;
-                bezug.Longitude = ort?.Longitude ?? satz.Lon;
-                bezug.HoeheM = ort?.Elevation;
-                // PVGIS rechnet AM Standort: Seine Hoehe ist die des Standorts.
-                if (!erg.Standort.HoeheM.HasValue) erg.Standort.HoeheM = ort?.Elevation;
-            }
-
-            if (!bezug.EntfernungKm.HasValue && bezug.Latitude.HasValue && bezug.Longitude.HasValue)
-                bezug.EntfernungKm = TryPaketLeser.EntfernungKm(
-                    satz.Lat, satz.Lon, bezug.Latitude.Value, bezug.Longitude.Value);
+            double? standortHoehe = erg.Standort.HoeheM;
+            KlimaBezugspunkt bezug = BezugspunktBilden(auftrag.Quelle, satz, ref standortHoehe);
+            erg.Standort.HoeheM = standortHoehe;
 
             erg.Bezugspunkt = bezug;
             erg.HoehenunterschiedM = bezug.HoeheM.HasValue && erg.Standort.HoeheM.HasValue
@@ -1017,8 +1092,10 @@ namespace WindowsFormsApplication1
                 foreach (TmyHourlyData h in satz.Stunden) direktNormal.Add(h.Kopie());
                 DwdTryLeser.DirektNormal(direktNormal, satz.Lon, satz.Lat);
             }
-            erg.Kennzahlen = KlimaKennzahlen.Rechnen(satz.Stunden, direktNormal);
-            erg.Parameterbestand = KlimaParameterbestand.Fuer(auftrag.Quelle, satz.Stunden);
+            // KD-8 Teil B: die Rohwert-Groessen der Vorschau aus derselben Rohreihe, die der Import schreibt.
+            erg.Kennzahlen = KlimaKennzahlen.Rechnen(satz.Stunden, direktNormal, RohreiheBilden(auftrag.Quelle, satz));
+            erg.RohwerteGespeichert = KlimaRohwerteSchema.SchemaVollstaendig();
+            erg.Parameterbestand = KlimaParameterbestand.Fuer(auftrag.Quelle, satz.Stunden, erg.RohwerteGespeichert);
 
             // ---- Hinweise (KD-Q1, KD-Q9) -------------------------------------
             var hinweise = new List<string>();

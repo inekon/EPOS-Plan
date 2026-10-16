@@ -56899,6 +56899,336 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="KI_DLG_KLIMA_HOEHE_ERL" xml:space="preserve">
     <value>The altitude of the site above sea level, in metres. It enters the preview: the altitude difference to the reference point decides the note "not typical for the site". Empty = unknown; for PVGIS and a TRY file with header data it comes from the source.</value>
   </data>
+  <data name="BTA_GRUPPE_STRAHLUNG" xml:space="preserve">
+    <value>Radiation of the outer surface</value>
+  </data>
+  <data name="BTA_LBL_ABSORPTION" xml:space="preserve">
+    <value>Solar absorptance</value>
+  </data>
+  <data name="BTA_LBL_EMISSION" xml:space="preserve">
+    <value>Long-wave emissivity</value>
+  </data>
+  <data name="BTA_PLATZHALTER_STRAHLUNG" xml:space="preserve">
+    <value>Default {0}</value>
+  </data>
+  <data name="BTA_STRAHLUNG_HINWEIS" xml:space="preserve">
+    <value>Absorptance (solar radiation) and emissivity (long-wave) of the outer surface enter the equivalent outdoor temperature. Empty means the default; a building element can carry its own value.</value>
+  </data>
+  <data name="BTDLG_LBL_ABSORPTION" xml:space="preserve">
+    <value>Solar absorptance :</value>
+  </data>
+  <data name="BTDLG_LBL_EMISSION" xml:space="preserve">
+    <value>Emissivity :</value>
+  </data>
+  <data name="BTDLG_PLATZHALTER_STRAHLUNG" xml:space="preserve">
+    <value>Construction, else {0}</value>
+  </data>
+  <data name="KI_DLG_BT_ABSORPTION_ERL" xml:space="preserve">
+    <value>The solar absorptance of the outer surface between 0 and 1; empty = the value of the construction, else the default 0.6.</value>
+  </data>
+  <data name="KI_DLG_BT_EMISSION_ERL" xml:space="preserve">
+    <value>The long-wave emissivity of the outer surface between 0 and 1; empty = the value of the construction, else the default 0.9.</value>
+  </data>
+  <data name="KI_DLG_BTA_STRAHLUNG_ERL" xml:space="preserve">
+    <value>Absorptance (solar radiation) or emissivity (long-wave) of the outer surface of the construction between 0 and 1; empty = default. A building element can carry its own value.</value>
+  </data>
+  <data name="KLIMA_TRY_ROHWERTE_GESPEICHERT" xml:space="preserve">
+    <value>all fields stored as raw values</value>
+  </data>
+  <data name="KLIMA_VK_GESPEICHERT" xml:space="preserve">
+    <value>stored</value>
+  </data>
+  <data name="KLIMA_VK_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>not stored</value>
+  </data>
+  <data name="KEXP_ROH_NAME" xml:space="preserve">
+    <value>{0} (raw value)</value>
+  </data>
+  <data name="KEXP_G_TEMPERATUR" xml:space="preserve">
+    <value>Air temperature</value>
+  </data>
+  <data name="KEXP_G_LUFTFEUCHTE" xml:space="preserve">
+    <value>Relative humidity</value>
+  </data>
+  <data name="KEXP_G_GLOBAL" xml:space="preserve">
+    <value>Global horizontal irradiance</value>
+  </data>
+  <data name="KEXP_G_DIREKT_NORMAL" xml:space="preserve">
+    <value>Direct normal irradiance</value>
+  </data>
+  <data name="KEXP_G_DIREKT_HORIZONTAL" xml:space="preserve">
+    <value>Direct horizontal irradiance</value>
+  </data>
+  <data name="KEXP_G_DIFFUS" xml:space="preserve">
+    <value>Diffuse horizontal irradiance</value>
+  </data>
+  <data name="KEXP_G_GEGENSTRAHLUNG" xml:space="preserve">
+    <value>Atmospheric counter radiation</value>
+  </data>
+  <data name="KEXP_G_AUSSTRAHLUNG" xml:space="preserve">
+    <value>Terrestrial emission</value>
+  </data>
+  <data name="KEXP_G_BEDECKUNG" xml:space="preserve">
+    <value>Cloud cover</value>
+  </data>
+  <data name="KEXP_G_SOL_NORD" xml:space="preserve">
+    <value>Facade north</value>
+  </data>
+  <data name="KEXP_G_SOL_OST" xml:space="preserve">
+    <value>Facade east</value>
+  </data>
+  <data name="KEXP_G_SOL_SUED" xml:space="preserve">
+    <value>Facade south</value>
+  </data>
+  <data name="KEXP_G_SOL_WEST" xml:space="preserve">
+    <value>Facade west</value>
+  </data>
+  <data name="KEXP_G_SONNENWINKEL" xml:space="preserve">
+    <value>Solar angle</value>
+  </data>
+  <data name="KEXP_G_LUFTDRUCK" xml:space="preserve">
+    <value>Air pressure</value>
+  </data>
+  <data name="KEXP_G_WINDGESCHWINDIGKEIT" xml:space="preserve">
+    <value>Wind speed</value>
+  </data>
+  <data name="KEXP_G_WINDRICHTUNG" xml:space="preserve">
+    <value>Wind direction</value>
+  </data>
+  <data name="KEXP_G_WASSERDAMPF" xml:space="preserve">
+    <value>Water vapour content</value>
+  </data>
+  <data name="KEXP_G_QUALITAET" xml:space="preserve">
+    <value>Radiation quality flag</value>
+  </data>
+  <data name="KEXP_G_TAUPUNKT" xml:space="preserve">
+    <value>Dew point</value>
+  </data>
+  <data name="KEXP_GRUND_OHNE_ROHDATEN" xml:space="preserve">
+    <value>Region imported without raw data – only the calculation values are available.</value>
+  </data>
+  <data name="KEXP_GRUND_NICHT_GEFUEHRT" xml:space="preserve">
+    <value>The source does not provide this quantity.</value>
+  </data>
+  <data name="KEXP_KOPF_EXPORT" xml:space="preserve">
+    <value>EPOS-Plan climate data export</value>
+  </data>
+  <data name="KEXP_KOPF_REGION" xml:space="preserve">
+    <value>Region</value>
+  </data>
+  <data name="KEXP_KOPF_QUELLE" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="KEXP_KOPF_AUSFUEHRUNG" xml:space="preserve">
+    <value>Data set</value>
+  </data>
+  <data name="KEXP_KOPF_KOORDINATEN" xml:space="preserve">
+    <value>Coordinates (latitude / longitude)</value>
+  </data>
+  <data name="KEXP_KOPF_HOEHE" xml:space="preserve">
+    <value>Elevation</value>
+  </data>
+  <data name="KEXP_KOPF_BEZUGSPUNKT" xml:space="preserve">
+    <value>Reference point</value>
+  </data>
+  <data name="KEXP_KOPF_ZEITBEZUG" xml:space="preserve">
+    <value>Time reference</value>
+  </data>
+  <data name="KEXP_KOPF_ZEITSTEMPEL" xml:space="preserve">
+    <value>Time stamp</value>
+  </data>
+  <data name="KEXP_ZEITSTEMPEL_REGEL" xml:space="preserve">
+    <value>start of the hour in a common year of 8760 hours</value>
+  </data>
+  <data name="KEXP_GERECHNET_KOPF" xml:space="preserve">
+    <value>Calculated</value>
+  </data>
+  <data name="KEXP_TAUPUNKT_REGEL" xml:space="preserve">
+    <value>dew point by the Magnus formula (Sonntag 1990) from air temperature and relative humidity</value>
+  </data>
+  <data name="KEXP_KOPF_LIZENZ" xml:space="preserve">
+    <value>Licence</value>
+  </data>
+  <data name="KEXP_LIZENZ_DWD" xml:space="preserve">
+    <value>Deutscher Wetterdienst (DWD), test reference years, CC BY 4.0</value>
+  </data>
+  <data name="KEXP_LIZENZ_PVGIS" xml:space="preserve">
+    <value>PVGIS © European Union, Joint Research Centre</value>
+  </data>
+  <data name="KEXP_ZB_MEZ" xml:space="preserve">
+    <value>CET without daylight saving time (UTC+1)</value>
+  </data>
+  <data name="KEXP_ZB_UTC" xml:space="preserve">
+    <value>UTC</value>
+  </data>
+  <data name="KEXP_SP_STUNDE" xml:space="preserve">
+    <value>Hour</value>
+  </data>
+  <data name="KEXP_SP_DATUM" xml:space="preserve">
+    <value>Date time</value>
+  </data>
+  <data name="KEXP_SP_ISO" xml:space="preserve">
+    <value>Time stamp ISO 8601</value>
+  </data>
+  <data name="KEXP_DATEI" xml:space="preserve">
+    <value>ClimateData_{0}.csv</value>
+  </data>
+  <data name="KEXP_DZ_KONFLIKT" xml:space="preserve">
+    <value>A decimal comma cannot be used with the comma separator.</value>
+  </data>
+  <data name="KEXP_KEINE_PARAMETER" xml:space="preserve">
+    <value>No parameter selected.</value>
+  </data>
+  <data name="KEXP_TITEL" xml:space="preserve">
+    <value>Export climate data</value>
+  </data>
+  <data name="KEXP_HANDLUNG" xml:space="preserve">
+    <value>Export…</value>
+  </data>
+  <data name="KEXP_HANDLUNG_GRUND" xml:space="preserve">
+    <value>The export applies to exactly one region.</value>
+  </data>
+  <data name="KEXP_GRP_PARAMETER" xml:space="preserve">
+    <value>Parameters</value>
+  </data>
+  <data name="KEXP_GR_RECHENWERTE" xml:space="preserve">
+    <value>Calculation values (as read by the simulation)</value>
+  </data>
+  <data name="KEXP_GR_FASSADENWERTE" xml:space="preserve">
+    <value>Facade values and solar angle</value>
+  </data>
+  <data name="KEXP_GR_ROHWERTE" xml:space="preserve">
+    <value>Raw values of the source</value>
+  </data>
+  <data name="KEXP_GR_ABGELEITET" xml:space="preserve">
+    <value>Derived</value>
+  </data>
+  <data name="KEXP_GERECHNET" xml:space="preserve">
+    <value>calculated</value>
+  </data>
+  <data name="KEXP_ALLE" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="KEXP_KEINE" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="KEXP_GRP_FORMAT" xml:space="preserve">
+    <value>Format</value>
+  </data>
+  <data name="KEXP_VORLAGE_HAUS" xml:space="preserve">
+    <value>House (as chart CSV)</value>
+  </data>
+  <data name="KEXP_VORLAGE_INTERNATIONAL" xml:space="preserve">
+    <value>International (comma, point, ISO)</value>
+  </data>
+  <data name="KEXP_TRENNZEICHEN" xml:space="preserve">
+    <value>Separator</value>
+  </data>
+  <data name="KEXP_TZ_SEMIKOLON" xml:space="preserve">
+    <value>Semicolon</value>
+  </data>
+  <data name="KEXP_TZ_KOMMA" xml:space="preserve">
+    <value>Comma</value>
+  </data>
+  <data name="KEXP_TZ_TABULATOR" xml:space="preserve">
+    <value>Tab</value>
+  </data>
+  <data name="KEXP_DEZIMALZEICHEN" xml:space="preserve">
+    <value>Decimal separator</value>
+  </data>
+  <data name="KEXP_DZ_KOMMA" xml:space="preserve">
+    <value>Comma</value>
+  </data>
+  <data name="KEXP_DZ_PUNKT" xml:space="preserve">
+    <value>Point</value>
+  </data>
+  <data name="KEXP_ZEITSPALTE" xml:space="preserve">
+    <value>Time column</value>
+  </data>
+  <data name="KEXP_ZS_STUNDE" xml:space="preserve">
+    <value>Running hour 1…8760</value>
+  </data>
+  <data name="KEXP_ZS_DATUM" xml:space="preserve">
+    <value>Date and time (DD.MM. hh:00)</value>
+  </data>
+  <data name="KEXP_ZS_BEIDES" xml:space="preserve">
+    <value>Hour and date</value>
+  </data>
+  <data name="KEXP_ZS_ISO" xml:space="preserve">
+    <value>ISO 8601 with reference year</value>
+  </data>
+  <data name="KEXP_ZS_KEINE" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="KEXP_ZEITBEZUG" xml:space="preserve">
+    <value>Time reference</value>
+  </data>
+  <data name="KEXP_KOPFART" xml:space="preserve">
+    <value>Header</value>
+  </data>
+  <data name="KEXP_KA_EINE" xml:space="preserve">
+    <value>Name [unit] in one line</value>
+  </data>
+  <data name="KEXP_KA_ZWEI" xml:space="preserve">
+    <value>Name and unit line</value>
+  </data>
+  <data name="KEXP_KA_OHNE" xml:space="preserve">
+    <value>No header</value>
+  </data>
+  <data name="KEXP_HERKUNFT" xml:space="preserve">
+    <value>Origin block with # lines</value>
+  </data>
+  <data name="KEXP_VORSCHAU" xml:space="preserve">
+    <value>Preview (first five hours)</value>
+  </data>
+  <data name="KEXP_BTN_EXPORT" xml:space="preserve">
+    <value>Export …</value>
+  </data>
+  <data name="KEXP_BTN_EXPORT_IOS" xml:space="preserve">
+    <value>Export and share …</value>
+  </data>
+  <data name="KEXP_MSG_GESPEICHERT" xml:space="preserve">
+    <value>The file has been saved: {0}</value>
+  </data>
+  <data name="KEXP_MSG_FEHLER" xml:space="preserve">
+    <value>The file could not be written: {0}</value>
+  </data>
+  <data name="KEXP_MSG_TEILEN_FEHLER" xml:space="preserve">
+    <value>The file has been saved but could not be shared: {0}</value>
+  </data>
+  <data name="KEXP_MSG_KEINE_DATEN" xml:space="preserve">
+    <value>There are no hourly values for this region in the database.</value>
+  </data>
+  <data name="KEXP_MSG_LESEN" xml:space="preserve">
+    <value>Reading the hourly values …</value>
+  </data>
+  <data name="KEXP_DATEIDIALOG_TITEL" xml:space="preserve">
+    <value>Export climate data</value>
+  </data>
+  <data name="KI_DLG_MASKE_KLIMAEXPORT" xml:space="preserve">
+    <value>Export climate data</value>
+  </data>
+  <data name="KEXP_KI_TZ_ERL" xml:space="preserve">
+    <value>Separator of the file: 0 = semicolon, 1 = comma, 2 = tab.</value>
+  </data>
+  <data name="KEXP_KI_DZ_ERL" xml:space="preserve">
+    <value>Decimal separator: 0 = comma, 1 = point. A comma cannot be used with the comma separator.</value>
+  </data>
+  <data name="KEXP_KI_ZS_ERL" xml:space="preserve">
+    <value>Time column: 0 = running hour, 1 = date and time, 2 = both, 3 = ISO 8601, 4 = none.</value>
+  </data>
+  <data name="KEXP_KI_ZB_ERL" xml:space="preserve">
+    <value>Time reference of the output: 0 = CET without daylight saving time (default), 1 = UTC.</value>
+  </data>
+  <data name="KEXP_KI_KA_ERL" xml:space="preserve">
+    <value>Column header: 0 = name [unit] in one line, 1 = name and unit line, 2 = no header.</value>
+  </data>
+  <data name="KEXP_KI_HK_ERL" xml:space="preserve">
+    <value>Writes region, source, data set, coordinates, elevation, time reference and licence as # lines before the header.</value>
+  </data>
+  <data name="KEXP_KI_PAR_ERL" xml:space="preserve">
+    <value>The selected quantities as a comma-separated list of keys (e.g. R_TEMPERATUR,R_GLOBAL,A_TAUPUNKT). Raw values (ROH_…) only for regions with raw data.</value>
+  </data>
   <data name="KLIMA_RW_KURZ_TEMPERATUR" xml:space="preserve">
     <value>Temperature</value>
   </data>
@@ -57064,6 +57394,9 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="KLIMA_RW_NAME_QUALITAET" xml:space="preserve">
     <value>Radiation quality flag</value>
   </data>
+  <data name="KLIMA_RW_ROHWERT_MARKE" xml:space="preserve">
+    <value>Raw value of the source from the raw-value table (R)</value>
+  </data>
   <data name="CHART_LEGENDE_NETZBEZUG" xml:space="preserve">
     <value>Grid purchase</value>
   </data>
@@ -57105,39 +57438,6 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="KI_DLG_PEAK_SCHWELLE_ERL" xml:space="preserve">
     <value>Shows the reached threshold as a horizontal line in the chart.</value>
-  </data>
-  <data name="BTA_GRUPPE_STRAHLUNG" xml:space="preserve">
-    <value>Radiation of the outer surface</value>
-  </data>
-  <data name="BTA_LBL_ABSORPTION" xml:space="preserve">
-    <value>Solar absorptance</value>
-  </data>
-  <data name="BTA_LBL_EMISSION" xml:space="preserve">
-    <value>Long-wave emissivity</value>
-  </data>
-  <data name="BTA_PLATZHALTER_STRAHLUNG" xml:space="preserve">
-    <value>Default {0}</value>
-  </data>
-  <data name="BTA_STRAHLUNG_HINWEIS" xml:space="preserve">
-    <value>Absorptance (solar radiation) and emissivity (long-wave) of the outer surface enter the equivalent outdoor temperature. Empty means the default; a building element can carry its own value.</value>
-  </data>
-  <data name="BTDLG_LBL_ABSORPTION" xml:space="preserve">
-    <value>Solar absorptance :</value>
-  </data>
-  <data name="BTDLG_LBL_EMISSION" xml:space="preserve">
-    <value>Emissivity :</value>
-  </data>
-  <data name="BTDLG_PLATZHALTER_STRAHLUNG" xml:space="preserve">
-    <value>Construction, else {0}</value>
-  </data>
-  <data name="KI_DLG_BT_ABSORPTION_ERL" xml:space="preserve">
-    <value>The solar absorptance of the outer surface between 0 and 1; empty = the value of the construction, else the default 0.6.</value>
-  </data>
-  <data name="KI_DLG_BT_EMISSION_ERL" xml:space="preserve">
-    <value>The long-wave emissivity of the outer surface between 0 and 1; empty = the value of the construction, else the default 0.9.</value>
-  </data>
-  <data name="KI_DLG_BTA_STRAHLUNG_ERL" xml:space="preserve">
-    <value>Absorptance (solar radiation) or emissivity (long-wave) of the outer surface of the construction between 0 and 1; empty = default. A building element can carry its own value.</value>
   </data>
 </root>
 

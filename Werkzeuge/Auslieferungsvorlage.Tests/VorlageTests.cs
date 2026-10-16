@@ -264,7 +264,11 @@ namespace Auslieferungsvorlage.Tests
             // 197 seit dem Schemaschritt 236 (KaeltetyptagSchema, KBP-4): +2 Tab_Kaeltetyptag, Tab_Kaeltetyptag_Matrix
             // (Projektdaten, in der Vorlage leer).
             //
-            Assert.Equal(197, befund.Strict);
+            // 198 seit dem Schemaschritt 238 (KlimaRohwerteSchema, KD-4): +1 Tab_Klimastunde_STAMM (Rohwerte des
+            // Klimaimports), STRICT von ihrer ersten Zeile an und in der Vorlage LEER - die Auslieferung der Rohwerte
+            // ist vertagt.
+            //
+            Assert.Equal(198, befund.Strict);
         }
 
         // =============================================================================
