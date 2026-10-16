@@ -218,6 +218,11 @@ Die Wärmepumpe steht einmal, wenn sie nur heizt; heizt und kühlt sie, sind es 
 („Wärmepumpe (Heizen)“, „Wärmepumpe (Kühlen)“), weil beide verschiedene Busse bedienen. Mehrere
 Pufferspeicher stehen je als Knoten; die Busse sind je Energieform genau einer.
 
+Die Tabelle beschreibt die **Bilanz** (Reiter „Tabelle“, KI-Text, Textalternative). Das **Bild**
+nimmt die Spalten nicht fest: Die Abbildung (2.3) faltet jeden Speicher in seinen Bus und lässt
+Kleinstverluste weg, der Renderer setzt die Spalte aus dem längsten Weg zur Senke (Abschnitt 3,
+Variante A, SK-Q13).
+
 ### 2.3 Flüsse
 
 Der Flussbau ist eine Kernklasse `Energiefluss` (`EPOS.Kern/Allgemein/Bericht/Energiefluss.cs`)
@@ -230,9 +235,10 @@ einen fertigen Zeigertext; ein Knoten trägt Art (`EnergieflussKnotenart`), Spal
 und Rest. Die Reihenfolge der Knoten ist die der Tabelle 2.2, die der Bänder an einem Knoten folgt
 der Lage des Gegenknotens (weniger Kreuzungen). Die Bilanz kennt keine Farbe und keinen Bildpunkt:
 `EnergieflussAbbildung.Bild(EnergieflussBilanz)` (`EnergieflussAbbildung.cs`) bildet sie auf die
-Bilddaten des Renderers ab (`EnergieflussBildDaten`: Knoten, Bänder, Spaltentitel) und vergibt dabei
-Farbrolle und Bandart nach Abschnitt 3.4 — ohne Rechnung und ohne Zeichenlogik; die Hinweiszeilen
-bleiben an der Bilanz.
+Bilddaten des Renderers ab (`EnergieflussBildDaten`: Knoten mit Spur, Bänder, Legende): Sie faltet
+die Speicher in ihren Bus, lässt Verluste unter 1 % und Nullbänder weg, vergibt je Knoten die Spur
+und je Band Farbrolle (= Energieform) und Bandart nach Abschnitt 3 — ohne neue Fachgröße und ohne
+Zeichenlogik; die Hinweiszeilen bleiben an der Bilanz.
 
 ### 2.4 Bilanzprüfung und Verhalten bei fehlendem Schluss
 
@@ -269,90 +275,129 @@ nur, wenn es die Mindestbandbreite erreicht; sonst nennt es der Reiter „Tabell
 
 ## 3. Zeichnen: `ChartRenderer.Energiefluss*`
 
-### 3.1 Layout
+Das Bild folgt **Variante A „Gestraffte Kette“** der Recherche vom 16.10.2026 (Anhang, Abschnitt 12;
+Anwenderentscheide SK-Q13 bis SK-Q16): so viele Spalten, wie die Anlage braucht; in jeder Spalte die
+Spuren Strom, Gemischt, Wärme, Kälte; Speicher am Bus; Verluste als Abzweige; Farbe nach Energieform;
+Legende unter dem Bild. Der Weg von der Version zum Bild bleibt derselbe: `Energiefluss.Aus` (Bilanz) →
+`EnergieflussAbbildung.Bild` (Bilddaten) → `ChartRenderer.EnergieflussModell` (Zeichenmodell).
 
-Neue Teildatei `EPOS.Kern/Allgemein/Bericht/ChartRenderer.Energiefluss.cs`, ein reines
-Pixelbild ohne Zeichenfläche (wie Versionsbalken und Kesselkennlinie): kein Zoom, der Zeigertext
-kommt aus `data-wert` des Elements unter dem Zeiger (DG-E3-10).
-`ChartRenderer.EnergieflussModell(EnergieflussBildDaten daten, Bildmass? mass, bool knotenwerte)`
-→ `Zeichenmodell`, dazu `EnergieflussBild(…)` als PNG für Proben und Bericht; Maße
-`ENERGIEFLUSS_BREIT`, `ENERGIEFLUSS_SCHMAL`, `ENERGIEFLUSS_BERICHT`. Der Weg von der Version zum
-Bild ist immer derselbe: `Energiefluss.Aus` (Bilanz) → `EnergieflussAbbildung.Bild` (Bilddaten) →
-`ChartRenderer.EnergieflussModell` (Zeichenmodell).
+### 3.1 Abbildung und Layout
 
-**Spalte und Verlustknoten — eine Regel für Bilanz, Abbildung und Renderer:** Die Spalte ist
-überall eine ganze Zahl 0 … 6 (`EnergieflussKnoten.Spalte` wie `EnergieflussBildKnoten.Spalte`).
-Ein Verlust- oder Füllstandsknoten (`EnergieflussKnotenart.Verlust`) trägt die Spalte seines
-Eigentümers, des Knotens, aus dem sein Band kommt; dass er in der Lücke zur nächsten Spalte
-(Spalte + ½) unter dem Fuß des Eigentümers steht, ist Zeichenregel des Renderers und kein Datum.
-Die Knotenart ist genau eine Aufzählung (`EnergieflussKnotenart` in `Energiefluss.cs`), die alle
-drei Stufen teilen.
+**Abbildung** (`EnergieflussAbbildung.Bild`, `EPOS.Kern/Allgemein/Bericht/EnergieflussAbbildung.cs`),
+ohne Änderung an der Bilanz:
 
-- Spalten gleichmäßig über die Breite abzüglich Beschriftungsrand links und rechts (je 150 px
-  breit, 100 px schmal); Knotenbreite 14 px; Lücke zwischen Knoten einer Spalte 30 px (schmal
-  26 px, Platz für die Beschriftung der inneren Knoten über dem Knoten); jede Spalte vertikal
-  zentriert. Eine innere Beschriftung darf bis zu 1,5 Spaltenabstände breit sein, bevor sie
-  gekürzt wird („Wärmepumpe (Heizen)“ und im Bericht „Name · Wert“ bleiben so lesbar); was eine
-  schon gesetzte Beschriftung überdeckte, entfällt (größere Knoten zuerst).
-- Spaltentitel oben („Quellen“, „Wandler“, „Strom“, „Wandler“, „Wärme · Kälte“, „Speicher“,
-  „Bedarf“) in `TEXT`, 11 pt.
-- Höhe des Bildes: breit 1 180 × 560, schmal 680 × 640, Bericht 1 240 × 620 (Faktor 2 auf
-  620 × 310 pt). Die Breite kommt aus `Bildmass`; die Beschriftungsregeln schalten bei
-  `Breite < 900` auf „schmal“ (Abschnitt 3.3).
+- **Speicher falten (SK-Q13):** Ein Speicherknoten verschwindet aus dem Bild. Seine Entladung wird
+  ein Band des Busses in die Senke (ein schon vorhandenes direktes Band wird um den Speicheranteil
+  breiter; der Zeigertext nennt „davon x MWh/a über Speicher“), Verlust und Füllstandsänderung werden
+  Abzweige am Bus, Ladung und Entladung stehen im Zeigertext des Busses, dessen Name den Zusatz
+  „· Speicher“ trägt (Kurzname unverändert). Mehrere Speicher eines Busses stehen einzeln im Zeigertext.
+- **Kleinstverluste (SK-Q15):** Ein Verlust unter 1 % des Zu- bzw. Abflusses seines Knotens
+  (`KLEINVERLUST_ANTEIL`) wird nicht gezeichnet; der Knoten nennt ihn im Zeigertext („Verlust 0,2 MWh/a
+  (unter 1 %, nicht gezeichnet)“).
+- **Nullbänder:** Ein Band unter 0,05 MWh/a (`MINDEST_BAND_MWH`, es stünde als „0,0“ im Bild) entfällt,
+  ein Knoten ohne Band entfällt.
+- **Spur je Knoten** (`EnergieflussSpur`: Strom, Gemischt, Wärme, Kälte): Busse nach ihrer Kennung;
+  Wandler nach den Formen ihrer Abgabe (Strom und Wärme = Gemischt, das BHKW); Senken nach der Spur
+  ihres größten Zuflusses; Quellen nach der Spur ihres größten Abflusses; Verlustknoten nach ihrem
+  Eigentümer; Rückfall die Energieform.
+- **Farbrolle = Energieform des Bandes** (3.4) und Bandart (Verlust, gestrichelt, normal); **Legende**
+  der vorkommenden Formen in fester Reihenfolge mit Texten in der Sprache der Bilanz (`EF_LEG_*`).
+
+**Renderer** (`ChartRenderer.EnergieflussModell(EnergieflussBildDaten daten, Bildmass? mass, bool
+knotenwerte)` → `Zeichenmodell`, Teildatei `ChartRenderer.Energiefluss.cs`; dazu `EnergieflussBild(…)`
+als PNG), ein reines Pixelbild ohne Zeichenfläche (kein Zoom, Zeigertext aus `data-wert`, DG-E3-10):
+
+- **Spalten:** keine feste Zahl. Spalte = n − 1 − längster Weg zur Senke (jeder Knoten so weit rechts
+  wie möglich, wie `sankeyRight` in d3-sankey); Senken stehen in der letzten Spalte, Quellen direkt
+  vor ihrem ersten Wandler. 1058 hat sechs Spalten, 1046 fünf, 1018 vier. **Keine Spaltentitel** —
+  Quellen sind links, Senken rechts beschriftet, Wandler sind beschriftete Kästen.
+- **Wegpunkte:** Ein Band über mehr als eine Lücke bekommt je Zwischenspalte einen unsichtbaren
+  Wegpunkt seiner Zielspur (floweaver-Prinzip); es hält seine Spur frei, läuft nie hinter einem Kasten
+  hindurch und bleibt **ein** Pfad.
+- **Reihenfolge je Spalte:** zuerst nach Spur (Strom oben, Gemischt, Wärme, Kälte unten; Spurabstand
+  30 px, Lücke 20 px, schmal 18/14 px), darin Schwerpunkt-Relaxation wie d3-sankey (28 Durchläufe,
+  Umordnung nur innerhalb der Spur), dann drei Tauschdurchläufe benachbarter Knoten derselben Spur gegen
+  die mit den Mengen gewichtete Kreuzungszahl — auch kombiniert mit einem Tausch in der Nachbarspalte —,
+  zuletzt zehn Durchläufe ohne Umordnung. Alles deterministisch (zweimal zeichnen ist byte-gleich).
+- **Maßstab:** Bildpunkte je MWh aus der Spalte, die am wenigsten Platz je MWh lässt; ein Band unter
+  2 px wird 2 px breit; Knoten mindestens 4 px hoch.
+- **Knoten:** Wandler ab 15 px Höhe als **Kasten** in `KNOTEN`, so breit wie die Kurzform innen
+  (Bericht „Kurzname · Wert“); ein kleinerer Wandler ist ein Balken mit der Kurzform darüber. Busse sind
+  Balken in `KNOTEN` (10 px) mit fettem Namen darüber, Quellen und Senken Balken in `KNOTEN` mit Deckung
+  0,59 und Namen außen (passt der Name nicht in den Rand, steht die Kurzform).
+- **Verluste:** kurzer grauer Abzweig (höchstens 44 px) nach rechts unten direkt am Erzeuger bzw. Bus,
+  ohne Knotenbalken, leise Beschriftung „Verlust“ bzw. der Name des Verlustknotens darunter (Bericht mit
+  Wert). Der Abzweig trägt die Marke seines Bandes, auch die Beschriftung.
+- **Kreuzungszahl als Messgröße:** `ChartRenderer.EnergieflussKreuzungen` zählt die Paare sich
+  schneidender Bandmittellinien (`EnergieflussKreuzungspaare` nennt die Paare). Die Wache hält 1018 und
+  1046 kreuzungsfrei, 1058 bei höchstens zwei (das 0,7-MWh/a-Band Strom → Wärmepumpe (Kühlen) muss von der
+  Stromspur durch die Wärmespur — Umweltwärme → Wärmepumpe (Heizen) und BHKW → Wärme — in die Kältespur;
+  topologisch unvermeidbar), 1063 bei höchstens zwei.
+- **Darstellungsart** (SK-Q17): `EnergieflussDarstellung { Kette, Stufen }` ist der vierte Parameter von
+  `EnergieflussModell`, `EnergieflussBild` und `EnergieflussKreuzungen` (Vorgabe Kette). Stufen (Variante B) kommt
+  mit SK-2d und wird bis dahin benannt abgelehnt (`NotSupportedException`); die Verbinderregel sitzt als eine
+  Naht im Renderer (`Verbinderregel`, `EfBand.Verbinder` — ein Verbinder zieht keine Knoten zueinander, bekommt
+  keinen Wegpunkt und zählt nicht als Kreuzung), damit Stufen und schmale Fassung sie gemeinsam nutzen.
+- **Maße:** breit 1 180 × 460 (430 px Bild, 30 px Legende), Bericht 1 240 × 490 (Faktor 2 auf
+  620 × 245 pt), schmal 680 × 560 — vorläufig die verkleinerte Kette mit Kurznamen; die Verbinderregel
+  der schmalen Fassung kommt mit SK-2d (SK-Q13). Die Beschriftungsregeln schalten bei `Breite < 900` auf
+  „schmal“.
 
 ### 3.2 Bänder
 
-Ein Band ist ein `Pfad` (geschlossen, Füllung in der Farbrolle mit Deckung 0,55, kein Rand):
-Oberkante von `(x0, y0o)` nach `(x1, y1o)` als abgetastete S-Kurve
-`y(t) = y0 + (y1 − y0)·(3t² − 2t³)` mit 24 Stützstellen, Unterkante zurück. Das Zeichenmodell
-kennt keine Bézierkurve, und der SVG-Schreiber wie der Skia-Maler zeichnen denselben Polygonzug —
-Bericht und Bildschirm bleiben byte- bzw. knotengleich. Ein Verlustband endet in seinem
-Verlustknoten (Spalte + ½) mit derselben Kurve. Knoten sind `Rechteck` in `KNOTEN` mit 1-px-Rand
-`RAHMEN`.
+Ein Band ist ein geschlossener `Pfad`: Oberkante durch alle Wegpunkte als abgetastete S-Kurven
+`y(t) = y0 + (y1 − y0)·(3t² − 2t³)` mit 24 Stützstellen je Teilstück, Unterkante zurück. Füllung in der
+Rolle der Energieform mit Deckung 0,9, weißer Saum 0,8 px (`HINTERGRUND`); benachbarte Bänder in einen
+Knoten wechseln zwischen Grundton und hellerer Tönung (Deckung 0,65). „Nicht zugeordnet“ und „ungedeckt“
+tragen einen gestrichelten Rand in `REST` und Deckung 0,5. Das Zeichenmodell kennt keine Bézierkurve, und
+der SVG-Schreiber wie der Skia-Maler zeichnen denselben Polygonzug — Bericht und Bildschirm bleiben
+byte- bzw. knotengleich.
 
-### 3.3 Beschriftung, Zeiger, Marken
+### 3.3 Beschriftung, Zeiger, Marken, Legende
 
-- Quellen beschriften links des Knotens, Senken rechts, innere Spalten über dem Knoten,
-  11 pt / schmal 10 pt. **Am Bildschirm tragen Knoten nur ihren Namen, Bänder keine Zahlen**
-  (SK-Q12); die Werte erscheinen im Zeigertext. Im Word-Bericht (kein Überfahren) trägt jeder
-  Knoten unter dem Namen seine Jahressumme „56,3 MWh/a“; Bänder bleiben ohne Zahlen.
-- Schmal: Namen in Kurzform (`EnergieflussKnoten.Kurzname`, Ressource); die Werte stehen auch
-  hier nur im Zeigertext, der Reiter „Tabelle“ bleibt vollständig.
-- Jedes Band trägt `Marke = "fluss:<von>:<nach>"` und `Wert = "<Von> → <Nach>: 38,4 MWh/a
-  (71 % des Wärmebedarfs)"`; ein bilanziertes Band ergänzt „· bilanziert“, ein abgeleitetes
-  „· abgeleitet: Wärme − Strom“. Jeder Knoten trägt `Marke = "knoten:<id>"` und `Wert =
-  "<Name>: Zufluss x · Abfluss y MWh/a"`. Der Baustein `DiagrammSvg` zeigt den Wert in seiner
-  Zeigerzeile; eine Änderung am Baustein ist nicht nötig (`data-wert` steht an jedem Befehl,
-  auch am `Pfad`).
-- Keine Legende im Bild (`LegendeSchaltbar="false"` wie bei Ring und Kuchen); die Farben sind
-  die der Rollen und damit die der übrigen Bilder.
+- **Am Bildschirm tragen Knoten nur ihren Namen, Bänder keine Zahlen** (SK-Q12); die Werte stehen im
+  Zeigertext. Im Word-Bericht nennen Quellen und Senken unter dem Namen ihre Jahressumme
+  „56,3 MWh/a“, Busse „Wärme · Speicher · 72,0“, Kästen „WP Heizen · 56,3“, Verluste „Verlust 2,0“;
+  Bänder bleiben ohne Zahl.
+- Kästen tragen immer die Kurzform (`EnergieflussKnoten.Kurzname`); die schmale Fassung nimmt sie überall.
+- **Beschriftungsplätze:** größere Knoten zuerst, Kästen sind belegt; eine Beschriftung, die eine
+  gesetzte überdeckte, weicht in Schritten einer Zeilenhöhe nach unten bzw. oben aus (bis drei Schritte);
+  Verlustbeschriftungen zuletzt. Kein Produktname als Beschriftung — der Gerätename steht im Zeigertext
+  (Kurznamen `EF_KK_*`).
+- Jedes Band trägt `Marke = "fluss:<von>:<nach>"` und `Wert = "<Von> → <Nach>: 38,4 MWh/a (71 %)"`
+  (bilanziert / abgeleitet wie bisher, ein verschmolzenes Band „· davon x MWh/a über Speicher“); jeder
+  Knoten `Marke = "knoten:<id>"` und `Wert = "<Name>: Zufluss x · Abfluss y MWh/a"`, ein Bus mit Speicher
+  dahinter „· <Speicher>: Ladung l · Entladung e MWh/a · Verlust v · Füllstandsänderung f MWh/a“. Der
+  Baustein `DiagrammSvg` zeigt den Wert in seiner Zeigerzeile; eine Änderung am Baustein ist nicht nötig.
+- **Legende** (SK-Q14) unter dem Bild als Teil des Zeichenmodells (30 px): je vorkommender Energieform
+  ein Farbfeld (Marke `legende:<rolle>`, ohne Wert) und der Text aus `EnergieflussBildLegende`; so tragen
+  Bildschirm und Bericht dieselbe Legende.
+- **Umfeld für die Hervorhebung (SK-2d):** Ein `Zeichenbefehl` trägt nur Marke und Wert; ein Attribut mit
+  dem Umfeld eines Knotens (seine Bänder bis zum nächsten Bus) verlangt entweder ein drittes Attribut am
+  Zeichenbefehl (Schreiber, Maler, Wache) oder die Rechnung im JS des Bausteins aus den Marken
+  `fluss:<von>:<nach>`. SK-2d entscheidet.
 
 ### 3.4 Farbrollen
 
-Vorhandene Rollen tragen die Bänder: `STROM_NETZ`, `STROM_PV`, `STROM_BHKW`, `STROM_SPEICHER`,
-`SPEICHERLADUNG`, `WAERME_WP`, `WAERME_BHKW`, `WAERME_KESSEL`, `WAERME_SOLAR`, `HEIZSTAB`,
-`HEIZWAERME`, `WARMWASSER`, `PROZESSWAERME`, `KAELTE_DEZENTRAL`, `VERBRAUCH_GESAMT` (Strombedarf),
-`UEBERSCHUSS` (Einspeisung), `REST` (ungedeckt, nicht zugeordnet), `TEXT`, `RAHMEN`. Die Regel der
-Zuordnung: **Ein Band in einen Bus trägt die Rolle seiner Quelle** (Netz, Photovoltaik, BHKW-Strom,
-Wärmepumpe, Kessel …), **ein Band aus einem Bus die Rolle seiner Verwendung** (Wärmepumpe,
-Heizstab, Elektrokessel, Kälteerzeuger, Strombedarf, Speicherladung, Einspeisung; aus dem Wärmebus
-die Kanalrollen Heizung, Warmwasser, Prozesswärme). So sagt die Farbe am Strombus, wofür der
-Strom gebraucht wird, und am Wärmebus, woher die Wärme kommt. **Fünf neue Rollen** in
-`Farbpalette.Vorgabe` und in `Diagrammfarben` (Gruppe „Erzeuger und Bedarf“ bzw. „Allgemein“),
-mit Ressourcen in beiden Sprachen:
+**Farbe = Energieform des Bandes** (SK-Q14): sieben Rollen statt der rund zwanzig Quell- und
+Verwendungsrollen; der Anteil je Erzeuger am Bus ist über Reihenfolge, Tönung, Kästen und Zeiger lesbar.
 
-| Rolle | Wofür | Vorgabe |
+| Rolle | Energieform | Vorgabe |
 |---|---|---|
-| `BRENNSTOFF` | Bänder Brennstoffträger → Wandler (alle Träger eine Rolle; der Name unterscheidet) | #8B6F47 |
-| `UMWELTWAERME` | Umweltwärme → Wärmepumpe, Umwelt (Kälte) → Kälteerzeuger, Kondensationswärme | #7FB8A4 |
-| `KAELTE` | Kälte der Erzeuger → Bus Kälte → Kältespeicher → Kühlung (Split-Bänder behalten `KAELTE_DEZENTRAL`) | #2A7FA6 |
-| `VERLUST` | Verlustbänder und Verlustknoten | #B8B8B8 |
-| `KNOTEN` | Knotenrechtecke | #4A5769 |
+| `STROM` (neu) | Strom: Netz, Photovoltaik, BHKW-Strom, Strom in Wärmepumpe, Heizstab, Elektrokessel, Kälteerzeuger, Strombedarf, Einspeisung | #E9A825 |
+| `WAERME` (neu) | Wärme der Erzeuger in den Bus, aus dem Bus in Heizung, Warmwasser, Prozesswärme | #E2573D |
+| `KAELTE` | Kälte der Erzeuger (auch Split) → Bus Kälte → Kühlung | #2A7FA6 |
+| `BRENNSTOFF` | Brennstoffträger → Wandler | #8B6F47 |
+| `UMWELTWAERME` | Umweltwärme, Umwelt (Kälte), Kondensationswärme | #7FB8A4 |
+| `VERLUST` | Verlustabzweige | #B8B8B8 |
+| `REST` | ungedeckt, nicht zugeordnet (gestrichelt) | #BFBFBF |
+| `KNOTEN` | Kästen, Busse, Quellen und Senken (letztere mit Deckung 0,59); Kastenbeschriftung in `HINTERGRUND` | #4A5769 |
 
-Die Wache `ChartRendererRollenTests` bekommt das Bild als `InlineData("Energiefluss")`: Jedes
-Band und jeder Knoten tragen genau ihre Rolle; mit der Tauschpalette fällt jeder aufgelöste
-Farbwert auf. `DiagrammfarbenWacheTests` bleibt grün, weil weder Hülle noch Komponente eine
-Farbzahl kennen.
+`STROM` und `WAERME` stehen in `Farbpalette.Vorgabe` und in `Diagrammfarben` (Gruppe „Erzeuger und
+Bedarf“, Ressourcen `DGF_ROLLE_STROM`, `DGF_ROLLE_WAERME` in beiden Sprachen); die Rollen `STROM_NETZ`,
+`WAERME_WP`, `HEIZWAERME` … bleiben den übrigen Bildern. Die Wache `ChartRendererRollenTests` hält unter
+einer Tauschpalette jede Rolle an Band, Knoten und Legende; `FarbpaletteTests` zählt 62 Rollen;
+`DiagrammfarbenWacheTests` bleibt grün, weil weder Hülle noch Komponente eine Farbzahl kennen.
 
 ---
 
@@ -431,8 +476,8 @@ Versionswahl ist ein Anzeigezustand, kein Einstellwert der Seite (kein Feld in d
 - `Berichtsbilder.Energiefluss(VariantenDaten v, Bildmass? mass)` in `Berichtsbilder.Ergebnis.cs`:
   `Energiefluss.Aus(v, BerichtTexte.Englisch)` → `EnergieflussAbbildung.Bild` →
   `ChartRenderer.EnergieflussModell(daten, ChartRenderer.ENERGIEFLUSS_BERICHT, knotenwerte: true)`;
-  `null` ohne Ergebnis oder ohne Fluss (`EnergieflussBilanz.Leer`, `Grund`). Knoten tragen ihre
-  Jahressumme in MWh/a, Bänder keine Zahlen (SK-Q12).
+  `null` ohne Ergebnis oder ohne Fluss (`EnergieflussBilanz.Leer`, `Grund`). Knoten, Kästen und
+  Verluste tragen ihre Jahressumme in MWh/a, Bänder keine Zahlen (SK-Q12); die Legende steht im Bild.
 - **Vorlagenfeld** `stand.bild.energiefluss` (Kontext Stand, `Vorlagenbedarf.Keiner` — das Bild
   braucht keine Zeitreihen) und Schalter `hat.bild.energiefluss`, beide `Seit =
   FASSUNG_ENERGIEFLUSS = 25`; `Vorlagenfeldkatalog.KATALOGFASSUNG` auf **25**;
@@ -440,10 +485,10 @@ Versionswahl ist ein Anzeigezustand, kein Einstellwert der Seite (kein Feld in d
   `EPOS.Kern.Tests/Messlatten/Vorlagenfeldkatalog_v25.txt` aus dem Testlauf kopieren,
   `VorlagenfeldkatalogWacheTests` auf 25 (die v24-Liste bleibt unverändert).
 - **Bausteinweg:** `ErgebnisseBaustein.SchreibeWord` zeichnet nach der Kennzahlentafel
-  `k.Bild(m, 620, 310)` mit Beschriftung „Energiefluss (Jahresbilanz Strom, Wärme, Kälte;
-  Umweltanteil nach Jahresarbeitszahl)“ — vor den Ganglinien, weil es ohne Zeitreihen immer da
-  ist. Der Excel-Bericht bekommt kein Diagramm (ein Sankey ist kein Excel-Diagrammtyp); der
-  Prüfer meldet den Platzhalter in Excel als „nur Word“ (`Vorlagenausgabe.Word`).
+  `k.Bild(m, 620, 245)` (Berichtsfassung 1 240 × 490 px, Faktor 2) mit Beschriftung „Energiefluss
+  (Jahresbilanz Strom, Wärme, Kälte; Umweltanteil nach Jahresarbeitszahl)“ — vor den Ganglinien, weil
+  es ohne Zeitreihen immer da ist. Der Excel-Bericht bekommt kein Diagramm (ein Sankey ist kein
+  Excel-Diagrammtyp); der Prüfer meldet den Platzhalter in Excel als „nur Word“ (`Vorlagenausgabe.Word`).
 - Die Standardvorlage und die Beispielvorlage werden nicht neu gebaut (die letzte
   Fassungsanhebung auf 24 hat sie ebenfalls nicht berührt); wer das Bild in einer eigenen
   Vorlage will, setzt den Platzhalter.
@@ -495,12 +540,14 @@ dem Merge. Kein Schemaschritt (Abschnitt 1.7).
 | **SK-2** Renderer | `ChartRenderer.Energiefluss.cs` (Layout, S-Kurven-Polygone, Verlustknoten, breit/schmal, Marken/Werte), fünf Farbrollen in `Farbpalette`, `Diagrammfarben` und Einstellungsdialog (Ressourcen), `Program.Energiefluss.cs` der ChartProben samt neuer Messlatte | `EnergieflussModellTests`, `ChartRendererRollenTests`, ChartProben 0 Verstöße, Messlatte alte Zeilen unverändert |
 | **SK-12** Zusammenführung und Abbildung | `sk1` und `sk2` gemergt; eine Knotenart (`EnergieflussKnotenart`), Domänenklasse `EnergieflussBilanz` (statt „Modell“, das der Renderer für das Zeichenmodell führt), Spalte ganzzahlig mit der Regel aus 3.1; `EnergieflussAbbildung.Bild` (Spalten, Spaltentitel, Rollen nach 3.4, Bandarten, Zeigertexte, Kurznamen); innere Beschriftung bis 1,5 Spaltenabstände | `EnergieflussAbbildungTests`, Wache zeichnet die vier Referenzprojekte in drei Fassungen (Sichtprüfung der PNG), ChartProben 0 Verstöße, Messlatte nachgezogen |
 | **SK-3** Oberfläche | dritte Stellung, `UebersichtErgebnisFluss.razor` + Daten, Hülle `FlussLaden`, Stilblatt, Versionswahl, Textalternative verborgen, Hinweise, KI-Text, Wiki-Quelle „Varianten“ | `UebersichtErgebnisseTests`, `UebersichtErgebnisFlussTests`, `StilblattTests`, `KiMaskenabdeckungWacheTests`, `WikiProduktdatenWacheTests`; Windows-Schale mit `EnableWindowsTargeting=true` gebaut (keine Hülle der Schale betroffen, Nachweis trotzdem); `diagrammprobe.mjs` Fall `fluss` |
+| **SK-2c** Variante A | Abbildung (Speicher falten, Kleinstverluste, Nullbänder, Spur, Rolle = Energieform, Legende), Renderer (Spalten aus dem längsten Weg zur Senke, Spuren, Relaxation und Tausch, Wegpunkte, Kästen, Verlustabzweige, Tönung und Saum, Legende, Maße, Kreuzungszahl), Rollen `STROM` und `WAERME`, Ressourcen beider Sprachen, Konzept 3, 5, 10 und 12 | `EnergieflussModellTests`, `EnergieflussAbbildungTests`, `EnergieflussReferenzprojektWacheTests` (Kreuzungszahlen), `ChartRendererRollenTests`, `FarbpaletteTests`, UI-Tests der Ansicht Fluss; ChartProben 0 Verstöße, die zwölf `energiefluss*`-Zeilen der Messlatte ersetzt; Sichtprüfung der vier Referenzprojekte gegen die Vorlage der Recherche |
+| **SK-2d** Stufen, schmale Fassung, Filter, Hervorhebung | Darstellung Stufen (Variante B, SK-Q17): vier feste Spalten Einsatz \| Anlagen \| Energieform \| Nutzen mit Titeln, Verbinder (Stummel „→ Gerät“ am Bus, „Strom“ am Gerät, gemeinsame Marke) über die Naht `Verbinderregel` und `EfBand.Verbinder` des Renderers, Schalter „Kette \| Stufen“ in der Ansicht Fluss (Vorgabe Kette, je Benutzer gemerkt wie `Uebersicht.Ergebnisse.Ansicht`, der Bericht zeigt die Kette); dieselbe Verbinderregel für die schmale Fassung (unter 900 px) und als Rückfall, wenn eine Anlage mehr als sechs Spalten bräuchte; Formfilter Alle \| Strom \| Wärme \| Kälte (vier Zeichenmodelle je Fassung oder Klassen im SVG); Pfad-Hervorhebung bis zum nächsten Bus im Modul von `DiagrammSvg` (Umfeld als drittes Attribut des Zeichenbefehls oder aus den Marken gerechnet) | `EnergieflussModellTests` (Verbinder), `UebersichtErgebnisFlussTests`, `diagrammprobe.mjs` Fall `fluss` samt Gegenprobe, ChartProben |
 | **SK-4** Bericht | `Berichtsbilder.Energiefluss`, Vorlagenfeld und Schalter, Katalogfassung 25 mit Messlatte v25, Baustein „Ergebnisse je Variante“, Wiki-Quelle Bericht | `VorlagenfeldkatalogWacheTests`, `VorlagenprueferTests`, `WordBaukastenTests`, Wortbericht eines Referenzprojekts mit Bild (Sichtprobe) |
 | **SK-5** Abschluss | Statuszeile, Protokoll unter `ueberholt/Protokolle/`, Logbuch-Entwurf, Konzept Diagramme Abschnitt 9 um die fünf Rollen ergänzt, dieses Papier nach `ueberholt/` mit Indexzeile | `DokumentationLinkWacheTests`, `RepositoryOrdnungWacheTests` |
 
 SK-1 und SK-2 sind unabhängig und laufen parallel (der Renderer arbeitet auf seinem eigenen
 Eingabetyp `EnergieflussBildDaten`); SK-12 führt beide zusammen, vereinheitlicht die Namen und baut
-die Abbildung. SK-3 und SK-4 folgen SK-12. Vorgemerkt (nicht in dieser Welle): die drei Ergebnisspalten aus
+die Abbildung. SK-3 und SK-4 folgen SK-12; SK-2c (Variante A) folgt SK-3, SK-2d folgt SK-2c. Vorgemerkt (nicht in dieser Welle): die drei Ergebnisspalten aus
 Abschnitt 1.7 als Schemaschritt mit neuer Basis, falls der Anwender die exakte Ausweisung von
 Standby und Abregelung will.
 
@@ -540,6 +587,11 @@ Standby und Abregelung will.
 | **SK-Q10** | Bericht: (a) Bild im Baustein „Ergebnisse je Variante“ nach der Kennzahlentafel, 620 × 310 pt; (b) eigener Baustein „Energiefluss“ | **(a).** Das Bild gehört zu den Ergebnissen der Variante; ein eigener Baustein brächte nur eine weitere Kapitelwahl. — *entschieden 16.10.2026 nach Empfehlung* |
 | **SK-Q11** | Versionswahl: (a) Versionen der Vergleichswahl (Stamm und „Im Vergleich“); (b) alle Versionen der Gruppe | **(a).** Dieselben Versionen wie Tabelle und Grafik; eine Version, die nicht im Vergleich ist, nimmt der Anwender über die Vergleichswahl hinzu. — *entschieden 16.10.2026 nach Empfehlung* |
 | **SK-Q12** | Werte am Bildschirm: (a) im Bild an Bändern und Knoten bzw. als Tabelle darunter; (b) nur im Zeigertext | **(b).** Anwendervorgabe: „Werte mit Mouse-over anzeigen, nicht darunter (die Werte stehen schon im Tab Tabelle).“ Knoten tragen am Bildschirm nur den Namen; Textalternative für Bildschirmleser verborgen; Hinweiszeilen bleiben; im Word-Bericht tragen Knoten ihre Jahressumme. — *entschieden 16.10.2026, Anwendervorgabe* |
+| **SK-Q13** | Gestaltung nach der Recherche (Abschnitt 12): (A) gestraffte Kette — Spalten nach Bedarf, Spuren nach Energieform, Speicher am Bus; (B) vier feste Stufen mit Verbindern; (C) Bilanzbalken je Energieform | **(A) für die breite Fassung und den Bericht; die schmale Fassung nach der Verbinderregel aus (B)** (SK-2d). A behebt die zehn Befunde der heutigen Bilder und bleibt ein echtes Sankey; B ist in 680 px das bessere Bild. — *entschieden 16.10.2026 nach Empfehlung* |
+| **SK-Q14** | Farbe: (a) nach Energieform des Bandes (sieben Rollen) mit Legende unter dem Bild; (b) wie bisher Quelle hinein, Verwendung heraus (rund zwanzig Rollen, keine Legende) | **(a).** Dieselbe Energie trägt eine Farbe; der Anteil je Erzeuger ist über Reihenfolge, Tönung, Kästen und Zeiger lesbar. Die Legende steht im Zeichenmodell, damit Bildschirm und Bericht sie tragen. — *entschieden 16.10.2026 nach Empfehlung* |
+| **SK-Q15** | Kleinstverluste unter 1 % des Knotens: (a) nur im Zeigertext; (b) als 2-px-Band | **(a).** Ein 2-px-Abzweig trägt keine Aussage und kollidiert mit Beschriftungen; der Wert steht im Zeigertext und im Reiter „Tabelle“. — *entschieden 16.10.2026 nach Empfehlung* |
+| **SK-Q16** | Variante C (Bilanzbalken je Energieform): (a) vorgemerkt als spätere vierte Stellung „Bilanz“ bzw. Berichtstafel; (b) verwerfen | **(a).** C ist kein Fluss, löst aber den exakten Vergleich ähnlicher Mengen, den ein Sankey nicht kann; nicht Teil dieser Welle. — *entschieden 16.10.2026 nach Empfehlung* |
+| **SK-Q17** | Variante B zusätzlich: (a) wählbare Darstellung „Kette \| Stufen“ in der Ansicht Fluss, Vorgabe Kette (Variante A), Wahl je Benutzer gemerkt, der Wortbericht zeigt die Kette; (b) nur die Kette | **(a).** Gebaut in SK-2d; SK-2c legt die Darstellungsart als Parameter an (`EnergieflussDarstellung { Kette, Stufen }` an `ChartRenderer.EnergieflussModell`, `EnergieflussBild`, `EnergieflussKreuzungen`; dieselben Bilddaten, die Abbildung kennt keine Darstellung) und die Verbinderregel als eine Naht für Stufen und schmale Fassung; bis SK-2d wird Stufen benannt abgelehnt. — *entschieden 16.10.2026, Anwendervorgabe* |
 
 ---
 
@@ -574,3 +626,60 @@ Standby und Abregelung will.
   Reihen `bhkw_strom.csv`, `strombedarf_viertelstunde.csv`, `reststrom_viertelstunde.csv`,
   `wp_strom.csv`, `kessel_strom.csv`; Exportschlüssel in `Referenzlauf/Ergebnisexport.cs`,
   Vergleichsregel „Eintrag nur im Vergleichslauf“ in `Referenzlauf/Vergleich.cs`.
+
+---
+
+## 12. Anhang: Recherche „Übersichtliches Energieflussbild“ (16.10.2026)
+
+Der Anwender fand das Bild des Stands SK-12 (sieben feste Spalten) „nicht sehr übersichtlich“. Die
+Recherche hat Vorbilder, Gestaltungsregeln und interaktive Mittel gesammelt, die Bilder der vier
+Referenzprojekte beurteilt und drei Varianten als bedienbare Anschauung gebaut (ohne Produktcode); die
+Ergebnisse sind in SK-Q13 bis SK-Q16 entschieden und in Abschnitt 3 umgesetzt. Der Direktabruf von
+Webseiten war gesperrt; die Befunde stammen aus den Suchauszügen der Quellen.
+
+**Befund der heutigen Bilder (SK-12):** sieben Spalten auch ohne Bedarf (1018 mit leerer Spalte); die
+Speicherspalte wiederholt den Wärmebus eins zu eins; lange Bänder laufen hinter Knoten hindurch;
+Reihenfolge nach Tabelle statt nach Energieform (Stromsenken unten rechts kreuzen die Wärmeseite); die
+Farbe wechselt an jedem Bus (rund zwanzig Rollen, reines Rot und Gelb, Deckung 0,55 schlammig);
+Verlustknoten wirken wie Anlagen, ihre Beschriftung kollidiert; vier fast bildhohe Balken bilden einen
+Zaun; Bildverhältnis 2,1 : 1 mit steilen S-Kurven; Produktnamen und Nullbänder („ungedeckt 0,0“) im Bild;
+keine Legende. Gut und geblieben: Bilanz schließt, Busse Strom/Wärme/Kälte, Verluste am Entstehungsort
+(SK-Q7), vollständiger Zeigertext.
+
+**Gemeinsamer Nenner der Vorbilder:** drei bis vier Stufen; Strom als ein Sammelknoten; Verluste zweigen
+ab und kreuzen nichts; Farbe nach Energieträger bzw. -form, nicht nach Gerät; keine Rückflüsse; Speicher
+erscheinen in Jahresbildern nicht als eigene Stufe. Praxisregeln: eine Leserichtung, 8–15 Knoten, 2–5
+Farben, kleine Flüsse bündeln, Verluste als eigener Abfluss, ähnlich breite Bänder nicht vergleichen
+(dafür Tabelle oder Balken). Kreuzungsminimierung ist das Kernproblem (gewichtet mit der Banddicke);
+d3-sankey ordnet mit 32 Relaxationsdurchläufen, `sankeyRight` setzt jeden Knoten so weit rechts wie
+möglich; floweaver führt Bänder über Wegpunkte durch Zwischenspalten; interaktive Sankeys heben beim
+Überfahren den Pfad hervor und blenden den Rest ab.
+
+**Varianten:** A „Gestraffte Kette“ (Spalten nach Bedarf, Spuren nach Energieform, Speicher am Bus,
+Verlustabzweige, Farbe nach Form, Legende; 1058 sechs Spalten mit einer topologisch unvermeidbaren
+Kreuzung, 1046 kreuzungsfrei); B „Vier Stufen Einsatz | Anlagen | Energieform | Nutzen“ mit Verbindern
+für den Strom an Wärmepumpe, Heizstab, Elektrokessel und Kälteerzeuger (kreuzungsfrei, aber der Stromweg
+zum Wärmeerzeuger ist unterbrochen); C „Bilanzbalken je Energieform“ (Herkunft über Verwendung, gleicher
+Maßstab, exakt lesbar, kein Fluss). Empfehlung und Entscheid: A für breit und Bericht, B-Verbinder für
+schmal, C vorgemerkt.
+
+**Quellen.**
+
+- AG Energiebilanzen, Energieflussbild Deutschland: <https://ag-energiebilanzen.de/daten-und-fakten/energieflussbilder/>,
+  <https://ag-energiebilanzen.de/wp-content/uploads/2023/09/AGEB_Energieflussbild-kurz_DE-2023-PJ_20240919.pdf>
+- BDEW/AGEB/HEA/FfE Nutzenergiebilanz: <https://www.bdew.de/energie/nutzenergiebilanz/>
+- LLNL Energy Flow Charts: <https://flowcharts.llnl.gov/>; OSTI „How to Read an LLNL Energy Flow Chart“: <https://www.osti.gov/biblio/1248035>
+- IEA Energy Sankey: <https://www.iea.org/data-and-statistics/data-tools/energy-sankey>
+- Eurostat Energy Balance Sankey: <https://ec.europa.eu/eurostat/web/products-eurostat-news/-/wdn-20190329-1>
+- Abdelalim, O’Brien, Shi (Carleton), Sankey aus Gebäudesimulation: <https://carleton.ca/dci/wp-content/uploads/21-45-eSim2016.pdf>
+- Solar-Wärmepumpe Genf (Messjahr): <https://archive-ouverte.unige.ch/unige:97185>
+- e!Sankey (ifu/iPoint): <https://www.ipoint-systems.com/software/e-sankey/sankey-diagram/>; LEAP Sankey: <https://leap.sei.org/help/Views/Sankey_Diagrams.htm>
+- Zarate, Le Bodic, Dwyer, Gange, Stuckey, „Optimal Sankey Diagrams via Integer Programming“ (PacificVis 2018): <https://ialab.it.monash.edu/~dwyer/papers/optimal-sankey-diagrams.pdf>; Nachfolge (Barycenter, 2019): <https://arxiv.org/abs/1912.05339>
+- d3-sankey (Bostock): <https://github.com/d3/d3-sankey>
+- Riehmann, Hanfler, Froehlich, „Interactive Sankey Diagrams“ (InfoVis 2005): <https://www.uni-weimar.de/de/medien/professuren/medieninformatik/vr/research/information-visualization/interactive-sankey-diagrams/>
+- Lupton, Allwood, „Hybrid Sankey diagrams“ (2017) und floweaver: <https://www.repository.cam.ac.uk/handle/1810/260879>, <https://floweaver.readthedocs.io/en/stable/sdd.html>
+- Schmidt, „The Sankey Diagram in Energy and Material Flow Management“ (J. Ind. Ecol. 12, 2008), DOI 10.1111/j.1530-9290.2008.00004.x
+- Praxisregeln: <https://www.storytellingwithdata.com/blog/what-is-a-sankey-diagram>, <https://policyviz.com/2021/02/02/the-sankey-diagram/>,
+  <https://dataviz.unhcr.org/chart-types/flow>, <https://ctl.duke.edu/blog/2015/11/using-sankey-diagrams-tell-story-data/>
+- Pfad-Hervorhebung: ApexSankey <https://apexcharts.com/apexsankey/docs/path-highlighting/>, MUI X Charts <https://next.mui.com/x/react-charts/sankey>,
+  amCharts <https://www.amcharts.com/demos/traceable-sankey-diagram/>
