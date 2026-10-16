@@ -2,9 +2,9 @@
 
 Gegenstand: der Dialog „Kältebedarfsprofile“ (Kachel „Kühlung und Kälteanlagen“ bzw. Reiter „Kältebedarf“ und Menü
 „Profile & Lastgänge → Kältebedarf“) und seine Rechenvorstufe bis zur 8 760-Stunden-Reihe. Grundlage ist das
-[Konzept Kältebedarf](../ueberholt/Konzept_Kaeltebedarf_EPOS-Plan.md), Abschnitte 3.3, 3.4 und 4.1; dieses Papier schreibt den
+[Konzept Kältebedarf](Konzept_Kaeltebedarf_EPOS-Plan.md), Abschnitte 3.3, 3.4 und 4.1; dieses Papier schreibt den
 Profilteil fort und ändert nichts an Deckung, Buchung und Erzeugern. Mockup:
-[`Mockups/Kaeltebedarfsprofil_Mockup.html`](Mockups/Kaeltebedarfsprofil_Mockup.html) (Bild daneben, gleicher Name, `.png`).
+[`Mockups/Kaeltebedarfsprofil_Mockup.html`](../aktuell/Mockups/Kaeltebedarfsprofil_Mockup.html) (Bild daneben, gleicher Name, `.png`).
 
 Anwenderwunsch: „Die Bedarfsprofile sollte ähnlich dem der Wärmebedarfsprofile sein - Funktionalität - Darstellung in
 Grafik, Eingabe mit Monatswerte, Tageswerte, Wochenwerte ... Vorlagen für Bedarfsprofile erweitern (Krankenhaus,
@@ -27,7 +27,7 @@ Dialog.
 | R4 | Kältebilder sind Stapel. Bericht und `Proben/ChartProben` bleiben bitgleich. | Abschnitt 5: Die neuen Bilder entstehen nur im Dialog; kein Berichtsbild, kein Renderer und keine Messlatte ändert sich. |
 | R5 | `BedarfsProfileHuelle.Oeffnen(...)` mit Pflicht-Schreibweg und `Projektkopievormerkung.Schliessen(...)` bleiben; `BedarfsprofilVormerkungWacheTests` und `BedarfsprofilZuordnungVormerkungTests` bleiben grün. | Abschnitt 3.5: Jede Bearbeitung von Monaten, Woche oder Typtagen läuft über die Projektkopie und die Vormerkung; die Signaturen bleiben. |
 | R6 | Neue Diagramme laufen über `DiagrammSvg`. | Abschnitt 5: Jahresgang und Wochenansicht tragen damit die Achswahl „Datum \| Stunde im Jahr“ von selbst. |
-| R7 | Schemaschritte nennen Tabellen und Spalten, aber keine Nummer. | Abschnitt 8 verweist auf die Anmeldung im Kopf von [`Status_iOS_Migration.md`](Status_iOS_Migration.md). |
+| R7 | Schemaschritte nennen Tabellen und Spalten, aber keine Nummer. | Abschnitt 8 verweist auf die Anmeldung im Kopf von [`Status_iOS_Migration.md`](../aktuell/Status_iOS_Migration.md). |
 | R8 | Berührte Einfrierregeln werden ausdrücklich benannt. | Abschnitt 9. |
 
 **Nicht Gegenstand:** Erzeuger, Kältefolge, Split-Deckung, Buchung und Ergebnisgrößen (Konzept Kältebedarf 4.2 ff.), der
@@ -343,7 +343,7 @@ Monatswerte und Wochenprofil von Prozesswärme und Brauchwasser stehen in den be
 ### 8.3 Nummern und Migration
 
 Beide Schritte tragen **keine Nummer in diesem Papier**. Die Nummer meldet die bauende Sitzung vor dem Bau in der Zeile
-„Schemaschritt angemeldet“ im Kopf von [`Status_iOS_Migration.md`](Status_iOS_Migration.md) an; die Kette hängt über `+ 1`
+„Schemaschritt angemeldet“ im Kopf von [`Status_iOS_Migration.md`](../aktuell/Status_iOS_Migration.md) an; die Kette hängt über `+ 1`
 an der Vorgängerklasse (ADR-001). Beim Schreiben dieses Papiers sind 228 und 229 angemeldet und 230 als frei geführt.
 
 Migration: Jede bestehende Zuordnung erhält `Eingabeart = 'jahr'` über die Vorgabe der Spalte — kein `UPDATE`, keine
