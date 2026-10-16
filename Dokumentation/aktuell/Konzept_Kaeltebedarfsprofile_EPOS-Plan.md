@@ -106,6 +106,15 @@ erzwingen will, wählt 3.2 mit Wochenprofil.
 Rechenweg: ein neuer Zweig `Typtagschicht` neben der Kalenderschicht in `ProfilBedarf`, nur für Zeilen mit Eingabeart
 Typtage. Schemabedarf: Abschnitt 8.2.
 
+Editor (KBP-4b, nach dem Mockup): Typtagwahl mit Bezeichner, Tagesmenge und 24 Stundenwerten in Prozent der Tagesspitze
+(Stundenraster des Wochenprofils), Matrix je Tagesart im Monatsraster der Monatswerte, je Zelle ein Auswahlfeld mit
+„(keiner)“. Beim ersten Wechsel auf Typtage belegt der Dialog drei Typtage aus dem Wochenprofil der Zeile vor — Werktag
+(Mittel Montag bis Freitag), Samstag, Sonn-/Feiertag (Sonntag), Stunden in Prozent der Tagesspitze, Tagesmenge als
+Verhältnis der Tagessumme zur Werktagssumme, Matrix in allen Monaten 1/2/3 —, so dass die Reihe die Wochenform
+gleichmäßig über das Jahr zeigt. Leere Zellen und zugeordnete Typtage ohne Stunden nennt der Dialog mit denselben
+Aussagen wie der Lauf. Wählbar ist die Eingabeart nur bei Kältezeilen und erst, wenn die Datenbank die Tabellen des
+Schritts führt; sonst steht sie benannt gesperrt.
+
 ### 3.5 Bearbeitung und Projektkopie
 
 Jede Änderung an Monaten, Woche oder Typtagen betrifft die **Projektkopie** der Zuordnung, nie den Katalog. Teilen sich
@@ -361,7 +370,7 @@ Spalte erst mit Entscheid OE-5.
 | **KBP-1** Kalenderbaustein | Baustein `Betriebskalenderwahl` (Auswahl, Knopf „Betriebskalender…“ als Blatt, drei Hinweise, Neulesen, Vorwahl) für alle Bedarfsarten mit Kalenderspalte; Ressourcen beider Sprachen; „Aus Gebäude übernehmen…“ im `BetriebskalenderDialog` | bunit: Baustein, `BedarfsProfileDialogTests`, `BetriebskalenderDialogTests`; `BedarfsprofilVormerkungWacheTests` und `BedarfsprofilZuordnungVormerkungTests` grün; Windows-Schale kompiliert (`EnableWindowsTargeting`); `fensterprobe.mjs` der Rasterprobe; Ressourcen-Designer; kein Schemaschritt |
 | **KBP-2** Vorlagen | Schemaschritt A (Eingabeart, Art-Vorschlag, Saat 7–16); Quellen der Richtwerte belegt oder ersetzt | Saatwache (Zeilen, Summen der Monatsanteile = 100, Bestandszeilen 1–6 bytegleich gegen eingefrorenen Abdruck); `KatalogfassungWache`, `AuslieferungsvorlagenWacheTests`; SQL-Dialekt-Prüfer; Referenzlauf der CI-Auswahl byte-gleich; `WikiProduktdatenWacheTests` |
 | **KBP-3** Eingabearten und Grafik | Eingabeart-Wahl in der Bearbeiten-Überlagerung; Monatswerte (MWh/%), Wochenprofil (Werktag/Sa/So und 168 h); Kopie bei Bearbeitung über die Vormerkung; Blätter Jahresgang, Monate, Woche, Dauerlinie über `DiagrammSvg`; Kennzahlenzeile | bunit; Kern-Tests `BedarfsProfilVorschauTests`, `KaeltebedarfKernwegeTests`; Vormerkungswachen grün; `diagrammprobe.mjs`; ChartProben unverändert; Referenzlauf byte-gleich |
-| **KBP-4** Typtage (nur nach OE-1) | Schemaschritt B; `Typtagschicht` in `ProfilBedarf`; Editor (sechs Typtage, Matrix) | Kern-Tests der Schicht (Summe, Monat × Tagesart, Feiertag = Sonntag, Ferienfaktor); SQL-Dialekt-Prüfer; Referenzlauf byte-gleich |
+| **KBP-4** Typtage — *umgesetzt* | Schemaschritt B (geparkt auf 236, bis zur Hebung der Kette ohne Tabellen benannt gesperrt); `Typtagschicht` in `ProfilBedarf`; Editor `KaelteTyptagEditor` (sechs Typtage, Matrix 12 × 3 je Zelle als Auswahlfeld, Hinweise wie `SIMENG_TYPTAG_*`, Vorbelegung aus dem Wochenprofil); Speicherweg über `WizardCtrl.Add_Projekt_Kaelte` und `KaeltetyptagCtrl.Schreiben` nach der Kopie bei Bearbeitung; Grafik aus dem Arbeitsstand | Kern-Tests der Schicht (Summe, Monat × Tagesart, Feiertag = Sonntag, Ferienfaktor) `TyptagschichtTests`, `KaeltetyptagTests`, Speicherweg `KaeltetyptagSpeicherwegTests`; bunit `BedarfsProfileTyptageTests`; `fensterprobe.mjs` Fall `kaeltetyptage` mit Gegenprobe; SQL-Dialekt-Prüfer; Referenzlauf byte-gleich |
 | **KBP-5** Angleichung und Doku — *umgesetzt* | Schemaschritt C (8.3a); Eingabearten auch für Prozesswärme und Brauchwasser (OE-5); Normkalender der Vorlage 8 (7.4, OE-7); Wiki-Quelle der Bedienungsseite, Logbuch-Entwurf | Wiki-Gegenlesemuster aus `CLAUDE.md`; `DokumentationLinkWacheTests`; `NormkalenderTests`; Referenzlauf byte-gleich; das Konzept bleibt in `aktuell/`, bis KBP-4 (Typtage) umgesetzt ist |
 
 ## 11. Entscheide
