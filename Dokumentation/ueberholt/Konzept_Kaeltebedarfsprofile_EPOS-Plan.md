@@ -4,7 +4,7 @@ Gegenstand: der Dialog „Kältebedarfsprofile“ (Kachel „Kühlung und Kälte
 „Profile & Lastgänge → Kältebedarf“) und seine Rechenvorstufe bis zur 8 760-Stunden-Reihe. Grundlage ist das
 [Konzept Kältebedarf](Konzept_Kaeltebedarf_EPOS-Plan.md), Abschnitte 3.3, 3.4 und 4.1; dieses Papier schreibt den
 Profilteil fort und ändert nichts an Deckung, Buchung und Erzeugern. Mockup:
-[`Mockups/Kaeltebedarfsprofil_Mockup.html`](../aktuell/Mockups/Kaeltebedarfsprofil_Mockup.html) (Bild daneben, gleicher Name, `.png`).
+[`Mockups/Kaeltebedarfsprofil_Mockup.html`](../ueberholt/Mockups/Kaeltebedarfsprofil_Mockup.html) (Bild daneben, gleicher Name, `.png`).
 
 Anwenderwunsch: „Die Bedarfsprofile sollte ähnlich dem der Wärmebedarfsprofile sein - Funktionalität - Darstellung in
 Grafik, Eingabe mit Monatswerte, Tageswerte, Wochenwerte ... Vorlagen für Bedarfsprofile erweitern (Krankenhaus,

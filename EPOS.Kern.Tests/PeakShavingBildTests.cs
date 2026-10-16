@@ -136,6 +136,80 @@ namespace EPOS.Kern.Tests
             Assert.NotEqual(ohne.Length, mit.Length);
         }
 
+        /// <summary>
+        /// Welle RZ: Ohne die zwei zuschaltbaren Reihen ist das Modell dasselbe wie bisher — Bit fuer Bit im PNG,
+        /// mit und ohne Ladezustand.
+        /// </summary>
+        [Fact]
+        public void Ohne_Zusatzreihen_bleibt_das_Bild_byte_gleich()
+        {
+            PeakShavingErgebnis r = Ergebnis();
+            foreach (bool soc in new[] { false, true })
+                Assert.Equal(PeakShavingBild.Lastgang(r, soc),
+                             WindowsFormsApplication1.Zeichnung.SkiaMaler.Png(PeakShavingBild.Modell(r, soc, false, false)));
+        }
+
+        /// <summary>
+        /// Welle RZ: Lade- und Entladeleistung stehen als zwei Linien im Bild, die Schwelle als eine — je nur
+        /// gewählt. Die Leistung ist Energie je Intervall durch die Intervalldauer (0,25 h).
+        /// </summary>
+        [Fact]
+        public void Leistung_und_Schwelle_stehen_nur_gewaehlt_im_Bild()
+        {
+            PeakShavingErgebnis r = Ergebnis();
+            string[] Namen(WindowsFormsApplication1.Zeichnung.Zeichenmodell m)
+                => System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Select(m.Reihen, x => x.Name));
+
+            string[] ohne = Namen(PeakShavingBild.Modell(r, false, false, false));
+            string[] leistung = Namen(PeakShavingBild.Modell(r, false, true, false));
+            string[] schwelle = Namen(PeakShavingBild.Modell(r, false, false, true));
+
+            Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.PEAK_SERIE_LADELEISTUNG, ohne);
+            Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.PEAK_SERIE_SCHWELLE, ohne);
+            Assert.Contains(WindowsFormsApplication1.MyResource.Resource.PEAK_SERIE_LADELEISTUNG, leistung);
+            Assert.Contains(WindowsFormsApplication1.MyResource.Resource.PEAK_SERIE_ENTLADELEISTUNG, leistung);
+            Assert.DoesNotContain(WindowsFormsApplication1.MyResource.Resource.PEAK_SERIE_SCHWELLE, leistung);
+            Assert.Contains(WindowsFormsApplication1.MyResource.Resource.PEAK_SERIE_SCHWELLE, schwelle);
+            Assert.Equal(ohne.Length + 2, leistung.Length);
+            Assert.Equal(ohne.Length + 1, schwelle.Length);
+
+            double[] lade = PeakShavingBild.LadeleistungKw(r);
+            double[] entlade = PeakShavingBild.EntladeleistungKw(r);
+            Assert.Equal(r.LadungAcKwh.Length, lade.Length);
+            for (int i = 0; i < lade.Length; i++)
+            {
+                Assert.Equal(r.LadungAcKwh[i] / 0.25, lade[i], 9);
+                Assert.Equal(r.EntladungAcKwh[i] / 0.25, entlade[i], 9);
+            }
+            Assert.True(System.Linq.Enumerable.Max(entlade) > 0.0, "Der Speicher kappt die Spitze.");
+            Assert.All(PeakShavingBild.SchwelleKw(r), w => Assert.Equal(r.ErreichteSchwelleKw, w));
+        }
+
+        /// <summary>
+        /// Welle RZ: Die CSV der Huelle haengt die gewaehlten Reihen hinter die fuenf Spalten des Vorlaeufers;
+        /// ohne Wahl bleiben es genau die fuenf.
+        /// </summary>
+        [Fact]
+        public void Die_CSV_Spalten_folgen_der_Wahl()
+        {
+            PeakShavingErgebnis r = Ergebnis();
+            string[] Kopf(EPOS.UI.Dialoge.Strom.PeakShavingBildwahl w)
+                => System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Select(PeakShavingHuelle.CsvSpalten(r, w), s => s.Name));
+
+            string[] fuenf = Kopf(new EPOS.UI.Dialoge.Strom.PeakShavingBildwahl(true));
+            Assert.Equal(5, fuenf.Length);
+            Assert.Equal(fuenf, Kopf(null));
+            Assert.Equal(7, Kopf(new EPOS.UI.Dialoge.Strom.PeakShavingBildwahl(false, true)).Length);
+            Assert.Equal(6, Kopf(new EPOS.UI.Dialoge.Strom.PeakShavingBildwahl(false, false, true)).Length);
+            string[] alle = Kopf(new EPOS.UI.Dialoge.Strom.PeakShavingBildwahl(false, true, true));
+            Assert.Equal(new[]
+            {
+                WindowsFormsApplication1.MyResource.Resource.PEAK_CSV_LADELEISTUNG,
+                WindowsFormsApplication1.MyResource.Resource.PEAK_CSV_ENTLADELEISTUNG,
+                WindowsFormsApplication1.MyResource.Resource.PEAK_CSV_SCHWELLE
+            }, alle[5..]);
+        }
+
         /// <summary>Dieselbe Reihe, dasselbe Bild — Bit fuer Bit.</summary>
         [Fact]
         public void Dasselbe_Ergebnis_liefert_dasselbe_Bild()

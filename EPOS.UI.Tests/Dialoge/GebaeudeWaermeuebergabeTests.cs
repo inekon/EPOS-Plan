@@ -304,7 +304,7 @@ public class GebaeudeWaermeuebergabeTests : EposBunitContext
         GebaeudeKatalogDaten geschrieben = null!;
         var cut = Aufbauen(d, speichern: (x, _, _) => { geschrieben = x; return new(true, ""); });
         Assert.NotNull(FeldOderNull(cut, RAUMEINFLUSS));
-        Assert.Contains("„geschlossener Kreis (AK3)“", Gruppe(cut));
+        Assert.Contains("„geschlossener Kreis“", Gruppe(cut));
 
         Eingabe(cut, RAUMEINFLUSS).Input("1,5");
         Ok(cut);

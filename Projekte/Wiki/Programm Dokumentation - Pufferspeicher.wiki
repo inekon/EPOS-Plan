@@ -155,7 +155,7 @@ Ein neuer Speicher rechnet als ein einziger Vorrat (''Schichten:'' 1) mit einer 
 
 {{Anker|schichtung-ergebnisse}}'''Wo Sie die Wirkung sehen.'''
 * ''Simulation Konfiguration'' – die Speicherkachel nennt die Schichtenzahl („4 Schichten“) und nach dem Lauf „Oberste Schicht: … °C im Jahresmittel“.
-* Reiter ''Wärmepumpe'' der Simulationsergebnisse, Unterblatt ''Speichertemperaturen'' – das Bild ''Speichertemperaturen im Jahresverlauf'' zeigt je Speicher ''T oben [°C]'' und gestrichelt ''T unten [°C]''. Geschichtet laufen beide auseinander, und der Abstand zeigt, wie viel Spreizung der Speicher hält; mit einer Schicht liegen beide Linien aufeinander. Ohne Wärmepumpe in der Kaskade gibt es diesen Reiter nicht.
+* Reiter ''Wärmepumpe'' der Simulationsergebnisse, Unterblatt ''Speichertemperaturen'' – das Bild ''Speichertemperaturen im Jahresverlauf'' zeigt je Speicher ''T oben [°C]'' und gestrichelt ''T unten [°C]''. Geschichtet laufen beide auseinander, und der Abstand zeigt, wie viel Spreizung der Speicher hält; mit einer Schicht liegen beide Linien aufeinander. Ab zwei Speichern steht über dem Bild je Speicher ein Schalter, mit dem Sie ihn aus- und wieder einblenden; ab Werk sind alle Speicher eingeblendet. Ohne Wärmepumpe in der Kaskade gibt es diesen Reiter nicht.
 * Dieselbe Tabelle der Pufferspeicher nennt Ladung, Entladung, Verluste und Vollzyklen und – mit Frischwassermodul – die Stunden, in denen die oberste Zone zu kalt zum Zapfen war.
 * Das ''Simulationsprotokoll'' nennt Zonenanteile, die der Lauf nicht annehmen konnte und durch gleich große Zonen ersetzt hat.
 

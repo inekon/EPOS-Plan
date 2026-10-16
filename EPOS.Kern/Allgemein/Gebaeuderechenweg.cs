@@ -294,17 +294,17 @@ namespace WindowsFormsApplication1
             }
         }
 
-        /// <summary>Der Anzeigename einer Kopplungsstufe (<c>DbWerte.ANLAGENKOPPLUNG_*</c>); NULL heißt „aus".</summary>
+        /// <summary>Der Anzeigename einer Kopplungsstufe (<c>DbWerte.ANLAGENKOPPLUNG_*</c>); NULL heißt „ohne Kopplung".</summary>
         public static string Stufenname(string stufe)
         {
             switch (stufe)
             {
                 case null:
                 case "":
-                case DbWerte.ANLAGENKOPPLUNG_AUS: return Text("SIMKONF_ANLAGENKOPPLUNG_AUS", "aus");
-                case DbWerte.ANLAGENKOPPLUNG_AK1: return Text("SIMKONF_ANLAGENKOPPLUNG_AK1", "Heizkreis (AK1)");
-                case DbWerte.ANLAGENKOPPLUNG_AK2: return Text("SIMKONF_ANLAGENKOPPLUNG_AK2", "Fahrplan (AK2)");
-                case DbWerte.ANLAGENKOPPLUNG_AK3: return Text("SIMKONF_ANLAGENKOPPLUNG_AK3", "geschlossener Kreis (AK3)");
+                case DbWerte.ANLAGENKOPPLUNG_AUS: return Text("SIMKONF_ANLAGENKOPPLUNG_AUS", "ohne Kopplung");
+                case DbWerte.ANLAGENKOPPLUNG_AK1: return Text("SIMKONF_ANLAGENKOPPLUNG_AK1", "Heizkreis");
+                case DbWerte.ANLAGENKOPPLUNG_AK2: return Text("SIMKONF_ANLAGENKOPPLUNG_AK2", "Fahrplan");
+                case DbWerte.ANLAGENKOPPLUNG_AK3: return Text("SIMKONF_ANLAGENKOPPLUNG_AK3", "geschlossener Kreis");
                 default: return stufe;
             }
         }

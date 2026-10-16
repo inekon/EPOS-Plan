@@ -63,3 +63,7 @@ ein Schalter im Kern (`KlimaReihenkatalog.RohwerteFreigeschaltet`), dazu kommt m
   Fensterprobe: `klimareihen` 0 Verstöße in vier Fenstern (10 Chips, 1 gesperrt; 520 × 624 Bild zuerst, sonst Wahl
   zuerst; Wahl 476/449/472/331 px hoch), Gegenproben 520 × 624 ohne Umbruch 2 und ohne Reihenfolgeregel 1 Verstoß;
   `klimaimport` 0 Verstöße, Rollhöhe 2 008/560 px, Gegenprobe 4 je Fenster; `dubletten` 0 Verstöße, Gegenprobe rot.
+
+## Integration
+
+Zweig `integ-dk`, 16.10.2026, zusammen mit `kd8a`, `mu`, `rza`, `rzb` und `origin` (Schritt 237, Basis R57). EPOS.UI.Tests 9645 grün (inklusive Klimadialog-, Reihenwahl- und Stilblattwachen), `KlimaReihenkatalogTests` grün (Kern-Teilmenge 616 Tests), Fensterprobe `klimaimport`, `klimareihen`, `dubletten` samt Gegenproben erfüllt. Beim Zusammenführen fiel auf: der Reihenwahl-Block des Stilblatts lag zwischen `.epos-kond` und dem Formularraster und verletzte die Wachen KP2 und Formularraster; er steht jetzt davor, Regeln unverändert. Gate gegen R57: Referenzlauf 38 Projekte ohne Abweichung (13 025 956 Werte, CSV 1233 von 1233 byte-gleich), KiKern 553, SpeicherEngine 397, SpeicherPlanung 27, Dokumentationswachen 35, Werkzeugtests 250, ChartProben 257 Bilder 0 Verstöße (Messlatte unverändert), SQL-Dialektprüfer grün, Windows-Schale 0 Fehler.

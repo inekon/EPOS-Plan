@@ -2268,7 +2268,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteseite im Kreis (AK3), Projekt, letzter Lauf ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteseite im geschlossenen Kreis, Projekt, letzter Lauf ähnelt.
         /// </summary>
         public static string AK3K_GEBB_QUELLE_KREIS {
             get {
@@ -2331,7 +2331,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Geschlossener Kreis (AK3), Projekt, letzter Lauf ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geschlossener Kreis, Projekt, letzter Lauf ähnelt.
         /// </summary>
         public static string AK3_GEBB_QUELLE {
             get {
@@ -2340,7 +2340,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Raumeinfluss: Der Vorlauf steigt je Kelvin, um das die Raumtemperatur unter dem Sollwert liegt, um den eingetragenen Wert (0 bis {0} K/K; leer oder 0 = aus). Er wirkt nur mit der Anlagenkopplung „geschlossener Kreis (AK3)“. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumeinfluss: Der Vorlauf steigt je Kelvin, um das die Raumtemperatur unter dem Sollwert liegt, um den eingetragenen Wert (0 bis {0} K/K; leer oder 0 = aus). Er wirkt nur mit der Anlagenkopplung „geschlossener Kreis“. ähnelt.
         /// </summary>
         public static string AK3_GEBK_HRL_RAUMEINFLUSS {
             get {
@@ -2358,7 +2358,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Durchläufe je Stunde, Höchstwert (AK3) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Durchläufe je Stunde, Höchstwert (geschlossener Kreis) ähnelt.
         /// </summary>
         public static string AK3_KI_GEBB_DURCHLAEUFE_MAX {
             get {
@@ -2367,7 +2367,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Durchläufe je Stunde im Mittel (AK3) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Durchläufe je Stunde im Mittel (geschlossener Kreis) ähnelt.
         /// </summary>
         public static string AK3_KI_GEBB_DURCHLAEUFE_MITTEL {
             get {
@@ -2376,7 +2376,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahl des geschlossenen Kreises (Anlagenkopplung AK3) aus dem letzten Projektlauf; leer ohne Lauf mit AK3. Nur Anzeige. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahl des geschlossenen Kreises (Anlagenkopplung) aus dem letzten Projektlauf; leer ohne Lauf im geschlossenen Kreis. Nur Anzeige. ähnelt.
         /// </summary>
         public static string AK3_KI_GEBB_ERL {
             get {
@@ -2385,7 +2385,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis der Rückstufe (AK3) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis der Rückstufe (geschlossener Kreis) ähnelt.
         /// </summary>
         public static string AK3_KI_GEBB_RUECKSTUFE {
             get {
@@ -2394,7 +2394,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bei der Anlagenkopplung AK3 rechnet die Auskunft ohne geschlossenen Kreis auf dem Profilweg; leer sonst. Nur Anzeige. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bei der Anlagenkopplung „geschlossener Kreis“ rechnet die Auskunft ohne geschlossenen Kreis auf dem Profilweg; leer sonst. Nur Anzeige. ähnelt.
         /// </summary>
         public static string AK3_KI_GEBB_RUECKSTUFE_ERL {
             get {
@@ -2403,7 +2403,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Raumeinfluss der Heizkurve in K/K, 0 bis 10; leer oder 0 = aus. Wirkt nur mit eingeschalteter Heizkurve und der Anlagenkopplung AK3. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumeinfluss der Heizkurve in K/K, 0 bis 10; leer oder 0 = aus. Wirkt nur mit eingeschalteter Heizkurve und der Anlagenkopplung „geschlossener Kreis“. ähnelt.
         /// </summary>
         public static string AK3_KI_GEBK_RAUMEINFLUSS_ERL {
             get {
@@ -2412,7 +2412,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung AK3: Der geschlossene Kreis findet in Jahresstunde {1} keine stabile Lösung (Gebäude {0}; beteiligt {2}; größte Abweichung {3}; letzter Stand {4}). Der Lauf bricht ab, statt zu nähern. Prüfen Sie Leistung und Kennlinien der Erzeuger, den Raumeinfluss der Heizkurve und die Wärmeübergabe — oder rechnen Sie das Projekt mit der Anlagenkopplung „Heizkreis (AK1)“. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung „geschlossener Kreis“: Der Kreis findet in Jahresstunde {1} keine stabile Lösung (Gebäude {0}; beteiligt {2}; größte Abweichung {3}; letzter Stand {4}). Der Lauf bricht ab, statt zu nähern. Prüfen Sie Leistung und Kennlinien der Erzeuger, den Raumeinfluss der Heizkurve und die Wärmeübergabe — oder rechnen Sie das Projekt mit der Anlagenkopplung „Heizkreis“. ähnelt.
         /// </summary>
         public static string AK3_MSG_KONVERGENZ {
             get {
@@ -2421,7 +2421,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Berechnet ohne geschlossenen Kreis (Profilweg): Diese Auskunft rechnet die Anlagenkopplung AK3 wie AK2; der Projektlauf rechnet den geschlossenen Kreis. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Berechnet ohne geschlossenen Kreis (Profilweg): Diese Auskunft rechnet die Anlagenkopplung „geschlossener Kreis“ ohne Rückwirkung der Anlage auf das Gebäude; der Projektlauf rechnet den geschlossenen Kreis. ähnelt.
         /// </summary>
         public static string AK3_RUECKSTUFE {
             get {
@@ -2430,7 +2430,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Geschlossener Kreis (AK3): Je Stunde wirkt die verfügbare Leistung der Erzeuger und Speicher auf die Gebäude zurück — Raumtemperatur, Bedarf und Vorlauf werden im Kreis abgeglichen. Gebäude mit eingeschalteter Wärmeübergabe rechnen den Heizkreis wie bei AK1. Die Rechenzeit ist höher; Auskünfte (Bedarf eines Gebäudes, Aufheizung) rechnen ohne geschlossenen Kreis. Die Einstellung gilt für das ganze Projekt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geschlossener Kreis: Je Stunde wirkt die verfügbare Leistung der Erzeuger und Speicher auf die Gebäude zurück — Raumtemperatur, Bedarf und Vorlauf werden im Kreis abgeglichen. Gebäude mit eingeschalteter Wärmeübergabe rechnen den Heizkreis wie auf der Stufe „Heizkreis“. Die Rechenzeit ist höher; Auskünfte (Bedarf eines Gebäudes, Aufheizung) rechnen ohne geschlossenen Kreis. Die Einstellung gilt für das ganze Projekt. ähnelt.
         /// </summary>
         public static string AK3_SIMKONF_HRL_ANLAGENKOPPLUNG {
             get {
@@ -5505,7 +5505,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die θ_biv,1 = {0} °C ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kessel hilft unter {0} °C ähnelt.
         /// </summary>
         public static string BER_BILD_BIVALENZ_MARKE_BIV1 {
             get {
@@ -5514,7 +5514,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die θ_biv,2 = {0} °C ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kessel allein unter {0} °C ähnelt.
         /// </summary>
         public static string BER_BILD_BIVALENZ_MARKE_BIV2 {
             get {
@@ -5523,7 +5523,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die nach Kennfeld {0} °C ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennfeld {0} °C ähnelt.
         /// </summary>
         public static string BER_BILD_BIVALENZ_MARKE_KENNFELD {
             get {
@@ -5649,7 +5649,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bivalenzpunkt θ_biv,1 berechnet [°C] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kessel hilft unter, Bivalenzpunkt 1 berechnet [°C] ähnelt.
         /// </summary>
         public static string BER_BIV_PUNKT1 {
             get {
@@ -5658,7 +5658,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bivalenzpunkt θ_biv,2 berechnet [°C] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kessel allein unter, Bivalenzpunkt 2 berechnet [°C] ähnelt.
         /// </summary>
         public static string BER_BIV_PUNKT2 {
             get {
@@ -23234,6 +23234,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzbezug ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_NETZBEZUG {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_NETZBEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzeinspeisung ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_NETZEINSPEISUNG {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_NETZEINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Profil/Lastgang ähnelt.
         /// </summary>
         public static string CHART_LEGENDE_PROFIL_LASTGANG {
@@ -23311,6 +23329,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_LEGENDE_SUMME_STROMVERBRAUCH {
             get {
                 return ResourceManager.GetString("CHART_LEGENDE_SUMME_STROMVERBRAUCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe Strombedarf Wärmepumpe und Heizstab ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_SUMME_STROM_WP {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_SUMME_STROM_WP", resourceCulture);
             }
         }
         
@@ -36927,7 +36954,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlkurve: Fußpunkt {0} °C bei Außenluft am Kühlsollwert und darunter, Auslegungsvorlauf {1} °C bei der Auslegungs-Außentemperatur ({2}), dazwischen linear, nie unter der Vorlaufgrenze; der Raumeinfluss senkt den Vorlauf um k · Überschreitung des Kühlsollwerts. Gerechnet wird sie auf Stufe AK3, sonst gilt der feste Vorlauf. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlkurve: Fußpunkt {0} °C bei Außenluft am Kühlsollwert und darunter, Auslegungsvorlauf {1} °C bei der Auslegungs-Außentemperatur ({2}), dazwischen linear, nie unter der Vorlaufgrenze; der Raumeinfluss senkt den Vorlauf um k · Überschreitung des Kühlsollwerts. Gerechnet wird sie auf der Stufe „geschlossener Kreis“, sonst gilt der feste Vorlauf. ähnelt.
         /// </summary>
         public static string GEBK_ZEILE_KUEHLKURVE {
             get {
@@ -37062,7 +37089,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gerechnet wird die Kühlübergabe nur in Projekten mit Anlagenkopplung „Heizkreis (AK1)“ und der Projekteinstellung „Kühlung rechnen“ (Simulationskonfiguration). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerechnet wird die Kühlübergabe nur in Projekten mit Anlagenkopplung „Heizkreis“ und der Projekteinstellung „Kühlung rechnen“ (Simulationskonfiguration). ähnelt.
         /// </summary>
         public static string GEBK_ZEILE_KUEHL_PROJEKT {
             get {
@@ -37314,7 +37341,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gerechnet wird die Wärmeübergabe nur in Projekten mit der Projekteinstellung Anlagenkopplung „Heizkreis (AK1)“ oder „geschlossener Kreis (AK3)“ (Simulationskonfiguration). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerechnet wird die Wärmeübergabe nur in Projekten mit der Projekteinstellung Anlagenkopplung „Heizkreis“ oder „geschlossener Kreis“ (Simulationskonfiguration). ähnelt.
         /// </summary>
         public static string GEBK_ZEILE_UEBERGABE_PROJEKT {
             get {
@@ -40446,7 +40473,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die gekoppelt (AK1) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die mit Anlagenkopplung ähnelt.
         /// </summary>
         public static string GEB_RECHENWEG_GEKOPPELT {
             get {
@@ -54213,7 +54240,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die η_RT ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad Laden/Entladen ähnelt.
         /// </summary>
         public static string IMP_KAT_SP_ETA {
             get {
@@ -61443,7 +61470,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die η_RT ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad Laden/Entladen ähnelt.
         /// </summary>
         public static string KFLT_SP_ETART {
             get {
@@ -61695,7 +61722,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die P_N ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennkälteleistung ähnelt.
         /// </summary>
         public static string KFLT_SP_NENNKAELTELEISTUNG {
             get {
@@ -61704,7 +61731,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die P_N ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennleistung ähnelt.
         /// </summary>
         public static string KFLT_SP_NENNLEISTUNG {
             get {
@@ -67234,7 +67261,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeübergabe rechnen statt idealer Regelung (Anlagenkopplung AK1); wirkt nur mit einer Übergabeart und in einem Projekt mit Anlagenkopplung AK1. Beim ersten Einschalten schlägt der Dialog die Heizkurve vor. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeübergabe rechnen statt idealer Regelung (Anlagenkopplung „Heizkreis“); wirkt nur mit einer Übergabeart und in einem Projekt mit Anlagenkopplung „Heizkreis“. Beim ersten Einschalten schlägt der Dialog die Heizkurve vor. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_HEIZKREIS_AKTIV_ERL {
             get {
@@ -67306,7 +67333,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlkurve ein oder aus: Der Kühlvorlauf gleitet über die Außentemperatur vom Fußpunkt zum Auslegungsvorlauf; gerechnet auf Stufe AK3 mit Kühlübergabe. Beim Einschalten wird ein leerer Raumeinfluss mit dem Vorgabewert gefüllt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlkurve ein oder aus: Der Kühlvorlauf gleitet über die Außentemperatur vom Fußpunkt zum Auslegungsvorlauf; gerechnet auf der Stufe „geschlossener Kreis“ mit Kühlübergabe. Beim Einschalten wird ein leerer Raumeinfluss mit dem Vorgabewert gefüllt. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_KUEHLKURVE_AKTIV_ERL {
             get {
@@ -67360,7 +67387,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlübergabe rechnen statt idealer Kühlung (Anlagenkopplung AK1); wirkt nur mit Kühlung, Kühlsollwert, einer Kühlübergabeart und in einem Projekt mit Anlagenkopplung AK1 und Kühlbetrieb. Beim Abschalten bleibt die Art stehen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlübergabe rechnen statt idealer Kühlung (Anlagenkopplung „Heizkreis“); wirkt nur mit Kühlung, Kühlsollwert, einer Kühlübergabeart und in einem Projekt mit Anlagenkopplung „Heizkreis“ und Kühlbetrieb. Beim Abschalten bleibt die Art stehen. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_KUEHLUEBERGABE_AKTIV_ERL {
             get {
@@ -71446,6 +71473,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt Lade- und Entladeleistung des Speichers als Linien im Diagramm. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_LEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_LEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Leistungspreis des Netzanschlusses; er bewertet die gekappte Spitze. ähnelt.
         /// </summary>
         public static string KI_DLG_PEAK_LP_ERL {
@@ -71514,6 +71550,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_PEAK_REITER_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_PEAK_REITER_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt die erreichte Schwelle als waagerechte Linie im Diagramm. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_SCHWELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_SCHWELLE_ERL", resourceCulture);
             }
         }
         
@@ -72976,7 +73021,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Projekteinstellung Anlagenkopplung: AUS (ideale Regelung), AK1 (Heizkreis als Randbedingung) oder AK3 (geschlossener Kreis: die verfügbare Leistung wirkt je Stunde auf die Gebäude zurück, Rechenzeit höher); AK2 ist noch nicht verfügbar. Wird sofort gespeichert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekteinstellung Anlagenkopplung als Steuerwert: AUS (ohne Kopplung, ideale Regelung), AK1 (Heizkreis als Randbedingung) oder AK3 (geschlossener Kreis: die verfügbare Leistung wirkt je Stunde auf die Gebäude zurück, Rechenzeit höher); AK2 (Fahrplan) ist noch nicht verfügbar. Wird sofort gespeichert. ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_ANLAGENKOPPLUNG_ERL {
             get {
@@ -72985,7 +73030,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stufe „{0}“ gibt es nicht; bekannt sind AUS, AK1, AK2 und AK3. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stufe „{0}“ gibt es nicht; bekannt sind die Steuerwerte AUS (ohne Kopplung), AK1 (Heizkreis), AK2 (Fahrplan) und AK3 (geschlossener Kreis). ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_ANLAGENKOPPLUNG_UNBEKANNT {
             get {
@@ -104380,6 +104425,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lade- und Entladeleistung im Diagramm zeigen ähnelt.
+        /// </summary>
+        public static string PEAK_CHK_LEISTUNG {
+            get {
+                return ResourceManager.GetString("PEAK_CHK_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schwelle im Diagramm zeigen ähnelt.
+        /// </summary>
+        public static string PEAK_CHK_SCHWELLE {
+            get {
+                return ResourceManager.GetString("PEAK_CHK_SCHWELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ladezustand im Diagramm zeigen ähnelt.
         /// </summary>
         public static string PEAK_CHK_SOC {
@@ -104389,11 +104452,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entladeleistung [kW] ähnelt.
+        /// </summary>
+        public static string PEAK_CSV_ENTLADELEISTUNG {
+            get {
+                return ResourceManager.GetString("PEAK_CSV_ENTLADELEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Entladung [kWh] ähnelt.
         /// </summary>
         public static string PEAK_CSV_ENTLADUNG {
             get {
                 return ResourceManager.GetString("PEAK_CSV_ENTLADUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladeleistung [kW] ähnelt.
+        /// </summary>
+        public static string PEAK_CSV_LADELEISTUNG {
+            get {
+                return ResourceManager.GetString("PEAK_CSV_LADELEISTUNG", resourceCulture);
             }
         }
         
@@ -104421,6 +104502,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PEAK_CSV_PNEU {
             get {
                 return ResourceManager.GetString("PEAK_CSV_PNEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schwelle [kW] ähnelt.
+        /// </summary>
+        public static string PEAK_CSV_SCHWELLE {
+            get {
+                return ResourceManager.GetString("PEAK_CSV_SCHWELLE", resourceCulture);
             }
         }
         
@@ -104731,7 +104821,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad η_RT [-] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungsgrad Laden/Entladen [-] ähnelt.
         /// </summary>
         public static string PEAK_LBL_ETA {
             get {
@@ -105118,11 +105208,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entladeleistung ähnelt.
+        /// </summary>
+        public static string PEAK_SERIE_ENTLADELEISTUNG {
+            get {
+                return ResourceManager.GetString("PEAK_SERIE_ENTLADELEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladeleistung ähnelt.
+        /// </summary>
+        public static string PEAK_SERIE_LADELEISTUNG {
+            get {
+                return ResourceManager.GetString("PEAK_SERIE_LADELEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Lastgang mit Speicher ähnelt.
         /// </summary>
         public static string PEAK_SERIE_NEU {
             get {
                 return ResourceManager.GetString("PEAK_SERIE_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schwelle ähnelt.
+        /// </summary>
+        public static string PEAK_SERIE_SCHWELLE {
+            get {
+                return ResourceManager.GetString("PEAK_SERIE_SCHWELLE", resourceCulture);
             }
         }
         
@@ -107544,7 +107661,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die 1 = ein Vorrat wie bisher; ab 2 rechnet der Speicher geschichtet. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die 1 = ein Vorrat ohne Schichtung; ab 2 rechnet der Speicher geschichtet. ähnelt.
         /// </summary>
         public static string PSP_HINWEIS_SCHICHTEN {
             get {
@@ -116824,7 +116941,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung AK3 mit Kälteseite: Kälteschranke gegriffen in {0} h, Umschaltstunden {1} h, Kälte-Restbedarf {2:0.###} kWh in {3} h, Fallwechsel {4}; Vorrangschätzung zu knapp in {5} h ({6:0.###} kWh), zu weit in {7} h. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung „geschlossener Kreis“ mit Kälteseite: Kälteschranke gegriffen in {0} h, Umschaltstunden {1} h, Kälte-Restbedarf {2:0.###} kWh in {3} h, Fallwechsel {4}; Vorrangschätzung zu knapp in {5} h ({6:0.###} kWh), zu weit in {7} h. ähnelt.
         /// </summary>
         public static string SIMENG_AK3K_KREISZAEHLER {
             get {
@@ -116833,7 +116950,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung AK3 (Kernstufe): Gebäude und Kaskade rechnen je Stunde im geschlossenen Kreis mit Kälteseite — der Kühlkanal folgt dem Kreis, die Kältekaskade rechnet je Stunde nach der Wärmestunde. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung „geschlossener Kreis“: Gebäude und Kaskade rechnen je Stunde im geschlossenen Kreis mit Kälteseite — der Kühlkanal folgt dem Kreis, die Kältekaskade rechnet je Stunde nach der Wärmestunde. ähnelt.
         /// </summary>
         public static string SIMENG_AK3K_KREIS_MIT_KAELTESEITE {
             get {
@@ -117121,7 +117238,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: Das Projekt steht auf der Stufe {0}; gebaut ist die Stufe AK1 — gerechnet wird der Heizkreis als Randbedingung (AK1). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenkopplung: Das Projekt steht auf der Stufe „{0}“, die noch nicht verfügbar ist — gerechnet wird der Heizkreis als Randbedingung. ähnelt.
         /// </summary>
         public static string SIMENG_AK_STUFE_NICHT_GEBAUT {
             get {
@@ -120181,6 +120298,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe und Heizstab getrennt ähnelt.
+        /// </summary>
+        public static string SIMERG_CHK_WP_STROM_GETRENNT {
+            get {
+                return ResourceManager.GetString("SIMERG_CHK_WP_STROM_GETRENNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Vorgabe) ähnelt.
         /// </summary>
         public static string SIMERG_ETA30_VORGABE {
@@ -121673,7 +121799,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Heizkreis (AK1) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizkreis ähnelt.
         /// </summary>
         public static string SIMKONF_ANLAGENKOPPLUNG_AK1 {
             get {
@@ -121682,7 +121808,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Fahrplan (AK2) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fahrplan ähnelt.
         /// </summary>
         public static string SIMKONF_ANLAGENKOPPLUNG_AK2 {
             get {
@@ -121691,7 +121817,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die geschlossener Kreis (AK3) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die geschlossener Kreis ähnelt.
         /// </summary>
         public static string SIMKONF_ANLAGENKOPPLUNG_AK3 {
             get {
@@ -121700,7 +121826,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die aus ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Kopplung ähnelt.
         /// </summary>
         public static string SIMKONF_ANLAGENKOPPLUNG_AUS {
             get {
@@ -121925,7 +122051,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Mit der Anlagenkopplung „Heizkreis (AK1)“ wird ein Gebäude ohne Zonen nicht optimiert; der Lauf nennt es. Gebäude mit Zonen bekommen die Rampe. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit der Anlagenkopplung „Heizkreis“ wird ein Gebäude ohne Zonen nicht optimiert; der Lauf nennt es. Gebäude mit Zonen bekommen die Rampe. ähnelt.
         /// </summary>
         public static string SIMKONF_AUFH_HRL_GEKOPPELT {
             get {
@@ -122006,7 +122132,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Heizkreis gekoppelt (AK1) — wird nicht optimiert ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Heizkreis gekoppelt — wird nicht optimiert ähnelt.
         /// </summary>
         public static string SIMKONF_AUFH_HRL_ZEILE_GEKOPPELT {
             get {
@@ -122438,7 +122564,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Heizkreis (AK1): Gebäude mit eingeschalteter Wärmeübergabe rechnen Vorlauf, Rücklauf und die Grenze der Übergabe; die Wärmepumpe wählt ihre Kennlinie am gerechneten Vorlauf. Die Einstellung gilt für das ganze Projekt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizkreis: Gebäude mit eingeschalteter Wärmeübergabe rechnen Vorlauf, Rücklauf und die Grenze der Übergabe; die Wärmepumpe wählt ihre Kennlinie am gerechneten Vorlauf. Die Einstellung gilt für das ganze Projekt. ähnelt.
         /// </summary>
         public static string SIMKONF_HRL_ANLAGENKOPPLUNG_AK1 {
             get {
@@ -122456,7 +122582,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gespeichert ist „{0}“ — diese Stufe ist noch nicht verfügbar; der Lauf rechnet den Heizkreis (AK1) und nennt es. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gespeichert ist „{0}“ — diese Stufe ist noch nicht verfügbar; der Lauf rechnet den Heizkreis und nennt es. ähnelt.
         /// </summary>
         public static string SIMKONF_HRL_ANLAGENKOPPLUNG_NICHT_GEBAUT {
             get {
@@ -127540,7 +127666,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bivalenzpunkt θ_biv,1 (berechnet) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kessel hilft unter (Bivalenzpunkt 1, berechnet) ähnelt.
         /// </summary>
         public static string SIM_LBL_BIVALENZPUNKT_1 {
             get {
@@ -127549,7 +127675,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bivalenzpunkt θ_biv,2 (berechnet) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kessel allein unter (Bivalenzpunkt 2, berechnet) ähnelt.
         /// </summary>
         public static string SIM_LBL_BIVALENZPUNKT_2 {
             get {
@@ -154039,7 +154165,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeübergabe der Zone; leer = wie Gebäude (Wert des Gebäudes, sonst Vorgabe der wirksamen Art). Wirkt nur bei beheizter Zone, eingeschaltetem Heizkreis des Gebäudes und Anlagenkopplung AK1 im Projekt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeübergabe der Zone; leer = wie Gebäude (Wert des Gebäudes, sonst Vorgabe der wirksamen Art). Wirkt nur bei beheizter Zone, eingeschaltetem Heizkreis des Gebäudes und Anlagenkopplung „Heizkreis“ im Projekt. ähnelt.
         /// </summary>
         public static string ZONDLG_UEBERGABE_KI_ERL {
             get {
@@ -154129,7 +154255,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Wirkung, solange das Projekt keine Anlagenkopplung (AK1) rechnet — die Werte bleiben erhalten. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Wirkung, solange das Projekt ohne Anlagenkopplung rechnet — die Werte bleiben erhalten. ähnelt.
         /// </summary>
         public static string ZONDLG_UEBERGABE_ZEILE_PROJEKT_AUS {
             get {
