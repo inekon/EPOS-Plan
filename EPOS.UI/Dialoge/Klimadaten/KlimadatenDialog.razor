@@ -2128,26 +2128,8 @@
                 Farbe = Chipfarbe(r)
             });
         }
-        // Rohwerte, die die Quelle führt, diese Fassung aber nicht liefert: benannt als weich
-        // gesperrter Chip „nicht verfügbar“, nie still weggelassen (§ 4a.3). Was die Quelle
-        // gar nicht führt, nennt der Parameterbestand darunter.
-        var fehlt = new HashSet<KlimaParameter>((_vorschau?.Parameterbestand ?? Array.Empty<KlimaParameterEintrag>())
-            .Where(p => p.Stand == KlimaParameterStand.Fehlt).Select(p => p.Parameter));
-        foreach (KlimaReihe r in KlimaReihenkatalog.NichtVerfuegbar(vorschau: true))
-        {
-            if (r.Parameter is { } p && fehlt.Contains(p)) continue;
-            liste.Add(NichtVerfuegbarChip(r, r.Monatseinheit));
-        }
-        return liste.OrderBy(c => KlimaReihenkatalog.Reihe(c.Schluessel)?.Reihenfolge ?? int.MaxValue).ToList();
+        return liste;
     }
-
-    /// <summary>Ein weich gesperrter Chip einer Größe, die diese Fassung nicht liefert.</summary>
-    private static Reihenwahl.Reihenchip NichtVerfuegbarChip(KlimaReihe r, string einheit)
-        => new(r.Schluessel, r.Kurzname(), einheit, KlimaReihenkatalog.Gruppenname(r.Gruppe))
-        {
-            Sperrgrund = KlimaReihenkatalog.SperrgrundNichtVerfuegbar(r),
-            Rohwert = r.Herkunft == KlimaReihenherkunft.Rohwert
-        };
 
     /// <summary>Hält die Wahl der Vorschau auf Größen, die der gelesene Satz trägt; leer → Vorgabe.</summary>
     private void VorschauWahlPruefen()
@@ -2187,6 +2169,12 @@
         VorschaubildBauen();
     }
 
+    /// <summary>
+    /// Die Reihen der Region, die diese Fassung zeigt: Rohwerte erst nach ihrer Freischaltung
+    /// (<c>KlimaReihenkatalog.RohwerteFreigeschaltet</c>, Teil B) — vorher ohne Chip (§ 4a.3).
+    /// </summary>
+    private IEnumerable<KlimaReihenwerte> SichtbarerBestand => _reihenbestand.Where(w => w.Reihe.Freigeschaltet);
+
     /// <summary>Die Einheit des Bildes „Weitere Reihen“ (die der ersten gewählten Reihe).</summary>
     private string JahrEinheit => _jahrWahl.Count > 0 ? KlimaReihenkatalog.Reihe(_jahrWahl[0])?.Einheit ?? "" : "";
 
@@ -2197,7 +2185,7 @@
         {
             string einheit = JahrEinheit;
             var liste = new List<Reihenwahl.Reihenchip>();
-            foreach (KlimaReihenwerte w in _reihenbestand)
+            foreach (KlimaReihenwerte w in SichtbarerBestand)
             {
                 KlimaReihe r = w.Reihe;
                 bool an = _jahrWahl.Contains(r.Schluessel);
@@ -2219,9 +2207,7 @@
                     Farbe = Chipfarbe(r)
                 });
             }
-            foreach (KlimaReihe r in KlimaReihenkatalog.NichtVerfuegbar(vorschau: false))
-                liste.Add(NichtVerfuegbarChip(r, r.Einheit));
-            return liste.OrderBy(c => KlimaReihenkatalog.Reihe(c.Schluessel)?.Reihenfolge ?? int.MaxValue).ToList();
+            return liste;
         }
     }
 
@@ -2231,7 +2217,7 @@
     /// </summary>
     private void JahrWahlPruefen()
     {
-        var gefuehrt = _reihenbestand.Where(w => w.Gefuehrt).Select(w => w.Reihe.Schluessel).ToList();
+        var gefuehrt = SichtbarerBestand.Where(w => w.Gefuehrt).Select(w => w.Reihe.Schluessel).ToList();
         var wahl = _jahrWahl.Where(gefuehrt.Contains).ToList();
         if (wahl.Count == 0)
             wahl = KlimaReihenkatalog.VORGABE_JAHRESVERLAUF.Where(gefuehrt.Contains).ToList();
@@ -2242,14 +2228,14 @@
 
     private void ReihenbildBauen()
     {
-        var gewaehlt = _jahrWahl.Select(k => _reihenbestand.FirstOrDefault(w => w.Reihe.Schluessel == k && w.Gefuehrt))
+        var gewaehlt = _jahrWahl.Select(k => SichtbarerBestand.FirstOrDefault(w => w.Reihe.Schluessel == k && w.Gefuehrt))
                                 .Where(w => w is not null).Select(w => w!).ToList();
         _modellReihen = gewaehlt.Count > 0 ? KlimaVorschaubild.Jahresverlauf(gewaehlt) : null;
     }
 
     private void JahrUmschalten(string schluessel)
     {
-        KlimaReihenwerte? w = _reihenbestand.FirstOrDefault(x => x.Reihe.Schluessel == schluessel);
+        KlimaReihenwerte? w = SichtbarerBestand.FirstOrDefault(x => x.Reihe.Schluessel == schluessel);
         if (w is null || !w.Gefuehrt) return;
         IReadOnlyList<string> neu = KlimaReihenkatalog.JahresverlaufKlick(_jahrWahl, schluessel, out string grund);
         if (grund.Length > 0) return;

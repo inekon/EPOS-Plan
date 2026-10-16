@@ -57016,9 +57016,6 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="KLIMA_RW_DIA_BEZEICHNUNG" xml:space="preserve">
     <value>Annual profile of the selected series</value>
   </data>
-  <data name="KLIMA_RW_NICHT_VERFUEGBAR" xml:space="preserve">
-    <value>Not available: this version does not store the raw values of the source</value>
-  </data>
   <data name="KLIMA_RW_NAME_TEMPERATUR" xml:space="preserve">
     <value>Air temperature</value>
   </data>

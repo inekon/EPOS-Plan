@@ -151,10 +151,11 @@ namespace WindowsFormsApplication1
         public static readonly IReadOnlyList<string> VORGABE_JAHRESVERLAUF = new[] { R_GLOBAL };
 
         /// <summary>
-        /// Teil B (KD-4) schaltet die Rohwerte frei; bis dahin stehen sie benannt als weich gesperrter
-        /// Chip „nicht verfügbar“ (<see cref="SperrgrundNichtVerfuegbar"/>), nie still weggelassen.
+        /// Teil B (KD-4, Rohwerttabelle) schaltet die Rohwerte frei; bis dahin bekommen sie keinen Chip,
+        /// weder in der Vorschau noch im Reiter „Weitere Reihen“ (Konzept § 4a.3, Anwenderentscheid
+        /// 16.10.2026). Gesetzt wird der Schalter nur von Teil B und von Tests (Gegenprobe).
         /// </summary>
-        public const bool RohwerteFreigeschaltet = false;
+        public static bool RohwerteFreigeschaltet { get; internal set; }
 
         private static KlimaReihe Rechen(int nr, string schluessel, KlimaParameter p, Func<string> name, Func<string> kurz,
                                          string einheit, KlimaReihengruppe gruppe, KlimaMonatsregel regel, string spalte,
@@ -302,7 +303,6 @@ namespace WindowsFormsApplication1
         {
             KlimaReihe r = Reihe(schluessel);
             if (r == null) return "";
-            if (!r.Freigeschaltet) return SperrgrundNichtVerfuegbar(r);
             wahl ??= Array.Empty<string>();
             if (wahl.Contains(schluessel))
                 return wahl.Count <= 1 ? MyResource.Resource.KLIMA_RW_LETZTE_BLEIBT : "";
@@ -312,21 +312,6 @@ namespace WindowsFormsApplication1
                                      string.Join(", ", einheiten));
             return "";
         }
-
-        /// <summary>
-        /// Warum eine Größe in dieser Fassung gar nicht wählbar ist; leer = verfügbar. Rohwerte vor
-        /// ihrer Freischaltung (<see cref="RohwerteFreigeschaltet"/>) sind „nicht verfügbar“.
-        /// </summary>
-        public static string SperrgrundNichtVerfuegbar(KlimaReihe r)
-            => r == null || r.Freigeschaltet ? "" : MyResource.Resource.KLIMA_RW_NICHT_VERFUEGBAR;
-
-        /// <summary>
-        /// Die Größen mit Bild, die diese Fassung noch nicht liefert — für die Vorschau
-        /// (<paramref name="vorschau"/>) bzw. den Reiter „Weitere Reihen“. Sie stehen als weich
-        /// gesperrte Chips mit Grund in der Wahl.
-        /// </summary>
-        public static IReadOnlyList<KlimaReihe> NichtVerfuegbar(bool vorschau)
-            => Reihen.Where(r => !r.Freigeschaltet && (vorschau ? r.InVorschau : r.ImJahresverlauf)).ToList();
 
         // =====================================================================
         // Regel des Jahresverlaufs (KD-Q11)

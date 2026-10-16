@@ -111,7 +111,7 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Rohwerte_stehen_vor_der_Freischaltung_benannt_als_nicht_verfuegbar()
+        public void Rohwerte_sind_bis_zur_Freischaltung_verborgen_Gegenprobe_frei()
         {
             string[] erwartet =
             {
@@ -119,18 +119,22 @@ namespace EPOS.Kern.Tests
                 "ROH_Luftdruck_hPa", "ROH_Windgeschwindigkeit_m_s"
             };
             // Windrichtung und Qualitätskennung haben kein Bild (KD-Q12) und stehen in keiner Wahl.
-            Assert.Equal(erwartet, KlimaReihenkatalog.NichtVerfuegbar(vorschau: true).Select(r => r.Schluessel));
-            Assert.Equal(erwartet, KlimaReihenkatalog.NichtVerfuegbar(vorschau: false).Select(r => r.Schluessel));
-            foreach (string k in erwartet)
+            var mitBild = KlimaReihenkatalog.Reihen.Where(r => r.Herkunft == KlimaReihenherkunft.Rohwert && r.InVorschau).ToList();
+            Assert.Equal(erwartet, mitBild.Select(r => r.Schluessel));
+            Assert.All(mitBild, r => Assert.True(r.ImJahresverlauf));
+            Assert.False(KlimaReihenkatalog.RohwerteFreigeschaltet);
+            Assert.All(mitBild, r => Assert.False(r.Freigeschaltet));
+
+            KlimaReihenkatalog.RohwerteFreigeschaltet = true;
+            try
             {
-                KlimaReihe r = KlimaReihenkatalog.Reihe(k);
-                Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KLIMA_RW_NICHT_VERFUEGBAR, KlimaReihenkatalog.SperrgrundNichtVerfuegbar(r));
-                // Auch die Achsenregel nimmt sie nicht an, selbst wenn noch Platz für eine Einheit ist.
-                Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KLIMA_RW_NICHT_VERFUEGBAR,
-                             KlimaReihenkatalog.SperrgrundMonatsbild(k, new[] { KlimaReihenkatalog.R_GLOBAL }));
+                Assert.All(mitBild, r => Assert.True(r.Freigeschaltet));
+                Assert.Equal("", KlimaReihenkatalog.SperrgrundMonatsbild("ROH_Luftdruck_hPa", new[] { KlimaReihenkatalog.R_GLOBAL }));
             }
-            Assert.Equal("", KlimaReihenkatalog.SperrgrundNichtVerfuegbar(KlimaReihenkatalog.Reihe(KlimaReihenkatalog.R_GLOBAL)));
-            Assert.Equal("", KlimaReihenkatalog.SperrgrundNichtVerfuegbar(null));
+            finally
+            {
+                KlimaReihenkatalog.RohwerteFreigeschaltet = false;
+            }
         }
 
         // =====================================================================

@@ -57023,9 +57023,6 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="KLIMA_RW_DIA_BEZEICHNUNG" xml:space="preserve">
     <value>Jahresverlauf der gewählten Reihen</value>
   </data>
-  <data name="KLIMA_RW_NICHT_VERFUEGBAR" xml:space="preserve">
-    <value>Nicht verfügbar: Diese Fassung speichert die Rohwerte der Quelle nicht</value>
-  </data>
   <data name="KLIMA_RW_NAME_TEMPERATUR" xml:space="preserve">
     <value>Lufttemperatur</value>
   </data>

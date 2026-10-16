@@ -2221,40 +2221,72 @@ public class KlimadatenDialogTests : EposBunitContext
         => cut.FindComponents<DiagrammSvg>().Single(d => d.Instance.Kennung == "klima-vorschau").Instance.Modell!;
 
     [Fact]
-    public void KD8_Rohwerte_stehen_benannt_als_nicht_verfuegbar_in_beiden_Wahlen()
+    public void KD8_Rohwerte_bekommen_vor_der_Freischaltung_keinen_Chip_Gegenprobe_frei()
     {
-        // Vorschau: geführte Rohwerte als weich gesperrter Chip mit Grund und Marke „R“; was der
-        // Parameterbestand als „fehlt“ führt, bekommt keinen Chip (er nennt es selbst).
-        var erg = TrefferMitReihen();
-        erg.Parameterbestand = new List<KlimaParameterEintrag>
-        {
-            new() { Parameter = KlimaParameter.Luftdruck, Stand = KlimaParameterStand.Gefuehrt },
-            new() { Parameter = KlimaParameter.Ausstrahlung, Stand = KlimaParameterStand.Fehlt }
-        };
-        var cut = ZeigeSuche(_ => Task.FromResult(erg));
-        Suchen(cut);
-        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-kennung=klima-vorschau] button.epos-reihenwahl-chip")));
+        // Die fünf Rohwert-Größen mit Bild - Monatsreihen und Stundenwerte liegen vor, der
+        // Parameterbestand führt sie; bis Teil B (Rohwerttabelle) bekommen sie dennoch keinen Chip.
+        string[] roh = KlimaReihenkatalog.Reihen
+            .Where(r => r.Herkunft == KlimaReihenherkunft.Rohwert && r.InVorschau).Select(r => r.Schluessel).ToArray();
+        Assert.Equal(5, roh.Length);
 
-        var druck = Chip(cut, "klima-vorschau", KlimaReihenkatalog.ROH_PREFIX + "Luftdruck_hPa");
-        Assert.Equal("true", druck.GetAttribute("aria-disabled"));
-        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KLIMA_RW_NICHT_VERFUEGBAR, druck.GetAttribute("title"));
-        Assert.NotNull(druck.QuerySelector(".epos-reihenwahl-marke"));
-        Assert.Empty(cut.FindAll("[data-kennung=klima-vorschau] [data-schluessel=ROH_Ausstrahlung_W_m2]"));
-        Assert.Empty(cut.FindAll("[data-kennung=klima-vorschau] [data-schluessel=ROH_Windrichtung_Grad]"));
-        druck.Click();
-        Assert.Equal(2, Vorschaubild(cut).Reihen.Count);
-        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.KLIMA_RW_NICHT_VERFUEGBAR,
-                        cut.Find("[data-kennung=klima-vorschau] .epos-reihenwahl-leise").TextContent);
-
-        // Jahresverlauf: alle Rohwerte mit Bild stehen gesperrt im Reiter „Weitere Reihen“.
-        var jahr = ZeigeWeitere();
-        foreach (KlimaReihe r in KlimaReihenkatalog.NichtVerfuegbar(vorschau: false))
+        IRenderedComponent<KlimadatenDialog> Vorschau()
         {
-            var chip = Chip(jahr, "klima-jahr", r.Schluessel);
-            Assert.Equal("true", chip.GetAttribute("aria-disabled"));
-            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KLIMA_RW_NICHT_VERFUEGBAR, chip.GetAttribute("title"));
+            var erg = TrefferMitReihen();
+            foreach (string k in roh) erg.Kennzahlen!.Monatsreihen[k] = Enumerable.Repeat(3.0, 12).ToArray();
+            erg.Parameterbestand = Enum.GetValues<KlimaParameter>()
+                .Select(p => new KlimaParameterEintrag { Parameter = p, Stand = KlimaParameterStand.Gefuehrt }).ToList();
+            var cut = ZeigeSuche(_ => Task.FromResult(erg));
+            Suchen(cut);
+            cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-kennung=klima-vorschau] button.epos-reihenwahl-chip")));
+            return cut;
         }
-        Assert.Empty(jahr.FindAll("[data-kennung=klima-jahr] [data-schluessel=ROH_Qualitaet_Strahlung]"));
+
+        IRenderedComponent<KlimadatenDialog> Jahr()
+        {
+            IReadOnlyList<Katalogfilterzeile> liste = Regionen();
+            var cut = Render<KlimadatenDialog>(p => p
+                .Add(x => x.Regionen, () => Task.FromResult(liste))
+                .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+                .Add(x => x.Ansicht, n =>
+                {
+                    var a = AnsichtMitReihen(n);
+                    var bestand = a.Reihenbestand.Concat(roh.Select(k => new KlimaReihenwerte
+                    {
+                        Reihe = KlimaReihenkatalog.Reihe(k), Werte = Enumerable.Repeat(3.0, 8760).ToArray(), Gefuehrt = true
+                    })).ToList();
+                    return Task.FromResult(a with { Reihenbestand = bestand });
+                })
+                .Add(x => x.Geschlossen, _ => { }));
+            cut.WaitForAssertion(() => Assert.Equal("Berlin", cut.Instance.Gewaehlt), TimeSpan.FromSeconds(10));
+            cut.FindAll(".epos-stammblatt .epos-reiter-knopf").First(e => e.TextContent.Trim() == "Weitere Reihen").Click();
+            cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-kennung=klima-jahr] button.epos-reihenwahl-chip")));
+            return cut;
+        }
+
+        int Rohchips(IRenderedComponent<KlimadatenDialog> cut, string kennung)
+            => cut.FindAll($"[data-kennung={kennung}] button.epos-reihenwahl-chip")
+                  .Count(c => c.GetAttribute("data-schluessel")!.StartsWith(KlimaReihenkatalog.ROH_PREFIX));
+
+        Assert.False(KlimaReihenkatalog.RohwerteFreigeschaltet);
+        Assert.Equal(0, Rohchips(Vorschau(), "klima-vorschau"));
+        Assert.Equal(0, Rohchips(Jahr(), "klima-jahr"));
+
+        // Gegenprobe: freigeschaltet erscheinen die fünf Chips - frei schaltbar, mit Marke „R“.
+        KlimaReihenkatalog.RohwerteFreigeschaltet = true;
+        try
+        {
+            var v = Vorschau();
+            Assert.Equal(5, Rohchips(v, "klima-vorschau"));
+            var j = Jahr();
+            Assert.Equal(5, Rohchips(j, "klima-jahr"));
+            var druck = Chip(j, "klima-jahr", KlimaReihenkatalog.ROH_PREFIX + "Luftdruck_hPa");
+            Assert.Null(druck.GetAttribute("aria-disabled"));
+            Assert.NotNull(druck.QuerySelector(".epos-reihenwahl-marke"));
+        }
+        finally
+        {
+            KlimaReihenkatalog.RohwerteFreigeschaltet = false;
+        }
     }
 
     [Fact]

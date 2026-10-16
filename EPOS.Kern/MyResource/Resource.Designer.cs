@@ -84378,15 +84378,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht verfügbar: Diese Fassung speichert die Rohwerte der Quelle nicht ähnelt.
-        /// </summary>
-        public static string KLIMA_RW_NICHT_VERFUEGBAR {
-            get {
-                return ResourceManager.GetString("KLIMA_RW_NICHT_VERFUEGBAR", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Weitere Reihen ähnelt.
         /// </summary>
         public static string KLIMA_RW_REITER {
