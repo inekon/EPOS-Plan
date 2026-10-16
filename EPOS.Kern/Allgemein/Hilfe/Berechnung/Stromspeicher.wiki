@@ -41,9 +41,9 @@ Der Speicher darf den Lauf '''nicht kippen''': Fehlen Stammdaten, passt das Zeit
 |-
 | Zugesicherte Zyklen || — || Speicherkatalog
 |-
-| Verschleißkosten je Zyklus || €/(kWh·Zyklus) || Speicherkatalog
+| Verschleißkosten je Zyklus || €/(kWh·Zyklus) || Satzvorlage des Katalogsatzes (Kostenverwaltung)
 |-
-| Modulkosten, Leistungskosten, feste Investition || €/kWh, €/kW, € || Speicherkatalog
+| Modulkosten, Leistungskosten, feste Investition || €/kWh, €/kW, € || Satzvorlage des Katalogsatzes (Kostenverwaltung)
 |-
 | Kapitalzins, Nutzungsdauer || %, a || Speichervariante
 |-
@@ -68,7 +68,7 @@ Der Speicherkatalog lässt sich auch '''einlesen''' statt nur von Hand zu pflege
 
 Der Bezeichner entsteht als „Hersteller: Modell" und bleibt in der Maske änderbar. Was eine Quelle nicht liefert, bleibt '''leer''' statt erfunden zu werden und fällt im Rechenweg auf die Vorgaben dieser Seite zurück: ein fehlender Umlaufwirkungsgrad auf 0,90, eine fehlende Leistung auf 1 C.
 
-'''Kosten kommen aus keiner der beiden Quellen.''' Modulkosten, Leistungskosten, feste Investition und Verschleißkosten bleiben nach dem Einlesen leer; die Maske sagt es in einer Zeile unter den Feldern. Sie sind vor der Wirtschaftlichkeitsrechnung in der Verwaltung „Stromspeicher" von Hand zu ergänzen — ein Speicher mit 0 €/kWh ist in der Rechnung gratis und damit immer die beste Lösung. Ebenso wenig liefern die Quellen Degradation, Start-Ladezustand und zugesicherte Zyklen.
+'''Kosten kommen aus keiner der beiden Quellen.''' Der Katalogsatz führt keine Kostenfelder; nach dem Einlesen hat er keinen Verweis auf eine Satzvorlage, die Gerätekosten bleiben leer, und die Maske sagt es in einer Zeile. Sie sind vor der Wirtschaftlichkeitsrechnung in der Kostenverwaltung zu ergänzen — ein Speicher mit 0 €/kWh ist in der Rechnung gratis und damit immer die beste Lösung. Ebenso wenig liefern die Quellen Degradation, Start-Ladezustand und zugesicherte Zyklen.
 
 Am Rechenweg ändert der Import nichts: Er schreibt in dieselben Katalogfelder, die eine Eingabe von Hand auch beschreibt.
 
@@ -104,11 +104,11 @@ Eingaben, Katalogwerte, Vorgaben und Konstanten. Sie ändern sich innerhalb eine
 |-
 | <math>n_{\mathrm{Z}}</math> || zugesicherte Zyklen || — || Speicherkatalog
 |-
-| <math>c_{\mathrm{ver}}</math> || Verschleißkosten je Zyklus || €/(kWh·Zyklus) || Speicherkatalog; '''Rückfall: 0,025'''
+| <math>c_{\mathrm{ver}}</math> || Verschleißkosten je Zyklus || €/(kWh·Zyklus) || Satzvorlage des Katalogsatzes; '''Rückfall: 0,025'''
 |-
-| <math>c_{\mathrm{cap}}</math> || Modulkosten || €/kWh || Speicherkatalog
+| <math>c_{\mathrm{cap}}</math> || Modulkosten || €/kWh || Satzvorlage des Katalogsatzes
 |-
-| <math>c_{\mathrm{pow}}</math> || Leistungskosten || €/kW || Speicherkatalog
+| <math>c_{\mathrm{pow}}</math> || Leistungskosten || €/kW || Satzvorlage des Katalogsatzes
 |-
 | <math>I_{\mathrm{fix}}</math> || feste Investition || € || Speicherkatalog
 |-
@@ -312,7 +312,7 @@ Gerechnet wird die Anlagenzeile der '''aktiven Speichervariante'''. Lässt sie s
 :: <math>C_{\mathrm{nom}}</math> – Nennkapazität [kWh]
 :: <math>c_{\mathrm{pow}}</math> – Leistungskosten [€/kW]
 :: <math>P</math> – Lade- und Entladeleistung [kW]
-:: <math>I_{\mathrm{fix}}</math> – feste Investition [€]
+:: <math>I_{\mathrm{fix}}</math> – feste Investition [€]; sie geht in die Speicherauslegung nicht ein
 
 Rückfallwerte, wenn ein Wert fehlt oder unplausibel ist: Band '''10…90&nbsp;%''' der Nennkapazität, <math>\eta_{\mathrm{RT}} = 0{,}90</math>, <math>c_{\mathrm{ver}} = 0{,}025</math>&nbsp;€/(kWh·Zyklus), <math>i = 3</math>&nbsp;%, <math>N = 20</math>&nbsp;a. Fehlt die Leistungsgrenze, gilt '''1&nbsp;C''' — <math>P</math> wird gleich <math>C_{\mathrm{nom}}</math> gesetzt; das entspricht der impliziten Annahme des Bestands und begrenzt praktisch nicht.
 
