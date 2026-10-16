@@ -90,7 +90,8 @@ namespace WindowsFormsApplication1
                 bool da = kennzahlen.TryGetValue(id, out k) && k.Brauchbar;
 
                 zeile.MitZahl(Katalogfilterprofil.SpJahresarbeitMwh,
-                              da ? k.JahresarbeitMwh : (double?)null, 1);
+                              da ? k.JahresarbeitMwh : (double?)null,
+                              Energieeinheit.JAHRESWERT_MWH_NACHKOMMASTELLEN);
                 zeile.MitZahl(Katalogfilterprofil.SpSpitzeKw,
                               da ? k.SpitzeKw : (double?)null, 1);
 

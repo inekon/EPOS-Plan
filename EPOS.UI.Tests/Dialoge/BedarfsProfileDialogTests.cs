@@ -39,7 +39,8 @@ public class BedarfsProfileDialogTests : EposBunitContext
         => new Katalogfilterzeile(id, name)
             .MitText(Katalogfilterprofil.SpBezeichner, name)
             .MitText(Katalogfilterprofil.SpTyp, typ)
-            .MitZahl(Katalogfilterprofil.SpJahressummeMwh, summe, 3)
+            .MitZahl(Katalogfilterprofil.SpJahressummeMwh, summe,
+                     Energieeinheit.JAHRESWERT_MWH_NACHKOMMASTELLEN) // wie BedarfStammCtrl (BP-3)
             .MitText(Katalogfilterprofil.SpBeschreibung, beschreibung)
             .MitKennzeichen(Katalogfilterprofil.SpAuslieferung, false);
 
@@ -274,7 +275,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
             Zeile(1, "Profil A", 10), Zeile(2, "Profil B", 5)
         });
 
-        Assert.Contains("15,00", cut.Markup);
+        Assert.Equal("15", cut.Find(".epos-zweispalten-summe b").TextContent); // BP-3: N0
     }
 
     [Fact]
@@ -504,7 +505,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
         };
         var cut = Aufbauen(zeilen: zeilen);
 
-        Assert.Contains("20,00", cut.Markup);
+        Assert.Equal("20", cut.Find(".epos-zweispalten-summe b").TextContent); // BP-3: N0
 
         Einheitenfeld(cut).Change("1");
         Assert.Contains("20000", cut.Markup);
@@ -1475,7 +1476,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
     {
         var cut = AufbauenS4(new List<BedarfsProfilZeile> { Zeile(1, summe: 12.5), Zeile(2, "Profil B", 7.5) });
 
-        Assert.Contains("20,00", cut.Find(".epos-zweispalten-summe").TextContent);
+        Assert.Equal("20", cut.Find(".epos-zweispalten-summe b").TextContent); // BP-3: N0
         Assert.False(cut.Find(".epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-projekt").HasAttribute("disabled"));
         Assert.Null(cut.Find(".epos-zweispalten-bereich--projekt > .epos-zweispalten-kopfleiste").QuerySelector(".epos-knopf--bearbeiten-projekt"));
         Assert.NotNull(cut.Find(".epos-knopf--simulation"));
@@ -1546,7 +1547,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
 
         string zf = cut.Find(".epos-satzzusammenfassung").TextContent;
         Assert.Contains("Typ 1", zf);
-        Assert.Contains("12,50", zf);
+        Assert.Contains("12", cut.FindAll(".epos-satzzusammenfassung dd").Select(e => e.TextContent.Trim())); // BP-3: 12,5 MWh ganzzahlig
         Assert.Contains("Kalender", zf);
         Assert.Contains("Beschreibung Profil A", zf);
         // Ohne Ueberlagerung stehen die Felder nicht im Dialog.
