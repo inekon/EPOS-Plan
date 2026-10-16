@@ -11435,6 +11435,12 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="HILFS_ANTEIL_HERKUNFT" xml:space="preserve">
     <value>rate from the unit's auxiliary energy share</value>
   </data>
+  <data name="HILFS_STROMSTEUER_POSITION" xml:space="preserve">
+    <value>Electricity tax on auxiliary power ({0} €/MWh, of which {1} €/MWh included in the energy price)</value>
+  </data>
+  <data name="HILFS_STROMSTEUER_OHNE_SATZ" xml:space="preserve">
+    <value>Electricity tax on {0} MWh/a of auxiliary power not applied: the legal catalogue holds no standard electricity tax rate.</value>
+  </data>
   <data name="KOH_HILFSENERGIE_DOPPELT" xml:space="preserve">
     <value>Auxiliary energy maintained twice (quantity at the unit and cost item {0}): {1} carries an auxiliary energy share of {2} % and at the same time an active auxiliary energy cost item. The cost item carries the costs; the share at the unit only reduces the CHP bonus and is not priced a second time.</value>
   </data>

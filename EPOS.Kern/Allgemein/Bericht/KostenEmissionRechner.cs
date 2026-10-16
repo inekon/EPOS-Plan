@@ -344,6 +344,7 @@ namespace WindowsFormsApplication1
                 v.Energiekosten = null; v.StromkostenNetz = null;
                 v.EnergieLeistungsanteil = null;
                 v.CO2Gesamt = null; v.CO2Spezifisch = null; v.CO2Brennstoff = null;
+                v.HilfsstromMWh = 0; v.HilfsstromCO2t = 0;   // 6b
                 v.BiogenMengeMWh = 0; v.BiogenBehgMengeMWh = 0;
                 v.EmissionsModus = DbWerte.EMISSION_MODUS_CO2;
                 v.CO2StrommixRueckfall = false;
@@ -374,6 +375,8 @@ namespace WindowsFormsApplication1
             v.SzenarioLeistungspreisOhneWirkung = new List<string>();     // E9a
             v.StromTraegerRueckfall = null;
             v.CO2TraegerRueckfall = null;        // Auftrag #293
+            v.HilfsstromMWh = 0;                 // 6b
+            v.HilfsstromCO2t = 0;
             v.StrombedarfOhneVerwendungMWh = null;   // Anwenderentscheid 22.09.2026
             v.StromGruppenregelMWh = null;           // Gruppenregel (nur im Vergleich gesetzt)
             v.LeistungspreisOhneSpitze = null;
@@ -913,15 +916,24 @@ namespace WindowsFormsApplication1
                 else if (co2ImVergleichGeliehen && netzbezugBewertet > 0)
                     v.CO2TraegerRueckfall = TraegerName(co2Traeger);
             }
+            // 6b (Anwenderentscheid 16.10.2026): der Hilfsstrom von BHKW und Brennstoffkesseln
+            // aus dem Hilfsenergieanteil ihrer Anlagen. Die Simulation führt ihn nicht im
+            // Netzbezug; er ist bezogener Strom und geht mit dem Faktor des Netzstroms in die
+            // Bilanz — derselbe Faktor wie der Netzbezug des Projekts. Ohne Anteil 0 (bitgleich).
+            double hilfsMWh = stromOhneVerwendung ? 0.0 : HilfsstromRechner.SummeMWh(m, stromkessel);
+            double hilfsCO2t = hilfsMWh * stromCO2 / 1000.0;
+            v.HilfsstromMWh = hilfsMWh;
+            v.HilfsstromCO2t = hilfsCO2t;
+
             // Ohne (bewerteten) Netzbezug ändert der Vorgabewert nichts - dann ist er kein
             // Rückfall, sondern eine Zahl, die mit 0 MWh multipliziert wird.
-            v.CO2StrommixRueckfall = strommixRueckfall && netzbezugProjektBewertet > 0;
+            v.CO2StrommixRueckfall = strommixRueckfall && (netzbezugProjektBewertet > 0 || hilfsMWh > 0);
 
             // E34: der Stromträger des Projekts trägt den Netzbezug ohne den Anteil der
             // abweichenden Kühlträger; die tragen ihre Menge mit IHREM Faktor (dieselbe Stufenfolge,
             // Emissionsquelle.Netzstrom - ein Kühlträger ohne Faktor rechnet mit dem Vorgabewert
             // und meldet das wie der Träger des Projekts).
-            double netzCO2t = netzbezugProjektBewertet * stromCO2 / 1000.0;
+            double netzCO2t = netzbezugProjektBewertet * stromCO2 / 1000.0 + hilfsCO2t;
 
             double kuehlKosten = 0.0, kuehlCO2t = 0.0;
             var kuehlOhnePreis = new List<string>();
