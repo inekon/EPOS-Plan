@@ -800,7 +800,8 @@ namespace WindowsFormsApplication1
                     }
                     Typtagschicht.Ergebnis e = Typtagschicht.TyptageZuJahr(
                         typtage, summe, jahreswerte, moAnfang, wochentagJan1, artenT,
-                        kalT?.Ferienfaktor ?? 1.0, kalT != null && kalT.FerienKuerzen);
+                        kalT?.Ferienfaktor ?? 1.0, kalT != null && kalT.FerienKuerzen,
+                        kalT != null && kalT.FerienWieSonntag);
                     if (e.FehlendeZellen.Count > 0)
                         SimulationProtokoll.Aktuell.Hinweis(string.Format(
                             MyResource.Resource.SIMENG_TYPTAG_ZELLEN_LEER, quelle.Praefix, name,

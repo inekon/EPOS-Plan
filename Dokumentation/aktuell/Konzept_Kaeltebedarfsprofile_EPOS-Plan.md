@@ -98,7 +98,8 @@ Eingabe: bis zu sechs **Typtage** mit je 24 Stundenwerten und einer Tagesmenge (
 **Zuordnungsmatrix** 12 Monate × 3 Tagesarten (Werktag, Samstag, Sonn-/Feiertag) → Typtag. Damit lassen sich z. B. ein
 Sommerwerktag, ein Übergangswerktag und ein Wintertag mit eigener Form abbilden — was ein einziges Wochenprofil nicht kann.
 
-Reihe: Tag `d` mit Monat `m(d)` und Tagesart `t(d)` (Feiertag = Sonn-/Feiertag; Ferien = Werktag mit Ferienfaktor) nimmt
+Reihe: Tag `d` mit Monat `m(d)` und Tagesart `t(d)` (Feiertag = Sonn-/Feiertag; Ferien = Werktag mit Ferienfaktor, mit „Ferien wie Sonntag“ (7.3) der
+Sonntag-Typtag des Monats ohne Ferienfaktor) nimmt
 Typtag `T = Matrix[m(d), t(d)]`; Stunde `h` erhält `g_T · f_T[h] / Σ f_T`, mit Tagesmenge `g_T`. Danach wird die ganze Reihe auf
 `Summe` normiert. Monatsanteile entfallen in dieser Art, weil die Matrix den Jahresgang trägt; wer zusätzlich Monatswerte
 erzwingen will, wählt 3.2 mit Wochenprofil.

@@ -96,6 +96,42 @@ namespace EPOS.Kern.Tests
             Assert.Equal(SUMME * 1000.0 - ausfall, gekuerzt.Sum(), 6);
         }
 
+        /// <summary>
+        /// KBP-5d: Mit „Ferien wie Sonntag“ nimmt ein Ferientag den Sonntag-Typtag seines Monats ohne Ferienfaktor; die Summe
+        /// bleibt, „Ferien kürzen“ wirkt weiter, ohne Schalter bleibt die Reihe bitgleich.
+        /// </summary>
+        [Fact]
+        public void Ein_Ferientag_wie_Sonntag_nimmt_den_Sonntag_Typtag()
+        {
+            KaeltetyptagEingabe e = Drei();
+            int ferienMittwoch = TagImMonat(7, 2);           // August
+            int sonntag = TagImMonat(7, 6) + 7;               // ein Sonntag desselben Monats ohne Ferien
+            int dienstag = TagImMonat(7, 1);
+            byte[] arten = new byte[365];
+            arten[ferienMittwoch] = Betriebskalender.TAG_FERIEN;
+
+            var verteilt = new double[8760];
+            Assert.True(Typtagschicht.TyptageZuJahr(e, SUMME, verteilt, MO_ANFANG, W0, arten, 0.4, false, true).Gerechnet);
+            Assert.Equal(SUMME * 1000.0, verteilt.Sum(), 6);
+            Assert.Equal(Tag(verteilt, sonntag), Tag(verteilt, ferienMittwoch));
+            Assert.NotEqual(Tag(verteilt, dienstag), Tag(verteilt, ferienMittwoch));
+
+            // Kürzen: der Ferientag trägt den Sonntag der Reihe ohne Ferien.
+            var ohne = new double[8760];
+            var gekuerzt = new double[8760];
+            Typtagschicht.TyptageZuJahr(e, SUMME, ohne, MO_ANFANG, W0, new byte[365], 0.4, true);
+            Assert.True(Typtagschicht.TyptageZuJahr(e, SUMME, gekuerzt, MO_ANFANG, W0, arten, 0.4, true, true).Gerechnet);
+            Assert.Equal(Tag(ohne, sonntag), Tag(gekuerzt, ferienMittwoch));
+            Assert.Equal(Tag(ohne, dienstag), Tag(gekuerzt, dienstag));
+
+            // Ohne Schalter bitgleich zum Aufruf ohne den neuen Parameter.
+            var alt = new double[8760];
+            var neu = new double[8760];
+            Typtagschicht.TyptageZuJahr(e, SUMME, alt, MO_ANFANG, W0, arten, 0.4, false);
+            Typtagschicht.TyptageZuJahr(e, SUMME, neu, MO_ANFANG, W0, arten, 0.4, false, false);
+            Assert.Equal(alt.Select(BitConverter.DoubleToInt64Bits), neu.Select(BitConverter.DoubleToInt64Bits));
+        }
+
         [Fact]
         public void Ferien_ohne_Bedarf_rechnen_das_Jahr_ohne_Ferien()
         {

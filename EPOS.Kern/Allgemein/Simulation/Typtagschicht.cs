@@ -14,6 +14,7 @@ namespace WindowsFormsApplication1
     ///         Werktag    sonst
     /// a(h)  = g_T · f_T[s] / Σ f_T,  T = Matrix[m(d), t(d)]            h = 24 d + s (der Tag ohne Ferien)
     /// b(h)  = a(h), an einem Ferientag f · g_W · f_W[s] / Σ f_W,  W = Matrix[m(d), Werktag]
+    ///         mit „Ferien wie Sonntag“ an einem Ferientag g_S · f_S[s] / Σ f_S,  S = Matrix[m(d), Sonntag] (ohne f)
     /// q(h)  = b(h) / Σ_Jahr b · S · 1000                  Ferien verteilen um (Vorgabe)
     /// q(h)  = b(h) / Σ_Jahr a · S · 1000                  „Ferien kürzen die Menge“
     /// </code>
@@ -69,9 +70,14 @@ namespace WindowsFormsApplication1
         /// <c>null</c> = ohne Kalender (keine Feiertage, keine Ferien).</param>
         /// <param name="ferienfaktor">Ferienfaktor f (0 … 1) des Kalenders.</param>
         /// <param name="ferienKuerzen">Kürzen die Ferien die Menge (statt umzuverteilen)?</param>
+        /// <param name="ferienWieSonntag">
+        /// Nimmt ein Ferientag den Sonntag-Typtag seines Monats (<see cref="Betriebskalender.FerienWieSonntag"/>)?
+        /// <paramref name="ferienfaktor"/> wirkt dann nicht. Vorgabe nein: der Werktag mit Ferienfaktor wie zuvor.
+        /// </param>
         public static Ergebnis TyptageZuJahr(KaeltetyptagEingabe eingabe, double jahressummeMwh, double[] outJahr,
                                              int[] moAnfang, int wochentagJan1, byte[] tagesarten,
-                                             double ferienfaktor, bool ferienKuerzen)
+                                             double ferienfaktor, bool ferienKuerzen,
+                                             bool ferienWieSonntag = false)
         {
             if (eingabe == null) throw new ArgumentNullException(nameof(eingabe));
             if (outJahr == null || outJahr.Length < STUNDEN) throw new ArgumentException("8760 Stunden erwartet.", nameof(outJahr));
@@ -97,9 +103,12 @@ namespace WindowsFormsApplication1
                 int wochentag = (w0 + d) % 7;
                 int spalte = art == Betriebskalender.TAG_FEIERTAG || wochentag == 6 ? 2 : wochentag == 5 ? 1 : 0;
 
-                // a: der Tag ohne Ferien (Typtag seines Wochentags), b: mit Ferien (Werktag · f).
+                // a: der Tag ohne Ferien (Typtag seines Wochentags), b: mit Ferien (Werktag · f, mit „Ferien wie
+                // Sonntag“ der Sonntag-Typtag des Monats ohne f).
                 Tagesform(eingabe, monat, spalte, d, a, 1.0, true, fehlend, leer, erg);
-                if (ferien)
+                if (ferien && ferienWieSonntag)
+                    Tagesform(eingabe, monat, 2, d, b, 1.0, false, fehlend, leer, erg);
+                else if (ferien)
                     Tagesform(eingabe, monat, 0, d, b, ferienfaktor, false, fehlend, leer, erg);
                 else
                     Array.Copy(a, d * TAG, b, d * TAG, TAG);
