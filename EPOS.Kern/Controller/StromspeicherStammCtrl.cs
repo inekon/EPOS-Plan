@@ -1079,6 +1079,8 @@ namespace WindowsFormsApplication1
             Katalogtabelle = TABLE,
             Anlagenverweis = "ID_SP",
             KomponentenId = KOMPONENTE_KOSTEN,
+            // Welle KB-5: Die Kosten stehen nur in den Satzvorlagen - der Verweis der Kopie geht mit.
+            KostenverweisMitnehmen = true,
             Pruefung = zeile =>
             {
                 var m = new StromspeicherModel();

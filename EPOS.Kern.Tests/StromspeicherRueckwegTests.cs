@@ -294,6 +294,45 @@ namespace EPOS.Kern.Tests
             Assert.Equal(satz, Anzahl("SELECT ID_Stamm FROM Tab_Stromspeicher WHERE ID = ?", neueKopie));
         }
 
+        /// <summary>
+        /// Welle KB-5 (Entscheid Rückweg): Der Stromspeicher führt keine Kostenspalte mehr — ohne eigene Kostenposition der
+        /// Anlage übernimmt der Katalogsatz die Verweise der Kopie auf ihre Satzvorlagen und rechnet denselben Kostensatz;
+        /// beim Überschreiben gilt das je Kategorie, Positionen der Anlage gehen vor.
+        /// </summary>
+        [Fact]
+        public void Ohne_Kostenposition_der_Anlage_gehen_die_Satzvorlagen_der_Kopie_mit()
+        {
+            if (!_db.Vorhanden) return;
+            var k = Kopie();
+            Sql("DELETE FROM Tab_ProjektWerte WHERE ID_Anlage = ?", k.Anlage);
+            int invest = Anzahl("SELECT MIN(ID) FROM Tab_KostenVorlage WHERE KomponentenID = 5 AND KategorieID = ? AND IstStandard = 0",
+                                DbWerte.KOSTEN_KATEGORIE_INVESTITION);
+            int betrieb = Anzahl("SELECT MIN(ID) FROM Tab_KostenVorlage WHERE KomponentenID = 5 AND KategorieID = ?",
+                                 DbWerte.KOSTEN_KATEGORIE_BETRIEB);
+            Sql("UPDATE Tab_Stromspeicher SET ID_KostenVorlageInvestition = ?, ID_KostenVorlage = ? WHERE ID = ?", invest, betrieb, k.Id);
+
+            Rueckwegergebnis e = Neu(k.Id, "Rueckweg Verweis");
+            Assert.True(e.Ok, e.Meldung);
+            int satz = e.Saetze[0].IdKatalog;
+            Assert.Equal(0, e.Saetze[0].Kostenpositionen);
+            Assert.Equal(invest, Invest(satz));
+            Assert.Equal(betrieb, Vorlage(satz));
+            double? kopieSatz = KatalogkostensatzCtrl.Stromspeicher(KOPIE, k.Id).CCapEurProKwh;
+            Assert.True(kopieSatz > 0);
+            Assert.Equal(kopieSatz, KatalogkostensatzCtrl.Stromspeicher(KATALOG, satz).CCapEurProKwh);
+
+            // Überschreiben mit einer Betriebsposition: Betrieb kommt aus der Anlage, die Investition aus der Kopie.
+            Positionen(k, 1, 0);
+            Rueckwegergebnis u = Ueberschreiben(k.Id);
+            Assert.True(u.Ok, u.Meldung);
+            Assert.Equal(satz, u.Saetze[0].IdKatalog);
+            Assert.Equal(invest, Invest(satz));
+            Assert.NotEqual(betrieb, Vorlage(satz));
+            Assert.Equal(1, Positionenzahl(Vorlage(satz)));
+            // Die gemeinsame Satzvorlage bleibt unberührt stehen.
+            Assert.Equal(1, Anzahl("SELECT COUNT(*) FROM Tab_KostenVorlage WHERE ID = ?", invest));
+        }
+
         // ------------------------------------------------ KA-E-14: Investitionspositionen ---
 
         private const int BETRIEB = DbWerte.KOSTEN_KATEGORIE_BETRIEB;
