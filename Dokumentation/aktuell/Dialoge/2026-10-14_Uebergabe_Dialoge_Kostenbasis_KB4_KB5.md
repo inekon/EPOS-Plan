@@ -96,7 +96,7 @@ gemergte Zweige `kb2`, `kb3`, `kb4a`, `kb4b`, `kb4c` sind als Worktrees entfernt
 4. **Vorlagenplatzhalter Kältemaschine** (#1035 Punkt 3): **erledigt #1125 (Fassung 24)**; war eigene Welle, Platzhalter mit der Sitzung Anlagendialog abstimmen
    (Katalogfassung 23 unverändert lassen).
 5. **Wasserpreis am Rückkühlwerk:** **erledigt #1125**; übernommen von dieser Sitzung (Anwenderentscheid 16.10.2026, Abschnitt 2), Welle KB-7, Schritt 235; `Tab_Rueckkuehlwerk.Modulkosten` bleibt (Anwenderentscheid).
-6. **Variantenliste:** gebaut als Gruppe „Katalogsätze“, umkehrbar über `KostenVorlagenCtrl.KATALOGSAETZE_GRUPPIEREN` — Anwenderentscheid
+6. **Variantenliste:** **entschieden 16.10.2026 nach Empfehlung — die Gruppe „Katalogsätze“ bleibt** (umkehrbar über `KostenVorlagenCtrl.KATALOGSAETZE_GRUPPIEREN`); vormals: Anwenderentscheid
    nach Sichtabnahme.
 7. **Sichtabnahme unter Windows** der Dialoge aus #1034–#1042 und der Kostenmasken aus KB-4 (Lesewert „Gerätekosten“/„Kostensatz“).
 8. **`CLAUDE.md`, Abschnitt Regressionsnetz:** nennt noch R54 mit 36 Projekten, im Ordner liegt R55 mit 37 — die Sitzung Anlagendialog
