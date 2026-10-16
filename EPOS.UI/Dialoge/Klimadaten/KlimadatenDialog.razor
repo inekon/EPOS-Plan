@@ -219,22 +219,26 @@
                                        kehrt auf x1 zurueck. *@
                                     <Reiterblatt Schluessel="WEITERE" Titel="@ReiterWeitereText">
                                         <KindInhalt>
-                                            @if (_reihenbestand.Count > 0)
-                                            {
-                                                <Reihenwahl Kennung="klima-jahr" Bezeichnung="@WahlJahrText"
-                                                            Kopf="@KopfJahrText"
-                                                            Kopfhinweis="@string.Format(CultureInfo.CurrentCulture, HinweisJahrText, JahrEinheit)"
-                                                            Leise="@GleicheEinheitText"
-                                                            Chips="@JahrChips" Umschalten="JahrUmschalten" />
-                                            }
-                                            <DiagrammSvg Modell="@_modellReihen" Kennung="klima-reihen"
-                                                         Bezeichnung="@DiagrammReihenText"
-                                                         PlatzhalterText="@KeineDatenText"
-                                                         Einheit="@JahrEinheit"
-                                                         Palette="@Farbpalette.Aktuell"
-                                                         FarbwahlErlaubt="@FarbwahlMoeglich"
-                                                         FarbeGewaehlt="FarbeUebernehmen"
-                                                         FarbeZurueckgesetzt="FarbeVerwerfen" />
+                                            @* Wahl ueber dem Bild wie im Mockup; im schmalen Fenster (unter 600 px)
+                                               stellt .epos-reihenbild das Bild nach oben (CSS order, ein Markup). *@
+                                            <div class="epos-reihenbild">
+                                                @if (_reihenbestand.Count > 0)
+                                                {
+                                                    <Reihenwahl Kennung="klima-jahr" Bezeichnung="@WahlJahrText"
+                                                                Kopf="@KopfJahrText"
+                                                                Kopfhinweis="@string.Format(CultureInfo.CurrentCulture, HinweisJahrText, JahrEinheit)"
+                                                                Leise="@GleicheEinheitText"
+                                                                Chips="@JahrChips" Umschalten="JahrUmschalten" />
+                                                }
+                                                <DiagrammSvg Modell="@_modellReihen" Kennung="klima-reihen"
+                                                             Bezeichnung="@DiagrammReihenText"
+                                                             PlatzhalterText="@KeineDatenText"
+                                                             Einheit="@JahrEinheit"
+                                                             Palette="@Farbpalette.Aktuell"
+                                                             FarbwahlErlaubt="@FarbwahlMoeglich"
+                                                             FarbeGewaehlt="FarbeUebernehmen"
+                                                             FarbeZurueckgesetzt="FarbeVerwerfen" />
+                                            </div>
                                         </KindInhalt>
                                     </Reiterblatt>
                                 </KindInhalt>

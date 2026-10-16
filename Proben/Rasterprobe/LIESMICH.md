@@ -1150,15 +1150,17 @@ der Wurzel (`gap`) zwischen Schlussleiste und Protokoll: Die Gegenprobe „Fuß 
 
 **Fall `klimareihen`** (`--nur klimareihen`, in denselben vier Fenstern wie `klimaimport`; KD-8 Teil A):
 `?fall=klimareihen`, im schmalen Rahmen „Stammblatt ›“, dann der Reiter „Weitere Reihen“. Gemessen: Kein Chip und
-kein Gruppenname der Reihenwahl ragt aus ihrem Kasten, kein Vorfahr und nicht das Dokument rollt quer, unter der
-Wahl steht das Bild (mindestens 50 px hoch), die Schlussleiste des Dialogs steht ganz im Fenster. Foto
-`klimareihen_*`. Gegenprobe (nur 520 × 624 und 787 × 520): die Gruppen ohne Umbruch (`flex-wrap: nowrap`) müssen
-rot sein. **Ergebnis vom 16.10.2026:** 0 Verstöße; 15 Chips (6 weich gesperrt: Bedeckungsgrad „Quelle führt die
-Größe nicht“, fünf Rohwerte „nicht verfügbar“), Wahl 626/499/622/381 px hoch, ragt 0 px, Bild 113/150/126/240 px,
-Leiste 564–608 px (iPad 754–798, 787 × 520 460–504); Gegenprobe 2 Verstöße je Fenster. Der Fall `klimaimport` misst
-seitdem die Vorschaukarte mit der Reihenwahl (der Wirt liefert alle Monatsreihen von Teil A): Rollhöhe 2 058/560 px
-(520 px breit 2 680/560, iPad 2 058/749, 787 × 520 2 327/466), Leiste oben wie am Ende haftend, 0 Verstöße,
-Gegenprobe 4 Verstöße je Fenster.
+kein Gruppenname der Reihenwahl ragt aus ihrem Kasten, kein Vorfahr und nicht das Dokument rollt quer, das Bild ist
+mindestens 50 px hoch, die Schlussleiste des Dialogs steht ganz im Fenster, und die Reihenfolge stimmt: im Fenster
+bis 600 px Breite steht das Bild über der Wahl (Medienregel `.epos-reihenbild`, `order`), breiter die Wahl über dem
+Bild. Foto `klimareihen_*`. Gegenproben im Fenster 520 × 624: die Gruppen ohne Umbruch (`flex-wrap: nowrap`) und die
+Wahl ohne Reihenfolgeregel (`order: 0`) müssen rot sein. **Ergebnis vom 16.10.2026:** 0 Verstöße; 10 Chips (1 weich
+gesperrt: Bedeckungsgrad „Quelle führt die Größe nicht“; die Rohwerte haben bis zur Rohwerttabelle keinen Chip), Wahl
+476/449/472/331 px hoch, ragt 0 px, Bild 113/150/126/240 px, im Fenster 520 × 624 Bild zuerst, Leiste 564–608 px (iPad
+754–798, 787 × 520 460–504); Gegenproben 2 bzw. 1 Verstoß. Der Fall `klimaimport` misst seitdem die Vorschaukarte mit
+der Reihenwahl unter dem Bild (der Wirt liefert alle Monatsreihen von Teil A): Rollhöhe 2 008/560 px (520 px breit
+2 530/560, iPad 2 008/749, 787 × 520 2 327/466), Leiste oben wie am Ende haftend, 0 Verstöße, Gegenprobe 4 Verstöße je
+Fenster.
 
 **Fall `wp-steckbrief`** (`--nur wp-steckbrief`, bei **1 280 × 800** und **1 194 × 834** mit sicheren Abständen):
 die Satz-Überlagerung der Wärmepumpe („Bearbeiten…" der Projektkopie) mit dem Gerätesteckbrief links unter

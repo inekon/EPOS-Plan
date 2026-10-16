@@ -19396,6 +19396,17 @@ td.epos-vorlage-katalogbeschreibung {
     min-height: 1.4em;
 }
 .epos-reihenwahl-leise--warn { color: var(--epos-warn-text); }
+/* Reiter "Weitere Reihen": Wahl ueber dem Bild; im schmalen FENSTER (unter 600 px) steht das
+   Bild oben und die Wahl darunter (Anwenderentscheid 16.10.2026) - eine Medienregel, weil das
+   Stammblatt auch im breiten Fenster schmal ist und dort die Wahl oben bleibt. */
+.epos-reihenbild {
+    display: flex;
+    flex-direction: column;
+}
+.epos-reihenbild > * { min-width: 0; }
+@media (max-width: 600px) {
+    .epos-reihenbild > .epos-reihenwahl { order: 1; }
+}
 @media (forced-colors: active) {
     .epos-reihenwahl-chip[aria-pressed="true"] { border-width: 2px; }
 }

@@ -45,7 +45,8 @@
 //    eintragen, "Datensatz suchen"); Gegenprobe: Leiste position: static.
 //  KLIMAREIHEN (KD-8 Teil A, --nur klimareihen): der Reiter "Weitere Reihen" der Detailkarte - die
 //    Reihenwahl bricht in ihrem Kasten um (kein Chip ragt heraus, nichts rollt quer), das Bild darunter
-//    steht, die Schlussleiste des Dialogs steht ganz im Fenster; Gegenprobe: Gruppen ohne Umbruch.
+//    steht, die Schlussleiste des Dialogs steht ganz im Fenster; im Fenster bis 600 px steht das Bild UEBER
+//    der Wahl, breiter die Wahl ueber dem Bild. Gegenproben: Gruppen ohne Umbruch; Reihenfolge ohne die Regel.
 //
 //  IPAD 11 ZOLL (1 194 x 834 quer): dieselben Faelle MIT den sicheren Abstaenden
 //    des iPads (Statusleiste oben 24 px, Home-Anzeige unten 20 px, gesetzt ueber die
@@ -570,7 +571,9 @@ async function klimareihen(browser, f, stil = '') {
       if (getComputedStyle(e).overflowX !== 'visible') querVorfahr = Math.max(querVorfahr, e.scrollWidth - e.clientWidth);
     const bild = wahl.parentElement.querySelector(':scope > * svg, :scope svg');
     const lb = leiste.getBoundingClientRect();
+    const bildOben = bild ? bild.getBoundingClientRect().top : NaN;
     return {
+      bildZuerst: bildOben < kasten.top, schmal: innerWidth <= 600,
       ragt: Math.round(ragt * 10) / 10, chips, gesperrt, querVorfahr,
       dokQuer: document.scrollingElement.scrollWidth - innerWidth,
       bildHoehe: bild ? Math.round(bild.getBoundingClientRect().height) : 0,
@@ -582,7 +585,10 @@ async function klimareihen(browser, f, stil = '') {
   if (m.ragt > TOL) fehler.push(`ein Chip ragt ${m.ragt} px aus der Reihenwahl`);
   if (m.querVorfahr > TOL) fehler.push(`ein Vorfahr der Reihenwahl rollt quer (${m.querVorfahr} px)`);
   if (m.dokQuer > TOL) fehler.push(`das Dokument rollt quer (${m.dokQuer} px)`);
-  if (m.bildHoehe < 50) fehler.push(`kein Bild unter der Reihenwahl (${m.bildHoehe} px)`);
+  if (m.bildHoehe < 50) fehler.push(`kein Bild bei der Reihenwahl (${m.bildHoehe} px)`);
+  if (m.bildZuerst !== m.schmal)
+    fehler.push(m.schmal ? 'schmales Fenster: die Reihenwahl steht ueber dem Bild statt darunter'
+                         : 'breites Fenster: das Bild steht ueber der Reihenwahl statt darunter');
   if (m.leiste[0] < rand(f).oben - TOL || m.leiste[1] > m.innen - rand(f).unten + TOL)
     fehler.push(`Schlussleiste ${m.leiste[0]}..${m.leiste[1]} px nicht ganz im Fenster`);
   if (FOTOS && !stil) await seite.screenshot({ path: `${FOTOS}/klimareihen_${f.breite}x${f.hoehe}.png` });
@@ -1192,7 +1198,8 @@ try {
       console.log(`- ${name}`);
       const r = await klimareihen(browser, f);
       for (const t of r.fehler) melde(name, t);
-      console.log(`    ${r.m.chips} Chips (${r.m.gesperrt} gesperrt), Wahl ${r.m.wahlHoehe} px hoch, ragt ${r.m.ragt} px; `
+      console.log(`    ${r.m.chips} Chips (${r.m.gesperrt} gesperrt), ${r.m.bildZuerst ? 'Bild zuerst' : 'Wahl zuerst'}, `
+        + `Wahl ${r.m.wahlHoehe} px hoch, ragt ${r.m.ragt} px; `
         + `Bild ${r.m.bildHoehe} px; Leiste ${JSON.stringify(r.m.leiste)}`);
     }
   }
@@ -1350,10 +1357,16 @@ try {
       }
     }
     if (MIT_GEGENPROBE && (!NUR || NUR === 'klimareihen')) {
-      // KD-8 Teil A: Ohne Umbruch der Gruppen ragen die Chips im schmalen Fenster aus der Reihenwahl.
-      for (const f of KLIMA_FENSTER.filter(f => f.breite < 900)) {
+      // KD-8 Teil A: Ohne Umbruch der Gruppen ragen die Chips im schmalen Fenster (520 px) aus der Reihenwahl.
+      for (const f of KLIMA_FENSTER.filter(f => f.breite <= 600)) {
         const g = await klimareihen(browser, f, '.epos-reihenwahl-gruppe { flex-wrap: nowrap !important; }');
         console.log(`    Gegenprobe klimareihen ohne Umbruch ${f.breite}x${f.hoehe}: ${g.n} Verstoesse`);
+        if (g.n === 0) gegenGruen++;
+      }
+      // Anwenderentscheid 16.10.2026: Ohne die Reihenfolgeregel steht im schmalen Fenster die Wahl ueber dem Bild.
+      for (const f of KLIMA_FENSTER.filter(f => f.breite <= 600)) {
+        const g = await klimareihen(browser, f, '.epos-reihenbild > .epos-reihenwahl { order: 0 !important; }');
+        console.log(`    Gegenprobe klimareihen ohne Reihenfolgeregel ${f.breite}x${f.hoehe}: ${g.n} Verstoesse`);
         if (g.n === 0) gegenGruen++;
       }
     }
