@@ -48,7 +48,7 @@ public class PrueflisteDialogTests : EposBunitContext
         Assert.Equal("Prüfliste der Vorlage", cut.Find(".epos-dialog-titel").TextContent);
         Assert.Single(cut.FindAll(".epos-dialog-kopf .epos-dialog-zu"));
         Assert.Single(cut.FindAll(".epos-dialog-kopf .epos-hilfepille"));
-        Assert.Contains("Keine Befunde", cut.Find(".epos-vorlage-pruefleer").TextContent);
+        Assert.Contains("Keine Meldungen", cut.Find(".epos-vorlage-pruefleer").TextContent);
         Assert.Empty(cut.FindAll(".epos-vorlage-pruefkopf"));
         Assert.Empty(cut.FindAll(".epos-vorlage-meldung"));
         Assert.Equal("UcBericht.btn_Help_Pruefliste", cut.Instance.HilfeSchluessel);
