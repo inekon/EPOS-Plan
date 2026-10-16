@@ -594,13 +594,13 @@ public class KaeltemaschineKatalogDialogTests : EposBunitContext
         cut.Find(".epos-kaeltemaschine-kennlinienbild [role=tab]").Click();            // Zeichenlauf ohne Änderung
         Assert.Same(vorher, Bild(cut, "km-kennlinie-eer").Modell);
 
-        // Kaltwassertemperatur des ersten Punkts auf 9 °C: eine neue Linie „9°C".
+        // Kaltwassertemperatur des ersten Punkts auf 9 °C: eine neue Linie „9 °C".
         IElement kaltwasser = cut.FindAll(".epos-kaeltemaschine-punkt input")[1];
         kaltwasser.Input("9");
 
         var nachher = Bild(cut, "km-kennlinie-eer").Modell;
         Assert.NotSame(vorher, nachher);
-        Assert.Contains("9°C", Bildtext(cut));
+        Assert.Contains("9 °C", Bildtext(cut));
     }
 
     [Fact]
