@@ -3793,12 +3793,12 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     flex: 0 1 auto !important;
     flex-wrap: nowrap;
     gap: 8px;
-    min-width: 0;
+    min-width: min-content;   /* KA-E-27: nie schmaler als ihre starren Kinder samt Suchfeld an seiner Untergrenze - sonst ragte „Spalten…“ ueber ihren Rand unter den naechsten Knopf; vorher gibt die Ueberschrift nach */
     overflow: clip;
 }
 .epos-zweispalten-kopfleiste > .epos-katalog-suchzeile > * { flex: 0 0 auto; white-space: nowrap; }
 .epos-zweispalten-kopfleiste > .epos-katalog-suchzeile > .epos-leiste-fueller { display: none; }
-.epos-zweispalten-kopfleiste .epos-katalog-suchfeld { flex: 0 3 16rem !important; min-width: 7rem; }   /* gibt vor Trefferzahl und Legende nach (4.10); ausserhalb der Kompaktstufe siehe unten */
+.epos-zweispalten-kopfleiste .epos-katalog-suchfeld { flex: 0 3 16rem !important; min-width: 7rem; width: 7rem; }   /* width = Untergrenze: so rechnet die Mindestbreite der Suchzeile das Feld mit 7rem (KA-E-27); gibt vor Trefferzahl und Legende nach (4.10); ausserhalb der Kompaktstufe siehe unten */
 .epos-zweispalten-kopfleiste .epos-katalog-suchbeschriftung {
     position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
 }
