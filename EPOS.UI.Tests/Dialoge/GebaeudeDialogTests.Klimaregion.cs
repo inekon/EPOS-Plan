@@ -152,7 +152,7 @@ public partial class GebaeudeDialogTests
             cut.WaitForAssertion(() => Assert.Equal(3, gelesen));
             Assert.Equal(fassung + 2, cut.Instance.BedarfFassung);
 
-            DisposeComponents();
+            await cut.InvokeAsync(cut.Instance.Dispose);
             Assert.False(kontext.Hoert);
         }
         finally

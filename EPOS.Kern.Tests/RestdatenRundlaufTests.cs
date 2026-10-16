@@ -225,7 +225,7 @@ namespace EPOS.Kern.Tests
                                                        out List<(string Schluessel, string Wert)> werte);
             Assert.Equal("Text", davor);
             Assert.Equal(new[] { ("Zone", "Z1"), ("Woche_1", "HEIZSOLL;1 2;Ost flügel"), ("Vorheizzeit_H", "2") }, werte.ToArray());
-            Assert.Equal("a b", GebaeudeRestdaten.Einzeilig("a b"));
+            Assert.Equal("a b", GebaeudeRestdaten.Einzeilig("a\u2028b"));
             Assert.Equal("ohne", GebaeudeRestdaten.Einzeilig("ohne"));
         }
 

@@ -30,7 +30,7 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(vorher, weg.Gewaehlt);
                 // Nachzug N6: die Herkunftszeile der Region ist derselbe Satz wie im Projektassistenten.
                 Assert.Equal(EPOS.UI.Seiten.Start.KlimaHerkunftGaben.Zeile(ProjektKopfHuelle.Herkunft(vorher),
-                                 MyResource.Resource.START_KLIMA_HERKUNFT, MyResource.Resource.START_KLIMA_HERKUNFT_KURZ),
+                                 WindowsFormsApplication1.MyResource.Resource.START_KLIMA_HERKUNFT, WindowsFormsApplication1.MyResource.Resource.START_KLIMA_HERKUNFT_KURZ),
                              weg.Herkunftszeile(vorher));
                 Assert.NotEqual("", weg.Herkunftszeile(vorher));
 

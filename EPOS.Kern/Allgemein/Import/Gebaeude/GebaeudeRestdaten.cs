@@ -420,7 +420,7 @@ namespace WindowsFormsApplication1
         internal static string Einzeilig(string text)
         {
             if (string.IsNullOrEmpty(text)) return text;
-            static bool Bricht(char c) => char.IsControl(c) || c == ' ' || c == ' ';
+            static bool Bricht(char c) => char.IsControl(c) || c == '\u2028' || c == '\u2029';
             if (!text.Any(Bricht)) return text;
             var sb = new StringBuilder(text.Length);
             foreach (char c in text) sb.Append(Bricht(c) ? ' ' : c);
