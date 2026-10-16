@@ -19322,6 +19322,95 @@ td.epos-vorlage-katalogbeschreibung {
 .epos-klimavorschau-bestand li span { color: var(--epos-text-leise); }
 .epos-klimavorschau-stand--fehlt { color: var(--epos-text-sehr-leise); }
 
+/* REIHENWAHL (Auftrag KD-8 Teil A, Konzept Klimadatenimport § 4a): Chips je Groesse,
+   gruppiert. Gedrueckt = Wahl; weich gesperrt (aria-disabled) gestrichelt und blass -
+   zwei Zustaende, sichtbar verschieden. Die Punktfarbe setzt der Wirt je Chip aus der
+   Palette (--epos-reihenwahl-farbe). */
+.epos-reihenwahl { margin: 10px 0 0; }
+.epos-reihenwahl-kopf {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    align-items: center;
+    color: var(--epos-text-leise);
+    margin-bottom: 4px;
+}
+.epos-reihenwahl-kopf b { color: var(--epos-text); }
+.epos-reihenwahl-fueller { flex: 1; }
+.epos-reihenwahl-gruppe {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    margin: 4px 0;
+}
+/* Der Gruppenname steht als eigene Zeile ueber seinen Chips: Im Stammblatt (340-440 px) nimmt ein
+   Name links daneben den Chips die halbe Breite, und jeder Chip stuende in einer eigenen Zeile. */
+.epos-reihenwahl-gruppenname {
+    color: var(--epos-text-leise);
+    flex-basis: 100%;
+}
+.epos-reihenwahl-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: var(--epos-touchziel);
+    padding: 0 12px;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: 999px;
+    background: var(--epos-karte-flaeche);
+    color: var(--epos-text);
+    font: inherit;
+    cursor: pointer;
+}
+.epos-reihenwahl-punkt {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--epos-reihenwahl-farbe, currentColor);
+    opacity: .35;
+}
+.epos-reihenwahl-chip[aria-pressed="true"] {
+    background: var(--epos-karte-flaeche-hover);
+    border-color: var(--epos-marke);
+    font-weight: 600;
+}
+.epos-reihenwahl-chip[aria-pressed="true"] .epos-reihenwahl-punkt { opacity: 1; }
+.epos-reihenwahl-chip[aria-disabled="true"] {
+    opacity: .55;
+    cursor: not-allowed;
+    border-style: dashed;
+}
+.epos-reihenwahl-chip:focus-visible {
+    outline: 2px solid var(--epos-marke);
+    outline-offset: 2px;
+}
+.epos-reihenwahl-einheit,
+.epos-reihenwahl-marke {
+    color: var(--epos-text-leise);
+    font-weight: 400;
+}
+.epos-reihenwahl-leise {
+    color: var(--epos-text-leise);
+    margin: 6px 0 0;
+    min-height: 1.4em;
+}
+.epos-reihenwahl-leise--warn { color: var(--epos-warn-text); }
+/* Reiter "Weitere Reihen": Wahl ueber dem Bild; im schmalen FENSTER (unter 600 px) steht das
+   Bild oben und die Wahl darunter (Anwenderentscheid 16.10.2026) - eine Medienregel, weil das
+   Stammblatt auch im breiten Fenster schmal ist und dort die Wahl oben bleibt. */
+.epos-reihenbild {
+    display: flex;
+    flex-direction: column;
+}
+.epos-reihenbild > * { min-width: 0; }
+@media (max-width: 600px) {
+    .epos-reihenbild > .epos-reihenwahl { order: 1; }
+}
+@media (forced-colors: active) {
+    .epos-reihenwahl-chip[aria-pressed="true"] { border-width: 2px; }
+}
+
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
 /* "Verbessere die Darstellung der Dialoge, insbesondere der Parameter   */

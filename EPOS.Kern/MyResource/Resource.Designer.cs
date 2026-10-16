@@ -83946,6 +83946,501 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihe abwählen ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_ABWAEHLEN {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_ABWAEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert [{0}] ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_ACHSE {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_ACHSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Andere Einheit: zeigt {0} allein ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_ANDERE_EINHEIT {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_ANDERE_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresverlauf der gewählten Reihen ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_DIA_BEZEICHNUNG {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_DIA_BEZEICHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weitere Reihen Verlauf ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_DIA_TITEL {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_DIA_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchstens drei Reihen je Bild; erst eine abwählen. ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_DREI_REIHEN {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_DREI_REIHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fassade Nord ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_FASSADE_NORD {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_FASSADE_NORD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fassade Ost ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_FASSADE_OST {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_FASSADE_OST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fassade Süd ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_FASSADE_SUED {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_FASSADE_SUED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fassade West ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_FASSADE_WEST {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_FASSADE_WEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle führt die Größe nicht ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_FUEHRT_NICHT {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_FUEHRT_NICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihen gleicher Einheit lassen sich zusammen zeigen; eine andere Einheit beginnt ein neues Bild. ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_GLEICHE_EINHEIT {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_GLEICHE_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bewölkung, Druck, Wind ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_GRUPPE_BEWOELKUNG {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_GRUPPE_BEWOELKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fassadenwerte ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_GRUPPE_FASSADE {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_GRUPPE_FASSADE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strahlung ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_GRUPPE_STRAHLUNG {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_GRUPPE_STRAHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperatur und Feuchte ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_GRUPPE_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_GRUPPE_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eine Einheit je Bild, bis zu drei Reihen · jetzt: {0} ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_HINWEIS_JAHR {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_HINWEIS_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strahlung als Monatssumme, sonst Monatsmittel · höchstens zwei Einheiten ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_HINWEIS_VORSCHAU {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_HINWEIS_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihe hinzufügen ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_HINZUFUEGEN {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_HINZUFUEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihen ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_KOPF_JAHR {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_KOPF_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihen im Bild ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_KOPF_VORSCHAU {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_KOPF_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedeckung ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_KURZ_BEDECKUNG {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_KURZ_BEDECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diffus ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_KURZ_DIFFUS {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_KURZ_DIFFUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Direkt normal ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_KURZ_DIREKT_NORMAL {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_KURZ_DIREKT_NORMAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feuchte ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_KURZ_FEUCHTE {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_KURZ_FEUCHTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gegenstrahlung ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_KURZ_GEGENSTRAHLUNG {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_KURZ_GEGENSTRAHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Global ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_KURZ_GLOBAL {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_KURZ_GLOBAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nord ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_KURZ_NORD {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_KURZ_NORD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ost ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_KURZ_OST {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_KURZ_OST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Süd ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_KURZ_SUED {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_KURZ_SUED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperatur ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_KURZ_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_KURZ_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die West ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_KURZ_WEST {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_KURZ_WEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mindestens eine Reihe bleibt gewählt. ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_LETZTE_BLEIBT {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_LETZTE_BLEIBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausstrahlung ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_NAME_AUSSTRAHLUNG {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_NAME_AUSSTRAHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedeckungsgrad ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_NAME_BEDECKUNG {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_NAME_BEDECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diffusstrahlung ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_NAME_DIFFUS {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_NAME_DIFFUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Direktstrahlung horizontal ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_NAME_DIREKT_HORIZONTAL {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_NAME_DIREKT_HORIZONTAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Direktstrahlung normal ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_NAME_DIREKT_NORMAL {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_NAME_DIREKT_NORMAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} [{1}] ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_NAME_EINHEIT {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_NAME_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Relative Luftfeuchte ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_NAME_FEUCHTE {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_NAME_FEUCHTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gegenstrahlung ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_NAME_GEGENSTRAHLUNG {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_NAME_GEGENSTRAHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Globalstrahlung ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_NAME_GLOBAL {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_NAME_GLOBAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftdruck ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_NAME_LUFTDRUCK {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_NAME_LUFTDRUCK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Qualitätskennung der Strahlung ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_NAME_QUALITAET {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_NAME_QUALITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lufttemperatur ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_NAME_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_NAME_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wasserdampfgehalt ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_NAME_WASSERDAMPF {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_NAME_WASSERDAMPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Windgeschwindigkeit ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_NAME_WIND {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_NAME_WIND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Windrichtung ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_NAME_WINDRICHTUNG {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_NAME_WINDRICHTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weitere Reihen ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_REITER {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_REITER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} Stunden mit Wert ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_TEILFUELLUNG {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_TEILFUELLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_VORGABE {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihen im Jahresverlauf ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_WAHL_JAHR {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_WAHL_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihen im Monatsbild ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_WAHL_VORSCHAU {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_WAHL_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihe zuschalten ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_ZUSCHALTEN {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_ZUSCHALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchstens zwei Einheiten zugleich ({0}); erst eine Reihe dieser Einheiten abwählen. ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_ZWEI_EINHEITEN {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_ZWEI_EINHEITEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Herkunftsvermerk ähnelt.
         /// </summary>
         public static string KLIMA_SB_VERMERK {
