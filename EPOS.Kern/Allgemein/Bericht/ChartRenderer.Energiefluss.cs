@@ -48,6 +48,9 @@ namespace WindowsFormsApplication1
         /// <summary>Stützstellen je Bandkante.</summary>
         public const int EF_STUETZSTELLEN = 24;
 
+        /// <summary>Breite einer inneren Beschriftung (über dem Knoten) in Spaltenabständen, bevor sie gekürzt wird.</summary>
+        public const float EF_INNEN_BREITE = 1.5f;
+
         /// <summary>Deckung der Bandflächen: 0,55.</summary>
         public const byte EF_BANDDECKUNG = 140;
 
@@ -318,7 +321,10 @@ namespace WindowsFormsApplication1
                     return zeilen;
                 }
                 if (k.H < EF_MIN_BESCHRIFTUNG && k.Daten.Art != EnergieflussKnotenart.Bus) return zeilen;
-                string innen = Gekuerzt(mitWert ? name + " · " + zahl : name, lf, Math.Max(40f, abstand - 6f));
+                // Eine innere Beschriftung darf über ihre Spalte hinausragen (bis EF_INNEN_BREITE Spaltenabstände): So
+                // bleiben „Wärmepumpe (Heizen)“ und im Bericht „Name · Wert“ lesbar; was eine gesetzte Beschriftung
+                // überdeckte, entfällt ohnehin (Planung oben).
+                string innen = Gekuerzt(mitWert ? name + " · " + zahl : name, lf, Math.Max(40f, abstand * EF_INNEN_BREITE - 6f));
                 float wi = lf.MeasureText(innen);
                 float xi = Math.Max(2f, Math.Min(W - wi - 2f, k.X + EF_KNOTENBREITE / 2f - wi / 2f));
                 zeilen.Add((innen, lf, xi, Math.Max(oben - lf.Hoehe, k.Y - 3f - lf.Hoehe)));

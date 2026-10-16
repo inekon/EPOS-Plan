@@ -710,3 +710,6 @@ zugeordnet“ am Strombus. Erwartete Farben: `KNOTEN`, `VERLUST`, `TEXT` (die B�
 | SVG | `svg_energiefluss` | je Band und Knoten Marke und `data-wert`, byte-gleich, keine Zahl im Bildschirmbild |
 
 Das sind **12 neue Zeilen** am Ende von `Messlatte_2026-10-16.sha256`; die bisherigen 226 Zeilen bleiben unverändert.
+Schritt SK-12 hat zehn dieser zwölf Zeilen ersetzt (alle breiten und Berichtsproben): Eine innere Beschriftung darf
+seither bis zu 1,5 Spaltenabstände breit sein (`ChartRenderer.EF_INNEN_BREITE`), damit „Wärmepumpe (Heizen)“ und im
+Bericht „Name · Wert“ ungekürzt stehen; die beiden schmalen Proben und die 226 älteren Zeilen sind unverändert.
