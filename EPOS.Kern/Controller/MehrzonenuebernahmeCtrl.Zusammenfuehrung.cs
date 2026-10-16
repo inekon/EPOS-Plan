@@ -254,6 +254,10 @@ namespace WindowsFormsApplication1
             }
             m.Vorheizzeit_H ??= alt.Vorheizzeit_H;
             m.Nutzungsprofil ??= alt.Nutzungsprofil;
+            // Nachzug N6: die Profilwerte der Zone (Außenluft je Person, Licht, Personenwärme) trägt keine Datei - sie bleiben.
+            m.Aussenluft_Person ??= alt.Aussenluft_Person;
+            m.Licht_W_m2 ??= alt.Licht_W_m2;
+            m.Personen_Waerme_W ??= alt.Personen_Waerme_W;
             return m;
         }
 
