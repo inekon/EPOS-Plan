@@ -510,11 +510,13 @@ namespace WindowsFormsApplication1
                 // K6b (E34): der Stromtraeger des Projekts - der eigene Zaehler wirkt nur bei abweichendem Kuehltraeger.
                 gaben["ProjektStromtraeger"] = Kaeltestromabrechnung.Projekttraeger(projektId);
                 // KBP-3b (Konzept Kaeltebedarfsprofile 5): die vier Blaetter und die Kennzahlenzeile der markierten
-                // Kaeltezeile - gerechnet im Kern mit den Jahressummen und Kalendern, wie der Dialog sie gerade zeigt.
+                // Kaeltezeile - gerechnet im Kern mit dem Arbeitsstand des Dialogs: Jahressummen, Kalender und die dort
+                // bearbeiteten (noch ungespeicherten) Monatsanteile und Wochenprofile.
                 gaben["KaelteGrafik"] = new Func<BedarfsProfilZeile, IReadOnlyList<BedarfsProfilZeile>, Kaelteprofilbilder>(
                     (markiert, alle) =>
                     {
-                        var zeilenDesDialogs = alle.Select(z => new Kaeltegrafikzeile(z.Name, z.Summe, z.KalenderId)).ToList();
+                        var zeilenDesDialogs = alle.Select(z => new Kaeltegrafikzeile(z.Name, z.Summe, z.KalenderId,
+                            z.ProfilGeaendert ? z.Monatsanteile : null, z.ProfilGeaendert ? z.Wochenprofil : null)).ToList();
                         int platz = alle.ToList().IndexOf(markiert);
                         return platz < 0 ? null : KaelteprofilgrafikCtrl.Rechnen(projektId, zeilenDesDialogs, zeilenDesDialogs[platz]);
                     });

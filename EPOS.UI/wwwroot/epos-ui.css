@@ -12784,6 +12784,43 @@ table.epos-kmt-liste > tbody > tr.epos-zeile--gewaehlt > td:first-child {
     margin: 4px 0 0;
 }
 
+/* Nacharbeit KBP-3b: das Blatt Woche der Kaeltegrafik - die Tagesarten der */
+/* gewaehlten Kalenderwoche als farbige Streifen UNTER der Zeichenflaeche.  */
+/* Das Bild ist durchsichtig; Verlauf, Hoehe und Lage der Streifen setzt    */
+/* der Baustein je Woche als Variablen (Farben aus --epos-kalb-*).          */
+.epos-kbp-woche .epos-diagramm-svg-flaeche {
+    background-image: var(--epos-kbp-tagesarten);
+    background-repeat: no-repeat;
+    background-size: 100% var(--epos-kbp-tagesarten-hoehe);
+    background-position: 0 var(--epos-kbp-tagesarten-lage);
+}
+
+.epos-kbp-tagesarten {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    margin: 6px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.epos-kbp-tagesart::before {
+    content: "";
+    display: inline-block;
+    width: 0.9em;
+    height: 0.9em;
+    margin-right: 6px;
+    vertical-align: -0.1em;
+    border: 1px solid var(--epos-rahmen-leise);
+    background: var(--epos-kbp-tagesart-farbe);
+}
+
+.epos-kbp-tagesart--werktag { --epos-kbp-tagesart-farbe: var(--epos-kalb-grundwoche); }
+.epos-kbp-tagesart--samstag { --epos-kbp-tagesart-farbe: var(--epos-kalb-wochenende); }
+.epos-kbp-tagesart--sonntag { --epos-kbp-tagesart-farbe: var(--epos-kalb-feiertag); }
+.epos-kbp-tagesart--ferien { --epos-kbp-tagesart-farbe: var(--epos-kalb-ferien); }
+.epos-kbp-tagesart--ausserhalb { --epos-kbp-tagesart-farbe: var(--epos-kalb-saison); }
+
 /* Die Nummer steht VOR dem Feld, nicht darueber: Label3 lag bei x = 16  */
 /* und st1 bei x = 37 auf DERSELBEN Zeile. Uebereinander waere die       */
 /* Spalte doppelt so hoch - und genau das war der Befund.                */

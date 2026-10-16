@@ -142,10 +142,15 @@ namespace WindowsFormsApplication1
         /// Zuordnung vor (<see cref="ProfilQuelle.Jahressummen"/>): Die Vorschau zeigt, was
         /// der Lauf nach dem Speichern rechnet. <c>null</c> = allein der gespeicherte Stand.
         /// </param>
+        /// <param name="arbeitsstaende">
+        /// Nur Kälte (Konzept Kältebedarfsprofile 5): Monatswerte, Wochenprofil und Betriebskalender je Profilname, wie sie
+        /// im offenen Dialog stehen (<see cref="ProfilQuelle.Arbeitsstaende"/>); <c>null</c> = der gespeicherte Stand.
+        /// </param>
         internal static BedarfsVorschau ProjektVorschau(BedarfsArt art, int idProjekt,
                                                        IReadOnlyList<string> namen,
                                                        ZapfprofilStand zapfprofil = null,
-                                                       IReadOnlyDictionary<string, double> jahressummen = null)
+                                                       IReadOnlyDictionary<string, double> jahressummen = null,
+                                                       IReadOnlyDictionary<string, ProfilArbeitsstand> arbeitsstaende = null)
         {
             var ergebnis = new BedarfsVorschau { Art = art };
 
@@ -162,7 +167,7 @@ namespace WindowsFormsApplication1
             if (art == BedarfsArt.Stromverbraucher) return Strom(ergebnis, idProjekt, liste, jahressummen);
 
             // K2: Die Kaelte rechnet ueber ihre eigene Profilquelle - sie faellt NICHT in den Brauchwasserzweig darunter.
-            if (art == BedarfsArt.Kaelte) return Kaelte(ergebnis, idProjekt, liste, jahressummen);
+            if (art == BedarfsArt.Kaelte) return Kaelte(ergebnis, idProjekt, liste, jahressummen, arbeitsstaende);
 
             var sim = new SimulationWaermebedarf { m_ID_Projekt = idProjekt };
 
@@ -278,7 +283,8 @@ namespace WindowsFormsApplication1
         /// <see cref="BedarfsVorschau.Erfolgreich"/> auf <c>false</c> (die Meldung gibt die Routine selbst).
         /// </summary>
         private static BedarfsVorschau Kaelte(BedarfsVorschau ergebnis, int idProjekt, List<string> liste,
-                                              IReadOnlyDictionary<string, double> jahressummen = null)
+                                              IReadOnlyDictionary<string, double> jahressummen = null,
+                                              IReadOnlyDictionary<string, ProfilArbeitsstand> arbeitsstaende = null)
         {
             if (!KaeltebedarfSchema.TabellenVorhanden()) return ergebnis;
 
@@ -288,6 +294,7 @@ namespace WindowsFormsApplication1
 
             ProfilQuelle quelle = ProfilQuelle.Kaelte(ProfilBedarf.Vorschaumodus(liste, idProjekt));
             quelle.Jahressummen = jahressummen;
+            quelle.Arbeitsstaende = arbeitsstaende;
 
             var stunde = new double[8760];
             var monat = new double[12];

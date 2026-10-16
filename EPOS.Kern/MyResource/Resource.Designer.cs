@@ -56375,6 +56375,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerechnet wird der Arbeitsstand dieses Dialogs – Jahressumme, Monatswerte, Wochenprofil und Betriebskalender, auch ungespeichert. Jahresgang, Woche und Dauerlinie zeigen die markierte Zeile, die Monate stapeln alle Zeilen. ähnelt.
+        /// </summary>
+        public static string KBP_GRAFIK_HERLEITUNG_ARBEIT {
+            get {
+                return ResourceManager.GetString("KBP_GRAFIK_HERLEITUNG_ARBEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Für die markierte Zeile liegt kein Profil vor. ähnelt.
         /// </summary>
         public static string KBP_GRAFIK_OHNE {
@@ -56425,6 +56434,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KBP_HINW_EINGABEART_ZAPFPROFIL {
             get {
                 return ResourceManager.GetString("KBP_HINW_EINGABEART_ZAPFPROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hintergrund nach Tagesart des Betriebskalenders; Kalenderwochen nach DIN EN ISO 8601 im Jahresraster, zuerst die Woche mit der Spitze. ähnelt.
+        /// </summary>
+        public static string KBP_HINW_GRAFIKWOCHE {
+            get {
+                return ResourceManager.GetString("KBP_HINW_GRAFIKWOCHE", resourceCulture);
             }
         }
         
@@ -56551,6 +56569,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KBP_LBL_EINGABEART {
             get {
                 return ResourceManager.GetString("KBP_LBL_EINGABEART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalenderwoche ähnelt.
+        /// </summary>
+        public static string KBP_LBL_KALENDERWOCHE {
+            get {
+                return ResourceManager.GetString("KBP_LBL_KALENDERWOCHE", resourceCulture);
             }
         }
         
@@ -56708,6 +56735,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die außerhalb des Jahres ähnelt.
+        /// </summary>
+        public static string KBP_TAGESART_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("KBP_TAGESART_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien ähnelt.
+        /// </summary>
+        public static string KBP_TAGESART_FERIEN {
+            get {
+                return ResourceManager.GetString("KBP_TAGESART_FERIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Samstag ähnelt.
+        /// </summary>
+        public static string KBP_TAGESART_SAMSTAG {
+            get {
+                return ResourceManager.GetString("KBP_TAGESART_SAMSTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonntag/Feiertag ähnelt.
+        /// </summary>
+        public static string KBP_TAGESART_SONNTAG {
+            get {
+                return ResourceManager.GetString("KBP_TAGESART_SONNTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werktag ähnelt.
+        /// </summary>
+        public static string KBP_TAGESART_WERKTAG {
+            get {
+                return ResourceManager.GetString("KBP_TAGESART_WERKTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Werktag (Mo–Fr);Samstag;Sonntag ähnelt.
         /// </summary>
         public static string KBP_TAGE_DREI {
@@ -56735,6 +56807,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf {0} ähnelt.
+        /// </summary>
+        public static string KBP_TITEL_KALENDERWOCHE {
+            get {
+                return ResourceManager.GetString("KBP_TITEL_KALENDERWOCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf je Monat ähnelt.
         /// </summary>
         public static string KBP_TITEL_MONATE {
@@ -56758,6 +56839,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KBP_WOCHENTAGE {
             get {
                 return ResourceManager.GetString("KBP_WOCHENTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KW {0} ({1}–{2}) ähnelt.
+        /// </summary>
+        public static string KBP_WOCHE_EINTRAG {
+            get {
+                return ResourceManager.GetString("KBP_WOCHE_EINTRAG", resourceCulture);
             }
         }
         

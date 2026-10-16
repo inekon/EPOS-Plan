@@ -56438,5 +56438,35 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="KBP_KALENDER_NORM_NAME_TAG" xml:space="preserve">
     <value>Norm {0} Tage ({1}, 1.1. {2})</value>
   </data>
+  <data name="KBP_WOCHE_EINTRAG" xml:space="preserve">
+    <value>KW {0} ({1}–{2})</value>
+  </data>
+  <data name="KBP_TITEL_KALENDERWOCHE" xml:space="preserve">
+    <value>Kältebedarf {0}</value>
+  </data>
+  <data name="KBP_LBL_KALENDERWOCHE" xml:space="preserve">
+    <value>Kalenderwoche</value>
+  </data>
+  <data name="KBP_TAGESART_WERKTAG" xml:space="preserve">
+    <value>Werktag</value>
+  </data>
+  <data name="KBP_TAGESART_SAMSTAG" xml:space="preserve">
+    <value>Samstag</value>
+  </data>
+  <data name="KBP_TAGESART_SONNTAG" xml:space="preserve">
+    <value>Sonntag/Feiertag</value>
+  </data>
+  <data name="KBP_TAGESART_FERIEN" xml:space="preserve">
+    <value>Ferien</value>
+  </data>
+  <data name="KBP_TAGESART_AUSSERHALB" xml:space="preserve">
+    <value>außerhalb des Jahres</value>
+  </data>
+  <data name="KBP_HINW_GRAFIKWOCHE" xml:space="preserve">
+    <value>Hintergrund nach Tagesart des Betriebskalenders; Kalenderwochen nach DIN EN ISO 8601 im Jahresraster, zuerst die Woche mit der Spitze.</value>
+  </data>
+  <data name="KBP_GRAFIK_HERLEITUNG_ARBEIT" xml:space="preserve">
+    <value>Gerechnet wird der Arbeitsstand dieses Dialogs – Jahressumme, Monatswerte, Wochenprofil und Betriebskalender, auch ungespeichert. Jahresgang, Woche und Dauerlinie zeigen die markierte Zeile, die Monate stapeln alle Zeilen.</value>
+  </data>
 </root>
 
