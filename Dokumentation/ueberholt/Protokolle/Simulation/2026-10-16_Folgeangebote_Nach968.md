@@ -2,7 +2,7 @@
 
 ## Anlass
 
-Der Block „Nach #968“ der Statusdatei nannte acht Folgeangebote (a) bis (h). Sieben davon sind gebaut und vorintegriert (Zweig `vorintegration-nach968`); (c) die Katalogliste bleibt in Arbeit.
+Der Block „Nach #968“ der Statusdatei nannte acht Folgeangebote (a) bis (h). Sieben davon sind gebaut und vorintegriert (Zweig `vorintegration-nach968`); (c) die Katalogliste ist mit #1145 erledigt.
 
 ## Umsetzung und Abnahme
 
@@ -15,6 +15,14 @@ Der Block „Nach #968“ der Statusdatei nannte acht Folgeangebote (a) bis (h).
 
 Volles Gate (`gate_linux.sh`) auf dem Stand vor R57: Kern 14 515 bestanden, 5 Rot; UI 9 619 bestanden, 1 Rot; KiKern 553, SpeicherEngine 397, SpeicherPlanung 27; Referenzlauf 37/37 (CSV 1 205/1 205). Die sechs Rotstellen waren eigene Folgen der Diagrammänderung und sind im Commit `bf53c0cc5` behoben: zwei Bausteinvorlagen (`Berichtsvorlage_Bausteine.dotx`, `_en.dotx`) neu erzeugt, Legendentest „9 °C“. Danach Rest-Gate auf dem Stand nach R57: UI 9 622/0, Referenzlauf 38/38 gegen R57 (CSV 1 233/1 233), SQL 3 045 Texte 0 Fundstellen, Konfliktmarker keine. Nach dem Push von „Dialoge und Korrekturen“ (`105df8e61`): Builds 0 Fehler, ChartProben 0 Verstöße, Messlatte unverändert, UI-Filter 494/0.
 
+## (c) Katalogliste bei 1160 px (Status #1145)
+
+- **Befund:** Bei 1160 px Dialogbreite (Fenster 1400 × 820, Wiki-Bilder) schnitt die Kopfleiste des Katalogs Suchfeld und Schaltflächen ab; durch die längeren Spaltenköpfe aus (d) wurde es enger.
+- **Lösung:** `epos-ui.css`, Block `@media (min-width: 1280px) and (min-height: 800px)`: die Kopfleiste bricht um (Katalogverwaltung und Übernahme in der zweiten Zeile). Gefundene Spalten der Kältemaschinenliste bei 1160 px: Hersteller, Bezeichner, Nennkälteleistung, EER, Rückkühlart, Herkunft, Art (Typ ausgeblendet).
+- **Sollwert:** In `rollbereichprobe.mjs` darf die Katalog-Kopfleiste im Normalmaß zwei Zeilen und höchstens 93 px hoch sein, weil der Umbruch sie bewusst zweizeilig macht; die Kompaktstufe behält ihr Maß.
+- **Proben:** Kopfleistenprobe 38/38, Gegenprobe 48 Verstöße; Raster- und Fensterprobe grün mit Gegenproben; Katalogprobe 21/70 wie vorher (darunter N08b, N22b bei 400 × 624, schon vorher rot); Rollbereich rot nur in der Kompaktstufe 1024 × 700/768; UI-Tests 1 805/0 (gefiltert).
+- **Offen in der Kompaktstufe:** KA-E-27 (Kältemaschine „Spalten…“ über „Katalogverwaltung…“), Satzfläche der pv-/solarganglinie, gekürzter Suchplatzhalter der Projektauswahl.
+
 ## Offen
 
-(c) Katalogliste; Wiki-Upload der Seite „Pufferspeicher auslegen“, zweier Grundlagenseiten und zweier Diagrammbilder mit dem Sammel-Upload (Entwurf „Nachtrag zu Version 1.2.0.11“ in `Dokumentation/aktuell/Wiki_Update_2026-09-26.md`).
+Wiki-Upload der Seite „Pufferspeicher auslegen“, zweier Grundlagenseiten und zweier Diagrammbilder mit dem Sammel-Upload (Entwurf „Nachtrag zu Version 1.2.0.11“ in `Dokumentation/aktuell/Wiki_Update_2026-09-26.md`).

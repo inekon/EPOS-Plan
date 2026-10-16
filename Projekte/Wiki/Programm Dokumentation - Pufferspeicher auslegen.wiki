@@ -101,6 +101,8 @@ Je Kriterium eine Karte mit Schalter, Volumen, Herkunft und – ab Standard – 
 === Schritt 4 — Ergebnis und Übernahme ===
 {{Anker|schritt-4|ergebnis}}
 
+[[Datei:Bildschirmfoto_Pufferspeicher_auslegen.png|mini|zentriert|800px|Schritt 4 der Pufferspeicher-Auslegung für einen Kombipuffer an einer Wärmepumpe: Vorschlag je Zone, Kennzahlen, Nachbarstufen und Übernahme – Bildschirmfoto mit Beispieldaten.]]
+
 '''Wann gerechnet wird.''' Schalter wie Speicherklasse, Vorlage oder ein Kriterium rechnen sofort. Ein Zahlenfeld kennzeichnet das Ergebnis als ''veraltet''; gerechnet wird beim Wechsel in Schritt 4 oder mit ''Neu rechnen''. Vor der ersten Rechnung steht ''Auslegen und Ergebnis zeigen''.
 
 * {{Anker|zonen}}'''Vorschlag je Zone''' – Zone, bemessendes Kriterium und Volumen, darunter die ''Summe der Zonen''.

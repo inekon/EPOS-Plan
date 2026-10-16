@@ -43,6 +43,8 @@ public partial class Wikibild
             ["Daten"] = TransferDaten()
         }),
         "erdreich" => (typeof(QuelleErdreichDialog), ErdreichGaben()),
+        // Die Pufferspeicher-Auslegung (Beispieldaten in Wikibild.Pufferauslegung.cs).
+        "pufferauslegung" => (typeof(EPOS.UI.Seiten.Pufferspeicher.PufferAuslegungSeite), _pufferauslegung ??= PufferauslegungGaben()),
         "simulation" => (typeof(KomponentenKonfigurationDialog), new Dictionary<string, object>
         {
             ["Komponente"] = Komponentenart.Waermepumpe,
