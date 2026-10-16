@@ -263,9 +263,9 @@ namespace WindowsFormsApplication1
                 Gestapelt = true,
             };
             foreach (string m in ChartRenderer.MONATE) d.Kategorien.Add(m);
-            foreach (ChartRenderer.Reihe r in serien.Where(s => s.Name != ChartRenderer.EINSPEISUNG_NEBENBALKEN))
+            foreach (ChartRenderer.Reihe r in serien.Where(s => !ChartRenderer.IstEinspeisungNebenbalken(s)))
                 d.Reihe(r.Name, Exceldiagramm.Endlich(r.Werte), Excelreihenart.Saeule, Hex(r.Farbe));
-            foreach (ChartRenderer.Reihe r in serien.Where(s => s.Name == ChartRenderer.EINSPEISUNG_NEBENBALKEN))
+            foreach (ChartRenderer.Reihe r in serien.Where(ChartRenderer.IstEinspeisungNebenbalken))
                 d.Reihe(r.Name, Exceldiagramm.Endlich(r.Werte), Excelreihenart.Linie, Hex(r.Farbe)).Strich = Excelstrich.Gestrichelt;
             if (bedarf != null)
                 d.Reihe("Strombedarf", Exceldiagramm.Endlich(bedarf), Excelreihenart.Linie, Hex(ChartRenderer.C_BEDARF)).Staerke = 2.25;

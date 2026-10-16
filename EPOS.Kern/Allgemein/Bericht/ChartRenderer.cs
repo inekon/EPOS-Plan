@@ -490,7 +490,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Ganglinientyp 3: Strombilanz im Monatsverlauf — gestapelte Deckung
-        /// (PV-Eigenverbrauch, BHKW, Netzbezug), Einspeisung als eigene Reihe,
+        /// (PV-Eigenverbrauch, BHKW, Netzbezug), die Einspeisung (ohne Flotte die PV-Einspeisung,
+        /// mit Flotte die Netzeinspeisung gesamt) als schmaler Nebenbalken,
         /// Strombedarf als Linie (Konzept Kap. 6.2 Nr. 3).
         /// </summary>
         public static byte[] StrombilanzMonate(ZeitreihenSatz z)
@@ -539,7 +540,7 @@ namespace WindowsFormsApplication1
             if (z.Hat(ZeitreihenSatz.NETZBEZUG))
                 serien.Add(new Reihe("Netzbezug", MonatsSummenMWh(z.Hole(ZeitreihenSatz.NETZBEZUG)), C_KESSEL));
             if (z.Hat(ZeitreihenSatz.NETZEINSPEISUNG))
-                serien.Add(new Reihe("Netzeinspeisung gesamt",
+                serien.Add(new Reihe(NETZEINSPEISUNG_GESAMT,
                     MonatsSummenMWh(z.Hole(ZeitreihenSatz.NETZEINSPEISUNG)), C_NETZ));
             else if (z.Hat(ZeitreihenSatz.PV_UEBERSCHUSS))
                 serien.Add(new Reihe("Einspeisung", MonatsSummenMWh(z.Hole(ZeitreihenSatz.PV_UEBERSCHUSS)), C_NETZ));
@@ -876,7 +877,7 @@ namespace WindowsFormsApplication1
             var rc = SKRect.Create(90f, 80f, W - 130f, H - 180f - mehr);
 
             // Einspeisung wird nicht gestapelt, sondern als schmaler Nebenbalken gezeigt.
-            Reihe einspeisung = serien.FirstOrDefault(s => s.Name == EINSPEISUNG_NEBENBALKEN);
+            Reihe einspeisung = serien.FirstOrDefault(IstEinspeisungNebenbalken);
             var stapel = serien.Where(s => s != einspeisung).ToList();
 
             var summe = new double[12];
@@ -8876,6 +8877,18 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Name der Reihe, die die Strombilanz als schmalen Nebenbalken statt im Stapel zeigt.</summary>
         internal const string EINSPEISUNG_NEBENBALKEN = "Einspeisung";
+
+        /// <summary>Der Name der Einspeisereihe mit Speicherflotte (PV, BHKW und Batterie ins Netz).</summary>
+        internal const string NETZEINSPEISUNG_GESAMT = "Netzeinspeisung gesamt";
+
+        /// <summary>
+        /// 6a: Gehört die Reihe in den Nebenbalken der Einspeisung statt in den Stapel der Deckung? Eingespeister Strom
+        /// deckt keinen Bedarf — ohne Flotte die PV-Einspeisung, mit Flotte die Netzeinspeisung gesamt.
+        /// </summary>
+        internal static bool IstEinspeisungNebenbalken(Reihe r)
+        {
+            return r != null && (r.Name == EINSPEISUNG_NEBENBALKEN || r.Name == NETZEINSPEISUNG_GESAMT);
+        }
 
         // Erzeugerreihen Wärme in fester Stapelreihenfolge (Solar unten … Kessel oben).
         private static List<Reihe> WaermeErzeugerReihen(ZeitreihenSatz z, bool tagesmittel)
