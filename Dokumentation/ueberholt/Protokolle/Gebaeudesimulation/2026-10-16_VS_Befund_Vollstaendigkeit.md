@@ -30,3 +30,7 @@ Nicht umbenannt (im Auftrag nicht genannt): Spalte „Befund“ in `GEBSIM_SP_BE
 - Meldung(en)/Message(s): `BV_VORLAGEN_PRUEFZEILE_BEFUND`, `_BEFUNDE`, `_OK`, `VF_PRUEF_KEINE_BEFUNDE` (samt Standardtext in `PrueflisteTexte.cs`), `KI_REG_EINHEITEN_OHNE_BEFUND`, `KI_REG_EINHEITEN_BEFUNDE`, `KI_REG_ZWECK_ENERGIETRAEGER_PRUEFEN`, `KI_DLG_KSE_STATUS_ERL`, `KI_DLG_IKF_AKTION_ERL` (9 Schlüssel). 22 Einträge in beiden Sprachen, Designer neu.
 - Test: `PrueflisteDialogTests` (1 Zeile). Läufe: UI-Filter 1725, Kern-Filter 561 grün. Wiki ohne „Befund“.
 - Weiter offen: `ADM_DUBLETTEN_BAUM` („Dublettenbefund“/„Duplicate findings“) und `BHW_K_LEER` (en „No findings“), nicht genannt.
+
+## Nachzug VS2 (E145: kein sichtbarer Text „Befund“)
+
+`ADM_DUBLETTEN_BAUM` heißt deutsch „Dublettenhinweise“, englisch „Duplicate notes“ (Schlüssel unverändert). Weitere sichtbare Ressourcentexte mit „Befund“ gibt es nicht; die Wiki-Quellen tragen kein „Befund“. Test `BaumansichtTests` auf den neuen Text nachgezogen.

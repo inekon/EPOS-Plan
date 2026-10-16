@@ -15704,7 +15704,7 @@ Its hourly and daily values will be deleted as well.</value>
     <value>Close</value>
   </data>
   <data name="ADM_DUBLETTEN_BAUM" xml:space="preserve">
-    <value>Duplicate findings</value>
+    <value>Duplicate notes</value>
   </data>
   <data name="ADM_DUBLETTEN_SCAN_LAEUFT" xml:space="preserve">
     <value>Searching for duplicates…</value>
@@ -54227,7 +54227,7 @@ chart</value>
     <value>{0} DIN profile(s) filled with values, {1} skipped (values present), {2} source profile(s) without assignment.</value>
   </data>
   <data name="RNP_NW_MSG_ENTFERNT" xml:space="preserve">
-    <value>Read-in values removed from {0} DIN profile(s).</value>
+    <value>Read-in values removed from {0} DIN profile(s); the delivered values apply again.</value>
   </data>
   <data name="RNP_NW_BTN_EINLESEN" xml:space="preserve">
     <value>Read in standard values…</value>
@@ -54239,7 +54239,7 @@ chart</value>
     <value>Read in standard values</value>
   </data>
   <data name="RNP_NW_TXT_HINWEIS" xml:space="preserve">
-    <value>Fills the profiles of the category DIN/TS 18599-10 with the values from your CSV file or a project file. The program ships no standard values.</value>
+    <value>Compares the profiles of the category DIN/TS 18599-10 with the values from your CSV file or a project file. The values of the 2025-10 edition are delivered; you apply differing values here, and removing them restores the delivered values.</value>
   </data>
   <data name="RNP_NW_BTN_CSV" xml:space="preserve">
     <value>Choose CSV file…</value>
@@ -54332,7 +54332,7 @@ chart</value>
     <value>No profile carries read-in values.</value>
   </data>
   <data name="RNP_NW_FRAGE_ENTFERNEN" xml:space="preserve">
-    <value>Remove the read-in values of {0} profile(s)? The profiles are then without values again.</value>
+    <value>Remove the read-in values of {0} profile(s)? The profiles then hold the delivered values again.</value>
   </data>
   <data name="RNP_NW_BTN_JA" xml:space="preserve">
     <value>Remove</value>
@@ -54417,6 +54417,57 @@ chart</value>
   </data>
   <data name="BTA_SUMME_RT" xml:space="preserve">
     <value>R_T = R_si + R + R_se = {0} m²K/W</value>
+  </data>
+  <data name="BTA_ABS_MSG_EBENE" xml:space="preserve">
+    <value>{0}: Layer plane {1} carries the sections {2}, the other inhomogeneous planes {3} – every inhomogeneous plane needs the same sections.</value>
+  </data>
+  <data name="BTA_ABS_MSG_ANTEIL" xml:space="preserve">
+    <value>{0}: Section {1} has no area fraction greater than zero.</value>
+  </data>
+  <data name="BTA_ABS_MSG_SUMME" xml:space="preserve">
+    <value>{0}: The area fractions of the sections add up to {1:0.###} instead of 1 (permitted 0.99 to 1.01).</value>
+  </data>
+  <data name="BTA_SP_ABSCHNITT" xml:space="preserve">
+    <value>Section</value>
+  </data>
+  <data name="BTA_SP_FLAECHENANTEIL" xml:space="preserve">
+    <value>Area fraction</value>
+  </data>
+  <data name="BTA_ABSCHNITT_NEU" xml:space="preserve">
+    <value>Add a section alongside (inhomogeneous layer)</value>
+  </data>
+  <data name="BTA_SUMME_RT_OBEN" xml:space="preserve">
+    <value>R'_T upper limit = {0} m²K/W</value>
+  </data>
+  <data name="BTA_SUMME_RT_UNTEN" xml:space="preserve">
+    <value>R''_T lower limit = {0} m²K/W</value>
+  </data>
+  <data name="BTA_SUMME_RT_MITTEL" xml:space="preserve">
+    <value>R_T = (R'_T + R''_T) / 2 = {0} m²K/W</value>
+  </data>
+  <data name="BTA_GRUPPE_FENSTER" xml:space="preserve">
+    <value>Window</value>
+  </data>
+  <data name="BTA_LBL_UG" xml:space="preserve">
+    <value>U_g glazing</value>
+  </data>
+  <data name="BTA_LBL_UF" xml:space="preserve">
+    <value>U_f frame</value>
+  </data>
+  <data name="BTA_LBL_GWERT" xml:space="preserve">
+    <value>g-value</value>
+  </data>
+  <data name="BTA_LBL_RAHMENANTEIL" xml:space="preserve">
+    <value>Frame fraction</value>
+  </data>
+  <data name="BTA_LBL_PSI_GLASRAND" xml:space="preserve">
+    <value>ψ_g glazing edge</value>
+  </data>
+  <data name="BTA_FENSTER_HINWEIS" xml:space="preserve">
+    <value>When assigned to a window, the component takes over g-value and frame fraction; its U-value becomes U_w = (1 − f)·U_g + f·U_f + l_g·ψ_g / A with the frame fraction f and the glazing edge length l_g ≈ 4·√((1 − f)·A).</value>
+  </data>
+  <data name="BTDLG_FENSTER_UEBERNOMMEN" xml:space="preserve">
+    <value>Taken over from the window build-up: g-value, frame fraction and U_w = {0} W/(m²K).</value>
   </data>
   <data name="BTA_RICHTUNG" xml:space="preserve">
     <value>Layer order inside → outside: layer 1 faces the room, the last layer faces outside.</value>
@@ -56271,6 +56322,12 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="BKAL_MSG_FERIEN_FEHLEN" xml:space="preserve">
     <value>Holiday state and holidays of "{0}" copied. The building has {1} holiday periods, the calendar takes four: the first four are copied, {2} are missing.</value>
+  </data>
+  <data name="BTA_ABS_EBENENSUMME" xml:space="preserve">
+    <value>Σ area fractions of the layer = {0}</value>
+  </data>
+  <data name="BTA_ABS_EBENENSUMME_WARN" xml:space="preserve">
+    <value>Σ area fractions of the layer = {0} – 0.99 to 1.01 is allowed; the construction is calculated only then.</value>
   </data>
   <data name="KBP_GRUPPE_EINGABEART" xml:space="preserve">
     <value>Input method</value>

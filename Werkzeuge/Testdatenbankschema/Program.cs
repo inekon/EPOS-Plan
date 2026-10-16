@@ -3737,6 +3737,88 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt RaumnutzungDinWerteSchema.SCHRITT (DA-6, E135): die 45 DIN-Nutzungsprofile mit den Werten der
+            //      Saat RaumnutzungDinSaat (Fassung 2025-10), nur wo kein Wert steht. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_RaumnutzungDinWerte. Wiederholbar.
+            //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt nutzt ein Nutzungsprofil.
+            string nrDa6 = RaumnutzungDinWerteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrDa6 + " - Werte der DIN-Nutzungsprofile: " +
+                              (RaumnutzungDinWerteSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtDa6 = new List<string>();
+                RaumnutzungDinWerteSchema.Ausfuehren(berichtDa6);
+                foreach (string zeile in berichtDa6)
+                    Console.WriteLine("Schritt " + nrDa6 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrDa6 + " - vollstaendig: " + RaumnutzungDinWerteSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt BauteilkatalogAbschnittSchema.SCHRITT (BK-5/BK-6): Psi_Glasrand an Tab_Bauteilaufbau(_STAMM). Aus
+            //      DERSELBEN Quelle wie SchemaMigration.Schritt_BauteilkatalogAbschnitt. Wiederholbar.
+            //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt fuehrt einen Aufbau, die Spalte bleibt leer.
+            string nrBk5 = BauteilkatalogAbschnittSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBk5 + " - Inhomogene Schicht und Fenster im Aufbaukatalog: " +
+                              (BauteilkatalogAbschnittSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtBk5 = new List<string>();
+                angelegt += BauteilkatalogAbschnittSchema.Ausfuehren(berichtBk5);
+                foreach (string zeile in berichtBk5)
+                    Console.WriteLine("Schritt " + nrBk5 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBk5 + " - vollstaendig: " + BauteilkatalogAbschnittSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt BauteilUHerkunftSchema.SCHRITT (MA-6b, E149): U_Herkunft an Tab_Bauteil(_STAMM). Aus DERSELBEN
+            //      Quelle wie SchemaMigration.Schritt_BauteilUHerkunft. Wiederholbar.
+            //      REFERENZLAUF UNVERAENDERT: Die Spalte bleibt leer, der Rechenweg liest sie nicht.
+            string nrMa6b = BauteilUHerkunftSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrMa6b + " - Herkunft des U-Werts je Bauteil: " +
+                              (BauteilUHerkunftSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtMa6b = new List<string>();
+                angelegt += BauteilUHerkunftSchema.Ausfuehren(berichtMa6b);
+                foreach (string zeile in berichtMa6b)
+                    Console.WriteLine("Schritt " + nrMa6b + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrMa6b + " - vollstaendig: " + BauteilUHerkunftSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Saat zu Schritt BauteilUHerkunftSchema.SCHRITT (Fehlerbehebung FX): die Herkunft des U-Werts an den
+            //      gesaeten Bauteilen der Zonen-Referenzprojekte 1052, 1054 (Kopie von 1052) und 1062 - genau der Wert,
+            //      den ihre Bauplaene ueber die Programmwege schreiben (Referenzlaeufe/Skripte/referenzprojekt_1052_bauplan.cs,
+            //      referenzprojekt_1062_kkz.cs): Die Kopien der Uebernahme ("Gebaeude als eine Zone uebernehmen",
+            //      GebaeudeZonenabbildung.AlsBauteilModel) tragen VORGABE, die von Hand angelegten Zeilen MANUELL
+            //      (GebaeudeZonenCtrl.UHerkunftNeu). Nur diese Projekte und nur U_Herkunft; KEINE Datenmigration fuer
+            //      Anwenderdatenbanken (der Bestand bleibt NULL). Wiederholbar.
+            //      REFERENZLAUF BYTE-GLEICH: Der Rechenweg liest U_Herkunft nicht.
+            if (!trocken && BauteilUHerkunftSchema.Vollstaendig())
+            {
+                const string ZEILEN = "ID_Aufbau IS NULL AND U_Wert IS NOT NULL AND ID_Zone IN (SELECT z.ID FROM Tab_Zone z " +
+                                      "JOIN Tab_Gebaeude g ON g.ID = z.ID_Gebaeude WHERE g.ID_Projekt IN (1052, 1054, 1062))";
+                const string VON_HAND = "Bezeichner IN (?, ?, ?, ?, ?)";
+                DbParam[] Parameter(string herkunft) => new[]
+                {
+                    new DbParam("@h", herkunft),
+                    new DbParam("@b1", "Kellerdecke"), new DbParam("@b2", "Trennwand Gastronomie"),
+                    new DbParam("@b3", "Kellerboden"), new DbParam("@b4", "Kellerwände"),
+                    new DbParam("@b5", "Trennwand Nord/Ost"),
+                };
+                int manuell = DataRepository.ExecuteNonQuery(
+                    "UPDATE Tab_Bauteil SET U_Herkunft = ? WHERE " + ZEILEN + " AND " + VON_HAND,
+                    Parameter(DbWerte.HERKUNFT_MANUELL));
+                int vorgabe = DataRepository.ExecuteNonQuery(
+                    "UPDATE Tab_Bauteil SET U_Herkunft = ? WHERE " + ZEILEN + " AND NOT " + VON_HAND,
+                    Parameter(DbWerte.HERKUNFT_VORGABE));
+                Console.WriteLine("Schritt " + nrMa6b + " - Saat der Zonen-Referenzprojekte: " + vorgabe + " Bauteil(e) VORGABE, " +
+                                  manuell + " Bauteil(e) MANUELL (erwartet 72 und 11).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

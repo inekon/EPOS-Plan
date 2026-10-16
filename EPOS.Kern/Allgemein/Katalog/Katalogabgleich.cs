@@ -650,7 +650,7 @@ namespace WindowsFormsApplication1
             {
                 var p = new List<DbParam> { new DbParam("@fk", id) };
                 foreach (string sp in spalten)
-                    p.Add(new DbParam("@p" + p.Count.ToString(CultureInfo.InvariantCulture), Wert(v, k.Verweise, z, sp)));
+                    p.Add(new DbParam("@p" + p.Count.ToString(CultureInfo.InvariantCulture), Wert(v, k.Verweise, z, sp, id)));
                 if (k.Enkel.Count == 0)
                 {
                     v.Ausfuehren(sql, p.ToArray());
@@ -664,8 +664,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Schreibwert einer Spalte — ein Verweis als ID des Ziels, gelesen im selben Vorgang.</summary>
         private static object Wert(DbVorgang v, IReadOnlyList<Katalogverweis> verweise,
-                                   IReadOnlyDictionary<string, object> werte, string spalte) =>
-            Katalogfassung.Schreibwert(verweise, werte, spalte, (sql, p) => v.Lese(sql, p));
+                                   IReadOnlyDictionary<string, object> werte, string spalte, long? eigentuemer = null) =>
+            Katalogfassung.Schreibwert(verweise, werte, spalte, (sql, p) => v.Lese(sql, p), eigentuemer);
 
         /// <summary>
         /// Eine Protokollzeile; mit <paramref name="doppeltPruefen"/> nur, wenn dieselbe (Fassung,

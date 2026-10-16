@@ -183,9 +183,23 @@ namespace WindowsFormsApplication1
 
         private static bool Hand(BauteilModel b) => string.Equals(b?.Herkunft, DbWerte.HERKUNFT_MANUELL, StringComparison.Ordinal);
 
-        /// <summary>Der Aufbau des Bauteils ist von Hand gewählt: ein Satz <c>MANUELL</c> oder ein Aufbau, der nicht aus der Datei stammt.</summary>
+        /// <summary>
+        /// Der Aufbau des Bauteils ist von Hand gewählt: ein Satz <c>MANUELL</c> oder ein Aufbau, der nicht aus der Datei stammt.
+        /// MA-6b: Nennt die Herkunft des U-Werts den Import (<c>IFC</c>, <c>GBXML</c>, <c>SQPROJ</c>) oder eine Vorgabe, kam der
+        /// Aufbau mit dem Import (Ersatzaufbau) und ist nicht von Hand; ohne Herkunft (NULL, Bestand) gilt die Regel wie bisher.
+        /// </summary>
         private static bool HandAufbau(Bestand alt, BauteilModel b)
-            => Hand(b) || (b.ID_Aufbau.HasValue && !alt.DateiAufbauten.Contains(b.ID_Aufbau.Value));
+            => Hand(b) || (b.ID_Aufbau.HasValue && !alt.DateiAufbauten.Contains(b.ID_Aufbau.Value) && !UAusImport(b));
+
+        /// <summary>Stammt der U-Wert laut seiner Herkunft aus dem Import (Datei oder Vorgabe)?</summary>
+        private static bool UAusImport(BauteilModel b)
+            => b.U_Herkunft is DbWerte.HERKUNFT_IFC or DbWerte.HERKUNFT_GBXML or DbWerte.HERKUNFT_SQPROJ or DbWerte.HERKUNFT_VORGABE;
+
+        /// <summary>
+        /// Der U-Wert ist von Hand gesetzt (MA-6b, E149): Herkunft <c>MANUELL</c> am U-Wert (<c>Tab_Bauteil.U_Herkunft</c>) — auch
+        /// ohne Aufbauwechsel. Eine unbekannte Herkunft (NULL, Bestand) zählt nicht.
+        /// </summary>
+        private static bool HandU(BauteilModel b) => string.Equals(b?.U_Herkunft, DbWerte.HERKUNFT_MANUELL, StringComparison.Ordinal);
 
         /// <summary>Die Fläche ist von Hand geändert: aus der Datei gepaart, ihre Flächenherkunft fiel in der Pflege auf <c>null</c>.</summary>
         private static bool HandFlaeche(BauteilModel alt, BauteilModel neu)
@@ -245,7 +259,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Bauteil zusammenführen</b> (die Id des Bestands bleibt): Name, Art, Neigung, Azimut und Fläche kommen aus der
-        /// Datei — eine von Hand geänderte Fläche bleibt. Aufbau und U-Wert bleiben, wenn der Aufbau von Hand gewählt ist; ein
+        /// Datei — eine von Hand geänderte Fläche bleibt. Aufbau und U-Wert samt Herkunft bleiben, wenn der Aufbau von Hand
+        /// gewählt oder der U-Wert von Hand gesetzt ist (<see cref="HandU"/>); ein
         /// Satz <c>MANUELL</c> behält zudem g-Wert, Rahmen, Verschattung, ψ·L und Randbedingung samt Nachbarzone.
         /// </summary>
         private static BauteilModel BauteilZusammen(Bestand bestand, BauteilModel alt, BauteilModel neu)
@@ -254,7 +269,7 @@ namespace WindowsFormsApplication1
             m.ID = alt.ID;
             m.Quellkennung = neu.Quellkennung ?? alt.Quellkennung;
             if (HandFlaeche(alt, neu)) { m.Flaeche = alt.Flaeche; m.Flaechenherkunft = null; }
-            if (HandAufbau(bestand, alt)) { m.ID_Aufbau = alt.ID_Aufbau; m.U_Wert = alt.U_Wert; }
+            if (HandAufbau(bestand, alt) || HandU(alt)) { m.ID_Aufbau = alt.ID_Aufbau; m.U_Wert = alt.U_Wert; m.U_Herkunft = alt.U_Herkunft; }
             if (Hand(alt))
             {
                 m.g_Wert = alt.g_Wert;
@@ -312,7 +327,8 @@ namespace WindowsFormsApplication1
                         if (!string.Equals(ab.Bauteilart, nb.Bauteilart, StringComparison.Ordinal)) felder.Add(MyResource.Resource.GEBWI_FELD_ART);
                         if (HandFlaeche(ab, nb)) hand.Add(MyResource.Resource.GEBWI_FELD_FLAECHE);
                         else if (!Gleich(ab.Flaeche, nb.Flaeche)) felder.Add(MyResource.Resource.GEBWI_FELD_FLAECHE);
-                        if (HandAufbau(alt, ab)) hand.Add(MyResource.Resource.GEBWI_FELD_AUFBAU);
+                        if (HandU(ab)) hand.Add(MyResource.Resource.GEBWI_FELD_U);
+                        else if (HandAufbau(alt, ab)) hand.Add(MyResource.Resource.GEBWI_FELD_AUFBAU);
                         else if (!Gleich(ab.U_Wert, nb.U_Wert)) felder.Add(MyResource.Resource.GEBWI_FELD_U);
                         if (!Gleich(ab.Neigung, nb.Neigung)) felder.Add(MyResource.Resource.GEBWI_FELD_NEIGUNG);
                         if (!Gleich(ab.Azimut, nb.Azimut)) felder.Add(MyResource.Resource.GEBWI_FELD_AZIMUT);

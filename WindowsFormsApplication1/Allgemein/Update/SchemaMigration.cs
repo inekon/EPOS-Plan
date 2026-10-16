@@ -5577,6 +5577,33 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KAELTEVORLAGEN = KaeltebedarfsprofilVorlagenSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="RaumnutzungDinWerteSchema.SCHRITT"/> — <b>Werte der DIN-Nutzungsprofile</b> (DA-6, E135): die 45
+        /// ausgelieferten Profile der Kategorie DIN/TS 18599-10 bekommen die Werte der Fassung 2025-10 aus
+        /// <see cref="RaumnutzungDinSaat"/>, nur wo kein Wert steht; eingelesene Werte des Anwenders bleiben. Schritt 231.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Referenzprojekt nutzt ein Nutzungsprofil.</para>
+        /// </summary>
+        public const int SCHRITT_RAUMNUTZUNG_DIN_WERTE = RaumnutzungDinWerteSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="BauteilkatalogAbschnittSchema.SCHRITT"/> — <b>Inhomogene Schicht und Fenster im Aufbaukatalog</b>
+        /// (BK-5/BK-6, E132 F7): ψ des Glasrands <c>Psi_Glasrand</c> an <c>Tab_Bauteilaufbau(_STAMM)</c>; die Abschnitte stehen
+        /// seit Schritt 221. Schritt 232, hängt an 231.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Referenzprojekt führt einen Aufbau; die Spalte bleibt leer.</para>
+        /// </summary>
+        public const int SCHRITT_BAUTEILKATALOG_ABSCHNITT = BauteilkatalogAbschnittSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="BauteilUHerkunftSchema.SCHRITT"/> — <b>Herkunft des U-Werts je Bauteil</b> (MA-6b, E149):
+        /// <c>U_Herkunft</c> an <c>Tab_Bauteil(_STAMM)</c> (MANUELL, KATALOG, IFC, GBXML, VORGABE, SQPROJ; NULL = unbekannt).
+        /// Der Wiederimport behält einen U-Wert, der von Hand gesetzt ist. Schritt 233, hängt an 232.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Die Spalte bleibt leer, der Rechenweg liest sie nicht.</para>
+        /// </summary>
+        public const int SCHRITT_BAUTEIL_U_HERKUNFT = BauteilUHerkunftSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -8208,6 +8235,26 @@ namespace WindowsFormsApplication1
                         "Rechenergebnis aendert sich - jede Zuordnung rechnet mit Eingabeart 'jahr', die Zeilen 1-6 " +
                         "bleiben unberuehrt.",
                         Schritt_Kaeltevorlagen),
+            // DA-6: Werte der DIN-Nutzungsprofile. Quelle ist RaumnutzungDinWerteSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_RAUMNUTZUNG_DIN_WERTE,
+                        "Tab_Raumnutzungsprofil: Werte der 45 DIN-Profile nach DIN/TS 18599-10:2025-10 (nur leere Profile); " +
+                        "Tab_Raumnutzungskatalog: Quellenhinweis und Beschreibung der Kategorie DIN",
+                        "Die ausgelieferten DIN-Profile stuenden ohne Werte, und jeder Anwender muesste sie selbst einlesen (E135). " +
+                        "KEIN Rechenergebnis aendert sich - kein Referenzprojekt nutzt ein Nutzungsprofil.",
+                        Schritt_RaumnutzungDinWerte),
+            // BK-5/BK-6: Inhomogene Schicht und Fenster im Aufbaukatalog. Quelle ist BauteilkatalogAbschnittSchema, die Nummer
+            // steht allein dort.
+            new Schritt(SCHRITT_BAUTEILKATALOG_ABSCHNITT,
+                        "Tab_Bauteilaufbau(_STAMM): Psi_Glasrand (psi des Glasrands fuer U_w nach DIN EN ISO 10077-1)",
+                        "Ein Fensteraufbau koennte den Glasrand nicht fuehren, und U_w liesse sich beim Zuweisen nicht aus Ug, Uf, " +
+                        "Rahmenanteil und psi des Glasrands bilden. KEIN Rechenergebnis aendert sich - die Spalte bleibt leer.",
+                        Schritt_BauteilkatalogAbschnitt),
+            // MA-6b: Herkunft des U-Werts je Bauteil. Quelle ist BauteilUHerkunftSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_BAUTEIL_U_HERKUNFT,
+                        "Tab_Bauteil(_STAMM): U_Herkunft (Herkunft des U-Werts je Bauteil)",
+                        "Ein von Hand gesetzter U-Wert ohne Aufbauwechsel waere beim Wiederimport nicht erkennbar und fiele an den " +
+                        "Wert der Datei (E149). KEIN Rechenergebnis aendert sich - die Spalte bleibt leer.",
+                        Schritt_BauteilUHerkunft),
         };
 
         /// <summary>
@@ -16254,6 +16301,165 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Kaeltebedarfsvorlagen und Eingabeart - " +
                     (angelegt == 0 ? "Spalten standen bereits." : angelegt + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Werte der DIN-Nutzungsprofile" — Anlass und Wirkung stehen bei <see cref="SCHRITT_RAUMNUTZUNG_DIN_WERTE"/>,
+        /// die Anweisungen bei <see cref="RaumnutzungDinWerteSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_RaumnutzungDinWerte(Lauf l)
+        {
+            string nr = RaumnutzungDinWerteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in RaumnutzungDinWerteSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = RaumnutzungDinWerteSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!RaumnutzungDinWerteSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Werte der DIN-Nutzungsprofile stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Werte der DIN-Nutzungsprofile - " + (handgriffe == 0 ? "standen bereits." : handgriffe + " Profil(e) gesaet.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Inhomogene Schicht und Fenster im Aufbaukatalog" — Anlass und Wirkung stehen bei <see cref="SCHRITT_BAUTEILKATALOG_ABSCHNITT"/>,
+        /// die Anweisungen bei <see cref="BauteilkatalogAbschnittSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_BauteilkatalogAbschnitt(Lauf l)
+        {
+            string nr = BauteilkatalogAbschnittSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in BauteilkatalogAbschnittSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = BauteilkatalogAbschnittSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!BauteilkatalogAbschnittSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Psi_Glasrand am Aufbaukatalog steht nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Psi_Glasrand am Aufbaukatalog - " + (handgriffe == 0 ? "stand bereits." : "Spalten angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Herkunft des U-Werts je Bauteil" — Anlass und Wirkung stehen bei <see cref="SCHRITT_BAUTEIL_U_HERKUNFT"/>,
+        /// die Anweisungen bei <see cref="BauteilUHerkunftSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_BauteilUHerkunft(Lauf l)
+        {
+            string nr = BauteilUHerkunftSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in BauteilUHerkunftSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = BauteilUHerkunftSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!BauteilUHerkunftSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "U_Herkunft an Tab_Bauteil(_STAMM) steht nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": U_Herkunft an Tab_Bauteil(_STAMM) - " + (handgriffe == 0 ? "stand bereits." : "Spalten angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

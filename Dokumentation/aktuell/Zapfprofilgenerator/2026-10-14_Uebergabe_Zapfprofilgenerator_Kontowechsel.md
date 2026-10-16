@@ -102,7 +102,7 @@ notwendig und sinnvoll.“ K5 (eigene Messobjekte) ruht.
    ohne Zugang gibt es keinen Upload.
 2. **Sichtabnahme unter Windows** beim Anwender; Prüfpunkte in der Statusdatei unter „Nach #1043–#1045“ und
    „Nach #1062–#1065“.
-3. **Erledigt mit #1110 (16.10.2026):** ~~**Klein, ohne Auftrag:** In der Testdatenbank trägt `DIN4708.p_b` die Einheit „Personen“,
+3. **Erledigt mit #1113 (16.10.2026):** ~~**Klein, ohne Auftrag:** In der Testdatenbank trägt `DIN4708.p_b` die Einheit „Personen“,
    `TwwParameterschluessel` erwartet „P“ — mit der nächsten Saat des Testkatalogs berichtigen (Einfrierregel
    „gesäte Zapfprofil-Eingaben“ vorher prüfen). In `Referenzlaeufe/LIESMICH.md` endet die Liste
    „Entfernte Basen“ bei R47.~~
