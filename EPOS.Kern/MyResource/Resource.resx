@@ -4764,7 +4764,7 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
     <value>Eintrag (Name beim Umbenennen anpassen)</value>
   </data>
   <data name="IMP_KONFLIKT_SPALTE_BEFUND" xml:space="preserve">
-    <value>Befund</value>
+    <value>Hinweis</value>
   </data>
   <data name="IMP_KONFLIKT_SPALTE_AKTION" xml:space="preserve">
     <value>Aktion</value>
@@ -34411,7 +34411,7 @@ Möchten Sie das zulassen?</value>
     <value>Flächen je Zone</value>
   </data>
   <data name="GIMP_DLG_FILTER_FEHLER" xml:space="preserve">
-    <value>Nur Flächen mit Befund</value>
+    <value>Nur Flächen mit Hinweis</value>
   </data>
   <data name="GIMP_DLG_FILTER_OHNE_GEGENSTUECK" xml:space="preserve">
     <value>Nur Flächen ohne Nachbarfläche</value>
@@ -34423,7 +34423,7 @@ Möchten Sie das zulassen?</value>
     <value>Die Filter schränken nur die Anzeige der Liste ein; zusammen gelten sie als „und“. Gespeichert wird immer alles.</value>
   </data>
   <data name="GIMP_DLG_FILTER_FEHLER_HINWEIS" xml:space="preserve">
-    <value>Zeigt nur Flächen, bei denen die Spalte „Befund“ etwas nennt: ohne Nachbarfläche, ohne U-Wert, geschätzte Fläche oder ein Beleg aus Raumkörpern. Wirkt nur auf die Anzeige; gespeichert wird alles.</value>
+    <value>Zeigt nur Flächen, bei denen die Spalte „Hinweis“ etwas nennt: ohne Nachbarfläche, ohne U-Wert, geschätzte Fläche oder ein Beleg aus Raumkörpern. Wirkt nur auf die Anzeige; gespeichert wird alles.</value>
   </data>
   <data name="GIMP_DLG_FILTER_OHNE_GEGENSTUECK_HINWEIS" xml:space="preserve">
     <value>Zeigt nur Trennflächen, zu denen der Import keine Gegenfläche in der Nachbarzone gefunden hat. Sie rechnen gegen einen unbeheizten Raum. Wirkt nur auf die Anzeige; gespeichert wird alles.</value>
@@ -34432,7 +34432,7 @@ Möchten Sie das zulassen?</value>
     <value>Zeigt nur Flächen, bei denen weder ein U-Wert noch ein Schichtaufbau vorliegt (aus der Datei oder zugeordnet). Wirkt nur auf die Anzeige; gespeichert wird alles.</value>
   </data>
   <data name="GIMP_DLG_FLAECHEN_HINWEIS" xml:space="preserve">
-    <value>Die Spalte „Befund“ nennt, was an einer Fläche fehlt: ohne Gegenstück (gerechnet gegen unbeheizt), ohne U-Wert oder eine geschätzte Fläche. Die Filter zeigen nur diese Flächen; die Suche findet in allen Spalten.</value>
+    <value>Die Spalte „Hinweis“ nennt, was an einer Fläche fehlt: ohne Gegenstück (gerechnet gegen unbeheizt), ohne U-Wert oder eine geschätzte Fläche. Die Filter zeigen nur diese Flächen; die Suche findet in allen Spalten.</value>
   </data>
   <data name="GIMP_BT_KOPF_ZONEN" xml:space="preserve">
     <value>{0} Zonen · Nutzfläche {1} m² · {2} Bauteile · {3} Aufbauten</value>
@@ -34444,7 +34444,7 @@ Möchten Sie das zulassen?</value>
     <value>Aufbau</value>
   </data>
   <data name="GIMP_FL_SP_BEFUND" xml:space="preserve">
-    <value>Befund</value>
+    <value>Hinweis</value>
   </data>
   <data name="GIMP_FL_BEFUND_OHNE_GEGENSTUECK" xml:space="preserve">
     <value>ohne Gegenstück</value>
@@ -48638,7 +48638,7 @@ Chart</value>
     <value>„Aufbau“ ist gesperrt: Es liegt kein Bauteilvorschlag vor. {0}</value>
   </data>
   <data name="GANS_BEFUND_OHNE_VORSCHLAG" xml:space="preserve">
-    <value>„Befund“ ist gesperrt: Es liegt kein Bauteilvorschlag vor. {0}</value>
+    <value>„Vollständigkeit“ ist gesperrt: Es liegt kein Bauteilvorschlag vor. {0}</value>
   </data>
   <data name="GANS_OHNE_BAUTEILBEZUG" xml:space="preserve">
     <value>ohne Bauteilbezug ({0})</value>
@@ -49369,7 +49369,7 @@ Chart</value>
     <value>{0} Bauteile entfallen: vollständig durch Öffnungen belegt ({1}).</value>
   </data>
   <data name="IMP_BEFUND_OHNE" xml:space="preserve">
-    <value>Ohne Befund</value>
+    <value>vollständig</value>
   </data>
   <data name="IMP_BEFUND_KOERPER_UNLESBAR" xml:space="preserve">
     <value>Körper unlesbar</value>
@@ -49399,7 +49399,7 @@ Chart</value>
     <value>Körper entartet: Er ergibt keine maßgebliche Fläche.</value>
   </data>
   <data name="BTSB_BEFUND" xml:space="preserve">
-    <value>Befund</value>
+    <value>Vollständigkeit</value>
   </data>
   <data name="IMP_GEB_PROT_NORD_VORGABE" xml:space="preserve">
     <value>Nordrichtung nach Eingabe: Die Planoberseite (+y der Datei) zeigt nach {0}°, der Nordwinkel ist {1}°; die Himmelsrichtungen aller Bauteile und Grundrisse folgen ihm.</value>
@@ -49522,7 +49522,7 @@ Chart</value>
     <value>NW</value>
   </data>
   <data name="GANS_FARBMODUS_BEFUND" xml:space="preserve">
-    <value>Befund</value>
+    <value>Vollständigkeit</value>
   </data>
   <data name="GANS_FARBMODUS_NUTZUNG" xml:space="preserve">
     <value>Nutzung</value>
@@ -49543,7 +49543,7 @@ Chart</value>
     <value>Hervorgehoben: {0} — {1} Bauteile, {2} Zonen</value>
   </data>
   <data name="GANS_PRUEF_OHNE" xml:space="preserve">
-    <value>{0}: Kein Befund dieser Gruppe liegt auf einer Fläche oder Zone der Ansicht.</value>
+    <value>{0}: Keine Meldung dieser Gruppe liegt auf einer Fläche oder Zone der Ansicht.</value>
   </data>
   <data name="GANS_PRUEF_VORSCHLAEGE" xml:space="preserve">
     <value>Vorschläge</value>
@@ -49561,13 +49561,13 @@ Chart</value>
     <value>{0}: die Vorschläge übernehmen — zurücknehmen im Blatt „Modell prüfen“</value>
   </data>
   <data name="GANS_PRUEF_VERWERFEN_HINWEIS" xml:space="preserve">
-    <value>{0}: die Vorschläge verwerfen — die Befunde bleiben</value>
+    <value>{0}: die Vorschläge verwerfen — die Meldungen bleiben</value>
   </data>
   <data name="GANS_BEFUND_OHNE" xml:space="preserve">
-    <value>„Befund“ ist gesperrt: Es liegen keine Befunde der Bauteile vor (kein Bauteilvorschlag).</value>
+    <value>„Vollständigkeit“ ist gesperrt: Es liegt kein Bauteilvorschlag vor.</value>
   </data>
   <data name="GANS_BEFUND_LEGENDE" xml:space="preserve">
-    <value>Befund je Bauteil</value>
+    <value>Vollständigkeit je Bauteil</value>
   </data>
   <data name="GANS_BEFUND_BAUTEILE" xml:space="preserve">
     <value>Bauteile</value>
@@ -49597,10 +49597,10 @@ Chart</value>
     <value>Die Spalte „Fläche aus“ nennt den Weg der Fläche: Mengensatz der Datei, Polygon der Raumgrenze, Bauteilkörper oder schematische Vorgabe.</value>
   </data>
   <data name="GIMP_DLG_FILTER_BAUTEILBEFUND" xml:space="preserve">
-    <value>Nur Bauteile mit Befund</value>
+    <value>Nur unvollständige Bauteile</value>
   </data>
   <data name="GIMP_DLG_FILTER_BAUTEILBEFUND_HINWEIS" xml:space="preserve">
-    <value>Zeigt nur Flächen, deren Bauteil im Farbmodus „Befund“ orange oder rot steht: Körper unlesbar oder ohne Eigenschaften (U-Wert oder Fläche). Wirkt nur auf die Anzeige; gespeichert wird alles.</value>
+    <value>Zeigt nur Flächen, deren Bauteil im Farbmodus „Vollständigkeit“ orange oder rot steht: Körper unlesbar oder ohne Eigenschaften (U-Wert oder Fläche). Wirkt nur auf die Anzeige; gespeichert wird alles.</value>
   </data>
   <data name="IMP_IFC_PROT_KOERPERFLAECHEN" xml:space="preserve">
     <value>Das Gebäude „{0}“ führt weder Raumgrenzen noch Raumbezüge; {1} Bauteile sind über ihre Körper den Räumen zugeordnet — {2} Flächen je Raum mit zusammen {3} m² (Herkunft Körper).</value>
@@ -55500,7 +55500,7 @@ Chart</value>
     <value>Vorschlag verworfen: {0}</value>
   </data>
   <data name="MP_MSG_VERWORFEN_ZAHL" xml:space="preserve">
-    <value>{0} Vorschläge verworfen — die Befunde bleiben.</value>
+    <value>{0} Vorschläge verworfen — die Meldungen bleiben.</value>
   </data>
   <data name="MP_MSG_UNBEKANNT" xml:space="preserve">
     <value>Unbekannte Vorschlagsart.</value>
@@ -55557,7 +55557,7 @@ Chart</value>
     <value>Das Gebäude ließ sich nicht lesen.</value>
   </data>
   <data name="MPB_MSG_UEBERNOMMEN" xml:space="preserve">
-    <value>{0} Vorschläge übernommen, {1} Befunde brauchen eine Eingabe.</value>
+    <value>{0} Vorschläge übernommen, {1} Meldungen brauchen eine Eingabe.</value>
   </data>
   <data name="MPB_MSG_NORD_BESTAETIGT" xml:space="preserve">
     <value>Die Nordrichtung ist bestätigt.</value>
@@ -55569,10 +55569,10 @@ Chart</value>
     <value>Die Klimaregion gilt für das Projekt: Sie wird in den Projektdaten gewählt.</value>
   </data>
   <data name="MPB_ZAEHLUNG" xml:space="preserve">
-    <value>{0} Befunde, {1} Vorschläge</value>
+    <value>{0} Meldungen, {1} Vorschläge</value>
   </data>
   <data name="MPB_AMPEL_GRUEN" xml:space="preserve">
-    <value>grün – ohne Befund</value>
+    <value>grün – ohne Meldung</value>
   </data>
   <data name="MPB_AMPEL_GELB" xml:space="preserve">
     <value>gelb – rechnet mit Vorgaben</value>
@@ -55581,7 +55581,7 @@ Chart</value>
     <value>rot – nicht rechenfähig</value>
   </data>
   <data name="MPB_BTN_BEFUNDE_HINWEIS" xml:space="preserve">
-    <value>Die Befunde dieser Prüfgruppe zeigen oder verbergen</value>
+    <value>Die Meldungen dieser Prüfgruppe zeigen oder verbergen</value>
   </data>
   <data name="MPB_BTN_UEBERNEHMEN" xml:space="preserve">
     <value>Vorschlag übernehmen</value>
@@ -55590,7 +55590,7 @@ Chart</value>
     <value>Alle Vorschläge dieser Prüfgruppe in einem Schritt übernehmen und neu prüfen</value>
   </data>
   <data name="MPB_SPERRE_KEIN_VORSCHLAG" xml:space="preserve">
-    <value>Kein Vorschlag – die Befunde brauchen eine Eingabe.</value>
+    <value>Kein Vorschlag – die Meldungen brauchen eine Eingabe.</value>
   </data>
   <data name="MPB_BTN_ZURUECKNEHMEN" xml:space="preserve">
     <value>Zurücknehmen</value>
@@ -56226,7 +56226,7 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
     <value>Modellprüfung des gespeicherten Gebäudes</value>
   </data>
   <data name="MPB_LEISTE_GRUPPE_HINWEIS" xml:space="preserve">
-    <value>{0}: {1} Befunde, {2} Vorschläge – öffnet „Modell prüfen“ auf dieser Gruppe.</value>
+    <value>{0}: {1} Meldungen, {2} Vorschläge – öffnet „Modell prüfen“ auf dieser Gruppe.</value>
   </data>
   <data name="ZNB_WOCHE_BILD" xml:space="preserve">
     <value>Woche der Zone {0} je Größe</value>

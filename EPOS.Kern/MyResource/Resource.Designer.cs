@@ -17002,7 +17002,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Befund ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vollständigkeit ähnelt.
         /// </summary>
         public static string BTSB_BEFUND {
             get {
@@ -32138,7 +32138,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Befund je Bauteil ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vollständigkeit je Bauteil ähnelt.
         /// </summary>
         public static string GANS_BEFUND_LEGENDE {
             get {
@@ -32147,7 +32147,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „Befund“ ist gesperrt: Es liegen keine Befunde der Bauteile vor (kein Bauteilvorschlag). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Vollständigkeit“ ist gesperrt: Es liegt kein Bauteilvorschlag vor. ähnelt.
         /// </summary>
         public static string GANS_BEFUND_OHNE {
             get {
@@ -32156,7 +32156,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „Befund“ ist gesperrt: Es liegt kein Bauteilvorschlag vor. {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Vollständigkeit“ ist gesperrt: Es liegt kein Bauteilvorschlag vor. {0} ähnelt.
         /// </summary>
         public static string GANS_BEFUND_OHNE_VORSCHLAG {
             get {
@@ -32219,7 +32219,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Befund ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vollständigkeit ähnelt.
         /// </summary>
         public static string GANS_FARBMODUS_BEFUND {
             get {
@@ -32453,7 +32453,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Kein Befund dieser Gruppe liegt auf einer Fläche oder Zone der Ansicht. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Keine Meldung dieser Gruppe liegt auf einer Fläche oder Zone der Ansicht. ähnelt.
         /// </summary>
         public static string GANS_PRUEF_OHNE {
             get {
@@ -32489,7 +32489,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: die Vorschläge verwerfen — die Befunde bleiben ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: die Vorschläge verwerfen — die Meldungen bleiben ähnelt.
         /// </summary>
         public static string GANS_PRUEF_VERWERFEN_HINWEIS {
             get {
@@ -44268,7 +44268,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Bauteile mit Befund ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur unvollständige Bauteile ähnelt.
         /// </summary>
         public static string GIMP_DLG_FILTER_BAUTEILBEFUND {
             get {
@@ -44277,7 +44277,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt nur Flächen, deren Bauteil im Farbmodus „Befund“ orange oder rot steht: Körper unlesbar oder ohne Eigenschaften (U-Wert oder Fläche). Wirkt nur auf die Anzeige; gespeichert wird alles. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt nur Flächen, deren Bauteil im Farbmodus „Vollständigkeit“ orange oder rot steht: Körper unlesbar oder ohne Eigenschaften (U-Wert oder Fläche). Wirkt nur auf die Anzeige; gespeichert wird alles. ähnelt.
         /// </summary>
         public static string GIMP_DLG_FILTER_BAUTEILBEFUND_HINWEIS {
             get {
@@ -44295,7 +44295,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Flächen mit Befund ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Flächen mit Hinweis ähnelt.
         /// </summary>
         public static string GIMP_DLG_FILTER_FEHLER {
             get {
@@ -44304,7 +44304,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt nur Flächen, bei denen die Spalte „Befund“ etwas nennt: ohne Nachbarfläche, ohne U-Wert, geschätzte Fläche oder ein Beleg aus Raumkörpern. Wirkt nur auf die Anzeige; gespeichert wird alles. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt nur Flächen, bei denen die Spalte „Hinweis“ etwas nennt: ohne Nachbarfläche, ohne U-Wert, geschätzte Fläche oder ein Beleg aus Raumkörpern. Wirkt nur auf die Anzeige; gespeichert wird alles. ähnelt.
         /// </summary>
         public static string GIMP_DLG_FILTER_FEHLER_HINWEIS {
             get {
@@ -44349,7 +44349,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spalte „Befund“ nennt, was an einer Fläche fehlt: ohne Gegenstück (gerechnet gegen unbeheizt), ohne U-Wert oder eine geschätzte Fläche. Die Filter zeigen nur diese Flächen; die Suche findet in allen Spalten. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spalte „Hinweis“ nennt, was an einer Fläche fehlt: ohne Gegenstück (gerechnet gegen unbeheizt), ohne U-Wert oder eine geschätzte Fläche. Die Filter zeigen nur diese Flächen; die Suche findet in allen Spalten. ähnelt.
         /// </summary>
         public static string GIMP_DLG_FLAECHEN_HINWEIS {
             get {
@@ -46176,7 +46176,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Befund ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis ähnelt.
         /// </summary>
         public static string GIMP_FL_SP_BEFUND {
             get {
@@ -50010,7 +50010,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Befund ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die vollständig ähnelt.
         /// </summary>
         public static string IMP_BEFUND_OHNE {
             get {
@@ -54060,7 +54060,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Befund ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis ähnelt.
         /// </summary>
         public static string IMP_KONFLIKT_SPALTE_BEFUND {
             get {
@@ -93848,7 +93848,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die grün – ohne Befund ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die grün – ohne Meldung ähnelt.
         /// </summary>
         public static string MPB_AMPEL_GRUEN {
             get {
@@ -93920,7 +93920,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Befunde dieser Prüfgruppe zeigen oder verbergen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Meldungen dieser Prüfgruppe zeigen oder verbergen ähnelt.
         /// </summary>
         public static string MPB_BTN_BEFUNDE_HINWEIS {
             get {
@@ -94064,7 +94064,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} Befunde, {2} Vorschläge – öffnet „Modell prüfen“ auf dieser Gruppe. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} Meldungen, {2} Vorschläge – öffnet „Modell prüfen“ auf dieser Gruppe. ähnelt.
         /// </summary>
         public static string MPB_LEISTE_GRUPPE_HINWEIS {
             get {
@@ -94100,7 +94100,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Vorschläge übernommen, {1} Befunde brauchen eine Eingabe. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Vorschläge übernommen, {1} Meldungen brauchen eine Eingabe. ähnelt.
         /// </summary>
         public static string MPB_MSG_UEBERNOMMEN {
             get {
@@ -94118,7 +94118,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Vorschlag – die Befunde brauchen eine Eingabe. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Vorschlag – die Meldungen brauchen eine Eingabe. ähnelt.
         /// </summary>
         public static string MPB_SPERRE_KEIN_VORSCHLAG {
             get {
@@ -94154,7 +94154,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Befunde, {1} Vorschläge ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Meldungen, {1} Vorschläge ähnelt.
         /// </summary>
         public static string MPB_ZAEHLUNG {
             get {
@@ -94694,7 +94694,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Vorschläge verworfen — die Befunde bleiben. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Vorschläge verworfen — die Meldungen bleiben. ähnelt.
         /// </summary>
         public static string MP_MSG_VERWORFEN_ZAHL {
             get {

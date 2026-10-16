@@ -4748,7 +4748,7 @@ Please run the simulation with photovoltaics first.</value>
     <value>Entry (edit the name when renaming)</value>
   </data>
   <data name="IMP_KONFLIKT_SPALTE_BEFUND" xml:space="preserve">
-    <value>Finding</value>
+    <value>Note</value>
   </data>
   <data name="IMP_KONFLIKT_SPALTE_AKTION" xml:space="preserve">
     <value>Action</value>
@@ -34404,7 +34404,7 @@ Do you want to allow this?</value>
     <value>Surfaces per zone</value>
   </data>
   <data name="GIMP_DLG_FILTER_FEHLER" xml:space="preserve">
-    <value>Only surfaces with a finding</value>
+    <value>Only surfaces with a note</value>
   </data>
   <data name="GIMP_DLG_FILTER_OHNE_GEGENSTUECK" xml:space="preserve">
     <value>Only surfaces without an adjacent surface</value>
@@ -34416,7 +34416,7 @@ Do you want to allow this?</value>
     <value>The filters only narrow the displayed list; together they apply as “and”. Everything is always saved.</value>
   </data>
   <data name="GIMP_DLG_FILTER_FEHLER_HINWEIS" xml:space="preserve">
-    <value>Shows only surfaces for which the “Finding” column states something: no adjacent surface, no U-value, estimated area or a record from room bodies. Affects the display only; everything is saved.</value>
+    <value>Shows only surfaces for which the “Note” column states something: no adjacent surface, no U-value, estimated area or a record from room bodies. Affects the display only; everything is saved.</value>
   </data>
   <data name="GIMP_DLG_FILTER_OHNE_GEGENSTUECK_HINWEIS" xml:space="preserve">
     <value>Shows only partition surfaces for which the import found no counterpart in the neighbouring zone. They are calculated against an unheated room. Affects the display only; everything is saved.</value>
@@ -34425,7 +34425,7 @@ Do you want to allow this?</value>
     <value>Shows only surfaces that have neither a U-value nor a layer build-up (from the file or assigned). Affects the display only; everything is saved.</value>
   </data>
   <data name="GIMP_DLG_FLAECHEN_HINWEIS" xml:space="preserve">
-    <value>The “Finding” column states what a surface lacks: no counterpart (calculated against unheated), no U-value or an estimated area. The filters show only these surfaces; the search looks in all columns.</value>
+    <value>The “Note” column states what a surface lacks: no counterpart (calculated against unheated), no U-value or an estimated area. The filters show only these surfaces; the search looks in all columns.</value>
   </data>
   <data name="GIMP_BT_KOPF_ZONEN" xml:space="preserve">
     <value>{0} zones · usable area {1} m² · {2} components · {3} constructions</value>
@@ -34437,7 +34437,7 @@ Do you want to allow this?</value>
     <value>Construction</value>
   </data>
   <data name="GIMP_FL_SP_BEFUND" xml:space="preserve">
-    <value>Finding</value>
+    <value>Note</value>
   </data>
   <data name="GIMP_FL_BEFUND_OHNE_GEGENSTUECK" xml:space="preserve">
     <value>no counterpart</value>
@@ -48631,7 +48631,7 @@ chart</value>
     <value>“Construction” is unavailable: there is no component proposal. {0}</value>
   </data>
   <data name="GANS_BEFUND_OHNE_VORSCHLAG" xml:space="preserve">
-    <value>“Findings” is unavailable: there is no component proposal. {0}</value>
+    <value>“Completeness” is unavailable: there is no component proposal. {0}</value>
   </data>
   <data name="GANS_OHNE_BAUTEILBEZUG" xml:space="preserve">
     <value>without component reference ({0})</value>
@@ -49362,7 +49362,7 @@ chart</value>
     <value>{0} components omitted: completely occupied by openings ({1}).</value>
   </data>
   <data name="IMP_BEFUND_OHNE" xml:space="preserve">
-    <value>No finding</value>
+    <value>complete</value>
   </data>
   <data name="IMP_BEFUND_KOERPER_UNLESBAR" xml:space="preserve">
     <value>Body unreadable</value>
@@ -49392,7 +49392,7 @@ chart</value>
     <value>Body degenerate: it yields no relevant area.</value>
   </data>
   <data name="BTSB_BEFUND" xml:space="preserve">
-    <value>Finding</value>
+    <value>Completeness</value>
   </data>
   <data name="IMP_GEB_PROT_NORD_VORGABE" xml:space="preserve">
     <value>North direction as entered: the top of the plan (+y of the file) points to {0}°, the north angle is {1}°; the orientations of all components and floor plans follow it.</value>
@@ -49515,7 +49515,7 @@ chart</value>
     <value>NW</value>
   </data>
   <data name="GANS_FARBMODUS_BEFUND" xml:space="preserve">
-    <value>Findings</value>
+    <value>Completeness</value>
   </data>
   <data name="GANS_FARBMODUS_NUTZUNG" xml:space="preserve">
     <value>Usage</value>
@@ -49536,7 +49536,7 @@ chart</value>
     <value>Highlighted: {0} — {1} components, {2} zones</value>
   </data>
   <data name="GANS_PRUEF_OHNE" xml:space="preserve">
-    <value>{0}: No finding of this group lies on a surface or zone of the view.</value>
+    <value>{0}: No message of this group lies on a surface or zone of the view.</value>
   </data>
   <data name="GANS_PRUEF_VORSCHLAEGE" xml:space="preserve">
     <value>Proposals</value>
@@ -49554,13 +49554,13 @@ chart</value>
     <value>{0}: apply the proposals — undo in the “Check model” sheet</value>
   </data>
   <data name="GANS_PRUEF_VERWERFEN_HINWEIS" xml:space="preserve">
-    <value>{0}: discard the proposals — the findings remain</value>
+    <value>{0}: discard the proposals — the messages remain</value>
   </data>
   <data name="GANS_BEFUND_OHNE" xml:space="preserve">
-    <value>“Findings” is unavailable: there are no findings for the components (no component proposal).</value>
+    <value>“Completeness” is unavailable: there is no component proposal.</value>
   </data>
   <data name="GANS_BEFUND_LEGENDE" xml:space="preserve">
-    <value>Findings per component</value>
+    <value>Completeness per component</value>
   </data>
   <data name="GANS_BEFUND_BAUTEILE" xml:space="preserve">
     <value>Components</value>
@@ -49590,10 +49590,10 @@ chart</value>
     <value>The “Area from” column names how the area was obtained: quantity set of the file, polygon of the space boundary, component solid or schematic default.</value>
   </data>
   <data name="GIMP_DLG_FILTER_BAUTEILBEFUND" xml:space="preserve">
-    <value>Only components with findings</value>
+    <value>Only incomplete components</value>
   </data>
   <data name="GIMP_DLG_FILTER_BAUTEILBEFUND_HINWEIS" xml:space="preserve">
-    <value>Shows only areas whose component is orange or red in the “Findings” colour mode: solid unreadable or without properties (U-value or area). Affects the display only; everything is saved.</value>
+    <value>Shows only areas whose component is orange or red in the “Completeness” colour mode: solid unreadable or without properties (U-value or area). Affects the display only; everything is saved.</value>
   </data>
   <data name="IMP_IFC_PROT_KOERPERFLAECHEN" xml:space="preserve">
     <value>Building "{0}" has neither space boundaries nor spatial references; {1} components are assigned to the spaces through their bodies — {2} areas per space totalling {3} m² (origin: body).</value>
@@ -55493,7 +55493,7 @@ chart</value>
     <value>Proposal discarded: {0}</value>
   </data>
   <data name="MP_MSG_VERWORFEN_ZAHL" xml:space="preserve">
-    <value>{0} proposals discarded — the findings remain.</value>
+    <value>{0} proposals discarded — the messages remain.</value>
   </data>
   <data name="MP_MSG_UNBEKANNT" xml:space="preserve">
     <value>Unknown kind of proposal.</value>
@@ -55550,7 +55550,7 @@ chart</value>
     <value>The building could not be read.</value>
   </data>
   <data name="MPB_MSG_UEBERNOMMEN" xml:space="preserve">
-    <value>{0} suggestions applied, {1} findings need an input.</value>
+    <value>{0} suggestions applied, {1} messages need an input.</value>
   </data>
   <data name="MPB_MSG_NORD_BESTAETIGT" xml:space="preserve">
     <value>The north direction is confirmed.</value>
@@ -55562,10 +55562,10 @@ chart</value>
     <value>The climate region applies to the project: it is selected in the project data.</value>
   </data>
   <data name="MPB_ZAEHLUNG" xml:space="preserve">
-    <value>{0} findings, {1} suggestions</value>
+    <value>{0} messages, {1} suggestions</value>
   </data>
   <data name="MPB_AMPEL_GRUEN" xml:space="preserve">
-    <value>green – no finding</value>
+    <value>green – no message</value>
   </data>
   <data name="MPB_AMPEL_GELB" xml:space="preserve">
     <value>yellow – computes with defaults</value>
@@ -55574,7 +55574,7 @@ chart</value>
     <value>red – not computable</value>
   </data>
   <data name="MPB_BTN_BEFUNDE_HINWEIS" xml:space="preserve">
-    <value>Show or hide the findings of this check group</value>
+    <value>Show or hide the messages of this check group</value>
   </data>
   <data name="MPB_BTN_UEBERNEHMEN" xml:space="preserve">
     <value>Apply suggestion</value>
@@ -55583,7 +55583,7 @@ chart</value>
     <value>Apply all suggestions of this check group in one step and check again</value>
   </data>
   <data name="MPB_SPERRE_KEIN_VORSCHLAG" xml:space="preserve">
-    <value>No suggestion – the findings need an input.</value>
+    <value>No suggestion – the messages need an input.</value>
   </data>
   <data name="MPB_BTN_ZURUECKNEHMEN" xml:space="preserve">
     <value>Undo</value>
@@ -56219,7 +56219,7 @@ Replace these holidays with the project default? With “No” these zones remai
     <value>Model check of the saved building</value>
   </data>
   <data name="MPB_LEISTE_GRUPPE_HINWEIS" xml:space="preserve">
-    <value>{0}: {1} findings, {2} proposals – opens “Check model” on this group.</value>
+    <value>{0}: {1} messages, {2} proposals – opens “Check model” on this group.</value>
   </data>
   <data name="ZNB_WOCHE_BILD" xml:space="preserve">
     <value>Week of zone {0} per quantity</value>
