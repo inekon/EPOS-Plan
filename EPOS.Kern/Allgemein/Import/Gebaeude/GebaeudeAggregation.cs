@@ -991,6 +991,8 @@ namespace WindowsFormsApplication1
             if (e.UmfangM.HasValue) Setzen(z[GebaeudeZielfelder.LAENGE_AUSSENWAND_KELLER], e.UmfangM, datei, beleg);
             if (e.UWirksam.HasValue) Setzen(z[GebaeudeZielfelder.ERDREICH_U_WIRKSAM], e.UWirksam, datei, beleg);
             if (e.KellertemperaturC.HasValue) Setzen(z[GebaeudeZielfelder.KELLERTEMPERATUR], e.KellertemperaturC, datei, beleg);
+            // Nachzug N4: die obere Raumtemperatur des Gebäudes (Inventar B10).
+            if (e.MaximaleraumtemperaturC.HasValue) Setzen(z[GebaeudeZielfelder.MAX_RAUMTEMPERATUR], e.MaximaleraumtemperaturC, datei, beleg);
         }
 
         private static void Waermebruecken(char? k, Dictionary<string, GebaeudeFeldzeile> z)

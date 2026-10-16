@@ -232,6 +232,11 @@ namespace WindowsFormsApplication1
         public const string NACHT_BEGINN = "NACHT_BEGINN";
         /// <summary>Ende der Nachtabsenkung [h, Stunde des Tages] (<c>Nachtabsenkung_Ende</c>) — die Vorgabe <see cref="Nachtzeit.VORGABE_ENDE"/> als ausdrücklicher Wert (E43).</summary>
         public const string NACHT_ENDE = "NACHT_ENDE";
+        /// <summary>
+        /// Nachzug N4: die obere Raumtemperatur des Gebäudes [°C] (<c>Maximaleraumtemperatur</c>, Inventar B10) — nur, was die
+        /// Datei trägt (gbXML-Block <c>EPOS:</c>, IFC <c>EPOS_Gebaeude</c>); ohne bleibt die Zeile leer.
+        /// </summary>
+        public const string MAX_RAUMTEMPERATUR = "MAX_RAUMTEMPERATUR";
 
         // ------------------------------------------------------------------ Aufzählungswerte
 
@@ -329,6 +334,7 @@ namespace WindowsFormsApplication1
                 F(SOLL_NACHT, GRUPPE_SOLLWERTE, "°C"),
                 F(NACHT_BEGINN, GRUPPE_SOLLWERTE, "h"),
                 F(NACHT_ENDE, GRUPPE_SOLLWERTE, "h"),
+                F(MAX_RAUMTEMPERATUR, GRUPPE_SOLLWERTE, "°C"),
             };
         }
     }

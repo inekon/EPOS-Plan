@@ -94,7 +94,9 @@ namespace WindowsFormsApplication1
             ["Raumsolltemperatur_Tag"] = R, ["Luftwechsel_Infiltration"] = R, ["Fensterdurchlassgrad"] = R,
             ["Interne_Waermegewinne"] = V, ["Bauweise"] = V, ["Masseanteil_Aussen"] = V, ["Innenflaechenfaktor"] = V,
             ["Raumsolltemperatur_Nachtabsenkung"] = V, ["Raumsolltemperatur_Wochenende"] = V, ["Raumsolltemperatur_Ferien"] = V,
-            ["Maximaleraumtemperatur"] = V, ["Luftwechselrate"] = V, ["Luftwechsel_Nutzer"] = V,
+            // Nachzug N4 (B10): die obere Raumtemperatur des Gebäudes reist als Restdatum neben dem Erdreich (gbXML-Block EPOS:
+            // der Building/Description, IFC EPOS_Gebaeude) und kommt über das Zielfeld MAX_RAUMTEMPERATUR zurück.
+            ["Maximaleraumtemperatur"] = R, ["Luftwechselrate"] = V, ["Luftwechsel_Nutzer"] = V,
             ["Baualtersklasse"] = V, ["Baujahr"] = V, ["Energiestandard"] = V,
             // DA-3/DA-7: die Gebäudeart reist als buildingType (gbXML) bzw. EPOS_Gebaeude.Gebaeudeart (IFC).
             ["Gebaeudeart"] = R, ["Wohngebaeude_Nicht_Wohngebaeude"] = V,
@@ -155,7 +157,7 @@ namespace WindowsFormsApplication1
             var namen = new SortedSet<string>(System.StringComparer.Ordinal)
             {
                 "Raumsolltemperatur_Nachtabsenkung", "Raumsolltemperatur_Wochenende", "Raumsolltemperatur_Ferien",
-                "Maximaleraumtemperatur", "Bauweise",
+                "Bauweise",
             };
             if (kalender) namen.Add(KALENDER);
             if (g != null)

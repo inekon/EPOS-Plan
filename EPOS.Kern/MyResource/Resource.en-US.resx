@@ -56155,6 +56155,9 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="GIMP_FELD_ERDREICH_U_WIRKSAM" xml:space="preserve">
     <value>Effective U-value to ground</value>
   </data>
+  <data name="GIMP_FELD_MAX_RAUMTEMPERATUR" xml:space="preserve">
+    <value>Maximum room temperature</value>
+  </data>
   <data name="GIMP_FELD_KELLERTEMPERATUR" xml:space="preserve">
     <value>Basement temperature</value>
   </data>
