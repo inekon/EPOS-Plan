@@ -10320,7 +10320,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wählen Sie die Datei Baustoffe.csv des CSV-Exports; Aufbauten.csv, Schichten.csv, Schichten_Abschnitte.csv, Fenster.csv und Basis_Auszug.csv liegen daneben. Die Vorschau schreibt nichts. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wählen Sie die Datei Baustoffe.csv des CSV-Exports; Aufbauten.csv, Schichten.csv, Schichten_Abschnitte.csv, Fenster.csv und Basis_Auszug.csv liegen daneben, Katalog.csv und Katalog_Inhalt.csv ergänzen die Teilkataloge. Liegt Baustoffe.csv im Unterordner Export, genügt der Ordner darüber. Die Vorschau schreibt nichts. ähnelt.
         /// </summary>
         public static string BKI_HINWEIS {
             get {
@@ -10361,6 +10361,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BKI_OK_SPERRE {
             get {
                 return ResourceManager.GetString("BKI_OK_SPERRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gelesen wird der Ordner: {0} ähnelt.
+        /// </summary>
+        public static string BKI_ORDNER {
+            get {
+                return ResourceManager.GetString("BKI_ORDNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Baustoffe.csv liegt im Unterordner Export; gelesen wird dieser Ordner: {0} ähnelt.
+        /// </summary>
+        public static string BKI_ORDNER_EXPORT {
+            get {
+                return ResourceManager.GetString("BKI_ORDNER_EXPORT", resourceCulture);
             }
         }
         
@@ -10451,6 +10469,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BKI_SP_WIEDER {
             get {
                 return ResourceManager.GetString("BKI_SP_WIEDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Teilkataloge: {0}; die Quelle nennt sie an {1} Baustoffen und {2} Aufbauten. ähnelt.
+        /// </summary>
+        public static string BKI_TEILKATALOGE {
+            get {
+                return ResourceManager.GetString("BKI_TEILKATALOGE", resourceCulture);
             }
         }
         

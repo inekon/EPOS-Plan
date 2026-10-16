@@ -22,7 +22,9 @@ public sealed record BauteilkatalogVorschauDaten(
     IReadOnlyList<string> Protokoll,
     int LambdaSkaliert = 0,
     string? Haustechnik = null,
-    IReadOnlyList<string>? Gliederung = null);
+    IReadOnlyList<string>? Gliederung = null,
+    string? Ordner = null,
+    string? Teilkataloge = null);
 
 /// <summary>Das Ergebnis von „Übernehmen“: geschrieben oder nicht, und die Meldung mit Zahlen.</summary>
 public sealed record BauteilkatalogImportErgebnis(bool Erfolg, string Meldung);
