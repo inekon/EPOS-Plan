@@ -49,6 +49,12 @@ gemergte Zweige `kb2`, `kb3`, `kb4a`, `kb4b`, `kb4c` sind als Worktrees entfernt
   Positionen keine `NutzungsdauerID`; Schritt 75 holt das nur nach, wenn eine Datenbank in einem Lauf gehoben wird (Testdatenbank 228:
   125 Positionen aus 226 tragen die Nutzungsdauer, die 8 Wechselrichter-Positionen aus 228 nicht; ohne Rechenwirkung) — Empfehlung:
   die Saat setzt die Nutzungsdauer selbst, als kleiner Nachzug in KB-5b.
+- **Wasserpreis am Rückkühlwerk (16.10.2026):** Die Kostenbasis übernimmt den Punkt (es gibt keine Sitzung Kälteanlagen mehr).
+  Wasser wird Träger der Trägerkarte mit einem Arbeitspreis je m³ je Projekt, der den Abwasseranteil enthält (kein Grundpreis,
+  kein zweiter Preis); die Wassermenge des Rückkühlwerks aus dem Lauf wird als Betriebskosten mit der Preissteigerung p_B gebucht und
+  wirkt im Kapitalwert; die Wasserkosten bekommen eine eigene Berichtskennzahl; `Tab_Energieanlagen.Wasserpreis_EUR_m3` wandert in
+  die Trägerkarte und entfällt (Welle KB-7, Schemaschritt 235; Entwurf
+  [`2026-10-16_Entwurf_KB7_Wasserkosten_Rueckkuehlwerk.md`](2026-10-16_Entwurf_KB7_Wasserkosten_Rueckkuehlwerk.md)).
 
 
 ## 3 Regeln und Fallstricke dieser Sitzung (über `CLAUDE.md` hinaus)
@@ -89,7 +95,7 @@ gemergte Zweige `kb2`, `kb3`, `kb4a`, `kb4b`, `kb4c` sind als Worktrees entfernt
    (`wikibilder.mjs`), Upload erst ab 16.10.2026 nach Freigabe und Versionsnummer.
 4. **Vorlagenplatzhalter Kältemaschine** (#1035 Punkt 3): eigene Welle, Platzhalter mit der Sitzung Anlagendialog abstimmen
    (Katalogfassung 23 unverändert lassen).
-5. **Wasserpreis am Rückkühlwerk:** gehört zur Sitzung Kälteanlagen; `Tab_Rueckkuehlwerk.Modulkosten` bleibt (Anwenderentscheid).
+5. **Wasserpreis am Rückkühlwerk:** übernommen von dieser Sitzung (Anwenderentscheid 16.10.2026, Abschnitt 2), Welle KB-7, Schritt 235; `Tab_Rueckkuehlwerk.Modulkosten` bleibt (Anwenderentscheid).
 6. **Variantenliste:** gebaut als Gruppe „Katalogsätze“, umkehrbar über `KostenVorlagenCtrl.KATALOGSAETZE_GRUPPIEREN` — Anwenderentscheid
    nach Sichtabnahme.
 7. **Sichtabnahme unter Windows** der Dialoge aus #1034–#1042 und der Kostenmasken aus KB-4 (Lesewert „Gerätekosten“/„Kostensatz“).
