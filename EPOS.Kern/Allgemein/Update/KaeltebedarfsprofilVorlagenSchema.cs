@@ -34,8 +34,8 @@ namespace WindowsFormsApplication1
     public static class KaeltebedarfsprofilVorlagenSchema
     {
         /// <summary><b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht.</summary>
-        // KETTE: an 229 BauteilkatalogAbschnittSchema haengen, sobald auf origin
-        public const int SCHRITT = BrennstoffpreiseTraegerkarteSchema.SCHRITT + 1;
+        // KETTE: haengt ueber StromspeicherKostenSchema.SCHRITT + 1 an 229 (KB-5).
+        public const int SCHRITT = StromspeicherKostenSchema.SCHRITT + 1;
 
         /// <summary>Die Zuordnung der Kältebedarfsprofile.</summary>
         public const string TAB_ZUORDNUNG = KaeltebedarfSchema.TAB_ZUORDNUNG;

@@ -73,8 +73,9 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Nummer_Kette_und_Register()
         {
-            // KETTE: an 229 BauteilkatalogAbschnittSchema haengen, sobald auf origin - dann diese Zeile mitziehen.
-            Assert.Equal(BrennstoffpreiseTraegerkarteSchema.SCHRITT + 1, KaeltebedarfsprofilVorlagenSchema.SCHRITT);
+            // KETTE: 230 haengt ueber + 1 an 229 (StromspeicherKostenSchema, KB-5).
+            Assert.Equal(230, KaeltebedarfsprofilVorlagenSchema.SCHRITT);
+            Assert.Equal(StromspeicherKostenSchema.SCHRITT + 1, KaeltebedarfsprofilVorlagenSchema.SCHRITT);
             Assert.Equal(KaeltebedarfsprofilVorlagenSchema.SCHRITT, SchemaStand.Zielversion);
             Assert.Contains(Paketanhebung.Stufen, s => s.Nr == KaeltebedarfsprofilVorlagenSchema.SCHRITT && s.Wirkung == Paketanhebung.Art.Ddl);
             Assert.Equal(3, KaeltebedarfsprofilVorlagenSchema.SPALTEN.Count);
