@@ -86,6 +86,8 @@ Festlegungen, die Folgewellen kennen müssen:
 5. Wiki-Quellen für BK-5/BK-6 und DA-6; Sammel-Upload nur auf Zuruf (E144, Version 1.2.0.12 laut Empfehlung). Der am 14.10.2026 vorbereitete Upload (Logbuch „Version 1.2.0.11“ in `Werkzeuge/WikiUpload/logbuch.wiki`, 33 abweichende Seiten) ist nicht geladen; vor dem Upload die Versionsnummer gegen das Wiki bestätigen. Aus der Cloud nur, wenn `WIKI_BOT_USER`/`WIKI_BOT_PASS` als Umgebungsgeheimnisse hinterlegt sind, sonst lokal über „Epos Lokal“ (`py -3 Werkzeuge\WikiUpload\wiki_upload.py --seiten`, dann `--logbuch`); danach Statuszeile und `Wiki_Update_2026-09-26.md` nachführen.
 6. SA4 (Referenzprojekt Schnellaufheizung): erledigt (#1134, E153), Basis R57 ([Protokoll SA4](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-16_SA4_Referenzprojekt.md)). Die Nachzüge daraus sind erledigt: der Testname der Zählung in `ErgebnisansichtTests` trägt keine Zahl mehr, und `Werkzeuge/Gate/nachgate_gebaeudesimulation.sh` liest die Projektliste aus der CI-Auswahl in `kern.yml`.
 7. Zweiter Importlauf des Bauteilkatalogs: erledigt (E147/E148); Vorschau BK-7b/BK-8/BK-8b über das Postfach.
+8. N7 (#1153): erledigt — die Kalender der Zonen aus gbXML und IFC kommen auch ohne gespeicherten Zonenplan an; gbXML trägt je Wochenplan nur einen Feiertagstyp (Grenze in der Exportvorschau und im Wiki „Datenexport“); Testklasse `GebaeudeImportZonenkalenderDialogwegTests` ([Protokoll N7](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-16_N7_Import_Zonenkalender.md)).
+9. Testschutz (#1154): erledigt — `EPOS.Kern.Tests` sieht nie die Anwenderdatenbank des Rechners (Modulinitialisierer `OhneAnwenderdatenbank.cs`, Wache `OhneAnwenderdatenbankTests`).
 
 ## 5. Offen beim Anwender
 
@@ -94,6 +96,8 @@ Festlegungen, die Folgewellen kennen müssen:
 - Zweiter Importlauf des Bauteilkatalogs nach dem Push von 232 (E147), Sicherung vorher; dabei Bereinigung des einen Importsatzes mit Name und Gruppe eines Auslieferungssatzes (E148).
 - Windows-Sichtabnahme N5 (A-N5-1 bis A-N5-4, Protokoll N5, Abschnitt „Sichtabnahme Windows“).
 - Anwenderprobe N4 unter Windows: Export eines Gebäudes mit Feiertagsverweis und oberer Raumtemperatur, Wiedereinlesen im Importdialog (Zeile „Maximale Raumtemperatur“).
+  - Ergebnis der Windows-Probe: die obere Raumtemperatur reist; die Zonenkalender fehlten auf dem Dialogweg, behoben mit N7 (#1153). Die Probe wird über EPOS Lokal wiederholt.
+  - Offen: ob der gbXML-Export die Zonenzuordnung der Räume trägt, die die Zonenregel „nach Zone“ braucht; der Dialog bot sie für eine von EPOS-Plan geschriebene gbXML-Datei nicht an.
 - Wiki-Upload nur auf Zuruf (E144).
 
 Alle Entscheide des Anwenders vom 14.10.2026 (E144 bis E149) stehen mit Wortlaut im Register der Statusdatei Gebäudesimulation.
