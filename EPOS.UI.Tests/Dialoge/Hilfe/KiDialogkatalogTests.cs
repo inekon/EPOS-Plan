@@ -805,7 +805,7 @@ public class KiDialogkatalogTests : IDisposable
     /// auf und nicht beim Anwender.</para>
     /// </remarks>
     [Fact]
-    public void Die_fuenf_Erzeugerkataloge_fuehren_17_12_15_15_und_26_Felder()
+    public void Die_fuenf_Erzeugerkataloge_fuehren_18_12_15_12_und_26_Felder()
     {
         // BHKW-Editor: dreizehn plus die Gruppe „Teillast und Takten" (Welle M4: BH1, BH2) plus die
         // Abschaltgrenze des Ruecklaufs (UB-E3-b).
@@ -813,8 +813,9 @@ public class KiDialogkatalogTests : IDisposable
         // Kollektoreditor: elf plus die Bezugsfläche der Kennwerte (Welle M2, ST6).
         Assert.Equal(12, KiDialoge.Katalog.Finde(KiMaskennamen.SOLARKOLLEKTOR)!.Felder.Count);
         Assert.Equal(15, KiDialoge.Katalog.Finde(KiMaskennamen.PV_MODULKATALOG)!.Felder.Count);
-        // Stromspeicherkatalog: vierzehn plus die Selbstentladung (Welle M5, SP1).
-        Assert.Equal(15, KiDialoge.Katalog.Finde(KiMaskennamen.STROMSPEICHER_KATALOG)!.Felder.Count);
+        // Stromspeicherkatalog: zwoelf - die vier Kostenspalten sind entfallen, der
+        // Kostensatz der Satzvorlage steht gesperrt da (Welle KB-5).
+        Assert.Equal(12, KiDialoge.Katalog.Finde(KiMaskennamen.STROMSPEICHER_KATALOG)!.Felder.Count);
         Assert.Equal(26, KiDialoge.Katalog.Finde(KiMaskennamen.WECHSELRICHTER_KATALOG)!.Felder.Count);
     }
 
