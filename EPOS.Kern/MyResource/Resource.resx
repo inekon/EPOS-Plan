@@ -56900,6 +56900,213 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="KI_DLG_KLIMA_HOEHE_ERL" xml:space="preserve">
     <value>Die Höhe des Standorts über dem Meer, in Metern. Sie geht in die Vorschau ein: Der Höhenunterschied zum Bezugspunkt entscheidet über den Hinweis „nicht ortstypisch“. Leer = unbekannt; bei PVGIS und einer TRY-Datei mit Kopfangabe kommt sie aus der Quelle.</value>
   </data>
+  <data name="KLIMA_RW_KURZ_TEMPERATUR" xml:space="preserve">
+    <value>Temperatur</value>
+  </data>
+  <data name="KLIMA_RW_KURZ_FEUCHTE" xml:space="preserve">
+    <value>Feuchte</value>
+  </data>
+  <data name="KLIMA_RW_KURZ_GLOBAL" xml:space="preserve">
+    <value>Global</value>
+  </data>
+  <data name="KLIMA_RW_KURZ_DIREKT_NORMAL" xml:space="preserve">
+    <value>Direkt normal</value>
+  </data>
+  <data name="KLIMA_RW_KURZ_DIFFUS" xml:space="preserve">
+    <value>Diffus</value>
+  </data>
+  <data name="KLIMA_RW_KURZ_GEGENSTRAHLUNG" xml:space="preserve">
+    <value>Gegenstrahlung</value>
+  </data>
+  <data name="KLIMA_RW_KURZ_BEDECKUNG" xml:space="preserve">
+    <value>Bedeckung</value>
+  </data>
+  <data name="KLIMA_RW_KURZ_SUED" xml:space="preserve">
+    <value>Süd</value>
+  </data>
+  <data name="KLIMA_RW_KURZ_WEST" xml:space="preserve">
+    <value>West</value>
+  </data>
+  <data name="KLIMA_RW_KURZ_OST" xml:space="preserve">
+    <value>Ost</value>
+  </data>
+  <data name="KLIMA_RW_KURZ_NORD" xml:space="preserve">
+    <value>Nord</value>
+  </data>
+  <data name="KLIMA_RW_FASSADE_SUED" xml:space="preserve">
+    <value>Fassade Süd</value>
+  </data>
+  <data name="KLIMA_RW_FASSADE_WEST" xml:space="preserve">
+    <value>Fassade West</value>
+  </data>
+  <data name="KLIMA_RW_FASSADE_OST" xml:space="preserve">
+    <value>Fassade Ost</value>
+  </data>
+  <data name="KLIMA_RW_FASSADE_NORD" xml:space="preserve">
+    <value>Fassade Nord</value>
+  </data>
+  <data name="KLIMA_RW_GRUPPE_TEMPERATUR" xml:space="preserve">
+    <value>Temperatur und Feuchte</value>
+  </data>
+  <data name="KLIMA_RW_GRUPPE_STRAHLUNG" xml:space="preserve">
+    <value>Strahlung</value>
+  </data>
+  <data name="KLIMA_RW_GRUPPE_FASSADE" xml:space="preserve">
+    <value>Fassadenwerte</value>
+  </data>
+  <data name="KLIMA_RW_GRUPPE_BEWOELKUNG" xml:space="preserve">
+    <value>Bewölkung, Druck, Wind</value>
+  </data>
+  <data name="KLIMA_RW_LETZTE_BLEIBT" xml:space="preserve">
+    <value>Mindestens eine Reihe bleibt gewählt.</value>
+  </data>
+  <data name="KLIMA_RW_ZWEI_EINHEITEN" xml:space="preserve">
+    <value>Höchstens zwei Einheiten zugleich ({0}); erst eine Reihe dieser Einheiten abwählen.</value>
+  </data>
+  <data name="KLIMA_RW_DREI_REIHEN" xml:space="preserve">
+    <value>Höchstens drei Reihen je Bild; erst eine abwählen.</value>
+  </data>
+  <data name="KLIMA_RW_NAME_EINHEIT" xml:space="preserve">
+    <value>{0} [{1}]</value>
+  </data>
+  <data name="KLIMA_RW_DIA_TITEL" xml:space="preserve">
+    <value>Weitere Reihen Verlauf</value>
+  </data>
+  <data name="KLIMA_RW_ACHSE" xml:space="preserve">
+    <value>Wert [{0}]</value>
+  </data>
+  <data name="KLIMA_RW_VORGABE" xml:space="preserve">
+    <value>Vorgabe</value>
+  </data>
+  <data name="KLIMA_RW_KOPF_VORSCHAU" xml:space="preserve">
+    <value>Reihen im Bild</value>
+  </data>
+  <data name="KLIMA_RW_HINWEIS_VORSCHAU" xml:space="preserve">
+    <value>Strahlung als Monatssumme, sonst Monatsmittel · höchstens zwei Einheiten</value>
+  </data>
+  <data name="KLIMA_RW_KOPF_JAHR" xml:space="preserve">
+    <value>Reihen</value>
+  </data>
+  <data name="KLIMA_RW_HINWEIS_JAHR" xml:space="preserve">
+    <value>eine Einheit je Bild, bis zu drei Reihen · jetzt: {0}</value>
+  </data>
+  <data name="KLIMA_RW_FUEHRT_NICHT" xml:space="preserve">
+    <value>Quelle führt die Größe nicht</value>
+  </data>
+  <data name="KLIMA_RW_ANDERE_EINHEIT" xml:space="preserve">
+    <value>Andere Einheit: zeigt {0} allein</value>
+  </data>
+  <data name="KLIMA_RW_ABWAEHLEN" xml:space="preserve">
+    <value>Reihe abwählen</value>
+  </data>
+  <data name="KLIMA_RW_ZUSCHALTEN" xml:space="preserve">
+    <value>Reihe zuschalten</value>
+  </data>
+  <data name="KLIMA_RW_HINZUFUEGEN" xml:space="preserve">
+    <value>Reihe hinzufügen</value>
+  </data>
+  <data name="KLIMA_RW_TEILFUELLUNG" xml:space="preserve">
+    <value>{0} von {1} Stunden mit Wert</value>
+  </data>
+  <data name="KLIMA_RW_GLEICHE_EINHEIT" xml:space="preserve">
+    <value>Reihen gleicher Einheit lassen sich zusammen zeigen; eine andere Einheit beginnt ein neues Bild.</value>
+  </data>
+  <data name="KLIMA_RW_REITER" xml:space="preserve">
+    <value>Weitere Reihen</value>
+  </data>
+  <data name="KLIMA_RW_WAHL_VORSCHAU" xml:space="preserve">
+    <value>Reihen im Monatsbild</value>
+  </data>
+  <data name="KLIMA_RW_WAHL_JAHR" xml:space="preserve">
+    <value>Reihen im Jahresverlauf</value>
+  </data>
+  <data name="KLIMA_RW_DIA_BEZEICHNUNG" xml:space="preserve">
+    <value>Jahresverlauf der gewählten Reihen</value>
+  </data>
+  <data name="KLIMA_RW_NAME_TEMPERATUR" xml:space="preserve">
+    <value>Lufttemperatur</value>
+  </data>
+  <data name="KLIMA_RW_NAME_FEUCHTE" xml:space="preserve">
+    <value>Relative Luftfeuchte</value>
+  </data>
+  <data name="KLIMA_RW_NAME_GLOBAL" xml:space="preserve">
+    <value>Globalstrahlung</value>
+  </data>
+  <data name="KLIMA_RW_NAME_DIREKT_NORMAL" xml:space="preserve">
+    <value>Direktstrahlung normal</value>
+  </data>
+  <data name="KLIMA_RW_NAME_DIFFUS" xml:space="preserve">
+    <value>Diffusstrahlung</value>
+  </data>
+  <data name="KLIMA_RW_NAME_GEGENSTRAHLUNG" xml:space="preserve">
+    <value>Gegenstrahlung</value>
+  </data>
+  <data name="KLIMA_RW_NAME_BEDECKUNG" xml:space="preserve">
+    <value>Bedeckungsgrad</value>
+  </data>
+  <data name="KLIMA_RW_NAME_WASSERDAMPF" xml:space="preserve">
+    <value>Wasserdampfgehalt</value>
+  </data>
+  <data name="KLIMA_RW_NAME_DIREKT_HORIZONTAL" xml:space="preserve">
+    <value>Direktstrahlung horizontal</value>
+  </data>
+  <data name="KLIMA_RW_NAME_AUSSTRAHLUNG" xml:space="preserve">
+    <value>Ausstrahlung</value>
+  </data>
+  <data name="KLIMA_RW_NAME_LUFTDRUCK" xml:space="preserve">
+    <value>Luftdruck</value>
+  </data>
+  <data name="KLIMA_RW_NAME_WIND" xml:space="preserve">
+    <value>Windgeschwindigkeit</value>
+  </data>
+  <data name="KLIMA_RW_NAME_WINDRICHTUNG" xml:space="preserve">
+    <value>Windrichtung</value>
+  </data>
+  <data name="KLIMA_RW_NAME_QUALITAET" xml:space="preserve">
+    <value>Qualitätskennung der Strahlung</value>
+  </data>
+  <data name="CHART_LEGENDE_NETZBEZUG" xml:space="preserve">
+    <value>Netzbezug</value>
+  </data>
+  <data name="CHART_LEGENDE_NETZEINSPEISUNG" xml:space="preserve">
+    <value>Netzeinspeisung</value>
+  </data>
+  <data name="CHART_LEGENDE_SUMME_STROM_WP" xml:space="preserve">
+    <value>Summe Strombedarf Wärmepumpe und Heizstab</value>
+  </data>
+  <data name="SIMERG_CHK_WP_STROM_GETRENNT" xml:space="preserve">
+    <value>Wärmepumpe und Heizstab getrennt</value>
+  </data>
+  <data name="PEAK_CHK_LEISTUNG" xml:space="preserve">
+    <value>Lade- und Entladeleistung im Diagramm zeigen</value>
+  </data>
+  <data name="PEAK_CHK_SCHWELLE" xml:space="preserve">
+    <value>Schwelle im Diagramm zeigen</value>
+  </data>
+  <data name="PEAK_SERIE_LADELEISTUNG" xml:space="preserve">
+    <value>Ladeleistung</value>
+  </data>
+  <data name="PEAK_SERIE_ENTLADELEISTUNG" xml:space="preserve">
+    <value>Entladeleistung</value>
+  </data>
+  <data name="PEAK_SERIE_SCHWELLE" xml:space="preserve">
+    <value>Schwelle</value>
+  </data>
+  <data name="PEAK_CSV_LADELEISTUNG" xml:space="preserve">
+    <value>Ladeleistung [kW]</value>
+  </data>
+  <data name="PEAK_CSV_ENTLADELEISTUNG" xml:space="preserve">
+    <value>Entladeleistung [kW]</value>
+  </data>
+  <data name="PEAK_CSV_SCHWELLE" xml:space="preserve">
+    <value>Schwelle [kW]</value>
+  </data>
+  <data name="KI_DLG_PEAK_LEISTUNG_ERL" xml:space="preserve">
+    <value>Zeigt Lade- und Entladeleistung des Speichers als Linien im Diagramm.</value>
+  </data>
+  <data name="KI_DLG_PEAK_SCHWELLE_ERL" xml:space="preserve">
+    <value>Zeigt die erreichte Schwelle als waagerechte Linie im Diagramm.</value>
+  </data>
   <data name="BTA_GRUPPE_STRAHLUNG" xml:space="preserve">
     <value>Strahlung der Außenfläche</value>
   </data>

@@ -136,6 +136,13 @@ namespace WindowsFormsApplication1
         internal double? ObereRaumtemperaturC;
 
         /// <summary>
+        /// Die Außentemperatur je Stunde [°C] — die Stundenreihe des Klimakalenders, mit der der Lauf
+        /// das Gebäude gerechnet hat; die zuschaltbare Orientierungsreihe des Bildes „Raumtemperatur"
+        /// (Welle RZ). <c>null</c> ohne VDI-Lauf.
+        /// </summary>
+        internal double[] AussentemperaturC;
+
+        /// <summary>
         /// Die gezählten Unterschreitungsstunden der Heizseite (Anlagenkopplung AK2, 5.5) — die Maske der
         /// <c>Komfortkennzahlen</c>, aus der das Bild „Raumtemperatur und Sollwert" seine Woche wählt (E80);
         /// <c>null</c>, solange am Gebäude kein Komfort erhoben ist (ungekoppelt, Tagesbilanz).
@@ -497,6 +504,8 @@ namespace WindowsFormsApplication1
                 ergebnis.OperativeTemperaturC = vdi.OperativeTemperatur;
                 ergebnis.HeizsollwertC = vdi.Heizsollwert;
                 ergebnis.ObereRaumtemperaturC = vdi.ThetaMax;
+                // Welle RZ: die Außentemperatur des Laufs zur Orientierung im Raumtemperaturbild - nur gelesen.
+                ergebnis.AussentemperaturC = (double[])sim.Stundentemperatur.Clone();
 
                 // Stufe G6b (W5; A2 = M5 (a)): je Zone eine Zeile, auch unbeheizt - aus DEMSELBEN
                 // Ergebnistraeger. Die Gebaeudezahlen darueber sind Summe bzw. Mittel der Zonen

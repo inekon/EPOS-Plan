@@ -241,7 +241,10 @@ namespace WindowsFormsApplication1
             {
                 Jahresmittel = werteTemperatur.Average(),
                 Tiefstwert = werteTemperatur.Min(),
-                Hoechstwert = werteTemperatur.Max()
+                Hoechstwert = werteTemperatur.Max(),
+                // KD-8 Teil A: die gespeicherten Rechenspalten für „Weitere Reihen“ —
+                // dieselben Zeilen (SolardatenCtrl.ReadAllStamm, ?-Parameter).
+                Reihenbestand = KlimaReihenkatalog.AusRechenspalten(solar.items)
             });
         }
 

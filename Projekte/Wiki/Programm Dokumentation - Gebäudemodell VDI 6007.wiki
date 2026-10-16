@@ -280,7 +280,7 @@ Die Zeilen unter dem Abschnitt sagen, wie der Kühlbedarf entsteht, und nennen d
 
 Die Tabelle '''Vergleich der Rechenwege''' stellt dasselbe Gebäude auf beiden Rechenwegen nebeneinander: Wärmebedarf, Spitzenlast der Stunde, Spitzenlast als höchstes Mittel über 24 Stunden, der Wert, den die Stundenlast in 95 % der Stunden nicht überschreitet, und die Vollbenutzungsstunden, jeweils mit der Abweichung des Stundenmodells in Prozent. Beide Spalten rechnet das Programm beim Öffnen; gespeichert wird dabei nichts.
 
-Das Bild '''Raumtemperatur''' zeigt den Jahresverlauf der Raumluft und der operativen Temperatur, dazu gestrichelt den Heizsollwert und die obere Raumtemperatur. Zoom, Ausschnitt, Legende und Farbwahl bedienen Sie wie in den übrigen Diagrammen; das Bild führt seinen Ausschnitt getrennt von der Ganglinie der Wärmelast.
+Das Bild '''Raumtemperatur''' zeigt den Jahresverlauf der Raumluft und der operativen Temperatur, dazu gestrichelt den Heizsollwert und die obere Raumtemperatur. Zoom, Ausschnitt, Legende und Farbwahl bedienen Sie wie in den übrigen Diagrammen; das Bild führt seinen Ausschnitt getrennt von der Ganglinie der Wärmelast. Der Schalter ''Außentemperatur'' über dem Bild blendet die Außentemperatur der Klimaregion als weitere Linie ein – zur Orientierung bei Überhitzung und Komfort; ab Werk ist er aus.
 
 Rechnet das Gebäude mit [[#heizkreis|Wärmeübergabe]], zeigt der Wärmebedarf zusätzlich:
 * in der Zeile '''Rechenweg''' den Zusatz ''gekoppelt'';

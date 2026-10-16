@@ -3397,6 +3397,10 @@
         internal static string PeakNutzungsdauerErl => MyResource.Resource.KI_DLG_PEAK_NUTZUNGSDAUER_ERL;
         internal static string PeakSocName => MyResource.Resource.PEAK_CHK_SOC;
         internal static string PeakSocErl => MyResource.Resource.KI_DLG_PEAK_SOC_ERL;
+        internal static string PeakLeistungName => MyResource.Resource.PEAK_CHK_LEISTUNG;
+        internal static string PeakLeistungErl => MyResource.Resource.KI_DLG_PEAK_LEISTUNG_ERL;
+        internal static string PeakSchwelleName => MyResource.Resource.PEAK_CHK_SCHWELLE;
+        internal static string PeakSchwelleErl => MyResource.Resource.KI_DLG_PEAK_SCHWELLE_ERL;
         internal static string PeakReiterName => MyResource.Resource.KI_DLG_PEAK_REITER_NAME;
         internal static string PeakReiterErl => MyResource.Resource.KI_DLG_PEAK_REITER_ERL;
         internal static string PeakReiheName => MyResource.Resource.KI_DLG_PEAK_REIHE_NAME;

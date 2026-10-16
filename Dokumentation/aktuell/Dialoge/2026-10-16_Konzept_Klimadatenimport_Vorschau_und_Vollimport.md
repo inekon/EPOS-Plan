@@ -15,8 +15,9 @@ der Daten und des Datenformats, angelehnt an die vorhandenen CSV-Wege.
 **Abgrenzung.** Quellen, Formate, Zeitbasis und Herkunftsvermerk beschreibt
 [`Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md`](../Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md).
 Dieses Papier ergänzt es. Was umgesetzt ist, wird dort nachgezogen (Schritt KD-7); danach wandert
-dieses Papier nach `ueberholt/`. Mockup:
-`Dokumentation/aktuell/Mockups/Klimadatenimport_Mockup.html`.
+dieses Papier nach `ueberholt/`. Mockups:
+`Dokumentation/aktuell/Mockups/Klimadatenimport_Mockup.html` (Vorschau, Export) und
+`Dokumentation/aktuell/Mockups/Klimadatenreihen_Mockup.html` (weitere Datenreihen, Abschnitt 4a).
 
 ---
 
@@ -280,6 +281,133 @@ Verfall, weiche Sperre, Felder, Höhe im Auftrag, Hinweis ab 50 km/200 m, Fehlsc
 
 ---
 
+## 4a. Weitere Datenreihen in Vorschau und Jahresverlauf (KD-8)
+
+**Anwenderwunsch (16.10.2026, zwei Bildschirmfotos).** Die übrigen Datenreihen sollen sich
+wahlweise zeigen lassen: (1) im Monatsbild der Vorschaukarte beim Import und (2) im Jahresverlauf
+der Detailkarte einer Region im Klimadaten-Dialog. Mockup:
+[`../Mockups/Klimadatenreihen_Mockup.html`](../Mockups/Klimadatenreihen_Mockup.html), mit beiden Stellen
+spielbar, Quelle TRY oder PVGIS, Ausbaustand „Teil A“ oder „mit Rohwerten“ und einer Region ohne
+Rohdaten.
+
+**Ein Baustein, ein Verzeichnis.** Beide Stellen nutzen denselben neuen Baustein **`Reihenwahl`**.
+Er zeigt eine Reihe von Schaltknöpfen (Chips) je Größe, gruppiert nach „Temperatur und Feuchte“,
+„Strahlung“, „Fassadenwerte“ (nur im Jahresverlauf) und „Bewölkung, Druck, Wind“. Ein Chip trägt
+`aria-pressed`, die Einheit und bei Rohwerten die Marke „R“. Ein nicht wählbarer Chip ist **weich
+gesperrt** (`aria-disabled`) und nennt den Grund im Titel und in einer leisen Zeile unter der
+Wahl. Welche Größe welche Einheit, Monatsregel und Herkunft hat, steht einmal im Kern im
+**`KlimaReihenkatalog`** (je `KlimaParameter` und je Fassadenwert). Die Oberfläche fragt nur ab.
+Der Export (KD-5) nutzt dasselbe Verzeichnis für seine Kästchen.
+
+### 4a.1 Vorschaukarte (Monatsbild)
+
+1. Unter dem Monatsbild steht die Reihenwahl. **Vorgabe wie heute:** Globalstrahlung und
+   Temperatur. „Vorgabe“ stellt sie wieder her.
+2. Chips gibt es für jede Größe, die der Parameterbestand als *geführt* oder *gerechnet* meldet.
+   Eine Größe, die *fehlt*, bekommt keinen Chip. Der Parameterbestand darunter nennt sie.
+3. Ein Klick schaltet die Reihe zu oder ab. Die letzte gewählte Reihe lässt sich nicht abwählen.
+4. **Achsenregel:** Jede Einheit bekommt eine Achse, **höchstens zwei Einheiten** zugleich.
+   Strahlung (kWh/m²) steht immer links, sonst steht die zuerst gewählte Einheit links. Ein Chip,
+   dessen Einheit eine dritte wäre, ist weich gesperrt mit dem Grund „Höchstens zwei Einheiten
+   zugleich (…); erst eine Reihe dieser Einheiten abwählen“. Ein stilles Ersetzen der zuletzt
+   gewählten Reihe ist abgelehnt (KD-Q10).
+5. Das Bild bleibt `KlimaVorschaubild` über `ChartRenderer.SummenlinieModell` (linke und rechte
+   Achse). Alle Reihen sind Linien wie heute. Summen tragen eckige Marken, Mittel runde (KD-Q14).
+
+**Aggregation je Größe** (aus den Stunden des gelesenen Satzes, Monatsgrenzen im Gemeinjahr
+744/672/… h):
+
+| Größe | Regel | Einheit im Monatsbild | Teil |
+|---|---|---|---|
+| Lufttemperatur, relative Feuchte, Bedeckungsgrad | Monatsmittel | °C, %, Achtel | A |
+| Global-, Direkt- (normal), Diffus-, Gegenstrahlung | Monatssumme ∑ W/m² · 1 h / 1 000 | kWh/m² | A |
+| Direktstrahlung horizontal, Ausstrahlung | Monatssumme | kWh/m² | B |
+| Luftdruck, Windgeschwindigkeit, Wasserdampfgehalt | Monatsmittel | hPa, m/s, g/kg | B |
+| Windrichtung, Qualitätskennung | **kein Bild** (ein Winkelmittel täuscht; eine Kennung ist keine Größe), nur Export (KD-Q12) | – | – |
+
+Trägt der gelesene Satz für eine Größe keine einzige Stunde, entfällt ihr Chip. Fehlen nur
+einzelne Stunden, wird über die vorhandenen gemittelt bzw. summiert, und der Titel des Chips nennt
+die Zahl der Stunden.
+
+### 4a.2 Detailkarte (Jahresverlauf)
+
+1. Die Reiter **Temperatur | Sonnenwinkel** bleiben, wie sie sind. Dazu kommt der dritte Reiter
+   **„Weitere Reihen“** mit der Reihenwahl über dem Bild (KD-Q13).
+2. Die Wahl führt alle **gespeicherten** Größen der Region mit 8 760 Stunden außer Temperatur und
+   Sonnenwinkel: Luftfeuchte, Global-, Direkt- und Diffusstrahlung, Gegenstrahlung,
+   Bedeckungsgrad, die vier Fassadenwerte (`Sol_Sued/West/Ost/Nord`) und mit KD-4 die Rohwerte
+   (Marke „R“). Vorgabe ist die Globalstrahlung.
+3. **Eine Einheit je Bild, bis zu drei Reihen** (KD-Q11). Ein Klick auf eine Reihe derselben
+   Einheit fügt sie hinzu. Ein Klick auf eine Reihe einer anderen Einheit zeigt diese allein. Die
+   leise Zeile und der Titel des Chips sagen das vor dem Klick („Andere Einheit: zeigt … allein“).
+   Die vierte Reihe ist weich gesperrt.
+4. **Zoom, Achse und „CSV…“ wie heute**, für die gewählten Reihen. ×1 zeigt das Tagesband, Bereich
+   und 1:1 zeigen die Stunden, die Achse wählt „Datum | Stunde im Jahr“, und „CSV…“ schreibt alle
+   Reihen des Bildes über die Export-Kaskade (Raster `Stunde`). „groß…“ zeigt das Bild des dritten
+   Reiters breit wie die beiden anderen.
+5. Das Bild ist `ChartRenderer.JahresgangModell` mit einer y-Achse und unverändertem Modell. Jede
+   neue Wahl ergibt ein neues Modell, damit baut `DiagrammSvg` neu und der Zoom kehrt auf ×1
+   zurück. Die Kennung bleibt `klima-reihen`, denn es gibt ein Bild je Reiter.
+6. Wechselt die Region, bleibt die Wahl, soweit die neue Region die Reihen führt. Fällt alles weg,
+   gilt die Vorgabe. Die Wahl wird nicht in den Einstellungen gespeichert.
+
+### 4a.3 Verfügbarkeit
+
+- **Teil A (Rechenspalten, sofort):** In der Vorschau stehen die Größen, die der Leseweg heute in
+  `TmyHourlyData` trägt. Im Jahresverlauf stehen die Spalten von `Tab_Solar_STAMM` (Leser
+  `SolardatenCtrl`, `SELECT *`). Es gibt keinen Schemaschritt und keinen neuen Leser im Rechenweg.
+- **Teil B (Rohwerte, mit KD-4):** Luftdruck, Windgeschwindigkeit, Wasserdampfgehalt, Ausstrahlung
+  und Direktstrahlung horizontal. In der Vorschau kommen sie, sobald `DwdTryLeser` und der
+  PVGIS-Leser alle Felder liefern. Im Jahresverlauf liest sie ein neuer Leser aus
+  `Tab_Klimastunde_STAMM`, nur wenn `Rohdaten = 1`. Vor KD-4 zeigt die Oberfläche **keinen**
+  Chip für sie und keinen Verweis auf einen künftigen Schritt.
+- **Gründe der weichen Sperre im Jahresverlauf:** „Region ohne Rohdaten importiert“
+  (`Rohdaten = 0`, Altbestand nach KD-Q7) und „Quelle führt die Größe nicht“ (Spalte in allen
+  Stunden NULL, etwa Wasserdampf und Ausstrahlung bei PVGIS). Ob eine Rechenspalte, die die Quelle
+  nicht führt (Bedeckungsgrad bei PVGIS), heute als 0 oder NULL gespeichert wird, prüft der Bau.
+  Eine durchgehende 0 aus einer nicht führenden Quelle gilt als „führt nicht“.
+- **Rechenweg und Referenzbasis:** unberührt. Die Reihen werden nur gelesen, die Wache „Rechenweg
+  liest Rohtabelle nicht“ aus KD-4 gilt weiter.
+
+### 4a.4 Betroffene Dateien
+
+| Teil | Datei | Änderung |
+|---|---|---|
+| A | `EPOS.Kern/Allgemein/Import/KlimaReihenkatalog.cs` (neu) | Größe → Name (Ressource), Einheit, Monatsregel, Gruppe, Herkunft (Rechenspalte/Rohwert), Bild ja/nein, Farbrolle |
+| A | `EPOS.Kern/Allgemein/Import/KlimaVorschau.cs` | `KlimaKennzahlen` trägt Monatsreihen je Größe, gerechnet in `Rechnen` |
+| A | `EPOS.Kern/Allgemein/Bericht/KlimaVorschaubild.cs` | `Modell(kennzahlen, auswahl, texte)` mit der Achsenregel; Vorgabe = heutiges Bild |
+| A | `EPOS.UI/Bausteine/Reihenwahl.razor` (neu), `EPOS.UI/wwwroot` (Regeln `.epos-reihenwahl*`, Farben als Token) | Chips, Gruppen, weiche Sperre mit Grund, leise Zeile |
+| A | `EPOS.UI/Dialoge/Klimadaten/KlimadatenDialog.razor` | Reihenwahl unter dem Vorschaubild; dritter Reiter „Weitere Reihen“; `Regionsansicht` mit Reihenbestand und Bildweg |
+| A | `EPOS.UI.Daten/Klimadaten/KlimadatenHuelle.cs` | Reihen der Rechenspalten aus `SolardatenCtrl.items`, Bild je Wahl über `JahresgangModell` |
+| A | `EPOS.Kern/MyResource/Resource*.resx`, `Resource.Designer.cs` | Reiter, Kopf, Gruppen, Sperrgründe, Hinweise in beiden Sprachen; `designer_neu.py` |
+| A | `EPOS.Kern/Allgemein/KI/Dialoge/KiDialoge.cs` | Feldliste nachziehen, falls die Wahl als Feld zählt |
+| B | Leser `Tab_Klimastunde_STAMM` (neben dem Schreibweg aus KD-4), `KlimaVorschau.cs` | Rohwert-Reihen der Region, Monatsreihen der Rohwerte in der Vorschau |
+
+`DiagrammSvg` und `ChartRenderer` bleiben unverändert. Fehlende Farbrollen für Feuchte,
+Diffusstrahlung, Druck, Wind usw. kommen in die Farbpalette.
+
+### 4a.5 Abnahme
+
+- **Kern-Tests:** Monatsreihen (Summe gegen Mittel, Monatsgrenzen, Teilfüllung, fehlende Größe
+  ohne Reihe), Achsenregel von `KlimaVorschaubild` (Strahlung links, zwei Einheiten, eine dritte
+  abgelehnt, Vorgabe gleich dem heutigen Bild) und eine Wache „jeder `KlimaParameter` steht im
+  Katalog mit Einheit und Regel“.
+- **bunit:** `ReihenwahlTests` (Schalten, weiche Sperre mit Grund, letzte Reihe bleibt) und
+  `KlimadatenDialogTests`. Für die Vorschau: Vorgabe, Zuschalten, dritte Einheit gesperrt. Für
+  den Jahresverlauf: dritter Reiter, Einheitswechsel ersetzt, Grenze drei, Rohwert-Reihe bei
+  `Rohdaten = 0` gesperrt mit Grund, der CSV-Delegat bekommt das Modell mit den gewählten Reihen.
+  Dazu `CsvAmBildWacheTests` und `KiMaskenabdeckungWacheTests`.
+- **Proben:** `fensterprobe.mjs`, Fall `klimaimport`, weil die Karte wächst und die Leiste haften
+  muss. `diagrammprobe.mjs` nur, falls `DiagrammSvg` doch berührt wird. `Proben/ChartProben` nur,
+  falls `ChartRenderer` ein neues Modell oder eine neue Farbrolle bekommt; die Messlatte bleibt
+  dann unverändert.
+- Kein Referenzlauf nötig, weil der Rechenweg unberührt ist. Kein Schemaschritt in Teil A. Teil B
+  hängt am Schemaschritt von KD-4 und dessen Abnahme.
+
+Die offenen Entscheide dieses Abschnitts stehen als KD-Q10 bis KD-Q14 in Abschnitt 9.
+
+---
+
 ## 5. CSV-Export
 
 **Bestand, an den der Export anschließt:**
@@ -352,10 +480,13 @@ Jeder Schritt umfasst höchstens rund 150 Werkzeugaufrufe, Bau mit `WP-Plan.Kern
 | **KD-4** Rohdaten | Schemaschritt (Nummer anmelden): `Tab_Klimastunde_STAMM`, Spalten an `Tab_Klimaregion(_STAMM)`; `DwdTryLeser` und PVGIS-Leser liefern alle Felder, Schreibweg füllt sie, `SchemaKatalog`, Katalogregister | `SqlDialektPruefer`, Schematests, Wache „Rechenweg liest Rohtabelle nicht“, Referenzlauf 18 Projekte `PASS` |
 | **KD-5** Export | `KlimaCsv`, `KlimaExportOptionen`, Exportdialog, Handlung in der Auswahlleiste, Taupunkt abgeleitet | Kern-Tests (Trennzeichen × Dezimal × Zeitspalte, Einheitenzeile, Altbestand ohne Rohdaten), bunit Exportdialog, `CsvAmBildWacheTests` unberührt |
 | **KD-6** CSV-Import (nur nach KD-Q5) | vierte Quelle mit Spaltenzuordnung über `GanglinienImportOptionen` | Rundlauf Export → Import bitgleich in den Rechenspalten |
+| **KD-8** Weitere Datenreihen (Abschnitt 4a) | **Teil A, sofort pushbar:** `KlimaReihenkatalog`, Monatsreihen der Vorschau, `KlimaVorschaubild` mit Achsenregel, Baustein `Reihenwahl`, dritter Reiter „Weitere Reihen“ mit den Rechenspalten, Ressourcen in beiden Sprachen, kein Schemaschritt. **Teil B, mit KD-4:** Rohwert-Reihen in Vorschau und Jahresverlauf, Leser `Tab_Klimastunde_STAMM`, weiche Sperre „Region ohne Rohdaten importiert“ | Kern-Tests (Monatsreihen, Achsenregel, Katalogwache), bunit `ReihenwahlTests` und `KlimadatenDialogTests`, `CsvAmBildWacheTests`, `KiMaskenabdeckungWacheTests`, `designer_neu.py`, `fensterprobe.mjs` Fall `klimaimport`; Teil B dazu `SqlDialektPruefer` |
 | **KD-7** Doku | Konzept Klimadatenquellen §§ 1, 2, 6, 7, 10, 12 nachziehen, Wiki-Quelle „Programm Dokumentation/Klimadaten“, Logbuch-Entwurf, dieses Papier nach `ueberholt/` | `DokumentationLinkWacheTests`, `WikiProduktdatenWacheTests` |
 
 KD-1 lässt sich unabhängig vorziehen. KD-2 und KD-3 gehen vor KD-4, weil die Vorschau keine neuen
-Spalten braucht. KD-5 setzt KD-4 voraus, wenn die Rohwerte exportiert werden sollen.
+Spalten braucht. KD-5 setzt KD-4 voraus, wenn die Rohwerte exportiert werden sollen. KD-8 Teil A
+ist von KD-4 unabhängig. Teil B folgt KD-4 oder geht im selben Auftrag mit. KD-7 beschreibt die
+Reihenwahl mit.
 
 ---
 
@@ -390,6 +521,11 @@ Spalten braucht. KD-5 setzt KD-4 voraus, wenn die Rohwerte exportiert werden sol
 | **KD-Q7** | Rohdaten für Bestands- und Auslieferungsregionen nachladen? | **Nein**, nur Neuimporte. Die Auslieferungsvorlage führt Rohdaten erst nach eigenem Entscheid (Größe). — *entschieden 16.10.2026: Empfehlung übernommen* |
 | **KD-Q8** | Zeitbezug des Exports als Vorgabe | **MEZ ohne Sommerzeit** (Raster der TRY und der Anwender), UTC wählbar. — *entschieden 16.10.2026: Empfehlung übernommen* |
 | **KD-Q9** | Schwellen des Hinweises (50 km, 200 m) | **Ja**, als Festwerte im Kern, nicht in den Einstellungen. — *entschieden 16.10.2026: Empfehlung übernommen* |
+| **KD-Q10** | Vorschau: Was geschieht mit einer Reihe, deren Einheit die dritte wäre? (a) Chip weich gesperrt mit Grund; (b) sie ersetzt die zuletzt gewählte Reihe | **(a).** Hausregel „weich gesperrt mit Grund“. Ein stilles Ersetzen nimmt dem Anwender eine Wahl, ohne dass er es sieht. |
+| **KD-Q11** | Jahresverlauf: (a) eine Einheit je Bild mit bis zu drei Reihen; (b) zwei Einheiten auf zwei Achsen | **(a).** Über 8 760 Stunden decken sich die Tagesbänder zweier Größen. `JahresgangModell` bleibt unverändert, und es braucht keine neue ChartProbe. Größen verschiedener Einheit vergleicht das Monatsbild oder der Export. |
+| **KD-Q12** | Windrichtung und Qualitätskennung im Bild? (a) nicht, nur Export; (b) Windrichtung als vorherrschende Richtung je Monat bzw. als Punktwolke | **(a).** Ein Mittel über Winkel täuscht (350° und 10° ergäben 180°). Eine Windrose wäre ein eigenes Bild und folgt erst auf Wunsch. |
+| **KD-Q13** | Jahresverlauf: (a) dritter Reiter „Weitere Reihen“ neben Temperatur und Sonnenwinkel; (b) beide Reiter durch eine Reihenwahl ersetzen | **(a).** Die gewohnten Bilder, ihre Tests und Kennungen bleiben. Der dritte Reiter enthält nur das Neue. |
+| **KD-Q14** | Vorschau: Strahlung (a) als Linie wie heute; (b) als Säulen | **(a).** Das umgesetzte Bild nutzt `SummenlinieModell`. Säulen neben Linien bräuchten ein neues Mischmodell samt ChartProben. Summen und Mittel unterscheiden sich durch eckige bzw. runde Marken. |
 
 ---
 

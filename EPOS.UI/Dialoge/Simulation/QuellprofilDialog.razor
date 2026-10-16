@@ -183,6 +183,15 @@
                        Gruppe (a)): Zoom auf der Zeitachse, Wert am Mauszeiger. *@
                     @* "CSV..." am Bild schreibt den gezeigten Jahresverlauf (Ausgabe);
                        "CSV einlesen..." bleibt der Einleseweg. *@
+                    @* Welle RZ (Teil b): die Außentemperatur zuschaltbar, ab Werk aus. Kein
+                       Delegat, kein Schalter; die Beschriftung ist der Legendentext der Reihe. *@
+                    @if (JahresbildReihen is not null)
+                    {
+                        <div class="epos-leiste">
+                            <Schalter Bezeichnung="@LabelAussentemperatur" Wert="@_mitAussen"
+                                      WertChanged="AussentemperaturGesetzt" />
+                        </div>
+                    }
                     <CascadingValue Value="@Exportnaht">
                         <DiagrammSvg Modell="@_modell" Kennung="quellprofil"
                                      Bezeichnung="@BildAlt" PlatzhalterText="@PlatzhalterText"
@@ -276,6 +285,19 @@
 
     /// <summary>Rechnet das Zeichenmodell des Jahresbildes aus Betriebsart und Werten.</summary>
     [Parameter] public Func<string, double[], Task<Zeichenmodell?>>? Jahresbild { get; set; }
+
+    /// <summary>
+    /// Welle RZ (Teil b): das Jahresbild mit ZUSCHALTBAREN Reihen — dritter Parameter die gewählten
+    /// Zusatzreihen (<c>Zusatzreihen.Aussentemperatur</c>). Gerufen nur bei gesetztem Schalter; aus
+    /// bleibt es bei <see cref="Jahresbild"/>. Ohne Delegat kein Schalter.
+    /// </summary>
+    [Parameter] public Func<string, double[], IReadOnlyList<string>, Task<Zeichenmodell?>>? JahresbildReihen { get; set; }
+
+    /// <summary>Beschriftung des Schalters „Außentemperatur" — wörtlich der Legendentext der Reihe.</summary>
+    [Parameter] public string LabelAussentemperatur { get; set; } = "Außentemperatur";
+
+    /// <summary>Steht der Schalter „Außentemperatur" am Jahresbild? Prüfhilfe für die Tests.</summary>
+    public bool MitAussentemperatur => _mitAussen;
 
     /// <summary>Die Sollzahl an Werten je Betriebsart (<c>DbWerte.QuellprofilWerteanzahl</c>).</summary>
     [Parameter] public Func<string, int>? Werteanzahl { get; set; }
@@ -853,8 +875,23 @@
             werte = _werte;
         }
 
-        _modell = await Jahresbild(Betriebsart, werte);
+        _modell = _mitAussen && JahresbildReihen is not null
+            ? await JahresbildReihen(Betriebsart, werte, MIT_AUSSEN)
+            : await Jahresbild(Betriebsart, werte);
         StateHasChanged();
+    }
+
+    /// <summary>Welle RZ: der Schalter „Außentemperatur" am Jahresbild; ab Werk aus.</summary>
+    private bool _mitAussen;
+
+    private static readonly IReadOnlyList<string> MIT_AUSSEN =
+        new[] { EPOS.UI.Seiten.Simulation.Zusatzreihen.Aussentemperatur };
+
+    /// <summary>Der Schalter zeichnet das Bild neu — mit oder ohne Außentemperatur.</summary>
+    private Task AussentemperaturGesetzt(bool wert)
+    {
+        _mitAussen = wert;
+        return BildZeichnen();
     }
 
     // --- Ergebnis ---------------------------------------------------------------

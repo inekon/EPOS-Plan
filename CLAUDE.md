@@ -17,22 +17,25 @@ Antworten, Bezeichner und Kommentare auf Deutsch.
 
 ## Modellwahl und Agenten
 
-- **Fable 5.1 nur, wenn es unbedingt nötig ist:** Es schneidet Aufträge, wählt das Modell,
-  nimmt Ergebnisse ab, entscheidet bei widersprüchlichen Befunden, bereitet Anwenderentscheide
-  vor und berichtet — in knappen Zügen. Alles andere wird delegiert, auch Merges und
-  Konfliktlösung, Gates, CI-Prüfung und CI-Vermerke, Status- und Protokollpflege, Hüllen,
-  Nachzüge und Konzeptabsätze; Fable fasst Dateien nur an, wenn ein Agentenaufruf teurer wäre
-  als die Änderung selbst (eine Zeile, ein Verweis). Geplante Check-ins (Routinen) lösen
-  einen Agenten aus, statt Fable arbeiten zu lassen.
+- **Fable 5.1 für die Orchestrierung und für komplexe Aufgaben:** Die Orchestrierung schneidet
+  Aufträge, wählt das Modell, nimmt Ergebnisse ab, entscheidet bei widersprüchlichen Befunden,
+  bereitet Anwenderentscheide vor und berichtet — in knappen Zügen. Komplexe Aufgaben bekommt
+  ein Fable-Agent: Schemaketten samt Hebung der Testdatenbank, Konflikte mit Fachinhalt über
+  mehrere Zweige, Fehlersuche über mehrere Schichten, schwierige Analysen. Alles andere geht an
+  Opus, Sonnet oder Haiku, auch Merges ohne Fachkonflikt, Gates, CI-Prüfung und CI-Vermerke,
+  Status- und Protokollpflege, Hüllen, Nachzüge und Konzeptabsätze; die Orchestrierung fasst
+  Dateien nur an, wenn ein Agentenaufruf teurer wäre als die Änderung selbst (eine Zeile, ein
+  Verweis). Geplante Check-ins (Routinen) lösen einen Agenten aus, statt die Orchestrierung
+  arbeiten zu lassen.
 - **Für jede delegierte Aufgabe das geeignete, günstigste Modell wählen** — das spart Token
   und Zeit:
 
   | Modell | Aufgaben |
   |---|---|
-  | `model: opus` (Opus 5.5, `opus-umsetzung`) | Rechenweg, Schema, Tests, Hüllen und Dialoge, Fehlersuche im Code, Konfliktauflösung mit Fachinhalt, Konzeptabsätze mit Fachinhalt, Referenzprojekte und Basen einfrieren |
+  | `model: opus` (Opus 5.5, `opus-umsetzung`) | Rechenweg, Schema, Tests, Hüllen und Dialoge, Fehlersuche im Code, Konfliktauflösung mit Fachinhalt in einem Zweig, Konzeptabsätze mit Fachinhalt, Referenzprojekte und Basen einfrieren |
   | `model: sonnet` (`sonnet-mechanik`) | Inventare und Suchen, Status-, Protokoll- und Indexpflege nach Vorlage, Ressourcen in beiden Sprachen, Wiki-Quellen und Logbuch-Entwürfe, Gate fahren und Zahlen melden, Merges ohne Fachkonflikt, CI-Protokolle auswerten, Vergleichstabellen aus vorliegenden Zahlen |
   | `model: haiku` (`haiku-pruefung`) | Zählungen, BOM-, Encoding- und Zeilenendenprüfungen, Konfliktmarker, LFS-Zeiger, Dateilisten |
-  | `model: fable` | nur, wenn die Orchestrierung selbst eine schwierige Analyse in einem frischen Kontext braucht |
+  | `model: fable` | komplexe Aufgaben: Schemaketten mit Hebung der Testdatenbank, Konfliktauflösung mit Fachinhalt über mehrere Zweige, Fehlersuche über mehrere Schichten, schwierige Analysen in frischem Kontext |
 
   Das Modell bei jedem Agentenaufruf **ausdrücklich** setzen, nie erben lassen.
 - **Agentenaufträge** sind vollständig und repo-relativ formuliert (keine absoluten Pfade —
