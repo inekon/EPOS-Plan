@@ -81,6 +81,9 @@ namespace WindowsFormsApplication1
             // MA-6b (BauteilUHerkunftSchema): die Herkunft des U-Werts ist ein Merkmal der Pflege; der Import setzt sie nach
             // dem Format der Datei neu.
             ["U_Herkunft"] = N,
+            // DA-8: Absorptions- und Emissionsgrad reisen in beiden Richtungen — gbXML als Absorptance der Construction
+            // (ein abweichendes Wertepaar bekommt eine eigene Construction), IFC als EPOS_Bauteil; leer bleibt die Vorgabe.
+            ["Absorptionsgrad_Solar"] = R, ["Emissionsgrad"] = R,
         };
 
         /// <summary>
