@@ -44620,7 +44620,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Draw-off profile storage sizing (TwwSpeicherauslegung)</value>
   </data>
   <data name="PAUS_HERK_FRISCHWASSER" xml:space="preserve">
-    <value>VDI 4645 draft 2026-03, Annex I; research round 2, section 4.1</value>
+    <value>VDI 4645 draft 2026-03, Annex I</value>
   </data>
   <data name="PAUS_HERK_W551" xml:space="preserve">
     <value>DVGW W 551</value>
@@ -44731,7 +44731,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>V_Hz = {0} l {1} {2} l/kW · {3} kW = {4} l{5}</value>
   </data>
   <data name="PAUS_WEG_K1_EINZELRAUM" xml:space="preserve">
-    <value>; individual room control: can be shut off, no credit for K1</value>
+    <value>; individual room control: can be shut off, no credit in the pre-check of the system volume</value>
   </data>
   <data name="PAUS_WEG_K2" xml:space="preserve">
     <value>{0} l/kW ({1}) · {2} kW</value>
@@ -44797,7 +44797,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Default</value>
   </data>
   <data name="PAUS_HERK_Q_KERN" xml:space="preserve">
-    <value>EPOS-Plan calculation core (ProjektPuffer.WH_JE_LITER_KELVIN)</value>
+    <value>EPOS-Plan calculation core (heat capacity of water)</value>
   </data>
   <data name="PAUS_HERK_Q_VDI_783" xml:space="preserve">
     <value>VDI 4645 draft 2026-03, section 7.8.3</value>
@@ -44836,7 +44836,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Technical portals on cycling (secondary source)</value>
   </data>
   <data name="PAUS_HERK_Q_TOOL" xml:space="preserve">
-    <value>Heat storage tool (Quellen/Waermespeicher-Tool), load profile simulation</value>
+    <value>Heat storage tool, load profile simulation</value>
   </data>
   <data name="PAUS_HERK_Q_EN15450" xml:space="preserve">
     <value>DIN EN 15450</value>
@@ -44854,7 +44854,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Solar thermal planning guides (secondary source), with reference to DIN EN 12977</value>
   </data>
   <data name="PAUS_HERK_Q_RUNDE2" xml:space="preserve">
-    <value>Research buffer storage sizing round 2, section 4.1</value>
+    <value>EPOS-Plan default</value>
   </data>
   <data name="PAUS_HERK_Q_ZIRK" xml:space="preserve">
     <value>Technical portals on circulation (secondary source)</value>
@@ -44878,13 +44878,13 @@ This folder holds the standard template, the short report, the detailed template
     <value>prEN 15316-5:2024, table B.4</value>
   </data>
   <data name="PAUS_HERK_Q_V39" xml:space="preserve">
-    <value>Research buffer storage sizing round 3, proposal V39</value>
+    <value>EPOS-Plan default</value>
   </data>
   <data name="PAUS_HERK_Q_PUFFER" xml:space="preserve">
     <value>EPOS-Plan default of the project buffer (thresholds)</value>
   </data>
   <data name="PAUS_HERK_Q_VORLAGE" xml:space="preserve">
-    <value>Research buffer storage sizing round 1, section 6</value>
+    <value>EPOS-Plan default</value>
   </data>
   <data name="PAUS_HERK_PARAMETER_KOPIE" xml:space="preserve">
     <value>{0} (project copy), missing keys from {1}</value>
@@ -44896,7 +44896,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>built-in defaults (default table missing)</value>
   </data>
   <data name="PAUS_HERK_KLASSEN_PUFFER" xml:space="preserve">
-    <value>Class set of the buffer (Nutzung_Heizung/_Brauchwasser/_Prozess)</value>
+    <value>Class set of the buffer (use for heating, hot water, process)</value>
   </data>
   <data name="PAUS_HERK_KLASSEN_NEU_PROZESS" xml:space="preserve">
     <value>new buffer: heating and process heat (project carries process heat)</value>
@@ -44950,7 +44950,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>no heat generator in the project: default</value>
   </data>
   <data name="PAUS_HERK_SPERRE_ANLAGE" xml:space="preserve">
-    <value>Lock-out time of the system at rank 1 (Sperrzeit_von/_bis)</value>
+    <value>Lock-out time of the system at rank 1</value>
   </data>
   <data name="PAUS_HERK_SPERRE_KEINE" xml:space="preserve">
     <value>no lock-out time maintained</value>
@@ -44962,13 +44962,13 @@ This folder holds the standard template, the short report, the detailed template
     <value>no emitter type maintained: ideal, calculated like FLAECHE (note {0})</value>
   </data>
   <data name="PAUS_HERK_ANLAGENVOLUMEN" xml:space="preserve">
-    <value>Emitter type × design heating load (Anlagenvolumen.&lt;emitter&gt;_l_kW)</value>
+    <value>Emitter type × design heating load (default system volume in l/kW)</value>
   </data>
   <data name="PAUS_HERK_HEIZLAST_REIHE" xml:space="preserve">
     <value>Maximum of the heating series</value>
   </data>
   <data name="PAUS_HERK_KATALOG_PUFFER" xml:space="preserve">
-    <value>{0} catalogue buffers from Tab_Pufferspeicher_STAMM</value>
+    <value>{0} catalogue buffers from the buffer catalogue</value>
   </data>
   <data name="PAUS_HERK_REIHEN" xml:space="preserve">
     <value>Demand series from KanaeleDrei()</value>
@@ -44977,7 +44977,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>no series: {0}</value>
   </data>
   <data name="PAUS_HERK_RANG1_KASKADE" xml:space="preserve">
-    <value>Rank 1 of the cascade: {0} (Tab_Einstellungen.Tool_{1})</value>
+    <value>Rank 1 of the cascade: {0} (cascade position {1})</value>
   </data>
   <data name="PAUS_HERK_RANG1_RUECKFALL" xml:space="preserve">
     <value>Cascade without an existing generator: first generator in the order HP, CHP, boiler, solar</value>
@@ -45025,7 +45025,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>, nominal volume {0} l</value>
   </data>
   <data name="PAUS_HERK_NENNINHALTE_PARAMETER" xml:space="preserve">
-    <value>Speicherauslegung.Nenninhalt.* ({0})</value>
+    <value>Nominal volume list of the storage sizing ({0})</value>
   </data>
   <data name="PAUS_HERK_NENNINHALTE_VORGABE" xml:space="preserve">
     <value>fixed list 100 … 10,000 l, above that a 1,000 l grid</value>
@@ -45538,7 +45538,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Table of the cold storages of the base project: capacity, charging, discharging, heat gain and full cycles per cold storage. If it is in the template, the section in the project chapter is omitted.</value>
   </data>
   <data name="PAUS_HERK_NACHBARSTUFEN" xml:space="preserve">
-    <value>Buffer sizing concept 6 (benefit-effort line); pass-through D1 and two-point D2 with fixed volume, loss K11 by class C limit</value>
+    <value>Recalculation per step with fixed volume (coverage and cycling target); standby loss by the limit of efficiency class C</value>
   </data>
   <data name="PAUS_HERK_KURVE" xml:space="preserve">
     <value>Ecosizer (Ecotope 2020), storage versus capacity: running volume of the peak event ÷ η_s</value>
@@ -45637,28 +45637,28 @@ This folder holds the standard template, the short report, the detailed template
     <value>Warm-up after setback</value>
   </data>
   <data name="PAUS_HERK_K12" xml:space="preserve">
-    <value>Buffer sizing concept V30 / KP3 (warm-up sizing of the buildings)</value>
+    <value>Warm-up sizing of the buildings (last simulation)</value>
   </data>
   <data name="PAUS_HERK_Q_V30" xml:space="preserve">
-    <value>Buffer sizing concept V30 / KP3</value>
+    <value>EPOS-Plan default</value>
   </data>
   <data name="PAUS_WEG_K12" xml:space="preserve">
     <value>({0} kW − {1} kW) · {2} h ({3}) / ({4} · {5} K · {6})</value>
   </data>
   <data name="PAUS_WEG_K12_DAUER_KP3" xml:space="preserve">
-    <value>warm-up duration from KP3</value>
+    <value>warm-up duration from the warm-up sizing</value>
   </data>
   <data name="PAUS_WEG_K12_DAUER_VORGABE" xml:space="preserve">
-    <value>default Aufheiz.Dauer_h</value>
+    <value>default warm-up duration</value>
   </data>
   <data name="PAUS_WEG_K12_KEINE" xml:space="preserve">
-    <value>no KP3 warm-up sizing of the buildings</value>
+    <value>no warm-up sizing of the buildings</value>
   </data>
   <data name="PAUS_HERK_AUFHEIZ_KP3" xml:space="preserve">
-    <value>KP3 warm-up sizing of the last run: sum of Aufheiz_Leistung_Kw over {0} buildings, longest warm-up time</value>
+    <value>Warm-up sizing of the last run: sum of the warm-up capacity over {0} buildings, longest warm-up time</value>
   </data>
   <data name="PAUS_HERK_AUFHEIZ_KEINE" xml:space="preserve">
-    <value>no warm-up sizing in the last run (criterion K12 does not size)</value>
+    <value>no warm-up sizing in the last run (the criterion “Warm-up after setback” does not size)</value>
   </data>
   <data name="PAUS_K12_SCHALTER_VORLAGE" xml:space="preserve">
     <value>Template of the usage profile: on for office/school</value>

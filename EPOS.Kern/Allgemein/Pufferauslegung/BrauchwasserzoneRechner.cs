@@ -22,7 +22,7 @@ namespace WindowsFormsApplication1
     public static class BrauchwasserzoneRechner
     {
         public static readonly Textbaustein HERKUNFT_SPEICHER = T("PAUS_HERK_ZAPF_SPEICHER", "Zapfprofil-Speicherauslegung (TwwSpeicherauslegung)");
-        public static readonly Textbaustein HERKUNFT_FRISCHWASSER = T("PAUS_HERK_FRISCHWASSER", "VDI 4645 E 2026-03, Anhang I; Recherche Runde 2, Abschnitt 4.1");
+        public static readonly Textbaustein HERKUNFT_FRISCHWASSER = T("PAUS_HERK_FRISCHWASSER", "VDI 4645 E 2026-03, Anhang I");
         public static readonly Textbaustein HERKUNFT_W551 = T("PAUS_HERK_W551", "DVGW W 551");
         public static readonly Textbaustein HERKUNFT_IEA = T("PAUS_HERK_IEA", "IEA SHC Task/Annex 46");
 
