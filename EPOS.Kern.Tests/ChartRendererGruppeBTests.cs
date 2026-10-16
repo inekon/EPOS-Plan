@@ -336,8 +336,8 @@ namespace EPOS.Kern.Tests
             Zeichenmodell k = ChartRenderer.KennlinienModell("K", "COP", "Temperatur",
                                   Kennlinien(), ChartRenderer.Kennlinienmarke.Kreis);
             Assert.Equal(2, k.Reihen.Count);
-            Assert.Equal("35°C", k.Reihen[0].Name);
-            Assert.Equal("45°C", k.Reihen[1].Name);
+            Assert.Equal("35 °C", k.Reihen[0].Name);
+            Assert.Equal("45 °C", k.Reihen[1].Name);
             foreach (Datenreihe r in k.Reihen)
             {
                 Assert.Equal("COP", r.Einheit);

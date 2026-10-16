@@ -241,10 +241,11 @@ namespace WindowsFormsApplication1
             };
             // Wie das Bild: die Erzeuger als Stapel in der Stundenfolge des Bedarfs, der Bedarf als Linie.
             Zahlenkategorien(d, 1, reihen[0].Werte.Length);
-            for (int i = 1; i < reihen.Count; i++)
-                d.Reihe(reihen[i].Name, Exceldiagramm.Endlich(reihen[i].Werte), Excelreihenart.Flaeche, Hex(reihen[i].Farbe));
+            // Der Bedarf bleibt die erste Spalte; als Linie liegt er im Diagramm über den Flächen.
             d.Reihe(reihen[0].Name, Exceldiagramm.Endlich(reihen[0].Werte), Excelreihenart.Linie, Hex(reihen[0].Farbe))
              .Staerke = 2.25;
+            for (int i = 1; i < reihen.Count; i++)
+                d.Reihe(reihen[i].Name, Exceldiagramm.Endlich(reihen[i].Werte), Excelreihenart.Flaeche, Hex(reihen[i].Farbe));
             return d;
         }
 

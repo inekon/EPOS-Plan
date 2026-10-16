@@ -2258,7 +2258,33 @@ namespace WindowsFormsApplication1
                 return leer;
             }
 
-            float links = 150f, rechts = W - 40f, oben = 110f, unten = H - 140f;
+            // Die Namen unter den Säulen folgen den Metriken: Ein Wort, das allein breiter ist als
+            // sein Platz („Ersatzbeschaffungen“), trennt Zerlegt an einer Silbenfuge, statt in die
+            // Nachbarspalte zu ragen; ein Name steht in höchstens drei Zeilen. Die Schrift bleibt
+            // 15 pt (Stufe 2 zeichnet neu, nicht kleiner). Braucht ein Name die dritte Zeile, wächst
+            // das Bild um so viel, wie Fuß und Legende tiefer rücken; mit höchstens zwei Zeilen
+            // steht alles wie gehabt.
+            string fuss = texte.Fuss ?? "";
+            string ergebnisname = texte.Ergebnis ?? "";
+            float platzVorab = (W - 40f - 150f) / (gueltig.Count + 1);
+            var namenzeilen = new List<List<string>>();
+            float namenzeile;
+            using (var f = Schrift(15f))
+            using (var ff = Schrift(15f, fett: true))
+            {
+                for (int i = 0; i <= gueltig.Count; i++)
+                {
+                    bool letzte = i == gueltig.Count;
+                    Schriftmass fs = letzte ? ff : f;
+                    namenzeilen.Add(Umbruchzeilen(Zerlegt(letzte ? ergebnisname : (gueltig[i].Name ?? ""), fs, platzVorab - 8f),
+                                                  fs, platzVorab - 8f, 3));
+                }
+                namenzeile = TextHoehe(f) + 2f;
+            }
+            float tiefer = (float)Math.Ceiling(Math.Max(0f, 10f + namenzeilen.Max(l => l.Count) * namenzeile + 4f - 66f));
+            H += (int)tiefer;
+
+            float links = 150f, rechts = W - 40f, oben = 110f, unten = H - 140f - tiefer;
             var z = Modell(W, H);
             string unterzeile = texte.Unterzeile ?? "";
             z.Markiert("titel", zt =>
@@ -2321,8 +2347,15 @@ namespace WindowsFormsApplication1
                     z.Markiert("reihe:" + name, name + ": " + betrag + " €", zr =>
                     {
                         zr.Rechteck(x, yo, breite, Math.Max(yu - yo, 1f), null, Flaeche(rolle));
-                        float bb = wf.MeasureText(betrag);
-                        Text(zr, betrag, wf, Farbrolle.ACHSE, x + (breite - bb) / 2f, yo - 6f - TextHoehe(wf));
+                        // Der Betrag steht am Ende des Schritts: eine Mehrung über, eine Minderung
+                        // unter ihrer Säule — über ihr läge er auf dem Stand davor und damit oft auf
+                        // der Nulllinie, die sein Minuszeichen verschluckte. Reicht der Platz bis zur
+                        // Achse nicht (8 px bleiben bis zu den Namen), steht er doch darüber und
+                        // dann ganz über der Nulllinie, nie auf ihr.
+                        float bb = wf.MeasureText(betrag), bh = TextHoehe(wf);
+                        float by = s.Wert < 0.0 && yu + 6f + bh <= unten + 8f ? yu + 6f : yo - 6f - bh;
+                        if (by < yu && by + bh > y0 - 2f && by < y0 + 2f) by = y0 - 4f - bh;
+                        Text(zr, betrag, wf, Farbrolle.ACHSE, x + (breite - bb) / 2f, by);
                     });
 
                     // Die Verbindung zur nächsten Säule, auf der Höhe des neuen Standes.
@@ -2343,9 +2376,7 @@ namespace WindowsFormsApplication1
                 });
             }
 
-            // Die Namen unter den Säulen (höchstens zwei Zeilen) und der Fuß.
-            string fuss = texte.Fuss ?? "";
-            string ergebnisname = texte.Ergebnis ?? "";
+            // Die Namen unter den Säulen (oben gebrochen) und der Fuß.
             z.Markiert("xachse", zx =>
             {
                 using (var f = Schrift(15f))
@@ -2355,19 +2386,18 @@ namespace WindowsFormsApplication1
                     {
                         bool letzte = i == gueltig.Count;
                         Schriftmass fs = letzte ? ff : f;
-                        List<string> zeilen = Umbruchzeilen(letzte ? ergebnisname : (gueltig[i].Name ?? ""),
-                                                            fs, platz - 8f, 2);
+                        List<string> zeilen = namenzeilen[i];
                         float mitte = links + i * platz + platz / 2f;
                         for (int k = 0; k < zeilen.Count; k++)
                             Text(zx, zeilen[k], fs, letzte ? Farbrolle.TEXT : Farbrolle.ACHSE,
                                  mitte - fs.MeasureText(zeilen[k]) / 2f, unten + 10f + k * (TextHoehe(fs) + 2f));
                     }
-                    Text(zx, fuss, f, Farbrolle.ACHSE, links, unten + 66f);
+                    Text(zx, fuss, f, Farbrolle.ACHSE, links, unten + 66f + tiefer);
                 }
             });
 
             // Die Legende: mindert, mehrt, Ergebnis — sie schaltet nichts.
-            float ly = unten + 100f;
+            float ly = unten + 100f + tiefer;
             using (var f = Schrift(16f))
             {
                 var eintraege = new[]
@@ -3415,10 +3445,10 @@ namespace WindowsFormsApplication1
 
                 // Linie UND Punktmarken tragen die Marke der Reihe: Wer die Kennlinie
                 // ueber die Legende abwaehlt, blendet beides zusammen aus.
-                string name = gueltig[i].Vorlauf.ToString(Zahlkultur) + "°C";
+                string name = gueltig[i].Vorlauf.ToString(Zahlkultur) + " °C";
 
                 // DG-E3-10: Jede Punktmarke nennt IHREN Wert — „Außentemperatur
-                // −5 °C · 35°C: 4,25". Die Linie darunter zeigt keine einzelne Zahl
+                // −5 °C · 35 °C: 4,25". Die Linie darunter zeigt keine einzelne Zahl
                 // und nennt deshalb nur ihren Namen (Regel der Gruppe (c)).
                 var werttexte = new string[punkte.Length];
                 for (int t = 0; t < punkte.Length; t++)
@@ -3443,7 +3473,7 @@ namespace WindowsFormsApplication1
             // Rückwärtssuche fände C_SERIEN[0] die wertgleiche BHKW-Rolle, und eine eigene
             // Farbe der Serie 1 erreichte die Legende nie.
             Legende(z, gueltig.Select((r, i) => new Segment(
-                        r.Vorlauf.ToString(Zahlkultur) + "°C", 0, C_SERIEN[i % C_SERIEN.Length])
+                        r.Vorlauf.ToString(Zahlkultur) + " °C", 0, C_SERIEN[i % C_SERIEN.Length])
                         { Ton = Farbton.Aus(Serienrolle(i)) })
                     .ToList(), 90f, H - 96f, W - 30f);
             return z;
@@ -4750,7 +4780,7 @@ namespace WindowsFormsApplication1
             }
             else
                 Legende(z, gueltig.Select(r => Eintrag(r)).ToList(),
-                        Px(satz, 100f), Px(satz, 66f), W - Px(satz, 30f), satz);
+                        Px(satz, 100f), Px(satz, LegendeOben(yTitel)), W - Px(satz, 30f), satz);
 
             // Der gemeinsame Bezugswert (siehe Kopf) — aus der GANZEN Reihe, damit
             // 100 % im Ausschnitt dasselbe heisst wie in der Vollansicht.
@@ -4988,7 +5018,7 @@ namespace WindowsFormsApplication1
 
             // Anschlag und Hoehe der Legende stehen als Namen da - das Rechteck
             // unten rechnet mit denselben Werten (Muster aus Verlaufsbild, W11b-B-28).
-            const float LEGENDE_X = 100f, LEGENDE_Y = 66f;
+            const float LEGENDE_X = 100f; float LEGENDE_Y = LegendeOben(yTitel, y2Titel);
 
             var z = Modell(W, H);
             z.Markiert("titel", zt => Titel(zt, titel ?? "", W));
@@ -6260,7 +6290,7 @@ namespace WindowsFormsApplication1
 
             // W11b-B-28: Anschlag und Hoehe der Legende stehen als Namen da - das
             // Rechteck unten rechnet mit denselben Werten.
-            const float LEGENDE_X = 100f, LEGENDE_Y = 66f;
+            const float LEGENDE_X = 100f; float LEGENDE_Y = LegendeOben(yTitel, y2Titel);
 
             var z = Modell(W, H);
             z.Markiert("titel", zt => Titel(zt, titel ?? "", W));
@@ -6926,6 +6956,52 @@ namespace WindowsFormsApplication1
             var block = Umbruchzeilen(grundtext, f, breite, FUSS_ZEILEN_JE_TEIL);
             block.AddRange(Umbruchzeilen(zusatz, f, breite, FUSS_ZEILEN_JE_TEIL));
             return block;
+        }
+
+        /// <summary>
+        /// <b>Der Trennstrich als Ausweg des Umbruchs:</b> Jedes Wort, das auch allein breiter ist als
+        /// <paramref name="breite"/>, wird mit „-“ zerlegt — an der Silbenfuge (<see cref="Silbenfuge"/>), deren
+        /// breiterer Teil am schmalsten ist („Ersatz-“ / „beschaffungen“), ohne Fuge am längsten Anfang, der passt;
+        /// mindestens drei Zeichen vorn und hinten. Passt jedes Wort, kommt der Text unverändert zurück.
+        /// </summary>
+        private static string Zerlegt(string text, Schriftmass f, float breite)
+        {
+            if (string.IsNullOrEmpty(text) || f.MeasureText(text) <= breite) return text ?? "";
+            var teile = new List<string>();
+            foreach (string wort in text.Split(' '))
+            {
+                string rest = wort;
+                while (rest.Length >= 6 && f.MeasureText(rest) > breite)
+                {
+                    int laengster = rest.Length - 3;
+                    while (laengster > 3 && f.MeasureText(rest.Substring(0, laengster) + "-") > breite) laengster--;
+                    int schnitt = laengster;
+                    float bester = float.MaxValue;
+                    for (int s = 3; s <= laengster; s++)
+                    {
+                        if (!Silbenfuge(rest, s)) continue;
+                        float breiter = Math.Max(f.MeasureText(rest.Substring(0, s) + "-"), f.MeasureText(rest.Substring(s)));
+                        if (breiter < bester) { bester = breiter; schnitt = s; }
+                    }
+                    teile.Add(rest.Substring(0, schnitt) + "-");
+                    rest = rest.Substring(schnitt);
+                }
+                teile.Add(rest);
+            }
+            return string.Join(" ", teile);
+        }
+
+        /// <summary>Ein Schnitt vor <paramref name="i"/> trennt zwei Konsonanten, deren zweiter vor einem Vokal steht.</summary>
+        private static bool Silbenfuge(string w, int i)
+        {
+            const string VOKALE = "aeiouäöüyAEIOUÄÖÜY";
+            if (i < 1 || i + 1 >= w.Length) return false;
+            char a = w[i - 1], b = w[i], c = w[i + 1];
+            if (!char.IsLetter(a) || !char.IsLetter(b) || VOKALE.IndexOf(a) >= 0 || VOKALE.IndexOf(b) >= 0
+                || VOKALE.IndexOf(c) < 0) return false;
+            bool ch = (a == 'c' && (b == 'h' || b == 'k')) || (b == 'c' && c == 'h');
+            bool sch = i >= 2 && w[i - 2] == 's' && a == 'c' && b == 'h';
+            return !ch && !sch && !(a == 's' && b == 'c');
         }
 
         /// <summary>
@@ -8592,6 +8668,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>Höhe EINER Legendenzeile [px] — der Schritt des Umbruchs.</summary>
         public const float LEGENDE_ZEILE = 30f;
+
+        /// <summary>
+        /// <b>Die Oberkante der Kopflegende</b> der Zeitreihenbilder [px, vor dem Behältermaßstab]: Ihre Felder sind
+        /// 22 px hoch, der Achsentitel steht 24 px über der Zeichenfläche (bei 110 px also ab 86 px). Bei 66 px
+        /// berührte die Legende ihn; steht ein Achsentitel im Bild, rückt sie deshalb auf 58 px — 6 px Abstand nach
+        /// unten, 16 px zum Bildtitel. Ohne Achsentitel bleibt sie bei 66 px.
+        /// </summary>
+        private static float LegendeOben(string yTitel, string y2Titel = null)
+            => string.IsNullOrEmpty(yTitel) && string.IsNullOrEmpty(y2Titel) ? 66f : 58f;
 
         /// <summary>
         /// Stufe 2 (BV-E5): die kleinste Höhe der Zeichenfläche im Zielmaß [px]. Räumt sie einer
