@@ -68,6 +68,7 @@ jobs:
   # Block X. Die Einteilung gleicht die Bloecke nach gemessener Testdauer aus;
   # waechst ein Block deutlich ueber die anderen, Buchstaben umhaengen.
   kern-tests:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     name: Kern-Tests ${{ matrix.block.name }}
     runs-on: ubuntu-latest
     strategy:
@@ -147,6 +148,7 @@ jobs:
   # SpeicherPlanung mit Google.OrTools samt nativer Haelfte; SpeicherPlanung.Tests rechnet die
   # MILP-Faelle ("27 bestanden, 1 uebersprungen" ist erwartet, der Jahresbenchmark steht auf Skip).
   weitere-tests:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     name: Bau und Tests UI, KiKern, Speicher
     runs-on: ubuntu-latest
     steps:
@@ -181,6 +183,7 @@ jobs:
           exit $rc
 
   build-test:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     # fail-fast aus: schlaegt ubuntu fehl, soll macos trotzdem zu Ende laufen -
     # nur so wird sichtbar, ob ein Fehler plattformabhaengig ist.
     strategy:
