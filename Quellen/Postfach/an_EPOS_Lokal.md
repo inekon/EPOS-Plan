@@ -158,3 +158,29 @@ der Verweis einer Feiertagsperiode auf eine benannte Woche (`Feiertagswoche_<n>`
    Vorschauzeile „Maximale Raumtemperatur“ anzusehen (Abbruch vor der Übernahme). Melde die Dateinamen.
 6. Nichts committen, nichts pushen. Nur Zählungen und Ja/Nein, keine Werte aus der Datenbank des Anwenders (die Testdatenbank ist
    neutral; ihre Werte dürfen genannt werden).
+
+## 10 · 2026-10-16 22:58 UTC · Probe N4 wiederholen (N7 behoben), Windows-Tests erneut
+
+Beide Befunde aus Nachricht 9 sind behoben und liegen auf `origin/ios_migration_september` mit `56eddca88` (Testdatenbank Schritt 238):
+- **N7 (#1153):** Die Kalender der Zonen aus gbXML/IFC kommen auf dem Dialogweg auch ohne gespeicherten Zonenplan an; ebenso beim
+  Wiederimport mit gespeichertem Plan. Zonen mit Herkunft MANUELL bleiben. gbXML trägt je Wochenplan nur einen Feiertagstyp — die
+  Exportvorschau meldet das jetzt (Grenze des Formats, kein Fehler).
+- **Testschutz (#1154):** Die drei roten Fälle unter Windows kamen daher, dass `EPOS.Kern.Tests` ohne eingelegte Testdatenbank die
+  Anwenderdatenbank `%ProgramData%\EPOS_PLAN\Kenndaten.sqlite` las (Nutzungskatalog → „#1“/„#2“). Jetzt sieht kein Test mehr die
+  Datenbank des Rechners.
+
+Bitte:
+1. Klon per Fast-Forward auf mindestens `56eddca88`, Bau wie gewohnt (`-p:OutDir` außerhalb, falls EPOS-Plan läuft).
+2. **Tests unter Windows**, Filter wie bei Nachricht 9 und zusätzlich `ZonenplanTests`, `SqprojZonenTests`, `SqprojHuelleTests`,
+   `OhneAnwenderdatenbankTests`, `GebaeudeImportZonenkalenderDialogwegTests` — Zahl bestanden/rot melden.
+3. **Probe wiederholen** wie bei Nachricht 9, auf einer **neuen** Kopie der Testdatenbank (`C:\Temp\N4\Kenndaten_N4b.sqlite`, Schritt
+   238), Projekt 1045, obere Raumtemperatur 26 °C, Feiertagsperiode mit Wochenverweis und eine eingebettete Feiertagsperiode; Export
+   gbXML und IFC über die Export-Hülle, Import über die Hüllenfolge des Dialogs **ohne** Planvorlage. Melden je Format:
+   - Zonenperioden am neuen Gebäude (Anzahl), Verweis auf die benannte Woche ja/nein, eingebettete Periode eingebettet ja/nein,
+     obere Raumtemperatur;
+   - bei gbXML: erscheint die Meldung zur Feiertagsgrenze in der Exportvorschau?
+   - **Wiederimport** derselben Datei auf das neue Gebäude, nachdem eine Zone von Hand geändert wurde (Herkunft MANUELL): bleibt sie
+     unverändert, bekommen die übrigen Zonen die Kalender der Datei?
+4. Optional, nur Zählung: Bietet der Importdialog für die von EPOS-Plan geschriebene gbXML-Datei die Zonenregel „nach Zone“ (X1) an?
+   Wenn nein: Trägt die Datei Zonen-Elemente mit Zuordnung der Räume (Anzahl `Zone`-Elemente, Anzahl Räume mit `zoneIdRef`)?
+5. Kopie und Dateien in `C:\Temp\N4\` liegen lassen. Nichts committen, nichts pushen; nur Zählungen und Ja/Nein.
