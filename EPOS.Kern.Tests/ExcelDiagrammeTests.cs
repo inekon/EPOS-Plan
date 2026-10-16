@@ -271,7 +271,8 @@ namespace EPOS.Kern.Tests
             string pfad = Erzeuge(daten, "flotte_nebenbalken.xlsx");
             Assert.Empty(Exceldiagrammbefund.Validierungsfehler(pfad));
             using SpreadsheetDocument doc = SpreadsheetDocument.Open(pfad, false);
-            List<C.ChartSpace> strom = Diagrammraeume(doc).Where(x => x.Name == "stand.bild.strombilanz_monate").Select(x => x.Raum).ToList();
+            List<(string Name, C.ChartSpace Raum)> diagramme = Diagrammraeume(doc);
+            List<C.ChartSpace> strom = diagramme.Where(x => x.Name == "stand.bild.strombilanz_monate").Select(x => x.Raum).ToList();
             Assert.NotEmpty(strom);
             foreach (C.ChartSpace raum in strom)
             {
