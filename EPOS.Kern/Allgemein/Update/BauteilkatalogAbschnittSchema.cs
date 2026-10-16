@@ -6,9 +6,8 @@ using System.Linq;
 namespace WindowsFormsApplication1
 {
     // ====================================================================================
-    // SCHRITT 229 - INHOMOGENE SCHICHT UND FENSTER IM AUFBAUKATALOG (Entwurf Bauteilkatalog 6a, Wellen BK-5 und BK-6;
-    // Entscheid E132 F7). Angemeldet als 229, haengt beim Merge an 228 GeraetekostenEntfallSchema; bis dahin haengt die Klasse
-    // vorlaeufig an der letzten vorhandenen Klasse (BrennstoffpreiseTraegerkarteSchema, 227) - die Kette laeuft ueber + 1.
+    // SCHRITT 232 - INHOMOGENE SCHICHT UND FENSTER IM AUFBAUKATALOG (Entwurf Bauteilkatalog 6a, Wellen BK-5 und BK-6;
+    // Entscheid E132 F7). Angemeldet als 232, haengt ueber + 1 an 231 RaumnutzungDinWerteSchema - die Kette laeuft ueber + 1.
     //
     // BEFUND. Was BK-5 und BK-6 an Spalten brauchen, steht zum groessten Teil seit Schritt 221 (BauteilkatalogSchema):
     //   - Abschnitte: Tab_Bauteilabschnitt(_STAMM) (Nummer, Flaechenanteil 0..1, Text, Quellkennung) und an der Schicht der
@@ -31,15 +30,17 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// <b>Schemaschritt der inhomogenen Schicht und der Fenster im Aufbaukatalog</b> (BK-5/BK-6): ψ des Glasrands am Aufbau
     /// (Katalog und Projektkopie). Die Abschnitte selbst stehen seit <see cref="BauteilkatalogSchema"/>. Wiederholbar,
-    /// ergebnisneutral, kein DML. Angemeldet als 229, hängt beim Merge an 228 <c>GeraetekostenEntfallSchema</c>.
+    /// ergebnisneutral, kein DML. Schritt 232, hängt an 231 <see cref="RaumnutzungDinWerteSchema"/>.
     /// </summary>
     public static class BauteilkatalogAbschnittSchema
     {
         /// <summary>
-        /// Die Nummer des Schritts — angemeldet als 229; vorläufig an <see cref="BrennstoffpreiseTraegerkarteSchema"/> (227)
-        /// gehängt, beim Merge an 228 <c>GeraetekostenEntfallSchema</c>. Die Nummer steht allein hier.
+        /// Die Nummer des Schritts — angemeldet als 232; hängt an <see cref="RaumnutzungDinWerteSchema"/> (231) und ist
+        /// das Ende der Kette. Die Nummer steht allein hier.
         /// </summary>
-        public const int SCHRITT = BrennstoffpreiseTraegerkarteSchema.SCHRITT + 1;
+        // vorläufig (230, solange 229/230 nicht auf origin liegen); das Umhängen geschieht allein am Vorgänger
+        // RaumnutzungDinWerteSchema — nach Schritt 230 dort auf `KaeltebedarfsprofilVorlagenSchema.SCHRITT + 1` umhängen
+        public const int SCHRITT = RaumnutzungDinWerteSchema.SCHRITT + 1;
 
         /// <summary>ψ des Glasrands [W/(m·K)] (DIN EN ISO 10077-1, ψ_g); NULL = nicht angegeben.</summary>
         public const string SPALTE_PSI_GLASRAND = "Psi_Glasrand";

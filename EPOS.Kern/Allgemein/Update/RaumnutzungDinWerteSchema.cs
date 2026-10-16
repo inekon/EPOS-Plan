@@ -41,10 +41,11 @@ namespace WindowsFormsApplication1
     public static class RaumnutzungDinWerteSchema
     {
         /// <summary>
-        /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht. Angemeldet ist 231.
+        /// <b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht. Angemeldet ist 231; der Nachfolger
+        /// <see cref="BauteilkatalogAbschnittSchema"/> (232) hängt über <c>+ 1</c> hier an.
         /// </summary>
-        // Vorlaeufig an BK-5/BK-6 (229). Endgueltig: KaeltebedarfsprofilVorlagenSchema.SCHRITT + 1 (230), Umhaengen beim Merge.
-        public const int SCHRITT = BauteilkatalogAbschnittSchema.SCHRITT + 1;
+        // vorläufig; nach Schritt 230 auf `KaeltebedarfsprofilVorlagenSchema.SCHRITT + 1` umhängen
+        public const int SCHRITT = GeraetekostenEntfallSchema.SCHRITT + 1;
 
         private static readonly string Q_PROFIL = "\"" + RaumnutzungSchema.TAB_PROFIL + "\"";
         private static readonly string Q_KATALOG = "\"" + RaumnutzungSchema.TAB_KATALOG + "\"";

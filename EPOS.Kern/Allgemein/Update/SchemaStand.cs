@@ -1082,14 +1082,16 @@ namespace WindowsFormsApplication1
         /// dieser Gewerke liest eine der Spalten; Planwert, Dialoge und Berichte lesen die Satzvorlage.
         /// <b>Neue Katalogfassung:</b> Die Prüfsumme jedes Satzes der acht Kataloge ändert sich, der Schritt
         /// bildet sie für unveränderte Sätze neu.
-        /// Danach, mit der INHOMOGENEN SCHICHT UND DEN FENSTERN IM AUFBAUKATALOG (BK-5/BK-6), steht das Ziel auf
-        /// <see cref="BauteilkatalogAbschnittSchema.SCHRITT"/>: ψ des Glasrands am Aufbau (<see cref="BauteilkatalogAbschnittSchema"/>).
         /// Danach, mit der SAAT DER DIN-NUTZUNGSPROFILE (DA-6, E135), steht das Ziel auf <see cref="RaumnutzungDinWerteSchema.SCHRITT"/>:
         /// Die 45 ausgelieferten Profile der Kategorie DIN/TS 18599-10 tragen die Werte der Fassung 2025-10
         /// (<see cref="RaumnutzungDinSaat"/>), nur wo kein Wert stand. <b>Ergebnisneutral:</b> Kein Referenzprojekt nutzt ein
         /// Nutzungsprofil.
+        /// Danach, mit der INHOMOGENEN SCHICHT UND DEN FENSTERN IM AUFBAUKATALOG (BK-5/BK-6), steht das Ziel auf
+        /// <see cref="BauteilkatalogAbschnittSchema.SCHRITT"/>: ψ des Glasrands am Aufbau (<see cref="BauteilkatalogAbschnittSchema"/>).
+        /// <b>Ergebnisneutral:</b> Kein Referenzprojekt führt einen Aufbau. Das Ziel ist das Ende der Kette; umgehängt wird
+        /// allein am Vorgänger <see cref="RaumnutzungDinWerteSchema.SCHRITT"/>.
         /// </summary>
-        public const int Zielversion = RaumnutzungDinWerteSchema.SCHRITT;
+        public const int Zielversion = BauteilkatalogAbschnittSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

@@ -156,8 +156,10 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Der_Schritt_haengt_an_der_Kette_und_steht_im_Register()
         {
-            Assert.Equal(BauteilkatalogAbschnittSchema.SCHRITT + 1, RaumnutzungDinWerteSchema.SCHRITT);
-            Assert.True(SchemaStand.Zielversion >= RaumnutzungDinWerteSchema.SCHRITT);
+            // Schritt 231 haengt hinter KB-4 (228) und vor BK-5/BK-6 (232); die Nummer steht allein in der Klasse.
+            Assert.True(RaumnutzungDinWerteSchema.SCHRITT > GeraetekostenEntfallSchema.SCHRITT);
+            Assert.Equal(RaumnutzungDinWerteSchema.SCHRITT + 1, BauteilkatalogAbschnittSchema.SCHRITT);
+            Assert.True(SchemaStand.Zielversion > RaumnutzungDinWerteSchema.SCHRITT);
             Assert.Contains(Paketanhebung.Stufen, s => s.Nr == RaumnutzungDinWerteSchema.SCHRITT);
         }
 

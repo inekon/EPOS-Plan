@@ -150,10 +150,11 @@ namespace EPOS.Kern.Tests
         public void Dispose() => _db.Dispose();
 
         [Fact]
-        public void Die_Nummer_haengt_vorlaeufig_an_227_und_ist_das_Ziel()
+        public void Die_Nummer_haengt_an_DA6_und_ist_das_Ziel()
         {
-            // Angemeldet als 229; bis 228 GeraetekostenEntfallSchema auf dem Arbeitszweig steht, haengt die Klasse an 227 + 1.
-            Assert.Equal(BrennstoffpreiseTraegerkarteSchema.SCHRITT + 1, BauteilkatalogAbschnittSchema.SCHRITT);
+            // Schritt 232 haengt ueber + 1 an 231 (RaumnutzungDinWerteSchema); keine feste Nummer, die Kette entscheidet.
+            Assert.Equal(RaumnutzungDinWerteSchema.SCHRITT + 1, BauteilkatalogAbschnittSchema.SCHRITT);
+            Assert.True(BauteilkatalogAbschnittSchema.SCHRITT > GeraetekostenEntfallSchema.SCHRITT);
             Assert.Equal(BauteilkatalogAbschnittSchema.SCHRITT, SchemaStand.Zielversion);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == BauteilkatalogAbschnittSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, s.Wirkung);

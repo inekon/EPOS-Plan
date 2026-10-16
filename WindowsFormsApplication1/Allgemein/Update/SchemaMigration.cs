@@ -5561,7 +5561,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Schritt <see cref="RaumnutzungDinWerteSchema.SCHRITT"/> — <b>Werte der DIN-Nutzungsprofile</b> (DA-6, E135): die 45
         /// ausgelieferten Profile der Kategorie DIN/TS 18599-10 bekommen die Werte der Fassung 2025-10 aus
-        /// <see cref="RaumnutzungDinSaat"/>, nur wo kein Wert steht; eingelesene Werte des Anwenders bleiben. Angemeldet als 231.
+        /// <see cref="RaumnutzungDinSaat"/>, nur wo kein Wert steht; eingelesene Werte des Anwenders bleiben. Schritt 231.
         ///
         /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Referenzprojekt nutzt ein Nutzungsprofil.</para>
         /// </summary>
@@ -5570,7 +5570,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Schritt <see cref="BauteilkatalogAbschnittSchema.SCHRITT"/> — <b>Inhomogene Schicht und Fenster im Aufbaukatalog</b>
         /// (BK-5/BK-6, E132 F7): ψ des Glasrands <c>Psi_Glasrand</c> an <c>Tab_Bauteilaufbau(_STAMM)</c>; die Abschnitte stehen
-        /// seit Schritt 221. Angemeldet als 229, hängt beim Merge an 228.
+        /// seit Schritt 221. Schritt 232, hängt an 231.
         ///
         /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Referenzprojekt führt einen Aufbau; die Spalte bleibt leer.</para>
         /// </summary>

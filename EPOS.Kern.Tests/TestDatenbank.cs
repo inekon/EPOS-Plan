@@ -1068,12 +1068,12 @@ namespace EPOS.Kern.Tests
                 // Schritt GeraetekostenEntfallSchema.SCHRITT (KB-4): Investitionsverweis und Saat am Wechselrichter,
                 // dann Entfall der 32 Kostenspalten der acht Investitionsgewerke. Wiederholbar, ergebnisneutral.
                 GeraetekostenEntfallSchema.Ausfuehren(null);
-                // Schritt BauteilkatalogAbschnittSchema.SCHRITT (BK-5/BK-6): Psi_Glasrand am Aufbaukatalog, leer, reines DDL.
-                // Wiederholbar, ergebnisneutral.
-                BauteilkatalogAbschnittSchema.Ausfuehren(null);
                 // Schritt RaumnutzungDinWerteSchema.SCHRITT (DA-6, E135): die 45 DIN-Nutzungsprofile mit den Werten der
                 // Saat, nur wo kein Wert steht. Wiederholbar, ergebnisneutral.
                 RaumnutzungDinWerteSchema.Ausfuehren(null);
+                // Schritt BauteilkatalogAbschnittSchema.SCHRITT (BK-5/BK-6): Psi_Glasrand am Aufbaukatalog, leer, reines DDL.
+                // Wiederholbar, ergebnisneutral.
+                BauteilkatalogAbschnittSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
