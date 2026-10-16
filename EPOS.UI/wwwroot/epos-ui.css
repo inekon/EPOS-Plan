@@ -4668,6 +4668,23 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 :is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-knoepfe > .epos-berechnungshilfe {
     margin-bottom: 0;
 }
+/* Unter 1 280 px Breite ruecken Spalten und Bedienelemente der Kennzahlenzeile enger zusammen. Die Infoknoepfe
+   der Solar- und PV-Ganglinie (2 x 39 px, Beruehrungsmass KP2, bleibt) liessen der Kennzahlenspalte bei 1 024 px
+   sonst nur 303 px: Jahresarbeit und Spitze (zusammen 315 px) passten nicht nebeneinander, die drei Kennzahlen
+   brachen in drei Zeilen, der Kopf der Satzflaeche wurde 93 px hoch (DZ1-N1: hoechstens 90 px) und die Satzflaeche
+   rollte bei 1 024 x 700 in sich. Mit den engeren Abstaenden hat die Spalte 327 px, zwei Zeilen und Reserve fuer
+   laengere Werte. Gemessen: rollbereichprobe.mjs. */
+@media (max-width: 1279.98px) {
+    :is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik {
+        column-gap: 6px;
+    }
+    :is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-kennzahlen {
+        column-gap: 10px;
+    }
+    :is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-leiste {
+        column-gap: 6px;
+    }
+}
 :is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-diagramm-svg {
     display: contents;
 }
