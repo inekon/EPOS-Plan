@@ -49,6 +49,12 @@ namespace WindowsFormsApplication1
         /// <summary>Die Fassung der Pufferauslegungstafel (Katalog v12, Welle P4c): <c>tabelle.pufferauslegung</c>, Word und Excel.</summary>
         internal const int FASSUNG_PUFFERAUSLEGUNG = 12;
 
+        /// <summary>
+        /// Die Fassung der Kenndatentafel der Kältemaschine (Katalog v24): <c>tabelle.komponenten.kenndaten.kaeltemaschine</c>
+        /// samt Schalter, dieselbe Lesung wie Komponentenmatrix und Unterschiedsliste; leer, wenn kein Stand sie verbaut.
+        /// </summary>
+        internal const int FASSUNG_KAELTEMASCHINE_GEWERK = 24;
+
         /// <summary>Der Alternativtext der Mustertabelle (Konzept 6.4 Nr. 2).</summary>
         public const string MUSTER_TABELLE = "muster.tabelle";
 
@@ -158,6 +164,7 @@ namespace WindowsFormsApplication1
             {
                 string g = gewerk;
                 Tabellenquelle q = Q("tabelle.komponenten.kenndaten." + name, B, w => Berichtstabellen.Kenndaten(w.Daten, g, w.Englisch, w.Kultur));
+                if (ProjektDetails.NurWennVerbaut(g)) q.Seit = FASSUNG_KAELTEMASCHINE_GEWERK;
                 q.Ableitung = new Vorlagenfeldableitung(MUSTER_TABELLE_KENNDATEN, nameof(R.VF_MUSTER_TABELLE_KENNDATEN), name)
                 {
                     Bezeichnung = k => BerichtTexte.T(g, k.Name.StartsWith("en", StringComparison.OrdinalIgnoreCase)),

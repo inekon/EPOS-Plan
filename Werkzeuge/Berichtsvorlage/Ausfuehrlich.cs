@@ -568,6 +568,7 @@ namespace Berichtsvorlage
                 ("photovoltaik", "Photovoltaik", "Photovoltaics"),
                 ("pufferspeicher", "Pufferspeicher", "Buffer storage"),
                 ("stromspeicher", "Stromspeicher", "Battery storage"),
+                ("kaeltemaschine", "Kältemaschine", "Chiller"),
             };
 
             /// <summary>4 — Komponenten &amp; Varianten: Matrix, Kenndaten je Gewerk, Abweichungen je Variante.</summary>
