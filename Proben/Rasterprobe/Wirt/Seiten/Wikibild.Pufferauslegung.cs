@@ -111,9 +111,10 @@ public partial class Wikibild
             int tag = i / 24, stunde = i % 24;
             double aussen = 9 - 11 * Math.Cos(2 * Math.PI * (tag - 15) / 365.0) + 3 * Math.Sin(2 * Math.PI * (stunde - 9) / 24.0);
             heizung[i] = Math.Max(0, (15 - aussen) / 20.0 * 30.0);
-            // Zapfspitzen morgens und abends; im Mittel rund 2,7 kW (≈ 64 kWh je Tag).
-            double gang = stunde is >= 6 and <= 8 ? 3.0 : stunde is >= 18 and <= 21 ? 2.2 : stunde is >= 0 and <= 4 ? 0.2 : 0.9;
-            brauchwasser[i] = 2.7 * gang;
+            // Wohnüblicher Tagesgang: kurze Morgenspitze um 7 Uhr, kleinere Abendspitze um 19 Uhr, sonst wenig;
+            // im Mittel rund 2,7 kW (≈ 64 kWh je Tag). Die Spitzen über der Ladeleistung tragen die Kurve.
+            double gang = stunde switch { 7 => 30.0, 6 or 8 => 6.0, 19 => 12.0, 20 => 6.0, _ => 0.25 };
+            brauchwasser[i] = gang;
         }
         double mittel = brauchwasser.Average();
         for (int i = 0; i < 8760; i++) brauchwasser[i] *= 2.7 / mittel;
