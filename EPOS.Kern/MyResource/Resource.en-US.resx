@@ -54704,7 +54704,7 @@ chart</value>
     <value>Browse…</value>
   </data>
   <data name="BKI_HINWEIS" xml:space="preserve">
-    <value>Select the file Baustoffe.csv of the CSV export; Aufbauten.csv, Schichten.csv, Schichten_Abschnitte.csv, Fenster.csv and Basis_Auszug.csv lie next to it. The preview writes nothing.</value>
+    <value>Select the file Baustoffe.csv of the CSV export; Aufbauten.csv, Schichten.csv, Schichten_Abschnitte.csv, Fenster.csv and Basis_Auszug.csv lie next to it, Katalog.csv and Katalog_Inhalt.csv add the sub-catalogues. If Baustoffe.csv lies in the subfolder Export, the folder above it is enough. The preview writes nothing.</value>
   </data>
   <data name="BKI_FILTER" xml:space="preserve">
     <value>Baustoffe.csv|Baustoffe.csv|CSV files (*.csv)|*.csv</value>
@@ -54771,6 +54771,15 @@ chart</value>
   </data>
   <data name="BKI_QUELLE" xml:space="preserve">
     <value>Source of the records: {0}</value>
+  </data>
+  <data name="BKI_ORDNER" xml:space="preserve">
+    <value>Folder read: {0}</value>
+  </data>
+  <data name="BKI_ORDNER_EXPORT" xml:space="preserve">
+    <value>Baustoffe.csv lies in the subfolder Export; this folder is read: {0}</value>
+  </data>
+  <data name="BKI_TEILKATALOGE" xml:space="preserve">
+    <value>Sub-catalogues: {0}; the source names them on {1} materials and {2} constructions.</value>
   </data>
   <data name="BKI_UEBERNEHMEN" xml:space="preserve">
     <value>Import</value>

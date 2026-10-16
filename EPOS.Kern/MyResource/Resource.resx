@@ -54711,7 +54711,7 @@ Chart</value>
     <value>Durchsuchen…</value>
   </data>
   <data name="BKI_HINWEIS" xml:space="preserve">
-    <value>Wählen Sie die Datei Baustoffe.csv des CSV-Exports; Aufbauten.csv, Schichten.csv, Schichten_Abschnitte.csv, Fenster.csv und Basis_Auszug.csv liegen daneben. Die Vorschau schreibt nichts.</value>
+    <value>Wählen Sie die Datei Baustoffe.csv des CSV-Exports; Aufbauten.csv, Schichten.csv, Schichten_Abschnitte.csv, Fenster.csv und Basis_Auszug.csv liegen daneben, Katalog.csv und Katalog_Inhalt.csv ergänzen die Teilkataloge. Liegt Baustoffe.csv im Unterordner Export, genügt der Ordner darüber. Die Vorschau schreibt nichts.</value>
   </data>
   <data name="BKI_FILTER" xml:space="preserve">
     <value>Baustoffe.csv|Baustoffe.csv|CSV-Dateien (*.csv)|*.csv</value>
@@ -54778,6 +54778,15 @@ Chart</value>
   </data>
   <data name="BKI_QUELLE" xml:space="preserve">
     <value>Quelle der Sätze: {0}</value>
+  </data>
+  <data name="BKI_ORDNER" xml:space="preserve">
+    <value>Gelesen wird der Ordner: {0}</value>
+  </data>
+  <data name="BKI_ORDNER_EXPORT" xml:space="preserve">
+    <value>Baustoffe.csv liegt im Unterordner Export; gelesen wird dieser Ordner: {0}</value>
+  </data>
+  <data name="BKI_TEILKATALOGE" xml:space="preserve">
+    <value>Teilkataloge: {0}; die Quelle nennt sie an {1} Baustoffen und {2} Aufbauten.</value>
   </data>
   <data name="BKI_UEBERNEHMEN" xml:space="preserve">
     <value>Übernehmen</value>

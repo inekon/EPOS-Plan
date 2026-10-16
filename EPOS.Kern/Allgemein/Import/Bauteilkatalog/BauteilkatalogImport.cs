@@ -71,6 +71,16 @@ namespace WindowsFormsApplication1
         public string Abgelehnt { get; internal set; }
         /// <summary>Die Quellangabe der Sätze („Hottgenroth-Katalog, Datenstand JJJJ-MM“).</summary>
         public string Quelle { get; internal set; } = "";
+        /// <summary>Der gelesene Ordner (BK-7: bei fehlender <c>Baustoffe.csv</c> der Unterordner <c>Export</c>).</summary>
+        public string Ordner { get; internal set; } = "";
+        /// <summary><c>true</c>, wenn der Unterordner <c>Export</c> gelesen wurde (BK-7).</summary>
+        public bool UnterordnerExport { get; internal set; }
+        /// <summary>Die Zahl der Teilkataloge, die geplanten Sätzen zugeordnet sind (BK-7).</summary>
+        public int Teilkataloge { get; internal set; }
+        /// <summary>Geplante Baustoffe mit Teilkatalog in der Quelle (BK-7).</summary>
+        public int BaustoffeMitTeilkatalog { get; internal set; }
+        /// <summary>Geplante Aufbauten mit Teilkatalog in der Quelle (BK-7).</summary>
+        public int AufbautenMitTeilkatalog { get; internal set; }
         /// <summary>Zahlen der Baustoffe.</summary>
         public BauteilkatalogZaehlung Baustoffe { get; } = new BauteilkatalogZaehlung();
         /// <summary>Zahlen der Aufbauten.</summary>
@@ -398,6 +408,7 @@ namespace WindowsFormsApplication1
             internal Satz Abschnitt;          // Schicht → Abschnitt
             internal BauteilkatalogBestand Bestand;
             internal List<Satz> Schichten = new List<Satz>();
+            internal SortedSet<string> Teilkataloge = new SortedSet<string>(StringComparer.Ordinal); // BK-7
             internal double? Lambda => W("Lambda");
             internal double? Rho => W("Rho");
             internal double? Cp => W("cp");
@@ -458,6 +469,8 @@ namespace WindowsFormsApplication1
         {
             var p = new Plan();
             BauteilkatalogVorschau v = p.Vorschau;
+            v.Ordner = q.Ordner ?? "";
+            v.UnterordnerExport = q.AusUnterordnerExport;
             if (q.Abgelehnt != null) { v.Abgelehnt = q.Abgelehnt; return p; }
             v.Protokoll.AddRange(q.Hinweise);
             stand ??= new BauteilkatalogStand();
@@ -495,6 +508,28 @@ namespace WindowsFormsApplication1
                     if (!basisStoff.TryGetValue(mat, out Dictionary<int, int> zahl)) basisStoff[mat] = zahl = new Dictionary<int, int>();
                     zahl[g.Value] = zahl.TryGetValue(g.Value, out int n) ? n + 1 : 1;
                 }
+            }
+
+            // BK-7: Teilkataloge - Kennung (Satz oder Basiszeile) -> Saetze, dann die Zuordnung aus Katalog_Inhalt.csv.
+            var ziele = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+            void Ziel(string von, string satz)
+            {
+                if (von == null || satz == null) return;
+                if (!ziele.TryGetValue(von, out List<string> l)) ziele[von] = l = new List<string>();
+                if (!l.Contains(satz)) l.Add(satz);
+            }
+            foreach (string[] z in tb.Zeilen) { string k = tb.Kennung(z, "UId"); Ziel(k, k); }
+            foreach (string[] z in ta.Zeilen)
+            {
+                string k = ta.Kennung(z, "UId");
+                Ziel(k, k);
+                Ziel(ta.Kennung(z, "BasisUId"), k);
+            }
+            foreach (string[] z in tz.Zeilen) Ziel(tz.Kennung(z, "UId"), tz.Kennung(z, "MaterialUId"));
+            Dictionary<string, SortedSet<string>> teil = BauteilkatalogTeilkataloge.Zuordnen(q, ziele, v.Protokoll);
+            void TeilkatalogeSetzen(Satz s)
+            {
+                if (teil.TryGetValue(s.Kennung, out SortedSet<string> namen)) s.Teilkataloge.UnionWith(namen);
             }
 
             // ---- Baustoffe ----
@@ -554,6 +589,7 @@ namespace WindowsFormsApplication1
                 Felder(s, tb, z, BAUSTOFF_FELDER, BauteilkatalogSchema.TAB_BAUSTOFF_STAMM, Zaehle);
                 s.Werte["Quelle"] = v.Quelle;
                 s.Werte["Quellkennung"] = k;
+                TeilkatalogeSetzen(s);
 
                 var schl = (schluessel, gruppe);
                 if (!vertreter.TryGetValue(schl, out List<Satz> liste)) vertreter[schl] = liste = new List<Satz>();
@@ -562,12 +598,14 @@ namespace WindowsFormsApplication1
                 {
                     foreach (KeyValuePair<string, object> w in s.Werte)
                         if (gleich.Werte.TryGetValue(w.Key, out object alt) && alt == null) gleich.Werte[w.Key] = w.Value;
+                    gleich.Teilkataloge.UnionWith(s.Teilkataloge); // Entwurf 2.3: die Quelle nennt alle Teilkataloge
                     v.Baustoffe.InQuelle++;
                     continue;
                 }
                 liste.Add(s);
                 p.Baustoffe.Add(s);
             }
+            foreach (Satz s in p.Baustoffe) s.Werte["Quelle"] = BauteilkatalogTeilkataloge.QuelleMit(v.Quelle, s.Teilkataloge);
             if (widerspruch > 0)
                 v.Protokoll.Add("Baustoffe mit widersprüchlicher Stoffgruppe in Basis_Auszug (häufigste gewählt): " + Zahl(widerspruch));
 
@@ -679,7 +717,8 @@ namespace WindowsFormsApplication1
                 s.Werte["Gueltigkeit"] = von.HasValue || bis.HasValue
                     ? (von?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "") + " bis " + (bis?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "")
                     : null;
-                s.Werte["Quelle"] = v.Quelle;
+                TeilkatalogeSetzen(s);
+                s.Werte["Quelle"] = BauteilkatalogTeilkataloge.QuelleMit(v.Quelle, s.Teilkataloge);
                 s.Werte["Quellkennung"] = k;
                 if (aufbauNachKennung.TryGetValue(k, out BauteilkatalogBestand b))
                 {
@@ -691,6 +730,12 @@ namespace WindowsFormsApplication1
                 aufbauten[k] = s;
                 p.Aufbauten.Add(s);
             }
+            v.BaustoffeMitTeilkatalog = p.Baustoffe.Count(x => x.Teilkataloge.Count > 0);
+            v.AufbautenMitTeilkatalog = p.Aufbauten.Count(x => x.Teilkataloge.Count > 0);
+            v.Teilkataloge = p.Baustoffe.Concat(p.Aufbauten).SelectMany(x => x.Teilkataloge).Distinct(StringComparer.Ordinal).Count();
+            if (v.Teilkataloge > 0)
+                v.Protokoll.Add("Teilkataloge: " + Zahl(v.Teilkataloge) + ", in der Quelle genannt an " + Zahl(v.BaustoffeMitTeilkatalog) +
+                                " Baustoffen und " + Zahl(v.AufbautenMitTeilkatalog) + " Aufbauten");
 
             // ---- Abschnitte ----
             var abschnitte = new Dictionary<string, Satz>(StringComparer.Ordinal);
@@ -1189,7 +1234,8 @@ namespace WindowsFormsApplication1
             List<string> leer = spalten.Where(x => s.Werte.ContainsKey(x) && x != "Bezeichner" && x != "Quelle" &&
                                                    x != BauteilkatalogSchema.SPALTE_UNGEEIGNET).ToList();
             var q = Parameter(leer, s.Werte).ToList();
-            q.Add(new DbParam("@q", QuelleAnhaengen(s.Bestand.Quelle, quelle)));
+            string eigene = s.Werte.TryGetValue("Quelle", out object qs) && qs is string text && text.Length > 0 ? text : quelle; // BK-7
+            q.Add(new DbParam("@q", QuelleAnhaengen(s.Bestand.Quelle, eigene)));
             q.Add(new DbParam("@id", s.ZielId));
             v.Ausfuehren("UPDATE \"" + tabelle + "\" SET " + string.Join(", ", leer.Select(x => "\"" + x + "\" = COALESCE(\"" + x + "\", ?)")) +
                          ", \"Quelle\" = ? WHERE \"ID\" = ?", q.ToArray());
