@@ -97,10 +97,12 @@ namespace WindowsFormsApplication1
             };
 
         /// <summary>Was ein Lauf getan hat: gesäte Vorlagen, entfernte Spalten, neue Prüfsummen.</summary>
-        public readonly record struct Laufergebnis(int Gesaet, int Entfernt, int PruefsummenNeu)
+        /// <param name="NutzungsdauerNachgetragen">Gesäte Investitionspositionen, die ihre Nutzungsdauerzeile erst hier
+        /// bekommen haben (<see cref="NutzungsdauerNachtragen"/>).</param>
+        public readonly record struct Laufergebnis(int Gesaet, int Entfernt, int PruefsummenNeu, int NutzungsdauerNachgetragen = 0)
         {
             /// <summary>Die Summe der Handgriffe.</summary>
-            public int Handgriffe => Gesaet + Entfernt + PruefsummenNeu;
+            public int Handgriffe => Gesaet + Entfernt + PruefsummenNeu + NutzungsdauerNachgetragen;
         }
 
         /// <summary>Die Tabellen, ohne die der Schritt nicht laufen kann.</summary>
@@ -152,6 +154,7 @@ namespace WindowsFormsApplication1
                                                         " fehlt; ein frueherer Schritt ist nicht gelaufen.");
 
             int gesaet = KatalogkostenSaatSchema.Saeen(bericht, GEWERKE);
+            int nutzungsdauer = NutzungsdauerNachtragen(bericht);
 
             IReadOnlyList<string> offen = OhneVerweis();
             if (offen.Count > 0)
@@ -165,7 +168,28 @@ namespace WindowsFormsApplication1
             int summen = GeraetekostenEntfallSchema.PruefsummenNeuBilden(stimmig, bericht);
             bericht?.Add("Rechenweg: die vier Speichersaetze kommen aus Position und Satzvorlage; " +
                          "dieselben Zahlen wie aus den Spalten");
-            return new Laufergebnis(gesaet, entfernt, summen);
+            return new Laufergebnis(gesaet, entfernt, summen, nutzungsdauer);
+        }
+
+        /// <summary>
+        /// <b>Nachzug Nutzungsdauer</b> (Welle KB-5): Die Saat der Schritte 226 und 228 und die eigene Saat dieses Schritts
+        /// legen Investitionspositionen ohne <c>NutzungsdauerID</c> an; Schritt 75 ordnet sie nur zu, wenn er in DEMSELBEN
+        /// Lauf nach der Saat läuft. Hier läuft dieselbe Regel (<see cref="NutzungsdauerSchema.ZuordnungSchreiben"/>:
+        /// Bezeichnung und Technik der Vorlage, nur Investitionsvorlagen, nur wo der Verweis leer ist) noch einmal —
+        /// wiederholbar und nie überschreibend; eine vom Anwender gepflegte Zuordnung bleibt. Ohne Nutzungsdauertabelle
+        /// (Schritt 75 nicht gelaufen) tut der Nachzug nichts.
+        /// </summary>
+        /// <returns>Zahl der gesetzten Verweise.</returns>
+        public static int NutzungsdauerNachtragen(IList<string> bericht)
+        {
+            if (!DataRepository.TabelleVorhanden(NutzungsdauerSchema.TABELLE) ||
+                !DataRepository.SpalteVorhanden(SchemaKatalog.TAB_KOSTENVORLAGEPOSITION, NutzungsdauerSchema.SPALTE_VERWEIS))
+                return 0;
+            int n = NutzungsdauerSchema.ZuordnungSchreiben();
+            bericht?.Add(n > 0
+                ? "Nutzungsdauer an " + n.ToString(CultureInfo.InvariantCulture) + " gesaeter Investitionsposition(en) nachgetragen"
+                : "Nutzungsdauer der gesaeten Investitionspositionen: nichts nachzutragen");
+            return n;
         }
 
         private static int Entfernen(IList<string> bericht)
