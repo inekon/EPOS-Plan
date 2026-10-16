@@ -33,8 +33,6 @@ public class VorlagenfeldAbdeckungWacheTests
         // ---- Berichte › Übersicht ----
         ("Berichte/UebersichtErgebnisGrafik.razor", "Modell=\"@d.Modell\"", 1,
          "Versionsvergleich der Energie-Kennzahlen als Balken: der Berichtskatalog führt keinen Versionsvergleich der Ergebnisse; dieselben Werte zeigt die Tabelle des Abschnitts"),
-        ("Berichte/UebersichtErgebnisFluss.razor", "Modell=\"@_stand.", 2,
-         "Energieflussbild breit und schmal (SK-3): den Platzhalter stand.bild.energiefluss führt der Berichtskatalog erst mit SK-4 (Katalogfassung 25); dann trägt das Bild das Vorlagenfeld statt dieser Ausnahme"),
         // ---- Simulation › Ergebnis (die Erzeuger- und Bedarfsbilder tragen seit Katalog v10 stand.bild.*) ----
         ("Simulation/ErgebnisReiter.razor", "simerg-waermemonate", 1,
          "Wärme-Autarkie der Solarthermie je Monat: Direktdeckung und Speicheranteil führt der Zeitreihensatz des Berichts nicht"),
