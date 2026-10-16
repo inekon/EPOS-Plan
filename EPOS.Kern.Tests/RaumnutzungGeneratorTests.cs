@@ -303,7 +303,7 @@ namespace EPOS.Kern.Tests
             var c = new RaumnutzungCtrl();
             RaumnutzungCtrl.Kategorie din = c.Kategorien().Single(k => k.Art == RaumnutzungSchema.ART_DIN_V_18599_10);
             Raumnutzungsprofil einzelbuero = c.Profile(din.Id).Single(p => p.Nummer == "1");
-            Assert.True(einzelbuero.IstLeer);
+            Assert.False(einzelbuero.IstLeer);                      // gesät (DA-6)
 
             // Ausgeliefert: weder ändern noch löschen, nicht in eine ausgelieferte Kategorie duplizieren.
             Assert.False(c.ProfilLoeschen(einzelbuero.Id).Ok);

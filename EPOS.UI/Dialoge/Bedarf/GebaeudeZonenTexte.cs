@@ -1,4 +1,5 @@
-﻿using WindowsFormsApplication1.MyResource;
+﻿using WindowsFormsApplication1;
+using WindowsFormsApplication1.MyResource;
 
 namespace EPOS.UI.Dialoge.Bedarf;
 
@@ -700,6 +701,21 @@ public sealed class BauteilDialogTexte
     /// <summary><c>BTDLG_KAPAZITAET_BAUWEISE</c> — ohne Aufbau kommt die Speichermasse aus der Bauweise.</summary>
     public string KapazitaetBauweise { get; set; } = Resource.BTDLG_KAPAZITAET_BAUWEISE;
 
+    /// <summary><c>BTDLG_LBL_UHERKUNFT</c> — die nur lesende Zeile unter dem U-Wert.</summary>
+    public string LabelUHerkunft { get; set; } = Resource.BTDLG_LBL_UHERKUNFT;
+
+    /// <summary>Die Herkunft des U-Werts als Text (<c>DbWerte.HERKUNFT_*</c> → <c>BTDLG_UHK_*</c>); ohne Herkunft „–“.</summary>
+    public string UHerkunftText(string? herkunft) => herkunft switch
+    {
+        DbWerte.HERKUNFT_MANUELL => Resource.BTDLG_UHK_MANUELL,
+        DbWerte.HERKUNFT_KATALOG => Resource.BTDLG_UHK_KATALOG,
+        DbWerte.HERKUNFT_IFC => Resource.BTDLG_UHK_IFC,
+        DbWerte.HERKUNFT_GBXML => Resource.BTDLG_UHK_GBXML,
+        DbWerte.HERKUNFT_SQPROJ => Resource.BTDLG_UHK_SQPROJ,
+        DbWerte.HERKUNFT_VORGABE => Resource.BTDLG_UHK_VORGABE,
+        _ => "–",
+    };
+
     /// <summary><c>BTDLG_PLATZHALTER_U</c></summary>
     public string PlatzhalterU { get; set; } = Resource.BTDLG_PLATZHALTER_U;
 
@@ -723,6 +739,9 @@ public sealed class BauteilDialogTexte
 
     /// <summary><c>BTDLG_BTN_AUFBAU_UEBERNEHMEN</c></summary>
     public string KnopfAufbauUebernehmen { get; set; } = Resource.BTDLG_BTN_AUFBAU_UEBERNEHMEN;
+
+    /// <summary><c>BTDLG_FENSTER_UEBERNOMMEN</c> — „Aus dem Fensteraufbau übernommen: …, U_w = {0} W/(m²K)." (BK-6)</summary>
+    public string FensterUebernommen { get; set; } = Resource.BTDLG_FENSTER_UEBERNOMMEN;
 
     /// <summary><c>BTDLG_HINWEIS_KATALOG</c></summary>
     public string HinweisKatalog { get; set; } = Resource.BTDLG_HINWEIS_KATALOG;

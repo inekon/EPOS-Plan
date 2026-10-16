@@ -351,6 +351,8 @@ namespace WindowsFormsApplication1
                         AufbauText = a?.Text ?? "",
                         UAufbau = a?.UWert,
                         Herkunft = b.Herkunft,
+                        // MA-6b: die Herkunft des U-Werts nur zum Lesen (Assistent); der Schreibweg leitet sie neu ab.
+                        UHerkunft = b.U_Herkunft,
                         Quellkennung = b.Quellkennung,
                         IdNachbarzone = b.ID_Nachbarzone,
                         TrennflaecheZuordnung = b.Trennflaeche_Zuordnung
@@ -602,8 +604,10 @@ namespace WindowsFormsApplication1
             string text = a.Bezeichner ?? "";
             if (!string.IsNullOrEmpty(a.Bauteilart)) text += " · " + BauteilaufbauCtrl.BauteilartText(a.Bauteilart);
             if (ungeeignet) text += " · " + MyResource.Resource.BKAT_MARKE_UNGEEIGNET;
+            // BK-6: Ein Fensteraufbau reicht seine Fensterwerte mit; sie gehen beim Zuweisen an das Bauteil über.
+            Fensteraufbau fenster = Fensterkennwerte.IstFensterart(a.Bauteilart) ? Fensterkennwerte.AusAufbau(a) : null;
             return new AufbauWahl(a.ID, katalog, text, a.Bauteilart ?? "", u, !string.IsNullOrEmpty(a.Typaufbau),
-                                  ungeeignet, u.HasValue ? "" : grund ?? "");
+                                  ungeeignet, u.HasValue ? "" : grund ?? "", fenster is { Vorhanden: true } ? fenster : null);
         }
 
         /// <summary>Die Baustoffe des Projekts — die Schichten eines Projektaufbaus zeigen auf sie.</summary>

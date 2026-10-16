@@ -282,8 +282,12 @@ public sealed class KiMaskenabdeckungWacheTests
         // BK-2b: die Klasse des Baustoffs (Katalogfeld klasse, 8 → 9); Gruppe und Klasse des Aufbaus (Katalogfelder
         // gruppe, klasse) und der Werkzeugschalter „nur geeignete“ (Filter der Liste, kein Maskenfeld): 4 → 7.
         new("BaustoffKatalogDialog", 9, "der Werkzeugschalter „nur herstellerneutral“ setzt den Filter der Liste"),
-        new("BauteilaufbauDialog", 7, "der Werkzeugschalter „nur geeignete“ blendet Zeilen der Liste aus"),
-        new("BauteilschichtenFelder", 6),
+        // BK-6 (Nachzug KIS): die fünf Fensterwerte (U_g, g, Rahmenanteil, U_f, ψ_g) stehen als Katalogfelder fenster_* in der
+        // Feldkarte; sie stehen im Stammblatt und in „Neu…“ aus EINEM Fragment (12 bleibt, der Vermerk nennt nur noch den Schalter).
+        new("BauteilaufbauDialog", 12, "der Werkzeugschalter „nur geeignete“ blendet Zeilen der Liste aus"),
+        // BK-5 (Nachzug KIS): Abschnitt und Flächenanteil der inhomogenen Schicht stehen als Spalten schicht_abschnitt und
+        // schicht_flaechenanteil in der Feldkarte (8 bleibt, kein Vermerk mehr); die Ebenensumme ist ein Lesewert.
+        new("BauteilschichtenFelder", 8),
 
         // KU3-1: die Verwaltung der Kaeltemaschinen - zwoelf Kenndaten als EIN Fragment fuer
         // Stammblatt und „Neu…" (Rueckkuehlart als Auswahlfeld) und das Kennlinienraster mit vier
@@ -521,7 +525,7 @@ public sealed class KiMaskenabdeckungWacheTests
             "keine Einstellwerte des Gebäudes; die Wahl „Vorlage (alle Größen)“ führt die Rückfrage der Matrix; Feiertagsland und " +
             "Ferienbezeichnung sind Handlungen der Kalenderbedienung über dem Arbeitsstand (FeiertagslandSetzen, " +
             "FerienlisteSetzen), der Name einer benannten Woche ist die Angabe von „Woche anlegen“/„Umbenennen“"),
-        new("KlimadatenDialog", 7),
+        new("KlimadatenDialog", 8),
         new("KomponentenKonfigurationDialog", 4),
         new("KostenKomponenteDialog", 3),
         new("KostenSeite", 0),

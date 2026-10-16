@@ -1094,6 +1094,7 @@ Datenbank. bunit misst weder Lage noch Rollstand; die Voraussetzungen der Regel 
 | `…?fall=dubletten` | `KatalogDublettenDialog` — das Protokoll steht **unter** der Schlussleiste |
 | `…?fall=katalog` | `BedarfAdminDialog` (Katalogdialog, `.epos-katalog-dialog`) |
 | `…?fall=kaelteprofile` | `BedarfsProfileDialog` der Art Kälte mit dem Baustein `Betriebskalenderwahl`; „Betriebskalender…“ öffnet das Blatt mit dem `BetriebskalenderDialog` samt „Aus Gebäude übernehmen…“ (Ablage im Speicher); `&kalender=leer` ohne Kalender, `&gebaeude=0` ohne Gebäude; die Bearbeiten-Überlagerung einer Projektzeile zeigt die Eingabeart samt den Editoren Monatswerte und Wochenprofil (KBP-3a) und die Kältegrafik (KBP-3b: Kennzahlen, Jahresgang, Monate, Woche mit Wahl der Kalenderwoche und Tagesarten als Hintergrund, Dauerlinie) aus einer synthetischen Reihe, die dem Arbeitsstand folgt; in der Fallliste der Katalogauswahl und Gegenstand des Falls `kaeltegrafik` |
+| `…?fall=klimaimport` | `KlimadatenDialog` (Katalogdialog); „Import…“ öffnet die Überlagerung „Klimadaten einlesen“ (`.epos-einlesen`, Leiste ohne Statusspanne) — Gegenstand des Falls `klimaimport` |
 | `…&lizenz=1` | das Lizenzbanner der `AppWurzel` (Baustein `Lizenzbanner`, Lesemodus-Satz) als erstes Kind von `#app` vor dem Dialog |
 | `…&marke=0` | ohne Fenstermarke — der Dialog steht wie ohne die Regel |
 | `…?meldung=liste` | statt des Falls ein langer Dialog aus Hausbausteinen, dessen `Warnbanner` 30 Hinweise aufgeklappt zeigt (Fall „Meldungsliste" unten) |
@@ -1108,8 +1109,8 @@ Je Fensterdialog: die Marke steht in `#app` hinter dem Dialog, der Dialog ist h�
 Mitte und Ende steht der Kopf bei `top 0` und die Schlussleiste mit `bottom` = Fensterhöhe (± 1 px), beide
 über die volle Breite der Wurzel; am Ende steht alles, was im Markup vor der Leiste kommt, über ihr; keine
 andere Leiste haftet, genau ein haftender Kopf; der Tabulator durch den ganzen Dialog legt kein Feld unter
-Kopf oder Fuß und rollt nicht, wenn er in Kopf oder Fuß landet. Dublettenprüfung: oben haftet der Fuß, am Ende steht er ganz im Bild und das Protokoll
-frei darunter. Überlagerung (Gebäude → „Simulation…"): sie rollt nicht als Ganzes, nur ihr Rollkörper
+Kopf oder Fuß und rollt nicht, wenn er in Kopf oder Fuß landet. Dublettenprüfung: oben haftet der Fuß, am Ende steht er ganz im Bild an seinem Platz und das Protokoll
+frei darunter, im Zeilenabstand der Wurzel. Überlagerung (Gebäude → „Simulation…"): sie rollt nicht als Ganzes, nur ihr Rollkörper
 (`.epos-dialog-rollkoerper`) rollt, ihr Fuß steht oben wie nach dem Rollen an ihrem Boden, der Kopf des
 Unterdialogs haftet nicht, Kopf und Fuß des Fensters liegen unter der Abdunkelung, das Dokument rollt nicht —
 und jede Zahl ist dieselbe wie mit `marke=0`. Katalogdialog: Kopf und Fuß statisch, das Dokument rollt nicht,
@@ -1126,6 +1127,25 @@ Tagesart tragen (`--epos-kalb-saison`, `-grundwoche`, `-wochenende`, `-feiertag`
 `bedarfsprofile`, in `ZUSAMMENFASSUNG`. **Ergebnis vom 16.10.2026:** beide Fenster erfüllt (53 Wochen, sieben
 Bildpunkte je Fenster in der Farbe ihrer Tagesart), Gegenprobe ohne Hintergrund rot (5 Verstöße — der Werktag bleibt
 weiß wie `--epos-kalb-grundwoche`); `kaelteprofile` in der Katalogauswahl 0 Verstöße in drei Fenstern.
+
+**Fall `klimaimport`** (`--nur klimaimport`, bei **1 088 × 624**, **520 × 624**, **1 194 × 834** mit sicheren
+Abständen und **787 × 520** — das Fenstermaß 1 180 × 780 bei 150 % Anzeigeskalierung; KD-1, Anwenderbefund
+16.10.2026 „Schlussleiste des Klimadaten-Imports abgeschnitten“): `?fall=klimaimport`, „Import…“, dann (KD-3) Ort
+„Ort 1“ und „Datensatz suchen“ — der Wirt liefert eine volle Vorschau mit neutralen Werten, gemessen wird die
+Überlagerung in ihrer höchsten Gestalt MIT Vorschaukarte. Die Überlagerung
+„Klimadaten einlesen“ trägt `.epos-einlesen` statt eines `.epos-dialog` und eine Leiste ohne Statusspanne; ihre
+Schlussleiste haftet über die Regel `.epos-ueberlagerung-inhalt > .epos-einlesen > .epos-leiste:last-child`
+(`epos-ui.css`, gilt für alle sechs Einlese-Überlagerungen). Gemessen bei Rollstand oben und Ende der Überlagerung:
+sie steht zwischen den sicheren Abständen, die Schlussleiste steht ganz in ihr und endet an ihrem Boden, der
+Primärknopf steht ganz im Bild, am Ende steht der Inhalt davor über der Leiste. Foto `klimaimport_*`. Gegenprobe:
+die Leiste mit `position: static` muss in jedem Fenster rot sein. **Ergebnis vom 16.10.2026:** vorher (ohne die
+Regel) 13 Verstöße — die Leiste lag oben bei 736–887 px unter dem Boden der Überlagerung (592 bzw. 493 px);
+nachher 0 Verstöße: Überlagerung 31–593 px (787 × 520: 26–494 px), Rollhöhe 774/560 px (520 px breit 881/560,
+787 × 520 862/466, iPad 774/749), Leiste 523–592 px oben wie am Ende (iPad 724–793, 787 × 520 424–493), Inhalt am
+Ende bis 483 px; Gegenprobe 4 Verstöße je Fenster. Zugleich misst der Fall `dubletten` am Ende den ganzen Abstand
+der Wurzel (`gap`) zwischen Schlussleiste und Protokoll: Die Gegenprobe „Fuß mit negativem Rand“ blieb vorher bei
+1 088 und 520 px grün (der Rand rückt das Protokoll nur 16 px in die 20-px-Lücke, es überdeckt nichts), jetzt
+1, 1 und 3 Verstöße.
 
 **Fall `wp-steckbrief`** (`--nur wp-steckbrief`, bei **1 280 × 800** und **1 194 × 834** mit sicheren Abständen):
 die Satz-Überlagerung der Wärmepumpe („Bearbeiten…" der Projektkopie) mit dem Gerätesteckbrief links unter
@@ -1149,8 +1169,10 @@ Gegenprobe: je Wirt ein Steckbrief mit `min-width: 1600px` ohne Umbruch muss rot
 
 **Gegenprobe** (läuft mit): dieselben Fensterdialoge mit `marke=0` müssen die Haft-Kriterien verfehlen; mit
 Marke, aber `scroll-padding: 0` muss der Tabulator Felder unter Kopf oder Fuß legen; das eingebettete
-Warnband mit `bottom: 0` muss verdeckt sein; der Fuß der Dublettenprüfung mit negativem Rand muss das
-Protokoll überdecken. Rückgabe `0` = kein Verstoß **und** Gegenprobe rot, `1` = Verstoß oder Gegenprobe
+Warnband mit `bottom: 0` muss verdeckt sein; der Fuß der Dublettenprüfung mit negativem Rand muss rot sein. Er
+überdeckt das Protokoll nicht (Zeilenabstand der Wurzel 20 px, Kartenrand 16 px: es bleiben 4 px), rückt aber aus
+seinem Platz — deshalb verlangt die Probe am Ende zwischen Fuß und Protokoll genau den Zeilenabstand (`row-gap`)
+der Wurzel (± 1 px), nicht nur, dass nichts überdeckt ist. Die Leiste mit `position: static` in der Klimadaten-Importüberlagerung muss rot sein. Rückgabe `0` = kein Verstoß **und** Gegenprobe rot, `1` = Verstoß oder Gegenprobe
 grün, `2` = Aufbaufehler. Die Probe steht in keiner CI.
 
 **Ergebnis vom 30.09.2026** (Wirt Release auf Port 5299, Chromium headless über das globale Playwright,

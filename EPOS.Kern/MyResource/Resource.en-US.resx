@@ -7132,6 +7132,15 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="WIRT_ZEILE_INVESTITION" xml:space="preserve">
     <value>Investment I₀ [€]</value>
   </data>
+  <data name="WIRT_WASSER_HERLEITUNG" xml:space="preserve">
+    <value>{0} m³/a × {1} €/m³</value>
+  </data>
+  <data name="WIRT_ZEILE_WASSER_RKW" xml:space="preserve">
+    <value>thereof heat rejection water</value>
+  </data>
+  <data name="WIRT_ZEILE_WASSER_RKW_HERLEITUNG" xml:space="preserve">
+    <value>Heat rejection water: quantity × price</value>
+  </data>
   <data name="WIRT_ZEILE_BETRIEBSKOSTEN" xml:space="preserve">
     <value>Operating cost [€/a]</value>
   </data>
@@ -10735,6 +10744,9 @@ To deactivate it, set its rate or amount to 0.</value>
   </data>
   <data name="KDLG_ET_NICHT_ZUGEORDNET" xml:space="preserve">
     <value>not assigned</value>
+  </data>
+  <data name="KDLG_ET_WASSER_RUECKKUEHLWERK" xml:space="preserve">
+    <value>Water of the cooling towers</value>
   </data>
   <data name="KDLG_ET_PASST_NICHT" xml:space="preserve">
     <value>does not match the component</value>
@@ -15704,7 +15716,7 @@ Its hourly and daily values will be deleted as well.</value>
     <value>Close</value>
   </data>
   <data name="ADM_DUBLETTEN_BAUM" xml:space="preserve">
-    <value>Duplicate findings</value>
+    <value>Duplicate notes</value>
   </data>
   <data name="ADM_DUBLETTEN_SCAN_LAEUFT" xml:space="preserve">
     <value>Searching for duplicates…</value>
@@ -22746,7 +22758,7 @@ Do you want to allow this?</value>
     <value>The location of file “{0}” cannot be read — please enter longitude and latitude.</value>
   </data>
   <data name="KLIMA_TRY_BTN_REGION" xml:space="preserve">
-    <value>Determine region</value>
+    <value>Find data set</value>
   </data>
   <data name="KLIMA_TRY_VORSCHAU" xml:space="preserve">
     <value>Region {0}, station {1}, distance {2} km</value>
@@ -22755,7 +22767,7 @@ Do you want to allow this?</value>
     <value>available: {0}</value>
   </data>
   <data name="KLIMA_TRY_VORSCHAU_LAEUFT" xml:space="preserve">
-    <value>Determining region …</value>
+    <value>Searching data set …</value>
   </data>
   <data name="ADM_SET_RUBRIK_KLIMA" xml:space="preserve">
     <value>Climate data</value>
@@ -22873,6 +22885,12 @@ Do you want to allow this?</value>
   </data>
   <data name="TRANSFER_ANHEBUNG_FEHLER" xml:space="preserve">
     <value>The package (version {0}) could not be upgraded to version {1} — step {2}: {3}. The database is unchanged.</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_WASSERPREIS" xml:space="preserve">
+    <value>water price(s) of the systems transferred to the “Water” carrier card</value>
+  </data>
+  <data name="TRANSFER_ANHEBUNG_WASSERPREIS_OFFEN" xml:space="preserve">
+    <value>Water price {0} EUR/m³ of system {1} not transferred — please set it in the “Water” carrier card</value>
   </data>
   <data name="TRANSFER_ANHEBUNG_S67" xml:space="preserve">
     <value>Project setting(s) without a CHP minimum output set to {0} %</value>
@@ -28772,11 +28790,14 @@ Do you want to allow this?</value>
   <data name="SIMENG_KAELTE_RKW_UEBERLAST" xml:space="preserve">
     <value>Chiller "{0}": the heat rejection unit "{1}" exceeded its rated capacity in {2} hours — the fan ran at full speed, a load-dependent approach rose above its rated value.</value>
   </data>
-  <data name="SIMENG_KAELTE_RKW_WASSER_KOSTEN" xml:space="preserve">
-    <value>Chiller "{0}": the heat rejection unit "{1}" uses {2} m³ of water in {3} wet hours; water cost {4} €/a (quantity × water price, not included in the operating costs of the economic analysis).</value>
+  <data name="SIMENG_KAELTE_RKW_WASSER" xml:space="preserve">
+    <value>Chiller "{0}": the heat rejection unit "{1}" uses {2} m³ of water in {3} wet hours; the water cost (quantity × price of the water carrier) is part of the operating costs of the economic analysis.</value>
   </data>
-  <data name="SIMENG_KAELTE_RKW_WASSER_OHNE_PREIS" xml:space="preserve">
-    <value>Chiller "{0}": the heat rejection unit "{1}" uses {2} m³ of water in {3} wet hours; no water price at the plant, so no water cost.</value>
+  <data name="WIRT_BK_WASSER_RKW" xml:space="preserve">
+    <value>Heat rejection water: {0} m³ × {1} €/m³</value>
+  </data>
+  <data name="WIRT_HINWEIS_WASSER_OHNE_PREIS" xml:space="preserve">
+    <value>Heat rejection water {0} m³/a without price: the water carrier has no energy charge — the operating costs contain no water cost.</value>
   </data>
   <data name="SIMENG_KAELTE_KM_RANDWERT" xml:space="preserve">
     <value>Chiller "{0}": in {1} hours the operating point lay outside the performance map (heat rejection {2} to {3} °C, chilled water {4} °C) — the boundary value was used.</value>
@@ -35967,7 +35988,7 @@ Do you want to allow this?</value>
     <value>The U-value in W/(m²K); empty = from the construction build-up. Windows and curtain walls always need it.</value>
   </data>
   <data name="KI_DLG_BT_AUFBAU_ERL" xml:space="preserve">
-    <value>The project construction build-up, 0 = without construction build-up. A construction build-up from the catalogue is taken over by hand and copied into the project with the OK of the building editor.</value>
+    <value>The project construction build-up, 0 = without construction build-up. A construction build-up from the catalogue is taken over by hand and copied into the project with the OK of the building editor. If a window or curtain wall selects a window build-up, the component takes over its g-value and frame fraction and, as U-value, U_w according to EN ISO 10077-1; afterwards the three values remain editable.</value>
   </data>
   <data name="ZPG_SATZ_MESSREIHE_AUFLOESUNG_UNBEKANNT" xml:space="preserve">
     <value>{0}: the smallest interval between two time stamps is {1:0.###} min — allowed are {2} min.</value>
@@ -54212,7 +54233,7 @@ chart</value>
     <value>{0} DIN profile(s) filled with values, {1} skipped (values present), {2} source profile(s) without assignment.</value>
   </data>
   <data name="RNP_NW_MSG_ENTFERNT" xml:space="preserve">
-    <value>Read-in values removed from {0} DIN profile(s).</value>
+    <value>Read-in values removed from {0} DIN profile(s); the delivered values apply again.</value>
   </data>
   <data name="RNP_NW_BTN_EINLESEN" xml:space="preserve">
     <value>Read in standard values…</value>
@@ -54224,7 +54245,7 @@ chart</value>
     <value>Read in standard values</value>
   </data>
   <data name="RNP_NW_TXT_HINWEIS" xml:space="preserve">
-    <value>Fills the profiles of the category DIN/TS 18599-10 with the values from your CSV file or a project file. The program ships no standard values.</value>
+    <value>Compares the profiles of the category DIN/TS 18599-10 with the values from your CSV file or a project file. The values of the 2025-10 edition are delivered; you apply differing values here, and removing them restores the delivered values.</value>
   </data>
   <data name="RNP_NW_BTN_CSV" xml:space="preserve">
     <value>Choose CSV file…</value>
@@ -54317,7 +54338,7 @@ chart</value>
     <value>No profile carries read-in values.</value>
   </data>
   <data name="RNP_NW_FRAGE_ENTFERNEN" xml:space="preserve">
-    <value>Remove the read-in values of {0} profile(s)? The profiles are then without values again.</value>
+    <value>Remove the read-in values of {0} profile(s)? The profiles then hold the delivered values again.</value>
   </data>
   <data name="RNP_NW_BTN_JA" xml:space="preserve">
     <value>Remove</value>
@@ -54403,6 +54424,57 @@ chart</value>
   <data name="BTA_SUMME_RT" xml:space="preserve">
     <value>R_T = R_si + R + R_se = {0} m²K/W</value>
   </data>
+  <data name="BTA_ABS_MSG_EBENE" xml:space="preserve">
+    <value>{0}: Layer plane {1} carries the sections {2}, the other inhomogeneous planes {3} – every inhomogeneous plane needs the same sections.</value>
+  </data>
+  <data name="BTA_ABS_MSG_ANTEIL" xml:space="preserve">
+    <value>{0}: Section {1} has no area fraction greater than zero.</value>
+  </data>
+  <data name="BTA_ABS_MSG_SUMME" xml:space="preserve">
+    <value>{0}: The area fractions of the sections add up to {1:0.###} instead of 1 (permitted 0.99 to 1.01).</value>
+  </data>
+  <data name="BTA_SP_ABSCHNITT" xml:space="preserve">
+    <value>Section</value>
+  </data>
+  <data name="BTA_SP_FLAECHENANTEIL" xml:space="preserve">
+    <value>Area fraction</value>
+  </data>
+  <data name="BTA_ABSCHNITT_NEU" xml:space="preserve">
+    <value>Add a section alongside (inhomogeneous layer)</value>
+  </data>
+  <data name="BTA_SUMME_RT_OBEN" xml:space="preserve">
+    <value>R'_T upper limit = {0} m²K/W</value>
+  </data>
+  <data name="BTA_SUMME_RT_UNTEN" xml:space="preserve">
+    <value>R''_T lower limit = {0} m²K/W</value>
+  </data>
+  <data name="BTA_SUMME_RT_MITTEL" xml:space="preserve">
+    <value>R_T = (R'_T + R''_T) / 2 = {0} m²K/W</value>
+  </data>
+  <data name="BTA_GRUPPE_FENSTER" xml:space="preserve">
+    <value>Window</value>
+  </data>
+  <data name="BTA_LBL_UG" xml:space="preserve">
+    <value>U_g glazing</value>
+  </data>
+  <data name="BTA_LBL_UF" xml:space="preserve">
+    <value>U_f frame</value>
+  </data>
+  <data name="BTA_LBL_GWERT" xml:space="preserve">
+    <value>g-value</value>
+  </data>
+  <data name="BTA_LBL_RAHMENANTEIL" xml:space="preserve">
+    <value>Frame fraction</value>
+  </data>
+  <data name="BTA_LBL_PSI_GLASRAND" xml:space="preserve">
+    <value>ψ_g glazing edge</value>
+  </data>
+  <data name="BTA_FENSTER_HINWEIS" xml:space="preserve">
+    <value>When assigned to a window, the component takes over g-value and frame fraction; its U-value becomes U_w = (1 − f)·U_g + f·U_f + l_g·ψ_g / A with the frame fraction f and the glazing edge length l_g ≈ 4·√((1 − f)·A).</value>
+  </data>
+  <data name="BTDLG_FENSTER_UEBERNOMMEN" xml:space="preserve">
+    <value>Taken over from the window build-up: g-value, frame fraction and U_w = {0} W/(m²K).</value>
+  </data>
   <data name="BTA_RICHTUNG" xml:space="preserve">
     <value>Layer order inside → outside: layer 1 faces the room, the last layer faces outside.</value>
   </data>
@@ -54411,6 +54483,27 @@ chart</value>
   </data>
   <data name="BTDLG_KAPAZITAET_BAUWEISE" xml:space="preserve">
     <value>from the construction type</value>
+  </data>
+  <data name="BTDLG_LBL_UHERKUNFT" xml:space="preserve">
+    <value>Origin of the U-value</value>
+  </data>
+  <data name="BTDLG_UHK_MANUELL" xml:space="preserve">
+    <value>entered by hand</value>
+  </data>
+  <data name="BTDLG_UHK_KATALOG" xml:space="preserve">
+    <value>catalogue</value>
+  </data>
+  <data name="BTDLG_UHK_IFC" xml:space="preserve">
+    <value>file (IFC)</value>
+  </data>
+  <data name="BTDLG_UHK_GBXML" xml:space="preserve">
+    <value>file (gbXML)</value>
+  </data>
+  <data name="BTDLG_UHK_SQPROJ" xml:space="preserve">
+    <value>file (project file)</value>
+  </data>
+  <data name="BTDLG_UHK_VORGABE" xml:space="preserve">
+    <value>default</value>
   </data>
   <data name="GEBMZ_KNOPF" xml:space="preserve">
     <value>Adopt as multi-zone model…</value>
@@ -54638,7 +54731,7 @@ chart</value>
     <value>Browse…</value>
   </data>
   <data name="BKI_HINWEIS" xml:space="preserve">
-    <value>Select the file Baustoffe.csv of the CSV export; Aufbauten.csv, Schichten.csv, Schichten_Abschnitte.csv, Fenster.csv and Basis_Auszug.csv lie next to it. The preview writes nothing.</value>
+    <value>Select the file Baustoffe.csv of the CSV export; Aufbauten.csv, Schichten.csv, Schichten_Abschnitte.csv, Fenster.csv and Basis_Auszug.csv lie next to it, Katalog.csv and Katalog_Inhalt.csv add the sub-catalogues. If Baustoffe.csv lies in the subfolder Export, the folder above it is enough. The preview writes nothing.</value>
   </data>
   <data name="BKI_FILTER" xml:space="preserve">
     <value>Baustoffe.csv|Baustoffe.csv|CSV files (*.csv)|*.csv</value>
@@ -54705,6 +54798,15 @@ chart</value>
   </data>
   <data name="BKI_QUELLE" xml:space="preserve">
     <value>Source of the records: {0}</value>
+  </data>
+  <data name="BKI_ORDNER" xml:space="preserve">
+    <value>Folder read: {0}</value>
+  </data>
+  <data name="BKI_ORDNER_EXPORT" xml:space="preserve">
+    <value>Baustoffe.csv lies in the subfolder Export; this folder is read: {0}</value>
+  </data>
+  <data name="BKI_TEILKATALOGE" xml:space="preserve">
+    <value>Sub-catalogues: {0}; the source names them on {1} materials and {2} constructions.</value>
   </data>
   <data name="BKI_UEBERNEHMEN" xml:space="preserve">
     <value>Import</value>
@@ -56257,6 +56359,12 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="BKAL_MSG_FERIEN_FEHLEN" xml:space="preserve">
     <value>Holiday state and holidays of "{0}" copied. The building has {1} holiday periods, the calendar takes four: the first four are copied, {2} are missing.</value>
   </data>
+  <data name="BTA_ABS_EBENENSUMME" xml:space="preserve">
+    <value>Σ area fractions of the layer = {0}</value>
+  </data>
+  <data name="BTA_ABS_EBENENSUMME_WARN" xml:space="preserve">
+    <value>Σ area fractions of the layer = {0} – 0.99 to 1.01 is allowed; the construction is calculated only then.</value>
+  </data>
   <data name="KBP_GRUPPE_EINGABEART" xml:space="preserve">
     <value>Input method</value>
   </data>
@@ -56455,6 +56563,66 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="SIMENG_TYPTAG_ZELLEN_LEER" xml:space="preserve">
     <value>{0}profile "{1}": no typical day is assigned to {2} cell(s) of the typical-day matrix ({3}); these days carry no demand, the annual total is distributed over the remaining days.</value>
   </data>
+  <data name="KI_DLG_BTA_FENSTER_UG_ERL" xml:space="preserve">
+    <value>The thermal transmittance U_g of the glazing in W/(m²K); empty = none. Only for the component types window and curtain wall.</value>
+  </data>
+  <data name="KI_DLG_BTA_FENSTER_G_ERL" xml:space="preserve">
+    <value>The total solar energy transmittance g of the glazing (0 to 1); it is passed to the component on assignment. Only for window or curtain wall.</value>
+  </data>
+  <data name="KI_DLG_BTA_FENSTER_RAHMEN_ERL" xml:space="preserve">
+    <value>The frame fraction f of the window area (0 to 1); it is passed to the component on assignment. Only for window or curtain wall.</value>
+  </data>
+  <data name="KI_DLG_BTA_FENSTER_UF_ERL" xml:space="preserve">
+    <value>The thermal transmittance U_f of the frame in W/(m²K); empty = none. Only for window or curtain wall.</value>
+  </data>
+  <data name="KI_DLG_BTA_FENSTER_PSI_ERL" xml:space="preserve">
+    <value>The linear thermal transmittance ψ_g of the glazing edge in W/(mK). Together with U_g, U_f and f it gives the U-value U_w of the component on assignment according to EN ISO 10077-1.</value>
+  </data>
+  <data name="KI_DLG_BTA_SUMME_U_NAME" xml:space="preserve">
+    <value>U-value of the construction build-up</value>
+  </data>
+  <data name="KI_DLG_BTA_SUMME_U_ERL" xml:space="preserve">
+    <value>The U-value of the construction build-up in W/(m²K) from the summary row, calculated according to EN ISO 6946 – read only; empty if the build-up does not provide it.</value>
+  </data>
+  <data name="KI_DLG_BTA_RT_OBEN_NAME" xml:space="preserve">
+    <value>R'_T upper limit</value>
+  </data>
+  <data name="KI_DLG_BTA_RT_OBEN_ERL" xml:space="preserve">
+    <value>The upper limit R'_T of the total thermal resistance of a build-up with an inhomogeneous layer in m²K/W (EN ISO 6946, 6.7) – read only; empty for a homogeneous build-up.</value>
+  </data>
+  <data name="KI_DLG_BTA_RT_UNTEN_NAME" xml:space="preserve">
+    <value>R''_T lower limit</value>
+  </data>
+  <data name="KI_DLG_BTA_RT_UNTEN_ERL" xml:space="preserve">
+    <value>The lower limit R''_T of the total thermal resistance of a build-up with an inhomogeneous layer in m²K/W; R_T is the mean of both limits – read only; empty for a homogeneous build-up.</value>
+  </data>
+  <data name="KI_DLG_BTA_SCHICHT_ABSCHNITT_ERL" xml:space="preserve">
+    <value>The section number of an inhomogeneous layer; empty = homogeneous layer. Consecutive sections with ascending numbers lie side by side in the same plane. The user adds a section alongside with a click.</value>
+  </data>
+  <data name="KI_DLG_BTA_SCHICHT_ANTEIL_ERL" xml:space="preserve">
+    <value>The area fraction of the section (0 to 1); it applies to all layers of the same section. The fractions of a plane add up to 1 (permitted 0.99 to 1.01).</value>
+  </data>
+  <data name="KI_DLG_BTA_SCHICHT_EBENENSUMME_NAME" xml:space="preserve">
+    <value>Σ area fractions of the plane</value>
+  </data>
+  <data name="KI_DLG_BTA_SCHICHT_EBENENSUMME_ERL" xml:space="preserve">
+    <value>The sum of the area fractions of an inhomogeneous plane, shown at its last layer – read only; empty at all other layers.</value>
+  </data>
+  <data name="KI_DLG_BT_UHERKUNFT_NAME" xml:space="preserve">
+    <value>Origin of the U-value</value>
+  </data>
+  <data name="KI_DLG_BT_UHERKUNFT_ERL" xml:space="preserve">
+    <value>Where the U-value of the component comes from, as it would be saved with OK – read only: KATALOG = from the construction build-up, MANUELL = entered by hand, IFC, GBXML or SQPROJ = from the import file, VORGABE = default by component type; empty = unknown. A U-value entered by hand is kept on re-import.</value>
+  </data>
+  <data name="KLIMA_VORSCHAU_LEER" xml:space="preserve">
+    <value>The source returned no hourly values.</value>
+  </data>
+  <data name="KLIMA_VORSCHAU_REPRAESENTANZ" xml:space="preserve">
+    <value>Nearest representative station, not the official climate region.</value>
+  </data>
+  <data name="KLIMA_VORSCHAU_NICHT_ORTSTYPISCH" xml:space="preserve">
+    <value>Reference point not typical of the site; for site-specific values, import the DWD TRY file for this location.</value>
+  </data>
   <data name="SIMENG_TYPTAG_OHNE_STUNDEN" xml:space="preserve">
     <value>{0}profile "{1}": typical day {2} has no hourly values; the days using it carry no demand.</value>
   </data>
@@ -56535,6 +56703,168 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="BKAL_HRL_FAKTOR_GESPERRT" xml:space="preserve">
     <value>The holiday factor is locked: “Company holidays like Sunday” is set, a holiday day carries Sunday of the weekly profile.</value>
+  </data>
+  <data name="KLIMA_VK_SUCHHINWEIS" xml:space="preserve">
+    <value>Finds the data set and reads it for the preview. Nothing is saved.</value>
+  </data>
+  <data name="KLIMA_VK_TITEL" xml:space="preserve">
+    <value>Preview of the data set</value>
+  </data>
+  <data name="KLIMA_VK_GEFUNDEN" xml:space="preserve">
+    <value>Data set found: {0}</value>
+  </data>
+  <data name="KLIMA_VK_NICHT_IM_PAKET" xml:space="preserve">
+    <value>{0} is not in the package.</value>
+  </data>
+  <data name="KLIMA_VK_VORHANDEN" xml:space="preserve">
+    <value>Available:</value>
+  </data>
+  <data name="KLIMA_VK_AUSFUEHRUNG_TRY" xml:space="preserve">
+    <value>TRY {0} · {1}</value>
+  </data>
+  <data name="KLIMA_VK_AUSFUEHRUNG_DATEI" xml:space="preserve">
+    <value>TRY file {0}</value>
+  </data>
+  <data name="KLIMA_VK_AUSFUEHRUNG_PVGIS" xml:space="preserve">
+    <value>PVGIS TMY (typical year)</value>
+  </data>
+  <data name="KLIMA_VK_STANDORT" xml:space="preserve">
+    <value>Site</value>
+  </data>
+  <data name="KLIMA_VK_ORT" xml:space="preserve">
+    <value>Place</value>
+  </data>
+  <data name="KLIMA_VK_KOORDINATE" xml:space="preserve">
+    <value>Coordinate</value>
+  </data>
+  <data name="KLIMA_VK_HOEHE" xml:space="preserve">
+    <value>Altitude</value>
+  </data>
+  <data name="KLIMA_VK_UNBEKANNT" xml:space="preserve">
+    <value>unknown</value>
+  </data>
+  <data name="KLIMA_VK_BEZUG_STATION" xml:space="preserve">
+    <value>Reference point: nearest representative station</value>
+  </data>
+  <data name="KLIMA_VK_BEZUG_DATEI" xml:space="preserve">
+    <value>Reference point: location of the file</value>
+  </data>
+  <data name="KLIMA_VK_BEZUG_PVGIS" xml:space="preserve">
+    <value>Reference point: PVGIS grid point</value>
+  </data>
+  <data name="KLIMA_VK_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="KLIMA_VK_ENTFERNUNG" xml:space="preserve">
+    <value>Distance</value>
+  </data>
+  <data name="KLIMA_VK_HOEHENUNTERSCHIED" xml:space="preserve">
+    <value>Altitude difference</value>
+  </data>
+  <data name="KLIMA_VK_KZ_MITTEL" xml:space="preserve">
+    <value>Annual mean air temperature</value>
+  </data>
+  <data name="KLIMA_VK_KZ_MINMAX" xml:space="preserve">
+    <value>Minimum / maximum (hour)</value>
+  </data>
+  <data name="KLIMA_VK_KZ_GLOBAL" xml:space="preserve">
+    <value>Global radiation, annual total</value>
+  </data>
+  <data name="KLIMA_VK_KZ_GRADTAG" xml:space="preserve">
+    <value>Degree days G20/15</value>
+  </data>
+  <data name="KLIMA_VK_KZ_HEIZTAGE" xml:space="preserve">
+    <value>Heating days (θm &lt; 15 °C)</value>
+  </data>
+  <data name="KLIMA_VK_BILD_TITEL" xml:space="preserve">
+    <value>Monthly values</value>
+  </data>
+  <data name="KLIMA_VK_BILD_MONAT" xml:space="preserve">
+    <value>Month</value>
+  </data>
+  <data name="KLIMA_VK_BILD_STRAHLUNG" xml:space="preserve">
+    <value>Global radiation [kWh/m²]</value>
+  </data>
+  <data name="KLIMA_VK_BILD_TEMPERATUR" xml:space="preserve">
+    <value>Monthly mean temperature [°C]</value>
+  </data>
+  <data name="KLIMA_VK_BILD_BEZEICHNUNG" xml:space="preserve">
+    <value>Monthly mean temperature and monthly total global radiation</value>
+  </data>
+  <data name="KLIMA_VK_BESTAND" xml:space="preserve">
+    <value>Parameters of the source</value>
+  </data>
+  <data name="KLIMA_VK_GEFUEHRT" xml:space="preserve">
+    <value>provided</value>
+  </data>
+  <data name="KLIMA_VK_GERECHNET" xml:space="preserve">
+    <value>calculated</value>
+  </data>
+  <data name="KLIMA_VK_FEHLT" xml:space="preserve">
+    <value>missing</value>
+  </data>
+  <data name="KLIMA_VK_VERFALLEN" xml:space="preserve">
+    <value>Input changed, the preview has expired. Please "Find data set" again.</value>
+  </data>
+  <data name="KLIMA_VK_ERST_SUCHEN" xml:space="preserve">
+    <value>First "Find data set" – nothing is taken over without a valid preview.</value>
+  </data>
+  <data name="KLIMA_VK_NICHT_IMPORTIERBAR" xml:space="preserve">
+    <value>The preview has no data set to take over – please choose an available version or check the inputs.</value>
+  </data>
+  <data name="KLIMA_VK_FELDHERKUNFT" xml:space="preserve">
+    <value>Longitude, latitude and name pre-filled from the search; editable. They are taken over only with "Read data".</value>
+  </data>
+  <data name="KLIMA_LBL_HOEHE" xml:space="preserve">
+    <value>Altitude of the site (m):</value>
+  </data>
+  <data name="KLIMA_FELD_HOEHE" xml:space="preserve">
+    <value>Altitude of the site</value>
+  </data>
+  <data name="KLIMA_PAR_LUFTTEMPERATUR" xml:space="preserve">
+    <value>Temperature</value>
+  </data>
+  <data name="KLIMA_PAR_LUFTFEUCHTE" xml:space="preserve">
+    <value>Humidity</value>
+  </data>
+  <data name="KLIMA_PAR_GLOBALSTRAHLUNG" xml:space="preserve">
+    <value>Global</value>
+  </data>
+  <data name="KLIMA_PAR_DIREKTSTRAHLUNGNORMAL" xml:space="preserve">
+    <value>Direct normal</value>
+  </data>
+  <data name="KLIMA_PAR_DIREKTSTRAHLUNGHORIZONTAL" xml:space="preserve">
+    <value>Direct horizontal</value>
+  </data>
+  <data name="KLIMA_PAR_DIFFUSSTRAHLUNG" xml:space="preserve">
+    <value>Diffuse</value>
+  </data>
+  <data name="KLIMA_PAR_GEGENSTRAHLUNG" xml:space="preserve">
+    <value>Atmospheric counter-radiation</value>
+  </data>
+  <data name="KLIMA_PAR_BEDECKUNGSGRAD" xml:space="preserve">
+    <value>Cloud cover</value>
+  </data>
+  <data name="KLIMA_PAR_LUFTDRUCK" xml:space="preserve">
+    <value>Air pressure</value>
+  </data>
+  <data name="KLIMA_PAR_WINDGESCHWINDIGKEIT" xml:space="preserve">
+    <value>Wind</value>
+  </data>
+  <data name="KLIMA_PAR_WINDRICHTUNG" xml:space="preserve">
+    <value>Wind direction</value>
+  </data>
+  <data name="KLIMA_PAR_WASSERDAMPFGEHALT" xml:space="preserve">
+    <value>Water vapour</value>
+  </data>
+  <data name="KLIMA_PAR_AUSSTRAHLUNG" xml:space="preserve">
+    <value>Outgoing radiation</value>
+  </data>
+  <data name="KLIMA_PAR_QUALITAETSTRAHLUNG" xml:space="preserve">
+    <value>Quality</value>
+  </data>
+  <data name="KI_DLG_KLIMA_HOEHE_ERL" xml:space="preserve">
+    <value>The altitude of the site above sea level, in metres. It enters the preview: the altitude difference to the reference point decides the note "not typical for the site". Empty = unknown; for PVGIS and a TRY file with header data it comes from the source.</value>
   </data>
 </root>
 

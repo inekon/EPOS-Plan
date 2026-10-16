@@ -46,6 +46,8 @@ namespace WindowsFormsApplication1
         private static bool? _nutzungsprofilVorhanden;
         private static string _pfadFlaechenherkunft;
         private static bool? _flaechenherkunftVorhanden;
+        private static string _pfadUHerkunft;
+        private static bool? _uHerkunftVorhanden;
         private static string _pfadNordherkunft;
         private static bool? _nordherkunftVorhanden;
         private static string _pfadVorheizzeit;
@@ -99,6 +101,8 @@ namespace WindowsFormsApplication1
                 _nutzungsprofilVorhanden = null;
                 _pfadFlaechenherkunft = null;
                 _flaechenherkunftVorhanden = null;
+                _pfadUHerkunft = null;
+                _uHerkunftVorhanden = null;
                 _pfadNordherkunft = null;
                 _nordherkunftVorhanden = null;
                 _pfadVorheizzeit = null;
@@ -266,6 +270,29 @@ namespace WindowsFormsApplication1
             {
                 _pfadFlaechenherkunft = pfad;
                 _flaechenherkunftVorhanden = da;
+            }
+            return da;
+        }
+
+        /// <summary>
+        /// Tragen <c>Tab_Bauteil</c> und <c>Tab_Bauteil_STAMM</c> die Spalte <c>U_Herkunft</c> (Schritt
+        /// <see cref="BauteilUHerkunftSchema.SCHRITT"/>)? Gemerkt je Datenbankpfad wie <see cref="FlaechenherkunftVorhanden"/>;
+        /// <see cref="ProbeVerwerfen"/> verwirft auch diese Probe.
+        /// </summary>
+        internal static bool UHerkunftVorhanden()
+        {
+            string pfad = Pfad();
+            lock (_sperre)
+            {
+                if (_uHerkunftVorhanden.HasValue && string.Equals(pfad, _pfadUHerkunft, StringComparison.OrdinalIgnoreCase))
+                    return _uHerkunftVorhanden.Value;
+            }
+
+            bool da = BauteilUHerkunftSchema.Vollstaendig();
+            lock (_sperre)
+            {
+                _pfadUHerkunft = pfad;
+                _uHerkunftVorhanden = da;
             }
             return da;
         }

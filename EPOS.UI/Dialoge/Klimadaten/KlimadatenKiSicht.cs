@@ -39,6 +39,9 @@ public sealed class KlimadatenKiSicht
     public Func<double?>? BreitengradLesen { get; init; }
     public Action<double?>? BreitengradSetzen { get; init; }
 
+    public Func<double?>? HoeheLesen { get; init; }
+    public Action<double?>? HoeheSetzen { get; init; }
+
     public Func<int?>? JahrLesen { get; init; }
     public Action<int?>? JahrSetzen { get; init; }
 
@@ -110,6 +113,13 @@ public sealed class KlimadatenKiSicht
     {
         get => BreitengradLesen?.Invoke();
         set => BreitengradSetzen?.Invoke(value);
+    }
+
+    /// <summary>Die Höhe des Ortes über dem Meer, in Metern; leer = unbekannt (Auftrag KD-3).</summary>
+    public double? Hoehe
+    {
+        get => HoeheLesen?.Invoke();
+        set => HoeheSetzen?.Invoke(value);
     }
 
     /// <summary>Das Bezugsjahr des Testreferenzjahres.</summary>

@@ -77,6 +77,36 @@ namespace WindowsFormsApplication1
         /// <summary>Der Fenstertitel und zugleich die Dialogüberschrift.</summary>
         internal static string Titel() => MyResource.Resource.KLIMA_TITEL;
 
+        /// <summary>Das Wunschmaß der Klimadatenverwaltung selbst (Vorläufer: 757 × 641).</summary>
+        internal const int FENSTER_BREITE = 1180;
+
+        /// <summary>Siehe <see cref="FENSTER_BREITE"/>.</summary>
+        internal const int FENSTER_HOEHE = 780;
+
+        /// <summary>
+        /// Das Wunschmaß der Überlagerung „Klimadaten einlesen“ als eigenes Fenster (KD-1):
+        /// so breit wie eine Überlagerung (900 px), so hoch, dass sie VOR der Suche (gemessen
+        /// 900 px samt Höhenfeld und Suchzeile, KD-3) in 90 % der Fensterhöhe steht, ohne zu
+        /// rollen. Die Vorschaukarte (rund 750 px) rollt dann unter der haftenden Leiste — ein
+        /// Fenster, das auch sie ganz zeigte, gäbe kein Schirm her. Reicht der Schirm nicht,
+        /// rollt der Inhalt, und die Schlussleiste
+        /// haftet am Boden der Überlagerung (<c>epos-ui.css</c>, „Die Schlussleiste des
+        /// Einlesens haftet genauso“).
+        /// </summary>
+        internal const int EINLESEN_BREITE = 900;
+
+        /// <summary>Siehe <see cref="EINLESEN_BREITE"/>.</summary>
+        internal const int EINLESEN_HOEHE = 1000;
+
+        /// <summary>
+        /// Das Wunschmaß des Fensters: mindestens das der getragenen Überlagerung
+        /// (<see cref="EPOS.UI.Dienste.Fenstermass.MitUeberlagerung"/>), wie bei jedem Fenster,
+        /// das einen Import als Überlagerung trägt.
+        /// </summary>
+        internal static (int Breite, int Hoehe) Wunschmass()
+            => EPOS.UI.Dienste.Fenstermass.MitUeberlagerung(
+                FENSTER_BREITE, FENSTER_HOEHE, EINLESEN_BREITE, EINLESEN_HOEHE);
+
         /// <summary>Der PARAMETERSATZ der Komponente — ohne <c>Geschlossen</c>.</summary>
         internal static IReadOnlyDictionary<string, object> Gaben()
         {
@@ -262,17 +292,27 @@ namespace WindowsFormsApplication1
                 ort => PVGIS_EPW_Downloader.GetCoordinatesAsync(ort),
                 melder,
                 marke,
-                Bereich),
+                Bereich,
+                _vorschau),
                 a => new KlimaImportErgebnis { Ausgang = KlimaImportAusgang.Eingabefehler, Meldung = a.Text });
         }
+
+        /// <summary>
+        /// Die zuletzt gelesene VORSCHAU (Auftrag KD-2, Entscheid KD-Q3). Der Import
+        /// übernimmt ihren Satz ohne zweiten Abruf, solange sie zum Auftrag passt
+        /// (<see cref="KlimaVorschauErgebnis.PasstZu"/>); ändert der Anwender Ort, Quelle,
+        /// Jahr oder Szenario, ist sie verfallen und der Import liest selbst.
+        /// </summary>
+        private static KlimaVorschauErgebnis _vorschau;
 
         // =====================================================================
         // Die REGIONSVORSCHAU (Auftrag KL-3)
         // =====================================================================
 
         /// <summary>
-        /// Sagt vor dem Einlesen, welche TRY-Region der Standort trifft — über
-        /// DIESELBEN Nahtstellen wie der Import (Ortsauflösung und Bereichsabruf).
+        /// Sucht und LIEST vor dem Einlesen den Datensatz des Standorts (Auftrag KD-2,
+        /// alle drei Quellen) — über DIESELBEN Nahtstellen wie der Import (Ortsauflösung,
+        /// Bereichsabruf, PVGIS-Abruf samt Kopf). Das Ergebnis bleibt für den Import liegen.
         ///
         /// <para><b>Auch sie läuft nebenher</b>: Sie holt das
         /// Zentralverzeichnis des Pakets über das Netz, und in einer WebView ist der
@@ -281,11 +321,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static async Task<KlimaVorschauErgebnis> RegionErmitteln(KlimaImportAuftrag auftrag)
         {
-            return await Kulturweitergabe.StartenAsync(() => KlimaImportAblauf.RegionErmittelnAsync(
+            _vorschau = null;
+            KlimaVorschauErgebnis erg = await Kulturweitergabe.StartenAsync(() => KlimaImportAblauf.RegionErmittelnAsync(
                 auftrag,
                 ort => PVGIS_EPW_Downloader.GetCoordinatesAsync(ort),
                 CancellationToken.None,
-                Bereich));
+                Bereich,
+                (lon, lat, azimut) => PVGIS_EPW_Downloader.GetTmyAbruf(lon, lat, azimut)));
+            _vorschau = erg;
+            return erg;
         }
 
         // =====================================================================

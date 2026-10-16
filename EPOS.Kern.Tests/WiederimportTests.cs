@@ -33,8 +33,11 @@ namespace EPOS.Kern.Tests
                 try { File.Delete(d); } catch (IOException) { }
         }
 
-        /// <summary>Das Probehaus; die Fassung 2 ändert Halle (R1) und die Wände und lässt das Dach DA1 weg.</summary>
-        private string Probehaus(string name, bool fassung2)
+        /// <summary>
+        /// Das Probehaus; die Fassung 2 ändert Halle (R1) und die Wände und lässt das Dach DA1 weg. Mit <paramref name="uNeu"/>
+        /// trägt die Fassung 2 an W1, W2 und BP1 andere U-Werte (MA-6b).
+        /// </summary>
+        private string Probehaus(string name, bool fassung2, bool uNeu = false)
         {
             SqprojProbenErzeuger e = new SqprojProbenErzeuger { Baujahr = "1995-05-01 00:00:00" }
                 .Geschoss("F1", "EG", 0.0, 3.0).Geschoss("F2", "OG", 3.0, 3.0)
@@ -44,9 +47,9 @@ namespace EPOS.Kern.Tests
                 .Raum("R4", "Lager", "F2", null, 10.0, null, 1, 3.0)
                 .Zone("Z3", "Nutzung Halle", 5, null, "R1", "R2")
                 .Zone("Z4", "Nutzung Buero", 5, null, "R3")
-                .Flaeche("W1", 1, 3, fassung2 ? 40.0 : 30.0, fassung2 ? 44.0 : 34.0, 180.0, 90.0, cad: "C1", u: 0.5).Bezug("E1", "R1", "W1", 1)
-                .Flaeche("W2", 1, 3, fassung2 ? 20.0 : 25.0, fassung2 ? 20.0 : 25.0, 0.0, 90.0, cad: "C2", u: 0.5).Bezug("E3", "R3", "W2", 1)
-                .Flaeche("BP1", 11, 5, 50.0, 50.0, null, 0.0, cad: "C3", u: 0.8).Bezug("E4", "R1", "BP1", 8);
+                .Flaeche("W1", 1, 3, fassung2 ? 40.0 : 30.0, fassung2 ? 44.0 : 34.0, 180.0, 90.0, cad: "C1", u: uNeu ? 0.45 : 0.5).Bezug("E1", "R1", "W1", 1)
+                .Flaeche("W2", 1, 3, fassung2 ? 20.0 : 25.0, fassung2 ? 20.0 : 25.0, 0.0, 90.0, cad: "C2", u: uNeu ? 0.6 : 0.5).Bezug("E3", "R3", "W2", 1)
+                .Flaeche("BP1", 11, 5, 50.0, 50.0, null, 0.0, cad: "C3", u: uNeu ? 0.7 : 0.8).Bezug("E4", "R1", "BP1", 8);
             if (!fassung2)
                 e = e.Flaeche("DA1", 5, 3, 30.0, 30.0, null, 0.0, cad: "C5", u: 0.4).Bezug("E6", "R3", "DA1", 9);
             e = e.Flaeche("DA2", 5, 3, 10.0, 10.0, null, 0.0, cad: "C6", u: 0.4).Bezug("E7", "R4", "DA2", 9);
@@ -149,8 +152,10 @@ namespace EPOS.Kern.Tests
                                                                         new DbParam("@g", idGebaeude)).Rows[0][0], CultureInfo.InvariantCulture);
             int aufbauHand = new BauteilaufbauCtrl().CopyFromStamm(stamm, idProjekt);
             Assert.True(aufbauHand > 0);
-            Anlegen(v => v.Ausfuehren("UPDATE \"Tab_Bauteil\" SET \"ID_Aufbau\" = ?, \"U_Wert\" = ? WHERE \"ID\" = ?",
-                                      new DbParam("@a", aufbauHand), new DbParam("@u", 0.25), new DbParam("@b", w1.ID)));
+            // Wie der OK-Weg der Pflege und die Modellprüfung: ein gewählter Aufbau trägt die Herkunft KATALOG (MA-6b).
+            Anlegen(v => v.Ausfuehren("UPDATE \"Tab_Bauteil\" SET \"ID_Aufbau\" = ?, \"U_Wert\" = ?, \"U_Herkunft\" = ? WHERE \"ID\" = ?",
+                                      new DbParam("@a", aufbauHand), new DbParam("@u", 0.25), new DbParam("@h", DbWerte.HERKUNFT_KATALOG),
+                                      new DbParam("@b", w1.ID)));
 
             // Hand-Zone samt Bauteil (ohne Quellkennung) und ein ergänztes Bauteil (MA-3, Herkunft VORGABE) in der Halle.
             int handzone = Anlegen(v => v.EinfuegenUndId(
@@ -230,6 +235,72 @@ namespace EPOS.Kern.Tests
             Assert.DoesNotContain(dritt.SelectMany(z => z.Bauteile), b => b.ID == dachDa1);
             Assert.Contains(dritt, z => z.ID == handzone);
             Assert.Equal(aufbauHand, dritt.SelectMany(z => z.Bauteile).Single(b => b.ID == w1.ID).ID_Aufbau);
+        }
+
+        /// <summary>
+        /// MA-6b (E149): Ein U-Wert, den die Pflege ohne Aufbauwechsel von Hand setzt, wird <c>MANUELL</c> und übersteht den
+        /// Wiederimport; die Vorschau führt ihn unter „von Hand“. Gegenproben: der Datei-U-Wert der Wand W2 weicht dem neuen
+        /// Dateiwert, und ein Bauteil ohne Herkunft (NULL, Bestand) folgt der Regel wie bisher (sein Ersatzaufbau bleibt).
+        /// </summary>
+        [Fact]
+        public async Task Hand_U_ohne_Aufbauwechsel_uebersteht_den_Wiederimport()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            var ctrl = new ProjektGebaeudeCtrl();
+            ctrl.ReadAll(1045);
+            int idGebaeude = ctrl.items[0].ID_Gebaeude;
+            Assert.Empty(Zonen(idGebaeude));
+
+            string v1 = Probehaus("ma6b_v1", false);
+            var h = new GebaeudeMehrzonenHuelle(() => idGebaeude, 1045, ios: false);
+            Assert.Null(await Vormerken(h, v1, QuelleVon(v1)));
+            Assert.Null(h.Schreiben());
+            List<ZoneModel> erst = Zonen(idGebaeude);
+            ZoneModel halle = erst.OrderByDescending(z => z.Nutzflaeche ?? 0).First();
+            ZoneModel buero = erst.Single(z => z.ID != halle.ID && z.Bauteile.Any(b => b.Neigung is double n && Math.Abs(n - 90.0) < 1e-6));
+            BauteilModel w1 = Wand(halle), w2 = Wand(buero);
+            BauteilModel bp1 = halle.Bauteile.Single(b => b.Quellkennung != null && b.Bauteilart == DbWerte.BAUTEILART_BODENPLATTE);
+            // Der Import schreibt die Herkunft des U-Werts nach dem Format der Datei.
+            Assert.Equal(DbWerte.HERKUNFT_SQPROJ, w1.U_Herkunft);
+            Assert.Equal(DbWerte.HERKUNFT_SQPROJ, w2.U_Herkunft);
+            int? aufbauW1 = w1.ID_Aufbau;
+
+            // Hand-U an W1 über den OK-Weg der Pflege, ohne Aufbauwechsel; BP1 als Bestand ohne Herkunft.
+            w1.U_Wert = 0.3;
+            GebaeudeZonenCtrl.Schreibergebnis ok = new GebaeudeZonenCtrl().Schreiben(idGebaeude, erst, null,
+                new Dictionary<int, Konditionierungsstand>());
+            Assert.True(ok.Ok, ok.Meldung);
+            List<ZoneModel> gepflegt = Zonen(idGebaeude);
+            BauteilModel w1Hand = gepflegt.SelectMany(z => z.Bauteile).Single(b => b.ID == w1.ID);
+            Assert.Equal(DbWerte.HERKUNFT_MANUELL, w1Hand.U_Herkunft);
+            Assert.Equal(aufbauW1, w1Hand.ID_Aufbau);
+            Assert.Equal(DbWerte.HERKUNFT_SQPROJ, gepflegt.SelectMany(z => z.Bauteile).Single(b => b.ID == w2.ID).U_Herkunft);
+            Anlegen(v => v.Ausfuehren("UPDATE \"Tab_Bauteil\" SET \"U_Herkunft\" = NULL WHERE \"ID\" = ?", new DbParam("@b", bp1.ID)));
+
+            // Wiederimport der Fassung mit neuen U-Werten.
+            string v2 = Probehaus("ma6b_v2", true, uNeu: true);
+            GebaeudeWiederimportDaten vorschau = await Vormerken(h, v2, MehrzonenuebernahmeCtrl.Quelle(idGebaeude));
+            Assert.NotNull(vorschau);
+            Assert.Contains(vorschau.Zeilen, z => !z.IstZone && z.Hand.Contains(MyResource.Resource.GEBWI_FELD_U)
+                                                 && !z.Felder.Contains(MyResource.Resource.GEBWI_FELD_U));
+            Assert.Contains(vorschau.Zeilen, z => !z.IstZone && z.Felder.Contains(MyResource.Resource.GEBWI_FELD_U));
+            Assert.Contains(vorschau.Zeilen, z => !z.IstZone && z.Name == bp1.Bezeichner && z.Hand.Contains(MyResource.Resource.GEBWI_FELD_AUFBAU));
+            Assert.Null(h.Schreiben());
+
+            List<BauteilModel> zweit = Zonen(idGebaeude).SelectMany(z => z.Bauteile).ToList();
+            BauteilModel w1neu = zweit.Single(b => b.ID == w1.ID);
+            Assert.Equal(0.3, w1neu.U_Wert!.Value, 9);
+            Assert.Equal(DbWerte.HERKUNFT_MANUELL, w1neu.U_Herkunft);
+            Assert.NotEqual(w1.Flaeche, w1neu.Flaeche);
+            BauteilModel w2neu = zweit.Single(b => b.ID == w2.ID);
+            Assert.Equal(0.6, w2neu.U_Wert!.Value, 6);
+            Assert.Equal(DbWerte.HERKUNFT_SQPROJ, w2neu.U_Herkunft);
+            // Ohne Herkunft (Bestand) gilt die Regel wie bisher: der Ersatzaufbau zählt als nicht aus der Datei, Aufbau und U bleiben.
+            BauteilModel bp1neu = zweit.Single(b => b.ID == bp1.ID);
+            Assert.Equal(bp1.U_Wert!.Value, bp1neu.U_Wert!.Value, 9);
+            Assert.Equal(bp1.ID_Aufbau, bp1neu.ID_Aufbau);
+            Assert.Null(bp1neu.U_Herkunft);
         }
 
         private static List<string> Wochen(int idGebaeude, int idZone)

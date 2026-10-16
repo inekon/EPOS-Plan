@@ -153,6 +153,15 @@ public sealed class EnergietraegerStand
     /// <summary>Führt er einen Leistungspreis? (<c>has_powerprice</c>)</summary>
     public bool MitLeistungspreis { get; set; }
 
+    /// <summary>Führt er einen Grundpreis? Nein am Wasserträger (Preismodell <c>WATER</c>, Entscheid F5).</summary>
+    public bool MitGrundpreis { get; set; } = true;
+
+    /// <summary>Führt die Karte den Emissionsblock? Nein am Wasserträger (Betriebsmittel).</summary>
+    public bool MitEmissionen { get; set; } = true;
+
+    /// <summary>Führt die Karte den Block „Einheiten und Umrechnung" (Kette bis kWh)? Nein am Wasserträger.</summary>
+    public bool MitUmrechnung { get; set; } = true;
+
     public string EinheitArbeitspreis { get; set; } = "";
     public string EinheitLeistungspreis { get; set; } = "";
     public string EinheitHeizwert { get; set; } = "";

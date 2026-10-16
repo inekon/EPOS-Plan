@@ -63,10 +63,10 @@ namespace EPOS.Kern.Tests
                 "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'Tab_Raumnutzungskatalog'"), CultureInfo.InvariantCulture);
             Assert.Contains("'SIA_2024'", sql, StringComparison.Ordinal);
             Assert.Contains("'VDI_2078'", sql, StringComparison.Ordinal);
-            // Die DIN trägt 45 Profile: 43 Nutzungen mit Nummer, dahinter die zwei Wohnprofile ohne Nummer und ohne Werte.
+            // Die DIN trägt 45 Profile: 43 Nutzungen mit Nummer, dahinter die zwei Wohnprofile ohne Nummer mit den Werten der Saat (DA-6).
             long din = Zahl("SELECT ID FROM Tab_Raumnutzungskatalog WHERE Art = 'DIN_V_18599_10'");
             Assert.Equal(45L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil WHERE ID_Katalog = " + din));
-            WohnprofileOhneWerte(din);
+            Wohnprofile(din, gesaet: true);
         }
 
         [Fact]
@@ -107,7 +107,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { RaumnutzungSaat.KATEGORIE_EPOS, dinName }, wahl.Select(w => w.Kategorie).Distinct().ToArray());
             var dinWahl = wahl.Where(w => w.Kategorie == dinName).ToList();
             Assert.Equal(erwartet, dinWahl.Skip(43).Select(w => w.Name));
-            Assert.All(dinWahl.Skip(43), w => Assert.True(w.OhneWerte));
+            Assert.All(dinWahl.Skip(43), w => Assert.False(w.OhneWerte));
         }
 
         [Fact]
@@ -128,7 +128,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(2, RaumnutzungNormkategorienSchema.Ausfuehren(bericht));
             Assert.Equal(2, bericht.Count(z => z.StartsWith("Wohnprofil '", StringComparison.Ordinal)));
             Assert.True(RaumnutzungNormkategorienSchema.Vollstaendig());
-            WohnprofileOhneWerte(din);
+            Wohnprofile(din, gesaet: false);
+            // DA-6: Der Saatschritt sät die neu angelegten Wohnprofile, das eigene Profil gleichen Namens bleibt.
+            Assert.Equal(2, RaumnutzungDinWerteSchema.Ausfuehren(null));
+            Wohnprofile(din, gesaet: true);
             Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil WHERE ID_Katalog = " + eigen));
 
             // Zweiter Lauf ändert nichts; ein DIN-Profil gleichen Namens in anderer Schreibung zählt als vorhanden.
@@ -216,7 +219,7 @@ namespace EPOS.Kern.Tests
         // =================================================================
 
         /// <summary>Beide Wohnprofile stehen in der DIN genau einmal: ohne Nummer, ohne Kennwert, Zeilenbild, Stunden, ausgeliefert.</summary>
-        private static void WohnprofileOhneWerte(long din)
+        private static void Wohnprofile(long din, bool gesaet)
         {
             foreach (string name in RaumnutzungNormkategorienSchema.WOHNPROFILE)
             {
@@ -227,9 +230,11 @@ namespace EPOS.Kern.Tests
                 DataRow r = t.Rows[0];
                 long id = Convert.ToInt64(r["ID"], CultureInfo.InvariantCulture);
                 Assert.Equal(DBNull.Value, r["Nummer"]);
-                Assert.Equal(RaumnutzungNormkategorienSchema.WOHNEN_BESCHREIBUNG, Convert.ToString(r["Beschreibung"], CultureInfo.InvariantCulture));
+                // DA-6: Die Beschreibung trägt den Quellenvermerk der Saat (er ersetzt den ausgelieferten Text der Wohnprofile).
+                Assert.Equal(gesaet ? RaumnutzungDinSaat.Zu(null, name).Beschreibung : RaumnutzungNormkategorienSchema.WOHNEN_BESCHREIBUNG,
+                             Convert.ToString(r["Beschreibung"], CultureInfo.InvariantCulture));
                 Assert.Equal(1L, Convert.ToInt64(r["ReadOnly"], CultureInfo.InvariantCulture));
-                Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil WHERE ID = " + id + " AND (" +
+                Assert.Equal(gesaet ? 1L : 0L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil WHERE ID = " + id + " AND (" +
                                       string.Join(" OR ", RaumnutzungSchema.SPALTEN_KENNWERTE.Select(s => s.Spalte + " IS NOT NULL")) + ")"));
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungszeile WHERE ID_Profil = " + id));
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsstunden WHERE ID_Profil = " + id));

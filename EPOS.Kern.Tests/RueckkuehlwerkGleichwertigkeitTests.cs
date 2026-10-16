@@ -18,7 +18,7 @@ namespace EPOS.Kern.Tests
     /// (<c>Ergebnisexport.ProjektAusfuehren</c>) und die Ergebniszeilen der Kältemaschine (<c>Tab_ErgebnisKaeltemaschine</c>)
     /// sind byte-gleich (bis auf die Ergebnisspalten des Rückkühlwerks, die nur mit Rückkühlwerk belegt sind, K-F2). Gegenprobe:
     /// dieselbe Kopie mit +2 K Annäherung rechnet mehr Kältestrom. K-F2: eine Kopie mit Kühlturm, lastabhängiger Annäherung,
-    /// Drehzahlventilator und Wasserpreis füllt die Ergebnisspalten. Ein Datenbanktest, nicht in der Basis.
+    /// Drehzahlventilator füllt die Ergebnisspalten. Ein Datenbanktest, nicht in der Basis.
     /// </summary>
     [Collection("Testdatenbank")]
     public sealed class RueckkuehlwerkGleichwertigkeitTests : IDisposable
@@ -188,7 +188,6 @@ namespace EPOS.Kern.Tests
             });
             Assert.True(s.Ok, s.Meldung);
             Assert.Null(KaeltemaschineAnlageCtrl.RueckkuehlwerkWaehlen(anlage, s.Id));
-            Assert.Null(KaeltemaschineAnlageCtrl.WasserpreisSetzen(anlage, 3.0));
 
             lauf = new SimulationRunner();
             Assert.True(lauf.SimuliereUndSpeichere(projekt, out fehler) > 0, "Lauf gescheitert: " + fehler);
@@ -206,10 +205,14 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(KaelteWert(projekt, RueckkuehlwerkSchema.SPALTE_TEILFREIKUEHLUNG_STUNDEN));
             Assert.True(KaelteSumme(projekt, "Kaelteproduktion_MWh") > 0);
 
-            // Die Hinweise je einmal: Ausweichweg ohne Feuchte, 42. BImSchV, Wasser mit Kosten, Reihe mit Spreizung (K-F3).
+            // Die Hinweise je einmal: Ausweichweg ohne Feuchte, 42. BImSchV, Wasser, Reihe mit Spreizung (K-F3). Welle KB-7b:
+            // Der Lauf liest keinen Wasserpreis - der Hinweis SIMENG_KAELTE_RKW_WASSER nennt Menge und Nassstunden und verweist
+            // auf die Betriebskosten der Wirtschaftlichkeit; ein Betrag steht nicht darin.
             Assert.Single(lauf.Protokoll.Hinweise, h => h.Contains("RK Kuehlturm", StringComparison.Ordinal) && h.Contains("BImSchV", StringComparison.Ordinal));
             string w = Assert.Single(lauf.Protokoll.Hinweise, h => h.Contains("RK Kuehlturm", StringComparison.Ordinal) && h.Contains("m³", StringComparison.Ordinal));
-            Assert.Contains("€/a", w, StringComparison.Ordinal);
+            Assert.DoesNotContain("€/a", w, StringComparison.Ordinal);
+            Assert.Contains(wasser.ToString("N1", CultureInfo.CurrentCulture) + " m³ Wasser in " + nass + " Nassstunden", w, StringComparison.Ordinal);
+            Assert.Contains("Betriebskosten der Wirtschaftlichkeit", w, StringComparison.Ordinal);
             Assert.Single(lauf.Protokoll.Hinweise, h => h.Contains("RK Kuehlturm", StringComparison.Ordinal) &&
                                                        h.Contains("Teil-Freikühlung", StringComparison.Ordinal));
             Assert.DoesNotContain(lauf.Protokoll.Hinweise, h => h.Contains("noch nicht gerechnet", StringComparison.Ordinal));

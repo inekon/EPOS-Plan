@@ -280,6 +280,18 @@ namespace WindowsFormsApplication1
             int? alt = bt.ID_Aufbau;
             double? altU = bt.U_Wert;
             int idb = bt.ID;
+            // MA-6b: die Herkunft des U-Werts - ein Aufbau aus Projekt oder Katalog KATALOG, ein Typaufbau und der U-Wert der
+            // Baualtersklasse VORGABE; die Rücknahme stellt die alte Herkunft zurück.
+            if (GebaeudeZonenanschluss.UHerkunftVorhanden())
+            {
+                string uhNeu = p.UBauteil.HasValue || p.Herkunft == Vorschlagsherkunft.Typaufbau
+                    ? DbWerte.HERKUNFT_VORGABE : DbWerte.HERKUNFT_KATALOG;
+                string uhAlt = bt.U_Herkunft;
+                v.Ausfuehren("UPDATE \"Tab_Bauteil\" SET \"" + BauteilUHerkunftSchema.SPALTE + "\" = ? WHERE \"ID\" = ?",
+                             new DbParam("@h", uhNeu), new DbParam("@b", idb));
+                rueck.Add(x => x.Ausfuehren("UPDATE \"Tab_Bauteil\" SET \"" + BauteilUHerkunftSchema.SPALTE + "\" = ? WHERE \"ID\" = ?",
+                                            new DbParam("@h", (object)uhAlt ?? DBNull.Value), new DbParam("@b", idb)));
+            }
             if (p.UBauteil is double uNeu)
             {
                 // Stufe C mit Baualtersklasse (MA-4): U und Aufbau in einem Schritt, eine Rücknahme stellt beide zurück.

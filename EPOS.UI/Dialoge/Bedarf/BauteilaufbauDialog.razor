@@ -108,6 +108,18 @@
                         </KindInhalt>
                     </Stammblattgruppe>
 
+                    @* FENSTER (BK-6): nur bei Bauteilart Fenster oder Vorhangfassade - U_g, g-Wert, Rahmenanteil,
+                       U_f und psi des Glasrands; ein Auslieferungssatz als TEXT. *@
+                    @if (WindowsFormsApplication1.Fensterkennwerte.IstFensterart(_stand.Arbeit.Bauteilart))
+                    {
+                        <Stammblattgruppe Titel="@Texte.GruppeFenster" Lesemodus="@_auslieferung"
+                                          Werte="@(_auslieferung ? Fensterwerte(_stand.Gespeichert) : null)">
+                            <KindInhalt>
+                                @Fensterfelder(_stand)
+                            </KindInhalt>
+                        </Stammblattgruppe>
+                    }
+
                     @* SCHICHTEN: das Zeilenraster mit Summenfuss; ein Auslieferungssatz als TEXT,
                        der Summenfuss als Nachsatz. *@
                     <Stammblattgruppe Titel="@Texte.GruppeSchichten" Lesemodus="@_auslieferung"
@@ -168,6 +180,10 @@
                         <Warnbanner Stufe="WarnStufe.Warnung" Text="@_neuMeldung" />
                     }
                     @Kenndatenfelder(_neuStand)
+                    @if (WindowsFormsApplication1.Fensterkennwerte.IstFensterart(_neuStand.Arbeit.Bauteilart))
+                    {
+                        @Fensterfelder(_neuStand)
+                    }
                     <BauteilschichtenFelder Stand="@_neuStand" Baustoffe="@_baustoffe" Kennwerte="@_neuKennwerte"
                                             Texte="@Texte.Schichten" Geaendert="NeuNachziehen" />
                     <SpeichernLeiste OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen" Ergebnis="NeuErgebnis" />
@@ -429,6 +445,8 @@
             Bauteilarten = () => Arten,
             Baustoffe = () => _baustoffe,
             Geaendert = Nachziehen,
+            // BK-5: der Summenfuß des Kerns (U, R'_T, R''_T) zum Lesen.
+            KennwerteLesen = () => _stand.Gespeichert.Id > 0 ? _kennwerte : null,
             LadestandLesen = () => KatalogKiSperre.Ladestand(_listeFehler, _satzFehler)
         };
     }
@@ -560,6 +578,47 @@
             <Herleitungszeile Text="@Texte.ImportQuelle" />
         }
     };
+
+    // --- Fenster (BK-6) -------------------------------------------------------------
+
+    /// <summary>
+    /// Die Fensterwerte eines Fensteraufbaus — im Stammblatt und in „Neu…" dieselben. Sie gehen beim Zuweisen an das Bauteil
+    /// über (g-Wert, Rahmenanteil, U_w); die Oberfläche rechnet U_w nicht, das tut der Kern beim Zuweisen.
+    /// </summary>
+    private RenderFragment Fensterfelder(BauteilaufbauArbeitsstand stand) => __builder =>
+    {
+        BauteilaufbauDaten d = stand.Arbeit;
+        <Formularraster>
+            <KindInhalt>
+                <Zahlenfeld Bezeichnung="@Texte.LabelUg" Einheit="W/(m²K)" Wert="@d.FensterUg" Min="0" Nachkommastellen="2"
+                            WertChanged="w => Kopf(stand, () => d.FensterUg = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelGWert" Wert="@d.FensterG" Min="0" Max="1" Nachkommastellen="2"
+                            WertChanged="w => Kopf(stand, () => d.FensterG = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelRahmenanteil" Wert="@d.FensterRahmenanteil" Min="0" Max="1" Nachkommastellen="2"
+                            WertChanged="w => Kopf(stand, () => d.FensterRahmenanteil = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelUf" Einheit="W/(m²K)" Wert="@d.FensterUf" Min="0" Nachkommastellen="2"
+                            WertChanged="w => Kopf(stand, () => d.FensterUf = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelPsiGlasrand" Einheit="W/(mK)" Wert="@d.FensterPsiGlasrand" Min="0" Nachkommastellen="3"
+                            WertChanged="w => Kopf(stand, () => d.FensterPsiGlasrand = w)" />
+            </KindInhalt>
+        </Formularraster>
+        <Herleitungszeile Text="@Texte.FensterHinweis" />
+    };
+
+    /// <summary>Die Fensterwerte als Text — Lesemodus eines Auslieferungssatzes.</summary>
+    private IReadOnlyList<Stammblattwert> Fensterwerte(BauteilaufbauDaten d)
+    {
+        var c = System.Globalization.CultureInfo.CurrentCulture;
+        string Z(double? w, string format, string einheit) => w is double x ? x.ToString(format, c) + einheit : "";
+        return new[]
+        {
+            new Stammblattwert(Texte.LabelUg, Z(d.FensterUg, "0.00", " W/(m²K)")),
+            new Stammblattwert(Texte.LabelGWert, Z(d.FensterG, "0.00", "")),
+            new Stammblattwert(Texte.LabelRahmenanteil, Z(d.FensterRahmenanteil, "0.00", "")),
+            new Stammblattwert(Texte.LabelUf, Z(d.FensterUf, "0.00", " W/(m²K)")),
+            new Stammblattwert(Texte.LabelPsiGlasrand, Z(d.FensterPsiGlasrand, "0.000", " W/(mK)"))
+        };
+    }
 
     // --- Gruppe, Klasse, Eignung (BK-2b) ------------------------------------------
 

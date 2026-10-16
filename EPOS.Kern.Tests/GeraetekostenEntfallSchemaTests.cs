@@ -26,7 +26,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(228, GeraetekostenEntfallSchema.SCHRITT);
             // Die Kette hängt über + 1 an 227 (KB-2, Brennstoffpreise in die Trägerkarte).
             Assert.Equal(BrennstoffpreiseTraegerkarteSchema.SCHRITT + 1, GeraetekostenEntfallSchema.SCHRITT);
-            Assert.True(SchemaStand.Zielversion >= GeraetekostenEntfallSchema.SCHRITT);
+            // Das Ziel steht hinter KB-4 (KB-5, KBP-2, DA-6, BK-5/BK-6); dieser Schritt bleibt in der Kette.
+            Assert.True(SchemaStand.Zielversion > GeraetekostenEntfallSchema.SCHRITT);
             Assert.Contains(Paketanhebung.Stufen,
                             s => s.Nr == GeraetekostenEntfallSchema.SCHRITT && s.Wirkung == Paketanhebung.Art.Ddl);
         }

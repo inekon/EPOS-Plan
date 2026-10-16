@@ -1093,11 +1093,33 @@ namespace WindowsFormsApplication1
         /// Art-Vorschlag <c>Kaelte_Art</c> an <c>Tab_Kaeltebedarf_STAMM</c> und <c>Tab_Kaeltebedarf</c> und die Saat der
         /// Vorlagen 7–16 (<see cref="KaeltebedarfsprofilVorlagenSchema"/>). <b>Ergebnisneutral:</b> Jede Zuordnung rechnet weiter mit
         /// der Jahressumme, die Zeilen 1–6 bleiben bytegleich samt Prüfsumme.
-        // KETTE: BedarfsprofilEingabeartSchema (KBP-5a) ist auf 234 GEPARKT; das Ziel wandert erst dorthin, wenn 231 bis 233
-        // in der Kette stehen und der Schritt umgehaengt ist (BauteilUHerkunftSchema.SCHRITT + 1).
-        // KETTE: KaeltetyptagSchema (KBP-4a) ist auf 236 GEPARKT; das Ziel wandert erst dorthin, wenn 235
-        // (WasserpreisTraegerkarteSchema) in der Kette steht und der Schritt umgehaengt ist (WasserpreisTraegerkarteSchema.SCHRITT + 1).
-        public const int Zielversion = KaeltebedarfsprofilVorlagenSchema.SCHRITT;
+        /// Danach, mit der SAAT DER DIN-NUTZUNGSPROFILE (DA-6, E135), steht das Ziel auf <see cref="RaumnutzungDinWerteSchema.SCHRITT"/>:
+        /// Die 45 ausgelieferten Profile der Kategorie DIN/TS 18599-10 tragen die Werte der Fassung 2025-10
+        /// (<see cref="RaumnutzungDinSaat"/>), nur wo kein Wert stand. <b>Ergebnisneutral:</b> Kein Referenzprojekt nutzt ein
+        /// Nutzungsprofil.
+        /// Danach, mit der INHOMOGENEN SCHICHT UND DEN FENSTERN IM AUFBAUKATALOG (BK-5/BK-6), steht das Ziel auf
+        /// <see cref="BauteilkatalogAbschnittSchema.SCHRITT"/>: ψ des Glasrands am Aufbau (<see cref="BauteilkatalogAbschnittSchema"/>).
+        /// <b>Ergebnisneutral:</b> Kein Referenzprojekt führt einen Aufbau.
+        /// Danach, mit der HERKUNFT DES U-WERTS (MA-6b, E149), steht das Ziel auf <see cref="BauteilUHerkunftSchema.SCHRITT"/>:
+        /// <c>U_Herkunft</c> an <c>Tab_Bauteil(_STAMM)</c> (<see cref="BauteilUHerkunftSchema"/>) — ein von Hand gesetzter U-Wert
+        /// bleibt beim Wiederimport. <b>Ergebnisneutral:</b> Die Spalte entsteht leer, der Rechenweg liest sie nicht.
+        /// Danach, mit der EINGABEART DER BEDARFSPROFILE (KBP-5a bis KBP-5d), steht das Ziel auf
+        /// <see cref="BedarfsprofilEingabeartSchema.SCHRITT"/>: <c>Eingabeart</c> an <c>Z_Projekt_Prozesswaerme</c> und
+        /// <c>Z_Projekt_Brauchwasser</c>, <c>Nutzungstage_Norm</c> an <c>Tab_Kaeltebedarf(_STAMM)</c> (Saat allein an Vorlage 8),
+        /// <c>Ferien_wie_Sonntag</c> am Betriebskalender (<see cref="BedarfsprofilEingabeartSchema"/>). <b>Ergebnisneutral:</b>
+        /// Jede Zuordnung rechnet mit Eingabeart 'jahr', die Nutzungstage liest kein Rechenweg.
+        /// Danach, mit dem WASSERPREIS IN DER TRÄGERKARTE (KB-7a), steht das Ziel auf
+        /// <see cref="WasserpreisTraegerkarteSchema.SCHRITT"/>: Träger „Wasser“ (Preismodell <c>WATER</c>, Einheit m³),
+        /// Übernahme der Anlagenpreise in <c>energy_project_settings</c> (je Projekt die Anlage mit der kleinsten ID,
+        /// ein gepflegter Kartenpreis bleibt), dann der Entfall von <c>Tab_Energieanlagen.Wasserpreis_EUR_m3</c>
+        /// (<see cref="WasserpreisTraegerkarteSchema"/>). <b>Ergebnisneutral:</b> Kein Referenzprojekt rechnet ein
+        /// Rückkühlwerk; keine neue Katalogfassung.
+        /// Danach, mit den TYPTAGEN DER KÄLTEBEDARFSZUORDNUNG (KBP-4a), steht das Ziel auf
+        /// <see cref="KaeltetyptagSchema.SCHRITT"/>: <c>Tab_Kaeltetyptag</c> und <c>Tab_Kaeltetyptag_Matrix</c>, zwei leere
+        /// Tabellen (<see cref="KaeltetyptagSchema"/>). <b>Ergebnisneutral:</b> Keine Zuordnung trägt Eingabeart 'typtag'. Das
+        /// Ziel ist das Ende der Kette; umgehängt wird allein am Vorgänger <see cref="WasserpreisTraegerkarteSchema.SCHRITT"/>.
+        /// </summary>
+        public const int Zielversion = KaeltetyptagSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

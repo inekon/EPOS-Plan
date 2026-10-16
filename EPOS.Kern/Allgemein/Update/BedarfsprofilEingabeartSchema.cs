@@ -37,11 +37,8 @@ namespace WindowsFormsApplication1
     public static class BedarfsprofilEingabeartSchema
     {
         /// <summary><b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht.</summary>
-        // KETTE: geparkt auf 234 - 231 RaumnutzungDinWerteSchema, 232 BauteilkatalogAbschnittSchema und 233
-        // BauteilUHerkunftSchema liegen noch nicht vor. Sobald 233 auf origin liegt, umhaengen auf
-        // "BauteilUHerkunftSchema.SCHRITT + 1" und im selben Schritt eintragen: SchemaMigration.SCHRITTE_SQLITE,
-        // Paketanhebung.STUFEN, SchemaStand.Zielversion; danach die Testdatenbank heben.
-        public const int SCHRITT = 234;
+        // KETTE: haengt ueber BauteilUHerkunftSchema.SCHRITT + 1 an 233 (MA-6b).
+        public const int SCHRITT = BauteilUHerkunftSchema.SCHRITT + 1;
 
         /// <summary>Die Zuordnung der Prozesswärme.</summary>
         public const string TAB_PROZESS = "Z_Projekt_Prozesswaerme";

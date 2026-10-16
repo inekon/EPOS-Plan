@@ -316,6 +316,9 @@ Luftaustausch.btn_Help = Gebäude#zonen
 # und Bauteilaufbauten.wiki), je Maske ein Abschnitt.
 BaustoffKatalog.btn_Help = Baustoffe und Bauteilaufbauten#baustoffe
 Bauteilaufbau.btn_Help = Baustoffe und Bauteilaufbauten#bauteilaufbauten
+# Der Dialog "Bauteilkatalog einlesen..." (BK-7): Abschnitt derselben Seite; der Bereich des
+# Assistenten folgt dem Praefix "Bauteil".
+BauteilkatalogImport.btn_Help = Baustoffe und Bauteilaufbauten#bauteilkatalog-einlesen
 # Das Blatt "Nutzungsprofile" (Katalog und Zuordnung der Nutzungsprofile, aus dem Gebaeudeeditor und
 # dem Gebaeudeimport): Razor-Komponente ohne WinForms-Vorlaeufer, der Schluessel steht in der Komponente
 # (HilfeSchluessel); die Seite hat eine Repo-Quelle (Projekte/Wiki/Programm Dokumentation - Nutzungsprofile.wiki).

@@ -1,6 +1,6 @@
-# Die Protokolle der 57 entfernten Referenzbasen
+# Die Protokolle der 58 entfernten Referenzbasen
 
-**Was hier liegt.** Für jede der **57 historischen Referenzbasen** unter `Referenzlaeufe/` das
+**Was hier liegt.** Für jede der **58 historischen Referenzbasen** unter `Referenzlaeufe/` das
 Protokoll ihrer Entstehung — `lauf_protokoll.md` beziehungsweise `protokoll.txt`, byte-gleich
 aus dem Stand `b02f986^` (= dem letzten Commit vor der Löschung) gesichert; das Protokoll von R7 kam am
 16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026, das von R14, das von R15, das von R16, das von R17 und das von R18 am 25.09.2026, das von R19, das von R20, das von R21 und das von R22 am 26.09.2026, das von R23 am 29.09.2026, das von R24 und das von R25 am 29.09.2026, das von R26, das von R27, das von R28 und das von R29 am 30.09.2026, das von R30, das von R31 und das von R32 am 02.10.2026. **51 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral`](../../../Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral/);
+> [`Referenzlaeufe/2026-10-16_R56_Wasserkosten`](../../../Referenzlaeufe/2026-10-16_R56_Wasserkosten/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -100,6 +100,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-10-11_R52_Vorheizen` | 11.10.2026 | Basis mit dem Referenzprojekt 1065 (berechnete Vorheizzeit, AH-V7), auf Linux eingefroren; Testdatenbank `832fda50…` (Schemastand 215), Nachträge bis Schemastand 222; dreißig Projekte, 979 CSV, 6 777 Skalare — abgelöst durch R53 am 13.10.2026 | [`2026-10-11_R52_Vorheizen/protokoll.txt`](2026-10-11_R52_Vorheizen/protokoll.txt) |
 | `2026-10-13_R53_Zapfprofiloptionen` | 13.10.2026 | Basis mit den Referenzprojekten 1066 bis 1071 der Zapfprofil-Optionen (ZB12), auf Linux eingefroren; Testdatenbank `6ef7aa68…` (Schemastand 224), Nachträge bis Schemastand 227 (`fb42e2f3…`); sechsunddreißig Projekte, 1 171 CSV, 7 983 Skalare — abgelöst durch R54 am 14.10.2026 | [`2026-10-13_R53_Zapfprofiloptionen/protokoll.txt`](2026-10-13_R53_Zapfprofiloptionen/protokoll.txt) |
 | `2026-10-14_R54_Dachflaechen` | 14.10.2026 | Basis mit den Satteldächern 42° der Zonenprojekte 1052 und 1054 (Anwenderentscheid E141), auf Linux eingefroren; Testdatenbank `1f2cf95f…` (Schemastand 227); sechsunddreißig Projekte, 1 171 CSV, 7 983 Skalare — abgelöst durch R55 am 14.10.2026 | [`2026-10-14_R54_Dachflaechen/protokoll.txt`](2026-10-14_R54_Dachflaechen/protokoll.txt) |
+| `2026-10-14_R55_KaeltebedarfDezentral` | 14.10.2026 | Basis mit dem Referenzprojekt 1072 (Kältebedarfsprofile und dezentrale Deckung, Stufe K6 des Konzepts Kältebedarf), auf Linux eingefroren; Testdatenbank `aee043d0…` (Schemastand 227), Nachträge bis Schemastand 235 (`3478881f…`); siebenunddreißig Projekte, 1 205 CSV, 8 259 Skalare — abgelöst durch R56 am 16.10.2026 | [`2026-10-14_R55_KaeltebedarfDezentral/protokoll.txt`](2026-10-14_R55_KaeltebedarfDezentral/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -5832,5 +5833,100 @@ sechsunddreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
 >
 > Befund, Berichtigung und Vergleich stehen im
 > [Protokoll R54](../Protokolle/Gebaeudesimulation/2026-10-14_R54_Dachflaechen.md).
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R55 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 14.10.2026 die Basis R55 beschrieben — den Anlass (Referenzprojekt 1072 „Referenzprojekt Kältebedarf dezentral“, Stufe K6 des Konzepts Kältebedarf) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`.
+
+**Abgelöst wurde R55 durch `2026-10-16_R56_Wasserkosten`** (Schemaschritt 235, Wasserkosten des Rückkühlwerks, KB-7): Die Schemaschritte 228 bis 235 ändern keinen Rechenwert der Referenzprojekte — alle siebenunddreißig Projekte sind gegen R55 PASS (12 736 541 Werte, 1 205 CSV); R56 nimmt in `Projekt_1072/aggregate.csv` die zwei Schlüssel `Kaelte.DeckungsgradGesamtProzent` und `Kaelte.DeckungsgradKaeltefolgeProzent` auf, die R55 nicht führt.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-10-14_R55_KaeltebedarfDezentral/`** — **siebenunddreißig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063, 1064, 1065, 1066, 1067, 1068, 1069, 1070, 1071, 1072), **1 205 CSV**, **8 259 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 14.10.2026, Stand `d66bc09cc`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **227**, 108 720 128 Byte, LFS-SHA-256 `aee043d0…`, mit den Projekten 1053 bis 1072,
+dem erfundenen Typtagsatz und den Satteldächern von 1052 und 1054; die Nachträge der Schemaschritte unten sind darin
+enthalten). Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065 und 1066 bis 1071) jeden Push und rechnet dieselben Projekte
+ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045 (Feiertage zählen im
+Zapfkalender als Sonntag und liegen nach der Konvention des Gemeinjahrs im Wochentagsraster der Klimaregion), `EPOS.Kern.Tests/FeiertageTests` die Konvention selbst,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049 samt der Anker (genutzte Solarwärme,
+Überschuss, mittlere Arbeitstemperatur des Felds), `EPOS.Kern.Tests/StromViertelstundenTests` die PV-Bilanz der
+Projekte 1045 und 1046 (Erzeugung, Einspeisung, Restbezug),
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
+die Kesselstunden von Projekt 1024, `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023 und 1007,
+das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des Referenzprojekts 1050,
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` das Brennwertkennzeichen der Projektkessel,
+`EPOS.Kern.Tests/StromverbraucherZuordnungTests` die Stromverbraucher-Zuordnung über die ID an 1017, 1043 und
+1046, `EPOS.Kern.Tests/BhkwLeistungsgrenzeTests` die Rangfolge der BHKW-Untergrenze (Anlagenfeld, Katalog,
+Projekt) in allen drei Betriebsarten, `EPOS.Kern.Tests/KonditionierungReferenzprojektWacheTests` die Kalender,
+die Nachtzeile der Lüftung und die Aufheizoptimierung von Projekt 1051 und
+`EPOS.Kern.Tests/ZonenReferenzprojektWacheTests` die Zonen von Projekt 1052 und `EPOS.Kern.Tests/ZonenHeizkreisReferenzprojektWacheTests` Kopplung, Heizkurve und die
+Zonenübergabe von Projekt 1054, `EPOS.Kern.Tests/KaeltemaschineReferenzprojektWacheTests` die Kältemaschine von Projekt 1055
+`EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests` Sperrzeit, Zeitprogramme, Vorlaufgrenze und Komfortstunden von
+Projekt 1056, `EPOS.Kern.Tests/ErdsondeReferenzprojektWacheTests` die Erdreichquellen der Referenzprojekte und das
+Sondenfeld von Projekt 1057 und `EPOS.Kern.Tests/Ak3ReferenzprojektWacheTests` Stufe AK3, Heizungspuffer, Raumeinfluss
+und Kennzahlen des Kreises von Projekt 1058, `EPOS.Kern.Tests/Ak3KReferenzprojektWacheTests` die Kälteseite im Kreis
+von Projekt 1059, `EPOS.Kern.Tests/KuehlkurveReferenzprojektWacheTests` die Kühlkurve von Projekt 1061 und
+`EPOS.Kern.Tests/ZonenKuehlkurveReferenzprojektWacheTests` die Kühlübergabe je Zone von Projekt 1062 und
+`EPOS.Kern.Tests/UebergabegrenzeReferenzprojektWacheTests` Übergabegrenze, Betriebsbereiche, Bivalenzpunkte und die
+Rücklaufstufe „Vorwärmer“ von Projekt 1060 samt Rücklauf- und Spreizungsgrenze und
+`EPOS.Kern.Tests/KaeltemaschineTeillastReferenzprojektWacheTests` Teillastkurve, Takten und Gütegrad-Extrapolation der
+Kältemaschine von Projekt 1063 und `EPOS.Kern.Tests/FreieKuehlungReferenzprojektWacheTests` die freie Kühlung über die
+Wärmequelle von Projekt 1064, `EPOS.Kern.Tests/VorheizReferenzprojektWacheTests` die berechnete Vorheizzeit von
+Projekt 1065 und `EPOS.Kern.Tests/ZapfprofilOptionenReferenzprojekteWacheTests` die Zapfprofile der Projekte 1066 bis
+1071 samt Generator-Bilanz und den eingefrorenen Auslegungswerten von 1071 und
+`EPOS.Kern.Tests/KaelteDezentralReferenzprojektWacheTests` die Kältebedarfsprofile und die dezentrale Deckung von
+Projekt 1072. 1050, 1052, 1054, 1055, 1056, 1057, 1059, 1061, 1062, 1064 und 1072 stehen nicht in der CI-Auswahl;
+`Werkzeuge/Gate/gate_linux.sh` rechnet alle siebenunddreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+**Zwei Schlüssel, die R55 nicht führt.** Mit Split-Zeile schreibt der Referenzlauf in `aggregate.csv` die Hauptzahl des
+Kältedeckungsgrads `Kaelte.DeckungsgradGesamtProzent` und „davon Kältefolge“ `Kaelte.DeckungsgradKaeltefolgeProzent`
+(dieselbe Stelle `KaelteDeckungsgrad` wie die Laufmeldung der Kälteerzeugung; `Kaelte.DeckungsgradProzent` bleibt).
+R55 enthält sie nicht; die Vergleiche gegen R55 in `Werkzeuge/Gate/` nehmen sie deshalb mit `--ohne` aus. Wer die
+nächste Basis einfriert, nimmt die beiden Schlüssel auf und streicht `--ohne` aus den Gate-Skripten.
+
+> **Anlass: das Referenzprojekt 1072 „Referenzprojekt Kältebedarf dezentral“ (Stufe K6 des Konzepts Kältebedarf).**
+> Bis dahin rechnete kein Referenzprojekt ein Kältebedarfsprofil oder eine dezentrale Deckung: Profilbuchung, Split-Buchung
+> neben der Kältefolge mit EER fest und linear, anteiliger Netzbezug des Split-Stroms, eigener Zähler auf einem abweichenden
+> Kühlträger und die Ergebniszeilen je Split-Zeile (`Tab_ErgebnisKaelteDezentral`) standen außerhalb des Regressionsnetzes.
+> 1072 ist eine Kopie von 1055 mit drei Kältebedarfsprofilen (Abschnitt „Das Referenzprojekt 1072“ unten) und steht nicht
+> in der CI-Auswahl. Die Testdatenbank wächst um die Kopie; der Schemastand bleibt 227. Es gilt die Einfrierregel „gesäte
+> Kältebedarfs-Zuordnungen“ (oben).
+>
+> **Gegen R54 sind alle sechsunddreißig Projekte byte-gleich (1 171/1 171 CSV; einziger Befund des `vergleich`: 1072 nur
+> im Vergleichslauf)** — ohne Split-Zeile bleibt jeder Rechenweg unberührt. Hinzu kommt 1072 mit 34 CSV (die 32 von 1055
+> und die Reihen `kaeltebedarf_dezentral` und `strom_kaelte_dezentral`) und 276 Skalaren. Die Kälteseite (MWh/a):
+>
+> | Größe | 1055 (zum Vergleich) | 1072 |
+> |---|---|---|
+> | Kältebedarf gesamt | 4,05 | 10,05 |
+> | davon Kältefolge (Gebäude, „Büro Kälteprofil“) | 4,05 | 5,05 |
+> | davon dezentral (Split) | – | 5,00 |
+> | Kältestrom der Kältemaschine | 1,25 | 1,51 |
+> | Strom dezentral (Jahres-EER 3,27) | – | 1,53 |
+> | Deckungsgrad: Hauptzahl / davon Kältefolge | 100 % | 100 % / 100 % |
+>
+> Je Split-Zeile: „Split Büro“ 3,00 MWh Kälte und 1,00 MWh Strom (EER fest 3,0), davon 0,88 MWh Netzbezug anteilig über
+> den Stromträger des Projekts (den Rest decken Photovoltaik und Stromspeicher); „Split Serverraum“ 2,00 MWh Kälte und
+> 0,53 MWh Strom (EER linear, Jahreswert 3,78), Netzbezug 0,53 MWh vollständig über den eigenen Zähler mit Träger 58. Die
+> gespeicherte Größe `Kaelte.DeckungsgradProzent` behält ihre Bedeutung (Kälte der Kältefolge am gesamten Kältebedarf) und
+> steht für 1072 bei 50,25 %; die Hauptzahl mit der Split-Deckung entsteht nur mit Split-Zeile. Zwei Läufe sind byte-gleich
+> (1 205/1 205 CSV).
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063,1064,1065,1066,1067,1068,1069,1070,1071,1072 \
+>   --ziel Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral
+> ```
+>
+> Die Regel steht im [Konzept Kältebedarf](../Konzept_Kaeltebedarf_EPOS-Plan.md), Abschnitt 8.1.
 
 <!-- ÜBERNOMMENER ABSCHNITT, ENDE -->

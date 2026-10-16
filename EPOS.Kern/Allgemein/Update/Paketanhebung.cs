@@ -478,13 +478,27 @@ namespace WindowsFormsApplication1
             // Art-Vorschlag; der Schritt legt die Spalten am Ziel an (Vorgabe 'jahr' bzw. leer).
             new Stufe(KaeltebedarfsprofilVorlagenSchema.SCHRITT, Art.Ddl,
                       "Eingabeart der Kältebedarfszuordnung, Art-Vorschlag und Vorlagen 7–16 des Kältekatalogs (KBP-2)"),
-            // KBP-5a (BedarfsprofilEingabeartSchema), KETTE: GEPARKT auf 234 - die Stufe folgt mit dem Umhaengen hinter 233:
-            //   new Stufe(BedarfsprofilEingabeartSchema.SCHRITT, Art.Ddl,
-            //             "Eingabeart an Prozesswärme und Brauchwasser, Nutzungstage nach Norm an den Kältevorlagen (KBP-5a)"),
-            // KBP-4a (KaeltetyptagSchema), KETTE: GEPARKT auf 236 - die Stufe folgt mit dem Umhaengen hinter 235. Ein älteres
-            // Paket bringt keine Typtage; der Schritt legt die zwei leeren Tabellen am Ziel an:
-            //   new Stufe(KaeltetyptagSchema.SCHRITT, Art.Ddl,
-            //             "Typtage und Zuordnungsmatrix der Kältebedarfszuordnung (KBP-4a)"),
+            // Ein Paket führt keinen Katalog der Nutzungsprofile (er bleibt im Ziel); der Schritt sät die DIN-Profile am Ziel.
+            new Stufe(RaumnutzungDinWerteSchema.SCHRITT, Art.Katalog,
+                      "Werte der DIN-Nutzungsprofile nach DIN/TS 18599-10:2025-10 (DA-6, E135)"),
+            // Ein älteres Paket bringt seine Fensteraufbauten ohne ψ des Glasrands; der Schritt legt die Spalte leer an.
+            new Stufe(BauteilkatalogAbschnittSchema.SCHRITT, Art.Ddl,
+                      "ψ des Glasrands am Aufbaukatalog (BK-6)"),
+            // Ein älteres Paket bringt seine Bauteile ohne Herkunft des U-Werts; der Schritt legt die Spalte leer an.
+            new Stufe(BauteilUHerkunftSchema.SCHRITT, Art.Ddl,
+                      "Herkunft des U-Werts je Bauteil (MA-6b)"),
+            // Ein älteres Paket bringt Prozesswärme und Brauchwasser ohne Eingabeart und die Kältevorlagen ohne Nutzungstage;
+            // der Schritt legt die Spalten an (Vorgabe 'jahr').
+            new Stufe(BedarfsprofilEingabeartSchema.SCHRITT, Art.Ddl,
+                      "Eingabeart an Prozesswärme und Brauchwasser, Nutzungstage nach Norm an den Kältevorlagen (KBP-5a)"),
+            // KB-7a: Ein älteres Paket bringt den Wasserpreis noch an seinen Anlagenzeilen; die Stufe übergibt ihn an
+            // die Trägerkarte des Projekts (energy_project_settings des Wasserträgers am Ziel), danach fällt die
+            // Spalte mit der Schnittmenge des Imports fort.
+            new Stufe(WasserpreisTraegerkarteSchema.SCHRITT, Art.Umformung,
+                      "Wasserpreis der Anlage in die Trägerkarte, Entfall von Wasserpreis_EUR_m3 (KB-7a)", SchrittWasserpreis),
+            // KBP-4a: Ein älteres Paket bringt keine Typtage; der Schritt legt die zwei leeren Tabellen am Ziel an.
+            new Stufe(KaeltetyptagSchema.SCHRITT, Art.Ddl,
+                      "Typtage und Zuordnungsmatrix der Kältebedarfszuordnung (KBP-4a)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>
@@ -562,6 +576,64 @@ namespace WindowsFormsApplication1
                 return string.IsNullOrEmpty(s) ? rueckfall : s;
             }
             catch { return rueckfall; }
+        }
+
+        /// <summary>
+        /// <see cref="WasserpreisTraegerkarteSchema.SCHRITT"/> — der Wasserpreis eines älteren Pakets geht in die
+        /// Trägerkarte seines Projekts: je Projekt nach Regel c (<see cref="WasserpreisTraegerkarteSchema.Projektpreise"/>)
+        /// eine Zeile <c>energy_project_settings</c> mit dem Wasserträger des Ziels und dem Preis als
+        /// <c>custom_price_work</c>. Der Verweis zeigt auf die Id des ZIELS; der Import schlüsselt nur Ids um, die der
+        /// Paketkatalog der Träger führt. Führt er dieselbe Id für einen anderen Träger, nennt die Stufe den Preis,
+        /// statt ihn an einen fremden Träger zu hängen. Die Spalte selbst fällt mit der Schnittmenge des Imports fort.
+        /// </summary>
+        private static string SchrittWasserpreis(Paketarbeitsdatenbank db)
+        {
+            string anl = WasserpreisTraegerkarteSchema.TAB_ANLAGEN;
+            if (!db.SpalteVorhanden(anl, WasserpreisTraegerkarteSchema.ALTSPALTE) || !db.SpalteVorhanden(anl, "ID_Projekt"))
+                return null;
+            List<WasserpreisTraegerkarteSchema.Projektpreis> preise =
+                WasserpreisTraegerkarteSchema.Projektpreise(db.Lesen(WasserpreisTraegerkarteSchema.SqlPreiseLesen()));
+            if (preise.Count == 0) return null;
+
+            var teile = new List<string>();
+            long? traeger = WasserpreisTraegerkarteSchema.TraegerId();
+            bool belegt = traeger.HasValue && db.SpalteVorhanden(WasserpreisTraegerkarteSchema.TAB_TRAEGER, "id") &&
+                          Ganz(db.Skalar("SELECT COUNT(*) FROM \"" + WasserpreisTraegerkarteSchema.TAB_TRAEGER + "\" WHERE \"id\" = ?",
+                                         new DbParam("@id", traeger.Value))) > 0;
+            if (!traeger.HasValue || belegt)
+            {
+                foreach (WasserpreisTraegerkarteSchema.Projektpreis p in preise)
+                    teile.Add(string.Format(CultureInfo.InvariantCulture,
+                        Text("TRANSFER_ANHEBUNG_WASSERPREIS_OFFEN",
+                             "Wasserpreis {0} EUR/m³ der Anlage {1} nicht übernommen — bitte in der Trägerkarte „Wasser“ setzen"),
+                        p.Preis, p.IdAnlage));
+                return string.Join("; ", teile);
+            }
+
+            string tab = WasserpreisTraegerkarteSchema.TAB_EINSTELLUNG;
+            string spTraeger = WasserpreisTraegerkarteSchema.SPALTE_TRAEGER;
+            string spPreis = WasserpreisTraegerkarteSchema.SPALTE_PREIS;
+            if (!db.TabelleVorhanden(tab))
+                db.Ausfuehren("CREATE TABLE \"" + tab + "\" (\"ID\", \"ID_Projekt\", \"" + spTraeger + "\", \"" + spPreis + "\")");
+            db.SpalteSicherstellen(tab, "ID");
+            db.SpalteSicherstellen(tab, "ID_Projekt");
+            db.SpalteSicherstellen(tab, spTraeger);
+            db.SpalteSicherstellen(tab, spPreis);
+            int n = 0;
+            foreach (WasserpreisTraegerkarteSchema.Projektpreis p in preise)
+            {
+                long id = Ganz(db.Skalar("SELECT IFNULL(MAX(\"ID\"), 0) + 1 FROM \"" + tab + "\""));
+                db.Ausfuehren("INSERT INTO \"" + tab + "\" (\"ID\", \"ID_Projekt\", \"" + spTraeger + "\", \"" + spPreis +
+                              "\") VALUES (?, ?, ?, ?)",
+                              new DbParam("@id", id), new DbParam("@p", p.IdProjekt), new DbParam("@t", traeger.Value),
+                              new DbParam("@w", p.Preis));
+                n++;
+                string verworfen = WasserpreisTraegerkarteSchema.HinweisVerworfen(p);
+                if (verworfen != null) teile.Add(verworfen);
+            }
+            teile.Insert(0, Zeilen(n, Text("TRANSFER_ANHEBUNG_WASSERPREIS",
+                                           "Wasserpreis(e) der Anlagen in die Trägerkarte „Wasser“ übernommen")));
+            return string.Join("; ", teile);
         }
 
         /// <summary>67 — <see cref="BhkwLeistungsgrenzeVorgabe.Anhebung"/>: eine leere

@@ -3406,7 +3406,8 @@ namespace Testdatenbankschema
             }
 
             // ---- Schritt RueckkuehlwerkSchema.SCHRITT (K-F1): Rueckkuehlwerk als eigenes Glied - Katalog und Projektkopie
-            //      (leer, keine Saat), ID_Rueckkuehlwerk und Wasserpreis_EUR_m3 an Tab_Energieanlagen, sechs Kennzahlen an
+            //      (leer, keine Saat), ID_Rueckkuehlwerk an Tab_Energieanlagen (der Wasserpreis steht in der
+            //      Traegerkarte, WasserpreisTraegerkarteSchema), sechs Kennzahlen an
             //      Tab_ErgebnisKaeltemaschine. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_Rueckkuehlwerk.
             //
             //      REFERENZLAUF UNVERAENDERT: Kein Rechenweg liest die Tabellen oder Spalten, jede Zeile steht auf NULL.
@@ -3737,12 +3738,93 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt RaumnutzungDinWerteSchema.SCHRITT (DA-6, E135): die 45 DIN-Nutzungsprofile mit den Werten der
+            //      Saat RaumnutzungDinSaat (Fassung 2025-10), nur wo kein Wert steht. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_RaumnutzungDinWerte. Wiederholbar.
+            //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt nutzt ein Nutzungsprofil.
+            string nrDa6 = RaumnutzungDinWerteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrDa6 + " - Werte der DIN-Nutzungsprofile: " +
+                              (RaumnutzungDinWerteSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtDa6 = new List<string>();
+                RaumnutzungDinWerteSchema.Ausfuehren(berichtDa6);
+                foreach (string zeile in berichtDa6)
+                    Console.WriteLine("Schritt " + nrDa6 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrDa6 + " - vollstaendig: " + RaumnutzungDinWerteSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt BauteilkatalogAbschnittSchema.SCHRITT (BK-5/BK-6): Psi_Glasrand an Tab_Bauteilaufbau(_STAMM). Aus
+            //      DERSELBEN Quelle wie SchemaMigration.Schritt_BauteilkatalogAbschnitt. Wiederholbar.
+            //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt fuehrt einen Aufbau, die Spalte bleibt leer.
+            string nrBk5 = BauteilkatalogAbschnittSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBk5 + " - Inhomogene Schicht und Fenster im Aufbaukatalog: " +
+                              (BauteilkatalogAbschnittSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtBk5 = new List<string>();
+                angelegt += BauteilkatalogAbschnittSchema.Ausfuehren(berichtBk5);
+                foreach (string zeile in berichtBk5)
+                    Console.WriteLine("Schritt " + nrBk5 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBk5 + " - vollstaendig: " + BauteilkatalogAbschnittSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt BauteilUHerkunftSchema.SCHRITT (MA-6b, E149): U_Herkunft an Tab_Bauteil(_STAMM). Aus DERSELBEN
+            //      Quelle wie SchemaMigration.Schritt_BauteilUHerkunft. Wiederholbar.
+            //      REFERENZLAUF UNVERAENDERT: Die Spalte bleibt leer, der Rechenweg liest sie nicht.
+            string nrMa6b = BauteilUHerkunftSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrMa6b + " - Herkunft des U-Werts je Bauteil: " +
+                              (BauteilUHerkunftSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtMa6b = new List<string>();
+                angelegt += BauteilUHerkunftSchema.Ausfuehren(berichtMa6b);
+                foreach (string zeile in berichtMa6b)
+                    Console.WriteLine("Schritt " + nrMa6b + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrMa6b + " - vollstaendig: " + BauteilUHerkunftSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Saat zu Schritt BauteilUHerkunftSchema.SCHRITT (Fehlerbehebung FX): die Herkunft des U-Werts an den
+            //      gesaeten Bauteilen der Zonen-Referenzprojekte 1052, 1054 (Kopie von 1052) und 1062 - genau der Wert,
+            //      den ihre Bauplaene ueber die Programmwege schreiben (Referenzlaeufe/Skripte/referenzprojekt_1052_bauplan.cs,
+            //      referenzprojekt_1062_kkz.cs): Die Kopien der Uebernahme ("Gebaeude als eine Zone uebernehmen",
+            //      GebaeudeZonenabbildung.AlsBauteilModel) tragen VORGABE, die von Hand angelegten Zeilen MANUELL
+            //      (GebaeudeZonenCtrl.UHerkunftNeu). Nur diese Projekte und nur U_Herkunft; KEINE Datenmigration fuer
+            //      Anwenderdatenbanken (der Bestand bleibt NULL). Wiederholbar.
+            //      REFERENZLAUF BYTE-GLEICH: Der Rechenweg liest U_Herkunft nicht.
+            if (!trocken && BauteilUHerkunftSchema.Vollstaendig())
+            {
+                const string ZEILEN = "ID_Aufbau IS NULL AND U_Wert IS NOT NULL AND ID_Zone IN (SELECT z.ID FROM Tab_Zone z " +
+                                      "JOIN Tab_Gebaeude g ON g.ID = z.ID_Gebaeude WHERE g.ID_Projekt IN (1052, 1054, 1062))";
+                const string VON_HAND = "Bezeichner IN (?, ?, ?, ?, ?)";
+                DbParam[] Parameter(string herkunft) => new[]
+                {
+                    new DbParam("@h", herkunft),
+                    new DbParam("@b1", "Kellerdecke"), new DbParam("@b2", "Trennwand Gastronomie"),
+                    new DbParam("@b3", "Kellerboden"), new DbParam("@b4", "Kellerwände"),
+                    new DbParam("@b5", "Trennwand Nord/Ost"),
+                };
+                int manuell = DataRepository.ExecuteNonQuery(
+                    "UPDATE Tab_Bauteil SET U_Herkunft = ? WHERE " + ZEILEN + " AND " + VON_HAND,
+                    Parameter(DbWerte.HERKUNFT_MANUELL));
+                int vorgabe = DataRepository.ExecuteNonQuery(
+                    "UPDATE Tab_Bauteil SET U_Herkunft = ? WHERE " + ZEILEN + " AND NOT " + VON_HAND,
+                    Parameter(DbWerte.HERKUNFT_VORGABE));
+                Console.WriteLine("Schritt " + nrMa6b + " - Saat der Zonen-Referenzprojekte: " + vorgabe + " Bauteil(e) VORGABE, " +
+                                  manuell + " Bauteil(e) MANUELL (erwartet 72 und 11).");
+            }
+
             // ---- Schritt BedarfsprofilEingabeartSchema.SCHRITT (KBP-5a): Z_Projekt_Prozesswaerme.Eingabeart und
             //      Z_Projekt_Brauchwasser.Eingabeart (Vorgabe 'jahr'), Nutzungstage_Norm an Tab_Kaeltebedarf_STAMM/
             //      Tab_Kaeltebedarf, Saat allein an Vorlage 8 (230 Tage). Aus DERSELBEN Quelle wie
             //      SchemaMigration.Schritt_BedarfsEingabeart. Wiederholbar.
-            //      KETTE: GEPARKT auf 234 - dieser Block bleibt HINTER den Bloecken von 231 bis 233; die Hebung der
-            //      Testdatenbank folgt erst nach dem Umhaengen (BauteilUHerkunftSchema.SCHRITT + 1).
+            //      Haengt ueber BauteilUHerkunftSchema.SCHRITT + 1 an 233 und steht hinter dessen Block.
             //
             //      REFERENZLAUF UNVERAENDERT: jede Zuordnung rechnet weiter mit der Jahressumme; die Nutzungstage liest
             //      kein Rechenweg, die Kaeltezeilen 1-6 bleiben samt Pruefsumme bytegleich.
@@ -3760,11 +3842,27 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt WasserpreisTraegerkarteSchema.SCHRITT (KB-7a): Traeger Wasser (WATER, m3), Uebernahme der
+            //      Anlagenpreise in energy_project_settings, Entfall von Tab_Energieanlagen.Wasserpreis_EUR_m3. Aus
+            //      DERSELBEN Quelle wie SchemaMigration.Schritt_WasserpreisTraegerkarte. Wiederholbar, ergebnisneutral.
+            string nrKb7 = WasserpreisTraegerkarteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKb7 + " - Wasserpreis in der Traegerkarte: " +
+                              (WasserpreisTraegerkarteSchema.Vollstaendig() ? "steht bereits" : "offen") +
+                              " (" + WasserpreisTraegerkarteSchema.Offen() + " Teil(e) offen).");
+            if (!trocken)
+            {
+                var berichtKb7 = new List<string>();
+                angelegt += WasserpreisTraegerkarteSchema.Ausfuehren(berichtKb7);
+                foreach (string zeile in berichtKb7)
+                    Console.WriteLine("Schritt " + nrKb7 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKb7 + " - vollstaendig: " + WasserpreisTraegerkarteSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             // ---- Schritt KaeltetyptagSchema.SCHRITT (KBP-4a): Tab_Kaeltetyptag und Tab_Kaeltetyptag_Matrix (leer, STRICT,
             //      Fremdschluessel auf Tab_Projekt und die Projektkopie Tab_Kaeltebedarf). Aus DERSELBEN Quelle wie
             //      SchemaMigration.Schritt_Kaeltetyptag. Wiederholbar.
-            //      KETTE: GEPARKT auf 236 - dieser Block bleibt HINTER dem Block von 235 (WasserpreisTraegerkarteSchema);
-            //      die Hebung der Testdatenbank folgt erst nach dem Umhaengen (WasserpreisTraegerkarteSchema.SCHRITT + 1).
             //
             //      REFERENZLAUF UNVERAENDERT: keine Zuordnung traegt Eingabeart 'typtag'.
             string nrKbp4 = KaeltetyptagSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);

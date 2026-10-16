@@ -12,8 +12,10 @@ namespace WindowsFormsApplication1
     // WAS.
     //   Tab_Rueckkuehlwerk_STAMM     Katalog der Auslieferung (ReadOnly, Katalogspalten, Kostenvorlagen)
     //   Tab_Rueckkuehlwerk           Projektkopie: ID_Projekt (Kaskade), ID_Stamm (SET NULL)
-    //   Tab_Energieanlagen           ID_Rueckkuehlwerk (Verweis auf die PROJEKTKOPIE, SET NULL) und
-    //                                Wasserpreis_EUR_m3 (Frage KD-Q8: Preis optional an der Anlage, leer = keine Kosten)
+    //   Tab_Energieanlagen           ID_Rueckkuehlwerk (Verweis auf die PROJEKTKOPIE, SET NULL)
+    //                                Den Wasserpreis an der Anlage (Frage KD-Q8) legt der Schritt NICHT mehr an: Er steht in
+    //                                der Traegerkarte (WasserpreisTraegerkarteSchema, KB-7). Eine Datenbank, die den Schritt
+    //                                mit der Preisspalte gefahren hat, verliert sie dort - samt Uebertrag ihrer Preise.
     //   Tab_ErgebnisKaeltemaschine   sechs Kennzahlen der Rueckkuehlung (Entwurf 5.8), leer bis K-F2/K-F3 sie fuellen
     //
     // Das Rueckkuehlwerk ist KEIN Erzeuger der Anlagenliste und hat KEINEN Platz in der Kaeltefolge (K8, fortgeschrieben):
@@ -59,9 +61,6 @@ namespace WindowsFormsApplication1
 
         /// <summary>Verweis der Projektkopie auf ihren Katalogsatz.</summary>
         public const string SPALTE_ID_STAMM = "ID_Stamm";
-
-        /// <summary>Wasserpreis an der Anlagenzeile [€/m³]; leer = keine Wasserkosten (Frage KD-Q8).</summary>
-        public const string SPALTE_WASSERPREIS = "Wasserpreis_EUR_m3";
 
         // ---- Fachspalten (Katalog und Projektkopie) ----
 
@@ -186,11 +185,13 @@ namespace WindowsFormsApplication1
         /// <summary>Die Namen der Fachspalten in Tabellenfolge (Register der Katalogfassung, Schreibweg).</summary>
         public static readonly string[] Fachspalten = FACH_SPALTEN.Select(s => s.Spalte).ToArray();
 
-        /// <summary>Die Spalten an der Anlagenzeile: Verweis und Wasserpreis.</summary>
+        /// <summary>
+        /// Die Spalte an der Anlagenzeile: der Verweis. Der Wasserpreis steht in der Trägerkarte
+        /// (<see cref="WasserpreisTraegerkarteSchema"/>) — der Schritt legt ihn auch beim erneuten Lauf nicht wieder an.
+        /// </summary>
         public static readonly IReadOnlyList<(string Tabelle, string Spalte, string Typ)> SPALTEN_ANLAGE = new[]
         {
             (TAB_ANLAGEN, SPALTE_ID_RUECKKUEHLWERK, "INTEGER REFERENCES " + Q(TAB_PROJEKT) + " (\"ID\") ON DELETE SET NULL"),
-            (TAB_ANLAGEN, SPALTE_WASSERPREIS, NichtNegativ(SPALTE_WASSERPREIS)),
         };
 
         /// <summary>Die Kennzahlen der Rückkühlung am Ergebnis der Kältemaschine (Entwurf 5.8).</summary>
@@ -257,13 +258,12 @@ namespace WindowsFormsApplication1
             SPALTEN_ANLAGE.All(s => DataRepository.SpalteVorhanden(s.Tabelle, s.Spalte))
             && DataRepository.TabelleVorhanden(TAB_PROJEKT);
 
-        /// <summary>Wie viele Anlagenzeilen tragen einen Verweis oder Wasserpreis? (Nachweis: nach dem Schritt 0.)</summary>
+        /// <summary>Wie viele Anlagenzeilen tragen einen Verweis? (Nachweis: nach dem Schritt 0.)</summary>
         public static int ZeilenMitWert()
         {
             if (!AnlagenspaltenVorhanden()) return 0;
             object o = DataRepository.ExecuteScalar(
-                "SELECT COUNT(*) FROM " + Q(TAB_ANLAGEN) + " WHERE " + Q(SPALTE_ID_RUECKKUEHLWERK) + " IS NOT NULL OR " +
-                Q(SPALTE_WASSERPREIS) + " IS NOT NULL");
+                "SELECT COUNT(*) FROM " + Q(TAB_ANLAGEN) + " WHERE " + Q(SPALTE_ID_RUECKKUEHLWERK) + " IS NOT NULL");
             return o == null || o == DBNull.Value ? 0 : Convert.ToInt32(o, CultureInfo.InvariantCulture);
         }
 

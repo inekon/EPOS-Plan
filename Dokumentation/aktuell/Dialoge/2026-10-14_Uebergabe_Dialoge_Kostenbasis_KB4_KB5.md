@@ -37,12 +37,12 @@ gemergte Zweige `kb2`, `kb3`, `kb4a`, `kb4b`, `kb4c` sind als Worktrees entfernt
   Sätze stehen ohne Version im Entwurf `Dokumentation/aktuell/Wiki_Update_2026-09-26.md`.
 - **Modellwahl:** Fable 5.1 nur für Orchestrierung und sehr komplexe Analyse; Umsetzung Opus 5.5 (`opus-umsetzung`), Mechanik
   Sonnet (`sonnet-mechanik`), Prüfungen Haiku (`haiku-pruefung`); wöchentliche Nutzung sparsam.
-- **KB-5, nach Empfehlung entschieden, vom Anwender zu bestätigen:** Verschleiß als Betriebsposition je entladener kWh
+- **KB-5, nach Empfehlung entschieden, vom Anwender bestätigt (16.10.2026):** Verschleiß als Betriebsposition je entladener kWh
   (`EUR_PRO_KWH_ELEKTRISCH`; €/(kWh Nennkapazität · Vollzyklus) ist dieselbe Größe), eine Quelle und eine Buchung; der Fixanteil
   geht weiterhin nicht in die Speicherauslegung ein (heute `IFixEur = 0`); der Testwert 3999,5 €/kWh wird ergebnisneutral übernommen,
   obwohl er wie ein Absolutpreis aussieht; die Flotte liest ihre Einheit aus der Satzvorlage und schreibt bei der Übernahme
   Kostenpositionen der Anlage statt Katalogspalten; der Flottenstand `@Projektflotte` von 1046 bleibt unberührt.
-- **Aus KB-5a und der Hebung auf 228, ebenfalls vom Anwender zu bestätigen:** (a) Die Flotten-Übernahme schreibt Kostenpositionen nur
+- **Aus KB-5a und der Hebung auf 228, vom Anwender bestätigt (16.10.2026), umgesetzt mit #1100:** (a) Die Flotten-Übernahme schreibt Kostenpositionen nur
   noch bei „eigene Kosten“ der Einheit (vorher schrieb sie die Katalogspalten immer); (b) die Verweise `ID_KostenVorlage` und
   `ID_KostenVorlageInvestition` gehen den Rückweg Kopie → Katalog nicht mit — ein aus einer Kopie angelegter Katalogsatz hat damit
   keine Kosten; Entscheid in KB-5b, analog zum Wechselrichter in KB-4b; (c) die Saat der Schritte 226/228 setzt an den gesäten
@@ -54,7 +54,7 @@ gemergte Zweige `kb2`, `kb3`, `kb4a`, `kb4b`, `kb4c` sind als Worktrees entfernt
   kein zweiter Preis); die Wassermenge des Rückkühlwerks aus dem Lauf wird als Betriebskosten mit der Preissteigerung p_B gebucht und
   wirkt im Kapitalwert; die Wasserkosten bekommen eine eigene Berichtskennzahl; `Tab_Energieanlagen.Wasserpreis_EUR_m3` wandert in
   die Trägerkarte und entfällt (Welle KB-7, Schemaschritt 235; Entwurf
-  [`2026-10-16_Entwurf_KB7_Wasserkosten_Rueckkuehlwerk.md`](2026-10-16_Entwurf_KB7_Wasserkosten_Rueckkuehlwerk.md)).
+  [`2026-10-16_Entwurf_KB7_Wasserkosten_Rueckkuehlwerk.md`](../../ueberholt/2026-10-16_Entwurf_KB7_Wasserkosten_Rueckkuehlwerk.md)).
 
 
 ## 3 Regeln und Fallstricke dieser Sitzung (über `CLAUDE.md` hinaus)
@@ -93,9 +93,9 @@ gemergte Zweige `kb2`, `kb3`, `kb4a`, `kb4b`, `kb4c` sind als Worktrees entfernt
 2. **KB-5b** (Abschnitt 5.3) und **KB-5 Merge-Welle** (Abschnitt 5.4): erledigt #1100 (Merge `dd3806f5d` und `b1839ef00`, Hebung auf 229, Referenzlauf 37/37 gegen R55 PASS, kein R56 nötig); Push `acb71849f`, Kern-Lauf 38852265014 grün (CI-Vermerk gesetzt).
 3. **KB-6:** Konzept und Wiki-Quellen sind je Welle nachgeführt; Logbuchsätze ohne Version liegen im Entwurf; Bilder neu ziehen
    (`wikibilder.mjs`), Upload erst ab 16.10.2026 nach Freigabe und Versionsnummer.
-4. **Vorlagenplatzhalter Kältemaschine** (#1035 Punkt 3): eigene Welle, Platzhalter mit der Sitzung Anlagendialog abstimmen
+4. **Vorlagenplatzhalter Kältemaschine** (#1035 Punkt 3): **erledigt #1125 (Fassung 24)**; war eigene Welle, Platzhalter mit der Sitzung Anlagendialog abstimmen
    (Katalogfassung 23 unverändert lassen).
-5. **Wasserpreis am Rückkühlwerk:** übernommen von dieser Sitzung (Anwenderentscheid 16.10.2026, Abschnitt 2), Welle KB-7, Schritt 235; `Tab_Rueckkuehlwerk.Modulkosten` bleibt (Anwenderentscheid).
+5. **Wasserpreis am Rückkühlwerk:** **erledigt #1125**; übernommen von dieser Sitzung (Anwenderentscheid 16.10.2026, Abschnitt 2), Welle KB-7, Schritt 235; `Tab_Rueckkuehlwerk.Modulkosten` bleibt (Anwenderentscheid).
 6. **Variantenliste:** gebaut als Gruppe „Katalogsätze“, umkehrbar über `KostenVorlagenCtrl.KATALOGSAETZE_GRUPPIEREN` — Anwenderentscheid
    nach Sichtabnahme.
 7. **Sichtabnahme unter Windows** der Dialoge aus #1034–#1042 und der Kostenmasken aus KB-4 (Lesewert „Gerätekosten“/„Kostensatz“).

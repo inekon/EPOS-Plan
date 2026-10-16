@@ -144,11 +144,12 @@ public sealed class EnergietraegerKiSicht
         set => Setze(s => s.Arbeitspreis = value);
     }
 
-    /// <summary>Der Grundpreis des Trägers.</summary>
+    /// <summary>Der Grundpreis des Trägers; am Wasserträger gibt es keinen (Welle KB-7c1, Entscheid F5) —
+    /// dort liest er 0, und ein Setzen bleibt ohne Wirkung, wie das ausgeblendete Feld.</summary>
     public double Grundpreis
     {
-        get => Stand?.Grundpreis ?? 0;
-        set => Setze(s => s.Grundpreis = value);
+        get => Stand is { MitGrundpreis: true } ? Stand.Grundpreis : 0;
+        set => Setze(s => { if (s.MitGrundpreis) s.Grundpreis = value; });
     }
 
     /// <summary>Der Leistungspreis des Trägers.</summary>
@@ -281,29 +282,29 @@ public sealed class EnergietraegerKiSicht
     /// <summary>Rechnet die Maske in CO₂-ÄQUIVALENT statt in reinem CO₂?</summary>
     public bool EmissionenAlsCo2e
     {
-        get => Stand?.ModusCo2e ?? false;
-        set => Setze(s => s.ModusCo2e = value);
+        get => Stand is { MitEmissionen: true } && Stand.ModusCo2e;
+        set => Setze(s => { if (s.MitEmissionen) s.ModusCo2e = value; });
     }
 
     /// <summary>Der CO₂-Ersatzwert, solange der Katalog keinen führt.</summary>
     public double Co2
     {
-        get => Stand?.AltCO2 ?? 0;
-        set => Setze(s => s.AltCO2 = value);
+        get => Stand is { MitEmissionen: true } ? Stand.AltCO2 : 0;
+        set => Setze(s => { if (s.MitEmissionen) s.AltCO2 = value; });
     }
 
     /// <summary>Der SO₂-Ersatzwert, solange der Katalog keinen führt.</summary>
     public double So2
     {
-        get => Stand?.AltSO2 ?? 0;
-        set => Setze(s => s.AltSO2 = value);
+        get => Stand is { MitEmissionen: true } ? Stand.AltSO2 : 0;
+        set => Setze(s => { if (s.MitEmissionen) s.AltSO2 = value; });
     }
 
     /// <summary>Der NOx-Ersatzwert, solange der Katalog keinen führt.</summary>
     public double Nox
     {
-        get => Stand?.AltNOx ?? 0;
-        set => Setze(s => s.AltNOx = value);
+        get => Stand is { MitEmissionen: true } ? Stand.AltNOx : 0;
+        set => Setze(s => { if (s.MitEmissionen) s.AltNOx = value; });
     }
 
     // =====================================================================

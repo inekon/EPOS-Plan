@@ -2323,6 +2323,15 @@ namespace WindowsFormsApplication1
             // Szenarios statt immer an der des Erwartungsfalls.
             BetriebsTopfe topfe = LiesBetriebskostenTopfe(v.IdProjekt, szenario, satz);
             if (topfe.Fehler != null) Stufenfehler(v.IdProjekt, STUFE_BETRIEBSKOSTEN, topfe.Fehler);   // E7c3 (B‑6)
+            // Welle KB-7b: die Wasserkosten des Rückkühlwerks — Menge des Laufs (dieser Stand ist bereits
+            // szenarioskaliert) × Arbeitspreis des Wasserträgers mit den Trägerpreisen dieses Szenarios
+            // (derselbe Schlüssel wie die Energiekosten in Szenariodaten). Genau eine Buchung: in den
+            // Betriebs-Topf, sofort wirksam, Steigerung p_B (Entscheid F3). Ohne Wasser bleibt der Topf
+            // unberührt — die Summe ist dann bitgenau die von vorher.
+            Wasserkosten.Ergebnis wasser = null;
+            try { wasser = Wasserkosten.Rechne(v.IdProjekt, v, satz != null ? szenario : null); }
+            catch (Exception ex) { Stufenfehler(v.IdProjekt, STUFE_BETRIEBSKOSTEN, Fehlergrund.Text(ex)); }
+            if (wasser != null && wasser.KostenEur > 0) topfe.BetriebSofort += wasser.KostenEur;
             e.Betrieb = topfe.BetriebSofort;
             e.BetriebAbJahr = topfe.BetriebAbJahr;
             e.Endenergie = topfe.EndenergieSofort;
@@ -2360,6 +2369,11 @@ namespace WindowsFormsApplication1
             // eine zweite, ausschließlich beschreibende Sicht, statt die Rechnung auf
             // einen neuen Leseweg umzustellen.
             e.Betriebskosten = LiesBetriebskostenPositionen(v.IdProjekt, szenario, satz);
+            // Welle KB-7b: die Nachweiszeile der Wasserkosten — die Gliederung trifft damit die Summe des
+            // Betriebs-Topfes; ohne Preis keine Kosten, aber ein Hinweis mit der Menge (benannt, KD‑Q8).
+            KostenPositionNachweis wasserZeile = Wasserkosten.Nachweis(wasser);
+            if (wasserZeile != null) e.Betriebskosten.Add(wasserZeile);
+            Melde(e, Wasserkosten.HinweisOhnePreis(wasser));
             e.Energie = v.Energiekosten;   // KostenEmissionRechner (Phase 5)
 
             double pvUeberschussMWh = v.Ergebnis.Photovoltaik != null ? v.Ergebnis.Photovoltaik.Ueberschuss : 0;

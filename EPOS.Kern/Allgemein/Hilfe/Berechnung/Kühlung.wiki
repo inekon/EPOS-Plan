@@ -254,6 +254,8 @@ Die Kennlinie der Kältemaschine wird über die '''Rückkühltemperatur''' geles
 
 Führt die Klimareihe keine Luftfeuchte, rechnet der Nasskühler mit der Außentemperatur minus 3&nbsp;K, und das Protokoll nennt die Stunden.
 
+Die Wassermenge des Rückkühlwerks ermittelt die Simulation; das Protokoll nennt Menge und Nassstunden. Die Kosten rechnet die Wirtschaftlichkeit als Betriebskosten mit dem Arbeitspreis des Trägers Wasser (Menge × Preis); der Preis steht in der Trägerkarte, nicht am Gerät.
+
 '''Freie Kühlung''' ist ein Betriebsfall der Rückkühlung, kein eigener Erzeuger. Eine Maschine mit Trocken- oder Nasskühler deckt die Kälte direkt über den Rückkühler, solange <math>\vartheta_{\mathrm{RK}}(t) \le \vartheta_{\mathrm{KW}} - \Delta\vartheta_{\mathrm{FK}}</math> — bis zur Nennkälteleistung und mit dem EER-Ersatz:
 
 : <math>\displaystyle Q_{\mathrm{FK}}(t) = \min\left(L(t), N \cdot Q_{\mathrm{nenn}}\right)</math> &nbsp;&nbsp;(5)

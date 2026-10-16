@@ -254,6 +254,12 @@ public sealed class BauteilDaten
     /// <summary>Herkunft (Persistenzwert) — reist unverändert mit.</summary>
     public string? Herkunft { get; set; }
 
+    /// <summary>
+    /// MA-6b: Die gespeicherte Herkunft des U-Werts (Persistenzwert, <c>Tab_Bauteil.U_Herkunft</c>) — nur gelesen; der
+    /// Schreibweg leitet sie im Kern neu ab. Der Hilfe-Assistent zeigt sie im Bauteildialog.
+    /// </summary>
+    public string? UHerkunft { get; set; }
+
     /// <summary>Kennung eines Imports — reist unverändert mit.</summary>
     public string? Quellkennung { get; set; }
 
@@ -295,10 +301,11 @@ public sealed class BauteilDaten
 /// <c>false</c>) oder aus dem Stammkatalog; <see cref="UWert"/> im Kern gerechnet, <c>null</c> =
 /// nicht bestimmbar. <see cref="Ungeeignet"/> ist das Kennzeichen „für die Gebäudesimulation meist nicht geeignet" des
 /// Kerns (BK-2b) — die Wahl blendet solche Aufbauten aus, bis der Schalter sie zeigt; ihr U ist das U der Quelle.
-/// <see cref="Grund"/> sagt, warum <see cref="UWert"/> leer ist.
+/// <see cref="Grund"/> sagt, warum <see cref="UWert"/> leer ist. <see cref="Fenster"/> trägt die Fensterwerte eines
+/// Fensteraufbaus (BK-6) — sie gehen beim Zuweisen an das Bauteil über; <c>null</c> = keine.
 /// </summary>
 public sealed record AufbauWahl(int Id, bool Katalog, string Text, string Bauteilart, double? UWert, bool Ersatz = false,
-                                bool Ungeeignet = false, string Grund = "");
+                                bool Ungeeignet = false, string Grund = "", WindowsFormsApplication1.Fensteraufbau? Fenster = null);
 
 /// <summary>
 /// <b>Ein Luftstrom zwischen zwei Zonen</b> eines Gebäudes (Stufe G6b; <c>Tab_Zonenluftstrom</c>) — das

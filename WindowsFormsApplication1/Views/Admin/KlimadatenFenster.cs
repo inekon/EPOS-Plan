@@ -19,9 +19,6 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class KlimadatenFenster
     {
-        /// <summary>Gewünschtes Innenmaß (Vorläufer: 757 × 641).</summary>
-        private static readonly Size MASS = new Size(1180, 780);
-
         /// <summary>
         /// Zeigt die Klimadaten als eigenes Fenster — der Weg von
         /// <c>HauptfensterHuelle.Ablauf</c> (Menüpunkt „Administration → Klimadaten")
@@ -52,8 +49,11 @@ namespace WindowsFormsApplication1
                 })
             };
 
+            // KD-1: Das Fenster traegt die Ueberlagerung "Klimadaten einlesen" und wuenscht
+            // mindestens deren Mass (Fenstermass.MitUeberlagerung).
+            (int breite, int hoehe) = KlimadatenHuelle.Wunschmass();
             dlg = new BlazorDialogForm<KlimadatenDialog>(
-                KlimadatenHuelle.Titel(), MASS, werte);
+                KlimadatenHuelle.Titel(), new Size(breite, hoehe), werte);
 
             using (dlg)
             {

@@ -71,7 +71,7 @@ Prozesskältezeile oder ein Inbetriebnahmejahr.
 - **Sitzung „Dialoge und Korrekturen“:** Kältedialoge (KM5, Katalogauswahl). Nicht erreichbar gewesen; Änderungen an deren
   Rahmen nur nach Freigabe des Anwenders.
 - **Befund für eine andere Sitzung:** `PlatzhalterkatalogDialog` setzt kein `aria-selected` an der gewählten Zeile.
-- **Wasserpreis am Rückkühlwerk (Teil von K‑F5):** liegt bei der Sitzung „Dialoge und Korrekturen — Anlagendialog, Kältebedarf,
+- **Wasserpreis am Rückkühlwerk (Teil von K‑F5):** **erledigt mit #1125 (Kostenbasis)**; lag bei der Sitzung „Dialoge und Korrekturen — Anlagendialog, Kältebedarf,
   Kostenbasis“ (`session_01LxWpn8bgrFYtFBXppoeoCL`), Anwenderentscheid 16.10.2026: Wasser als Träger der Trägerkarte, Wassermenge als
   Betriebskosten mit Wirkung im Kapitalwert, Preisfeld an der Anlage entfällt (Welle KB-7, Schritt 235). Oberfläche des Rückkühlwerks
   und Berichtszeile aus K‑F5 bleiben Kältethemen; die Kostenseite dort nicht doppelt bauen.

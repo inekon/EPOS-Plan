@@ -505,6 +505,68 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        /// <summary>
+        /// <b>Der Vorschauweg liest dieselbe Reihe wie der Import</b> (Auftrag KD-2,
+        /// Entscheid KD-Q3): gleicher Eintrag, gleiche Stunden, dazu die Ausführungen der
+        /// Region — der Import ruft genau diesen Weg.
+        /// </summary>
+        [Fact]
+        public void Der_Vorschauweg_liest_dieselbe_Reihe_wie_der_Import()
+        {
+            using (var a = new MemoryStream(Paket()))
+            using (var b = new MemoryStream(Paket()))
+            {
+                TryPaketErgebnis import = TryPaketLeser.AusStrom(a, 7.1, 50.8, 2045, TrySzenario.Sommerwarm);
+                TryPaketErgebnis vorschau = TryPaketLeser.VorschauAusStrom(b, 7.1, 50.8, 2045, TrySzenario.Sommerwarm);
+
+                Assert.True(vorschau.AusfuehrungGefunden);
+                Assert.Equal("", vorschau.Grund);
+                Assert.Equal(import.Eintrag, vorschau.Eintrag);
+                Assert.Equal(6, vorschau.Ausfuehrungen.Count);
+                Assert.Equal(import.Stunden.Count, vorschau.Stunden.Count);
+                for (int i = 0; i < import.Stunden.Count; i++)
+                {
+                    Assert.Equal(import.Stunden[i].TimeString, vorschau.Stunden[i].TimeString);
+                    Assert.Equal(import.Stunden[i].Temperature, vorschau.Stunden[i].Temperature);
+                }
+            }
+        }
+
+        /// <summary>
+        /// <b>Gegenprobe: Fehlt das Szenario, wirft der Vorschauweg nicht</b>, sondern sagt
+        /// nein mit dem Grund, den der Import als Ausnahme meldet.
+        /// </summary>
+        [Fact]
+        public void Fehlt_das_Szenario_meldet_der_Vorschauweg_den_Grund()
+        {
+            var speicher = new MemoryStream();
+            using (var archiv = new ZipArchive(speicher, ZipArchiveMode.Create, leaveOpen: true))
+            {
+                string name = "1_raw-data/7/TRY2015_" + Ziffern(50.9, 7.0) + "_Jahr.dat";
+                using (var w = new StreamWriter(archiv.CreateEntry(name).Open())) w.Write(Reihe(71));
+            }
+            byte[] paket = speicher.ToArray();
+
+            using (var ms = new MemoryStream(paket))
+            {
+                TryPaketErgebnis v = TryPaketLeser.VorschauAusStrom(ms, 7.0, 50.9, 2015, TrySzenario.Winterkalt);
+
+                Assert.False(v.AusfuehrungGefunden);
+                Assert.Empty(v.Stunden);
+                Assert.Equal("", v.Eintrag);
+                Assert.Single(v.Ausfuehrungen);
+                Assert.Equal(7, v.Region.Nummer);
+                Assert.Contains("Wint", v.Grund);
+            }
+
+            using (var ms = new MemoryStream(paket))
+            {
+                var ex = Assert.Throws<InvalidOperationException>(
+                    () => TryPaketLeser.AusStrom(ms, 7.0, 50.9, 2015, TrySzenario.Winterkalt));
+                Assert.Contains("Wint", ex.Message);
+            }
+        }
+
         // =====================================================================
         //  5 — Die Namen der 15 Repräsentanzstationen (Auftrag KL-3)
         // =====================================================================

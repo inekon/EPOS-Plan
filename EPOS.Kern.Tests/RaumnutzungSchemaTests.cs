@@ -126,9 +126,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsstunden"));
             Assert.Equal(27L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungszuordnung WHERE ReadOnly = 1 AND ID_Profil IS NOT NULL"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Zone WHERE Nutzungsprofil IS NOT NULL"));
-            // Kein Wert in einer Normkategorie (NP-F21); SIA und VDI entfallen (E129).
+            // In der Normkategorie DIN stehen genau die gesäten Werte (DA-6, E135); SIA und VDI entfallen (E129).
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungskatalog WHERE Art IN ('SIA_2024','VDI_2078')"));
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil p JOIN Tab_Raumnutzungskatalog k ON k.ID = p.ID_Katalog " +
+            Assert.Equal((long)RaumnutzungDinSaat.ANZAHL, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil p JOIN Tab_Raumnutzungskatalog k ON k.ID = p.ID_Katalog " +
                                   "WHERE k.Art = 'DIN_V_18599_10' AND (" +
                                   string.Join(" OR ", RaumnutzungSchema.SPALTEN_KENNWERTE.Select(s => s.Spalte + " IS NOT NULL")) + ")"));
             foreach (string t in RaumnutzungSchema.TABELLEN)

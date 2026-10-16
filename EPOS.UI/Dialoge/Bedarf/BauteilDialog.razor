@@ -96,6 +96,10 @@
                         Platzhalter="@UPlatzhalter"
                         Feldname="@Texte.LabelUWert" FehlerZustand="FehlerMelden"
                         Wert="@_stand.UWert" WertChanged="w => _stand.UWert = w" />
+            @* U_HERKUNFT: nur lesend, nach den Regeln des Speicherns (BauteilUHerkunftVorschau) — eine Änderung im
+               offenen Dialog zeigt sofort „von Hand“. Kein Eingabefeld (NurLesen). *@
+            <Textfeld Bezeichnung="@Texte.LabelUHerkunft" NurLesen="true" Kurz="true"
+                      Wert="@Texte.UHerkunftText(UHerkunftVorschau())" />
             @if (!Transparent)
             {
                 @* KAPAZITAET: Lesewert C = Σ ρ·c_p·d des gewaehlten Aufbaus, fertig aus dem Kern
@@ -158,6 +162,11 @@
                     }
                 </div>
                 <Herleitungszeile Text="@Texte.HinweisKatalog" />
+            }
+            @if (_fensterHinweis.Length > 0)
+            {
+                @* BK-6: was der Fensteraufbau an das Bauteil uebergeben hat (g-Wert, Rahmenanteil, U_w). *@
+                <Herleitungszeile Text="@_fensterHinweis" />
             }
             @if (_aufbauGrund.Length > 0)
             {
@@ -232,6 +241,9 @@
     private bool _ersterAufbau = true;
     private BauteilDaten _stand = new();
     private string _meldung = "";
+
+    /// <summary>BK-6: die leise Zeile nach der Übernahme der Fensterwerte; leer = keine.</summary>
+    private string _fensterHinweis = "";
     private int? _katalogwahl;
     private AufbauAnsichtDaten? _ansicht;
     private BauteilaufbauArbeitsstand? _ansichtStand;
@@ -306,8 +318,22 @@
             NachbarzoneEintraege = () => KiMaskenanmeldung.Eintraege(Nachbareintraege, e => e.Id, e => e.Text),
             ZuordnungLesen = () => IstTrennflaeche ? Zuordnungsindex : null,
             ZuordnungSetzen = w => { if (IstTrennflaeche) ZuordnungWaehlen(w); },
-            ZuordnungEintraege = () => KiMaskenanmeldung.Eintraege(Zuordnungseintraege, e => e.Id, e => e.Text)
+            ZuordnungEintraege = () => KiMaskenanmeldung.Eintraege(Zuordnungseintraege, e => e.Id, e => e.Text),
+            // MA-6b: die Herkunft des U-Werts, wie das OK sie schriebe - Regel des Kerns, nur lesbar.
+            UHerkunftLesen = UHerkunftVorschau
         };
+    }
+
+    /// <summary>
+    /// MA-6b: Die Herkunft des U-Werts nach den Regeln des Schreibwegs (Kernregel <c>BauteilUHerkunftVorschau</c>) — ein neues
+    /// Bauteil bringt keine Herkunft mit, ein gespeichertes vergleicht Aufbau und U-Wert mit dem geöffneten Stand.
+    /// </summary>
+    private string? UHerkunftVorschau()
+    {
+        bool neu = (Bauteil?.Id ?? 0) <= 0;
+        return WindowsFormsApplication1.BauteilUHerkunftVorschau.Herkunft(
+            neu ? null : Bauteil?.UHerkunft, neu, Bauteil?.IdAufbau, Bauteil?.UWert,
+            _stand.IdAufbau, _stand.UWert, _stand.IdAufbauStamm.HasValue);
     }
 
     /// <summary>
@@ -512,6 +538,7 @@
             _stand.AufbauText = a?.Text ?? _stand.AufbauText;
             _stand.UAufbau = a?.UWert;
             _aufbauGrund = a?.Grund ?? "";
+            FensterUebernehmen(a);
         }
         AnsichtNachziehen();
     }
@@ -530,7 +557,26 @@
         _stand.AufbauText = a.Text;
         _stand.UAufbau = a.UWert;
         _aufbauGrund = a.Grund;
+        FensterUebernehmen(a);
         AnsichtNachziehen();
+    }
+
+    /// <summary>
+    /// <b>BK-6: Fensterwerte übernehmen.</b> Ein Fenster oder eine Vorhangfassade, dem ein Fensteraufbau zugewiesen wird,
+    /// übernimmt dessen g-Wert und Rahmenanteil und als U-Wert U_w nach DIN EN ISO 10077-1 — gerechnet im Kern
+    /// (<c>Fensterkennwerte.Uw</c>) mit der Fläche des Bauteils als Näherung der Glasrandlänge. Was der Aufbau nicht trägt,
+    /// bleibt am Bauteil stehen. Danach bleiben alle drei Felder von Hand änderbar.
+    /// </summary>
+    private void FensterUebernehmen(AufbauWahl? a)
+    {
+        _fensterHinweis = "";
+        if (!Transparent || a?.Fenster is not WindowsFormsApplication1.Fensteraufbau f) return;
+        if (f.GWert.HasValue) _stand.GWert = f.GWert;
+        if (f.Rahmenanteil.HasValue) _stand.Rahmenanteil = f.Rahmenanteil;
+        double? uw = WindowsFormsApplication1.Fensterkennwerte.Uw(f, _stand.Flaeche);
+        if (uw.HasValue) _stand.UWert = Math.Round(uw.Value, 3);
+        _fensterHinweis = string.Format(CultureInfo.CurrentCulture, Texte.FensterUebernommen,
+                                        uw.HasValue ? uw.Value.ToString("0.###", CultureInfo.CurrentCulture) : "–");
     }
 
     /// <summary>

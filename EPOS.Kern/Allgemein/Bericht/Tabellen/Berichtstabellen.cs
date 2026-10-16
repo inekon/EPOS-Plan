@@ -53,16 +53,15 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
-        /// Die Gewerke der Kenndatentafeln (<see cref="ProjektDetails.GewerkTabellen"/>) und ihre Schlüssel im Katalog.
-        /// Ohne die Kältemaschine: Ein neuer Platzhalter gehört in eine neue Katalogfassung samt Vorlagen; der
-        /// Bericht zeigt ihre Kenndatentafel über den Baustein.
+        /// Die Gewerke der Kenndatentafeln (<see cref="ProjektDetails.GewerkTabellen"/>) und ihre Schlüssel im Katalog,
+        /// die Kältemaschine eingeschlossen (Katalogfassung 24,
+        /// <see cref="Vorlagenfeldkatalog.FASSUNG_KAELTEMASCHINE_GEWERK"/>); ihre Tafel ist leer, wenn kein Stand sie verbaut.
         /// </summary>
         public static IReadOnlyList<(string Gewerk, string Schluessel)> Gewerke
         {
             get
             {
                 return ProjektDetails.GewerkTabellen
-                    .Where(g => !ProjektDetails.NurWennVerbaut(g.Key))
                     .Select(g => (g.Key, Platzhaltersyntax.NormiereSchluessel(g.Key)))
                     .ToList();
             }

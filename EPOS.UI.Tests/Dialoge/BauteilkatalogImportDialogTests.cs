@@ -78,6 +78,34 @@ public class BauteilkatalogImportDialogTests : BauteilkatalogImportProbe
     }
 
     [Fact]
+    public void Die_Vorschau_nennt_den_gelesenen_Ordner_und_die_Teilkataloge_nur_wenn_vorhanden()
+    {
+        var z = new Zaehler();
+        IRenderedComponent<BauteilkatalogImportDialog> ohne = Dialog(z);
+        Knopf(ohne, "Vorschau").Click();
+        Assert.Empty(ohne.FindAll("p.epos-bki-ordner"));
+        Assert.Empty(ohne.FindAll("p.epos-bki-teilkataloge"));
+
+        BauteilkatalogVorschauDaten mit = Probe() with
+        {
+            Ordner = "Baustoffe.csv liegt im Unterordner Export; gelesen wird dieser Ordner: /probe/Export",
+            Teilkataloge = "Teilkataloge: 2; die Quelle nennt sie an 3 Baustoffen und 1 Aufbauten."
+        };
+        IRenderedComponent<BauteilkatalogImportDialog> cut = Dialog(z, mit);
+        Knopf(cut, "Vorschau").Click();
+        Assert.Contains("Unterordner Export", cut.Find("p.epos-bki-ordner").TextContent);
+        Assert.Contains("Teilkataloge: 2", cut.Find("p.epos-bki-teilkataloge").TextContent);
+    }
+
+    [Fact]
+    public void Der_Dialog_traegt_den_eigenen_Hilfeschluessel_auf_den_Abschnitt_Bauteilkatalog_einlesen()
+    {
+        IRenderedComponent<BauteilkatalogImportDialog> cut = Dialog(new Zaehler());
+        Assert.Equal("BauteilkatalogImport.btn_Help", cut.Instance.HilfeSchluessel);
+        Assert.Contains("Unterordner Export", cut.Find("p.epos-hinweis").TextContent);
+    }
+
+    [Fact]
     public void Die_Vorschau_zeigt_Skalenfehler_Haustechnik_und_Gliederung_nur_wenn_vorhanden()
     {
         var z = new Zaehler();

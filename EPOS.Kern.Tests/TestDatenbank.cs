@@ -1023,8 +1023,8 @@ namespace EPOS.Kern.Tests
                 // Schritt KaeltebedarfSchema.SCHRITT (K1): Kaeltebedarfsprofile, Typkatalog, Zuordnung mit Deckungsart,
                 // Deckungsspalten an Z_ProjektWaermebedarf ('zentral'), Saat der sechs Typsaetze. Wiederholbar.
                 KaeltebedarfSchema.Ausfuehren(null);
-                // Schritt RueckkuehlwerkSchema.SCHRITT (K-F1): Katalog und Projektkopie des Rueckkuehlwerks, Verweis und
-                // Wasserpreis an der Anlage, Kennzahlen am Ergebnis der Kaeltemaschine, leer, reines DDL. Wiederholbar.
+                // Schritt RueckkuehlwerkSchema.SCHRITT (K-F1): Katalog und Projektkopie des Rueckkuehlwerks, Verweis an der
+                // Anlage, Kennzahlen am Ergebnis der Kaeltemaschine, leer, reines DDL. Wiederholbar.
                 RueckkuehlwerkSchema.Ausfuehren(null);
                 // Schritt VorheizenSchema.SCHRITT (AH-V4): sieben Einstellungsspalten, Vorheizzeit der Zone, achtzehn
                 // Ergebnisspalten je Gebaeude und Zone, leer, reines DDL. Wiederholbar.
@@ -1074,13 +1074,24 @@ namespace EPOS.Kern.Tests
                 // Schritt KaeltebedarfsprofilVorlagenSchema.SCHRITT (KBP-2): Eingabeart der Kaeltebedarfszuordnung, Art-Vorschlag am
                 // Kaeltekatalog und Saat der Vorlagen 7-16. Wiederholbar, ergebnisneutral.
                 KaeltebedarfsprofilVorlagenSchema.Ausfuehren(null);
-                // Schritt BedarfsprofilEingabeartSchema.SCHRITT (KBP-5a, GEPARKT auf 234): Eingabeart an Prozesswaerme und
-                // Brauchwasser, Nutzungstage nach Norm an den Kaeltevorlagen (Saat Vorlage 8). Wiederholbar, ergebnisneutral.
-                // KETTE: steht hinter 231 bis 233, sobald diese hier eingetragen sind.
+                // Schritt RaumnutzungDinWerteSchema.SCHRITT (DA-6, E135): die 45 DIN-Nutzungsprofile mit den Werten der
+                // Saat, nur wo kein Wert steht. Wiederholbar, ergebnisneutral.
+                RaumnutzungDinWerteSchema.Ausfuehren(null);
+                // Schritt BauteilkatalogAbschnittSchema.SCHRITT (BK-5/BK-6): Psi_Glasrand am Aufbaukatalog, leer, reines DDL.
+                // Wiederholbar, ergebnisneutral.
+                BauteilkatalogAbschnittSchema.Ausfuehren(null);
+                // Schritt BauteilUHerkunftSchema.SCHRITT (MA-6b, E149): U_Herkunft an Tab_Bauteil(_STAMM), leer, reines DDL.
+                // Wiederholbar, ergebnisneutral.
+                BauteilUHerkunftSchema.Ausfuehren(null);
+                // Schritt BedarfsprofilEingabeartSchema.SCHRITT (KBP-5a bis KBP-5d): Eingabeart an Prozesswaerme und
+                // Brauchwasser, Nutzungstage nach Norm an den Kaeltevorlagen (Saat Vorlage 8), Ferien wie Sonntag am
+                // Betriebskalender. Wiederholbar, ergebnisneutral.
                 BedarfsprofilEingabeartSchema.Ausfuehren(null);
-                // Schritt KaeltetyptagSchema.SCHRITT (KBP-4a, GEPARKT auf 236): Typtage und Matrix der Kaeltebedarfszuordnung,
+                // Schritt WasserpreisTraegerkarteSchema.SCHRITT (KB-7a): Traeger Wasser, Uebernahme der Anlagenpreise in
+                // die Traegerkarte, Entfall von Wasserpreis_EUR_m3. Wiederholbar, ergebnisneutral.
+                WasserpreisTraegerkarteSchema.Ausfuehren(null);
+                // Schritt KaeltetyptagSchema.SCHRITT (KBP-4a): Typtage und Matrix der Kaeltebedarfszuordnung,
                 // zwei leere Tabellen. Wiederholbar, ergebnisneutral.
-                // KETTE: steht hinter 235 (WasserpreisTraegerkarteSchema), sobald dieser hier eingetragen ist.
                 KaeltetyptagSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
