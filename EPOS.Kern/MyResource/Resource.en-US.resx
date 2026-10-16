@@ -56833,5 +56833,128 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="KI_DLG_KLIMA_HOEHE_ERL" xml:space="preserve">
     <value>The altitude of the site above sea level, in metres. It enters the preview: the altitude difference to the reference point decides the note "not typical for the site". Empty = unknown; for PVGIS and a TRY file with header data it comes from the source.</value>
   </data>
+  <data name="KLIMA_RW_KURZ_TEMPERATUR" xml:space="preserve">
+    <value>Temperature</value>
+  </data>
+  <data name="KLIMA_RW_KURZ_FEUCHTE" xml:space="preserve">
+    <value>Humidity</value>
+  </data>
+  <data name="KLIMA_RW_KURZ_GLOBAL" xml:space="preserve">
+    <value>Global</value>
+  </data>
+  <data name="KLIMA_RW_KURZ_DIREKT_NORMAL" xml:space="preserve">
+    <value>Direct normal</value>
+  </data>
+  <data name="KLIMA_RW_KURZ_DIFFUS" xml:space="preserve">
+    <value>Diffuse</value>
+  </data>
+  <data name="KLIMA_RW_KURZ_GEGENSTRAHLUNG" xml:space="preserve">
+    <value>Longwave</value>
+  </data>
+  <data name="KLIMA_RW_KURZ_BEDECKUNG" xml:space="preserve">
+    <value>Cloud cover</value>
+  </data>
+  <data name="KLIMA_RW_KURZ_SUED" xml:space="preserve">
+    <value>South</value>
+  </data>
+  <data name="KLIMA_RW_KURZ_WEST" xml:space="preserve">
+    <value>West</value>
+  </data>
+  <data name="KLIMA_RW_KURZ_OST" xml:space="preserve">
+    <value>East</value>
+  </data>
+  <data name="KLIMA_RW_KURZ_NORD" xml:space="preserve">
+    <value>North</value>
+  </data>
+  <data name="KLIMA_RW_FASSADE_SUED" xml:space="preserve">
+    <value>Facade south</value>
+  </data>
+  <data name="KLIMA_RW_FASSADE_WEST" xml:space="preserve">
+    <value>Facade west</value>
+  </data>
+  <data name="KLIMA_RW_FASSADE_OST" xml:space="preserve">
+    <value>Facade east</value>
+  </data>
+  <data name="KLIMA_RW_FASSADE_NORD" xml:space="preserve">
+    <value>Facade north</value>
+  </data>
+  <data name="KLIMA_RW_GRUPPE_TEMPERATUR" xml:space="preserve">
+    <value>Temperature and humidity</value>
+  </data>
+  <data name="KLIMA_RW_GRUPPE_STRAHLUNG" xml:space="preserve">
+    <value>Radiation</value>
+  </data>
+  <data name="KLIMA_RW_GRUPPE_FASSADE" xml:space="preserve">
+    <value>Facade values</value>
+  </data>
+  <data name="KLIMA_RW_GRUPPE_BEWOELKUNG" xml:space="preserve">
+    <value>Clouds, pressure, wind</value>
+  </data>
+  <data name="KLIMA_RW_LETZTE_BLEIBT" xml:space="preserve">
+    <value>At least one series stays selected.</value>
+  </data>
+  <data name="KLIMA_RW_ZWEI_EINHEITEN" xml:space="preserve">
+    <value>At most two units at a time ({0}); first deselect a series of these units.</value>
+  </data>
+  <data name="KLIMA_RW_DREI_REIHEN" xml:space="preserve">
+    <value>At most three series per chart; first deselect one.</value>
+  </data>
+  <data name="KLIMA_RW_NAME_EINHEIT" xml:space="preserve">
+    <value>{0} [{1}]</value>
+  </data>
+  <data name="KLIMA_RW_DIA_TITEL" xml:space="preserve">
+    <value>Further series</value>
+  </data>
+  <data name="KLIMA_RW_ACHSE" xml:space="preserve">
+    <value>Value [{0}]</value>
+  </data>
+  <data name="KLIMA_RW_VORGABE" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="KLIMA_RW_KOPF_VORSCHAU" xml:space="preserve">
+    <value>Series in the chart</value>
+  </data>
+  <data name="KLIMA_RW_HINWEIS_VORSCHAU" xml:space="preserve">
+    <value>Radiation as monthly sum, otherwise monthly mean · at most two units</value>
+  </data>
+  <data name="KLIMA_RW_KOPF_JAHR" xml:space="preserve">
+    <value>Series</value>
+  </data>
+  <data name="KLIMA_RW_HINWEIS_JAHR" xml:space="preserve">
+    <value>one unit per chart, up to three series · now: {0}</value>
+  </data>
+  <data name="KLIMA_RW_FUEHRT_NICHT" xml:space="preserve">
+    <value>The source does not provide this quantity</value>
+  </data>
+  <data name="KLIMA_RW_ANDERE_EINHEIT" xml:space="preserve">
+    <value>Other unit: shows {0} alone</value>
+  </data>
+  <data name="KLIMA_RW_ABWAEHLEN" xml:space="preserve">
+    <value>Deselect series</value>
+  </data>
+  <data name="KLIMA_RW_ZUSCHALTEN" xml:space="preserve">
+    <value>Add series</value>
+  </data>
+  <data name="KLIMA_RW_HINZUFUEGEN" xml:space="preserve">
+    <value>Add series</value>
+  </data>
+  <data name="KLIMA_RW_TEILFUELLUNG" xml:space="preserve">
+    <value>{0} of {1} hours with a value</value>
+  </data>
+  <data name="KLIMA_RW_GLEICHE_EINHEIT" xml:space="preserve">
+    <value>Series of the same unit can be shown together; another unit starts a new chart.</value>
+  </data>
+  <data name="KLIMA_RW_REITER" xml:space="preserve">
+    <value>More series</value>
+  </data>
+  <data name="KLIMA_RW_WAHL_VORSCHAU" xml:space="preserve">
+    <value>Series in the monthly chart</value>
+  </data>
+  <data name="KLIMA_RW_WAHL_JAHR" xml:space="preserve">
+    <value>Series in the annual profile</value>
+  </data>
+  <data name="KLIMA_RW_DIA_BEZEICHNUNG" xml:space="preserve">
+    <value>Annual profile of the selected series</value>
+  </data>
 </root>
 
