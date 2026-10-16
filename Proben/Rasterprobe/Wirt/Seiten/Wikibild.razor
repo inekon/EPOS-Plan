@@ -20,7 +20,7 @@
                  solarkollektoren|brauchwasser|prozesswaerme|gebaeude|kaeltemaschine|
                  klimadaten|kaeltebedarf|betriebskalender|waermebedarf|strombedarf|zapfprofil|baustoffe
                  (die Beispieldaten der zweiten Reihe stehen in Wikibild.Weitere.cs)
-                 |einstellungen|lizenz|projektverwaltung|varianten|projekttransfer|erdreich|simulation
+                 |einstellungen|lizenz|projektverwaltung|varianten|projekttransfer|erdreich|simulation|pufferauslegung
                  (die übrigen Bilder stehen in Wikibild.Uebrige.cs)
            ?kultur=de-DE   (die Kultur des Wirtes, siehe Program.cs)
 *@
@@ -35,6 +35,8 @@
     /* Brennstoffe des Projekts: zwölf Spalten samt Aktionen stehen erst mit schmalerem Zellenrand ganz im Bild. */
     .epos-wikibild[data-bild="brennstoffe"] .epos-pbrs-liste :is(th, td) { padding-inline: 0.35rem; }
     .epos-wikibild[data-bild="brennstoffe"] .epos-pbrs-liste .epos-pbrs-bearbeiten { white-space: nowrap; }
+    /* Pufferspeicher-Auslegung: die Spalte „Wirkung" der Nachbarstufen bricht um, statt über den Rand zu laufen. */
+    .epos-wikibild[data-bild="pufferauslegung"] .epos-pausl-nachbarstufe-jaz { white-space: normal; }
 </style>
 <div class="epos-probe-wirt epos-wikibild" data-bild="@_bild" data-breit="@(Breit ? "" : null)">
     @switch (_bild)

@@ -2006,7 +2006,9 @@ das Skript aus `/konditionierungsprobe`, deren Satz ebenfalls neutral ist. Die A
 
 Gaben von `bild`: `heizkessel`, `bhkw`, `waermepumpe`, `pufferspeicher`, `stromspeicher`,
 `photovoltaik`, `solarkollektoren`, `brauchwasser`, `prozesswaerme`, `gebaeude`,
-`kaeltemaschine`; die Kultur wie überall mit `kultur=de-DE`.
+`kaeltemaschine` (dazu die Gaben der zweiten Reihe und der übrigen Bilder, siehe Kopf von
+`Wirt/Seiten/Wikibild.razor`, darunter `pufferauslegung`: die freie Ansicht der Pufferspeicher-Auslegung in
+Schritt 4, deren Ergebnis der Kern ohne Datenbank aus synthetischen Jahresreihen rechnet); die Kultur wie überall mit `kultur=de-DE`.
 
 ```bash
 # Wirt wie oben bauen und starten, dann:

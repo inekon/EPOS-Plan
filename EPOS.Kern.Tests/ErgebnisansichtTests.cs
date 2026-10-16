@@ -680,10 +680,10 @@ namespace EPOS.Kern.Tests
         /// 11 Positionen mit — zusammen 169 von 176, 38 von 45. Das Referenzprojekt Erdsonde 1057 (Kopie von 1029) bringt
         /// dessen 4 Positionen mit, alle ohne Dauer, zwei betragstragend — zusammen 173 von 180, 40 von 47. Das Referenzprojekt
         /// Vorheizen 1065 (Kopie von 1051) bringt dessen 8 Positionen mit, alle ohne Dauer — zusammen 181 von 188. Das Referenzprojekt
-        /// Schnellaufheizung 1073 (Kopie von 1054) bringt dessen 11 Positionen mit, alle ohne Dauer, einer betragstragend — zusammen 192 von 199, 41 von 48.
+        /// Schnellaufheizung 1073 (Kopie von 1054) bringt dessen 11 Positionen mit, alle ohne Dauer; betragstragend ist davon eine, ohne Dauer (das BHKW, nachgezählt am 16.10.2026: Betrag ≠ 0, keine Zuschusszeile) — zusammen 192 von 199, 41 von 48.
         /// </summary>
         [Fact]
-        public void Die_Testdatenbank_traegt_27_von_33_betragstragenden_Positionen_ohne_Dauer()
+        public void Die_Testdatenbank_traegt_die_gezaehlten_betragstragenden_Positionen_ohne_Dauer()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
