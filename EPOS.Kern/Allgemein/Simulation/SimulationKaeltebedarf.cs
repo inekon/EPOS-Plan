@@ -1101,6 +1101,18 @@ namespace WindowsFormsApplication1
                 s.Add(new KeyValuePair<string, double>("Kaelte.DezentralSpitzeKw", kaelte.Kaelte_Dezentral_Max));
                 s.Add(new KeyValuePair<string, double>("Kaelte.DezentralStromMwh", kaelte.Strom_Dezentral_Gesamt));
                 s.Add(new KeyValuePair<string, double>("Kaelte.DezentralJahresEer", kaelte.Jahres_EER_Dezentral));
+                // Die Hauptzahl des Deckungsgrads und „davon Kältefolge“ wie in der Laufmeldung der Kälteerzeugung
+                // (SimulationControl.KaeltedeckungMeldung) — dieselbe Stelle KaelteDeckungsgrad, nur mit Wert; der
+                // gespeicherte Kaelte.DeckungsgradProzent (Kältefolge am Gesamtbedarf) bleibt daneben unverändert.
+                double kaeltefolgeMwh = k != null ? k.DeckungGesamtKwh / 1000.0 : 0.0;
+                double? hauptzahl = KaelteDeckungsgrad.Hauptzahl(kaeltefolgeMwh, kaelte.Kaeltebedarf_Dezentral_Gesamt,
+                                                                 kaelte.Kaeltebedarf_Gesamt);
+                if (hauptzahl != null)
+                    s.Add(new KeyValuePair<string, double>("Kaelte.DeckungsgradGesamtProzent", hauptzahl.Value));
+                double? davon = KaelteDeckungsgrad.DavonKaeltefolge(kaeltefolgeMwh, kaelte.Kaeltebedarf_Dezentral_Gesamt,
+                                                                    kaelte.Kaeltebedarf_Gesamt);
+                if (davon != null)
+                    s.Add(new KeyValuePair<string, double>("Kaelte.DeckungsgradKaeltefolgeProzent", davon.Value));
                 // Schritt 223: je Split-Zeile Strom, Netzbezug, abweichender Kühlträger (0 = Projektträger) und Zähler.
                 for (int i = 0; i < kaelte.DezentraleZeilen.Count; i++)
                 {
