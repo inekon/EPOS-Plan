@@ -284,6 +284,9 @@ namespace WindowsFormsApplication1
         /// <summary>Warnungen beim Füllen der Vorlage.</summary>
         public const string BV_LAUF_WARNUNGEN = nameof(MyResource.Resource.BV_LAUF_WARNUNGEN);
 
+        /// <summary>Teile der Wirtschaftlichkeitsdaten beim Schreiben nachgerechnet.</summary>
+        public const string BV_LAUF_NACHGEHOLT = nameof(MyResource.Resource.BV_LAUF_NACHGEHOLT);
+
         /// <summary>Die Vorlage nutzt den Paarvergleich, gewählt ist Sicht 1.</summary>
         public const string BV_START_SICHT = nameof(MyResource.Resource.BV_START_SICHT);
 
@@ -311,7 +314,7 @@ namespace WindowsFormsApplication1
             VF_PRUEF_GUELTIGKEIT, VF_PRUEF_KAPITEL_DOPPELT, VF_PRUEF_KAPITEL_IM_BLOCK, VF_PRUEF_SPAETER, VF_PRUEF_ANHANG_E_STELLE,
             BV_VORLAGEN_NICHT_LESBAR, BV_VORLAGEN_FEHLT, BV_VORLAGEN_IN_WORD,
             BV_LAUF_VORLAGE, BV_LAUF_RUECKFALL, BV_LAUF_UNBEKANNT, BV_LAUF_LEER, BV_LAUF_KOMMENTARE,
-            BV_LAUF_WARNUNGEN, BV_START_SICHT, BV_START_OHNE_WIRTSCHAFT
+            BV_LAUF_WARNUNGEN, BV_LAUF_NACHGEHOLT, BV_START_SICHT, BV_START_OHNE_WIRTSCHAFT
         };
 
         /// <summary>

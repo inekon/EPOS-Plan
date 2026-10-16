@@ -36,6 +36,19 @@ namespace WindowsFormsApplication1
         Gepunktet,
     }
 
+    /// <summary>Wo die Beschriftung eines Punkts steht (Datenbeschriftung eines Säulen- oder Balkenpunkts).</summary>
+    internal enum Excelbeschriftungslage
+    {
+        /// <summary>In der Mitte des Punkts.</summary>
+        Mitte,
+
+        /// <summary>Innen am Ende des Punkts (vom Anfang des Stapels her gesehen).</summary>
+        InnenEnde,
+
+        /// <summary>Innen am Anfang des Punkts.</summary>
+        InnenBasis,
+    }
+
     /// <summary>
     /// Eine Reihe eines <see cref="Exceldiagramm"/>s: Name, Werte, Art, Farbe (sRGB <c>RRGGBB</c> aus den Farbrollen des
     /// <see cref="ChartRenderer"/>), Strichart und Stärke. Eine <see cref="Hilfsreihe"/> trägt eine gerechnete Hilfsgröße
@@ -90,6 +103,22 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Farbe je Punkt (Kreissegment, hervorgehobener Balken); <c>null</c> = die Farbe der Reihe.</summary>
         internal string[] Punktfarben { get; set; }
+
+        /// <summary>
+        /// Die Beschriftung je Punkt als fester Text (der Betrag, den das Wortbild an den Balken schreibt); <c>null</c> oder ein
+        /// leerer Eintrag = keine Beschriftung.
+        /// </summary>
+        internal string[] Beschriftungen { get; set; }
+
+        /// <summary>Die Lage der Beschriftung je Punkt; ohne Angabe die Mitte.</summary>
+        internal Excelbeschriftungslage[] Beschriftungslagen { get; set; }
+
+        /// <summary>
+        /// Auf der Zweitachse: Die Säulen stehen in einer eigenen, nicht gestapelten Gruppe über unsichtbaren Achsen
+        /// (<see cref="Exceldiagramm.ZweitMin"/>, <see cref="Exceldiagramm.ZweitMax"/>) — der Nebenbalken neben einem Stapel,
+        /// das Band hinter einem Jahr.
+        /// </summary>
+        internal bool Zweitachse { get; set; }
     }
 
     /// <summary>
@@ -136,6 +165,24 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die erste Kategorie oben (waagerechte Balken in Berichtsfolge).</summary>
         internal bool KategorienVonOben { get; set; }
+
+        /// <summary>Die Grenzen der Wertachse; <c>null</c> = Excel entscheidet.</summary>
+        internal double? Wertmin { get; set; }
+
+        /// <summary>Die Obergrenze der Wertachse; <c>null</c> = Excel entscheidet.</summary>
+        internal double? Wertmax { get; set; }
+
+        /// <summary>Die Grenzen der unsichtbaren Zweitachse (<see cref="Excelreihe.Zweitachse"/>).</summary>
+        internal double? ZweitMin { get; set; }
+
+        /// <summary>Die Obergrenze der unsichtbaren Zweitachse.</summary>
+        internal double? ZweitMax { get; set; }
+
+        /// <summary>Der Abstand zwischen den Säulen der Hauptgruppe in Prozent der Säulenbreite; <c>null</c> = Vorgabe.</summary>
+        internal int? Luecke { get; set; }
+
+        /// <summary>Der Abstand zwischen den Säulengruppen der Zweitachse in Prozent der Säulenbreite.</summary>
+        internal int ZweitLuecke { get; set; } = 150;
 
         /// <summary>Jede n-te Kategorie beschriften (lange Raster); <c>0</c> = Excel entscheidet.</summary>
         internal int Beschriftungsabstand { get; set; }

@@ -134,7 +134,7 @@ namespace EPOS.Kern.Tests
         /// p_E 2 %, p_B 1,5 %, p_I 2,5 %); der erste Stand ist der Stamm, die übrigen heißen
         /// „Variante A", „Variante B".
         /// </summary>
-        private static BerichtsDaten GruppeMitSaetzen(int[] ids, double[] energie,
+        internal static BerichtsDaten GruppeMitSaetzen(int[] ids, double[] energie,
                                                       int? zeitraumGuenstig = null, int? zeitraumUnguenstig = null)
         {
             var ctrl = new WirtschaftlichkeitCtrl();

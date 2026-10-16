@@ -20448,6 +20448,9 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   <data name="KI_FRAGE_BV_LAUF_WARNUNGEN" xml:space="preserve">
     <value>Die Laufmeldung nennt Warnungen beim Füllen der Vorlage. Was ist zu tun?</value>
   </data>
+  <data name="KI_FRAGE_BV_LAUF_NACHGEHOLT" xml:space="preserve">
+    <value>Die Laufmeldung nennt nachgerechnete Teile der Wirtschaftlichkeitsdaten. Was bedeutet das?</value>
+  </data>
   <data name="KI_FRAGE_BV_START_SICHT" xml:space="preserve">
     <value>Die Vorprüfung meldet, dass meine Vorlage den Paarvergleich nutzt. Was muss ich einstellen?</value>
   </data>
@@ -37513,6 +37516,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="BV_LAUF_WARNUNGEN" xml:space="preserve">
     <value>Warnungen beim Füllen der Vorlage: {0}</value>
   </data>
+  <data name="BV_LAUF_NACHGEHOLT" xml:space="preserve">
+    <value>Hinweis: {0} Teil(e) der Wirtschaftlichkeitsdaten fehlten nach der Datensammlung und wurden beim Schreiben nachgerechnet – der Bericht ist vollständig.</value>
+  </data>
   <data name="BV_LAUF_PUNKT_UNBEKANNT" xml:space="preserve">
     <value>{0} – {1}; {2}</value>
   </data>
@@ -40476,6 +40482,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="BV_XL_DG_BASIS" xml:space="preserve">
     <value>Basis (Hilfsspalte)</value>
+  </data>
+  <data name="BV_XL_DG_ABSTAND" xml:space="preserve">
+    <value>Abstand (Hilfsspalte)</value>
   </data>
   <data name="BV_XL_DG_UEBER_NULL" xml:space="preserve">
     <value>{0} (über null)</value>

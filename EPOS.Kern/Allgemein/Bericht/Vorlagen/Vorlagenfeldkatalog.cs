@@ -791,9 +791,22 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Deckblattangaben: was das Kapitel Deckblatt schreibt, ohne Schalter — trägt eine Vorlage
-        /// eine davon im Rumpf, trägt sie ihr Deckblatt selbst (Stelle „Deckblatt“ der Anhang-E-Checkliste).
+        /// Die Deckblattangaben: was das Kapitel Deckblatt schreibt, ohne Schalter. Ob eine Vorlage ihr
+        /// Deckblatt selbst trägt, entscheidet allein das <see cref="Deckblattmerkmal"/>.
         /// </summary>
+        /// <summary>
+        /// Das Merkmal eines eigenen Deckblatts: der Berichtstitel <c>{{bericht.titel}}</c>. Trägt der Rumpf einer
+        /// Vorlage ihn als Platzhalter, trägt sie ihr Deckblatt selbst (Häkchen „Deckblatt“ ausgegraut, Stelle
+        /// „Deckblatt“ der Anhang-E-Checkliste); eine andere Deckblattangabe allein — etwa nur das Datum — genügt nicht.
+        /// </summary>
+        public const string Deckblattmerkmal = "bericht.titel";
+
+        /// <summary>Ist der Schlüssel (oder sein Alias) das <see cref="Deckblattmerkmal"/>?</summary>
+        public static bool IstDeckblattmerkmal(string schluessel)
+        {
+            return string.Equals(Finde(schluessel ?? "")?.Schluessel, Deckblattmerkmal, StringComparison.Ordinal);
+        }
+
         public static ISet<string> Deckblattangaben
         {
             get

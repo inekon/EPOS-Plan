@@ -699,8 +699,9 @@ namespace WindowsFormsApplication1
         private static object Leer(string text) => string.IsNullOrEmpty(text) ? null : text;
 
         /// <summary>
-        /// Die Datenschalter <c>hat.*</c> (Konzept 4.5, 4.7): im Block <c>je stand</c> für den laufenden Stand, außerhalb
-        /// für die Gruppe — wahr, sobald irgendein Stand die Bedingung erfüllt. Kontext Gruppe: gültig überall.
+        /// Die Datenschalter <c>hat.*</c> (Konzept 4.5, 4.7): im Block <c>je stand</c> bzw. <c>je variante</c> für den laufenden
+        /// Stand, im Gruppenblock <c>je variante|block n</c> für die Varianten der Gruppe, außerhalb für den ganzen Bericht —
+        /// wahr, sobald irgendein Stand die Bedingung erfüllt. Kontext Gruppe: gültig überall.
         /// </summary>
         private static IEnumerable<Vorlagenfeld> Datenschalter()
         {
@@ -1140,10 +1141,14 @@ namespace WindowsFormsApplication1
             return string.IsNullOrWhiteSpace(a) ? b : a;
         }
 
-        /// <summary>Ein Datenschalter: im Standblock für den laufenden Stand, sonst für irgendeinen Stand.</summary>
+        /// <summary>
+        /// Ein Datenschalter: im Standblock für den laufenden Stand, im Gruppenblock <c>{{#je variante|block n}}</c>
+        /// für irgendeine Variante der Gruppe, sonst für irgendeinen Stand des Berichts.
+        /// </summary>
         private static object Hat(Berichtswerte w, Func<VariantenDaten, bool> bedingung)
         {
             if (w.LaufenderStand != null) return bedingung(w.LaufenderStand);
+            if (w.LaufendeGruppe != null) return w.LaufendeGruppe.Any(bedingung);
             return w.Staende.Any(bedingung);
         }
 

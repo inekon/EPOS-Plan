@@ -537,7 +537,7 @@ namespace WindowsFormsApplication1
             /// (mit <c>|ohne titel</c> sonst die nächste Überschrift davor), ohne ihn die eigene
             /// Überschrift des Bausteins; über den Sammelanker die eigene Überschrift. <c>null</c>, wenn
             /// die Vorlage das Kapitel nicht führt oder sein Häkchen fehlt. Das Deckblatt steht auch dann
-            /// im Bericht, wenn die Vorlage Deckblattangaben aus Platzhaltern trägt.
+            /// im Bericht, wenn die Vorlage den Berichtstitel als Platzhalter trägt.
             /// </summary>
             private IReadOnlyDictionary<string, string> BerechneKapitelstellen()
             {
@@ -588,17 +588,17 @@ namespace WindowsFormsApplication1
                 return k.Ueberschrift(_englisch);
             }
 
-            /// <summary>Trägt der Rumpf Deckblattangaben aus Platzhaltern (was das Kapitel Deckblatt deckt)?</summary>
+            /// <summary>Trägt der Rumpf sein eigenes Deckblatt — den Berichtstitel als Platzhalter
+            /// (<see cref="Vorlagenfeldkatalog.Deckblattmerkmal"/>)?</summary>
             private bool DeckblattImRumpf()
             {
-                ISet<string> angaben = Vorlagenfeldkatalog.Deckblattangaben;
                 Teilinfo rumpf = _teile[0];
                 foreach (Paragraph p in rumpf.Wurzel.Descendants<Paragraph>())
                     foreach (Platzhalter m in Platzhaltersyntax.Finde(p.InnerText))
-                        if (m.Art == Platzhalterart.Feld && angaben.Contains(Vorlagenfeldkatalog.Finde(m.Schluessel)?.Schluessel ?? ""))
+                        if (m.Art == Platzhalterart.Feld && Vorlagenfeldkatalog.IstDeckblattmerkmal(m.Schluessel))
                             return true;
                 return _sdts.Any(s => s.Teil.Art == Teilart.Rumpf && s.Marke.Art == Platzhalterart.Feld &&
-                                      angaben.Contains(Vorlagenfeldkatalog.Finde(s.Marke.Schluessel)?.Schluessel ?? ""));
+                                      Vorlagenfeldkatalog.IstDeckblattmerkmal(s.Marke.Schluessel));
             }
 
             /// <summary>Konzept 6.1: ohne jeden Platzhalter kommen die Kapitel ans Ende des Rumpfs, vor

@@ -19585,6 +19585,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis: {0} Teil(e) der Wirtschaftlichkeitsdaten fehlten nach der Datensammlung und wurden beim Schreiben nachgerechnet – der Bericht ist vollständig. ähnelt.
+        /// </summary>
+        public static string BV_LAUF_NACHGEHOLT {
+            get {
+                return ResourceManager.GetString("BV_LAUF_NACHGEHOLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ließ sich nicht füllen: {1} ähnelt.
         /// </summary>
         public static string BV_LAUF_NICHT_FUELLBAR {
@@ -21511,6 +21520,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_XL_BLATT_VORLAGE {
             get {
                 return ResourceManager.GetString("BV_XL_BLATT_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abstand (Hilfsspalte) ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_ABSTAND {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_ABSTAND", resourceCulture);
             }
         }
         
@@ -79461,6 +79479,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_FRAGE_BV_LAUF_LEER {
             get {
                 return ResourceManager.GetString("KI_FRAGE_BV_LAUF_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Laufmeldung nennt nachgerechnete Teile der Wirtschaftlichkeitsdaten. Was bedeutet das? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_BV_LAUF_NACHGEHOLT {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_BV_LAUF_NACHGEHOLT", resourceCulture);
             }
         }
         
