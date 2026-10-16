@@ -64,6 +64,7 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
             DataRepository.ExecuteNonQuery("DELETE FROM energy_carrier WHERE pricing_model = 'WATER'");
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET Kostenkatalog_Geaendert = NULL");   // Stempel des Loeschens
             SpalteWiederAnlegen();
             long anlage = Anlagen(1055).First();
             DataRepository.ExecuteNonQuery("UPDATE \"" + TAB + "\" SET \"" + SPALTE + "\" = ? WHERE ID = ?",
@@ -74,6 +75,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal((1, 1, 0, 0, 1), (e.TraegerAngelegt, e.Uebernommen, e.Verworfen, e.Behalten, e.Entfernt));
             Assert.True(WasserpreisTraegerkarteSchema.Vollstaendig());
             Assert.Equal(2.5, Kartenpreis(1055));
+            // Der neue Traeger stempelt den Katalog nicht als geaendert (Preis 0, keine Zuordnung).
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Applikation WHERE Kostenkatalog_Geaendert IS NOT NULL"));
 
             // Zweiter Lauf: nichts. Ein umbenannter Traeger wird am Preismodell erkannt - kein zweiter.
             DataRepository.ExecuteNonQuery("UPDATE energy_carrier SET name = 'Brauchwasser' WHERE pricing_model = 'WATER'");

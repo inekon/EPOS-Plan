@@ -239,12 +239,39 @@ namespace WindowsFormsApplication1
             "\"billing_unit\", \"hi_kwh_per_unit\", \"hs_kwh_per_unit\", \"price_work\", \"price_base\", \"price_power\", " +
             "\"co2\", \"so2\", \"nox\", \"is_active\") VALUES (0, ?, ?, ?, ?, ?, NULL, NULL, 0, 0, 0, 0, 0, 0, 1)";
 
+        /// <summary>
+        /// Legt den Träger an. DER KATALOGSTEMPEL BLEIBT, WIE ER WAR: Der Auslöser an <c>energy_carrier</c>
+        /// (<see cref="KostenStempelSchema"/>) stempelt jede neue Zeile als Kostenänderung des Katalogs - eine Zeile mit
+        /// Preis 0 ohne Zuordnung ändert aber keine Wirtschaftlichkeit. Der Stempel wird deshalb im selben Vorgang auf
+        /// seinen Wert davor zurückgesetzt (Saat bewegt nie ein Ergebnis, auch nicht dessen Aktualitätsvermerk).
+        /// </summary>
         private static int TraegerAnlegen(IList<string> bericht)
         {
             if (TraegerId().HasValue) return 0;
-            DataRepository.ExecuteNonQuery(SqlTraegerAnlegen(),
-                new DbParam("@name", NAME_WASSER), new DbParam("@code", NAME_WASSER), new DbParam("@gruppe", NAME_WASSER),
-                new DbParam("@modell", PREISMODELL_WASSER), new DbParam("@einheit", EINHEIT_WASSER));
+            string tabStempel = KostenStempelSchema.TAB_APPLIKATION, spStempel = KostenStempelSchema.SPALTE_KATALOG;
+            bool mitStempel = DataRepository.TabelleVorhanden(tabStempel) && DataRepository.SpalteVorhanden(tabStempel, spStempel);
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    DataTable stempel = mitStempel
+                        ? v.Lese("SELECT rowid, " + Q(spStempel) + " FROM " + Q(tabStempel), Array.Empty<DbParam>())
+                        : null;
+                    v.Ausfuehren(SqlTraegerAnlegen(),
+                        new DbParam("@name", NAME_WASSER), new DbParam("@code", NAME_WASSER), new DbParam("@gruppe", NAME_WASSER),
+                        new DbParam("@modell", PREISMODELL_WASSER), new DbParam("@einheit", EINHEIT_WASSER));
+                    if (stempel != null)
+                        foreach (DataRow r in stempel.Rows)
+                            v.Ausfuehren("UPDATE " + Q(tabStempel) + " SET " + Q(spStempel) + " = ? WHERE rowid = ?",
+                                         new DbParam("@s", r[1]), new DbParam("@r", r[0]));
+                    v.Commit();
+                }
+                catch
+                {
+                    v.Rollback();
+                    throw;
+                }
+            }
             bericht?.Add(TAB_TRAEGER + ": Traeger \"" + NAME_WASSER + "\" (" + PREISMODELL_WASSER + ", " + EINHEIT_WASSER +
                          ") angelegt");
             return 1;
