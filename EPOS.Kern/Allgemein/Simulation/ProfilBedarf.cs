@@ -153,6 +153,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public IReadOnlyDictionary<string, double> Jahressummen;
 
+        /// <summary>
+        /// Der ungespeicherte Arbeitsstand je Profilname — Monatswerte, Wochenprofil und Betriebskalender, wie sie im
+        /// offenen Dialog stehen (Konzept Kältebedarfsprofile 5); <c>null</c> = allein der gespeicherte Stand. Er geht
+        /// Kopfsatz, Typprofil und Kalender der Zuordnung vor; die Jahressumme bleibt bei <see cref="Jahressummen"/>.
+        /// Der Lauf setzt ihn nie.
+        /// </summary>
+        public IReadOnlyDictionary<string, ProfilArbeitsstand> Arbeitsstaende;
+
         /// <summary>Protokollpräfix der Bedarfsart („Brauchwasser: " …) für die generischen Meldungen.</summary>
         public string Praefix = "";
 
@@ -324,6 +332,26 @@ namespace WindowsFormsApplication1
                 TextTypUndefiniert = MyResource.Resource.SIMENG_STROMPROFIL_TYP_UNDEFINIERT
             };
         }
+    }
+
+    /// <summary>
+    /// Der ungespeicherte Arbeitsstand EINES Profils für die Vorschau (<see cref="ProfilQuelle.Arbeitsstaende"/>): was
+    /// hier steht, ersetzt den Wert der Datenbank in derselben Rechenkette — die Monatswerte den Kopfsatz (danach wie
+    /// gespeichert auf die Jahressumme skaliert), das Wochenprofil das Typprofil, der Kalender den der Zuordnung.
+    /// </summary>
+    public sealed class ProfilArbeitsstand
+    {
+        /// <summary>Die zwölf Monatswerte (Anteile; nur das Verhältnis zählt); <c>null</c> = die des Kopfsatzes.</summary>
+        public double[] Monatswerte;
+
+        /// <summary>Die 168 Wochenwerte, Montag 0 Uhr zuerst; <c>null</c> = das Typprofil.</summary>
+        public double[] Wochenwerte;
+
+        /// <summary>Gilt <see cref="KalenderId"/> statt des Kalenders der Zuordnung?</summary>
+        public bool KalenderGesetzt;
+
+        /// <summary>Der Betriebskalender des Arbeitsstands; 0 = keiner. Wirkt nur mit <see cref="KalenderGesetzt"/>.</summary>
+        public int KalenderId;
     }
 
     /// <summary>
@@ -727,10 +755,16 @@ namespace WindowsFormsApplication1
                 else if (idProjekt != 0)
                     pjv = ProjektJahressumme(satzquelle, idProjekt, kopf);
 
+                // Der ungespeicherte Arbeitsstand des Dialogs (nur Vorschau): Monatswerte, Wochenprofil, Kalender.
+                ProfilArbeitsstand arbeit = null;
+                quelle.Arbeitsstaende?.TryGetValue(name, out arbeit);
+                bool monateAusArbeit = arbeit?.Monatswerte != null && arbeit.Monatswerte.Length == MONATE;
+                bool wocheAusArbeit = arbeit?.Wochenwerte != null && arbeit.Wochenwerte.Length == WOCHEN_STUNDEN;
+
                 double jv = 0;
                 for (int i = 0; i < MONATE; i++)
                 {
-                    double d = (double)kopf["Monat_" + (i + 1).ToString()];
+                    double d = monateAusArbeit ? arbeit.Monatswerte[i] : (double)kopf["Monat_" + (i + 1).ToString()];
                     monatswerte[i] = (double)d;
                     jv += monatswerte[i];
                 }
@@ -751,7 +785,7 @@ namespace WindowsFormsApplication1
                 }
 
                 object objTyp = kopf["Typ"];
-                if (DBNull.Value.Equals(objTyp) || objTyp == null)
+                if (!wocheAusArbeit && (DBNull.Value.Equals(objTyp) || objTyp == null))
                 {
                     // Ohne Typbezug gibt es keine Verteilung: DIESES Profil wird mit
                     // benannter Warnung übersprungen (Anteil 0), die übrigen rechnen
@@ -764,12 +798,14 @@ namespace WindowsFormsApplication1
                     continue;
                 }
 
-                string typ = objTyp.ToString();
+                string typ = objTyp == null || DBNull.Value.Equals(objTyp) ? "" : objTyp.ToString();
 
                 // V0-3: Wochenprofil vor JEDEM Ladevorgang nullen.
                 Array.Clear(wochenwerte, 0, wochenwerte.Length);
 
-                if (!WochenprofilLesen(satzquelle, idProjekt, typ, KopfId(kopf), wochenwerte))
+                if (wocheAusArbeit)
+                    Array.Copy(arbeit.Wochenwerte, wochenwerte, WOCHEN_STUNDEN);
+                else if (!WochenprofilLesen(satzquelle, idProjekt, typ, KopfId(kopf), wochenwerte))
                 {
                     if (projektmodus)
                         SimulationProtokoll.Aktuell.Warnung(string.Format(
@@ -794,7 +830,9 @@ namespace WindowsFormsApplication1
                 // Jahresverteilung gemäß Wochenprofil - mit dem Wochentag des 1. Januar (F3).
                 // PW2/BW2: Mit Betriebskalender legt die Kalenderschicht Feiertage und Ferien
                 // zwischen Kachelung und Monatsnormierung; ohne ihn rechnet der Weg wie zuvor.
-                Betriebskalender kal = KalenderDesEintrags(quelle, satzquelle, idProjekt, eintrag, kopf, kalender);
+                Betriebskalender kal = arbeit != null && arbeit.KalenderGesetzt
+                    ? KalenderUeberId(arbeit.KalenderId, kalender)
+                    : KalenderDesEintrags(quelle, satzquelle, idProjekt, eintrag, kopf, kalender);
                 if (kal == null)
                 {
                     WPPlan.Core.BhkwPlan.StromWocheToJahr(wochenwerte, monatswerte, jahreswerte,
@@ -853,6 +891,12 @@ namespace WindowsFormsApplication1
                     if (wert != null && wert != DBNull.Value) id = Convert.ToInt32(wert);
                 }
             }
+            return KalenderUeberId(id, cache);
+        }
+
+        /// <summary>Der Betriebskalender <paramref name="id"/>, je Aufruf einmal gelesen; <c>null</c> bei 0 oder ohne Satz.</summary>
+        private static Betriebskalender KalenderUeberId(int id, Dictionary<int, Betriebskalender> cache)
+        {
             if (id <= 0) return null;
             if (!cache.TryGetValue(id, out Betriebskalender kal))
             {

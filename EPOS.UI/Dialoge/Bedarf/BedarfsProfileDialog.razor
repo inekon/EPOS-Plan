@@ -428,8 +428,9 @@
     }
 
     @* KBP-3b (Konzept Kaeltebedarfsprofile 5): die Kennzahlenzeile und die vier Blaetter der markierten Kaeltezeile.
-       Gerechnet wird im Kern ueber den Weg der Huelle (KaelteGrafik), mit den Jahressummen und Kalendern, wie der Dialog
-       sie gerade zeigt; das Ergebnis bleibt liegen, bis sich dieser Stand aendert (eine Referenz je Rechenstand). *@
+       Gerechnet wird im Kern ueber den Weg der Huelle (KaelteGrafik) mit dem Arbeitsstand: Jahressummen, Kalender und
+       Monatswerte/Wochenprofil, auch die gerade in der Ueberlagerung bearbeiteten (GrafikZeile); das Ergebnis bleibt
+       liegen, bis sich dieser Stand aendert (eine Referenz je Rechenstand). *@
     @if (GrafikSichtbar)
     {
         <Gruppenkopf Titel="@Resource.KBP_GRAFIK_GRUPPE">
@@ -673,24 +674,62 @@
     private string? _grafikStand;
 
     /// <summary>
-    /// Die Bilder zum gegenwärtigen Stand: neu gerechnet nur, wenn sich markierte Zeile, Namen, Jahressummen oder
-    /// Kalender geändert haben — sonst dieselbe Referenz (DiagrammSvg baut seinen Baum nur bei neuer Referenz neu und
-    /// behält Zoom, Zeigerstelle und abgewählte Reihen). Ein Fehler des Wegs zeigt „kein Profil“.
+    /// Die Bilder zum gegenwärtigen Arbeitsstand: neu gerechnet nur, wenn sich markierte Zeile, Namen, Jahressummen,
+    /// Kalender, Monatswerte oder Wochenprofil geändert haben — sonst dieselbe Referenz (DiagrammSvg baut seinen Baum nur
+    /// bei neuer Referenz neu und behält Zoom, Zeigerstelle und abgewählte Reihen). Die markierte Zeile geht als
+    /// <see cref="GrafikZeile"/> hinein. Ein Fehler des Wegs zeigt „kein Profil“.
     /// </summary>
     private WindowsFormsApplication1.Kaelteprofilbilder? GrafikBilder()
     {
         if (KaelteGrafik is null || _gewaehlt is null) return null;
+        BedarfsProfilZeile markiert = GrafikZeile(_gewaehlt);
+        var zeilen = Zeilen.Select(z => ReferenceEquals(z, _gewaehlt) ? markiert : z).ToList();
+        var inv = System.Globalization.CultureInfo.InvariantCulture;
         var stand = new System.Text.StringBuilder();
         stand.Append(Zeilen.IndexOf(_gewaehlt)).Append('|');
-        foreach (BedarfsProfilZeile z in Zeilen)
-            stand.Append(z.Name).Append('\u001f').Append(z.Summe.ToString("R", System.Globalization.CultureInfo.InvariantCulture))
-                 .Append('\u001f').Append(z.KalenderId).Append('\u001e');
+        foreach (BedarfsProfilZeile z in zeilen)
+        {
+            stand.Append(z.Name).Append('\u001f').Append(z.Summe.ToString("R", inv))
+                 .Append('\u001f').Append(z.KalenderId).Append('\u001f').Append(z.ProfilGeaendert);
+            if (z.ProfilGeaendert)
+                foreach (double w in (z.Monatsanteile ?? Array.Empty<double>()).Concat(z.Wochenprofil ?? Array.Empty<double>()))
+                    stand.Append(';').Append(w.ToString("R", inv));
+            stand.Append('\u001e');
+        }
         string schluessel = stand.ToString();
         if (schluessel == _grafikStand) return _grafik;
         _grafikStand = schluessel;
-        try { _grafik = KaelteGrafik(_gewaehlt, Zeilen); }
+        try { _grafik = KaelteGrafik(markiert, zeilen); }
         catch (Exception) { _grafik = null; }
         return _grafik;
+    }
+
+    /// <summary>
+    /// Nacharbeit KBP-3b: die markierte Zeile, wie die Grafik sie rechnet — mit den Monatswerten und dem Wochenprofil,
+    /// die in der Überlagerung gerade bearbeitet und gültig sind (dieselben Prüfungen wie das OK der Überlagerung).
+    /// Ohne solche Eingabe die Zeile selbst; sonst eine Kopie, die Zeile bleibt unangetastet.
+    /// </summary>
+    private BedarfsProfilZeile GrafikZeile(BedarfsProfilZeile z)
+    {
+        double[]? monate = null, woche = null;
+        double summe = z.Summe;
+        if (_eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_MONAT && _monateArbeit is not null &&
+            _monateBearbeitet && WindowsFormsApplication1.Kaelteprofileingabe.PruefeMonate(_monateArbeit, _monateProzent) is null)
+        {
+            if (_monateProzent) monate = _monateArbeit.Select(a => a ?? 0.0).ToArray();
+            else (summe, monate) = WindowsFormsApplication1.Kaelteprofileingabe.AusMwh(_monateArbeit);
+        }
+        if (_eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_WOCHE && _wocheArbeit is not null &&
+            _wocheBearbeitet && WindowsFormsApplication1.Kaelteprofileingabe.PruefeWoche(_wocheArbeit) is null)
+            woche = (double[])_wocheArbeit.Clone();
+        if (monate is null && woche is null) return z;
+        return new BedarfsProfilZeile
+        {
+            IdZ = z.IdZ, IdStamm = z.IdStamm, Name = z.Name, Summe = summe, KalenderId = z.KalenderId, KaelteArt = z.KaelteArt,
+            Eingabeart = _eingabeartArbeit, ProfilGeaendert = true,
+            Monatsanteile = monate ?? (z.ProfilGeaendert ? z.Monatsanteile : null),
+            Wochenprofil = woche ?? (z.ProfilGeaendert ? z.Wochenprofil : null)
+        };
     }
 
     /// <summary>Die Bilder des letzten Rechenstands — Prüfhilfe für die Tests.</summary>

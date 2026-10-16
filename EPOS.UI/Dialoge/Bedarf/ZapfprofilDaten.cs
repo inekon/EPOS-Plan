@@ -1551,6 +1551,12 @@ public sealed class ZapfprofilEmpfehlungDaten
     /// <summary>Trägt der Punkt den Vermerk „Schnellauslegung"?</summary>
     public bool Schnellauslegung { get; set; }
 
+    /// <summary>
+    /// Ist der Punkt die Schnellauslegung nach Vorlage V4 (Nenninhalt des Bandes, ohne Summenlinie)?
+    /// Nur in der Stufe Einfach ohne die Auslegungswerte der A100; der Dialog zeigt die Herkunft.
+    /// </summary>
+    public bool VorlageV4 { get; set; }
+
     /// <summary>Der Vermerk (Entwurfsstand, Spitzen unterschätzt …).</summary>
     public string Vermerk { get; set; } = "";
 

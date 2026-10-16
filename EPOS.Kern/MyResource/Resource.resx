@@ -27342,6 +27342,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_AUS_SCHNELLAUSLEGUNG" xml:space="preserve">
     <value>Schnellauslegung</value>
   </data>
+  <data name="ZPG_AUS_SCHNELLAUSLEGUNG_V4" xml:space="preserve">
+    <value>Schnellauslegung V4</value>
+  </data>
   <data name="ZPG_AUS_ENTWURFSSTAND" xml:space="preserve">
     <value>Entwurfsstand — A100/A1 sind Entwürfe, Anwendung besonders zu vereinbaren.</value>
   </data>
@@ -30426,11 +30429,17 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_AUSHINWEIS_TEMPERATUR_GROSSANLAGE" xml:space="preserve">
     <value>Mit {0:0.###} °C ergibt die Auslegung {1:0} l — eine Großanlage nach DVGW W 551; die Gruppe rechnet deshalb mit der Mindesttemperatur {2:0.###} °C.</value>
   </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_EMPFEHLUNG_V4" xml:space="preserve">
+    <value>Schnellauslegung nach Vorlage V4, ohne Summenlinie: Die Auslegungswerte der A100 fehlen im Katalog; empfohlen ist der Nenninhalt {0:0} l des Verfahrensvergleichs (Band bis {1:0} l). Die Summenlinie rechnet erst mit einem Katalogpaket, das diese Werte führt.</value>
+  </data>
   <data name="ZPG_SATZ_AUSHINWEIS_TEMPERATUR_GROSSANLAGE_BLEIBT" xml:space="preserve">
     <value>{0} Die Gruppe bleibt bei {1:0.###} °C.</value>
   </data>
   <data name="ZPG_SATZ_AUSTEXT_VERMERK_SCHNELLAUSLEGUNG" xml:space="preserve">
     <value>Schnellauslegung</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_VERMERK_VORLAGE_V4" xml:space="preserve">
+    <value>Schnellauslegung nach Vorlage V4, ohne Summenlinie</value>
   </data>
   <data name="ZPG_SATZ_AUSTEXT_VERMERK_SPITZEN" xml:space="preserve">
     <value>Spitzen unterschätzt</value>
@@ -31352,6 +31361,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_SATZ_HERKUNFT_BEDARFSTAGFAKTOR" xml:space="preserve">
     <value>(θ_Zapf − θ_KW,A) / (θ_Zapf − θ_KW,A,Katalog) = ({0:0.###} − {1:0.###}) / ({0:0.###} − {2:0.###})</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_EMPFEHLUNG_V4" xml:space="preserve">
+    <value>Schnellauslegung nach Vorlage V4, ohne Summenlinie: Nenninhalt {0:0} l des Bandes bis {1:0} l</value>
   </data>
   <data name="ZPG_SATZ_HERKUNFT_GEWICHT_FLAECHE" xml:space="preserve">
     <value>flächengewichtet</value>
@@ -38772,6 +38784,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="ZPG_GROESSE_AUSLEGUNG_LADEFENSTER" xml:space="preserve">
     <value>Auslegung, Ladefenster</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_EMPFEHLUNG" xml:space="preserve">
+    <value>Auslegung, Empfehlung</value>
   </data>
   <data name="ZPGK_IMPORT_DATEI_ZIP" xml:space="preserve">
     <value>ZIP-Paket wählen…</value>
@@ -56396,12 +56411,6 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="KBP_REIHE_KAELTE" xml:space="preserve">
     <value>Kältebedarf</value>
   </data>
-  <data name="KBP_REIHE_WOCHE" xml:space="preserve">
-    <value>Werktag, Samstag, Sonntag bzw. Feiertag</value>
-  </data>
-  <data name="KBP_REIHE_FERIEN" xml:space="preserve">
-    <value>Ferientag</value>
-  </data>
   <data name="KBP_KZ_SUMME" xml:space="preserve">
     <value>Jahressumme</value>
   </data>
@@ -56414,14 +56423,41 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="KBP_KZ_GRUNDLAST" xml:space="preserve">
     <value>Grundlast-Anteil</value>
   </data>
-  <data name="KBP_GRAFIK_HERLEITUNG" xml:space="preserve">
-    <value>Jahresgang, Woche und Dauerlinie zeigen die markierte Zeile mit der Jahressumme dieses Dialogs; die Monate stapeln alle Zeilen.</value>
-  </data>
   <data name="KBP_GRAFIK_OHNE" xml:space="preserve">
     <value>Für die markierte Zeile liegt kein Profil vor.</value>
   </data>
   <data name="KBP_GRAFIK_ERL" xml:space="preserve">
     <value>Grafik der markierten Kältezeile: Jahresgang, Monate, Woche und Dauerlinie samt Kennzahlen (nur Anzeige).</value>
+  </data>
+  <data name="KBP_WOCHE_EINTRAG" xml:space="preserve">
+    <value>KW {0} ({1}–{2})</value>
+  </data>
+  <data name="KBP_TITEL_KALENDERWOCHE" xml:space="preserve">
+    <value>Kältebedarf {0}</value>
+  </data>
+  <data name="KBP_LBL_KALENDERWOCHE" xml:space="preserve">
+    <value>Kalenderwoche</value>
+  </data>
+  <data name="KBP_TAGESART_WERKTAG" xml:space="preserve">
+    <value>Werktag</value>
+  </data>
+  <data name="KBP_TAGESART_SAMSTAG" xml:space="preserve">
+    <value>Samstag</value>
+  </data>
+  <data name="KBP_TAGESART_SONNTAG" xml:space="preserve">
+    <value>Sonntag/Feiertag</value>
+  </data>
+  <data name="KBP_TAGESART_FERIEN" xml:space="preserve">
+    <value>Ferien</value>
+  </data>
+  <data name="KBP_TAGESART_AUSSERHALB" xml:space="preserve">
+    <value>außerhalb des Jahres</value>
+  </data>
+  <data name="KBP_HINW_GRAFIKWOCHE" xml:space="preserve">
+    <value>Hintergrund nach Tagesart des Betriebskalenders; Kalenderwochen nach DIN EN ISO 8601 im Jahresraster, zuerst die Woche mit der Spitze.</value>
+  </data>
+  <data name="KBP_GRAFIK_HERLEITUNG_ARBEIT" xml:space="preserve">
+    <value>Gerechnet wird der Arbeitsstand dieses Dialogs – Jahressumme, Monatswerte, Wochenprofil und Betriebskalender, auch ungespeichert. Jahresgang, Woche und Dauerlinie zeigen die markierte Zeile, die Monate stapeln alle Zeilen.</value>
   </data>
   <data name="KBP_HINW_EINGABEART_ZAPFPROFIL" xml:space="preserve">
     <value>Das Brauchwasser rechnet mit dem Zapfprofilgenerator – die Eingabeart (Monatswerte, Wochenprofil) gilt nur für den Profilweg.</value>
