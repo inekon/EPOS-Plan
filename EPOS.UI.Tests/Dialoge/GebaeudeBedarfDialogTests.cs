@@ -833,7 +833,7 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
     private static GebaeudeBedarfDaten GekoppelterSatz(bool mitHeizstunden = true) => new()
     {
         Name = "Gebäude A", HeizwaermeMwh = 70.67, MaxLastKw = 34.5, VollbenutzungsstundenH = 2048.0,
-        MonatswerteMwh = new double[12], Modelltext = "VDI 6007, gekoppelt (AK1)", IstVdi6007 = true,
+        MonatswerteMwh = new double[12], Modelltext = "VDI 6007, mit Anlagenkopplung", IstVdi6007 = true,
         IstGekoppelt = true,
         VorlaufMittelC = mitHeizstunden ? 35.3 : null,
         RuecklaufMittelC = mitHeizstunden ? 32.06 : null,
@@ -862,7 +862,7 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
     /// <summary>
     /// Ein gekoppelt gerechnetes Gebäude zeigt unter den Kennzahlen ZWEI Kacheln — die Mittel von
     /// Vorlauf und Rücklauf mit Übergabeart und Auslegungspunkt, die Stunden mit begrenzter
-    /// Übergabe — und die Rechenwegzeile trägt den Ausweis „gekoppelt (AK1)".
+    /// Übergabe — und die Rechenwegzeile trägt den Ausweis „mit Anlagenkopplung".
     /// </summary>
     [Fact]
     public void Ein_gekoppeltes_Gebaeude_zeigt_zwei_Kacheln_und_den_Ausweis()
@@ -876,7 +876,7 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         Assert.Equal("Mittel der Stunden mit Heizbetrieb — Radiator, Auslegung 55/45 °C", Kachel(kacheln[0], "quelle"));
         Assert.Equal("Stunden mit begrenzter Übergabe", Kachel(kacheln[1], "titel"));
         Assert.Equal("211 h", Kachel(kacheln[1], "wert"));
-        Assert.Contains("VDI 6007, gekoppelt (AK1)", cut.Find("table.gebb-kennzahlen").TextContent);
+        Assert.Contains("VDI 6007, mit Anlagenkopplung", cut.Find("table.gebb-kennzahlen").TextContent);
 
         // Die Kacheln stehen im Abschnitt „Wärmebedarf", nicht bei der Kälte.
         Assert.NotNull(cut.Find("section[data-seite=waerme]").QuerySelector("div.gebb-heizkreis"));
@@ -1025,7 +1025,7 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
     private static GebaeudeBedarfDaten KomfortSatz(bool erhoben) => new()
     {
         Name = "Gebäude A", HeizwaermeMwh = 70.67, MaxLastKw = 34.5, VollbenutzungsstundenH = 2048.0,
-        MonatswerteMwh = new double[12], Modelltext = "VDI 6007, gekoppelt (AK1)", IstVdi6007 = true,
+        MonatswerteMwh = new double[12], Modelltext = "VDI 6007, mit Anlagenkopplung", IstVdi6007 = true,
         IstGekoppelt = true, VorlaufMittelC = 35.3, RuecklaufMittelC = 32.06, UebergabeBegrenztStundenH = 210.9,
         KomfortUnterschreitungsstundenH = erhoben ? 273 : null,
         KomfortKelvinstundenKh = erhoben ? 412.46 : null,

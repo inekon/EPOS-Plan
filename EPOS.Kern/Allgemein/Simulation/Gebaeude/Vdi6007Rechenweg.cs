@@ -923,7 +923,7 @@ namespace WindowsFormsApplication1
             // „gebaut ist die Stufe AK1“ — der Kreis meldet sich selbst (Ak3Vorbereiten), eine Auskunft nennt ihre Rückstufe.
             if (e.AnlagenkopplungStufe != DbWerte.ANLAGENKOPPLUNG_AK1 && !Ak3Kernstufe.Wirksam(e.AnlagenkopplungStufe))
                 p.HinweisEinmal("ak-stufe-" + e.AnlagenkopplungStufe,
-                    string.Format(k, MyResource.Resource.SIMENG_AK_STUFE_NICHT_GEBAUT, e.AnlagenkopplungStufe));
+                    string.Format(k, MyResource.Resource.SIMENG_AK_STUFE_NICHT_GEBAUT, Waermeuebergabevorgaben.Stufenname(e.AnlagenkopplungStufe)));
 
             HeizkreisErgebnis hk = r.Heizkreis;
             if (hk != null && hk.UebergabeBegrenztStundenH > 0.0)
@@ -1003,7 +1003,7 @@ namespace WindowsFormsApplication1
             // „gebaut ist die Stufe AK1“ — der Kreis meldet sich selbst (Ak3Vorbereiten), eine Auskunft nennt ihre Rückstufe.
             if (e.AnlagenkopplungStufe != DbWerte.ANLAGENKOPPLUNG_AK1 && !Ak3Kernstufe.Wirksam(e.AnlagenkopplungStufe))
                 p.HinweisEinmal("ak-stufe-" + e.AnlagenkopplungStufe,
-                    string.Format(k, MyResource.Resource.SIMENG_AK_STUFE_NICHT_GEBAUT, e.AnlagenkopplungStufe));
+                    string.Format(k, MyResource.Resource.SIMENG_AK_STUFE_NICHT_GEBAUT, Waermeuebergabevorgaben.Stufenname(e.AnlagenkopplungStufe)));
 
             KuehlkreisErgebnis kk = r.Kuehlkreis;
             if (kk != null && kk.UebergabeBegrenztStundenH > 0.0)
