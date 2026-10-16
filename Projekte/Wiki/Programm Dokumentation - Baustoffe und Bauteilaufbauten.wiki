@@ -81,6 +81,10 @@ Bei der Bauteilart ''Fenster'' (und ''Vorhangfassade'') zeigt das Stammblatt die
 
 Daraus entsteht <math>U_{\mathrm{w}} = (1 - f) \cdot U_{\mathrm{g}} + f \cdot U_{\mathrm{f}} + l_{\mathrm{g}} \cdot \psi_{\mathrm{g}} / A</math> nach DIN EN ISO 10077-1, mit der genäherten Glasrandlänge <math>l_{\mathrm{g}}</math>. Weist man den Aufbau einem Fenster im Bauteildialog zu, übernimmt das Bauteil g-Wert, Rahmenanteil und <math>U_{\mathrm{w}}</math>.
 
+=== Strahlung der Außenfläche ===
+
+Jeder Aufbau führt den '''Absorptionsgrad solar''' und den '''Emissionsgrad''' (langwellig) seiner Außenfläche, je 0 bis 1. Beide gehen in die äquivalente Außentemperatur der Bauteile ein, die den Aufbau tragen; leer gilt die Vorgabe 0,6 bzw. 0,9. Ein Bauteil kann im Bauteildialog einen eigenen Wert tragen. Der Gebäudeexport schreibt die Werte in gbXML als <code>Absorptance</code> der Konstruktion und in IFC im Satz <code>EPOS_Bauteil</code>; der Gebäudeimport übernimmt sie von dort.
+
 == Gruppe, Klasse und Herkunft ==
 {{Anker|gruppe-klasse}}
 

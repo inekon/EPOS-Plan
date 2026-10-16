@@ -357,7 +357,9 @@ namespace WindowsFormsApplication1
             new Katalogtabelle("Tab_Bauteilaufbau_STAMM", "BTA",
                 new[] { "Bezeichner", "Beschreibung", "Bauteilart", "Quelle", "Herkunft", "Quellkennung", "Typaufbau" }
                     .Concat(BauteilkatalogSchema.AUFBAU_SPALTEN.Select(s => s.Name))
-                    .Concat(BauteilkatalogAbschnittSchema.AUFBAU_SPALTEN.Select(s => s.Name)).ToArray(),
+                    .Concat(BauteilkatalogAbschnittSchema.AUFBAU_SPALTEN.Select(s => s.Name))
+                    // DA-8 (BauteilStrahlungSchema): Absorptions- und Emissionsgrad; leer tragen sie nichts zur Pruefsumme bei.
+                    .Concat(BauteilStrahlungSchema.SPALTEN.Select(s => s.Name)).ToArray(),
                 // BK-5: Die Abschnitte stehen VOR den Schichten - der Abgleich legt sie zuerst an, die Schicht findet ihren
                 // Abschnitt dann ueber die Nummer unter demselben Aufbau. Ohne Abschnitt bleibt die Pruefsumme des Aufbaus.
                 new Katalogkind(BauteilkatalogSchema.TAB_ABSCHNITT_STAMM, "ID_Aufbau",

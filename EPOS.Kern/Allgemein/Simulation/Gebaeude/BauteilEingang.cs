@@ -100,8 +100,12 @@ namespace WindowsFormsApplication1
             double alphaKonInnen_WM2K = double.NaN,
             double alphaKonAussen_WM2K = double.NaN,
             int? idNachbarzone = null,
-            Trennflaechenzuordnung zuordnung = Trennflaechenzuordnung.Regel)
+            Trennflaechenzuordnung zuordnung = Trennflaechenzuordnung.Regel,
+            double absorptionsgradSolar = double.NaN,
+            double emissionsgrad = double.NaN)
         {
+            AbsorptionsgradSolar = absorptionsgradSolar;
+            Emissionsgrad = emissionsgrad;
             IdNachbarzone = idNachbarzone;
             Zuordnung = zuordnung;
             Bezeichnung = bezeichnung;
@@ -168,6 +172,24 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal int? IdNachbarzone { get; }
 
+        /// <summary>
+        /// Absorptionsgrad der Außenfläche für Solarstrahlung a_F [–] (DA-8); NaN = Festwert
+        /// <see cref="GebaeudeFestwerte.ABSORPTIONSGRAD_OPAK"/>.
+        /// </summary>
+        internal double AbsorptionsgradSolar { get; }
+
+        /// <summary>
+        /// Langwelliger Emissionsgrad der Außenfläche ε_F [–] (DA-8); NaN = Festwert
+        /// <see cref="GebaeudeFestwerte.EMISSIONSGRAD_AUSSEN"/>.
+        /// </summary>
+        internal double Emissionsgrad { get; }
+
+        /// <summary>Der wirksame Absorptionsgrad a_F [–]: eingetragen, sonst <see cref="GebaeudeFestwerte.ABSORPTIONSGRAD_OPAK"/>.</summary>
+        internal double AbsorptionsgradSolarWirksam => double.IsNaN(AbsorptionsgradSolar) ? GebaeudeFestwerte.ABSORPTIONSGRAD_OPAK : AbsorptionsgradSolar;
+
+        /// <summary>Der wirksame Emissionsgrad ε_F [–]: eingetragen, sonst <see cref="GebaeudeFestwerte.EMISSIONSGRAD_AUSSEN"/>.</summary>
+        internal double EmissionsgradWirksam => double.IsNaN(Emissionsgrad) ? GebaeudeFestwerte.EMISSIONSGRAD_AUSSEN : Emissionsgrad;
+
         /// <summary>Die Gruppe einer Trennfläche (<see cref="Trennflaechenzuordnung"/>); an jedem anderen Rand ohne Belang.</summary>
         internal Trennflaechenzuordnung Zuordnung { get; }
 
@@ -199,7 +221,7 @@ namespace WindowsFormsApplication1
             if (Rand != Bauteilrand.Zone || zuordnung == Zuordnung) return this;
             return new BauteilEingang(Bezeichnung, Art, Flaeche_M2, Rand, UWert_WM2K, Schichten, NeigungGrad, AzimutGrad,
                                       GWert, Rahmenanteil, Verschattungsfaktor, PsiL_WK, AlphaKonInnen_WM2K, AlphaKonAussen_WM2K,
-                                      IdNachbarzone, zuordnung);
+                                      IdNachbarzone, zuordnung, AbsorptionsgradSolar, Emissionsgrad);
         }
 
         /// <summary>
@@ -222,7 +244,8 @@ namespace WindowsFormsApplication1
                                       180.0 - NeigungWirksamGrad, azimut, GWert, Rahmenanteil, Verschattungsfaktor,
                                       psiL_WK: 0.0,
                                       alphaKonInnen_WM2K: AlphaKonAussen_WM2K, alphaKonAussen_WM2K: AlphaKonInnen_WM2K,
-                                      idNachbarzone: fuehrendeZone, zuordnung: Zuordnung);
+                                      idNachbarzone: fuehrendeZone, zuordnung: Zuordnung,
+                                      absorptionsgradSolar: AbsorptionsgradSolar, emissionsgrad: Emissionsgrad);
         }
 
         /// <summary>Die wirksame Neigung [°]: eingetragen, sonst nach Art (Dach/Decke 0°, Bodenplatte 180°, sonst 90°).</summary>
@@ -249,7 +272,8 @@ namespace WindowsFormsApplication1
                                       double.IsNaN(GWert) ? gWert : GWert,
                                       double.IsNaN(Rahmenanteil) ? rahmenanteil : Rahmenanteil,
                                       double.IsNaN(Verschattungsfaktor) ? verschattungsfaktor : Verschattungsfaktor,
-                                      PsiL_WK, AlphaKonInnen_WM2K, AlphaKonAussen_WM2K, IdNachbarzone, Zuordnung);
+                                      PsiL_WK, AlphaKonInnen_WM2K, AlphaKonAussen_WM2K, IdNachbarzone, Zuordnung,
+                                      AbsorptionsgradSolar, Emissionsgrad);
         }
 
         /// <summary>Die Vorgabeneigung einer Art [°].</summary>

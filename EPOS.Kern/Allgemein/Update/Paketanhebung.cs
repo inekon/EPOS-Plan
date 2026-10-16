@@ -499,6 +499,9 @@ namespace WindowsFormsApplication1
             // KBP-4a: Ein älteres Paket bringt keine Typtage; der Schritt legt die zwei leeren Tabellen am Ziel an.
             new Stufe(KaeltetyptagSchema.SCHRITT, Art.Ddl,
                       "Typtage und Zuordnungsmatrix der Kältebedarfszuordnung (KBP-4a)"),
+            // Ein älteres Paket bringt Aufbauten und Bauteile ohne Strahlungswerte; der Schritt legt die Spalten leer an.
+            new Stufe(BauteilStrahlungSchema.SCHRITT, Art.Ddl,
+                      "Absorptions- und Emissionsgrad je Aufbau und Bauteil (DA-8)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

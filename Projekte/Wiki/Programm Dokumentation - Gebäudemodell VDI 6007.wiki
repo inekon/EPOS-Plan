@@ -249,7 +249,7 @@ Ein unsaniertes Gebäude braucht mit den Vorgaben oft keine Rampe, weil seine Sp
 == Strahlung auf die Außenbauteile ==
 {{Anker|strahlung}}
 
-Ohne diesen Schalter sehen Wände, Dach und sonstige Außenflächen die Außenlufttemperatur. Mit dem Schalter rechnet das Modell für sie eine '''äquivalente Außentemperatur''' nach VDI 6007 Blatt 1: Die Sonne erwärmt die Außenflächen (Absorptionsgrad 0,6), die langwellige Abstrahlung gegen den Himmel kühlt sie. Die Außenwand bekommt dabei das Mittel der Einstrahlung auf die vier Fassaden, das Dach wird als waagerechte Fläche gerechnet. Auf dem [[#bauteilweg|Bauteilweg]] bekommt jedes Außenbauteil an Außenluft die Einstrahlung seiner eigenen Neigung und Richtung.
+Ohne diesen Schalter sehen Wände, Dach und sonstige Außenflächen die Außenlufttemperatur. Mit dem Schalter rechnet das Modell für sie eine '''äquivalente Außentemperatur''' nach VDI 6007 Blatt 1: Die Sonne erwärmt die Außenflächen (Absorptionsgrad 0,6), die langwellige Abstrahlung gegen den Himmel kühlt sie (Emissionsgrad 0,9). Auf dem Bauteilweg gelten Absorptions- und Emissionsgrad des Bauteils, leer die seines Aufbaus, ohne sie diese Vorgaben. Die Außenwand bekommt dabei das Mittel der Einstrahlung auf die vier Fassaden, das Dach wird als waagerechte Fläche gerechnet. Auf dem [[#bauteilweg|Bauteilweg]] bekommt jedes Außenbauteil an Außenluft die Einstrahlung seiner eigenen Neigung und Richtung.
 
 Für die Abstrahlung braucht das Modell die '''atmosphärische Gegenstrahlung''' der Klimadaten. PVGIS-Abrufe und Testreferenzjahre liefern sie; eine Klimaregion ohne diesen Wert rechnet ohne den langwelligen Anteil. Die Abstrahlung der Fenster geht immer ein, wenn die Klimadaten die Gegenstrahlung führen.
 

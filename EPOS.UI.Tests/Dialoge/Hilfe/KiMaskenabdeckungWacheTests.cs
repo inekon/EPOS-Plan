@@ -284,7 +284,8 @@ public sealed class KiMaskenabdeckungWacheTests
         new("BaustoffKatalogDialog", 9, "der Werkzeugschalter „nur herstellerneutral“ setzt den Filter der Liste"),
         // BK-6 (Nachzug KIS): die fünf Fensterwerte (U_g, g, Rahmenanteil, U_f, ψ_g) stehen als Katalogfelder fenster_* in der
         // Feldkarte; sie stehen im Stammblatt und in „Neu…“ aus EINEM Fragment (12 bleibt, der Vermerk nennt nur noch den Schalter).
-        new("BauteilaufbauDialog", 12, "der Werkzeugschalter „nur geeignete“ blendet Zeilen der Liste aus"),
+        // DA-8: Absorptions- und Emissionsgrad (Katalogfelder absorptionsgrad, emissionsgrad): 12 → 14.
+        new("BauteilaufbauDialog", 14, "der Werkzeugschalter „nur geeignete“ blendet Zeilen der Liste aus"),
         // BK-5 (Nachzug KIS): Abschnitt und Flächenanteil der inhomogenen Schicht stehen als Spalten schicht_abschnitt und
         // schicht_flaechenanteil in der Feldkarte (8 bleibt, kein Vermerk mehr); die Ebenensumme ist ein Lesewert.
         new("BauteilschichtenFelder", 8),
@@ -319,7 +320,8 @@ public sealed class KiMaskenabdeckungWacheTests
         // AH-V5: die Vorheizzeit der Zone - Katalogfeld vorheizzeit (22 → 23).
         new("ZonenDialog", 23),
         // BK-2b: der Schalter „auch ungeeignete zeigen“ filtert nur die Aufbauwahl (15 → 16).
-        new("BauteilDialog", 16, "die Suchauswahl „Aufbau aus dem Katalog“ wählt nur vor; die Kopie ins Projekt ist ein Klick auf „Übernehmen“; der Schalter „auch ungeeignete zeigen“ filtert nur die Wahl"),
+        // DA-8: Absorptions- und Emissionsgrad (Katalogfelder absorptionsgrad, emissionsgrad): 16 → 18.
+        new("BauteilDialog", 18, "die Suchauswahl „Aufbau aus dem Katalog“ wählt nur vor; die Kopie ins Projekt ist ein Klick auf „Übernehmen“; der Schalter „auch ungeeignete zeigen“ filtert nur die Wahl"),
         // Stufe G6b (W2): der Luftaustausch zwischen den Zonen - ein Raster, je Zeile Zone A, Zone B
         // und V̇; die Zonen liest der Assistent nur.
         new("LuftaustauschDialog", 3, "Zone A und Zone B wählt der Anwender; der Assistent liest sie und setzt den Volumenstrom"),

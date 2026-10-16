@@ -323,6 +323,13 @@ namespace WindowsFormsApplication1
         /// Gegenstrahlung 0.
         /// </summary>
         internal static double DeltaThetaLangwellig(double gegenstrahlungWm2, double thetaAussen, double sichtfaktor)
+            => DeltaThetaLangwellig(gegenstrahlungWm2, thetaAussen, sichtfaktor, GebaeudeFestwerte.EMISSIONSGRAD_AUSSEN);
+
+        /// <summary>
+        /// Der langwellige Term Δθ_lw mit dem Emissionsgrad <paramref name="emissionsgrad"/> der Fläche ε_F [–] (DA-8: der Wert
+        /// des Bauteils, sonst der seines Aufbaus, sonst <see cref="GebaeudeFestwerte.EMISSIONSGRAD_AUSSEN"/>).
+        /// </summary>
+        internal static double DeltaThetaLangwellig(double gegenstrahlungWm2, double thetaAussen, double sichtfaktor, double emissionsgrad)
         {
             if (!GegenstrahlungRechenbar(gegenstrahlungWm2)) return 0.0;
             double eE = AusstrahlungErde(gegenstrahlungWm2, thetaAussen);
@@ -331,7 +338,7 @@ namespace WindowsFormsApplication1
             double alphaStr = AlphaStrAussen(gegenstrahlungWm2, thetaAussen);
             double alphaA = GebaeudeFestwerte.ALPHA_KON_AUSSEN + alphaStr;
             double dt = (thetaErd - thetaAussen) * (1.0 - sichtfaktor) + (thetaAtm - thetaAussen) * sichtfaktor;
-            double w = dt * GebaeudeFestwerte.EMISSIONSGRAD_AUSSEN * alphaStr / (alphaA * EMISSIONSGRAD_ERDBODEN);
+            double w = dt * emissionsgrad * alphaStr / (alphaA * EMISSIONSGRAD_ERDBODEN);
             return double.IsNaN(w) || double.IsInfinity(w) ? 0.0 : w;
         }
 
@@ -340,9 +347,16 @@ namespace WindowsFormsApplication1
         /// (I_dir + I_diff)·a_F/α_A, α_A mit α_str,A nach Gl. (37) bzw. der NULL-Regel.
         /// </summary>
         internal static double DeltaThetaKurzwellig(double einstrahlungWm2, double gegenstrahlungWm2, double thetaAussen)
+            => DeltaThetaKurzwellig(einstrahlungWm2, gegenstrahlungWm2, thetaAussen, GebaeudeFestwerte.ABSORPTIONSGRAD_OPAK);
+
+        /// <summary>
+        /// Der kurzwellige Term Δθ_kw mit dem Absorptionsgrad <paramref name="absorptionsgrad"/> der Fläche a_F [–] (DA-8: der
+        /// Wert des Bauteils, sonst der seines Aufbaus, sonst <see cref="GebaeudeFestwerte.ABSORPTIONSGRAD_OPAK"/>).
+        /// </summary>
+        internal static double DeltaThetaKurzwellig(double einstrahlungWm2, double gegenstrahlungWm2, double thetaAussen, double absorptionsgrad)
         {
             if (!(einstrahlungWm2 > 0.0)) return 0.0;
-            return einstrahlungWm2 * GebaeudeFestwerte.ABSORPTIONSGRAD_OPAK / AlphaAussen(gegenstrahlungWm2, thetaAussen);
+            return einstrahlungWm2 * absorptionsgrad / AlphaAussen(gegenstrahlungWm2, thetaAussen);
         }
 
         /// <summary>Die Gegenstrahlung einer Zeile [W/m²]; NaN = nicht verfügbar (NULL).</summary>

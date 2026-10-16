@@ -274,6 +274,9 @@ namespace WindowsFormsApplication1
             m.Quellkennung = neu.Quellkennung ?? alt.Quellkennung;
             if (HandFlaeche(alt, neu)) { m.Flaeche = alt.Flaeche; m.Flaechenherkunft = null; }
             if (HandAufbau(bestand, alt) || HandU(alt)) { m.ID_Aufbau = alt.ID_Aufbau; m.U_Wert = alt.U_Wert; m.U_Herkunft = alt.U_Herkunft; }
+            // DA-8: Absorptions- und Emissionsgrad - ein Wert der Datei gilt, sonst bleibt der des Bestands.
+            m.Absorptionsgrad_Solar = neu.Absorptionsgrad_Solar ?? alt.Absorptionsgrad_Solar;
+            m.Emissionsgrad = neu.Emissionsgrad ?? alt.Emissionsgrad;
             if (Hand(alt))
             {
                 m.g_Wert = alt.g_Wert;

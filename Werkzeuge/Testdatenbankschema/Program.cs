@@ -3879,6 +3879,23 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt BauteilStrahlungSchema.SCHRITT (DA-8): Absorptionsgrad_Solar und Emissionsgrad an Aufbau und Bauteil.
+            //      Aus DERSELBEN Quelle wie SchemaMigration.Schritt_BauteilStrahlung. Wiederholbar.
+            //      REFERENZLAUF UNVERAENDERT: Die Spalten bleiben leer, leer heisst Festwert.
+            string nrDa8 = BauteilStrahlungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrDa8 + " - Absorptions- und Emissionsgrad je Bauteil: " +
+                              (BauteilStrahlungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtDa8 = new List<string>();
+                angelegt += BauteilStrahlungSchema.Ausfuehren(berichtDa8);
+                foreach (string zeile in berichtDa8)
+                    Console.WriteLine("Schritt " + nrDa8 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrDa8 + " - vollstaendig: " + BauteilStrahlungSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

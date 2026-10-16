@@ -255,7 +255,18 @@ namespace WindowsFormsApplication1
                 verschattungsfaktor: b.Verschattungsfaktor ?? double.NaN,
                 psiL_WK: b.Psi_L ?? 0.0,
                 idNachbarzone: b.ID_Nachbarzone,
-                zuordnung: zuordnung);
+                zuordnung: zuordnung,
+                // DA-8: der Wert des Bauteils, sonst der seines Aufbaus; leer (NaN) heißt Festwert.
+                absorptionsgradSolar: b.Absorptionsgrad_Solar ?? AufbauZahl(b, aufbauten, BauteilStrahlungSchema.SPALTE_ABSORPTION) ?? double.NaN,
+                emissionsgrad: b.Emissionsgrad ?? AufbauZahl(b, aufbauten, BauteilStrahlungSchema.SPALTE_EMISSION) ?? double.NaN);
+        }
+
+        /// <summary>Ein Zusatzfeld des Aufbaus eines Bauteils (DA-8); <c>null</c> ohne Aufbau oder ohne Wert.</summary>
+        private static double? AufbauZahl(BauteilModel b, IReadOnlyDictionary<int, BauteilaufbauModel> aufbauten, string spalte)
+        {
+            if (!b.ID_Aufbau.HasValue || aufbauten == null || !aufbauten.TryGetValue(b.ID_Aufbau.Value, out BauteilaufbauModel a) || a == null)
+                return null;
+            return Bauteilkatalog.Zahl(a.Zusatz, spalte);
         }
 
         /// <summary>

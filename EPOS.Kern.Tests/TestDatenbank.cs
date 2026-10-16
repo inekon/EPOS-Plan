@@ -1093,6 +1093,9 @@ namespace EPOS.Kern.Tests
                 // Schritt KaeltetyptagSchema.SCHRITT (KBP-4a): Typtage und Matrix der Kaeltebedarfszuordnung,
                 // zwei leere Tabellen. Wiederholbar, ergebnisneutral.
                 KaeltetyptagSchema.Ausfuehren(null);
+                // Schritt BauteilStrahlungSchema.SCHRITT (DA-8): Absorptionsgrad_Solar und Emissionsgrad an Aufbau und Bauteil,
+                // leer, reines DDL. Wiederholbar, ergebnisneutral.
+                BauteilStrahlungSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

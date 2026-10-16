@@ -576,6 +576,18 @@ namespace WindowsFormsApplication1
         /// <summary>Kennung aus der Datei, ungekürzt.</summary>
         public string Kennung { get; set; } = "";
 
+        /// <summary>
+        /// DA-8: Absorptionsgrad der Außenfläche für Solarstrahlung a_F [–], eingetragen am Bauteil oder seinem Aufbau;
+        /// <c>null</c> = die Vorgabe (<see cref="BauteilStrahlungSchema.VORGABE_ABSORPTION"/>).
+        /// </summary>
+        public double? AbsorptionsgradSolar { get; set; }
+
+        /// <summary>
+        /// DA-8: langwelliger Emissionsgrad der Außenfläche ε_F [–], eingetragen am Bauteil oder seinem Aufbau; <c>null</c> =
+        /// die Vorgabe (<see cref="BauteilStrahlungSchema.VORGABE_EMISSION"/>).
+        /// </summary>
+        public double? Emissionsgrad { get; set; }
+
         /// <summary>Typ der Quellentität (<c>Surface</c>, <c>Opening</c> …).</summary>
         public string Quelltyp { get; set; } = "";
 
@@ -890,6 +902,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der eingetragene U-Wert [W/(m²K)]; er hat Vorrang vor der Rechnung aus den Schichten.</summary>
         public double? UWertWm2K { get; set; }
+
+        /// <summary>DA-8: Absorptionsgrad solar der Datei, wo er von der Vorgabe abweicht; <c>null</c> = Vorgabe. Nur der Leser setzt ihn.</summary>
+        public double? AbsorptionsgradSolar { get; set; }
+
+        /// <summary>DA-8: Emissionsgrad der Datei, wo er von der Vorgabe abweicht; <c>null</c> = Vorgabe. Nur der Leser setzt ihn.</summary>
+        public double? Emissionsgrad { get; set; }
 
         /// <summary>Die Schichten in der Richtung <see cref="Richtung"/>.</summary>
         public List<AbbildSchicht> Schichten { get; } = new List<AbbildSchicht>();

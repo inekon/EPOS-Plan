@@ -283,7 +283,9 @@ namespace EPOS.Kern.Tests
                          Spalten(SchemaKatalog.TAB_BAUSTOFF_STAMM));
             Assert.Equal(new[] { "ID", "Bezeichner" }.Concat(BauteilaufbauSchema.Fachspalten).Concat(new[] { "ReadOnly" }).Concat(new[] { TypaufbauSchema.SPALTE })
                              .Concat(BauteilkatalogSchema.AUFBAU_SPALTEN.Select(s => s.Name))
-                             .Concat(BauteilkatalogAbschnittSchema.AUFBAU_SPALTEN.Select(s => s.Name)),
+                             .Concat(BauteilkatalogAbschnittSchema.AUFBAU_SPALTEN.Select(s => s.Name))
+                             // DA-8: dahinter Absorptions- und Emissionsgrad (BauteilStrahlungSchema).
+                             .Concat(BauteilStrahlungSchema.SPALTEN.Select(s => s.Name)),
                          Spalten(SchemaKatalog.TAB_BAUTEILAUFBAU_STAMM));
             Assert.Equal(new[] { "ID" }.Concat(BauteilaufbauSchema.Schichtspalten)
                              .Concat(BauteilkatalogSchema.SpaltenVon(SchemaKatalog.TAB_BAUTEILSCHICHT).Select(s => s.Name)),
@@ -302,10 +304,11 @@ namespace EPOS.Kern.Tests
                          Spalten(SchemaKatalog.TAB_ZONE));
             // Hinter den Spalten von S-C hängt der Schritt S-G (Stufe G6b) Nachbarzone und Zuordnung an,
             // dahinter die Herkunft der Bauteilfläche (G5-0, FlaechenherkunftSchema.SCHRITT) und die des U-Werts
-            // (MA-6b, BauteilUHerkunftSchema.SCHRITT).
+            // (MA-6b, BauteilUHerkunftSchema.SCHRITT), dahinter die Strahlungswerte (DA-8, BauteilStrahlungSchema.SCHRITT).
             Assert.Equal(new[] { "ID" }.Concat(ZonenSchema.Bauteilspalten)
                                        .Concat(ZonenkopplungSchema.SpaltenBauteil.Select(s => s.Key))
-                                       .Concat(new[] { FlaechenherkunftSchema.SPALTE, BauteilUHerkunftSchema.SPALTE }),
+                                       .Concat(new[] { FlaechenherkunftSchema.SPALTE, BauteilUHerkunftSchema.SPALTE })
+                                       .Concat(BauteilStrahlungSchema.SPALTEN.Select(s => s.Name)),
                          Spalten(SchemaKatalog.TAB_BAUTEIL));
             Assert.Contains(BaustoffSchema.SPALTE_HERSTELLER, Spalten(SchemaKatalog.TAB_BAUSTOFF));
         }
