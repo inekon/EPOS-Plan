@@ -14743,47 +14743,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation ähnelt.
-        /// </summary>
-        public static string BPF_BTN_SIMULATION_BW {
-            get {
-                return ResourceManager.GetString("BPF_BTN_SIMULATION_BW", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation ähnelt.
-        /// </summary>
-        public static string BPF_BTN_SIMULATION_KAELTE {
-            get {
-                return ResourceManager.GetString("BPF_BTN_SIMULATION_KAELTE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Simulation… ähnelt.
         /// </summary>
         public static string BPF_BTN_SIMULATION_LEISTE {
             get {
                 return ResourceManager.GetString("BPF_BTN_SIMULATION_LEISTE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation ähnelt.
-        /// </summary>
-        public static string BPF_BTN_SIMULATION_PROZ {
-            get {
-                return ResourceManager.GetString("BPF_BTN_SIMULATION_PROZ", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation... ähnelt.
-        /// </summary>
-        public static string BPF_BTN_SIMULATION_STROM {
-            get {
-                return ResourceManager.GetString("BPF_BTN_SIMULATION_STROM", resourceCulture);
             }
         }
         
@@ -14973,6 +14937,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BPF_KALENDER_KEINER {
             get {
                 return ResourceManager.GetString("BPF_KALENDER_KEINER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geben Sie die Daten der Brauchwasserprofile ein ähnelt.
+        /// </summary>
+        public static string BPF_KOPFBAND_BW {
+            get {
+                return ResourceManager.GetString("BPF_KOPFBAND_BW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geben Sie die Daten der Kältebedarfsprofile ein ähnelt.
+        /// </summary>
+        public static string BPF_KOPFBAND_KAELTE {
+            get {
+                return ResourceManager.GetString("BPF_KOPFBAND_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geben Sie die Daten der Prozesswärmeprofile ein ähnelt.
+        /// </summary>
+        public static string BPF_KOPFBAND_PROZ {
+            get {
+                return ResourceManager.GetString("BPF_KOPFBAND_PROZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geben Sie die Daten der Stromverbraucher ein ähnelt.
+        /// </summary>
+        public static string BPF_KOPFBAND_STROM {
+            get {
+                return ResourceManager.GetString("BPF_KOPFBAND_STROM", resourceCulture);
             }
         }
         

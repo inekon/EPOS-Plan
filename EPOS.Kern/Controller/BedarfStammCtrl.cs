@@ -319,15 +319,202 @@ namespace WindowsFormsApplication1
                                 "Prozesstemperatur (SimulationWaermebedarf.Prozesswaerme_berechnen)"));
             }
 
+            // BP-2: das Paar der Kaelte und ihre Art stehen im Vergleich als Angabe des Dialogs (ohne Wirkung, E-K3).
+            if (art == BedarfsArt.Kaelte)
+            {
+                (double? vl, double? rl) = Temperaturpaar(art, bezeichner);
+                liste.Add(Zeile(KaeltebedarfSchema.SPALTE_VORLAUF, t("PW_LBL_VORLAUF"), "°C", Grad(vl), ANGABE_DIALOG,
+                                Verwendung.Dialog));
+                liste.Add(Zeile(KaeltebedarfSchema.SPALTE_RUECKLAUF, t("PW_LBL_RUECKLAUF"), "°C", Grad(rl), ANGABE_DIALOG,
+                                Verwendung.Dialog));
+                liste.Add(Zeile(SPALTE_KAELTE_ART, t("KAELTE_ART_GRUPPE"), "",
+                                KaelteArtText(Wert(KopfTabelle(art), "Bezeichner", bezeichner, SPALTE_KAELTE_ART), t),
+                                ANGABE_DIALOG, Verwendung.Dialog));
+            }
+
             return liste;
         }
 
+        /// <summary>Die Spalte der Kälteart in Kopf und Zuordnung (KWN-0).</summary>
+        private const string SPALTE_KAELTE_ART = "Kaelte_Art";
+
+        /// <summary>Fundstelle einer Vergleichszeile, die nur der Dialog zeigt.</summary>
+        private const string ANGABE_DIALOG = "BedarfsProfileDialog (Angabe ohne Wirkung auf die Simulation)";
+
+        /// <summary>
+        /// <b>Die Angaben einer Projektzeile für „Vergleichen…"</b> (KA-E-24, Anwenderentscheid BP-2): die Werte der
+        /// Zuordnung, wie sie der Dialog gerade hält — Jahressumme, Kalender, Temperaturpaar, bei der Kälte Art und
+        /// Deckung. Typ, Beschreibung und Monatsgang liest der Kern aus der Projektkopie (<see cref="IdKopie"/>).
+        /// </summary>
+        internal sealed class Zuordnungsangaben
+        {
+            /// <summary>Die Projektkopie (im Assistenten ohne Projekt: der Katalogsatz).</summary>
+            public int IdKopie { get; set; }
+            /// <summary>Der Bezeichner — der Rückfall, wenn es die Kopie nicht gibt.</summary>
+            public string Bezeichner { get; set; } = "";
+            /// <summary>Der Jahresverbrauch der Zuordnung [MWh].</summary>
+            public double Summe { get; set; }
+            /// <summary>Der Betriebskalender der Zuordnung; <c>null</c> = keiner.</summary>
+            public int? KalenderId { get; set; }
+            /// <summary>Vorlauf der Zuordnung [°C] (Prozesswärme, Kälte).</summary>
+            public double? Vorlauf { get; set; }
+            /// <summary>Rücklauf der Zuordnung [°C] (Prozesswärme, Kälte).</summary>
+            public double? Ruecklauf { get; set; }
+            /// <summary>Die Kälteart als Steuerwert (<c>DbWerte.KAELTE_ART_*</c>).</summary>
+            public string KaelteArt { get; set; }
+            /// <summary>Die Deckungsart als Steuerwert (<c>KaeltebedarfSchema.DECKUNG_*</c>); <c>null</c> außerhalb der Kälte.</summary>
+            public string Deckung { get; set; }
+            /// <summary>Der EER-Weg einer Split-Zeile (<c>KaeltebedarfSchema.EER_*</c>).</summary>
+            public string EerWeg { get; set; }
+            /// <summary>EER am Punkt 1.</summary>
+            public double? Eer1 { get; set; }
+            /// <summary>Außentemperatur am Punkt 1 [°C].</summary>
+            public double? Taussen1 { get; set; }
+            /// <summary>EER am Punkt 2 (nur linear).</summary>
+            public double? Eer2 { get; set; }
+            /// <summary>Außentemperatur am Punkt 2 [°C] (nur linear).</summary>
+            public double? Taussen2 { get; set; }
+        }
+
+        /// <summary>
+        /// <b>Die Vergleichszeilen einer Projektzeile</b> (KA-E-24, BP-2) — DIESELBE Parameterliste wie
+        /// <see cref="Vergleichszeilen"/> für den Katalogsatz (Typ, Beschreibung, Jahressumme, zwölf Monatswerte,
+        /// Temperaturpaar), aus der Projektkopie gelesen und mit den Werten der Zuordnung: Jahressumme der Zuordnung,
+        /// der Monatsgang der Kopie auf sie skaliert (wie der Rechenweg), dazu Kalender und bei der Kälte Art und
+        /// Deckung (zentral/Split samt EER). <paramref name="idProjekt"/> 0 = Assistent ohne Projekt: dann zeigt
+        /// <see cref="Zuordnungsangaben.IdKopie"/> auf den Katalogsatz. Gibt es keinen Satz, gilt der Bezeichner im Katalog.
+        /// </summary>
+        internal static IReadOnlyList<Parameterwert> VergleichszeilenProjekt(
+            BedarfsArt art, Zuordnungsangaben angaben, int idProjekt, Func<string, string> text = null)
+        {
+            if (angaben == null) throw new ArgumentNullException(nameof(angaben));
+            Func<string, string> t = text ?? (s => s);
+            var liste = new List<Parameterwert>();
+
+            DataRow kopf = ProjektkopieZeile(art, angaben, idProjekt);
+            string Feld(string spalte)
+                => kopf != null && kopf.Table.Columns.Contains(spalte) && kopf[spalte] != DBNull.Value
+                    ? Convert.ToString(kopf[spalte], CultureInfo.InvariantCulture) : null;
+
+            liste.Add(Zeile("Typ", t("KFLT_SP_TYP"), "", Feld("Typ")));
+            liste.Add(Zeile("Beschreibung", t("KFLT_SP_BESCHREIBUNG"), "", Feld("Beschreibung")));
+            liste.Add(Zeile("Jahressumme", t("KFLT_SP_JAHRESSUMME"), "MWh", Text(angaben.Summe)));
+
+            double[] monat = null;
+            if (kopf != null)
+            {
+                monat = new double[12];
+                double summe = 0;
+                for (int i = 0; i < 12; i++)
+                {
+                    string s = "Monat_" + (i + 1);
+                    monat[i] = kopf.Table.Columns.Contains(s) && kopf[s] != DBNull.Value
+                        ? Convert.ToDouble(kopf[s], CultureInfo.InvariantCulture) : 0.0;
+                    summe += monat[i];
+                }
+                // Der Rechenweg skaliert den Monatsgang auf die Jahressumme der Zuordnung.
+                double faktor = summe > 0 ? angaben.Summe / summe : 0;
+                for (int i = 0; i < 12; i++) monat[i] *= faktor;
+            }
+            for (int i = 0; i < 12; i++)
+                liste.Add(Zeile("Monat_" + (i + 1),
+                                t("KFLT_SP_MONAT") + " " + (i + 1).ToString(CultureInfo.InvariantCulture),
+                                "MWh", monat == null ? null : Text(monat[i])));
+
+            if (art == BedarfsArt.Prozesswaerme)
+            {
+                liste.Add(Zeile(ProzesswaermeTemperaturSchema.SPALTE_VORLAUF, t("PW_LBL_VORLAUF"), "°C", Grad(angaben.Vorlauf),
+                                "Prozesstemperatur (SimulationWaermebedarf.Prozesswaerme_berechnen)"));
+                liste.Add(Zeile(ProzesswaermeTemperaturSchema.SPALTE_RUECKLAUF, t("PW_LBL_RUECKLAUF"), "°C", Grad(angaben.Ruecklauf),
+                                "Prozesstemperatur (SimulationWaermebedarf.Prozesswaerme_berechnen)"));
+            }
+            else if (art == BedarfsArt.Kaelte)
+            {
+                liste.Add(Zeile(KaeltebedarfSchema.SPALTE_VORLAUF, t("PW_LBL_VORLAUF"), "°C", Grad(angaben.Vorlauf), ANGABE_DIALOG,
+                                Verwendung.Dialog));
+                liste.Add(Zeile(KaeltebedarfSchema.SPALTE_RUECKLAUF, t("PW_LBL_RUECKLAUF"), "°C", Grad(angaben.Ruecklauf), ANGABE_DIALOG,
+                                Verwendung.Dialog));
+                liste.Add(Zeile(SPALTE_KAELTE_ART, t("KAELTE_ART_GRUPPE"), "", KaelteArtText(angaben.KaelteArt, t),
+                                ANGABE_DIALOG, Verwendung.Dialog));
+            }
+
+            // Der Betriebskalender der Zuordnung - nur die Projektzeile hat einen (der Katalogsatz bleibt leer).
+            string kalender = angaben.KalenderId is int kid && kid > 0
+                ? Wert(BedarfNetzKalenderSchema.TAB_KALENDER, "ID", kid, "Bezeichner") ?? t("BPF_KALENDER_KEINER")
+                : t("BPF_KALENDER_KEINER");
+            liste.Add(Zeile("ID_Betriebskalender", t("BPF_ZF_KALENDER"), "", kalender,
+                            "Betriebskalender der Zuordnung (Wochenprofil je Kalenderwoche)"));
+
+            if (art == BedarfsArt.Kaelte)
+            {
+                bool split = angaben.Deckung == KaeltebedarfSchema.DECKUNG_SPLIT;
+                const string fundstelle = "Deckung der Kältebedarfszeile (KaelteDezentral)";
+                liste.Add(Zeile("Deckung", t("DECK_LBL_ART"), "",
+                                t(split ? "DECK_ART_SPLIT" : "DECK_ART_ZENTRAL"), fundstelle));
+                if (split)
+                {
+                    bool linear = angaben.EerWeg == KaeltebedarfSchema.EER_LINEAR;
+                    liste.Add(Zeile("Split_EER_Weg", t("DECK_LBL_EER_WEG"), "",
+                                    t(linear ? "DECK_EER_LINEAR" : "DECK_EER_FEST"), fundstelle));
+                    liste.Add(Zeile("Split_EER_1", t("DECK_LBL_EER1"), "", Eer(angaben.Eer1), fundstelle));
+                    liste.Add(Zeile("Split_Taussen_1", t("DECK_LBL_TAUSSEN1"), "°C", Grad(angaben.Taussen1), fundstelle));
+                    if (linear)
+                    {
+                        liste.Add(Zeile("Split_EER_2", t("DECK_LBL_EER2"), "", Eer(angaben.Eer2), fundstelle));
+                        liste.Add(Zeile("Split_Taussen_2", t("DECK_LBL_TAUSSEN2"), "°C", Grad(angaben.Taussen2), fundstelle));
+                    }
+                }
+            }
+
+            return liste;
+        }
+
+        /// <summary>
+        /// Die Kopfzeile, aus der eine Projektzeile ihre Kennwerte liest: die Projektkopie des Projekts, im Assistenten
+        /// (<paramref name="idProjekt"/> 0) der Katalogsatz mit dieser Id; ohne Treffer der Katalogsatz des Namens.
+        /// </summary>
+        private static DataRow ProjektkopieZeile(BedarfsArt art, Zuordnungsangaben angaben, int idProjekt)
+        {
+            DataTable dt = null;
+            if (angaben.IdKopie > 0)
+            {
+                dt = idProjekt > 0
+                    ? DataRepository.GetDataTable("SELECT * FROM " + ProjektTabellen(art).Kopf + " WHERE ID = ? AND ID_Projekt = ?",
+                                                  new DbParam("@id", angaben.IdKopie), new DbParam("@proj", idProjekt))
+                    : DataRepository.GetDataTable("SELECT * FROM " + KopfTabelle(art) + " WHERE ID = ?",
+                                                  new DbParam("@id", angaben.IdKopie));
+            }
+            if (dt == null || dt.Rows.Count == 0)
+                dt = DataRepository.GetDataTable("SELECT * FROM " + KopfTabelle(art) + " WHERE Bezeichner = ?",
+                                                 new DbParam("@bez", angaben.Bezeichner ?? ""));
+            return dt == null || dt.Rows.Count == 0 ? null : dt.Rows[0];
+        }
+
+        /// <summary>Ein Wert einer Zeile über einen Schlüssel; <c>null</c>, wenn es Spalte oder Zeile nicht gibt.</summary>
+        private static string Wert(string tabelle, string schluesselspalte, object schluessel, string spalte)
+        {
+            if (!DataRepository.SpalteVorhanden(tabelle, spalte)) return null;
+            object o = DataRepository.ExecuteScalar(
+                "SELECT " + spalte + " FROM " + tabelle + " WHERE " + schluesselspalte + " = ?",
+                new DbParam("@schluessel", schluessel));
+            return o == null || o == DBNull.Value ? null : Convert.ToString(o, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>Der Anzeigetext der Kälteart; leer bleibt leer.</summary>
+        private static string KaelteArtText(string wert, Func<string, string> t)
+            => string.IsNullOrEmpty(wert) ? null
+             : wert == DbWerte.KAELTE_ART_PROZESS ? t("KAELTE_ART_PROZESS") : t("KAELTE_ART_RAUM");
+
+        private static string Eer(double? wert)
+            => wert == null ? null : wert.Value.ToString("0.##", CultureInfo.CurrentCulture);
+
         private static Parameterwert Zeile(string spalte, string anzeige, string einheit, string wert,
-                                           string fundstelle = "SimulationWaermebedarf / SimulationStrombedarf (BedarfStammCtrl.Monatswerte)")
+                                           string fundstelle = "SimulationWaermebedarf / SimulationStrombedarf (BedarfStammCtrl.Monatswerte)",
+                                           Verwendung verwendung = Verwendung.Simulation)
         {
             var eintrag = new ParameterEintrag(
                 spalte, anzeige, einheit,
-                new[] { Verwendung.Simulation },
+                new[] { verwendung },
                 fundstelle);
 
             return new Parameterwert(eintrag,
