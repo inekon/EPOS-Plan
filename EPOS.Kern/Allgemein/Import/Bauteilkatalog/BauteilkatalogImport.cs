@@ -121,10 +121,22 @@ namespace WindowsFormsApplication1
         /// Schichtgrenzen andere Schichten bekämen; nur die Vorschau zählt sie (<see cref="BauteilkatalogImport.Vorschau"/>).
         /// </summary>
         public int WiederimportGeteilt { get; internal set; }
+        /// <summary>
+        /// Wiederimport (BK-8c): davon die Aufbauten, deren U-Wert verglichen wurde — gegen das U, das der Kern für den
+        /// Katalogsatz rechnet, sonst gegen den gespeicherten U-Wert der Quelle.
+        /// </summary>
+        public int WiederimportVerglichen { get; internal set; }
+        /// <summary>Wiederimport (BK-8c): davon die Aufbauten, die gegen den gespeicherten U-Wert der Quelle verglichen wurden.</summary>
+        public int WiederimportGegenQuelle { get; internal set; }
         /// <summary>Wiederimport (BK-8b): davon die Aufbauten, deren U-Wert sich um mehr als 1 % ändert.</summary>
         public int WiederimportUGeaendert { get; internal set; }
         /// <summary>Wiederimport (BK-8b): die größte Änderung des U-Werts in % (Betrag); <c>null</c> = keiner verglichen.</summary>
         public double? WiederimportUMaxProzent { get; internal set; }
+        /// <summary>
+        /// Wiederimport (BK-8c): davon die Aufbauten ohne Vergleichswert — weder der Katalogsatz noch der neue Stand ergeben
+        /// ein U, und die Quelle hat keinen U-Wert gespeichert.
+        /// </summary>
+        public int WiederimportOhneVergleichswert { get; internal set; }
         /// <summary>
         /// Importsätze (<c>IMPORT</c>) des Katalogs mit Name und Gruppe eines Auslieferungssatzes (<c>VORGABE</c>) — vermutete
         /// Dubletten, nur gezählt (BK-3d); die Vorschau nennt die Zahl im Protokoll, gelöscht wird nichts.
@@ -1162,6 +1174,12 @@ namespace WindowsFormsApplication1
         /// (<see cref="AKTUALISIEREN"/>) und andere Schichten bekäme, als <paramref name="alt"/> liest, zählt die Vorschau ihn und —
         /// ändert sich U um mehr als <see cref="WIEDERIMPORT_U_SCHWELLE"/> — als geändert, dazu die größte Änderung in %.
         /// Ergänzte Sätze (<see cref="ERGAENZEN"/>) behalten ihre Schichten und zählen nicht. Schreibt nichts.
+        ///
+        /// <para><b>Vergleichswert</b> (BK-8c): das U, das der Kern für den Katalogsatz heute rechnet (derselbe Weg wie der
+        /// Aufbaueditor, <see cref="BauteilaufbauCtrl.Kennwerte"/>); lässt sich keins rechnen — etwa ein Satz eines frühen
+        /// Imports mit Abschnitten verschiedener Schichtzahl, den die Abschnittsprüfung ablehnt —, der gespeicherte U-Wert der
+        /// Quelle am Katalogsatz (<see cref="BauteilkatalogSchema.SPALTE_U_QUELLE"/>). Fehlt auch der oder ergibt der neue Stand
+        /// kein U, zählt der Aufbau „ohne Vergleichswert“ statt still zu fehlen.</para>
         /// </summary>
         internal static void WiederimportVergleichen(Plan p, Func<long, BauteilaufbauModel> alt)
         {
@@ -1172,11 +1190,27 @@ namespace WindowsFormsApplication1
                 if (vorher == null || GleicheSchichten(vorher, nachher)) continue;
                 v.WiederimportGeteilt++;
                 double? uAlt = BauteilaufbauCtrl.Kennwerte(vorher, false).U_WM2K, uNeu = BauteilaufbauCtrl.Kennwerte(nachher, false).U_WM2K;
-                if (!(uAlt > 0) || !uNeu.HasValue) continue;
+                bool gegenQuelle = false;
+                if (!(uAlt > 0))
+                {
+                    uAlt = Bauteilkatalog.Zahl(vorher.Zusatz, BauteilkatalogSchema.SPALTE_U_QUELLE);
+                    gegenQuelle = true;
+                }
+                if (!(uAlt > 0) || !(uNeu > 0))
+                {
+                    v.WiederimportOhneVergleichswert++;
+                    continue;
+                }
+                v.WiederimportVerglichen++;
+                if (gegenQuelle) v.WiederimportGegenQuelle++;
                 double aenderung = Math.Abs(uNeu.Value - uAlt.Value) / uAlt.Value;
                 v.WiederimportUMaxProzent = Math.Max(v.WiederimportUMaxProzent ?? 0.0, aenderung * 100.0);
                 if (aenderung > WIEDERIMPORT_U_SCHWELLE + 1e-12) v.WiederimportUGeaendert++;
             }
+            if (v.WiederimportGeteilt > 0)
+                v.Protokoll.Add("Wiederimport-Vergleich: " + Zahl(v.WiederimportVerglichen) + " verglichen, davon " +
+                                Zahl(v.WiederimportGegenQuelle) + " gegen den U-Wert der Quelle; ohne Vergleichswert " +
+                                Zahl(v.WiederimportOhneVergleichswert));
         }
 
         /// <summary>Dieselben Schichten: gleiche Zahl, je Zeile Ebene, Abschnitt und Dicke (auf 1e-9 m) gleich.</summary>
