@@ -302,8 +302,9 @@ namespace WindowsFormsApplication1
             {
                 Schluessel = "STROMSPEICHER",
                 Tabelle = SchemaKatalog.TAB_STROMSPEICHER_STAMM,
-                AusschlussSpalten = new[] { "Modulkosten", "Verschleisskosten",
-                    "Leistungskosten", "Investition_Fix" }
+                // Welle KB-5: Die vier Kostenspalten sind entfallen (StromspeicherKostenSchema); die Kosten
+                // stehen in der Satzvorlage, die keine Katalogspalte ist.
+                AusschlussSpalten = new string[0]
             },
             new KatalogDefinition
             {

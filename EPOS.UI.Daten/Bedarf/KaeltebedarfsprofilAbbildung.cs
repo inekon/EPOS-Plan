@@ -25,9 +25,29 @@ namespace WindowsFormsApplication1
                     Vorlauf = m.Vorlauf, Ruecklauf = m.Ruecklauf, TemperaturGeaendert = m.TemperaturGeaendert,
                     KaelteArt = KaelteArtSchema.Normal(m.KaelteArt),
                     KalenderId = m.ID_Betriebskalender,
-                    Deckung = DeckungsartDaten.Aus(m)
+                    Deckung = DeckungsartDaten.Aus(m),
+                    // KBP-3a: Eingabeart der Zuordnung, Monatsanteile und Wochenprofil der Projektkopie.
+                    Eingabeart = KaeltebedarfsprofilVorlagenSchema.Eingabeart(m.Eingabeart),
+                    Monatsanteile = m.Monatsanteile ?? KaeltebedarfStammCtrl.ProjektMonate(m.ID_Kaeltebedarf),
+                    Wochenprofil = m.Wochenprofil ?? KaeltebedarfStammCtrl.ProjektWoche(m.ID_Kaeltebedarf),
+                    ProfilGeaendert = m.Monatsanteile != null || m.Wochenprofil != null
                 });
             return zeilen;
+        }
+
+        /// <summary>
+        /// KBP-3a: eine neu übernommene Kältezeile — Eingabeart 'jahr' (Vorgabe), der Art-Vorschlag der Vorlage
+        /// (<see cref="KaeltebedarfStammCtrl.ArtVorschlag"/>; ohne Vorschlag bleibt die Vorgabe Raum, der Anwender hat hier
+        /// noch nichts gewählt) und Monatsanteile und Wochenprofil der Kopie, auf die die Zeile zeigt.
+        /// </summary>
+        internal static void Aufgenommen(BedarfsProfilZeile zeile, string vorlage)
+        {
+            if (zeile == null) return;
+            zeile.Eingabeart = KaeltebedarfsprofilVorlagenSchema.EINGABE_JAHR;
+            string vorschlag = KaeltebedarfStammCtrl.ArtVorschlag(vorlage);
+            if (vorschlag != null) zeile.KaelteArt = KaelteArtSchema.Normal(vorschlag);
+            zeile.Monatsanteile = KaeltebedarfStammCtrl.ProjektMonate(zeile.IdStamm);
+            zeile.Wochenprofil = KaeltebedarfStammCtrl.ProjektWoche(zeile.IdStamm);
         }
 
         /// <summary>
@@ -51,6 +71,10 @@ namespace WindowsFormsApplication1
                     m.Vorlauf = z.Vorlauf; m.Ruecklauf = z.Ruecklauf; m.TemperaturGeaendert = z.TemperaturGeaendert;
                     m.KaelteArt = KaelteArtSchema.Normal(z.KaelteArt);
                     m.ID_Betriebskalender = z.KalenderId;
+                    // KBP-3a: Eingabeart immer, Monate und Woche nur, wenn der Anwender sie übernommen hat.
+                    m.Eingabeart = KaeltebedarfsprofilVorlagenSchema.Eingabeart(z.Eingabeart);
+                    m.Monatsanteile = z.ProfilGeaendert ? z.Monatsanteile : null;
+                    m.Wochenprofil = z.ProfilGeaendert ? z.Wochenprofil : null;
                     (z.Deckung ??= new DeckungsartDaten()).InModell(m);
                     modelle.Add(m);
                 }

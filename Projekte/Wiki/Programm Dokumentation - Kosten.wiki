@@ -194,6 +194,8 @@ Der Dialog '''Gesetzliche Parameter''' führt die jahresscharfen Sätze, mit den
 
 Die [[Programm Dokumentation/Stromspeicher#auslegung-kosten|Speicherauslegung]] kann Investitions- und Betriebskostensätze der aktiven Speicheranlage unabhängig aus dem Kostenmodul übernehmen oder direkt im Auslegungsdialog erfassen. Es werden ausschließlich geeignete €/kW- und €/kWh-Bemessungen verwendet. Bei Betriebskosten werden installierte Kapazität je Jahr und tatsächlich entladene AC-Energie unterschieden.
 
+Die Kosten der Speichereinheiten liest die Flotte aus der Satzvorlage des Katalogsatzes; der feste Investitionsanteil geht nicht in die Speicherauslegung ein. Bei der Übernahme einer Flotte schreibt sie Kostenpositionen der Anlage nur, wenn die Einheit ''eigene Kosten'' hat. Der Verschleiß je entladener kWh wird genau einmal gebucht, vom Simulationslauf.
+
 Die Rechnung verwendet den spezifischen Satz und die Größe beziehungsweise Entlademenge jedes Kandidaten; ein bereits ausgewiesener Gesamtbetrag geht nicht ein. Pauschalen, Prozentpositionen, Erlöse, Zuschüsse, fehlende Sätze und erst später beginnende Positionen werden mit Hinweis ausgeschlossen. Benannte Auslegungsprofile speichern die spezifischen Sätze zusammen mit Suchraum und Zeitreihenquellen.
 
 Die Übernahme einer gefundenen Dimensionierung ersetzt keine vollständige Prüfung der projektweiten Kostenpositionen. Entladeabhängige Betriebskosten dürfen denselben Verschleißanteil nicht zusätzlich zum optionalen Verschleißterm der Auslegung enthalten.

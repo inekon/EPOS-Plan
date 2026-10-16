@@ -3697,6 +3697,46 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt StromspeicherKostenSchema.SCHRITT (KB-5): Sicherheitslauf der Saat am Stromspeicher, dann
+            //      der Entfall seiner vier Kostenspalten an Katalog und Projektkopie. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_StromspeicherKosten. Wiederholbar; der Rechenweg liest dieselben Saetze
+            //      aus Position und Satzvorlage.
+            string nrKb5 = StromspeicherKostenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKb5 + " - Entfall der Stromspeicher-Kostenspalten: " +
+                              (StromspeicherKostenSchema.Vollstaendig() ? "steht bereits" : "offen") +
+                              " (" + StromspeicherKostenSchema.Offen() + " Kostenspalte(n) noch da, " +
+                              StromspeicherKostenSchema.OhneVerweis().Count + " Zeile(n) ohne Satzvorlage).");
+            if (!trocken)
+            {
+                var berichtKb5 = new List<string>();
+                angelegt += StromspeicherKostenSchema.Ausfuehren(berichtKb5);
+                foreach (string zeile in berichtKb5)
+                    Console.WriteLine("Schritt " + nrKb5 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKb5 + " - vollstaendig: " + StromspeicherKostenSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt KaeltebedarfsprofilVorlagenSchema.SCHRITT (KBP-2): Z_Projekt_Kaeltebedarf.Eingabeart (Vorgabe 'jahr'),
+            //      Art-Vorschlag Kaelte_Art an Tab_Kaeltebedarf_STAMM/Tab_Kaeltebedarf, Saat der Vorlagen 7-16 samt
+            //      Katalogschluessel. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_Kaeltevorlagen. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: kein Referenzprojekt ordnet einen Kaeltebedarf der neuen Vorlagen zu, jede
+            //      Zuordnung rechnet weiter mit der Jahressumme; die Zeilen 1-6 bleiben samt Pruefsumme bytegleich.
+            string nrKbp2 = KaeltebedarfsprofilVorlagenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKbp2 + " - Kaeltebedarfsvorlagen und Eingabeart: " +
+                              (KaeltebedarfsprofilVorlagenSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKbp2 = new List<string>();
+                angelegt += KaeltebedarfsprofilVorlagenSchema.Ausfuehren(berichtKbp2);
+                foreach (string zeile in berichtKbp2)
+                    Console.WriteLine("Schritt " + nrKbp2 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKbp2 + " - vollstaendig: " + KaeltebedarfsprofilVorlagenSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

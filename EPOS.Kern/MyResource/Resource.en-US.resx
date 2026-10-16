@@ -1127,9 +1127,6 @@
   <data name="MODK_LBL_LEISTUNG" xml:space="preserve">
     <value>Performance</value>
   </data>
-  <data name="MODK_LBL_MODULKOSTEN" xml:space="preserve">
-    <value>Module costs</value>
-  </data>
   <data name="MODK_LBL_KOSTENSATZ" xml:space="preserve">
     <value>Cost rate</value>
   </data>
@@ -4062,20 +4059,8 @@ Please run the simulation with photovoltaics first.</value>
   <data name="SP_LABEL_ZYKLEN" xml:space="preserve">
     <value>Cycles (guaranteed)</value>
   </data>
-  <data name="SP_LABEL_VERSCHLEISSKOSTEN" xml:space="preserve">
-    <value>Wear cost</value>
-  </data>
-  <data name="SP_LABEL_LEISTUNGSKOSTEN" xml:space="preserve">
-    <value>Power-related cost</value>
-  </data>
-  <data name="SP_LABEL_INVESTITION_FIX" xml:space="preserve">
-    <value>Fixed investment</value>
-  </data>
   <data name="SP_LABEL_STANDBY" xml:space="preserve">
     <value>Standby consumption</value>
-  </data>
-  <data name="SP_EINHEIT_ZYKLUSKOSTEN" xml:space="preserve">
-    <value>€/(kWh·cycle)</value>
   </data>
   <data name="SP_PARAM_GRUPPE_BETRIEBSFUEHRUNG" xml:space="preserve">
     <value>Operating strategy (active variant)</value>
@@ -5602,8 +5587,8 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="SP_LABEL_ENERGIE_KURZ" xml:space="preserve">
     <value>Energy (capacity)</value>
   </data>
-  <data name="SP_LABEL_MODULKOSTEN" xml:space="preserve">
-    <value>Module costs [€/kWh]:</value>
+  <data name="SP_LABEL_KOSTENSATZ" xml:space="preserve">
+    <value>Cost rate [€/kWh]:</value>
   </data>
   <data name="SP_PARAM_LABEL_KAPAZITAET" xml:space="preserve">
     <value>Capacity [kWh]</value>
@@ -6626,6 +6611,9 @@ Depending on the project size this takes several minutes. Continue?</value>
   </data>
   <data name="KOSTEN_BETRIEB_OHNE_ERGEBNIS" xml:space="preserve">
     <value>Operating cost defaults are available only after a simulation run.</value>
+  </data>
+  <data name="KOSTEN_BETRIEB_SPEICHER_VERSCHLEISS_QUELLE" xml:space="preserve">
+    <value>Battery wear is an operating item "per discharged kWh": it is the source of the wear rate and is booked by the simulation run — the cost calculation does not count it a second time.</value>
   </data>
   <data name="KOSTEN_BETRIEB_OHNE_WARTUNGSFELD" xml:space="preserve">
     <value>No operating rate template of this trade holds a maintenance rate — no default value.</value>
@@ -25250,23 +25238,11 @@ Do you want to allow this?</value>
   <data name="KI_DLG_MODK_DEGRADATION_ERL" xml:space="preserve">
     <value>The annual capacity loss of the storage unit.</value>
   </data>
-  <data name="KI_DLG_MODK_KOSTEN_ERL" xml:space="preserve">
-    <value>The capacity-related module cost of the storage unit.</value>
-  </data>
   <data name="KI_DLG_MODK_WG_RT_ERL" xml:space="preserve">
     <value>The round-trip efficiency over charging and discharging as a factor; empty means not maintained.</value>
   </data>
   <data name="KI_DLG_MODK_ZYKLEN_ERL" xml:space="preserve">
     <value>The cycle life of the storage unit; empty means not maintained.</value>
-  </data>
-  <data name="KI_DLG_MODK_VERSCHLEISS_ERL" xml:space="preserve">
-    <value>The wear cost per kilowatt hour throughput; empty means not maintained.</value>
-  </data>
-  <data name="KI_DLG_MODK_LEISTUNGSKOSTEN_ERL" xml:space="preserve">
-    <value>The power-related share of the investment; empty means not maintained.</value>
-  </data>
-  <data name="KI_DLG_MODK_INVEST_FIX_ERL" xml:space="preserve">
-    <value>The fixed share of the investment per storage unit, independent of size and power.</value>
   </data>
   <data name="KI_DLG_MODK_STANDBY_ERL" xml:space="preserve">
     <value>The standby power of the storage unit at rest.</value>
@@ -56280,6 +56256,165 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="BKAL_MSG_FERIEN_FEHLEN" xml:space="preserve">
     <value>Holiday state and holidays of "{0}" copied. The building has {1} holiday periods, the calendar takes four: the first four are copied, {2} are missing.</value>
+  </data>
+  <data name="KBP_GRUPPE_EINGABEART" xml:space="preserve">
+    <value>Input method</value>
+  </data>
+  <data name="KBP_LBL_EINGABEART" xml:space="preserve">
+    <value>Input method:</value>
+  </data>
+  <data name="KBP_EINGABE_JAHR" xml:space="preserve">
+    <value>Annual total with template</value>
+  </data>
+  <data name="KBP_EINGABE_MONAT" xml:space="preserve">
+    <value>Monthly values</value>
+  </data>
+  <data name="KBP_EINGABE_WOCHE" xml:space="preserve">
+    <value>Weekly profile</value>
+  </data>
+  <data name="KBP_EINGABE_TYPTAG" xml:space="preserve">
+    <value>Typical days (to follow)</value>
+  </data>
+  <data name="KBP_HINW_TYPTAG_FOLGT" xml:space="preserve">
+    <value>Typical days will follow in a later version.</value>
+  </data>
+  <data name="KBP_HINW_EINGABEART" xml:space="preserve">
+    <value>Monthly values and weekly profile change the project copy of this assignment, never the catalogue. If two assignments share one copy, the edited one gets its own copy on OK.</value>
+  </data>
+  <data name="KBP_GRUPPE_MONATE" xml:space="preserve">
+    <value>Monthly values</value>
+  </data>
+  <data name="KBP_LBL_MONATSEINHEIT" xml:space="preserve">
+    <value>Input in:</value>
+  </data>
+  <data name="KBP_EINHEIT_PROZENT" xml:space="preserve">
+    <value>% of the annual total</value>
+  </data>
+  <data name="KBP_MONATE" xml:space="preserve">
+    <value>January;February;March;April;May;June;July;August;September;October;November;December</value>
+  </data>
+  <data name="KBP_SUMME_MWH" xml:space="preserve">
+    <value>Annual total from the months: {0} MWh</value>
+  </data>
+  <data name="KBP_SUMME_PROZENT" xml:space="preserve">
+    <value>Sum of shares: {0} % (annual total {1} MWh)</value>
+  </data>
+  <data name="KBP_MSG_SUMME_PROZENT" xml:space="preserve">
+    <value>The monthly shares add up to {0} %; together they must add up to 100 %.</value>
+  </data>
+  <data name="KBP_MSG_MONAT_NEGATIV" xml:space="preserve">
+    <value>Every monthly value must be a number of 0 or more.</value>
+  </data>
+  <data name="KBP_MSG_MONATE_NULL" xml:space="preserve">
+    <value>The monthly values add up to 0 – at least one month must carry demand.</value>
+  </data>
+  <data name="KBP_GRUPPE_WOCHE" xml:space="preserve">
+    <value>Weekly profile</value>
+  </data>
+  <data name="KBP_LBL_ANSICHT" xml:space="preserve">
+    <value>View:</value>
+  </data>
+  <data name="KBP_ANSICHT_DREI" xml:space="preserve">
+    <value>Weekday | Saturday | Sunday</value>
+  </data>
+  <data name="KBP_ANSICHT_168" xml:space="preserve">
+    <value>168 h</value>
+  </data>
+  <data name="KBP_LBL_TAG" xml:space="preserve">
+    <value>Day:</value>
+  </data>
+  <data name="KBP_TAGE_DREI" xml:space="preserve">
+    <value>Weekday (Mon–Fri);Saturday;Sunday</value>
+  </data>
+  <data name="KBP_WOCHENTAGE" xml:space="preserve">
+    <value>Monday;Tuesday;Wednesday;Thursday;Friday;Saturday;Sunday</value>
+  </data>
+  <data name="KBP_HINW_WERKTAGE_UNGLEICH" xml:space="preserve">
+    <value>Weekdays differ — 168 h view</value>
+  </data>
+  <data name="KBP_HINW_WOCHE" xml:space="preserve">
+    <value>Relative values as in the type catalogue; the monthly values set the amount. With an operating calendar, public holidays count as Sunday.</value>
+  </data>
+  <data name="KBP_MSG_WOCHE" xml:space="preserve">
+    <value>The weekly profile needs values of 0 or more and at least one hour with demand.</value>
+  </data>
+  <data name="KBP_BTN_TAG_KOPIEREN" xml:space="preserve">
+    <value>Copy day</value>
+  </data>
+  <data name="KBP_BTN_TAG_EINFUEGEN" xml:space="preserve">
+    <value>Paste day</value>
+  </data>
+  <data name="KBP_STUNDE" xml:space="preserve">
+    <value>{0}:00</value>
+  </data>
+  <data name="KBP_KI_EINGABEART_ERL" xml:space="preserve">
+    <value>Input method of the selected cooling row: annual total with template, monthly values or weekly profile; typical days follow.</value>
+  </data>
+  <data name="KBP_GRAFIK_GRUPPE" xml:space="preserve">
+    <value>Chart of the selected row</value>
+  </data>
+  <data name="KBP_REITER_JAHRESGANG" xml:space="preserve">
+    <value>Annual profile</value>
+  </data>
+  <data name="KBP_REITER_MONATE" xml:space="preserve">
+    <value>Months</value>
+  </data>
+  <data name="KBP_REITER_WOCHE" xml:space="preserve">
+    <value>Week</value>
+  </data>
+  <data name="KBP_REITER_DAUERLINIE" xml:space="preserve">
+    <value>Duration curve</value>
+  </data>
+  <data name="KBP_TITEL_JAHRESGANG" xml:space="preserve">
+    <value>Cooling demand over the year</value>
+  </data>
+  <data name="KBP_TITEL_MONATE" xml:space="preserve">
+    <value>Cooling demand per month</value>
+  </data>
+  <data name="KBP_TITEL_WOCHE" xml:space="preserve">
+    <value>Typical week by day type</value>
+  </data>
+  <data name="KBP_TITEL_DAUERLINIE" xml:space="preserve">
+    <value>Annual duration curve of the cooling demand</value>
+  </data>
+  <data name="KBP_ACHSE_LEISTUNG" xml:space="preserve">
+    <value>Cooling load [kW]</value>
+  </data>
+  <data name="KBP_ACHSE_WOCHENSTUNDE" xml:space="preserve">
+    <value>Hour of the week from Monday 0:00</value>
+  </data>
+  <data name="KBP_ACHSE_RANG" xml:space="preserve">
+    <value>Hours of the year, sorted in descending order</value>
+  </data>
+  <data name="KBP_REIHE_KAELTE" xml:space="preserve">
+    <value>Cooling demand</value>
+  </data>
+  <data name="KBP_REIHE_WOCHE" xml:space="preserve">
+    <value>Working day, Saturday, Sunday or public holiday</value>
+  </data>
+  <data name="KBP_REIHE_FERIEN" xml:space="preserve">
+    <value>Company holiday</value>
+  </data>
+  <data name="KBP_KZ_SUMME" xml:space="preserve">
+    <value>Annual total</value>
+  </data>
+  <data name="KBP_KZ_SPITZE" xml:space="preserve">
+    <value>Peak</value>
+  </data>
+  <data name="KBP_KZ_VBH" xml:space="preserve">
+    <value>Full-load hours</value>
+  </data>
+  <data name="KBP_KZ_GRUNDLAST" xml:space="preserve">
+    <value>Base-load share</value>
+  </data>
+  <data name="KBP_GRAFIK_HERLEITUNG" xml:space="preserve">
+    <value>Annual profile, week and duration curve show the selected row with the annual total of this dialog; the months stack all rows.</value>
+  </data>
+  <data name="KBP_GRAFIK_OHNE" xml:space="preserve">
+    <value>There is no profile for the selected row.</value>
+  </data>
+  <data name="KBP_GRAFIK_ERL" xml:space="preserve">
+    <value>Chart of the selected cooling row: annual profile, months, week and duration curve with key figures (display only).</value>
   </data>
 </root>
 

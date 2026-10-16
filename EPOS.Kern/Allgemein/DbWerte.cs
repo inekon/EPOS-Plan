@@ -1460,6 +1460,21 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string KAELTE_ART_PROZESS = "PROZESS";
 
+        /// <summary>
+        /// Eingabeart einer Kältebedarfszuordnung „Jahressumme mit Vorlage“ (KBP-2, Schritt
+        /// <see cref="KaeltebedarfsprofilVorlagenSchema.SCHRITT"/>, Spalte <c>Eingabeart</c>) — die Vorgabe. ASCII, eingefroren.
+        /// </summary>
+        public const string KAELTE_EINGABE_JAHR = "jahr";
+
+        /// <summary>Eingabeart einer Kältebedarfszuordnung „Monatswerte“ (KBP-2). ASCII, eingefroren.</summary>
+        public const string KAELTE_EINGABE_MONAT = "monat";
+
+        /// <summary>Eingabeart einer Kältebedarfszuordnung „Wochenprofil“ (KBP-2). ASCII, eingefroren.</summary>
+        public const string KAELTE_EINGABE_WOCHE = "woche";
+
+        /// <summary>Eingabeart einer Kältebedarfszuordnung „Typtage“ (KBP-2, Rechenzweig erst mit KBP-4). ASCII, eingefroren.</summary>
+        public const string KAELTE_EINGABE_TYPTAG = "typtag";
+
         // =====================================================================
         // Kanal-Knappheitsreihenfolge
         //   Tab_Einstellungen.Kanal_Knappheitsreihenfolge  (Migrationsschritt 49,

@@ -5558,6 +5558,25 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_GERAETEKOSTEN_ENTFALL = GeraetekostenEntfallSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="StromspeicherKostenSchema.SCHRITT"/> — <b>die Kostenspalten des Stromspeichers
+        /// entfallen</b> (KB-5, Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine Doppelhaltung"):
+        /// Sicherheitslauf der Saat, Wache, Entfall der acht Spalten an Katalog und Projektkopie, Neubildung
+        /// der Katalogprüfsummen. <b>Wiederholbar, ergebnisgleich.</b>
+        /// </summary>
+        public const int SCHRITT_STROMSPEICHER_KOSTEN = StromspeicherKostenSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="KaeltebedarfsprofilVorlagenSchema.SCHRITT"/> — <b>Schemaschritt A der Kältebedarfsprofile</b> (KBP-2,
+        /// Konzept Kältebedarfsprofile 8.1, Entscheid OE-3): <c>Z_Projekt_Kaeltebedarf.Eingabeart</c> (Vorgabe 'jahr',
+        /// Prüfklausel jahr/monat/woche/typtag), der Art-Vorschlag <c>Kaelte_Art</c> an <c>Tab_Kaeltebedarf_STAMM</c> und
+        /// <c>Tab_Kaeltebedarf</c> (nullbar) und die Saat der Vorlagen 7–16 samt Katalogschlüssel.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> kein UPDATE des Bestands, jede Zuordnung rechnet weiter mit der
+        /// Jahressumme; die Zeilen 1–6 bleiben samt Prüfsumme bytegleich.</para>
+        /// </summary>
+        public const int SCHRITT_KAELTEVORLAGEN = KaeltebedarfsprofilVorlagenSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -8172,6 +8191,23 @@ namespace WindowsFormsApplication1
                         "gerechnet wird aus Tab_ProjektWerte; die eine Basis ist die Satzvorlage des " +
                         "zentralen Kostenkatalogs.",
                         Schritt_GeraetekostenEntfall),
+            // KB-5: Entfall der Kostenspalten des Stromspeichers. Quelle ist StromspeicherKostenSchema, die
+            // Nummer steht allein dort.
+            new Schritt(SCHRITT_STROMSPEICHER_KOSTEN,
+                        "Tab_Stromspeicher(_STAMM): Sicherheitslauf der Saat, die vier Kostenspalten " +
+                        "Modulkosten, Leistungskosten, Investition_Fix und Verschleisskosten entfallen",
+                        "Derselbe Kostensatz stuende weiter am Speicher UND in seiner Satzvorlage. KEIN " +
+                        "Rechenergebnis aendert sich - der Rechenweg liest dieselben Saetze aus Position und " +
+                        "Satzvorlage.",
+                        Schritt_StromspeicherKosten),
+            // KBP-2: Schemaschritt A der Kaeltebedarfsprofile. Quelle ist KaeltebedarfsprofilVorlagenSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KAELTEVORLAGEN,
+                        "Z_Projekt_Kaeltebedarf: Eingabeart; Tab_Kaeltebedarf_STAMM und Tab_Kaeltebedarf: Kaelte_Art " +
+                        "(Art-Vorschlag); Saat der Kaeltebedarfsvorlagen 7-16 in Tab_Kaeltebedarf_STAMM/Tab_Kaeltetyp_STAMM",
+                        "Der Kaeltekatalog fuehrte nur sechs Saetze, die Zuordnung kannte allein die Jahressumme. KEIN " +
+                        "Rechenergebnis aendert sich - jede Zuordnung rechnet mit Eingabeart 'jahr', die Zeilen 1-6 " +
+                        "bleiben unberuehrt.",
+                        Schritt_Kaeltevorlagen),
         };
 
         /// <summary>
@@ -16053,6 +16089,64 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Der Schritt „Die Kostenspalten des Stromspeichers entfallen" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_STROMSPEICHER_KOSTEN"/>, die Anweisungen bei <see cref="StromspeicherKostenSchema"/>.
+        /// <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_StromspeicherKosten(Lauf l)
+        {
+            string nr = StromspeicherKostenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in StromspeicherKostenSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            StromspeicherKostenSchema.Laufergebnis ergebnis;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                try
+                {
+                    ergebnis = StromspeicherKostenSchema.Lauf(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!StromspeicherKostenSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Kostenspalten des Stromspeichers stehen nach dem Schritt noch.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Stromspeicher-Kostenspalten entfallen - " +
+                    (ergebnis.Handgriffe == 0
+                        ? "stand bereits."
+                        : ergebnis.Gesaet + " Satzvorlage(n) gesaet, " + ergebnis.Entfernt + " Spalte(n) entfernt, " +
+                          ergebnis.PruefsummenNeu + " Pruefsumme(n) neu.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
         /// Der Schritt „Die Kostenspalten der Investitionsgewerke entfallen" — Anlass und Wirkung stehen bei
         /// <see cref="SCHRITT_GERAETEKOSTEN_ENTFALL"/>, die Anweisungen bei
         /// <see cref="GeraetekostenEntfallSchema"/>. <b>Wiederholbar.</b>
@@ -16106,6 +16200,60 @@ namespace WindowsFormsApplication1
                         ? "stand bereits."
                         : ergebnis.Verweisspalten + " Verweisspalte(n), " + ergebnis.Gesaet + " Satzvorlage(n) gesaet, " +
                           ergebnis.Entfernt + " Spalte(n) entfernt, " + ergebnis.PruefsummenNeu + " Pruefsumme(n) neu.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Kältebedarfsvorlagen und Eingabeart" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_KAELTEVORLAGEN"/>, die Anweisungen bei <see cref="KaeltebedarfsprofilVorlagenSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Kaeltevorlagen(Lauf l)
+        {
+            string nr = KaeltebedarfsprofilVorlagenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KaeltebedarfsprofilVorlagenSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int angelegt;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    angelegt = KaeltebedarfsprofilVorlagenSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!KaeltebedarfsprofilVorlagenSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Eingabeart, Art-Vorschlag oder Kaeltebedarfsvorlagen fehlen nach dem Schritt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Kaeltebedarfsvorlagen und Eingabeart - " +
+                    (angelegt == 0 ? "Spalten standen bereits." : angelegt + " Spalte(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

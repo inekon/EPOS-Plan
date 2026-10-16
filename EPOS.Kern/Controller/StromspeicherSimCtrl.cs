@@ -1251,8 +1251,8 @@ namespace WindowsFormsApplication1
         /// </para>
         /// <para>
         /// Feldbedeutungen nach Entscheid AP0 (16.08.2026): <c>Ladezustand</c> ist der
-        /// Start-SoC in Prozent der Nennkapazität, <c>Modulkosten</c> sind bereits
-        /// EUR/kWh und werden ohne Umrechnung zu c_cap, <c>Degradation</c> steht in
+        /// Start-SoC in Prozent der Nennkapazität, der Kapazitätssatz der Satzvorlage ist
+        /// EUR/kWh und wird ohne Umrechnung zu c_cap, <c>Degradation</c> steht in
         /// Prozent pro Jahr (UI-Label "%") und wird zum Bruch.
         /// </para>
         /// <para>
@@ -1455,7 +1455,12 @@ namespace WindowsFormsApplication1
 
                     summeEnergie += energie;
                     summeLeistung += leistung;
-                    summeInvestitionFix += Zahl(dt, row, "Investition_Fix");
+                    // Welle KB-5: die vier Kostensätze aus Position und Satzvorlage (Rangfolge Kostenposition
+                    // der Anlage, Satzvorlage der Projektkopie, Satzvorlage des Katalogsatzes). Ein fehlender
+                    // Satz trägt wie die leere Spalte vorher nichts bei; c_ver fällt unten auf C_VER_STANDARD.
+                    KatalogkostensatzCtrl.Stromspeichersaetze kosten = KatalogkostensatzCtrl.Stromspeicher(
+                        StromspeicherKostenSchema.TAB_KOPIE, (int)Zahl(dt, row, "ID"), (int)Zahl(dt, row, "ID_Anlage"));
+                    summeInvestitionFix += kosten.IFixEur ?? 0.0;
                     // SP1 (Welle M5): Standby je Gerät 0 … 1 000 W; ein Wert außerhalb rechnet nicht
                     // und wird gemeldet (die Bestandsspalte trägt keine Prüfklausel).
                     double standbyW = Zahl(dt, row, StromViertelstundenSchema.SPALTE_STANDBY);
@@ -1469,11 +1474,11 @@ namespace WindowsFormsApplication1
 
                     gewichtetLadezustand += Zahl(dt, row, "Ladezustand") * energie;
                     gewichtetDegradation += Zahl(dt, row, "Degradation") * energie;
-                    gewichteteModulkosten += Zahl(dt, row, "Modulkosten") * energie;
+                    gewichteteModulkosten += (kosten.CCapEurProKwh ?? 0.0) * energie;
                     gewichteterWirkungsgrad += Zahl(dt, row, "Wirkungsgrad_RT") * energie;
-                    gewichteteVerschleisskosten += Zahl(dt, row, "Verschleisskosten") * energie;
+                    gewichteteVerschleisskosten += (kosten.CVerEurProKwh ?? 0.0) * energie;
                     gewichteteZyklen += Zahl(dt, row, "Zyklen_Zugesichert") * energie;
-                    leistungsgewichteteLeistungskosten += Zahl(dt, row, "Leistungskosten") * leistung;
+                    leistungsgewichteteLeistungskosten += (kosten.CPowEurProKw ?? 0.0) * leistung;
 
                     // Bezug des Ergebnissatzes: die gerechnete Anlage. Das ist die
                     // gewählte bzw. die der aktiven Variante; nur im Rückfall auf die

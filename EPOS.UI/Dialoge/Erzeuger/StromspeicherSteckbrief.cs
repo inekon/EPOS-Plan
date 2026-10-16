@@ -30,8 +30,7 @@ public static class StromspeicherSteckbrief
         (ModulKatalogProfil.FeldDegradation, "degradation"),
         (ModulKatalogProfil.FeldStandby, "standby"),
         (ModulKatalogProfil.FeldSelbstentladung, "selbstentladung"),
-        (ModulKatalogProfil.FeldModulkosten, "modulkosten"),
-        (ModulKatalogProfil.FeldInvestitionFix, "invest"),
+        (ModulKatalogProfil.FeldKostensatz, "invest"),
     };
 
     /// <summary>Die Zeilen aus Feldsatz bzw. Detailblock, am Projektsatz mit den Kostensummen der Anlage.</summary>

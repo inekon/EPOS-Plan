@@ -767,15 +767,17 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
-        // 6. Stromspeicher — Tab_Stromspeicher_STAMM (16 Spalten)
+        // 6. Stromspeicher — Tab_Stromspeicher_STAMM (12 Spalten)
         // =================================================================
 
         /// <remarks>
         /// <b>Der Befund dieser Tabelle:</b> Sie ist die einzige der sieben, in der
         /// JEDE Fachspalte gerechnet wird — <c>StromspeicherSimCtrl.LeseParameter</c>
-        /// liest alle elf und reicht sie als <c>SpeicherParameter</c> an die
-        /// <c>SpeicherEngine</c>. Vier davon sind Kostengroessen und gehen ausserdem in
-        /// den Kostenplanwert (<c>TechnikPlanwertCtrl.BasenFuellen</c>).
+        /// liest sie und reicht sie als <c>SpeicherParameter</c> an die
+        /// <c>SpeicherEngine</c>. Eine Kostenspalte fuehrt die Tabelle nicht mehr (Welle KB-5):
+        /// Die vier Saetze c_cap, c_pow, I_fix und c_ver stehen in den Satzvorlagen, auf die
+        /// die Verweisspalten zeigen (<see cref="Kostenvorlage"/>), und kommen ueber
+        /// <c>KatalogkostensatzCtrl.Stromspeicher</c> in Rechenweg und Kostenplanwert.
         /// </remarks>
         private static IReadOnlyList<ParameterEintrag> Stromspeicher(Func<string, string> t)
         {
@@ -795,20 +797,12 @@ namespace WindowsFormsApplication1
                   "StromspeicherSimCtrl.LeseParameter (SpeicherParameter.DegradationProA)"),
                 E("Ladezustand", t("MODK_LBL_LADEZUSTAND"), "%", SIM,
                   "StromspeicherSimCtrl.LeseParameter (nutzbarer Hub)"),
-                E("Modulkosten", t("MODK_LBL_MODULKOSTEN"), "€/kWh", WIRT,
-                  "TechnikPlanwertCtrl.BasenFuellen (spezifischer Kapazitaetspreis)"),
                 E("ReadOnly", t("PARV_LBL_READONLY"), "", DLG,
                   "StromspeicherStammCtrl.SpeichernAus (Auslieferungssatz)"),
                 E("Wirkungsgrad_RT", t("SP_LABEL_WIRKUNGSGRAD_RT"), "-", SIM,
                   "StromspeicherSimCtrl.LeseParameter (Umlaufwirkungsgrad der SpeicherEngine)"),
                 E("Zyklen_Zugesichert", t("SP_LABEL_ZYKLEN"), "-", SIM_WIRT,
                   "StromspeicherSimCtrl.LeseParameter; ArbitragePlaner.Lauf (Zyklenbudget)"),
-                E("Verschleisskosten", t("SP_LABEL_VERSCHLEISSKOSTEN"), t("SP_EINHEIT_ZYKLUSKOSTEN"), WIRT,
-                  "StromspeicherSimCtrl.LeseParameter; ArbitrageOptionen.VerschleissCtKwh"),
-                E("Leistungskosten", t("SP_LABEL_LEISTUNGSKOSTEN"), "€/kW", WIRT,
-                  "TechnikPlanwertCtrl.BasenFuellen"),
-                E("Investition_Fix", t("SP_LABEL_INVESTITION_FIX"), "€", WIRT,
-                  "TechnikPlanwertCtrl.BasenFuellen; StromspeicherSimCtrl.LeseParameter"),
                 E("Standby_Verbrauch", t("SP_LABEL_STANDBY"), "W", SIM,
                   "StromspeicherSimCtrl.LeseParameter (SpeicherParameter.StandbyKw); " +
                   "SpeicherEngine/Speichersystem.Standby (aus PV-Überschuss, sonst Netz; Welle M5, SP1)"),

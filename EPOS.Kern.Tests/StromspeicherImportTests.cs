@@ -148,10 +148,6 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.0, m.m_Degradation);
             Assert.Equal(0.0, m.m_Ladezustand);
             Assert.Equal(0, m.m_ZyklenZugesichert);
-            Assert.Equal(0.0, m.m_Modulkosten);
-            Assert.Equal(0.0, m.m_Leistungskosten);
-            Assert.Equal(0.0, m.m_InvestitionFix);
-            Assert.Equal(0.0, m.m_Verschleisskosten);
             Assert.Equal(0.0, m.m_StandbyVerbrauch);
         }
 

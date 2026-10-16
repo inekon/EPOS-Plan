@@ -1127,9 +1127,6 @@
   <data name="MODK_LBL_LEISTUNG" xml:space="preserve">
     <value>Leistung</value>
   </data>
-  <data name="MODK_LBL_MODULKOSTEN" xml:space="preserve">
-    <value>Modulkosten</value>
-  </data>
   <data name="MODK_LBL_KOSTENSATZ" xml:space="preserve">
     <value>Kostensatz</value>
   </data>
@@ -4078,20 +4075,8 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="SP_LABEL_ZYKLEN" xml:space="preserve">
     <value>Zyklen (zugesichert)</value>
   </data>
-  <data name="SP_LABEL_VERSCHLEISSKOSTEN" xml:space="preserve">
-    <value>Verschleißkosten</value>
-  </data>
-  <data name="SP_LABEL_LEISTUNGSKOSTEN" xml:space="preserve">
-    <value>Leistungskosten</value>
-  </data>
-  <data name="SP_LABEL_INVESTITION_FIX" xml:space="preserve">
-    <value>Investition (fix)</value>
-  </data>
   <data name="SP_LABEL_STANDBY" xml:space="preserve">
     <value>Standby-Verbrauch</value>
-  </data>
-  <data name="SP_EINHEIT_ZYKLUSKOSTEN" xml:space="preserve">
-    <value>€/(kWh·Zyklus)</value>
   </data>
   <data name="SP_PARAM_GRUPPE_BETRIEBSFUEHRUNG" xml:space="preserve">
     <value>Betriebsführung (aktive Variante)</value>
@@ -5618,8 +5603,8 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="SP_LABEL_ENERGIE_KURZ" xml:space="preserve">
     <value>Energie (Kapazität)</value>
   </data>
-  <data name="SP_LABEL_MODULKOSTEN" xml:space="preserve">
-    <value>Modulkosten [€/kWh]:</value>
+  <data name="SP_LABEL_KOSTENSATZ" xml:space="preserve">
+    <value>Kostensatz [€/kWh]:</value>
   </data>
   <data name="SP_PARAM_LABEL_KAPAZITAET" xml:space="preserve">
     <value>Kapazität [kWh]</value>
@@ -6642,6 +6627,9 @@ Je nach Projektgröße dauert das einige Minuten. Fortfahren?</value>
   </data>
   <data name="KOSTEN_BETRIEB_OHNE_ERGEBNIS" xml:space="preserve">
     <value>Vorbelegung der Betriebskosten erst nach einem Simulationslauf verfügbar.</value>
+  </data>
+  <data name="KOSTEN_BETRIEB_SPEICHER_VERSCHLEISS_QUELLE" xml:space="preserve">
+    <value>Der Verschleiß des Stromspeichers ist eine Betriebsposition „je entladener kWh“: Sie ist die Quelle des Verschleißsatzes, gebucht wird sie vom Simulationslauf — die Kostenrechnung zählt sie nicht ein zweites Mal.</value>
   </data>
   <data name="KOSTEN_BETRIEB_OHNE_WARTUNGSFELD" xml:space="preserve">
     <value>Für dieses Gewerk führt keine Betriebs-Satzvorlage einen Wartungssatz — keine Vorbelegung.</value>
@@ -25257,23 +25245,11 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_MODK_DEGRADATION_ERL" xml:space="preserve">
     <value>Der jährliche Kapazitätsverlust des Speichers.</value>
   </data>
-  <data name="KI_DLG_MODK_KOSTEN_ERL" xml:space="preserve">
-    <value>Die kapazitätsbezogenen Modulkosten des Speichers.</value>
-  </data>
   <data name="KI_DLG_MODK_WG_RT_ERL" xml:space="preserve">
     <value>Der Umlaufwirkungsgrad über Laden und Entladen als Faktor; leer heißt nicht gepflegt.</value>
   </data>
   <data name="KI_DLG_MODK_ZYKLEN_ERL" xml:space="preserve">
     <value>Die Zyklenlebensdauer des Speichers; leer heißt nicht gepflegt.</value>
-  </data>
-  <data name="KI_DLG_MODK_VERSCHLEISS_ERL" xml:space="preserve">
-    <value>Die Verschleißkosten je umgesetzter Kilowattstunde; leer heißt nicht gepflegt.</value>
-  </data>
-  <data name="KI_DLG_MODK_LEISTUNGSKOSTEN_ERL" xml:space="preserve">
-    <value>Der leistungsbezogene Anteil der Investition; leer heißt nicht gepflegt.</value>
-  </data>
-  <data name="KI_DLG_MODK_INVEST_FIX_ERL" xml:space="preserve">
-    <value>Der feste Anteil der Investition je Speicher, unabhängig von Größe und Leistung.</value>
   </data>
   <data name="KI_DLG_MODK_STANDBY_ERL" xml:space="preserve">
     <value>Die Bereitschaftsleistung des Speichers im Ruhezustand.</value>
@@ -56287,6 +56263,165 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="BKAL_MSG_FERIEN_FEHLEN" xml:space="preserve">
     <value>Feiertagsland und Ferien von „{0}“ übernommen. Das Gebäude führt {1} Ferienzeiträume, der Kalender nimmt vier auf: Übernommen sind die ersten vier, {2} fehlen.</value>
+  </data>
+  <data name="KBP_GRUPPE_EINGABEART" xml:space="preserve">
+    <value>Eingabeart</value>
+  </data>
+  <data name="KBP_LBL_EINGABEART" xml:space="preserve">
+    <value>Eingabeart:</value>
+  </data>
+  <data name="KBP_EINGABE_JAHR" xml:space="preserve">
+    <value>Jahressumme mit Vorlage</value>
+  </data>
+  <data name="KBP_EINGABE_MONAT" xml:space="preserve">
+    <value>Monatswerte</value>
+  </data>
+  <data name="KBP_EINGABE_WOCHE" xml:space="preserve">
+    <value>Wochenprofil</value>
+  </data>
+  <data name="KBP_EINGABE_TYPTAG" xml:space="preserve">
+    <value>Typtage (folgt)</value>
+  </data>
+  <data name="KBP_HINW_TYPTAG_FOLGT" xml:space="preserve">
+    <value>Typtage folgen in einer späteren Fassung.</value>
+  </data>
+  <data name="KBP_HINW_EINGABEART" xml:space="preserve">
+    <value>Monatswerte und Wochenprofil ändern die Projektkopie dieser Zuordnung, nie den Katalog. Teilen sich zwei Zuordnungen eine Kopie, erhält die bearbeitete beim OK eine eigene.</value>
+  </data>
+  <data name="KBP_GRUPPE_MONATE" xml:space="preserve">
+    <value>Monatswerte</value>
+  </data>
+  <data name="KBP_LBL_MONATSEINHEIT" xml:space="preserve">
+    <value>Eingabe in:</value>
+  </data>
+  <data name="KBP_EINHEIT_PROZENT" xml:space="preserve">
+    <value>% der Jahressumme</value>
+  </data>
+  <data name="KBP_MONATE" xml:space="preserve">
+    <value>Januar;Februar;März;April;Mai;Juni;Juli;August;September;Oktober;November;Dezember</value>
+  </data>
+  <data name="KBP_SUMME_MWH" xml:space="preserve">
+    <value>Jahressumme aus den Monaten: {0} MWh</value>
+  </data>
+  <data name="KBP_SUMME_PROZENT" xml:space="preserve">
+    <value>Summe der Anteile: {0} % (Jahressumme {1} MWh)</value>
+  </data>
+  <data name="KBP_MSG_SUMME_PROZENT" xml:space="preserve">
+    <value>Die Monatsanteile ergeben {0} %, zusammen müssen sie 100 % ergeben.</value>
+  </data>
+  <data name="KBP_MSG_MONAT_NEGATIV" xml:space="preserve">
+    <value>Jeder Monatswert muss eine Zahl ab 0 sein.</value>
+  </data>
+  <data name="KBP_MSG_MONATE_NULL" xml:space="preserve">
+    <value>Die Monatswerte ergeben zusammen 0 – mindestens ein Monat muss Bedarf tragen.</value>
+  </data>
+  <data name="KBP_GRUPPE_WOCHE" xml:space="preserve">
+    <value>Wochenprofil</value>
+  </data>
+  <data name="KBP_LBL_ANSICHT" xml:space="preserve">
+    <value>Ansicht:</value>
+  </data>
+  <data name="KBP_ANSICHT_DREI" xml:space="preserve">
+    <value>Werktag | Samstag | Sonntag</value>
+  </data>
+  <data name="KBP_ANSICHT_168" xml:space="preserve">
+    <value>168 h</value>
+  </data>
+  <data name="KBP_LBL_TAG" xml:space="preserve">
+    <value>Tag:</value>
+  </data>
+  <data name="KBP_TAGE_DREI" xml:space="preserve">
+    <value>Werktag (Mo–Fr);Samstag;Sonntag</value>
+  </data>
+  <data name="KBP_WOCHENTAGE" xml:space="preserve">
+    <value>Montag;Dienstag;Mittwoch;Donnerstag;Freitag;Samstag;Sonntag</value>
+  </data>
+  <data name="KBP_HINW_WERKTAGE_UNGLEICH" xml:space="preserve">
+    <value>Werktage unterscheiden sich — 168-h-Ansicht</value>
+  </data>
+  <data name="KBP_HINW_WOCHE" xml:space="preserve">
+    <value>Relative Werte wie im Typkatalog; die Monatswerte bestimmen die Menge. Mit einem Betriebskalender zählen Feiertage wie Sonntag.</value>
+  </data>
+  <data name="KBP_MSG_WOCHE" xml:space="preserve">
+    <value>Das Wochenprofil braucht Werte ab 0 und mindestens eine Stunde mit Bedarf.</value>
+  </data>
+  <data name="KBP_BTN_TAG_KOPIEREN" xml:space="preserve">
+    <value>Tag kopieren</value>
+  </data>
+  <data name="KBP_BTN_TAG_EINFUEGEN" xml:space="preserve">
+    <value>Tag einfügen</value>
+  </data>
+  <data name="KBP_STUNDE" xml:space="preserve">
+    <value>{0} Uhr</value>
+  </data>
+  <data name="KBP_KI_EINGABEART_ERL" xml:space="preserve">
+    <value>Eingabeart der markierten Kältezeile: Jahressumme mit Vorlage, Monatswerte oder Wochenprofil; Typtage folgen.</value>
+  </data>
+  <data name="KBP_GRAFIK_GRUPPE" xml:space="preserve">
+    <value>Grafik der markierten Zeile</value>
+  </data>
+  <data name="KBP_REITER_JAHRESGANG" xml:space="preserve">
+    <value>Jahresgang</value>
+  </data>
+  <data name="KBP_REITER_MONATE" xml:space="preserve">
+    <value>Monate</value>
+  </data>
+  <data name="KBP_REITER_WOCHE" xml:space="preserve">
+    <value>Woche</value>
+  </data>
+  <data name="KBP_REITER_DAUERLINIE" xml:space="preserve">
+    <value>Dauerlinie</value>
+  </data>
+  <data name="KBP_TITEL_JAHRESGANG" xml:space="preserve">
+    <value>Kältebedarf im Jahresgang</value>
+  </data>
+  <data name="KBP_TITEL_MONATE" xml:space="preserve">
+    <value>Kältebedarf je Monat</value>
+  </data>
+  <data name="KBP_TITEL_WOCHE" xml:space="preserve">
+    <value>Typische Woche nach Tagesarten</value>
+  </data>
+  <data name="KBP_TITEL_DAUERLINIE" xml:space="preserve">
+    <value>Jahresdauerlinie des Kältebedarfs</value>
+  </data>
+  <data name="KBP_ACHSE_LEISTUNG" xml:space="preserve">
+    <value>Kältelast [kW]</value>
+  </data>
+  <data name="KBP_ACHSE_WOCHENSTUNDE" xml:space="preserve">
+    <value>Stunde der Woche ab Montag 0 Uhr</value>
+  </data>
+  <data name="KBP_ACHSE_RANG" xml:space="preserve">
+    <value>Stunden im Jahr, absteigend sortiert</value>
+  </data>
+  <data name="KBP_REIHE_KAELTE" xml:space="preserve">
+    <value>Kältebedarf</value>
+  </data>
+  <data name="KBP_REIHE_WOCHE" xml:space="preserve">
+    <value>Werktag, Samstag, Sonntag bzw. Feiertag</value>
+  </data>
+  <data name="KBP_REIHE_FERIEN" xml:space="preserve">
+    <value>Ferientag</value>
+  </data>
+  <data name="KBP_KZ_SUMME" xml:space="preserve">
+    <value>Jahressumme</value>
+  </data>
+  <data name="KBP_KZ_SPITZE" xml:space="preserve">
+    <value>Spitze</value>
+  </data>
+  <data name="KBP_KZ_VBH" xml:space="preserve">
+    <value>Vollbenutzungsstunden</value>
+  </data>
+  <data name="KBP_KZ_GRUNDLAST" xml:space="preserve">
+    <value>Grundlast-Anteil</value>
+  </data>
+  <data name="KBP_GRAFIK_HERLEITUNG" xml:space="preserve">
+    <value>Jahresgang, Woche und Dauerlinie zeigen die markierte Zeile mit der Jahressumme dieses Dialogs; die Monate stapeln alle Zeilen.</value>
+  </data>
+  <data name="KBP_GRAFIK_OHNE" xml:space="preserve">
+    <value>Für die markierte Zeile liegt kein Profil vor.</value>
+  </data>
+  <data name="KBP_GRAFIK_ERL" xml:space="preserve">
+    <value>Grafik der markierten Kältezeile: Jahresgang, Monate, Woche und Dauerlinie samt Kennzahlen (nur Anzeige).</value>
   </data>
 </root>
 

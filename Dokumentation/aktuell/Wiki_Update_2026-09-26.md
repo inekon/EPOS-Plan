@@ -399,9 +399,13 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 13.10.2026: Eine abweichende Anzahl gleicher Kältemaschinen erscheint in den Unterschieden zum Stammprojekt und lässt sich einzeln übernehmen. (#1042)
 - Seit 14.10.2026: Im Dialog „Gesetzliche Parameter“ wird die Einheit einer neuen Zeile aus dem Schlüssel oder dem Bereich vorbelegt; EEG und Umlagen lassen sich als Bereich wählen.
 - Seit 14.10.2026: Im Bedarfsprofil-Dialog öffnet der Knopf „Betriebskalender…“ die Kalenderverwaltung direkt im Dialog, ein dort neu angelegter Kalender ist vorgewählt, und „Aus Gebäude übernehmen…“ kopiert Bundesland und Ferien eines Projektgebäudes in einen Betriebskalender. (#1088)
+- Seit 16.10.2026: Die Kältezeile im Bedarfsprofil-Dialog nimmt die Eingabeart Monatswerte (MWh oder Prozent) oder Wochenprofil (Werktag, Samstag, Sonntag und 168 Stunden) an. (#1102)
+- Seit 16.10.2026: Zehn weitere Vorlagen für Kältebedarfsprofile mit belegten Nutzungszeiten (DIN/TS 18599-10:2025-10) stehen im Katalog; jedes Profil trägt einen Art-Vorschlag. (#1101)
+- Seit 16.10.2026: Die Kältezeile zeigt Jahresgang, Monate, Woche und Dauerlinie als Blätter mit einer Kennzahlenzeile (Jahressumme, Spitze, Vollbenutzungsstunden, Grundlast-Anteil). (#1103)
 - 13.10.2026: Der Kostendialog und die Kostenseite gleichen die Kosten einer Anlage mit dem zentralen Kostenkatalog ab („Mit dem Kostenkatalog abgleichen…“). (#1079)
 - 13.10.2026: Arbeits-, Grund- und Leistungspreis eines Brennstoffs stehen allein in der Karte seines Energieträgers. (#1080)
 - 14.10.2026: Die Gerätekataloge führen keine Kostenfelder mehr; die Kosten eines Geräts stehen allein in der Kostenverwaltung, die Maske zeigt die Gerätekosten bzw. den Kostensatz aus der Satzvorlage des Katalogsatzes. (#1095)
+- 16.10.2026: Auch die Kosten des Stromspeichers stehen wie bei den übrigen Gewerken allein in der Kostenverwaltung; der Katalogsatz führt keine Kostenfelder mehr. (#1100)
 
 ### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -200,6 +201,188 @@ namespace WindowsFormsApplication1
                 return Convert.ToInt32(o, CultureInfo.InvariantCulture);
             }
             catch { return 0; }
+        }
+
+        // =================================================================================
+        //  Welle KB-5: die vier Sätze des Stromspeichers
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Die vier Kostensätze eines Stromspeichers</b> — c_cap [€/kWh Nennkapazität], c_pow [€/kW],
+        /// I_fix [€] und c_ver [€ je entladener kWh = € je kWh Nennkapazität und Vollzyklus]. <c>null</c> heißt:
+        /// auf keiner Stufe gepflegt; der Grund steht dann benannt in <see cref="Datenluecken"/>. Der Leser
+        /// setzt nie still 0 — was ein fehlender Satz im Rechenweg bedeutet, entscheidet der Rechenweg.
+        /// </summary>
+        public sealed class Stromspeichersaetze
+        {
+            /// <summary>c_cap [€/kWh Nennkapazität] (Investition, <c>EUR_PRO_KWH_KAPAZITAET</c>).</summary>
+            public double? CCapEurProKwh;
+            /// <summary>c_pow [€/kW] (Investition, <c>EUR_PRO_KW_LEISTUNG</c> bzw. <c>EUR_PRO_KW_ELEKTRISCH</c>).</summary>
+            public double? CPowEurProKw;
+            /// <summary>I_fix [€] (Investition, <c>BETRAG</c>).</summary>
+            public double? IFixEur;
+            /// <summary>c_ver [€ je entladener kWh] (Betrieb, <c>EUR_PRO_KWH_ELEKTRISCH</c>).</summary>
+            public double? CVerEurProKwh;
+            /// <summary>Je Satz die Stufe, aus der er kommt (Steuerwerte <see cref="QUELLE_POSITION"/> usw.).</summary>
+            public readonly Dictionary<string, string> Quelle = new Dictionary<string, string>(StringComparer.Ordinal);
+            /// <summary>Je fehlendem Satz ein benannter Grund.</summary>
+            public readonly List<string> Datenluecken = new List<string>();
+        }
+
+        /// <summary>Stufe 1: die Kostenposition der Anlage (<c>Tab_ProjektWerte</c>).</summary>
+        public const string QUELLE_POSITION = "Position";
+        /// <summary>Stufe 2: die Satzvorlage der Projektkopie.</summary>
+        public const string QUELLE_PROJEKTKOPIE = "Projektkopie";
+        /// <summary>Stufe 3: die Satzvorlage des Katalogsatzes.</summary>
+        public const string QUELLE_KATALOG = "Katalog";
+
+        /// <summary>Schlüssel der vier Sätze (Quelle, Datenlücke).</summary>
+        public const string SATZ_CCAP = "c_cap", SATZ_CPOW = "c_pow", SATZ_IFIX = "I_fix", SATZ_CVER = "c_ver";
+
+        /// <summary>
+        /// Die vier Sätze eines Stromspeichers in der Rangfolge <b>Kostenposition der Anlage →
+        /// Satzvorlage der Projektkopie → Satzvorlage des Katalogsatzes</b> — je Satz für sich.
+        /// </summary>
+        /// <param name="tabelle"><c>Tab_Stromspeicher</c> (Projektkopie) oder <c>Tab_Stromspeicher_STAMM</c>.</param>
+        /// <param name="id">ID des Satzes in dieser Tabelle.</param>
+        /// <param name="idAnlage">Anlagenzeile (<c>Tab_Energieanlagen.ID</c>); 0 = ohne Positionsstufe.</param>
+        public static Stromspeichersaetze Stromspeicher(string tabelle, int id, int idAnlage = 0)
+        {
+            var s = new Stromspeichersaetze();
+            var stufen = new List<(string Quelle, Dictionary<string, double> Saetze)>();
+            try
+            {
+                if (idAnlage > 0) stufen.Add((QUELLE_POSITION, SaetzeDerAnlage(idAnlage)));
+
+                bool kopie = string.Equals(tabelle, StromspeicherKostenSchema.TAB_KOPIE, StringComparison.Ordinal);
+                bool katalog = string.Equals(tabelle, StromspeicherKostenSchema.TAB_STAMM, StringComparison.Ordinal);
+                if ((kopie || katalog) && id > 0)
+                {
+                    (int inv, int betr, int stamm) = Verweise(tabelle, id, kopie);
+                    stufen.Add((kopie ? QUELLE_PROJEKTKOPIE : QUELLE_KATALOG, SaetzeDerVorlagen(inv, betr)));
+                    if (kopie && stamm > 0)
+                    {
+                        (int invK, int betrK, int _) = Verweise(StromspeicherKostenSchema.TAB_STAMM, stamm, false);
+                        stufen.Add((QUELLE_KATALOG, SaetzeDerVorlagen(invK, betrK)));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                s.Datenluecken.Add("Kostensaetze nicht lesbar: " + ex.Message);
+            }
+
+            s.CCapEurProKwh = Waehle(s, stufen, SATZ_CCAP);
+            s.CPowEurProKw = Waehle(s, stufen, SATZ_CPOW);
+            s.IFixEur = Waehle(s, stufen, SATZ_IFIX);
+            s.CVerEurProKwh = Waehle(s, stufen, SATZ_CVER);
+            return s;
+        }
+
+        private static double? Waehle(Stromspeichersaetze s, List<(string Quelle, Dictionary<string, double> Saetze)> stufen,
+                                      string satz)
+        {
+            foreach ((string quelle, Dictionary<string, double> saetze) in stufen)
+            {
+                double wert;
+                if (saetze != null && saetze.TryGetValue(satz, out wert))
+                {
+                    s.Quelle[satz] = quelle;
+                    return wert;
+                }
+            }
+            s.Datenluecken.Add(satz + ": keine Kostenposition der Anlage, keine Satzvorlage an Projektkopie oder Katalogsatz");
+            return null;
+        }
+
+        /// <summary>Welcher der vier Sätze eine Position dieser Kategorie und Bemessung ist; <c>null</c> = keiner.</summary>
+        internal static string SatzVon(int kategorie, string bemessung)
+        {
+            if (kategorie == DbWerte.KOSTEN_KATEGORIE_INVESTITION)
+            {
+                if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWH_KAPAZITAET, StringComparison.Ordinal)) return SATZ_CCAP;
+                if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG, StringComparison.Ordinal) ||
+                    string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH, StringComparison.Ordinal)) return SATZ_CPOW;
+                if (string.Equals(bemessung, DbWerte.BEMESSUNG_BETRAG, StringComparison.Ordinal)) return SATZ_IFIX;
+                return null;
+            }
+            if (kategorie == DbWerte.KOSTEN_KATEGORIE_BETRIEB &&
+                string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, StringComparison.Ordinal)) return SATZ_CVER;
+            return null;
+        }
+
+        private static void Addiere(Dictionary<string, double> d, string satz, double wert)
+        {
+            if (satz == null || !double.IsFinite(wert) || wert < 0) return;
+            double alt;
+            d[satz] = d.TryGetValue(satz, out alt) ? alt + wert : wert;
+        }
+
+        /// <summary>
+        /// Stufe 1: die Kostenpositionen der Anlage — dieselben Regeln wie
+        /// <see cref="SpeicherAuslegungCtrl.Modulkosten"/>: ohne Satz, Erlös, Zuschuss oder späteres Startjahr
+        /// zählt eine Position nicht. Ein Betrag (<c>BETRAG</c>) steht im Einheitspreis oder im erfassten Wert.
+        /// </summary>
+        private static Dictionary<string, double> SaetzeDerAnlage(int idAnlage)
+        {
+            var d = new Dictionary<string, double>(StringComparer.Ordinal);
+            DataTable t = DataRepository.GetDataTable(
+                "SELECT KategorieID, Bemessung, Einheitpreis, EingegebenerWert, IstErloes, Kostenart, StartJahr " +
+                "FROM Tab_ProjektWerte WHERE ID_Anlage = ? AND KomponentenID = ? AND KategorieID IN (1, 2)",
+                new DbParam("@a", idAnlage), new DbParam("@k", StromspeicherKostenSchema.KOMPONENTE));
+            if (t == null) return d;
+            foreach (DataRow r in t.Rows)
+            {
+                if (r["IstErloes"] != DBNull.Value && Convert.ToBoolean(r["IstErloes"], CultureInfo.InvariantCulture)) continue;
+                if (string.Equals(Convert.ToString(r["Kostenart"], CultureInfo.InvariantCulture), DbWerte.KOSTENART_ZUSCHUSS,
+                                  StringComparison.Ordinal)) continue;
+                if (r["StartJahr"] != DBNull.Value && Convert.ToInt32(r["StartJahr"], CultureInfo.InvariantCulture) > 1) continue;
+                string satz = SatzVon(Convert.ToInt32(r["KategorieID"], CultureInfo.InvariantCulture),
+                                      Convert.ToString(r["Bemessung"], CultureInfo.InvariantCulture));
+                if (satz == null) continue;
+                if (r["Einheitpreis"] != DBNull.Value)
+                    Addiere(d, satz, Convert.ToDouble(r["Einheitpreis"], CultureInfo.InvariantCulture));
+                else if (satz == SATZ_IFIX && r["EingegebenerWert"] != DBNull.Value &&
+                         Convert.ToDouble(r["EingegebenerWert"], CultureInfo.InvariantCulture) > 0)
+                    Addiere(d, satz, Convert.ToDouble(r["EingegebenerWert"], CultureInfo.InvariantCulture));
+            }
+            return d;
+        }
+
+        /// <summary>Stufen 2 und 3: die Positionen der Investitions- und der Betriebs-Satzvorlage.</summary>
+        private static Dictionary<string, double> SaetzeDerVorlagen(int idInvestition, int idBetrieb)
+        {
+            var d = new Dictionary<string, double>(StringComparer.Ordinal);
+            foreach ((int idVorlage, int kategorie) in new[] { (idInvestition, DbWerte.KOSTEN_KATEGORIE_INVESTITION),
+                                                                (idBetrieb, DbWerte.KOSTEN_KATEGORIE_BETRIEB) })
+            {
+                if (idVorlage <= 0) continue;
+                foreach (KostenVorlagenPosition p in KostenVorlagenCtrl.Positionen(idVorlage))
+                {
+                    if (p == null || p.IstErloes) continue;
+                    double? wert = p.Satz ?? (Katalogkostenabgleich.Absolut(p.Bemessung) ? p.BetragNetto : null);
+                    if (!wert.HasValue) continue;
+                    Addiere(d, SatzVon(kategorie, p.Bemessung), wert.Value);
+                }
+            }
+            return d;
+        }
+
+        /// <summary>Die zwei Vorlagenverweise eines Speichersatzes und (an der Projektkopie) sein Katalogursprung.</summary>
+        private static (int Investition, int Betrieb, int Stamm) Verweise(string tabelle, int id, bool mitStamm)
+        {
+            var spalten = new List<string>();
+            string inv = KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION;
+            string betr = KatalogkostenSaatSchema.Verweisspalte(DbWerte.KOSTEN_KATEGORIE_BETRIEB);
+            foreach (string sp in new[] { inv, betr, mitStamm ? "ID_Stamm" : null })
+                if (sp != null && DataRepository.SpalteVorhanden(tabelle, sp)) spalten.Add(sp);
+            if (spalten.Count == 0) return (0, 0, 0);
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT " + string.Join(", ", spalten.Select(sp => "\"" + sp + "\"")) + " FROM \"" + tabelle +
+                "\" WHERE \"ID\" = ?", new DbParam("@id", id));
+            if (dt == null || dt.Rows.Count == 0) return (0, 0, 0);
+            DataRow r = dt.Rows[0];
+            return (Ganz(r, inv), Ganz(r, betr), mitStamm ? Ganz(r, "ID_Stamm") : 0);
         }
 
         private static double Zahl(DataRow r, string spalte)

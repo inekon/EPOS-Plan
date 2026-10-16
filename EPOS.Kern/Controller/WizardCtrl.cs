@@ -354,6 +354,7 @@ namespace WindowsFormsApplication1
             // KWN-0: Die Art (Raum/Prozess) steht in JEDER Schreibstelle, sobald der Schritt KaelteArtSchema steht - sonst
             // fiele eine Prozesszeile beim naechsten Speichern still auf Raum zurueck.
             bool mitArt = KaelteArtSchema.ProfilLesbar();
+            bool mitEingabeart = KaeltebedarfsprofilVorlagenSchema.EingabeartLesbar();
             foreach (var item in list)
             {
                 Z_ProjektKaeltebedarfCtrl.Normalisieren(item);
@@ -382,6 +383,31 @@ namespace WindowsFormsApplication1
                     return false;
                 }
 
+                // KBP-3a (Konzept Kaeltebedarfsprofile 3.2, 3.3, 3.5): bearbeitete Monatswerte und Wochenprofil gehen in
+                // die PROJEKTKOPIE, nie in den Katalog. Teilt sie sich die Kopie mit einer anderen Zeile, bekommt die
+                // bearbeitete Zeile eine eigene (Kopie bei Bearbeitung) - geschrieben erst hier, also erst mit OK.
+                if (ProfilBearbeitet(item))
+                {
+                    if (KaelteKopieAbspalten(list, item, kopie, projektID))
+                    {
+                        int eigene = KaeltebedarfStammCtrl.ProjektkopieAbspalten(kopie, projektID);
+                        if (eigene <= 0)
+                        {
+                            DataRepository.FehlerMelden("Die eigene Projektkopie des Kaeltebedarfs \"" + (item.Bezeichner ?? "") +
+                                                        "\" konnte nicht angelegt werden. Die Zuordnung wurde nicht gespeichert.");
+                            return false;
+                        }
+                        kopie = eigene;
+                        item.ID_Kaeltebedarf = kopie;
+                    }
+                    if (!KaeltebedarfStammCtrl.ProjektProfilSchreiben(kopie, item.Monatsanteile, item.Wochenprofil))
+                    {
+                        DataRepository.FehlerMelden("Monatswerte oder Wochenprofil des Kaeltebedarfs \"" + (item.Bezeichner ?? "") +
+                                                    "\" konnten nicht gespeichert werden. Die Zuordnung wurde nicht gespeichert.");
+                        return false;
+                    }
+                }
+
                 int idZ = nextID++;
                 var ps = new List<DbParam>
                 {
@@ -401,11 +427,15 @@ namespace WindowsFormsApplication1
                     new DbParam("@zae", item.KuehlEigenerZaehler ? 1 : 0),
                 };
                 if (mitArt) ps.Add(new DbParam("@art", item.KaelteArt));
+                // KBP-3a: die Eingabeart in JEDER Schreibstelle, sobald der Schritt KaeltebedarfsprofilVorlagenSchema steht -
+                // sonst fiele eine Monats- oder Wochenzeile beim naechsten Speichern still auf 'jahr' zurueck.
+                if (mitEingabeart) ps.Add(new DbParam("@ein", KaeltebedarfsprofilVorlagenSchema.Eingabeart(item.Eingabeart)));
                 bool ok = DataRepository.ExecuteSQL(
                     mitArt
                         ? "INSERT INTO Z_Projekt_Kaeltebedarf (ID, ID_Projekt, ID_Kaeltebedarf, Bezeichner, Summe, ID_Betriebskalender, " +
                           "Deckung, Split_EER_Weg, Split_EER_1, Split_Taussen_1, Split_EER_2, Split_Taussen_2, Kuehl_ID_Carrier, " +
-                          "Kuehl_EigenerZaehler, Kaelte_Art) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                          "Kuehl_EigenerZaehler, Kaelte_Art" + (mitEingabeart ? ", Eingabeart" : "") +
+                          ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?" + (mitEingabeart ? ", ?" : "") + ")"
                         : "INSERT INTO Z_Projekt_Kaeltebedarf (ID, ID_Projekt, ID_Kaeltebedarf, Bezeichner, Summe, ID_Betriebskalender, " +
                           "Deckung, Split_EER_Weg, Split_EER_1, Split_Taussen_1, Split_EER_2, Split_Taussen_2, Kuehl_ID_Carrier, " +
                           "Kuehl_EigenerZaehler) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -416,6 +446,35 @@ namespace WindowsFormsApplication1
                 nachzug?.Merken(() => { zeile.ID_Z = idZ; zeile.ID_Projekt = projektID; });
             }
             return true;
+        }
+
+        /// <summary>KBP-3a: Trägt die Zeile bearbeitete Monatswerte oder ein bearbeitetes Wochenprofil?</summary>
+        private static bool ProfilBearbeitet(Z_ProjektKaeltebedarfModel z) => z != null && (z.Monatsanteile != null || z.Wochenprofil != null);
+
+        /// <summary>
+        /// KBP-3a, Kopie bei Bearbeitung (Konzept Kaeltebedarfsprofile 3.5): Braucht die bearbeitete Zeile
+        /// <paramref name="item"/> eine eigene Projektkopie, weil eine andere Zeile der Liste auf dieselbe Kopie
+        /// <paramref name="kopie"/> zeigt? Ja, sobald eine solche Zeile unbearbeitet ist oder als frühere bearbeitete Zeile
+        /// die Kopie schon trägt; sind alle Teilhaber bearbeitet, behält die erste die Kopie — es bleibt keine Waise.
+        /// </summary>
+        private static bool KaelteKopieAbspalten(List<Z_ProjektKaeltebedarfModel> list, Z_ProjektKaeltebedarfModel item,
+                                                 int kopie, int projektID)
+        {
+            int eigene = list.IndexOf(item);
+            bool geteilt = false, alleBearbeitet = true, erster = true;
+            for (int i = 0; i < list.Count; i++)
+            {
+                Z_ProjektKaeltebedarfModel andere = list[i];
+                if (i == eigene || andere == null) continue;
+                int ihre = andere.ID_Kaeltebedarf == kopie ? kopie
+                    : KaeltebedarfStammCtrl.GetProjektIdUeberId(andere.ID_Kaeltebedarf, andere.Bezeichner, projektID);
+                if (ihre <= 0 && i > eigene) ihre = KaeltebedarfStammCtrl.GetProjektId(andere.Bezeichner, projektID);
+                if (ihre != kopie) continue;
+                geteilt = true;
+                if (!ProfilBearbeitet(andere)) alleBearbeitet = false;
+                else if (i < eigene) erster = false;
+            }
+            return geteilt && !(alleBearbeitet && erster);
         }
 
         public bool Del_Stromganglinie(int projektID, DbVorgang vorgang = null)

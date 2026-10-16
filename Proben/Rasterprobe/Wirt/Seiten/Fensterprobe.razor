@@ -201,6 +201,7 @@
                                   BetriebskalenderGaben="@KpKalenderGaben"
                                   TypStammGaben="@((n, b, t, neu) => new Dictionary<string, object>())"
                                   TypProfilGaben="@(() => new Dictionary<string, object>())"
+                                  KaelteGrafik="@KpGrafik"
                                   Geschlossen="@(b => Beendet(b))" />
             break;
 
@@ -518,8 +519,48 @@
     private IReadOnlyList<Katalogfilterzeile> KpKatalog => _kpKatalog ??= Zeilenbau.Voll(KpProfil, _anzahl);
     private List<BedarfsProfilZeile>? _kpZeilen;
     private List<BedarfsProfilZeile> KpZeilen => _kpZeilen ??= Enumerable.Range(1, 2)
-        .Select(i => new BedarfsProfilZeile { IdZ = i, IdStamm = 200 + i, Name = "Kälte " + i, Summe = 40 * i, Vorlauf = 16, Ruecklauf = 19 })
+        .Select(i => new BedarfsProfilZeile
+        {
+            IdZ = i, IdStamm = 200 + i, Name = "Kälte " + i, Summe = 40 * i, Vorlauf = 16, Ruecklauf = 19,
+            // KBP-3a: Eingabeart, Monatsanteile und Wochenprofil der Projektkopie fuer die beiden Editoren.
+            Eingabeart = WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_JAHR,
+            Monatsanteile = new double[] { 1, 2, 4, 7, 11, 15, 18, 17, 12, 7, 4, 2 },
+            Wochenprofil = WindowsFormsApplication1.Kaelteprofileingabe.WocheAusTagen(
+                Enumerable.Range(0, 24).Select(h => h >= 7 && h < 19 ? 1.0 : 0.2).ToArray(),
+                Enumerable.Range(0, 24).Select(h => h >= 8 && h < 14 ? 0.5 : 0.2).ToArray(),
+                Enumerable.Repeat(0.2, 24).ToArray())
+        })
         .ToList();
+
+    /// <summary>
+    /// KBP-3b: die Grafik der markierten Kaeltezeile aus einer synthetischen Reihe - werktags 7 bis 19 Uhr Volllast
+    /// mit Sommeranstieg, sonst ein Fuenftel, auf die Jahressumme der Zeile skaliert; der Kalender 2 legt Betriebsferien.
+    /// </summary>
+    private WindowsFormsApplication1.Kaelteprofilbilder? KpGrafik(BedarfsProfilZeile markiert, IReadOnlyList<BedarfsProfilZeile> alle)
+    {
+        static double[] Reihe(double summeMwh, int versatz)
+        {
+            var r = new double[8760];
+            for (int d = 0; d < 365; d++)
+            {
+                double saison = 0.4 + 0.6 * Math.Max(0.0, Math.Sin(Math.PI * (d - 60) / 245.0));
+                for (int h = 0; h < 24; h++)
+                    r[d * 24 + h] = saison * ((d + 3) % 7 < 5 && h >= 7 + versatz && h < 19 ? 1.0 : 0.2);
+            }
+            double s = r.Sum();
+            for (int i = 0; i < r.Length; i++) r[i] *= summeMwh * 1000.0 / s;
+            return r;
+        }
+        byte[]? arten = null;
+        if (markiert.KalenderId == 2)
+        {
+            arten = new byte[365];
+            for (int d = 212; d < 233; d++) arten[d] = WindowsFormsApplication1.Betriebskalender.TAG_FERIEN;
+        }
+        int platz = alle.ToList().IndexOf(markiert);
+        return WindowsFormsApplication1.Kaelteprofilgrafik.Bilder(Reihe(markiert.Summe, platz),
+            alle.Select((z, i) => (z.Name, Reihe(z.Summe, i))).ToList(), 3, arten);
+    }
 
     private readonly List<BetriebskalenderDaten> _kpKalender = new()
     {
