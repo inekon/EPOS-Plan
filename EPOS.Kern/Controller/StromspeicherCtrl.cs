@@ -45,8 +45,6 @@ namespace WindowsFormsApplication1
                 if (dt.Columns.Contains("Ladezustand") && row["Ladezustand"] != DBNull.Value)
                     item.m_Ladezustand = Convert.ToDouble(row["Ladezustand"]);
 
-                if (dt.Columns.Contains("Modulkosten") && row["Modulkosten"] != DBNull.Value)
-                    item.m_Modulkosten = Convert.ToDouble(row["Modulkosten"]);
 
                 GeraetefelderLesen(item, dt, row);
 
@@ -72,7 +70,6 @@ namespace WindowsFormsApplication1
             m_Energie = 0;
             m_Degradation = 0;
             m_Ladezustand = 0;
-            m_Modulkosten = 0;
             GeraetefelderZuruecksetzen(this);
 
             if (dt != null && dt.Rows.Count > 0)
@@ -100,8 +97,6 @@ namespace WindowsFormsApplication1
                 if (dt.Columns.Contains("Ladezustand") && row["Ladezustand"] != DBNull.Value)
                     m_Ladezustand = Convert.ToDouble(row["Ladezustand"]);
 
-                if (dt.Columns.Contains("Modulkosten") && row["Modulkosten"] != DBNull.Value)
-                    m_Modulkosten = Convert.ToDouble(row["Modulkosten"]);
 
                 GeraetefelderLesen(this, dt, row);
 
@@ -133,7 +128,6 @@ namespace WindowsFormsApplication1
             m_Energie = 0;
             m_Degradation = 0;
             m_Ladezustand = 0;
-            m_Modulkosten = 0;
             GeraetefelderZuruecksetzen(this);
 
             if (dt != null && dt.Rows.Count > 0)
@@ -161,8 +155,6 @@ namespace WindowsFormsApplication1
                 if (dt.Columns.Contains("Ladezustand") && row["Ladezustand"] != DBNull.Value)
                     m_Ladezustand = Convert.ToDouble(row["Ladezustand"]);
 
-                if (dt.Columns.Contains("Modulkosten") && row["Modulkosten"] != DBNull.Value)
-                    m_Modulkosten = Convert.ToDouble(row["Modulkosten"]);
 
                 GeraetefelderLesen(this, dt, row);
 
@@ -191,9 +183,6 @@ namespace WindowsFormsApplication1
         {
             m.m_WirkungsgradRT = 0.0;
             m.m_ZyklenZugesichert = 0;
-            m.m_Verschleisskosten = 0.0;
-            m.m_Leistungskosten = 0.0;
-            m.m_InvestitionFix = 0.0;
             m.m_StandbyVerbrauch = 0.0;
             m.m_Selbstentladung = 0.0;
         }
@@ -206,14 +195,8 @@ namespace WindowsFormsApplication1
             if (dt.Columns.Contains("Zyklen_Zugesichert") && row["Zyklen_Zugesichert"] != DBNull.Value)
                 m.m_ZyklenZugesichert = Convert.ToInt32(row["Zyklen_Zugesichert"]);
 
-            if (dt.Columns.Contains("Verschleisskosten") && row["Verschleisskosten"] != DBNull.Value)
-                m.m_Verschleisskosten = Convert.ToDouble(row["Verschleisskosten"]);
 
-            if (dt.Columns.Contains("Leistungskosten") && row["Leistungskosten"] != DBNull.Value)
-                m.m_Leistungskosten = Convert.ToDouble(row["Leistungskosten"]);
 
-            if (dt.Columns.Contains("Investition_Fix") && row["Investition_Fix"] != DBNull.Value)
-                m.m_InvestitionFix = Convert.ToDouble(row["Investition_Fix"]);
 
             if (dt.Columns.Contains("Standby_Verbrauch") && row["Standby_Verbrauch"] != DBNull.Value)
                 m.m_StandbyVerbrauch = Convert.ToDouble(row["Standby_Verbrauch"]);
@@ -282,10 +265,10 @@ namespace WindowsFormsApplication1
                 // Projektliste koennte ihn nicht zeigen. ColOrNull faengt eine Datenbank
                 // vor dem Schritt ab.
                 string sql = @"INSERT INTO Tab_Stromspeicher
-                    (ID, ID_Projekt, Bezeichner, Firma, Typ, Leistung, Energie, Degradation, Ladezustand, Modulkosten,
-                     Wirkungsgrad_RT, Zyklen_Zugesichert, Verschleisskosten, Leistungskosten, Investition_Fix, Standby_Verbrauch,
+                    (ID, ID_Projekt, Bezeichner, Firma, Typ, Leistung, Energie, Degradation, Ladezustand,
+                     Wirkungsgrad_RT, Zyklen_Zugesichert, Standby_Verbrauch,
                      Selbstentladung_Prozent_Monat)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
                 DbParam[] ps = {
                     new DbParam("@id", neueId),
@@ -297,12 +280,8 @@ namespace WindowsFormsApplication1
                     P("@ene", ColOrNull(s, "Energie")),
                     P("@deg", ColOrNull(s, "Degradation")),
                     P("@lad", ColOrNull(s, "Ladezustand")),
-                    P("@mod", ColOrNull(s, "Modulkosten")),
                     P("@eta", ColOrNull(s, "Wirkungsgrad_RT")),
                     P("@nzyk", ColOrNull(s, "Zyklen_Zugesichert")),
-                    P("@cver", ColOrNull(s, "Verschleisskosten")),
-                    P("@cpow", ColOrNull(s, "Leistungskosten")),
-                    P("@ifix", ColOrNull(s, "Investition_Fix")),
                     P("@stby", ColOrNull(s, "Standby_Verbrauch")),
                     P("@selbst", ColOrNull(s, StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG))
                 };
@@ -313,6 +292,15 @@ namespace WindowsFormsApplication1
                 if (ok && KatalogkostenUrsprungSchema.UrsprungLesbar("Tab_Stromspeicher"))
                     DataRepository.ExecuteSQL("UPDATE [Tab_Stromspeicher] SET [ID_Stamm] = ? WHERE [ID] = ?",
                                               new DbParam("@st", stammId), new DbParam("@id", neueId));
+                // Welle KB-5: Die Kosten stehen nicht mehr in Spalten, sondern in den Satzvorlagen — der Verweis
+                // der Projektkopie zeigt auf dieselben Vorlagen wie ihr Katalogsatz (Muster Wechselrichter, KB-4b).
+                if (ok)
+                    foreach (string verweis in new[] { KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION,
+                                                       KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE })
+                        if (s.Table.Columns.Contains(verweis) && s[verweis] != DBNull.Value &&
+                            DataRepository.SpalteVorhanden("Tab_Stromspeicher", verweis))
+                            DataRepository.ExecuteSQL("UPDATE [Tab_Stromspeicher] SET [" + verweis + "] = ? WHERE [ID] = ?",
+                                                      new DbParam("@v", s[verweis]), new DbParam("@id", neueId));
                 return ok ? neueId : -1;
             }
             catch (Exception ex)

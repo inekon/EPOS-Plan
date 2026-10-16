@@ -1068,6 +1068,9 @@ namespace EPOS.Kern.Tests
                 // Schritt GeraetekostenEntfallSchema.SCHRITT (KB-4): Investitionsverweis und Saat am Wechselrichter,
                 // dann Entfall der 32 Kostenspalten der acht Investitionsgewerke. Wiederholbar, ergebnisneutral.
                 GeraetekostenEntfallSchema.Ausfuehren(null);
+                // Schritt StromspeicherKostenSchema.SCHRITT (KB-5): Sicherheitslauf der Saat und Entfall der vier
+                // Kostenspalten des Stromspeichers. Wiederholbar, ergebnisgleich.
+                StromspeicherKostenSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

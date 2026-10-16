@@ -1082,7 +1082,13 @@ namespace WindowsFormsApplication1
         /// dieser Gewerke liest eine der Spalten; Planwert, Dialoge und Berichte lesen die Satzvorlage.
         /// <b>Neue Katalogfassung:</b> Die Prüfsumme jedes Satzes der acht Kataloge ändert sich, der Schritt
         /// bildet sie für unveränderte Sätze neu.
-        public const int Zielversion = GeraetekostenEntfallSchema.SCHRITT;
+        /// Danach, mit dem ENTFALL DER STROMSPEICHER-KOSTENSPALTEN (KB-5), steht das Ziel auf
+        /// <see cref="StromspeicherKostenSchema.SCHRITT"/>: Sicherheitslauf der Saat, dann der Entfall von
+        /// <c>Modulkosten</c>, <c>Leistungskosten</c>, <c>Investition_Fix</c> und <c>Verschleisskosten</c> an
+        /// Katalog und Projektkopie (<see cref="StromspeicherKostenSchema"/>). <b>Ergebnisgleich:</b> Der Rechenweg
+        /// liest dieselben Sätze aus Position und Satzvorlage. <b>Neue Katalogfassung:</b> Die Prüfsumme jedes
+        /// Stromspeichers ändert sich, der Schritt bildet sie für unveränderte Sätze neu.
+        public const int Zielversion = StromspeicherKostenSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

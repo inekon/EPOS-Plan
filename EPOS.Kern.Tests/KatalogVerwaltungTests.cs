@@ -1019,11 +1019,13 @@ namespace EPOS.Kern.Tests
             // bekommt sein Feld "Firma" - VIERZEHN statt dreizehn, davon acht im
             // Bestandsblock. Er war der einzige Modulkatalog ohne dieses Feld.
             // Welle M5 (SP1): dazu die Selbstentladung im Block Geraetetechnik - FUENFZEHN.
-            Assert.Equal(15, sp.Felder.Count);
+            // Welle KB-5: Verschleiss-, Leistungs- und Fixkosten entfallen, die Modulkosten werden
+            // zum gesperrten Kostensatz der Satzvorlage - ZWOELF, acht im Bestandsblock.
+            Assert.Equal(12, sp.Felder.Count);
             Assert.Equal(15, pv.Felder.Count);
 
             Assert.Equal(8, sp.Felder.Count(f => f.Gruppe == 0));
-            Assert.Equal(7, sp.Felder.Count(f => f.Gruppe == 1));
+            Assert.Equal(4, sp.Felder.Count(f => f.Gruppe == 1));
             Assert.Equal(15, pv.Felder.Count(f => f.Gruppe == 0));
             Assert.Equal("", pv.GruppeZwei);
 
@@ -1055,9 +1057,11 @@ namespace EPOS.Kern.Tests
             Assert.False(pv.Felder.First(f => f.Schluessel == ModulKatalogProfil.FeldLeistung).LeerErlaubt);
 
             var sp = ModulKatalogProfil.Finde(ModulKatalogArt.Stromspeicher);
-            var bestand = sp.Felder.Where(f => f.Gruppe == 0 && f.Art != BrowserFeldArt.Text).ToList();
-            Assert.Equal(5, bestand.Count);
+            // Welle KB-5: Der Kostensatz ist ein gesperrter Lesewert und darf leer sein (keine Satzvorlage).
+            var bestand = sp.Felder.Where(f => f.Gruppe == 0 && f.Art != BrowserFeldArt.Text && !f.Gesperrt).ToList();
+            Assert.Equal(4, bestand.Count);
             Assert.All(bestand, f => Assert.False(f.LeerErlaubt));
+            Assert.True(sp.Felder.Single(f => f.Schluessel == ModulKatalogProfil.FeldKostensatz).LeerErlaubt);
             Assert.All(sp.Felder.Where(f => f.Gruppe == 1), f => Assert.True(f.LeerErlaubt));
 
             // Der Typ ist ein TEXTfeld und darf ebenfalls nicht leer sein
@@ -1078,7 +1082,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal("", Vorgabe(sp, ModulKatalogProfil.FeldBezeichner));
             Assert.Equal("Lithium-Ionen", Vorgabe(sp, ModulKatalogProfil.FeldTyp));
             Assert.Equal("0,9", Vorgabe(sp, ModulKatalogProfil.FeldWirkungsgradRt));
-            Assert.Equal("0,025", Vorgabe(sp, ModulKatalogProfil.FeldVerschleisskosten));
+            // Welle KB-5: Der Verschleisssatz ist kein Katalogfeld mehr; der Kostensatz traegt wie beim
+            // PV-Modul die Vorgabe 0 des gesperrten Lesewerts.
+            Assert.Equal("0", Vorgabe(sp, ModulKatalogProfil.FeldKostensatz));
             Assert.Equal("0", Vorgabe(sp, ModulKatalogProfil.FeldEnergie));
 
             var pv = ModulKatalogProfil.Finde(ModulKatalogArt.Photovoltaik);

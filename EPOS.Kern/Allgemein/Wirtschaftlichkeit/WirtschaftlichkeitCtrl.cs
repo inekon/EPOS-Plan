@@ -7860,6 +7860,9 @@ namespace WindowsFormsApplication1
                         KomponenteUndAnlage(r, out komponenteZ, out anlageZ);
                         if (!zaehlt(komponenteZ, anlageZ)) continue;
                     }
+                    // Welle KB-5: Die Verschleißposition des Stromspeichers bucht der Lauf (eine Quelle,
+                    // eine Buchung) — die Kostenrechnung zählt sie nicht ein zweites Mal.
+                    if (mitBemessung && VomLaufGebucht(r)) continue;
                     double wert = Szenariowert(r, szenario, "EingegebenerWert", "BestCase", "WorstCase");
                     int start = StartJahrDerZeile(r);
                     double beitrag;
@@ -8112,6 +8115,8 @@ namespace WindowsFormsApplication1
 
                 foreach (DataRow r in dt.Rows)
                 {
+                    // Welle KB-5: dieselbe Ausnahme wie in der Summenschleife — die Nachweisliste trifft deren Summe.
+                    if (VomLaufGebucht(r)) continue;
                     double wert = Szenariowert(r, szenario, "EingegebenerWert", "BestCase", "WorstCase");
                     string bem = Text(r, SchemaKatalog.SPALTE_PW_BEMESSUNG);
                     if (string.IsNullOrEmpty(bem)) bem = DbWerte.BEMESSUNG_BETRAG;
@@ -8456,6 +8461,30 @@ namespace WindowsFormsApplication1
         {
             return EndenergieAufloeser.FuerProjekt(idProjekt, szenario,
                                                   satz != null ? satz.MengeFaktor : 1.0);
+        }
+
+        /// <summary>
+        /// <b>Welle KB-5 — „vom Lauf gebucht"</b>: Die Betriebsposition des Stromspeichers „je entladener kWh"
+        /// (<c>EUR_PRO_KWH_ELEKTRISCH</c> an Komponente 5) ist die QUELLE des Verschleißsatzes c_ver; gebucht
+        /// wird der Verschleiß vom Lauf als eigene Betriebskostenzeile (<c>StromspeicherSimCtrl</c>,
+        /// c_ver × entladene kWh). Die Kostenrechnung bucht dieselbe Position deshalb nicht ein zweites Mal —
+        /// eine Quelle, eine Buchung. Ein Erlös ist kein Verschleiß und bleibt.
+        /// </summary>
+        internal static bool VomLaufGebucht(int komponente, int kategorie, string bemessung, bool erloes)
+            => komponente == EndenergieAufloeser.KOMPONENTE_STROMSPEICHER &&
+               kategorie == DbWerte.KOSTEN_KATEGORIE_BETRIEB && !erloes &&
+               string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, StringComparison.Ordinal);
+
+        /// <summary><see cref="VomLaufGebucht(int,int,string,bool)"/> für eine Betriebszeile aus <c>Tab_ProjektWerte</c>.</summary>
+        private static bool VomLaufGebucht(DataRow r)
+        {
+            if (!r.Table.Columns.Contains("KomponentenID") ||
+                !r.Table.Columns.Contains(SchemaKatalog.SPALTE_PW_BEMESSUNG)) return false;
+            int komponente, idAnlage;
+            KomponenteUndAnlage(r, out komponente, out idAnlage);
+            return VomLaufGebucht(komponente, DbWerte.KOSTEN_KATEGORIE_BETRIEB,
+                                  Text(r, SchemaKatalog.SPALTE_PW_BEMESSUNG),
+                                  B(r, SchemaKatalog.SPALTE_PW_IST_ERLOES));
         }
 
         /// <summary>Komponente und Anlage der Positionszeile (0 = nicht gesetzt bzw.

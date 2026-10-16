@@ -147,7 +147,7 @@ public static class Wikibeispiele
         name, "",
         new[] { ("Typ:", "LFP"), ("Leistung [kW]:", "50"),
                 ("Energie (Kapazität) [kWh]:", "100"), ("Degradation [%/a]:", "1,0"),
-                ("Ladezustand [%]:", "50"), ("Modulkosten [€/kWh]:", "500") });
+                ("Ladezustand [%]:", "50"), ("Kostensatz [€/kWh]:", "500") });
 
     // ------------------------------------------------------------------ Photovoltaik
     public static readonly Satz[] Photovoltaik =
