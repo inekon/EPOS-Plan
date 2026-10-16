@@ -40432,7 +40432,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>The zoning yields {0} zones — the building calculates no more than {1}; nothing adopted. Suggestion: rule {2}.</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_EINZONE_ZEITPLAENE" xml:space="preserve">
-    <value>Zone "{0}": The file carries schedules or calendars per room; importing as a single zone does not take them, the calendars come from the usage profile. With a zoning rule for several zones they arrive per zone.</value>
+    <value>Zone "{0}": The rooms of the file carry different schedules or calendars; importing as a single zone takes none of them, the calendars come from the usage profile. Choose a zoning rule for several zones to have them arrive per zone.</value>
   </data>
   <data name="GEXP_PROT_FEIERTAGE_EIN_BILD" xml:space="preserve">
     <value>{0} calendars hold holidays with different daily profiles; gbXML knows only the one day type "Holiday" per week schedule and carries the profile of the highest-ranking holiday (the other holidays come back with this profile, IFC carries each one separately): {1}</value>
