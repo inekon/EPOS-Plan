@@ -455,8 +455,9 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Ganglinientyp 2: Jahresdauerlinie Wärme — geordnete Bedarfslinie plus
-        /// geordnete Dauerlinien der Erzeuger (Konzept Kap. 6.2 Nr. 2).
+        /// Ganglinientyp 2: Jahresdauerlinie Wärme — die Stunden nach dem Wärmebedarf
+        /// absteigend geordnet, die Erzeuger in derselben Stundenfolge gestapelt, die
+        /// Bedarfsdauerlinie obenauf (Konzept Kap. 6.2 Nr. 2).
         /// </summary>
         public static byte[] DauerlinieWaerme(ZeitreihenSatz z)
         {
@@ -470,7 +471,7 @@ namespace WindowsFormsApplication1
         /// Wärmebedarf führt. Siehe <see cref="JahresverlaufWaermeModell"/>.
         ///
         /// <para>Auf der x-Achse zählt hier der RANG, nicht die Jahresstunde — die
-        /// Reihen sind absteigend sortiert.</para>
+        /// Stunden sind nach dem Bedarf absteigend geordnet.</para>
         /// </summary>
         /// <param name="z">Der Zeitreihensatz des Laufs.</param>
         /// <param name="mass">Stufe 2 (BV-E5): das Zielmaß; <c>null</c> = 1240 × 560 wie bisher.</param>
@@ -479,9 +480,12 @@ namespace WindowsFormsApplication1
             List<Reihe> reihen = DauerlinieWaermeReihen(z);
             if (reihen == null) return null;
 
-            return LinienDiagrammModell("Jahresdauerlinie Wärme", "kW", reihen,
-                new[] { 0, 2190, 4380, 6570, 8760 },
-                new[] { "0", "2.190", "4.380", "6.570", "8.760 h" }, mass);
+            // Die Erzeuger als Stapel in der Stundenfolge des Bedarfs, der Bedarf als Linie obenauf
+            // (Regel in DauerlinieWaermeReihen).
+            return StapelDiagrammModell("Jahresdauerlinie Wärme", "kW", reihen.Skip(1).ToList(),
+                reihen[0].Werte, reihen[0].Name,
+                new KeyValuePair<int[], string[]>(new[] { 0, 2190, 4380, 6570, 8760 },
+                                                  new[] { "0", "2.190", "4.380", "6.570", "8.760 h" }), mass);
         }
 
         /// <summary>
@@ -835,41 +839,6 @@ namespace WindowsFormsApplication1
             if (linie != null)
                 z.Markiert("reihe:" + linienName, zr =>
                     ZeichneLinie(zr, rc, linie, 0, max, C_BEDARF.Ton(), 3f));
-
-            Legende(z, leg, 90f, H - 64f - mehr, umbruch);
-            return z;
-        }
-
-        /// <summary>
-        /// Der gemeinsame Rumpf der Dauerlinie — seit Etappe DG-E3 (Gruppe d) ein
-        /// <see cref="Zeichenmodell"/> statt PNG-Bytes; siehe
-        /// <see cref="StapelDiagrammModell"/>.
-        /// </summary>
-        private static Zeichenmodell LinienDiagrammModell(string titel, string einheit,
-                                             List<Reihe> reihen,
-                                             int[] xpos, string[] xlab,
-                                             Bildmass? mass = null)
-        {
-            int W = Bildmass.BreiteOder(mass, 1240), H = Bildmass.HoeheOder(mass, 560);
-            var leg = reihen.Select(r => Eintrag(r)).ToList();
-            float umbruch = mass.HasValue ? W - 30f : 0f;
-            float mehr = mass.HasValue ? (LegendenZeilen(leg, 90f, umbruch) - 1) * LEGENDE_ZEILE : 0f;
-            if (mass.HasValue) H = Math.Max(H, (int)Math.Ceiling(180f + mehr + STUFE2_MIN_FLAECHE));
-            var z = Modell(W, H);
-            z.Markiert("titel", zt => Titel(zt, titel + "  [" + einheit + "]", W, mass.HasValue));
-            var rc = SKRect.Create(90f, 80f, W - 130f, H - 180f - mehr);
-
-            int n = reihen[0].Werte.Length;
-            double max = Nice(reihen.Max(r => r.Werte.Max()));
-            AchsenRaster(z, rc, max, xpos, xlab, n);
-
-            foreach (Reihe r in reihen)
-            {
-                Reihe reihe = r;
-                z.Markiert("reihe:" + reihe.Name, zr =>
-                    ZeichneLinie(zr, rc, reihe.Werte, 0, max, Ton(reihe),
-                                 Traegt(reihe, Farbrolle.BEDARF, C_BEDARF) ? 3.5f : 2.5f));
-            }
 
             Legende(z, leg, 90f, H - 64f - mehr, umbruch);
             return z;
@@ -4653,8 +4622,9 @@ namespace WindowsFormsApplication1
         /// <param name="reihen">Ein bis vier Reihen; leere und ungueltige entfallen.</param>
         /// <param name="yTitel">Beschriftung der y-Achse (der Prozentbezug).</param>
         /// <param name="achse">Monatsgrenzen oder Jahresstunden.</param>
-        /// <param name="sortiert">Dauerlinie statt Ganglinie — jede Reihe FUER SICH
-        /// absteigend sortiert (dieselbe Regel wie <see cref="Ganglinie.Dauerlinie"/>).</param>
+        /// <param name="sortiert">Dauerlinie statt Ganglinie — ohne Flächenreihe jede Reihe FUER SICH
+        /// absteigend sortiert (dieselbe Regel wie <see cref="Ganglinie.Dauerlinie"/>), mit Flächenreihen
+        /// alle in der Stundenfolge der Summenlinie.</param>
         /// <param name="fenster">DATENZOOM (Windows-Abnahme 05.09.2026): der Zeitausschnitt,
         /// den der Anwender aufgezogen hat; <c>null</c> = das ganze Jahr. <b>Nur der
         /// ZEITausschnitt gilt</b> — die Prozentachse dieses Bildes ist per Definition
@@ -4698,10 +4668,10 @@ namespace WindowsFormsApplication1
         /// <see cref="Datenreihe.Huelle"/>; unter der Achse steht dazu ein Hinweis. Eine
         /// Flächenschicht trägt im Modell ihre Oberkante als <c>Werte</c> und die Summe
         /// darunter als <c>Unten</c> — dieselbe Form wie im Erzeugerstapel. In der
-        /// Dauerlinie wird NICHT gestapelt: Jede Reihe ist dort für sich sortiert, eine
-        /// Summe aus sortierten Reihen wäre frei erfunden (dieselbe Regel wie
-        /// <see cref="ErzeugerStapelModell"/>). Ohne Flächenreihe bleibt das Bild
-        /// byte-gleich.</para>
+        /// Dauerlinie bleibt der Stapel: Die Stunden werden einmal nach der Summenlinie
+        /// absteigend geordnet und alle Reihen in derselben Stundenfolge gezeichnet
+        /// (dieselbe Regel wie <see cref="ErzeugerStapelModell"/>). Ohne Flächenreihe
+        /// sortiert die Dauerlinie jede Linie für sich, und das Bild bleibt byte-gleich.</para>
         ///
         /// <para><b>Die Zeichenfläche in Behältergröße</b> (DZ1‑N2): Mit
         /// <paramref name="breite"/> und <paramref name="hoehe"/> entsteht das Modell in
@@ -4747,6 +4717,23 @@ namespace WindowsFormsApplication1
             {
                 z.Markiert("leerhinweis", zl => Leerhinweis(zl, rc, satz));
                 return z;
+            }
+
+            // DIE DAUERLINIE DER GESTAPELTEN BEDARFSARTEN: Die Stunden werden EINMAL nach der
+            // Summenlinie (der Bedarfslinie, sonst der ersten Linie, ohne Linie der Oberkante
+            // des Stapels) absteigend geordnet, und alle Reihen stehen in derselben
+            // Stundenfolge - der Stapel bleibt Stapel, seine Oberkante ist die Dauerlinie.
+            if (sortiert && gueltig.Any(r => r.Stapelgruppe == Stapelart.Flaeche))
+            {
+                List<Reihe> flaechen = gueltig.Where(r => r.Stapelgruppe == Stapelart.Flaeche).ToList();
+                List<Reihe> linienN = gueltig.Where(r => r.Stapelgruppe != Stapelart.Flaeche).ToList();
+                Reihe ordnungslinie = linienN.FirstOrDefault(r => Traegt(r, Farbrolle.BEDARF, C_BEDARF))
+                                      ?? linienN.FirstOrDefault();
+                double[] ordnung = ordnungslinie != null
+                    ? ordnungslinie.Werte
+                    : Stapeloberkante(flaechen, Stapelart.Flaeche, flaechen.Max(r => r.Werte.Length));
+                int[] folge = Dauerlinienfolge(ordnung);
+                gueltig = gueltig.Select(r => Mit(r, Umgeordnet(r.Werte, folge))).ToList();
             }
 
             if (kompakt)
@@ -4801,7 +4788,7 @@ namespace WindowsFormsApplication1
             // nur, wo eine Schicht abgewählt ist. Bei dichten Reihen zeichnet sie dafür
             // dieselbe Treppe in den Spitzenstunden wie die Oberkante (Huelle); roh
             // füllte ihr Zickzack je Bildpunktspalte die ganze Spanne und schien durch.
-            bool stapeln = !sortiert && gueltig.Any(r => r.Stapelgruppe == Stapelart.Flaeche);
+            bool stapeln = gueltig.Any(r => r.Stapelgruppe == Stapelart.Flaeche);
             // Das Tagesraster der Stufenregel steht auf dem Jahresanfang: die Laenge der
             // GANZEN Reihe und der Beginn des Ausschnitts.
             int gesamtN = ganz.Max(r => r.Werte.Length);
@@ -4813,7 +4800,7 @@ namespace WindowsFormsApplication1
             foreach (Reihe r in gueltig)
             {
                 if (stapeln && r.Stapelgruppe == Stapelart.Flaeche) continue;
-                double[] werte = sortiert ? AbsteigendKopie(r.Werte) : r.Werte;
+                double[] werte = sortiert && !stapeln ? AbsteigendKopie(r.Werte) : r.Werte;
                 linien.Add((r, Normiert(werte, bezug)));
             }
 
@@ -4863,7 +4850,7 @@ namespace WindowsFormsApplication1
                 // Zusammengefasst zeigt jede Stufe EINE Stunde - der Hinweis unter der Achse
                 // sagt welche (nur bei dichten Reihen).
                 bool hinweisUnterDatum = DatumUnterMarken(fenster, achse, sortiert, gesamtN);
-                z.Markiert("xachse", zx => Stufenhinweis(zx, rc, gesamtN, n, hinweisUnterDatum, satz));
+                if (!sortiert) z.Markiert("xachse", zx => Stufenhinweis(zx, rc, gesamtN, n, hinweisUnterDatum, satz));
             }
 
             return z;
@@ -4918,10 +4905,12 @@ namespace WindowsFormsApplication1
         /// Bildpunktspalte die ganze Spanne ihres Stundenzickzacks zu fuellen; unter der
         /// Achse steht dazu ein Hinweis. Die Reihen der zweiten Achse bleiben Linien.</para>
         ///
-        /// <para><b>Sortiert wird NICHT gestapelt</b> (<c>GanglinienDarstellung.Stapeltyp</c>):
-        /// In der Dauerlinie ist jede Reihe fuer sich sortiert, eine Summe daraus waere
-        /// frei erfunden. Der Stapel wird dann zu Linien, im Bestand mit
-        /// <c>BorderWidth 4</c> — deshalb die dickere Strichstaerke.</para>
+        /// <para><b>Die Dauerlinie eines Stapels bleibt Stapel:</b> Die Stunden werden EINMAL
+        /// nach der Bezugsgroesse der Stufenregel absteigend geordnet (Bedarfslinie, sonst
+        /// Kontur, sonst Oberkante des Stapels), und alle Reihen — Schichten, Linien, Kontur,
+        /// zweite Achse — stehen in DERSELBEN Stundenfolge (<see cref="Dauerlinienfolge"/>).
+        /// Die Oberkante ist dann die Dauerlinie der Bezugsgroesse, keine Flaeche kreuzt eine
+        /// andere. Nur ein Bild OHNE Stapel sortiert jede Linie fuer sich.</para>
         ///
         /// <para><b>Zwei Stapelgruppen.</b> <see cref="Reihe.Stapelgruppe"/> trennt sie
         /// wie <c>StackedGroupName</c> im Vorlaeufer: Auf der Waermepumpenseite steht der
@@ -4946,7 +4935,7 @@ namespace WindowsFormsApplication1
         /// <param name="kontur">Die Summenlinie unter dem Stapel; <c>null</c> = keine.</param>
         /// <param name="yTitel">Beschriftung der linken y-Achse.</param>
         /// <param name="achse">Monatsgrenzen oder Jahresstunden.</param>
-        /// <param name="sortiert">Dauerlinie statt Ganglinie — dann ohne Stapel.</param>
+        /// <param name="sortiert">Dauerlinie statt Ganglinie — die Stunden nach der Bezugsgröße geordnet, der Stapel bleibt.</param>
         /// <param name="zweiteAchsen">B3: die Reihen mit eigener Skala rechts;
         /// <c>null</c> oder leer = keine zweite Achse. <b>Seit #234 eine LISTE</b>
         /// (vorher genau eine Reihe): Auf der zweiten Achse des Wärmegangs stehen die
@@ -4975,8 +4964,8 @@ namespace WindowsFormsApplication1
         /// <para><b>Jede Stapelschicht ist eine FLÄCHE</b> (DG-E3-2): <c>Werte</c> ist
         /// ihre Oberkante (die Summe bis einschließlich dieser Schicht),
         /// <c>Unten</c> die Summe der Schichten darunter. Bedarfs- und Konturlinien
-        /// bleiben Linien; in der Dauerlinie (<paramref name="sortiert"/>) wird der
-        /// Stapel ohnehin zu Linien.</para>
+        /// bleiben Linien; in der Dauerlinie (<paramref name="sortiert"/>) stehen alle
+        /// Reihen in der Stundenfolge der Bezugsgröße.</para>
         ///
         /// <para><b>Die ZWEITE Achse trägt ihr eigenes Fenster</b> (DG-E3-1): Der
         /// Speicherinhalt rechts hat seine eigene Skala 0…max2 und steht trotzdem im
@@ -5023,6 +5012,22 @@ namespace WindowsFormsApplication1
             List<Reihe> linienG = Brauchbare(linien);
             bool mitKontur = Brauchbar(kontur);
 
+            // DIE DAUERLINIE EINES STAPELS: Die Stunden werden EINMAL nach der Bezugsgröße
+            // absteigend geordnet - der Bedarfslinie, sonst der Kontur, sonst der Oberkante
+            // des Stapels -, und ALLE Reihen stehen in derselben Stundenfolge. Der Stapel
+            // bleibt Stapel, seine Oberkante ist die Dauerlinie der Bezugsgröße, und keine
+            // Fläche kreuzt eine andere (Regel in DauerlinieWaermeReihen).
+            bool geordnet = sortiert && stapelG.Count > 0;
+            if (geordnet)
+            {
+                int[] folge = Dauerlinienfolge(Ordnungsbezug(stapelG, linienG, mitKontur ? kontur : null,
+                                                             stufenNachStapel));
+                stapelG = stapelG.Select(r => Mit(r, Umgeordnet(r.Werte, folge))).ToList();
+                linienG = linienG.Select(r => Mit(r, Umgeordnet(r.Werte, folge))).ToList();
+                if (mitKontur) kontur = Mit(kontur, Umgeordnet(kontur.Werte, folge));
+                y2G = y2G.Select(r => Mit(r, Umgeordnet(r.Werte, folge))).ToList();
+            }
+
             // Der Leerhinweis gilt erst, wenn AUCH die zweite Achse nichts trägt
             // (#234): Wer alle Erzeuger abwählt und nur einen Speicher stehen lässt,
             // hat eine Reihe gewählt — und bekommt sie zu sehen.
@@ -5064,7 +5069,7 @@ namespace WindowsFormsApplication1
             // Produktion sind unabhaengige Groessen mit gemeinsamer Nulllinie).
             // Dazu Linien und Kontur.
             double max = 0;
-            if (!sortiert)
+            if (!sortiert || geordnet)
             {
                 max = Math.Max(max, Stapelhoehe(stapelG, Stapelart.Flaeche, n));
                 max = Math.Max(max, Stapelhoehe(stapelG, Stapelart.Saeule, n));
@@ -5097,8 +5102,10 @@ namespace WindowsFormsApplication1
             // Reihen zeichnen sie die Treppe ihrer Werte in den Spitzenstunden (Huelle),
             // derselben Stunde je Stufe wie die Schichten - roh fuellte jede je
             // Bildpunktspalte die ganze Spanne ihres Zickzacks und deckte die Schichten zu.
-            // In der Dauerlinie gibt es keinen Stapel; dort bleiben alle Reihen Linien.
-            bool mitStapel = !sortiert && stapelG.Count > 0;
+            // In der Dauerlinie bleibt der Stapel, alle Reihen in der Stundenfolge der
+            // Bezugsgröße (siehe oben); den Stufenhinweis „je Tag“ trägt sie nicht - ihre
+            // Stufen zählen Ränge, keine Tage.
+            bool mitStapel = (!sortiert || geordnet) && stapelG.Count > 0;
             int abN = (int)xVon;
 
             // DIE SPITZENSTUNDE JE STUFE (Stufenregel des Stapels): Bei dichten Reihen
@@ -5128,7 +5135,7 @@ namespace WindowsFormsApplication1
             // die halbe Strichbreite als Rand über der Oberkante stehen.
             if (mitKontur)
             {
-                double[] konturwerte = sortiert ? AbsteigendKopie(kontur.Werte) : kontur.Werte;
+                double[] konturwerte = sortiert && !geordnet ? AbsteigendKopie(kontur.Werte) : kontur.Werte;
                 float konturstaerke = kontur.Breite > 0 ? kontur.Breite : 4f;
                 z.Markiert("reihe:" + (kontur.Name ?? ""), zr =>
                 {
@@ -5143,7 +5150,7 @@ namespace WindowsFormsApplication1
             }
 
             // (2) Der Stapel.
-            if (sortiert)
+            if (sortiert && !geordnet)
             {
                 // Ohne Stapel: jede Reihe fuer sich als Dauerlinie, BorderWidth 4.
                 foreach (Reihe r in stapelG)
@@ -5195,14 +5202,14 @@ namespace WindowsFormsApplication1
                 // Zusammengefasst zeigt jede Stufe EINE Stunde - der Hinweis unter der Achse
                 // sagt welche (nur mit Stapel, bei dichten Reihen und ueber die volle Breite).
                 bool hinweisUnterDatum = DatumUnterMarken(fenster, achse, sortiert, gesamt);
-                if (mitStapel && !nebeneinander) z.Markiert("xachse", zx => Stufenhinweis(zx, rc, gesamt, n, hinweisUnterDatum));
+                if (mitStapel && !nebeneinander && !geordnet) z.Markiert("xachse", zx => Stufenhinweis(zx, rc, gesamt, n, hinweisUnterDatum));
             }
 
             // (3) Die Linien darueber, in Zeichenreihenfolge — ueber einem Stapel als
             // Huelle (siehe oben): eine Kante auf den Schichten, kein Band ueber ihnen.
             foreach (Reihe r in linienG)
             {
-                double[] werte = sortiert ? AbsteigendKopie(r.Werte) : r.Werte;
+                double[] werte = sortiert && !geordnet ? AbsteigendKopie(r.Werte) : r.Werte;
                 float staerke = r.Breite > 0 ? r.Breite : 2.5f;
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
                 {
@@ -5238,7 +5245,7 @@ namespace WindowsFormsApplication1
                 // x-Spanne, eigene y-Skala 0…max2.
                 foreach (Reihe r in y2G)
                 {
-                    double[] werte = sortiert ? AbsteigendKopie(r.Werte) : r.Werte;
+                    double[] werte = sortiert && !geordnet ? AbsteigendKopie(r.Werte) : r.Werte;
                     float staerke = r.Breite > 0 ? r.Breite : 2f;
                     z.Markiert("reihe:" + (r.Name ?? ""), zr =>
                         ZeichneLinie(zr, rc, werte, 0, max2, Ton(r), staerke));
@@ -5472,6 +5479,24 @@ namespace WindowsFormsApplication1
                     oben[i] = oben[i] + (i < r.Werte.Length ? Stapelbeitrag(r.Werte[i]) : 0);
             }
             return oben;
+        }
+
+        /// <summary>
+        /// <b>Die Größe, nach der eine gestapelte Dauerlinie ihre Stunden ordnet</b> — dieselbe Bezugsgröße wie die
+        /// Stufenregel: die Bedarfslinie, sonst die Kontur (die Summe), sonst die Oberkante des Stapels (bei zwei
+        /// Gruppen die der Flächengruppe, des Bedarfs); mit <paramref name="nachStapel"/> stets die Oberkante.
+        /// </summary>
+        private static double[] Ordnungsbezug(List<Reihe> stapel, List<Reihe> linien, Reihe kontur, bool nachStapel)
+        {
+            int n = stapel.Max(r => r.Werte.Length);
+            Stapelart gruppe = stapel.Any(r => r.Stapelgruppe == Stapelart.Flaeche) ? Stapelart.Flaeche
+                             : stapel.Any(r => r.Stapelgruppe == Stapelart.Saeule) ? Stapelart.Saeule
+                             : Stapelart.Keine;
+            if (nachStapel) return Stapeloberkante(stapel, gruppe, n);
+            Reihe bedarfslinie = linien.FirstOrDefault(r => Traegt(r, Farbrolle.BEDARF, C_BEDARF));
+            if (bedarfslinie != null) return bedarfslinie.Werte;
+            if (kontur != null) return kontur.Werte;
+            return Stapeloberkante(stapel, gruppe, n);
         }
 
         /// <summary>
@@ -8695,18 +8720,52 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Reihen der Jahresdauerlinie Wärme [kW], je absteigend sortiert — der Bedarf zuerst, dann die Erzeuger;
-        /// <c>null</c> ohne Wärmebedarf. Dieselben Reihen für das Bild und das Excel-Diagramm (BV-E8).
+        /// Die Reihen der Jahresdauerlinie Wärme [kW] — der Bedarf zuerst, dann die Erzeuger; <c>null</c> ohne
+        /// Wärmebedarf. Dieselben Reihen für das Bild und das Excel-Diagramm (BV-E8).
+        ///
+        /// <para><b>Die Regel der Dauerlinie:</b> Die Stunden werden EINMAL nach dem Wärmebedarf absteigend geordnet
+        /// (<see cref="Dauerlinienfolge"/>), und jede Erzeugerreihe steht in DERSELBEN Stundenfolge. Gestapelt ist die
+        /// Oberkante dann die Bedarfsdauerlinie, und keine Fläche kreuzt eine andere; je Reihe für sich sortiert
+        /// gehörten die Werte eines Rangs zu verschiedenen Stunden.</para>
         /// </summary>
         internal static List<Reihe> DauerlinieWaermeReihen(ZeitreihenSatz z)
         {
             double[] bedarf = z.Hole(ZeitreihenSatz.WAERMEBEDARF);
             if (bedarf == null) return null;
 
-            var reihen = new List<Reihe> { new Reihe("Wärmebedarf", SortiertAbsteigend(bedarf), C_BEDARF) };
+            int[] folge = Dauerlinienfolge(bedarf);
+            var reihen = new List<Reihe> { new Reihe("Wärmebedarf", Umgeordnet(bedarf, folge), C_BEDARF) };
             foreach (Reihe r in WaermeErzeugerReihen(z, tagesmittel: false))
-                reihen.Add(Mit(r, SortiertAbsteigend(r.Werte)));
+                reihen.Add(Mit(r, Umgeordnet(r.Werte, folge)));
             return reihen;
+        }
+
+        /// <summary>
+        /// <b>Die Stundenfolge einer Dauerlinie:</b> die Indizes der Stützstellen nach <paramref name="bezug"/>
+        /// absteigend geordnet — stabil (gleiche Werte in Zeitfolge), nicht endliche Werte zuletzt. Jede Reihe eines
+        /// gestapelten Dauerlinienbilds wird mit DIESER Folge umgeordnet (<see cref="Umgeordnet"/>), sodass alle
+        /// Werte eines Rangs zu derselben Stunde gehören.
+        /// </summary>
+        internal static int[] Dauerlinienfolge(double[] bezug)
+        {
+            if (bezug == null) return Array.Empty<int>();
+            return Enumerable.Range(0, bezug.Length)
+                             .OrderBy(i => double.IsFinite(bezug[i]) ? 0 : 1)
+                             .ThenByDescending(i => double.IsFinite(bezug[i]) ? bezug[i] : 0.0)
+                             .ToArray();
+        }
+
+        /// <summary>
+        /// Die Werte in der Stundenfolge <paramref name="folge"/>; die Kopie ist so lang wie die Folge. Fehlt einer
+        /// Reihe eine Stützstelle der Folge, steht dort NaN (eine Lücke, keine Null).
+        /// </summary>
+        internal static double[] Umgeordnet(double[] werte, int[] folge)
+        {
+            if (werte == null) return null;
+            var r = new double[folge.Length];
+            for (int i = 0; i < folge.Length; i++)
+                r[i] = folge[i] < werte.Length ? werte[folge[i]] : double.NaN;
+            return r;
         }
 
         /// <summary>Die Monatsnamen der Monatsbilder (Achse der Strombilanz).</summary>
@@ -8761,14 +8820,6 @@ namespace WindowsFormsApplication1
                 r[m] = s / 1000.0;
                 h0 += hn;
             }
-            return r;
-        }
-
-        private static double[] SortiertAbsteigend(double[] q)
-        {
-            var r = (double[])q.Clone();
-            Array.Sort(r);
-            Array.Reverse(r);
             return r;
         }
 
@@ -8906,6 +8957,7 @@ namespace WindowsFormsApplication1
                 : new Reihe(r.Name, werte, r.Farbe, r.Stapelgruppe, r.Strichart, r.Breite);
             kopie.Farbe = r.Farbe;
             kopie.Luecken = r.Luecken;
+            kopie.Reihenrolle = r.Reihenrolle;
             return kopie;
         }
 

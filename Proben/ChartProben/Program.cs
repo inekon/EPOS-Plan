@@ -577,7 +577,8 @@ namespace ChartProben
                             },
                             null, "Leistung [kW]", ChartRenderer.Achse.Monate, false));
 
-            // Sortiert - ohne Stapel, mit dickeren Dauerlinien (BorderWidth 4).
+            // Sortiert - der Stapel bleibt, alle Reihen in der Stundenfolge der Bezugsgroesse (ohne
+            // Bedarfsrolle: der Oberkante des Stapels).
             Pruefe(ziel, "erzeugerstapel_kessel_sortiert", 1240, 560,
                    new[] { SKColors.Blue, SKColors.Green, SKColors.Red },
                    () => ChartRenderer.ErzeugerStapel("Waermelast Jahresdauerlinie",

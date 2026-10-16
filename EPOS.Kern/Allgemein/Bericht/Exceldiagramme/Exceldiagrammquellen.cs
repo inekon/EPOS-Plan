@@ -236,12 +236,15 @@ namespace WindowsFormsApplication1
             {
                 Kategorienkopf = k.T(nameof(R.BV_XL_DG_RANG)),
                 Wertachse = "kW",
+                Gestapelt = true,
                 Beschriftungsabstand = 730,
             };
+            // Wie das Bild: die Erzeuger als Stapel in der Stundenfolge des Bedarfs, der Bedarf als Linie.
             Zahlenkategorien(d, 1, reihen[0].Werte.Length);
-            for (int i = 0; i < reihen.Count; i++)
-                d.Reihe(reihen[i].Name, Exceldiagramm.Endlich(reihen[i].Werte), Excelreihenart.Linie, Hex(reihen[i].Farbe))
-                 .Staerke = i == 0 ? 2.25 : 1.5;
+            for (int i = 1; i < reihen.Count; i++)
+                d.Reihe(reihen[i].Name, Exceldiagramm.Endlich(reihen[i].Werte), Excelreihenart.Flaeche, Hex(reihen[i].Farbe));
+            d.Reihe(reihen[0].Name, Exceldiagramm.Endlich(reihen[0].Werte), Excelreihenart.Linie, Hex(reihen[0].Farbe))
+             .Staerke = 2.25;
             return d;
         }
 
