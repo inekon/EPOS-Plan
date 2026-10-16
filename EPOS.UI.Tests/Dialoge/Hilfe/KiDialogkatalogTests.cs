@@ -820,12 +820,12 @@ public class KiDialogkatalogTests : IDisposable
     }
 
     /// <summary>
-    /// <b>Die drei Strommasken der Welle KI‑F6 führen 22, 18 und 2 Felder.</b>
+    /// <b>Die drei Strommasken der Welle KI‑F6 führen 24, 18 und 2 Felder.</b>
     /// </summary>
     /// <remarks>
-    /// <para>Die LASTSPITZENKAPPUNG führt achtzehn Eingaben und vier Anzeigen (Quelle,
-    /// Ganglinie und die achtzehn Zahlen und Schalter; dazu Reihenzeile, Herkunft und
-    /// das offene Blatt).</para>
+    /// <para>Die LASTSPITZENKAPPUNG führt zwanzig Eingaben und vier Anzeigen (Quelle,
+    /// Ganglinie und die zwanzig Zahlen und Schalter — mit den zwei Bildschaltern der Welle RZ,
+    /// Lade-/Entladeleistung und Schwelle; dazu Reihenzeile, Herkunft und das offene Blatt).</para>
     /// <para>Die ZEITREIHEN-Leseregeln führen sechzehn Einstellwerte und zwei
     /// Anzeigen; Datei und Rolle kommen vom Wirt.</para>
     /// <para>Die STROMGANGLINIEN-Verwaltung führt genau EINEN Einstellwert — das
@@ -833,13 +833,13 @@ public class KiDialogkatalogTests : IDisposable
     /// Suche, Auswahl und Ladevorgang (KI‑D‑Q5).</para>
     /// </remarks>
     [Fact]
-    public void Die_drei_Strommasken_fuehren_22_18_und_2_Felder()
+    public void Die_drei_Strommasken_fuehren_24_18_und_2_Felder()
     {
         KiDialog peak = KiDialoge.Katalog.Finde(KiMaskennamen.PEAK_SHAVING)!;
         KiDialog reihe = KiDialoge.Katalog.Finde(KiMaskennamen.SPEICHER_ZEITREIHEN)!;
         KiDialog admin = KiDialoge.Katalog.Finde(KiMaskennamen.STROMGANGLINIE_ADMIN)!;
 
-        Assert.Equal(22, peak.Felder.Count);
+        Assert.Equal(24, peak.Felder.Count);
         Assert.Equal(18, reihe.Felder.Count);
         Assert.Equal(2, admin.Felder.Count);
 
