@@ -111817,6 +111817,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bedingt geeignet (Angaben fehlen) ähnelt.
+        /// </summary>
+        public static string PVS_WRV_BEDINGT_ANGABEN {
+            get {
+                return ResourceManager.GetString("PVS_WRV_BEDINGT_ANGABEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string PVS_WRV_BTN_ABBRECHEN {

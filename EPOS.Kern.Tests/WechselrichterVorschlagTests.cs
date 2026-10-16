@@ -218,13 +218,14 @@ namespace EPOS.Kern.Tests
             geraet.m_P_DC_Max = 3.75;
             geraet.m_Straenge_Je_Mppt = 2;
 
+            // Gepflegter Kurzschlussstrom je MPPT von 12 A: Die vorhandene Grenze hält
+            // schon einen Strang nicht - ungeeignet wegen des Stroms.
+            geraet.m_I_Sc_Max = 12.0;
             WechselrichterVorschlag.Kandidat k = WechselrichterVorschlag.Bewerte(modul, geraet, 10, KALT, HEISS);
 
             Assert.Equal(WechselrichterVorschlag.Eignung.Ungeeignet, k.Stufe);
-            Assert.Equal(WechselrichterVorschlag.Grund.StromZuHoch, k.Hauptgrund);
-            // Die Grenze war der Betriebsstrom (I_Sc_Max fehlt) - der zweite Grund sagt es.
-            Assert.Equal("Strom eines Strangs 13,7 A über der Grenze je MPPT 12,0 A"
-                         + " · Katalogwerte unvollständig (Betriebsstrom als Grenze)",
+            Assert.Equal(new[] { WechselrichterVorschlag.Grund.StromZuHoch }, k.Gruende.ToArray());
+            Assert.Equal("Strom eines Strangs 13,7 A über der Grenze je MPPT 12,0 A",
                          WechselrichterVorschlag.GrundText(k));
             Assert.Equal("Muster 2500TL — ungeeignet: Strangstrom 13,7 A > 12,0 A",
                          WechselrichterVorschlag.Klapplisteneintrag("Muster 2500TL", k));
@@ -237,6 +238,79 @@ namespace EPOS.Kern.Tests
             Assert.Equal("1,06", WechselrichterVorschlag.DcAcText(k));
             Assert.Equal("Muster 2500TL — geeignet · DC/AC 1,06 · 2 Geräte",
                          WechselrichterVorschlag.Klapplisteneintrag("Muster 2500TL", k));
+        }
+
+        /// <summary>
+        /// <b>Fehlt der Kurzschlussstrom je MPPT</b> (CEC-Liste), ist der Betriebsstrom
+        /// <c>I_Dc_Max</c> nur eine Ersatzgrenze: Hält sie schon einen Strang nicht, ist das
+        /// Gerät „bedingt geeignet (Angaben fehlen)", nicht „ungeeignet wegen Strom" — die
+        /// Aufteilung rechnet ohne die Ersatzgrenze, der Deckel <c>Straenge_Je_Mppt</c>
+        /// (vorhanden) gilt weiter.
+        /// </summary>
+        [Fact]
+        public void Ohne_Kurzschlussstrom_ist_ein_Geraet_ueber_dem_Betriebsstrom_bedingt()
+        {
+            var modul = new PhotovoltaikModel
+            {
+                m_szName = "Modul 530", m_Leistung = 530.785, m_U_Leerlauf = 49.2, m_U_Mpp = 41.5,
+                m_I_Kurzschluss = 13.6, m_alpha_SC = 0.00272, m_beta_OC = -0.128904
+            };
+            var geraet = Geraet(1, "Muster 2500TL", 2.5);
+            geraet.m_P_DC_Max = 3.75;
+            geraet.m_Straenge_Je_Mppt = 2;
+
+            WechselrichterVorschlag.Kandidat k = WechselrichterVorschlag.Bewerte(modul, geraet, 10, KALT, HEISS);
+
+            Assert.Equal(WechselrichterVorschlag.Eignung.Bedingt, k.Stufe);
+            Assert.True(k.AngabenFehlen);
+            Assert.True(k.StromUngeprueft);
+            Assert.Equal(new[] { WechselrichterVorschlag.Grund.KatalogUnvollstaendig }, k.Gruende.ToArray());
+            Assert.Equal("2 × (1 × 5)", WechselrichterVorschlag.AufteilungText(k));
+            Assert.Equal("bedingt geeignet (Angaben fehlen)", WechselrichterVorschlag.StufeText(k));
+            Assert.Equal("Katalogwerte unvollständig (Betriebsstrom als Grenze)", WechselrichterVorschlag.GrundText(k));
+            Assert.Equal("Muster 2500TL — bedingt geeignet (Angaben fehlen): Katalogwerte unvollständig (Betriebsstrom als Grenze)",
+                         WechselrichterVorschlag.Klapplisteneintrag("Muster 2500TL", k));
+        }
+
+        /// <summary>
+        /// Ein Gerät mit Lücke, das an einer VORHANDENEN Angabe scheitert, bleibt ungeeignet:
+        /// Ohne Kurzschlussstrom und Trackerzahl, aber mit einem MPP-Fenster, in das keine
+        /// Reihe passt.
+        /// </summary>
+        [Fact]
+        public void Ein_Geraet_mit_Luecke_scheitert_an_einer_vorhandenen_Grenze()
+        {
+            var geraet = Geraet(5, "Hochvolt 5000", 5.0, 600.0, 800.0, 1000.0, mppt: null);
+
+            WechselrichterVorschlag.Kandidat k = WechselrichterVorschlag.Bewerte(Modul(), geraet, 20, KALT, HEISS);
+
+            Assert.Equal(WechselrichterVorschlag.Eignung.Ungeeignet, k.Stufe);
+            Assert.Equal(WechselrichterVorschlag.Grund.Spannungsfenster, k.Hauptgrund);
+            Assert.False(k.AngabenFehlen);
+            Assert.Equal("ungeeignet", WechselrichterVorschlag.StufeText(k));
+        }
+
+        /// <summary>
+        /// Die Rangfolge stellt geeignete vor bedingt geeignete Geräte mit fehlenden
+        /// Angaben; ein vollständiges Gerät behält seine Stufe und hat keine Lücke.
+        /// </summary>
+        [Fact]
+        public void Geeignete_stehen_vor_Geraeten_mit_fehlenden_Angaben()
+        {
+            var vollstaendig = Passend();
+            vollstaendig.m_I_Sc_Max = 15.0;
+            vollstaendig.m_Straenge_Je_Mppt = 2;
+            var luecke = Geraet(9, "Aaa Luecke 4600", 4.6, mppt: null);
+
+            List<WechselrichterVorschlag.Kandidat> liste = WechselrichterVorschlag.Bewerten(
+                Modul(), 20, KALT, HEISS, new List<WechselrichterModel> { luecke, vollstaendig });
+
+            Assert.Equal("Passend 4600", liste[0].Geraet.m_szName);
+            Assert.Equal(WechselrichterVorschlag.Eignung.Geeignet, liste[0].Stufe);
+            Assert.Equal("geeignet", WechselrichterVorschlag.StufeText(liste[0]));
+            Assert.Null(WechselrichterVorschlag.Lueckengeraet(vollstaendig));
+            Assert.Equal(WechselrichterVorschlag.Eignung.Bedingt, liste[1].Stufe);
+            Assert.True(liste[1].AngabenFehlen);
         }
 
         /// <summary>
@@ -263,7 +337,7 @@ namespace EPOS.Kern.Tests
             Assert.True(k.TrackerAngenommen);
             Assert.False(k.BetriebsstromAlsGrenze);
             Assert.Equal("Katalogwerte unvollständig (1 Tracker angenommen)", WechselrichterVorschlag.GrundText(k));
-            Assert.Equal("Muster 2500TL — bedingt: Katalogwerte unvollständig (1 Tracker angenommen)",
+            Assert.Equal("Muster 2500TL — bedingt geeignet (Angaben fehlen): Katalogwerte unvollständig (1 Tracker angenommen)",
                          WechselrichterVorschlag.Klapplisteneintrag("Muster 2500TL", k));
 
             // Mit gepflegter Trackerzahl ist es wieder geeignet.

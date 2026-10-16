@@ -40915,6 +40915,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="PVS_WRV_BEDINGT" xml:space="preserve">
     <value>bedingt</value>
   </data>
+  <data name="PVS_WRV_BEDINGT_ANGABEN" xml:space="preserve">
+    <value>bedingt geeignet (Angaben fehlen)</value>
+  </data>
   <data name="PVS_WRV_UNGEEIGNET" xml:space="preserve">
     <value>ungeeignet</value>
   </data>

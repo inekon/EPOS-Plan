@@ -40908,6 +40908,9 @@ This folder holds the standard template, the short report, the detailed template
   <data name="PVS_WRV_BEDINGT" xml:space="preserve">
     <value>limited</value>
   </data>
+  <data name="PVS_WRV_BEDINGT_ANGABEN" xml:space="preserve">
+    <value>limited (data missing)</value>
+  </data>
   <data name="PVS_WRV_UNGEEIGNET" xml:space="preserve">
     <value>unsuitable</value>
   </data>
