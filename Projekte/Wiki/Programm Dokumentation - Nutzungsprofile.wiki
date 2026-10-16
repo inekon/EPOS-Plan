@@ -68,7 +68,7 @@ Die Nutzung einer Vorlage ist ein freier Text; beim Eintippen bietet das Program
 
 Die Profile der Kategorie ''DIN/TS 18599-10'' werden mit den Werten der Fassung 2025-10 ausgeliefert. ''Normwerte einlesen…'' gleicht eigene Werte aus Ihrer Quelle dagegen ab; der Dialog öffnet sich im Blatt und schreibt erst mit ''Übernehmen''.
 
-# '''Vorlage holen''' – ''Vorlage speichern…'' schreibt die CSV-Datei der Kategorie mit Nummern und Namen. Tragen Sie die Werte aus Ihrer Ausgabe der Norm ein; Nummer und Name bleiben, wie sie sind. Das Format steht unter [[#csv-format|CSV-Format]], die Außenluft je Person in der Spalte <code>Aussenluft_Person</code>.
+# '''Vorlage holen''' – ''Vorlage speichern…'' schreibt die CSV-Datei der Kategorie mit Nummern und Namen, ohne Werte. Tragen Sie die Werte aus Ihrer Ausgabe der Norm ein; Nummer und Name bleiben, wie sie sind. Das Format steht unter [[#csv-format|CSV-Format]], die Außenluft je Person in der Spalte <code>Aussenluft_Person</code>.
 # '''Quelle wählen''' – ''CSV-Datei wählen…'' liest Ihre Datei, ''Projektdatei wählen…'' eine Projektdatei (.sqproj), deren Nutzungsprofile die DIN-Nummer tragen.
 # '''Vorschau prüfen''' – die Tabelle ''Treffer'' nennt je Profil Nummer, Name, Stand (ohne Werte, Werte vorhanden, eingelesene Werte vorhanden) und die Spalten, deren Wert vom vorhandenen abweicht; darunter die Abweichungen je Spalte. Die Tabelle ''Nicht übernommen'' nennt unbekannte Nummern, Profile ohne Wert, doppelte Nummern und weitere Meldungen.
 # '''Übernehmen''' – zugeordnet wird über die Nummer, die zwei Wohnprofile ohne Nummer über ihren Namen. Vorhandene Werte bleiben, solange ''vorhandene Werte überschreiben'' nicht gesetzt ist. Die Meldung nennt die Zahl der gefüllten und der übersprungenen Profile.
