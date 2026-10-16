@@ -76,7 +76,7 @@ try {
     // Erst im ueblichen Fenster; ist das Bild zu gross, im kleineren noch einmal.
     let geschrieben = false;
     // Brauchwasser, Prozesswaerme, Waermepumpe, Stromspeicher: die Kopfzeile der Katalogliste (Titel, Suchfeld, Zaehler,
-    // Spalten..., Vergleichen, Uebernehmen) steht erst ab rund 1380 px ungekuerzt; die Seite
+    // Spalten..., Uebernehmen) steht erst ab rund 1380 px in EINER Zeile (darunter bricht sie um); die Seite
     // /wikibild laesst den Dialog dafuer breiter werden (Bildbreite bleibt <= 1400 px).
     const fenster = fremd ? [[1280, fremd.hoehe], [1100, fremd.hoehe]]
       : BREIT.has(name) ? [[1400, 800]] : [[1280, 800], [1100, 720]];

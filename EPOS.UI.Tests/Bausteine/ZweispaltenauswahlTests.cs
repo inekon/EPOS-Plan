@@ -643,7 +643,7 @@ public class ZweispaltenauswahlTests : EposBunitContext
         Assert.Contains("overflow: auto", Stilblock(".epos-zweispalten-satz {"));
     }
 
-    /// <summary>Die Kopfleisten brechen nicht um (4.8) und sind kein Rollbereich.</summary>
+    /// <summary>Die Kopfleisten brechen in der Grundregel nicht um (4.8) und sind kein Rollbereich.</summary>
     [Fact]
     public void Die_Kopfleiste_bricht_nicht_um_und_rollt_nicht()
     {
@@ -651,6 +651,28 @@ public class ZweispaltenauswahlTests : EposBunitContext
         Assert.Contains("flex-wrap: nowrap", leiste);
         Assert.Contains("overflow: clip", leiste);
         Assert.DoesNotContain("overflow: auto", leiste);
+    }
+
+    /// <summary>
+    /// Die Kopfleiste des KATALOGS schneidet bei der festen Dialogbreite (1160 px) nichts ab: Sie
+    /// bricht zwischen ihren Kindern um, statt Überschrift, Platzhalter oder Knöpfe zu kürzen, und
+    /// das Suchfeld trägt seinen Platzhalter ganz. Die Regel steht NACH der Grundregel (die Wache
+    /// oben liest den ersten Block). Gemessen im Browser: Proben/Rasterprobe.
+    /// </summary>
+    [Fact]
+    public void Die_Kopfleiste_des_Katalogs_bricht_um_statt_abzuschneiden()
+    {
+        string css = Stilblatt();
+        const string regel = ".epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste {";
+        Assert.True(css.IndexOf(".epos-zweispalten-kopfleiste {", StringComparison.Ordinal)
+                    < css.IndexOf(regel, StringComparison.Ordinal), "Die Katalogregel steht vor der Grundregel.");
+        string katalog = Stilblock(regel);
+        Assert.Contains("flex-wrap: wrap", katalog);
+        Assert.DoesNotContain("overflow", katalog);
+
+        string suchfeld = Stilblock(".epos-zweispalten-kopfleiste .epos-katalog-suchfeld {");
+        Assert.Contains("flex: 0 0 12.5rem !important", suchfeld);
+        Assert.Contains("min-width: 12.5rem", suchfeld);
     }
 
     /// <summary>Die Haftregel „Dialog im eigenen Fenster" nimmt diese Dialoge aus — sie füllen ihr Fenster.</summary>

@@ -19,10 +19,10 @@
            ?kultur=de-DE   (die Kultur des Wirtes, siehe Program.cs)
 *@
 
-@* Die Kopfzeile der Katalogliste (Titel, Suchfeld, Zähler, Spalten…, Vergleichen, Übernehmen)
-   braucht bei den Bedarfsdialogen, der Wärmepumpe und dem Stromspeicher mehr als die 1160 px des Hausblatts, sonst kürzt sie Titel
-   und Suchfeld und schiebt „Vergleichen" an den Rand. Nur fürs Bild: der Dialog darf breiter, das Suchfeld
-   trägt seinen Platzhalter ganz. *@
+@* Die Kopfzeile der Katalogliste (Titel, Suchfeld, Zähler, Spalten…, Übernehmen) bricht bei den
+   Bedarfsdialogen, der Wärmepumpe und dem Stromspeicher in den 1160 px des Hausblatts in eine zweite Zeile um
+   (gemessen mit kopfleistenprobe.mjs, die data-breit abnimmt). Nur fürs Bild: der Dialog darf breiter, damit
+   die Kopfzeile EINE Zeile bleibt wie in den übrigen Bildern. *@
 <style>
     .epos-wikibild[data-breit] .epos-dialog { max-width: 1380px; }
     .epos-wikibild[data-breit] .epos-zweispalten-kopfleiste .epos-katalog-suchfeld { flex: 0 0 14rem !important; }
