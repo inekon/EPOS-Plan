@@ -5974,8 +5974,7 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     max-width: 680px;
 }
 
-.epos-ergebnis-fluss-zeiger,
-.epos-ergebnis-fluss-hinweis {
+.epos-ergebnis-fluss .epos-leisezeile {
     margin: 4px 0 0 0;
 }
 

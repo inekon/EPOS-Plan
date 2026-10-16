@@ -1801,6 +1801,26 @@ dasselbe Modell ohne die Regel (das Bild des Berichts). Die Probe misst den Zeig
 der Regel zählt sie je Reihe zwei Pfade (Band und Kern), und auch die Bänder bleiben über die Bewegung dieselben
 Elemente.
 
+**Fall `fluss` (`--fall fluss`, Energieflussbild der Übersicht) — Seite `/uebersichtprobe?ansicht=fluss`.** Das
+Energieflussbild ist ein Bild **ohne** Zeichenfläche: Die Zeigerzeile nennt den Zeigertext des Bandes oder Knotens
+unter der Maus (Werte nur im Zeigertext, keine Zahlen im Bild). Die Seite stellt den Abschnitt „Ergebnisse — Energie“
+mit der echten Hülle `UebersichtErgebnisGaben` und synthetischen Ergebnissen (`?version=<id>` wählt die Version,
+Vorgabe Stamm). Die Probe tastet das breite Bild in einem Raster von 80 × 40 Punkten ab und nimmt je getroffenem Band
+oder Knoten einen Punkt; je Element: Maus auf einen freien Punkt des Bildes — die Zeile ist leer; Maus auf das
+Element — die Zeile nennt binnen 2 s einen Text mit „MWh/a“, ein Band („Von → Nach“) steht bis „%)“ wortgleich in
+der verborgenen Textalternative, ein Knoten mit seinem Namen. Sollwerte: jedes Element mit Zeigertext, mindestens
+3 Bänder und 3 Knoten, das erste Element nennt beim zweiten Mal denselben Text. **Gegenprobe:** dieselben Punkte mit
+`pointer-events: none` auf den Elementen des Bildes — die Zeile bleibt leer, die Probe muss verfehlen.
+
+```bash
+node diagrammprobe.mjs --url http://127.0.0.1:5299 --fall fluss [--fotos <ordner außerhalb des Repositorys>]
+```
+
+**Ergebnis vom 16.10.2026** (Linux-Container, Chromium headless, Wirt Blazor Server): 24 Elemente, **12 Bänder und
+12 Knoten** mit Zeigertext, alle in der Textalternative (24 Zeilen) — Rückgabe 0. Gegenprobe: 24 von 24 Elementen
+ohne Zeigertext (verfehlt, richtig). Der Fall `zoom` (Vorgabe) am selben Stand unverändert: ×12, 41 Schritte,
+größter Abstand 0,50 px, Zeile mit Datum 41/41, 0 Mutationen; Gegenprobe verfehlt.
+
 ---
 
 ## Tabellenprobe (Ergebnistabellen der Simulation, Auftrag TA) — Seite `/tabellenprobe`

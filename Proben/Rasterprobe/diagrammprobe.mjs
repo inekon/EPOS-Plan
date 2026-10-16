@@ -30,8 +30,21 @@
 //  Baustein zeichnet Linie und Zeile nach einem Rundlauf je Bewegung selbst. Dort
 //  steht die Linie nicht im selben Bild wie die Maus; die Probe muss verfehlen.
 //
+//  FALL "fluss" (--fall fluss, SK-3): das Energieflussbild der Uebersicht
+//  (/uebersichtprobe?ansicht=fluss, echte Huelle, synthetische Ergebnisse). Ein
+//  Bild OHNE Zeichenflaeche: die Zeigerzeile zeigt den Zeigertext des Elements unter
+//  der Maus (Band oder Knoten), nicht einen Wert aus einer Reihe. Die Probe tastet
+//  das breite Bild in einem Raster ab, nimmt je getroffenem Band oder Knoten einen
+//  Punkt und misst je Element: Maus darauf - die Zeile nennt binnen 2 s einen Text
+//  mit "MWh/a"; ein Band ("Von -> Nach") steht mit demselben Wortlaut bis "%)" in
+//  der verborgenen Textalternative, ein Knoten mit seinem Namen; Maus daneben - die
+//  Zeile ist leer. Mindestens 3 Baender und 3 Knoten, und das erste Element liefert
+//  am Ende denselben Text wie am Anfang. GEGENPROBE: dieselben Punkte mit
+//  pointer-events: none auf den Elementen des Bildes - die Zeile bleibt leer, die
+//  Probe muss verfehlen.
+//
 //  AUFRUF (der Wirt muss laufen, siehe LIESMICH.md):
-//    node diagrammprobe.mjs --url http://127.0.0.1:5299 [--fotos <ordner>] [--ohne-gegenprobe]
+//    node diagrammprobe.mjs --url http://127.0.0.1:5299 [--fall zoom|fluss] [--fotos <ordner>] [--ohne-gegenprobe]
 //
 //  Rueckgabe 0 = alle Sollwerte erfuellt (und Gegenprobe verfehlt), 1 = Verstoss,
 //  2 = Aufbaufehler.
@@ -53,6 +66,7 @@ const arg = (name, vorgabe) => {
 const WURZEL = arg('url', 'http://127.0.0.1:5299');
 const FOTOS = arg('fotos', '');
 const MIT_GEGENPROBE = !process.argv.includes('--ohne-gegenprobe');
+const FALL = arg('fall', 'zoom');
 const SCHRITTE = 40;
 const TOLERANZ_PX = 1;
 
@@ -163,6 +177,114 @@ async function lauf(browser, ohneTafel) {
   }
 }
 
+/**
+ * FALL "fluss": die Zeigerzeile folgt der Maus ueber Band und Knoten des Energieflussbilds.
+ * ohneZeiger = Gegenprobe (pointer-events: none auf den Elementen des Bildes).
+ */
+async function laufFluss(browser, ohneZeiger) {
+  const seite = await browser.newPage({ viewport: { width: 1400, height: 900 } });
+  const befunde = [];
+  try {
+    await seite.goto(WURZEL + '/uebersichtprobe?ansicht=fluss', { waitUntil: 'networkidle' });
+    await seite.waitForSelector('.epos-ergebnis-fluss-mass--breit svg', { timeout: 20000 });
+    await seite.locator('.epos-ergebnis-fluss-bild').scrollIntoViewIfNeeded();
+    await seite.waitForTimeout(300);
+
+    // Die verborgene Textalternative (Sollwerte) und die Kandidaten: je Element ein Punkt.
+    const lage = await seite.evaluate(() => {
+      const huelle = document.querySelector('.epos-ergebnis-fluss-mass--breit');
+      const svg = huelle.querySelector('svg');
+      const r = svg.getBoundingClientRect();
+      const text = [...document.querySelectorAll('.epos-ergebnis-fluss-text li')].map(l => l.textContent);
+      const punkte = [];
+      const gesehen = new Set();
+      let n = 0;
+      for (let gy = 0; gy < 40; gy++) {
+        for (let gx = 0; gx < 80; gx++) {
+          const x = r.x + 4 + (r.width - 8) * gx / 79, y = r.y + 4 + (r.height - 8) * gy / 39;
+          const el = document.elementFromPoint(x, y);
+          if (!el || !svg.contains(el) || el === svg || !['path', 'rect'].includes(el.tagName)) continue;
+          const b = el.getBoundingClientRect();
+          if (b.width >= r.width * 0.95 && b.height >= r.height * 0.95) continue;   // Hintergrund
+          if (gesehen.has(el)) continue;
+          gesehen.add(el);
+          el.setAttribute('data-probe', String(n));
+          punkte.push({ n: n++, x, y, art: el.tagName });
+        }
+      }
+      // Ein Punkt daneben: im Bild, aber auf keinem Element.
+      let leer = null;
+      for (let gy = 0; gy < 40 && !leer; gy++)
+        for (let gx = 0; gx < 80 && !leer; gx++) {
+          const x = r.x + 4 + (r.width - 8) * gx / 79, y = r.y + 4 + (r.height - 8) * gy / 39;
+          const el = document.elementFromPoint(x, y);
+          if (el && svg.contains(el) && el.tagName === 'rect' && el.getBoundingClientRect().width >= r.width * 0.95) leer = { x, y };
+        }
+      return { text, punkte, leer };
+    });
+    if (lage.punkte.length === 0) befunde.push('keine Baender oder Knoten im Bild getroffen');
+    if (!lage.leer) befunde.push('kein freier Punkt im Bild');
+
+    if (ohneZeiger) {
+      await seite.addStyleTag({ content: '.epos-ergebnis-fluss-bild svg path, .epos-ergebnis-fluss-bild svg rect { pointer-events: none !important; }' });
+    }
+
+    const zeile = () => seite.evaluate(() =>
+      ((document.querySelector('.epos-ergebnis-fluss-mass--breit .epos-diagramm-zeigerzeile') || {}).textContent || '').trim());
+    const warte = async (bedingung) => {
+      const ende = Date.now() + 2000;
+      let t = await zeile();
+      while (!bedingung(t) && Date.now() < ende) { await seite.waitForTimeout(40); t = await zeile(); }
+      return t;
+    };
+
+    const texte = [];
+    let baender = 0, knoten = 0, ohneText = 0, nichtInAlternative = 0, nichtLeer = 0;
+    for (const p of lage.punkte) {
+      if (lage.leer) {
+        await seite.mouse.move(lage.leer.x, lage.leer.y);
+        const t0 = await warte(t => t === '');
+        if (t0 !== '') nichtLeer++;
+      }
+      await seite.mouse.move(p.x, p.y);
+      const t = await warte(t => t !== '');
+      texte.push(t);
+      if (!t || !t.includes('MWh/a')) { ohneText++; continue; }
+      if (t.includes(' → ')) {
+        baender++;
+        const kopf = t.slice(0, t.indexOf('%)') + 2);
+        if (!lage.text.some(l => l.startsWith(kopf))) nichtInAlternative++;
+      } else {
+        knoten++;
+        const name = t.slice(0, t.indexOf(':'));
+        if (!lage.text.some(l => l.startsWith(name + ':') || l.includes(name + ' → ') || l.includes(' → ' + name + ':'))) nichtInAlternative++;
+      }
+    }
+    // Wiederholt: das erste Element liefert denselben Text.
+    if (lage.punkte.length > 0 && lage.leer) {
+      await seite.mouse.move(lage.leer.x, lage.leer.y);
+      await warte(t => t === '');
+      await seite.mouse.move(lage.punkte[0].x, lage.punkte[0].y);
+      const t = await warte(t => t !== '');
+      if (t !== texte[0]) befunde.push('erstes Element nennt beim zweiten Mal einen anderen Text');
+    }
+
+    if (ohneText > 0) befunde.push(`${ohneText} von ${lage.punkte.length} Elementen ohne Zeigertext mit MWh/a`);
+    if (nichtInAlternative > 0) befunde.push(`${nichtInAlternative} Zeigertexte nicht in der Textalternative`);
+    if (nichtLeer > 0) befunde.push(`${nichtLeer} mal blieb die Zeile neben dem Bild stehen`);
+    if (baender < 3) befunde.push(`nur ${baender} Baender mit Zeigertext`);
+    if (knoten < 3) befunde.push(`nur ${knoten} Knoten mit Zeigertext`);
+
+    if (FOTOS) {
+      await mkdir(FOTOS, { recursive: true });
+      await seite.locator('.epos-ergebnis-fluss').screenshot({ path: `${FOTOS}/fluss_${ohneZeiger ? 'gegenprobe' : 'probe'}.png` });
+    }
+    return { elemente: lage.punkte.length, baender, knoten, alternative: lage.text.length, befunde };
+  } finally {
+    await seite.close();
+  }
+}
+
 let browser;
 try {
   browser = await chromium.launch();
@@ -173,6 +295,20 @@ try {
 
 let rc = 0;
 try {
+  if (FALL === 'fluss') {
+    const p = await laufFluss(browser, false);
+    console.log(`PROBE   Fluss · ${p.elemente} Elemente · ${p.baender} Baender und ${p.knoten} Knoten mit Zeigertext · ` +
+                `${p.alternative} Zeilen Textalternative`);
+    for (const b of p.befunde) console.log('  VERSTOSS: ' + b);
+    if (p.befunde.length > 0) rc = 1;
+    if (MIT_GEGENPROBE) {
+      const g = await laufFluss(browser, true);
+      const verfehlt = g.befunde.length > 0;
+      console.log(`GEGEN   ohne Zeigerereignisse: ${verfehlt ? 'verfehlt (richtig)' : 'erfuellt (FALSCH)'}` +
+                  (g.befunde.length ? ' - ' + g.befunde.join('; ') : ''));
+      if (!verfehlt) rc = 1;
+    }
+  } else {
   const p = await lauf(browser, false);
   console.log(`PROBE   Stufe ${p.stufe} · ${p.schritte} Schritte · groesster Abstand ${p.groesster.toFixed(2)} px · ` +
               `Zeile mit Datum ${p.mitDatum}/${p.schritte} · ${p.pfade} Pfade · ${p.mutationen} Mutationen`);
@@ -185,6 +321,7 @@ try {
     console.log(`GEGEN   ohne Tafel: ${verfehlt ? 'verfehlt (richtig)' : 'erfuellt (FALSCH)'}` +
                 (g.befunde.length ? ' - ' + g.befunde.join('; ') : ''));
     if (!verfehlt) rc = 1;
+  }
   }
 } catch (e) {
   console.error('Aufbaufehler: ' + (e && e.stack || e));

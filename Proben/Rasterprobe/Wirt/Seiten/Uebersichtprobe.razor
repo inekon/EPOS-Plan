@@ -15,7 +15,8 @@
     Komponentenvergleich. Die Wahl im Feld wirkt auch von Hand.
 
     Darunter der Abschnitt "Ergebnisse — Energie" (Anwenderauftrag 13.10.2026) aus der echten
-    Huelle UebersichtErgebnisGaben mit synthetischen Ergebnissen: Variante 1 ist simuliert und
+    Huelle UebersichtErgebnisGaben mit synthetischen Ergebnissen (?ansicht=grafik|fluss stellt den Umschalter,
+    ?version=<id> die Version des Energieflussbilds - diagrammprobe.mjs --fall fluss): Variante 1 ist simuliert und
     weicht ab, weitere Varianten sind nicht simuliert. ?offen=alle klappt alle zugeklappten
     Gruppen auf, ?offen=<schluessel,...> die genannten (Gruppenschluessel des Kerns, etwa
     emissionen). ?anpassen=1 oeffnet den Dialog "Anzeige anpassen..." beim Laden;
@@ -66,6 +67,7 @@
     /// <summary>Die Einstellungsablage der Probe (Attrappe der Naht, je Seitenaufruf geleert).</summary>
     private static readonly WindowsFormsApplication1.FluechtigeEinstellungen s_ablage = new();
     private static string s_ansicht = "tabelle";
+    private static int? s_flussVersion;
 
     protected override void OnInitialized()
     {
@@ -75,7 +77,9 @@
         s_nurUnterschiede = abfrage.TryGetValue("nurunterschiede", out var u) && u.ToString() == "1";
         s_markiert = abfrage.TryGetValue("variante", out var w) && int.TryParse(w, out int i) && i >= 1 && i <= s_varianten
             ? 1 + i : 1;
-        s_ansicht = abfrage.TryGetValue("ansicht", out var a) && a.ToString() == "grafik" ? "grafik" : "tabelle";
+        s_ansicht = abfrage.TryGetValue("ansicht", out var a) && (a.ToString() == "grafik" || a.ToString() == "fluss")
+            ? a.ToString() : "tabelle";
+        s_flussVersion = abfrage.TryGetValue("version", out var fv) && int.TryParse(fv, out int fid) ? fid : null;
         s_offen.Clear();
         s_anpassen = abfrage.TryGetValue("anpassen", out var anp) && anp.ToString() == "1";
         s_ablage.Loesche(EPOS.UI.Seiten.Berichte.UebersichtErgebnisAnzeige.SCHLUESSEL_GRUPPEN);
@@ -144,7 +148,10 @@
         var satz = new Dictionary<string, object>(s_ergebnisHuelle.Gaben())
         {
             ["AnpassenOffen"] = s_anpassen,
-            // ?ansicht=grafik zeigt die Grafik; die Wahl gilt im Wirt je Sitzung statt in der Einstellungsnaht.
+            // ?ansicht=grafik zeigt die Grafik, ?ansicht=fluss das Energieflussbild (SK-3; ?version=<id> waehlt die
+            // Version, Vorgabe Stamm); die Wahl gilt im Wirt je Sitzung statt in der Einstellungsnaht.
+            ["FlussVersionLesen"] = new Func<int?>(() => s_flussVersion),
+            ["FlussVersionGewechselt"] = new Action<int>(id => s_flussVersion = id),
             ["AnsichtLesen"] = new Func<string>(() => s_ansicht),
             ["AnsichtGewechselt"] = new Action<string>(a => s_ansicht = a),
             ["KlappgruppeOffenLesen"] = new Func<string, bool>(g => s_offen.Contains(g)),
