@@ -96,6 +96,10 @@
                     {
                         <p class="epos-bki-inhomogen">@_vorschau.Inhomogen</p>
                     }
+                    @if (!string.IsNullOrEmpty(_vorschau.Wiederimport))
+                    {
+                        <p class="epos-bki-inhomogen">@_vorschau.Wiederimport</p>
+                    }
                     <p class="epos-bki-richtung">@_vorschau.Richtung</p>
                     @if (_vorschau.Gliederung is { Count: > 0 } gliederung)
                     {

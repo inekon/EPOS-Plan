@@ -54452,6 +54452,12 @@ Chart</value>
   <data name="BTA_SUMME_RT_MITTEL" xml:space="preserve">
     <value>R_T = (R'_T + R''_T) / 2 = {0} m²K/W</value>
   </data>
+  <data name="BTA_SUMME_FEHLERSCHRANKE" xml:space="preserve">
+    <value>Fehlerschranke e = (R'_T − R''_T) / (2 R_T) = {0} %</value>
+  </data>
+  <data name="BTA_HINWEIS_FEHLERSCHRANKE" xml:space="preserve">
+    <value>Die Fehlerschranke e = {0} % liegt über {1} % (R'_T / R''_T über 1,5): Das vereinfachte Verfahren nach DIN EN ISO 6946, 6.7 ist für diesen Aufbau ungenau; gerechnet wird weiter mit dem Mittel R_T.</value>
+  </data>
   <data name="BTA_GRUPPE_FENSTER" xml:space="preserve">
     <value>Fenster</value>
   </data>
@@ -54819,13 +54825,16 @@ Chart</value>
     <value>inhomogen: Schicht ohne Dicke in Abschnitten verschiedener Schichtzahl</value>
   </data>
   <data name="BKI_INHOMOGEN" xml:space="preserve">
-    <value>Inhomogene Aufbauten: {0} mit verschiedener Schichtzahl je Abschnitt an gemeinsamen Schichtgrenzen geteilt ({1} Teilschichten zusätzlich); {2} fehlende Flächenanteile als Rest zu 1 eingesetzt.</value>
+    <value>Inhomogene Aufbauten: {0} an gemeinsamen Schichtgrenzen geteilt (verschiedene Schichtzahl oder versetzte Grenzen je Abschnitt, {1} Teilschichten zusätzlich); {2} fehlende Flächenanteile als Rest zu 1 eingesetzt.</value>
   </data>
   <data name="BKI_PROT_ANTEIL" xml:space="preserve">
     <value>Flächenanteil als Rest zu 1 eingesetzt (Abschnitt {0}: {1}): {2}</value>
   </data>
   <data name="BKI_PROT_GETEILT" xml:space="preserve">
     <value>Schichten an gemeinsamen Schichtgrenzen geteilt ({0} → {1} Schichten): {2}</value>
+  </data>
+  <data name="BKI_WIEDERIMPORT" xml:space="preserve">
+    <value>Wiederimport: {0} Aufbauten im Katalog bekommen durch die Teilung an gemeinsamen Schichtgrenzen andere Schichten; {1} davon ändern ihren U-Wert um mehr als 1 % (größte Änderung {2} %).</value>
   </data>
   <data name="BKI_UEBERNEHMEN" xml:space="preserve">
     <value>Übernehmen</value>

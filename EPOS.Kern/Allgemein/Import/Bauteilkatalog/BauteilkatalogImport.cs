@@ -107,12 +107,24 @@ namespace WindowsFormsApplication1
         public int SchichtenMitBaustoff { get; internal set; }
         /// <summary>Baustoffe, deren λ als Skalenfehler der Quelle durch 1 000 geteilt wurde (E134; je Zeile im Protokoll).</summary>
         public int LambdaSkaliert { get; internal set; }
-        /// <summary>Aufbauten mit verschiedener Schichtzahl je Abschnitt, an gemeinsamen Schichtgrenzen geteilt (BK-8).</summary>
+        /// <summary>
+        /// Aufbauten, deren Abschnitte an gemeinsamen Schichtgrenzen geteilt wurden (BK-8, BK-8b): verschiedene Schichtzahl oder
+        /// gleiche Schichtzahl mit versetzten Grenzen.
+        /// </summary>
         public int SchichtzahlAngeglichen { get; internal set; }
         /// <summary>Schichten, die das Teilen an gemeinsamen Schichtgrenzen zusätzlich anlegt (BK-8).</summary>
         public int Teilschichten { get; internal set; }
         /// <summary>Abschnitte, deren fehlender Flächenanteil als Rest zu 1 eingesetzt wurde (BK-8).</summary>
         public int AnteilErgaenzt { get; internal set; }
+        /// <summary>
+        /// Wiederimport (BK-8b): Aufbauten, die schon als Importsatz im Katalog stehen und durch die Teilung an gemeinsamen
+        /// Schichtgrenzen andere Schichten bekämen; nur die Vorschau zählt sie (<see cref="BauteilkatalogImport.Vorschau"/>).
+        /// </summary>
+        public int WiederimportGeteilt { get; internal set; }
+        /// <summary>Wiederimport (BK-8b): davon die Aufbauten, deren U-Wert sich um mehr als 1 % ändert.</summary>
+        public int WiederimportUGeaendert { get; internal set; }
+        /// <summary>Wiederimport (BK-8b): die größte Änderung des U-Werts in % (Betrag); <c>null</c> = keiner verglichen.</summary>
+        public double? WiederimportUMaxProzent { get; internal set; }
         /// <summary>
         /// Importsätze (<c>IMPORT</c>) des Katalogs mit Name und Gruppe eines Auslieferungssatzes (<c>VORGABE</c>) — vermutete
         /// Dubletten, nur gezählt (BK-3d); die Vorschau nennt die Zahl im Protokoll, gelöscht wird nichts.
@@ -424,6 +436,7 @@ namespace WindowsFormsApplication1
             internal long ZielId;
             internal Satz Vertreter;          // Schicht → Baustoff, Schicht/Abschnitt → Aufbau
             internal Satz Abschnitt;          // Schicht → Abschnitt
+            internal bool Geteilt;            // Aufbau: an gemeinsamen Schichtgrenzen geteilt (BK-8b)
             internal BauteilkatalogBestand Bestand;
             internal List<Satz> Schichten = new List<Satz>();
             internal SortedSet<string> Teilkataloge = new SortedSet<string>(StringComparer.Ordinal); // BK-7
@@ -957,12 +970,16 @@ namespace WindowsFormsApplication1
         /// Abschnitts bildet die Ebene k, und die Flächenanteile der Abschnitte ergeben 1 ± 0,01.
         /// <para><b>Fehlender Flächenanteil (BK-8).</b> Fehlt er (leer oder 0) bei genau einem Abschnitt und lassen die übrigen mehr
         /// als die Toleranz bis 1 offen, trägt dieser Abschnitt den Rest 1 − Σ (Hinweis); sonst wird verworfen.</para>
-        /// <para><b>Verschiedene Schichtzahl (BK-8, DIN EN ISO 6946, 6.7.2.3).</b> Haben alle Abschnitte dieselbe Gesamtdicke
-        /// (<see cref="DICKE_TOLERANZ_M"/>), werden die Schichtgrenzen aller Abschnitte vereinigt und jede Schicht an den Grenzen der
-        /// übrigen geteilt — in der auf die eigene Gesamtdicke genormten Lage, so behält jeder Abschnitt seine Dicke und seinen
-        /// Widerstand, und der obere Grenzwert bleibt gleich; danach führt jeder Abschnitt gleich viele Schichten. Verworfen wird,
-        /// wenn die Dicken nicht zusammenpassen, eine Schicht keine Dicke hat oder eine ruhende Luftschicht (Widerstand nach
-        /// Tabelle, nicht dickenproportional) geteilt werden müsste. Aufbauten mit gleicher Schichtzahl bleiben unverändert.</para>
+        /// <para><b>Gemeinsame Schichtgrenzen (BK-8, BK-8b, DIN EN ISO 6946, 6.7.2.3).</b> Für den unteren Grenzwert werden die
+        /// Schichten an den Grenzen aller übrigen Abschnitte geteilt: Die Schichtgrenzen aller Abschnitte werden vereinigt und jede
+        /// Schicht an den Grenzen der übrigen geteilt — in der auf die eigene Gesamtdicke genormten Lage, so behält jeder Abschnitt
+        /// seine Dicke und seinen Widerstand, und der obere Grenzwert bleibt gleich; danach führt jeder Abschnitt gleich viele
+        /// Schichten. Das gilt bei verschiedener wie bei gleicher Schichtzahl. Liegen bei gleicher Schichtzahl alle Grenzen
+        /// innerhalb der Toleranz (<see cref="DICKE_TOLERANZ_M"/>, <see cref="DICKE_TOLERANZ_ANTEIL"/>) übereinander, bleibt der
+        /// Aufbau, wie er ist. Verworfen wird, wenn geteilt werden muss und die Gesamtdicken nicht zusammenpassen, eine Schicht
+        /// neben verschiedener Schichtzahl keine Dicke hat oder eine ruhende Luftschicht (Widerstand nach Tabelle, nicht
+        /// dickenproportional) geteilt werden müsste. Bei gleicher Schichtzahl mit einer Schicht ohne Dicke ist die Lage der Grenzen
+        /// unbestimmt; der Aufbau bleibt, wie er ist.</para>
         /// Sonst wird der Aufbau samt Abschnitten und Schichten benannt verworfen.
         /// </summary>
         private static void AbschnittePruefen(Plan p, BauteilkatalogVorschau v)
@@ -981,7 +998,7 @@ namespace WindowsFormsApplication1
                 else
                 {
                     grund = AnteilePruefen(streifen, out ergaenzt, out rest);
-                    if (grund == null && streifen.Select(x => a.Schichten.Count(s => s.Abschnitt == x)).Distinct().Count() > 1)
+                    if (grund == null && streifen.Count > 1)
                         grund = Angleichen(a, streifen, out teile);
                 }
                 if (grund == null)
@@ -999,6 +1016,7 @@ namespace WindowsFormsApplication1
                         HashSet<Satz> alt = a.Schichten.ToHashSet();
                         p.Schichten.RemoveAll(alt.Contains);
                         a.Schichten = teile;
+                        a.Geteilt = true;
                         p.Schichten.AddRange(teile);
                         v.SchichtzahlAngeglichen++;
                         v.Teilschichten += teile.Count - vorher;
@@ -1038,54 +1056,73 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>Gemeinsame Schichtgrenzen</b> (BK-8, DIN EN ISO 6946, 6.7.2.3) für Abschnitte mit verschiedener Schichtzahl:
-        /// <c>null</c> und in <paramref name="teile"/> die Schichten aller Abschnitte, geteilt an der Vereinigung der Grenzen
-        /// (Lage je Abschnitt auf seine Gesamtdicke genormt), mit der Ebene als <c>Reihenfolge</c>; sonst der Ablehnungsgrund.
-        /// Ein Teil trägt den Anteil der Dicke und, wo die Quelle ihn nennt, denselben Anteil von <c>R_Quelle</c>.
+        /// <b>Gemeinsame Schichtgrenzen</b> (BK-8, BK-8b, DIN EN ISO 6946, 6.7.2.3) für Abschnitte eines Aufbaus: <c>null</c> und in
+        /// <paramref name="teile"/> die Schichten aller Abschnitte, geteilt an der Vereinigung der Grenzen (Lage je Abschnitt auf
+        /// seine Gesamtdicke genormt), mit der Ebene als <c>Reihenfolge</c>; <c>null</c> und <paramref name="teile"/> <c>null</c>,
+        /// wenn nichts zu teilen ist (gleiche Schichtzahl, Grenzen übereinander); sonst der Ablehnungsgrund.
+        /// <para><b>Übereinander.</b> Grenzen verschiedener Abschnitte, die in der genormten Lage höchstens die Dickentoleranz
+        /// (bezogen auf die größte Gesamtdicke) auseinanderliegen, sind eine gemeinsame Grenze an ihrem Mittel; zwei Grenzen
+        /// desselben Abschnitts bleiben immer getrennt (eine dünne Folie bleibt eine Schicht).</para>
+        /// Ein Teil trägt den Anteil der Dicke und, wo die Quelle ihn nennt, denselben Anteil von <c>R_Quelle</c>; die Teile einer
+        /// Schicht ergeben ihre Dicke, so bleibt R'_T jedes Abschnitts gleich.
         /// </summary>
         private static string Angleichen(Satz a, List<Satz> streifen, out List<Satz> teile)
         {
             teile = null;
             var folgen = streifen.ToDictionary(x => x, x => a.Schichten.Where(s => s.Abschnitt == x)
                                                                    .OrderBy(s => (int)s.Werte["Reihenfolge"]).ToList());
-            if (folgen.Values.SelectMany(f => f).Any(s => !(s.W("Dicke") > 0))) return MyResource.Resource.BKI_GRUND_OHNE_DICKE;
+            bool gleicheZahl = folgen.Values.Select(f => f.Count).Distinct().Count() == 1;
+            if (folgen.Values.SelectMany(f => f).Any(s => !(s.W("Dicke") > 0)))
+                return gleicheZahl ? null : MyResource.Resource.BKI_GRUND_OHNE_DICKE;
             var dicke = folgen.ToDictionary(f => f.Key, f => f.Value.Sum(s => s.W("Dicke").Value));
             double groesste = dicke.Values.Max(), kleinste = dicke.Values.Min();
-            if (groesste - kleinste > Math.Max(DICKE_TOLERANZ_M, DICKE_TOLERANZ_ANTEIL * groesste) + 1e-12)
-                return MyResource.Resource.BKI_GRUND_DICKEN;
+            double toleranz = Math.Max(DICKE_TOLERANZ_M, DICKE_TOLERANZ_ANTEIL * groesste);
 
-            // Die Vereinigung der inneren Grenzen in genormter Lage, dazu das Ende 1.
-            var grenzen = new List<double>();
+            // Die inneren Grenzen in genormter Lage, je Abschnitt und Index; zu Gruppen gemeinsamer Grenzen gefasst.
+            var grenzen = new List<(double Lage, Satz Streifen, int Index)>();
             foreach (KeyValuePair<Satz, List<Satz>> f in folgen)
             {
                 double z = 0.0;
                 for (int i = 0; i < f.Value.Count - 1; i++)
                 {
                     z += f.Value[i].W("Dicke").Value;
-                    grenzen.Add(z / dicke[f.Key]);
+                    grenzen.Add((z / dicke[f.Key], f.Key, i));
                 }
             }
-            grenzen.Sort();
-            var ebenen = new List<double>();
-            foreach (double g in grenzen)
-                if (g > GRENZE_GLEICH && g < 1.0 - GRENZE_GLEICH && (ebenen.Count == 0 || g - ebenen[ebenen.Count - 1] > GRENZE_GLEICH))
-                    ebenen.Add(g);
-            ebenen.Add(1.0);
+            double tolN = toleranz / groesste + GRENZE_GLEICH;
+            var gruppen = new List<(double Beginn, List<double> Lagen, HashSet<Satz> Streifen)>();
+            var gruppeVon = new Dictionary<(Satz, int), int>();
+            foreach ((double lage, Satz st, int index) in grenzen.OrderBy(g => g.Lage))
+            {
+                bool dazu = gruppen.Count > 0 && lage - gruppen[gruppen.Count - 1].Beginn <= tolN &&
+                            !gruppen[gruppen.Count - 1].Streifen.Contains(st);
+                if (!dazu) gruppen.Add((lage, new List<double>(), new HashSet<Satz>()));
+                gruppen[gruppen.Count - 1].Lagen.Add(lage);
+                gruppen[gruppen.Count - 1].Streifen.Add(st);
+                gruppeVon[(st, index)] = gruppen.Count - 1;
+            }
 
+            // Liegen bei gleicher Schichtzahl alle Grenzen übereinander, bleibt der Aufbau (Schicht k neben Schicht k).
+            if (gleicheZahl && gruppen.All(g => g.Streifen.Count == folgen.Count)) return null;
+            if (groesste - kleinste > toleranz + 1e-12) return MyResource.Resource.BKI_GRUND_DICKEN;
+
+            var ebenen = gruppen.Select(g => g.Lagen.Average()).ToList();
+            ebenen.Add(1.0);
             var ergebnis = new List<Satz>();
             foreach (KeyValuePair<Satz, List<Satz>> f in folgen)
             {
                 double z = 0.0;
-                int ebene = 0;
                 for (int i = 0; i < f.Value.Count; i++)
                 {
                     Satz s = f.Value[i];
-                    double d = s.W("Dicke").Value;
                     double t0 = z / dicke[f.Key];
-                    z += d;
-                    double t1 = i == f.Value.Count - 1 ? 1.0 : z / dicke[f.Key];
+                    z += s.W("Dicke").Value;
+                    bool letzte = i == f.Value.Count - 1;
+                    double t1 = letzte ? 1.0 : z / dicke[f.Key];
+                    int von = i == 0 ? -1 : gruppeVon[(f.Key, i - 1)];
+                    int bis = letzte ? ebenen.Count - 1 : gruppeVon[(f.Key, i)];
                     var stuecke = new List<double> { t0 };
-                    stuecke.AddRange(ebenen.Where(g => g > t0 + GRENZE_GLEICH && g < t1 - GRENZE_GLEICH));
+                    for (int g = von + 1; g < bis; g++) stuecke.Add(ebenen[g]);
                     stuecke.Add(t1);
                     bool ruhendeLuft = (int)s.Werte["IstLuftschicht"] == 1 && !(s.Lambda > 0);
                     if (stuecke.Count > 2 && ruhendeLuft) return MyResource.Resource.BKI_GRUND_LUFTSCHICHT;
@@ -1093,13 +1130,13 @@ namespace WindowsFormsApplication1
                     {
                         double anteil = (stuecke[k + 1] - stuecke[k]) / (t1 - t0);
                         Satz t = stuecke.Count == 2 ? s : Teil(s, anteil);
-                        while (ebenen[ebene] < stuecke[k + 1] - GRENZE_GLEICH) ebene++;
-                        t.Werte["Reihenfolge"] = ++ebene;
+                        t.Werte["Reihenfolge"] = von + 2 + k;
                         ergebnis.Add(t);
                     }
                 }
-                if (ebene != ebenen.Count) throw new InvalidOperationException("Ebenen des Abschnitts unvollständig: " + a.Kennung);
             }
+            if (ergebnis.GroupBy(s => s.Abschnitt).Any(g => g.Count() != ebenen.Count))
+                throw new InvalidOperationException("Ebenen des Abschnitts unvollständig: " + a.Kennung);
             teile = ergebnis.OrderBy(s => (int)s.Werte["Reihenfolge"]).ThenBy(s => (int)s.Abschnitt.Werte["Nummer"]).ToList();
             return null;
         }
@@ -1116,6 +1153,58 @@ namespace WindowsFormsApplication1
             if (s.W("R_Quelle") is double r) t.Werte["R_Quelle"] = r * anteil;
             return t;
         }
+
+        /// <summary>Die Änderung des U-Werts, ab der der Wiederimport-Vergleich einen Aufbau zählt: 1 %.</summary>
+        internal const double WIEDERIMPORT_U_SCHWELLE = 0.01;
+
+        /// <summary>
+        /// <b>Wiederimport-Vergleich</b> (BK-8b): Für jeden geteilten Aufbau, der als Importsatz schon im Katalog steht
+        /// (<see cref="AKTUALISIEREN"/>) und andere Schichten bekäme, als <paramref name="alt"/> liest, zählt die Vorschau ihn und —
+        /// ändert sich U um mehr als <see cref="WIEDERIMPORT_U_SCHWELLE"/> — als geändert, dazu die größte Änderung in %.
+        /// Ergänzte Sätze (<see cref="ERGAENZEN"/>) behalten ihre Schichten und zählen nicht. Schreibt nichts.
+        /// </summary>
+        internal static void WiederimportVergleichen(Plan p, Func<long, BauteilaufbauModel> alt)
+        {
+            BauteilkatalogVorschau v = p.Vorschau;
+            foreach (Satz a in p.Aufbauten.Where(x => x.Geteilt && x.Aktion == AKTUALISIEREN && x.Bestand != null))
+            {
+                BauteilaufbauModel vorher = alt(a.Bestand.Id), nachher = ModellAusPlan(p, a);
+                if (vorher == null || GleicheSchichten(vorher, nachher)) continue;
+                v.WiederimportGeteilt++;
+                double? uAlt = BauteilaufbauCtrl.Kennwerte(vorher, false).U_WM2K, uNeu = BauteilaufbauCtrl.Kennwerte(nachher, false).U_WM2K;
+                if (!(uAlt > 0) || !uNeu.HasValue) continue;
+                double aenderung = Math.Abs(uNeu.Value - uAlt.Value) / uAlt.Value;
+                v.WiederimportUMaxProzent = Math.Max(v.WiederimportUMaxProzent ?? 0.0, aenderung * 100.0);
+                if (aenderung > WIEDERIMPORT_U_SCHWELLE + 1e-12) v.WiederimportUGeaendert++;
+            }
+        }
+
+        /// <summary>Dieselben Schichten: gleiche Zahl, je Zeile Ebene, Abschnitt und Dicke (auf 1e-9 m) gleich.</summary>
+        private static bool GleicheSchichten(BauteilaufbauModel x, BauteilaufbauModel y)
+        {
+            List<BauteilschichtModel> a = x.Schichten.Where(s => s != null).OrderBy(s => s.Reihenfolge).ThenBy(s => s.Abschnitt).ToList();
+            List<BauteilschichtModel> b = y.Schichten.Where(s => s != null).OrderBy(s => s.Reihenfolge).ThenBy(s => s.Abschnitt).ToList();
+            return a.Count == b.Count && a.Zip(b, (s, t) => s.Reihenfolge == t.Reihenfolge && s.Abschnitt == t.Abschnitt &&
+                                                           Math.Abs(s.Dicke - t.Dicke) <= 1e-9).All(g => g);
+        }
+
+        /// <summary>Der geplante Aufbau <paramref name="a"/> als Modell, wie ihn der Katalog nach dem Schreiben liest.</summary>
+        internal static BauteilaufbauModel ModellAusPlan(Plan p, Satz a) => new BauteilaufbauModel
+        {
+            Bezeichner = a.Werte.TryGetValue("Bezeichner", out object n) ? n as string ?? "" : "",
+            Bauteilart = a.Werte.TryGetValue("Bauteilart", out object art) ? art as string : null,
+            Schichten = a.Schichten.OrderBy(s => (int)s.Werte["Reihenfolge"]).ThenBy(s => s.Abschnitt == null ? 0 : (int)s.Abschnitt.Werte["Nummer"])
+                                   .Select(s => new BauteilschichtModel
+                                   {
+                                       Reihenfolge = (int)s.Werte["Reihenfolge"], Dicke = s.W("Dicke") ?? 0.0, Lambda = s.Lambda, Rho = s.Rho,
+                                       Cp = s.Cp, IstLuftschicht = (int)s.Werte["IstLuftschicht"] == 1,
+                                       Abschnitt = s.Abschnitt == null ? null : (int)s.Abschnitt.Werte["Nummer"]
+                                   }).ToList(),
+            Abschnitte = p.Abschnitte.Where(x => x.Vertreter == a).Select(x => new BauteilabschnittModel
+            {
+                Nummer = (int)x.Werte["Nummer"], Flaechenanteil = x.W("Flaechenanteil")
+            }).ToList()
+        };
 
         /// <summary>Regel 7: Dämmlage hinter tragender Schicht (Außenwände) und U aus Schichten gegen U der Quelle.</summary>
         private static void Richtungsprobe(Plan p)
@@ -1301,7 +1390,9 @@ namespace WindowsFormsApplication1
                     stand = StandLesen(v);
                     v.Rollback();
                 }
-            BauteilkatalogVorschau vs = Planen(q, stand).Vorschau;
+            Plan p = Planen(q, stand);
+            if (q.Abgelehnt == null) WiederimportVergleichen(p, id => new BauteilaufbauCtrl().LesenKatalogsatz((int)id));
+            BauteilkatalogVorschau vs = p.Vorschau;
             vs.DauerMs = uhr.ElapsedMilliseconds;
             return vs;
         }

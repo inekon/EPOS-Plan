@@ -87,6 +87,8 @@ namespace WindowsFormsApplication1
                 RT_M2KW = k.RT_M2KW,
                 RT_Oben_M2KW = k.RT_Oben_M2KW,
                 RT_Unten_M2KW = k.RT_Unten_M2KW,
+                Fehlerschranke = k.Fehlerschranke,
+                Hinweis = k.Hinweis ?? "",
                 U_WM2K = k.U_WM2K,
                 Kapazitaet_KJM2K = k.Kapazitaet_KJM2K,
                 KapazitaetWirksam_KJM2K = k.KapazitaetWirksam_KJM2K,

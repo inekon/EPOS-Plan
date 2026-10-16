@@ -10356,7 +10356,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Inhomogene Aufbauten: {0} mit verschiedener Schichtzahl je Abschnitt an gemeinsamen Schichtgrenzen geteilt ({1} Teilschichten zusätzlich); {2} fehlende Flächenanteile als Rest zu 1 eingesetzt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Inhomogene Aufbauten: {0} an gemeinsamen Schichtgrenzen geteilt (verschiedene Schichtzahl oder versetzte Grenzen je Abschnitt, {1} Teilschichten zusätzlich); {2} fehlende Flächenanteile als Rest zu 1 eingesetzt. ähnelt.
         /// </summary>
         public static string BKI_INHOMOGEN {
             get {
@@ -10559,6 +10559,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BKI_VORSCHAU {
             get {
                 return ResourceManager.GetString("BKI_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wiederimport: {0} Aufbauten im Katalog bekommen durch die Teilung an gemeinsamen Schichtgrenzen andere Schichten; {1} davon ändern ihren U-Wert um mehr als 1 % (größte Änderung {2} %). ähnelt.
+        /// </summary>
+        public static string BKI_WIEDERIMPORT {
+            get {
+                return ResourceManager.GetString("BKI_WIEDERIMPORT", resourceCulture);
             }
         }
         
@@ -16363,6 +16372,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fehlerschranke e = {0} % liegt über {1} % (R'_T / R''_T über 1,5): Das vereinfachte Verfahren nach DIN EN ISO 6946, 6.7 ist für diesen Aufbau ungenau; gerechnet wird weiter mit dem Mittel R_T. ähnelt.
+        /// </summary>
+        public static string BTA_HINWEIS_FEHLERSCHRANKE {
+            get {
+                return ResourceManager.GetString("BTA_HINWEIS_FEHLERSCHRANKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ohne λ ist die Luftschicht eine ruhende Luftschicht: Ihr Widerstand folgt DIN EN ISO 6946, Tabelle 8, und sie trägt keine Speichermasse. ähnelt.
         /// </summary>
         public static string BTA_HINWEIS_LUFTSCHICHT {
@@ -16701,6 +16719,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BTA_SUMME_C {
             get {
                 return ResourceManager.GetString("BTA_SUMME_C", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fehlerschranke e = (R'_T − R''_T) / (2 R_T) = {0} % ähnelt.
+        /// </summary>
+        public static string BTA_SUMME_FEHLERSCHRANKE {
+            get {
+                return ResourceManager.GetString("BTA_SUMME_FEHLERSCHRANKE", resourceCulture);
             }
         }
         

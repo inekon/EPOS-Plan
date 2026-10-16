@@ -54445,6 +54445,12 @@ chart</value>
   <data name="BTA_SUMME_RT_MITTEL" xml:space="preserve">
     <value>R_T = (R'_T + R''_T) / 2 = {0} m²K/W</value>
   </data>
+  <data name="BTA_SUMME_FEHLERSCHRANKE" xml:space="preserve">
+    <value>Error bound e = (R'_T − R''_T) / (2 R_T) = {0} %</value>
+  </data>
+  <data name="BTA_HINWEIS_FEHLERSCHRANKE" xml:space="preserve">
+    <value>The error bound e = {0} % exceeds {1} % (R'_T / R''_T above 1.5): the simplified method of EN ISO 6946, 6.7 is inaccurate for this construction; the mean R_T is still used.</value>
+  </data>
   <data name="BTA_GRUPPE_FENSTER" xml:space="preserve">
     <value>Window</value>
   </data>
@@ -54812,13 +54818,16 @@ chart</value>
     <value>inhomogeneous: layer without thickness in sections with different layer counts</value>
   </data>
   <data name="BKI_INHOMOGEN" xml:space="preserve">
-    <value>Inhomogeneous constructions: {0} with different layer counts per section split at common layer boundaries ({1} additional sub-layers); {2} missing area fractions set to the remainder of 1.</value>
+    <value>Inhomogeneous constructions: {0} split at common layer boundaries (different layer counts or offset boundaries per section, {1} additional sub-layers); {2} missing area fractions set to the remainder of 1.</value>
   </data>
   <data name="BKI_PROT_ANTEIL" xml:space="preserve">
     <value>Area fraction set to the remainder of 1 (section {0}: {1}): {2}</value>
   </data>
   <data name="BKI_PROT_GETEILT" xml:space="preserve">
     <value>Layers split at common layer boundaries ({0} → {1} layers): {2}</value>
+  </data>
+  <data name="BKI_WIEDERIMPORT" xml:space="preserve">
+    <value>Re-import: {0} constructions in the catalogue get different layers from the split at common layer boundaries; {1} of them change their U-value by more than 1 % (largest change {2} %).</value>
   </data>
   <data name="BKI_UEBERNEHMEN" xml:space="preserve">
     <value>Import</value>

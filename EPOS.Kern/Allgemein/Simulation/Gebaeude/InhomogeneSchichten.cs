@@ -12,6 +12,18 @@ namespace WindowsFormsApplication1
     {
         /// <summary>Der Wärmedurchgangswiderstand R_T = (R'_T + R''_T) / 2.</summary>
         public double RT_M2KW => (RT_Oben_M2KW + RT_Unten_M2KW) / 2.0;
+
+        /// <summary>
+        /// Die größte mögliche relative Abweichung e = (R'_T − R''_T) / (2 R_T) des Mittels R_T vom wahren Wert
+        /// (DIN EN ISO 6946, 6.7.2.5) — eine Schranke, kein Zuschlag: R_T bleibt das Mittel.
+        /// </summary>
+        public double Fehlerschranke => RT_M2KW > 0 ? (RT_Oben_M2KW - RT_Unten_M2KW) / (2.0 * RT_M2KW) : 0.0;
+
+        /// <summary>
+        /// Liegt <see cref="Fehlerschranke"/> über <see cref="InhomogeneSchichten.FEHLERSCHRANKE_GRENZE"/>? Dann trägt der
+        /// vereinfachte Weg die Genauigkeit nicht, die die Norm ihm zuschreibt — ein Hinweis, keine Ablehnung.
+        /// </summary>
+        public bool FehlerschrankeUeberschritten => Fehlerschranke > InhomogeneSchichten.FEHLERSCHRANKE_GRENZE + 1e-12;
     }
 
     /// <summary>
@@ -32,12 +44,22 @@ namespace WindowsFormsApplication1
     /// λ_eff = d_j / (k·R_j), ρ_eff = Σ f_m ρ_m d_mj / d_j und c_eff = Σ f_m ρ_m c_m d_mj / (ρ_eff d_j) — die Kapazität der Ebene
     /// flächengewichtet. Eine Ebene mit einer Luftschicht ist eine Luftschicht mit äquivalenter Leitfähigkeit.</para>
     ///
+    /// <para><b>Fehlerschranke.</b> e = (R'_T − R''_T) / (2 R_T) nach 6.7.2.5 (<see cref="Abschnittsgrenzen.Fehlerschranke"/>);
+    /// über <see cref="FEHLERSCHRANKE_GRENZE"/> nennt der Summenfuß einen Hinweis. Der Rechenweg bleibt das Mittel.</para>
+    ///
     /// <para><b>Ein Aufbau ohne Abschnitt</b> läuft nicht hierher; sein Weg bleibt unverändert.</para>
     /// </summary>
     public static class InhomogeneSchichten
     {
         /// <summary>Die zulässige Abweichung der Summe der Flächenanteile von 1.</summary>
         public const double ANTEIL_TOLERANZ = 0.01;
+
+        /// <summary>
+        /// Die Höchstgrenze der relativen Abweichung e für den Hinweis (DIN EN ISO 6946, 6.7.2.5): 20 %. Sie entspricht dem
+        /// Verhältnis R'_T / R''_T = 1,5 — bis dahin gilt das vereinfachte Verfahren nach 6.7 als anwendbar; darüber (etwa
+        /// Metall, das die Dämmung durchdringt) verweist die Norm auf eine numerische Rechnung nach DIN EN ISO 10211.
+        /// </summary>
+        public const double FEHLERSCHRANKE_GRENZE = 0.20;
 
         /// <summary>Führt der Aufbau eine Schicht mit Abschnitt?</summary>
         public static bool Inhomogen(BauteilaufbauModel m) => m?.Schichten != null && m.Schichten.Any(s => s?.Abschnitt != null);
