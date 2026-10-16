@@ -39,14 +39,14 @@ namespace WindowsFormsApplication1
         Rechenspalte = 0,
         /// <summary>Eine Spalte von <c>Tab_Solar(_STAMM)</c>, die EPOS-Plan rechnet (Fassadenwerte, Sonnenwinkel).</summary>
         Gerechnet = 1,
-        /// <summary>Ein Rohwert der Quelle; erst mit den Rohwerten (KD-4, Teil B).</summary>
+        /// <summary>Ein Rohwert der Quelle aus <c>Tab_Klimastunde_STAMM</c> (KD-4); gezeigt, sobald der Schritt 238 steht (Teil B).</summary>
         Rohwert = 2
     }
 
     /// <summary>
-    /// <b>Eine Größe des Reihenkatalogs</b> (Auftrag KD-8 Teil A). Der <see cref="Schluessel"/> ist
-    /// derselbe wie in <c>KlimaExportOptionen.Groessen</c> (KD-5), die <see cref="Spalte"/> dieselbe
-    /// Datenbankspalte — so setzt der Export beim Zusammenführen auf dieses Verzeichnis auf.
+    /// <b>Eine Größe des Reihenkatalogs</b> (Auftrag KD-8). Der <see cref="Schluessel"/> steht allein hier;
+    /// <c>KlimaExportOptionen.Groessen</c> (KD-5) nimmt Schlüssel, Spalte und Einheit von hier — eine Quelle für
+    /// Reihenwahl und Export.
     /// </summary>
     public sealed class KlimaReihe
     {
@@ -89,8 +89,8 @@ namespace WindowsFormsApplication1
         /// <summary>Die Einheit im Monatsbild: kWh/m² bei Summen, sonst die der Stundenwerte.</summary>
         public string Monatseinheit => Monatsregel == KlimaMonatsregel.Summe ? KlimaReihenkatalog.EINHEIT_SUMME : Einheit;
 
-        /// <summary>Freigeschaltet? Teil A schaltet nur die Spalten von <c>Tab_Solar(_STAMM)</c> frei.</summary>
-        public bool Freigeschaltet => Herkunft != KlimaReihenherkunft.Rohwert || KlimaReihenkatalog.RohwerteFreigeschaltet;
+        /// <summary>Ein Rohwert der Quelle (Marke „R“; gezeigt, sobald die Rohwerttabelle des Schritts 238 steht, Teil B).</summary>
+        public bool IstRohwert => Herkunft == KlimaReihenherkunft.Rohwert;
     }
 
     /// <summary>Eine Reihe einer Region mit ihren Stundenwerten und der Aussage, ob die Quelle sie führt.</summary>
@@ -106,16 +106,19 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// <b>Der Reihenkatalog des Klimadatenimports</b> (Auftrag KD-8 Teil A, Konzept Klimadatenimport
-    /// § 4a): je Größe Einheit, Gruppe, Monatsregel, Herkunft und Reihenfolge — einmal im Kern; die
-    /// Oberfläche fragt nur ab. Teil A schaltet die Spalten von <c>Tab_Solar(_STAMM)</c> frei; die
-    /// Rohwert-Größen (Luftdruck, Wind, Wasserdampf, Ausstrahlung, Direktstrahlung horizontal,
-    /// Windrichtung, Qualitätskennung) stehen hier mit <see cref="KlimaReihenherkunft.Rohwert"/>
-    /// und bekommen vor KD-4 keinen Chip.
+    /// <b>Der Reihenkatalog des Klimadatenimports</b> (Auftrag KD-8, Konzept Klimadatenimport § 4a): je
+    /// Größe Einheit, Gruppe, Monatsregel, Herkunft und Reihenfolge — einmal im Kern; die Oberfläche
+    /// fragt nur ab. Teil A zeigt die Spalten von <c>Tab_Solar(_STAMM)</c>; Teil B zeigt die Rohwert-Größen
+    /// (Luftdruck, Wind, Wasserdampf, Ausstrahlung, Direktstrahlung horizontal; Windrichtung und
+    /// Qualitätskennung ohne Bild) mit <see cref="KlimaReihenherkunft.Rohwert"/>, sobald die Rohwerttabelle
+    /// des Schritts 238 steht (<see cref="RohwerteFreigeschaltet"/>, aus dem Datenstand): in der Vorschau aus
+    /// der gelesenen Rohreihe, im Jahresverlauf aus <c>Tab_Klimastunde_STAMM</c> (Leser
+    /// <c>KlimaExportCtrl.RohwerteLesen</c>, <see cref="AusRohwerten"/>); eine Größe, die die Region nicht
+    /// führt, bleibt weich gesperrt („führt nicht“).
     ///
-    /// <para><b>Schlüssel und Spalten</b> sind die des Exportverzeichnisses <c>KlimaExportOptionen.Groessen</c>
-    /// (KD-5): <c>R_*</c> für Rechenspalten, <c>F_*</c> für gerechnete Spalten, <c>ROH_</c> + Spalte der
-    /// Rohwerttabelle für Rohwerte.</para>
+    /// <para><b>Schlüssel und Spalten</b> stehen allein hier — <c>R_*</c> für Rechenspalten, <c>F_*</c> für
+    /// gerechnete Spalten, <c>ROH_</c> + Spalte der Rohwerttabelle für Rohwerte —, der Export
+    /// (<c>KlimaExportOptionen</c>, KD-5) nimmt sie als Aliasse.</para>
     /// </summary>
     public static class KlimaReihenkatalog
     {
@@ -132,7 +135,7 @@ namespace WindowsFormsApplication1
         public const string F_WEST = "F_WEST";
         public const string F_SONNENWINKEL = "F_SONNENWINKEL";
 
-        /// <summary>Präfix der Rohwert-Schlüssel (wie <c>KlimaExportOptionen.ROH_PREFIX</c>).</summary>
+        /// <summary>Präfix der Rohwert-Schlüssel (<c>ROH_</c> + Spalte der Rohwerttabelle; der Export nimmt ihn als Alias).</summary>
         public const string ROH_PREFIX = "ROH_";
 
         /// <summary>Die Einheit einer Monatssumme der Strahlung.</summary>
@@ -151,11 +154,20 @@ namespace WindowsFormsApplication1
         public static readonly IReadOnlyList<string> VORGABE_JAHRESVERLAUF = new[] { R_GLOBAL };
 
         /// <summary>
-        /// Teil B (KD-4, Rohwerttabelle) schaltet die Rohwerte frei; bis dahin bekommen sie keinen Chip,
-        /// weder in der Vorschau noch im Reiter „Weitere Reihen“ (Konzept § 4a.3, Anwenderentscheid
-        /// 16.10.2026). Gesetzt wird der Schalter nur von Teil B und von Tests (Gegenprobe).
+        /// Sind die Rohwerte freigeschaltet? Aus dem DATENSTAND (Teil B, Konzept § 4a.3, Anwenderentscheid 16.10.2026):
+        /// ja, sobald die Rohwerttabelle und die Regionsspalten des Schritts 238 (<see cref="KlimaRohwerteSchema"/>) in
+        /// der Datenbank stehen. Die Hülle fragt einmal je Ansicht (<see cref="AusRohwerten"/>), die Vorschau trägt
+        /// dieselbe Auskunft als <c>KlimaVorschauErgebnis.RohwerteGespeichert</c>; vorher bekommen die Rohwerte keinen
+        /// Chip (<see cref="Sichtbar"/>).
         /// </summary>
-        public static bool RohwerteFreigeschaltet { get; internal set; }
+        public static bool RohwerteFreigeschaltet() => KlimaRohwerteSchema.SchemaVollstaendig();
+
+        /// <summary>
+        /// Zeigt diese Fassung die Größe? Rechen- und gerechnete Spalten immer, Rohwerte nur freigeschaltet
+        /// (<paramref name="rohwerteFreigeschaltet"/>, aus dem Datenstand) — sonst ohne Chip (§ 4a.3).
+        /// </summary>
+        public static bool Sichtbar(KlimaReihe r, bool rohwerteFreigeschaltet)
+            => r != null && (!r.IstRohwert || rohwerteFreigeschaltet);
 
         private static KlimaReihe Rechen(int nr, string schluessel, KlimaParameter p, Func<string> name, Func<string> kurz,
                                          string einheit, KlimaReihengruppe gruppe, KlimaMonatsregel regel, string spalte,
@@ -230,28 +242,28 @@ namespace WindowsFormsApplication1
                 Herkunft = KlimaReihenherkunft.Gerechnet, Spalte = "Sonnenwinkel", Rolle = Farbrolle.SONNENWINKEL
             },
 
-            // ---- Rohwerte (Teil B, mit KD-4); Spalten wie KlimaRohwerteSchema.SPALTE_* ----
-            Roh(30, "Wasserdampfgehalt_g_kg", KlimaParameter.Wasserdampfgehalt, () => MyResource.Resource.KLIMA_RW_NAME_WASSERDAMPF,
+            // ---- Rohwerte (Teil B, KD-4): die Spalten von Tab_Klimastunde_STAMM ----
+            Roh(30, KlimaRohwerteSchema.SPALTE_WASSERDAMPF, KlimaParameter.Wasserdampfgehalt, () => MyResource.Resource.KLIMA_RW_NAME_WASSERDAMPF,
                 () => MyResource.Resource.KLIMA_PAR_WASSERDAMPFGEHALT, "g/kg", KlimaReihengruppe.TemperaturFeuchte,
                 KlimaMonatsregel.Mittel, Farbrolle.SERIE_3),
-            Roh(60, "Direkt_Horizontal_W_m2", KlimaParameter.DirektstrahlungHorizontal,
+            Roh(60, KlimaRohwerteSchema.SPALTE_DIREKT_HORIZONTAL, KlimaParameter.DirektstrahlungHorizontal,
                 () => MyResource.Resource.KLIMA_RW_NAME_DIREKT_HORIZONTAL,
                 () => MyResource.Resource.KLIMA_PAR_DIREKTSTRAHLUNGHORIZONTAL, "W/m²", KlimaReihengruppe.Strahlung,
                 KlimaMonatsregel.Summe, Farbrolle.SERIE_1),
-            Roh(90, "Ausstrahlung_W_m2", KlimaParameter.Ausstrahlung, () => MyResource.Resource.KLIMA_RW_NAME_AUSSTRAHLUNG,
+            Roh(90, KlimaRohwerteSchema.SPALTE_AUSSTRAHLUNG, KlimaParameter.Ausstrahlung, () => MyResource.Resource.KLIMA_RW_NAME_AUSSTRAHLUNG,
                 () => MyResource.Resource.KLIMA_PAR_AUSSTRAHLUNG, "W/m²", KlimaReihengruppe.Strahlung,
                 KlimaMonatsregel.Summe, Farbrolle.SERIE_4),
-            Roh(140, "Luftdruck_hPa", KlimaParameter.Luftdruck, () => MyResource.Resource.KLIMA_RW_NAME_LUFTDRUCK,
+            Roh(140, KlimaRohwerteSchema.SPALTE_LUFTDRUCK, KlimaParameter.Luftdruck, () => MyResource.Resource.KLIMA_RW_NAME_LUFTDRUCK,
                 () => MyResource.Resource.KLIMA_PAR_LUFTDRUCK, "hPa", KlimaReihengruppe.BewoelkungDruckWind,
                 KlimaMonatsregel.Mittel, Farbrolle.SERIE_6),
-            Roh(150, "Windgeschwindigkeit_m_s", KlimaParameter.Windgeschwindigkeit,
+            Roh(150, KlimaRohwerteSchema.SPALTE_WINDGESCHWINDIGKEIT, KlimaParameter.Windgeschwindigkeit,
                 () => MyResource.Resource.KLIMA_RW_NAME_WIND,
                 () => MyResource.Resource.KLIMA_PAR_WINDGESCHWINDIGKEIT, "m/s", KlimaReihengruppe.BewoelkungDruckWind,
                 KlimaMonatsregel.Mittel, Farbrolle.SERIE_7),
-            Roh(160, "Windrichtung_Grad", KlimaParameter.Windrichtung, () => MyResource.Resource.KLIMA_RW_NAME_WINDRICHTUNG,
+            Roh(160, KlimaRohwerteSchema.SPALTE_WINDRICHTUNG, KlimaParameter.Windrichtung, () => MyResource.Resource.KLIMA_RW_NAME_WINDRICHTUNG,
                 () => MyResource.Resource.KLIMA_PAR_WINDRICHTUNG, "°", KlimaReihengruppe.Ohne,
                 KlimaMonatsregel.KeinBild, Farbrolle.UNBENANNT),
-            Roh(170, "Qualitaet_Strahlung", KlimaParameter.QualitaetStrahlung, () => MyResource.Resource.KLIMA_RW_NAME_QUALITAET,
+            Roh(170, KlimaRohwerteSchema.SPALTE_QUALITAET, KlimaParameter.QualitaetStrahlung, () => MyResource.Resource.KLIMA_RW_NAME_QUALITAET,
                 () => MyResource.Resource.KLIMA_PAR_QUALITAETSTRAHLUNG, "", KlimaReihengruppe.Ohne,
                 KlimaMonatsregel.KeinBild, Farbrolle.UNBENANNT)
         }.OrderBy(r => r.Reihenfolge).ToList();
@@ -342,7 +354,7 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
-        // Reihenbestand einer Region (Rechenspalten)
+        // Reihenbestand einer Region (Rechenspalten, Teil A; Rohwerte, Teil B)
         // =====================================================================
 
         /// <summary>
@@ -374,6 +386,59 @@ namespace WindowsFormsApplication1
                 if (!double.IsNaN(w) && w != 0.0) return true;
             return false;
         }
+
+        /// <summary>
+        /// Die Rohwert-Reihen einer Katalogregion für den Reiter „Weitere Reihen“ (Teil B): je Rohwert-Größe mit Bild
+        /// die Stundenwerte aus <see cref="KlimaExportDaten.Rohwerte"/> (Leser <c>KlimaExportCtrl.RohwerteLesen</c>,
+        /// Stunde 1 … 8760 im Raster der Quelle). <b>Führt nicht</b> heißt: die Region trägt keine Rohwerte
+        /// (<c>Rohdaten = 0</c>, Altbestand nach KD-Q7) oder die Spalte ist in jeder Stunde NULL (etwa Wasserdampf und
+        /// Ausstrahlung bei PVGIS) — der Chip bleibt dann weich gesperrt. <c>null</c> = keine Reihen.
+        /// </summary>
+        public static IReadOnlyList<KlimaReihenwerte> AusRohwerten(KlimaExportDaten roh)
+        {
+            var liste = new List<KlimaReihenwerte>();
+            if (roh == null) return liste;
+            foreach (KlimaReihe r in Reihen)
+            {
+                if (!r.ImJahresverlauf || !r.IstRohwert) continue;
+                double[] werte;
+                if (roh.Rohdaten && roh.Rohwerte.TryGetValue(r.Spalte, out double[] w) && w != null && w.Length > 0)
+                    werte = (double[])w.Clone();
+                else
+                {
+                    werte = new double[KlimaRohwerteSchema.STUNDE_MAX];
+                    for (int i = 0; i < werte.Length; i++) werte[i] = double.NaN;
+                }
+                liste.Add(new KlimaReihenwerte { Reihe = r, Werte = werte, Gefuehrt = roh.Rohdaten && Gefuehrt(werte) });
+            }
+            return liste;
+        }
+
+        /// <summary>Die erste Stunde (0-basiert) jedes Monats im Gemeinjahr, dazu 8760 als Ende.</summary>
+        private static readonly int[] MONATSBEGINN =
+            { 0, 744, 1416, 2160, 2880, 3624, 4344, 5088, 5832, 6552, 7296, 8016, 8760 };
+
+        /// <summary>Der Monat (0 … 11) einer Stunde 1 … 8760 im Gemeinjahr (kein Schaltjahr); −1 außerhalb.</summary>
+        public static int MonatVonStunde(int stunde)
+        {
+            if (stunde < KlimaRohwerteSchema.STUNDE_MIN || stunde > KlimaRohwerteSchema.STUNDE_MAX) return -1;
+            int h = stunde - 1;
+            for (int m = 0; m < 12; m++)
+                if (h < MONATSBEGINN[m + 1]) return m;
+            return -1;
+        }
+
+        /// <summary>Der Rohwert einer gelesenen Stunde (Vorschau, Teil B); <c>null</c> = die Quelle führt ihn nicht.</summary>
+        internal static double? Rohstundenwert(KlimaRohstunde s, string schluessel) => schluessel switch
+        {
+            ROH_PREFIX + KlimaRohwerteSchema.SPALTE_WASSERDAMPF => s.Wasserdampfgehalt_g_kg,
+            ROH_PREFIX + KlimaRohwerteSchema.SPALTE_DIREKT_HORIZONTAL => s.DirektHorizontal,
+            ROH_PREFIX + KlimaRohwerteSchema.SPALTE_AUSSTRAHLUNG => s.Ausstrahlung,
+            ROH_PREFIX + KlimaRohwerteSchema.SPALTE_LUFTDRUCK => s.Luftdruck_hPa,
+            ROH_PREFIX + KlimaRohwerteSchema.SPALTE_WINDGESCHWINDIGKEIT => s.Windgeschwindigkeit_m_s,
+            ROH_PREFIX + KlimaRohwerteSchema.SPALTE_WINDRICHTUNG => s.Windrichtung_Grad,
+            _ => null
+        };
 
         private static double? Spaltenwert(SolardatenModel z, string schluessel) => schluessel switch
         {

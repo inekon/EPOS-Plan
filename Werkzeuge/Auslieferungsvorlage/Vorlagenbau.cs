@@ -43,6 +43,8 @@ namespace Auslieferungsvorlage
             "Tab_Kenndaten_Kuehlung_STAMM",
             "Tab_Klimadaten_STAMM",
             "Tab_Solar_STAMM",
+            // KD-4: die Rohwerte einer Klimaregion haengen an Tab_Klimaregion_STAMM (Kaskade).
+            KlimaRohwerteSchema.TAB_ROH,
             SchemaKatalog.TAB_BAUTEILSCHICHT_STAMM,
             // BK-2 (Schritt 221): die Abschnitte eines Katalogaufbaus haengen an Tab_Bauteilaufbau_STAMM (Kaskade).
             BauteilkatalogSchema.TAB_ABSCHNITT_STAMM,

@@ -24890,6 +24890,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiefluss (Jahresbilanz Strom, Wärme, Kälte; Umweltanteil nach Jahresarbeitszahl) ähnelt.
+        /// </summary>
+        public static string EF_BER_BESCHRIFTUNG {
+            get {
+                return ResourceManager.GetString("EF_BER_BESCHRIFTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Energieflussbild — {0} ähnelt.
+        /// </summary>
+        public static string EF_BER_OHNE_BILD {
+            get {
+                return ResourceManager.GetString("EF_BER_OHNE_BILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kette ähnelt.
         /// </summary>
         public static string EF_DARSTELLUNG_KETTE {
@@ -61317,6 +61335,861 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle ähnelt.
+        /// </summary>
+        public static string KEXP_ALLE {
+            get {
+                return ResourceManager.GetString("KEXP_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Exportieren … ähnelt.
+        /// </summary>
+        public static string KEXP_BTN_EXPORT {
+            get {
+                return ResourceManager.GetString("KEXP_BTN_EXPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Exportieren und teilen … ähnelt.
+        /// </summary>
+        public static string KEXP_BTN_EXPORT_IOS {
+            get {
+                return ResourceManager.GetString("KEXP_BTN_EXPORT_IOS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimadaten_{0}.csv ähnelt.
+        /// </summary>
+        public static string KEXP_DATEI {
+            get {
+                return ResourceManager.GetString("KEXP_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimadaten exportieren ähnelt.
+        /// </summary>
+        public static string KEXP_DATEIDIALOG_TITEL {
+            get {
+                return ResourceManager.GetString("KEXP_DATEIDIALOG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dezimalzeichen ähnelt.
+        /// </summary>
+        public static string KEXP_DEZIMALZEICHEN {
+            get {
+                return ResourceManager.GetString("KEXP_DEZIMALZEICHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komma ähnelt.
+        /// </summary>
+        public static string KEXP_DZ_KOMMA {
+            get {
+                return ResourceManager.GetString("KEXP_DZ_KOMMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komma als Dezimalzeichen geht nicht neben dem Trennzeichen Komma. ähnelt.
+        /// </summary>
+        public static string KEXP_DZ_KONFLIKT {
+            get {
+                return ResourceManager.GetString("KEXP_DZ_KONFLIKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Punkt ähnelt.
+        /// </summary>
+        public static string KEXP_DZ_PUNKT {
+            get {
+                return ResourceManager.GetString("KEXP_DZ_PUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gerechnet ähnelt.
+        /// </summary>
+        public static string KEXP_GERECHNET {
+            get {
+                return ResourceManager.GetString("KEXP_GERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerechnet ähnelt.
+        /// </summary>
+        public static string KEXP_GERECHNET_KOPF {
+            get {
+                return ResourceManager.GetString("KEXP_GERECHNET_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Format ähnelt.
+        /// </summary>
+        public static string KEXP_GRP_FORMAT {
+            get {
+                return ResourceManager.GetString("KEXP_GRP_FORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parameter ähnelt.
+        /// </summary>
+        public static string KEXP_GRP_PARAMETER {
+            get {
+                return ResourceManager.GetString("KEXP_GRP_PARAMETER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quelle führt die Größe nicht. ähnelt.
+        /// </summary>
+        public static string KEXP_GRUND_NICHT_GEFUEHRT {
+            get {
+                return ResourceManager.GetString("KEXP_GRUND_NICHT_GEFUEHRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Region ohne Rohdaten importiert – nur die Rechenwerte stehen zur Wahl. ähnelt.
+        /// </summary>
+        public static string KEXP_GRUND_OHNE_ROHDATEN {
+            get {
+                return ResourceManager.GetString("KEXP_GRUND_OHNE_ROHDATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abgeleitet ähnelt.
+        /// </summary>
+        public static string KEXP_GR_ABGELEITET {
+            get {
+                return ResourceManager.GetString("KEXP_GR_ABGELEITET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fassadenwerte und Sonnenwinkel ähnelt.
+        /// </summary>
+        public static string KEXP_GR_FASSADENWERTE {
+            get {
+                return ResourceManager.GetString("KEXP_GR_FASSADENWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenwerte (wie die Simulation sie liest) ähnelt.
+        /// </summary>
+        public static string KEXP_GR_RECHENWERTE {
+            get {
+                return ResourceManager.GetString("KEXP_GR_RECHENWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rohwerte der Quelle ähnelt.
+        /// </summary>
+        public static string KEXP_GR_ROHWERTE {
+            get {
+                return ResourceManager.GetString("KEXP_GR_ROHWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Terrestrische Ausstrahlung ähnelt.
+        /// </summary>
+        public static string KEXP_G_AUSSTRAHLUNG {
+            get {
+                return ResourceManager.GetString("KEXP_G_AUSSTRAHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedeckungsgrad ähnelt.
+        /// </summary>
+        public static string KEXP_G_BEDECKUNG {
+            get {
+                return ResourceManager.GetString("KEXP_G_BEDECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diffusstrahlung horizontal ähnelt.
+        /// </summary>
+        public static string KEXP_G_DIFFUS {
+            get {
+                return ResourceManager.GetString("KEXP_G_DIFFUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Direktstrahlung horizontal ähnelt.
+        /// </summary>
+        public static string KEXP_G_DIREKT_HORIZONTAL {
+            get {
+                return ResourceManager.GetString("KEXP_G_DIREKT_HORIZONTAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Direktstrahlung normal ähnelt.
+        /// </summary>
+        public static string KEXP_G_DIREKT_NORMAL {
+            get {
+                return ResourceManager.GetString("KEXP_G_DIREKT_NORMAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Atmosphärische Gegenstrahlung ähnelt.
+        /// </summary>
+        public static string KEXP_G_GEGENSTRAHLUNG {
+            get {
+                return ResourceManager.GetString("KEXP_G_GEGENSTRAHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Globalstrahlung horizontal ähnelt.
+        /// </summary>
+        public static string KEXP_G_GLOBAL {
+            get {
+                return ResourceManager.GetString("KEXP_G_GLOBAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftdruck ähnelt.
+        /// </summary>
+        public static string KEXP_G_LUFTDRUCK {
+            get {
+                return ResourceManager.GetString("KEXP_G_LUFTDRUCK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Relative Feuchte ähnelt.
+        /// </summary>
+        public static string KEXP_G_LUFTFEUCHTE {
+            get {
+                return ResourceManager.GetString("KEXP_G_LUFTFEUCHTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Qualitätskennung Strahlung ähnelt.
+        /// </summary>
+        public static string KEXP_G_QUALITAET {
+            get {
+                return ResourceManager.GetString("KEXP_G_QUALITAET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fassade Nord ähnelt.
+        /// </summary>
+        public static string KEXP_G_SOL_NORD {
+            get {
+                return ResourceManager.GetString("KEXP_G_SOL_NORD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fassade Ost ähnelt.
+        /// </summary>
+        public static string KEXP_G_SOL_OST {
+            get {
+                return ResourceManager.GetString("KEXP_G_SOL_OST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fassade Süd ähnelt.
+        /// </summary>
+        public static string KEXP_G_SOL_SUED {
+            get {
+                return ResourceManager.GetString("KEXP_G_SOL_SUED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fassade West ähnelt.
+        /// </summary>
+        public static string KEXP_G_SOL_WEST {
+            get {
+                return ResourceManager.GetString("KEXP_G_SOL_WEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonnenwinkel ähnelt.
+        /// </summary>
+        public static string KEXP_G_SONNENWINKEL {
+            get {
+                return ResourceManager.GetString("KEXP_G_SONNENWINKEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Taupunkt ähnelt.
+        /// </summary>
+        public static string KEXP_G_TAUPUNKT {
+            get {
+                return ResourceManager.GetString("KEXP_G_TAUPUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lufttemperatur ähnelt.
+        /// </summary>
+        public static string KEXP_G_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("KEXP_G_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wasserdampfgehalt ähnelt.
+        /// </summary>
+        public static string KEXP_G_WASSERDAMPF {
+            get {
+                return ResourceManager.GetString("KEXP_G_WASSERDAMPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Windgeschwindigkeit ähnelt.
+        /// </summary>
+        public static string KEXP_G_WINDGESCHWINDIGKEIT {
+            get {
+                return ResourceManager.GetString("KEXP_G_WINDGESCHWINDIGKEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Windrichtung ähnelt.
+        /// </summary>
+        public static string KEXP_G_WINDRICHTUNG {
+            get {
+                return ResourceManager.GetString("KEXP_G_WINDRICHTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Exportieren… ähnelt.
+        /// </summary>
+        public static string KEXP_HANDLUNG {
+            get {
+                return ResourceManager.GetString("KEXP_HANDLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Export gilt für genau eine Region. ähnelt.
+        /// </summary>
+        public static string KEXP_HANDLUNG_GRUND {
+            get {
+                return ResourceManager.GetString("KEXP_HANDLUNG_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunftsblock mit #-Zeilen ähnelt.
+        /// </summary>
+        public static string KEXP_HERKUNFT {
+            get {
+                return ResourceManager.GetString("KEXP_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name [Einheit] in einer Zeile ähnelt.
+        /// </summary>
+        public static string KEXP_KA_EINE {
+            get {
+                return ResourceManager.GetString("KEXP_KA_EINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Kopf ähnelt.
+        /// </summary>
+        public static string KEXP_KA_OHNE {
+            get {
+                return ResourceManager.GetString("KEXP_KA_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name und Einheitenzeile ähnelt.
+        /// </summary>
+        public static string KEXP_KA_ZWEI {
+            get {
+                return ResourceManager.GetString("KEXP_KA_ZWEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine ähnelt.
+        /// </summary>
+        public static string KEXP_KEINE {
+            get {
+                return ResourceManager.GetString("KEXP_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Parameter gewählt. ähnelt.
+        /// </summary>
+        public static string KEXP_KEINE_PARAMETER {
+            get {
+                return ResourceManager.GetString("KEXP_KEINE_PARAMETER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dezimalzeichen: 0 = Komma, 1 = Punkt. Komma geht nicht neben dem Trennzeichen Komma. ähnelt.
+        /// </summary>
+        public static string KEXP_KI_DZ_ERL {
+            get {
+                return ResourceManager.GetString("KEXP_KI_DZ_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schreibt Region, Quelle, Ausführung, Koordinaten, Höhe, Zeitbezug und Lizenz als #-Zeilen vor den Kopf. ähnelt.
+        /// </summary>
+        public static string KEXP_KI_HK_ERL {
+            get {
+                return ResourceManager.GetString("KEXP_KI_HK_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spaltenkopf: 0 = Name [Einheit] in einer Zeile, 1 = Name und Einheitenzeile, 2 = ohne Kopf. ähnelt.
+        /// </summary>
+        public static string KEXP_KI_KA_ERL {
+            get {
+                return ResourceManager.GetString("KEXP_KI_KA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählten Größen als Schlüsselliste, durch Komma getrennt (etwa R_TEMPERATUR,R_GLOBAL,A_TAUPUNKT). Rohwerte (ROH_…) nur bei Regionen mit Rohdaten. ähnelt.
+        /// </summary>
+        public static string KEXP_KI_PAR_ERL {
+            get {
+                return ResourceManager.GetString("KEXP_KI_PAR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trennzeichen der Datei: 0 = Semikolon, 1 = Komma, 2 = Tabulator. ähnelt.
+        /// </summary>
+        public static string KEXP_KI_TZ_ERL {
+            get {
+                return ResourceManager.GetString("KEXP_KI_TZ_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitbezug der Ausgabe: 0 = MEZ ohne Sommerzeit (Vorgabe), 1 = UTC. ähnelt.
+        /// </summary>
+        public static string KEXP_KI_ZB_ERL {
+            get {
+                return ResourceManager.GetString("KEXP_KI_ZB_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitspalte: 0 = laufende Stunde, 1 = Datum und Uhrzeit, 2 = beides, 3 = ISO 8601, 4 = keine. ähnelt.
+        /// </summary>
+        public static string KEXP_KI_ZS_ERL {
+            get {
+                return ResourceManager.GetString("KEXP_KI_ZS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kopf ähnelt.
+        /// </summary>
+        public static string KEXP_KOPFART {
+            get {
+                return ResourceManager.GetString("KEXP_KOPFART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausführung ähnelt.
+        /// </summary>
+        public static string KEXP_KOPF_AUSFUEHRUNG {
+            get {
+                return ResourceManager.GetString("KEXP_KOPF_AUSFUEHRUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugspunkt ähnelt.
+        /// </summary>
+        public static string KEXP_KOPF_BEZUGSPUNKT {
+            get {
+                return ResourceManager.GetString("KEXP_KOPF_BEZUGSPUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Plan Klimadatenexport ähnelt.
+        /// </summary>
+        public static string KEXP_KOPF_EXPORT {
+            get {
+                return ResourceManager.GetString("KEXP_KOPF_EXPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höhe ähnelt.
+        /// </summary>
+        public static string KEXP_KOPF_HOEHE {
+            get {
+                return ResourceManager.GetString("KEXP_KOPF_HOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Koordinaten (Breite / Länge) ähnelt.
+        /// </summary>
+        public static string KEXP_KOPF_KOORDINATEN {
+            get {
+                return ResourceManager.GetString("KEXP_KOPF_KOORDINATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lizenz ähnelt.
+        /// </summary>
+        public static string KEXP_KOPF_LIZENZ {
+            get {
+                return ResourceManager.GetString("KEXP_KOPF_LIZENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string KEXP_KOPF_QUELLE {
+            get {
+                return ResourceManager.GetString("KEXP_KOPF_QUELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Region ähnelt.
+        /// </summary>
+        public static string KEXP_KOPF_REGION {
+            get {
+                return ResourceManager.GetString("KEXP_KOPF_REGION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitbezug ähnelt.
+        /// </summary>
+        public static string KEXP_KOPF_ZEITBEZUG {
+            get {
+                return ResourceManager.GetString("KEXP_KOPF_ZEITBEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitstempel ähnelt.
+        /// </summary>
+        public static string KEXP_KOPF_ZEITSTEMPEL {
+            get {
+                return ResourceManager.GetString("KEXP_KOPF_ZEITSTEMPEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deutscher Wetterdienst (DWD), Testreferenzjahre, CC BY 4.0 ähnelt.
+        /// </summary>
+        public static string KEXP_LIZENZ_DWD {
+            get {
+                return ResourceManager.GetString("KEXP_LIZENZ_DWD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PVGIS © Europäische Union, Gemeinsame Forschungsstelle ähnelt.
+        /// </summary>
+        public static string KEXP_LIZENZ_PVGIS {
+            get {
+                return ResourceManager.GetString("KEXP_LIZENZ_PVGIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei ließ sich nicht schreiben: {0} ähnelt.
+        /// </summary>
+        public static string KEXP_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("KEXP_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei ist gespeichert: {0} ähnelt.
+        /// </summary>
+        public static string KEXP_MSG_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("KEXP_MSG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zu dieser Region stehen keine Stundenwerte in der Datenbank. ähnelt.
+        /// </summary>
+        public static string KEXP_MSG_KEINE_DATEN {
+            get {
+                return ResourceManager.GetString("KEXP_MSG_KEINE_DATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stundenwerte werden gelesen … ähnelt.
+        /// </summary>
+        public static string KEXP_MSG_LESEN {
+            get {
+                return ResourceManager.GetString("KEXP_MSG_LESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei ist gespeichert, ließ sich aber nicht teilen: {0} ähnelt.
+        /// </summary>
+        public static string KEXP_MSG_TEILEN_FEHLER {
+            get {
+                return ResourceManager.GetString("KEXP_MSG_TEILEN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Rohwert) ähnelt.
+        /// </summary>
+        public static string KEXP_ROH_NAME {
+            get {
+                return ResourceManager.GetString("KEXP_ROH_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datum Uhrzeit ähnelt.
+        /// </summary>
+        public static string KEXP_SP_DATUM {
+            get {
+                return ResourceManager.GetString("KEXP_SP_DATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitstempel ISO 8601 ähnelt.
+        /// </summary>
+        public static string KEXP_SP_ISO {
+            get {
+                return ResourceManager.GetString("KEXP_SP_ISO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunde ähnelt.
+        /// </summary>
+        public static string KEXP_SP_STUNDE {
+            get {
+                return ResourceManager.GetString("KEXP_SP_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Taupunkt nach Magnus (Sonntag 1990) aus Lufttemperatur und relativer Feuchte ähnelt.
+        /// </summary>
+        public static string KEXP_TAUPUNKT_REGEL {
+            get {
+                return ResourceManager.GetString("KEXP_TAUPUNKT_REGEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimadaten exportieren ähnelt.
+        /// </summary>
+        public static string KEXP_TITEL {
+            get {
+                return ResourceManager.GetString("KEXP_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trennzeichen ähnelt.
+        /// </summary>
+        public static string KEXP_TRENNZEICHEN {
+            get {
+                return ResourceManager.GetString("KEXP_TRENNZEICHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komma ähnelt.
+        /// </summary>
+        public static string KEXP_TZ_KOMMA {
+            get {
+                return ResourceManager.GetString("KEXP_TZ_KOMMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Semikolon ähnelt.
+        /// </summary>
+        public static string KEXP_TZ_SEMIKOLON {
+            get {
+                return ResourceManager.GetString("KEXP_TZ_SEMIKOLON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tabulator ähnelt.
+        /// </summary>
+        public static string KEXP_TZ_TABULATOR {
+            get {
+                return ResourceManager.GetString("KEXP_TZ_TABULATOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Haus (wie CSV am Bild) ähnelt.
+        /// </summary>
+        public static string KEXP_VORLAGE_HAUS {
+            get {
+                return ResourceManager.GetString("KEXP_VORLAGE_HAUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die International (Komma, Punkt, ISO) ähnelt.
+        /// </summary>
+        public static string KEXP_VORLAGE_INTERNATIONAL {
+            get {
+                return ResourceManager.GetString("KEXP_VORLAGE_INTERNATIONAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschau (erste fünf Stunden) ähnelt.
+        /// </summary>
+        public static string KEXP_VORSCHAU {
+            get {
+                return ResourceManager.GetString("KEXP_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die MEZ ohne Sommerzeit (UTC+1) ähnelt.
+        /// </summary>
+        public static string KEXP_ZB_MEZ {
+            get {
+                return ResourceManager.GetString("KEXP_ZB_MEZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die UTC ähnelt.
+        /// </summary>
+        public static string KEXP_ZB_UTC {
+            get {
+                return ResourceManager.GetString("KEXP_ZB_UTC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitbezug ähnelt.
+        /// </summary>
+        public static string KEXP_ZEITBEZUG {
+            get {
+                return ResourceManager.GetString("KEXP_ZEITBEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitspalte ähnelt.
+        /// </summary>
+        public static string KEXP_ZEITSPALTE {
+            get {
+                return ResourceManager.GetString("KEXP_ZEITSPALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beginn der Stunde im Gemeinjahr mit 8760 Stunden ähnelt.
+        /// </summary>
+        public static string KEXP_ZEITSTEMPEL_REGEL {
+            get {
+                return ResourceManager.GetString("KEXP_ZEITSTEMPEL_REGEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunde und Datum ähnelt.
+        /// </summary>
+        public static string KEXP_ZS_BEIDES {
+            get {
+                return ResourceManager.GetString("KEXP_ZS_BEIDES", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datum und Uhrzeit (TT.MM. hh:00) ähnelt.
+        /// </summary>
+        public static string KEXP_ZS_DATUM {
+            get {
+                return ResourceManager.GetString("KEXP_ZS_DATUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ISO 8601 mit Bezugsjahr ähnelt.
+        /// </summary>
+        public static string KEXP_ZS_ISO {
+            get {
+                return ResourceManager.GetString("KEXP_ZS_ISO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine ähnelt.
+        /// </summary>
+        public static string KEXP_ZS_KEINE {
+            get {
+                return ResourceManager.GetString("KEXP_ZS_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Laufende Stunde 1…8760 ähnelt.
+        /// </summary>
+        public static string KEXP_ZS_STUNDE {
+            get {
+                return ResourceManager.GetString("KEXP_ZS_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die 🗑️ Löschen ähnelt.
         /// </summary>
         public static string KFAK_BTN_LOESCHEN {
@@ -70641,6 +71514,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_KLIMA {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_KLIMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimadaten exportieren ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_KLIMAEXPORT {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_KLIMAEXPORT", resourceCulture);
             }
         }
         
@@ -85737,6 +86619,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rohwert der Quelle aus der Rohwerttabelle (R) ähnelt.
+        /// </summary>
+        public static string KLIMA_RW_ROHWERT_MARKE {
+            get {
+                return ResourceManager.GetString("KLIMA_RW_ROHWERT_MARKE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} von {1} Stunden mit Wert ähnelt.
         /// </summary>
         public static string KLIMA_RW_TEILFUELLUNG {
@@ -86133,6 +87024,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die alle Felder als Rohwerte gespeichert ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_ROHWERTE_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_ROHWERTE_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zeile {0}: erwartet werden {1} Spalten, gelesen wurden {2}. ähnelt.
         /// </summary>
         public static string KLIMA_TRY_SPALTENZAHL {
@@ -86448,6 +87348,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wird gespeichert ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Höhe ähnelt.
         /// </summary>
         public static string KLIMA_VK_HOEHE {
@@ -86525,6 +87434,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KLIMA_VK_NAME {
             get {
                 return ResourceManager.GetString("KLIMA_VK_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die wird nicht gespeichert ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_NICHT_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_NICHT_GESPEICHERT", resourceCulture);
             }
         }
         
@@ -100242,7 +101160,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Übergabeart × Auslegungsheizlast (Anlagenvolumen.&lt;Übergabe&gt;_l_kW) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergabeart × Auslegungsheizlast (Vorgabe Anlagenvolumen in l/kW) ähnelt.
         /// </summary>
         public static string PAUS_HERK_ANLAGENVOLUMEN {
             get {
@@ -100251,7 +101169,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die keine Aufheizbemessung im letzten Lauf (Kriterium K12 bemisst nicht) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Aufheizbemessung im letzten Lauf (das Kriterium „Aufheizen nach Absenkung“ bemisst nicht) ähnelt.
         /// </summary>
         public static string PAUS_HERK_AUFHEIZ_KEINE {
             get {
@@ -100260,7 +101178,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizbemessung KP3 des letzten Laufs: Summe Aufheiz_Leistung_Kw über {0} Gebäude, längste Aufheizzeit ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizbemessung des letzten Laufs: Summe der Aufheizleistung über {0} Gebäude, längste Aufheizzeit ähnelt.
         /// </summary>
         public static string PAUS_HERK_AUFHEIZ_KP3 {
             get {
@@ -100350,7 +101268,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 4645 E 2026-03, Anhang I; Recherche Runde 2, Abschnitt 4.1 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 4645 E 2026-03, Anhang I ähnelt.
         /// </summary>
         public static string PAUS_HERK_FRISCHWASSER {
             get {
@@ -100422,7 +101340,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Konzept Pufferauslegung V30 / KP3 (Aufheizbemessung der Gebäude) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizbemessung der Gebäude (letzte Simulation) ähnelt.
         /// </summary>
         public static string PAUS_HERK_K12 {
             get {
@@ -100485,7 +101403,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Katalogpuffer aus Tab_Pufferspeicher_STAMM ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Katalogpuffer aus dem Pufferkatalog ähnelt.
         /// </summary>
         public static string PAUS_HERK_KATALOG_PUFFER {
             get {
@@ -100521,7 +101439,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Klassen-Set des Puffers (Nutzung_Heizung/_Brauchwasser/_Prozess) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klassen-Set des Puffers (Nutzung Heizung, Brauchwasser, Prozess) ähnelt.
         /// </summary>
         public static string PAUS_HERK_KLASSEN_PUFFER {
             get {
@@ -100557,7 +101475,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Konzept Pufferauslegung 6 (Nutzen-Aufwand-Zeile); Durchlauf D1 und Zweipunkt D2 mit festem Volumen, Verlust K11 nach Klasse-C-Grenze ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachrechnung je Stufe mit festem Volumen (Deckungsgrad und Taktziel); Bereitschaftsverlust nach der Grenze der Effizienzklasse C ähnelt.
         /// </summary>
         public static string PAUS_HERK_NACHBARSTUFEN {
             get {
@@ -100575,7 +101493,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Speicherauslegung.Nenninhalt.* ({0}) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nenninhaltsliste der Speicherauslegung ({0}) ähnelt.
         /// </summary>
         public static string PAUS_HERK_NENNINHALTE_PARAMETER {
             get {
@@ -100773,7 +101691,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Plan Rechenkern (ProjektPuffer.WH_JE_LITER_KELVIN) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenkern EPOS-Plan (Wärmekapazität des Wassers) ähnelt.
         /// </summary>
         public static string PAUS_HERK_Q_KERN {
             get {
@@ -100791,7 +101709,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Recherche Pufferspeicher-Auslegung Runde 2, Abschnitt 4.1 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe EPOS-Plan ähnelt.
         /// </summary>
         public static string PAUS_HERK_Q_RUNDE2 {
             get {
@@ -100818,7 +101736,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmespeicher-Tool (Quellen/Waermespeicher-Tool), Lastgang-Simulation ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmespeicher-Tool, Lastgang-Simulation ähnelt.
         /// </summary>
         public static string PAUS_HERK_Q_TOOL {
             get {
@@ -100827,7 +101745,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Konzept Pufferauslegung V30 / KP3 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe EPOS-Plan ähnelt.
         /// </summary>
         public static string PAUS_HERK_Q_V30 {
             get {
@@ -100836,7 +101754,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Recherche Pufferspeicher-Auslegung Runde 3, Vorschlag V39 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe EPOS-Plan ähnelt.
         /// </summary>
         public static string PAUS_HERK_Q_V39 {
             get {
@@ -100917,7 +101835,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Recherche Pufferspeicher-Auslegung Runde 1, Abschnitt 6 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe EPOS-Plan ähnelt.
         /// </summary>
         public static string PAUS_HERK_Q_VORLAGE {
             get {
@@ -100953,7 +101871,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Rang 1 der Kaskade: {0} (Tab_Einstellungen.Tool_{1}) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rang 1 der Kaskade: {0} (Kaskadenplatz {1}) ähnelt.
         /// </summary>
         public static string PAUS_HERK_RANG1_KASKADE {
             get {
@@ -101025,7 +101943,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrzeit der Anlage an Rang 1 (Sperrzeit_von/_bis) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrzeit der Anlage an Rang 1 ähnelt.
         /// </summary>
         public static string PAUS_HERK_SPERRE_ANLAGE {
             get {
@@ -103338,7 +104256,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizdauer aus KP3 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizdauer aus der Aufheizbemessung ähnelt.
         /// </summary>
         public static string PAUS_WEG_K12_DAUER_KP3 {
             get {
@@ -103347,7 +104265,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe Aufheiz.Dauer_h ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe Aufheizdauer ähnelt.
         /// </summary>
         public static string PAUS_WEG_K12_DAUER_VORGABE {
             get {
@@ -103356,7 +104274,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die keine KP3-Aufheizbemessung der Gebäude ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Aufheizbemessung der Gebäude ähnelt.
         /// </summary>
         public static string PAUS_WEG_K12_KEINE {
             get {
@@ -103365,7 +104283,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die ; Einzelraumregelung: absperrbar, keine Gutschrift für K1 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die ; Einzelraumregelung: absperrbar, keine Gutschrift bei der Vorprüfung Anlagenvolumen ähnelt.
         /// </summary>
         public static string PAUS_WEG_K1_EINZELRAUM {
             get {
@@ -137004,6 +137922,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Energieflussbild (Stand bzw. irgendein Stand)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__ENERGIEFLUSS {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__ENERGIEFLUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild der Heizkessel (Stand bzw. irgendein Stand)? ähnelt.
         /// </summary>
         public static string VF_HAT__BILD__HEIZKESSEL {
@@ -138323,6 +139250,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_ORT_AUTARKIE_MONATE {
             get {
                 return ResourceManager.GetString("VF_ORT_AUTARKIE_MONATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht tragen die Knoten ihre Jahressumme (MWh/a); die Bänder bleiben ohne Zahl, die Werte stehen hier im Zeigertext ähnelt.
+        /// </summary>
+        public static string VF_ORT_ENERGIEFLUSS {
+            get {
+                return ResourceManager.GetString("VF_ORT_ENERGIEFLUSS", resourceCulture);
             }
         }
         
@@ -140195,6 +141131,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_STAND__BILD__DECKUNG_WAERME {
             get {
                 return ResourceManager.GetString("VF_STAND__BILD__DECKUNG_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Energieflussbild — Jahresbilanz von Strom, Wärme und Kälte von den Quellen über die Erzeuger zu den Bedarfen; die Knoten tragen ihre Jahressumme (MWh/a), die Bänder keine Zahl; nur Word. ähnelt.
+        /// </summary>
+        public static string VF_STAND__BILD__ENERGIEFLUSS {
+            get {
+                return ResourceManager.GetString("VF_STAND__BILD__ENERGIEFLUSS", resourceCulture);
             }
         }
         

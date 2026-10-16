@@ -486,6 +486,9 @@ namespace WindowsFormsApplication1
                 // Die KLIMADATEN haengen am Menuepunkt „Administration → Klimadaten" -
                 // siehe KLIMADATEN.
                 { KiMaskennamen.KLIMADATEN, KLIMADATEN },
+                // Der KLIMAEXPORT als CSV (KD-5) geht als Ueberlagerung im Katalogdialog der
+                // Klimadaten auf und braucht eine gewaehlte Region - sein Weg ist der der Klimadaten.
+                { KiMaskennamen.KLIMA_EXPORT, KLIMADATEN },
 
                 // Welle KI-F4: Die ENERGIETRAEGERVERWALTUNG haengt am Menuepunkt
                 // „Administration → Kosten → Energietraegerverwaltung…" - siehe

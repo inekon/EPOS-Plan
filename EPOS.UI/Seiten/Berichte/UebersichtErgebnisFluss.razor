@@ -47,10 +47,14 @@
             <figure class="epos-ergebnis-fluss-bild" aria-label="@Bildtext" aria-describedby="@TextId">
                 <div class="epos-ergebnis-fluss-mass epos-ergebnis-fluss-mass--breit">
                     <DiagrammSvg Modell="@_stand.Breit" Kennung="@("ergebnis-fluss-" + _stand.IdProjekt + "-breit")"
+                                 Vorlagenfeld="stand.bild.energiefluss" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
+                                 VorlagenfeldHinweis="@Resource.VF_ORT_ENERGIEFLUSS"
                                  Bezeichnung="@Bildtext" OhneZoom="true" LegendeSchaltbar="false" />
                 </div>
                 <div class="epos-ergebnis-fluss-mass epos-ergebnis-fluss-mass--schmal">
                     <DiagrammSvg Modell="@_stand.Schmal" Kennung="@("ergebnis-fluss-" + _stand.IdProjekt + "-schmal")"
+                                 Vorlagenfeld="stand.bild.energiefluss" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
+                                 VorlagenfeldHinweis="@Resource.VF_ORT_ENERGIEFLUSS"
                                  Bezeichnung="@Bildtext" OhneZoom="true" LegendeSchaltbar="false" />
                 </div>
             </figure>

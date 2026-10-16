@@ -28,6 +28,7 @@ Absatz [Heading1] Berechnungsergebnisse je Variante
 Absatz [Heading2] Stamm — Stamm
 Absatz [Hinweis] Simulationsstand: —
 Absatz [Normal] Keine Kennzahlen verfügbar.
+Absatz [Hinweis] Kein Energieflussbild — Die Version „Stammprojekt“ hat keine Energieflüsse.
 Bild 620×280 px, SVG ja
 Absatz [Beschriftung] Wärmeerzeugung im Jahresverlauf (gestapelte Erzeuger, Bedarf als Linie, Tagesmittel)
 Bild 620×280 px, SVG ja
@@ -39,6 +40,7 @@ Absatz [Beschriftung] Speicherverlauf in charakteristischen Wochen (Winter/Über
 Absatz [Heading2] Variante — Variante A
 Absatz [Hinweis] Simulationsstand: —
 Absatz [Normal] Keine Kennzahlen verfügbar.
+Absatz [Hinweis] Kein Energieflussbild — Die Version „Variante A“ hat keine Energieflüsse.
 Bild 620×280 px, SVG ja
 Absatz [Beschriftung] Wärmeerzeugung im Jahresverlauf (gestapelte Erzeuger, Bedarf als Linie, Tagesmittel)
 Bild 620×280 px, SVG ja

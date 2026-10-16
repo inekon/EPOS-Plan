@@ -161,6 +161,9 @@ public static class Vorlagenfeldorte
         // Die Gegenüberstellung der Komponenten je Version (ähnlich: im Bericht die
         // Komponentenmatrix des Kapitels „Projekt“ mit allen Merkmalen).
         O("tabelle.komponenten.matrix", ANSICHT_BERICHTE, REITER_UEBERSICHT, "tafel.komponenten");
+        // Das Energieflussbild der gewählten Version, Ansicht „Fluss“ (Katalog v25, SK-4; ähnlich: im Bericht tragen die
+        // Knoten ihre Jahressumme).
+        O("stand.bild.energiefluss", ANSICHT_BERICHTE, REITER_UEBERSICHT, "bild.energiefluss");
 
         // ---- Berichte & Kosten › Wirtschaftlichkeit: die Vergleichsgruppe --------------
         // Die App listet alle Stände zur Wahl, der Bericht die gewählten (ähnlich).

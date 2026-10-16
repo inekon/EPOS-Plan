@@ -44654,7 +44654,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Zapfprofil-Speicherauslegung (TwwSpeicherauslegung)</value>
   </data>
   <data name="PAUS_HERK_FRISCHWASSER" xml:space="preserve">
-    <value>VDI 4645 E 2026-03, Anhang I; Recherche Runde 2, Abschnitt 4.1</value>
+    <value>VDI 4645 E 2026-03, Anhang I</value>
   </data>
   <data name="PAUS_HERK_W551" xml:space="preserve">
     <value>DVGW W 551</value>
@@ -44765,7 +44765,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>V_Hz = {0} l {1} {2} l/kW · {3} kW = {4} l{5}</value>
   </data>
   <data name="PAUS_WEG_K1_EINZELRAUM" xml:space="preserve">
-    <value>; Einzelraumregelung: absperrbar, keine Gutschrift für K1</value>
+    <value>; Einzelraumregelung: absperrbar, keine Gutschrift bei der Vorprüfung Anlagenvolumen</value>
   </data>
   <data name="PAUS_WEG_K2" xml:space="preserve">
     <value>{0} l/kW ({1}) · {2} kW</value>
@@ -44831,7 +44831,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Vorgabe</value>
   </data>
   <data name="PAUS_HERK_Q_KERN" xml:space="preserve">
-    <value>EPOS-Plan Rechenkern (ProjektPuffer.WH_JE_LITER_KELVIN)</value>
+    <value>Rechenkern EPOS-Plan (Wärmekapazität des Wassers)</value>
   </data>
   <data name="PAUS_HERK_Q_VDI_783" xml:space="preserve">
     <value>VDI 4645 E 2026-03, Abschnitt 7.8.3</value>
@@ -44870,7 +44870,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Fachportale zur Taktung (Sekundärquelle)</value>
   </data>
   <data name="PAUS_HERK_Q_TOOL" xml:space="preserve">
-    <value>Wärmespeicher-Tool (Quellen/Waermespeicher-Tool), Lastgang-Simulation</value>
+    <value>Wärmespeicher-Tool, Lastgang-Simulation</value>
   </data>
   <data name="PAUS_HERK_Q_EN15450" xml:space="preserve">
     <value>DIN EN 15450</value>
@@ -44888,7 +44888,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Planungshilfen Solarthermie (Sekundärquelle), Bezug DIN EN 12977</value>
   </data>
   <data name="PAUS_HERK_Q_RUNDE2" xml:space="preserve">
-    <value>Recherche Pufferspeicher-Auslegung Runde 2, Abschnitt 4.1</value>
+    <value>Vorgabe EPOS-Plan</value>
   </data>
   <data name="PAUS_HERK_Q_ZIRK" xml:space="preserve">
     <value>Fachportale zur Zirkulation (Sekundärquelle)</value>
@@ -44912,13 +44912,13 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>prEN 15316-5:2024, Tabelle B.4</value>
   </data>
   <data name="PAUS_HERK_Q_V39" xml:space="preserve">
-    <value>Recherche Pufferspeicher-Auslegung Runde 3, Vorschlag V39</value>
+    <value>Vorgabe EPOS-Plan</value>
   </data>
   <data name="PAUS_HERK_Q_PUFFER" xml:space="preserve">
     <value>EPOS-Plan Vorgabe des Projektpuffers (Schwellen)</value>
   </data>
   <data name="PAUS_HERK_Q_VORLAGE" xml:space="preserve">
-    <value>Recherche Pufferspeicher-Auslegung Runde 1, Abschnitt 6</value>
+    <value>Vorgabe EPOS-Plan</value>
   </data>
   <data name="PAUS_HERK_PARAMETER_KOPIE" xml:space="preserve">
     <value>{0} (Projektkopie), fehlende Schlüssel aus {1}</value>
@@ -44930,7 +44930,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>eingebaute Vorgaben (Vorgabetabelle fehlt)</value>
   </data>
   <data name="PAUS_HERK_KLASSEN_PUFFER" xml:space="preserve">
-    <value>Klassen-Set des Puffers (Nutzung_Heizung/_Brauchwasser/_Prozess)</value>
+    <value>Klassen-Set des Puffers (Nutzung Heizung, Brauchwasser, Prozess)</value>
   </data>
   <data name="PAUS_HERK_KLASSEN_NEU_PROZESS" xml:space="preserve">
     <value>neuer Puffer: Heizung und Prozesswärme (Projekt trägt Prozesswärme)</value>
@@ -44984,7 +44984,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>kein Wärmeerzeuger im Projekt: Vorgabe</value>
   </data>
   <data name="PAUS_HERK_SPERRE_ANLAGE" xml:space="preserve">
-    <value>Sperrzeit der Anlage an Rang 1 (Sperrzeit_von/_bis)</value>
+    <value>Sperrzeit der Anlage an Rang 1</value>
   </data>
   <data name="PAUS_HERK_SPERRE_KEINE" xml:space="preserve">
     <value>keine Sperrzeit gepflegt</value>
@@ -44996,13 +44996,13 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>keine Übergabeart gepflegt: ideal, rechnet wie FLAECHE (Hinweis {0})</value>
   </data>
   <data name="PAUS_HERK_ANLAGENVOLUMEN" xml:space="preserve">
-    <value>Übergabeart × Auslegungsheizlast (Anlagenvolumen.&lt;Übergabe&gt;_l_kW)</value>
+    <value>Übergabeart × Auslegungsheizlast (Vorgabe Anlagenvolumen in l/kW)</value>
   </data>
   <data name="PAUS_HERK_HEIZLAST_REIHE" xml:space="preserve">
     <value>Maximum der Heizreihe</value>
   </data>
   <data name="PAUS_HERK_KATALOG_PUFFER" xml:space="preserve">
-    <value>{0} Katalogpuffer aus Tab_Pufferspeicher_STAMM</value>
+    <value>{0} Katalogpuffer aus dem Pufferkatalog</value>
   </data>
   <data name="PAUS_HERK_REIHEN" xml:space="preserve">
     <value>Bedarfsreihen aus KanaeleDrei()</value>
@@ -45011,7 +45011,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>keine Reihen: {0}</value>
   </data>
   <data name="PAUS_HERK_RANG1_KASKADE" xml:space="preserve">
-    <value>Rang 1 der Kaskade: {0} (Tab_Einstellungen.Tool_{1})</value>
+    <value>Rang 1 der Kaskade: {0} (Kaskadenplatz {1})</value>
   </data>
   <data name="PAUS_HERK_RANG1_RUECKFALL" xml:space="preserve">
     <value>Kaskade ohne vorhandenen Erzeuger: erster Erzeuger in der Rangfolge WP, BHKW, Kessel, Solar</value>
@@ -45059,7 +45059,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>, Nenninhalt {0} l</value>
   </data>
   <data name="PAUS_HERK_NENNINHALTE_PARAMETER" xml:space="preserve">
-    <value>Speicherauslegung.Nenninhalt.* ({0})</value>
+    <value>Nenninhaltsliste der Speicherauslegung ({0})</value>
   </data>
   <data name="PAUS_HERK_NENNINHALTE_VORGABE" xml:space="preserve">
     <value>feste Liste 100 … 10 000 l, darüber Raster 1 000 l</value>
@@ -45572,7 +45572,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Tabelle der Kältespeicher des Stammprojekts: je Kältespeicher Kapazität, Ladung, Entladung, Wärmeeintrag und Vollzyklen. Steht sie in der Vorlage, entfällt der Abschnitt im Kapitel Projekt.</value>
   </data>
   <data name="PAUS_HERK_NACHBARSTUFEN" xml:space="preserve">
-    <value>Konzept Pufferauslegung 6 (Nutzen-Aufwand-Zeile); Durchlauf D1 und Zweipunkt D2 mit festem Volumen, Verlust K11 nach Klasse-C-Grenze</value>
+    <value>Nachrechnung je Stufe mit festem Volumen (Deckungsgrad und Taktziel); Bereitschaftsverlust nach der Grenze der Effizienzklasse C</value>
   </data>
   <data name="PAUS_HERK_KURVE" xml:space="preserve">
     <value>Ecosizer (Ecotope 2020), Speicher gegen Leistung: Laufvolumen des Spitzenereignisses ÷ η_s</value>
@@ -45671,28 +45671,28 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Aufheizen nach Absenkung</value>
   </data>
   <data name="PAUS_HERK_K12" xml:space="preserve">
-    <value>Konzept Pufferauslegung V30 / KP3 (Aufheizbemessung der Gebäude)</value>
+    <value>Aufheizbemessung der Gebäude (letzte Simulation)</value>
   </data>
   <data name="PAUS_HERK_Q_V30" xml:space="preserve">
-    <value>Konzept Pufferauslegung V30 / KP3</value>
+    <value>Vorgabe EPOS-Plan</value>
   </data>
   <data name="PAUS_WEG_K12" xml:space="preserve">
     <value>({0} kW − {1} kW) · {2} h ({3}) / ({4} · {5} K · {6})</value>
   </data>
   <data name="PAUS_WEG_K12_DAUER_KP3" xml:space="preserve">
-    <value>Aufheizdauer aus KP3</value>
+    <value>Aufheizdauer aus der Aufheizbemessung</value>
   </data>
   <data name="PAUS_WEG_K12_DAUER_VORGABE" xml:space="preserve">
-    <value>Vorgabe Aufheiz.Dauer_h</value>
+    <value>Vorgabe Aufheizdauer</value>
   </data>
   <data name="PAUS_WEG_K12_KEINE" xml:space="preserve">
-    <value>keine KP3-Aufheizbemessung der Gebäude</value>
+    <value>keine Aufheizbemessung der Gebäude</value>
   </data>
   <data name="PAUS_HERK_AUFHEIZ_KP3" xml:space="preserve">
-    <value>Aufheizbemessung KP3 des letzten Laufs: Summe Aufheiz_Leistung_Kw über {0} Gebäude, längste Aufheizzeit</value>
+    <value>Aufheizbemessung des letzten Laufs: Summe der Aufheizleistung über {0} Gebäude, längste Aufheizzeit</value>
   </data>
   <data name="PAUS_HERK_AUFHEIZ_KEINE" xml:space="preserve">
-    <value>keine Aufheizbemessung im letzten Lauf (Kriterium K12 bemisst nicht)</value>
+    <value>keine Aufheizbemessung im letzten Lauf (das Kriterium „Aufheizen nach Absenkung“ bemisst nicht)</value>
   </data>
   <data name="PAUS_K12_SCHALTER_VORLAGE" xml:space="preserve">
     <value>Vorlage des Nutzungsprofils: an bei Büro/Schule</value>
@@ -56948,6 +56948,336 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="KI_DLG_KLIMA_HOEHE_ERL" xml:space="preserve">
     <value>Die Höhe des Standorts über dem Meer, in Metern. Sie geht in die Vorschau ein: Der Höhenunterschied zum Bezugspunkt entscheidet über den Hinweis „nicht ortstypisch“. Leer = unbekannt; bei PVGIS und einer TRY-Datei mit Kopfangabe kommt sie aus der Quelle.</value>
   </data>
+  <data name="BTA_GRUPPE_STRAHLUNG" xml:space="preserve">
+    <value>Strahlung der Außenfläche</value>
+  </data>
+  <data name="BTA_LBL_ABSORPTION" xml:space="preserve">
+    <value>Absorptionsgrad solar</value>
+  </data>
+  <data name="BTA_LBL_EMISSION" xml:space="preserve">
+    <value>Emissionsgrad langwellig</value>
+  </data>
+  <data name="BTA_PLATZHALTER_STRAHLUNG" xml:space="preserve">
+    <value>Vorgabe {0}</value>
+  </data>
+  <data name="BTA_STRAHLUNG_HINWEIS" xml:space="preserve">
+    <value>Absorptionsgrad (Solarstrahlung) und Emissionsgrad (langwellig) der Außenfläche gehen in die äquivalente Außentemperatur ein. Leer gilt die Vorgabe; ein Bauteil kann einen eigenen Wert tragen.</value>
+  </data>
+  <data name="BTDLG_LBL_ABSORPTION" xml:space="preserve">
+    <value>Absorptionsgrad solar :</value>
+  </data>
+  <data name="BTDLG_LBL_EMISSION" xml:space="preserve">
+    <value>Emissionsgrad :</value>
+  </data>
+  <data name="BTDLG_PLATZHALTER_STRAHLUNG" xml:space="preserve">
+    <value>Aufbau, sonst {0}</value>
+  </data>
+  <data name="KI_DLG_BT_ABSORPTION_ERL" xml:space="preserve">
+    <value>Der Absorptionsgrad der Außenfläche für Solarstrahlung zwischen 0 und 1; leer = der Wert des Aufbaus, sonst die Vorgabe 0,6.</value>
+  </data>
+  <data name="KI_DLG_BT_EMISSION_ERL" xml:space="preserve">
+    <value>Der langwellige Emissionsgrad der Außenfläche zwischen 0 und 1; leer = der Wert des Aufbaus, sonst die Vorgabe 0,9.</value>
+  </data>
+  <data name="KI_DLG_BTA_STRAHLUNG_ERL" xml:space="preserve">
+    <value>Absorptionsgrad (Solarstrahlung) bzw. Emissionsgrad (langwellig) der Außenfläche des Aufbaus zwischen 0 und 1; leer = Vorgabe. Ein Bauteil kann einen eigenen Wert tragen.</value>
+  </data>
+  <data name="KLIMA_TRY_ROHWERTE_GESPEICHERT" xml:space="preserve">
+    <value>alle Felder als Rohwerte gespeichert</value>
+  </data>
+  <data name="KLIMA_VK_GESPEICHERT" xml:space="preserve">
+    <value>wird gespeichert</value>
+  </data>
+  <data name="KLIMA_VK_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>wird nicht gespeichert</value>
+  </data>
+  <data name="KEXP_ROH_NAME" xml:space="preserve">
+    <value>{0} (Rohwert)</value>
+  </data>
+  <data name="KEXP_G_TEMPERATUR" xml:space="preserve">
+    <value>Lufttemperatur</value>
+  </data>
+  <data name="KEXP_G_LUFTFEUCHTE" xml:space="preserve">
+    <value>Relative Feuchte</value>
+  </data>
+  <data name="KEXP_G_GLOBAL" xml:space="preserve">
+    <value>Globalstrahlung horizontal</value>
+  </data>
+  <data name="KEXP_G_DIREKT_NORMAL" xml:space="preserve">
+    <value>Direktstrahlung normal</value>
+  </data>
+  <data name="KEXP_G_DIREKT_HORIZONTAL" xml:space="preserve">
+    <value>Direktstrahlung horizontal</value>
+  </data>
+  <data name="KEXP_G_DIFFUS" xml:space="preserve">
+    <value>Diffusstrahlung horizontal</value>
+  </data>
+  <data name="KEXP_G_GEGENSTRAHLUNG" xml:space="preserve">
+    <value>Atmosphärische Gegenstrahlung</value>
+  </data>
+  <data name="KEXP_G_AUSSTRAHLUNG" xml:space="preserve">
+    <value>Terrestrische Ausstrahlung</value>
+  </data>
+  <data name="KEXP_G_BEDECKUNG" xml:space="preserve">
+    <value>Bedeckungsgrad</value>
+  </data>
+  <data name="KEXP_G_SOL_NORD" xml:space="preserve">
+    <value>Fassade Nord</value>
+  </data>
+  <data name="KEXP_G_SOL_OST" xml:space="preserve">
+    <value>Fassade Ost</value>
+  </data>
+  <data name="KEXP_G_SOL_SUED" xml:space="preserve">
+    <value>Fassade Süd</value>
+  </data>
+  <data name="KEXP_G_SOL_WEST" xml:space="preserve">
+    <value>Fassade West</value>
+  </data>
+  <data name="KEXP_G_SONNENWINKEL" xml:space="preserve">
+    <value>Sonnenwinkel</value>
+  </data>
+  <data name="KEXP_G_LUFTDRUCK" xml:space="preserve">
+    <value>Luftdruck</value>
+  </data>
+  <data name="KEXP_G_WINDGESCHWINDIGKEIT" xml:space="preserve">
+    <value>Windgeschwindigkeit</value>
+  </data>
+  <data name="KEXP_G_WINDRICHTUNG" xml:space="preserve">
+    <value>Windrichtung</value>
+  </data>
+  <data name="KEXP_G_WASSERDAMPF" xml:space="preserve">
+    <value>Wasserdampfgehalt</value>
+  </data>
+  <data name="KEXP_G_QUALITAET" xml:space="preserve">
+    <value>Qualitätskennung Strahlung</value>
+  </data>
+  <data name="KEXP_G_TAUPUNKT" xml:space="preserve">
+    <value>Taupunkt</value>
+  </data>
+  <data name="KEXP_GRUND_OHNE_ROHDATEN" xml:space="preserve">
+    <value>Region ohne Rohdaten importiert – nur die Rechenwerte stehen zur Wahl.</value>
+  </data>
+  <data name="KEXP_GRUND_NICHT_GEFUEHRT" xml:space="preserve">
+    <value>Die Quelle führt die Größe nicht.</value>
+  </data>
+  <data name="KEXP_KOPF_EXPORT" xml:space="preserve">
+    <value>EPOS-Plan Klimadatenexport</value>
+  </data>
+  <data name="KEXP_KOPF_REGION" xml:space="preserve">
+    <value>Region</value>
+  </data>
+  <data name="KEXP_KOPF_QUELLE" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="KEXP_KOPF_AUSFUEHRUNG" xml:space="preserve">
+    <value>Ausführung</value>
+  </data>
+  <data name="KEXP_KOPF_KOORDINATEN" xml:space="preserve">
+    <value>Koordinaten (Breite / Länge)</value>
+  </data>
+  <data name="KEXP_KOPF_HOEHE" xml:space="preserve">
+    <value>Höhe</value>
+  </data>
+  <data name="KEXP_KOPF_BEZUGSPUNKT" xml:space="preserve">
+    <value>Bezugspunkt</value>
+  </data>
+  <data name="KEXP_KOPF_ZEITBEZUG" xml:space="preserve">
+    <value>Zeitbezug</value>
+  </data>
+  <data name="KEXP_KOPF_ZEITSTEMPEL" xml:space="preserve">
+    <value>Zeitstempel</value>
+  </data>
+  <data name="KEXP_ZEITSTEMPEL_REGEL" xml:space="preserve">
+    <value>Beginn der Stunde im Gemeinjahr mit 8760 Stunden</value>
+  </data>
+  <data name="KEXP_GERECHNET_KOPF" xml:space="preserve">
+    <value>Gerechnet</value>
+  </data>
+  <data name="KEXP_TAUPUNKT_REGEL" xml:space="preserve">
+    <value>Taupunkt nach Magnus (Sonntag 1990) aus Lufttemperatur und relativer Feuchte</value>
+  </data>
+  <data name="KEXP_KOPF_LIZENZ" xml:space="preserve">
+    <value>Lizenz</value>
+  </data>
+  <data name="KEXP_LIZENZ_DWD" xml:space="preserve">
+    <value>Deutscher Wetterdienst (DWD), Testreferenzjahre, CC BY 4.0</value>
+  </data>
+  <data name="KEXP_LIZENZ_PVGIS" xml:space="preserve">
+    <value>PVGIS © Europäische Union, Gemeinsame Forschungsstelle</value>
+  </data>
+  <data name="KEXP_ZB_MEZ" xml:space="preserve">
+    <value>MEZ ohne Sommerzeit (UTC+1)</value>
+  </data>
+  <data name="KEXP_ZB_UTC" xml:space="preserve">
+    <value>UTC</value>
+  </data>
+  <data name="KEXP_SP_STUNDE" xml:space="preserve">
+    <value>Stunde</value>
+  </data>
+  <data name="KEXP_SP_DATUM" xml:space="preserve">
+    <value>Datum Uhrzeit</value>
+  </data>
+  <data name="KEXP_SP_ISO" xml:space="preserve">
+    <value>Zeitstempel ISO 8601</value>
+  </data>
+  <data name="KEXP_DATEI" xml:space="preserve">
+    <value>Klimadaten_{0}.csv</value>
+  </data>
+  <data name="KEXP_DZ_KONFLIKT" xml:space="preserve">
+    <value>Komma als Dezimalzeichen geht nicht neben dem Trennzeichen Komma.</value>
+  </data>
+  <data name="KEXP_KEINE_PARAMETER" xml:space="preserve">
+    <value>Kein Parameter gewählt.</value>
+  </data>
+  <data name="KEXP_TITEL" xml:space="preserve">
+    <value>Klimadaten exportieren</value>
+  </data>
+  <data name="KEXP_HANDLUNG" xml:space="preserve">
+    <value>Exportieren…</value>
+  </data>
+  <data name="KEXP_HANDLUNG_GRUND" xml:space="preserve">
+    <value>Der Export gilt für genau eine Region.</value>
+  </data>
+  <data name="KEXP_GRP_PARAMETER" xml:space="preserve">
+    <value>Parameter</value>
+  </data>
+  <data name="KEXP_GR_RECHENWERTE" xml:space="preserve">
+    <value>Rechenwerte (wie die Simulation sie liest)</value>
+  </data>
+  <data name="KEXP_GR_FASSADENWERTE" xml:space="preserve">
+    <value>Fassadenwerte und Sonnenwinkel</value>
+  </data>
+  <data name="KEXP_GR_ROHWERTE" xml:space="preserve">
+    <value>Rohwerte der Quelle</value>
+  </data>
+  <data name="KEXP_GR_ABGELEITET" xml:space="preserve">
+    <value>Abgeleitet</value>
+  </data>
+  <data name="KEXP_GERECHNET" xml:space="preserve">
+    <value>gerechnet</value>
+  </data>
+  <data name="KEXP_ALLE" xml:space="preserve">
+    <value>Alle</value>
+  </data>
+  <data name="KEXP_KEINE" xml:space="preserve">
+    <value>Keine</value>
+  </data>
+  <data name="KEXP_GRP_FORMAT" xml:space="preserve">
+    <value>Format</value>
+  </data>
+  <data name="KEXP_VORLAGE_HAUS" xml:space="preserve">
+    <value>Haus (wie CSV am Bild)</value>
+  </data>
+  <data name="KEXP_VORLAGE_INTERNATIONAL" xml:space="preserve">
+    <value>International (Komma, Punkt, ISO)</value>
+  </data>
+  <data name="KEXP_TRENNZEICHEN" xml:space="preserve">
+    <value>Trennzeichen</value>
+  </data>
+  <data name="KEXP_TZ_SEMIKOLON" xml:space="preserve">
+    <value>Semikolon</value>
+  </data>
+  <data name="KEXP_TZ_KOMMA" xml:space="preserve">
+    <value>Komma</value>
+  </data>
+  <data name="KEXP_TZ_TABULATOR" xml:space="preserve">
+    <value>Tabulator</value>
+  </data>
+  <data name="KEXP_DEZIMALZEICHEN" xml:space="preserve">
+    <value>Dezimalzeichen</value>
+  </data>
+  <data name="KEXP_DZ_KOMMA" xml:space="preserve">
+    <value>Komma</value>
+  </data>
+  <data name="KEXP_DZ_PUNKT" xml:space="preserve">
+    <value>Punkt</value>
+  </data>
+  <data name="KEXP_ZEITSPALTE" xml:space="preserve">
+    <value>Zeitspalte</value>
+  </data>
+  <data name="KEXP_ZS_STUNDE" xml:space="preserve">
+    <value>Laufende Stunde 1…8760</value>
+  </data>
+  <data name="KEXP_ZS_DATUM" xml:space="preserve">
+    <value>Datum und Uhrzeit (TT.MM. hh:00)</value>
+  </data>
+  <data name="KEXP_ZS_BEIDES" xml:space="preserve">
+    <value>Stunde und Datum</value>
+  </data>
+  <data name="KEXP_ZS_ISO" xml:space="preserve">
+    <value>ISO 8601 mit Bezugsjahr</value>
+  </data>
+  <data name="KEXP_ZS_KEINE" xml:space="preserve">
+    <value>Keine</value>
+  </data>
+  <data name="KEXP_ZEITBEZUG" xml:space="preserve">
+    <value>Zeitbezug</value>
+  </data>
+  <data name="KEXP_KOPFART" xml:space="preserve">
+    <value>Kopf</value>
+  </data>
+  <data name="KEXP_KA_EINE" xml:space="preserve">
+    <value>Name [Einheit] in einer Zeile</value>
+  </data>
+  <data name="KEXP_KA_ZWEI" xml:space="preserve">
+    <value>Name und Einheitenzeile</value>
+  </data>
+  <data name="KEXP_KA_OHNE" xml:space="preserve">
+    <value>Ohne Kopf</value>
+  </data>
+  <data name="KEXP_HERKUNFT" xml:space="preserve">
+    <value>Herkunftsblock mit #-Zeilen</value>
+  </data>
+  <data name="KEXP_VORSCHAU" xml:space="preserve">
+    <value>Vorschau (erste fünf Stunden)</value>
+  </data>
+  <data name="KEXP_BTN_EXPORT" xml:space="preserve">
+    <value>Exportieren …</value>
+  </data>
+  <data name="KEXP_BTN_EXPORT_IOS" xml:space="preserve">
+    <value>Exportieren und teilen …</value>
+  </data>
+  <data name="KEXP_MSG_GESPEICHERT" xml:space="preserve">
+    <value>Die Datei ist gespeichert: {0}</value>
+  </data>
+  <data name="KEXP_MSG_FEHLER" xml:space="preserve">
+    <value>Die Datei ließ sich nicht schreiben: {0}</value>
+  </data>
+  <data name="KEXP_MSG_TEILEN_FEHLER" xml:space="preserve">
+    <value>Die Datei ist gespeichert, ließ sich aber nicht teilen: {0}</value>
+  </data>
+  <data name="KEXP_MSG_KEINE_DATEN" xml:space="preserve">
+    <value>Zu dieser Region stehen keine Stundenwerte in der Datenbank.</value>
+  </data>
+  <data name="KEXP_MSG_LESEN" xml:space="preserve">
+    <value>Die Stundenwerte werden gelesen …</value>
+  </data>
+  <data name="KEXP_DATEIDIALOG_TITEL" xml:space="preserve">
+    <value>Klimadaten exportieren</value>
+  </data>
+  <data name="KI_DLG_MASKE_KLIMAEXPORT" xml:space="preserve">
+    <value>Klimadaten exportieren</value>
+  </data>
+  <data name="KEXP_KI_TZ_ERL" xml:space="preserve">
+    <value>Trennzeichen der Datei: 0 = Semikolon, 1 = Komma, 2 = Tabulator.</value>
+  </data>
+  <data name="KEXP_KI_DZ_ERL" xml:space="preserve">
+    <value>Dezimalzeichen: 0 = Komma, 1 = Punkt. Komma geht nicht neben dem Trennzeichen Komma.</value>
+  </data>
+  <data name="KEXP_KI_ZS_ERL" xml:space="preserve">
+    <value>Zeitspalte: 0 = laufende Stunde, 1 = Datum und Uhrzeit, 2 = beides, 3 = ISO 8601, 4 = keine.</value>
+  </data>
+  <data name="KEXP_KI_ZB_ERL" xml:space="preserve">
+    <value>Zeitbezug der Ausgabe: 0 = MEZ ohne Sommerzeit (Vorgabe), 1 = UTC.</value>
+  </data>
+  <data name="KEXP_KI_KA_ERL" xml:space="preserve">
+    <value>Spaltenkopf: 0 = Name [Einheit] in einer Zeile, 1 = Name und Einheitenzeile, 2 = ohne Kopf.</value>
+  </data>
+  <data name="KEXP_KI_HK_ERL" xml:space="preserve">
+    <value>Schreibt Region, Quelle, Ausführung, Koordinaten, Höhe, Zeitbezug und Lizenz als #-Zeilen vor den Kopf.</value>
+  </data>
+  <data name="KEXP_KI_PAR_ERL" xml:space="preserve">
+    <value>Die gewählten Größen als Schlüsselliste, durch Komma getrennt (etwa R_TEMPERATUR,R_GLOBAL,A_TAUPUNKT). Rohwerte (ROH_…) nur bei Regionen mit Rohdaten.</value>
+  </data>
   <data name="KLIMA_RW_KURZ_TEMPERATUR" xml:space="preserve">
     <value>Temperatur</value>
   </data>
@@ -57113,6 +57443,9 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="KLIMA_RW_NAME_QUALITAET" xml:space="preserve">
     <value>Qualitätskennung der Strahlung</value>
   </data>
+  <data name="KLIMA_RW_ROHWERT_MARKE" xml:space="preserve">
+    <value>Rohwert der Quelle aus der Rohwerttabelle (R)</value>
+  </data>
   <data name="CHART_LEGENDE_NETZBEZUG" xml:space="preserve">
     <value>Netzbezug</value>
   </data>
@@ -57154,39 +57487,6 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="KI_DLG_PEAK_SCHWELLE_ERL" xml:space="preserve">
     <value>Zeigt die erreichte Schwelle als waagerechte Linie im Diagramm.</value>
-  </data>
-  <data name="BTA_GRUPPE_STRAHLUNG" xml:space="preserve">
-    <value>Strahlung der Außenfläche</value>
-  </data>
-  <data name="BTA_LBL_ABSORPTION" xml:space="preserve">
-    <value>Absorptionsgrad solar</value>
-  </data>
-  <data name="BTA_LBL_EMISSION" xml:space="preserve">
-    <value>Emissionsgrad langwellig</value>
-  </data>
-  <data name="BTA_PLATZHALTER_STRAHLUNG" xml:space="preserve">
-    <value>Vorgabe {0}</value>
-  </data>
-  <data name="BTA_STRAHLUNG_HINWEIS" xml:space="preserve">
-    <value>Absorptionsgrad (Solarstrahlung) und Emissionsgrad (langwellig) der Außenfläche gehen in die äquivalente Außentemperatur ein. Leer gilt die Vorgabe; ein Bauteil kann einen eigenen Wert tragen.</value>
-  </data>
-  <data name="BTDLG_LBL_ABSORPTION" xml:space="preserve">
-    <value>Absorptionsgrad solar :</value>
-  </data>
-  <data name="BTDLG_LBL_EMISSION" xml:space="preserve">
-    <value>Emissionsgrad :</value>
-  </data>
-  <data name="BTDLG_PLATZHALTER_STRAHLUNG" xml:space="preserve">
-    <value>Aufbau, sonst {0}</value>
-  </data>
-  <data name="KI_DLG_BT_ABSORPTION_ERL" xml:space="preserve">
-    <value>Der Absorptionsgrad der Außenfläche für Solarstrahlung zwischen 0 und 1; leer = der Wert des Aufbaus, sonst die Vorgabe 0,6.</value>
-  </data>
-  <data name="KI_DLG_BT_EMISSION_ERL" xml:space="preserve">
-    <value>Der langwellige Emissionsgrad der Außenfläche zwischen 0 und 1; leer = der Wert des Aufbaus, sonst die Vorgabe 0,9.</value>
-  </data>
-  <data name="KI_DLG_BTA_STRAHLUNG_ERL" xml:space="preserve">
-    <value>Absorptionsgrad (Solarstrahlung) bzw. Emissionsgrad (langwellig) der Außenfläche des Aufbaus zwischen 0 und 1; leer = Vorgabe. Ein Bauteil kann einen eigenen Wert tragen.</value>
   </data>
   <data name="EF_KN_NETZBEZUG" xml:space="preserve">
     <value>Netzbezug</value>
@@ -57541,6 +57841,21 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="EF_DARSTELLUNG_STUFEN" xml:space="preserve">
     <value>Stufen</value>
+  </data>
+  <data name="VF_STAND__BILD__ENERGIEFLUSS" xml:space="preserve">
+    <value>Bild je Stand: Energieflussbild — Jahresbilanz von Strom, Wärme und Kälte von den Quellen über die Erzeuger zu den Bedarfen; die Knoten tragen ihre Jahressumme (MWh/a), die Bänder keine Zahl; nur Word.</value>
+  </data>
+  <data name="VF_HAT__BILD__ENERGIEFLUSS" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Energieflussbild (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="EF_BER_BESCHRIFTUNG" xml:space="preserve">
+    <value>Energiefluss (Jahresbilanz Strom, Wärme, Kälte; Umweltanteil nach Jahresarbeitszahl)</value>
+  </data>
+  <data name="EF_BER_OHNE_BILD" xml:space="preserve">
+    <value>Kein Energieflussbild — {0}</value>
+  </data>
+  <data name="VF_ORT_ENERGIEFLUSS" xml:space="preserve">
+    <value>im Bericht tragen die Knoten ihre Jahressumme (MWh/a); die Bänder bleiben ohne Zahl, die Werte stehen hier im Zeigertext</value>
   </data>
 </root>
 

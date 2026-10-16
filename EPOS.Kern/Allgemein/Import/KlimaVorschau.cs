@@ -92,8 +92,11 @@ namespace WindowsFormsApplication1
         /// <param name="direktNormal">Wahlweise dieselben Stunden mit Direkt-Normalstrahlung
         /// (TRY: nach <c>DwdTryLeser.DirektNormal</c>); <c>null</c> = <paramref name="stunden"/>
         /// führen sie schon (PVGIS).</param>
+        /// <param name="rohreihe">Wahlweise die Rohreihe des Satzes (KD-4, dieselbe, die der Import
+        /// schreibt) für die Monatsreihen der Rohwert-Größen (KD-8 Teil B); <c>null</c> = keine.</param>
         public static KlimaKennzahlen Rechnen(IReadOnlyList<TmyHourlyData> stunden,
-                                              IReadOnlyList<TmyHourlyData> direktNormal = null)
+                                              IReadOnlyList<TmyHourlyData> direktNormal = null,
+                                              KlimaRohreihe rohreihe = null)
         {
             if (stunden == null || stunden.Count == 0) return null;
 
@@ -151,7 +154,7 @@ namespace WindowsFormsApplication1
             for (int m = 0; m < 12; m++)
                 k.MonatsmittelTemperatur[m] = monatN[m] > 0 ? monatT[m] / monatN[m] : double.NaN;
 
-            MonatsreihenRechnen(k, stunden, direktNormal);
+            MonatsreihenRechnen(k, stunden, direktNormal, rohreihe);
 
             k.Tage = tagSumme.Count;
             for (int i = 0; i < tagSumme.Count; i++)
@@ -167,14 +170,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Monatsreihen je Größe der Vorschau (Konzept § 4a.1): Monatsmittel bzw. Monatssumme
-        /// ∑ W/m² · 1 h / 1 000 über die vorhandenen Stunden; Monatsgrenzen aus dem Zeitstempel.
+        /// ∑ W/m² · 1 h / 1 000 über die vorhandenen Stunden; Monatsgrenzen aus dem Zeitstempel. Die
+        /// Rohwert-Größen (Teil B) kommen aus der Rohreihe, Monatsgrenzen aus der Stunde im Gemeinjahr.
         /// </summary>
         private static void MonatsreihenRechnen(KlimaKennzahlen k, IReadOnlyList<TmyHourlyData> stunden,
-                                                IReadOnlyList<TmyHourlyData> direktNormal)
+                                                IReadOnlyList<TmyHourlyData> direktNormal, KlimaRohreihe rohreihe)
         {
             foreach (KlimaReihe r in KlimaReihenkatalog.Reihen)
             {
-                if (!r.InVorschau || r.Herkunft == KlimaReihenherkunft.Rohwert) continue;
+                if (!r.InVorschau || r.IstRohwert) continue;
                 IReadOnlyList<TmyHourlyData> quelle =
                     r.Schluessel == KlimaReihenkatalog.R_DIREKT_NORMAL && direktNormal != null ? direktNormal : stunden;
 
@@ -195,13 +199,35 @@ namespace WindowsFormsApplication1
                     gesamt++;
                 }
                 if (gesamt == 0) continue;
-
-                var monate = new double[12];
-                for (int m = 0; m < 12; m++)
-                    monate[m] = zahl[m] == 0 ? double.NaN
-                        : r.Monatsregel == KlimaMonatsregel.Summe ? summe[m] / 1000.0 : summe[m] / zahl[m];
-                k.Monatsreihen[r.Schluessel] = monate;
+                k.Monatsreihen[r.Schluessel] = Monate(summe, zahl, r.Monatsregel);
                 k.Reihenstunden[r.Schluessel] = gesamt;
+            }
+
+            // KD-8 Teil B: die Rohwert-Größen aus der gelesenen Rohreihe (Stunde 1 … 8760 im Raster der
+            // Quelle). Eine Größe ohne eine einzige Stunde steht nicht darin - die Quelle führt sie nicht.
+            if (rohreihe?.Stunden != null)
+            {
+                foreach (KlimaReihe r in KlimaReihenkatalog.Reihen)
+                {
+                    if (!r.InVorschau || !r.IstRohwert) continue;
+                    var summe = new double[12];
+                    var zahl = new int[12];
+                    int gesamt = 0;
+                    foreach (KlimaRohstunde s in rohreihe.Stunden)
+                    {
+                        if (s == null) continue;
+                        double? w = KlimaReihenkatalog.Rohstundenwert(s, r.Schluessel);
+                        if (!w.HasValue || double.IsNaN(w.Value)) continue;
+                        int m = KlimaReihenkatalog.MonatVonStunde(s.Stunde);
+                        if (m < 0) continue;
+                        summe[m] += w.Value;
+                        zahl[m]++;
+                        gesamt++;
+                    }
+                    if (gesamt == 0) continue;
+                    k.Monatsreihen[r.Schluessel] = Monate(summe, zahl, r.Monatsregel);
+                    k.Reihenstunden[r.Schluessel] = gesamt;
+                }
             }
 
             // Die beiden Reihen des heutigen Bildes bleiben dieselben Zahlen.
@@ -209,6 +235,16 @@ namespace WindowsFormsApplication1
                 k.Monatsreihen[KlimaReihenkatalog.R_TEMPERATUR] = (double[])k.MonatsmittelTemperatur.Clone();
             if (k.Monatsreihen.ContainsKey(KlimaReihenkatalog.R_GLOBAL))
                 k.Monatsreihen[KlimaReihenkatalog.R_GLOBAL] = (double[])k.MonatssummeGlobalstrahlungKwhM2.Clone();
+        }
+
+        /// <summary>Zwölf Monatswerte aus Summe und Stundenzahl: Summe in kWh/m² (∑ W/m² · 1 h / 1 000) oder Mittel; NaN ohne Stunde.</summary>
+        private static double[] Monate(double[] summe, int[] zahl, KlimaMonatsregel regel)
+        {
+            var monate = new double[12];
+            for (int m = 0; m < 12; m++)
+                monate[m] = zahl[m] == 0 ? double.NaN
+                    : regel == KlimaMonatsregel.Summe ? summe[m] / 1000.0 : summe[m] / zahl[m];
+            return monate;
         }
     }
 
@@ -247,6 +283,12 @@ namespace WindowsFormsApplication1
     {
         public KlimaParameter Parameter;
         public KlimaParameterStand Stand;
+
+        /// <summary>
+        /// Wird die Größe beim Import gespeichert (KD-4)? Als Rechenspalte (<c>Tab_Solar_STAMM</c>) oder, sobald die
+        /// Rohtabelle steht, als Rohwert. Eine Größe, die die Quelle nicht führt, wird nie gespeichert.
+        /// </summary>
+        public bool Gespeichert;
     }
 
     /// <summary>
@@ -262,7 +304,8 @@ namespace WindowsFormsApplication1
         /// der Satz aber keinen einzigen Wert, steht sie auf <see cref="KlimaParameterStand.Fehlt"/>.
         /// </summary>
         public static IReadOnlyList<KlimaParameterEintrag> Fuer(KlimaQuelle quelle,
-                                                                 IReadOnlyList<TmyHourlyData> stunden = null)
+                                                                 IReadOnlyList<TmyHourlyData> stunden = null,
+                                                                 bool rohtabelle = false)
         {
             var liste = new List<KlimaParameterEintrag>();
             foreach (KlimaParameter p in Enum.GetValues(typeof(KlimaParameter)))
@@ -272,9 +315,35 @@ namespace WindowsFormsApplication1
                     !WertVorhanden(p, stunden))
                     stand = KlimaParameterStand.Fehlt;
 
-                liste.Add(new KlimaParameterEintrag { Parameter = p, Stand = stand });
+                liste.Add(new KlimaParameterEintrag
+                {
+                    Parameter = p,
+                    Stand = stand,
+                    Gespeichert = stand != KlimaParameterStand.Fehlt && (Rechenspalte(p) || rohtabelle)
+                });
             }
             return liste;
+        }
+
+        /// <summary>
+        /// Hat die Größe eine Rechenspalte in <c>Tab_Solar(_STAMM)</c>? Die übrigen — Direktstrahlung horizontal,
+        /// Luftdruck, Wind, Wasserdampfgehalt, Ausstrahlung, Qualitätskennung — gibt es nur als Rohwert (KD-4).
+        /// </summary>
+        public static bool Rechenspalte(KlimaParameter p)
+        {
+            switch (p)
+            {
+                case KlimaParameter.Lufttemperatur:
+                case KlimaParameter.Luftfeuchte:
+                case KlimaParameter.Globalstrahlung:
+                case KlimaParameter.DirektstrahlungNormal:
+                case KlimaParameter.Diffusstrahlung:
+                case KlimaParameter.Gegenstrahlung:
+                case KlimaParameter.Bedeckungsgrad:
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         /// <summary>Der Stand dem FORMAT der Quelle nach (Konzept § 2).</summary>

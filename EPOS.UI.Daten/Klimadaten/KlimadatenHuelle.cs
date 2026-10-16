@@ -126,8 +126,54 @@ namespace WindowsFormsApplication1
                 // AD-Q15: das Schloss laesst sich nach Rueckfrage umschalten.
                 ["Schloss"] = Schlosswege.Aus(KlimaregionStammCtrl.SchlossSetzen),
                 ["Ortsvorschlaege"] = Ortsvorschlaege(),
-                ["DateiWaehlen"] = new Func<string, Task<string>>(DateiWaehlen)
+                ["DateiWaehlen"] = new Func<string, Task<string>>(DateiWaehlen),
+                // KD-5: der CSV-Export einer Region (Handlung „Exportieren…" der Auswahlleiste).
+                ["ExportLesen"] = new Func<string, Task<KlimaExportDaten>>(ExportLesen),
+                ["ExportSpeichern"] = new Func<string, string, Task<EPOS.UI.Dialoge.Export.KlimaExportErgebnis>>(
+                    (inhalt, vorschlag) => ExportSpeichern(inhalt, vorschlag, OperatingSystem.IsIOS()))
             };
+        }
+
+        // =====================================================================
+        // CSV-Export einer Region (Auftrag KD-5)
+        // =====================================================================
+
+        /// <summary>Liest die Region abseits des Oberflächenfadens (<see cref="KlimaExportCtrl.Lesen(string)"/>).</summary>
+        private static Task<KlimaExportDaten> ExportLesen(string region)
+            => Kulturweitergabe.Starten(() => KlimaExportCtrl.Lesen(region));
+
+        /// <summary>
+        /// Der Speicherweg des Exports über die vorhandene Naht <see cref="CsvExportClass.DateiWaehlenFuerExportAsync"/>
+        /// (Dateiwahl über <c>Dienste.Datei</c>, gemerkter Ordner): Schreiben als UTF-8 mit BOM — ganz oder gar nicht —,
+        /// auf iOS danach das Teilen. Eine abgebrochene Dateiwahl meldet <see cref="EPOS.UI.Dialoge.Export.KlimaExportErgebnis.Abgebrochen"/>.
+        /// </summary>
+        internal static async Task<EPOS.UI.Dialoge.Export.KlimaExportErgebnis> ExportSpeichern(string inhalt, string vorschlag, bool ios)
+        {
+            string pfad = await CsvExportClass.DateiWaehlenFuerExportAsync(vorschlag).ConfigureAwait(true);
+            if (string.IsNullOrWhiteSpace(pfad)) return EPOS.UI.Dialoge.Export.KlimaExportErgebnis.Abgebrochen;
+            try
+            {
+                await Kulturweitergabe.Starten(() =>
+                {
+                    File.WriteAllText(pfad, inhalt ?? "", new System.Text.UTF8Encoding(true));
+                    return true;
+                });
+            }
+            catch (Exception ex)
+            {
+                return new EPOS.UI.Dialoge.Export.KlimaExportErgebnis(false, false,
+                    string.Format(System.Globalization.CultureInfo.CurrentCulture, MyResource.Resource.KEXP_MSG_FEHLER, ex.Message));
+            }
+            string text = string.Format(System.Globalization.CultureInfo.CurrentCulture, MyResource.Resource.KEXP_MSG_GESPEICHERT, pfad);
+            if (ios)
+            {
+                bool geteilt;
+                try { geteilt = Dienste.Datei.MitSystemOeffnen(pfad); }
+                catch (Exception) { geteilt = false; }
+                if (!geteilt)
+                    text = string.Format(System.Globalization.CultureInfo.CurrentCulture, MyResource.Resource.KEXP_MSG_TEILEN_FEHLER, pfad);
+            }
+            return new EPOS.UI.Dialoge.Export.KlimaExportErgebnis(true, false, text);
         }
 
         // =====================================================================
@@ -243,9 +289,24 @@ namespace WindowsFormsApplication1
                 Tiefstwert = werteTemperatur.Min(),
                 Hoechstwert = werteTemperatur.Max(),
                 // KD-8 Teil A: die gespeicherten Rechenspalten für „Weitere Reihen“ —
-                // dieselben Zeilen (SolardatenCtrl.ReadAllStamm, ?-Parameter).
-                Reihenbestand = KlimaReihenkatalog.AusRechenspalten(solar.items)
+                // dieselben Zeilen (SolardatenCtrl.ReadAllStamm, ?-Parameter); Teil B: dahinter die
+                // Rohwert-Reihen aus Tab_Klimastunde_STAMM, sobald der Schritt 238 steht (Datenstand).
+                Reihenbestand = ReihenbestandLesen(region.m_ID_Klimaregion, solar.items)
             });
+        }
+
+        /// <summary>
+        /// Der Reihenbestand einer Katalogregion (KD-8): die Rechenspalten (Teil A) und, freigeschaltet aus dem
+        /// Datenstand (Schritt 238, <c>KlimaReihenkatalog.RohwerteFreigeschaltet</c>), die Rohwert-Reihen (Teil B,
+        /// Leser <c>KlimaExportCtrl.RohwerteLesen</c>); eine Region ohne Rohwerte führt sie als „führt nicht“, der
+        /// Chip bleibt weich gesperrt.
+        /// </summary>
+        private static IReadOnlyList<KlimaReihenwerte> ReihenbestandLesen(int idStamm, IReadOnlyList<SolardatenModel> zeilen)
+        {
+            var liste = new List<KlimaReihenwerte>(KlimaReihenkatalog.AusRechenspalten(zeilen));
+            if (KlimaReihenkatalog.RohwerteFreigeschaltet())
+                liste.AddRange(KlimaReihenkatalog.AusRohwerten(KlimaExportCtrl.RohwerteLesen(idStamm)));
+            return liste;
         }
 
         // =====================================================================
