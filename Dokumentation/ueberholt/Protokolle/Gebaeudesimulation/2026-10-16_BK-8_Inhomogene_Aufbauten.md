@@ -71,7 +71,13 @@ die Testdatenbank mit denselben Grenzwerten.
 
 ## Abnahme
 
-Siehe Bericht an die Orchestrierung (Build, Tests, SQL-Dialekt, Referenzlauf).
+- `dotnet build WP-Plan.Kern.slnf -c Release`: 0 Fehler; Windows-Schale mit `EnableWindowsTargeting`: 0 Fehler.
+- `EPOS.Kern.Tests` mit Filter (Bauteil*, *Abschnitt*, Uwert*, *ReferenzprojektWache*, DokumentationLinkWache,
+  WikiProduktdatenWache, RepositoryOrdnungWache): 642 grün, 1 übersprungen (Bestand), 0 rot; `EPOS.UI.Tests` Bauteilkatalog*:
+  9 grün.
+- SQL-Dialekt-Prüfer: 3 009 SQL-Texte, 0 Fundstellen.
+- Referenzlauf der achtzehn CI-Projekte gegen `2026-10-14_R55_KaeltebedarfDezentral` (ohne die zwei Kälte-Deckungsgrade):
+  GESAMT PASS, 6 398 669 Werte innerhalb der Toleranz.
 
 ## Logbuch (Vorschlag)
 
