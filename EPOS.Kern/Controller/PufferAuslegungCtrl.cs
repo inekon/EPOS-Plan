@@ -325,7 +325,7 @@ namespace WindowsFormsApplication1
                 PufferSpCtrl.KlassenSet ks = PufferSpCtrl.KlassenSetAusZeile(pz);
                 kH = ks.Heizung; kB = ks.Brauchwasser; kP = ks.Prozess;
                 if (!kH && !kB && !kP) kH = true;
-                H("Klassen", PufferHerkunftsquelle.PUFFER, T("PAUS_HERK_KLASSEN_PUFFER", "Klassen-Set des Puffers (Nutzung_Heizung/_Brauchwasser/_Prozess)"));
+                H("Klassen", PufferHerkunftsquelle.PUFFER, T("PAUS_HERK_KLASSEN_PUFFER", "Klassen-Set des Puffers (Nutzung Heizung, Brauchwasser, Prozess)"));
             }
             else
             {
@@ -435,7 +435,7 @@ namespace WindowsFormsApplication1
                 }
             H(nameof(PufferAuslegungEingang.Vorlage), rang1 == 0 && !(kP && !kH && !kB) ? PufferHerkunftsquelle.VORGABE : PufferHerkunftsquelle.KASKADE, vText);
             if (sperre.Count > 0)
-                H(nameof(PufferAuslegungEingang.Sperrfenster), PufferHerkunftsquelle.KASKADE, T("PAUS_HERK_SPERRE_ANLAGE", "Sperrzeit der Anlage an Rang 1 (Sperrzeit_von/_bis)"));
+                H(nameof(PufferAuslegungEingang.Sperrfenster), PufferHerkunftsquelle.KASKADE, T("PAUS_HERK_SPERRE_ANLAGE", "Sperrzeit der Anlage an Rang 1"));
             else
                 H(nameof(PufferAuslegungEingang.Sperrfenster), PufferHerkunftsquelle.VORGABE, T("PAUS_HERK_SPERRE_KEINE", "keine Sperrzeit gepflegt"));
 
@@ -450,7 +450,7 @@ namespace WindowsFormsApplication1
                   : T("PAUS_HERK_UEBERGABE_KEINE", "keine Übergabeart gepflegt: ideal, rechnet wie FLAECHE (Hinweis {0})",
                       PufferWarncode.UEBERGABE_UNBEKANNT));
             H(nameof(PufferAuslegungEingang.AnlagenvolumenL), PufferHerkunftsquelle.VORGABE,
-              T("PAUS_HERK_ANLAGENVOLUMEN", "Übergabeart × Auslegungsheizlast (Anlagenvolumen.<Übergabe>_l_kW)"));
+              T("PAUS_HERK_ANLAGENVOLUMEN", "Übergabeart × Auslegungsheizlast (Vorgabe Anlagenvolumen in l/kW)"));
             H(nameof(PufferAuslegungEingang.AuslegungsheizlastKw), PufferHerkunftsquelle.REIHE, T("PAUS_HERK_HEIZLAST_REIHE", "Maximum der Heizreihe"));
 
             // ---- Zapfprofil ----
@@ -460,7 +460,7 @@ namespace WindowsFormsApplication1
             IReadOnlyList<double> nenn = Nenninhalte(h);
             IReadOnlyList<PufferKatalogsatz> katalog = Katalog();
             H(nameof(PufferAuslegungEingang.Katalog), PufferHerkunftsquelle.KATALOG,
-              T("PAUS_HERK_KATALOG_PUFFER", "{0} Katalogpuffer aus Tab_Pufferspeicher_STAMM", katalog.Count));
+              T("PAUS_HERK_KATALOG_PUFFER", "{0} Katalogpuffer aus dem Pufferkatalog", katalog.Count));
 
             // ---- Nutzungsprofil ----
             PufferNutzungsprofilAbleitung np = global::WindowsFormsApplication1.Nutzungsprofil.Ableiten(
@@ -471,8 +471,8 @@ namespace WindowsFormsApplication1
             // ---- Aufheizbemessung KP3 (Kriterium K12, V30) ----
             var (aufheizKw, aufheizH, aufheizGebaeude) = Aufheizbemessung(idProjekt);
             H(nameof(PufferAuslegungEingang.AufheizleistungKw), aufheizKw.HasValue ? PufferHerkunftsquelle.GEBAEUDE : PufferHerkunftsquelle.VORGABE,
-              aufheizKw.HasValue ? T("PAUS_HERK_AUFHEIZ_KP3", "Aufheizbemessung KP3 des letzten Laufs: Summe Aufheiz_Leistung_Kw über {0} Gebäude, längste Aufheizzeit", aufheizGebaeude)
-                                 : T("PAUS_HERK_AUFHEIZ_KEINE", "keine Aufheizbemessung im letzten Lauf (Kriterium K12 bemisst nicht)"));
+              aufheizKw.HasValue ? T("PAUS_HERK_AUFHEIZ_KP3", "Aufheizbemessung des letzten Laufs: Summe der Aufheizleistung über {0} Gebäude, längste Aufheizzeit", aufheizGebaeude)
+                                 : T("PAUS_HERK_AUFHEIZ_KEINE", "keine Aufheizbemessung im letzten Lauf (das Kriterium „Aufheizen nach Absenkung“ bemisst nicht)"));
 
             if (reihen != null)
                 H("Reihen", PufferHerkunftsquelle.REIHE, reihen.Vorhanden
@@ -607,7 +607,7 @@ namespace WindowsFormsApplication1
                 int typ = TypAusKaskade(eintrag);
                 if (typ != 0 && anlagen.Any(a => a.Typ == typ))
                 {
-                    text = T("PAUS_HERK_RANG1_KASKADE", "Rang 1 der Kaskade: {0} (Tab_Einstellungen.Tool_{1})", Erzeugertext(typ, eintrag), i);
+                    text = T("PAUS_HERK_RANG1_KASKADE", "Rang 1 der Kaskade: {0} (Kaskadenplatz {1})", Erzeugertext(typ, eintrag), i);
                     return typ;
                 }
             }
@@ -985,7 +985,7 @@ namespace WindowsFormsApplication1
             if (w.Liste != null)
             {
                 h.Add(new PufferAuslegungHerkunft(nameof(PufferAuslegungEingang.Nenninhalte), PufferHerkunftsquelle.PARAMETER,
-                                                  T("PAUS_HERK_NENNINHALTE_PARAMETER", "Speicherauslegung.Nenninhalt.* ({0})", w.Quelle)));
+                                                  T("PAUS_HERK_NENNINHALTE_PARAMETER", "Nenninhaltsliste der Speicherauslegung ({0})", w.Quelle)));
                 return w.Liste.WerteL;
             }
             h.Add(new PufferAuslegungHerkunft(nameof(PufferAuslegungEingang.Nenninhalte), PufferHerkunftsquelle.VORGABE,

@@ -99036,7 +99036,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Übergabeart × Auslegungsheizlast (Anlagenvolumen.&lt;Übergabe&gt;_l_kW) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übergabeart × Auslegungsheizlast (Vorgabe Anlagenvolumen in l/kW) ähnelt.
         /// </summary>
         public static string PAUS_HERK_ANLAGENVOLUMEN {
             get {
@@ -99045,7 +99045,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die keine Aufheizbemessung im letzten Lauf (Kriterium K12 bemisst nicht) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Aufheizbemessung im letzten Lauf (das Kriterium „Aufheizen nach Absenkung“ bemisst nicht) ähnelt.
         /// </summary>
         public static string PAUS_HERK_AUFHEIZ_KEINE {
             get {
@@ -99054,7 +99054,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizbemessung KP3 des letzten Laufs: Summe Aufheiz_Leistung_Kw über {0} Gebäude, längste Aufheizzeit ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizbemessung des letzten Laufs: Summe der Aufheizleistung über {0} Gebäude, längste Aufheizzeit ähnelt.
         /// </summary>
         public static string PAUS_HERK_AUFHEIZ_KP3 {
             get {
@@ -99144,7 +99144,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 4645 E 2026-03, Anhang I; Recherche Runde 2, Abschnitt 4.1 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 4645 E 2026-03, Anhang I ähnelt.
         /// </summary>
         public static string PAUS_HERK_FRISCHWASSER {
             get {
@@ -99216,7 +99216,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Konzept Pufferauslegung V30 / KP3 (Aufheizbemessung der Gebäude) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizbemessung der Gebäude (letzte Simulation) ähnelt.
         /// </summary>
         public static string PAUS_HERK_K12 {
             get {
@@ -99279,7 +99279,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Katalogpuffer aus Tab_Pufferspeicher_STAMM ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Katalogpuffer aus dem Pufferkatalog ähnelt.
         /// </summary>
         public static string PAUS_HERK_KATALOG_PUFFER {
             get {
@@ -99315,7 +99315,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Klassen-Set des Puffers (Nutzung_Heizung/_Brauchwasser/_Prozess) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klassen-Set des Puffers (Nutzung Heizung, Brauchwasser, Prozess) ähnelt.
         /// </summary>
         public static string PAUS_HERK_KLASSEN_PUFFER {
             get {
@@ -99351,7 +99351,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Konzept Pufferauslegung 6 (Nutzen-Aufwand-Zeile); Durchlauf D1 und Zweipunkt D2 mit festem Volumen, Verlust K11 nach Klasse-C-Grenze ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachrechnung je Stufe mit festem Volumen (Deckungsgrad und Taktziel); Bereitschaftsverlust nach der Grenze der Effizienzklasse C ähnelt.
         /// </summary>
         public static string PAUS_HERK_NACHBARSTUFEN {
             get {
@@ -99369,7 +99369,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Speicherauslegung.Nenninhalt.* ({0}) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nenninhaltsliste der Speicherauslegung ({0}) ähnelt.
         /// </summary>
         public static string PAUS_HERK_NENNINHALTE_PARAMETER {
             get {
@@ -99567,7 +99567,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die EPOS-Plan Rechenkern (ProjektPuffer.WH_JE_LITER_KELVIN) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenkern EPOS-Plan (Wärmekapazität des Wassers) ähnelt.
         /// </summary>
         public static string PAUS_HERK_Q_KERN {
             get {
@@ -99585,7 +99585,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Recherche Pufferspeicher-Auslegung Runde 2, Abschnitt 4.1 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe EPOS-Plan ähnelt.
         /// </summary>
         public static string PAUS_HERK_Q_RUNDE2 {
             get {
@@ -99612,7 +99612,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmespeicher-Tool (Quellen/Waermespeicher-Tool), Lastgang-Simulation ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmespeicher-Tool, Lastgang-Simulation ähnelt.
         /// </summary>
         public static string PAUS_HERK_Q_TOOL {
             get {
@@ -99621,7 +99621,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Konzept Pufferauslegung V30 / KP3 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe EPOS-Plan ähnelt.
         /// </summary>
         public static string PAUS_HERK_Q_V30 {
             get {
@@ -99630,7 +99630,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Recherche Pufferspeicher-Auslegung Runde 3, Vorschlag V39 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe EPOS-Plan ähnelt.
         /// </summary>
         public static string PAUS_HERK_Q_V39 {
             get {
@@ -99711,7 +99711,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Recherche Pufferspeicher-Auslegung Runde 1, Abschnitt 6 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe EPOS-Plan ähnelt.
         /// </summary>
         public static string PAUS_HERK_Q_VORLAGE {
             get {
@@ -99747,7 +99747,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Rang 1 der Kaskade: {0} (Tab_Einstellungen.Tool_{1}) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rang 1 der Kaskade: {0} (Kaskadenplatz {1}) ähnelt.
         /// </summary>
         public static string PAUS_HERK_RANG1_KASKADE {
             get {
@@ -99819,7 +99819,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrzeit der Anlage an Rang 1 (Sperrzeit_von/_bis) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sperrzeit der Anlage an Rang 1 ähnelt.
         /// </summary>
         public static string PAUS_HERK_SPERRE_ANLAGE {
             get {
@@ -102132,7 +102132,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizdauer aus KP3 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufheizdauer aus der Aufheizbemessung ähnelt.
         /// </summary>
         public static string PAUS_WEG_K12_DAUER_KP3 {
             get {
@@ -102141,7 +102141,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe Aufheiz.Dauer_h ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe Aufheizdauer ähnelt.
         /// </summary>
         public static string PAUS_WEG_K12_DAUER_VORGABE {
             get {
@@ -102150,7 +102150,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die keine KP3-Aufheizbemessung der Gebäude ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Aufheizbemessung der Gebäude ähnelt.
         /// </summary>
         public static string PAUS_WEG_K12_KEINE {
             get {
@@ -102159,7 +102159,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die ; Einzelraumregelung: absperrbar, keine Gutschrift für K1 ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die ; Einzelraumregelung: absperrbar, keine Gutschrift bei der Vorprüfung Anlagenvolumen ähnelt.
         /// </summary>
         public static string PAUS_WEG_K1_EINZELRAUM {
             get {
