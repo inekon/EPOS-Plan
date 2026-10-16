@@ -65,16 +65,16 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Die Speicherauslegung der Stufe Einfach allein mit dem freien Paketteil:</b> Jede mitgelieferte
-        /// Nutzungsart ohne Flächenbezug (eine Zone, Bezugsmenge 3, Topologie Speicher) rechnet die Auslegung
-        /// ohne Abbruch — das Kaltwasser der Auslegung steht im Paketteil, und ohne die Kennwerte der DIN 4708
-        /// ist der Normvergleich benannt „nicht rechenbar" statt die Auslegung abzubrechen. Der
-        /// Verfahrensvergleich nach der Vorlage V4 liefert ein Band und einen Nenninhalt über 0. Die
-        /// Empfehlung (der Punkt der Summenlinie) braucht die Auslegungswerte der A100 und einen Bedarfstag;
-        /// sie bleibt ohne externes Katalogpaket benannt offen (Hinweis <c>KONSTRUKTOR_OEFFNEN</c>), nie still.
+        /// <b>Die Speicherauslegung der Stufe Einfach allein mit dem freien Paketteil</b> (Anwenderentscheid
+        /// 16.10.2026, Schnellauslegung V4): Jede mitgelieferte Nutzungsart ohne Flächenbezug (eine Zone,
+        /// Bezugsmenge 3, Topologie Speicher) rechnet die Auslegung ohne Abbruch — das Kaltwasser der Auslegung
+        /// steht im Paketteil, ohne die Kennwerte der DIN 4708 ist der Normvergleich benannt „nicht rechenbar".
+        /// Ohne die Auslegungswerte der A100 rechnet keine Summenlinie; empfohlen ist der Nenninhalt des Bandes
+        /// nach V4 (&gt; 0), mit dem Vermerk „Schnellauslegung", dem Hinweis
+        /// <see cref="ZapfprofilAuslegung.HINWEIS_EMPFEHLUNG_V4"/> und einem Eintrag im Herkunftsprotokoll.
         /// </summary>
         [Fact]
-        public void Jede_mitgelieferte_Nutzungsart_rechnet_in_der_Stufe_Einfach_die_Speicherauslegung_ohne_Abbruch()
+        public void Jede_mitgelieferte_Nutzungsart_rechnet_in_der_Stufe_Einfach_die_Speicherauslegung_nach_V4()
         {
             using var db = new TwwTestdatenbank();
             Assert.True(ZapfprofilCtrl.Verfuegbar().Ja);
@@ -84,23 +84,59 @@ namespace EPOS.Kern.Tests
             foreach (Nutzungsart n in ZapfprofilCtrl.Katalog())
             {
                 if (n.Bezug == ZapfBezugsart.Flaeche) continue;
-                var zone = new ZonenStand { Id = 1, Name = "Zone 1", IdNutzungsart = n.Id, Bezugsmenge = 3, Reihenfolge = 1 };
-                Auslegungsrechnung r = ZapfprofilCtrl.Auslegung(1, new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { zone }, projekt),
-                                                               3, ZapfprofilTestbau.We(3),
-                                                               new Auslegungslauf(null, null, false, default, ZapfStufe.Einfach));
+                Auslegungsrechnung r = Auslegen(n, projekt, ZapfStufe.Einfach);
                 Assert.True(r.Ergebnis.Ablehnungen.Count == 0,
                             n.Name + ": " + string.Join(" | ", r.Ergebnis.Ablehnungen.Select(a => a.Satz?.Klartext)));
+                Assert.True(ZapfAuslegungParameter.A100Fehlt(r.Parameter), n.Name + ": A100-Werte im freien Teil");
                 Auslegungsgruppe g = Assert.Single(r.Ergebnis.Gruppen);
                 Assert.Equal(ZapfTopologie.Speicher, g.Topologie);
                 Assert.False(g.Normvergleich.Gueltig, n.Name + ": Normvergleich ohne Kennwerte gültig");
+                Assert.Null(g.Summenlinie);
                 Speicherauslegungsergebnis sa = g.Speicherauslegung;
-                Assert.True(sa != null, n.Name + ": kein Verfahrensvergleich");
-                Assert.True(sa.BandMaxL > 0 && sa.NenninhaltL > 0, n.Name + ": Verfahrensvergleich ohne Volumen");
-                Assert.False(g.Empfehlung.Rechenbar, n.Name + ": Empfehlung ohne A100-Werte rechenbar");
-                Assert.Contains(g.Hinweise, h => h.Code == "KONSTRUKTOR_OEFFNEN");
+                Assert.True(sa?.NenninhaltL > 0, n.Name + ": Verfahrensvergleich ohne Nenninhalt");
+
+                Auslegungsempfehlung e = g.Empfehlung;
+                Assert.True(e.Rechenbar, n.Name + ": keine Empfehlung — " + e.GrundText);
+                Assert.Equal(ZapfAuslegungsverfahren.VorlageV4, e.Verfahren);
+                Assert.True(e.NenninhaltL > 0, n.Name + ": Empfehlung 0");
+                Assert.Equal(sa.NenninhaltL, e.NenninhaltL);
+                Assert.Equal(e.NenninhaltL, e.VolumenL);
+                Assert.True(e.Schnellauslegung);
+                Assert.Contains(e.Vermerke, v => v.Kennung == "AUSTEXT_VERMERK_VORLAGE_V4");
+                Assert.Contains(g.Hinweise, h => h.Code == ZapfprofilAuslegung.HINWEIS_EMPFEHLUNG_V4);
+                Assert.Contains(r.Ergebnis.Herkunft, k => k.Feld == ZapfFeld.AUSLEGUNG_EMPFEHLUNG && k.Wert == e.NenninhaltL);
                 gerechnet++;
             }
             Assert.True(gerechnet >= 5, "nur " + gerechnet + " Nutzungsarten gerechnet");
+        }
+
+        /// <summary>
+        /// <b>Die Schnellauslegung V4 gilt nur in der Stufe Einfach:</b> In Erweitert und Experte bleibt die
+        /// Empfehlung ohne die Auslegungswerte der A100 benannt offen — kein Punkt, kein Hinweis V4.
+        /// </summary>
+        [Theory]
+        [InlineData((int)ZapfStufe.Erweitert)]
+        [InlineData((int)ZapfStufe.Experte)]
+        public void Ohne_A100_bleibt_die_Empfehlung_ausserhalb_der_Stufe_Einfach_offen(int stufe)
+        {
+            using var db = new TwwTestdatenbank();
+            Assert.True(ZapfprofilCtrl.Verfuegbar().Ja);
+            ProjektStand projekt = ZapfprofilCtrl.ProjektVorgabe();
+            Nutzungsart n = ZapfprofilCtrl.Katalog().First(k => k.Bezug != ZapfBezugsart.Flaeche);
+
+            Auslegungsgruppe g = Assert.Single(Auslegen(n, projekt, (ZapfStufe)stufe).Ergebnis.Gruppen);
+
+            Assert.False(g.Empfehlung.Rechenbar);
+            Assert.Equal(ZapfAuslegungsverfahren.Summenlinie, g.Empfehlung.Verfahren);
+            Assert.DoesNotContain(g.Hinweise, h => h.Code == ZapfprofilAuslegung.HINWEIS_EMPFEHLUNG_V4);
+            Assert.True(g.Speicherauslegung?.NenninhaltL > 0);
+        }
+
+        private static Auslegungsrechnung Auslegen(Nutzungsart n, ProjektStand projekt, ZapfStufe stufe)
+        {
+            var zone = new ZonenStand { Id = 1, Name = "Zone 1", IdNutzungsart = n.Id, Bezugsmenge = 3, Reihenfolge = 1 };
+            return ZapfprofilCtrl.Auslegung(1, new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { zone }, projekt),
+                                            3, ZapfprofilTestbau.We(3), new Auslegungslauf(null, null, false, default, stufe));
         }
 
         /// <summary>

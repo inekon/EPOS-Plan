@@ -155722,6 +155722,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnellauslegung V4 ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_SCHNELLAUSLEGUNG_V4 {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_SCHNELLAUSLEGUNG_V4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Spannweite (min – max) ähnelt.
         /// </summary>
         public static string ZPG_AUS_SPANNWEITE {
@@ -156690,6 +156699,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_GROESSE_AUSLEGUNG_BEDARFSTAGFAKTOR {
             get {
                 return ResourceManager.GetString("ZPG_GROESSE_AUSLEGUNG_BEDARFSTAGFAKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung, Empfehlung ähnelt.
+        /// </summary>
+        public static string ZPG_GROESSE_AUSLEGUNG_EMPFEHLUNG {
+            get {
+                return ResourceManager.GetString("ZPG_GROESSE_AUSLEGUNG_EMPFEHLUNG", resourceCulture);
             }
         }
         
@@ -160078,6 +160096,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnellauslegung nach Vorlage V4, ohne Summenlinie: Die Auslegungswerte der A100 fehlen im Katalog; empfohlen ist der Nenninhalt {0:0} l des Verfahrensvergleichs (Band bis {1:0} l). Die Summenlinie rechnet erst mit einem Katalogpaket, das diese Werte führt. ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_AUSHINWEIS_EMPFEHLUNG_V4 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_AUSHINWEIS_EMPFEHLUNG_V4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der gewählte Bezug des Füllstands ({0}) ist nicht bestimmbar; es gilt die Vorgabe. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSHINWEIS_FUELLSTAND_BEZUG_VORGABE {
@@ -161190,6 +161217,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_AUSTEXT_VERMERK_SPITZEN {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_AUSTEXT_VERMERK_SPITZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnellauslegung nach Vorlage V4, ohne Summenlinie ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_AUSTEXT_VERMERK_VORLAGE_V4 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_AUSTEXT_VERMERK_VORLAGE_V4", resourceCulture);
             }
         }
         
@@ -163467,6 +163503,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_SATZ_HERKUNFT_BEZUGSTEMPERATUR_NUTZUNGSART {
             get {
                 return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_BEZUGSTEMPERATUR_NUTZUNGSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schnellauslegung nach Vorlage V4, ohne Summenlinie: Nenninhalt {0:0} l des Bandes bis {1:0} l ähnelt.
+        /// </summary>
+        public static string ZPG_SATZ_HERKUNFT_EMPFEHLUNG_V4 {
+            get {
+                return ResourceManager.GetString("ZPG_SATZ_HERKUNFT_EMPFEHLUNG_V4", resourceCulture);
             }
         }
         
