@@ -14142,15 +14142,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="BPF_BTN_DB_NEU_STROM" xml:space="preserve">
     <value>Electricity consumer new...</value>
   </data>
-  <data name="BPF_BTN_SIMULATION_BW" xml:space="preserve">
-    <value>Simulation</value>
-  </data>
-  <data name="BPF_BTN_SIMULATION_PROZ" xml:space="preserve">
-    <value>Simulation</value>
-  </data>
-  <data name="BPF_BTN_SIMULATION_STROM" xml:space="preserve">
-    <value>Simulation...</value>
-  </data>
   <data name="BPF_BTN_TYP_AENDERN_BW" xml:space="preserve">
     <value>Change type in DB</value>
   </data>
@@ -52967,6 +52958,18 @@ chart</value>
   <data name="BPF_TITEL_KAELTE" xml:space="preserve">
     <value>Cooling demand profiles</value>
   </data>
+  <data name="BPF_KOPFBAND_PROZ" xml:space="preserve">
+    <value>Enter the data of the process heat profiles</value>
+  </data>
+  <data name="BPF_KOPFBAND_STROM" xml:space="preserve">
+    <value>Enter the data of the electricity consumers</value>
+  </data>
+  <data name="BPF_KOPFBAND_BW" xml:space="preserve">
+    <value>Enter the data of the domestic hot water profiles</value>
+  </data>
+  <data name="BPF_KOPFBAND_KAELTE" xml:space="preserve">
+    <value>Enter the data of the cooling demand profiles</value>
+  </data>
   <data name="BPF_LBL_PROJEKTLISTE_KAELTE" xml:space="preserve">
     <value>Selected cooling demands in the project</value>
   </data>
@@ -52993,9 +52996,6 @@ chart</value>
   </data>
   <data name="BPF_BTN_TYP_AENDERN_KAELTE" xml:space="preserve">
     <value>Edit type in database</value>
-  </data>
-  <data name="BPF_BTN_SIMULATION_KAELTE" xml:space="preserve">
-    <value>Simulation</value>
   </data>
   <data name="BADM_TITEL_KAELTE" xml:space="preserve">
     <value>Cooling demand management</value>

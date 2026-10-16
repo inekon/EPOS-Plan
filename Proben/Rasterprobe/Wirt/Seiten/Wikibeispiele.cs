@@ -257,7 +257,7 @@ public static class Wikibeispiele
         => saetze.Select((s, i) => new Katalogfilterzeile(i + 1, s.Name)
                 .MitText(Katalogfilterprofil.SpBezeichner, s.Name)
                 .MitText(Katalogfilterprofil.SpTyp, s.Typ)
-                .MitZahl(Katalogfilterprofil.SpJahressummeMwh, s.Mwh, 3)
+                .MitZahl(Katalogfilterprofil.SpJahressummeMwh, s.Mwh, Energieeinheit.JAHRESWERT_MWH_NACHKOMMASTELLEN)
                 .MitText(Katalogfilterprofil.SpBeschreibung, s.Beschreibung)
                 .MitKennzeichen(Katalogfilterprofil.SpAuslieferung, i < 2))
             .ToList();

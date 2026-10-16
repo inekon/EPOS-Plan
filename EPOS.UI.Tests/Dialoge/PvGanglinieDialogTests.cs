@@ -146,7 +146,7 @@ public class PvGanglinieDialogTests : EposBunitContext
         cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr")[0].QuerySelector(".epos-zeilenzelle--name, .epos-anlagenwahl, .epos-projektzeile")!.Click();
         var werte = cut.FindAll("input[readonly]").Select(e => e.GetAttribute("value")).ToList();
         Assert.Contains(Resource.PVG_RASTER_VIERTEL, werte);
-        Assert.Contains("9,5 MWh", werte);
+        Assert.Contains("10 MWh", werte); // BP-3: Jahresarbeit in MWh ganzzahlig
         Assert.Contains("12,00 kWp", werte);
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr")[1].QuerySelector(".epos-zeilenzelle--name, .epos-anlagenwahl, .epos-projektzeile")!.Click();

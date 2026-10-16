@@ -197,7 +197,7 @@ public partial class Wikibild
             {
                 var z = new Katalogfilterzeile(i + 1, s.Name) { Geschuetzt = i == 0 }
                     .MitText(Katalogfilterprofil.SpBezeichner, s.Name)
-                    .MitZahl(Katalogfilterprofil.SpJahresarbeitMwh, s.Mwh, 1)
+                    .MitZahl(Katalogfilterprofil.SpJahresarbeitMwh, s.Mwh, Energieeinheit.JAHRESWERT_MWH_NACHKOMMASTELLEN)
                     .MitZahl(Katalogfilterprofil.SpSpitzeKw, s.Kw, 1);
                 return strom ? z.MitZahl(Katalogfilterprofil.SpZeitintervall, 4, 0) : z;
             }).ToList();

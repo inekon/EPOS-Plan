@@ -1389,7 +1389,7 @@
     private static string Beschriftung(string text) => (text ?? "").Trim().TrimEnd(':').TrimEnd();
 
     private string Jahresarbeitstext(GanglinienKennzahlen k)
-        => Anzeigeeinheit.Formatiere(Anzeigeeinheit.AusMWh(k.JahresarbeitMwh)) + " " + Anzeigeeinheit.Text;
+        => Anzeigeeinheit.FormatiereJahreswert(Anzeigeeinheit.AusMWh(k.JahresarbeitMwh)) + " " + Anzeigeeinheit.Text;
 
     /// <summary>Die Grafik merkt die gewählte Einheit — Zusammenfassung und Hülle folgen.</summary>
     private void BeiEinheitGewaehlt(Energieeinheit einheit)

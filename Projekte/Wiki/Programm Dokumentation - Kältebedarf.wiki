@@ -28,7 +28,7 @@ Der Dialog liest einen Kältelastgang als CSV-Datei ein und ordnet ihn dem Proje
 == Kältebedarfsprofile ==
 {{Anker|profile}}
 
-Der Dialog bildet Kältebedarf aus einem Typprofil mit 168 Wochenstunden, den Monatsanteilen, einer Jahressumme in MWh und einem Betriebskalender (Feiertage, Ferien). Der Katalog liefert Sätze wie ''Raumkühlung Büro'' oder ''Serverraum''. Vorlauf und Rücklauf eines Katalogsatzes sind eine Angabe ohne Wirkung auf die Erzeuger. Die Vorschau zeigt Wochenbild, Monatsbalken und Jahresreihe in der Kältefarbe. Die Feldgruppe [[#deckung|Deckung]] steht an der Projektzeile.
+Der Dialog bildet Kältebedarf aus einem Typprofil mit 168 Wochenstunden, den Monatsanteilen, einer Jahressumme in MWh und einem Betriebskalender (Feiertage, Ferien). Der Katalog liefert Sätze wie ''Raumkühlung Büro'' oder ''Serverraum''. Vorlauf und Rücklauf eines Katalogsatzes sind eine Angabe ohne Wirkung auf die Erzeuger. Die Vorschau zeigt Wochenbild, Monatsbalken und Jahresreihe in der Kältefarbe. Die Feldgruppe [[#deckung|Deckung]] steht an der Projektzeile. Die Knopfleiste am gewählten Satz (''Vergleichen…'', ''Schloss setzen…'', ''Löschen'', ''Bearbeiten…'', ''Typ ändern…'', ''Neu…'') arbeitet wie bei den übrigen Bedarfsprofilen; ''Vergleichen…'' stellt zwei bis drei Projektzeilen und Katalogsätze nebeneinander und zeigt Typ, Jahressumme, Monatswerte, Vorlauf und Rücklauf, Art, bei Projektzeilen auch Kalender und Deckung samt EER.
 
 [[Datei:Bildschirmfoto_Kaeltebedarf.png|mini|zentriert|800px|Dialog Kältebedarfsprofile – Bildschirmfoto mit Beispieldaten.]]
 

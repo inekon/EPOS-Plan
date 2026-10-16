@@ -374,6 +374,12 @@ namespace WindowsFormsApplication1
                 // Quelle wie die Parameteruebersicht (W14a-E-8) - keine zweite Liste.
                 ["Vergleichsparameter"] = new Func<string, IReadOnlyList<Parameterwert>>(
                     n => BedarfStammCtrl.Vergleichszeilen(art, n, BedarfAdminHuelle.Filtertext)),
+                // BP-2 (KA-E-24): die Projektzeile im Vergleich - dieselbe Liste aus der Projektkopie samt
+                // den Werten der Zuordnung, wie der Dialog sie gerade haelt.
+                ["VergleichsparameterProjekt"] = new Func<BedarfsProfilZeile, IReadOnlyList<Parameterwert>>(
+                    z => BedarfStammCtrl.VergleichszeilenProjekt(art, Vergleichsangaben(z),
+                        !wizard && projektId > 0 && ProjektCtrl.Existiert(projektId) ? projektId : 0,
+                        BedarfAdminHuelle.Filtertext)),
                 ["Info"] = new Func<string, BedarfsProfilInfo>(name => Info(art, name)),
                 ["Jahressumme"] = new Func<string, double>(
                     name => BedarfStammCtrl.Jahressumme(art, name)),
@@ -396,7 +402,7 @@ namespace WindowsFormsApplication1
                     () => TypStammHuelle.ProfilGaben(art)),
 
                 ["TitelText"] = Titel(art),
-                ["KopfbandText"] = Titel(art),
+                ["KopfbandText"] = Kopfband(art),
                 ["LabelProjektliste"] = Text_(art, "BPF_LBL_PROJEKTLISTE",
                     "Ausgewählte Prozesse im Projekt",
                     "Ausgewählte Strombedarfe im Projekt",
@@ -762,6 +768,36 @@ namespace WindowsFormsApplication1
         {
             return Text_(art, "BPF_TITEL", "Prozesswärme", "Standard Stromprofil",
                          "Brauchwasserwärme", "Kältebedarfsprofile");
+        }
+
+        /// <summary>BP-1: die Hinweiszeile im Dialogkopf je Art, wie bei den Erzeugern.</summary>
+        internal static string Kopfband(BedarfsArt art)
+        {
+            return Text_(art, "BPF_KOPFBAND", "Geben Sie die Daten der Prozesswärmeprofile ein",
+                         "Geben Sie die Daten der Stromverbraucher ein",
+                         "Geben Sie die Daten der Brauchwasserprofile ein",
+                         "Geben Sie die Daten der Kältebedarfsprofile ein");
+        }
+
+        /// <summary>BP-2: die Werte einer Zuordnung für den Vergleich (Kern-Controller).</summary>
+        private static BedarfStammCtrl.Zuordnungsangaben Vergleichsangaben(BedarfsProfilZeile z)
+        {
+            return new BedarfStammCtrl.Zuordnungsangaben
+            {
+                IdKopie = z.IdStamm,
+                Bezeichner = z.Name ?? "",
+                Summe = z.Summe,
+                KalenderId = z.KalenderId,
+                Vorlauf = z.Vorlauf,
+                Ruecklauf = z.Ruecklauf,
+                KaelteArt = z.KaelteArt,
+                Deckung = z.Deckung?.Deckungsart,
+                EerWeg = z.Deckung?.EerWeg,
+                Eer1 = z.Deckung?.Eer1,
+                Taussen1 = z.Deckung?.Taussen1,
+                Eer2 = z.Deckung?.Eer2,
+                Taussen2 = z.Deckung?.Taussen2
+            };
         }
 
         private static string HilfeSchluessel(BedarfsArt art)

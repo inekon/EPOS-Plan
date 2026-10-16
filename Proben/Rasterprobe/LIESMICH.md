@@ -91,7 +91,7 @@ melden sie im Takt des Bildaufbaus.
 | T3 | derselbe Katalog mit 40 Sätzen (unter der Schwelle, das Maß eines ausgelieferten Katalogs), 1 088 × 624 |
 | GD1 / GD2 | 6 654 Gebäude in der Katalogliste des **Gebäude-Projektdialogs** „Eingabe der Gebäudedaten" (Seite `/katalogprobe?maske=projekt-gebaeude`; Projektliste oben, Übernahmeleiste, Katalog darunter), 1 088 × 624 und 400 × 624 — gemessen nur in der Katalogliste (`bereich: '.epos-katalogliste'`, die Projektliste darüber trägt ebenfalls eine Hülle); Sollwerte: Rollbehälter = Hülle, Zeile **53 px** (Projektdialog: die Wahlspalte bleibt), keine Tastaturprobe |
 | GD3 | derselbe Dialog mit 269 Gebäuden (das Maß der Testdatenbank, weiter virtualisiert), 1 088 × 624 |
-| Z1 / Z2 | die **Wohnungstabelle** der Stufe Erweitert im Zapfprofil-Dialog (Seite `maske=wohnungen`; die Probe klickt die Stufe „Erweitert"), 12 Wohnungstypen, 1 088 × 624 und 400 × 624 — Sollwerte (l) |
+| Z1 / Z2 | die **Wohnungstabelle** der Stufe Erweitert im Zapfprofil-Dialog (Seite `maske=wohnungen`; die Probe klickt die Stufe „Erweitert" und klappt die Karte „Belegung" auf, `aufklappen`), 12 Wohnungstypen, 1 088 × 624 und 400 × 624 — Sollwerte (l) |
 | Z3 / Z4 / Z5 | das **Raster der Zapfkategorien** für sich (Seite `maske=kategorien`), 10 Kategorien, bearbeitbar 1 088 × 624 und 400 × 624, lesend (`art=lesen`) 1 088 × 624 — Sollwerte (l) |
 | Z6 / Z7 | dasselbe Raster **in seiner Überlagerung** „Kategorien…" des Katalogdialogs (Seite `maske=tww`), 1 088 × 624 (dazu `querMax` 1 px; das Raster trägt dafür `--col-gap: 0px` wie die Katalogliste, Summe der Mindestbreiten 970 px in der 988 px breiten Hülle) und 400 × 624 — Sollwerte (l) |
 | Z8 | **Gegenprobe** zu Z7: die versteckte Feldbeschriftung ohne positionierten Vorfahren (`position: static`). Sie MUSS die Sollwerte verfehlen |
@@ -663,6 +663,27 @@ Port 5361):
 
 Offen: Die Wohnungstabelle rollt im Eingabeblock des Zapfprofil-Dialogs bei 1 088 px noch 102 px quer
 („Entfernen" teils hinter dem Rand) — fünf Spalten mit Auswahlfeld und Knopf passen nicht in 498 px.
+
+**Karte „Belegung" (Zapfprofil W4).** Die Wohnungstabelle steht in der Klappgruppe „Belegung", die
+beim Öffnen zu ist. Das Fallfeld `aufklappen` nennt die Klasse der Karte
+(`.epos-zapfprofil-karte--belegung`); die Probe drückt den Kopfknopf der Klappgruppe nur bei
+`aria-expanded="false"` und verlangt danach `aria-expanded="true"`. Fehlt die Karte oder bleibt sie
+zu, steht kein Raster da: Der Fall endet mit einer Zeitüberschreitung und der Lauf mit Rückgabe 2.
+
+**Ergebnis vom 16.10.2026** (Chromium headless, Playwright 1.56.1, Wirt auf Port 5471, `--nur Z`):
+Z1 und Z2 grün — 12 von 12 echten Zeilen, Zeile 47,4 px, Hülle rollt weder senkrecht noch quer,
+Seite quer 0. Gegenprobe aus einer Kopie der Probe: Karte unter falscher Klasse → `ABBRUCH`
+nach 20 s, Rückgabe 2; ohne `aufklappen` (Karte zu) → ebenso Rückgabe 2. Z3, Z4, Z5, Z7 grün,
+Z8 zeigt den Fehler wie erwartet. **Z6 rot:** Die Hülle rollt 2 px quer (Soll ≤ 1). Ursache ist
+das Maß `--epos-rand` (Commit `27a7fd4b6`, 10 → 20 px): Der Körper der Gruppe „Zapfkategorien"
+polstert seither 20 px je Seite, die Hülle ist 968 statt 988 px breit, die Summe der
+Mindestbreiten bleibt 970 px. Gemessen mit dem Stilblatt des Vorgängers `14f0764e9`: quer 0.
+
+**Behebung Z6 (örtlich).** `--epos-rand` bleibt im Haus 20 px; allein im Kategoriendialog polstert
+der Körper der Gruppe seitlich 10 px (`.epos-zapfprofil-kategorien > .epos-gruppenkopf >
+.epos-gruppenkopf-koerper { padding-inline: 10px }`), die Hülle ist wieder 988 px breit.
+Ergebnis: **Rasterprobe 0 (29 von 29 Fällen)**, Z6 Hülle quer 0, Z7 Hülle quer 642 px bei
+Überlagerung quer 0, Gegenprobe Z8 rot (Überlagerung quer 330 px); Fensterprobe 0 (Gegenprobe rot).
 
 ## Gebäudesimulation G3, Welle K — die Katalogseite des Gebäudedialogs (GD1–GD3)
 
