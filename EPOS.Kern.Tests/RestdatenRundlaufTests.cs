@@ -195,6 +195,40 @@ namespace EPOS.Kern.Tests
             Assert.Null(gelesen.Gebaeude[0].Erdreich);
         }
 
+        /// <summary>
+        /// Nachzug N6: Bezeichner mit Zeilenumbruch oder Steuerzeichen (Woche, Periode) brechen den Block nicht — der Schreiber
+        /// setzt Leerzeichen, der Rundlauf gibt alle übrigen Restdaten zurück. Gegenprobe Lesen: Ein in einer fremden Datei
+        /// umbrochener Wert wird fortgesetzt, nicht abgeschnitten.
+        /// </summary>
+        [Fact]
+        public void Bezeichner_mit_Zeilenumbruch_bricht_den_Block_nicht()
+        {
+            GebaeudeAbbild quelle = Abbild();
+            AbbildZonenrest r1 = quelle.Gebaeude[0].Raeume.Single(x => x.Kennung == GebaeudeExportKennung.Raum(ZONE1)).Rest;
+            r1.Wochen[1] = new BenannteWoche(0, Konditionierungsgroesse.Lueftung, "Umbau\r\nNord\tSüd\u0001", Woche(1.5, 0.5));
+            r1.Periodenwochen[0] = new AbbildPeriodenwoche(Konditionierungsgroesse.Heizsoll, 100, 110, "Messe\nHalle 1", "Messewoche");
+            string xml = Encoding.UTF8.GetString(GbxmlExportProbe.Schreiben(quelle));
+            Assert.Contains("Umbau  Nord Süd ", xml, StringComparison.Ordinal);
+            GbxmlAbbild gelesen = GbxmlExportProbe.Lesen(Encoding.UTF8.GetBytes(xml));
+            AbbildGebaeude g = gelesen.Gebaeude[0];
+            AbbildZonenrest l = g.Raeume.Single(x => x.Kennung == GebaeudeExportKennung.Raum(ZONE1)).Rest;
+            Assert.Empty(g.Meldungen.Where(x => x.Schluessel == GbxmlImportProfil.MELDUNGSPRAEFIX + "RESTDATEN_UEBERSPRUNGEN"));
+            Assert.Equal(new[] { "Messewoche", "Umbau  Nord Süd" }, l.Wochen.Select(w => w.Name).ToArray());
+            Assert.Equal(r1.Wochen[1].Werte, l.Wochen[1].Werte);
+            Assert.Equal(2, l.Periodenwochen.Count);
+            Assert.Equal("Messe Halle 1", l.Periodenwochen[0].Bezeichner);
+            Assert.Equal(4, l.Zeilenbild.Count);
+            Assert.Equal(5000.0, l.HeizleistungMax);
+
+            // Lesen: ein Block mit umbrochenem Wert (fremde Datei) setzt den Wert fort.
+            string davor = GebaeudeRestdaten.OhneBlock("Text\nEPOS:\nZone=Z1\nWoche_1=HEIZSOLL;1 2;Ost\nflügel\nVorheizzeit_H=2",
+                                                       out List<(string Schluessel, string Wert)> werte);
+            Assert.Equal("Text", davor);
+            Assert.Equal(new[] { ("Zone", "Z1"), ("Woche_1", "HEIZSOLL;1 2;Ost flügel"), ("Vorheizzeit_H", "2") }, werte.ToArray());
+            Assert.Equal("a b", GebaeudeRestdaten.Einzeilig("a\u2028b"));
+            Assert.Equal("ohne", GebaeudeRestdaten.Einzeilig("ohne"));
+        }
+
         [Fact]
         public void Ein_unlesbarer_Wert_wird_benannt_uebergangen_die_uebrigen_bleiben()
         {

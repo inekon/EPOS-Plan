@@ -234,6 +234,7 @@ Der '''Bauteildialog''' erscheint als Überlagerung über dem Zonendialog und be
 * '''Randbedingung''' – Außenluft, Erdreich, unbeheizter Raum und, ab zwei Zonen, Nachbarzone. Leer gilt Außenluft, an Innenwand und Decke „innerhalb der Zone". Mit ''Nachbarzone'' wählen Sie die Zone, an die das Bauteil grenzt, und unter ''Trennfläche rechnen'' ''automatisch (4-K-Regel)'', ''wie Innenbauteil'' oder ''wie Außenbauteil'' (siehe [[Programm Dokumentation/Mehrzonenmodell#trennflaechen|Mehrzonenmodell]]).
 * '''g-Wert''', '''Rahmenanteil''' und '''Verschattungsfaktor''' – nur bei Fenster und Vorhangfassade; leer gilt der Wert des Gebäudes.
 * '''Wärmebrücke <math>\psi \cdot L</math>''' in W/K.
+* '''Absorptionsgrad solar''' und '''Emissionsgrad''' der Außenfläche, je 0 bis 1 – leer gilt der Wert des Aufbaus, ohne ihn die Vorgabe 0,6 bzw. 0,9 (siehe [[Programm Dokumentation/Gebäudemodell VDI 6007#strahlung|Strahlung auf die Außenbauteile]]).
 * '''U-Wert''' in W/(m²·K) – leer gilt der U-Wert des Aufbaus.
 * '''Herkunft des U-Werts''' – nur zum Lesen: ''von Hand'', ''Katalog'', ''Datei (IFC)'', ''Datei (gbXML)'', ''Datei (Projektdatei)'' oder ''Vorgabe''; ändern Sie den U-Wert oder den Aufbau, zeigt die Zeile sofort, welche Herkunft das Bauteil beim ''OK'' erhält, ohne Herkunft steht ein Strich.
 

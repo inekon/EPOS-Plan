@@ -10,6 +10,8 @@ Der '''Strombedarf''' entsteht auf demselben Weg wie der Wärmebedarf: aus Verbr
 * '''Ergebnis''' – maximaler Leistungsbedarf, Jahresverbrauch, Monatswerte und die geordnete Jahresdauerlinie.
 * '''Grafik''' – der Reiter ''Grafik'' im Dialog Wärme-/Strombedarf zeigt den Strombedarf als Jahresganglinie mit Zoomleiste. Die Knopfgruppe ''Jahr'', ''Monat'', ''Woche'', ''Tag'' wählt das Zeitraster; Monat, Woche und Tag zeigen die Summen als gestapelte Säulen. ''CSV…'' am Bild speichert die gewählte Ansicht als CSV-Datei, siehe [[Datenexport]].
 
+[[Datei:Bildschirmfoto_Strombedarf.png|mini|zentriert|800px|Dialog Stromganglinien zum Einlesen gemessener Lastgänge – Bildschirmfoto mit Beispieldaten.]]
+
 == Berechnung ==
 
 Profile, eingelesene Messlastgänge, Viertelstundenraster und Jahresdauerlinie: der Rechenweg steht unter [[Programm Dokumentation/Berechnung/Strombedarf|Berechnung: Strombedarf]].

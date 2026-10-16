@@ -342,9 +342,13 @@ wird; dann gilt die Regel „gesäte Zonendaten“ (Bauteile samt Aufbau).
   verschiedenen Dicken, einer Schicht ohne Dicke und einer ruhenden Luftschicht, die geteilt werden müsste (Widerstand nach
   Tabelle 8, nicht dickenproportional). Fehlt der Flächenanteil genau eines Abschnitts und bleibt bis 1 mehr als die
   Toleranz 0,01 offen, trägt er den Rest 1 − Σ; sonst wird verworfen. Beides zählt die Vorschau als Hinweis, dazu beim
-  Wiederimport die Katalogaufbauten, die andere Schichten bekämen, und wie viele davon ihren U-Wert um mehr als 1 % ändern.
+  Wiederimport die Katalogaufbauten, die andere Schichten bekämen, wie viele davon verglichen wurden und ihren U-Wert um
+  mehr als 1 % ändern, die größte Änderung und die Zahl ohne Vergleichswert (BK-8c: verglichen mit dem U, das der Kern für
+  den Katalogsatz rechnet, sonst mit dem gespeicherten U-Wert der Quelle).
 - Der Kern rechnet je inhomogenem Aufbau die Fehlerschranke e = (R'_T − R''_T)/(2 R_T) nach DIN EN ISO 6946, 6.7.2.5 und
-  nennt über 20 % (R'_T/R''_T > 1,5) einen Hinweis im Summenfuß (BK-8b). Der Rechenweg des Kerns bleibt unverändert.
+  nennt über 20 % (R'_T/R''_T > 1,5) einen Hinweis im Summenfuß (BK-8b). Das Verhältnis 1,5 ist die Anwendungsgrenze des
+  vereinfachten Verfahrens nach 6.7.2.2, die 20 % bei diesem Verhältnis die Fehlerabschätzung nach 6.7.2.5; Ausgabe
+  DIN EN ISO 6946:2018-03 (EN ISO 6946:2017) mit Berichtigung 1:2023-04. Der Rechenweg des Kerns bleibt unverändert.
 
 ## 6 Fragen an den Anwender
 

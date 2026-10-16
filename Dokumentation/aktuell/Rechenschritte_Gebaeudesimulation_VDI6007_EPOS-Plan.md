@@ -565,8 +565,8 @@ führt, jeder Abschnitt einen Flächenanteil größer null trägt und die Summe 
 Anteile werden danach auf Σ f_m = 1 genormt. Eine Lücke lehnt den Aufbau benannt ab (im Editor als Grund
 statt Zahl, im Speicherweg vor dem Schreiben, in der Simulation als Modellfehler).
 
-**B0c — Grenzwerte und R_T** (DIN EN ISO 6946, Abschnitt 6.7). R_si und R_se folgen aus Neigung und
-Randbedingung des Bauteils wie in B7.
+**B0c — Grenzwerte und R_T** (DIN EN ISO 6946, Abschnitt 6.7; maßgebend ist die Ausgabe DIN EN ISO 6946:2018-03,
+EN ISO 6946:2017, mit Berichtigung 1:2023-04). R_si und R_se folgen aus Neigung und Randbedingung des Bauteils wie in B7.
 
 ```
 oberer Grenzwert   1/R'_T = Σ_m f_m / R_T,m     mit R_T,m = R_si + R_hom + Σ_j R_mj + R_se   [m²K/W]
@@ -587,7 +587,8 @@ Hinweis, wenn e > 0,20   (gleichbedeutend R'_T / R''_T > 1,5)
 ```
 
 Der Kern rechnet e je inhomogenem Aufbau (`Abschnittsgrenzen.Fehlerschranke`), der Summenfuß zeigt sie. Über 20 % — dem
-Verhältnis 1,5, das die Norm als Grenze des vereinfachten Verfahrens nennt — steht im Summenfuß ein Hinweis
+Verhältnis 1,5, das die Norm in 6.7.2.2 als Anwendungsgrenze des vereinfachten Verfahrens nennt; die Fehlerabschätzung
+dazu steht in 6.7.2.5 — steht im Summenfuß ein Hinweis
 (`InhomogeneSchichten.FEHLERSCHRANKE_GRENZE`); abgelehnt wird nichts, und R_T bleibt das Mittel, auch in der Simulation.
 
 **B0d — Ersatzschichten.** Die Kettenmatrix (B2, B3) kennt nur homogene Schichten. Jede inhomogene Ebene
@@ -634,10 +635,13 @@ Schichtzahl. Zwei Grenzen desselben Abschnitts bleiben getrennt (eine dünne Fol
 Schichtzahl alle Grenzen innerhalb der Toleranz übereinanderliegen, bleibt der Aufbau, wie er ist; ebenso bei gleicher
 Schichtzahl mit einer Schicht ohne Dicke, deren Lage unbestimmt ist. Für Aufbauten, die schon als Importsatz im Katalog
 stehen und durch die Teilung andere Schichten bekämen, zählt die Vorschau, wie viele ihren U-Wert um mehr als 1 % ändern,
-und nennt die größte Änderung (`BauteilkatalogImport.WiederimportVergleichen`). Fehlt der Flächenanteil genau eines Abschnitts und bleibt bis 1
+und nennt die größte Änderung (`BauteilkatalogImport.WiederimportVergleichen`). Vergleichswert ist das U, das der Kern für
+den Katalogsatz rechnet (derselbe Weg wie der Aufbaueditor), sonst der gespeicherte U-Wert der Quelle; ergibt sich keiner,
+zählt der Aufbau „ohne Vergleichswert“. Fehlt der Flächenanteil genau eines Abschnitts und bleibt bis 1
 mehr als 0,01 offen, setzt der Import f = 1 − Σ der übrigen. Protokoll:
 [`2026-10-16_BK-8_Inhomogene_Aufbauten.md`](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-16_BK-8_Inhomogene_Aufbauten.md),
-[`2026-10-16_BK-8b_Normgerechte_Teilung.md`](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-16_BK-8b_Normgerechte_Teilung.md).
+[`2026-10-16_BK-8b_Normgerechte_Teilung.md`](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-16_BK-8b_Normgerechte_Teilung.md),
+[`2026-10-16_BK-8c_Wiederimport_Vergleich.md`](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-16_BK-8c_Wiederimport_Vergleich.md).
 
 **Fensteraufbauten.** Ein Aufbau der Art Fenster oder Vorhangfassade führt die Fensterwerte U_g und U_f
 [W/(m²K)], den g-Wert, den Rahmenanteil f = A_f/(A_g + A_f) und ψ_g des Glasrands [W/(mK)] (`Fensterkennwerte`).

@@ -672,6 +672,8 @@ namespace WindowsFormsApplication1
                       Winkel("Neigung", b.NeigungGrad, "GEXP_IFC_NEIGUNG_BEZUG"),
                       Wert("IstZusammenfassung", new IfcBoolean(zusammen)),
                       Zahl("WaermebrueckeUA", b.WaermebrueckeWK, "GEXP_IFC_WAERMEBRUECKE"),
+                      Zahl(IfcStandardsaetze.EPOS_ABSORPTION, b.AbsorptionsgradSolar, null),
+                      Zahl(IfcStandardsaetze.EPOS_EMISSION, b.Emissionsgrad, null),
                       schichten ? Wert("Schichtrichtung", new IfcLabel(IfcSchreiber.SCHICHTRICHTUNG_AUSSEN_INNEN), null, "GEXP_IFC_SCHICHTRICHTUNG") : null,
                       a != null ? Wert("Ersatzschichtung", new IfcBoolean(a.IstErsatz)) : null,
                       herkunft != null ? Wert("Materialherkunft", new IfcLabel(herkunft), null, "GEXP_IFC_ANR_MATERIALHERKUNFT") : null);

@@ -728,6 +728,7 @@ namespace WindowsFormsApplication1
                         v.Rollback();
                         return e;
                     }
+                    ZoneVonHandMarkieren(v, eigner);
                     v.Commit();
                 }
                 catch (Exception ex)
@@ -1002,12 +1003,13 @@ namespace WindowsFormsApplication1
                         v.Rollback();
                         return Ergebnis.Fehler(r.Meldung);
                     }
-                    Ergebnis e = StandSchreiben(v, eigner, r.Stand, mitBestand, out _);
+                    Ergebnis e = StandSchreiben(v, eigner, r.Stand, mitBestand, out bool geschrieben);
                     if (!e.Ok)
                     {
                         v.Rollback();
                         return e;
                     }
+                    if (geschrieben) ZoneVonHandMarkieren(v, eigner);
                     v.Commit();
                 }
                 catch (Exception ex)
@@ -1017,6 +1019,21 @@ namespace WindowsFormsApplication1
                 }
             }
             return Ergebnis.Gut;
+        }
+
+        /// <summary>
+        /// <b>Eine Handlung der Bedienung hat die Konditionierung einer Projektzone geändert</b> (Nachzug N6, MA-6 a): Die Zone
+        /// wird <c>MANUELL</c> — wie im Zonendialog und im Blatt „Nutzung und Kalender“ —, der Wiederimport bewahrt dann ihre
+        /// Kalender. Andere Eigentümer (Gebäude, Katalog, Vorlage) bleiben ohne Marke; die Importwege schreiben nicht hierüber.
+        /// Markiert wird nur eine Zone aus einer Datei (Quellkennung oder Herkunft IFC, gbXML, Projektdatei): Eine Zone
+        /// ohne Datei übergeht der Wiederimport ohnehin, ihre Herkunft bleibt, wie sie ist.
+        /// </summary>
+        internal static void ZoneVonHandMarkieren(DbVorgang v, Eigner eigner)
+        {
+            if (v == null || eigner == null || eigner.Art != Kalendereigentuemer.Zone || eigner.IdZone is not long idZone) return;
+            v.Ausfuehren("UPDATE \"Tab_Zone\" SET \"Herkunft\" = ? WHERE \"ID\" = ? AND (\"Quellkennung\" IS NOT NULL OR \"Herkunft\" IN (?, ?, ?))",
+                         new DbParam("@h", DbWerte.HERKUNFT_MANUELL), new DbParam("@z", idZone), new DbParam("@i", DbWerte.HERKUNFT_IFC),
+                         new DbParam("@g", DbWerte.HERKUNFT_GBXML), new DbParam("@s", DbWerte.HERKUNFT_SQPROJ));
         }
 
         /// <summary>

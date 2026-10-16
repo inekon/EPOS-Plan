@@ -10,6 +10,8 @@ Der '''Wärmebedarf''' entsteht aus bis zu vier Anteilen, die getrennt erfasst u
 * '''Betriebskalender''' – Feiertage und Betriebsferien je Profilzuordnung von Brauchwasser und Prozesswärme ([[Programm Dokumentation/Betriebskalender|Betriebskalender]]).
 * '''Grafik''' – der Reiter ''Grafik'' im Dialog Wärme-/Strombedarf zeigt die Bedarfsart als Jahresganglinie mit Zoomleiste. Eine Zeile mit zwei Knopfgruppen wählt die Bedarfsart (''Prozesse'', ''Gebäude'', ''Brauchwasser'', mehrere zugleich möglich) und das Zeitraster (''Jahr'', ''Monat'', ''Woche'', ''Tag''); Monat, Woche und Tag zeigen die Summen als gestapelte Säulen. ''CSV…'' am Bild speichert die gewählte Ansicht als CSV-Datei, siehe [[Datenexport]].
 
+[[Datei:Bildschirmfoto_Waermebedarf.png|mini|zentriert|800px|Dialog Wärmebedarf Extern – Bildschirmfoto mit Beispieldaten.]]
+
 == Berechnung ==
 
 Wie aus Gebäuden, Ganglinien, Brauchwasser und Prozesswärme die stündliche Wärmelast des Projekts entsteht – Formeln, Kanäle und die Verteilung der Netzverluste – steht unter [[Programm Dokumentation/Berechnung/Wärmebedarf|Berechnung: Wärmebedarf]].

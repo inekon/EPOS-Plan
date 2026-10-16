@@ -12194,7 +12194,7 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
     <value>Einspeisung (kein Leistungspreis; geteiltes Feld für PV- und KWK-Einspeisung)</value>
   </data>
   <data name="TARIF_G_ROLLEN" xml:space="preserve">
-    <value>Rollenmodell (Etappe E5) — Differenzmethode „vermiedene Kosten“</value>
+    <value>Rollenmodell — Differenzmethode „vermiedene Kosten“</value>
   </data>
   <data name="TARIF_G_ZEITZONEN" xml:space="preserve">
     <value>Winterspanne (Sommer- und Wintermaximum des Leistungspreismodells „Staffel“)</value>
@@ -54840,7 +54840,7 @@ Chart</value>
     <value>Schichten an gemeinsamen Schichtgrenzen geteilt ({0} → {1} Schichten): {2}</value>
   </data>
   <data name="BKI_WIEDERIMPORT" xml:space="preserve">
-    <value>Wiederimport: {0} Aufbauten im Katalog bekommen durch die Teilung an gemeinsamen Schichtgrenzen andere Schichten; {1} davon ändern ihren U-Wert um mehr als 1 % (größte Änderung {2} %).</value>
+    <value>Wiederimport: {0} Aufbauten im Katalog bekommen durch die Teilung an gemeinsamen Schichtgrenzen andere Schichten; verglichen {1}, davon {2} mit einer Änderung des U-Werts um mehr als 1 % (größte Änderung {3} %); ohne Vergleichswert {4}.</value>
   </data>
   <data name="BKI_UEBERNEHMEN" xml:space="preserve">
     <value>Übernehmen</value>
@@ -55362,7 +55362,7 @@ Chart</value>
     <value>Zone „{0}“, Raum „{1}“: latente Wärmeabgabe je Person ({2} W) verworfen — gerechnet wird die sensible Wärme.</value>
   </data>
   <data name="IMP_GBXML_PROT_ABSORPTION_ABWEICHUNG" xml:space="preserve">
-    <value>Aufbau „{0}“: Der Grad {1} der Datei ({2}) weicht von der Konstante des Rechenwegs ({3}) ab — es gilt die Konstante.</value>
+    <value>Aufbau „{0}“: Der Grad {1} der Datei ({2}) liegt nicht zwischen 0 und 1 — es gilt die Vorgabe ({3}).</value>
   </data>
   <data name="IMP_GBXML_PROT_AUSSENLUFT_PERSON" xml:space="preserve">
     <value>Zone „{0}“: Außenluft je Person in den Luftwechsel der Nutzer umgerechnet ({1} 1/h); der Wert je Person steht zusätzlich an der Zone.</value>
@@ -56899,6 +56899,39 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="KI_DLG_KLIMA_HOEHE_ERL" xml:space="preserve">
     <value>Die Höhe des Standorts über dem Meer, in Metern. Sie geht in die Vorschau ein: Der Höhenunterschied zum Bezugspunkt entscheidet über den Hinweis „nicht ortstypisch“. Leer = unbekannt; bei PVGIS und einer TRY-Datei mit Kopfangabe kommt sie aus der Quelle.</value>
+  </data>
+  <data name="BTA_GRUPPE_STRAHLUNG" xml:space="preserve">
+    <value>Strahlung der Außenfläche</value>
+  </data>
+  <data name="BTA_LBL_ABSORPTION" xml:space="preserve">
+    <value>Absorptionsgrad solar</value>
+  </data>
+  <data name="BTA_LBL_EMISSION" xml:space="preserve">
+    <value>Emissionsgrad langwellig</value>
+  </data>
+  <data name="BTA_PLATZHALTER_STRAHLUNG" xml:space="preserve">
+    <value>Vorgabe {0}</value>
+  </data>
+  <data name="BTA_STRAHLUNG_HINWEIS" xml:space="preserve">
+    <value>Absorptionsgrad (Solarstrahlung) und Emissionsgrad (langwellig) der Außenfläche gehen in die äquivalente Außentemperatur ein. Leer gilt die Vorgabe; ein Bauteil kann einen eigenen Wert tragen.</value>
+  </data>
+  <data name="BTDLG_LBL_ABSORPTION" xml:space="preserve">
+    <value>Absorptionsgrad solar :</value>
+  </data>
+  <data name="BTDLG_LBL_EMISSION" xml:space="preserve">
+    <value>Emissionsgrad :</value>
+  </data>
+  <data name="BTDLG_PLATZHALTER_STRAHLUNG" xml:space="preserve">
+    <value>Aufbau, sonst {0}</value>
+  </data>
+  <data name="KI_DLG_BT_ABSORPTION_ERL" xml:space="preserve">
+    <value>Der Absorptionsgrad der Außenfläche für Solarstrahlung zwischen 0 und 1; leer = der Wert des Aufbaus, sonst die Vorgabe 0,6.</value>
+  </data>
+  <data name="KI_DLG_BT_EMISSION_ERL" xml:space="preserve">
+    <value>Der langwellige Emissionsgrad der Außenfläche zwischen 0 und 1; leer = der Wert des Aufbaus, sonst die Vorgabe 0,9.</value>
+  </data>
+  <data name="KI_DLG_BTA_STRAHLUNG_ERL" xml:space="preserve">
+    <value>Absorptionsgrad (Solarstrahlung) bzw. Emissionsgrad (langwellig) der Außenfläche des Aufbaus zwischen 0 und 1; leer = Vorgabe. Ein Bauteil kann einen eigenen Wert tragen.</value>
   </data>
 </root>
 

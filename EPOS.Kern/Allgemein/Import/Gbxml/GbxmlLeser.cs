@@ -491,6 +491,8 @@ namespace WindowsFormsApplication1
                 {
                     b.Aufbau = Aufbau(kref);
                     if (b.Aufbau.UWertWm2K.HasValue) { b.UWertWm2K = b.Aufbau.UWertWm2K; b.UWertQuelle = "Construction"; }
+                    b.AbsorptionsgradSolar = b.Aufbau.AbsorptionsgradSolar;
+                    b.Emissionsgrad = b.Aufbau.Emissionsgrad;
                 }
 
                 foreach (XElement o in Kinder(s, "Opening"))
@@ -559,6 +561,8 @@ namespace WindowsFormsApplication1
                     {
                         b.Aufbau = Aufbau(kref);
                         if (!u.HasValue && b.Aufbau.UWertWm2K.HasValue) { u = b.Aufbau.UWertWm2K; quelle = "Construction"; }
+                        b.AbsorptionsgradSolar = b.Aufbau.AbsorptionsgradSolar;
+                        b.Emissionsgrad = b.Aufbau.Emissionsgrad;
                     }
                 }
                 b.UWertWm2K = u;
@@ -736,7 +740,7 @@ namespace WindowsFormsApplication1
                     RichtungAngenommen = true,
                 };
                 _aufbauten[kref] = a;
-                Absorptionsgrade(k, kref, a.Name);
+                Absorptionsgrade(k, kref, a);
 
                 bool luecke = false;
                 foreach (XElement li in Kinder(k, "LayerId"))
@@ -868,12 +872,13 @@ namespace WindowsFormsApplication1
             }
 
             /// <summary>
-            /// E138 F8 (b), Welle DA-2: Der Absorptionsgrad (solar, <c>ExtSolar</c>) und der Emissionsgrad (<c>ExtIR</c>) einer
-            /// <c>Construction</c> werden gelesen und nur gemeldet, wo sie von den Konstanten des Rechenwegs abweichen
-            /// (<see cref="GebaeudeFestwerte.ABSORPTIONSGRAD_OPAK"/>, <see cref="GebaeudeFestwerte.EMISSIONSGRAD_AUSSEN"/>); es gibt
-            /// kein Feld, es gilt die Konstante.
+            /// DA-8: Der Absorptionsgrad (solar, <c>ExtSolar</c>) und der Emissionsgrad (<c>ExtIR</c>) einer <c>Construction</c>
+            /// werden gelesen und am Aufbau des Abbilds geführt, wo sie von der Vorgabe des Rechenwegs abweichen
+            /// (<see cref="GebaeudeFestwerte.ABSORPTIONSGRAD_OPAK"/>, <see cref="GebaeudeFestwerte.EMISSIONSGRAD_AUSSEN"/>); die
+            /// Bauteile mit diesem Aufbau übernehmen sie. Gleich der Vorgabe bleibt das Feld leer. Ein Wert außerhalb 0 … 1 wird
+            /// verworfen und gemeldet.
             /// </summary>
-            private void Absorptionsgrade(XElement k, string kref, string name)
+            private void Absorptionsgrade(XElement k, string kref, AbbildAufbau a)
             {
                 foreach (XElement e in Kinder(k, "Absorptance"))
                 {
@@ -884,14 +889,22 @@ namespace WindowsFormsApplication1
                     if (double.IsNaN(konstante)) continue;
                     double? wert = Zahl(e, kref);
                     if (string.Equals(Attr(e, "unit"), "Percent", StringComparison.OrdinalIgnoreCase)) wert /= 100.0;
-                    if (wert.HasValue && Math.Abs(wert.Value - konstante) > ABSORPTION_TOLERANZ && _gemeldet.Add("A|" + kref + "|" + typ))
-                        Datei(PruefStufe.Info, "ABSORPTION_ABWEICHUNG", name ?? kref, typ,
-                              wert.Value.ToString("0.###", CultureInfo.CurrentCulture), konstante.ToString("0.###", CultureInfo.CurrentCulture));
+                    if (!wert.HasValue) continue;
+                    if (!(wert.Value >= 0.0 && wert.Value <= 1.0))
+                    {
+                        if (_gemeldet.Add("A|" + kref + "|" + typ))
+                            Datei(PruefStufe.Warnung, "ABSORPTION_ABWEICHUNG", a.Name ?? kref, typ,
+                                  wert.Value.ToString("0.###", CultureInfo.CurrentCulture), konstante.ToString("0.###", CultureInfo.CurrentCulture));
+                        continue;
+                    }
+                    if (Math.Abs(wert.Value - konstante) <= ABSORPTION_TOLERANZ) continue;
+                    if (konstante == GebaeudeFestwerte.ABSORPTIONSGRAD_OPAK) a.AbsorptionsgradSolar = wert.Value;
+                    else a.Emissionsgrad = wert.Value;
                 }
             }
 
-            /// <summary>Die Abweichung vom Absorptions- bzw. Emissionsgrad des Rechenwegs, ab der gemeldet wird.</summary>
-            internal const double ABSORPTION_TOLERANZ = 0.005;
+            /// <summary>Die Abweichung von der Vorgabe des Rechenwegs, bis zu der ein Grad als Vorgabe gilt (das Feld bleibt leer).</summary>
+            internal const double ABSORPTION_TOLERANZ = 1e-9;
 
             private void VerweisLeer(string art, string ziel, string wo)
             {

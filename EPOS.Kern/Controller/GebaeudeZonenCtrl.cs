@@ -143,6 +143,8 @@ namespace WindowsFormsApplication1
                 : ZonenSchema.Bauteilspalten;
             if (GebaeudeZonenanschluss.FlaechenherkunftVorhanden()) spalten = spalten.Append(FlaechenherkunftSchema.SPALTE);
             if (GebaeudeZonenanschluss.UHerkunftVorhanden()) spalten = spalten.Append(BauteilUHerkunftSchema.SPALTE);
+            // DA-8: Absorptions- und Emissionsgrad, wenn der Schritt steht (BauteilStrahlungSchema).
+            if (BauteilStrahlungSchema.Lesbar()) spalten = spalten.Concat(BauteilStrahlungSchema.SPALTEN.Select(s => s.Name));
             return spalten.ToList();
         }
 
@@ -153,6 +155,10 @@ namespace WindowsFormsApplication1
         /// <summary>Führt die Spaltenliste <paramref name="bauteilspalten"/> die Flächenherkunft (Schritt 197)?</summary>
         private static bool MitFlaechenherkunft(IReadOnlyList<string> bauteilspalten)
             => bauteilspalten.Contains(FlaechenherkunftSchema.SPALTE);
+
+        /// <summary>Führt die Spaltenliste <paramref name="bauteilspalten"/> Absorptions- und Emissionsgrad (DA-8)?</summary>
+        private static bool MitStrahlung(IReadOnlyList<string> bauteilspalten)
+            => bauteilspalten.Contains(BauteilStrahlungSchema.SPALTE_EMISSION);
 
         /// <summary>Führt die Spaltenliste <paramref name="bauteilspalten"/> die Herkunft des U-Werts (MA-6b)?</summary>
         private static bool MitUHerkunft(IReadOnlyList<string> bauteilspalten)
@@ -758,6 +764,7 @@ namespace WindowsFormsApplication1
             IReadOnlyList<string> bauteilspalten = Bauteilspalten();
             bool flaechenherkunft = MitFlaechenherkunft(bauteilspalten);
             bool uHerkunft = MitUHerkunft(bauteilspalten);
+            bool strahlung = MitStrahlung(bauteilspalten);
 
             try
             {
@@ -908,7 +915,7 @@ namespace WindowsFormsApplication1
                                 v.Ausfuehren("UPDATE \"" + tab.Bauteil + "\" SET " +
                                              string.Join(", ", bauteilspalten.Select(s => "\"" + s + "\" = ?")) +
                                              " WHERE \"ID\" = ?",
-                                             Bauteilwerte(b, kopplung, flaechenherkunft, uHerkunft).Append(new DbParam("@id", b.ID)).ToArray());
+                                             Bauteilwerte(b, kopplung, flaechenherkunft, uHerkunft, strahlung).Append(new DbParam("@id", b.ID)).ToArray());
                             }
                             else
                             {
@@ -918,7 +925,7 @@ namespace WindowsFormsApplication1
                                 b.ID = v.EinfuegenUndId("INSERT INTO \"" + tab.Bauteil + "\" (" +
                                                         string.Join(", ", bauteilspalten.Select(s => "\"" + s + "\"")) +
                                                         ") VALUES (" + BaustoffCtrl.Fragezeichen(bauteilspalten.Count) + ")",
-                                                        Bauteilwerte(b, kopplung, flaechenherkunft, uHerkunft).ToArray());
+                                                        Bauteilwerte(b, kopplung, flaechenherkunft, uHerkunft, strahlung).ToArray());
                             }
                         }
                         z.Bauteile = z.Bauteile.Where(x => x != null).ToList();
@@ -965,7 +972,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Hat der Zonendialog ein Feld von Hand geändert, das auch eine Datei tragen kann?</b> (Nachzug N2, MA-6 c) — Übergabe
-        /// (sieben Spalten), Kühlübergabe (drei), Vorheizzeit, Höchstleistungen, Sollwerte und Höchsttemperatur, verglichen mit
+        /// (sieben Spalten), Kühlübergabe (drei), Vorheizzeit, Höchstleistungen, Sollwerte und Höchsttemperatur, dazu (Nachzug N6)
+        /// Beheizung, Kühlung, Strahlungsanteil, Luftwechsel, interne Gewinne, Bewohner, Nutzungsprofil und Profilwerte, verglichen mit
         /// dem gespeicherten Stand (Zahlen mit dem Rand 1e-9 relativ). Nutzfläche, Raumhöhe und Volumen zählen nicht.
         /// </summary>
         internal static bool HandfelderGeaendert(ZoneModel alt, ZoneModel neu)
@@ -988,7 +996,16 @@ namespace WindowsFormsApplication1
                    || Z(alt.Raumsolltemperatur_Wochenende, neu.Raumsolltemperatur_Wochenende)
                    || Z(alt.Raumsolltemperatur_Ferien, neu.Raumsolltemperatur_Ferien)
                    || Z(alt.Kuehl_Sollwert, neu.Kuehl_Sollwert) || Z(alt.Kuehl_Sollwert_Nacht, neu.Kuehl_Sollwert_Nacht)
-                   || Z(alt.Maximaleraumtemperatur, neu.Maximaleraumtemperatur);
+                   || Z(alt.Maximaleraumtemperatur, neu.Maximaleraumtemperatur)
+                   // Nachzug N6 (MA-6 c): auch die übrigen Felder des Dialogs, die eine Datei tragen kann - Beheizung, Kühlung,
+                   // Strahlungsanteil, Luftwechsel, interne Gewinne, Bewohner, Nutzungsprofil und die Profilwerte.
+                   || alt.IstBeheizt != neu.IstBeheizt || alt.Kuehlung_Aktiv != neu.Kuehlung_Aktiv
+                   || Z(alt.Heizung_Strahlungsanteil, neu.Heizung_Strahlungsanteil)
+                   || Z(alt.Luftwechsel_Infiltration, neu.Luftwechsel_Infiltration) || Z(alt.Luftwechsel_Nutzer, neu.Luftwechsel_Nutzer)
+                   || Z(alt.Interne_Waermegewinne, neu.Interne_Waermegewinne) || Z(alt.Bewohner, neu.Bewohner)
+                   || Z(alt.Aussenluft_Person, neu.Aussenluft_Person) || Z(alt.Licht_W_m2, neu.Licht_W_m2)
+                   || Z(alt.Personen_Waerme_W, neu.Personen_Waerme_W)
+                   || T(alt.Nutzungsprofil, neu.Nutzungsprofil);
         }
 
         /// <summary>
@@ -1202,6 +1219,7 @@ namespace WindowsFormsApplication1
             bool kopplung = MitKopplung(bauteilspalten);
             bool flaechenherkunft = MitFlaechenherkunft(bauteilspalten);
             bool uHerkunft = MitUHerkunft(bauteilspalten);
+            bool strahlung = MitStrahlung(bauteilspalten);
             // Ohne Schritt S-G keine Trennfläche — benannt, bevor etwas geschrieben ist.
             if (!kopplung && zonen.SelectMany(z => z.Bauteile).Any(b => b.ID_Nachbarzone.HasValue || b.Randbedingung == DbWerte.RANDBEDINGUNG_ZONE))
                 return Vorschlagsergebnis.Fehler(GebaeudeBauteilvorschlag.NICHT_GESCHRIEBEN,
@@ -1298,7 +1316,7 @@ namespace WindowsFormsApplication1
                             b.ID = v.EinfuegenUndId("INSERT INTO \"" + ZonenSchema.TAB_BAUTEIL + "\" (" +
                                                     string.Join(", ", bauteilspalten.Select(s => "\"" + s + "\"")) +
                                                     ") VALUES (" + BaustoffCtrl.Fragezeichen(bauteilspalten.Count) + ")",
-                                                    Bauteilwerte(b, kopplung, flaechenherkunft, uHerkunft).ToArray());
+                                                    Bauteilwerte(b, kopplung, flaechenherkunft, uHerkunft, strahlung).ToArray());
                         }
                     }
 
@@ -1489,7 +1507,8 @@ namespace WindowsFormsApplication1
         /// (<see cref="ZonenkopplungSchema.SpaltenBauteil"/>), mit <paramref name="flaechenherkunft"/> zuletzt
         /// <c>Flaechenherkunft</c> (Schritt <see cref="FlaechenherkunftSchema.SCHRITT"/>); NULL bleibt NULL.
         /// </summary>
-        private static IEnumerable<DbParam> Bauteilwerte(BauteilModel b, bool kopplung, bool flaechenherkunft, bool uHerkunft)
+        private static IEnumerable<DbParam> Bauteilwerte(BauteilModel b, bool kopplung, bool flaechenherkunft, bool uHerkunft,
+                                                         bool strahlung)
         {
             foreach (DbParam p in Bauteilwerte(b)) yield return p;
             if (kopplung)
@@ -1499,6 +1518,11 @@ namespace WindowsFormsApplication1
             }
             if (flaechenherkunft) yield return BaustoffCtrl.Text("@fh", b.Flaechenherkunft);
             if (uHerkunft) yield return BaustoffCtrl.Text("@uh", b.U_Herkunft);
+            if (strahlung)
+            {
+                yield return BaustoffCtrl.Zahl("@as", b.Absorptionsgrad_Solar);
+                yield return BaustoffCtrl.Zahl("@em", b.Emissionsgrad);
+            }
         }
 
         /// <summary>
@@ -1514,7 +1538,7 @@ namespace WindowsFormsApplication1
             b.ID = v.EinfuegenUndId("INSERT INTO \"" + ZonenSchema.TAB_BAUTEIL + "\" (" +
                                     string.Join(", ", spalten.Select(s => "\"" + s + "\"")) +
                                     ") VALUES (" + BaustoffCtrl.Fragezeichen(spalten.Count) + ")",
-                                    Bauteilwerte(b, MitKopplung(spalten), MitFlaechenherkunft(spalten), MitUHerkunft(spalten)).ToArray());
+                                    Bauteilwerte(b, MitKopplung(spalten), MitFlaechenherkunft(spalten), MitUHerkunft(spalten), MitStrahlung(spalten)).ToArray());
             return b.ID;
         }
 
@@ -1529,7 +1553,7 @@ namespace WindowsFormsApplication1
             IReadOnlyList<string> spalten = Bauteilspalten();
             v.Ausfuehren("UPDATE \"" + ZonenSchema.TAB_BAUTEIL + "\" SET " + string.Join(", ", spalten.Select(s => "\"" + s + "\" = ?")) +
                          " WHERE \"ID\" = ?",
-                         Bauteilwerte(b, MitKopplung(spalten), MitFlaechenherkunft(spalten), MitUHerkunft(spalten)).Append(new DbParam("@id", b.ID)).ToArray());
+                         Bauteilwerte(b, MitKopplung(spalten), MitFlaechenherkunft(spalten), MitUHerkunft(spalten), MitStrahlung(spalten)).Append(new DbParam("@id", b.ID)).ToArray());
         }
 
         /// <summary>
@@ -1647,7 +1671,9 @@ namespace WindowsFormsApplication1
                         Herkunft = BaustoffCtrl.TextAus(r, "Herkunft"),
                         Quellkennung = BaustoffCtrl.TextAus(r, "Quellkennung"),
                         Flaechenherkunft = BaustoffCtrl.TextAus(r, FlaechenherkunftSchema.SPALTE),
-                        U_Herkunft = BaustoffCtrl.TextAus(r, BauteilUHerkunftSchema.SPALTE)
+                        U_Herkunft = BaustoffCtrl.TextAus(r, BauteilUHerkunftSchema.SPALTE),
+                        Absorptionsgrad_Solar = BaustoffCtrl.ZahlAus(r, BauteilStrahlungSchema.SPALTE_ABSORPTION),
+                        Emissionsgrad = BaustoffCtrl.ZahlAus(r, BauteilStrahlungSchema.SPALTE_EMISSION)
                     };
                     if (jeId.TryGetValue(b.ID_Zone, out ZoneModel z)) z.Bauteile.Add(b);
                 }

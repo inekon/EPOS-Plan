@@ -10,6 +10,8 @@ Beide Kataloge öffnen Sie über das Menü '''Administration''' › ''Gebäude''
 
 Der Baustoffkatalog führt je Stoff einen Namen, eine Gruppe (etwa Mauerwerk, Beton, Dämmstoffe), den Hersteller und drei Stoffwerte:
 
+[[Datei:Bildschirmfoto_Baustoffe.png|mini|zentriert|800px|Katalog Baustoffe – Bildschirmfoto mit Beispieldaten.]]
+
 {| class="wikitable"
 ! Wert !! Einheit !! zulässig
 |-
@@ -59,7 +61,7 @@ Unter den Schichten stehen die Kennwerte des Aufbaus:
 
 Fehlt einer Schicht eine Angabe, bleiben die Summen leer, und die Zeile nennt, was fehlt.
 
-Enthält der Aufbau Abschnitte, zeigt der Summenfuß statt eines einzelnen Widerstands den oberen Grenzwert <math>R'_{\mathrm{T}}</math> (Wärme fließt in parallelen Streifen), den unteren Grenzwert <math>R''_{\mathrm{T}}</math> (Schichten als durchgehende Ebenen) und ihr Mittel <math>R_{\mathrm{T}} = (R'_{\mathrm{T}} + R''_{\mathrm{T}})/2</math> nach DIN EN ISO 6946; mit dem Mittel rechnet der U-Wert. Darunter steht die Fehlerschranke <math>e = (R'_{\mathrm{T}} - R''_{\mathrm{T}})/(2 R_{\mathrm{T}})</math>, die größte mögliche Abweichung des Mittels vom wahren Wert. Liegt sie über 20 % (der obere Grenzwert ist mehr als 1,5-mal so groß wie der untere), weist ein Hinweis darauf hin, dass das vereinfachte Verfahren für diesen Aufbau ungenau ist; gerechnet wird weiter mit dem Mittel.
+Enthält der Aufbau Abschnitte, zeigt der Summenfuß statt eines einzelnen Widerstands den oberen Grenzwert <math>R'_{\mathrm{T}}</math> (Wärme fließt in parallelen Streifen), den unteren Grenzwert <math>R''_{\mathrm{T}}</math> (Schichten als durchgehende Ebenen) und ihr Mittel <math>R_{\mathrm{T}} = (R'_{\mathrm{T}} + R''_{\mathrm{T}})/2</math> nach DIN EN ISO 6946:2018-03, Abschnitt 6.7; mit dem Mittel rechnet der U-Wert. Darunter steht die Fehlerschranke <math>e = (R'_{\mathrm{T}} - R''_{\mathrm{T}})/(2 R_{\mathrm{T}})</math>, die größte mögliche Abweichung des Mittels vom wahren Wert. Liegt sie über 20 % (der obere Grenzwert ist mehr als 1,5-mal so groß wie der untere — die Anwendungsgrenze des vereinfachten Verfahrens nach Abschnitt 6.7.2.2, die Fehlerabschätzung steht in Abschnitt 6.7.2.5), weist ein Hinweis darauf hin, dass das vereinfachte Verfahren für diesen Aufbau ungenau ist; gerechnet wird weiter mit dem Mittel.
 
 === Speichern und Neu ===
 {{Anker|speichern}}
@@ -80,6 +82,10 @@ Bei der Bauteilart ''Fenster'' (und ''Vorhangfassade'') zeigt das Stammblatt die
 * '''ψ_g Glasrand''' – der längenbezogene Wärmedurchgangskoeffizient des Glasrands.
 
 Daraus entsteht <math>U_{\mathrm{w}} = (1 - f) \cdot U_{\mathrm{g}} + f \cdot U_{\mathrm{f}} + l_{\mathrm{g}} \cdot \psi_{\mathrm{g}} / A</math> nach DIN EN ISO 10077-1, mit der genäherten Glasrandlänge <math>l_{\mathrm{g}}</math>. Weist man den Aufbau einem Fenster im Bauteildialog zu, übernimmt das Bauteil g-Wert, Rahmenanteil und <math>U_{\mathrm{w}}</math>.
+
+=== Strahlung der Außenfläche ===
+
+Jeder Aufbau führt den '''Absorptionsgrad solar''' und den '''Emissionsgrad''' (langwellig) seiner Außenfläche, je 0 bis 1. Beide gehen in die äquivalente Außentemperatur der Bauteile ein, die den Aufbau tragen; leer gilt die Vorgabe 0,6 bzw. 0,9. Ein Bauteil kann im Bauteildialog einen eigenen Wert tragen. Der Gebäudeexport schreibt die Werte in gbXML als <code>Absorptance</code> der Konstruktion und in IFC im Satz <code>EPOS_Bauteil</code>; der Gebäudeimport übernimmt sie von dort.
 
 == Gruppe, Klasse und Herkunft ==
 {{Anker|gruppe-klasse}}
@@ -125,6 +131,6 @@ Beim Einlesen gilt:
 * '''Zusammenführen.''' Sätze mit gleichem aufbereiteten Namen und gleicher Gruppe gelten als einer, wenn Wärmeleitfähigkeit (±2 %), Rohdichte (±5 %) und Wärmekapazität (±10 %) übereinstimmen; leere Felder füllt der spätere Satz.
 * '''Schichten''' werden je Aufbau und Abschnitt in der Reihenfolge der Quelle von 1 bis n neu nummeriert. Eine Schicht ohne Dicke bekommt 0 m und behält den Widerstand der Quelle.
 * '''Inhomogene Aufbauten.''' Ein Aufbau mit Abschnitten wird übernommen, wenn jede Schicht in einem Abschnitt liegt und die Flächenanteile zusammen 100 % ergeben (zulässig 99 bis 101 %). Fehlt der Anteil bei genau einem Abschnitt und lassen die übrigen mehr als 1 % offen, bekommt dieser Abschnitt den Rest auf 100 %; die Vorschau zählt diese Fälle. Liegen die Schichtgrenzen aller Abschnitte übereinander (zulässig 1 mm oder 1 % der größten Dicke, das größere Maß), bildet die k-te Schicht jedes Abschnitts die Ebene k. Sonst – bei verschiedener Schichtzahl wie bei gleicher Schichtzahl mit versetzten Grenzen – müssen alle Abschnitte gleich dick sein (dieselbe Toleranz); dann werden die Schichtgrenzen aller Abschnitte zusammengelegt und jede Schicht an den Grenzen der übrigen Abschnitte geteilt, sodass jede Ebene in jedem Abschnitt eine Schicht führt – Dicke und Widerstand jedes Abschnitts bleiben dabei gleich. Grenzen, die näher als die Toleranz beieinanderliegen, gelten als eine Grenze. Die Vorschau zählt diese Aufbauten und die zusätzlichen Teilschichten. Stehen solche Aufbauten schon aus einem Import im Katalog und bekämen sie andere Schichten, nennt die Vorschau, wie viele davon ihren U-Wert um mehr als 1 % ändern, und die größte Änderung. Gerechnet wird nach DIN EN ISO 6946 mit dem Mittel aus oberem und unterem Grenzwert (siehe ''Summen''). Abgelehnt wird ein Aufbau mit einer durchgehenden Schicht neben Abschnitten, mit fehlenden Flächenanteilen, die sich nicht ergänzen lassen, mit einer Anteilsumme außerhalb 99 bis 101 %, mit verschieden dicken Abschnitten, deren Schichten geteilt werden müssten, mit einer Schicht ohne Dicke bei verschiedener Schichtzahl und mit einer ruhenden Luftschicht, die geteilt werden müsste (ihr Widerstand hängt nicht anteilig von der Dicke ab).
-* '''Wiederimport.''' Sätze mit derselben Kennung der Quelle werden aktualisiert (ein Aufbau samt Schichten ersetzt), ohne Dubletten; andere Sätze des Katalogs bekommen nur leere Felder ergänzt, ein ausgelieferter Satz wird nie überschrieben.
+* '''Wiederimport.''' Sätze mit derselben Kennung der Quelle werden aktualisiert (ein Aufbau samt Schichten ersetzt), ohne Dubletten; andere Sätze des Katalogs bekommen nur leere Felder ergänzt, ein ausgelieferter Satz wird nie überschrieben. Bekämen Aufbauten des Katalogs durch die Teilung an gemeinsamen Schichtgrenzen andere Schichten, nennt die Vorschau ihre Zahl, wie viele davon verglichen wurden, wie viele ihren U-Wert um mehr als 1 % ändern, die größte Änderung und wie viele ohne Vergleichswert bleiben. Verglichen wird mit dem U-Wert, den EPOS-Plan für den Aufbau im Katalog rechnet; lässt sich keiner rechnen, mit dem gespeicherten U-Wert der Quelle.
 
 [[Kategorie:Programm Dokumentation]]

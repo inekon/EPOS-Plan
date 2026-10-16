@@ -152,6 +152,8 @@ namespace WindowsFormsApplication1
                 FensterG = Fensterkennwerte.AusAufbau(m).GWert,
                 FensterRahmenanteil = Fensterkennwerte.AusAufbau(m).Rahmenanteil,
                 FensterPsiGlasrand = Fensterkennwerte.AusAufbau(m).PsiGlasrand,
+                AbsorptionsgradSolar = Bauteilkatalog.Zahl(m.Zusatz, BauteilStrahlungSchema.SPALTE_ABSORPTION),
+                Emissionsgrad = Bauteilkatalog.Zahl(m.Zusatz, BauteilStrahlungSchema.SPALTE_EMISSION),
                 Schichten = m.Schichten.Where(s => s != null).Select(s => new BauteilschichtDaten
                 {
                     Id = s.ID,
@@ -186,6 +188,9 @@ namespace WindowsFormsApplication1
                 KlasseCode = Leer(d.KlasseCode)
             };
             if (d.UQuelle.HasValue) m.Zusatz[BauteilkatalogSchema.SPALTE_U_QUELLE] = d.UQuelle.Value;
+            // DA-8: Absorptions- und Emissionsgrad an jedem Aufbau; leer heißt Vorgabe.
+            m.Zusatz[BauteilStrahlungSchema.SPALTE_ABSORPTION] = d.AbsorptionsgradSolar;
+            m.Zusatz[BauteilStrahlungSchema.SPALTE_EMISSION] = d.Emissionsgrad;
             // BK-6: Die Fensterwerte schreibt nur ein Fenster oder eine Vorhangfassade - sonst bleiben die gespeicherten.
             if (Fensterkennwerte.IstFensterart(m.Bauteilart))
             {

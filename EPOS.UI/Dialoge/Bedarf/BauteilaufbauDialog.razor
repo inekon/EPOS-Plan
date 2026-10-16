@@ -134,6 +134,14 @@
                         </Nachsatz>
                     </Stammblattgruppe>
 
+                    @* STRAHLUNG (DA-8): Absorptions- und Emissionsgrad der Aussenflaeche; leer = Vorgabe. *@
+                    <Stammblattgruppe Titel="@Texte.GruppeStrahlung" Lesemodus="@_auslieferung"
+                                      Werte="@(_auslieferung ? Strahlungswerte(_stand.Gespeichert) : null)">
+                        <KindInhalt>
+                            @Strahlungsfelder(_stand)
+                        </KindInhalt>
+                    </Stammblattgruppe>
+
                     @* HERKUNFT: immer Text. *@
                     <Stammblattgruppe Titel="@Texte.GruppeHerkunft" Lesemodus="true" Werte="@Herkunftwerte" />
                 </Gruppen>
@@ -186,6 +194,7 @@
                     }
                     <BauteilschichtenFelder Stand="@_neuStand" Baustoffe="@_baustoffe" Kennwerte="@_neuKennwerte"
                                             Texte="@Texte.Schichten" Geaendert="NeuNachziehen" />
+                    @Strahlungsfelder(_neuStand)
                     <SpeichernLeiste OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen" Ergebnis="NeuErgebnis" />
                 </div>
             }
@@ -617,6 +626,43 @@
             new Stammblattwert(Texte.LabelRahmenanteil, Z(d.FensterRahmenanteil, "0.00", "")),
             new Stammblattwert(Texte.LabelUf, Z(d.FensterUf, "0.00", " W/(m²K)")),
             new Stammblattwert(Texte.LabelPsiGlasrand, Z(d.FensterPsiGlasrand, "0.000", " W/(mK)"))
+        };
+    }
+
+    // --- Strahlung der Aussenflaeche (DA-8) ------------------------------------------
+
+    /// <summary>Platzhalter eines leeren Strahlungsfelds: die Vorgabe des Rechenwegs.</summary>
+    private string Vorgabetext(double vorgabe)
+        => string.Format(System.Globalization.CultureInfo.CurrentCulture, Texte.PlatzhalterStrahlung,
+                         vorgabe.ToString("0.0#", System.Globalization.CultureInfo.CurrentCulture));
+
+    /// <summary>Absorptions- und Emissionsgrad — im Stammblatt und in „Neu…" dieselben; leer gilt die Vorgabe.</summary>
+    private RenderFragment Strahlungsfelder(BauteilaufbauArbeitsstand stand) => __builder =>
+    {
+        BauteilaufbauDaten d = stand.Arbeit;
+        <Formularraster>
+            <KindInhalt>
+                <Zahlenfeld Bezeichnung="@Texte.LabelAbsorption" Wert="@d.AbsorptionsgradSolar" Min="0" Max="1" Nachkommastellen="2"
+                            Platzhalter="@Vorgabetext(WindowsFormsApplication1.BauteilStrahlungSchema.VORGABE_ABSORPTION)"
+                            WertChanged="w => Kopf(stand, () => d.AbsorptionsgradSolar = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelEmission" Wert="@d.Emissionsgrad" Min="0" Max="1" Nachkommastellen="2"
+                            Platzhalter="@Vorgabetext(WindowsFormsApplication1.BauteilStrahlungSchema.VORGABE_EMISSION)"
+                            WertChanged="w => Kopf(stand, () => d.Emissionsgrad = w)" />
+            </KindInhalt>
+        </Formularraster>
+        <Herleitungszeile Text="@Texte.StrahlungHinweis" />
+    };
+
+    /// <summary>Die Strahlungswerte als Text — Lesemodus eines Auslieferungssatzes.</summary>
+    private IReadOnlyList<Stammblattwert> Strahlungswerte(BauteilaufbauDaten d)
+    {
+        var c = System.Globalization.CultureInfo.CurrentCulture;
+        return new[]
+        {
+            new Stammblattwert(Texte.LabelAbsorption, d.AbsorptionsgradSolar is double a ? a.ToString("0.00", c)
+                                                      : Vorgabetext(WindowsFormsApplication1.BauteilStrahlungSchema.VORGABE_ABSORPTION)),
+            new Stammblattwert(Texte.LabelEmission, d.Emissionsgrad is double e ? e.ToString("0.00", c)
+                                                    : Vorgabetext(WindowsFormsApplication1.BauteilStrahlungSchema.VORGABE_EMISSION))
         };
     }
 

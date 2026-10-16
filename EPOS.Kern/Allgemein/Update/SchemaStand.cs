@@ -1116,10 +1116,13 @@ namespace WindowsFormsApplication1
         /// Rückkühlwerk; keine neue Katalogfassung.
         /// Danach, mit den TYPTAGEN DER KÄLTEBEDARFSZUORDNUNG (KBP-4a), steht das Ziel auf
         /// <see cref="KaeltetyptagSchema.SCHRITT"/>: <c>Tab_Kaeltetyptag</c> und <c>Tab_Kaeltetyptag_Matrix</c>, zwei leere
-        /// Tabellen (<see cref="KaeltetyptagSchema"/>). <b>Ergebnisneutral:</b> Keine Zuordnung trägt Eingabeart 'typtag'. Das
-        /// Ziel ist das Ende der Kette; umgehängt wird allein am Vorgänger <see cref="WasserpreisTraegerkarteSchema.SCHRITT"/>.
+        /// Tabellen (<see cref="KaeltetyptagSchema"/>). <b>Ergebnisneutral:</b> Keine Zuordnung trägt Eingabeart 'typtag'.
+        /// Danach, mit ABSORPTIONS- UND EMISSIONSGRAD JE BAUTEIL (DA-8), steht das Ziel auf
+        /// <see cref="BauteilStrahlungSchema.SCHRITT"/>: <c>Absorptionsgrad_Solar</c> und <c>Emissionsgrad</c> an Aufbau und Bauteil
+        /// (<see cref="BauteilStrahlungSchema"/>). <b>Ergebnisneutral:</b> Die Spalten entstehen leer, leer heißt Festwert. Das Ziel
+        /// ist das Ende der Kette; umgehängt wird allein am Vorgänger <see cref="KaeltetyptagSchema.SCHRITT"/>.
         /// </summary>
-        public const int Zielversion = KaeltetyptagSchema.SCHRITT;
+        public const int Zielversion = BauteilStrahlungSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

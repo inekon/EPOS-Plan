@@ -94,6 +94,18 @@
         /// </summary>
         public string U_Herkunft;
 
+        /// <summary>
+        /// Absorptionsgrad der Außenfläche für Solarstrahlung a_F [–] (<c>Tab_Bauteil.Absorptionsgrad_Solar</c>, Schemaschritt
+        /// <see cref="BauteilStrahlungSchema"/>); <c>null</c> = der Wert des Aufbaus, ohne ihn der Festwert.
+        /// </summary>
+        public double? Absorptionsgrad_Solar;
+
+        /// <summary>
+        /// Langwelliger Emissionsgrad der Außenfläche ε_F [–] (<c>Tab_Bauteil.Emissionsgrad</c>, Schemaschritt
+        /// <see cref="BauteilStrahlungSchema"/>); <c>null</c> = der Wert des Aufbaus, ohne ihn der Festwert.
+        /// </summary>
+        public double? Emissionsgrad;
+
         /// <summary>Eine entkoppelte Kopie.</summary>
         public BauteilModel Kopie() => (BauteilModel)MemberwiseClone();
     }

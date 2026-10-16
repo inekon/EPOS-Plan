@@ -583,7 +583,7 @@ namespace WindowsFormsApplication1
                 var surface = new XElement(NS + "Surface",
                     new XAttribute("id", Kennung(f.Kennung, "Surface")),
                     new XAttribute("surfaceType", f.Quellart),
-                    new XAttribute("constructionIdRef", Aufbau(f.Aufbau)));
+                    new XAttribute("constructionIdRef", Aufbau(f.Aufbau, f)));
                 Flaechen++;
                 Text(surface, "Name", f.Name);
                 foreach (AbbildNachbar n in f.Nachbarn)
@@ -625,7 +625,7 @@ namespace WindowsFormsApplication1
                     opening.Add(new XAttribute("windowTypeIdRef", Kennung(o.FenstertypKennung, "WindowType")));
                     _fenstertypen.Add(Fenstertyp(o));
                 }
-                if (o.Aufbau != null) opening.Add(new XAttribute("constructionIdRef", Aufbau(o.Aufbau)));
+                if (o.Aufbau != null) opening.Add(new XAttribute("constructionIdRef", Aufbau(o.Aufbau, o)));
                 Text(opening, "Name", o.Name);
                 if (o.FenstertypKennung == null)
                 {
@@ -683,10 +683,18 @@ namespace WindowsFormsApplication1
             //  Aufbauten, Schichten, Baustoffe
             // --------------------------------------------------------------
 
-            /// <summary>Schreibt den Aufbau beim ersten Auftreten und liefert seine Kennung.</summary>
-            private string Aufbau(AbbildAufbau a)
+            /// <summary>
+            /// Schreibt den Aufbau beim ersten Auftreten und liefert seine Kennung. DA-8: <c>Absorptance</c> trägt den Absorptions-
+            /// und Emissionsgrad des Bauteils <paramref name="b"/> (eingetragen am Bauteil oder seinem Aufbau, sonst die Vorgabe);
+            /// weichen sie von der Vorgabe ab, steht der Aufbau mit diesen Werten als eigene <c>Construction</c> (Kennung mit
+            /// Zusatz <c>-S</c>), denn gbXML führt die Grade nur an der Konstruktion.
+            /// </summary>
+            private string Aufbau(AbbildAufbau a, AbbildBauteil b)
             {
-                string kennung = a.Kennung;
+                double absorption = b?.AbsorptionsgradSolar ?? GebaeudeFestwerte.ABSORPTIONSGRAD_OPAK;
+                double emission = b?.Emissionsgrad ?? GebaeudeFestwerte.EMISSIONSGRAD_AUSSEN;
+                bool eigen = absorption != GebaeudeFestwerte.ABSORPTIONSGRAD_OPAK || emission != GebaeudeFestwerte.EMISSIONSGRAD_AUSSEN;
+                string kennung = eigen ? a.Kennung + "-S" + Zahl(absorption) + "-" + Zahl(emission) : a.Kennung;
                 if (_aufbauJeKennung.TryGetValue(kennung ?? "", out AbbildAufbau vorhanden))
                 {
                     if (!ReferenceEquals(vorhanden, a) && !GleicherAufbau(vorhanden, a))
@@ -699,11 +707,11 @@ namespace WindowsFormsApplication1
                 Text(construction, "Name", a.Name);
                 Text(construction, "Description", a.Beschreibung);
                 Groesse(construction, "U-value", a.UWertWm2K, GbxmlVokabular.WPerSquareMeterK);
-                // E138 F8 (b): die Konstanten des Rechenwegs durchreichen - solarer Absorptionsgrad und langwelliger Emissionsgrad
-                // außen (als Absorptionsgrad im Infraroten, Kirchhoff); der Import liest sie und meldet Abweichungen, ohne Feld.
-                construction.Add(new XElement(NS + "Absorptance", Zahl(GebaeudeFestwerte.ABSORPTIONSGRAD_OPAK),
+                // DA-8: solarer Absorptionsgrad und langwelliger Emissionsgrad außen (als Absorptionsgrad im Infraroten, Kirchhoff) -
+                // die des Bauteils, sonst die Vorgabe des Rechenwegs; der Import führt einen abweichenden Wert am Bauteil.
+                construction.Add(new XElement(NS + "Absorptance", Zahl(absorption),
                                               new XAttribute("unit", GbxmlVokabular.Fraction), new XAttribute("type", GbxmlVokabular.ExtSolar)),
-                                 new XElement(NS + "Absorptance", Zahl(GebaeudeFestwerte.EMISSIONSGRAD_AUSSEN),
+                                 new XElement(NS + "Absorptance", Zahl(emission),
                                               new XAttribute("unit", GbxmlVokabular.Fraction), new XAttribute("type", GbxmlVokabular.ExtIR)));
                 foreach (AbbildSchicht s in AussenNachInnen(a))
                     construction.Add(new XElement(NS + "LayerId", new XAttribute("layerIdRef", Schicht(s))));

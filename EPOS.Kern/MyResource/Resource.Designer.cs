@@ -10590,7 +10590,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wiederimport: {0} Aufbauten im Katalog bekommen durch die Teilung an gemeinsamen Schichtgrenzen andere Schichten; {1} davon ändern ihren U-Wert um mehr als 1 % (größte Änderung {2} %). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wiederimport: {0} Aufbauten im Katalog bekommen durch die Teilung an gemeinsamen Schichtgrenzen andere Schichten; verglichen {1}, davon {2} mit einer Änderung des U-Werts um mehr als 1 % (größte Änderung {3} %); ohne Vergleichswert {4}. ähnelt.
         /// </summary>
         public static string BKI_WIEDERIMPORT {
             get {
@@ -16381,6 +16381,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strahlung der Außenfläche ähnelt.
+        /// </summary>
+        public static string BTA_GRUPPE_STRAHLUNG {
+            get {
+                return ResourceManager.GetString("BTA_GRUPPE_STRAHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bezugsperiode aus R₁;rel = {0} und C₁;rel = {1}. ähnelt.
         /// </summary>
         public static string BTA_HERLEITUNG_TBT {
@@ -16453,6 +16462,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Absorptionsgrad solar ähnelt.
+        /// </summary>
+        public static string BTA_LBL_ABSORPTION {
+            get {
+                return ResourceManager.GetString("BTA_LBL_ABSORPTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Baustoff ähnelt.
         /// </summary>
         public static string BTA_LBL_BAUSTOFF {
@@ -16485,6 +16503,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BTA_LBL_BEZEICHNER {
             get {
                 return ResourceManager.GetString("BTA_LBL_BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionsgrad langwellig ähnelt.
+        /// </summary>
+        public static string BTA_LBL_EMISSION {
+            get {
+                return ResourceManager.GetString("BTA_LBL_EMISSION", resourceCulture);
             }
         }
         
@@ -16633,6 +16660,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe {0} ähnelt.
+        /// </summary>
+        public static string BTA_PLATZHALTER_STRAHLUNG {
+            get {
+                return ResourceManager.GetString("BTA_PLATZHALTER_STRAHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Schichten von innen nach außen ähnelt.
         /// </summary>
         public static string BTA_RASTER {
@@ -16737,6 +16773,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BTA_SP_RHO {
             get {
                 return ResourceManager.GetString("BTA_SP_RHO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Absorptionsgrad (Solarstrahlung) und Emissionsgrad (langwellig) der Außenfläche gehen in die äquivalente Außentemperatur ein. Leer gilt die Vorgabe; ein Bauteil kann einen eigenen Wert tragen. ähnelt.
+        /// </summary>
+        public static string BTA_STRAHLUNG_HINWEIS {
+            get {
+                return ResourceManager.GetString("BTA_STRAHLUNG_HINWEIS", resourceCulture);
             }
         }
         
@@ -16957,6 +17002,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Absorptionsgrad solar : ähnelt.
+        /// </summary>
+        public static string BTDLG_LBL_ABSORPTION {
+            get {
+                return ResourceManager.GetString("BTDLG_LBL_ABSORPTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bauteilart ähnelt.
         /// </summary>
         public static string BTDLG_LBL_ART {
@@ -16998,6 +17052,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BTDLG_LBL_BEZEICHNUNG {
             get {
                 return ResourceManager.GetString("BTDLG_LBL_BEZEICHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionsgrad : ähnelt.
+        /// </summary>
+        public static string BTDLG_LBL_EMISSION {
+            get {
+                return ResourceManager.GetString("BTDLG_LBL_EMISSION", resourceCulture);
             }
         }
         
@@ -17142,6 +17205,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BTDLG_PLATZHALTER_NEIGUNG {
             get {
                 return ResourceManager.GetString("BTDLG_PLATZHALTER_NEIGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau, sonst {0} ähnelt.
+        /// </summary>
+        public static string BTDLG_PLATZHALTER_STRAHLUNG {
+            get {
+                return ResourceManager.GetString("BTDLG_PLATZHALTER_STRAHLUNG", resourceCulture);
             }
         }
         
@@ -50451,7 +50523,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau „{0}“: Der Grad {1} der Datei ({2}) weicht von der Konstante des Rechenwegs ({3}) ab — es gilt die Konstante. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufbau „{0}“: Der Grad {1} der Datei ({2}) liegt nicht zwischen 0 und 1 — es gilt die Vorgabe ({3}). ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_ABSORPTION_ABWEICHUNG {
             get {
@@ -64327,6 +64399,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Absorptionsgrad (Solarstrahlung) bzw. Emissionsgrad (langwellig) der Außenfläche des Aufbaus zwischen 0 und 1; leer = Vorgabe. Ein Bauteil kann einen eigenen Wert tragen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BTA_STRAHLUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BTA_STRAHLUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der U-Wert des Aufbaus in W/(m²K) aus dem Summenfuß, gerechnet nach DIN EN ISO 6946 – nur lesbar; leer, wenn der Aufbau ihn nicht trägt. ähnelt.
         /// </summary>
         public static string KI_DLG_BTA_SUMME_U_ERL {
@@ -64341,6 +64422,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_BTA_SUMME_U_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_BTA_SUMME_U_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Absorptionsgrad der Außenfläche für Solarstrahlung zwischen 0 und 1; leer = der Wert des Aufbaus, sonst die Vorgabe 0,6. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BT_ABSORPTION_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BT_ABSORPTION_ERL", resourceCulture);
             }
         }
         
@@ -64377,6 +64467,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_BT_BEZEICHNUNG_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_BT_BEZEICHNUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der langwellige Emissionsgrad der Außenfläche zwischen 0 und 1; leer = der Wert des Aufbaus, sonst die Vorgabe 0,9. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BT_EMISSION_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BT_EMISSION_ERL", resourceCulture);
             }
         }
         
@@ -132457,7 +132556,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Rollenmodell (Etappe E5) — Differenzmethode „vermiedene Kosten“ ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rollenmodell — Differenzmethode „vermiedene Kosten“ ähnelt.
         /// </summary>
         public static string TARIF_G_ROLLEN {
             get {

@@ -127,6 +127,8 @@ Beispielanlage C: Einfamilienhaus, Neubau mit 150 m², Heizlast 6 kW bei −12 �
 * '''Kollektor tiefer als 10 m.''' Der Dialog lässt es nicht zu; steht in den Daten mehr, rechnet der Lauf die Anlage als Erdsonde und warnt im Protokoll.
 * '''Frostwarnung strenger als die Norm.''' Gewarnt wird, wenn Quelltemperatur minus Spreizung in mehr als 5 % der Betriebsstunden unter 0 °C liegt; die Grenzwerte der Tabelle B2 gelten für −5 °C Soleaustritt bei Spitzenlast.
 
+[[Datei:Bildschirmfoto_Erdreich.png|mini|zentriert|800px|Wärmequelle Erdreich mit Erdsonde, Vorschau und Auslegungsprüfung – Bildschirmfoto mit Beispieldaten.]]
+
 == Eingaben ==
 
 * {{Anker|quellsystem}}'''Quellsystem''' – ''Erdkollektor'' mit ''Verlegetiefe [m]'' und ''Fläche [m²]'' oder ''Erdsonde'' mit ''Länge je Sonde [m]'' und ''Anzahl Sonden''; jede Rubrik trägt ihr Optionsfeld, gewählt ist genau eines. Ein Kollektor wird nicht tiefer als 10 m verlegt; für größere Tiefen ist die Erdsonde zu wählen. ''OK'' verlangt eine Verlegetiefe über 0 m und eine Kollektorfläche bzw. eine Sondenlänge über 0 m und mindestens eine Sonde.

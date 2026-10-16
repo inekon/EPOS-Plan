@@ -153,7 +153,7 @@ public class BauteilaufbauDialogTests : EposBunitContext
         Assert.Equal("Bauteilaufbauten", cut.Find(".epos-dialog-titel").TextContent);
         Assert.Single(cut.FindAll(".epos-dialog-kopf .epos-dialog-zu"));
         Assert.Equal(2, cut.FindAll(".epos-katalogliste tbody tr").Count);
-        Assert.Equal(new[] { "Kenndaten", "Schichten", "Herkunft" },
+        Assert.Equal(new[] { "Kenndaten", "Schichten", "Strahlung der Außenfläche", "Herkunft" },
                      cut.FindAll(".epos-stammblattgruppe-titel").Select(e => e.TextContent).ToArray());
         Assert.Equal(new[] { "Speichern", "Verwerfen", "Neu…", "Beenden" },
                      Fussleiste(cut).QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToArray());
@@ -641,7 +641,7 @@ public class BauteilaufbauDialogTests : EposBunitContext
         Assert.DoesNotContain("Fenster", cut.FindAll(".epos-stammblattgruppe-titel").Select(e => e.TextContent));
 
         Zeilenklick.Zeile(cut, 2);                                   // Fenster Probe
-        Assert.Equal(new[] { "Kenndaten", "Fenster", "Schichten", "Herkunft" },
+        Assert.Equal(new[] { "Kenndaten", "Fenster", "Schichten", "Strahlung der Außenfläche", "Herkunft" },
                      cut.FindAll(".epos-stammblattgruppe-titel").Select(e => e.TextContent).ToArray());
         IElement blatt = Stammblatt(cut);
         Assert.Equal("1,40", Feld(blatt, "U_f Rahmen").GetAttribute("value"));

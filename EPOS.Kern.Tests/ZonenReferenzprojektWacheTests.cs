@@ -21,16 +21,19 @@ namespace EPOS.Kern.Tests
     internal static class Zonenbestand
     {
         /// <summary>Die Zonenprojekte der Testdatenbank.</summary>
-        internal static readonly long[] PROJEKTE = { Zonenprojekt1052.NEU, Zonenprojekt1054.NEU, KUEHLKURVE };
+        internal static readonly long[] PROJEKTE = { Zonenprojekt1052.NEU, Zonenprojekt1054.NEU, KUEHLKURVE, SCHNELLAUFHEIZUNG };
 
         /// <summary>Das Referenzprojekt der Kühlkurve mit Zonen (KK5a): Zonen und Trennfläche, kein Luftstrom, kein Zonenkalender.</summary>
         internal const long KUEHLKURVE = 1062;
 
-        /// <summary>Die Zonenprojekte mit Luftströmen und Zonenkalendern (1052 und seine Kopie 1054).</summary>
-        internal static readonly long[] PROJEKTE_MIT_KALENDER = { Zonenprojekt1052.NEU, Zonenprojekt1054.NEU };
+        /// <summary>Das Referenzprojekt der Schnellaufheizung (SA4): Kopie von 1054 samt Zonen, Luftströmen und Zonenkalendern.</summary>
+        internal const long SCHNELLAUFHEIZUNG = 1073;
+
+        /// <summary>Die Zonenprojekte mit Luftströmen und Zonenkalendern (1052, seine Kopie 1054 und deren Kopie 1073).</summary>
+        internal static readonly long[] PROJEKTE_MIT_KALENDER = { Zonenprojekt1052.NEU, Zonenprojekt1054.NEU, SCHNELLAUFHEIZUNG };
 
         /// <summary>Die Gebäude der Zonenprojekte.</summary>
-        internal const string GEBAEUDE_ZONENPROJEKTE = "SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt IN (1052, 1054, 1062)";
+        internal const string GEBAEUDE_ZONENPROJEKTE = "SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt IN (1052, 1054, 1062, 1073)";
 
         /// <summary>Die Zonen der Zonenprojekte.</summary>
         internal const string ZONEN_ZONENPROJEKTE = "SELECT ID FROM Tab_Zone WHERE ID_Gebaeude IN (" + GEBAEUDE_ZONENPROJEKTE + ")";

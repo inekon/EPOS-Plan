@@ -188,7 +188,7 @@ Version beim Anwender zu erfragen; die Wiki-Quellen (Prozesswärme, Brauchwasser
 
 ### Version 1.2.0.12 — Entwurf, Versionsnummer beim Anwender zu bestätigen — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
-Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1 bis DA-7, MA-1 bis MA-5, MA-7; Statuszeilen #1002 bis #1057, #1076 bis #1083, #1085, #1091, #1092, #1094, #1110, #1111, #1114, #1115, #1126 bis #1128). Die Wiki-Quellen (Gebäude, Gebäudeimport, Nutzungsprofile, Baustoffe und Bauteilaufbauten, Datenexport, Index der Hilfeschlüssel) sind fortgeschrieben, ins Wiki geladen ist noch nichts. Nach dem Anwenderentscheid vom 13.10.2026 gilt die Nummer bis zum 16.10.2026 nur als Vorschlag; es gibt keinen Upload.
+Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1 bis DA-7, MA-1 bis MA-5, MA-7; Statuszeilen #1002 bis #1057, #1076 bis #1083, #1085, #1091, #1092, #1094, #1110, #1111, #1114, #1115, #1126 bis #1128, #1132 bis #1135). Die Wiki-Quellen (Gebäude, Gebäudeimport, Nutzungsprofile, Baustoffe und Bauteilaufbauten, Gebäudemodell VDI 6007, Programm Dokumentation - Simulation, Simulationsergebnisse, Datenexport, Index der Hilfeschlüssel) sind fortgeschrieben, ins Wiki geladen ist noch nichts. Nach dem Anwenderentscheid vom 13.10.2026 gilt die Nummer bis zum 16.10.2026 nur als Vorschlag; es gibt keinen Upload.
 
 - Seit 13.10.2026: Der Gebäudedialog prüft ein Gebäude mit „Modell prüfen…“ auf Rechenfähigkeit, zeigt je Prüfgruppe eine Ampel und übernimmt die Vorschläge mit einem Klick; nach einem Import öffnet die Prüfung von selbst.
 - Seit 13.10.2026: Die Modellprüfung meldet je Zone eine nicht geschlossene Hülle und schlägt das fehlende Dach, die fehlende Bodenplatte oder Geschossdecke mit passender Fläche vor.
@@ -210,6 +210,10 @@ Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1 bis DA-7, MA-1 bis MA-5
 - Seit 16.10.2026: Der Bauteilkatalog-Import übernimmt inhomogene Aufbauten auch mit verschiedener Schichtzahl je Abschnitt und ergänzt einen einzelnen fehlenden Flächenanteil.
 - Seit 16.10.2026: Der Bauteilkatalog-Import teilt inhomogene Aufbauten an allen gemeinsamen Schichtgrenzen nach DIN EN ISO 6946, und der Summenfuß nennt die Fehlerschranke des U-Werts.
 - Seit 16.10.2026: Die Nutzungsprofile der Kategorie DIN/TS 18599-10 werden mit den Werten der Fassung 2025-10 ausgeliefert; „Normwerte einlesen…“ gleicht eigene Werte dagegen ab, und die Rücknahme stellt die ausgelieferten Werte wieder her.
+- Seit 16.10.2026: Kalenderänderungen und alle Werte einer Zone, die von Hand bearbeitet wurden, bleiben bei einem erneuten Gebäudeimport erhalten.
+- Seit 16.10.2026: Die Auswahl der Klimaregion im Gebäudedialog zeigt die Herkunft der Klimadaten; eine offene Wärmebedarfsansicht rechnet sofort mit der neu gewählten Region.
+- Seit 16.10.2026: Absorptions- und Emissionsgrad lassen sich je Bauteilaufbau und Bauteil eintragen und reisen mit gbXML und IFC.
+- Entwurf (Version beim Anwender erfragen; gehört zur Veröffentlichung von SA3): Die Aufheizoptimierung kann im Vorheizfenster die Heizkurve anheben (Schnellaufheizung).
 - Seit 14.10.2026: Beim Gebäudeimport ordnet EPOS-Plan jeder Zone das Nutzungsprofil der DIN/TS 18599-10 zu, wenn die Datei eine Profilnummer oder einen gbXML-Raumtyp trägt, und die Modellprüfung zeigt mit einer Ampel, woher das Profil jeder Zone kommt.
 - Seit 14.10.2026: Im Reiter „Zonen“ des Gebäudeeditors zeigt eine Ampelleiste den Stand der Modellprüfung; ein Klick öffnet die Prüfung auf der Gruppe.
 - Seit 14.10.2026: Das Blatt „Nutzung und Kalender“ zeigt je Zone ein Kurzbild der Woche; „Sollwerte setzen…“ wirkt auch auf den Heizkalender einer Zone.
@@ -420,11 +424,11 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 16.10.2026: Die Kältezeile im Bedarfsprofil-Dialog nimmt die Eingabeart Monatswerte (MWh oder Prozent) oder Wochenprofil (Werktag, Samstag, Sonntag und 168 Stunden) an. (#1102)
 - Seit 16.10.2026: Zehn weitere Vorlagen für Kältebedarfsprofile mit belegten Nutzungszeiten (DIN/TS 18599-10:2025-10) stehen im Katalog; jedes Profil trägt einen Art-Vorschlag. (#1101)
 - Seit 16.10.2026: Die Kältezeile zeigt Jahresgang, Monate, Woche und Dauerlinie als Blätter mit einer Kennzahlenzeile (Jahressumme, Spitze, Vollbenutzungsstunden, Grundlast-Anteil); das Blatt Woche wählt die Kalenderwoche und zeigt die Tagesarten als Hintergrund, die Grafik folgt dem ungespeicherten Stand der Zeile. (#1103, #1108)
-- 13.10.2026: Der Kostendialog und die Kostenseite gleichen die Kosten einer Anlage mit dem zentralen Kostenkatalog ab („Mit dem Kostenkatalog abgleichen…“). (#1079)
-- 13.10.2026: Arbeits-, Grund- und Leistungspreis eines Brennstoffs stehen allein in der Karte seines Energieträgers. (#1080)
-- 14.10.2026: Die Gerätekataloge führen keine Kostenfelder mehr; die Kosten eines Geräts stehen allein in der Kostenverwaltung, die Maske zeigt die Gerätekosten bzw. den Kostensatz aus der Satzvorlage des Katalogsatzes. (#1095)
-- 16.10.2026: Auch die Kosten des Stromspeichers stehen wie bei den übrigen Gewerken allein in der Kostenverwaltung; der Katalogsatz führt keine Kostenfelder mehr. (#1100)
-- 16.10.2026: Die Wasserkosten des Rückkühlwerks werden mit dem Preis des Trägers Wasser als Betriebskosten gerechnet. (#1125)
+- Seit 13.10.2026: Der Kostendialog und die Kostenseite gleichen die Kosten einer Anlage mit dem zentralen Kostenkatalog ab („Mit dem Kostenkatalog abgleichen…“). (#1079)
+- Seit 13.10.2026: Arbeits-, Grund- und Leistungspreis eines Brennstoffs stehen allein in der Karte seines Energieträgers. (#1080)
+- Seit 14.10.2026: Die Gerätekataloge führen keine Kostenfelder mehr; die Kosten eines Geräts stehen allein in der Kostenverwaltung, die Maske zeigt die Gerätekosten bzw. den Kostensatz aus der Satzvorlage des Katalogsatzes. (#1095)
+- Seit 16.10.2026: Auch die Kosten des Stromspeichers stehen wie bei den übrigen Gewerken allein in der Kostenverwaltung; der Katalogsatz führt keine Kostenfelder mehr. (#1100)
+- Seit 16.10.2026: Die Wasserkosten des Rückkühlwerks werden mit dem Preis des Trägers Wasser als Betriebskosten gerechnet. (#1125)
 
 ### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 

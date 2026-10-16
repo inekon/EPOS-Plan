@@ -57,6 +57,7 @@ public sealed class BauteilaufbauArbeitsstand
             if (!Gleich(Arbeit.GruppeCode, Gespeichert.GruppeCode)) n++;
             if (!Gleich(Arbeit.KlasseCode, Gespeichert.KlasseCode)) n++;
             n += Arbeit.FensterUnterschiede(Gespeichert);
+            n += Arbeit.StrahlungUnterschiede(Gespeichert);
             int gemeinsam = Math.Min(Arbeit.Schichten.Count, Gespeichert.Schichten.Count);
             for (int i = 0; i < gemeinsam; i++)
                 if (!Arbeit.Schichten[i].GleicheWerte(Gespeichert.Schichten[i])) n++;

@@ -1555,6 +1555,9 @@ namespace WindowsFormsApplication1
             internal double Sichtfaktor = double.NaN;
             internal double[] Einstrahlung;
             internal double UA_WK;
+            // DA-8: Absorptions- und Emissionsgrad der Bauteile des Glieds (wirksame Werte; NaN an Erdreich und unbeheiztem Raum).
+            internal double Absorptionsgrad = double.NaN;
+            internal double Emissionsgrad = double.NaN;
         }
 
         /// <summary>
@@ -1621,13 +1624,21 @@ namespace WindowsFormsApplication1
             }
 
             var glieder = new List<Glied>();
-            Glied Finden(Aussenseite art, double sichtfaktor, double[] einstrahlung)
+            // DA-8: Absorptions- und Emissionsgrad gehören zum Schlüssel des Glieds - Bauteile mit dem Festwert (alle
+            // Referenzprojekte) fallen wie bisher in ein Glied.
+            Glied Finden(Aussenseite art, double sichtfaktor, double[] einstrahlung,
+                         double absorptionsgrad = double.NaN, double emissionsgrad = double.NaN)
             {
                 foreach (Glied vorhanden in glieder)
                     if (vorhanden.Art == art && vorhanden.Sichtfaktor.Equals(sichtfaktor)
-                        && ReferenceEquals(vorhanden.Einstrahlung, einstrahlung))
+                        && ReferenceEquals(vorhanden.Einstrahlung, einstrahlung)
+                        && vorhanden.Absorptionsgrad.Equals(absorptionsgrad) && vorhanden.Emissionsgrad.Equals(emissionsgrad))
                         return vorhanden;
-                var neu = new Glied { Art = art, Sichtfaktor = sichtfaktor, Einstrahlung = einstrahlung };
+                var neu = new Glied
+                {
+                    Art = art, Sichtfaktor = sichtfaktor, Einstrahlung = einstrahlung,
+                    Absorptionsgrad = absorptionsgrad, Emissionsgrad = emissionsgrad,
+                };
                 glieder.Add(neu);
                 return neu;
             }
@@ -1664,14 +1675,16 @@ namespace WindowsFormsApplication1
                     default:
                         if (b.IstTransparent)
                         {
-                            g = Finden(Aussenseite.LuftFenster, GebaeudeKlimaweg.SichtfaktorHimmel(neigung), null);
+                            g = Finden(Aussenseite.LuftFenster, GebaeudeKlimaweg.SichtfaktorHimmel(neigung), null,
+                                       emissionsgrad: b.EmissionsgradWirksam);
                             double faktor = b.GWert * (1.0 - b.RahmenanteilWirksam) * b.VerschattungsfaktorWirksam * GebaeudeFestwerte.F_W;
                             fensterSolar.Add((b.Flaeche_M2, faktor, Reihe(b)));
                         }
                         else
                         {
                             g = AussenbauteileStrahlung
-                                ? Finden(Aussenseite.LuftOpak, GebaeudeKlimaweg.SichtfaktorHimmel(neigung), Reihe(b))
+                                ? Finden(Aussenseite.LuftOpak, GebaeudeKlimaweg.SichtfaktorHimmel(neigung), Reihe(b),
+                                         b.AbsorptionsgradSolarWirksam, b.EmissionsgradWirksam)
                                 : Finden(Aussenseite.LuftOpak, double.NaN, null);
                         }
                         break;
@@ -1739,13 +1752,13 @@ namespace WindowsFormsApplication1
                             theta = Kellertemperatur;
                             break;
                         case Aussenseite.LuftFenster:
-                            theta = tOut + GebaeudeKlimaweg.DeltaThetaLangwellig(eA, tOut, g.Sichtfaktor);
+                            theta = tOut + GebaeudeKlimaweg.DeltaThetaLangwellig(eA, tOut, g.Sichtfaktor, g.Emissionsgrad);
                             break;
                         default:
                             theta = g.Einstrahlung == null
                                 ? tOut
-                                : tOut + GebaeudeKlimaweg.DeltaThetaLangwellig(eA, tOut, g.Sichtfaktor)
-                                  + GebaeudeKlimaweg.DeltaThetaKurzwellig(g.Einstrahlung[h], eA, tOut);
+                                : tOut + GebaeudeKlimaweg.DeltaThetaLangwellig(eA, tOut, g.Sichtfaktor, g.Emissionsgrad)
+                                  + GebaeudeKlimaweg.DeltaThetaKurzwellig(g.Einstrahlung[h], eA, tOut, g.Absorptionsgrad);
                             break;
                     }
                     summe += g.UA_WK * theta;

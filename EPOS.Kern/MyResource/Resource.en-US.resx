@@ -12187,7 +12187,7 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>Feed-in (no demand price; shared field for PV and CHP feed-in)</value>
   </data>
   <data name="TARIF_G_ROLLEN" xml:space="preserve">
-    <value>Role model (stage E5) — difference method “avoided cost”</value>
+    <value>Role model — difference method “avoided cost”</value>
   </data>
   <data name="TARIF_G_ZEITZONEN" xml:space="preserve">
     <value>Winter period (summer and winter maximum of the demand charge model “Scale”)</value>
@@ -54833,7 +54833,7 @@ chart</value>
     <value>Layers split at common layer boundaries ({0} → {1} layers): {2}</value>
   </data>
   <data name="BKI_WIEDERIMPORT" xml:space="preserve">
-    <value>Re-import: {0} constructions in the catalogue get different layers from the split at common layer boundaries; {1} of them change their U-value by more than 1 % (largest change {2} %).</value>
+    <value>Re-import: {0} constructions in the catalogue get different layers from the split at common layer boundaries; compared {1}, of which {2} change their U-value by more than 1 % (largest change {3} %); without a reference value {4}.</value>
   </data>
   <data name="BKI_UEBERNEHMEN" xml:space="preserve">
     <value>Import</value>
@@ -55355,7 +55355,7 @@ chart</value>
     <value>Zone "{0}", space "{1}": latent heat gain per person ({2} W) discarded — the sensible heat is used.</value>
   </data>
   <data name="IMP_GBXML_PROT_ABSORPTION_ABWEICHUNG" xml:space="preserve">
-    <value>Construction "{0}": the {1} value of the file ({2}) differs from the constant of the calculation ({3}) — the constant applies.</value>
+    <value>Construction "{0}": the {1} value of the file ({2}) is not between 0 and 1 — the default ({3}) applies.</value>
   </data>
   <data name="IMP_GBXML_PROT_AUSSENLUFT_PERSON" xml:space="preserve">
     <value>Zone "{0}": outdoor air per person converted into the user air change ({1} 1/h); the per-person value is also kept at the zone.</value>
@@ -56892,6 +56892,39 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="KI_DLG_KLIMA_HOEHE_ERL" xml:space="preserve">
     <value>The altitude of the site above sea level, in metres. It enters the preview: the altitude difference to the reference point decides the note "not typical for the site". Empty = unknown; for PVGIS and a TRY file with header data it comes from the source.</value>
+  </data>
+  <data name="BTA_GRUPPE_STRAHLUNG" xml:space="preserve">
+    <value>Radiation of the outer surface</value>
+  </data>
+  <data name="BTA_LBL_ABSORPTION" xml:space="preserve">
+    <value>Solar absorptance</value>
+  </data>
+  <data name="BTA_LBL_EMISSION" xml:space="preserve">
+    <value>Long-wave emissivity</value>
+  </data>
+  <data name="BTA_PLATZHALTER_STRAHLUNG" xml:space="preserve">
+    <value>Default {0}</value>
+  </data>
+  <data name="BTA_STRAHLUNG_HINWEIS" xml:space="preserve">
+    <value>Absorptance (solar radiation) and emissivity (long-wave) of the outer surface enter the equivalent outdoor temperature. Empty means the default; a building element can carry its own value.</value>
+  </data>
+  <data name="BTDLG_LBL_ABSORPTION" xml:space="preserve">
+    <value>Solar absorptance :</value>
+  </data>
+  <data name="BTDLG_LBL_EMISSION" xml:space="preserve">
+    <value>Emissivity :</value>
+  </data>
+  <data name="BTDLG_PLATZHALTER_STRAHLUNG" xml:space="preserve">
+    <value>Construction, else {0}</value>
+  </data>
+  <data name="KI_DLG_BT_ABSORPTION_ERL" xml:space="preserve">
+    <value>The solar absorptance of the outer surface between 0 and 1; empty = the value of the construction, else the default 0.6.</value>
+  </data>
+  <data name="KI_DLG_BT_EMISSION_ERL" xml:space="preserve">
+    <value>The long-wave emissivity of the outer surface between 0 and 1; empty = the value of the construction, else the default 0.9.</value>
+  </data>
+  <data name="KI_DLG_BTA_STRAHLUNG_ERL" xml:space="preserve">
+    <value>Absorptance (solar radiation) or emissivity (long-wave) of the outer surface of the construction between 0 and 1; empty = default. A building element can carry its own value.</value>
   </data>
 </root>
 
