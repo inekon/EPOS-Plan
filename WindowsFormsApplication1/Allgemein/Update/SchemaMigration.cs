@@ -16445,22 +16445,6 @@ namespace WindowsFormsApplication1
                 return false;
             }
 
-        /// <summary>
-        /// Der Schritt „Eingabeart an Prozesswärme und Brauchwasser" (KBP-5a, Schritt
-        /// <see cref="BedarfsprofilEingabeartSchema.SCHRITT"/>) — die Anweisungen bei <see cref="BedarfsprofilEingabeartSchema"/>.
-        /// <b>Wiederholbar, ergebnisneutral.</b>
-        /// </summary>
-        private static bool Schritt_BedarfsEingabeart(Lauf l)
-        {
-            string nr = BedarfsprofilEingabeartSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
-            foreach (string tabelle in BedarfsprofilEingabeartSchema.Voraussetzungen())
-            {
-                if (SqliteTabelleVorhanden(tabelle)) continue;
-                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
-                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
-                return false;
-            }
-
             var bericht = new List<string>();
             int handgriffe;
             using (DataRepository.EngineModus())
@@ -16495,6 +16479,61 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": U_Herkunft an Tab_Bauteil(_STAMM) - " + (handgriffe == 0 ? "stand bereits." : "Spalten angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Eingabeart an Prozesswärme und Brauchwasser" (KBP-5a, Schritt
+        /// <see cref="BedarfsprofilEingabeartSchema.SCHRITT"/>) — die Anweisungen bei <see cref="BedarfsprofilEingabeartSchema"/>.
+        /// <b>Wiederholbar, ergebnisneutral.</b>
+        /// </summary>
+        private static bool Schritt_BedarfsEingabeart(Lauf l)
+        {
+            string nr = BedarfsprofilEingabeartSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in BedarfsprofilEingabeartSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int angelegt;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    angelegt = BedarfsprofilEingabeartSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!BedarfsprofilEingabeartSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Eingabeart oder Nutzungstage fehlen nach dem Schritt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Eingabeart und Nutzungstage - " +
+                    (angelegt == 0 ? "Spalten standen bereits." : angelegt + " Spalte(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }
