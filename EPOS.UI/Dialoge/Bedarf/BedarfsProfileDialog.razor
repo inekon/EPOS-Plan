@@ -76,6 +76,8 @@
         {
             <h1 class="epos-dialog-titel">@TitelText</h1>
         }
+        @* BP-1: Der Titel steht EINMAL; daneben die Hinweiszeile je Art im Dialogkopf wie bei den Erzeugern. *@
+        <span class="epos-dialog-kontext" title="@Kopfband">@Kopfband</span>
         <InfoKnopf Schluessel="@HilfeSchluessel" />
         @* H13: der Rechenweg der Auspraegung (Monatswerte mal Wochenprofil, Skalierung auf die
            Jahressumme, monatsweise Normierung) steht im Kopf der Detailzeile (SatzKopfKnoepfe). *@
@@ -84,8 +86,6 @@
             <Schliesskreuz Geschlossen="Abbrechen" />
         }
     </div>
-
-    <p class="epos-kontextzeile">@KopfbandText</p>
 
     @if (_meldung.Length > 0)
     {
@@ -141,6 +141,9 @@
                         SatzUebernommen="BeiSatzUebernommen" SatzVerworfen="BeiSatzVerworfen"
                         SatzZusammenfassung="@Zusammenfassung()"
                         KnopfleisteAmSatz="true"
+                        VergleichProjekt="@(VergleichsparameterProjekt is null ? null : VergleichProjektsatz)"
+                        VergleichKatalog="@VergleichKatalogsatz"
+                        KatalogGewaehlt="@_katalogzeile?.Schluessel" VergleichAbgelehnt="BeiSchlossAbgelehnt"
                         ProjektGewaehlt="@(_gewaehlt is null ? null : Projektschluessel(_gewaehlt))"
                         ProjektGewaehltChanged="BeiProjektTastenwahl"
                         @ref="_zweispalten">
@@ -203,22 +206,19 @@
             <Katalogliste @ref="_katalogliste" Profil="@Katalogprofil" Zeilen="@_katalog"
                           Filterstand="@_filterstand" Texte="@Filtertexte"
                           Gewaehlt="@_katalogGewaehlt" GewaehltChanged="KatalogzeileWaehlen"
-                          Vergleichsparameter="@Vergleichsparameter"
+                          Vergleichsparameter="@_vergleichsgabe"
                           ZeileIstWahl="true" Kaestchen="true" Gewaehlte="@_katalogKaestchen"
                           GewaehlteChanged="BeiKatalogKaestchen"
                           Bearbeiten="BeiKatalogStift" BearbeitenHinweis="@Resource.AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS" />
         </Rechts>
 
         <KatalogFuss>
-            @if (TypProfilGaben is not null)
-            {
-                <button type="button" class="epos-knopf epos-knopf--typ-aendern" title="@Resource.BPF_HINW_TYP_AENDERN"
-                        @onclick="() => _typProfilOffen = true">@BtnTypAendernText</button>
-            }
-            @* DIE KNOPFLEISTE AM GEWAEHLTEN SATZ (AW3b): Schloss… und Loeschen nur auf Katalogsaetze - beim
-               Projektsatz weich gesperrt mit dem Grund „Katalogsatz waehlen"; Bearbeiten… je Satzart (Projekt-
-               satz: die Zuordnung in der Ueberlagerung, genau eine Zeile; Katalogsatz: der Katalogeditor
-               „DB ändern…", gesperrt nur lesend). Einen Vergleich fuehrt der Dialog nicht. *@
+            @* DIE KNOPFLEISTE AM GEWAEHLTEN SATZ (AW3b, BP-2 in der Reihenfolge der Erzeuger): Vergleichen… (fuehrt
+               die Zweispaltenauswahl als ersten Knopf, KA-E-24: angekreuzte Projektzeilen und Katalogsaetze zusammen),
+               Schloss setzen…, Loeschen, Bearbeiten…, Typ ändern…, rechts Neu…. Schloss… und Loeschen nur auf
+               Katalogsaetze - beim Projektsatz weich gesperrt mit dem Grund „Katalogsatz waehlen"; Bearbeiten… je
+               Satzart (Projektsatz: die Zuordnung in der Ueberlagerung, genau eine Zeile; Katalogsatz: der
+               Katalogeditor, gesperrt nur lesend). *@
             <Katalogschloss @ref="_katalogschloss" Weg="@Schloss" Zeile="@_katalogzeile"
                             Sperrgrund="@KatalogSperrgrund"
                             JaText="@JaText" NeinText="@NeinText"
@@ -244,6 +244,11 @@
                 <button type="button" class="epos-knopf epos-knopf--bearbeiten-katalog epos-knopf--db-aendern"
                         title="@(KatalogZiele().Count > 0 && KatalogZiele().All(z => z.Geschuetzt) ? Resource.ADM_SCHLOSS_ERST_AUFHEBEN : Resource.BPF_HINW_DB_AENDERN)"
                         disabled="@(KatalogZiele().Count == 0)" @onclick="BeiKatalogBearbeiten">@Resource.AUSWAHL_BTN_BEARBEITEN</button>
+            }
+            @if (TypProfilGaben is not null)
+            {
+                <button type="button" class="epos-knopf epos-knopf--typ-aendern" title="@Resource.BPF_HINW_TYP_AENDERN"
+                        @onclick="() => _typProfilOffen = true">@BtnTypAendernText</button>
             }
         </KatalogFuss>
 
@@ -516,7 +521,7 @@
        Blattwechsel tauscht den Inhalt DIESES Dialogs (siehe @if oben) gegen das Blatt;
        derselbe ZapfprofilDialog, dieselbe Geschlossen-Behandlung wie zuvor (OK uebernimmt,
        Abbrechen verwirft, beide fuehren zurueck) - nur eine Ebene flacher. *@
-    <Blattwechsel Offen="@ZapfprofilOffen" WirtTitel="@KopfbandText"
+    <Blattwechsel Offen="@ZapfprofilOffen" WirtTitel="@Wirttitel"
                   Titel="@ZapfprofilEinstiegTexte.Titel" ZusatzKlasse="epos-blatt--breit"
                   Zurueck="ZapfprofilZurueck">
         <KindInhalt>
@@ -532,7 +537,7 @@
        derselbe Tausch wie beim Zapfprofil: keine dritte Ueberlagerungsebene. OK (oder ein Schreiben im Blatt)
        liest die Liste neu und waehlt einen neu angelegten Kalender fuer die markierte Zeile vor; danach geht die
        Satz-Ueberlagerung mit ihrem Stand beim Oeffnen (Merker) wieder auf. *@
-    <Blattwechsel Offen="@KalenderblattOffen" WirtTitel="@KopfbandText"
+    <Blattwechsel Offen="@KalenderblattOffen" WirtTitel="@Wirttitel"
                   Titel="@Resource.BKAL_TITEL" Zurueck="KalenderblattZurueck">
         <KindInhalt>
             @if (_kalenderGaben is not null)
@@ -587,6 +592,13 @@
     /// vergleicht die <c>Katalogliste</c> ihre eigenen Spalten.
     /// </summary>
     [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Vergleichsparameter { get; set; }
+
+    /// <summary>
+    /// BP-2 (KA-E-24): die Kennwerte einer PROJEKTZEILE für „Vergleichen…" — dieselbe Parameterliste wie
+    /// <see cref="Vergleichsparameter"/>, aus der Projektkopie samt den Werten der Zuordnung (Kern-Controller,
+    /// gereicht von der Hülle). Ohne diese Gabe vergleicht „Vergleichen…" nur Katalogsätze.
+    /// </summary>
+    [Parameter] public Func<BedarfsProfilZeile, IReadOnlyList<Parameterwert>>? VergleichsparameterProjekt { get; set; }
 
 
     /// <summary>Die Beschriftungen der Katalogliste — sie füllen sich selbst aus <c>MyResource</c>.</summary>
@@ -907,7 +919,10 @@
     // --- Texte -----------------------------------------------------------------
 
     [Parameter] public string TitelText { get; set; } = "Prozesswärme";
-    [Parameter] public string KopfbandText { get; set; } = "Prozesswärme";
+    /// <summary>
+    /// BP-1: die Hinweiszeile im Dialogkopf, wie bei den Erzeugern; leer = die Zeile der Art (<c>BPF_KOPFBAND_*</c>).
+    /// </summary>
+    [Parameter] public string KopfbandText { get; set; } = "";
     [Parameter] public string LabelProjektliste { get; set; } = "Ausgewählte Prozesse im Projekt";
     [Parameter] public string LabelKatalog { get; set; } = "Datenbank Prozesswärme";
     [Parameter] public string GruppeInfo { get; set; } = "Profil";
@@ -1171,6 +1186,12 @@
 
     protected override void OnParametersSet()
     {
+        // KT-9: die Vergleichsgabe der Katalogliste gefangen (einmal je Gabe des Wirtes gebaut).
+        if (!ReferenceEquals(_vergleichsgabeQuelle, Vergleichsparameter))
+        {
+            _vergleichsgabeQuelle = Vergleichsparameter;
+            _vergleichsgabe = Katalogladung.Vergleichsgabe(Vergleichsparameter, VergleichsfehlerMelden);
+        }
         // Der Kopf der WAHLSPALTE kommt weiter ueber den eigenen Text des Wirtes.
         Filtertexte.SpalteWahl = SpalteWahl;
         if (TitelDbAendern.Length == 0) TitelDbAendern = BtnDbAendernText;
@@ -1653,6 +1674,63 @@
         _katalogKaestchen = gewaehlt;
         _katalogWahl.Setzen(gewaehlt);
     }
+
+    // --- Vergleichen… (BP-2, KA-E-24 wie bei den Erzeugern) ----------------------------
+
+    /// <summary>KT-9: die Gabe des Wirtes, aus der <see cref="_vergleichsgabe"/> gebaut ist.</summary>
+    private Func<string, IReadOnlyList<Parameterwert>>? _vergleichsgabeQuelle;
+
+    /// <summary>KT-9: die gefangene Vergleichsgabe — wirft die Abfrage eines Satzes, nennt der Banner den Grund.</summary>
+    private Func<string, IReadOnlyList<Parameterwert>>? _vergleichsgabe;
+
+    /// <summary>KT-9: Der Grund einer geworfenen Vergleichsabfrage geht in den Banner des Dialogs.</summary>
+    private void VergleichsfehlerMelden(string grund)
+    {
+        Melden(grund, WarnStufe.Warnung);
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>
+    /// Die Kennwerte einer Projektzeile für „Vergleichen…" (KA-E-24): dieselbe Parameterliste wie die des
+    /// Katalogsatzes, aus der Projektkopie samt Jahressumme, Kalender, Temperaturen und Deckung der Zuordnung.
+    /// </summary>
+    private Vergleichssatz? VergleichProjektsatz(string schluessel)
+    {
+        BedarfsProfilZeile? z = Zeilen.FirstOrDefault(r => Projektschluessel(r) == schluessel);
+        if (z is null || VergleichsparameterProjekt is null) return null;
+        string grund = "";
+        IReadOnlyList<Parameterwert>? werte = Katalogladung.SatzDazu(() => VergleichsparameterProjekt(z), z.Name, ref grund);
+        if (grund.Length > 0) VergleichsfehlerMelden(grund);
+        return Vergleichssatz.AusParametern(Satzmarke.Projektsatz, z.Name, werte);
+    }
+
+    /// <summary>Die Kennwerte eines Katalogsatzes für „Vergleichen…" — die Parameterliste, ohne sie die Profilspalten.</summary>
+    private Vergleichssatz? VergleichKatalogsatz(string schluessel)
+    {
+        Katalogfilterzeile? k = _katalog.FirstOrDefault(z => z.Schluessel == schluessel);
+        if (k is null) return null;
+        return _vergleichsgabe is not null
+            ? Vergleichssatz.AusParametern(Satzmarke.Katalogsatz, k.Bezeichner, _vergleichsgabe(k.Bezeichner))
+            : Vergleichssatz.AusSpalten(Satzmarke.Katalogsatz, Katalogprofil, k);
+    }
+
+    /// <summary>Die Hinweiszeile im Kopf: die des Wirtes, sonst die der Art.</summary>
+    private string Kopfband => !string.IsNullOrEmpty(KopfbandText) ? KopfbandText : Art switch
+    {
+        BedarfsArt.Kaelte => Resource.BPF_KOPFBAND_KAELTE,
+        BedarfsArt.Stromverbraucher => Resource.BPF_KOPFBAND_STROM,
+        BedarfsArt.Brauchwasser => Resource.BPF_KOPFBAND_BW,
+        _ => Resource.BPF_KOPFBAND_PROZ
+    };
+
+    /// <summary>Der Titel des Dialogs für den Rückknopf der Blätter: der Titel, eingebettet (ohne Titel) der Name der Art.</summary>
+    private string Wirttitel => !string.IsNullOrEmpty(TitelText) ? TitelText : Art switch
+    {
+        BedarfsArt.Kaelte => Resource.BPF_TITEL_KAELTE,
+        BedarfsArt.Stromverbraucher => Resource.BPF_TITEL_STROM,
+        BedarfsArt.Brauchwasser => Resource.BPF_TITEL_BW,
+        _ => Resource.BPF_TITEL_PROZ
+    };
 
     private void KatalogKaestchenLeeren()
     {
