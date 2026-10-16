@@ -15723,7 +15723,7 @@ Ihre Stunden- und Tageswerte werden mit gelöscht.</value>
     <value>Schließen</value>
   </data>
   <data name="ADM_DUBLETTEN_BAUM" xml:space="preserve">
-    <value>Dublettenbefund</value>
+    <value>Dublettenhinweise</value>
   </data>
   <data name="ADM_DUBLETTEN_SCAN_LAEUFT" xml:space="preserve">
     <value>Dublettensuche läuft…</value>

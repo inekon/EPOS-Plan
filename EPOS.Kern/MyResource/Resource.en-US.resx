@@ -15716,7 +15716,7 @@ Its hourly and daily values will be deleted as well.</value>
     <value>Close</value>
   </data>
   <data name="ADM_DUBLETTEN_BAUM" xml:space="preserve">
-    <value>Duplicate findings</value>
+    <value>Duplicate notes</value>
   </data>
   <data name="ADM_DUBLETTEN_SCAN_LAEUFT" xml:space="preserve">
     <value>Searching for duplicates…</value>

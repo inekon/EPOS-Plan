@@ -601,7 +601,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Dublettenbefund ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dublettenhinweise ähnelt.
         /// </summary>
         public static string ADM_DUBLETTEN_BAUM {
             get {
