@@ -3823,8 +3823,7 @@ namespace Testdatenbankschema
             //      Z_Projekt_Brauchwasser.Eingabeart (Vorgabe 'jahr'), Nutzungstage_Norm an Tab_Kaeltebedarf_STAMM/
             //      Tab_Kaeltebedarf, Saat allein an Vorlage 8 (230 Tage). Aus DERSELBEN Quelle wie
             //      SchemaMigration.Schritt_BedarfsEingabeart. Wiederholbar.
-            //      KETTE: GEPARKT auf 234 - dieser Block bleibt HINTER den Bloecken von 231 bis 233; die Hebung der
-            //      Testdatenbank folgt erst nach dem Umhaengen (BauteilUHerkunftSchema.SCHRITT + 1).
+            //      Haengt ueber BauteilUHerkunftSchema.SCHRITT + 1 an 233 und steht hinter dessen Block.
             //
             //      REFERENZLAUF UNVERAENDERT: jede Zuordnung rechnet weiter mit der Jahressumme; die Nutzungstage liest
             //      kein Rechenweg, die Kaeltezeilen 1-6 bleiben samt Pruefsumme bytegleich.

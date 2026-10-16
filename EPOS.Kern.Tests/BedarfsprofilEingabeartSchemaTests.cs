@@ -10,7 +10,7 @@ namespace EPOS.Kern.Tests
 {
     /// <summary>
     /// <b>KBP-5a — Schemaschritt <see cref="BedarfsprofilEingabeartSchema"/></b> auf einer frisch migrierten Kopie der
-    /// Testdatenbank: die (geparkte) Nummer, die vier Spalten samt Prüfklausel und Vorgabe, die Saat allein an Vorlage 8,
+    /// Testdatenbank: die Nummer in der Kette, die vier Spalten samt Prüfklausel und Vorgabe, die Saat allein an Vorlage 8,
     /// die Zeilen 1–6 unberührt samt Prüfsumme, die Wiederholbarkeit und dass eine Anwenderangabe stehen bleibt.
     /// </summary>
     [Collection("Testdatenbank")]
@@ -35,13 +35,13 @@ namespace EPOS.Kern.Tests
         private const string PRUEFSUMME_8_VORHER = "7cc242baa95c40710758452690fb7a467848a6d82c497795533e821928a45509";
 
         [Fact]
-        public void Nummer_geparkt_und_noch_nicht_im_Register()
+        public void Nummer_Kette_und_Register()
         {
-            // KETTE: geparkt auf 234; nach dem Umhaengen hinter 233 BauteilUHerkunftSchema gelten statt der drei letzten
-            // Zeilen: SCHRITT == BauteilUHerkunftSchema.SCHRITT + 1, Zielversion == SCHRITT, Stufe in der Paketanhebung.
+            // KETTE: 234 haengt ueber + 1 an 233 (BauteilUHerkunftSchema, MA-6b).
             Assert.Equal(234, BedarfsprofilEingabeartSchema.SCHRITT);
-            Assert.True(SchemaStand.Zielversion < BedarfsprofilEingabeartSchema.SCHRITT);
-            Assert.DoesNotContain(Paketanhebung.Stufen, s => s.Nr == BedarfsprofilEingabeartSchema.SCHRITT);
+            Assert.Equal(BauteilUHerkunftSchema.SCHRITT + 1, BedarfsprofilEingabeartSchema.SCHRITT);
+            Assert.True(SchemaStand.Zielversion >= BedarfsprofilEingabeartSchema.SCHRITT);
+            Assert.Contains(Paketanhebung.Stufen, s => s.Nr == BedarfsprofilEingabeartSchema.SCHRITT && s.Wirkung == Paketanhebung.Art.Ddl);
             Assert.Equal(5, BedarfsprofilEingabeartSchema.SPALTEN.Count);
             Assert.Contains(BedarfsprofilEingabeartSchema.SPALTE_NUTZUNGSTAGE,
                             Katalogfassung.Tabelle(KaeltebedarfSchema.TAB_KOPF_STAMM).Fachspalten);

@@ -1102,10 +1102,15 @@ namespace WindowsFormsApplication1
         /// <b>Ergebnisneutral:</b> Kein Referenzprojekt führt einen Aufbau.
         /// Danach, mit der HERKUNFT DES U-WERTS (MA-6b, E149), steht das Ziel auf <see cref="BauteilUHerkunftSchema.SCHRITT"/>:
         /// <c>U_Herkunft</c> an <c>Tab_Bauteil(_STAMM)</c> (<see cref="BauteilUHerkunftSchema"/>) — ein von Hand gesetzter U-Wert
-        /// bleibt beim Wiederimport. <b>Ergebnisneutral:</b> Die Spalte entsteht leer, der Rechenweg liest sie nicht. Das Ziel ist
-        /// das Ende der Kette; umgehängt wird allein am Vorgänger <see cref="BauteilkatalogAbschnittSchema.SCHRITT"/>.
+        /// bleibt beim Wiederimport. <b>Ergebnisneutral:</b> Die Spalte entsteht leer, der Rechenweg liest sie nicht.
+        /// Danach, mit der EINGABEART DER BEDARFSPROFILE (KBP-5a bis KBP-5d), steht das Ziel auf
+        /// <see cref="BedarfsprofilEingabeartSchema.SCHRITT"/>: <c>Eingabeart</c> an <c>Z_Projekt_Prozesswaerme</c> und
+        /// <c>Z_Projekt_Brauchwasser</c>, <c>Nutzungstage_Norm</c> an <c>Tab_Kaeltebedarf(_STAMM)</c> (Saat allein an Vorlage 8),
+        /// <c>Ferien_wie_Sonntag</c> am Betriebskalender (<see cref="BedarfsprofilEingabeartSchema"/>). <b>Ergebnisneutral:</b>
+        /// Jede Zuordnung rechnet mit Eingabeart 'jahr', die Nutzungstage liest kein Rechenweg. Das Ziel ist das Ende der Kette;
+        /// umgehängt wird allein am Vorgänger <see cref="BauteilUHerkunftSchema.SCHRITT"/>.
         /// </summary>
-        public const int Zielversion = BauteilUHerkunftSchema.SCHRITT;
+        public const int Zielversion = BedarfsprofilEingabeartSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
