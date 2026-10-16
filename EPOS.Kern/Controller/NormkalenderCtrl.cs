@@ -18,11 +18,11 @@ namespace WindowsFormsApplication1
     /// Feiertage und ohne Ferien). Feiertagsland aus dem ersten Gebäude des Projekts mit Land, sonst
     /// <see cref="LAND_VORGABE"/>.</para>
     ///
-    /// <para><b>Ferientage wie Sonntag:</b> Die Kalenderschicht (<see cref="Betriebskalenderschicht"/>) legt einen
-    /// Ferientag auf <c>f · m_s</c> (Tagesmittel des Wochenprofils), nicht auf den Sonntag. Der Ferienfaktor wird
-    /// deshalb so gewählt, dass ein Ferientag die Tagesmenge des Sonntags trägt:
-    /// <c>f = Σ Sonntag / Σ m_s</c> (<see cref="Ferienfaktor"/>, auf zwei Stellen). „Ferien kürzen“ bleibt aus —
-    /// die Monatsmengen und damit die Jahressumme bleiben erhalten.</para>
+    /// <para><b>Ferientage wie Sonntag</b> (KBP-5d, Entscheid des Anwenders 16.10.2026): Der Normkalender setzt
+    /// <see cref="Betriebskalender.FerienWieSonntag"/> — ein Ferientag trägt Tagesmenge und Stundengang des Sonntags
+    /// aus dem Wochenprofil (<see cref="Betriebskalenderschicht"/>). Der Ferienfaktor wirkt dann nicht und steht neutral
+    /// auf <see cref="FERIENFAKTOR_NEUTRAL"/>; der Kalender hängt damit nicht vom Wochenprofil ab. „Ferien kürzen“ bleibt
+    /// aus — die Monatsmengen und damit die Jahressumme bleiben erhalten.</para>
     ///
     /// <para><b>Name und Wiederverwendung</b> (KBP-5c, Entscheid 16.10.2026): Die Kalender sind projektübergreifend
     /// sichtbar, deshalb trägt der Name das Feiertagsland — „Norm 230 Tage (BY)“, ohne Land „Norm 230 Tage
@@ -79,7 +79,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Namen, unter denen der Normkalender gesucht und angelegt wird, in dieser Reihenfolge: <see cref="Name"/>,
         /// <see cref="NameMitWochentag"/>, dann der Ausweichname mit laufender Nummer („… #2“) — falls auch dieser Name
-        /// schon mit anderem Inhalt besteht (etwa ein anderer Ferienfaktor). Ein Doppelname entsteht so nie.
+        /// schon mit anderem Inhalt besteht (etwa ein anderes Wochentagsraster). Ein Doppelname entsteht so nie.
         /// </summary>
         public static IEnumerable<string> Namensfolge(int normtage, string bundesland, Gemeinjahrkalender raster)
         {
@@ -106,37 +106,23 @@ namespace WindowsFormsApplication1
             return n;
         }
 
-        /// <summary>
-        /// Der Ferienfaktor, mit dem ein Ferientag die Tagesmenge des Sonntags trägt: <c>Σ Sonntag / Σ m_s</c>, auf zwei
-        /// Stellen, in 0 … 1; 0 ohne Wochenprofil oder ohne Last.
-        /// </summary>
-        public static double Ferienfaktor(double[] woche)
-        {
-            if (woche == null || woche.Length < 168) return 0.0;
-            double sonntag = 0.0, alle = 0.0;
-            for (int h = 0; h < 168; h++)
-            {
-                alle += woche[h];
-                if (h >= 144) sonntag += woche[h];
-            }
-            if (!(alle > 0)) return 0.0;
-            double f = sonntag * 7.0 / alle;
-            return Math.Round(Math.Min(1.0, Math.Max(0.0, f)), 2, MidpointRounding.AwayFromZero);
-        }
+        /// <summary>Der Ferienfaktor des Normkalenders: neutral, er wirkt neben „Ferien wie Sonntag“ nicht.</summary>
+        public const double FERIENFAKTOR_NEUTRAL = 1.0;
 
         /// <summary>
         /// Bildet den Normkalender (rein, ohne Datenbank). Liegen ohne Ferien schon höchstens <paramref name="normtage"/>
         /// Nutzungstage vor, bleibt er ohne Ferien.
         /// </summary>
-        public static Betriebskalender Bilden(int normtage, string bundesland, Gemeinjahrkalender raster, double[] woche)
+        public static Betriebskalender Bilden(int normtage, string bundesland, Gemeinjahrkalender raster)
         {
             string land = Landesfeiertage.Bekannt(bundesland) ? bundesland : LAND_VORGABE;
             var k = new Betriebskalender
             {
                 Bezeichner = Name(normtage, land),
                 Bundesland = land,
-                Ferienfaktor = Ferienfaktor(woche),
+                Ferienfaktor = FERIENFAKTOR_NEUTRAL,
                 FeiertagWieSonntag = true,
+                FerienWieSonntag = true,
                 FerienKuerzen = false
             };
             byte[] arten = k.Tagesarten(raster);
@@ -228,7 +214,7 @@ namespace WindowsFormsApplication1
             if (normtage is not int t || t <= 0) return null;
             tage = t;
             raster = Konditionierungdatenweg.Raster(idProjekt);
-            return Bilden(tage, Feiertagsland(idProjekt), raster, KaeltebedarfStammCtrl.ProjektWoche(idKopie));
+            return Bilden(tage, Feiertagsland(idProjekt), raster);
         }
 
         /// <summary>
@@ -283,11 +269,12 @@ namespace WindowsFormsApplication1
             return genutzt;
         }
 
-        /// <summary>Gleicher Inhalt: Land, Ferien in Reihenfolge, Faktor und beide Schalter.</summary>
+        /// <summary>Gleicher Inhalt: Land, Ferien in Reihenfolge, Faktor und die drei Schalter.</summary>
         private static bool Gleich(Betriebskalender a, Betriebskalender b)
             => string.Equals(a.Bundesland, b.Bundesland, StringComparison.Ordinal)
                && Math.Abs(a.Ferienfaktor - b.Ferienfaktor) < 1e-9
                && a.FeiertagWieSonntag == b.FeiertagWieSonntag
+               && a.FerienWieSonntag == b.FerienWieSonntag
                && a.FerienKuerzen == b.FerienKuerzen
                && (a.Ferien ?? new List<Ferienzeitraum>()).SequenceEqual(b.Ferien ?? new List<Ferienzeitraum>());
     }

@@ -42,7 +42,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(234, BedarfsprofilEingabeartSchema.SCHRITT);
             Assert.True(SchemaStand.Zielversion < BedarfsprofilEingabeartSchema.SCHRITT);
             Assert.DoesNotContain(Paketanhebung.Stufen, s => s.Nr == BedarfsprofilEingabeartSchema.SCHRITT);
-            Assert.Equal(4, BedarfsprofilEingabeartSchema.SPALTEN.Count);
+            Assert.Equal(5, BedarfsprofilEingabeartSchema.SPALTEN.Count);
             Assert.Contains(BedarfsprofilEingabeartSchema.SPALTE_NUTZUNGSTAGE,
                             Katalogfassung.Tabelle(KaeltebedarfSchema.TAB_KOPF_STAMM).Fachspalten);
         }
@@ -129,6 +129,30 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0, BedarfsprofilEingabeartSchema.Ausfuehren(bericht));
             Assert.Equal(200L, Zahl("SELECT \"Nutzungstage_Norm\" FROM Tab_Kaeltebedarf_STAMM WHERE ID = 8"));
             Assert.Contains(bericht, b => b.Contains("stehen bereits", StringComparison.Ordinal));
+        }
+
+        /// <summary>KBP-5d: „Ferien wie Sonntag“ am Betriebskalender — 0/1 mit Vorgabe 0, kein UPDATE, Lese- und Schreibweg.</summary>
+        [Fact]
+        public void Ferien_wie_Sonntag_steht_mit_Vorgabe_0_und_Pruefklausel()
+        {
+            if (!_db.Vorhanden) return;
+            Assert.True(BedarfsprofilEingabeartSchema.FerienWieSonntagLesbar());
+            string ddl = Convert.ToString(DataRepository.ExecuteScalar(
+                "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?",
+                new DbParam("@n", BedarfsprofilEingabeartSchema.TAB_KALENDER)), CultureInfo.InvariantCulture);
+            Assert.Contains("\"Ferien_wie_Sonntag\" INTEGER NOT NULL DEFAULT 0 CHECK (\"Ferien_wie_Sonntag\" IN (0,1))", ddl);
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Betriebskalender WHERE \"Ferien_wie_Sonntag\" <> 0"));
+
+            var k = new Betriebskalender { Bezeichner = "KBP-5d Probe", Ferienfaktor = 0.4 };
+            int id = BetriebskalenderCtrl.Speichern(k);
+            Assert.True(id > 0);
+            Assert.False(BetriebskalenderCtrl.Lies(id).FerienWieSonntag);
+            Assert.Equal(0L, Zahl("SELECT \"Ferien_wie_Sonntag\" FROM Tab_Betriebskalender WHERE ID = " + id));
+            k.FerienWieSonntag = true;
+            Assert.Equal(id, BetriebskalenderCtrl.Speichern(k));
+            Assert.True(BetriebskalenderCtrl.Lies(id).FerienWieSonntag);
+            Assert.ThrowsAny<Exception>(() => Ausfuehren("UPDATE Tab_Betriebskalender SET \"Ferien_wie_Sonntag\" = 2 WHERE ID = " + id));
+            Assert.ThrowsAny<Exception>(() => Ausfuehren("UPDATE Tab_Betriebskalender SET \"Ferien_wie_Sonntag\" = NULL WHERE ID = " + id));
         }
 
         private static void Ausfuehren(string sql)

@@ -62,7 +62,7 @@ Gemeinjahr-Konvention des Kerns. Kein neuer Kalenderweg, keine neue Feiertagsreg
 1. Das Wochenprofil `w[1…168]` wird auf die 365 Tage des Rasters gelegt; Tag `d` nimmt den Wochentag
    `(Wochentag(1. Januar) + d − 1) mod 7`.
 2. Mit Betriebskalender ersetzt die Kalenderschicht Feiertage durch den Sonntag (`Feiertag_wie_Sonntag`) und gewichtet
-   Ferientage mit dem Ferienfaktor; ohne Kalender bleibt die Woche unberührt.
+   Ferientage mit dem Ferienfaktor oder legt sie mit `Ferien_wie_Sonntag` ebenfalls auf den Sonntag; ohne Kalender bleibt die Woche unberührt.
 3. Je Monat `m` werden die Stunden auf `Summe · a_m / 100 · 1000` kWh normiert (`a_m` = Monatsanteil in %).
 
 ### 3.1 Jahressumme mit Vorlage (Vorgabe, heutiger Weg)
@@ -233,7 +233,7 @@ dort ebenso als Blatt.
 | | Betriebskalender (Bedarfsprofile) | Konditionierungskalender (Gebäude, `KalenderbedienungSchema`) |
 |---|---|---|
 | Wofür | Tagesart je Tag für Profilzeilen: normal, Feiertag, Ferien | Sollwerte, Nutzung, Lüftung je Größe, Gebäude und Zone |
-| Daten | `Tab_Betriebskalender`: Bundesland, vier Ferienzeiträume, Ferienfaktor, „Feiertag wie Sonntag“, „Ferien kürzen“ | Gemeinschaftsperioden, benannte Wochen, `Wochenendtage`, `Feiertagsland` am Gebäude |
+| Daten | `Tab_Betriebskalender`: Bundesland, vier Ferienzeiträume, Ferienfaktor, „Feiertag wie Sonntag“, „Ferien wie Sonntag“, „Ferien kürzen“ | Gemeinschaftsperioden, benannte Wochen, `Wochenendtage`, `Feiertagsland` am Gebäude |
 | Verweis | `ID_Betriebskalender` an der Zuordnung | am Gebäude bzw. an der Zone |
 
 Beide bleiben getrennt: ein Profil gehört nicht zu einem Gebäude, und die Gebäudekalender steuern Sollwerte, keine
@@ -247,6 +247,10 @@ Projektgebäudes **als Kopie** in den Kalender schreibt — nie als Verweis (Fes
   Jahr setzt die echten Daten. Keine neue Regel.
 - Ferien: die vier Zeiträume des Betriebskalenders. Mehr als vier Zeiträume folgen der Ferienliste der Kalenderbedienung
   (offener Punkt K2-U), nicht diesem Konzept.
+- Ferientag: ohne Schalter trägt er je Stunde `f · m_s` (Ferienfaktor mal Tagesmittel des Wochenprofils). Mit „Ferien wie
+  Sonntag“ (`Tab_Betriebskalender.Ferien_wie_Sonntag`, Entscheid des Anwenders 16.10.2026) trägt er Tagesmenge und
+  Stundengang des Sonntags aus dem Wochenprofil wie ein Feiertag; der Ferienfaktor wirkt dann nicht und ist im Dialog
+  gesperrt, „Ferien kürzen“ wirkt weiter. Ferien gehen Feiertagen vor.
 - Wochenende: die Profile rechnen mit dem Wochenprofil (Samstag und Sonntag sind Tage des Profils); die Wochenmaske
   `Wochenendtage` der Gebäude wirkt nicht auf Profile.
 
@@ -260,7 +264,7 @@ Zeile vor.
   Kerns — „Norm 230 Tage (BY)“, ohne Land „Norm 230 Tage (bundesweit)“; englisch „Standard 230 days (BY)“ bzw.
   „Standard 230 days (nationwide)“ (Ressourcen `KBP_KALENDER_NORM_NAME`, `KBP_KALENDER_NORM_BUNDESWEIT`).
 - **Wiederverwendung:** genommen wird zuerst ein Kalender dieses Namens, den eine Zuordnung des Projekts schon nutzt, dann
-  einer dieses Namens mit gleichem Inhalt (Land, Ferien, Ferienfaktor, beide Schalter), erst sonst entsteht ein neuer. Zwei
+  einer dieses Namens mit gleichem Inhalt (Land, Ferien, Ferienfaktor, die drei Schalter), erst sonst entsteht ein neuer. Zwei
   Projekte im selben Land und mit gleichem Wochentagsraster teilen so einen Kalender, Projekte verschiedener Länder
   bekommen verschieden benannte.
 - **Kein Doppelname:** Steht der Name schon mit anderem Inhalt (etwa ein anderes Wochentagsraster der Klimaregion), heißt
@@ -277,15 +281,15 @@ Zeile vor.
   Ferien 24.12.–6.1. und 3.8.–24.8.
 - **Feiertagsland:** aus dem ersten Gebäude des Projekts (nach Name), das eines führt; sonst die Vorgabe
   `NormkalenderCtrl.LAND_VORGABE` = nur die neun bundeseinheitlichen Feiertage.
-- **Ferientag wie Sonntag:** Die Kalenderschicht legt einen Ferientag auf `f · m_s` (Tagesmittel des Wochenprofils), nicht
-  auf den Sonntag. Der Ferienfaktor wird deshalb aus dem Wochenprofil der Vorlage so gewählt, dass ein Ferientag die
-  Tagesmenge des Sonntags trägt (`f = Σ Sonntag / Σ m_s`, zwei Stellen; Nr. 8: 2,4 / 8,19 = 0,29). Der Stundengang des
-  Ferientags folgt dem Tagesmittel, nicht dem Sonntag. „Ferien kürzen“ bleibt aus: Monatsmengen und Jahressumme bleiben.
+- **Ferientag wie Sonntag:** Der Normkalender setzt „Ferien wie Sonntag“ (7.3): Ein Ferientag trägt Tagesmenge und
+  Stundengang des Sonntags aus dem Wochenprofil. Der Ferienfaktor steht neutral auf 1 (`NormkalenderCtrl.FERIENFAKTOR_NEUTRAL`)
+  und wirkt nicht; der Kalender hängt damit nicht vom Wochenprofil der Vorlage ab. „Ferien kürzen“ bleibt aus:
+  Monatsmengen und Jahressumme bleiben.
 - **Wahl frei:** Der Baustein `Betriebskalenderwahl` bleibt frei (anderer Kalender oder „ohne Kalender“, dann 260/261
   Werktage). Der Dialog zeigt an Zeilen mit Normtagen eine Herleitungszeile mit den Normtagen und dem tatsächlichen
   Namen des Normkalenders (`BedarfsProfilZeile.Normkalender`, von der Hülle gesetzt).
 - **Nachweis:** `NormkalenderTests` (alle Länder und Wochentage 230 Tage, Testdatenbank zwei Länder, Jahressumme,
-  Wiederverwendung, Name mit Land in beiden Sprachen, gemeinsamer Kalender je Land, kein Doppelname), bunit `BedarfsProfileDialogTests` (Vorwahl bei Nr. 8, keine bei anderen Vorlagen).
+  Ferientag gleich Sonntag, Wiederverwendung nach Inhalt samt Schalter, Name mit Land in beiden Sprachen, gemeinsamer Kalender je Land, kein Doppelname), bunit `BedarfsProfileDialogTests` (Vorwahl bei Nr. 8, keine bei anderen Vorlagen).
 
 ## 8. Datenhaltung
 
@@ -320,10 +324,11 @@ Klasse `BedarfsprofilEingabeartSchema`, Kette über `+ 1` hinter der Vorgängerk
 |---|---|
 | `Z_Projekt_Prozesswaerme`, `Z_Projekt_Brauchwasser` | neue Spalte `Eingabeart` TEXT NOT NULL DEFAULT 'jahr', dieselbe Prüfklausel wie an `Z_Projekt_Kaeltebedarf`; kein `UPDATE` |
 | `Tab_Kaeltebedarf_STAMM`, `Tab_Kaeltebedarf` | neue Spalte `Nutzungstage_Norm` INTEGER nullbar CHECK 1…365; gesät allein an Nr. 8 = 230 (DIN/TS 18599-10:2025-10), Zeilen 1–6 bytegleich |
+| `Tab_Betriebskalender` | neue Spalte `Ferien_wie_Sonntag` INTEGER NOT NULL DEFAULT 0 CHECK IN (0,1) (7.3); kein `UPDATE`, jeder Bestandskalender rechnet wie bisher |
 
 Monatswerte und Wochenprofil von Prozesswärme und Brauchwasser stehen in den bestehenden Wertespalten ihrer Projektkopien
-(Kopie bei Bearbeitung wie bei der Kälte). Der Normkalender (7.4) braucht kein Schema: Er ist eine Zeile in
-`Tab_Betriebskalender`, die Zuordnung zeigt über `ID_Betriebskalender` auf ihn.
+(Kopie bei Bearbeitung wie bei der Kälte). Der Normkalender (7.4) braucht darüber hinaus kein Schema: Er ist eine Zeile in
+`Tab_Betriebskalender` mit `Ferien_wie_Sonntag` = 1, die Zuordnung zeigt über `ID_Betriebskalender` auf ihn.
 
 ### 8.3 Nummern und Migration
 

@@ -25,7 +25,8 @@ namespace WindowsFormsApplication1
     /// <para><b>Tagtyp-Regel:</b> Ein Ferientag trägt je Stunde <c>f · m_s</c>, mit dem Tagesmittel
     /// des Wochenprofils <c>m_s = (1/7) Σ_d w(d, s)</c> zur Stunde s und dem Ferienfaktor f (0 … 1);
     /// ein Feiertag außerhalb der Ferien trägt den Sonntag des Wochenprofils, wenn
-    /// <see cref="FeiertagWieSonntag"/> gesetzt ist. Ferien gehen Feiertagen vor.</para>
+    /// <see cref="FeiertagWieSonntag"/> gesetzt ist. Ferien gehen Feiertagen vor. Mit
+    /// <see cref="FerienWieSonntag"/> trägt auch ein Ferientag den Sonntag des Wochenprofils.</para>
     /// </summary>
     public sealed class Betriebskalender
     {
@@ -49,6 +50,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>Feiertage wie Sonntag rechnen (Vorgabe ja); nein = Feiertage wirken nicht.</summary>
         public bool FeiertagWieSonntag { get; set; } = true;
+
+        /// <summary>
+        /// Ferientage wie Sonntag rechnen (Vorgabe nein): Ein Ferientag trägt dann Tagesmenge und
+        /// Stundengang des Sonntags aus dem Wochenprofil, der <see cref="Ferienfaktor"/> wirkt nicht.
+        /// <see cref="FerienKuerzen"/> bleibt wirksam.
+        /// </summary>
+        public bool FerienWieSonntag { get; set; }
 
         /// <summary>
         /// Kürzen die Ferien die Monatsmenge? Nein (Vorgabe): Die Monatsnormierung verteilt die
@@ -117,6 +125,7 @@ namespace WindowsFormsApplication1
             Ferien = new List<Ferienzeitraum>(Ferien ?? new List<Ferienzeitraum>()),
             Ferienfaktor = Ferienfaktor,
             FeiertagWieSonntag = FeiertagWieSonntag,
+            FerienWieSonntag = FerienWieSonntag,
             FerienKuerzen = FerienKuerzen
         };
     }

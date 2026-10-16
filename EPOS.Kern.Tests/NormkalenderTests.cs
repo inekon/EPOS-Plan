@@ -29,14 +29,6 @@ namespace EPOS.Kern.Tests
 
         public void Dispose() => _db.Dispose();
 
-        /// <summary>Das Wochenprofil der Vorlage 8: Grundlast 0,1 rund um die Uhr, Montag bis Freitag 7–16 Uhr 1,0.</summary>
-        private static double[] Woche8()
-        {
-            var w = new double[168];
-            for (int h = 0; h < 168; h++) w[h] = (h / 24 < 5 && h % 24 >= 7 && h % 24 < 16) ? 1.0 : 0.1;
-            return w;
-        }
-
         [Fact]
         public void Jedes_Land_und_jeder_Wochentag_ergibt_genau_230_Nutzungstage()
         {
@@ -46,24 +38,28 @@ namespace EPOS.Kern.Tests
                 foreach (string land in laender)
                 {
                     var raster = new Gemeinjahrkalender(w0);
-                    Betriebskalender k = NormkalenderCtrl.Bilden(230, land, raster, Woche8());
+                    Betriebskalender k = NormkalenderCtrl.Bilden(230, land, raster);
                     Assert.Equal(230, NormkalenderCtrl.Nutzungstage(k, raster));
                     Assert.Null(k.Pruefen());
                     Assert.InRange(k.Ferien.Count, 1, BedarfNetzKalenderSchema.FERIEN_ANZAHL);
                     Assert.Equal(NormkalenderCtrl.WINTER_BEGINN, k.Ferien[0].Von);
                     Assert.True(k.FeiertagWieSonntag);
+                    Assert.True(k.FerienWieSonntag);
+                    Assert.Equal(NormkalenderCtrl.FERIENFAKTOR_NEUTRAL, k.Ferienfaktor);
                     Assert.False(k.FerienKuerzen);
                     Assert.Equal(land, k.Bundesland);
                 }
         }
 
+        /// <summary>KBP-5d: Der Normkalender rechnet Ferientage wie Sonntag, der Ferienfaktor steht neutral auf 1.</summary>
         [Fact]
-        public void Ferienfaktor_traegt_die_Tagesmenge_des_Sonntags()
+        public void Normkalender_setzt_Ferien_wie_Sonntag_und_neutralen_Faktor()
         {
-            // Sonntag 24 · 0,1 = 2,4; Tagesmittel 15 · 0,1 + 9 · 5,2/7 = 8,1857 → 0,29.
-            Assert.Equal(0.29, NormkalenderCtrl.Ferienfaktor(Woche8()), 12);
-            Assert.Equal(0.0, NormkalenderCtrl.Ferienfaktor(null));
-            Assert.Equal(0.0, NormkalenderCtrl.Ferienfaktor(new double[168]));
+            Betriebskalender k = NormkalenderCtrl.Bilden(230, "BY", new Gemeinjahrkalender(3));
+            Assert.True(k.FerienWieSonntag);
+            Assert.Equal(1.0, k.Ferienfaktor);
+            Assert.True(k.Kopie().FerienWieSonntag);
+            Assert.Null(k.Pruefen());
         }
 
         [Fact]
@@ -85,12 +81,19 @@ namespace EPOS.Kern.Tests
 
             foreach (string land in new[] { "BY", "NW", null })
             {
-                Betriebskalender k = NormkalenderCtrl.Bilden(230, land, raster, woche);
+                Betriebskalender k = NormkalenderCtrl.Bilden(230, land, raster);
                 Assert.Equal(230, NormkalenderCtrl.Nutzungstage(k, raster));
                 var jahr = new double[8760];
                 Assert.True(Betriebskalenderschicht.WocheZuJahr(woche, monate, jahr, anfang, ende, raster.W0,
-                                                                k.Tagesarten(raster), k.Ferienfaktor, k.FerienKuerzen));
+                                                                k.Tagesarten(raster), k.Ferienfaktor, k.FerienKuerzen,
+                                                                k.FerienWieSonntag));
                 Assert.Equal(monate.Sum() * 1000.0, jahr.Sum(), 6);
+                // Ein Ferientag (24.12.) trägt Stunde für Stunde den Sonntag desselben Monats.
+                byte[] arten = k.Tagesarten(raster);
+                int ferientag = NormkalenderCtrl.WINTER_BEGINN - 1;
+                int sonntag = Enumerable.Range(334, 31).First(d => (raster.W0 + d) % 7 == 6 && arten[d] == Betriebskalender.TAG_NORMAL);
+                Assert.Equal(Betriebskalender.TAG_FERIEN, arten[ferientag]);
+                for (int s = 0; s < 24; s++) Assert.Equal(jahr[sonntag * 24 + s], jahr[ferientag * 24 + s], 12);
                 int feiertageWerktag = Landesfeiertage.Jahrestage(land, raster).Count(t => (raster.W0 + t - 1) % 7 < 5);
                 _aus.WriteLine(string.Format(CultureInfo.InvariantCulture,
                     "w0={0} Land={1} Feiertage Mo-Fr={2} f={3} Ferien={4}", raster.W0, land ?? "(bund)", feiertageWerktag,
@@ -164,8 +167,8 @@ namespace EPOS.Kern.Tests
                 Assert.Equal("Norm 230 Tage (bundesweit)", NormkalenderCtrl.Name(230));
                 Assert.Equal("Norm 230 Tage (bundesweit)", NormkalenderCtrl.Name(230, "XX"));
                 Assert.Equal("Norm 230 Tage (BY, 1.1. Do)", NormkalenderCtrl.NameMitWochentag(230, "BY", raster));
-                Assert.Equal("Norm 230 Tage (BY)", NormkalenderCtrl.Bilden(230, "BY", raster, Woche8()).Bezeichner);
-                Assert.Equal("Norm 230 Tage (bundesweit)", NormkalenderCtrl.Bilden(230, null, raster, Woche8()).Bezeichner);
+                Assert.Equal("Norm 230 Tage (BY)", NormkalenderCtrl.Bilden(230, "BY", raster).Bezeichner);
+                Assert.Equal("Norm 230 Tage (bundesweit)", NormkalenderCtrl.Bilden(230, null, raster).Bezeichner);
                 List<string> folge = NormkalenderCtrl.Namensfolge(230, "BY", raster).Take(3).ToList();
                 Assert.Equal(new[] { "Norm 230 Tage (BY)", "Norm 230 Tage (BY, 1.1. Do)", "Norm 230 Tage (BY, 1.1. Do) #2" }, folge);
             }
@@ -227,6 +230,31 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// KBP-5d: Ein gleichnamiger Kalender ohne „Ferien wie Sonntag“ (etwa mit dem Ferienfaktor der Fassung KBP-5b) hat
+        /// anderen Inhalt — er wird nicht wiederverwendet, der neue trägt den Wochentag des 1. Januar.
+        /// </summary>
+        [Fact]
+        public void Ohne_Ferien_wie_Sonntag_ist_ein_gleichnamiger_Kalender_anderer_Inhalt()
+        {
+            if (!_db.Vorhanden) return;
+            using var kultur = new Kulturvorrichtung();
+            LandSetzen(PROJEKT, "BY");
+            Gemeinjahrkalender raster = Konditionierungdatenweg.Raster(PROJEKT);
+            Betriebskalender alt = NormkalenderCtrl.Bilden(230, "BY", raster);
+            alt.FerienWieSonntag = false;
+            alt.Ferienfaktor = 0.29;
+            Assert.True(BetriebskalenderCtrl.Speichern(alt) > 0);
+            Assert.False(BetriebskalenderCtrl.Lies(alt.ID).FerienWieSonntag);
+
+            (int a, string nameA) = Uebernehmen(PROJEKT);
+            Assert.NotEqual(alt.ID, a);
+            Assert.Equal(NormkalenderCtrl.NameMitWochentag(230, "BY", raster), nameA);
+            Betriebskalender neu = BetriebskalenderCtrl.Lies(a);
+            Assert.True(neu.FerienWieSonntag);
+            Assert.Equal(1.0, neu.Ferienfaktor);
+        }
+
+        /// <summary>
         /// KBP-5c: Steht der Name schon mit anderem Inhalt (etwa einem anderen Wochentagsraster), entsteht kein Doppelname —
         /// der neue Kalender trägt den Wochentag des 1. Januar, als letzter Ausweg eine laufende Nummer.
         /// </summary>
@@ -240,7 +268,7 @@ namespace EPOS.Kern.Tests
             string name = NormkalenderCtrl.Name(230, "BY");
             string mitTag = NormkalenderCtrl.NameMitWochentag(230, "BY", raster);
             // Ein fremder Kalender gleichen Namens mit anderem Inhalt: anderes Wochentagsraster, von keiner Zuordnung des Projekts genutzt.
-            Betriebskalender fremd = NormkalenderCtrl.Bilden(230, "BY", new Gemeinjahrkalender((raster.W0 + 1) % 7), Woche8());
+            Betriebskalender fremd = NormkalenderCtrl.Bilden(230, "BY", new Gemeinjahrkalender((raster.W0 + 1) % 7));
             Assert.True(BetriebskalenderCtrl.Speichern(fremd) > 0);
 
             (int a, string nameA) = Uebernehmen(PROJEKT);

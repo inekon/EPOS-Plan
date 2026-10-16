@@ -189,6 +189,56 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.5 * mittel12, halb[ferientag + 12] / ohne[werktag], 9);
         }
 
+        /// <summary>
+        /// KBP-5d: Mit „Ferien wie Sonntag“ trägt ein Ferientag Tagesmenge und Stundengang des Sonntags; der Ferienfaktor
+        /// wirkt nicht, die Monats- und Jahressumme bleibt, „Ferien kürzen“ wirkt weiter, ohne Schalter bleibt der Weg bitgleich.
+        /// </summary>
+        [Fact]
+        public void Ferien_wie_Sonntag_traegt_Menge_und_Gang_des_Sonntags()
+        {
+            (int[] a, int[] e) = Monate();
+            double[] wo = Woche();
+            double[] mon = Enumerable.Repeat(10.0, 12).ToArray();
+            int von = Feiertage.Gemeinjahrestag(8, 1), bis = Feiertage.Gemeinjahrestag(8, 21);
+            var k = new Betriebskalender { Bezeichner = "Sommer", FeiertagWieSonntag = false, FerienWieSonntag = true,
+                                           Ferien = { new Ferienzeitraum(von, bis) } };
+            byte[] arten = k.Tagesarten(Gemeinjahrkalender.Kalenderjahr(2025));
+            // 1. Januar 2025 ist ein Mittwoch (w0 = 2): Montag, 4. August (Index 215), Sonntag, 31. August (Index 242).
+            const int MONTAG_FERIEN = 215, SONNTAG = 242;
+            Assert.Equal(Betriebskalender.TAG_FERIEN, arten[MONTAG_FERIEN]);
+            Assert.Equal(Betriebskalender.TAG_NORMAL, arten[SONNTAG]);
+
+            // Verteilt um: der Ferientag gleicht dem Sonntag desselben Monats Stunde für Stunde, gleich welcher Faktor.
+            var r = new double[8760];
+            Assert.True(Betriebskalenderschicht.WocheZuJahr(wo, mon, r, a, e, 2, arten, 0.0, false, true));
+            var r2 = new double[8760];
+            Assert.True(Betriebskalenderschicht.WocheZuJahr(wo, mon, r2, a, e, 2, arten, 0.7, false, true));
+            for (int s = 0; s < 24; s++)
+            {
+                Assert.Equal(BitConverter.DoubleToInt64Bits(r[SONNTAG * 24 + s]), BitConverter.DoubleToInt64Bits(r[MONTAG_FERIEN * 24 + s]));
+                Assert.Equal(BitConverter.DoubleToInt64Bits(r[MONTAG_FERIEN * 24 + s]), BitConverter.DoubleToInt64Bits(r2[MONTAG_FERIEN * 24 + s]));
+            }
+            for (int m = 0; m < 12; m++) Assert.True(Math.Abs(Monatssumme(r, a, e, m) - 10000) < 1e-6, "Monat " + (m + 1));
+            Assert.Equal(120000.0, r.Sum(), 6);
+
+            // Gekürzt: der Ferientag trägt den Sonntag des Profils ohne Ferien, der August verliert Menge.
+            var ohne = new double[8760];
+            WPPlan.Core.BhkwPlan.StromWocheToJahr(wo, mon, ohne, a, e, 2);
+            var g = new double[8760];
+            Betriebskalenderschicht.WocheZuJahr(wo, mon, g, a, e, 2, arten, 0.0, true, true);
+            for (int s = 0; s < 24; s++) Assert.Equal(ohne[SONNTAG * 24 + s], g[MONTAG_FERIEN * 24 + s], 12);
+            Assert.True(Monatssumme(g, a, e, 7) < 10000 - 1);
+
+            // Ohne Schalter: bitgleich zum Aufruf ohne den neuen Parameter.
+            var alt = new double[8760];
+            var neu = new double[8760];
+            Betriebskalenderschicht.WocheZuJahr(wo, mon, alt, a, e, 2, arten, 0.5, false);
+            Betriebskalenderschicht.WocheZuJahr(wo, mon, neu, a, e, 2, arten, 0.5, false, false);
+            for (int h = 0; h < 8760; h++)
+                Assert.Equal(BitConverter.DoubleToInt64Bits(alt[h]), BitConverter.DoubleToInt64Bits(neu[h]));
+            Assert.NotEqual(alt[MONTAG_FERIEN * 24 + 12], r[MONTAG_FERIEN * 24 + 12]);
+        }
+
         [Fact]
         public void Ein_Monat_ganz_in_Ferien_ohne_Kuerzen_rechnet_ohne_Ferien()
         {

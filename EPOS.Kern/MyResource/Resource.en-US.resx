@@ -56459,13 +56459,22 @@ Replace these holidays with the project default? With “No” these zones remai
     <value>Standard {0} days ({1})</value>
   </data>
   <data name="KBP_HINW_NORMKALENDER" xml:space="preserve">
-    <value>The template counts {0} days of use according to the standard; the operating calendar “{1}” reproduces them and is preselected on adoption (public holidays like Sunday, company holidays around New Year and in summer).</value>
+    <value>The template counts {0} days of use according to the standard; the operating calendar “{1}” reproduces them and is preselected on adoption (public holidays and company holidays like Sunday, company holidays around New Year and in summer).</value>
   </data>
   <data name="KBP_KALENDER_NORM_BUNDESWEIT" xml:space="preserve">
     <value>nationwide</value>
   </data>
   <data name="KBP_KALENDER_NORM_NAME_TAG" xml:space="preserve">
     <value>Standard {0} days ({1}, 1 Jan {2})</value>
+  </data>
+  <data name="BKAL_LBL_FERIEN_SONNTAG" xml:space="preserve">
+    <value>Company holidays like Sunday</value>
+  </data>
+  <data name="BKAL_HRL_FERIEN_SONNTAG" xml:space="preserve">
+    <value>A holiday day carries the daily amount and hourly pattern of Sunday from the weekly profile; the holiday factor then has no effect, “Holidays reduce the monthly amount” stays in effect.</value>
+  </data>
+  <data name="BKAL_HRL_FAKTOR_GESPERRT" xml:space="preserve">
+    <value>The holiday factor is locked: “Company holidays like Sunday” is set, a holiday day carries Sunday of the weekly profile.</value>
   </data>
 </root>
 

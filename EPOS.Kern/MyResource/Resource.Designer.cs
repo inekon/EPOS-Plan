@@ -8979,11 +8979,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Ferienfaktor ist gesperrt: „Ferien wie Sonntag“ ist gesetzt, ein Ferientag trägt den Sonntag des Wochenprofils. ähnelt.
+        /// </summary>
+        public static string BKAL_HRL_FAKTOR_GESPERRT {
+            get {
+                return ResourceManager.GetString("BKAL_HRL_FAKTOR_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ein Feiertag außerhalb der Ferien trägt den Sonntag des Wochenprofils; aus = Feiertage wirken nicht. ähnelt.
         /// </summary>
         public static string BKAL_HRL_FEIERTAG {
             get {
                 return ResourceManager.GetString("BKAL_HRL_FEIERTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Ferientag trägt Tagesmenge und Stundengang des Sonntags aus dem Wochenprofil; der Ferienfaktor wirkt dann nicht, „Ferien kürzen“ bleibt wirksam. ähnelt.
+        /// </summary>
+        public static string BKAL_HRL_FERIEN_SONNTAG {
+            get {
+                return ResourceManager.GetString("BKAL_HRL_FERIEN_SONNTAG", resourceCulture);
             }
         }
         
@@ -9209,6 +9227,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BKAL_LBL_FERIEN_BIS {
             get {
                 return ResourceManager.GetString("BKAL_LBL_FERIEN_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferien wie Sonntag ähnelt.
+        /// </summary>
+        public static string BKAL_LBL_FERIEN_SONNTAG {
+            get {
+                return ResourceManager.GetString("BKAL_LBL_FERIEN_SONNTAG", resourceCulture);
             }
         }
         
@@ -56438,7 +56465,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage rechnet nach Norm mit {0} Nutzungstagen; der Betriebskalender „{1}“ bildet sie ab und ist bei der Übernahme vorgewählt (Feiertage wie Sonntag, Betriebsferien um den Jahreswechsel und im Sommer). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage rechnet nach Norm mit {0} Nutzungstagen; der Betriebskalender „{1}“ bildet sie ab und ist bei der Übernahme vorgewählt (Feiertage und Betriebsferien wie Sonntag, Betriebsferien um den Jahreswechsel und im Sommer). ähnelt.
         /// </summary>
         public static string KBP_HINW_NORMKALENDER {
             get {
