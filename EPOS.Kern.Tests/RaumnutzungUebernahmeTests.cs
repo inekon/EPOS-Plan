@@ -59,11 +59,11 @@ namespace EPOS.Kern.Tests
             string ohne = RaumnutzungHuelle.Texte().TextOhneWerteKurz;
             Assert.All(liste.Where(p => p.OhneWerte), p => Assert.Equal(ohne, p.Kurzform));
             Assert.All(liste.Where(p => !p.OhneWerte), p => Assert.NotEqual("", p.Kurzform));
-            // Die Gruppen folgen der Ordnung des Kerns: die EPOS-Muster zuerst, die DIN-Profile tragen keine Werte (NP-F13).
+            // Die Gruppen folgen der Ordnung des Kerns: die EPOS-Muster zuerst, die DIN-Profile tragen die gesäten Werte (DA-6).
             var c = new RaumnutzungCtrl();
             Assert.Equal(c.Kategorien().First().Bezeichner, liste.First().Kategorie);
             string din = c.Kategorien().Single(k => k.Art == RaumnutzungSchema.ART_DIN_V_18599_10).Bezeichner;
-            Assert.All(liste.Where(p => p.Kategorie == din), p => Assert.True(p.OhneWerte));
+            Assert.All(liste.Where(p => p.Kategorie == din), p => Assert.False(p.OhneWerte));
         }
 
         [Fact]

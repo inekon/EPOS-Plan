@@ -5559,6 +5559,15 @@ namespace WindowsFormsApplication1
         public const int SCHRITT_GERAETEKOSTEN_ENTFALL = GeraetekostenEntfallSchema.SCHRITT;
 
         /// <summary>
+        /// Schritt <see cref="RaumnutzungDinWerteSchema.SCHRITT"/> — <b>Werte der DIN-Nutzungsprofile</b> (DA-6, E135): die 45
+        /// ausgelieferten Profile der Kategorie DIN/TS 18599-10 bekommen die Werte der Fassung 2025-10 aus
+        /// <see cref="RaumnutzungDinSaat"/>, nur wo kein Wert steht; eingelesene Werte des Anwenders bleiben. Angemeldet als 231.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Referenzprojekt nutzt ein Nutzungsprofil.</para>
+        /// </summary>
+        public const int SCHRITT_RAUMNUTZUNG_DIN_WERTE = RaumnutzungDinWerteSchema.SCHRITT;
+
+        /// <summary>
         /// Schritt <see cref="BauteilkatalogAbschnittSchema.SCHRITT"/> — <b>Inhomogene Schicht und Fenster im Aufbaukatalog</b>
         /// (BK-5/BK-6, E132 F7): ψ des Glasrands <c>Psi_Glasrand</c> an <c>Tab_Bauteilaufbau(_STAMM)</c>; die Abschnitte stehen
         /// seit Schritt 221. Angemeldet als 229, hängt beim Merge an 228.
@@ -8181,6 +8190,13 @@ namespace WindowsFormsApplication1
                         "gerechnet wird aus Tab_ProjektWerte; die eine Basis ist die Satzvorlage des " +
                         "zentralen Kostenkatalogs.",
                         Schritt_GeraetekostenEntfall),
+            // DA-6: Werte der DIN-Nutzungsprofile. Quelle ist RaumnutzungDinWerteSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_RAUMNUTZUNG_DIN_WERTE,
+                        "Tab_Raumnutzungsprofil: Werte der 45 DIN-Profile nach DIN/TS 18599-10:2025-10 (nur leere Profile); " +
+                        "Tab_Raumnutzungskatalog: Quellenhinweis und Beschreibung der Kategorie DIN",
+                        "Die ausgelieferten DIN-Profile stuenden ohne Werte, und jeder Anwender muesste sie selbst einlesen (E135). " +
+                        "KEIN Rechenergebnis aendert sich - kein Referenzprojekt nutzt ein Nutzungsprofil.",
+                        Schritt_RaumnutzungDinWerte),
             // BK-5/BK-6: Inhomogene Schicht und Fenster im Aufbaukatalog. Quelle ist BauteilkatalogAbschnittSchema, die Nummer
             // steht allein dort.
             new Schritt(SCHRITT_BAUTEILKATALOG_ABSCHNITT,
@@ -16122,6 +16138,59 @@ namespace WindowsFormsApplication1
                         ? "stand bereits."
                         : ergebnis.Verweisspalten + " Verweisspalte(n), " + ergebnis.Gesaet + " Satzvorlage(n) gesaet, " +
                           ergebnis.Entfernt + " Spalte(n) entfernt, " + ergebnis.PruefsummenNeu + " Pruefsumme(n) neu.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Werte der DIN-Nutzungsprofile" — Anlass und Wirkung stehen bei <see cref="SCHRITT_RAUMNUTZUNG_DIN_WERTE"/>,
+        /// die Anweisungen bei <see cref="RaumnutzungDinWerteSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_RaumnutzungDinWerte(Lauf l)
+        {
+            string nr = RaumnutzungDinWerteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in RaumnutzungDinWerteSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = RaumnutzungDinWerteSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!RaumnutzungDinWerteSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Werte der DIN-Nutzungsprofile stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Werte der DIN-Nutzungsprofile - " + (handgriffe == 0 ? "standen bereits." : handgriffe + " Profil(e) gesaet.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

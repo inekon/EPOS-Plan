@@ -112450,7 +112450,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die eingelesenen Werte von {0} Profil(en) entfernen? Die Profile stehen danach wieder ohne Werte. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die eingelesenen Werte von {0} Profil(en) entfernen? Die Profile tragen danach wieder die ausgelieferten Werte. ähnelt.
         /// </summary>
         public static string RNP_NW_FRAGE_ENTFERNEN {
             get {
@@ -112576,7 +112576,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eingelesene Werte aus {0} Profil(en) der DIN entfernt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingelesene Werte aus {0} Profil(en) der DIN entfernt; die ausgelieferten Werte stehen wieder. ähnelt.
         /// </summary>
         public static string RNP_NW_MSG_ENTFERNT {
             get {
@@ -112684,7 +112684,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Füllt die Profile der Kategorie DIN/TS 18599-10 mit den Werten aus Ihrer CSV-Datei oder einer Projektdatei. Das Programm liefert keine Normwerte mit. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gleicht die Profile der Kategorie DIN/TS 18599-10 mit den Werten aus Ihrer CSV-Datei oder einer Projektdatei ab. Ausgeliefert werden die Werte der Fassung 2025-10; abweichende Werte übernehmen Sie hier, die Rücknahme stellt die ausgelieferten wieder her. ähnelt.
         /// </summary>
         public static string RNP_NW_TXT_HINWEIS {
             get {

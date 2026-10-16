@@ -54236,7 +54236,7 @@ chart</value>
     <value>{0} DIN profile(s) filled with values, {1} skipped (values present), {2} source profile(s) without assignment.</value>
   </data>
   <data name="RNP_NW_MSG_ENTFERNT" xml:space="preserve">
-    <value>Read-in values removed from {0} DIN profile(s).</value>
+    <value>Read-in values removed from {0} DIN profile(s); the delivered values apply again.</value>
   </data>
   <data name="RNP_NW_BTN_EINLESEN" xml:space="preserve">
     <value>Read in standard values…</value>
@@ -54248,7 +54248,7 @@ chart</value>
     <value>Read in standard values</value>
   </data>
   <data name="RNP_NW_TXT_HINWEIS" xml:space="preserve">
-    <value>Fills the profiles of the category DIN/TS 18599-10 with the values from your CSV file or a project file. The program ships no standard values.</value>
+    <value>Compares the profiles of the category DIN/TS 18599-10 with the values from your CSV file or a project file. The values of the 2025-10 edition are delivered; you apply differing values here, and removing them restores the delivered values.</value>
   </data>
   <data name="RNP_NW_BTN_CSV" xml:space="preserve">
     <value>Choose CSV file…</value>
@@ -54341,7 +54341,7 @@ chart</value>
     <value>No profile carries read-in values.</value>
   </data>
   <data name="RNP_NW_FRAGE_ENTFERNEN" xml:space="preserve">
-    <value>Remove the read-in values of {0} profile(s)? The profiles are then without values again.</value>
+    <value>Remove the read-in values of {0} profile(s)? The profiles then hold the delivered values again.</value>
   </data>
   <data name="RNP_NW_BTN_JA" xml:space="preserve">
     <value>Remove</value>

@@ -1084,8 +1084,12 @@ namespace WindowsFormsApplication1
         /// bildet sie für unveränderte Sätze neu.
         /// Danach, mit der INHOMOGENEN SCHICHT UND DEN FENSTERN IM AUFBAUKATALOG (BK-5/BK-6), steht das Ziel auf
         /// <see cref="BauteilkatalogAbschnittSchema.SCHRITT"/>: ψ des Glasrands am Aufbau (<see cref="BauteilkatalogAbschnittSchema"/>).
+        /// Danach, mit der SAAT DER DIN-NUTZUNGSPROFILE (DA-6, E135), steht das Ziel auf <see cref="RaumnutzungDinWerteSchema.SCHRITT"/>:
+        /// Die 45 ausgelieferten Profile der Kategorie DIN/TS 18599-10 tragen die Werte der Fassung 2025-10
+        /// (<see cref="RaumnutzungDinSaat"/>), nur wo kein Wert stand. <b>Ergebnisneutral:</b> Kein Referenzprojekt nutzt ein
+        /// Nutzungsprofil.
         /// </summary>
-        public const int Zielversion = BauteilkatalogAbschnittSchema.SCHRITT;
+        public const int Zielversion = RaumnutzungDinWerteSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
