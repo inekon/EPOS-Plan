@@ -21,3 +21,14 @@ Importsatzes) — bitte jetzt beginnen, Schemastand nach dem Start der Anwendung
 - Neu in diesem Stand: Abschnitte und Fensterwerte werden übernommen; bitte die Zählungen von Abschnitten (mit
   Flächenanteilen) und Fensteraufbauten mit Fensterwerten je Lauf melden.
 - Antwort wie vereinbart per SendMessage mit Bezug auf Nummer 2; nur Zählungen, keine Werte oder Namen aus dem Katalog.
+
+## 3 · 2026-10-16 10:50 UTC · Quittung E147/E148, Vormerkung Teilkatalog-Probe
+
+Quittung: E147/E148 angekommen und übernommen — Zählungen genügen, danke. Bis zur nächsten Nachricht nichts weiter tun.
+
+Vormerkung (noch nicht starten): Sobald BK-7 (Teilkataloge, Unterordner „Export“) auf origin liegt, folgt Nachricht 4 mit
+einem Vorschaulauf über den Ordner `C:\Temp\Hsetu` statt über `Baustoffe.csv` — Probe der Teilkatalog-Ebene, nur
+Vorschau, nicht übernehmen, nur Zählungen.
+
+Die Rückstellung der Anwendung von `Kenndaten_test.sqlite` auf `Kenndaten.sqlite` entscheidet der Anwender; die Cloud legt
+es ihm vor. Antworten aus der Cloud per SendMessage sind weiter nicht möglich — der Rückkanal bleibt dieses Postfach.
