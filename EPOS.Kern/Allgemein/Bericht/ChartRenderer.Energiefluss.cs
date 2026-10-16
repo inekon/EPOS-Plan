@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using WindowsFormsApplication1.Zeichnung;
@@ -6,85 +6,150 @@ using WindowsFormsApplication1.Zeichnung;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// <b>Das Energieflussbild (Sankey)</b> — Konzept Energieflussbild, Abschnitt 3: Strom, Wärme und Kälte eines Jahres in
-    /// sieben Spalten (Quellen, Wandler, Bus Strom, Wandler, Busse Wärme und Kälte, Speicher, Senken), die Bänder als
-    /// S-Kurven, Verluste in schmalen Knoten in der Lücke neben ihrem Erzeuger.
+    /// <b>Das Energieflussbild (Sankey)</b> — Konzept Energieflussbild, Abschnitt 3, Variante A „Gestraffte Kette“ (SK-2c):
+    /// Strom, Wärme und Kälte eines Jahres als Kette aus so vielen Spalten, wie die Anlage braucht; in jeder Spalte die
+    /// Spuren Strom (oben), Gemischt, Wärme, Kälte (unten); Wandler als beschriftete Kästen, Busse als dunkle Balken,
+    /// Quellen und Senken als schmale Balken mit Namen außen; Verluste als kurze graue Abzweige ohne Knotenbalken; die
+    /// Legende der Energieformen unter dem Bild.
     ///
-    /// <para><b>Ein reines Pixelbild</b> wie Versionsbalken und Kesselkennlinie: keine Zeichenfläche, kein Zoom, keine
-    /// Legende. Jedes Band trägt die Marke <c>fluss:&lt;von&gt;:&lt;nach&gt;</c>, jeder Knoten <c>knoten:&lt;Kennung&gt;</c>, beide
-    /// ihren Zeigertext als Wert — die Zeigerzeile des Bausteins <c>DiagrammSvg</c> greift ohne Änderung am Baustein.</para>
+    /// <para><b>Layout.</b> Spalte = n − 1 − längster Weg zur Senke (jeder Knoten so weit rechts wie möglich, Senken in der
+    /// letzten Spalte). Ein Band über mehr als eine Lücke bekommt je Zwischenspalte einen unsichtbaren Wegpunkt seiner Spur
+    /// und läuft so nie hinter einem Kasten hindurch. Die Reihenfolge je Spalte: erst nach Spur, darin Schwerpunkt-Relaxation
+    /// (<see cref="EF_RELAX_DURCHLAEUFE"/> Durchläufe wie d3-sankey, Umordnung nur innerhalb der Spur), dann ein
+    /// Tauschdurchlauf benachbarter Knoten derselben Spur gegen die gewichtete Kreuzungszahl (auch kombiniert mit einem Tausch
+    /// in der Nachbarspalte), dann <see cref="EF_RELAX_NACH"/> Durchläufe ohne Umordnung. Alles ist deterministisch.</para>
+    ///
+    /// <para><b>Ein reines Pixelbild</b> wie Versionsbalken und Kesselkennlinie: keine Zeichenfläche, kein Zoom. Jedes Band
+    /// trägt die Marke <c>fluss:&lt;von&gt;:&lt;nach&gt;</c>, jeder Knoten <c>knoten:&lt;Kennung&gt;</c>, beide ihren Zeigertext als
+    /// Wert — die Zeigerzeile des Bausteins <c>DiagrammSvg</c> greift ohne Änderung am Baustein. Ein Verlustabzweig trägt
+    /// die Marke seines Bandes, auch seine Beschriftung.</para>
     ///
     /// <para><b>Beschriftung</b> (Anwenderentscheid SK-Q12): Am Bildschirm tragen die Knoten nur ihren Namen und die Bänder
     /// keine Zahl — die Werte stehen im Zeigertext. Die Berichtsfassung (<c>knotenwerte</c>) nennt an jedem Knoten seine
-    /// Jahressumme in MWh/a; Bänder bleiben ohne Zahl.</para>
+    /// Jahressumme in MWh/a (Kästen „Kurzname · Wert“, Verluste „Verlust Wert“); Bänder bleiben ohne Zahl.</para>
     ///
-    /// <para><b>Bänder</b> sind geschlossene Pfade: Oberkante als abgetastete S-Kurve y(t) = y0 + (y1 − y0)·(3t² − 2t³) mit
-    /// <see cref="EF_STUETZSTELLEN"/> Stützstellen, Unterkante zurück; Füllung in der Rolle mit Deckung 0,55. Das
-    /// Zeichenmodell kennt keine Bézierkurve, PNG und SVG zeichnen denselben Polygonzug.</para>
+    /// <para><b>Bänder</b> sind geschlossene Pfade: Oberkante durch alle Wegpunkte als abgetastete S-Kurven
+    /// y(t) = y0 + (y1 − y0)·(3t² − 2t³) mit <see cref="EF_STUETZSTELLEN"/> Stützstellen je Teilstück, Unterkante zurück;
+    /// Füllung in der Rolle mit Deckung 0,9, weißer Saum; benachbarte Bänder in einen Knoten wechseln zwischen zwei Tönungen
+    /// (<see cref="EF_BANDDECKUNG"/>, <see cref="EF_BANDDECKUNG_HELL"/>). Das Zeichenmodell kennt keine Bézierkurve, PNG und
+    /// SVG zeichnen denselben Polygonzug.</para>
     /// </summary>
     public static partial class ChartRenderer
     {
-        /// <summary>Die breite Fassung am Bildschirm [px].</summary>
-        public static readonly Bildmass ENERGIEFLUSS_BREIT = new Bildmass(1180, 560);
+        /// <summary>Die breite Fassung am Bildschirm [px]: 430 px Bild und die Legende darunter.</summary>
+        public static readonly Bildmass ENERGIEFLUSS_BREIT = new Bildmass(1180, 460);
 
-        /// <summary>Die schmale Fassung am Bildschirm [px] (Stilblatt wählt sie unter 900 px Breite).</summary>
-        public static readonly Bildmass ENERGIEFLUSS_SCHMAL = new Bildmass(680, 640);
+        /// <summary>Die schmale Fassung am Bildschirm [px] (Stilblatt wählt sie unter 900 px Breite); vorläufig die verkleinerte Kette (SK-2d bringt die Verbinderregel).</summary>
+        public static readonly Bildmass ENERGIEFLUSS_SCHMAL = new Bildmass(680, 560);
 
-        /// <summary>Die Berichtsfassung [px] — Faktor 2 auf 620 × 310 pt.</summary>
-        public static readonly Bildmass ENERGIEFLUSS_BERICHT = new Bildmass(1240, 620);
+        /// <summary>Die Berichtsfassung [px] — Faktor 2 auf 620 × 245 pt.</summary>
+        public static readonly Bildmass ENERGIEFLUSS_BERICHT = new Bildmass(1240, 490);
 
-        /// <summary>Unter dieser Breite [px] gelten die Regeln der schmalen Fassung (Kurznamen, kleinere Schrift).</summary>
+        /// <summary>Unter dieser Breite [px] gelten die Regeln der schmalen Fassung (Kurznamen, kleinere Schrift, engere Lücken).</summary>
         public const int ENERGIEFLUSS_SCHMAL_UNTER = 900;
 
-        /// <summary>Breite eines Knotens [px].</summary>
-        public const float EF_KNOTENBREITE = 14f;
+        /// <summary>Breite eines Balkens (Quelle, Senke, Bus) [px]; Kästen sind so breit wie ihre Beschriftung.</summary>
+        public const float EF_KNOTENBREITE = 10f;
 
         /// <summary>Mindestbreite eines Bandes [px] — ein kleinerer Fluss wird so breit gezeichnet und zählt so in die Knotenhöhe.</summary>
         public const float EF_MINDESTBAND = 2f;
 
-        /// <summary>Unter dieser Höhe [px] trägt ein innerer Knoten keine Beschriftung im Bild (Busse ausgenommen).</summary>
-        public const float EF_MIN_BESCHRIFTUNG = 12f;
+        /// <summary>Ab dieser Höhe [px] ist ein Wandler ein beschrifteter Kasten; darunter ein Balken mit Namen darüber.</summary>
+        public const float EF_KASTEN_AB = 15f;
 
-        /// <summary>Stützstellen je Bandkante.</summary>
+        /// <summary>Stützstellen je Bandkante und Teilstück.</summary>
         public const int EF_STUETZSTELLEN = 24;
 
-        /// <summary>Breite einer inneren Beschriftung (über dem Knoten) in Spaltenabständen, bevor sie gekürzt wird.</summary>
-        public const float EF_INNEN_BREITE = 1.5f;
+        /// <summary>Deckung der Bandflächen: 0,9.</summary>
+        public const byte EF_BANDDECKUNG = 230;
 
-        /// <summary>Deckung der Bandflächen: 0,55.</summary>
-        public const byte EF_BANDDECKUNG = 140;
+        /// <summary>Die zweite Tönung benachbarter Bänder in einen Knoten: 0,65.</summary>
+        public const byte EF_BANDDECKUNG_HELL = 165;
+
+        /// <summary>Deckung der Balken von Quellen und Senken (heller als Kästen und Busse).</summary>
+        public const byte EF_BALKENDECKUNG = 150;
+
+        /// <summary>Deckung der gestrichelten Bänder „nicht zugeordnet“ und „ungedeckt“.</summary>
+        public const byte EF_RESTDECKUNG = 128;
+
+        /// <summary>Stärke des weißen Saums um jedes Band [px].</summary>
+        public const float EF_SAUM = 0.8f;
+
+        /// <summary>Höhe der Legende unter dem Bild [px].</summary>
+        public const float EF_LEGENDE_HOEHE = 30f;
+
+        /// <summary>Relaxationsdurchläufe mit Umordnung innerhalb der Spur, Tauschdurchläufe, Durchläufe danach ohne Umordnung.</summary>
+        public const int EF_RELAX_DURCHLAEUFE = 28, EF_TAUSCH_DURCHLAEUFE = 3, EF_RELAX_NACH = 10;
 
         /// <summary>Mindesthöhe eines Knotens [px].</summary>
         private const float EF_MIN_KNOTEN = 4f;
 
-        /// <summary>Spaltenzahl des Bildes (Konzept 2.2); mehr Spalten nur, wenn die Daten sie verlangen.</summary>
-        private const int EF_SPALTEN = 7;
+        private enum EfArt { Quelle = 0, Wandler = 1, Weg = 2, Bus = 3, Senke = 4 }
 
-        /// <summary>Ein Knoten im Layout.</summary>
+        /// <summary>Ein Knoten im Layout (auch ein Wegpunkt).</summary>
         private sealed class EfKnoten
         {
             public EnergieflussBildKnoten Daten;
-            public int Index;
-            public bool Verlust;
-            public float X, Y, H;
-            public double Ein, Aus;
-            public readonly List<EfBand> Eingang = new List<EfBand>();
-            public readonly List<EfBand> Ausgang = new List<EfBand>();
-            public double Wert => Daten != null && double.IsFinite(Daten.Mwh) ? Daten.Mwh : Math.Max(Ein, Aus);
+            public int Index, Spalte, Spur;
+            public EfArt Art;
+            public float X, Y, W, H;
+            public double Zu, Ab;
+            public bool Kasten;
+            public readonly List<EfBand> Ein = new List<EfBand>(), Aus = new List<EfBand>();
+            public readonly List<EfSegment> EinS = new List<EfSegment>(), AusS = new List<EfSegment>();
+            public readonly List<EfVerlust> Verl = new List<EfVerlust>();
+            public float Mitte => Y + H / 2f;
+            public double Menge => Math.Max(Zu, Ab);
+            public double Wert => Daten != null && double.IsFinite(Daten.Mwh) ? Daten.Mwh : Menge;
         }
 
-        /// <summary>Ein Band im Layout.</summary>
+        /// <summary>Ein Band im Layout: ein oder mehrere Teilstücke über Wegpunkte.</summary>
         private sealed class EfBand
         {
             public EnergieflussBildBand Daten;
             public int Index;
             public EfKnoten Von, Nach;
-            public float Dicke, Y0, Y1;
+            /// <summary>
+            /// Verbinder (Variante B, SK-2d): das Band wird nicht durch das Bild geführt, sondern am Bus als Stummel „→ Gerät“
+            /// ausgeleitet und am Gerät als Stummel „Strom“ eingeleitet; es zieht die Knoten nicht zueinander und zählt
+            /// nicht als Kreuzung. In der Kette ist kein Band ein Verbinder.
+            /// </summary>
+            public bool Verbinder;
+            public readonly List<EfSegment> Segs = new List<EfSegment>();
+        }
+
+        /// <summary>Ein Teilstück eines Bandes zwischen zwei Knoten benachbarter Spalten.</summary>
+        private sealed class EfSegment
+        {
+            public EfBand Band;
+            public EfKnoten Von, Nach;
+            public float D, Y0, Y1;
+            public double Wert => Band.Daten.Mwh;
+        }
+
+        /// <summary>Ein Verlustabzweig an seinem Eigentümer.</summary>
+        private sealed class EfVerlust
+        {
+            public EnergieflussBildBand Daten;
+            public EnergieflussBildKnoten Knoten;
+            public int Index;
+            public EfKnoten Von;
+            public float D, Y0, X1, Y1;
+        }
+
+        private readonly struct EfZeile
+        {
+            public EfZeile(string text, Schriftmass f, Farbrolle rolle, float x, float y) { Text = text; F = f; Rolle = rolle; X = x; Y = y; }
+            public readonly string Text;
+            public readonly Schriftmass F;
+            public readonly Farbrolle Rolle;
+            public readonly float X, Y;
         }
 
         /// <summary>Das Energieflussbild als PNG (für die Proben und den Bericht).</summary>
-        public static byte[] EnergieflussBild(EnergieflussBildDaten daten, Bildmass? mass = null, bool knotenwerte = false)
-            => SkiaMaler.Png(EnergieflussModell(daten, mass, knotenwerte));
+        public static byte[] EnergieflussBild(EnergieflussBildDaten daten, Bildmass? mass = null, bool knotenwerte = false,
+                                              EnergieflussDarstellung darstellung = EnergieflussDarstellung.Kette)
+            => SkiaMaler.Png(EnergieflussModell(daten, mass, knotenwerte, darstellung));
 
         /// <summary>
         /// <b>Das Zeichenmodell des Energieflussbilds.</b> Ohne <paramref name="mass"/> die breite Fassung
@@ -92,12 +157,17 @@ namespace WindowsFormsApplication1
         /// schmalen Fassung. Bänder ohne endlichen positiven Wert oder mit unbekanntem Knoten fallen weg, ebenso Knoten
         /// ohne Band; das Bild ist deterministisch.
         /// </summary>
-        /// <param name="daten">Knoten, Bänder und Spaltentitel.</param>
+        /// <param name="daten">Knoten, Bänder und Legende.</param>
         /// <param name="mass">Die Bildgröße; <c>null</c> = breit.</param>
         /// <param name="knotenwerte">Berichtsfassung: jeder Knoten nennt seine Jahressumme (MWh/a). Am Bildschirm
         /// <c>false</c> — dort stehen die Werte nur im Zeigertext.</param>
-        public static Zeichenmodell EnergieflussModell(EnergieflussBildDaten daten, Bildmass? mass = null, bool knotenwerte = false)
+        /// <param name="darstellung">Die Darstellungsart (SK-Q17): <see cref="EnergieflussDarstellung.Kette"/> (Vorgabe);
+        /// <see cref="EnergieflussDarstellung.Stufen"/> kommt mit SK-2d und wird bis dahin benannt abgelehnt.</param>
+        public static Zeichenmodell EnergieflussModell(EnergieflussBildDaten daten, Bildmass? mass = null, bool knotenwerte = false,
+                                                       EnergieflussDarstellung darstellung = EnergieflussDarstellung.Kette)
         {
+            if (darstellung != EnergieflussDarstellung.Kette)
+                throw new NotSupportedException("Energieflussbild: Darstellung " + darstellung + " ist noch nicht gezeichnet (SK-2d); gezeichnet wird die Kette.");
             int W = Bildmass.BreiteOder(mass, ENERGIEFLUSS_BREIT.Breite);
             int H = Bildmass.HoeheOder(mass, ENERGIEFLUSS_BREIT.Hoehe);
             var z = Modell(W, H);
@@ -105,238 +175,519 @@ namespace WindowsFormsApplication1
 
             // ---------------------------------------------------------------- Knoten und Bänder sammeln
             var knoten = new Dictionary<string, EfKnoten>(StringComparer.Ordinal);
+            var verlustknoten = new Dictionary<string, EnergieflussBildKnoten>(StringComparer.Ordinal);
             var reihenfolge = new List<EfKnoten>();
             IReadOnlyList<EnergieflussBildKnoten> eingabeKnoten = daten?.Knoten ?? Array.Empty<EnergieflussBildKnoten>();
             for (int i = 0; i < eingabeKnoten.Count; i++)
             {
                 EnergieflussBildKnoten k = eingabeKnoten[i];
-                if (k == null || string.IsNullOrEmpty(k.Kennung) || knoten.ContainsKey(k.Kennung)) continue;
-                var ek = new EfKnoten { Daten = k, Index = i, Verlust = k.Art == EnergieflussKnotenart.Verlust };
+                if (k == null || string.IsNullOrEmpty(k.Kennung) || knoten.ContainsKey(k.Kennung) || verlustknoten.ContainsKey(k.Kennung)) continue;
+                if (k.Art == EnergieflussKnotenart.Verlust) { verlustknoten[k.Kennung] = k; continue; }
+                var ek = new EfKnoten
+                {
+                    Daten = k, Index = i, Spur = (int)k.Spur,
+                    Art = k.Art == EnergieflussKnotenart.Quelle ? EfArt.Quelle
+                        : k.Art == EnergieflussKnotenart.Bus ? EfArt.Bus
+                        : k.Art == EnergieflussKnotenart.Senke ? EfArt.Senke
+                        : EfArt.Wandler,
+                };
                 knoten[k.Kennung] = ek;
                 reihenfolge.Add(ek);
             }
 
             var baender = new List<EfBand>();
+            var verluste = new List<EfVerlust>();
             IReadOnlyList<EnergieflussBildBand> eingabeBaender = daten?.Baender ?? Array.Empty<EnergieflussBildBand>();
             for (int i = 0; i < eingabeBaender.Count; i++)
             {
                 EnergieflussBildBand b = eingabeBaender[i];
                 if (b == null || !double.IsFinite(b.Mwh) || b.Mwh <= 0) continue;
                 if (b.Von == null || b.Nach == null || b.Von == b.Nach) continue;
-                if (!knoten.TryGetValue(b.Von, out EfKnoten von) || !knoten.TryGetValue(b.Nach, out EfKnoten nach)) continue;
-                if (von.Verlust) continue;   // aus einem Verlustknoten fließt nichts weiter
+                if (!knoten.TryGetValue(b.Von, out EfKnoten von)) continue;   // aus einem Verlustknoten fließt nichts weiter
+                if (verlustknoten.TryGetValue(b.Nach, out EnergieflussBildKnoten vk))
+                {
+                    if (verluste.Any(v => v.Knoten == vk)) continue;           // ein Verlustknoten hat genau ein Band
+                    var v = new EfVerlust { Daten = b, Knoten = vk, Index = i, Von = von };
+                    verluste.Add(v);
+                    von.Verl.Add(v); von.Ab += b.Mwh;
+                    continue;
+                }
+                if (!knoten.TryGetValue(b.Nach, out EfKnoten nach)) continue;
                 var eb = new EfBand { Daten = b, Index = i, Von = von, Nach = nach };
                 baender.Add(eb);
-                von.Ausgang.Add(eb); von.Aus += b.Mwh;
-                nach.Eingang.Add(eb); nach.Ein += b.Mwh;
+                von.Aus.Add(eb); von.Ab += b.Mwh;
+                nach.Ein.Add(eb); nach.Zu += b.Mwh;
             }
-            List<EfKnoten> sichtbar = reihenfolge.Where(k => k.Eingang.Count + k.Ausgang.Count > 0).ToList();
+            List<EfKnoten> sichtbar = reihenfolge.Where(k => k.Ein.Count + k.Aus.Count + k.Verl.Count > 0).ToList();
             if (baender.Count == 0) return z;
 
-            // ---------------------------------------------------------------- Geometrie
-            int spalten = Math.Max(EF_SPALTEN, sichtbar.Max(k => Math.Max(0, k.Daten.Spalte) + (k.Verlust ? 2 : 1)));
-            float randL = schmal ? 100f : 150f, randR = schmal ? 100f : 150f;
-            float oben = schmal ? 46f : 34f, unten = 28f;
-            float luecke = schmal ? 26f : 30f;
-            float spaltAbst = (W - randL - randR - EF_KNOTENBREITE) / (spalten - 1);
-            float X(double sp) => randL + (float)sp * spaltAbst;
-            float nutzH = H - oben - unten;
-
-            var proSpalte = new SortedDictionary<int, List<EfKnoten>>();
-            foreach (EfKnoten k in sichtbar.Where(k => !k.Verlust))
+            // ---------------------------------------------------------------- Spalten: längster Weg zur Senke
+            var tiefe = new Dictionary<EfKnoten, int>();
+            var besuch = new HashSet<EfKnoten>();
+            int Tiefe(EfKnoten k)
             {
-                int sp = Math.Max(0, k.Daten.Spalte);
-                if (!proSpalte.TryGetValue(sp, out List<EfKnoten> liste)) proSpalte[sp] = liste = new List<EfKnoten>();
-                liste.Add(k);
+                if (tiefe.TryGetValue(k, out int t)) return t;
+                if (!besuch.Add(k)) return 0;                                   // ein Kreis zählt nicht weiter
+                t = 0;
+                foreach (EfBand b in k.Aus) t = Math.Max(t, 1 + Tiefe(b.Nach));
+                tiefe[k] = t;
+                return t;
             }
+            int n = 0;
+            foreach (EfKnoten k in sichtbar) n = Math.Max(n, Tiefe(k));
+            foreach (EfKnoten k in sichtbar) k.Spalte = n - Tiefe(k);
+            int nSp = n + 1;
 
-            // Maßstab aus der höchsten Spaltensumme über die nutzbare Höhe; die Mindestbandbreite kann die Spalte
-            // verlängern, dann schrumpft der Maßstab, bis jede Spalte passt.
-            double maxSumme = 0; int maxN = 1;
-            foreach (List<EfKnoten> liste in proSpalte.Values)
+            // ---------------------------------------------------------------- Wegpunkte
+            var wege = new List<EfKnoten>();
+            var segmente = new List<EfSegment>();
+            EfSegment Seg(EfBand b, EfKnoten von, EfKnoten nach)
             {
-                double s = liste.Sum(k => Math.Max(k.Ein, k.Aus));
-                if (s > maxSumme) { maxSumme = s; maxN = liste.Count; }
+                var s = new EfSegment { Band = b, Von = von, Nach = nach };
+                segmente.Add(s); von.AusS.Add(s); nach.EinS.Add(s); b.Segs.Add(s);
+                return s;
             }
-            double massstab = maxSumme > 0 ? Math.Max(1e-9, (nutzH - luecke * (maxN - 1)) / maxSumme) : 1.0;
-            float Dicke(double mwh) => Math.Max((float)(mwh * massstab), EF_MINDESTBAND);
-            float Hoehe(EfKnoten k) => Math.Max(EF_MIN_KNOTEN,
-                Math.Max(k.Eingang.Sum(b => Dicke(b.Daten.Mwh)), k.Ausgang.Sum(b => Dicke(b.Daten.Mwh))));
-            for (int versuch = 0; versuch < 60; versuch++)
+            foreach (EfBand b in baender)
             {
-                float groesste = proSpalte.Values.Max(l => l.Sum(Hoehe) + luecke * (l.Count - 1));
-                if (groesste <= nutzH + 0.01f) break;
-                massstab *= 0.97;
-            }
-            foreach (EfBand b in baender) b.Dicke = Dicke(b.Daten.Mwh);
-
-            // Knoten je Spalte in Eingabereihenfolge, die Spalte vertikal zentriert.
-            foreach (KeyValuePair<int, List<EfKnoten>> e in proSpalte)
-            {
-                float gesamt = e.Value.Sum(Hoehe) + luecke * (e.Value.Count - 1);
-                float y = oben + (nutzH - gesamt) / 2f;
-                foreach (EfKnoten k in e.Value)
+                b.Verbinder = Verbinderregel(b, darstellung, schmal);
+                if (b.Nach.Spalte - b.Von.Spalte <= 1 || b.Verbinder) { Seg(b, b.Von, b.Nach); continue; }
+                EfKnoten vorher = b.Von;
+                for (int c = b.Von.Spalte + 1; c < b.Nach.Spalte; c++)
                 {
-                    k.X = X(e.Key); k.Y = y; k.H = Hoehe(k);
-                    y += k.H + luecke;
+                    var w = new EfKnoten { Art = EfArt.Weg, Spur = b.Nach.Spur, Spalte = c, Index = 100000 + wege.Count, Zu = b.Daten.Mwh, Ab = b.Daten.Mwh };
+                    wege.Add(w);
+                    Seg(b, vorher, w);
+                    vorher = w;
                 }
+                Seg(b, vorher, b.Nach);
             }
+            List<EfKnoten> alle = sichtbar.Concat(wege).ToList();
+            var spalten = new List<EfKnoten>[nSp];
+            for (int c = 0; c < nSp; c++) spalten[c] = new List<EfKnoten>();
+            foreach (EfKnoten k in alle) spalten[k.Spalte].Add(k);
+            float ArtRang(EfArt a) => a == EfArt.Weg ? 1.5f : (int)a > (int)EfArt.Weg ? (int)a - 1 : (int)a;
+            for (int c = 0; c < nSp; c++)
+                spalten[c] = spalten[c].OrderBy(k => k.Spur).ThenBy(k => ArtRang(k.Art)).ThenBy(k => k.Index).ToList();
 
-            // Verlustknoten: in der Lücke rechts neben ihrem Erzeuger, unter dessen Fuß; mehrere in einer Lücke
-            // stapeln sich nach der Lage ihres Erzeugers.
-            var unterkante = new Dictionary<int, float>();
-            foreach (EfKnoten k in sichtbar.Where(k => k.Verlust)
-                                           .OrderBy(k => k.Eingang.Count > 0 ? k.Eingang[0].Von.Y : 0f).ThenBy(k => k.Index))
+            // ---------------------------------------------------------------- Geometrie und Maßstab
+            float randL = schmal ? 92f : 130f, randR = schmal ? 92f : 150f;
+            float oben = schmal ? 30f : 34f, unten = EF_LEGENDE_HOEHE + (schmal ? 24f : 30f);
+            float luecke = schmal ? 14f : 20f, spurabstand = schmal ? 18f : 30f;
+            float gap = (W - randL - randR - EF_KNOTENBREITE) / Math.Max(1, nSp - 1);
+            float X(int sp) => randL + sp * gap;
+            float nutz = H - oben - unten;
+            float Abstand(EfKnoten a, EfKnoten b)
+                => ((a.Art == EfArt.Weg || b.Art == EfArt.Weg) ? luecke * 0.5f : luecke) + (a.Spur != b.Spur ? spurabstand : 0f);
+            float Luecken(List<EfKnoten> s)
             {
-                int sp = Math.Max(0, k.Daten.Spalte);
-                EfKnoten q = k.Eingang.Count > 0 ? k.Eingang[0].Von : null;
-                k.H = Hoehe(k);
-                k.X = X(sp + 0.5) - EF_KNOTENBREITE / 2f;
-                float y = q != null ? q.Y + q.H + 8f : oben;
-                if (unterkante.TryGetValue(sp, out float frei)) y = Math.Max(y, frei + 4f);
-                y = Math.Max(oben, Math.Min(y, H - unten - k.H));
-                k.Y = y;
-                unterkante[sp] = y + k.H;
+                float a = 0f;
+                for (int i = 0; i < s.Count - 1; i++) a += Abstand(s[i], s[i + 1]);
+                return a;
             }
-
-            // Bandlagen je Knoten: ausgehend nach der Lage des Ziels (Verluste zuunterst), eingehend nach der der Quelle.
-            foreach (EfKnoten k in sichtbar)
+            double m = double.PositiveInfinity;
+            foreach (List<EfKnoten> s in spalten)
             {
-                float y = k.Y;
-                foreach (EfBand b in k.Ausgang.OrderBy(b => (b.Nach.Verlust ? 1e5f : 0f) + b.Nach.Y).ThenBy(b => b.Index))
-                { b.Y0 = y; y += b.Dicke; }
-                y = k.Y;
-                foreach (EfBand b in k.Eingang.OrderBy(b => b.Von.Y).ThenBy(b => b.Index))
-                { b.Y1 = y; y += b.Dicke; }
+                double summe = s.Sum(k => k.Menge);
+                if (summe > 0) m = Math.Min(m, (nutz - Luecken(s)) / summe);
+            }
+            if (!double.IsFinite(m) || m <= 0) m = 1.0;
+            float Dicke(double mwh) => Math.Max((float)(mwh * m), EF_MINDESTBAND);
+            float Hoehe(EfKnoten k) => Math.Max(k.Art == EfArt.Weg ? 1f : EF_MIN_KNOTEN,
+                Math.Max(k.EinS.Sum(s => Dicke(s.Wert)), k.AusS.Sum(s => Dicke(s.Wert)) + k.Verl.Sum(v => Dicke(v.Daten.Mwh))));
+            for (int versuch = 0; versuch < 80; versuch++)
+            {
+                float groesste = spalten.Max(s => s.Sum(Hoehe) + Luecken(s));
+                if (groesste <= nutz + 0.01f) break;
+                m *= 0.97;
             }
 
             using (var tf = Schrift(schmal ? 10f : 11f, true))
             using (var lf = Schrift(schmal ? 10f : 11f))
             using (var vf = Schrift(schmal ? 9f : 10f))
+            using (var xf = Schrift(schmal ? 8.5f : 9.5f))
             {
-                // ------------------------------------------------------------ Spaltentitel
-                IReadOnlyList<string> titel = daten.Spaltentitel ?? Array.Empty<string>();
-                foreach (int sp in proSpalte.Keys)
+                string Kastentext(EfKnoten k) => KnotenName(k, true) + (knotenwerte ? " · " + EfZahl(k.Wert) : "");
+
+                // Knotenbreite: Wandler als beschriftete Kästen (Kurzname innen), Busse, Quellen und Senken schmale Balken,
+                // Wegpunkte breitenlos in der Mitte der Spalte.
+                foreach (EfKnoten k in alle)
                 {
-                    string t = sp < titel.Count ? titel[sp] ?? "" : "";
-                    if (t.Length == 0) continue;
-                    t = Gekuerzt(t, tf, Math.Max(40f, spaltAbst * (schmal ? 1.8f : 0.95f)));
-                    float w = tf.MeasureText(t);
-                    float x = Math.Max(2f, Math.Min(W - w - 2f, X(sp) + EF_KNOTENBREITE / 2f - w / 2f));
-                    float y = schmal && sp % 2 == 1 ? 4f + tf.Hoehe : 4f;
-                    z.Markiert("spaltentitel", zt => Text(zt, t, tf, Farbrolle.TEXT, x, y));
+                    k.H = Hoehe(k);
+                    k.Kasten = k.Art == EfArt.Wandler && k.H >= EF_KASTEN_AB;
+                    k.W = k.Art == EfArt.Weg ? 0f : k.Kasten ? Math.Max(EF_KNOTENBREITE, tf.MeasureText(Kastentext(k)) + 14f) : EF_KNOTENBREITE;
+                    k.X = X(k.Spalte) - (k.W - EF_KNOTENBREITE) / 2f + (k.Art == EfArt.Weg ? EF_KNOTENBREITE / 2f : 0f);
+                }
+
+                // ------------------------------------------------------------ Reihenfolge: Relaxation und Tausch
+                foreach (List<EfKnoten> s in spalten)
+                {
+                    float ges = s.Sum(k => k.H) + Luecken(s);
+                    float y = oben + (nutz - ges) / 2f;
+                    for (int i = 0; i < s.Count; i++)
+                    {
+                        s[i].Y = y;
+                        y += s[i].H + (i < s.Count - 1 ? Abstand(s[i], s[i + 1]) : 0f);
+                    }
+                }
+                float? Ziel(EfKnoten k, bool ein)
+                {
+                    double summe = 0, w = 0;
+                    foreach (EfSegment s in ein ? k.EinS : k.AusS)
+                    {
+                        if (s.Band.Verbinder) continue;
+                        EfKnoten o = ein ? s.Von : s.Nach;
+                        summe += s.Wert * o.Mitte; w += s.Wert;
+                    }
+                    return w > 0 ? (float)(summe / w) : (float?)null;
+                }
+                void Ordne(int c, bool sortieren)
+                {
+                    List<EfKnoten> s = spalten[c];
+                    if (sortieren) spalten[c] = s = s.OrderBy(k => k.Spur).ThenBy(k => k.Mitte).ThenBy(k => k.Index).ToList();
+                    for (int i = 0; i < s.Count; i++)
+                    {
+                        float minY = i == 0 ? oben : s[i - 1].Y + s[i - 1].H + Abstand(s[i - 1], s[i]);
+                        if (s[i].Y < minY) s[i].Y = minY;
+                    }
+                    for (int i = s.Count - 1; i >= 0; i--)
+                    {
+                        float maxY = i == s.Count - 1 ? oben + nutz - s[i].H : s[i + 1].Y - Abstand(s[i], s[i + 1]) - s[i].H;
+                        if (s[i].Y > maxY) s[i].Y = maxY;
+                    }
+                }
+                void Relax(int durchlaeufe, bool sortieren)
+                {
+                    for (int it = 0; it < durchlaeufe; it++)
+                    {
+                        float alpha = 0.6f * (float)Math.Pow(0.92, it);
+                        for (int c = 0; c < nSp; c++)
+                        {
+                            foreach (EfKnoten k in spalten[c]) { float? t = Ziel(k, true); if (t.HasValue) k.Y += (t.Value - k.Mitte) * alpha; }
+                            Ordne(c, sortieren);
+                        }
+                        for (int c = nSp - 1; c >= 0; c--)
+                        {
+                            foreach (EfKnoten k in spalten[c]) { float? t = Ziel(k, false); if (t.HasValue) k.Y += (t.Value - k.Mitte) * alpha; }
+                            Ordne(c, sortieren);
+                        }
+                    }
+                }
+                Relax(EF_RELAX_DURCHLAEUFE, true);
+
+                // Gewichtete Kreuzungen: je Spalte die Paare ausgehender Teilstücke, deren Reihenfolge am Ziel kippt.
+                double Kreuzungen()
+                {
+                    double k = 0;
+                    foreach (List<EfKnoten> s in spalten)
+                    {
+                        var li = new List<(int P, float Key, double W)>();
+                        for (int i = 0; i < s.Count; i++)
+                            foreach (EfSegment seg in s[i].AusS) if (!seg.Band.Verbinder) li.Add((i, seg.Nach.Mitte, seg.Wert));
+                        for (int i = 0; i < li.Count; i++)
+                            for (int j = i + 1; j < li.Count; j++)
+                                if ((li[i].P - li[j].P) * (li[i].Key - li[j].Key) < 0) k += li[i].W * li[j].W;
+                    }
+                    return k;
+                }
+                void Tausch(int c, int i)
+                {
+                    List<EfKnoten> s = spalten[c];
+                    List<float> ys = s.Select(k => k.Y).ToList();
+                    (s[i], s[i + 1]) = (s[i + 1], s[i]);
+                    for (int j = 0; j < s.Count; j++) s[j].Y = ys[j];
+                    Ordne(c, false);
+                }
+                List<int> Paare(int c)
+                {
+                    var r = new List<int>();
+                    for (int i = 0; i < spalten[c].Count - 1; i++) if (spalten[c][i].Spur == spalten[c][i + 1].Spur) r.Add(i);
+                    return r;
+                }
+                for (int sweep = 0; sweep < EF_TAUSCH_DURCHLAEUFE; sweep++)
+                    for (int c = 0; c < nSp; c++)
+                        foreach (int i in Paare(c))
+                        {
+                            double vor = Kreuzungen();
+                            Tausch(c, i);
+                            if (Kreuzungen() < vor - 1e-9) continue;
+                            bool besser = false;
+                            foreach (int c2 in new[] { c - 1, c + 1 })
+                            {
+                                if (c2 < 0 || c2 >= nSp || besser) continue;
+                                foreach (int j in Paare(c2))
+                                {
+                                    Tausch(c2, j);
+                                    if (Kreuzungen() < vor - 1e-9) { besser = true; break; }
+                                    Tausch(c2, j);
+                                }
+                            }
+                            if (!besser) Tausch(c, i);
+                        }
+                Relax(EF_RELAX_NACH, false);
+
+                // ------------------------------------------------------------ Bandlagen
+                foreach (EfSegment s in segmente) s.D = Dicke(s.Wert);
+                foreach (EfVerlust v in verluste) v.D = Dicke(v.Daten.Mwh);
+                // Ausgehend nach der Lage des Ziels; ein Verlustabzweig zielt knapp unter den Fuß seines Knotens und liegt so
+                // über den Bändern, die weiter nach unten gehen (sonst kreuzte er sie). Eingehend nach der Lage der Quelle.
+                foreach (EfKnoten k in alle)
+                {
+                    float y = k.Y;
+                    var aus = k.AusS.Select(s => (Key: s.Nach.Mitte, Index: s.Band.Index, Seg: s, Verl: (EfVerlust)null))
+                               .Concat(k.Verl.Select(v => (Key: k.Y + k.H + 12f, Index: 1000000 + v.Index, Seg: (EfSegment)null, Verl: v)))
+                               .OrderBy(e => e.Key).ThenBy(e => e.Index);
+                    foreach (var e in aus)
+                    {
+                        if (e.Seg != null) { e.Seg.Y0 = y; y += e.Seg.D; }
+                        else { e.Verl.Y0 = y; y += e.Verl.D; }
+                    }
+                    y = k.Y;
+                    foreach (EfSegment s in k.EinS.OrderBy(s => s.Von.Mitte).ThenBy(s => s.Band.Index)) { s.Y1 = y; y += s.D; }
+                }
+                // Tönung: Bänder in einen Knoten wechseln nach ihrer Lage zwischen Grund- und hellerem Ton.
+                var hell = new HashSet<EfBand>();
+                foreach (EfKnoten k in sichtbar)
+                {
+                    int i = 0;
+                    foreach (EfSegment s in k.EinS.OrderBy(s => s.Y1).ThenBy(s => s.Band.Index)) if (i++ % 2 == 1) hell.Add(s.Band);
+                }
+                float verlustLaenge = Math.Min(44f, gap * 0.26f);
+                foreach (EfVerlust v in verluste)
+                {
+                    v.X1 = v.Von.X + v.Von.W + verlustLaenge;
+                    v.Y1 = Math.Min(v.Y0 + Math.Max(4f, v.D * 0.35f), oben + nutz - v.D);   // sanfter Bogen: kreuzt kein Band, das tiefer geht
+                }
+
+                // ------------------------------------------------------------ Beschriftung planen
+                // Eine Beschriftung, die eine gesetzte überdeckte, weicht in Schritten nach unten bzw. oben aus; Kästen sind
+                // belegt; größere Knoten zuerst, Verluste zuletzt.
+                var belegt = new List<Rahmen>();
+                float schritt = lf.Hoehe + 2f;
+                float Platz(float x, float y, float w, float h, bool lieberOben)
+                {
+                    float[] folge = lieberOben ? new[] { 0f, -1f, 1f, -2f, 2f, -3f, 3f } : new[] { 0f, 1f, -1f, 2f, -2f, 3f, -3f };
+                    foreach (float f in folge)
+                    {
+                        var r = new Rahmen(x, y + f * schritt, w, h);
+                        if (r.Y < 0f || r.Unten > H - EF_LEGENDE_HOEHE) continue;
+                        if (!belegt.Any(o => Ueberlappt(r, o))) { belegt.Add(r); return r.Y; }
+                    }
+                    belegt.Add(new Rahmen(x, y, w, h));
+                    return y;
+                }
+                foreach (EfKnoten k in sichtbar.Where(k => k.Kasten)) belegt.Add(new Rahmen(k.X, k.Y, k.W, k.H));
+
+                var zeilen = new Dictionary<EfKnoten, List<EfZeile>>();
+                foreach (EfKnoten k in sichtbar.OrderByDescending(k => k.H).ThenBy(k => k.Index))
+                {
+                    var liste = new List<EfZeile>();
+                    string name = KnotenName(k, schmal);
+                    string zahl = EfZahl(k.Wert);
+                    if (k.Art == EfArt.Quelle || k.Art == EfArt.Senke)
+                    {
+                        bool links = k.Art == EfArt.Quelle;
+                        float platz = (links ? randL : randR) - 12f;
+                        // Passt der Name nicht in den Rand, steht die Kurzform, bevor gekürzt wird.
+                        if (lf.MeasureText(name) > platz && !string.IsNullOrEmpty(k.Daten.Kurzname) && lf.MeasureText(k.Daten.Kurzname) < lf.MeasureText(name))
+                            name = k.Daten.Kurzname;
+                        string t = Gekuerzt(name, lf, platz);
+                        string v = knotenwerte ? Gekuerzt(zahl + " MWh/a", vf, platz) : null;
+                        float wT = lf.MeasureText(t), wV = v != null ? vf.MeasureText(v) : 0f;
+                        float hoehe = lf.Hoehe + (v != null ? vf.Hoehe : 0f);
+                        float xT = links ? k.X - 7f - wT : k.X + k.W + 7f;
+                        float xV = links ? k.X - 7f - wV : k.X + k.W + 7f;
+                        float y = Platz(Math.Min(xT, xV), k.Mitte - hoehe / 2f, Math.Max(wT, wV) + 4f, hoehe, false);
+                        liste.Add(new EfZeile(t, lf, Farbrolle.TEXT, xT, y));
+                        if (v != null) liste.Add(new EfZeile(v, vf, Farbrolle.TEXT, xV, y + lf.Hoehe));
+                    }
+                    else if (k.Kasten)
+                    {
+                        string t = Kastentext(k);
+                        liste.Add(new EfZeile(t, tf, Farbrolle.HINTERGRUND, k.X + k.W / 2f - tf.MeasureText(t) / 2f, k.Mitte - tf.Hoehe / 2f));
+                    }
+                    else
+                    {
+                        Schriftmass f = k.Art == EfArt.Bus ? tf : lf;
+                        string t = Gekuerzt((k.Art == EfArt.Bus ? name : KnotenName(k, true)) + (knotenwerte ? " · " + zahl : ""), f, Math.Max(60f, gap * 1.4f));
+                        float w = f.MeasureText(t);
+                        float x = Math.Max(2f, Math.Min(W - w - 2f, k.X + k.W / 2f - w / 2f));
+                        float y = Platz(x, k.Y - 4f - f.Hoehe, w + 4f, f.Hoehe, true);
+                        liste.Add(new EfZeile(t, f, Farbrolle.TEXT, x, y));
+                    }
+                    zeilen[k] = liste;
+                }
+                var verlustzeilen = new Dictionary<EfVerlust, EfZeile>();
+                foreach (EfVerlust v in verluste.OrderByDescending(v => v.D).ThenBy(v => v.Index))
+                {
+                    string name = string.IsNullOrEmpty(v.Knoten.Name) ? v.Knoten.Kennung : v.Knoten.Name;
+                    string t = name + (knotenwerte ? " " + EfZahl(v.Daten.Mwh) : "");
+                    float w = xf.MeasureText(t);
+                    float x = Math.Min(v.X1 + 2f, W - w - 2f);
+                    float y = Platz(x, v.Y1 + v.D + 2f, w + 4f, xf.Hoehe, false);
+                    verlustzeilen[v] = new EfZeile(t, xf, Farbrolle.TEXT, x, y);
                 }
 
                 // ------------------------------------------------------------ Bänder
+                var saum = Stift(Farbrolle.HINTERGRUND, EF_SAUM);
                 foreach (EfBand b in baender)
                 {
                     EnergieflussBildBand d = b.Daten;
                     Farbrolle rolle = d.Rolle ?? (d.Art == EnergieflussBandart.Verlust ? Farbrolle.VERLUST
                                                 : d.Art == EnergieflussBandart.NichtZugeordnet ? Farbrolle.REST
                                                 : Farbrolle.UNBENANNT);
-                    float x0 = b.Von.X + EF_KNOTENBREITE, x1 = b.Nach.X;
-                    var punkte = new List<Punkt>(2 * EF_STUETZSTELLEN);
-                    for (int i = 0; i < EF_STUETZSTELLEN; i++)
+                    var punkte = new List<Punkt>(2 * EF_STUETZSTELLEN * b.Segs.Count);
+                    foreach (EfSegment s in b.Segs) Kurve(punkte, s.Von.X + s.Von.W, s.Y0, s.Nach.X, s.Y1);
+                    for (int i = b.Segs.Count - 1; i >= 0; i--)
                     {
-                        float s = i / (float)(EF_STUETZSTELLEN - 1);
-                        float e = 3f * s * s - 2f * s * s * s;
-                        punkte.Add(new Punkt(x0 + (x1 - x0) * s, b.Y0 + (b.Y1 - b.Y0) * e));
+                        EfSegment s = b.Segs[i];
+                        Kurve(punkte, s.Nach.X, s.Y1 + s.D, s.Von.X + s.Von.W, s.Y0 + s.D);
                     }
-                    for (int i = EF_STUETZSTELLEN - 1; i >= 0; i--)
-                    {
-                        float s = i / (float)(EF_STUETZSTELLEN - 1);
-                        float e = 3f * s * s - 2f * s * s * s;
-                        punkte.Add(new Punkt(x0 + (x1 - x0) * s, b.Y0 + b.Dicke + (b.Y1 - b.Y0) * e));
-                    }
-                    Zeichnung.Stift rand = d.Art == EnergieflussBandart.NichtZugeordnet
-                        ? Stift(rolle, 1f, new Strichmuster(4f, 3f)) : null;
-                    var fuellung = Flaeche(Farbton.Aus(rolle).MitDeckung(EF_BANDDECKUNG));
-                    string wert = d.Zeigertext ?? (KnotenName(b.Von, false) + " → " + KnotenName(b.Nach, false) + ": " +
-                                                   EfZahl(d.Mwh) + " MWh/a");
+                    bool rest = d.Art == EnergieflussBandart.NichtZugeordnet;
+                    Zeichnung.Stift rand = rest ? Stift(rolle, 1f, new Strichmuster(4f, 3f)) : saum;
+                    byte deckung = rest ? EF_RESTDECKUNG : hell.Contains(b) ? EF_BANDDECKUNG_HELL : EF_BANDDECKUNG;
+                    var fuellung = Flaeche(Farbton.Aus(rolle).MitDeckung(deckung));
+                    string wert = d.Zeigertext ?? (KnotenName(b.Von, false) + " → " + KnotenName(b.Nach, false) + ": " + EfZahl(d.Mwh) + " MWh/a");
                     z.Markiert("fluss:" + b.Von.Daten.Kennung + ":" + b.Nach.Daten.Kennung, wert,
                                zb => zb.Pfad(punkte, true, rand, fuellung));
                 }
 
-                // ------------------------------------------------------------ Beschriftung planen
-                // Erst die Lage jeder Beschriftung, dann gezeichnet: Eine Beschriftung, die eine schon gesetzte
-                // überdecken würde, entfällt (größere Knoten zuerst) — ihr Name steht im Zeigertext.
-                var beschriftung = new Dictionary<EfKnoten, List<(string Text, Schriftmass F, float X, float Y)>>();
-                var belegt = new List<Rahmen>();
-                foreach (EfKnoten k in sichtbar.OrderByDescending(k => k.H).ThenBy(k => k.Index))
+                // ------------------------------------------------------------ Verlustabzweige
+                foreach (EfVerlust v in verluste)
                 {
-                    var zeilen = Beschriftung(k, schmal, knotenwerte, spalten, spaltAbst, randL, randR, lf, vf);
-                    if (zeilen.Count == 0) continue;
-                    var rahmen = zeilen.Select(t => new Rahmen(t.X - 2f, t.Y, t.F.MeasureText(t.Text) + 4f, t.F.Hoehe)).ToList();
-                    if (rahmen.Any(r => belegt.Any(o => Ueberlappt(r, o)))) continue;
-                    belegt.AddRange(rahmen);
-                    beschriftung[k] = zeilen;
+                    float x0 = v.Von.X + v.Von.W;
+                    var punkte = new List<Punkt>(2 * EF_STUETZSTELLEN);
+                    Kurve(punkte, x0, v.Y0, v.X1, v.Y1);
+                    Kurve(punkte, v.X1, v.Y1 + v.D, x0, v.Y0 + v.D);
+                    Farbrolle rolle = v.Daten.Rolle ?? Farbrolle.VERLUST;
+                    var fuellung = Flaeche(Farbton.Aus(rolle).MitDeckung(EF_BANDDECKUNG));
+                    string vName = string.IsNullOrEmpty(v.Knoten.Name) ? v.Knoten.Kennung : v.Knoten.Name;
+                    string wert = v.Daten.Zeigertext ?? (KnotenName(v.Von, false) + " → " + vName + ": " + EfZahl(v.Daten.Mwh) + " MWh/a");
+                    EfZeile zeile = verlustzeilen[v];
+                    z.Markiert("fluss:" + v.Von.Daten.Kennung + ":" + v.Knoten.Kennung, wert, zv =>
+                    {
+                        zv.Pfad(punkte, true, saum, fuellung);
+                        Text(zv, zeile.Text, zeile.F, zeile.Rolle, zeile.X, zeile.Y);
+                    });
                 }
 
                 // ------------------------------------------------------------ Knoten
-                var randStift = Stift(Farbrolle.RAHMEN, 1f);
                 foreach (EfKnoten k in sichtbar)
                 {
-                    Farbrolle rolle = k.Daten.Rolle ?? (k.Verlust ? Farbrolle.VERLUST : Farbrolle.KNOTEN);
+                    Farbton ton = Farbton.Aus(k.Daten.Rolle ?? Farbrolle.KNOTEN);
+                    if (k.Art == EfArt.Quelle || k.Art == EfArt.Senke) ton = ton.MitDeckung(EF_BALKENDECKUNG);
+                    var fuellung = Flaeche(ton);
                     string wert = k.Daten.Zeigertext ?? (KnotenName(k, false) + ": " + EfZahl(k.Wert) + " MWh/a");
-                    beschriftung.TryGetValue(k, out var zeilen);
+                    zeilen.TryGetValue(k, out List<EfZeile> liste);
                     z.Markiert("knoten:" + k.Daten.Kennung, wert, zk =>
                     {
-                        zk.Rechteck(k.X, k.Y, EF_KNOTENBREITE, k.H, randStift, Flaeche(rolle));
-                        if (zeilen != null)
-                            foreach (var t in zeilen) Text(zk, t.Text, t.F, Farbrolle.TEXT, t.X, t.Y);
+                        zk.Rechteck(k.X, k.Y, k.W, k.H, null, fuellung);
+                        if (liste != null)
+                            foreach (EfZeile t in liste) Text(zk, t.Text, t.F, t.Rolle, t.X, t.Y);
                     });
+                }
+
+                // ------------------------------------------------------------ Legende
+                IReadOnlyList<EnergieflussBildLegende> legende = daten.Legende ?? Array.Empty<EnergieflussBildLegende>();
+                float lx = 16f, ly = H - EF_LEGENDE_HOEHE + (EF_LEGENDE_HOEHE - vf.Hoehe) / 2f;
+                foreach (EnergieflussBildLegende e in legende)
+                {
+                    if (e == null || e.Rolle == null) continue;
+                    string t = e.Text ?? "";
+                    float w = vf.MeasureText(t);
+                    if (lx + 19f + w > W - 8f) break;
+                    float x = lx, feldH = Math.Max(8f, vf.Hoehe - 4f);
+                    Zeichnung.Stift rand = e.Gestrichelt ? Stift(e.Rolle, 1f, new Strichmuster(3f, 2f)) : null;
+                    var fuellung = Flaeche(Farbton.Aus(e.Rolle).MitDeckung(e.Gestrichelt ? EF_RESTDECKUNG : EF_BANDDECKUNG));
+                    z.Markiert("legende:" + e.Rolle.Name.ToLowerInvariant(), zl =>
+                    {
+                        zl.Rechteck(x, ly + (vf.Hoehe - feldH) / 2f, 14f, feldH, rand, fuellung);
+                        Text(zl, t, vf, Farbrolle.TEXT, x + 19f, ly);
+                    });
+                    lx += 19f + w + 18f;
                 }
             }
             return z;
+        }
 
-            // Die Zeilen der Beschriftung eines Knotens samt Lage (linke obere Ecke).
-            List<(string Text, Schriftmass F, float X, float Y)> Beschriftung(EfKnoten k, bool eng, bool mitWert, int nSpalten,
-                float abstand, float rl, float rr, Schriftmass lf, Schriftmass vf)
+        /// <summary>
+        /// <b>Die Verbinderregel</b> (Variante B, Konzept 3.1, SK-Q13/SK-Q17): Ob ein Band als Verbinder statt als
+        /// durchgehendes Band gezeichnet wird. In der Kette nie; mit SK-2d für die Darstellung Stufen und die schmale Fassung:
+        /// Strom aus dem Bus an einen Wandler (Wärmepumpe, Heizstab, Elektrokessel, Kälteerzeuger). Die Naht sitzt hier, damit
+        /// Layout (Ziel, Kreuzungen, Wegpunkte) und Zeichnung sie gemeinsam nutzen.
+        /// </summary>
+        private static bool Verbinderregel(EfBand b, EnergieflussDarstellung darstellung, bool schmal)
+            => false;
+
+        /// <summary>Die abgetastete S-Kurve von (x0, y0) nach (x1, y1) mit <see cref="EF_STUETZSTELLEN"/> Punkten, angehängt an <paramref name="punkte"/>.</summary>
+        private static void Kurve(List<Punkt> punkte, float x0, float y0, float x1, float y1)
+        {
+            for (int i = 0; i < EF_STUETZSTELLEN; i++)
             {
-                var zeilen = new List<(string Text, Schriftmass F, float X, float Y)>();
-                string name = KnotenName(k, eng);
-                string zahl = EfZahl(k.Wert);
-                float cy = k.Y + k.H / 2f;
-                if (k.Verlust)
-                {
-                    string t = Gekuerzt(mitWert ? name + " " + zahl : name, vf, Math.Max(30f, abstand - EF_KNOTENBREITE - 4f));
-                    float w = vf.MeasureText(t);
-                    zeilen.Add((t, vf, k.X + EF_KNOTENBREITE / 2f - w / 2f, k.Y + k.H + 2f));
-                    return zeilen;
-                }
-                int sp = Math.Max(0, k.Daten.Spalte);
-                bool links = k.Daten.Art == EnergieflussKnotenart.Quelle || sp == 0;
-                bool rechts = !links && (k.Daten.Art == EnergieflussKnotenart.Senke || sp >= nSpalten - 1);
-                if (links || rechts)
-                {
-                    float breite = (links ? rl : rr) - 10f;
-                    string t = Gekuerzt(name, lf, breite);
-                    string v = mitWert ? Gekuerzt(zahl + " MWh/a", vf, breite) : null;
-                    float hoehe = lf.Hoehe + (v != null ? vf.Hoehe : 0f);
-                    float y = cy - hoehe / 2f;
-                    float xT = links ? k.X - 6f - lf.MeasureText(t) : k.X + EF_KNOTENBREITE + 6f;
-                    zeilen.Add((t, lf, xT, y));
-                    if (v != null)
-                        zeilen.Add((v, vf, links ? k.X - 6f - vf.MeasureText(v) : k.X + EF_KNOTENBREITE + 6f, y + lf.Hoehe));
-                    return zeilen;
-                }
-                if (k.H < EF_MIN_BESCHRIFTUNG && k.Daten.Art != EnergieflussKnotenart.Bus) return zeilen;
-                // Eine innere Beschriftung darf über ihre Spalte hinausragen (bis EF_INNEN_BREITE Spaltenabstände): So
-                // bleiben „Wärmepumpe (Heizen)“ und im Bericht „Name · Wert“ lesbar; was eine gesetzte Beschriftung
-                // überdeckte, entfällt ohnehin (Planung oben).
-                string innen = Gekuerzt(mitWert ? name + " · " + zahl : name, lf, Math.Max(40f, abstand * EF_INNEN_BREITE - 6f));
-                float wi = lf.MeasureText(innen);
-                float xi = Math.Max(2f, Math.Min(W - wi - 2f, k.X + EF_KNOTENBREITE / 2f - wi / 2f));
-                zeilen.Add((innen, lf, xi, Math.Max(oben - lf.Hoehe, k.Y - 3f - lf.Hoehe)));
-                return zeilen;
+                float s = i / (float)(EF_STUETZSTELLEN - 1);
+                float e = 3f * s * s - 2f * s * s * s;
+                punkte.Add(new Punkt(x0 + (x1 - x0) * s, y0 + (y1 - y0) * e));
             }
         }
 
-        /// <summary>Name eines Knotens, schmal die Kurzform (sonst der Name).</summary>
-        private static string KnotenName(EfKnoten k, bool schmal)
+        /// <summary>
+        /// <b>Die Kreuzungszahl eines gezeichneten Energieflussbilds</b> (Messgröße, Konzept 3.1): die Zahl der Paare von
+        /// Bändern (Marke <c>fluss:</c>), deren Mittellinien sich schneiden. Die Mittellinie ist der Mittelwert aus Ober- und
+        /// Unterkante des Polygons; zwei Bänder, die nur in einem Knoten aneinanderstoßen, zählen nicht.
+        /// </summary>
+        public static int EnergieflussKreuzungen(Zeichenmodell modell) => EnergieflussKreuzungspaare(modell).Count;
+
+        /// <summary>Die Paare sich schneidender Bänder (Marken), die <see cref="EnergieflussKreuzungen(Zeichenmodell)"/> zählt.</summary>
+        public static IReadOnlyList<(string A, string B)> EnergieflussKreuzungspaare(Zeichenmodell modell)
+        {
+            var paare = new List<(string A, string B)>();
+            if (modell == null) return paare;
+            var linien = new List<(string Marke, Punkt[] Mitte)>();
+            foreach (Pfad p in modell.Befehle.OfType<Pfad>())
+            {
+                if (p.Marke == null || !p.Marke.StartsWith("fluss:", StringComparison.Ordinal)) continue;
+                int n = p.Punkte.Count / 2;
+                if (n < 2) continue;
+                var mitte = new Punkt[n];
+                for (int i = 0; i < n; i++)
+                    mitte[i] = new Punkt((p.Punkte[i].X + p.Punkte[2 * n - 1 - i].X) / 2f, (p.Punkte[i].Y + p.Punkte[2 * n - 1 - i].Y) / 2f);
+                linien.Add((p.Marke, mitte));
+            }
+            for (int a = 0; a < linien.Count; a++)
+                for (int b = a + 1; b < linien.Count; b++)
+                    if (Schneiden(linien[a].Mitte, linien[b].Mitte)) paare.Add((linien[a].Marke, linien[b].Marke));
+            return paare;
+        }
+
+        /// <summary>Dieselbe Kreuzungszahl für Bilddaten in einer Fassung und Darstellung.</summary>
+        public static int EnergieflussKreuzungen(EnergieflussBildDaten daten, Bildmass? mass = null, bool knotenwerte = false,
+                                                 EnergieflussDarstellung darstellung = EnergieflussDarstellung.Kette)
+            => EnergieflussKreuzungen(EnergieflussModell(daten, mass, knotenwerte, darstellung));
+
+        private static bool Schneiden(Punkt[] a, Punkt[] b)
+        {
+            float minAx = a.Min(p => p.X), maxAx = a.Max(p => p.X), minBx = b.Min(p => p.X), maxBx = b.Max(p => p.X);
+            if (maxAx <= minBx || maxBx <= minAx) return false;
+            for (int i = 0; i < a.Length - 1; i++)
+                for (int j = 0; j < b.Length - 1; j++)
+                    if (Schneiden(a[i], a[i + 1], b[j], b[j + 1])) return true;
+            return false;
+        }
+
+        /// <summary>Echter Schnitt zweier Strecken (Berührung in einem Endpunkt zählt nicht).</summary>
+        private static bool Schneiden(Punkt p1, Punkt p2, Punkt q1, Punkt q2)
+        {
+            float d1 = Kreuz(q1, q2, p1), d2 = Kreuz(q1, q2, p2), d3 = Kreuz(p1, p2, q1), d4 = Kreuz(p1, p2, q2);
+            return ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) && ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0));
+        }
+
+        private static float Kreuz(Punkt a, Punkt b, Punkt c) => (b.X - a.X) * (c.Y - a.Y) - (b.Y - a.Y) * (c.X - a.X);
+
+        /// <summary>Name eines Knotens, kurz die Kurzform (sonst der Name).</summary>
+        private static string KnotenName(EfKnoten k, bool kurz)
         {
             EnergieflussBildKnoten d = k.Daten;
-            if (schmal && !string.IsNullOrEmpty(d.Kurzname)) return d.Kurzname;
+            if (d == null) return "";
+            if (kurz && !string.IsNullOrEmpty(d.Kurzname)) return d.Kurzname;
             return string.IsNullOrEmpty(d.Name) ? d.Kennung : d.Name;
         }
 

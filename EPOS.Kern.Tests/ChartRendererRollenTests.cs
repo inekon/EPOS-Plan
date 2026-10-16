@@ -220,10 +220,11 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Das Energieflussbild</b> (SK-2, Konzept Energieflussbild 3.4) hat keine Reihen, sondern Bänder und Knoten:
-        /// Jedes Band trägt genau die Rolle seiner Gabe, jeder Knoten <c>KNOTEN</c> bzw. <c>VERLUST</c> — auch unter einer
-        /// Palette, in der jede dieser Rollen die Hausfarbe der nächsten trägt, sodass die Rückwärtssuche überall eine
-        /// fremde Rolle fände. Im SVG kommt die getauschte Farbe der Rolle an.
+        /// <b>Das Energieflussbild</b> (SK-2, SK-2c, Konzept Energieflussbild 3.4) hat keine Reihen, sondern Bänder und
+        /// Knoten: Jedes Band trägt genau die Rolle seiner Gabe (die Energieform), jeder Knoten <c>KNOTEN</c>, ein Verlust
+        /// ist ein Abzweig in <c>VERLUST</c> ohne Knotenbalken — auch unter einer Palette, in der jede dieser Rollen die
+        /// Hausfarbe der nächsten trägt, sodass die Rückwärtssuche überall eine fremde Rolle fände. Im SVG kommt die
+        /// getauschte Farbe der Rolle an.
         /// </summary>
         [Fact]
         public void Energiefluss_traegt_die_Rolle_jedes_Bandes_und_Knotens()
@@ -231,7 +232,7 @@ namespace EPOS.Kern.Tests
             Farbrolle[] tausch =
             {
                 Farbrolle.BRENNSTOFF, Farbrolle.UMWELTWAERME, Farbrolle.KAELTE, Farbrolle.VERLUST, Farbrolle.KNOTEN,
-                Farbrolle.STROM_NETZ, Farbrolle.WAERME_WP, Farbrolle.HEIZWAERME
+                Farbrolle.STROM, Farbrolle.WAERME, Farbrolle.REST
             };
             var farben = new Dictionary<Farbrolle, Farbe>();
             for (int i = 0; i < tausch.Length; i++)
@@ -240,39 +241,43 @@ namespace EPOS.Kern.Tests
 
             var knoten = new List<EnergieflussBildKnoten>
             {
-                new EnergieflussBildKnoten { Kennung = "gas", Spalte = 0, Name = "Erdgas", Art = EnergieflussKnotenart.Quelle },
-                new EnergieflussBildKnoten { Kennung = "netz", Spalte = 0, Name = "Netz", Art = EnergieflussKnotenart.Quelle },
-                new EnergieflussBildKnoten { Kennung = "umwelt", Spalte = 0, Name = "Umwelt", Art = EnergieflussKnotenart.Quelle },
-                new EnergieflussBildKnoten { Kennung = "kessel", Spalte = 1, Name = "Kessel", Art = EnergieflussKnotenart.Wandler },
-                new EnergieflussBildKnoten { Kennung = "v", Spalte = 1, Name = "Verlust", Art = EnergieflussKnotenart.Verlust },
-                new EnergieflussBildKnoten { Kennung = "wp", Spalte = 3, Name = "WP", Art = EnergieflussKnotenart.Wandler },
-                new EnergieflussBildKnoten { Kennung = "km", Spalte = 3, Name = "KM", Art = EnergieflussKnotenart.Wandler },
-                new EnergieflussBildKnoten { Kennung = "heizung", Spalte = 6, Name = "Heizung", Art = EnergieflussKnotenart.Senke },
-                new EnergieflussBildKnoten { Kennung = "kuehlung", Spalte = 6, Name = "Kühlung", Art = EnergieflussKnotenart.Senke }
+                new EnergieflussBildKnoten { Kennung = "gas", Spur = EnergieflussSpur.Waerme, Name = "Erdgas", Art = EnergieflussKnotenart.Quelle },
+                new EnergieflussBildKnoten { Kennung = "netz", Spur = EnergieflussSpur.Strom, Name = "Netz", Art = EnergieflussKnotenart.Quelle },
+                new EnergieflussBildKnoten { Kennung = "umwelt", Spur = EnergieflussSpur.Waerme, Name = "Umwelt", Art = EnergieflussKnotenart.Quelle },
+                new EnergieflussBildKnoten { Kennung = "kessel", Spur = EnergieflussSpur.Waerme, Name = "Kessel", Art = EnergieflussKnotenart.Wandler },
+                new EnergieflussBildKnoten { Kennung = "v", Spur = EnergieflussSpur.Waerme, Name = "Verlust", Art = EnergieflussKnotenart.Verlust },
+                new EnergieflussBildKnoten { Kennung = "wp", Spur = EnergieflussSpur.Waerme, Name = "WP", Art = EnergieflussKnotenart.Wandler },
+                new EnergieflussBildKnoten { Kennung = "km", Spur = EnergieflussSpur.Kaelte, Name = "KM", Art = EnergieflussKnotenart.Wandler },
+                new EnergieflussBildKnoten { Kennung = "heizung", Spur = EnergieflussSpur.Waerme, Name = "Heizung", Art = EnergieflussKnotenart.Senke },
+                new EnergieflussBildKnoten { Kennung = "kuehlung", Spur = EnergieflussSpur.Kaelte, Name = "Kühlung", Art = EnergieflussKnotenart.Senke },
+                new EnergieflussBildKnoten { Kennung = "rest", Spur = EnergieflussSpur.Waerme, Name = "ungedeckt", Art = EnergieflussKnotenart.Senke }
             };
             var baender = new List<EnergieflussBildBand>
             {
                 new EnergieflussBildBand { Von = "gas", Nach = "kessel", Mwh = 10, Rolle = Farbrolle.BRENNSTOFF },
                 new EnergieflussBildBand { Von = "kessel", Nach = "v", Mwh = 1, Rolle = Farbrolle.VERLUST, Art = EnergieflussBandart.Verlust },
-                new EnergieflussBildBand { Von = "kessel", Nach = "heizung", Mwh = 9, Rolle = Farbrolle.HEIZWAERME },
-                new EnergieflussBildBand { Von = "netz", Nach = "wp", Mwh = 3, Rolle = Farbrolle.STROM_NETZ },
+                new EnergieflussBildBand { Von = "kessel", Nach = "heizung", Mwh = 9, Rolle = Farbrolle.WAERME },
+                new EnergieflussBildBand { Von = "netz", Nach = "wp", Mwh = 3, Rolle = Farbrolle.STROM },
                 new EnergieflussBildBand { Von = "umwelt", Nach = "wp", Mwh = 6, Rolle = Farbrolle.UMWELTWAERME },
-                new EnergieflussBildBand { Von = "wp", Nach = "heizung", Mwh = 9, Rolle = Farbrolle.WAERME_WP },
+                new EnergieflussBildBand { Von = "wp", Nach = "heizung", Mwh = 9, Rolle = Farbrolle.WAERME },
+                new EnergieflussBildBand { Von = "wp", Nach = "rest", Mwh = 1, Rolle = Farbrolle.REST, Art = EnergieflussBandart.NichtZugeordnet },
                 new EnergieflussBildBand { Von = "umwelt", Nach = "km", Mwh = 4, Rolle = Farbrolle.UMWELTWAERME },
                 new EnergieflussBildBand { Von = "km", Nach = "kuehlung", Mwh = 4, Rolle = Farbrolle.KAELTE }
             };
+            var legende = new List<EnergieflussBildLegende> { new EnergieflussBildLegende { Rolle = Farbrolle.STROM, Text = "Strom" } };
 
             using (new Palettenwahl(palette))
             {
-                Zeichenmodell m = ChartRenderer.EnergieflussModell(new EnergieflussBildDaten { Knoten = knoten, Baender = baender });
+                Zeichenmodell m = ChartRenderer.EnergieflussModell(new EnergieflussBildDaten { Knoten = knoten, Baender = baender, Legende = legende });
                 foreach (EnergieflussBildBand b in baender)
                 {
                     Assert.NotEqual(b.Rolle, Farbpalette.Ton(Farbpalette.Aktuell[b.Rolle]).Rolle);
-                    Assert.Equal(new[] { b.Rolle }, Rollen(m, "fluss:" + b.Von + ":" + b.Nach));
+                    Assert.Equal(new[] { b.Rolle }, Rollen(m, "fluss:" + b.Von + ":" + b.Nach).Where(r => r != Farbrolle.HINTERGRUND).ToArray());   // ohne den weißen Saum
                 }
                 foreach (EnergieflussBildKnoten k in knoten)
-                    Assert.Equal(new[] { k.Art == EnergieflussKnotenart.Verlust ? Farbrolle.VERLUST : Farbrolle.KNOTEN },
-                                 Rollen(m, "knoten:" + k.Kennung).Where(r => r != Farbrolle.RAHMEN).ToArray());
+                    Assert.Equal(k.Art == EnergieflussKnotenart.Verlust ? Array.Empty<Farbrolle>() : new[] { Farbrolle.KNOTEN },
+                                 Rollen(m, "knoten:" + k.Kennung).Where(r => r != Farbrolle.RAHMEN && r != Farbrolle.HINTERGRUND).ToArray());
+                Assert.Equal(new[] { Farbrolle.STROM }, Rollen(m, "legende:strom"));
 
                 // Im SVG trägt das Rechteck des Knotens die getauschte Farbe der Rolle KNOTEN.
                 SvgKnoten rechteck = SvgSchreiber.Baum(m, palette).Alle()

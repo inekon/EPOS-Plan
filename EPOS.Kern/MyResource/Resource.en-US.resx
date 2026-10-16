@@ -57484,5 +57484,41 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="EF_SP_BEDARF" xml:space="preserve">
     <value>Demand</value>
   </data>
+  <data name="DGF_ROLLE_STROM" xml:space="preserve">
+    <value>Electricity (energy flow)</value>
+  </data>
+  <data name="DGF_ROLLE_WAERME" xml:space="preserve">
+    <value>Heat (energy flow)</value>
+  </data>
+  <data name="EF_LEG_STROM" xml:space="preserve">
+    <value>Electricity</value>
+  </data>
+  <data name="EF_LEG_WAERME" xml:space="preserve">
+    <value>Heat</value>
+  </data>
+  <data name="EF_LEG_KAELTE" xml:space="preserve">
+    <value>Cooling</value>
+  </data>
+  <data name="EF_LEG_BRENNSTOFF" xml:space="preserve">
+    <value>Fuel</value>
+  </data>
+  <data name="EF_LEG_UMWELT" xml:space="preserve">
+    <value>Ambient heat / ambient (cooling)</value>
+  </data>
+  <data name="EF_LEG_VERLUST" xml:space="preserve">
+    <value>Loss</value>
+  </data>
+  <data name="EF_LEG_REST" xml:space="preserve">
+    <value>unassigned / uncovered</value>
+  </data>
+  <data name="EF_ZEIGER_SPEICHER_AM_BUS" xml:space="preserve">
+    <value>{0}: charging {1} · discharging {2} MWh/a</value>
+  </data>
+  <data name="EF_ZEIGER_UEBER_SPEICHER" xml:space="preserve">
+    <value>of which {0} MWh/a via {1}</value>
+  </data>
+  <data name="EF_ZEIGER_KLEINVERLUST" xml:space="preserve">
+    <value>{0} {1} MWh/a (below 1 %, not drawn)</value>
+  </data>
 </root>
 

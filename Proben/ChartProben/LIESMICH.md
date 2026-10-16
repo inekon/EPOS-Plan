@@ -690,26 +690,30 @@ Rechner (`--hashes` zweimal, Windows wie Linux), dazu `EPOS.Kern.Tests/Oberflaec
 
 ---
 
-## Energieflussbild (Sankey, Schritt SK-2)
+## Energieflussbild (Sankey, Schritte SK-2 und SK-2c)
 
-`ChartRenderer.EnergieflussModell` zeichnet Strom, Wärme und Kälte eines Jahres in sieben Spalten; die Gaben
-(`Program.Energiefluss.cs`) sind synthetisch und fest verdrahtet: Netz, Photovoltaik, BHKW und Kessel am Erdgas,
-Wärmepumpe, Heizstab, Kältemaschine mit Kältespeicher, Puffer- und Stromspeicher mit Verlust, ein Band „nicht
-zugeordnet“ am Strombus. Erwartete Farben: `KNOTEN`, `VERLUST`, `TEXT` (die Bänder sind halbdurchsichtig).
+`ChartRenderer.EnergieflussModell` zeichnet Strom, Wärme und Kälte eines Jahres als gestraffte Kette (Variante A,
+Konzept Energieflussbild 3): so viele Spalten, wie die Anlage braucht (längster Weg zur Senke), in jeder Spalte die
+Spuren Strom, Gemischt, Wärme, Kälte, Bänder über Wegpunkte, Wandler als beschriftete Kästen, Verluste als kurze
+Abzweige ohne Knotenbalken, Farbe nach Energieform, Legende unter dem Bild. Die Gaben (`Program.Energiefluss.cs`) sind
+synthetisch und fest verdrahtet: Netz, Photovoltaik, BHKW und Kessel am Erdgas, Wärmepumpe, Heizstab, Kältemaschine,
+Wärme-, Kälte- und Strombus mit Speicherverlust (die Speicher sind in ihren Bus gefaltet), ein Band „nicht zugeordnet“
+am Strombus. Erwartete Farben: `KNOTEN`, `TEXT` (die Bänder sind halbdurchsichtig, Verluste haben keinen Balken).
 
 | Art | Probe | Aussage |
 |---|---|---|
-| Maßprobe | `energiefluss` | breite Fassung 1180 × 560, nur Namen an den Knoten |
-| Maßprobe | `energiefluss_schmal` | schmale Fassung 680 × 640, Kurznamen |
-| Maßprobe | `energiefluss_bericht` | Berichtsfassung 1240 × 620, Jahressumme an jedem Knoten |
+| Maßprobe | `energiefluss` | breite Fassung 1180 × 460, nur Namen an den Knoten, Legende |
+| Maßprobe | `energiefluss_schmal` | schmale Fassung 680 × 560, Kurznamen (vorläufig die verkleinerte Kette) |
+| Maßprobe | `energiefluss_bericht` | Berichtsfassung 1240 × 490, Jahressumme an Knoten, Kästen und Verlusten |
 | Maßprobe | `energiefluss_kaelte_split` | ein Split-Gerät neben der Kältemaschine |
-| Gegenprobe | `energiefluss_speicher_wirkt` | mit und ohne Pufferspeicher |
+| Gegenprobe | `energiefluss_speicher_wirkt` | Wärmebus mit und ohne Speicher (Zusatz „· Speicher“, Speicherverlust) |
 | Gegenprobe | `energiefluss_rest_wirkt` | geschlossen und mit Band „nicht zugeordnet“ |
 | Gegenprobe | `energiefluss_schmal_wirkt` | breit und schmal |
 | Gegenprobe | `energiefluss_knotenwerte_wirkt` | Bericht ohne und mit Knotenwerten |
-| SVG | `svg_energiefluss` | je Band und Knoten Marke und `data-wert`, byte-gleich, keine Zahl im Bildschirmbild |
+| SVG | `svg_energiefluss` | je Band und Knoten Marke und `data-wert`, je Energieform ein Legendenfeld, byte-gleich, keine Zahl im Bildschirmbild, nur die drei topologisch unvermeidbaren Kreuzungen (Strom → Kältemaschine durch die Wärmespur) |
 
-Das sind **12 neue Zeilen** am Ende von `Messlatte_2026-10-16.sha256`; die bisherigen 226 Zeilen bleiben unverändert.
-Schritt SK-12 hat zehn dieser zwölf Zeilen ersetzt (alle breiten und Berichtsproben): Eine innere Beschriftung darf
-seither bis zu 1,5 Spaltenabstände breit sein (`ChartRenderer.EF_INNEN_BREITE`), damit „Wärmepumpe (Heizen)“ und im
-Bericht „Name · Wert“ ungekürzt stehen; die beiden schmalen Proben und die 226 älteren Zeilen sind unverändert.
+Das sind **12 Zeilen** am Ende von `Messlatte_2026-10-16.sha256`; die bisherigen 226 Zeilen bleiben unverändert.
+Schritt SK-12 hatte zehn dieser zwölf Zeilen ersetzt (innere Beschriftung bis 1,5 Spaltenabstände); Schritt SK-2c
+ersetzt alle zwölf: Das Bild ist nach Variante A neu gezeichnet (Spalten nach Bedarf statt sieben feste, Speicher am
+Bus, Verlustabzweige, Farbe nach Energieform mit den Rollen `STROM` und `WAERME`, Legende, neue Maße 1180 × 460,
+680 × 560 und 1240 × 490). Die 226 älteren Zeilen sind unverändert.

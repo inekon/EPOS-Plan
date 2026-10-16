@@ -9,11 +9,11 @@ namespace EPOS.Kern.Tests
 {
     /// <summary>
     /// <b>Die Abbildung Bilanz → Bilddaten</b> (<see cref="EnergieflussAbbildung"/>, Konzept Energieflussbild 3.1 und 3.4,
-    /// Schritt SK-12): jede Kante der Bilanz wird genau ein Band, jeder Knoten genau ein Bildknoten, nichts geht verloren;
-    /// Farbrolle nach der Regel „in den Bus die Quelle, aus dem Bus die Verwendung“, Brennstoff, Umwelt, Kälte, Verlust,
-    /// Rest; Bandart Verlust bzw. gestrichelt; Verlustknoten mit der Spalte ihres Eigentümers; Zeigertexte, Kurznamen und
-    /// Jahressummen übernommen; Spaltentitel in der Sprache der Bilanz; und der Renderer zeichnet die abgebildeten
-    /// Gaben vollständig (Bänder schließen an, Verlustknoten stehen in der Lücke).
+    /// Schritte SK-12 und SK-2c, Variante A): Speicher werden in ihren Bus gefaltet (Entladung als Busband, Verlust als
+    /// Abzweig am Bus, Ladung und Entladung im Zeigertext, Name „· Speicher“), Kleinstverluste unter 1 % und Nullbänder
+    /// entfallen, jede andere Kante wird genau ein Band; Farbrolle = Energieform; Bandart Verlust bzw. gestrichelt; Spur je
+    /// Knoten; Zeigertexte, Kurznamen und Jahressummen übernommen; Legende in der Sprache der Bilanz; und der Renderer
+    /// zeichnet die abgebildeten Gaben vollständig (Bänder schließen an, Verluste ohne Knotenbalken).
     /// </summary>
     [Collection("Testdatenbank")]
     public sealed class EnergieflussAbbildungTests : IDisposable
@@ -22,10 +22,8 @@ namespace EPOS.Kern.Tests
 
         public void Dispose() => _kultur.Dispose();
 
-        private const float KB = ChartRenderer.EF_KNOTENBREITE;
-
         // =====================================================================
-        //  Eine Bilanz von Hand, die jede Regel der Farbvergabe berührt
+        //  Eine Bilanz von Hand, die jede Regel berührt
         // =====================================================================
 
         private static readonly (string Id, EnergieflussKnotenart Art, int Spalte)[] KNOTEN =
@@ -54,60 +52,69 @@ namespace EPOS.Kern.Tests
             (Energiefluss.EINSPEISUNG_BHKW, EnergieflussKnotenart.Senke, 6), (Energiefluss.NICHT_ZUGEORDNET, EnergieflussKnotenart.Senke, 6),
         };
 
-        /// <summary>Jede Kante mit ihrer erwarteten Rolle (Konzept 3.4) und Bandart.</summary>
-        private static readonly (string Von, string Nach, EnergieflussForm Form, Farbrolle Rolle, EnergieflussBandart Art)[] KANTEN =
+        /// <summary>Jede Kante mit ihrer Energieform; die Rolle folgt der Form (Konzept 3.4, SK-Q14).</summary>
+        private static readonly (string Von, string Nach, EnergieflussForm Form)[] KANTEN =
         {
-            (Energiefluss.NETZBEZUG, Energiefluss.STROM, EnergieflussForm.Strom, Farbrolle.STROM_NETZ, EnergieflussBandart.Normal),
-            (Energiefluss.PHOTOVOLTAIK, Energiefluss.STROM, EnergieflussForm.Strom, Farbrolle.STROM_PV, EnergieflussBandart.Normal),
-            (Energiefluss.BHKW, Energiefluss.STROM, EnergieflussForm.Strom, Farbrolle.STROM_BHKW, EnergieflussBandart.Normal),
-            (Energiefluss.BHKW, Energiefluss.WAERME, EnergieflussForm.Waerme, Farbrolle.WAERME_BHKW, EnergieflussBandart.Normal),
-            ("traeger:7", Energiefluss.BHKW, EnergieflussForm.Brennstoff, Farbrolle.BRENNSTOFF, EnergieflussBandart.Normal),
-            ("traeger:7", Energiefluss.HEIZKESSEL, EnergieflussForm.Brennstoff, Farbrolle.BRENNSTOFF, EnergieflussBandart.Normal),
-            (Energiefluss.BHKW, Energiefluss.VERLUST + Energiefluss.BHKW, EnergieflussForm.Verlust, Farbrolle.VERLUST, EnergieflussBandart.Verlust),
-            (Energiefluss.HEIZKESSEL, Energiefluss.WAERME, EnergieflussForm.Waerme, Farbrolle.WAERME_KESSEL, EnergieflussBandart.Normal),
-            (Energiefluss.KONDENSATION, Energiefluss.HEIZKESSEL, EnergieflussForm.Umwelt, Farbrolle.UMWELTWAERME, EnergieflussBandart.Normal),
-            (Energiefluss.STROM, Energiefluss.WP_HEIZEN, EnergieflussForm.Strom, Farbrolle.WAERME_WP, EnergieflussBandart.Normal),
-            (Energiefluss.UMWELTWAERME, Energiefluss.WP_HEIZEN, EnergieflussForm.Umwelt, Farbrolle.UMWELTWAERME, EnergieflussBandart.Normal),
-            (Energiefluss.WP_HEIZEN, Energiefluss.WAERME, EnergieflussForm.Waerme, Farbrolle.WAERME_WP, EnergieflussBandart.Normal),
-            (Energiefluss.STROM, Energiefluss.HEIZSTAB, EnergieflussForm.Strom, Farbrolle.HEIZSTAB, EnergieflussBandart.Normal),
-            (Energiefluss.HEIZSTAB, Energiefluss.WAERME, EnergieflussForm.Waerme, Farbrolle.HEIZSTAB, EnergieflussBandart.Normal),
-            (Energiefluss.STROM, Energiefluss.ELEKTROKESSEL, EnergieflussForm.Strom, Farbrolle.WAERME_KESSEL, EnergieflussBandart.Normal),
-            (Energiefluss.ELEKTROKESSEL, Energiefluss.WAERME, EnergieflussForm.Waerme, Farbrolle.WAERME_KESSEL, EnergieflussBandart.Normal),
-            (Energiefluss.ELEKTROKESSEL, Energiefluss.VERLUST + Energiefluss.ELEKTROKESSEL, EnergieflussForm.Verlust, Farbrolle.VERLUST, EnergieflussBandart.Verlust),
-            (Energiefluss.SOLARTHERMIE, Energiefluss.WAERME, EnergieflussForm.Waerme, Farbrolle.WAERME_SOLAR, EnergieflussBandart.Normal),
-            (Energiefluss.STROM, Energiefluss.WP_KUEHLEN, EnergieflussForm.Strom, Farbrolle.KAELTE, EnergieflussBandart.Normal),
-            (Energiefluss.UMWELTKAELTE, Energiefluss.WP_KUEHLEN, EnergieflussForm.Umwelt, Farbrolle.UMWELTWAERME, EnergieflussBandart.Normal),
-            (Energiefluss.WP_KUEHLEN, Energiefluss.KAELTE, EnergieflussForm.Kaelte, Farbrolle.KAELTE, EnergieflussBandart.Normal),
-            (Energiefluss.KUEHLSTROM_EIGEN, "kaeltemaschine:1", EnergieflussForm.Strom, Farbrolle.STROM_NETZ, EnergieflussBandart.Normal),
-            ("kaeltemaschine:1", Energiefluss.KAELTE, EnergieflussForm.Kaelte, Farbrolle.KAELTE, EnergieflussBandart.Normal),
-            (Energiefluss.FREIE_KUEHLUNG, Energiefluss.KAELTE, EnergieflussForm.Kaelte, Farbrolle.KAELTE, EnergieflussBandart.Normal),
-            (Energiefluss.STROM, "split:1", EnergieflussForm.Strom, Farbrolle.KAELTE_DEZENTRAL, EnergieflussBandart.Normal),
-            ("split:1", Energiefluss.KAELTE, EnergieflussForm.Kaelte, Farbrolle.KAELTE_DEZENTRAL, EnergieflussBandart.Normal),
-            (Energiefluss.STROM, "weitere:split", EnergieflussForm.Strom, Farbrolle.KAELTE_DEZENTRAL, EnergieflussBandart.Normal),
-            ("weitere:split", Energiefluss.KAELTE, EnergieflussForm.Kaelte, Farbrolle.KAELTE_DEZENTRAL, EnergieflussBandart.Normal),
-            (Energiefluss.WAERME, "puffer:3:0", EnergieflussForm.Waerme, Farbrolle.SPEICHERLADUNG, EnergieflussBandart.Normal),
-            ("puffer:3:0", Energiefluss.HEIZUNG, EnergieflussForm.Waerme, Farbrolle.HEIZWAERME, EnergieflussBandart.Normal),
-            ("puffer:3:0", Energiefluss.WARMWASSER, EnergieflussForm.Waerme, Farbrolle.WARMWASSER, EnergieflussBandart.Normal),
-            ("puffer:3:0", "verlust:puffer:3:0", EnergieflussForm.Verlust, Farbrolle.VERLUST, EnergieflussBandart.Verlust),
-            ("puffer:3:0", "fuellstand:puffer:3:0", EnergieflussForm.Waerme, Farbrolle.SPEICHERLADUNG, EnergieflussBandart.Normal),
-            (Energiefluss.WAERME, "weitere:puffer", EnergieflussForm.Waerme, Farbrolle.SPEICHERLADUNG, EnergieflussBandart.Normal),
-            ("weitere:puffer", Energiefluss.PROZESSWAERME, EnergieflussForm.Waerme, Farbrolle.PROZESSWAERME, EnergieflussBandart.Normal),
-            (Energiefluss.WAERME, Energiefluss.HEIZUNG, EnergieflussForm.Waerme, Farbrolle.HEIZWAERME, EnergieflussBandart.Normal),
-            (Energiefluss.WAERME, Energiefluss.WARMWASSER, EnergieflussForm.Waerme, Farbrolle.WARMWASSER, EnergieflussBandart.Normal),
-            (Energiefluss.WAERME, Energiefluss.PROZESSWAERME, EnergieflussForm.Waerme, Farbrolle.PROZESSWAERME, EnergieflussBandart.Normal),
-            (Energiefluss.KAELTE, "kaeltespeicher:4:0", EnergieflussForm.Kaelte, Farbrolle.SPEICHERLADUNG, EnergieflussBandart.Normal),
-            ("kaeltespeicher:4:0", Energiefluss.KUEHLUNG, EnergieflussForm.Kaelte, Farbrolle.KAELTE, EnergieflussBandart.Normal),
-            (Energiefluss.KAELTE, Energiefluss.KUEHLUNG, EnergieflussForm.Kaelte, Farbrolle.KAELTE, EnergieflussBandart.Normal),
-            (Energiefluss.STROM, "stromspeicher:1", EnergieflussForm.Strom, Farbrolle.SPEICHERLADUNG, EnergieflussBandart.Normal),
-            ("stromspeicher:1", Energiefluss.STROMBEDARF, EnergieflussForm.Strom, Farbrolle.STROM_SPEICHER, EnergieflussBandart.Normal),
-            ("stromspeicher:1", "verlust:stromspeicher:1", EnergieflussForm.Verlust, Farbrolle.VERLUST, EnergieflussBandart.Verlust),
-            (Energiefluss.STROM, Energiefluss.STROMBEDARF, EnergieflussForm.Strom, Farbrolle.VERBRAUCH_GESAMT, EnergieflussBandart.Normal),
-            (Energiefluss.STROM, Energiefluss.EINSPEISUNG_PV, EnergieflussForm.Strom, Farbrolle.UEBERSCHUSS, EnergieflussBandart.Normal),
-            (Energiefluss.STROM, Energiefluss.EINSPEISUNG_BHKW, EnergieflussForm.Strom, Farbrolle.UEBERSCHUSS, EnergieflussBandart.Normal),
-            (Energiefluss.STROM, Energiefluss.NICHT_ZUGEORDNET, EnergieflussForm.Rest, Farbrolle.REST, EnergieflussBandart.NichtZugeordnet),
-            (Energiefluss.NICHT_ZUGEORDNET_QUELLE, Energiefluss.WAERME, EnergieflussForm.Rest, Farbrolle.REST, EnergieflussBandart.NichtZugeordnet),
-            (Energiefluss.UNGEDECKT, Energiefluss.HEIZUNG, EnergieflussForm.Rest, Farbrolle.REST, EnergieflussBandart.NichtZugeordnet),
+            (Energiefluss.NETZBEZUG, Energiefluss.STROM, EnergieflussForm.Strom),
+            (Energiefluss.PHOTOVOLTAIK, Energiefluss.STROM, EnergieflussForm.Strom),
+            (Energiefluss.BHKW, Energiefluss.STROM, EnergieflussForm.Strom),
+            (Energiefluss.BHKW, Energiefluss.WAERME, EnergieflussForm.Waerme),
+            ("traeger:7", Energiefluss.BHKW, EnergieflussForm.Brennstoff),
+            ("traeger:7", Energiefluss.HEIZKESSEL, EnergieflussForm.Brennstoff),
+            (Energiefluss.BHKW, Energiefluss.VERLUST + Energiefluss.BHKW, EnergieflussForm.Verlust),
+            (Energiefluss.HEIZKESSEL, Energiefluss.WAERME, EnergieflussForm.Waerme),
+            (Energiefluss.KONDENSATION, Energiefluss.HEIZKESSEL, EnergieflussForm.Umwelt),
+            (Energiefluss.STROM, Energiefluss.WP_HEIZEN, EnergieflussForm.Strom),
+            (Energiefluss.UMWELTWAERME, Energiefluss.WP_HEIZEN, EnergieflussForm.Umwelt),
+            (Energiefluss.WP_HEIZEN, Energiefluss.WAERME, EnergieflussForm.Waerme),
+            (Energiefluss.STROM, Energiefluss.HEIZSTAB, EnergieflussForm.Strom),
+            (Energiefluss.HEIZSTAB, Energiefluss.WAERME, EnergieflussForm.Waerme),
+            (Energiefluss.STROM, Energiefluss.ELEKTROKESSEL, EnergieflussForm.Strom),
+            (Energiefluss.ELEKTROKESSEL, Energiefluss.WAERME, EnergieflussForm.Waerme),
+            (Energiefluss.ELEKTROKESSEL, Energiefluss.VERLUST + Energiefluss.ELEKTROKESSEL, EnergieflussForm.Verlust),
+            (Energiefluss.SOLARTHERMIE, Energiefluss.WAERME, EnergieflussForm.Waerme),
+            (Energiefluss.STROM, Energiefluss.WP_KUEHLEN, EnergieflussForm.Strom),
+            (Energiefluss.UMWELTKAELTE, Energiefluss.WP_KUEHLEN, EnergieflussForm.Umwelt),
+            (Energiefluss.WP_KUEHLEN, Energiefluss.KAELTE, EnergieflussForm.Kaelte),
+            (Energiefluss.KUEHLSTROM_EIGEN, "kaeltemaschine:1", EnergieflussForm.Strom),
+            ("kaeltemaschine:1", Energiefluss.KAELTE, EnergieflussForm.Kaelte),
+            (Energiefluss.FREIE_KUEHLUNG, Energiefluss.KAELTE, EnergieflussForm.Kaelte),
+            (Energiefluss.STROM, "split:1", EnergieflussForm.Strom),
+            ("split:1", Energiefluss.KAELTE, EnergieflussForm.Kaelte),
+            (Energiefluss.STROM, "weitere:split", EnergieflussForm.Strom),
+            ("weitere:split", Energiefluss.KAELTE, EnergieflussForm.Kaelte),
+            (Energiefluss.WAERME, "puffer:3:0", EnergieflussForm.Waerme),
+            ("puffer:3:0", Energiefluss.HEIZUNG, EnergieflussForm.Waerme),
+            ("puffer:3:0", Energiefluss.WARMWASSER, EnergieflussForm.Waerme),
+            ("puffer:3:0", "verlust:puffer:3:0", EnergieflussForm.Verlust),
+            ("puffer:3:0", "fuellstand:puffer:3:0", EnergieflussForm.Waerme),
+            (Energiefluss.WAERME, "weitere:puffer", EnergieflussForm.Waerme),
+            ("weitere:puffer", Energiefluss.PROZESSWAERME, EnergieflussForm.Waerme),
+            (Energiefluss.WAERME, Energiefluss.HEIZUNG, EnergieflussForm.Waerme),
+            (Energiefluss.WAERME, Energiefluss.WARMWASSER, EnergieflussForm.Waerme),
+            (Energiefluss.WAERME, Energiefluss.PROZESSWAERME, EnergieflussForm.Waerme),
+            (Energiefluss.KAELTE, "kaeltespeicher:4:0", EnergieflussForm.Kaelte),
+            ("kaeltespeicher:4:0", Energiefluss.KUEHLUNG, EnergieflussForm.Kaelte),
+            (Energiefluss.KAELTE, Energiefluss.KUEHLUNG, EnergieflussForm.Kaelte),
+            (Energiefluss.STROM, "stromspeicher:1", EnergieflussForm.Strom),
+            ("stromspeicher:1", Energiefluss.STROMBEDARF, EnergieflussForm.Strom),
+            ("stromspeicher:1", "verlust:stromspeicher:1", EnergieflussForm.Verlust),
+            (Energiefluss.STROM, Energiefluss.STROMBEDARF, EnergieflussForm.Strom),
+            (Energiefluss.STROM, Energiefluss.EINSPEISUNG_PV, EnergieflussForm.Strom),
+            (Energiefluss.STROM, Energiefluss.EINSPEISUNG_BHKW, EnergieflussForm.Strom),
+            (Energiefluss.STROM, Energiefluss.NICHT_ZUGEORDNET, EnergieflussForm.Rest),
+            (Energiefluss.NICHT_ZUGEORDNET_QUELLE, Energiefluss.WAERME, EnergieflussForm.Rest),
+            (Energiefluss.UNGEDECKT, Energiefluss.HEIZUNG, EnergieflussForm.Rest),
         };
+
+        private static readonly Dictionary<EnergieflussForm, Farbrolle> ROLLE = new Dictionary<EnergieflussForm, Farbrolle>
+        {
+            { EnergieflussForm.Strom, Farbrolle.STROM }, { EnergieflussForm.Waerme, Farbrolle.WAERME }, { EnergieflussForm.Kaelte, Farbrolle.KAELTE },
+            { EnergieflussForm.Brennstoff, Farbrolle.BRENNSTOFF }, { EnergieflussForm.Umwelt, Farbrolle.UMWELTWAERME },
+            { EnergieflussForm.Verlust, Farbrolle.VERLUST }, { EnergieflussForm.Rest, Farbrolle.REST },
+        };
+
+        private static readonly string[] SPEICHER = { "puffer:3:0", "weitere:puffer", "kaeltespeicher:4:0", "stromspeicher:1" };
 
         private static EnergieflussBilanz VonHand(bool englisch = false)
         {
@@ -134,31 +141,90 @@ namespace EPOS.Kern.Tests
         private static EnergieflussBildBand Band(EnergieflussBildDaten d, string von, string nach)
             => Assert.Single(d.Baender, x => x.Von == von && x.Nach == nach);
 
+        private static EnergieflussBildKnoten Knoten(EnergieflussBildDaten d, string id)
+            => Assert.Single(d.Knoten, x => x.Kennung == id);
+
+        private static double Fluss(EnergieflussBilanz b, string von, string nach) => b.Fluss(von, nach);
+
         // =====================================================================
-        //  Vollständigkeit
+        //  Speicher gefaltet, sonst nichts verloren
         // =====================================================================
 
         [Fact]
-        public void Jede_Kante_wird_genau_ein_Band_und_jeder_Knoten_genau_ein_Bildknoten()
+        public void Speicher_werden_in_ihren_Bus_gefaltet_alle_anderen_Kanten_bleiben_Baender()
         {
             EnergieflussBilanz b = VonHand();
             EnergieflussBildDaten d = EnergieflussAbbildung.Bild(b);
-            Assert.Equal(b.Knoten.Count, d.Knoten.Count);
-            Assert.Equal(b.Fluesse.Count, d.Baender.Count);
-            Assert.Equal(b.Knoten.Select(k => k.Id), d.Knoten.Select(k => k.Kennung));
-            Assert.Equal(b.Fluesse.Select(f => (f.Von, f.Nach, f.Mwh)), d.Baender.Select(x => (x.Von, x.Nach, x.Mwh)));
-            Assert.Equal(b.Fluesse.Sum(f => f.Mwh), d.Baender.Sum(x => x.Mwh), 9);
+            foreach (string s in SPEICHER)
+            {
+                Assert.DoesNotContain(d.Knoten, k => k.Kennung == s);
+                Assert.DoesNotContain(d.Baender, x => x.Von == s || x.Nach == s);
+            }
+            // Jede Kante, die keinen Speicher berührt, ist genau ein Band mit Wert und Zeigertext wörtlich.
+            foreach (var e in KANTEN.Where(e => !SPEICHER.Contains(e.Von) && !SPEICHER.Contains(e.Nach)))
+            {
+                EnergieflussBildBand band = Band(d, e.Von, e.Nach);
+                Assert.Equal(e.Von == Energiefluss.WAERME && (e.Nach == Energiefluss.HEIZUNG || e.Nach == Energiefluss.WARMWASSER || e.Nach == Energiefluss.PROZESSWAERME)
+                             || e.Von == Energiefluss.KAELTE && e.Nach == Energiefluss.KUEHLUNG
+                             || e.Von == Energiefluss.STROM && e.Nach == Energiefluss.STROMBEDARF
+                             ? Fluss(b, e.Von, e.Nach) + SPEICHER.Sum(s => Fluss(b, s, e.Nach))
+                             : Fluss(b, e.Von, e.Nach), band.Mwh, 9);
+                if (band.Mwh == Fluss(b, e.Von, e.Nach)) Assert.Equal("Z " + e.Von + "→" + e.Nach, band.Zeigertext);
+            }
+            // Die Entladung in eine Senke verbreitert das direkte Band; der Zeigertext nennt den Speicheranteil.
+            EnergieflussBildBand heizung = Band(d, Energiefluss.WAERME, Energiefluss.HEIZUNG);
+            Assert.Contains("davon " + Energiefluss.Zahl(Fluss(b, "puffer:3:0", Energiefluss.HEIZUNG), Energiefluss.Kultur(false)) + " MWh/a über N puffer:3:0", heizung.Zeigertext);
+            Assert.StartsWith("N waerme · Speicher → N heizung: ", heizung.Zeigertext);
+            // Verlust und Füllstandsänderung des Speichers sind Abzweige am Bus.
+            Assert.Equal(Fluss(b, "puffer:3:0", "verlust:puffer:3:0"), Band(d, Energiefluss.WAERME, "verlust:puffer:3:0").Mwh, 9);
+            Assert.Equal(Fluss(b, "puffer:3:0", "fuellstand:puffer:3:0"), Band(d, Energiefluss.WAERME, "fuellstand:puffer:3:0").Mwh, 9);
+            Assert.Equal("Z puffer:3:0→verlust:puffer:3:0", Band(d, Energiefluss.WAERME, "verlust:puffer:3:0").Zeigertext);
+            Assert.Equal(Fluss(b, "stromspeicher:1", "verlust:stromspeicher:1"), Band(d, Energiefluss.STROM, "verlust:stromspeicher:1").Mwh, 9);
+            // Der Bus trägt den Zusatz „· Speicher“ und Ladung/Entladung im Zeigertext; die Kurzform bleibt.
+            EnergieflussBildKnoten waerme = Knoten(d, Energiefluss.WAERME);
+            Assert.Equal("N waerme · Speicher", waerme.Name);
+            Assert.Equal("K waerme", waerme.Kurzname);
+            Assert.StartsWith("Z waerme · N puffer:3:0: Ladung ", waerme.Zeigertext);
+            Assert.Contains("· N weitere:puffer: Ladung ", waerme.Zeigertext);
+            Assert.Equal("N strom · Speicher", Knoten(d, Energiefluss.STROM).Name);
+            Assert.Equal("N kaelte · Speicher", Knoten(d, Energiefluss.KAELTE).Name);
+            // Nichts geht verloren: jede Menge der Bilanz steckt in einem Band, bis auf die Ladungen der Speicher.
+            double ladungen = SPEICHER.Sum(s => KANTEN.Where(e => e.Nach == s).Sum(e => Fluss(b, e.Von, s)));
+            Assert.Equal(b.Fluesse.Sum(f => f.Mwh) - ladungen, d.Baender.Sum(x => x.Mwh), 6);
+            Assert.Equal(b.Knoten.Count - SPEICHER.Length, d.Knoten.Count);
         }
 
         [Fact]
-        public void Knoten_tragen_Spalte_Art_Namen_Kurznamen_Zeigertext_und_Jahressumme()
+        public void Kleinstverluste_und_Nullbaender_entfallen_mit_Vermerk_im_Zeigertext()
+        {
+            var b = new EnergieflussBilanz { Simuliert = true };
+            b.Knoten.Add(new EnergieflussKnoten { Id = "gas", Name = "Erdgas", Art = EnergieflussKnotenart.Quelle, AbflussMwh = 100.0, Zeigertext = "Z gas" });
+            b.Knoten.Add(new EnergieflussKnoten { Id = "kessel", Name = "Kessel", Art = EnergieflussKnotenart.Wandler, Spalte = 1, ZuflussMwh = 100.0, AbflussMwh = 100.0, Zeigertext = "Z kessel" });
+            b.Knoten.Add(new EnergieflussKnoten { Id = "verlust:kessel", Name = "Verlust", Art = EnergieflussKnotenart.Verlust, Spalte = 1, ZuflussMwh = 0.9 });
+            b.Knoten.Add(new EnergieflussKnoten { Id = "heizung", Name = "Heizung", Art = EnergieflussKnotenart.Senke, Spalte = 6, ZuflussMwh = 99.1 });
+            b.Knoten.Add(new EnergieflussKnoten { Id = "ungedeckt", Name = "ungedeckt", Art = EnergieflussKnotenart.Quelle, AbflussMwh = 0.01 });
+            b.Fluesse.Add(new EnergieflussFluss { Von = "gas", Nach = "kessel", Mwh = 100.0, Form = EnergieflussForm.Brennstoff });
+            b.Fluesse.Add(new EnergieflussFluss { Von = "kessel", Nach = "heizung", Mwh = 99.1, Form = EnergieflussForm.Waerme });
+            b.Fluesse.Add(new EnergieflussFluss { Von = "kessel", Nach = "verlust:kessel", Mwh = 0.9, Form = EnergieflussForm.Verlust });
+            b.Fluesse.Add(new EnergieflussFluss { Von = "ungedeckt", Nach = "heizung", Mwh = 0.01, Form = EnergieflussForm.Rest });
+            EnergieflussBildDaten d = EnergieflussAbbildung.Bild(b);
+            Assert.Equal(2, d.Baender.Count);
+            Assert.DoesNotContain(d.Knoten, k => k.Kennung == "verlust:kessel" || k.Kennung == "ungedeckt");
+            Assert.Equal("Z kessel · Verlust 0,90 MWh/a (unter 1 %, nicht gezeichnet)", Knoten(d, "kessel").Zeigertext);
+            Assert.Equal(new[] { Farbrolle.WAERME, Farbrolle.BRENNSTOFF }, d.Legende.Select(l => l.Rolle).ToArray());
+            // Ab 1 % bleibt der Verlust ein Band.
+            b.Fluesse[2].Mwh = 1.0;
+            Assert.Equal(3, EnergieflussAbbildung.Bild(b).Baender.Count);
+        }
+
+        [Fact]
+        public void Knoten_tragen_Spur_Art_Namen_Kurznamen_Zeigertext_und_Jahressumme()
         {
             EnergieflussBilanz b = VonHand();
             EnergieflussBildDaten d = EnergieflussAbbildung.Bild(b);
-            foreach (EnergieflussKnoten k in b.Knoten)
+            foreach (EnergieflussKnoten k in b.Knoten.Where(k => k.Art != EnergieflussKnotenart.Speicher && k.Art != EnergieflussKnotenart.Bus))
             {
-                EnergieflussBildKnoten bk = Assert.Single(d.Knoten, x => x.Kennung == k.Id);
-                Assert.Equal(k.Spalte, bk.Spalte);
+                EnergieflussBildKnoten bk = Knoten(d, k.Id);
                 Assert.Equal(k.Art, bk.Art);
                 Assert.Equal(k.Name, bk.Name);
                 Assert.Equal(k.Kurzname, bk.Kurzname);
@@ -166,82 +232,92 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(k.Art == EnergieflussKnotenart.Quelle ? k.AbflussMwh : k.ZuflussMwh, bk.Mwh, 9);
                 Assert.Equal(k.Art == EnergieflussKnotenart.Verlust ? Farbrolle.VERLUST : Farbrolle.KNOTEN, bk.Rolle);
             }
-            // Ein Verlust- oder Füllstandsknoten trägt die Spalte seines Eigentümers (Konzept 3.1) — ganzzahlig.
-            Assert.Equal(1, Assert.Single(d.Knoten, x => x.Kennung == Energiefluss.VERLUST + Energiefluss.BHKW).Spalte);
-            Assert.Equal(5, Assert.Single(d.Knoten, x => x.Kennung == "fuellstand:puffer:3:0").Spalte);
+            var spuren = new Dictionary<string, EnergieflussSpur>
+            {
+                { Energiefluss.STROM, EnergieflussSpur.Strom }, { Energiefluss.WAERME, EnergieflussSpur.Waerme }, { Energiefluss.KAELTE, EnergieflussSpur.Kaelte },
+                { Energiefluss.BHKW, EnergieflussSpur.Gemischt }, { Energiefluss.HEIZKESSEL, EnergieflussSpur.Waerme },
+                { Energiefluss.WP_HEIZEN, EnergieflussSpur.Waerme }, { Energiefluss.HEIZSTAB, EnergieflussSpur.Waerme },
+                { Energiefluss.WP_KUEHLEN, EnergieflussSpur.Kaelte }, { "kaeltemaschine:1", EnergieflussSpur.Kaelte }, { "split:1", EnergieflussSpur.Kaelte },
+                { Energiefluss.NETZBEZUG, EnergieflussSpur.Strom }, { Energiefluss.PHOTOVOLTAIK, EnergieflussSpur.Strom },
+                { Energiefluss.UMWELTWAERME, EnergieflussSpur.Waerme }, { Energiefluss.UMWELTKAELTE, EnergieflussSpur.Kaelte },
+                { Energiefluss.KUEHLSTROM_EIGEN, EnergieflussSpur.Kaelte }, { Energiefluss.UNGEDECKT, EnergieflussSpur.Waerme },
+                { "traeger:7", EnergieflussSpur.Waerme },   // der größere Abfluss geht in den Kessel
+                { Energiefluss.HEIZUNG, EnergieflussSpur.Waerme }, { Energiefluss.KUEHLUNG, EnergieflussSpur.Kaelte },
+                { Energiefluss.STROMBEDARF, EnergieflussSpur.Strom }, { Energiefluss.NICHT_ZUGEORDNET, EnergieflussSpur.Strom },
+                { Energiefluss.EINSPEISUNG_BHKW, EnergieflussSpur.Strom },
+                { Energiefluss.VERLUST + Energiefluss.BHKW, EnergieflussSpur.Gemischt }, { "verlust:puffer:3:0", EnergieflussSpur.Waerme },
+                { "verlust:stromspeicher:1", EnergieflussSpur.Strom },
+            };
+            foreach (var s in spuren) Assert.True(s.Value == Knoten(d, s.Key).Spur, s.Key + ": erwartet " + s.Value + ", ist " + Knoten(d, s.Key).Spur);
         }
 
         [Fact]
-        public void Baender_tragen_Zeigertext_der_Bilanz_woertlich()
+        public void Leere_Zeigertexte_werden_null_der_Renderer_bildet_dann_seinen_Vorgabetext()
         {
             EnergieflussBilanz b = VonHand();
-            EnergieflussBildDaten d = EnergieflussAbbildung.Bild(b);
-            foreach (EnergieflussFluss f in b.Fluesse)
-                Assert.Equal(f.Zeigertext, Band(d, f.Von, f.Nach).Zeigertext);
-            // Ein leerer Zeigertext wird null — der Renderer bildet dann seinen Vorgabetext.
             b.Fluesse[0].Zeigertext = "";
             b.Knoten[0].Zeigertext = "";
-            d = EnergieflussAbbildung.Bild(b);
-            Assert.Null(d.Baender[0].Zeigertext);
-            Assert.Null(d.Knoten[0].Zeigertext);
+            EnergieflussBildDaten d = EnergieflussAbbildung.Bild(b);
+            Assert.Null(Band(d, b.Fluesse[0].Von, b.Fluesse[0].Nach).Zeigertext);
+            Assert.Null(Knoten(d, b.Knoten[0].Id).Zeigertext);
         }
 
         // =====================================================================
-        //  Rollen und Bandarten (Konzept 3.4)
+        //  Rollen, Bandarten, Legende (Konzept 3.4, SK-Q14)
         // =====================================================================
 
         [Fact]
-        public void Rollen_folgen_der_Regel_in_den_Bus_die_Quelle_aus_dem_Bus_die_Verwendung()
+        public void Rolle_ist_die_Energieform_des_Bandes_Verlust_und_Rest_nach_Bandart()
         {
             EnergieflussBildDaten d = EnergieflussAbbildung.Bild(VonHand());
-            foreach (var e in KANTEN)
+            foreach (var e in KANTEN.Where(e => !SPEICHER.Contains(e.Von) && !SPEICHER.Contains(e.Nach)))
             {
                 EnergieflussBildBand band = Band(d, e.Von, e.Nach);
-                Assert.True(e.Rolle == band.Rolle, e.Von + " → " + e.Nach + ": erwartet " + e.Rolle + ", ist " + band.Rolle);
-                Assert.True(e.Art == band.Art, e.Von + " → " + e.Nach + ": erwartet " + e.Art + ", ist " + band.Art);
+                Assert.True(ROLLE[e.Form] == band.Rolle, e.Von + " → " + e.Nach + ": erwartet " + ROLLE[e.Form] + ", ist " + band.Rolle);
+                EnergieflussBandart art = e.Form == EnergieflussForm.Verlust ? EnergieflussBandart.Verlust
+                                        : e.Form == EnergieflussForm.Rest ? EnergieflussBandart.NichtZugeordnet : EnergieflussBandart.Normal;
+                Assert.True(art == band.Art, e.Von + " → " + e.Nach + ": erwartet " + art + ", ist " + band.Art);
             }
+            Assert.Equal(Farbrolle.VERLUST, Band(d, Energiefluss.WAERME, "verlust:puffer:3:0").Rolle);
+            Assert.Equal(EnergieflussBandart.Verlust, Band(d, Energiefluss.WAERME, "verlust:puffer:3:0").Art);
+            Assert.Equal(Farbrolle.WAERME, Band(d, Energiefluss.WAERME, "fuellstand:puffer:3:0").Rolle);
+            foreach (EnergieflussForm f in Enum.GetValues(typeof(EnergieflussForm)))
+                Assert.Equal(ROLLE[f], EnergieflussAbbildung.Rolle(f));
         }
 
         [Fact]
-        public void Unbekannte_Knoten_fallen_auf_die_Energieform_zurueck()
+        public void Legende_nennt_die_vorkommenden_Formen_in_fester_Reihenfolge_und_in_der_Sprache_der_Bilanz()
+        {
+            Assert.Equal(new[] { "Strom", "Wärme", "Kälte", "Brennstoff", "Umweltwärme / Umwelt (Kälte)", "Verlust", "nicht zugeordnet / ungedeckt" },
+                         EnergieflussAbbildung.Bild(VonHand()).Legende.Select(l => l.Text).ToArray());
+            IReadOnlyList<EnergieflussBildLegende> en = EnergieflussAbbildung.Bild(VonHand(englisch: true)).Legende;
+            Assert.Equal(new[] { "Electricity", "Heat", "Cooling", "Fuel", "Ambient heat / ambient (cooling)", "Loss", "unassigned / uncovered" },
+                         en.Select(l => l.Text).ToArray());
+            Assert.Equal(new[] { Farbrolle.STROM, Farbrolle.WAERME, Farbrolle.KAELTE, Farbrolle.BRENNSTOFF, Farbrolle.UMWELTWAERME, Farbrolle.VERLUST, Farbrolle.REST },
+                         en.Select(l => l.Rolle).ToArray());
+            Assert.Equal(new[] { false, false, false, false, false, false, true }, en.Select(l => l.Gestrichelt).ToArray());
+            Assert.Equal("Storage", Energiefluss.T("EF_SP_SPEICHER", true));
+            Assert.EndsWith(" · Storage", Knoten(EnergieflussAbbildung.Bild(VonHand(englisch: true)), Energiefluss.WAERME).Name);
+        }
+
+        [Fact]
+        public void Unbekannte_Knoten_bekommen_Rolle_und_Spur_aus_der_Energieform()
         {
             var b = new EnergieflussBilanz { Simuliert = true };
             b.Knoten.Add(new EnergieflussKnoten { Id = "fremd_a", Art = EnergieflussKnotenart.Wandler, Spalte = 1 });
             b.Knoten.Add(new EnergieflussKnoten { Id = "fremd_b", Art = EnergieflussKnotenart.Wandler, Spalte = 3 });
+            b.Knoten.Add(new EnergieflussKnoten { Id = "fremd_c", Art = EnergieflussKnotenart.Senke, Spalte = 6 });
             b.Fluesse.Add(new EnergieflussFluss { Von = "fremd_a", Nach = "fremd_b", Mwh = 1.0, Form = EnergieflussForm.Strom });
-            b.Fluesse.Add(new EnergieflussFluss { Von = "fremd_b", Nach = "fremd_a", Mwh = 1.0, Form = EnergieflussForm.Kaelte });
+            b.Fluesse.Add(new EnergieflussFluss { Von = "fremd_b", Nach = "fremd_c", Mwh = 1.0, Form = EnergieflussForm.Kaelte });
             b.Fluesse.Add(new EnergieflussFluss { Von = "fremd_b", Nach = "unbekannt", Mwh = 1.0, Form = EnergieflussForm.Waerme });
             EnergieflussBildDaten d = EnergieflussAbbildung.Bild(b);
-            Assert.Equal(Farbrolle.STROM_NETZ, Band(d, "fremd_a", "fremd_b").Rolle);
-            Assert.Equal(Farbrolle.KAELTE, Band(d, "fremd_b", "fremd_a").Rolle);
-            Assert.Equal(Farbrolle.HEIZWAERME, Band(d, "fremd_b", "unbekannt").Rolle);
+            Assert.Equal(2, d.Baender.Count);
+            Assert.Equal(Farbrolle.STROM, Band(d, "fremd_a", "fremd_b").Rolle);
+            Assert.Equal(Farbrolle.KAELTE, Band(d, "fremd_b", "fremd_c").Rolle);
+            Assert.Equal(EnergieflussSpur.Strom, Knoten(d, "fremd_a").Spur);
+            Assert.Equal(EnergieflussSpur.Kaelte, Knoten(d, "fremd_b").Spur);
+            Assert.Equal(EnergieflussSpur.Kaelte, Knoten(d, "fremd_c").Spur);
             Assert.All(d.Baender, x => Assert.Equal(EnergieflussBandart.Normal, x.Art));
-        }
-
-        // =====================================================================
-        //  Spaltentitel und Sprache
-        // =====================================================================
-
-        [Fact]
-        public void Spaltentitel_in_der_Sprache_der_Bilanz_und_nur_die_Busse_die_im_Bild_stehen()
-        {
-            // Die Bustitel sind die Namen der Busknoten (hier „N strom“ …), die übrigen Titel Ressourcen.
-            Assert.Equal(new[] { "Quellen", "Wandler", "N strom", "Wandler", "N waerme · N kaelte", "Speicher", "Bedarf" },
-                         EnergieflussAbbildung.Bild(VonHand()).Spaltentitel);
-            Assert.Equal(new[] { "Sources", "Converters", "N strom", "Converters", "N waerme · N kaelte", "Storage", "Demand" },
-                         EnergieflussAbbildung.Bild(VonHand(englisch: true)).Spaltentitel);
-            EnergieflussBilanz echt = Energiefluss.Aus(Baum(), null, false, "Stamm", 4711);
-            Assert.Equal(new[] { "Quellen", "Wandler", "Strom", "Wandler", "Wärme", "Speicher", "Bedarf" }, EnergieflussAbbildung.Bild(echt).Spaltentitel);
-            EnergieflussBilanz en = Energiefluss.Aus(Baum(), null, true, "Stamm", 4711);
-            Assert.Equal(new[] { "Sources", "Converters", en.KnotenMit(Energiefluss.STROM).Name, "Converters", en.KnotenMit(Energiefluss.WAERME).Name, "Storage", "Demand" },
-                         EnergieflussAbbildung.Bild(en).Spaltentitel);
-
-            // Ohne Kältebus heißt die Spalte „Wärme“; ohne beide der Vorgabetitel.
-            EnergieflussBilanz nurWaerme = VonHand();
-            nurWaerme.Knoten.RemoveAll(k => k.Id == Energiefluss.KAELTE);
-            Assert.Equal("N " + Energiefluss.WAERME, EnergieflussAbbildung.Bild(nurWaerme).Spaltentitel[Energiefluss.SPALTE_BUSSE]);
-            Assert.Equal("Wärme · Kälte", EnergieflussAbbildung.Bild(new EnergieflussBilanz()).Spaltentitel[Energiefluss.SPALTE_BUSSE]);
-            Assert.Equal(EnergieflussAbbildung.SPALTEN, EnergieflussAbbildung.Bild(new EnergieflussBilanz()).Spaltentitel.Count);
         }
 
         [Fact]
@@ -250,6 +326,7 @@ namespace EPOS.Kern.Tests
             EnergieflussBildDaten d = EnergieflussAbbildung.Bild(null);
             Assert.Empty(d.Knoten);
             Assert.Empty(d.Baender);
+            Assert.Empty(d.Legende);
             Assert.Empty(ChartRenderer.EnergieflussModell(d).Befehle);
             Assert.Empty(ChartRenderer.EnergieflussModell(EnergieflussAbbildung.Bild(new EnergieflussBilanz())).Befehle);
         }
@@ -281,46 +358,62 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Bilanz_aus_dem_Flussbau_wird_vollstaendig_gezeichnet_Verlustknoten_in_der_Luecke()
+        public void Bilanz_aus_dem_Flussbau_wird_vollstaendig_gezeichnet_Speicher_am_Bus_Verluste_ohne_Balken()
         {
             EnergieflussBilanz b = Energiefluss.Aus(Baum(), null, false, "Stamm", 4711);
             Assert.False(b.Leer);
-            Assert.Contains(b.Knoten, k => k.Art == EnergieflussKnotenart.Verlust);
-            Assert.Contains(b.Knoten, k => k.Id.StartsWith(Energiefluss.FUELLSTAND, StringComparison.Ordinal));
+            Assert.Contains(b.Knoten, k => k.Art == EnergieflussKnotenart.Speicher);
             EnergieflussBildDaten d = EnergieflussAbbildung.Bild(b);
+            Assert.DoesNotContain(d.Knoten, k => k.Art == EnergieflussKnotenart.Speicher);
+            Assert.Contains(d.Baender, x => x.Von == Energiefluss.WAERME && x.Nach.StartsWith(Energiefluss.VERLUST, StringComparison.Ordinal));
+            Assert.NotEmpty(d.Legende);
 
             foreach (var (mass, werte) in new[] { (ChartRenderer.ENERGIEFLUSS_BREIT, false), (ChartRenderer.ENERGIEFLUSS_SCHMAL, false), (ChartRenderer.ENERGIEFLUSS_BERICHT, true) })
             {
                 Zeichenmodell z = ChartRenderer.EnergieflussModell(d, mass, werte);
-                var rechtecke = z.Befehle.OfType<Rechteck>().Where(r => r.Marke != null && r.Marke.StartsWith("knoten:", StringComparison.Ordinal))
-                                 .ToDictionary(r => r.Marke.Substring("knoten:".Length), r => r);
-                var baender = z.Befehle.OfType<Pfad>().Where(p => p.Marke != null && p.Marke.StartsWith("fluss:", StringComparison.Ordinal)).ToList();
-                Assert.Equal(b.Knoten.Count, rechtecke.Count);
-                Assert.Equal(b.Fluesse.Count, baender.Count);
-                int n = ChartRenderer.EF_STUETZSTELLEN;
-                foreach (EnergieflussFluss f in b.Fluesse)
-                {
-                    Pfad p = Assert.Single(baender, x => x.Marke == f.Marke);
-                    Rechteck von = rechtecke[f.Von], nach = rechtecke[f.Nach];
-                    Assert.Equal(von.X + KB, p.Punkte[0].X, 3);
-                    Assert.Equal(nach.X, p.Punkte[n - 1].X, 3);
-                    Assert.InRange(p.Punkte[0].Y, von.Y - 0.01f, von.Y + von.Hoehe + 0.01f);
-                    Assert.InRange(p.Punkte[n - 1].Y, nach.Y - 0.01f, nach.Y + nach.Hoehe + 0.01f);
-                    Assert.Equal(f.Zeigertext, p.Wert);
-                }
-                foreach (EnergieflussKnoten k in b.Knoten)
-                    Assert.Equal(k.Zeigertext, rechtecke[k.Id].Wert);
-                // Verlust- und Füllstandsknoten stehen in der Lücke rechts neben ihrem Eigentümer, vor der nächsten Spalte.
-                foreach (EnergieflussKnoten k in b.Knoten.Where(k => k.Art == EnergieflussKnotenart.Verlust))
-                {
-                    string eigentuemer = Assert.Single(b.Fluesse, f => f.Nach == k.Id).Von;
-                    Rechteck o = rechtecke[eigentuemer], v = rechtecke[k.Id];
-                    float naechste = rechtecke.Where(r => b.KnotenMit(r.Key).Art != EnergieflussKnotenart.Verlust && r.Value.X > o.X + KB)
-                                              .Select(r => r.Value.X).DefaultIfEmpty(z.Breite).Min();
-                    Assert.True(v.X > o.X + KB && v.X + v.Breite < naechste, k.Id + " in der Lücke (" + mass.Breite + ")");
-                }
+                Gezeichnet(d, z, "(" + mass.Breite + ")");
                 Assert.True(z.Gleicht(ChartRenderer.EnergieflussModell(d, mass, werte)));
             }
+            Assert.Equal(0, ChartRenderer.EnergieflussKreuzungen(d));
+        }
+
+        /// <summary>
+        /// Jedes Band der Bilddaten ist genau ein Pfad, der an seinem Quellknoten beginnt und — außer einem Verlustabzweig —
+        /// an seinem Zielknoten endet; jeder Knoten außer den Verlustknoten ist genau ein Rechteck; Zeigertexte wörtlich.
+        /// </summary>
+        internal static void Gezeichnet(EnergieflussBildDaten d, Zeichenmodell z, string wo)
+        {
+            var rechtecke = z.Befehle.OfType<Rechteck>().Where(r => r.Marke != null && r.Marke.StartsWith("knoten:", StringComparison.Ordinal))
+                             .ToDictionary(r => r.Marke.Substring("knoten:".Length), r => r);
+            var baender = z.Befehle.OfType<Pfad>().Where(p => p.Marke != null && p.Marke.StartsWith("fluss:", StringComparison.Ordinal)).ToList();
+            var verluste = new HashSet<string>(d.Knoten.Where(k => k.Art == EnergieflussKnotenart.Verlust).Select(k => k.Kennung), StringComparer.Ordinal);
+            Assert.Equal(d.Knoten.Count(k => k.Art != EnergieflussKnotenart.Verlust), rechtecke.Count);
+            Assert.Equal(d.Baender.Count, baender.Count);
+            foreach (EnergieflussBildBand f in d.Baender)
+            {
+                Pfad p = Assert.Single(baender, x => x.Marke == "fluss:" + f.Von + ":" + f.Nach);
+                int n = p.Punkte.Count / 2;
+                Rechteck von = rechtecke[f.Von];
+                Assert.Equal(von.X + von.Breite, p.Punkte[0].X, 3);
+                Assert.InRange(p.Punkte[0].Y, von.Y - 0.01f, von.Y + von.Hoehe + 0.01f);
+                if (verluste.Contains(f.Nach))
+                {
+                    Assert.False(rechtecke.ContainsKey(f.Nach), wo + " " + f.Nach + " hat keinen Balken");
+                    Assert.Equal(2 * ChartRenderer.EF_STUETZSTELLEN, p.Punkte.Count);
+                    Assert.True(p.Punkte[n - 1].X - p.Punkte[0].X <= 44f + 0.01f, wo + " Abzweig kurz");
+                }
+                else
+                {
+                    Rechteck nach = rechtecke[f.Nach];
+                    Assert.Equal(nach.X, p.Punkte[n - 1].X, 3);
+                    Assert.InRange(p.Punkte[n - 1].Y, nach.Y - 0.01f, nach.Y + nach.Hoehe + 0.01f);
+                }
+                if (f.Zeigertext != null) Assert.Equal(f.Zeigertext, p.Wert);
+            }
+            foreach (EnergieflussBildKnoten k in d.Knoten.Where(k => k.Art != EnergieflussKnotenart.Verlust))
+                if (k.Zeigertext != null) Assert.Equal(k.Zeigertext, rechtecke[k.Kennung].Wert);
+            foreach (Rechteck r in rechtecke.Values)
+                Assert.True(r.X >= 0 && r.Y >= 0 && r.X + r.Breite <= z.Breite && r.Y + r.Hoehe <= z.Hoehe - ChartRenderer.EF_LEGENDE_HOEHE, wo + " " + r.Marke + " im Bild");
         }
     }
 }

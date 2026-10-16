@@ -92,6 +92,12 @@ namespace WindowsFormsApplication1.Zeichnung
         public static readonly Farbrolle VERLUST = new Farbrolle("VERLUST");
         public static readonly Farbrolle KNOTEN = new Farbrolle("KNOTEN");
 
+        // SK-2c (Konzept Energieflussbild 3.4, SK-Q14): die Farbe eines Bandes ist seine Energieform — Strom und Wärme
+        // bekommen je eine eigene Rolle; Kälte, Brennstoff, Umwelt, Verlust und Rest tragen die vorhandenen.
+
+        public static readonly Farbrolle STROM = new Farbrolle("STROM");
+        public static readonly Farbrolle WAERME = new Farbrolle("WAERME");
+
         // -------------------------------------------------------- Variantenreihen
 
         public static readonly Farbrolle SERIE_1 = new Farbrolle("SERIE_1");
@@ -280,6 +286,9 @@ namespace WindowsFormsApplication1.Zeichnung
                 { Farbrolle.KAELTE,          new Farbe(0x2A, 0x7F, 0xA6) },
                 { Farbrolle.VERLUST,         new Farbe(0xB8, 0xB8, 0xB8) },
                 { Farbrolle.KNOTEN,          new Farbe(0x4A, 0x57, 0x69) },
+                // SK-2c: Strom und Wärme als Energieform der Bänder, jede mit eigenem Wert (Rückwärtssuche).
+                { Farbrolle.STROM,           new Farbe(0xE9, 0xA8, 0x25) },
+                { Farbrolle.WAERME,          new Farbe(0xE2, 0x57, 0x3D) },
 
                 { Farbrolle.SERIE_1,         new Farbe(0xED, 0x7D, 0x31) },  // Orange
                 { Farbrolle.SERIE_2,         new Farbe(0x70, 0xAD, 0x47) },  // Grün

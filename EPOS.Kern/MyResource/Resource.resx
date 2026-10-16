@@ -57491,5 +57491,41 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="EF_SP_BEDARF" xml:space="preserve">
     <value>Bedarf</value>
   </data>
+  <data name="DGF_ROLLE_STROM" xml:space="preserve">
+    <value>Strom (Energiefluss)</value>
+  </data>
+  <data name="DGF_ROLLE_WAERME" xml:space="preserve">
+    <value>Wärme (Energiefluss)</value>
+  </data>
+  <data name="EF_LEG_STROM" xml:space="preserve">
+    <value>Strom</value>
+  </data>
+  <data name="EF_LEG_WAERME" xml:space="preserve">
+    <value>Wärme</value>
+  </data>
+  <data name="EF_LEG_KAELTE" xml:space="preserve">
+    <value>Kälte</value>
+  </data>
+  <data name="EF_LEG_BRENNSTOFF" xml:space="preserve">
+    <value>Brennstoff</value>
+  </data>
+  <data name="EF_LEG_UMWELT" xml:space="preserve">
+    <value>Umweltwärme / Umwelt (Kälte)</value>
+  </data>
+  <data name="EF_LEG_VERLUST" xml:space="preserve">
+    <value>Verlust</value>
+  </data>
+  <data name="EF_LEG_REST" xml:space="preserve">
+    <value>nicht zugeordnet / ungedeckt</value>
+  </data>
+  <data name="EF_ZEIGER_SPEICHER_AM_BUS" xml:space="preserve">
+    <value>{0}: Ladung {1} · Entladung {2} MWh/a</value>
+  </data>
+  <data name="EF_ZEIGER_UEBER_SPEICHER" xml:space="preserve">
+    <value>davon {0} MWh/a über {1}</value>
+  </data>
+  <data name="EF_ZEIGER_KLEINVERLUST" xml:space="preserve">
+    <value>{0} {1} MWh/a (unter 1 %, nicht gezeichnet)</value>
+  </data>
 </root>
 

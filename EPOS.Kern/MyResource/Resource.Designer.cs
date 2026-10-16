@@ -24521,6 +24521,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strom (Energiefluss) ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_STROM {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die BHKW-Strom ähnelt.
         /// </summary>
         public static string DGF_ROLLE_STROM_BHKW {
@@ -24598,6 +24607,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string DGF_ROLLE_VERLUST {
             get {
                 return ResourceManager.GetString("DGF_ROLLE_VERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärme (Energiefluss) ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_WAERME {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_WAERME", resourceCulture);
             }
         }
         
@@ -25637,6 +25655,69 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff ähnelt.
+        /// </summary>
+        public static string EF_LEG_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("EF_LEG_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälte ähnelt.
+        /// </summary>
+        public static string EF_LEG_KAELTE {
+            get {
+                return ResourceManager.GetString("EF_LEG_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht zugeordnet / ungedeckt ähnelt.
+        /// </summary>
+        public static string EF_LEG_REST {
+            get {
+                return ResourceManager.GetString("EF_LEG_REST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strom ähnelt.
+        /// </summary>
+        public static string EF_LEG_STROM {
+            get {
+                return ResourceManager.GetString("EF_LEG_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umweltwärme / Umwelt (Kälte) ähnelt.
+        /// </summary>
+        public static string EF_LEG_UMWELT {
+            get {
+                return ResourceManager.GetString("EF_LEG_UMWELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verlust ähnelt.
+        /// </summary>
+        public static string EF_LEG_VERLUST {
+            get {
+                return ResourceManager.GetString("EF_LEG_VERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärme ähnelt.
+        /// </summary>
+        public static string EF_LEG_WAERME {
+            get {
+                return ResourceManager.GetString("EF_LEG_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Für die Version „{0}“ liegt kein Simulationsergebnis vor. ähnelt.
         /// </summary>
         public static string EF_NICHT_SIMULIERT {
@@ -25718,6 +25799,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} {1} MWh/a (unter 1 %, nicht gezeichnet) ähnelt.
+        /// </summary>
+        public static string EF_ZEIGER_KLEINVERLUST {
+            get {
+                return ResourceManager.GetString("EF_ZEIGER_KLEINVERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Zufluss {1} · Abfluss {2} MWh/a ähnelt.
         /// </summary>
         public static string EF_ZEIGER_KNOTEN {
@@ -25754,6 +25844,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Ladung {1} · Entladung {2} MWh/a ähnelt.
+        /// </summary>
+        public static string EF_ZEIGER_SPEICHER_AM_BUS {
+            get {
+                return ResourceManager.GetString("EF_ZEIGER_SPEICHER_AM_BUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Verlust {0} · Füllstandsänderung {1} MWh/a ähnelt.
         /// </summary>
         public static string EF_ZEIGER_SPEICHER_VERLUST {
@@ -25768,6 +25867,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string EF_ZEIGER_STROMSPEICHER {
             get {
                 return ResourceManager.GetString("EF_ZEIGER_STROMSPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon {0} MWh/a über {1} ähnelt.
+        /// </summary>
+        public static string EF_ZEIGER_UEBER_SPEICHER {
+            get {
+                return ResourceManager.GetString("EF_ZEIGER_UEBER_SPEICHER", resourceCulture);
             }
         }
         

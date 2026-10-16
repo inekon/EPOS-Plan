@@ -138,7 +138,8 @@ namespace WindowsFormsApplication1.Zeichnung
                 Farbrolle.HEIZSTAB, Farbrolle.HEIZWAERME, Farbrolle.WARMWASSER,
                 Farbrolle.PROZESSWAERME, Farbrolle.STROM_BHKW, Farbrolle.UEBERSCHUSS,
                 Farbrolle.ERZEUGUNG_GESAMT, Farbrolle.VERBRAUCH_GESAMT, Farbrolle.KAELTE_DEZENTRAL,
-                Farbrolle.BRENNSTOFF, Farbrolle.UMWELTWAERME, Farbrolle.KAELTE, Farbrolle.VERLUST
+                Farbrolle.BRENNSTOFF, Farbrolle.UMWELTWAERME, Farbrolle.KAELTE, Farbrolle.VERLUST,
+                Farbrolle.STROM, Farbrolle.WAERME
             }),
             new Rollengruppe("VARIANTEN", () => MyResource.Resource.DGF_GRUPPE_VARIANTEN, new List<Farbrolle>
             {
@@ -554,6 +555,8 @@ namespace WindowsFormsApplication1.Zeichnung
                 { Farbrolle.UMWELTWAERME,     () => MyResource.Resource.DGF_ROLLE_UMWELTWAERME },
                 { Farbrolle.KAELTE,           () => MyResource.Resource.DGF_ROLLE_KAELTE },
                 { Farbrolle.VERLUST,          () => MyResource.Resource.DGF_ROLLE_VERLUST },
+                { Farbrolle.STROM,            () => MyResource.Resource.DGF_ROLLE_STROM },
+                { Farbrolle.WAERME,           () => MyResource.Resource.DGF_ROLLE_WAERME },
 
                 { Farbrolle.SERIE_1,          () => MyResource.Resource.DGF_ROLLE_SERIE_1 },
                 { Farbrolle.SERIE_2,          () => MyResource.Resource.DGF_ROLLE_SERIE_2 },
