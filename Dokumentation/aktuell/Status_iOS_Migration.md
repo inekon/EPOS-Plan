@@ -1294,7 +1294,7 @@ Zum nächsten Sammel-Upload gehört alles, was nach dem Sammel-Upload vom 14.10.
 - Zweidimensionales Feinraster der Größen-Sicht wäre ein Rechenwegwechsel mit neuer Referenzbasis (eigener Entscheid) (#255, 13.09.2026).
 - Die `<pre>`-Kästen aus eingerückten Fortsetzungszeilen auf elf Rechenwegseiten als eigener Auftrag (#250, 13.09.2026).
 - Kälteanlagen K-F4 (Referenzprojekt Rückkühlwerk mit Feuchtesaat, Einfrierregel, neue Basis) und K-F5 (Oberfläche, Bericht, Wiki) offen; keine Statuszeile nach #1005/#1018 führt sie, die Übergabe vom 12.10. nennt sie als nächste Arbeit (#945, 11.10.2026; geprüft 16.10.).
-- `sql/tools/Erzeuge-Schema.ps1` nicht laufend belegt (braucht Windows/DAO); `python3 Werkzeuge/KlimazonenPfade/erzeugen.py --pruefen` meldet `KlimazonenPfade.cs` weiterhin „weicht ab“ (eine Kommentarzeile im `KOPF`-Text; Erzeuger neu laufen lassen und committen) (#290, 15.09.2026; geprüft 16.10.).
+- `sql/tools/Erzeuge-Schema.ps1` nicht laufend belegt (braucht Windows/DAO) (#290, 15.09.2026; geprüft 16.10.).
 - Ungesicherte Übergabe-Notiz und Indexstände im Zweig `…konzept-konditionierung` (nicht auf `origin`) — nicht anfassen, Zweig klären (#604, 29.09.2026).
 - Nebenbefunde in „Test: Wirtschaftlichkeit“ (1071–1073): Gas-Grundpreis 100 gegen 120 €/a, Preisbasis „kWh“ gegen Nm³, absolute Szenariopreise; „Speichern unter“ in WaermebedarfExtern, StromganglinieDialog und den Verwaltungen (#550, #554, #555, 26.09.2026).
 - Stützpunkt-Kreise der Schnittkurve fehlen im SVG (zweite Punkte-Reihe oder Kernmarkierung); x-Einheit der Schnittkurve leer (#408, 20.09.2026).
