@@ -80,12 +80,12 @@ public class AufheizHerleitungszeileTests
         yield return new object[]
         {
             "de-DE", new AufheizHerleitungsdaten("GMH", DbWerte.AUFHEIZ_ZUSTAND_GEKOPPELT, null, null, null, null, null, null, null),
-            "GMH: Heizkreis gekoppelt (AK1) — wird nicht optimiert",
+            "GMH: Heizkreis gekoppelt — wird nicht optimiert",
         };
         yield return new object[]
         {
             "en-US", new AufheizHerleitungsdaten("GMH", DbWerte.AUFHEIZ_ZUSTAND_GEKOPPELT, null, null, null, null, null, null, null),
-            "GMH: heating circuit coupled (AK1) — not optimised",
+            "GMH: heating circuit coupled — not optimised",
         };
         yield return new object[]
         {

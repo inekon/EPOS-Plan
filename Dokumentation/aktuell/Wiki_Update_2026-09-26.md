@@ -1116,6 +1116,11 @@ Der Sammel-Upload 1.2.0.11 lief am 14.10.2026 (Seite Brauchwasser-Zapfprofil Rev
 
 - Seit 14.10.2026: Die mitgelieferten Brauchwasser-Nutzungsarten rechnen im Zapfprofil-Dialog in der Stufe „Einfach“ ohne zusätzlichen Katalog. (#1096)
 - Seit 16.10.2026: In der Stufe Einfach empfiehlt die Speicherauslegung im Brauchwasser-Zapfprofil auch ohne externes Katalogpaket einen Speicher-Nenninhalt, gekennzeichnet als Schnellauslegung nach Vorlage V4. (#1112)
+- Seit 16.10.2026: Die Übernahme aus der Pufferauslegung setzt beim Kombipuffer jetzt auch die Zonenanteile und legt die Entnahme der Heizung unter die Brauchwasserzone. (#1140)
+- Seit 16.10.2026: Die Stufen der Anlagenkopplung heißen in der Oberfläche „ohne Kopplung“, „Heizkreis“, „Fahrplan“ und „geschlossener Kreis“; die Kataloge zeigen „Nennleistung“, „Nennkälteleistung“ und „Wirkungsgrad Laden/Entladen“ statt Formelzeichen. (#1142)
+- Seit 16.10.2026: Die Jahresdauerlinien ordnen die Stunden nach dem Gesamtbedarf und zeigen die Erzeuger darunter gestapelt; das Bivalenzdiagramm beschriftet seine Bivalenzpunkte mit „Kessel hilft unter …“ und „Kessel allein unter …“. (#1143)
+
+*Wiki-Quellen dieses Nachtrags (Upload ausstehend):* `Projekte/Wiki/Programm Dokumentation - Pufferspeicher auslegen.wiki`, „Grundlagen - Anlagenkopplung und Regelung“, „Simulation konfigurieren und starten“, `Projekte/Wiki/Dateien/Diagramm_Bivalenz.png`, `Projekte/Wiki/Dateien/Diagramm_Kapitalwert_Bruecke.png`.
 
 ### Entwurf, Version offen (Klimadaten-Import, Einlesen-Dialoge)
 

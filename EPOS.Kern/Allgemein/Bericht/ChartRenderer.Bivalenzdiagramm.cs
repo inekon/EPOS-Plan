@@ -49,6 +49,13 @@ namespace WindowsFormsApplication1
         /// steht der Platzhaltertext.
         /// </summary>
         public static Zeichenmodell BivalenzdiagrammZeichnung(BivalenzdiagrammModell modell)
+            => BivalenzdiagrammZeichnung(modell, true);
+
+        /// <summary>
+        /// Dasselbe Zeichenmodell; mit <paramref name="markenAusweichen"/> = <c>false</c> stehen die Markenbeschriftungen
+        /// an ihrer Grundlage, ohne Linien auszuweichen — allein für die Gegenprobe der ChartProben.
+        /// </summary>
+        internal static Zeichenmodell BivalenzdiagrammZeichnung(BivalenzdiagrammModell modell, bool markenAusweichen)
         {
             int W = BIVALENZ_BREITE, H = BIVALENZ_HOEHE;
             modell ??= BivalenzdiagrammModell.Platzhalter();
@@ -163,8 +170,31 @@ namespace WindowsFormsApplication1
                           Stift(Farbrolle.BEDARF, 3f, null, Strichverbindung.Rund)));
 
             // Die Marken: senkrechte Linien, die Beschriftung je Art in eigener Zeile, rechts der Linie oder - wo der
-            // Platz rechts nicht reicht oder die Art es verlangt - links davon.
+            // Platz rechts nicht reicht oder die Art es verlangt - links davon. Eine Beschriftung kreuzt keine Linie:
+            // Liegt ihr Platz auf Heizlast, Kennfeld, Übergabegrenze, Wärmepumpe, einer fremden Marke oder einer schon
+            // gesetzten Beschriftung, nimmt sie die andere Seite, sonst die nächste freie Zeile darunter (dann darüber).
+            // Kreuzt jeder Platz eine fremde Marke, steht sie auf dem ersten Platz, der nur Marken kreuzt, und
+            // hinterlegt sich hell; die Beschriftungen stehen deshalb über allen Markenlinien.
+            var kurven = new List<SKPoint[]>
+            {
+                modell.Heizlast.Select(p => new SKPoint(X(p.AussenC), Y(p.Leistung))).ToArray(),
+                modell.Kennfeld.Select(p => new SKPoint(X(p.AussenC), Y(p.Leistung))).ToArray(),
+            };
+            if (modell.Waermepumpe.Count >= 2)
+            {
+                // Die Fläche der Wärmepumpe mit ihren senkrechten Rändern bis zur Nulllinie.
+                var wp = new List<SKPoint> { new SKPoint(X(modell.Waermepumpe[0].AussenC), Y(0.0)) };
+                wp.AddRange(modell.Waermepumpe.Select(p => new SKPoint(X(p.AussenC), Y(p.Leistung))));
+                wp.Add(new SKPoint(X(modell.Waermepumpe[modell.Waermepumpe.Count - 1].AussenC), Y(0.0)));
+                kurven.Add(wp.ToArray());
+            }
+            if (Endlich(modell.Uebergabegrenze))
+                kurven.Add(new[] { new SKPoint(rc.Left, Y(modell.Uebergabegrenze)), new SKPoint(rc.Right, Y(modell.Uebergabegrenze)) });
+            var gesetzt = new List<SKRect>();
+            var beschriftungen = new List<(BivalenzMarke Marke, string Text, float X, float Y, bool Hinterlegt)>();
             using (var f = Schrift(13f))
+            {
+                float hoehe = TextHoehe(f);
                 foreach (BivalenzMarke m in modell.Marken)
                 {
                     float x = X(m.AussenC);
@@ -177,15 +207,46 @@ namespace WindowsFormsApplication1
                     };
                     string text = string.Format(Zahlkultur, vorlage ?? "", Grad(m.AussenC));
                     float breite = f.MeasureText(text);
-                    if (!links && x + 4f + breite > rc.Right) links = true;
-                    if (links && x - 4f - breite < rc.Left) links = false;
-                    float tx = links ? x - 4f - breite : x + 4f;
-                    z.Markiert("marke:" + m.Art, text, zm =>
+                    var marken = modell.Marken.Where(n => !ReferenceEquals(n, m))
+                        .Select(n => new[] { new SKPoint(X(n.AussenC), rc.Top), new SKPoint(X(n.AussenC), rc.Bottom) }).ToList();
+                    float Anfang(bool l) => l ? x - 4f - breite : x + 4f;
+                    bool Passt(bool l) => l ? x - 4f - breite >= rc.Left : x + 4f + breite <= rc.Right;
+                    bool Frei(bool l, float zy, bool auchMarken)
                     {
-                        zm.Linie(x, rc.Top, x, rc.Bottom, Stift(rolle, 1.5f, Strichfolge(art)));
-                        Text(zm, text, f, Farbrolle.TEXT, tx, zeileY);
-                    });
+                        var r = new SKRect(Anfang(l) - 2f, zy - 2f, Anfang(l) + breite + 2f, zy + hoehe + 2f);
+                        return Passt(l) && !gesetzt.Any(g => g.IntersectsWith(r)) && !kurven.Any(k => Kreuzt(k, r))
+                               && (!auchMarken || !marken.Any(k => Kreuzt(k, r)));
+                    }
+                    var zeilen = new List<float> { zeileY };
+                    for (float zy = zeileY + 20f; zy + hoehe <= rc.Bottom - 2f; zy += 20f) zeilen.Add(zy);
+                    for (float zy = zeileY - 20f; zy >= rc.Top + 2f; zy -= 20f) zeilen.Add(zy);
+                    if (!Passt(links)) links = !links;
+                    float tx = Anfang(links), ty = zeileY;
+                    bool hinterlegt = false, gefunden = false;
+                    foreach (bool auchMarken in markenAusweichen ? new[] { true, false } : new bool[0])
+                        foreach (float zy in zeilen)
+                            foreach (bool l in new[] { links, !links })
+                                if (!gefunden && Frei(l, zy, auchMarken))
+                                {
+                                    tx = Anfang(l); ty = zy; gefunden = true; hinterlegt = !auchMarken;
+                                }
+                    gesetzt.Add(new SKRect(tx, ty, tx + breite, ty + hoehe));
+                    beschriftungen.Add((m, text, tx, ty, hinterlegt));
+                    z.Markiert("marke:" + m.Art, text, zm => zm.Linie(x, rc.Top, x, rc.Bottom, Stift(rolle, 1.5f, Strichfolge(art))));
                 }
+                foreach (var bs in beschriftungen)
+                    z.Markiert("marke:" + bs.Marke.Art, bs.Text, zm =>
+                    {
+                        if (bs.Hinterlegt)
+                        {
+                            float br = f.MeasureText(bs.Text);
+                            zm.Pfad(new[] { new Punkt(bs.X - 2f, bs.Y - 1f), new Punkt(bs.X + br + 2f, bs.Y - 1f),
+                                            new Punkt(bs.X + br + 2f, bs.Y + hoehe + 1f), new Punkt(bs.X - 2f, bs.Y + hoehe + 1f) },
+                                    true, null, Flaeche(Farbton.Aus(Farbrolle.HINTERGRUND).MitDeckung(217)));
+                        }
+                        Text(zm, bs.Text, f, Farbrolle.TEXT, bs.X, bs.Y);
+                    });
+            }
 
             var legende = new List<Segment>
             {
@@ -199,6 +260,63 @@ namespace WindowsFormsApplication1
                 legende.Add(new Segment(t.Stunden, 0, C_SERIEN[0]) { Ton = Farbton.Aus(Farbrolle.SERIE_5) });
             Legende(z, legende, 24f, rc.Bottom + 62f, W - 30f);
             return z;
+        }
+
+        /// <summary>Ob der Linienzug <paramref name="zug"/> das Rechteck <paramref name="r"/> berührt (abgetastet je Pixel).</summary>
+        private static bool Kreuzt(SKPoint[] zug, SKRect r)
+        {
+            for (int i = 0; i + 1 < zug.Length; i++)
+            {
+                SKPoint a = zug[i], b = zug[i + 1];
+                if (!float.IsFinite(a.X) || !float.IsFinite(a.Y) || !float.IsFinite(b.X) || !float.IsFinite(b.Y)) continue;
+                int n = Math.Max(1, (int)Math.Ceiling(Math.Max(Math.Abs(b.X - a.X), Math.Abs(b.Y - a.Y))));
+                for (int k = 0; k <= n; k++)
+                {
+                    float s = (float)k / n;
+                    if (r.Contains(a.X + (b.X - a.X) * s, a.Y + (b.Y - a.Y) * s)) return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// <b>Prüfung „Markenbeschriftung kreuzt keine Linie“</b> (ChartProben): je Text einer Marke die Linien und Pfade
+        /// der Reihen und fremder Marken, die sein Rechteck berühren; eine hell hinterlegte Beschriftung darf fremde
+        /// Marken kreuzen. Leer heißt: frei.
+        /// </summary>
+        internal static List<string> BivalenzMarkenKreuzungen(Zeichenmodell z)
+        {
+            var befund = new List<string>();
+            var befehle = z.Befehle.ToList();
+            var zuege = new List<(string Marke, SKPoint[] Punkte)>();
+            foreach (Zeichenbefehl b in befehle)
+            {
+                string mk = b.Marke ?? "";
+                if (!mk.StartsWith("reihe:", StringComparison.Ordinal) && !mk.StartsWith("marke:", StringComparison.Ordinal)) continue;
+                if (b is Zeichnung.Linie l) zuege.Add((mk, new[] { new SKPoint(l.X1, l.Y1), new SKPoint(l.X2, l.Y2) }));
+                else if (b is Zeichnung.Pfad pf && pf.Rand != null)
+                {
+                    var pk = pf.Punkte.Select(q => new SKPoint(q.X, q.Y)).ToList();
+                    if (pf.Geschlossen && pk.Count > 2) pk.Add(pk[0]);
+                    zuege.Add((mk, pk.ToArray()));
+                }
+            }
+            foreach (Zeichenbefehl b in befehle)
+            {
+                if (b is not Zeichnung.Text tx || !(tx.Marke ?? "").StartsWith("marke:", StringComparison.Ordinal)) continue;
+                bool hinterlegt = befehle.Any(o => o is Zeichnung.Pfad hp && hp.Rand == null && hp.Fuellung != null && o.Marke == tx.Marke);
+                using (var f = Schrift(tx.Schrift.Punkt, tx.Schrift.Fett))
+                {
+                    var r = new SKRect(tx.X, tx.Y, tx.X + f.MeasureText(tx.Inhalt), tx.Y + TextHoehe(f));
+                    foreach (var (mk, punkte) in zuege)
+                    {
+                        if (mk == tx.Marke) continue;
+                        if (hinterlegt && mk.StartsWith("marke:", StringComparison.Ordinal)) continue;
+                        if (Kreuzt(punkte, r)) befund.Add("„" + tx.Inhalt + "“ kreuzt " + mk);
+                    }
+                }
+            }
+            return befund;
         }
     }
 }

@@ -18,7 +18,7 @@ Eine '''Heizfläche''' gibt ihre Leistung mit der Übertemperatur ab, der Differ
 {| class="wikitable"
 ! Stufe !! Was gerechnet wird
 |-
-| {{Anker|aus}}''Ohne Kopplung'' || ideale Regelung (in der Auswahl „aus“): Jedes Gebäude bekommt die Wärme, die den Sollwert hält; die Wärmepumpe rechnet mit dem Vorlauf ihrer Auslegung.
+| {{Anker|aus}}''Ohne Kopplung'' || ideale Regelung: Jedes Gebäude bekommt die Wärme, die den Sollwert hält; die Wärmepumpe rechnet mit dem Vorlauf ihrer Auslegung.
 |-
 | {{Anker|ak1}}''Heizkreis'' || Gebäude mit Wärmeübergabe rechnen Vorlauf, Rücklauf und die Grenze ihrer Heizflächen; die Wärmepumpe wählt ihre Kennlinie am gerechneten Vorlauf. Gekühlte Gebäude mit Kühlübergabe rechnen ebenso ihre Kälteseite mit festem Kaltwasser-Vorlauf. Die Richtung ist eine Einbahnstraße vom Gebäude zur Anlage.
 |-

@@ -2019,7 +2019,7 @@ fällt weg** — 23 für die Dialoggruppe „Schichtung und Leistungsgrenzen" un
 |---|---|---|---|
 | `PSP_GRUPPE_SCHICHTUNG` | Schichtung und Leistungsgrenzen | Stratification and power limits | `Form_PufferSp_Projekt` — Kopf der programmatischen Gruppe. Sie fasst zwei Dinge zusammen, die dieselbe Bedingung teilen: Beide sind Eigenschaften des BEHÄLTERS, nicht der Senke. |
 | `PSP_LABEL_SCHICHTEN` | Schichten: | Layers: | Zahl der Knoten N (`Tab_Pufferspeicher.Schichten_Anzahl`). |
-| `PSP_HINWEIS_SCHICHTEN` | 1 = ein Vorrat wie bisher; ab 2 rechnet der Speicher geschichtet. | 1 = one single store as before; from 2 on the tank is calculated stratified. | Fußtext dazu. Er nennt genau die Grenze, an der der N=1-Byte-Nachweis endet. |
+| `PSP_HINWEIS_SCHICHTEN` | 1 = ein Vorrat ohne Schichtung; ab 2 rechnet der Speicher geschichtet. | 1 = one store without stratification; from 2 on the tank is calculated stratified. | Fußtext dazu. Er nennt genau die Grenze, an der der N=1-Byte-Nachweis endet. |
 | `PSP_LABEL_HOEHE` | Höhe [m]: | Height [m]: | `Hoehe`; NULL = aus dem H/D-Verhältnis abgeleitet. |
 | `PSP_HINWEIS_HOEHE` | leer = automatisch aus dem Höhen-/Durchmesserverhältnis 2,5 | empty = derived from the height/diameter ratio of 2.5 | Fußtext; die Zahl steht im Text, weil sie sonst nur im Konzept stünde. |
 | `PSP_LABEL_LAMBDA_EFF` | λ effektiv [W/(m·K)]: | λ effective [W/(m·K)]: | `Lambda_Eff`, der vertikale Ausgleich. |

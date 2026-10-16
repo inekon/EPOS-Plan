@@ -759,10 +759,10 @@ namespace WindowsFormsApplication1
                         "Operating range " + enB[j] + ", heat", "MWh/a", GR_EFFIZIENZ, "N2", true,
                         v => Bereiche(v)?.Mwh[j])));
                 }
-                l.Add(B(new Kennzahl(PRAEFIX_WP_BIVALENZ + "punkt_1", "Bivalenzpunkt θ_biv,1 (berechnet)",
-                    "Bivalence point θ_biv,1 (calculated)", "°C", GR_EFFIZIENZ, "N1", true, v => Bereichsmodul(v)?.Bivalenzpunkt_1)));
-                l.Add(B(new Kennzahl(PRAEFIX_WP_BIVALENZ + "punkt_2", "Bivalenzpunkt θ_biv,2 (berechnet)",
-                    "Bivalence point θ_biv,2 (calculated)", "°C", GR_EFFIZIENZ, "N1", true, v => Bereichsmodul(v)?.Bivalenzpunkt_2)));
+                l.Add(B(new Kennzahl(PRAEFIX_WP_BIVALENZ + "punkt_1", "Kessel hilft unter (Bivalenzpunkt 1, berechnet)",
+                    "Boiler assists below (bivalence point 1, calculated)", "°C", GR_EFFIZIENZ, "N1", true, v => Bereichsmodul(v)?.Bivalenzpunkt_1)));
+                l.Add(B(new Kennzahl(PRAEFIX_WP_BIVALENZ + "punkt_2", "Kessel allein unter (Bivalenzpunkt 2, berechnet)",
+                    "Boiler alone below (bivalence point 2, calculated)", "°C", GR_EFFIZIENZ, "N1", true, v => Bereichsmodul(v)?.Bivalenzpunkt_2)));
                 l.Add(B(new Kennzahl(PRAEFIX_WP_BIVALENZ + "uebergabe_max", "Übergabegrenze bei Auslegung",
                     "Heat emission limit at design", "kW", GR_EFFIZIENZ, "N1", true, v => Bereichsmodul(v)?.Uebergabe_Max_kW)));
                 l.Add(B(new Kennzahl(PRAEFIX_WP_BIVALENZ + "spreizung_unterschritten", "Stunden unter der Mindestspreizung",
