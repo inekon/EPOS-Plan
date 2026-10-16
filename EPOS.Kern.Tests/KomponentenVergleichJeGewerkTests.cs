@@ -249,7 +249,83 @@ namespace EPOS.Kern.Tests
             Assert.Equal(8, mit.Zeilen.Count);
             Assert.Equal(KM, mit.Zeilen[7].Zellen[0].Text);
 
-            Assert.DoesNotContain(Berichtstabellen.Gewerke, g => g.Gewerk == KM);
+            // Katalog v24: die Kältemaschine hat ihre Kenndatentafel als Platzhalter wie jedes Gewerk.
+            Assert.Contains(Berichtstabellen.Gewerke, g => g.Gewerk == KM && g.Schluessel == "kaeltemaschine");
+        }
+
+        // =============================================================================
+        //  Der Vorlagenplatzhalter der Kältemaschine (Katalog v24)
+        // =============================================================================
+
+        private const string KM_TAFEL = "tabelle.komponenten.kenndaten.kaeltemaschine";
+
+        /// <summary>Die Tafel und ihr Schalter kommen mit Fassung 24, mit Bezeichnung wie die Gewerkspalte der Übersicht.</summary>
+        [Fact]
+        public void Kenndatentafel_der_Kaeltemaschine_steht_seit_Fassung_24_im_Katalog()
+        {
+            Assert.Equal(24, Vorlagenfeldkatalog.FASSUNG_KAELTEMASCHINE_GEWERK);
+            Vorlagenfeld tafel = Vorlagenfeldkatalog.Finde(KM_TAFEL);
+            Vorlagenfeld schalter = Vorlagenfeldkatalog.Finde("hat." + KM_TAFEL);
+            Assert.NotNull(tafel);
+            Assert.NotNull(schalter);
+            Assert.Equal(24, tafel.Seit);
+            Assert.Equal(24, schalter.Seit);
+            Assert.Equal(Vorlagenfeldart.Tabelle, tafel.Art);
+            Assert.Equal(Vorlagenfeldart.Schalter, schalter.Art);
+            // Die übrigen Gewerke bleiben bei ihrer Fassung.
+            Assert.Equal(4, Vorlagenfeldkatalog.Finde("tabelle.komponenten.kenndaten.waermepumpe").Seit);
+            Assert.Equal("Kältemaschine", BerichtTexte.T(KM, false));
+            Assert.Equal("Chiller", BerichtTexte.T(KM, true));
+        }
+
+        /// <summary>Verbaut ein Stand die Kältemaschine, zeigt die Tafel ihre Nennkälteleistung; sonst ist sie leer.</summary>
+        [Fact]
+        public void Kenndatentafel_der_Kaeltemaschine_ist_leer_ohne_Kaeltemaschine()
+        {
+            BerichtsDaten daten = Berichtsdatenproben.Gruppendaten(2);
+            foreach (VariantenDaten v in daten.Varianten)
+                v.Details = new Bestand().Geraet("Wärmepumpe", WizardItemClass.WP_TYP, "ID_WP", 1, "WP A").Fertig();
+            Berichtswerte ohne = Berichtswerte.Aus(daten, null, false, null);
+            Assert.True(Loese(KM_TAFEL, ohne).Tabelle == null || Loese(KM_TAFEL, ohne).Tabelle.IstLeer);
+            Assert.False(Loese("hat." + KM_TAFEL, ohne).Schalter);
+
+            daten.Varianten[1].Details = MitKaeltemaschine(new Bestand(), 30, "Kältemaschine 1", 20.0).Fertig();
+            Berichtswerte mit = Berichtswerte.Aus(daten, null, false, null);
+            Assert.True(Loese("hat." + KM_TAFEL, mit).Schalter);
+            Berichtstabelle t = Loese(KM_TAFEL, mit).Tabelle;
+            Assert.NotNull(t);
+            Assert.False(t.IstLeer);
+            Assert.Contains(t.Zeilen, z => z.Zellen.Any(c => c.Text == "20,0 kW"));
+        }
+
+        /// <summary>Referenzprojekte 1055 (20 kW) und 1059 (10 kW), 1017 ohne Kältemaschine: der Platzhalter mit den Werten der Testdatenbank.</summary>
+        [Fact]
+        public void Kenndatentafel_der_Kaeltemaschine_zeigt_die_Referenzprojekte()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            BerichtsDaten daten = Berichtsdatenproben.Gruppendaten(3);
+            int[] ids = { 1055, 1059, 1017 };
+            for (int i = 0; i < 3; i++) daten.Varianten[i].Details = ProjektDetails.Lade(ids[i]);
+            Berichtswerte w = Berichtswerte.Aus(daten, null, false, null);
+            Assert.True(Loese("hat." + KM_TAFEL, w).Schalter);
+            Berichtstabelle t = Loese(KM_TAFEL, w).Tabelle;
+            Assert.NotNull(t);
+            Tabellenzeile leistung = t.Zeilen.Single(z => z.Zellen[0].Text == "Nennkälteleistung");
+            Assert.Equal(new[] { "20,0 kW", "10,0 kW", Tabellenzelle.STRICH }, leistung.Zellen.Skip(1).Select(c => c.Text).ToArray());
+
+            // Ohne Kältemaschine in allen Ständen: leer.
+            for (int i = 0; i < 3; i++) daten.Varianten[i].Details = ProjektDetails.Lade(1017);
+            Berichtswerte ohne = Berichtswerte.Aus(daten, null, false, null);
+            Assert.False(Loese("hat." + KM_TAFEL, ohne).Schalter);
+        }
+
+        private static Platzhalterwert Loese(string marke, Berichtswerte werte)
+        {
+            Platzhalterwert w = Vorlagenfeldkatalog.Loese(Platzhaltersyntax.Lies("{{" + marke + "}}"), werte);
+            Assert.True(w != null, marke + " ist kein Katalogschlüssel");
+            return w;
         }
 
         /// <summary>Referenzprojekte 1055 (20 kW) und 1059 (10 kW): die Zeile mit den Werten der Testdatenbank.</summary>

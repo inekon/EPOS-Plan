@@ -159,6 +159,7 @@ hat.tabelle.kaeltespeicher
 hat.tabelle.kennzahlen
 hat.tabelle.km_teillast
 hat.tabelle.komponenten.kenndaten.bhkw
+hat.tabelle.komponenten.kenndaten.kaeltemaschine
 hat.tabelle.komponenten.kenndaten.photovoltaik
 hat.tabelle.komponenten.kenndaten.pufferspeicher
 hat.tabelle.komponenten.kenndaten.solarthermie
@@ -2369,6 +2370,7 @@ tabelle.gebaeude.ergebnis
 tabelle.kaelteerzeuger
 tabelle.kaeltespeicher
 tabelle.komponenten.kenndaten.bhkw
+tabelle.komponenten.kenndaten.kaeltemaschine
 tabelle.komponenten.kenndaten.photovoltaik
 tabelle.komponenten.kenndaten.pufferspeicher
 tabelle.komponenten.kenndaten.solarthermie
