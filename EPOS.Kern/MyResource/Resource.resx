@@ -56427,10 +56427,16 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
     <value>Das Brauchwasser rechnet mit dem Zapfprofilgenerator – die Eingabeart (Monatswerte, Wochenprofil) gilt nur für den Profilweg.</value>
   </data>
   <data name="KBP_KALENDER_NORM_NAME" xml:space="preserve">
-    <value>Norm {0} Tage</value>
+    <value>Norm {0} Tage ({1})</value>
   </data>
   <data name="KBP_HINW_NORMKALENDER" xml:space="preserve">
     <value>Die Vorlage rechnet nach Norm mit {0} Nutzungstagen; der Betriebskalender „{1}“ bildet sie ab und ist bei der Übernahme vorgewählt (Feiertage wie Sonntag, Betriebsferien um den Jahreswechsel und im Sommer).</value>
+  </data>
+  <data name="KBP_KALENDER_NORM_BUNDESWEIT" xml:space="preserve">
+    <value>bundesweit</value>
+  </data>
+  <data name="KBP_KALENDER_NORM_NAME_TAG" xml:space="preserve">
+    <value>Norm {0} Tage ({1}, 1.1. {2})</value>
   </data>
 </root>
 

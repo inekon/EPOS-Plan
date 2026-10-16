@@ -193,8 +193,8 @@ Saatwache `KaeltebedarfsprofilVorlagenSchemaTests` hält Zeilen, Monatssummen 10
 Zeilen 1–6 bytegleich gegen einen eingefrorenen Abdruck.
 
 **Normtage und Normkalender (Welle KBP-5).** Allein Nr. 8 trägt ihre Normtage als Zahl: `Nutzungstage_Norm = 230` an
-Katalogkopf und Projektkopie (8.3a). Wer sie übernimmt, bekommt im Projekt den Betriebskalender „Norm 230 Tage“
-vorgewählt, der im Gemeinjahr-Raster des Projekts genau 230 Nutzungstage lässt (7.4); die übrigen Vorlagen nennen ihre
+Katalogkopf und Projektkopie (8.3a). Wer sie übernimmt, bekommt im Projekt den Betriebskalender „Norm 230 Tage (BY)“
+(Feiertagsland im Namen) vorgewählt, der im Gemeinjahr-Raster des Projekts genau 230 Nutzungstage lässt (7.4); die übrigen Vorlagen nennen ihre
 Nutzungstage nur in der Beschreibung und bleiben ohne Vorwahl.
 
 Temperaturpaare der neuen Köpfe bleiben Angabe ohne Wirkung (E-K3): Raumkühlung 16/19 °C, Prozesskälte 6/12 °C,
@@ -253,9 +253,21 @@ Projektgebäudes **als Kopie** in den Kalender schreibt — nie als Verweis (Fes
 ### 7.4 Normkalender der Vorlagen mit Normtagen (Entscheid 16.10.2026)
 
 Übernimmt der Anwender eine Kältevorlage mit `Nutzungstage_Norm` (heute nur Nr. 8, 230 Tage), legt der Kern
-(`NormkalenderCtrl.Vorwahl`) den Betriebskalender „Norm {Normtage} Tage“ an und wählt ihn für die übernommene Zeile vor.
-Die Kalender sind projektübergreifend; genommen wird zuerst ein Kalender dieses Namens, den eine Zuordnung des Projekts
-schon nutzt, dann einer dieses Namens mit gleichem Inhalt, erst sonst entsteht ein neuer.
+(`NormkalenderCtrl.Vorwahl`) den Betriebskalender „Norm {Normtage} Tage ({Land})“ an und wählt ihn für die übernommene
+Zeile vor.
+
+- **Name:** Die Kalender sind projektübergreifend sichtbar, deshalb trägt der Name das Feiertagsland als Länderkürzel des
+  Kerns — „Norm 230 Tage (BY)“, ohne Land „Norm 230 Tage (bundesweit)“; englisch „Standard 230 days (BY)“ bzw.
+  „Standard 230 days (nationwide)“ (Ressourcen `KBP_KALENDER_NORM_NAME`, `KBP_KALENDER_NORM_BUNDESWEIT`).
+- **Wiederverwendung:** genommen wird zuerst ein Kalender dieses Namens, den eine Zuordnung des Projekts schon nutzt, dann
+  einer dieses Namens mit gleichem Inhalt (Land, Ferien, Ferienfaktor, beide Schalter), erst sonst entsteht ein neuer. Zwei
+  Projekte im selben Land und mit gleichem Wochentagsraster teilen so einen Kalender, Projekte verschiedener Länder
+  bekommen verschieden benannte.
+- **Kein Doppelname:** Steht der Name schon mit anderem Inhalt (etwa ein anderes Wochentagsraster der Klimaregion), heißt
+  der neue Kalender nach dem Wochentag des 1. Januar im Raster — „Norm 230 Tage (BY, 1.1. Do)“, englisch
+  „Standard 230 days (BY, 1 Jan Thu)“ (`KBP_KALENDER_NORM_NAME_TAG`); ist auch dieser Name mit anderem Inhalt belegt,
+  folgt eine laufende Nummer („… #2“). Für jeden dieser Namen gilt dieselbe Wiederverwendung (`NormkalenderCtrl.Wahl`,
+  Namensfolge `NormkalenderCtrl.Namensfolge`).
 
 - **Tage:** Feiertage wie Sonntag; Betriebsferien in zwei der vier Ferienzeiträume — ab dem 24.12. über den Jahreswechsel
   bis höchstens zum 6.1., dann ab dem ersten Montag ab dem 1.8. —, Tag für Tag so bemessen, dass im Gemeinjahr-Raster
@@ -270,9 +282,10 @@ schon nutzt, dann einer dieses Namens mit gleichem Inhalt, erst sonst entsteht e
   Tagesmenge des Sonntags trägt (`f = Σ Sonntag / Σ m_s`, zwei Stellen; Nr. 8: 2,4 / 8,19 = 0,29). Der Stundengang des
   Ferientags folgt dem Tagesmittel, nicht dem Sonntag. „Ferien kürzen“ bleibt aus: Monatsmengen und Jahressumme bleiben.
 - **Wahl frei:** Der Baustein `Betriebskalenderwahl` bleibt frei (anderer Kalender oder „ohne Kalender“, dann 260/261
-  Werktage). Der Dialog zeigt an Zeilen mit Normtagen eine Herleitungszeile (Normtage und Name des Normkalenders).
+  Werktage). Der Dialog zeigt an Zeilen mit Normtagen eine Herleitungszeile mit den Normtagen und dem tatsächlichen
+  Namen des Normkalenders (`BedarfsProfilZeile.Normkalender`, von der Hülle gesetzt).
 - **Nachweis:** `NormkalenderTests` (alle Länder und Wochentage 230 Tage, Testdatenbank zwei Länder, Jahressumme,
-  Wiederverwendung), bunit `BedarfsProfileDialogTests` (Vorwahl bei Nr. 8, keine bei anderen Vorlagen).
+  Wiederverwendung, Name mit Land in beiden Sprachen, gemeinsamer Kalender je Land, kein Doppelname), bunit `BedarfsProfileDialogTests` (Vorwahl bei Nr. 8, keine bei anderen Vorlagen).
 
 ## 8. Datenhaltung
 
@@ -361,4 +374,4 @@ Spalte erst mit Entscheid OE-5.
 | **OE-4** | Gemeinsamer Kalenderbaustein zuerst (KBP-1 vor allem anderen)? | **Ja.** Er beantwortet die Anwenderfrage sofort, braucht kein Schema, wirkt für alle Bedarfsarten und ändert keinen Rechenweg. — *entschieden 14.10.2026: Empfehlung übernommen* |
 | **OE-5** | Eingabearten Monatswerte/Wochenprofil auch für Prozesswärme und Brauchwasser? | **Ja, nach KBP-3**, mit derselben Spalte `Eingabeart` an deren Zuordnungen; der Dialog ist derselbe. — *entschieden 14.10.2026: Empfehlung übernommen* |
 | **OE-6** | „Aus Gebäude übernehmen…“ im Betriebskalender (Kopie von Feiertagsland und Ferien eines Projektgebäudes)? | **Ja, als Kopie** (KP1b 6), in KBP-1. — *entschieden 14.10.2026: Empfehlung übernommen* |
-| **OE-7** | Wie bildet das Projekt die Normtage der Vorlage 8 (230 Tage) ab? | **Normkalender „Norm 230 Tage“** beim Übernehmen anlegen (oder einen vorhandenen gleichen Namens nehmen) und vorwählen: Feiertage wie Sonntag, Betriebsferien um den Jahreswechsel und im Sommer, bemessen auf genau 230 Nutzungstage im Raster des Projekts; Wahl bleibt frei (7.4). — *entschieden 16.10.2026* |
+| **OE-7** | Wie bildet das Projekt die Normtage der Vorlage 8 (230 Tage) ab? | **Normkalender „Norm 230 Tage (BY)“** mit dem Feiertagsland im Namen (ohne Land „bundesweit“) beim Übernehmen anlegen (oder einen vorhandenen gleichen Namens nehmen) und vorwählen: Feiertage wie Sonntag, Betriebsferien um den Jahreswechsel und im Sommer, bemessen auf genau 230 Nutzungstage im Raster des Projekts; Wahl bleibt frei (7.4). — *entschieden 16.10.2026* |

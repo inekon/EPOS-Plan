@@ -80,6 +80,12 @@ public sealed class BedarfsProfilZeile
     /// Nur Anzeige — die Herleitungszeile am Kalender nennt sie samt Normkalender.
     /// </summary>
     public int? Normtage { get; set; }
+
+    /// <summary>
+    /// KBP-5c: der tatsächliche Name des Normkalenders der Zeile („Norm 230 Tage (BY)“), wie ihn die Hülle vorgewählt
+    /// hat oder vorwählen würde; <c>null</c> = keiner bekannt (die Herleitungszeile bildet dann den bundesweiten Namen).
+    /// </summary>
+    public string? Normkalender { get; set; }
 }
 
 /// <summary>

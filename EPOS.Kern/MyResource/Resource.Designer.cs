@@ -56465,11 +56465,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Norm {0} Tage ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die bundesweit ähnelt.
+        /// </summary>
+        public static string KBP_KALENDER_NORM_BUNDESWEIT {
+            get {
+                return ResourceManager.GetString("KBP_KALENDER_NORM_BUNDESWEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Norm {0} Tage ({1}) ähnelt.
         /// </summary>
         public static string KBP_KALENDER_NORM_NAME {
             get {
                 return ResourceManager.GetString("KBP_KALENDER_NORM_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Norm {0} Tage ({1}, 1.1. {2}) ähnelt.
+        /// </summary>
+        public static string KBP_KALENDER_NORM_NAME_TAG {
+            get {
+                return ResourceManager.GetString("KBP_KALENDER_NORM_NAME_TAG", resourceCulture);
             }
         }
         

@@ -1913,8 +1913,12 @@ public class BedarfsProfileDialogTests : EposBunitContext
     public void KBP5b_Uebernahme_der_Vorlage_8_waehlt_den_Normkalender_vor_andere_nicht()
     {
         const int NORM = 77;
+        // KBP-5c: Der Name kommt von der Hülle und trägt das Feiertagsland.
         string normname = string.Format(CultureInfo.CurrentCulture,
-            WindowsFormsApplication1.MyResource.Resource.KBP_KALENDER_NORM_NAME, 230);
+            WindowsFormsApplication1.MyResource.Resource.KBP_KALENDER_NORM_NAME, 230, "BY");
+        string bundesweit = string.Format(CultureInfo.CurrentCulture,
+            WindowsFormsApplication1.MyResource.Resource.KBP_KALENDER_NORM_NAME, 230,
+            WindowsFormsApplication1.MyResource.Resource.KBP_KALENDER_NORM_BUNDESWEIT);
         var kalender = new List<(int Id, string Text)> { (5, "Werkskalender") };
         var zeilen = new List<BedarfsProfilZeile>();
         int neuGelesen = 0;
@@ -1929,7 +1933,8 @@ public class BedarfsProfileDialogTests : EposBunitContext
             .Add(x => x.Jahressumme, _ => 42.0)
             // Die Hülle wählt für „Profil A“ (Normtage 230) den Normkalender vor und legt ihn dabei an.
             .Add(x => x.Aufnehmen, n => n == "Profil A"
-                ? new BedarfsProfilZeile { IdZ = 100000, IdStamm = 9, Name = n, Summe = 42.0, Normtage = 230, KalenderId = NORM }
+                ? new BedarfsProfilZeile { IdZ = 100000, IdStamm = 9, Name = n, Summe = 42.0, Normtage = 230, KalenderId = NORM,
+                                           Normkalender = normname }
                 : new BedarfsProfilZeile { IdZ = 100001, IdStamm = 10, Name = n, Summe = 7.5 })
             .Add(x => x.Betriebskalender, (IReadOnlyList<(int, string)>)kalender)
             .Add(x => x.BetriebskalenderNeuLesen, () =>
@@ -1949,8 +1954,15 @@ public class BedarfsProfileDialogTests : EposBunitContext
         Assert.NotNull(hinweis);
         Assert.Contains("230", hinweis);
         Assert.Contains(normname, hinweis);
+        Assert.Contains("(BY)", hinweis);
+        Assert.DoesNotContain(bundesweit, hinweis);
         Satz(cut);
         Assert.Contains(hinweis!, string.Concat(cut.Nodes.Select(n => n.TextContent)));
+
+        // Ohne Namen von der Hülle nennt die Zeile den bundesweiten Normkalender.
+        zeilen[0].Normkalender = null;
+        Assert.Contains(bundesweit, cut.Instance.HinweisNormkalender);
+        zeilen[0].Normkalender = normname;
 
         // Eine andere Vorlage: keine Vorwahl, keine Herleitungszeile, kein weiteres Neulesen.
         KatalogKlick(cut, 1);

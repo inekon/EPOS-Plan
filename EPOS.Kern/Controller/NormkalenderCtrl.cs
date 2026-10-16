@@ -10,7 +10,7 @@ namespace WindowsFormsApplication1
     /// <b>Der Normkalender einer Kältevorlage mit Nutzungstagen nach Norm</b> (Konzept Kältebedarfsprofile 6.2, 8;
     /// Entscheid des Anwenders vom 16.10.2026; Welle KBP-5b). Wer eine Vorlage mit <c>Nutzungstage_Norm</c> übernimmt
     /// (Vorlage 8 „Prozesskälte einschichtig“: 230 Tage nach DIN/TS 18599-10:2025-10, Hallenprofile), bekommt im Projekt
-    /// den Betriebskalender „Norm 230 Tage“ vorgewählt.
+    /// den Betriebskalender „Norm 230 Tage (Land)“ vorgewählt.
     ///
     /// <para><b>Bildung:</b> Feiertage wie Sonntag; Betriebsferien in zwei der vier Ferienzeiträume — ab dem 24.12. über
     /// den Jahreswechsel bis höchstens zum 6.1. und ab dem ersten Montag ab dem 1.8. —, Tag für Tag so bemessen, dass im
@@ -24,9 +24,13 @@ namespace WindowsFormsApplication1
     /// <c>f = Σ Sonntag / Σ m_s</c> (<see cref="Ferienfaktor"/>, auf zwei Stellen). „Ferien kürzen“ bleibt aus —
     /// die Monatsmengen und damit die Jahressumme bleiben erhalten.</para>
     ///
-    /// <para><b>Wiederverwendung:</b> Die Kalender sind projektübergreifend. Genommen wird ein Kalender dieses Namens,
-    /// den eine Zuordnung des Projekts schon nutzt, sonst einer dieses Namens mit gleichem Inhalt; erst dann entsteht
-    /// ein neuer.</para>
+    /// <para><b>Name und Wiederverwendung</b> (KBP-5c, Entscheid 16.10.2026): Die Kalender sind projektübergreifend
+    /// sichtbar, deshalb trägt der Name das Feiertagsland — „Norm 230 Tage (BY)“, ohne Land „Norm 230 Tage
+    /// (bundesweit)“. Genommen wird ein Kalender dieses Namens, den eine Zuordnung des Projekts schon nutzt, sonst einer
+    /// dieses Namens mit gleichem Inhalt; erst dann entsteht ein neuer. Steht der Name schon mit anderem Inhalt
+    /// (anderes Wochentagsraster der Klimaregion), heißt der neue „Norm 230 Tage (BY, 1.1. Do)“ mit dem Wochentag des
+    /// 1. Januar, als letzter Ausweg mit laufender Nummer — nie entsteht ein Doppelname (<see cref="Namensfolge"/>,
+    /// <see cref="Wahl"/>).</para>
     /// </summary>
     public static class NormkalenderCtrl
     {
@@ -44,9 +48,47 @@ namespace WindowsFormsApplication1
 
         private const string TAB_KAELTE = "Z_Projekt_Kaeltebedarf";
 
-        /// <summary>Der Name des Normkalenders, aus der Zahl der Normtage gebildet („Norm 230 Tage“).</summary>
-        public static string Name(int normtage)
-            => string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KBP_KALENDER_NORM_NAME, normtage);
+        /// <summary>Höchste laufende Nummer eines Ausweichnamens („… #2“ bis „… #99“).</summary>
+        private const int NUMMER_HOECHSTENS = 99;
+
+        /// <summary>
+        /// Der Name des Normkalenders aus der Zahl der Normtage und dem Feiertagsland (KBP-5c, Entscheid 16.10.2026):
+        /// „Norm 230 Tage (BY)“ mit dem Länderkürzel, ohne bekanntes Land „Norm 230 Tage (bundesweit)“. Die Kalender
+        /// sind projektübergreifend sichtbar — das Land im Namen hält Kalender verschiedenen Inhalts auseinander.
+        /// </summary>
+        public static string Name(int normtage, string bundesland = LAND_VORGABE)
+            => string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KBP_KALENDER_NORM_NAME, normtage,
+                             Landzusatz(bundesland));
+
+        /// <summary>
+        /// Der Ausweichname, wenn ein Kalender des Namens <see cref="Name"/> schon mit anderem Inhalt besteht (anderes
+        /// Wochentagsraster der Klimaregion): dazu der Wochentag des 1. Januar im Raster — „Norm 230 Tage (BY, 1.1. Do)“.
+        /// </summary>
+        public static string NameMitWochentag(int normtage, string bundesland, Gemeinjahrkalender raster)
+        {
+            // W0 zählt ab Montag (0), DayOfWeek ab Sonntag (0).
+            string tag = CultureInfo.CurrentUICulture.DateTimeFormat.AbbreviatedDayNames[(raster.W0 + 1) % 7];
+            return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KBP_KALENDER_NORM_NAME_TAG, normtage,
+                                 Landzusatz(bundesland), tag);
+        }
+
+        /// <summary>Der Zusatz in der Klammer: das Länderkürzel, ohne bekanntes Land „bundesweit“.</summary>
+        private static string Landzusatz(string bundesland)
+            => Landesfeiertage.Bekannt(bundesland) ? bundesland : MyResource.Resource.KBP_KALENDER_NORM_BUNDESWEIT;
+
+        /// <summary>
+        /// Die Namen, unter denen der Normkalender gesucht und angelegt wird, in dieser Reihenfolge: <see cref="Name"/>,
+        /// <see cref="NameMitWochentag"/>, dann der Ausweichname mit laufender Nummer („… #2“) — falls auch dieser Name
+        /// schon mit anderem Inhalt besteht (etwa ein anderer Ferienfaktor). Ein Doppelname entsteht so nie.
+        /// </summary>
+        public static IEnumerable<string> Namensfolge(int normtage, string bundesland, Gemeinjahrkalender raster)
+        {
+            yield return Name(normtage, bundesland);
+            string tag = NameMitWochentag(normtage, bundesland, raster);
+            yield return tag;
+            for (int n = 2; n <= NUMMER_HOECHSTENS; n++)
+                yield return tag + " #" + n.ToString(CultureInfo.InvariantCulture);
+        }
 
         /// <summary>Ist der Jahrestag-Index <paramref name="d"/> (0 = 1. Januar) im Raster ein Werktag Montag bis Freitag?</summary>
         private static bool Werktag(Gemeinjahrkalender raster, int d) => (raster.W0 + d) % 7 < 5;
@@ -88,10 +130,11 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static Betriebskalender Bilden(int normtage, string bundesland, Gemeinjahrkalender raster, double[] woche)
         {
+            string land = Landesfeiertage.Bekannt(bundesland) ? bundesland : LAND_VORGABE;
             var k = new Betriebskalender
             {
-                Bezeichner = Name(normtage),
-                Bundesland = Landesfeiertage.Bekannt(bundesland) ? bundesland : LAND_VORGABE,
+                Bezeichner = Name(normtage, land),
+                Bundesland = land,
                 Ferienfaktor = Ferienfaktor(woche),
                 FeiertagWieSonntag = true,
                 FerienKuerzen = false
@@ -138,33 +181,92 @@ namespace WindowsFormsApplication1
         /// liefert sie die ID des Normkalenders — vorhanden oder neu angelegt; sonst <c>null</c> (die Zeile bleibt ohne
         /// Vorwahl). Ohne Kalendertabelle oder bei gescheitertem Schreiben ebenfalls <c>null</c>.
         /// </summary>
-        public static int? Vorwahl(int idProjekt, int idKopie)
-        {
-            if (idProjekt <= 0 || idKopie <= 0 || !BetriebskalenderCtrl.TabelleVorhanden()) return null;
-            int? normtage = KaeltebedarfStammCtrl.ProjektNutzungstage(idKopie);
-            if (normtage is not int tage || tage <= 0) return null;
+        public static int? Vorwahl(int idProjekt, int idKopie) => Vorwahl(idProjekt, idKopie, out _);
 
-            Gemeinjahrkalender raster = Konditionierungdatenweg.Raster(idProjekt);
-            Betriebskalender soll = Bilden(tage, Feiertagsland(idProjekt), raster, KaeltebedarfStammCtrl.ProjektWoche(idKopie));
-            int? vorhanden = Vorhanden(idProjekt, soll);
-            if (vorhanden.HasValue) return vorhanden;
+        /// <summary>
+        /// Wie <see cref="Vorwahl(int, int)"/>; <paramref name="name"/> ist der tatsächliche Name des vorgewählten
+        /// Kalenders (für die Herleitungszeile), sonst <c>null</c>.
+        /// </summary>
+        public static int? Vorwahl(int idProjekt, int idKopie, out string name)
+        {
+            name = null;
+            Betriebskalender soll = Soll(idProjekt, idKopie, out Gemeinjahrkalender raster, out int tage);
+            if (soll == null) return null;
+            (int? vorhanden, string frei) = Wahl(idProjekt, soll, Namensfolge(tage, soll.Bundesland, raster));
+            if (vorhanden.HasValue)
+            {
+                name = BetriebskalenderCtrl.Lies(vorhanden.Value)?.Bezeichner ?? frei;
+                return vorhanden;
+            }
+            if (frei == null) return null;
+            soll.Bezeichner = frei;
             int id = BetriebskalenderCtrl.Speichern(soll);
-            return id > 0 ? id : (int?)null;
+            if (id <= 0) return null;
+            name = frei;
+            return id;
         }
 
         /// <summary>
-        /// Ein vorhandener Kalender gleichen Namens: zuerst einer, den eine Zuordnung des Projekts nutzt, dann einer mit
-        /// gleichem Inhalt; <c>null</c> = keiner.
+        /// Der Name des Normkalenders, den <see cref="Vorwahl(int, int)"/> für diese Projektkopie nähme oder anlegte — ohne
+        /// zu schreiben (die Herleitungszeile einer geladenen Zeile); <c>null</c> ohne Normtage oder ohne Kalendertabelle.
         /// </summary>
-        public static int? Vorhanden(int idProjekt, Betriebskalender soll)
+        public static string Bezeichner(int idProjekt, int idKopie)
         {
+            Betriebskalender soll = Soll(idProjekt, idKopie, out Gemeinjahrkalender raster, out int tage);
             if (soll == null) return null;
-            string name = (soll.Bezeichner ?? "").Trim();
-            List<Betriebskalender> gleichnamig = BetriebskalenderCtrl.Liste()
-                .Where(k => string.Equals((k.Bezeichner ?? "").Trim(), name, StringComparison.Ordinal))
-                .OrderBy(k => k.ID).ToList();
-            if (gleichnamig.Count == 0) return null;
+            (int? vorhanden, string frei) = Wahl(idProjekt, soll, Namensfolge(tage, soll.Bundesland, raster));
+            return vorhanden.HasValue ? BetriebskalenderCtrl.Lies(vorhanden.Value)?.Bezeichner ?? frei : frei;
+        }
 
+        /// <summary>Der Sollkalender der Projektkopie; <c>null</c> ohne Normtage, ohne Projekt oder ohne Kalendertabelle.</summary>
+        private static Betriebskalender Soll(int idProjekt, int idKopie, out Gemeinjahrkalender raster, out int tage)
+        {
+            raster = default;
+            tage = 0;
+            if (idProjekt <= 0 || idKopie <= 0 || !BetriebskalenderCtrl.TabelleVorhanden()) return null;
+            int? normtage = KaeltebedarfStammCtrl.ProjektNutzungstage(idKopie);
+            if (normtage is not int t || t <= 0) return null;
+            tage = t;
+            raster = Konditionierungdatenweg.Raster(idProjekt);
+            return Bilden(tage, Feiertagsland(idProjekt), raster, KaeltebedarfStammCtrl.ProjektWoche(idKopie));
+        }
+
+        /// <summary>
+        /// Ein vorhandener Kalender eines der <paramref name="namen"/>: zuerst einer, den eine Zuordnung des Projekts nutzt
+        /// (früherer Name vor späterem); dann je Name in Reihenfolge einer mit gleichem Inhalt. Sonst bleibt
+        /// <c>Id = null</c>, und <c>Frei</c> ist der erste Name, unter dem noch kein Kalender steht — der Name eines neuen
+        /// Kalenders, damit kein Doppelname mit anderem Inhalt entsteht; <c>null</c>, wenn alle Namen belegt sind.
+        /// </summary>
+        public static (int? Id, string Frei) Wahl(int idProjekt, Betriebskalender soll, IEnumerable<string> namen)
+        {
+            if (soll == null || namen == null) return (null, null);
+            List<string> folge = namen.Select(n => (n ?? "").Trim()).Where(n => n.Length > 0).Distinct().ToList();
+            List<Betriebskalender> alle = BetriebskalenderCtrl.Liste();
+            Dictionary<string, List<Betriebskalender>> jeName = folge.ToDictionary(
+                n => n, n => alle.Where(k => string.Equals((k.Bezeichner ?? "").Trim(), n, StringComparison.Ordinal))
+                                 .OrderBy(k => k.ID).ToList(), StringComparer.Ordinal);
+
+            if (jeName.Values.Any(l => l.Count > 0))
+            {
+                HashSet<int> genutzt = GenutzteKalender(idProjekt);
+                foreach (string n in folge)
+                {
+                    Betriebskalender projekt = jeName[n].FirstOrDefault(k => genutzt.Contains(k.ID));
+                    if (projekt != null) return (projekt.ID, n);
+                }
+            }
+            foreach (string n in folge)
+            {
+                if (jeName[n].Count == 0) return (null, n);
+                Betriebskalender gleich = jeName[n].FirstOrDefault(k => Gleich(k, soll));
+                if (gleich != null) return (gleich.ID, n);
+            }
+            return (null, null);
+        }
+
+        /// <summary>Die Kalender, die eine Zuordnung des Projekts nutzt (die drei Bedarfszuordnungen und die Kälte).</summary>
+        private static HashSet<int> GenutzteKalender(int idProjekt)
+        {
             var genutzt = new HashSet<int>();
             foreach (string tab in BedarfNetzKalenderSchema.ZUORDNUNGEN)
                 foreach (int? id in BetriebskalenderCtrl.KalenderDerZuordnungen(tab, idProjekt).Values)
@@ -178,11 +280,7 @@ namespace WindowsFormsApplication1
                 if (dt != null)
                     foreach (DataRow r in dt.Rows) genutzt.Add(Convert.ToInt32(r[0], CultureInfo.InvariantCulture));
             }
-            Betriebskalender projekt = gleichnamig.FirstOrDefault(k => genutzt.Contains(k.ID));
-            if (projekt != null) return projekt.ID;
-
-            Betriebskalender gleich = gleichnamig.FirstOrDefault(k => Gleich(k, soll));
-            return gleich?.ID;
+            return genutzt;
         }
 
         /// <summary>Gleicher Inhalt: Land, Ferien in Reihenfolge, Faktor und beide Schalter.</summary>

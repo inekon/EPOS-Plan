@@ -32,7 +32,9 @@ namespace WindowsFormsApplication1
                     Wochenprofil = m.Wochenprofil ?? KaeltebedarfStammCtrl.ProjektWoche(m.ID_Kaeltebedarf),
                     ProfilGeaendert = m.Monatsanteile != null || m.Wochenprofil != null,
                     // KBP-5b: die Normtage der Vorlage für die Herleitungszeile am Kalender.
-                    Normtage = m.NutzungstageNorm
+                    Normtage = m.NutzungstageNorm,
+                    // KBP-5c: der tatsächliche Name des Normkalenders für die Herleitungszeile (ohne zu schreiben).
+                    Normkalender = m.NutzungstageNorm.HasValue ? NormkalenderCtrl.Bezeichner(m.ID_Projekt, m.ID_Kaeltebedarf) : null
                 });
             return zeilen;
         }
@@ -52,8 +54,8 @@ namespace WindowsFormsApplication1
                                            : KaeltebedarfStammCtrl.Nutzungstage(vorlage);
             if (idProjekt > 0 && zeile.Normtage.HasValue)
             {
-                int? kalender = NormkalenderCtrl.Vorwahl(idProjekt, zeile.IdStamm);
-                if (kalender.HasValue) zeile.KalenderId = kalender;
+                int? kalender = NormkalenderCtrl.Vorwahl(idProjekt, zeile.IdStamm, out string normname);
+                if (kalender.HasValue) { zeile.KalenderId = kalender; zeile.Normkalender = normname; }
             }
             zeile.Eingabeart = KaeltebedarfsprofilVorlagenSchema.EINGABE_JAHR;
             string vorschlag = KaeltebedarfStammCtrl.ArtVorschlag(vorlage);

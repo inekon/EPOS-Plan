@@ -12,12 +12,14 @@ namespace EPOS.Kern.Tests
     /// <b>Der Normkalender der Kältevorlage 8</b> (Konzept Kältebedarfsprofile 6.2, 8; Entscheid des Anwenders vom
     /// 16.10.2026; Welle KBP-5b): genau die Normtage als Nutzungstage im Gemeinjahr-Raster für jedes Feiertagsland und
     /// jeden Wochentag des 1. Januar, die Jahressumme bleibt erhalten, ein Kalender gleichen Namens wird wiederverwendet,
-    /// Vorlagen ohne Normtage bekommen keine Vorwahl.
+    /// Vorlagen ohne Normtage bekommen keine Vorwahl. KBP-5c: Der Name trägt das Feiertagsland, Projekte eines Landes
+    /// teilen einen Kalender, ein abweichender Inhalt bekommt einen eigenen Namen statt eines Doppelnamens.
     /// </summary>
     [Collection("Testdatenbank")]
     public class NormkalenderTests : IDisposable
     {
         private const int PROJEKT = 1017;
+        private const int PROJEKT_ZWEI = 1047;
         private const string VORLAGE_8 = "Prozesskälte einschichtig";
         private const string BUERO = "Raumkühlung Büro";
         private readonly TestDatenbank _db = new TestDatenbank();
@@ -108,7 +110,8 @@ namespace EPOS.Kern.Tests
             Assert.True(zeile.KalenderId is int id && id > 0);
 
             Betriebskalender k = BetriebskalenderCtrl.Lies(zeile.KalenderId!.Value);
-            Assert.Equal(NormkalenderCtrl.Name(230), k.Bezeichner);
+            Assert.Equal(NormkalenderCtrl.Name(230, NormkalenderCtrl.Feiertagsland(PROJEKT)), k.Bezeichner);
+            Assert.Equal(k.Bezeichner, zeile.Normkalender);
             Assert.Equal(230, NormkalenderCtrl.Nutzungstage(k, Konditionierungdatenweg.Raster(PROJEKT)));
             Assert.Equal(NormkalenderCtrl.Feiertagsland(PROJEKT), k.Bundesland);
 
@@ -135,7 +138,8 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
             // Ein Kalender dieses Namens mit ANDEREM Inhalt, den eine Zuordnung des Projekts schon nutzt.
-            int eigen = BetriebskalenderCtrl.Speichern(new Betriebskalender { Bezeichner = NormkalenderCtrl.Name(230), Ferienfaktor = 0.5 });
+            string name = NormkalenderCtrl.Name(230, NormkalenderCtrl.Feiertagsland(PROJEKT));
+            int eigen = BetriebskalenderCtrl.Speichern(new Betriebskalender { Bezeichner = name, Ferienfaktor = 0.5 });
             Assert.True(eigen > 0);
             int zuordnung = Convert.ToInt32(DataRepository.ExecuteScalar(
                 "SELECT ID FROM Z_Projekt_Stromverbraucher WHERE ID_Projekt = ? ORDER BY ID LIMIT 1", new DbParam("?", PROJEKT))
@@ -145,7 +149,132 @@ namespace EPOS.Kern.Tests
 
             int kopie = KaeltebedarfStammCtrl.CopyFromStamm(VORLAGE_8, PROJEKT);
             Assert.Equal(eigen, NormkalenderCtrl.Vorwahl(PROJEKT, kopie));
-            Assert.Single(BetriebskalenderCtrl.Liste(), k => k.Bezeichner == NormkalenderCtrl.Name(230));
+            Assert.Single(BetriebskalenderCtrl.Liste(), k => k.Bezeichner == name);
+        }
+
+        /// <summary>KBP-5c: Der Name trägt das Länderkürzel, ohne Land „bundesweit“ — in beiden Sprachen.</summary>
+        [Fact]
+        public void Der_Name_traegt_das_Feiertagsland()
+        {
+            var raster = new Gemeinjahrkalender(3); // 1. Januar ein Donnerstag
+            using (new Kulturvorrichtung())
+            {
+                Assert.Equal("Norm 230 Tage (BY)", NormkalenderCtrl.Name(230, "BY"));
+                Assert.Equal("Norm 230 Tage (NW)", NormkalenderCtrl.Name(230, "NW"));
+                Assert.Equal("Norm 230 Tage (bundesweit)", NormkalenderCtrl.Name(230));
+                Assert.Equal("Norm 230 Tage (bundesweit)", NormkalenderCtrl.Name(230, "XX"));
+                Assert.Equal("Norm 230 Tage (BY, 1.1. Do)", NormkalenderCtrl.NameMitWochentag(230, "BY", raster));
+                Assert.Equal("Norm 230 Tage (BY)", NormkalenderCtrl.Bilden(230, "BY", raster, Woche8()).Bezeichner);
+                Assert.Equal("Norm 230 Tage (bundesweit)", NormkalenderCtrl.Bilden(230, null, raster, Woche8()).Bezeichner);
+                List<string> folge = NormkalenderCtrl.Namensfolge(230, "BY", raster).Take(3).ToList();
+                Assert.Equal(new[] { "Norm 230 Tage (BY)", "Norm 230 Tage (BY, 1.1. Do)", "Norm 230 Tage (BY, 1.1. Do) #2" }, folge);
+            }
+            using (new Kulturvorrichtung("en-US"))
+            {
+                Assert.Equal("Standard 230 days (BY)", NormkalenderCtrl.Name(230, "BY"));
+                Assert.Equal("Standard 230 days (nationwide)", NormkalenderCtrl.Name(230));
+                Assert.Equal("Standard 230 days (BY, 1 Jan Thu)", NormkalenderCtrl.NameMitWochentag(230, "BY", raster));
+            }
+        }
+
+        /// <summary>Setzt das Feiertagsland aller Gebäude eines Projekts.</summary>
+        private static void LandSetzen(int projekt, string land)
+            => DataRepository.ExecuteNonQuery(
+                "UPDATE Tab_Gebaeude SET Feiertagsland = ? WHERE ID_ProjektGebaeude IN (SELECT ID FROM Z_ProjektGebaeude WHERE ID_Projekt = ?)",
+                new DbParam("?", (object)land ?? DBNull.Value), new DbParam("?", projekt));
+
+        /// <summary>Übernimmt die Vorlage 8 ins Projekt und liefert Kalender-ID und Namen der Vorwahl.</summary>
+        private static (int Id, string Name) Uebernehmen(int projekt)
+        {
+            int kopie = KaeltebedarfStammCtrl.CopyFromStamm(VORLAGE_8, projekt);
+            Assert.True(kopie > 0);
+            int? id = NormkalenderCtrl.Vorwahl(projekt, kopie, out string name);
+            Assert.True(id is int i && i > 0);
+            Assert.Equal(name, BetriebskalenderCtrl.Lies(id!.Value).Bezeichner);
+            Assert.Equal(name, NormkalenderCtrl.Bezeichner(projekt, kopie));
+            return (id.Value, name);
+        }
+
+        /// <summary>KBP-5c: Zwei Projekte im selben Land teilen einen Kalender, in verschiedenen Ländern zwei verschieden benannte.</summary>
+        [Fact]
+        public void Projekte_teilen_den_Kalender_ihres_Landes()
+        {
+            if (!_db.Vorhanden) return;
+            using var kultur = new Kulturvorrichtung();
+            Assert.Equal(Konditionierungdatenweg.Raster(PROJEKT).W0, Konditionierungdatenweg.Raster(PROJEKT_ZWEI).W0);
+
+            LandSetzen(PROJEKT, "BY");
+            LandSetzen(PROJEKT_ZWEI, "BY");
+            (int a, string nameA) = Uebernehmen(PROJEKT);
+            (int b, string nameB) = Uebernehmen(PROJEKT_ZWEI);
+            Assert.Equal("Norm 230 Tage (BY)", nameA);
+            Assert.Equal(a, b);
+            Assert.Equal(nameA, nameB);
+
+            LandSetzen(PROJEKT_ZWEI, "NW");
+            (int c, string nameC) = Uebernehmen(PROJEKT_ZWEI);
+            Assert.Equal("Norm 230 Tage (NW)", nameC);
+            Assert.NotEqual(a, c);
+            Assert.Equal("NW", BetriebskalenderCtrl.Lies(c).Bundesland);
+
+            LandSetzen(PROJEKT_ZWEI, null);
+            (int d, string nameD) = Uebernehmen(PROJEKT_ZWEI);
+            Assert.Equal("Norm 230 Tage (bundesweit)", nameD);
+            Assert.Null(BetriebskalenderCtrl.Lies(d).Bundesland);
+
+            List<Betriebskalender> liste = BetriebskalenderCtrl.Liste();
+            foreach (string n in new[] { nameA, nameC, nameD }) Assert.Single(liste, k => k.Bezeichner == n);
+        }
+
+        /// <summary>
+        /// KBP-5c: Steht der Name schon mit anderem Inhalt (etwa einem anderen Wochentagsraster), entsteht kein Doppelname —
+        /// der neue Kalender trägt den Wochentag des 1. Januar, als letzter Ausweg eine laufende Nummer.
+        /// </summary>
+        [Fact]
+        public void Bei_abweichendem_Inhalt_entsteht_kein_Doppelname()
+        {
+            if (!_db.Vorhanden) return;
+            using var kultur = new Kulturvorrichtung();
+            LandSetzen(PROJEKT, "BY");
+            Gemeinjahrkalender raster = Konditionierungdatenweg.Raster(PROJEKT);
+            string name = NormkalenderCtrl.Name(230, "BY");
+            string mitTag = NormkalenderCtrl.NameMitWochentag(230, "BY", raster);
+            // Ein fremder Kalender gleichen Namens mit anderem Inhalt: anderes Wochentagsraster, von keiner Zuordnung des Projekts genutzt.
+            Betriebskalender fremd = NormkalenderCtrl.Bilden(230, "BY", new Gemeinjahrkalender((raster.W0 + 1) % 7), Woche8());
+            Assert.True(BetriebskalenderCtrl.Speichern(fremd) > 0);
+
+            (int a, string nameA) = Uebernehmen(PROJEKT);
+            Assert.Equal(mitTag, nameA);
+            Assert.NotEqual(name, nameA);
+
+            // Ein zweites Projekt im selben Land nimmt den Ausweichkalender gleichen Inhalts.
+            LandSetzen(PROJEKT_ZWEI, "BY");
+            (int b, string nameB) = Uebernehmen(PROJEKT_ZWEI);
+            Assert.Equal(a, b);
+            Assert.Equal(mitTag, nameB);
+
+            List<Betriebskalender> liste = BetriebskalenderCtrl.Liste();
+            Assert.Single(liste, k => k.Bezeichner == name);
+            Assert.Single(liste, k => k.Bezeichner == mitTag);
+        }
+
+        /// <summary>KBP-5c: Sind Name und Ausweichname mit anderem Inhalt belegt, trägt der neue Kalender die laufende Nummer.</summary>
+        [Fact]
+        public void Sind_beide_Namen_belegt_traegt_der_neue_die_laufende_Nummer()
+        {
+            if (!_db.Vorhanden) return;
+            using var kultur = new Kulturvorrichtung();
+            LandSetzen(PROJEKT, "BY");
+            Gemeinjahrkalender raster = Konditionierungdatenweg.Raster(PROJEKT);
+            string name = NormkalenderCtrl.Name(230, "BY");
+            string mitTag = NormkalenderCtrl.NameMitWochentag(230, "BY", raster);
+            Assert.True(BetriebskalenderCtrl.Speichern(new Betriebskalender { Bezeichner = name, Bundesland = "BY", Ferienfaktor = 0.5 }) > 0);
+            Assert.True(BetriebskalenderCtrl.Speichern(new Betriebskalender { Bezeichner = mitTag, Bundesland = "BY", Ferienfaktor = 0.77 }) > 0);
+
+            (int a, string nameA) = Uebernehmen(PROJEKT);
+            Assert.Equal(mitTag + " #2", nameA);
+            List<Betriebskalender> liste = BetriebskalenderCtrl.Liste();
+            foreach (string n in new[] { name, mitTag, nameA }) Assert.Single(liste, k => k.Bezeichner == n);
         }
     }
 }

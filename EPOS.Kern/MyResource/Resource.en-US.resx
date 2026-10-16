@@ -56420,10 +56420,16 @@ Replace these holidays with the project default? With “No” these zones remai
     <value>Domestic hot water is calculated with the draw-off profile generator – the input type (monthly values, weekly profile) applies only to the profile method.</value>
   </data>
   <data name="KBP_KALENDER_NORM_NAME" xml:space="preserve">
-    <value>Standard {0} days</value>
+    <value>Standard {0} days ({1})</value>
   </data>
   <data name="KBP_HINW_NORMKALENDER" xml:space="preserve">
     <value>The template counts {0} days of use according to the standard; the operating calendar “{1}” reproduces them and is preselected on adoption (public holidays like Sunday, company holidays around New Year and in summer).</value>
+  </data>
+  <data name="KBP_KALENDER_NORM_BUNDESWEIT" xml:space="preserve">
+    <value>nationwide</value>
+  </data>
+  <data name="KBP_KALENDER_NORM_NAME_TAG" xml:space="preserve">
+    <value>Standard {0} days ({1}, 1 Jan {2})</value>
   </data>
 </root>
 

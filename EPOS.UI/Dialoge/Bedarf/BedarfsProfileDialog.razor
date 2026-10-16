@@ -1673,12 +1673,17 @@
 
     /// <summary>
     /// KBP-5b: die Herleitungszeile am Kalender, wenn die markierte Zeile eine Vorlage mit Nutzungstagen nach Norm trägt
-    /// (<c>KBP_HINW_NORMKALENDER</c>: Normtage und Name des Normkalenders, <c>KBP_KALENDER_NORM_NAME</c>); sonst <c>null</c>.
+    /// (<c>KBP_HINW_NORMKALENDER</c>: Normtage und Name des Normkalenders); sonst <c>null</c>. KBP-5c: Der Name ist der
+    /// tatsächliche der Zeile (<see cref="BedarfsProfilZeile.Normkalender"/>, mit Feiertagsland); ohne ihn der
+    /// bundesweite Name (<c>KBP_KALENDER_NORM_NAME</c> mit <c>KBP_KALENDER_NORM_BUNDESWEIT</c>).
     /// </summary>
     public string? HinweisNormkalender
         => _gewaehlt?.Normtage is int tage && tage > 0
             ? string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.KBP_HINW_NORMKALENDER, tage,
-                            string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.KBP_KALENDER_NORM_NAME, tage))
+                            string.IsNullOrWhiteSpace(_gewaehlt.Normkalender)
+                                ? string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.KBP_KALENDER_NORM_NAME,
+                                                tage, Resource.KBP_KALENDER_NORM_BUNDESWEIT)
+                                : _gewaehlt.Normkalender)
             : null;
 
     /// <summary>Die Jahressumme gilt als Eingabe nicht bei Monatswerten in MWh — dort ist sie die Summe der Monate.</summary>
