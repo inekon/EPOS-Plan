@@ -250,6 +250,9 @@ jobs:
           fi
           echo "Messlatte: $messlatte"
           echo "Hashliste: $liste (Laeuferabbild ${ImageOS:-?} ${ImageVersion:-?})"
+          echo "::group::ChartProben-Hashliste ubuntu (vollständig, für die Messlatte)"
+          cat "$liste"
+          echo "::endgroup::"
           awk -v messlatte="$(basename "$messlatte")" '
             function abweichung(art, bild, text) {
               print art bild text
@@ -264,7 +267,7 @@ jobs:
             $2 in hash { abweichung("GEAENDERT: ", $2, "  Messlatte " $1 "  Lauf " hash[$2]); next }
                        { abweichung("FEHLT:     ", $2, "  Messlatte " $1 "  - im Lauf nicht gezeichnet") }
             END {
-              for (i = 1; i <= n; i++) if (!(name[i] in alt)) { print "NEU:       " name[i]; neu++ }
+              for (i = 1; i <= n; i++) if (!(name[i] in alt)) { print "NEU:       " name[i] " " hash[name[i]]; neu++ }
               printf "%s: %d von %d Zeilen unveraendert, %d geaendert oder fehlend, %d neue Bilder ohne Messlattenzeile.\n", messlatte, gleich, zeilen, aus, neu
               if (zeilen == 0) { print "::error::Die Messlatte " messlatte " ist leer."; exit 1 }
               if (aus > 0) { print "::error::ChartProben-Messlatte: " aus " von " zeilen " Zeilen geaendert oder fehlend: " betroffen; exit 1 }
@@ -428,6 +431,8 @@ jobs:
       # der CI-Auswahl; die zwoelf uebrigen bleiben byte-gleich.
       # R54 (14.10.2026): Daecher von 1052 und 1054 als Satteldach 42 Grad (E141), beide nicht
       # in der CI-Auswahl; alle achtzehn bleiben byte-gleich.
+      # R55 (14.10.2026): Referenzprojekt 1072 (Kaeltebedarf dezentral, Kopie von 1055 mit drei Kaeltebedarfsprofilen,
+      # K6c), nicht in der CI-Auswahl; alle achtzehn bleiben byte-gleich.
       - name: Kern-Referenzlauf 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065, 1066-1071
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: >
@@ -440,28 +445,28 @@ jobs:
       # Suite (Betrag >= 1: rel. 1e-4, sonst abs. 0,01). Exit 1 bei FAIL macht den
       # Job rot. Der Byte-Diff danach ist nur Information - auf ARM64 sind
       # Gleitkomma-Abweichungen im Rahmen der Toleranz erwartbar (iF15).
-      - name: Vergleich mit Referenzbasis 2026-10-14_R54_Dachflaechen
+      - name: Vergleich mit Referenzbasis 2026-10-14_R55_KaeltebedarfDezentral
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: |
           mkdir -p artifacts/reflauf/ref
-          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1030 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1007 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1017 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1045 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1046 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1047 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1049 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1051 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1058 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1060 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1063 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1065 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1066 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1067 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1068 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1069 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1070 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-14_R54_Dachflaechen/Projekt_1071 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral/Projekt_1030 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral/Projekt_1007 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral/Projekt_1017 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral/Projekt_1045 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral/Projekt_1046 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral/Projekt_1047 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral/Projekt_1049 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral/Projekt_1051 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral/Projekt_1058 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral/Projekt_1060 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral/Projekt_1063 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral/Projekt_1065 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral/Projekt_1066 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral/Projekt_1067 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral/Projekt_1068 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral/Projekt_1069 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral/Projekt_1070 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral/Projekt_1071 artifacts/reflauf/ref/
           dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/ref artifacts/reflauf/${{ matrix.os }}_kern
           echo "--- Byte-Diff (nur Information) ---"
           for p in 1030 1007 1017 1045 1046 1047 1049 1051 1058 1060 1063 1065 1066 1067 1068 1069 1070 1071; do

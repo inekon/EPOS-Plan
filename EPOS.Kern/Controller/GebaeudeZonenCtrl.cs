@@ -921,6 +921,34 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Hat der Zonendialog ein Feld von Hand geändert, das auch eine Datei tragen kann?</b> (Nachzug N2, MA-6 c) — Übergabe
+        /// (sieben Spalten), Kühlübergabe (drei), Vorheizzeit, Höchstleistungen, Sollwerte und Höchsttemperatur, verglichen mit
+        /// dem gespeicherten Stand (Zahlen mit dem Rand 1e-9 relativ). Nutzfläche, Raumhöhe und Volumen zählen nicht.
+        /// </summary>
+        internal static bool HandfelderGeaendert(ZoneModel alt, ZoneModel neu)
+        {
+            if (alt == null || neu == null) return false;
+            static bool Z(double? a, double? b)
+                => a.HasValue != b.HasValue || (a.HasValue && Math.Abs(a.Value - b.Value) > 1e-9 * Math.Max(1.0, Math.Abs(a.Value)));
+            static bool T(string a, string b)
+                => !string.Equals(string.IsNullOrWhiteSpace(a) ? null : a.Trim(), string.IsNullOrWhiteSpace(b) ? null : b.Trim(), StringComparison.Ordinal);
+            return T(alt.Uebergabe_Art, neu.Uebergabe_Art) || Z(alt.Uebergabe_Exponent, neu.Uebergabe_Exponent)
+                   || Z(alt.Uebergabe_Leistung_Nenn, neu.Uebergabe_Leistung_Nenn) || Z(alt.Auslegung_Vorlauf, neu.Auslegung_Vorlauf)
+                   || Z(alt.Auslegung_Ruecklauf, neu.Auslegung_Ruecklauf) || Z(alt.Auslegung_Raumtemperatur, neu.Auslegung_Raumtemperatur)
+                   || Z(alt.Regler_Proportionalband, neu.Regler_Proportionalband)
+                   || T(alt.Kuehl_Uebergabe_Art, neu.Kuehl_Uebergabe_Art) || Z(alt.Kuehl_Uebergabe_Exponent, neu.Kuehl_Uebergabe_Exponent)
+                   || Z(alt.Kuehl_Uebergabe_Leistung_Nenn, neu.Kuehl_Uebergabe_Leistung_Nenn)
+                   || alt.Vorheizzeit_H != neu.Vorheizzeit_H
+                   || Z(alt.Heizleistung_Max, neu.Heizleistung_Max) || Z(alt.Kuehlleistung_Max, neu.Kuehlleistung_Max)
+                   || Z(alt.Raumsolltemperatur_Tag, neu.Raumsolltemperatur_Tag)
+                   || Z(alt.Raumsolltemperatur_Nachtabsenkung, neu.Raumsolltemperatur_Nachtabsenkung)
+                   || Z(alt.Raumsolltemperatur_Wochenende, neu.Raumsolltemperatur_Wochenende)
+                   || Z(alt.Raumsolltemperatur_Ferien, neu.Raumsolltemperatur_Ferien)
+                   || Z(alt.Kuehl_Sollwert, neu.Kuehl_Sollwert) || Z(alt.Kuehl_Sollwert_Nacht, neu.Kuehl_Sollwert_Nacht)
+                   || Z(alt.Maximaleraumtemperatur, neu.Maximaleraumtemperatur);
+        }
+
+        /// <summary>
         /// <b>Was der OK-Weg der Zonen ergeben hat</b> (Stufe KP2, Welle K2; Befund B10): neben Ok und
         /// Meldung die <b>Zuordnung</b> der vorläufigen Ids — so trägt der Arbeitsstand nach dem OK die
         /// endgültigen, und ein zweites OK schreibt nichts doppelt.
@@ -966,6 +994,18 @@ namespace WindowsFormsApplication1
             List<ZoneModel> liste = (zonen ?? new List<ZoneModel>()).Where(z => z != null).ToList();
             var zonenVorher = liste.Select(z => (Zone: z, Id: z.ID)).ToList();
 
+            // Nachzug N2 (MA-6 c): Ändert der Zonendialog an einer Projektzone ein Feld, das auch eine Datei tragen kann
+            // (Übergabe, Kühlübergabe, Vorheizzeit, Höchstleistungen, Sollwerte), wird die Zone MANUELL - der Wiederimport
+            // bewahrt sie dann. Geometrie (Fläche, Höhe, Volumen) kommt immer aus der Datei und markiert nicht.
+            bool projekt = ebene == Zonenebene.Projekt;
+            if (projekt && liste.Any(z => z.ID > 0))
+            {
+                Dictionary<int, ZoneModel> gespeichert = LesenJeGebaeude(idGebaeude).ToDictionary(z => z.ID);
+                foreach (ZoneModel z in liste)
+                    if (z.ID > 0 && gespeichert.TryGetValue(z.ID, out ZoneModel alt) && HandfelderGeaendert(alt, z))
+                        z.Herkunft = DbWerte.HERKUNFT_MANUELL;
+            }
+
             using (DbVorgang v = DataRepository.Vorgang())
             using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(v))
             {
@@ -1005,6 +1045,16 @@ namespace WindowsFormsApplication1
                                     MyResource.Resource.ZONE_MSG_NICHT_GESPEICHERT, k.Meldung));
                             }
                             if (zeile) geschrieben++;
+                            // Nachzug N2 (MA-6 a): Hat der Kalendereditor die Konditionierung einer bestehenden Projektzone
+                            // geändert (Vorgabezeilen, Kalender, Perioden, Wochen), wird die Zone MANUELL - wie im Blatt
+                            // „Nutzung und Kalender“ (ZonenNutzungCtrl); der Wiederimport bewahrt dann ihre Kalender.
+                            if (zeile && projekt && p.Key > 0)
+                            {
+                                ZoneModel markiert = liste.First(z => z.ID == id);
+                                markiert.Herkunft = DbWerte.HERKUNFT_MANUELL;
+                                v.Ausfuehren("UPDATE \"Tab_Zone\" SET \"Herkunft\" = ? WHERE \"ID\" = ?",
+                                             new DbParam("@h", DbWerte.HERKUNFT_MANUELL), new DbParam("@z", id));
+                            }
                         }
                     }
 

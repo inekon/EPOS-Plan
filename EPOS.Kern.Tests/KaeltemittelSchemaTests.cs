@@ -218,7 +218,7 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die Zuordnung: die drei Projektkopien (1055, 1059, 1063) tragen die ID von R513A bei unverändertem Text, die
+        /// Die Zuordnung: die vier Projektkopien (1055, 1059, 1063, 1072) tragen die ID von R513A bei unverändertem Text, die
         /// Auslieferungssätze 1 bis 3 ihre ID mit neuer Prüfsumme (Satz 3 „R1234ze“ → R1234ze(E)), die 34 Typkennfelder
         /// bleiben leer.
         /// </summary>
@@ -227,7 +227,7 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
             long r513a = Id("R513A");
-            Assert.Equal(3L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine WHERE ID_Projekt IN (1055, 1059, 1063) " +
+            Assert.Equal(4L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine WHERE ID_Projekt IN (1055, 1059, 1063, 1072) " +
                                   "AND Kaeltemittel = 'R513A' AND ID_Kaeltemittel = " + r513a));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine WHERE ID_Kaeltemittel IS NULL"));
 
@@ -313,7 +313,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(8, e.Angelegt);              // Tabelle, drei Spalten, drei Katalogspalten, Teilindex
             Assert.Equal(18, e.Saat);
             Assert.Equal(3, e.KatalogZugeordnet);
-            Assert.Equal(3, e.ProjektZugeordnet);
+            Assert.Equal(4, e.ProjektZugeordnet);       // 1055, 1059, 1063 und 1072 (K6c)
             Assert.Equal(3, e.PruefsummenNeu);
             Assert.True(KaeltemittelSchema.Vollstaendig());
             Assert.Equal(summenNachher, Pruefsummen());

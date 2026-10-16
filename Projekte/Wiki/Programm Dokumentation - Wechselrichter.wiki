@@ -58,8 +58,6 @@ Wie ein Wechselrichter arbeitet – MPP-Regelung, Wirkungsgradkennlinie und Abre
 |-
 | Verwaltung Wechselrichter || ''Standby-Verbrauch'', ''Nachtverbrauch'' || 50 W, 5 W || bis 50 W Gleichstromleistung speist das Gerät nicht ein und bezieht 5 W
 |-
-| Verwaltung Wechselrichter || ''Gerätepreis'' || 3 000 € || Investition je Gerät
-|-
 | rowspan="5" | Verwaltung Photovoltaik Module || ''Anzahl Module'', ''Neigung [°]'', ''Azimut [°]'' || 75, 30, 0 || die Anlage beschreibt die Südfläche
 |-
 | ''Wechselrichter'' || mit Wechselrichter || Strangweg mit Gerät
@@ -104,7 +102,7 @@ Der Vorschlag meldet „Vorschlag: 1 Gerät, je 5 Stränge mit 15 Modulen in Rei
 |-
 | Netz || im Stundenlauf keine || eingespeist wird, was nach Haus und Speicher bleibt || keine Einspeisegrenze im Stundenlauf; die 60-%-Wirkleistungsbegrenzung (§ 9 Abs. 2 EEG) im Dialog ''PV-Vergütung (EEG)'' mindert nur die vergütete Einspeisung, eine Netzeinspeisegrenze gibt es in der [[Programm Dokumentation/Stromspeicher#auslegung-netz|Stromspeicher-Auslegung]]
 |-
-| Kosten || – || Gerätepreis mal Geräteanzahl || eine Kostenzeile je Gerätetyp; kWp, Stückpreis und Vergütung lesen die Anlagenzeile
+| Kosten || – || Kostenpositionen der Anlage, Gerätekosten aus der Satzvorlage des Katalogsatzes || eine Kostenzeile je Gerätetyp, abgeglichen über ''Mit dem Kostenkatalog abgleichen…''; kWp, Stückpreis und Vergütung lesen die Anlagenzeile
 |}
 
 == Fallstricke ==
@@ -114,7 +112,7 @@ Der Vorschlag meldet „Vorschlag: 1 Gerät, je 5 Stränge mit 15 Modulen in Rei
 * '''Ein Gerät gehört zu einer Anlage.''' Zwei Anlagen mit je ''Gerät'' 1 sind zwei Geräte mit doppelten Gerätekosten; ein gemeinsames Gerät verlangt Stränge einer Anlage ([[Programm Dokumentation/Photovoltaik#teilfelder|Photovoltaik: Teilfelder]]).
 * '''„Strang anlegen“ legt alle Module in eine Reihe.''' Der erste Strang bekommt die ganze ''Anzahl Module''; im Beispiel A wird die Ampel dann rot. Besser ''Auslegung vorschlagen''.
 * '''„Auslegung vorschlagen“ kennt keine Dachflächen.''' Er ersetzt die Tabelle durch gleich lange Stränge an gleich belegten Geräten und lässt Ausrichtung und Modul je Strang leer; geht die Modulzahl nicht auf, kommt kein Vorschlag.
-* '''Projektkopie.''' Die Kopie entsteht bei der ersten Zuordnung und wird danach wiederverwendet. Später im Katalog ergänzte Werte wie ''Gerätepreis'' oder ''Anzahl MPPT'' sehen nur die Vorschläge, nicht Ampel, Simulation und Kosten. Deshalb den Satz vor der ersten Zuordnung vollständig pflegen, nachträglich mit ''Duplizieren…'' unter neuem Namen anlegen und neu wählen.
+* '''Projektkopie.''' Die Kopie entsteht bei der ersten Zuordnung und wird danach wiederverwendet. Später im Katalog ergänzte Werte wie ''Anzahl MPPT'' sehen nur die Vorschläge, nicht Ampel, Simulation und Kosten. Deshalb den Satz vor der ersten Zuordnung vollständig pflegen, nachträglich mit ''Duplizieren…'' unter neuem Namen anlegen und neu wählen.
 * '''Importierte Geräte sind unvollständig.''' Die CEC-Liste führt keine ''Anzahl MPPT'' – dann gilt ein Tracker, und der Vorschlag nennt „Katalogwerte unvollständig“. Keine Quelle führt den ''max. Kurzschlussstrom je MPPT'' – dann ist der Betriebsstrom die rote Grenze – oder einen ''Gerätepreis'' – dann kostet das Gerät nichts.
 * '''Wirkungsgrade sind Faktoren''' (0,97, nicht 97); Werte über 1 speichert die Verwaltung nicht.
 * '''Anlagenwerte (Rückfall)''' rechnen nur ohne Strangzuordnung und nur im Modell ''Erweitert''; im Modell ''Einfach'' gilt allein der ''WR-Wirkungsgrad'', auch mit eingetragener ''AC-Nennleistung''.
@@ -141,7 +139,7 @@ Die Ampel misst allein an den Datenblattgrenzen des gewählten Geräts. Schutz g
 
 === Verwaltung Wechselrichter ===
 
-* {{Anker|katalog-geraet}}'''Gerät''' – ''Bezeichnung'', ''Hersteller'', ''Beschreibung'', ''AC-Nennleistung'' (kW, Pflicht), ''max. AC-Scheinleistung'' (kVA), ''max. DC-Leistung'' (kW), ''Herkunft'' (CEC, OND oder HAND); unter ''Kosten'' der ''Gerätepreis'' (€). Beim Speichern prüft die Verwaltung die Werte: Fehler verhindern das Speichern, Hinweise stehen in der Meldung.
+* {{Anker|katalog-geraet}}'''Gerät''' – ''Bezeichnung'', ''Hersteller'', ''Beschreibung'', ''AC-Nennleistung'' (kW, Pflicht), ''max. AC-Scheinleistung'' (kVA), ''max. DC-Leistung'' (kW), ''Herkunft'' (CEC, OND oder HAND); unter ''Kosten'' der gesperrte ''Kostensatz'' (€/kW) aus der Satzvorlage mit Vermerk auf die Kostenverwaltung; ohne Verweis bleibt das Feld leer. Beim Speichern prüft die Verwaltung die Werte: Fehler verhindern das Speichern, Hinweise stehen in der Meldung.
 * {{Anker|katalog-eingang}}'''Eingang''' – ''MPP-Fenster von'' und ''bis'', ''max. DC-Spannung'', ''Einschaltspannung'' (je V), ''max. DC-Strom je MPPT'' und ''max. Kurzschlussstrom je MPPT'' (je A), ''Anzahl MPPT'' (leer: ein Tracker), ''Stränge je MPPT'' (leer: keine Grenze).
 * {{Anker|katalog-wirkungsgrad}}'''Wirkungsgrad''' – ''Wirkungsgrad bei 5 %'' bis ''bei 100 %'' als Faktor, fehlende Stützstellen werden übersprungen; ''Euro-Wirkungsgrad'', ''Maximalwirkungsgrad''; ''Standby-Verbrauch'' (W, wirkt als Einschaltschwelle) und ''Nachtverbrauch'' (W).
 * {{Anker|katalog-import}}'''Wechselrichter einlesen (CEC und OND)''' – ''CEC-Liste laden'' rechnet die sechs Stützstellen aus den Sandia-Koeffizienten, ''OND laden'' übernimmt Kennlinie und Trackerzahl aus der Datei.

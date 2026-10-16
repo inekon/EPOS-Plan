@@ -142,6 +142,12 @@
     /// </summary>
     [Parameter] public EventCallback<Pruefgruppe> Bearbeiten { get; set; }
 
+    /// <summary>
+    /// N1: die Gruppe, auf der das Blatt aufgeht (Klick in der Ampelleiste des Reiters „Zonen“) — ihre Befunde stehen offen;
+    /// <c>null</c> = alle zu.
+    /// </summary>
+    [Parameter] public Pruefgruppe? StartGruppe { get; set; }
+
     /// <summary>Prüft neu und zeigt den Stand (etwa nach dem Blatt „Nutzung und Kalender“).</summary>
     public void Auffrischen()
     {
@@ -168,6 +174,7 @@
         _offen.Clear();
         _meldung = "";
         _stand = Weg.Pruefen();
+        if (StartGruppe is Pruefgruppe g && _stand?.Gruppen.Any(z => z.Gruppe == g && z.Anzahl > 0) == true) _offen.Add(g);
     }
 
     private void Umschalten(Pruefgruppe g)
@@ -216,7 +223,7 @@
     private static string Zaehlung(ModellpruefungGruppenzeile g)
         => string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.MPB_ZAEHLUNG, g.Anzahl, g.Vorschlaege);
 
-    private static Pruefampel Stufe(Rechenstatus s) => s switch
+    internal static Pruefampel Stufe(Rechenstatus s) => s switch
     {
         Rechenstatus.Vollstaendig => Pruefampel.Gruen,
         Rechenstatus.RechnetMitVorgaben => Pruefampel.Gelb,

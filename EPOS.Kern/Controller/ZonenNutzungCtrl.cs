@@ -75,13 +75,16 @@ namespace WindowsFormsApplication1
     /// <b>Eine Zone im Blatt „Nutzung und Kalender“</b> (MA-2): Fläche, Profil samt Kategorie und Herkunft, der Vorschlag
     /// der Profilregel, je Größe die Kalenderkennung (Schlüssel <see cref="DbWerte.KOND_GROESSE_HEIZSOLL"/> usw.),
     /// Sollwerte Tag und Nacht, Ferien und Heizperiode, die Ampel und die Befunde der Prüfgruppe 3, dazu die eigenen
-    /// Ferien der Zone (<see cref="Zonenferien"/>, E139; <c>null</c> = ohne Angabe).
+    /// Ferien der Zone (<see cref="Zonenferien"/>, E139; <c>null</c> = ohne Angabe). <paramref name="Wochen"/> (N1, Kurzbild
+    /// der Woche): je Größe die Standardwoche des Kalenders, der für die Zone gilt (eigen oder vom Gebäude geerbt) — 168
+    /// Werte, „aus“ als <see cref="double.NaN"/>; eine Größe ohne Kalender fehlt.
     /// </summary>
     public sealed record ZonenNutzungszeile(int IdZone, string Zone, double? Flaeche, bool Beheizt, string Profil, long? IdProfil,
                                            string Kategorie, Profilherkunft Herkunft, string Vorschlag,
                                            IReadOnlyDictionary<string, Kalenderkennung> Kalender, double? SollTag, double? SollNacht,
                                            Ferienkennung Ferien, Ferienkennung Heizperiode, Pruefampel Ampel,
-                                           IReadOnlyList<string> Befunde, Zonenferien FerienAngaben = null);
+                                           IReadOnlyList<string> Befunde, Zonenferien FerienAngaben = null,
+                                           IReadOnlyDictionary<string, double[]> Wochen = null);
 
     /// <summary>
     /// <b>Der Stand des Blatts</b>: die Zonen, ob das Projekt Ferien und Heizperiode vorgibt (am Gebäude oder an einem anderen
@@ -156,15 +159,21 @@ namespace WindowsFormsApplication1
             // Kalender je Eigner und Größe, mit Nutzung (Schlüssel 0 = Gebäude).
             var kalender = new Dictionary<int, Dictionary<string, string>>();
             var vorgaben = new Dictionary<int, HashSet<string>>();
+            var wochen = new Dictionary<int, Dictionary<string, double[]>>();
             if (KonditionierungSchema.Lesbar())
             {
                 foreach (DataRow r in DataRepository.GetDataTable(
-                             "SELECT \"ID_Zone\", \"Groesse\", \"Nutzung\" FROM \"" + KonditionierungSchema.TAB_KALENDER +
+                             "SELECT \"ID_Zone\", \"Groesse\", \"Nutzung\", \"Wert\", \"Aus\", \"Woche\" FROM \"" + KonditionierungSchema.TAB_KALENDER +
                              "\" WHERE \"ID_Gebaeude\" = ? ORDER BY \"ID\"", new DbParam("@g", IdGebaeude)).Rows)
                 {
                     int eigner = r["ID_Zone"] is DBNull ? 0 : Convert.ToInt32(r["ID_Zone"], CultureInfo.InvariantCulture);
                     if (!kalender.TryGetValue(eigner, out Dictionary<string, string> je)) kalender[eigner] = je = new Dictionary<string, string>(StringComparer.Ordinal);
                     string g = Convert.ToString(r["Groesse"], CultureInfo.InvariantCulture);
+                    if (Wochenwerte(r, g) is double[] w)
+                    {
+                        if (!wochen.TryGetValue(eigner, out Dictionary<string, double[]> jw)) wochen[eigner] = jw = new Dictionary<string, double[]>(StringComparer.Ordinal);
+                        jw.TryAdd(g, w);
+                    }
                     string n = r["Nutzung"] is DBNull ? "" : Convert.ToString(r["Nutzung"], CultureInfo.InvariantCulture);
                     if (!je.ContainsKey(g) || (je[g].Length == 0 && n.Length > 0)) je[g] = n;
                 }
@@ -209,12 +218,22 @@ namespace WindowsFormsApplication1
                 List<Modellbefund> jeZone = befunde.Where(b => b.IdZone == z.ID).ToList();
                 Pruefampel ampel = jeZone.Count == 0 ? Pruefampel.Gruen : jeZone.Max(b => b.Ampel);
                 if (!ferien.TryGetValue(z.ID, out Zonenferien zf)) zf = Zonenferien.Ohne;
+                wochen.TryGetValue(z.ID, out Dictionary<string, double[]> wEigen);
+                wochen.TryGetValue(0, out Dictionary<string, double[]> wGeb);
+                var wochenJeGroesse = new Dictionary<string, double[]>(StringComparer.Ordinal);
+                foreach (string g in GROESSEN)
+                {
+                    if (kennungen[g] == Kalenderkennung.Entfaellt) continue;
+                    double[] w = wEigen != null && wEigen.TryGetValue(g, out double[] e) ? e
+                               : kennungen[g] == Kalenderkennung.Geerbt && wGeb != null && wGeb.TryGetValue(g, out double[] b) ? b : null;
+                    if (w != null) wochenJeGroesse[g] = w;
+                }
                 zeilen.Add(new ZonenNutzungszeile(
                     z.ID, z.Bezeichner ?? "", z.Nutzflaeche, z.IstBeheizt, profil ?? "", treffer?.Id, treffer?.Kategorie ?? "",
                     herkunft, vorschlag, kennungen, z.Raumsolltemperatur_Tag, z.Raumsolltemperatur_Nachtabsenkung,
                     zf.Abweichend ? Ferienkennung.Abweichung : gebFerien ? Ferienkennung.Projekt : Ferienkennung.Fehlt,
                     Hat(vorgaben, z.ID, DbWerte.KOND_ZEILE_SAISON) ? Ferienkennung.Abweichung : gebSaison ? Ferienkennung.Projekt : Ferienkennung.Fehlt,
-                    ampel, jeZone.Select(b => b.Text ?? "").ToList(), zf));
+                    ampel, jeZone.Select(b => b.Text ?? "").ToList(), zf, wochenJeGroesse));
             }
             return new ZonenNutzungsstand(IdGebaeude, zeilen, gebFerien || s.FerienQuelle.HasValue, gebSaison || s.SaisonQuelle.HasValue,
                                           befunde.Where(b => b.IdZone == null).Select(b => b.Text ?? "").ToList(), KannZuruecknehmen);
@@ -274,6 +293,26 @@ namespace WindowsFormsApplication1
 
         private static bool Hat(Dictionary<int, HashSet<string>> v, int eigner, string zeile)
             => v.TryGetValue(eigner, out HashSet<string> z) && z.Contains(zeile);
+
+        /// <summary>
+        /// Die Standardwoche einer Kalenderzeile (N1, Kurzbild): die Woche des Kalenders über <see cref="Kalenderwoche.Lesen"/>,
+        /// sonst die Grundangabe (Wert oder „aus“) in allen 168 Stunden; <c>null</c> für „ALLE“, eine unbekannte Größe oder eine
+        /// unlesbare Woche. Liest nur die Zeile — die Perioden (Ferien, Feiertage) zeigt das Kurzbild nicht.
+        /// </summary>
+        internal static double[] Wochenwerte(DataRow r, string groesse)
+        {
+            if (!Konditionierungsgroessen.AusKennwort(groesse, out Konditionierungsgroesse g)) return null;
+            string text = r["Woche"] is DBNull ? null : Convert.ToString(r["Woche"], CultureInfo.InvariantCulture);
+            if (!string.IsNullOrWhiteSpace(text))
+            {
+                Wochenlesung l = Kalenderwoche.Lesen(text, g);
+                return l.Befund == Wochenbefund.Gelesen ? (double[])l.Werte.Clone() : null;
+            }
+            bool aus = !(r["Aus"] is DBNull) && Convert.ToInt64(r["Aus"], CultureInfo.InvariantCulture) != 0;
+            if (!aus && r["Wert"] is DBNull) return null;
+            double v = aus ? double.NaN : Convert.ToDouble(r["Wert"], CultureInfo.InvariantCulture);
+            return Enumerable.Repeat(v, Kalenderwoche.WOCHENWERTE).ToArray();
+        }
 
         /// <summary>Die Nutzung des Kalenders der Größe (leer = ohne Profil), auch über „ALLE“; <c>null</c> = keiner.</summary>
         private static string Groesse(Dictionary<string, string> je, string g)
@@ -479,7 +518,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Setzt die Sollwerte</b> Tag und Nacht der gewählten Zonen (<c>Tab_Zone.Raumsolltemperatur_Tag</c>,
         /// <c>Raumsolltemperatur_Nachtabsenkung</c>); <c>null</c> lässt den Wert, wie er ist. Bereich 5 bis 30 °C, die Nacht
-        /// nicht über dem Tag.
+        /// nicht über dem Tag. <b>Kalenderweg (N1):</b> Trägt die Zone einen eigenen Heizkalender, gilt dieser und nicht die
+        /// Spalten — dann werden auch seine Stunden umgesetzt (<see cref="SollwerteImKalender"/>); die Zeilen <c>TAG</c>/<c>NACHT</c>
+        /// der Zone, die einen Wert tragen, bekommen den neuen. Die Rücknahme stellt Kalender und Zeilen her (Abbild).
         /// </summary>
         public ZonenNutzungsergebnis SollwerteSetzen(IReadOnlyCollection<int> zonen, double? tag, double? nacht)
         {
@@ -493,6 +534,7 @@ namespace WindowsFormsApplication1
                 int n = 0;
                 foreach (int idz in zonenListe)
                 {
+                    if (KonditionierungSchema.Lesbar()) SollwerteImKalender(v, IdGebaeude, idz, tag, nacht);
                     if (tag.HasValue)
                         v.Ausfuehren("UPDATE \"Tab_Zone\" SET \"Raumsolltemperatur_Tag\" = ? WHERE \"ID\" = ?", new DbParam("@t", tag.Value), new DbParam("@z", idz));
                     if (nacht.HasValue)
@@ -502,6 +544,96 @@ namespace WindowsFormsApplication1
                 }
                 return n;
             });
+        }
+
+        /// <summary>
+        /// <b>Die Sollwerte im Heizkalender der Zone</b> (N1, Nachzug MA-2) — vor dem Schreiben der Spalten aufzurufen: Die
+        /// alten Werte Tag und Nacht sind die der Zeilen <c>TAG</c>/<c>NACHT</c> der Zone (Größe Heizsoll), sonst die Spalten
+        /// an <c>Tab_Zone</c>; fehlt einer, gilt der höchste bzw. tiefste Wert der Woche. Jede Stunde der Woche, jede Grundangabe
+        /// und jede Periode der Heizkalender der Zone, die den alten Tageswert trägt, bekommt den neuen, ebenso der Nachtwert;
+        /// andere Werte und „aus“ bleiben. Zeilen <c>TAG</c>/<c>NACHT</c> mit Wert bekommen den neuen Wert, ihre Zeiten bleiben.
+        /// </summary>
+        internal static void SollwerteImKalender(DbVorgang v, int idGebaeude, int idZone, double? tag, double? nacht)
+        {
+            string heiz = DbWerte.KOND_GROESSE_HEIZSOLL;
+            double? Zeilenwert(string zeile)
+            {
+                DataTable t = v.Lese("SELECT \"Wert\" FROM \"" + KonditionierungSchema.TAB_VORGABE + "\" WHERE \"ID_Gebaeude\" = ? AND " +
+                                     "\"ID_Zone\" = ? AND \"Groesse\" = ? AND \"Zeile\" = ? AND \"Wert\" IS NOT NULL",
+                                     new DbParam("@g", idGebaeude), new DbParam("@z", idZone), new DbParam("@gr", heiz), new DbParam("@zl", zeile));
+                return t.Rows.Count == 0 ? (double?)null : Convert.ToDouble(t.Rows[0][0], CultureInfo.InvariantCulture);
+            }
+            DataTable spalten = v.Lese("SELECT \"Raumsolltemperatur_Tag\", \"Raumsolltemperatur_Nachtabsenkung\" FROM \"Tab_Zone\" WHERE \"ID\" = ?",
+                                       new DbParam("@z", idZone));
+            double? Spalte(int i) => spalten.Rows.Count == 0 || spalten.Rows[0][i] is DBNull ? (double?)null
+                                     : Convert.ToDouble(spalten.Rows[0][i], CultureInfo.InvariantCulture);
+            double? alterTag = Zeilenwert(DbWerte.KOND_ZEILE_TAG) ?? Spalte(0);
+            double? alteNacht = Zeilenwert(DbWerte.KOND_ZEILE_NACHT) ?? Spalte(1);
+
+            foreach ((string zeile, double? neu) in new[] { (DbWerte.KOND_ZEILE_TAG, tag), (DbWerte.KOND_ZEILE_NACHT, nacht) })
+                if (neu.HasValue)
+                    v.Ausfuehren("UPDATE \"" + KonditionierungSchema.TAB_VORGABE + "\" SET \"Wert\" = ? WHERE \"ID_Gebaeude\" = ? AND " +
+                                 "\"ID_Zone\" = ? AND \"Groesse\" = ? AND \"Zeile\" = ? AND \"Wert\" IS NOT NULL",
+                                 new DbParam("@w", neu.Value), new DbParam("@g", idGebaeude), new DbParam("@z", idZone),
+                                 new DbParam("@gr", heiz), new DbParam("@zl", zeile));
+
+            DataTable kalender = v.Lese("SELECT \"ID\", \"Wert\", \"Woche\" FROM \"" + KonditionierungSchema.TAB_KALENDER +
+                                        "\" WHERE \"ID_Zone\" = ? AND \"Groesse\" = ?", new DbParam("@z", idZone), new DbParam("@gr", heiz));
+            foreach (DataRow k in kalender.Rows)
+            {
+                long idKalender = Convert.ToInt64(k["ID"], CultureInfo.InvariantCulture);
+                double[] woche = Wochenwerte(k["Woche"]);
+                double? hoch = woche?.Where(double.IsFinite).DefaultIfEmpty(double.NaN).Max();
+                double? tief = woche?.Where(double.IsFinite).DefaultIfEmpty(double.NaN).Min();
+                double? aTag = alterTag ?? (hoch is double h && double.IsFinite(h) ? h : (double?)null);
+                double? aNacht = alteNacht ?? (tief is double t && double.IsFinite(t) && t < (hoch ?? t) ? t : (double?)null);
+                double Umsetzen(double w)
+                {
+                    if (tag.HasValue && aTag.HasValue && Math.Abs(w - aTag.Value) < 1e-9) return tag.Value;
+                    if (nacht.HasValue && aNacht.HasValue && Math.Abs(w - aNacht.Value) < 1e-9) return nacht.Value;
+                    return w;
+                }
+                if (woche != null)
+                {
+                    double[] neu = woche.Select(w => double.IsNaN(w) ? w : Umsetzen(w)).ToArray();
+                    if (!neu.SequenceEqual(woche))
+                        v.Ausfuehren("UPDATE \"" + KonditionierungSchema.TAB_KALENDER + "\" SET \"Woche\" = ? WHERE \"ID\" = ?",
+                                     new DbParam("@w", Kalenderwoche.Schreiben(neu, Konditionierungsgroesse.Heizsoll)), new DbParam("@k", idKalender));
+                }
+                if (!(k["Wert"] is DBNull))
+                {
+                    double alt = Convert.ToDouble(k["Wert"], CultureInfo.InvariantCulture);
+                    if (Umsetzen(alt) != alt)
+                        v.Ausfuehren("UPDATE \"" + KonditionierungSchema.TAB_KALENDER + "\" SET \"Wert\" = ? WHERE \"ID\" = ?",
+                                     new DbParam("@w", Umsetzen(alt)), new DbParam("@k", idKalender));
+                }
+                foreach (DataRow p in v.Lese("SELECT \"ID\", \"Wert\", \"Woche\" FROM \"" + KonditionierungSchema.TAB_PERIODE +
+                                             "\" WHERE \"ID_Kalender\" = ?", new DbParam("@k", idKalender)).Rows)
+                {
+                    long idP = Convert.ToInt64(p["ID"], CultureInfo.InvariantCulture);
+                    if (!(p["Wert"] is DBNull))
+                    {
+                        double alt = Convert.ToDouble(p["Wert"], CultureInfo.InvariantCulture);
+                        if (Umsetzen(alt) != alt)
+                            v.Ausfuehren("UPDATE \"" + KonditionierungSchema.TAB_PERIODE + "\" SET \"Wert\" = ? WHERE \"ID\" = ?",
+                                         new DbParam("@w", Umsetzen(alt)), new DbParam("@p", idP));
+                    }
+                    double[] pw = Wochenwerte(p["Woche"]);
+                    if (pw == null) continue;
+                    double[] pn = pw.Select(w => double.IsNaN(w) ? w : Umsetzen(w)).ToArray();
+                    if (!pn.SequenceEqual(pw))
+                        v.Ausfuehren("UPDATE \"" + KonditionierungSchema.TAB_PERIODE + "\" SET \"Woche\" = ? WHERE \"ID\" = ?",
+                                     new DbParam("@w", Kalenderwoche.Schreiben(pn, Konditionierungsgroesse.Heizsoll)), new DbParam("@p", idP));
+                }
+            }
+        }
+
+        /// <summary>Die Werte einer Woche der Heizsollgröße; <c>null</c> ohne oder mit unlesbarer Woche.</summary>
+        private static double[] Wochenwerte(object woche)
+        {
+            if (woche is DBNull || woche == null) return null;
+            Wochenlesung l = Kalenderwoche.Lesen(Convert.ToString(woche, CultureInfo.InvariantCulture), Konditionierungsgroesse.Heizsoll);
+            return l.Befund == Wochenbefund.Gelesen ? (double[])l.Werte.Clone() : null;
         }
 
         /// <summary><b>Nimmt die letzte Mehrfachänderung zurück</b> (ein Vorgang) und liest neu.</summary>

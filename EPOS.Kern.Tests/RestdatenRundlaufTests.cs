@@ -46,6 +46,7 @@ namespace EPOS.Kern.Tests
                 UebergabeArt = DbWerte.UEBERGABE_RADIATOR, UebergabeExponent = 1.3, UebergabeLeistungNenn = 6000.0, AuslegungVorlauf = 70.0,
                 AuslegungRuecklauf = 50.0, AuslegungRaumtemperatur = 20.0, ReglerProportionalband = 2.0,
                 KuehlUebergabeArt = Waermeuebergabevorgaben.KuehlArten[0], KuehlUebergabeExponent = 1.1, KuehlUebergabeLeistungNenn = 2500.0,
+                Maximaleraumtemperatur = 26.0,
             };
             r1.Rest.Luftstroeme.Add(new AbbildLuftstrom(GebaeudeExportKennung.Zone(ZONE2), 100.0));
             r1.Rest.Zeilenbild.Add(new Vorgabezeile { Groesse = DbWerte.KOND_GROESSE_HEIZSOLL, Zeile = DbWerte.KOND_ZEILE_NACHT, Wert = 16.0, Von = 22, Bis = 6 });
@@ -54,6 +55,8 @@ namespace EPOS.Kern.Tests
             r1.Rest.Zeilenbild.Add(new Vorgabezeile { Groesse = DbWerte.KOND_GROESSE_LUEFTUNG, Zeile = DbWerte.KOND_ZEILE_NACHT, Wert = 0.5, BedingtK = 2.0 });
             r1.Rest.Wochen.Add(new BenannteWoche(0, Konditionierungsgroesse.Heizsoll, "Messewoche", Woche(21.0, 17.0)));
             r1.Rest.Wochen.Add(new BenannteWoche(0, Konditionierungsgroesse.Lueftung, "Umbau", Woche(1.5, 0.5)));
+            // Nachzug N2: eine Periode verweist auf die benannte Woche (der Bezeichner darf das Trennzeichen tragen).
+            r1.Rest.Periodenwochen.Add(new AbbildPeriodenwoche(Konditionierungsgroesse.Heizsoll, 100, 110, "Messe; Halle 1", "Messewoche"));
             r2.Rest = new AbbildZonenrest { Zone = GebaeudeExportKennung.Zone(ZONE2), VorheizzeitH = 0, HeizleistungMax = 2000.0 };
             return a;
         }
@@ -79,7 +82,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(q.KuehlUebergabeArt, l.KuehlUebergabeArt);
             Z(q.KuehlUebergabeExponent, l.KuehlUebergabeExponent, "Kuehl_Uebergabe_Exponent");
             Z(q.KuehlUebergabeLeistungNenn, l.KuehlUebergabeLeistungNenn, "Kuehl_Uebergabe_Leistung_Nenn");
-            felder += 14;
+            Z(q.Maximaleraumtemperatur, l.Maximaleraumtemperatur, "Maximaleraumtemperatur");
+            felder += 15;
+            Assert.Equal(q.Periodenwochen, l.Periodenwochen);
+            felder += 5 * q.Periodenwochen.Count;
             Assert.Equal(q.Luftstroeme, l.Luftstroeme);
             felder += 2 * q.Luftstroeme.Count;
             Assert.Equal(q.Zeilenbild.Count, l.Zeilenbild.Count);
@@ -124,8 +130,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(datei, GbxmlExportProbe.Schreiben(Abbild()));
             GbxmlAbbild gelesen = GbxmlExportProbe.Lesen(datei);
             int felder = Vergleichen(quelle, gelesen, q => gelesen.Gebaeude[0].Raeume.Single(r => r.Kennung == q.Kennung));
-            // Erdreich 3; Zone 1: 14 Felder, 1 Luftstrom (2), 4 Zeilen (28), 2 Wochen (2 × 170); Zone 2: 14 Felder.
-            Assert.Equal(3 + 14 + 2 + 28 + 340 + 14, felder);
+            // Erdreich 3; Zone 1: 15 Felder, 1 Luftstrom (2), 4 Zeilen (28), 2 Wochen (2 × 170), 1 Periodenverweis (5); Zone 2: 15 Felder.
+            Assert.Equal(3 + 15 + 2 + 28 + 340 + 5 + 15, felder);
         }
 
         [Fact]
@@ -139,7 +145,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(datei, IfcExportProbe.Schreiben(Abbild()));
             GebaeudeAbbild gelesen = IfcExportProbe.Lesen(datei);
             int felder = Vergleichen(quelle, gelesen, q => gelesen.Gebaeude[0].Raeume.Single(r => r.Name == q.Name));
-            Assert.Equal(3 + 14 + 2 + 28 + 340 + 14, felder);
+            Assert.Equal(3 + 15 + 2 + 28 + 340 + 5 + 15, felder);
         }
 
         [Fact]
@@ -159,7 +165,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(7, l1.Konditionierung?.DinNummer);
             // Die Restdaten kommen vollständig und ohne übergangenen Wert zurück — die DIN-Nummer stört den Leser der Restdaten nicht.
             int felder = Vergleichen(quelle, gelesen, q => gelesen.Gebaeude[0].Raeume.Single(r => r.Name == q.Name));
-            Assert.Equal(3 + 14 + 2 + 28 + 340 + 14, felder);
+            Assert.Equal(3 + 15 + 2 + 28 + 340 + 5 + 15, felder);
             // Gegenprobe: ohne Restdaten bleibt die DIN-Nummer allein und kommt ebenso zurück.
             GebaeudeAbbild ohne = IfcExportRundlaufTests.Abbild();
             AbbildRaum o1 = ohne.Gebaeude[0].Raeume.Single(x => x.Kennung == GebaeudeExportKennung.Raum(ZONE1));
@@ -246,9 +252,10 @@ namespace EPOS.Kern.Tests
             IReadOnlyList<string> getragen = GebaeudeExportVerluste.Getragen(new ProjektGebaeudeModel { Erdreich_U_Wirksam = 0.3 }, new[] { z });
             foreach (string f in new[] { "Vorheizzeit_H", "Heizleistung_Max", "Kuehlleistung_Max", "Uebergabe_Art", "Kuehl_Uebergabe_Art", "Erdreich_U_Wirksam" })
                 Assert.DoesNotContain(f, getragen);
-            // Gegenprobe: was weiter kein Format trägt, bleibt benannt.
-            Assert.Equal(Exporteinstufung.BenannterVerlust, GebaeudeExportVerluste.Zone["Maximaleraumtemperatur"]);
-            Assert.Contains("Maximaleraumtemperatur", getragen);
+            // Nachzug N2: die Höchsttemperatur der Zone reist; Gegenprobe: was weiter kein Format trägt, bleibt benannt.
+            Assert.Equal(Exporteinstufung.Rundlaeufig, GebaeudeExportVerluste.Zone["Maximaleraumtemperatur"]);
+            Assert.Equal(Exporteinstufung.BenannterVerlust, GebaeudeExportVerluste.Zone["Heizung_Strahlungsanteil"]);
+            Assert.Contains("Raumsolltemperatur_Wochenende", getragen);
         }
 
         [Fact]
@@ -307,6 +314,66 @@ namespace EPOS.Kern.Tests
                 Assert.True(w.Id > 0);
                 Assert.True(q.Werte.Zip(w.Werte, (x, y) => double.IsNaN(x) ? double.IsNaN(y) : x == y).All(x => x));
             }
+        }
+
+        /// <summary>
+        /// Nachzug N2 (DA-4): Eine Periode, die in der Datei auf eine benannte Woche verweist, verweist nach dem Import wieder auf sie
+        /// (<c>ID_Woche</c>) und wird ohne Verlust wieder exportiert; die Gegenprobe — eine Periode ohne Verweis — bleibt eine
+        /// eingebettete Woche. Die Höchsttemperatur der Zone (B10) kommt an die Zonenzeile.
+        /// </summary>
+        [Fact]
+        public void Eine_Periode_mit_Verweis_auf_eine_benannte_Woche_verweist_nach_dem_Import_wieder_auf_sie()
+        {
+            if (!_db.Vorhanden) return;
+            var ctrl = new ProjektGebaeudeCtrl();
+            ctrl.ReadAll(1045);
+            ProjektGebaeudeModel g = ctrl.items[0];
+            Assert.True(g.Zonen == null || g.Zonen.Count == 0, "Das Probengebäude trägt schon eine Zone.");
+            GebaeudeImportAblauf ablauf = BauteilvorschlagProbe.Lesen("ifc4_haus.ifc");
+            double[] messe = Woche(21.0, 17.0), revision = Woche(19.0, 15.0);
+            var kalender = new Konditionierungskalender(Konditionierungsgroesse.Heizsoll, Kalenderangabe.AusWert(20.0), null, new[]
+            {
+                Kalenderregel.Zeitraum(Standardfahrplan.RANG_EIGEN, DbWerte.KOND_ART_ZEITRAUM, "Messe", 100, 110, Kalenderangabe.AusWoche(messe)),
+                Kalenderregel.Zeitraum(Standardfahrplan.RANG_EIGEN + 1, DbWerte.KOND_ART_ZEITRAUM, "Revision", 200, 210, Kalenderangabe.AusWoche(revision)),
+            });
+            var k = new AbbildKonditionierung();
+            k.Kalender.Add(new AbbildKalender(kalender, null));
+            var rest = new AbbildZonenrest { Zone = "EG", Maximaleraumtemperatur = 27.0 };
+            rest.Wochen.Add(new BenannteWoche(0, Konditionierungsgroesse.Heizsoll, "Messewoche", messe));
+            rest.Periodenwochen.Add(new AbbildPeriodenwoche(Konditionierungsgroesse.Heizsoll, 100, 110, "Messe", "Messewoche"));
+            foreach (AbbildRaum r in ablauf.Abbild.Gebaeude[0].Raeume.Where(r => r.Beheizt))
+            {
+                r.Konditionierung = k;
+                r.Rest = rest;
+            }
+            // Wie der Importdialog: über den Zonenplan, der die Konditionierung der Datei je Zone mitnimmt.
+            GebaeudeZonierung zonierung = Zonenplan.Vorschlag(ablauf.Abbild, 0).Zonieren();
+            GebaeudeBauteilvorschlag v = GebaeudeBauteilvorschlag.Bilden(ablauf, 0, null, zonierung: zonierung);
+            Assert.False(v.Abgelehnt, string.Join(" | ", v.Meldungen.Where(m => m.Stufe == PruefStufe.Fehler)));
+            GebaeudeZonenCtrl.Vorschlagsergebnis e = new GebaeudeZonenCtrl().VorschlagSchreiben(g.ID_Gebaeude, v);
+            Assert.True(e.Ok, e.Meldung);
+
+            ZoneModel z = new GebaeudeZonenCtrl().LesenJeGebaeude(g.ID_Gebaeude).Single(x => x.Bezeichner == "Erdgeschoss");
+            Assert.Equal(27.0, z.Maximaleraumtemperatur);
+            Konditionierungsstand stand = new KonditionierungCtrl().StandLesen(KonditionierungCtrl.Eigner.Zone(g.ID_Gebaeude, z.ID), out string meldung);
+            Assert.True(stand != null, meldung);
+            BenannteWoche w = Assert.Single(stand.Wochen, x => x.Name == "Messewoche");
+            Assert.True(w.Id > 0);
+            Kalenderregel pm = Assert.Single(stand.Kalender(Konditionierungsgroesse.Heizsoll).Perioden, p => p.Bezeichner == "Messe");
+            Kalenderregel pr = Assert.Single(stand.Kalender(Konditionierungsgroesse.Heizsoll).Perioden, p => p.Bezeichner == "Revision");
+            Assert.Equal(w.Id, pm.Angabe.IdWoche);
+            Assert.Equal(messe, pm.Angabe.Woche.ToArray());
+            // Gegenprobe: ohne Verweis bleibt die Woche eingebettet.
+            Assert.Null(pr.Angabe.IdWoche);
+            Assert.Equal(Angabeart.Woche, pr.Angabe.Art);
+            Assert.Equal(revision, pr.Angabe.Woche.ToArray());
+
+            // Wieder exportiert: genau der eine Verweis, über Nummer und Namen der Woche.
+            AbbildZonenrest aus = GebaeudeRestdaten.AusZone(z, "EG", null, stand);
+            AbbildPeriodenwoche p1 = Assert.Single(aus.Periodenwochen);
+            Assert.Equal(new AbbildPeriodenwoche(Konditionierungsgroesse.Heizsoll, 100, 110, "Messe", "Messewoche"), p1);
+            Assert.Contains(GebaeudeRestdaten.Werte(aus), x => x.Schluessel == GebaeudeRestdaten.PERIODENWOCHE + "1");
+            Assert.Contains(GebaeudeRestdaten.Werte(aus), x => x.Schluessel == GebaeudeRestdaten.MAXIMALERAUMTEMPERATUR && x.Wert == "27");
         }
 
         /// <summary>

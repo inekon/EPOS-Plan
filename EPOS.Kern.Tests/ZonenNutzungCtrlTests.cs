@@ -246,6 +246,43 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Sollwerte_setzen_traegt_die_Werte_in_den_Heizkalender_der_Zone_mit_Ruecknahme()
+        {
+            // N1: Das Gästezimmer (1054) trägt einen Heizkalender des Profils „WOHNEN" (Woche 18/20 °C); er gilt vor den Spalten.
+            if (!_db.Vorhanden) return;
+            var ctrl = new ZonenNutzungCtrl(Gebaeude(1054));
+            ZonenNutzungszeile gast = Zone(ctrl.Lesen(), "Gästezimmer");
+            Assert.Equal(Kalenderkennung.Profil, gast.Kalender[DbWerte.KOND_GROESSE_HEIZSOLL]);
+            double[] vorher = gast.Wochen[DbWerte.KOND_GROESSE_HEIZSOLL];
+            Assert.Equal(168, vorher.Length);
+            Assert.Contains(20.0, vorher);
+            Assert.Contains(18.0, vorher);
+
+            ZonenNutzungsergebnis e = ctrl.SollwerteSetzen(new[] { gast.IdZone }, 21.5, 16.5);
+            Assert.True(e.Ok, e.Meldung);
+            double[] nachher = Zone(e.Stand, "Gästezimmer").Wochen[DbWerte.KOND_GROESSE_HEIZSOLL];
+            for (int i = 0; i < 168; i++)
+                Assert.Equal(vorher[i] == 20.0 ? 21.5 : vorher[i] == 18.0 ? 16.5 : vorher[i], nachher[i]);
+            // Die Nachtzeile der Zone trägt nur Zeiten — sie bleibt, wie sie ist.
+            Assert.Equal(1, Zahl("SELECT COUNT(*) FROM \"Tab_Konditionierungsvorgabe\" WHERE \"ID_Zone\" = ? AND \"Zeile\" = 'NACHT' " +
+                                 "AND \"Wert\" IS NULL AND \"Von\" = 22 AND \"Bis\" = 6", gast.IdZone));
+
+            Assert.True(ctrl.Zuruecknehmen().Ok);
+            Assert.Equal(vorher, Zone(ctrl.Lesen(), "Gästezimmer").Wochen[DbWerte.KOND_GROESSE_HEIZSOLL]);
+        }
+
+        [Fact]
+        public void Kurzbild_der_Woche_je_Groesse_eigen_und_ohne_Kalender()
+        {
+            if (!_db.Vorhanden) return;
+            ZonenNutzungsstand s = new ZonenNutzungCtrl(Gebaeude(1054)).Lesen();
+            ZonenNutzungszeile gastro = Zone(s, "Gastronomie und Verwaltung");
+            Assert.True(gastro.Wochen.ContainsKey(DbWerte.KOND_GROESSE_HEIZSOLL));
+            Assert.False(gastro.Wochen.ContainsKey(DbWerte.KOND_GROESSE_LUEFTUNG));
+            Assert.Empty(Zone(s, "Keller").Wochen.Where(w => w.Key == DbWerte.KOND_GROESSE_HEIZSOLL));
+        }
+
+        [Fact]
         public void Sollwerte_fuer_mehrere_Zonen_mit_Bereich()
         {
             if (!_db.Vorhanden) return;

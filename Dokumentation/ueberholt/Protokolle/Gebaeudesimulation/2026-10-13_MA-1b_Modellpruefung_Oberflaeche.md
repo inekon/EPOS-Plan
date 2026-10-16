@@ -98,3 +98,74 @@ Nachweis: Kern-Filter 0 Fehler; `EPOS.UI.Tests` mit Filter `Formularraster|Infok
 
 „Im Gebäudedialog prüft ‚Modell prüfen…‘ ein Gebäude auf Rechenfähigkeit, zeigt je Prüfgruppe eine Ampel und übernimmt die
 Vorschläge mit einem Klick — nach einem Import öffnet die Prüfung von selbst.“
+
+## Nachzug N1 (14.10.2026)
+
+- **Befund:** Die Ampelleiste im Reiter „Zonen“ des Editors stand aus (Entwurf 2.2, Offen oben); die Prüfung war nur über
+  „Modell prüfen…“ der Kopfleiste zu erreichen.
+- **Ergebnis:** Neuer Baustein `EPOS.UI/Dialoge/Bedarf/Modellpruefungsleiste.razor` — Rechenstatus (Klasse
+  `epos-ampel-gruen|gelb|rot`) und je Prüfgruppe ein Knopf mit Ampel, Name und Zahl der Befunde, Titel mit Befunden und
+  Vorschlägen. Der Gebäudedialog reicht dem Editor der Projektzeile `ModellpruefungLesen` (Weg `ModellpruefungWeg.Pruefen` der
+  Hülle `ModellpruefungHuelle`, einmal je Öffnen gebaut) und `PruefgruppeOeffnen` durch; ein Klick öffnet das Ampelblatt
+  über dem Editor auf dieser Gruppe (`Modellpruefungsblatt.StartGruppe`: ihre Befunde stehen offen). Jede Übernahme oder
+  Rücknahme im Ampelblatt, jede Änderung im Blatt „Nutzung und Kalender“ und jede Auswahl an der Legende der Ansicht zählt
+  `PruefFassung` hoch — die Leiste prüft neu, ohne ungespeicherte Zonen liest der Reiter die Zonen neu (das OK des Editors
+  schreibt so keinen veralteten Stand zurück). Mit ungespeicherten Zonen ist die Leiste weich gesperrt (Grund wie „Nutzung und
+  Kalender…“); im Assistenten, im Katalog und ohne Delegat keine Leiste. CSS `epos-pruefleiste*` vor dem Formularraster.
+- **Dateien:** `Modellpruefungsleiste.razor` (neu), `Modellpruefungsblatt.razor`, `GebaeudeKatalogDialog.razor`,
+  `GebaeudeDialog.razor`, `EPOS.UI/wwwroot/epos-ui.css`, `Resource(.en-US).resx` (`MPB_LEISTE_TITEL`,
+  `MPB_LEISTE_GRUPPE_HINWEIS`), `Resource.Designer.cs`.
+- **Tests:** `GebaeudeKatalogPruefleisteTests` (Leiste mit Status, fünf Gruppen, Klick; ohne Weg keine Leiste; neue Prüffassung
+  liest Leiste und Zonen neu; Startzone), `GebaeudeDialogTests.N1_Ampelleiste_im_Editor_oeffnet_das_Ampelblatt_auf_der_Gruppe`,
+  `…N1_Ampelleiste_nicht_im_Assistenten`.
+- **Offen:** ~~Eine Übernahme der Gruppe 4 (Nordrichtung) schreibt am Gebäude; der Editor liest nach einer Prüffassung nur die
+  Zonen neu, nicht die Felder der Hülle — ein OK danach schreibt die Hüllfelder des Editors.~~ Erledigt mit Nachzug N3. Windows-Sichtabnahme der Leiste.
+- **Logbuch:** „Im Reiter „Zonen“ des Gebäudeeditors zeigt eine Ampelleiste den Stand der Modellprüfung; ein Klick öffnet die
+  Prüfung auf der Gruppe.“
+
+## Nachzug N3 (14.10.2026)
+
+- **Befund:** Nach einer Übernahme, Rücknahme oder Nordrichtungs-Bestätigung im Ampelblatt las der Editor der Projektzeile nur
+  die Zonen neu. Ein OK danach schrieb die Gebäudefelder aus dem Stand beim Öffnen zurück — zum Beispiel das alte Feiertagsland
+  über die Übernahme der Gruppe 4.
+- **Ort der Leiste:** Die Leiste sitzt im Reiter „Zonen“ von `GebaeudeKatalogDialog.razor`, und zwar nur in der Betriebsart
+  Projekt als Editor der Projektzeile, die `GebaeudeDialog.razor` öffnet. Im Katalog und im Assistenten gibt es keine Leiste.
+  Der Gebäudedialog zählt `PruefFassung` hoch, der Editor zieht nach. Der Katalogdialog ist damit der richtige Ort; im
+  Gebäudedialog selbst gibt es keine Hüllfelder.
+- **Geschriebene Spalten je Gruppe** (`ModellpruefungCtrl.Anwenden`, Rücknahme spiegelbildlich):
+  Gruppe 1 (Hüllbauteil) legt eine Zeile in `Tab_Bauteil` an.
+  Gruppe 2 (Aufbau) schreibt `Tab_Bauteil.ID_Aufbau` und bei einem Typaufbau auch `U_Wert`. Ein Katalogaufbau legt dazu eine
+  Projektkopie in `Tab_Bauteilaufbau` an.
+  Gruppe 3 (Profil) schreibt `Tab_Zone.Nutzungsprofil` sowie Kalender, Vorgaben und Wochen der Zone. Dabei wird auch der Stand
+  der Konditionierung auf Gebäudeebene neu geschrieben (`RaumnutzungCtrl.ProfilUebernehmen`).
+  Gruppe 3 (Ferien/Saison) fügt `Tab_Konditionierungsvorgabe`-Zeilen auf Gebäudeebene ein (`ID_Zone` leer).
+  Gruppe 4 (Feiertagsland) schreibt `Tab_Gebaeude.Feiertagsland`; das ist die einzige Spalte von `Tab_Gebaeude`, die eine
+  Übernahme schreibt.
+  Gruppe 4 (Nordrichtung bestätigen) schreibt `Tab_Bauteil.Azimut` und den Nordwinkel samt Herkunft an der Importquelle.
+  Gruppe 4 (Klimaregion wählen) ist im Gebäudedialog nicht verdrahtet und zeigt nur einen Hinweis; die Klimaregion gehört
+  ohnehin zum Projekt (`Tab_Projekt.ID_Klimaregion`).
+  Die Hüllspalten von `Tab_Gebaeude` (Flächen, U-Werte) schreibt keine Übernahme. Was an den Bauteilen steht, kommt mit dem
+  Neulesen der Zonen.
+- **Lösung:** Die Hülle `GebaeudeKatalogHuelle.ProjektNeulesen(idGebaeude)` liest die Projektkopie samt Konditionierung der
+  Gebäudeebene. `ProjektGaben` reicht sie als Parameter `GebaeudeNeulesen` an den Editor. Bei jeder neuen Prüffassung übernimmt
+  der Editor daraus das Feiertagsland und die Konditionierung der Gebäudeebene, danach wie bisher die Zonen.
+  Ungespeicherte Änderungen an diesen Feldern (Feiertagsland abweichend vom zuletzt gelesenen Wert oder Fassung der
+  Konditionierung > 0) werden nicht überschrieben. In diesem Fall ist die Leiste weich gesperrt, Grund
+  `GEB_SPERRE_PRUEFFELDER` (de/en). Ungespeicherte Zonen sperren wie bisher mit `GEB_SPERRE_ZONENNUTZUNG`.
+  `ModellpruefungCtrl` bleibt unverändert, neue SQL gibt es nicht.
+- **Dateien:** `EPOS.UI/Dialoge/Bedarf/GebaeudeKatalogDialog.razor`, `EPOS.UI.Daten/Bedarf/GebaeudeKatalogHuelle.cs`,
+  `Resource(.en-US).resx`, `Resource.Designer.cs`.
+- **Tests:** In `GebaeudeKatalogPruefleisteTests` vier Fälle:
+  - Nach der Übernahme der Gruppe 4 zeigt der Editor das neue Feiertagsland, und OK schreibt den neuen Wert.
+  - Gegenprobe: Ein ungespeichertes Feiertagsland sperrt die Leiste mit Grund und bleibt bei einer neuen Prüffassung stehen.
+  - Gegenprobe: Eine geänderte Konditionierung sperrt die Leiste.
+  - Ein unveränderter Dialog lässt die Leiste frei.
+
+  Dazu `ModellpruefungDatenbankTests.Gebaeudeeditor_liest_das_Feiertagsland_nach_einer_Uebernahme_neu` (Weg der Hülle gegen
+  die Testdatenbank).
+  Ergebnis: UI-Filter 346/346 grün, Kern-Filter „Modellpruefung“ 31/31 grün. Build des Kern-Filters und der Windows-Schale mit
+  0 Fehlern; Designer im zweiten Lauf +0.
+- **Offen:** Die Wochenvorschau der Konditionierung rechnet nach dem Neulesen erst bei der nächsten Handlung neu, weil ihr
+  Schlüssel an der Fassung hängt und das Neulesen die Fassung 0 behält. Ferien und Saison ändern die Woche nicht, ein
+  übernommenes Profil ändert die Zonen. Windows-Sichtabnahme.
+- **Logbuch:** kein eigener Eintrag, weil der Editor nur einen Stand zeigt, den er ohnehin hätte zeigen sollen.

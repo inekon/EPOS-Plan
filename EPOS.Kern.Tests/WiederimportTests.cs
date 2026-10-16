@@ -232,6 +232,82 @@ namespace EPOS.Kern.Tests
             Assert.Equal(aufbauHand, dritt.SelectMany(z => z.Bauteile).Single(b => b.ID == w1.ID).ID_Aufbau);
         }
 
+        private static List<string> Wochen(int idGebaeude, int idZone)
+            => new KonditionierungCtrl().StandLesen(KonditionierungCtrl.Eigner.Zone(idGebaeude, idZone), out _)?.Wochen.Select(w => w.Name).ToList()
+               ?? new List<string>();
+
+        /// <summary>
+        /// Nachzug N2 (MA-6 a und c): Der OK-Weg des Zonendialogs markiert eine Zone MANUELL, wenn ihr Kalendereditor die
+        /// Konditionierung ändert oder ein Feld geändert wird, das auch die Datei tragen kann — der Wiederimport bewahrt dann
+        /// Kalender und Feld. Gegenproben: ein unveränderter Stand und eine geänderte Nutzfläche markieren nicht; dieselbe
+        /// Kalenderänderung an einer nicht markierten Zone ersetzt die Datei.
+        /// </summary>
+        [Fact]
+        public async Task Kalendereditor_und_Zonendialog_markieren_die_Zone_und_der_Wiederimport_bewahrt_sie()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            var ctrl = new ProjektGebaeudeCtrl();
+            ctrl.ReadAll(1045);
+            int idGebaeude = ctrl.items[0].ID_Gebaeude;
+            Assert.Empty(Zonen(idGebaeude));
+            string v1 = Probehaus("ma6n2_v1", false);
+            var h = new GebaeudeMehrzonenHuelle(() => idGebaeude, 1045, ios: false);
+            Assert.Null(await Vormerken(h, v1, QuelleVon(v1)));
+            Assert.Null(h.Schreiben());
+            List<ZoneModel> erst = Zonen(idGebaeude);
+            Assert.Equal(3, erst.Count);
+            ZoneModel halle = erst.OrderByDescending(z => z.Nutzflaeche ?? 0).First();
+            ZoneModel buero = erst.Single(z => z.ID != halle.ID && z.Bauteile.Any(b => b.Neigung is double n && Math.Abs(n - 90.0) < 1e-6));
+            ZoneModel lager = erst.Single(z => z.ID != halle.ID && z.ID != buero.ID);
+            Assert.All(erst, z => Assert.NotEqual(DbWerte.HERKUNFT_MANUELL, z.Herkunft));
+
+            // Der OK-Weg des Dialogs: Halle mit einer neuen Woche im Kalendereditor (a), Lager mit Vorheizzeit und Sollwert (c),
+            // Büro mit unverändertem Stand und geänderter Nutzfläche (Gegenproben).
+            var kond = new KonditionierungCtrl();
+            Konditionierungsstand halleStand = kond.StandLesen(KonditionierungCtrl.Eigner.Zone(idGebaeude, halle.ID), out _);
+            Konditionierungsstand bueroStand = kond.StandLesen(KonditionierungCtrl.Eigner.Zone(idGebaeude, buero.ID), out _);
+            Assert.NotNull(halleStand);
+            Assert.NotNull(bueroStand);
+            double[] woche = Enumerable.Repeat(20.0, Kalenderwoche.WOCHENWERTE).ToArray();
+            var handwoche = new BenannteWoche(-1, Konditionierungsgroesse.Heizsoll, "Handwoche", woche);
+            lager.Vorheizzeit_H = 5;
+            lager.Raumsolltemperatur_Tag = 23.5;
+            buero.Nutzflaeche = (buero.Nutzflaeche ?? 0.0) + 1.0;
+            GebaeudeZonenCtrl.Schreibergebnis ok = new GebaeudeZonenCtrl().Schreiben(idGebaeude, erst, null,
+                new Dictionary<int, Konditionierungsstand>
+                {
+                    [halle.ID] = halleStand.MitWochen(halleStand.Wochen.Append(handwoche)),
+                    [buero.ID] = bueroStand,
+                });
+            Assert.True(ok.Ok, ok.Meldung);
+            Assert.Equal(1, ok.KonditionierungGeschrieben);
+            Dictionary<int, ZoneModel> markiert = Zonen(idGebaeude).ToDictionary(z => z.ID);
+            Assert.Equal(DbWerte.HERKUNFT_MANUELL, markiert[halle.ID].Herkunft);
+            Assert.Equal(DbWerte.HERKUNFT_MANUELL, markiert[lager.ID].Herkunft);
+            Assert.NotEqual(DbWerte.HERKUNFT_MANUELL, markiert[buero.ID].Herkunft);
+            Assert.False(GebaeudeZonenCtrl.HandfelderGeaendert(erst.Single(z => z.ID == buero.ID), markiert[buero.ID]));
+
+            // Gegenprobe (a): dieselbe Woche am Büro, aber ohne den Dialog geschrieben - die Zone bleibt ohne Marke.
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                Assert.True(kond.StandSchreiben(v, KonditionierungCtrl.Eigner.Zone(idGebaeude, buero.ID),
+                                                bueroStand.MitWochen(bueroStand.Wochen.Append(handwoche)), false, out _).Ok);
+                v.Commit();
+            }
+            Assert.Contains("Handwoche", Wochen(idGebaeude, buero.ID));
+
+            // Wiederimport der geänderten Fassung.
+            string v2 = Probehaus("ma6n2_v2", true);
+            Assert.NotNull(await Vormerken(h, v2, MehrzonenuebernahmeCtrl.Quelle(idGebaeude)));
+            Assert.Null(h.Schreiben());
+            Dictionary<int, ZoneModel> zweit = Zonen(idGebaeude).ToDictionary(z => z.ID);
+            Assert.Contains("Handwoche", Wochen(idGebaeude, halle.ID));
+            Assert.Equal((5, 23.5), (zweit[lager.ID].Vorheizzeit_H, zweit[lager.ID].Raumsolltemperatur_Tag));
+            // Gegenprobe: am Büro ohne Marke gewinnt die Datei - Kalender und Wochen der Zone kommen aus ihr.
+            Assert.DoesNotContain("Handwoche", Wochen(idGebaeude, buero.ID));
+        }
+
         /// <summary>Alle Zonen und Bauteile des Gebäudes als Text (Id und Felder).</summary>
         private static string Abbild(int idGebaeude)
             => string.Join("|", Zonen(idGebaeude).OrderBy(z => z.ID).Select(z =>

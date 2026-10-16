@@ -1502,4 +1502,36 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         var (d, _, _) = Assert.Single(p.Gespeichert);
         Assert.True(d.Konditionierung!.Fassung > 0);
     }
+
+    /// <summary>
+    /// N1 (Nachzug MA-7): „Vorgaben der Baualtersklasse übernehmen…“ steht auch im Stammblatt der Verwaltung — dieselbe Vorschau,
+    /// die Übernahme trägt in den Arbeitsstand, „Speichern“ schreibt; mit Zonen des Satzes gesperrt mit Grund.
+    /// </summary>
+    [Fact]
+    public void N1_Vorgaben_der_Baualtersklasse_im_Stammblatt_mit_Vorschau_und_Speichern()
+    {
+        var p = new Protokoll();
+        var cut = Aufbauen(p);
+        IElement knopf = cut.Find("button.epos-gebk-vorgaben-knopf");
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.GEBV_BTN_OEFFNEN, knopf.TextContent.Trim());
+        Assert.False(knopf.HasAttribute("disabled"));
+        knopf.Click();
+        Assert.True(cut.Instance.VorgabenOffen);
+        Assert.NotEmpty(cut.FindAll(".epos-gebk-vorgaben-tabelle tr[data-feld=UAussenwand]"));
+        cut.Find("button.epos-gebk-vorgaben-uebernehmen").Click();
+        Assert.False(cut.Instance.VorgabenOffen);
+        Assert.NotEmpty(cut.FindAll("button.epos-gebk-vorgaben-zurueck"));
+        Knopf(cut, "Speichern").Click();
+        var (d, _, _) = Assert.Single(p.Gespeichert);
+        Assert.Equal(Einzonenvorgaben.Fuer(d.Baualtersklasse, d.Energiestandard)!.Werte.UAussenwand, d.UWertAussenwand);
+    }
+
+    [Fact]
+    public void N1_Vorgaben_der_Baualtersklasse_sind_mit_Zonen_des_Satzes_gesperrt()
+    {
+        var p = new Protokoll { Zonen = new[] { new Stammblattwert("Erdgeschoss", "90 m², 2 Bauteile") } };
+        var cut = Aufbauen(p);
+        Assert.True(cut.Find("button.epos-gebk-vorgaben-knopf").HasAttribute("disabled"));
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.GEBV_GRUND_ZONEN, cut.Find(".epos-gebk-vorgaben-grund").TextContent.Trim());
+    }
 }

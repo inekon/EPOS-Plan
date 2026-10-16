@@ -26,6 +26,10 @@
                            "Simulation..." (Waermebedarf als Ueberlagerung darueber), Stift, Rueckfrage des Rueckwegs
       ?fall=dubletten      KatalogDublettenDialog - das Protokoll steht UNTER der Schlussleiste
       ?fall=katalog        BedarfAdminDialog (Katalogdialog, .epos-katalog-dialog)
+      ?fall=kaelteprofile  BedarfsProfileDialog der Art Kaelte mit dem Baustein Betriebskalenderwahl (KBP-1): der Knopf
+                           "Betriebskalender…" oeffnet das Blatt mit dem BetriebskalenderDialog samt "Aus Gebaeude
+                           uebernehmen…" (zwei Gebaeude, eines mit sechs Ferienzeitraeumen); Ablage im Speicher.
+                           &kalender=leer: noch kein Kalender angelegt; &gebaeude=0: das Projekt hat kein Gebaeude
       ?meldung=1           fuer die Bannerprobe (bannerprobe.mjs): Heizkessel und BHKW melden bei
                            "Hinzufuegen" einen Fehler der Traegerwahl, der Gebaeudedialog traegt
                            "In DB uebernehmen" (weich gesperrt - der Versuch meldet den Grund);
@@ -184,6 +188,22 @@
                                Geschlossen="@(b => Beendet(b))" />
             break;
 
+        case "kaelteprofile":
+            <BedarfsProfileDialog Art="BedarfsArt.Kaelte" TitelText="Kältebedarfsprofile"
+                                  Zeilen="@KpZeilen" Katalogprofil="@KpProfil"
+                                  Katalogzeilen="@(() => KpKatalog)" Filterstandvorgabe="@_filterstand"
+                                  Info="@(n => new BedarfsProfilInfo(n, "Raumkühlung eines Bürogeschosses, Mo–Fr 7–19 Uhr", "Raumkühlung Büro", 16, 19))"
+                                  Jahressumme="@(_ => 40.0)"
+                                  TemperaturPruefen="@((v, r) => null)"
+                                  KaelteArten="@(new[] { (WindowsFormsApplication1.DbWerte.KAELTE_ART_RAUM, "Raumkühlung"), (WindowsFormsApplication1.DbWerte.KAELTE_ART_PROZESS, "Prozesskälte") })"
+                                  Betriebskalender="@KpKalenderliste()"
+                                  BetriebskalenderNeuLesen="@KpKalenderliste"
+                                  BetriebskalenderGaben="@KpKalenderGaben"
+                                  TypStammGaben="@((n, b, t, neu) => new Dictionary<string, object>())"
+                                  TypProfilGaben="@(() => new Dictionary<string, object>())"
+                                  Geschlossen="@(b => Beendet(b))" />
+            break;
+
         default:
             <p>unbekannter Fall: @_fall</p>
             break;
@@ -232,6 +252,8 @@
     {
         var abfrage = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
         if (abfrage.TryGetValue("fall", out var f)) _fall = f.ToString();
+        if (abfrage.TryGetValue("kalender", out var kl) && kl.ToString() == "leer") _kpKalender.Clear();
+        if (abfrage.TryGetValue("gebaeude", out var gb) && gb.ToString() == "0") _kpGebaeude.Clear();
         _steckbrief = abfrage.TryGetValue("steckbrief", out var sb) && sb == "1";   // WP1b: voller Feldsatz
         if (abfrage.TryGetValue("marke", out var m)) _marke = m.ToString() != "0";
         if (abfrage.TryGetValue("meldung", out var g)) { _meldung = g.ToString() == "1"; _meldungListe = g.ToString() == "liste"; }
@@ -488,6 +510,49 @@
             ["BildauftragRaumtemperatur"] = new Func<Zeichenmodell?>(() => RAUM)
         };
     }
+
+    // ------------------------------------------------------ Kaeltebedarfsprofile mit Betriebskalenderwahl (KBP-1)
+    private Katalogfilterprofil? _kpProfil;
+    private Katalogfilterprofil KpProfil => _kpProfil ??= Katalogfilterprofil.FuerBedarf(BedarfsArt.Kaelte, Uebersetzt);
+    private IReadOnlyList<Katalogfilterzeile>? _kpKatalog;
+    private IReadOnlyList<Katalogfilterzeile> KpKatalog => _kpKatalog ??= Zeilenbau.Voll(KpProfil, _anzahl);
+    private List<BedarfsProfilZeile>? _kpZeilen;
+    private List<BedarfsProfilZeile> KpZeilen => _kpZeilen ??= Enumerable.Range(1, 2)
+        .Select(i => new BedarfsProfilZeile { IdZ = i, IdStamm = 200 + i, Name = "Kälte " + i, Summe = 40 * i, Vorlauf = 16, Ruecklauf = 19 })
+        .ToList();
+
+    private readonly List<BetriebskalenderDaten> _kpKalender = new()
+    {
+        new BetriebskalenderDaten { Id = 1, Bezeichner = "Werkskalender", Bundesland = "BY" },
+        new BetriebskalenderDaten { Id = 2, Bezeichner = "Betriebsferien Sommer", Von = new int?[] { 213, null, null, null }, Bis = new int?[] { 233, null, null, null } }
+    };
+
+    private readonly List<BetriebskalenderGebaeude> _kpGebaeude = new()
+    {
+        new BetriebskalenderGebaeude("Bürogebäude", "BY", new[] { (1, 6), (54, 58), (90, 101), (146, 157), (211, 254), (300, 306) }),
+        new BetriebskalenderGebaeude("Halle", "NW", new[] { (172, 184), (355, 2) })
+    };
+
+    private IReadOnlyList<(int Id, string Text)> KpKalenderliste()
+        => _kpKalender.OrderBy(k => k.Bezeichner).Select(k => (k.Id, k.Bezeichner)).ToList();
+
+    private IReadOnlyDictionary<string, object> KpKalenderGaben() => new Dictionary<string, object>
+    {
+        ["Laden"] = new Func<IReadOnlyList<BetriebskalenderDaten>>(() => _kpKalender.OrderBy(k => k.Bezeichner).Select(k => k.Kopie()).ToList()),
+        ["Laender"] = (IReadOnlyList<Bundeslandeintrag>)new[] { new Bundeslandeintrag("BY", "Bayern"), new Bundeslandeintrag("HE", "Hessen"), new Bundeslandeintrag("NW", "Nordrhein-Westfalen") },
+        ["Pruefen"] = new Func<BetriebskalenderDaten, string?>(d => string.IsNullOrWhiteSpace(d.Bezeichner) ? "Bitte eine Bezeichnung eingeben." : null),
+        ["Speichern"] = new Func<BetriebskalenderDaten, string?>(d =>
+        {
+            if (d.Id <= 0) d.Id = _kpKalender.Count == 0 ? 1 : _kpKalender.Max(k => k.Id) + 1;
+            _kpKalender.RemoveAll(k => k.Id == d.Id);
+            _kpKalender.Add(d.Kopie());
+            return null;
+        }),
+        ["Loeschen"] = new Func<int, string?>(id => { _kpKalender.RemoveAll(k => k.Id == id); return null; }),
+        ["Verwendungen"] = new Func<int, int>(_ => 1),
+        ["Herleitung"] = new Func<BetriebskalenderDaten, string>(d => "Im Gemeinjahr (1. Januar ein Donnerstag): Feiertage und Ferientage nach den Regeln des Kerns."),
+        ["Gebaeude"] = new Func<IReadOnlyList<BetriebskalenderGebaeude>>(() => _kpGebaeude)
+    };
 
     // ------------------------------------------------------ Katalogdialog
     private Katalogfilterprofil? _bedarfProfil;

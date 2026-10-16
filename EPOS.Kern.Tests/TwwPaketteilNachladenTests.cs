@@ -148,22 +148,30 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// <b>Eine vorhandene Katalogversion bleibt unberührt</b> — auch eine eigene, abweichende: kein
-        /// Nachladen, keine Zeile mehr, die Version bleibt die der Datenbank.
+        /// Nachladen des Paketteils, die Version bleibt die der Datenbank, keine Zeile der Datenbank ändert
+        /// sich. Nachgetragen werden allein die Parameter aus <see cref="PaketteilNachfuehrung.PARAMETER"/>,
+        /// die ihr fehlen (Kaltwasser und Zirkulation der Stufe Einfach, Anwenderentscheid 14.10.2026) —
+        /// in ihre Version.
         /// </summary>
         [Fact]
         public void Eine_vorhandene_Katalogversion_bleibt_unberuehrt()
         {
             using var db = new TwwTestdatenbank();
             TwwTestdatenbank.ParameterAnlegen("Probe.Eins", 1.0, "EIGEN-7");
-            string vorher = Fingerabdruck();
+            Dictionary<string, long> bis = HoechsteZeilen();
+            string vorher = Fingerabdruck(bis);
 
             ZapfVerfuegbarkeit v = ZapfprofilCtrl.Verfuegbar();
             Assert.True(v.Ja);
-            Assert.Null(v.Nachladen);
+            Assert.Equal("PAKETTEIL_PARAMETER_NACHGETRAGEN", v.Nachladen?.Kennung);
             Assert.Equal("EIGEN-7", ZapfprofilCtrl.AktuelleKatalogversion());
             Assert.False(TwwPaketteilCtrl.Nachladen().Versucht);
-            Assert.Equal(vorher, Fingerabdruck());
-            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_PARAMETER_STAMM + "\""));
+            Assert.Equal(vorher, Fingerabdruck(bis));
+            Assert.Equal(1L + PaketteilNachfuehrung.PARAMETER.Count,
+                         Zahl("SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_PARAMETER_STAMM + "\" WHERE \"Katalogversion\" = 'EIGEN-7'"));
+            Assert.Equal(1L + PaketteilNachfuehrung.PARAMETER.Count, Zahl("SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_PARAMETER_STAMM + "\""));
+            foreach (KeyValuePair<string, long> t in HoechsteZeilen().Where(t => t.Key != TwwSchema.TAB_TWW_PARAMETER_STAMM))
+                Assert.Equal(bis[t.Key], t.Value);
         }
 
         /// <summary>Ohne Tww-Tabellen geschieht nichts: kein Nachladen, keine Tabelle entsteht.</summary>

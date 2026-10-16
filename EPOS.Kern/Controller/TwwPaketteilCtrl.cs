@@ -198,6 +198,86 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Trägt die Parameter nach, die der Paketteil nach seiner ersten Auslieferung hinzubekommen
+        /// hat</b> (<see cref="PaketteilNachfuehrung.PARAMETER"/>; Anwenderentscheid 14.10.2026:
+        /// Kaltwasser und Zirkulation der Stufe Einfach) — in eine Datenbank, die schon eine Katalogversion
+        /// führt und der sie dort fehlen. Ohne sie lehnte das Mengengerüst jede Zone ab, sobald die
+        /// Datenbank allein den freien Paketteil führt; <see cref="Nachladen"/> fasst eine vorhandene
+        /// Katalogversion nicht an.
+        ///
+        /// <para><b>Wie.</b> Derselbe Einspielweg wie <see cref="Nachladen"/> und die Auslieferungsvorlage
+        /// (<see cref="Einspielen"/>, aus den eingebetteten Dateien), beschränkt auf die fehlenden Schlüssel
+        /// der Liste: Status <c>AUSLIEFERUNG</c>, <c>ReadOnly</c> 1, die Herkunft des Pakets und die
+        /// Katalogversion, die der Parametersatz liest (<see cref="ZapfprofilCtrl.Zielkatalogversion"/>).
+        /// Eine vorhandene Zeile — auch eine Anwender- oder Importzeile — bleibt unberührt
+        /// (<see cref="VORRANG_DATENBANK"/>); nichts wird geändert oder gelöscht.</para>
+        ///
+        /// <para><b>Wann.</b> Aus <see cref="ZapfprofilCtrl.Verfuegbar"/>, sobald eine Katalogversion steht —
+        /// auf Windows und iOS. Wiederholbar: Fehlt nichts, geschieht nichts (eine Abfrage). Das Ergebnis
+        /// geht als Hinweis (nachgetragen) bzw. als Warnung (Fehler, nichts geändert) in das Laufprotokoll.</para>
+        /// </summary>
+        internal static TwwPaketteilNachladen ParameterNachtragen()
+        {
+            foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen)
+                if (!DataRepository.TabelleVorhanden(a.Key)) return TwwPaketteilNachladen.Nichts;
+            if (FehlendeParameter().Count == 0) return TwwPaketteilNachladen.Nichts;
+
+            lock (_sperre)
+            {
+                IReadOnlyList<string> fehlend = FehlendeParameter();
+                if (fehlend.Count == 0) return TwwPaketteilNachladen.Nichts;
+
+                var bericht = new List<string>();
+                bool ok;
+                string fehler;
+                TwwPaketteilZahlen zahlen;
+                try
+                {
+                    using (Schreibnaht.Freigabe(Schreibnaht.GRUND_BEREITSTELLUNG))
+                        ok = Einspielen(Eingebettet(), QUELLE_EINGEBETTET, VORRANG_DATENBANK, false, bericht.Add, null,
+                                        new HashSet<string>(fehlend, StringComparer.Ordinal), out fehler, out zahlen);
+                }
+                catch (Exception ex)
+                {
+                    ok = false;
+                    fehler = ex.Message;
+                    zahlen = null;
+                }
+
+                if (!ok)
+                {
+                    ZapfSatz f = ZapfSatz.Neu("PAKETTEIL_NACHLADEN_FEHLGESCHLAGEN", fehler ?? "");
+                    SimulationProtokoll.Aktuell.Warnung(f.Klartext);
+                    return new TwwPaketteilNachladen(true, false, f, bericht);
+                }
+                if (zahlen == null || zahlen.Parameter == 0) return TwwPaketteilNachladen.Nichts;
+
+                IReadOnlyList<string> nachher = FehlendeParameter();
+                string schluessel = string.Join(", ", fehlend.Where(k => !nachher.Contains(k)));
+                ZapfSatz s = ZapfSatz.Neu("PAKETTEIL_PARAMETER_NACHGETRAGEN", zahlen.Katalogversion, zahlen.Parameter, schluessel);
+                SimulationProtokoll.Aktuell.Hinweis(s.Klartext);
+                return new TwwPaketteilNachladen(true, true, s, bericht);
+            }
+        }
+
+        /// <summary>
+        /// Die Schlüssel aus <see cref="PaketteilNachfuehrung.PARAMETER"/>, die die aktuelle Katalogversion
+        /// nicht führt — in der Folge der Liste; leer ohne Katalogversion oder ohne Parametertabelle.
+        /// </summary>
+        internal static IReadOnlyList<string> FehlendeParameter()
+        {
+            string version = ZapfprofilCtrl.AktuelleKatalogversion();
+            if (string.IsNullOrWhiteSpace(version)) return new string[0];
+            var vorhanden = new HashSet<string>(StringComparer.Ordinal);
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT Schluessel FROM " + TwwSchema.TAB_TWW_PARAMETER_STAMM + " WHERE Katalogversion = ?",
+                new DbParam("?", version));
+            if (dt != null)
+                foreach (DataRow r in dt.Rows) vorhanden.Add(Convert.ToString(r["Schluessel"], CultureInfo.InvariantCulture));
+            return PaketteilNachfuehrung.PARAMETER.Where(k => !vorhanden.Contains(k)).ToList();
+        }
+
+        /// <summary>
         /// Die eingebetteten Dateien des Paketteils (Name ohne Präfix, Text in UTF-8), geordnet nach
         /// Namen — dieselbe Form wie <see cref="TwwNutzungsartCtrl.PaketLesen"/> sie aus einem Ordner liest.
         /// </summary>
@@ -286,7 +366,7 @@ namespace WindowsFormsApplication1
         internal static bool Einspielen(IReadOnlyList<TwwPaketdatei> dateien, string quelle, string vorrang,
                                         bool nurOhneKatalogversion, Action<string> zeile,
                                         out string fehler, out TwwPaketteilZahlen zahlen)
-            => Einspielen(dateien, quelle, vorrang, nurOhneKatalogversion, zeile, null, out fehler, out zahlen);
+            => Einspielen(dateien, quelle, vorrang, nurOhneKatalogversion, zeile, null, null, out fehler, out zahlen);
 
         /// <summary>
         /// <b>Trägt einzelne Nutzungsarten des freien Paketteils in einen Katalog nach, der schon eine
@@ -306,7 +386,7 @@ namespace WindowsFormsApplication1
             if (ZapfprofilCtrl.AktuelleKatalogversion() == null) return 0;
             var filter = new HashSet<string>(bezeichner ?? Array.Empty<string>(), StringComparer.Ordinal);
             if (filter.Count == 0) return 0;
-            if (!Einspielen(Eingebettet(), QUELLE_EINGEBETTET, VORRANG_DATENBANK, false, zeile, filter, out fehler,
+            if (!Einspielen(Eingebettet(), QUELLE_EINGEBETTET, VORRANG_DATENBANK, false, zeile, filter, null, out fehler,
                             out TwwPaketteilZahlen zahlen))
                 return -1;
             return zahlen?.Nutzungsarten ?? 0;
@@ -314,7 +394,7 @@ namespace WindowsFormsApplication1
 
         private static bool Einspielen(IReadOnlyList<TwwPaketdatei> dateien, string quelle, string vorrang,
                                        bool nurOhneKatalogversion, Action<string> zeile, ISet<string> nurNutzungsarten,
-                                       out string fehler, out TwwPaketteilZahlen zahlen)
+                                       ISet<string> nurParameter, out string fehler, out TwwPaketteilZahlen zahlen)
         {
             fehler = null;
             zahlen = null;
@@ -385,6 +465,21 @@ namespace WindowsFormsApplication1
                         orte[t] = new List<string>();
                     }
                     Z("Auswahl: " + arten.Count + " Nutzungsart(en), " + saetze.Count + " Tagesgangsatz/-saetze");
+                }
+                if (nurParameter != null)
+                {
+                    // Nur die genannten Parameter; Nutzungsarten, Saetze, Bedarfstage und Kategorien bleiben aussen vor.
+                    string t0 = TwwSchema.TAB_TWW_PARAMETER_STAMM;
+                    var idx = Enumerable.Range(0, zeilen[t0].Count)
+                        .Where(i => nurParameter.Contains(Convert.ToString(zeilen[t0][i]["Schluessel"], CultureInfo.InvariantCulture))).ToList();
+                    zeilen[t0] = idx.Select(i => zeilen[t0][i]).ToList();
+                    orte[t0] = idx.Select(i => orte[t0][i]).ToList();
+                    foreach (string t in TABELLEN.Where(t => t != t0))
+                    {
+                        zeilen[t] = new List<Dictionary<string, object>>();
+                        orte[t] = new List<string>();
+                    }
+                    Z("Auswahl: " + idx.Count + " Parameter");
                 }
             }
             catch (InvalidDataException ex)

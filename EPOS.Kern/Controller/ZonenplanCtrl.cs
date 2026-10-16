@@ -155,7 +155,28 @@ namespace WindowsFormsApplication1
                 var wochen = ebene.Wochen.Where(w => !rest.Wochen.Any(n => n.Groesse == w.Groesse && n.Name == w.Name)).ToList();
                 long neu = Math.Min(0, wochen.Count == 0 ? 0 : wochen.Min(w => w.Id));
                 foreach (BenannteWoche w in rest.Wochen) wochen.Add(w with { Id = --neu });
-                stand = stand.MitEbene(idZone, ebene.MitWochen(wochen));
+                ebene = ebene.MitWochen(wochen);
+                // Nachzug N2 (DA-4): eine Periode, die in der Datei auf eine benannte Woche verweist, verweist wieder auf sie
+                // (ID_Woche) statt eine eigene Woche einzubetten — gefunden über Größe, Beginn, Ende und Bezeichner.
+                foreach (IGrouping<Konditionierungsgroesse, AbbildPeriodenwoche> je in rest.Periodenwochen.GroupBy(p => p.Groesse))
+                {
+                    Konditionierungskalender k = ebene.Kalender(je.Key);
+                    if (k == null) continue;
+                    bool geaendert = false;
+                    var perioden = k.Perioden.Select(r =>
+                    {
+                        AbbildPeriodenwoche p = r.IstFeiertag ? null
+                            : je.FirstOrDefault(x => x.Beginn == r.Beginn && x.Ende == r.Ende && x.Bezeichner == r.Bezeichner);
+                        BenannteWoche w = p == null ? null : ebene.Wochen.FirstOrDefault(x => x.Groesse == je.Key && x.Name == p.Woche);
+                        if (w == null) return r;
+                        geaendert = true;
+                        return Kalenderbedienung.MitAngabe(r, Kalenderangabe.AusBenannterWoche(w.Id, w.Werte));
+                    }).ToList();
+                    if (geaendert)
+                        ebene = ebene.MitKalender(je.Key, new Konditionierungskalender(k.Groesse, k.Grundangabe, k.Nennwert, perioden),
+                                                  ebene.Herkunft(je.Key));
+                }
+                stand = stand.MitEbene(idZone, ebene);
             }
             using (DbVorgang v = DataRepository.Vorgang())
             using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(v))

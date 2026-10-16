@@ -22,11 +22,21 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class BetriebskalenderHuelle
     {
-        /// <summary>Der Parametersatz der Verwaltung — ohne <c>Geschlossen</c>, das setzt der Wirt.</summary>
-        internal static IReadOnlyDictionary<string, object> Gaben()
+        /// <summary>
+        /// Der Parametersatz der Verwaltung für das geöffnete Projekt (<see cref="Dienste.Projekt"/>) — ohne
+        /// <c>Geschlossen</c>, das setzt der Wirt.
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> Gaben() => Gaben(AktivesProjekt());
+
+        /// <summary>
+        /// Der Parametersatz der Verwaltung; <paramref name="projektId"/> nennt das Projekt, dessen Gebäude
+        /// „Aus Gebäude übernehmen…“ anbietet (Konzept Kältebedarfsprofile 7.2) — 0 = keines.
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> Gaben(int projektId)
         {
             return new Dictionary<string, object>
             {
+                ["Gebaeude"] = new Func<IReadOnlyList<BetriebskalenderGebaeude>>(() => Gebaeude(projektId)),
                 ["Laden"] = new Func<IReadOnlyList<BetriebskalenderDaten>>(
                     () => BetriebskalenderCtrl.Liste().Select(AlsDaten).ToList()),
                 ["Laender"] = Laender(),
@@ -40,13 +50,39 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Hängt die Wahl je Zuordnung an den Parametersatz des Bedarfsprofil-Dialogs: die Kalender als
-        /// (ID, Bezeichner); ohne Kalender bleibt die Liste leer und der Dialog nennt den Weg.
+        /// Hängt die Wahl je Zuordnung an den Parametersatz des Bedarfsprofil-Dialogs (Baustein
+        /// <c>Betriebskalenderwahl</c>, Konzept Kältebedarfsprofile 7.1): die Kalender als (ID, Bezeichner) —
+        /// ohne Kalender bleibt die Liste leer und der Baustein nennt den Weg —, dazu den Leseweg für das
+        /// Neulesen nach dem Blatt „Betriebskalender…“ und den Parametersatz dieses Blattes für
+        /// <paramref name="projektId"/> (0 = das geöffnete Projekt).
         /// </summary>
-        internal static void WahlEinhaengen(IDictionary<string, object> gaben)
+        internal static void WahlEinhaengen(IDictionary<string, object> gaben, int projektId = 0)
         {
-            gaben["Betriebskalender"] = (IReadOnlyList<(int Id, string Text)>)BetriebskalenderCtrl.Liste()
-                .Select(k => (k.ID, k.Bezeichner ?? "")).ToList();
+            int projekt = projektId > 0 ? projektId : AktivesProjekt();
+            gaben["Betriebskalender"] = Wahl();
+            gaben["BetriebskalenderNeuLesen"] = new Func<IReadOnlyList<(int Id, string Text)>>(Wahl);
+            gaben["BetriebskalenderGaben"] = new Func<IReadOnlyDictionary<string, object>>(() => Gaben(projekt));
+        }
+
+        /// <summary>Die Kalender als (ID, Bezeichner), nach Bezeichner.</summary>
+        internal static IReadOnlyList<(int Id, string Text)> Wahl()
+            => BetriebskalenderCtrl.Liste().Select(k => (k.ID, k.Bezeichner ?? "")).ToList();
+
+        /// <summary>
+        /// Die Gebäude des Projekts als Quellen für „Aus Gebäude übernehmen…“ (<see cref="BetriebskalenderGebaeudeCtrl"/>);
+        /// leer ohne Projekt — dann sperrt der Dialog den Knopf und nennt den Grund.
+        /// </summary>
+        internal static IReadOnlyList<BetriebskalenderGebaeude> Gebaeude(int projektId)
+            => BetriebskalenderGebaeudeCtrl.Quellen(projektId)
+                .Select(q => new BetriebskalenderGebaeude(q.Bezeichner ?? "", q.Feiertagsland,
+                                                          q.Ferien.Select(f => (f.Von, f.Bis)).ToList()))
+                .ToList();
+
+        /// <summary>Das geöffnete Projekt; 0 = keines.</summary>
+        private static int AktivesProjekt()
+        {
+            IProjektKontext p = Dienste.Projekt;
+            return p != null && p.Vorhanden ? p.Id : 0;
         }
 
         /// <summary>Schreibt einen Satz; die neue ID steht danach im DTO. <c>null</c> = gelungen.</summary>
