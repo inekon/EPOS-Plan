@@ -191,6 +191,34 @@ public sealed class GebaeudeKatalogPruefleisteTests : EposBunitContext
         Assert.Equal(new[] { Pruefgruppe.OrtLage }, geklickt);
     }
 
+    /// <summary>
+    /// N5: Das Neulesen nach einer Prüffassung bringt einen neuen Konditionierungssatz mit Fassung 0 — der Schlüssel der
+    /// Wochenvorschau ändert sich trotzdem, die Karte rechnet neu. Gegenprobe: ein Zeichnen ohne Neulesen lässt ihn stehen.
+    /// </summary>
+    [Fact]
+    public void N5_Neulesen_aendert_den_Schluessel_der_Wochenvorschau()
+    {
+        GebaeudeKatalogDaten MitKonditionierung()
+        {
+            GebaeudeKatalogDaten s = Satz("BY");
+            s.Konditionierung = new KonditionierungDaten();
+            return s;
+        }
+        var cut = Aufbauen(new ModellpruefungProbeweg(), new List<Pruefgruppe>(), daten: MitKonditionierung(),
+                           gebaeudeNeulesen: () => { _gebaeudeGelesen++; return MitKonditionierung(); });
+        KonditionierungBearbeitung kond = cut.Instance.Konditionierungsbearbeitung;
+        string vorher = kond.Vorschauschluessel(KonditionierungGroesse.Heizen);
+        cut.Render();
+        Assert.Equal(vorher, kond.Vorschauschluessel(KonditionierungGroesse.Heizen));
+
+        cut.Render(p => p.Add(x => x.PruefFassung, 1));
+        Assert.Equal(1, _gebaeudeGelesen);
+        Assert.Equal(0, cut.Instance.Arbeitsstand.Konditionierung!.Fassung);
+        string nachher = kond.Vorschauschluessel(KonditionierungGroesse.Heizen);
+        Assert.NotEqual(vorher, nachher);
+        Assert.Equal(nachher, kond.Vorschauschluessel(KonditionierungGroesse.Heizen));
+    }
+
     [Fact]
     public void Startzone_oeffnet_die_Zone_im_Zonendialog()
     {
