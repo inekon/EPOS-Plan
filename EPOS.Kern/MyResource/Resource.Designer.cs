@@ -68584,24 +68584,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der feste Anteil der Investition je Speicher, unabhängig von Größe und Leistung. ähnelt.
-        /// </summary>
-        public static string KI_DLG_MODK_INVEST_FIX_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_MODK_INVEST_FIX_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die kapazitätsbezogenen Modulkosten des Speichers. ähnelt.
-        /// </summary>
-        public static string KI_DLG_MODK_KOSTEN_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_MODK_KOSTEN_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der nutzbare Anteil der Kapazität; er begrenzt die Entladetiefe. ähnelt.
         /// </summary>
         public static string KI_DLG_MODK_LADEZUSTAND_ERL {
@@ -68616,15 +68598,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MODK_LAENGE_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_MODK_LAENGE_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der leistungsbezogene Anteil der Investition; leer heißt nicht gepflegt. ähnelt.
-        /// </summary>
-        public static string KI_DLG_MODK_LEISTUNGSKOSTEN_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_MODK_LEISTUNGSKOSTEN_ERL", resourceCulture);
             }
         }
         
@@ -68724,15 +68697,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MODK_UMPP_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_MODK_UMPP_ERL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Verschleißkosten je umgesetzter Kilowattstunde; leer heißt nicht gepflegt. ähnelt.
-        /// </summary>
-        public static string KI_DLG_MODK_VERSCHLEISS_ERL {
-            get {
-                return ResourceManager.GetString("KI_DLG_MODK_VERSCHLEISS_ERL", resourceCulture);
             }
         }
         
@@ -93700,15 +93664,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string MODK_LBL_LEISTUNG {
             get {
                 return ResourceManager.GetString("MODK_LBL_LEISTUNG", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Modulkosten ähnelt.
-        /// </summary>
-        public static string MODK_LBL_MODULKOSTEN {
-            get {
-                return ResourceManager.GetString("MODK_LBL_MODULKOSTEN", resourceCulture);
             }
         }
         
@@ -127237,15 +127192,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die €/(kWh·Zyklus) ähnelt.
-        /// </summary>
-        public static string SP_EINHEIT_ZYKLUSKOSTEN {
-            get {
-                return ResourceManager.GetString("SP_EINHEIT_ZYKLUSKOSTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Amortisation dynamisch ähnelt.
         /// </summary>
         public static string SP_ERG_AMORT_DYNAMISCH {
@@ -128110,29 +128056,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Investition (fix) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostensatz [€/kWh]: ähnelt.
         /// </summary>
-        public static string SP_LABEL_INVESTITION_FIX {
+        public static string SP_LABEL_KOSTENSATZ {
             get {
-                return ResourceManager.GetString("SP_LABEL_INVESTITION_FIX", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungskosten ähnelt.
-        /// </summary>
-        public static string SP_LABEL_LEISTUNGSKOSTEN {
-            get {
-                return ResourceManager.GetString("SP_LABEL_LEISTUNGSKOSTEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Modulkosten [€/kWh]: ähnelt.
-        /// </summary>
-        public static string SP_LABEL_MODULKOSTEN {
-            get {
-                return ResourceManager.GetString("SP_LABEL_MODULKOSTEN", resourceCulture);
+                return ResourceManager.GetString("SP_LABEL_KOSTENSATZ", resourceCulture);
             }
         }
         
@@ -128151,15 +128079,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SP_LABEL_STANDBY {
             get {
                 return ResourceManager.GetString("SP_LABEL_STANDBY", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Verschleißkosten ähnelt.
-        /// </summary>
-        public static string SP_LABEL_VERSCHLEISSKOSTEN {
-            get {
-                return ResourceManager.GetString("SP_LABEL_VERSCHLEISSKOSTEN", resourceCulture);
             }
         }
         

@@ -1127,9 +1127,6 @@
   <data name="MODK_LBL_LEISTUNG" xml:space="preserve">
     <value>Performance</value>
   </data>
-  <data name="MODK_LBL_MODULKOSTEN" xml:space="preserve">
-    <value>Module costs</value>
-  </data>
   <data name="MODK_LBL_KOSTENSATZ" xml:space="preserve">
     <value>Cost rate</value>
   </data>
@@ -4062,20 +4059,8 @@ Please run the simulation with photovoltaics first.</value>
   <data name="SP_LABEL_ZYKLEN" xml:space="preserve">
     <value>Cycles (guaranteed)</value>
   </data>
-  <data name="SP_LABEL_VERSCHLEISSKOSTEN" xml:space="preserve">
-    <value>Wear cost</value>
-  </data>
-  <data name="SP_LABEL_LEISTUNGSKOSTEN" xml:space="preserve">
-    <value>Power-related cost</value>
-  </data>
-  <data name="SP_LABEL_INVESTITION_FIX" xml:space="preserve">
-    <value>Fixed investment</value>
-  </data>
   <data name="SP_LABEL_STANDBY" xml:space="preserve">
     <value>Standby consumption</value>
-  </data>
-  <data name="SP_EINHEIT_ZYKLUSKOSTEN" xml:space="preserve">
-    <value>€/(kWh·cycle)</value>
   </data>
   <data name="SP_PARAM_GRUPPE_BETRIEBSFUEHRUNG" xml:space="preserve">
     <value>Operating strategy (active variant)</value>
@@ -5602,8 +5587,8 @@ It then feeds the overview and the overall simulation. The existing simulation r
   <data name="SP_LABEL_ENERGIE_KURZ" xml:space="preserve">
     <value>Energy (capacity)</value>
   </data>
-  <data name="SP_LABEL_MODULKOSTEN" xml:space="preserve">
-    <value>Module costs [€/kWh]:</value>
+  <data name="SP_LABEL_KOSTENSATZ" xml:space="preserve">
+    <value>Cost rate [€/kWh]:</value>
   </data>
   <data name="SP_PARAM_LABEL_KAPAZITAET" xml:space="preserve">
     <value>Capacity [kWh]</value>
@@ -25253,23 +25238,11 @@ Do you want to allow this?</value>
   <data name="KI_DLG_MODK_DEGRADATION_ERL" xml:space="preserve">
     <value>The annual capacity loss of the storage unit.</value>
   </data>
-  <data name="KI_DLG_MODK_KOSTEN_ERL" xml:space="preserve">
-    <value>The capacity-related module cost of the storage unit.</value>
-  </data>
   <data name="KI_DLG_MODK_WG_RT_ERL" xml:space="preserve">
     <value>The round-trip efficiency over charging and discharging as a factor; empty means not maintained.</value>
   </data>
   <data name="KI_DLG_MODK_ZYKLEN_ERL" xml:space="preserve">
     <value>The cycle life of the storage unit; empty means not maintained.</value>
-  </data>
-  <data name="KI_DLG_MODK_VERSCHLEISS_ERL" xml:space="preserve">
-    <value>The wear cost per kilowatt hour throughput; empty means not maintained.</value>
-  </data>
-  <data name="KI_DLG_MODK_LEISTUNGSKOSTEN_ERL" xml:space="preserve">
-    <value>The power-related share of the investment; empty means not maintained.</value>
-  </data>
-  <data name="KI_DLG_MODK_INVEST_FIX_ERL" xml:space="preserve">
-    <value>The fixed share of the investment per storage unit, independent of size and power.</value>
   </data>
   <data name="KI_DLG_MODK_STANDBY_ERL" xml:space="preserve">
     <value>The standby power of the storage unit at rest.</value>

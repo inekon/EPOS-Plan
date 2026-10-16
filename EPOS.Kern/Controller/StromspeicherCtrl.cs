@@ -70,7 +70,6 @@ namespace WindowsFormsApplication1
             m_Energie = 0;
             m_Degradation = 0;
             m_Ladezustand = 0;
-            m_Modulkosten = 0;
             GeraetefelderZuruecksetzen(this);
 
             if (dt != null && dt.Rows.Count > 0)
@@ -129,7 +128,6 @@ namespace WindowsFormsApplication1
             m_Energie = 0;
             m_Degradation = 0;
             m_Ladezustand = 0;
-            m_Modulkosten = 0;
             GeraetefelderZuruecksetzen(this);
 
             if (dt != null && dt.Rows.Count > 0)
@@ -185,9 +183,6 @@ namespace WindowsFormsApplication1
         {
             m.m_WirkungsgradRT = 0.0;
             m.m_ZyklenZugesichert = 0;
-            m.m_Verschleisskosten = 0.0;
-            m.m_Leistungskosten = 0.0;
-            m.m_InvestitionFix = 0.0;
             m.m_StandbyVerbrauch = 0.0;
             m.m_Selbstentladung = 0.0;
         }

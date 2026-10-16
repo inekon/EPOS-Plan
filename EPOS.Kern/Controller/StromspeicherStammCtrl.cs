@@ -288,9 +288,9 @@ namespace WindowsFormsApplication1
         private void Reset()
         {
             m_ID = 0; m_szBezeichner = string.Empty; m_szTyp = string.Empty;
-            m_Leistung = 0; m_Energie = 0; m_Degradation = 0; m_Ladezustand = 0; m_Modulkosten = 0;
-            m_WirkungsgradRT = 0; m_ZyklenZugesichert = 0; m_Verschleisskosten = 0;
-            m_Leistungskosten = 0; m_InvestitionFix = 0; m_StandbyVerbrauch = 0; m_Selbstentladung = 0;
+            m_Leistung = 0; m_Energie = 0; m_Degradation = 0; m_Ladezustand = 0;
+            m_WirkungsgradRT = 0; m_ZyklenZugesichert = 0;
+            m_StandbyVerbrauch = 0; m_Selbstentladung = 0;
             m_bReadOnly = false;
         }
 
@@ -805,12 +805,8 @@ namespace WindowsFormsApplication1
             ziel.m_Energie = m.m_Energie;
             ziel.m_Degradation = m.m_Degradation;
             ziel.m_Ladezustand = m.m_Ladezustand;
-            ziel.m_Modulkosten = m.m_Modulkosten;
             ziel.m_WirkungsgradRT = m.m_WirkungsgradRT;
             ziel.m_ZyklenZugesichert = m.m_ZyklenZugesichert;
-            ziel.m_Verschleisskosten = m.m_Verschleisskosten;
-            ziel.m_Leistungskosten = m.m_Leistungskosten;
-            ziel.m_InvestitionFix = m.m_InvestitionFix;
             ziel.m_StandbyVerbrauch = m.m_StandbyVerbrauch;
             ziel.m_Selbstentladung = m.m_Selbstentladung;
         }
@@ -849,17 +845,40 @@ namespace WindowsFormsApplication1
             werte[ModulKatalogProfil.FeldLeistung] = Spaltentext(r, "Leistung");
             werte[ModulKatalogProfil.FeldDegradation] = Spaltentext(r, "Degradation");
             werte[ModulKatalogProfil.FeldLadezustand] = Spaltentext(r, "Ladezustand");
-            werte[ModulKatalogProfil.FeldModulkosten] = Spaltentext(r, "Modulkosten");
+            // Welle KB-5: der Kostensatz je kWh Nennkapazitaet aus der Satzvorlage (Projektkopie, dann
+            // Katalogsatz) - ein LESEWERT, gepflegt wird er in der Kostenverwaltung.
+            werte[ModulKatalogProfil.FeldKostensatz] = KostensatzText(r);
 
             werte[ModulKatalogProfil.FeldWirkungsgradRt] = Spaltentext(r, "Wirkungsgrad_RT");
             werte[ModulKatalogProfil.FeldZyklen] = Spaltentext(r, "Zyklen_Zugesichert");
-            werte[ModulKatalogProfil.FeldVerschleisskosten] = Spaltentext(r, "Verschleisskosten");
-            werte[ModulKatalogProfil.FeldLeistungskosten] = Spaltentext(r, "Leistungskosten");
-            werte[ModulKatalogProfil.FeldInvestitionFix] = Spaltentext(r, "Investition_Fix");
             werte[ModulKatalogProfil.FeldStandby] = Spaltentext(r, "Standby_Verbrauch");
             werte[ModulKatalogProfil.FeldSelbstentladung] = Spaltentext(r, StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG);
 
             return werte;
+        }
+
+        /// <summary>
+        /// Der Satz c_cap [€/kWh] der Satzvorlage dieses Satzes als Text in der Kultur des Anwenders;
+        /// leer = keine Satzvorlage mit Kapazitaetssatz (der Vermerk der Maske nennt die Kostenverwaltung).
+        /// Eine Zeile mit <c>ID_Stamm</c> ist eine Projektkopie, sonst ein Katalogsatz.
+        /// </summary>
+        private static string KostensatzText(DataRow r)
+        {
+            if (!r.Table.Columns.Contains("ID") || r["ID"] == DBNull.Value) return "";
+            return KostensatzText(r.Table.Columns.Contains(KatalogkostenUrsprungSchema.SPALTE_ID_STAMM),
+                                  Convert.ToInt32(r["ID"], CultureInfo.InvariantCulture));
+        }
+
+        /// <summary>
+        /// <b>Der Kostensatz c_cap [€/kWh] des Satzes <paramref name="id"/></b> (Projektkopie oder Katalog) als Text in
+        /// der Kultur des Anwenders — Satzvorlage der Projektkopie, dann des Katalogsatzes
+        /// (<see cref="KatalogkostensatzCtrl.Stromspeicher"/>); leer = nicht gepflegt. Ein LESEWERT der Masken.
+        /// </summary>
+        public static string KostensatzText(bool projektkopie, int id)
+        {
+            if (id <= 0) return "";
+            double? satz = KatalogkostensatzCtrl.Stromspeicher(Tabelle(projektkopie), id).CCapEurProKwh;
+            return satz.HasValue ? satz.Value.ToString(CultureInfo.CurrentCulture) : "";
         }
 
         /// <summary>Feldwert als Text; fehlende Spalte und <c>NULL</c> ergeben „".</summary>
@@ -921,12 +940,8 @@ namespace WindowsFormsApplication1
                 Negativ(ModulKatalogProfil.FeldLeistung, m.m_Leistung),
                 Bereich(ModulKatalogProfil.FeldDegradation, m.m_Degradation, 0, 100),
                 Bereich(ModulKatalogProfil.FeldLadezustand, m.m_Ladezustand, 0, 100),
-                Negativ(ModulKatalogProfil.FeldModulkosten, m.m_Modulkosten),
                 Bereich(ModulKatalogProfil.FeldWirkungsgradRt, m.m_WirkungsgradRT, 0, 1),
                 Negativ(ModulKatalogProfil.FeldZyklen, m.m_ZyklenZugesichert),
-                Negativ(ModulKatalogProfil.FeldVerschleisskosten, m.m_Verschleisskosten),
-                Negativ(ModulKatalogProfil.FeldLeistungskosten, m.m_Leistungskosten),
-                Negativ(ModulKatalogProfil.FeldInvestitionFix, m.m_InvestitionFix),
                 Negativ(ModulKatalogProfil.FeldStandby, m.m_StandbyVerbrauch),
                 Bereich(ModulKatalogProfil.FeldSelbstentladung, m.m_Selbstentladung, 0, 100));
         }
@@ -1052,9 +1067,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Das Gewerk des Rückwegs „In die Datenbank übernehmen…"</b> (Konzept Katalogauswahl 5.2, KA‑E‑9): Kopie
         /// <see cref="TABELLE_PROJEKT"/>, Katalog <see cref="TABLE"/>, Anlage über <c>ID_SP</c>, Kostenkomponente 5.
-        /// <b>Keine Kindtabellen</b> — Kapazität, Leistung, Gerätewerte und die vier Kostenposten (<c>Modulkosten</c>,
-        /// <c>Leistungskosten</c>, <c>Investition_Fix</c>, <c>Verschleisskosten</c>) stehen als Spalten am Satz und gehen
-        /// mit der Schnittmenge. Anlagenbezogen und damit im Projekt bleiben Energieträger und Betriebsführung
+        /// <b>Keine Kindtabellen</b> — Kapazität, Leistung und Gerätewerte stehen als Spalten am Satz und gehen
+        /// mit der Schnittmenge. Die Kosten gehen als Kostenpositionen der Anlage: Sie werden Satzvorlagen des Satzes;
+        /// die Verweise der Kopie gehen nicht mit (eine Anlage ohne Position ergibt einen Satz ohne Kosten). Anlagenbezogen und damit im Projekt bleiben Energieträger und Betriebsführung
         /// (<c>Tab_StromspeicherVariante</c> hängt an der Anlage, nicht an der Kopie). Prüfregel wie beim Speichern
         /// (<see cref="Pruefen"/>).
         /// </summary>
@@ -1078,7 +1093,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>„In die Datenbank übernehmen…"</b> — die Projektkopien als neue Katalogsätze oder als Ersatz ihres Ursprungs,
-        /// alles oder nichts (<see cref="Katalogrueckweg.Uebernehmen"/>): Gerätespalten samt den vier Kostenposten,
+        /// alles oder nichts (<see cref="Katalogrueckweg.Uebernehmen"/>): Gerätespalten,
         /// Betriebs- und Investitionspositionen der Anlage als Satzvorlagen. Der Name der Kopie bleibt (KA‑E‑15).
         /// </summary>
         public static Rueckwegergebnis AusProjektUebernehmen(IReadOnlyList<Rueckwegauftrag> auftraege)

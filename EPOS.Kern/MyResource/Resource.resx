@@ -1127,9 +1127,6 @@
   <data name="MODK_LBL_LEISTUNG" xml:space="preserve">
     <value>Leistung</value>
   </data>
-  <data name="MODK_LBL_MODULKOSTEN" xml:space="preserve">
-    <value>Modulkosten</value>
-  </data>
   <data name="MODK_LBL_KOSTENSATZ" xml:space="preserve">
     <value>Kostensatz</value>
   </data>
@@ -4078,20 +4075,8 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="SP_LABEL_ZYKLEN" xml:space="preserve">
     <value>Zyklen (zugesichert)</value>
   </data>
-  <data name="SP_LABEL_VERSCHLEISSKOSTEN" xml:space="preserve">
-    <value>Verschleißkosten</value>
-  </data>
-  <data name="SP_LABEL_LEISTUNGSKOSTEN" xml:space="preserve">
-    <value>Leistungskosten</value>
-  </data>
-  <data name="SP_LABEL_INVESTITION_FIX" xml:space="preserve">
-    <value>Investition (fix)</value>
-  </data>
   <data name="SP_LABEL_STANDBY" xml:space="preserve">
     <value>Standby-Verbrauch</value>
-  </data>
-  <data name="SP_EINHEIT_ZYKLUSKOSTEN" xml:space="preserve">
-    <value>€/(kWh·Zyklus)</value>
   </data>
   <data name="SP_PARAM_GRUPPE_BETRIEBSFUEHRUNG" xml:space="preserve">
     <value>Betriebsführung (aktive Variante)</value>
@@ -5618,8 +5603,8 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="SP_LABEL_ENERGIE_KURZ" xml:space="preserve">
     <value>Energie (Kapazität)</value>
   </data>
-  <data name="SP_LABEL_MODULKOSTEN" xml:space="preserve">
-    <value>Modulkosten [€/kWh]:</value>
+  <data name="SP_LABEL_KOSTENSATZ" xml:space="preserve">
+    <value>Kostensatz [€/kWh]:</value>
   </data>
   <data name="SP_PARAM_LABEL_KAPAZITAET" xml:space="preserve">
     <value>Kapazität [kWh]</value>
@@ -25260,23 +25245,11 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_MODK_DEGRADATION_ERL" xml:space="preserve">
     <value>Der jährliche Kapazitätsverlust des Speichers.</value>
   </data>
-  <data name="KI_DLG_MODK_KOSTEN_ERL" xml:space="preserve">
-    <value>Die kapazitätsbezogenen Modulkosten des Speichers.</value>
-  </data>
   <data name="KI_DLG_MODK_WG_RT_ERL" xml:space="preserve">
     <value>Der Umlaufwirkungsgrad über Laden und Entladen als Faktor; leer heißt nicht gepflegt.</value>
   </data>
   <data name="KI_DLG_MODK_ZYKLEN_ERL" xml:space="preserve">
     <value>Die Zyklenlebensdauer des Speichers; leer heißt nicht gepflegt.</value>
-  </data>
-  <data name="KI_DLG_MODK_VERSCHLEISS_ERL" xml:space="preserve">
-    <value>Die Verschleißkosten je umgesetzter Kilowattstunde; leer heißt nicht gepflegt.</value>
-  </data>
-  <data name="KI_DLG_MODK_LEISTUNGSKOSTEN_ERL" xml:space="preserve">
-    <value>Der leistungsbezogene Anteil der Investition; leer heißt nicht gepflegt.</value>
-  </data>
-  <data name="KI_DLG_MODK_INVEST_FIX_ERL" xml:space="preserve">
-    <value>Der feste Anteil der Investition je Speicher, unabhängig von Größe und Leistung.</value>
   </data>
   <data name="KI_DLG_MODK_STANDBY_ERL" xml:space="preserve">
     <value>Die Bereitschaftsleistung des Speichers im Ruhezustand.</value>
