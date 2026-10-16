@@ -3718,6 +3718,26 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt KaeltebedarfsprofilVorlagenSchema.SCHRITT (KBP-2): Z_Projekt_Kaeltebedarf.Eingabeart (Vorgabe 'jahr'),
+            //      Art-Vorschlag Kaelte_Art an Tab_Kaeltebedarf_STAMM/Tab_Kaeltebedarf, Saat der Vorlagen 7-16 samt
+            //      Katalogschluessel. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_Kaeltevorlagen. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: kein Referenzprojekt ordnet einen Kaeltebedarf der neuen Vorlagen zu, jede
+            //      Zuordnung rechnet weiter mit der Jahressumme; die Zeilen 1-6 bleiben samt Pruefsumme bytegleich.
+            string nrKbp2 = KaeltebedarfsprofilVorlagenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKbp2 + " - Kaeltebedarfsvorlagen und Eingabeart: " +
+                              (KaeltebedarfsprofilVorlagenSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKbp2 = new List<string>();
+                angelegt += KaeltebedarfsprofilVorlagenSchema.Ausfuehren(berichtKbp2);
+                foreach (string zeile in berichtKbp2)
+                    Console.WriteLine("Schritt " + nrKbp2 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKbp2 + " - vollstaendig: " + KaeltebedarfsprofilVorlagenSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             // ---- Schritt WasserpreisTraegerkarteSchema.SCHRITT (KB-7a): Traeger Wasser (WATER, m3), Uebernahme der
             //      Anlagenpreise in energy_project_settings, Entfall von Tab_Energieanlagen.Wasserpreis_EUR_m3. Aus
             //      DERSELBEN Quelle wie SchemaMigration.Schritt_WasserpreisTraegerkarte. Wiederholbar, ergebnisneutral.

@@ -1088,6 +1088,11 @@ namespace WindowsFormsApplication1
         /// Katalog und Projektkopie (<see cref="StromspeicherKostenSchema"/>). <b>Ergebnisgleich:</b> Der Rechenweg
         /// liest dieselben Sätze aus Position und Satzvorlage. <b>Neue Katalogfassung:</b> Die Prüfsumme jedes
         /// Stromspeichers ändert sich, der Schritt bildet sie für unveränderte Sätze neu.
+        /// Danach, mit SCHEMASCHRITT A DER KÄLTEBEDARFSPROFILE (KBP-2), steht das Ziel auf
+        /// <see cref="KaeltebedarfsprofilVorlagenSchema.SCHRITT"/>: <c>Z_Projekt_Kaeltebedarf.Eingabeart</c> (Vorgabe 'jahr'), der
+        /// Art-Vorschlag <c>Kaelte_Art</c> an <c>Tab_Kaeltebedarf_STAMM</c> und <c>Tab_Kaeltebedarf</c> und die Saat der
+        /// Vorlagen 7–16 (<see cref="KaeltebedarfsprofilVorlagenSchema"/>). <b>Ergebnisneutral:</b> Jede Zuordnung rechnet weiter mit
+        /// der Jahressumme, die Zeilen 1–6 bleiben bytegleich samt Prüfsumme.
         /// Danach, mit dem WASSERPREIS IN DER TRÄGERKARTE (KB-7a), steht das Ziel auf
         /// <see cref="WasserpreisTraegerkarteSchema.SCHRITT"/>: Träger „Wasser“ (Preismodell <c>WATER</c>, Einheit m³),
         /// Übernahme der Anlagenpreise in <c>energy_project_settings</c> (je Projekt die Anlage mit der kleinsten ID,

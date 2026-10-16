@@ -487,6 +487,17 @@ namespace WindowsFormsApplication1
                     .StromtraegerDesProjekts(projektId).Select(t => (t.Key, t.Value)).ToList();
                 // K6b (E34): der Stromtraeger des Projekts - der eigene Zaehler wirkt nur bei abweichendem Kuehltraeger.
                 gaben["ProjektStromtraeger"] = Kaeltestromabrechnung.Projekttraeger(projektId);
+                // KBP-3b (Konzept Kaeltebedarfsprofile 5): die vier Blaetter und die Kennzahlenzeile der markierten
+                // Kaeltezeile - gerechnet im Kern mit dem Arbeitsstand des Dialogs: Jahressummen, Kalender und die dort
+                // bearbeiteten (noch ungespeicherten) Monatsanteile und Wochenprofile.
+                gaben["KaelteGrafik"] = new Func<BedarfsProfilZeile, IReadOnlyList<BedarfsProfilZeile>, Kaelteprofilbilder>(
+                    (markiert, alle) =>
+                    {
+                        var zeilenDesDialogs = alle.Select(z => new Kaeltegrafikzeile(z.Name, z.Summe, z.KalenderId,
+                            z.ProfilGeaendert ? z.Monatsanteile : null, z.ProfilGeaendert ? z.Wochenprofil : null)).ToList();
+                        int platz = alle.ToList().IndexOf(markiert);
+                        return platz < 0 ? null : KaelteprofilgrafikCtrl.Rechnen(projektId, zeilenDesDialogs, zeilenDesDialogs[platz]);
+                    });
             }
 
             // Brauchwasser (5.2): Das OK schreibt Zuordnungen und Zapfprofil in EINEM Vorgang,
@@ -670,7 +681,7 @@ namespace WindowsFormsApplication1
 
             // PW1 Stufe 1: die Vorbelegung des Katalogs - die Kopie übernimmt sie beim Speichern.
             (double? vorlauf, double? ruecklauf) = BedarfStammCtrl.Temperaturpaar(art, name);
-            return new BedarfsProfilZeile
+            var zeile = new BedarfsProfilZeile
             {
                 IdZ = naechsteId[0]++,      // noch nicht gespeichert, also noch unbekannt
                 IdStamm = idStamm,
@@ -679,6 +690,8 @@ namespace WindowsFormsApplication1
                 Vorlauf = vorlauf,
                 Ruecklauf = ruecklauf
             };
+            if (art == BedarfsArt.Kaelte) KaeltebedarfsprofilAbbildung.Aufgenommen(zeile, name);
+            return zeile;
         }
 
         private static bool KatalogLoeschen(BedarfsArt art, string name)

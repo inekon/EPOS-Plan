@@ -27353,6 +27353,9 @@ Do you want to allow this?</value>
   <data name="ZPG_AUS_SCHNELLAUSLEGUNG" xml:space="preserve">
     <value>Quick design</value>
   </data>
+  <data name="ZPG_AUS_SCHNELLAUSLEGUNG_V4" xml:space="preserve">
+    <value>Quick design V4</value>
+  </data>
   <data name="ZPG_AUS_ENTWURFSSTAND" xml:space="preserve">
     <value>Draft status — A100/A1 are drafts; application to be agreed separately.</value>
   </data>
@@ -30440,11 +30443,17 @@ Do you want to allow this?</value>
   <data name="ZPG_SATZ_AUSHINWEIS_TEMPERATUR_GROSSANLAGE" xml:space="preserve">
     <value>At {0:0.###} °C the design gives {1:0} l — a large system according to DVGW W 551; the group therefore calculates with the minimum temperature {2:0.###} °C.</value>
   </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_EMPFEHLUNG_V4" xml:space="preserve">
+    <value>Quick design according to template V4, without cumulative curve: the A100 design values are missing from the catalogue; the recommendation is the nominal volume {0:0} l of the method comparison (band up to {1:0} l). The cumulative curve is only calculated with a catalogue package that contains these values.</value>
+  </data>
   <data name="ZPG_SATZ_AUSHINWEIS_TEMPERATUR_GROSSANLAGE_BLEIBT" xml:space="preserve">
     <value>{0} The group stays at {1:0.###} °C.</value>
   </data>
   <data name="ZPG_SATZ_AUSTEXT_VERMERK_SCHNELLAUSLEGUNG" xml:space="preserve">
     <value>Quick design</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_VERMERK_VORLAGE_V4" xml:space="preserve">
+    <value>Quick design according to template V4, without cumulative curve</value>
   </data>
   <data name="ZPG_SATZ_AUSTEXT_VERMERK_SPITZEN" xml:space="preserve">
     <value>Peaks underestimated</value>
@@ -31366,6 +31375,9 @@ Do you want to allow this?</value>
   </data>
   <data name="ZPG_SATZ_HERKUNFT_BEDARFSTAGFAKTOR" xml:space="preserve">
     <value>(θ_draw − θ_cold,d) / (θ_draw − θ_cold,d,catalogue) = ({0:0.###} − {1:0.###}) / ({0:0.###} − {2:0.###})</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_EMPFEHLUNG_V4" xml:space="preserve">
+    <value>Quick design according to template V4, without cumulative curve: nominal volume {0:0} l of the band up to {1:0} l</value>
   </data>
   <data name="ZPG_SATZ_HERKUNFT_GEWICHT_FLAECHE" xml:space="preserve">
     <value>weighted by area</value>
@@ -38786,6 +38798,9 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="ZPG_GROESSE_AUSLEGUNG_LADEFENSTER" xml:space="preserve">
     <value>Design, charging window</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_EMPFEHLUNG" xml:space="preserve">
+    <value>Design, recommendation</value>
   </data>
   <data name="ZPGK_IMPORT_DATEI_ZIP" xml:space="preserve">
     <value>Select ZIP package…</value>
@@ -56277,6 +56292,195 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="BKAL_MSG_FERIEN_FEHLEN" xml:space="preserve">
     <value>Holiday state and holidays of "{0}" copied. The building has {1} holiday periods, the calendar takes four: the first four are copied, {2} are missing.</value>
+  </data>
+  <data name="KBP_GRUPPE_EINGABEART" xml:space="preserve">
+    <value>Input method</value>
+  </data>
+  <data name="KBP_LBL_EINGABEART" xml:space="preserve">
+    <value>Input method:</value>
+  </data>
+  <data name="KBP_EINGABE_JAHR" xml:space="preserve">
+    <value>Annual total with template</value>
+  </data>
+  <data name="KBP_EINGABE_MONAT" xml:space="preserve">
+    <value>Monthly values</value>
+  </data>
+  <data name="KBP_EINGABE_WOCHE" xml:space="preserve">
+    <value>Weekly profile</value>
+  </data>
+  <data name="KBP_EINGABE_TYPTAG" xml:space="preserve">
+    <value>Typical days (to follow)</value>
+  </data>
+  <data name="KBP_HINW_TYPTAG_FOLGT" xml:space="preserve">
+    <value>Typical days will follow in a later version.</value>
+  </data>
+  <data name="KBP_HINW_EINGABEART" xml:space="preserve">
+    <value>Monthly values and weekly profile change the project copy of this assignment, never the catalogue. If two assignments share one copy, the edited one gets its own copy on OK.</value>
+  </data>
+  <data name="KBP_GRUPPE_MONATE" xml:space="preserve">
+    <value>Monthly values</value>
+  </data>
+  <data name="KBP_LBL_MONATSEINHEIT" xml:space="preserve">
+    <value>Input in:</value>
+  </data>
+  <data name="KBP_EINHEIT_PROZENT" xml:space="preserve">
+    <value>% of the annual total</value>
+  </data>
+  <data name="KBP_MONATE" xml:space="preserve">
+    <value>January;February;March;April;May;June;July;August;September;October;November;December</value>
+  </data>
+  <data name="KBP_SUMME_MWH" xml:space="preserve">
+    <value>Annual total from the months: {0} MWh</value>
+  </data>
+  <data name="KBP_SUMME_PROZENT" xml:space="preserve">
+    <value>Sum of shares: {0} % (annual total {1} MWh)</value>
+  </data>
+  <data name="KBP_MSG_SUMME_PROZENT" xml:space="preserve">
+    <value>The monthly shares add up to {0} %; together they must add up to 100 %.</value>
+  </data>
+  <data name="KBP_MSG_MONAT_NEGATIV" xml:space="preserve">
+    <value>Every monthly value must be a number of 0 or more.</value>
+  </data>
+  <data name="KBP_MSG_MONATE_NULL" xml:space="preserve">
+    <value>The monthly values add up to 0 – at least one month must carry demand.</value>
+  </data>
+  <data name="KBP_GRUPPE_WOCHE" xml:space="preserve">
+    <value>Weekly profile</value>
+  </data>
+  <data name="KBP_LBL_ANSICHT" xml:space="preserve">
+    <value>View:</value>
+  </data>
+  <data name="KBP_ANSICHT_DREI" xml:space="preserve">
+    <value>Weekday | Saturday | Sunday</value>
+  </data>
+  <data name="KBP_ANSICHT_168" xml:space="preserve">
+    <value>168 h</value>
+  </data>
+  <data name="KBP_LBL_TAG" xml:space="preserve">
+    <value>Day:</value>
+  </data>
+  <data name="KBP_TAGE_DREI" xml:space="preserve">
+    <value>Weekday (Mon–Fri);Saturday;Sunday</value>
+  </data>
+  <data name="KBP_WOCHENTAGE" xml:space="preserve">
+    <value>Monday;Tuesday;Wednesday;Thursday;Friday;Saturday;Sunday</value>
+  </data>
+  <data name="KBP_HINW_WERKTAGE_UNGLEICH" xml:space="preserve">
+    <value>Weekdays differ — 168 h view</value>
+  </data>
+  <data name="KBP_HINW_WOCHE" xml:space="preserve">
+    <value>Relative values as in the type catalogue; the monthly values set the amount. With an operating calendar, public holidays count as Sunday.</value>
+  </data>
+  <data name="KBP_MSG_WOCHE" xml:space="preserve">
+    <value>The weekly profile needs values of 0 or more and at least one hour with demand.</value>
+  </data>
+  <data name="KBP_BTN_TAG_KOPIEREN" xml:space="preserve">
+    <value>Copy day</value>
+  </data>
+  <data name="KBP_BTN_TAG_EINFUEGEN" xml:space="preserve">
+    <value>Paste day</value>
+  </data>
+  <data name="KBP_STUNDE" xml:space="preserve">
+    <value>{0}:00</value>
+  </data>
+  <data name="KBP_KI_EINGABEART_ERL" xml:space="preserve">
+    <value>Input method of the selected cooling row: annual total with template, monthly values or weekly profile; typical days follow.</value>
+  </data>
+  <data name="KBP_GRAFIK_GRUPPE" xml:space="preserve">
+    <value>Chart of the selected row</value>
+  </data>
+  <data name="KBP_REITER_JAHRESGANG" xml:space="preserve">
+    <value>Annual profile</value>
+  </data>
+  <data name="KBP_REITER_MONATE" xml:space="preserve">
+    <value>Months</value>
+  </data>
+  <data name="KBP_REITER_WOCHE" xml:space="preserve">
+    <value>Week</value>
+  </data>
+  <data name="KBP_REITER_DAUERLINIE" xml:space="preserve">
+    <value>Duration curve</value>
+  </data>
+  <data name="KBP_TITEL_JAHRESGANG" xml:space="preserve">
+    <value>Cooling demand over the year</value>
+  </data>
+  <data name="KBP_TITEL_MONATE" xml:space="preserve">
+    <value>Cooling demand per month</value>
+  </data>
+  <data name="KBP_TITEL_WOCHE" xml:space="preserve">
+    <value>Typical week by day type</value>
+  </data>
+  <data name="KBP_TITEL_DAUERLINIE" xml:space="preserve">
+    <value>Annual duration curve of the cooling demand</value>
+  </data>
+  <data name="KBP_ACHSE_LEISTUNG" xml:space="preserve">
+    <value>Cooling load [kW]</value>
+  </data>
+  <data name="KBP_ACHSE_WOCHENSTUNDE" xml:space="preserve">
+    <value>Hour of the week from Monday 0:00</value>
+  </data>
+  <data name="KBP_ACHSE_RANG" xml:space="preserve">
+    <value>Hours of the year, sorted in descending order</value>
+  </data>
+  <data name="KBP_REIHE_KAELTE" xml:space="preserve">
+    <value>Cooling demand</value>
+  </data>
+  <data name="KBP_REIHE_WOCHE" xml:space="preserve">
+    <value>Working day, Saturday, Sunday or public holiday</value>
+  </data>
+  <data name="KBP_REIHE_FERIEN" xml:space="preserve">
+    <value>Company holiday</value>
+  </data>
+  <data name="KBP_KZ_SUMME" xml:space="preserve">
+    <value>Annual total</value>
+  </data>
+  <data name="KBP_KZ_SPITZE" xml:space="preserve">
+    <value>Peak</value>
+  </data>
+  <data name="KBP_KZ_VBH" xml:space="preserve">
+    <value>Full-load hours</value>
+  </data>
+  <data name="KBP_KZ_GRUNDLAST" xml:space="preserve">
+    <value>Base-load share</value>
+  </data>
+  <data name="KBP_GRAFIK_HERLEITUNG" xml:space="preserve">
+    <value>Annual profile, week and duration curve show the selected row with the annual total of this dialog; the months stack all rows.</value>
+  </data>
+  <data name="KBP_GRAFIK_OHNE" xml:space="preserve">
+    <value>There is no profile for the selected row.</value>
+  </data>
+  <data name="KBP_GRAFIK_ERL" xml:space="preserve">
+    <value>Chart of the selected cooling row: annual profile, months, week and duration curve with key figures (display only).</value>
+  </data>
+  <data name="KBP_WOCHE_EINTRAG" xml:space="preserve">
+    <value>CW {0} ({1}–{2})</value>
+  </data>
+  <data name="KBP_TITEL_KALENDERWOCHE" xml:space="preserve">
+    <value>Cooling demand {0}</value>
+  </data>
+  <data name="KBP_LBL_KALENDERWOCHE" xml:space="preserve">
+    <value>Calendar week</value>
+  </data>
+  <data name="KBP_TAGESART_WERKTAG" xml:space="preserve">
+    <value>Working day</value>
+  </data>
+  <data name="KBP_TAGESART_SAMSTAG" xml:space="preserve">
+    <value>Saturday</value>
+  </data>
+  <data name="KBP_TAGESART_SONNTAG" xml:space="preserve">
+    <value>Sunday/public holiday</value>
+  </data>
+  <data name="KBP_TAGESART_FERIEN" xml:space="preserve">
+    <value>Closure period</value>
+  </data>
+  <data name="KBP_TAGESART_AUSSERHALB" xml:space="preserve">
+    <value>outside the year</value>
+  </data>
+  <data name="KBP_HINW_GRAFIKWOCHE" xml:space="preserve">
+    <value>Background by day type of the operating calendar; calendar weeks per ISO 8601 within the year grid, starting with the week of the peak.</value>
+  </data>
+  <data name="KBP_GRAFIK_HERLEITUNG_ARBEIT" xml:space="preserve">
+    <value>The working state of this dialog is calculated – annual total, monthly values, weekly profile and operating calendar, unsaved ones included. Annual profile, week and duration curve show the selected row; the months stack all rows.</value>
   </data>
 </root>
 

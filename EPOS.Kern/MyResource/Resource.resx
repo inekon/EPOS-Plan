@@ -27360,6 +27360,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_AUS_SCHNELLAUSLEGUNG" xml:space="preserve">
     <value>Schnellauslegung</value>
   </data>
+  <data name="ZPG_AUS_SCHNELLAUSLEGUNG_V4" xml:space="preserve">
+    <value>Schnellauslegung V4</value>
+  </data>
   <data name="ZPG_AUS_ENTWURFSSTAND" xml:space="preserve">
     <value>Entwurfsstand — A100/A1 sind Entwürfe, Anwendung besonders zu vereinbaren.</value>
   </data>
@@ -30447,11 +30450,17 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_SATZ_AUSHINWEIS_TEMPERATUR_GROSSANLAGE" xml:space="preserve">
     <value>Mit {0:0.###} °C ergibt die Auslegung {1:0} l — eine Großanlage nach DVGW W 551; die Gruppe rechnet deshalb mit der Mindesttemperatur {2:0.###} °C.</value>
   </data>
+  <data name="ZPG_SATZ_AUSHINWEIS_EMPFEHLUNG_V4" xml:space="preserve">
+    <value>Schnellauslegung nach Vorlage V4, ohne Summenlinie: Die Auslegungswerte der A100 fehlen im Katalog; empfohlen ist der Nenninhalt {0:0} l des Verfahrensvergleichs (Band bis {1:0} l). Die Summenlinie rechnet erst mit einem Katalogpaket, das diese Werte führt.</value>
+  </data>
   <data name="ZPG_SATZ_AUSHINWEIS_TEMPERATUR_GROSSANLAGE_BLEIBT" xml:space="preserve">
     <value>{0} Die Gruppe bleibt bei {1:0.###} °C.</value>
   </data>
   <data name="ZPG_SATZ_AUSTEXT_VERMERK_SCHNELLAUSLEGUNG" xml:space="preserve">
     <value>Schnellauslegung</value>
+  </data>
+  <data name="ZPG_SATZ_AUSTEXT_VERMERK_VORLAGE_V4" xml:space="preserve">
+    <value>Schnellauslegung nach Vorlage V4, ohne Summenlinie</value>
   </data>
   <data name="ZPG_SATZ_AUSTEXT_VERMERK_SPITZEN" xml:space="preserve">
     <value>Spitzen unterschätzt</value>
@@ -31373,6 +31382,9 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ZPG_SATZ_HERKUNFT_BEDARFSTAGFAKTOR" xml:space="preserve">
     <value>(θ_Zapf − θ_KW,A) / (θ_Zapf − θ_KW,A,Katalog) = ({0:0.###} − {1:0.###}) / ({0:0.###} − {2:0.###})</value>
+  </data>
+  <data name="ZPG_SATZ_HERKUNFT_EMPFEHLUNG_V4" xml:space="preserve">
+    <value>Schnellauslegung nach Vorlage V4, ohne Summenlinie: Nenninhalt {0:0} l des Bandes bis {1:0} l</value>
   </data>
   <data name="ZPG_SATZ_HERKUNFT_GEWICHT_FLAECHE" xml:space="preserve">
     <value>flächengewichtet</value>
@@ -38793,6 +38805,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="ZPG_GROESSE_AUSLEGUNG_LADEFENSTER" xml:space="preserve">
     <value>Auslegung, Ladefenster</value>
+  </data>
+  <data name="ZPG_GROESSE_AUSLEGUNG_EMPFEHLUNG" xml:space="preserve">
+    <value>Auslegung, Empfehlung</value>
   </data>
   <data name="ZPGK_IMPORT_DATEI_ZIP" xml:space="preserve">
     <value>ZIP-Paket wählen…</value>
@@ -56284,6 +56299,195 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="BKAL_MSG_FERIEN_FEHLEN" xml:space="preserve">
     <value>Feiertagsland und Ferien von „{0}“ übernommen. Das Gebäude führt {1} Ferienzeiträume, der Kalender nimmt vier auf: Übernommen sind die ersten vier, {2} fehlen.</value>
+  </data>
+  <data name="KBP_GRUPPE_EINGABEART" xml:space="preserve">
+    <value>Eingabeart</value>
+  </data>
+  <data name="KBP_LBL_EINGABEART" xml:space="preserve">
+    <value>Eingabeart:</value>
+  </data>
+  <data name="KBP_EINGABE_JAHR" xml:space="preserve">
+    <value>Jahressumme mit Vorlage</value>
+  </data>
+  <data name="KBP_EINGABE_MONAT" xml:space="preserve">
+    <value>Monatswerte</value>
+  </data>
+  <data name="KBP_EINGABE_WOCHE" xml:space="preserve">
+    <value>Wochenprofil</value>
+  </data>
+  <data name="KBP_EINGABE_TYPTAG" xml:space="preserve">
+    <value>Typtage (folgt)</value>
+  </data>
+  <data name="KBP_HINW_TYPTAG_FOLGT" xml:space="preserve">
+    <value>Typtage folgen in einer späteren Fassung.</value>
+  </data>
+  <data name="KBP_HINW_EINGABEART" xml:space="preserve">
+    <value>Monatswerte und Wochenprofil ändern die Projektkopie dieser Zuordnung, nie den Katalog. Teilen sich zwei Zuordnungen eine Kopie, erhält die bearbeitete beim OK eine eigene.</value>
+  </data>
+  <data name="KBP_GRUPPE_MONATE" xml:space="preserve">
+    <value>Monatswerte</value>
+  </data>
+  <data name="KBP_LBL_MONATSEINHEIT" xml:space="preserve">
+    <value>Eingabe in:</value>
+  </data>
+  <data name="KBP_EINHEIT_PROZENT" xml:space="preserve">
+    <value>% der Jahressumme</value>
+  </data>
+  <data name="KBP_MONATE" xml:space="preserve">
+    <value>Januar;Februar;März;April;Mai;Juni;Juli;August;September;Oktober;November;Dezember</value>
+  </data>
+  <data name="KBP_SUMME_MWH" xml:space="preserve">
+    <value>Jahressumme aus den Monaten: {0} MWh</value>
+  </data>
+  <data name="KBP_SUMME_PROZENT" xml:space="preserve">
+    <value>Summe der Anteile: {0} % (Jahressumme {1} MWh)</value>
+  </data>
+  <data name="KBP_MSG_SUMME_PROZENT" xml:space="preserve">
+    <value>Die Monatsanteile ergeben {0} %, zusammen müssen sie 100 % ergeben.</value>
+  </data>
+  <data name="KBP_MSG_MONAT_NEGATIV" xml:space="preserve">
+    <value>Jeder Monatswert muss eine Zahl ab 0 sein.</value>
+  </data>
+  <data name="KBP_MSG_MONATE_NULL" xml:space="preserve">
+    <value>Die Monatswerte ergeben zusammen 0 – mindestens ein Monat muss Bedarf tragen.</value>
+  </data>
+  <data name="KBP_GRUPPE_WOCHE" xml:space="preserve">
+    <value>Wochenprofil</value>
+  </data>
+  <data name="KBP_LBL_ANSICHT" xml:space="preserve">
+    <value>Ansicht:</value>
+  </data>
+  <data name="KBP_ANSICHT_DREI" xml:space="preserve">
+    <value>Werktag | Samstag | Sonntag</value>
+  </data>
+  <data name="KBP_ANSICHT_168" xml:space="preserve">
+    <value>168 h</value>
+  </data>
+  <data name="KBP_LBL_TAG" xml:space="preserve">
+    <value>Tag:</value>
+  </data>
+  <data name="KBP_TAGE_DREI" xml:space="preserve">
+    <value>Werktag (Mo–Fr);Samstag;Sonntag</value>
+  </data>
+  <data name="KBP_WOCHENTAGE" xml:space="preserve">
+    <value>Montag;Dienstag;Mittwoch;Donnerstag;Freitag;Samstag;Sonntag</value>
+  </data>
+  <data name="KBP_HINW_WERKTAGE_UNGLEICH" xml:space="preserve">
+    <value>Werktage unterscheiden sich — 168-h-Ansicht</value>
+  </data>
+  <data name="KBP_HINW_WOCHE" xml:space="preserve">
+    <value>Relative Werte wie im Typkatalog; die Monatswerte bestimmen die Menge. Mit einem Betriebskalender zählen Feiertage wie Sonntag.</value>
+  </data>
+  <data name="KBP_MSG_WOCHE" xml:space="preserve">
+    <value>Das Wochenprofil braucht Werte ab 0 und mindestens eine Stunde mit Bedarf.</value>
+  </data>
+  <data name="KBP_BTN_TAG_KOPIEREN" xml:space="preserve">
+    <value>Tag kopieren</value>
+  </data>
+  <data name="KBP_BTN_TAG_EINFUEGEN" xml:space="preserve">
+    <value>Tag einfügen</value>
+  </data>
+  <data name="KBP_STUNDE" xml:space="preserve">
+    <value>{0} Uhr</value>
+  </data>
+  <data name="KBP_KI_EINGABEART_ERL" xml:space="preserve">
+    <value>Eingabeart der markierten Kältezeile: Jahressumme mit Vorlage, Monatswerte oder Wochenprofil; Typtage folgen.</value>
+  </data>
+  <data name="KBP_GRAFIK_GRUPPE" xml:space="preserve">
+    <value>Grafik der markierten Zeile</value>
+  </data>
+  <data name="KBP_REITER_JAHRESGANG" xml:space="preserve">
+    <value>Jahresgang</value>
+  </data>
+  <data name="KBP_REITER_MONATE" xml:space="preserve">
+    <value>Monate</value>
+  </data>
+  <data name="KBP_REITER_WOCHE" xml:space="preserve">
+    <value>Woche</value>
+  </data>
+  <data name="KBP_REITER_DAUERLINIE" xml:space="preserve">
+    <value>Dauerlinie</value>
+  </data>
+  <data name="KBP_TITEL_JAHRESGANG" xml:space="preserve">
+    <value>Kältebedarf im Jahresgang</value>
+  </data>
+  <data name="KBP_TITEL_MONATE" xml:space="preserve">
+    <value>Kältebedarf je Monat</value>
+  </data>
+  <data name="KBP_TITEL_WOCHE" xml:space="preserve">
+    <value>Typische Woche nach Tagesarten</value>
+  </data>
+  <data name="KBP_TITEL_DAUERLINIE" xml:space="preserve">
+    <value>Jahresdauerlinie des Kältebedarfs</value>
+  </data>
+  <data name="KBP_ACHSE_LEISTUNG" xml:space="preserve">
+    <value>Kältelast [kW]</value>
+  </data>
+  <data name="KBP_ACHSE_WOCHENSTUNDE" xml:space="preserve">
+    <value>Stunde der Woche ab Montag 0 Uhr</value>
+  </data>
+  <data name="KBP_ACHSE_RANG" xml:space="preserve">
+    <value>Stunden im Jahr, absteigend sortiert</value>
+  </data>
+  <data name="KBP_REIHE_KAELTE" xml:space="preserve">
+    <value>Kältebedarf</value>
+  </data>
+  <data name="KBP_REIHE_WOCHE" xml:space="preserve">
+    <value>Werktag, Samstag, Sonntag bzw. Feiertag</value>
+  </data>
+  <data name="KBP_REIHE_FERIEN" xml:space="preserve">
+    <value>Ferientag</value>
+  </data>
+  <data name="KBP_KZ_SUMME" xml:space="preserve">
+    <value>Jahressumme</value>
+  </data>
+  <data name="KBP_KZ_SPITZE" xml:space="preserve">
+    <value>Spitze</value>
+  </data>
+  <data name="KBP_KZ_VBH" xml:space="preserve">
+    <value>Vollbenutzungsstunden</value>
+  </data>
+  <data name="KBP_KZ_GRUNDLAST" xml:space="preserve">
+    <value>Grundlast-Anteil</value>
+  </data>
+  <data name="KBP_GRAFIK_HERLEITUNG" xml:space="preserve">
+    <value>Jahresgang, Woche und Dauerlinie zeigen die markierte Zeile mit der Jahressumme dieses Dialogs; die Monate stapeln alle Zeilen.</value>
+  </data>
+  <data name="KBP_GRAFIK_OHNE" xml:space="preserve">
+    <value>Für die markierte Zeile liegt kein Profil vor.</value>
+  </data>
+  <data name="KBP_GRAFIK_ERL" xml:space="preserve">
+    <value>Grafik der markierten Kältezeile: Jahresgang, Monate, Woche und Dauerlinie samt Kennzahlen (nur Anzeige).</value>
+  </data>
+  <data name="KBP_WOCHE_EINTRAG" xml:space="preserve">
+    <value>KW {0} ({1}–{2})</value>
+  </data>
+  <data name="KBP_TITEL_KALENDERWOCHE" xml:space="preserve">
+    <value>Kältebedarf {0}</value>
+  </data>
+  <data name="KBP_LBL_KALENDERWOCHE" xml:space="preserve">
+    <value>Kalenderwoche</value>
+  </data>
+  <data name="KBP_TAGESART_WERKTAG" xml:space="preserve">
+    <value>Werktag</value>
+  </data>
+  <data name="KBP_TAGESART_SAMSTAG" xml:space="preserve">
+    <value>Samstag</value>
+  </data>
+  <data name="KBP_TAGESART_SONNTAG" xml:space="preserve">
+    <value>Sonntag/Feiertag</value>
+  </data>
+  <data name="KBP_TAGESART_FERIEN" xml:space="preserve">
+    <value>Ferien</value>
+  </data>
+  <data name="KBP_TAGESART_AUSSERHALB" xml:space="preserve">
+    <value>außerhalb des Jahres</value>
+  </data>
+  <data name="KBP_HINW_GRAFIKWOCHE" xml:space="preserve">
+    <value>Hintergrund nach Tagesart des Betriebskalenders; Kalenderwochen nach DIN EN ISO 8601 im Jahresraster, zuerst die Woche mit der Spitze.</value>
+  </data>
+  <data name="KBP_GRAFIK_HERLEITUNG_ARBEIT" xml:space="preserve">
+    <value>Gerechnet wird der Arbeitsstand dieses Dialogs – Jahressumme, Monatswerte, Wochenprofil und Betriebskalender, auch ungespeichert. Jahresgang, Woche und Dauerlinie zeigen die markierte Zeile, die Monate stapeln alle Zeilen.</value>
   </data>
 </root>
 

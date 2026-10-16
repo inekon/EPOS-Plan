@@ -74,7 +74,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Die Parameter, die der freie Paketteil nach seiner ersten Auslieferung hinzubekommen hat</b>
         /// (Anwenderentscheid 14.10.2026: Kaltwasser und Zirkulation, ohne die die Stufe Einfach mit dem
-        /// Paketteil allein nicht rechnet). Eine Datenbank, die den Paketteil in einem früheren Stand trägt,
+        /// Paketteil allein nicht rechnet; Anwenderauftrag 16.10.2026: das Kaltwasser der Auslegung, ohne das
+        /// die Speicherauslegung der Stufe Einfach nicht rechnet). Eine Datenbank, die den Paketteil in einem früheren Stand trägt,
         /// führt schon eine Katalogversion; <see cref="TwwPaketteilCtrl.Nachladen"/> fasst sie nicht an.
         /// <see cref="TwwPaketteilCtrl.ParameterNachtragen"/> trägt ihr diese Schlüssel nach, wo sie ihrer
         /// Katalogversion fehlen — sonst nichts. Jeder Schlüssel steht in
@@ -85,6 +86,7 @@ namespace WindowsFormsApplication1
         {
             ZapfParameter.KALTWASSER_MITTEL, ZapfParameter.KALTWASSER_AMPLITUDE, ZapfParameter.KALTWASSER_MONAT_MAXIMUM,
             ZapfParameter.ZIRKULATION_LAUFZEIT, ZapfParameter.ZIRKULATION_ANTEIL, ZapfParameter.ZIRKULATION_VERLUST_JE_METER,
+            ZapfAuslegungParameter.KALTWASSER_AUSLEGUNG,
         };
 
         /// <summary>

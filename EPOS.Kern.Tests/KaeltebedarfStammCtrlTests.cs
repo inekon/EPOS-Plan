@@ -27,9 +27,11 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
             Assert.Equal(("Tab_Kaeltetyp_STAMM", "Bezeichner"), BedarfStammCtrl.TypKatalog(BedarfsArt.Kaelte));
             Assert.Equal("Tab_Kaeltebedarf_STAMM", BedarfStammCtrl.KopfTabelle(BedarfsArt.Kaelte));
-            Assert.Equal(KaeltetypSaat.Alle.Select(s => s.Name).OrderBy(n => n, StringComparer.Ordinal),
+            // Bestand 1-6 (KaeltetypSaat) und seit KBP-2 die Vorlagen 7-16 (KaeltevorlagenSaat).
+            Assert.Equal(KaeltetypSaat.Alle.Select(s => s.Name).Concat(KaeltevorlagenSaat.Alle.Select(s => s.Name))
+                                       .OrderBy(n => n, StringComparer.Ordinal),
                          BedarfStammCtrl.Bezeichner(BedarfsArt.Kaelte).OrderBy(n => n, StringComparer.Ordinal));
-            Assert.Equal(6, BedarfStammCtrl.Typen(BedarfsArt.Kaelte).Count);
+            Assert.Equal(16, BedarfStammCtrl.Typen(BedarfsArt.Kaelte).Count);
             Assert.True(BedarfStammCtrl.Exists(BedarfsArt.Kaelte, BUERO));
             Assert.True(BedarfStammCtrl.IstReadOnly(BedarfsArt.Kaelte, BUERO));
             Assert.Equal(((double?)16, (double?)19), BedarfStammCtrl.Temperaturpaar(BedarfsArt.Kaelte, "Raumkühlung Büro"));

@@ -1071,6 +1071,9 @@ namespace EPOS.Kern.Tests
                 // Schritt StromspeicherKostenSchema.SCHRITT (KB-5): Sicherheitslauf der Saat und Entfall der vier
                 // Kostenspalten des Stromspeichers. Wiederholbar, ergebnisgleich.
                 StromspeicherKostenSchema.Ausfuehren(null);
+                // Schritt KaeltebedarfsprofilVorlagenSchema.SCHRITT (KBP-2): Eingabeart der Kaeltebedarfszuordnung, Art-Vorschlag am
+                // Kaeltekatalog und Saat der Vorlagen 7-16. Wiederholbar, ergebnisneutral.
+                KaeltebedarfsprofilVorlagenSchema.Ausfuehren(null);
                 // Schritt WasserpreisTraegerkarteSchema.SCHRITT (KB-7a): Traeger Wasser, Uebernahme der Anlagenpreise in
                 // die Traegerkarte, Entfall von Wasserpreis_EUR_m3. Wiederholbar, ergebnisneutral.
                 WasserpreisTraegerkarteSchema.Ausfuehren(null);

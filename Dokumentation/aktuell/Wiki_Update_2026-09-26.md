@@ -169,7 +169,7 @@ Brauchwasser-Zapfprofil, Berichtsvorlagen, Mehrzonenmodell und Projekttransfer.
 ## 2 Logbuch-Einträge für die Wiki-Seite „Update-Logbuch“
 
 Die Abschnitte 1.2.6 und 1.2.0.5 stehen seit dem 29.09.2026 im Wiki (Revision 723). Die Blöcke 1.2.0.6 bis 1.2.0.9 und "Version offen" sind am 10.10.2026 (#889, Revision 827) veröffentlicht, zusammengefasst nach Regel 13.4 (70 Sätze) und unter den Versionsnummern laut Anwenderentscheid 10.10.2026 "letzte Stelle um eins erhöhen": 1.2.0.10 (29 Sätze aus den Blöcken 1.2.0.9 und „Version offen“), 1.2.0.9 (1 Satz: BDEW-Standardlastprofile Strom 2025), 1.2.0.8 (4 Sätze: Berichtsseite mit vier Karten, Wirtschaftlichkeitsbericht mit drei Szenarien, Pufferspeicher-Auslegung, Sperrfenster der Wärmepumpe), 1.2.0.7 (36 Sätze: Block 1.2.0.6 und die nie veröffentlichten Sätze aus 1.2.0.5). Die Entwürfe unten bleiben als Geschichte stehen. Ein neuer Satz gehört in einen
-neuen Abschnitt; seine Version erfragt die Sitzung beim Anwender. **Anwenderentscheid 13.10.2026:** Bis zum 16.10.2026 wird keine neue Versionsnummer vergeben; neue Sätze bleiben bis dahin ohne Version im Entwurf, und es gibt keinen Upload.
+neuen Abschnitt; seine Version erfragt die Sitzung beim Anwender. **Anwenderentscheid 13.10.2026:** Bis zum 16.10.2026 wird keine neue Versionsnummer vergeben; neue Sätze bleiben bis dahin ohne Version im Entwurf, und es gibt keinen Upload. **Anwenderentscheid 16.10.2026:** Der Sammel-Upload 1.2.0.11 folgt in der Woche ab dem 19.10.2026, hochgeladen wird nach Freigabe des Anwenders.
 
 Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung, ohne
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
@@ -214,7 +214,7 @@ Version beim Anwender zu erfragen (Empfehlung: Sammelversion mit K4/K5); Wiki-Qu
 - Seit 13.10.2026: Kältebedarf, der dezentral über Split-Geräte gedeckt wird, erscheint im Kältegang, in der Kältelast, in der Strombilanz als „Kühlung dezentral“, im Deckungsgrad Kälte, im Anlagenschema, in der Simulationskonfiguration und im Bericht; der Strom wird je Kühlträger und Zähler abgerechnet.
 - Seit 13.10.2026: Die Berichtsvorlagen bieten Platzhalter für den Kältebedarf aus Profilen und die dezentrale Kühlung mit Split-Geräten (Kälte, Strom, Jahres-EER, Deckungsgrad gesamt und Anteil der Kälteerzeuger).
 
-### Version 1.2.0.11 — Brauchwasser-Zapfprofil (Entwurf, Upload am 20.10.2026) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
+### Version 1.2.0.11 — Brauchwasser-Zapfprofil (veröffentlicht am 14.10.2026, Sammel-Upload) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
 Version laut Anwender (13.10.2026); die Wiki-Quellen (Programm Dokumentation/Brauchwasser-Zapfprofil, Brauchwasser) sind fortgeschrieben, ins Wiki (wiki.epos-plan.de) wird am 20.10.2026 geladen.
 
@@ -225,7 +225,6 @@ Version laut Anwender (13.10.2026); die Wiki-Quellen (Programm Dokumentation/Bra
 - Seit 13.10.2026: Temperatur der Literanzeige und Schwelle der Stundenzählung stehen nur noch in den Einstellungen, Rubrik „Zapfprofil“.
 - Seit 13.10.2026: Der Katalogimport der Brauchwasser-Nutzungsarten spielt auch die Kennwerte nach DIN 4708 ein (Belegung je Raumzahl, Ausstattungsklassen); eine Paketvorlage liegt im Ordner „Vorlage\Katalogpaket_DIN4708“ bei.
 - Seit 13.10.2026: Für die Typtage nach VDI 4655 liegt eine Paketvorlage im Ordner „Vorlage\Typtagpaket_VDI4655“ bei.
-- Seit 14.10.2026: Die mitgelieferten Brauchwasser-Nutzungsarten rechnen im Zapfprofil-Dialog in der Stufe „Einfach“ ohne zusätzlichen Katalog.
 
 ### Version ‹Version› — Dialoge mit Katalogauswahl (Entwurf, Upload ausstehend) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
@@ -399,6 +398,9 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - Seit 13.10.2026: Eine abweichende Anzahl gleicher Kältemaschinen erscheint in den Unterschieden zum Stammprojekt und lässt sich einzeln übernehmen. (#1042)
 - Seit 14.10.2026: Im Dialog „Gesetzliche Parameter“ wird die Einheit einer neuen Zeile aus dem Schlüssel oder dem Bereich vorbelegt; EEG und Umlagen lassen sich als Bereich wählen.
 - Seit 14.10.2026: Im Bedarfsprofil-Dialog öffnet der Knopf „Betriebskalender…“ die Kalenderverwaltung direkt im Dialog, ein dort neu angelegter Kalender ist vorgewählt, und „Aus Gebäude übernehmen…“ kopiert Bundesland und Ferien eines Projektgebäudes in einen Betriebskalender. (#1088)
+- Seit 16.10.2026: Die Kältezeile im Bedarfsprofil-Dialog nimmt die Eingabeart Monatswerte (MWh oder Prozent) oder Wochenprofil (Werktag, Samstag, Sonntag und 168 Stunden) an. (#1102)
+- Seit 16.10.2026: Zehn weitere Vorlagen für Kältebedarfsprofile mit belegten Nutzungszeiten (DIN/TS 18599-10:2025-10) stehen im Katalog; jedes Profil trägt einen Art-Vorschlag. (#1101)
+- Seit 16.10.2026: Die Kältezeile zeigt Jahresgang, Monate, Woche und Dauerlinie als Blätter mit einer Kennzahlenzeile (Jahressumme, Spitze, Vollbenutzungsstunden, Grundlast-Anteil); das Blatt Woche wählt die Kalenderwoche und zeigt die Tagesarten als Hintergrund, die Grafik folgt dem ungespeicherten Stand der Zeile. (#1103, #1108)
 - 13.10.2026: Der Kostendialog und die Kostenseite gleichen die Kosten einer Anlage mit dem zentralen Kostenkatalog ab („Mit dem Kostenkatalog abgleichen…“). (#1079)
 - 13.10.2026: Arbeits-, Grund- und Leistungspreis eines Brennstoffs stehen allein in der Karte seines Energieträgers. (#1080)
 - 14.10.2026: Die Gerätekataloge führen keine Kostenfelder mehr; die Kosten eines Geräts stehen allein in der Kostenverwaltung, die Maske zeigt die Gerätekosten bzw. den Kostensatz aus der Satzvorlage des Katalogsatzes. (#1095)
@@ -1084,6 +1086,13 @@ mehr abgeschnitten) lag in der Statusdatei kein ausformulierter Satz vor — der
 vorgeschlagenen Wortlaut, damit ist die frühere Rückfrage an den Anwender erledigt.
 *Zurückgestellt:* der engere Klimadiagramm-Satz aus #396 — er geht in der Sache im Satz zu
 #404/#413 (oben) auf.
+
+### Nachtrag zu Version 1.2.0.11 (Entwurf, Upload ausstehend, Version beim Anwender erfragen)
+
+Der Sammel-Upload 1.2.0.11 lief am 14.10.2026 (Seite Brauchwasser-Zapfprofil Revision 1000, Update-Logbuch Revision 1023) vor dem Push von #1096; deshalb fehlen live der berichtigte Absatz `katalog-frei` der Zapfprofil-Seite und der folgende Satz. Quelle der Seite: `Projekte/Wiki/Programm Dokumentation - Brauchwasser-Zapfprofil.wiki`.
+
+- Seit 14.10.2026: Die mitgelieferten Brauchwasser-Nutzungsarten rechnen im Zapfprofil-Dialog in der Stufe „Einfach“ ohne zusätzlichen Katalog. (#1096)
+- Seit 16.10.2026: In der Stufe Einfach empfiehlt die Speicherauslegung im Brauchwasser-Zapfprofil auch ohne externes Katalogpaket einen Speicher-Nenninhalt, gekennzeichnet als Schnellauslegung nach Vorlage V4. (#1107)
 
 ## 3 Offene Punkte
 

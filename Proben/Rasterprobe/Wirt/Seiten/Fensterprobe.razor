@@ -29,7 +29,10 @@
       ?fall=kaelteprofile  BedarfsProfileDialog der Art Kaelte mit dem Baustein Betriebskalenderwahl (KBP-1): der Knopf
                            "Betriebskalender…" oeffnet das Blatt mit dem BetriebskalenderDialog samt "Aus Gebaeude
                            uebernehmen…" (zwei Gebaeude, eines mit sechs Ferienzeitraeumen); Ablage im Speicher.
-                           &kalender=leer: noch kein Kalender angelegt; &gebaeude=0: das Projekt hat kein Gebaeude
+                           &kalender=leer: noch kein Kalender angelegt; &gebaeude=0: das Projekt hat kein Gebaeude.
+                           Die Bearbeiten-Ueberlagerung einer Zeile zeigt die Kaeltegrafik (KBP-3b) aus einer
+                           synthetischen Reihe, die dem Arbeitsstand folgt (Jahressumme, Monatsanteile, Kalender 2 =
+                           Betriebsferien); Blatt Woche mit Wahl der Kalenderwoche (fensterprobe.mjs, Fall kaeltegrafik)
       ?meldung=1           fuer die Bannerprobe (bannerprobe.mjs): Heizkessel und BHKW melden bei
                            "Hinzufuegen" einen Fehler der Traegerwahl, der Gebaeudedialog traegt
                            "In DB uebernehmen" (weich gesperrt - der Versuch meldet den Grund);
@@ -201,6 +204,7 @@
                                   BetriebskalenderGaben="@KpKalenderGaben"
                                   TypStammGaben="@((n, b, t, neu) => new Dictionary<string, object>())"
                                   TypProfilGaben="@(() => new Dictionary<string, object>())"
+                                  KaelteGrafik="@KpGrafik"
                                   Geschlossen="@(b => Beendet(b))" />
             break;
 
@@ -518,8 +522,64 @@
     private IReadOnlyList<Katalogfilterzeile> KpKatalog => _kpKatalog ??= Zeilenbau.Voll(KpProfil, _anzahl);
     private List<BedarfsProfilZeile>? _kpZeilen;
     private List<BedarfsProfilZeile> KpZeilen => _kpZeilen ??= Enumerable.Range(1, 2)
-        .Select(i => new BedarfsProfilZeile { IdZ = i, IdStamm = 200 + i, Name = "Kälte " + i, Summe = 40 * i, Vorlauf = 16, Ruecklauf = 19 })
+        .Select(i => new BedarfsProfilZeile
+        {
+            IdZ = i, IdStamm = 200 + i, Name = "Kälte " + i, Summe = 40 * i, Vorlauf = 16, Ruecklauf = 19,
+            // KBP-3a: Eingabeart, Monatsanteile und Wochenprofil der Projektkopie fuer die beiden Editoren.
+            Eingabeart = WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_JAHR,
+            Monatsanteile = new double[] { 1, 2, 4, 7, 11, 15, 18, 17, 12, 7, 4, 2 },
+            Wochenprofil = WindowsFormsApplication1.Kaelteprofileingabe.WocheAusTagen(
+                Enumerable.Range(0, 24).Select(h => h >= 7 && h < 19 ? 1.0 : 0.2).ToArray(),
+                Enumerable.Range(0, 24).Select(h => h >= 8 && h < 14 ? 0.5 : 0.2).ToArray(),
+                Enumerable.Repeat(0.2, 24).ToArray())
+        })
         .ToList();
+
+    /// <summary>
+    /// KBP-3b: die Grafik der markierten Kaeltezeile aus einer synthetischen Reihe - werktags 7 bis 19 Uhr Volllast
+    /// mit Sommeranstieg, sonst ein Fuenftel, auf die Jahressumme der Zeile skaliert; der Kalender 2 legt Betriebsferien.
+    /// Nacharbeit: Bearbeitete Monatsanteile (Arbeitsstand der Ueberlagerung) verteilen die Monate um, wie im Kern.
+    /// </summary>
+    private WindowsFormsApplication1.Kaelteprofilbilder? KpGrafik(BedarfsProfilZeile markiert, IReadOnlyList<BedarfsProfilZeile> alle)
+    {
+        static double[] Reihe(double summeMwh, int versatz)
+        {
+            var r = new double[8760];
+            for (int d = 0; d < 365; d++)
+            {
+                double saison = 0.4 + 0.6 * Math.Max(0.0, Math.Sin(Math.PI * (d - 60) / 245.0));
+                for (int h = 0; h < 24; h++)
+                    r[d * 24 + h] = saison * ((d + 3) % 7 < 5 && h >= 7 + versatz && h < 19 ? 1.0 : 0.2);
+            }
+            double s = r.Sum();
+            for (int i = 0; i < r.Length; i++) r[i] *= summeMwh * 1000.0 / s;
+            return r;
+        }
+        byte[]? arten = null;
+        if (markiert.KalenderId == 2)
+        {
+            arten = new byte[365];
+            for (int d = 212; d < 233; d++) arten[d] = WindowsFormsApplication1.Betriebskalender.TAG_FERIEN;
+        }
+        static double[] Monate(BedarfsProfilZeile z, double[] r)
+        {
+            if (!z.ProfilGeaendert || z.Monatsanteile is not { Length: 12 } a || a.Sum() <= 0) return r;
+            int h = 0;
+            for (int m = 0; m < 12; m++)
+            {
+                int ende = h + new[] { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }[m] * 24;
+                double ist = 0;
+                for (int i = h; i < ende; i++) ist += r[i];
+                double soll = z.Summe * 1000.0 * a[m] / a.Sum();
+                for (int i = h; i < ende; i++) r[i] = ist > 0 ? r[i] * soll / ist : 0;
+                h = ende;
+            }
+            return r;
+        }
+        int platz = alle.ToList().IndexOf(markiert);
+        return WindowsFormsApplication1.Kaelteprofilgrafik.Bilder(Monate(markiert, Reihe(markiert.Summe, platz)),
+            alle.Select((z, i) => (z.Name, Monate(z, Reihe(z.Summe, i)))).ToList(), 3, arten);
+    }
 
     private readonly List<BetriebskalenderDaten> _kpKalender = new()
     {

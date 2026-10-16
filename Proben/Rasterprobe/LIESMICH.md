@@ -1093,7 +1093,7 @@ Datenbank. bunit misst weder Lage noch Rollstand; die Voraussetzungen der Regel 
 | `…?fall=gebaeude` | `GebaeudeDialog`; „Simulation…" öffnet den Wärmebedarf als Überlagerung |
 | `…?fall=dubletten` | `KatalogDublettenDialog` — das Protokoll steht **unter** der Schlussleiste |
 | `…?fall=katalog` | `BedarfAdminDialog` (Katalogdialog, `.epos-katalog-dialog`) |
-| `…?fall=kaelteprofile` | `BedarfsProfileDialog` der Art Kälte mit dem Baustein `Betriebskalenderwahl`; „Betriebskalender…“ öffnet das Blatt mit dem `BetriebskalenderDialog` samt „Aus Gebäude übernehmen…“ (Ablage im Speicher); `&kalender=leer` ohne Kalender, `&gebaeude=0` ohne Gebäude — Ansicht für Fotos und Handprobe, nicht in der Fallliste der `fensterprobe.mjs` |
+| `…?fall=kaelteprofile` | `BedarfsProfileDialog` der Art Kälte mit dem Baustein `Betriebskalenderwahl`; „Betriebskalender…“ öffnet das Blatt mit dem `BetriebskalenderDialog` samt „Aus Gebäude übernehmen…“ (Ablage im Speicher); `&kalender=leer` ohne Kalender, `&gebaeude=0` ohne Gebäude; die Bearbeiten-Überlagerung einer Projektzeile zeigt die Eingabeart samt den Editoren Monatswerte und Wochenprofil (KBP-3a) und die Kältegrafik (KBP-3b: Kennzahlen, Jahresgang, Monate, Woche mit Wahl der Kalenderwoche und Tagesarten als Hintergrund, Dauerlinie) aus einer synthetischen Reihe, die dem Arbeitsstand folgt; in der Fallliste der Katalogauswahl und Gegenstand des Falls `kaeltegrafik` |
 | `…&lizenz=1` | das Lizenzbanner der `AppWurzel` (Baustein `Lizenzbanner`, Lesemodus-Satz) als erstes Kind von `#app` vor dem Dialog |
 | `…&marke=0` | ohne Fenstermarke — der Dialog steht wie ohne die Regel |
 | `…?meldung=liste` | statt des Falls ein langer Dialog aus Hausbausteinen, dessen `Warnbanner` 30 Hinweise aufgeklappt zeigt (Fall „Meldungsliste" unten) |
@@ -1114,6 +1114,18 @@ frei darunter. Überlagerung (Gebäude → „Simulation…"): sie rollt nicht a
 Unterdialogs haftet nicht, Kopf und Fuß des Fensters liegen unter der Abdunkelung, das Dokument rollt nicht —
 und jede Zahl ist dieselbe wie mit `marke=0`. Katalogdialog: Kopf und Fuß statisch, das Dokument rollt nicht,
 jede Zahl dieselbe wie mit `marke=0`.
+
+**Fall `kaeltegrafik`** (`--nur kaeltegrafik`, bei **1 088 × 624** und **520 × 624**; Nacharbeit KBP-3b): in
+`?fall=kaelteprofile` die Bearbeiten-Überlagerung der ersten Kältezeile, Blatt Woche. Die Wahl der Kalenderwoche führt
+53 Wochen (1. Januar ein Donnerstag); gewählt wird KW 1 (29.12. bis 04.01.: drei Tage außerhalb des Jahres, Donnerstag
+und Freitag Werktag, Samstag, Sonntag). Je Tag liest die Probe einen Bildpunkt im oberen Zehntel der Zeichenfläche (das
+innere `<svg>`) um 6 Uhr aus dem Bildschirmfoto (PNG 1 × 1 px, ohne Zusatzbibliothek gelesen); er muss die Farbe der
+Tagesart tragen (`--epos-kalb-saison`, `-grundwoche`, `-wochenende`, `-feiertag`, Toleranz 3 je Kanal). Foto
+`kaeltegrafik_*`. Gegenprobe: ohne den Hintergrund (`background-image: none`) muss die Woche rot sein. Der Fall
+`kaelteprofile` steht zudem in der Fallliste der Katalogauswahl (nichts rollt außer den Listen) und, wie
+`bedarfsprofile`, in `ZUSAMMENFASSUNG`. **Ergebnis vom 16.10.2026:** beide Fenster erfüllt (53 Wochen, sieben
+Bildpunkte je Fenster in der Farbe ihrer Tagesart), Gegenprobe ohne Hintergrund rot (5 Verstöße — der Werktag bleibt
+weiß wie `--epos-kalb-grundwoche`); `kaelteprofile` in der Katalogauswahl 0 Verstöße in drei Fenstern.
 
 **Fall `wp-steckbrief`** (`--nur wp-steckbrief`, bei **1 280 × 800** und **1 194 × 834** mit sicheren Abständen):
 die Satz-Überlagerung der Wärmepumpe („Bearbeiten…" der Projektkopie) mit dem Gerätesteckbrief links unter

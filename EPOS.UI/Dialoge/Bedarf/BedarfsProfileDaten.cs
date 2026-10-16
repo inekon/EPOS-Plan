@@ -56,6 +56,24 @@ public sealed class BedarfsProfilZeile
     /// Kältebedarfsprofile. Bearbeitet in der Überlagerung „Deckung…“, geschrieben mit OK.
     /// </summary>
     public DeckungsartDaten? Deckung { get; set; }
+
+    /// <summary>
+    /// KBP-3a: die Eingabeart einer Kältebedarfszeile als Steuerwert ('jahr', 'monat', 'woche'; 'typtag' folgt mit KBP-4),
+    /// <c>null</c> außerhalb der Kältebedarfsprofile. Gewählt in der Bearbeiten-Überlagerung, geschrieben mit OK.
+    /// </summary>
+    public string? Eingabeart { get; set; }
+
+    /// <summary>KBP-3a: die Monatsanteile [%] der Projektkopie (12 Werte); <c>null</c> = unbekannt.</summary>
+    public double[]? Monatsanteile { get; set; }
+
+    /// <summary>KBP-3a: das Wochenprofil der Projektkopie (168 Werte, Montag 0 Uhr zuerst); <c>null</c> = unbekannt.</summary>
+    public double[]? Wochenprofil { get; set; }
+
+    /// <summary>
+    /// KBP-3a: <c>true</c>, sobald der Anwender Monatswerte oder Wochenprofil in der Überlagerung übernommen hat — erst
+    /// dann schreibt das OK sie in die Projektkopie (bei geteilter Kopie in eine eigene).
+    /// </summary>
+    public bool ProfilGeaendert { get; set; }
 }
 
 /// <summary>

@@ -11,6 +11,8 @@ ab, dessen Entscheide weitergelten (Abschnitt 2). Die parallelen Sitzungen führ
 
 ## 1 Stand 14.10.2026
 
+Stand 16.10.2026: Übernahme durch Sitzung `session_019JuX7JfD2tStDzd3CiStwf`; #1105/#1106 gepusht, CI grün (Lauf 38863988800).
+
 - Zweig: Arbeitszweig `ios_migration_september`; alle Wellen dieser Sitzung sind gepusht und mit CI-Vermerk versehen, keine Agenten, keine offenen Worktrees. Letzter eigener Commit vor diesem Papier: `d40c38cd0` (LIESMICH-Bildzahl 257).
 - Wellen und Statuszeilen: KR1/KR1b runde Wahlkästchen (#1037); K6 Kältebedarf dezentral/Split mit Schemaschritt 223 und Referenzprojekt 1072 (#1056/#1057); K6d (#1066); K6d-N (#1078); K6c (#1089, `8bf550004`); K6c-N Laufmeldung nennt die Hauptzahl (#1090, `bd7abe18a`).
 - Basis R55 `Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral` (37 Projekte; die CI rechnet 18).
@@ -36,6 +38,11 @@ ab, dessen Entscheide weitergelten (Abschnitt 2). Die parallelen Sitzungen führ
 - Anwenderentscheid 14.10.: Die Verantwortung für Stromspeicher und Speicherflotte (Schemaschritt 229, KB-5) liegt bei der Kältemaschinen-Sitzung.
 - Anwenderentscheid 14.10.: Modellregel — Fable orchestriert nur, sonst Opus 5.5 bzw. Sonnet/Haiku; Check-ins löst ein Sonnet-Agent aus; Fable macht keine GitHub-Abfragen und keine Dateiänderungen.
 - Anwenderentscheid 14.10.: Die ChartProben-Messlatte wird über die Hashliste im CI-Protokoll umgesetzt (erledigt, `Messlatte_2026-10-14.sha256`).
+- Anwenderentscheid 16.10.: Die Hauptzahl wird jetzt gemergt und gegen R55 mit `--ohne` verglichen, bis die nächste Basis sie aufnimmt.
+- Anwenderentscheid 16.10.: Die Abbruchregel von `kern.yml` bleibt.
+- Anwenderentscheid 16.10.: Kein Kern-Lauf für Pull Requests aus dem eigenen Repository.
+- Anwenderentscheid 16.10.: Wiki-Sammel-Upload in der Woche ab 19.10.
+- Anwenderentscheid 16.10.: Modellregel — Fable 5 nur für sehr komplexe Aufgaben, sonst Opus 5.5 bzw. Sonnet/Haiku je nach Aufgabe.
 
 ## 3 Hinweis
 
@@ -44,8 +51,8 @@ Die Regeln der Sitzung über `CLAUDE.md` hinaus stehen im Einstiegs-Prompt (Absc
 ## 4 Offene Punkte (mit Empfehlung)
 
 1. ~~Nachweis Messlatte~~ erledigt: Kern-Lauf [38550151112](https://github.com/inekon/EPOS-Plan/actions/runs/38550151112) grün auf `ae1f65a24` (enthält `683bc2cac`), Schritt „ChartProben-Messlatte (nur ubuntu)“: 225 von 225 Zeilen unverändert.
-2. Beim Anwender: Versionsnummer des Logbuchs für die zwei Entwurfsblöcke in [`../Wiki_Update_2026-09-26.md`](../Wiki_Update_2026-09-26.md); Wiki-Upload nur nach Freigabe; Sichtabnahme unter Windows (runde Wahlkästchen, Kältebedarf-Dialoge, Laufmeldung).
-3. Nicht beauftragt: `aggregate.csv` des Referenzlaufs führt bei Split-Zeilen keine Hauptzahl; die CI-Laufzeit von rund 87 Minuten und die Abbrüche auf dem Arbeitszweig.
+2. Beim Anwender: Versionsnummer des Logbuchs für die zwei Entwurfsblöcke in [`../Wiki_Update_2026-09-26.md`](../Wiki_Update_2026-09-26.md); Wiki-Upload nur nach Freigabe; der Wiki-Sammel-Upload 1.2.0.11 folgt in der Woche ab 19.10., nach Freigabe; Sichtabnahme unter Windows (runde Wahlkästchen, Kältebedarf-Dialoge, Laufmeldung).
+3. Erledigt: Hauptzahl in `aggregate.csv` (#1105) und CI-Kern-Lauf in parallelen Jobs (#1106), Wandzeit rund 19,5 statt 84 min.
 4. Beobachten: Schemakette 228 KB-4, 229 KB-5 (Stromspeicher/Speicherflotte bei der Sitzung „Dialoge und Korrekturen (Konto Übernahme)“/Kältemaschinen), 230 KBP-2, 231 DA-6, 232 BK-5/BK-6; Basen R56 KB-5, R57 SA4. Die Sitzung „Dialoge Cloud“ arbeitet am Konzept Kältebedarfsprofile (KBP) mit unseren drei Bitten: Deckungsgruppe und Naht `SimulationPlattformwege.KaelteDezentralBearbeiten` unverändert, neue Vorlagen nur als neue Katalogzeilen, Kalenderhinweis als Baustein.
 5. Erledigt: ~~Kältebedarf K6~~ erledigt (#1056/#1057, #1066, #1078, #1089, #1090); ~~Sichtabnahme der Katalogauswahl-Wirte~~ in Punkt 2 aufgegangen; ~~Nachzüge Katalogauswahl, KM-K2, Kostenbasis KB-2/KB-3~~ erledigt (Statuszeilen #1034, #1038, #1079, #1080).
 

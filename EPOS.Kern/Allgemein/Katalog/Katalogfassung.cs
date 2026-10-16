@@ -503,7 +503,10 @@ namespace WindowsFormsApplication1
         {
             new Katalogtabelle(KaeltebedarfSchema.TAB_KOPF_STAMM, "KB",
                 Verbinden(new[] { "Bezeichner", "Typ", "Beschreibung" }, Monate12(),
-                          new[] { KaeltebedarfSchema.SPALTE_VORLAUF, KaeltebedarfSchema.SPALTE_RUECKLAUF }))
+                          new[] { KaeltebedarfSchema.SPALTE_VORLAUF, KaeltebedarfSchema.SPALTE_RUECKLAUF,
+                                  // KBP-2 (KaeltebedarfsprofilVorlagenSchema): der Art-Vorschlag; leer an den Zeilen 1-6, eine leere
+                                  // Fachspalte traegt nichts zur Pruefsumme bei - deren Summen bleiben.
+                                  KaeltebedarfsprofilVorlagenSchema.SPALTE_ART }))
             { Stufe = 4, Anzeigeschluessel = "KABG_KATALOG_KB" },
             new Katalogtabelle(KaeltebedarfSchema.TAB_TYP_STAMM, "KBT",
                 Verbinden(new[] { "Bezeichner", "Beschreibung" }, Stunden168()))

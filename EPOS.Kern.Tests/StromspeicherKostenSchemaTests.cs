@@ -30,6 +30,7 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(229, StromspeicherKostenSchema.SCHRITT);
             Assert.Equal(GeraetekostenEntfallSchema.SCHRITT + 1, StromspeicherKostenSchema.SCHRITT);
+            // Das Ziel steht seit KBP-2 eine Nummer weiter (KaeltebedarfsprofilVorlagenSchema); dieser Schritt bleibt in der Kette.
             Assert.True(SchemaStand.Zielversion >= StromspeicherKostenSchema.SCHRITT);
             Assert.Contains(Paketanhebung.Stufen,
                             s => s.Nr == StromspeicherKostenSchema.SCHRITT && s.Wirkung == Paketanhebung.Art.Ddl);

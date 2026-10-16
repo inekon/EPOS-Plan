@@ -474,6 +474,10 @@ namespace WindowsFormsApplication1
             // der Schritt sät die fehlenden Satzvorlagen an der Zieldatenbank und entfernt die Spalten danach.
             new Stufe(StromspeicherKostenSchema.SCHRITT, Art.Ddl,
                       "Entfall der vier Kostenspalten des Stromspeichers, Kosten in der Satzvorlage (KB-5)"),
+            // KBP-2: Ein älteres Paket bringt seine Kältebedarfszuordnungen ohne Eingabeart und seine Projektkopien ohne
+            // Art-Vorschlag; der Schritt legt die Spalten am Ziel an (Vorgabe 'jahr' bzw. leer).
+            new Stufe(KaeltebedarfsprofilVorlagenSchema.SCHRITT, Art.Ddl,
+                      "Eingabeart der Kältebedarfszuordnung, Art-Vorschlag und Vorlagen 7–16 des Kältekatalogs (KBP-2)"),
             // KB-7a: Ein älteres Paket bringt den Wasserpreis noch an seinen Anlagenzeilen; die Stufe übergibt ihn an
             // die Trägerkarte des Projekts (energy_project_settings des Wasserträgers am Ziel), danach fällt die
             // Spalte mit der Schnittmenge des Imports fort.
