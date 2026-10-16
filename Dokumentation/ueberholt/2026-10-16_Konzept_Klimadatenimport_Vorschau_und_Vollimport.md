@@ -13,11 +13,11 @@ gefundenen Datensatzes **vor** dem Import im Dialog zeigen; übernommen wird ers
 der Daten und des Datenformats, angelehnt an die vorhandenen CSV-Wege.
 
 **Abgrenzung.** Quellen, Formate, Zeitbasis und Herkunftsvermerk beschreibt
-[`Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md`](../Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md).
+[`Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md`](../aktuell/Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md).
 Dieses Papier ergänzt es. Was umgesetzt ist, wird dort nachgezogen (Schritt KD-7); danach wandert
 dieses Papier nach `ueberholt/`. Mockups:
-`Dokumentation/aktuell/Mockups/Klimadatenimport_Mockup.html` (Vorschau, Export) und
-`Dokumentation/aktuell/Mockups/Klimadatenreihen_Mockup.html` (weitere Datenreihen, Abschnitt 4a).
+`Dokumentation/ueberholt/Mockups/Klimadatenimport_Mockup.html` (Vorschau, Export) und
+`Dokumentation/ueberholt/Mockups/Klimadatenreihen_Mockup.html` (weitere Datenreihen, Abschnitt 4a).
 
 ---
 
@@ -301,7 +301,7 @@ Verfall, weiche Sperre, Felder, Höhe im Auftrag, Hinweis ab 50 km/200 m, Fehlsc
 **Anwenderwunsch (16.10.2026, zwei Bildschirmfotos).** Die übrigen Datenreihen sollen sich
 wahlweise zeigen lassen: (1) im Monatsbild der Vorschaukarte beim Import und (2) im Jahresverlauf
 der Detailkarte einer Region im Klimadaten-Dialog. Mockup:
-[`../Mockups/Klimadatenreihen_Mockup.html`](../Mockups/Klimadatenreihen_Mockup.html), mit beiden Stellen
+[`Mockups/Klimadatenreihen_Mockup.html`](Mockups/Klimadatenreihen_Mockup.html), mit beiden Stellen
 spielbar, Quelle TRY oder PVGIS, Ausbaustand „Teil A“ oder „mit Rohwerten“ und einer Region ohne
 Rohdaten.
 
@@ -497,7 +497,7 @@ Jeder Schritt umfasst höchstens rund 150 Werkzeugaufrufe, Bau mit `WP-Plan.Kern
 | **KD-5** Export — *umgesetzt 16.10.2026* | `KlimaCsv`, `KlimaExportOptionen` und `KlimaExportCtrl` im Kern (eine Katalogregion je Datei; zwölf Rechenspalten aus `Tab_Solar_STAMM`, die 14 Rohspalten nur bei `Rohdaten = 1`, Taupunkt nach Magnus gerechnet und gekennzeichnet; Zeitspalte zusätzlich „Stunde und Datum“; Rechenwerte stehen in UTC, Rohwerte im Raster der Region, die Ausgabe wird zyklisch im Gemeinjahr auf MEZ oder UTC gedreht, `mez[j] = utc[(j − 1) mod 8760]`; volle Genauigkeit als Schalter des Kerns für KD-6), `KlimaExportDialog` als Überlagerung hinter „Exportieren…“ der Auswahlleiste, Speicherweg über `CsvExportClass.DateiWaehlenFuerExportAsync`, KI-Maske `KlimaExport`; Schlüssel, Spalte und Einheit der Rechenspalten kommen aus dem `KlimaReihenkatalog` (KD-8) | `KlimaCsvTests` (Trennzeichen × Dezimal × Zeitspalte, Einheitenzeile, Kopf, Altbestand ohne Rohdaten, UTC↔MEZ, Taupunkt, Rundlauf bitgleich), `KlimaExportDialogTests`, `CsvAmBildWacheTests` unberührt, `fensterprobe.mjs` Fall `klimaexport` mit Gegenprobe |
 | **KD-6** CSV-Import (nur nach KD-Q5) | vierte Quelle mit Spaltenzuordnung über `GanglinienImportOptionen` | Rundlauf Export → Import bitgleich in den Rechenspalten |
 | **KD-8** Weitere Datenreihen (Abschnitt 4a) — *Teil A und Teil B umgesetzt 16.10.2026* | **Teil A:** `KlimaReihenkatalog`, Monatsreihen der Vorschau, `KlimaVorschaubild` mit Achsenregel, Baustein `Reihenwahl`, dritter Reiter „Weitere Reihen“ mit den Rechenspalten, Ressourcen in beiden Sprachen, kein Schemaschritt. **Teil B (mit KD-4):** Rohwert-Reihen in der Vorschau (Monatsreihen aus der Rohreihe des gelesenen Satzes) und im Jahresverlauf (Leser `KlimaExportCtrl.RohwerteLesen` auf `Tab_Klimastunde_STAMM`, `KlimaReihenkatalog.AusRohwerten`), Freischaltung aus dem Datenstand (`KlimaReihenkatalog.RohwerteFreigeschaltet`, Schritt 238), Marke „R“ mit Titel; eine Reihe, für die die Region keine Rohwerte führt, bleibt weich gesperrt „Quelle führt die Größe nicht“; Export und Reihenwahl teilen die Schlüssel des Reihenkatalogs (eine Quelle) | Kern-Tests (Monatsreihen, Achsenregel, Katalogwache), bunit `ReihenwahlTests` und `KlimadatenDialogTests`, `CsvAmBildWacheTests`, `KiMaskenabdeckungWacheTests`, `designer_neu.py`, `fensterprobe.mjs` Fall `klimaimport`; Teil B dazu `KlimaReihenkatalogTests` (Rohreihe, `AusRohwerten`, Sichtbarkeit, Export-Aliasse), `KlimaRohwerteTests` (`RohwerteLesen`), `fensterprobe.mjs` Fälle `klimareihen` und `klimaimport`, `SqlDialektPruefer` |
-| **KD-7** Doku | Konzept Klimadatenquellen §§ 1, 2, 6, 7, 10, 12 nachziehen, Wiki-Quelle „Programm Dokumentation/Klimadaten“, Logbuch-Entwurf, dieses Papier nach `ueberholt/` | `DokumentationLinkWacheTests`, `WikiProduktdatenWacheTests` |
+| **KD-7** Doku — *umgesetzt 16.10.2026* | Konzept Klimadatenquellen §§ 1, 2, 6, 7, 10, 12 nachziehen, Wiki-Quelle „Programm Dokumentation/Klimadaten“, Logbuch-Entwurf, dieses Papier nach `ueberholt/` | `DokumentationLinkWacheTests`, `WikiProduktdatenWacheTests` |
 
 KD-1 lässt sich unabhängig vorziehen. KD-2 und KD-3 gehen vor KD-4, weil die Vorschau keine neuen
 Spalten braucht. KD-5 setzt KD-4 voraus, wenn die Rohwerte exportiert werden sollen. KD-8 Teil A

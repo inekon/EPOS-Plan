@@ -923,3 +923,36 @@ Termine — die Inhalte stehen fest, die beiden rechten Spalten füllt der Anwen
 **Reihenfolge.** (e) ist in Minuten erledigt und beseitigt ein Ausfallrisiko — er gehört vor alles
 andere. (a) und (c) verlangen fremde Rechner und Zeit; sie sind die eigentliche Terminfrage. (b) ist
 in seiner neuen Fassung Teil des Migrationspfads und sinnvollerweise mit (a) zusammen zu prüfen.
+
+---
+
+## 5 Entscheide 16.10.2026 zur Entscheidungsvorlage Gruppe C
+
+Der Anwender hat die 41 Punkte der Gruppe C aus Status 4.5 am 16.10.2026 im Gespräch einzeln beschieden. Die Kennung ist Nummer und Teil der Vorlage; der Bezug nennt die Statuszeile des Befunds. Die 16 umzusetzenden Aufträge stehen in Status 4.6.
+
+| Kennung | Entscheid | Weg | Bezug |
+|---|---|---|---|
+| **8a** | Bedingungen im Wiederholblock je Variante auswerten | nach Empfehlung | #532, #597 |
+| **8b** | Deckblatt-Regel schärfen (Berichtstitel nötig) | nach Empfehlung | #520, #597 |
+| **8c** | Excel-Diagramme jetzt angleichen, ohne Sichtprobe | abweichend (Empfehlung: bis zur Sichtprobe zurückstellen) | #558, #597 |
+| **8d** | Kälte in Dashboard und Katalog angleichen (eine Rechnung) | nach Empfehlung | #544, #597 |
+| **8e** | Hinweis in der Laufmeldung; Datenbefunde der Testdatenbank bereinigen | nach Empfehlung | #528, #597 |
+| **15** | Beispielvorlage neben dem Kurzbericht entfernen | nach Empfehlung | #520 |
+| **5** | Projektwert `Leistungsgrenze` belassen | nach Empfehlung | #704, #659 |
+| **20c** | Drei Datenbankabfragen der Simulation parametriert umstellen | nach Empfehlung | #441 |
+| **28d** | Rasterkarte wächst nach der Fußzeile, Zusatz als Textzeile | nach Empfehlung | #361 |
+| **40b** | Text `FLOTTE_OPT_KEIN_ERGEBNIS` entfernen | nach Empfehlung | #273 |
+| **23** | Der KI-Assistent bekommt den Übernahmeweg für Modul und Wechselrichter im Strang | abweichend (Empfehlung: belassen) | #420 |
+| **10a** | Wechselrichter ohne Angaben: „bedingt geeignet (Angaben fehlen)“ | nach Empfehlung | #564 |
+| **10b** | Strang mit entferntem Modul: Markierung belassen | nach Empfehlung | #565 |
+| **6a** | Flotteneinspeisung in den Nebenbalken der Einspeisung | nach Empfehlung | #536, #676 |
+| **6b** | Hilfsstrom: Emission und Stromsteuer gesondert ansetzen | abweichend (Empfehlung: nur Emission) | #548, #676 |
+| **6c** | Hinweis „Obergrenze Regelsatz“ belassen | nach Empfehlung | #653 |
+| **21** | Stromkosten Netzbezug: „—“ belassen | nach Empfehlung | #433 |
+| **17** | E16‑Q1 bis Q4: Lesart a bestätigt | nach Empfehlung | #484 |
+| **28b** | Import legt eine eigene Vergütungszeile mit den Stammwerten an | abweichend (Empfehlung: belassen) | #360 |
+| **28c** | Klappliste der Variantenwahl in der Katalogübernahme belassen | nach Empfehlung | #363 |
+| **29b** | Herleitungszeile beim Kollektorfeld belassen | nach Empfehlung | #350 |
+| **29c** | Betriebskosten je kW und Jahr nur beim BHKW (je kW elektrisch), Wärmepumpe nicht | abweichend (Empfehlung: belassen) | #350 |
+| **35b** | Vermerk „seit Etappe B5“ streichen (beide Sprachen) | nach Empfehlung | #292 |
+| **Sammelzeile** | 18 als erledigt belegte Punkte bestätigt und aus Status 4.5 gestrichen: 38, 26, 9, 20a, 20b, 18, 33a, 33b, 40a, 16, 14, 41, 28a, 29a, 30, 35a, 37, 12 | nach Empfehlung | Status 4.5 |

@@ -2,6 +2,8 @@ Der '''Datenexport''' gibt die berechneten Zeitreihen als CSV-Datei aus – Semi
 
 Außerdem trägt jedes Bild mit Zeitreihen in den Eingabedialogen ''CSV…'': das Zahlungsstrombild der Wirtschaftlichkeit (je Jahr), die Monatssäulen des Bedarfs, der Jahresgang der Wärmequelle Erdreich, die Ganglinien der Wärmebedarfs- und Stromganglinienverwaltung und der Projektdialoge dazu, die Bilder des Gebäudebedarfs, der Klimadaten und des Kostenprofils, die Wochen- und Tagesprofile (Typprofile, Gebäudetypen, Raumnutzung, Konditionierung, Nutzungsarten) und die Bilder des Zapfprofils samt Auslegung. Die erste Spalte folgt dem Raster der Reihe: Stunde, Viertelstunde, Tag, Woche, Monat, Jahr, Stunde des Tages oder Wochenstunde. Kennlinien tragen keinen Knopf. Der Kalenderteppich (Konditionierung, Raumnutzung) wird als Tabelle mit 365 Tageszeilen – Datum ohne Jahr und Wochentag – und 24 Stundenspalten mit Einheit gespeichert; Stunden „aus“ bleiben leer.
 
+Die Stundenwerte einer Klimaregion schreibt ''Exportieren…'' im Dialog Klimadaten mit Wahl der Größen, des Trennzeichens, des Dezimalzeichens, der Zeitspalte und des Zeitbezugs, siehe [[Programm Dokumentation/Klimadaten#export|Klimadaten – Exportieren]].
+
 == Export von Zeitreihen ==
 {{Anker|export-von-zeitreihen|csv-export|zeitreihen}}
 

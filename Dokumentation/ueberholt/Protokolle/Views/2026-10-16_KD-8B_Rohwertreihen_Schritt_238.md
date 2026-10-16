@@ -2,7 +2,7 @@
 
 Sitzung Dialoge und Korrekturen (Klimadaten), 16.10.2026, Zweig `kd238` (Merge von `kd5` mit `kd4` und von `kd8a`).
 Konzept:
-[`2026-10-16_Konzept_Klimadatenimport_Vorschau_und_Vollimport.md`](../../../aktuell/Dialoge/2026-10-16_Konzept_Klimadatenimport_Vorschau_und_Vollimport.md),
+[`2026-10-16_Konzept_Klimadatenimport_Vorschau_und_Vollimport.md`](../../2026-10-16_Konzept_Klimadatenimport_Vorschau_und_Vollimport.md),
 Abschnitte 3, 4a.3 und 7; Vorgänger:
 [`2026-10-16_KD-4_KD-5_Rohwerte_Klimaexport.md`](2026-10-16_KD-4_KD-5_Rohwerte_Klimaexport.md) und
 [`2026-10-16_KD-8A_Weitere_Klimadatenreihen.md`](2026-10-16_KD-8A_Weitere_Klimadatenreihen.md). `ChartRenderer` und

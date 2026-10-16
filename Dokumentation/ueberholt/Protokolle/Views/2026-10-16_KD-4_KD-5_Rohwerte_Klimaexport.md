@@ -2,7 +2,7 @@
 
 Sitzung Dialoge und Korrekturen (Klimadaten), 16.10.2026, Zweige `kd4` und `kd5`, zusammengeführt in der Welle
 KD-238. Konzept:
-[`2026-10-16_Konzept_Klimadatenimport_Vorschau_und_Vollimport.md`](../../../aktuell/Dialoge/2026-10-16_Konzept_Klimadatenimport_Vorschau_und_Vollimport.md),
+[`2026-10-16_Konzept_Klimadatenimport_Vorschau_und_Vollimport.md`](../../2026-10-16_Konzept_Klimadatenimport_Vorschau_und_Vollimport.md),
 Abschnitte 3, 5 und 7; Entscheide KD-Q2, KD-Q4 bis KD-Q9 nach Empfehlung. Schemaschritt 238 `KlimaRohwerteSchema`
 (zunächst geparkt, mit der Welle an 237 gehängt), Testdatenbank 238; `ChartRenderer` und `DiagrammSvg` unverändert.
 
