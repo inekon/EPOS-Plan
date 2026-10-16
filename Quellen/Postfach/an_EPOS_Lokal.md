@@ -63,3 +63,20 @@ Der Anwender hat die Suche über LocalDB freigegeben. Bitte:
    bekämen, wie viele Teilkataloge je Satz (1, 2, mehr), und ob die Tabelle im CSV-Export fehlt. **Keine Werte, keine
    Katalog- oder Produktnamen.**
 5. Danach die Datenbank von LocalDB lösen (detach); die Analysekopie darf liegen bleiben. Nichts committen, nichts pushen.
+
+## 6 · 2026-10-16 11:40 UTC · Katalog_Zuordnung.csv erzeugen (Anwender: „Beides“)
+
+Der Anwender hat beides freigegeben: die Datei lokal und BK-7b in der Cloud (der Import liest sie). Bitte:
+
+1. Das Exportskript `C:\Temp\Hsetu\sql\export.py` um eine Datei **`Katalog_Zuordnung.csv`** aus `TcCatalogContents` erweitern
+   (wiederholbar), Spalten genau in dieser Reihenfolge und mit diesen Kopfnamen:
+   `UId;CatalogContentUId;CatalogUId;BasisUId;DimensionUId;StateType;SortNum` — **keine Namens- oder Textspalten**
+   (`ShortDesc`, `LongDesc`, `InfoDesc`, `MatchCode` nicht). Format wie die übrigen Dateien: UTF-8 ohne BOM, `;`, CRLF,
+   leere Kennung als leeres Feld.
+2. Die Datei aus der Analysekopie (`C:\Temp\Hsetu\Analyse\`, wieder anhängen, nur lesen, danach lösen) nach
+   `C:\Temp\Hsetu\Export\` schreiben. Die übrigen 16 Dateien dürfen sich nicht ändern — vorher und nachher SHA-256 je Datei
+   vergleichen und das Ergebnis melden. Original und erste Kopie der Datenbank bleiben unberührt.
+3. Melden, nur Zählungen: Zeilen der Datei; Verteilung von `StateType` (Code → Zeilen); Zeilen mit leerer `BasisUId` und
+   leerer `DimensionUId`; die 5 Zeilen mit `CatalogUId` ≠ Teilkatalog des Inhaltsknotens (nur Anzahl je `StateType`); und für
+   die 45 Baustoffe mit zwei Teilkatalogen, ob die beiden Teilkataloge denselben Namen tragen (Anzahl gleich / verschieden).
+4. Noch keine Vorschau — die folgt mit Nachricht 7, sobald BK-7b auf origin liegt. Nichts committen, nichts pushen.
