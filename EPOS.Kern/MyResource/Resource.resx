@@ -22765,7 +22765,7 @@ Möchten Sie das zulassen?</value>
     <value>Der Standort der Datei „{0}“ ist nicht lesbar — Längen- und Breitengrad bitte eintragen.</value>
   </data>
   <data name="KLIMA_TRY_BTN_REGION" xml:space="preserve">
-    <value>Region ermitteln</value>
+    <value>Datensatz suchen</value>
   </data>
   <data name="KLIMA_TRY_VORSCHAU" xml:space="preserve">
     <value>Region {0}, Station {1}, Entfernung {2} km</value>
@@ -22774,7 +22774,7 @@ Möchten Sie das zulassen?</value>
     <value>vorhanden: {0}</value>
   </data>
   <data name="KLIMA_TRY_VORSCHAU_LAEUFT" xml:space="preserve">
-    <value>Region wird ermittelt …</value>
+    <value>Datensatz wird gesucht …</value>
   </data>
   <data name="ADM_SET_RUBRIK_KLIMA" xml:space="preserve">
     <value>Klimadaten</value>
@@ -56618,6 +56618,15 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="KI_DLG_BT_UHERKUNFT_ERL" xml:space="preserve">
     <value>Woher der U-Wert des Bauteils stammt, wie er mit OK gespeichert würde – nur lesbar: KATALOG = aus dem Aufbau, MANUELL = von Hand, IFC, GBXML oder SQPROJ = aus der Importdatei, VORGABE = Vorgabe nach Bauteilart; leer = unbekannt. Ein U-Wert von Hand bleibt beim Wiederimport stehen.</value>
   </data>
+  <data name="KLIMA_VORSCHAU_LEER" xml:space="preserve">
+    <value>Die Quelle hat keine Stundenwerte geliefert.</value>
+  </data>
+  <data name="KLIMA_VORSCHAU_REPRAESENTANZ" xml:space="preserve">
+    <value>Nächste Repräsentanzstation, nicht die amtliche Klimaregion.</value>
+  </data>
+  <data name="KLIMA_VORSCHAU_NICHT_ORTSTYPISCH" xml:space="preserve">
+    <value>Bezugspunkt nicht ortstypisch; für ortsgenaue Werte die TRY-Datei des DWD für diesen Standort einlesen.</value>
+  </data>
   <data name="KBP_HINW_EINGABEART_ZAPFPROFIL" xml:space="preserve">
     <value>Das Brauchwasser rechnet mit dem Zapfprofilgenerator – die Eingabeart (Monatswerte, Wochenprofil) gilt nur für den Profilweg.</value>
   </data>
@@ -56641,6 +56650,168 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="BKAL_HRL_FAKTOR_GESPERRT" xml:space="preserve">
     <value>Der Ferienfaktor ist gesperrt: „Ferien wie Sonntag“ ist gesetzt, ein Ferientag trägt den Sonntag des Wochenprofils.</value>
+  </data>
+  <data name="KLIMA_VK_SUCHHINWEIS" xml:space="preserve">
+    <value>Sucht den Datensatz und liest ihn zur Vorschau. Gespeichert wird nichts.</value>
+  </data>
+  <data name="KLIMA_VK_TITEL" xml:space="preserve">
+    <value>Vorschau des Datensatzes</value>
+  </data>
+  <data name="KLIMA_VK_GEFUNDEN" xml:space="preserve">
+    <value>Datensatz gefunden: {0}</value>
+  </data>
+  <data name="KLIMA_VK_NICHT_IM_PAKET" xml:space="preserve">
+    <value>{0} ist nicht im Paket.</value>
+  </data>
+  <data name="KLIMA_VK_VORHANDEN" xml:space="preserve">
+    <value>Vorhanden:</value>
+  </data>
+  <data name="KLIMA_VK_AUSFUEHRUNG_TRY" xml:space="preserve">
+    <value>TRY {0} · {1}</value>
+  </data>
+  <data name="KLIMA_VK_AUSFUEHRUNG_DATEI" xml:space="preserve">
+    <value>TRY-Datei {0}</value>
+  </data>
+  <data name="KLIMA_VK_AUSFUEHRUNG_PVGIS" xml:space="preserve">
+    <value>PVGIS-TMY (typisches Jahr)</value>
+  </data>
+  <data name="KLIMA_VK_STANDORT" xml:space="preserve">
+    <value>Standort</value>
+  </data>
+  <data name="KLIMA_VK_ORT" xml:space="preserve">
+    <value>Ort</value>
+  </data>
+  <data name="KLIMA_VK_KOORDINATE" xml:space="preserve">
+    <value>Koordinate</value>
+  </data>
+  <data name="KLIMA_VK_HOEHE" xml:space="preserve">
+    <value>Höhe</value>
+  </data>
+  <data name="KLIMA_VK_UNBEKANNT" xml:space="preserve">
+    <value>unbekannt</value>
+  </data>
+  <data name="KLIMA_VK_BEZUG_STATION" xml:space="preserve">
+    <value>Bezugspunkt: nächste Repräsentanzstation</value>
+  </data>
+  <data name="KLIMA_VK_BEZUG_DATEI" xml:space="preserve">
+    <value>Bezugspunkt: Standort der Datei</value>
+  </data>
+  <data name="KLIMA_VK_BEZUG_PVGIS" xml:space="preserve">
+    <value>Bezugspunkt: PVGIS-Rasterpunkt</value>
+  </data>
+  <data name="KLIMA_VK_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="KLIMA_VK_ENTFERNUNG" xml:space="preserve">
+    <value>Entfernung</value>
+  </data>
+  <data name="KLIMA_VK_HOEHENUNTERSCHIED" xml:space="preserve">
+    <value>Höhenunterschied</value>
+  </data>
+  <data name="KLIMA_VK_KZ_MITTEL" xml:space="preserve">
+    <value>Jahresmittel Lufttemperatur</value>
+  </data>
+  <data name="KLIMA_VK_KZ_MINMAX" xml:space="preserve">
+    <value>Minimum / Maximum (Stunde)</value>
+  </data>
+  <data name="KLIMA_VK_KZ_GLOBAL" xml:space="preserve">
+    <value>Globalstrahlung, Jahressumme</value>
+  </data>
+  <data name="KLIMA_VK_KZ_GRADTAG" xml:space="preserve">
+    <value>Gradtagzahl G20/15</value>
+  </data>
+  <data name="KLIMA_VK_KZ_HEIZTAGE" xml:space="preserve">
+    <value>Heiztage (θm &lt; 15 °C)</value>
+  </data>
+  <data name="KLIMA_VK_BILD_TITEL" xml:space="preserve">
+    <value>Monatswerte</value>
+  </data>
+  <data name="KLIMA_VK_BILD_MONAT" xml:space="preserve">
+    <value>Monat</value>
+  </data>
+  <data name="KLIMA_VK_BILD_STRAHLUNG" xml:space="preserve">
+    <value>Globalstrahlung [kWh/m²]</value>
+  </data>
+  <data name="KLIMA_VK_BILD_TEMPERATUR" xml:space="preserve">
+    <value>Monatsmittel Temperatur [°C]</value>
+  </data>
+  <data name="KLIMA_VK_BILD_BEZEICHNUNG" xml:space="preserve">
+    <value>Monatsmittel der Temperatur und Monatssumme der Globalstrahlung</value>
+  </data>
+  <data name="KLIMA_VK_BESTAND" xml:space="preserve">
+    <value>Parameterbestand der Quelle</value>
+  </data>
+  <data name="KLIMA_VK_GEFUEHRT" xml:space="preserve">
+    <value>geführt</value>
+  </data>
+  <data name="KLIMA_VK_GERECHNET" xml:space="preserve">
+    <value>gerechnet</value>
+  </data>
+  <data name="KLIMA_VK_FEHLT" xml:space="preserve">
+    <value>fehlt</value>
+  </data>
+  <data name="KLIMA_VK_VERFALLEN" xml:space="preserve">
+    <value>Eingabe geändert, die Vorschau ist verfallen. Bitte erneut „Datensatz suchen“.</value>
+  </data>
+  <data name="KLIMA_VK_ERST_SUCHEN" xml:space="preserve">
+    <value>Erst „Datensatz suchen“ – ohne gültige Vorschau wird nichts übernommen.</value>
+  </data>
+  <data name="KLIMA_VK_NICHT_IMPORTIERBAR" xml:space="preserve">
+    <value>Die Vorschau hat keinen Datensatz zum Übernehmen – bitte eine vorhandene Ausführung wählen oder die Eingaben prüfen.</value>
+  </data>
+  <data name="KLIMA_VK_FELDHERKUNFT" xml:space="preserve">
+    <value>Longitude, Latitude und Bezeichnung aus der Suche vorbelegt; änderbar. Übernommen wird erst mit „Daten einlesen“.</value>
+  </data>
+  <data name="KLIMA_LBL_HOEHE" xml:space="preserve">
+    <value>Höhe des Ortes (m):</value>
+  </data>
+  <data name="KLIMA_FELD_HOEHE" xml:space="preserve">
+    <value>Höhe des Ortes</value>
+  </data>
+  <data name="KLIMA_PAR_LUFTTEMPERATUR" xml:space="preserve">
+    <value>Temperatur</value>
+  </data>
+  <data name="KLIMA_PAR_LUFTFEUCHTE" xml:space="preserve">
+    <value>Feuchte</value>
+  </data>
+  <data name="KLIMA_PAR_GLOBALSTRAHLUNG" xml:space="preserve">
+    <value>Global</value>
+  </data>
+  <data name="KLIMA_PAR_DIREKTSTRAHLUNGNORMAL" xml:space="preserve">
+    <value>Direkt normal</value>
+  </data>
+  <data name="KLIMA_PAR_DIREKTSTRAHLUNGHORIZONTAL" xml:space="preserve">
+    <value>Direkt horizontal</value>
+  </data>
+  <data name="KLIMA_PAR_DIFFUSSTRAHLUNG" xml:space="preserve">
+    <value>Diffus</value>
+  </data>
+  <data name="KLIMA_PAR_GEGENSTRAHLUNG" xml:space="preserve">
+    <value>Gegenstrahlung</value>
+  </data>
+  <data name="KLIMA_PAR_BEDECKUNGSGRAD" xml:space="preserve">
+    <value>Bedeckung</value>
+  </data>
+  <data name="KLIMA_PAR_LUFTDRUCK" xml:space="preserve">
+    <value>Luftdruck</value>
+  </data>
+  <data name="KLIMA_PAR_WINDGESCHWINDIGKEIT" xml:space="preserve">
+    <value>Wind</value>
+  </data>
+  <data name="KLIMA_PAR_WINDRICHTUNG" xml:space="preserve">
+    <value>Windrichtung</value>
+  </data>
+  <data name="KLIMA_PAR_WASSERDAMPFGEHALT" xml:space="preserve">
+    <value>Wasserdampf</value>
+  </data>
+  <data name="KLIMA_PAR_AUSSTRAHLUNG" xml:space="preserve">
+    <value>Ausstrahlung</value>
+  </data>
+  <data name="KLIMA_PAR_QUALITAETSTRAHLUNG" xml:space="preserve">
+    <value>Qualität</value>
+  </data>
+  <data name="KI_DLG_KLIMA_HOEHE_ERL" xml:space="preserve">
+    <value>Die Höhe des Standorts über dem Meer, in Metern. Sie geht in die Vorschau ein: Der Höhenunterschied zum Bezugspunkt entscheidet über den Hinweis „nicht ortstypisch“. Leer = unbekannt; bei PVGIS und einer TRY-Datei mit Kopfangabe kommt sie aus der Quelle.</value>
   </data>
 </root>
 

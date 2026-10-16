@@ -67657,6 +67657,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Höhe des Standorts über dem Meer, in Metern. Sie geht in die Vorschau ein: Der Höhenunterschied zum Bezugspunkt entscheidet über den Hinweis „nicht ortstypisch“. Leer = unbekannt; bei PVGIS und einer TRY-Datei mit Kopfangabe kommt sie aus der Quelle. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KLIMA_HOEHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KLIMA_HOEHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Bezugsjahr des Testreferenzjahres; zur Wahl stehen der heutige Stand und die Projektion. ähnelt.
         /// </summary>
         public static string KI_DLG_KLIMA_JAHR_ERL {
@@ -83215,6 +83224,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höhe des Ortes ähnelt.
+        /// </summary>
+        public static string KLIMA_FELD_HOEHE {
+            get {
+                return ResourceManager.GetString("KLIMA_FELD_HOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Latitude ähnelt.
         /// </summary>
         public static string KLIMA_FELD_LATITUDE {
@@ -83321,6 +83339,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KLIMA_LBL_DETAILS {
             get {
                 return ResourceManager.GetString("KLIMA_LBL_DETAILS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höhe des Ortes (m): ähnelt.
+        /// </summary>
+        public static string KLIMA_LBL_HOEHE {
+            get {
+                return ResourceManager.GetString("KLIMA_LBL_HOEHE", resourceCulture);
             }
         }
         
@@ -83474,6 +83501,132 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KLIMA_MSG_SCHON_VORHANDEN {
             get {
                 return ResourceManager.GetString("KLIMA_MSG_SCHON_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausstrahlung ähnelt.
+        /// </summary>
+        public static string KLIMA_PAR_AUSSTRAHLUNG {
+            get {
+                return ResourceManager.GetString("KLIMA_PAR_AUSSTRAHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedeckung ähnelt.
+        /// </summary>
+        public static string KLIMA_PAR_BEDECKUNGSGRAD {
+            get {
+                return ResourceManager.GetString("KLIMA_PAR_BEDECKUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diffus ähnelt.
+        /// </summary>
+        public static string KLIMA_PAR_DIFFUSSTRAHLUNG {
+            get {
+                return ResourceManager.GetString("KLIMA_PAR_DIFFUSSTRAHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Direkt horizontal ähnelt.
+        /// </summary>
+        public static string KLIMA_PAR_DIREKTSTRAHLUNGHORIZONTAL {
+            get {
+                return ResourceManager.GetString("KLIMA_PAR_DIREKTSTRAHLUNGHORIZONTAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Direkt normal ähnelt.
+        /// </summary>
+        public static string KLIMA_PAR_DIREKTSTRAHLUNGNORMAL {
+            get {
+                return ResourceManager.GetString("KLIMA_PAR_DIREKTSTRAHLUNGNORMAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gegenstrahlung ähnelt.
+        /// </summary>
+        public static string KLIMA_PAR_GEGENSTRAHLUNG {
+            get {
+                return ResourceManager.GetString("KLIMA_PAR_GEGENSTRAHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Global ähnelt.
+        /// </summary>
+        public static string KLIMA_PAR_GLOBALSTRAHLUNG {
+            get {
+                return ResourceManager.GetString("KLIMA_PAR_GLOBALSTRAHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftdruck ähnelt.
+        /// </summary>
+        public static string KLIMA_PAR_LUFTDRUCK {
+            get {
+                return ResourceManager.GetString("KLIMA_PAR_LUFTDRUCK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feuchte ähnelt.
+        /// </summary>
+        public static string KLIMA_PAR_LUFTFEUCHTE {
+            get {
+                return ResourceManager.GetString("KLIMA_PAR_LUFTFEUCHTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperatur ähnelt.
+        /// </summary>
+        public static string KLIMA_PAR_LUFTTEMPERATUR {
+            get {
+                return ResourceManager.GetString("KLIMA_PAR_LUFTTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Qualität ähnelt.
+        /// </summary>
+        public static string KLIMA_PAR_QUALITAETSTRAHLUNG {
+            get {
+                return ResourceManager.GetString("KLIMA_PAR_QUALITAETSTRAHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wasserdampf ähnelt.
+        /// </summary>
+        public static string KLIMA_PAR_WASSERDAMPFGEHALT {
+            get {
+                return ResourceManager.GetString("KLIMA_PAR_WASSERDAMPFGEHALT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wind ähnelt.
+        /// </summary>
+        public static string KLIMA_PAR_WINDGESCHWINDIGKEIT {
+            get {
+                return ResourceManager.GetString("KLIMA_PAR_WINDGESCHWINDIGKEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Windrichtung ähnelt.
+        /// </summary>
+        public static string KLIMA_PAR_WINDRICHTUNG {
+            get {
+                return ResourceManager.GetString("KLIMA_PAR_WINDRICHTUNG", resourceCulture);
             }
         }
         
@@ -83739,7 +83892,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Region ermitteln ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datensatz suchen ähnelt.
         /// </summary>
         public static string KLIMA_TRY_BTN_REGION {
             get {
@@ -84027,7 +84180,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Region wird ermittelt … ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datensatz wird gesucht … ähnelt.
         /// </summary>
         public static string KLIMA_TRY_VORSCHAU_LAEUFT {
             get {
@@ -84050,6 +84203,366 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KLIMA_TRY_ZEITFELD {
             get {
                 return ResourceManager.GetString("KLIMA_TRY_ZEITFELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die TRY-Datei {0} ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_AUSFUEHRUNG_DATEI {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_AUSFUEHRUNG_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PVGIS-TMY (typisches Jahr) ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_AUSFUEHRUNG_PVGIS {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_AUSFUEHRUNG_PVGIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die TRY {0} · {1} ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_AUSFUEHRUNG_TRY {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_AUSFUEHRUNG_TRY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parameterbestand der Quelle ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_BESTAND {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_BESTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugspunkt: Standort der Datei ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_BEZUG_DATEI {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_BEZUG_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugspunkt: PVGIS-Rasterpunkt ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_BEZUG_PVGIS {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_BEZUG_PVGIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugspunkt: nächste Repräsentanzstation ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_BEZUG_STATION {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_BEZUG_STATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monatsmittel der Temperatur und Monatssumme der Globalstrahlung ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_BILD_BEZEICHNUNG {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_BILD_BEZEICHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monat ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_BILD_MONAT {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_BILD_MONAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Globalstrahlung [kWh/m²] ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_BILD_STRAHLUNG {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_BILD_STRAHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monatsmittel Temperatur [°C] ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_BILD_TEMPERATUR {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_BILD_TEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monatswerte ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_BILD_TITEL {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_BILD_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entfernung ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_ENTFERNUNG {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_ENTFERNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst „Datensatz suchen“ – ohne gültige Vorschau wird nichts übernommen. ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_ERST_SUCHEN {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_ERST_SUCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die fehlt ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_FEHLT {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Longitude, Latitude und Bezeichnung aus der Suche vorbelegt; änderbar. Übernommen wird erst mit „Daten einlesen“. ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_FELDHERKUNFT {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_FELDHERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die geführt ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_GEFUEHRT {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_GEFUEHRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datensatz gefunden: {0} ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_GEFUNDEN {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_GEFUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gerechnet ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_GERECHNET {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_GERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höhe ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_HOEHE {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_HOEHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höhenunterschied ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_HOEHENUNTERSCHIED {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_HOEHENUNTERSCHIED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Koordinate ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_KOORDINATE {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_KOORDINATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Globalstrahlung, Jahressumme ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_KZ_GLOBAL {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_KZ_GLOBAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gradtagzahl G20/15 ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_KZ_GRADTAG {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_KZ_GRADTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heiztage (θm &lt; 15 °C) ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_KZ_HEIZTAGE {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_KZ_HEIZTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Minimum / Maximum (Stunde) ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_KZ_MINMAX {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_KZ_MINMAX", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresmittel Lufttemperatur ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_KZ_MITTEL {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_KZ_MITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_NAME {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorschau hat keinen Datensatz zum Übernehmen – bitte eine vorhandene Ausführung wählen oder die Eingaben prüfen. ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_NICHT_IMPORTIERBAR {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_NICHT_IMPORTIERBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ist nicht im Paket. ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_NICHT_IM_PAKET {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_NICHT_IM_PAKET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ort ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_ORT {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_ORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standort ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_STANDORT {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_STANDORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sucht den Datensatz und liest ihn zur Vorschau. Gespeichert wird nichts. ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_SUCHHINWEIS {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_SUCHHINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschau des Datensatzes ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_TITEL {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unbekannt ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe geändert, die Vorschau ist verfallen. Bitte erneut „Datensatz suchen“. ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_VERFALLEN {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_VERFALLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorhanden: ähnelt.
+        /// </summary>
+        public static string KLIMA_VK_VORHANDEN {
+            get {
+                return ResourceManager.GetString("KLIMA_VK_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quelle hat keine Stundenwerte geliefert. ähnelt.
+        /// </summary>
+        public static string KLIMA_VORSCHAU_LEER {
+            get {
+                return ResourceManager.GetString("KLIMA_VORSCHAU_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugspunkt nicht ortstypisch; für ortsgenaue Werte die TRY-Datei des DWD für diesen Standort einlesen. ähnelt.
+        /// </summary>
+        public static string KLIMA_VORSCHAU_NICHT_ORTSTYPISCH {
+            get {
+                return ResourceManager.GetString("KLIMA_VORSCHAU_NICHT_ORTSTYPISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nächste Repräsentanzstation, nicht die amtliche Klimaregion. ähnelt.
+        /// </summary>
+        public static string KLIMA_VORSCHAU_REPRAESENTANZ {
+            get {
+                return ResourceManager.GetString("KLIMA_VORSCHAU_REPRAESENTANZ", resourceCulture);
             }
         }
         

@@ -152,6 +152,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>Übertragene Bytes (0 bei einer lokalen Datei).</summary>
         public long UebertrageneBytes;
+
+        /// <summary>
+        /// Was das Paket für die gewählte Region führt — Jahr und Szenario (Auftrag KD-2;
+        /// gefüllt vom Vorschauweg <see cref="TryPaketLeser.VorschauAusStrom"/>).
+        /// </summary>
+        public IReadOnlyList<TryAusfuehrung> Ausfuehrungen = new List<TryAusfuehrung>();
+
+        /// <summary>
+        /// Führt das Paket die GEWÄHLTE Ausführung (Jahr und Szenario) für die Region?
+        /// Nein heißt: <see cref="Stunden"/> bleibt leer, <see cref="Grund"/> sagt warum.
+        /// </summary>
+        public bool AusfuehrungGefunden = true;
+
+        /// <summary>Der benannte Grund, wenn <see cref="AusfuehrungGefunden"/> nein ist.</summary>
+        public string Grund = "";
     }
 
     /// <summary>
@@ -362,6 +377,30 @@ namespace WindowsFormsApplication1
         public static TryPaketErgebnis AusStrom(Stream strom, double lon, double lat,
                                                 int jahr, TrySzenario szenario)
         {
+            TryPaketErgebnis erg = VorschauAusStrom(strom, lon, lat, jahr, szenario);
+
+            if (!erg.AusfuehrungGefunden)
+                throw new InvalidOperationException(erg.Grund);
+
+            return erg;
+        }
+
+        /// <summary>
+        /// Der VORSCHAUWEG (Auftrag KD-2, Entscheid KD-Q3): Region wählen, die Ausführungen
+        /// der Region nennen und den gewählten Eintrag LESEN — rund 155 KB statt nur des
+        /// Zentralverzeichnisses. <see cref="AusStrom"/> ruft genau diesen Weg; ein
+        /// zweiter Leser könnte eine andere Reihe liefern als die Vorschau zeigt.
+        ///
+        /// <para><b>Fehlt die gewählte Ausführung</b>, wirft der Vorschauweg NICHT: Er
+        /// meldet <see cref="TryPaketErgebnis.AusfuehrungGefunden"/> = nein mit dem
+        /// benannten Grund und den vorhandenen Ausführungen, damit der Dialog sie zur Wahl
+        /// stellen kann.</para>
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Kein Eintrag für das Bezugsjahr,
+        /// oder der nächste Regionsmittelpunkt liegt zu weit weg.</exception>
+        public static TryPaketErgebnis VorschauAusStrom(Stream strom, double lon, double lat,
+                                                        int jahr, TrySzenario szenario)
+        {
             if (strom == null) throw new ArgumentNullException(nameof(strom));
 
             var erg = new TryPaketErgebnis();
@@ -370,6 +409,9 @@ namespace WindowsFormsApplication1
             {
                 List<Paketeintrag> eintraege = Zentralverzeichnis(archiv);
                 TryRegion beste = Regionswahl(eintraege, lon, lat, jahr);
+
+                erg.Region = beste;
+                erg.Ausfuehrungen = Ausfuehrungen(eintraege, beste.Nummer);
 
                 ZipArchiveEntry datei = null;
                 foreach (Paketeintrag e in eintraege)
@@ -381,18 +423,71 @@ namespace WindowsFormsApplication1
                 }
 
                 if (datei == null)
-                    throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                {
+                    erg.AusfuehrungGefunden = false;
+                    erg.Grund = string.Format(CultureInfo.CurrentCulture,
                         MyResource.Resource.KLIMA_TRY_KEIN_SZENARIO,
                         Kuerzel(szenario),
-                        beste.Nummer.ToString(CultureInfo.CurrentCulture)));
+                        beste.Nummer.ToString(CultureInfo.CurrentCulture));
+                    return erg;
+                }
 
-                erg.Region = beste;
                 erg.Eintrag = datei.FullName;
                 erg.Stunden = DwdTryLeser.Lesen(Zeilen(datei), out TryKopf kopf);
                 erg.Kopf = kopf;
             }
 
             return erg;
+        }
+
+        /// <summary>Der Vorschauweg aus einer LOKALEN <c>data.zip</c>.</summary>
+        public static TryPaketErgebnis VorschauAusDatei(string zipPfad, double lon, double lat,
+                                                        int jahr, TrySzenario szenario)
+        {
+            if (string.IsNullOrWhiteSpace(zipPfad) || !File.Exists(zipPfad))
+                throw new FileNotFoundException(zipPfad ?? "");
+
+            using (FileStream fs = File.OpenRead(zipPfad))
+            {
+                return VorschauAusStrom(fs, lon, lat, jahr, szenario);
+            }
+        }
+
+        /// <summary>Der Vorschauweg über BEREICHSABRUFE.</summary>
+        public static async Task<TryPaketErgebnis> VorschauAusNetzAsync(
+            INetzbereich bereich, string adresse, double lon, double lat,
+            int jahr, TrySzenario szenario, CancellationToken abbruch = default)
+        {
+            if (bereich == null) throw new ArgumentNullException(nameof(bereich));
+            if (string.IsNullOrWhiteSpace(adresse)) adresse = ADRESSE_VORGABE;
+
+            using (BereichStream strom = await BereichStream.OeffnenAsync(
+                       bereich, adresse, abbruch).ConfigureAwait(false))
+            {
+                TryPaketErgebnis erg = VorschauAusStrom(strom, lon, lat, jahr, szenario);
+                erg.Abrufe = strom.Abrufe;
+                erg.UebertrageneBytes = strom.UebertrageneBytes;
+                return erg;
+            }
+        }
+
+        /// <summary>Jahr und Szenario jedes Eintrags einer Region, sortiert.</summary>
+        private static List<TryAusfuehrung> Ausfuehrungen(List<Paketeintrag> eintraege, int nummer)
+        {
+            var ausfuehrungen = new List<TryAusfuehrung>();
+            foreach (Paketeintrag e in eintraege)
+            {
+                if (e.Nummer != nummer) continue;
+                TrySzenario? sz = Szenario(e.Kuerzel);
+                if (!sz.HasValue) continue;
+                ausfuehrungen.Add(new TryAusfuehrung { Jahr = e.Jahr, Szenario = sz.Value });
+            }
+
+            ausfuehrungen.Sort((a, b) => a.Jahr != b.Jahr
+                ? a.Jahr.CompareTo(b.Jahr)
+                : ((int)a.Szenario).CompareTo((int)b.Szenario));
+
+            return ausfuehrungen;
         }
 
         // =================================================================
@@ -423,21 +518,8 @@ namespace WindowsFormsApplication1
                 List<Paketeintrag> eintraege = Zentralverzeichnis(archiv);
                 TryRegion beste = Regionswahl(eintraege, lon, lat, jahr);
 
-                var ausfuehrungen = new List<TryAusfuehrung>();
-                foreach (Paketeintrag e in eintraege)
-                {
-                    if (e.Nummer != beste.Nummer) continue;
-                    TrySzenario? sz = Szenario(e.Kuerzel);
-                    if (!sz.HasValue) continue;
-                    ausfuehrungen.Add(new TryAusfuehrung { Jahr = e.Jahr, Szenario = sz.Value });
-                }
-
-                ausfuehrungen.Sort((a, b) => a.Jahr != b.Jahr
-                    ? a.Jahr.CompareTo(b.Jahr)
-                    : ((int)a.Szenario).CompareTo((int)b.Szenario));
-
                 vorschau.Region = beste;
-                vorschau.Ausfuehrungen = ausfuehrungen;
+                vorschau.Ausfuehrungen = Ausfuehrungen(eintraege, beste.Nummer);
             }
 
             return vorschau;

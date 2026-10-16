@@ -9,12 +9,12 @@ F3 Betriebskosten p_B, F4 eigene Kennzahl, F5 ein Arbeitspreis inklusive Abwasse
 
 | Welle | Statuszeile | Inhalt | Nachweis |
 |---|---|---|---|
-| KB-7a | #1121 | Schemaschritt 235 `WasserpreisTraegerkarteSchema` (hängt an 234): Träger „Wasser“ (`pricing_model` WATER, m³, ID 78), Preise je Projekt aus `Tab_Energieanlagen.Wasserpreis_EUR_m3` nach `energy_project_settings.custom_price_work` (kleinste Anlagen-ID gewinnt, mit Hinweis), Spalte entfällt, Katalogstempel bleibt, Paketanhebung `SchrittWasserpreis` | Kern-Tests, Testdatenbank 235 |
-| KB-7b | #1121 | `Wasserkosten.cs`: Σ `Wasser_m3` × Arbeitspreis in den Betriebs-Topf (p_B), Nachweiszeile „Wasser Rückkühlwerk“, ohne Preis Hinweis mit Menge; nicht in Energiekosten, CO₂, BEHG, Zulässigkeit, `Verwendete`; Lauf liest keinen Preis, Hinweis `SIMENG_KAELTE_RKW_WASSER` | Kern-Tests |
-| KB-7c1 | #1121 | Trägerkarte €/m³ ohne Grundpreis, Heizwert, Emission; Sichtbarkeit bei Kältemaschine mit Rückkühlwerk (`ProjektEnergietraegerCtrl.WasserTraegerInKarte`); Unterzeile `BETRIEBSKOSTEN_WASSER_RKW` | bUnit |
-| KB-7c2 | #1121 | Kennzahl `kaelte.rk.wasser_kosten` [€/a], Fassung 24 des Vorlagenfeldkatalogs (`FASSUNG_WASSERKOSTEN_RUECKKUEHLWERK`), zehn Vorlagen neu | Kern-Tests |
-| KB-7e | #1121 | Kenndatentafel der Kältemaschine als Platzhalter (`tabelle.komponenten.kenndaten.kaeltemaschine`, `FASSUNG_KAELTEMASCHINE_GEWERK` = 24); erledigt den Platzhalterpunkt aus #1035; Messlatte `Vorlagenfeldkatalog_v24.txt` = v23 + 17 | Kern-Tests, Messlatte |
-| KB-7d | #1121 | Wiki-Quellen Kosten, Wirtschaftlichkeit, Kälteerzeugung, Hilfe Kühlung; Konzept Wirtschaftlichkeit § 3.4; Logbuch-Zeile | Dokumentationswachen |
+| KB-7a | #1125 | Schemaschritt 235 `WasserpreisTraegerkarteSchema` (hängt an 234): Träger „Wasser“ (`pricing_model` WATER, m³, ID 78), Preise je Projekt aus `Tab_Energieanlagen.Wasserpreis_EUR_m3` nach `energy_project_settings.custom_price_work` (kleinste Anlagen-ID gewinnt, mit Hinweis), Spalte entfällt, Katalogstempel bleibt, Paketanhebung `SchrittWasserpreis` | Kern-Tests, Testdatenbank 235 |
+| KB-7b | #1125 | `Wasserkosten.cs`: Σ `Wasser_m3` × Arbeitspreis in den Betriebs-Topf (p_B), Nachweiszeile „Wasser Rückkühlwerk“, ohne Preis Hinweis mit Menge; nicht in Energiekosten, CO₂, BEHG, Zulässigkeit, `Verwendete`; Lauf liest keinen Preis, Hinweis `SIMENG_KAELTE_RKW_WASSER` | Kern-Tests |
+| KB-7c1 | #1125 | Trägerkarte €/m³ ohne Grundpreis, Heizwert, Emission; Sichtbarkeit bei Kältemaschine mit Rückkühlwerk (`ProjektEnergietraegerCtrl.WasserTraegerInKarte`); Unterzeile `BETRIEBSKOSTEN_WASSER_RKW` | bUnit |
+| KB-7c2 | #1125 | Kennzahl `kaelte.rk.wasser_kosten` [€/a], Fassung 24 des Vorlagenfeldkatalogs (`FASSUNG_WASSERKOSTEN_RUECKKUEHLWERK`), zehn Vorlagen neu | Kern-Tests |
+| KB-7e | #1125 | Kenndatentafel der Kältemaschine als Platzhalter (`tabelle.komponenten.kenndaten.kaeltemaschine`, `FASSUNG_KAELTEMASCHINE_GEWERK` = 24); erledigt den Platzhalterpunkt aus #1035; Messlatte `Vorlagenfeldkatalog_v24.txt` = v23 + 17 | Kern-Tests, Messlatte |
+| KB-7d | #1125 | Wiki-Quellen Kosten, Wirtschaftlichkeit, Kälteerzeugung, Hilfe Kühlung; Konzept Wirtschaftlichkeit § 3.4; Logbuch-Zeile | Dokumentationswachen |
 
 Commits der Welle: Merge `fa67c4e86`, Testdatenbank `f4952d170`, R56 `ba986af15`.
 

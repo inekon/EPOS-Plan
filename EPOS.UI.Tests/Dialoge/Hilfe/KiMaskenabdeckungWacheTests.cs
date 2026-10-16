@@ -522,7 +522,7 @@ public sealed class KiMaskenabdeckungWacheTests
             "keine Einstellwerte des Gebäudes; die Wahl „Vorlage (alle Größen)“ führt die Rückfrage der Matrix; Feiertagsland und " +
             "Ferienbezeichnung sind Handlungen der Kalenderbedienung über dem Arbeitsstand (FeiertagslandSetzen, " +
             "FerienlisteSetzen), der Name einer benannten Woche ist die Angabe von „Woche anlegen“/„Umbenennen“"),
-        new("KlimadatenDialog", 7),
+        new("KlimadatenDialog", 8),
         new("KomponentenKonfigurationDialog", 4),
         new("KostenKomponenteDialog", 3),
         new("KostenSeite", 0),

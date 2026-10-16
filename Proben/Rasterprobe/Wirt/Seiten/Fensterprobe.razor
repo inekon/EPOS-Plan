@@ -33,7 +33,9 @@
                            Die Bearbeiten-Ueberlagerung einer Zeile zeigt die Kaeltegrafik (KBP-3b) aus einer
                            synthetischen Reihe, die dem Arbeitsstand folgt (Jahressumme, Monatsanteile, Kalender 2 =
                            Betriebsferien); Blatt Woche mit Wahl der Kalenderwoche (fensterprobe.mjs, Fall kaeltegrafik)
-      ?meldung=1           fuer die Bannerprobe (bannerprobe.mjs): Heizkessel und BHKW melden bei
+      ?fall=klimaimport    KlimadatenDialog (Katalogdialog); "Import..." oeffnet die Ueberlagerung "Klimadaten
+                           einlesen" (.epos-einlesen) - ihre Schlussleiste haftet am Boden (KD-1)
+      ?meldung=1          fuer die Bannerprobe (bannerprobe.mjs): Heizkessel und BHKW melden bei
                            "Hinzufuegen" einen Fehler der Traegerwahl, der Gebaeudedialog traegt
                            "In DB uebernehmen" (weich gesperrt - der Versuch meldet den Grund);
                            ohne den Schalter steht alles wie fuer die Fensterprobe
@@ -208,6 +210,20 @@
                                   Geschlossen="@(b => Beendet(b))" />
             break;
 
+        case "klimaimport":
+            @* KD-1: Die Ueberlagerung "Klimadaten einlesen" traegt .epos-einlesen statt eines
+               .epos-dialog und eine Leiste ohne Statusspanne - die Probe misst, dass ihre
+               Schlussleiste dennoch am Boden der Ueberlagerung haftet. *@
+            <EPOS.UI.Dialoge.Klimadaten.KlimadatenDialog
+                Regionen="@(() => Task.FromResult<IReadOnlyList<Katalogfilterzeile>>(new[] { new Katalogfilterzeile(1, "Region 1") }))"
+                Filterstandvorgabe="@_filterstand"
+                Importieren="@((_, _) => Task.FromResult(new KlimaImportErgebnis()))"
+                DateiWaehlen="@(_ => Task.FromResult<string?>(null))"
+                RegionErmitteln="@KlimaVorschau"
+                Loeschen="@(_ => Task.FromResult(true))"
+                Geschlossen="@(b => Beendet(b))" />
+            break;
+
         default:
             <p>unbekannter Fall: @_fall</p>
             break;
@@ -221,6 +237,50 @@
 <p id="probe-ausgang" hidden data-ausgang="@_ausgang"></p>
 
 @code {
+    /// <summary>
+    /// KD-3: eine volle Vorschau fuer "Datensatz suchen" im Fall klimaimport - neutrale Werte
+    /// (Station 1, 56 km, 734 m), Kennzahlen mit Monatsreihen, Parameterbestand und Hinweise.
+    /// So misst die Probe die Ueberlagerung MIT Vorschaukarte, ihrer hoechsten Gestalt.
+    /// </summary>
+    private static Task<WindowsFormsApplication1.KlimaVorschauErgebnis> KlimaVorschau(WindowsFormsApplication1.KlimaImportAuftrag a)
+    {
+        var kz = new WindowsFormsApplication1.KlimaKennzahlen
+        {
+            Stunden = 8760, Tage = 365, TemperaturMittel = 9.9, TemperaturMin = -12.4, TemperaturMax = 34.3,
+            GlobalstrahlungKwhM2 = 1147, GradtagzahlKdA = 3105, Heiztage = 209
+        };
+        for (int m = 0; m < 12; m++)
+        {
+            kz.MonatsmittelTemperatur[m] = 10 - 9 * Math.Cos(2 * Math.PI * (m + 0.5) / 12);
+            kz.MonatssummeGlobalstrahlungKwhM2[m] = 95 - 70 * Math.Cos(2 * Math.PI * (m + 0.5) / 12);
+        }
+        var bestand = new List<WindowsFormsApplication1.KlimaParameterEintrag>();
+        foreach (WindowsFormsApplication1.KlimaParameter p in Enum.GetValues<WindowsFormsApplication1.KlimaParameter>())
+            bestand.Add(new() { Parameter = p, Stand = WindowsFormsApplication1.KlimaParameterStand.Gefuehrt });
+        return Task.FromResult(new WindowsFormsApplication1.KlimaVorschauErgebnis
+        {
+            Ausgang = WindowsFormsApplication1.KlimaImportAusgang.Erfolg,
+            Quelle = a.Quelle,
+            Bezugsjahr = a.TryJahr,
+            Szenario = a.Szenario,
+            AusfuehrungGefunden = true,
+            Standort = new WindowsFormsApplication1.KlimaStandort
+            {
+                Latitude = 48.7289, Longitude = 9.1085, Anzeigename = "Ort 1, Land 1", AusGeokodierung = true, HoeheM = 450
+            },
+            Bezugspunkt = new WindowsFormsApplication1.KlimaBezugspunkt
+            {
+                Art = WindowsFormsApplication1.KlimaBezugspunktArt.Repraesentanzstation, Name = "Station 1",
+                Latitude = 48.6536, Longitude = 9.8666, HoeheM = 734, EntfernungKm = 56
+            },
+            HoehenunterschiedM = 284,
+            Kennzahlen = kz,
+            Parameterbestand = bestand,
+            Repraesentanzhinweis = true,
+            Ortshinweis = true
+        });
+    }
+
     /// <summary>VG1 (KA-E-24): eine kleine Parameterliste für „Vergleichen…" über beide Listen — neutrale Werte.</summary>
     private static IReadOnlyList<WindowsFormsApplication1.Parameterwert> VglWerte(string name, int leistung)
     {

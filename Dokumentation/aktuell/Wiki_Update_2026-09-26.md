@@ -420,7 +420,7 @@ Version vom Anwender bestätigt (09.10.2026); Anwenderwünsche vom 08.10.2026.
 - 13.10.2026: Arbeits-, Grund- und Leistungspreis eines Brennstoffs stehen allein in der Karte seines Energieträgers. (#1080)
 - 14.10.2026: Die Gerätekataloge führen keine Kostenfelder mehr; die Kosten eines Geräts stehen allein in der Kostenverwaltung, die Maske zeigt die Gerätekosten bzw. den Kostensatz aus der Satzvorlage des Katalogsatzes. (#1095)
 - 16.10.2026: Auch die Kosten des Stromspeichers stehen wie bei den übrigen Gewerken allein in der Kostenverwaltung; der Katalogsatz führt keine Kostenfelder mehr. (#1100)
-- 16.10.2026: Die Wasserkosten des Rückkühlwerks werden mit dem Preis des Trägers Wasser als Betriebskosten gerechnet. (#1121)
+- 16.10.2026: Die Wasserkosten des Rückkühlwerks werden mit dem Preis des Trägers Wasser als Betriebskosten gerechnet. (#1125)
 
 ### Version 1.2.0.8 — veröffentlicht 10.10.2026 (Revision 827)
 
@@ -1108,6 +1108,11 @@ Der Sammel-Upload 1.2.0.11 lief am 14.10.2026 (Seite Brauchwasser-Zapfprofil Rev
 
 - Seit 14.10.2026: Die mitgelieferten Brauchwasser-Nutzungsarten rechnen im Zapfprofil-Dialog in der Stufe „Einfach“ ohne zusätzlichen Katalog. (#1096)
 - Seit 16.10.2026: In der Stufe Einfach empfiehlt die Speicherauslegung im Brauchwasser-Zapfprofil auch ohne externes Katalogpaket einen Speicher-Nenninhalt, gekennzeichnet als Schnellauslegung nach Vorlage V4. (#1112)
+
+### Entwurf, Version offen (Klimadaten-Import, Einlesen-Dialoge)
+
+- Seit 16.10.2026: Der Klimadaten-Import zeigt vor dem Einlesen den gefundenen Datensatz mit Treffer, Standort und Kennzahlen. (#1123, #1124)
+- Seit 16.10.2026: Die Knöpfe der Einlesen-Dialoge bleiben am unteren Fensterrand sichtbar. (#1122)
 
 ## 3 Offene Punkte
 
