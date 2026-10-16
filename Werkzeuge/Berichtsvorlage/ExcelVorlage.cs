@@ -119,7 +119,6 @@ namespace Berichtsvorlage
             int excel = Vorlagenfeldkatalog.KATALOGFASSUNG;
             return new List<Sammelschritt>
             {
-                new Sammelschritt("Berichtsvorlage_Beispiel.docx", (q, z, a) => Beispielvorlage.Ausfuehren(q, z, Vorlagenart.Beispiel, word, a)),
                 new Sammelschritt(BerichtsvorlagenCtrl.DATEI_STANDARD, (q, z, a) => Beispielvorlage.Ausfuehren(q, z, Vorlagenart.Standard, word, a)),
                 new Sammelschritt(BerichtsvorlagenCtrl.DATEI_KURZBERICHT, (q, z, a) => Kurzbericht.Ausfuehren(q, z, false, word, a)),
                 new Sammelschritt(BerichtsvorlagenCtrl.DATEI_KURZBERICHT_EN, (q, z, a) => Kurzbericht.Ausfuehren(q, z, true, word, a)),

@@ -274,9 +274,7 @@
        in der Zeile "Excel-Vorlage" direkt waehlbar.
        Alle ausgelieferten Vorlagen erzeugt der Sammelbefehl des Werkzeugs
        (alle <vorlagenordner>); die Aktualitaetswache
-       EPOS.Kern.Tests/AuslieferungsvorlagenAktualitaetWacheTests haelt sie beim Katalog.
-       Berichtsvorlage_Beispiel.docx ist die Beispielvorlage zur Anschauung
-       und wird nicht ausgeliefert. -->
+       EPOS.Kern.Tests/AuslieferungsvorlagenAktualitaetWacheTests haelt sie beim Katalog. -->
   <ItemGroup>
     <None Update="Allgemein\Bericht\Vorlagen\Berichtsvorlage.docx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

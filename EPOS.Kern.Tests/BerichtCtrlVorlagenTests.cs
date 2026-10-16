@@ -142,7 +142,7 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// Abweichung auf eine eigene Vorlage — eine Kopie der Beispielvorlage: Deckblatt gefüllt, die
+        /// Abweichung auf eine eigene Vorlage im vollen Aufbau: Deckblatt gefüllt, die
         /// acht <c>{{kapitel.*}}</c> kennt Katalog v1 nicht, sie stehen gelb im Bericht und in der
         /// Laufmeldung; die zwei Kommentare sind entfernt und genannt.
         /// </summary>
