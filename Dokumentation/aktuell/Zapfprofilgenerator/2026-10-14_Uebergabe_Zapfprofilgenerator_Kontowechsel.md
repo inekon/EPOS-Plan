@@ -51,7 +51,7 @@ CI-grün.
 | Modellwahl | Fable 5 nur für sehr komplexe Aufgaben und die Orchestrierung; sonst Opus 5.5, Sonnet und Haiku je nach Aufgabe, auch für Agenten |
 | K5 (16.10.2026) | eigene Messobjekte vorerst zurückgestellt |
 | Datenanfragen (16.10.2026) | die vorbereiteten Anfragen werden nicht vorgenommen |
-| iOS-Lauf #524/#540 (16.10.2026) | freigegeben für einen Lauf am 16.10.2026, 22:00 Uhr (geplant) |
+| iOS-Lauf #524/#540 (16.10.2026) | freigegeben für einen Lauf am 16.10.2026, 22:00 Uhr (geplant); Anwenderentscheid 16.10. abends: Lauf auf den Abend des 17.10. verschoben, nur auf Rückfrage (Freigabe vom 16.10. erloschen) |
 | Speicherauslegung „Einfach“ (16.10.2026) | Variante 1: ohne A100-Werte Schnellauslegung nach Vorlage V4 (#1107) |
 
 Stehende Anweisungen des Anwenders, wörtlich: „nach grünem Gate auf ios_migration_september ohne Rückfrage
