@@ -193,14 +193,15 @@ public class ModulKatalogDialogTests : EposBunitContext
         Assert.Contains("kWh", einheiten);
         Assert.Contains("€/kWh", einheiten);
 
-        // Der Designer trug an der Kapazitaet "kW" und an den Modulkosten ein nacktes
+        // Der Designer trug an der Kapazitaet "kW" und an den Kosten ein nacktes
         // "€"; beides berichtigte der Vorlaeufer erst zur Laufzeit. Jetzt steht es
-        // gleich richtig im Profil - das "€" der AP3-Investition bleibt davon
-        // unberuehrt.
+        // gleich richtig im Profil - seit KB-5 als gesperrter Kostensatz der
+        // Satzvorlage je kWh Nennkapazitaet.
         var profil = Profil(ModulKatalogArt.Stromspeicher);
         Assert.Equal("kWh", profil.Felder.First(f => f.Schluessel == ModulKatalogProfil.FeldEnergie).Einheit);
-        Assert.Equal("€/kWh", profil.Felder.First(f => f.Schluessel == ModulKatalogProfil.FeldModulkosten).Einheit);
-        Assert.Equal("€", profil.Felder.First(f => f.Schluessel == ModulKatalogProfil.FeldInvestitionFix).Einheit);
+        ModulKatalogFeld satz = profil.Felder.First(f => f.Schluessel == ModulKatalogProfil.FeldKostensatz);
+        Assert.Equal("€/kWh", satz.Einheit);
+        Assert.True(satz.Gesperrt);
     }
 
     [Fact]

@@ -1078,7 +1078,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal("", Vorgabe(sp, ModulKatalogProfil.FeldBezeichner));
             Assert.Equal("Lithium-Ionen", Vorgabe(sp, ModulKatalogProfil.FeldTyp));
             Assert.Equal("0,9", Vorgabe(sp, ModulKatalogProfil.FeldWirkungsgradRt));
-            Assert.Equal("0,025", Vorgabe(sp, ModulKatalogProfil.FeldVerschleisskosten));
+            // Welle KB-5: Der Verschleisssatz ist kein Katalogfeld mehr; der Kostensatz ist ein Lesewert ohne Vorgabe.
+            Assert.Equal("", Vorgabe(sp, ModulKatalogProfil.FeldKostensatz));
             Assert.Equal("0", Vorgabe(sp, ModulKatalogProfil.FeldEnergie));
 
             var pv = ModulKatalogProfil.Finde(ModulKatalogArt.Photovoltaik);

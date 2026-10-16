@@ -503,11 +503,7 @@ namespace EPOS.Kern.Tests
             // zu werden.
             Assert.Equal("", ctrl.m_szTyp ?? "");
 
-            // Entscheide Q3 und Q6: nichts erfunden.
-            Assert.Equal(0.0, ctrl.m_Modulkosten);
-            Assert.Equal(0.0, ctrl.m_Leistungskosten);
-            Assert.Equal(0.0, ctrl.m_InvestitionFix);
-            Assert.Equal(0.0, ctrl.m_Verschleisskosten);
+            // Entscheide Q3 und Q6: nichts erfunden (Kosten fuehrt das Modell seit KB-5 gar nicht).
             Assert.Equal(0.0, ctrl.m_Degradation);
             Assert.Equal(0.0, ctrl.m_Ladezustand);
             Assert.Equal(0, ctrl.m_ZyklenZugesichert);

@@ -276,8 +276,10 @@ namespace EPOS.Kern.Tests
         /// </summary>
         [Theory]
         // Welle KB-4: Heizkessel, BHKW, Waermepumpe, Photovoltaik, Solarkollektor, Pufferspeicher und Kaeltemaschine fuehren
-        // keine Kostenspalte mehr - ihre Kosten stehen in der Satzvorlage des Katalogsatzes.
-        [InlineData(Anlagenart.Stromspeicher, "Leistungskosten")]
+        // keine Kostenspalte mehr - ihre Kosten stehen in der Satzvorlage des Katalogsatzes; der Stromspeicher seit KB-5
+        // ebenso. Was die Kostenseite liest, ist der Verweis auf die Satzvorlage.
+        [InlineData(Anlagenart.Stromspeicher, KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION)]
+        [InlineData(Anlagenart.Stromspeicher, KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE)]
         public void Die_Kostenseite_ist_als_Wirtschaftlichkeit_gekennzeichnet(Anlagenart art, string spalte)
         {
             Assert.True(Eintrag(art, spalte).Hat(Verwendung.Wirtschaftlichkeit),
@@ -571,9 +573,8 @@ namespace EPOS.Kern.Tests
 
                 case Anlagenart.Stromspeicher:
                     return new[] { "Bezeichner", "Typ", "Energie", "Leistung", "Ladezustand",
-                                   "Degradation", "Modulkosten", "Wirkungsgrad_RT",
-                                   "Zyklen_Zugesichert", "Verschleisskosten", "Leistungskosten",
-                                   "Investition_Fix", "Standby_Verbrauch",
+                                   "Degradation", "Wirkungsgrad_RT",
+                                   "Zyklen_Zugesichert", "Standby_Verbrauch",
                                    // Welle M5 (SP1): das Katalogfeld „Selbstentladung".
                                    StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG };
 
