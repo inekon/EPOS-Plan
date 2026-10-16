@@ -44,3 +44,7 @@ Schalter der Reiter (Muster „Produktion“) und bleibt deshalb unverändert.
 
 Teil b der Welle RZ. Wiki-Quellen (Simulation, Wärmepumpe, Stromspeicher) gehen mit dem Sammel-Upload hinaus. Den
 Logbuch-Entwurf bekommt die Orchestrierung, die Version erfragt sie beim Anwender. Sichtprüfung unter Windows.
+
+## Integration
+
+Zweig `integ-dk`, 16.10.2026, zusammen mit `kd8a`, `mu`, `rza`, `rzb` und `origin` (Schritt 237, Basis R57). `KiMaskenabdeckungWacheTests`: `WaermepumpeReiter` zusammen mit RZ-b 11. EPOS.UI.Tests 9645 grün, `ZuschaltbareReihenStromTests` und `PeakShavingBildTests` grün (Kern-Teilmenge 616). Gate gegen R57: Referenzlauf 38 Projekte ohne Abweichung (13 025 956 Werte, CSV 1233 von 1233 byte-gleich), KiKern 553, SpeicherEngine 397, SpeicherPlanung 27, Dokumentationswachen 35, Werkzeugtests 250, ChartProben 257 Bilder 0 Verstöße (Messlatte unverändert), SQL-Dialektprüfer grün, Windows-Schale 0 Fehler.
