@@ -7368,7 +7368,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Angaben stehen seit Etappe B5 im eigenen Dialog „BHKW-Wirtschaftlichkeit“ — dort zusammen mit den Werten je BHKW-Modul, den Herleitungen und der Vorschau. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Angaben stehen im eigenen Dialog „BHKW-Wirtschaftlichkeit“ — dort zusammen mit den Werten je BHKW-Modul, den Herleitungen und der Vorschau. ähnelt.
         /// </summary>
         public static string BHW_PARAM_VERWEIS {
             get {
@@ -30946,15 +30946,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_OPT_KEINE_GERAETE {
             get {
                 return ResourceManager.GetString("FLOTTE_OPT_KEINE_GERAETE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Noch keine Suche gerechnet. ähnelt.
-        /// </summary>
-        public static string FLOTTE_OPT_KEIN_ERGEBNIS {
-            get {
-                return ResourceManager.GetString("FLOTTE_OPT_KEIN_ERGEBNIS", resourceCulture);
             }
         }
         

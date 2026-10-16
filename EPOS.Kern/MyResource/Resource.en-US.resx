@@ -11977,7 +11977,7 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
     <value>CHP unit — CHP Act, energy and electricity tax</value>
   </data>
   <data name="BHW_PARAM_VERWEIS" xml:space="preserve">
-    <value>As of stage B5 these settings are held in the separate dialogue "CHP economics" — there together with the values per CHP module, the derivations and the preview.</value>
+    <value>These settings are held in the separate dialogue "CHP economics" — there together with the values per CHP module, the derivations and the preview.</value>
   </data>
   <data name="VPOS_TITEL" xml:space="preserve">
     <value>Edit item</value>
@@ -21262,9 +21262,6 @@ Do you want to allow this?</value>
   </data>
   <data name="FLOTTE_OPT_MARKE_FEIN" xml:space="preserve">
     <value>Fine grid</value>
-  </data>
-  <data name="FLOTTE_OPT_KEIN_ERGEBNIS" xml:space="preserve">
-    <value>No search computed yet.</value>
   </data>
   <data name="FLOTTE_ED_KOSTEN_EINHEIT" xml:space="preserve">
     <value>Costs of this unit</value>

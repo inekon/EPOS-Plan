@@ -421,7 +421,7 @@ Versionswahl ist ein Anzeigezustand, kein Einstellwert der Seite (kein Feld in d
   Umweltanteil nach Jahresarbeitszahl)“ — vor den Ganglinien, weil es ohne Zeitreihen immer da
   ist. Der Excel-Bericht bekommt kein Diagramm (ein Sankey ist kein Excel-Diagrammtyp); der
   Prüfer meldet den Platzhalter in Excel als „nur Word“ (`Vorlagenausgabe.Word`).
-- Die Standardvorlage und die Beispielvorlage werden nicht neu gebaut (die letzte
+- Die Standardvorlage wird nicht neu gebaut (die letzte
   Fassungsanhebung auf 24 hat sie ebenfalls nicht berührt); wer das Bild in einer eigenen
   Vorlage will, setzt den Platzhalter.
 
