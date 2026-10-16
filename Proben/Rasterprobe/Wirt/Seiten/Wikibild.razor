@@ -20,6 +20,8 @@
                  solarkollektoren|brauchwasser|prozesswaerme|gebaeude|kaeltemaschine|
                  klimadaten|kaeltebedarf|betriebskalender|waermebedarf|strombedarf|zapfprofil|baustoffe
                  (die Beispieldaten der zweiten Reihe stehen in Wikibild.Weitere.cs)
+                 |einstellungen|lizenz|projektverwaltung|varianten|projekttransfer|erdreich|simulation
+                 (die übrigen Bilder stehen in Wikibild.Uebrige.cs)
            ?kultur=de-DE   (die Kultur des Wirtes, siehe Program.cs)
 *@
 
@@ -342,7 +344,15 @@
             break;
 
         default:
-            <p>Unbekanntes Bild „@_bild“.</p>
+            @* Die übrigen Bilder (Beispieldaten und Parametersatz in Wikibild.Uebrige.cs). *@
+            @if (Uebrig is { } uebrig)
+            {
+                <DynamicComponent Type="@uebrig.Typ" Parameters="@uebrig.Gaben" />
+            }
+            else
+            {
+                <p>Unbekanntes Bild „@_bild“.</p>
+            }
             break;
     }
 </div>

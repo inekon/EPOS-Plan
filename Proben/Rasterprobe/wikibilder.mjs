@@ -63,6 +63,14 @@ const BILDER = [
   ['strombedarf', 'Strombedarf', { seite: '/wikibild?bild=strombedarf', wahl: '.epos-wikibild .epos-dialog', zeile: ['.epos-projektzeile', 'Messung Bürogebäude'], breite: 1400, hoehe: 800 }],
   ['zapfprofil', 'Zapfprofil', { seite: '/wikibild?bild=zapfprofil', wahl: '.epos-wikibild .epos-dialog', hoehe: 1500 }],
   ['baustoffe', 'Baustoffe'],
+  // Die uebrigen Bilder (Beispieldaten in Wirt/Seiten/Wikibild.Uebrige.cs).
+  ['einstellungen', 'Einstellungen', { seite: '/wikibild?bild=einstellungen', wahl: '.epos-wikibild .epos-dialog', reiter: 'Datenbank', hoehe: 900 }],
+  ['lizenz', 'Lizenz', { seite: '/wikibild?bild=lizenz', wahl: '.epos-wikibild .epos-lizenz', hoehe: 1200 }],
+  ['projektverwaltung', 'Projektverwaltung', { seite: '/wikibild?bild=projektverwaltung', wahl: '.epos-wikibild .epos-dialog', hoehe: 800 }],
+  ['varianten', 'Varianten', { seite: '/wikibild?bild=varianten', wahl: '.epos-wikibild .epos-dialog', hoehe: 800 }],
+  ['projekttransfer', 'Projekttransfer', { seite: '/wikibild?bild=projekttransfer', wahl: '.epos-wikibild .epos-dialog', hoehe: 900 }],
+  ['erdreich', 'Erdreich', { seite: '/wikibild?bild=erdreich', wahl: '.epos-wikibild .epos-dialog', hoehe: 1600 }],
+  ['simulation', 'Simulation', { seite: '/wikibild?bild=simulation', wahl: '.epos-wikibild .epos-dialog', hoehe: 1600 }],
 ];
 
 // Bei diesen Bildern steht der Bereich "Gewaehlter Satz" aufgeklappt - die Wiki-Seite
