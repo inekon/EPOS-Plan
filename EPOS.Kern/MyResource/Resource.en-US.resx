@@ -56416,5 +56416,35 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="KBP_GRAFIK_ERL" xml:space="preserve">
     <value>Chart of the selected cooling row: annual profile, months, week and duration curve with key figures (display only).</value>
   </data>
+  <data name="KBP_WOCHE_EINTRAG" xml:space="preserve">
+    <value>CW {0} ({1}–{2})</value>
+  </data>
+  <data name="KBP_TITEL_KALENDERWOCHE" xml:space="preserve">
+    <value>Cooling demand {0}</value>
+  </data>
+  <data name="KBP_LBL_KALENDERWOCHE" xml:space="preserve">
+    <value>Calendar week</value>
+  </data>
+  <data name="KBP_TAGESART_WERKTAG" xml:space="preserve">
+    <value>Working day</value>
+  </data>
+  <data name="KBP_TAGESART_SAMSTAG" xml:space="preserve">
+    <value>Saturday</value>
+  </data>
+  <data name="KBP_TAGESART_SONNTAG" xml:space="preserve">
+    <value>Sunday/public holiday</value>
+  </data>
+  <data name="KBP_TAGESART_FERIEN" xml:space="preserve">
+    <value>Closure period</value>
+  </data>
+  <data name="KBP_TAGESART_AUSSERHALB" xml:space="preserve">
+    <value>outside the year</value>
+  </data>
+  <data name="KBP_HINW_GRAFIKWOCHE" xml:space="preserve">
+    <value>Background by day type of the operating calendar; calendar weeks per ISO 8601 within the year grid, starting with the week of the peak.</value>
+  </data>
+  <data name="KBP_GRAFIK_HERLEITUNG_ARBEIT" xml:space="preserve">
+    <value>The working state of this dialog is calculated – annual total, monthly values, weekly profile and operating calendar, unsaved ones included. Annual profile, week and duration curve show the selected row; the months stack all rows.</value>
+  </data>
 </root>
 

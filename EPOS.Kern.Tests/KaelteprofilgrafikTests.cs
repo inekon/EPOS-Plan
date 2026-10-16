@@ -83,15 +83,39 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Kaelteprofilgrafik.SONNTAG, ohne[3]);
             Assert.DoesNotContain(Kaelteprofilgrafik.FERIEN, ohne);
 
-            double[][] gaenge = Kaelteprofilgrafik.Tagesgaenge(r, ohne);
-            Assert.Null(gaenge[Kaelteprofilgrafik.FERIEN]);
-            double[] woche = Kaelteprofilgrafik.TypischeWoche(gaenge);
+            // Kalenderwochen nach DIN EN ISO 8601: Der 1. Januar ist ein Donnerstag - 53 Wochen, KW 1 beginnt am 29.12.
+            Assert.Equal(53, Kaelteprofilgrafik.Wochenzahl(W0));
+            Assert.Equal(52, Kaelteprofilgrafik.Wochenzahl(0));
+            Assert.Equal(-3, Kaelteprofilgrafik.ErsterTag(1, W0));
+            Assert.Equal(0, Kaelteprofilgrafik.ErsterTag(1, 0));
+            Assert.Equal(3, Kaelteprofilgrafik.ErsterTag(1, 4));                // Freitag: KW 1 beginnt am 4. Januar
+            Assert.Equal(1, Kaelteprofilgrafik.WocheDesTags(1, 4));             // der 2. Januar gehört zu keiner Woche des Jahres
+            Assert.Equal(27, Kaelteprofilgrafik.WocheDesTags(180, W0));
+            Assert.Equal(string.Format(WindowsFormsApplication1.MyResource.Resource.KBP_WOCHE_EINTRAG, 27, "29.06.", "05.07."), Kaelteprofilgrafik.Wochentext(27, W0));
+            Assert.Equal(string.Format(WindowsFormsApplication1.MyResource.Resource.KBP_WOCHE_EINTRAG, 1, "01.01.", "04.01."), Kaelteprofilgrafik.Wochentext(1, W0));
+
+            double[] woche = Kaelteprofilgrafik.Wochenwerte(r, 2, W0);         // KW 2: Montag, der 5. Januar
             Assert.Equal(168, woche.Length);
             Assert.Equal(10.0, woche[0 * 24 + 8], 9);       // Montag 8 Uhr
             Assert.Equal(2.0, woche[4 * 24 + 22], 9);       // Freitag 22 Uhr
             Assert.Equal(4.0, woche[5 * 24 + 8], 9);        // Samstag
             Assert.Equal(2.0, woche[6 * 24 + 8], 9);        // Sonntag
-            Assert.Null(Kaelteprofilgrafik.Ferienwoche(gaenge));
+            double[] erste = Kaelteprofilgrafik.Wochenwerte(r, 1, W0);
+            Assert.All(erste.Take(72), w => Assert.Equal(0.0, w));             // 29. bis 31.12. liegen außerhalb
+            Assert.Equal(10.0, erste[3 * 24 + 8], 9);                          // Donnerstag, der 1. Januar
+            Assert.Equal(new byte[] { Kaelteprofilgrafik.AUSSERHALB, Kaelteprofilgrafik.AUSSERHALB, Kaelteprofilgrafik.AUSSERHALB,
+                                      Kaelteprofilgrafik.WERKTAG, Kaelteprofilgrafik.WERKTAG, Kaelteprofilgrafik.SAMSTAG,
+                                      Kaelteprofilgrafik.SONNTAG }, Kaelteprofilgrafik.Wochentagesarten(ohne, 1, W0));
+            byte[] letzte = Kaelteprofilgrafik.Wochentagesarten(ohne, 53, W0);    // 28.12. bis 03.01.
+            Assert.Equal(new byte[] { Kaelteprofilgrafik.AUSSERHALB, Kaelteprofilgrafik.AUSSERHALB, Kaelteprofilgrafik.AUSSERHALB },
+                         letzte.Skip(4).ToArray());
+
+            // Vorgabewoche: die Woche der Spitze; ohne Spitze die erste ganze Woche.
+            var spitze = (double[])r.Clone();
+            spitze[180 * 24 + 12] = 99.0;
+            Assert.Equal(27, Kaelteprofilgrafik.Vorgabewoche(spitze, W0));
+            Assert.Equal(2, Kaelteprofilgrafik.Vorgabewoche(new double[8760], W0));
+            Assert.Equal(1, Kaelteprofilgrafik.Vorgabewoche(new double[8760], 0));
 
             // Kalender: Ferien gehen Feiertag und Wochentag vor, ein Feiertag zählt als Sonntag.
             var arten = new byte[365];
@@ -101,15 +125,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Kaelteprofilgrafik.SONNTAG, mit[0]);
             Assert.All(mit.Skip(200).Take(14), k => Assert.Equal(Kaelteprofilgrafik.FERIEN, k));
 
-            double[][] mitGaengen = Kaelteprofilgrafik.Tagesgaenge(r, mit);
-            // Zwei Wochen Ferien: zehn Werktage zu 10/2, je zwei Samstage und Sonntage.
-            double ferienMittag = (10 * 10.0 + 2 * 4.0 + 2 * 2.0) / 14.0;
-            Assert.Equal(ferienMittag, mitGaengen[Kaelteprofilgrafik.FERIEN][12], 9);
-            double[] ferienwoche = Kaelteprofilgrafik.Ferienwoche(mitGaengen);
-            Assert.Equal(168, ferienwoche.Length);
-            Assert.Equal(ferienMittag, ferienwoche[6 * 24 + 12], 9);
-            // Der Feiertag geht in den Sonntag ein: dort mittags ein Donnerstag zu 10 kW unter lauter 2 kW.
-            Assert.True(mitGaengen[Kaelteprofilgrafik.SONNTAG][12] > 2.0);
+            // KW 30 beginnt am 20. Juli (Tag 200): sieben Ferientage im Hintergrund der Woche.
+            Assert.All(Kaelteprofilgrafik.Wochentagesarten(mit, 30, W0), k => Assert.Equal(Kaelteprofilgrafik.FERIEN, k));
+            Assert.Equal(Kaelteprofilgrafik.SONNTAG, Kaelteprofilgrafik.Wochentagesarten(mit, 1, W0)[3]);   // Neujahr
         }
 
         [Fact]
@@ -147,9 +165,22 @@ namespace EPOS.Kern.Tests
             double[] dl = eine.Dauerlinie.Reihen[0].Werte;
             for (int i = 1; i < dl.Length; i++) Assert.True(dl[i - 1] >= dl[i]);
 
-            // Woche: 168 Stunden, keine Jahreszeitachse.
-            Assert.Equal(168, eine.Woche.Reihen[0].Werte.Length);
+            // Woche: 168 Stunden der Vorgabewoche (die Spitze liegt im ersten Werktag 7 Uhr), keine Jahreszeitachse, EINE
+            // Reihe (die Tagesarten sind Hintergrund), durchsichtig; dieselbe Referenz wie Wochenbild(Vorgabewoche).
+            Assert.Equal(1, eine.Vorgabewoche);
+            Assert.Equal(53, eine.Wochenzahl);
+            Assert.Equal(53, eine.Wocheneintraege.Count);
+            Assert.Equal(168, eine.Woche.Reihen.Single().Werte.Length);
             Assert.Equal(0.0, Zeitachse.StundenJeStuetzstelle(eine.Woche.Flaeche));
+            Assert.Equal((byte)0, eine.Woche.Hintergrund.Deckung);
+            Assert.Same(eine.Woche, eine.Wochenbild(1).Modell);
+            Kaeltewochenbild kw27 = eine.Wochenbild(27);
+            Assert.Same(kw27, eine.Wochenbild(27));
+            Assert.Equal(179, kw27.ErsterTag);
+            Assert.Equal(a.Skip(179 * 24).Take(168).ToArray(), kw27.Modell.Reihen.Single().Werte);
+            Assert.Same(eine.Wochenbild(53), eine.Wochenbild(99));
+            var lage = kw27.Flaechenlage;
+            Assert.True(lage.Links > 0 && lage.Links + lage.Breite < 1 && lage.Oben > 0 && lage.Oben + lage.Hoehe < 1);
 
             // Monate: eine Zeile - zwölf Säulen ohne Zeichenfläche; zwei Zeilen - Stapel je Zeile.
             Assert.Null(eine.Monate.Flaeche);
@@ -163,7 +194,7 @@ namespace EPOS.Kern.Tests
         public void Der_Controller_rechnet_die_markierte_Zeile_mit_der_Jahressumme_des_Dialogs()
         {
             if (!_db.Vorhanden) return;
-            var zeile = new Kaeltegrafikzeile(KUEHLRAUM, 30.0, null);
+            var zeile = new Kaeltegrafikzeile(KUEHLRAUM, 30.0, null, null, null);
             Kaelteprofilbilder bilder = KaelteprofilgrafikCtrl.Rechnen(PROJEKT, new[] { zeile }, zeile);
             Assert.NotNull(bilder);
             Assert.Equal(30.0, bilder.Kennzahlen.JahressummeMwh, 6);
@@ -173,6 +204,77 @@ namespace EPOS.Kern.Tests
             Assert.Null(KaelteprofilgrafikCtrl.Rechnen(PROJEKT, new[] { zeile }, null));
             var fremd = new Kaeltegrafikzeile("", 1, null);
             Assert.Null(KaelteprofilgrafikCtrl.Rechnen(PROJEKT, new[] { fremd }, fremd));
+        }
+
+        /// <summary>
+        /// Nacharbeit KBP-3b: Ungespeicherte Monatswerte, Wochenprofil und Betriebskalender des Dialogs gehen in die Grafik
+        /// ein — die Reihe gleicht der, die nach dem Speichern derselben Werte gerechnet wird; Woche und Stundenreihe kommen
+        /// aus demselben Arbeitsstand (die Ferientage des ungespeicherten Kalenders stehen in beiden).
+        /// </summary>
+        [Fact]
+        public void Die_Vorschau_rechnet_ungespeicherte_Monate_Woche_und_Kalender_wie_nach_dem_Speichern()
+        {
+            if (!_db.Vorhanden) return;
+            int stamm = Convert.ToInt32(DataRepository.ExecuteScalar(
+                "SELECT ID FROM Tab_Kaeltebedarf_STAMM WHERE Bezeichner = ?", new DbParam("?", KUEHLRAUM)));
+            Assert.True(new WizardCtrl().Add_Projekt_Kaelte(PROJEKT, new List<Z_ProjektKaeltebedarfModel>
+            {
+                new Z_ProjektKaeltebedarfModel { ID_Kaeltebedarf = stamm, Bezeichner = KUEHLRAUM, Summe = 50 }
+            }));
+            System.Data.DataTable z = DataRepository.GetDataTable(
+                "SELECT z.ID AS Zeile, z.ID_Kaeltebedarf AS Kopie FROM Z_Projekt_Kaeltebedarf z JOIN Tab_Kaeltebedarf k " +
+                "ON k.ID = z.ID_Kaeltebedarf WHERE z.ID_Projekt = ? AND k.Bezeichner = ? ORDER BY z.ID DESC",
+                new DbParam("?", PROJEKT), new DbParam("?", KUEHLRAUM));
+            int zeile = Convert.ToInt32(z.Rows[0]["Zeile"]);
+            int kopie = Convert.ToInt32(z.Rows[0]["Kopie"]);
+
+            double[] monate = { 2, 2, 4, 6, 10, 14, 18, 16, 12, 8, 5, 3 };
+            var woche = new double[168];
+            for (int i = 0; i < 168; i++) woche[i] = i / 24 < 5 && i % 24 >= 8 && i % 24 < 18 ? 3.0 : 0.5;
+            int kalender = BetriebskalenderCtrl.Speichern(new Betriebskalender
+            {
+                Bezeichner = "Sommerpause", FerienKuerzen = true, Ferien = { new Ferienzeitraum(201, 214) }
+            });
+            Assert.True(kalender > 0);
+
+            var gespeichert = new Kaeltegrafikzeile(KUEHLRAUM, 50, null);
+            Kaelteprofilbilder vorher = KaelteprofilgrafikCtrl.Rechnen(PROJEKT, new[] { gespeichert }, gespeichert);
+            var offen = new Kaeltegrafikzeile(KUEHLRAUM, 50, kalender, monate, woche);
+            Kaelteprofilbilder arbeit = KaelteprofilgrafikCtrl.Rechnen(PROJEKT, new[] { offen }, offen);
+            Assert.NotNull(vorher);
+            Assert.NotNull(arbeit);
+            Assert.NotEqual(vorher.StundeKwh, arbeit.StundeKwh);              // der Arbeitsstand wirkt ...
+            Assert.True(arbeit.Kennzahlen.JahressummeMwh < 50.0);            // ... die Ferien kürzen die Menge
+
+            // Dieselben Werte gespeichert: dieselbe Reihe ohne Arbeitsstand.
+            Assert.True(KaeltebedarfStammCtrl.ProjektProfilSchreiben(kopie, monate, woche));
+            DataRepository.ExecuteNonQuery("UPDATE Z_Projekt_Kaeltebedarf SET ID_Betriebskalender = ? WHERE ID = ?",
+                                           new DbParam("?", kalender), new DbParam("?", zeile));
+            var nachher = new Kaeltegrafikzeile(KUEHLRAUM, 50, kalender);
+            BedarfsVorschau lauf = BedarfsVorschauCtrl.ProjektVorschau(BedarfsArt.Kaelte, PROJEKT, new[] { KUEHLRAUM }, null,
+                new Dictionary<string, double> { { KUEHLRAUM, 50 } });
+            for (int h = 0; h < 8760; h++) Assert.Equal(lauf.KaelteStunde[h], arbeit.StundeKwh[h], 9);
+            Kaelteprofilbilder gesp = KaelteprofilgrafikCtrl.Rechnen(PROJEKT, new[] { nachher }, nachher);
+            for (int h = 0; h < 8760; h++) Assert.Equal(gesp.StundeKwh[h], arbeit.StundeKwh[h], 9);
+
+            // Kalender gespeichert, im Dialog auf „keiner“ gestellt: Stundenreihe UND Woche ohne Ferien.
+            var ohneKalender = new Kaeltegrafikzeile(KUEHLRAUM, 50, null, monate, woche);
+            Kaelteprofilbilder ohne = KaelteprofilgrafikCtrl.Rechnen(PROJEKT, new[] { ohneKalender }, ohneKalender);
+            int w0 = arbeit.WochentagJan1;
+            int kw = Kaelteprofilgrafik.WocheDesTags(205, w0);
+            Kaeltewochenbild mitFerien = arbeit.Wochenbild(kw), ohneFerien = ohne.Wochenbild(kw);
+            Assert.Equal(arbeit.StundeKwh.Skip(mitFerien.ErsterTag * 24).Take(168).ToArray(), mitFerien.Modell.Reihen.Single().Werte);
+            for (int t = 0; t < 7; t++)
+            {
+                int tag = mitFerien.ErsterTag + t;
+                bool ferien = tag >= 200 && tag <= 213;
+                Assert.Equal(ferien, mitFerien.Tagesarten[t] == Kaelteprofilgrafik.FERIEN);
+                Assert.NotEqual(Kaelteprofilgrafik.FERIEN, ohneFerien.Tagesarten[t]);
+                double tagMit = arbeit.StundeKwh.Skip(tag * 24).Take(24).Sum();
+                double tagOhne = ohne.StundeKwh.Skip(tag * 24).Take(24).Sum();
+                if (ferien) Assert.Equal(0.0, tagMit, 9);                   // Ferienfaktor 0: Stillstand, in Woche und Reihe
+                else Assert.True(tagOhne > 0);
+            }
         }
     }
 }
