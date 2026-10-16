@@ -550,43 +550,47 @@ jobs:
       # K6c), nicht in der CI-Auswahl; alle achtzehn bleiben byte-gleich.
       # R56 (16.10.2026): Schemaschritte 230 bis 235 (KB-7 Wasserkosten) ohne Wirkung auf Rechenwerte; 1072 fuehrt
       # die zwei Kaelteschluessel des Deckungsgrads; alle achtzehn bleiben byte-gleich.
-      - name: Kern-Referenzlauf 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065, 1066-1071
+      # R57 (16.10.2026): Referenzprojekt 1073 (Schnellaufheizung, Kopie von 1054 mit Vorheizzeit berechnet und
+      # Raumsollwert-Ueberhoehung 3 K, SA4) in der CI-Auswahl - kein anderes CI-Projekt rechnet die Ueberhoehung im
+      # Vorheizfenster; die achtzehn uebrigen bleiben byte-gleich.
+      - name: Kern-Referenzlauf 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065, 1066-1071, 1073
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: >
           dotnet run --project EPOS.Referenzlauf -c Release --no-build --
           lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite
-          --projekte 1030,1007,1017,1045,1046,1047,1049,1051,1058,1060,1063,1065,1066,1067,1068,1069,1070,1071 --ziel artifacts/reflauf/${{ matrix.os }}_kern
+          --projekte 1030,1007,1017,1045,1046,1047,1049,1051,1058,1060,1063,1065,1066,1067,1068,1069,1070,1071,1073 --ziel artifacts/reflauf/${{ matrix.os }}_kern
 
       # Der eigentliche Nachweis (Umsetzungskonzept iT3, Entscheidungsregister 2.3):
       # Vergleich gegen die eingefrorene Windows-Basis nach der Toleranzregel der
       # Suite (Betrag >= 1: rel. 1e-4, sonst abs. 0,01). Exit 1 bei FAIL macht den
       # Job rot. Der Byte-Diff danach ist nur Information - auf ARM64 sind
       # Gleitkomma-Abweichungen im Rahmen der Toleranz erwartbar (iF15).
-      - name: Vergleich mit Referenzbasis 2026-10-16_R56_Wasserkosten
+      - name: Vergleich mit Referenzbasis 2026-10-16_R57_Schnellaufheizung
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: |
           mkdir -p artifacts/reflauf/ref
-          cp -r Referenzlaeufe/2026-10-16_R56_Wasserkosten/Projekt_1030 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-16_R56_Wasserkosten/Projekt_1007 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-16_R56_Wasserkosten/Projekt_1017 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-16_R56_Wasserkosten/Projekt_1045 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-16_R56_Wasserkosten/Projekt_1046 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-16_R56_Wasserkosten/Projekt_1047 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-16_R56_Wasserkosten/Projekt_1049 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-16_R56_Wasserkosten/Projekt_1051 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-16_R56_Wasserkosten/Projekt_1058 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-16_R56_Wasserkosten/Projekt_1060 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-16_R56_Wasserkosten/Projekt_1063 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-16_R56_Wasserkosten/Projekt_1065 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-16_R56_Wasserkosten/Projekt_1066 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-16_R56_Wasserkosten/Projekt_1067 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-16_R56_Wasserkosten/Projekt_1068 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-16_R56_Wasserkosten/Projekt_1069 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-16_R56_Wasserkosten/Projekt_1070 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-16_R56_Wasserkosten/Projekt_1071 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-16_R57_Schnellaufheizung/Projekt_1030 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-16_R57_Schnellaufheizung/Projekt_1007 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-16_R57_Schnellaufheizung/Projekt_1017 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-16_R57_Schnellaufheizung/Projekt_1045 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-16_R57_Schnellaufheizung/Projekt_1046 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-16_R57_Schnellaufheizung/Projekt_1047 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-16_R57_Schnellaufheizung/Projekt_1049 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-16_R57_Schnellaufheizung/Projekt_1051 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-16_R57_Schnellaufheizung/Projekt_1058 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-16_R57_Schnellaufheizung/Projekt_1060 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-16_R57_Schnellaufheizung/Projekt_1063 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-16_R57_Schnellaufheizung/Projekt_1065 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-16_R57_Schnellaufheizung/Projekt_1066 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-16_R57_Schnellaufheizung/Projekt_1067 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-16_R57_Schnellaufheizung/Projekt_1068 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-16_R57_Schnellaufheizung/Projekt_1069 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-16_R57_Schnellaufheizung/Projekt_1070 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-16_R57_Schnellaufheizung/Projekt_1071 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-16_R57_Schnellaufheizung/Projekt_1073 artifacts/reflauf/ref/
           dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/ref artifacts/reflauf/${{ matrix.os }}_kern
           echo "--- Byte-Diff (nur Information) ---"
-          for p in 1030 1007 1017 1045 1046 1047 1049 1051 1058 1060 1063 1065 1066 1067 1068 1069 1070 1071; do
+          for p in 1030 1007 1017 1045 1046 1047 1049 1051 1058 1060 1063 1065 1066 1067 1068 1069 1070 1071 1073; do
             if diff -rq artifacts/reflauf/ref/Projekt_$p artifacts/reflauf/${{ matrix.os }}_kern/Projekt_$p; then echo "BYTE-GLEICH: Projekt_$p"; else echo "byte-verschieden: Projekt_$p (siehe oben) - Toleranzvergleich oben ist massgeblich"; fi
           done
 
@@ -600,7 +604,7 @@ jobs:
       - name: Plattformnachweis - gestoerter Lauf gegen ungestoerten
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: |
-          dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite --projekte 1030,1007,1017,1045,1046,1047,1049,1051,1058,1060,1063,1065,1066,1067,1068,1069,1070,1071 --ziel artifacts/reflauf/${{ matrix.os }}_stoerung --stoerung ulp
+          dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite --projekte 1030,1007,1017,1045,1046,1047,1049,1051,1058,1060,1063,1065,1066,1067,1068,1069,1070,1071,1073 --ziel artifacts/reflauf/${{ matrix.os }}_stoerung --stoerung ulp
           dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/${{ matrix.os }}_kern artifacts/reflauf/${{ matrix.os }}_stoerung
 
       - name: Ergebnis-CSV als Artefakt
