@@ -53,6 +53,26 @@ public sealed class BauteilaufbauDaten
     /// <summary>Ein eingelesener Aufbau (Herkunft <c>IMPORT</c>).</summary>
     public bool Import { get; set; }
 
+    /// <summary>BK-6: U_g der Verglasung [W/(m²K)]; nur bei Fenster und Vorhangfassade bedient.</summary>
+    public double? FensterUg { get; set; }
+
+    /// <summary>BK-6: U_f des Rahmens [W/(m²K)].</summary>
+    public double? FensterUf { get; set; }
+
+    /// <summary>BK-6: g-Wert (0…1).</summary>
+    public double? FensterG { get; set; }
+
+    /// <summary>BK-6: Rahmenanteil (0…1).</summary>
+    public double? FensterRahmenanteil { get; set; }
+
+    /// <summary>BK-6: ψ_g des Glasrands [W/(m·K)].</summary>
+    public double? FensterPsiGlasrand { get; set; }
+
+    /// <summary>BK-6: Weichen die Fensterwerte voneinander ab?</summary>
+    public int FensterUnterschiede(BauteilaufbauDaten andere)
+        => (FensterUg != andere.FensterUg ? 1 : 0) + (FensterUf != andere.FensterUf ? 1 : 0) + (FensterG != andere.FensterG ? 1 : 0)
+           + (FensterRahmenanteil != andere.FensterRahmenanteil ? 1 : 0) + (FensterPsiGlasrand != andere.FensterPsiGlasrand ? 1 : 0);
+
     /// <summary>Eine entkoppelte Kopie samt Schichten — der Arbeitsstand der Verwaltung.</summary>
     public BauteilaufbauDaten Kopie()
     {
@@ -96,6 +116,12 @@ public sealed class BauteilschichtDaten
     /// <summary>Spezifische Wärmekapazität c_p [J/(kgK)].</summary>
     public double? Cp { get; set; }
 
+    /// <summary>BK-5: Nummer des Abschnitts (inhomogene Schicht); <c>null</c> = homogen.</summary>
+    public int? Abschnitt { get; set; }
+
+    /// <summary>BK-5: Flächenanteil des Abschnitts (0…1) — je Abschnitt EIN Wert, an jeder seiner Schichten gezeigt.</summary>
+    public double? Flaechenanteil { get; set; }
+
     /// <summary>Eine entkoppelte Kopie.</summary>
     public BauteilschichtDaten Kopie() => (BauteilschichtDaten)MemberwiseClone();
 
@@ -103,7 +129,8 @@ public sealed class BauteilschichtDaten
     public bool GleicheWerte(BauteilschichtDaten? andere)
         => andere is not null && IdBaustoff == andere.IdBaustoff && DickeMm == andere.DickeMm
            && IstLuftschicht == andere.IstLuftschicht && Lambda == andere.Lambda
-           && Rho == andere.Rho && Cp == andere.Cp;
+           && Rho == andere.Rho && Cp == andere.Cp
+           && Abschnitt == andere.Abschnitt && Flaechenanteil == andere.Flaechenanteil;
 }
 
 /// <summary>
@@ -136,6 +163,12 @@ public sealed record AufbauKennwerteDaten
 
     /// <summary>R_T = R_si + R + R_se [m²K/W] — aus dem Kern, nicht nachgerechnet.</summary>
     public double? RT_M2KW { get; init; }
+
+    /// <summary>BK-5: oberer Grenzwert R'_T [m²K/W] eines inhomogenen Aufbaus; <c>null</c> = homogen.</summary>
+    public double? RT_Oben_M2KW { get; init; }
+
+    /// <summary>BK-5: unterer Grenzwert R''_T [m²K/W] eines inhomogenen Aufbaus; <c>null</c> = homogen.</summary>
+    public double? RT_Unten_M2KW { get; init; }
 
     /// <summary>U [W/(m²K)].</summary>
     public double? U_WM2K { get; init; }

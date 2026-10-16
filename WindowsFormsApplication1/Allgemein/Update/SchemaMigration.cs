@@ -5558,6 +5558,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_GERAETEKOSTEN_ENTFALL = GeraetekostenEntfallSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="BauteilkatalogAbschnittSchema.SCHRITT"/> — <b>Inhomogene Schicht und Fenster im Aufbaukatalog</b>
+        /// (BK-5/BK-6, E132 F7): ψ des Glasrands <c>Psi_Glasrand</c> an <c>Tab_Bauteilaufbau(_STAMM)</c>; die Abschnitte stehen
+        /// seit Schritt 221. Angemeldet als 229, hängt beim Merge an 228.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Referenzprojekt führt einen Aufbau; die Spalte bleibt leer.</para>
+        /// </summary>
+        public const int SCHRITT_BAUTEILKATALOG_ABSCHNITT = BauteilkatalogAbschnittSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -8172,6 +8181,13 @@ namespace WindowsFormsApplication1
                         "gerechnet wird aus Tab_ProjektWerte; die eine Basis ist die Satzvorlage des " +
                         "zentralen Kostenkatalogs.",
                         Schritt_GeraetekostenEntfall),
+            // BK-5/BK-6: Inhomogene Schicht und Fenster im Aufbaukatalog. Quelle ist BauteilkatalogAbschnittSchema, die Nummer
+            // steht allein dort.
+            new Schritt(SCHRITT_BAUTEILKATALOG_ABSCHNITT,
+                        "Tab_Bauteilaufbau(_STAMM): Psi_Glasrand (psi des Glasrands fuer U_w nach DIN EN ISO 10077-1)",
+                        "Ein Fensteraufbau koennte den Glasrand nicht fuehren, und U_w liesse sich beim Zuweisen nicht aus Ug, Uf, " +
+                        "Rahmenanteil und psi des Glasrands bilden. KEIN Rechenergebnis aendert sich - die Spalte bleibt leer.",
+                        Schritt_BauteilkatalogAbschnitt),
         };
 
         /// <summary>
@@ -16106,6 +16122,59 @@ namespace WindowsFormsApplication1
                         ? "stand bereits."
                         : ergebnis.Verweisspalten + " Verweisspalte(n), " + ergebnis.Gesaet + " Satzvorlage(n) gesaet, " +
                           ergebnis.Entfernt + " Spalte(n) entfernt, " + ergebnis.PruefsummenNeu + " Pruefsumme(n) neu.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Inhomogene Schicht und Fenster im Aufbaukatalog" — Anlass und Wirkung stehen bei <see cref="SCHRITT_BAUTEILKATALOG_ABSCHNITT"/>,
+        /// die Anweisungen bei <see cref="BauteilkatalogAbschnittSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_BauteilkatalogAbschnitt(Lauf l)
+        {
+            string nr = BauteilkatalogAbschnittSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in BauteilkatalogAbschnittSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = BauteilkatalogAbschnittSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!BauteilkatalogAbschnittSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Psi_Glasrand am Aufbaukatalog steht nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Psi_Glasrand am Aufbaukatalog - " + (handgriffe == 0 ? "stand bereits." : "Spalten angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

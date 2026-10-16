@@ -221,7 +221,21 @@ namespace WindowsFormsApplication1
                 if (aufbauten == null || !aufbauten.TryGetValue(b.ID_Aufbau.Value, out BauteilaufbauModel aufbau) || aufbau == null)
                     throw new GebaeudeModellException(GebaeudeModellFehler.BauteilUngueltig,
                         Format(MyResource.Resource.SIMENG_G3_ZEILE_AUFBAU_FEHLT, wer, b.ID_Aufbau.Value.ToString(CultureInfo.InvariantCulture)));
-                schichten = AlsSchichten(aufbau, wer);
+                // BK-6: Ein Fenster oder eine Vorhangfassade mit einem Fensteraufbau ohne Schicht rechnet mit dem U-Wert der
+                // Zeile (VDI 6007-1 Gl. (25)/(26)); das Zuweisen hat U_w, g und Rahmenanteil an das Bauteil übernommen.
+                bool fensterOhneSchicht = (art == Bauteilart.Fenster || art == Bauteilart.Vorhangfassade) &&
+                                          (aufbau.Schichten == null || aufbau.Schichten.All(x => x == null));
+                if (!fensterOhneSchicht)
+                    schichten = AlsSchichten(aufbau, wer);
+                // BK-5: Ein Aufbau mit Abschnitten rechnet über die Ersatzschichten (DIN EN ISO 6946, 6.7, Mittel der
+                // Grenzwerte); die Übergänge nach Neigung und Rand des Bauteils.
+                if (!fensterOhneSchicht && InhomogeneSchichten.Inhomogen(aufbau))
+                {
+                    double neigung = b.Neigung ?? GebaeudeZonenCtrl.NeigungVorgabe(b.Bauteilart);
+                    (double rSi, double rSe) = Bauteilreduktion.Uebergangswiderstaende(neigung, rand, wer);
+                    schichten = InhomogeneSchichten.Rechnen(aufbau, schichten, Bauteilreduktion.RichtungAusNeigung(neigung, wer),
+                                                            rSi, rSe, wer + " (" + aufbau.Bezeichner + ")").Ersatz;
+                }
             }
 
             // Die Trennfläche (G6b): Nachbarzone und Gruppe; NULL heißt „die 4-K-Regel entscheidet".

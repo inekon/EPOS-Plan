@@ -65,6 +65,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Spalte des Ziels mit dem stabilen Namen.</summary>
         public string Zielspalte { get; }
+
+        /// <summary>
+        /// Ein Verweis auf eine GESCHWISTERZEILE desselben Eigentümers (BK-5: die Schicht auf den Abschnitt ihres Aufbaus):
+        /// Der Name des Ziels ist nur unter diesem Eigentümer eindeutig, das Schreiben sucht das Ziel mit
+        /// <c>"Eigentuemerspalte" = ID des Eigentümers</c>. <c>null</c> = das Ziel ist ein eigener Katalogsatz.
+        /// </summary>
+        public string Eigentuemerspalte { get; init; }
     }
 
     /// <summary>Eine Kindtabelle eines Katalogsatzes (etwa die Kennlinie der Wärmepumpe).</summary>
@@ -113,6 +120,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Eine eingefügte Kindzeile trägt <c>ReadOnly = 1</c> (wo die Tabelle das Kennzeichen pflegt).</summary>
         public bool GesperrtEinfuegen { get; init; }
+
+        /// <summary>
+        /// <c>true</c> = die Prüfsumme nimmt den Kopf dieses Kindes nur, wenn es Zeilen hat (BK-5: die Abschnitte eines
+        /// Aufbaus). So behält jeder Satz ohne solche Zeilen die Prüfsumme, die er vor der Aufnahme des Kindes trug.
+        /// </summary>
+        public bool NurMitZeilen { get; init; }
 
         /// <summary>Eine einspaltige Reihe ohne Enkel und Verweis — im Paket als bloße Werteliste.</summary>
         public bool Reihe => Geordnet && Fachspalten.Count == 1 && Enkel.Count == 0 && Verweise.Count == 0;
@@ -343,14 +356,25 @@ namespace WindowsFormsApplication1
             { Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_BAUSTOFF" },
             new Katalogtabelle("Tab_Bauteilaufbau_STAMM", "BTA",
                 new[] { "Bezeichner", "Beschreibung", "Bauteilart", "Quelle", "Herkunft", "Quellkennung", "Typaufbau" }
-                    .Concat(BauteilkatalogSchema.AUFBAU_SPALTEN.Select(s => s.Name)).ToArray(),
+                    .Concat(BauteilkatalogSchema.AUFBAU_SPALTEN.Select(s => s.Name))
+                    .Concat(BauteilkatalogAbschnittSchema.AUFBAU_SPALTEN.Select(s => s.Name)).ToArray(),
+                // BK-5: Die Abschnitte stehen VOR den Schichten - der Abgleich legt sie zuerst an, die Schicht findet ihren
+                // Abschnitt dann ueber die Nummer unter demselben Aufbau. Ohne Abschnitt bleibt die Pruefsumme des Aufbaus.
+                new Katalogkind(BauteilkatalogSchema.TAB_ABSCHNITT_STAMM, "ID_Aufbau",
+                    new[] { "Nummer", "Flaechenanteil", "Text", "Quellkennung" })
+                { NurMitZeilen = true },
                 new Katalogkind("Tab_Bauteilschicht_STAMM", "ID_Aufbau",
                     new[] { "Reihenfolge", "ID_Baustoff", "Dicke", "IstLuftschicht", "Lambda", "Rho", "cp" }
-                        .Concat(BauteilkatalogSchema.SCHICHT_SPALTEN.Select(s => s.Name)).ToArray())
+                        .Concat(BauteilkatalogSchema.SCHICHT_SPALTEN.Select(s => s.Name))
+                        .Append(BauteilkatalogSchema.SPALTE_ID_ABSCHNITT).ToArray())
                 {
-                    Verweise = new[] { new Katalogverweis("ID_Baustoff", "Tab_Baustoff_STAMM", SPALTE_SCHLUESSEL) },
-                    // BK-2: Der Abschnittsverweis reist erst mit den Abschnitten (BK-5); bis dahin laesst der Abgleich ihn leer.
-                    Nebenspalten = new[] { BauteilkatalogSchema.SPALTE_ID_ABSCHNITT }
+                    Verweise = new[]
+                    {
+                        new Katalogverweis("ID_Baustoff", "Tab_Baustoff_STAMM", SPALTE_SCHLUESSEL),
+                        // BK-5: der Abschnitt als seine Nummer unter demselben Aufbau; eine homogene Schicht bleibt leer.
+                        new Katalogverweis(BauteilkatalogSchema.SPALTE_ID_ABSCHNITT, BauteilkatalogSchema.TAB_ABSCHNITT_STAMM, "Nummer")
+                        { Eigentuemerspalte = "ID_Aufbau" }
+                    }
                 })
             { Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_BAUTEILAUFBAU" },
             // BrennstoffpreiseTraegerkarteSchema (Schritt 227, KB-2): Standard_Grundpreis, Standard_Arbeitspreis und
@@ -572,11 +596,6 @@ namespace WindowsFormsApplication1
             "ID_Zone_Stamm aus seinen Kindern.";
 
         /// <summary>Grund der Ausnahme der Abschnitte inhomogener Schichten (Schritt 221, BK-2).</summary>
-        public const string GRUND_ABSCHNITTE =
-            "Abschnitte inhomogener Schichten (Schritt 221, BK-2): Die Schicht verweist ueber ID_Abschnitt auf den Abschnitt " +
-            "desselben Aufbaus; diesen Verweis bildet der Paketweg erst mit BK-5 ab. Bis dahin tragen weder Pruefsumme noch Paket " +
-            "des Aufbaus Abschnitte, der Verweis ist Nebenspalte der Schicht.";
-
         private static IReadOnlyDictionary<string, string> AusnahmenBauen()
         {
             var d = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -592,7 +611,6 @@ namespace WindowsFormsApplication1
             d[ProzessNutzungSchema.TAB_PROFIL] = GRUND_NUTZUNGSPROFIL;
             foreach (string t in new[] { ZonenKatalogSchema.TAB_ZONE, ZonenKatalogSchema.TAB_BAUTEIL, ZonenKatalogSchema.TAB_LUFTSTROM })
                 d[t] = GRUND_KATALOGZONEN;
-            d[BauteilkatalogSchema.TAB_ABSCHNITT_STAMM] = GRUND_ABSCHNITTE;
             return d;
         }
 
@@ -738,9 +756,10 @@ namespace WindowsFormsApplication1
             Zeilen(sb, t.Fachspalten, werte);
             foreach (Katalogkind k in t.Kinder)
             {
-                sb.Append("#").Append(k.Tabelle).Append('\n');
                 IReadOnlyList<IReadOnlyDictionary<string, object>> zeilen = null;
                 kinder?.TryGetValue(k.Tabelle, out zeilen);
+                if (k.NurMitZeilen && (zeilen == null || zeilen.Count == 0)) continue;
+                sb.Append("#").Append(k.Tabelle).Append('\n');
                 foreach (string z in Kindtexte(k, zeilen)) sb.Append(z).Append('\n');
             }
             return Hex(sb.ToString());
@@ -860,13 +879,22 @@ namespace WindowsFormsApplication1
         /// es das Ziel nicht gibt), sonst der Wert.
         /// </summary>
         internal static object Schreibwert(IReadOnlyList<Katalogverweis> verweise, IReadOnlyDictionary<string, object> werte,
-                                           string spalte, Func<string, DbParam[], DataTable> lese)
+                                           string spalte, Func<string, DbParam[], DataTable> lese, long? eigentuemer = null)
         {
             object w = werte != null && werte.TryGetValue(spalte, out object x) && x != null ? x : null;
             Katalogverweis v = verweise.FirstOrDefault(z => string.Equals(z.Spalte, spalte, StringComparison.OrdinalIgnoreCase));
             if (v == null || w == null) return w ?? DBNull.Value;
             if (!DataRepository.TabelleVorhanden(v.Zieltabelle) || !DataRepository.SpalteVorhanden(v.Zieltabelle, v.Zielspalte))
                 return DBNull.Value;
+            if (v.Eigentuemerspalte != null)
+            {
+                // BK-5: Das Ziel ist eine Geschwisterzeile - sein Name gilt nur unter demselben Eigentümer.
+                if (!eigentuemer.HasValue) return DBNull.Value;
+                DataTable g = lese("SELECT ID FROM \"" + v.Zieltabelle + "\" WHERE \"" + v.Zielspalte + "\" = ? AND \"" +
+                                   v.Eigentuemerspalte + "\" = ? ORDER BY ID LIMIT 1",
+                                   new[] { new DbParam("@n", w), new DbParam("@e", eigentuemer.Value) });
+                return g != null && g.Rows.Count > 0 ? g.Rows[0][0] : DBNull.Value;
+            }
             DataTable dt = lese("SELECT ID FROM \"" + v.Zieltabelle + "\" WHERE \"" + v.Zielspalte + "\" = ? ORDER BY ID LIMIT 1",
                                 new[] { new DbParam("@n", w) });
             return dt != null && dt.Rows.Count > 0 ? dt.Rows[0][0] : DBNull.Value;

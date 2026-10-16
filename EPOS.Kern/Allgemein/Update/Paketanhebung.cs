@@ -470,6 +470,9 @@ namespace WindowsFormsApplication1
             // Schritt sät die fehlenden Satzvorlagen an der Zieldatenbank und entfernt die Spalten danach.
             new Stufe(GeraetekostenEntfallSchema.SCHRITT, Art.Ddl,
                       "Satzvorlage am Wechselrichter, Entfall der 32 Kostenspalten der Investitionsgewerke (KB-4)"),
+            // Ein älteres Paket bringt seine Fensteraufbauten ohne ψ des Glasrands; der Schritt legt die Spalte leer an.
+            new Stufe(BauteilkatalogAbschnittSchema.SCHRITT, Art.Ddl,
+                      "ψ des Glasrands am Aufbaukatalog (BK-6)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>
