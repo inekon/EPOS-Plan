@@ -921,7 +921,7 @@ nächste Basis einfriert, nimmt die beiden Schlüssel auf und streicht `--ohne` 
 >   --ziel Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral
 > ```
 >
-> Die Regel steht im [Konzept Kältebedarf](../Dokumentation/aktuell/Konzept_Kaeltebedarf_EPOS-Plan.md), Abschnitt 8.1.
+> Die Regel steht im [Konzept Kältebedarf](../Dokumentation/ueberholt/Konzept_Kaeltebedarf_EPOS-Plan.md), Abschnitt 8.1.
 
 
 > **Nachtrag — Schemaschritte 177 bis 179 (Sperrfenster der Wärmepumpe, Nutzungsprofile, Ergänzungen der

@@ -16,18 +16,18 @@ Split-Kälte …“.
 |---|---|
 | **E-K1** | Eigene Gruppe „Kältebedarf“ auf der Startseite mit drei Kacheln: „Kältebedarf extern“ (CSV-Lastgang), „Kältebedarfsprofile“ (Typkatalog, Jahressumme, Temperatur, Kalender), „Gebäudekühlung“ (Sprung zu den Kühleinstellungen der Gebäude). Die Startseite kennt Reiter (Projekt, Wärmebedarf, Strombedarf, Energieerzeuger, Simulation, Berichte & Kosten), also wird es ein **siebter Reiter „Kältebedarf“**. |
 | **E-K2** | Deckungsart je Zuordnungszeile (CSV-Lastgang und Profil): „zentral“ (Vorgabe, geht in die Kältefolge wie heute) oder „dezentral Split“ mit EER (fest oder linear über der Außentemperatur), Kühlträger und eigenem Zähler; der Split-Anteil wird **neben** der Kaskade gebucht und als Strom gezählt — ohne Gerätegrenze, ohne Inneneinheiten (die gehören zum Raumklimagerät Typ 14 des Entwurfs K-D; Kennfeld später von dort). |
-| **E-K3** | Kältebedarfsprofile tragen Vorlauf/Rücklauf nur als Angabe ohne Wirkung auf die Erzeuger; Prozesskälte mit Vorrang (Naht `Kaelteangebot.Prozesskaelte`) ist eine spätere Welle. Die Art je Zeile (Raumkühlung/Prozesskälte, `Kaelte_Art`, Schema 218), der Unterposten `Kaeltebedarf_Prozess` und die Belegung der Naht sind mit KWN‑0 gebaut, beschrieben im [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 5.6.9 und 5.6.13; das Temperaturpaar wirkt erst für gekoppelte Geräte ab KWN‑1. |
+| **E-K3** | Kältebedarfsprofile tragen Vorlauf/Rücklauf nur als Angabe ohne Wirkung auf die Erzeuger; Prozesskälte mit Vorrang (Naht `Kaelteangebot.Prozesskaelte`) ist eine spätere Welle. Die Art je Zeile (Raumkühlung/Prozesskälte, `Kaelte_Art`, Schema 218), der Unterposten `Kaeltebedarf_Prozess` und die Belegung der Naht sind mit KWN‑0 gebaut, beschrieben im [Kühlkonzept](../aktuell/Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 5.6.9 und 5.6.13; das Temperaturpaar wirkt erst für gekoppelte Geräte ab KWN‑1. |
 
 Schemaschritt **213** ist für die Welle K1 angemeldet (Zeile „Schemaschritt angemeldet“ im Kopf von
-[`Status_iOS_Migration.md`](Status_iOS_Migration.md), 10.10.2026 21:26 UTC); er hängt an 212 `KaelteRangSchema` (Welle KB-D der
+[`Status_iOS_Migration.md`](../aktuell/Status_iOS_Migration.md), 10.10.2026 21:26 UTC); er hängt an 212 `KaelteRangSchema` (Welle KB-D der
 Sitzung Gebäudesimulation), Kette über `+ 1` an der Vorgängerklasse.
 
 ### 1.2 Abgrenzung
 
 | Liegt in der Übergabe Kälteanlagen bzw. bei der Sitzung Gebäudesimulation | Liegt in diesem Konzept |
 |---|---|
-| **K-D** Split/Multisplit als Anlagenart Typ 14 „Raumklimagerät“ mit Außengerät im Kältekatalog, Inneneinheiten je Gebäude/Zone, Gerätegrenze im Stundenrand, Buchung `Kaeltebedarf_Raumgeraete` ([Entwurf](Kälteanlagen/2026-10-10_Entwurf_Split_VRF_Rueckkuehlwerk.md)) | Kältebedarf **ohne Gebäudemodell**: CSV-Lastgang und Profil, je Zeile zentral oder dezentral (Split) gedeckt |
-| **K-E** VRF, **K-F** Rückkühlwerk, **K-B** Startkatalog, **K-H** EPREL ([Übergabe Programm](Kälteanlagen/2026-10-10_Uebergabe_Kaelteanlagen_Programm.md)) | — |
+| **K-D** Split/Multisplit als Anlagenart Typ 14 „Raumklimagerät“ mit Außengerät im Kältekatalog, Inneneinheiten je Gebäude/Zone, Gerätegrenze im Stundenrand, Buchung `Kaeltebedarf_Raumgeraete` ([Entwurf](../aktuell/Kälteanlagen/2026-10-10_Entwurf_Split_VRF_Rueckkuehlwerk.md)) | Kältebedarf **ohne Gebäudemodell**: CSV-Lastgang und Profil, je Zeile zentral oder dezentral (Split) gedeckt |
+| **K-E** VRF, **K-F** Rückkühlwerk, **K-B** Startkatalog, **K-H** EPREL ([Übergabe Programm](../aktuell/Kälteanlagen/2026-10-10_Uebergabe_Kaelteanlagen_Programm.md)) | — |
 | **KB-B** Bereich „Kälte“ in `SimulationKonfigSeite.razor`, **KB-D** pflegbare Kältefolge `Kaelte_Rang` (Schema 212, E117) — Sitzung Gebäudesimulation | Anzeige und Sprung im Bereich „Kälte“ nach dem Push von KB-B (Abschnitt 6) |
 | Gebäudekühlung: Rechenweg, Zonen, Kühlübergabe, Kühlkurve | nur die Kachel „Gebäudekühlung“ als Sprung und Zustandsanzeige |
 
@@ -38,8 +38,8 @@ Sitzung Gebäudesimulation), Kette über `+ 1` an der Vorgängerklasse.
 - Begriff auf der Bedarfsebene: **„dezentral (Split)“**, nie „Raumklimagerät“ — der Begriff gehört Typ 14.
 - Nur sensible Kälte, keine Latentlast (E31 K5); die Grenze steht an jeder Kältezahl.
 - Kältefolge und `Kaelte_Rang` gehören der Gebäudesimulation. Ein Split liefert nie Kaltwasser und geht nie in die Kaskade.
-- Kältenetzverluste bleiben ausgegrenzt ([Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md), Abschnitt 14).
-- Kältebedarf wird mit denselben Bausteinen dargestellt wie Wärme (E21, [Statusdatei Gebäudesimulation](Status_Gebaeudesimulation_VDI6007.md)).
+- Kältenetzverluste bleiben ausgegrenzt ([Kühlkonzept](../aktuell/Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md), Abschnitt 14).
+- Kältebedarf wird mit denselben Bausteinen dargestellt wie Wärme (E21, [Statusdatei Gebäudesimulation](../aktuell/Status_Gebaeudesimulation_VDI6007.md)).
 
 ## 2. Befund
 
@@ -145,7 +145,7 @@ und `NurKuehlung`.
   Modus `NurKuehlung` löscht und schreibt nur seine Kanalzeilen. Ein Test hält: eine Speicherung im Modus `NurKuehlung`
   lässt jede Wärmezeile (ID, Ganglinie, Bezeichner, Kanal) unverändert. Im Modus `Alle` ändert sich nichts.
 - **Katalogauswahl V1.** Der Dialog folgt dem Gerüst „Gerahmt und gestapelt“ des
-  [Katalogauswahlkonzepts](../ueberholt/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md) im Aufbau des Wärmepumpendialogs
+  [Katalogauswahlkonzepts](Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md) im Aufbau des Wärmepumpendialogs
   (KA‑E‑23), in beiden Modi gleich: Die Zeile „gewählter Satz“ zeigt nur das Wesentliche — Bezeichner, Kanal und Art,
   Jahresarbeit, Vollbenutzungsstunden, bei einer Kühlzeile die Deckung in einem Satz — und die Knopfleiste Vergleichen…,
   Schloss setzen…, Löschen, Bearbeiten…, Neu… (Neu… legt über die Importkette einen Katalogsatz an). Bearbeiten… und der
@@ -267,8 +267,8 @@ Kennzahlenkatalog (Fassung 23): `kaelte.profil` [MWh/a], `kaelte.dezentral` [MWh
 ## 5. Schema 213
 
 Eine Klasse `KaeltebedarfSchema` (Schritt `KaelteRangSchema.SCHRITT + 1`), eingetragen in `SchemaStand.Zielversion`, nach
-[ADR-001](ADR-001_Schema-Ausrollung.md); alle neuen Tabellen `STRICT`, Boolean `INTEGER NOT NULL DEFAULT 0 CHECK (… IN
-(0,1))`, Regeln aus [BETRIEB_SQLITE.md](BETRIEB_SQLITE.md) Abschnitt 6. Kein DML an Bestandszeilen außer der Saat.
+[ADR-001](../aktuell/ADR-001_Schema-Ausrollung.md); alle neuen Tabellen `STRICT`, Boolean `INTEGER NOT NULL DEFAULT 0 CHECK (… IN
+(0,1))`, Regeln aus [BETRIEB_SQLITE.md](../aktuell/BETRIEB_SQLITE.md) Abschnitt 6. Kein DML an Bestandszeilen außer der Saat.
 
 | Tabelle | Spalten |
 |---|---|
@@ -361,10 +361,10 @@ Deckungsspalte eines Kühllastgangs gehört ab K1 zur Regel „gesäte Kältedat
 
 ### 8.2 Offene Punkte
 
-| Nr. | Frage | Empfehlung |
-|---|---|---|
-| **OP-1** | Lage des Reiters: hinter „Wärmebedarf“ (Platz 3) oder hinter „Strombedarf“ (Platz 4)? | **hinter „Wärmebedarf“** — Wärme und Kälte sind die thermischen Bedarfe, der Assistent führt in derselben Folge; Tests auf Reiterindex werden nachgezogen |
-| **OP-2** | Bleibt der Kanal „Kühlung“ im Dialog „Wärmebedarf extern“ (Modus `Alle`) wählbar, wenn es die Kachel „Kältebedarf extern“ gibt? | **ja, aber mit Hinweis** „Kältelastgänge pflegen Sie unter Kältebedarf extern“; ein Entzug würde bestehende Projekte im Wärmedialog unsichtbar machen |
-| **OP-3** | Hilfsstrom des Split (Ventilatoren, Bereitschaft) als eigenes Feld? | **nein** in K3 — der EER des Datenblatts schließt die Ventilatoren ein; Bereitschaft kommt mit K-D (Typ 14) |
-| **OP-4** | Kosten der dezentralen Geräte in der Wirtschaftlichkeit (Investition, Wartung)? | **nicht in K1–K6**; die Wirtschaftlichkeit zählt den Strom über Träger und Zähler. Gerätekosten gehören an die Anlage Typ 14; wer sie braucht, rechnet mit K-D |
-| **OP-5** | Kältebedarfsprofile auf iOS: Profilpflege mit 168-Stunden-Raster auf dem kleinen Schirm? | **gleicher Dialog wie Prozesswärme** auf iOS (kein eigener Weg, E31 K12); kein iOS-Lauf für K1–K6, weil die iOS-Hülle selbst nicht berührt wird |
+| Nr. | Frage | Empfehlung | Stand |
+|---|---|---|---|
+| **OP-1** | Lage des Reiters: hinter „Wärmebedarf“ (Platz 3) oder hinter „Strombedarf“ (Platz 4)? | **hinter „Wärmebedarf“** — Wärme und Kälte sind die thermischen Bedarfe, der Assistent führt in derselben Folge; Tests auf Reiterindex werden nachgezogen | umgesetzt, Reiter an dritter Stelle (#982) |
+| **OP-2** | Bleibt der Kanal „Kühlung“ im Dialog „Wärmebedarf extern“ (Modus `Alle`) wählbar, wenn es die Kachel „Kältebedarf extern“ gibt? | **ja, aber mit Hinweis** „Kältelastgänge pflegen Sie unter Kältebedarf extern“; ein Entzug würde bestehende Projekte im Wärmedialog unsichtbar machen | umgesetzt, Hinweis „Kältelastgänge pflegen Sie unter Kältebedarf extern.“ im Wärmebedarf extern |
+| **OP-3** | Hilfsstrom des Split (Ventilatoren, Bereitschaft) als eigenes Feld? | **nein** in K3 — der EER des Datenblatts schließt die Ventilatoren ein; Bereitschaft kommt mit K-D (Typ 14) | nach Empfehlung, kein Bau |
+| **OP-4** | Kosten der dezentralen Geräte in der Wirtschaftlichkeit (Investition, Wartung)? | **nicht in K1–K6**; die Wirtschaftlichkeit zählt den Strom über Träger und Zähler. Gerätekosten gehören an die Anlage Typ 14; wer sie braucht, rechnet mit K-D | gehört zur Anlage Typ 14 (K-D), nicht zu diesem Konzept |
+| **OP-5** | Kältebedarfsprofile auf iOS: Profilpflege mit 168-Stunden-Raster auf dem kleinen Schirm? | **gleicher Dialog wie Prozesswärme** auf iOS (kein eigener Weg, E31 K12); kein iOS-Lauf für K1–K6, weil die iOS-Hülle selbst nicht berührt wird | nach Empfehlung, kein Bau |
