@@ -54,7 +54,7 @@ gemergte Zweige `kb2`, `kb3`, `kb4a`, `kb4b`, `kb4c` sind als Worktrees entfernt
   kein zweiter Preis); die Wassermenge des Rückkühlwerks aus dem Lauf wird als Betriebskosten mit der Preissteigerung p_B gebucht und
   wirkt im Kapitalwert; die Wasserkosten bekommen eine eigene Berichtskennzahl; `Tab_Energieanlagen.Wasserpreis_EUR_m3` wandert in
   die Trägerkarte und entfällt (Welle KB-7, Schemaschritt 235; Entwurf
-  [`2026-10-16_Entwurf_KB7_Wasserkosten_Rueckkuehlwerk.md`](2026-10-16_Entwurf_KB7_Wasserkosten_Rueckkuehlwerk.md)).
+  [`2026-10-16_Entwurf_KB7_Wasserkosten_Rueckkuehlwerk.md`](../../ueberholt/2026-10-16_Entwurf_KB7_Wasserkosten_Rueckkuehlwerk.md)).
 
 
 ## 3 Regeln und Fallstricke dieser Sitzung (über `CLAUDE.md` hinaus)
@@ -93,9 +93,9 @@ gemergte Zweige `kb2`, `kb3`, `kb4a`, `kb4b`, `kb4c` sind als Worktrees entfernt
 2. **KB-5b** (Abschnitt 5.3) und **KB-5 Merge-Welle** (Abschnitt 5.4): erledigt #1100 (Merge `dd3806f5d` und `b1839ef00`, Hebung auf 229, Referenzlauf 37/37 gegen R55 PASS, kein R56 nötig); Push `acb71849f`, Kern-Lauf 38852265014 grün (CI-Vermerk gesetzt).
 3. **KB-6:** Konzept und Wiki-Quellen sind je Welle nachgeführt; Logbuchsätze ohne Version liegen im Entwurf; Bilder neu ziehen
    (`wikibilder.mjs`), Upload erst ab 16.10.2026 nach Freigabe und Versionsnummer.
-4. **Vorlagenplatzhalter Kältemaschine** (#1035 Punkt 3): eigene Welle, Platzhalter mit der Sitzung Anlagendialog abstimmen
+4. **Vorlagenplatzhalter Kältemaschine** (#1035 Punkt 3): **erledigt #1121 (Fassung 24)**; war eigene Welle, Platzhalter mit der Sitzung Anlagendialog abstimmen
    (Katalogfassung 23 unverändert lassen).
-5. **Wasserpreis am Rückkühlwerk:** übernommen von dieser Sitzung (Anwenderentscheid 16.10.2026, Abschnitt 2), Welle KB-7, Schritt 235; `Tab_Rueckkuehlwerk.Modulkosten` bleibt (Anwenderentscheid).
+5. **Wasserpreis am Rückkühlwerk:** **erledigt #1121**; übernommen von dieser Sitzung (Anwenderentscheid 16.10.2026, Abschnitt 2), Welle KB-7, Schritt 235; `Tab_Rueckkuehlwerk.Modulkosten` bleibt (Anwenderentscheid).
 6. **Variantenliste:** gebaut als Gruppe „Katalogsätze“, umkehrbar über `KostenVorlagenCtrl.KATALOGSAETZE_GRUPPIEREN` — Anwenderentscheid
    nach Sichtabnahme.
 7. **Sichtabnahme unter Windows** der Dialoge aus #1034–#1042 und der Kostenmasken aus KB-4 (Lesewert „Gerätekosten“/„Kostensatz“).

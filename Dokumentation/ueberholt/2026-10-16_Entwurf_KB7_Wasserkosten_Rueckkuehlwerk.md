@@ -2,11 +2,11 @@
 
 Sitzung Dialoge und Korrekturen (Kostenbasis), Entwurf vom 16.10.2026. Schemaschritt **235** (angemeldet, hängt an
 234 KBP-5). Nur Entwurf — kein Code, keine Schemaänderung. Bezüge: Entwurf Rückkühlwerk
-[`2026-10-10_Entwurf_Split_VRF_Rueckkuehlwerk.md`](../Kälteanlagen/2026-10-10_Entwurf_Split_VRF_Rueckkuehlwerk.md)
+[`2026-10-10_Entwurf_Split_VRF_Rueckkuehlwerk.md`](../aktuell/Kälteanlagen/2026-10-10_Entwurf_Split_VRF_Rueckkuehlwerk.md)
 (Frage KD‑Q8), Protokolle
-[`K-F1`](../../ueberholt/Protokolle/Kaelteanlagen/2026-10-10_K-F1_Rueckkuehlwerk_Glied.md) und
-[`K-F2`](../../ueberholt/Protokolle/Kaelteanlagen/2026-10-11_K-F2_Rueckkuehlwerk_Rechenweg.md), Übergabe
-[`KB-4/KB-5`](2026-10-14_Uebergabe_Dialoge_Kostenbasis_KB4_KB5.md).
+[`K-F1`](Protokolle/Kaelteanlagen/2026-10-10_K-F1_Rueckkuehlwerk_Glied.md) und
+[`K-F2`](Protokolle/Kaelteanlagen/2026-10-11_K-F2_Rueckkuehlwerk_Rechenweg.md), Übergabe
+[`KB-4/KB-5`](../aktuell/Dialoge/2026-10-14_Uebergabe_Dialoge_Kostenbasis_KB4_KB5.md).
 
 ## 1 Ausgangslage
 
