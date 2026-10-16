@@ -381,6 +381,7 @@ namespace WindowsFormsApplication1
                 ID_Aufbau = null,
                 Flaeche = b.Flaeche_M2,
                 U_Wert = Zahl(b.UWert_WM2K),
+                U_Herkunft = Zahl(b.UWert_WM2K).HasValue ? DbWerte.HERKUNFT_VORGABE : null,
                 g_Wert = Zahl(b.GWert),
                 Rahmenanteil = Zahl(b.Rahmenanteil),
                 Verschattungsfaktor = Zahl(b.Verschattungsfaktor),

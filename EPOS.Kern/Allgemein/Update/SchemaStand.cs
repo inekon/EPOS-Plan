@@ -1099,10 +1099,13 @@ namespace WindowsFormsApplication1
         /// Nutzungsprofil.
         /// Danach, mit der INHOMOGENEN SCHICHT UND DEN FENSTERN IM AUFBAUKATALOG (BK-5/BK-6), steht das Ziel auf
         /// <see cref="BauteilkatalogAbschnittSchema.SCHRITT"/>: ψ des Glasrands am Aufbau (<see cref="BauteilkatalogAbschnittSchema"/>).
-        /// <b>Ergebnisneutral:</b> Kein Referenzprojekt führt einen Aufbau. Das Ziel ist das Ende der Kette; umgehängt wird
-        /// allein am Vorgänger <see cref="RaumnutzungDinWerteSchema.SCHRITT"/>.
+        /// <b>Ergebnisneutral:</b> Kein Referenzprojekt führt einen Aufbau.
+        /// Danach, mit der HERKUNFT DES U-WERTS (MA-6b, E149), steht das Ziel auf <see cref="BauteilUHerkunftSchema.SCHRITT"/>:
+        /// <c>U_Herkunft</c> an <c>Tab_Bauteil(_STAMM)</c> (<see cref="BauteilUHerkunftSchema"/>) — ein von Hand gesetzter U-Wert
+        /// bleibt beim Wiederimport. <b>Ergebnisneutral:</b> Die Spalte entsteht leer, der Rechenweg liest sie nicht. Das Ziel ist
+        /// das Ende der Kette; umgehängt wird allein am Vorgänger <see cref="BauteilkatalogAbschnittSchema.SCHRITT"/>.
         /// </summary>
-        public const int Zielversion = BauteilkatalogAbschnittSchema.SCHRITT;
+        public const int Zielversion = BauteilUHerkunftSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

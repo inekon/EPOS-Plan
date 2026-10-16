@@ -155,7 +155,7 @@ namespace EPOS.Kern.Tests
             // Schritt 232 haengt ueber + 1 an 231 (RaumnutzungDinWerteSchema); keine feste Nummer, die Kette entscheidet.
             Assert.Equal(RaumnutzungDinWerteSchema.SCHRITT + 1, BauteilkatalogAbschnittSchema.SCHRITT);
             Assert.True(BauteilkatalogAbschnittSchema.SCHRITT > KaeltebedarfsprofilVorlagenSchema.SCHRITT);
-            Assert.Equal(BauteilkatalogAbschnittSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(BauteilkatalogAbschnittSchema.SCHRITT <= SchemaStand.Zielversion);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == BauteilkatalogAbschnittSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, s.Wirkung);
             Assert.Contains("IS NULL OR", BauteilkatalogAbschnittSchema.AUFBAU_SPALTEN.Single().Typ, StringComparison.Ordinal);

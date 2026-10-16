@@ -132,7 +132,8 @@ namespace EPOS.Kern.Tests
                 "SELECT name FROM sqlite_master WHERE type = 'table' AND sql LIKE ? ORDER BY name", new DbParam("@m", "%'GBXML'%"));
             // Die Katalogzwillinge der Zonen (Schritt ZK) entstehen spaeter schon mit SQPROJ - kein Umbau dieses Schritts.
             var zwillinge = new[] { ZonenKatalogSchema.TAB_ZONE, ZonenKatalogSchema.TAB_BAUTEIL };
-            foreach (string z in zwillinge) Assert.Equal(1, Vorkommen(Sql(z), "'SQPROJ'"));
+            // Die Herkunft des U-Werts (MA-6b, BauteilUHerkunftSchema) fuehrt SQPROJ in ihrem eigenen CHECK - sie zaehlt hier nicht.
+            foreach (string z in zwillinge) Assert.Equal(1, Vorkommen(Sql(z).Replace(BauteilUHerkunftSchema.Typ, ""), "'SQPROJ'"));
             var namen = t.Rows.Cast<DataRow>().Select(r => Convert.ToString(r["name"], CultureInfo.InvariantCulture))
                          .Where(n => !zwillinge.Contains(n)).ToList();
             Assert.Equal(ProjektdateiImportSchema.TABELLEN.Select(u => u.Tabelle).OrderBy(x => x, StringComparer.Ordinal),

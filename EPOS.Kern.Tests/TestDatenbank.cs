@@ -1080,6 +1080,9 @@ namespace EPOS.Kern.Tests
                 // Schritt BauteilkatalogAbschnittSchema.SCHRITT (BK-5/BK-6): Psi_Glasrand am Aufbaukatalog, leer, reines DDL.
                 // Wiederholbar, ergebnisneutral.
                 BauteilkatalogAbschnittSchema.Ausfuehren(null);
+                // Schritt BauteilUHerkunftSchema.SCHRITT (MA-6b, E149): U_Herkunft an Tab_Bauteil(_STAMM), leer, reines DDL.
+                // Wiederholbar, ergebnisneutral.
+                BauteilUHerkunftSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
