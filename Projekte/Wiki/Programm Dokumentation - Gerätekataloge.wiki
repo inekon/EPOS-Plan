@@ -181,9 +181,11 @@ Fußleiste: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Import…'', ''Beenden''
 
 Der Stromspeicherkatalog führt das Gerät — nicht die im Projekt geplante Speicherflotte, dafür [[Programm Dokumentation/Stromspeicher]]. Zwei Gruppen:
 
-'''Speicherdaten''' (alle fünf Felder Pflicht): Bezeichner, Hersteller, Typ (Zelltechnologie, Auswahl), Energie/Kapazität (kWh), Leistung (kW), Ladezustand (%), Degradation (%), Modulkosten (€/kWh).
+'''Speicherdaten''' (alle fünf Felder Pflicht): Bezeichner, Hersteller, Typ (Zelltechnologie, Auswahl), Energie/Kapazität (kWh), Leistung (kW), Ladezustand (%), Degradation (%).
 
-'''Gerätetechnik''' (alle sechs Felder dürfen leer bleiben und heißen dann nicht gepflegt): Wirkungsgrad (Round-Trip), Zyklen (zugesichert), Verschleißkosten (€/(kWh·Zyklus)), Leistungskosten (€/kW), Investition fix (€), Standby-Verbrauch (W).
+'''Gerätetechnik''' (alle Felder dürfen leer bleiben und heißen dann nicht gepflegt): Wirkungsgrad (Round-Trip), Zyklen (zugesichert), Standby-Verbrauch (W), Selbstentladung (%/Monat).
+
+'''Kosten''': Der Satz führt keine Kostenfelder. Die Maske zeigt die Gerätekosten als gesperrten Lesewert mit Vermerk auf die Kostenverwaltung; sie stammen aus der Satzvorlage des Satzes – Investition je kWh Kapazität, je kW Leistung und als fester Betrag, Betrieb als Verschleiß je entladener kWh –, ohne Verweis auf den Kostenkatalog bleibt das Feld leer. Gepflegt werden die Kosten in der Kostenverwaltung.
 
 Fußleiste: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Import…'', ''Beenden''; ''Duplizieren…'', ''Schloss aufheben…''/''Schloss setzen…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
@@ -197,7 +199,7 @@ Die Kataloge der '''Solarthermie-Ganglinien''' (Menü ''Solarthermieganglinie'')
 
 Vier Kataloge lesen sich aus Herstellerdateien nach VDI 3805 ein: Heizkessel (Blatt 3), Pufferspeicher (Blatt 20), Solarkollektoren (Blatt 19) und Wärmepumpen (Blatt 22, samt Kennlinien). PV-Module und Wechselrichter lesen sich wahlweise aus der CEC-Liste (Netzabruf oder Datei) oder aus PVsyst-Dateien ein — Module aus ''.PAN'', Wechselrichter aus ''.OND''. Stromspeicher haben keine VDI-3805-Vorlage; sie lesen sich aus der CEC Energy Storage System List und aus einer offenen Bibliothek von Batteriespezifikationen (bslib, CC BY 4.0).
 
-Der Ablauf ist bei allen Importen derselbe: Datei wählen oder Quelle abrufen, die gefundenen Sätze in einer Liste mit Kontrollkästchen mehrfach auswählen (ein Klick schaltet die Markierung um, ein Doppelklick übernimmt die angeklickte Zeile sofort, ohne die übrige Auswahl zu leeren), eine Vorprüfung auf Dubletten, bei einem Fund ein eigener Konfliktdialog, danach die Übernahme mit einer Sammelmeldung. Der Dialog bleibt nach jeder Übernahme offen, damit sich mehrere Sätze nacheinander übernehmen lassen. Was eine Quelle nicht liefert — bei den Stromspeichern etwa Verschleißkosten oder Zyklen —, sagt eine Hinweiszeile am Import.
+Der Ablauf ist bei allen Importen derselbe: Datei wählen oder Quelle abrufen, die gefundenen Sätze in einer Liste mit Kontrollkästchen mehrfach auswählen (ein Klick schaltet die Markierung um, ein Doppelklick übernimmt die angeklickte Zeile sofort, ohne die übrige Auswahl zu leeren), eine Vorprüfung auf Dubletten, bei einem Fund ein eigener Konfliktdialog, danach die Übernahme mit einer Sammelmeldung. Der Dialog bleibt nach jeder Übernahme offen, damit sich mehrere Sätze nacheinander übernehmen lassen. Was eine Quelle nicht liefert — bei den Stromspeichern etwa die zugesicherten Zyklen —, sagt eine Hinweiszeile am Import.
 
 {{Anker|import-heizkessel}}Beim Heizkessel liest der Import aus dem Leistungssatz 710.01 den Wirkungsgrad bei Nennlast, den Wirkungsgrad bei 30 % Last und die kleinste Leistung, jeweils vom Temperaturpaar mit dem niedrigsten Rücklauf; führt der Satz keinen Nennlastwert, gilt der Wirkungsgrad des Gerätesatzes 700. Prozentangaben werden zu Faktoren, ein unplausibler Teillastwert bleibt leer. Die Bauart „Brennwert…“ setzt den Schalter '''Brennwertkessel'''; die '''Brennwertkennlinie''' bleibt aus, Anfahrverlust und Mindestlaufzeit bleiben leer.
 
