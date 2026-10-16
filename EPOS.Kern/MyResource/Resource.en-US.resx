@@ -57133,5 +57133,296 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="KI_DLG_BTA_STRAHLUNG_ERL" xml:space="preserve">
     <value>Absorptance (solar radiation) or emissivity (long-wave) of the outer surface of the construction between 0 and 1; empty = default. A building element can carry its own value.</value>
   </data>
+  <data name="EF_KN_NETZBEZUG" xml:space="preserve">
+    <value>Grid import</value>
+  </data>
+  <data name="EF_KK_NETZBEZUG" xml:space="preserve">
+    <value>Grid</value>
+  </data>
+  <data name="EF_KN_PHOTOVOLTAIK" xml:space="preserve">
+    <value>Photovoltaics</value>
+  </data>
+  <data name="EF_KK_PHOTOVOLTAIK" xml:space="preserve">
+    <value>PV</value>
+  </data>
+  <data name="EF_KN_BRENNSTOFF" xml:space="preserve">
+    <value>Fuel</value>
+  </data>
+  <data name="EF_KK_BRENNSTOFF" xml:space="preserve">
+    <value>Fuel</value>
+  </data>
+  <data name="EF_KN_UMWELTWAERME" xml:space="preserve">
+    <value>Ambient heat</value>
+  </data>
+  <data name="EF_KK_UMWELTWAERME" xml:space="preserve">
+    <value>Ambient</value>
+  </data>
+  <data name="EF_KN_UMWELTKAELTE" xml:space="preserve">
+    <value>Ambient (cooling)</value>
+  </data>
+  <data name="EF_KK_UMWELTKAELTE" xml:space="preserve">
+    <value>Amb. C.</value>
+  </data>
+  <data name="EF_KN_KONDENSATION" xml:space="preserve">
+    <value>Condensing heat</value>
+  </data>
+  <data name="EF_KK_KONDENSATION" xml:space="preserve">
+    <value>Cond.</value>
+  </data>
+  <data name="EF_KN_SOLARTHERMIE" xml:space="preserve">
+    <value>Solar thermal</value>
+  </data>
+  <data name="EF_KK_SOLARTHERMIE" xml:space="preserve">
+    <value>Solar</value>
+  </data>
+  <data name="EF_KN_KUEHLSTROM_EIGEN" xml:space="preserve">
+    <value>Cooling power (own meter)</value>
+  </data>
+  <data name="EF_KK_KUEHLSTROM_EIGEN" xml:space="preserve">
+    <value>Cool. power</value>
+  </data>
+  <data name="EF_KN_UNGEDECKT" xml:space="preserve">
+    <value>unmet</value>
+  </data>
+  <data name="EF_KK_UNGEDECKT" xml:space="preserve">
+    <value>unmet</value>
+  </data>
+  <data name="EF_KN_NICHT_ZUGEORDNET" xml:space="preserve">
+    <value>unassigned</value>
+  </data>
+  <data name="EF_KK_NICHT_ZUGEORDNET" xml:space="preserve">
+    <value>unassig.</value>
+  </data>
+  <data name="EF_KN_BHKW" xml:space="preserve">
+    <value>CHP</value>
+  </data>
+  <data name="EF_KK_BHKW" xml:space="preserve">
+    <value>CHP</value>
+  </data>
+  <data name="EF_KN_HEIZKESSEL" xml:space="preserve">
+    <value>Boiler</value>
+  </data>
+  <data name="EF_KK_HEIZKESSEL" xml:space="preserve">
+    <value>Boiler</value>
+  </data>
+  <data name="EF_KN_STROM" xml:space="preserve">
+    <value>Electricity</value>
+  </data>
+  <data name="EF_KK_STROM" xml:space="preserve">
+    <value>Elec.</value>
+  </data>
+  <data name="EF_KN_WAERMEPUMPE" xml:space="preserve">
+    <value>Heat pump</value>
+  </data>
+  <data name="EF_KK_WAERMEPUMPE" xml:space="preserve">
+    <value>HP</value>
+  </data>
+  <data name="EF_KN_WP_HEIZEN" xml:space="preserve">
+    <value>Heat pump (heating)</value>
+  </data>
+  <data name="EF_KK_WP_HEIZEN" xml:space="preserve">
+    <value>HP heat</value>
+  </data>
+  <data name="EF_KN_WP_KUEHLEN" xml:space="preserve">
+    <value>Heat pump (cooling)</value>
+  </data>
+  <data name="EF_KK_WP_KUEHLEN" xml:space="preserve">
+    <value>HP cool</value>
+  </data>
+  <data name="EF_KN_HEIZSTAB" xml:space="preserve">
+    <value>Immersion heater</value>
+  </data>
+  <data name="EF_KK_HEIZSTAB" xml:space="preserve">
+    <value>Imm. heater</value>
+  </data>
+  <data name="EF_KN_ELEKTROKESSEL" xml:space="preserve">
+    <value>Electric boiler</value>
+  </data>
+  <data name="EF_KK_ELEKTROKESSEL" xml:space="preserve">
+    <value>E-boiler</value>
+  </data>
+  <data name="EF_KN_KAELTEMASCHINE" xml:space="preserve">
+    <value>Chiller</value>
+  </data>
+  <data name="EF_KK_KAELTEMASCHINE" xml:space="preserve">
+    <value>Chiller</value>
+  </data>
+  <data name="EF_KN_FREIE_KUEHLUNG" xml:space="preserve">
+    <value>Free cooling</value>
+  </data>
+  <data name="EF_KK_FREIE_KUEHLUNG" xml:space="preserve">
+    <value>Free</value>
+  </data>
+  <data name="EF_KN_SPLIT" xml:space="preserve">
+    <value>Split unit</value>
+  </data>
+  <data name="EF_KK_SPLIT" xml:space="preserve">
+    <value>Split</value>
+  </data>
+  <data name="EF_KN_WAERME" xml:space="preserve">
+    <value>Heat</value>
+  </data>
+  <data name="EF_KK_WAERME" xml:space="preserve">
+    <value>Heat</value>
+  </data>
+  <data name="EF_KN_KAELTE" xml:space="preserve">
+    <value>Cooling</value>
+  </data>
+  <data name="EF_KK_KAELTE" xml:space="preserve">
+    <value>Cool.</value>
+  </data>
+  <data name="EF_KN_PUFFERSPEICHER" xml:space="preserve">
+    <value>Buffer tank</value>
+  </data>
+  <data name="EF_KK_PUFFERSPEICHER" xml:space="preserve">
+    <value>Buffer</value>
+  </data>
+  <data name="EF_KN_KAELTESPEICHER" xml:space="preserve">
+    <value>Cold storage</value>
+  </data>
+  <data name="EF_KK_KAELTESPEICHER" xml:space="preserve">
+    <value>Cold st.</value>
+  </data>
+  <data name="EF_KN_STROMSPEICHER" xml:space="preserve">
+    <value>Battery storage</value>
+  </data>
+  <data name="EF_KK_STROMSPEICHER" xml:space="preserve">
+    <value>Battery</value>
+  </data>
+  <data name="EF_KN_HEIZUNG" xml:space="preserve">
+    <value>Space heating</value>
+  </data>
+  <data name="EF_KK_HEIZUNG" xml:space="preserve">
+    <value>Heating</value>
+  </data>
+  <data name="EF_KN_WARMWASSER" xml:space="preserve">
+    <value>Hot water</value>
+  </data>
+  <data name="EF_KK_WARMWASSER" xml:space="preserve">
+    <value>DHW</value>
+  </data>
+  <data name="EF_KN_PROZESSWAERME" xml:space="preserve">
+    <value>Process heat</value>
+  </data>
+  <data name="EF_KK_PROZESSWAERME" xml:space="preserve">
+    <value>Process</value>
+  </data>
+  <data name="EF_KN_KUEHLUNG" xml:space="preserve">
+    <value>Cooling demand</value>
+  </data>
+  <data name="EF_KK_KUEHLUNG" xml:space="preserve">
+    <value>Cooling</value>
+  </data>
+  <data name="EF_KN_STROMBEDARF" xml:space="preserve">
+    <value>Power demand</value>
+  </data>
+  <data name="EF_KK_STROMBEDARF" xml:space="preserve">
+    <value>Power</value>
+  </data>
+  <data name="EF_KN_EINSPEISUNG_PV" xml:space="preserve">
+    <value>PV feed-in</value>
+  </data>
+  <data name="EF_KK_EINSPEISUNG_PV" xml:space="preserve">
+    <value>PV feed-in</value>
+  </data>
+  <data name="EF_KN_EINSPEISUNG_BHKW" xml:space="preserve">
+    <value>CHP feed-in</value>
+  </data>
+  <data name="EF_KK_EINSPEISUNG_BHKW" xml:space="preserve">
+    <value>CHP feed-in</value>
+  </data>
+  <data name="EF_KN_VERLUST" xml:space="preserve">
+    <value>Loss</value>
+  </data>
+  <data name="EF_KK_VERLUST" xml:space="preserve">
+    <value>Loss</value>
+  </data>
+  <data name="EF_KN_FUELLSTAND" xml:space="preserve">
+    <value>Change of charge</value>
+  </data>
+  <data name="EF_KK_FUELLSTAND" xml:space="preserve">
+    <value>ΔCharge</value>
+  </data>
+  <data name="EF_KN_WEITERE" xml:space="preserve">
+    <value>more ({0})</value>
+  </data>
+  <data name="EF_KK_WEITERE" xml:space="preserve">
+    <value>more ({0})</value>
+  </data>
+  <data name="EF_ZEIGER_FLUSS" xml:space="preserve">
+    <value>{0} → {1}: {2} MWh/a ({3} %)</value>
+  </data>
+  <data name="EF_ZEIGER_KNOTEN" xml:space="preserve">
+    <value>{0}: inflow {1} · outflow {2} MWh/a</value>
+  </data>
+  <data name="EF_ZEIGER_MENGE" xml:space="preserve">
+    <value>{0}: {1} MWh/a</value>
+  </data>
+  <data name="EF_ZEIGER_BILANZIERT" xml:space="preserve">
+    <value>balanced from the electricity balance of the run</value>
+  </data>
+  <data name="EF_ZEIGER_ABGELEITET" xml:space="preserve">
+    <value>derived: {0}</value>
+  </data>
+  <data name="EF_ZEIGER_NICHT_ZUGEORDNET" xml:space="preserve">
+    <value>balance remainder at node {0}</value>
+  </data>
+  <data name="EF_FORMEL_UMWELT_WAERME" xml:space="preserve">
+    <value>heat − electricity</value>
+  </data>
+  <data name="EF_FORMEL_UMWELT_KAELTE" xml:space="preserve">
+    <value>cooling − electricity</value>
+  </data>
+  <data name="EF_FORMEL_KONDENSATION" xml:space="preserve">
+    <value>heat − fuel (net calorific value)</value>
+  </data>
+  <data name="EF_FORMEL_VERLUST" xml:space="preserve">
+    <value>inflow − outflow</value>
+  </data>
+  <data name="EF_FORMEL_DIREKT" xml:space="preserve">
+    <value>demand − storage discharge − unmet</value>
+  </data>
+  <data name="EF_FORMEL_UNGEDECKT" xml:space="preserve">
+    <value>unmet demand pro rata by demand</value>
+  </data>
+  <data name="EF_FORMEL_FUELLSTAND" xml:space="preserve">
+    <value>charge − discharge − loss</value>
+  </data>
+  <data name="EF_ZEIGER_SPEICHER_VERLUST" xml:space="preserve">
+    <value>loss {0} · change of charge {1} MWh/a</value>
+  </data>
+  <data name="EF_ZEIGER_STROMSPEICHER" xml:space="preserve">
+    <value>The discharge covers the remainder of the connection; there is no allocation to individual consumers.</value>
+  </data>
+  <data name="EF_ZEIGER_SOLARUEBERSCHUSS" xml:space="preserve">
+    <value>unusable surplus {0} MWh/a (not drawn)</value>
+  </data>
+  <data name="EF_ZEIGER_UMWELT" xml:space="preserve">
+    <value>ambient share by seasonal performance factor</value>
+  </data>
+  <data name="EF_ZEIGER_GEBUENDELT" xml:space="preserve">
+    <value>bundled: {0}</value>
+  </data>
+  <data name="EF_HINWEIS_BILANZ" xml:space="preserve">
+    <value>Balance at node {0} does not close: {1} MWh/a unassigned</value>
+  </data>
+  <data name="EF_NICHT_SIMULIERT" xml:space="preserve">
+    <value>There is no simulation result for version “{0}”.</value>
+  </data>
+  <data name="EF_LEER" xml:space="preserve">
+    <value>Version “{0}” has no energy flows.</value>
+  </data>
+  <data name="EF_KI_KOPF" xml:space="preserve">
+    <value>[flow] Energy flow — {0}</value>
+  </data>
+  <data name="EF_HERKUNFT_DIREKT" xml:space="preserve">
+    <value>direct</value>
+  </data>
+  <data name="EF_HERKUNFT_ABGELEITET" xml:space="preserve">
+    <value>derived</value>
+  </data>
+  <data name="EF_HERKUNFT_BILANZIERT" xml:space="preserve">
+    <value>balanced</value>
+  </data>
 </root>
 
