@@ -8,7 +8,7 @@ U-Werte, g-Wert und ψ; der Bauteilvorschlag lehnte einen importierten Neubau oh
 nach Stein/Loga (2025) als Rückfall für Klassen und Standards ohne Katalogsatz; F4 des
 [Konzepts Baualtersklassen](../../../aktuell/Konzept_Baualtersklassen_Energiestandard_EPOS-Plan.md) ist
 aufgehoben, E27 bei U12 geändert. Arbeitsgrundlage war die
-[Übergabe](../../../aktuell/Gebaeudesimulation/2026-09-26_Uebergabe_G6c_Katalog_M_A.md), Abschnitt 2.2.
+[Übergabe](../../2026-09-26_Uebergabe_G6c_Katalog_M_A.md), Abschnitt 2.2.
 
 ## 1 Entscheide des Anwenders zur Umsetzung (26.09.2026)
 

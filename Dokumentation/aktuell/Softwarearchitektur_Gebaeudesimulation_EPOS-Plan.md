@@ -59,7 +59,7 @@
 > [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md)), der symmetrische Ausbau der Kälteseite und der
 > Verbleib des Tagesbilanz-Wegs für die Dauer des Übergangs (E23).
 > **Rev. 2 — Korrekturen des Gegenlesens vom 15.09.2026, Protokoll:**
-> [Gegenlesen](Gebaeudesimulation/2026-09-15_Gegenlesen_Softwarearchitektur.md)
+> [Gegenlesen](../ueberholt/2026-09-15_Gegenlesen_Softwarearchitektur.md)
 
 Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
@@ -89,9 +89,9 @@ eigener Lesung (Belege `Datei:Zeile`):
 
 | Befund | Gegenstand |
 |---|---|
-| [`Befund T`](Gebaeudesimulation/2026-09-15_Befund_T_Softwarearchitektur_Bestand.md) | Schichten und Kantenrichtung, neun Umgebungsdienste, die drei Nähte, Laufreihenfolge, Zustand und Fäden, Leistungsbudget, Regeln 1–10 und die drei Fehlerstellen (Kap. 7) |
-| [`Befund U`](Gebaeudesimulation/2026-09-15_Befund_U_Dialogfuehrung_Bestand.md) | Navigation, Bausteinsatz, der eine Schreibweg, die fünf Gebäudemasken, Importkette, Ergebnisdarstellung, Tests, iOS; Muster P1–P13, Lücken L1–L12, Maskenreihenfolge je Stufe |
-| [`Befund V`](Gebaeudesimulation/2026-09-15_Befund_V_Datenmodell_Architektur.md) | Schemaverwaltung, Sicht `Abfrage_Projektgebaeude`, konsolidiertes Zielmodell, Widersprüche W1–W18 und Lücken L1/L2, Migrations- und Einfrierplan, Mengen, Regeln R1–R18 |
+| [`Befund T`](../ueberholt/2026-09-15_Befund_T_Softwarearchitektur_Bestand.md) | Schichten und Kantenrichtung, neun Umgebungsdienste, die drei Nähte, Laufreihenfolge, Zustand und Fäden, Leistungsbudget, Regeln 1–10 und die drei Fehlerstellen (Kap. 7) |
+| [`Befund U`](../ueberholt/2026-09-15_Befund_U_Dialogfuehrung_Bestand.md) | Navigation, Bausteinsatz, der eine Schreibweg, die fünf Gebäudemasken, Importkette, Ergebnisdarstellung, Tests, iOS; Muster P1–P13, Lücken L1–L12, Maskenreihenfolge je Stufe |
+| [`Befund V`](../ueberholt/2026-09-15_Befund_V_Datenmodell_Architektur.md) | Schemaverwaltung, Sicht `Abfrage_Projektgebaeude`, konsolidiertes Zielmodell, Widersprüche W1–W18 und Lücken L1/L2, Migrations- und Einfrierplan, Mengen, Regeln R1–R18 |
 
 Dazu die Fachbefunde L (Einbindung Kern), M (Gebäudedialog), N (IFC-Import), Q (Muster Datenmodell
 und Dialoge), R (gbXML), S (IFC-Export), H (Rechenzeit) unter
@@ -2443,7 +2443,7 @@ führen die Konzeptpapiere, die sie stellen, und das
   **Reihenfolge und Abnahmebedingung**, sonst nichts.
 - **Die Feldlisten und der Wortlaut der Masken.** Welche Felder Reiter 3 trägt, wie die U·A-Tabelle
   aussieht und wie die neuen Texte lauten, steht in
-  [Befund M](Gebaeudesimulation/2026-09-15_Befund_M_Gebaeudedialog.md) 5.2 bis 5.11. Hier stehen
+  [Befund M](../ueberholt/2026-09-15_Befund_M_Gebaeudedialog.md) 5.2 bis 5.11. Hier stehen
   Zustände, Übergänge, Schreibwege, Präfixe und Tests.
 - **Die Abbildungsregeln je Format.** Welche IFC-Entität und welches gbXML-Element auf welches
   EPOS-Feld führt, mit welchen Rückfällen und Sonderfällen, steht im Umsetzungskonzept 3.4, im
@@ -2486,7 +2486,7 @@ führen die Konzeptpapiere, die sie stellen, und das
   Kälteseite symmetrisch zur Wärmeseite an und entscheidet damit **K1** des Kühlkonzepts.
 
 **Was nach der Abnahme mit den Befunden geschieht.** Die Befunde unter
-[`Dokumentation/aktuell/Gebaeudesimulation/`](Gebaeudesimulation/2026-09-15_Befund_T_Softwarearchitektur_Bestand.md)
+[`Dokumentation/aktuell/Gebaeudesimulation/`](../ueberholt/2026-09-15_Befund_T_Softwarearchitektur_Bestand.md)
 sind **Belegquelle**, nicht Konzept: Sie bleiben in `aktuell/`, solange die Stufen laufen, die auf
 ihnen stehen — dieses Papier und der Systementwurf verweisen an rund vierzig Stellen auf sie, und die
 Wache über die Papiere prüft **jeden** dieser Verweise. Sie wandern erst dann per `git mv` nach

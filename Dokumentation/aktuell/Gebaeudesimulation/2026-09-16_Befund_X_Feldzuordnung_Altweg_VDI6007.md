@@ -17,7 +17,7 @@ liefern muss, schätzt die Verschiebung nach `Altweg/` und listet, was die Stufe
 **Was dieser Befund nicht tut.** Er entscheidet nichts: Die Vorschläge für den Dialog und die
 Aufwände sind Vorschläge, die offenen Punkte in Kapitel 5 gehen an den Anwender. Er nennt keine
 Zahlen aus VDI 6007 und nichts aus VDI 6020:2022 (Entscheid E6). Er öffnet die Testdatenbank nicht;
-Mengenangaben dazu stammen aus [Befund D](2026-09-15_Befund_D_Testdatenbank.md). Die Leserseite des
+Mengenangaben dazu stammen aus [Befund D](../../ueberholt/2026-09-15_Befund_D_Testdatenbank.md). Die Leserseite des
 VDI-Wegs ist **noch kein Quelltext** — sie steht in Konzept 4 und 6 und in der Eingabetabelle 1.1
 der [Rechenschritte](../Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md); das ist als
 Quelle je Zeile benannt.

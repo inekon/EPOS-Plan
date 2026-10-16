@@ -576,8 +576,19 @@ Wärmedurchgangswiderstand   R_T = (R'_T + R''_T) / 2,      U = 1 / R_T         
 
 Der obere Grenzwert schaltet die Streifen über den ganzen Aufbau parallel, der untere bildet je
 inhomogener Ebene den flächengewichteten Leitwert und schaltet die Ebenen in Reihe. Der Summenfuß des
-Aufbaueditors zeigt R'_T, R''_T und R_T. Eine Fehlerabschätzung aus dem Abstand der Grenzwerte
-rechnet der Kern nicht; das Verhältnis R'_T/R''_T wird weder geprüft noch begrenzt.
+Aufbaueditors zeigt R'_T, R''_T und R_T.
+
+**Fehlerschranke** (DIN EN ISO 6946, 6.7.2.5). Aus dem Abstand der Grenzwerte folgt die größte mögliche relative
+Abweichung des Mittels vom wahren Wert:
+
+```
+e = (R'_T − R''_T) / (2 · R_T)                                                               [–]
+Hinweis, wenn e > 0,20   (gleichbedeutend R'_T / R''_T > 1,5)
+```
+
+Der Kern rechnet e je inhomogenem Aufbau (`Abschnittsgrenzen.Fehlerschranke`), der Summenfuß zeigt sie. Über 20 % — dem
+Verhältnis 1,5, das die Norm als Grenze des vereinfachten Verfahrens nennt — steht im Summenfuß ein Hinweis
+(`InhomogeneSchichten.FEHLERSCHRANKE_GRENZE`); abgelehnt wird nichts, und R_T bleibt das Mittel, auch in der Simulation.
 
 **B0d — Ersatzschichten.** Die Kettenmatrix (B2, B3) kennt nur homogene Schichten. Jede inhomogene Ebene
 wird deshalb **eine homogene Ersatzschicht**; die homogenen Ebenen gehen unverändert durch:
@@ -599,6 +610,34 @@ Ersatzschicht eine Luftschicht mit der äquivalenten Leitfähigkeit λ_eff,j. Mi
 B1 bis B7 wie für jeden homogenen Aufbau.
 
 **Aufbauten ohne Abschnitt** laufen nicht über B0a bis B0d; ihr Weg ist unverändert.
+
+**Gemeinsame Schichtgrenzen beim Katalogimport.** Eine Quelle kann je Abschnitt eine eigene Schichtfolge mit eigener
+Schichtzahl führen, auch bei gleicher Schichtzahl mit versetzten Grenzen. B0a verlangt in jeder inhomogenen Ebene jeden
+Abschnitt genau einmal, und der untere Grenzwert nach DIN EN ISO 6946, 6.7.2.3 setzt voraus, dass jede Ebene parallel zur
+Oberfläche isotherm ist und die Schichten an den Grenzen aller übrigen Abschnitte unterteilt sind. Der Import
+(`BauteilkatalogImport.AbschnittePruefen`) bringt die Folgen deshalb immer auf gemeinsame Ebenen:
+
+```
+D_m      = Σ_i d_mi                                    Gesamtdicke des Abschnitts m             [m]
+Annahme  max D_m − min D_m ≤ max(0,001 m; 0,01 · max D_m)
+t_mi     = (Σ_{k≤i} d_mk) / D_m                        genormte Lage der Grenzen               [–]
+T        = ⋃_m { t_mi }                                gemeinsame Grenzen, Ende 1; Grenzen verschiedener
+                                                       Abschnitte mit |Δt| ≤ max(0,001 m; 0,01 · max D_m) / max D_m
+                                                       sind eine Grenze an ihrem Mittel
+Teil     d = d_mi · Δt / (t_mi − t_m,i−1)              je Stück zwischen zwei Grenzen aus T      [m]
+```
+
+Jeder Abschnitt behält Dicke und Widerstand (R'_T unverändert); jede Ebene j führt danach in jedem Abschnitt genau ein Stück.
+Eine ruhende Luftschicht (Widerstand nach Tabelle, nicht anteilig zur Dicke) wird nicht geteilt; fiele eine Grenze in sie, wird
+der Aufbau verworfen, ebenso bei Gesamtdicken außerhalb der Toleranz und bei einer Schicht ohne Dicke neben verschiedener
+Schichtzahl. Zwei Grenzen desselben Abschnitts bleiben getrennt (eine dünne Folie bleibt eine Schicht). Nur wenn bei gleicher
+Schichtzahl alle Grenzen innerhalb der Toleranz übereinanderliegen, bleibt der Aufbau, wie er ist; ebenso bei gleicher
+Schichtzahl mit einer Schicht ohne Dicke, deren Lage unbestimmt ist. Für Aufbauten, die schon als Importsatz im Katalog
+stehen und durch die Teilung andere Schichten bekämen, zählt die Vorschau, wie viele ihren U-Wert um mehr als 1 % ändern,
+und nennt die größte Änderung (`BauteilkatalogImport.WiederimportVergleichen`). Fehlt der Flächenanteil genau eines Abschnitts und bleibt bis 1
+mehr als 0,01 offen, setzt der Import f = 1 − Σ der übrigen. Protokoll:
+[`2026-10-16_BK-8_Inhomogene_Aufbauten.md`](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-16_BK-8_Inhomogene_Aufbauten.md),
+[`2026-10-16_BK-8b_Normgerechte_Teilung.md`](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-16_BK-8b_Normgerechte_Teilung.md).
 
 **Fensteraufbauten.** Ein Aufbau der Art Fenster oder Vorhangfassade führt die Fensterwerte U_g und U_f
 [W/(m²K)], den g-Wert, den Rahmenanteil f = A_f/(A_g + A_f) und ψ_g des Glasrands [W/(mK)] (`Fensterkennwerte`).
@@ -2168,15 +2207,15 @@ steht im Inventar der Altweg-Bestandteile (Umsetzungskonzept 6.1).
 
 **Befunde (Protokolle)**
 
-- [`Gebaeudesimulation/2026-09-15_Befund_B_Rechenweg_Kern.md`](Gebaeudesimulation/2026-09-15_Befund_B_Rechenweg_Kern.md)
+- [`../ueberholt/2026-09-15_Befund_B_Rechenweg_Kern.md`](../ueberholt/2026-09-15_Befund_B_Rechenweg_Kern.md)
   — was der Bestand rechnet, Datenmodell, Klimadaten, Andockpunkte.
 - [`Gebaeudesimulation/2026-09-15_Befund_E_Prototyp_Normtestfaelle.md`](Gebaeudesimulation/2026-09-15_Befund_E_Prototyp_Normtestfaelle.md)
   — Aufbau des Lösers, Herleitung der eliminierten Matrix, Validierungstabelle.
-- [`Gebaeudesimulation/2026-09-15_Befund_D_Testdatenbank.md`](Gebaeudesimulation/2026-09-15_Befund_D_Testdatenbank.md)
+- [`../ueberholt/2026-09-15_Befund_D_Testdatenbank.md`](../ueberholt/2026-09-15_Befund_D_Testdatenbank.md)
   — die fünfzehn gesäten Gebäude, Einheiten und Wertebereiche je Spalte, Aus-Marker.
 - [`Gebaeudesimulation/2026-09-15_Befund_F_Prototyp_Vergleich_Tagesmodell.md`](Gebaeudesimulation/2026-09-15_Befund_F_Prototyp_Vergleich_Tagesmodell.md)
   — Sollwertfahrplan und Stundenkonvention des Bestands im Vergleich zum Prototyp.
-- [`Gebaeudesimulation/2026-09-15_Befund_H_OstWest_Rechenzeit.md`](Gebaeudesimulation/2026-09-15_Befund_H_OstWest_Rechenzeit.md)
+- [`../ueberholt/2026-09-15_Befund_H_OstWest_Rechenzeit.md`](../ueberholt/2026-09-15_Befund_H_OstWest_Rechenzeit.md)
   — Wirkung der Ost/West-Trennung, Rechenzeit je Gebäude und Jahr.
 - [`Gebaeudesimulation/2026-09-15_Befund_I_VDI6007_Richtlinie_Abgleich.md`](Gebaeudesimulation/2026-09-15_Befund_I_VDI6007_Richtlinie_Abgleich.md)
   — die Gleichungsnummern und Fundstellen der Blätter 1 bis 3.

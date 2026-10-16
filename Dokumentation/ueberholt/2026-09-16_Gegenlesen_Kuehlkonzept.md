@@ -1,6 +1,6 @@
 # Gegenlesen des Kühlkonzepts (16.09.2026)
 
-**Papier:** [`Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md`](../Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md)
+**Papier:** [`Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md`](../aktuell/Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md)
 — gegengelesen als **Rev. 1** (1 409 Zeilen), nach Einarbeitung **Rev. 2** (1 851 Zeilen).
 
 Das Papier ist am selben Tag entstanden, an dem es gegengelesen wurde: Es ist die Ausführung von
@@ -51,16 +51,16 @@ nicht anfassen muss, und lässt die stehen, die den Schaden anrichtet.
 
 | Nr. | Schwere | Stelle | Befund in einem Satz | Erledigung |
 |---|---|---|---|---|
-| **K1** | **hoch** | 10.4 | Eine „**fünfte** Einfrierregel" gibt es nicht: Der [Systementwurf](../Systementwurf_Gebaeudesimulation_EPOS-Plan.md) 8.3 (`:841-848`) hält ausdrücklich fest, dass Regeln **über ihren Gegenstand** benannt werden, nicht über eine Ordnungszahl — „gesäte Gebäudedaten" (mit GB, `:148`), „gesäte Klimareihen", „gesäte Zonendaten" (mit G6d). | 10.4 umgeschrieben: „**gesäte Kältedaten**" ohne Ordnungszahl, mit der Begründung aus 8.3 und dem vollständigen Gegenstand der Regel. |
-| **K2** | **hoch** | 4.7, 6.4 | Zweite Wahrheit: Die [Softwarearchitektur](../Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 4.4 (`:1791-1793`) legt mit G1 `gebaeude_<n>_kuehlbedarf.csv` **je Gebäude** fest (kWh, `ID_ProjektGebaeude`) samt den Skalaren „Kühlenergie" und „Stunden mit Kühlbedarf"; das Kühlkonzept führte daneben `waermebedarf_kuehlung.csv` **je Projekt** plus „Jahreskälte", ohne das Verhältnis zu klären. | In 4.7 zwei neue Zeilen („Verhältnis zur Gebäudereihe", „Wer ‚Jahreskälte' führt") und in 6.4 ein Absatz: **Gebäudereihe = Rohbedarf je Gebäude** (G1/G2), **Kanalreihe = Summe über Gebäude + externe Ganglinien**; „Jahreskälte" führt der **Kanal**, die Gebäudeskalare bleiben unverändert. |
+| **K1** | **hoch** | 10.4 | Eine „**fünfte** Einfrierregel" gibt es nicht: Der [Systementwurf](../aktuell/Systementwurf_Gebaeudesimulation_EPOS-Plan.md) 8.3 (`:841-848`) hält ausdrücklich fest, dass Regeln **über ihren Gegenstand** benannt werden, nicht über eine Ordnungszahl — „gesäte Gebäudedaten" (mit GB, `:148`), „gesäte Klimareihen", „gesäte Zonendaten" (mit G6d). | 10.4 umgeschrieben: „**gesäte Kältedaten**" ohne Ordnungszahl, mit der Begründung aus 8.3 und dem vollständigen Gegenstand der Regel. |
+| **K2** | **hoch** | 4.7, 6.4 | Zweite Wahrheit: Die [Softwarearchitektur](../aktuell/Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 4.4 (`:1791-1793`) legt mit G1 `gebaeude_<n>_kuehlbedarf.csv` **je Gebäude** fest (kWh, `ID_ProjektGebaeude`) samt den Skalaren „Kühlenergie" und „Stunden mit Kühlbedarf"; das Kühlkonzept führte daneben `waermebedarf_kuehlung.csv` **je Projekt** plus „Jahreskälte", ohne das Verhältnis zu klären. | In 4.7 zwei neue Zeilen („Verhältnis zur Gebäudereihe", „Wer ‚Jahreskälte' führt") und in 6.4 ein Absatz: **Gebäudereihe = Rohbedarf je Gebäude** (G1/G2), **Kanalreihe = Summe über Gebäude + externe Ganglinien**; „Jahreskälte" führt der **Kanal**, die Gebäudeskalare bleiben unverändert. |
 | **K3** | mittel | 6.4 | Der Bestandseintrag `gebaeude.kuehlbedarf` heißt „Kühlbedarf (**informativ**)" (Softwarearchitektur `:1738`); mit E12 trifft der Zusatz nicht mehr zu. | In 6.4 als Umbenennung festgelegt: Zusatz entfällt in **beiden** `.resx`, danach `Werkzeuge/ResourceDesigner`; Rechenweg, Schlüssel, Einheit und Aggregation unverändert; der Posten steht in KU1 (11.1). |
-| **K4** | mittel | 9.1 | Der Import sollte `Kuehlung_Aktiv = 1` setzen — mit der Begründung, ein Autorensystem schreibe `DesignCoolT` nur für gekühlte Zonen. Das [Datenaustauschkonzept](../Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) hält für genau dieses Feld fest, es „fehlt oft" und es gebe „keine Zahlenvorgabe im Import" (`:417`; IFC-Gegenstück `:822`). | 9.1 umgeschrieben: Der Import setzt `Kuehlung_Aktiv` **nicht**; der Wert ist ein **Vorschlag mit Herkunftsmarke**, und der **Importbericht nennt die Zonen mit Kühlsollwert**. Risikozeile in 13. |
+| **K4** | mittel | 9.1 | Der Import sollte `Kuehlung_Aktiv = 1` setzen — mit der Begründung, ein Autorensystem schreibe `DesignCoolT` nur für gekühlte Zonen. Das [Datenaustauschkonzept](../aktuell/Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) hält für genau dieses Feld fest, es „fehlt oft" und es gebe „keine Zahlenvorgabe im Import" (`:417`; IFC-Gegenstück `:822`). | 9.1 umgeschrieben: Der Import setzt `Kuehlung_Aktiv` **nicht**; der Wert ist ein **Vorschlag mit Herkunftsmarke**, und der **Importbericht nennt die Zonen mit Kühlsollwert**. Risikozeile in 13. |
 | **K5** | mittel | Kopf, Kapitel 12 | Der Kopf nannte „Fragen K1–K18", die Tabelle führte bis K19 samt K8a–K8c und K18a. | Kopf auf **K1–K23**; Kapitel 12 bekommt einen Vorspann, der den Bereich und die Herkunft (K20–K23 aus E15 und dem Gegenlesen) nennt; KU0 in 11.1 entsprechend. |
-| **K6** | mittel | Indexzeile, ganzes Papier | Die Indexzeile in [`Dokumentation/LIESMICH.md`](../../LIESMICH.md) nennt bereits **E15** und die Katalogauswahl — das Papier führte beides nicht. | E15 eingearbeitet (Abschnitt „Was E15 hinzufügt"); die Indexzeile trifft jetzt zu. |
+| **K6** | mittel | Indexzeile, ganzes Papier | Die Indexzeile in [`Dokumentation/LIESMICH.md`](../LIESMICH.md) nennt bereits **E15** und die Katalogauswahl — das Papier führte beides nicht. | E15 eingearbeitet (Abschnitt „Was E15 hinzufügt"); die Indexzeile trifft jetzt zu. |
 | **K7** | niedrig | Schwesterpapier-Tabelle | „Schemaschritt 77 (1.6)" ist eine Zahl, die wandert: `SchemaStand.Zielversion` steht auf **78** (`SchemaStand.cs:106`). | In der Tabelle auf „**der Gebäude-Schemaschritt (1.6)**" geändert — **nur hier**. Meldung ans Umsetzungskonzept siehe unten. |
 | **K8** | niedrig | 4.3 | Die Kopfzeile nannte die Herkunft der Liste nicht genau, und die W-Nummern fehlten. | Kopfzeile: „Stellenliste aus Befund W 1.2, neu durchgezählt und um vier ergänzt; die Spalte ‚Beleg' nennt die W-Nummer und die Fundstelle." Jede Zeile trägt jetzt ihre W-Nummer, die vier neuen sind als **neu** gekennzeichnet. |
 | **K9** | niedrig | 10.5 | Dem Einfrierbild fehlte der Anschluss an G6d. | `Basis_KU2 --> Basis_G6 : G6d — Zonenprojekt` ergänzt, danach `[*]`. |
-| **K10** | niedrig | 11.1 | Der Vergleich „dieselbe Klasse wie G1 + G2 zusammen" stimmt nicht. | Am [Umsetzungskonzept](../Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 4 nachgesehen: Dort steht **eine** Zeile „G1 + G2 — das Modell und seine Darstellung" mit **15–21 PT**. **Abweichung vom Rohbefund:** Er las „15–21 PT je Stufe" und schloss auf das Anderthalbfache; gegen die gemeinsame Zeile ist die Kühlsumme (47–74 PT) rund das **Dreifache**. So ist es geschrieben, mit der Begründung, dass die Kühlung Kanal, Erzeuger, Strom, Wirtschaftlichkeit, Oberfläche und Regressionsnetz zugleich berührt. |
+| **K10** | niedrig | 11.1 | Der Vergleich „dieselbe Klasse wie G1 + G2 zusammen" stimmt nicht. | Am [Umsetzungskonzept](../aktuell/Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 4 nachgesehen: Dort steht **eine** Zeile „G1 + G2 — das Modell und seine Darstellung" mit **15–21 PT**. **Abweichung vom Rohbefund:** Er las „15–21 PT je Stufe" und schloss auf das Anderthalbfache; gegen die gemeinsame Zeile ist die Kühlsumme (47–74 PT) rund das **Dreifache**. So ist es geschrieben, mit der Begründung, dass die Kühlung Kanal, Erzeuger, Strom, Wirtschaftlichkeit, Oberfläche und Regressionsnetz zugleich berührt. |
 | **K11** | niedrig | 11.1 | KU3 führte den Kältespeicher im Aufwand, obwohl **K7** ihn noch offen lässt. | KU3 jetzt **17–26 PT**, mit Kältespeicher (K7) **20–31 PT**; Summe **47–74 PT**, ohne Kältespeicher **44–69 PT**. KU2 steigt von 14–22 auf **16–26 PT** (Kühl-Vorlauf, eigener Deckungszweig, Katalogauswahl aus E15) — mit einem Absatz, der die Erhöhung begründet. |
 | **K12** | niedrig | 10.1 | Ein Halbsatz („nennt nur ihre Nummern, keine Werte") stand gegen den Produktausweis, der zwei Beträge nennt. | Geschärft: Das Papier nennt **keine Normreferenzwerte**; die zwei Beträge des Produktausweises sind **eigene Messwerte** (der Abstand zum Band, von EPOS gemessen) und stehen nach **E10** im Wortlaut, an einer Stelle gepflegt und über einen Ressourcenschlüssel gezogen. |
 
@@ -95,7 +95,7 @@ Kühlblock `:313-331`, Nachzug fehlender Kennlinien `:395`), Gewerkübernahme
 **Was E15 im Weg steht.** Die Katalogspalte „Kühlen" ist als Ja/Nein-Kennzeichen definiert
 (`Katalogfilterprofil.cs:340`, `:521`) und damit vom Filtern ausgeschlossen:
 `Filterbar = filterbar && art != Katalogspaltenart.JaNein` (`:79`). Das ist **Absicht** — der
-[Katalogfilter-Konzept](../Konzept_Katalogfilter_EPOS-Plan.md) 5.6.2 begründet es damit, dass
+[Katalogfilter-Konzept](../aktuell/Konzept_Katalogfilter_EPOS-Plan.md) 5.6.2 begründet es damit, dass
 „enthält ja" für zwei Werte ein Bedienelement ohne Gewinn sei und die Sortierung genüge. Für die
 Kühlung trägt die Begründung nicht mehr, weil die Kühlfähigkeit ab KU2 eine **Vorbedingung** ist
 und keine Zusatzangabe. Der Weg — benannte Ausnahme oder eigene Filterart — ist **K20**; das
@@ -103,7 +103,7 @@ Papier empfiehlt die eigene Filterart, damit die Regel eine Regel bleibt.
 
 **Die Zusage und ihre Grenze.** Eine Projektkonfiguration mit reversibler Wärmepumpe rechnet die
 Simulation mit Kühlung vollständig — **frühestens nach G1 + G2 + KU1 + KU2**. Das steht so in
-5.0.6 und in [`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+5.0.6 und in [`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
 **N1.20**, dem neuen Abschnitt am Ende des Nachtrags 1.
 
 ---
@@ -149,7 +149,7 @@ Die Zahlen stehen als **Nachtrag (16.09.2026)** am Ende von
 
 **Nicht geändert, nur gemeldet** — der Auftrag erlaubte am Umsetzungskonzept keine Änderung:
 
-Das [Umsetzungskonzept](../Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) führt den
+Das [Umsetzungskonzept](../aktuell/Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) führt den
 Gebäude-Schemaschritt in 1.6 und in der Aufwandstabelle (Zeile „M3 — Schema") als **„Schritt 77
 (+78 verschmolzen, U5)"**. Im Arbeitsbaum steht `SchemaStand.Zielversion` auf **78**
 (`EPOS.Kern/Allgemein/Update/SchemaStand.cs:106`). Eine Schrittnummer, die vor ihrer Umsetzung
@@ -181,11 +181,11 @@ nächsten Auftrag, der das Umsetzungskonzept ohnehin anfasst.
 
 | Datei | Was |
 |---|---|
-| [`Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md`](../Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) | Rev. 2 — 26 Befunde und E15 eingearbeitet; 1 409 → 1 851 Zeilen |
-| [`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) | neuer Abschnitt **N1.20** am Ende des Nachtrags 1 (Entscheid E15) |
-| [`Status_Gebaeudesimulation_VDI6007.md`](../Status_Gebaeudesimulation_VDI6007.md) | Abschnitt 1: neue Zeile **E15**; Abschnitt 3: Kühlkonzept auf **Rev. 2** |
+| [`Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md`](../aktuell/Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) | Rev. 2 — 26 Befunde und E15 eingearbeitet; 1 409 → 1 851 Zeilen |
+| [`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) | neuer Abschnitt **N1.20** am Ende des Nachtrags 1 (Entscheid E15) |
+| [`Status_Gebaeudesimulation_VDI6007.md`](../aktuell/Status_Gebaeudesimulation_VDI6007.md) | Abschnitt 1: neue Zeile **E15**; Abschnitt 3: Kühlkonzept auf **Rev. 2** |
 | [`2026-09-16_Befund_W_Kuehlung_Bestand.md`](2026-09-16_Befund_W_Kuehlung_Bestand.md) | **Nachtrag (16.09.2026)** mit der Zählung |
 | dieses Protokoll | neu |
 
-Die Indexzeile für dieses Protokoll in [`Dokumentation/LIESMICH.md`](../../LIESMICH.md) setzt der
+Die Indexzeile für dieses Protokoll in [`Dokumentation/LIESMICH.md`](../LIESMICH.md) setzt der
 Orchestrator.

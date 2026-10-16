@@ -4528,7 +4528,7 @@ Freischaltung, N1.56); G6d (Keller gegen Erdreich); G4c und G4a (Importweg, Zuor
 3 (M7, M8, M12, M13) und 9; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Kopf und Abschnitte 1 (E50),
 2 (G6c) und 3; [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) Kopf, 2.9, 6.1, 6.2, 6.5, 6.6
 und 10; die
-[Übergabe](Gebaeudesimulation/2026-09-26_Uebergabe_G6c_Katalog_M_A.md) samt Indexzeile in
+[Übergabe](../ueberholt/2026-09-26_Uebergabe_G6c_Katalog_M_A.md) samt Indexzeile in
 [`Dokumentation/LIESMICH.md`](../LIESMICH.md). Mit Welle A (26.09.2026): das
 [Protokoll G6c](../ueberholt/Protokolle/Gebaeudesimulation/2026-09-26_G6c_Zonenimport.md) samt Indexzeile, die
 Statusdatei Kopf und Abschnitt 2 (G6c), die Übergabe 2.1 und das Mehrzonenkonzept 6 und 8.2. Mit Welle C
@@ -4634,7 +4634,7 @@ Auslieferungsvorlage und Lizenzhinweise.
 **Nachgezogen:** [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Kopf und Abschnitte 1 (E51), 2 (G4) und 3;
 [Konzept Baualtersklassen](Konzept_Baualtersklassen_Energiestandard_EPOS-Plan.md) Kopf, 4 und 8 (F4);
 [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) Kopf und U12 (Kapitel 0 und 2); die
-[Übergabe](Gebaeudesimulation/2026-09-26_Uebergabe_G6c_Katalog_M_A.md). Mit der Umsetzung: Statusdatei
+[Übergabe](../ueberholt/2026-09-26_Uebergabe_G6c_Katalog_M_A.md). Mit der Umsetzung: Statusdatei
 (Kopf, E51, G4, Papiere), Konzept Baualtersklassen (Kopf, 4), Register (Kopf, U12), Übergabe 2.2,
 [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 5 (U12) und das Logbuch des
 Sammel-Uploads.

@@ -65,11 +65,17 @@ namespace EPOS.Kern.Tests
             public string KopfK = KOPF_K, KopfI = KOPF_I;
             public List<string[]> K, I;
             public string Unterordner;
+            // BK-7b: Katalog_Zuordnung.csv; null = Datei fehlt. ZuordnungUnterordner: Unterordner des gelesenen Ordners.
+            public string KopfKZ = KOPF_KZ;
+            public List<string[]> KZ;
+            public string ZuordnungUnterordner;
         }
 
         // BK-7: erfundene Spaltennamen der Zuordnung - der Leser haengt an keiner Verweisspalte.
         private const string KOPF_K = "UId;ShortDesc;Bemerkung";
         private const string KOPF_I = "UId;KnotenUId;ZielUId;Sortierung";
+        // BK-7b: der Kopf von Katalog_Zuordnung.csv laut Vertrag des Exports.
+        private const string KOPF_KZ = "UId;CatalogContentUId;CatalogUId;BasisUId;DimensionUId;StateType;SortNum";
 
         private string Schreiben(Probe p)
         {
@@ -80,6 +86,12 @@ namespace EPOS.Kern.Tests
             var utf8 = new UTF8Encoding(false);
             if (p.K != null) File.WriteAllText(Path.Combine(o, "Katalog.csv"), Csv(p.KopfK, p.K), utf8);
             if (p.I != null) File.WriteAllText(Path.Combine(o, "Katalog_Inhalt.csv"), Csv(p.KopfI, p.I), utf8);
+            if (p.KZ != null)
+            {
+                string oz = p.ZuordnungUnterordner == null ? o : Path.Combine(o, p.ZuordnungUnterordner);
+                Directory.CreateDirectory(oz);
+                File.WriteAllText(Path.Combine(oz, "Katalog_Zuordnung.csv"), Csv(p.KopfKZ, p.KZ), utf8);
+            }
             File.WriteAllText(Path.Combine(o, "Baustoffe.csv"), Csv(p.KopfB, p.B), utf8);
             File.WriteAllText(Path.Combine(o, "Aufbauten.csv"), Csv(KOPF_A, p.A), utf8);
             File.WriteAllText(Path.Combine(o, "Schichten.csv"), Csv(KOPF_S, p.S), utf8);
@@ -514,6 +526,152 @@ namespace EPOS.Kern.Tests
             Assert.Equal(q, Quelle("Tab_Bauteilaufbau_STAMM", 102));
             string katalog = DataRepository.ExecuteScalar("SELECT \"Quelle\" FROM \"Tab_Baustoff_STAMM\" WHERE \"ID\" = ?", new DbParam("@id", k.Id)) as string;
             Assert.EndsWith(q + ", Teilkatalog Teilkatalog A", katalog);
+        }
+
+        // ---- BK-7b: Katalog_Zuordnung.csv ---------------------------------------------------
+
+        /// <summary>
+        /// Die Probe der Teilkataloge mit <c>Katalog_Zuordnung.csv</c>: B4 über seine Basiszeile in A (sein
+        /// Inhaltsknoten hängt in B — CatalogUId gilt), A1 und A5 über ihre BasisUId in B, A2 über DimensionUId in A,
+        /// B8 über eine eigene Basiszeile in A und B, eine Zeile ohne Treffer, zwei Zeilen mit Satz ohne benannten
+        /// Teilkatalog (A3, A4). B2 steht nur in Katalog_Inhalt.csv und bleibt deshalb ohne Teilkatalog.
+        /// </summary>
+        private static Probe ProbeZuordnung()
+        {
+            Probe p = ProbeTeilkataloge();
+            p.Z.Add(new[] { G(908), "", "", G(8) });                          // Basiszeile des Baustoffs B8
+            p.KZ = new List<string[]>
+            {
+                new[] { G(861), G(855), G(801), G(904), "", "0", "1" },       // B4 in A, Knoten 855 in B
+                new[] { G(862), "", G(802), G(901), "", "0", "2" },           // A1, A5 über BasisUId in B
+                new[] { G(863), "", G(801), "", G(102), "0", "3" },           // A2 über DimensionUId in A
+                new[] { G(864), "", G(801), G(908), "", "0", "4" },           // B8 in A ...
+                new[] { G(865), "", G(802), G(908), "", "0", "5" },           // ... und in B
+                new[] { G(866), "", G(801), G(999), "", "0", "6" },           // kein Treffer
+                new[] { G(867), "", G(803), G(903), "", "0", "7" },           // A3, Teilkatalog ohne Namen
+                new[] { G(868), "", G(809), "", G(104), "0", "8" }            // A4, Teilkatalog unbekannt
+            };
+            return p;
+        }
+
+        private static string Quelle(List<BauteilkatalogImport.Satz> l, int n) => (string)l.Single(s => s.Kennung == G(n)).Werte["Quelle"];
+
+        [Fact]
+        public void Katalog_Zuordnung_gilt_vorrangig_ueber_Basiszeile_BasisUId_und_DimensionUId()
+        {
+            BauteilkatalogImport.Plan p = BauteilkatalogImport.Planen(BauteilkatalogQuelle.Lesen(Schreiben(ProbeZuordnung())), new BauteilkatalogStand());
+            BauteilkatalogVorschau v = p.Vorschau;
+            Assert.Null(v.Abgelehnt);
+            string q = v.Quelle;
+            Assert.True(v.TeilkatalogeAusZuordnung);
+            Assert.Equal(q + ", Teilkatalog Teilkatalog A", Quelle(p.Baustoffe, 4));                  // Basiszeile, CatalogUId gilt
+            Assert.Equal(q + ", Teilkataloge Teilkatalog A / Teilkatalog B", Quelle(p.Baustoffe, 8));  // zwei Teilkataloge
+            Assert.Equal(q, Quelle(p.Baustoffe, 2));                                                   // nur in Katalog_Inhalt.csv
+            Assert.Equal(q, Quelle(p.Baustoffe, 1));
+            Assert.Equal(q + ", Teilkatalog Teilkatalog B", Quelle(p.Aufbauten, 101));                 // BasisUId
+            Assert.Equal(q + ", Teilkatalog Teilkatalog B", Quelle(p.Aufbauten, 105));
+            Assert.Equal(q + ", Teilkatalog Teilkatalog A", Quelle(p.Aufbauten, 102));                 // DimensionUId
+            Assert.Equal(q, Quelle(p.Aufbauten, 103));
+            Assert.Equal(q, Quelle(p.Aufbauten, 104));
+            Assert.Equal(2, v.Teilkataloge);
+            Assert.Equal(2, v.TeilkatalogeInQuelle);
+            Assert.Equal(2, v.BaustoffeMitTeilkatalog);
+            Assert.Equal(1, v.BaustoffeMitMehrerenTeilkatalogen);
+            Assert.Equal(2, v.BaustoffeOhneTeilkatalog);
+            Assert.Equal(3, v.AufbautenMitTeilkatalog);
+            Assert.Equal(0, v.AufbautenMitMehrerenTeilkatalogen);
+            Assert.Equal(2, v.AufbautenOhneTeilkatalog);
+            Assert.Contains(v.Protokoll, z => z == "Katalog_Zuordnung.csv: Teilkataloge aus dieser Datei; 7 von 8 Zeilen treffen einen Satz der Quelle");
+            Assert.Contains(v.Protokoll, z => z == "Katalog_Zuordnung.csv: Zeilen mit Satz, aber ohne benannten Teilkatalog: 2");
+            Assert.Contains(v.Protokoll, z => z == "Katalog_Zuordnung.csv: CatalogUId weicht vom Teilkatalog des Inhaltsknotens ab, CatalogUId gilt: 1");
+            Assert.Contains(v.Protokoll, z => z.StartsWith("Teilkataloge in Katalog.csv: 2; aus Katalog_Zuordnung.csv; mit zwei oder mehr Teilkatalogen 1 Baustoffe",
+                                                           StringComparison.Ordinal));
+            Assert.DoesNotContain(v.Protokoll, z => z.StartsWith("Katalog_Inhalt.csv:", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void Fehlt_Katalog_Zuordnung_oder_taugt_sie_nicht_gilt_der_Weg_ueber_Katalog_Inhalt()
+        {
+            BauteilkatalogVorschau ohne = BauteilkatalogImport.Planen(BauteilkatalogQuelle.Lesen(Schreiben(ProbeTeilkataloge())), null).Vorschau;
+            Assert.False(ohne.TeilkatalogeAusZuordnung);
+            Assert.Contains(ohne.Protokoll, z => z == "Datei fehlt, Teilkataloge aus Katalog_Inhalt.csv: Katalog_Zuordnung.csv");
+            Assert.Equal(2, ohne.Teilkataloge);
+            Assert.Equal(1, ohne.BaustoffeMitMehrerenTeilkatalogen);                                   // B2 mit Dublette B3
+
+            Probe p = ProbeZuordnung();
+            p.KopfKZ = "UId;CatalogContentUId;Kennzeichen;BasisUId;DimensionUId;StateType;SortNum";   // ohne CatalogUId
+            BauteilkatalogImport.Plan plan = BauteilkatalogImport.Planen(BauteilkatalogQuelle.Lesen(Schreiben(p)), null);
+            Assert.Null(plan.Vorschau.Abgelehnt);
+            Assert.False(plan.Vorschau.TeilkatalogeAusZuordnung);
+            Assert.Contains(plan.Vorschau.Protokoll, z => z == "Katalog_Zuordnung.csv: Spalte fehlt (CatalogUId), Teilkataloge aus Katalog_Inhalt.csv");
+            string q = plan.Vorschau.Quelle;
+            Assert.Equal(q + ", Teilkataloge Teilkatalog A / Teilkatalog B", Quelle(plan.Baustoffe, 2));
+
+            p = ProbeZuordnung();
+            p.KZ.Add(new[] { "nur", "zwei" });                                                         // kaputte Zeile
+            plan = BauteilkatalogImport.Planen(BauteilkatalogQuelle.Lesen(Schreiben(p)), null);
+            Assert.Null(plan.Vorschau.Abgelehnt);
+            Assert.False(plan.Vorschau.TeilkatalogeAusZuordnung);
+            Assert.Contains(plan.Vorschau.Protokoll, z => z.StartsWith("Katalog_Zuordnung.csv: Datensatz", StringComparison.Ordinal) &&
+                                                          z.EndsWith("Teilkataloge aus Katalog_Inhalt.csv", StringComparison.Ordinal));
+
+            p = ProbeZuordnung();
+            p.KZ = p.KZ.Select(z => new[] { z[0], z[1], z[2], G(999), "", z[5], z[6] }).ToList();    // trifft keinen Satz
+            plan = BauteilkatalogImport.Planen(BauteilkatalogQuelle.Lesen(Schreiben(p)), null);
+            Assert.True(plan.Vorschau.TeilkatalogeAusZuordnung);
+            Assert.Contains(plan.Vorschau.Protokoll, z => z == "Katalog_Zuordnung.csv: keine Zeile trifft einen Satz der Quelle, ohne Teilkatalognamen weiter");
+            Assert.Equal(0, plan.Vorschau.Teilkataloge);
+            Assert.Equal(4, plan.Vorschau.BaustoffeOhneTeilkatalog);
+        }
+
+        [Fact]
+        public void Katalog_Zuordnung_wird_auch_im_Unterordner_Export_gelesen()
+        {
+            Probe p = ProbeZuordnung();
+            p.Unterordner = "Export";                                                                  // ganzer Export im Unterordner
+            BauteilkatalogVorschau v = BauteilkatalogImport.Planen(BauteilkatalogQuelle.Lesen(Path.GetDirectoryName(Schreiben(p))), null).Vorschau;
+            Assert.True(v.UnterordnerExport);
+            Assert.True(v.TeilkatalogeAusZuordnung);
+            Assert.Equal(3, v.AufbautenMitTeilkatalog);
+
+            p = ProbeZuordnung();
+            p.ZuordnungUnterordner = "Export";                                                         // nur die Zuordnung im Unterordner
+            v = BauteilkatalogImport.Planen(BauteilkatalogQuelle.Lesen(Schreiben(p)), null).Vorschau;
+            Assert.False(v.UnterordnerExport);
+            Assert.True(v.TeilkatalogeAusZuordnung);
+            Assert.Contains(v.Protokoll, z => z == "Katalog_Zuordnung.csv gelesen aus dem Unterordner Export");
+            Assert.Equal(1, v.BaustoffeMitMehrerenTeilkatalogen);
+        }
+
+        [Fact]
+        public void Der_Wiederimport_mit_Katalog_Zuordnung_bleibt_konvergent()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            string o = Schreiben(ProbeZuordnung());
+            BauteilkatalogVorschau eins = BauteilkatalogImport.Uebernehmen(o);
+            Assert.Null(eins.Fehler);
+            Assert.True(eins.Geschrieben);
+            string q = eins.Quelle;
+            string Gelesen(string tabelle, int n) => DataRepository.ExecuteScalar(
+                "SELECT \"Quelle\" FROM \"" + tabelle + "\" WHERE \"Quellkennung\" = ?", new DbParam("@k", G(n))) as string;
+            Assert.Equal(q + ", Teilkataloge Teilkatalog A / Teilkatalog B", Gelesen("Tab_Baustoff_STAMM", 8));
+            Assert.Equal(q + ", Teilkatalog Teilkatalog A", Gelesen("Tab_Baustoff_STAMM", 4));
+            Assert.Equal(q + ", Teilkatalog Teilkatalog A", Gelesen("Tab_Bauteilaufbau_STAMM", 102));
+            Assert.Equal(q + ", Teilkatalog Teilkatalog B", Gelesen("Tab_Bauteilaufbau_STAMM", 101));
+            long baustoffe = Zahl("SELECT COUNT(*) FROM \"Tab_Baustoff_STAMM\"");
+            long aufbauten = Zahl("SELECT COUNT(*) FROM \"Tab_Bauteilaufbau_STAMM\"");
+            string stand = string.Join("|", new[] { 1, 2, 4, 8 }.Select(n => Gelesen("Tab_Baustoff_STAMM", n)).Concat(
+                                            new[] { 101, 102, 103, 104, 105 }.Select(n => Gelesen("Tab_Bauteilaufbau_STAMM", n))));
+
+            BauteilkatalogVorschau zwei = BauteilkatalogImport.Uebernehmen(o);
+            Assert.True(zwei.Geschrieben);
+            Assert.Equal(0, zwei.Baustoffe.Neu);
+            Assert.Equal(0, zwei.Aufbauten.Neu);
+            Assert.Equal(baustoffe, Zahl("SELECT COUNT(*) FROM \"Tab_Baustoff_STAMM\""));
+            Assert.Equal(aufbauten, Zahl("SELECT COUNT(*) FROM \"Tab_Bauteilaufbau_STAMM\""));
+            Assert.Equal(stand, string.Join("|", new[] { 1, 2, 4, 8 }.Select(n => Gelesen("Tab_Baustoff_STAMM", n)).Concat(
+                                                 new[] { 101, 102, 103, 104, 105 }.Select(n => Gelesen("Tab_Bauteilaufbau_STAMM", n)))));
         }
 
         // ---- Nachzug E134 (BK-3b) -----------------------------------------------------------

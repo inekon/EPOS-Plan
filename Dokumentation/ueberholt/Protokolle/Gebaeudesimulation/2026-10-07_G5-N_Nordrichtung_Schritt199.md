@@ -1,7 +1,7 @@
 # Protokoll G5-N — Nordrichtung abfragen und nachträglich ändern, Schemaschritt 199 `NordrichtungSchema` (07.10.2026)
 
 **Sitzung:** IFC / Gebäudeimport, Statuszeile **#813**. Commits Kern: `fd362170c`, `c29b52856`; Schema: `fc8740334`, `a8004cee2`, `fc734fe2f`; Oberfläche: `2419f3de2`, `8bb3bed9d`, `aa20f70db`, `f175d90f0`, `e66fea08a`, `6f61bfabd`.
-**Entscheid:** E101; Abstimmung [G5 IFC](../../../aktuell/Gebaeudesimulation/2026-10-07_Abstimmung_G5_IFC.md), Abschnitt 7.
+**Entscheid:** E101; Abstimmung [G5 IFC](../../2026-10-07_Abstimmung_G5_IFC.md), Abschnitt 7.
 
 ## 1 Anlass
 

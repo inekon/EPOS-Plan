@@ -254,6 +254,9 @@ else
                 liste.Add((string.Format(c, Texte.SummeRtOben, oben.ToString("0.000", c)), false));
                 liste.Add((string.Format(c, Texte.SummeRtUnten, unten.ToString("0.000", c)), false));
                 liste.Add((string.Format(c, Texte.SummeRtMittel, (k.RT_M2KW ?? 0).ToString("0.000", c)), false));
+                // BK-8b: die Fehlerschranke nach 6.7.2.5 und, über der Höchstgrenze, der Hinweis aus dem Kern.
+                if (k.Fehlerschranke is double e)
+                    liste.Add((string.Format(c, Texte.SummeFehlerschranke, (e * 100.0).ToString("0.0", c)), false));
             }
             else
                 liste.Add((string.Format(c, Texte.SummeRt, (k.RT_M2KW ?? 0).ToString("0.000", c)), false));
@@ -267,6 +270,7 @@ else
                                          (k.KapazitaetWirksam_KJM2K ?? 0).ToString("0.0", c)), false));
             else if (k.PeriodeGrund.Length > 0)
                 liste.Add((string.Format(c, Texte.SummeTbtOffen, k.PeriodeGrund), false));
+            if (k.Hinweis.Length > 0) liste.Add((k.Hinweis, false));
             return liste;
         }
     }

@@ -5,7 +5,7 @@ Regeln der Sitzung, die offenen Punkte und am Ende den Einstiegs-Prompt für die
 Regelquelle bleibt [`CLAUDE.md`](../../../CLAUDE.md); dieses Papier ergänzt nur, was die Sitzung
 darüber hinaus vereinbart hat. Dauerhafter Stand: [Statusdatei](../Status_iOS_Migration.md),
 Entscheidungsregister in der [Statusdatei Gebäudesimulation](../Status_Gebaeudesimulation_VDI6007.md),
-Abstimmung mit der Sitzung Gebäudesimulation: [Abstimmung G5](2026-10-07_Abstimmung_G5_IFC.md).
+Abstimmung mit der Sitzung Gebäudesimulation: [Abstimmung G5](../../ueberholt/2026-10-07_Abstimmung_G5_IFC.md).
 
 ## 1. Stand
 

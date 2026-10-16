@@ -1,11 +1,11 @@
 # Gegenlesen der Softwarearchitektur Gebäudesimulation (15.09.2026)
 
-**Papier:** [`Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md`](../Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md)
+**Papier:** [`Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md`](../aktuell/Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md)
 — gegengelesen als Rev. 1 (1 778 Zeilen), nach Einarbeitung **Rev. 2** (1 991 Zeilen).
 
 Fünf Leser haben die beiden Architekturpapiere unabhängig voneinander geprüft, jeder aus einem
 eigenen Blickwinkel. Zwei lasen das Schwesterpapier
-([Systementwurf](../Systementwurf_Gebaeudesimulation_EPOS-Plan.md)), zwei dieses Papier, einer beide
+([Systementwurf](../aktuell/Systementwurf_Gebaeudesimulation_EPOS-Plan.md)), zwei dieses Papier, einer beide
 gegeneinander; ihre Einträge zu „beiden Papieren" stehen in diesem Protokoll, soweit sie dieses
 Papier treffen.
 
@@ -21,7 +21,7 @@ Papier treffen.
 W1–W21, Entscheidevorschläge, Grenzen). Die Skizze bleibt Maßstab: Wo ein Leser einen anderen Namen
 vorschlug als die Skizze, gilt die Skizze; wo die Skizze eine Sache nicht nennt — der
 Gebäudebetrachter nach **E11** —, sind die Namen hier neu gesetzt, wie es
-[Konzept N1.16](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) ausdrücklich diesem Papier
+[Konzept N1.16](../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) ausdrücklich diesem Papier
 überlässt.
 
 **Vier Widersprüche zwischen Lesern wurden am Quelltext geklärt** und sind unten in der Spalte
@@ -71,7 +71,7 @@ Einfrierregeln und die Frage, ob der Wortlaut des Produktausweises in dieses Pap
 | 34 | mittel | A-K | 2.2 | `Tab_Gebaeude.Luftwechselrate` blieb ungenannt, obwohl sie Eingang des Klassenwegs und Gegenstand einer Einfrierregel ist | eingearbeitet: eigener Absatz — Spalte bleibt, im Stundenweg gilt `Luftwechsel_Infiltration + Luftwechsel_Nutzer` mit Rückfall auf `Luftwechselrate`, Herleitungszeile statt stillem Überschreiben, dieselbe Kette für die Zone |
 | 35 | mittel | A-K | Kap. 6 A16 | A16 war unter Umsetzungskonzept 1.5 bereits entschieden | eingearbeitet, Variante (b): A16 auf das **neu** Offene verengt — Zuschnitt und Durchreichen der Modellwahl am zweiten Punkt (`:647`); der erste Punkt ist als entschieden benannt. Die Zahl der Fragen bleibt davon unberührt |
 | 36 | mittel | A-K | 3.2, Kap. 6 | U2 (Feldsichtbarkeit je Schalterstellung) ist ein Maskenzustand und fehlte | eingearbeitet: neue Regel 4 in 3.2 (verstecken, Herleitungszeile in beiden Stellungen, Feldbestandstest prüft beide) und **A19** als Sperrpunkt (= U2); Zählungen in Kap. 0, Kap. 6 und Kap. 7 nachgezogen |
-| 37 | mittel | A-K | 4.3, 4.6, A12 | Der Produktausweis nach E10 wird zur Pflicht erklärt, aber nirgends wiedergegeben oder verwiesen | eingearbeitet, **abweichend**: **kein Blockzitat** — dieses Papier führt keine Zahlen des Nachweises. Stattdessen die eine Quelle ([ADR-002](../ADR-002_Stundenmodell_VDI6007_Einbindung.md), Entscheidung Punkt 7) und **ein** Ressourcenschlüssel in beiden `.resx` (3.6), aus dem Bericht, Wiki-Seite und Exportdatei denselben Text ziehen |
+| 37 | mittel | A-K | 4.3, 4.6, A12 | Der Produktausweis nach E10 wird zur Pflicht erklärt, aber nirgends wiedergegeben oder verwiesen | eingearbeitet, **abweichend**: **kein Blockzitat** — dieses Papier führt keine Zahlen des Nachweises. Stattdessen die eine Quelle ([ADR-002](../aktuell/ADR-002_Stundenmodell_VDI6007_Einbindung.md), Entscheidung Punkt 7) und **ein** Ressourcenschlüssel in beiden `.resx` (3.6), aus dem Bericht, Wiki-Seite und Exportdatei denselben Text ziehen |
 | 38 | niedrig | A-K | 1.1, 1.7 | Die Verbotsliste des Kerns war unvollständig (`SpecialFolder`, `ProtectedData`, `System.Drawing`) | eingearbeitet: Zelle vervollständigt, dazu der Satz, dass die zwei `git grep`-Wächter nach jedem Merge der Import- und Exportfamilie leer bleiben müssen |
 | 39 | niedrig | A-K | 1.3 | Sammelparameter „ort" ohne Typ | eingearbeitet: `laengengrad`, `breitengrad` in Tabelle und classDiagram, wie Umsetzungskonzept 1.4 |
 | 40 | niedrig | A-K | 1.8, Kap. 5 G0 | Die Prüfklasse der Normfälle war nicht benannt | eingearbeitet: `EPOS.Kern.Tests/GebaeudeModellNormfallTests` in 1.8 und in der Abnahme von G0 |
@@ -112,7 +112,7 @@ Spalte „Erledigung" zusammengeführt (1/4/23, 2/5/10/44, 7/41, 8/43, 14/56, 15
 28/52, 31/48) und **nicht** entdoppelt gezählt, damit jede Lesernummer wiederzufinden ist.
 
 Die fünf Einträge außerhalb dieses Papiers sind **vier Nummern derselben Sache** (die Indexzeilen in
-[`Dokumentation/LIESMICH.md`](../../LIESMICH.md) — sie pflegt der Orchestrator im Abnahme-Commit) und
+[`Dokumentation/LIESMICH.md`](../LIESMICH.md) — sie pflegt der Orchestrator im Abnahme-Commit) und
 **eine** Kürzung, die im Schwesterpapier geschieht (Nr. 54). Zwei Einträge trafen zusätzlich das
 Schwesterpapier und sind dort nachzuziehen: Nr. 42 (Zahl der Umrechnungsnähte) und Nr. 45
 (Signatur des Lesers).
@@ -174,6 +174,6 @@ Zwei weitere Punkte der zweiten Prüfung betrafen dieses Papier:
   jetzt dieselbe Größe wie Systementwurf 5.2.
 
 **Weiterhin außerhalb dieses Papiers:** die Indexzeile für **dieses Protokoll** in
-[`Dokumentation/LIESMICH.md`](../../LIESMICH.md). Sie fehlt als einzige der
+[`Dokumentation/LIESMICH.md`](../LIESMICH.md). Sie fehlt als einzige der
 Gebäudesimulations-Familie; ohne sie ist der Fall `Der_Index_nennt_jedes_Papier` der
 `DokumentationLinkWacheTests` rot und `kern.yml` mit ihm. Den Index pflegt der Orchestrator (Nr. 2).

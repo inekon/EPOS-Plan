@@ -81,6 +81,9 @@ public sealed class BauteilschichtenTexte
     /// <summary><c>BTA_SUMME_RT_MITTEL</c> — „R_T = (R'_T + R''_T) / 2 = {0} m²K/W" (BK-5).</summary>
     public string SummeRtMittel { get; set; } = Resource.BTA_SUMME_RT_MITTEL;
 
+    /// <summary><c>BTA_SUMME_FEHLERSCHRANKE</c> — „Fehlerschranke e = (R'_T − R''_T) / (2 R_T) = {0} %" (BK-8b).</summary>
+    public string SummeFehlerschranke { get; set; } = Resource.BTA_SUMME_FEHLERSCHRANKE;
+
     /// <summary><c>BTA_SP_ABSCHNITT</c> — die Abschnittsnummer einer inhomogenen Schicht (BK-5).</summary>
     public string SpalteAbschnitt { get; set; } = Resource.BTA_SP_ABSCHNITT;
 

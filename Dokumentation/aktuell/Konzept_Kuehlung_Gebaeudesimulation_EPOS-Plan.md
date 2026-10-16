@@ -17,7 +17,7 @@
 > (Gegenlesen vom 16.09.2026, E15) sind darin enthalten. Grundlagen:
 > [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md),
 > [Konzept Gebäudesimulation](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.25 und N1.31,
-> Protokolle: [Gegenlesen](Gebaeudesimulation/2026-09-16_Gegenlesen_Kuehlkonzept.md),
+> Protokolle: [Gegenlesen](../ueberholt/2026-09-16_Gegenlesen_Kuehlkonzept.md),
 > [Prüfung 17.09.2026](Gebaeudesimulation/2026-09-17_Pruefung_Konsistenz_Umsetzbarkeit.md).**
 >
 > **Nachzug 22.09.2026:** Die Zusicherung zu Heizen und Kühlen gilt **je Abschnitt** der
@@ -175,7 +175,7 @@ trägt dort den Vermerk und wird nicht erneut vorgelegt; E34 ergänzt K9 (6.1), 
 | [Simulationsablauf](Konzept_Simulationsablauf_EPOS-Plan.md) | das Ergebnis-Dashboard mit **zwei Spalten „Wärme \| Strom"** (8.2) — die Zielform, in die sich die Kältedeckung einfügt (8.4) |
 | [Mehrzonenmodell](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) | Reihen und Kennzahlen je Zone (7), Zonenspaltentabelle (4.2), Abgrenzung (12) |
 | [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) | Kühlsollwerte aus gbXML und IFC, `EPOS_Ergebnis`, `Results` |
-| [Befund W](Gebaeudesimulation/2026-09-16_Befund_W_Kuehlung_Bestand.md) | der Bestand: 19 belegte Stellen, Kühlkenndaten der Wärmepumpen, Referenzlauf-Grenze, Größenordnung |
+| [Befund W](../ueberholt/2026-09-16_Befund_W_Kuehlung_Bestand.md) | der Bestand: 19 belegte Stellen, Kühlkenndaten der Wärmepumpen, Referenzlauf-Grenze, Größenordnung |
 
 **Was dieses Papier nicht tut.** Es nennt keine Ergebniswerte der VDI-6007-Testbeispiele und
 nichts aus VDI 6020:2022 (E6). Es setzt keine Beschaffung von Datenträgern oder
@@ -1161,7 +1161,7 @@ zur Nennkühlleistung ohne Kennlinie steht im Lauf, sobald das Projekt Kälte re
 
 Gemessen auf `Referenzlaeufe/Kenndaten_Test.sqlite`, **nur lesend**, mit einem Prüfwerkzeug
 außerhalb des Repositoriums (Nachtrag zu
-[Befund W](Gebaeudesimulation/2026-09-16_Befund_W_Kuehlung_Bestand.md)):
+[Befund W](../ueberholt/2026-09-16_Befund_W_Kuehlung_Bestand.md)):
 
 | Größe | Zahl |
 |---|---|
@@ -3791,13 +3791,13 @@ die Stufe GA entfällt; Regel des Inventars),
 **Befunde und Protokolle.**
 [Prüfung auf Konsistenz und Umsetzbarkeit (17.09.2026)](Gebaeudesimulation/2026-09-17_Pruefung_Konsistenz_Umsetzbarkeit.md)
 (die Befunde KUE-01 bis KUE-E5 und die Festlegungen F-K1 bis F-K6 in Kapitel 3),
-[Gegenlesen des Kühlkonzepts (16.09.2026)](Gebaeudesimulation/2026-09-16_Gegenlesen_Kuehlkonzept.md)
+[Gegenlesen des Kühlkonzepts (16.09.2026)](../ueberholt/2026-09-16_Gegenlesen_Kuehlkonzept.md)
 (die 26 Befunde dieser Fassung und die Messung zu 5.0.2),
-[Befund W — Kühlung im Bestand](Gebaeudesimulation/2026-09-16_Befund_W_Kuehlung_Bestand.md)
+[Befund W — Kühlung im Bestand](../ueberholt/2026-09-16_Befund_W_Kuehlung_Bestand.md)
 (Grundlage dieses Papiers, mit dem Nachtrag zur Zählung),
-[Befund D — Testdatenbank](Gebaeudesimulation/2026-09-15_Befund_D_Testdatenbank.md),
+[Befund D — Testdatenbank](../ueberholt/2026-09-15_Befund_D_Testdatenbank.md),
 [Befund K — VDI 6020 und VDI 2078](Gebaeudesimulation/2026-09-15_Befund_K_VDI6020_VDI2078_Abgleich.md),
-[Befund T — Softwarearchitektur im Bestand](Gebaeudesimulation/2026-09-15_Befund_T_Softwarearchitektur_Bestand.md).
+[Befund T — Softwarearchitektur im Bestand](../ueberholt/2026-09-15_Befund_T_Softwarearchitektur_Bestand.md).
 
 **Quelltext** (selbst gelesen, Belege im Text mit `Datei:Zeile`).
 

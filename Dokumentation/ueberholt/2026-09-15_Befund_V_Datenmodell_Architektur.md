@@ -14,21 +14,21 @@ solche gekennzeichnet.
 `EPOS.Kern/Controller/` (`ProjektGebaeudeCtrl.cs`, `GebaeudeStammCtrl.cs`,
 `ProjektDuplizierenCtrl.cs`, `GebaeudeBedarfCtrl.cs`, `WizardCtrl.cs`),
 `Werkzeuge/Testdatenbankschema/Program.cs`, `Werkzeuge/SqlDialektPruefer/pruefer.py`.
-Papiere: [`ADR-001_Schema-Ausrollung.md`](../ADR-001_Schema-Ausrollung.md),
-[`BETRIEB_SQLITE.md`](../BETRIEB_SQLITE.md),
-[`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+Papiere: [`ADR-001_Schema-Ausrollung.md`](../aktuell/ADR-001_Schema-Ausrollung.md),
+[`BETRIEB_SQLITE.md`](../aktuell/BETRIEB_SQLITE.md),
+[`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
 (6.1–6.4, 11, 12, Nachtrag 1),
-[`Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](../Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+[`Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](../aktuell/Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
 (1.6–1.8, U1–U16),
-[`Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md`](../Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md)
+[`Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md`](../aktuell/Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md)
 (3.5, 4.1–4.4, 7, 9, M1–M14),
-[`Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md`](../Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md)
-(7.1–7.5, D1–D15), [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md).
+[`Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md`](../aktuell/Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md)
+(7.1–7.5, D1–D15), [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md).
 
 **Abgrenzung — was hier NICHT wiederholt wird.** Den Rechenweg des Bestands und die Naht
-`HeizwaermeEinesGebaeudes` belegt [Befund L](2026-09-15_Befund_L_Einbindung_Kern.md); den
+`HeizwaermeEinesGebaeudes` belegt [Befund L](../aktuell/Gebaeudesimulation/2026-09-15_Befund_L_Einbindung_Kern.md); den
 Gebäudedialog und seine Felder [Befund M](2026-09-15_Befund_M_Gebaeudedialog.md); den IFC-Leser
-[Befund N](2026-09-15_Befund_N_IFC-Import_Entwurf.md); die Hausmuster für Eltern-Kind-Tabellen,
+[Befund N](../aktuell/Gebaeudesimulation/2026-09-15_Befund_N_IFC-Import_Entwurf.md); die Hausmuster für Eltern-Kind-Tabellen,
 Kataloge, Listendialoge und Bericht [Befund Q](2026-09-15_Befund_Q_Muster_Datenmodell_Dialoge.md);
 die Messwerte der Testdatenbank [Befund D](2026-09-15_Befund_D_Testdatenbank.md). Dieses Papier
 verweist dorthin und ergänzt, was für eine Architektur fehlt: die **Schemaverwaltung als System**,
@@ -74,7 +74,7 @@ das **Gesamtbild beider Modelle**, die **Konsolidierung** der vier Vorschläge u
 
 ### 1.1 Der Ausrollweg — ADR-001, Option C
 
-[`ADR-001`](../ADR-001_Schema-Ausrollung.md) (Entscheidung ab `:63`, Konsequenzen ab `:201`) legt
+[`ADR-001`](../aktuell/ADR-001_Schema-Ausrollung.md) (Entscheidung ab `:63`, Konsequenzen ab `:201`) legt
 fest: **versionierte, im Programmcode gehaltene Migration mit Schemamarker, einmalig beim Start**;
 nummerierte Schrittmethoden, die nur laufen, wenn der Marker kleiner ist, und den Marker **erst
 nach nachgewiesenem Erfolg** anheben; Fehler gesammelt und einmal gemeldet, bei Fehlschlag bleibt
@@ -138,11 +138,11 @@ Verweisspalten — die Saat — die Saat-Zuordnung. Und die Reihenfolge der Quel
 | `Z_*` | Zuordnung Projekt ↔ Katalog bzw. Eltern ↔ Kind | z. B. `…:2873` (`Z_ProjektGebaeude`) |
 | `STRICT` | jede Fachtabelle; erlaubt sind INT/INTEGER/REAL/TEXT/BLOB/ANY | `WechselrichterSchema.cs:38-40` |
 | Boolean | `INTEGER NOT NULL DEFAULT 0 CHECK (x IN (0,1))` | `…:1188` (`ReadOnly`), `…:1364` (`WE`) |
-| Beziehungen | über **IDs**, nicht über Textfelder | Wurzel-[`CLAUDE.md`](../../../CLAUDE.md), Abschnitt „Datenhaltung" |
+| Beziehungen | über **IDs**, nicht über Textfelder | Wurzel-[`CLAUDE.md`](../../CLAUDE.md), Abschnitt „Datenhaltung" |
 | Zugriff | `DataRepository` mit **`?`**-Parametern, nie zusammengesetzter SQL-Text | `EPOS.Kern/Allgemein/DataRepository.cs:300`, `:306`, `:312`, `:318`, `:323`, Muster `:498-499` |
 | Schemaauskunft | `DataRepository.SpaltenVonTabelle` reicht an `IDatenzugriff` durch | `…/DataRepository.cs:426-428` |
 
-Der SQL-Dialekt ist in [`BETRIEB_SQLITE.md`](../BETRIEB_SQLITE.md) Abschnitt 6 (`:233` ff.)
+Der SQL-Dialekt ist in [`BETRIEB_SQLITE.md`](../aktuell/BETRIEB_SQLITE.md) Abschnitt 6 (`:233` ff.)
 geregelt: Umlautregel (`:241`), Verbotsliste der Access-Schreibweisen (`:258`), `= True`/`= False`
 (`:294`), Prüfbefehl (`:307`). Der Prüfer `Werkzeuge/SqlDialektPruefer/pruefer.py` hält jeden
 SQL-Text des Bestands mit `EXPLAIN` gegen die Testdatenbank und gegen die Musterliste (z. B.
@@ -166,7 +166,7 @@ erreichen soll, erzwingt deshalb den **ersten Sichtneubau des SQLite-Zweigs**.
 | `Werkzeuge/Testdatenbankschema` | zieht `Referenzlaeufe/Kenndaten_Test.sqlite` auf den Zielstand nach, aus **derselben** Schema-Klasse wie die Migration (`Program.cs:272` ff.) | jede neue Tabelle braucht dort ihren Block, sonst ist die Messlatte älter als die Anwendung |
 | `Werkzeuge/Auslieferungsvorlage` | erzeugt die Vorlagendatenbank; erkennt Kataloge **ordinal** über `EndsWith("_STAMM")`, behält bei `--kataloge readonly` nur `ReadOnly = 1`, und ein auf null Zeilen fallender Katalog löst den Wächter aus | Katalogname exakt `_STAMM`; Saat mit `ReadOnly = 1`; Kindtabellen ohne `ReadOnly` prüfen |
 | `EPOS.Kern/Allgemein/Datenbank/Erstbereitstellung.cs:119` | kopiert die Vorlage beim ersten Start ans Ziel, „einmal je Rechner, nie überschreibend, nie halb" (`:87`); der Schemastand der Vorlage **darf älter sein** (`:113`) | nichts — die Migration holt den Rest nach |
-| Sicherung | `VACUUM INTO` im laufenden Betrieb ([`BETRIEB_SQLITE.md`](../BETRIEB_SQLITE.md) `:149`), Dateikopie bei geschlossener Anwendung (`:138`) | nichts; wächst aber mit jeder persistierten Zeitreihe (Kapitel 6) |
+| Sicherung | `VACUUM INTO` im laufenden Betrieb ([`BETRIEB_SQLITE.md`](../aktuell/BETRIEB_SQLITE.md) `:149`), Dateikopie bei geschlossener Anwendung (`:138`) | nichts; wächst aber mit jeder persistierten Zeitreihe (Kapitel 6) |
 | `Werkzeuge/SqlDialektPruefer` | hält jede Anweisung gegen Dialektregeln und Testdatenbank | nach **jeder** neuen oder geänderten SQL-Anweisung ziehen |
 | Projekttransfer (`.wpx`) | schreibt `SchemaStand.Zielversion` ins Manifest und lehnt beim Import ein Paket mit abweichendem Stand ab (`SchemaStand.cs:30-40`) | jede neue Nummer entwertet ältere Pakete — gehört in den Schrittbericht |
 
@@ -527,7 +527,7 @@ Kennung **W**n. Spalte „Vorschlag" ist eine Empfehlung dieses Befunds, kein En
 | **W15** | Kaskade unter `Tab_Gebaeude` | Mehrzonen 4.1: `Tab_Zone` mit `ON DELETE CASCADE` an `Tab_Gebaeude` | `AnlageStrangSchema`-Lehre: „Kaskade an einem Eltern, dessen Speicherweg Löschen + Neuanlegen ist, räumt jede Kindliste ab" | ein Speichervorgang am Gebäude könnte alle Zonen löschen | **Kaskade behalten**, aber den Gebäude-Schreibweg **vorher messen** und, falls er löscht und neu anlegt, die Rettung dort einbauen, wo das Löschen steht — nicht im Zonencontroller. **Offen** |
 | **W16** | Fehlender Fremdschlüssel `Tab_Gebaeude.ID_Projekt` | `…:1133`: `INTEGER DEFAULT 0`, kein FK | `WizardCtrl.cs:181-188`, `ProjektDuplizierenCtrl.cs:156-157` benutzen ihn als Löschsieb | zwei Bindungen ans Projekt, die auseinanderlaufen können | **nicht anfassen** (ein nachgerüsteter FK änderte den Löschweg, `WechselrichterSchema.cs:40-45`); aber **in `GebaeudeSchema` benennen** und jede neue Kindtabelle ausdrücklich über `ID_Gebaeude` hängen, nie über ein eigenes `ID_Projekt` |
 | **W17** | Sichtneubau als wiederkehrender Fall | Umsetzungskonzept 1.6: Schritt 77 baut die Sicht neu | Konzept 6.1: `Baujahr` kommt erst mit dem IFC-Schritt (7.6) | ein dritter Sichtneubau ohne Muster | **`GebaeudeSchema.SQL_VIEW_NEU` ist ab 77 die einzige Quelle der Sichtdefinition**; `sql/schema/002_views.sql` bleibt der eingefrorene Stand 61 und wird **nicht** nachgezogen |
-| **W18** | Einfrierregel je Schritt | Umsetzungskonzept 1.8: vierte Regel „gesäte Gebäudedaten" mit GB | Mehrzonen 8.3: fünfte Regel „gesäte Zonendaten" mit G6d | [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) führt heute **drei** Regeln (dritte ab `:100`), die Wurzel-`CLAUDE.md` ebenfalls drei | **beide Regeln im jeweiligen Schritt eintragen**, an beiden Orten (LIESMICH und `CLAUDE.md`, Abschnitt „Regressionsnetz") |
+| **W18** | Einfrierregel je Schritt | Umsetzungskonzept 1.8: vierte Regel „gesäte Gebäudedaten" mit GB | Mehrzonen 8.3: fünfte Regel „gesäte Zonendaten" mit G6d | [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md) führt heute **drei** Regeln (dritte ab `:100`), die Wurzel-`CLAUDE.md` ebenfalls drei | **beide Regeln im jeweiligen Schritt eintragen**, an beiden Orten (LIESMICH und `CLAUDE.md`, Abschnitt „Regressionsnetz") |
 
 **Zwei Lücken ohne Gegenpapier:**
 
@@ -580,7 +580,7 @@ stateDiagram-v2
 **Nur GB und G1+G2 berühren die Basis** — und beide begründet: GB, weil `_prevRoomTemp` heute
 statisch ist und das Ergebnis damit an der Zeilenreihenfolge hängt; G1+G2, weil dreizehn Projekte
 stündlich rechnen. Alle Tabellenschritte sind ergebnisneutral, **und das ist nachzuweisen, nicht zu
-behaupten**: der Wortlaut dafür steht in [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md)
+behaupten**: der Wortlaut dafür steht in [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md)
 (Muster: Nachtrag „Schemastand 75", `:232-247` — dort mit Zeilenzahl, Dateigröße, Tabellenzahl,
 Projektzahl und dem Satz „Der Referenzlauf ist 5/5 byte-gleich gegen diese Basis").
 
@@ -743,5 +743,5 @@ Schrittbericht und, bei mehreren Schritten in einer Auslieferung, in die Freigab
 
 **R18 — Die Einfrierregel gehört in denselben Schritt wie die Saat.** Wer Gebäudedaten sät (GB/G1)
 oder Zonendaten sät (G6d), trägt die zugehörige Einfrierregel im selben Schritt in
-[`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) **und** im Abschnitt
-„Regressionsnetz" der Wurzel-[`CLAUDE.md`](../../../CLAUDE.md) nach.
+[`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md) **und** im Abschnitt
+„Regressionsnetz" der Wurzel-[`CLAUDE.md`](../../CLAUDE.md) nach.

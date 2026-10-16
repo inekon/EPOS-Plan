@@ -1,8 +1,8 @@
 # Gegenlesen des Systementwurfs Gebäudesimulation (15.09.2026)
 
-**Papier:** [`Systementwurf_Gebaeudesimulation_EPOS-Plan.md`](../Systementwurf_Gebaeudesimulation_EPOS-Plan.md)
+**Papier:** [`Systementwurf_Gebaeudesimulation_EPOS-Plan.md`](../aktuell/Systementwurf_Gebaeudesimulation_EPOS-Plan.md)
 (Rev. 1 → **Rev. 2**)
-**Schwesterpapier:** [`Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md`](../Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md)
+**Schwesterpapier:** [`Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md`](../aktuell/Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md)
 — dort arbeitet ein zweiter Leser parallel; die Abstimmung der Namen lief über die verbindliche
 Skizze des Auftrags, **nicht** über Änderungen am Schwesterpapier.
 
@@ -157,6 +157,6 @@ hier eingearbeitet; die Zählung oben ist zugleich auf die Form des Schwesterpro
 | Zählung | „Alle 60 Befunde sind eingearbeitet; keiner blieb offen" gegen die eigene Liste „Was außerhalb dieses Auftrags liegt" (Nr. 5, 22, 41, 48 und 10) | auf die Form des Schwesterprotokolls gebracht: 60 Einträge, 55 vollständig in diesem Papier, 5 mit einem Rest außerhalb |
 
 **Weiterhin außerhalb dieses Auftrags:** die Indexzeilen in
-[`Dokumentation/LIESMICH.md`](../../LIESMICH.md) — die Zeile für dieses Protokoll steht dort, die
+[`Dokumentation/LIESMICH.md`](../LIESMICH.md) — die Zeile für dieses Protokoll steht dort, die
 für das [Schwesterprotokoll](2026-09-15_Gegenlesen_Softwarearchitektur.md) fehlt als einzige der
 Familie; den Index pflegt der Orchestrator. Ebenso die Rechenfehler in Befund V 6.2 und 0.7.

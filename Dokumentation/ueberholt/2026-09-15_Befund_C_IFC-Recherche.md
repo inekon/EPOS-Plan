@@ -2,7 +2,7 @@
 
 **Protokoll.** Befund eines Recherche-Agenten (Modell Opus, mit Quellenprüfung im Netz und
 Auszählung öffentlicher Beispieldateien) im Auftrag des Konzepts
-[`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md),
+[`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](../aktuell/Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md),
 Sitzung vom 15.09.2026. Wortlaut wie geliefert; das Gegenlesen hat die Lizenzbewertung der
 CDDL-1.0, die Zeile `Xbim.Geometry` (Vorabversion, LGPL-Abhängigkeit OCCT) und die
 Zahlenangaben zur Interoperabilitätsstudie korrigiert — bei Widerspruch gilt das Konzept

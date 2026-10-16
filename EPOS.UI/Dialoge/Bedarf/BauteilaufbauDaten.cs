@@ -170,6 +170,12 @@ public sealed record AufbauKennwerteDaten
     /// <summary>BK-5: unterer Grenzwert R''_T [m²K/W] eines inhomogenen Aufbaus; <c>null</c> = homogen.</summary>
     public double? RT_Unten_M2KW { get; init; }
 
+    /// <summary>BK-8b: Fehlerschranke e nach DIN EN ISO 6946, 6.7.2.5 [–] eines inhomogenen Aufbaus; <c>null</c> = homogen.</summary>
+    public double? Fehlerschranke { get; init; }
+
+    /// <summary>BK-8b: der Hinweis des Kerns, wenn e die Höchstgrenze übersteigt (übersetzt); leer sonst.</summary>
+    public string Hinweis { get; init; } = "";
+
     /// <summary>U [W/(m²K)].</summary>
     public double? U_WM2K { get; init; }
 
