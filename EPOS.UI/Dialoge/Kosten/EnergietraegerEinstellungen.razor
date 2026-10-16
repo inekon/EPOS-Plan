@@ -77,9 +77,13 @@
                                              AuswahlChanged="BeiPreisbasis" />
                             }
 
-                            <Zahlenfeld Bezeichnung="@LabelGrundpreis" Einheit="@Stand.EinheitGrundpreis"
-                                        Wert="@Stand.Grundpreis"
-                                        WertChanged="@(w => Feld(() => Stand.Grundpreis = w ?? Stand.Grundpreis))" />
+                            @* Welle KB-7c1 (Entscheid F5): am Wasserträger kein Grundpreis. *@
+                            @if (Stand.MitGrundpreis)
+                            {
+                                <Zahlenfeld Bezeichnung="@LabelGrundpreis" Einheit="@Stand.EinheitGrundpreis"
+                                            Wert="@Stand.Grundpreis"
+                                            WertChanged="@(w => Feld(() => Stand.Grundpreis = w ?? Stand.Grundpreis))" />
+                            }
 
                             @if (Stand.MitLeistungspreis)
                             {
@@ -166,10 +170,13 @@
                                            Kurztext="@SzenarioKurztext(PREIS_ARBEIT)"
                                            GepflegtText="@SzenarioGepflegtText" WarnungText="@SzenarioWarnungText"
                                            Angefordert="() => SzenarioPflegen.InvokeAsync(PREIS_ARBEIT)" />
-                            <SzenarioKnopf Text="@LabelGrundpreis" Gepflegt="@Stand.SzenarioGrundGepflegt"
-                                           Kurztext="@SzenarioKurztext(PREIS_GRUND)"
-                                           GepflegtText="@SzenarioGepflegtText" WarnungText="@SzenarioWarnungText"
-                                           Angefordert="() => SzenarioPflegen.InvokeAsync(PREIS_GRUND)" />
+                            @if (Stand.MitGrundpreis)
+                            {
+                                <SzenarioKnopf Text="@LabelGrundpreis" Gepflegt="@Stand.SzenarioGrundGepflegt"
+                                               Kurztext="@SzenarioKurztext(PREIS_GRUND)"
+                                               GepflegtText="@SzenarioGepflegtText" WarnungText="@SzenarioWarnungText"
+                                               Angefordert="() => SzenarioPflegen.InvokeAsync(PREIS_GRUND)" />
+                            }
                             @if (Stand.MitLeistungspreis)
                             {
                                 <SzenarioKnopf Text="@LabelLeistungspreis" Gepflegt="@Stand.SzenarioLeistungGepflegt"
@@ -294,6 +301,9 @@
         </div>
     </div>
 
+    @* Welle KB-7c1: Der Wasserträger (Preismodell WATER) führt weder Emissionen noch eine Kette bis kWh. *@
+    @if (Stand.MitEmissionen)
+    {
     @* ==================================================== Block C: Emissionen *@
     <Gruppenkopf Titel="@TitelBlockEmissionen">
         <KindInhalt>
@@ -387,7 +397,10 @@
             }
         </KindInhalt>
     </Gruppenkopf>
+    }
 
+    @if (Stand.MitUmrechnung)
+    {
     @* ======================================= Block D: Einheiten und Umrechnung *@
     <Gruppenkopf Titel="@TitelBlockEinheiten">
         <KindInhalt>
@@ -451,6 +464,7 @@
             </div>
         </KindInhalt>
     </Gruppenkopf>
+    }
 
     @* ================================================ Historie und Speichern *@
     <Gruppenkopf Titel="@TitelHistorie">

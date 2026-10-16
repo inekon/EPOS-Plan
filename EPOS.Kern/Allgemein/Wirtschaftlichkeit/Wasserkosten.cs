@@ -138,8 +138,35 @@ namespace WindowsFormsApplication1
                 Bemessung = DbWerte.BEMESSUNG_BETRAG,
                 Menge = e.MengeM3,
                 Einheitpreis = e.PreisEurM3,
+                SatzHerkunft = HERKUNFT_WASSERTRAEGER,
                 BetragJahr = e.KostenEur
             };
+        }
+
+        /// <summary>
+        /// Welle KB-7c1: die Herkunft des Satzes der Nachweiszeile — der Arbeitspreis des Wasserträgers aus der
+        /// Trägerkarte (<see cref="KostenPositionNachweis.SatzHerkunft"/>, im Nachweisumschlag gespeichert).
+        /// Woran die Zeilen der Wirtschaftlichkeit die Wasserkosten wiederfinden, auch in einem gespeicherten Lauf.
+        /// </summary>
+        internal const string HERKUNFT_WASSERTRAEGER = "WASSERTRAEGER";
+
+        /// <summary>Welle KB-7c1: die Nachweiszeile der Wasserkosten eines Ergebnisses; <c>null</c> = keine.</summary>
+        internal static KostenPositionNachweis NachweisIn(WirtschaftlichkeitErgebnis e)
+        {
+            if (e?.Betriebskosten == null) return null;
+            foreach (KostenPositionNachweis n in e.Betriebskosten)
+                if (n != null && string.Equals(n.SatzHerkunft, HERKUNFT_WASSERTRAEGER, StringComparison.Ordinal))
+                    return n;
+            return null;
+        }
+
+        /// <summary>Welle KB-7c1: „1.000,0 m³/a × 2,50 €/m³" — die Herleitung der Zeile; leer ohne Nachweis.</summary>
+        internal static string Herleitung(KostenPositionNachweis n, CultureInfo kultur)
+        {
+            if (n == null || !n.Menge.HasValue || !n.Einheitpreis.HasValue) return "";
+            CultureInfo k = kultur ?? CultureInfo.CurrentCulture;
+            return string.Format(k, MyResource.Resource.WIRT_WASSER_HERLEITUNG,
+                                 n.Menge.Value.ToString("N1", k), n.Einheitpreis.Value.ToString("N2", k));
         }
 
         /// <summary>Der Hinweis ohne Preis (Menge in m³/a); leer, wenn Kosten stehen oder kein Wasser floss.</summary>
