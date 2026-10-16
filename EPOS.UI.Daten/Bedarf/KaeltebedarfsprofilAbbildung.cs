@@ -30,7 +30,9 @@ namespace WindowsFormsApplication1
                     Eingabeart = KaeltebedarfsprofilVorlagenSchema.Eingabeart(m.Eingabeart),
                     Monatsanteile = m.Monatsanteile ?? KaeltebedarfStammCtrl.ProjektMonate(m.ID_Kaeltebedarf),
                     Wochenprofil = m.Wochenprofil ?? KaeltebedarfStammCtrl.ProjektWoche(m.ID_Kaeltebedarf),
-                    ProfilGeaendert = m.Monatsanteile != null || m.Wochenprofil != null
+                    ProfilGeaendert = m.Monatsanteile != null || m.Wochenprofil != null,
+                    // KBP-5b: die Normtage der Vorlage für die Herleitungszeile am Kalender.
+                    Normtage = m.NutzungstageNorm
                 });
             return zeilen;
         }
@@ -40,9 +42,19 @@ namespace WindowsFormsApplication1
         /// (<see cref="KaeltebedarfStammCtrl.ArtVorschlag"/>; ohne Vorschlag bleibt die Vorgabe Raum, der Anwender hat hier
         /// noch nichts gewählt) und Monatsanteile und Wochenprofil der Kopie, auf die die Zeile zeigt.
         /// </summary>
-        internal static void Aufgenommen(BedarfsProfilZeile zeile, string vorlage)
+        /// <remarks>KBP-5b (Entscheid 16.10.2026): Trägt die Vorlage Nutzungstage nach Norm, wählt die Zeile im Projekt
+        /// (<paramref name="idProjekt"/> &gt; 0, Projektkopie angelegt) den Normkalender vor
+        /// (<see cref="NormkalenderCtrl.Vorwahl"/>: vorhanden oder neu); im Assistenten bleibt die Wahl leer.</remarks>
+        internal static void Aufgenommen(BedarfsProfilZeile zeile, string vorlage, int idProjekt = 0)
         {
             if (zeile == null) return;
+            zeile.Normtage = idProjekt > 0 ? KaeltebedarfStammCtrl.ProjektNutzungstage(zeile.IdStamm)
+                                           : KaeltebedarfStammCtrl.Nutzungstage(vorlage);
+            if (idProjekt > 0 && zeile.Normtage.HasValue)
+            {
+                int? kalender = NormkalenderCtrl.Vorwahl(idProjekt, zeile.IdStamm);
+                if (kalender.HasValue) zeile.KalenderId = kalender;
+            }
             zeile.Eingabeart = KaeltebedarfsprofilVorlagenSchema.EINGABE_JAHR;
             string vorschlag = KaeltebedarfStammCtrl.ArtVorschlag(vorlage);
             if (vorschlag != null) zeile.KaelteArt = KaelteArtSchema.Normal(vorschlag);

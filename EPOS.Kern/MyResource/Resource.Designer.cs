@@ -56429,6 +56429,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlage rechnet nach Norm mit {0} Nutzungstagen; der Betriebskalender „{1}“ bildet sie ab und ist bei der Übernahme vorgewählt (Feiertage wie Sonntag, Betriebsferien um den Jahreswechsel und im Sommer). ähnelt.
+        /// </summary>
+        public static string KBP_HINW_NORMKALENDER {
+            get {
+                return ResourceManager.GetString("KBP_HINW_NORMKALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Typtage folgen in einer späteren Fassung. ähnelt.
         /// </summary>
         public static string KBP_HINW_TYPTAG_FOLGT {
@@ -56456,7 +56465,16 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabeart der markierten Kältezeile: Jahressumme mit Vorlage, Monatswerte oder Wochenprofil; Typtage folgen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Norm {0} Tage ähnelt.
+        /// </summary>
+        public static string KBP_KALENDER_NORM_NAME {
+            get {
+                return ResourceManager.GetString("KBP_KALENDER_NORM_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabeart der markierten Zeile (Kälte, Prozesswärme, Brauchwasser): Jahressumme mit Vorlage, Monatswerte oder Wochenprofil; Typtage folgen. ähnelt.
         /// </summary>
         public static string KBP_KI_EINGABEART_ERL {
             get {

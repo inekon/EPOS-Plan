@@ -407,6 +407,12 @@
                               Oeffnen="@(BetriebskalenderGaben is null ? default(EventCallback) : EventCallback.Factory.Create(this, KalenderblattOeffnen))"
                               Titel="@GruppeKalender" Bezeichnung="@LabelKalender"
                               TextOhneKalender="@TextOhneKalender" HinweisNormal="@HinweisKalender" />
+        @* KBP-5b (Entscheid 16.10.2026): Traegt die Zeile eine Vorlage mit Nutzungstagen nach Norm, nennt die Zeile die
+           Normtage und den Normkalender, den die Uebernahme vorgewaehlt hat; die Wahl darueber bleibt frei. *@
+        @if (HinweisNormkalender is string normhinweis)
+        {
+            <Herleitungszeile Text="@normhinweis" />
+        }
     }
 
     @if (_gewaehlt is not null)
@@ -1665,6 +1671,16 @@
     /// </summary>
     private bool EingabeartAngeboten => _eingabeartArbeit is not null && !Zapfprofilweg;
 
+    /// <summary>
+    /// KBP-5b: die Herleitungszeile am Kalender, wenn die markierte Zeile eine Vorlage mit Nutzungstagen nach Norm trägt
+    /// (<c>KBP_HINW_NORMKALENDER</c>: Normtage und Name des Normkalenders, <c>KBP_KALENDER_NORM_NAME</c>); sonst <c>null</c>.
+    /// </summary>
+    public string? HinweisNormkalender
+        => _gewaehlt?.Normtage is int tage && tage > 0
+            ? string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.KBP_HINW_NORMKALENDER, tage,
+                            string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.KBP_KALENDER_NORM_NAME, tage))
+            : null;
+
     /// <summary>Die Jahressumme gilt als Eingabe nicht bei Monatswerten in MWh — dort ist sie die Summe der Monate.</summary>
     private bool VerbrauchSichtbar => !(EingabeartAngeboten && _eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_MONAT && !_monateProzent);
 
@@ -1911,6 +1927,11 @@
             neue.Add(neu);
         }
         if (neue.Count == 0) return;
+
+        // KBP-5b: Hat die Uebernahme einen Normkalender angelegt, kennt die Wahl ihn noch nicht - die Liste neu lesen.
+        if (BetriebskalenderNeuLesen is not null && KalenderListe is not null &&
+            neue.Any(z => z.KalenderId is int id && !KalenderListe.Any(k => k.Id == id)))
+            _kalenderGelesen = BetriebskalenderNeuLesen();
 
         KatalogKaestchenLeeren();
         if (neue.Count > 1) _projektWahl.Setzen(neue.Select(Projektschluessel).ToList());

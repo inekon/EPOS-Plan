@@ -1903,4 +1903,61 @@ public class BedarfsProfileDialogTests : EposBunitContext
             .Add(x => x.HinweisTemperatur, WindowsFormsApplication1.MyResource.Resource.BPF_HINW_TEMPERATUR_KAELTE));
         Assert.Contains(WindowsFormsApplication1.MyResource.Resource.BPF_HINW_TEMPERATUR_KAELTE, Satz(cut).TextContent);
     }
+
+    /// <summary>
+    /// KBP-5b (Entscheid 16.10.2026): Die Übernahme einer Kältevorlage mit Normtagen (Vorlage 8) bringt den von der Hülle
+    /// vorgewählten Normkalender mit — der Dialog liest die Kalender neu, die Wahl steht auf ihm, die Herleitungszeile
+    /// nennt Normtage und Kalender. Eine Vorlage ohne Normtage bleibt ohne Kalender und ohne Zeile.
+    /// </summary>
+    [Fact]
+    public void KBP5b_Uebernahme_der_Vorlage_8_waehlt_den_Normkalender_vor_andere_nicht()
+    {
+        const int NORM = 77;
+        string normname = string.Format(CultureInfo.CurrentCulture,
+            WindowsFormsApplication1.MyResource.Resource.KBP_KALENDER_NORM_NAME, 230);
+        var kalender = new List<(int Id, string Text)> { (5, "Werkskalender") };
+        var zeilen = new List<BedarfsProfilZeile>();
+        int neuGelesen = 0;
+        var cut = Render<BedarfsProfileDialog>(p => p
+            .Add(x => x.Art, BedarfsArt.Kaelte)
+            .Add(x => x.TitelText, "Kälte")
+            .Add(x => x.Zeilen, zeilen)
+            .Add(x => x.Katalogzeilen, () => Katalogzeilen())
+            .Add(x => x.Katalogprofil, Profil(BedarfsArt.Kaelte))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Info, n => new BedarfsProfilInfo(n, "Beschreibung " + n, "Typ 1"))
+            .Add(x => x.Jahressumme, _ => 42.0)
+            // Die Hülle wählt für „Profil A“ (Normtage 230) den Normkalender vor und legt ihn dabei an.
+            .Add(x => x.Aufnehmen, n => n == "Profil A"
+                ? new BedarfsProfilZeile { IdZ = 100000, IdStamm = 9, Name = n, Summe = 42.0, Normtage = 230, KalenderId = NORM }
+                : new BedarfsProfilZeile { IdZ = 100001, IdStamm = 10, Name = n, Summe = 7.5 })
+            .Add(x => x.Betriebskalender, (IReadOnlyList<(int, string)>)kalender)
+            .Add(x => x.BetriebskalenderNeuLesen, () =>
+            {
+                neuGelesen++;
+                return new List<(int, string)> { (NORM, normname), (5, "Werkskalender") };
+            })
+            .Add(x => x.Einheit, Energieeinheit.MWh));
+
+        KatalogKlick(cut, 0);
+        Uebernehmen(cut).Click();
+        Assert.Single(zeilen);
+        Assert.Equal(NORM, zeilen[0].KalenderId);
+        Assert.Equal(1, neuGelesen);
+        Assert.Contains(cut.Instance.KalenderListe!, k => k.Id == NORM);
+        string? hinweis = cut.Instance.HinweisNormkalender;
+        Assert.NotNull(hinweis);
+        Assert.Contains("230", hinweis);
+        Assert.Contains(normname, hinweis);
+        Satz(cut);
+        Assert.Contains(hinweis!, string.Concat(cut.Nodes.Select(n => n.TextContent)));
+
+        // Eine andere Vorlage: keine Vorwahl, keine Herleitungszeile, kein weiteres Neulesen.
+        KatalogKlick(cut, 1);
+        Uebernehmen(cut).Click();
+        Assert.Equal(2, zeilen.Count);
+        Assert.Null(zeilen[1].KalenderId);
+        Assert.Equal(1, neuGelesen);
+        Assert.Null(cut.Instance.HinweisNormkalender);
+    }
 }

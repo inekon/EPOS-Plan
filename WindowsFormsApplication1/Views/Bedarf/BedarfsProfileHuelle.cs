@@ -710,7 +710,8 @@ namespace WindowsFormsApplication1
                 Vorlauf = vorlauf,
                 Ruecklauf = ruecklauf
             };
-            if (art == BedarfsArt.Kaelte) KaeltebedarfsprofilAbbildung.Aufgenommen(zeile, name);
+            // KBP-5b: im gespeicherten Projekt waehlt eine Vorlage mit Normtagen ihren Normkalender vor.
+            if (art == BedarfsArt.Kaelte) KaeltebedarfsprofilAbbildung.Aufgenommen(zeile, name, wizard ? 0 : projektId);
             // KBP-5a: Prozesswaerme und Brauchwasser - Eingabeart 'jahr' und das Profil der neuen Projektkopie.
             else if (!wizard) BedarfsprofilEingabeAbbildung.Aufgenommen(zeile, art, projektId);
             return zeile;

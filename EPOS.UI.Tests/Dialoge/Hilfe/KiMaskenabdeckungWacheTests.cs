@@ -81,7 +81,7 @@ public sealed class KiMaskenabdeckungWacheTests
         // KBP-1: die Wahl des Betriebskalenders der markierten Zuordnung - Katalogfeld betriebskalender der Feldkarte
         // Form_Bedarfsprofile, gebunden ueber BedarfsProfileKiSicht (KalenderLesen/KalenderSetzen) des Wirts.
         new("Betriebskalenderwahl",           "BedarfsProfileDialog",        KiMaskennamen.BEDARFSPROFILE),
-        // KBP-3a: die Editoren der Eingabearten Monatswerte und Wochenprofil in der Bearbeiten-Ueberlagerung der Kaeltezeile.
+        // KBP-3a, KBP-5b: die Editoren der Eingabearten Monatswerte und Wochenprofil in der Bearbeiten-Ueberlagerung der Kaelte-, Prozesswaerme- und Brauchwasserzeile.
         new("KaelteMonatswerteEditor",        "BedarfsProfileDialog",        KiMaskennamen.BEDARFSPROFILE),
         new("KaelteWochenprofilEditor",       "BedarfsProfileDialog",        KiMaskennamen.BEDARFSPROFILE),
         // Die Rueckfrage „In die Datenbank übernehmen…“ (Stufe 2b) steht ebenso als Ueberlagerung im Projektdialog;

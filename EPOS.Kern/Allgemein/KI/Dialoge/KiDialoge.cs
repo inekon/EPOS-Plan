@@ -4292,7 +4292,7 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("kaelte_art", "BedarfsProfileKiSicht.KaelteArt",
                                      KiDialogTexte.KaelteArtName, KiParameterTyp.Wahl,
                                      KiDialogTexte.KaelteArtErl, leerErlaubt: true),
-                    // KBP-3a: die Eingabeart der markierten Kaeltezeile (Jahressumme, Monatswerte, Wochenprofil).
+                    // KBP-3a, KBP-5b: die Eingabeart der markierten Zeile (Kaelte, Prozesswaerme, Brauchwasser; Jahressumme, Monatswerte, Wochenprofil).
                     new KiDialogFeld("eingabeart", "BedarfsProfileKiSicht.Eingabeart",
                                      KiDialogTexte.KbpEingabeartName, KiParameterTyp.Wahl,
                                      KiDialogTexte.KbpEingabeartErl, leerErlaubt: true),

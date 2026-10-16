@@ -56348,7 +56348,7 @@ Replace these holidays with the project default? With “No” these zones remai
     <value>{0}:00</value>
   </data>
   <data name="KBP_KI_EINGABEART_ERL" xml:space="preserve">
-    <value>Input method of the selected cooling row: annual total with template, monthly values or weekly profile; typical days follow.</value>
+    <value>Input method of the selected row (cooling, process heat, domestic hot water): annual total with template, monthly values or weekly profile; typical days follow.</value>
   </data>
   <data name="KBP_GRAFIK_GRUPPE" xml:space="preserve">
     <value>Chart of the selected row</value>
@@ -56418,6 +56418,12 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="KBP_HINW_EINGABEART_ZAPFPROFIL" xml:space="preserve">
     <value>Domestic hot water is calculated with the draw-off profile generator – the input type (monthly values, weekly profile) applies only to the profile method.</value>
+  </data>
+  <data name="KBP_KALENDER_NORM_NAME" xml:space="preserve">
+    <value>Standard {0} days</value>
+  </data>
+  <data name="KBP_HINW_NORMKALENDER" xml:space="preserve">
+    <value>The template counts {0} days of use according to the standard; the operating calendar “{1}” reproduces them and is preselected on adoption (public holidays like Sunday, company holidays around New Year and in summer).</value>
   </data>
 </root>
 

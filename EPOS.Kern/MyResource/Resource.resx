@@ -56355,7 +56355,7 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
     <value>{0} Uhr</value>
   </data>
   <data name="KBP_KI_EINGABEART_ERL" xml:space="preserve">
-    <value>Eingabeart der markierten Kältezeile: Jahressumme mit Vorlage, Monatswerte oder Wochenprofil; Typtage folgen.</value>
+    <value>Eingabeart der markierten Zeile (Kälte, Prozesswärme, Brauchwasser): Jahressumme mit Vorlage, Monatswerte oder Wochenprofil; Typtage folgen.</value>
   </data>
   <data name="KBP_GRAFIK_GRUPPE" xml:space="preserve">
     <value>Grafik der markierten Zeile</value>
@@ -56425,6 +56425,12 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="KBP_HINW_EINGABEART_ZAPFPROFIL" xml:space="preserve">
     <value>Das Brauchwasser rechnet mit dem Zapfprofilgenerator – die Eingabeart (Monatswerte, Wochenprofil) gilt nur für den Profilweg.</value>
+  </data>
+  <data name="KBP_KALENDER_NORM_NAME" xml:space="preserve">
+    <value>Norm {0} Tage</value>
+  </data>
+  <data name="KBP_HINW_NORMKALENDER" xml:space="preserve">
+    <value>Die Vorlage rechnet nach Norm mit {0} Nutzungstagen; der Betriebskalender „{1}“ bildet sie ab und ist bei der Übernahme vorgewählt (Feiertage wie Sonntag, Betriebsferien um den Jahreswechsel und im Sommer).</value>
   </data>
 </root>
 
