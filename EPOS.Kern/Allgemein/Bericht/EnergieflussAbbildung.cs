@@ -231,6 +231,51 @@ namespace WindowsFormsApplication1
             return ziel;
         }
 
+        // ---------------------------------------------------------------- Umfeld (Referenz der Hervorhebung)
+
+        /// <summary>
+        /// <b>Das Umfeld eines Knotens</b> — die Referenz der Hervorhebungsregel (Konzept 3.3), die das Modul von
+        /// <c>DiagrammSvg</c> im Browser aus den Kanten und Bussen der Hülle rechnet: die Marken
+        /// (<c>fluss:&lt;von&gt;:&lt;nach&gt;</c>) aller Bänder des Knotens, dazu von jedem Nachbarn, der kein Bus ist, rekursiv in
+        /// derselben Richtung weiter (eingehend über die Bänder in den Nachbarn, ausgehend über die Bänder aus ihm); ein
+        /// Bus beendet den Weg, sein Band zählt noch; ist der Knoten selbst ein Bus, nur seine eigenen Bänder.
+        /// Verlustabzweige sind gewöhnliche Bänder. Eine unbekannte Kennung ergibt ein leeres Umfeld.
+        /// </summary>
+        public static IReadOnlyList<string> Umfeld(EnergieflussBildDaten daten, string kennung)
+        {
+            var umfeld = new List<string>();
+            if (daten == null || string.IsNullOrEmpty(kennung)) return umfeld;
+            var art = new Dictionary<string, EnergieflussKnotenart>(StringComparer.Ordinal);
+            foreach (EnergieflussBildKnoten k in daten.Knoten ?? Array.Empty<EnergieflussBildKnoten>())
+                if (k != null && !string.IsNullOrEmpty(k.Kennung) && !art.ContainsKey(k.Kennung)) art[k.Kennung] = k.Art;
+            if (!art.ContainsKey(kennung)) return umfeld;
+            List<EnergieflussBildBand> baender = (daten.Baender ?? Array.Empty<EnergieflussBildBand>())
+                .Where(b => b != null && b.Von != null && b.Nach != null && b.Von != b.Nach && art.ContainsKey(b.Von) && art.ContainsKey(b.Nach))
+                .ToList();
+            var gesehen = new HashSet<string>(StringComparer.Ordinal);
+            void Merke(EnergieflussBildBand b) { string m = "fluss:" + b.Von + ":" + b.Nach; if (gesehen.Add(m)) umfeld.Add(m); }
+            bool IstBus(string id) => art[id] == EnergieflussKnotenart.Bus;
+            if (IstBus(kennung))
+            {
+                foreach (EnergieflussBildBand b in baender.Where(b => b.Von == kennung || b.Nach == kennung)) Merke(b);
+                return umfeld;
+            }
+            var besucht = new HashSet<string>(StringComparer.Ordinal);
+            void Lauf(string id, bool ein)
+            {
+                if (!besucht.Add((ein ? "<" : ">") + id)) return;
+                foreach (EnergieflussBildBand b in baender.Where(b => ein ? b.Nach == id : b.Von == id))
+                {
+                    Merke(b);
+                    string nachbar = ein ? b.Von : b.Nach;
+                    if (!IstBus(nachbar)) Lauf(nachbar, ein);
+                }
+            }
+            Lauf(kennung, true);
+            Lauf(kennung, false);
+            return umfeld;
+        }
+
         // ---------------------------------------------------------------- Speicher falten
 
         private static void SpeicherFalten(Dictionary<string, AKnoten> knoten, List<AKnoten> folge, List<ABand> baender,

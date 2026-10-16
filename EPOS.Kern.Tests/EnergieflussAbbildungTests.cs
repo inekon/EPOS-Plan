@@ -538,6 +538,35 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Umfeld_eines_Knotens_reicht_bis_zum_naechsten_Bus_ein_Bus_hat_nur_seine_Baender()
+        {
+            EnergieflussBildDaten d = EnergieflussAbbildung.Bild(VonHand());
+            string M(string von, string nach) => "fluss:" + von + ":" + nach;
+            // Ein Wandler: seine Einsätze und seine Abgabe, die Busse beenden den Weg.
+            Assert.Equal(new[] { M(Energiefluss.STROM, Energiefluss.WP_HEIZEN), M(Energiefluss.UMWELTWAERME, Energiefluss.WP_HEIZEN), M(Energiefluss.WP_HEIZEN, Energiefluss.WAERME) }.OrderBy(x => x, StringComparer.Ordinal),
+                         EnergieflussAbbildung.Umfeld(d, Energiefluss.WP_HEIZEN).OrderBy(x => x, StringComparer.Ordinal));
+            // Eine Quelle: durch BHKW und Kessel hindurch bis zu den Bussen, samt Verlust des BHKW; nicht die anderen Einsätze des Kessels.
+            IReadOnlyList<string> gas = EnergieflussAbbildung.Umfeld(d, "traeger:7");
+            Assert.Equal(new[] { M("traeger:7", Energiefluss.BHKW), M("traeger:7", Energiefluss.HEIZKESSEL), M(Energiefluss.BHKW, Energiefluss.STROM), M(Energiefluss.BHKW, Energiefluss.WAERME),
+                                 M(Energiefluss.BHKW, Energiefluss.VERLUST + Energiefluss.BHKW), M(Energiefluss.HEIZKESSEL, Energiefluss.WAERME) }.OrderBy(x => x, StringComparer.Ordinal),
+                         gas.OrderBy(x => x, StringComparer.Ordinal));
+            Assert.DoesNotContain(M(Energiefluss.KONDENSATION, Energiefluss.HEIZKESSEL), gas);
+            // Ein Bus: nur seine eigenen Bänder (samt Abzweigen), nichts dahinter.
+            IReadOnlyList<string> strom = EnergieflussAbbildung.Umfeld(d, Energiefluss.STROM);
+            Assert.Equal(d.Baender.Count(b => b.Von == Energiefluss.STROM || b.Nach == Energiefluss.STROM), strom.Count);
+            Assert.All(strom, m => Assert.True(m.StartsWith("fluss:" + Energiefluss.STROM + ":", StringComparison.Ordinal) || m.EndsWith(":" + Energiefluss.STROM, StringComparison.Ordinal), m));
+            Assert.Contains(M(Energiefluss.STROM, "verlust:stromspeicher:1"), strom);
+            // Eine Senke: ihre Bänder aus Bus und Quelle, nicht weiter; Unbekanntes leer.
+            Assert.Equal(new[] { M(Energiefluss.UNGEDECKT, Energiefluss.HEIZUNG), M(Energiefluss.WAERME, Energiefluss.HEIZUNG) },
+                         EnergieflussAbbildung.Umfeld(d, Energiefluss.HEIZUNG).OrderBy(x => x, StringComparer.Ordinal));
+            Assert.Empty(EnergieflussAbbildung.Umfeld(d, "gibtsnicht"));
+            Assert.Empty(EnergieflussAbbildung.Umfeld(null, Energiefluss.STROM));
+            // Jede Marke des Umfelds ist im gezeichneten Bild ein Element.
+            Zeichenmodell z = ChartRenderer.EnergieflussModell(d, null, false, EnergieflussDarstellung.Stufen);
+            Assert.All(gas, m => Assert.Contains(z.Befehle, b => b.Marke == m));
+        }
+
+        [Fact]
         public void Ein_Filter_ohne_Fluss_der_Form_ist_leer_und_benannt()
         {
             var b = new EnergieflussBilanz { Simuliert = true };
