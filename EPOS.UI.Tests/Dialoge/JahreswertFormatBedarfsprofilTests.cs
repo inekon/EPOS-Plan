@@ -99,6 +99,24 @@ public class JahreswertFormatBedarfsprofilTests : EposBunitContext
         Assert.Contains(erwartet, Satzzeile(cut));
     }
 
+    [Theory]
+    [InlineData("de-DE", "1.200", ",4")]
+    [InlineData("en-US", "1,200", ".4")]
+    public void Satzkopf_Kenndaten_zeigen_die_Jahressumme_ganzzahlig(string kultur, string erwartet, string verboten)
+    {
+        using var k = new Kulturvorrichtung(kultur);
+        var cut = Aufbauen(Zeilen());
+
+        cut.FindAll(".epos-projektzeile")[0].Click();
+        var kopf = cut.FindAll(".epos-zweispalten-satzkenndaten").Select(e => e.TextContent.Trim()).ToList();
+        Assert.NotEmpty(kopf);
+        Assert.All(kopf, t =>
+        {
+            Assert.Contains(erwartet, t);
+            Assert.DoesNotContain(erwartet + verboten, t);
+        });
+    }
+
     [Fact]
     public void Eingabefeld_und_Lesewert_der_Ueberlagerung_bleiben_genau()
     {

@@ -1757,7 +1757,7 @@
             if (SatzArt == Satzmarke.Keiner) return null;
             var teile = new List<string>();
             if (_infoTyp.Length > 0) teile.Add(_infoTyp);
-            teile.Add(Jahresverbrauch);
+            teile.Add(JahresverbrauchSatz);
             if (_katalogzeile?.Geschuetzt == true) teile.Add(Resource.AUSWAHL_SATZ_NUR_LESEN);
             return string.Join(" · ", teile);
         }
