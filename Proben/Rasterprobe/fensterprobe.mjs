@@ -41,7 +41,8 @@
 //    rollt nicht, jede Zahl dieselbe wie ohne Fenstermarke.
 //  KLIMAIMPORT (KD-1, --nur klimaimport): die Ueberlagerung "Klimadaten einlesen" (.epos-einlesen,
 //    Leiste ohne Statusspanne) - ihre Schlussleiste steht oben wie am Ende ganz im Bild am Boden der
-//    Ueberlagerung, auch bei 787 x 520 (1 180 x 780 bei 150 %); Gegenprobe: Leiste position: static.
+//    Ueberlagerung, auch bei 787 x 520 (1 180 x 780 bei 150 %); gemessen MIT Vorschaukarte (KD-3: Ort
+//    eintragen, "Datensatz suchen"); Gegenprobe: Leiste position: static.
 //
 //  IPAD 11 ZOLL (1 194 x 834 quer): dieselben Faelle MIT den sicheren Abstaenden
 //    des iPads (Statusleiste oben 24 px, Home-Anzeige unten 20 px, gesetzt ueber die
@@ -504,6 +505,10 @@ async function klimaimport(browser, f, stil = '') {
   if (stil) await seite.addStyleTag({ content: stil });
   await seite.click('button.epos-importknopf');
   await seite.waitForSelector('.epos-ueberlagerung-inhalt > .epos-einlesen > .epos-leiste:last-child', { timeout: 20000 });
+  // KD-3: Ort eintragen und "Datensatz suchen" - gemessen wird die Ueberlagerung MIT Vorschaukarte.
+  await seite.fill('.epos-einlesen input[list=epos-klimaregion-orte]', 'Ort 1');
+  await seite.click('.epos-klimavorschau-suche > button');
+  await seite.waitForSelector('.epos-einlesen .epos-klimavorschau svg', { timeout: 20000 });
   const messen = async unten => {
     await seite.evaluate(unten => {
       const ue = document.querySelector('.epos-ueberlagerung:has(> .epos-ueberlagerung-inhalt > .epos-einlesen)');

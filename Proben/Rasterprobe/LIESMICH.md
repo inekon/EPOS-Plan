@@ -1130,7 +1130,9 @@ weiß wie `--epos-kalb-grundwoche`); `kaelteprofile` in der Katalogauswahl 0 Ver
 
 **Fall `klimaimport`** (`--nur klimaimport`, bei **1 088 × 624**, **520 × 624**, **1 194 × 834** mit sicheren
 Abständen und **787 × 520** — das Fenstermaß 1 180 × 780 bei 150 % Anzeigeskalierung; KD-1, Anwenderbefund
-16.10.2026 „Schlussleiste des Klimadaten-Imports abgeschnitten“): `?fall=klimaimport`, „Import…“. Die Überlagerung
+16.10.2026 „Schlussleiste des Klimadaten-Imports abgeschnitten“): `?fall=klimaimport`, „Import…“, dann (KD-3) Ort
+„Ort 1“ und „Datensatz suchen“ — der Wirt liefert eine volle Vorschau mit neutralen Werten, gemessen wird die
+Überlagerung in ihrer höchsten Gestalt MIT Vorschaukarte. Die Überlagerung
 „Klimadaten einlesen“ trägt `.epos-einlesen` statt eines `.epos-dialog` und eine Leiste ohne Statusspanne; ihre
 Schlussleiste haftet über die Regel `.epos-ueberlagerung-inhalt > .epos-einlesen > .epos-leiste:last-child`
 (`epos-ui.css`, gilt für alle sechs Einlese-Überlagerungen). Gemessen bei Rollstand oben und Ende der Überlagerung:

@@ -85,16 +85,18 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Das Wunschmaß der Überlagerung „Klimadaten einlesen“ als eigenes Fenster (KD-1):
-        /// so breit wie eine Überlagerung (900 px), so hoch, dass sie (gemessen 776 px
-        /// in der <c>fensterprobe.mjs</c>, Fall „klimaimport“) in 90 % der Fensterhöhe steht,
-        /// ohne zu rollen. Reicht der Schirm nicht, rollt der Inhalt, und die Schlussleiste
+        /// so breit wie eine Überlagerung (900 px), so hoch, dass sie VOR der Suche (gemessen
+        /// 900 px samt Höhenfeld und Suchzeile, KD-3) in 90 % der Fensterhöhe steht, ohne zu
+        /// rollen. Die Vorschaukarte (rund 750 px) rollt dann unter der haftenden Leiste — ein
+        /// Fenster, das auch sie ganz zeigte, gäbe kein Schirm her. Reicht der Schirm nicht,
+        /// rollt der Inhalt, und die Schlussleiste
         /// haftet am Boden der Überlagerung (<c>epos-ui.css</c>, „Die Schlussleiste des
         /// Einlesens haftet genauso“).
         /// </summary>
         internal const int EINLESEN_BREITE = 900;
 
         /// <summary>Siehe <see cref="EINLESEN_BREITE"/>.</summary>
-        internal const int EINLESEN_HOEHE = 870;
+        internal const int EINLESEN_HOEHE = 1000;
 
         /// <summary>
         /// Das Wunschmaß des Fensters: mindestens das der getragenen Überlagerung

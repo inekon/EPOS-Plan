@@ -19277,6 +19277,9 @@ td.epos-vorlage-katalogbeschreibung {
     font-size: 13px;
     color: var(--epos-text-leise);
 }
+/* Das Bild ist eine Uebersicht, kein Arbeitsbild: hoechstens 640 px breit, sonst nimmt
+   es der Karte die halbe Hoehe. */
+.epos-klimavorschau > .epos-diagramm-svg { max-width: 640px; }
 .epos-klimavorschau-bestand ul {
     display: flex;
     flex-wrap: wrap;
