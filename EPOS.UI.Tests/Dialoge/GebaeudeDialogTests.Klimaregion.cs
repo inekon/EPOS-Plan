@@ -19,6 +19,7 @@ public partial class GebaeudeDialogTests
         public readonly List<int> Gespeichert = new();
         public int Gefragt;
         public string? Grund;
+        public int Herkunft;
 
         public GebaeudeKlimaregionWeg Weg()
         {
@@ -28,6 +29,7 @@ public partial class GebaeudeDialogTests
                 Eintraege = new[] { (1, "Ort A (Probe)"), (2, "Ort B (Probe)") },
                 Gewaehlt = 1,
                 Speichern = id => { if (Grund is null) Gespeichert.Add(id); return Grund; },
+                Herkunftszeile = id => { Herkunft++; return id == 1 ? "Klimadaten: Probequelle A" : ""; },
             };
         }
     }
@@ -65,6 +67,28 @@ public partial class GebaeudeDialogTests
         Assert.True(cut.Instance.ModellpruefungOffen);
         Assert.True(pruefweg.Geprueft > geprueft);
         Assert.Equal(string.Format(R.MPB_KLIMA_GESPEICHERT, "Ort B (Probe)"), cut.Instance.Meldung);
+    }
+
+    /// <summary>
+    /// Nachzug N6: Unter der Liste steht die Herkunftszeile der gewählten Region wie im Projektassistenten; gefragt wird nur bei
+    /// einem Wechsel der Wahl. Gegenprobe: eine Region ohne Auskunft zeigt keine Zeile.
+    /// </summary>
+    [Fact]
+    public async Task N6_Klimaregion_zeigt_die_Herkunftszeile_der_Wahl()
+    {
+        using var _ = new Kulturvorrichtung();
+        var probe = new Klimaprobe();
+        var cut = Aufbauen(zeilen: GespeicherteZeilen());
+        cut.Render(p => p.Add(x => x.ModellpruefungGaben, _ => new ModellpruefungProbeweg().Weg()).Add(x => x.KlimaregionGaben, probe.Weg));
+        Pruefknopf(cut)!.Click();
+        cut.Find("button.epos-modellpruefung-klima").Click();
+        Assert.Equal("Klimadaten: Probequelle A", cut.Find(".epos-klimawahl-herkunft").TextContent.Trim());
+        cut.Render();
+        Assert.Equal(1, probe.Herkunft);
+
+        await Waehlen(cut, 2);
+        Assert.Empty(cut.FindAll(".epos-klimawahl-herkunft"));
+        Assert.Equal(2, probe.Herkunft);
     }
 
     [Fact]

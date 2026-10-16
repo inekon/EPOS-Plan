@@ -746,6 +746,9 @@ namespace WindowsFormsApplication1
                 Eintraege = eintraege,
                 Gewaehlt = stamm > 0 ? stamm : (int?)null,
                 Speichern = id => KlimaregionSpeichern(projektId, id),
+                // Nachzug N6: die Herkunftszeile wie unter der Kopfleiste und im Projektassistenten.
+                Herkunftszeile = id => EPOS.UI.Seiten.Start.KlimaHerkunftGaben.Zeile(ProjektKopfHuelle.Herkunft(id),
+                    MyResource.Resource.START_KLIMA_HERKUNFT, MyResource.Resource.START_KLIMA_HERKUNFT_KURZ),
             };
         }
 
