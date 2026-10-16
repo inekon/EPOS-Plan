@@ -202,8 +202,8 @@ public static class WikibeispieleKosten
     public static IReadOnlyList<Katalogfilterzeile> Gesetzeszeilen(string klasse)
     {
         (int Id, string Schluessel, int Jahr, double Wert, string Einheit, string Status)[] saetze = klasse == "CO2_PREIS"
-            ? new[] { (1, "CO2_PREIS", 2027, 100.0, "€/t", "Prognose"), (2, "CO2_PREIS", 2030, 150.0, "€/t", "Prognose") }
-            : new[] { (3, "UMLAGE_A", 2026, 1.0, "ct/kWh", "gültig"), (4, "UMLAGE_B", 2026, 0.5, "ct/kWh", "gültig") };
+            ? new[] { (1, "CO2_PREIS", 2027, 100.0, "€/t", "PROGNOSE"), (2, "CO2_PREIS", 2030, 150.0, "€/t", "PROGNOSE") }
+            : new[] { (3, "UMLAGE_A", 2026, 1.0, "ct/kWh", "GESICHERT"), (4, "UMLAGE_B", 2026, 0.5, "ct/kWh", "GESICHERT") };
         return saetze.Select(s => (Katalogfilterzeile)new Katalogfilterzeile(s.Id, s.Schluessel)
             {
                 Schluessel = s.Id.ToString(CultureInfo.InvariantCulture)

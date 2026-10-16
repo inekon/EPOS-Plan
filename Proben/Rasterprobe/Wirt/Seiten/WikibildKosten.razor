@@ -72,7 +72,7 @@
                                Zeilen="@(k => Task.FromResult(WikibeispieleKosten.Gesetzeszeilen(k)))"
                                Klassenvorrat="@WikibeispieleKosten.Gesetzesklassen"
                                Einheiten="@(new[] { "€/t", "ct/kWh" })"
-                               Statuswerte="@(new[] { "Prognose", "gültig" })"
+                               Statuswerte="@(new[] { "GESICHERT", "VORLAEUFIG", "PROGNOSE" })"
                                Vorwahl="CO2_PREIS"
                                AktuellesJahr="2026"
                                Geschlossen="@(b => { })" />

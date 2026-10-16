@@ -3,6 +3,8 @@
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
 Der Dialog '''Emissionsfaktor-Katalog''' verwaltet die Emissionsarten und die Faktoren, mit denen die Verbräuche eines Projekts bewertet werden. Links stehen die Arten – CO₂ als Pflichtart, dazu SO₂, NO<sub>x</sub>, Staub, Methan und Lachgas –, rechts die Werte der markierten Art für den aufgerufenen Energieträger sowie die trägerunabhängigen Vorlagen.
 
+[[Datei:Bildschirmfoto_Emissionen.png|mini|zentriert|800px|Emissionsfaktor-Katalog, aus einem Energieträger geöffnet – Bildschirmfoto mit Beispieldaten.]]
+
 == Eingaben ==
 
 * '''CO₂-Berechnung''' – die programmweite Vorgabe, ob mit reinem CO₂ oder mit dem CO₂-Äquivalent (<math>\mathrm{GWP}_{100}</math>) gerechnet wird.
