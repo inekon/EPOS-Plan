@@ -20450,6 +20450,9 @@ Please go through the project page again so that the data of the selected projec
   <data name="KI_FRAGE_BV_LAUF_WARNUNGEN" xml:space="preserve">
     <value>The run message lists warnings while filling the template. What should I do?</value>
   </data>
+  <data name="KI_FRAGE_BV_LAUF_NACHGEHOLT" xml:space="preserve">
+    <value>The run message lists recalculated parts of the economic data. What does that mean?</value>
+  </data>
   <data name="KI_FRAGE_BV_START_SICHT" xml:space="preserve">
     <value>The pre-check reports that my template uses the pair comparison. What do I need to set?</value>
   </data>
@@ -37517,6 +37520,9 @@ This folder holds the standard template, the short report, the detailed template
   </data>
   <data name="BV_LAUF_WARNUNGEN" xml:space="preserve">
     <value>Warnings while filling the template: {0}</value>
+  </data>
+  <data name="BV_LAUF_NACHGEHOLT" xml:space="preserve">
+    <value>Note: {0} part(s) of the economic data were missing after data collection and were recalculated while writing – the report is complete.</value>
   </data>
   <data name="BV_LAUF_PUNKT_UNBEKANNT" xml:space="preserve">
     <value>{0} – {1}; {2}</value>

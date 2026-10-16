@@ -327,6 +327,22 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Deckblatt", lauf.VorlageName);
             Assert.False(lauf.IstRueckfall);
             Assert.Empty(daten.Wirtschaft.Nachgeholt);
+            Assert.Empty(lauf.Nachgeholt);
+            Assert.DoesNotContain(BerichtCtrl.Laufabschnitte(lauf, false), m => m.Kennung == KiMeldungskennung.BV_LAUF_NACHGEHOLT);
+
+            // Liest ein Schreiber nach dem Sammeln einen Teil, den der Sammler nicht gerechnet hat (hier einen
+            // Trägernamen), rechnet der Teil nach — der nächste Lauf übernimmt ihn, und die Laufmeldung nennt ihn in
+            // einer Hinweiszeile, in Word und Excel und in beiden Sprachen.
+            _ = daten.Wirtschaft.Traegername(0);
+            Assert.Equal(new[] { "Traegername 0" }, daten.Wirtschaft.Nachgeholt);
+            Berichtslauf nachgeholt = ctrl.ErzeugeWord(daten, konfig, start, Startweg.Gewaehlt);
+            Assert.Equal(new[] { "Traegername 0" }, nachgeholt.Nachgeholt);
+            Berichtsmeldung hinweis = BerichtCtrl.Laufabschnitte(nachgeholt, false).Single(m => m.Kennung == KiMeldungskennung.BV_LAUF_NACHGEHOLT);
+            Assert.Equal("Hinweis: 1 Teil(e) der Wirtschaftlichkeitsdaten fehlten nach der Datensammlung und wurden beim Schreiben " +
+                         "nachgerechnet – der Bericht ist vollständig.", hinweis.Text);
+            Assert.Equal(new[] { "Traegername 0" }, hinweis.Punkte);
+            Assert.Contains("recalculated while writing", BerichtCtrl.Laufmeldung(nachgeholt, true));
+            Assert.Contains("nachgerechnet", BerichtCtrl.LaufmeldungExcel(nachgeholt, false));
 
             // Die Standardvorlage mit allen Häkchen: Stundenreihen und Verlauf wie heute.
             BerichtsKonfiguration voll = Berichtsdatenproben.VolleKonfiguration();
