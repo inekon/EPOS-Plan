@@ -1481,7 +1481,9 @@ nächste Basis einfriert, nimmt die beiden Schlüssel auf und streicht `--ohne` 
 > (die Zapfprofil-Zellen und die Einheit „P“ von `DIN4708.p_b` erhalten). Kein Referenzprojekt rechnet ein Rückkühlwerk;
 > der Schritt wirkt auf kein Rechenergebnis. Die Testdatenbank steht auf **235** (`integrity_check` ok,
 > `foreign_key_check` leer): **108 744 704 Byte, LFS-SHA-256
-> `3478881f3c518127442c49a09b928edeba9b83f520ef100ba08c908ed61d15dc`**.
+> `3478881f3c518127442c49a09b928edeba9b83f520ef100ba08c908ed61d15dc`**. Der Referenzlauf aller siebenunddreißig
+> Projekte gegen R55 bleibt PASS und byte-gleich (1 205 CSV; in `Projekt_1072/aggregate.csv` allein die zwei Schlüssel,
+> die R55 nicht führt).
 
 ### Die Vorgängerbasis R54 (Dachflächen)
 
