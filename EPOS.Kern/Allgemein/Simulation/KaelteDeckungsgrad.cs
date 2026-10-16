@@ -37,5 +37,15 @@
             if (!(zentral > 0)) return null;
             return SimulationRunner.DeckungProzent(kaeltefolgeMwh, zentral);
         }
+
+        /// <summary>
+        /// <b>Jahresarbeitszahl Kälte</b> (EER-Jahreswert) [—] = Kälte / Kältestrom über die ganze Kältefolge
+        /// (Wärmepumpen und Kältemaschinen; Kühlkonzept 6.4) — die EINE Formel, die Übersicht und Kennzahlenkatalog
+        /// (<c>kaelte.jaz</c>) rufen. Gerechnet wird mit den ungerundeten Jahressummen des Laufs; <c>null</c> ohne Kältestrom.
+        /// </summary>
+        public static double? Jahresarbeitszahl(double kaelteMwh, double stromMwh)
+        {
+            return stromMwh > 0 ? kaelteMwh / stromMwh : (double?)null;
+        }
     }
 }

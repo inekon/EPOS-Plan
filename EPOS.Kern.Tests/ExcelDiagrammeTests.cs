@@ -255,6 +255,38 @@ namespace EPOS.Kern.Tests
             Assert.Equal(mitErsatz, baender);
         }
 
+        /// <summary>
+        /// Die Netzeinspeisung der Speicherflotte steht im Excel-Diagramm wie im Bild im Nebenbalken der Einspeisung: als
+        /// vierter Platz der Säulengruppe auf der Zweitachse, nicht im Stapel und nicht als Linie.
+        /// </summary>
+        [Fact]
+        public void Excel_zeigt_Flotteneinspeisung_im_Nebenbalken()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            BerichtsDaten daten = Gruppe3();
+            // Mit gesamter Netzeinspeisung (Speicherflotte) tritt sie an die Stelle der PV-Einspeisung.
+            foreach (VariantenDaten v in daten.Varianten.Where(v => v.Zeitreihen != null))
+                v.Zeitreihen.Reihen[ZeitreihenSatz.NETZEINSPEISUNG] = Enumerable.Repeat(0.3, ZeitreihenSatz.Stunden).ToArray();
+            string pfad = Erzeuge(daten, "flotte_nebenbalken.xlsx");
+            Assert.Empty(Exceldiagrammbefund.Validierungsfehler(pfad));
+            using SpreadsheetDocument doc = SpreadsheetDocument.Open(pfad, false);
+            List<C.ChartSpace> strom = Diagrammraeume(doc).Where(x => x.Name == "stand.bild.strombilanz_monate").Select(x => x.Raum).ToList();
+            Assert.NotEmpty(strom);
+            foreach (C.ChartSpace raum in strom)
+            {
+                List<C.BarChart> gruppen = raum.Descendants<C.BarChart>().ToList();
+                Assert.Equal(2, gruppen.Count);
+                Assert.DoesNotContain(gruppen[0].Elements<C.BarChartSeries>(),
+                                      r => r.SeriesText.InnerText.Contains(ChartRenderer.NETZEINSPEISUNG_GESAMT, StringComparison.Ordinal));
+                List<C.BarChartSeries> neben = gruppen[1].Elements<C.BarChartSeries>().ToList();
+                Assert.Equal(4, neben.Count);
+                Assert.Equal(ChartRenderer.NETZEINSPEISUNG_GESAMT, neben[3].SeriesText.Descendants<C.StringPoint>().Single().InnerText);
+                Assert.DoesNotContain(raum.Descendants<C.LineChartSeries>(),
+                                      r => r.SeriesText.InnerText.Contains(ChartRenderer.NETZEINSPEISUNG_GESAMT, StringComparison.Ordinal));
+            }
+        }
+
         /// <summary>Die Diagramme der Mappe mit ihrem Namen (Bildschlüssel).</summary>
         private static List<(string, C.ChartSpace)> Diagrammraeume(SpreadsheetDocument doc)
         {

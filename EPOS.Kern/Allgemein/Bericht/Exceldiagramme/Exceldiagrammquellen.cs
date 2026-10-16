@@ -265,13 +265,14 @@ namespace WindowsFormsApplication1
                 Gestapelt = true,
             };
             foreach (string m in ChartRenderer.MONATE) d.Kategorien.Add(m);
-            List<ChartRenderer.Reihe> stapel = serien.Where(s => s.Name != ChartRenderer.EINSPEISUNG_NEBENBALKEN).ToList();
-            List<ChartRenderer.Reihe> neben = serien.Where(s => s.Name == ChartRenderer.EINSPEISUNG_NEBENBALKEN).ToList();
+            List<ChartRenderer.Reihe> stapel = serien.Where(s => !ChartRenderer.IstEinspeisungNebenbalken(s)).ToList();
+            List<ChartRenderer.Reihe> neben = serien.Where(ChartRenderer.IstEinspeisungNebenbalken).ToList();
             foreach (ChartRenderer.Reihe r in stapel)
                 d.Reihe(r.Name, Exceldiagramm.Endlich(r.Werte), Excelreihenart.Saeule, Hex(r.Farbe));
             if (neben.Count > 0)
             {
-                // Der Nebenbalken wie im Bild: eine eigene Säulengruppe auf der Zweitachse mit derselben Skala — vier Plätze je
+                // Der Nebenbalken wie im Bild (PV-Einspeisung oder Netzeinspeisung der Speicherflotte): eine eigene
+                // Säulengruppe auf der Zweitachse mit derselben Skala — vier Plätze je
                 // Monat, drei leere (Hilfsspalten) und die Einspeisung als vierter rechts des Stapels, der schmaler steht.
                 double max = 0.0;
                 for (int m = 0; m < 12; m++)

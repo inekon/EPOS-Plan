@@ -489,12 +489,9 @@ namespace WindowsFormsApplication1
                         k.DeckungFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_DECKUNGSGRAD);
                     k.StromFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_STROM);
                     k.JazFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_JAZ);
-                    // Der Katalog bildet Deckungsgrad und EER-Jahreswert aus den gespeicherten Summen
-                    // (Kennzahlenkatalog), das Dashboard aus dem Lauf: In 1017 weichen sie in der
-                    // letzten Stelle ab (98,4 gegen 98,5 %, 4,52 gegen 4,51) — „ähnlich im Bericht“.
-                    k.DeckungStufe = Vorlagenfeldstufe.Aehnlich;
-                    k.JazStufe = Vorlagenfeldstufe.Aehnlich;
-                    k.KennzahlHinweis = MyResource.Resource.VF_ORT_KENNZAHL_RECHENWEG;
+                    // 8d: Deckungsgrad und EER-Jahreswert der Kältefolge kommen aus EINER Rechnung
+                    // (KaelteDeckungsgrad, ungerundet gespeicherte Kältesummen) — der Bericht zeigt genau
+                    // diese Zahlen. „Ähnlich“ bleibt allein die Hauptzahl samt Split (oben).
                 }
             }
             d.SpeichertemperaturFeld = stamm && d.Speichertemperaturen ? "stamm.bild.speichertemperaturen" : "";

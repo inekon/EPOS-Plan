@@ -915,7 +915,7 @@ namespace ChartProben
             double[][] geraeteWerte = Geraetefeld(rasterKapazitaeten, geraeteLeistungen, geraete);
             bool[][] rasterSperre = Rastersperre(rasterKapazitaeten.Length, geraeteLeistungen.Length);
 
-            Pruefe(ziel, "flottenraster_schraffur", 860, 560,
+            Pruefe(ziel, "flottenraster_schraffur", 860, Rasterhoehe("SP-O-4: Die Aussage gilt nur für die geprüften Geräte. " + "Zwischen zwei Geräten ist nichts gerechnet."),
                    new[] { ChartRenderer.C_RASTER_SCHLECHT, ChartRenderer.C_RASTER_MITTE,
                            ChartRenderer.C_RASTER_GUT, SKColors.Black },
                    () => ChartRenderer.Optimierungsraster(
@@ -980,7 +980,7 @@ namespace ChartProben
             for (int i = 0; i < 13; i++) kapLeistungAchse[i] = 20.0 + 40.0 * i;
             double[][] kapLeistungWerte = Leistungsfeld(kapLeistungAchse, kapLeistungAchse);
 
-            Pruefe(ziel, "flottenraster_leistung", 860, 560,
+            Pruefe(ziel, "flottenraster_leistung", 860, Rasterhoehe("SP-O-4: Die Aussage gilt nur für das geprüfte endliche Raster. " + "Zwischen zwei Stützstellen ist nichts gerechnet."),
                    new[] { ChartRenderer.C_RASTER_SCHLECHT, ChartRenderer.C_RASTER_MITTE,
                            ChartRenderer.C_RASTER_GUT, SKColors.Black },
                    () => ChartRenderer.Optimierungsraster(
@@ -1023,7 +1023,7 @@ namespace ChartProben
             double[] stueckAchse2 = { 0.0, 1.0, 2.0 };
             double[][] stueckfeld = Stueckfeld(stueckAchse1, stueckAchse2);
 
-            Pruefe(ziel, "flotte_stueckzahlraster", 860, 560,
+            Pruefe(ziel, "flotte_stueckzahlraster", 860, Rasterhoehe("SP-O-4: Die Aussage gilt nur für das geprüfte endliche Raster. " + "Zwischen zwei Stützstellen ist nichts gerechnet."),
                    new[] { ChartRenderer.C_RASTER_SCHLECHT, ChartRenderer.C_RASTER_MITTE,
                            ChartRenderer.C_RASTER_GUT, SKColors.Black },
                    () => ChartRenderer.Optimierungsraster(
@@ -1241,6 +1241,28 @@ namespace ChartProben
                         kapLeistungAchse, kapLeistungAchse, kapLeistungWerte,
                         LEISTUNGSFELD_BESTE_ZEILE, LEISTUNGSFELD_BESTE_SPALTE, null,
                         fussGrund, fussZusatz + "Grob-Optimum."));
+
+            // 28d: Auch OHNE Zusatz waechst die Karte nach der gemessenen Fusszeile. Bis
+            // dahin brach der Hinweis allein nach zwei Zeilen ab und blieb bei 560 Punkten
+            // Hoehe - eine lange Fusszeile war abgeschnitten. Die Gegenprobe: zwei Texte
+            // ueber drei Zeilen, die sich nur im letzten Wort unterscheiden, muessen zwei
+            // verschiedene Bilder ergeben (drei Zeilen: mehr, als der Hinweis bis dahin zeigte).
+            const string FUSS_DRITTE_ZEILE =
+                " Die Grenze der Aussage gilt für jede Einheit der Flotte und für jede Kopplung der Achsen; "
+              + "sie endet erst mit dem Wort ";
+            Unterschiedlich("flottenraster_fusszeile_letzte_zeile_steht_im_bild",
+                () => ChartRenderer.Optimierungsraster(
+                        "Kapitalwert über Kapazität und Entladeleistung",
+                        "Entladeleistung [kW]", "Kapazität [kWh]", "Kapitalwert [€]",
+                        kapLeistungAchse, kapLeistungAchse, kapLeistungWerte,
+                        LEISTUNGSFELD_BESTE_ZEILE, LEISTUNGSFELD_BESTE_SPALTE, null,
+                        fussGrund + FUSS_DRITTE_ZEILE + "Anfang."),
+                () => ChartRenderer.Optimierungsraster(
+                        "Kapitalwert über Kapazität und Entladeleistung",
+                        "Entladeleistung [kW]", "Kapazität [kWh]", "Kapitalwert [€]",
+                        kapLeistungAchse, kapLeistungAchse, kapLeistungWerte,
+                        LEISTUNGSFELD_BESTE_ZEILE, LEISTUNGSFELD_BESTE_SPALTE, null,
+                        fussGrund + FUSS_DRITTE_ZEILE + "Ende."));
 
             // Und dasselbe fuer die FEINRASTERPUNKTE (#224): Masse, Farben und
             // Determinismus stimmen auch dann, wenn der Parameter stillschweigend
@@ -2236,6 +2258,15 @@ namespace ChartProben
         // =================================================================================
         // Pruefung eines Bildes
         // =================================================================================
+
+        /// <summary>
+        /// 28d: Die Höhe der Rasterkarte folgt der GEMESSENEN Fußzeile — sie hängt von der Schrift ab (auf Liberation
+        /// Sans braucht der SP-O-4-Hinweis zwei Zeilen und das Bild 584 Punkte). Die Maßprobe hält deshalb die Höhe,
+        /// die das Zeichenmodell für denselben Hinweis nennt; der Vergleich mit der Messlatte hält das Bild.
+        /// </summary>
+        private static int Rasterhoehe(string fusszeile)
+            => ChartRenderer.OptimierungsrasterModell("", "", "", "", Array.Empty<double>(), Array.Empty<double>(),
+                                                      null, -1, -1, null, fusszeile).Hoehe;
 
         private static void Pruefe(string ziel, string name, int breite, int hoehe,
                                    SKColor[] erwartet, Func<byte[]> erzeuge)

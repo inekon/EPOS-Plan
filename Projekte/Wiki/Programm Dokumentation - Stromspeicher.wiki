@@ -610,7 +610,7 @@ Unter dem Kasten „Bestes Ergebnis" steht die Größen-Sicht:
 
 '''Die Achsen sind Kapazität und Entladeleistung.''' Zeilen sind die Kapazitäten der gefundenen Geräte, Spalten ihre Entladeleistungen – beides aufsteigend. '''Die Karte ist dünn besetzt''': Geräte bilden kein lückenloses Gitter, und eine Zelle, für die kein Kandidat gerechnet wurde, bleibt '''hellgrau''' – „nicht gerechnet" ist etwas anderes als „schlechtester Kandidat". Jede besetzte Zelle ist ein Speicher, den es wirklich gibt.
 
-'''Die Aussage gilt für die geprüften Geräte''', nicht global – der Hinweis steht im Bild, weil das Bild exportiert wird. Ein Speicher, der im Bestand fehlt, wird nicht gerechnet.
+'''Die Aussage gilt für die geprüften Geräte''', nicht global – der Hinweis steht im Bild, weil das Bild exportiert wird. Das Bild wird so hoch, dass der ganze Hinweis darin steht. Stammt das beste Ergebnis aus dem Feinraster, nennt ein zweiter Satz unter dem Hinweis seinen Kapitalwert und seine Stelle; derselbe Satz steht auch als Textzeile unter der Karte. Ein Speicher, der im Bestand fehlt, wird nicht gerechnet.
 
 '''Die Zahl einer Zelle steht am Zeiger.''' Zeigen Sie auf eine Zelle der Rasterkarte, nennt die Zeile unter dem Bild ihre beiden Achsenwerte und ihren Kapitalwert – ''Kapazität 220 kWh · Entladeleistung 100 kW: 4.000 €''. Eine unzulässige Zelle hängt ''(unzulässig)'' an, eine nicht gerechnete nennt statt der Zahl ''nicht gerechnet''. Dasselbe gilt für die '''Stückzahlkurve''' und die '''Stückzahl-Rasterkarte'''. Auf einem Berührungsbildschirm tippen Sie das Element an; ein Tippen daneben löscht die Zeile wieder. '''Gezoomt wird in diesen Bildern nicht''' – ein Raster hat keine Zwischenwerte, und zwischen zwei ganzen Geräten liegt nichts.
 
