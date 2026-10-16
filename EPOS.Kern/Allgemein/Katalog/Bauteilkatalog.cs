@@ -206,9 +206,11 @@ namespace WindowsFormsApplication1
         {
             IReadOnlyList<BauteilkatalogSchema.Spalte> basis = BauteilkatalogSchema.SpaltenVon(tabelle);
             bool aufbau = tabelle == BauteilkatalogSchema.TAB_AUFBAU || tabelle == BauteilkatalogSchema.TAB_AUFBAU_STAMM;
-            return aufbau && BauteilkatalogAbschnittSchema.Lesbar()
-                ? basis.Concat(BauteilkatalogAbschnittSchema.AUFBAU_SPALTEN).ToList()
-                : basis;
+            if (!aufbau || !BauteilkatalogAbschnittSchema.Lesbar()) return basis;
+            IEnumerable<BauteilkatalogSchema.Spalte> mit = basis.Concat(BauteilkatalogAbschnittSchema.AUFBAU_SPALTEN);
+            // DA-8: Absorptions- und Emissionsgrad, wenn der Schritt steht (BauteilStrahlungSchema).
+            if (BauteilStrahlungSchema.Lesbar()) mit = mit.Concat(BauteilStrahlungSchema.SPALTEN);
+            return mit.ToList();
         }
 
         private static bool IstSchicht(string tabelle) =>

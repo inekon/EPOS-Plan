@@ -487,6 +487,9 @@ namespace WindowsFormsApplication1
             // Ein älteres Paket bringt seine Bauteile ohne Herkunft des U-Werts; der Schritt legt die Spalte leer an.
             new Stufe(BauteilUHerkunftSchema.SCHRITT, Art.Ddl,
                       "Herkunft des U-Werts je Bauteil (MA-6b)"),
+            // Ein älteres Paket bringt Aufbauten und Bauteile ohne Strahlungswerte; der Schritt legt die Spalten leer an.
+            new Stufe(BauteilStrahlungSchema.SCHRITT, Art.Ddl,
+                      "Absorptions- und Emissionsgrad je Aufbau und Bauteil (DA-8)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

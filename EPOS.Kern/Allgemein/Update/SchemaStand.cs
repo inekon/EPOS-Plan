@@ -1103,9 +1103,12 @@ namespace WindowsFormsApplication1
         /// Danach, mit der HERKUNFT DES U-WERTS (MA-6b, E149), steht das Ziel auf <see cref="BauteilUHerkunftSchema.SCHRITT"/>:
         /// <c>U_Herkunft</c> an <c>Tab_Bauteil(_STAMM)</c> (<see cref="BauteilUHerkunftSchema"/>) — ein von Hand gesetzter U-Wert
         /// bleibt beim Wiederimport. <b>Ergebnisneutral:</b> Die Spalte entsteht leer, der Rechenweg liest sie nicht. Das Ziel ist
-        /// das Ende der Kette; umgehängt wird allein am Vorgänger <see cref="BauteilkatalogAbschnittSchema.SCHRITT"/>.
+        /// Danach, mit ABSORPTIONS- UND EMISSIONSGRAD JE BAUTEIL (DA-8), steht das Ziel auf
+        /// <see cref="BauteilStrahlungSchema.SCHRITT"/>: <c>Absorptionsgrad_Solar</c> und <c>Emissionsgrad</c> an Aufbau und Bauteil
+        /// (<see cref="BauteilStrahlungSchema"/>). <b>Ergebnisneutral:</b> Die Spalten entstehen leer, leer heißt Festwert. Das Ziel
+        /// ist das Ende der Kette; umgehängt wird allein am Vorgänger.
         /// </summary>
-        public const int Zielversion = BauteilUHerkunftSchema.SCHRITT;
+        public const int Zielversion = BauteilStrahlungSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

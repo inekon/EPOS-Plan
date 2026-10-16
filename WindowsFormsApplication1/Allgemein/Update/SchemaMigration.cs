@@ -5604,6 +5604,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_BAUTEIL_U_HERKUNFT = BauteilUHerkunftSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="BauteilStrahlungSchema.SCHRITT"/> — <b>Absorptions- und Emissionsgrad je Bauteil</b> (DA-8):
+        /// <c>Absorptionsgrad_Solar</c> und <c>Emissionsgrad</c> an <c>Tab_Bauteilaufbau(_STAMM)</c> und <c>Tab_Bauteil(_STAMM)</c>
+        /// (NULL = Festwert). Schritt 237.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Die Spalten bleiben leer, leer heißt Festwert.</para>
+        /// </summary>
+        public const int SCHRITT_BAUTEIL_STRAHLUNG = BauteilStrahlungSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -8255,6 +8264,13 @@ namespace WindowsFormsApplication1
                         "Ein von Hand gesetzter U-Wert ohne Aufbauwechsel waere beim Wiederimport nicht erkennbar und fiele an den " +
                         "Wert der Datei (E149). KEIN Rechenergebnis aendert sich - die Spalte bleibt leer.",
                         Schritt_BauteilUHerkunft),
+            // DA-8: Absorptions- und Emissionsgrad je Aufbau und Bauteil. Quelle ist BauteilStrahlungSchema, die Nummer steht
+            // allein dort.
+            new Schritt(SCHRITT_BAUTEIL_STRAHLUNG,
+                        "Tab_Bauteilaufbau(_STAMM), Tab_Bauteil(_STAMM): Absorptionsgrad_Solar, Emissionsgrad",
+                        "Absorptions- und Emissionsgrad der Aussenflaechen liessen sich weder je Bauteil eintragen noch aus gbXML oder " +
+                        "IFC uebernehmen. KEIN Rechenergebnis aendert sich - die Spalten bleiben leer, leer heisst Festwert.",
+                        Schritt_BauteilStrahlung),
         };
 
         /// <summary>
@@ -16461,6 +16477,59 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": U_Herkunft an Tab_Bauteil(_STAMM) - " + (handgriffe == 0 ? "stand bereits." : "Spalten angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Absorptions- und Emissionsgrad je Bauteil" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_BAUTEIL_STRAHLUNG"/>, die Anweisungen bei <see cref="BauteilStrahlungSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_BauteilStrahlung(Lauf l)
+        {
+            string nr = BauteilStrahlungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in BauteilStrahlungSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = BauteilStrahlungSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!BauteilStrahlungSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Absorptionsgrad_Solar und Emissionsgrad stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Absorptionsgrad_Solar und Emissionsgrad an Aufbau und Bauteil - " +
+                    (handgriffe == 0 ? "stand bereits." : "Spalten angelegt.") + " KEIN Rechenergebnis aendert sich.");
             return true;
         }
 

@@ -23,7 +23,7 @@ namespace EPOS.Kern.Tests
         {
             // Keine feste Nummer: die Kette haengt ueber + 1 an der Vorgaengerklasse.
             Assert.Equal(BauteilkatalogAbschnittSchema.SCHRITT + 1, BauteilUHerkunftSchema.SCHRITT);
-            Assert.Equal(BauteilUHerkunftSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= BauteilUHerkunftSchema.SCHRITT);
             Paketanhebung.Stufe s = Paketanhebung.Stufen.Single(x => x.Nr == BauteilUHerkunftSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, s.Wirkung);
             Assert.Equal(new[] { "Tab_Bauteil", "Tab_Bauteil_STAMM" }, BauteilUHerkunftSchema.TABELLEN);

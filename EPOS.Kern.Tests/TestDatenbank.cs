@@ -1083,6 +1083,9 @@ namespace EPOS.Kern.Tests
                 // Schritt BauteilUHerkunftSchema.SCHRITT (MA-6b, E149): U_Herkunft an Tab_Bauteil(_STAMM), leer, reines DDL.
                 // Wiederholbar, ergebnisneutral.
                 BauteilUHerkunftSchema.Ausfuehren(null);
+                // Schritt BauteilStrahlungSchema.SCHRITT (DA-8): Absorptionsgrad_Solar und Emissionsgrad an Aufbau und Bauteil,
+                // leer, reines DDL. Wiederholbar, ergebnisneutral.
+                BauteilStrahlungSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
