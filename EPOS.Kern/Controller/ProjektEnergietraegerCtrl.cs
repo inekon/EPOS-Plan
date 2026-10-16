@@ -528,6 +528,63 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Welle KB-7c1: Führt das Projekt eine Kältemaschinen-Anlage mit Rückkühlwerk
+        /// (<c>Tab_Energieanlagen.ID_Kaeltemaschine &gt; 0</c> und <c>ID_Rueckkuehlwerk</c> gesetzt)? Nur sie
+        /// verbraucht Wasser (<see cref="Wasserkosten"/>). Ein Bestand ohne die Spalte antwortet <c>false</c>.
+        /// </summary>
+        internal static bool MitRueckkuehlwerk(int projektID)
+        {
+            if (projektID <= 0) return false;
+            try
+            {
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] " +
+                    "WHERE ID_Projekt = ? AND [" + KaeltemaschineSchema.SPALTE_ID_KAELTEMASCHINE + "] > 0 " +
+                    "AND [" + RueckkuehlwerkSchema.SPALTE_ID_RUECKKUEHLWERK + "] IS NOT NULL",
+                    new DbParam("@p", (Int32)projektID));
+                return o != null && o != DBNull.Value && Convert.ToInt32(o) > 0;
+            }
+            catch { return false; }
+        }
+
+        /// <summary>
+        /// <b>Welle KB-7c1 — die Sichtbarkeitsregel des Wasserträgers in der Trägerkarte des Projekts.</b>
+        /// Der Wasserträger (erkannt am Preismodell <c>WATER</c>, nie am Namen) steht in der Karte, wenn
+        /// <list type="bullet">
+        ///   <item><description>dem Projekt eine Zeile in <c>energy_project_settings</c> für ihn zugeordnet ist —
+        ///     dann gilt dieser Träger (eine vorhandene Zuordnung wird nie verschwiegen), oder</description></item>
+        ///   <item><description>das Projekt eine Kältemaschinen-Anlage mit Rückkühlwerk führt
+        ///     (<see cref="MitRueckkuehlwerk"/>) — dann der Katalogträger, noch ohne Zuordnung; Speichern ordnet ihn zu.</description></item>
+        /// </list>
+        /// Sonst bleibt er aus der Karte und aus der Übernahme. Er kehrt damit NICHT in
+        /// <see cref="Verwendete"/> zurück: Wasser ist Betriebsmittel, kein Träger mit Verbrauch eines Erzeugers.
+        /// </summary>
+        /// <returns><c>energy_carrier.id</c> des anzuzeigenden Wasserträgers; 0 = keiner.</returns>
+        internal static int WasserTraegerInKarte(int projektID)
+        {
+            if (projektID <= 0) return 0;
+            int zugeordnet = 0;
+            try
+            {
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT ec.id FROM energy_project_settings AS s " +
+                    "INNER JOIN energy_carrier AS ec ON s.[ID_Energieträger] = ec.id " +
+                    "WHERE s.ID_Projekt = ? AND ec.pricing_model = ? ORDER BY ec.id LIMIT 1",
+                    new DbParam("@p", (Int32)projektID),
+                    new DbParam("@m", WasserpreisTraegerkarteSchema.PREISMODELL_WASSER));
+                if (o != null && o != DBNull.Value) zugeordnet = Convert.ToInt32(o);
+            }
+            catch { zugeordnet = 0; }
+            if (zugeordnet > 0) return zugeordnet;
+            if (!MitRueckkuehlwerk(projektID)) return 0;
+
+            long? katalog = null;
+            try { katalog = WasserpreisTraegerkarteSchema.TraegerId(); }
+            catch { katalog = null; }
+            return katalog.HasValue ? (int)katalog.Value : 0;
+        }
+
+        /// <summary>
         /// <b>DIE EINE REGEL „Strombedarf ohne Verwendung"</b> (Anwenderentscheide
         /// 22.09.2026: „Energiekosten (Strom, Gas, …) sollen nur anfallen, falls sie auch
         /// Verwendung finden" — Kosten UND Emissionen, unabhängig davon, ob ein Preis

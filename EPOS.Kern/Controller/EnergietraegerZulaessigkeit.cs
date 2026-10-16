@@ -240,6 +240,17 @@ namespace WindowsFormsApplication1
             // Keine Anlage mit Träger - keine Einengung.
             if (codes.Count == 0) return null;
 
+            // Welle KB-7c1: Der Wasserträger ist kein Träger eines Erzeugers, steht aber in der Karte, sobald das
+            // Projekt ihn führt oder eine Kältemaschine mit Rückkühlwerk hat
+            // (ProjektEnergietraegerCtrl.WasserTraegerInKarte) — dann lässt auch die Übernahme seine Gruppe zu.
+            try
+            {
+                if (ProjektEnergietraegerCtrl.WasserTraegerInKarte(projektId) > 0
+                 && !codes.Contains(WasserpreisTraegerkarteSchema.PREISMODELL_WASSER))
+                    codes.Add(WasserpreisTraegerkarteSchema.PREISMODELL_WASSER);
+            }
+            catch { }
+
             List<string> gruppen = GruppenZuCodes(codes);
             return gruppen.Count == 0 ? null : (IReadOnlyList<string>)gruppen;
         }
