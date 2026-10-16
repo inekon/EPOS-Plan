@@ -950,6 +950,22 @@ nächste Nenninhalt der Liste ≥ V als Anzeige; bei den anderen Topologien die 
 Bedarfstags. In der Stufe Einfach trägt der Punkt den Vermerk **„Schnellauslegung"**. Der
 Verfahrensvergleich (4.7) ist nachrichtlich.
 
+**Schnellauslegung nach Vorlage V4.** Fehlt der Katalogversion einer der Auslegungswerte der A100, ohne
+die keine Summenlinie rechnet (`ZapfAuslegungParameter.SUMMENLINIE_A100`: Ladungsfaktor, Sensorhöhe,
+Verzögerung, Übertemperatur des Übertragers), und gibt es deshalb keinen Summenlinienpunkt, so ist in der
+**Stufe Einfach** bei Speicher der Nenninhalt des Bandes der Speicherauslegung nach V4 (4.7) die Empfehlung
+(Verfahren `VorlageV4`, Volumen = Nenninhalt, Leistung = angesetzte Ladeleistung). Sie trägt die Vermerke
+„Schnellauslegung" und „Schnellauslegung nach Vorlage V4, ohne Summenlinie", den Hinweis
+`EMPFEHLUNG_VORLAGE_V4` und den Eintrag `Auslegung.Empfehlung` im Herkunftsprotokoll; der Dialog zeigt am
+Punkt die Marke „Schnellauslegung V4" statt „Schnellauslegung" und keinen Entwurfsstand. Die Karte (a)
+bleibt „nicht rechenbar" mit Grund, der Verfahrensvergleich nachrichtlich. **Abgrenzung:** Führt die
+Katalogversion die A100-Werte, bleibt der Summenlinienpunkt die Empfehlung — auch wenn er mangels
+Bedarfstag offen bleibt (dann öffnet die Auslegung den Konstruktor wie bisher). In den Stufen Erweitert und
+Experte bleibt die Empfehlung ohne A100-Werte benannt offen; dort wird der Anwender auf das Katalogpaket
+verwiesen, statt dass ein Ersatzverfahren den Punkt stellt. Die Durchfluss-Topologien sind nicht berührt.
+Ohne die Kennwerte der DIN 4708 ist der Normvergleich „nicht rechenbar" mit dem Satz des Parametersatzes,
+nie ein Abbruch der Auslegung.
+
 **Plausibilitätsprüfung, größengleich.** Speicher, in Litern beim selben Φ_N: erwartet
 `V_Perzentil ≤ V_Summenlinie < V_DIN`; Durchfluss, in kW: erwartet `P_Perzentil ≤ P_Bedarfstag`,
 der DIN-1988-300-Wert nachrichtlich. Liegt die stochastische Spitze deutlich über der Leistung des
@@ -1334,14 +1350,16 @@ Wohnen (`DIN18599.Wohnen.*`), Leitungslage und Flächenkennwerte der DIN V 4701-
 eine flächenbezogene Zone lehnt ohne es benannt ab. Die Speicherauslegung rechnet in der Stufe Einfach ohne
 externes Paket den Verfahrensvergleich nach V4 (profilbasiertes Volumen, Band, Nenninhalt; nachrichtlich, 4.7);
 ohne die Kennwerte der DIN 4708 ist der Normvergleich benannt „nicht rechenbar" (nie ein Abbruch), die
-Vorgaberegel des Bedarfstags (4.5) öffnet den Konstruktor, und die Empfehlung — der Punkt der Summenlinie —
-bleibt benannt offen, weil die Summenlinie die Auslegungswerte der A100 braucht. Eine Datenbank, die den
+Vorgaberegel des Bedarfstags (4.5) öffnet den Konstruktor; weil die Summenlinie die Auslegungswerte der A100
+braucht, ist die Empfehlung der Stufe Einfach der Nenninhalt des V4-Bandes (Schnellauslegung nach Vorlage V4,
+4.5). Eine Datenbank, die den
 Paketteil in einem früheren Stand führt, bekommt diese sieben Schlüssel beim ersten
 `ZapfprofilCtrl.Verfuegbar()` in ihre Katalogversion nachgetragen (`TwwPaketteilCtrl.ParameterNachtragen`,
 Liste `PaketteilNachfuehrung.PARAMETER`): nur was fehlt, `AUSLIEFERUNG` und `ReadOnly` 1, eine
 vorhandene Zeile bleibt; das Ergebnis steht im Laufprotokoll. Die Testdatenbank führt dieselben
 Schlüssel als fiktive Zeilen; dort treten die des Paketteils zurück. Wache:
-`EPOS.Kern.Tests/TwwPaketteilParameterNachtragTests`.
+`EPOS.Kern.Tests/TwwPaketteilParameterNachtragTests` (jede mitgelieferte Nutzungsart ohne Flächenbezug: Bilanz
+über 0 und in der Stufe Einfach eine Empfehlung über 0 mit dem Hinweis der Schnellauslegung V4).
 
 **Lokale Testdaten.** `Referenzlaeufe/Normzahlen/` mit `vdi4655/`, `vdi6002/` und
 `zapfprofil/normtabellen.js` (Ladedatei des Mockups) ist per `.gitignore` ausgeschlossen (Zeilen
