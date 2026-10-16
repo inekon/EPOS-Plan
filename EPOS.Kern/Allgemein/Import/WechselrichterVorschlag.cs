@@ -26,9 +26,15 @@ namespace WindowsFormsApplication1
     ///     DC/AC über <see cref="DCAC_GEEIGNET_MAX"/> (bis 1,5 lässt die Ampel es zu),
     ///     Restmodule, die keinen Strang finden, mehr als <see cref="MAX_GERAETE_GEEIGNET"/>
     ///     Geräte, ein unbekanntes DC/AC (AC-Nennleistung fehlt), Spannungsgrenzen des
-    ///     Geräts, die nicht alle gepflegt sind, oder eine fehlende Trackerzahl
-    ///     (<c>Anzahl_Mppt</c>, <see cref="Grund.KatalogUnvollstaendig"/>: gerechnet wird
-    ///     dann mit einem Tracker).</description></item>
+    ///     Geräts, die nicht alle gepflegt sind, oder fehlende Angaben des Stromeingangs
+    ///     (<see cref="Grund.KatalogUnvollstaendig"/>, Stufentext „bedingt geeignet (Angaben
+    ///     fehlen)"): ohne <c>Anzahl_Mppt</c> wird mit einem Tracker gerechnet; scheitert die
+    ///     Prüfung des Stroms oder die Aufteilung nur an einer Grenze, die aus einer FEHLENDEN
+    ///     Angabe folgt (Betriebsstrom statt <c>I_Sc_Max</c>, angenommener Tracker, daraus
+    ///     der Deckel der Stränge je Gerät), ist das Gerät nicht ungeeignet, sondern bedingt
+    ///     geeignet — die Aufteilung rechnet dann ohne diese Grenze
+    ///     (<see cref="Lueckengeraet"/>). Wer an einer VORHANDENEN Angabe scheitert, bleibt
+    ///     ungeeignet.</description></item>
     ///   <item><description><b>geeignet</b> — alles andere: alle Module untergebracht, alle
     ///     drei Spannungsgrenzen geprüft, DC/AC im Fenster
     ///     <see cref="DCAC_GEEIGNET_MIN"/>…<see cref="DCAC_GEEIGNET_MAX"/>, höchstens
@@ -162,6 +168,17 @@ namespace WindowsFormsApplication1
             public bool TrackerAngenommen;
             /// <summary><c>I_Sc_Max</c> fehlt im Katalog — der Betriebsstrom <c>I_Dc_Max</c> ist die Grenze.</summary>
             public bool BetriebsstromAlsGrenze;
+            /// <summary>
+            /// Die Prüfung des Stroms oder die Aufteilung scheiterte nur an einer Grenze aus
+            /// einer fehlenden Angabe; die Aufteilung ist ohne diese Grenze gerechnet.
+            /// </summary>
+            public bool StromUngeprueft;
+
+            /// <summary>„bedingt geeignet (Angaben fehlen)": bedingt, und Katalogangaben fehlen.</summary>
+            public bool AngabenFehlen
+            {
+                get { return Stufe == Eignung.Bedingt && Gruende.Contains(Grund.KatalogUnvollstaendig); }
+            }
 
             /// <summary>Der gewichtigste Grund; <see cref="Grund.Keiner"/> ohne Abstrich.</summary>
             public Grund Hauptgrund { get { return Gruende.Count > 0 ? Gruende[0] : Grund.Keiner; } }
@@ -214,6 +231,8 @@ namespace WindowsFormsApplication1
                          : Gesetzt(geraet.m_I_Dc_Max) ? geraet.m_I_Dc_Max : null;
             bool ohneTracker = !(geraet.m_Anzahl_Mppt.HasValue && geraet.m_Anzahl_Mppt.Value >= 1);
             bool ohneIsc = !Gesetzt(geraet.m_I_Sc_Max) && Gesetzt(geraet.m_I_Dc_Max);
+            // Das Gerät ohne die Grenzen, die nur aus fehlenden Angaben folgen; null ohne Lücke.
+            WechselrichterModel luecke = Lueckengeraet(geraet);
 
             if (modul == null || anzahlModule <= 0) return Ungeeignet(k, Grund.ModulFehlt);
 
@@ -234,26 +253,22 @@ namespace WindowsFormsApplication1
             if (jeTrackerMax.HasValue && jeTrackerMax.Value < 1)
             {
                 k.StromJeMppt = StrangPlausibilitaet.StromJeStrang(modul, tHeiss);
-                Ungeeignet(k, Grund.StromZuHoch);
-                // Die Grenze war der Betriebsstrom: Ein gepflegter I_Sc_Max kann das
-                // Urteil kippen - das sagt der zweite Grund.
-                if (ohneIsc)
-                {
-                    k.BetriebsstromAlsGrenze = true;
-                    k.Gruende.Add(Grund.KatalogUnvollstaendig);
-                }
-                return k;
+                // Die Grenze war der Betriebsstrom, weil I_Sc_Max fehlt: Das ist eine
+                // Datenlücke, kein Ausschlussgrund - bedingt geeignet, die Aufteilung
+                // rechnet ohne diese Grenze weiter. Mit gepflegtem I_Sc_Max bleibt es
+                // "ungeeignet wegen Strom".
+                if (!ohneIsc) return Ungeeignet(k, Grund.StromZuHoch);
+                k.StromUngeprueft = true;
             }
 
             // --- Die Aufteilung: erst die ganze Modulzahl, dann höchstens eine
-            //     Reihenlänge weniger.
-            int reiheMax = rb.Max ?? anzahlModule;
-            int tiefste = Math.Max(1, anzahlModule - Math.Max(0, reiheMax - 1));
-            StrangAuslegung.Vorschlag v = null;
-            for (int m = anzahlModule; m >= tiefste; m--)
+            //     Reihenlänge weniger. Scheitert sie mit den Grenzen aus fehlenden
+            //     Angaben, rechnet sie ohne sie (bedingt, "Angaben fehlen").
+            StrangAuslegung.Vorschlag v = k.StromUngeprueft ? null : Aufteilung(modul, geraet, anzahlModule, rb, tKalt, tHeiss);
+            if (v == null && luecke != null)
             {
-                StrangAuslegung.Vorschlag versuch = StrangAuslegung.Vorschlagen(modul, geraet, m, tKalt, tHeiss);
-                if (versuch.Moeglich) { v = versuch; break; }
+                v = Aufteilung(modul, luecke, anzahlModule, rb, tKalt, tHeiss);
+                if (v != null) k.StromUngeprueft = true;
             }
             if (v == null) return Ungeeignet(k, Grund.KeineAufteilung);
 
@@ -279,15 +294,65 @@ namespace WindowsFormsApplication1
             // Ohne Anzahl_Mppt ist die Aufteilung eine Annahme (ein Tracker) - die
             // CEC-Liste fuehrt die Zahl nicht. Fehlt dazu I_Sc_Max, nennt der Grund auch
             // die Stromgrenze.
-            if (ohneTracker)
+            // Scheiterte der Strom oder die Aufteilung nur an einer Grenze aus einer
+            // fehlenden Angabe, steht derselbe Vermerk da.
+            if (ohneTracker || k.StromUngeprueft)
             {
-                k.TrackerAngenommen = true;
+                k.TrackerAngenommen = ohneTracker;
                 k.BetriebsstromAlsGrenze = ohneIsc;
                 k.Gruende.Add(Grund.KatalogUnvollstaendig);
             }
 
             k.Stufe = k.Gruende.Count == 0 ? Eignung.Geeignet : Eignung.Bedingt;
             return k;
+        }
+
+        private static StrangAuslegung.Vorschlag Aufteilung(PhotovoltaikModel modul, WechselrichterModel geraet,
+                                                            int anzahlModule, StrangAuslegung.Reihenbereich rb,
+                                                            double tKalt, double tHeiss)
+        {
+            int reiheMax = rb.Max ?? anzahlModule;
+            int tiefste = Math.Max(1, anzahlModule - Math.Max(0, reiheMax - 1));
+            for (int m = anzahlModule; m >= tiefste; m--)
+            {
+                StrangAuslegung.Vorschlag versuch = StrangAuslegung.Vorschlagen(modul, geraet, m, tKalt, tHeiss);
+                if (versuch.Moeglich) return versuch;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// <b>Das Gerät ohne die Grenzen, die nur aus FEHLENDEN Angaben folgen</b> — eine
+        /// Kopie für die Aufteilung; <c>null</c>, wenn keine solche Lücke besteht (dann gilt
+        /// das Gerät, wie es ist).
+        /// <list type="bullet">
+        ///   <item><description>Fehlt <c>I_Sc_Max</c>, fällt die Ersatzgrenze
+        ///     <c>I_Dc_Max</c> (Betriebsstrom) für die Stränge je Tracker weg.</description></item>
+        ///   <item><description>Fehlt <c>Anzahl_Mppt</c>, ist auch der Deckel der Stränge je
+        ///     Gerät eine Annahme (ein Tracker): Stromgrenzen und <c>Straenge_Je_Mppt</c>
+        ///     fallen für die Aufteilung weg.</description></item>
+        /// </list>
+        /// Spannungsgrenzen, Leistungen und die übrigen Angaben bleiben, wie sie sind.
+        /// Dieselbe Regel nimmt „Auslegung vorschlagen", wenn das Gerät mit seinen
+        /// Katalogwerten keine Aufteilung findet.
+        /// </summary>
+        public static WechselrichterModel Lueckengeraet(WechselrichterModel geraet)
+        {
+            if (geraet == null) return null;
+            bool ohneTracker = !(geraet.m_Anzahl_Mppt.HasValue && geraet.m_Anzahl_Mppt.Value >= 1);
+            bool ohneIsc = !Gesetzt(geraet.m_I_Sc_Max) && Gesetzt(geraet.m_I_Dc_Max);
+            if (!ohneTracker && !ohneIsc) return null;
+            var kopie = new WechselrichterModel();
+            kopie.UebernimmVon(geraet);
+            kopie.m_ID = geraet.m_ID;
+            if (ohneIsc) kopie.m_I_Dc_Max = null;
+            if (ohneTracker)
+            {
+                kopie.m_I_Sc_Max = null;
+                kopie.m_I_Dc_Max = null;
+                kopie.m_Straenge_Je_Mppt = null;
+            }
+            return kopie;
         }
 
         private static Kandidat Ungeeignet(Kandidat k, Grund grund)
@@ -342,6 +407,16 @@ namespace WindowsFormsApplication1
                 case Eignung.Bedingt: return MyResource.Resource.PVS_WRV_BEDINGT;
                 default: return MyResource.Resource.PVS_WRV_UNGEEIGNET;
             }
+        }
+
+        /// <summary>
+        /// Der Stufentext eines Kandidaten: wie <see cref="StufeText(Eignung)"/>, bei
+        /// fehlenden Katalogangaben „bedingt geeignet (Angaben fehlen)".
+        /// </summary>
+        public static string StufeText(Kandidat k)
+        {
+            if (k == null) return "";
+            return k.AngabenFehlen ? MyResource.Resource.PVS_WRV_BEDINGT_ANGABEN : StufeText(k.Stufe);
         }
 
         /// <summary>Alle Gründe als ein Satz, mit „ · " getrennt; leer ohne Abstrich.</summary>
@@ -428,7 +503,7 @@ namespace WindowsFormsApplication1
                 return text + MyResource.Resource.PVS_TRENNER + Geraetezahl(k.Geraete);
             }
             return string.Format(c, MyResource.Resource.PVS_WRV_KLAPP_GRUND,
-                                 StufeText(k.Stufe), Kurzgrund(k, k.Hauptgrund));
+                                 StufeText(k), Kurzgrund(k, k.Hauptgrund));
         }
 
         /// <summary>„1 Gerät" / „2 Geräte".</summary>
