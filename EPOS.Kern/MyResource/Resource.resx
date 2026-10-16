@@ -15711,7 +15711,7 @@ Ihre Stunden- und Tageswerte werden mit gelöscht.</value>
     <value>Schließen</value>
   </data>
   <data name="ADM_DUBLETTEN_BAUM" xml:space="preserve">
-    <value>Dublettenbefund</value>
+    <value>Dublettenhinweise</value>
   </data>
   <data name="ADM_DUBLETTEN_SCAN_LAEUFT" xml:space="preserve">
     <value>Dublettensuche läuft…</value>
@@ -54234,7 +54234,7 @@ Chart</value>
     <value>{0} Profil(e) der DIN mit Werten gefüllt, {1} übersprungen (Werte vorhanden), {2} Profil(e) der Quelle ohne Zuordnung.</value>
   </data>
   <data name="RNP_NW_MSG_ENTFERNT" xml:space="preserve">
-    <value>Eingelesene Werte aus {0} Profil(en) der DIN entfernt.</value>
+    <value>Eingelesene Werte aus {0} Profil(en) der DIN entfernt; die ausgelieferten Werte stehen wieder.</value>
   </data>
   <data name="RNP_NW_BTN_EINLESEN" xml:space="preserve">
     <value>Normwerte einlesen…</value>
@@ -54246,7 +54246,7 @@ Chart</value>
     <value>Normwerte einlesen</value>
   </data>
   <data name="RNP_NW_TXT_HINWEIS" xml:space="preserve">
-    <value>Füllt die Profile der Kategorie DIN/TS 18599-10 mit den Werten aus Ihrer CSV-Datei oder einer Projektdatei. Das Programm liefert keine Normwerte mit.</value>
+    <value>Gleicht die Profile der Kategorie DIN/TS 18599-10 mit den Werten aus Ihrer CSV-Datei oder einer Projektdatei ab. Ausgeliefert werden die Werte der Fassung 2025-10; abweichende Werte übernehmen Sie hier, die Rücknahme stellt die ausgelieferten wieder her.</value>
   </data>
   <data name="RNP_NW_BTN_CSV" xml:space="preserve">
     <value>CSV-Datei wählen…</value>
@@ -54339,7 +54339,7 @@ Chart</value>
     <value>Kein Profil trägt eingelesene Werte.</value>
   </data>
   <data name="RNP_NW_FRAGE_ENTFERNEN" xml:space="preserve">
-    <value>Die eingelesenen Werte von {0} Profil(en) entfernen? Die Profile stehen danach wieder ohne Werte.</value>
+    <value>Die eingelesenen Werte von {0} Profil(en) entfernen? Die Profile tragen danach wieder die ausgelieferten Werte.</value>
   </data>
   <data name="RNP_NW_BTN_JA" xml:space="preserve">
     <value>Entfernen</value>
@@ -54424,6 +54424,57 @@ Chart</value>
   </data>
   <data name="BTA_SUMME_RT" xml:space="preserve">
     <value>R_T = R_si + R + R_se = {0} m²K/W</value>
+  </data>
+  <data name="BTA_ABS_MSG_EBENE" xml:space="preserve">
+    <value>{0}: Die Schichtebene {1} führt die Abschnitte {2}, die übrigen inhomogenen Ebenen {3} – jede inhomogene Ebene braucht dieselben Abschnitte.</value>
+  </data>
+  <data name="BTA_ABS_MSG_ANTEIL" xml:space="preserve">
+    <value>{0}: Der Abschnitt {1} hat keinen Flächenanteil größer null.</value>
+  </data>
+  <data name="BTA_ABS_MSG_SUMME" xml:space="preserve">
+    <value>{0}: Die Flächenanteile der Abschnitte ergeben zusammen {1:0.###} statt 1 (zulässig 0,99 bis 1,01).</value>
+  </data>
+  <data name="BTA_SP_ABSCHNITT" xml:space="preserve">
+    <value>Abschnitt</value>
+  </data>
+  <data name="BTA_SP_FLAECHENANTEIL" xml:space="preserve">
+    <value>Flächenanteil</value>
+  </data>
+  <data name="BTA_ABSCHNITT_NEU" xml:space="preserve">
+    <value>Abschnitt daneben anlegen (inhomogene Schicht)</value>
+  </data>
+  <data name="BTA_SUMME_RT_OBEN" xml:space="preserve">
+    <value>R'_T oberer Grenzwert = {0} m²K/W</value>
+  </data>
+  <data name="BTA_SUMME_RT_UNTEN" xml:space="preserve">
+    <value>R''_T unterer Grenzwert = {0} m²K/W</value>
+  </data>
+  <data name="BTA_SUMME_RT_MITTEL" xml:space="preserve">
+    <value>R_T = (R'_T + R''_T) / 2 = {0} m²K/W</value>
+  </data>
+  <data name="BTA_GRUPPE_FENSTER" xml:space="preserve">
+    <value>Fenster</value>
+  </data>
+  <data name="BTA_LBL_UG" xml:space="preserve">
+    <value>U_g Verglasung</value>
+  </data>
+  <data name="BTA_LBL_UF" xml:space="preserve">
+    <value>U_f Rahmen</value>
+  </data>
+  <data name="BTA_LBL_GWERT" xml:space="preserve">
+    <value>g-Wert</value>
+  </data>
+  <data name="BTA_LBL_RAHMENANTEIL" xml:space="preserve">
+    <value>Rahmenanteil</value>
+  </data>
+  <data name="BTA_LBL_PSI_GLASRAND" xml:space="preserve">
+    <value>ψ_g Glasrand</value>
+  </data>
+  <data name="BTA_FENSTER_HINWEIS" xml:space="preserve">
+    <value>Beim Zuweisen an ein Fenster übernimmt das Bauteil g-Wert und Rahmenanteil; sein U-Wert wird U_w = (1 − f)·U_g + f·U_f + l_g·ψ_g / A mit dem Rahmenanteil f und der Glasrandlänge l_g ≈ 4·√((1 − f)·A).</value>
+  </data>
+  <data name="BTDLG_FENSTER_UEBERNOMMEN" xml:space="preserve">
+    <value>Aus dem Fensteraufbau übernommen: g-Wert, Rahmenanteil und U_w = {0} W/(m²K).</value>
   </data>
   <data name="BTA_RICHTUNG" xml:space="preserve">
     <value>Schichtfolge innen → außen: Schicht 1 liegt raumseitig, die letzte Schicht außen.</value>
@@ -56278,6 +56329,12 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="BKAL_MSG_FERIEN_FEHLEN" xml:space="preserve">
     <value>Feiertagsland und Ferien von „{0}“ übernommen. Das Gebäude führt {1} Ferienzeiträume, der Kalender nimmt vier auf: Übernommen sind die ersten vier, {2} fehlen.</value>
+  </data>
+  <data name="BTA_ABS_EBENENSUMME" xml:space="preserve">
+    <value>Σ Flächenanteile der Ebene = {0}</value>
+  </data>
+  <data name="BTA_ABS_EBENENSUMME_WARN" xml:space="preserve">
+    <value>Σ Flächenanteile der Ebene = {0} – zulässig sind 0,99 bis 1,01; der Aufbau rechnet erst danach.</value>
   </data>
   <data name="KBP_GRUPPE_EINGABEART" xml:space="preserve">
     <value>Eingabeart</value>

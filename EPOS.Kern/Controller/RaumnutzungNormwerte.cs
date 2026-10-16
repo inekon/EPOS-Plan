@@ -7,8 +7,8 @@ using System.Linq;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// <b>Normwerte der DIN einlesen</b> (Stufe NP7, Entscheid E131; Konzept Nutzungsprofile 6.5): füllt die ausgelieferten,
-    /// leeren Profile der Kategorie DIN/TS 18599-10 in der Datenbank des Anwenders aus einer Quelle des Anwenders — einer CSV
+    /// <b>Normwerte der DIN einlesen</b> (Stufe NP7, Entscheid E131; Konzept Nutzungsprofile 6.5): gleicht die ausgelieferten
+    /// Profile der Kategorie DIN/TS 18599-10 in der Datenbank des Anwenders mit einer Quelle des Anwenders ab — einer CSV
     /// im Format 6.4 (<see cref="RaumnutzungCsv"/>) oder einer Projektdatei mit Nutzungsprofilen
     /// (<see cref="Projektdateiprofile"/>). Zugeordnet wird über die DIN-Nummer, die zwei Wohnprofile ohne Nummer über ihren
     /// Namen (<see cref="RaumnutzungNormkategorienSchema.WOHNPROFILE"/>) oder über die Nummern 70 und 71 der Projektdatei
@@ -19,10 +19,12 @@ namespace WindowsFormsApplication1
     /// Kategorie und <c>ReadOnly</c> bleiben; Zeilenbild und Stundenprofile der Quelle werden nicht übernommen. Die Vorschau
     /// (<see cref="Vorschau"/>) nennt Treffer, unbekannte Nummern, Abweichungen zu vorhandenen Werten und was abgelehnt
     /// wird; das Einlesen überschreibt vorhandene Werte nur auf ausdrücklichen Wunsch. <see cref="Entfernen"/> nimmt alle
-    /// eingelesenen Werte zurück.</para>
+    /// eingelesenen Werte zurück und stellt die gesäten Werte wieder her.</para>
     ///
-    /// <para><b>Keine Normwerte im Programm:</b> Die Werte kommen allein aus der Quelle des Anwenders; ausgeliefert wird die
-    /// Struktur ohne Werte, und die Auslieferungsvorlage nimmt eingelesene Werte heraus (NP-F21).</para>
+    /// <para><b>Ausgelieferte Normwerte (DA-6, E135):</b> Die DIN-Profile tragen die Werte der Fassung 2025-10 aus
+    /// <see cref="RaumnutzungDinSaat"/> (Schemaschritt <see cref="RaumnutzungDinWerteSchema"/>, Herkunft leer = wie
+    /// ausgeliefert). Die Vorschau zeigt deshalb die Abweichungen der Quelle gegen die gesäten Werte; die Auslieferungsvorlage
+    /// nimmt eingelesene Werte heraus und lässt die gesäten stehen (NP-F21).</para>
     /// </summary>
     public static class RaumnutzungNormwerte
     {
@@ -195,8 +197,9 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>Nimmt alle eingelesenen Werte zurück</b>: jedes ausgelieferte Profil mit Herkunft „eingelesen“ steht danach wieder
-        /// ohne Werte (Kennwerte, Außenluft je Person, Herkunft leer). Auch die Auslieferungsvorlage ruft das.
+        /// <b>Nimmt alle eingelesenen Werte zurück</b>: jedes ausgelieferte Profil mit Herkunft „eingelesen“ trägt danach wieder
+        /// die gesäten Werte (<see cref="RaumnutzungDinSaat"/>, Herkunft leer); ein Profil ohne Saatzeile steht ohne Werte. In
+        /// einem Vorgang. Auch die Auslieferungsvorlage ruft das.
         /// </summary>
         public static Bilanz Entfernen()
         {
@@ -206,7 +209,8 @@ namespace WindowsFormsApplication1
             {
                 try
                 {
-                    n = v.Ausfuehren(SQL_ENTFERNEN, new DbParam("@h", RaumnutzungNormwerteSchema.HERKUNFT_EINGELESEN));
+                    n = RaumnutzungDinWerteSchema.Wiederherstellen(v);
+                    n += v.Ausfuehren(SQL_ENTFERNEN, new DbParam("@h", RaumnutzungNormwerteSchema.HERKUNFT_EINGELESEN));
                     v.Commit();
                 }
                 catch (Exception ex)

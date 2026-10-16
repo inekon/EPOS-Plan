@@ -85,6 +85,8 @@ namespace WindowsFormsApplication1
                 RJeSchicht_M2KW = k.RJeSchicht_M2KW,
                 R_M2KW = k.R_M2KW,
                 RT_M2KW = k.RT_M2KW,
+                RT_Oben_M2KW = k.RT_Oben_M2KW,
+                RT_Unten_M2KW = k.RT_Unten_M2KW,
                 U_WM2K = k.U_WM2K,
                 Kapazitaet_KJM2K = k.Kapazitaet_KJM2K,
                 KapazitaetWirksam_KJM2K = k.KapazitaetWirksam_KJM2K,
@@ -143,6 +145,11 @@ namespace WindowsFormsApplication1
                 KlasseCode = m.KlasseCode ?? "",
                 UQuelle = Bauteilkatalog.Zahl(m.Zusatz, BauteilkatalogSchema.SPALTE_U_QUELLE),
                 Import = m.Herkunft == BauteilkatalogSchema.HERKUNFT_IMPORT,
+                FensterUg = Fensterkennwerte.AusAufbau(m).Ug,
+                FensterUf = Fensterkennwerte.AusAufbau(m).Uf,
+                FensterG = Fensterkennwerte.AusAufbau(m).GWert,
+                FensterRahmenanteil = Fensterkennwerte.AusAufbau(m).Rahmenanteil,
+                FensterPsiGlasrand = Fensterkennwerte.AusAufbau(m).PsiGlasrand,
                 Schichten = m.Schichten.Where(s => s != null).Select(s => new BauteilschichtDaten
                 {
                     Id = s.ID,
@@ -151,7 +158,9 @@ namespace WindowsFormsApplication1
                     IstLuftschicht = s.IstLuftschicht,
                     Lambda = s.Lambda,
                     Rho = s.Rho,
-                    Cp = s.Cp
+                    Cp = s.Cp,
+                    Abschnitt = s.Abschnitt,
+                    Flaechenanteil = s.Abschnitt is int nr ? m.Abschnitte.FirstOrDefault(a => a.Nummer == nr)?.Flaechenanteil : null
                 }).ToList()
             };
         }
@@ -175,6 +184,15 @@ namespace WindowsFormsApplication1
                 KlasseCode = Leer(d.KlasseCode)
             };
             if (d.UQuelle.HasValue) m.Zusatz[BauteilkatalogSchema.SPALTE_U_QUELLE] = d.UQuelle.Value;
+            // BK-6: Die Fensterwerte schreibt nur ein Fenster oder eine Vorhangfassade - sonst bleiben die gespeicherten.
+            if (Fensterkennwerte.IstFensterart(m.Bauteilart))
+            {
+                m.Zusatz[Fensterkennwerte.SPALTE_UG] = d.FensterUg;
+                m.Zusatz[Fensterkennwerte.SPALTE_UF] = d.FensterUf;
+                m.Zusatz[Fensterkennwerte.SPALTE_GWERT] = d.FensterG;
+                m.Zusatz[Fensterkennwerte.SPALTE_RAHMENANTEIL] = d.FensterRahmenanteil;
+                m.Zusatz[BauteilkatalogAbschnittSchema.SPALTE_PSI_GLASRAND] = d.FensterPsiGlasrand;
+            }
             int rang = 0;
             foreach (BauteilschichtDaten s in d.Schichten ?? new List<BauteilschichtDaten>())
             {
@@ -187,9 +205,18 @@ namespace WindowsFormsApplication1
                     IstLuftschicht = s.IstLuftschicht,
                     Lambda = s.Lambda,
                     Rho = s.Rho,
-                    Cp = s.Cp
+                    Cp = s.Cp,
+                    Abschnitt = s.Abschnitt
                 });
+                // BK-5: je Abschnitt EIN Satz; der Anteil kommt von der ersten Schicht, die einen trägt.
+                if (s.Abschnitt is int nr)
+                {
+                    BauteilabschnittModel a = m.Abschnitte.FirstOrDefault(x => x.Nummer == nr);
+                    if (a == null) m.Abschnitte.Add(a = new BauteilabschnittModel { Nummer = nr });
+                    a.Flaechenanteil ??= s.Flaechenanteil;
+                }
             }
+            m.Abschnitte = m.Abschnitte.OrderBy(a => a.Nummer).ToList();
             return m;
         }
 

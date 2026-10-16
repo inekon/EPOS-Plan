@@ -76,7 +76,8 @@ namespace EPOS.Kern.Tests
             // KETTE: 230 haengt ueber + 1 an 229 (StromspeicherKostenSchema, KB-5).
             Assert.Equal(230, KaeltebedarfsprofilVorlagenSchema.SCHRITT);
             Assert.Equal(StromspeicherKostenSchema.SCHRITT + 1, KaeltebedarfsprofilVorlagenSchema.SCHRITT);
-            Assert.Equal(KaeltebedarfsprofilVorlagenSchema.SCHRITT, SchemaStand.Zielversion);
+            // Das Ziel steht hinter KBP-2 (DA-6, BK-5/BK-6); dieser Schritt bleibt in der Kette.
+            Assert.True(SchemaStand.Zielversion > KaeltebedarfsprofilVorlagenSchema.SCHRITT);
             Assert.Contains(Paketanhebung.Stufen, s => s.Nr == KaeltebedarfsprofilVorlagenSchema.SCHRITT && s.Wirkung == Paketanhebung.Art.Ddl);
             Assert.Equal(3, KaeltebedarfsprofilVorlagenSchema.SPALTEN.Count);
             Assert.Equal(new[] { "jahr", "monat", "woche", "typtag" }, KaeltebedarfsprofilVorlagenSchema.EINGABEARTEN);

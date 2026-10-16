@@ -37,6 +37,13 @@
         /// <summary>Spezifische Wärmekapazität [J/(kg·K)] — Kopie; <c>null</c> = nicht angegeben.</summary>
         public double? Cp;
 
+        /// <summary>
+        /// Nummer des Abschnitts (<see cref="BauteilabschnittModel.Nummer"/>), in dem die Schicht liegt; <c>null</c> = homogen
+        /// (die Schicht reicht über die ganze Fläche). Schichten mit Abschnitt, die mit aufsteigender Nummer aufeinander
+        /// folgen, liegen nebeneinander in DERSELBEN Schichtebene (BK-5, <c>InhomogeneSchichten.Ebenen</c>).
+        /// </summary>
+        public int? Abschnitt;
+
         /// <summary>Die Felder der Quelle (Spalten aus <c>BauteilkatalogSchema.SCHICHT_SPALTEN</c>), roh je Spaltenname.</summary>
         public System.Collections.Generic.Dictionary<string, object> Zusatz = new System.Collections.Generic.Dictionary<string, object>();
 

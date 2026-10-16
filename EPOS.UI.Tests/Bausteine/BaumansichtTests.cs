@@ -48,7 +48,7 @@ public class BaumansichtTests : BunitContext
             .Add(x => x.Wurzeln, baum ?? Baum())
             .Add(x => x.Gewaehlt, gewaehlt)
             .Add(x => x.GewaehltChanged, gewaehltChanged ?? (_ => { }))
-            .Add(x => x.Bezeichnung, "Dublettenbefund")
+            .Add(x => x.Bezeichnung, "Dublettenhinweise")
             .Add(x => x.LeerText, leerText));
     }
 
@@ -65,7 +65,7 @@ public class BaumansichtTests : BunitContext
         var cut = Zeige();
 
         Assert.Single(cut.FindAll("ul[role=tree]"));
-        Assert.Equal("Dublettenbefund", cut.Find("ul[role=tree]").GetAttribute("aria-label"));
+        Assert.Equal("Dublettenhinweise", cut.Find("ul[role=tree]").GetAttribute("aria-label"));
 
         // Wurzel und Ast sind offen, die Gruppe zu -> sichtbar sind
         // 2 Wurzeln + 1 Ast + 1 Gruppe = 4 treeitem.

@@ -43,6 +43,7 @@ Die Gruppe ''Schichten'' im Stammblatt ist eine Liste, in der jede Zeile eine Sc
 * '''<math>\lambda</math>, <math>\rho</math>, <math>c_{p}</math>''' – die Werte der Schicht. Eine Schicht aus Stoff braucht alle drei; der Bauteilweg rechnet mit ihnen die Speichermasse.
 * '''Luftschicht''' – ohne <math>\lambda</math> ist die Schicht eine ruhende Luftschicht: Ihr Widerstand folgt DIN EN ISO 6946, Tabelle 8 (bis 300 mm), und sie trägt keine Speichermasse. Mit <math>\lambda</math> rechnet sie wie eine Stoffschicht mit dieser äquivalenten Leitfähigkeit.
 * '''<math>R</math>''' – der Wärmedurchlasswiderstand der Schicht in m²K/W, gerechnet.
+* '''Abschnitt''' und '''Flächenanteil''' – eine inhomogene Schicht (etwa Holzständer mit Dämmung dazwischen) besteht aus mehreren Abschnitten nebeneinander; ''Abschnitt daneben anlegen (inhomogene Schicht)'' legt den nächsten an. Jeder Abschnitt führt Baustoff, Dicke und Flächenanteil. Die Anteile einer Ebene ergeben zusammen 100 % (zulässig 99 bis 101 %), jeder Anteil ist größer null, und jede inhomogene Ebene führt dieselben Abschnitte. Ein Aufbau ohne Abschnitte rechnet wie jeder andere.
 
 Die Knöpfe ▲ und ▼ schieben eine Schicht nach innen oder außen, ✕ nimmt sie heraus, ''+ Neue Schicht …'' hängt außen eine an. Die Nummerierung folgt immer der Reihenfolge der Liste.
 
@@ -58,6 +59,8 @@ Unter den Schichten stehen die Kennwerte des Aufbaus:
 
 Fehlt einer Schicht eine Angabe, bleiben die Summen leer, und die Zeile nennt, was fehlt.
 
+Enthält der Aufbau Abschnitte, zeigt der Summenfuß statt eines einzelnen Widerstands den oberen Grenzwert <math>R'_{\mathrm{T}}</math> (Wärme fließt in parallelen Streifen), den unteren Grenzwert <math>R''_{\mathrm{T}}</math> (Schichten als durchgehende Ebenen) und ihr Mittel <math>R_{\mathrm{T}} = (R'_{\mathrm{T}} + R''_{\mathrm{T}})/2</math> nach DIN EN ISO 6946; mit dem Mittel rechnet der U-Wert.
+
 === Speichern und Neu ===
 {{Anker|speichern}}
 
@@ -66,6 +69,17 @@ Geschrieben wird der Aufbau erst mit ''Speichern'' – Kopf und Schichten zusamm
 ''Neu…'' öffnet dieselben Felder samt Schichtenliste als eigenes Blatt über der Verwaltung; ''OK'' prüft mit denselben Regeln und legt den Aufbau an. ''Duplizieren…'' kopiert einen Aufbau samt seinen Schichten unter neuem Namen.
 
 Ein Aufbau des Katalogs ist eine Vorlage: Übernimmt ein Projekt ihn, arbeitet es mit einer Kopie samt seinen Stoffen. Eine spätere Änderung im Katalog verschiebt kein gerechnetes Projekt.
+
+=== Fensteraufbau ===
+{{Anker|fensteraufbau}}
+
+Bei der Bauteilart ''Fenster'' (und ''Vorhangfassade'') zeigt das Stammblatt die Gruppe ''Fenster'':
+
+* '''U_g Verglasung''' und '''U_f Rahmen''' in W/(m²K).
+* '''g-Wert''' der Verglasung und '''Rahmenanteil''' <math>f</math>.
+* '''ψ_g Glasrand''' – der längenbezogene Wärmedurchgangskoeffizient des Glasrands.
+
+Daraus entsteht <math>U_{\mathrm{w}} = (1 - f) \cdot U_{\mathrm{g}} + f \cdot U_{\mathrm{f}} + l_{\mathrm{g}} \cdot \psi_{\mathrm{g}} / A</math> nach DIN EN ISO 10077-1, mit der genäherten Glasrandlänge <math>l_{\mathrm{g}}</math>. Weist man den Aufbau einem Fenster im Bauteildialog zu, übernimmt das Bauteil g-Wert, Rahmenanteil und <math>U_{\mathrm{w}}</math>.
 
 == Gruppe, Klasse und Herkunft ==
 {{Anker|gruppe-klasse}}

@@ -180,7 +180,7 @@ namespace EPOS.Kern.Tests
             new Inventarzeile("E7", OF, "Luftfilmwiderstand an der Schemakopie 6.01 zu prüfen — " + RUECKFALL, OF,
                               "kein Standardsatz; EPOS_Bauteil nicht erweitert", A("Rsi"), A("Rse"), S("Rsi"), S("Rse")),
 
-            new Inventarzeile("F1", BE, null, BE, null, B("U_Wert"), A("Ug"), A("Uf"), A("U_Quelle")),
+            new Inventarzeile("F1", BE, null, BE, null, B("U_Wert"), A("Ug"), A("Uf"), A("Psi_Glasrand"), A("U_Quelle")),
             new Inventarzeile("F2", BE, null, BE, null, B("g_Wert"), A("g_Wert"), G("Fensterdurchlassgrad")),
             new Inventarzeile("F3", OF, "WindowType/Frame an der Schemakopie 6.01 zu prüfen — " + RUECKFALL, D3, null,
                               B("Rahmenanteil"), A("Rahmenanteil"), A("Rahmenbreite"), G("Rahmenanteil")),
@@ -231,7 +231,7 @@ namespace EPOS.Kern.Tests
                   Ids("Tab_Bauteilaufbau", "ID", "ID_Projekt"), Ids("Tab_Bauteilschicht", "ID", "ID_Aufbau", "ID_Baustoff"),
                   Ids("ProjektGebaeudeModel", "items", "ID_Gebaeude"), Ids("ZoneModel", "Bauteile"))),
             new Austauschausnahme("Herkunftsmarke der Übernahme: der Import setzt sie neu (Quelle, Kennung der Quelle)",
-                F(Ids("Tab_Zone", "Herkunft", "Quellkennung"), Ids("Tab_Bauteil", "Herkunft", "Quellkennung", "Flaechenherkunft"),
+                F(Ids("Tab_Zone", "Herkunft", "Quellkennung"), Ids("Tab_Bauteil", "Herkunft", "Quellkennung", "Flaechenherkunft", "U_Herkunft"),
                   Ids("Tab_Bauteilaufbau", "Quelle", "Herkunft", "Quellkennung", "Dicke_Quelle"), Ids("Tab_Bauteilschicht", "Quellkennung"))),
             new Austauschausnahme("Anzeige, Name oder Freitext ohne Wirkung auf die Rechnung",
                 F(Ids("Tab_Bauteil", "Bezeichner"), Ids("Tab_Gebaeude", "Gebaeudename", "Typ", "Beschreibung"),

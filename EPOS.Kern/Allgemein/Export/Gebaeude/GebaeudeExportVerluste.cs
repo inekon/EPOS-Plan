@@ -78,6 +78,9 @@ namespace WindowsFormsApplication1
             ["Rahmenanteil"] = V, ["Verschattungsfaktor"] = V, ["Psi_L"] = V,
             // Eine Trennfläche zur Nachbarzone kommt als innere Masse zurück (Import X4).
             ["ID_Nachbarzone"] = V, ["Trennflaeche_Zuordnung"] = V,
+            // MA-6b (BauteilUHerkunftSchema): die Herkunft des U-Werts ist ein Merkmal der Pflege; der Import setzt sie nach
+            // dem Format der Datei neu.
+            ["U_Herkunft"] = N,
         };
 
         /// <summary>

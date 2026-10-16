@@ -810,7 +810,7 @@ lehnt die Prüfung sie benannt ab; `EPOS.Kern.Tests/TwwTyptagVorlageTests` hält
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
 Basen aufräumt, lässt `2026-10-14_R55_KaeltebedarfDezentral`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Katalogpaket_Vorlage_DIN4708`,
-`Typtagpaket_Vorlage_VDI4655`, `Skripte` und `LIESMICH.md`
+`Typtagpaket_Vorlage_VDI4655`, `Messreihen_INEKON`, `Normzahlen`, `Schemakopien`, `Skripte` und `LIESMICH.md`
 stehen.**
 
 Außer der aktuellen liegt hier keine Basis mehr: Die 24 historischen Referenzbasen (7 731
@@ -824,11 +824,11 @@ gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026,
 `2026-09-26_R22_Solarthermie` am 26.09.2026, `2026-09-26_R23_KesselBereitschaft`, `2026-09-27_R24_Heizgrenze` und `2026-09-29_R25_Plattformrand` am 29.09.2026,
 `2026-09-29_R26_Kesselrest`, `2026-09-30_R27_Kesselteillast`, `2026-09-30_R28_Kesselbrennwert` und
 `2026-09-30_R29_Kesseltakten` am 30.09.2026, `2026-09-30_R30_Stromverbraucher`,
-`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich`, `2026-10-04_R35_Zonenuebergabe`, die Basis R36 (Kältemaschine) und `2026-10-05_R37_Fahrplan` am 05.10.2026, die Basis R38 (Vorlaufwahl) am 06.10.2026, die Basis R39 (Auslegungsheizlast), die Basis R40 (Erdreichquellen), die Basis R41 (Erdreichprüfung) und die Basis R42 (Vorlaufinterpolation AK3) am 07.10.2026, die Basis R43 (Kälteseite AK3K) am 08.10.2026, die Basis R44 (Kühlkurve), die Basis R45 (Übergabegrenze), die Basis R46 (Gerätegrenzen) und die Basis R47 (Zapffeiertage) am 09.10.2026**
-(64 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
+`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich`, `2026-10-04_R35_Zonenuebergabe`, die Basis R36 (Kältemaschine) und `2026-10-05_R37_Fahrplan` am 05.10.2026, die Basis R38 (Vorlaufwahl) am 06.10.2026, die Basis R39 (Auslegungsheizlast), die Basis R40 (Erdreichquellen), die Basis R41 (Erdreichprüfung) und die Basis R42 (Vorlaufinterpolation AK3) am 07.10.2026, die Basis R43 (Kälteseite AK3K) am 08.10.2026, die Basis R44 (Kühlkurve), die Basis R45 (Übergabegrenze), die Basis R46 (Gerätegrenzen) und die Basis R47 (Zapffeiertage) am 09.10.2026, die Basis R48 (Gemeinjahr), die Basis R49 (Kältemaschine Teillast) und die Basis R50 (Wochentagsraster) am 10.10.2026, die Basis R51 (freie Kühlung) am 11.10.2026, die Basis R52 (Vorheizen) am 13.10.2026, die Basis R53 (Zapfprofiloptionen) und die Basis R54 (Dachflächen) am 14.10.2026**
+(71 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
 eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine
 alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 64 Basen samt der Tabelle Basis → Datum → Zweck →
+Erhalten sind die **Protokolle** aller 71 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
@@ -1419,6 +1419,44 @@ nächste Basis einfriert, nimmt die beiden Schlüssel auf und streicht `--ohne` 
 > **230** (`integrity_check` ok, `foreign_key_check` leer): **108 720 128 Byte, LFS-SHA-256
 > `a901f445a430231ab6c68c1cc0e3a1ef71a3717cc922bb07c426328b27b3b3f1`**. Der Referenzlauf der CI-Auswahl gegen R55 bleibt PASS
 > (11 Projekte, 373 CSV byte-gleich).
+
+> **Nachtrag — Schema 231 und 232 (DA-6 Werte der DIN-Nutzungsprofile und BK-5/BK-6 Fenster im Aufbaukatalog, 16.10.2026,
+> hängt an 230 `KaeltebedarfsprofilVorlagenSchema`), Basis R55 unverändert.** `RaumnutzungDinWerteSchema` (231 =
+> `KaeltebedarfsprofilVorlagenSchema.SCHRITT + 1`) sät die Werte der 45 ausgelieferten Profile der Kategorie DIN/TS 18599-10
+> in der Fassung 2025-10 in `Tab_Raumnutzungsprofil`, nur wo kein Wert steht; `BauteilkatalogAbschnittSchema` (232 =
+> `RaumnutzungDinWerteSchema.SCHRITT + 1`) legt `Psi_Glasrand` an `Tab_Bauteilaufbau_STAMM` und `Tab_Bauteilaufbau` leer an.
+> Kein Referenzprojekt nutzt ein Nutzungsprofil oder führt einen Aufbau. Gehoben aus der Fassung 230 (108 720 128 Byte) mit
+> `Werkzeuge/Testdatenbankschema` auf **232** (45 Profile gesät, 2 Spalten angelegt, `integrity_check` ok, 108 728 320 Byte).
+> Größe und LFS-SHA-256 der eingecheckten Fassung stehen im Nachtrag des folgenden Schritts, der die Datei in einem Zug weiterhebt.
+
+> **Nachtrag — Schema 233 (MA-6b Herkunft des U-Werts, 16.10.2026, hängt an 232 `BauteilkatalogAbschnittSchema`), Basis
+> R55 unverändert.** Kette 230 `KaeltebedarfsprofilVorlagenSchema` → 231 `RaumnutzungDinWerteSchema` → 232
+> `BauteilkatalogAbschnittSchema` → 233 `BauteilUHerkunftSchema` (233 = `BauteilkatalogAbschnittSchema.SCHRITT + 1`), das
+> `U_Herkunft` an `Tab_Bauteil` und `Tab_Bauteil_STAMM` leer anlegt (kein DML; leer heißt Bestand). Gehoben aus der Fassung
+> 230 (108 720 128 Byte, `a901f445…`) in einem Zug mit `Werkzeuge/Testdatenbankschema` über 231 und 232 auf 233 (45
+> DIN-Profile gesät, 4 Spalten angelegt; ein zweiter Lauf ist inhaltsgleich). Die Testdatenbank steht auf **233**
+> (`integrity_check` ok, `foreign_key_check` leer): **108 728 320 Byte, LFS-SHA-256
+> `95d1dd45028454d9f83cf3db22123beb4d3525f80f0c79c973b865ab188432da`**. Der Referenzlauf gegen R55 läuft im Gate.
+>
+> **Saatstand zu 233 (16.10.2026), Basis R55 unverändert.** Die gesäten Bauteile der Zonen-Referenzprojekte 1052, 1054
+> und 1062 tragen `U_Herkunft` so, wie ihre Baupläne es über die Programmwege schreiben: die Kopien der Übernahme
+> („Gebäude als eine Zone übernehmen“, `GebaeudeZonenabbildung.AlsBauteilModel`) `VORGABE`, die von Hand angelegten
+> Zeilen (Kellerdecke, Trennwand Gastronomie, Kellerboden, Kellerwände; Trennwand Nord/Ost) `MANUELL`
+> (`GebaeudeZonenCtrl.UHerkunftNeu`) — 72 und 11 Zeilen; `Skripte/referenzprojekt_1052_bauplan.cs` nennt die Herkunft
+> der Handzeilen ausdrücklich. Gesät mit `Werkzeuge/Testdatenbankschema` (Block nach Schritt 233, nur diese Projekte,
+> nur `U_Herkunft`, wiederholbar; keine Datenmigration für Anwenderdatenbanken, deren Bestand bleibt leer). Der
+> Rechenweg liest die Spalte nicht. `integrity_check` ok, `foreign_key_check` leer, außer `Tab_Bauteil` jede Tabelle
+> inhaltsgleich: **108 728 320 Byte, LFS-SHA-256
+> `e6aef7ded55a644cab3d70e1f49fd76f63376e6efd035191a96fcfbad5e08562`**.
+
+> **Nachtrag — Einheit von `DIN4708.p_b` im Testkatalog (16.10.2026, Schemastand 233), Basis R55 unverändert.** Der
+> fiktive Parameter `DIN4708.p_b` trägt die Einheit „P“ wie in `TwwParameterschluessel` statt „Personen“; nachgezogen in
+> `Skripte/tww_testkatalog_fiktiv.py` und darüber gesät (ein zweiter Lauf meldet 0 nachgeführt). Der Zellvergleich aller
+> Tabellen zeigt allein diese Zelle in `Tab_TwwParameter_STAMM`. Die Einheit ist Beschreibung, kein Rechenwert — deshalb
+> kein Neueinfrieren. Die Testdatenbank: **108 728 320 Byte, LFS-SHA-256
+> `6cb9f52c7e14d2d835434e10850374b7a4a549b5e84e70cd8974e4d11ccf9b00`** (auf der Fassung des Saatstands zu 233 gesät). Der Referenzlauf aller siebenunddreißig Projekte
+> gegen R55 bleibt PASS und byte-gleich (1 205 CSV; in `Projekt_1072/aggregate.csv` allein die zwei Schlüssel, die R55
+> nicht führt).
 
 ### Die Vorgängerbasis R54 (Dachflächen)
 

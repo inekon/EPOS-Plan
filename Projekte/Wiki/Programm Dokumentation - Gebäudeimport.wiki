@@ -188,7 +188,7 @@ Die Prüfgruppe 3 der [[Programm Dokumentation/Gebäude#modell-pruefen|Modellpr�
 Rot kommt in dieser Gruppe nicht vor. Die Vorschläge übernehmen Sie wie alle Vorschläge der Modellprüfung.
 
 {{Anker|wiederimport}}
-'''Wiederimport.''' Lesen Sie eine neue Fassung derselben Datei (gleiches Format, anderer Inhalt) in ein Gebäude ein, das schon Zonen hat, führt EPOS-Plan Datei und Bestand zusammen. Je Feld gilt: Hand vor Datei vor Vorgabe. Ein von Hand gesetztes Profil, Sollwerte, Kalender, eine von Hand angepasste Fläche oder ein gewählter Aufbau bleiben, Zonen und Bauteile ohne Kennung der Datei bleiben unberührt. Vor dem Schreiben zeigt eine Vorschau je Zone und Bauteil, was neu hinzukommt, sich verändert oder entfällt; entfallende Zonen und Bauteile werden nur entfernt, wenn Sie den Haken dazu setzen.
+'''Wiederimport.''' Lesen Sie eine neue Fassung derselben Datei (gleiches Format, anderer Inhalt) in ein Gebäude ein, das schon Zonen hat, führt EPOS-Plan Datei und Bestand zusammen. Je Feld gilt: Hand vor Datei vor Vorgabe. Ein von Hand gesetztes Profil, Sollwerte, Kalender, eine von Hand angepasste Fläche, ein von Hand gesetzter U-Wert eines Bauteils oder ein gewählter Aufbau bleiben, Zonen und Bauteile ohne Kennung der Datei bleiben unberührt. Vor dem Schreiben zeigt eine Vorschau je Zone und Bauteil, was neu hinzukommt, sich verändert oder entfällt; entfallende Zonen und Bauteile werden nur entfernt, wenn Sie den Haken dazu setzen.
 
 === Mehrere Zonen ===
 {{Anker|mehrere-zonen}}
