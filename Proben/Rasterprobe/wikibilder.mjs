@@ -95,7 +95,13 @@ await mkdir(ZIEL, { recursive: true });
 let browser;
 let fehler = 0;
 try {
-  browser = await chromium.launch();
+  // Die Oberflaechensprache des Browsers: locale allein formatiert im headless Chromium die
+  // Datumsfelder (<input type=date>) nicht deutsch ("01/01/2026"), --lang allein auch nicht;
+  // erst die Sprachumgebung des Browserprozesses (LANGUAGE/LANG/LC_ALL) ergibt "01.01.2026".
+  browser = await chromium.launch({
+    args: ['--lang=de-DE'],
+    env: { ...process.env, LANGUAGE: 'de', LANG: 'de_DE.UTF-8', LC_ALL: 'de_DE.UTF-8' },
+  });
   for (const [name, maske, fremd] of BILDER) {
     if (NUR && name !== NUR) continue;
     // Erst im ueblichen Fenster; ist das Bild zu gross, im kleineren noch einmal.
