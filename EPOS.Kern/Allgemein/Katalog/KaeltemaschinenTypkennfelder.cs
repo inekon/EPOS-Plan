@@ -171,6 +171,44 @@ namespace WindowsFormsApplication1
             m.Taktverlustfaktor_Cd, m.Verdichterregelung, m.Kennfeld_Randweg
         };
 
+        /// <summary>
+        /// Die Zahl der eingebauten Typkennfelder, die noch nicht im Katalog stehen — dieselbe Zugehörigkeitsregel wie
+        /// <see cref="Einspielen"/> (<see cref="ImKatalog"/>). 0 heißt: ein „Typkennfelder laden…" brächte nichts Neues.
+        /// Ohne Katalogtabelle oder Schlüsselspalten zählen alle als fehlend (das Laden meldet dann den Grund).
+        /// </summary>
+        public static int Fehlend(IDatenzugriff db = null)
+        {
+            IDatenzugriff vorher = null;
+            bool getauscht = db != null && !ReferenceEquals(db, DataRepository.Zugriff);
+            if (getauscht) { vorher = DataRepository.Zugriff; DataRepository.Zugriff = db; }
+            try
+            {
+                string tab = KaeltemaschineSchema.TAB_STAMM;
+                IReadOnlyList<Typkennfeld> alle = Lesen();
+                if (!DataRepository.TabelleVorhanden(tab) || !Katalogfassung.SpaltenVorhanden(tab)) return alle.Count;
+                int fehlend = 0;
+                foreach (Typkennfeld t in alle)
+                    if (!ImKatalog(DataRepository.ExecuteScalar, tab, t)) fehlend++;
+                return fehlend;
+            }
+            finally
+            {
+                if (getauscht) DataRepository.Zugriff = vorher;
+            }
+        }
+
+        /// <summary>
+        /// Steht das Typkennfeld schon im Katalog — über seinen Katalogschlüssel oder seinen Bezeichner? Die eine
+        /// Zugehörigkeitsregel von <see cref="Einspielen"/> (überspringen) und <see cref="Fehlend"/> (zählen).
+        /// </summary>
+        private static bool ImKatalog(Func<string, DbParam[], object> skalar, string tab, Typkennfeld t)
+        {
+            object da = skalar(
+                "SELECT COUNT(*) FROM " + tab + " WHERE " + Katalogfassung.SPALTE_SCHLUESSEL + " = ? OR Bezeichner = ?",
+                new[] { new DbParam("?", Schluessel(t.Bezeichner)), new DbParam("?", t.Bezeichner) });
+            return da != null && da != DBNull.Value && Convert.ToInt32(da, CultureInfo.InvariantCulture) > 0;
+        }
+
         private static Einspielergebnis EinspielenIntern()
         {
             string tab = KaeltemaschineSchema.TAB_STAMM;
@@ -186,10 +224,7 @@ namespace WindowsFormsApplication1
                         foreach (Typkennfeld t in Lesen())
                         {
                             string schluessel = Schluessel(t.Bezeichner);
-                            object da = v.Skalar(
-                                "SELECT COUNT(*) FROM " + tab + " WHERE " + Katalogfassung.SPALTE_SCHLUESSEL + " = ? OR Bezeichner = ?",
-                                new DbParam("?", schluessel), new DbParam("?", t.Bezeichner));
-                            if (da != null && da != DBNull.Value && Convert.ToInt32(da, CultureInfo.InvariantCulture) > 0)
+                            if (ImKatalog(v.Skalar, tab, t))
                             {
                                 ueber++;
                                 continue;

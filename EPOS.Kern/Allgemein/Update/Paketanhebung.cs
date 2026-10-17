@@ -510,6 +510,10 @@ namespace WindowsFormsApplication1
             // (leer heißt nicht erhoben).
             new Stufe(ErgebnisreihenSchema.SCHRITT, Art.Ddl,
                       "Ergebnisreihen: BHKW-Einspeisung, Standby des Speichersystems, PV-Abregelung (EB-1)"),
+            // KB-8: Ein älteres Paket bringt Ergebniszeilen der Wirtschaftlichkeit ohne die vier Spalten; der Schritt legt
+            // sie leer an (kein DML).
+            new Stufe(ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT, Art.Ddl,
+                      "Die vier Ergebnisspalten der Wirtschaftlichkeit (KB-8)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

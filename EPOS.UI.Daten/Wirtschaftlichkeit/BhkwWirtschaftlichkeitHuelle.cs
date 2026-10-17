@@ -105,10 +105,8 @@ namespace WindowsFormsApplication1
                     new Func<IReadOnlyList<int>, IReadOnlyList<WirtschaftlichkeitErgebnis>>(
                         ids => ctrl.LadeErgebnisse(new List<int>(ids))),
 
-                // ETAPPE E13 (E7c3‑Q6 a): der Ladefehler des Kerns nach ErgebnisseLaden
-                // und die Warnung der Tabellenvorsorge beim Öffnen (LadeParameter oben).
+                // ETAPPE E13 (E7c3‑Q6 a): der Ladefehler des Kerns nach ErgebnisseLaden.
                 ["Ladefehler"] = new Func<string>(() => ctrl.Ladefehler),
-                ["Vorsorgewarnung"] = WirtschaftlichkeitCtrl.Vorsorgewarnung ?? "",
 
                 // DIE ZWEI SCHREIBWEGE, je einer fuer eine Zeile und fuer die
                 // Projektvorgaben. Der Dialog ruft sie NUR im OK-Weg und weiss

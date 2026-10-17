@@ -26,7 +26,8 @@ public sealed record BauteilkatalogVorschauDaten(
     string? Ordner = null,
     string? Teilkataloge = null,
     string? Inhomogen = null,
-    string? Wiederimport = null);
+    string? Wiederimport = null,
+    string? Aktualisiert = null);
 
 /// <summary>Das Ergebnis von „Übernehmen“: geschrieben oder nicht, und die Meldung mit Zahlen.</summary>
 public sealed record BauteilkatalogImportErgebnis(bool Erfolg, string Meldung);

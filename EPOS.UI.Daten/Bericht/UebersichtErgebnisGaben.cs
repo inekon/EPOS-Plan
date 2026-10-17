@@ -47,7 +47,7 @@ namespace WindowsFormsApplication1
         private static string s_flussFilter = ErgebnisFlussWahl.ALLE;
 
         /// <summary>
-        /// Der Einstellungsschlüssel der Darstellung des Energieflussbilds („kette“ | „stufen“, SK-Q17) — je Benutzer über die
+        /// Der Einstellungsschlüssel der Darstellung des Energieflussbilds („kette“ | „stufen“ | „zuordnung“, SK-Q17) — je Benutzer über die
         /// Naht des Kerns wie die Ansicht; ein unbekannter Wert gilt als Kette.
         /// </summary>
         internal const string EINSTELLUNG_FLUSS_DARSTELLUNG = "Uebersicht.Ergebnisse.Fluss.Darstellung";
@@ -230,7 +230,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Darstellung des Kerns zu einem Ablagewert (<see cref="ErgebnisFlussWahl"/>).</summary>
         internal static EnergieflussDarstellung KernDarstellung(string wert)
-            => ErgebnisFlussWahl.Darstellung(wert) == ErgebnisFlussWahl.STUFEN ? EnergieflussDarstellung.Stufen : EnergieflussDarstellung.Kette;
+            => ErgebnisFlussWahl.Darstellung(wert) switch
+            {
+                ErgebnisFlussWahl.STUFEN => EnergieflussDarstellung.Stufen,
+                ErgebnisFlussWahl.ZUORDNUNG => EnergieflussDarstellung.Zuordnung,
+                _ => EnergieflussDarstellung.Kette
+            };
 
         /// <summary>Der Formfilter des Kerns zu einem Ablagewert (<see cref="ErgebnisFlussWahl"/>).</summary>
         internal static EnergieflussFilter KernFilter(string wert)
@@ -265,15 +270,20 @@ namespace WindowsFormsApplication1
                 fluss = new ErgebnisFlussStand { IdProjekt = idProjekt, Version = eintrag.Name, NichtSimuliert = true };
             else
             {
-                EnergieflussBilanz b = Energiefluss.Aus(Daten(v), englisch, eintrag.Name);
-                fluss = FlussStand(b, englisch);
+                VariantenDaten vd = Daten(v);
+                EnergieflussBilanz b = Energiefluss.Aus(vd, englisch, eintrag.Name);
+                fluss = FlussStand(b, englisch, () => Energiefluss.Aus(vd, englisch, eintrag.Name, EnergieflussDarstellung.Zuordnung));
             }
             _flussPuffer[idProjekt] = (stand, englisch, eintrag.Name, fluss);
             return fluss;
         }
 
-        /// <summary>Bildet eine Bilanz des Kerns auf den Stand der Komponente ab (reine Funktion, auch für Proben).</summary>
-        internal static ErgebnisFlussStand FlussStand(EnergieflussBilanz b, bool englisch)
+        /// <summary>
+        /// Bildet eine Bilanz des Kerns auf den Stand der Komponente ab (reine Funktion, auch für Proben). Die Darstellung
+        /// Zuordnung zeichnet aus einer eigenen Bilanz (<paramref name="zuordnung"/>, gerufen erst beim ersten Bedarf); ohne
+        /// sie zeigt die Zuordnung das Bild der Kette.
+        /// </summary>
+        internal static ErgebnisFlussStand FlussStand(EnergieflussBilanz b, bool englisch, Func<EnergieflussBilanz> zuordnung = null)
         {
             if (b == null) return new ErgebnisFlussStand { NichtSimuliert = true };
             if (b.Leer)
@@ -285,7 +295,6 @@ namespace WindowsFormsApplication1
 
             CultureInfo k = Energiefluss.Kultur(englisch);
             EnergieflussBildDaten d = EnergieflussAbbildung.Bild(b);
-            string Name(string id) => b.KnotenMit(id)?.Name ?? id;
 
             var hinweise = new List<string>(b.Hinweise);
             foreach (EnergieflussKnoten kn in b.Knoten.Where(x => x.Gebuendelt.Count > 0))
@@ -295,15 +304,28 @@ namespace WindowsFormsApplication1
 
             // Die übrigen Bilder (Stufen, Formfilter; Konzept 3.5) entstehen beim ersten Bedarf und bleiben im Stand,
             // der selbst je Version und Simulationsstand im Puffer liegt — nie je Rendern.
+            // Die Zuordnung hat eine eigene Bilanz und damit eigene Kanten und eine eigene Textalternative (einmal je Stand).
+            EnergieflussBilanz bz = null;
+            EnergieflussBildDaten dz = null;
             ErgebnisFlussBild Bildbau(string darstellung, string filter)
             {
-                EnergieflussBildDaten df = EnergieflussAbbildung.Gefiltert(d, KernFilter(filter), englisch);
                 EnergieflussDarstellung art = KernDarstellung(darstellung);
+                bool eigen = art == EnergieflussDarstellung.Zuordnung && zuordnung != null;
+                if (eigen && dz == null)
+                {
+                    bz = zuordnung() ?? b;
+                    dz = bz.Leer ? d : EnergieflussAbbildung.Bild(bz);
+                }
+                EnergieflussBildDaten df = EnergieflussAbbildung.Gefiltert(eigen ? dz : d, KernFilter(filter), englisch);
                 return new ErgebnisFlussBild
                 {
                     Breit = ChartRenderer.EnergieflussModell(df, ChartRenderer.ENERGIEFLUSS_BREIT, false, art),
                     Schmal = ChartRenderer.EnergieflussModell(df, ChartRenderer.ENERGIEFLUSS_SCHMAL, false, art),
-                    Hinweis = df.Hinweis ?? ""
+                    Hinweis = df.Hinweis ?? "",
+                    KantenJson = eigen ? KantenJson(dz) : null,
+                    BusseJson = eigen ? BusseJson(dz) : null,
+                    Fluesse = eigen && !bz.Leer ? Flusszeilen(bz, englisch) : null,
+                    Knoten = eigen && !bz.Leer ? Knotenzeilen(bz, englisch) : null
                 };
             }
 
@@ -316,24 +338,39 @@ namespace WindowsFormsApplication1
                 Bildbau = Bildbau,
                 KantenJson = KantenJson(d),
                 BusseJson = BusseJson(d),
-                Fluesse = b.Fluesse.Select(f => new ErgebnisFlussZeile
-                {
-                    Von = Name(f.Von),
-                    Nach = Name(f.Nach),
-                    Wert = Energiefluss.Zahl(f.Mwh, k),
-                    Anteil = Energiefluss.Prozent(f.AnteilProzent, k),
-                    Herkunft = Energiefluss.HerkunftText(f.Herkunft, englisch)
-                }).ToList(),
-                Knoten = b.Knoten.Where(x => x.ZuflussMwh != 0 || x.AbflussMwh != 0).Select(x => new ErgebnisFlussKnotenzeile
-                {
-                    Name = x.Name,
-                    Zufluss = Energiefluss.Zahl(x.ZuflussMwh, k),
-                    Abfluss = Energiefluss.Zahl(x.AbflussMwh, k),
-                    Rest = Energiefluss.Zahl(Math.Abs(x.RestMwh) < 0.005 ? 0.0 : x.RestMwh, k)
-                }).ToList(),
+                Fluesse = Flusszeilen(b, englisch),
+                Knoten = Knotenzeilen(b, englisch),
                 Hinweise = hinweise,
                 KiText = b.KiText().Replace("\r\n", "\n").TrimEnd()
             };
+        }
+
+        /// <summary>Je Band einer Bilanz eine Zeile der Textalternative.</summary>
+        private static List<ErgebnisFlussZeile> Flusszeilen(EnergieflussBilanz b, bool englisch)
+        {
+            CultureInfo k = Energiefluss.Kultur(englisch);
+            string Name(string id) => b.KnotenMit(id)?.Name ?? id;
+            return b.Fluesse.Select(f => new ErgebnisFlussZeile
+            {
+                Von = Name(f.Von),
+                Nach = Name(f.Nach),
+                Wert = Energiefluss.Zahl(f.Mwh, k),
+                Anteil = Energiefluss.Prozent(f.AnteilProzent, k),
+                Herkunft = Energiefluss.HerkunftText(f.Herkunft, englisch)
+            }).ToList();
+        }
+
+        /// <summary>Je Knoten einer Bilanz mit Fluss seine Bilanzzeile der Textalternative.</summary>
+        private static List<ErgebnisFlussKnotenzeile> Knotenzeilen(EnergieflussBilanz b, bool englisch)
+        {
+            CultureInfo k = Energiefluss.Kultur(englisch);
+            return b.Knoten.Where(x => x.ZuflussMwh != 0 || x.AbflussMwh != 0).Select(x => new ErgebnisFlussKnotenzeile
+            {
+                Name = x.Name,
+                Zufluss = Energiefluss.Zahl(x.ZuflussMwh, k),
+                Abfluss = Energiefluss.Zahl(x.AbflussMwh, k),
+                Rest = Energiefluss.Zahl(Math.Abs(x.RestMwh) < 0.005 ? 0.0 : x.RestMwh, k)
+            }).ToList();
         }
 
         /// <summary>

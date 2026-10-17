@@ -224,8 +224,15 @@ public class WaermepumpeReiterTests : EposBunitContext
         Assert.Equal(3, listen.Count);
 
         Assert.Equal(
-            new[] { "Wärmebedarfsdeckung:", "Wärmebedarf:", "Wärmeproduktion WP:", "Restwärmebedarf:" },
+            new[] { "Wärmebedarfsdeckung:", "Wärmebedarf:", "Erzeugte Nutzwärme Wärmepumpe:", "davon Heizung:",
+                    "davon Warmwasser:", "Restwärmebedarf:", "Wärmeproduktion Wärmepumpe:",
+                    "abzüglich Quellwärme aus Kaskade:", "zuzüglich Wärmeproduktion Heizstab:",
+                    "abzüglich Speicherverluste:", "Erzeugte Nutzwärme Wärmepumpe:" },
             listen[0].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+
+        // Die Wärme des Heizstabs steht neben der der Wärmepumpe: so viel, wie er Strom aufnimmt.
+        Assert.Equal("2,50", listen[0].QuerySelectorAll("dd")
+                                      .Select(z => z.TextContent.Trim()).ToArray()[8 * 2 + 0]);
         Assert.Equal(
             new[] { "Stromverbrauch WP:", "Stromverbrauch Heizstab:",
                     "Jahresarbeitszahl WP:", "Jahresarbeitszahl mit Heizstab:" },
@@ -234,6 +241,64 @@ public class WaermepumpeReiterTests : EposBunitContext
             new[] { "Bivalenzpunkt:", "durchschnittliche Vollbenutzungsstunden:",
                     "Minimale Spitzenkesselleistung:", "Kapazität des Pufferspeichers:" },
             listen[2].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+    }
+
+    /// <summary>
+    /// Der gedeckte Wärmebedarf steht mit seiner Aufteilung nach Bedarfsart in der
+    /// Wärmegruppe; Prozesswärme erscheint nur, wenn die Wärmepumpe welche gedeckt hat.
+    /// </summary>
+    [Fact]
+    public void Gedeckter_Waermebedarf_teilt_sich_nach_Bedarfsart()
+    {
+        var erg = Erg();
+        erg.GedecktMwh = 17.0;
+        erg.GedecktKanalMwh = new[] { 10.0, 5.0, 2.0, 0.0 };
+
+        var dl = Zeichnen(erg).FindAll("dl.epos-simerg-werte")[0];
+        string[] zeilen = dl.QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray();
+        string[] werte = dl.QuerySelectorAll("dd").Select(z => z.TextContent.Trim()).ToArray();
+
+        int i = Array.IndexOf(zeilen, "Erzeugte Nutzwärme Wärmepumpe:");
+        Assert.Equal(new[] { "Erzeugte Nutzwärme Wärmepumpe:", "davon Heizung:", "davon Warmwasser:",
+                             "davon Prozesswärme:", "Restwärmebedarf:" },
+                     zeilen.Skip(i).Take(5).ToArray());
+        Assert.Equal(new[] { "17,00", "10,00", "5,00", "2,00" },
+                     Enumerable.Range(i, 4).Select(z => werte[2 * z]).ToArray());
+    }
+
+    /// <summary>
+    /// Die Herleitung geht auf: Produktion − Quellwärme aus Kaskade + Heizstab
+    /// − Speicherverluste = Nutzwärme (Zahlen der Booster-Kette ohne Heizstab).
+    /// </summary>
+    [Fact]
+    public void Herleitung_der_Nutzwaerme_geht_auf()
+    {
+        var erg = Erg();
+        erg.WaermeproduktionMwh = 99.89;
+        erg.QuellwaermeKaskadeMwh = 20.48;
+        erg.HeizstabStromverbrauchMwh = 0.0;
+        erg.GedecktMwh = 77.51;
+
+        var dl = Zeichnen(erg).FindAll("dl.epos-simerg-werte")[0];
+        string[] zeilen = dl.QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray();
+        string[] werte = dl.QuerySelectorAll("dd").Select(z => z.TextContent.Trim()).ToArray();
+        string Wert(string zeile) => werte[2 * Array.IndexOf(zeilen, zeile)];
+
+        Assert.Equal("99,89", Wert("Wärmeproduktion Wärmepumpe:"));
+        Assert.Equal("20,48", Wert("abzüglich Quellwärme aus Kaskade:"));
+        Assert.Equal("0,00", Wert("zuzüglich Wärmeproduktion Heizstab:"));
+        Assert.Equal("1,90", Wert("abzüglich Speicherverluste:"));
+        Assert.Equal("77,51", Wert("Erzeugte Nutzwärme Wärmepumpe:"));
+
+        // Die Rechnung steht als eigener Block unter einem Zwischenkopf: die Zeilen
+        // eingerückt, die Nutzwärme als Ergebnis unter dem Summenstrich.
+        Assert.Equal("Herleitung der Nutzwärme",
+                     dl.QuerySelector("div.epos-simerg-zwischenkopf")!.TextContent.Trim());
+        Assert.Equal(4, dl.QuerySelectorAll("dt.epos-simerg-eingerueckt").Length);
+        var summe = dl.QuerySelectorAll("dt.epos-simerg-zwischensumme");
+        Assert.Single(summe);
+        Assert.Equal("Erzeugte Nutzwärme Wärmepumpe:", summe[0].TextContent.Trim());
+        Assert.Same(summe[0], dl.QuerySelectorAll("dt").Last());
     }
 
     /// <summary>Die Restwärme schliesst die Wärmegruppe betont ab (W11b‑B‑15).</summary>

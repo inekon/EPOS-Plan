@@ -1128,10 +1128,15 @@ namespace WindowsFormsApplication1
         /// <c>Stromeinspeisung</c> an <c>Tab_ErgebnisBHKW</c>, <c>Abregelung</c> an <c>Tab_ErgebnisPhotovoltaik</c>,
         /// <c>Eigenverbrauch_System</c> an <c>Tab_ErgebnisStromspeicher</c> (<see cref="ErgebnisreihenSchema"/>).
         /// <b>Ergebnisneutral:</b> Der Rechenweg bleibt, der Lauf schreibt nur zusätzlich, was er schon rechnet;
-        /// Altergebnisse bleiben leer. Das Ziel ist das Ende der Kette; umgehängt wird allein am Vorgänger
-        /// <see cref="KlimaRohwerteSchema.SCHRITT"/>.
+        /// Altergebnisse bleiben leer.
+        /// Danach, mit den ERGEBNISSPALTEN DER WIRTSCHAFTLICHKEIT (KB-8), steht das Ziel auf
+        /// <see cref="ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT"/>: <c>StromsteuerBefreiungModus</c>, <c>ErsatzBarwert</c>,
+        /// <c>Nachweis_Json</c> und <c>Lauf_Staende</c> an <c>Tab_ErgebnisWirtschaftlichkeit</c>, jede nur, wenn sie fehlt
+        /// (<see cref="ErgebnisWirtschaftlichkeitSpaltenSchema"/>). <b>Ergebnisneutral:</b> kein DML, Bestandszeilen bleiben
+        /// leer. Das Ziel ist das Ende der Kette; umgehängt wird allein am Vorgänger
+        /// <see cref="ErgebnisreihenSchema.SCHRITT"/>.
         /// </summary>
-        public const int Zielversion = ErgebnisreihenSchema.SCHRITT;
+        public const int Zielversion = ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

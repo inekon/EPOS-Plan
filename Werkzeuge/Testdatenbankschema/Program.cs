@@ -324,42 +324,9 @@ namespace Testdatenbankschema
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 88, trocken);
 
-            // ---- Schritt 88, zweiter Teil: die KONSERVENSPALTE des Ergebnisses.
-            //      Tab_ErgebnisWirtschaftlichkeit steht im Grundschema; ihre Ergebnisspalten
-            //      ohne Schemaschritt zieht WirtschaftlichkeitCtrl.SpalteSicher nach, also
-            //      erst beim ersten Lauf der Anwendung. Fuer die REPO-Testdatenbank reicht das
-            //      nicht: Sie ist die Messlatte des SqlDialektpruefers, und der loest
-            //      das INSERT des Ergebnisses gegen genau diese Datei auf. Ohne die
-            //      Spalte meldete er eine Fundstelle, die in der Anwendung keine ist.
-            //      Die Quelle ist dieselbe Konstante, die auch der Ctrl nimmt.
-            angelegt += SpalteSicherstellen(WirtschaftlichkeitCtrl.TAB_ERGEBNIS,
-                                            WirtschaftlichkeitCtrl.SPALTE_STROMST_MODUS,
-                                            "TEXT", 88, trocken);
-
-            // ---- Etappe B7P: die KONSERVENSPALTE des Nachweisumschlags. KEIN eigener
-            //      Schritt - die Spalte gehoert zu den Ergebnisspalten, die allein
-            //      WirtschaftlichkeitCtrl.SpalteSicher nachzieht; die Zielversion bleibt 89.
-            //      Wortgleiche Begruendung wie oben: Der
-            //      SqlDialektpruefer loest das INSERT des Ergebnisses gegen diese Datei
-            //      auf und meldete ohne die Spalte eine Fundstelle, die in der
-            //      Anwendung keine ist. Die Quelle ist dieselbe Konstante, die auch der
-            //      Ctrl nimmt.
-            angelegt += SpalteSicherstellen(WirtschaftlichkeitCtrl.TAB_ERGEBNIS,
-                                            WirtschaftlichkeitCtrl.SPALTE_NACHWEIS_JSON,
-                                            "TEXT", 89, trocken);
-
-            // ---- Register EZ-19 (Anwenderentscheid 02.10.2026): der LAUFVERMERK der
-            //      Ergebniszeile (Lauf_Staende, die Staende des Laufs mit Komma). KEIN eigener
-            //      Schritt - wie Nachweis_Json eine Ergebnisspalte, die allein
-            //      WirtschaftlichkeitCtrl.SpalteSicher nachzieht; die Zielversion bleibt 158,
-            //      die Nummer im Bericht nennt sie nur. Wortgleiche Begruendung wie oben: Der
-            //      SqlDialektpruefer loest das INSERT des Ergebnisses gegen diese Datei auf.
-            //      Bestandszeilen bleiben NULL (Altbestand ohne Vermerk); die Basis fuehrt
-            //      keinen Wert dieser Tabelle. Die Quelle ist dieselbe Konstante, die auch der
-            //      Ctrl nimmt.
-            angelegt += SpalteSicherstellen(WirtschaftlichkeitCtrl.TAB_ERGEBNIS,
-                                            WirtschaftlichkeitCtrl.SPALTE_LAUF_STAENDE,
-                                            "TEXT", 158, trocken);
+            // ---- Die vier Ergebnisspalten der Wirtschaftlichkeit ohne Grundschema (StromsteuerBefreiungModus,
+            //      ErsatzBarwert, Nachweis_Json, Lauf_Staende) legt der Schritt
+            //      ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT (KB-8) an - unten, hinter KD-4.
 
             // ---- Schritt 89: die Anlagenwahrheit des KWK-Zuschlags (Etappe BK1,
             //      Entscheid BK-E-1 a). EINE Spalte an Tab_Energieanlagen UND neun
@@ -3931,6 +3898,25 @@ namespace Testdatenbankschema
                 foreach (string zeile in berichtEb1)
                     Console.WriteLine("Schritt " + nrEb1 + " - " + zeile + ".");
                 Console.WriteLine("Schritt " + nrEb1 + " - vollstaendig: " + ErgebnisreihenSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT (KB-8): die vier Ergebnisspalten der
+            //      Wirtschaftlichkeit an Tab_ErgebnisWirtschaftlichkeit, jede nur, wenn sie fehlt, mit der Typuebersetzung
+            //      des frueheren Laufzeitwegs. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_ErgebnisWirtschaftlichkeitSpalten.
+            //      Wiederholbar, kein DML - der Referenzlauf bleibt gleich. Der SqlDialektpruefer loest das INSERT des
+            //      Ergebnisses gegen diese Datei auf und braucht die Spalten.
+            string nrKb8 = ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKb8 + " - Ergebnisspalten der Wirtschaftlichkeit: " +
+                              (ErgebnisWirtschaftlichkeitSpaltenSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKb8 = new List<string>();
+                angelegt += ErgebnisWirtschaftlichkeitSpaltenSchema.Ausfuehren(berichtKb8);
+                foreach (string zeile in berichtKb8)
+                    Console.WriteLine("Schritt " + nrKb8 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKb8 + " - vollstaendig: " + ErgebnisWirtschaftlichkeitSpaltenSchema.Vollstaendig() +
                                   " (erwartet True).");
             }
 

@@ -1187,7 +1187,7 @@ public sealed class StilblattTests
 
     /// <summary>
     /// <b>SK-2d-2: Knopfgruppen und Abblendregel des Energieflussbilds.</b> Der Kopf hat keine Höchstbreite mehr (Version,
-    /// „Kette | Stufen“ und Filter stehen nebeneinander und brechen um); die Hervorhebung blendet über die Deckkraft ab — nur
+    /// „Kette | Stufen | Zuordnung“ und Filter stehen nebeneinander und brechen um); die Hervorhebung blendet über die Deckkraft ab — nur
     /// Bänder und Knoten ohne <c>epos-fluss-an</c>, solange die figure markiert ist; keine Farbe, Legende und Stufentitel
     /// bleiben unberührt (die Regel nennt nur <c>fluss:</c> und <c>knoten:</c>).
     /// </summary>
