@@ -48570,11 +48570,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Z7 – nach Nutzungsprofil ähnelt.
+        /// </summary>
+        public static string GIMP_ZONENREGEL_Z7 {
+            get {
+                return ResourceManager.GetString("GIMP_ZONENREGEL_Z7", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ohne Außenfläche ähnelt.
         /// </summary>
         public static string GIMP_ZONE_OHNE_AUSSEN {
             get {
                 return ResourceManager.GetString("GIMP_ZONE_OHNE_AUSSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Nutzung ähnelt.
+        /// </summary>
+        public static string GIMP_ZONE_OHNE_NUTZUNG {
+            get {
+                return ResourceManager.GetString("GIMP_ZONE_OHNE_NUTZUNG", resourceCulture);
             }
         }
         
@@ -48593,6 +48611,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_ZONE_UNBEHEIZT {
             get {
                 return ResourceManager.GetString("GIMP_ZONE_UNBEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unbeheizt ähnelt.
+        /// </summary>
+        public static string GIMP_ZONE_UNBEHEIZT_Z7 {
+            get {
+                return ResourceManager.GetString("GIMP_ZONE_UNBEHEIZT_Z7", resourceCulture);
             }
         }
         
@@ -52305,6 +52332,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unbekanntes Profil „{0}“ – die Zuordnung wird nicht übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_PROFIL_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_PROFIL_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Raum {0} gehört nicht zu diesem Gebäude. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_PLAN_RAUM_UNBEKANNT {
@@ -54267,6 +54303,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unbekanntes Profil „{0}“ – die Zuordnung wird nicht übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_PROFIL_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_PROFIL_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Raum {0} gehört nicht zu diesem Gebäude. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_PLAN_RAUM_UNBEKANNT {
@@ -54326,6 +54371,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_PLATZIERUNGSART {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_PLATZIERUNGSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofile je Raum: {0} eindeutig zugeordnet, {1} mit Vorschlag, {2} offen (Rückfrage), {3} ohne Kandidaten; offen: {4}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PROFILE_ZUGEORDNET {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PROFILE_ZUGEORDNET", resourceCulture);
             }
         }
         
@@ -116878,11 +116932,191 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beherbergung und Pflege ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_BEHERBERGUNG {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_BEHERBERGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildung ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_BILDUNG {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_BILDUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Büro und Verwaltung ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_BUERO {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_BUERO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gastronomie und Küche ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_GASTRONOMIE {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_GASTRONOMIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Labor und Gesundheit ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_GESUNDHEIT {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_GESUNDHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hallen und Produktion ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_HALLEN {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_HALLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Handel ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_HANDEL {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_HANDEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Veranstaltung und Kultur ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_KULTUR {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_KULTUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neben-, Verkehrs- und Lagerflächen ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_NEBENFLAECHEN {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_NEBENFLAECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parken ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_PARKEN {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_PARKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sport und Wellness ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_SPORT {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_SPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohnen ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_WOHNEN {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_WOHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} aus der Datei ähnelt.
         /// </summary>
         public static string RNP_IMP_AUS_DATEI {
             get {
                 return ResourceManager.GetString("RNP_IMP_AUS_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung der Datei „{0}“ ähnelt.
+        /// </summary>
+        public static string RNP_IMP_BEGR_DATEI {
+            get {
+                return ResourceManager.GetString("RNP_IMP_BEGR_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die von Hand ähnelt.
+        /// </summary>
+        public static string RNP_IMP_BEGR_HAND {
+            get {
+                return ResourceManager.GetString("RNP_IMP_BEGR_HAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Küchen ähnelt.
+        /// </summary>
+        public static string RNP_IMP_BEGR_KUECHEN {
+            get {
+                return ResourceManager.GetString("RNP_IMP_BEGR_KUECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} % der beheizten Fläche ähnelt.
+        /// </summary>
+        public static string RNP_IMP_BEGR_MEHRHEIT {
+            get {
+                return ResourceManager.GetString("RNP_IMP_BEGR_MEHRHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name „{0}“ ähnelt.
+        /// </summary>
+        public static string RNP_IMP_BEGR_NAME {
+            get {
+                return ResourceManager.GetString("RNP_IMP_BEGR_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nichtwohngebäude ähnelt.
+        /// </summary>
+        public static string RNP_IMP_BEGR_NICHTWOHN {
+            get {
+                return ResourceManager.GetString("RNP_IMP_BEGR_NICHTWOHN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumart {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_BEGR_RAUMART {
+            get {
+                return ResourceManager.GetString("RNP_IMP_BEGR_RAUMART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohngebäude ({0} % Wohnfläche) ähnelt.
+        /// </summary>
+        public static string RNP_IMP_BEGR_WOHNGEBAEUDE {
+            get {
+                return ResourceManager.GetString("RNP_IMP_BEGR_WOHNGEBAEUDE", resourceCulture);
             }
         }
         
@@ -116932,6 +117166,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil Nr. {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_PROFIL_NUMMER {
+            get {
+                return ResourceManager.GetString("RNP_IMP_PROFIL_NUMMER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die aus der Nutzung der Datei ähnelt.
         /// </summary>
         public static string RNP_IMP_QUELLE_DATEI {
@@ -116973,6 +117216,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string RNP_IMP_QUELLE_IFC {
             get {
                 return ResourceManager.GetString("RNP_IMP_QUELLE_IFC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_RAUMPROFIL {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_RAUMPROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag der Mehrheit – {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_RAUMPROFIL_MEHRHEIT {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_RAUMPROFIL_MEHRHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die offen – Auswahl: {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_RAUMPROFIL_OFFEN {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_RAUMPROFIL_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag – {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_RAUMPROFIL_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_RAUMPROFIL_VORSCHLAG", resourceCulture);
             }
         }
         

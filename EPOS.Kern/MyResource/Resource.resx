@@ -58217,4 +58217,97 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="KI_DLG_KMA_RKW_ERL" xml:space="preserve">
     <value>Katalogsatz des Rückkühlwerks der wassergekühlten Kältemaschine (Id); leer = keins, dann gelten die Festwerte der Rückkühlart. Mit OK bekommt die Anlage eine eigene Projektkopie.</value>
   </data>
+  <data name="GIMP_ZONENREGEL_Z7" xml:space="preserve">
+    <value>Z7 – nach Nutzungsprofil</value>
+  </data>
+  <data name="GIMP_ZONE_UNBEHEIZT_Z7" xml:space="preserve">
+    <value>unbeheizt</value>
+  </data>
+  <data name="GIMP_ZONE_OHNE_NUTZUNG" xml:space="preserve">
+    <value>ohne Nutzung</value>
+  </data>
+  <data name="IMP_IFC_PROT_PROFILE_ZUGEORDNET" xml:space="preserve">
+    <value>Nutzungsprofile je Raum: {0} eindeutig zugeordnet, {1} mit Vorschlag, {2} offen (Rückfrage), {3} ohne Kandidaten; offen: {4}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_PROFIL_UNBEKANNT" xml:space="preserve">
+    <value>Unbekanntes Profil „{0}“ – die Zuordnung wird nicht übernommen.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_PROFIL_UNBEKANNT" xml:space="preserve">
+    <value>Unbekanntes Profil „{0}“ – die Zuordnung wird nicht übernommen.</value>
+  </data>
+  <data name="RNP_IMP_PROFIL_NUMMER" xml:space="preserve">
+    <value>Profil Nr. {0}</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_RAUMPROFIL" xml:space="preserve">
+    <value>aus {0}</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_RAUMPROFIL_VORSCHLAG" xml:space="preserve">
+    <value>Vorschlag – {0}</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_RAUMPROFIL_OFFEN" xml:space="preserve">
+    <value>offen – Auswahl: {0}</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_RAUMPROFIL_MEHRHEIT" xml:space="preserve">
+    <value>Vorschlag der Mehrheit – {0}</value>
+  </data>
+  <data name="RNP_IMP_BEGR_DATEI" xml:space="preserve">
+    <value>Bezeichnung der Datei „{0}“</value>
+  </data>
+  <data name="RNP_IMP_BEGR_RAUMART" xml:space="preserve">
+    <value>Raumart {0}</value>
+  </data>
+  <data name="RNP_IMP_BEGR_NAME" xml:space="preserve">
+    <value>Name „{0}“</value>
+  </data>
+  <data name="RNP_IMP_BEGR_WOHNGEBAEUDE" xml:space="preserve">
+    <value>Wohngebäude ({0} % Wohnfläche)</value>
+  </data>
+  <data name="RNP_IMP_BEGR_NICHTWOHN" xml:space="preserve">
+    <value>Nichtwohngebäude</value>
+  </data>
+  <data name="RNP_IMP_BEGR_KUECHEN" xml:space="preserve">
+    <value>{0} Küchen</value>
+  </data>
+  <data name="RNP_IMP_BEGR_HAND" xml:space="preserve">
+    <value>von Hand</value>
+  </data>
+  <data name="RNP_IMP_BEGR_MEHRHEIT" xml:space="preserve">
+    <value>{0} % der beheizten Fläche</value>
+  </data>
+  <data name="RNP_GRUPPE_BUERO" xml:space="preserve">
+    <value>Büro und Verwaltung</value>
+  </data>
+  <data name="RNP_GRUPPE_HANDEL" xml:space="preserve">
+    <value>Handel</value>
+  </data>
+  <data name="RNP_GRUPPE_BILDUNG" xml:space="preserve">
+    <value>Bildung</value>
+  </data>
+  <data name="RNP_GRUPPE_BEHERBERGUNG" xml:space="preserve">
+    <value>Beherbergung und Pflege</value>
+  </data>
+  <data name="RNP_GRUPPE_GASTRONOMIE" xml:space="preserve">
+    <value>Gastronomie und Küche</value>
+  </data>
+  <data name="RNP_GRUPPE_NEBENFLAECHEN" xml:space="preserve">
+    <value>Neben-, Verkehrs- und Lagerflächen</value>
+  </data>
+  <data name="RNP_GRUPPE_HALLEN" xml:space="preserve">
+    <value>Hallen und Produktion</value>
+  </data>
+  <data name="RNP_GRUPPE_KULTUR" xml:space="preserve">
+    <value>Veranstaltung und Kultur</value>
+  </data>
+  <data name="RNP_GRUPPE_SPORT" xml:space="preserve">
+    <value>Sport und Wellness</value>
+  </data>
+  <data name="RNP_GRUPPE_PARKEN" xml:space="preserve">
+    <value>Parken</value>
+  </data>
+  <data name="RNP_GRUPPE_GESUNDHEIT" xml:space="preserve">
+    <value>Labor und Gesundheit</value>
+  </data>
+  <data name="RNP_GRUPPE_WOHNEN" xml:space="preserve">
+    <value>Wohnen</value>
+  </data>
 </root>

@@ -116,6 +116,11 @@ namespace WindowsFormsApplication1
                 else if (string.Equals(q.Art, RaumnutzungSchema.ZUORDNUNG_HOTTCAD, StringComparison.Ordinal)) { raumtyp = q.Schluessel ?? ""; regel = true; }
                 else if (string.Equals(q.Art, RaumnutzungSchema.ZUORDNUNG_IFC, StringComparison.Ordinal)) { klasse = q.Schluessel ?? ""; regel = true; }
                 else if (string.Equals(q.Art, Zonenvorbesetzung.VORGABE_GEBAEUDEART, StringComparison.Ordinal)) regel = true;
+                // Entwurf ZZ (F6): ein eindeutig zugeordnetes DIN-Profil zählt wie eines aus der Datei (grün); ein unbestätigter
+                // Vorschlag und das Mehrheitsprofil einer gemischten Zone sind Profile aus einer Regel (gelb).
+                else if (string.Equals(q.Art, Raumprofilzuordnung.QUELLE, StringComparison.Ordinal)) regel = false;
+                else if (string.Equals(q.Art, Raumprofilzuordnung.QUELLE_VORSCHLAG, StringComparison.Ordinal)
+                         || string.Equals(q.Art, Raumprofilzuordnung.QUELLE_MEHRHEIT, StringComparison.Ordinal)) regel = true;
                 else continue;
                 liste.Add(new Zonenquellhinweis(z.Name, din, raumtyp, klasse, regel));
             }
