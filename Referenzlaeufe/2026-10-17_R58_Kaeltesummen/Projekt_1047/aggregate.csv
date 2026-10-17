@@ -129,8 +129,8 @@ Waermepumpe.Deckung_Heizung;13.53
 Waermepumpe.Deckung_Brauchwasser;0
 Waermepumpe.Deckung_Prozess;0
 Waermepumpe.Deckung_Kuehlung;100
-Waermepumpe.Kaelteproduktion_WP;3.83
-Waermepumpe.Stromverbrauch_Kuehlung;0.73
+Waermepumpe.Kaelteproduktion_WP;3.82939092
+Waermepumpe.Stromverbrauch_Kuehlung;0.73106554
 WaermepumpeModul[0].Modul;WPE-I 59 H 400 Premium
 WaermepumpeModul[0].Leistung;35
 WaermepumpeModul[0].Waermeproduktion;9.43

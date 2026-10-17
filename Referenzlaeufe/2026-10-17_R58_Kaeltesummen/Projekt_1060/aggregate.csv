@@ -129,8 +129,8 @@ Waermepumpe.Deckung_Heizung;71.35
 Waermepumpe.Deckung_Brauchwasser;0
 Waermepumpe.Deckung_Prozess;0
 Waermepumpe.Deckung_Kuehlung;100
-Waermepumpe.Kaelteproduktion_WP;3.83
-Waermepumpe.Stromverbrauch_Kuehlung;0.73
+Waermepumpe.Kaelteproduktion_WP;3.82873151
+Waermepumpe.Stromverbrauch_Kuehlung;0.730939651
 Waermepumpe.Bereich_WpAllein_h;3964
 Waermepumpe.Bereich_Parallel_h;0
 Waermepumpe.Bereich_Vorwaermung_h;620

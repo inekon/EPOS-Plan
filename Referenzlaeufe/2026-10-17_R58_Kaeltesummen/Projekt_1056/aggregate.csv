@@ -128,9 +128,9 @@ Waermepumpe.Bivalenzpunkt;-10.04
 Waermepumpe.Deckung_Heizung;18.84
 Waermepumpe.Deckung_Brauchwasser;0
 Waermepumpe.Deckung_Prozess;0
-Waermepumpe.Deckung_Kuehlung;98.39
-Waermepumpe.Kaelteproduktion_WP;3.77
-Waermepumpe.Stromverbrauch_Kuehlung;0.72
+Waermepumpe.Deckung_Kuehlung;98.3947398
+Waermepumpe.Kaelteproduktion_WP;3.76627292
+Waermepumpe.Stromverbrauch_Kuehlung;0.71901574
 WaermepumpeModul[0].Modul;WPE-I 59 H 400 Premium
 WaermepumpeModul[0].Leistung;35
 WaermepumpeModul[0].Waermeproduktion;12.12
