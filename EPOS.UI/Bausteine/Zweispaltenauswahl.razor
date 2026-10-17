@@ -108,7 +108,7 @@
     <section class="epos-zweispalten-bereich epos-zweispalten-bereich--katalog epos-zweispalten-spalte epos-zweispalten-spalte--unten"
              role="group" aria-label="@RechtsTitel" data-mehrfach="@(KatalogWahl is null ? null : "1")">
         <div class="epos-zweispalten-kopfleiste">
-            <span class="epos-zweispalten-marke epos-zweispalten-marke--katalog">@KatalogMarke</span>
+            <span class="epos-zweispalten-marke epos-zweispalten-marke--katalog" title="@Resource.AUSWAHL_MARKE_KATALOG_HINWEIS">@KatalogMarke</span>
             <h2 class="epos-untergruppe epos-zweispalten-titel" title="@RechtsTitel">@RechtsTitel</h2>
             @if (Wahltext(KatalogWahl, KatalogSichtbar) is string kz)
             {
@@ -123,7 +123,7 @@
             @if (!NurRechts)
             {
                 <button type="button" class="epos-knopf epos-zweispalten-knopf epos-zweispalten-knopf--richtung epos-zweispalten-knopf--uebernehmen"
-                        title="@UebernehmenHinweis" disabled="@UebernehmenGesperrt"
+                        title="@UebernehmenTitel" disabled="@UebernehmenGesperrt"
                         @onclick="Uebernehmen">
                     <span class="epos-zweispalten-pfeil" aria-hidden="true">▲</span>
                     <span class="epos-zweispalten-knopftext">@UebernehmenText</span>
@@ -591,6 +591,15 @@
 
     /// <summary>Kurztext des Übernahmeknopfes — <c>AUSWAHL_BTN_UEBERNEHMEN_HINWEIS</c>.</summary>
     [Parameter] public string UebernehmenHinweis { get; set; } = Resource.AUSWAHL_BTN_UEBERNEHMEN_HINWEIS;
+
+    /// <summary>
+    /// title des Übernahmeknopfes: der volle Knopftext, dann der Kurztext — in der Kompaktstufe
+    /// kürzt der Knopftext mit Auslassung, der title nennt ihn ganz (Nach #968 c, Konzept 4.8).
+    /// </summary>
+    private string UebernehmenTitel
+        => string.IsNullOrWhiteSpace(UebernehmenHinweis) || UebernehmenHinweis == UebernehmenText
+            ? UebernehmenText
+            : UebernehmenText + " – " + UebernehmenHinweis;
 
     /// <summary>Gesperrt, solange im Katalog keine Zeile markiert ist.</summary>
     [Parameter] public bool UebernehmenGesperrt { get; set; }

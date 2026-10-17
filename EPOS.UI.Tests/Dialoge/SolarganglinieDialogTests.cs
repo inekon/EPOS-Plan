@@ -610,4 +610,40 @@ public class SolarganglinieDialogTests : EposBunitContext
             Katalogwege.SolarganglinienDatei = vorher;
         }
     }
+
+    // =================================================================================
+    // KA-E-19: Vergleichen… beim Projektsatz
+    // =================================================================================
+
+    private IRenderedComponent<SolarganglinieDialog> MitKennzahlen()
+        => Render<SolarganglinieDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "Ganglinie Nord", 21), Zeile(2, "Ganglinie Süd", 22) })
+            .Add(x => x.Katalogwege, Wege())
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.Solarganglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Kennzahlen, (GanglinienWahl w) => Task.FromResult<GanglinienKennzahlen?>(
+                w.Bezeichner == "Ganglinie Nord" ? new GanglinienKennzahlen(3.9, 5.4, 722.0)
+                                                 : new GanglinienKennzahlen(4.2, 6.0, 700.0))));
+
+    [Fact]
+    public void Vergleichen_steht_vorn_in_der_Knopfleiste_am_Satz()
+        => GanglinienVergleichPruefung.StehtVorn(MitKennzahlen());
+
+    /// <summary>Projektsatz: zwei angekreuzte Projektzeilen mit Jahresarbeit, Spitze und Vollbenutzungsstunden.</summary>
+    [Fact]
+    public void Vergleichen_beim_Projektsatz_stellt_die_angekreuzten_Projektzeilen_nebeneinander()
+    {
+        var cut = MitKennzahlen();
+        GanglinienVergleichPruefung.Projektseite(cut, () => cut.FindComponent<Katalogliste>().Instance,
+            Ganglinienvergleich.Beschriftung(Resource.STROMGL_LBL_SPITZE),
+            "5,4 kW", "6 kW");
+        Assert.Equal(3, cut.FindComponent<Katalogliste>().Instance.Vergleich.Count);
+    }
+
+    [Fact]
+    public void Vergleichen_beim_Katalogsatz_stellt_die_angekreuzten_Katalogsaetze_nebeneinander()
+    {
+        var cut = MitKennzahlen();
+        GanglinienVergleichPruefung.Katalogseite(cut, () => cut.FindComponent<Katalogliste>().Instance);
+    }
 }

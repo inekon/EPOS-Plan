@@ -17070,7 +17070,10 @@ Please go through the project page again so that the data of the selected projec
     <value>In project</value>
   </data>
   <data name="AUSWAHL_MARKE_KATALOG" xml:space="preserve">
-    <value>Catalogue (database)</value>
+    <value>Catalogue (DB)</value>
+  </data>
+  <data name="AUSWAHL_MARKE_KATALOG_HINWEIS" xml:space="preserve">
+    <value>Catalogue from the database – shared by all projects</value>
   </data>
   <data name="AUSWAHL_MARKE_SATZ" xml:space="preserve">
     <value>Selected record</value>
@@ -52884,7 +52887,7 @@ chart</value>
     <value>Chillers in the project:</value>
   </data>
   <data name="KMA_LISTE_KATALOG" xml:space="preserve">
-    <value>Chillers in the database:</value>
+    <value>Chillers</value>
   </data>
   <data name="KMA_SUMME" xml:space="preserve">
     <value>Total rated cooling capacity [kW]:</value>
@@ -54912,6 +54915,9 @@ chart</value>
   </data>
   <data name="BKI_PROT_ANTEIL" xml:space="preserve">
     <value>Area fraction set to the remainder of 1 (section {0}: {1}): {2}</value>
+  </data>
+  <data name="BKI_PROT_OHNE_BEITRAG" xml:space="preserve">
+    <value>Sections without contribution (area fraction 0) omitted ({0} section(s), {1} layers): {2}</value>
   </data>
   <data name="BKI_PROT_GETEILT" xml:space="preserve">
     <value>Layers split at common layer boundaries ({0} → {1} layers): {2}</value>

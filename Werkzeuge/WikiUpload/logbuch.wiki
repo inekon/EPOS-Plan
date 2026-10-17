@@ -40,5 +40,6 @@
 * Seit 17.10.2026: Eine einzeln weitergegebene Variante führt am Ziel die Photovoltaik-Vergütung ihres Stammprojekts als eigene Angaben.
 * Seit 17.10.2026: Ein Wechselrichter, dem im Katalog Angaben zu MPP-Trackern oder Kurzschlussstrom fehlen, heißt beim Wechselrichtervorschlag „bedingt geeignet (Angaben fehlen)“ statt ungeeignet.
 * Seit 17.10.2026: Der Hilfe-Assistent wählt im Photovoltaik-Dialog auch Modul und Wechselrichter eines Strangs; eine ungeeignete Wahl lehnt er mit Grund ab.
+* Seit 17.10.2026: Auch Strom-, Solar- und PV-Ganglinie stellen mit „Vergleichen…“ zwei oder mehr angekreuzte Ganglinien des Projekts oder des Katalogs nebeneinander.
 
 

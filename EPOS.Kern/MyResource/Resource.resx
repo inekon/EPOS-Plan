@@ -17059,7 +17059,10 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
     <value>Im Projekt</value>
   </data>
   <data name="AUSWAHL_MARKE_KATALOG" xml:space="preserve">
-    <value>Katalog (Datenbank)</value>
+    <value>Katalog (DB)</value>
+  </data>
+  <data name="AUSWAHL_MARKE_KATALOG_HINWEIS" xml:space="preserve">
+    <value>Katalog aus der Datenbank – gilt für alle Projekte</value>
   </data>
   <data name="AUSWAHL_MARKE_SATZ" xml:space="preserve">
     <value>Gewählter Satz</value>
@@ -52891,7 +52894,7 @@ Chart</value>
     <value>Kältemaschinen im Projekt:</value>
   </data>
   <data name="KMA_LISTE_KATALOG" xml:space="preserve">
-    <value>Kältemaschinen in der Datenbank:</value>
+    <value>Kältemaschinen</value>
   </data>
   <data name="KMA_SUMME" xml:space="preserve">
     <value>Summe Nennkälteleistung [kW]:</value>
@@ -54919,6 +54922,9 @@ Chart</value>
   </data>
   <data name="BKI_PROT_ANTEIL" xml:space="preserve">
     <value>Flächenanteil als Rest zu 1 eingesetzt (Abschnitt {0}: {1}): {2}</value>
+  </data>
+  <data name="BKI_PROT_OHNE_BEITRAG" xml:space="preserve">
+    <value>Abschnitte ohne Beitrag (Flächenanteil 0) weggelassen ({0} Abschnitt(e), {1} Schichten): {2}</value>
   </data>
   <data name="BKI_PROT_GETEILT" xml:space="preserve">
     <value>Schichten an gemeinsamen Schichtgrenzen geteilt ({0} → {1} Schichten): {2}</value>

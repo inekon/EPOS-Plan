@@ -21,11 +21,18 @@
 //  Fenster: 1 400 x 820 und 1 280 x 800 (Normalmass; Dialog 1 160 px breit) -
 //  beide Kopfleisten. In der Kompaktstufe (unter 1 280 x 800) gilt 4.8: die
 //  Kopfleisten bleiben einzeilig, Knopftexte kuerzen mit Auslassung (title nennt
-//  den vollen Text), das Suchfeld gibt Breite ab - dort misst diese Probe nicht.
+//  den vollen Text), das Suchfeld gibt Breite ab, aber nur bis 11.25rem.
+//  KOMPAKTSTUFE (1 024 x 700 und 1 024 x 768, Nach #968 Mangel c): je Kopfleiste
+//    - der Platzhalter des Suchfelds steht ganz;
+//    - nichts liegt ueber dem Rand der Leiste oder ihres clippenden Vorfahren,
+//      keine zwei Elemente ueberlappen ("Spalten..." nie unter einem Knopf);
+//    - die Leiste ist einzeilig (alle Kinder in einer Zeile);
+//    gekuerzte Knopftexte und Ueberschrift sind dort erlaubt (4.8).
 //
 //  GEGENPROBE (laeuft mit, --ohne-gegenprobe laesst sie aus): dieselben Faelle
 //  mit den Regeln von vorher (Kopfleiste des Katalogs ohne Umbruch, Suchfeld
-//  "0 3 16rem", Untergrenze 7rem) - der Lauf muss dann rot sein.
+//  "0 3 16rem", Untergrenze 7rem; in der Kompaktstufe das Suchfeld mit 7rem) -
+//  der Lauf muss dann rot sein.
 //
 //  Aufruf (der Wirt laeuft, siehe LIESMICH.md):
 //    node kopfleistenprobe.mjs [--url http://127.0.0.1:5299] [--fotos <ordner>] [--nur <fall>] [--ohne-gegenprobe]
@@ -54,6 +61,9 @@ const OHNE_GEGENPROBE = process.argv.includes('--ohne-gegenprobe');
 const VORHER_CSS = `
 .epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste { flex-wrap: nowrap !important; }
 .epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste .epos-katalog-suchfeld { flex: 0 3 16rem !important; min-width: 7rem !important; }`;
+// Kompaktstufe vorher: das Suchfeld an seiner Untergrenze 7rem (Platzhalter gekuerzt).
+const VORHER_KOMPAKT_CSS = `
+.epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste .epos-katalog-suchfeld { min-width: 7rem !important; width: 7rem !important; }`;
 
 const FAELLE = [
   ...['heizkessel', 'bhkw', 'waermepumpe', 'pufferspeicher', 'stromspeicher', 'photovoltaik', 'solarkollektoren',
@@ -61,13 +71,14 @@ const FAELLE = [
   ...['heizkessel', 'bhkw', 'waermepumpen', 'gebaeude', 'kaelteprofile'].map(f => [`fenster-${f}`, `/fensterprobe?fall=${f}&kultur=de-DE`]),
   ...['heizkessel', 'bhkw', 'waermepumpen'].map(f => [`fenster-${f}-en`, `/fensterprobe?fall=${f}&kultur=en-US`]),
 ];
-const FENSTER = [[1400, 820, false], [1280, 800, false]];
+// [Breite, Hoehe, nur Katalog, Kompaktstufe]
+const FENSTER = [[1400, 820, false, false], [1280, 800, false, false], [1024, 768, false, true], [1024, 700, false, true]];
 
 async function messen(browser, vorher) {
   let verstoesse = 0;
   for (const [name, pfad] of FAELLE) {
     if (NUR && !name.startsWith(NUR)) continue;
-    for (const [w, h, nurKatalog] of FENSTER) {
+    for (const [w, h, nurKatalog, kompakt] of FENSTER) {
       const kontext = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1 });
       const seite = await kontext.newPage();
       await seite.goto(WURZEL + pfad, { waitUntil: 'networkidle' });
@@ -78,9 +89,9 @@ async function messen(browser, vorher) {
       // aus einem frueheren Lauf verdeckte den Platzhalter - die Probe misst mit leerem Feld.
       for (const feld of await seite.locator('.epos-zweispalten-kopfleiste input[type=search]').all())
         if (await feld.inputValue()) await feld.fill('');
-      if (vorher) await seite.addStyleTag({ content: VORHER_CSS });
+      if (vorher) await seite.addStyleTag({ content: kompakt ? VORHER_KOMPAKT_CSS : VORHER_CSS });
       await seite.waitForTimeout(700);
-      const r = await seite.evaluate((nurKatalog) => {
+      const r = await seite.evaluate(([nurKatalog, kompakt]) => {
         const aus = { dialog: 0, leisten: [] };
         const d = document.querySelector('.epos-dialog');
         if (d) aus.dialog = Math.round(d.getBoundingClientRect().width);
@@ -108,8 +119,9 @@ async function messen(browser, vorher) {
               if (q.right > vr.right + 0.5) befund.push(`abgeschnitten: ${nm(e)} bis ${Math.round(q.right)}, ${nm(v).slice(0, 30)} bis ${Math.round(vr.right)}`);
               break;
             }
-            if (e.tagName !== 'INPUT' && e.clientWidth > 0 && e.scrollWidth > e.clientWidth + 1) befund.push(`gekuerzt: ${nm(e)} ${e.scrollWidth} > ${e.clientWidth} px`);
-            for (const t of e.querySelectorAll('span'))
+            // Kompaktstufe (4.8): Knopftexte und Ueberschrift kuerzen dort mit Auslassung - erlaubt.
+            if (!kompakt && e.tagName !== 'INPUT' && e.clientWidth > 0 && e.scrollWidth > e.clientWidth + 1) befund.push(`gekuerzt: ${nm(e)} ${e.scrollWidth} > ${e.clientWidth} px`);
+            if (!kompakt) for (const t of e.querySelectorAll('span'))
               if (sicht(t) && t.clientWidth > 0 && t.scrollWidth > t.clientWidth + 1) befund.push(`gekuerzt: ${nm(t)} ${t.scrollWidth} > ${t.clientWidth} px`);
             if (e.tagName === 'INPUT' && e.placeholder && !e.value) {
               e.value = e.placeholder; const sw = e.scrollWidth, cw = e.clientWidth; e.value = '';
@@ -123,18 +135,30 @@ async function messen(browser, vorher) {
             const ix = Math.min(p.right, q.right) - Math.max(p.left, q.left), iy = Math.min(p.bottom, q.bottom) - Math.max(p.top, q.top);
             if (ix > 0.5 && iy > 0.5) befund.push(`ueberlappt: ${nm(a)} / ${nm(c)} ${Math.round(ix)} x ${Math.round(iy)} px`);
           }
+          // Kompaktstufe: ein gekuerzter Knopf behaelt sein Sinnbild (Pfeil ▲/▼) ganz im Knopf.
+          if (kompakt) for (const p of l.querySelectorAll('.epos-zweispalten-pfeil')) {
+            if (!sicht(p)) continue;
+            const k = p.closest('button'), q = p.getBoundingClientRect(), kr = k.getBoundingClientRect();
+            if (q.left < kr.left - 0.5 || q.right > kr.right + 0.5 || q.width < 4) befund.push(`Sinnbild verdeckt: ${nm(k)} ${Math.round(q.width)} px`);
+          }
+          // Kompaktstufe: die Leiste bleibt EINE Zeile (4.8) - jedes Kind teilt eine Zeile mit allen anderen.
+          if (kompakt && kinder.length) {
+            const unten = Math.min(...kinder.map(e => e.getBoundingClientRect().bottom));
+            const oben = Math.max(...kinder.map(e => e.getBoundingClientRect().top));
+            if (oben >= unten - 0.5) befund.push(`zweizeilig: Kinder von ${Math.round(oben)} bis ${Math.round(unten)} px, Leiste ${Math.round(lr.height)} px hoch`);
+          }
           const art = l.closest('.epos-zweispalten-bereich--katalog') ? 'Katalog' : 'Projekt';
           aus.leisten.push({ art, breite: Math.round(lr.width), hoehe: Math.round(lr.height), befund });
         }
         return aus;
-      }, nurKatalog);
+      }, [nurKatalog, kompakt]);
       const n = r.leisten.reduce((s, l) => s + l.befund.length, 0);
       verstoesse += n;
       if (!vorher || n) {
         console.log(`${n ? '--' : 'OK'} ${name} ${w}x${h}  Dialog ${r.dialog} px  ${r.leisten.map(l => `${l.art} ${l.breite}x${l.hoehe}`).join(', ')}`);
         if (!vorher) for (const l of r.leisten) for (const x of l.befund) console.log(`     ${l.art}: ${x}`);
       }
-      if (FOTOS && !vorher) await seite.locator('.epos-dialog').first().screenshot({ path: `${FOTOS}/kopfleiste_${name}_${w}.png` });
+      if (FOTOS && !vorher) await seite.locator('.epos-dialog').first().screenshot({ path: `${FOTOS}/kopfleiste_${name}_${w}x${h}.png` });
       await kontext.close();
     }
   }

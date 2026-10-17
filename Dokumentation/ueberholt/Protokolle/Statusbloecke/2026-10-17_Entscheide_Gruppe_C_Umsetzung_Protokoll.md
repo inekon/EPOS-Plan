@@ -1,6 +1,6 @@
-# Statusblock #1167 — Umsetzung der Anwenderentscheide Gruppe C (17.10.2026)
+# Statusblock #1170 — Umsetzung der Anwenderentscheide Gruppe C (17.10.2026)
 
-Der ausführliche Block zur Statuszeile #1167 in
+Der ausführliche Block zur Statuszeile #1170 in
 [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md). Register der Entscheide:
 [Entscheidungsregister iOS](../../../aktuell/Entscheidungsregister_iOS_EPOS-Plan.md) § 5.
 Sitzung „Dialoge und Korrekturen“ (Kostenbasis), Integrationszweig `integration-c`, Stand `18dbbcaaa`.
@@ -74,7 +74,7 @@ Innerhalb der Toleranz liegen `Stromverbrauch_Kuehlung` und `Deckung_Kuehlung` b
 - Gefilterte Tests: Kern 1 267 grün, 1 übersprungen; UI 624 grün.
 - ChartProben: 277 Bilder, 0 Verstöße. SQL-Dialekt-Prüfer: 0 Fundstellen bei 3 057 Texten.
 - Gate (`gate_rest_linux.sh`) auf `18dbbcaaa`: grün (UI 9698/9698, KiKern 553/553, SpeicherEngine 397/397, SpeicherPlanung 27/27, Werkzeugtests grün, Kern-Filter, Windows-Schale, Designer, SQL-Prüfer, BOM, Konfliktmarker ohne Befund; Referenzlauf aller 38 Projekte gegen R58 GESAMT PASS, 1233/1233 CSV byte-gleich)
-- CI-Kern-Lauf 39009472495 auf `18dbbcaaa`: rot in Block K (zwei Tests: Zählung der KI-Kennungen nach 8e, gerundet gespeicherter Kältestrom-Netzbezug der Kältemaschine nach 8d; behoben mit `412aac2b4` und `5ca1ee743`, alle 38 Projekte gegen R58 weiter GESAMT PASS und byte-gleich, Basis unverändert); Nachlauf {CI2}
+- CI-Kern-Lauf 39009472495 auf `18dbbcaaa`: rot in Block K (zwei Tests: Zählung der KI-Kennungen nach 8e, gerundet gespeicherter Kältestrom-Netzbezug der Kältemaschine nach 8d; behoben mit `412aac2b4` und `5ca1ee743`, alle 38 Projekte gegen R58 weiter GESAMT PASS und byte-gleich, Basis unverändert); Nachlauf CI-Kern-Lauf 39012285546 grün auf `1c4e4e13f`
 
 ## 7 Offen
 
