@@ -122,6 +122,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         public int AbschnitteOhneBeitrag { get; internal set; }
         /// <summary>
+        /// Wiedererkannte Aufbauten, die die Übernahme ändert (BK-11): ein Importsatz, dessen <c>Quelle</c> (samt Teilkatalog),
+        /// Bezeichner, Schicht- oder Abschnittzahl oder Gesamtdicke der Schichten vom Katalog abweicht — die Übernahme ersetzt
+        /// Kopf, Schichten und Abschnitte —, und ein Satz eigener Herkunft, dessen <c>Quelle</c> die Übernahme ergänzt (seine
+        /// Schichten bleiben). Nach einer Übernahme zählt eine zweite Vorschau derselben Quelle 0.
+        /// </summary>
+        public int AufbautenAktualisiert { get; internal set; }
+        /// <summary>
         /// Wiederimport (BK-8b): Aufbauten, die schon als Importsatz im Katalog stehen und durch die Teilung an gemeinsamen
         /// Schichtgrenzen andere Schichten bekämen; nur die Vorschau zählt sie (<see cref="BauteilkatalogImport.Vorschau"/>).
         /// </summary>
@@ -200,6 +207,12 @@ namespace WindowsFormsApplication1
         public string Quellkennung { get; set; }
         /// <summary>Die Quelle.</summary>
         public string Quelle { get; set; }
+        /// <summary>Aufbau: die Zahl seiner Schichten im Katalog (BK-11).</summary>
+        public int Schichten { get; set; }
+        /// <summary>Aufbau: die Zahl seiner Abschnitte im Katalog (BK-11).</summary>
+        public int Abschnitte { get; set; }
+        /// <summary>Aufbau: die Summe der Schichtdicken aller Abschnitte in m (BK-11).</summary>
+        public double Dicke { get; set; }
     }
 
     /// <summary>Der Abzug des Katalogs, gegen den geplant wird.</summary>
@@ -906,6 +919,7 @@ namespace WindowsFormsApplication1
             }
             if (luecken > 0) v.Protokoll.Add("Schichtgruppen neu nummeriert: " + Zahl(luecken));
             AbschnittePruefen(p, v);
+            AktualisierteZaehlen(p, v);
             // BK-9: die Teilkatalog-Zählungen erst nach dem Verwerfen - Vorschau und Übernahme zählen dieselben Sätze.
             v.BaustoffeMitTeilkatalog = p.Baustoffe.Count(x => x.Teilkataloge.Count > 0);
             v.AufbautenMitTeilkatalog = p.Aufbauten.Count(x => x.Teilkataloge.Count > 0);
@@ -1017,6 +1031,7 @@ namespace WindowsFormsApplication1
                     {
                         // Ein Abschnitt bleibt: der Aufbau ist homogen (Schichten ohne Abschnitt, wie ein Aufbau der Quelle ohne Abschnitte).
                         p.Abschnitte.Remove(streifen[0]);
+                        Abziehen(v.Abschnitte, a, 1); // BK-11: der Abschnitt wird nicht geschrieben
                         foreach (Satz s in a.Schichten) s.Abschnitt = null;
                         continue;
                     }
@@ -1082,10 +1097,51 @@ namespace WindowsFormsApplication1
             a.Schichten.RemoveAll(wegSchichten.Contains);
             p.Schichten.RemoveAll(wegSchichten.Contains);
             p.Abschnitte.RemoveAll(weg.Contains);
+            // BK-11: Weggelassenes zählt weder neu noch wiedererkannt - Vorschau und Übernahme zählen dieselben Sätze.
+            Abziehen(v.Abschnitte, a, weg.Count);
+            Abziehen(v.Schichten, a, schichten.Count);
             v.AbschnitteOhneBeitrag += weg.Count;
             v.Protokoll.Add(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BKI_PROT_OHNE_BEITRAG,
                                           Zahl(weg.Count), Zahl(schichten.Count), a.Kennung));
             return true;
+        }
+
+        /// <summary>Nimmt <paramref name="n"/> Sätze des Aufbaus <paramref name="a"/> aus der Zählung neu bzw. wiedererkannt (BK-11).</summary>
+        private static void Abziehen(BauteilkatalogZaehlung z, Satz a, int n)
+        {
+            if (a.Aktion == NEU) z.Neu -= n; else z.Wiedererkannt -= n;
+        }
+
+        /// <summary>
+        /// <b>Aktualisiert</b> (BK-11): zählt die wiedererkannten Aufbauten, die die Übernahme ändert. Ein Importsatz
+        /// (<see cref="AKTUALISIEREN"/>) zählt, wenn Quelle oder Bezeichner, die Zahl der Schichten oder Abschnitte oder die
+        /// Gesamtdicke (auf 1e-6 m) vom Katalog abweichen; ein ergänzter Satz (<see cref="ERGAENZEN"/>), wenn seine Quelle
+        /// angehängt wird. Ohne Katalogstand zählt nichts.
+        /// </summary>
+        private static void AktualisierteZaehlen(Plan p, BauteilkatalogVorschau v)
+        {
+            Dictionary<Satz, int> abschnitte = p.Abschnitte.GroupBy(x => x.Vertreter).ToDictionary(g => g.Key, g => g.Count());
+            foreach (Satz a in p.Aufbauten)
+            {
+                BauteilkatalogBestand b = a.Bestand;
+                if (b == null) continue;
+                string quelle = a.Werte.TryGetValue("Quelle", out object q) ? q as string : null;
+                bool anders;
+                if (a.Aktion == AKTUALISIEREN)
+                    anders = !string.Equals(quelle, b.Quelle, StringComparison.Ordinal) ||
+                             !string.Equals(a.Werte["Bezeichner"] as string, b.Bezeichner, StringComparison.Ordinal) ||
+                             a.Schichten.Count != b.Schichten ||
+                             (abschnitte.TryGetValue(a, out int n) ? n : 0) != b.Abschnitte ||
+                             Math.Abs(a.Schichten.Sum(s => s.W("Dicke") ?? 0.0) - b.Dicke) > 1e-6;
+                else
+                {
+                    string eigene = string.IsNullOrEmpty(quelle) ? v.Quelle : quelle;
+                    anders = !string.Equals(QuelleAnhaengen(b.Quelle, eigene), b.Quelle, StringComparison.Ordinal);
+                }
+                if (anders) v.AufbautenAktualisiert++;
+            }
+            if (v.AufbautenAktualisiert > 0)
+                v.Protokoll.Add("Wiedererkannte Aufbauten, die die Übernahme ändert: " + Zahl(v.AufbautenAktualisiert));
         }
 
         /// <summary>
@@ -1446,6 +1502,19 @@ namespace WindowsFormsApplication1
                     Bezeichner = r["Bezeichner"] as string,
                     Herkunft = r["Herkunft"] as string, Quellkennung = r["Quellkennung"] as string, Quelle = r["Quelle"] as string
                 });
+            // BK-11: Schichtzahl, Gesamtdicke und Abschnittzahl je Aufbau - der Vergleich für „aktualisiert“.
+            Dictionary<long, BauteilkatalogBestand> nachId = st.Aufbauten.ToDictionary(x => x.Id);
+            foreach (DataRow r in v.Lese("SELECT \"ID_Aufbau\", COUNT(*) AS \"Anzahl\", TOTAL(\"Dicke\") AS \"Dicke\" FROM \"" +
+                                         BauteilkatalogSchema.TAB_SCHICHT_STAMM + "\" GROUP BY \"ID_Aufbau\"").Rows)
+                if (r["ID_Aufbau"] != DBNull.Value && nachId.TryGetValue(Convert.ToInt64(r["ID_Aufbau"], CultureInfo.InvariantCulture), out BauteilkatalogBestand ab))
+                {
+                    ab.Schichten = Convert.ToInt32(r["Anzahl"], CultureInfo.InvariantCulture);
+                    ab.Dicke = Dbl(r["Dicke"]) ?? 0.0;
+                }
+            foreach (DataRow r in v.Lese("SELECT \"ID_Aufbau\", COUNT(*) AS \"Anzahl\" FROM \"" + BauteilkatalogSchema.TAB_ABSCHNITT_STAMM +
+                                         "\" GROUP BY \"ID_Aufbau\"").Rows)
+                if (r["ID_Aufbau"] != DBNull.Value && nachId.TryGetValue(Convert.ToInt64(r["ID_Aufbau"], CultureInfo.InvariantCulture), out BauteilkatalogBestand ab))
+                    ab.Abschnitte = Convert.ToInt32(r["Anzahl"], CultureInfo.InvariantCulture);
             return st;
         }
 
