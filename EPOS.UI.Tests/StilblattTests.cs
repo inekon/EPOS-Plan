@@ -1024,6 +1024,25 @@ public sealed class StilblattTests
     }
 
     /// <summary>
+    /// Zapfprofil ZC5: Die Wirkungsmarke der Methoden ist eine kleine Pille aus Tokens (leiser Text, leiser Rahmen),
+    /// bricht nicht um und bleibt im Kontrastmodus sichtbar; die Teile je Bereich und je Projekt trennt eine Linie.
+    /// </summary>
+    [Fact]
+    public void ZC5_Die_Wirkungsmarke_ist_eine_Pille_aus_Tokens_und_die_Teile_trennt_eine_Linie()
+    {
+        string css = Quelltextleser.Stilblatt();
+        string marke = Regelblock(".epos-zapfprofil-wirkung {");
+        Assert.Contains("border-radius: 999px", marke, StringComparison.Ordinal);
+        Assert.Contains("border: 1px solid var(--epos-rahmen-leise)", marke, StringComparison.Ordinal);
+        Assert.Contains("color: var(--epos-text-leise)", marke, StringComparison.Ordinal);
+        Assert.Contains("white-space: nowrap", marke, StringComparison.Ordinal);
+        Assert.DoesNotContain("#", marke, StringComparison.Ordinal);
+        Assert.Contains("@media (forced-colors: active) {\n    .epos-zapfprofil-wirkung {\n        border-color: CanvasText;", css, StringComparison.Ordinal);
+        Assert.Contains("border-top: 1px dashed var(--epos-rahmen-leise)",
+                        Regelblock(".epos-zapfprofil-methodenteil + .epos-zapfprofil-methodenteil {"), StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// Zapfprofil ZB6 / N13 (u): Die Wohnungstabelle fuellt ihre Zelle mit festen Spaltenanteilen, jedes
     /// Feld nimmt die Breite seiner Zelle — sie rollt im Eingabeblock nicht quer (Sichtprobe bei 1 500
     /// und 900 px: 0 px).

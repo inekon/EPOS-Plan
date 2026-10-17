@@ -16542,12 +16542,61 @@ Dieselben Regeln wie beim Projektkopf. */
     container: zapfprofil / inline-size;
 }
 
-.epos-zapfprofil-zonenblock,
-.epos-zapfprofil-gebaeudeblock {
+.epos-zapfprofil-methoden {
     display: flex;
     flex-direction: column;
     gap: 4px;
     min-width: 0;
+}
+
+/* DIE METHODEN ALS BEREICHE (Konzept Zapfprofil Bereiche und Methoden ZC5): sechs Karten in der Stufe Experte.
+   Rechts im Kopf die Wirkungsmarke als kleine Pille (Text leise auf der Flaeche, Rahmen leise; haelt 4,5:1),
+   unter dem Kopf ein leiser Satz, was die Methode tut. Felder je Bereich und je Projekt stehen in eigenen
+   Teilen untereinander, jeder unter seiner kleinen Marke; eine Linie trennt sie. */
+.epos-zapfprofil-wirkung {
+    display: inline-block;
+    padding: 0 8px;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: 999px;
+    color: var(--epos-text-leise);
+    font-size: 0.85em;
+    line-height: 1.6;
+    white-space: nowrap;
+}
+
+.epos-zapfprofil-methode .epos-klappgruppe-handlungen {
+    align-items: center;
+}
+
+.epos-zapfprofil-methodensatz {
+    margin: 0 0 4px;
+}
+
+.epos-zapfprofil-methodenteil {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.epos-zapfprofil-methodenteil + .epos-zapfprofil-methodenteil {
+    margin-top: var(--epos-abstand);
+    padding-top: 4px;
+    border-top: 1px dashed var(--epos-rahmen-leise);
+}
+
+.epos-zapfprofil-teilmarke {
+    margin: 0;
+    color: var(--epos-text-leise);
+    font-size: 0.85em;
+    font-weight: 700;
+}
+
+@media (forced-colors: active) {
+    .epos-zapfprofil-wirkung {
+        border-color: CanvasText;
+        color: CanvasText;
+    }
 }
 
 .epos-zapfprofil-karte + .epos-zapfprofil-karte {
@@ -16626,8 +16675,8 @@ Dieselben Regeln wie beim Projektkopf. */
 
 /* Das Blatt „Katalog der Nutzungsarten" (ZB9): Die Tabelle nimmt die Breite des Blattes und rollt nur in
    ihrer Huelle. */
-/* Der Titel des Typtagwegs steht links, seine Hilfepille rechts. */
-.epos-zapfprofil-typtage .epos-zapfprofil-gruppenhilfe > h5 {
+/* Der Titel einer Teilgruppe der Methoden (Tagesbedarf, Typtagweg) steht links, seine Hilfepille rechts. */
+.epos-zapfprofil-methodenteil .epos-zapfprofil-gruppenhilfe > h5 {
     margin-inline-end: auto;
 }
 
