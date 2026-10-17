@@ -317,7 +317,7 @@ namespace EPOS.Kern.Tests
             ["MFH_mittel_1984.ifc"] = new Kennzahlen
             {
                 Kopf = "21/14/7", Baujahr = "1984", Klasse = "H", Vorschlagsname = "MFH_mittel_1984",
-                Raeume = "29/24/298.84", Vorgabe = "Z4 5",
+                Raeume = "29/24/298.84", Vorgabe = "Z7 10",
                 ZonenZ4 = "DG2 29.43, DG1 104.11, EG 102.12, Keller 63.19, Keller (unbeheizt) 48.35",
                 TrennungenZ4 = "DG2|DG1|27.3, DG1|EG|99.39, EG|Keller|62.53, Keller|Keller (unbeheizt)|37.23",
                 Geschaetzt = "", Innenflaechenfaktor = "2.95",
@@ -328,7 +328,7 @@ namespace EPOS.Kern.Tests
             ["MFH-Klein-unsaniert-1964.ifc"] = new Kennzahlen
             {
                 Kopf = "21/14/7", Baujahr = "1964", Klasse = "E", Vorschlagsname = "MFH-Klein-unsaniert-1964",
-                Raeume = "30/23/275.21", Vorgabe = "Z4 7",
+                Raeume = "30/23/275.21", Vorgabe = "Z7 2",
                 ZonenZ4 = "DG2 48.78, DG1 98.15, OG1 88.53, OG1 (unbeheizt) 19.34, EG 88.53, EG (unbeheizt) 11.3, Keller 114.34",
                 TrennungenZ4 = "DG2|DG1|12.27, DG2|OG1 (unbeheizt)|2.78, DG1|OG1|82.95, DG1|OG1 (unbeheizt)|13.74, OG1|OG1 (unbeheizt)|23.81, OG1|EG|88.53, OG1 (unbeheizt)|EG (unbeheizt)|11.3, EG|EG (unbeheizt)|23.81, EG|Keller|11.84, EG (unbeheizt)|Keller|11.3",
                 Geschaetzt = "", Innenflaechenfaktor = "3.37",
@@ -339,7 +339,7 @@ namespace EPOS.Kern.Tests
             ["Sportheim_1970_unsaniert.ifc"] = new Kennzahlen
             {
                 Kopf = "21/14/7", Baujahr = "1985", Klasse = "H", Vorschlagsname = "Sportheim_1970_unsaniert",
-                Raeume = "56/41/718.99", Vorgabe = "Z4 4",
+                Raeume = "56/41/718.99", Vorgabe = "Z7 9",
                 ZonenZ4 = "OG 230.1, EG 450.78, UG (unbeheizt) 464.56, UG 38.11",
                 TrennungenZ4 = "OG|EG|152.78, EG|UG (unbeheizt)|98.82, EG|UG|35.16, UG (unbeheizt)|UG|45.06",
                 Geschaetzt = "", Innenflaechenfaktor = "2.66",
@@ -350,7 +350,7 @@ namespace EPOS.Kern.Tests
             ["Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc"] = new Kennzahlen
             {
                 Kopf = "21/14/7", Baujahr = "1969", Klasse = "F", Vorschlagsname = "Verwaltung_mit_Montage-2969_vollsaniert_2014",
-                Raeume = "113/91/4343.08", Vorgabe = "Z4 8",
+                Raeume = "113/91/4343.08", Vorgabe = "Z7 7",
                 ZonenZ4 = "OG4 546.81, OG3 649.47, OG3 (unbeheizt) 132.63, OG2 669.1, OG1 493.9, EG 1003.67, UG1 980.13, "
                     + "UG2 (unbeheizt) 154.46",
                 TrennungenZ4 = "OG4|OG3|578.13, OG4|OG3 (unbeheizt)|67.38, OG3|OG3 (unbeheizt)|93.77, OG3|OG2|761.74, OG3 (unbeheizt)|OG2|57.93, OG3 (unbeheizt)|OG1|58.55, OG3 (unbeheizt)|EG|72.11, OG3 (unbeheizt)|UG1|124.89, OG3 (unbeheizt)|UG2 (unbeheizt)|11.26, OG2|OG1|621.36, OG2|EG|169.01, OG1|EG|707.17, EG|UG1|944.76, UG1|UG2 (unbeheizt)|32.62",
@@ -362,7 +362,7 @@ namespace EPOS.Kern.Tests
             ["WG-EH55_Poroton-GModG-2026.ifc"] = new Kennzahlen
             {
                 Kopf = "21/14/7", Baujahr = "2026", Klasse = "M", Vorschlagsname = "WG-EH55_Poroton-GModG-2026",
-                Raeume = "20/20/342.56", Vorgabe = "Z4 3",
+                Raeume = "20/20/342.56", Vorgabe = "Z7 4",
                 ZonenZ4 = "DG 114.9, EG 120.26, Keller 107.4",
                 TrennungenZ4 = "DG|EG|113.56, EG|Keller|105.81",
                 Geschaetzt = "", Innenflaechenfaktor = "3.48",
@@ -373,7 +373,7 @@ namespace EPOS.Kern.Tests
             ["Produktion_groß_mit_Verwaltung_EG55-2026.ifc"] = new Kennzahlen
             {
                 Kopf = "21/14/7", Baujahr = "2026", Klasse = "M", Vorschlagsname = "Produktion_groß_mit_Verwaltung_EG55-2026",
-                Raeume = "49/48/18481.66", Vorgabe = "Z4 3",
+                Raeume = "49/48/18481.66", Vorgabe = "Z7 7",
                 ZonenZ4 = "OG1 8794.25, EG 9687.41, EG (unbeheizt) 130.54",
                 TrennungenZ4 = "OG1|EG|9098.57, EG|EG (unbeheizt)|149.11",
                 Geschaetzt = "", Innenflaechenfaktor = "1.73",
@@ -455,8 +455,9 @@ namespace EPOS.Kern.Tests
                          g.Raeume.Where(r => r.GeschossKennung == g.Geschosse.Single(x => x.Anzeigename == "Keller").Kennung && r.Beheizt)
                                  .Select(r => r.Name));
             Assert.Single(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_ERKLAERUNG_VOR_BEZUG");
-            GebaeudeZonierung z = GebaeudeZonierung.Bilden(a.Abbild, 0);
-            Assert.Equal(IfcImportProfil.ZONENREGEL_Z4, z.Vorgabe);
+            // Entwurf ZZ (F1): Raumart an allen Räumen, keine IfcZone → Vorgabe Z7; die Geschosszonierung Z4 bleibt wählbar und gekoppelt.
+            GebaeudeZonierung z = GebaeudeZonierung.Bilden(a.Abbild, 0, IfcImportProfil.ZONENREGEL_Z4);
+            Assert.Equal(IfcImportProfil.ZONENREGEL_Z7, z.Vorgabe);
             Assert.DoesNotContain(z.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_KEINE_GRENZEN" || m.Schluessel == "IMP_IFC_PROT_GRENZEN_ENTKOPPELT");
         }
 
@@ -508,8 +509,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal("3.37", Z(satz.Zeile(GebaeudeZielfelder.INNENFLAECHENFAKTOR).Wert));
             Assert.Equal(Importherkunft.Ifc, satz.Zeile(GebaeudeZielfelder.INNENFLAECHENFAKTOR).Herkunft);
 
-            GebaeudeZonierung vorgabe = GebaeudeZonierung.Bilden(a.Abbild, 0);
-            Assert.Equal(IfcImportProfil.ZONENREGEL_Z4, vorgabe.Vorgabe);
+            // Entwurf ZZ (F1): die Vorgabe ist Z7; die Trennungen der Geschosszonierung Z4 bleiben wie gemessen.
+            GebaeudeZonierung vorgabe = GebaeudeZonierung.Bilden(a.Abbild, 0, IfcImportProfil.ZONENREGEL_Z4);
+            Assert.Equal(IfcImportProfil.ZONENREGEL_Z7, vorgabe.Vorgabe);
             Assert.DoesNotContain(vorgabe.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_GRENZEN_ENTKOPPELT");
             Assert.Equal(new[] { "DG2|DG1|12.27", "DG2|OG1 (unbeheizt)|2.78", "DG1|OG1|82.95", "DG1|OG1 (unbeheizt)|13.74", "OG1|OG1 (unbeheizt)|23.81",
                                  "OG1|EG|88.53", "OG1 (unbeheizt)|EG (unbeheizt)|11.3", "EG|EG (unbeheizt)|23.81", "EG|Keller|11.84", "EG (unbeheizt)|Keller|11.3" },
@@ -533,8 +535,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { "Entsorgungsraum" }, g.Raeume.Where(r => !r.Beheizt).Select(r => r.Name));
             Assert.Single(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_NAME_PLATZHALTER");
             Assert.DoesNotContain(g.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_BAUJAHR_DATEINAME");   // die Datei führt 2026
-            GebaeudeZonierung z = GebaeudeZonierung.Bilden(a.Abbild, 0);
-            Assert.Equal(IfcImportProfil.ZONENREGEL_Z4, z.Vorgabe);
+            // Entwurf ZZ (F1): die Vorgabe ist Z7; unter Z4 koppeln die Körperdecken die Geschosse wie gemessen.
+            GebaeudeZonierung z = GebaeudeZonierung.Bilden(a.Abbild, 0, IfcImportProfil.ZONENREGEL_Z4);
+            Assert.Equal(IfcImportProfil.ZONENREGEL_Z7, z.Vorgabe);
             Assert.DoesNotContain(z.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_GRENZEN_ENTKOPPELT");
             Assert.DoesNotContain(z.Meldungen, m => m.Schluessel == "IMP_IFC_PROT_ZONE_OHNE_FLAECHEN");
             Assert.Equal(new[] { "OG1|EG|9098.57", "EG|EG (unbeheizt)|149.11" },
@@ -850,27 +853,33 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>Beide Durchgänge einer Datei — Vorgabe zuerst, dann die andere Regel —, ins Protokoll geschrieben.</summary>
-        private async Task<(Rechnung Vorgabe, Rechnung Vergleich)> Beide(string datei)
+        /// <summary>
+        /// Drei Durchgänge je Datei: die Vorgabe der Datei (Entwurf ZZ, F1: Z7 nach Nutzungsprofil — sie muss fehlerfrei rechnen),
+        /// die gemessene Regel der Tabelle <see cref="SOLL"/> (Z4, die Zahlen bleiben) und die andere Regel (Z5) als Vergleich.
+        /// </summary>
+        private async Task<(Rechnung Vorgabe, Rechnung Gemessen, Rechnung Vergleich)> Beide(string datei, string gemessen)
         {
-            if (!_db.Vorhanden) { _aus.WriteLine("Testdatenbank fehlt — übersprungen."); return (null, null); }
+            if (!_db.Vorhanden) { _aus.WriteLine("Testdatenbank fehlt — übersprungen."); return (null, null, null); }
             string pfad = IfcQuelldateienDiagnoseTests.Pfad(datei);
-            if (pfad == null) { _aus.WriteLine(datei + " fehlt — übersprungen."); return (null, null); }
+            if (pfad == null) { _aus.WriteLine(datei + " fehlt — übersprungen."); return (null, null, null); }
             string vorgabe;
             var a = new GebaeudeImportAblauf();
             using (FileStream s = File.OpenRead(pfad))
                 a.Lesen(s, pfad, new IfcImportProfil());
             vorgabe = GebaeudeZonierung.Bilden(a.Abbild, 0).Vorgabe;
-            string andere = vorgabe == IfcImportProfil.ZONENREGEL_Z4 ? IfcImportProfil.ZONENREGEL_Z5 : IfcImportProfil.ZONENREGEL_Z4;
+            string andere = gemessen == IfcImportProfil.ZONENREGEL_Z4 ? IfcImportProfil.ZONENREGEL_Z5 : IfcImportProfil.ZONENREGEL_Z4;
             string stamm = Path.GetFileNameWithoutExtension(datei);
-            Rechnung r1 = await Durchgang(pfad, vorgabe, stamm + " " + vorgabe);
+            Rechnung r0 = vorgabe == gemessen ? null : await Durchgang(pfad, vorgabe, stamm + " " + vorgabe);
+            Rechnung r1 = await Durchgang(pfad, gemessen, stamm + " " + gemessen);
             Rechnung r2 = await Durchgang(pfad, andere, stamm + " " + andere);
-            foreach (Rechnung r in new[] { r1, r2 })
-                _aus.WriteLine(datei + " " + r.Regel + (r == r1 ? " (Vorgabe)" : " (Vergleich)") + ": " + r.Zonen + " Zonen, A " + Z(r.NutzflaecheM2)
+            r0 ??= r1;
+            foreach (Rechnung r in new[] { r0, r1, r2 }.Distinct())
+                _aus.WriteLine(datei + " " + r.Regel + (r == r0 ? " (Vorgabe)" : r == r1 ? " (gemessen)" : " (Vergleich)") + ": " + r.Zonen + " Zonen, A " + Z(r.NutzflaecheM2)
                                + " m², Q " + Z(r.HeizwaermeMwh) + " MWh/a = " + Z(r.SpezifischKwhM2) + " kWh/(m²a), Spitze " + Z(r.MaxLastKw)
                                + " kW, Tagesmittel " + Z(r.SpitzeTagesmittelKw) + " kW, Auslegungsheizlast " + Z(r.AuslegungsheizlastKw)
                                + " kW, " + Z(r.Sekunden) + " s" + (r.Befund == null ? "" : "; BEFUND: " + r.Befund)
                                + "; Hinweise: " + string.Join(" | ", r.Hinweise));
-            return (r1, r2);
+            return (r0, r1, r2);
         }
 
         /// <summary>Nah an einem gemessenen Wert (relativ).</summary>
@@ -914,6 +923,18 @@ namespace EPOS.Kern.Tests
                 ["Produktion_groß_mit_Verwaltung_EG55-2026.ifc"] = ("Z4", 3, 1824.25, 1249.16, 863.06, 1820.62, 1010.76),
             };
 
+        /// <summary>Die Vorgabe der Datei (Entwurf ZZ, F1: Z7 nach Nutzungsprofil) und ihre Zonenzahl — sie rechnet fehlerfrei durch.</summary>
+        private static readonly IReadOnlyDictionary<string, (string Regel, int Zonen)> VORGABE
+            = new Dictionary<string, (string, int)>(StringComparer.Ordinal)
+            {
+                ["MFH_mittel_1984.ifc"] = ("Z7", 10),
+                ["MFH-Klein-unsaniert-1964.ifc"] = ("Z7", 2),
+                ["Sportheim_1970_unsaniert.ifc"] = ("Z7", 9),
+                ["Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc"] = ("Z7", 7),
+                ["WG-EH55_Poroton-GModG-2026.ifc"] = ("Z7", 4),
+                ["Produktion_groß_mit_Verwaltung_EG55-2026.ifc"] = ("Z7", 7),
+            };
+
         /// <summary>
         /// <b>Je Anwenderdatei der Durchgang mit der Vorgabe und mit der anderen Regel</b>: Die Vorgabe rechnet fehlerfrei,
         /// mit den gemessenen Werten (relativ 1 %); der Vergleich rechnet ebenso, die Verwaltung unter Z4 mit der
@@ -928,9 +949,13 @@ namespace EPOS.Kern.Tests
         [InlineData("Produktion_groß_mit_Verwaltung_EG55-2026.ifc")]
         public async Task Durchgang_bis_zur_Rechnung(string datei)
         {
-            (Rechnung vorgabe, Rechnung vergleich) = await Beide(datei);
-            if (vorgabe == null) return;
             var soll = SOLL[datei];
+            (Rechnung z7, Rechnung vorgabe, Rechnung vergleich) = await Beide(datei, soll.Regel);
+            if (vorgabe == null) return;
+            // Die Vorgabe der Datei (Z7) rechnet fehlerfrei mit ihren Nutzungszonen; die gemessenen Zahlen gehören zur Regel der Tabelle.
+            Assert.Null(z7.Befund);
+            Assert.Equal(VORGABE[datei].Regel, z7.Regel);
+            Assert.Equal(VORGABE[datei].Zonen, z7.Zonen);
             Assert.Null(vorgabe.Befund);
             Assert.Equal(soll.Regel, vorgabe.Regel);
             Assert.Equal(soll.Zonen, vorgabe.Zonen);

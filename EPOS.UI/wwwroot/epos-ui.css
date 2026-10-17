@@ -8499,6 +8499,46 @@ table.epos-simerg-tabelle {
     min-width: 0;
 }
 
+/* ZZ-B: die Überlagerung „Nutzungsprofile zuordnen…“ — links der Katalogbaum, rechts die Bündel;
+   im schmalen Fenster untereinander. Die Bündeltabelle trägt die Klassen des Hausblatts (epos-raster). */
+.epos-gebimport-pz-spalten {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 8px 16px;
+}
+
+.epos-gebimport-pz-katalog {
+    flex: 1 1 18rem;
+    min-width: 0;
+    max-height: 60vh;
+    overflow: auto;
+}
+
+.epos-gebimport-pz-buendel {
+    flex: 3 1 36rem;
+    min-width: 0;
+}
+
+.epos-gebimport-pz-titel {
+    margin: 0 0 4px;
+    font-size: 1em;
+}
+
+.epos-gebimport-pz-suche {
+    width: 100%;
+    margin-bottom: 4px;
+}
+
+.epos-gebimport-pz-zeile[aria-selected="true"] {
+    background: var(--epos-auswahl-flaeche, rgba(0, 120, 212, 0.08));
+}
+
+.epos-gebimport-pz-stand[data-stand="OFFEN"],
+.epos-gebimport-pz-stand[data-stand="OHNE"] {
+    font-weight: 600;
+}
+
 .epos-gebimport-grundrissspalte {
     flex: 1 1 22rem;
     min-width: 0;

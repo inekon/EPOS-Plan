@@ -1,6 +1,8 @@
 == Version 1.2.0.11 – Oktober 2026 ==
 {{Anker|version-1-2-0-11-oktober-2026|v1-2-0-11}}
 
+* Seit 17.10.2026: Der Gebäudeimport bildet die Zonen einer IFC-Datei auf Wunsch nach Nutzungsprofil (Regel „Z7 – nach Nutzungsprofil“) und ordnet jedem Raum ein Profil der DIN/TS 18599-10 zu, mit Vorschlägen aus Bezeichnung, Raumart und Raumname.
+* Seit 17.10.2026: Der neue Dialog „Nutzungsprofile zuordnen…“ im Gebäudeimport zeigt die Räume als Bündel mit Katalog der Normgruppen und lässt Profile einzeln, gebündelt oder als Sammelübernahme der Vorschläge zuordnen.
 * Seit 13.10.2026: Der Gebäudedialog prüft ein Gebäude mit „Modell prüfen…“ auf Rechenfähigkeit, zeigt je Prüfgruppe eine Ampel, schlägt fehlende Hüllflächen und Aufbauten nach Namen und Baualtersklasse vor und übernimmt die Vorschläge mit einem Klick; nach einem Import öffnet die Prüfung von selbst.
 * Seit 13.10.2026: Aus „Modell prüfen“ öffnet „Ansicht…“ die Gebäudeansicht mit den betroffenen Flächen und Zonen hervorgehoben; Zonen, Legendeneinträge und Bauteilgruppen lassen sich ein- und ausblenden, und der neue Farbmodus „Nutzung“ zeigt die Nutzungsprofile.
 * Seit 13.10.2026: Das neue Blatt „Nutzung und Kalender“ zeigt Nutzungsprofil, Kalender, Sollwerte, Ferien und Heizperiode aller Zonen eines Gebäudes mit einem Kurzbild der Woche und weist sie mehreren Zonen in einem Schritt zu.
