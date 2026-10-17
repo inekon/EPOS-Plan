@@ -248,8 +248,13 @@ namespace WindowsFormsApplication1
         /// Jahressummen je Profilname aus dem offenen Dialog
         /// (<see cref="ProfilQuelle.Jahressummen"/>); <c>null</c> im Lauf.
         /// </param>
+        /// <param name="arbeitsstaende">
+        /// Der Arbeitsstand des offenen Dialogs je Profilname — hier der Betriebskalender der Zeile
+        /// (<see cref="ProfilQuelle.Arbeitsstaende"/>); <c>null</c> im Lauf.
+        /// </param>
         public double[] Stromprofil_Strombedarf_berechnen(List<string> list = null,
-                                                         IReadOnlyDictionary<string, double> jahressummen = null)
+                                                         IReadOnlyDictionary<string, double> jahressummen = null,
+                                                         IReadOnlyDictionary<string, ProfilArbeitsstand> arbeitsstaende = null)
         {
             double[] summe = new double[8760];
 
@@ -266,6 +271,7 @@ namespace WindowsFormsApplication1
 
                 ProfilQuelle quelle = ProfilQuelle.Strom(modus);
                 quelle.Jahressummen = jahressummen;
+                quelle.Arbeitsstaende = arbeitsstaende;
                 // Typbezug leer (Befund PW6): Die Profilroutine überspringt das Profil mit
                 // benannter Warnung, die übrigen rechnen vollständig - in allen drei
                 // Bedarfsarten gleich. Der Lauf bricht daran nicht mehr ab; die Rückgabe

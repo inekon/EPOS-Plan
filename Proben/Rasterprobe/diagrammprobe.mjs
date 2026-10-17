@@ -20,6 +20,9 @@
 //      unmittelbar nach mouse.move, bevor ein weiterer Bildaufbau kommt);
 //    - die Zeigerzeile nennt nach dem naechsten Bildaufbau Stunde und Datum
 //      ("… h · <Tag>. <Monat> …");
+//    - der Zeigertext (.epos-diagramm-zeigertext) steht in der Zeile UNTER dem Bild, mittig unter
+//      der Maus (|Mitte - Maus x| <= 1 px) oder, wo er sonst aus der Zeile liefe, buendig an
+//      ihrem linken bzw. rechten Rand - nie ausserhalb (Befund 17.10.2026);
 //    - die Pfade der Reihen sind DIESELBEN Elemente wie vor der Bewegung (nicht
 //      neu erzeugt) und ihr d-Attribut ist unveraendert - kein Neuzeichnen.
 //  Dazu die Zahl der Pfad-Mutationen (MutationObserver) ueber die ganze Bewegung:
@@ -221,6 +224,7 @@ async function lauf(browser, ohneTafel) {
 
     const abstaende = [];
     let mitDatum = 0;
+    const zeigertext = { mittig: 0, links: 0, rechts: 0, daneben: 0, ohne: 0 };
     for (let s = 0; s <= SCHRITTE; s++) {
       const x = r.x + 2 + (r.width - 4) * s / SCHRITTE;
       const y = r.y + r.height / 2;
@@ -237,10 +241,30 @@ async function lauf(browser, ohneTafel) {
       if (lage === null) { abstaende.push(Infinity); continue; }
       abstaende.push(Math.abs(lage - x));
       // Die Zeile nach dem naechsten Bildaufbau.
-      const zeile = await seite.evaluate(() => new Promise(fertig =>
-        requestAnimationFrame(() => requestAnimationFrame(() =>
-          fertig((document.querySelector('.epos-diagramm-zeigerzeile') || {}).textContent || '')))));
+      const { zeile, text } = await seite.evaluate(() => new Promise(fertig =>
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          const z = document.querySelector('.epos-diagramm-zeigerzeile');
+          const t = z ? z.querySelector('.epos-diagramm-zeigertext') : null;
+          const fl = document.querySelector('.epos-diagramm-svg-flaeche');
+          const rz = z ? z.getBoundingClientRect() : null, rt = t ? t.getBoundingClientRect() : null;
+          fertig({ zeile: (z || {}).textContent || '',
+                   text: rt ? { links: rt.left, rechts: rt.right, oben: rt.top, zLinks: rz.left, zRechts: rz.right,
+                                bildUnten: fl.getBoundingClientRect().bottom } : null });
+        }))));
       if (/ h · \d+\.? ?[A-Za-zÄÖÜäöü.]+|h · [A-Z][a-z]+ \d+/.test(zeile)) mitDatum++;
+      // DER ZEIGERTEXT (Befund 17.10.2026): mittig unter dem Zeiger, sonst buendig an einem Rand der Zeile,
+      // die er nie verlaesst, und unter dem Bild (nicht ueber Tick-Beschriftung und Achsentitel).
+      if (!text) zeigertext.ohne++;
+      else {
+        const mitte = (text.links + text.rechts) / 2;
+        const drin = text.links >= text.zLinks - TOLERANZ_PX && text.rechts <= text.zRechts + TOLERANZ_PX;
+        const unter = text.oben >= text.bildUnten - TOLERANZ_PX;
+        if (!drin || !unter) zeigertext.daneben++;
+        else if (Math.abs(mitte - x) <= TOLERANZ_PX) zeigertext.mittig++;
+        else if (Math.abs(text.links - text.zLinks) <= TOLERANZ_PX && x < mitte) zeigertext.links++;
+        else if (Math.abs(text.rechts - text.zRechts) <= TOLERANZ_PX && x > mitte) zeigertext.rechts++;
+        else zeigertext.daneben++;
+      }
     }
 
     const stand = await seite.evaluate(() => {
@@ -258,13 +282,18 @@ async function lauf(browser, ohneTafel) {
     if (!stand.gleich) befunde.push('Pfade neu erzeugt oder veraendert');
     if (stand.mutationen > 0) befunde.push(`${stand.mutationen} Pfad-Mutationen waehrend der Bewegung`);
     if (!ohneTafel && mitDatum < abstaende.length) befunde.push(`Zeile mit Datum nur in ${mitDatum} von ${abstaende.length} Schritten`);
+    const tGut = zeigertext.mittig + zeigertext.links + zeigertext.rechts;
+    if (tGut < abstaende.length)
+      befunde.push(`Zeigertext nur in ${tGut} von ${abstaende.length} Schritten unter dem Zeiger ` +
+                   `(${zeigertext.daneben} daneben, ${zeigertext.ohne} ohne Zeigertext)`);
+    if (zeigertext.mittig === 0) befunde.push('Zeigertext in keinem Schritt mittig unter dem Zeiger');
 
     if (FOTOS) {
       await mkdir(FOTOS, { recursive: true });
       await rahmen.screenshot({ path: `${FOTOS}/diagramm_${ohneTafel ? 'gegenprobe' : 'probe'}.png` });
     }
     return { stufe, schritte: abstaende.length, groesster, mitDatum, pfade: stand.pfade,
-             mutationen: stand.mutationen, befunde };
+             mutationen: stand.mutationen, zeigertext, befunde };
   } finally {
     await seite.close();
   }
@@ -615,7 +644,8 @@ try {
   } else {
   const p = await lauf(browser, false);
   console.log(`PROBE   Stufe ${p.stufe} · ${p.schritte} Schritte · groesster Abstand ${p.groesster.toFixed(2)} px · ` +
-              `Zeile mit Datum ${p.mitDatum}/${p.schritte} · ${p.pfade} Pfade · ${p.mutationen} Mutationen`);
+              `Zeile mit Datum ${p.mitDatum}/${p.schritte} · ${p.pfade} Pfade · ${p.mutationen} Mutationen · ` +
+              `Zeigertext mittig ${p.zeigertext.mittig}, links geklemmt ${p.zeigertext.links}, rechts geklemmt ${p.zeigertext.rechts}`);
   for (const b of p.befunde) console.log('  VERSTOSS: ' + b);
   if (p.befunde.length > 0) rc = 1;
 

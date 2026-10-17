@@ -417,14 +417,10 @@ namespace WindowsFormsApplication1
                     }
                 }
 
-                // KV8 (Entscheid des Anwenders vom 17.10.2026): Eine neu uebernommene Zeile (noch ohne Zuordnung) ohne Kalender,
-                // deren Kopie Nutzungstage nach Norm traegt, bekommt den Normkalender vorgewaehlt - wie die Uebernahme im
-                // Dialog (KaeltebedarfsprofilAbbildung.Aufgenommen), auch wenn dort noch kein Projekt bestand (Assistent).
-                if (item.ID_Z == 0 && !(item.ID_Betriebskalender > 0) && KaeltebedarfStammCtrl.ProjektNutzungstage(kopie) > 0)
-                {
-                    int? norm = NormkalenderCtrl.Vorwahl(projektID, kopie);
-                    if (norm.HasValue) item.ID_Betriebskalender = norm;
-                }
+                // KV8-N: Der Kalender ist die Wahl des Dialogs, auch „keiner“ (NULL). Die Vorwahl des Normkalenders trifft
+                // allein die Übernahme im Dialog (KaeltebedarfsprofilAbbildung.Aufgenommen); einen Assistentenweg ohne
+                // Dialog gibt es für die Kälte nicht. Eine Zeile mit Normtagen ohne Kalender rechnet mit dem Normkalender
+                // als Vorgabe (NormkalenderCtrl.Wirksam).
 
                 int idZ = nextID++;
                 var ps = new List<DbParam>

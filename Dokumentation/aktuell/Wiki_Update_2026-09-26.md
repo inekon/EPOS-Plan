@@ -228,6 +228,7 @@ Version beim Anwender zu erfragen; die Wiki-Quellen (Prozesswärme, Brauchwasser
 - Seit 16.10.2026: Wer die Kältevorlage „Prozesskälte einschichtig“ übernimmt, bekommt den Betriebskalender „Norm 230 Tage“ mit dem Bundesland im Namen und 230 Nutzungstagen vorgewählt. (#1117, #1118)
 - Seit 16.10.2026: Der Betriebskalender hat den Schalter „Ferien wie Sonntag“; ein Ferientag rechnet dann mit Tagesmenge und Stundengang des Sonntags, der Ferienfaktor ist gesperrt. (#1119)
 - Seit 17.10.2026: Kältebedarfsprofile mit Normtagen rechnen ohne gewählten Kalender mit dem Normkalender (230 Nutzungstage); die Kennzahlen nennen die Nutzungstage. (#1181)
+- Seit 17.10.2026: Vorschau und Grafik der Kältebedarfsprofile rechnen im Wochentagsraster der Klimaregion des Projekts wie die Simulation; die Kalenderwahl „keiner“ bleibt nach dem Speichern erhalten. (#1188)
 
 #### Gebäudesimulation und weitere Dialoge — Sätze nach dem Sammel-Upload 14.10.2026 (Entwurf, Upload ausstehend)
 
@@ -264,6 +265,9 @@ Der Sammel-Upload 1.2.0.11 lief am 14.10.2026 (Seite Brauchwasser-Zapfprofil Rev
 - Seit 16.10.2026: Jahressummen und Jahresarbeit in MWh stehen in Auswahllisten, Katalog und Satzzeile einheitlich als ganze Zahl mit Tausendertrennzeichen. (#1156)
 - Seit 16.10.2026: Achsenbeschriftungen und Texte der Ganglinien in den Bedarfs- und Ganglinien-Dialogen stehen in der Schriftgröße der Oberfläche, auch im Projektassistenten. (#1157)
 - Seit 17.10.2026: Auch Strom-, Solar- und PV-Ganglinie stellen mit „Vergleichen…“ zwei oder mehr angekreuzte Ganglinien des Projekts oder des Katalogs nebeneinander. (#1168)
+- Seit 17.10.2026: Die Vorschau „Simulation…“ der Bedarfsprofile rechnet mit dem im Dialog gewählten Betriebskalender.
+- Seit 17.10.2026: Diagramme in Reiterblättern zeigen Achsenbeschriftung und Zeigertext vollständig; der Zeigertext steht mittig unter dem Zeiger.
+- Seit 17.10.2026: In der Übersicht Berichte & Kosten ist die Reiterleiste deutlicher hervorgehoben.
 
 *Wiki-Quellen dieses Nachtrags (Upload ausstehend):* `Projekte/Wiki/Programm Dokumentation - Pufferspeicher auslegen.wiki`, „Grundlagen - Anlagenkopplung und Regelung“, „Simulation konfigurieren und starten“, `Projekte/Wiki/Dateien/Diagramm_Bivalenz.png`, `Projekte/Wiki/Dateien/Diagramm_Kapitalwert_Bruecke.png`.
 

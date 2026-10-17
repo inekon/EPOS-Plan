@@ -163,6 +163,15 @@ else
             {
                 <div class="epos-diagramm-zeigerzeile epos-diagramm-zeigerzeile--modul" aria-live="polite"></div>
             }
+            else if (Zeigertextlage is string lage && Zeigerzeile is { Length: > 0 } text)
+            {
+                @* DER ZEIGERTEXT STEHT UNTER DEM ZEIGER (Befund 17.10.2026): in seiner eigenen Zeile
+                   unter dem Bild - also unter Tick-Beschriftung und Achsentitel, nie darueber -, mittig
+                   unter der Stelle und an den Raendern ins Bild geklemmt. Das Modul setzt die Lage auf
+                   den Bildpunkt genau; hier, ohne Modul, haelt left p % mit translate −p % den Text
+                   ueber der Stelle und ganz in der Zeile (mittig bei 50 %, buendig an den Raendern). *@
+                <div class="epos-diagramm-zeigerzeile" aria-live="polite"><span class="epos-diagramm-zeigertext" style="@lage">@text</span></div>
+            }
             else
             {
                 <div class="epos-diagramm-zeigerzeile" aria-live="polite">@Zeigerzeile</div>
@@ -1515,6 +1524,30 @@ else
                     : name + ": " + wert + " " + einheit);
             }
             return string.Join(" · ", teile);
+        }
+    }
+
+    /// <summary>
+    /// <b>Die Lage des Zeigertextes in seiner Zeile</b> (Befund 17.10.2026) als Stilwert — der Anteil
+    /// der Zeigerstelle an der Bildbreite p (0 … 100 %) als <c>left: p%</c> mit
+    /// <c>translate: −p%</c>: Bei 50 % steht der Text mittig unter dem Zeiger, an den Rändern bündig,
+    /// dazwischen immer über der Stelle und nie außerhalb der Zeile. <c>null</c>, wo kein Zeiger auf
+    /// einer Zeichenfläche steht (dann steht die Zeile wie bisher linksbündig). Das Modul ersetzt die
+    /// Lage im Browser durch die bildpunktgenaue: mittig unter dem Balken, an den Rändern geklemmt.
+    /// </summary>
+    private string? Zeigertextlage
+    {
+        get
+        {
+            if (ZeigtWertAmElement || !_zeiger.HasValue || Bild?.Flaeche is null || Bild.Breite <= 0) return null;
+            Datenfenster d = Bild.Flaeche.Daten;
+            double von = _fenster?.Von ?? d.XVon;
+            double bis = _fenster?.Bis ?? d.XBis;
+            if (!(bis > von)) return null;
+            Rahmen r = Bild.Flaeche.Bild;
+            double x = r.X + Math.Clamp((_zeiger.Value - von) / (bis - von), 0.0, 1.0) * r.Breite;
+            string p = Math.Clamp(x / Bild.Breite * 100.0, 0.0, 100.0).ToString("0.##", CultureInfo.InvariantCulture);
+            return "left: " + p + "%; translate: -" + p + "% 0";
         }
     }
 

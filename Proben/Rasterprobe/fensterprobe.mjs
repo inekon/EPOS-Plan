@@ -96,6 +96,12 @@
 //    Ueberlagerung, nichts rollt waagerecht (Editor und Dokument), in allen drei Fenstern samt iPad.
 //    Gegenprobe: das Monatsraster der Matrix in einer Zeile (zwoelf Spalten) muss die Messung rot machen.
 //
+//  BEDARFGRAFIK (Befund 17.10.2026, --nur bedarfgrafik): der Reiter "Grafik Strombedarf" des Ergebnisdialogs als
+//    Ueberlagerung ueber einem Fensterdialog, je Raster Jahr | Monat | Woche | Tag, in 1 088 x 624 und 1 600 x 1 000.
+//    Die Zeigerzeile steht UNTER dem Bild (keine Textzeile des SVG unter ihr), und nach dem Rollen ans Ende steht die
+//    unterste Textzeile des SVG (Tick-Beschriftung, Achsentitel) ganz im sichtbaren Rollbereich ueber der Schlussleiste.
+//    Gegenprobe: die Zeigerzeile im Reiterblatt mit dem Fussabstand der Ueberlagerung (der Befund) muss rot sein.
+//
 //  KAELTEDECKUNG (Fall "kaeltedeckung"): /fensterprobe?fall=kaelteprofile, Bearbeiten-Ueberlagerung der ersten
 //    Kaeltezeile, Deckungsgruppe (DeckungsartFelder, .epos-deckung) aufgeklappt. Kopf und Schlussleiste haften bei
 //    Rollstand oben, Mitte, Ende; die Gruppe liegt im rollenden Koerper und laesst sich ganz hineinrollen; nichts
@@ -388,6 +394,48 @@ async function kaeltetyptage(browser, f, stil = '') {
   if (FOTOS && !stil) await seite.screenshot({ path: `${FOTOS}/kaeltetyptage_${f.breite}.png`, fullPage: true });
   await seite.close();
   return { n: fehler.length, fehler, zahlen: { auswahl: m.auswahl, spalten: m.spalten, ausserhalb: m.ausserhalb, schmal: Math.round(m.schmal) } };
+}
+
+/**
+ * Befund 17.10.2026: die Grafik des Ergebnisdialogs in einer Ueberlagerung. Je Raster: Zeigerzeile unter dem Bild,
+ * unterste Textzeile des SVG nach dem Rollen ans Ende sichtbar. Mit `stil` (Gegenprobe) wird eine Stilzeile eingeschoben.
+ */
+async function bedarfgrafik(browser, f, stil = '') {
+  const seite = await browser.newPage({ viewport: { width: f.breite, height: f.hoehe } });
+  await seite.goto(`${WURZEL}/fensterprobe?fall=bedarfgrafik&kultur=de-DE`);
+  if (stil) await seite.addStyleTag({ content: stil });
+  await seite.waitForSelector('.epos-ueberlagerung .epos-diagramm-svg-flaeche > svg', { timeout: 20000 });
+  const fehler = [];
+  const zahlen = [];
+  for (const raster of ['Jahr', 'Monat', 'Woche', 'Tag']) {
+    if (raster !== 'Jahr') {
+      await seite.click(`.epos-ueberlagerung button[data-raster="${raster}"]`);
+      await seite.waitForSelector(`.epos-ueberlagerung button[data-raster="${raster}"][aria-pressed="true"]`, { timeout: 20000 });
+    }
+    await seite.waitForTimeout(400);
+    const m = await seite.evaluate(() => {
+      const roll = document.querySelector('.epos-ueberlagerung');
+      roll.scrollTop = roll.scrollHeight;
+      const svg = roll.querySelector('.epos-diagramm-svg-flaeche > svg');
+      const zeile = roll.querySelector('.epos-diagramm-zeigerzeile');
+      const leiste = roll.querySelector('.epos-ueberlagerung-inhalt > .epos-dialog > .epos-leiste');
+      const texte = [...svg.querySelectorAll('text')].map(t => t.getBoundingClientRect()).filter(r => r.height > 0);
+      const unten = Math.max(...texte.map(r => r.bottom));
+      const rb = roll.getBoundingClientRect();
+      const sichtbar = Math.min(rb.top + roll.clientTop + roll.clientHeight, leiste ? leiste.getBoundingClientRect().top : Infinity);
+      const r1 = (v) => Math.round(v * 10) / 10;
+      return { textUnten: r1(unten), svgUnten: r1(svg.getBoundingClientRect().bottom),
+               zeileOben: zeile ? r1(zeile.getBoundingClientRect().top) : null, sichtbar: r1(sichtbar), texte: texte.length };
+    });
+    if (m.zeileOben !== null && m.zeileOben < m.textUnten - TOL)
+      fehler.push(`${raster}: Zeigerzeile ab ${m.zeileOben} px ueberdeckt die Textzeile des Bildes bis ${m.textUnten} px`);
+    if (m.textUnten > m.sichtbar + TOL)
+      fehler.push(`${raster}: unterste Textzeile bis ${m.textUnten} px unter dem sichtbaren Rollbereich (${m.sichtbar} px)`);
+    zahlen.push(`${raster} Text bis ${m.textUnten}, Zeile ab ${m.zeileOben}, sichtbar bis ${m.sichtbar}`);
+    if (FOTOS && !stil) await seite.screenshot({ path: `${FOTOS}/bedarfgrafik_${raster}_${f.breite}x${f.hoehe}.png` });
+  }
+  await seite.close();
+  return { fehler, n: fehler.length, zahlen };
 }
 
 /**
@@ -1322,6 +1370,18 @@ try {
     }
   }
 
+  // ----------------------------------------- Befund 17.10.2026: Grafik des Ergebnisdialogs in der Ueberlagerung
+  const BEDARF_FENSTER = [FENSTER[0], { breite: 1600, hoehe: 1000 }];
+  if (!NUR || NUR === 'bedarfgrafik') {
+    for (const f of BEDARF_FENSTER) {
+      const name = `bedarfgrafik ${f.breite}x${f.hoehe}`;
+      console.log(`- ${name}`);
+      const r = await bedarfgrafik(browser, f);
+      for (const t of r.fehler) melde(name, t);
+      console.log('    ' + r.zahlen.join('; '));
+    }
+  }
+
   // ------------------------------------------- Deckungsgruppe der Kaeltezeile in der Bearbeiten-Ueberlagerung
   if (!NUR || NUR === 'kaeltedeckung') {
     for (const f of FENSTER) {
@@ -1340,6 +1400,15 @@ try {
     const g = await kaeltetyptage(browser, FENSTER[0], '.epos-kbp-matrix .epos-stundenraster { grid-template-rows: repeat(1, auto) !important; }');
     console.log(`    Gegenprobe kaeltetyptage Matrix in einer Zeile: ${g.n} Verstoesse`);
     if (g.n === 0) gegenGruen++;
+  }
+  if (MIT_GEGENPROBE && (!NUR || NUR === 'bedarfgrafik')) {
+    // Der Befund: die Zeigerzeile im Reiterblatt haftet mit dem Fussabstand der Ueberlagerung ueber der Achse.
+    for (const f of BEDARF_FENSTER) {
+      const g = await bedarfgrafik(browser, f,
+        '.epos-ueberlagerung-inhalt .epos-reiter-blatt .epos-diagramm-zeigerzeile { bottom: var(--epos-ueberlagerung-fuss) !important; }');
+      console.log(`    Gegenprobe bedarfgrafik mit Fussabstand ${f.breite}x${f.hoehe}: ${g.n} Verstoesse`);
+      if (g.n === 0) gegenGruen++;
+    }
   }
   if (MIT_GEGENPROBE && (!NUR || NUR === 'kaeltedeckung')) {
     // Rollt der Koerper nicht (overflow: visible), schiebt die Deckungsgruppe die Schlussleiste aus dem Bild: rot.
