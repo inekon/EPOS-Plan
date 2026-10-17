@@ -23,7 +23,7 @@ Protokolle:
 | Größe | Rechnet der Lauf in | Laufreihe (`ZeitreihenSatz`, nicht persistiert) | Jahressumme vor EB-1 |
 |---|---|---|---|
 | Einspeisung des BHKW [MWh/a] | Viertelstundenbilanz des Laufs, `SimulationControl.BhkwEinspeisungDesLaufs()`, mit Flotte `Speicherflottennetzbilanz.BhkwNetzeinspeisungKwh`; gebündelt in `SimulationErgebnisCtrl.BhkwEinspeisungMwh(sim)` | `BHKW_UEBERSCHUSS` (`"BHKW_Ueberschuss"`, kWh je Stunde; Reihe nur ab 0,5 kWh/a) | nur `Tab_ErgebnisStromMatrix.KwkEinspMWh`, geschrieben allein von `WirtschaftlichkeitCtrl.Persistiere` (erst eine Wirtschaftlichkeitsrechnung, nicht der Lauf); `ErgebnisBHKWModel` kannte `Stromproduktion` und `Strombedarfsdeckung`, nicht die Einspeisung |
-| Standby des Speichersystems [kWh/a] | `SimulationControl.SpeichersystemEigenverbrauchKwh` — Standby aus PV und Netz (`StandbyAufteilen`), im Flottenpfad der Hilfsverbrauch der Einheiten | `SPEICHER_EIGENVERBRAUCH` (kWh je Stunde; nur ab 0,5 kWh/a) | nur der Skalar `Stromspeicher.EigenverbrauchSystemMwh` des Referenzlauf-Exports; nicht im Ergebnisbaum |
+| Standby des Speichersystems [kWh/a] | `SimulationControl.SpeichersystemEigenverbrauchKwh` — Standby aus PV und Netz (`StandbyAufteilen`), im Flottenpfad der Hilfsverbrauch der Einheiten (seit EB-4 auch in der vorbelegten Flotte des Laufs der Oberfläche: Standby und Selbstentladung je Anlage) | `SPEICHER_EIGENVERBRAUCH` (kWh je Stunde; nur ab 0,5 kWh/a) | nur der Skalar `Stromspeicher.EigenverbrauchSystemMwh` des Referenzlauf-Exports; nicht im Ergebnisbaum |
 | PV-Abregelung an der Einspeisegrenze [MWh/a] | `SimulationPV.EinspeisungAufteilen` je Viertelstunde nach der Speicherladung, mit Flotte `Speicherflottennetzbilanz.PvAbregelungKwh`; Reiterwert `SimulationErgebnisCtrl.PhotovoltaikErgebnis.AbregelungMwh` | `PV_ABREGELUNG` (`"PV_Abregelung"`, kWh je Stunde; nur ab 0,5 kWh/a) | nur der Skalar `Photovoltaik.AbregelungMwh` des Exports; `KennzahlenKatalog.AbregelungMwh` las die Reihe, ohne Reihe 0 (Übersicht lädt keine Reihen) |
 
 **Wo Ergebnisse liegen.** Der Lauf (`SimulationRunner.BaueErgebnis`) baut den `ErgebnisModel`-Baum, `ErgebnisCtrl.Save`
@@ -73,11 +73,11 @@ die drei Felder; der einzige Eingriff in bestehenden Code ist, dass `SimulationE
 Der Export liest `SELECT *`, deshalb bekommt `aggregate.csv` je BHKW-Projekt den Schlüssel `BHKW.Stromeinspeisung` und je
 PV-Projekt `Photovoltaik.Abregelung` (34 neue Einträge in 38 Projekten, alle Abregelungen 0 — kein Referenzprojekt trägt
 eine Einspeisegrenze); `Tab_ErgebnisStromspeicher` steht nicht im Export, der Standby bleibt der bisherige Skalar
-`Stromspeicher.EigenverbrauchSystemMwh` (1046: 0,438). Der Vergleich R59 gegen R57 meldet genau diese Einträge als
+`Stromspeicher.EigenverbrauchSystemMwh` (1046: 0,438). Die Basis **R59 `2026-10-17_R59_Ergebnisreihen`** setzt auf R58
+(Kältesummen ungerundet, nach dem Nachtrag „8d einheitlich“) auf: Der Vergleich R59 gegen R58 meldet genau diese Einträge als
 „Eintrag nur im Vergleichslauf“; mit `--ohne BHKW.Stromeinspeisung,Photovoltaik.Abregelung` ist er **PASS (13 025 990
 Werte)**, 1 199 der 1 233 CSV sind byte-gleich (die 34 anderen sind die `aggregate.csv` mit den neuen Schlüsseln). Kein
-bisheriger Wert hat sich geändert. Die Basis ist als **R59 `2026-10-17_R59_Ergebnisreihen`** neu eingefroren (R58 war im
-Statuskopf von der Sitzung Kostenbasis angemeldet, R59 die nächste freie Nummer); R57 liegt mit Protokoll unter
+bisheriger Wert hat sich geändert. R58 und R57 liegen mit Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../../ueberholt/Referenzbasen/LIESMICH.md).
 
 **Keine neue Einfrierregel:** Die drei Spalten sind Ausgaben des Laufs, keine gesäten Eingaben; was sie bestimmt

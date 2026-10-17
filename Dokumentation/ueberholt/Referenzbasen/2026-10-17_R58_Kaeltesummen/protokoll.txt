@@ -372,3 +372,20 @@ Byte-verschieden sind allein die neun aggregate.csv von 1017, 1047, 1056, 1058, 
 innerhalb der Toleranz ändern sich dort nur Waermepumpe.Stromverbrauch_Kuehlung (die acht Projekte oben) und
 Waermepumpe.Deckung_Kuehlung (1056 98.39 -> 98.3947398, 1061 100 -> 99.9999998, 1072 50.25 -> 50.2513151).
 Alle übrigen 1 224 CSV sind byte-gleich; 1 233 CSV, 8 596 Skalare wie R57.
+
+## Nachtrag 8d einheitlich (17.10.2026)
+
+**Nachtrag — 8d einheitlich (Anwenderentscheid vom 17.10.2026), Basis im selben Ordner nachgeführt.** Ungerundet gespeichert werden nun auch die Kältespalten der Modulzeile der Wärmepumpe (`Kaelteproduktion`, `Stromverbrauch_Kuehlung`, `Kaeltestrom_Netzbezug`, `FreieKuehlung_MWh`), `FreieKuehlung_MWh` der Wärmepumpe, `Entladung_Kuehlung` der Kältespeicher, die Kältemengen der Kältemaschine (`FreieKuehlung_MWh`, `Unterdeckung_MWh`, `TeilFreikuehlung_MWh`) und die Mengen und Spitzen der Split-Zeilen (`Tab_ErgebnisKaelteDezentral`); die Bedarfsseite (`Waermebedarf_Kuehlung`, `Kaeltebedarf*`, `StromDezentralMwh`) bleibt gerundet. Der Lauf der achtunddreißig Projekte gegen R58 vor dem Nachtrag ist für 30 Projekte PASS; acht weichen je in `aggregate.csv`, Schlüssel `WaermepumpeModul[0].Kaelteproduktion`, außerhalb der Toleranz ab:
+
+| Projekt | R58 bisher | R58 nachgeführt | Faktor der Toleranz |
+|---|---|---|---|
+| 1017 | 4,05 | 4,05051694 | 1,276 |
+| 1047 | 3,83 | 3,82939092 | 1,590 |
+| 1056 | 3,77 | 3,76627292 | 9,886 |
+| 1058 | 3,81 | 3,80818165 | 4,773 |
+| 1060 | 3,83 | 3,82873151 | 3,312 |
+| 1061 | 3,83 | 3,83047193 | 1,232 |
+| 1062 | 3,91 | 3,90538151 | 11,812 |
+| 1064 | 4,05 | 4,05051694 | 1,276 |
+
+Innerhalb der Toleranz ändern sich in denselben Dateien `WaermepumpeModul[0].Stromverbrauch_Kuehlung` und `Kaeltestrom_Netzbezug` (alle acht), bei 1064 `Waermepumpe.FreieKuehlung_MWh` und `WaermepumpeModul[0].FreieKuehlung_MWh` (0,28 → 0,277361939), dazu `Pufferspeicher[…].Entladung_Kuehlung` bei 1055, 1059, 1063 und 1072. Byte-verschieden sind allein diese zwölf `aggregate.csv`; die übrigen 1 221 CSV sind byte-gleich, Zahl der CSV (1 233) und der Skalare (8 596) bleibt. Nachgeführt wurden nur diese zwölf Dateien.

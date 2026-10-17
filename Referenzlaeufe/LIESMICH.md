@@ -848,8 +848,8 @@ danach im Wegweiser desselben Ordners.
 
 **`2026-10-17_R59_Ergebnisreihen/`** — **achtunddreißig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063, 1064, 1065, 1066, 1067, 1068, 1069, 1070, 1071, 1072, 1073), **1 233 CSV**, **8 630 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 17.10.2026, Stand `53da1da8b`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **239**, 109 608 960 Byte, LFS-SHA-256 `2fb633f6…`, mit den Projekten 1053 bis 1073,
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 17.10.2026, Stand `79cf8532c`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **239**, 109 608 960 Byte, LFS-SHA-256 `5bfedf09…`, mit den Projekten 1053 bis 1073,
 dem erfundenen Typtagsatz und den Satteldächern von 1052 und 1054; die Nachträge der Schemaschritte unten sind darin
 enthalten). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065, 1066 bis 1071 und 1073) jeden Push und rechnet dieselben Projekte
@@ -887,16 +887,18 @@ Projekt 1065 und `EPOS.Kern.Tests/ZapfprofilOptionenReferenzprojekteWacheTests` 
 Projekt 1072 und `EPOS.Kern.Tests/SchnellaufheizungReferenzprojektWacheTests` die Schnellaufheizung von Projekt 1073, `EPOS.Kern.Tests/ErgebnisreihenLaufTests` die drei Ergebnisreihen des Schemaschritts 239 (BHKW-Einspeisung von 1018, Standby von 1046, Abregelung an 1040 mit synthetischer Einspeisegrenze) und `EPOS.Kern.Tests/EnergieflussReferenzprojektWacheTests` das Energieflussbild von 1018, 1046, 1058 und 1063 mit direkter Einspeisung und benanntem Standby. 1050, 1052, 1054, 1055, 1056, 1057, 1059, 1061, 1062, 1064 und 1072 stehen nicht in der CI-Auswahl;
 `Werkzeuge/Gate/gate_linux.sh` rechnet alle achtunddreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
 
-> **Anlass: Welle EB-1 „Ergebnisreihen“ (Schemaschritt 239, Anwenderentscheide vom 17.10.2026).** Der Lauf schreibt die
-> Einspeisung des BHKW, den Standby des Speichersystems und die PV-Abregelung als Jahressummen in die Ergebniszeilen
-> (`Tab_ErgebnisBHKW.Stromeinspeisung`, `Tab_ErgebnisStromspeicher.Eigenverbrauch_System`,
+> **Anlass: Welle EB „Ergebnisreihen“ (Schemaschritt 239, Anwenderentscheide vom 17.10.2026), eingefroren auf R58.** Der Lauf
+> schreibt die Einspeisung des BHKW, den Standby des Speichersystems und die PV-Abregelung als Jahressummen in die
+> Ergebniszeilen (`Tab_ErgebnisBHKW.Stromeinspeisung`, `Tab_ErgebnisStromspeicher.Eigenverbrauch_System`,
 > `Tab_ErgebnisPhotovoltaik.Abregelung`); der Rechenweg ist unverändert. Weil der Export `SELECT *` liest, bekommt
 > `aggregate.csv` die Schlüssel `BHKW.Stromeinspeisung` (je BHKW-Projekt) und `Photovoltaik.Abregelung` (je PV-Projekt,
 > überall 0 — kein Referenzprojekt trägt eine Einspeisegrenze): 34 Einträge in 38 Projekten, 8 630 statt 8 596 Skalare.
-> Der Vergleich der 38 Projekte gegen R57 ist mit `--ohne BHKW.Stromeinspeisung,Photovoltaik.Abregelung` PASS
+> R59 setzt auf R58 nach dem Nachtrag „8d einheitlich“ auf (Kältesummen ungerundet, zwölf `aggregate.csv` nachgeführt):
+> Der Vergleich der 38 Projekte gegen R58 ist mit `--ohne BHKW.Stromeinspeisung,Photovoltaik.Abregelung` PASS
 > (13 025 990 Werte), 1 199 der 1 233 CSV sind byte-gleich, die 34 übrigen sind die `aggregate.csv` mit den neuen
-> Schlüsseln; kein bisheriger Wert hat sich geändert. R58 war im Statuskopf von der Sitzung Kostenbasis angemeldet, R59
-> ist die nächste freie Nummer. Konzept:
+> Schlüsseln; kein bisheriger Wert hat sich geändert. Der Lauf aus der Oberfläche rechnet den Standby des Speichersystems
+> seit EB-4 auch über die vorbelegte Flotte (Standby und Selbstentladung je Anlage); der Referenzlauf rechnet über
+> `SimulationRunner` und war davon nie berührt. Konzept:
 > [`2026-10-17_Konzept_Ergebnisreihen_Einspeisung_Standby_Abregelung.md`](../Dokumentation/aktuell/Dialoge/2026-10-17_Konzept_Ergebnisreihen_Einspeisung_Standby_Abregelung.md).
 >
 > ```bash
@@ -906,21 +908,6 @@ Projekt 1072 und `EPOS.Kern.Tests/SchnellaufheizungReferenzprojektWacheTests` di
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063,1064,1065,1066,1067,1068,1069,1070,1071,1072,1073 \
 >   --ziel Referenzlaeufe/2026-10-17_R59_Ergebnisreihen
 > ```
->
-> **Nachtrag — 8d einheitlich (Anwenderentscheid vom 17.10.2026), Basis im selben Ordner nachgeführt.** Ungerundet gespeichert werden nun auch die Kältespalten der Modulzeile der Wärmepumpe (`Kaelteproduktion`, `Stromverbrauch_Kuehlung`, `Kaeltestrom_Netzbezug`, `FreieKuehlung_MWh`), `FreieKuehlung_MWh` der Wärmepumpe, `Entladung_Kuehlung` der Kältespeicher, die Kältemengen der Kältemaschine (`FreieKuehlung_MWh`, `Unterdeckung_MWh`, `TeilFreikuehlung_MWh`) und die Mengen und Spitzen der Split-Zeilen (`Tab_ErgebnisKaelteDezentral`); die Bedarfsseite (`Waermebedarf_Kuehlung`, `Kaeltebedarf*`, `StromDezentralMwh`) bleibt gerundet. Der Lauf der achtunddreißig Projekte gegen R58 vor dem Nachtrag ist für 30 Projekte PASS; acht weichen je in `aggregate.csv`, Schlüssel `WaermepumpeModul[0].Kaelteproduktion`, außerhalb der Toleranz ab:
->
-> | Projekt | R58 bisher | R58 nachgeführt | Faktor der Toleranz |
-> |---|---|---|---|
-> | 1017 | 4,05 | 4,05051694 | 1,276 |
-> | 1047 | 3,83 | 3,82939092 | 1,590 |
-> | 1056 | 3,77 | 3,76627292 | 9,886 |
-> | 1058 | 3,81 | 3,80818165 | 4,773 |
-> | 1060 | 3,83 | 3,82873151 | 3,312 |
-> | 1061 | 3,83 | 3,83047193 | 1,232 |
-> | 1062 | 3,91 | 3,90538151 | 11,812 |
-> | 1064 | 4,05 | 4,05051694 | 1,276 |
->
-> Innerhalb der Toleranz ändern sich in denselben Dateien `WaermepumpeModul[0].Stromverbrauch_Kuehlung` und `Kaeltestrom_Netzbezug` (alle acht), bei 1064 `Waermepumpe.FreieKuehlung_MWh` und `WaermepumpeModul[0].FreieKuehlung_MWh` (0,28 → 0,277361939), dazu `Pufferspeicher[…].Entladung_Kuehlung` bei 1055, 1059, 1063 und 1072. Byte-verschieden sind allein diese zwölf `aggregate.csv`; die übrigen 1 221 CSV sind byte-gleich, Zahl der CSV (1 233) und der Skalare (8 596) bleibt. Nachgeführt wurden nur diese zwölf Dateien.
 
 
 > **Nachtrag — Schemaschritte 177 bis 179 (Sperrfenster der Wärmepumpe, Nutzungsprofile, Ergänzungen der
@@ -1537,7 +1524,7 @@ Achtunddreißig Projekte, 1 233 CSV, 8 596 Skalare, auf Linux eingefroren gegen 
 vom 16.10.2026, Punkt 8d: Kältesummen ungerundet gespeichert) unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R59
 nimmt allein die neuen Ergebnisschlüssel des Schemaschritts 239 auf (`BHKW.Stromeinspeisung`, `Photovoltaik.Abregelung`);
-alle Rechenwerte von R58 sind unverändert — @@CSVGLEICH@@ der 1 233 CSV byte-gleich, die @@CSVNEU@@ übrigen sind die `aggregate.csv`
+alle Rechenwerte von R58 sind unverändert — 1 199 der 1 233 CSV byte-gleich, die 34 übrigen sind die `aggregate.csv`
 mit den neuen Schlüsseln.
 
 ## Was hier liegt

@@ -50,7 +50,7 @@ namespace EPOS.Kern.Tests
         private const int PROJEKT = 1065, VORLAGE = 1051;
         private const string NAME = "Referenzprojekt Vorheizen";
 
-        // Die Kennzahlen der Basis R52 (Referenzlaeufe/2026-10-17_R58_Kaeltesummen/Projekt_1065/aggregate.csv, unverändert seit R52).
+        // Die Kennzahlen der Basis R52 (Referenzlaeufe/2026-10-17_R59_Ergebnisreihen/Projekt_1065/aggregate.csv, unverändert seit R52).
         private const int R52_VORHEIZZEIT_H = 2, R52_BEDARF_MAX_H = 5, R52_TAGE_UEBER = 5, R52_TAGE_VERFEHLT = 5;
         private const double R52_BEZUG_KW = 23.6166077, R52_DECKEL_KW = 28.3399293;
         private const double R52_HEIZWAERME_1065_MWH = 24.6731709, R52_HEIZWAERME_1051_MWH = 24.223504;

@@ -6074,7 +6074,7 @@ Projekt 1072 und `EPOS.Kern.Tests/SchnellaufheizungReferenzprojektWacheTests` di
 
 Der Abschnitt „Aktuelle Basis“ hat am 17.10.2026 die Basis R58 beschrieben — den Anlass (Anwenderentscheid vom 16.10.2026, Punkt 8d: die Kältespalten der Ergebnistabellen werden ungerundet gespeichert) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`.
 
-**Abgelöst wurde R58 durch `2026-10-17_R59_Ergebnisreihen`** (Welle EB „Ergebnisreihen“, Schemaschritt 239, Anwenderentscheide vom 17.10.2026): Der Lauf schreibt die Einspeisung des BHKW, den Standby des Speichersystems und die PV-Abregelung als Jahressummen in die Ergebniszeilen; der Rechenweg ist unverändert. Gegen R58 ist der Vergleich der 38 Projekte mit `--ohne BHKW.Stromeinspeisung,Photovoltaik.Abregelung` PASS; die 34 `aggregate.csv` der BHKW- und PV-Projekte tragen die zwei neuen Schlüssel, alle übrigen CSV sind byte-gleich. Testdatenbank `5bfedf09…` (Schemastand 239).
+**Abgelöst wurde R58 durch `2026-10-17_R59_Ergebnisreihen`** (Welle EB „Ergebnisreihen“, Schemaschritt 239, Anwenderentscheide vom 17.10.2026): Der Lauf schreibt die Einspeisung des BHKW, den Standby des Speichersystems und die PV-Abregelung als Jahressummen in die Ergebniszeilen; der Rechenweg ist unverändert. Gegen R58 (nach dem Nachtrag „8d einheitlich“, zwölf `aggregate.csv` nachgeführt) ist der Vergleich der 38 Projekte mit `--ohne BHKW.Stromeinspeisung,Photovoltaik.Abregelung` PASS (13 025 990 Werte); die 34 `aggregate.csv` der BHKW- und PV-Projekte tragen die zwei neuen Schlüssel, alle übrigen CSV sind byte-gleich. Testdatenbank `5bfedf09…` (Schemastand 239).
 
 <!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
 
@@ -6151,5 +6151,20 @@ Projekt 1072 und `EPOS.Kern.Tests/SchnellaufheizungReferenzprojektWacheTests` di
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063,1064,1065,1066,1067,1068,1069,1070,1071,1072,1073 \
 >   --ziel Referenzlaeufe/2026-10-17_R58_Kaeltesummen
 > ```
+>
+> **Nachtrag — 8d einheitlich (Anwenderentscheid vom 17.10.2026), Basis im selben Ordner nachgeführt.** Ungerundet gespeichert werden nun auch die Kältespalten der Modulzeile der Wärmepumpe (`Kaelteproduktion`, `Stromverbrauch_Kuehlung`, `Kaeltestrom_Netzbezug`, `FreieKuehlung_MWh`), `FreieKuehlung_MWh` der Wärmepumpe, `Entladung_Kuehlung` der Kältespeicher, die Kältemengen der Kältemaschine (`FreieKuehlung_MWh`, `Unterdeckung_MWh`, `TeilFreikuehlung_MWh`) und die Mengen und Spitzen der Split-Zeilen (`Tab_ErgebnisKaelteDezentral`); die Bedarfsseite (`Waermebedarf_Kuehlung`, `Kaeltebedarf*`, `StromDezentralMwh`) bleibt gerundet. Der Lauf der achtunddreißig Projekte gegen R58 vor dem Nachtrag ist für 30 Projekte PASS; acht weichen je in `aggregate.csv`, Schlüssel `WaermepumpeModul[0].Kaelteproduktion`, außerhalb der Toleranz ab:
+>
+> | Projekt | R58 bisher | R58 nachgeführt | Faktor der Toleranz |
+> |---|---|---|---|
+> | 1017 | 4,05 | 4,05051694 | 1,276 |
+> | 1047 | 3,83 | 3,82939092 | 1,590 |
+> | 1056 | 3,77 | 3,76627292 | 9,886 |
+> | 1058 | 3,81 | 3,80818165 | 4,773 |
+> | 1060 | 3,83 | 3,82873151 | 3,312 |
+> | 1061 | 3,83 | 3,83047193 | 1,232 |
+> | 1062 | 3,91 | 3,90538151 | 11,812 |
+> | 1064 | 4,05 | 4,05051694 | 1,276 |
+>
+> Innerhalb der Toleranz ändern sich in denselben Dateien `WaermepumpeModul[0].Stromverbrauch_Kuehlung` und `Kaeltestrom_Netzbezug` (alle acht), bei 1064 `Waermepumpe.FreieKuehlung_MWh` und `WaermepumpeModul[0].FreieKuehlung_MWh` (0,28 → 0,277361939), dazu `Pufferspeicher[…].Entladung_Kuehlung` bei 1055, 1059, 1063 und 1072. Byte-verschieden sind allein diese zwölf `aggregate.csv`; die übrigen 1 221 CSV sind byte-gleich, Zahl der CSV (1 233) und der Skalare (8 596) bleibt. Nachgeführt wurden nur diese zwölf Dateien.
 
 <!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
