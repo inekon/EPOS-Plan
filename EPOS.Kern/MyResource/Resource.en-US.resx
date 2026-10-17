@@ -15239,7 +15239,7 @@ Please check all entries!</value>
     <value>Results</value>
   </data>
   <data name="SIMERG_LBL_WAERMEBEDARF_NETZ" xml:space="preserve">
-    <value>Heat requirement of the local heating network:</value>
+    <value>Total heat demand:</value>
   </data>
   <data name="SIMERG_LBL_STROMBEDARF" xml:space="preserve">
     <value>Power requirements:</value>

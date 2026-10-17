@@ -123518,7 +123518,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf des Nahwärmenetzes: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtwärmebedarf: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_WAERMEBEDARF_NETZ {
             get {

@@ -15246,7 +15246,7 @@ Alle Eingaben überprüfen!</value>
     <value>Ergebnisse</value>
   </data>
   <data name="SIMERG_LBL_WAERMEBEDARF_NETZ" xml:space="preserve">
-    <value>Wärmebedarf des Nahwärmenetzes:</value>
+    <value>Gesamtwärmebedarf:</value>
   </data>
   <data name="SIMERG_LBL_STROMBEDARF" xml:space="preserve">
     <value>Strombedarf:</value>
