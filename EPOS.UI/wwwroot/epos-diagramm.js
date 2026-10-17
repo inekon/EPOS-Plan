@@ -647,7 +647,11 @@ function zeigerMerken(z, clientX) {
         stelle = Math.min(voll.x + voll.b, Math.max(voll.x, stelle));
         const schritt = b.b / 1000;
         if (schritt > 0) stelle = Math.round(stelle / schritt) * schritt;
-        if (stelle === z.zeigerStunde) return;
+        if (stelle === z.zeigerStunde) {
+            // Dieselbe Stelle, aber der Balken ist ein Stueck gewandert: der Text folgt ihm.
+            if (z.zustand) zeigertextNachziehen(z);
+            return;
+        }
         z.zeigerStunde = stelle;
         if (z.zustand) {
             // DAS MODUL FUEHRT DIE ZEILE: schreiben, .NET nur gedrosselt unterrichten.
@@ -743,11 +747,55 @@ function balkenSetzen(z, flaeche, clientX) {
     balken.hidden = false;
 }
 
+/**
+ * Schreibt die Zeigerzeile. DER TEXT STEHT UNTER DEM ZEIGER (Befund 17.10.2026): in einem
+ * eigenen Element .epos-diagramm-zeigertext der Zeile unter dem Bild, mittig unter dem Balken
+ * und an den Raendern in die Zeile geklemmt. Ohne Text bleibt die Zeile leer (:empty).
+ */
 function zeileSchreiben(z, text) {
     const rahmen = z.svg ? z.svg.closest(".epos-diagramm-svg-flaeche") : null;
     const wurzel = rahmen ? rahmen.parentElement : null;
     const zeile = wurzel ? wurzel.querySelector(".epos-diagramm-zeigerzeile--modul") : null;
-    if (zeile && zeile.textContent !== text) zeile.textContent = text;
+    if (!zeile) return;
+    if (!text) {
+        if (zeile.firstChild) zeile.textContent = "";
+        return;
+    }
+    let span = zeile.firstElementChild;
+    if (!span || !span.classList.contains("epos-diagramm-zeigertext")) {
+        zeile.textContent = "";
+        span = document.createElement("span");
+        span.className = "epos-diagramm-zeigertext";
+        zeile.appendChild(span);
+    }
+    if (span.textContent !== text) span.textContent = text;
+    zeigertextLegen(z, zeile, span);
+}
+
+/** Legt einen stehenden Zeigertext neu unter den Balken (gleicher Text, neue Stelle). */
+function zeigertextNachziehen(z) {
+    const rahmen = z.svg ? z.svg.closest(".epos-diagramm-svg-flaeche") : null;
+    const zeile = rahmen && rahmen.parentElement
+        ? rahmen.parentElement.querySelector(".epos-diagramm-zeigerzeile--modul") : null;
+    const span = zeile ? zeile.firstElementChild : null;
+    if (span && span.classList.contains("epos-diagramm-zeigertext")) zeigertextLegen(z, zeile, span);
+}
+
+/**
+ * Legt den Zeigertext mittig unter den Balken: left = Balkenmitte − halbe Textbreite, geklemmt
+ * auf [0, Zeilenbreite − Textbreite]. Ohne sichtbaren Balken bleibt die Lage stehen.
+ */
+function zeigertextLegen(z, zeile, span) {
+    const balken = balkenElement(z);
+    if (!balken || balken.hidden) return;
+    const br = balken.getBoundingClientRect();
+    const zr = zeile.getBoundingClientRect();
+    const breite = zeile.clientWidth;
+    const w = span.offsetWidth;
+    const mitte = br.left + br.width / 2 - zr.left - zeile.clientLeft;
+    const links = Math.min(Math.max(0, breite - w), Math.max(0, mitte - w / 2));
+    span.style.translate = "none";
+    span.style.left = links + "px";
 }
 
 /** Rundung wie Math.Round in .NET: die Haelfte zur geraden Zahl. */

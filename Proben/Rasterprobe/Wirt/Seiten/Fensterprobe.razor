@@ -51,6 +51,8 @@
       ?lizenz=1            das Lizenzbanner der AppWurzel (Baustein Lizenzbanner, Lesemodus-Satz) als
                            erstes Kind von #app vor dem Dialog - fuer den Fall „lizenzbanner" der
                            fensterprobe.mjs (mit ?marke=0 wie in der AppWurzel auf iOS)
+      ?fall=bedarfgrafik   Wirt im eigenen Fenster mit der Ueberlagerung "Simulation..." (BedarfErgebnisDialog,
+                           Reiter "Grafik Strombedarf", Jahr | Monat | Woche | Tag) - fensterprobe.mjs, Fall bedarfgrafik
       ?marke=0             OHNE Fenstermarke - die Gegenprobe: der Dialog steht wie ohne die Regel
       ?zeilen=40           Katalogzeilen
       ?verwendet=1         Heizkessel und BHKW: die erste Projektzeile heisst wie die zweite
@@ -244,6 +246,27 @@
                 RegionErmitteln="@KlimaVorschau"
                 Loeschen="@(_ => Task.FromResult(true))"
                 Geschlossen="@(b => Beendet(b))" />
+            break;
+
+        case "bedarfgrafik":
+            @* Befund 17.10.2026: der Reiter "Grafik" des Ergebnisdialogs (Standard Stromprofil -> "Simulation...")
+               als Ueberlagerung ueber einem Dialog im eigenen Fenster, mit echten Modellen des Kerns wie die
+               Huelle (Jahresgang, Saeulenstapel). fensterprobe.mjs, Fall bedarfgrafik, misst, dass die unterste
+               Textzeile des Bildes (Tick-Beschriftung, Achsentitel) im sichtbaren Rollbereich steht. *@
+            <div class="epos-dialog" tabindex="-1">
+                <div class="epos-dialog-kopf">
+                    <h1 class="epos-dialog-titel">Standard Stromprofil</h1>
+                    <Schliesskreuz Geschlossen="@(() => Beendet(false))" />
+                </div>
+                <p>Wirt des Ergebnisdialogs.</p>
+                <SpeichernLeiste Ergebnis="@(b => Beendet(b))" />
+            </div>
+            <Ueberlagerung Offen="true" Titel="Simulation…" Geschlossen="@(() => Beendet(false))">
+                <KindInhalt>
+                    <BedarfErgebnisDialog Daten="@BgDaten" TitelAnzeigen="false" ReiterKennzahlen="Strombedarf Ergebnisse"
+                                          ReiterGrafik="Grafik Strombedarf" Geschlossen="@(b => Beendet(b))" />
+                </KindInhalt>
+            </Ueberlagerung>
             break;
 
         default:
@@ -697,6 +720,54 @@
     /// mit Sommeranstieg, sonst ein Fuenftel, auf die Jahressumme der Zeile skaliert; der Kalender 2 legt Betriebsferien.
     /// Nacharbeit: Bearbeitete Monatsanteile (Arbeitsstand der Ueberlagerung) verteilen die Monate um, wie im Kern.
     /// </summary>
+    /// <summary>Fall bedarfgrafik: Strombedarf als synthetische Jahresreihe, Bilder wie die Huelle.</summary>
+    private BedarfErgebnisDaten? _bgDaten;
+    private BedarfErgebnisDaten BgDaten => _bgDaten ??= BgBauen();
+
+    private static BedarfErgebnisDaten BgBauen()
+    {
+        var reihe = new double[8760];
+        for (int i = 0; i < reihe.Length; i++)
+            reihe[i] = 20.0 + 8.0 * Math.Sin(Math.PI * 2 * i / 8760.0) + ((i % 24) is >= 7 and < 19 ? 6.0 : 0.0);
+        double[] Summen(Bedarfsraster raster, Energieeinheit e)
+        {
+            int n = raster switch { Bedarfsraster.Monat => 12, Bedarfsraster.Woche => 52, _ => 365 };
+            var s = new double[n];
+            for (int h = 0; h < 8760; h++)
+            {
+                int tag = h / 24;
+                int k = raster switch { Bedarfsraster.Monat => Math.Min(11, tag * 12 / 365), Bedarfsraster.Woche => Math.Min(51, tag / 7), _ => tag };
+                s[k] += reihe[h] / (e == Energieeinheit.KWh ? 1.0 : 1000.0);
+            }
+            return s;
+        }
+        var quelle = new Bedarfsgrafikquelle
+        {
+            MitReihe = new[] { 0 },
+            Titel = (_, raster) => raster == Bedarfsraster.Jahr ? "Strombedarf Jahresganglinie" : "Strombedarf " + raster,
+            Modell = (_, raster, einheit) =>
+            {
+                if (raster == Bedarfsraster.Jahr)
+                    return ChartRenderer.JahresgangModell("Strombedarf Jahresganglinie",
+                        new[] { new ChartRenderer.Reihe("Strombedarf", reihe, Farbrolle.HEIZWAERME) }, "Stunde", "kW", minimumNull: true);
+                Energieeinheit e = einheit ?? Energieeinheit.Vorgabe;
+                double[] s = Summen(raster, e);
+                string[] namen = Enumerable.Range(1, s.Length).Select(i => raster == Bedarfsraster.Monat
+                    ? CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(i) : i.ToString(CultureInfo.InvariantCulture)).ToArray();
+                return ChartRenderer.SaeulenstapelModell("Strombedarf " + raster, e.Text,
+                    new[] { new ChartRenderer.Reihe("Strombedarf", s, Farbrolle.HEIZWAERME) }, namen, namen);
+            }
+        };
+        return new BedarfErgebnisDaten
+        {
+            Sicht = ErgebnisSicht.Strom,
+            StartReiter = 2,
+            Kennzahlen = new[] { new ErgebnisKennzahl("max. Leistung:", "34,00", "kW") { Art = Kennzahlart.Leistung } },
+            Sichten = new[] { new Monatssicht("Strombedarf", null, null) },
+            Grafik = quelle
+        };
+    }
+
     private WindowsFormsApplication1.Kaelteprofilbilder? KpGrafik(BedarfsProfilZeile markiert, IReadOnlyList<BedarfsProfilZeile> alle)
     {
         static double[] Reihe(double summeMwh, int versatz)
