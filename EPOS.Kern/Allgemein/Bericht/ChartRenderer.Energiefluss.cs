@@ -190,7 +190,8 @@ namespace WindowsFormsApplication1
         /// <param name="knotenwerte">Berichtsfassung: jeder Knoten nennt seine Jahressumme (MWh/a). Am Bildschirm
         /// <c>false</c> — dort stehen die Werte nur im Zeigertext.</param>
         /// <param name="darstellung">Die Darstellungsart (SK-Q17): <see cref="EnergieflussDarstellung.Kette"/> (Vorgabe, auch im
-        /// Bericht) oder <see cref="EnergieflussDarstellung.Stufen"/> (vier feste Spalten mit Titeln und Verbindern).</param>
+        /// Bericht) oder <see cref="EnergieflussDarstellung.Stufen"/> (vier feste Spalten mit Titeln und Verbindern);
+        /// <see cref="EnergieflussDarstellung.Zuordnung"/> zeichnet wie die Kette (ihre Bilddaten kommen aus der eigenen Bilanz).</param>
         public static Zeichenmodell EnergieflussModell(EnergieflussBildDaten daten, Bildmass? mass = null, bool knotenwerte = false,
                                                        EnergieflussDarstellung darstellung = EnergieflussDarstellung.Kette)
         {

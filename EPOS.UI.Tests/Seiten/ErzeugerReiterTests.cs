@@ -265,10 +265,15 @@ public class ErzeugerReiterTests : EposBunitContext
                      {
                          Resource.SIMERG_LBL_WAERMEBEDARFSDECKUNG,
                          Resource.SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG,
-                         Resource.SIMERG_LBL_WAERMEPRODUKTION_SPK,
-                         Resource.SIM_KESSEL_QUELLWAERME,
+                         Resource.SIMERG_LBL_NUTZWAERME_SPK,
+                         Resource.SIMERG_LBL_DAVON_HEIZUNG,
+                         Resource.SIMERG_LBL_DAVON_WARMWASSER,
                          Resource.SIMERG_LBL_RESTWAERMEBEDARF_NACH_KESSEL,
-                         Resource.SIMERG_LBL_DAVON_PUFFER_ANDERE
+                         Resource.SIMERG_LBL_DAVON_PUFFER_ANDERE,
+                         Resource.SIM_KESSEL_QUELLWAERME,
+                         Resource.SIMERG_LBL_WAERMEPRODUKTION_SPK,
+                         Resource.SIMERG_LBL_ABZUEGLICH_SPEICHERVERLUSTE,
+                         Resource.SIMERG_LBL_NUTZWAERME_SPK
                      },
                      seite.FindAll("dl.epos-simerg-werte")[0]
                           .QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
@@ -452,6 +457,20 @@ public class ErzeugerReiterTests : EposBunitContext
     /// ihrer Rasterzeile. Kein <c>h3</c> bleibt
     /// übrig; die Zeilenfolge JEDER Gruppe ist die von W11b‑B‑15.
     /// </summary>
+    /// <summary>
+    /// Kommt beim Kessel der ganze Projektbedarf an, heißt der Stufeneingang
+    /// „Gesamtwärmebedarf“; sonst „Restwärmebedarf vor dem Kessel“.
+    /// </summary>
+    [Fact]
+    public void Kessel_nennt_den_Stufeneingang_Gesamtwaermebedarf_nur_wenn_er_es_ist()
+    {
+        var erg = Kessel();
+        Assert.Equal("Restwärmebedarf vor dem Kessel:", Zeilen(KesselZeichnen(erg), 0)[1]);
+
+        erg.StufeneingangIstGesamtbedarf = true;
+        Assert.Equal("Gesamtwärmebedarf:", Zeilen(KesselZeichnen(erg), 0)[1]);
+    }
+
     [Fact]
     public void Kessel_gliedert_seine_Felder_in_vier_Gruppen_mit_Balken()
     {
@@ -474,9 +493,11 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.Equal(5, listen.Count);          // vier Gruppen + der Brennstoffblock
 
         Assert.Equal(
-            new[] { "Wärmebedarfsdeckung:", "Restwärmebedarf (Stufeneingang):",
-                    "Wärmeproduktion der Spitzenkessel:", "Quellwärme aus Kaskade:",
-                    "Restwärmebedarf nach Kessel:", "davon aus Puffer (andere Erzeuger):" },
+            new[] { "Wärmebedarfsdeckung:", "Restwärmebedarf vor dem Kessel:",
+                    "Erzeugte Nutzwärme Heizkessel:", "davon Heizung:", "davon Warmwasser:",
+                    "Restwärmebedarf nach Kessel:", "davon aus Puffer (andere Erzeuger):",
+                    "Quellwärme aus Kaskade:", "Wärmeproduktion der Spitzenkessel:",
+                    "abzüglich Speicherverluste:", "Erzeugte Nutzwärme Heizkessel:" },
             listen[0].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
         Assert.Equal(
             new[] { "Strombedarf:", "Reststrombedarf:" },

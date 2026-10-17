@@ -149,10 +149,25 @@ public sealed class ErgebnisFlussBild
 
     /// <summary>Der benannte Grund eines leeren Filters („Kälte: keine Flüsse in dieser Version“); leer = keiner.</summary>
     public string Hinweis { get; init; } = "";
+
+    /// <summary>
+    /// Die Kanten der Hervorhebung, wenn das Bild aus einer eigenen Bilanz stammt (Darstellung Zuordnung); <c>null</c> =
+    /// die Kanten des Standes (<see cref="ErgebnisFlussStand.KantenJson"/>).
+    /// </summary>
+    public string? KantenJson { get; init; }
+
+    /// <summary>Die Busse der Hervorhebung zu <see cref="KantenJson"/>; <c>null</c> = die Busse des Standes.</summary>
+    public string? BusseJson { get; init; }
+
+    /// <summary>Die Bandzeilen der Textalternative einer eigenen Bilanz; <c>null</c> = die Zeilen des Standes.</summary>
+    public IReadOnlyList<ErgebnisFlussZeile>? Fluesse { get; init; }
+
+    /// <summary>Die Knotenzeilen der Textalternative einer eigenen Bilanz; <c>null</c> = die Zeilen des Standes.</summary>
+    public IReadOnlyList<ErgebnisFlussKnotenzeile>? Knoten { get; init; }
 }
 
 /// <summary>
-/// Die Ablagewerte der beiden Wahlen über dem Energieflussbild: Darstellung „Kette | Stufen“ (je Benutzer gemerkt, SK-Q17)
+/// Die Ablagewerte der beiden Wahlen über dem Energieflussbild: Darstellung „Kette | Stufen | Zuordnung“ (je Benutzer gemerkt, SK-Q17)
 /// und Formfilter „Alle | Strom | Wärme | Kälte“ (je Sitzung). Sprachneutral; die Hülle bildet sie auf den Kern ab.
 /// </summary>
 public static class ErgebnisFlussWahl
@@ -162,6 +177,9 @@ public static class ErgebnisFlussWahl
 
     /// <summary>Die vier Stufen mit Verbindern.</summary>
     public const string STUFEN = "stufen";
+
+    /// <summary>Die Zuordnung: Bänder Erzeuger → Verwendung statt des Wärmebusses (nur in der Oberfläche).</summary>
+    public const string ZUORDNUNG = "zuordnung";
 
     /// <summary>Jeder Fluss (Vorgabe).</summary>
     public const string ALLE = "alle";
@@ -176,13 +194,13 @@ public static class ErgebnisFlussWahl
     public const string KAELTE = "kaelte";
 
     /// <summary>Die Stellungen der Darstellung in Reihenfolge.</summary>
-    public static readonly IReadOnlyList<string> DARSTELLUNGEN = new[] { KETTE, STUFEN };
+    public static readonly IReadOnlyList<string> DARSTELLUNGEN = new[] { KETTE, STUFEN, ZUORDNUNG };
 
     /// <summary>Die Stellungen des Filters in Reihenfolge.</summary>
     public static readonly IReadOnlyList<string> FILTER = new[] { ALLE, STROM, WAERME, KAELTE };
 
     /// <summary>Ein gültiger Wert der Darstellung; unbekannt oder leer = Kette.</summary>
-    public static string Darstellung(string? wert) => wert == STUFEN ? STUFEN : KETTE;
+    public static string Darstellung(string? wert) => wert is STUFEN or ZUORDNUNG ? wert : KETTE;
 
     /// <summary>Ein gültiger Wert des Filters; unbekannt oder leer = „Alle“.</summary>
     public static string Filter(string? wert) => wert is STROM or WAERME or KAELTE ? wert : ALLE;
@@ -222,16 +240,16 @@ public sealed class ErgebnisFlussTexte
     /// <summary>Die Überschrift der Knotenbilanz der Textalternative (<c>BK_ERG_FLUSS_TEXT_KNOTEN</c>).</summary>
     public string TextKnoten { get; init; } = "Bilanz je Knoten";
 
-    /// <summary>Die Sprachausgabe der Wahl „Kette | Stufen“ (<c>BK_ERG_FLUSS_DARSTELLUNG</c>).</summary>
+    /// <summary>Die Sprachausgabe der Wahl „Kette | Stufen | Zuordnung“ (<c>BK_ERG_FLUSS_DARSTELLUNG</c>).</summary>
     public string Darstellung { get; init; } = "Darstellung des Energieflussbilds";
 
     /// <summary>Die Sprachausgabe der Filterknöpfe (<c>BK_ERG_FLUSS_FILTER</c>).</summary>
     public string Filter { get; init; } = "Energieform";
 
-    /// <summary>Die Beschriftung je Stellung der Darstellung (Schlüssel <see cref="ErgebnisFlussWahl.KETTE"/>, <see cref="ErgebnisFlussWahl.STUFEN"/>; <c>EF_DARSTELLUNG_*</c>).</summary>
+    /// <summary>Die Beschriftung je Stellung der Darstellung (Schlüssel aus <see cref="ErgebnisFlussWahl.DARSTELLUNGEN"/>; <c>EF_DARSTELLUNG_*</c>).</summary>
     public IReadOnlyDictionary<string, string> Darstellungen { get; init; } = new Dictionary<string, string>
     {
-        [ErgebnisFlussWahl.KETTE] = "Kette", [ErgebnisFlussWahl.STUFEN] = "Stufen"
+        [ErgebnisFlussWahl.KETTE] = "Kette", [ErgebnisFlussWahl.STUFEN] = "Stufen", [ErgebnisFlussWahl.ZUORDNUNG] = "Zuordnung"
     };
 
     /// <summary>Die Beschriftung je Filterknopf (Schlüssel aus <see cref="ErgebnisFlussWahl.FILTER"/>; <c>EF_FILTER_ALLE</c>, <c>EF_LEG_*</c>).</summary>

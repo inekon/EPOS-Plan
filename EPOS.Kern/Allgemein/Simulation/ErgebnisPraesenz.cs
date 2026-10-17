@@ -159,20 +159,34 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Allein der Anlagenbestand des Projekts, ohne Lauf: welche Erzeuger als Anlage
+        /// angelegt sind. Die Reiterleiste der Ergebnisseite blendet damit einen Erzeuger
+        /// aus, der zwar in der Kaskade gewählt ist, im Projekt aber keine Anlage hat.
+        /// <c>null</c>, wenn die Abfrage scheitert oder kein Projekt gesetzt ist — der
+        /// Aufrufer blendet dann nichts aus.
+        /// </summary>
+        public static ErgebnisPraesenz Anlagenbestand(int idProjekt)
+        {
+            if (idProjekt <= 0) return null;
+            ErgebnisPraesenz p = new ErgebnisPraesenz();
+            return AnlagenbestandUebernehmen(idProjekt, p) ? p : null;
+        }
+
+        /// <summary>
         /// Punkt 4 der Regel: eine einzige Abfrage über die Typen der Projektanlagen.
         /// Schlägt sie fehl (oder ist kein Projekt gesetzt), bleibt <paramref name="p"/>
         /// unverändert — die Anzeige fällt dann auf die Lauf-Auskunft zurück, statt
         /// fälschlich Komponenten auszublenden.
         /// </summary>
-        private static void AnlagenbestandUebernehmen(int idProjekt, ErgebnisPraesenz p)
+        private static bool AnlagenbestandUebernehmen(int idProjekt, ErgebnisPraesenz p)
         {
-            if (idProjekt <= 0) return;
+            if (idProjekt <= 0) return false;
 
             DataTable dt = StilleDb.Tabelle(
                 "SELECT DISTINCT ID_Type FROM Tab_Energieanlagen WHERE ID_Projekt = ?",
                 StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
 
-            if (dt == null) return;   // stiller Fehler - Regel greift ohne Punkt 4
+            if (dt == null) return false;   // stiller Fehler - Regel greift ohne Punkt 4
 
             foreach (DataRow r in dt.Rows)
             {
@@ -183,8 +197,10 @@ namespace WindowsFormsApplication1
                     case WizardItemClass.PV_TYP: p.Photovoltaik = true; break;
                     case WizardItemClass.KESSEL_TYP: p.Heizkessel = true; break;
                     case WizardItemClass.BHKW_TYP: p.BHKW = true; break;
+                    case WizardItemClass.SP_TYP: p.Stromspeicher = true; break;
                 }
             }
+            return true;
         }
     }
 }

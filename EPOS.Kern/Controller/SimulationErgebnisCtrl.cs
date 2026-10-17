@@ -386,6 +386,40 @@ namespace WindowsFormsApplication1
             public double WaermeproduktionMwh;
 
             /// <summary>
+            /// Die Wärme der Heizstäbe [MWh/a]. Der Heizstab gibt so viel Wärme ab, wie er Strom
+            /// aufnimmt (<see cref="Jahresarbeitszahl"/>); <see cref="WaermeproduktionMwh"/> enthält sie nicht.
+            /// </summary>
+            public double HeizstabWaermeproduktionMwh => HeizstabStromverbrauchMwh;
+
+            /// <summary>
+            /// Quellwärme aus der Kaskade [MWh/a] — was ein Booster aus dem Puffer eines anderen
+            /// Erzeugers bezieht; in <see cref="WaermeproduktionMwh"/> enthalten
+            /// (<c>SimulationWaermepumpe.QuellwaermeKaskadeKwh</c>).
+            /// </summary>
+            public double QuellwaermeKaskadeMwh;
+
+            /// <summary>
+            /// Der GEDECKTE Wärmebedarf [MWh/a] — der Eigenanteil der Wärmepumpe samt Heizstab
+            /// (<see cref="SimulationRunner.EigenanteilWpMwh"/>), aus dem auch
+            /// <see cref="DeckungProzent"/> und <see cref="RestwaermeMwh"/> folgen.
+            /// </summary>
+            public double GedecktMwh;
+
+            /// <summary>
+            /// Dieselbe Deckung je Kanal [MWh/a], Index nach <see cref="Kanal"/>: Direktdeckung,
+            /// zugerechnete Speicherentladung und Heizstab des Kanals.
+            /// </summary>
+            public double[] GedecktKanalMwh = new double[Kanal.ANZAHL];
+
+            /// <summary>
+            /// Speicherverluste der Wärmepumpe [MWh/a]: was sie netto erzeugt, aber nicht deckt
+            /// (Verluste und Füllstand am Jahresende). Schließt die Herleitung
+            /// Produktion − Quellwärme + Heizstab − Speicherverluste = <see cref="GedecktMwh"/>.
+            /// </summary>
+            public double SpeicherverlusteMwh =>
+                WaermeproduktionMwh - QuellwaermeKaskadeMwh + HeizstabWaermeproduktionMwh - GedecktMwh;
+
+            /// <summary>
             /// Die Jahresarbeitszahl der Wärmepumpe allein [–] = <see cref="WaermeproduktionMwh"/> ÷
             /// <see cref="StromverbrauchMwh"/>; <c>null</c> ohne Strom (<see cref="Jahresarbeitszahl.Waermepumpe"/>).
             /// </summary>
@@ -482,6 +516,9 @@ namespace WindowsFormsApplication1
             e.RestwaermeMwh = SimulationRunner.RestNachEigenanteil(e.StufeneingangMwh, eigen);
             e.DeckungProzent = SimulationRunner.DeckungProzent(
                 eigen, wb != null ? wb.Waermebedarf_Gesamt : 0.0);
+            e.GedecktMwh = eigen;
+            e.GedecktKanalMwh = KanalMwh(SimulationRunner.Summiere(
+                wp.Direktdeckung_Kanal, wp.Speicherentladung_Kanal, wp.Heizstab_Kanal));
 
             e.BivalenzpunktVorhanden = wp.Bivalenzpunkt != -100;
             e.Bivalenzpunkt = wp.Bivalenzpunkt;
@@ -489,6 +526,7 @@ namespace WindowsFormsApplication1
             e.StromverbrauchMwh = wp.WpStrombedarfGesamtKwh / 1000.0;
             e.HeizstabStromverbrauchMwh = wp.HeizstabGesamtKwh / 1000.0;
             e.WaermeproduktionMwh = wp.WpWaermeproduktionGesamtKwh / 1000.0;
+            e.QuellwaermeKaskadeMwh = wp.QuellwaermeKaskadeKwh / 1000.0;
 
             // UB-E4 (FK 7.1): die Betriebsbereiche - dieselbe Abbildung wie das gespeicherte Ergebnis (SimulationRunner).
             e.Bereiche = BereicheDerWaermepumpe(wp);
@@ -625,8 +663,34 @@ namespace WindowsFormsApplication1
         {
             public double DeckungProzent;
             public double StufeneingangMwh;
+
+            /// <summary>
+            /// Kommt beim Kessel der ganze Projektwärmebedarf an? Dann rechnet er in derselben
+            /// Stufe wie die übrigen Erzeuger, und der Reiter nennt den Stufeneingang
+            /// „Gesamtwärmebedarf“; sonst ist er der Rest nach den vorgelagerten Erzeugern.
+            /// </summary>
+            public bool StufeneingangIstGesamtbedarf;
+
+            /// <summary>
+            /// Der GEDECKTE Wärmebedarf [MWh/a] — der Eigenanteil der Kessel
+            /// (<see cref="SimulationRunner.EigenanteilKesselMwh"/>).
+            /// </summary>
+            public double GedecktMwh;
+
+            /// <summary>
+            /// Dieselbe Deckung je Kanal [MWh/a], Index nach <see cref="Kanal"/>: Direktdeckung
+            /// und zugerechnete Speicherentladung des Kanals.
+            /// </summary>
+            public double[] GedecktKanalMwh = new double[Kanal.ANZAHL];
             public double RestwaermeMwh;
             public double WaermeproduktionMwh;
+
+            /// <summary>
+            /// Die Speicherverluste der Kessel [MWh/a]: der Teil ihrer eigenen Produktion, der in
+            /// Speichern verloren geht oder am Jahresende noch darin steht. Die Herleitung im Reiter:
+            /// Produktion − Speicherverluste = <see cref="GedecktMwh"/>.
+            /// </summary>
+            public double SpeicherverlusteMwh => WaermeproduktionMwh - GedecktMwh;
             public double StrombedarfMwh;
             public double ReststrombedarfMwh;
             public double GasMwh;
@@ -789,6 +853,12 @@ namespace WindowsFormsApplication1
         /// <para><b>W11-B19 behoben:</b> Der Vorläufer setzte <c>tb_Koks</c> ZWEIMAL mit
         /// demselben Wert (:4418 und :4425). Ein DTO-Feld gibt es nur einmal.</para>
         /// </summary>
+        /// <summary>
+        /// Gleichheitsrand zwischen Stufeneingang und Projektwärmebedarf [MWh/a] — die halbe
+        /// letzte Anzeigestelle: Beide sind Summen derselben Stundenreihe, nur getrennt gebildet.
+        /// </summary>
+        private const double STUFENEINGANG_GLEICH_MWH = 0.005;
+
         public static HeizkesselErgebnis Heizkessel(SimulationControl sim, SimulationWaermebedarf wb)
         {
             if (sim == null || !sim.bSimulationKessel) return null;
@@ -798,9 +868,14 @@ namespace WindowsFormsApplication1
 
             double eigen = SimulationRunner.EigenanteilKesselMwh(spk);
             e.StufeneingangMwh = spk.WaermebedarfGesamtMwh;
+            e.StufeneingangIstGesamtbedarf = wb != null && wb.Waermebedarf_Gesamt > 0 &&
+                Math.Abs(e.StufeneingangMwh - wb.Waermebedarf_Gesamt) < STUFENEINGANG_GLEICH_MWH;
             e.RestwaermeMwh = SimulationRunner.RestNachEigenanteil(e.StufeneingangMwh, eigen);
             e.DeckungProzent = SimulationRunner.DeckungProzent(
                 eigen, wb != null ? wb.Waermebedarf_Gesamt : 0.0);
+            e.GedecktMwh = eigen;
+            e.GedecktKanalMwh = KanalMwh(SimulationRunner.Summiere(
+                spk.Direktdeckung_Kanal, spk.Speicherentladung_Kanal));
 
             e.WaermeproduktionMwh = spk.SWaermeSpkMwh;
             e.StrombedarfMwh = spk.StrombedarfGesamtKwh / 1000.0;

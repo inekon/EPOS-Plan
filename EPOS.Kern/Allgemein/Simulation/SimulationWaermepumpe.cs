@@ -28,6 +28,14 @@ namespace WindowsFormsApplication1
 
         public double WpStrombedarfGesamtKwh = 0;
         public double WpWaermeproduktionGesamtKwh = 0;
+
+        /// <summary>
+        /// Jahressumme der QUELLWÄRME AUS DER KASKADE [kWh]: was die Module aus einem Puffer
+        /// entnommen haben, den ein anderer Erzeuger lädt (Booster). Sie steckt in
+        /// <see cref="WpWaermeproduktionGesamtKwh"/> und zugleich in der Produktion des
+        /// Laders; echte Quellspeicher (Erdreich, Grundwasser) zählen nicht. Nur Anzeige.
+        /// </summary>
+        public double QuellwaermeKaskadeKwh = 0;
         public double HeizstabGesamtKwh = 0;
         public double WP_Laufzeit = 0;
 
@@ -373,6 +381,7 @@ namespace WindowsFormsApplication1
                                          SimulationPufferspeicher ziel)
         {
             if (quelle == null || menge <= 0 || quelle.IstQuelle) return;
+            QuellwaermeKaskadeKwh += menge;
             Quellentnahmen.Add(new Quellentnahme { Quelle = quelle, Menge = menge, Ziel = ziel });
         }
 
@@ -2082,6 +2091,7 @@ namespace WindowsFormsApplication1
 
             WpStrombedarfGesamtKwh = 0;
             WpWaermeproduktionGesamtKwh = 0;
+            QuellwaermeKaskadeKwh = 0;
             HeizstabGesamtKwh = 0;
             WP_Laufzeit = 0;
             Bivalenzpunkt = -100;
@@ -2513,11 +2523,9 @@ namespace WindowsFormsApplication1
                         // null = die Wärme deckt Bedarf).
                         if (entnahme > 0)
                         {
-                            // PAKET E1: OHNE Kanalangabe — eine Quellentnahme trägt
-                            // keinen Bedarfskanal und wird auf dem Heizkanal gebucht
-                            // (Vorbelegung von Entladen, dieselbe Näherung wie
-                            // Kaskadenschleife.Anteil_Entladen ohne Kanal).
-                            double geliefert = quelle.Entladen(entnahme, stunde);
+                            // Eine Quellentnahme trägt keinen Bedarfskanal: Sie steht im
+                            // Speicher als Quellentnahme, nicht als Entladung in die Heizung.
+                            double geliefert = quelle.Entladen(entnahme, stunde, quellentnahme: true);
                             QuellentnahmeMelden(quelle, geliefert, null);
 
                             // NACHARBEIT E-K1-3 — SYMMETRIE ZUM KESSEL.
@@ -3009,8 +3017,8 @@ namespace WindowsFormsApplication1
                     double entnahme = ladung - strom;
                     // D5a: Ziel = der geladene Speicher — die Wärme hat nur den Speicher
                     // gewechselt, ihre Herkunft wandert mit (Anteil_Umbuchen).
-                    // PAKET E1: OHNE Kanalangabe (Heizkanal-Vorbelegung, siehe oben).
-                    if (entnahme > 0) QuellentnahmeMelden(quelle, quelle.Entladen(entnahme, stunde), sp);
+                    // Als Quellentnahme gebucht, nicht als Entladung in die Heizung (siehe oben).
+                    if (entnahme > 0) QuellentnahmeMelden(quelle, quelle.Entladen(entnahme, stunde, quellentnahme: true), sp);
                 }
 
                 return ladung;
@@ -3110,6 +3118,7 @@ namespace WindowsFormsApplication1
                 WP_MitHeizstab[i] = false;
             }
             WpWaermeproduktionGesamtKwh = 0;
+            QuellwaermeKaskadeKwh = 0;
             WpStrombedarfGesamtKwh = 0;
             HeizstabGesamtKwh = 0;
             Meldung.Warten(false);
@@ -3550,6 +3559,7 @@ namespace WindowsFormsApplication1
                 Heizstab_stuendlich[i] = 0;
             }
             WpWaermeproduktionGesamtKwh = 0;
+            QuellwaermeKaskadeKwh = 0;
             HeizstabGesamtKwh = 0;
             WpStrombedarfGesamtKwh = 0;
             WP_Laufzeit = 0;

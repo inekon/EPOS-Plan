@@ -1,4 +1,4 @@
-﻿@* Der Abschnitt "Ergebnisse — Energie" der Seite "Uebersicht" (Anwenderauftrag 13.10.2026).
+﻿@* Der Abschnitt "Uebersicht Energie" der Seite "Uebersicht" (Anwenderauftrag 13.10.2026).
 
    WAS ER ZEIGT. Die Energie-Kennzahlen von Stamm und Varianten nebeneinander -
    dieselben Versionen und dieselbe Reihenfolge wie die Gegenueberstellung der
@@ -26,10 +26,10 @@
    Gruppenliste; die Komponente reicht sie bei OK an AnzeigeSpeichern und laedt neu. Was
    "ohne Wert" ausblendet, nennt eine leise Zeile unter der Tabelle. Kein Delegat, kein Knopf.
    TABELLE, GRAFIK ODER FLUSS. Im Kopf des Abschnitts steht der Umschalter "Tabelle |
-   Grafik | Fluss" (Vorgabe Tabelle; Pfeiltasten laufen ueber alle Stellungen, Pos1 und
+   Grafik | Fluss" (Vorgabe Fluss, ohne dessen Ladeweg Tabelle; Pfeiltasten laufen ueber alle Stellungen, Pos1 und
    Ende auf die erste und letzte); die Wahl gilt je Benutzer ueber die Einstellungsnaht
    des Kerns (Schluessel Uebersicht.Ergebnisse.Ansicht, Lesen und Schreiben reicht
-   die Huelle durch; ein unbekannter Wert faellt auf die Tabelle). Die Grafik
+   die Huelle durch; ohne gemerkte Wahl oder bei einem unbekannten Wert gilt die Vorgabe). Die Grafik
    (UebersichtErgebnisGrafik) bekommt dieselben Gruppen wie die Tafel, gefiltert nach
    Zustand und "nur Unterschiede". Der Fluss (UebersichtErgebnisFluss) zeigt das
    Energieflussbild EINER Version (Wahl darueber, daneben "Kette | Stufen" je Benutzer und
@@ -164,7 +164,7 @@
     [Parameter] public Func<UebersichtStand, UebersichtErgebnisStand>? Laden { get; set; }
 
     /// <summary>Die Abschnittsüberschrift (<c>BK_ERG_ABSCHNITT_ERGEBNISSE</c>).</summary>
-    [Parameter] public string Titel { get; set; } = "Ergebnisse — Energie";
+    [Parameter] public string Titel { get; set; } = "Übersicht Energie";
 
     /// <summary>Der Kopf der ersten Spalte (<c>BK_ERG_SP_KENNZAHL</c>).</summary>
     [Parameter] public string SpalteKennzahl { get; set; } = "Kennzahl";
@@ -269,8 +269,8 @@
     /// <summary>Die erste Zeile des Assistententextes in der Grafikansicht.</summary>
     public const string KI_ANSICHT_GRAFIK = "Ansicht: Grafik (Balken je Version, je Gruppe und Einheit ein Diagramm)";
 
-    /// <summary>Liest die gewählte Ansicht („tabelle“, „grafik“, „fluss“) aus der Einstellungsnaht der Hülle; ohne Leseweg gilt die Tabelle.</summary>
-    [Parameter] public Func<string>? AnsichtLesen { get; set; }
+    /// <summary>Liest die gewählte Ansicht („tabelle“, „grafik“, „fluss“) aus der Einstellungsnaht der Hülle; ohne Leseweg oder gemerkte Wahl gilt die Vorgabe (Fluss).</summary>
+    [Parameter] public Func<string?>? AnsichtLesen { get; set; }
 
     /// <summary>Meldet die neue Ansicht an die Hülle, die sie je Benutzer ablegt.</summary>
     [Parameter] public Action<string>? AnsichtGewechselt { get; set; }
@@ -330,8 +330,8 @@
         => stellung == ANSICHT_GRAFIK ? AnsichtGrafikText : stellung == ANSICHT_FLUSS ? FlussTexte.Ansicht : AnsichtTabelleText;
 
     /// <summary>
-    /// Die gezeigte Ansicht („tabelle“, „grafik“ oder „fluss“; Prüfhilfe). Ein unbekannter Wert — oder „fluss“ ohne
-    /// Ladeweg — fällt auf die Tabelle.
+    /// Die gezeigte Ansicht („tabelle“, „grafik“ oder „fluss“; Prüfhilfe). Ohne gemerkte Wahl und bei einem
+    /// unbekannten Wert gilt die <see cref="Vorgabeansicht"/>; „fluss“ ohne Ladeweg fällt auf die Tabelle.
     /// </summary>
     public string Ansicht
     {
@@ -340,11 +340,14 @@
             if (_ansicht is null)
             {
                 string? gelesen = AnsichtLesen?.Invoke();
-                _ansicht = gelesen is not null && Stellungen.Contains(gelesen) ? gelesen : ANSICHT_TABELLE;
+                _ansicht = gelesen is not null && Stellungen.Contains(gelesen) ? gelesen : Vorgabeansicht;
             }
             return _ansicht;
         }
     }
+
+    /// <summary>Die Ansicht beim ersten Öffnen: das Energieflussbild, ohne dessen Ladeweg die Tabelle.</summary>
+    private string Vorgabeansicht => FlussLaden is null ? ANSICHT_TABELLE : ANSICHT_FLUSS;
 
     private bool IstGrafik => Ansicht == ANSICHT_GRAFIK;
 

@@ -24,8 +24,10 @@
 
    DARSTELLUNG UND FILTER (SK-2d-2). Neben der Versionswahl stehen zwei Knopfgruppen im
    Muster des Umschalters "Tabelle | Grafik | Fluss" (role="radiogroup", Pfeiltasten,
-   Pos1/Ende, ein Tabulatorhalt je Gruppe): "Kette | Stufen" (Vorgabe Kette, je Benutzer
-   gemerkt ueber die Huelle; der Bericht zeigt immer die Kette) und "Alle | Strom | Waerme |
+   Pos1/Ende, ein Tabulatorhalt je Gruppe): "Kette | Stufen | Zuordnung" (Vorgabe Kette, je
+   Benutzer gemerkt ueber die Huelle; der Bericht zeigt immer die Kette; die Zuordnung fuehrt
+   Baender Erzeuger -> Verwendung aus einer eigenen Bilanz samt eigener Kanten und
+   Textalternative) und "Alle | Strom | Waerme |
    Kaelte" (je Sitzung wie die Versionswahl). Jede Wahl ist ein eigenes Bildpaar breit/schmal
    aus dem Stand (ErgebnisFlussStand.Bild, beim ersten Bedarf gebaut und dort gehalten); ein
    Filter ohne Fluss nennt seinen Grund im Bild und als leise Zeile darueber.
@@ -76,7 +78,7 @@
             }
             <figure class="epos-ergebnis-fluss-bild" aria-label="@Bildtext" aria-describedby="@TextId" @ref="_figur"
                     data-darstellung="@Darstellung" data-filter="@Filter"
-                    data-kanten="@_stand.KantenJson" data-busse="@_stand.BusseJson">
+                    data-kanten="@(_bild?.KantenJson ?? _stand.KantenJson)" data-busse="@(_bild?.BusseJson ?? _stand.BusseJson)">
                 <div class="epos-ergebnis-fluss-mass epos-ergebnis-fluss-mass--breit">
                     <DiagrammSvg Modell="@_bild?.Breit" Kennung="@("ergebnis-fluss-" + _stand.IdProjekt + "-breit")"
                                  Vorlagenfeld="stand.bild.energiefluss" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
@@ -93,14 +95,14 @@
             <div id="@TextId" class="epos-komponenten-sprachausgabe epos-ergebnis-fluss-text">
                 <p>@Texte.TextFluesse</p>
                 <ul>
-                    @foreach (ErgebnisFlussZeile f in _stand.Fluesse)
+                    @foreach (ErgebnisFlussZeile f in _bild?.Fluesse ?? _stand.Fluesse)
                     {
                         <li>@string.Format(Texte.Zeile, f.Von, f.Nach, f.Wert, f.Anteil, f.Herkunft)</li>
                     }
                 </ul>
                 <p>@Texte.TextKnoten</p>
                 <ul>
-                    @foreach (ErgebnisFlussKnotenzeile k in _stand.Knoten)
+                    @foreach (ErgebnisFlussKnotenzeile k in _bild?.Knoten ?? _stand.Knoten)
                     {
                         <li>@string.Format(Texte.Knoten, k.Name, k.Zufluss, k.Abfluss, k.Rest)</li>
                     }
@@ -134,7 +136,7 @@
     /// <summary>Meldet die neu gewählte Version an die Hülle.</summary>
     [Parameter] public Action<int>? FlussVersionGewechselt { get; set; }
 
-    /// <summary>Liest die gemerkte Darstellung („kette“ | „stufen“) aus der Einstellungsnaht der Hülle; ohne Leseweg die Kette.</summary>
+    /// <summary>Liest die gemerkte Darstellung („kette“ | „stufen“ | „zuordnung“) aus der Einstellungsnaht der Hülle; ohne Leseweg die Kette.</summary>
     [Parameter] public Func<string>? FlussDarstellungLesen { get; set; }
 
     /// <summary>Meldet die neue Darstellung an die Hülle, die sie je Benutzer ablegt.</summary>
@@ -157,7 +159,7 @@
     private ErgebnisFlussBild? _bild;
     private string? _darstellung;
     private string? _filter;
-    private readonly ElementReference[] _darstellungKnoepfe = new ElementReference[2];
+    private readonly ElementReference[] _darstellungKnoepfe = new ElementReference[ErgebnisFlussWahl.DARSTELLUNGEN.Count];
     private readonly ElementReference[] _filterKnoepfe = new ElementReference[4];
     private string? _fokusGruppe;
     private ElementReference _figur;
@@ -166,7 +168,7 @@
     private string? _figurGebunden;
     private ErgebnisFlussBild? _bildGebunden;
 
-    /// <summary>Die gezeigte Darstellung („kette“ oder „stufen“; Prüfhilfe). Gelesen einmal aus der Hülle, Vorgabe Kette.</summary>
+    /// <summary>Die gezeigte Darstellung („kette“, „stufen“ oder „zuordnung“; Prüfhilfe). Gelesen einmal aus der Hülle, Vorgabe Kette.</summary>
     public string Darstellung => _darstellung ??= ErgebnisFlussWahl.Darstellung(FlussDarstellungLesen?.Invoke());
 
     /// <summary>Der gezeigte Formfilter („alle“, „strom“, „waerme“, „kaelte“; Prüfhilfe). Gelesen einmal aus der Hülle, Vorgabe „alle“.</summary>

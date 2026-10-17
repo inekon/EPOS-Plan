@@ -63,8 +63,27 @@
                 <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARFSDECKUNG, Zahl(Daten.DeckungProzent), "%")
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF, Zahl(Daten.StufeneingangMwh), MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_WP, Zahl(Daten.WaermeproduktionMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_NUTZWAERME_WP, Zahl(Daten.GedecktMwh), MWH,
+                               titel: Resource.SIMERG_TIP_NUTZWAERME_WP)
+                    @foreach (var (text, wert) in Kanalzeilen.Davon(Daten.GedecktKanalMwh))
+                    {
+                        @Wertzeile(text, Zahl(wert), MWH)
+                    }
                     @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, Zahl(Daten.RestwaermeMwh), MWH, betont: true)
+
+                    @* Die Herleitung der Nutzwärme als eigener Block: Produktion − Quellwärme
+                       + Heizstab − Speicherverluste = Nutzwärme, die Grundlage der Deckung. *@
+                    <div class="epos-simerg-zwischenkopf" role="heading" aria-level="4">@Resource.SIMERG_GRP_HERLEITUNG_NUTZWAERME</div>
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_WP, Zahl(Daten.WaermeproduktionMwh), MWH,
+                               titel: Resource.SIMERG_TIP_WAERMEPRODUKTION_WP, stufe: Zeilenstufe.Herleitung)
+                    @Wertzeile(Resource.SIMERG_LBL_ABZUEGLICH_QUELLWAERME_KASKADE, Zahl(Daten.QuellwaermeKaskadeMwh), MWH,
+                               titel: Resource.SIMERG_TIP_QUELLWAERME_KASKADE_WP, stufe: Zeilenstufe.Herleitung)
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_HEIZSTAB, Zahl(Daten.HeizstabWaermeproduktionMwh), MWH,
+                               titel: Resource.SIMERG_TIP_WAERMEPRODUKTION_HEIZSTAB, stufe: Zeilenstufe.Herleitung)
+                    @Wertzeile(Resource.SIMERG_LBL_ABZUEGLICH_SPEICHERVERLUSTE, Zahl(Daten.SpeicherverlusteMwh), MWH,
+                               titel: Resource.SIMERG_TIP_SPEICHERVERLUSTE_WP, stufe: Zeilenstufe.Herleitung)
+                    @Wertzeile(Resource.SIMERG_LBL_NUTZWAERME_WP, Zahl(Daten.GedecktMwh), MWH,
+                               titel: Resource.SIMERG_TIP_NUTZWAERME_WP, stufe: Zeilenstufe.Ergebnis)
                 </dl>
 
             </section>
@@ -595,19 +614,15 @@
     /// bleibt (W11b‑B‑15); ohne den Schalter bleibt das Markup unveraendert.
     /// <paramref name="titel"/> ist der Kurztext an Beschriftung und Wert (die Formel einer
     /// Jahresarbeitszahl); ohne ihn laesst Blazor das Attribut weg.
+    /// <paramref name="stufe"/> setzt eine Zeile des Herleitungsblocks ab (<see cref="Zeilenstufe"/>).
     /// </summary>
     private RenderFragment Wertzeile(string text, string wert, string einheit,
-                                     bool betont = false, string? titel = null) => @<text>
-        <dt class="@Zeilenklasse(betont)" title="@titel">@text</dt>
-        <dd class="@Zeilenklasse(betont)" title="@titel">@wert</dd>
-        <dd class="@Einheitsklasse(betont)">@einheit</dd>
+                                     bool betont = false, string? titel = null,
+                                     Zeilenstufe stufe = Zeilenstufe.Normal) => @<text>
+        <dt class="@Zeilenstufen.Klasse(betont, stufe, beschriftung: true)" title="@titel">@text</dt>
+        <dd class="@Zeilenstufen.Klasse(betont, stufe)" title="@titel">@wert</dd>
+        <dd class="@Zeilenstufen.Einheitsklasse(betont, stufe)">@einheit</dd>
     </text>;
-
-    /// <summary><c>null</c> laesst Blazor das Attribut ganz weg — kein leeres class="".</summary>
-    private static string? Zeilenklasse(bool betont) => betont ? "epos-simerg-abschluss" : null;
-
-    private static string Einheitsklasse(bool betont) =>
-        betont ? "epos-simerg-einheit epos-simerg-abschluss" : "epos-simerg-einheit";
 
     // =====================================================================
     //  Der Hilfe-Assistent (Welle #458, Stufe 2): die Schalter der Anzeige

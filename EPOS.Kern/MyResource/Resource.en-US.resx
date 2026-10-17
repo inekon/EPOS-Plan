@@ -5804,10 +5804,10 @@ It then feeds the overview and the overall simulation. The existing simulation r
     <value>{0} versions</value>
   </data>
   <data name="BK_ERG_ABSCHNITT_KOMPONENTEN" xml:space="preserve">
-    <value>Components and settings</value>
+    <value>Overview components / comparison</value>
   </data>
   <data name="BK_ERG_ABSCHNITT_ERGEBNISSE" xml:space="preserve">
-    <value>Results — energy</value>
+    <value>Overview energy</value>
   </data>
   <data name="BK_ERG_SP_KENNZAHL" xml:space="preserve">
     <value>Indicator</value>
@@ -15239,7 +15239,7 @@ Please check all entries!</value>
     <value>Results</value>
   </data>
   <data name="SIMERG_LBL_WAERMEBEDARF_NETZ" xml:space="preserve">
-    <value>Heat requirement of the local heating network:</value>
+    <value>Total heat demand:</value>
   </data>
   <data name="SIMERG_LBL_STROMBEDARF" xml:space="preserve">
     <value>Power requirements:</value>
@@ -15251,7 +15251,16 @@ Please check all entries!</value>
     <value>Residual power requirement:</value>
   </data>
   <data name="SIMERG_LBL_WAERMEPRODUKTION_WP" xml:space="preserve">
-    <value>Heat production WP:</value>
+    <value>Heat production heat pump:</value>
+  </data>
+  <data name="SIMERG_LBL_WAERMEPRODUKTION_HEIZSTAB" xml:space="preserve">
+    <value>plus heat production heating element:</value>
+  </data>
+  <data name="SIMERG_TIP_WAERMEPRODUKTION_WP" xml:space="preserve">
+    <value>Heat delivered by the heat pumps, measured per module at the generator and without the heating element. If a heat pump draws its source heat from a buffer charged by another heat pump (booster), that heat is contained in both modules.</value>
+  </data>
+  <data name="SIMERG_TIP_WAERMEPRODUKTION_HEIZSTAB" xml:space="preserve">
+    <value>Heat of the heating elements. A heating element delivers as much heat as it draws power.</value>
   </data>
   <data name="SIMERG_LBL_STROMVERBRAUCH_WP" xml:space="preserve">
     <value>Power consumption HP:</value>
@@ -15266,10 +15275,10 @@ Please check all entries!</value>
     <value>SPF incl. heating element:</value>
   </data>
   <data name="SIMERG_TIP_JAZ_WP" xml:space="preserve">
-    <value>Seasonal performance factor of the heat pump alone: heat production HP ÷ power consumption HP. Without power consumption a dash is shown.</value>
+    <value>Seasonal performance factor of the heat pump alone: heat production heat pump ÷ power consumption HP. Without power consumption a dash is shown.</value>
   </data>
   <data name="SIMERG_TIP_JAZ_SYSTEM" xml:space="preserve">
-    <value>Seasonal performance factor of the system incl. heating element (balance boundary per VDI 4650): (heat production HP + heat of the heating element) ÷ (power consumption HP + power consumption heating element); the heating element delivers as much heat as it draws power. Same calculation as the key figure “Heat pump system SPF incl. backup heater” in the report. Without power consumption a dash is shown.</value>
+    <value>Seasonal performance factor of the system incl. heating element (balance boundary per VDI 4650): (heat production heat pump + heat production heating element) ÷ (power consumption HP + power consumption heating element); the heating element delivers as much heat as it draws power. Same calculation as the key figure “Heat pump system SPF incl. backup heater” in the report. Without power consumption a dash is shown.</value>
   </data>
   <data name="SIMERG_LBL_WAERMEPRODUKTION_SPK" xml:space="preserve">
     <value>Heat production of the top boilers:</value>
@@ -28983,7 +28992,34 @@ Do you want to allow this?</value>
     <value>Residual heat demand after boiler:</value>
   </data>
   <data name="SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG" xml:space="preserve">
-    <value>Residual heat demand (stage input):</value>
+    <value>Residual heat demand before boiler:</value>
+  </data>
+  <data name="SIMERG_LBL_GEDECKT" xml:space="preserve">
+    <value>Covered heat demand:</value>
+  </data>
+  <data name="SIMERG_TIP_GEDECKT" xml:space="preserve">
+    <value>The part of the heat demand this generator covers: heat delivered directly plus the storage discharge attributed to it, for the heat pump including the heating element. Heat charged into storage counts only when it is discharged; storage losses and the source heat of a booster do not count.</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_HEIZUNG" xml:space="preserve">
+    <value>of which space heating:</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_WARMWASSER" xml:space="preserve">
+    <value>of which domestic hot water:</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_PROZESS" xml:space="preserve">
+    <value>of which process heat:</value>
+  </data>
+  <data name="SIMERG_LBL_ABZUEGLICH_QUELLWAERME_KASKADE" xml:space="preserve">
+    <value>less source heat from cascade:</value>
+  </data>
+  <data name="SIMERG_TIP_QUELLWAERME_KASKADE_WP" xml:space="preserve">
+    <value>Heat a heat pump draws as its source from a buffer charged by another generator (booster). It is contained twice in the heat production: at the generator charging the buffer and at the heat pump lifting it. 0 without a cascade.</value>
+  </data>
+  <data name="SIMERG_LBL_GESAMTWAERMEBEDARF" xml:space="preserve">
+    <value>Total heat demand:</value>
+  </data>
+  <data name="SIMERG_TIP_RESTWAERMEBEDARF_STUFENEINGANG" xml:space="preserve">
+    <value>Heat demand that reaches the boiler. If generators run before the boiler in the cascade, it is what remains after them; if the boiler runs in the same stage with them, it is the total heat demand.</value>
   </data>
   <data name="CHART_LEGENDE_REST_NACH_KESSEL" xml:space="preserve">
     <value>other generators / uncovered</value>
@@ -58114,6 +58150,21 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="EF_DARSTELLUNG_STUFEN" xml:space="preserve">
     <value>Stages</value>
   </data>
+  <data name="EF_DARSTELLUNG_ZUORDNUNG" xml:space="preserve">
+    <value>Allocation</value>
+  </data>
+  <data name="EF_KN_SPEICHERVERLUST" xml:space="preserve">
+    <value>Storage loss</value>
+  </data>
+  <data name="EF_KK_SPEICHERVERLUST" xml:space="preserve">
+    <value>Stor. loss</value>
+  </data>
+  <data name="EF_FORMEL_DECKUNG" xml:space="preserve">
+    <value>coverage per channel × heat demand</value>
+  </data>
+  <data name="EF_FORMEL_SPEICHERVERLUST" xml:space="preserve">
+    <value>net output − coverage (storage losses, state of charge)</value>
+  </data>
   <data name="VF_STAND__BILD__ENERGIEFLUSS" xml:space="preserve">
     <value>Image per state: energy flow diagram — annual balance of electricity, heat and cooling from the sources via the generators to the demands; the nodes carry their annual total (MWh/a), the bands no number; Word only.</value>
   </data>
@@ -58182,5 +58233,26 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="KI_DLG_KMA_RKW_ERL" xml:space="preserve">
     <value>Catalogue record of the heat rejection unit of the water-cooled chiller (id); empty = none, then the fixed values of the heat rejection type apply. With OK the plant gets its own project copy.</value>
+  </data>
+  <data name="SIMERG_LBL_ABZUEGLICH_SPEICHERVERLUSTE" xml:space="preserve">
+    <value>less storage losses:</value>
+  </data>
+  <data name="SIMERG_TIP_SPEICHERVERLUSTE_WP" xml:space="preserve">
+    <value>Heat pump heat lost in storage or still stored at year end, so it covers no demand. Computed as heat production minus source heat from cascade plus heating element minus useful heat.</value>
+  </data>
+  <data name="SIMERG_LBL_NUTZWAERME_WP" xml:space="preserve">
+    <value>Useful heat produced by heat pump:</value>
+  </data>
+  <data name="SIMERG_TIP_NUTZWAERME_WP" xml:space="preserve">
+    <value>The part of the heat demand covered by the heat pump: heat delivered directly plus the storage discharge attributed to it, including the heating element. Each kilowatt hour counts once, even if a booster lifted it a second time. Basis of the heat demand coverage.</value>
+  </data>
+  <data name="SIMERG_GRP_HERLEITUNG_NUTZWAERME" xml:space="preserve">
+    <value>Derivation of useful heat</value>
+  </data>
+  <data name="SIMERG_LBL_NUTZWAERME_SPK" xml:space="preserve">
+    <value>Useful heat generated by boiler:</value>
+  </data>
+  <data name="SIMERG_TIP_SPEICHERVERLUSTE_SPK" xml:space="preserve">
+    <value>Boiler heat that is lost in storage or still stored at the end of the year and so covers no demand. Calculated as heat production minus useful heat.</value>
   </data>
 </root>
