@@ -405,7 +405,7 @@ namespace WindowsFormsApplication1
                                 new DbParam("@n", DbParamTyp.Integer) { Wert = km.Anzahl },
                                 new DbParam("@k", DbParamTyp.Double) { Wert = km.Kaelteproduktion_MWh },
                                 new DbParam("@s", DbParamTyp.Double) { Wert = km.Stromverbrauch_MWh },
-                                new DbParam("@h", DbParamTyp.Double) { Wert = R(km.Hilfsstrom_MWh) },
+                                new DbParam("@h", DbParamTyp.Double) { Wert = km.Hilfsstrom_MWh },
                                 new DbParam("@f", DbParamTyp.Double) { Wert = R(km.FreieKuehlung_MWh) },
                                 new DbParam("@fs", DbParamTyp.Integer) { Wert = km.FreieKuehlung_Stunden },
                                 new DbParam("@t", DbParamTyp.Integer) { Wert = km.Taktstunden },
@@ -413,18 +413,20 @@ namespace WindowsFormsApplication1
                                 new DbParam("@l", DbParamTyp.Integer) { Wert = km.Stunden_Leistungsgrenze },
                             };
                             // KU3-4d (Schritt 184): Netzbezug, abweichender Kuehltraeger samt Abrechnungsart, Stromspitze.
+                            // 8d: die Stromspalten der Kaeltemaschine (Strom, Hilfsstrom, Netzbezug, Spitze, Taktstrom,
+                            // Ventilatorstrom) ungerundet wie Kaelte und Strom - eine Rechnung, ungerundete Kaeltesummen.
                             if (kmAbrechnung)
                             {
                                 bool traeger = km.Kuehl_CarrierId.HasValue && km.Kuehl_CarrierId.Value > 0;
-                                pk.Add(new DbParam("@nb", DbParamTyp.Double) { Wert = km.Kaeltestrom_Netzbezug_MWh.HasValue ? (object)R(km.Kaeltestrom_Netzbezug_MWh.Value) : DBNull.Value });
+                                pk.Add(new DbParam("@nb", DbParamTyp.Double) { Wert = UngerundetOderNull(km.Kaeltestrom_Netzbezug_MWh) });
                                 pk.Add(new DbParam("@kc", DbParamTyp.Integer) { Wert = traeger ? (object)km.Kuehl_CarrierId.Value : DBNull.Value });
                                 pk.Add(new DbParam("@kz", DbParamTyp.Integer) { Wert = traeger && km.Kuehl_EigenerZaehler.HasValue ? (object)(km.Kuehl_EigenerZaehler.Value ? 1 : 0) : DBNull.Value });
-                                pk.Add(new DbParam("@sp", DbParamTyp.Double) { Wert = km.Stromspitze_kW.HasValue ? (object)R(km.Stromspitze_kW.Value) : DBNull.Value });
+                                pk.Add(new DbParam("@sp", DbParamTyp.Double) { Wert = UngerundetOderNull(km.Stromspitze_kW) });
                             }
                             // KM3 (Schritt 210): ohne Teillast_Weg NULL - der Satz bleibt wie ohne KM3.
                             if (kmTeillast)
                             {
-                                pk.Add(new DbParam("@tm", DbParamTyp.Double) { Wert = WertOderNull(km.Taktstrom_MWh) });
+                                pk.Add(new DbParam("@tm", DbParamTyp.Double) { Wert = UngerundetOderNull(km.Taktstrom_MWh) });
                                 pk.Add(new DbParam("@st", DbParamTyp.Integer) { Wert = GanzOderDbNull(km.Starts) });
                                 pk.Add(new DbParam("@tl", DbParamTyp.Integer) { Wert = GanzOderDbNull(km.Teillaststunden) });
                                 pk.Add(new DbParam("@lg", DbParamTyp.Double) { Wert = WertOderNull(km.Lastgrad_Mittel) });
@@ -433,7 +435,7 @@ namespace WindowsFormsApplication1
                             // K-F2 (Schritt 214): ohne Rueckkuehlwerk NULL - der Satz bleibt wie ohne K-F2.
                             if (kmRueckkuehlung)
                             {
-                                pk.Add(new DbParam("@rv", DbParamTyp.Double) { Wert = WertOderNull(km.Ventilatorstrom_MWh) });
+                                pk.Add(new DbParam("@rv", DbParamTyp.Double) { Wert = UngerundetOderNull(km.Ventilatorstrom_MWh) });
                                 pk.Add(new DbParam("@rw", DbParamTyp.Double) { Wert = WertOderNull(km.Wasser_m3) });
                                 pk.Add(new DbParam("@rn", DbParamTyp.Integer) { Wert = GanzOderDbNull(km.Stunden_Nass) });
                                 pk.Add(new DbParam("@rt", DbParamTyp.Double) { Wert = WertOderNull(km.Rueckkuehltemperatur_Mittel) });
