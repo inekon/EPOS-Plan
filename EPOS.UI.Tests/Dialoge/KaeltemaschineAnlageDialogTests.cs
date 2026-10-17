@@ -570,7 +570,7 @@ public sealed class KaeltemaschineAnlageDialogEnglischTests : EposBunitContext
         var cut = KaeltemaschineAnlageDialogTests.Aufbauen(this, p);
 
         Assert.Equal("Chillers in the project", cut.Find(".epos-dialog-titel").TextContent);
-        Assert.Contains("Chillers in the database:", cut.Markup);
+        Assert.Contains("Chillers", cut.Markup);
         Assert.Contains("Total rated cooling capacity [kW]:", cut.Markup);
         cut.Find(".epos-zweispalten-bereich--projekt .epos-zeilenstift").Click();
         Assert.Contains("Chilled water supply", cut.Markup);

@@ -1,6 +1,6 @@
-# Statusblock #1167 — Umsetzung der Anwenderentscheide Gruppe C (17.10.2026)
+# Statusblock #1170 — Umsetzung der Anwenderentscheide Gruppe C (17.10.2026)
 
-Der ausführliche Block zur Statuszeile #1167 in
+Der ausführliche Block zur Statuszeile #1170 in
 [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md). Register der Entscheide:
 [Entscheidungsregister iOS](../../../aktuell/Entscheidungsregister_iOS_EPOS-Plan.md) § 5.
 Sitzung „Dialoge und Korrekturen“ (Kostenbasis), Integrationszweig `integration-c`, Stand `18dbbcaaa`.

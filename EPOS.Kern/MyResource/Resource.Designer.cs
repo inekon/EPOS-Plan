@@ -3300,7 +3300,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog (Datenbank) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog (DB) ähnelt.
         /// </summary>
         public static string AUSWAHL_MARKE_KATALOG {
             get {
@@ -3314,6 +3314,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string AUSWAHL_MARKE_KATALOGSATZ {
             get {
                 return ResourceManager.GetString("AUSWAHL_MARKE_KATALOGSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog aus der Datenbank – gilt für alle Projekte ähnelt.
+        /// </summary>
+        public static string AUSWAHL_MARKE_KATALOG_HINWEIS {
+            get {
+                return ResourceManager.GetString("AUSWAHL_MARKE_KATALOG_HINWEIS", resourceCulture);
             }
         }
         
@@ -88077,7 +88086,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen in der Datenbank: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschinen ähnelt.
         /// </summary>
         public static string KMA_LISTE_KATALOG {
             get {

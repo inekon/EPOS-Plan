@@ -115,7 +115,7 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   gestapelt", [Konzept](../Dokumentation/ueberholt/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md)):
   drei gerahmte Bereiche mit Kopfleiste und Kennfarbe — „Im Projekt" (mit „▼ Aus dem Projekt
   entfernen"), darunter die ziehbare Trennlinie (Höhe je Dialog über `Dienste.Einstellungen`,
-  Schlüssel `Katalogauswahl.Trenner.<Dialogname>`), „Katalog (Datenbank)" (mit „▲ In das Projekt
+  Schlüssel `Katalogauswahl.Trenner.<Dialogname>`), „Katalog (DB)" (mit „▲ In das Projekt
   übernehmen", Enter und Doppelklick übernehmen) und die zugeklappte Detailzeile „gewählter Satz".
   Der Wirt nennt `Dialogname` und reicht Projektliste (`Links`), Katalogliste samt Fußleiste
   (`Rechts`) und seinen Detailblock (`Satz`) hinein; die Zeichen ▲/▼ stehen als
