@@ -5662,8 +5662,6 @@ namespace WindowsFormsApplication1
         ///
         /// <para><b>Wiederholbar, ergebnisneutral:</b> kein DML, Bestandszeilen bleiben NULL.</para>
         /// </summary>
-        // KETTE (KB-8): Die Konstante und Schritt_ErgebnisWirtschaftlichkeitSpalten stehen bereit; den Eintrag in der
-        // Schrittliste (hinter dem Schritt 239) und den Zielstand setzt erst die Merge-Welle, wenn 239 auf origin liegt.
         public const int SCHRITT_ERGEBNIS_WIRTSCHAFTLICHKEIT_SPALTEN = ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
@@ -8362,6 +8360,16 @@ namespace WindowsFormsApplication1
                         "Ergebnisbaum fuehrte sie nicht. KEIN Rechenergebnis aendert sich - der Lauf schreibt nur " +
                         "zusaetzlich, was er schon rechnet; Altergebnisse bleiben leer.",
                         Schritt_Ergebnisreihen),
+            // KB-8: die vier Ergebnisspalten der Wirtschaftlichkeit - bisher legte sie der WirtschaftlichkeitCtrl beim
+            // ersten Lauf an (Spaltenvorsorge), jetzt gehoeren sie zum Schema. Quelle ist
+            // ErgebnisWirtschaftlichkeitSpaltenSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_ERGEBNIS_WIRTSCHAFTLICHKEIT_SPALTEN,
+                        "Tab_ErgebnisWirtschaftlichkeit: StromsteuerBefreiungModus, ErsatzBarwert, Nachweis_Json, " +
+                        "Lauf_Staende",
+                        "Die vier Spalten entstanden bisher erst beim ersten Lauf der Wirtschaftlichkeit; jetzt legt sie " +
+                        "der Schritt an, jede nur, wenn sie fehlt. KEIN Rechenergebnis aendert sich - kein DML, " +
+                        "Bestandszeilen bleiben NULL.",
+                        Schritt_ErgebnisWirtschaftlichkeitSpalten),
         };
 
         /// <summary>

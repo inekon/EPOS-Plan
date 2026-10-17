@@ -3906,7 +3906,6 @@ namespace Testdatenbankschema
             //      des frueheren Laufzeitwegs. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_ErgebnisWirtschaftlichkeitSpalten.
             //      Wiederholbar, kein DML - der Referenzlauf bleibt gleich. Der SqlDialektpruefer loest das INSERT des
             //      Ergebnisses gegen diese Datei auf und braucht die Spalten.
-            //      KETTE (KB-8): bis zum Umhaengen hinter Schritt 239 ausserhalb des Zielstands.
             string nrKb8 = ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
             Console.WriteLine();
             Console.WriteLine("Schritt " + nrKb8 + " - Ergebnisspalten der Wirtschaftlichkeit: " +

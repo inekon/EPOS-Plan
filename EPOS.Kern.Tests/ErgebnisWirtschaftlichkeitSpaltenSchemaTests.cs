@@ -31,8 +31,11 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Nummer_und_die_Typen_stehen()
         {
-            // KETTE (KB-8): vorlaeufig ueber + 2 an 238; nach dem Umhaengen auf 239 + 1.
             Assert.Equal(240, ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT);
+            Assert.Equal(ErgebnisreihenSchema.SCHRITT + 1, ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT);
+            Assert.Equal(ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT, SchemaStand.Zielversion);
+            Paketanhebung.Stufe stufe = Paketanhebung.Stufen.Single(x => x.Nr == ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT);
+            Assert.Equal(Paketanhebung.Art.Ddl, stufe.Wirkung);
             Assert.Equal(TABELLE, WirtschaftlichkeitCtrl.TAB_ERGEBNIS);
             Assert.Equal(new[] { "StromsteuerBefreiungModus", "ErsatzBarwert", "Nachweis_Json", "Lauf_Staende" },
                          ErgebnisWirtschaftlichkeitSpaltenSchema.SPALTEN.Select(s => s.Name));

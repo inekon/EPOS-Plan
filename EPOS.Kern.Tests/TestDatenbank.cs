@@ -1105,7 +1105,6 @@ namespace EPOS.Kern.Tests
 
                 // Schritt ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT (KB-8): die vier Ergebnisspalten der
                 // Wirtschaftlichkeit, nur wenn sie fehlen. Wiederholbar, ergebnisneutral.
-                // KETTE (KB-8): vorlaeufig ausserhalb des Zielstands; nach dem Umhaengen hinter Schritt 239.
                 ErgebnisWirtschaftlichkeitSpaltenSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);

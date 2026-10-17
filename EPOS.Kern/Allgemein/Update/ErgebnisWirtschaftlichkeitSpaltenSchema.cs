@@ -36,8 +36,7 @@ namespace WindowsFormsApplication1
     public static class ErgebnisWirtschaftlichkeitSpaltenSchema
     {
         /// <summary>Die Nummer des Schritts (240); die Nummer steht allein hier.</summary>
-        // KETTE (KB-8): vor dem Merge auf <Klasse des Schritts 239>.SCHRITT + 1 umhängen.
-        public const int SCHRITT = KlimaRohwerteSchema.SCHRITT + 2;
+        public const int SCHRITT = ErgebnisreihenSchema.SCHRITT + 1;
 
         /// <summary>Die Tabelle des Schritts.</summary>
         public const string TABELLE = WirtschaftlichkeitCtrl.TAB_ERGEBNIS;
