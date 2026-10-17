@@ -99,7 +99,7 @@ Festlegungen, die Folgewellen kennen müssen:
 - Anwenderprobe N4 unter Windows: Export eines Gebäudes mit Feiertagsverweis und oberer Raumtemperatur, Wiedereinlesen im Importdialog (Zeile „Maximale Raumtemperatur“).
   - Ergebnis der Windows-Probe: die obere Raumtemperatur reist; die Zonenkalender fehlten auf dem Dialogweg, behoben mit N7 (#1153). Die Probe wird über EPOS Lokal wiederholt.
   - Erledigt mit N8 (#1161): Die Regel X1 und der Einzonenweg mit Kalender sind behoben, die Meldungsliste trägt die Einzonenwarnung.
-  - Offen: Wiederholung der Windows-Probe (Einzonenweg beider Formate, X1 für eigene gbXML, Meldungsliste) durch EPOS Lokal (Postfach 11).
+  - Windows-Probe N4c (EPOS Lokal, Postfach 11) bestanden: Einzonenweg beider Formate, X1 für die eigene gbXML-Datei und Meldungsliste wie erwartet, Windows-Tests 350/350 grün. Z6 fehlt bei abweichenden Raumtemperaturen gewollt (jede Gruppe ein Raum).
 - Wiki-Upload nur auf Zuruf (E144).
 
 Alle Entscheide des Anwenders vom 14.10.2026 (E144 bis E149) stehen mit Wortlaut im Register der Statusdatei Gebäudesimulation.
