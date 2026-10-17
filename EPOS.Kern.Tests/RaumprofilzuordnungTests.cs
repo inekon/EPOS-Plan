@@ -146,8 +146,8 @@ namespace EPOS.Kern.Tests
         //  Stufe 3 — Gebäudeart (F4)
         // ------------------------------------------------------------------
 
-        private static AbbildGebaeude Wohnhaus(string art = null, int kuechen = 1) => G(art,
-            new[] { R("w1", "Wohnzimmer", 30, "mrtLiving"), R("w2", "Schlafzimmer", 20, "mrtSleeping"), R("w3", "Bad", 8, "mrtBath"),
+        private static AbbildGebaeude Wohnhaus(string art = null, int kuechen = 1, double wohnzimmer = 30) => G(art,
+            new[] { R("w1", "Wohnzimmer", wohnzimmer, "mrtLiving"), R("w2", "Schlafzimmer", 20, "mrtSleeping"), R("w3", "Bad", 8, "mrtBath"),
                     R("w4", "Flur 1", 10, "mrtHall"), R("w5", "Treppenhaus", 12, "mrtStairway"), R("w6", "Keller", 40, "mrtBasement", beheizt: false) }
                 .Concat(Enumerable.Range(1, kuechen).Select(i => R("k" + i, "Küche " + i, 12, "mrtKitchen"))).ToArray());
 
@@ -180,12 +180,16 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Mehr_als_zwei_Kuechen_schlagen_das_Mehrfamilienhaus_vor_und_die_Gebaeudeart_der_Datei_macht_es_eindeutig()
         {
-            Assert.Equal(Raumprofilschluessel.WOHNEN_MFH, Raumprofilzuordnung.Gebaeudeart(Wohnhaus(kuechen: 3), r => r.Beheizt).Wohnprofil);
-            Gebaeudeartbefund datei = Raumprofilzuordnung.Gebaeudeart(Wohnhaus("Einfamilienhaus", kuechen: 3), r => r.Beheizt);
+            // Drei Küchen verkleinern den Wohnanteil; mit 60 m² Wohnzimmer bleibt es ein Wohngebäude (80 von 146 m² → 55 %).
+            Gebaeudeartbefund kuechen = Raumprofilzuordnung.Gebaeudeart(Wohnhaus(kuechen: 3, wohnzimmer: 60), r => r.Beheizt);
+            Assert.True(kuechen.Wohngebaeude);
+            Assert.Equal(55, kuechen.WohnanteilProzent);
+            Assert.Equal(Raumprofilschluessel.WOHNEN_MFH, kuechen.Wohnprofil);
+            Gebaeudeartbefund datei = Raumprofilzuordnung.Gebaeudeart(Wohnhaus("Einfamilienhaus", kuechen: 3, wohnzimmer: 60), r => r.Beheizt);
             Assert.True(datei.AusDatei);
             Assert.True(datei.WohnprofilEindeutig);
             Assert.Equal(Raumprofilschluessel.WOHNEN_EFH, datei.Wohnprofil);
-            Raumprofilbefund wohnen = Raumprofilzuordnung.Befunde(Wohnhaus("Einfamilienhaus", 3), r => r.Beheizt, V).Single(b => b.Raum.Kennung == "w1");
+            Raumprofilbefund wohnen = Raumprofilzuordnung.Befunde(Wohnhaus("Einfamilienhaus", 3, 60), r => r.Beheizt, V).Single(b => b.Raum.Kennung == "w1");
             Assert.Equal(Raumprofilstand.Eindeutig, wohnen.Stand);
             Assert.Equal(Raumprofilschluessel.WOHNEN_EFH, wohnen.Vorschlag);
         }
@@ -197,7 +201,7 @@ namespace EPOS.Kern.Tests
                                  R("s1", "Personalzimmer", 15, "mrtGuests"), R("wc", "WC-Raum", 6, "mrtWC"));
             Gebaeudeartbefund art = Raumprofilzuordnung.Gebaeudeart(g, r => r.Beheizt);
             Assert.False(art.Wohngebaeude);
-            Assert.Equal(12, art.WohnanteilProzent);
+            Assert.Equal(18, art.WohnanteilProzent);   // Wohnraum 30 und Gästezimmer 15 (Guests zählt als Wohnfläche) von 251 m²
             IReadOnlyList<Raumprofilbefund> b = Raumprofilzuordnung.Befunde(g, r => r.Beheizt, V);
             Assert.Equal("17", b.Single(x => x.Raum.Kennung == "w1").Vorschlag);
             Assert.Equal("11", b.Single(x => x.Raum.Kennung == "s1").Vorschlag);

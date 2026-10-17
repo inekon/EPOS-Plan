@@ -56787,6 +56787,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} beheizte Räume gehören keiner Zone der Projektdatei; für {1} schlägt die Rangfolge (Bezeichnung, Raumart, Raumname) ein Nutzungsprofil vor: {2}. Die Räume bleiben nicht zugeordnet, bis Sie sie einer Zone zuordnen. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_RAUM_OHNE_ZONE_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_RAUM_OHNE_ZONE_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die IFC und Projektdatei gehören vermutlich nicht zum selben Projektstand: Bei {0} Bauteil(en) mit {1} % der Hüllfläche weicht das U der Projektdatei um mehr als 10 % vom U der IFC ab. Anzeichen: {2}. ähnelt.
         /// </summary>
         public static string IMP_SQ_PROT_STAND_ABWEICHEND {

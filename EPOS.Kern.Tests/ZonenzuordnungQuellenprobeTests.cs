@@ -36,13 +36,13 @@ namespace EPOS.Kern.Tests
 
         private static readonly IReadOnlyDictionary<string, Erwartung> ERWARTET = new Dictionary<string, Erwartung>(StringComparer.Ordinal)
         {
-            ["MFH-Klein-unsaniert-1964.ifc"] = new Erwartung(30, 0, 0, 0, 0, 0, true),
-            ["MFH_mittel_1984.ifc"] = new Erwartung(29, 0, 0, 0, 0, 0, true),
-            ["Produktion_groß_mit_Verwaltung_EG55-2026.ifc"] = new Erwartung(49, 0, 0, 0, 0, 0, false),
-            ["Sportheim_1970_unsaniert.ifc"] = new Erwartung(56, 0, 0, 0, 0, 0, false),
-            ["Sportheim_Bestand-1997_test_ifc4.ifc"] = new Erwartung(56, 0, 0, 0, 0, 0, false),
-            ["Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc"] = new Erwartung(113, 0, 0, 0, 0, 0, false),
-            ["WG-EH55_Poroton-GModG-2026.ifc"] = new Erwartung(20, 0, 0, 0, 0, 0, true),
+            ["MFH-Klein-unsaniert-1964.ifc"] = new Erwartung(30, 6, 24, 0, 0, 2, true),
+            ["MFH_mittel_1984.ifc"] = new Erwartung(29, 28, 0, 0, 1, 10, false),
+            ["Produktion_groß_mit_Verwaltung_EG55-2026.ifc"] = new Erwartung(49, 39, 5, 5, 0, 7, false),
+            ["Sportheim_1970_unsaniert.ifc"] = new Erwartung(56, 53, 0, 3, 0, 9, false),
+            ["Sportheim_Bestand-1997_test_ifc4.ifc"] = new Erwartung(56, 53, 0, 3, 0, 9, false),
+            ["Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc"] = new Erwartung(113, 66, 4, 43, 0, 7, false),
+            ["WG-EH55_Poroton-GModG-2026.ifc"] = new Erwartung(20, 4, 15, 1, 0, 4, true),
         };
 
         private GebaeudeImportAblauf Lesen(string datei)

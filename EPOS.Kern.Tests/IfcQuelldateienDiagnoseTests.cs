@@ -328,7 +328,7 @@ namespace EPOS.Kern.Tests
             ["MFH-Klein-unsaniert-1964.ifc"] = new Kennzahlen
             {
                 Kopf = "21/14/7", Baujahr = "1964", Klasse = "E", Vorschlagsname = "MFH-Klein-unsaniert-1964",
-                Raeume = "30/23/275.21", Vorgabe = "Z7 4",
+                Raeume = "30/23/275.21", Vorgabe = "Z7 2",
                 ZonenZ4 = "DG2 48.78, DG1 98.15, OG1 88.53, OG1 (unbeheizt) 19.34, EG 88.53, EG (unbeheizt) 11.3, Keller 114.34",
                 TrennungenZ4 = "DG2|DG1|12.27, DG2|OG1 (unbeheizt)|2.78, DG1|OG1|82.95, DG1|OG1 (unbeheizt)|13.74, OG1|OG1 (unbeheizt)|23.81, OG1|EG|88.53, OG1 (unbeheizt)|EG (unbeheizt)|11.3, EG|EG (unbeheizt)|23.81, EG|Keller|11.84, EG (unbeheizt)|Keller|11.3",
                 Geschaetzt = "", Innenflaechenfaktor = "3.37",
@@ -362,7 +362,7 @@ namespace EPOS.Kern.Tests
             ["WG-EH55_Poroton-GModG-2026.ifc"] = new Kennzahlen
             {
                 Kopf = "21/14/7", Baujahr = "2026", Klasse = "M", Vorschlagsname = "WG-EH55_Poroton-GModG-2026",
-                Raeume = "20/20/342.56", Vorgabe = "Z7 7",
+                Raeume = "20/20/342.56", Vorgabe = "Z7 4",
                 ZonenZ4 = "DG 114.9, EG 120.26, Keller 107.4",
                 TrennungenZ4 = "DG|EG|113.56, EG|Keller|105.81",
                 Geschaetzt = "", Innenflaechenfaktor = "3.48",
@@ -928,10 +928,10 @@ namespace EPOS.Kern.Tests
             = new Dictionary<string, (string, int)>(StringComparer.Ordinal)
             {
                 ["MFH_mittel_1984.ifc"] = ("Z7", 10),
-                ["MFH-Klein-unsaniert-1964.ifc"] = ("Z7", 4),
+                ["MFH-Klein-unsaniert-1964.ifc"] = ("Z7", 2),
                 ["Sportheim_1970_unsaniert.ifc"] = ("Z7", 9),
                 ["Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc"] = ("Z7", 7),
-                ["WG-EH55_Poroton-GModG-2026.ifc"] = ("Z7", 7),
+                ["WG-EH55_Poroton-GModG-2026.ifc"] = ("Z7", 4),
                 ["Produktion_groß_mit_Verwaltung_EG55-2026.ifc"] = ("Z7", 7),
             };
 

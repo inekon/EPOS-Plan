@@ -47007,6 +47007,9 @@ chart</value>
   <data name="IMP_SQ_PROT_RAUM_BEHEIZUNG" xml:space="preserve">
     <value>The room {0} does not match the heating of zone {1} and stays unassigned.</value>
   </data>
+  <data name="IMP_SQ_PROT_RAUM_OHNE_ZONE_VORSCHLAG" xml:space="preserve">
+    <value>{0} heated rooms belong to no zone of the project file; for {1} the ranking (designation, room type, room name) suggests a usage profile: {2}. The rooms stay unassigned until you assign them to a zone.</value>
+  </data>
   <data name="IMP_SQ_PROT_NUTZUNG_OHNE_ABBILDUNG" xml:space="preserve">
     <value>The zone {0} carries usage profile no. {1} without a counterpart — it stays without use.</value>
   </data>

@@ -47014,6 +47014,9 @@ Chart</value>
   <data name="IMP_SQ_PROT_RAUM_BEHEIZUNG" xml:space="preserve">
     <value>Der Raum {0} passt in der Beheizung nicht zur Zone {1} und bleibt nicht zugeordnet.</value>
   </data>
+  <data name="IMP_SQ_PROT_RAUM_OHNE_ZONE_VORSCHLAG" xml:space="preserve">
+    <value>{0} beheizte Räume gehören keiner Zone der Projektdatei; für {1} schlägt die Rangfolge (Bezeichnung, Raumart, Raumname) ein Nutzungsprofil vor: {2}. Die Räume bleiben nicht zugeordnet, bis Sie sie einer Zone zuordnen.</value>
+  </data>
   <data name="IMP_SQ_PROT_NUTZUNG_OHNE_ABBILDUNG" xml:space="preserve">
     <value>Die Zone {0} trägt das Nutzungsprofil Nr. {1} ohne Entsprechung — sie bleibt ohne Nutzung.</value>
   </data>
