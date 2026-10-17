@@ -599,6 +599,12 @@ namespace WindowsFormsApplication1
                 return summen;
             }
 
+            /// <summary>Der Betriebskalender je Profilname, wie ihn der Dialog gerade zeigt (Arbeitsstand).</summary>
+            private IReadOnlyDictionary<string, ProfilArbeitsstand> Kalender()
+                => BedarfsVorschauCtrl.KalenderDesDialogs(
+                       (_zeilen ?? (IReadOnlyList<BedarfsProfilZeile>)Array.Empty<BedarfsProfilZeile>())
+                       .Select(z => (z.Name, z.KalenderId)));
+
             /// <summary>Die Meldung des letzten Laufs (Zapfprofilweg); leer = keine.</summary>
             internal string Meldung { get; private set; } = "";
 
@@ -606,9 +612,11 @@ namespace WindowsFormsApplication1
             {
                 // Beim Brauchwasser mit dem ARBEITSSTAND des Zapfprofils (5.2): null = der
                 // gespeicherte Stand; steht er auf dem Generator, rechnet der Zapfprofilweg.
+                // Der Betriebskalender je Zeile, wie der Dialog ihn zeigt - auch der gerade gewaehlte oder im Blatt
+                // "Betriebskalender..." angelegte, noch nicht gespeicherte; der Lauf nimmt ihn nach dem Speichern.
                 BedarfsVorschau v = BedarfsVorschauCtrl.ProjektVorschau(_art, _projektId, namen,
                                                                        _zapfprofil?.Arbeitsstand,
-                                                                       Jahressummen());
+                                                                       Jahressummen(), Kalender());
                 Meldung = _zapfprofil != null ? ZapfprofilHuelle.Leistenmeldung(v) : "";
                 if (!v.Erfolgreich) return null;
 
