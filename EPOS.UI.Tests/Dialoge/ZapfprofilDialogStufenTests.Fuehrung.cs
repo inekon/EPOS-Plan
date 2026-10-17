@@ -166,7 +166,7 @@ public partial class ZapfprofilDialogStufenTests
     public void ZB6_Die_Wohnungstabelle_erklaert_sich_und_nennt_die_Summe_des_Kerns()
     {
         var cut = AufbauenGefuehrt();
-        Stufe(cut, "Erweitert");
+        Stufe(cut, "Experte");
 
         Assert.Equal("Wohnungen (wahlweise)", cut.Find(".epos-zapfprofil-untertitel").TextContent.Trim());
         Assert.StartsWith("Statt einer Bezugsgröße die Wohnungen nach Typ angeben",
@@ -195,7 +195,7 @@ public partial class ZapfprofilDialogStufenTests
         ZapfprofilDaten daten = Daten();
         daten.Ausstattungen.Clear();
         var cut = AufbauenGefuehrt(daten);
-        Stufe(cut, "Erweitert");
+        Stufe(cut, "Experte");
         Knopf(cut, "Wohnungstyp hinzufügen").Click();
 
         Assert.DoesNotContain(cut.FindAll(".epos-zapfprofil-wohnungen thead th"), t => t.TextContent.Contains("Ausstattungsklasse"));

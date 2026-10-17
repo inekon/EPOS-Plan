@@ -8,7 +8,7 @@ using Xunit;
 namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
-/// Der Dialog „Brauchwasser-Zapfprofil" in den Stufen Erweitert und Experte (Umsetzungskonzept
+/// Der Dialog „Brauchwasser-Zapfprofil" in den Stufe Experte (Umsetzungskonzept
 /// Zapfprofilgenerator 5.1, 5.3, 5.7; Stufe Z4, Gruppe 2a): Sichtbarkeit je Stufe, die Stufe behält
 /// Überschreibungen, Zonenliste mit Topologie, Anteil und Rechenweg, Wohnungstabelle nur bei Wohnen
 /// samt wirksamer Menge, Bundesland gesperrt mit Grund, Jahresmesswert, Schätzhilfen auto/manuell,
@@ -205,7 +205,7 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
     {
         cut.Find("fieldset[aria-label='Stufe']").QuerySelectorAll("label.epos-option")
            .First(l => l.TextContent.Trim() == stufe).QuerySelector("input")!.Change(
-               stufe == "Einfach" ? "0" : stufe == "Erweitert" ? "1" : "2");
+               stufe == "Einfach" ? "0" : "2");
         if (aufklappen) ZapfprofilKarten.AlleAuf(cut);
     }
 
@@ -237,7 +237,7 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
     // =================================================================================
 
     [Fact]
-    public void Einfach_zeigt_nur_die_vier_Felder_und_verweist_auf_Erweitert()
+    public void Einfach_zeigt_nur_die_vier_Felder_und_verweist_auf_Experte()
     {
         var cut = Aufbauen();
 
@@ -248,7 +248,8 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-zapfprofil-katalogknopf"));
         Assert.False(HatFeld(cut, "Anlagentopologie"));
         Assert.Empty(cut.FindAll(".epos-zapfprofil-katalog"));
-        Assert.Equal("Weitere Angaben stehen in der Stufe Erweitert.", cut.Find(".epos-zapfprofil-weitere").TextContent.Trim());
+        Assert.Equal("Weitere Angaben — Belegung, Kalender, Messwert, Fachwerte und Jahresreihe — stehen in der Stufe Experte.",
+                     cut.Find(".epos-zapfprofil-weitere").TextContent.Trim());
         Assert.Equal(4, cut.FindAll("table.epos-zapfprofil-zonen thead th").Count);
         // ZB8: Herkunft und Einheit stehen im title des Felds, nicht als Dauerzeile.
         Assert.Equal("Einheit aus dem Katalog der Nutzungsart", Feld(cut, "Bezugsgröße").Closest("label")!.GetAttribute("title"));
@@ -257,16 +258,16 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
     }
 
     [Fact]
-    public void Erweitert_zeigt_Belegung_Schaetzhilfen_Katalog_und_verweist_auf_Experte()
+    public void Experte_zeigt_Belegung_Schaetzhilfen_und_Katalog_ohne_weiteren_Verweis()
     {
         var cut = Aufbauen();
-        Stufe(cut, "Erweitert", aufklappen: false);
+        Stufe(cut, "Experte", aufklappen: false);
 
         // ZB3: zwei Ebenen - der Block der Zone und die Gruppe „Gebäude und Anlage", je als Karten, alle zugeklappt.
         Assert.Equal(new[] { "Nutzungszonen", "Zone „Wohnen“", "Gebäude und Anlage", "Vorschau" }, Gruppen(cut));
         string[] Karten(string block) => cut.FindAll(block + " .epos-klappgruppe-text").Select(k => k.TextContent.Trim()).ToArray();
-        Assert.Equal(new[] { "Belegung", "Kalender", "Messwert", "Tagesbedarf" }, Karten(".epos-zapfprofil-zonenblock"));
-        Assert.Equal(new[] { "Zirkulation", "Ladeleistung und Ladefenster", "Leitungsinhalt", "Stochastik · Jahresreihe" },
+        Assert.Equal(new[] { "Belegung", "Kalender", "Messwert", "Tagesbedarf", "Fachwerte der Zone" }, Karten(".epos-zapfprofil-zonenblock"));
+        Assert.Equal(new[] { "Zirkulation", "Ladeleistung und Ladefenster", "Leitungsinhalt", "Fachwerte · Gebäude", "Stochastik · Jahresreihe" },
                      Karten(".epos-zapfprofil-gebaeudeblock"));
         Assert.All(cut.FindAll(".epos-zapfprofil-karte .epos-klappgruppe-knopf"), k => Assert.Equal("false", k.GetAttribute("aria-expanded")));
         Assert.False(HatFeld(cut, "Anlagentopologie"));
@@ -278,7 +279,7 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
         Assert.StartsWith("1,5 kW (auto) · ", ZapfprofilKarten.Zusatz(cut, "zirkulation"));
         Assert.Equal("auto · Ladefenster 10 h ab 22 Uhr", ZapfprofilKarten.Zusatz(cut, "ladeleistung"));
         Assert.Equal("keine Angabe", ZapfprofilKarten.Zusatz(cut, "leitungsinhalt"));
-        Assert.Equal("deterministisch", ZapfprofilKarten.Zusatz(cut, "jahresreihe"));
+        Assert.Equal("deterministisch · Seed 1", ZapfprofilKarten.Zusatz(cut, "jahresreihe"));
 
         ZapfprofilKarten.AlleAuf(cut);
         foreach (string feld in new[] { "Personen je Wohneinheit", "Wohnfläche je Wohneinheit", "Anlagentopologie",
@@ -288,17 +289,17 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
         Assert.Equal("Kalender", cut.Find(".epos-zapfprofil-kalender .epos-klappgruppe-text").TextContent.Trim());
         Assert.False(HatFeld(cut, "Bundesland"));
         Assert.False(HatFeld(cut, "Tagesbedarf manuell"));
-        // Der Rechenweg der Jahresreihe steht ab Erweitert (N12 (s)), Seed und Realisierungen erst in Experte.
+        // Der Rechenweg der Jahresreihe, Seed und Fachwerte stehen in Experte (ZC3).
         Assert.NotNull(cut.Find("fieldset[aria-label='Rechenweg der Jahresreihe']"));
-        Assert.False(HatFeld(cut, "Zufallssaat (Seed)"));
-        Assert.False(HatFeld(cut, "Spezifischer Bedarf"));
+        Assert.True(HatFeld(cut, "Zufallssaat (Seed)"));
+        Assert.True(HatFeld(cut, "Spezifischer Bedarf"));
 
         // ZB9: Die Tabelle des Katalogs klappt nicht mehr unter der Nutzungsart auf; „Katalog…" öffnet sie als Blatt.
         Assert.Empty(cut.FindAll(".epos-zapfprofil-katalog"));
         Assert.Contains("Wohnen A · Personen", Auswahl(cut, "Nutzungsart").TextContent);
 
-        Assert.Equal("Fachwerte, Tagesgänge und Zufallssaat stehen in der Stufe Experte.",
-                     cut.Find(".epos-zapfprofil-weitere").TextContent.Trim());
+        // In Experte gibt es keine weitere Stufe, also keinen Verweis.
+        Assert.Empty(cut.FindAll(".epos-zapfprofil-weitere"));
         // Vorgaben als Platzhalter im leeren Feld, ihre Erklärung im title statt als Zeile „Vorgabe · …" (ZB8).
         Assert.Equal("(80)", Feld(cut, "Wohnfläche je Wohneinheit").GetAttribute("placeholder"));
         Assert.Equal("(10)", Feld(cut, "Ladezeitfenster").GetAttribute("placeholder"));
@@ -359,7 +360,7 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
     {
         ZapfprofilErgebnisDaten? ergebnis = null;
         var cut = Aufbauen(geschlossen: e => ergebnis = e);
-        Stufe(cut, "Erweitert");
+        Stufe(cut, "Experte");
         Auswahl(cut, "Anlagentopologie").Change("3");
         Feld(cut, "Ladezeitfenster").Input("8");
         Stufe(cut, "Experte");
@@ -381,10 +382,10 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
     // =================================================================================
 
     [Fact]
-    public void Die_Zonenliste_fuehrt_ab_Erweitert_Topologie_Anteil_und_Rechenweg_mit_Summenfuss()
+    public void Die_Zonenliste_fuehrt_ab_Experte_Topologie_Anteil_und_Rechenweg_mit_Summenfuss()
     {
         var cut = Aufbauen();
-        Stufe(cut, "Erweitert");
+        Stufe(cut, "Experte");
 
         IElement tabelle = cut.Find("table.epos-zapfprofil-zonen");
         Assert.Equal(new[] { "Zone", "Nutzungsart", "Bezugsgröße", "Topologie", "MWh/a", "Anteil", "Rechenweg" },
@@ -418,7 +419,7 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
     {
         ZapfprofilErgebnisDaten? ergebnis = null;
         var cut = Aufbauen(geschlossen: e => ergebnis = e);
-        Stufe(cut, "Erweitert");
+        Stufe(cut, "Experte");
 
         Assert.Contains("Wohnungen (wahlweise)", cut.Find(".epos-zapfprofil-untertitel").TextContent);
         Assert.Contains("Bedarfskennzahl nach DIN 4708", cut.Find(".epos-zapfprofil-wohnungen-erklaerung").TextContent);
@@ -443,7 +444,7 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
 
         // Bei einer Nutzungsart ohne Wohnen gibt es keine Wohnungstabelle.
         var zwei = Aufbauen();
-        Stufe(zwei, "Erweitert");
+        Stufe(zwei, "Experte");
         zwei.FindAll("table.epos-zapfprofil-zonen tbody tr")[1].QuerySelector("button")!.Click();
         Assert.Empty(zwei.FindAll(".epos-zapfprofil-untertitel"));
         Assert.DoesNotContain("Wohnungstyp hinzufügen", zwei.Markup);
@@ -457,7 +458,7 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
     public void Der_Jahresmesswert_nimmt_die_Einheit_und_zeigt_Grenze_und_Speicherverlust_nach_Bedarf()
     {
         var cut = Aufbauen();
-        Stufe(cut, "Erweitert");
+        Stufe(cut, "Experte");
         Assert.False(HatFeld(cut, "Speicherverlust"));
 
         Feld(cut, "Jahresmesswert").Input("30000");
@@ -485,7 +486,7 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
     public void Ein_Feld_je_Wert_leer_ist_auto_und_ein_Wert_ist_manuell()
     {
         var cut = Aufbauen();
-        Stufe(cut, "Erweitert");
+        Stufe(cut, "Experte");
 
         // ZB4 (b): EIN Feld - leer = auto, der Vorschlag grau im Feld; der Umschalter auto/manuell ist weg.
         Assert.Empty(cut.FindAll("fieldset[aria-label='Tagesbedarf']"));
@@ -513,7 +514,7 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
         // Rundlauf: Das OK trägt den Arbeitsstand unverändert (Auto + manueller Wert).
         ZapfprofilErgebnisDaten? ergebnis = null;
         var zwei = Aufbauen(geschlossen: e => ergebnis = e);
-        Stufe(zwei, "Erweitert");
+        Stufe(zwei, "Experte");
         Feld(zwei, "Tagesbedarf").Input("75");
         Knopf(zwei, "OK").Click();
         Assert.Equal((false, (double?)75.0), (ergebnis!.Eingabe.Zonen[0].Angaben!.TagesbedarfAuto, ergebnis.Eingabe.Zonen[0].Angaben!.TagesbedarfManuellKwh));
@@ -543,7 +544,7 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
         ZapfprofilEingabeDaten e = Eingabe();
         e.Auslegung = new ZapfprofilAuslegungEingabeDaten { PunktVolumenL = 300, PunktLeistungKw = 25 };
         var cut = Aufbauen(Daten(e));
-        Stufe(cut, "Erweitert");
+        Stufe(cut, "Experte");
 
         Feld(cut, "Quelle des Messwerts").Input("Zähler");
         Assert.False(cut.Instance.Eingabe.PunktUeberholt);
@@ -574,10 +575,10 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
     }
 
     [Fact]
-    public void Der_Reiter_Dauerlinie_zeigt_ab_Erweitert_Marken_und_Schwelle()
+    public void Der_Reiter_Dauerlinie_zeigt_ab_Experte_Marken_und_Schwelle()
     {
         var cut = Aufbauen();
-        Stufe(cut, "Erweitert");
+        Stufe(cut, "Experte");
 
         IElement dauer = cut.FindAll("[role=tab]").First(b => b.TextContent.Trim() == "Dauerlinie");
         Assert.Null(dauer.GetAttribute("aria-disabled"));
@@ -627,9 +628,12 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
         var texte = new ZapfprofilTexte();
 
         var einfach = Assert.Throws<InvalidOperationException>(() => Zugang("topologie").Setzen(3));
-        Assert.Contains(texte.StufeErweitert, einfach.Message, StringComparison.Ordinal);
+        Assert.Contains(texte.StufeExperte, einfach.Message, StringComparison.Ordinal);
+        // Fachwerte erst in Experte — in Einfach mit derselben Absage.
+        var experte = Assert.Throws<InvalidOperationException>(() => Zugang("zapftemperatur").Setzen(55.0));
+        Assert.Contains(texte.StufeExperte, experte.Message, StringComparison.Ordinal);
 
-        Setze("stufe", "Erweitert");
+        Setze("stufe", "Experte");
         cut.Render();
         Setze("topologie", "Durchfluss");
         Setze("ladefenster", "7");
@@ -644,11 +648,6 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
         Setze("zirk_laenge", "50");
         Assert.Equal(50.0, cut.Instance.Eingabe.Gebaeude!.ZirkLaengeM);
 
-        // Fachwerte erst in Experte.
-        var experte = Assert.Throws<InvalidOperationException>(() => Zugang("zapftemperatur").Setzen(55.0));
-        Assert.Contains(texte.StufeExperte, experte.Message, StringComparison.Ordinal);
-        Setze("stufe", "Experte");
-        cut.Render();
         Setze("zapftemperatur", "55");
         Assert.Equal(55.0, cut.Instance.Eingabe.Zonen[0].Angaben!.ZapftemperaturC);
         EPOS.UI.Tests.Dialoge.Hilfe.KiReihenhilfe.Setze(WindowsFormsApplication1.KiMaskennamen.ZAPFPROFIL, "auslastungsgang", new[] { 1.1 }, ab: 1);

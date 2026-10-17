@@ -49,8 +49,6 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_STUFE_EINFACH</c></summary>
     public string StufeEinfach { get; set; } = "Einfach";
 
-    /// <summary><c>ZPG_STUFE_ERWEITERT</c></summary>
-    public string StufeErweitert { get; set; } = "Erweitert";
 
     /// <summary><c>ZPG_STUFE_EXPERTE</c></summary>
     public string StufeExperte { get; set; } = "Experte";
@@ -188,8 +186,6 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_HINW_WEITERE_VORGABE</c></summary>
     public string HinweisWeitereVorgabe { get; set; } = "Weitere Angaben stehen auf den Vorgaben des Katalogs.";
 
-    /// <summary><c>ZPG_HINW_WEITERE_ERWEITERT</c></summary>
-    public string HinweisWeitereErweitert { get; set; } = "Weitere Angaben stehen in der Stufe Erweitert.";
 
     /// <summary><c>ZPG_HINW_NUTZUNGSART_KATALOG</c></summary>
     public string HinweisNutzungsartKatalog { get; set; } = "Katalog · {0}";
@@ -430,13 +426,13 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_STATUS_OHNE_VORSCHAU</c></summary>
     public string StatusOhneVorschau { get; set; } = "Keine Vorschau — {0}";
 
-    // ------------------------------------------------------------ Stufen Erweitert und Experte (Z4)
+    // ------------------------------------------------------------ Stufe Experte (Z4)
 
     /// <summary><c>ZPG_HINW_WEITERE_EXPERTE</c></summary>
-    public string HinweisWeitereExperte { get; set; } = "Fachwerte, Tagesgänge und Zufallssaat stehen in der Stufe Experte.";
+    public string HinweisWeitereExperte { get; set; } = "Weitere Angaben — Belegung, Kalender, Messwert, Fachwerte und Jahresreihe — stehen in der Stufe Experte.";
 
     /// <summary><c>ZPG_GRUND_DAUERLINIE</c></summary>
-    public string GrundDauerlinie { get; set; } = "Die Dauerlinie zeigt die Stufe Erweitert.";
+    public string GrundDauerlinie { get; set; } = "Die Dauerlinie zeigt die Stufe Experte.";
 
     /// <summary><c>ZPG_VORGABE_EINTRAG</c></summary>
     public string VorgabeEintrag { get; set; } = "Vorgabe · {0}";
@@ -456,7 +452,7 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_FELD_ZEILE</c></summary>
     public string FeldZeile { get; set; } = "{0}, Zeile {1}";
 
-    // ------------------------------------------------------------ Zonenliste ab Erweitert
+    // ------------------------------------------------------------ Zonenliste ab Experte
 
     /// <summary><c>ZPG_SP_TOPOLOGIE</c></summary>
     public string SpalteTopologie { get; set; } = "Topologie";
@@ -499,7 +495,7 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_HINW_BEZUGSMENGE_WOHNUNGSTABELLE</c></summary>
     public string HinweisBezugsmengeWohnungstabelle { get; set; } = "Wirksam aus der Wohnungstabelle: {0} {1} — OK übernimmt sie als Bezugsgröße.";
 
-    // ------------------------------------------------------------ Belegung und Anlage (Erweitert)
+    // ------------------------------------------------------------ Belegung und Anlage (Experte)
 
     /// <summary><c>ZPG_GRP_BELEGUNG</c></summary>
     public string GruppeBelegung { get; set; } = "Belegung";
@@ -751,7 +747,7 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_HINW_JAHRESMESSWERT</c></summary>
     public string HinweisJahresmesswert { get; set; } = "Leer = kein Messwert. Ein Messwert skaliert die Zone mit einem ausgewiesenen Faktor; ein Volumen gilt an der Zapfstelle und wird über Zapf- und Kaltwassertemperatur umgerechnet.";
 
-    // ------------------------------------------------------------ Tagesbedarf, Ladeleistung, Zirkulation (Erweitert)
+    // ------------------------------------------------------------ Tagesbedarf, Ladeleistung, Zirkulation (Experte)
 
     /// <summary><c>ZPG_LBL_TAGESBEDARF</c></summary>
     public string LabelTagesbedarf { get; set; } = "Tagesbedarf";
@@ -1193,7 +1189,7 @@ public sealed class ZapfprofilTexte
     public string VergleichOhneWahl { get; set; } = "Wählen Sie die Messreihe, gegen die verglichen werden soll.";
 
     /// <summary><c>ZPG_VERGL_NUR_ERWEITERT</c></summary>
-    public string VergleichNurErweitert { get; set; } = "Der Vergleich mit einer Messreihe steht ab der Stufe Erweitert.";
+    public string VergleichNurExperte { get; set; } = "Der Vergleich mit einer Messreihe steht ab der Stufe Experte.";
 
     /// <summary><c>ZPG_VERGL_LEER</c></summary>
     public string VergleichLeer { get; set; } = "Noch kein Vergleich gerechnet.";

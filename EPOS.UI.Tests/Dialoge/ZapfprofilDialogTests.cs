@@ -226,19 +226,19 @@ public class ZapfprofilDialogTests : EposBunitContext
     }
 
     [Fact]
-    public void Die_Vorschau_zeigt_fuenf_Reiter_und_die_Dauerlinie_erst_ab_Erweitert()
+    public void Die_Vorschau_zeigt_fuenf_Reiter_und_die_Dauerlinie_erst_ab_Experte()
     {
         var cut = Aufbauen();
 
         string[] reiter = cut.FindAll("[role=tab]").Select(b => b.TextContent.Trim()).ToArray();
         Assert.Equal(new[] { "Tagesgang", "Wochenprofil", "Jahresgang", "Dauerlinie", "Kennzahlen" }, reiter);
 
-        // Die Dauerlinie gehört zur Stufe Erweitert (Mockup „Die drei Tiefen"): in Einfach weich gesperrt mit Grund.
+        // Die Dauerlinie gehört zur Stufe Experte (Mockup „Die drei Tiefen"): in Einfach weich gesperrt mit Grund.
         IElement dauer = cut.FindAll("[role=tab]").First(b => b.TextContent.Trim() == "Dauerlinie");
         Assert.Equal("true", dauer.GetAttribute("aria-disabled"));
-        Assert.Equal("Die Dauerlinie zeigt die Stufe Erweitert.", dauer.GetAttribute("title"));
+        Assert.Equal("Die Dauerlinie zeigt die Stufe Experte.", dauer.GetAttribute("title"));
         dauer.Click();
-        Assert.Equal("Die Dauerlinie zeigt die Stufe Erweitert.", cut.Instance.Hinweis);
+        Assert.Equal("Die Dauerlinie zeigt die Stufe Experte.", cut.Instance.Hinweis);
         Assert.Equal("tagesgang", cut.Instance.AktiverReiter);
 
         Assert.Contains("Unterschrift Tagesgang Summe aller Zonen", cut.Markup);
@@ -290,7 +290,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         // der Grund statt einer Zahl — nie ein vorbelegtes Ergebnis.
         int vergleich = Array.FindIndex(texte, t => t.StartsWith("Vergleich mit der Messung"));
         Assert.Equal(stochastik + 2, vergleich);
-        Assert.Contains("steht ab der Stufe Erweitert", texte[vergleich + 1]);
+        Assert.Contains("steht ab der Stufe Experte", texte[vergleich + 1]);
         Assert.Equal(vergleich + 2, texte.Length);
 
         // Ohne Schwelle keine Zeile.
@@ -315,21 +315,28 @@ public class ZapfprofilDialogTests : EposBunitContext
     // Benannte Sperren
     // =================================================================================
 
-    /// <summary>Stufe Z4: Alle drei Stufen sind wählbar — keine trägt mehr eine Sperre.</summary>
+    /// <summary>
+    /// ZC3: Die Wahl der Stufe hat genau zwei Einträge, Einfach und Experte, beide ohne Sperre; der alte
+    /// Wert „Erweitert" (1) wird beim Wählen zu Experte.
+    /// </summary>
     [Fact]
-    public void Alle_drei_Stufen_sind_waehlbar()
+    public void Die_Stufenwahl_hat_genau_zwei_Eintraege_Einfach_und_Experte()
     {
         var cut = Aufbauen();
 
-        Assert.Null(Option(cut, "Erweitert").GetAttribute("aria-disabled"));
+        string[] eintraege = cut.Find("fieldset[aria-label='Stufe']").QuerySelectorAll("label.epos-option")
+                                .Select(l => l.TextContent.Trim()).ToArray();
+        Assert.Equal(new[] { "Einfach", "Experte" }, eintraege);
+        Assert.Null(Option(cut, "Einfach").GetAttribute("aria-disabled"));
         Assert.Null(Option(cut, "Experte").GetAttribute("aria-disabled"));
         Assert.True(Option(cut, "Einfach").HasAttribute("checked"));
 
-        Option(cut, "Erweitert").Change("1");
-        Assert.Equal(ZapfprofilStufe.Erweitert, cut.Instance.Stufe);
-        Assert.True(Option(cut, "Erweitert").HasAttribute("checked"));
+        // Der alte Wert 1 über den Assistenten oder einen alten Stand: Er gilt als Experte.
+        Option(cut, "Experte").Change("1");
+        Assert.Equal(ZapfprofilStufe.Experte, cut.Instance.Stufe);
         Assert.Equal("", cut.Instance.Hinweis);
 
+        Option(cut, "Einfach").Change("0");
         Option(cut, "Experte").Change("2");
         ZapfprofilKarten.AlleAuf(cut);
         Assert.Equal(ZapfprofilStufe.Experte, cut.Instance.Stufe);
@@ -364,8 +371,8 @@ public class ZapfprofilDialogTests : EposBunitContext
         => cut.FindAll(".epos-feld-text").Any(t => t.TextContent.Trim() == bezeichnung);
 
     /// <summary>
-    /// 5.3: Der Rechenweg der Jahresreihe steht erst in der Stufe Experte (Erweitert ist noch
-    /// gesperrt), dazu immer der Seed — er gilt auch für das Ensemble der Auslegung —, die
+    /// 5.3: Der Rechenweg der Jahresreihe steht erst in der Stufe Experte, dazu
+    /// immer der Seed — er gilt auch für das Ensemble der Auslegung —, die
     /// Realisierungen der Jahresreihe nur bei „stochastisch"; mit der Vorgabe als Platzhalter
     /// und den Grenzen aus Schema und Kern. Die Stufe blendet nur aus: Zurück in Einfach bleibt
     /// der Rechenweg, und der Zähler zählt ihn.
@@ -1346,7 +1353,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Equal(1, cut.Instance.Eingabe.Zonen[0].IdNutzungsart);
 
         var rechenweg = Assert.Throws<InvalidOperationException>(() => Zugang("rechenweg_jahresreihe").Setzen(1));
-        Assert.Contains(texte.StufeErweitert, rechenweg.Message, StringComparison.Ordinal);
+        Assert.Contains(texte.StufeExperte, rechenweg.Message, StringComparison.Ordinal);
 
         var seed = Assert.Throws<InvalidOperationException>(() => Zugang("seed").Setzen(42));
         Assert.Contains(texte.LabelSeed, seed.Message, StringComparison.Ordinal);

@@ -65,9 +65,6 @@ public partial class ZapfprofilDialogStufenTests
         var cut = AufbauenMitTyptagen(Typtagstand());
         Assert.Empty(cut.FindAll("label.epos-schalter").Where(l => l.TextContent.Contains("Typtage")));
 
-        Stufe(cut, "Erweitert");
-        Assert.Empty(cut.FindAll("label.epos-schalter").Where(l => l.TextContent.Contains("Typtage")));
-
         Stufe(cut, "Experte");
         Assert.Contains("Typtage nach VDI 4655", cut.Find(".epos-zapfprofil-typtagleiste").ParentElement!.TextContent);
         Assert.NotNull(Typtagschalter(cut));

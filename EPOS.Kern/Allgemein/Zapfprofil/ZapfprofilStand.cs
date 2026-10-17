@@ -52,6 +52,7 @@ namespace WindowsFormsApplication1
     internal enum ZapfStufe
     {
         Einfach = 0,
+        /// <summary>Nicht mehr angeboten (ZC3): bleibt für alte Stände lesbar und gilt wie Experte.</summary>
         Erweitert = 1,
         Experte = 2
     }

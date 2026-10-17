@@ -18,7 +18,7 @@ namespace WindowsFormsApplication1
     /// <para><b>Die einzige Stelle, die übersetzt.</b> Nur hier wird der Arbeitsstand des Kerns
     /// (<see cref="ZapfprofilStand"/>) zu den DTO aus <c>ZapfprofilDaten.cs</c> und zurück
     /// (<see cref="AlsEingabe"/>, <see cref="AlsStand"/>); der Dialog kennt keinen Kern-Typ.
-    /// Die Angaben der Stufen Erweitert und Experte gehen je Zone als
+    /// Die Angaben der Stufe Experte gehen je Zone als
     /// <see cref="ZapfprofilZonenangabenDaten"/> und fürs Gebäude als
     /// <see cref="ZapfprofilGebaeudeDaten"/> hin und zurück (Stufe Z4); fehlen sie im DTO, bleibt
     /// der Arbeitsstand des Kerns stehen — die Stufe blendet nur ein und aus.</para>
@@ -179,7 +179,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Was die Stufen Erweitert und Experte zum Öffnen brauchen (Stufe Z4): die gebäudeweiten
+        /// Was die Stufe Experte zum Öffnen brauchen (Stufe Z4): die gebäudeweiten
         /// Größen einer Projektzeile ohne Eingabe (DDL, <see cref="ZapfprofilCtrl.ProjektVorgabe()"/>)
         /// — trägt der Arbeitsstand keine Projektzeile, beginnt der Dialog mit ihnen —, die Vorgaben des
         /// Parametersatzes für die Platzhalter, die Tagesgangsätze, die Ausstattungsklassen der
@@ -423,7 +423,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Angaben der Stufen Erweitert und Experte einer Zone des Kerns (5.3): Jahrestage der
+        /// Die Angaben der Stufe Experte einer Zone des Kerns (5.3): Jahrestage der
         /// Ferien als Jahrestage des Gemeinjahrs (0, 366 und leer = keine Angabe) — JEDER Zeitraum der
         /// Liste 1:1 als Zeile samt Name, ohne Auffüllen —, Wohnungstabelle in ihrer
         /// Reihenfolge, Texte leer statt <c>null</c>.
@@ -683,7 +683,7 @@ namespace WindowsFormsApplication1
                     Niveau = (ZapfNiveau)(int)d.Niveau,
                     Reihenfolge = i + 1
                 };
-                // Die Angaben der Stufen Erweitert und Experte (Z4): Trägt die Zone sie, gelten sie —
+                // Die Angaben der Stufe Experte (Z4): Trägt die Zone sie, gelten sie —
                 // bei einem Duplikat ohne Ids der Vorlage (neue Wohnungstypen).
                 if (d.Angaben != null)
                 {
@@ -712,7 +712,7 @@ namespace WindowsFormsApplication1
                 entwurf = EntwurfAus(eingabe.Auslegung);
                 zeilen = Konstruktorzeilen(eingabe.Auslegung);
             }
-            // Die gebäudeweiten Größen der Stufen Erweitert und Experte (Z4) — nach der Auslegung:
+            // Die gebäudeweiten Größen der Stufe Experte (Z4) — nach der Auslegung:
             // Ladeleistung, Ladefenster und Speichertemperatur hat der Dialog mit ihrem OK angeglichen.
             projekt = MitGebaeude(projekt, eingabe.Gebaeude);
             // Haben sich die Zonen nach der Übernahme geändert, ist der Punkt überholt: verworfen,
@@ -1022,7 +1022,7 @@ namespace WindowsFormsApplication1
                     Zone = name,
                     JahresbedarfZapfungKwh = z.JahresbedarfZapfungKwh,
                     Abgelehnt = z.Abgelehnt,
-                    // Die Spalten der Zonenliste ab Erweitert (Z4): wirksame Menge (bei Wohnungstabelle aus
+                    // Die Spalten der Zonenliste ab Experte (Z4): wirksame Menge (bei Wohnungstabelle aus
                     // ihr), Anteil an der Zapfung und wie die Menge entsteht — alles aus dem Kern.
                     BezugsmengeWirksam = z.Abgelehnt || !(z.Bezugsmenge > 0) ? null : z.Bezugsmenge,
                     Anteil = summeZapfung > 0 ? z.JahresbedarfZapfungKwh / summeZapfung : (double?)null,
@@ -1076,7 +1076,7 @@ namespace WindowsFormsApplication1
             return new ZapfprofilWarnDaten(kennung, titel, Satztext(h?.Satz),
                                            h != null && h.Warnung ? ZapfprofilWarnstufe.Warnung : ZapfprofilWarnstufe.Hinweis)
             {
-                AbErweitert = ErstAbErweitert(h?.Code)
+                AbExperte = ErstAbExperte(h?.Code)
             };
         }
 
@@ -1084,15 +1084,15 @@ namespace WindowsFormsApplication1
         /// Die Hinweise des Bilanzrechenwegs, die der Anwender in der Stufe EINFACH beheben kann (ZB8): Dort stehen
         /// nur Nutzungsart, Bezugsgröße und Bedarfsniveau — ein Bedarf außerhalb der Bandbreite des Niveaus ist der
         /// einzige Hinweis, den diese Felder beheben. Jeder andere Hinweis (Zirkulation, Wohnungstabelle, Messwert,
-        /// Katalog, Typtage, Einstellungen) steht erst ab der Stufe Erweitert.
+        /// Katalog, Typtage, Einstellungen) steht erst ab der Stufe Experte.
         /// </summary>
         internal static readonly string[] EINFACH_BEHEBBAR = { Mengengeruest.HINWEIS_BANDBREITE };
 
         /// <summary>
         /// DIE Regel der Hinweise je Stufe (ZB8), einmal hier: Steht der Hinweis mit dem Code
-        /// <paramref name="code"/> erst ab der Stufe Erweitert? Ein Hinweis ohne Code steht in jeder Stufe.
+        /// <paramref name="code"/> erst ab der Stufe Experte? Ein Hinweis ohne Code steht in jeder Stufe.
         /// </summary>
-        internal static bool ErstAbErweitert(string code)
+        internal static bool ErstAbExperte(string code)
             => !string.IsNullOrEmpty(code) && Array.IndexOf(EINFACH_BEHEBBAR, code) < 0;
 
         /// <summary>Eine Schätzhilfe des Kerns als DTO — Vorschlag <c>null</c> ohne Verfahren, Rechenweg in der Oberflächensprache.</summary>
@@ -1359,7 +1359,7 @@ namespace WindowsFormsApplication1
                 m.Add(Fehler("ZPG_MSG_ZONE_NAME_DOPPELT", doppelt,
                     Format(Text_("ZPG_MSG_ZONE_NAME_DOPPELT", "Zone „{0}“: Der Name ist mehrfach vergeben — bitte jeder Zone einen eigenen Namen geben."), doppelt)));
 
-            // Zirkulation manuell (gebäudeweit, Stufen Erweitert/Experte): dieselbe Regel wie der
+            // Zirkulation manuell (gebäudeweit, Stufe Experte): dieselbe Regel wie der
             // Rechenweg (Zirkulationskanal.ManuellGueltig, Z4, Gruppe 2a Punkt 7).
             if (eingabe.Gebaeude is { ZirkAuto: false } gebaeude && !Zirkulationskanal.ManuellGueltig(gebaeude.ZirkManuellKw))
                 m.Add(Fehler("ZPG_MSG_ZIRKULATION_MANUELL_UNGUELTIG", "",
@@ -1377,7 +1377,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Pflichtprüfung der Angaben einer Zone (Stufen Erweitert und Experte): jeder Wohnungstyp
+        /// Die Pflichtprüfung der Angaben einer Zone (Stufe Experte): jeder Wohnungstyp
         /// mit einer Anzahl größer 0 — SOLANGE die Wohnungstabelle wirksam ist
         /// (<paramref name="wohnungstabelleWirksam"/>, <see cref="Mengengeruest.WohnungstabelleWirksam(ZapfBezugsart)"/>;
         /// außerhalb bleibt eine verdeckte Zeile ungeprüft, Z4, Gruppe 2a Punkt 6) —, jeder begonnene
@@ -1801,7 +1801,7 @@ namespace WindowsFormsApplication1
             => new ZapfprofilMeldung(Satzkennung(h.Satz, "ZPG_SATZ_" + h.Code), h.Zone ?? "", Satztext(h.Satz),
                                      ZapfprofilMeldungsart.Hinweis, h.Text ?? "")
             {
-                AbErweitert = ErstAbErweitert(h.Code)
+                AbExperte = ErstAbExperte(h.Code)
             };
 
         /// <summary>Die Kennung der Nichtverfügbarkeit: die des Satzes.</summary>
@@ -1850,7 +1850,6 @@ namespace WindowsFormsApplication1
             t.KontextUeberschrieben = Text_("ZPG_KONTEXT_UEBERSCHRIEBEN", t.KontextUeberschrieben);
             t.LabelStufe = Text_("ZPG_LBL_STUFE", t.LabelStufe);
             t.StufeEinfach = Text_("ZPG_STUFE_EINFACH", t.StufeEinfach);
-            t.StufeErweitert = Text_("ZPG_STUFE_ERWEITERT", t.StufeErweitert);
             t.StufeExperte = Text_("ZPG_STUFE_EXPERTE", t.StufeExperte);
             t.GrundNochNicht = Text_("ZPG_GRUND_NOCH_NICHT", t.GrundNochNicht);
 
@@ -1897,7 +1896,6 @@ namespace WindowsFormsApplication1
             t.HinweisBezugsmengeEinheit = Text_("ZPG_HINW_BEZUGSMENGE_EINHEIT", t.HinweisBezugsmengeEinheit);
             t.HinweisNiveauVorgabe = Text_("ZPG_HINW_NIVEAU_VORGABE", t.HinweisNiveauVorgabe);
             t.HinweisWeitereVorgabe = Text_("ZPG_HINW_WEITERE_VORGABE", t.HinweisWeitereVorgabe);
-            t.HinweisWeitereErweitert = Text_("ZPG_HINW_WEITERE_ERWEITERT", t.HinweisWeitereErweitert);
             t.HinweisNutzungsartKatalog = Text_("ZPG_HINW_NUTZUNGSART_KATALOG", t.HinweisNutzungsartKatalog);
             t.KatalogKeineAuswahl = Text_("ZPG_KAT_KEINE_AUSWAHL", t.KatalogKeineAuswahl);
 
@@ -1980,7 +1978,7 @@ namespace WindowsFormsApplication1
             t.KennzahlVergleich = Text_("ZPG_KZ_VERGLEICH", t.KennzahlVergleich);
             t.VergleichOhneReihe = Text_("ZPG_VERGL_OHNE_REIHE", t.VergleichOhneReihe);
             t.VergleichOhneWahl = Text_("ZPG_VERGL_OHNE_WAHL", t.VergleichOhneWahl);
-            t.VergleichNurErweitert = Text_("ZPG_VERGL_NUR_ERWEITERT", t.VergleichNurErweitert);
+            t.VergleichNurExperte = Text_("ZPG_VERGL_NUR_ERWEITERT", t.VergleichNurExperte);
             t.VergleichLeer = Text_("ZPG_VERGL_LEER", t.VergleichLeer);
             t.VergleichLaeuft = Text_("ZPG_VERGL_LAEUFT", t.VergleichLaeuft);
             t.VergleichAbgebrochen = Text_("ZPG_VERGL_ABGEBROCHEN", t.VergleichAbgebrochen);

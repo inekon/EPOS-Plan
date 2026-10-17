@@ -119,7 +119,7 @@ namespace WindowsFormsApplication1
         {
             eingabe ??= new ZapfprofilEingabeDaten();
             ZapfprofilAuslegungEingabeDaten anfang = eingabe.Auslegung?.Kopie() ?? AuslegungAusStand(basis);
-            // Ladeleistung, Ladefenster und Speichertemperatur führt auch der Dialog (Stufen Erweitert
+            // Ladeleistung, Ladefenster und Speichertemperatur führt auch der Dialog (Stufe Experte
             // und Experte, Z4): Die Überlagerung beginnt mit seinem Stand.
             eingabe.Gebaeude?.InAuslegung(anfang);
             anfang.Stochastisch = stochastisch;
@@ -407,7 +407,7 @@ namespace WindowsFormsApplication1
             foreach (Auslegungsgruppe g in r.Ergebnis.Gruppen) d.Gruppen.Add(AlsGruppe(g, stufe));
 
             // Die Karte "Herkunft" (N19): Die Ueberlagerung fuehrt keine eigene Stufe, deshalb
-            // entscheidet die Huelle - ab Erweitert steht die Karte, in der Stufe Einfach nicht.
+            // entscheidet die Huelle - ab Experte steht die Karte, in der Stufe Einfach nicht.
             d.HerkunftSichtbar = stufe != ZapfprofilStufe.Einfach;
             if (d.HerkunftSichtbar) d.Herkunft.AddRange(Herkunftszeilen(r.Ergebnis.Herkunft));
             return d;
@@ -680,9 +680,8 @@ namespace WindowsFormsApplication1
         {
             switch (stufe)
             {
-                case ZapfprofilStufe.Erweitert: return Text_("ZPG_STUFE_ERWEITERT", "Erweitert");
-                case ZapfprofilStufe.Experte: return Text_("ZPG_STUFE_EXPERTE", "Experte");
-                default: return Text_("ZPG_STUFE_EINFACH", "Einfach");
+                case ZapfprofilStufe.Einfach: return Text_("ZPG_STUFE_EINFACH", "Einfach");
+                default: return Text_("ZPG_STUFE_EXPERTE", "Experte");
             }
         }
 

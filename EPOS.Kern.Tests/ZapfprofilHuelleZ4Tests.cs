@@ -107,24 +107,24 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// ZB8: EINE Regel der Hülle entscheidet, welche Hinweise schon in der Stufe Einfach stehen — nur, was dort
         /// zu beheben ist (der Bedarf außerhalb der Bandbreite des Niveaus); jeder andere Hinweis trägt
-        /// <c>AbErweitert</c>, in der Warnliste wie als Meldung am Block.
+        /// <c>AbExperte</c>, in der Warnliste wie als Meldung am Block.
         /// </summary>
         [Fact]
         public void ZB8_In_der_Stufe_Einfach_stehen_nur_Hinweise_die_dort_zu_beheben_sind()
         {
             Assert.Equal(new[] { Mengengeruest.HINWEIS_BANDBREITE }, ZapfprofilHuelle.EINFACH_BEHEBBAR);
             var band = new ZapfHinweis("Wohnen", Mengengeruest.HINWEIS_BANDBREITE, ZapfSatz.Neu("UNBEKANNT"));
-            Assert.False(ZapfprofilHuelle.Warnung(band).AbErweitert);
-            Assert.False(ZapfprofilHuelle.Meldung(band).AbErweitert);
+            Assert.False(ZapfprofilHuelle.Warnung(band).AbExperte);
+            Assert.False(ZapfprofilHuelle.Meldung(band).AbExperte);
 
             foreach (string code in ZapfprofilHuelle.BILANZHINWEISE.Where(c => c != Mengengeruest.HINWEIS_BANDBREITE))
             {
                 var h = new ZapfHinweis("Wohnen", code, ZapfSatz.Neu("UNBEKANNT"));
-                Assert.True(ZapfprofilHuelle.Warnung(h).AbErweitert, code);
-                Assert.True(ZapfprofilHuelle.Meldung(h).AbErweitert, code);
+                Assert.True(ZapfprofilHuelle.Warnung(h).AbExperte, code);
+                Assert.True(ZapfprofilHuelle.Meldung(h).AbExperte, code);
             }
-            Assert.False(ZapfprofilHuelle.ErstAbErweitert(null));
-            Assert.False(ZapfprofilHuelle.ErstAbErweitert(""));
+            Assert.False(ZapfprofilHuelle.ErstAbExperte(null));
+            Assert.False(ZapfprofilHuelle.ErstAbExperte(""));
         }
 
         // =================================================================================
