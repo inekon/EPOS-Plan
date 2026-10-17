@@ -162,7 +162,8 @@
                         title="@Resource.AUSWAHL_SATZ_HINWEIS" @onclick="SatzUmschalten" @ref="_satzzeile">
                     <span class="epos-zweispalten-satzpfeil" aria-hidden="true">@(SatzflaecheOffen ? "▾" : "▸")</span>
                     <span class="epos-zweispalten-marke epos-zweispalten-marke--satz">@SatzMarke</span>
-                    <span class="epos-zweispalten-satzname">@(string.IsNullOrEmpty(SatzName) ? Resource.AUSWAHL_SATZ_LEER : SatzName)</span>
+                    @* Der volle Name steht im title - kuerzt die Zeile ihn mit „…", bleibt er lesbar. *@
+                    <span class="epos-zweispalten-satzname" title="@(string.IsNullOrEmpty(SatzName) ? null : SatzName)">@(string.IsNullOrEmpty(SatzName) ? Resource.AUSWAHL_SATZ_LEER : SatzName)</span>
                     @if (!string.IsNullOrEmpty(SatzKenndaten))
                     {
                         <span class="epos-zweispalten-satzkenndaten">@SatzKenndaten</span>
