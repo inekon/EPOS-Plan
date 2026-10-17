@@ -13,11 +13,11 @@ ab, dessen Entscheide weitergelten (Abschnitt 2). Die parallelen Sitzungen führ
 
 Stand 16.10.2026: Übernahme durch Sitzung `session_019JuX7JfD2tStDzd3CiStwf`; #1105/#1106 gepusht, CI grün (Lauf 38863988800). Aufräumen #1109 (Konzept Kältebedarf und Katalogauswahl-Mockups nach `ueberholt/`). Die Basis R56 `2026-10-16_R56_Wasserkosten` (KB-7) ist eingefroren und enthält die zwei Kälteschlüssel von #1105; das `--ohne` der Gate-Skripte ist gestrichen.
 
-- Zweig: Arbeitszweig `ios_migration_september`; alle Wellen dieser Sitzung sind gepusht und mit CI-Vermerk versehen, keine Agenten, keine offenen Worktrees. Letzter Push: Merge `kv8n` + Statuscommit `1229764` (#1188 KV8-N), gepusht auf beide Zweige.
+- Zweig: Arbeitszweig `ios_migration_september`; alle Wellen dieser Sitzung sind gepusht und mit CI-Vermerk versehen, keine Agenten, keine offenen Worktrees. Letzter Push: Merge `kmt1` (`93da672d6`) + Statuscommit (der Commit „Status #1200“, #1200 KM-T1), gepusht auf beide Zweige.
 - Wellen und Statuszeilen: KR1/KR1b runde Wahlkästchen (#1037); K6 Kältebedarf dezentral/Split mit Schemaschritt 223 und Referenzprojekt 1072 (#1056/#1057); K6d (#1066); K6d-N (#1078); K6c (#1089, `8bf550004`); K6c-N Laufmeldung nennt die Hauptzahl (#1090, `bd7abe18a`).
 - Basis R55 `Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral` (37 Projekte; die CI rechnet 18).
 - ChartProben-Messlatte `Proben/ChartProben/Messlatte_2026-10-14.sha256` mit 225 Zeilen; Vermerke #1089/#1090 in `683bc2cac` (Hashes aus Kern-Lauf 38532651105). `kern.yml` schreibt seit `b4b73a9b2` die vollständige Hashliste ins Protokoll (eingeklappte Gruppe „ChartProben-Hashliste ubuntu“); LIESMICH-Bildzahl 257 in `d40c38cd0`.
-- CI-Vermerke gesetzt mit `a4e2e2bb4` (#1056/#1057), `5215d8e22` (#1066), `5f5a0023d` (#1078), `683bc2cac` (#1089/#1090); alle vermerkt (zuletzt #1188, Lauf 39036878119).
+- CI-Vermerke gesetzt mit `a4e2e2bb4` (#1056/#1057), `5215d8e22` (#1066), `5f5a0023d` (#1078), `683bc2cac` (#1089/#1090); alle vermerkt (zuletzt #1188, Lauf 39036878119); #1200 ausstehend (Check-in).
 - Frühere Wellen (11. bis 13.10.): Katalogauswahl V1 mit Knopfleiste am gewählten Satz (KA-E-17 bis KA-E-27), Wärmepumpen-Überlagerung, Kältemaschinen-Dialog, Vergleich Projekt/Katalog, Gerätesteckbrief, KAL1-Klappgruppe, Kältebedarf K1 bis K5; Einzelheiten im Papier vom 11.10.2026.
 - Schemakette und Basenfolge (nur beobachten): 224 Zapfprofil, 225, 226/227, 228 KB-4, 229 KB-5, 230 KBP-2, 231 DA-6, 232 BK-5/BK-6; Basen R56 KB-5, R57 SA4. Maßgeblich ist die Kopfzeile „Schemaschritt angemeldet“ der Statusdatei.
 
@@ -47,6 +47,7 @@ Stand 16.10.2026: Übernahme durch Sitzung `session_019JuX7JfD2tStDzd3CiStwf`; #
 - Anwenderentscheid 16.10.: Modellregel — Fable 5 nur für sehr komplexe Aufgaben, sonst Opus 5.5 bzw. Sonnet/Haiku je nach Aufgabe.
 - Anwenderentscheid 17.10.: KBP-3b-Rest „Woche als Reihen statt Hintergrund“ geschlossen — Hintergrund nach Konzept (#1108) bleibt; die Nennung als Rest war ein Lesefehler.
 - Anwenderentscheid 17.10.: Wiki-Quellen für Seiten ohne Quelle nicht in dieser Sitzung; Übergabepapiere Kontowechsel, Kostenbasis KB4/KB5 und KB5-Inventar nach `ueberholt/`; Kältevorlage 8 auf 230 Nutzungstage nach DIN/TS 18599‑10.
+- Anwenderentscheid 17.10.: KM-T1 (Übergabe aus „Kälteanlagen“) — „Typkennfelder laden…“ gesperrt mit Hinweis, wenn alle Typkennfelder geladen sind; Rückmeldung in einer zweiten Zeile der Katalogkopfzeile (ab 1280 px), „In das Projekt übernehmen“ bleibt in Zeile 1; Kompaktstufe einzeilig mit Symbolknöpfen. Zwei Zeilen auch in der Kompaktstufe wären eine Ausnahme von Hausregel 4.8 (78 px) — offen.
 - **KB-8/KB-9 (17.10.2026):** Die Längengrenze von `StromsteuerBefreiungModus` bleibt wie vorgefunden — Testdatenbank ohne `CHECK (length ≤ 20)`, Anwenderdatenbanken aus dem Laufzeitweg mit; kein Tabellenumbau. KB-9 (übrige Vorsorgewege) wird vorbereitet (Abschnitt 6).
 
 ## 3 Hinweis
@@ -68,6 +69,7 @@ Die Regeln der Sitzung über `CLAUDE.md` hinaus stehen im Einstiegs-Prompt (Absc
 11. Setup-Skript der Cloud-Umgebung (beim Anwender).
 12. Kältevorlage 8: umgesetzt mit KV8 (#1181): Normkalender als Vorgabe, Schreibweg wählt ihn vor; zwei Befunde als eigene Aufträge (Vorschau-Raster Wochentag 6; Kalenderwahl „keiner“). Nachzüge KV8-N (#1188) umgesetzt: Projektraster für Vorschau und Grafik, Kalenderwahl „keiner“ bleibt. Offen als eigener Auftrag: Projektvorschau Brauchwasser/Prozesswärme (Altkonvention nach F3) und Strom bei Preisreihe mit Jahr.
 13. **#501 Vorsorgewege:** KB-8 (Schritt 240) umgesetzt auf `kb8`, Merge-Welle läuft; KB-9 Auftrag in Abschnitt 6, Schritt 243 (Anmeldung in der Kopfzeile der Statusdatei). Befund dabei: Die iOS-Gerätedatenbank wird nach dem Erststart nie gehoben (keine Schemapflege auf dem Gerät) — Entscheid beim Anwender, ob und wann der Kern eine eigene Schemapflege für iOS bekommt.
+14. KM-T1 (#1200) umgesetzt. Offen beim Anwender: Kompaktstufe zweizeilig (Ausnahme 4.8); optional ein Wiki-Satz zum gesperrten Knopf in „Programm Dokumentation - Kälteerzeugung“.
 
 ## 5 Einstiegs-Prompt für die Übernahme (14.10.2026)
 
