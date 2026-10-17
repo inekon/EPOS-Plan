@@ -28976,6 +28976,9 @@ Do you want to allow this?</value>
   <data name="SIMERG_LBL_DAVON_PUFFER_ANDERE" xml:space="preserve">
     <value>of which from buffer (other generators):</value>
   </data>
+  <data name="SIMERG_LBL_DAVON_UEBRIGE_UNGEDECKT" xml:space="preserve">
+    <value>of which other generators / uncovered:</value>
+  </data>
   <data name="SIMERG_LBL_RESTWAERMEBEDARF_NACH_KESSEL" xml:space="preserve">
     <value>Residual heat demand after boiler:</value>
   </data>

@@ -122051,6 +122051,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon übrige Erzeuger / ungedeckt: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_DAVON_UEBRIGE_UNGEDECKT {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_DAVON_UEBRIGE_UNGEDECKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Jahres-EER dezentral ähnelt.
         /// </summary>
         public static string SIMERG_LBL_EER_DEZENTRAL {

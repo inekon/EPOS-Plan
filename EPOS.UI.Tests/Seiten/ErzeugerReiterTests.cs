@@ -268,11 +268,14 @@ public class ErzeugerReiterTests : EposBunitContext
                          Resource.SIMERG_LBL_WAERMEPRODUKTION_SPK,
                          Resource.SIM_KESSEL_QUELLWAERME,
                          Resource.SIMERG_LBL_RESTWAERMEBEDARF_NACH_KESSEL,
-                         Resource.SIMERG_LBL_DAVON_PUFFER_ANDERE
+                         Resource.SIMERG_LBL_DAVON_PUFFER_ANDERE,
+                         Resource.SIMERG_LBL_DAVON_UEBRIGE_UNGEDECKT
                      },
                      seite.FindAll("dl.epos-simerg-werte")[0]
                           .QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
         Assert.Contains("4,50", text);
+        // Rest nach Kessel 6,04 − davon aus Puffer 4,50 = übrige Erzeuger / ungedeckt 1,54.
+        Assert.Contains("1,54", text);
         Assert.Contains("1.797", text);
         Assert.Contains("4.335", text);
         Assert.Contains("216,75", text);
@@ -476,7 +479,8 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.Equal(
             new[] { "Wärmebedarfsdeckung:", "Restwärmebedarf (Stufeneingang):",
                     "Wärmeproduktion der Spitzenkessel:", "Quellwärme aus Kaskade:",
-                    "Restwärmebedarf nach Kessel:", "davon aus Puffer (andere Erzeuger):" },
+                    "Restwärmebedarf nach Kessel:", "davon aus Puffer (andere Erzeuger):",
+                    "davon übrige Erzeuger / ungedeckt:" },
             listen[0].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
         Assert.Equal(
             new[] { "Strombedarf:", "Reststrombedarf:" },

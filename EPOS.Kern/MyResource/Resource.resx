@@ -28983,6 +28983,9 @@ Möchten Sie das zulassen?</value>
   <data name="SIMERG_LBL_DAVON_PUFFER_ANDERE" xml:space="preserve">
     <value>davon aus Puffer (andere Erzeuger):</value>
   </data>
+  <data name="SIMERG_LBL_DAVON_UEBRIGE_UNGEDECKT" xml:space="preserve">
+    <value>davon übrige Erzeuger / ungedeckt:</value>
+  </data>
   <data name="SIMERG_LBL_RESTWAERMEBEDARF_NACH_KESSEL" xml:space="preserve">
     <value>Restwärmebedarf nach Kessel:</value>
   </data>

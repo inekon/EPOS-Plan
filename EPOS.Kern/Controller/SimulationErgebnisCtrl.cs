@@ -650,6 +650,15 @@ namespace WindowsFormsApplication1
             /// </summary>
             public double AusPufferAndereMwh;
 
+            /// <summary>
+            /// Der zweite Teil von <see cref="RestwaermeMwh"/> [MWh/a]: was weder der Kessel noch der Puffer aus
+            /// der Ladung der anderen Erzeuger deckt — Erzeuger hinter dem Kessel in der Kaskade, sonst ungedeckt.
+            /// Dieselbe Aufteilung wie die Reihe „übrige Erzeuger / ungedeckt“ des Kesselbildes. Steht der Kessel
+            /// mit allen Erzeugern hinter einem Puffer (AK3, Pufferkreis), ist sein Stufeneingang die ganze
+            /// Pufferanforderung und erst dieser Teil eine Aussage über die Unterdeckung an der Kesselstufe.
+            /// </summary>
+            public double UebrigeUngedecktMwh => Math.Max(0.0, RestwaermeMwh - AusPufferAndereMwh);
+
             /// <summary>Laufstunden aller Kessel [h/a] (Summe über die Kessel).</summary>
             public int Laufstunden;
 
