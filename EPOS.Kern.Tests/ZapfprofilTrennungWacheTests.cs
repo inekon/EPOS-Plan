@@ -81,7 +81,10 @@ namespace EPOS.Kern.Tests
             "Messreihe.cs", "Messvergleich.cs", "Messkalibrierung.cs",
             // Die Vorprüfung einer Zone liest die Regeln des Mengengerüsts (S1) ohne Ausnahme — Bilanz;
             // die Auslegung ruft sie wie das Mengengerüst selbst.
-            "Zonenvorpruefung.cs"
+            "Zonenvorpruefung.cs",
+            // ZC6: die Abbildung des Ergebnisses auf einen Profilsatz (Monate, Woche) liest nur die
+            // JAHRESREIHE der Bilanz — Bilanz; die Auslegung kennt sie nicht.
+            "ZapfprofilProfilsatz.cs"
         };
 
         /// <summary>Die Dateien, deren Typen Minuten- bzw. Stundenwerte tragen dürfen.</summary>
