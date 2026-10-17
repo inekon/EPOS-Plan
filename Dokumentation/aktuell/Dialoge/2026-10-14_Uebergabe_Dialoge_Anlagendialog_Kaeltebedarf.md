@@ -6,8 +6,8 @@ Stand, die geltenden Entscheide, die offenen Punkte und den Einstiegs-Prompt (Ab
 über `CLAUDE.md` hinaus stehen im Prompt. Regelquelle bleibt `CLAUDE.md`. Es löst das Papier vom 11.10.2026
 ([`2026-10-11_Uebergabe_Dialoge_Anlagendialog_Kaeltebedarf.md`](../../ueberholt/2026-10-11_Uebergabe_Dialoge_Anlagendialog_Kaeltebedarf.md))
 ab, dessen Entscheide weitergelten (Abschnitt 2). Die parallelen Sitzungen führen eigene Papiere, etwa
-[`2026-10-14_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md`](2026-10-14_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md)
-(Berichte & Kosten) und [`2026-10-14_Uebergabe_Dialoge_Kostenbasis_KB4_KB5.md`](2026-10-14_Uebergabe_Dialoge_Kostenbasis_KB4_KB5.md).
+[`2026-10-14_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md`](../../ueberholt/2026-10-14_Uebergabe_Dialoge_und_Korrekturen_Kontowechsel.md)
+(Berichte & Kosten) und [`2026-10-14_Uebergabe_Dialoge_Kostenbasis_KB4_KB5.md`](../../ueberholt/2026-10-14_Uebergabe_Dialoge_Kostenbasis_KB4_KB5.md).
 
 ## 1 Stand 14.10.2026
 
@@ -45,6 +45,7 @@ Stand 16.10.2026: Übernahme durch Sitzung `session_019JuX7JfD2tStDzd3CiStwf`; #
 - Anwenderentscheid 16.10.: Kein Kern-Lauf für Pull Requests aus dem eigenen Repository.
 - Anwenderentscheid 16.10.: Wiki-Sammel-Upload in der Woche ab 19.10.
 - Anwenderentscheid 16.10.: Modellregel — Fable 5 nur für sehr komplexe Aufgaben, sonst Opus 5.5 bzw. Sonnet/Haiku je nach Aufgabe.
+- Anwenderentscheid 17.10.: Wiki-Quellen für Seiten ohne Quelle nicht in dieser Sitzung; Übergabepapiere Kontowechsel, Kostenbasis KB4/KB5 und KB5-Inventar nach `ueberholt/`; Kältevorlage 8 auf 230 Nutzungstage nach DIN/TS 18599‑10.
 
 ## 3 Hinweis
 
@@ -57,6 +58,13 @@ Die Regeln der Sitzung über `CLAUDE.md` hinaus stehen im Einstiegs-Prompt (Absc
 3. Erledigt: Hauptzahl in `aggregate.csv` (#1105) und CI-Kern-Lauf in parallelen Jobs (#1106), Wandzeit rund 19,5 statt 84 min.
 4. Beobachten (R56 eingefroren, siehe Abschnitt 1): Schemakette 228 KB-4, 229 KB-5 (Stromspeicher/Speicherflotte bei der Sitzung „Dialoge und Korrekturen (Konto Übernahme)“/Kältemaschinen), 230 KBP-2, 231 DA-6, 232 BK-5/BK-6; Basen R56 KB-5, R57 SA4. Die Sitzung „Dialoge Cloud“ arbeitet am Konzept Kältebedarfsprofile (KBP) mit unseren drei Bitten: Deckungsgruppe und Naht `SimulationPlattformwege.KaelteDezentralBearbeiten` unverändert, neue Vorlagen nur als neue Katalogzeilen, Kalenderhinweis als Baustein.
 5. Erledigt: ~~Kältebedarf K6~~ erledigt (#1056/#1057, #1066, #1078, #1089, #1090); ~~Sichtabnahme der Katalogauswahl-Wirte~~ in Punkt 2 aufgegangen; ~~Nachzüge Katalogauswahl, KM-K2, Kostenbasis KB-2/KB-3~~ erledigt (Statuszeilen #1034, #1038, #1079, #1080).
+6. KBP‑3b: Kältegrafik — Monatswerte und Wochenprofil erst nach Speichern, Woche als Reihen statt Hintergrund (Rest gegen #1108 prüfen).
+7. Kern-Test Betriebskalender mit mehr als vier Ferienzeiträumen, sobald die Testdatenbank eine Ferienliste führt.
+8. Gemessene Kälte-Lastgänge für Richtwerte der Vorlagen (beim Anwender).
+9. Wiki-Bilder neu ziehen (offen).
+10. Sichtabnahme Windows Dialoge #1034–#1042 und Kostenmasken KB‑4 (beim Anwender).
+11. Setup-Skript der Cloud-Umgebung (beim Anwender).
+12. Kältevorlage 8: Anwenderentscheid 17.10.: Norm 230 Nutzungstage; Umsetzung in Welle KV8.
 
 ## 5 Einstiegs-Prompt für die Übernahme (14.10.2026)
 

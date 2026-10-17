@@ -4,10 +4,10 @@ Dieses Papier übergibt die Sitzung „Dialoge und Korrekturen (Übersicht Beric
 (`session_01Mt7MsJGzcGr77yqBsxwpLj`) an eine Sitzung auf einem anderen Konto. Es nennt den Stand, die
 geltenden Entscheide, die Regeln der Sitzung über `CLAUDE.md` hinaus, die Cloud-Umgebung und die offenen
 Punkte; der Einstiegs-Prompt steht in Abschnitt 5. Regelquelle bleibt `CLAUDE.md`. Es löst das Papier
-[`2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Konto3.md`](../../ueberholt/2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Konto3.md)
+[`2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Konto3.md`](2026-10-11_Uebergabe_Dialoge_und_Korrekturen_Konto3.md)
 ab; dessen Entscheide gelten weiter und werden hier nicht abgeschrieben. Den gemeinsamen Stand mit der
 Anlagendialog-Sitzung führt der Abschnitt dieser Sitzung im Papier
-[`2026-10-11_Uebergabe_Dialoge_Anlagendialog_Kaeltebedarf.md`](../../ueberholt/2026-10-11_Uebergabe_Dialoge_Anlagendialog_Kaeltebedarf.md)
+[`2026-10-11_Uebergabe_Dialoge_Anlagendialog_Kaeltebedarf.md`](2026-10-11_Uebergabe_Dialoge_Anlagendialog_Kaeltebedarf.md)
 (Punkte 10 bis 13).
 
 ## 1 Stand

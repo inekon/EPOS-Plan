@@ -1,8 +1,8 @@
 # Übergabe der Sitzung „Dialoge und Korrekturen — Anlagendialog, Kältebedarf, Kostenbasis“ (14.10.2026)
 
 Dieses Papier bereitet den Wechsel der Sitzung auf ein anderes Konto vor. Es löst
-[`2026-10-11_Uebergabe_Dialoge_Anlagendialog_Kaeltebedarf.md`](../../ueberholt/2026-10-11_Uebergabe_Dialoge_Anlagendialog_Kaeltebedarf.md)
-ab (dort stehen die erledigten Punkte 1–9 der Vorgängerübergabe). Regelquelle bleibt [`CLAUDE.md`](../../../CLAUDE.md);
+[`2026-10-11_Uebergabe_Dialoge_Anlagendialog_Kaeltebedarf.md`](2026-10-11_Uebergabe_Dialoge_Anlagendialog_Kaeltebedarf.md)
+ab (dort stehen die erledigten Punkte 1–9 der Vorgängerübergabe). Regelquelle bleibt [`CLAUDE.md`](../../CLAUDE.md);
 dieses Papier nennt nur, was die neue Sitzung darüber hinaus wissen muss. Abschnitt 6 ist der Einstiegs-Prompt.
 
 **Zeitpunkt des Wechsels:** nach dem Push von KB-4 (#1095, Schemaschritt 228) und des Sitzungszweigs `kb5` am 14.10.2026 — alles
@@ -54,7 +54,7 @@ gemergte Zweige `kb2`, `kb3`, `kb4a`, `kb4b`, `kb4c` sind als Worktrees entfernt
   kein zweiter Preis); die Wassermenge des Rückkühlwerks aus dem Lauf wird als Betriebskosten mit der Preissteigerung p_B gebucht und
   wirkt im Kapitalwert; die Wasserkosten bekommen eine eigene Berichtskennzahl; `Tab_Energieanlagen.Wasserpreis_EUR_m3` wandert in
   die Trägerkarte und entfällt (Welle KB-7, Schemaschritt 235; Entwurf
-  [`2026-10-16_Entwurf_KB7_Wasserkosten_Rueckkuehlwerk.md`](../../ueberholt/2026-10-16_Entwurf_KB7_Wasserkosten_Rueckkuehlwerk.md)).
+  [`2026-10-16_Entwurf_KB7_Wasserkosten_Rueckkuehlwerk.md`](2026-10-16_Entwurf_KB7_Wasserkosten_Rueckkuehlwerk.md)).
 
 
 ## 3 Regeln und Fallstricke dieser Sitzung (über `CLAUDE.md` hinaus)
