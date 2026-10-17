@@ -57,6 +57,9 @@ namespace WindowsFormsApplication1
         /// <summary>Die Fassung der Kennzahlen des Hilfsstroms von BHKW und Kesseln: Menge, Emissionen, Stromsteuer (Katalog v26, 6b).</summary>
         internal const int FASSUNG_HILFSSTROM = 26;
 
+        /// <summary>Die Fassung der Kennzahlen Einspeisung BHKW, Abregelung PV und Standby Speichersystem (Katalog v27, EB-2/EB-4).</summary>
+        internal const int FASSUNG_ERGEBNISREIHEN = 27;
+
         /// <summary>
         /// Die Kennzahlen der Kältemaschine als Anlage (Schemaschritt 183) kamen mit Katalog v12 — ihre erzeugten
         /// Einträge (Stammzahl, Beschriftung, Einheit) stehen erst ab dieser Fassung, frühere Listen bleiben, wie sie

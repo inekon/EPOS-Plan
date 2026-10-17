@@ -78,13 +78,15 @@ namespace EPOS.Kern.Tests
             SimulationErgebnisDienste dienste = await Gelaufen(PV_BHKW);
             SimulationErgebnisDaten d = dienste.Laden!(PV_BHKW);
 
-            // Die zwei Reihen stehen HINTER allen anderen und sind vorhanden.
+            // Die zwei Reihen stehen HINTER allen Verbrauchern und Erzeugern (dahinter nur die zuschaltbaren Reihen der
+            // Welle EB: BHKW-Anteil der Einspeisung und PV-Abregelung) und sind vorhanden.
             IReadOnlyList<Ganglinienreihe> reihen = d.Stromgang.Reihen;
-            Assert.Equal("NETZBEZUG", reihen[reihen.Count - 2].Schluessel);
-            Assert.Equal("NETZEINSPEISUNG", reihen[reihen.Count - 1].Schluessel);
-            Assert.True(reihen[reihen.Count - 2].Vorhanden);
-            Assert.True(reihen[reihen.Count - 1].Vorhanden);
-            Assert.Equal(R.CHART_LEGENDE_NETZBEZUG, reihen[reihen.Count - 2].Text);
+            int bezug = reihen.Select(r => r.Schluessel).ToList().IndexOf("NETZBEZUG");
+            Assert.Equal(reihen.Count - 4, bezug);
+            Assert.Equal("NETZEINSPEISUNG", reihen[bezug + 1].Schluessel);
+            Assert.True(reihen[bezug].Vorhanden);
+            Assert.True(reihen[bezug + 1].Vorhanden);
+            Assert.Equal(R.CHART_LEGENDE_NETZBEZUG, reihen[bezug].Text);
 
             // Vorgabe des Reiters ist „nur Summe": kein Netz im Bild.
             Zeichenmodell vorgabe = dienste.Modell!(new Bildauftrag(Bilder.Stromgang, false, -1, new[] { "GESAMT" }))!;

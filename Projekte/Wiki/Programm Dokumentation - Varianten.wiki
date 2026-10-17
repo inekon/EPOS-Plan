@@ -49,7 +49,7 @@ Der Abschnitt stellt die Energie-Ergebnisse von Stammprojekt und Varianten gegen
 Die Zeilen sind in Gruppen geordnet, die Einheit steht im Zeilenkopf. In der Vorgabe stehen offen in der Tabelle:
 * '''Bedarf''' – Wärmebedarf gesamt und davon Heizung, Brauchwasser und Prozesswärme, Wärmelast, Kältebedarf und Kältelast, Strombedarf und Stromlast.
 * '''Wärmeerzeugung''' – die Wärme je Erzeuger: Wärmepumpe, BHKW, Spitzenkessel, Solarthermie.
-* '''Strom''' – Stromerzeugung von BHKW und Photovoltaik, Netzeinspeisung, PV-Eigenverbrauchsquote und Autarkiegrad.
+* '''Strom''' – Stromerzeugung von BHKW und Photovoltaik, Netzeinspeisung, Einspeisung BHKW, Abregelung PV (nur mit Abregelung), Standby Speichersystem in kWh/a (nur mit Standby-Verbrauch), PV-Eigenverbrauchsquote und Autarkiegrad. Fehlt einem älteren Ergebnis die Einspeisung BHKW, nimmt die Zeile den Wert der Wirtschaftlichkeitsrechnung; ohne ihn steht „—“.
 * '''Endenergie''' – Brennstoffeinsatz und Netzbezug Strom, darunter je Energieträger eine Zeile ''Endenergie <Träger>'' mit der Menge in MWh/a aus dem Kostennachweis, ohne Kosten. Der Strom aus dem Netz steht nur als ''Netzbezug Strom''. Rechnet eine Kälteerzeugung ihren Strom mit einem eigenen Energieträger ab, steht diese Menge als ''Endenergie <Träger> (Kältestrom)''. Führt nur eine Version einen Träger, zeigen die übrigen einen Gedankenstrich.
 * '''Deckung''' – Wärmedeckung der Wärmepumpe, ungedeckter Wärmebedarf und die Deckungsgrade je Bedarfsart.
 * '''Effizienz''' – die Jahresarbeitszahl der Wärmepumpe, die Jahresarbeitszahl Kälte und die Vollbenutzungsstunden der Erzeuger.

@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-10-17_R58_Kaeltesummen`](../../../Referenzlaeufe/2026-10-17_R58_Kaeltesummen/);
+> [`Referenzlaeufe/2026-10-17_R59_Ergebnisreihen`](../../../Referenzlaeufe/2026-10-17_R59_Ergebnisreihen/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -103,6 +103,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-10-14_R55_KaeltebedarfDezentral` | 14.10.2026 | Basis mit dem Referenzprojekt 1072 (Kältebedarfsprofile und dezentrale Deckung, Stufe K6 des Konzepts Kältebedarf), auf Linux eingefroren; Testdatenbank `aee043d0…` (Schemastand 227), Nachträge bis Schemastand 235 (`3478881f…`); siebenunddreißig Projekte, 1 205 CSV, 8 259 Skalare — abgelöst durch R56 am 16.10.2026 | [`2026-10-14_R55_KaeltebedarfDezentral/protokoll.txt`](2026-10-14_R55_KaeltebedarfDezentral/protokoll.txt) |
 | `2026-10-16_R56_Wasserkosten` | 16.10.2026 | Basis nach Schemaschritt 235 (KB-7, Wasserkosten des Rückkühlwerks) mit den zwei Schlüsseln des Kältedeckungsgrads von 1072, auf Linux eingefroren; Testdatenbank `3478881f…` (Schemastand 235); siebenunddreißig Projekte, 1 205 CSV, 8 261 Skalare — abgelöst durch R57 am 16.10.2026 | [`2026-10-16_R56_Wasserkosten/protokoll.txt`](2026-10-16_R56_Wasserkosten/protokoll.txt) |
 | `2026-10-16_R57_Schnellaufheizung` | 16.10.2026 | Basis mit dem Referenzprojekt 1073 (Schnellaufheizung, Stufe SA4), auf Linux eingefroren; Testdatenbank `75fb0a61…` (Schemastand 237), Nachtrag bis Schemastand 238 (`20c0a3fe…`); achtunddreißig Projekte, 1 233 CSV, 8 596 Skalare — abgelöst durch R58 am 17.10.2026 | [`2026-10-16_R57_Schnellaufheizung/protokoll.txt`](2026-10-16_R57_Schnellaufheizung/protokoll.txt) |
+| `2026-10-17_R58_Kaeltesummen` | 17.10.2026 | Basis mit den ungerundet gespeicherten Kältesummen der Ergebnistabellen (Anwenderentscheid vom 16.10.2026, Punkt 8d), auf Linux eingefroren; Testdatenbank `c8befb51…` (Schemastand 238); achtunddreißig Projekte, 1 233 CSV, 8 596 Skalare — abgelöst durch R59 am 17.10.2026 | [`2026-10-17_R58_Kaeltesummen/protokoll.txt`](2026-10-17_R58_Kaeltesummen/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -6066,5 +6067,104 @@ Projekt 1072 und `EPOS.Kern.Tests/SchnellaufheizungReferenzprojektWacheTests` di
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063,1064,1065,1066,1067,1068,1069,1070,1071,1072,1073 \
 >   --ziel Referenzlaeufe/2026-10-16_R57_Schnellaufheizung
 > ```
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R58 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 17.10.2026 die Basis R58 beschrieben — den Anlass (Anwenderentscheid vom 16.10.2026, Punkt 8d: die Kältespalten der Ergebnistabellen werden ungerundet gespeichert) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`.
+
+**Abgelöst wurde R58 durch `2026-10-17_R59_Ergebnisreihen`** (Welle EB „Ergebnisreihen“, Schemaschritt 239, Anwenderentscheide vom 17.10.2026): Der Lauf schreibt die Einspeisung des BHKW, den Standby des Speichersystems und die PV-Abregelung als Jahressummen in die Ergebniszeilen; der Rechenweg ist unverändert. Gegen R58 (nach dem Nachtrag „8d einheitlich“, zwölf `aggregate.csv` nachgeführt) ist der Vergleich der 38 Projekte mit `--ohne BHKW.Stromeinspeisung,Photovoltaik.Abregelung` PASS (13 025 990 Werte); die 34 `aggregate.csv` der BHKW- und PV-Projekte tragen die zwei neuen Schlüssel, alle übrigen CSV sind byte-gleich. Testdatenbank `5bfedf09…` (Schemastand 239).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-10-17_R58_Kaeltesummen/`** — **achtunddreißig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063, 1064, 1065, 1066, 1067, 1068, 1069, 1070, 1071, 1072, 1073), **1 233 CSV**, **8 596 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 17.10.2026, Stand `3d08644b4`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **238**, 109 604 864 Byte, LFS-SHA-256 `c8befb51…`, mit den Projekten 1053 bis 1073,
+dem erfundenen Typtagsatz und den Satteldächern von 1052 und 1054; die Nachträge der Schemaschritte unten sind darin
+enthalten). Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065, 1066 bis 1071 und 1073) jeden Push und rechnet dieselben Projekte
+ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045 (Feiertage zählen im
+Zapfkalender als Sonntag und liegen nach der Konvention des Gemeinjahrs im Wochentagsraster der Klimaregion), `EPOS.Kern.Tests/FeiertageTests` die Konvention selbst,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049 samt der Anker (genutzte Solarwärme,
+Überschuss, mittlere Arbeitstemperatur des Felds), `EPOS.Kern.Tests/StromViertelstundenTests` die PV-Bilanz der
+Projekte 1045 und 1046 (Erzeugung, Einspeisung, Restbezug),
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
+die Kesselstunden von Projekt 1024, `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023 und 1007,
+das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des Referenzprojekts 1050,
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` das Brennwertkennzeichen der Projektkessel,
+`EPOS.Kern.Tests/StromverbraucherZuordnungTests` die Stromverbraucher-Zuordnung über die ID an 1017, 1043 und
+1046, `EPOS.Kern.Tests/BhkwLeistungsgrenzeTests` die Rangfolge der BHKW-Untergrenze (Anlagenfeld, Katalog,
+Projekt) in allen drei Betriebsarten, `EPOS.Kern.Tests/KonditionierungReferenzprojektWacheTests` die Kalender,
+die Nachtzeile der Lüftung und die Aufheizoptimierung von Projekt 1051 und
+`EPOS.Kern.Tests/ZonenReferenzprojektWacheTests` die Zonen von Projekt 1052 und `EPOS.Kern.Tests/ZonenHeizkreisReferenzprojektWacheTests` Kopplung, Heizkurve und die
+Zonenübergabe von Projekt 1054, `EPOS.Kern.Tests/KaeltemaschineReferenzprojektWacheTests` die Kältemaschine von Projekt 1055
+`EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests` Sperrzeit, Zeitprogramme, Vorlaufgrenze und Komfortstunden von
+Projekt 1056, `EPOS.Kern.Tests/ErdsondeReferenzprojektWacheTests` die Erdreichquellen der Referenzprojekte und das
+Sondenfeld von Projekt 1057 und `EPOS.Kern.Tests/Ak3ReferenzprojektWacheTests` Stufe AK3, Heizungspuffer, Raumeinfluss
+und Kennzahlen des Kreises von Projekt 1058, `EPOS.Kern.Tests/Ak3KReferenzprojektWacheTests` die Kälteseite im Kreis
+von Projekt 1059, `EPOS.Kern.Tests/KuehlkurveReferenzprojektWacheTests` die Kühlkurve von Projekt 1061 und
+`EPOS.Kern.Tests/ZonenKuehlkurveReferenzprojektWacheTests` die Kühlübergabe je Zone von Projekt 1062 und
+`EPOS.Kern.Tests/UebergabegrenzeReferenzprojektWacheTests` Übergabegrenze, Betriebsbereiche, Bivalenzpunkte und die
+Rücklaufstufe „Vorwärmer“ von Projekt 1060 samt Rücklauf- und Spreizungsgrenze und
+`EPOS.Kern.Tests/KaeltemaschineTeillastReferenzprojektWacheTests` Teillastkurve, Takten und Gütegrad-Extrapolation der
+Kältemaschine von Projekt 1063 und `EPOS.Kern.Tests/FreieKuehlungReferenzprojektWacheTests` die freie Kühlung über die
+Wärmequelle von Projekt 1064, `EPOS.Kern.Tests/VorheizReferenzprojektWacheTests` die berechnete Vorheizzeit von
+Projekt 1065 und `EPOS.Kern.Tests/ZapfprofilOptionenReferenzprojekteWacheTests` die Zapfprofile der Projekte 1066 bis
+1071 samt Generator-Bilanz und den eingefrorenen Auslegungswerten von 1071 und
+`EPOS.Kern.Tests/KaelteDezentralReferenzprojektWacheTests` die Kältebedarfsprofile und die dezentrale Deckung von
+Projekt 1072 und `EPOS.Kern.Tests/SchnellaufheizungReferenzprojektWacheTests` die Schnellaufheizung von Projekt 1073. 1050, 1052, 1054, 1055, 1056, 1057, 1059, 1061, 1062, 1064 und 1072 stehen nicht in der CI-Auswahl;
+`Werkzeuge/Gate/gate_linux.sh` rechnet alle achtunddreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass: Kältespalten ungerundet (Anwenderentscheid vom 16.10.2026, Punkt 8d).** Die Kältespalten der
+> Ergebnistabellen — `Deckung_Kuehlung` der Erzeugerzeilen, `Kaelteproduktion_WP`, `Stromverbrauch_Kuehlung`, Kälte und
+> Strom der Kältemaschinen — werden ungerundet gespeichert (`Waermebedarf_Kuehlung` bleibt gerundet), damit Übersicht und
+> Kennzahlenkatalog Deckungsgrad und Jahresarbeitszahl der Kälte aus einer Rechnung zeigen. Der Referenzlauf der
+> achtunddreißig Projekte gegen R57 ist für 30 Projekte PASS; die acht Projekte mit Kühlbetrieb der Wärmepumpe weichen je
+> in `aggregate.csv`, Schlüssel `Waermepumpe.Kaelteproduktion_WP`, außerhalb der Toleranz ab:
+>
+> | Projekt | R57 | R58 | Faktor der Toleranz |
+> |---|---|---|---|
+> | 1017 | 4,05 | 4,05051694 | 1,276 |
+> | 1047 | 3,83 | 3,82939092 | 1,590 |
+> | 1056 | 3,77 | 3,76627292 | 9,886 |
+> | 1058 | 3,81 | 3,80818165 | 4,773 |
+> | 1060 | 3,83 | 3,82873151 | 3,312 |
+> | 1061 | 3,83 | 3,83047193 | 1,232 |
+> | 1062 | 3,91 | 3,90538151 | 11,812 |
+> | 1064 | 4,05 | 4,05051694 | 1,276 |
+>
+> Innerhalb der Toleranz ändern sich in denselben Dateien `Waermepumpe.Stromverbrauch_Kuehlung` (alle acht) und
+> `Waermepumpe.Deckung_Kuehlung` (1056 98,39 → 98,3947398, 1061 100 → 99,9999998, dazu 1072 50,25 → 50,2513151).
+> Byte-verschieden sind allein diese neun `aggregate.csv`; die übrigen 1 224 CSV sind gegen R57 byte-gleich, Zahl der
+> CSV (1 233) und der Skalare (8 596) bleibt. Kein anderer Schlüssel ändert sich; die Bereinigung der
+> Wirtschaftlichkeitsergebnisse 1029, 1043 und 1044 der Testdatenbank (8e) berührt kein Referenzprojekt. Herleitung im
+> `protokoll.txt` der Basis.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063,1064,1065,1066,1067,1068,1069,1070,1071,1072,1073 \
+>   --ziel Referenzlaeufe/2026-10-17_R58_Kaeltesummen
+> ```
+>
+> **Nachtrag — 8d einheitlich (Anwenderentscheid vom 17.10.2026), Basis im selben Ordner nachgeführt.** Ungerundet gespeichert werden nun auch die Kältespalten der Modulzeile der Wärmepumpe (`Kaelteproduktion`, `Stromverbrauch_Kuehlung`, `Kaeltestrom_Netzbezug`, `FreieKuehlung_MWh`), `FreieKuehlung_MWh` der Wärmepumpe, `Entladung_Kuehlung` der Kältespeicher, die Kältemengen der Kältemaschine (`FreieKuehlung_MWh`, `Unterdeckung_MWh`, `TeilFreikuehlung_MWh`) und die Mengen und Spitzen der Split-Zeilen (`Tab_ErgebnisKaelteDezentral`); die Bedarfsseite (`Waermebedarf_Kuehlung`, `Kaeltebedarf*`, `StromDezentralMwh`) bleibt gerundet. Der Lauf der achtunddreißig Projekte gegen R58 vor dem Nachtrag ist für 30 Projekte PASS; acht weichen je in `aggregate.csv`, Schlüssel `WaermepumpeModul[0].Kaelteproduktion`, außerhalb der Toleranz ab:
+>
+> | Projekt | R58 bisher | R58 nachgeführt | Faktor der Toleranz |
+> |---|---|---|---|
+> | 1017 | 4,05 | 4,05051694 | 1,276 |
+> | 1047 | 3,83 | 3,82939092 | 1,590 |
+> | 1056 | 3,77 | 3,76627292 | 9,886 |
+> | 1058 | 3,81 | 3,80818165 | 4,773 |
+> | 1060 | 3,83 | 3,82873151 | 3,312 |
+> | 1061 | 3,83 | 3,83047193 | 1,232 |
+> | 1062 | 3,91 | 3,90538151 | 11,812 |
+> | 1064 | 4,05 | 4,05051694 | 1,276 |
+>
+> Innerhalb der Toleranz ändern sich in denselben Dateien `WaermepumpeModul[0].Stromverbrauch_Kuehlung` und `Kaeltestrom_Netzbezug` (alle acht), bei 1064 `Waermepumpe.FreieKuehlung_MWh` und `WaermepumpeModul[0].FreieKuehlung_MWh` (0,28 → 0,277361939), dazu `Pufferspeicher[…].Entladung_Kuehlung` bei 1055, 1059, 1063 und 1072. Byte-verschieden sind allein diese zwölf `aggregate.csv`; die übrigen 1 221 CSV sind byte-gleich, Zahl der CSV (1 233) und der Skalare (8 596) bleibt. Nachgeführt wurden nur diese zwölf Dateien.
 
 <!-- ÜBERNOMMENER ABSCHNITT, ENDE -->

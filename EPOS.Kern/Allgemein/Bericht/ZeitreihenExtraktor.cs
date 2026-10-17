@@ -422,7 +422,7 @@ namespace WindowsFormsApplication1
         /// Der Eigenverbrauch des Speichersystems je Viertelstunde [kW] (SP1): Standby aus PV plus aus dem
         /// Netz, im Flottenpfad der Hilfsverbrauch der Einheiten; <c>null</c> ohne Reihe.
         /// </summary>
-        private static double[] SpeichersystemEigenverbrauchKw(SimulationControl sim)
+        internal static double[] SpeichersystemEigenverbrauchKw(SimulationControl sim)
         {
             if (sim.SpeichersystemStandbyAusPvKw != null && sim.SpeichersystemStandbyAusNetzKw != null &&
                 sim.SpeichersystemStandbyAusPvKw.Length == sim.SpeichersystemStandbyAusNetzKw.Length)

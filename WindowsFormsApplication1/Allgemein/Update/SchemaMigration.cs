@@ -5645,6 +5645,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_KLIMA_ROHWERTE = KlimaRohwerteSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="ErgebnisreihenSchema.SCHRITT"/> — <b>Ergebnisreihen</b> (EB-1): <c>Stromeinspeisung</c> an
+        /// <c>Tab_ErgebnisBHKW</c>, <c>Abregelung</c> an <c>Tab_ErgebnisPhotovoltaik</c>, <c>Eigenverbrauch_System</c> an
+        /// <c>Tab_ErgebnisStromspeicher</c> (NULL = nicht erhoben). Schritt 239, hängt an 238.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Der Rechenweg bleibt unverändert, der Lauf schreibt nur zusätzlich,
+        /// was er schon rechnet; Altergebnisse bleiben leer.</para>
+        /// </summary>
+        public const int SCHRITT_ERGEBNISREIHEN = ErgebnisreihenSchema.SCHRITT;
+
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -8333,6 +8343,15 @@ namespace WindowsFormsApplication1
                         "Der Import verwarf Luftdruck, Wind, Wasserdampfgehalt, Ausstrahlung und Qualitaetskennung. " +
                         "KEIN Rechenergebnis aendert sich - Bestandsregionen bleiben ohne Rohwerte.",
                         Schritt_KlimaRohwerte),
+            // EB-1: Ergebnisreihen - BHKW-Einspeisung, Standby des Speichersystems, PV-Abregelung als Jahressummen im
+            // Ergebnis. Quelle ist ErgebnisreihenSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_ERGEBNISREIHEN,
+                        "Tab_ErgebnisBHKW: Stromeinspeisung; Tab_ErgebnisPhotovoltaik: Abregelung; " +
+                        "Tab_ErgebnisStromspeicher: Eigenverbrauch_System",
+                        "Einspeisung des BHKW, Standby des Speichersystems und PV-Abregelung rechnete der Lauf, der " +
+                        "Ergebnisbaum fuehrte sie nicht. KEIN Rechenergebnis aendert sich - der Lauf schreibt nur " +
+                        "zusaetzlich, was er schon rechnet; Altergebnisse bleiben leer.",
+                        Schritt_Ergebnisreihen),
         };
 
         /// <summary>
@@ -16814,6 +16833,59 @@ namespace WindowsFormsApplication1
             l.Notiz(nr + ": Rohwerte des Klimaimports - " +
                     (angelegt == 0 ? "Spalten standen bereits." : angelegt + " Spalte(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Ergebnisreihen" (EB-1, Schritt <see cref="ErgebnisreihenSchema.SCHRITT"/>) — die Anweisungen bei
+        /// <see cref="ErgebnisreihenSchema"/>. <b>Wiederholbar, ergebnisneutral.</b>
+        /// </summary>
+        private static bool Schritt_Ergebnisreihen(Lauf l)
+        {
+            string nr = ErgebnisreihenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in ErgebnisreihenSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = ErgebnisreihenSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!ErgebnisreihenSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Stromeinspeisung, Abregelung und Eigenverbrauch_System stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Ergebnisreihen an BHKW, Photovoltaik und Stromspeicher - " +
+                    (handgriffe == 0 ? "stand bereits." : "Spalten angelegt.") + " KEIN Rechenergebnis aendert sich.");
             return true;
         }
 

@@ -266,6 +266,18 @@ namespace WindowsFormsApplication1
                                           arb.VerkaufAcKwh));
             }
 
+            // EB-3: der Standby des Speichersystems als LETZTE Spalte je Intervall [kWh] (dieselbe Reihe wie im
+            // Betriebsbild, mal Intervalldauer) - die bisherigen Spalten bleiben, wie sie waren, der Rückweg eigener
+            // Exporte damit auch. Ohne Standby keine Spalte.
+            double[] standbyKw = erg.SoCKwh == null ? null : SpeicherStandbyKw(erg.SoCKwh.Length);
+            if (standbyKw != null)
+            {
+                SpeicherParameter par = sim.Speicherkontext?.Parameter;
+                double dt = par != null && par.DtH > 0.0 ? par.DtH : StromspeicherSimCtrl.INTERVALL_H;
+                spalten.Add(new CsvSpalte(MyResource.Resource.SP_CSV_STANDBY,
+                                          standbyKw.Select(kw => kw * dt).ToArray()));
+            }
+
             CsvExportClass.Export(
                 string.Format(MyResource.Resource.SP_DATEI_STROMSPEICHER, m_ID_Projekt),
                 _waermebedarf.Stundentemperatur, spalten, true);
@@ -388,6 +400,19 @@ namespace WindowsFormsApplication1
                         if (netz?.EinspeisungKw != null)
                             spalten.Add(new CsvSpalte(MyResource.Resource.CHART_LEGENDE_NETZEINSPEISUNG,
                                                       netz.EinspeisungKw));
+                        break;
+                    case REIHE_BHKW_EINSPEISUNG:
+                        // EB-2: dieselben Reihen wie im Bild - nur, wenn gewählt.
+                        netz ??= SimulationErgebnisCtrl.NetzreihenViertelstunde(sim);
+                        if (netz?.BhkwEinspeisungKw != null)
+                            spalten.Add(new CsvSpalte(MyResource.Resource.CHART_LEGENDE_BHKW_EINSPEISUNG,
+                                                      netz.BhkwEinspeisungKw));
+                        break;
+                    case REIHE_PV_ABREGELUNG:
+                        netz ??= SimulationErgebnisCtrl.NetzreihenViertelstunde(sim);
+                        if (netz?.PvAbregelungKw != null)
+                            spalten.Add(new CsvSpalte(MyResource.Resource.CHART_LEGENDE_PV_ABREGELUNG,
+                                                      netz.PvAbregelungKw));
                         break;
                     case "PROFIL_LASTGANG":
                         spalten.Add(new CsvSpalte(MyResource.Resource.CHART_LEGENDE_PROFIL_LASTGANG,
