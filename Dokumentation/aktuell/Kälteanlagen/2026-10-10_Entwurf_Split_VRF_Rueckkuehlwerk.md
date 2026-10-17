@@ -7,7 +7,7 @@ Multisplit bis 12 kW (Stufe 5 der [Recherche](2026-10-08_Recherche_Kaelteanlagen
 **K-D**) und VRF (Stufe 7, hier **K-E**) kommen **nur als rechnende Anlagenart**; der Ausschluss von Luftführung und
 Kältemitteln im [Kühlkonzept](../Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) §14 ist für **Direktverdampfer** und für
 das **Kältemittel als Stammdatum** aufgehoben; das **Rückkühlwerk als eigenes Glied** (**K-F**) kommt nach FK, E33/K8 wird
-fortgeschrieben, die Vorgaben sind die heutigen Festwerte; Absorption bleibt zurückgestellt; der Katalog bekommt das Feld
+fortgeschrieben, die Vorgaben sind die heutigen Festwerte; Absorptions- und Adsorptionskälte: siehe [Konzept Sorptionskälte](2026-10-17_Konzept_Sorptionskaelte.md) (E168); der Katalog bekommt das Feld
 Geräteart (K-A, Schemaschritt 211, parallel); die Kältefolge wird konfigurierbar (KB-D, Schemaschritt 212).
 
 Grundlagen: Konzeptprüfung (Gerätearten-Matrix, 5.1/5.2), Recherche (Abschnitte „Split, Multisplit und VRF“ und
@@ -534,7 +534,7 @@ der iOS-Hülle); der Nachweis ist der grüne Kern-Lauf.
 Nicht Gegenstand: Kanalgeräte und Rooftops (RLT, §14), latente Last und Entfeuchtung (K5), Heizen am Raum und
 VRF-Wärmerückgewinnung (Frage 4), direkte Treibhauswirkung des Kältemittels (Füllmenge, Leckage) — das Kältemittel bleibt
 beschreibendes Stammdatum mit GWP aus K-A, eine Warnung nach den Stichtagen der F-Gas-Verordnung (VO (EU) 2024/573) ist
-Ausbau von K-A —, Absorption (zurückgestellt), Kältenetzverluste, der EPREL-Abruf (K-H). Normen nur als Einordnung:
+Ausbau von K-A —, Absorptions- und Adsorptionskälte (siehe [Konzept Sorptionskälte](2026-10-17_Konzept_Sorptionskaelte.md), E168), Kältenetzverluste, der EPREL-Abruf (K-H). Normen nur als Einordnung:
 EN 14825 (Teillast und saisonale Kennzahlen), EN 14511 (Volllastprüfung), EN 1048 (Trockenkühler), VO 206/2012
 (Ökodesign Raumklimageräte), VO 626/2011 (Energieverbrauchskennzeichnung), VO 2016/2281 (Kaltwassersätze und Luftkühler
 über 12 kW), VDI 2078 (Kühllast, nur Einordnung), 42. BImSchV (Verdunstungskühlanlagen).

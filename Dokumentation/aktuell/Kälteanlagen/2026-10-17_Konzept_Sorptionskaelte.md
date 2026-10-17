@@ -320,17 +320,22 @@ Adsorber gibt es keine Kristallisation; die Grenze KALTWASSER gilt wie bei LiBr 
   der Bauart `ADSORPTION_SILIKAGEL` oder `ADSORPTION_ZEOLITH` braucht Datenblattpunkte (Herkunft `DATENBLATT` oder
   `TABELLE`); `TYPKENNFELD` wird für Adsorption benannt abgelehnt.
 - **Mindestzahl Stützstellen:** sechs Parameter, je Punkt zwei Gleichungen (Kälteleistung, Antriebswärme). Verlangt werden
-  **mindestens fünf Punkte** samt Nennpunkt, darunter je mindestens zwei verschiedene Antriebs-, Kühlwasser- und
-  Kaltwassertemperaturen — sonst sind a (Kühlwasser) und e (Kaltwasser) nicht bestimmt. Drei Punkte träfen die sechs
-  Parameter genau und ließen keine Güte zu; die zwei weiteren machen die Anpassung prüfbar.
+  **mindestens fünf Punkte** samt Nennpunkt, darunter je mindestens zwei verschiedene Antriebs- und Kühlwassertemperaturen — sonst sind s/r und a (Kühlwasser)
+  nicht bestimmt. Drei Punkte träfen die sechs Parameter genau und ließen keine Güte zu; die zwei weiteren machen die
+  Anpassung prüfbar.
+- **Eine Kaltwassertemperatur ist zugelassen (SOK-Q13).** Nennt das Datenblatt nur eine Kaltwassertemperatur, rechnet die
+  Maschine mit ihr als fester Größe: Die Kaltwasserabhängigkeit der Gleichung entfällt (e wird nicht angepasst), die
+  Parameteranpassung nutzt nur Antrieb und Kühlwasser. Verlangt die Simulation eine andere Kaltwassertemperatur, wird auf
+  den Datenblattwert geklemmt; die Stunden werden gezählt und gemeldet. Mit mindestens zwei Kaltwassertemperaturen bleibt
+  die volle Anpassung.
 - **Anpassung:** kleinste Quadrate wie 8.2 ([L3]; Kälte- und Wärmegleichung getrennt, a und e gemeinsam); verlangt sind
   der volle Rang der Regressionsmatrix, höchstens 5 % Abweichung am Nennpunkt, höchstens 10 % an jedem Punkt (Vorgabe, Festwert
   in SOK-1), ζ an jedem Punkt im Band der Bauart und s_E, s_G > 0.
 - **Einsatzgrenzen sind Pflicht** (`Antrieb_Min_C`, `Antrieb_Max_C`, `Kuehlwasser_Min_C`, `Kuehlwasser_Max_C` aus dem
   Datenblatt); es gibt keine Vorgabe. Linear fortgesetzt wird nur innerhalb dieser Grenzen.
 - **Ablehnung:** Fehlt eine Bedingung, wird das Gerät beim Speichern und beim Import benannt abgewiesen („Adsorption
-  braucht mindestens fünf Datenblattpunkte mit verschiedenen Antriebs-, Kühlwasser- und Kaltwassertemperaturen und die
-  Einsatzgrenzen; ein Typkennfeld gibt es nicht“); der Lauf rechnet eine abgewiesene Maschine nicht und meldet sie.
+  braucht mindestens fünf Datenblattpunkte mit verschiedenen Antriebs- und Kühlwassertemperaturen (die Kaltwassertemperatur
+  darf einzig sein) und die Einsatzgrenzen; ein Typkennfeld gibt es nicht“); der Lauf rechnet eine abgewiesene Maschine nicht und meldet sie.
 
 ---
 
@@ -523,7 +528,8 @@ Senken.
 - **Neue Senkeneigenschaft „Mitnahme“ (nicht startauslösend).** Die Antriebssenke einer wärmegeführten Anlage geht nicht
   in die Lauf- und Leistungsentscheidung der Quelle ein: Die Wärmekaskade entscheidet Start, Laufzeit und Takt der Quelle
   allein mit ihren übrigen Senken. Erst danach bedient die Quelle die Mitnahmesenke mit dem, was in der Stunde übrig ist —
-  beim BHKW, das ohnehin läuft, die Differenz zwischen seiner Leistung und der Wärme an die übrigen Senken; beim
+  beim BHKW, das ohnehin läuft, die Differenz zwischen seiner Leistung und der Wärme an die übrigen Senken — es moduliert
+  bis zur Leistung des BHKW hoch, löst nie einen Start aus, und Strom und Brennstoff des BHKW steigen entsprechend; beim
   Kollektorfeld der Solarertrag, den Direktsenken und Puffer nicht abnehmen. Eine stehende Quelle liefert nichts; die
   Mitnahme verlängert keine Laufzeit und zählt keinen Start. Die Mitnahmesenke steht deshalb immer **hinter allen**
   Senken der Quelle (Senkenrang nur unter mehreren Mitnahmesenken). Kessel: benannt abgelehnt. Die Eigenschaft folgt aus
@@ -688,7 +694,7 @@ Katalogschlüssel und Prüfsumme über die Katalogfassung, Register „KM“). S
 |---|---|---|
 | Absorption einstufig | Kühn/Ziegler (10 kW) und Puig-Arnavat (4,5 / 15 kW), Satznamen neutralisiert; der große Satz aus [D1] erst nach Klärung des Fehlers (3.3) | 15, 50, 150 kW; Klassen ab 500 kW erst mit einem geprüften großen Satz — ein auf das Hundertfache skaliertes Kleingerät überschätzt die relativen Verluste r_G |
 | Absorption zweistufig | Puig-Arnavat (1 163 kW) | 500, 1 500 kW |
-| Adsorption | **keines** — kein freier Parametersatz; freigegeben nur mit Anpassung an Datenblattpunkte (4.6, SOK-Q4) | — |
+| Adsorption | **keines** — kein freier Parametersatz; freigegeben nur mit Anpassung an Datenblattpunkte, Kaltwassertemperatur darf einzig sein (4.6, SOK-Q4, SOK-Q13) | — |
 | NH₃/H₂O | offen | — |
 
 Aus Nennkälteleistung, ζ_N und Nennpunkt eines Datenblatts entsteht ein **Typkennfeld aus Nennwerten**: a und e der
@@ -719,6 +725,9 @@ Kaltwassertemperatur samt Spreizung, Rückkühlwärme (nur zur Bilanzprobe), Hil
 min./max., Kühlwasser min./max.), Mindestteillast. **An der Anlage:** Antriebsweg, Träger oder Quellen, Antriebsvorlauf,
 Führung, Freigabe, Rückkühlwerk.
 
+**Adsorption:** mindestens fünf Punkte mit je mindestens zwei Antriebs- und Kühlwassertemperaturen; eine einzige
+Kaltwassertemperatur ist zugelassen (4.6).
+
 **Empfohlen:** zwei bis fünf Punkte aus den Leistungskorrekturdiagrammen (Kälteleistung und ζ bei anderer Heiz- bzw.
 Kühlwassertemperatur) — sie machen aus dem Typkennfeld ein Gerätekennfeld.
 
@@ -727,9 +736,10 @@ Kühlwassertemperatur) — sie machen aus dem Typkennfeld ein Gerätekennfeld.
 Ohne Korrekturpunkte: a und e der Bauart, s und r aus Nennpunkt und ζ_N (7.4), Vorgaben für Grenzen, Anfahrverlust und
 Mindestlaufzeit. Mit Korrekturpunkten: Anpassung aller sechs Parameter nach der Methode der kleinsten Quadrate
 ([L3]; Kälte- und Wärmegleichung getrennt, a und e gemeinsam), Rückfall auf a und e der Bauart, wenn die Punkte sie
-nicht bestimmen (alle bei derselben Kaltwassertemperatur → e bleibt Vorgabe). Anpassungsgüte und Herkunft gehen ins
+nicht bestimmen (alle bei derselben Kaltwassertemperatur → e bleibt Vorgabe; bei Adsorption entfällt e ganz, 4.6). Anpassungsgüte und Herkunft gehen ins
 Leseprotokoll und in `Kennlinie_Guete`; eine Abweichung über 5 % am Nennpunkt ist ein Fehler der Eingabe. Für
-Adsorption gibt es diesen Rückfall nicht: ohne die Punkte aus 4.6 keine Anpassung und kein Gerät.
+Adsorption gibt es diesen Rückfall nicht: ohne die Punkte aus 4.6 keine Anpassung und kein Gerät; eine einzige Kaltwassertemperatur ist dort
+zugelassen (feste Größe, Klemmung, Zählung und Meldung).
 
 ### 8.3 Import
 
@@ -873,6 +883,8 @@ Entschieden vom Anwender am 17.10.2026, jede Frage einzeln (Entscheid **E168**).
 | **SOK-Q9** | Referenzprojekte als Kopien von 1055, das gekoppelte in der CI-Auswahl? | **Ja** — 1055 trägt BHKW, Kältemaschine, Rückkühler und Kältespeicher; das solare Projekt (Kopie von 1049) folgt mit SOK-7 | E168 — Anwender 17.10.2026: wie empfohlen: Referenzprojekte als Kopien von 1055, das gekoppelte in der CI-Auswahl |
 | **SOK-Q10** | Hinweis jetzt: Kältemaschinen mit Geräteart `ABSORPTION` rechnen als elektrische Maschine? | **Ja**, als Hinweis ohne Zahlenwirkung in SOK-0 — schützt vor einer falsch eingespielten Maschine, bis SOK rechnet | E168 — Anwender 17.10.2026: wie empfohlen: Hinweis jetzt, ohne Zahlenwirkung (gebaut mit SOK-0) |
 | **SOK-Q11** | Abwärme mit stündlicher Verfügbarkeit (Lastgang) als Antrieb? | **Später**; erste Stufe EXTERN mit Träger und Anschlussleistung | E168 — Anwender 17.10.2026: wie empfohlen: Abwärme mit Lastgang später |
+| **SOK-Q12** | Mitnahme beim BHKW (wärmegeführt): darf ein ohnehin laufendes BHKW für die Sorptionsmaschine bis zu seiner Leistung hochmodulieren? | **Ja** — nie startauslösend; Strom und Brennstoff steigen entsprechend (6.4) | E168 — Anwender 17.10.2026: bestätigt, wie im Konzept: ein ohnehin laufendes BHKW moduliert bis zu seiner Leistung hoch; die Sorptionsmaschine löst nie einen Start aus; Strom und Brennstoff des BHKW steigen |
+| **SOK-Q13** | Adsorption mit nur einer Kaltwassertemperatur im Datenblatt zulassen? | **Ja**, mit fester Kaltwassertemperatur, Klemmung, Zählung und Meldung (4.6) | E168 — Anwender 17.10.2026: **zugelassen**: die Maschine rechnet mit der Kaltwassertemperatur des Datenblatts als fester Größe; andere verlangte Werte werden geklemmt, die Stunden gezählt und gemeldet; die Pflicht „je mindestens zwei Kaltwassertemperaturen“ entfällt dafür, für Antrieb und Kühlwasser bleiben je mindestens zwei Werte Pflicht; übrige Prüfregeln bleiben |
 
 ---
 
@@ -884,7 +896,7 @@ Entschieden vom Anwender am 17.10.2026, jede Frage einzeln (Entscheid **E168**).
 | Rückkühltemperatur bestimmt die Kälteleistung stark (5.3) | zu kleines oder trockenes Rückkühlwerk überschätzt die Kälte | Prüfregel Rückkühlwerk, Grenzstunden, lastabhängige Annäherung (K-F) |
 | Antriebstemperatur in der Vorstufe nur Plan (Gerätedaten der Quellen) | Kollektorfeld liefert kühler als geplant, Antrieb teils nicht verwertbar | Nachstufe begrenzt in einem Schritt; nicht verwertbare Wärme gebucht, gezählt, gemeldet |
 | Mitnahme (wärmegeführt) braucht eine neue Senkeneigenschaft | Eingriff in die Kaskadenschleife | in SOK-3b als nicht startauslösende Senke hinter allen Senken der Quelle, nur betreten mit Sorptionsanlage; Proben: Starts und Laufstunden der Quelle unverändert, Kälte ≤ Bedarf |
-| Adsorption ohne freien Parametersatz, Linearität nur als Zyklusmittel und nicht am Wortlaut belegt (4.6) | Kälteleistung abseits der Datenblattpunkte unsicher | Punktepflicht mit Variation aller Temperaturen, Gütegrenzen, Einsatzgrenzen als Pflicht, benannte Ablehnung; Fundstelle in SOK-1 |
+| Adsorption ohne freien Parametersatz, Linearität nur als Zyklusmittel und nicht am Wortlaut belegt (4.6) | Kälteleistung abseits der Datenblattpunkte unsicher | Punktepflicht mit Variation von Antrieb und Kühlwasser (Kaltwasser darf einzig sein: feste Größe, Klemmung gezählt und gemeldet, SOK-Q13), Gütegrenzen, Einsatzgrenzen als Pflicht, benannte Ablehnung; Fundstelle in SOK-1 |
 | Doppelbuchung Wärme/Kälte | stille Fehler in Bilanz und Kennzahlen | Antriebsbuchung, Sorptionsprobe, Deckungsprobe (6.9) |
 
 ---
