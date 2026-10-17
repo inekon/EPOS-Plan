@@ -32,5 +32,13 @@
 * Seit 16.10.2026: In den Bedarfsprofilen vergleicht „Vergleichen…“ zwei bis drei Projektzeilen und Katalogsätze nebeneinander; Kopfzeile und Knöpfe folgen den übrigen Dialogen mit Katalogauswahl.
 * Seit 16.10.2026: Jahressummen und Jahresarbeit in MWh stehen in Auswahllisten, Katalog und Satzzeile einheitlich als ganze Zahl mit Tausendertrennzeichen.
 * Seit 16.10.2026: Achsenbeschriftungen und Texte der Ganglinien in den Bedarfs- und Ganglinien-Dialogen stehen in der Schriftgröße der Oberfläche, auch im Projektassistenten.
+* Seit 17.10.2026: In einer Variantengruppe einer Berichtsvorlage fragen Bedingungen wie „hat Tabelle …“ die Varianten der Gruppe und das Stammprojekt.
+* Seit 17.10.2026: Das Häkchen „Deckblatt“ ist nur noch ausgegraut, wenn die Word-Vorlage den Berichtstitel als Platzhalter enthält.
+* Seit 17.10.2026: Im Excel-Bericht zeigen die Diagramme die Einspeisung der Strombilanz als Nebenbalken, die Beträge an Brücke und Spanne und die Ersatzjahre des Zahlungsstroms wie der Word-Bericht.
+* Seit 17.10.2026: Deckungsgrad und Jahresarbeitszahl der Kälte zeigen in der Übersicht und im Bericht denselben Wert; die Jahresarbeitszahl Kälte gilt für alle Kälteerzeuger.
+* Seit 17.10.2026: Der Hilfsstrom von BHKW und Heizkessel geht in die CO₂-Bilanz ein, seine Stromsteuer wird angesetzt, soweit der Strompreis sie nicht enthält, und der Bericht weist Hilfsstrom, CO₂ und Stromsteuer als eigene Kennzahlen aus.
+* Seit 17.10.2026: Eine einzeln weitergegebene Variante führt am Ziel die Photovoltaik-Vergütung ihres Stammprojekts als eigene Angaben.
+* Seit 17.10.2026: Ein Wechselrichter, dem im Katalog Angaben zu MPP-Trackern oder Kurzschlussstrom fehlen, heißt beim Wechselrichtervorschlag „bedingt geeignet (Angaben fehlen)“ statt ungeeignet.
+* Seit 17.10.2026: Der Hilfe-Assistent wählt im Photovoltaik-Dialog auch Modul und Wechselrichter eines Strangs; eine ungeeignete Wahl lehnt er mit Grund ab.
 
 
