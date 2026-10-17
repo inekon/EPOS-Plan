@@ -122,6 +122,13 @@ namespace EPOS.Kern.Tests
 
         /// <summary>Die Hüllenfolge des Gebäudedialogs ohne Planvorlage und Planschritte; liefert die neue Projektkopie.</summary>
         private static async Task<int> Importieren(string pfad, string name)
+            => (await Importieren(pfad, name, Dateizonen(pfad), einzonig: false)).Kopie;
+
+        /// <summary>
+        /// Die Hüllenfolge mit einer Zonenregel; <paramref name="einzonig"/> = die Regel ergibt den Einzonenweg. Liefert die neue
+        /// Projektkopie und den Stand der Zuordnung (allgemeine Meldungsliste, Zonierung, Bauteile).
+        /// </summary>
+        private static async Task<(int Kopie, GebaeudeImportStand Stand)> Importieren(string pfad, string name, string regel, bool einzonig)
         {
             List<Z_ProjGebModel> modelle = Z_ProjGebCtrl.LiesProjekt(PROJEKT);
             IReadOnlyDictionary<string, object> gaben = GebaeudeHuelle.Gaben(PROJEKT, "", modelle, wizard: false);
@@ -130,13 +137,13 @@ namespace EPOS.Kern.Tests
             GebaeudeLesestand gelesen = await lesen(pfad, null, CancellationToken.None);
             Assert.True(gelesen.Gelesen, string.Join(" | ", gelesen.Meldungen.Select(m => m.Text)));
             var zuordnen = (Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand>)weg.Gaben["Zuordnen"];
-            GebaeudeImportStand stand = zuordnen(new GebaeudeZuordnungsanfrage(0, KLASSE_E, Keine, Zonenregel: Dateizonen(pfad)));
-            Assert.False(stand.Zonierung!.Einzonig, "Die Datei ergibt nur eine Zone: " + stand.Zonierung.Regel + " von " +
+            GebaeudeImportStand stand = zuordnen(new GebaeudeZuordnungsanfrage(0, KLASSE_E, Keine, Zonenregel: regel));
+            Assert.True(stand.Zonierung!.Einzonig == einzonig, "Regel " + regel + " ergibt " + stand.Zonierung.Regel + " von " +
                                                     string.Join(", ", stand.Zonierung.Regeln.Select(r => r.Schluessel)));
             Assert.True(stand.Bauteile!.Moeglich, stand.Bauteile.Ablehnung);
 
             var ergebnis = new GebaeudeImportErgebnis(0, KLASSE_E, name, Keine, stand.Zeilen.ToList(), AlsZone: true,
-                                                      Zonenregel: Dateizonen(pfad));
+                                                      Zonenregel: regel);
             var pruefen = (Func<GebaeudeImportErgebnis, IReadOnlyList<GebaeudeImportMeldung>>)weg.Gaben["Pruefen"];
             Assert.DoesNotContain(pruefen(ergebnis), m => m.Stufe == EPOS.UI.Bausteine.WarnStufe.Fehler);
             Assert.Null(await ((Func<GebaeudeImportErgebnis, Task<string>>)weg.Gaben["Uebernehmen"])(ergebnis));
@@ -156,9 +163,9 @@ namespace EPOS.Kern.Tests
             Z_ProjGebModel neu = modelle.Single(m => m.Gebaeudename == name);
             (bool ok, string meldung) = new WizardCtrl().Speichere_Projekt_Gebaeudeliste(PROJEKT, modelle);
             Assert.True(ok, meldung);
-            return Convert.ToInt32(DataRepository.ExecuteScalar(
+            return (Convert.ToInt32(DataRepository.ExecuteScalar(
                 "SELECT ID FROM Tab_Gebaeude WHERE ID_ProjektGebaeude = ? AND ID_Projekt = ?",
-                new DbParam("@z", neu.ID_Z), new DbParam("@p", PROJEKT)), CultureInfo.InvariantCulture);
+                new DbParam("@z", neu.ID_Z), new DbParam("@p", PROJEKT)), CultureInfo.InvariantCulture), stand);
         }
 
         /// <summary>Die Kalender- und Periodenzeilen einer Zone samt Kennungen — ändert sich bei jedem Neuschreiben.</summary>
@@ -215,8 +222,8 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Der Einzonenweg nimmt die Zeitpläne der Datei nicht — benannt (Warnung an der einen Zone) statt still. Gegenprobe: ohne
-        /// Kalender an den Räumen keine Meldung.
+        /// Der Einzonenweg (N8, E160): Tragen alle beheizten Räume denselben Kalender, nimmt die eine Zone ihn ohne Warnung; trägt ein
+        /// Raum einen anderen, nimmt sie keinen — benannt (Warnung an der einen Zone). Gegenprobe: ohne Kalender keine Meldung.
         /// </summary>
         [Fact]
         public void Der_Einzonenweg_benennt_die_nicht_uebernommenen_Zeitplaene()
@@ -225,14 +232,28 @@ namespace EPOS.Kern.Tests
             GebaeudeImportAblauf ohne = BauteilvorschlagProbe.Lesen("ifc4_haus.ifc");
             Assert.DoesNotContain(GebaeudeBauteilvorschlag.Bilden(ohne, 0, null).Meldungen,
                                   m => m.Schluessel == GebaeudeBauteilvorschlag.EINZONE_ZEITPLAENE);
+            static AbbildKonditionierung Satz(double wert)
+            {
+                var k = new AbbildKonditionierung();
+                k.Kalender.Add(new AbbildKalender(new Konditionierungskalender(Konditionierungsgroesse.Heizsoll, Kalenderangabe.AusWert(wert), null,
+                                                                               Array.Empty<Kalenderregel>()), null));
+                return k;
+            }
+            GebaeudeImportAblauf gleich = BauteilvorschlagProbe.Lesen("ifc4_haus.ifc");
+            foreach (AbbildRaum r in gleich.Abbild.Gebaeude[0].Raeume.Where(r => r.Beheizt)) r.Konditionierung = Satz(20.0);
+            GebaeudeBauteilvorschlag vg = GebaeudeBauteilvorschlag.Bilden(gleich, 0, null);
+            Assert.DoesNotContain(vg.Meldungen, x => x.Schluessel == GebaeudeBauteilvorschlag.EINZONE_ZEITPLAENE);
+            Assert.NotNull(Assert.Single(vg.Zonenkonditionierungen));
+
             GebaeudeImportAblauf mit = BauteilvorschlagProbe.Lesen("ifc4_haus.ifc");
-            var k = new AbbildKonditionierung();
-            k.Kalender.Add(new AbbildKalender(new Konditionierungskalender(Konditionierungsgroesse.Heizsoll, Kalenderangabe.AusWert(20.0), null,
-                                                                           Array.Empty<Kalenderregel>()), null));
-            foreach (AbbildRaum r in mit.Abbild.Gebaeude[0].Raeume.Where(r => r.Beheizt)) r.Konditionierung = k;
-            PruefMeldung m = Assert.Single(GebaeudeBauteilvorschlag.Bilden(mit, 0, null).Meldungen,
-                                           x => x.Schluessel == GebaeudeBauteilvorschlag.EINZONE_ZEITPLAENE);
+            List<AbbildRaum> warm = mit.Abbild.Gebaeude[0].Raeume.Where(r => r.Beheizt).ToList();
+            Assert.True(warm.Count >= 2, "Die Probe braucht zwei beheizte Räume.");
+            foreach (AbbildRaum r in warm) r.Konditionierung = Satz(20.0);
+            warm[^1].Konditionierung = Satz(21.0);
+            GebaeudeBauteilvorschlag v = GebaeudeBauteilvorschlag.Bilden(mit, 0, null);
+            PruefMeldung m = Assert.Single(v.Meldungen, x => x.Schluessel == GebaeudeBauteilvorschlag.EINZONE_ZEITPLAENE);
             Assert.Equal(PruefStufe.Warnung, m.Stufe);
+            Assert.Null(Assert.Single(v.Zonenkonditionierungen));
         }
 
         [Fact]
@@ -271,6 +292,88 @@ namespace EPOS.Kern.Tests
             // Gegenprobe: Die Zone ohne Marke nimmt die Kalender der Datei neu — mit den Perioden der Datei.
             Assert.NotEqual(dateiVorher, Kalenderbild(datei.ID));
             KalenderAngekommen(kopie, GebaeudeQuelle.FORMAT_IFC);
+        }
+
+        // ==================================================================
+        //  N8 — Einzonenweg (E160), Regel X1 der eigenen gbXML-Datei (E161), Meldung in der allgemeinen Liste
+        // ==================================================================
+
+        /// <summary>Die Einzonenregel des Formats: gbXML X4, IFC Z5.</summary>
+        private static string Einzone(string format)
+            => format == GebaeudeQuelle.FORMAT_IFC ? IfcImportProfil.ZONENREGEL_Z5 : GebaeudeImportProfil.ZONENREGEL_X4;
+
+        /// <summary>Nimmt einer beheizten Zone des Ausgangsgebäudes die Perioden des Heizkalenders — ihr Kalender weicht dann ab.</summary>
+        private static void EineZoneAbweichend(int idGebaeude)
+        {
+            ZoneModel z = new GebaeudeZonenCtrl().LesenJeGebaeude(idGebaeude).First(x => x.IstBeheizt);
+            DataRepository.ExecuteNonQuery(
+                "DELETE FROM Tab_Konditionierungsperiode WHERE ID_Kalender IN (SELECT ID FROM Tab_Konditionierungskalender WHERE ID_Zone = ?)",
+                new DbParam("@z", z.ID));
+        }
+
+        private static bool Gewarnt(IEnumerable<GebaeudeImportMeldung> meldungen)
+            => meldungen.Any(m => m.Kennung == GebaeudeBauteilvorschlag.EINZONE_ZEITPLAENE);
+
+        /// <summary>
+        /// E160: Tragen alle Räume der Datei denselben Kalender, nimmt die eine Zone ihn — Perioden, Feiertagsverweis auf die benannte
+        /// Woche, eingebettete Feiertagsperiode; keine Warnung.
+        /// </summary>
+        [Theory]
+        [InlineData(GebaeudeQuelle.FORMAT_GBXML)]
+        [InlineData(GebaeudeQuelle.FORMAT_IFC)]
+        public async Task Der_Einzonenweg_nimmt_den_gemeinsamen_Kalender_der_Raeume(string format)
+        {
+            if (!_db.Vorhanden) return;
+            (int _, int idZ) = Ausgangsgebaeude();
+            (string pfad, _) = await Exportieren(idZ, format);
+            (int kopie, GebaeudeImportStand stand) = await Importieren(pfad, "Kalenderhaus N8 eine Zone " + format, Einzone(format), einzonig: true);
+            Assert.False(Gewarnt(stand.Meldungen));
+            Assert.False(Gewarnt(stand.Bauteile!.Meldungen));
+            Assert.Single(new GebaeudeZonenCtrl().LesenJeGebaeude(kopie));
+            KalenderAngekommen(kopie, format);
+        }
+
+        /// <summary>
+        /// E160, Gegenprobe: Weicht der Kalender eines Raums ab, nimmt die eine Zone keinen Kalender der Datei — die Warnung steht im
+        /// Vorschlag und in der allgemeinen Meldungsliste des Imports.
+        /// </summary>
+        [Theory]
+        [InlineData(GebaeudeQuelle.FORMAT_GBXML)]
+        [InlineData(GebaeudeQuelle.FORMAT_IFC)]
+        public async Task Der_Einzonenweg_warnt_bei_abweichenden_Kalendern_und_nimmt_keinen(string format)
+        {
+            if (!_db.Vorhanden) return;
+            (int idGebaeude, int idZ) = Ausgangsgebaeude();
+            EineZoneAbweichend(idGebaeude);
+            (string pfad, _) = await Exportieren(idZ, format);
+            (int kopie, GebaeudeImportStand stand) = await Importieren(pfad, "Kalenderhaus N8 abweichend " + format, Einzone(format), einzonig: true);
+            Assert.True(Gewarnt(stand.Bauteile!.Meldungen));
+            GebaeudeImportMeldung m = Assert.Single(stand.Meldungen, x => x.Kennung == GebaeudeBauteilvorschlag.EINZONE_ZEITPLAENE);
+            Assert.Equal(EPOS.UI.Bausteine.WarnStufe.Warnung, m.Stufe);
+            ZoneModel zone = Assert.Single(new GebaeudeZonenCtrl().LesenJeGebaeude(kopie));
+            Konditionierungsstand s = new KonditionierungCtrl().StandLesen(KonditionierungCtrl.Eigner.Zone(kopie, zone.ID), out string meldung);
+            Assert.True(s != null, meldung);
+            Assert.DoesNotContain(Konditionierungsgroessen.Alle.Select(s.Kalender).Where(k => k != null).SelectMany(k => k.Perioden),
+                                  p => p.Feiertagsregel == DbWerte.KOND_FEIERTAG_NEUJAHR);
+            Assert.DoesNotContain(s.Wochen, w => w.Name == "Betriebsruhe");
+        }
+
+        /// <summary>
+        /// E161: Die von EPOS-Plan geschriebene gbXML-Datei (je Zone ein Raum mit <c>zoneIdRef</c>) bietet die Regel X1 an; X1 bildet
+        /// die Zonen der Datei mit ihren Kalendern.
+        /// </summary>
+        [Fact]
+        public async Task Die_eigene_gbXML_Datei_bietet_X1_an_und_X1_bildet_die_Zonen_der_Datei()
+        {
+            if (!_db.Vorhanden) return;
+            (int idGebaeude, int idZ) = Ausgangsgebaeude();
+            int quellzonen = new GebaeudeZonenCtrl().LesenJeGebaeude(idGebaeude).Count;
+            (string pfad, _) = await Exportieren(idZ, GebaeudeQuelle.FORMAT_GBXML);
+            (int kopie, GebaeudeImportStand stand) = await Importieren(pfad, "Kalenderhaus N8 X1", GebaeudeImportProfil.ZONENREGEL_X1, einzonig: false);
+            Assert.Equal(GebaeudeImportProfil.ZONENREGEL_X1, stand.Zonierung!.Regel);
+            Assert.Contains(stand.Zonierung.Regeln, r => r.Schluessel == GebaeudeImportProfil.ZONENREGEL_X1);
+            Assert.Equal(quellzonen, new GebaeudeZonenCtrl().LesenJeGebaeude(kopie).Count);
+            KalenderAngekommen(kopie, GebaeudeQuelle.FORMAT_GBXML);
         }
     }
 }

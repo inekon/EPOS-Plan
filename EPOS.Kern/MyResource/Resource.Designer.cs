@@ -51180,7 +51180,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Die Datei trägt Zeitpläne bzw. Kalender je Raum; die Übernahme als eine Zone nimmt sie nicht, die Kalender kommen aus dem Nutzungsprofil. Mit einer Zonenregel für mehrere Zonen kommen sie je Zone an. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Die Räume der Datei tragen verschiedene Zeitpläne bzw. Kalender; die Übernahme als eine Zone nimmt keinen davon, die Kalender kommen aus dem Nutzungsprofil. Wählen Sie eine Zonenregel für mehrere Zonen, dann kommen sie je Zone an. ähnelt.
         /// </summary>
         public static string IMP_BAUTEIL_PROT_EINZONE_ZEITPLAENE {
             get {

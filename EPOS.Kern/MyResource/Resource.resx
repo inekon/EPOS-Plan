@@ -40469,7 +40469,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Die Zonierung ergibt {0} Zonen — mehr als {1} rechnet das Gebäude nicht; nichts übernommen. Vorschlag: Regel {2}.</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_EINZONE_ZEITPLAENE" xml:space="preserve">
-    <value>Zone „{0}“: Die Datei trägt Zeitpläne bzw. Kalender je Raum; die Übernahme als eine Zone nimmt sie nicht, die Kalender kommen aus dem Nutzungsprofil. Mit einer Zonenregel für mehrere Zonen kommen sie je Zone an.</value>
+    <value>Zone „{0}“: Die Räume der Datei tragen verschiedene Zeitpläne bzw. Kalender; die Übernahme als eine Zone nimmt keinen davon, die Kalender kommen aus dem Nutzungsprofil. Wählen Sie eine Zonenregel für mehrere Zonen, dann kommen sie je Zone an.</value>
   </data>
   <data name="GEXP_PROT_FEIERTAGE_EIN_BILD" xml:space="preserve">
     <value>{0} Kalender führen Feiertage mit verschiedenen Tagesverläufen; gbXML kennt nur den einen Tagtyp „Holiday“ je Wochenplan und trägt das Bild des ranghöchsten Feiertags (die übrigen Feiertage kommen mit diesem Bild zurück, IFC trägt jeden einzeln): {1}</value>

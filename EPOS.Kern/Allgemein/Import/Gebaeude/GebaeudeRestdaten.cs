@@ -213,6 +213,27 @@ namespace WindowsFormsApplication1
             => raeume?.Select(x => x?.Rest).FirstOrDefault(x => x != null);
 
         /// <summary>
+        /// Der Rest ohne seine Konditionierung (Zeilenbild, benannte Wochen, Verweise der Perioden) — für die eine Zone, deren Räume
+        /// verschiedene Kalender tragen (Nachzug N8, E160): Die Felder der Zonenzeile und die Luftströme bleiben; <c>null</c> bleibt
+        /// <c>null</c>.
+        /// </summary>
+        internal static AbbildZonenrest OhneKonditionierung(AbbildZonenrest r)
+        {
+            if (r == null || !r.TraegtKonditionierung && r.Periodenwochen.Count == 0) return r;
+            var k = new AbbildZonenrest
+            {
+                Zone = r.Zone, VorheizzeitH = r.VorheizzeitH, HeizleistungMax = r.HeizleistungMax, KuehlleistungMax = r.KuehlleistungMax,
+                UebergabeArt = r.UebergabeArt, UebergabeExponent = r.UebergabeExponent, UebergabeLeistungNenn = r.UebergabeLeistungNenn,
+                AuslegungVorlauf = r.AuslegungVorlauf, AuslegungRuecklauf = r.AuslegungRuecklauf,
+                AuslegungRaumtemperatur = r.AuslegungRaumtemperatur, ReglerProportionalband = r.ReglerProportionalband,
+                KuehlUebergabeArt = r.KuehlUebergabeArt, KuehlUebergabeExponent = r.KuehlUebergabeExponent,
+                KuehlUebergabeLeistungNenn = r.KuehlUebergabeLeistungNenn, Maximaleraumtemperatur = r.Maximaleraumtemperatur,
+            };
+            k.Luftstroeme.AddRange(r.Luftstroeme);
+            return k;
+        }
+
+        /// <summary>
         /// Die Luftströme der Datei zwischen den Zonen über ihre vorläufigen Ids: die Partnerzone über die Kennung ihres Rests
         /// (<see cref="AbbildZonenrest.Zone"/>). Ein Partner, den die Datei nicht als Zone führt, die Zone selbst oder ein Paar, das
         /// schon steht, wird benannt übergangen (<see cref="GebaeudeBauteilvorschlag.LUFTSTROM_PARTNER"/>).
