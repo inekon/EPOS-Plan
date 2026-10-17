@@ -266,6 +266,18 @@ namespace WindowsFormsApplication1
                                           arb.VerkaufAcKwh));
             }
 
+            // EB-3: der Standby des Speichersystems als LETZTE Spalte je Intervall [kWh] (dieselbe Reihe wie im
+            // Betriebsbild, mal Intervalldauer) - die bisherigen Spalten bleiben, wie sie waren, der Rückweg eigener
+            // Exporte damit auch. Ohne Standby keine Spalte.
+            double[] standbyKw = erg.SoCKwh == null ? null : SpeicherStandbyKw(erg.SoCKwh.Length);
+            if (standbyKw != null)
+            {
+                SpeicherParameter par = sim.Speicherkontext?.Parameter;
+                double dt = par != null && par.DtH > 0.0 ? par.DtH : StromspeicherSimCtrl.INTERVALL_H;
+                spalten.Add(new CsvSpalte(MyResource.Resource.SP_CSV_STANDBY,
+                                          standbyKw.Select(kw => kw * dt).ToArray()));
+            }
+
             CsvExportClass.Export(
                 string.Format(MyResource.Resource.SP_DATEI_STROMSPEICHER, m_ID_Projekt),
                 _waermebedarf.Stundentemperatur, spalten, true);

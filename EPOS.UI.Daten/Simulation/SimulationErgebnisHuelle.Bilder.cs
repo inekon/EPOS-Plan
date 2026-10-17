@@ -1202,7 +1202,7 @@ namespace WindowsFormsApplication1
         /// <summary>Welle RZ: die Netzeinspeisung im Stromgang — zuschaltbar, ab Werk aus.</summary>
         internal const string REIHE_NETZEINSPEISUNG = "NETZEINSPEISUNG";
 
-        /// <summary>EB-2: der BHKW-Anteil der Netzeinspeisung („eingespeister Strom“) im Stromgang — zuschaltbar, ab Werk aus.</summary>
+        /// <summary>EB-2: der BHKW-Anteil der Netzeinspeisung („Stromeinspeisung BHKW“) im Stromgang — zuschaltbar, ab Werk aus.</summary>
         internal const string REIHE_BHKW_EINSPEISUNG = "BHKW_EINSPEISUNG";
 
         /// <summary>EB-2: die PV-Abregelung an der Einspeisegrenze im Stromgang — zuschaltbar, ab Werk aus.</summary>

@@ -15,7 +15,7 @@ namespace EPOS.Kern.Tests
 {
     /// <summary>
     /// <b>Welle EB, Schritt EB-2 — die Ergebnisreihen in der Oberfläche</b> (Anwenderentscheide 17.10.2026): die
-    /// BHKW-Einspeisung („eingespeister Strom“) und die PV-Abregelung als zuschaltbare Reihen im Stromgang (ab Werk aus,
+    /// BHKW-Einspeisung („Stromeinspeisung BHKW“) und die PV-Abregelung als zuschaltbare Reihen im Stromgang (ab Werk aus,
     /// CSV folgt der Wahl), dazu die drei Kennzahlen der Übersicht „Ergebnisse – Energie“ in der Gruppe Strom samt dem
     /// Rückfall der Einspeisung auf die Strommatrix bei einem Altergebnis (EB-Q3) und „—“ ohne Wert.
     /// </summary>
@@ -24,6 +24,7 @@ namespace EPOS.Kern.Tests
     {
         private const int PV_BHKW = 1018;
         private const int PV_GRENZE = 1040;
+        private const int SPEICHER_STANDBY = 1007;
 
         private readonly Kulturvorrichtung _kultur = new Kulturvorrichtung();
         private readonly IDateiDienst _dateiVorher = Dienste.Datei;
@@ -63,7 +64,7 @@ namespace EPOS.Kern.Tests
         private static Kennzahl K(string schluessel) => KennzahlenKatalog.Alle().Single(k => k.Schluessel == schluessel);
 
         // =====================================================================
-        //  Stromgang: eingespeister Strom (BHKW) und Abregelung
+        //  Stromgang: Stromeinspeisung BHKW und Abregelung
         // =====================================================================
 
         [Fact]
@@ -162,6 +163,62 @@ namespace EPOS.Kern.Tests
             Dienste.Datei = new Dateiprobe { Antwort = mit };
             dienste.CsvStromgang!(new[] { "PROFIL_LASTGANG", "PV_ABREGELUNG" });
             Assert.Contains(R.CHART_LEGENDE_PV_ABREGELUNG, File.ReadLines(mit, Encoding.UTF8).First());
+        }
+
+        /// <summary>
+        /// EB-3: die CSV des Stromspeicher-Reiters hängt den Standby des Speichersystems als letzte Spalte an — die
+        /// bisherigen Spalten stehen unverändert davor, die Summe trifft den Standby des Laufs.
+        /// </summary>
+        [Fact]
+        public async Task Csv_Stromspeicher_haengt_den_Standby_als_letzte_Spalte_an()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            SimulationErgebnisHuelle huelle =
+                SimulationErgebnisHuelle.Erzeugen(null, SPEICHER_STANDBY, new BedarfsZustand());
+            var dienste = (SimulationErgebnisDienste)huelle.Gaben()["Dienste"];
+            Rueckmeldung lauf = await dienste.Laufen!((anteil, text) => { });
+            Assert.True(lauf.Erfolg, lauf.Text);
+
+            // Gegenprobe ohne Standby: keine neue Spalte.
+            string ohne = Path.Combine(_ordner, "speicher-ohne.csv");
+            Dienste.Datei = new Dateiprobe { Antwort = ohne };
+            dienste.CsvSpeicher!();
+            string[] kopfOhne = File.ReadLines(ohne, Encoding.UTF8).First().Split(';');
+            Assert.DoesNotContain(R.SP_CSV_STANDBY, kopfOhne);
+
+            // Der Lauf bekommt 20 W Standby des Speichersystems (die Reihe, aus der auch das Betriebsbild zeichnet):
+            // 0,02 kW · 8760 h = 175,2 kWh/a, je Viertelstunde 0,005 kWh.
+            var sim = (SimulationControl)typeof(SimulationErgebnisHuelle)
+                .GetField("sim", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+                .GetValue(huelle)!;
+            int n = sim.Speicherergebnis.SoCKwh.Length;
+            sim.SpeichersystemStandbyAusPvKw = Enumerable.Repeat(0.01, n).ToArray();
+            sim.SpeichersystemStandbyAusNetzKw = Enumerable.Repeat(0.01, n).ToArray();
+            sim.SpeichersystemEigenverbrauchKwh = 175.2;
+
+            string datei = Path.Combine(_ordner, "speicher.csv");
+            Dienste.Datei = new Dateiprobe { Antwort = datei };
+            dienste.CsvSpeicher!();
+
+            List<string> zeilen = File.ReadLines(datei, Encoding.UTF8).ToList();
+            string[] kopf = zeilen[0].Split(';');
+            Assert.Equal(R.SP_CSV_STANDBY, kopf[kopf.Length - 1]);
+            Assert.Equal(kopfOhne, kopf.Take(kopf.Length - 1).ToArray());       // die bisherigen Spalten unverändert
+            Assert.Contains(R.SP_CSV_SOC, kopf);
+            Assert.Single(kopf, k => k == R.SP_CSV_STANDBY);
+
+            // Die Spalte ist dieselbe Reihe wie im Betriebsbild: ihre Summe ist der Standby des Laufs.
+            var de = new System.Globalization.CultureInfo("de-DE");
+            double summe = 0.0;
+            foreach (string z in zeilen.Skip(1))
+            {
+                string[] f = z.Split(';');
+                if (f.Length != kopf.Length) continue;
+                if (double.TryParse(f[f.Length - 1], System.Globalization.NumberStyles.Float, de, out double w)) summe += w;
+            }
+            Assert.Equal(175.2, summe, 1);
         }
 
         // =====================================================================

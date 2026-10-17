@@ -4360,6 +4360,9 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="SP_CSV_ENTLADUNG" xml:space="preserve">
     <value>Entladung [kWh]</value>
   </data>
+  <data name="SP_CSV_STANDBY" xml:space="preserve">
+    <value>Standby Speichersystem [kWh]</value>
+  </data>
   <data name="SP_CSV_GELDWERT" xml:space="preserve">
     <value>Geldwert [€]</value>
   </data>
@@ -56334,7 +56337,7 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
     <value>PV-Abregelung</value>
   </data>
   <data name="CHART_LEGENDE_BHKW_EINSPEISUNG" xml:space="preserve">
-    <value>eingespeister Strom (BHKW-Anteil)</value>
+    <value>Stromeinspeisung BHKW</value>
   </data>
   <data name="CHART_LEGENDE_SPEICHER_STANDBY" xml:space="preserve">
     <value>Standby Speichersystem</value>

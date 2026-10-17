@@ -1328,7 +1328,7 @@ namespace WindowsFormsApplication1
             public double[] EinspeisungKw;
 
             /// <summary>
-            /// EB-2: der BHKW-Anteil der Netzeinspeisung („eingespeister Strom“) — mit Speicherflotte deren
+            /// EB-2: der BHKW-Anteil der Netzeinspeisung („Stromeinspeisung BHKW“) — mit Speicherflotte deren
             /// BHKW-Einspeisung, sonst die BHKW-Einspeisung der Viertelstundenbilanz; dieselbe Menge wie
             /// <see cref="BhkwEinspeisungMwh"/>. Ein Anteil von <see cref="EinspeisungKw"/>, keine weitere Einspeisung.
             /// <c>null</c> ohne BHKW.

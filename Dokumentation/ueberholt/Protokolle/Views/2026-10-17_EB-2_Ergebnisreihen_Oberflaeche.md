@@ -2,7 +2,7 @@
 
 Sitzung Dialoge und Korrekturen, 17.10.2026, Zweig `eb2` auf `eb1` (`def464959`). Konzept:
 [`2026-10-17_Konzept_Ergebnisreihen_Einspeisung_Standby_Abregelung.md`](../../../aktuell/Dialoge/2026-10-17_Konzept_Ergebnisreihen_Einspeisung_Standby_Abregelung.md),
-Abschnitt 5; Anwenderentscheide 17.10.2026 (1) Einspeisung BHKW als eigene Reihe „eingespeister Strom“, (2) Standby des
+Abschnitt 5; Anwenderentscheide 17.10.2026 (1) Einspeisung BHKW als eigene Reihe (Name nach EB-Q4 „Stromeinspeisung BHKW“), (2) Standby des
 Stromspeichers, (3) Abregelung in den Zeitreihen-Grafiken zuschaltbar, Vorgabe aus; EB-Q2 und EB-Q3 nach Empfehlung.
 Nicht gepusht.
 
@@ -21,7 +21,7 @@ Nicht gepusht.
 
 | Größe | Tabelle (Reiter) | Grafik | Übersicht „Ergebnisse – Energie“ | KI / Bericht |
 |---|---|---|---|---|
-| Einspeisung BHKW | Bestand (BHKW-Reiter) | Stromgang: „eingespeister Strom (BHKW-Anteil)“, `BHKW_EINSPEISUNG`, gestrichelt in BHKW-Farbe, ab Werk aus; BHKW-Reiter: Bestand | `energie.bhkw_einspeisung` [MWh/a, N1], Gruppe Strom; Ergebniszeile, Rückfall Strommatrix, sonst „—“ (EB-Q3) | Tabelle der KI-Sicht der Übersicht; Kennzahlentafel des Berichts |
+| Einspeisung BHKW | Bestand (BHKW-Reiter) | Stromgang: „Stromeinspeisung BHKW“ (EB-Q4), `BHKW_EINSPEISUNG`, gestrichelt in BHKW-Farbe, ab Werk aus; BHKW-Reiter: Bestand | `energie.bhkw_einspeisung` [MWh/a, N1], Gruppe Strom; Ergebniszeile, Rückfall Strommatrix, sonst „—“ (EB-Q3) | Tabelle der KI-Sicht der Übersicht; Kennzahlentafel des Berichts |
 | Abregelung PV | Bestand (PV-Reiter) | Stromgang: „PV-Abregelung“, `PV_ABREGELUNG`, nur mit Abregelung wählbar, ab Werk aus; PV-Reiter: Bestand (Schicht) | `energie.pv_abregelung` [MWh/a, N1], nur > 0 | wie oben |
 | Standby Speichersystem | Bestand (Stromspeicher-Reiter, kWh/a) | Betriebsbild Stromspeicher: „Standby Speichersystem“, nur mit Standby, ab Werk aus | `energie.speicher_standby` [kWh/a, N0], nur > 0 | wie oben |
 
@@ -43,7 +43,8 @@ Nicht gepusht.
   `Vorlagenfeldkatalog_v26.txt`; zehn Berichtsvorlagen mit `Werkzeuge/Berichtsvorlage alle` neu gebaut (OpenXmlValidator
   0 Fehler). Der Bericht ändert sich damit um die neuen Zeilen der Kennzahlentafel (BHKW-Projekte: Einspeisung BHKW).
 - Ressourcen `CHART_LEGENDE_BHKW_EINSPEISUNG`, `CHART_LEGENDE_SPEICHER_STANDBY` (de/en), Designer neu geschrieben.
-- CSV: Stromgang folgt der Wahl; die Reiter-CSV des Stromspeichers bleibt fest (keine Wahlübergabe am Knopf).
+- CSV: Stromgang folgt der Wahl; die Reiter-CSV des Stromspeichers hängt mit Standby die Spalte „Standby Speichersystem
+  [kWh]“ als letzte an (EB-Q5), die bisherigen Spalten bleiben unverändert.
 - Wiki-Quellen: Simulation (Blatt Stromproduktion), Stromspeicher (Betriebsbild), Varianten (Gruppe Strom); BHKW und
   Photovoltaik unverändert (die Reiter änderten sich nicht). Gegenlesemuster 0 Treffer.
 
@@ -69,6 +70,11 @@ Nicht gepusht.
 ## Offen
 
 - Sichtprüfung unter Windows; Wiki-Upload mit dem Sammel-Upload.
-- Umbenennen der BHKW-Reiterreihe „Stromeinspeisung“ in „eingespeister Strom“ (ändert das Berichtsbild) — Entscheid der
-  Orchestrierung.
-- Reiter-CSV des Stromspeichers ohne Standby-Spalte (der Knopf übergibt keine Wahl).
+- Erledigt mit dem Nachzug (Anwenderentscheide 17.10.2026, EB-Q4/EB-Q5): Name überall „Stromeinspeisung“, im Blatt
+  Stromproduktion „Stromeinspeisung BHKW“ (BHKW-Reiter und Bericht unverändert); Reiter-CSV des Stromspeichers mit
+  Standby als letzter Spalte, Test `Csv_Stromspeicher_haengt_den_Standby_als_letzte_Spalte_an`.
+- Befund beim Nachzug: Der Lauf der Oberfläche (`SimulationErgebnisHuelle`, `SpeicherflotteAusLaufVorbelegen`) rechnet
+  den Speicher über die vorbelegte Flotte; dort ist der Standby 0 (1007 mit 20 W Standby: Lauf der Oberfläche 0 kWh/a,
+  `SimulationRunner` 175,2 kWh/a; 1046: 0 gegen 438 kWh/a). Standby-Reihe im Betriebsbild, CSV-Spalte und Kennzahl
+  erscheinen deshalb nach einem Lauf aus der Oberfläche nicht. Der Referenzlauf rechnet über `SimulationRunner` und ist
+  nicht betroffen. Eigener Auftrag (Kern, Flottenvorbelegung).

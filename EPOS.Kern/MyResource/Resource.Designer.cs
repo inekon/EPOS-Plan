@@ -23252,7 +23252,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die eingespeister Strom (BHKW-Anteil) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromeinspeisung BHKW ähnelt.
         /// </summary>
         public static string CHART_LEGENDE_BHKW_EINSPEISUNG {
             get {
@@ -131949,6 +131949,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SP_CSV_SOC {
             get {
                 return ResourceManager.GetString("SP_CSV_SOC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standby Speichersystem [kWh] ähnelt.
+        /// </summary>
+        public static string SP_CSV_STANDBY {
+            get {
+                return ResourceManager.GetString("SP_CSV_STANDBY", resourceCulture);
             }
         }
         

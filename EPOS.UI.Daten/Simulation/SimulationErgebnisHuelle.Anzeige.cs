@@ -1085,7 +1085,7 @@ namespace WindowsFormsApplication1
                                             netz?.NetzbezugKw != null));
             mitNetz.Add(new Ganglinienreihe(REIHE_NETZEINSPEISUNG, MyResource.Resource.CHART_LEGENDE_NETZEINSPEISUNG,
                                             netz?.EinspeisungKw != null));
-            // EB-2: der BHKW-Anteil der Einspeisung („eingespeister Strom“) und die PV-Abregelung, ebenfalls ab Werk aus;
+            // EB-2: der BHKW-Anteil der Einspeisung („Stromeinspeisung BHKW“) und die PV-Abregelung, ebenfalls ab Werk aus;
             // die Abregelung nur, wenn der Lauf eine hat (Einspeisegrenze).
             mitNetz.Add(new Ganglinienreihe(REIHE_BHKW_EINSPEISUNG, MyResource.Resource.CHART_LEGENDE_BHKW_EINSPEISUNG,
                                             netz?.BhkwEinspeisungKw != null));
