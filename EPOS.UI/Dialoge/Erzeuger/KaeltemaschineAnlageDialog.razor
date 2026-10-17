@@ -108,10 +108,13 @@
                die Knopfleiste am Satz traegt nur Satzaktionen. *@
             @* KM-T1: Fehlt kein Typkennfeld mehr (Gabe TypkennfelderFehlend = 0), ist der Knopf gesperrt und die Kopfzeile
                sagt es; die Rueckmeldung des Ladens steht als Statuszeile NEBEN dem Knopf - dort, wo geklickt wurde (der
-               Banner oben rollt in der Ansicht der Wurzel aus dem Bild). In der Kompaktstufe tragen beide Knoepfe nur ihr
-               Sinnbild wie „Spalten…" (4.10); title und aria-label nennen den vollen Text. *@
+               Banner oben rollt in der Ansicht der Wurzel aus dem Bild). Ab 1280 x 800 stehen Knopf und Statuszeile in
+               einer ZWEITEN Zeile der Kopfleiste (der Zeilenbruch davor), immer, auch ohne Meldung - die Liste springt
+               nicht. In der Kompaktstufe bleibt die Leiste einzeilig (4.8): beide Knoepfe tragen dort nur ihr Sinnbild wie
+               „Spalten…" (4.10); title und aria-label nennen den vollen Text. *@
             @if (TypkennfelderLaden is not null)
             {
+                <span class="epos-kaeltemaschine-zeilenbruch" aria-hidden="true"></span>
                 <button type="button" class="epos-knopf epos-zweispalten-knopf epos-kaeltemaschine-typkennfelder"
                         title="@(AlleTypkennfelderGeladen ? Texte.TypkennfelderAlleGeladen : Texte.KnopfTypkennfelder)"
                         aria-label="@Texte.KnopfTypkennfelder" disabled="@AlleTypkennfelderGeladen"
