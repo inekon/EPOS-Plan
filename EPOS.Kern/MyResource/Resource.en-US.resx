@@ -51884,6 +51884,15 @@ chart</value>
   <data name="BED_GRAFIK_ACHSE_STUNDE" xml:space="preserve">
     <value>Hour</value>
   </data>
+  <data name="BED_GRAFIK_ACHSE_STROM" xml:space="preserve">
+    <value>Electricity requirement [{0}]</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_WAERME" xml:space="preserve">
+    <value>Heat requirement [{0}]</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_KAELTE" xml:space="preserve">
+    <value>Cooling demand [{0}]</value>
+  </data>
   <data name="BED_GRAFIK_ACHSE_VIERTELSTUNDE" xml:space="preserve">
     <value>Quarter hour</value>
   </data>

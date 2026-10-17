@@ -4884,6 +4884,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf [{0}] ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_ACHSE_KAELTE {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_ACHSE_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf [{0}] ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_ACHSE_STROM {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_ACHSE_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stunde ähnelt.
         /// </summary>
         public static string BED_GRAFIK_ACHSE_STUNDE {
@@ -4898,6 +4916,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BED_GRAFIK_ACHSE_VIERTELSTUNDE {
             get {
                 return ResourceManager.GetString("BED_GRAFIK_ACHSE_VIERTELSTUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf [{0}] ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_ACHSE_WAERME {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_ACHSE_WAERME", resourceCulture);
             }
         }
         

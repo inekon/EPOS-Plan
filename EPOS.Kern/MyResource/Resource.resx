@@ -51891,6 +51891,15 @@ Chart</value>
   <data name="BED_GRAFIK_ACHSE_STUNDE" xml:space="preserve">
     <value>Stunde</value>
   </data>
+  <data name="BED_GRAFIK_ACHSE_STROM" xml:space="preserve">
+    <value>Strombedarf [{0}]</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_WAERME" xml:space="preserve">
+    <value>Wärmebedarf [{0}]</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_KAELTE" xml:space="preserve">
+    <value>Kältebedarf [{0}]</value>
+  </data>
   <data name="BED_GRAFIK_ACHSE_VIERTELSTUNDE" xml:space="preserve">
     <value>Viertelstunde</value>
   </data>
