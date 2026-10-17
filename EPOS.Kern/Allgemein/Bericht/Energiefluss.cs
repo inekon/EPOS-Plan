@@ -296,6 +296,16 @@ namespace WindowsFormsApplication1
             private readonly List<EnergieflussFluss> _fluesse = new List<EnergieflussFluss>();
             private int _folge;
             private double _bhkwStromMwh;
+
+            /// <summary>
+            /// Quellentnahme der Wärmepumpe je Wärmespeicher [MWh] (Booster-Kette): Wärme, die
+            /// eine Wärmepumpe erzeugt, in einen Puffer geladen und eine zweite als Quellwärme
+            /// wieder entnommen hat. Sie läuft im Kreis und wird deshalb gegen die Wärme der
+            /// Wärmepumpe und die Ladung des Puffers aufgerechnet, statt den Wärmebus doppelt
+            /// zu füllen.
+            /// </summary>
+            private readonly Dictionary<ErgebnisPufferspeicherModel, double> _quellentnahme =
+                new Dictionary<ErgebnisPufferspeicherModel, double>();
             /// <summary>EB-1: die Einspeisung der BHKW-Ergebniszeile; <c>null</c> = nicht erhoben (dann bilanziert, SK-Q1).</summary>
             private double? _bhkwEinspeisungMwh;
 
@@ -405,7 +415,7 @@ namespace WindowsFormsApplication1
                         else
                             KR(WP_HEIZEN, nameof(MyResource.Resource.EF_KN_WAERMEPUMPE), nameof(MyResource.Resource.EF_KK_WAERMEPUMPE), EnergieflussKnotenart.Wandler, SPALTE_WANDLER_II, R_WP);
                         F(STROM, WP_HEIZEN, w.Stromverbrauch_WP, EnergieflussForm.Strom);
-                        F(WP_HEIZEN, WAERME, w.Waermeproduktion_WP, EnergieflussForm.Waerme);
+                        F(WP_HEIZEN, WAERME, w.Waermeproduktion_WP - QuellentnahmenAufrechnen(w.Waermeproduktion_WP), EnergieflussForm.Waerme);
                         Umweltanteil(WP_HEIZEN, UMWELTWAERME, SPALTE_WANDLER_II, R_WP, waerme: true);
                     }
                     if (w.Stromverbrauch_Heizstab >= MINDEST_MWH)
@@ -681,20 +691,19 @@ namespace WindowsFormsApplication1
                     string id = PUFFER + p.ID_Pufferspeicher.ToString(CultureInfo.InvariantCulture) + ":" + p.ID_Anlage.ToString(CultureInfo.InvariantCulture);
                     string name = string.IsNullOrWhiteSpace(p.Bezeichner) ? T(nameof(MyResource.Resource.EF_KN_PUFFERSPEICHER)) : p.Bezeichner.Trim();
                     K(id, name, T(nameof(MyResource.Resource.EF_KK_PUFFERSPEICHER)), EnergieflussKnotenart.Speicher, SPALTE_SPEICHER, R_PUFFER, GRUPPE_PUFFER);
-                    double summeKanal = 0.0;
-                    foreach (int k in Kanal.KANAELE_WAERME) summeKanal += Math.Max(0.0, p.Entladung_Kanal?[k] ?? 0.0);
                     foreach (int k in Kanal.KANAELE_WAERME)
                     {
-                        // Eine Zeile ohne Kanalaufteilung entlädt ganz in die Heizung.
-                        double e = summeKanal > 0.0 ? AusKwh(Math.Max(0.0, p.Entladung_Kanal[k]))
-                                 : (k == Kanal.HEIZUNG ? AusKwh(p.Entladung_gesamt) : 0.0);
+                        // Was der Speicher über die Kanalzeilen hinaus abgibt, ist Quellentnahme
+                        // einer Wärmepumpe und deckt keinen Bedarf (siehe QuellentnahmenAufrechnen).
+                        double e = AusKwh(Math.Max(0.0, p.Entladung_Kanal?[k] ?? 0.0));
                         if (e < MINDEST_MWH) continue;
                         var s = Senke(k);
                         KR(s.id, s.name, s.kurz, EnergieflussKnotenart.Senke, SPALTE_SENKEN, s.rang, bedarf: true);
                         F(id, s.id, e, EnergieflussForm.Waerme);
                         entladung[k] += e;
                     }
-                    Speicher(id, WAERME, ladung, AusKwh(p.Verluste_gesamt), AusKwh(p.SOC_Ende), EnergieflussForm.Waerme, R_PUFFER);
+                    _quellentnahme.TryGetValue(p, out double quell);
+                    Speicher(id, WAERME, ladung - quell, AusKwh(p.Verluste_gesamt), AusKwh(p.SOC_Ende), EnergieflussForm.Waerme, R_PUFFER);
                 }
                 if (eb == null) return;
                 double bedarf = 0.0;
@@ -711,6 +720,31 @@ namespace WindowsFormsApplication1
                     F(WAERME, s.id, b - entladung[k] - ungedeckt, EnergieflussForm.Waerme, EnergieflussHerkunft.Abgeleitet,
                       T(nameof(MyResource.Resource.EF_FORMEL_DIREKT)));
                 }
+            }
+
+            /// <summary>
+            /// Ermittelt die Quellentnahme je Wärmespeicher (Entladung ohne Kanalzeile) und
+            /// liefert, wie viel davon gegen die Wärme der Wärmepumpe aufgerechnet wird —
+            /// höchstens deren Produktion; die Ladung jedes Speichers sinkt um seinen Anteil.
+            /// </summary>
+            private double QuellentnahmenAufrechnen(double waermeWpMwh)
+            {
+                var roh = new Dictionary<ErgebnisPufferspeicherModel, double>();
+                double summe = 0.0;
+                foreach (ErgebnisPufferspeicherModel p in _e.Pufferspeicher ?? new List<ErgebnisPufferspeicherModel>())
+                {
+                    if (p == null || IstKaeltespeicher(p) || IstQuellspeicher(p)) continue;
+                    double kanal = 0.0;
+                    foreach (int k in Kanal.KANAELE_WAERME) kanal += Math.Max(0.0, p.Entladung_Kanal?[k] ?? 0.0);
+                    double q = AusKwh(Math.Max(0.0, p.Entladung_gesamt - kanal));
+                    if (q < MINDEST_MWH) continue;
+                    roh[p] = q;
+                    summe += q;
+                }
+                if (summe <= 0.0 || waermeWpMwh <= 0.0) return 0.0;
+                double faktor = Math.Min(1.0, waermeWpMwh / summe);
+                foreach (var kv in roh) _quellentnahme[kv.Key] = kv.Value * faktor;
+                return summe * faktor;
             }
 
             private void Ungedeckt(string senke, double mwh, EnergieflussForm form)
