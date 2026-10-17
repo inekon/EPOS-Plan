@@ -14,8 +14,8 @@ Sitzung Dialoge und Korrekturen, 17.10.2026. Anwenderentscheide vom 17.10.2026 (
 
 Schritt **EB-1** (Kern, Schema 239, Basis R59) und Schritt **EB-2** (Oberfläche, Katalogfassung 26) sind umgesetzt.
 Protokolle:
-[`2026-10-17_EB-1_Ergebnisreihen_Kern.md`](../../ueberholt/Protokolle/Views/2026-10-17_EB-1_Ergebnisreihen_Kern.md),
-[`2026-10-17_EB-2_Ergebnisreihen_Oberflaeche.md`](../../ueberholt/Protokolle/Views/2026-10-17_EB-2_Ergebnisreihen_Oberflaeche.md).
+[`2026-10-17_EB-1_Ergebnisreihen_Kern.md`](Protokolle/Views/2026-10-17_EB-1_Ergebnisreihen_Kern.md),
+[`2026-10-17_EB-2_Ergebnisreihen_Oberflaeche.md`](Protokolle/Views/2026-10-17_EB-2_Ergebnisreihen_Oberflaeche.md).
 
 
 ## 1. Befund: wo der Lauf die drei Größen rechnet und wo sie bis EB-1 lagen
@@ -78,7 +78,7 @@ eine Einspeisegrenze); `Tab_ErgebnisStromspeicher` steht nicht im Export, der St
 „Eintrag nur im Vergleichslauf“; mit `--ohne BHKW.Stromeinspeisung,Photovoltaik.Abregelung` ist er **PASS (13 025 990
 Werte)**, 1 199 der 1 233 CSV sind byte-gleich (die 34 anderen sind die `aggregate.csv` mit den neuen Schlüsseln). Kein
 bisheriger Wert hat sich geändert. R58 und R57 liegen mit Protokoll unter
-[`Dokumentation/ueberholt/Referenzbasen/`](../../ueberholt/Referenzbasen/LIESMICH.md).
+[`Dokumentation/ueberholt/Referenzbasen/`](Referenzbasen/LIESMICH.md).
 
 **Keine neue Einfrierregel:** Die drei Spalten sind Ausgaben des Laufs, keine gesäten Eingaben; was sie bestimmt
 (Einspeisegrenze, Standby-Verbrauch der Speicher, BHKW-Grenzleistung), steht schon in den Einfrierregeln „gesäte

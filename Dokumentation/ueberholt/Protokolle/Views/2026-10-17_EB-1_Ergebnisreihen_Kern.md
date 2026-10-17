@@ -1,7 +1,7 @@
 # EB-1 — Ergebnisreihen im Kern: Schemaschritt 239, Lauf, Energieflussbild, Testdatenbank 239, Basis R59
 
 Sitzung Dialoge und Korrekturen, 17.10.2026, Zweig `eb1` auf `origin/ios_migration_september` (`17a7b985a`). Konzept:
-[`2026-10-17_Konzept_Ergebnisreihen_Einspeisung_Standby_Abregelung.md`](../../../aktuell/Dialoge/2026-10-17_Konzept_Ergebnisreihen_Einspeisung_Standby_Abregelung.md);
+[`2026-10-17_Konzept_Ergebnisreihen_Einspeisung_Standby_Abregelung.md`](../../2026-10-17_Konzept_Ergebnisreihen_Einspeisung_Standby_Abregelung.md);
 Anlass: Konzept Energieflussbild, Abschnitt 13 (optionale Ergebnisspalten) und die Anwenderentscheide vom 17.10.2026.
 Nicht gepusht.
 

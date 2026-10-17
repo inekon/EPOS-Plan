@@ -2,7 +2,7 @@
 
 Sitzung Dialoge und Korrekturen, 17.10.2026, Zweig `eb2` (Kopf vor EB-4 `bfba9c238`), zweimal mit
 `origin/ios_migration_september` zusammengeführt (`835ef152e`, danach der R58-Nachschub `93eb06f0b`). Konzept:
-[`2026-10-17_Konzept_Ergebnisreihen_Einspeisung_Standby_Abregelung.md`](../../../aktuell/Dialoge/2026-10-17_Konzept_Ergebnisreihen_Einspeisung_Standby_Abregelung.md);
+[`2026-10-17_Konzept_Ergebnisreihen_Einspeisung_Standby_Abregelung.md`](../../2026-10-17_Konzept_Ergebnisreihen_Einspeisung_Standby_Abregelung.md);
 Vorgänger [EB-1](2026-10-17_EB-1_Ergebnisreihen_Kern.md), [EB-2](2026-10-17_EB-2_Ergebnisreihen_Oberflaeche.md).
 Nicht gepusht; Gate und Push folgen in einem eigenen Auftrag.
 

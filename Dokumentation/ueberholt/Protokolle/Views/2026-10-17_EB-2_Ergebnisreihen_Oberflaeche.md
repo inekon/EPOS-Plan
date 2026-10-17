@@ -1,7 +1,7 @@
 # EB-2 — Ergebnisreihen in der Oberfläche: Stromgang, Speicherbild, Übersicht, Katalogfassung 26
 
 Sitzung Dialoge und Korrekturen, 17.10.2026, Zweig `eb2` auf `eb1` (`def464959`). Konzept:
-[`2026-10-17_Konzept_Ergebnisreihen_Einspeisung_Standby_Abregelung.md`](../../../aktuell/Dialoge/2026-10-17_Konzept_Ergebnisreihen_Einspeisung_Standby_Abregelung.md),
+[`2026-10-17_Konzept_Ergebnisreihen_Einspeisung_Standby_Abregelung.md`](../../2026-10-17_Konzept_Ergebnisreihen_Einspeisung_Standby_Abregelung.md),
 Abschnitt 5; Anwenderentscheide 17.10.2026 (1) Einspeisung BHKW als eigene Reihe (Name nach EB-Q4 „Stromeinspeisung BHKW“), (2) Standby des
 Stromspeichers, (3) Abregelung in den Zeitreihen-Grafiken zuschaltbar, Vorgabe aus; EB-Q2 und EB-Q3 nach Empfehlung.
 Nicht gepusht.
