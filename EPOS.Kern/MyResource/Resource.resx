@@ -57881,4 +57881,7 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="EF_KK_ABREGELUNG" xml:space="preserve">
     <value>abgeregelt</value>
   </data>
+  <data name="EF_FORMEL_EINSPEISUNG_BHKW" xml:space="preserve">
+    <value>BHKW-Überschuss des Laufs − BHKW-Ladung des Speichers</value>
+  </data>
 </root>

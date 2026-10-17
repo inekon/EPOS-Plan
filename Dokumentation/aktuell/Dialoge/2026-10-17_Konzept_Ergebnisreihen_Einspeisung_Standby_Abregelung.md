@@ -86,8 +86,14 @@ Stromfelder“ und „gesäte BHKW-Grenzleistungen“.
 
 ## 4. Energieflussbild (EB-1, Kern)
 
-- **Einspeisung BHKW:** Band Strom → „Einspeisung BHKW“ direkt aus `StromeinspeisungMwh` (Herkunft „direkt“), der
+- **Einspeisung BHKW:** Band Strom → „Einspeisung BHKW“ aus `StromeinspeisungMwh` (Herkunft „direkt“), der
   Stromknoten wird danach wie jeder andere geprüft; ein Altergebnis ohne Wert bilanziert wie bisher (SK-Q1).
+  **Speicherzeile:** Die Ergebniszeile trägt den BHKW-Überschuss des Laufs — dieselbe Menge wie Reihe, Reiter und
+  KWK-Split. Ein Stromspeicher ohne Flotte lädt daraus seine `Ladung_BHKW` (der Speicherweg bucht nach dem Überschuss),
+  ins Netz geht der Rest: Band = Zeile − `Ladung_BHKW`, Herkunft „abgeleitet“ mit Formeltext (1058: 5,32 − 1,86 = 3,46,
+  1063: 16,56 − 4,79). Mit Flotte ist die Zeile schon die Netzeinspeisung der Flotte (`BhkwNetzeinspeisungKwh`), die
+  Flottenzeile trägt ebenfalls eine `Ladung_BHKW`; welche Lesart gilt, sagt der Knoten: genommen wird die, mit der er
+  schließt (zuerst die Zeile) — kein Flottenkennzeichen im Ergebnisbaum nötig.
 - **Standby:** Band Strom → „Standby Speichersystem“ (Form Verlust, Knotenart Verlust, Spalte der Speicher) je
   Speicherzeile mit Wert; der Speicherknoten selbst schließt weiter über Ladung, Entladung, Verlust und Füllstand — der
   Standby ist Verbrauch des Systems am Strombus, nicht Inhalt des Speichers. 1046 schließt damit ohne „nicht zugeordnet“.

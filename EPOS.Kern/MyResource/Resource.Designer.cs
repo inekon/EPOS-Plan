@@ -24971,6 +24971,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW-Überschuss des Laufs − BHKW-Ladung des Speichers ähnelt.
+        /// </summary>
+        public static string EF_FORMEL_EINSPEISUNG_BHKW {
+            get {
+                return ResourceManager.GetString("EF_FORMEL_EINSPEISUNG_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ladung − Entladung − Verlust ähnelt.
         /// </summary>
         public static string EF_FORMEL_FUELLSTAND {

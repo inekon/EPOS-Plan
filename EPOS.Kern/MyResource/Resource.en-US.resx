@@ -57874,4 +57874,7 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="EF_KK_ABREGELUNG" xml:space="preserve">
     <value>curtailed</value>
   </data>
+  <data name="EF_FORMEL_EINSPEISUNG_BHKW" xml:space="preserve">
+    <value>CHP surplus of the run − CHP charging of the storage</value>
+  </data>
 </root>

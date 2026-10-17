@@ -818,19 +818,36 @@ namespace WindowsFormsApplication1
             // ---------------------------------------------------------------
 
             /// <summary>
-            /// Stromknoten: Mit erhobener Einspeisung der BHKW-Ergebniszeile (EB-1) ist das Band „Einspeisung BHKW“ direkt,
-            /// der Knoten wird danach wie jeder andere geprüft; ohne Wert (Altergebnis, SK-Q1, 2.4 Fall 1) ist ein positiver
-            /// Rest bis zum BHKW-Strom die bilanzierte Einspeisung.
+            /// Stromknoten: Mit erhobener Einspeisung der BHKW-Ergebniszeile (EB-1) ist das Band „Einspeisung BHKW“ die Zeile
+            /// (Herkunft direkt). Die Zeile trägt den BHKW-Überschuss des Laufs — dieselbe Menge wie Reihe, Reiter und
+            /// KWK-Split; ein Stromspeicher ohne Flotte lädt daraus seine <c>Ladung_BHKW</c>, ins Netz geht der Rest
+            /// (Herkunft abgeleitet). Mit Flotte ist die Zeile schon die Netzeinspeisung der Flotte; welche der beiden
+            /// Lesarten gilt, sagt der Knoten selbst: genommen wird die, mit der er schließt (zuerst die Zeile). Danach wird
+            /// der Knoten wie jeder andere geprüft. Ohne Wert (Altergebnis, SK-Q1, 2.4 Fall 1) ist ein positiver Rest bis
+            /// zum BHKW-Strom die bilanzierte Einspeisung.
             /// </summary>
             private void BilanzStrom()
             {
                 if (_bhkwStromMwh >= MINDEST_MWH && _bhkwEinspeisungMwh.HasValue)
                 {
-                    double direkt = _bhkwEinspeisungMwh.Value;
-                    if (direkt >= MINDEST_MWH)
+                    double zeile = Math.Max(0.0, _bhkwEinspeisungMwh.Value);
+                    double ladungBhkw = (_e.Stromspeicher ?? new List<ErgebnisStromspeicherModel>())
+                        .Where(sp => sp != null).Sum(sp => Math.Max(0.0, AusKwh(sp.Ladung_BHKW)));
+                    double offen = Zu(STROM) - Ab(STROM);
+                    double band = zeile;
+                    EnergieflussHerkunft herkunft = EnergieflussHerkunft.Direkt;
+                    string formel = "";
+                    if (ladungBhkw >= MINDEST_MWH && Math.Abs(offen - zeile) > Toleranz(Zu(STROM))
+                        && Math.Abs(offen - (zeile - ladungBhkw)) <= Toleranz(Zu(STROM)))
+                    {
+                        band = zeile - ladungBhkw;
+                        herkunft = EnergieflussHerkunft.Abgeleitet;
+                        formel = T(nameof(MyResource.Resource.EF_FORMEL_EINSPEISUNG_BHKW));
+                    }
+                    if (band >= MINDEST_MWH)
                     {
                         KR(EINSPEISUNG_BHKW, nameof(MyResource.Resource.EF_KN_EINSPEISUNG_BHKW), nameof(MyResource.Resource.EF_KK_EINSPEISUNG_BHKW), EnergieflussKnotenart.Senke, SPALTE_SENKEN, R_EINSP_BHKW);
-                        F(STROM, EINSPEISUNG_BHKW, direkt, EnergieflussForm.Strom);
+                        F(STROM, EINSPEISUNG_BHKW, band, EnergieflussForm.Strom, herkunft, formel);
                     }
                     Bilanz(STROM);
                     return;
