@@ -32094,7 +32094,7 @@ Do you want to allow this?</value>
     <value>Compute type days after VDI 4655</value>
   </data>
   <data name="ZPG_LBL_TYPTAGE_ZONE" xml:space="preserve">
-    <value>climate zone</value>
+    <value>Climate zone</value>
   </data>
   <data name="ZPG_LBL_TYPTAGE_GEBAEUDEART" xml:space="preserve">
     <value>Building type</value>
