@@ -56819,6 +56819,15 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="KBP_MONATE_KURZ" xml:space="preserve">
     <value>Jan;Feb;Mär;Apr;Mai;Jun;Jul;Aug;Sep;Okt;Nov;Dez</value>
   </data>
+  <data name="KBP_HINW_NORMKALENDER_VORGABE" xml:space="preserve">
+    <value>Normkalender (Vorgabe): {0} Nutzungstage, Feiertage und Betriebsferien wie Sonntag — mit „Aus Gebäude übernehmen“ oder einer Kalenderwahl ersetzbar.</value>
+  </data>
+  <data name="KBP_KZ_NUTZUNGSTAGE" xml:space="preserve">
+    <value>Nutzungstage</value>
+  </data>
+  <data name="KBP_KZ_NUTZUNGSTAGE_EINHEIT" xml:space="preserve">
+    <value>d/a</value>
+  </data>
   <data name="ZPG_AUS_SCHNELLAUSLEGUNG_V4" xml:space="preserve">
     <value>Schnellauslegung V4</value>
   </data>

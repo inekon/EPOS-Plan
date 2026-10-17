@@ -792,11 +792,12 @@ namespace WindowsFormsApplication1
                     Betriebskalender kalT = arbeit != null && arbeit.KalenderGesetzt
                         ? KalenderUeberId(arbeit.KalenderId, kalender)
                         : KalenderDesEintrags(quelle, satzquelle, idProjekt, eintrag, kopf, kalender);
+                    kalT ??= Normvorgabe(quelle, satzquelle, idProjekt, kopf);
                     byte[] artenT = null;
-                    if (kalT != null && !tagesarten.TryGetValue(kalT.ID, out artenT))
+                    if (kalT != null && !tagesarten.TryGetValue(Kalenderschluessel(kalT, kopf), out artenT))
                     {
                         artenT = kalT.Tagesarten(raster);
-                        tagesarten[kalT.ID] = artenT;
+                        tagesarten[Kalenderschluessel(kalT, kopf)] = artenT;
                     }
                     Typtagschicht.Ergebnis e = Typtagschicht.TyptageZuJahr(
                         typtage, summe, jahreswerte, moAnfang, wochentagJan1, artenT,
@@ -901,6 +902,7 @@ namespace WindowsFormsApplication1
                 Betriebskalender kal = arbeit != null && arbeit.KalenderGesetzt
                     ? KalenderUeberId(arbeit.KalenderId, kalender)
                     : KalenderDesEintrags(quelle, satzquelle, idProjekt, eintrag, kopf, kalender);
+                kal ??= Normvorgabe(quelle, satzquelle, idProjekt, kopf);
                 if (kal == null)
                 {
                     WPPlan.Core.BhkwPlan.StromWocheToJahr(wochenwerte, monatswerte, jahreswerte,
@@ -908,10 +910,10 @@ namespace WindowsFormsApplication1
                 }
                 else
                 {
-                    if (!tagesarten.TryGetValue(kal.ID, out byte[] arten))
+                    if (!tagesarten.TryGetValue(Kalenderschluessel(kal, kopf), out byte[] arten))
                     {
                         arten = kal.Tagesarten(raster);
-                        tagesarten[kal.ID] = arten;
+                        tagesarten[Kalenderschluessel(kal, kopf)] = arten;
                     }
                     if (!Betriebskalenderschicht.WocheZuJahr(wochenwerte, monatswerte, jahreswerte,
                                                              moAnfang, moEnde, wochentagJan1,
@@ -1003,6 +1005,26 @@ namespace WindowsFormsApplication1
                 new DbParam("@p", idProjekt), new DbParam("@kb", kopfId));
             return wert == null || wert == DBNull.Value ? null : KaeltebedarfsprofilVorlagenSchema.Eingabeart(wert);
         }
+
+        /// <summary>
+        /// Welle KV8 (Entscheid des Anwenders vom 17.10.2026): Eine Kältezeile ohne wirksamen Kalender, deren Projektkopie
+        /// Nutzungstage nach Norm trägt, rechnet mit dem Normkalender als Vorgabe (<see cref="NormkalenderCtrl.Vorgabe"/>,
+        /// im Speicher). Nur Kälte, nur aus der Projektkopie (nicht im Katalog und nicht im Rückfall auf ihn).
+        /// </summary>
+        private static Betriebskalender Normvorgabe(ProfilQuelle quelle, ProfilQuelle satzquelle, int idProjekt, DataRow kopf)
+        {
+            if (idProjekt <= 0 || !ReferenceEquals(quelle, satzquelle) || quelle.Modus == ProfilQuellmodus.Katalogvorschau ||
+                !string.Equals(quelle.ZuordnungTabelle, KaeltebedarfSchema.TAB_ZUORDNUNG, StringComparison.OrdinalIgnoreCase))
+                return null;
+            int kopfId = KopfId(kopf);
+            return kopfId > 0 ? NormkalenderCtrl.Vorgabe(idProjekt, kopfId) : null;
+        }
+
+        /// <summary>
+        /// Der Schlüssel der Tagesarten eines Kalenders in diesem Aufruf: seine ID; der Normkalender als Vorgabe (ID 0,
+        /// im Speicher) steht unter der negativen ID seiner Projektkopie.
+        /// </summary>
+        private static int Kalenderschluessel(Betriebskalender kal, DataRow kopf) => kal.ID > 0 ? kal.ID : -KopfId(kopf);
 
         /// <summary>Der Betriebskalender <paramref name="id"/>, je Aufruf einmal gelesen; <c>null</c> bei 0 oder ohne Satz.</summary>
         private static Betriebskalender KalenderUeberId(int id, Dictionary<int, Betriebskalender> cache)

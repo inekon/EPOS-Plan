@@ -56812,6 +56812,15 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="KBP_MONATE_KURZ" xml:space="preserve">
     <value>Jan;Feb;Mar;Apr;May;Jun;Jul;Aug;Sep;Oct;Nov;Dec</value>
   </data>
+  <data name="KBP_HINW_NORMKALENDER_VORGABE" xml:space="preserve">
+    <value>Standard calendar (default): {0} days of use, public holidays and company holidays like Sunday — replaceable via “Copy from building” or a calendar choice.</value>
+  </data>
+  <data name="KBP_KZ_NUTZUNGSTAGE" xml:space="preserve">
+    <value>Days of use</value>
+  </data>
+  <data name="KBP_KZ_NUTZUNGSTAGE_EINHEIT" xml:space="preserve">
+    <value>d/a</value>
+  </data>
   <data name="ZPG_AUS_SCHNELLAUSLEGUNG_V4" xml:space="preserve">
     <value>Quick design V4</value>
   </data>

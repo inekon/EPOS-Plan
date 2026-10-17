@@ -204,6 +204,30 @@ namespace WindowsFormsApplication1
             return vorhanden.HasValue ? BetriebskalenderCtrl.Lies(vorhanden.Value)?.Bezeichner ?? frei : frei;
         }
 
+        /// <summary>
+        /// <b>Der Normkalender als Vorgabe</b> (Welle KV8, Entscheid des Anwenders vom 17.10.2026): Trägt die Projektkopie
+        /// <paramref name="idKopie"/> Nutzungstage nach Norm und hat ihre Zeile keinen Kalender gewählt, rechnet sie mit dem
+        /// Normkalender — im Speicher gebildet, nicht gespeichert (<c>ID</c> 0), mit Feiertagsland und Raster wie
+        /// <see cref="Vorwahl(int, int)"/>, also derselbe Inhalt, den die Vorwahl anlegte. <c>null</c> ohne Normtage, ohne
+        /// Projekt oder ohne Kalendertabelle.
+        /// </summary>
+        public static Betriebskalender Vorgabe(int idProjekt, int idKopie) => Soll(idProjekt, idKopie, out _, out _);
+
+        /// <summary>
+        /// <b>Der wirksame Kalender einer Kältezeile</b> (Welle KV8): der gewählte <paramref name="idKalender"/>, wenn es ihn
+        /// gibt; sonst der Normkalender als Vorgabe (<see cref="Vorgabe"/>); sonst <c>null</c> (kein Kalender). Rechnung,
+        /// Vorschau und Kennzahlenzeile nehmen denselben Weg.
+        /// </summary>
+        public static Betriebskalender Wirksam(int idProjekt, int idKopie, int? idKalender)
+        {
+            if (idKalender is int id && id > 0)
+            {
+                Betriebskalender gewaehlt = BetriebskalenderCtrl.Lies(id);
+                if (gewaehlt != null) return gewaehlt;
+            }
+            return Vorgabe(idProjekt, idKopie);
+        }
+
         /// <summary>Der Sollkalender der Projektkopie; <c>null</c> ohne Normtage, ohne Projekt oder ohne Kalendertabelle.</summary>
         private static Betriebskalender Soll(int idProjekt, int idKopie, out Gemeinjahrkalender raster, out int tage)
         {
