@@ -399,6 +399,12 @@ namespace WindowsFormsApplication1
             public double QuellwaermeKaskadeMwh;
 
             /// <summary>
+            /// Hängt mindestens ein Modul in einer Kaskade, bezieht also seine Quellwärme aus dem
+            /// Puffer eines anderen Erzeugers? Ohne Kaskade weist der Reiter keine Quellwärme aus.
+            /// </summary>
+            public bool MitKaskade;
+
+            /// <summary>
             /// Der GEDECKTE Wärmebedarf [MWh/a] — der Eigenanteil der Wärmepumpe samt Heizstab
             /// (<see cref="SimulationRunner.EigenanteilWpMwh"/>), aus dem auch
             /// <see cref="DeckungProzent"/> und <see cref="RestwaermeMwh"/> folgen.
@@ -527,6 +533,7 @@ namespace WindowsFormsApplication1
             e.HeizstabStromverbrauchMwh = wp.HeizstabGesamtKwh / 1000.0;
             e.WaermeproduktionMwh = wp.WpWaermeproduktionGesamtKwh / 1000.0;
             e.QuellwaermeKaskadeMwh = wp.QuellwaermeKaskadeKwh / 1000.0;
+            e.MitKaskade = wp.Quellspeicher.Any(q => q != null && !q.IstQuelle);
 
             // UB-E4 (FK 7.1): die Betriebsbereiche - dieselbe Abbildung wie das gespeicherte Ergebnis (SimulationRunner).
             e.Bereiche = BereicheDerWaermepumpe(wp);
@@ -706,6 +713,12 @@ namespace WindowsFormsApplication1
             public double MaxKesselleistungKw;
             public double GasspitzeKw;
             public double QuellwaermeMwh;
+
+            /// <summary>
+            /// Bezieht mindestens ein Kessel Quellwärme aus einem Puffer (Kaskade)? Ohne Kaskade
+            /// weist der Reiter keine Quellwärme aus.
+            /// </summary>
+            public bool MitKaskade;
 
             /// <summary>
             /// Der Teil des Restwärmebedarfs nach dem Kessel, den der Puffer aus der Ladung
@@ -895,6 +908,8 @@ namespace WindowsFormsApplication1
             e.MaxKesselleistungKw = spk.Maximale_Kesselleistung_Spk;
             e.GasspitzeKw = spk.Gasspitze_Spk;
             e.QuellwaermeMwh = spk.QuellwaermeGesamtKwh / 1000.0;
+            e.MitKaskade = Enumerable.Range(0, Math.Min(spk.spk_list.Count, SimulationSPK.MAX_SPK))
+                                     .Any(i => spk.QuellSpeicher(i) != null);
             e.AusPufferAndereMwh = spk.SpeicherentladungAndere_Kwh / 1000.0;
             e.HeizgrenzeC = spk.Heizgrenze_C;
             e.Heiztage = spk.Heiztage_Anzahl;

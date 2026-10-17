@@ -85,16 +85,18 @@
                     @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF_NACH_KESSEL, Zahl(Daten.RestwaermeMwh), MWH, betont: true)
                     @Wertzeile(Resource.SIMERG_LBL_DAVON_PUFFER_ANDERE, Zahl(Daten.AusPufferAndereMwh), MWH)
 
-                    @* ETAPPE D4: Die Quellwaerme der Kaskade. Ohne Quellbezug steht dort
-                       0,00 - die Zeile bleibt sichtbar, denn „der Kessel bezieht nichts
-                       aus einem Puffer" ist die Antwort auf genau diese Frage. Sie ist durchgereicht
+                    @* ETAPPE D4: Die Quellwaerme der Kaskade - nur, wenn ein Kessel einen
+                       Quellpuffer hat; ohne Kaskade steht keine Zeile. Sie ist durchgereicht
                        und nicht in der Produktion des Kessels enthalten.
 
                        Die Einheit ist MWh/a wie in jeder anderen Waermezeile dieser
                        Liste (W11b‑B‑23); SIM_KESSEL_QUELLWAERME_EINHEIT („MWh") war
                        die Einheit des WinForms-Feldes und stand als einzige Zeile
                        der Ergebnisseite ohne Zeitbezug da. *@
-                    @Wertzeile(Resource.SIM_KESSEL_QUELLWAERME, Zahl(Daten.QuellwaermeMwh), MWH)
+                    @if (Daten.MitKaskade)
+                    {
+                        @Wertzeile(Resource.SIM_KESSEL_QUELLWAERME, Zahl(Daten.QuellwaermeMwh), MWH)
+                    }
 
                     @* Die Herleitung der Nutzwärme wie im Wärmepumpenreiter: Produktion
                        − Speicherverluste = Nutzwärme. *@

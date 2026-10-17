@@ -76,8 +76,12 @@
                     <div class="epos-simerg-zwischenkopf" role="heading" aria-level="4">@Resource.SIMERG_GRP_HERLEITUNG_NUTZWAERME</div>
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_WP, Zahl(Daten.WaermeproduktionMwh), MWH,
                                titel: Resource.SIMERG_TIP_WAERMEPRODUKTION_WP, stufe: Zeilenstufe.Herleitung)
-                    @Wertzeile(Resource.SIMERG_LBL_ABZUEGLICH_QUELLWAERME_KASKADE, Zahl(Daten.QuellwaermeKaskadeMwh), MWH,
-                               titel: Resource.SIMERG_TIP_QUELLWAERME_KASKADE_WP, stufe: Zeilenstufe.Herleitung)
+                    @* Die Quellwärme nur, wenn ein Modul in einer Kaskade hängt. *@
+                    @if (Daten.MitKaskade)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_ABZUEGLICH_QUELLWAERME_KASKADE, Zahl(Daten.QuellwaermeKaskadeMwh), MWH,
+                                   titel: Resource.SIMERG_TIP_QUELLWAERME_KASKADE_WP, stufe: Zeilenstufe.Herleitung)
+                    }
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_HEIZSTAB, Zahl(Daten.HeizstabWaermeproduktionMwh), MWH,
                                titel: Resource.SIMERG_TIP_WAERMEPRODUKTION_HEIZSTAB, stufe: Zeilenstufe.Herleitung)
                     @Wertzeile(Resource.SIMERG_LBL_ABZUEGLICH_SPEICHERVERLUSTE, Zahl(Daten.SpeicherverlusteMwh), MWH,
