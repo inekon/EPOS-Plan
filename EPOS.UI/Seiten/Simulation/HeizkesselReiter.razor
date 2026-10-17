@@ -65,9 +65,14 @@
                        aus :4530. *@
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARFSDECKUNG,
                                BedarfVorhanden ? Zahl(Daten.DeckungProzent) : "0", "%")
-                    @* #568: Der Stufeneingang ist der RESTwärmebedarf, der beim Kessel
-                       ankommt - nicht der Projektbedarf. *@
-                    @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG, Zahl(Daten.StufeneingangMwh), MWH)
+                    @* #568: Der Stufeneingang ist der Wärmebedarf, der beim Kessel ankommt.
+                       Rechnet der Kessel in derselben Stufe wie die übrigen Erzeuger, ist das
+                       der ganze Projektbedarf und heißt so; sonst der Rest vor dem Kessel. *@
+                    @Wertzeile(Daten.StufeneingangIstGesamtbedarf
+                                   ? Resource.SIMERG_LBL_GESAMTWAERMEBEDARF
+                                   : Resource.SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG,
+                               Zahl(Daten.StufeneingangMwh), MWH,
+                               hinweis: Resource.SIMERG_TIP_RESTWAERMEBEDARF_STUFENEINGANG)
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_SPK, Zahl(Daten.WaermeproduktionMwh), MWH)
 
                     @* ETAPPE D4: Die Quellwaerme der Kaskade. Ohne Quellbezug steht dort
@@ -79,6 +84,12 @@
                        die Einheit des WinForms-Feldes und stand als einzige Zeile
                        der Ergebnisseite ohne Zeitbezug da. *@
                     @Wertzeile(Resource.SIM_KESSEL_QUELLWAERME, Zahl(Daten.QuellwaermeMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_GEDECKT, Zahl(Daten.GedecktMwh), MWH,
+                               hinweis: Resource.SIMERG_TIP_GEDECKT)
+                    @foreach (var (text, wert) in Kanalzeilen.Davon(Daten.GedecktKanalMwh))
+                    {
+                        @Wertzeile(text, Zahl(wert), MWH)
+                    }
 
                     @* #568: Was der Kessel NICHT selbst deckt, und getrennt davon der Teil,
                        den der Puffer aus der Ladung der anderen Erzeuger deckt. *@

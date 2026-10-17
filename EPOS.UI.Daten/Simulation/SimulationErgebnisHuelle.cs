@@ -560,14 +560,24 @@ namespace WindowsFormsApplication1
             // Die Reiterleiste folgt derselben Regel wie die Menüliste des Vorläufers
             // (BefuelleQuellenListe :2876-2970) - samt der drei Zweige für PV und
             // Speicher (Befund W11-B6, wörtlich übernommen).
-            d.ReiterWaermepumpe = ErzeugerGewaehlt(tool, DbWerte.ERZEUGER_WAERMEPUMPE);
-            d.ReiterHeizkessel = ErzeugerGewaehlt(tool, DbWerte.ERZEUGER_HEIZKESSEL);
-            d.ReiterBhkw = ErzeugerGewaehlt(tool, DbWerte.ERZEUGER_BHKW);
-            d.ReiterSolarthermie = ErzeugerGewaehlt(tool, DbWerte.ERZEUGER_SOLARTHERMIE);
-            d.ReiterPhotovoltaik = tool[4] == DbWerte.ERZEUGER_PHOTOVOLTAIK || tool[4] == "true"
-                                   || tool.Contains(DbWerte.ERZEUGER_PHOTOVOLTAIK);
-            d.ReiterStromspeicher = tool[5] == DbWerte.ERZEUGER_STROMSPEICHER || tool[5] == "true"
-                                    || tool.Contains(DbWerte.ERZEUGER_STROMSPEICHER);
+            // Ein Reiter steht nur, wenn der Erzeuger im Projekt auch als Anlage angelegt
+            // ist: Eine Kaskade, die Solarthermie oder Photovoltaik waehlt, ohne dass es
+            // ein Kollektorfeld oder einen Generator gibt, zeigte sonst leere Reiter. Der
+            // Stromspeicher zaehlt auch ueber eine aktive Speicherflotte. Laesst sich der
+            // Bestand nicht lesen, blendet die Leiste nichts aus.
+            ErgebnisPraesenz bestand = ErgebnisPraesenz.Anlagenbestand(idProjekt);
+            bool Hat(Func<ErgebnisPraesenz, bool> art) => bestand == null || art(bestand);
+
+            d.ReiterWaermepumpe = ErzeugerGewaehlt(tool, DbWerte.ERZEUGER_WAERMEPUMPE) && Hat(b => b.Waermepumpe);
+            d.ReiterHeizkessel = ErzeugerGewaehlt(tool, DbWerte.ERZEUGER_HEIZKESSEL) && Hat(b => b.Heizkessel);
+            d.ReiterBhkw = ErzeugerGewaehlt(tool, DbWerte.ERZEUGER_BHKW) && Hat(b => b.BHKW);
+            d.ReiterSolarthermie = ErzeugerGewaehlt(tool, DbWerte.ERZEUGER_SOLARTHERMIE) && Hat(b => b.Solarthermie);
+            d.ReiterPhotovoltaik = (tool[4] == DbWerte.ERZEUGER_PHOTOVOLTAIK || tool[4] == "true"
+                                    || tool.Contains(DbWerte.ERZEUGER_PHOTOVOLTAIK))
+                                   && Hat(b => b.Photovoltaik);
+            d.ReiterStromspeicher = (tool[5] == DbWerte.ERZEUGER_STROMSPEICHER || tool[5] == "true"
+                                     || tool.Contains(DbWerte.ERZEUGER_STROMSPEICHER))
+                                    && (Hat(b => b.Stromspeicher) || SpeicherFlottenProjektCtrl.IstAktiv(idProjekt));
 
             // ---- Die Zahlen der Reiter ------------------------------------
             // DER BEDARF STEHT IN JEDEM ZUSTAND (#236). Er haengt nicht am Lauf,

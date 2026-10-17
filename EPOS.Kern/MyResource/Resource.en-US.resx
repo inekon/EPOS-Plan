@@ -15239,7 +15239,7 @@ Please check all entries!</value>
     <value>Results</value>
   </data>
   <data name="SIMERG_LBL_WAERMEBEDARF_NETZ" xml:space="preserve">
-    <value>Heat requirement of the local heating network:</value>
+    <value>Total heat demand:</value>
   </data>
   <data name="SIMERG_LBL_STROMBEDARF" xml:space="preserve">
     <value>Power requirements:</value>
@@ -15251,7 +15251,16 @@ Please check all entries!</value>
     <value>Residual power requirement:</value>
   </data>
   <data name="SIMERG_LBL_WAERMEPRODUKTION_WP" xml:space="preserve">
-    <value>Heat production WP:</value>
+    <value>Heat production heat pump:</value>
+  </data>
+  <data name="SIMERG_LBL_WAERMEPRODUKTION_HEIZSTAB" xml:space="preserve">
+    <value>Heat production heating element:</value>
+  </data>
+  <data name="SIMERG_TIP_WAERMEPRODUKTION_WP" xml:space="preserve">
+    <value>Heat delivered by the heat pumps, measured per module at the generator and without the heating element. If a heat pump draws its source heat from a buffer charged by another heat pump (booster), that heat is contained in both modules.</value>
+  </data>
+  <data name="SIMERG_TIP_WAERMEPRODUKTION_HEIZSTAB" xml:space="preserve">
+    <value>Heat of the heating elements. A heating element delivers as much heat as it draws power.</value>
   </data>
   <data name="SIMERG_LBL_STROMVERBRAUCH_WP" xml:space="preserve">
     <value>Power consumption HP:</value>
@@ -15266,10 +15275,10 @@ Please check all entries!</value>
     <value>SPF incl. heating element:</value>
   </data>
   <data name="SIMERG_TIP_JAZ_WP" xml:space="preserve">
-    <value>Seasonal performance factor of the heat pump alone: heat production HP ÷ power consumption HP. Without power consumption a dash is shown.</value>
+    <value>Seasonal performance factor of the heat pump alone: heat production heat pump ÷ power consumption HP. Without power consumption a dash is shown.</value>
   </data>
   <data name="SIMERG_TIP_JAZ_SYSTEM" xml:space="preserve">
-    <value>Seasonal performance factor of the system incl. heating element (balance boundary per VDI 4650): (heat production HP + heat of the heating element) ÷ (power consumption HP + power consumption heating element); the heating element delivers as much heat as it draws power. Same calculation as the key figure “Heat pump system SPF incl. backup heater” in the report. Without power consumption a dash is shown.</value>
+    <value>Seasonal performance factor of the system incl. heating element (balance boundary per VDI 4650): (heat production heat pump + heat production heating element) ÷ (power consumption HP + power consumption heating element); the heating element delivers as much heat as it draws power. Same calculation as the key figure “Heat pump system SPF incl. backup heater” in the report. Without power consumption a dash is shown.</value>
   </data>
   <data name="SIMERG_LBL_WAERMEPRODUKTION_SPK" xml:space="preserve">
     <value>Heat production of the top boilers:</value>
@@ -28983,7 +28992,34 @@ Do you want to allow this?</value>
     <value>Residual heat demand after boiler:</value>
   </data>
   <data name="SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG" xml:space="preserve">
-    <value>Residual heat demand (stage input):</value>
+    <value>Residual heat demand before boiler:</value>
+  </data>
+  <data name="SIMERG_LBL_GEDECKT" xml:space="preserve">
+    <value>Covered heat demand:</value>
+  </data>
+  <data name="SIMERG_TIP_GEDECKT" xml:space="preserve">
+    <value>The part of the heat demand this generator covers: heat delivered directly plus the storage discharge attributed to it, for the heat pump including the heating element. Heat charged into storage counts only when it is discharged; storage losses and the source heat of a booster do not count.</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_HEIZUNG" xml:space="preserve">
+    <value>of which space heating:</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_WARMWASSER" xml:space="preserve">
+    <value>of which domestic hot water:</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_PROZESS" xml:space="preserve">
+    <value>of which process heat:</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_QUELLWAERME_KASKADE" xml:space="preserve">
+    <value>of which source heat from cascade:</value>
+  </data>
+  <data name="SIMERG_TIP_QUELLWAERME_KASKADE_WP" xml:space="preserve">
+    <value>Heat a heat pump draws as its source from a buffer charged by another generator (booster). It is contained twice in the heat production: at the generator charging the buffer and at the heat pump lifting it. 0 without a cascade.</value>
+  </data>
+  <data name="SIMERG_LBL_GESAMTWAERMEBEDARF" xml:space="preserve">
+    <value>Total heat demand:</value>
+  </data>
+  <data name="SIMERG_TIP_RESTWAERMEBEDARF_STUFENEINGANG" xml:space="preserve">
+    <value>Heat demand that reaches the boiler. If generators run before the boiler in the cascade, it is what remains after them; if the boiler runs in the same stage with them, it is the total heat demand.</value>
   </data>
   <data name="CHART_LEGENDE_REST_NACH_KESSEL" xml:space="preserve">
     <value>other generators / uncovered</value>
