@@ -1150,6 +1150,16 @@ Tagesart tragen (`--epos-kalb-saison`, `-grundwoche`, `-wochenende`, `-feiertag`
 Bildpunkte je Fenster in der Farbe ihrer Tagesart), Gegenprobe ohne Hintergrund rot (5 Verstöße — der Werktag bleibt
 weiß wie `--epos-kalb-grundwoche`); `kaelteprofile` in der Katalogauswahl 0 Verstöße in drei Fenstern.
 
+**Fall `kaeltedeckung`** (`--nur kaeltedeckung`, bei **1 088 × 624**, **520 × 624** und **1 194 × 834** samt iPad): in
+`?fall=kaelteprofile` die Bearbeiten-Überlagerung der ersten Kältezeile mit aufgeklappter Deckungsgruppe (Baustein
+`DeckungsartFelder`, Klasse `.epos-deckung`; die Wirtszeilen tragen dazu einen `DeckungsartDaten`-Satz). Gemessen bei
+Rollstand oben, Mitte, Ende des Körpers und mit der Gruppe am unteren Körperrand: Kopf und Schlussleiste wandern nicht und
+stehen im Bild; die Gruppe liegt im rollenden Körper und lässt sich ganz hineinrollen; Körper, Gruppe und Dokument rollen
+nicht waagerecht; „Abbrechen“ und „OK“ stehen im Bild und werden nicht überdeckt (`elementFromPoint`). Foto
+`kaeltedeckung_*`. Gegenprobe: ein Körper ohne Rollen (`overflow: visible`) muss rot sein. **Ergebnis vom 17.10.2026:**
+alle drei Fenster erfüllt (Rollweg 1 494, 1 730 und 1 353 px im Körper von 483, 483 und 649 px; Gruppe 95, 132 und 95 px
+hoch), Gegenprobe 22 Verstöße, Rückgabe 0.
+
 **Fall `klimaimport`** (`--nur klimaimport`, bei **1 088 × 624**, **520 × 624**, **1 194 × 834** mit sicheren
 Abständen und **787 × 520** — das Fenstermaß 1 180 × 780 bei 150 % Anzeigeskalierung; KD-1, Anwenderbefund
 16.10.2026 „Schlussleiste des Klimadaten-Imports abgeschnitten“): `?fall=klimaimport`, „Import…“, dann (KD-3) Ort
