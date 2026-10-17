@@ -54503,7 +54503,7 @@ chart</value>
     <value>Error bound e = (R'_T − R''_T) / (2 R_T) = {0} %</value>
   </data>
   <data name="BTA_HINWEIS_FEHLERSCHRANKE" xml:space="preserve">
-    <value>The error bound e = {0} % exceeds {1} % (R'_T / R''_T above 1.5): the simplified method of EN ISO 6946, 6.7 is inaccurate for this construction; the mean R_T is still used.</value>
+    <value>The error bound e = {0} % exceeds {1} % (R'_T / R''_T above 1.5): the simplified method of EN ISO 6946 (6.7.2.2, error estimate 6.7.2.5) is inaccurate for this construction; the mean R_T is still used.</value>
   </data>
   <data name="BTA_GRUPPE_FENSTER" xml:space="preserve">
     <value>Window</value>

@@ -16534,7 +16534,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fehlerschranke e = {0} % liegt über {1} % (R'_T / R''_T über 1,5): Das vereinfachte Verfahren nach DIN EN ISO 6946, 6.7 ist für diesen Aufbau ungenau; gerechnet wird weiter mit dem Mittel R_T. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fehlerschranke e = {0} % liegt über {1} % (R'_T / R''_T über 1,5): Das vereinfachte Verfahren nach DIN EN ISO 6946 (6.7.2.2, Fehlerabschätzung 6.7.2.5) ist für diesen Aufbau ungenau; gerechnet wird weiter mit dem Mittel R_T. ähnelt.
         /// </summary>
         public static string BTA_HINWEIS_FEHLERSCHRANKE {
             get {

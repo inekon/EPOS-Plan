@@ -101,6 +101,11 @@ Festlegungen, die Folgewellen kennen müssen:
   - Erledigt mit N8 (#1161): Die Regel X1 und der Einzonenweg mit Kalender sind behoben, die Meldungsliste trägt die Einzonenwarnung.
   - Windows-Probe N4c (EPOS Lokal, Postfach 11) bestanden: Einzonenweg beider Formate, X1 für die eigene gbXML-Datei und Meldungsliste wie erwartet, Windows-Tests 350/350 grün. Z6 fehlt bei abweichenden Raumtemperaturen gewollt (jede Gruppe ein Raum).
 - Wiki-Upload nur auf Zuruf (E144).
+- Aus der Übergabe IFC-Gebäudeimport vom 08.10.:
+  - Wiki-Upload „Programm Dokumentation – Gebäudeimport“: gehört zum gesammelten Upload (19.10., Freigabe des Anwenders); der Bedienbegriff „Befund“ kommt in Oberflächentexten und Wiki-Quelle des Imports nicht mehr vor (erledigt).
+  - Sichtabnahme Windows: Rückfrage „Welche Aufbauten gelten?“, Quellenwahl im Importdialog, zweiter Dateidialog bei „IFC + Projektdatei“, Wahlfeld „DIN-V-18599-Zonen | Simulationszonen“ (zur Sichtprüfungsliste des Anwenders).
+  - Sportheim-Anwenderdatei (optional): Kellerwänden Bestandsaufbau zuweisen, Baujahr 1970, IFC und Projektdatei neu exportieren; Datei per Google-Drive-Link (Host `drive.usercontent.google.com` freigeben), unversioniert unter `Quellen/`.
+  - Technische Verfeinerungen: Boden/Decke je Raumpolygon nur eine Quellfläche; 41 % der Raumdreiecke mit Ersatzkennung; 5,9 % der Bauteilkörper mit angenommener Bezugsebene; `KERBE_NICHT_EINFACH` nie aufgetreten; iOS-Grenze 100 MB messen (wie G4-8).
 
 Alle Entscheide des Anwenders vom 14.10.2026 (E144 bis E149) stehen mit Wortlaut im Register der Statusdatei Gebäudesimulation.
 
