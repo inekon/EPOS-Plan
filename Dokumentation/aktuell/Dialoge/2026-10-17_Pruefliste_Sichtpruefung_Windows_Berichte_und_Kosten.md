@@ -39,11 +39,11 @@ Ort: Reiter der Simulationsergebnisse (#1073, #1074, #1138, #1139).
 
 ## 3 Zapfprofil-Vorschau in drei Stufen
 
-Ort: Brauchwasser des Projekts, Zapfprofil, Stufen Einfach, Erweitert, Experte (#1043, #1044, #1064).
+Ort: Menü „Wärme- und Kälteerzeugung“, „Brauchwasser“, „Brauchwasserprofile“; im Dialog der Knopf „Zapfprofil erzeugen…“ öffnet den Zapfprofil-Dialog; dort die Wahlgruppe Stufe mit Einfach, Erweitert, Experte (#1043, #1044, #1064).
 
 | Nr | Ort | Schritt | Erwartung | Befund |
 |---|---|---|---|---|
-| 3.1 | Stufe „Einfach“ | Stufe wählen, Vorschau ansehen | Vorschau haftet sichtbar, Eingaben ohne Abbruch | |
+| 3.1 | Zapfprofil-Dialog, Wahlgruppe Stufe: „Einfach“ | Stufe wählen, Vorschau ansehen | Vorschau haftet sichtbar, Eingaben ohne Abbruch | |
 | 3.2 | Stufe „Erweitert“ | Stufe wählen, Zonenliste und Zonenblock öffnen | Linke Spalte trägt Zonenliste und Zonenblock, Vorschau bleibt sichtbar | |
 | 3.3 | Stufe „Experte“ | Stufe wählen, Fachwerte öffnen | Alle Felder erreichbar, ein Feld je Wert | |
 | 3.4 | Alle Stufen | Vorschau beim Rollen beobachten | Vorschau haftet in jeder Stufe | |
@@ -66,7 +66,7 @@ Ort: Menü „Kosten“, „Gesetzliche Parameter…“ (#1086, #1075).
 
 ## 5 Kalenderbaustein
 
-Ort: Menü „Wärmebedarf & Heizung“, „Profile & Lastgänge“, „Betriebskalender“ und Bedarfsprofil-Dialog (#1088, #1117–#1119).
+Ort: Menü „Wärme- und Kälteerzeugung“, „Profile & Lastgänge“, „Betriebskalender“ und Bedarfsprofil-Dialog (#1088, #1117–#1119).
 
 | Nr | Ort | Schritt | Erwartung | Befund |
 |---|---|---|---|---|
@@ -78,7 +78,7 @@ Ort: Menü „Wärmebedarf & Heizung“, „Profile & Lastgänge“, „Betriebs
 
 ## 6 Kältebedarfsprofile
 
-Ort: Menü „Wärmebedarf & Heizung“, „Profile & Lastgänge“, „Kältebedarf“ (#1087, #1101–#1104, #1108, #1116, #1130, #1131).
+Ort: Menü „Wärme- und Kälteerzeugung“, „Profile & Lastgänge“, „Kältebedarf“ (#1087, #1101–#1104, #1108, #1116, #1130, #1131).
 
 | Nr | Ort | Schritt | Erwartung | Befund |
 |---|---|---|---|---|
@@ -108,7 +108,7 @@ Ort: Übersicht, „Ergebnisse — Energie“ (#1162–#1165).
 
 ## 8 Katalogauswahl und Ganglinien
 
-Ort: Katalogauswahl der Anlagendialoge, Menü „Profile & Lastgänge“ (#1167–#1169).
+Ort: Katalogauswahl der Anlagendialoge; Ganglinien unter „Wärme- und Kälteerzeugung“, „Profile & Lastgänge“ (Solarthermieganglinie, PV-Ganglinie) und „Strombedarf & Speicher“, „Stromganglinie“ (#1167–#1169).
 
 | Nr | Ort | Schritt | Erwartung | Befund |
 |---|---|---|---|---|
