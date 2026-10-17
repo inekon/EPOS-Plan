@@ -55124,6 +55124,9 @@ Chart</value>
   <data name="BKI_PROT_GETEILT" xml:space="preserve">
     <value>Schichten an gemeinsamen Schichtgrenzen geteilt ({0} → {1} Schichten): {2}</value>
   </data>
+  <data name="BKI_AKTUALISIERT" xml:space="preserve">
+    <value>Aktualisiert: {0} von {1} wiedererkannten Aufbauten ändert die Übernahme (Schichten, Abschnitte oder Quelle samt Teilkatalog).</value>
+  </data>
   <data name="BKI_WIEDERIMPORT" xml:space="preserve">
     <value>Wiederimport: {0} Aufbauten im Katalog bekommen durch die Teilung an gemeinsamen Schichtgrenzen andere Schichten; verglichen {1}, davon {2} mit einer Änderung des U-Werts um mehr als 1 % (größte Änderung {3} %); ohne Vergleichswert {4}.</value>
   </data>

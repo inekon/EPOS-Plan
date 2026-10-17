@@ -91,10 +91,10 @@ weggelassen, wenn die übrigen 100 % ergeben, mit einer Protokollzeile je Aufbau
    EPOS-Plan nicht starten.
 3. **Sicherung:** `VACUUM INTO` nach `C:\ProgramData\EPOS_PLAN\DB-Backup\Kenndaten_vor_Aufbauuebernahme_<Datum_Uhrzeit>.sqlite`;
    `integrity_check` der Kopie ok; Größe melden.
-4. **Schema** auf den Stand der Testdatenbank heben (Kernweg wie bei E147: `SchemaMigration.Ausfuehren` mit
+4. **Schema** auf den Stand der Testdatenbank heben (Schemastand 239; Kernweg wie bei E147: `SchemaMigration.Ausfuehren` mit
    `DataRepository.PfadUeberschreibung`; Schrittnummern je „OK“ melden); `integrity_check` ok.
 5. **Vorschau** über den Exportordner des 16.10. (derselbe Ordner samt `Katalog_Zuordnung.csv`), Lizenzablage angebunden, noch
-   nichts übernehmen. Erwartet: **7 neue Aufbauten**, Teilkatalog-Abweichung **0**.
+   nichts übernehmen. Erwartet: **0 neu, 7 aktualisiert** (mit BK-11 als Zahl sichtbar), Abschnitte 510, Teilkatalog danach 7 913 / 7 913, Teilkatalog-Abweichung **0**. Die 7 Aufbauten stehen schon in der Datenbank; „Übernehmen“ aktualisiert sie (Teilkatalog, Abschnitte ohne Beitrag fallen weg).
 6. **Übernahme** über `BauteilkatalogImport.Uebernehmen` (gleicher Ordner); Dauer und Laufzeile melden.
 7. **Konvergenzprobe:** zweite Vorschau, erwartet 0 neu, 0 zusammengeführt, alles wiedererkannt.
 8. `PRAGMA integrity_check` und `PRAGMA foreign_key_check`; Zählungen (Baustoffe, Aufbauten, Schichten, Abschnitte, Aufbauten mit
@@ -114,10 +114,10 @@ nichts darauf schreiben), dort Nachricht 8 (Übernahme vom 16.10.), und die Papi
 Ablauf: (1) Klon auf origin/ios_migration_september bringen, dotnet build WP-Plan.sln -c Debug -p:Platform=x64.
 (2) Kein Prozess EPOS_Plan darf laufen; sonst den Anwender bitten, die Anwendung zu beenden, und bis "fertig" nicht starten.
 (3) Sicherung per VACUUM INTO nach C:\ProgramData\EPOS_PLAN\DB-Backup\Kenndaten_vor_Aufbauuebernahme_<Datum_Uhrzeit>.sqlite,
-integrity_check der Kopie, Größe melden. (4) Schema der produktiven Kenndaten.sqlite auf den Stand der Testdatenbank heben
+integrity_check der Kopie, Größe melden. (4) Schema der produktiven Kenndaten.sqlite auf den Stand der Testdatenbank (jetzt 239) heben
 (SchemaMigration.Ausfuehren mit DataRepository.PfadUeberschreibung), Schritte je OK melden, integrity_check. (5) Vorschau über
-den Exportordner des 16.10. mit Katalog_Zuordnung.csv, Lizenzablage angebunden, noch nichts übernehmen; erwartet 7 neue
-Aufbauten und Teilkatalog-Abweichung 0. (6) Übernahme über BauteilkatalogImport.Uebernehmen, Dauer und Laufzeile melden.
+den Exportordner des 16.10. mit Katalog_Zuordnung.csv, Lizenzablage angebunden, noch nichts übernehmen; erwartet 0 neu, 7 aktualisiert
+(mit BK-11 als Zahl sichtbar), Abschnitte 510, Teilkatalog danach 7 913 / 7 913, Abweichung 0. (6) Übernahme über BauteilkatalogImport.Uebernehmen, Dauer und Laufzeile melden.
 (7) Konvergenzprobe: zweite Vorschau, erwartet 0 neu, 0 zusammengeführt. (8) PRAGMA integrity_check und PRAGMA foreign_key_check,
 Zählungen (Baustoffe, Aufbauten, Schichten, Abschnitte, Aufbauten mit Abschnitten, Sätze mit Teilkatalog).
 (9) Dann darf der Anwender EPOS-Plan wieder starten. Bei einem Fehler in Schritt 4 bis 7: Datenbank aus der Sicherung

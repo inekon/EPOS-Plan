@@ -10230,6 +10230,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aktualisiert: {0} von {1} wiedererkannten Aufbauten ändert die Übernahme (Schichten, Abschnitte oder Quelle samt Teilkatalog). ähnelt.
+        /// </summary>
+        public static string BKI_AKTUALISIERT {
+            get {
+                return ResourceManager.GetString("BKI_AKTUALISIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abschnitte ähnelt.
         /// </summary>
         public static string BKI_ART_ABSCHNITTE {
