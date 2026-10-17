@@ -78,7 +78,7 @@ Grundlagen ohne „Erweitert“, der Block als eine Zeile je Bereich beschrieben
 
 Vorprüfung auf dem Integrationsstand: 433 UI-Tests (Zapfprofil, Stilblatt, BedarfsProfile, KiMasken) und 761
 Kern-Tests (Zapfprofil, Tww, Brauchwasser, Ressource) grün; nach ZC1 354 UI- und 836 Kern-Tests grün. Rasterprobe
-Z1–Z8 erfüllt. Gate: <GATE>. Kein Rechenwegeingriff, deshalb kein neuer Referenzlauf.
+Z1–Z8 erfüllt. Gate: Gate #1194 (Linux, 17.10.2026, auf `e9eb79aa2`): Kern-Filter 0 Fehler; EPOS.UI.Tests 9775/9775, KiKern 553, SpeicherEngine 397, SpeicherPlanung 27 (1 übersprungen), Dokumentationswachen 35; EPOS.Kern.Tests 14870 grün, 2 rot — `KiMaskenwegTests` en-US (ZC1 hatte `ZPG_LBL_TYPTAGE_ZONE` en kleingeschrieben, behoben mit `39719f53d`, danach 92/93 grün) und `ZahlungsgliederungTests.Die_Bruecke_stapelt_die_Differenzspalte` (610 ≠ 611: Bildhöhe aus Textmaßen der Containerschrift Inter, Umgebungsbefund, auf origin grün); Referenzlauf gegen R58 GESAMT PASS (13 025 990 Werte, 1233/1233 CSV byte-gleich), Plattformnachweis PASS; ChartProben: die zwölf Zapfprofil-Bilder weichen in diesem Container von `Messlatte_2026-10-16` ab, der reine origin-Stand liefert hier dieselben 250 Hashes — Umgebungsbefund, Nachweis ist der CI-Lauf. Kein Rechenwegeingriff, deshalb kein neuer Referenzlauf.
 
 ## 5 Offen
 
