@@ -221,6 +221,7 @@ Version beim Anwender zu erfragen; die Wiki-Quellen (Prozesswärme, Brauchwasser
 - Seit 16.10.2026: Wer die Kältevorlage „Prozesskälte einschichtig“ übernimmt, bekommt den Betriebskalender „Norm 230 Tage“ mit dem Bundesland im Namen und 230 Nutzungstagen vorgewählt. (#1117, #1118)
 - Seit 16.10.2026: Der Betriebskalender hat den Schalter „Ferien wie Sonntag“; ein Ferientag rechnet dann mit Tagesmenge und Stundengang des Sonntags, der Ferienfaktor ist gesperrt. (#1119)
 - Seit 17.10.2026: Kältebedarfsprofile mit Normtagen rechnen ohne gewählten Kalender mit dem Normkalender (230 Nutzungstage); die Kennzahlen nennen die Nutzungstage. (#1181)
+- Seit 17.10.2026: Vorschau und Grafik der Kältebedarfsprofile rechnen im Wochentagsraster der Klimaregion des Projekts wie die Simulation; die Kalenderwahl „keiner“ bleibt nach dem Speichern erhalten. (#1188)
 
 #### Gebäudesimulation und weitere Dialoge — Sätze nach dem Sammel-Upload 14.10.2026 (Entwurf, Upload ausstehend)
 
