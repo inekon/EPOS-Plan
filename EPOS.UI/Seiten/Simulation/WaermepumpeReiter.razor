@@ -63,7 +63,10 @@
                 <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARFSDECKUNG, Zahl(Daten.DeckungProzent), "%")
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF, Zahl(Daten.StufeneingangMwh), MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_WP, Zahl(Daten.WaermeproduktionMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_WP, Zahl(Daten.WaermeproduktionMwh), MWH,
+                               titel: Resource.SIMERG_TIP_WAERMEPRODUKTION_WP)
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_HEIZSTAB, Zahl(Daten.HeizstabWaermeproduktionMwh), MWH,
+                               titel: Resource.SIMERG_TIP_WAERMEPRODUKTION_HEIZSTAB)
                     @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, Zahl(Daten.RestwaermeMwh), MWH, betont: true)
                 </dl>
 

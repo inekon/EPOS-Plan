@@ -224,8 +224,13 @@ public class WaermepumpeReiterTests : EposBunitContext
         Assert.Equal(3, listen.Count);
 
         Assert.Equal(
-            new[] { "Wärmebedarfsdeckung:", "Wärmebedarf:", "Wärmeproduktion WP:", "Restwärmebedarf:" },
+            new[] { "Wärmebedarfsdeckung:", "Wärmebedarf:", "Wärmeproduktion Wärmepumpe:",
+                    "Wärmeproduktion Heizstab:", "Restwärmebedarf:" },
             listen[0].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+
+        // Die Wärme des Heizstabs steht neben der der Wärmepumpe: so viel, wie er Strom aufnimmt.
+        Assert.Equal("2,50", listen[0].QuerySelectorAll("dd")
+                                      .Select(z => z.TextContent.Trim()).ToArray()[3 * 2 + 0]);
         Assert.Equal(
             new[] { "Stromverbrauch WP:", "Stromverbrauch Heizstab:",
                     "Jahresarbeitszahl WP:", "Jahresarbeitszahl mit Heizstab:" },

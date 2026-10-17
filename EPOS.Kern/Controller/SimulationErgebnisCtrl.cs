@@ -386,6 +386,12 @@ namespace WindowsFormsApplication1
             public double WaermeproduktionMwh;
 
             /// <summary>
+            /// Die Wärme der Heizstäbe [MWh/a]. Der Heizstab gibt so viel Wärme ab, wie er Strom
+            /// aufnimmt (<see cref="Jahresarbeitszahl"/>); <see cref="WaermeproduktionMwh"/> enthält sie nicht.
+            /// </summary>
+            public double HeizstabWaermeproduktionMwh => HeizstabStromverbrauchMwh;
+
+            /// <summary>
             /// Die Jahresarbeitszahl der Wärmepumpe allein [–] = <see cref="WaermeproduktionMwh"/> ÷
             /// <see cref="StromverbrauchMwh"/>; <c>null</c> ohne Strom (<see cref="Jahresarbeitszahl.Waermepumpe"/>).
             /// </summary>
@@ -625,6 +631,13 @@ namespace WindowsFormsApplication1
         {
             public double DeckungProzent;
             public double StufeneingangMwh;
+
+            /// <summary>
+            /// Kommt beim Kessel der ganze Projektwärmebedarf an? Dann rechnet er in derselben
+            /// Stufe wie die übrigen Erzeuger, und der Reiter nennt den Stufeneingang
+            /// „Gesamtwärmebedarf“; sonst ist er der Rest nach den vorgelagerten Erzeugern.
+            /// </summary>
+            public bool StufeneingangIstGesamtbedarf;
             public double RestwaermeMwh;
             public double WaermeproduktionMwh;
             public double StrombedarfMwh;
@@ -789,6 +802,12 @@ namespace WindowsFormsApplication1
         /// <para><b>W11-B19 behoben:</b> Der Vorläufer setzte <c>tb_Koks</c> ZWEIMAL mit
         /// demselben Wert (:4418 und :4425). Ein DTO-Feld gibt es nur einmal.</para>
         /// </summary>
+        /// <summary>
+        /// Gleichheitsrand zwischen Stufeneingang und Projektwärmebedarf [MWh/a] — die halbe
+        /// letzte Anzeigestelle: Beide sind Summen derselben Stundenreihe, nur getrennt gebildet.
+        /// </summary>
+        private const double STUFENEINGANG_GLEICH_MWH = 0.005;
+
         public static HeizkesselErgebnis Heizkessel(SimulationControl sim, SimulationWaermebedarf wb)
         {
             if (sim == null || !sim.bSimulationKessel) return null;
@@ -798,6 +817,8 @@ namespace WindowsFormsApplication1
 
             double eigen = SimulationRunner.EigenanteilKesselMwh(spk);
             e.StufeneingangMwh = spk.WaermebedarfGesamtMwh;
+            e.StufeneingangIstGesamtbedarf = wb != null && wb.Waermebedarf_Gesamt > 0 &&
+                Math.Abs(e.StufeneingangMwh - wb.Waermebedarf_Gesamt) < STUFENEINGANG_GLEICH_MWH;
             e.RestwaermeMwh = SimulationRunner.RestNachEigenanteil(e.StufeneingangMwh, eigen);
             e.DeckungProzent = SimulationRunner.DeckungProzent(
                 eigen, wb != null ? wb.Waermebedarf_Gesamt : 0.0);

@@ -122897,6 +122897,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtwärmebedarf: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_GESAMTWAERMEBEDARF {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_GESAMTWAERMEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gesamter Kältebedarf: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_GESAMT_KAELTEBEDARF {
@@ -123212,7 +123221,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Restwärmebedarf (Stufeneingang): ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwärmebedarf vor dem Kessel: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG {
             get {
@@ -123491,6 +123500,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeproduktion Heizstab: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_WAERMEPRODUKTION_HEIZSTAB {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_WAERMEPRODUKTION_HEIZSTAB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeproduktion der einzelnen Spitzenkessel: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_WAERMEPRODUKTION_MODULE_SPK {
@@ -123509,7 +123527,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeproduktion WP: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeproduktion Wärmepumpe: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_WAERMEPRODUKTION_WP {
             get {
@@ -123788,7 +123806,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresarbeitszahl des Systems mit Heizstab (Bilanzgrenze nach VDI 4650): (Wärmeproduktion WP + Wärme des Heizstabs) ÷ (Stromverbrauch WP + Stromverbrauch Heizstab); der Heizstab gibt so viel Wärme ab, wie er Strom aufnimmt. Dieselbe Rechnung wie die Kennzahl „Jahresarbeitszahl (JAZ) Wärmepumpe mit Heizstab“ im Bericht. Ohne Strom steht ein Strich. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresarbeitszahl des Systems mit Heizstab (Bilanzgrenze nach VDI 4650): (Wärmeproduktion Wärmepumpe + Wärmeproduktion Heizstab) ÷ (Stromverbrauch WP + Stromverbrauch Heizstab); der Heizstab gibt so viel Wärme ab, wie er Strom aufnimmt. Dieselbe Rechnung wie die Kennzahl „Jahresarbeitszahl (JAZ) Wärmepumpe mit Heizstab“ im Bericht. Ohne Strom steht ein Strich. ähnelt.
         /// </summary>
         public static string SIMERG_TIP_JAZ_SYSTEM {
             get {
@@ -123797,7 +123815,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresarbeitszahl der Wärmepumpe allein: Wärmeproduktion WP ÷ Stromverbrauch WP. Ohne Strom steht ein Strich. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresarbeitszahl der Wärmepumpe allein: Wärmeproduktion Wärmepumpe ÷ Stromverbrauch WP. Ohne Strom steht ein Strich. ähnelt.
         /// </summary>
         public static string SIMERG_TIP_JAZ_WP {
             get {
@@ -123833,6 +123851,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf, der beim Kessel ankommt. Rechnen Erzeuger in der Kaskade vor dem Kessel, ist es der Rest nach ihnen; rechnet der Kessel mit ihnen in derselben Stufe, ist es der Gesamtwärmebedarf. ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_RESTWAERMEBEDARF_STUFENEINGANG {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_RESTWAERMEBEDARF_STUFENEINGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Jahresarbeitszahl des Moduls ohne Heizstab: Wärmeproduktion ÷ Stromverbrauch. Ohne Strom steht ein Strich. ähnelt.
         /// </summary>
         public static string SIMERG_TIP_SPALTE_JAZ {
@@ -123856,6 +123883,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_TIP_TAKTEN_SPK {
             get {
                 return ResourceManager.GetString("SIMERG_TIP_TAKTEN_SPK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärme der Heizstäbe. Der Heizstab gibt so viel Wärme ab, wie er Strom aufnimmt. ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_WAERMEPRODUKTION_HEIZSTAB {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_WAERMEPRODUKTION_HEIZSTAB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärme, die die Wärmepumpen abgeben, je Modul gemessen am Erzeuger und ohne Heizstab. Bezieht eine Wärmepumpe ihre Quellwärme aus einem Puffer, den eine andere Wärmepumpe lädt (Booster), ist diese Wärme in beiden Modulen enthalten. ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_WAERMEPRODUKTION_WP {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_WAERMEPRODUKTION_WP", resourceCulture);
             }
         }
         
