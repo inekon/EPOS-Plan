@@ -58396,4 +58396,7 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="ZPG_OPT_TYPTAGE" xml:space="preserve">
     <value>Type days VDI 4655</value>
   </data>
+  <data name="ZPG_HINW_NUR_ENSEMBLE" xml:space="preserve">
+    <value>Here it only affects the sizing ensemble.</value>
+  </data>
 </root>

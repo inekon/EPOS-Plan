@@ -294,9 +294,9 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
         Assert.Equal("Kalender", cut.Find(".epos-zapfprofil-kalender .epos-klappgruppe-text").TextContent.Trim());
         Assert.False(HatFeld(cut, "Bundesland"));
         Assert.False(HatFeld(cut, "Tagesbedarf manuell"));
-        // Der Rechenweg der Jahresreihe und die Fachwerte stehen in Experte (ZC3); der Seed erst bei „stochastisch" (ZC5).
+        // Der Rechenweg der Jahresreihe, Seed und Fachwerte stehen in Experte (ZC3); der Seed bei jedem Weg (ZC5).
         Assert.NotNull(cut.Find("fieldset[aria-label='Rechenweg der Jahresreihe']"));
-        Assert.False(HatFeld(cut, "Zufallssaat (Seed)"));
+        Assert.True(HatFeld(cut, "Zufallssaat (Seed)"));
         Assert.True(HatFeld(cut, "Spezifischer Bedarf"));
 
         // ZB9: Die Tabelle des Katalogs klappt nicht mehr unter der Nutzungsart auf; „Katalog…" öffnet sie als Blatt.
@@ -326,7 +326,7 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
 
         foreach (string feld in new[] { "Spezifischer Bedarf", "Zapftemperatur", "Kaltwasser Jahresmittel", "Kaltwasser Amplitude",
                                         "Tagesgangsatz", "Kaltwasser der Auslegung", "Speichertemperatur", "Zirkulationsverlust (Kennwert)",
-                                        "Zirkulationsfläche", "Laufzeit der Zirkulation", "Januar", "Dezember" })
+                                        "Zirkulationsfläche", "Laufzeit der Zirkulation", "Zufallssaat (Seed)", "Januar", "Dezember" })
             Assert.True(HatFeld(cut, feld), feld);
         // ZB10: Literanzeige und Stundenschwelle stehen nur in den Einstellungen; der Fachblock verweist dorthin.
         Assert.False(HatFeld(cut, "Temperatur der Literanzeige"));

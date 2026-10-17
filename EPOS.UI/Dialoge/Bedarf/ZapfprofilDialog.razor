@@ -715,8 +715,7 @@
                                                        Titel="@Texte.HinweisRechenwegJahresreihe"
                                                        Auswahl="@JahresreihewegWahl" AuswahlChanged="JahresreihewegSetzen"
                                                        WeichGesperrt="@JahresreihewegSperren" />
-                                        @if (_eingabe.JahresreiheStochastisch)
-                                        {
+                                        @* Seed und Realisierungen stehen bei jedem Weg: Sie steuern auch das Ensemble der Auslegung. *@
                                                 <Ganzzahlfeld Bezeichnung="@Texte.LabelSeed" Feldname="@Texte.LabelSeed" Min="0"
                                                               Wert="@_eingabe.Seed" WertChanged="SeedSetzen"
                                                               Titel="@Format(Texte.HinweisSeed, Ganz(Daten.SeedVorgabe))"
@@ -727,8 +726,7 @@
                                                               Titel="@Format(Texte.HinweisRealisierungen, Ganz(Daten.RealisierungenMindestens), Ganz(Daten.RealisierungenHoechstens), Ganz(Daten.RealisierungenVorgabe))"
                                                               Wert="@_eingabe.Realisierungen" WertChanged="RealisierungenSetzen"
                                                               Platzhalter="@Klammer(Daten.RealisierungenVorgabe)" FehlerZustand="FehlerZustandMelden" />
-                                                <Herleitungszeile Text="@Texte.HinweisKonsistenzOrt" />
-                                        }
+                                                <Herleitungszeile Text="@(_eingabe.JahresreiheStochastisch ? Texte.HinweisKonsistenzOrt : Texte.HinweisNurEnsemble)" />
                                         @if (_eingabe.TyptageAktiv)
                                         {
                                                     <Auswahlfeld Bezeichnung="@Texte.LabelTyptageZone" Eintraege="@Typtagzonen"
@@ -2225,7 +2223,7 @@
 
     /// <summary>
     /// Die Wahl des Wegs: Norm schaltet Stochastik und Typtage aus, „stochastisch" die Typtage, „Typtage" die
-    /// Stochastik. Die Felder des verlassenen Wegs verschwinden und nehmen ihre Fehleingabe mit.
+    /// Stochastik. Seed und Realisierungen bleiben bei jedem Weg stehen.
     /// </summary>
     private void JahresreihewegSetzen(int? id)
     {
@@ -2234,7 +2232,6 @@
         if (weg == JAHRESREIHE_TYPTAGE && !TyptageDa) return;
         if (weg != JAHRESREIHE_TYPTAGE && _eingabe.TyptageAktiv) TyptageAktivSetzen(false);
         RechenwegSetzen(weg == JAHRESREIHE_STOCHASTISCH ? RECHENWEG_STOCHASTISCH : RECHENWEG_DETERMINISTISCH);
-        if (weg != JAHRESREIHE_STOCHASTISCH) _fehlfelder.Remove(Texte.LabelSeed);
         if (weg == JAHRESREIHE_TYPTAGE) TyptageAktivSetzen(true);
     }
 
@@ -3376,8 +3373,8 @@
         bool stochastisch = id == RECHENWEG_STOCHASTISCH;
         if (_eingabe.JahresreiheStochastisch == stochastisch) return;
         _eingabe.JahresreiheStochastisch = stochastisch;
-        // Nur das Feld, das verschwindet, nimmt seine Fehleingabe mit — der Seed bleibt stehen.
-        if (!stochastisch) _fehlfelder.Remove(Texte.LabelRealisierungen);
+        // Seed und Realisierungen stehen bei jedem Weg (sie steuern auch das Ensemble der Auslegung) - ihre
+        // Fehleingaben bleiben, bis der Anwender sie berichtigt.
         Geaendert();
     }
 
@@ -4079,26 +4076,22 @@
         return null;
     }
 
-    /// <summary>Der Seed — Stufe Experte beim Rechenweg „stochastisch" (ZC5: nur dort steht das Feld), ganze Zahl ab 0; leer = Vorgabe.</summary>
+    /// <summary>Der Seed — Stufe Experte bei jedem Weg der Jahresreihe (er steuert auch das Ensemble der Auslegung), ganze Zahl ab 0; leer = Vorgabe.</summary>
     private string? KiSeed(int? wert)
     {
         if (_stufe != ZapfprofilStufe.Experte)
             return ZapfprofilKiRegeln.NurMit(Texte.LabelSeed, Texte.StufeExperte);
-        if (!_eingabe.JahresreiheStochastisch)
-            return ZapfprofilKiRegeln.NurMit(Texte.LabelSeed, Texte.OptionStochastisch);
         string? grund = ZapfprofilKiRegeln.Bereich(Texte.LabelSeed, wert, 0, null);
         if (grund is not null) return grund;
         SeedSetzen(wert);
         return null;
     }
 
-    /// <summary>Die Realisierungen — Stufe Experte beim Rechenweg „stochastisch", in den Grenzen des Feldes.</summary>
+    /// <summary>Die Realisierungen — Stufe Experte bei jedem Weg der Jahresreihe (wie das Feld), in den Grenzen des Feldes.</summary>
     private string? KiRealisierungen(int? wert)
     {
         if (_stufe != ZapfprofilStufe.Experte)
             return ZapfprofilKiRegeln.NurMit(Texte.LabelRealisierungen, Texte.StufeExperte);
-        if (!_eingabe.JahresreiheStochastisch)
-            return ZapfprofilKiRegeln.NurMit(Texte.LabelRealisierungen, Texte.OptionStochastisch);
         string? grund = ZapfprofilKiRegeln.Bereich(Texte.LabelRealisierungen, wert,
                                                    Daten.RealisierungenMindestens, Daten.RealisierungenHoechstens);
         if (grund is not null) return grund;

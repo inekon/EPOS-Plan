@@ -163561,6 +163561,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkt hier nur auf das Ensemble der Auslegung. ähnelt.
+        /// </summary>
+        public static string ZPG_HINW_NUR_ENSEMBLE {
+            get {
+                return ResourceManager.GetString("ZPG_HINW_NUR_ENSEMBLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nur lesbar — bearbeiten lässt sich eine eigene Kopie. ähnelt.
         /// </summary>
         public static string ZPG_HINW_NUR_LESEN {

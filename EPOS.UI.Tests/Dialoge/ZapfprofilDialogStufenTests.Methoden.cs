@@ -102,23 +102,26 @@ public partial class ZapfprofilDialogStufenTests
         Stufe(cut, "Experte");
         Assert.True(Rechenwegoption(cut, "Norm-Jahresgang").HasAttribute("checked"));
         Assert.Equal("Norm-Jahresgang", ZapfprofilKarten.Zusatz(cut, "jahresreihe"));
-        Assert.False(HatFeld(cut, "Zufallssaat (Seed)"));
-        Assert.False(HatFeld(cut, "Realisierungen"));
+        // Seed und Realisierungen stehen bei jedem Weg; beim Norm-Jahresgang wirken sie nur auf das Ensemble der Auslegung.
+        Assert.True(HatFeld(cut, "Zufallssaat (Seed)"));
+        Assert.True(HatFeld(cut, "Realisierungen"));
+        Assert.Contains("Wirkt hier nur auf das Ensemble der Auslegung.", cut.Find(".epos-zapfprofil-karte--jahresreihe").TextContent);
         Assert.False(HatWahlfeld(cut, "Klimazone"));
 
-        // stochastisch: Seed und Realisierungen.
+        // stochastisch: dazu der Hinweis auf die Konsistenzprobe.
         Rechenwegoption(cut, "stochastisch").Change("1");
         Assert.True(cut.Instance.Eingabe.JahresreiheStochastisch);
         Assert.True(HatFeld(cut, "Zufallssaat (Seed)"));
         Assert.True(HatFeld(cut, "Realisierungen"));
         Assert.False(HatWahlfeld(cut, "Klimazone"));
+        Assert.Contains("Die Konsistenzprobe steht nach dem Lauf im Reiter Kennzahlen.", cut.Find(".epos-zapfprofil-karte--jahresreihe").TextContent);
         Assert.Equal("stochastisch · 10 Jahre · Seed 1", ZapfprofilKarten.Zusatz(cut, "jahresreihe"));
 
         // Typtage: Klimazone und Gebäudeart, die Stochastik geht aus.
         Rechenwegoption(cut, "Typtage VDI 4655").Change("2");
         Assert.True(cut.Instance.Eingabe.TyptageAktiv);
         Assert.False(cut.Instance.Eingabe.JahresreiheStochastisch);
-        Assert.False(HatFeld(cut, "Zufallssaat (Seed)"));
+        Assert.True(HatFeld(cut, "Zufallssaat (Seed)"));
         Assert.True(HatWahlfeld(cut, "Klimazone"));
         Assert.True(HatWahlfeld(cut, "Gebäudeart"));
         Assert.Equal("Typtage VDI 4655", ZapfprofilKarten.Zusatz(cut, "jahresreihe"));

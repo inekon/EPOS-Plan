@@ -1456,4 +1456,7 @@ public sealed class ZapfprofilTexte
 
     /// <summary><c>ZPG_OPT_TYPTAGE</c></summary>
     public string OptionTyptage { get; set; } = "Typtage VDI 4655";
+
+    /// <summary><c>ZPG_HINW_NUR_ENSEMBLE</c></summary>
+    public string HinweisNurEnsemble { get; set; } = "Wirkt hier nur auf das Ensemble der Auslegung.";
 }

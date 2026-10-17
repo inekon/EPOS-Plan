@@ -58403,4 +58403,7 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="ZPG_OPT_TYPTAGE" xml:space="preserve">
     <value>Typtage VDI 4655</value>
   </data>
+  <data name="ZPG_HINW_NUR_ENSEMBLE" xml:space="preserve">
+    <value>Wirkt hier nur auf das Ensemble der Auslegung.</value>
+  </data>
 </root>

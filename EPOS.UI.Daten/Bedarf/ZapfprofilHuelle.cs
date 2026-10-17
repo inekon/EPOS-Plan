@@ -1966,6 +1966,7 @@ namespace WindowsFormsApplication1
             t.EinheitJahre = Text_("ZPG_EINHEIT_JAHRE", t.EinheitJahre);
             t.HinweisRealisierungen = Text_("ZPG_HINW_REALISIERUNGEN", t.HinweisRealisierungen);
             t.HinweisKonsistenzOrt = Text_("ZPG_HINW_KONSISTENZ_ORT", t.HinweisKonsistenzOrt);
+            t.HinweisNurEnsemble = Text_("ZPG_HINW_NUR_ENSEMBLE", t.HinweisNurEnsemble);
             t.HinweisVorschauDeterministisch = Text_("ZPG_HINW_VORSCHAU_DETERMINISTISCH", t.HinweisVorschauDeterministisch);
             t.KennzahlStochastikGerechnet = Text_("ZPG_KZ_STOCHASTIK_GERECHNET", t.KennzahlStochastikGerechnet);
             t.KennzahlStochastikLaeuft = Text_("ZPG_KZ_STOCHASTIK_LAEUFT", t.KennzahlStochastikLaeuft);
