@@ -5820,10 +5820,10 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
     <value>{0} Versionen</value>
   </data>
   <data name="BK_ERG_ABSCHNITT_KOMPONENTEN" xml:space="preserve">
-    <value>Komponenten und Einstellungen</value>
+    <value>Übersicht Komponenten / Vergleich</value>
   </data>
   <data name="BK_ERG_ABSCHNITT_ERGEBNISSE" xml:space="preserve">
-    <value>Ergebnisse — Energie</value>
+    <value>Übersicht Energie</value>
   </data>
   <data name="BK_ERG_SP_KENNZAHL" xml:space="preserve">
     <value>Kennzahl</value>
@@ -51930,6 +51930,15 @@ Chart</value>
   <data name="BED_GRAFIK_ACHSE_STUNDE" xml:space="preserve">
     <value>Stunde</value>
   </data>
+  <data name="BED_GRAFIK_ACHSE_STROM" xml:space="preserve">
+    <value>Strombedarf [{0}]</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_WAERME" xml:space="preserve">
+    <value>Wärmebedarf [{0}]</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_KAELTE" xml:space="preserve">
+    <value>Kältebedarf [{0}]</value>
+  </data>
   <data name="BED_GRAFIK_ACHSE_VIERTELSTUNDE" xml:space="preserve">
     <value>Viertelstunde</value>
   </data>
@@ -58477,5 +58486,11 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="SIMERG_TIP_SPEICHERVERLUSTE_SPK" xml:space="preserve">
     <value>Wärme der Kessel, die in Speichern verloren geht oder am Jahresende noch darin steht, also keinen Bedarf deckt. Gerechnet als Wärmeproduktion minus Nutzwärme.</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_AUS_PUFFER_WP" xml:space="preserve">
+    <value>davon aus Puffer:</value>
+  </data>
+  <data name="SIMERG_TIP_DAVON_AUS_PUFFER_WP" xml:space="preserve">
+    <value>Der Teil der Nutzwärme, den die Speicher aus der Ladung der Wärmepumpen an den Bedarf abgegeben haben. Den Rest liefern die Wärmepumpen direkt. Im Heizkesselreiter ist dieser Wert in „davon aus Puffer (andere Erzeuger)“ enthalten.</value>
   </data>
 </root>

@@ -55,7 +55,8 @@ public class WaermepumpeReiterTests : EposBunitContext
             WaermeproduktionMwh = 300.0,
             Vollbenutzungsstunden = 1856.0,
             MinSpkLeistungKw = 20.22,
-            PufferVolumenKwh = 1160.0
+            PufferVolumenKwh = 1160.0,
+            MitKaskade = true
         };
         e.Module.Add(new SimulationErgebnisCtrl.WpModulZeile("WP 1", 30.0, 300.0, 75.0, 2.5, 1856.0));
         if (puffer)
@@ -225,14 +226,14 @@ public class WaermepumpeReiterTests : EposBunitContext
 
         Assert.Equal(
             new[] { "Wärmebedarfsdeckung:", "Wärmebedarf:", "Erzeugte Nutzwärme Wärmepumpe:", "davon Heizung:",
-                    "davon Warmwasser:", "Restwärmebedarf:", "Wärmeproduktion Wärmepumpe:",
+                    "davon Warmwasser:", "davon aus Puffer:", "Restwärmebedarf:", "Wärmeproduktion Wärmepumpe:",
                     "abzüglich Quellwärme aus Kaskade:", "zuzüglich Wärmeproduktion Heizstab:",
                     "abzüglich Speicherverluste:", "Erzeugte Nutzwärme Wärmepumpe:" },
             listen[0].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
 
         // Die Wärme des Heizstabs steht neben der der Wärmepumpe: so viel, wie er Strom aufnimmt.
         Assert.Equal("2,50", listen[0].QuerySelectorAll("dd")
-                                      .Select(z => z.TextContent.Trim()).ToArray()[8 * 2 + 0]);
+                                      .Select(z => z.TextContent.Trim()).ToArray()[9 * 2 + 0]);
         Assert.Equal(
             new[] { "Stromverbrauch WP:", "Stromverbrauch Heizstab:",
                     "Jahresarbeitszahl WP:", "Jahresarbeitszahl mit Heizstab:" },
@@ -260,7 +261,7 @@ public class WaermepumpeReiterTests : EposBunitContext
 
         int i = Array.IndexOf(zeilen, "Erzeugte Nutzwärme Wärmepumpe:");
         Assert.Equal(new[] { "Erzeugte Nutzwärme Wärmepumpe:", "davon Heizung:", "davon Warmwasser:",
-                             "davon Prozesswärme:", "Restwärmebedarf:" },
+                             "davon Prozesswärme:", "davon aus Puffer:" },
                      zeilen.Skip(i).Take(5).ToArray());
         Assert.Equal(new[] { "17,00", "10,00", "5,00", "2,00" },
                      Enumerable.Range(i, 4).Select(z => werte[2 * z]).ToArray());
@@ -299,6 +300,36 @@ public class WaermepumpeReiterTests : EposBunitContext
         Assert.Single(summe);
         Assert.Equal("Erzeugte Nutzwärme Wärmepumpe:", summe[0].TextContent.Trim());
         Assert.Same(summe[0], dl.QuerySelectorAll("dt").Last());
+    }
+
+    /// <summary>
+    /// Der Pufferanteil der Nutzwärme steht unter der Aufteilung nach Bedarfsart; derselbe
+    /// Wert wie im Kesselreiter unter „davon aus Puffer (andere Erzeuger)“.
+    /// </summary>
+    [Fact]
+    public void Pufferanteil_der_Nutzwaerme_steht_in_der_Waermegruppe()
+    {
+        var erg = Erg();
+        erg.GedecktMwh = 91.32;
+        erg.AusPufferMwh = 65.67;
+
+        var dl = Zeichnen(erg).FindAll("dl.epos-simerg-werte")[0];
+        string[] zeilen = dl.QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray();
+        string[] werte = dl.QuerySelectorAll("dd").Select(z => z.TextContent.Trim()).ToArray();
+        Assert.Equal("65,67", werte[2 * Array.IndexOf(zeilen, "davon aus Puffer:")]);
+    }
+
+    /// <summary>Ohne Kaskade fehlt die Zeile der Quellwärme in der Herleitung.</summary>
+    [Fact]
+    public void Ohne_Kaskade_keine_Quellwaerme()
+    {
+        var erg = Erg();
+        erg.MitKaskade = false;
+
+        string[] zeilen = Zeichnen(erg).FindAll("dl.epos-simerg-werte")[0]
+                                       .QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray();
+        Assert.DoesNotContain("abzüglich Quellwärme aus Kaskade:", zeilen);
+        Assert.Contains("abzüglich Speicherverluste:", zeilen);
     }
 
     /// <summary>Die Restwärme schliesst die Wärmegruppe betont ab (W11b‑B‑15).</summary>

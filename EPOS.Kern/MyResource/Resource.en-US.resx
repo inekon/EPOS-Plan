@@ -5804,10 +5804,10 @@ It then feeds the overview and the overall simulation. The existing simulation r
     <value>{0} versions</value>
   </data>
   <data name="BK_ERG_ABSCHNITT_KOMPONENTEN" xml:space="preserve">
-    <value>Components and settings</value>
+    <value>Overview components / comparison</value>
   </data>
   <data name="BK_ERG_ABSCHNITT_ERGEBNISSE" xml:space="preserve">
-    <value>Results — energy</value>
+    <value>Overview energy</value>
   </data>
   <data name="BK_ERG_SP_KENNZAHL" xml:space="preserve">
     <value>Indicator</value>
@@ -51923,6 +51923,15 @@ chart</value>
   <data name="BED_GRAFIK_ACHSE_STUNDE" xml:space="preserve">
     <value>Hour</value>
   </data>
+  <data name="BED_GRAFIK_ACHSE_STROM" xml:space="preserve">
+    <value>Electricity requirement [{0}]</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_WAERME" xml:space="preserve">
+    <value>Heat requirement [{0}]</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_KAELTE" xml:space="preserve">
+    <value>Cooling demand [{0}]</value>
+  </data>
   <data name="BED_GRAFIK_ACHSE_VIERTELSTUNDE" xml:space="preserve">
     <value>Quarter hour</value>
   </data>
@@ -58470,5 +58479,11 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="SIMERG_TIP_SPEICHERVERLUSTE_SPK" xml:space="preserve">
     <value>Boiler heat that is lost in storage or still stored at the end of the year and so covers no demand. Calculated as heat production minus useful heat.</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_AUS_PUFFER_WP" xml:space="preserve">
+    <value>of which from buffer:</value>
+  </data>
+  <data name="SIMERG_TIP_DAVON_AUS_PUFFER_WP" xml:space="preserve">
+    <value>The part of the useful heat that the storage tanks delivered to the demand from the heat pumps' charge. The heat pumps deliver the rest directly. In the boiler tab this value is part of “of which from buffer (other generators)”.</value>
   </data>
 </root>

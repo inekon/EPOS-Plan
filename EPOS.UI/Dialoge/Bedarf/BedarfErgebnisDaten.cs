@@ -133,13 +133,14 @@ public sealed class Bedarfsgrafikquelle
 {
     /// <summary>
     /// Das Zeichenmodell zu den gewählten Sichten (Indizes in <see cref="BedarfErgebnisDaten.Sichten"/>,
-    /// aufsteigend), dem Raster und der Anzeigeeinheit der Summen; <c>null</c> = kein Bild.
+    /// aufsteigend), dem Raster und der Anzeigeeinheit — die Summen in ihr, die Ganglinie in ihrer
+    /// Leistungseinheit (<see cref="Energieeinheit.Leistungstext"/>); <c>null</c> = kein Bild.
     /// </summary>
     public Func<IReadOnlyList<int>, Bedarfsraster, Energieeinheit, Zeichenmodell?>? Modell { get; init; }
 
     /// <summary>
     /// Die Spalten des CSV-Exports zum selben Bild: je Sicht eine, 8 760 bzw. 35 040 Zeilen für das
-    /// Jahr, 12, 52 oder 365 für die Summen.
+    /// Jahr (in der Leistungseinheit der Wahl), 12, 52 oder 365 für die Summen.
     /// </summary>
     public Func<IReadOnlyList<int>, Bedarfsraster, Energieeinheit, IReadOnlyList<ZeitreihenSpalte>>? Spalten { get; init; }
 

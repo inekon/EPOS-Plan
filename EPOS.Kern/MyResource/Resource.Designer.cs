@@ -4884,6 +4884,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf [{0}] ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_ACHSE_KAELTE {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_ACHSE_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf [{0}] ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_ACHSE_STROM {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_ACHSE_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stunde ähnelt.
         /// </summary>
         public static string BED_GRAFIK_ACHSE_STUNDE {
@@ -4898,6 +4916,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BED_GRAFIK_ACHSE_VIERTELSTUNDE {
             get {
                 return ResourceManager.GetString("BED_GRAFIK_ACHSE_VIERTELSTUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf [{0}] ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_ACHSE_WAERME {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_ACHSE_WAERME", resourceCulture);
             }
         }
         
@@ -12293,7 +12320,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnisse — Energie ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übersicht Energie ähnelt.
         /// </summary>
         public static string BK_ERG_ABSCHNITT_ERGEBNISSE {
             get {
@@ -12302,7 +12329,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Komponenten und Einstellungen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übersicht Komponenten / Vergleich ähnelt.
         /// </summary>
         public static string BK_ERG_ABSCHNITT_KOMPONENTEN {
             get {
@@ -123590,6 +123617,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon aus Puffer: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_DAVON_AUS_PUFFER_WP {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_DAVON_AUS_PUFFER_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die davon Heizung: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_DAVON_HEIZUNG {
@@ -124603,6 +124639,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_TIP_BRENNWERT_SPK {
             get {
                 return ResourceManager.GetString("SIMERG_TIP_BRENNWERT_SPK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Teil der Nutzwärme, den die Speicher aus der Ladung der Wärmepumpen an den Bedarf abgegeben haben. Den Rest liefern die Wärmepumpen direkt. Im Heizkesselreiter ist dieser Wert in „davon aus Puffer (andere Erzeuger)“ enthalten. ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_DAVON_AUS_PUFFER_WP {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_DAVON_AUS_PUFFER_WP", resourceCulture);
             }
         }
         

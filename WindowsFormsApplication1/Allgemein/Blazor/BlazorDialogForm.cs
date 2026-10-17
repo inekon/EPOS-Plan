@@ -144,6 +144,13 @@ namespace WindowsFormsApplication1
             try { _web.WebView.DefaultBackgroundColor = Themaflaeche; }
             catch { /* aeltere WebView2-Laufzeit: Schoenheitsfehler, kein Fehlschlag */ }
 
+            // FENSTER-WEG DES BEFEHLSTASTENHAKENS: Liegt der Fokus im Browserfenster der
+            // WebView2 (eigener Prozess), erreicht keine Taste ProcessCmdKey dieser Form.
+            // Was der Browser zurueckgibt, meldet die WebView2 ueber AcceleratorKeyPressed;
+            // das WinForms-Steuerelement macht daraus sein KeyDown und uebernimmt Handled.
+            // Das Steuerelement existiert hier schon (CreationProperties oben).
+            _web.WebView.KeyDown += WebViewTasteGedrueckt;
+
             // FEHLERSCHRANKE (Befund W13-B-1, 05.09.2026): Gemountet wird nicht
             // die Komponente selbst, sondern EPOS.UI.Bausteine.Wurzel<T> - eine
             // ErrorBoundary mit T darin. Eine ErrorBoundary faengt die Ausnahmen
@@ -290,12 +297,15 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Ein BEFEHLSTASTENHAKEN des Aufrufers: bekommt jede Taste, die
-        /// <see cref="ProcessCmdKey"/> erreicht, bevor die WebView sie sieht;
-        /// <c>true</c> = behandelt, die Taste endet hier. <c>null</c> (Vorgabe) =
-        /// unverändert. Der Weg der Geste des Entwicklermodus im Dialog „Über
-        /// EPOS-Plan" (<c>UeberFenster</c>); warum <see cref="ProcessCmdKey"/> und
-        /// nicht <c>KeyPreview</c>, steht am Hauptfensterrahmen.
+        /// Ein BEFEHLSTASTENHAKEN des Aufrufers: <c>true</c> = behandelt, die Taste
+        /// endet hier. <c>null</c> (Vorgabe) = unverändert. Zwei Wege, kein Doppelweg:
+        /// Liegt der Fokus im Browserfenster der WebView2, erreicht die Taste die Form
+        /// nie; dann kommt sie über das Tastenereignis der WebView2
+        /// (AcceleratorKeyPressed → <c>KeyDown</c> des Steuerelements,
+        /// <see cref="WebViewTasteGedrueckt"/>). Liegt er auf der WinForms-Seite, kommt
+        /// sie über <see cref="ProcessCmdKey"/>. Der Haken darf nichts Blockierendes tun
+        /// – der Browserprozess wartet auf die Antwort. Der Weg der Geste des
+        /// Entwicklermodus im Dialog „Über EPOS-Plan" (<c>UeberFenster</c>).
         /// </summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Func<Keys, bool> Befehlstaste { get; set; }
@@ -305,6 +315,21 @@ namespace WindowsFormsApplication1
         {
             if (Befehlstaste != null && !DesignMode && Befehlstaste(taste)) return true;
             return base.ProcessCmdKey(ref nachricht, taste);
+        }
+
+        /// <summary>
+        /// Fenster-Weg des <see cref="Befehlstaste"/>-Hakens bei Fokus im Browser: das
+        /// <c>KeyDown</c> des WebView2-Steuerelements (aus AcceleratorKeyPressed).
+        /// <c>Handled = true</c> geht an die WebView2 zurück, der Browser sieht die
+        /// Taste dann nicht mehr.
+        /// </summary>
+        private void WebViewTasteGedrueckt(object sender, KeyEventArgs e)
+        {
+            if (Befehlstaste != null && !DesignMode && Befehlstaste(e.KeyData))
+            {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+            }
         }
 
         /// <inheritdoc />
