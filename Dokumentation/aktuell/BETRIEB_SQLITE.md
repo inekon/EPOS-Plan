@@ -472,22 +472,17 @@ fragt `sqlite_master`, ob die Tabelle überhaupt noch ohne `STRICT` steht), läu
 Linux und kennt `--trocken` für den Blick vor dem Griff. Von Hand angelegte Spalten wären eine
 zweite Schreibweise derselben Spalte — genau das, was die Typübersetzung verhindern soll.
 
-> **Drei Spalten liegen AUSSERHALB dieses Wegs, mit Absicht: die Ergebnisspalten
-> `StromsteuerBefreiungModus`, `ErsatzBarwert` und `Nachweis_Json` von
-> `Tab_ErgebnisWirtschaftlichkeit`.** Sie führt weder das Grundschema noch ein Schemaschritt;
-> `WirtschaftlichkeitCtrl.StelleTabellenSicher()` zieht sie additiv nach, sobald sie fehlen
-> (Begründung dort). Alles Übrige der Wirtschaftlichkeit hat genau EINEN DDL-Ort: Die fünf
-> Tabellen stehen im Grundschema, STRICT und mit Fremdschlüssel auf `Tab_Projekt` (drei davon
-> aus Schritt 96), jede Eingabespalte in ihrem Schemaschritt; der Controller legt weder Tabellen
-> an noch zieht er Eingabespalten nach (Wache `WirtschaftlichkeitCtrlTabellenTests`). Das
-> Werkzeug oben trägt `StromsteuerBefreiungModus` und `Nachweis_Json` nach; `ErsatzBarwert`
-> (DOUBLE, Etappe W5‑B‑10) wurde EINZELN per `ALTER TABLE … ADD COLUMN … REAL` (die wortgleiche
-> Ausgabe der Typübersetzung für `DOUBLE`) nachgezogen — nicht über den vollen Aufruf von
-> `StelleTabellenSicher()`, der am Ende `GesetzKatalog.StelleKatalogSicher()` anhängt, das bei
-> veralteter Generation neue Gesetzesparameter-Zeilen einfügen würde, ein Dateninhalt jenseits
-> einer reinen Schema-Nachführung. **Wer eine weitere Ergebnisspalte ohne Schemaschritt
-> einführt, trägt sie im Werkzeug Testdatenbankschema nach und prüft die Testdatenbank mit — der
-> SQL-Dialektprüfer zeigt die Lücke an, das Schließen bleibt Handarbeit.**
+> **Die Wirtschaftlichkeit hat genau EINEN DDL-Ort: die Schemamigration.** Die fünf Tabellen
+> stehen im Grundschema, STRICT und mit Fremdschlüssel auf `Tab_Projekt` (drei davon aus
+> Schritt 96), jede Eingabespalte in ihrem Schemaschritt; die vier Ergebnisspalten
+> `StromsteuerBefreiungModus`, `ErsatzBarwert`, `Nachweis_Json` und `Lauf_Staende` von
+> `Tab_ErgebnisWirtschaftlichkeit`, die das Grundschema nicht führt, legt der Schritt
+> `ErgebnisWirtschaftlichkeitSpaltenSchema` an — jede nur, wenn sie fehlt, mit der Typübersetzung
+> von `StilleDb.AlterTableAddColumn` (`TEXT(20)` → `TEXT CHECK (length(…) <= 20)`, `DOUBLE` →
+> `REAL`, `LONGTEXT` und `TEXT` → `TEXT`). Der Controller legt weder Tabellen an noch zieht er
+> Spalten nach (Wache `WirtschaftlichkeitCtrlTabellenTests`). **Wer eine weitere Ergebnisspalte
+> einführt, legt sie in einem Schemaschritt an** — das Werkzeug Testdatenbankschema zieht ihn für
+> die Testdatenbank nach, der SQL-Dialektprüfer zeigt eine Lücke an.
 
 > **Danach ist der Referenzlauf Pflicht, nicht Kür.** Eine Schemamigration darf keinen
 > Rechenwert verschieben; belegt wird das, indem
