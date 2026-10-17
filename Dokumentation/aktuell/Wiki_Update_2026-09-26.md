@@ -1124,6 +1124,7 @@ Der Sammel-Upload 1.2.0.11 lief am 14.10.2026 (Seite Brauchwasser-Zapfprofil Rev
 - Seit 16.10.2026: In den Bedarfsprofilen vergleicht „Vergleichen…“ zwei bis drei Projektzeilen und Katalogsätze nebeneinander; Kopfzeile und Knöpfe folgen den übrigen Dialogen mit Katalogauswahl. (#1155)
 - Seit 16.10.2026: Jahressummen und Jahresarbeit in MWh stehen in Auswahllisten, Katalog und Satzzeile einheitlich als ganze Zahl mit Tausendertrennzeichen. (#1156)
 - Seit 16.10.2026: Achsenbeschriftungen und Texte der Ganglinien in den Bedarfs- und Ganglinien-Dialogen stehen in der Schriftgröße der Oberfläche, auch im Projektassistenten. (#1157)
+- Seit 17.10.2026: Auch Strom-, Solar- und PV-Ganglinie stellen mit „Vergleichen…“ zwei oder mehr angekreuzte Ganglinien des Projekts oder des Katalogs nebeneinander. (#1166)
 
 *Wiki-Quellen dieses Nachtrags (Upload ausstehend):* `Projekte/Wiki/Programm Dokumentation - Pufferspeicher auslegen.wiki`, „Grundlagen - Anlagenkopplung und Regelung“, „Simulation konfigurieren und starten“, `Projekte/Wiki/Dateien/Diagramm_Bivalenz.png`, `Projekte/Wiki/Dateien/Diagramm_Kapitalwert_Bruecke.png`.
 
