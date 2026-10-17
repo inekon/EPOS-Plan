@@ -1751,6 +1751,27 @@ Eine **Luft-Wasser-Wärmepumpe** und eine **luftgekühlte Kältemaschine** haben
 **nicht** (benannt abgelehnt); Geräte mit drittem Wärmeübertrager (Mehrleitergeräte) und die Teilwärmerückgewinnung am
 Enthitzer einer luftgekühlten Maschine sind spätere Gegenstände (KWN‑Q9).
 
+**Gebaut (KWN‑1a) — Festlegungen an der Kältemaschine** (`EPOS.Kern/Allgemein/Simulation/Kaelte/KaelteWaermeKopplung.cs`,
+rein, ohne Datenbank; Proben `KaelteWaermeKopplungTests`):
+
+- **Kennlinienpunkt:** Die Kennlinie wird an der **Kondensatortemperatur** `θ_W,VL + ΔT_Gr` als Rückkühlachse und am
+  **Kaltwasservorlauf** der Kältesenke gelesen (kein Grädigkeitsabzug am Verdampfer: die Kältesenke hängt wie im
+  Einzelbetrieb am Kaltwasserkreis der Maschine, die Grädigkeit gilt dem Übertrager zur Wärmesenke). Gegenüber dem
+  Rücklauf der Wärmesenke ist das die vorsichtige Lesart; Kapazität, EER, Randweg (Randwert bzw. Gütegrad) und Teillast
+  samt Takt kommen über die Wege der `Kaeltemaschine` (`PunktBei`, `VerdichterstundeBei`), nicht aus einer Kopie.
+- **Grädigkeit:** leer `KaelteFestwerte.KOPPLUNG_GRAEDIGKEIT_K` = 3 K (Rechenbeispiel oben).
+- **Hubgrenze:** Grund `HUB`, wenn die Kondensatortemperatur `Kopplung_Kond_Vorlauf_Max` übersteigt — leer den Rand der
+  Kennlinie, mit Randweg `GUETEGRAD` um die Extrapolationsweite 10 K darüber —, wenn das Kaltwasser unter
+  `Kaltwasser_Vorlauf_Min` liegt oder der Hub nicht positiv ist; Vergleiche über `Rechenrand.SchwelleErreicht`.
+- **Prüfreihenfolge** je Stunde: `LUFTGERAET` (Rückkühlart `LUFT`), `FUEHRUNG` (wärmegeführt, siehe 5.6.4),
+  `KEIN_BEDARF`, `HUB`, `GRENZE` (keine Leistung oder kein EER im Kopplungspunkt). Ohne Kopplung rechnet die Maschine
+  ihren Restbetrieb über die ganze Stunde.
+- **Q_V = 0**, die Bilanz `Q_W = Q_K + P_el` gilt mit dem Verdichterstrom. Der Hilfsstrom der Rückkühlung entfällt im
+  Kopplungsanteil; im kältegeführten Betrieb trägt die Überschusswärme ihren Anteil am Hilfsstrom, ausgewiesen außerhalb
+  der Bilanz.
+- **Teillast und Takt:** Unter der Mindestteillast taktet der Kopplungsanteil auf dem Weg der Maschine — mit
+  `Teillast_Weg` nach KM3 samt Mehrstrom, ohne ihn wie im Einzelbetrieb ohne Mehrstrom.
+
 #### 5.6.4 Führung
 
 | Führung | Regel je Stunde | Überschuss | Fehlbetrag |
@@ -1769,6 +1790,22 @@ Kälte, weil der Restbetrieb sie deckt.
 
 **Zeitanteil.** Der Kopplungsanteil belegt den Zeitanteil `τ_kop = Q_K,kop / Kapazität_K(Kopplungspunkt)`; für den
 Einzelbetrieb bleibt `1 − τ_kop`, genau wie heute der Heizanteil den Kühlanteil begrenzt (5.2).
+
+**Gebaut (KWN‑1a) — Festlegungen der Führung an der Kältemaschine:**
+
+- **Schnittmenge:** Der Anteil wird mit dem Volllast-EER im Kopplungspunkt bestimmt und dann auf dem Teillastweg der
+  Maschine gerechnet. Liegt der Teillast-EER darunter, übersteigt die Abwärme den Wärmebedarf; **genau ein Schritt** senkt
+  den Anteil bei der Leistungszahl dieser Stunde auf `Q_W = Q_W,Bedarf` (Kennzeichen „korrigiert“) — keine Iteration,
+  kein Überschuss.
+- **Restbetrieb:** Die offene Kälte läuft im Zeitanteil `1 − τ_kop` als Verdichterstunde an der übergebenen
+  Rückkühltemperatur der Stunde (Kapazität dort × Restzeitanteil); ohne Rückkühltemperatur geht sie ganz an die übrige
+  Kältefolge. Freie Kühlung und Bilanz eines Rückkühlwerks im Restbetrieb trägt erst der Einbau (KWN‑1c).
+- **Kältegeführt:** volle Kälte bis zur Kapazität, die Abwärme über dem Wärmebedarf ist Überschuss an die Rückkühlung.
+- **Wärmegeführt** an der Kältemaschine **benannt abgelehnt** (Grund `FUEHRUNG`): Ihr Verdampfer hat keine Umweltquelle,
+  die überschüssige Kälte hätte keinen Abnehmer (5.6.9). Die reine Aufteilung `KaelteWaermeKopplung.Aufteilen` rechnet die
+  Führung mit Kälteüberschuss für die Wärmepumpe (KWN‑2) bereits.
+- **Strom** nach Nutzenergie über die **genutzten** Mengen; beide Anteile summieren sich genau zu `P_el`, beide Seiten
+  tragen die Gesamtleistungszahl.
 
 #### 5.6.5 Speicher
 
@@ -2041,7 +2078,7 @@ Entfernen eines Referenzprojekts mit Kälte-Wärme-Kopplung.
 | Welle | Inhalt | Aufwand | Abnahme |
 |---|---|---|---|
 | **KWN-0** | **gebaut:** Schema 218 `KaelteArtSchema` (`Kaelte_Art` an beiden Zuordnungen), Unterposten `Kaeltebedarf_Prozess` mit Jahressumme `Kaeltebedarf_Prozess_Mwh`, Naht `Kaelteschranke.Prozesskaelte` verdrahtet (zentral gedeckter Prozessanteil, im AK3-Weg), Auswahlfeld „Art“ (Raumkühlung/Prozesskälte) in „Kältebedarf extern“ (Kopfleiste, nur Kanal Kühlung) und „Kältebedarfsprofile“ (eigene Gruppe). Das Temperaturpaar der Prozesskälte bleibt ohne Wirkung (E-K3 bis KWN‑1); Ergebnisspalte, Bericht und Kennzahl des Unterpostens folgen mit KWN‑4, die Quellenwahl der Wärmepumpe bietet einen Kältespeicher an (ohne Verwendungsfilter) — die benannte Ablehnung im Lauf bleibt offen bis KWN‑2S | 2–3 PT | Kern-Filter grün; Schematests, `SqlDialektPruefer`; Bedarfsprobe Kälte ohne Fehler; Proben Raum + Prozess = Kanal, Kanal byte-gleich, ohne `PROZESS` 0, Rundreise; Referenzlauf byte-gleich |
-| **KWN-1** | Schema `KWN-S1`, Kopplungsvorstufe mit Schnittmenge für die **Kältemaschine**, ein Wärme- und ein Kälteziel (Fälle a, b, c), Kopplungsbuchung, Kopplungsprobe, erweiterte Deckungsprobe, eigene Reihen und Stromposition, Hubgrenze | 5–7 PT | Rechenproben ohne Datenbank (Bilanz je Stunde, Hubgrenze, Schnittmenge an beiden Grenzen, τ_kop + Rest ≤ 1); Kopplungs- und Deckungsprobe ohne Fehler; Referenzlauf byte-gleich |
+| **KWN-1** | **KWN‑1a gebaut:** reine Rechenklasse `KaelteWaermeKopplung` (Stunde und Jahr, drei Führungen, Hub- und Gerätegrenze, Restbetrieb, Stromaufteilung; Festlegungen in 5.6.3 und 5.6.4), 22 Rechenproben; offen KWN‑1b (Schema 242, Datenmodell, Lesen der Projektkopie) und KWN‑1c (Einbau als Kopplungsvorstufe, Buchung, Proben, Ergebnisse). Gesamt: Schema `KWN-S1`, Kopplungsvorstufe mit Schnittmenge für die **Kältemaschine**, ein Wärme- und ein Kälteziel (Fälle a, b, c), Kopplungsbuchung, Kopplungsprobe, erweiterte Deckungsprobe, eigene Reihen und Stromposition, Hubgrenze | 5–7 PT | Rechenproben ohne Datenbank (Bilanz je Stunde, Hubgrenze, Schnittmenge an beiden Grenzen, τ_kop + Rest ≤ 1); Kopplungs- und Deckungsprobe ohne Fehler; Referenzlauf byte-gleich |
 | **KWN-2** | dasselbe für die **Wärmepumpe** (Sole/Wasser-Wasser) samt Brauchwasser als Senke; Erdreich unberührt; Führungen kälte- und wärmegeführt mit Überschuss an Rückkühlung bzw. Quelle | 3–4 PT | Rechenproben; Probe „Entzugsganglinie unverändert bei Kopplung“; Referenzlauf byte-gleich |
 | **KWN-2S** | Kopplung über Speicher (5.6.7): Kältespeicher als Quelle der Wärmepumpe, Regeneration als Stundenreihe aus der gebundenen Prozesskälte, Kälteüberlauf an die Kältekaskade, Prüfungen der Konfiguration (Verwendung, Temperaturfenster, Kreisschluss, keine zweite Quelle), Quellenwahl und Chip in der Simulationskonfiguration | 3–4 PT | Rechenproben (Speicher an der unteren Grenze, Puffer voll, Überlauf); Quellspeicherfälle des Bestands byte-gleich; bunit der Quellenwahl; Schale auf Linux (0 Fehler); Referenzlauf byte-gleich |
 | **KWN-3** | Referenzprojekte b, a und b über Speicher, Wachen, Einfrierregel in `CLAUDE.md`, neue Basis | 2–3 PT | Wachen grün; Referenzlauf aller Projekte gegen die neue Basis, Begründung in `Referenzlaeufe/LIESMICH.md` |
