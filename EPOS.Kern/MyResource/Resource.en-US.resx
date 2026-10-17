@@ -5804,10 +5804,10 @@ It then feeds the overview and the overall simulation. The existing simulation r
     <value>{0} versions</value>
   </data>
   <data name="BK_ERG_ABSCHNITT_KOMPONENTEN" xml:space="preserve">
-    <value>Components and settings</value>
+    <value>Overview components / comparison</value>
   </data>
   <data name="BK_ERG_ABSCHNITT_ERGEBNISSE" xml:space="preserve">
-    <value>Results — energy</value>
+    <value>Overview energy</value>
   </data>
   <data name="BK_ERG_SP_KENNZAHL" xml:space="preserve">
     <value>Indicator</value>
@@ -51919,6 +51919,15 @@ chart</value>
   </data>
   <data name="BED_GRAFIK_ACHSE_STUNDE" xml:space="preserve">
     <value>Hour</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_STROM" xml:space="preserve">
+    <value>Electricity requirement [{0}]</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_WAERME" xml:space="preserve">
+    <value>Heat requirement [{0}]</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_KAELTE" xml:space="preserve">
+    <value>Cooling demand [{0}]</value>
   </data>
   <data name="BED_GRAFIK_ACHSE_VIERTELSTUNDE" xml:space="preserve">
     <value>Quarter hour</value>

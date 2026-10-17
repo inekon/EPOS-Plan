@@ -184,8 +184,8 @@
     }
 
     @* --------------------------------------------- Komponentenbereich *@
-    @* Zwei Abschnitte (Anwenderauftrag 13.10.2026): "Komponenten und Einstellungen",
-       darunter "Ergebnisse — Energie" (UebersichtErgebnisse). *@
+    @* Zwei Bereiche: "Uebersicht Komponenten / Vergleich", darunter "Uebersicht Energie"
+       (UebersichtErgebnisse, beim ersten Oeffnen mit dem Energieflussbild). *@
     <h2 class="epos-uebersicht-abschnitt">@LabelAbschnittKomponenten</h2>
     @* Auf einer Variante steht ueber dem Titel der Unterschiede leise der Rueckweg. *@
     @if (VarianteGewaehlt)
@@ -346,7 +346,7 @@
         <p class="epos-status">@_status</p>
     }
 
-    @* ------------------------------------------- Ergebnisse — Energie *@
+    @* ---------------------------------------------- Uebersicht Energie *@
     @* "nur Unterschiede" wirkt auch hier, solange die Gegenueberstellung ihn zeigt. *@
     <UebersichtErgebnisse @ref="_ergebnisse" @attributes="ErgebnisGabenSatz" Stand="@_stand"
                           NurUnterschiede="@(NurUnterschiede && _stand.Gewerke.Count > 0)" />
@@ -703,7 +703,7 @@
     [Parameter] public Action<bool>? NurUnterschiedeGewechselt { get; set; }
 
     /// <summary>Die Überschrift des ersten Abschnitts (<c>BK_ERG_ABSCHNITT_KOMPONENTEN</c>).</summary>
-    [Parameter] public string LabelAbschnittKomponenten { get; set; } = "Komponenten und Einstellungen";
+    [Parameter] public string LabelAbschnittKomponenten { get; set; } = "Übersicht Komponenten / Vergleich";
 
     /// <summary>Der Parametersatz des Abschnitts „Ergebnisse — Energie“ (Hülle <c>UebersichtErgebnisGaben</c>); ohne ihn entfällt er.</summary>
     [Parameter] public IReadOnlyDictionary<string, object>? ErgebnisGaben { get; set; }
