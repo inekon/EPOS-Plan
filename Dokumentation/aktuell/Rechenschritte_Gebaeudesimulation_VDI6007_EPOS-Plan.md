@@ -544,6 +544,127 @@ Zeile 20); eine leere Randbedingung heißt an Innenwand und Decke „innerhalb d
 Außenluft; ein unbeheizter Nachbarraum rechnet mit der Kellertemperatur des Gebäudes bis G6b; solare
 Gewinne je Fensterbauteil mit Azimut und Neigung, θ_eq je Bauteil nach (41).
 
+### 3.1 Inhomogene Schichten und Fensteraufbauten
+
+Ein Bauteilaufbau kann neben homogenen Schichten **Abschnitte** führen: Streifen m nebeneinander, etwa
+Ständer und Gefach. Der Flächenanteil f_m gehört dem Abschnitt, nicht der einzelnen Schicht; die Summe der
+Anteile ist 1. Gerechnet wird in `InhomogeneSchichten` (Modul `Gebaeude/`), aufgerufen beim Bilden des
+Bauteileingangs (`GebaeudeZonenabbildung.AlsBauteil`) und für die Kennwerte des Aufbaueditors
+(`BauteilaufbauCtrl.Kennwerte`). Das Protokoll der Umsetzung steht unter
+[`2026-10-13_BK-5_BK-6_Abschnitte_Fenster.md`](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-13_BK-5_BK-6_Abschnitte_Fenster.md).
+
+**B0a — Ebenen bilden.** Die Schichten werden in Listenreihenfolge (von innen nach außen, wie B3) zu
+Ebenen j zusammengefasst: Eine Schicht ohne Abschnitt ist eine homogene Ebene über die ganze Fläche.
+Eine Schicht mit Abschnitt gehört zur Ebene ihrer Vorgängerin, wenn diese einen Abschnitt mit kleinerer
+Nummer trägt, sonst beginnt sie eine neue inhomogene Ebene. R_mj ist der Wärmedurchlasswiderstand der
+Schicht des Abschnitts m in der Ebene j (d/λ, eine ruhende Luftschicht nach ihrem Luftschichtwiderstand
+in der Wärmestromrichtung des Bauteils), R_hom die Summe der homogenen Ebenen.
+
+**B0b — Prüfen.** Rechenbar ist der Aufbau nur, wenn jede inhomogene Ebene dieselben Abschnittsnummern
+führt, jeder Abschnitt einen Flächenanteil größer null trägt und die Summe der Anteile 1 ± 0,01 ist; die
+Anteile werden danach auf Σ f_m = 1 genormt. Eine Lücke lehnt den Aufbau benannt ab (im Editor als Grund
+statt Zahl, im Speicherweg vor dem Schreiben, in der Simulation als Modellfehler).
+
+**B0c — Grenzwerte und R_T** (DIN EN ISO 6946, Abschnitt 6.7; maßgebend ist die Ausgabe DIN EN ISO 6946:2018-03,
+EN ISO 6946:2017, mit Berichtigung 1:2023-04). R_si und R_se folgen aus Neigung und Randbedingung des Bauteils wie in B7.
+
+```
+oberer Grenzwert   1/R'_T = Σ_m f_m / R_T,m     mit R_T,m = R_si + R_hom + Σ_j R_mj + R_se   [m²K/W]
+unterer Grenzwert  R''_T  = R_si + R_hom + Σ_j R_j + R_se   mit 1/R_j = Σ_m f_m / R_mj        [m²K/W]
+Wärmedurchgangswiderstand   R_T = (R'_T + R''_T) / 2,      U = 1 / R_T                       [m²K/W, W/(m²K)]
+```
+
+Der obere Grenzwert schaltet die Streifen über den ganzen Aufbau parallel, der untere bildet je
+inhomogener Ebene den flächengewichteten Leitwert und schaltet die Ebenen in Reihe. Der Summenfuß des
+Aufbaueditors zeigt R'_T, R''_T und R_T.
+
+**Fehlerschranke** (DIN EN ISO 6946, 6.7.2.5). Aus dem Abstand der Grenzwerte folgt die größte mögliche relative
+Abweichung des Mittels vom wahren Wert:
+
+```
+e = (R'_T − R''_T) / (2 · R_T)                                                               [–]
+Hinweis, wenn e > 0,20   (gleichbedeutend R'_T / R''_T > 1,5)
+```
+
+Der Kern rechnet e je inhomogenem Aufbau (`Abschnittsgrenzen.Fehlerschranke`), der Summenfuß zeigt sie. Über 20 % — dem
+Verhältnis 1,5, das die Norm in 6.7.2.2 als Anwendungsgrenze des vereinfachten Verfahrens nennt; die Fehlerabschätzung
+dazu steht in 6.7.2.5 — steht im Summenfuß ein Hinweis
+(`InhomogeneSchichten.FEHLERSCHRANKE_GRENZE`); abgelehnt wird nichts, und R_T bleibt das Mittel, auch in der Simulation.
+
+**B0d — Ersatzschichten.** Die Kettenmatrix (B2, B3) kennt nur homogene Schichten. Jede inhomogene Ebene
+wird deshalb **eine homogene Ersatzschicht**; die homogenen Ebenen gehen unverändert durch:
+
+```
+k       = (R_T − R_si − R_se − R_hom) / Σ_j R_j            (k ≥ 1, da R_T ≥ R''_T)
+d_j     = Σ_m f_m · d_mj                                    [m]
+λ_eff,j = d_j / (k · R_j)                                   [W/(mK)]
+ρ_eff,j = Σ_m f_m · ρ_m · d_mj / d_j                        [kg/m³]
+c_eff,j = Σ_m f_m · C_mj / (ρ_eff,j · d_j),  C_mj = ρ_m · c_m · d_mj   [J/(kgK)]
+```
+
+Der Faktor k verteilt den Abstand zwischen R_T und R''_T gleichmäßig auf die inhomogenen Ebenen, so dass
+die Reihe der Ersatzschichten zwischen den Übergängen genau R_T − R_si − R_se trägt; der U-Wert des
+Bauteilwegs ist damit der aus B0c. Die Wärmekapazität bleibt flächengewichtet erhalten:
+ρ_eff,j · c_eff,j · d_j = Σ_m f_m · C_mj. Eine Luftschicht ohne λ, ρ oder c trägt keine Kapazität (C = 0); fehlt in
+einer Ebene jede Rohdichte, bleibt die Ersatzschicht masselos. Enthält die Ebene eine Luftschicht, ist die
+Ersatzschicht eine Luftschicht mit der äquivalenten Leitfähigkeit λ_eff,j. Mit den Ersatzschichten laufen
+B1 bis B7 wie für jeden homogenen Aufbau.
+
+**Aufbauten ohne Abschnitt** laufen nicht über B0a bis B0d; ihr Weg ist unverändert.
+
+**Gemeinsame Schichtgrenzen beim Katalogimport.** Eine Quelle kann je Abschnitt eine eigene Schichtfolge mit eigener
+Schichtzahl führen, auch bei gleicher Schichtzahl mit versetzten Grenzen. B0a verlangt in jeder inhomogenen Ebene jeden
+Abschnitt genau einmal, und der untere Grenzwert nach DIN EN ISO 6946, 6.7.2.3 setzt voraus, dass jede Ebene parallel zur
+Oberfläche isotherm ist und die Schichten an den Grenzen aller übrigen Abschnitte unterteilt sind. Der Import
+(`BauteilkatalogImport.AbschnittePruefen`) bringt die Folgen deshalb immer auf gemeinsame Ebenen:
+
+```
+D_m      = Σ_i d_mi                                    Gesamtdicke des Abschnitts m             [m]
+Annahme  max D_m − min D_m ≤ max(0,001 m; 0,01 · max D_m)
+t_mi     = (Σ_{k≤i} d_mk) / D_m                        genormte Lage der Grenzen               [–]
+T        = ⋃_m { t_mi }                                gemeinsame Grenzen, Ende 1; Grenzen verschiedener
+                                                       Abschnitte mit |Δt| ≤ max(0,001 m; 0,01 · max D_m) / max D_m
+                                                       sind eine Grenze an ihrem Mittel
+Teil     d = d_mi · Δt / (t_mi − t_m,i−1)              je Stück zwischen zwei Grenzen aus T      [m]
+```
+
+Jeder Abschnitt behält Dicke und Widerstand (R'_T unverändert); jede Ebene j führt danach in jedem Abschnitt genau ein Stück.
+Eine ruhende Luftschicht (Widerstand nach Tabelle, nicht anteilig zur Dicke) wird nicht geteilt; fiele eine Grenze in sie, wird
+der Aufbau verworfen, ebenso bei Gesamtdicken außerhalb der Toleranz und bei einer Schicht ohne Dicke neben verschiedener
+Schichtzahl. Zwei Grenzen desselben Abschnitts bleiben getrennt (eine dünne Folie bleibt eine Schicht). Nur wenn bei gleicher
+Schichtzahl alle Grenzen innerhalb der Toleranz übereinanderliegen, bleibt der Aufbau, wie er ist; ebenso bei gleicher
+Schichtzahl mit einer Schicht ohne Dicke, deren Lage unbestimmt ist. Für Aufbauten, die schon als Importsatz im Katalog
+stehen und durch die Teilung andere Schichten bekämen, zählt die Vorschau, wie viele ihren U-Wert um mehr als 1 % ändern,
+und nennt die größte Änderung (`BauteilkatalogImport.WiederimportVergleichen`). Vergleichswert ist das U, das der Kern für
+den Katalogsatz rechnet (derselbe Weg wie der Aufbaueditor), sonst der gespeicherte U-Wert der Quelle; ergibt sich keiner,
+zählt der Aufbau „ohne Vergleichswert“. Fehlt der Flächenanteil genau eines Abschnitts und bleibt bis 1
+mehr als 0,01 offen, setzt der Import f = 1 − Σ der übrigen. Protokoll:
+[`2026-10-16_BK-8_Inhomogene_Aufbauten.md`](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-16_BK-8_Inhomogene_Aufbauten.md),
+[`2026-10-16_BK-8b_Normgerechte_Teilung.md`](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-16_BK-8b_Normgerechte_Teilung.md),
+[`2026-10-16_BK-8c_Wiederimport_Vergleich.md`](../ueberholt/Protokolle/Gebaeudesimulation/2026-10-16_BK-8c_Wiederimport_Vergleich.md).
+
+**Fensteraufbauten.** Ein Aufbau der Art Fenster oder Vorhangfassade führt die Fensterwerte U_g und U_f
+[W/(m²K)], den g-Wert, den Rahmenanteil f = A_f/(A_g + A_f) und ψ_g des Glasrands [W/(mK)] (`Fensterkennwerte`).
+Daraus folgt U_w nach DIN EN ISO 10077-1:
+
+```
+U_w = (A_g·U_g + A_f·U_f + l_g·ψ_g) / (A_g + A_f) = (1 − f)·U_g + f·U_f + (l_g / A)·ψ_g     [W/(m²K)]
+l_g ≈ 4 · √((1 − f) · A)                                                                    [m]
+```
+
+A ist die Fläche des Bauteils; die Glasrandlänge ist genähert als eine quadratische Scheibe der
+Glasfläche. Ohne ψ_g oder ohne Fläche entfällt der Randterm, ohne Rahmenanteil gilt f = 0; ohne U_g oder
+mit Rahmenanteil, aber ohne U_f, gibt es kein U_w. Wird ein Fensteraufbau einem Fensterbauteil
+zugewiesen, übernimmt das Bauteil g-Wert, Rahmenanteil und U_w (danach von Hand änderbar); was der Aufbau
+nicht trägt, bleibt am Bauteil stehen. Ein Fensteraufbau ohne Schicht geht nicht in die Kettenmatrix:
+Das Bauteil rechnet mit seinem U-Wert, g-Wert und Rahmenanteil den bestehenden Fensterzweig nach A7a und
+B6. Die Fensterwerte selbst gehen nicht unmittelbar in die Simulation ein, allein über die übernommenen
+Felder des Bauteils.
+
+**Referenzprojekte.** Kein Referenzprojekt führt einen Aufbau mit Abschnitten oder Fensterwerten
+(gehalten von `EPOS.Kern.Tests/BauteilaufbauAbschnittTests`); ihr Rechenweg ist nicht berührt, der
+Referenzlauf bleibt byte-gleich.
+
 ---
 
 ## 4. Schritt C — Systemmatrix
@@ -2090,15 +2211,15 @@ steht im Inventar der Altweg-Bestandteile (Umsetzungskonzept 6.1).
 
 **Befunde (Protokolle)**
 
-- [`Gebaeudesimulation/2026-09-15_Befund_B_Rechenweg_Kern.md`](Gebaeudesimulation/2026-09-15_Befund_B_Rechenweg_Kern.md)
+- [`../ueberholt/2026-09-15_Befund_B_Rechenweg_Kern.md`](../ueberholt/2026-09-15_Befund_B_Rechenweg_Kern.md)
   — was der Bestand rechnet, Datenmodell, Klimadaten, Andockpunkte.
 - [`Gebaeudesimulation/2026-09-15_Befund_E_Prototyp_Normtestfaelle.md`](Gebaeudesimulation/2026-09-15_Befund_E_Prototyp_Normtestfaelle.md)
   — Aufbau des Lösers, Herleitung der eliminierten Matrix, Validierungstabelle.
-- [`Gebaeudesimulation/2026-09-15_Befund_D_Testdatenbank.md`](Gebaeudesimulation/2026-09-15_Befund_D_Testdatenbank.md)
+- [`../ueberholt/2026-09-15_Befund_D_Testdatenbank.md`](../ueberholt/2026-09-15_Befund_D_Testdatenbank.md)
   — die fünfzehn gesäten Gebäude, Einheiten und Wertebereiche je Spalte, Aus-Marker.
 - [`Gebaeudesimulation/2026-09-15_Befund_F_Prototyp_Vergleich_Tagesmodell.md`](Gebaeudesimulation/2026-09-15_Befund_F_Prototyp_Vergleich_Tagesmodell.md)
   — Sollwertfahrplan und Stundenkonvention des Bestands im Vergleich zum Prototyp.
-- [`Gebaeudesimulation/2026-09-15_Befund_H_OstWest_Rechenzeit.md`](Gebaeudesimulation/2026-09-15_Befund_H_OstWest_Rechenzeit.md)
+- [`../ueberholt/2026-09-15_Befund_H_OstWest_Rechenzeit.md`](../ueberholt/2026-09-15_Befund_H_OstWest_Rechenzeit.md)
   — Wirkung der Ost/West-Trennung, Rechenzeit je Gebäude und Jahr.
 - [`Gebaeudesimulation/2026-09-15_Befund_I_VDI6007_Richtlinie_Abgleich.md`](Gebaeudesimulation/2026-09-15_Befund_I_VDI6007_Richtlinie_Abgleich.md)
   — die Gleichungsnummern und Fundstellen der Blätter 1 bis 3.

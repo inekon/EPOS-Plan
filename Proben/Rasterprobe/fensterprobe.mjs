@@ -39,6 +39,17 @@
 //    Dokument rollt nicht - und jede Zahl ist dieselbe wie ohne Fenstermarke.
 //  KATALOGDIALOG (Bedarfsverwaltung): Kopf und Fuss statisch, das Dokument
 //    rollt nicht, jede Zahl dieselbe wie ohne Fenstermarke.
+//  KLIMAIMPORT (KD-1, --nur klimaimport): die Ueberlagerung "Klimadaten einlesen" (.epos-einlesen,
+//    Leiste ohne Statusspanne) - ihre Schlussleiste steht oben wie am Ende ganz im Bild am Boden der
+//    Ueberlagerung, auch bei 787 x 520 (1 180 x 780 bei 150 %); gemessen MIT Vorschaukarte (KD-3: Ort
+//    eintragen, "Datensatz suchen"); Gegenprobe: Leiste position: static.
+//  KLIMAEXPORT (KD-5, --nur klimaexport): dieselbe Messung fuer die Ueberlagerung "Klimadaten exportieren"
+//    (.epos-klimaexport-dialog, SpeichernLeiste als letztes Kind), geoeffnet ueber "Exportieren..." der
+//    Auswahlleiste, Region mit Rohdaten (laengste Parameterliste); Gegenprobe: Leiste position: static.
+//  KLIMAREIHEN (KD-8 Teil A, --nur klimareihen): der Reiter "Weitere Reihen" der Detailkarte - die
+//    Reihenwahl bricht in ihrem Kasten um (kein Chip ragt heraus, nichts rollt quer), das Bild darunter
+//    steht, die Schlussleiste des Dialogs steht ganz im Fenster; im Fenster bis 600 px steht das Bild UEBER
+//    der Wahl, breiter die Wahl ueber dem Bild. Gegenproben: Gruppen ohne Umbruch; Reihenfolge ohne die Regel.
 //
 //  IPAD 11 ZOLL (1 194 x 834 quer): dieselben Faelle MIT den sicheren Abstaenden
 //    des iPads (Statusleiste oben 24 px, Home-Anzeige unten 20 px, gesetzt ueber die
@@ -70,6 +81,33 @@
 //    Gegenprobe: ohne Hoehengrenze der Liste, mit position: static am Banner, ohne
 //    Fenstermarke und mit dem Token auf eine Bannerzeile muss die Messung rot werden.
 //
+//  KAELTEGRAFIK (Nacharbeit KBP-3b, Fall "kaeltegrafik"): /fensterprobe?fall=kaelteprofile, Bearbeiten-
+//    Ueberlagerung der ersten Kaeltezeile, Blatt Woche. Die Wahl der Kalenderwoche fuehrt 53 Wochen
+//    (1. Januar ein Donnerstag); gewaehlt wird KW 1 (29.12. bis 04.01.: drei Tage ausserhalb des
+//    Jahres, Donnerstag und Freitag Werktag, Samstag, Sonntag). Je Tag wird ein Bildpunkt im oberen
+//    Zehntel der Zeichenflaeche (inneres <svg>) um 6 Uhr aus dem Bildschirmfoto gelesen; er muss die
+//    Farbe der Tagesart tragen (--epos-kalb-grundwoche, -wochenende, -feiertag, -saison, Toleranz 3).
+//    Gegenprobe: ohne den Hintergrund (background-image: none) muss die Messung rot werden.
+//    Dazu steht "kaelteprofile" in der Fallliste der Katalogauswahl (nichts rollt ausser den Listen).
+//
+//  KAELTETYPTAGE (KBP-4b, Fall "kaeltetyptage"): /fensterprobe?fall=kaelteprofile, Bearbeiten-Ueberlagerung der
+//    ersten Kaeltezeile, Eingabeart Typtage (Vorbelegung aus dem Wochenprofil). Der Editor fuehrt 36 Zellen der
+//    Zuordnungsmatrix als Auswahlfeld, je Tagesart in drei Spalten (Quartale); jede Zelle steht ganz im Koerper der
+//    Ueberlagerung, nichts rollt waagerecht (Editor und Dokument), in allen drei Fenstern samt iPad.
+//    Gegenprobe: das Monatsraster der Matrix in einer Zeile (zwoelf Spalten) muss die Messung rot machen.
+//
+//  BEDARFGRAFIK (Befund 17.10.2026, --nur bedarfgrafik): der Reiter "Grafik Strombedarf" des Ergebnisdialogs als
+//    Ueberlagerung ueber einem Fensterdialog, je Raster Jahr | Monat | Woche | Tag, in 1 088 x 624 und 1 600 x 1 000.
+//    Die Zeigerzeile steht UNTER dem Bild (keine Textzeile des SVG unter ihr), und nach dem Rollen ans Ende steht die
+//    unterste Textzeile des SVG (Tick-Beschriftung, Achsentitel) ganz im sichtbaren Rollbereich ueber der Schlussleiste.
+//    Gegenprobe: die Zeigerzeile im Reiterblatt mit dem Fussabstand der Ueberlagerung (der Befund) muss rot sein.
+//
+//  KAELTEDECKUNG (Fall "kaeltedeckung"): /fensterprobe?fall=kaelteprofile, Bearbeiten-Ueberlagerung der ersten
+//    Kaeltezeile, Deckungsgruppe (DeckungsartFelder, .epos-deckung) aufgeklappt. Kopf und Schlussleiste haften bei
+//    Rollstand oben, Mitte, Ende; die Gruppe liegt im rollenden Koerper und laesst sich ganz hineinrollen; nichts
+//    rollt waagerecht; Abbrechen und OK sind im Bild und nicht ueberdeckt, in allen drei Fenstern samt iPad.
+//    Gegenprobe: ein Koerper ohne Rollen (overflow: visible) muss die Messung rot machen.
+//
 //  GEGENPROBE (laeuft mit, abschaltbar mit --ohne-gegenprobe): dieselben
 //  Fensterdialoge OHNE Fenstermarke (?marke=0) muessen die Haft-Kriterien
 //  verfehlen, und MIT Marke, aber ohne scroll-padding muss der Tabulator
@@ -85,6 +123,7 @@
 import { mkdir } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { execSync } from 'node:child_process';
+import { inflateSync } from 'node:zlib';
 
 const { chromium } = await (async () => {
   try { return await import('playwright'); } catch { /* nicht lokal installiert */ }
@@ -113,12 +152,15 @@ const FENSTERDIALOGE = ['dubletten'];
 // Projektdialoge mit Katalogauswahl (Baustein Zweispaltenauswahl, Konzept Projektdialoge mit
 // Katalogauswahl 4.1): Sie fuellen ihr Fenster, die Haftregel ist fuer sie gegenstandslos. Die
 // Probe misst hier "nichts rollt ausser den Listen und der Detailzeile".
-const KATALOGAUSWAHL = ['heizkessel', 'bhkw', 'waermepumpen', 'gebaeude', 'kaeltemaschine'];
+const KATALOGAUSWAHL = ['heizkessel', 'bhkw', 'waermepumpen', 'gebaeude', 'kaeltemaschine', 'kaelteprofile'];
 // UeS2: Wirte mit Zusammenfassung - ihre Detailzeile hat keinen Vorrang (DZ1 entfaellt).
-const ZUSAMMENFASSUNG = new Set(['heizkessel', 'bhkw', 'waermepumpen', 'photovoltaik', 'solarkollektoren', 'kaeltemaschine', 'bedarfsprofile', 'gebaeude']);   // Gebäude: Stufe 4
+const ZUSAMMENFASSUNG = new Set(['heizkessel', 'bhkw', 'waermepumpen', 'photovoltaik', 'solarkollektoren', 'kaeltemaschine', 'bedarfsprofile', 'kaelteprofile', 'gebaeude']);   // Gebäude: Stufe 4; Kaelteprofile: BedarfsProfileDialog wie bedarfsprofile
 // Dialoge mit Inhalt UNTER der Schlussleiste (Protokoll der Dublettenpruefung): Am Ende steht
 // der Fuss an seinem Platz ueber dem Nachlauf, nicht am Fensterrand - und er ueberdeckt ihn nicht.
 const NACHLAUF = new Set(['dubletten']);
+// KD-1: die Fenster der Klimadaten-Importueberlagerung - dazu 787 x 520, das Fenstermass 1 180 x 780 bei
+// 150 % Anzeigeskalierung (Befund). In allen vier ist die Ueberlagerung hoeher als ihr Fenster.
+const KLIMA_FENSTER = [...FENSTER, { breite: 787, hoehe: 520 }];
 
 const verstoesse = [];
 const melde = (fall, text) => { verstoesse.push(fall + ': ' + text); console.log('  VERSTOSS ' + fall + ': ' + text); };
@@ -140,7 +182,11 @@ function lage() {
   return {
     y: scrollY, innen: innerHeight, dokument: document.documentElement.scrollHeight,
     wurzel: r(d), kopf: r(kopf), fuss: r(fuss), nachfolger: r(nach),
+    // Zeilenabstand der Wurzel (Flex-gap): Abstand zwischen Fuss und Nachlauf, solange der Fuss an seinem Platz steht.
+    luecke: d ? parseFloat(getComputedStyle(d).rowGap) || 0 : 0,
     kopfPos: kopf ? getComputedStyle(kopf).position : '', fussPos: fuss ? getComputedStyle(fuss).position : '',
+    // Der Abstand der Wurzel (gap) zwischen Schlussleiste und Nachlauf - er bleibt ganz (KD-1).
+    luecke: d ? parseFloat(getComputedStyle(d).rowGap) || 0 : 0,
   };
 }
 
@@ -232,6 +278,232 @@ async function oeffnen(browser, fall, f, zusatz = '') {
   return seite;
 }
 
+/** Ein Bildpunkt des Fensters als [r, g, b] - Bildschirmfoto 1 x 1 px, PNG ohne Zusatzbibliothek gelesen. */
+async function bildpunkt(seite, x, y) {
+  const png = await seite.screenshot({ clip: { x: Math.round(x), y: Math.round(y), width: 1, height: 1 } });
+  let i = 8, art = 0;
+  const idat = [];
+  while (i < png.length) {
+    const laenge = png.readUInt32BE(i), typ = png.toString('ascii', i + 4, i + 8);
+    if (typ === 'IHDR') art = png[i + 8 + 9];
+    if (typ === 'IDAT') idat.push(png.subarray(i + 8, i + 8 + laenge));
+    i += 12 + laenge;
+  }
+  // Eine Zeile mit einem Bildpunkt: Jeder Filter (Sub, Up, Avg, Paeth) gibt ohne Nachbarn den Rohwert.
+  const roh = inflateSync(Buffer.concat(idat));
+  if (art !== 2 && art !== 6) throw new Error('PNG-Farbart ' + art + ' nicht gelesen');
+  return [roh[1], roh[2], roh[3]];
+}
+
+/**
+ * Nacharbeit KBP-3b: die Tagesarten der Kalenderwoche als farbiger Hintergrund unter der Zeichenflaeche des Blatts
+ * Woche. Liefert { n, fehler, zahlen } - n = Zahl der Verstoesse.
+ */
+async function kaeltegrafik(browser, f, stil = '') {
+  const seite = await oeffnen(browser, 'kaelteprofile', f);
+  if (stil) await seite.addStyleTag({ content: stil });
+  const fehler = [];
+  await seite.locator('.epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-projekt').first().click();
+  await seite.waitForSelector('.epos-kbp-grafik button[role="tab"]', { timeout: 10000 });
+  await seite.locator('.epos-kbp-grafik button[role="tab"]').nth(2).click();
+  await seite.waitForSelector('.epos-kbp-woche svg', { timeout: 10000 });
+  const wahl = seite.locator('.epos-kbp-grafik select');
+  const optionen = await wahl.locator('option').count();
+  if (optionen !== 53) fehler.push(`Wahl der Kalenderwoche mit ${optionen} statt 53 Wochen`);
+  await wahl.selectOption('1');
+  await seite.waitForSelector('.epos-kbp-woche[data-kw="1"] svg', { timeout: 10000 });
+  await seite.locator('.epos-kbp-woche').scrollIntoViewIfNeeded();
+  await seite.waitForTimeout(400);
+  const m = await seite.evaluate(() => {
+    const flaeche = document.querySelector('.epos-kbp-woche .epos-diagramm-svg-flaeche');
+    const aussen = flaeche.querySelector(':scope > svg');
+    const innen = aussen.querySelector('svg');
+    const r = innen.getBoundingClientRect();
+    const farbe = v => {
+      const e = document.createElement('div');
+      e.style.backgroundColor = `var(${v})`;
+      document.body.appendChild(e);
+      const c = getComputedStyle(e).backgroundColor;
+      e.remove();
+      return (c.match(/\d+/g) || []).slice(0, 3).map(Number);
+    };
+    return {
+      zeichenflaeche: [r.left, r.top, r.width, r.height], innen: innerHeight,
+      farben: {
+        werktag: farbe('--epos-kalb-grundwoche'), samstag: farbe('--epos-kalb-wochenende'),
+        sonntag: farbe('--epos-kalb-feiertag'), ausserhalb: farbe('--epos-kalb-saison')
+      }
+    };
+  });
+  // KW 1 bei Donnerstag als 1. Januar: Mo-Mi ausserhalb, Do-Fr Werktag, Sa, So.
+  const soll = ['ausserhalb', 'ausserhalb', 'ausserhalb', 'werktag', 'werktag', 'samstag', 'sonntag'];
+  const [x0, y0, b, h] = m.zeichenflaeche;
+  const gelesen = [];
+  for (let t = 0; t < 7; t++) {
+    const x = x0 + b * (t + 0.25) / 7, y = y0 + h * 0.06;
+    if (y < 0 || y >= m.innen) { fehler.push(`Zeichenflaeche nicht im Fenster (y ${Math.round(y)})`); break; }
+    const ist = await bildpunkt(seite, x, y);
+    const erwartet = m.farben[soll[t]];
+    gelesen.push(`${soll[t]} ${ist.join('/')}`);
+    if (ist.some((c, k) => Math.abs(c - erwartet[k]) > 3))
+      fehler.push(`Tag ${t + 1} (${soll[t]}): Bildpunkt ${ist.join('/')} statt ${erwartet.join('/')}`);
+  }
+  if (FOTOS && !stil) await seite.screenshot({ path: `${FOTOS}/kaeltegrafik_${f.breite}.png` });
+  await seite.close();
+  return { n: fehler.length, fehler, zahlen: { optionen, zeichenflaeche: m.zeichenflaeche.map(v => Math.round(v)), gelesen } };
+}
+
+/**
+ * KBP-4b: der Typtage-Editor in der Bearbeiten-Ueberlagerung der Kaeltezeile - Matrix in drei Spalten je Tagesart,
+ * jede Zelle ganz im Koerper, kein waagerechtes Rollen. Liefert { n, fehler, zahlen }.
+ */
+async function kaeltetyptage(browser, f, stil = '') {
+  const seite = await oeffnen(browser, 'kaelteprofile', f);
+  if (stil) await seite.addStyleTag({ content: stil });
+  const fehler = [];
+  await seite.locator('.epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-projekt').first().click();
+  await seite.waitForSelector('.epos-satzueberlagerung-koerper', { timeout: 10000 });
+  await seite.locator('label.epos-feld', { hasText: 'Eingabeart' }).locator('select').first().selectOption('3');
+  await seite.waitForSelector('.epos-kbp-typtage .epos-kbp-matrix select', { timeout: 10000 });
+  await seite.waitForTimeout(300);
+  const m = await seite.evaluate(() => {
+    const editor = document.querySelector('.epos-kbp-typtage');
+    const koerper = editor.closest('.epos-satzueberlagerung-koerper') || document.body;
+    const k = koerper.getBoundingClientRect();
+    const zellen = [...editor.querySelectorAll('.epos-kbp-matrix .epos-feld')].map(e => e.getBoundingClientRect());
+    const spalten = [...editor.querySelectorAll('.epos-kbp-matrix')].map(b =>
+      new Set([...b.querySelectorAll('.epos-feld')].map(e => Math.round(e.getBoundingClientRect().left))).size);
+    return {
+      auswahl: editor.querySelectorAll('.epos-kbp-matrix select').length,
+      datalist: editor.querySelectorAll('datalist').length,
+      koerper: [k.left, k.right],
+      ausserhalb: zellen.filter(r => r.left < k.left - 1 || r.right > k.right + 1).length,
+      spalten,
+      editorRollt: editor.scrollWidth > editor.clientWidth + 1,
+      dokumentRollt: document.documentElement.scrollWidth > innerWidth + 1,
+      schmal: Math.min(...[...editor.querySelectorAll('.epos-kbp-matrix select')].map(s => s.getBoundingClientRect().width))
+    };
+  });
+  if (m.auswahl !== 36) fehler.push(`Matrix mit ${m.auswahl} statt 36 Auswahlfeldern`);
+  if (m.datalist !== 0) fehler.push(`${m.datalist} datalist im Editor`);
+  if (m.spalten.length !== 3 || m.spalten.some(s => s !== 3)) fehler.push(`Spalten je Tagesart ${JSON.stringify(m.spalten)} statt [3,3,3]`);
+  if (m.ausserhalb > 0) fehler.push(`${m.ausserhalb} Matrixzellen ragen aus dem Koerper ${m.koerper.map(Math.round).join('..')} px`);
+  if (m.editorRollt) fehler.push('der Editor rollt waagerecht');
+  if (m.dokumentRollt) fehler.push('das Dokument rollt waagerecht');
+  if (m.schmal < 40) fehler.push(`schmalstes Auswahlfeld ${Math.round(m.schmal)} px`);
+  if (FOTOS && !stil) await seite.screenshot({ path: `${FOTOS}/kaeltetyptage_${f.breite}.png`, fullPage: true });
+  await seite.close();
+  return { n: fehler.length, fehler, zahlen: { auswahl: m.auswahl, spalten: m.spalten, ausserhalb: m.ausserhalb, schmal: Math.round(m.schmal) } };
+}
+
+/**
+ * Befund 17.10.2026: die Grafik des Ergebnisdialogs in einer Ueberlagerung. Je Raster: Zeigerzeile unter dem Bild,
+ * unterste Textzeile des SVG nach dem Rollen ans Ende sichtbar. Mit `stil` (Gegenprobe) wird eine Stilzeile eingeschoben.
+ */
+async function bedarfgrafik(browser, f, stil = '') {
+  const seite = await browser.newPage({ viewport: { width: f.breite, height: f.hoehe } });
+  await seite.goto(`${WURZEL}/fensterprobe?fall=bedarfgrafik&kultur=de-DE`);
+  if (stil) await seite.addStyleTag({ content: stil });
+  await seite.waitForSelector('.epos-ueberlagerung .epos-diagramm-svg-flaeche > svg', { timeout: 20000 });
+  const fehler = [];
+  const zahlen = [];
+  for (const raster of ['Jahr', 'Monat', 'Woche', 'Tag']) {
+    if (raster !== 'Jahr') {
+      await seite.click(`.epos-ueberlagerung button[data-raster="${raster}"]`);
+      await seite.waitForSelector(`.epos-ueberlagerung button[data-raster="${raster}"][aria-pressed="true"]`, { timeout: 20000 });
+    }
+    await seite.waitForTimeout(400);
+    const m = await seite.evaluate(() => {
+      const roll = document.querySelector('.epos-ueberlagerung');
+      roll.scrollTop = roll.scrollHeight;
+      const svg = roll.querySelector('.epos-diagramm-svg-flaeche > svg');
+      const zeile = roll.querySelector('.epos-diagramm-zeigerzeile');
+      const leiste = roll.querySelector('.epos-ueberlagerung-inhalt > .epos-dialog > .epos-leiste');
+      const texte = [...svg.querySelectorAll('text')].map(t => t.getBoundingClientRect()).filter(r => r.height > 0);
+      const unten = Math.max(...texte.map(r => r.bottom));
+      const rb = roll.getBoundingClientRect();
+      const sichtbar = Math.min(rb.top + roll.clientTop + roll.clientHeight, leiste ? leiste.getBoundingClientRect().top : Infinity);
+      const r1 = (v) => Math.round(v * 10) / 10;
+      return { textUnten: r1(unten), svgUnten: r1(svg.getBoundingClientRect().bottom),
+               zeileOben: zeile ? r1(zeile.getBoundingClientRect().top) : null, sichtbar: r1(sichtbar), texte: texte.length };
+    });
+    if (m.zeileOben !== null && m.zeileOben < m.textUnten - TOL)
+      fehler.push(`${raster}: Zeigerzeile ab ${m.zeileOben} px ueberdeckt die Textzeile des Bildes bis ${m.textUnten} px`);
+    if (m.textUnten > m.sichtbar + TOL)
+      fehler.push(`${raster}: unterste Textzeile bis ${m.textUnten} px unter dem sichtbaren Rollbereich (${m.sichtbar} px)`);
+    zahlen.push(`${raster} Text bis ${m.textUnten}, Zeile ab ${m.zeileOben}, sichtbar bis ${m.sichtbar}`);
+    if (FOTOS && !stil) await seite.screenshot({ path: `${FOTOS}/bedarfgrafik_${raster}_${f.breite}x${f.hoehe}.png` });
+  }
+  await seite.close();
+  return { fehler, n: fehler.length, zahlen };
+}
+
+/**
+ * Fall kaeltedeckung: Deckungsgruppe (Baustein DeckungsartFelder, .epos-deckung) in der Bearbeiten-Ueberlagerung der
+ * ersten Kaeltezeile, aufgeklappt. Kopf und Schlussleiste haften bei Rollstand oben, Mitte und Ende des Koerpers, die
+ * Gruppe liegt im rollenden Koerper, nichts rollt waagerecht, Abbrechen und OK sind erreichbar (im Bild, nicht
+ * ueberdeckt). Liefert { n, fehler, zahlen }.
+ */
+async function kaeltedeckung(browser, f, stil = '') {
+  const seite = await oeffnen(browser, 'kaelteprofile', f);
+  if (stil) await seite.addStyleTag({ content: stil });
+  const fehler = [];
+  await seite.locator('.epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-projekt').first().click();
+  await seite.waitForSelector('.epos-satzueberlagerung-koerper .epos-deckung', { timeout: 10000 });
+  const knopf = seite.locator('.epos-satzueberlagerung-koerper .epos-deckung .epos-klappgruppe-knopf').first();
+  if ((await knopf.getAttribute('aria-expanded')) !== 'true') await knopf.click();
+  await seite.waitForSelector('.epos-satzueberlagerung-koerper .epos-deckung .epos-klappgruppe-inhalt', { timeout: 10000 });
+  await seite.waitForTimeout(300);
+  const messen = (y) => seite.evaluate((y) => {
+    const koerper = document.querySelector('.epos-satzueberlagerung-koerper');
+    if (y === 'deckung') document.querySelector('.epos-satzueberlagerung-koerper .epos-deckung').scrollIntoView({ block: 'end' });
+    else koerper.scrollTop = y === 'ende' ? 1e6 : y === 'mitte' ? Math.round((koerper.scrollHeight - koerper.clientHeight) / 2) : 0;
+    const r = e => { const b = e.getBoundingClientRect(); return { top: b.top, bottom: b.bottom, left: b.left, right: b.right }; };
+    const gruppe = koerper.querySelector('.epos-deckung');
+    const kopf = document.querySelector('.epos-ueberlagerung-kopf');
+    const fuss = document.querySelector('.epos-satzueberlagerung-fuss');
+    const knopfInfo = sel => {
+      const e = fuss.querySelector(sel);
+      if (!e) return null;
+      const b = e.getBoundingClientRect();
+      const o = document.elementFromPoint((b.left + b.right) / 2, (b.top + b.bottom) / 2);
+      return { ...r(e), frei: !!o && (o === e || e.contains(o)) };
+    };
+    return {
+      y: koerper.scrollTop, hoch: koerper.scrollHeight, sicht: koerper.clientHeight, breit: koerper.scrollWidth, sichtBreit: koerper.clientWidth,
+      innen: innerHeight, innenBreite: innerWidth,
+      koerper: r(koerper), gruppe: r(gruppe), kopf: r(kopf), fuss: r(fuss),
+      imKoerper: koerper.contains(gruppe), kopfPos: getComputedStyle(kopf).position,
+      dokumentRollt: document.documentElement.scrollWidth > innerWidth + 1,
+      abbrechen: knopfInfo('.epos-satzueberlagerung-abbrechen'), ok: knopfInfo('.epos-satzueberlagerung-ok')
+    };
+  }, y);
+  const stande = {};
+  for (const s of [0, 'mitte', 'ende', 'deckung']) stande[s] = await messen(s);
+  const o = stande[0];
+  if (!o.imKoerper) fehler.push('die Deckungsgruppe liegt nicht im rollenden Koerper');
+  if (o.hoch <= o.sicht + 1) fehler.push(`der Koerper rollt nicht (${o.hoch} <= ${o.sicht} px) - die Probe misst nichts`);
+  if (o.breit > o.sichtBreit + 1) fehler.push(`der Koerper rollt waagerecht (${o.breit} > ${o.sichtBreit} px)`);
+  for (const [name, m] of Object.entries(stande)) {
+    if (Math.abs(m.kopf.top - o.kopf.top) > TOL || Math.abs(m.fuss.bottom - o.fuss.bottom) > TOL)
+      fehler.push(`${name}: Kopf (${zahl(m.kopf.top)}) oder Schlussleiste (${zahl(m.fuss.bottom)}) wandert gegen oben (${zahl(o.kopf.top)}/${zahl(o.fuss.bottom)})`);
+    if (m.kopf.top < -TOL || m.fuss.bottom > m.innen + TOL) fehler.push(`${name}: Kopf oder Schlussleiste ausserhalb des Bildes`);
+    if (m.dokumentRollt) fehler.push(`${name}: das Dokument rollt waagerecht`);
+    if (m.gruppe.left < m.koerper.left - 1 || m.gruppe.right > m.koerper.right + 1) fehler.push(`${name}: die Gruppe ragt seitlich aus dem Koerper`);
+    for (const k of ['abbrechen', 'ok']) {
+      const b = m[k];
+      if (!b) { fehler.push(`${name}: ${k} fehlt`); continue; }
+      if (b.top < 0 || b.bottom > m.innen + TOL || b.left < 0 || b.right > m.innenBreite + TOL) fehler.push(`${name}: ${k} nicht ganz im Bild`);
+      if (!b.frei) fehler.push(`${name}: ${k} ist ueberdeckt`);
+    }
+  }
+  const d = stande.deckung;
+  if (d.gruppe.top < d.koerper.top - 1 || d.gruppe.bottom > d.koerper.bottom + 1) fehler.push('die Gruppe laesst sich nicht ganz in den Koerper rollen');
+  if (FOTOS && !stil) await seite.screenshot({ path: `${FOTOS}/kaeltedeckung_${f.breite}.png` });
+  await seite.close();
+  return { n: fehler.length, fehler, zahlen: { rollweg: Math.round(o.hoch - o.sicht), koerper: Math.round(o.sicht), gruppe: Math.round(d.gruppe.bottom - d.gruppe.top) } };
+}
+
 /** Die Haft-Kriterien; liefert die Zahl der Verstoesse (fuer die Gegenprobe). */
 async function haften(seite, name, melden, nachlauf = false, r = { oben: 0, unten: 0 }) {
   let n = 0;
@@ -250,6 +522,11 @@ async function haften(seite, name, melden, nachlauf = false, r = { oben: 0, unte
       // ... und am Ende steht der Nachlauf frei darunter.
       if (stand === 'Ende' && (!m.nachfolger || m.nachfolger.top < m.fuss.bottom - 0.5 || m.nachfolger.bottom > m.innen - r.unten + TOL))
         fehler(`Ende: Nachlauf ${m.nachfolger ? zahl(m.nachfolger.top) + '..' + zahl(m.nachfolger.bottom) : 'fehlt'} px, Fussleiste bis ${zahl(m.fuss.bottom)} px - ueberdeckt oder abgeschnitten`);
+      // ... und zwar genau an seinem Platz: Zwischen Fuss und Nachlauf steht der Zeilenabstand der Wurzel. Ein
+      // negativer unterer Rand (der Fuss reicht in den Rand der Wurzel) zieht ihn in diese Luecke - bei gap 20 px
+      // und Kartenrand 16 px ohne Ueberdeckung, deshalb misst die Probe den Abstand, nicht nur die Ueberdeckung.
+      else if (stand === 'Ende' && Math.abs(m.nachfolger.top - m.fuss.bottom - m.luecke) > TOL)
+        fehler(`Ende: Fussleiste bis ${zahl(m.fuss.bottom)} px, Nachlauf ab ${zahl(m.nachfolger.top)} px - Abstand ${zahl(m.nachfolger.top - m.fuss.bottom)} statt ${zahl(m.luecke)} px, der Fuss steht nicht an seinem Platz`);
     } else {
       if (Math.abs(m.fuss.bottom - (m.innen - r.unten)) > TOL) fehler(`${stand}: Fussleiste endet bei ${zahl(m.fuss.bottom)} statt ${m.innen - r.unten} px (Rollstand ${zahl(m.y)})`);
       if (m.fuss.top >= m.innen) fehler(`${stand}: Fussleiste ausserhalb des Bildes`);
@@ -302,48 +579,6 @@ async function tabulator(seite) {
       erg.verdeckt.push(`${m.wer} ${zahl(m.top)}..${zahl(m.bottom)} (Kopf bis ${zahl(m.kopfBoden)}, Fuss ab ${zahl(m.fussDecke)})`);
   }
   return erg;
-}
-
-/**
- * Waermepumpen: OK bei Rollstand 0 mit anschlagender Temperaturpruefung. Das Band des Wirts
- * steht oben im Bild; das Band im Fussblock der eingebetteten Detailansicht steht, solange
- * die Detailansicht im Bild ist, UEBER der Schlussleiste des Fensters und frei (nicht verdeckt).
- */
-async function warnband(seite, name, melden = true) {
-  let n = 0;
-  const melde_ = t => { n++; if (melden) melde(name, t); };
-  await rollen(seite, 0);
-  await seite.evaluate(() => {
-    const d = document.querySelector('body > #app > .epos-dialog');
-    const fuss = [...d.children].find(e => e.querySelector(':scope > .epos-knopf--primaer'));
-    fuss.querySelector(':scope > .epos-knopf--primaer').click();
-  });
-  const ok = await seite.waitForSelector('.epos-dialog--eingebettet > .epos-dialog-fuss .epos-warnbanner', { timeout: 5000 })
-    .then(() => true, () => false);
-  if (!ok) { melde_('nach OK steht kein Warnband im Fussblock der Detailansicht'); return n; }
-  const band = (auswahl) => seite.evaluate((auswahl) => {
-    const e = document.querySelector(auswahl);
-    if (!e) return null;
-    const d = document.querySelector('body > #app > .epos-dialog');
-    const fuss = [...d.children].find(x => x.querySelector(':scope > .epos-knopf--primaer'));
-    const b = e.getBoundingClientRect(), f = fuss.getBoundingClientRect(), k = d.firstElementChild.getBoundingClientRect();
-    const oben = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2);
-    return { top: b.top, bottom: b.bottom, fussDecke: f.top, kopfBoden: k.bottom, frei: e.contains(oben), y: scrollY };
-  }, auswahl);
-  const pruefe = (was, m) => {
-    if (!m) { melde_(was + ' fehlt'); return; }
-    const text = `${was} bei Rollstand ${zahl(m.y)}: ${zahl(m.top)}..${zahl(m.bottom)} px, Kopf bis ${zahl(m.kopfBoden)}, Leiste ab ${zahl(m.fussDecke)} px`;
-    if (m.bottom > m.fussDecke + 0.5 || m.top < m.kopfBoden - 0.5 || !m.frei) melde_(text + ', frei ' + m.frei);
-    else if (melden) console.log('    ' + text + ' - sichtbar');
-  };
-  pruefe('Band des Wirts', await band('body > #app > .epos-dialog > .epos-warnbanner'));
-  // Die Detailansicht oben im Bild (ihre Oberkante 150 px unter dem Fensterrand), dann das Ende.
-  const y = await seite.evaluate(() => scrollY + document.querySelector('.epos-wp-eingebettet').getBoundingClientRect().top - 150);
-  await rollen(seite, y);
-  pruefe('Band der Detailansicht', await band('.epos-dialog--eingebettet > .epos-dialog-fuss .epos-warnbanner'));
-  await rollen(seite, 1e6);
-  pruefe('Band der Detailansicht', await band('.epos-dialog--eingebettet > .epos-dialog-fuss .epos-warnbanner'));
-  return n;
 }
 
 /** Die Ueberlagerung "Simulation..." des Gebaeudedialogs - Zahlen fuer den Vergleich mit/ohne Marke. */
@@ -427,11 +662,141 @@ async function katalog(browser, f, marke) {
 }
 
 /**
+ * KD-8 Teil A: der Reiter „Weitere Reihen" des Klimadaten-Dialogs. Die Reihenwahl (Chips je Groesse,
+ * gruppiert) bricht in ihrem Kasten um: Kein Chip und kein Gruppenname ragt rechts heraus, kein Vorfahr
+ * rollt quer, das Dokument rollt nicht quer. Das Bild der gewaehlten Reihen steht darunter, die
+ * Schlussleiste des Dialogs ganz im Fenster. Mit `stil` (Gegenprobe) wird eine Stilzeile eingeschoben.
+ */
+async function klimareihen(browser, f, stil = '') {
+  const seite = await oeffnen(browser, 'klimareihen', f);
+  if (stil) await seite.addStyleTag({ content: stil });
+  // Schmal (Rahmen unter 900 px) steht die Liste allein; „Stammblatt ›" schiebt das Blatt ueber sie.
+  const blatt = seite.locator('.epos-auswahlleiste-knopf.epos-nur-schmal');
+  await seite.waitForTimeout(300);
+  if (await blatt.count() && await blatt.first().isVisible()) await blatt.first().click();
+  await seite.waitForSelector('.epos-stammblatt .epos-reiter-knopf', { timeout: 20000 });
+  await seite.locator('.epos-stammblatt .epos-reiter-knopf', { hasText: 'Weitere Reihen' }).click();
+  await seite.waitForSelector('[data-kennung=klima-jahr] button.epos-reihenwahl-chip', { timeout: 20000 });
+  await seite.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+  const m = await seite.evaluate(() => {
+    const wahl = document.querySelector('[data-kennung=klima-jahr]');
+    const d = document.querySelector('body > #app > .epos-dialog');
+    const leiste = d.querySelector(':scope > .epos-leiste');
+    const kasten = wahl.getBoundingClientRect();
+    let ragt = 0, chips = 0, gesperrt = 0;
+    for (const c of wahl.querySelectorAll('button.epos-reihenwahl-chip, .epos-reihenwahl-gruppenname')) {
+      const b = c.getBoundingClientRect();
+      ragt = Math.max(ragt, b.right - kasten.right, kasten.left - b.left);
+      if (c.tagName === 'BUTTON') { chips++; if (c.getAttribute('aria-disabled') === 'true') gesperrt++; }
+    }
+    let querVorfahr = 0;
+    for (let e = wahl; e && e !== document.body; e = e.parentElement)
+      if (getComputedStyle(e).overflowX !== 'visible') querVorfahr = Math.max(querVorfahr, e.scrollWidth - e.clientWidth);
+    const bild = wahl.parentElement.querySelector(':scope > * svg, :scope svg');
+    const lb = leiste.getBoundingClientRect();
+    const bildOben = bild ? bild.getBoundingClientRect().top : NaN;
+    return {
+      bildZuerst: bildOben < kasten.top, schmal: innerWidth <= 600,
+      ragt: Math.round(ragt * 10) / 10, chips, gesperrt, querVorfahr,
+      dokQuer: document.scrollingElement.scrollWidth - innerWidth,
+      bildHoehe: bild ? Math.round(bild.getBoundingClientRect().height) : 0,
+      wahlHoehe: Math.round(kasten.height), leiste: [Math.round(lb.top * 10) / 10, Math.round(lb.bottom * 10) / 10],
+      innen: innerHeight,
+    };
+  });
+  const fehler = [];
+  if (m.ragt > TOL) fehler.push(`ein Chip ragt ${m.ragt} px aus der Reihenwahl`);
+  if (m.querVorfahr > TOL) fehler.push(`ein Vorfahr der Reihenwahl rollt quer (${m.querVorfahr} px)`);
+  if (m.dokQuer > TOL) fehler.push(`das Dokument rollt quer (${m.dokQuer} px)`);
+  if (m.bildHoehe < 50) fehler.push(`kein Bild bei der Reihenwahl (${m.bildHoehe} px)`);
+  if (m.bildZuerst !== m.schmal)
+    fehler.push(m.schmal ? 'schmales Fenster: die Reihenwahl steht ueber dem Bild statt darunter'
+                         : 'breites Fenster: das Bild steht ueber der Reihenwahl statt darunter');
+  if (m.leiste[0] < rand(f).oben - TOL || m.leiste[1] > m.innen - rand(f).unten + TOL)
+    fehler.push(`Schlussleiste ${m.leiste[0]}..${m.leiste[1]} px nicht ganz im Fenster`);
+  if (FOTOS && !stil) await seite.screenshot({ path: `${FOTOS}/klimareihen_${f.breite}x${f.hoehe}.png` });
+  await seite.close();
+  return { fehler, n: fehler.length, m };
+}
+
+/**
  * WP1b: die zweispaltige Satz-Ueberlagerung eines Wirts mit dem GERAETESTECKBRIEF links. Kopf und Fuss zwischen den
  * sicheren Abstaenden, nur der Koerper rollt, die beiden Spalten stehen nebeneinander (ab 900 px), der Steckbrief
  * steht in der linken Spalte unter den Projektfeldern, bricht um statt quer zu rollen und ueberlappt die Kenndaten
  * nicht. Mit `stil` (Gegenprobe) wird eine Stilzeile eingeschoben; liefert die Zahl der Verstoesse und die Masse.
  */
+/**
+ * KD-1: die Ueberlagerung „Klimadaten einlesen" im Katalogdialog der Klimadaten. Ihr Inhalt ist
+ * .epos-einlesen (kein .epos-dialog), ihre Schlussleiste traegt keine Statusspanne. Gemessen bei
+ * Rollstand oben und Ende der Ueberlagerung: Sie steht zwischen den sicheren Abstaenden, die
+ * Schlussleiste (letztes Kind von .epos-einlesen) steht ganz in ihr und schliesst mit ihrem Boden
+ * ab (haftet), der Primaerknopf steht ganz im Fenster, am Ende steht alles davor ueber der Leiste.
+ * Mit `stil` (Gegenprobe) wird eine Stilzeile eingeschoben; liefert die Zahl der Verstoesse, die
+ * Texte und die Zahlen.
+ */
+async function klimaimport(browser, f, stil = '', art = 'import') {
+  // KD-5: art 'export' misst die Ueberlagerung des Klimaexports (.epos-klimaexport-dialog, SpeichernLeiste als
+  // letztes Kind) - geoeffnet ueber die Handlung "Exportieren..." der Auswahlleiste, Region mit Rohdaten.
+  const INHALT = art === 'export' ? '.epos-klimaexport-dialog' : '.epos-einlesen';
+  const seite = await oeffnen(browser, 'klimaimport', f);
+  if (stil) await seite.addStyleTag({ content: stil });
+  if (art === 'export') {
+    await seite.click('.epos-auswahlleiste button:has-text("Exportieren")');
+    await seite.waitForSelector('.epos-ueberlagerung-inhalt > .epos-klimaexport-dialog > .epos-leiste:last-child', { timeout: 20000 });
+    await seite.waitForSelector('.epos-klimaexport-dialog pre.epos-klimaexport-vorschau', { timeout: 20000 });
+  } else {
+  await seite.click('button.epos-importknopf');
+  await seite.waitForSelector('.epos-ueberlagerung-inhalt > .epos-einlesen > .epos-leiste:last-child', { timeout: 20000 });
+  // KD-3: Ort eintragen und "Datensatz suchen" - gemessen wird die Ueberlagerung MIT Vorschaukarte.
+  await seite.fill('.epos-einlesen input[list=epos-klimaregion-orte]', 'Ort 1');
+  await seite.click('.epos-klimavorschau-suche > button');
+  await seite.waitForSelector('.epos-einlesen .epos-klimavorschau svg', { timeout: 20000 });
+  }
+  const messen = async unten => {
+    await seite.evaluate(([unten, inhalt]) => {
+      const ue = document.querySelector(`.epos-ueberlagerung:has(> .epos-ueberlagerung-inhalt > ${inhalt})`);
+      ue.scrollTop = unten ? ue.scrollHeight : 0;
+    }, [unten, INHALT]);
+    await seite.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+    return seite.evaluate(inhalt => {
+      const ue = document.querySelector(`.epos-ueberlagerung:has(> .epos-ueberlagerung-inhalt > ${inhalt})`);
+      const ein = ue.querySelector(`:scope > .epos-ueberlagerung-inhalt > ${inhalt}`);
+      const leiste = ein.lastElementChild;
+      const primaer = leiste.querySelector(':scope > .epos-knopf--primaer');
+      const r = e => { const b = e.getBoundingClientRect(); return [Math.round(b.top * 10) / 10, Math.round(b.bottom * 10) / 10]; };
+      const s = getComputedStyle(ue);
+      let boden = -Infinity;
+      for (let e = leiste.previousElementSibling; e; e = e.previousElementSibling) {
+        const b = e.getBoundingClientRect();
+        if (b.height > 0) boden = Math.max(boden, b.bottom);
+      }
+      return {
+        ueberlagerung: r(ue), leiste: r(leiste), primaer: primaer ? r(primaer) : null,
+        rand: [parseFloat(s.borderTopWidth), parseFloat(s.borderBottomWidth)],
+        rollhoehe: ue.scrollHeight, fenster: ue.clientHeight, stand: Math.round(ue.scrollTop),
+        boden: Math.round(boden * 10) / 10, innen: innerHeight, leistePos: getComputedStyle(leiste).position,
+      };
+    }, INHALT);
+  };
+  const oben = await messen(false), ende = await messen(true);
+  const fehler = [];
+  for (const [stand, m] of [['oben', oben], ['Ende', ende]]) {
+    const deckel = m.ueberlagerung[0] + m.rand[0], grund = m.ueberlagerung[1] - m.rand[1];
+    if (m.ueberlagerung[0] < rand(f).oben - TOL || m.ueberlagerung[1] > f.hoehe - rand(f).unten + TOL)
+      fehler.push(`${stand}: Ueberlagerung ${m.ueberlagerung[0]}..${m.ueberlagerung[1]} px nicht zwischen den sicheren Abstaenden`);
+    if (m.leiste[0] < deckel - TOL || m.leiste[1] > grund + TOL)
+      fehler.push(`${stand}: Schlussleiste ${m.leiste[0]}..${m.leiste[1]} px nicht ganz in der Ueberlagerung (${deckel}..${grund})`);
+    if (Math.abs(m.leiste[1] - grund) > TOL)
+      fehler.push(`${stand}: Schlussleiste endet bei ${m.leiste[1]} statt am Boden der Ueberlagerung (${grund})`);
+    if (!m.primaer || m.primaer[0] < deckel - TOL || m.primaer[1] > Math.min(grund, m.innen - rand(f).unten) + TOL)
+      fehler.push(`${stand}: Primaerknopf ${JSON.stringify(m.primaer)} nicht ganz im Bild`);
+  }
+  if (ende.boden > ende.leiste[0] + TOL) fehler.push(`Ende: Inhalt bis ${ende.boden} px reicht unter die Schlussleiste (${ende.leiste[0]})`);
+  if (FOTOS && !stil) await seite.screenshot({ path: `${FOTOS}/klima${art}_${f.breite}x${f.hoehe}.png` });
+  await seite.close();
+  return { n: fehler.length, fehler, oben, ende };
+}
+
 const SATZ_WIRTE = [
   { wirt: 'heizkessel', seite: 'fensterprobe', klasse: 'hk', ipad: true },
   { wirt: 'bhkw', seite: 'fensterprobe', klasse: 'bhkw' },
@@ -839,7 +1204,6 @@ try {
       tab.verdeckt.forEach(v => melde(name, 'Fokus verdeckt: ' + v));
       tab.spruenge.forEach(v => melde(name, 'Fokus in Kopf/Fuss rollt: ' + v));
       if (FOTOS) { await rollen(seite, 1e6); await seite.screenshot({ path: `${FOTOS}/${fall}_${f.breite}_ende.png` }); }
-      if (fall === 'waermepumpen') await warnband(seite, name);
       await seite.close();
     }
 
@@ -947,8 +1311,117 @@ try {
     }
   }
 
+  // ----------------------------------------- KD-1: Schlussleiste der Klimadaten-Importueberlagerung
+  if (!NUR || NUR === 'klimaimport') {
+    for (const f of KLIMA_FENSTER) {
+      const name = `klimaimport ${f.breite}x${f.hoehe}${f.ipad ? ' iPad' : ''}`;
+      console.log(`- ${name}`);
+      const r = await klimaimport(browser, f);
+      for (const t of r.fehler) melde(name, t);
+      console.log(`    Ueberlagerung ${JSON.stringify(r.oben.ueberlagerung)}, Rollhoehe ${r.oben.rollhoehe}/${r.oben.fenster} px (gerollt ${r.ende.stand} px); `
+        + `Leiste oben ${JSON.stringify(r.oben.leiste)}, Ende ${JSON.stringify(r.ende.leiste)} (${r.oben.leistePos}); Inhalt am Ende bis ${r.ende.boden} px`);
+    }
+  }
+
+  // ----------------------------------------- KD-5: Schlussleiste der Klimaexport-Ueberlagerung
+  if (!NUR || NUR === 'klimaexport') {
+    for (const f of KLIMA_FENSTER) {
+      const name = `klimaexport ${f.breite}x${f.hoehe}${f.ipad ? ' iPad' : ''}`;
+      console.log(`- ${name}`);
+      const r = await klimaimport(browser, f, '', 'export');
+      for (const t of r.fehler) melde(name, t);
+      console.log(`    Ueberlagerung ${JSON.stringify(r.oben.ueberlagerung)}, Rollhoehe ${r.oben.rollhoehe}/${r.oben.fenster} px (gerollt ${r.ende.stand} px); `
+        + `Leiste oben ${JSON.stringify(r.oben.leiste)}, Ende ${JSON.stringify(r.ende.leiste)} (${r.oben.leistePos}); Inhalt am Ende bis ${r.ende.boden} px`);
+    }
+  }
+
+  // ----------------------------------------- KD-8 Teil A: Reihenwahl im Reiter „Weitere Reihen"
+  if (!NUR || NUR === 'klimareihen') {
+    for (const f of KLIMA_FENSTER) {
+      const name = `klimareihen ${f.breite}x${f.hoehe}${f.ipad ? ' iPad' : ''}`;
+      console.log(`- ${name}`);
+      const r = await klimareihen(browser, f);
+      for (const t of r.fehler) melde(name, t);
+      console.log(`    ${r.m.chips} Chips (${r.m.gesperrt} gesperrt), ${r.m.bildZuerst ? 'Bild zuerst' : 'Wahl zuerst'}, `
+        + `Wahl ${r.m.wahlHoehe} px hoch, ragt ${r.m.ragt} px; `
+        + `Bild ${r.m.bildHoehe} px; Leiste ${JSON.stringify(r.m.leiste)}`);
+    }
+  }
+
+  // ----------------------------------------- Nacharbeit KBP-3b: Tagesarten der Kalenderwoche als Hintergrund
+  if (!NUR || NUR === 'kaeltegrafik') {
+    for (const f of FENSTER.slice(0, 2)) {
+      const name = `kaeltegrafik ${f.breite}x${f.hoehe}`;
+      console.log(`- ${name}`);
+      const r = await kaeltegrafik(browser, f);
+      for (const t of r.fehler) melde(name, t);
+      console.log(`    ${r.zahlen.optionen} Wochen; Zeichenflaeche ${JSON.stringify(r.zahlen.zeichenflaeche)}; KW 1: ${r.zahlen.gelesen.join(', ')}`);
+    }
+  }
+
+  // ----------------------------------------------------- KBP-4b: Typtage-Editor in der Bearbeiten-Ueberlagerung
+  if (!NUR || NUR === 'kaeltetyptage') {
+    for (const f of FENSTER) {
+      const name = `kaeltetyptage ${f.breite}x${f.hoehe}`;
+      console.log(`- ${name}`);
+      const r = await kaeltetyptage(browser, f);
+      for (const t of r.fehler) melde(name, t);
+      console.log(`    ${r.zahlen.auswahl} Zellen; Spalten ${JSON.stringify(r.zahlen.spalten)}; ausserhalb ${r.zahlen.ausserhalb}; schmalste Wahl ${r.zahlen.schmal} px`);
+    }
+  }
+
+  // ----------------------------------------- Befund 17.10.2026: Grafik des Ergebnisdialogs in der Ueberlagerung
+  const BEDARF_FENSTER = [FENSTER[0], { breite: 1600, hoehe: 1000 }];
+  if (!NUR || NUR === 'bedarfgrafik') {
+    for (const f of BEDARF_FENSTER) {
+      const name = `bedarfgrafik ${f.breite}x${f.hoehe}`;
+      console.log(`- ${name}`);
+      const r = await bedarfgrafik(browser, f);
+      for (const t of r.fehler) melde(name, t);
+      console.log('    ' + r.zahlen.join('; '));
+    }
+  }
+
+  // ------------------------------------------- Deckungsgruppe der Kaeltezeile in der Bearbeiten-Ueberlagerung
+  if (!NUR || NUR === 'kaeltedeckung') {
+    for (const f of FENSTER) {
+      const name = `kaeltedeckung ${f.breite}x${f.hoehe}`;
+      console.log(`- ${name}`);
+      const r = await kaeltedeckung(browser, f);
+      for (const t of r.fehler) melde(name, t);
+      console.log(`    Rollweg ${r.zahlen.rollweg} px im Koerper von ${r.zahlen.koerper} px; Deckungsgruppe ${r.zahlen.gruppe} px hoch`);
+    }
+  }
+
   // -------------------------------------------------------------- Gegenprobe
   let gegenGruen = 0;
+  if (MIT_GEGENPROBE && (!NUR || NUR === 'kaeltetyptage')) {
+    // Die Matrix in einer Zeile (zwoelf Spalten) muss rot sein.
+    const g = await kaeltetyptage(browser, FENSTER[0], '.epos-kbp-matrix .epos-stundenraster { grid-template-rows: repeat(1, auto) !important; }');
+    console.log(`    Gegenprobe kaeltetyptage Matrix in einer Zeile: ${g.n} Verstoesse`);
+    if (g.n === 0) gegenGruen++;
+  }
+  if (MIT_GEGENPROBE && (!NUR || NUR === 'bedarfgrafik')) {
+    // Der Befund: die Zeigerzeile im Reiterblatt haftet mit dem Fussabstand der Ueberlagerung ueber der Achse.
+    for (const f of BEDARF_FENSTER) {
+      const g = await bedarfgrafik(browser, f,
+        '.epos-ueberlagerung-inhalt .epos-reiter-blatt .epos-diagramm-zeigerzeile { bottom: var(--epos-ueberlagerung-fuss) !important; }');
+      console.log(`    Gegenprobe bedarfgrafik mit Fussabstand ${f.breite}x${f.hoehe}: ${g.n} Verstoesse`);
+      if (g.n === 0) gegenGruen++;
+    }
+  }
+  if (MIT_GEGENPROBE && (!NUR || NUR === 'kaeltedeckung')) {
+    // Rollt der Koerper nicht (overflow: visible), schiebt die Deckungsgruppe die Schlussleiste aus dem Bild: rot.
+    const g = await kaeltedeckung(browser, FENSTER[0], '.epos-satzueberlagerung-koerper { overflow: visible !important; flex: 0 0 auto !important; }');
+    console.log(`    Gegenprobe kaeltedeckung Koerper ohne Rollen: ${g.n} Verstoesse`);
+    if (g.n === 0) gegenGruen++;
+  }
+  if (MIT_GEGENPROBE && (!NUR || NUR === 'kaeltegrafik')) {
+    // Ohne den Hintergrund der Tagesarten muss die Woche rot sein.
+    const g = await kaeltegrafik(browser, FENSTER[0], '.epos-kbp-woche .epos-diagramm-svg-flaeche { background-image: none !important; }');
+    console.log(`    Gegenprobe kaeltegrafik ohne Hintergrund: ${g.n} Verstoesse`);
+    if (g.n === 0) gegenGruen++;
+  }
   if (MIT_GEGENPROBE && (!NUR || NUR === 'satz-steckbrief')) {
     // WP1b: ein Steckbrief, der nicht umbricht und breiter ist als seine Spalte, muss je Wirt rot sein.
     for (const w of SATZ_WIRTE) {
@@ -976,7 +1449,7 @@ try {
       if (h.n === 0) gegenGruen++;
       await seite.close();
       if (NACHLAUF.has(fall)) {
-        // Der Fuss mit negativem Rand trotz Nachlauf: er laege ueber dessen Beschriftung.
+        // Der Fuss mit negativem Rand trotz Nachlauf: er rueckt in die Luecke zum Nachlauf (Abstand gap - Kartenrand).
         const s4 = await oeffnen(browser, fall, f);
         await s4.addStyleTag({ content: '#app > .epos-dialog > .epos-leiste { margin-bottom: calc(-1 * var(--epos-karte-rand)) !important; }' });
         const h4 = await haften(s4, '', false, true);
@@ -990,15 +1463,6 @@ try {
       console.log(`    ohne scroll-padding ${fall} ${f.breite}x${f.hoehe}: verdeckt ${tab.verdeckt.length}`);
       fokusRot += tab.verdeckt.length;
       await s2.close();
-      if (fall === 'waermepumpen') {
-        // Das eingebettete Band mit bottom: 0 (ohne die Regel fuer .epos-dialog--eingebettet).
-        const s3 = await oeffnen(browser, fall, f);
-        await s3.addStyleTag({ content: '.epos-dialog--eingebettet > .epos-dialog-fuss { bottom: 0 !important; }' });
-        const n = await warnband(s3, '', false);
-        console.log(`    Warnband mit bottom 0 ${f.breite}x${f.hoehe}: ${n} Verstoesse`);
-        if (n === 0) gegenGruen++;
-        await s3.close();
-      }
     }
     for (const f of FENSTER) for (const fall of KATALOGAUSWAHL) {
       if (NUR && NUR !== fall) continue;
@@ -1063,6 +1527,36 @@ try {
       ]) {
         const g = await meldungsliste(browser, f, false, zusatz, stil);
         console.log(`    Meldungsliste ${was} ${f.breite}x${f.hoehe}: ${g.n} Verstoesse (Tabulator: ${g.unterBanner} von ${g.schritte} Feldern verdeckt)`);
+        if (g.n === 0) gegenGruen++;
+      }
+    }
+    if (MIT_GEGENPROBE && (!NUR || NUR === 'klimaimport')) {
+      // KD-1: Ohne die Haftregel liegt die Schlussleiste im rollenden Fenster unter dem Boden der Ueberlagerung.
+      for (const f of KLIMA_FENSTER) {
+        const g = await klimaimport(browser, f, '.epos-ueberlagerung-inhalt > .epos-einlesen > .epos-leiste { position: static !important; margin-bottom: 0 !important; }');
+        console.log(`    Gegenprobe klimaimport ohne Haftregel ${f.breite}x${f.hoehe}: ${g.n} Verstoesse`);
+        if (g.n === 0) gegenGruen++;
+      }
+    }
+    if (MIT_GEGENPROBE && (!NUR || NUR === 'klimaexport')) {
+      // KD-5: Ohne die Haftregel liegt die Schlussleiste des Exports unter dem Boden der Ueberlagerung.
+      for (const f of KLIMA_FENSTER) {
+        const g = await klimaimport(browser, f, '.epos-ueberlagerung-inhalt > .epos-dialog > .epos-leiste { position: static !important; margin-bottom: 0 !important; }', 'export');
+        console.log(`    Gegenprobe klimaexport ohne Haftregel ${f.breite}x${f.hoehe}: ${g.n} Verstoesse`);
+        if (g.n === 0) gegenGruen++;
+      }
+    }
+    if (MIT_GEGENPROBE && (!NUR || NUR === 'klimareihen')) {
+      // KD-8 Teil A: Ohne Umbruch der Gruppen ragen die Chips im schmalen Fenster (520 px) aus der Reihenwahl.
+      for (const f of KLIMA_FENSTER.filter(f => f.breite <= 600)) {
+        const g = await klimareihen(browser, f, '.epos-reihenwahl-gruppe { flex-wrap: nowrap !important; }');
+        console.log(`    Gegenprobe klimareihen ohne Umbruch ${f.breite}x${f.hoehe}: ${g.n} Verstoesse`);
+        if (g.n === 0) gegenGruen++;
+      }
+      // Anwenderentscheid 16.10.2026: Ohne die Reihenfolgeregel steht im schmalen Fenster die Wahl ueber dem Bild.
+      for (const f of KLIMA_FENSTER.filter(f => f.breite <= 600)) {
+        const g = await klimareihen(browser, f, '.epos-reihenbild > .epos-reihenwahl { order: 0 !important; }');
+        console.log(`    Gegenprobe klimareihen ohne Reihenfolgeregel ${f.breite}x${f.hoehe}: ${g.n} Verstoesse`);
         if (g.n === 0) gegenGruen++;
       }
     }

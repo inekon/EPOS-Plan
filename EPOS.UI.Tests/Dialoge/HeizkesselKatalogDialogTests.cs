@@ -57,11 +57,8 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
         Brennwert = true,
         Vorlauf = 70,
         Ruecklauf = 50,
-        Investitionskosten = 12000,
         Raumbedarf = 2.5,
         Nutzungsdauer = 20,
-        Wartungskosten = 300,
-        WartungEinheit = 0,
         CO2 = 201600,
         SO2 = 0,
         NOx = 285,
@@ -265,7 +262,7 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
     /// <b>Der OK-Weg fasst die entfallenen Spalten nicht an</b> (Anwenderentscheid
     /// 15.09.2026).
     ///
-    /// <para>Der Dialog zeigt Investitionskosten, Wartungskosten, Wartungseinheit,
+    /// <para>Der Dialog zeigt (seit Welle KB-4 ohne jedes Kostenfeld)
     /// Raumbedarf, Nutzungsdauer und die fünf Emissionsfaktoren nicht mehr. Sie stehen
     /// aber weiter in <c>HeizkesselKatalogDaten</c>, weil die Hülle sie beim Laden
     /// füllt (<c>AusModell</c>) und beim Speichern zurückschreibt
@@ -288,10 +285,7 @@ public class HeizkesselKatalogDialogTests : EposBunitContext
         cut.FindAll(".epos-leiste button")[^4].Click();
 
         Assert.NotNull(uebergeben);
-        Assert.Equal(12000.0, uebergeben!.Investitionskosten);
-        Assert.Equal(300.0, uebergeben.Wartungskosten);
-        Assert.Equal(0, uebergeben.WartungEinheit);
-        Assert.Equal(2.5, uebergeben.Raumbedarf);
+        Assert.Equal(2.5, uebergeben!.Raumbedarf);
         Assert.Equal(20.0, uebergeben.Nutzungsdauer);
         Assert.Equal(201600.0, uebergeben.CO2);
         Assert.Equal(0.0, uebergeben.SO2);

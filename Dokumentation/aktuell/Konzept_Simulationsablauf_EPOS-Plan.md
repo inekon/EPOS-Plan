@@ -1723,14 +1723,18 @@ bis der Anwender eine Kopie bewusst auf den Katalog zurücksetzt.
 (`Tab_ProjektWirtschaftlichkeit.RefKessel_ID_Brennstoff`) führen sie, und der Kern verzweigt über ihre
 Nummernbereiche (Gas, Öl, Strom). Die Kopie hängt über `(ID_Projekt, ID_Brennstoff)` am Projekt und
 trägt alle Fachspalten des Stamms — Kategorie, Name, Einheiten, Heizwerte, Emissionsfaktoren
-(CO₂, SO₂, NOₓ, Staub), Primärenergiefaktor, Preisvorgaben — und `Katalogfassung_Herkunft`. Wer im
+(CO₂, SO₂, NOₓ, Staub), Primärenergiefaktor — und `Katalogfassung_Herkunft`. **Preise führt der
+Brennstoff nicht:** Arbeits-, Grund- und Leistungspreis stehen in der Karte des Energieträgers
+(`energy_carrier.price_work`/`price_base`/`price_power` samt `price_power_modus`), Schemaschritt
+`BrennstoffpreiseTraegerkarteSchema`; `PreisEinheit` bleibt als Katalogtext. Wer im
 Projekt einen Wert des Brennstoffs liest, nimmt `ProjektBrennstoffe.Sicht`: die Kopie des Projekts,
 für eine dem Projekt noch unbekannte Brennstoffart der Stamm. So lesen die Ebene STAMM der
 Emissionskette (`EmissionsFaktorLader`, Gerätebrennstoff in `Emissionsquelle`), die
 Emissionsbilanz (biogene Einstufung, Referenzkessel), die BEHG-Einstufung des Berichts
 (`KostenEmissionRechner`), die Wirtschaftlichkeit (Kategorie je Anlage, Heizöl-BHKW,
-Referenzkessel), die KWKG-Anlagenliste, die Vorgabepreise eines neuen Trägers (Assistent,
-Trägervariante) und die Pufferauslegung (Brennstoff des Kessels). Ohne Projekt — Katalogpflege,
+Referenzkessel), die KWKG-Anlagenliste, die Heizwerte und die Mengeneinheit eines neuen Trägers
+(Assistent, Trägervariante — seine **Preise** kommen aus der Trägerkarte) und die Pufferauslegung
+(Brennstoff des Kessels). Ohne Projekt — Katalogpflege,
 Energieträgerkatalog — gilt der Stamm. Die Kopie ist vollständig (je Projekt jede Brennstoffart),
 weil sich die benutzte Brennstoffart eines Projekts über die Rückfallketten (Stromträger,
 Referenzkessel-Vorgabe, Gerätebrennstoff ohne Träger) nicht abschließend bestimmen lässt.

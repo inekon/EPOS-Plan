@@ -95,8 +95,9 @@ namespace EPOS.Kern.Tests
             // Kopie von 1058, dort ohne Kühlbetrieb) und in den Referenzprojekten der Kühlkurve 1061 und 1062 (KK5a) und im Referenzprojekt der Übergabegrenze 1060
             // (referenzprojekt_1060_uebergabegrenze.cs, Kopie von 1056) und im Referenzprojekt Kältemaschine Teillast 1063
             // (referenzprojekt_1063_kaeltemaschine_teillast.cs, Kopie von 1055) und im Referenzprojekt Freie Kühlung 1064
-            // (referenzprojekt_1064_freie_kuehlung.py, Kopie von 1017), sonst keine.
-            Assert.Equal(110L, Convert.ToInt64(Skalar("SELECT COUNT(*) FROM Tab_Kenndaten_Kuehlung")));
+            // (referenzprojekt_1064_freie_kuehlung.py, Kopie von 1017) und im Referenzprojekt Kältebedarf dezentral 1072
+            // (referenzprojekt_1072_kaeltebedarf.cs, Kopie von 1055), sonst keine.
+            Assert.Equal(120L, Convert.ToInt64(Skalar("SELECT COUNT(*) FROM Tab_Kenndaten_Kuehlung")));
             Assert.Equal(10L, Convert.ToInt64(Skalar("SELECT COUNT(*) FROM Tab_Kenndaten_Kuehlung WHERE ID_WP = " + WP)));
             List<KuehlkennlinienZeile> zeilen = KenndatenKuehlungCtrl.ZeilenProjekt(WP);
             Assert.Equal(10, zeilen.Count);
@@ -222,11 +223,11 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(stunden, e.StundenMitKaelte);
                 Assert.True(kaelte <= kaskade.BedarfGesamtKwh + 1e-6);
 
-                // Gespeichert: die Modulspalten mit zwei Stellen.
+                // Gespeichert: die Kaeltespalten der Modulzeile ungerundet (8d).
                 ErgebnisModel erg = new ErgebnisCtrl().Load(PROJEKT);
                 ErgebnisWaermepumpeModulModel mo = Assert.Single(erg.Waermepumpe.Module);
-                Assert.Equal(Math.Round(kaelte / 1000.0, 2, MidpointRounding.AwayFromZero), mo.Kaelteproduktion.Value, 9);
-                Assert.Equal(Math.Round(strom / 1000.0, 2, MidpointRounding.AwayFromZero), mo.Stromverbrauch_Kuehlung.Value, 9);
+                Assert.Equal(kaelte / 1000.0, mo.Kaelteproduktion.Value, 9);
+                Assert.Equal(strom / 1000.0, mo.Stromverbrauch_Kuehlung.Value, 9);
                 Assert.True(mo.Kaeltestrom_Netzbezug.Value <= mo.Stromverbrauch_Kuehlung.Value + 1e-9);
                 Assert.Null(mo.Kuehl_CarrierId);
 

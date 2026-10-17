@@ -73,7 +73,16 @@ namespace WindowsFormsApplication1
 
         public bool Open(string sql)
         {
-            return Open(sql, null);
+            return Lade(sql, null, null);
+        }
+
+        /// <summary>
+        /// Wie <see cref="Open(string)"/>, aber mit <c>?</c>-Parametern
+        /// (<see cref="DataRepository"/>-Regel: nie zusammengesetzte SQL-Texte).
+        /// </summary>
+        public bool Open(string sql, params DbParam[] parameter)
+        {
+            return Lade(sql, null, parameter);
         }
 
         /// <summary>
@@ -90,6 +99,11 @@ namespace WindowsFormsApplication1
         /// </summary>
         public bool Open(string sql, DbVorgang vorgang)
         {
+            return Lade(sql, vorgang, null);
+        }
+
+        private bool Lade(string sql, DbVorgang vorgang, DbParam[] parameter)
+        {
             // Evtl. noch offenes Ergebnis aus einem vorherigen Open verwerfen.
             _ergebnis = null;
             _zeile = -1;
@@ -103,13 +117,13 @@ namespace WindowsFormsApplication1
 
                 if (vorgang != null)
                 {
-                    _ergebnis = vorgang.Lese(sql);
+                    _ergebnis = vorgang.Lese(sql, parameter);
                     return true;
                 }
 
                 // Andernfalls öffnen wir eine eigene, interne Verbindung für diese Abfrage.
                 using (SqliteConnection conn = StilleDb.OeffneVerbindung())
-                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(conn, null, sql, null))
+                using (SqliteCommand cmd = DataRepository.ErzeugeKommando(conn, null, sql, parameter))
                 using (SqliteDataReader leser = cmd.ExecuteReader())
                 {
                     _ergebnis = DataRepository.LadeTabelle(leser);

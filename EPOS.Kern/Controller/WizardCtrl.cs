@@ -354,6 +354,7 @@ namespace WindowsFormsApplication1
             // KWN-0: Die Art (Raum/Prozess) steht in JEDER Schreibstelle, sobald der Schritt KaelteArtSchema steht - sonst
             // fiele eine Prozesszeile beim naechsten Speichern still auf Raum zurueck.
             bool mitArt = KaelteArtSchema.ProfilLesbar();
+            bool mitEingabeart = KaeltebedarfsprofilVorlagenSchema.EingabeartLesbar();
             foreach (var item in list)
             {
                 Z_ProjektKaeltebedarfCtrl.Normalisieren(item);
@@ -382,6 +383,45 @@ namespace WindowsFormsApplication1
                     return false;
                 }
 
+                // KBP-3a (Konzept Kaeltebedarfsprofile 3.2, 3.3, 3.5): bearbeitete Monatswerte und Wochenprofil gehen in
+                // die PROJEKTKOPIE, nie in den Katalog. Teilt sie sich die Kopie mit einer anderen Zeile, bekommt die
+                // bearbeitete Zeile eine eigene (Kopie bei Bearbeitung) - geschrieben erst hier, also erst mit OK.
+                if (ProfilBearbeitet(item))
+                {
+                    if (KaelteKopieAbspalten(list, item, kopie, projektID))
+                    {
+                        int eigene = KaeltebedarfStammCtrl.ProjektkopieAbspalten(kopie, projektID);
+                        if (eigene <= 0)
+                        {
+                            DataRepository.FehlerMelden("Die eigene Projektkopie des Kaeltebedarfs \"" + (item.Bezeichner ?? "") +
+                                                        "\" konnte nicht angelegt werden. Die Zuordnung wurde nicht gespeichert.");
+                            return false;
+                        }
+                        kopie = eigene;
+                        item.ID_Kaeltebedarf = kopie;
+                    }
+                    if (!KaeltebedarfStammCtrl.ProjektProfilSchreiben(kopie, item.Monatsanteile, item.Wochenprofil))
+                    {
+                        DataRepository.FehlerMelden("Monatswerte oder Wochenprofil des Kaeltebedarfs \"" + (item.Bezeichner ?? "") +
+                                                    "\" konnten nicht gespeichert werden. Die Zuordnung wurde nicht gespeichert.");
+                        return false;
+                    }
+                    // KBP-4b (Konzept 3.4, 3.5): bearbeitete Typtage samt Matrix in dieselbe Projektkopie, im Vorgang des
+                    // Aufrufers (Unterpunkt) - nach der Kopie bei Bearbeitung.
+                    if (item.Typtage != null && !KaeltetyptagCtrl.Schreiben(projektID, kopie, item.Typtage, out string grundTyptage))
+                    {
+                        DataRepository.FehlerMelden("Die Typtage des Kaeltebedarfs \"" + (item.Bezeichner ?? "") +
+                                                    "\" konnten nicht gespeichert werden (" + grundTyptage +
+                                                    "). Die Zuordnung wurde nicht gespeichert.");
+                        return false;
+                    }
+                }
+
+                // KV8-N: Der Kalender ist die Wahl des Dialogs, auch „keiner“ (NULL). Die Vorwahl des Normkalenders trifft
+                // allein die Übernahme im Dialog (KaeltebedarfsprofilAbbildung.Aufgenommen); einen Assistentenweg ohne
+                // Dialog gibt es für die Kälte nicht. Eine Zeile mit Normtagen ohne Kalender rechnet mit dem Normkalender
+                // als Vorgabe (NormkalenderCtrl.Wirksam).
+
                 int idZ = nextID++;
                 var ps = new List<DbParam>
                 {
@@ -401,11 +441,15 @@ namespace WindowsFormsApplication1
                     new DbParam("@zae", item.KuehlEigenerZaehler ? 1 : 0),
                 };
                 if (mitArt) ps.Add(new DbParam("@art", item.KaelteArt));
+                // KBP-3a: die Eingabeart in JEDER Schreibstelle, sobald der Schritt KaeltebedarfsprofilVorlagenSchema steht -
+                // sonst fiele eine Monats- oder Wochenzeile beim naechsten Speichern still auf 'jahr' zurueck.
+                if (mitEingabeart) ps.Add(new DbParam("@ein", KaeltebedarfsprofilVorlagenSchema.Eingabeart(item.Eingabeart)));
                 bool ok = DataRepository.ExecuteSQL(
                     mitArt
                         ? "INSERT INTO Z_Projekt_Kaeltebedarf (ID, ID_Projekt, ID_Kaeltebedarf, Bezeichner, Summe, ID_Betriebskalender, " +
                           "Deckung, Split_EER_Weg, Split_EER_1, Split_Taussen_1, Split_EER_2, Split_Taussen_2, Kuehl_ID_Carrier, " +
-                          "Kuehl_EigenerZaehler, Kaelte_Art) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                          "Kuehl_EigenerZaehler, Kaelte_Art" + (mitEingabeart ? ", Eingabeart" : "") +
+                          ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?" + (mitEingabeart ? ", ?" : "") + ")"
                         : "INSERT INTO Z_Projekt_Kaeltebedarf (ID, ID_Projekt, ID_Kaeltebedarf, Bezeichner, Summe, ID_Betriebskalender, " +
                           "Deckung, Split_EER_Weg, Split_EER_1, Split_Taussen_1, Split_EER_2, Split_Taussen_2, Kuehl_ID_Carrier, " +
                           "Kuehl_EigenerZaehler) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -416,6 +460,79 @@ namespace WindowsFormsApplication1
                 nachzug?.Merken(() => { zeile.ID_Z = idZ; zeile.ID_Projekt = projektID; });
             }
             return true;
+        }
+
+        /// <summary>
+        /// KBP-5a (Konzept Kaeltebedarfsprofile 3.5, OE-5): schreibt bearbeitete Monatsanteile und Wochenprofil einer
+        /// Prozesswaerme- oder Brauchwasserzeile in ihre Projektkopie <paramref name="kopie"/> — nach demselben Muster wie
+        /// die Kaelte (<see cref="Add_Projekt_Kaelte"/>): Teilt sie sich die Kopie mit einer anderen Zeile, bekommt sie
+        /// zuerst eine eigene (Kopie bei Bearbeitung). Ohne Bearbeitung geschieht nichts. Scheitert ein Schritt, meldet
+        /// der Weg benannt und gibt <c>false</c> zurueck.
+        /// </summary>
+        private static bool ProfilInKopie<T>(Bedarfsprofilkopie.Tabellen t, List<T> list, T item, ref int kopie, int projektID,
+                                             Func<T, double[]> monate, Func<T, double[]> woche,
+                                             Func<T, int> kopieUeberId, Func<T, int> kopieUeberName, string name)
+            where T : class
+        {
+            bool Bearbeitet(T z) => z != null && (monate(z) != null || woche(z) != null);
+            if (!Bearbeitet(item)) return true;
+            int eigene = list.IndexOf(item), k = kopie;
+            int KopieVon(int i)
+            {
+                T andere = list[i];
+                if (andere == null) return 0;
+                int ihre = kopieUeberId(andere);
+                if (ihre <= 0 && i > eigene) ihre = kopieUeberName(andere);
+                return ihre;
+            }
+            if (Bedarfsprofilkopie.AbspaltenNoetig(list.Count, eigene, k, KopieVon, i => Bearbeitet(list[i])))
+            {
+                int neu = Bedarfsprofilkopie.Abspalten(t, k, projektID);
+                if (neu <= 0)
+                {
+                    DataRepository.FehlerMelden("Die eigene Projektkopie \"" + (name ?? "") + "\" (" + t.Kopf +
+                                                ") konnte nicht angelegt werden. Die Zuordnung wurde nicht gespeichert.");
+                    return false;
+                }
+                kopie = neu;
+            }
+            if (!Bedarfsprofilkopie.Schreiben(t, kopie, monate(item), woche(item)))
+            {
+                DataRepository.FehlerMelden("Monatswerte oder Wochenprofil \"" + (name ?? "") + "\" (" + t.Kopf +
+                                            ") konnten nicht gespeichert werden. Die Zuordnung wurde nicht gespeichert.");
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>KBP-3a, KBP-4b: Trägt die Zeile bearbeitete Monatswerte, ein bearbeitetes Wochenprofil oder bearbeitete Typtage?</summary>
+        private static bool ProfilBearbeitet(Z_ProjektKaeltebedarfModel z)
+            => z != null && (z.Monatsanteile != null || z.Wochenprofil != null || z.Typtage != null);
+
+        /// <summary>
+        /// KBP-3a, Kopie bei Bearbeitung (Konzept Kaeltebedarfsprofile 3.5): Braucht die bearbeitete Zeile
+        /// <paramref name="item"/> eine eigene Projektkopie, weil eine andere Zeile der Liste auf dieselbe Kopie
+        /// <paramref name="kopie"/> zeigt? Ja, sobald eine solche Zeile unbearbeitet ist oder als frühere bearbeitete Zeile
+        /// die Kopie schon trägt; sind alle Teilhaber bearbeitet, behält die erste die Kopie — es bleibt keine Waise.
+        /// </summary>
+        private static bool KaelteKopieAbspalten(List<Z_ProjektKaeltebedarfModel> list, Z_ProjektKaeltebedarfModel item,
+                                                 int kopie, int projektID)
+        {
+            int eigene = list.IndexOf(item);
+            bool geteilt = false, alleBearbeitet = true, erster = true;
+            for (int i = 0; i < list.Count; i++)
+            {
+                Z_ProjektKaeltebedarfModel andere = list[i];
+                if (i == eigene || andere == null) continue;
+                int ihre = andere.ID_Kaeltebedarf == kopie ? kopie
+                    : KaeltebedarfStammCtrl.GetProjektIdUeberId(andere.ID_Kaeltebedarf, andere.Bezeichner, projektID);
+                if (ihre <= 0 && i > eigene) ihre = KaeltebedarfStammCtrl.GetProjektId(andere.Bezeichner, projektID);
+                if (ihre != kopie) continue;
+                geteilt = true;
+                if (!ProfilBearbeitet(andere)) alleBearbeitet = false;
+                else if (i < eigene) erster = false;
+            }
+            return geteilt && !(alleBearbeitet && erster);
         }
 
         public bool Del_Stromganglinie(int projektID, DbVorgang vorgang = null)
@@ -2777,18 +2894,27 @@ namespace WindowsFormsApplication1
             if (oBrennstoff == null) return true;   // Katalogzeile fehlt -> nichts anzulegen
             int idBrennstoff = Convert.ToInt32(oBrennstoff);
 
-            // Default-Werte aus dem Brennstoff-Stamm (nur noch PREISE — zu den
-            // Emissionen siehe den Block vor dem INSERT der Projekt-Einstellungen)
-            // Die Vorgaben des Brennstoffs in der Sicht des Projekts (Projektkopie, ProjektBrennstoffe.Sicht).
+            // Heizwerte und Mengeneinheit aus dem Brennstoff in der Sicht des Projekts (Projektkopie,
+            // ProjektBrennstoffe.Sicht); zu den Emissionen siehe den Block vor dem INSERT der
+            // Projekt-Einstellungen.
             string quelle = ProjektBrennstoffe.Sicht(projektID, out DbParam[] sicht);
             DataTable dtBs = DataRepository.GetDataTable(
-                "SELECT bs.Standard_Arbeitspreis, bs.Standard_Grundpreis, bs.Standard_Leistungspreis, bs.Hi, bs.Hs, bs.Einheit " +
-                "FROM " + quelle + " AS bs WHERE bs.ID = ?",
+                "SELECT bs.Hi, bs.Hs, bs.Einheit FROM " + quelle + " AS bs WHERE bs.ID = ?",
                 ProjektBrennstoffe.Mit(sicht, new DbParam("@bs", idBrennstoff)));
             DataRow rBs = dtBs != null && dtBs.Rows.Count > 0 ? dtBs.Rows[0] : null;
-            double default_arbeitspreis = ToDouble(rBs?["Standard_Arbeitspreis"]);
-            double default_grundpreis = ToDouble(rBs?["Standard_Grundpreis"]);
-            double default_leistungspreis = ToDouble(rBs?["Standard_Leistungspreis"]);
+
+            // DIE PREISE KOMMEN AUS DER KARTE DES TRAEGERS (Welle KB-2, Anwenderentscheid 13.10.2026
+            // "eine Kostenbasis, keine Doppelhaltung"): energy_carrier.price_work/price_base/price_power
+            // ist die EINE Quelle - der Brennstoff fuehrt keine Preisspalten mehr (Schemaschritt
+            // BrennstoffpreiseTraegerkarteSchema.SCHRITT). Der Zeitbezug des Leistungspreises haengt an der
+            // Karte (price_power_modus); die Projektzeile fuehrt die Zahl in derselben Einheit.
+            DataTable dtPreis = DataRepository.GetDataTable(
+                "SELECT price_work, price_base, price_power FROM energy_carrier WHERE id = ?",
+                new DbParam[] { new DbParam("@cid", carrierId) });
+            DataRow rPreis = dtPreis != null && dtPreis.Rows.Count > 0 ? dtPreis.Rows[0] : null;
+            double default_arbeitspreis = ToDouble(rPreis?["price_work"]);
+            double default_grundpreis = ToDouble(rPreis?["price_base"]);
+            double default_leistungspreis = ToDouble(rPreis?["price_power"]);
 
             // Hi, Hs und Abrechnungseinheit - im Kosten-Dialog die Felder
             // SelectedHi / SelectedHs / SelectedBillingUnit aus derselben Zeile
@@ -3559,6 +3685,15 @@ namespace WindowsFormsApplication1
                     return false;
                 }
 
+                // KBP-5a (Konzept Kaeltebedarfsprofile 3.2, 3.3, 3.5; OE-5): bearbeitete Monatswerte und Wochenprofil gehen
+                // in die PROJEKTKOPIE, nie in den Katalog; eine mit anderen Zeilen geteilte Kopie wird erst hier abgespalten.
+                if (!ProfilInKopie(Bedarfsprofilkopie.Prozesswaerme, list, item, ref projPwId, projektID,
+                                   z => z.Monatsanteile, z => z.Wochenprofil,
+                                   z => ProzesswaermeStammCtrl.GetProjektIdUeberId(z.ID_Prozesswaerme, z.szProzessname, projektID),
+                                   z => ProzesswaermeStammCtrl.GetProjektId(z.szProzessname, projektID), item.szProzessname))
+                    return false;
+                item.ID_Prozesswaerme = projPwId;
+
                 string sql = "INSERT INTO Z_Projekt_Prozesswaerme (ID, ID_Projekt, ID_Prozesswaerme, Bezeichner, Summe) VALUES (?, ?, ?, ?, ?)";
 
                 int idZ = nextID++;
@@ -3573,6 +3708,9 @@ namespace WindowsFormsApplication1
                 if (!DataRepository.ExecuteSQL(sql, ps)) return false;
                 // PW2/BW2: der Betriebskalender der Zeile reist mit (nur gesetzt, spaltentolerant).
                 if (!BetriebskalenderCtrl.ZuordnungKalenderSetzen("Z_Projekt_Prozesswaerme", idZ, item.ID_Betriebskalender))
+                    return false;
+                // KBP-5a: die Eingabeart der Zeile ('jahr' ist die Vorgabe der Spalte und wird nicht geschrieben).
+                if (!BedarfsprofilEingabeartSchema.EingabeartSetzen(BedarfsprofilEingabeartSchema.TAB_PROZESS, idZ, item.Eingabeart))
                     return false;
 
                 Z_ProjektProzesswaermeModel zeile = item;
@@ -3765,6 +3903,14 @@ namespace WindowsFormsApplication1
                 }
                 item.ID_Brauchwasser = projBwId;
 
+                // KBP-5a: wie bei der Prozesswaerme - bearbeitete Monatswerte und Wochenprofil in die Projektkopie.
+                if (!ProfilInKopie(Bedarfsprofilkopie.Brauchwasser, list, item, ref projBwId, projektID,
+                                   z => z.Monatsanteile, z => z.Wochenprofil,
+                                   z => BrauchwasserStammCtrl.GetProjektIdUeberId(z.ID_Brauchwasser, z.szBezeichner, projektID),
+                                   z => BrauchwasserStammCtrl.GetProjektId(z.szBezeichner, projektID), item.szBezeichner))
+                    return false;
+                item.ID_Brauchwasser = projBwId;
+
                 string sql = "INSERT INTO Z_Projekt_Brauchwasser (ID, ID_Projekt, ID_Brauchwasser, Bezeichner, Summe) VALUES (?, ?, ?, ?, ?)";
 
                 int idZ = nextID++;
@@ -3780,6 +3926,9 @@ namespace WindowsFormsApplication1
 
                 // PW2/BW2: der Betriebskalender der Zeile reist mit (nur gesetzt, spaltentolerant).
                 if (!BetriebskalenderCtrl.ZuordnungKalenderSetzen("Z_Projekt_Brauchwasser", idZ, item.ID_Betriebskalender))
+                    return false;
+                // KBP-5a: die Eingabeart der Zeile ('jahr' ist die Vorgabe der Spalte und wird nicht geschrieben).
+                if (!BedarfsprofilEingabeartSchema.EingabeartSetzen(BedarfsprofilEingabeartSchema.TAB_BRAUCHWASSER, idZ, item.Eingabeart))
                     return false;
             }
             return true;

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -18,6 +20,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>Auslieferungs-Seed: nur über „Speichern unter" kopierbar.</summary>
         public bool NurLesen;
+
+        /// <summary>
+        /// <b>Die Vorlage gehört zu einem Katalogsatz</b> (Welle KB-4): Ein Gerät verweist auf sie, sie ist
+        /// also die Kostenbasis dieses Katalogsatzes und keine frei gepflegte Variante. Die Liste der
+        /// Kostenverwaltung führt diese Vorlagen als eigene Gruppe hinter den Varianten
+        /// (<see cref="KostenVorlagenCtrl.KATALOGSAETZE_GRUPPIEREN"/>).
+        /// </summary>
+        public bool IstKatalogsatz;
     }
 
     /// <summary>Eine Position einer Kostenvorlage (<c>Tab_KostenVorlagePosition</c>).
@@ -147,7 +157,24 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
-        /// <summary>Alle Varianten einer Komponente+Kategorie; Standard zuerst.</summary>
+        /// <summary>
+        /// <b>Stehen die Satzvorlagen der Katalogsätze als eigene Gruppe hinter den Varianten?</b>
+        /// (Welle KB-4; Anwenderentscheid 16.10.2026: die Gruppe bleibt.) <c>false</c>
+        /// mischt sie wieder zwischen die Varianten: <b>die Umkehr ist diese eine Zeile.</b>
+        /// </summary>
+        public const bool KATALOGSAETZE_GRUPPIEREN = true;
+
+        /// <summary>
+        /// Die Kennung der Gruppenzeile „Katalogsätze" in der Auswahlliste — kein Vorlagenschlüssel
+        /// (Vorlagen-IDs sind positiv). Wer sie wählt, bleibt bei der vorigen Wahl: Eine Gruppenzeile ist
+        /// eine Überschrift, keine Vorlage.
+        /// </summary>
+        public const int ID_GRUPPE_KATALOGSAETZE = -1;
+
+        /// <summary>
+        /// Alle Varianten einer Komponente+Kategorie; Standard zuerst, dann die freien Varianten, dann —
+        /// solange <see cref="KATALOGSAETZE_GRUPPIEREN"/> gilt — die Satzvorlagen der Katalogsätze.
+        /// </summary>
         public static IList<KostenVorlageKopf> Vorlagen(int komponentenId, int kategorieId)
         {
             var liste = new List<KostenVorlageKopf>();
@@ -173,7 +200,50 @@ namespace WindowsFormsApplication1
                     // Ä8: Flag nur noch Herkunftsmarker — die UI zeigt alles editierbar.
                     NurLesen = false,
                 });
-            return liste;
+
+            if (!KATALOGSAETZE_GRUPPIEREN) return liste;
+
+            ISet<int> katalogsaetze = SatzvorlagenDerKataloge();
+            foreach (KostenVorlageKopf k in liste) k.IstKatalogsatz = katalogsaetze.Contains(k.Id);
+            // Stabil sortiert: die Reihenfolge der Abfrage (Standard zuerst, dann nach Name) bleibt
+            // innerhalb jeder Gruppe erhalten.
+            return liste.OrderBy(k => k.IstKatalogsatz ? 1 : 0).ToList();
+        }
+
+        /// <summary>
+        /// <b>Die Satzvorlagen, auf die ein Katalogsatz verweist</b> — die Vorlagen der Gewerke mit Kosten
+        /// (Katalog und Projektkopie, beide Verweisarten) in EINER Abfrage. Eine Verweisspalte, die die
+        /// Datenbank nicht führt, zählt nicht.
+        /// </summary>
+        public static ISet<int> SatzvorlagenDerKataloge()
+        {
+            var ids = new HashSet<int>();
+            var teile = new List<string>();
+            foreach (Katalogkostengewerk g in KatalogkostenSaatSchema.GEWERKE.Concat(
+                         new[] { GeraetekostenEntfallSchema.GEWERK_WECHSELRICHTER }))
+                foreach (string tabelle in new[] { g.Katalog, g.Kopie })
+                {
+                    if (!DataRepository.TabelleVorhanden(tabelle)) continue;
+                    foreach (int kategorie in new[] { DbWerte.KOSTEN_KATEGORIE_INVESTITION,
+                                                      DbWerte.KOSTEN_KATEGORIE_BETRIEB })
+                    {
+                        string spalte = KatalogkostenSaatSchema.Verweisspalte(kategorie);
+                        if (!DataRepository.SpalteVorhanden(tabelle, spalte)) continue;
+                        teile.Add("SELECT \"" + spalte + "\" AS V FROM \"" + tabelle + "\" WHERE IFNULL(\"" +
+                                  spalte + "\", 0) > 0");
+                    }
+                }
+            if (teile.Count == 0) return ids;
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT DISTINCT V FROM (" + string.Join(" UNION ALL ", teile) + ")");
+                if (dt != null)
+                    foreach (DataRow r in dt.Rows)
+                        if (r[0] != DBNull.Value) ids.Add(Convert.ToInt32(r[0], CultureInfo.InvariantCulture));
+            }
+            catch { }
+            return ids;
         }
 
         /// <summary>Positionen einer Vorlage in Rasterreihenfolge.</summary>

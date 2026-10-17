@@ -1,6 +1,6 @@
 # Entwurf BK — Baustoff- und Bauteilkatalog vervollständigen, Importweg aus dem Hottgenroth-Katalog
 
-**Stand 12.10.2026 · Befund und Entwurf, Fragen F1–F8 mit E132 entschieden (Abschnitt 6a), nichts gebaut.** Gelesen auf `23ca3798d` (Zweig `ios_migration_september`,
+**Stand 12.10.2026 · Befund und Entwurf, Fragen F1–F8 mit E132 entschieden (Abschnitt 6a). Stand 16.10.2026: BK-1 bis BK-3d gebaut (Schritte 221 und 222), BK-5/BK-6 als Schritt 232 im Zweig `claude/gebaeudesimulation-bk5`, BK-7 offen.** Gelesen auf `23ca3798d` (Zweig `ios_migration_september`,
 Basis R52). Auftrag BK der Sitzung Gebäudesimulation. Grundlage sind der Code, die Testdatenbank, ein Strukturbericht des
 Hottgenroth-Gesamtkatalogs und eine Recherche offener Quellen. Beide Papiere liegen als Protokolle vor:
 [Strukturbericht](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-12_BK_Strukturbericht_Hottgenroth.md) und
@@ -331,7 +331,24 @@ wird; dann gilt die Regel „gesäte Zonendaten“ (Bauteile samt Aufbau).
 - BK-5 (inhomogene Schicht) ist eine Rechenwegänderung des Bauteilwegs: R_T als Mittel aus oberem und unterem Grenzwert,
   die Kapazität flächengewichtet. Sie wirkt nur auf Aufbauten mit Abschnitten und lässt die Basis byte-gleich, was der
   Referenzlauf der CI-Auswahl nachweist.
-- Ohne BK-5 werden solche Aufbauten beim Import mit dem Vermerk „inhomogen, nicht übernommen“ ausgelassen.
+- Der Import liest einen Aufbau mit Abschnitten als Ebenen (BK-8, BK-8b): Liegen bei gleicher Schichtzahl alle
+  Schichtgrenzen innerhalb der Toleranz max(1 mm; 1 % der größten Gesamtdicke) übereinander, bildet die k-te Schicht jedes
+  Abschnitts die Ebene k. Sonst — verschiedene Schichtzahl oder versetzte Grenzen — und bei gleicher Dicke (dieselbe
+  Toleranz) werden die Schichtgrenzen aller Abschnitte vereinigt (Grenzen verschiedener Abschnitte innerhalb der Toleranz
+  sind eine Grenze) — je Abschnitt in der auf
+  seine Gesamtdicke genormten Lage — und jede Schicht an den fremden Grenzen geteilt (DIN EN ISO 6946, 6.7.2.3: der untere
+  Grenzwert setzt jede Ebene parallel zur Oberfläche isotherm, eine Schicht wird dafür an den Grenzen der übrigen Abschnitte
+  unterteilt). Jeder Abschnitt behält Dicke und Widerstand, der obere Grenzwert bleibt gleich. Verworfen wird bei
+  verschiedenen Dicken, einer Schicht ohne Dicke und einer ruhenden Luftschicht, die geteilt werden müsste (Widerstand nach
+  Tabelle 8, nicht dickenproportional). Fehlt der Flächenanteil genau eines Abschnitts und bleibt bis 1 mehr als die
+  Toleranz 0,01 offen, trägt er den Rest 1 − Σ; sonst wird verworfen. Beides zählt die Vorschau als Hinweis, dazu beim
+  Wiederimport die Katalogaufbauten, die andere Schichten bekämen, wie viele davon verglichen wurden und ihren U-Wert um
+  mehr als 1 % ändern, die größte Änderung und die Zahl ohne Vergleichswert (BK-8c: verglichen mit dem U, das der Kern für
+  den Katalogsatz rechnet, sonst mit dem gespeicherten U-Wert der Quelle).
+- Der Kern rechnet je inhomogenem Aufbau die Fehlerschranke e = (R'_T − R''_T)/(2 R_T) nach DIN EN ISO 6946, 6.7.2.5 und
+  nennt über 20 % (R'_T/R''_T > 1,5) einen Hinweis im Summenfuß (BK-8b). Das Verhältnis 1,5 ist die Anwendungsgrenze des
+  vereinfachten Verfahrens nach 6.7.2.2, die 20 % bei diesem Verhältnis die Fehlerabschätzung nach 6.7.2.5; Ausgabe
+  DIN EN ISO 6946:2018-03 (EN ISO 6946:2017) mit Berichtigung 1:2023-04. Der Rechenweg des Kerns bleibt unverändert.
 
 ## 6 Fragen an den Anwender
 

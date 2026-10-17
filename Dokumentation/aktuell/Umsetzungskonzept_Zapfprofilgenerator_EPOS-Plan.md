@@ -477,7 +477,6 @@ neutraler Name der Ausstattungsklasse), `Wert` REAL NOT NULL (Belegung p bzw. Σ
 | `Personen_je_WE`, `Wohnflaeche_je_WE` | REAL | NULL = Vorgabe bzw. aus der Wohnungstabelle |
 | `Topologie` | INTEGER NOT NULL DEFAULT 1 CHECK (`Topologie` IN (1,2,3,4)) | Speicher, Frischwasserstation, Durchfluss, Wohnungsstation — wirkt in der Auslegung (4.5) |
 | `Zirkulation` | INTEGER NOT NULL DEFAULT 1 CHECK (`Zirkulation` IN (0,1)) | 0 nimmt die Zone aus dem Zirkulationsanteil (4.3) |
-| `Ferienbeginn_1`, `Ferienende_1` … `_4` | INTEGER | Jahrestag 1–365 wie `Tab_Gebaeude`; NULL, 0 und 366 = keine Angabe (4.2) |
 | `Jahresmesswert` | REAL | S6 |
 | `Jahresmesswert_Einheit` | INTEGER CHECK (`Jahresmesswert_Einheit` IN (1,2)) | 1 kWh/a, 2 m³/a (Umrechnung 4.1); ein Messwert ohne Einheit wird benannt abgelehnt (N7) |
 | `Jahresmesswert_Bilanzgrenze` | INTEGER CHECK (`Jahresmesswert_Bilanzgrenze` IN (1,2,3)) | Kodierung wie im Katalog; ein Volumenmesswert ist immer 1; ein Messwert in kWh/a ohne Grenze wird benannt abgelehnt (N7) |
@@ -495,6 +494,13 @@ nach Raumzahl aus `Tab_TwwDin4708Wert_STAMM`), `ID_Ausstattung` INTEGER NULL REF
 `Tab_TwwDin4708Wert_STAMM(ID)` (Art AUSSTATTUNG; NULL = Vorgabeklasse), `Reihenfolge` INTEGER NOT NULL.
 Ist die Tabelle belegt, bildet sie Bezugsmenge (WE bzw. Personen) und `Personen_je_WE` der Zone —
 Mengengerüst, DIN 4708 und Gleichzeitigkeit lesen dieselben Zahlen.
+
+**`Tab_TwwZonenferien`** — die eigenen Ferienzeiträume einer Zone, beliebig viele (STRICT):
+`ID` INTEGER PRIMARY KEY AUTOINCREMENT, `ID_Zone` INTEGER NOT NULL REFERENCES `Tab_TwwZone(ID)` ON DELETE CASCADE,
+`Reihenfolge` INTEGER NOT NULL (≥ 1), `Name` TEXT NULL, `Beginn` INTEGER NULL (Jahrestag 1–365 des Gemeinjahrs;
+NULL = vom 1. Januar an), `Ende` INTEGER NOT NULL (1–365); eindeutig je (`ID_Zone`, `Reihenfolge`). Ein Beginn nach dem
+Ende läuft über den Jahreswechsel (4.2). Gespeichert wird nur ein Zeitraum mit Ende; eine an ein Gebäude gebundene Zone
+ohne eigene Zeiträume übernimmt die Ferien des Gebäudes.
 
 **`Tab_TwwProjekt`** — Weiche und gebäudeweite Größen, höchstens eine Zeile je Projekt:
 
@@ -944,6 +950,22 @@ nächste Nenninhalt der Liste ≥ V als Anzeige; bei den anderen Topologien die 
 Bedarfstags. In der Stufe Einfach trägt der Punkt den Vermerk **„Schnellauslegung"**. Der
 Verfahrensvergleich (4.7) ist nachrichtlich.
 
+**Schnellauslegung nach Vorlage V4.** Fehlt der Katalogversion einer der Auslegungswerte der A100, ohne
+die keine Summenlinie rechnet (`ZapfAuslegungParameter.SUMMENLINIE_A100`: Ladungsfaktor, Sensorhöhe,
+Verzögerung, Übertemperatur des Übertragers), und gibt es deshalb keinen Summenlinienpunkt, so ist in der
+**Stufe Einfach** bei Speicher der Nenninhalt des Bandes der Speicherauslegung nach V4 (4.7) die Empfehlung
+(Verfahren `VorlageV4`, Volumen = Nenninhalt, Leistung = angesetzte Ladeleistung). Sie trägt die Vermerke
+„Schnellauslegung" und „Schnellauslegung nach Vorlage V4, ohne Summenlinie", den Hinweis
+`EMPFEHLUNG_VORLAGE_V4` und den Eintrag `Auslegung.Empfehlung` im Herkunftsprotokoll; der Dialog zeigt am
+Punkt die Marke „Schnellauslegung V4" statt „Schnellauslegung" und keinen Entwurfsstand. Die Karte (a)
+bleibt „nicht rechenbar" mit Grund, der Verfahrensvergleich nachrichtlich. **Abgrenzung:** Führt die
+Katalogversion die A100-Werte, bleibt der Summenlinienpunkt die Empfehlung — auch wenn er mangels
+Bedarfstag offen bleibt (dann öffnet die Auslegung den Konstruktor wie bisher). In den Stufen Erweitert und
+Experte bleibt die Empfehlung ohne A100-Werte benannt offen; dort wird der Anwender auf das Katalogpaket
+verwiesen, statt dass ein Ersatzverfahren den Punkt stellt. Die Durchfluss-Topologien sind nicht berührt.
+Ohne die Kennwerte der DIN 4708 ist der Normvergleich „nicht rechenbar" mit dem Satz des Parametersatzes,
+nie ein Abbruch der Auslegung.
+
 **Plausibilitätsprüfung, größengleich.** Speicher, in Litern beim selben Φ_N: erwartet
 `V_Perzentil ≤ V_Summenlinie < V_DIN`; Durchfluss, in kW: erwartet `P_Perzentil ≤ P_Bedarfstag`,
 der DIN-1988-300-Wert nachrichtlich. Liegt die stochastische Spitze deutlich über der Leistung des
@@ -1146,8 +1168,7 @@ Eigenkonstruktion, nie ein Hersteller- oder Produktname, nie Tabellenwerte; `Bel
 | Wohnfläche je WE | Erweitert | Zahlenfeld m² | Annahme, Flächenformel DIN V 18599-10 | `ZPG_LBL_WOHNFLAECHE_JE_WE` |
 | Anlagentopologie | Erweitert | Auswahlfeld | Speicher; bestimmt Auslegungsgröße und Gültigkeit der Verfahren | `ZPG_LBL_TOPOLOGIE` |
 | Zirkulation vorhanden | Erweitert | Optionsgruppe ja/nein | ja bei Großanlage nach DVGW W 551 | `ZPG_LBL_ZIRKULATION_VORHANDEN` |
-| Kalender / Ferien | Erweitert | Auswahlfeld + vier Zeiträume | Kalenderart der Nutzungsart, Gebäude (A8) | `ZPG_LBL_KALENDER` |
-| Bundesland | Erweitert | Auswahlfeld, gesperrt bis A6 | — | `ZPG_LBL_BUNDESLAND` |
+| Kalender / Ferien | Erweitert | Karte „Kalender“ (Klappgruppe): Quelle, Werte des Gebäudes, eigene Ferien als Liste (Name, von, bis), Jahresraster | Kalenderart der Nutzungsart, Gebäude (A8), Feiertagsland des Gebäudes | `ZPG_LBL_KALENDER` |
 | Jahresmesswert | Erweitert | Zahlenfeld + Einheit kWh/m³ + Bilanzgrenze + Quelle + Zeitraum | leer | `ZPG_LBL_JAHRESMESSWERT`, `ZPG_LBL_MESSWERT_EINHEIT`, `ZPG_LBL_MESSWERT_GRENZE`, `ZPG_LBL_MESSWERT_QUELLE`, `ZPG_LBL_MESSWERT_ZEITRAUM` |
 | Rechenweg der Jahresreihe | Erweitert | Optionsgruppe deterministisch/stochastisch | deterministisch | `ZPG_LBL_RECHENWEG_JAHRESREIHE` |
 | Tagesbedarf (auto/manuell) | Erweitert | Optionsgruppe + Vorschlag + Zahlenfeld + angesetzt + Rechenweg | auto, Katalog | `ZPG_LBL_TAGESBEDARF`, `ZPG_LBL_VORSCHLAG`, `ZPG_LBL_MANUELL`, `ZPG_LBL_ANGESETZT`, `ZPG_LBL_RECHENWEG` |
@@ -1313,6 +1334,32 @@ Repositoriums.
 | **DIN V 18599-10, DIN 4708, DIN 1988-300, DIN V 4701-10, DVGW W 551** | Kennwerte und Grenzen als Parameter nach Regel (a); die Oberfläche nennt Verfahren und Ausgabe, druckt keine Tabelle ab |
 | **frei** | Ecodesign-Zapfprofile (VO (EU) 814/2013 und 812/2013), Jordan/Vajen-Parametrik, DOE/ASHRAE-Schedules; OpenDHW (MIT) nur als Testorakel mit Attribution im Testordner, nicht im Auslieferungspaket |
 | **Hinweis** | lpagg und demandlib (MIT) sind Grundlage des Wärmespeicher-Tools; hier nur als Quellenhinweis, kein Code, keine Daten |
+
+**Freier Paketteil und Stufe Einfach.** Jede mitgelieferte Nutzungsart, deren Bezugsart keine Fläche
+ist (Personen, Wohneinheiten, Betten, Zimmer, Beschäftigte), rechnet in der Stufe Einfach allein mit dem
+freien Paketteil (`Referenzlaeufe/Katalogpaket_frei/`). Dafür führt er neben den freien Daten die
+Kaltwasser- und Zirkulationsschlüssel des Mengengerüsts: aus der INEKON-Vorlage TWW-Auslegung V4
+`Kaltwasser.Bilanz.Mittel` 10 °C, `Zirkulation.Laufzeit` 24 h (Dauerlast), `Zirkulation.Anteil` 0,2 und
+`Zirkulation.VerlustJeMeter` 10 W/m, als INEKON-Setzung `Kaltwasser.Bilanz.Amplitude` 3 K und
+`Kaltwasser.Bilanz.MonatMaximum` 8 (August), dazu für die Auslegung `A100.Kaltwasser.Auslegung` 10 °C aus V4
+(Blatt Berechnung, Zeile 389, „Bezug Kaltwasser", dieselbe Zelle wie der Kaltwasserbezug von
+`Speicherauslegung.Klassisch.Spreizung`), alle mit Herkunftsart `EIGENKONSTRUKTION`. Ohne Fläche
+rechnet die Zirkulation der Projektvorgabe (Flächenkennwert) mit der Methode Anteil. Die Flächenformel
+Wohnen (`DIN18599.Wohnen.*`), Leitungslage und Flächenkennwerte der DIN V 4701-10 sowie die
+übrigen Auslegungswerte (A100, DIN 4708, DVGW W 551) sind Normzahlen und bleiben im externen Katalogpaket;
+eine flächenbezogene Zone lehnt ohne es benannt ab. Die Speicherauslegung rechnet in der Stufe Einfach ohne
+externes Paket den Verfahrensvergleich nach V4 (profilbasiertes Volumen, Band, Nenninhalt; nachrichtlich, 4.7);
+ohne die Kennwerte der DIN 4708 ist der Normvergleich benannt „nicht rechenbar" (nie ein Abbruch), die
+Vorgaberegel des Bedarfstags (4.5) öffnet den Konstruktor; weil die Summenlinie die Auslegungswerte der A100
+braucht, ist die Empfehlung der Stufe Einfach der Nenninhalt des V4-Bandes (Schnellauslegung nach Vorlage V4,
+4.5). Eine Datenbank, die den
+Paketteil in einem früheren Stand führt, bekommt diese sieben Schlüssel beim ersten
+`ZapfprofilCtrl.Verfuegbar()` in ihre Katalogversion nachgetragen (`TwwPaketteilCtrl.ParameterNachtragen`,
+Liste `PaketteilNachfuehrung.PARAMETER`): nur was fehlt, `AUSLIEFERUNG` und `ReadOnly` 1, eine
+vorhandene Zeile bleibt; das Ergebnis steht im Laufprotokoll. Die Testdatenbank führt dieselben
+Schlüssel als fiktive Zeilen; dort treten die des Paketteils zurück. Wache:
+`EPOS.Kern.Tests/TwwPaketteilParameterNachtragTests` (jede mitgelieferte Nutzungsart ohne Flächenbezug: Bilanz
+über 0 und in der Stufe Einfach eine Empfehlung über 0 mit dem Hinweis der Schnellauslegung V4).
 
 **Lokale Testdaten.** `Referenzlaeufe/Normzahlen/` mit `vdi4655/`, `vdi6002/` und
 `zapfprofil/normtabellen.js` (Ladedatei des Mockups) ist per `.gitignore` ausgeschlossen (Zeilen
@@ -1608,8 +1655,8 @@ Anwenders; die neuen Fragen ZU16–ZU18 stehen mit Empfehlung in Kapitel 9 und s
   `Katalogversion`) mit Status `IMPORT` mitgenommen, ein Tagesgangsatz nur, wenn eine mitgenommene
   Nutzungsart ihn braucht; Tagesgänge und Ereignisse reisen im Paketordner `catalogchildren/`,
   `Beleg` und `Freigabe` reisen nicht mit. Fehlt eine benötigte Zeile im Paket, lehnt der Import
-  benannt ab und ändert nichts. Die Projektkopie nimmt `Tab_TwwProjekt`, `Tab_TwwZone` und
-  `Tab_TwwWohnungstyp` mit.
+  benannt ab und ändert nichts. Die Projektkopie nimmt `Tab_TwwProjekt`, `Tab_TwwZone`,
+  `Tab_TwwWohnungstyp` und `Tab_TwwZonenferien` mit.
 - **(j) Auslieferungsvorlage, Schritt 3c.** Die Tww-Regel gilt unabhängig von `--kataloge`: Es bleibt
   nur `Status = 'AUSLIEFERUNG'` ohne Herkunftsart `FIKTIV` oder `IMPORT`, auch `EIGEN` fällt;
   Fremdschlüssel eingeschaltet; verbleibende Auslieferungszeilen bekommen `ReadOnly = 1`. Prüfposten:
@@ -3670,10 +3717,11 @@ Katalog kommt als **Modell** herein: `Nutzungsart`, `Tagesgangsatz`, `Parameters
 `Zapfkategorie`, gebaut aus einem Paketordner im Format N2 (Kapitel 6 (b)) **oder** aus einer
 `.sqlite`. Kein Controller, keine Projektkopie, kein `DataRepository`; eine SQLite-Quelle wird
 `immutable=1` und `ReadOnly` geöffnet und bleibt byte-gleich. Die im Auftrag vorgesehene
-Projektkopie war damit nicht nötig. Der **freie Paketteil allein genügt nicht** — er führt die
-Kaltwasser-, Wohnen- und Zirkulationsparameter des Mengengerüsts nicht; Vorgabe der Katalogquelle ist
-deshalb `Referenzlaeufe/Kenndaten_Test.sqlite`, und das Beispiel bringt einen vollständigen,
-erfundenen Paketteil mit.
+Projektkopie war damit nicht nötig. Der **freie Paketteil** führt Kaltwasser und Zirkulation des
+Mengengerüsts (Kapitel 6, „Freier Paketteil und Stufe Einfach"), aber nicht die Flächenformel Wohnen
+und die Flächenkennwerte der Zirkulation — beides Normzahlen; für ein Messobjekt mit Bezugsart Fläche
+genügt er allein nicht. Vorgabe der Katalogquelle ist deshalb `Referenzlaeufe/Kenndaten_Test.sqlite`,
+und das Beispiel bringt einen vollständigen, erfundenen Paketteil mit.
 
 **(c) Zwei benannte Unterschiede zum Dialogweg**, beide mit Grund im Quelltext:
 
@@ -4129,9 +4177,10 @@ des Maximums". **Abweichungen:** (1) Wirkung des Ladefensters — in V4 nur Sch�
 in EPOS-Plan begrenzt es zusätzlich die Nachladung der Stundenbilanz (4.7); der Wert ist derselbe,
 seine Wirkung weiter. (2) Die Speichertemperatur 60 °C fällt mit der Mindesttemperatur nach
 DVGW W 551 zusammen, die V4 in der Beschriftung nennt; ausgeliefert wird der Eingabewert der Vorlage,
-nicht der Normwert (`W551.Mindesttemperatur` bleibt unberührt). (3) Nicht Gegenstand: die übrigen
-Eingaben der Vorlage (Kaltwasser 10 °C, Zirkulation 10 W/m, Ladeleistung) — sie gehören zu anderen
-Schlüsseln und bleiben, wie sie sind.
+nicht der Normwert (`W551.Mindesttemperatur` bleibt unberührt). (3) Kaltwasser 10 °C und Zirkulation
+(Dauerlast 24 h, Anteil 0,2, 10 W/m) stehen unter den Schlüsseln des Mengengerüsts
+(`Kaltwasser.Bilanz.Mittel`, `Zirkulation.*`) im freien Paketteil (Kapitel 6, „Freier Paketteil und
+Stufe Einfach"); nicht Gegenstand ist die Ladeleistung.
 
 **Herkunftsart.** `EIGENKONSTRUKTION` — eine Setzung von INEKON aus einer eigenen Unterlage, weder
 frei verfügbare Quelle (`FREI`) noch gerechnetes Verfahren (`VERFAHREN`). Die Paketteil-Regel

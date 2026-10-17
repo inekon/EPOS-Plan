@@ -316,7 +316,7 @@ namespace EPOS.Kern.Tests
         {
             ["MFH_mittel_1984.ifc"] = new Kennzahlen
             {
-                Kopf = "21/14/4", Baujahr = "1984", Klasse = "H", Vorschlagsname = "MFH_mittel_1984",
+                Kopf = "21/14/7", Baujahr = "1984", Klasse = "H", Vorschlagsname = "MFH_mittel_1984",
                 Raeume = "29/24/298.84", Vorgabe = "Z4 5",
                 ZonenZ4 = "DG2 29.43, DG1 104.11, EG 102.12, Keller 63.19, Keller (unbeheizt) 48.35",
                 TrennungenZ4 = "DG2|DG1|27.3, DG1|EG|99.39, EG|Keller|62.53, Keller|Keller (unbeheizt)|37.23",
@@ -327,7 +327,7 @@ namespace EPOS.Kern.Tests
             },
             ["MFH-Klein-unsaniert-1964.ifc"] = new Kennzahlen
             {
-                Kopf = "21/14/4", Baujahr = "1964", Klasse = "E", Vorschlagsname = "MFH-Klein-unsaniert-1964",
+                Kopf = "21/14/7", Baujahr = "1964", Klasse = "E", Vorschlagsname = "MFH-Klein-unsaniert-1964",
                 Raeume = "30/23/275.21", Vorgabe = "Z4 7",
                 ZonenZ4 = "DG2 48.78, DG1 98.15, OG1 88.53, OG1 (unbeheizt) 19.34, EG 88.53, EG (unbeheizt) 11.3, Keller 114.34",
                 TrennungenZ4 = "DG2|DG1|12.27, DG2|OG1 (unbeheizt)|2.78, DG1|OG1|82.95, DG1|OG1 (unbeheizt)|13.74, OG1|OG1 (unbeheizt)|23.81, OG1|EG|88.53, OG1 (unbeheizt)|EG (unbeheizt)|11.3, EG|EG (unbeheizt)|23.81, EG|Keller|11.84, EG (unbeheizt)|Keller|11.3",
@@ -338,7 +338,7 @@ namespace EPOS.Kern.Tests
             },
             ["Sportheim_1970_unsaniert.ifc"] = new Kennzahlen
             {
-                Kopf = "21/14/4", Baujahr = "1985", Klasse = "H", Vorschlagsname = "Sportheim_1970_unsaniert",
+                Kopf = "21/14/7", Baujahr = "1985", Klasse = "H", Vorschlagsname = "Sportheim_1970_unsaniert",
                 Raeume = "56/41/718.99", Vorgabe = "Z4 4",
                 ZonenZ4 = "OG 230.1, EG 450.78, UG (unbeheizt) 464.56, UG 38.11",
                 TrennungenZ4 = "OG|EG|152.78, EG|UG (unbeheizt)|98.82, EG|UG|35.16, UG (unbeheizt)|UG|45.06",
@@ -349,7 +349,7 @@ namespace EPOS.Kern.Tests
             },
             ["Verwaltung_mit_Montage-2969_vollsaniert_2014.ifc"] = new Kennzahlen
             {
-                Kopf = "21/14/4", Baujahr = "1969", Klasse = "F", Vorschlagsname = "Verwaltung_mit_Montage-2969_vollsaniert_2014",
+                Kopf = "21/14/7", Baujahr = "1969", Klasse = "F", Vorschlagsname = "Verwaltung_mit_Montage-2969_vollsaniert_2014",
                 Raeume = "113/91/4343.08", Vorgabe = "Z4 8",
                 ZonenZ4 = "OG4 546.81, OG3 649.47, OG3 (unbeheizt) 132.63, OG2 669.1, OG1 493.9, EG 1003.67, UG1 980.13, "
                     + "UG2 (unbeheizt) 154.46",
@@ -361,7 +361,7 @@ namespace EPOS.Kern.Tests
             },
             ["WG-EH55_Poroton-GModG-2026.ifc"] = new Kennzahlen
             {
-                Kopf = "21/14/4", Baujahr = "2026", Klasse = "M", Vorschlagsname = "WG-EH55_Poroton-GModG-2026",
+                Kopf = "21/14/7", Baujahr = "2026", Klasse = "M", Vorschlagsname = "WG-EH55_Poroton-GModG-2026",
                 Raeume = "20/20/342.56", Vorgabe = "Z4 3",
                 ZonenZ4 = "DG 114.9, EG 120.26, Keller 107.4",
                 TrennungenZ4 = "DG|EG|113.56, EG|Keller|105.81",
@@ -372,7 +372,7 @@ namespace EPOS.Kern.Tests
             },
             ["Produktion_groß_mit_Verwaltung_EG55-2026.ifc"] = new Kennzahlen
             {
-                Kopf = "21/14/4", Baujahr = "2026", Klasse = "M", Vorschlagsname = "Produktion_groß_mit_Verwaltung_EG55-2026",
+                Kopf = "21/14/7", Baujahr = "2026", Klasse = "M", Vorschlagsname = "Produktion_groß_mit_Verwaltung_EG55-2026",
                 Raeume = "49/48/18481.66", Vorgabe = "Z4 3",
                 ZonenZ4 = "OG1 8794.25, EG 9687.41, EG (unbeheizt) 130.54",
                 TrennungenZ4 = "OG1|EG|9098.57, EG|EG (unbeheizt)|149.11",

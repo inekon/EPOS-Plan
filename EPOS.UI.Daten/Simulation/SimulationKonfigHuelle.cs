@@ -107,6 +107,12 @@ namespace WindowsFormsApplication1
         /// <summary>Der Weg in die Ansicht „Stromspeicher-Auslegung" (#274); <c>null</c> = kein Knopf.</summary>
         private Action _auslegungWeg;
 
+        /// <summary>K6b-N: der Weg „Bearbeiten…“ der dezentralen Kältedeckung (Naht der Schale); <c>null</c> = benannt abgelehnt.</summary>
+        private Func<int, bool, int, Action<string>, string> _kaelteDezentralWeg;
+
+        /// <summary>K6b-N: der Sperrgrund der Schale für diesen Weg; leer = die Vorgabe <c>SIM_MSG_WEG_NICHT_HIER</c>.</summary>
+        private string _kaelteDezentralSperrgrund = "";
+
         /// <summary>Was nach einer Übernahme aus der Pufferspeicher-Auslegung nachzuziehen ist (Stufe P2).</summary>
         private Action _pufferNachzug;
 
@@ -385,6 +391,10 @@ namespace WindowsFormsApplication1
                     string grund = KaeltemaschineAnlageHuelle.Pruefen(d);
                     return string.IsNullOrEmpty(grund) ? KaeltemaschineAnlageHuelle.Speichern(d) : grund;
                 },
+
+                // K6b-N: „Bearbeiten…“ der Gruppe „Dezentrale Kältedeckung“ - in den Dialog der Quelle über die Naht der
+                // Schale; ohne sie steht der Knopf trotzdem da und nennt den Grund (keine stille Auslassung).
+                KaelteDezentralBearbeiten = KaelteDezentralBearbeiten,
 
                 // DIE DREI HANDGRIFFE AN DER KASKADE - und nur sie - machen die Kaskade
                 // zu einer GEPFLEGTEN (Anwenderentscheid 16.09.2026, Schemaschritt 82).
@@ -1397,7 +1407,9 @@ namespace WindowsFormsApplication1
                 Daten = daten,
                 Stromtraeger = Kaeltestromabrechnung.StromtraegerDesProjekts(m_ID_Projekt)
                     .Select(t => (t.Key, t.Value)).ToList(),
-                ProjektStromtraeger = Kaeltestromabrechnung.Projekttraeger(m_ID_Projekt)
+                ProjektStromtraeger = Kaeltestromabrechnung.Projekttraeger(m_ID_Projekt),
+                // K-F5b: dieselbe Gruppe „Rückkühlung“ wie im Dialog „Kältemaschinen im Projekt“ (ohne „Rückkühlwerke…“).
+                Rueckkuehlung = KaeltemaschineAnlageHuelle.Rueckkuehlung(m_ID_Projekt)
             };
         }
 
@@ -1516,6 +1528,31 @@ namespace WindowsFormsApplication1
         internal void AuslegungWegSetzen(Action weg)
         {
             _auslegungWeg = weg;
+        }
+
+        /// <summary>
+        /// K6b-N: legt den Weg „Bearbeiten…“ der dezentralen Kältedeckung ein — die Naht der Schale
+        /// (<see cref="SimulationPlattformwege.KaelteDezentralBearbeiten"/>) samt ihrem Sperrgrund.
+        /// </summary>
+        internal void KaelteDezentralWegSetzen(Func<int, bool, int, Action<string>, string> weg, string sperrgrund)
+        {
+            _kaelteDezentralWeg = weg;
+            _kaelteDezentralSperrgrund = sperrgrund ?? "";
+        }
+
+        /// <summary>
+        /// K6b-N: „Bearbeiten…“ an einer Split-Zeile der Gruppe „Dezentrale Kältedeckung“ — öffnet über die Naht der
+        /// Schale den Dialog ihrer Quelle (<paramref name="profil"/>: Kältebedarfsprofile, sonst Kältebedarf extern).
+        /// Rückgabe <c>null</c> = der Dialog geht auf, <paramref name="nachher"/> läuft, wenn er schließt; sonst der
+        /// benannte Grund — auf einer Schale ohne den Weg ihr Sperrgrund, nie eine stille Auslassung.
+        /// </summary>
+        private string KaelteDezentralBearbeiten(bool profil, int idZuordnung, Action<string> nachher)
+        {
+            if (_kaelteDezentralWeg == null)
+                return string.IsNullOrWhiteSpace(_kaelteDezentralSperrgrund)
+                    ? MyResource.Resource.SIM_MSG_WEG_NICHT_HIER : _kaelteDezentralSperrgrund;
+            if (m_ID_Projekt <= 0) return MyResource.Resource.SIM_MSG_WEG_NICHT_HIER;
+            return _kaelteDezentralWeg(m_ID_Projekt, profil, idZuordnung, nachher);
         }
 
         /// <summary>
@@ -1897,9 +1934,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Bildet das angeordnete Layout des Kerns auf den Satz ab, den der Baustein
-        /// <c>Schema</c> zeichnet — eine Zuordnung ohne Rechnung.
+        /// <c>Schema</c> zeichnet — eine Zuordnung ohne Rechnung. <c>internal</c> für die
+        /// Sichtprobe des Probenwirts (K6b-N), die ein Modell im Speicher anordnet.
         /// </summary>
-        private static SchemaBild SchemaAbbilden(SchemaLayout l)
+        internal static SchemaBild SchemaAbbilden(SchemaLayout l)
         {
             if (l == null || l.IstLeer) return SchemaBild.Leer;
 
@@ -2280,7 +2318,7 @@ namespace WindowsFormsApplication1
                     WaermequelleClass.WertLesen(idAnlage, "WQ_Wochenwerte") as string)
             };
 
-            return QuellprofilHuelle.Gaben(daten);
+            return QuellprofilHuelle.Gaben(daten, AussentemperaturLaden());
         }
 
         private IReadOnlyDictionary<string, object> QuelleErdreichGaben(int idAnlage)

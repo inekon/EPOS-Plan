@@ -16,7 +16,7 @@ tragen dasselbe Schema, `XmTables` bis Fassung 17.6). Kapitel 6 enthält die dar
 Codetabellen; Kapitel 3.2 und 3.5 sind danach berichtigt — die zuerst untersuchte Datei war
 in zwei Punkten ein Sonderfall.
 
-Vorarbeiten, auf die dieser Befund aufsetzt: [Befund C (IFC-Recherche)](2026-09-15_Befund_C_IFC-Recherche.md),
+Vorarbeiten, auf die dieser Befund aufsetzt: [Befund C (IFC-Recherche)](../../ueberholt/2026-09-15_Befund_C_IFC-Recherche.md),
 [Befund N (IFC-Import-Entwurf)](2026-09-15_Befund_N_IFC-Import_Entwurf.md),
 [Befund P (Zonen und Materialien in IFC)](2026-09-15_Befund_P_IFC_Zonen_Materialien.md),
 [Mehrzonenkonzept](../Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) Kapitel 6 und die Entscheide

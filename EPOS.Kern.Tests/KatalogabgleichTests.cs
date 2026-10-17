@@ -304,13 +304,16 @@ namespace EPOS.Kern.Tests
             // K1: Tab_Kaeltebedarf_STAMM und Tab_Kaeltetyp_STAMM dazu (Register "KB"/"KBT") - 53.
             // K-F1: Tab_Rueckkuehlwerk_STAMM dazu (Register "RKW") - 54.
             // KM4-E1: Tab_Kaeltemittel_STAMM dazu (Register "KMT") - 55.
-            // BK-2 (Schritt 221): Tab_Bauteilabschnitt_STAMM dazu, benannt ausgenommen - 56.
-            Assert.Equal(56, stamm.Count);
+            // BK-2 (Schritt 221): Tab_Bauteilabschnitt_STAMM dazu (seit BK-5 Kind des Aufbaus) - 56.
+            // KD-4: Tab_Klimastunde_STAMM dazu (Klimakatalog, benannt ausgenommen) - 57.
+            Assert.Equal(57, stamm.Count);
             foreach (string s in stamm)
                 Assert.True(erfasst.Contains(s) ^ Katalogfassung.Ausgenommen.ContainsKey(s),
                             s + " steht weder im Register noch in den Ausnahmen (oder in beiden).");
             Assert.All(Katalogfassung.Ausgenommen, kv => Assert.True(kv.Value.Length > 40, kv.Key + ": Grund fehlt."));
             // ZK: die drei Katalogzwillinge der Zonen sind benannt ausgenommen (Kindkataloge am Kopf) - 15.
+            // BK-5: die Abschnitte reisen als Kind des Aufbaus, die Ausnahme Tab_Bauteilabschnitt_STAMM entfaellt - 15.
+            // KD-4: Tab_Klimastunde_STAMM (Rohwerte des Klimaimports) gehoert zum ausgenommenen Klimakatalog - 16.
             Assert.Equal(16, Katalogfassung.Ausgenommen.Count);
         }
 
@@ -756,6 +759,67 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>BK-5:</b> Die Abschnitte einer inhomogenen Schicht reisen mit dem Aufbau: im Paket als Kind
+        /// <c>Tab_Bauteilabschnitt_STAMM</c>, an der Schicht als Nummer des Abschnitts; am Ziel zeigt jede Schicht wieder auf den
+        /// Abschnitt DESSELBEN Aufbaus. Gegenprobe: Ein Aufbau ohne Abschnitt behält die Prüfsumme ohne den Kopf des Kindes.
+        /// </summary>
+        [Fact]
+        public void Abschnitte_reisen_mit_dem_Aufbau_und_die_Schicht_findet_ihren_Abschnitt()
+        {
+            if (!_db.Vorhanden) return;
+
+            long baustoff = Zahl("SELECT ID FROM Tab_Baustoff_STAMM WHERE Bezeichner = 'Kalkzementputz'");
+            DataRepository.ExecuteNonQuery("INSERT INTO Tab_Bauteilaufbau_STAMM (Bezeichner, Bauteilart, Herkunft, \"ReadOnly\") " +
+                                           "VALUES ('Probeständer', 'AUSSENWAND', 'VORGABE', 1)");
+            long aufbau = Zahl("SELECT ID FROM Tab_Bauteilaufbau_STAMM WHERE Bezeichner = 'Probeständer'");
+            // Gegenprobe vorab: ohne Abschnitt kein Kopf des Kindes in der Prüfsumme.
+            Katalogtabelle bta = Katalogfassung.Tabelle("Tab_Bauteilaufbau_STAMM");
+            var ohne = new Dictionary<string, IReadOnlyList<IReadOnlyDictionary<string, object>>>();
+            var mitLeer = new Dictionary<string, IReadOnlyList<IReadOnlyDictionary<string, object>>>
+            {
+                ["Tab_Bauteilabschnitt_STAMM"] = new List<IReadOnlyDictionary<string, object>>()
+            };
+            var werte = new Dictionary<string, object> { ["Bezeichner"] = "Probeständer" };
+            Assert.Equal(Katalogfassung.Pruefsumme(bta, werte, ohne), Katalogfassung.Pruefsumme(bta, werte, mitLeer));
+
+            foreach ((int nr, double anteil) in new[] { (1, 0.85), (2, 0.15) })
+                DataRepository.ExecuteNonQuery("INSERT INTO Tab_Bauteilabschnitt_STAMM (ID_Aufbau, Nummer, Flaechenanteil, Text) VALUES (?, ?, ?, ?)",
+                    new DbParam("@a", aufbau), new DbParam("@n", nr), new DbParam("@f", anteil), new DbParam("@t", nr == 1 ? "Gefach" : "Ständer"));
+            long ab1 = Zahl("SELECT ID FROM Tab_Bauteilabschnitt_STAMM WHERE ID_Aufbau = " + aufbau + " AND Nummer = 1");
+            long ab2 = Zahl("SELECT ID FROM Tab_Bauteilabschnitt_STAMM WHERE ID_Aufbau = " + aufbau + " AND Nummer = 2");
+            DataRepository.ExecuteNonQuery("INSERT INTO Tab_Bauteilschicht_STAMM (ID_Aufbau, Reihenfolge, ID_Baustoff, Dicke, Lambda) VALUES (?, 1, ?, 0.015, 1.0)",
+                new DbParam("@a", aufbau), new DbParam("@b", baustoff));
+            DataRepository.ExecuteNonQuery("INSERT INTO Tab_Bauteilschicht_STAMM (ID_Aufbau, Reihenfolge, Dicke, Lambda, ID_Abschnitt) VALUES (?, 2, 0.14, 0.035, ?)",
+                new DbParam("@a", aufbau), new DbParam("@x", ab1));
+            DataRepository.ExecuteNonQuery("INSERT INTO Tab_Bauteilschicht_STAMM (ID_Aufbau, Reihenfolge, Dicke, Lambda, ID_Abschnitt) VALUES (?, 2, 0.14, 0.13, ?)",
+                new DbParam("@a", aufbau), new DbParam("@x", ab2));
+            Assert.Equal(1, KatalogSchluesselSaat.Ausfuehren(null, Katalogfassung.Stufe2));
+
+            Katalogpaket paket = Katalogpaket.AusBytes(Katalogpaket.AusDatenbank(2).Bytes());
+            Katalogpaketsatz satz = paket.Tabellen.Single(t => t.Tabelle == "Tab_Bauteilaufbau_STAMM").Saetze.Single(s => s.Schluessel == "BTA:PROBESTAENDER");
+            Assert.Equal(2, satz.Kinder["Tab_Bauteilabschnitt_STAMM"].Count);
+            Assert.Equal(new[] { "", "1", "2" },
+                         satz.Kinder["Tab_Bauteilschicht_STAMM"]
+                             .Select(z => z.TryGetValue("ID_Abschnitt", out object o) && o != null ? Convert.ToString(o, CultureInfo.InvariantCulture) : "")
+                             .OrderBy(x => x, StringComparer.Ordinal).ToArray());
+
+            DataRepository.ExecuteNonQuery("DELETE FROM Tab_Bauteilschicht_STAMM WHERE ID_Aufbau = " + aufbau);
+            DataRepository.ExecuteNonQuery("DELETE FROM Tab_Bauteilabschnitt_STAMM WHERE ID_Aufbau = " + aufbau);
+            DataRepository.ExecuteNonQuery("DELETE FROM Tab_Bauteilaufbau_STAMM WHERE ID = " + aufbau);
+            KatalogabgleichErgebnis e = Katalogabgleich.Ausfuehren(paket, nurPruefen: false);
+            Assert.Equal((1, 0, 0, 0), (e.Neu, e.Aktualisiert, e.Behalten, e.Ausgelaufen));
+
+            long neu = Zahl("SELECT ID FROM Tab_Bauteilaufbau_STAMM WHERE Katalog_Schluessel = 'BTA:PROBESTAENDER'");
+            Assert.NotEqual(ab1, Zahl("SELECT ID FROM Tab_Bauteilabschnitt_STAMM WHERE ID_Aufbau = " + neu + " AND Nummer = 1"));
+            Assert.Equal(0.035, Convert.ToDouble(DataRepository.ExecuteScalar(
+                "SELECT s.Lambda FROM Tab_Bauteilschicht_STAMM s JOIN Tab_Bauteilabschnitt_STAMM x ON x.ID = s.ID_Abschnitt " +
+                "WHERE s.ID_Aufbau = ? AND x.ID_Aufbau = ? AND x.Nummer = 1", new DbParam("@a", neu), new DbParam("@b", neu)), CultureInfo.InvariantCulture));
+            Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Bauteilschicht_STAMM WHERE ID_Aufbau = " + neu + " AND ID_Abschnitt IS NULL"));
+            // Die Prüfsumme am Ziel ist die des Pakets - ein zweiter Lauf hat nichts zu tun.
+            Assert.False(Katalogabgleich.Ausfuehren(paket, nurPruefen: true).EtwasZuTun);
+        }
+
+        /// <summary>
         /// <b>KM4-E1-b:</b> Der Verweis der Kältemaschine auf ihr Kältemittel reist im Katalogpaket als Code und wird am Ziel
         /// aufgelöst — auch wenn das Kältemittel dort fehlt und mit neuer ID eingefügt wird (<c>KMT</c> steht im Register vor
         /// <c>KM</c>).
@@ -892,7 +956,7 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
 
             Katalogpaket paket = Katalogpaket.Lesen(Probe);
-            DataRepository.ExecuteNonQuery("UPDATE Tab_Wechselrichter_STAMM SET \"ReadOnly\" = 0, Kosten = 1 WHERE Bezeichner = 'Muster 2500TL'");
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Wechselrichter_STAMM SET \"ReadOnly\" = 0, P_Standby = 1 WHERE Bezeichner = 'Muster 2500TL'");
             KatalogabgleichErgebnis plan = Katalogabgleich.Ausfuehren(paket, nurPruefen: true);
             KatalogabgleichEintrag z = plan.Eintraege.Single(x => x.Tabelle == "Tab_Wechselrichter_STAMM");
             Assert.Equal(Katalogabgleich.AKTION_BEHALTEN, z.Aktion);
@@ -901,7 +965,7 @@ namespace EPOS.Kern.Tests
             (bool ok, string meldung) = Katalogabgleich.Wiederherstellen(paket, "Tab_Wechselrichter_STAMM", z.Schluessel);
             Assert.True(ok, meldung);
             Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Wechselrichter_STAMM WHERE Bezeichner = 'Muster 2500TL' AND \"ReadOnly\" = 1 " +
-                                  "AND COALESCE(Kosten, -1) <> 1"));
+                                  "AND COALESCE(P_Standby, -1) <> 1"));
         }
 
         // =============================================================================

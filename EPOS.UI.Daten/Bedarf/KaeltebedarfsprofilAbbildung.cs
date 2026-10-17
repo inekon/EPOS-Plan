@@ -25,9 +25,49 @@ namespace WindowsFormsApplication1
                     Vorlauf = m.Vorlauf, Ruecklauf = m.Ruecklauf, TemperaturGeaendert = m.TemperaturGeaendert,
                     KaelteArt = KaelteArtSchema.Normal(m.KaelteArt),
                     KalenderId = m.ID_Betriebskalender,
-                    Deckung = DeckungsartDaten.Aus(m)
+                    Deckung = DeckungsartDaten.Aus(m),
+                    // KBP-3a: Eingabeart der Zuordnung, Monatsanteile und Wochenprofil der Projektkopie.
+                    Eingabeart = KaeltebedarfsprofilVorlagenSchema.Eingabeart(m.Eingabeart),
+                    Monatsanteile = m.Monatsanteile ?? KaeltebedarfStammCtrl.ProjektMonate(m.ID_Kaeltebedarf),
+                    Wochenprofil = m.Wochenprofil ?? KaeltebedarfStammCtrl.ProjektWoche(m.ID_Kaeltebedarf),
+                    ProfilGeaendert = m.Monatsanteile != null || m.Wochenprofil != null,
+                    // KBP-4b: Typtage und Matrix der Projektkopie (bearbeitet oder gespeichert).
+                    Typtage = m.Typtage ?? KaeltetyptagCtrl.Lies(m.ID_Kaeltebedarf),
+                    TyptageGeaendert = m.Typtage != null,
+                    // KBP-5b: die Normtage der Vorlage für die Herleitungszeile am Kalender.
+                    Normtage = m.NutzungstageNorm,
+                    // KBP-5c: der tatsächliche Name des Normkalenders für die Herleitungszeile (ohne zu schreiben).
+                    Normkalender = m.NutzungstageNorm.HasValue ? NormkalenderCtrl.Bezeichner(m.ID_Projekt, m.ID_Kaeltebedarf) : null
                 });
             return zeilen;
+        }
+
+        /// <summary>
+        /// KBP-3a: eine neu übernommene Kältezeile — Eingabeart 'jahr' (Vorgabe), der Art-Vorschlag der Vorlage
+        /// (<see cref="KaeltebedarfStammCtrl.ArtVorschlag"/>; ohne Vorschlag bleibt die Vorgabe Raum, der Anwender hat hier
+        /// noch nichts gewählt) und Monatsanteile und Wochenprofil der Kopie, auf die die Zeile zeigt.
+        /// </summary>
+        /// <remarks>KBP-5b (Entscheid 16.10.2026): Trägt die Vorlage Nutzungstage nach Norm, wählt die Zeile im Projekt
+        /// (<paramref name="idProjekt"/> &gt; 0, Projektkopie angelegt) den Normkalender vor
+        /// (<see cref="NormkalenderCtrl.Vorwahl"/>: vorhanden oder neu); im Assistenten bleibt die Wahl leer.</remarks>
+        internal static void Aufgenommen(BedarfsProfilZeile zeile, string vorlage, int idProjekt = 0)
+        {
+            if (zeile == null) return;
+            zeile.Normtage = idProjekt > 0 ? KaeltebedarfStammCtrl.ProjektNutzungstage(zeile.IdStamm)
+                                           : KaeltebedarfStammCtrl.Nutzungstage(vorlage);
+            if (idProjekt > 0 && zeile.Normtage.HasValue)
+            {
+                int? kalender = NormkalenderCtrl.Vorwahl(idProjekt, zeile.IdStamm, out string normname);
+                if (kalender.HasValue) { zeile.KalenderId = kalender; zeile.Normkalender = normname; }
+            }
+            zeile.Eingabeart = KaeltebedarfsprofilVorlagenSchema.EINGABE_JAHR;
+            string vorschlag = KaeltebedarfStammCtrl.ArtVorschlag(vorlage);
+            if (vorschlag != null) zeile.KaelteArt = KaelteArtSchema.Normal(vorschlag);
+            zeile.Monatsanteile = KaeltebedarfStammCtrl.ProjektMonate(zeile.IdStamm);
+            zeile.Wochenprofil = KaeltebedarfStammCtrl.ProjektWoche(zeile.IdStamm);
+            // KBP-4b: die Typtage der Kopie (eine neue Kopie führt keine).
+            zeile.Typtage = KaeltetyptagCtrl.Lies(zeile.IdStamm);
+            zeile.TyptageGeaendert = false;
         }
 
         /// <summary>
@@ -51,6 +91,12 @@ namespace WindowsFormsApplication1
                     m.Vorlauf = z.Vorlauf; m.Ruecklauf = z.Ruecklauf; m.TemperaturGeaendert = z.TemperaturGeaendert;
                     m.KaelteArt = KaelteArtSchema.Normal(z.KaelteArt);
                     m.ID_Betriebskalender = z.KalenderId;
+                    // KBP-3a: Eingabeart immer, Monate und Woche nur, wenn der Anwender sie übernommen hat.
+                    m.Eingabeart = KaeltebedarfsprofilVorlagenSchema.Eingabeart(z.Eingabeart);
+                    m.Monatsanteile = z.ProfilGeaendert ? z.Monatsanteile : null;
+                    m.Wochenprofil = z.ProfilGeaendert ? z.Wochenprofil : null;
+                    // KBP-4b: Typtage nur, wenn der Anwender sie übernommen hat.
+                    m.Typtage = z.TyptageGeaendert ? z.Typtage : null;
                     (z.Deckung ??= new DeckungsartDaten()).InModell(m);
                     modelle.Add(m);
                 }

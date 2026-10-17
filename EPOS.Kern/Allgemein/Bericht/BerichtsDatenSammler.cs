@@ -596,6 +596,10 @@ namespace WindowsFormsApplication1
             try { v.Kaeltemittel = KaeltemittelBerichtszeile.Aus(KaeltemittelProjektpruefung.Pruefen(v.IdProjekt, mitCodes: true)); }
             catch { v.Kaeltemittel = null; }
 
+            // K-F5b: das Rückkühlwerk je Kältemaschinen-Anlage (Name, Bauart) für die Tafel der Kälteerzeuger (best effort).
+            try { v.Rueckkuehlwerke = RueckkuehlwerkBerichtszeile.Sammeln(v.IdProjekt); }
+            catch { v.Rueckkuehlwerke = null; }
+
             // 4. Brennstoffmengen (best effort — fehlendes Kostenmodul stoppt nichts).
             try { v.Brennstoffmengen = EnergieMengen.BaueBrennstoffmengen(v.IdProjekt); }
             catch { v.Brennstoffmengen = null; }
@@ -641,6 +645,11 @@ namespace WindowsFormsApplication1
             // 6b. UB-E4: die Bivalenzwerte (Herleitung aus den Projektdaten) fuer Bild und Tafel „Bivalenz und Uebergabe“.
             try { v.Bivalenz = BivalenzBerichtsquelle.Lade(v.IdProjekt); }
             catch { v.Bivalenz = null; }
+
+            // 6d. SK-4: die Energieflussbilanz (Jahresbilanz Strom, Wärme, Kälte) aus Ergebnisbaum und Trägernachweis, in der
+            //     Sprache des Berichts — Bild und Schalter stand.bild.energiefluss lesen nur sie.
+            try { v.Energieflussbilanz = Energiefluss.Aus(v, BerichtTexte.Englisch); }
+            catch { v.Energieflussbilanz = null; }
 
             // 6c. KM3-E3-b: die Lesewerte der Teillastrechnung der Kaeltemaschinen (Projektkopien) fuer die Tafel.
             v.KaeltemaschineTeillast = KaeltemaschineTeillastBerichtsquelle.Lade(v.IdProjekt);

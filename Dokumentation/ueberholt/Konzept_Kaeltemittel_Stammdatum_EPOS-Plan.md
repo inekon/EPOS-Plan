@@ -567,7 +567,7 @@ Vorlagenfeld, keine neue Vorlagen‑Katalogfassung.
   [Übergabe Teil Programm](../aktuell/Kälteanlagen/2026-10-10_Uebergabe_Kaelteanlagen_Programm.md) — Zuständigkeiten, UB‑Schnittstelle,
   Stand, Arbeitsregeln; [Entwurf Split/VRF/Rückkühlwerk](../aktuell/Kälteanlagen/2026-10-10_Entwurf_Split_VRF_Rueckkuehlwerk.md) — K‑D,
   K‑E, K‑F; [Entwurf Kältebereich](../aktuell/Gebaeudesimulation/2026-10-10_Entwurf_Kaeltebereich.md) — KB‑A/KB‑B, Abschnitt 4
-  „Wer baut was“; [Konzept Projektdialoge und Katalogauswahl](../aktuell/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md)
+  „Wer baut was“; [Konzept Projektdialoge und Katalogauswahl](Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md)
   — Stufe 5 am Anlagendialog der Kältemaschine.
 - [Konzept Kühlung Gebäudesimulation](../aktuell/Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) — 6.3 und §14 (Ausschluss).
 - [Konzept Emissionsarten](../aktuell/Konzept_Emissionsarten_CO2-Aequivalent_EPOS-Plan.md) — GWP₁₀₀ der Emissionsarten (AR6).

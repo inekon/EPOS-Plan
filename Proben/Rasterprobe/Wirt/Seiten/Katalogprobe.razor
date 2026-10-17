@@ -291,7 +291,7 @@
                                DateiWaehlen="@(_ => Task.FromResult<string?>(null))"
                                Einlesen="@((_, _) => Task.FromResult(new GanglinienImportErgebnis()))"
                                Rechnen="@PeakRechnen"
-                               CsvSpeichern="@(_ => Task.FromResult(true))"
+                               CsvSpeichern="@((_, _) => Task.FromResult(true))"
                                VarianteUebernehmen="@((_, _) => Task.FromResult(true))"
                                VariantenBerechnungsart="@(() => Task.FromResult<string?>("PeakShaving"))"
                                Geschlossen="@(b => { })" />
@@ -949,7 +949,8 @@
         Heizstab = 6,
         Regelung = "stetig",
         Kuehlleistung = 8.5,
-        Modulkosten = 4000,
+        Kostensatz = "4000",
+        KostensatzEinheit = "€",
         MaxPtherm = 14,
         NurLesen = false
     };

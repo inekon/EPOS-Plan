@@ -95,6 +95,32 @@ public sealed class KaeltemaschineAnlageKiSicht
         set => Setzen(d => d.KuehlEigenerZaehler = value);
     }
 
+    /// <summary>
+    /// K-F5b: das Rückkühlwerk als Id des Katalogsatzes (Wahl, leer = keins) — derselbe Arbeitsstand wie die Klappliste der
+    /// Gruppe „Rückkühlung“; geschrieben wird mit „OK“. Eine unbekannte Id bleibt folgenlos.
+    /// </summary>
+    public string Rueckkuehlwerk
+    {
+        get => ArbeitLesen?.Invoke()?.RueckkuehlwerkWahl?.ToString(CultureInfo.InvariantCulture) ?? "";
+        set
+        {
+            if (string.IsNullOrWhiteSpace(value)) { Setzen(d => d.RueckkuehlwerkWahl = null); return; }
+            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int n)
+                && RueckkuehlwerkWahl.Any(w => w.Schluessel == value.Trim()))
+                Setzen(d => d.RueckkuehlwerkWahl = n);
+        }
+    }
+
+    /// <summary>K-F5b: die Katalogsätze der Rückkühlwerke (Id, Anzeigetext); leer bei luftgekühlter Maschine.</summary>
+    public IReadOnlyList<KiWahleintrag> RueckkuehlwerkWahl
+        => ArbeitLesen?.Invoke()?.Geraet is { Luftgekuehlt: false }
+           ? (Rueckkuehlwerke?.Invoke()?.Katalog ?? Array.Empty<RueckkuehlwerkEintrag>())
+             .Select(e => new KiWahleintrag(e.Id.ToString(CultureInfo.InvariantCulture), e.Text)).ToList()
+           : Array.Empty<KiWahleintrag>();
+
+    /// <summary>K-F5b: die Gaben der Gruppe „Rückkühlung“ des Dialogs.</summary>
+    public Func<RueckkuehlungGaben?>? Rueckkuehlwerke { get; init; }
+
     // =====================================================================
     //  KM3-E3-b: die Lesewerte der Teillastrechnung (nur zu lesen)
     // =====================================================================

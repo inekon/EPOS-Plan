@@ -193,10 +193,25 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Zusatzfelder (Felder der Quelle) eines Kopfs oder einer Schicht — ohne Gliederung, Kennzeichen, Verweis.</summary>
         public static IReadOnlyList<BauteilkatalogSchema.Spalte> Zusatzspalten(string tabelle) =>
-            BauteilkatalogSchema.SpaltenVon(tabelle)
+            Spalten(tabelle)
                 .Where(s => (s.Art != BauteilkatalogSchema.Spaltenart.Code || IstSchicht(tabelle)) &&
                             s.Art != BauteilkatalogSchema.Spaltenart.Kennzeichen && s.Art != BauteilkatalogSchema.Spaltenart.Verweis)
                 .ToList();
+
+        /// <summary>
+        /// Die Katalogspalten einer Tabelle: die von Schritt 221 (<see cref="BauteilkatalogSchema.SpaltenVon"/>) und — am
+        /// Aufbau, wenn der Schritt steht — ψ des Glasrands (<see cref="BauteilkatalogAbschnittSchema"/>).
+        /// </summary>
+        public static IReadOnlyList<BauteilkatalogSchema.Spalte> Spalten(string tabelle)
+        {
+            IReadOnlyList<BauteilkatalogSchema.Spalte> basis = BauteilkatalogSchema.SpaltenVon(tabelle);
+            bool aufbau = tabelle == BauteilkatalogSchema.TAB_AUFBAU || tabelle == BauteilkatalogSchema.TAB_AUFBAU_STAMM;
+            if (!aufbau || !BauteilkatalogAbschnittSchema.Lesbar()) return basis;
+            IEnumerable<BauteilkatalogSchema.Spalte> mit = basis.Concat(BauteilkatalogAbschnittSchema.AUFBAU_SPALTEN);
+            // DA-8: Absorptions- und Emissionsgrad, wenn der Schritt steht (BauteilStrahlungSchema).
+            if (BauteilStrahlungSchema.Lesbar()) mit = mit.Concat(BauteilStrahlungSchema.SPALTEN);
+            return mit.ToList();
+        }
 
         private static bool IstSchicht(string tabelle) =>
             tabelle == BauteilkatalogSchema.TAB_SCHICHT || tabelle == BauteilkatalogSchema.TAB_SCHICHT_STAMM;
@@ -258,7 +273,7 @@ namespace WindowsFormsApplication1
         internal static void Uebertragen(DbVorgang v, string quelle, long quelleId, string ziel, long zielId, bool lesbar)
         {
             if (!lesbar) return;
-            List<string> spalten = BauteilkatalogSchema.SpaltenVon(ziel)
+            List<string> spalten = Spalten(ziel)
                 .Where(s => s.Art != BauteilkatalogSchema.Spaltenart.Verweis).Select(s => "\"" + s.Name + "\"").ToList();
             if (spalten.Count == 0) return;
             v.Ausfuehren("UPDATE \"" + ziel + "\" SET (" + string.Join(", ", spalten) + ") = (SELECT " + string.Join(", ", spalten) +

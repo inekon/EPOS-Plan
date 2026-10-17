@@ -290,11 +290,24 @@ async function fall(browser, f) {
   await seite.goto(adresse, { waitUntil: 'domcontentloaded' });
 
   // f.klick: der Schritt des Anwenders vor der Messung (etwa die Stufe
-  // "Erweitert" des Zapfprofils, erst mit ihr steht die Wohnungstabelle da).
+  // "Erweitert" des Zapfprofils, erst mit ihr steht die Karte "Belegung" da).
   for (const k of [].concat(f.klick || [])) {
     await seite.waitForSelector(k, { timeout: 20000 });
     await schlaf(500);
     await seite.click(k);
+  }
+
+  // f.aufklappen: die Klappgruppen (Baustein Klappgruppe), in denen das Raster
+  // steht - etwa die Karte "Belegung" des Zapfprofils, die beim Oeffnen zu ist.
+  // Erkannt an ihrer Klasse, nicht an einem Text; der Knopf im Kopf wird nur
+  // gedrueckt, wenn die Karte zu ist (aria-expanded), und danach muss sie offen
+  // stehen. Fehlt die Karte, bricht der Fall ab wie ein fehlendes Raster.
+  for (const karte of [].concat(f.aufklappen || [])) {
+    const knopf = `${karte} > .epos-klappgruppe-kopf button.epos-klappgruppe-knopf`;
+    await seite.waitForSelector(knopf, { timeout: 20000 });
+    await schlaf(300);
+    if (await seite.getAttribute(knopf, 'aria-expanded') !== 'true') await seite.click(knopf);
+    await seite.waitForSelector(`${knopf}[aria-expanded="true"]`, { timeout: 20000 });
   }
 
   // Auf den Aufbau der interaktiven Komponente warten (Blazor Server).
@@ -630,10 +643,12 @@ const FAELLE = [
     pfad: '/katalogprobe?maske=projekt-gebaeude&zeilen=269', zeile: 46, bereich: '.epos-katalogliste' },
   { name: 'Z1_wohnungen_12_1088x624',    modus: 'sofort', zeilen: 12, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
     pfad: '/katalogprobe?maske=wohnungen&zeilen=12', frei: true, bereich: '.epos-zapfprofil-wohnungen',
-    klick: 'fieldset[aria-label="Stufe"] label.epos-option:has-text("Erweitert")' },
+    klick: 'fieldset[aria-label="Stufe"] label.epos-option:has-text("Erweitert")',
+    aufklappen: '.epos-zapfprofil-karte--belegung' },
   { name: 'Z2_wohnungen_12_400x624',     modus: 'sofort', zeilen: 12, takt: 0, breite: 400, hoehe: 624, dpr: 1,
     pfad: '/katalogprobe?maske=wohnungen&zeilen=12', frei: true, bereich: '.epos-zapfprofil-wohnungen',
-    klick: 'fieldset[aria-label="Stufe"] label.epos-option:has-text("Erweitert")' },
+    klick: 'fieldset[aria-label="Stufe"] label.epos-option:has-text("Erweitert")',
+    aufklappen: '.epos-zapfprofil-karte--belegung' },
   { name: 'Z3_kategorien_10_1088x624',   modus: 'sofort', zeilen: 10, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
     pfad: '/katalogprobe?maske=kategorien&zeilen=10', frei: true, bereich: '.epos-zapfprofil-kategorienraster' },
   { name: 'Z4_kategorien_10_400x624',    modus: 'sofort', zeilen: 10, takt: 0, breite: 400, hoehe: 624, dpr: 1,

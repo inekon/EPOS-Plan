@@ -216,8 +216,24 @@ public sealed class FenstermassTests : IDisposable
         Assert.Equal(1632, grossBreite);
     }
 
+    /// <summary>
+    /// KD-1 (Anwenderbefund 16.10.2026, Klimadaten-Import: Schlussleiste abgeschnitten): Das
+    /// Klimadatenfenster trägt die Überlagerung „Klimadaten einlesen“ und wünscht mindestens
+    /// deren Maß — vorher stand es fest auf 1 180 × 780; die Überlagerung braucht vor der Suche
+    /// 900 px (KD-3: Höhenfeld und Suchzeile), das Wunschmaß ist 1 000 px.
+    /// </summary>
+    [Fact]
+    public void Das_Klimadatenfenster_wuenscht_mindestens_das_Mass_seiner_Importueberlagerung()
+    {
+        (int breite, int hoehe) = WindowsFormsApplication1.KlimadatenHuelle.Wunschmass();
+        Assert.Equal((1180, 1000), (breite, hoehe));
+        Assert.True(breite >= WindowsFormsApplication1.KlimadatenHuelle.EINLESEN_BREITE);
+        Assert.True(hoehe >= WindowsFormsApplication1.KlimadatenHuelle.EINLESEN_HOEHE);
+        Assert.True(hoehe > WindowsFormsApplication1.KlimadatenHuelle.FENSTER_HOEHE);
+    }
+
     // =====================================================================
-    //  Anwenderbefund 26.09.2026: „Dialoggröße nicht angepasst — Kachel
+    //  Anwenderbefund 26.09.2026:„Dialoggröße nicht angepasst — Kachel
     //  ‚Projekt öffnen' und ‚Speichern unter'". Als Fachdialog öffneten beide
     //  auf dem Anteil (1 632 × 896), der Inhalt stand im oberen Drittel.
     // =====================================================================

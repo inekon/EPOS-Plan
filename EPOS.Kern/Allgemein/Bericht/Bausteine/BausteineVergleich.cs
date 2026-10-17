@@ -41,6 +41,10 @@ namespace WindowsFormsApplication1
                 if (!kennzahlen.IstLeer) k.Fuege(WordTabellenschreiber.Direkt(k, kennzahlen));
                 else k.Text("Keine Kennzahlen verfügbar.");
 
+                // SK-4: das Energieflussbild — dasselbe Modell wie {{stand.bild.energiefluss}}; braucht keine Zeitreihen
+                // und steht darum vor den Ganglinien. Ohne Fluss der benannte Grund der Bilanz.
+                ZeichneEnergiefluss(k, v);
+
                 // Die vier Ganglinientypen aus der In-Memory-Simulation (Konzept Kap. 6.2).
                 if (v.Zeitreihen != null)
                     ZeichneGanglinien(k, v.Zeitreihen);
@@ -85,6 +89,34 @@ namespace WindowsFormsApplication1
                 k.Bild(m, 620, 260);
                 k.Beschriftung("Speicherverlauf in charakteristischen Wochen (Winter/Übergang/Sommer)");
             }
+        }
+
+        /// <summary>Die Anzeigebreite der Bilder dieses Bausteins [Pixel bei 96 dpi].</summary>
+        private const int ANZEIGE_BREITE = 620;
+
+        /// <summary>
+        /// SK-4 (Konzept Energieflussbild 5): das Energieflussbild des Stands in der Berichtsfassung
+        /// (<see cref="Berichtsbilder.Energiefluss"/>, Maß <see cref="ChartRenderer.ENERGIEFLUSS_BERICHT"/>), angezeigt in der
+        /// Breite der übrigen Bilder und im Seitenverhältnis des Modells. Ohne Fluss ein benannter Satz statt des Bildes.
+        /// </summary>
+        private static void ZeichneEnergiefluss(WordKontext k, VariantenDaten v)
+        {
+            bool englisch = BerichtTexte.Englisch;
+            Zeichnung.Zeichenmodell m = Sicher(() => Berichtsbilder.Energiefluss(v, null, englisch));
+            if (m != null && m.Breite > 0)
+            {
+                int hoehe = (int)Math.Round(ANZEIGE_BREITE * (double)m.Hoehe / m.Breite, MidpointRounding.AwayFromZero);
+                k.Bild(m, ANZEIGE_BREITE, hoehe);
+                k.MitStilRoh("Beschriftung", Energiefluss.T(nameof(MyResource.Resource.EF_BER_BESCHRIFTUNG), englisch));
+                return;
+            }
+            EnergieflussBilanz b = null;
+            try { b = Berichtsbilder.EnergieflussbilanzDes(v, englisch); } catch { b = null; }
+            string grund = b != null && !string.IsNullOrEmpty(b.Grund)
+                ? b.Grund
+                : string.Format(Energiefluss.Kultur(englisch), Energiefluss.T(nameof(MyResource.Resource.EF_NICHT_SIMULIERT), englisch),
+                                Energiefluss.Versionsname(v));
+            k.HinweisRoh(string.Format(k.Kultur, Energiefluss.T(nameof(MyResource.Resource.EF_BER_OHNE_BILD), englisch), grund));
         }
 
         private static Zeichnung.Zeichenmodell Sicher(Func<Zeichnung.Zeichenmodell> f)

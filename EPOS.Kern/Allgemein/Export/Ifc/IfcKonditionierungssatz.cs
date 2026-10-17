@@ -62,6 +62,8 @@ namespace WindowsFormsApplication1
         internal const string HEIZSOLL_NACHT = "Heizsollwert_Nacht";
         internal const string KUEHLSOLL = "Kuehlsollwert";
         internal const string LUFTWECHSEL_NUTZER = "Luftwechsel_Nutzer";
+        /// <summary>Die Nummer des DIN/TS-18599-10-Profils (Welle DA-5), als <c>IfcLabel</c> mit der Nummer als Text.</summary>
+        internal const string DIN_NUMMER = "DinNummer";
         internal const string GRUNDWERT = "Grundwert";
         internal const string AUS = "Aus";
         internal const string WOCHE = "Woche";
@@ -85,12 +87,32 @@ namespace WindowsFormsApplication1
             var l = new List<IfcSatzwert>();
             if (k == null) return l;
             if (!string.IsNullOrWhiteSpace(k.Nutzung)) l.Add(new IfcSatzwert(NUTZUNG, IfcSatzwertart.Kennwort, Text: k.Nutzung.Trim()));
+            if (k.DinNummer is int din)
+                l.Add(new IfcSatzwert(DIN_NUMMER, IfcSatzwertart.Kennwort, Text: din.ToString(System.Globalization.CultureInfo.InvariantCulture)));
             if (k.HeizsollTagC.HasValue) l.Add(new IfcSatzwert(HEIZSOLL_TAG, IfcSatzwertart.Temperatur, k.HeizsollTagC));
             if (k.HeizsollNachtC.HasValue) l.Add(new IfcSatzwert(HEIZSOLL_NACHT, IfcSatzwertart.Temperatur, k.HeizsollNachtC));
             if (k.KuehlsollC.HasValue) l.Add(new IfcSatzwert(KUEHLSOLL, IfcSatzwertart.Temperatur, k.KuehlsollC));
             if (k.LuftwechselNutzerJeH.HasValue)
                 l.Add(new IfcSatzwert(LUFTWECHSEL_NUTZER, IfcSatzwertart.Zahl, k.LuftwechselNutzerJeH, Beschreibung: "GEXP_IFC_LUFTWECHSEL_NUTZER"));
             return l;
+        }
+
+        /// <summary>
+        /// <b>Die DIN-Nummer aus einem Satzwert</b> (Welle DA-5): Text (<c>IfcLabel</c>, <c>IfcIdentifier</c>) oder ganze Zahl
+        /// (<c>IfcInteger</c>, <c>IfcReal</c> ohne Nachkommastellen) zwischen 1 und 999; sonst <c>null</c>.
+        /// </summary>
+        internal static int? DinNummerLesen(IfcSatzwert w)
+        {
+            if (w == null) return null;
+            int n;
+            if (w.Text != null)
+            {
+                if (!int.TryParse(w.Text.Trim(), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out n))
+                    return null;
+            }
+            else if (w.Zahl is double z && Math.Abs(z - Math.Round(z)) < 1e-9 && Math.Abs(z) < 1e6) n = (int)Math.Round(z);
+            else return null;
+            return n >= 1 && n <= 999 ? n : null;
         }
 
         /// <summary>Die Werte des Kalendersatzes einer Größe — Grundangabe, Nennwert, Bemerkung, Perioden nach Rang aufsteigend.</summary>

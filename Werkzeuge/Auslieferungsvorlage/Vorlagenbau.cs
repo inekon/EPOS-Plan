@@ -43,6 +43,8 @@ namespace Auslieferungsvorlage
             "Tab_Kenndaten_Kuehlung_STAMM",
             "Tab_Klimadaten_STAMM",
             "Tab_Solar_STAMM",
+            // KD-4: die Rohwerte einer Klimaregion haengen an Tab_Klimaregion_STAMM (Kaskade).
+            KlimaRohwerteSchema.TAB_ROH,
             SchemaKatalog.TAB_BAUTEILSCHICHT_STAMM,
             // BK-2 (Schritt 221): die Abschnitte eines Katalogaufbaus haengen an Tab_Bauteilaufbau_STAMM (Kaskade).
             BauteilkatalogSchema.TAB_ABSCHNITT_STAMM,
@@ -278,12 +280,15 @@ namespace Auslieferungsvorlage
                            kategorien + " eigene Kategorie(n); " + zurueck + " ausgelieferte Zuordnung(en) auf ihr Saatprofil zurueckgestellt, " +
                            nachgesaet + " nachgesaet");
             // NP7 (E131): Normwerte, die der Anwender in die ausgelieferten DIN-Profile eingelesen hat, gehoeren nie in die
-            // Auslieferung - die Profile stehen danach wieder ohne Werte (Kennwerte, Aussenluft je Person, Herkunft leer).
+            // Auslieferung. DA-6 (E135): Die DIN-Profile tragen die gesaeten Werte der Fassung 2025-10 - die Ruecknahme stellt
+            // sie wieder her, und der Saatschritt saet jedes noch leere DIN-Profil (wiederholbar, nur wo kein Wert steht).
             if (RaumnutzungNormwerteSchema.Lesbar())
             {
                 RaumnutzungNormwerte.Bilanz normwerte = RaumnutzungNormwerte.Entfernen();
-                _bericht.Zeile("    eingelesene Normwerte entfernt: " + normwerte.Geschrieben + " Profil(e) der DIN" +
-                               (normwerte.Ok ? "" : " - FEHLER: " + normwerte.Meldung));
+                _bericht.Zeile("    eingelesene Normwerte entfernt, gesaete Werte wiederhergestellt: " + normwerte.Geschrieben +
+                               " Profil(e) der DIN" + (normwerte.Ok ? "" : " - FEHLER: " + normwerte.Meldung));
+                int gesaet = RaumnutzungDinWerteSchema.Ausfuehren(null);
+                _bericht.Zeile("    DIN-Profile mit den Werten der Fassung " + RaumnutzungDinSaat.FASSUNG + " nachgesaet: " + gesaet);
             }
             HerkunftZaehlen();
         }

@@ -19,10 +19,11 @@ namespace EPOS.UI.Tests.Dialoge;
 /// keine Kosten und Emissionen enthalten." Damit sind die Gruppen „Eingabedaten zur
 /// Berechnung der Kosten", „Emissionen nach BEHG-V" und „Emissionsfaktoren bezogen auf
 /// den Brennstoffverbrauch" ersatzlos entfallen — samt den drei Eingabewegen der
-/// Investition (W14a-E-8-B3) und den zwei Vorgabewertknoepfen. Gepflegt werden diese
-/// Spalten jetzt im Aufklapper „Alle Daten anzeigen" des Projektdialogs
-/// (<c>BhkwDialogTests</c>), gerechnet wird mit ihnen im Kern
-/// (<c>EPOS.Kern.Tests/BhkwKostenTests</c>).</para>
+/// Investition (W14a-E-8-B3) und den zwei Vorgabewertknoepfen. Die Emissionsspalten
+/// werden im Aufklapper „Alle Daten anzeigen" des Projektdialogs gepflegt
+/// (<c>BhkwDialogTests</c>); die KOSTENSPALTEN gibt es mit Welle KB-4 nicht mehr
+/// (Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine Doppelhaltung") — die
+/// Satzvorlage des Katalogsatzes traegt sie, und der Aufklapper zeigt nur ihre Summe.</para>
 ///
 /// <para><b>Was der Dialog nicht zeigt, verliert er nicht:</b> Die Huelle laedt den
 /// vollstaendigen Satz und schreibt ihn vollstaendig zurueck — dafuer steht der Fall
@@ -54,15 +55,8 @@ public class BhkwKatalogDialogTests : EposBunitContext
         Brennstoff = 1,
         Vorlauf = 80,
         Ruecklauf = 60,
-        KostenModul = 40000,
-        KostenMontage = 5000,
-        KostenLieferung = 1000,
-        KostenSchallschutzhaube = 3000,
-        KostenAbgasreinigung = 1000,
         Raumbedarf = 6,
-        WartungskostenJeKWhel = 0.03,
         Nutzungsdauer = 15,
-        InvestitionJeKWel = 1250,      // = 50 000 / 40 -> passt zur Summe
         CO2 = 200000,
         SO2 = 0,
         NOx = 285,
@@ -176,9 +170,9 @@ public class BhkwKatalogDialogTests : EposBunitContext
     /// <summary>
     /// <b>Was der Dialog nicht mehr zeigt, verliert er nicht.</b> Die Huelle laedt den
     /// vollstaendigen Satz in <c>BhkwKatalogDaten</c> und schreibt ihn vollstaendig
-    /// zurueck (<c>BhkwHuelle.AusModell</c> / <c>NachModell</c>); die fuenf
-    /// Kostenposten, Raumbedarf, Wartung, Nutzungsdauer und die fuenf
-    /// Emissionsfaktoren gehen unveraendert durch den Dialog hindurch.
+    /// zurueck (<c>BhkwHuelle.AusModell</c> / <c>NachModell</c>); Raumbedarf,
+    /// Nutzungsdauer und die fuenf Emissionsfaktoren gehen unveraendert durch den Dialog
+    /// hindurch. Kostenfelder fuehrt der Feldsatz seit Welle KB-4 nicht mehr.
     /// </summary>
     [Fact]
     public void Die_entfallenen_Felder_gehen_beim_Speichern_unveraendert_durch()
@@ -198,22 +192,12 @@ public class BhkwKatalogDialogTests : EposBunitContext
         Assert.NotNull(geschrieben);
         Assert.Equal(90.0, geschrieben!.Ptherm!.Value, 10);
 
-        Assert.Equal(40000.0, geschrieben.KostenModul!.Value, 10);
-        Assert.Equal(5000.0, geschrieben.KostenMontage!.Value, 10);
-        Assert.Equal(1000.0, geschrieben.KostenLieferung!.Value, 10);
-        Assert.Equal(3000.0, geschrieben.KostenSchallschutzhaube!.Value, 10);
-        Assert.Equal(1000.0, geschrieben.KostenAbgasreinigung!.Value, 10);
         Assert.Equal(6.0, geschrieben.Raumbedarf!.Value, 10);
-        Assert.Equal(0.03, geschrieben.WartungskostenJeKWhel!.Value, 10);
         Assert.Equal(15, geschrieben.Nutzungsdauer);
 
         Assert.Equal(200000, geschrieben.CO2);
         Assert.Equal(285, geschrieben.NOx);
         Assert.Equal(370, geschrieben.CO);
-
-        // Investition_kwel bleibt stehen, wie sie geladen wurde - nachgerechnet wird
-        // sie auf dem Schreibweg im Kern (W14a-E-8-B3).
-        Assert.Equal(1250.0, geschrieben.InvestitionJeKWel!.Value, 10);
     }
 
     // =================================================================================

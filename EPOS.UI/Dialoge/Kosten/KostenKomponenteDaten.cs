@@ -180,6 +180,14 @@ public sealed record ErsatzRestwertZeile(string Position, bool IstSumme, string 
 public sealed record NutzungsdauerVorbelegung(int Gefuellt, int Belegt);
 
 /// <summary>
+/// Was ein Abgleich mit dem zentralen Kostenkatalog ergibt (KB-3) — die Hülle rechnet ihn, die
+/// Komponente zeigt ihn. <paramref name="Absage"/> leer heißt: Der Abgleich war möglich;
+/// <paramref name="Vorschau"/> trägt je Unterschied eine fertige Zeile.
+/// </summary>
+public sealed record KatalogAbgleichStand(string Absage, int Fehlt, int WeichtAb, int Gleich,
+                                           string Vorschau, int Angelegt, int Gesetzt, bool Fehler);
+
+/// <summary>
 /// U31 — EINE Zeile der Gruppe „Endenergie je Komponente" unter dem Raster der
 /// Betriebsseite.
 ///
@@ -221,6 +229,13 @@ public sealed class KostenKomponenteStand
 
     /// <summary>Zeigt die Variantenzeile (nur im Stammkontext, Ä-KD6a).</summary>
     public bool VariantePflegbar { get; set; }
+
+    /// <summary>
+    /// KB-3: Lässt sich diese Ansicht mit dem zentralen Kostenkatalog abgleichen? Wahr im
+    /// Projektmodus an einer gewählten Anlage — nur dort gibt es einen Katalogsatz, aus dem das
+    /// Gerät stammt. Ohne das Kennzeichen bleibt der Knopf weg (kein Knopf ohne Wirkung).
+    /// </summary>
+    public bool KatalogAbgleichbar { get; set; }
 
     /// <summary>Die gewählte Vorlage ist eine Auslieferungsvorlage (<c>lblReadOnly</c>).</summary>
     public bool NurLesen { get; set; }

@@ -234,7 +234,6 @@ namespace WindowsFormsApplication1
 
             m.m_P_Standby = PSeuil != 0.0 ? (double?)PSeuil : null;             // W
             m.m_P_Nacht = Pnight != 0.0 ? (double?)Pnight : null;               // W
-            m.m_Kosten = null;
 
             m.m_Sandia_Pdco = null;
             m.m_Sandia_Vdco = VMppNom > 0.0 ? (double?)VMppNom : null;

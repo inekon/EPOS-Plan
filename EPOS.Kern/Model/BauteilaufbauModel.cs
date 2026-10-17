@@ -62,8 +62,15 @@ namespace WindowsFormsApplication1
         /// <summary>Die Felder der Quelle (Spalten aus <c>BauteilkatalogSchema.AUFBAU_SPALTEN</c>), roh je Spaltenname.</summary>
         public Dictionary<string, object> Zusatz = new Dictionary<string, object>();
 
-        /// <summary>Summe der Schichtdicken [m].</summary>
-        public double Gesamtdicke => Schichten.Sum(s => s.Dicke);
+        /// <summary>
+        /// Die Abschnitte (Streifen) inhomogener Schichtebenen samt Flächenanteil (BK-5); leer = homogener Aufbau.
+        /// </summary>
+        public List<BauteilabschnittModel> Abschnitte = new List<BauteilabschnittModel>();
+
+        /// <summary>Summe der Schichtdicken [m]; eine inhomogene Ebene zählt mit ihrer dicksten Schicht.</summary>
+        public double Gesamtdicke => Schichten.Any(s => s?.Abschnitt != null)
+            ? InhomogeneSchichten.Ebenen(Schichten).Sum(e => e.Max(i => Schichten[i].Dicke))
+            : Schichten.Sum(s => s.Dicke);
 
         /// <summary>Eine entkoppelte Kopie samt Schichten.</summary>
         public BauteilaufbauModel Kopie()
@@ -71,6 +78,7 @@ namespace WindowsFormsApplication1
             var k = (BauteilaufbauModel)MemberwiseClone();
             k.Schichten = Schichten.Select(s => s.Kopie()).ToList();
             k.Zusatz = new Dictionary<string, object>(Zusatz ?? new Dictionary<string, object>());
+            k.Abschnitte = (Abschnitte ?? new List<BauteilabschnittModel>()).Select(a => a.Kopie()).ToList();
             return k;
         }
     }

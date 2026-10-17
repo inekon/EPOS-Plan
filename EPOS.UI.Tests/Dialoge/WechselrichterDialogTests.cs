@@ -202,18 +202,20 @@ public class WechselrichterDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// Bezeichner und Herkunft sind gesperrt: der eine ist der WHERE-Schlüssel, die
-    /// andere die Auskunft des Imports.
+    /// Bezeichner, Kostensatz und Herkunft sind gesperrt: der eine ist der WHERE-Schlüssel,
+    /// der Kostensatz kommt aus der Satzvorlage und wird in der Kostenverwaltung gepflegt
+    /// (Welle KB-4, die Gerätespalte ist entfallen), die Herkunft ist die Auskunft des Imports.
     /// </summary>
     [Fact]
-    public void Bezeichner_und_Herkunft_sind_gesperrt()
+    public void Bezeichner_Kostensatz_und_Herkunft_sind_gesperrt()
     {
         IRenderedComponent<ModulKatalogDialog> cut = Verwaltung();
         var gesperrt = cut.FindAll("input[readonly]");
 
-        Assert.Equal(2, gesperrt.Count);
+        Assert.Equal(3, gesperrt.Count);
         Assert.Equal("Alpha 2500TL", gesperrt[0].GetAttribute("value"));
         Assert.Equal(DbWerte.WR_HERKUNFT_CEC, gesperrt[1].GetAttribute("value"));
+        Assert.Equal("0,97", gesperrt[2].GetAttribute("value"));   // der Kostensatz der Satzvorlage
     }
 
     /// <summary>

@@ -443,6 +443,77 @@ namespace WindowsFormsApplication1
             // der Kern beim nächsten Schreiben, gelesen leitet er die Gruppe aus Stoffgruppe bzw. Bauteilart ab.
             new Stufe(BauteilkatalogSchema.SCHRITT, Art.Ddl,
                       "Herkunft EIGEN/IMPORT, Gruppe und Klasse, Kennzeichen und Felder der Quelle am Bauteilkatalog (E132)"),
+            // Ein älteres Paket bringt seine Baustoffe und Aufbauten ohne die Klasse Haustechnik; der Schritt erweitert nur
+            // die Prüfklausel am Ziel.
+            new Stufe(BauteilkatalogHaustechnikSchema.SCHRITT, Art.Ddl,
+                      "Klasse Haustechnik in Baustoff- und Aufbaukatalog (E134)"),
+            // Ein älteres Paket führt keine Ergebniszeilen je Split-Zeile; der Schritt legt die Tabelle leer an, ein Lauf füllt sie.
+            new Stufe(KaeltebedarfSplitAbrechnungSchema.SCHRITT, Art.Ddl,
+                      "Ergebnis je dezentral (Split) gedeckter Kältebedarfszeile: Strom je Kühlträger und Zähler (K6)"),
+            // Ein älteres Paket bringt die eigenen Ferien einer Zone in den vier Spaltenpaaren von Tab_TwwZone; die Stufe bildet
+            // daraus die Zeilen von Tab_TwwZonenferien (dieselbe Regel wie der Schritt), die Spalten fallen am Ziel mit der
+            // Schnittmenge des Imports.
+            new Stufe(TwwZonenferienSchema.SCHRITT, Art.Umformung,
+                      "eigene Ferien der Zonen als Liste (Tab_TwwZonenferien) statt vier Spaltenpaaren", SchrittZonenferien),
+            // Ein älteres Paket bringt seine Zonen ohne die Lastfelder; der Schritt legt die Spalten am Ziel leer an.
+            new Stufe(ZonenLastfelderSchema.SCHRITT, Art.Ddl,
+                      "Außenluft je Person, Lichtleistung und Wärme je Person an der Zone (DA-2, E138)"),
+            // KB-3: Ein älteres Paket bringt seine Projektkopien ohne die zwei Verweise; die Satzvorlage eines
+            // Katalogsatzes reist in keinem Paket (Metaspalte), und der Schritt sät sie an der Zieldatenbank.
+            new Stufe(KatalogkostenSaatSchema.SCHRITT, Art.Ddl,
+                      "Verweise auf die Satzvorlagen an den Projektkopien mit Kosten, Saat der Katalogkosten (KB-3)"),
+            // KB-2: Ein älteres Paket bringt seine Brennstoffe samt Projektkopien noch mit den drei Preisspalten; der
+            // Schritt überträgt sie an der Zieldatenbank in die Trägerkarte und entfernt sie danach.
+            new Stufe(BrennstoffpreiseTraegerkarteSchema.SCHRITT, Art.Ddl,
+                      "Brennstoffpreise in die Trägerkarte, Entfall der drei Standardpreise am Brennstoff (KB-2)"),
+            // KB-4: Ein älteres Paket bringt seine Gerätekataloge samt Projektkopien noch mit den Kostenspalten; der
+            // Schritt sät die fehlenden Satzvorlagen an der Zieldatenbank und entfernt die Spalten danach.
+            new Stufe(GeraetekostenEntfallSchema.SCHRITT, Art.Ddl,
+                      "Satzvorlage am Wechselrichter, Entfall der 32 Kostenspalten der Investitionsgewerke (KB-4)"),
+            // KB-5: Ein älteres Paket bringt seine Stromspeicher samt Projektkopien noch mit den vier Kostenspalten;
+            // der Schritt sät die fehlenden Satzvorlagen an der Zieldatenbank und entfernt die Spalten danach.
+            new Stufe(StromspeicherKostenSchema.SCHRITT, Art.Ddl,
+                      "Entfall der vier Kostenspalten des Stromspeichers, Kosten in der Satzvorlage (KB-5)"),
+            // KBP-2: Ein älteres Paket bringt seine Kältebedarfszuordnungen ohne Eingabeart und seine Projektkopien ohne
+            // Art-Vorschlag; der Schritt legt die Spalten am Ziel an (Vorgabe 'jahr' bzw. leer).
+            new Stufe(KaeltebedarfsprofilVorlagenSchema.SCHRITT, Art.Ddl,
+                      "Eingabeart der Kältebedarfszuordnung, Art-Vorschlag und Vorlagen 7–16 des Kältekatalogs (KBP-2)"),
+            // Ein Paket führt keinen Katalog der Nutzungsprofile (er bleibt im Ziel); der Schritt sät die DIN-Profile am Ziel.
+            new Stufe(RaumnutzungDinWerteSchema.SCHRITT, Art.Katalog,
+                      "Werte der DIN-Nutzungsprofile nach DIN/TS 18599-10:2025-10 (DA-6, E135)"),
+            // Ein älteres Paket bringt seine Fensteraufbauten ohne ψ des Glasrands; der Schritt legt die Spalte leer an.
+            new Stufe(BauteilkatalogAbschnittSchema.SCHRITT, Art.Ddl,
+                      "ψ des Glasrands am Aufbaukatalog (BK-6)"),
+            // Ein älteres Paket bringt seine Bauteile ohne Herkunft des U-Werts; der Schritt legt die Spalte leer an.
+            new Stufe(BauteilUHerkunftSchema.SCHRITT, Art.Ddl,
+                      "Herkunft des U-Werts je Bauteil (MA-6b)"),
+            // Ein älteres Paket bringt Prozesswärme und Brauchwasser ohne Eingabeart und die Kältevorlagen ohne Nutzungstage;
+            // der Schritt legt die Spalten an (Vorgabe 'jahr').
+            new Stufe(BedarfsprofilEingabeartSchema.SCHRITT, Art.Ddl,
+                      "Eingabeart an Prozesswärme und Brauchwasser, Nutzungstage nach Norm an den Kältevorlagen (KBP-5a)"),
+            // KB-7a: Ein älteres Paket bringt den Wasserpreis noch an seinen Anlagenzeilen; die Stufe übergibt ihn an
+            // die Trägerkarte des Projekts (energy_project_settings des Wasserträgers am Ziel), danach fällt die
+            // Spalte mit der Schnittmenge des Imports fort.
+            new Stufe(WasserpreisTraegerkarteSchema.SCHRITT, Art.Umformung,
+                      "Wasserpreis der Anlage in die Trägerkarte, Entfall von Wasserpreis_EUR_m3 (KB-7a)", SchrittWasserpreis),
+            // KBP-4a: Ein älteres Paket bringt keine Typtage; der Schritt legt die zwei leeren Tabellen am Ziel an.
+            new Stufe(KaeltetyptagSchema.SCHRITT, Art.Ddl,
+                      "Typtage und Zuordnungsmatrix der Kältebedarfszuordnung (KBP-4a)"),
+            // Ein älteres Paket bringt Aufbauten und Bauteile ohne Strahlungswerte; der Schritt legt die Spalten leer an.
+            new Stufe(BauteilStrahlungSchema.SCHRITT, Art.Ddl,
+                      "Absorptions- und Emissionsgrad je Aufbau und Bauteil (DA-8)"),
+            // KD-4: Ein älteres Paket bringt keine Rohwerte und keine Herkunft der Klimaregion; der Schritt legt die
+            // leere Rohtabelle und die Herkunftsspalten am Ziel an (Bestandsregionen bleiben Rohdaten = 0).
+            new Stufe(KlimaRohwerteSchema.SCHRITT, Art.Ddl,
+                      "Rohwerte des Klimaimports und Herkunft der Klimaregion (KD-4)"),
+            // EB-1: Ein älteres Paket bringt Ergebniszeilen ohne die drei Reihen; der Schritt legt die Spalten leer an
+            // (leer heißt nicht erhoben).
+            new Stufe(ErgebnisreihenSchema.SCHRITT, Art.Ddl,
+                      "Ergebnisreihen: BHKW-Einspeisung, Standby des Speichersystems, PV-Abregelung (EB-1)"),
+            // KB-8: Ein älteres Paket bringt Ergebniszeilen der Wirtschaftlichkeit ohne die vier Spalten; der Schritt legt
+            // sie leer an (kein DML).
+            new Stufe(ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT, Art.Ddl,
+                      "Die vier Ergebnisspalten der Wirtschaftlichkeit (KB-8)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>
@@ -520,6 +591,64 @@ namespace WindowsFormsApplication1
                 return string.IsNullOrEmpty(s) ? rueckfall : s;
             }
             catch { return rueckfall; }
+        }
+
+        /// <summary>
+        /// <see cref="WasserpreisTraegerkarteSchema.SCHRITT"/> — der Wasserpreis eines älteren Pakets geht in die
+        /// Trägerkarte seines Projekts: je Projekt nach Regel c (<see cref="WasserpreisTraegerkarteSchema.Projektpreise"/>)
+        /// eine Zeile <c>energy_project_settings</c> mit dem Wasserträger des Ziels und dem Preis als
+        /// <c>custom_price_work</c>. Der Verweis zeigt auf die Id des ZIELS; der Import schlüsselt nur Ids um, die der
+        /// Paketkatalog der Träger führt. Führt er dieselbe Id für einen anderen Träger, nennt die Stufe den Preis,
+        /// statt ihn an einen fremden Träger zu hängen. Die Spalte selbst fällt mit der Schnittmenge des Imports fort.
+        /// </summary>
+        private static string SchrittWasserpreis(Paketarbeitsdatenbank db)
+        {
+            string anl = WasserpreisTraegerkarteSchema.TAB_ANLAGEN;
+            if (!db.SpalteVorhanden(anl, WasserpreisTraegerkarteSchema.ALTSPALTE) || !db.SpalteVorhanden(anl, "ID_Projekt"))
+                return null;
+            List<WasserpreisTraegerkarteSchema.Projektpreis> preise =
+                WasserpreisTraegerkarteSchema.Projektpreise(db.Lesen(WasserpreisTraegerkarteSchema.SqlPreiseLesen()));
+            if (preise.Count == 0) return null;
+
+            var teile = new List<string>();
+            long? traeger = WasserpreisTraegerkarteSchema.TraegerId();
+            bool belegt = traeger.HasValue && db.SpalteVorhanden(WasserpreisTraegerkarteSchema.TAB_TRAEGER, "id") &&
+                          Ganz(db.Skalar("SELECT COUNT(*) FROM \"" + WasserpreisTraegerkarteSchema.TAB_TRAEGER + "\" WHERE \"id\" = ?",
+                                         new DbParam("@id", traeger.Value))) > 0;
+            if (!traeger.HasValue || belegt)
+            {
+                foreach (WasserpreisTraegerkarteSchema.Projektpreis p in preise)
+                    teile.Add(string.Format(CultureInfo.InvariantCulture,
+                        Text("TRANSFER_ANHEBUNG_WASSERPREIS_OFFEN",
+                             "Wasserpreis {0} EUR/m³ der Anlage {1} nicht übernommen — bitte in der Trägerkarte „Wasser“ setzen"),
+                        p.Preis, p.IdAnlage));
+                return string.Join("; ", teile);
+            }
+
+            string tab = WasserpreisTraegerkarteSchema.TAB_EINSTELLUNG;
+            string spTraeger = WasserpreisTraegerkarteSchema.SPALTE_TRAEGER;
+            string spPreis = WasserpreisTraegerkarteSchema.SPALTE_PREIS;
+            if (!db.TabelleVorhanden(tab))
+                db.Ausfuehren("CREATE TABLE \"" + tab + "\" (\"ID\", \"ID_Projekt\", \"" + spTraeger + "\", \"" + spPreis + "\")");
+            db.SpalteSicherstellen(tab, "ID");
+            db.SpalteSicherstellen(tab, "ID_Projekt");
+            db.SpalteSicherstellen(tab, spTraeger);
+            db.SpalteSicherstellen(tab, spPreis);
+            int n = 0;
+            foreach (WasserpreisTraegerkarteSchema.Projektpreis p in preise)
+            {
+                long id = Ganz(db.Skalar("SELECT IFNULL(MAX(\"ID\"), 0) + 1 FROM \"" + tab + "\""));
+                db.Ausfuehren("INSERT INTO \"" + tab + "\" (\"ID\", \"ID_Projekt\", \"" + spTraeger + "\", \"" + spPreis +
+                              "\") VALUES (?, ?, ?, ?)",
+                              new DbParam("@id", id), new DbParam("@p", p.IdProjekt), new DbParam("@t", traeger.Value),
+                              new DbParam("@w", p.Preis));
+                n++;
+                string verworfen = WasserpreisTraegerkarteSchema.HinweisVerworfen(p);
+                if (verworfen != null) teile.Add(verworfen);
+            }
+            teile.Insert(0, Zeilen(n, Text("TRANSFER_ANHEBUNG_WASSERPREIS",
+                                           "Wasserpreis(e) der Anlagen in die Trägerkarte „Wasser“ übernommen")));
+            return string.Join("; ", teile);
         }
 
         /// <summary>67 — <see cref="BhkwLeistungsgrenzeVorgabe.Anhebung"/>: eine leere
@@ -925,6 +1054,25 @@ namespace WindowsFormsApplication1
             if (b.Gesetzt == 0) return null;
             return Zeilen(b.Gesetzt, Text("TRANSFER_ANHEBUNG_KESSEL_BRENNWERT",
                 "Projektkessel als Brennwertkessel gekennzeichnet (nach Katalogsatz oder Beschreibung)"));
+        }
+
+        /// <summary>
+        /// <see cref="TwwZonenferienSchema.SCHRITT"/> — <see cref="TwwZonenferienSchema.Uebertragen"/> an den Zonen des
+        /// Pakets: je Paar mit gültigem Ende eine Zeile der neuen Pakettabelle <c>Tab_TwwZonenferien</c> (sie reist als
+        /// neue Tabelle weiter, die ID vergibt die Stufe). Ohne Zone oder ohne die alten Spalten nichts.
+        /// </summary>
+        private static string SchrittZonenferien(Paketarbeitsdatenbank db)
+        {
+            if (!Hat(db, TwwSchema.TAB_TWW_ZONE, "ID")) return null;
+            if (!TwwZonenferienSchema.Altspalten().Any(s => db.SpalteVorhanden(TwwSchema.TAB_TWW_ZONE, s))) return null;
+            string t = TwwZonenferienSchema.TAB_ZONENFERIEN;
+            if (!db.TabelleVorhanden(t))
+                db.Ausfuehren("CREATE TABLE \"" + t + "\" (\"ID\", \"ID_Zone\", \"Reihenfolge\", \"Name\", \"Beginn\", \"Ende\")");
+            foreach (string s in new[] { "ID", "ID_Zone", "Reihenfolge", "Name", "Beginn", "Ende" })
+                db.SpalteSicherstellen(t, s);
+            int n = TwwZonenferienSchema.Uebertragen(db.Zugriff, true);
+            return n > 0 ? Zeilen(n, Text("TRANSFER_ANHEBUNG_ZONENFERIEN",
+                "Ferienzeitraum/-räume der Zonen in die Liste der Zonenferien übertragen")) : null;
         }
 
         // =================================================================

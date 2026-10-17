@@ -107,9 +107,9 @@ namespace WindowsFormsApplication1
 
             string sql = @"INSERT INTO [" + TABLE + @"]
                             (ID, Bezeichner, Firma, Beschreibung, Leistung, Wirkungsgrad, U_Mpp, U_Leerlauf,
-                             I_Mpp, I_Kurzschluss, alpha_SC, beta_OC, gamma_PMP, T_NOCT, Laenge, Breite, Modulkosten,
+                             I_Mpp, I_Kurzschluss, alpha_SC, beta_OC, gamma_PMP, T_NOCT, Laenge, Breite,
                              Technologie, ReadOnly)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             DbParam[] ps = {
                 new DbParam("@id", neueId),
@@ -128,7 +128,6 @@ namespace WindowsFormsApplication1
                 new DbParam("@noc", this.m_T_NOCT),
                 new DbParam("@lae", this.m_Laenge),
                 new DbParam("@bre", this.m_Breite),
-                new DbParam("@mod", this.m_Modulkosten),
                 Tec(),
                 new DbParam("@ro", false)
             };
@@ -240,7 +239,7 @@ namespace WindowsFormsApplication1
                             Bezeichner = ?, Firma = ?, Beschreibung = ?, Leistung = ?, Wirkungsgrad = ?,
                             U_Mpp = ?, U_Leerlauf = ?, I_Mpp = ?, I_Kurzschluss = ?,
                             alpha_SC = ?, beta_OC = ?, gamma_PMP = ?, T_NOCT = ?,
-                            Laenge = ?, Breite = ?, Modulkosten = ?, Technologie = ?
+                            Laenge = ?, Breite = ?, Technologie = ?
                           WHERE ID = ?";
 
             DbParam[] ps = {
@@ -259,7 +258,6 @@ namespace WindowsFormsApplication1
                 new DbParam("@noc", this.m_T_NOCT),
                 new DbParam("@lae", this.m_Laenge),
                 new DbParam("@bre", this.m_Breite),
-                new DbParam("@mod", this.m_Modulkosten),
                 Tec(),
                 new DbParam("@id", id)
             };
@@ -270,7 +268,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Import-Ueberschreiben (Dublettenkonzept 4.2): aktualisiert GENAU die Felder,
         /// die der Import liefert, adressiert per ID. Vom Anwender gepflegte Felder
-        /// (Bezeichner, Beschreibung, Modulkosten, ReadOnly) bleiben unangetastet.
+        /// (Bezeichner, Beschreibung, ReadOnly) bleiben unangetastet.
         /// </summary>
         /// <remarks>
         /// Bewusst OHNE ReadOnly-Sperre: Das Ueberschreiben eines ReadOnly-Satzes ist
@@ -368,7 +366,7 @@ namespace WindowsFormsApplication1
             this.m_T_NOCT = m.m_T_NOCT;
             this.m_Laenge = m.m_Laenge;
             this.m_Breite = m.m_Breite;
-            this.m_Modulkosten = m.m_Modulkosten;
+            this.IdKostenVorlageInvestition = m.IdKostenVorlageInvestition;
             this.m_Technologie = m.m_Technologie;
         }
 
@@ -400,7 +398,10 @@ namespace WindowsFormsApplication1
             m.m_T_NOCT = D(row, "T_NOCT");
             m.m_Laenge = D(row, "Laenge");
             m.m_Breite = D(row, "Breite");
-            m.m_Modulkosten = D(row, "Modulkosten");
+            // Welle KB-4: der VERWEIS auf die Satzvorlage statt der entfallenen Kostenspalte.
+            m.IdKostenVorlageInvestition = row.Table.Columns.Contains(
+                    KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION)
+                ? (int)D(row, KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION) : 0;
             // E2.3: fehlende Spalte und NULL sind derselbe Fall - Technologie unbekannt.
             if (row.Table.Columns.Contains("Technologie") && row["Technologie"] != DBNull.Value)
                 m.m_Technologie = row["Technologie"].ToString();
@@ -595,7 +596,7 @@ namespace WindowsFormsApplication1
                                          double? IKurzschluss = null, double? AlphaSc = null,
                                          double? BetaOc = null, double? GammaPmp = null,
                                          double? TNoct = null, double? Laenge = null,
-                                         double? Breite = null, double? Modulkosten = null,
+                                         double? Breite = null, string Kostensatz = "",
                                          string Technologie = "");
 
         /// <summary>
@@ -616,7 +617,8 @@ namespace WindowsFormsApplication1
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT Bezeichner, Beschreibung, Firma, Leistung, Wirkungsgrad, U_Mpp, U_Leerlauf, " +
                 "I_Mpp, I_Kurzschluss, alpha_SC, beta_OC, gamma_PMP, T_NOCT, Laenge, Breite, " +
-                "Modulkosten, Technologie FROM " + TABLE +
+                KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION +
+                ", Technologie FROM " + TABLE +
                 " WHERE Bezeichner = ? ORDER BY ID",
                 new DbParam("@nam", szName ?? ""));
             if (dt == null || dt.Rows.Count == 0) return null;
@@ -634,7 +636,8 @@ namespace WindowsFormsApplication1
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT Bezeichner, Beschreibung, Firma, Leistung, Wirkungsgrad, U_Mpp, U_Leerlauf, " +
                 "I_Mpp, I_Kurzschluss, alpha_SC, beta_OC, gamma_PMP, T_NOCT, Laenge, Breite, " +
-                "Modulkosten, Technologie FROM " + Tabelle(projektkopie) + " WHERE ID = ?",
+                KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION +
+                ", Technologie FROM " + Tabelle(projektkopie) + " WHERE ID = ?",
                 new DbParam("@id", id));
             if (dt == null || dt.Rows.Count == 0) return null;
             return DetailAus(dt.Rows[0]);
@@ -650,7 +653,10 @@ namespace WindowsFormsApplication1
                 Wert(r, "Wirkungsgrad"), Wert(r, "U_Mpp"), Wert(r, "U_Leerlauf"),
                 Wert(r, "I_Mpp"), Wert(r, "I_Kurzschluss"), Wert(r, "alpha_SC"),
                 Wert(r, "beta_OC"), Wert(r, "gamma_PMP"), Wert(r, "T_NOCT"),
-                Wert(r, "Laenge"), Wert(r, "Breite"), Wert(r, "Modulkosten"),
+                Wert(r, "Laenge"), Wert(r, "Breite"),
+                // Welle KB-4: der Kostensatz kommt aus der Satzvorlage, auf die der Satz verweist.
+                KatalogkostensatzCtrl.SatzTextDerVorlage(
+                    (int)(Wert(r, KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION) ?? 0)),
                 r.Table.Columns.Contains("Technologie") && r["Technologie"] != DBNull.Value
                     ? r["Technologie"].ToString() : "");
         }
@@ -745,7 +751,8 @@ namespace WindowsFormsApplication1
             zeilen.Add(Aus(profil, ModulKatalogProfil.FeldTNoct, Zahl(d.TNoct)));
             zeilen.Add(Aus(profil, ModulKatalogProfil.FeldLaenge, Zahl(d.Laenge)));
             zeilen.Add(Aus(profil, ModulKatalogProfil.FeldBreite, Zahl(d.Breite)));
-            zeilen.Add(Aus(profil, ModulKatalogProfil.FeldModulkosten, Zahl(d.Modulkosten)));
+            zeilen.Add(Aus(profil, ModulKatalogProfil.FeldKostensatz,
+                           string.IsNullOrEmpty(d.Kostensatz) ? ParameterNichtGepflegt : d.Kostensatz));
             zeilen.Add(Aus(profil, ModulKatalogProfil.FeldTechnologie, TechnologieText(d.Technologie)));
 
             return zeilen;
@@ -948,7 +955,8 @@ namespace WindowsFormsApplication1
                 [ModulKatalogProfil.FeldTempKoeff] = m.m_Temp_Coeff_Pmax.ToString(),
                 [ModulKatalogProfil.FeldLaenge] = m.m_Laenge.ToString(),
                 [ModulKatalogProfil.FeldBreite] = m.m_Breite.ToString(),
-                [ModulKatalogProfil.FeldModulkosten] = m.m_Modulkosten.ToString(),
+                [ModulKatalogProfil.FeldKostensatz] =
+                    KatalogkostensatzCtrl.SatzTextDerVorlage(m.IdKostenVorlageInvestition),
                 [ModulKatalogProfil.FeldTNoct] = m.m_T_NOCT.ToString(),
                 [ModulKatalogProfil.FeldTechnologie] = m.m_Technologie ?? ""
             };
@@ -971,7 +979,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Die Pruefregel eines Modulsatzes</b> — beim Sammelspeichern und beim Rueckweg dieselbe: Leistung,
-        /// Spannungen, Stroeme, Abmessungen, Modulkosten und NOCT nicht negativ, der Wirkungsgrad zwischen 0 und 100 %.
+        /// Spannungen, Stroeme, Abmessungen und NOCT nicht negativ, der Wirkungsgrad zwischen 0 und 100 %.
         /// Der Temperaturkoeffizient der Leistung ist frei (er ist negativ). <c>null</c> = in Ordnung.
         /// </summary>
         public static string Pruefen(PhotovoltaikModel m)
@@ -986,7 +994,6 @@ namespace WindowsFormsApplication1
                 Negativ(ModulKatalogProfil.FeldIKurzschluss, m.m_I_Kurzschluss),
                 Negativ(ModulKatalogProfil.FeldLaenge, m.m_Laenge),
                 Negativ(ModulKatalogProfil.FeldBreite, m.m_Breite),
-                Negativ(ModulKatalogProfil.FeldModulkosten, m.m_Modulkosten),
                 Negativ(ModulKatalogProfil.FeldTNoct, m.m_T_NOCT));
         }
 
@@ -1083,7 +1090,7 @@ namespace WindowsFormsApplication1
             string sql = "UPDATE [" + tabelle + @"] SET
                             Firma = ?, Beschreibung = ?, Leistung = ?, Wirkungsgrad = ?, U_Mpp = ?, U_Leerlauf = ?,
                             I_Mpp = ?, I_Kurzschluss = ?, gamma_PMP = ?, T_NOCT = ?, Laenge = ?, Breite = ?,
-                            Modulkosten = ?, Technologie = ?
+                            Technologie = ?
                           WHERE ID = ?";
             DbParam[] ps =
             {
@@ -1099,7 +1106,6 @@ namespace WindowsFormsApplication1
                 new DbParam("@noc", Wert("T_NOCT", m.m_T_NOCT)),
                 new DbParam("@lae", Wert("Laenge", m.m_Laenge)),
                 new DbParam("@bre", Wert("Breite", m.m_Breite)),
-                new DbParam("@mod", Wert("Modulkosten", m.m_Modulkosten)),
                 // Technologie: leer = NULL (unbekannt), wie TechnologieParam beim Katalogspeichern.
                 new DbParam("@tec", string.IsNullOrWhiteSpace(m.m_Technologie) ? (object)DBNull.Value : m.m_Technologie.Trim()),
                 new DbParam("@id", id)
@@ -1118,7 +1124,7 @@ namespace WindowsFormsApplication1
         /// <b>Das Gewerk des Rückwegs „In die Datenbank übernehmen…"</b> (Konzept Katalogauswahl 5.2, KA‑E‑9): Kopie
         /// <see cref="TABELLE_PROJEKT"/>, Katalog <see cref="TABLE"/>, Anlage über <c>ID_PV</c>, Kostenkomponente 3.
         /// <b>Keine Kindtabellen</b> — alle Modulwerte samt den Temperaturkoeffizienten <c>alpha_SC</c>, <c>beta_OC</c>,
-        /// <c>gamma_PMP</c>, <c>T_NOCT</c>, der Technologie und den <c>Modulkosten</c> sind Spalten des Satzes und gehen mit
+        /// <c>gamma_PMP</c>, <c>T_NOCT</c> und der Technologie sind Spalten des Satzes und gehen mit
         /// der Schnittmenge. <b>Anlagenbezogen und damit im Projekt</b> bleiben die Stränge und ihre Wechselrichterzuordnung
         /// (<c>Z_AnlageStrang</c> hängt an der Anlage), Neigung, Azimut, Anzahl Module, Ertragsmodell und Energieträger
         /// (Spalten von <c>Tab_Energieanlagen</c>). Prüfregel wie beim Sammelspeichern (<see cref="Pruefen"/>).
@@ -1144,7 +1150,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>„In die Datenbank übernehmen…"</b> — die Projektkopien als neue Katalogsätze oder als Ersatz ihres Ursprungs,
         /// alles oder nichts (<see cref="Katalogrueckweg.Uebernehmen"/>): alle Modulspalten samt Koeffizienten und
-        /// Modulkosten, Betriebs- und Investitionspositionen der Anlage als Satzvorlagen. Der Name der Kopie bleibt (KA‑E‑15).
+        /// Betriebs- und Investitionspositionen der Anlage als Satzvorlagen. Der Name der Kopie bleibt (KA‑E‑15).
         /// </summary>
         public static Rueckwegergebnis AusProjektUebernehmen(IReadOnlyList<Rueckwegauftrag> auftraege)
             => Katalogrueckweg.Uebernehmen(Rueckweg(), auftraege);

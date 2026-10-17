@@ -679,16 +679,17 @@ namespace EPOS.Kern.Tests
         /// zusammen 158 von 165, 37 von 44. Das Referenzprojekt 1054 (Kopie von 1052, AK1z) bringt wie 1052 dessen
         /// 11 Positionen mit — zusammen 169 von 176, 38 von 45. Das Referenzprojekt Erdsonde 1057 (Kopie von 1029) bringt
         /// dessen 4 Positionen mit, alle ohne Dauer, zwei betragstragend — zusammen 173 von 180, 40 von 47. Das Referenzprojekt
-        /// Vorheizen 1065 (Kopie von 1051) bringt dessen 8 Positionen mit, alle ohne Dauer — zusammen 181 von 188.
+        /// Vorheizen 1065 (Kopie von 1051) bringt dessen 8 Positionen mit, alle ohne Dauer — zusammen 181 von 188. Das Referenzprojekt
+        /// Schnellaufheizung 1073 (Kopie von 1054) bringt dessen 11 Positionen mit, alle ohne Dauer; betragstragend ist davon eine, ohne Dauer (das BHKW, nachgezählt am 16.10.2026: Betrag ≠ 0, keine Zuschusszeile) — zusammen 192 von 199, 41 von 48.
         /// </summary>
         [Fact]
-        public void Die_Testdatenbank_traegt_27_von_33_betragstragenden_Positionen_ohne_Dauer()
+        public void Die_Testdatenbank_traegt_die_gezaehlten_betragstragenden_Positionen_ohne_Dauer()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            Assert.Equal(188, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE KategorieID = ?"));
-            Assert.Equal(181, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE KategorieID = ? " +
+            Assert.Equal(199, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE KategorieID = ?"));
+            Assert.Equal(192, Zahl("SELECT COUNT(*) FROM Tab_ProjektWerte WHERE KategorieID = ? " +
                                   "AND (Nutzungsdauer IS NULL OR Nutzungsdauer < 1)"));
 
             int ohne = 0, alle = 0, hinweise = 0;
@@ -704,12 +705,12 @@ namespace EPOS.Kern.Tests
                 alle += h.Alle;
                 hinweise += h.Zeilen.Count;
             }
-            Assert.Equal(40, ohne);
-            Assert.Equal(47, alle);
+            Assert.Equal(41, ohne);
+            Assert.Equal(48, alle);
             // Einen Hinweis tragen nur Techniken mit Vorgabe unter T = 20 a: die Wärmepumpe
             // (18 a) in 1019, 1023, 1024, 1032, 1040, 1048 und 1050, das BHKW (15 a) in 1018, 1031,
-            // 1049, 1052, 1053 und 1054.
-            Assert.Equal(13, hinweise);
+            // 1049, 1052, 1053, 1054 und 1073.
+            Assert.Equal(14, hinweise);
         }
 
         /// <summary>

@@ -58,10 +58,10 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
-        public void ReadAll(string sql)
+        public void ReadAll(string sql, params DbParam[] parameter)
         {
             // Abfrage über das zentrale DataRepository laden
-            DataTable dt = DataRepository.GetDataTable(sql, null);
+            DataTable dt = DataRepository.GetDataTable(sql, parameter.Length == 0 ? null : parameter);
 
             // Interne Liste vor dem erneuten Befüllen leeren
             _internalList.Clear();

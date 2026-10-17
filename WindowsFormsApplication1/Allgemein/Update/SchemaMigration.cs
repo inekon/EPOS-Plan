@@ -1342,7 +1342,8 @@ namespace WindowsFormsApplication1
         ///
         /// <para>
         /// <b>Anlass.</b> Seit dem Nutzerentscheid vom 22.08.2026 fuehren die fuenf
-        /// Einzelposten (<see cref="BHKWKosten"/>), und <c>Investition_kwel</c> ist daraus
+        /// Einzelposten (<c>BHKWKosten</c>, mit Welle KB-4 entfallen), und
+        /// <c>Investition_kwel</c> ist daraus
         /// abgeleitet. Am 23.08.2026 ist deshalb in <c>TechnikPlanwertCtrl.BasenFuellen</c>
         /// die zweite Kostenbasis <c>BASIS_SPEZIFISCH</c> (= <c>Investition_kwel</c> *
         /// <c>Pel</c>) fuer das BHKW entfallen: Sie war seither eine Dublette des
@@ -1368,7 +1369,7 @@ namespace WindowsFormsApplication1
         ///     wird NIE auf 0 gesetzt, sonst ginge der einzige Nachweis der Investition
         ///     verloren.</description></item>
         ///   <item><description><b><c>Pel</c> = 0/NULL:</b> Der Wert je kWel ist nicht
-        ///     bestimmbar (<see cref="BHKWKosten.JeKWelBestimmbar"/>) - jede Zahl mal 0
+        ///     bestimmbar (<c>BHKWKosten.JeKWelBestimmbar</c>) - jede Zahl mal 0
         ///     ergaebe wieder 0 und verschwiege den erfassten Betrag. Die Zeile bleibt
         ///     UNVERAENDERT und wird als offen protokolliert.</description></item>
         ///   <item><description><b>Beides leer:</b> nichts zu tun.</description></item>
@@ -1379,7 +1380,7 @@ namespace WindowsFormsApplication1
         ///
         /// <para>
         /// <b>Rundungsregel: KEINE - und genau das ist die Regel.</b>
-        /// <see cref="BHKWKosten.JeKWel"/> (<c>Model\BHKWKosten.cs</c>, Zeile 58:
+        /// <c>BHKWKosten.JeKWel</c> (<c>Model\BHKWKosten.cs</c>, Zeile 58:
         /// <c>return JeKWelBestimmbar(pel) ? summe / pel : 0.0;</c>) rundet nicht, und
         /// <c>BHKWCtrl.Update</c> wie <c>BHKWStammCtrl.Update</c> schreiben genau diesen
         /// ungerundeten Quotienten in die <c>Double</c>-Spalte; gerundet wird allein die
@@ -5482,6 +5483,187 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_BAUTEILKATALOG = BauteilkatalogSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="BauteilkatalogHaustechnikSchema.SCHRITT"/> — <b>Klasse Haustechnik am Bauteilkatalog</b> (BK-3c, E134):
+        /// die Klasse <c>HAUSTECHNIK</c> in der Prüfklausel von <c>Klasse_Code</c> (Neubau der vier Kopftabellen mit Erhalt der IDs).
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Der Bauteilweg liest keine Gliederung.</para>
+        /// </summary>
+        public const int SCHRITT_BAUTEILKATALOG_HAUSTECHNIK = BauteilkatalogHaustechnikSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="KaeltebedarfSplitAbrechnungSchema.SCHRITT"/> — <b>Abrechnung des Split-Stroms</b> (K6, Konzept
+        /// Kältebedarf 4.2/4.3, E34/E35): die Ergebnistabelle <c>Tab_ErgebnisKaelteDezentral</c> je dezentral (Split) gedeckter
+        /// Kältebedarfszeile eines Laufs — Kälte, Strom, Spitzen, Jahres-EER, Netzbezug, abweichender Kühlträger samt Zähler.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Referenzprojekt führt eine Split-Zeile; die Tabelle bleibt leer.</para>
+        /// </summary>
+        public const int SCHRITT_KAELTEBEDARF_SPLIT_ABRECHNUNG = KaeltebedarfSplitAbrechnungSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="TwwZonenferienSchema.SCHRITT"/> — <b>Zonenferien als Liste</b> (ZB5, ZB‑Q3 B): die Tabelle
+        /// <c>Tab_TwwZonenferien</c> mit beliebig vielen eigenen Ferienzeiträumen je Zone; die vier Spaltenpaare
+        /// <c>Ferienbeginn_1…4</c>/<c>Ferienende_1…4</c> von <c>Tab_TwwZone</c> werden übertragen und danach abgebaut
+        /// (Neubau mit Erhalt der IDs).
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Der Zapfkalender rechnet über die Liste dieselben Fenster.</para>
+        /// </summary>
+        public const int SCHRITT_TWW_ZONENFERIEN = TwwZonenferienSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="ZonenLastfelderSchema.SCHRITT"/> — <b>Lastfelder der Zone</b> (DA-2, E138 F5): <c>Aussenluft_Person</c>,
+        /// <c>Licht_W_m2</c> und <c>Personen_Waerme_W</c> an <c>Tab_Zone</c> und <c>Tab_Zone_STAMM</c>, leer.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Der Rechenweg liest keine der drei Spalten.</para>
+        /// </summary>
+        public const int SCHRITT_ZONEN_LASTFELDER = ZonenLastfelderSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="KatalogkostenSaatSchema.SCHRITT"/> — <b>Saat der Katalogkosten-Satzvorlagen</b> (KB-3,
+        /// Anwenderentscheid 13.10.2026): die zwei Verweise <c>ID_KostenVorlage</c> und
+        /// <c>ID_KostenVorlageInvestition</c> an den acht Projektkopien mit Kosten, dazu je Satz mit mindestens einem
+        /// Kostenwert &gt; 0 und ohne Verweis genau eine Satzvorlage je Art samt Positionen.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Ein zweiter Lauf findet jeden Verweis gesetzt; gerechnet wird
+        /// aus <c>Tab_ProjektWerte</c>, eine Satzvorlage wirkt erst beim Übernehmen oder Abgleichen.</para>
+        /// </summary>
+        public const int SCHRITT_KATALOGKOSTEN_SAAT = KatalogkostenSaatSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="BrennstoffpreiseTraegerkarteSchema.SCHRITT"/> — <b>Brennstoffpreise in die
+        /// Trägerkarte</b> (KB-2, Anwenderentscheid 13.10.2026): <c>Standard_Arbeitspreis</c>,
+        /// <c>Standard_Grundpreis</c> und <c>Standard_Leistungspreis</c> gehen je Träger mit Brennstoffverweis an
+        /// <c>energy_carrier.price_work</c>/<c>price_base</c>/<c>price_power</c> über (nur wo der Trägerpreis leer
+        /// ist) und fallen danach an <c>Tab_Brennstoff_Stamm</c> und <c>Tab_Brennstoff</c> weg.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Rechenweg liest die drei Spalten — sie waren allein
+        /// die Saat der Energieträger-Variante. <b>Neue Katalogfassung:</b> Die Prüfsumme jedes Brennstoffs
+        /// ändert sich; der Schritt bildet sie für jeden Satz neu, dessen Summe vorher stimmte.</para>
+        /// </summary>
+        public const int SCHRITT_BRENNSTOFFPREISE_TRAEGERKARTE = BrennstoffpreiseTraegerkarteSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="GeraetekostenEntfallSchema.SCHRITT"/> — <b>die Kostenspalten der
+        /// Investitionsgewerke entfallen</b> (KB-4, Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine
+        /// Doppelhaltung"): der Investitionsverweis und die Satzvorlage am Wechselrichter, ein Sicherheitslauf
+        /// der Saat aller acht Gewerke dieser Welle, dann der Entfall ihrer 32 Kostenspalten an Katalog und
+        /// Projektkopie.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Rechenweg dieser Gewerke liest eine der Spalten —
+        /// gerechnet wird aus <c>Tab_ProjektWerte</c>; Planwert, Dialoge, Steckbriefe und Berichte lesen die
+        /// Satzvorlage. <b>Die Wache bricht benannt ab</b>, wenn nach der Saat noch ein Kostenwert ohne
+        /// Satzvorlage steht; die Spalten bleiben dann stehen. <b>Neue Katalogfassung:</b> Die Prüfsumme jedes
+        /// Satzes der acht Kataloge ändert sich; der Schritt bildet sie für jeden Satz neu, dessen Summe
+        /// vorher stimmte.</para>
+        /// </summary>
+        public const int SCHRITT_GERAETEKOSTEN_ENTFALL = GeraetekostenEntfallSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="StromspeicherKostenSchema.SCHRITT"/> — <b>die Kostenspalten des Stromspeichers
+        /// entfallen</b> (KB-5, Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine Doppelhaltung"):
+        /// Sicherheitslauf der Saat, Wache, Entfall der acht Spalten an Katalog und Projektkopie, Neubildung
+        /// der Katalogprüfsummen. <b>Wiederholbar, ergebnisgleich.</b>
+        /// </summary>
+        public const int SCHRITT_STROMSPEICHER_KOSTEN = StromspeicherKostenSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="KaeltebedarfsprofilVorlagenSchema.SCHRITT"/> — <b>Schemaschritt A der Kältebedarfsprofile</b> (KBP-2,
+        /// Konzept Kältebedarfsprofile 8.1, Entscheid OE-3): <c>Z_Projekt_Kaeltebedarf.Eingabeart</c> (Vorgabe 'jahr',
+        /// Prüfklausel jahr/monat/woche/typtag), der Art-Vorschlag <c>Kaelte_Art</c> an <c>Tab_Kaeltebedarf_STAMM</c> und
+        /// <c>Tab_Kaeltebedarf</c> (nullbar) und die Saat der Vorlagen 7–16 samt Katalogschlüssel.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> kein UPDATE des Bestands, jede Zuordnung rechnet weiter mit der
+        /// Jahressumme; die Zeilen 1–6 bleiben samt Prüfsumme bytegleich.</para>
+        /// </summary>
+        public const int SCHRITT_KAELTEVORLAGEN = KaeltebedarfsprofilVorlagenSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="RaumnutzungDinWerteSchema.SCHRITT"/> — <b>Werte der DIN-Nutzungsprofile</b> (DA-6, E135): die 45
+        /// ausgelieferten Profile der Kategorie DIN/TS 18599-10 bekommen die Werte der Fassung 2025-10 aus
+        /// <see cref="RaumnutzungDinSaat"/>, nur wo kein Wert steht; eingelesene Werte des Anwenders bleiben. Schritt 231.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Referenzprojekt nutzt ein Nutzungsprofil.</para>
+        /// </summary>
+        public const int SCHRITT_RAUMNUTZUNG_DIN_WERTE = RaumnutzungDinWerteSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="BauteilkatalogAbschnittSchema.SCHRITT"/> — <b>Inhomogene Schicht und Fenster im Aufbaukatalog</b>
+        /// (BK-5/BK-6, E132 F7): ψ des Glasrands <c>Psi_Glasrand</c> an <c>Tab_Bauteilaufbau(_STAMM)</c>; die Abschnitte stehen
+        /// seit Schritt 221. Schritt 232, hängt an 231.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Kein Referenzprojekt führt einen Aufbau; die Spalte bleibt leer.</para>
+        /// </summary>
+        public const int SCHRITT_BAUTEILKATALOG_ABSCHNITT = BauteilkatalogAbschnittSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="BauteilUHerkunftSchema.SCHRITT"/> — <b>Herkunft des U-Werts je Bauteil</b> (MA-6b, E149):
+        /// <c>U_Herkunft</c> an <c>Tab_Bauteil(_STAMM)</c> (MANUELL, KATALOG, IFC, GBXML, VORGABE, SQPROJ; NULL = unbekannt).
+        /// Der Wiederimport behält einen U-Wert, der von Hand gesetzt ist. Schritt 233, hängt an 232.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Die Spalte bleibt leer, der Rechenweg liest sie nicht.</para>
+        /// </summary>
+        public const int SCHRITT_BAUTEIL_U_HERKUNFT = BauteilUHerkunftSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="BedarfsprofilEingabeartSchema.SCHRITT"/> — <b>Eingabeart der Bedarfsprofile</b> (KBP-5a bis KBP-5d):
+        /// <c>Eingabeart</c> an <c>Z_Projekt_Prozesswaerme</c> und <c>Z_Projekt_Brauchwasser</c> (Vorgabe 'jahr'),
+        /// <c>Nutzungstage_Norm</c> an <c>Tab_Kaeltebedarf(_STAMM)</c> (Saat allein an Vorlage 8) und <c>Ferien_wie_Sonntag</c>
+        /// am Betriebskalender. Schritt 234, hängt an 233.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Jede Zuordnung rechnet mit Eingabeart 'jahr', die Nutzungstage liest kein
+        /// Rechenweg.</para>
+        /// </summary>
+        public const int SCHRITT_BEDARFS_EINGABEART = BedarfsprofilEingabeartSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="WasserpreisTraegerkarteSchema.SCHRITT"/> — <b>der Wasserpreis wandert in die
+        /// Trägerkarte</b> (KB-7a, Anwenderentscheide 16.10.2026): Träger „Wasser“ (Preismodell <c>WATER</c>, m³),
+        /// Übernahme der Anlagenpreise in <c>energy_project_settings</c>, Entfall von
+        /// <c>Tab_Energieanlagen.Wasserpreis_EUR_m3</c>. <b>Wiederholbar, ergebnisneutral.</b>
+        /// </summary>
+        public const int SCHRITT_WASSERPREIS_TRAEGERKARTE = WasserpreisTraegerkarteSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="KaeltetyptagSchema.SCHRITT"/> — <b>Typtage der Kältebedarfszuordnung</b> (KBP-4a):
+        /// <c>Tab_Kaeltetyptag</c> und <c>Tab_Kaeltetyptag_Matrix</c>, zwei leere Tabellen. <b>Wiederholbar, ergebnisneutral.</b>
+        /// </summary>
+        public const int SCHRITT_KAELTETYPTAG = KaeltetyptagSchema.SCHRITT;
+        /// Schritt <see cref="BauteilStrahlungSchema.SCHRITT"/> — <b>Absorptions- und Emissionsgrad je Bauteil</b> (DA-8):
+        /// <c>Absorptionsgrad_Solar</c> und <c>Emissionsgrad</c> an <c>Tab_Bauteilaufbau(_STAMM)</c> und <c>Tab_Bauteil(_STAMM)</c>
+        /// (NULL = Festwert). Schritt 237, hängt an 236.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Die Spalten bleiben leer, leer heißt Festwert.</para>
+        /// </summary>
+        public const int SCHRITT_BAUTEIL_STRAHLUNG = BauteilStrahlungSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="KlimaRohwerteSchema.SCHRITT"/> — <b>Rohwerte des Klimaimports</b> (KD-4): eigene Tabelle
+        /// <c>Tab_Klimastunde_STAMM</c> und die Herkunftsspalten der Klimaregion. Schritt 238, hängt an 237.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Bestandsregionen bleiben ohne Rohwerte, kein Rechenweg liest die
+        /// Rohtabelle.</para>
+        /// </summary>
+        public const int SCHRITT_KLIMA_ROHWERTE = KlimaRohwerteSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="ErgebnisreihenSchema.SCHRITT"/> — <b>Ergebnisreihen</b> (EB-1): <c>Stromeinspeisung</c> an
+        /// <c>Tab_ErgebnisBHKW</c>, <c>Abregelung</c> an <c>Tab_ErgebnisPhotovoltaik</c>, <c>Eigenverbrauch_System</c> an
+        /// <c>Tab_ErgebnisStromspeicher</c> (NULL = nicht erhoben). Schritt 239, hängt an 238.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Der Rechenweg bleibt unverändert, der Lauf schreibt nur zusätzlich,
+        /// was er schon rechnet; Altergebnisse bleiben leer.</para>
+        /// </summary>
+        public const int SCHRITT_ERGEBNISREIHEN = ErgebnisreihenSchema.SCHRITT;
+
+        /// <summary>
+        /// Schritt <see cref="ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT"/> — <b>die vier Ergebnisspalten der
+        /// Wirtschaftlichkeit</b> (KB-8): <c>StromsteuerBefreiungModus</c>, <c>ErsatzBarwert</c>, <c>Nachweis_Json</c> und
+        /// <c>Lauf_Staende</c> an <c>Tab_ErgebnisWirtschaftlichkeit</c>, jede nur, wenn sie fehlt. Schritt 240.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> kein DML, Bestandszeilen bleiben NULL.</para>
+        /// </summary>
+        public const int SCHRITT_ERGEBNIS_WIRTSCHAFTLICHKEIT_SPALTEN = ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -8041,6 +8223,153 @@ namespace WindowsFormsApplication1
                         "Ein eingelesener Katalogsatz waere nicht als solcher erkennbar, Baustoffe und Aufbauten nicht gegliedert, und die " +
                         "Felder der Quelle haetten keinen Platz. KEIN Rechenergebnis aendert sich - der Bauteilweg liest keine neue Spalte.",
                         Schritt_Bauteilkatalog),
+            // BK-3c: Klasse Haustechnik am Bauteilkatalog. Quelle ist BauteilkatalogHaustechnikSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_BAUTEILKATALOG_HAUSTECHNIK,
+                        "Tab_Baustoff(_STAMM), Tab_Bauteilaufbau(_STAMM): Klasse HAUSTECHNIK in der Pruefklausel von Klasse_Code",
+                        "Werkstoffe und Zubehoer der Haustechnik liessen sich im Katalog nicht als eigene Klasse fuehren und nicht " +
+                        "ausblenden. KEIN Rechenergebnis aendert sich - der Bauteilweg liest keine Gliederung.",
+                        Schritt_BauteilkatalogHaustechnik),
+            // K6: Abrechnung des Split-Stroms. Quelle ist KaeltebedarfSplitAbrechnungSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KAELTEBEDARF_SPLIT_ABRECHNUNG,
+                        "Tab_ErgebnisKaelteDezentral: Ergebnis je dezentral (Split) gedeckter Kaeltebedarfszeile (leer)",
+                        "Der Strom der Split-Zeilen liesse sich nicht je Kuehltraeger und Zaehler abrechnen, und Bericht und " +
+                        "Kostenrechnung saehen ohne frischen Lauf keine Split-Zeile. KEIN Rechenergebnis aendert sich - die Tabelle bleibt leer.",
+                        Schritt_KaeltebedarfSplitAbrechnung),
+            // ZB5 (ZB-Q3 B): Zonenferien als Liste. Quelle ist TwwZonenferienSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_TWW_ZONENFERIEN,
+                        "Tab_TwwZonenferien (neu); Tab_TwwZone: die vier Spaltenpaare Ferienbeginn/Ferienende uebertragen und entfernt",
+                        "Eine Zone des Zapfprofils koennte nicht mehr als vier eigene Ferienzeitraeume tragen. KEIN Rechenergebnis " +
+                        "aendert sich - der Zapfkalender rechnet ueber die Liste dieselben Fenster.",
+                        Schritt_TwwZonenferien),
+            // DA-2: Lastfelder der Zone. Quelle ist ZonenLastfelderSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_ZONEN_LASTFELDER,
+                        "Tab_Zone, Tab_Zone_STAMM: Aussenluft_Person, Licht_W_m2, Personen_Waerme_W (leer)",
+                        "Aussenluft je Person, Lichtleistung und Waerme je Person einer Zone haetten beim Datenaustausch keinen " +
+                        "Platz und gingen im Rundlauf verloren. KEIN Rechenergebnis aendert sich - alle Spalten stehen leer.",
+                        Schritt_ZonenLastfelder),
+            // KB-3: Saat der Katalogkosten-Satzvorlagen. Quelle ist KatalogkostenSaatSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KATALOGKOSTEN_SAAT,
+                        "Tab_BHKW, Tab_Heizkessel, Tab_WP, Tab_PV, Tab_Solarkollektoren, Tab_Pufferspeicher, " +
+                        "Tab_Kaeltemaschine, Tab_Stromspeicher: ID_KostenVorlage und ID_KostenVorlageInvestition; " +
+                        "je Satz mit Kosten eine Satzvorlage je Art samt Positionen",
+                        "Die Kosten eines Katalogsatzes stuenden weiter nur am Geraet und waeren mit dem zentralen " +
+                        "Kostenkatalog nicht abgleichbar. KEIN Rechenergebnis aendert sich - gerechnet wird aus " +
+                        "Tab_ProjektWerte, eine Satzvorlage wirkt erst beim Uebernehmen oder Abgleichen.",
+                        Schritt_KatalogkostenSaat),
+            // KB-2: Brennstoffpreise in die Traegerkarte. Quelle ist BrennstoffpreiseTraegerkarteSchema, die Nummer
+            // steht allein dort.
+            new Schritt(SCHRITT_BRENNSTOFFPREISE_TRAEGERKARTE,
+                        "energy_carrier: price_work, price_base, price_power (und price_power_modus) aus dem " +
+                        "Brennstoffkatalog; Tab_Brennstoff_Stamm und Tab_Brennstoff: Standard_Arbeitspreis, " +
+                        "Standard_Grundpreis, Standard_Leistungspreis entfallen",
+                        "Die Preise eines Brennstoffs stuenden weiter neben der Karte des Energietraegers und " +
+                        "saeten eine zweite Kostenbasis. KEIN Rechenergebnis aendert sich - gerechnet wird aus der " +
+                        "Traegerwelt; die drei Spalten waren allein Saat der Energietraeger-Variante.",
+                        Schritt_BrennstoffpreiseTraegerkarte),
+            // KB-4: Entfall der Gerätekostenspalten. Quelle ist GeraetekostenEntfallSchema, die Nummer steht
+            // allein dort.
+            new Schritt(SCHRITT_GERAETEKOSTEN_ENTFALL,
+                        "Tab_Wechselrichter(_STAMM): ID_KostenVorlageInvestition und die Satzvorlage aus " +
+                        "Kosten; Tab_BHKW, Tab_Heizkessel, Tab_WP, Tab_PV, Tab_Wechselrichter, " +
+                        "Tab_Solarkollektoren, Tab_Pufferspeicher, Tab_Kaeltemaschine (je samt _STAMM): die " +
+                        "32 Kostenspalten entfallen",
+                        "Derselbe Kostensatz stuende weiter am Geraet UND in der Position der Anlage, ohne " +
+                        "dass ein Mechanismus beide zusammenhaelt. KEIN Rechenergebnis aendert sich - " +
+                        "gerechnet wird aus Tab_ProjektWerte; die eine Basis ist die Satzvorlage des " +
+                        "zentralen Kostenkatalogs.",
+                        Schritt_GeraetekostenEntfall),
+            // KB-5: Entfall der Kostenspalten des Stromspeichers. Quelle ist StromspeicherKostenSchema, die
+            // Nummer steht allein dort.
+            new Schritt(SCHRITT_STROMSPEICHER_KOSTEN,
+                        "Tab_Stromspeicher(_STAMM): Sicherheitslauf der Saat, die vier Kostenspalten " +
+                        "Modulkosten, Leistungskosten, Investition_Fix und Verschleisskosten entfallen",
+                        "Derselbe Kostensatz stuende weiter am Speicher UND in seiner Satzvorlage. KEIN " +
+                        "Rechenergebnis aendert sich - der Rechenweg liest dieselben Saetze aus Position und " +
+                        "Satzvorlage.",
+                        Schritt_StromspeicherKosten),
+            // KBP-2: Schemaschritt A der Kaeltebedarfsprofile. Quelle ist KaeltebedarfsprofilVorlagenSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KAELTEVORLAGEN,
+                        "Z_Projekt_Kaeltebedarf: Eingabeart; Tab_Kaeltebedarf_STAMM und Tab_Kaeltebedarf: Kaelte_Art " +
+                        "(Art-Vorschlag); Saat der Kaeltebedarfsvorlagen 7-16 in Tab_Kaeltebedarf_STAMM/Tab_Kaeltetyp_STAMM",
+                        "Der Kaeltekatalog fuehrte nur sechs Saetze, die Zuordnung kannte allein die Jahressumme. KEIN " +
+                        "Rechenergebnis aendert sich - jede Zuordnung rechnet mit Eingabeart 'jahr', die Zeilen 1-6 " +
+                        "bleiben unberuehrt.",
+                        Schritt_Kaeltevorlagen),
+            // DA-6: Werte der DIN-Nutzungsprofile. Quelle ist RaumnutzungDinWerteSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_RAUMNUTZUNG_DIN_WERTE,
+                        "Tab_Raumnutzungsprofil: Werte der 45 DIN-Profile nach DIN/TS 18599-10:2025-10 (nur leere Profile); " +
+                        "Tab_Raumnutzungskatalog: Quellenhinweis und Beschreibung der Kategorie DIN",
+                        "Die ausgelieferten DIN-Profile stuenden ohne Werte, und jeder Anwender muesste sie selbst einlesen (E135). " +
+                        "KEIN Rechenergebnis aendert sich - kein Referenzprojekt nutzt ein Nutzungsprofil.",
+                        Schritt_RaumnutzungDinWerte),
+            // BK-5/BK-6: Inhomogene Schicht und Fenster im Aufbaukatalog. Quelle ist BauteilkatalogAbschnittSchema, die Nummer
+            // steht allein dort.
+            new Schritt(SCHRITT_BAUTEILKATALOG_ABSCHNITT,
+                        "Tab_Bauteilaufbau(_STAMM): Psi_Glasrand (psi des Glasrands fuer U_w nach DIN EN ISO 10077-1)",
+                        "Ein Fensteraufbau koennte den Glasrand nicht fuehren, und U_w liesse sich beim Zuweisen nicht aus Ug, Uf, " +
+                        "Rahmenanteil und psi des Glasrands bilden. KEIN Rechenergebnis aendert sich - die Spalte bleibt leer.",
+                        Schritt_BauteilkatalogAbschnitt),
+            // MA-6b: Herkunft des U-Werts je Bauteil. Quelle ist BauteilUHerkunftSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_BAUTEIL_U_HERKUNFT,
+                        "Tab_Bauteil(_STAMM): U_Herkunft (Herkunft des U-Werts je Bauteil)",
+                        "Ein von Hand gesetzter U-Wert ohne Aufbauwechsel waere beim Wiederimport nicht erkennbar und fiele an den " +
+                        "Wert der Datei (E149). KEIN Rechenergebnis aendert sich - die Spalte bleibt leer.",
+                        Schritt_BauteilUHerkunft),
+            // KBP-5a: Eingabeart an Prozesswaerme und Brauchwasser, Nutzungstage nach Norm an den Kaeltevorlagen. Quelle
+            // ist BedarfsprofilEingabeartSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_BEDARFS_EINGABEART,
+                        "Z_Projekt_Prozesswaerme und Z_Projekt_Brauchwasser: Eingabeart; Tab_Kaeltebedarf_STAMM und " +
+                        "Tab_Kaeltebedarf: Nutzungstage_Norm (Saat allein an Vorlage 8); Tab_Betriebskalender: Ferien_wie_Sonntag",
+                        "Prozesswaerme und Brauchwasser kannten allein die Jahressumme mit Vorlage. KEIN Rechenergebnis " +
+                        "aendert sich - jede Zuordnung rechnet mit Eingabeart 'jahr'.",
+                        Schritt_BedarfsEingabeart),
+            // KB-7a: Der Wasserpreis wandert in die Traegerkarte. Quelle ist WasserpreisTraegerkarteSchema, die
+            // Nummer steht allein dort.
+            new Schritt(SCHRITT_WASSERPREIS_TRAEGERKARTE,
+                        "energy_carrier: Traeger Wasser (WATER, m3); Tab_Energieanlagen: Wasserpreis je Projekt " +
+                        "nach energy_project_settings, die Spalte entfaellt",
+                        "Der Wasserpreis stuende als zweite Kostenbasis an der Anlage neben der Traegerkarte. " +
+                        "KEIN Rechenergebnis der Referenzprojekte aendert sich - keines rechnet ein Rueckkuehlwerk.",
+                        Schritt_WasserpreisTraegerkarte),
+            // KBP-4a: Typtage und Matrix der Kaeltebedarfszuordnung. Quelle ist KaeltetyptagSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KAELTETYPTAG,
+                        "Tab_Kaeltetyptag und Tab_Kaeltetyptag_Matrix: Typtage und Zuordnungsmatrix der Kaeltebedarfszuordnung",
+                        "Die Kaeltezuordnung kannte Jahressumme, Monatswerte und Wochenprofil, aber keine Typtage. KEIN " +
+                        "Rechenergebnis aendert sich - zwei leere Tabellen, keine Zuordnung traegt Eingabeart 'typtag'.",
+                        Schritt_Kaeltetyptag),
+            // DA-8: Absorptions- und Emissionsgrad je Aufbau und Bauteil. Quelle ist BauteilStrahlungSchema, die Nummer steht
+            // allein dort.
+            new Schritt(SCHRITT_BAUTEIL_STRAHLUNG,
+                        "Tab_Bauteilaufbau(_STAMM), Tab_Bauteil(_STAMM): Absorptionsgrad_Solar, Emissionsgrad",
+                        "Absorptions- und Emissionsgrad der Aussenflaechen liessen sich weder je Bauteil eintragen noch aus gbXML oder " +
+                        "IFC uebernehmen. KEIN Rechenergebnis aendert sich - die Spalten bleiben leer, leer heisst Festwert.",
+                        Schritt_BauteilStrahlung),
+            // KD-4: Rohwerte des Klimaimports. Quelle ist KlimaRohwerteSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_KLIMA_ROHWERTE,
+                        "Tab_Klimastunde_STAMM (neu): Rohwerte des Klimaimports; Tab_Klimaregion(_STAMM): Standorthoehe, " +
+                        "Bezugspunkt, Ausfuehrung; Tab_Klimaregion_STAMM: Zeitbezug, Rohdaten",
+                        "Der Import verwarf Luftdruck, Wind, Wasserdampfgehalt, Ausstrahlung und Qualitaetskennung. " +
+                        "KEIN Rechenergebnis aendert sich - Bestandsregionen bleiben ohne Rohwerte.",
+                        Schritt_KlimaRohwerte),
+            // EB-1: Ergebnisreihen - BHKW-Einspeisung, Standby des Speichersystems, PV-Abregelung als Jahressummen im
+            // Ergebnis. Quelle ist ErgebnisreihenSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_ERGEBNISREIHEN,
+                        "Tab_ErgebnisBHKW: Stromeinspeisung; Tab_ErgebnisPhotovoltaik: Abregelung; " +
+                        "Tab_ErgebnisStromspeicher: Eigenverbrauch_System",
+                        "Einspeisung des BHKW, Standby des Speichersystems und PV-Abregelung rechnete der Lauf, der " +
+                        "Ergebnisbaum fuehrte sie nicht. KEIN Rechenergebnis aendert sich - der Lauf schreibt nur " +
+                        "zusaetzlich, was er schon rechnet; Altergebnisse bleiben leer.",
+                        Schritt_Ergebnisreihen),
+            // KB-8: die vier Ergebnisspalten der Wirtschaftlichkeit - bisher legte sie der WirtschaftlichkeitCtrl beim
+            // ersten Lauf an (Spaltenvorsorge), jetzt gehoeren sie zum Schema. Quelle ist
+            // ErgebnisWirtschaftlichkeitSpaltenSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_ERGEBNIS_WIRTSCHAFTLICHKEIT_SPALTEN,
+                        "Tab_ErgebnisWirtschaftlichkeit: StromsteuerBefreiungModus, ErsatzBarwert, Nachweis_Json, " +
+                        "Lauf_Staende",
+                        "Die vier Spalten entstanden bisher erst beim ersten Lauf der Wirtschaftlichkeit; jetzt legt sie " +
+                        "der Schritt an, jede nur, wenn sie fehlt. KEIN Rechenergebnis aendert sich - kein DML, " +
+                        "Bestandszeilen bleiben NULL.",
+                        Schritt_ErgebnisWirtschaftlichkeitSpalten),
         };
 
         /// <summary>
@@ -15544,6 +15873,59 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Der Schritt „Zonenferien als Liste" — Anlass und Wirkung stehen bei <see cref="SCHRITT_TWW_ZONENFERIEN"/>, die
+        /// Anweisungen bei <see cref="TwwZonenferienSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_TwwZonenferien(Lauf l)
+        {
+            string nr = TwwZonenferienSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in TwwZonenferienSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = TwwZonenferienSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!TwwZonenferienSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Zonenferien stehen nach dem Schritt nicht vollstaendig (Tabelle oder Spaltenabbau).";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Zonenferien - " + (handgriffe == 0 ? "stand bereits." : handgriffe + " Handgriff(e).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
         /// Der Schritt „Bauteilkatalog" — Anlass und Wirkung stehen bei <see cref="SCHRITT_BAUTEILKATALOG"/>, die Anweisungen bei
         /// <see cref="BauteilkatalogSchema"/>. <b>Wiederholbar.</b>
         /// </summary>
@@ -15592,6 +15974,990 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz(nr + ": Bauteilkatalog - " + (handgriffe == 0 ? "stand bereits." : handgriffe + " Handgriff(e).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Klasse Haustechnik" — Anlass und Wirkung stehen bei <see cref="SCHRITT_BAUTEILKATALOG_HAUSTECHNIK"/>, die
+        /// Anweisungen bei <see cref="BauteilkatalogHaustechnikSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_BauteilkatalogHaustechnik(Lauf l)
+        {
+            string nr = BauteilkatalogHaustechnikSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in BauteilkatalogHaustechnikSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = BauteilkatalogHaustechnikSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!BauteilkatalogHaustechnikSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Klasse Haustechnik am Bauteilkatalog steht nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Klasse Haustechnik - " + (handgriffe == 0 ? "stand bereits." : handgriffe + " Tabelle(n) neu gebaut.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Abrechnung des Split-Stroms" — Anlass und Wirkung stehen bei <see cref="SCHRITT_KAELTEBEDARF_SPLIT_ABRECHNUNG"/>,
+        /// die Anweisungen bei <see cref="KaeltebedarfSplitAbrechnungSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_KaeltebedarfSplitAbrechnung(Lauf l)
+        {
+            string nr = KaeltebedarfSplitAbrechnungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KaeltebedarfSplitAbrechnungSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = KaeltebedarfSplitAbrechnungSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!KaeltebedarfSplitAbrechnungSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Ergebnistabelle je Split-Zeile steht nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Ergebnis je Split-Zeile - " + (handgriffe == 0 ? "stand bereits." : "Tabelle angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Lastfelder der Zone" — Anlass und Wirkung stehen bei <see cref="SCHRITT_ZONEN_LASTFELDER"/>, die
+        /// Anweisungen bei <see cref="ZonenLastfelderSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_ZonenLastfelder(Lauf l)
+        {
+            string nr = ZonenLastfelderSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in ZonenLastfelderSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = ZonenLastfelderSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!ZonenLastfelderSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Lastfelder der Zone stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Lastfelder der Zone - " + (handgriffe == 0 ? "standen bereits." : handgriffe + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Saat der Katalogkosten-Satzvorlagen" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_KATALOGKOSTEN_SAAT"/>, die Anweisungen bei <see cref="KatalogkostenSaatSchema"/>.
+        /// <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_KatalogkostenSaat(Lauf l)
+        {
+            string nr = KatalogkostenSaatSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KatalogkostenSaatSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = KatalogkostenSaatSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!KatalogkostenSaatSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Saat der Katalogkosten steht nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Saat der Katalogkosten - " +
+                    (handgriffe == 0 ? "stand bereits." : handgriffe + " Handgriff(e).") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Brennstoffpreise in die Trägerkarte" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_BRENNSTOFFPREISE_TRAEGERKARTE"/>, die Anweisungen bei
+        /// <see cref="BrennstoffpreiseTraegerkarteSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_BrennstoffpreiseTraegerkarte(Lauf l)
+        {
+            string nr = BrennstoffpreiseTraegerkarteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in BrennstoffpreiseTraegerkarteSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            BrennstoffpreiseTraegerkarteSchema.Laufergebnis ergebnis;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    ergebnis = BrennstoffpreiseTraegerkarteSchema.Lauf(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!BrennstoffpreiseTraegerkarteSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die drei Preisspalten des Brennstoffs stehen nach dem Schritt noch.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Brennstoffpreise in die Traegerkarte - " +
+                    (ergebnis.Handgriffe == 0
+                        ? "stand bereits."
+                        : ergebnis.Uebertragen + " Preis(e) uebertragen, " + ergebnis.Entfernt + " Spalte(n) entfernt, " +
+                          ergebnis.PruefsummenNeu + " Pruefsumme(n) neu.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Die Kostenspalten des Stromspeichers entfallen" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_STROMSPEICHER_KOSTEN"/>, die Anweisungen bei <see cref="StromspeicherKostenSchema"/>.
+        /// <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_StromspeicherKosten(Lauf l)
+        {
+            string nr = StromspeicherKostenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in StromspeicherKostenSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            StromspeicherKostenSchema.Laufergebnis ergebnis;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                try
+                {
+                    ergebnis = StromspeicherKostenSchema.Lauf(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!StromspeicherKostenSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Kostenspalten des Stromspeichers stehen nach dem Schritt noch.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Stromspeicher-Kostenspalten entfallen - " +
+                    (ergebnis.Handgriffe == 0
+                        ? "stand bereits."
+                        : ergebnis.Gesaet + " Satzvorlage(n) gesaet, " + ergebnis.Entfernt + " Spalte(n) entfernt, " +
+                          ergebnis.PruefsummenNeu + " Pruefsumme(n) neu.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Der Wasserpreis wandert in die Trägerkarte" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_WASSERPREIS_TRAEGERKARTE"/>, die Anweisungen bei <see cref="WasserpreisTraegerkarteSchema"/>.
+        /// <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_WasserpreisTraegerkarte(Lauf l)
+        {
+            string nr = WasserpreisTraegerkarteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in WasserpreisTraegerkarteSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            WasserpreisTraegerkarteSchema.Laufergebnis ergebnis;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                try
+                {
+                    ergebnis = WasserpreisTraegerkarteSchema.Lauf(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!WasserpreisTraegerkarteSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Wassertraeger oder Preisspalte an der Anlage stehen nach dem Schritt nicht wie verlangt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Wasserpreis in der Traegerkarte - " +
+                    (ergebnis.Handgriffe == 0
+                        ? "stand bereits."
+                        : ergebnis.TraegerAngelegt + " Traeger angelegt, " + ergebnis.Uebernommen + " Preis(e) uebernommen, " +
+                          ergebnis.Verworfen + " verworfen, " + ergebnis.Behalten + " gepflegt belassen, " +
+                          ergebnis.Entfernt + " Spalte(n) entfernt.") +
+                    " KEIN Rechenergebnis der Referenzprojekte aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Die Kostenspalten der Investitionsgewerke entfallen" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_GERAETEKOSTEN_ENTFALL"/>, die Anweisungen bei
+        /// <see cref="GeraetekostenEntfallSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_GeraetekostenEntfall(Lauf l)
+        {
+            string nr = GeraetekostenEntfallSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in GeraetekostenEntfallSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            GeraetekostenEntfallSchema.Laufergebnis ergebnis;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    ergebnis = GeraetekostenEntfallSchema.Lauf(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!GeraetekostenEntfallSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Kostenspalten der Investitionsgewerke stehen nach dem Schritt noch.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Gerätekostenspalten entfallen - " +
+                    (ergebnis.Handgriffe == 0
+                        ? "stand bereits."
+                        : ergebnis.Verweisspalten + " Verweisspalte(n), " + ergebnis.Gesaet + " Satzvorlage(n) gesaet, " +
+                          ergebnis.Entfernt + " Spalte(n) entfernt, " + ergebnis.PruefsummenNeu + " Pruefsumme(n) neu.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Kältebedarfsvorlagen und Eingabeart" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_KAELTEVORLAGEN"/>, die Anweisungen bei <see cref="KaeltebedarfsprofilVorlagenSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_Kaeltevorlagen(Lauf l)
+        {
+            string nr = KaeltebedarfsprofilVorlagenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KaeltebedarfsprofilVorlagenSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int angelegt;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    angelegt = KaeltebedarfsprofilVorlagenSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!KaeltebedarfsprofilVorlagenSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Eingabeart, Art-Vorschlag oder Kaeltebedarfsvorlagen fehlen nach dem Schritt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Kaeltebedarfsvorlagen und Eingabeart - " +
+                    (angelegt == 0 ? "Spalten standen bereits." : angelegt + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Werte der DIN-Nutzungsprofile" — Anlass und Wirkung stehen bei <see cref="SCHRITT_RAUMNUTZUNG_DIN_WERTE"/>,
+        /// die Anweisungen bei <see cref="RaumnutzungDinWerteSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_RaumnutzungDinWerte(Lauf l)
+        {
+            string nr = RaumnutzungDinWerteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in RaumnutzungDinWerteSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = RaumnutzungDinWerteSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!RaumnutzungDinWerteSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Werte der DIN-Nutzungsprofile stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Werte der DIN-Nutzungsprofile - " + (handgriffe == 0 ? "standen bereits." : handgriffe + " Profil(e) gesaet.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Inhomogene Schicht und Fenster im Aufbaukatalog" — Anlass und Wirkung stehen bei <see cref="SCHRITT_BAUTEILKATALOG_ABSCHNITT"/>,
+        /// die Anweisungen bei <see cref="BauteilkatalogAbschnittSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_BauteilkatalogAbschnitt(Lauf l)
+        {
+            string nr = BauteilkatalogAbschnittSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in BauteilkatalogAbschnittSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = BauteilkatalogAbschnittSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!BauteilkatalogAbschnittSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Psi_Glasrand am Aufbaukatalog steht nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Psi_Glasrand am Aufbaukatalog - " + (handgriffe == 0 ? "stand bereits." : "Spalten angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Herkunft des U-Werts je Bauteil" — Anlass und Wirkung stehen bei <see cref="SCHRITT_BAUTEIL_U_HERKUNFT"/>,
+        /// die Anweisungen bei <see cref="BauteilUHerkunftSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_BauteilUHerkunft(Lauf l)
+        {
+            string nr = BauteilUHerkunftSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in BauteilUHerkunftSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = BauteilUHerkunftSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!BauteilUHerkunftSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "U_Herkunft an Tab_Bauteil(_STAMM) steht nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": U_Herkunft an Tab_Bauteil(_STAMM) - " + (handgriffe == 0 ? "stand bereits." : "Spalten angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Eingabeart an Prozesswärme und Brauchwasser" (KBP-5a, Schritt
+        /// <see cref="BedarfsprofilEingabeartSchema.SCHRITT"/>) — die Anweisungen bei <see cref="BedarfsprofilEingabeartSchema"/>.
+        /// <b>Wiederholbar, ergebnisneutral.</b>
+        /// </summary>
+        private static bool Schritt_BedarfsEingabeart(Lauf l)
+        {
+            string nr = BedarfsprofilEingabeartSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in BedarfsprofilEingabeartSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int angelegt;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    angelegt = BedarfsprofilEingabeartSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!BedarfsprofilEingabeartSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Eingabeart oder Nutzungstage fehlen nach dem Schritt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Eingabeart und Nutzungstage - " +
+                    (angelegt == 0 ? "Spalten standen bereits." : angelegt + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Typtage der Kältebedarfszuordnung" (KBP-4a, Schritt <see cref="KaeltetyptagSchema.SCHRITT"/>) — die
+        /// Anweisungen bei <see cref="KaeltetyptagSchema"/>. <b>Wiederholbar, ergebnisneutral.</b>
+        /// </summary>
+        private static bool Schritt_Kaeltetyptag(Lauf l)
+        {
+            string nr = KaeltetyptagSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KaeltetyptagSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int angelegt;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    angelegt = KaeltetyptagSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!KaeltetyptagSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Typtage oder Matrix fehlen nach dem Schritt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Typtage und Matrix - " +
+                    (angelegt == 0 ? "Tabellen standen bereits." : angelegt + " Anweisung(en) ausgefuehrt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Absorptions- und Emissionsgrad je Bauteil" — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_BAUTEIL_STRAHLUNG"/>, die Anweisungen bei <see cref="BauteilStrahlungSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_BauteilStrahlung(Lauf l)
+        {
+            string nr = BauteilStrahlungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in BauteilStrahlungSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = BauteilStrahlungSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!BauteilStrahlungSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Absorptionsgrad_Solar und Emissionsgrad stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Absorptionsgrad_Solar und Emissionsgrad an Aufbau und Bauteil - " +
+                    (handgriffe == 0 ? "stand bereits." : "Spalten angelegt.") + " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Rohwerte des Klimaimports" (KD-4, Schritt <see cref="KlimaRohwerteSchema.SCHRITT"/>) — die
+        /// Anweisungen bei <see cref="KlimaRohwerteSchema"/>. <b>Wiederholbar, ergebnisneutral.</b>
+        /// </summary>
+        private static bool Schritt_KlimaRohwerte(Lauf l)
+        {
+            string nr = KlimaRohwerteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in KlimaRohwerteSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int angelegt;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    angelegt = KlimaRohwerteSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!KlimaRohwerteSchema.SchemaVollstaendig())
+            {
+                l.LetzterFehler = "Rohtabelle oder Herkunftsspalten der Klimaregion fehlen nach dem Schritt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Rohwerte des Klimaimports - " +
+                    (angelegt == 0 ? "Spalten standen bereits." : angelegt + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Ergebnisreihen" (EB-1, Schritt <see cref="ErgebnisreihenSchema.SCHRITT"/>) — die Anweisungen bei
+        /// <see cref="ErgebnisreihenSchema"/>. <b>Wiederholbar, ergebnisneutral.</b>
+        /// </summary>
+        private static bool Schritt_Ergebnisreihen(Lauf l)
+        {
+            string nr = ErgebnisreihenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in ErgebnisreihenSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int handgriffe;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    handgriffe = ErgebnisreihenSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!ErgebnisreihenSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Stromeinspeisung, Abregelung und Eigenverbrauch_System stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Ergebnisreihen an BHKW, Photovoltaik und Stromspeicher - " +
+                    (handgriffe == 0 ? "stand bereits." : "Spalten angelegt.") + " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Ergebnisspalten der Wirtschaftlichkeit" (KB-8) — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_ERGEBNIS_WIRTSCHAFTLICHKEIT_SPALTEN"/>, die Anweisungen bei
+        /// <see cref="ErgebnisWirtschaftlichkeitSpaltenSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_ErgebnisWirtschaftlichkeitSpalten(Lauf l)
+        {
+            string nr = ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in ErgebnisWirtschaftlichkeitSpaltenSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int angelegt;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    angelegt = ErgebnisWirtschaftlichkeitSpaltenSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!ErgebnisWirtschaftlichkeitSpaltenSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Ergebnisspalten der Wirtschaftlichkeit stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Ergebnisspalten der Wirtschaftlichkeit - " +
+                    (angelegt == 0 ? "standen bereits." : angelegt + " Spalte(n) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

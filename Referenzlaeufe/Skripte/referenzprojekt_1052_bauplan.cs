@@ -12,7 +12,8 @@
 // (GebaeudeZonenCtrl.Uebernahme, der Weg des Zonendialogs) liefert die hochgerechnete Huelle der
 // Projektkopie (Faktor 500 / 1975,34 m²); daraus entstehen drei Zonen:
 //   1 "Gästezimmer"                  beheizt, 60 % der Nutzflaeche und der Aussenhuelle
-//                                    (Waende, Fenster, Sonstiges, Dach, je mit ihrem psi·L),
+//                                    (Waende, Fenster, Sonstiges, Dach, je mit ihrem psi·L; das Dach
+//                                    als Satteldach 42° in zwei Haelften Nord/Sued),
 //                                    dazu 60 % der Bodenplatte als Kellerdecke zur Zone 3 und
 //                                    die Trennwand zur Zone 2;
 //   2 "Gastronomie und Verwaltung"   beheizt, 40 % derselben Flaechen, Kellerdecke 40 %;
@@ -76,6 +77,15 @@ namespace EPOS.Referenzlaeufe.Skripte
         public const double TRENNWAND_FLAECHE = 30.0;     // m²
         public const double TRENNWAND_U = 0.6;            // W/(m²K)
         public const string KELLERDECKE = "Kellerdecke";
+
+        /// <summary>
+        /// Das Dach der beheizten Zonen: Die Uebernahme liefert die geneigte Dachflaeche mit Neigung 0°; der
+        /// Plan legt sie als Satteldach mit <see cref="DACHNEIGUNG"/> in zwei gleiche Haelften nach Nord
+        /// (Azimut 0°) und Sued (180°). Geneigt braucht jede Haelfte ihren Azimut (GebaeudeZonenCtrl.BrauchtAzimut).
+        /// </summary>
+        public const double DACHNEIGUNG = 42.0;          // °, cos 42° ≈ Kellerdecke / Dach der Uebernahme
+        public const string DACH_NORD = "Dach Nord";
+        public const string DACH_SUED = "Dach Süd";
         public const string KELLERBODEN = "Kellerboden";
         public const string KELLERWAENDE = "Kellerwände";
         public const double KELLERHOEHE = 2.5;            // m, Hoehe der Kellerwaende
@@ -152,6 +162,10 @@ namespace EPOS.Referenzlaeufe.Skripte
             if (!v.Zone.Nutzflaeche.HasValue) { meldung = "Die Übernahme trägt keine Nutzfläche."; return null; }
             double nutz = v.Zone.Nutzflaeche.Value;
 
+            // Herkunft des U-Werts (MA-6b): Die Kopien der Uebernahme tragen VORGABE aus der Zonenabbildung, die von
+            // Hand angelegten Zeilen (Kellerdecke, Trennwand, Kellerboden, Kellerwaende) MANUELL - so, wie der OK-Weg
+            // (GebaeudeZonenCtrl.UHerkunftNeu) sie schreibt; der Plan nennt es ausdruecklich, damit Pruefen und Saat
+            // dieselbe Zelle sehen.
             List<BauteilModel> Aussen(double anteil, int nachbarKeller)
             {
                 var l = new List<BauteilModel>();
@@ -161,12 +175,22 @@ namespace EPOS.Referenzlaeufe.Skripte
                     k.ID = 0;
                     k.Flaeche = anteil * b.Flaeche;
                     k.Psi_L = b.Psi_L.HasValue ? anteil * b.Psi_L.Value : (double?)null;
+                    if (b.Bauteilart != DbWerte.BAUTEILART_DACH) { l.Add(k); continue; }
+                    // Satteldach: je Haelfte die halbe Flaeche (und das halbe psi·L), Nord vor Sued.
+                    k.Flaeche = 0.5 * k.Flaeche;
+                    k.Psi_L = k.Psi_L.HasValue ? 0.5 * k.Psi_L.Value : (double?)null;
+                    k.Neigung = DACHNEIGUNG;
+                    BauteilModel sued = k.Kopie();
+                    k.Bezeichner = DACH_NORD; k.Azimut = 0.0;
+                    sued.Bezeichner = DACH_SUED; sued.Azimut = 180.0;
                     l.Add(k);
+                    l.Add(sued);
                 }
                 l.Add(new BauteilModel
                 {
                     Bezeichner = KELLERDECKE, Bauteilart = DbWerte.BAUTEILART_DECKE, Flaeche = anteil * boden.Flaeche,
                     U_Wert = boden.U_Wert, Neigung = 180.0, Randbedingung = DbWerte.RANDBEDINGUNG_ZONE,
+                    U_Herkunft = DbWerte.HERKUNFT_MANUELL,
                     ID_Nachbarzone = nachbarKeller,
                 });
                 return l;
@@ -177,6 +201,7 @@ namespace EPOS.Referenzlaeufe.Skripte
             {
                 Bezeichner = TRENNWAND, Bauteilart = DbWerte.BAUTEILART_INNENWAND, Flaeche = TRENNWAND_FLAECHE,
                 U_Wert = TRENNWAND_U, Neigung = 90.0, Randbedingung = DbWerte.RANDBEDINGUNG_ZONE, ID_Nachbarzone = Z_GASTRO,
+                U_Herkunft = DbWerte.HERKUNFT_MANUELL,
             });
             List<BauteilModel> gastro = Aussen(ANTEIL_GASTRO, Z_KELLER);
             var keller = new List<BauteilModel>
@@ -185,12 +210,14 @@ namespace EPOS.Referenzlaeufe.Skripte
                 {
                     Bezeichner = KELLERBODEN, Bauteilart = DbWerte.BAUTEILART_BODENPLATTE, Flaeche = boden.Flaeche,
                     U_Wert = boden.U_Wert, Neigung = 180.0, Randbedingung = DbWerte.RANDBEDINGUNG_ERDREICH,
+                    U_Herkunft = DbWerte.HERKUNFT_MANUELL,
                 },
                 new BauteilModel
                 {
                     Bezeichner = KELLERWAENDE, Bauteilart = DbWerte.BAUTEILART_AUSSENWAND,
                     Flaeche = 4.0 * Math.Sqrt(boden.Flaeche) * KELLERHOEHE,
                     U_Wert = boden.U_Wert, Neigung = 90.0, Randbedingung = DbWerte.RANDBEDINGUNG_ERDREICH,
+                    U_Herkunft = DbWerte.HERKUNFT_MANUELL,
                 },
             };
 

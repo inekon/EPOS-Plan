@@ -117,9 +117,8 @@ namespace WindowsFormsApplication1
                 // OHNE "LabelKosten" (Anwenderentscheid 15.09.2026: "Der Dialog ueber
                 // Button Bearbeiten soll keine Kosten und Emissionen enthalten"). Das
                 // Feld "Investitionskosten" ist aus der Technikgruppe gefallen; gepflegt
-                // wird der Preis im Aufklapper "Alle Daten anzeigen". Der WERT bleibt im
-                // Feldsatz: AusModell liest ihn, NachModell schreibt ihn unveraendert
-                // zurueck - sonst nullte jedes "Ueberschreiben" die Spalte.
+                // wird der Preis in der Kostenverwaltung - die Spalte ist mit Welle KB-4
+                // entfallen, der Aufklapper zeigt die Geraetekosten als Lesewert.
                 // OHNE Vor- und Ruecklauf: Der Katalog fuehrt sie nicht mehr
                 // (SolarkollektorTemperaturen.SCHRITT) - sie hatten keinen Rechenweg.
                 ["BtnUeberschreibenText"] = Text_("SKK_BTN_UEBERSCHREIBEN", "Überschreiben"),
@@ -280,7 +279,7 @@ namespace WindowsFormsApplication1
                 // aus dem Kern (SolarkollektorenStammCtrl.RueckwegVorschau / AusProjektUebernehmen), alles in EINEM Vorgang.
                 ["RueckwegWege"] = wizard || projektId <= 0 ? null : RueckwegWege(),
                 ["RueckwegBleibtText"] = Text_("SKV_RUECK_BLEIBT",
-                    "Im Projekt bleiben: Modulanzahl, Neigung, Azimut, Albedo, der Solarkreis (Pumpe, Verluste, Arbeitstemperatur, Grädigkeit, Spreizung) und die Senken der Anlage. Kennwerte, Flächen und Investitionskosten gehen mit."),
+                    "Im Projekt bleiben: Modulanzahl, Neigung, Azimut, Albedo, der Solarkreis (Pumpe, Verluste, Arbeitstemperatur, Grädigkeit, Spreizung) und die Senken der Anlage. Kennwerte und Flächen gehen mit."),
 
                 ["TitelText"] = Text_("SKV_TITEL", "Eingabe der Solarkollektoren"),
                 ["KopfbandText"] = Text_("SKV_KOPFBAND", "Eingabe der Solarkollektoren"),
@@ -646,7 +645,6 @@ namespace WindowsFormsApplication1
             ziel.K2 = m.m_k2;
             ziel.Kdir = m.m_Kdir;
             ziel.Kdiff = m.m_Kdfu;
-            ziel.Kosten = m.m_Kosten;
             ziel.Bezugsflaeche = Solarkreis.Bezugsflaeche(m.m_Bezugsflaeche);
         }
 
@@ -670,7 +668,6 @@ namespace WindowsFormsApplication1
                 m_k2 = d.K2 ?? 0,
                 m_Kdir = d.Kdir ?? 0,
                 m_Kdfu = d.Kdiff ?? 0,
-                m_Kosten = d.Kosten ?? 0,
                 // ST6: ohne diese Zeile schriebe jedes „Überschreiben" die Vorgabe apertur zurück.
                 m_Bezugsflaeche = Solarkreis.Bezugsflaeche(d.Bezugsflaeche)
             };

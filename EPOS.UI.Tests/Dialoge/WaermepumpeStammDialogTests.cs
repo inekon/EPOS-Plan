@@ -88,7 +88,8 @@ public class WaermepumpeStammDialogTests : EposBunitContext
             Id = 1, Name = "WP Alpha", Firma = "Alpha", Beschreibung = "Testgerät",
             Typ = "Luft-Wasser", Baujahr = 2023, Aufstellung = "Innenaufstellung",
             Nennleistung = 12, Heizstab = 6, Regelung = "stetig",
-            Kuehlleistung = 8.5, Modulkosten = 4000, MaxPtherm = 14, NurLesen = false
+            Kuehlleistung = 8.5, Kostensatz = "4000", KostensatzEinheit = "€",
+            MaxPtherm = 14, NurLesen = false
         },
         _ => new WaermepumpeStammDaten
         {
@@ -812,37 +813,38 @@ public class WaermepumpeStammDialogTests : EposBunitContext
     }
 
     // =====================================================================
-    //  Modulkosten — Anwenderentscheid W14a‑O‑1 (06.09.2026)
+    //  Kostensatz — Anwenderentscheid W14a‑O‑1 (06.09.2026), Quelle seit KB-4 die Satzvorlage
     // =====================================================================
     //
-    //  Ä19 der Welle 7 nahm das Feld ganz aus der Maske; seither füllte es
-    //  allein der VDI‑3805‑Import, und niemand sah, warum die Kostenübernahme
-    //  keinen Planwert vorschlug. Der Entscheid holt den Wert zurück — NUR
-    //  LESEND, mit Herleitungszeile. Die Fälle halten beides fest: dass er
-    //  DASTEHT und dass er kein Eingabefeld ist.
+    //  Ä19 der Welle 7 nahm das Kostenfeld ganz aus der Maske, und niemand sah,
+    //  warum die Kostenübernahme keinen Planwert vorschlug. Der Entscheid holt den
+    //  Wert zurück — NUR LESEND, mit Herleitungszeile; seit Welle KB-4 ist seine
+    //  Quelle die SATZVORLAGE der Kostenverwaltung (die Gerätespalte ist mit
+    //  Schemaschritt 228 entfallen). Die Fälle halten beides fest: dass er DASTEHT
+    //  und dass er kein Eingabefeld ist.
 
     /// <summary>
-    /// Die Zeile der Modulkosten — seit Stufe 4 der Neuordnung in der eigenen Gruppe
+    /// Die Zeile des Kostensatzes — seit Stufe 4 der Neuordnung in der eigenen Gruppe
     /// „Kosten" des Stammblatts (nicht mehr zwischen den Kenndaten), als Lesewert.
     /// </summary>
-    private static IElement Modulkostenfeld(IRenderedComponent<WaermepumpeStammDialog> cut)
+    private static IElement Kostensatzfeld(IRenderedComponent<WaermepumpeStammDialog> cut)
         => Kostengruppe(cut).QuerySelector(".epos-stammblattwert")!;
 
     /// <summary>Die Gruppe „Kosten" des Stammblatts.</summary>
     private static IElement Kostengruppe(IRenderedComponent<WaermepumpeStammDialog> cut)
         => cut.FindAll(".epos-stammblattgruppe").Single(g => g.GetAttribute("aria-label") == "Kosten");
 
-    /// <summary>Die Herleitungszeilen unter den Modulkosten.</summary>
+    /// <summary>Die Herleitungszeilen unter dem Kostensatz.</summary>
     private static IEnumerable<string> Herleitungen(IRenderedComponent<WaermepumpeStammDialog> cut)
         => Kostengruppe(cut).QuerySelectorAll(".epos-herleitung").Select(e => e.TextContent.Trim()).ToList();
 
     [Fact]
-    public void Die_Modulkosten_stehen_als_Lesewert_mit_Einheit_im_Raster()
+    public void Der_Kostensatz_steht_als_Lesewert_mit_Einheit_im_Raster()
     {
         var cut = Aufbauen();                                   // WP Alpha: 4000 €
-        var feld = Modulkostenfeld(cut);
+        var feld = Kostensatzfeld(cut);
 
-        Assert.Equal("Modulkosten", feld.QuerySelector("dt")!.TextContent.Trim());
+        Assert.Equal("Kostensatz", feld.QuerySelector("dt")!.TextContent.Trim());
         Assert.Equal("4000 €", feld.QuerySelector("dd")!.TextContent.Trim());
     }
 
@@ -850,10 +852,10 @@ public class WaermepumpeStammDialogTests : EposBunitContext
     /// <b>Ä19 bleibt gewahrt.</b> Der Wert steht als Text da, nicht als gesperrtes
     /// Eingabefeld: Der Feldbestand des Blocks zählt sieben <c>input</c>
     /// (Name, Hersteller, Nennleistung, Heizstab, Kühlleistung, Mindestleistung, C_d), und die
-    /// Zelle der Modulkosten führt weder <c>input</c> noch <c>textarea</c> noch <c>select</c>.
+    /// Zelle des Kostensatzes führt weder <c>input</c> noch <c>textarea</c> noch <c>select</c>.
     /// </summary>
     [Fact]
-    public void Die_Modulkosten_sind_kein_Eingabefeld()
+    public void Der_Kostensatz_ist_kein_Eingabefeld()
     {
         var cut = Aufbauen();
 
@@ -875,68 +877,68 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         // Ein Wert ist da: nur die Herkunft, kein zweiter Hinweis.
         Assert.Equal(new[]
         {
-            "aus dem Datenbestand; Gerätekosten werden in der Kostenverwaltung gepflegt"
+            "aus der Satzvorlage; Gerätekosten werden in der Kostenverwaltung gepflegt"
         }, zeilen);
     }
 
     /// <summary>
-    /// <b>0 heißt „kein Planwert".</b> <c>Tab_WP_STAMM.Modulkosten</c> ist eine
-    /// INTEGER-Spalte, ein NULL kommt als 0 im Datensatz an, und
-    /// <c>TechnikPlanwertCtrl.Basis</c> verwirft Beträge ≤ 0 — die Kostenübernahme
-    /// schlägt dann nichts vor. Genau das sagt die Maske: der Halbgeviertstrich statt
-    /// einer 0, keine Einheit dahinter und eine zweite leise Zeile mit dem Grund.
+    /// <b>Ohne Satzvorlage kein Satz.</b> Ein Gerät ohne Verweis auf eine Satzvorlage
+    /// (oder eine Vorlage ohne gepflegten Satz) trägt keinen Kostensatz — die
+    /// Kostenübernahme schlägt dann nichts vor. Genau das sagt die Maske: der
+    /// Halbgeviertstrich statt einer Zahl, keine Einheit dahinter und eine zweite leise
+    /// Zeile mit dem Grund.
     /// </summary>
     [Fact]
-    public void Ohne_Planwert_steht_ein_Strich_und_der_Grund_darunter()
+    public void Ohne_Kostensatz_steht_ein_Strich_und_der_Grund_darunter()
     {
         var cut = Aufbauen();
-        Zeilenklick.Zeile(cut, 1);   // WP Ausliefer: 0
+        Zeilenklick.Zeile(cut, 1);   // WP Ausliefer: ohne Satz
 
-        var feld = Modulkostenfeld(cut);
+        var feld = Kostensatzfeld(cut);
         Assert.Equal("–", feld.QuerySelector("dd")!.TextContent.Trim());   // ohne Einheit
 
         var zeilen = Herleitungen(cut);
         Assert.Equal(new[]
         {
-            "aus dem Datenbestand; Gerätekosten werden in der Kostenverwaltung gepflegt",
-            "kein Planwert im Datenbestand"
+            "aus der Satzvorlage; Gerätekosten werden in der Kostenverwaltung gepflegt",
+            "kein Kostensatz in der Kostenverwaltung"
         }, zeilen);
     }
 
     /// <summary>Auch die neuen Zeilen sind lokalisiert (W7.9).</summary>
     [Fact]
-    public void Die_Modulkostenzeilen_stehen_auch_englisch()
+    public void Die_Kostensatzzeilen_stehen_auch_englisch()
     {
         var cut = Render<WaermepumpeStammDialog>(p => p
             .Add(x => x.Filterstandvorgabe, _filterstand)
             .Add(x => x.Liste, () => Liste)
             .Add(x => x.Satz, Satz)
-            .Add(x => x.LabelModulkosten, "Module costs")
-            .Add(x => x.HerleitungModulkosten,
-                 "from the stored catalogue; equipment costs are maintained in cost management")
-            .Add(x => x.HinweisModulkostenLeer, "no planned value in the stored catalogue"));
+            .Add(x => x.LabelKostensatz, "Cost rate")
+            .Add(x => x.HerleitungKostensatz,
+                 "from the rate template; equipment costs are maintained in cost management")
+            .Add(x => x.HinweisKostensatzLeer, "no cost rate in cost management"));
 
-        var feld = Modulkostenfeld(cut);
-        Assert.Equal("Module costs", feld.QuerySelector("dt")!.TextContent.Trim());
+        var feld = Kostensatzfeld(cut);
+        Assert.Equal("Cost rate", feld.QuerySelector("dt")!.TextContent.Trim());
         Assert.Equal("4000 €", feld.QuerySelector("dd")!.TextContent.Trim());
         Assert.Equal(new[]
         {
-            "from the stored catalogue; equipment costs are maintained in cost management"
+            "from the rate template; equipment costs are maintained in cost management"
         }, Herleitungen(cut));
 
-        Zeilenklick.Zeile(cut, 1);   // WP Ausliefer: 0
-        Assert.Equal("–", Modulkostenfeld(cut).QuerySelector("dd")!.TextContent.Trim());
+        Zeilenklick.Zeile(cut, 1);   // WP Ausliefer: ohne Satz
+        Assert.Equal("–", Kostensatzfeld(cut).QuerySelector("dd")!.TextContent.Trim());
         Assert.Equal(new[]
         {
-            "from the stored catalogue; equipment costs are maintained in cost management",
-            "no planned value in the stored catalogue"
+            "from the rate template; equipment costs are maintained in cost management",
+            "no cost rate in cost management"
         }, Herleitungen(cut));
     }
 
     /// <summary>
-    /// Eine Neuanlage steht auf 0 — der Fall, um den es dem Anwender ging: Wer eine
-    /// Wärmepumpe von Hand anlegt, sieht sofort, dass die Kostenübernahme von hier
-    /// keinen Planwert bekommt.
+    /// Eine Neuanlage hat keine Satzvorlage — der Fall, um den es dem Anwender ging:
+    /// Wer eine Wärmepumpe von Hand anlegt, sieht sofort, dass die Kostenübernahme von
+    /// hier keinen Planwert bekommt.
     /// </summary>
     [Fact]
     public void Eine_Neuanlage_zeigt_den_Strich()
@@ -944,33 +946,35 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         var cut = Aufbauen();
         Knopf(cut, "Neu").Click();
 
-        Assert.Equal("–", Modulkostenfeld(cut).QuerySelector("dd")!.TextContent.Trim());
-        Assert.Contains("kein Planwert im Datenbestand", Herleitungen(cut));
+        Assert.Equal("–", Kostensatzfeld(cut).QuerySelector("dd")!.TextContent.Trim());
+        Assert.Contains("kein Kostensatz in der Kostenverwaltung", Herleitungen(cut));
     }
 
     /// <summary>
-    /// <b>Raster und Aufklapper zeigen denselben Wert.</b> Die
-    /// <c>Parameteruebersicht</c> liest die Spalte roh aus der Datenbank, das Raster
-    /// den Feldsatz des Dialogs — zwei Wege zu einer Zahl. Der Fall legt sie
-    /// nebeneinander: Bei einem gepflegten Wert stehen dieselben Ziffern da.
+    /// <b>Der Aufklapper führt keine Kostenspalte mehr, das Raster den Satz.</b> Die
+    /// <c>Parameteruebersicht</c> liest die Spalten des Satzes roh aus der Datenbank —
+    /// eine Kostenspalte ist dort seit Welle KB-4 keine mehr, geführt wird der VERWEIS
+    /// auf die Satzvorlage. Das Raster zeigt deren Satz; beides steht hier
+    /// nebeneinander.
     /// </summary>
     [Fact]
-    public void Der_Aufklapper_zeigt_dieselbe_Zahl_wie_das_Raster()
+    public void Der_Aufklapper_fuehrt_den_Verweis_und_das_Raster_den_Satz()
     {
-        var eintrag = new ParameterEintrag("Modulkosten", "Modulkosten", "€",
+        var eintrag = new ParameterEintrag("ID_KostenVorlageInvestition",
+                                           "Kostenvorlage Investition", "",
                                            new[] { Verwendung.Wirtschaftlichkeit },
-                                           "TechnikPlanwertCtrl.cs:345");
+                                           "KatalogkostensatzCtrl.Satz");
         var cut = Render<WaermepumpeStammDialog>(p => p
             .Add(x => x.Filterstandvorgabe, _filterstand)
             .Add(x => x.Liste, () => Liste)
             .Add(x => x.Satz, Satz)
-            .Add(x => x.Uebersicht, _ => new[] { new Parameterwert(eintrag, "4000") }));
+            .Add(x => x.Uebersicht, _ => new[] { new Parameterwert(eintrag, "7") }));
 
-        Assert.Equal("4000 €", Modulkostenfeld(cut).QuerySelector("dd")!.TextContent.Trim());
+        Assert.Equal("4000 €", Kostensatzfeld(cut).QuerySelector("dd")!.TextContent.Trim());
 
         cut.Find(".epos-modulparameter-knopf").Click();
-        Assert.Contains("4000",
-                        cut.Find(".epos-parameteruebersicht-wert").TextContent.Trim());
+        Assert.Contains("Kostenvorlage",
+                        cut.Find(".epos-parameteruebersicht-name").TextContent.Trim());
     }
 
     // =================================================================================
@@ -1048,7 +1052,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         var cut = Aufbauen();
 
         var titel = cut.FindAll(".epos-stammblattgruppe-titel").Select(e => e.TextContent).ToList();
-        // Stufe 4: die eigene Gruppe Kosten (die Modulkosten, aus den Kenndaten heraus).
+        // Stufe 4: die eigene Gruppe Kosten (der Kostensatz, aus den Kenndaten heraus).
         Assert.Equal(new[] { "Kennlinie", "Gerätegrenzen", "Kenndaten", "Kosten" }, titel);
         var kennlinie = cut.FindAll(".epos-stammblattgruppe")[0];
         Assert.NotNull(kennlinie.QuerySelector(".epos-reiter"));

@@ -430,6 +430,9 @@ namespace WindowsFormsApplication1
             r++;
             foreach (KeyValuePair<string, string> g in ProjektDetails.GewerkTabellen)
             {
+                // Die Kältemaschine steht nur in der Matrix, wenn ein Stand sie verbaut.
+                if (ProjektDetails.NurWennVerbaut(g.Key) && !daten.Varianten.Any(v => v.Details != null && v.Details.HatGewerk(g.Key)))
+                    continue;
                 ws.Cell(r, 1).Value = g.Key;
                 for (int i = 0; i < daten.Varianten.Count; i++)
                 {

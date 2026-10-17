@@ -17,22 +17,25 @@ Antworten, Bezeichner und Kommentare auf Deutsch.
 
 ## Modellwahl und Agenten
 
-- **Fable 5.1 nur, wenn es unbedingt nötig ist:** Es schneidet Aufträge, wählt das Modell,
-  nimmt Ergebnisse ab, entscheidet bei widersprüchlichen Befunden, bereitet Anwenderentscheide
-  vor und berichtet — in knappen Zügen. Alles andere wird delegiert, auch Merges und
-  Konfliktlösung, Gates, CI-Prüfung und CI-Vermerke, Status- und Protokollpflege, Hüllen,
-  Nachzüge und Konzeptabsätze; Fable fasst Dateien nur an, wenn ein Agentenaufruf teurer wäre
-  als die Änderung selbst (eine Zeile, ein Verweis). Geplante Check-ins (Routinen) lösen
-  einen Agenten aus, statt Fable arbeiten zu lassen.
+- **Fable 5.1 für die Orchestrierung und für komplexe Aufgaben:** Die Orchestrierung schneidet
+  Aufträge, wählt das Modell, nimmt Ergebnisse ab, entscheidet bei widersprüchlichen Befunden,
+  bereitet Anwenderentscheide vor und berichtet — in knappen Zügen. Komplexe Aufgaben bekommt
+  ein Fable-Agent: Schemaketten samt Hebung der Testdatenbank, Konflikte mit Fachinhalt über
+  mehrere Zweige, Fehlersuche über mehrere Schichten, schwierige Analysen. Alles andere geht an
+  Opus, Sonnet oder Haiku, auch Merges ohne Fachkonflikt, Gates, CI-Prüfung und CI-Vermerke,
+  Status- und Protokollpflege, Hüllen, Nachzüge und Konzeptabsätze; die Orchestrierung fasst
+  Dateien nur an, wenn ein Agentenaufruf teurer wäre als die Änderung selbst (eine Zeile, ein
+  Verweis). Geplante Check-ins (Routinen) lösen einen Agenten aus, statt die Orchestrierung
+  arbeiten zu lassen.
 - **Für jede delegierte Aufgabe das geeignete, günstigste Modell wählen** — das spart Token
   und Zeit:
 
   | Modell | Aufgaben |
   |---|---|
-  | `model: opus` (Opus 5.5, `opus-umsetzung`) | Rechenweg, Schema, Tests, Hüllen und Dialoge, Fehlersuche im Code, Konfliktauflösung mit Fachinhalt, Konzeptabsätze mit Fachinhalt, Referenzprojekte und Basen einfrieren |
+  | `model: opus` (Opus 5.5, `opus-umsetzung`) | Rechenweg, Schema, Tests, Hüllen und Dialoge, Fehlersuche im Code, Konfliktauflösung mit Fachinhalt in einem Zweig, Konzeptabsätze mit Fachinhalt, Referenzprojekte und Basen einfrieren |
   | `model: sonnet` (`sonnet-mechanik`) | Inventare und Suchen, Status-, Protokoll- und Indexpflege nach Vorlage, Ressourcen in beiden Sprachen, Wiki-Quellen und Logbuch-Entwürfe, Gate fahren und Zahlen melden, Merges ohne Fachkonflikt, CI-Protokolle auswerten, Vergleichstabellen aus vorliegenden Zahlen |
   | `model: haiku` (`haiku-pruefung`) | Zählungen, BOM-, Encoding- und Zeilenendenprüfungen, Konfliktmarker, LFS-Zeiger, Dateilisten |
-  | `model: fable` | nur, wenn die Orchestrierung selbst eine schwierige Analyse in einem frischen Kontext braucht |
+  | `model: fable` | komplexe Aufgaben: Schemaketten mit Hebung der Testdatenbank, Konfliktauflösung mit Fachinhalt über mehrere Zweige, Fehlersuche über mehrere Schichten, schwierige Analysen in frischem Kontext |
 
   Das Modell bei jedem Agentenaufruf **ausdrücklich** setzen, nie erben lassen.
 - **Agentenaufträge** sind vollständig und repo-relativ formuliert (keine absoluten Pfade —
@@ -118,7 +121,7 @@ dotnet build WP-Plan.sln -c Debug -p:Platform=x64          # Windows-Anwendung s
 dotnet build WP-Plan.Kern.slnf -c Release                  # nur die plattformfreien Projekte
 dotnet test  WP-Plan.Kern.slnf -c Release --no-build -- xUnit.ParallelizeTestCollections=false xUnit.MaxParallelThreads=2
 dotnet run --project Proben/ChartProben -c Release          # Diagramm-Renderer ohne Windows
-dotnet run --project EPOS.Referenzlauf -c Release -- lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite --projekte 1030,1007,1017,1045,1046,1047,1049,1051 --ziel <ordner>
+dotnet run --project EPOS.Referenzlauf -c Release -- lauf --quelle Referenzlaeufe/Kenndaten_Test.sqlite --projekte 1030,1007,1017,1045,1046,1047,1049,1051,1058,1060,1063,1065,1066,1067,1068,1069,1070,1071,1073 --ziel <ordner>
 dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis> <neu>
 ```
 
@@ -164,7 +167,7 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 | `Werkzeuge/ResourceDesigner` | erzeugt `EPOS.Kern/MyResource/Resource.Designer.cs` aus der neutralen `.resx`; wiederholbar. **Nach jedem neuen Ressourcenschlüssel ziehen** | `python3 Werkzeuge/ResourceDesigner/designer_neu.py schreiben` (ohne Argument: nur prüfen) |
 | `Werkzeuge/Standardlastprofile` | leitet aus der BDEW-Excel unter `Quellen/Standardlastprofile/` die Konstanten `EPOS.Kern/Allgemein/Update/StandardlastprofilSaat.cs` ab; wiederholbar | `py Werkzeuge/Standardlastprofile/ableiten.py schreiben` (ohne Argument: nur prüfen) |
 | `Werkzeuge/Auslieferungsvorlage` | erzeugt aus einer produktiven `Kenndaten.sqlite` die bereinigte Auslieferungsdatenbank samt Prüfbericht und schreibt das Katalogpaket der Fassung (`Katalogpaket.json`) daneben. **Vor jeder Auslieferung ziehen** | `dotnet run --project Werkzeuge/Auslieferungsvorlage -c Release -- <quelle> <ziel> [--beispiele …] [--katalogfassung <n>] [--trocken]` |
-| `Werkzeuge/Berichtsvorlage` | bereinigt die Word-Stilvorlage des Berichts (doppelte Stile, Format „EPOS Kapitelkopf“) und baut daraus die Beispielvorlage mit Platzhaltern und mit `--standard` die ausgelieferte Standardvorlage `Berichtsvorlage_Standard.docx`, mit `kurzbericht` den ausgelieferten Kurzbericht je Sprache, alles nur bei grünem `OpenXmlValidator`; `BerichtsvorlageDateiWacheTests` und `AuslieferungsvorlagenWacheTests` halten die Dateien und beide Lieferwege. **Nach jeder Änderung an einer der Vorlagen ziehen**; Einzelheiten in [`LIESMICH.md`](Werkzeuge/Berichtsvorlage/LIESMICH.md) | `dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- bereinigen <docx>` / `… beispiel <quelle.docx> <ziel.docx> [--standard] [--katalogfassung <n>]` / `… kurzbericht <quelle.docx> <ziel.docx> --sprache de\|en` |
+| `Werkzeuge/Berichtsvorlage` | bereinigt die Word-Stilvorlage des Berichts (doppelte Stile, Format „EPOS Kapitelkopf“) und baut daraus mit `beispiel --standard` die ausgelieferte Standardvorlage `Berichtsvorlage_Standard.docx`, mit `kurzbericht` den ausgelieferten Kurzbericht je Sprache, alles nur bei grünem `OpenXmlValidator`; `BerichtsvorlageDateiWacheTests` und `AuslieferungsvorlagenWacheTests` halten die Dateien und beide Lieferwege. **Nach jeder Änderung an einer der Vorlagen ziehen**; Einzelheiten in [`LIESMICH.md`](Werkzeuge/Berichtsvorlage/LIESMICH.md) | `dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- bereinigen <docx>` / `… beispiel <quelle.docx> <ziel.docx> [--standard] [--katalogfassung <n>]` / `… kurzbericht <quelle.docx> <ziel.docx> --sprache de\|en` |
 | `Werkzeuge/ZapfprofilValidierung` | hält den Zapfprofilgenerator gegen **gemessene** Reihen: je Objekt eine Ampel nach den Abnahmekriterien der Stufe Z5 (Band der Dauerlinie, Formabgleich, Energie nach Kalibrierung), dazu die √N-Skalierung über alle Objekte; Bericht in Markdown und CSV. Datenbankfrei, der Katalog kommt aus einem Paketordner oder einer SQLite. **Die Messreihen liegen nie im Repositorium** — eine Wache im Werkzeug hält jeden Absolutwert und jede Mengeneinheit aus dem Bericht; Ablage und Konverter für offen lizenzierte Fremddaten in [`LIESMICH.md`](Werkzeuge/ZapfprofilValidierung/LIESMICH.md) | `dotnet run --project Werkzeuge/ZapfprofilValidierung -c Release -- <ordner> --ziel <berichtordner> [--katalog <sqlite\|paketordner>] [--realisierungen N] [--seed S] [--trocken]` |
 | `Werkzeuge/SqlDialektPruefer` | hält jeden SQL-Text des Bestands mit `EXPLAIN` gegen die Testdatenbank und die Verbotsliste | `python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite` |
 | `Werkzeuge/Formularkarte` | Feldkarte einer WinForms-Maske aus Designer und `.resx` samt Razor-Sektionsskelett; ihre Tests laufen in `kern.yml` | `dotnet run --project Werkzeuge/Formularkarte -- <Designer.cs>` |
@@ -175,7 +178,7 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-10-11_R52_Vorheizen`, dreißig Projekte; die Photovoltaik bilanziert je Viertelstunde, die Feiertage liegen im Gemeinjahr ohne Jahresdatum — Ostern ist der Sonntag des Wochentagsrasters am nächsten zum 8. April, Buß- und Bettag der letzte Mittwoch vor dem 23. November, nur eine Preisreihe mit Jahr setzt die echten Daten —, alle Leser — Gebäudelauf, Zapfkalender, Bedarfsprofile — rechnen mit dem Wochentagsraster der Klimaregion (in der Testdatenbank ist der 1. Januar ein Donnerstag), eine Preisreihe mit Jahr setzt für alle Raster und Feiertage dieses Jahres, die Gebäude rechnen nach VDI 6007 und laufen
+`2026-10-17_R59_Ergebnisreihen`, achtunddreißig Projekte; die Photovoltaik bilanziert je Viertelstunde, die Feiertage liegen im Gemeinjahr ohne Jahresdatum — Ostern ist der Sonntag des Wochentagsrasters am nächsten zum 8. April, Buß- und Bettag der letzte Mittwoch vor dem 23. November, nur eine Preisreihe mit Jahr setzt die echten Daten —, alle Leser — Gebäudelauf, Zapfkalender, Bedarfsprofile — rechnen mit dem Wochentagsraster der Klimaregion (in der Testdatenbank ist der 1. Januar ein Donnerstag), eine Preisreihe mit Jahr setzt für alle Raster und Feiertage dieses Jahres, die Gebäude rechnen nach VDI 6007 und laufen
 ohne wirksame Kühlung frei, die Gebäude heizen und kühlen eine Zone nie am selben Tag — die Tagesbetriebsart je Zone wählt innerhalb der Kalenderfreigabe (Heiz- und Kühlsollwertkalender, Heiz- und Kühlperiode) nach den Tagessummen des unbegrenzten Probetags, die Gegenseite steht den Tag über auf „aus“ —, Projekt 1017 rechnet Kälte und deckt sie mit einer Wärmepumpe im
 Kühlbetrieb, Projekt 1047 rechnet als Kopie von 1017 mit Anlagenkopplung AK1 — Heizkreis und
 Kühlübergabe gekoppelt —, beide rechnen ihren Strombedarf mit der gepflegten Jahressumme ihrer
@@ -194,7 +197,7 @@ die Gebäude rechnen Bauteile am Erdreich mit dem Erdreichwiderstand nach DIN EN
 Projekt 1051 rechnet als Kopie von 1007 einen Bürobau mit Konditionierungskalendern (Nachtzeile der
 Lüftung, Ferien, Heizperiode) und Aufheizoptimierung, gehalten von
 `EPOS.Kern.Tests/KonditionierungReferenzprojektWacheTests`, Projekt 1052 rechnet als Kopie von 1018 das Hotel in
-drei Zonen mit Zonenkalendern, gehalten von `EPOS.Kern.Tests/ZonenReferenzprojektWacheTests`, und steht nicht in
+drei Zonen mit Zonenkalendern (die Dächer von 1052 und 1054 sind mit 42° geneigt), gehalten von `EPOS.Kern.Tests/ZonenReferenzprojektWacheTests`, und steht nicht in
 der CI-Auswahl,
 Projekt 1054 rechnet als Kopie von 1052 mit Anlagenkopplung AK1, Radiator und Heizkurve am Gebäude und einer Zone mit eigener Übergabe (Konvektor 70/50 °C, Proportionalband 2 K) — die Übergabe je Zone am gemeinsamen Vorlauf, Rücklauf massenstromgewichtet —, gehalten von `EPOS.Kern.Tests/ZonenHeizkreisReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
 Projekt 1055 rechnet als Kopie von 1017 seine Kälte mit einer Kältemaschine mit Trocken-Rückkühler und eigenem Zähler und einem Kältespeicher (die Wärmepumpe heizt nur), gehalten von `EPOS.Kern.Tests/KaeltemaschineReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
@@ -208,13 +211,16 @@ Projekt 1062 rechnet als Kopie von 1061 das Gebäude in zwei Zonen mit Kühlübe
 Projekt 1063 rechnet als Kopie von 1055 seine Kältemaschine mit Teillastkurve, Takten unter der Mindestteillast von 30 % mit dem Vorgabe-Taktverlustfaktor und Gütegrad-Extrapolation an den Kennfeldrändern, gehalten von `EPOS.Kern.Tests/KaeltemaschineTeillastReferenzprojektWacheTests`,
 Projekt 1064 rechnet als Kopie von 1017 seine Kälte mit freier Kühlung über die Erdsonde der Wärmepumpe — Grädigkeit 4 K, Leistungsgrenze 4 kW, den Rest deckt der Verdichter —, gehalten von `EPOS.Kern.Tests/FreieKuehlungReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
 Projekt 1065 rechnet als Kopie von 1051 sein Gebäude mit berechneter Vorheizzeit — Deckel aus dem Jahresmaximum der Heizlast am Kalendersprung mit 20 % Toleranz, Vorheizzeit als 95-%-Quantil des Bedarfs, Ankunft innerhalb 1 K —, gehalten von `EPOS.Kern.Tests/VorheizReferenzprojektWacheTests`,
+die Projekte 1066 bis 1071 rechnen als Kopien von 1045 je eine Option des Zapfprofils — 1066 Mischnutzung in vier Zonen mit Wohnungstabelle (Belegung nach Raumzahl) und Zirkulation nach Leitungslänge, 1067 der Kalender der Nutzungsart mit fünf eigenen Ferienzeiträumen der Zone und ein Gebäudekalender mit Feiertagsland, 1068 die stochastische Jahresreihe, 1069 die Typtage eines erfundenen Typtagsatzes, 1070 die Kalibrierung auf einen Jahresmesswert mit manuellem Tagesbedarf, manueller Zirkulation und eigenen Fachwerten, 1071 die vier Topologien mit einer Auslegung über den Ecodesign-Bedarfstag, die nicht auf die Simulation wirkt —, gehalten samt den eingefrorenen Auslegungswerten von 1071 von `EPOS.Kern.Tests/ZapfprofilOptionenReferenzprojekteWacheTests`,
+Projekt 1072 rechnet als Kopie von 1055 drei Kältebedarfsprofile — eines zentral über Kältemaschine und Kältespeicher, zwei dezentral über Split-Geräte neben der Kältefolge, mit EER fest 3,0 anteilig über den Stromträger des Projekts und mit EER linear über einen eigenen Zähler auf dem Kühlträger 58, je Split-Zeile eine Ergebniszeile in `Tab_ErgebnisKaelteDezentral` —, gehalten von `EPOS.Kern.Tests/KaelteDezentralReferenzprojektWacheTests`, und steht nicht in der CI-Auswahl,
+Projekt 1073 rechnet als Kopie von 1054 sein Hotel in drei Zonen mit berechneter Vorheizzeit und Schnellaufheizung — im Vorheizfenster rechnet die Heizkurve der Zone mit Heizkreis mit dem Raumsollwert plus 3 K, Ende bei Ankunft —, gehalten von `EPOS.Kern.Tests/SchnellaufheizungReferenzprojektWacheTests`,
 die Sole-Wärmepumpen der Referenzprojekte rechnen mit Erdreichquelle (Erdsonde), deren Entzug ohne Taktstrom
 und deren Prüfung je Anlage mit Erdreichquelle, die Wärmepumpen rechnen ihre Kennlinie über den Vorlauf interpoliert,
 1047 und 1056 weisen die Vorlaufwahl ihrer Wärmepumpe aus, 1051 und 1052 weisen ihre Auslegungsheizlast aus,
 allein Projekt 1040 dauerhaft auf dem Tagesbilanz-Weg (der Altweg bleibt wählbar), gehalten von `EPOS.Kern.Tests/GebaeudeRueckwegTests`;
 Aufbau, Herleitung und Schemastand in
 [`Referenzlaeufe/LIESMICH.md`](Referenzlaeufe/LIESMICH.md)). Die CI rechnet die Projekte
-1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063 und 1065; Toleranz: Betrag ≥ 1 relativ 1e‑4, sonst absolut 0,01;
+1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065, 1066 bis 1071 und 1073 (neunzehn); Toleranz: Betrag ≥ 1 relativ 1e‑4, sonst absolut 0,01;
 der Byte-Vergleich ist nur Information.
 
 **Einfrierregeln** — wer eines davon ändert, friert im selben Schritt die Basis neu ein und
@@ -256,9 +262,12 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
 - die Freigabe der Konditionierung eines Referenzprojekts mit Kühlung: je Gebäude und Zone das „aus“ der Heiz- und
   Kühlsollwertkalender und die Heiz- und Kühlperiode;
 - gesäte Zapfprofil-Eingaben eines Referenzprojekts: `Tab_TwwProjekt` (`Weg`, Seed,
-  Realisierungen, Temperaturen, Bilanzgrenze), seine Zonen (`Tab_TwwZone`) und Wohnungstypen,
-  die Katalogzeilen (`Tab_Tww*_STAMM`), die sie benutzen, die Feiertagsregeln des Kerns und das
-  Feiertagsland der Gebäude der Referenzprojekte mit Zapfprofilgenerator, und das Umstellen eines
+  Realisierungen, Temperaturen, Bilanzgrenze, Zirkulation, Typtagwahl, Bedarfstag und Laufangaben der
+  Auslegung), seine Zonen (`Tab_TwwZone`), Wohnungstypen und die eigenen Ferienzeiträume der Zonen
+  (`Tab_TwwZonenferien`), die Katalogzeilen (`Tab_Tww*_STAMM`), die sie benutzen, der eingespielte
+  Typtagsatz `Tab_TwwTyptag_IMPORT` (in der Testdatenbank ein erfundener Satz, Herkunft fiktiv), die
+  Feiertagsregeln des Kerns, Feiertagsland und Wochenmaske der Gebäude der Referenzprojekte mit
+  Zapfprofilgenerator, das Anlegen oder Entfernen eines solchen Referenzprojekts und das Umstellen eines
   Referenzprojekts auf den Generator;
 - gesäte Solardaten des Referenzprojekts 1049: das Kollektorfeld (Kollektorsatz in
   `Tab_Solarkollektoren` samt `Kdfu` und `Bezugsflaeche`, Modulanzahl, Neigung, Azimut, Senken in
@@ -335,7 +344,14 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
   `Aufheiz_Verfahren`, `Aufheiz_Vorheizzeit_H`, `Aufheiz_Toleranz_Art`, `Aufheiz_Toleranz`, `Aufheiz_Regelgenauigkeit_K`,
   `Aufheiz_Geltung`, `Aufheiz_Heizkreis_Einbeziehen`, `Tab_Zone.Vorheizzeit_H` und `Tab_Gebaeude.Aufheizzeit_Manuell_H`
   seiner Gebäude, die Festwerte des Rechenwegs (Vorgabe 20 % Toleranz, Vorgabe ε 1 K, Quantil 95 %, Fenstergrenze 47 h,
-  Ankunftsbezug), dazu das Anlegen oder Entfernen eines Referenzprojekts mit Vorheizen.
+  Ankunftsbezug), dazu das Anlegen oder Entfernen eines Referenzprojekts mit Vorheizen; ebenso die Schnellaufheizung
+  eines Referenzprojekts (`Aufheiz_Schnellaufheizung`, `Aufheiz_Ueberhoehung_K`, die Vorgabe der Überhöhung 2 K) und das
+  Anlegen oder Entfernen eines Referenzprojekts mit Schnellaufheizung.
+- gesäte Kältebedarfs-Zuordnungen eines Referenzprojekts: `Z_Projekt_Kaeltebedarf` samt Projektkopien `Tab_Kaeltebedarf`
+  und `Tab_Kaeltetyp` (`Summe`, `Kaelte_Art`, `Deckung`, `Split_EER_Weg`, `Split_EER_1`, `Split_EER_2`, `Split_Taussen_1`,
+  `Split_Taussen_2`, `Kuehl_ID_Carrier`, `Kuehl_EigenerZaehler`), die Katalogzeilen `Tab_Kaeltebedarf_STAMM` und
+  `Tab_Kaeltetyp_STAMM`, die sie benutzen, und der Festwert `KaeltebedarfFestwerte.EER_MIN`, dazu das Anlegen oder
+  Entfernen eines Referenzprojekts mit Kältebedarfsprofil oder Split-Zeile.
 
 Frühere Basen liegen nicht mehr im Repository; ihre Protokolle stehen unter
 [`Dokumentation/ueberholt/Referenzbasen/`](Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
@@ -346,7 +362,7 @@ Gerechnet wird ausschließlich gegen die aktuelle Basis.
 
 | Workflow | Läuft von selbst | Nur auf Zuruf (*Actions → Run workflow*) |
 |---|---|---|
-| [`kern.yml`](.github/workflows/kern.yml) | bei jedem Push und Pull Request auf **ubuntu**: Bau und Tests des Filters, Werkzeugtests, SQL-Dialekt-Prüfer, ChartProben mit Hash-Messlatte (jede Zeile der jüngsten `Proben/ChartProben/Messlatte_*.sha256` muss unverändert in der Liste des Laufs stehen; Vergleich nur auf ubuntu, Liste als Artefakt), Referenzlauf der zwölf Projekte der CI-Auswahl gegen die Basis. Ein neuer Lauf desselben Zweigs bricht den überholten ab; Änderungen nur unter `Projekte/Wiki/`, `Dokumentation/aktuell/Mockups/`, `Quellen/`, `Lizenzserver/` lösen keinen Lauf aus | Häkchen „macos“: zusätzlich auf macOS (**zählt zehnfach**) |
+| [`kern.yml`](.github/workflows/kern.yml) | bei jedem Push und bei Pull Requests aus Forks auf **ubuntu**, in parallelen Jobs: Bau und Tests des Filters (`EPOS.Kern.Tests` in Blöcken nach dem Anfangsbuchstaben der Testklasse und einem Restblock für alles außerhalb A–Z, die übrigen Testprojekte in einem eigenen Job), Werkzeugtests, SQL-Dialekt-Prüfer, ChartProben mit Hash-Messlatte (jede Zeile der jüngsten `Proben/ChartProben/Messlatte_*.sha256` muss unverändert in der Liste des Laufs stehen; Vergleich nur auf ubuntu, Liste als Artefakt), Referenzlauf der neunzehn Projekte der CI-Auswahl gegen die Basis. Ein neuer Lauf desselben Zweigs bricht den überholten ab; Änderungen nur unter `Projekte/Wiki/`, `Dokumentation/aktuell/Mockups/`, `Quellen/`, `Lizenzserver/` lösen keinen Lauf aus | Häkchen „macos“: zusätzlich auf macOS als ein Job ohne Blöcke (**zählt zehnfach**) |
 | [`windows.yml`](.github/workflows/windows.yml) | Job `build-test` bei Push auf `main` und nächtlich 03:00 UTC auf dem Arbeitszweig `ios_migration_september` (der geplante Lauf nimmt den Workflow von `main` und checkt den Arbeitszweig aus; **zählt doppelt**); Pushes auf Arbeitszweige lösen ihn nicht aus, der Kern-Lauf auf ubuntu prüft sie | Häkchen „setup“: Job `installer` baut das Installationsprogramm (rund 4 Minuten, Installer als Artefakt) |
 | [`ios.yml`](.github/workflows/ios.yml) | nie | baut die iOS-Hülle auf `macos-26`, startet sie im Simulator und rechnet Projekt 1030 gegen die Basis; 15–20 Minuten, **zählt zehnfach** |
 

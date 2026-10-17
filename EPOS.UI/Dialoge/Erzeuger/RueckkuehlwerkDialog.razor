@@ -1,0 +1,1150 @@
+﻿@* Die Verwaltung "Rueckkuehlwerke" (K-F5a; Entwurf Split/VRF/Rueckkuehlwerk 5.2 und 8) - der Katalog
+   Tab_Rueckkuehlwerk_STAMM.
+
+   GERUEST DER VERWALTUNGEN (Vorbild BaustoffKatalogDialog): Katalograhmen, Katalogliste mit ZeileIstWahl,
+   Auswahlleiste, Stammblatt, Fussleiste Speichern - Verwerfen - Status - Neu... - Beenden. Unter Windows ein eigenes
+   Fenster, auf iOS eine freie Ansicht der AppWurzel; die Datenseite liegt in der Huelle (EPOS.UI.Daten,
+   RueckkuehlwerkHuelle) ueber RueckkuehlwerkStammCtrl.
+
+   DIE LISTE: Name, Bauart, Nennleistung, Annaeherung, Ventilator, Freikuehlung - Profil und Zeilen aus dem Kern
+   (Katalogfilterprofil.FuerRueckkuehlwerk, RueckkuehlwerkStammCtrl.Katalogfilterzeilen); das Schloss steht hinter dem
+   Namen.
+
+   DAS STAMMBLATT: fuenf Gruppen - Bauart und Nennpunkt, Annaeherung, Ventilator, Befeuchtung und Wasser (nur bei nassen
+   Bauarten) und Freikuehlung -, dazu die Herkunft mit der Verwendung. Die Auswahlen gehen ueber den LISTENPLATZ, der
+   Steuerwert ist nie der Anzeigetext. Ein leeres Feld zeigt die Vorgabe des Rechenwegs als Platzhalter
+   ("Vorgabe: ..."), die die Huelle aus dem Kern liefert. Ein Auslieferungssatz steht als Text. Geschrieben wird allein
+   mit "Speichern" - die Pruefregeln des Kerns (RueckkuehlwerkStammCtrl.Pruefen) genau dort.
+
+   TASTATUR: Esc schliesst stufenweise (Ueberlagerung, Rueckfrage, schmales Blatt, Dialog). Enter ist nicht belegt. *@
+
+@namespace EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Dialoge.Allgemein
+@using System.Globalization
+@using WindowsFormsApplication1
+@implements IDisposable
+
+<div class="epos-dialog epos-katalog-dialog epos-rueckkuehlwerk-admin" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
+        <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@Texte.Titel" />
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <Schliesskreuz Geschlossen="Schliessen" />
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_meldung" />
+    }
+    @* Wirft das Lesen der Katalogliste, nennt dieser Banner den Grund (Katalogladung). *@
+    @if (!string.IsNullOrEmpty(_listeFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+    }
+    @* Wirft das Lesen des gewaehlten Satzes, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
+    @if (_katalog.Count == 0)
+    {
+        <p class="epos-leisezeile epos-rueckkuehlwerk-leer">@Texte.LeerKatalog</p>
+    }
+
+    <Katalograhmen BlattOffen="@_auswahl.BlattOffen">
+        <Liste>
+            <Katalogliste Profil="@Profil" Zeilen="@_katalog"
+                          Filterstand="@_filterstand" Texte="@Filtertexte"
+                          Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile" ZeileIstWahl="true"
+                          Kaestchen="true" Gewaehlte="@_auswahl.Gewaehlte"
+                          GewaehlteChanged="BeiKaestchen" />
+        </Liste>
+
+        <Auswahl>
+            <Auswahlleiste Fokus="@Fokusname" Anzahl="@_auswahl.Anzahl"
+                           Handlungen="@Handlungen()"
+                           Aufheben="BeiAufheben" Gesperrt="Warnen"
+                           Stammblatt="@BlattOeffnenWeg" />
+        </Auswahl>
+
+        <Blatt>
+            <Stammblatt Name="@_daten.Bezeichner" Unterzeile="@Unterzeile"
+                        Auslieferung="@_auslieferung" SchlossText="@Filtertexte.Schloss"
+                        Entsperrt="@(!_auslieferung && _schloss.Entsperrt(ZeileZu(_gewaehlt)))"
+                        Kennzahlen="@Kennzahlen" Hinweis="@Aenderungshinweis"
+                        ZurListe="@_blattSchliessen"
+                        Vergleichskoepfe="@(_auswahl.Vergleich ? _vergleichskoepfe : null)"
+                        Vergleichszeilen="@(_auswahl.Vergleich ? _vergleichszeilen : null)"
+                        VergleichZurueck="BeiVergleichZurueck">
+                <Gruppen>
+                    @* BAUART UND NENNPUNKT: Name, Beschreibung, Bauart, Nennleistung; bei nassen Bauarten der Hinweis
+                       auf die 42. BImSchV. Ein Auslieferungssatz als TEXT. *@
+                    <Stammblattgruppe Titel="@Texte.GruppeNennpunkt" Lesemodus="@_auslieferung"
+                                      Werte="@(_auslieferung ? Nennpunktwerte(_daten) : null)">
+                        <KindInhalt>
+                            @Nennpunktfelder(_arbeit)
+                            @Bimschvhinweis(_arbeit)
+                        </KindInhalt>
+                        <Nachsatz>
+                            @Bimschvhinweis(_daten)
+                        </Nachsatz>
+                    </Stammblattgruppe>
+
+                    <Stammblattgruppe Titel="@Texte.GruppeAnnaeherung" Lesemodus="@_auslieferung"
+                                      Werte="@(_auslieferung ? Annaeherungswerte(_daten) : null)">
+                        <KindInhalt>
+                            @Annaeherungsfelder(_arbeit)
+                        </KindInhalt>
+                    </Stammblattgruppe>
+
+                    <Stammblattgruppe Titel="@Texte.GruppeVentilator" Lesemodus="@_auslieferung"
+                                      Werte="@(_auslieferung ? Ventilatorwerte(_daten) : null)">
+                        <KindInhalt>
+                            @Ventilatorfelder(_arbeit)
+                        </KindInhalt>
+                    </Stammblattgruppe>
+
+                    @* BEFEUCHTUNG UND WASSER: nur bei nassen Bauarten (adiabat, hybrid, Kuehlturm); die Befeuchtung nur bei
+                       den befeuchtenden (adiabat, hybrid). *@
+                    @if (IstNass(_auslieferung ? _daten : _arbeit))
+                    {
+                        <Stammblattgruppe Titel="@Texte.GruppeWasser" Lesemodus="@_auslieferung"
+                                          Werte="@(_auslieferung ? Wasserwerte(_daten) : null)">
+                            <KindInhalt>
+                                @Wasserfelder(_arbeit)
+                            </KindInhalt>
+                        </Stammblattgruppe>
+                    }
+
+                    <Stammblattgruppe Titel="@Texte.GruppeFreikuehlung" Lesemodus="@_auslieferung"
+                                      Werte="@(_auslieferung ? Freikuehlungswerte(_daten) : null)">
+                        <KindInhalt>
+                            @Freikuehlungsfelder(_arbeit)
+                        </KindInhalt>
+                    </Stammblattgruppe>
+
+                    @* HERKUNFT: immer Text - Verwendung in Projekten, Geraetepreis (gepflegt in der Kostenverwaltung). *@
+                    <Stammblattgruppe Titel="@Texte.GruppeHerkunft" Lesemodus="true" Werte="@Herkunftwerte" />
+                </Gruppen>
+            </Stammblatt>
+        </Blatt>
+    </Katalograhmen>
+
+    @* DIE FUSSLEISTE DER VERWALTUNG: Speichern - Verwerfen - Fueller (Statuszeile) - Neu... - Beenden. *@
+    <div class="epos-leiste">
+        @if (Speichern is not null)
+        {
+            @if (_auslieferung)
+            {
+                <button type="button" class="epos-knopf" aria-disabled="true"
+                        title="@Texte.SpeichernGesperrt" @onclick="BeiSpeichern">@Texte.KnopfSpeichern</button>
+            }
+            else
+            {
+                <button type="button" class="epos-knopf" disabled="@(!_geaendert)"
+                        @onclick="BeiSpeichern">@Texte.KnopfSpeichern</button>
+            }
+            <button type="button" class="epos-knopf" disabled="@(!_geaendert)"
+                    @onclick="BeiVerwerfen">@Texte.KnopfVerwerfen</button>
+        }
+        <span class="epos-leiste-fueller epos-status@(_statusFehler ? " epos-status--fehler" : "")" role="status">@_status</span>
+        @if (Speichern is not null)
+        {
+            <button type="button" class="epos-knopf" @onclick="BeiNeu">@Texte.KnopfNeu</button>
+        }
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                @onclick="Schliessen">@Texte.KnopfBeenden</button>
+    </div>
+
+    @* --- "Neu...": Bauart und Nennpunkt, OK prueft und legt an; die uebrigen Gruppen im Stammblatt danach ------- *@
+    <Ueberlagerung Offen="@_neuOffen" Titel="@Texte.TitelNeu" Geschlossen="NeuSchliessen">
+        <KindInhalt>
+            @if (_neuOffen)
+            {
+                <div class="epos-rueckkuehlwerk-neu">
+                    @if (_neuMeldung.Length > 0)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_neuMeldung" />
+                    }
+                    @Nennpunktfelder(_neu)
+                    <SpeichernLeiste OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen" Ergebnis="NeuErgebnis" />
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Namensabfrage von "Duplizieren...": Vorbelegung "... (Kopie)" ------------------------------------------ *@
+    <Ueberlagerung Offen="@_duplizierfrage" Titel="@Texte.KnopfDuplizieren"
+                   Geschlossen="() => _duplizierfrage = false">
+        <KindInhalt>
+            @if (_duplizierfrage)
+            {
+                <NamensDialog TitelText="" FrageText="@Texte.LabelBezeichner"
+                              Vorbelegung="@_kopievorschlag"
+                              MeldungLeer="@Texte.NameLeer" Pruefung="NameBelegt"
+                              OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen"
+                              Geschlossen="BeiDuplizierName" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Rueckfrage Offen="@_loeschfrage" TitelText="@Texte.KnopfLoeschen"
+                Frage="@_loeschfrageText"
+                JaText="@Texte.Ja" NeinText="@Texte.Nein" Beantwortet="BeiLoeschfrage" />
+
+    @* --- Rueckfrage vor dem Umschalten des Schlosses (Vorgabe Nein) *@
+    <Rueckfrage Offen="@_schloss.FrageOffen" TitelText="@_schloss.Titel" Frage="@_schloss.Frage"
+                VorgabeNein="true" JaText="@Texte.Ja" NeinText="@Texte.Nein" Beantwortet="BeiSchlossAntwort" />
+</div>
+
+@code {
+    /// <summary>
+    /// Der Seitenschlüssel dieser Verwaltung (<c>Seitenschluessel.Rueckkuehlwerk</c>) — benannt, damit ein Knopf
+    /// „Rückkühlwerke…" (etwa in der Rückkühlgruppe der Kältemaschine) dieselbe Ansicht öffnet.
+    /// </summary>
+    public const string SEITE = EPOS.UI.Seiten.Seitenschluessel.Rueckkuehlwerk;
+
+    // =====================================================================
+    // Gaben — die Datenseite liegt in der Hülle (RueckkuehlwerkHuelle)
+    // =====================================================================
+
+    /// <summary>Die Zeilen der Liste (<c>RueckkuehlwerkStammCtrl.Katalogfilterzeilen</c>); ohne sie ist die Liste leer.</summary>
+    [Parameter] public Func<IReadOnlyList<Katalogfilterzeile>>? Katalogzeilen { get; set; }
+
+    /// <summary>Die Spalten — <c>Katalogfilterprofil.FuerRueckkuehlwerk</c>; ohne sie das Profil mit den Ressourcentexten.</summary>
+    [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
+
+    /// <summary>Die Beschriftungen der Katalogliste — sie füllen sich selbst aus <c>MyResource</c>.</summary>
+    [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
+
+    /// <summary>Ein eigener Filterstand statt des Registers (Muster der Verwaltungen).</summary>
+    [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
+
+    /// <summary>Die Bauarten in Schemafolge (Persistenzwert, Text, nass, befeuchtend).</summary>
+    [Parameter] public IReadOnlyList<RueckkuehlwerkBauart>? Bauarten { get; set; }
+
+    /// <summary>Die Wege der Annäherung (<c>FEST</c>, <c>LASTABHAENGIG</c>).</summary>
+    [Parameter] public IReadOnlyList<RueckkuehlwerkWahl>? Wege { get; set; }
+
+    /// <summary>Die Ventilatorregelungen (<c>EIN_AUS</c>, <c>STUFEN</c>, <c>DREHZAHL</c>).</summary>
+    [Parameter] public IReadOnlyList<RueckkuehlwerkWahl>? Regelungen { get; set; }
+
+    /// <summary>Die Schaltungen der freien Kühlung (<c>PARALLEL</c>, <c>REIHE</c>).</summary>
+    [Parameter] public IReadOnlyList<RueckkuehlwerkWahl>? Schaltungen { get; set; }
+
+    /// <summary>Lädt einen Satz über seine Id; <c>null</c> = es gibt ihn nicht (mehr).</summary>
+    [Parameter] public Func<int, RueckkuehlwerkDaten?>? Lies { get; set; }
+
+    /// <summary>Die Prüfung des Kerns (<c>RueckkuehlwerkStammCtrl.Pruefen</c>) — <c>null</c> oder leer = gültig.</summary>
+    [Parameter] public Func<RueckkuehlwerkDaten, string?>? Pruefen { get; set; }
+
+    /// <summary>Schreibt einen Satz — Id 0 legt an, sonst wird geändert. Ohne ihn weder „Speichern" noch „Neu…".</summary>
+    [Parameter] public Func<RueckkuehlwerkDaten, RueckkuehlwerkSpeicherErgebnis>? Speichern { get; set; }
+
+    /// <summary>Löscht einen Satz (nur ohne Verwendung); ohne ihn keine Handlung.</summary>
+    [Parameter] public Func<int, RueckkuehlwerkSpeicherErgebnis>? Loeschen { get; set; }
+
+    /// <summary>„Duplizieren…"; ohne ihn keine Handlung.</summary>
+    [Parameter] public Func<int, string, RueckkuehlwerkSpeicherErgebnis>? Duplizieren { get; set; }
+
+    /// <summary>„Schloss setzen…" / „Schloss aufheben…" (<c>RueckkuehlwerkStammCtrl.SchlossSetzen</c>).</summary>
+    [Parameter] public Schlossweg? Schloss { get; set; }
+
+    /// <summary>Id des Satzes → Zahl seiner Projektkopien (<c>RueckkuehlwerkStammCtrl.KatalogVerwendung</c>).</summary>
+    [Parameter] public Func<IReadOnlyDictionary<int, int>>? Verwendung { get; set; }
+
+    /// <summary>Die Vorgaben der leeren Felder für die Bauart des Arbeitsstands (Rechenweg des Kerns).</summary>
+    [Parameter] public Func<RueckkuehlwerkDaten, RueckkuehlwerkVorgaben>? Vorgaben { get; set; }
+
+    /// <summary>Der Dialog wurde geschlossen („Beenden", Esc, Kreuz) — immer <c>true</c>.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>Die Anzeigetexte (ein Bündel).</summary>
+    [Parameter] public RueckkuehlwerkTexte Texte { get; set; } = new();
+
+    /// <summary>Der Titel im Dialogkopf; leer = eingebettet, die Überlagerung des Wirts trägt Titel und Kreuz.</summary>
+    [Parameter] public string TitelText { get; set; } = Resource.RKW_TITEL;
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Rueckkuehlwerk.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private Katalogfilterprofil? _profil;
+    private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
+    private Katalogfilterstand _filterstand = new();
+    private string _gewaehlt = "";
+    private bool _auslieferung;
+    private IReadOnlyDictionary<int, int> _verwendung = new Dictionary<int, int>();
+
+    /// <summary>Der GESPEICHERTE Stand des gewählten Satzes.</summary>
+    private RueckkuehlwerkDaten _daten = new();
+
+    /// <summary>Der ARBEITSSTAND des Stammblatts — die Felder schreiben hierhin, „Speichern" schreibt ihn.</summary>
+    private RueckkuehlwerkDaten _arbeit = new();
+    private bool _geaendert;
+
+    private bool _neuOffen;
+    private RueckkuehlwerkDaten _neu = new();
+    private string _neuMeldung = "";
+
+    private bool _duplizierfrage;
+    private string _kopievorschlag = "";
+    private string _duplizierQuelle = "";
+
+    private bool _loeschfrage;
+    private string _loeschfrageText = "";
+    private List<string> _loeschziele = new();
+    private int _loeschBleiben;
+
+    private readonly Zeilenauswahl _auswahl = new();
+    private IReadOnlyList<string>? _vergleichskoepfe;
+    private IReadOnlyList<Vergleichszeile>? _vergleichszeilen;
+
+    private string _meldung = "";
+    private string _listeFehler = "";
+    private string _satzFehler = "";
+
+    /// <summary>Die Statuszeile der Fußleiste; jede Zuweisung nimmt die rote Färbung zurück.</summary>
+    private string _status
+    {
+        get => _statusText;
+        set { _statusText = value; _statusFehler = false; }
+    }
+    private string _statusText = "";
+    private bool _statusFehler;
+
+    private EventCallback _vergleichen;
+    private EventCallback _duplizieren;
+    private EventCallback _schlossHandlung;
+    private EventCallback _loeschen;
+    private readonly Schlossumschaltung _schloss = new();
+    private EventCallback _blattOeffnen;
+    private EventCallback _blattSchliessen;
+
+    // ---- Prüfhilfen für die Tests ---------------------------------------
+    /// <summary>Die Namen der Liste in Listenreihenfolge (Prüfhilfe).</summary>
+    public IReadOnlyList<string> Namensliste => _katalog.Select(z => z.Bezeichner).ToList();
+    /// <summary>Der Schlüssel (die Id) der gewählten Zeile (Prüfhilfe).</summary>
+    public string Gewaehlt => _gewaehlt;
+    /// <summary>Der Arbeitsstand des Stammblatts (Prüfhilfe).</summary>
+    public RueckkuehlwerkDaten Arbeitsstand => _arbeit;
+    /// <summary>Die stehende Meldung (Prüfhilfe).</summary>
+    public string Meldung => _meldung;
+    /// <summary>Die Statuszeile der Fußleiste (Prüfhilfe).</summary>
+    public string Status => _status;
+    /// <summary>Trägt das Stammblatt geänderte Werte? (Prüfhilfe)</summary>
+    public bool Geaendert => _geaendert;
+    /// <summary>Ist der gewählte Satz ein Auslieferungssatz? (Prüfhilfe)</summary>
+    public bool Auslieferung => _auslieferung;
+    /// <summary>Steht die Überlagerung „Neu…"? (Prüfhilfe)</summary>
+    public bool NeuOffen => _neuOffen;
+    /// <summary>Steht die Löschrückfrage? (Prüfhilfe)</summary>
+    public bool Loeschfrage => _loeschfrage;
+
+    private Katalogfilterprofil Profil
+        => _profil ??= Katalogprofil
+                       ?? Katalogfilterprofil.FuerRueckkuehlwerk(s => Resource.ResourceManager.GetString(s) ?? s);
+
+    // =====================================================================
+    // Aufbau
+    // =====================================================================
+
+    protected override void OnInitialized()
+    {
+        _vergleichen = EventCallback.Factory.Create(this, BeiVergleichen);
+        _duplizieren = EventCallback.Factory.Create(this, BeiDuplizieren);
+        _schlossHandlung = EventCallback.Factory.Create(this, BeiSchloss);
+        _loeschen = EventCallback.Factory.Create(this, BeiLoeschen);
+        _blattOeffnen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = true);
+        _blattSchliessen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = false);
+
+        _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Profil.Schluessel);
+        // Wirft die Liste beim Aufbau, bricht der Dialog nicht ab - der Banner nennt die Meldung.
+        try
+        {
+            ListeLaden();
+        }
+        catch (Exception ex)
+        {
+            _meldung = string.Format(CultureInfo.CurrentCulture, Resource.WURZEL_LISTE_FEHLER, Texte.Titel, ex.Message);
+        }
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.RUECKKUEHLWERK, () => KiSicht(), KiHaken());
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync(preventScroll: true);
+    }
+
+    // =====================================================================
+    // Der Hilfe-Assistent
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private RueckkuehlwerkKiSicht? _kiSicht;
+
+    /// <summary>Die Sicht des Assistenten: Die Satzwahl nimmt den Weg eines Klicks, die Felder den Arbeitsstand.</summary>
+    private RueckkuehlwerkKiSicht KiSicht()
+    {
+        return _kiSicht ??= new RueckkuehlwerkKiSicht
+        {
+            SatzLesen = () => _gewaehlt,
+            SatzSetzen = BeiZeile,
+            SatzEintraege = () => KiMaskenanmeldung.Eintraege(_katalog, z => z.Schluessel, z => z.Bezeichner),
+            ArbeitLesen = () => _daten.Id > 0 ? _arbeit : null,
+            Geaendert = Nachziehen,
+            BauartEintraege = () => BauartListe.Select(b => new KiKern.KiWahleintrag(b.Code, b.Text)).ToList(),
+            WegEintraege = () => KiEintraege(Wege),
+            RegelungEintraege = () => KiEintraege(Regelungen),
+            SchaltungEintraege = () => KiEintraege(Schaltungen),
+            LadestandLesen = () => KatalogKiSperre.Ladestand(_listeFehler, _satzFehler)
+        };
+    }
+
+    private static IReadOnlyList<KiKern.KiWahleintrag> KiEintraege(IReadOnlyList<RueckkuehlwerkWahl>? liste)
+        => (liste ?? Array.Empty<RueckkuehlwerkWahl>()).Select(w => new KiKern.KiWahleintrag(w.Code, w.Text)).ToList();
+
+    /// <summary>Was der Assistent über die Feldwerte hinaus darf: „Speichern" ist der Weg des Knopfes.</summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Schreibgeschuetzt = () => _auslieferung,
+        Schreibschutzgrund = () => Texte.SpeichernGesperrt,
+        Sperrgrund = f => KatalogKiSperre.Feldsperre(f, _listeFehler, _satzFehler, "rueckkuehlwerk"),
+        Pruefen = () => Pruefbefund(_arbeit) ?? "",
+        Speichern = () => Task.FromResult(KiSpeichern())
+    };
+
+    private KiKern.KiErgebnis KiSpeichern()
+    {
+        if (KatalogKiSperre.Aktionssperre(_listeFehler, _satzFehler) is { } sperre)
+            return KiKern.KiErgebnis.Abgelehnt(sperre);
+        if (Speichern is null || _daten.Id <= 0)
+            return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG.Replace("{0}", Texte.Titel));
+        if (_auslieferung) return KiKern.KiErgebnis.Abgelehnt(Texte.SpeichernGesperrt);
+        if (!_geaendert) return KiKern.KiErgebnis.Ok(_daten.Bezeichner, anzahl: 0);
+
+        BeiSpeichern();
+        return _meldung.Length > 0
+                   ? KiKern.KiErgebnis.Abgelehnt(_meldung)
+                   : KiKern.KiErgebnis.Ok(_daten.Bezeichner, anzahl: 1);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
+
+    // =====================================================================
+    // Liste und Wahl
+    // =====================================================================
+
+    /// <summary>Lädt Liste und Verwendung; die bisherige Wahl bleibt, sonst die erste Zeile.</summary>
+    private void ListeLaden(string? wunsch = null)
+    {
+        _katalog = Katalogladung.Lesen(Katalogzeilen, TitelText, out _listeFehler);
+        IReadOnlyList<IReadOnlyDictionary<int, int>> verwendung = Katalogladung.Lesen<IReadOnlyDictionary<int, int>>(
+            Verwendung is null ? null : () => new IReadOnlyDictionary<int, int>[] { Verwendung() }, TitelText, out string verwendungFehler);
+        _verwendung = verwendung.Count > 0 && verwendung[0] is not null ? verwendung[0] : new Dictionary<int, int>();
+        if (_listeFehler.Length == 0) _listeFehler = verwendungFehler;
+
+        _auswahl.Abgleichen(_katalog.Select(z => z.Schluessel));
+        if (_auswahl.Vergleich) VergleichBauen();
+        else _vergleichszeilen = null;
+
+        string ziel = wunsch ?? _gewaehlt;
+        if (_katalog.Count == 0) { SatzWaehlen(""); return; }
+        SatzWaehlen(_katalog.Any(z => z.Schluessel == ziel) ? ziel : _katalog[0].Schluessel);
+    }
+
+    /// <summary>Die Liste meldet eine Zeile. Geänderte Werte halten die Wahl.</summary>
+    private void BeiZeile(string schluessel)
+    {
+        if (_geaendert && schluessel != _gewaehlt)
+        {
+            Warnen(Resource.ADM_MSG_UNGESPEICHERT);
+            return;
+        }
+        SatzWaehlen(schluessel);
+    }
+
+    private void SatzWaehlen(string schluessel)
+    {
+        _meldung = "";
+        _gewaehlt = schluessel ?? "";
+        Katalogfilterzeile? zeile = ZeileZu(_gewaehlt);
+        _satzFehler = "";
+        RueckkuehlwerkDaten? gelesen = zeile is not null && Lies is not null
+            ? Katalogladung.Satz(() => Lies(zeile.Id), zeile.Bezeichner, out _satzFehler)
+            : null;
+        _daten = gelesen ?? (zeile is null ? new RueckkuehlwerkDaten() : new RueckkuehlwerkDaten { Id = zeile.Id, Bezeichner = zeile.Bezeichner });
+        _auslieferung = zeile?.Geschuetzt == true || _daten.Auslieferung;
+        Zuruecksetzen();
+    }
+
+    /// <summary>Der Arbeitsstand wird wieder der gespeicherte (Wahl, Verwerfen, nach dem Speichern).</summary>
+    private void Zuruecksetzen()
+    {
+        _arbeit = _daten.Kopie();
+        _geaendert = false;
+    }
+
+    private Katalogfilterzeile? ZeileZu(string schluessel) => _katalog.FirstOrDefault(z => z.Schluessel == schluessel);
+
+    private string Fokusname => ZeileZu(_gewaehlt)?.Bezeichner ?? "";
+
+    // =====================================================================
+    // Wertemengen: Listenplatz ↔ Persistenzwert
+    // =====================================================================
+
+    private IReadOnlyList<RueckkuehlwerkBauart> BauartListe => Bauarten ?? Array.Empty<RueckkuehlwerkBauart>();
+
+    private RueckkuehlwerkBauart? BauartZu(string code)
+        => BauartListe.FirstOrDefault(b => b.Code == (string.IsNullOrEmpty(code) ? VorgabeBauart : code));
+
+    /// <summary>Der Persistenzwert der Vorgabe-Bauart (trocken) — die erste Bauart des Schemas.</summary>
+    private string VorgabeBauart => BauartListe.Count > 0 ? BauartListe[0].Code : "";
+
+    private bool IstNass(RueckkuehlwerkDaten d) => BauartZu(d.Bauart)?.Nass == true;
+
+    private bool IstBefeuchtend(RueckkuehlwerkDaten d) => BauartZu(d.Bauart)?.Befeuchtend == true;
+
+    private static IReadOnlyList<(int Id, string Text)> Eintraege(IEnumerable<string> texte)
+        => texte.Select((t, i) => (i + 1, t)).ToList();
+
+    private static int? Platz(IReadOnlyList<string> codes, string code)
+    {
+        int i = codes.ToList().IndexOf(code ?? "");
+        return i < 0 ? null : i + 1;
+    }
+
+    private static string CodeAus(IReadOnlyList<string> codes, int? id)
+        => id is int n && n >= 1 && n <= codes.Count ? codes[n - 1] : "";
+
+    private static IReadOnlyList<string> Codes(IReadOnlyList<RueckkuehlwerkWahl>? liste)
+        => (liste ?? Array.Empty<RueckkuehlwerkWahl>()).Select(w => w.Code).ToList();
+
+    private static IReadOnlyList<(int Id, string Text)> Eintraege(IReadOnlyList<RueckkuehlwerkWahl>? liste)
+        => Eintraege((liste ?? Array.Empty<RueckkuehlwerkWahl>()).Select(w => w.Text));
+
+    /// <summary>Der Anzeigetext eines Steuerwerts; leer = der erste Eintrag (die Vorgabe), unbekannt bleibt er stehen.</summary>
+    private static string TextZu(IReadOnlyList<RueckkuehlwerkWahl>? liste, string code)
+    {
+        IReadOnlyList<RueckkuehlwerkWahl> l = liste ?? Array.Empty<RueckkuehlwerkWahl>();
+        if (string.IsNullOrEmpty(code)) return l.Count > 0 ? l[0].Text : "";
+        return l.FirstOrDefault(w => w.Code == code)?.Text ?? code;
+    }
+
+    private string BauartText(string code) => BauartZu(code)?.Text ?? code;
+
+    private string VorgabeText(string text) => string.Format(CultureInfo.CurrentCulture, Texte.Vorgabe, text);
+
+    private string VorgabeZahl(double wert, string format, string einheit)
+        => VorgabeText((wert.ToString(format, CultureInfo.CurrentCulture) + " " + einheit).Trim());
+
+    private RueckkuehlwerkVorgaben? VorgabenZu(RueckkuehlwerkDaten d) => Vorgaben?.Invoke(d);
+
+    // =====================================================================
+    // Stammblatt: Felder
+    // =====================================================================
+
+    /// <summary>Bauart und Nennpunkt — im Stammblatt und in „Neu…" dieselben.</summary>
+    private RenderFragment Nennpunktfelder(RueckkuehlwerkDaten d) => __builder =>
+    {
+        <Formularraster>
+            <KindInhalt>
+                <Textfeld Bezeichnung="@Texte.LabelBezeichner" Wert="@d.Bezeichner"
+                          WertChanged="w => Feld(d, () => d.Bezeichner = w ?? string.Empty)" />
+                <Textfeld Bezeichnung="@Texte.LabelBeschreibung" Wert="@d.Beschreibung" Mehrzeilig="true" Zeilen="2"
+                          WertChanged="w => Feld(d, () => d.Beschreibung = w ?? string.Empty)" />
+                <Auswahlfeld Bezeichnung="@Texte.LabelBauart" Eintraege="@Eintraege(BauartListe.Select(b => b.Text))"
+                             Platzhalter="@VorgabeText(BauartText(""))"
+                             Auswahl="@Platz(BauartListe.Select(b => b.Code).ToList(), d.Bauart)"
+                             AuswahlChanged="id => Feld(d, () => d.Bauart = CodeAus(BauartListe.Select(b => b.Code).ToList(), id))" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelNennleistung" Einheit="@Texte.EinheitKw" Feldname="@Texte.LabelNennleistung"
+                            Wert="@d.NennleistungKw" WertChanged="w => Feld(d, () => d.NennleistungKw = w)" />
+            </KindInhalt>
+        </Formularraster>
+    };
+
+    /// <summary>Der Hinweis auf die 42. BImSchV bei nassen Bauarten (Verdunstungskühlanlage) — weich, nie eine Sperre.</summary>
+    private RenderFragment Bimschvhinweis(RueckkuehlwerkDaten d) => __builder =>
+    {
+        @if (IstNass(d))
+        {
+            <Herleitungszeile Text="@Texte.HinweisBimschv" />
+        }
+    };
+
+    private RenderFragment Annaeherungsfelder(RueckkuehlwerkDaten d) => __builder =>
+    {
+        RueckkuehlwerkVorgaben? v = VorgabenZu(d);
+        <Formularraster>
+            <KindInhalt>
+                <Zahlenfeld Bezeichnung="@Texte.LabelAnnaeherungNenn" Einheit="@Texte.EinheitK" Feldname="@Texte.LabelAnnaeherungNenn"
+                            Platzhalter="@(v is null ? "" : VorgabeZahl(v.AnnaeherungK, "0.#", Texte.EinheitK))"
+                            Wert="@d.AnnaeherungNennK" WertChanged="w => Feld(d, () => d.AnnaeherungNennK = w)" />
+                <Auswahlfeld Bezeichnung="@Texte.LabelAnnaeherungWeg" Eintraege="@Eintraege(Wege)"
+                             Platzhalter="@VorgabeText(TextZu(Wege, ""))"
+                             Auswahl="@Platz(Codes(Wege), d.AnnaeherungWeg)"
+                             AuswahlChanged="id => Feld(d, () => d.AnnaeherungWeg = CodeAus(Codes(Wege), id))" />
+            </KindInhalt>
+        </Formularraster>
+    };
+
+    private RenderFragment Ventilatorfelder(RueckkuehlwerkDaten d) => __builder =>
+    {
+        RueckkuehlwerkVorgaben? v = VorgabenZu(d);
+        IReadOnlyList<string> codes = Codes(Regelungen);
+        int? platz = Platz(codes, d.VentilatorRegelung);
+        <Formularraster>
+            <KindInhalt>
+                <Zahlenfeld Bezeichnung="@Texte.LabelVentilatorNenn" Einheit="@Texte.EinheitKw" Feldname="@Texte.LabelVentilatorNenn"
+                            Wert="@d.VentilatorNennKw" WertChanged="w => Feld(d, () => d.VentilatorNennKw = w)" />
+                <Auswahlfeld Bezeichnung="@Texte.LabelVentilatorRegelung" Eintraege="@Eintraege(Regelungen)"
+                             Platzhalter="@VorgabeText(TextZu(Regelungen, ""))"
+                             Auswahl="@platz"
+                             AuswahlChanged="id => Feld(d, () => d.VentilatorRegelung = CodeAus(codes, id))" />
+                @* Stufen nur bei Regelung Stufen, kleinste Drehzahl nur bei Drehzahl - gesperrt, nicht ausgeblendet. *@
+                <Ganzzahlfeld Bezeichnung="@Texte.LabelVentilatorStufen" Feldname="@Texte.LabelVentilatorStufen" Min="2"
+                              Aktiv="@(platz == 2)"
+                              Platzhalter="@(v is null ? "" : VorgabeText(v.VentilatorStufen.ToString(CultureInfo.CurrentCulture)))"
+                              Wert="@d.VentilatorStufen" WertChanged="w => Feld(d, () => d.VentilatorStufen = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelVentilatorDrehzahlMin" Feldname="@Texte.LabelVentilatorDrehzahlMin"
+                            Aktiv="@(platz == 3)"
+                            Platzhalter="@(v is null ? "" : VorgabeZahl(v.VentilatorDrehzahlMin, "0.##", ""))"
+                            Wert="@d.VentilatorDrehzahlMin" WertChanged="w => Feld(d, () => d.VentilatorDrehzahlMin = w)" />
+            </KindInhalt>
+        </Formularraster>
+        @if (!d.VentilatorNennKw.HasValue)
+        {
+            <Herleitungszeile Text="@Texte.VorgabeVentilator" />
+        }
+    };
+
+    private RenderFragment Wasserfelder(RueckkuehlwerkDaten d) => __builder =>
+    {
+        RueckkuehlwerkVorgaben? v = VorgabenZu(d);
+        <Formularraster>
+            <KindInhalt>
+                @if (IstBefeuchtend(d))
+                {
+                    <Zahlenfeld Bezeichnung="@Texte.LabelBefeuchtungWirkungsgrad" Feldname="@Texte.LabelBefeuchtungWirkungsgrad"
+                                Platzhalter="@(v is null ? "" : VorgabeZahl(v.BefeuchtungWirkungsgrad, "0.##", ""))"
+                                Wert="@d.BefeuchtungWirkungsgrad" WertChanged="w => Feld(d, () => d.BefeuchtungWirkungsgrad = w)" />
+                    <Zahlenfeld Bezeichnung="@Texte.LabelBefeuchtungAb" Einheit="@Texte.EinheitGradC" Feldname="@Texte.LabelBefeuchtungAb"
+                                Platzhalter="@(v is null ? "" : VorgabeZahl(v.BefeuchtungAbC, "0.#", Texte.EinheitGradC))"
+                                Wert="@d.BefeuchtungAbC" WertChanged="w => Feld(d, () => d.BefeuchtungAbC = w)" />
+                }
+                <Zahlenfeld Bezeichnung="@Texte.LabelVerdunstungFaktor" Feldname="@Texte.LabelVerdunstungFaktor"
+                            Platzhalter="@(v is null ? "" : VorgabeZahl(v.VerdunstungFaktor, "0.##", ""))"
+                            Wert="@d.VerdunstungFaktor" WertChanged="w => Feld(d, () => d.VerdunstungFaktor = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelEindickung" Feldname="@Texte.LabelEindickung"
+                            Platzhalter="@(v is null ? "" : VorgabeZahl(v.Eindickung, "0.#", ""))"
+                            Wert="@d.Eindickung" WertChanged="w => Feld(d, () => d.Eindickung = w)" />
+                <Zahlenfeld Bezeichnung="@Texte.LabelDriftAnteil" Feldname="@Texte.LabelDriftAnteil"
+                            Platzhalter="@(v is null ? "" : VorgabeZahl(v.DriftAnteil, "0.####", ""))"
+                            Wert="@d.DriftAnteil" WertChanged="w => Feld(d, () => d.DriftAnteil = w)" />
+            </KindInhalt>
+        </Formularraster>
+    };
+
+    private RenderFragment Freikuehlungsfelder(RueckkuehlwerkDaten d) => __builder =>
+    {
+        <Formularraster>
+            <KindInhalt>
+                <Auswahlfeld Bezeichnung="@Texte.LabelFreikuehlungSchaltung" Eintraege="@Eintraege(Schaltungen)"
+                             Platzhalter="@VorgabeText(TextZu(Schaltungen, ""))"
+                             Auswahl="@Platz(Codes(Schaltungen), d.FreikuehlungSchaltung)"
+                             AuswahlChanged="id => Feld(d, () => d.FreikuehlungSchaltung = CodeAus(Codes(Schaltungen), id))" />
+            </KindInhalt>
+        </Formularraster>
+    };
+
+    /// <summary>Eine Eingabe in ein Feld — im Stammblatt zieht sie „geändert" nach, in „Neu…" nicht.</summary>
+    private void Feld(RueckkuehlwerkDaten d, Action schritt)
+    {
+        if (ReferenceEquals(d, _arbeit) && _auslieferung) return;
+        schritt();
+        if (ReferenceEquals(d, _arbeit)) Nachziehen();
+        else _neuMeldung = "";
+    }
+
+    private void Nachziehen()
+    {
+        _geaendert = _arbeit.Abweichungen(_daten) > 0;
+        _meldung = "";
+        _status = "";
+    }
+
+    // =====================================================================
+    // Stammblatt: Lesewerte, Kopf, Herkunft
+    // =====================================================================
+
+    private static string Zahl(double? wert, string format, string einheit)
+        => wert.HasValue ? (wert.Value.ToString(format, CultureInfo.CurrentCulture) + " " + einheit).Trim() : "";
+
+    /// <summary>Ein Lesewert: der gepflegte Wert, sonst die Vorgabe.</summary>
+    private string Lesewert(double? wert, double? vorgabe, string format, string einheit)
+        => wert.HasValue ? Zahl(wert, format, einheit)
+         : vorgabe.HasValue ? VorgabeZahl(vorgabe.Value, format, einheit)
+         : "–";
+
+    private IReadOnlyList<Stammblattwert> Nennpunktwerte(RueckkuehlwerkDaten d) => new[]
+    {
+        new Stammblattwert(Texte.LabelBezeichner, d.Bezeichner),
+        new Stammblattwert(Texte.LabelBeschreibung, d.Beschreibung),
+        new Stammblattwert(Texte.LabelBauart, string.IsNullOrEmpty(d.Bauart) ? VorgabeText(BauartText("")) : BauartText(d.Bauart)),
+        new Stammblattwert(Texte.LabelNennleistung, Lesewert(d.NennleistungKw, null, "0.#", Texte.EinheitKw))
+    };
+
+    private IReadOnlyList<Stammblattwert> Annaeherungswerte(RueckkuehlwerkDaten d) => new[]
+    {
+        new Stammblattwert(Texte.LabelAnnaeherungNenn, Lesewert(d.AnnaeherungNennK, VorgabenZu(d)?.AnnaeherungK, "0.#", Texte.EinheitK)),
+        new Stammblattwert(Texte.LabelAnnaeherungWeg, Auswahlwert(Wege, d.AnnaeherungWeg))
+    };
+
+    private IReadOnlyList<Stammblattwert> Ventilatorwerte(RueckkuehlwerkDaten d)
+    {
+        RueckkuehlwerkVorgaben? v = VorgabenZu(d);
+        return new[]
+        {
+            new Stammblattwert(Texte.LabelVentilatorNenn, d.VentilatorNennKw.HasValue ? Zahl(d.VentilatorNennKw, "0.##", Texte.EinheitKw) : Texte.VorgabeVentilator),
+            new Stammblattwert(Texte.LabelVentilatorRegelung, Auswahlwert(Regelungen, d.VentilatorRegelung)),
+            new Stammblattwert(Texte.LabelVentilatorStufen, d.VentilatorStufen.HasValue
+                ? d.VentilatorStufen.Value.ToString(CultureInfo.CurrentCulture)
+                : v is null ? "–" : VorgabeText(v.VentilatorStufen.ToString(CultureInfo.CurrentCulture))),
+            new Stammblattwert(Texte.LabelVentilatorDrehzahlMin, Lesewert(d.VentilatorDrehzahlMin, v?.VentilatorDrehzahlMin, "0.##", ""))
+        };
+    }
+
+    private IReadOnlyList<Stammblattwert> Wasserwerte(RueckkuehlwerkDaten d)
+    {
+        RueckkuehlwerkVorgaben? v = VorgabenZu(d);
+        var liste = new List<Stammblattwert>(5);
+        if (IstBefeuchtend(d))
+        {
+            liste.Add(new(Texte.LabelBefeuchtungWirkungsgrad, Lesewert(d.BefeuchtungWirkungsgrad, v?.BefeuchtungWirkungsgrad, "0.##", "")));
+            liste.Add(new(Texte.LabelBefeuchtungAb, Lesewert(d.BefeuchtungAbC, v?.BefeuchtungAbC, "0.#", Texte.EinheitGradC)));
+        }
+        liste.Add(new(Texte.LabelVerdunstungFaktor, Lesewert(d.VerdunstungFaktor, v?.VerdunstungFaktor, "0.##", "")));
+        liste.Add(new(Texte.LabelEindickung, Lesewert(d.Eindickung, v?.Eindickung, "0.#", "")));
+        liste.Add(new(Texte.LabelDriftAnteil, Lesewert(d.DriftAnteil, v?.DriftAnteil, "0.####", "")));
+        return liste;
+    }
+
+    private IReadOnlyList<Stammblattwert> Freikuehlungswerte(RueckkuehlwerkDaten d) => new[]
+    {
+        new Stammblattwert(Texte.LabelFreikuehlungSchaltung, Auswahlwert(Schaltungen, d.FreikuehlungSchaltung))
+    };
+
+    private string Auswahlwert(IReadOnlyList<RueckkuehlwerkWahl>? liste, string code)
+        => string.IsNullOrEmpty(code) ? VorgabeText(TextZu(liste, "")) : TextZu(liste, code);
+
+    /// <summary>„Hybridkühler · Auslieferungssatz".</summary>
+    private string Unterzeile
+    {
+        get
+        {
+            if (_daten.Bezeichner.Length == 0) return "";
+            return BauartText(_daten.Bauart) + " · " + (_auslieferung ? Resource.ADM_SB_AUSLIEFERUNG : Resource.ADM_SB_EIGENER_SATZ);
+        }
+    }
+
+    /// <summary>Nennleistung und wirksame Annäherung des gespeicherten Standes; leer ohne Satz.</summary>
+    private IReadOnlyList<Stammblattkennzahl> Kennzahlen
+    {
+        get
+        {
+            if (_daten.Bezeichner.Length == 0) return Array.Empty<Stammblattkennzahl>();
+            double? annaeherung = _daten.AnnaeherungNennK ?? VorgabenZu(_daten)?.AnnaeherungK;
+            return new[]
+            {
+                new Stammblattkennzahl(_daten.NennleistungKw.HasValue ? Zahl(_daten.NennleistungKw, "0.#", Texte.EinheitKw) : "–", "Q̇_N"),
+                new Stammblattkennzahl(annaeherung.HasValue ? Zahl(annaeherung, "0.#", Texte.EinheitK) : "–", "ΔT")
+            };
+        }
+    }
+
+    private int Verwendungen(string schluessel)
+        => ZeileZu(schluessel) is Katalogfilterzeile z && _verwendung.TryGetValue(z.Id, out int n) ? n : 0;
+
+    private IReadOnlyList<Stammblattwert> Herkunftwerte
+    {
+        get
+        {
+            int n = Verwendungen(_gewaehlt);
+            return new[]
+            {
+                new Stammblattwert(Texte.LabelVerwendung, n > 0
+                    ? string.Format(CultureInfo.CurrentCulture, Texte.Verwendung, n)
+                    : Texte.VerwendungKeine),
+                new Stammblattwert(Texte.LabelModulkosten, _daten.Modulkosten.HasValue
+                    ? Zahl(_daten.Modulkosten, "#,##0.##", Texte.EinheitEuro)
+                    : Texte.HinweisKosten)
+            };
+        }
+    }
+
+    private string Aenderungshinweis
+    {
+        get
+        {
+            if (!_geaendert) return "";
+            int n = _arbeit.Abweichungen(_daten);
+            return n == 1 ? Resource.ADM_SB_GEAENDERT_EINS
+                 : string.Format(CultureInfo.CurrentCulture, Resource.ADM_SB_GEAENDERT, n);
+        }
+    }
+
+    // =====================================================================
+    // Speichern, Verwerfen, Neu — der EINE Schreibweg
+    // =====================================================================
+
+    /// <summary>Die Prüfung des Kerns; <c>null</c> = gültig.</summary>
+    private string? Pruefbefund(RueckkuehlwerkDaten d)
+    {
+        string? befund = Pruefen?.Invoke(d);
+        return string.IsNullOrEmpty(befund) ? null : befund;
+    }
+
+    /// <summary>„Speichern": die Prüfregeln EINMAL, dann der Schreibweg der Hülle; danach liest die Liste neu.</summary>
+    private void BeiSpeichern()
+    {
+        _meldung = "";
+        if (_auslieferung) { SpeichernAbgelehnt(Texte.SpeichernGesperrt); return; }
+        if (!_geaendert || _daten.Id <= 0 || Speichern is null) return;
+
+        string? befund = Pruefbefund(_arbeit);
+        if (befund is not null) { SpeichernAbgelehnt(befund); return; }
+
+        RueckkuehlwerkSpeicherErgebnis e = Katalogladung.Schreiben(() => Speichern(_arbeit), _arbeit.Bezeichner,
+                                                                    g => new RueckkuehlwerkSpeicherErgebnis(false, g, _arbeit.Id));
+        if (!e.Ok) { SpeichernAbgelehnt(e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler); return; }
+
+        _geaendert = false;
+        ListeLaden(e.Id.ToString(CultureInfo.InvariantCulture));
+        _status = string.Format(CultureInfo.CurrentCulture, Resource.ADM_STATUS_GESPEICHERT,
+                                DateTime.Now.ToString("HH:mm", CultureInfo.CurrentCulture));
+    }
+
+    private void BeiVerwerfen()
+    {
+        Zuruecksetzen();
+        _meldung = "";
+    }
+
+    private void BeiNeu()
+    {
+        if (Speichern is null) return;
+        if (_geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
+        _meldung = "";
+        _neu = new RueckkuehlwerkDaten();
+        _neuMeldung = "";
+        _neuOffen = true;
+    }
+
+    private void NeuSchliessen()
+    {
+        _neuOffen = false;
+        _neuMeldung = "";
+    }
+
+    /// <summary>„Neu…" — OK prüft (dieselbe Prüfung wie „Speichern") und legt an; die neue Zeile ist danach gewählt.</summary>
+    private void NeuErgebnis(bool ok)
+    {
+        if (!ok) { NeuSchliessen(); return; }
+        if (Speichern is null) return;
+
+        _neu.Id = 0;
+        string? befund = Pruefbefund(_neu);
+        if (befund is not null) { _neuMeldung = befund; return; }
+
+        RueckkuehlwerkSpeicherErgebnis e = Katalogladung.Schreiben(() => Speichern(_neu), _neu.Bezeichner,
+                                                                    g => new RueckkuehlwerkSpeicherErgebnis(false, g, 0));
+        if (!e.Ok) { _neuMeldung = e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler; return; }
+
+        string name = _neu.Bezeichner.Trim();
+        NeuSchliessen();
+        _auswahl.Aufheben();
+        _vergleichszeilen = null;
+        ListeLaden(e.Id.ToString(CultureInfo.InvariantCulture));
+        _status = string.Format(CultureInfo.CurrentCulture, Texte.Angelegt, name);
+    }
+
+    // =====================================================================
+    // Auswahlleiste: Vergleichen, Duplizieren..., Schloss, Löschen
+    // =====================================================================
+
+    private EventCallback BlattOeffnenWeg => _auswahl.BlattOffen ? default : _blattOeffnen;
+
+    private IReadOnlyList<Auswahlhandlung> Handlungen()
+    {
+        var liste = new List<Auswahlhandlung>(4)
+        {
+            new(Filtertexte.Vergleichen, _vergleichen)
+            {
+                Mindestens = 2,
+                ZahlGrund = Resource.ADM_AW_VERGLEICHEN_GRUND,
+                Gedrueckt = _auswahl.Vergleich
+            }
+        };
+        if (Duplizieren is not null)
+            liste.Add(new(Texte.KnopfDuplizieren, _duplizieren)
+            {
+                Hoechstens = 1,
+                ZahlGrund = Resource.ADM_AW_DUPLIZIEREN_GRUND
+            });
+        if (_schloss.Handlung(Schloss, _schlossHandlung, SchlossZiele, false) is { } schloss)
+            liste.Add(schloss);
+        if (Loeschen is not null)
+            liste.Add(new(Texte.KnopfLoeschen, _loeschen) { Sperrgrund = LoeschSperrgrund });
+        return liste;
+    }
+
+    private bool Geschuetzt(string schluessel) => ZeileZu(schluessel)?.Geschuetzt == true;
+
+    /// <summary>
+    /// Warum „Löschen" gerade nicht geht: Ist JEDE Zielzeile ein Auslieferungssatz oder in einem Projekt gewählt, ist
+    /// der Knopf weich gesperrt; der Grund nennt die Zahl der Projektanlagen.
+    /// </summary>
+    private string LoeschSperrgrund
+    {
+        get
+        {
+            IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+            if (ziele.Count == 0) return "";
+            foreach (string z in ziele)
+                if (!Geschuetzt(z) && Verwendungen(z) == 0) return "";
+            int verwendet = ziele.Where(z => !Geschuetzt(z)).Select(Verwendungen).DefaultIfEmpty(0).Max();
+            return verwendet > 0
+                ? string.Format(CultureInfo.CurrentCulture, Texte.LoeschenVerwendet, verwendet)
+                : Resource.ADM_AW_LOESCHEN_GESPERRT;
+        }
+    }
+
+    private void Warnen(string text) => _meldung = text ?? "";
+
+    /// <summary>Ein Speichern ist abgelehnt: Der Grund steht im Warnband UND rot in der Statuszeile.</summary>
+    private void SpeichernAbgelehnt(string grund)
+    {
+        Warnen(grund);
+        _status = grund ?? "";
+        _statusFehler = true;
+    }
+
+    private void BeiKaestchen(IReadOnlyList<string> gewaehlte)
+    {
+        _auswahl.Setzen(gewaehlte);
+        if (_auswahl.Vergleich) VergleichBauen();
+        else _vergleichszeilen = null;
+    }
+
+    private void BeiAufheben()
+    {
+        _auswahl.Aufheben();
+        _vergleichszeilen = null;
+    }
+
+    private void BeiVergleichen()
+    {
+        if (_auswahl.VergleichUmschalten()) VergleichBauen();
+        else _vergleichszeilen = null;
+    }
+
+    private void BeiVergleichZurueck()
+    {
+        _auswahl.VergleichBeenden();
+        _vergleichszeilen = null;
+    }
+
+    /// <summary><b>Der Vergleich</b>: die Lesewerte der gewählten Sätze nebeneinander, dazu die Herkunft.</summary>
+    private void VergleichBauen()
+    {
+        IReadOnlyList<string> schluessel = _auswahl.Gewaehlte;
+        _vergleichskoepfe = schluessel.Select(s => ZeileZu(s)?.Bezeichner ?? s).ToList();
+
+        var saetze = new List<IReadOnlyList<Vergleichsfeld>>(schluessel.Count);
+        foreach (string s in schluessel)
+        {
+            Katalogfilterzeile? z = ZeileZu(s);
+            RueckkuehlwerkDaten d = (z is null ? null
+                : Katalogladung.SatzDazu(() => Lies?.Invoke(z.Id), z.Bezeichner, ref _satzFehler)) ?? new RueckkuehlwerkDaten();
+            var felder = Nennpunktwerte(d).Skip(2)
+                .Concat(Annaeherungswerte(d)).Concat(Ventilatorwerte(d)).Concat(Freikuehlungswerte(d))
+                .Select((w, i) => new Vergleichsfeld("F" + i, w.Name, (w.Wert + " " + w.Einheit).Trim()))
+                .ToList();
+            felder.Add(new("HERKUNFT", Resource.ADM_VG_HERKUNFT,
+                Geschuetzt(s) ? Resource.ADM_SB_AUSLIEFERUNG : Resource.ADM_SB_EIGENER_SATZ));
+            saetze.Add(felder);
+        }
+        _vergleichszeilen = Vergleichsbau.AusFeldern(saetze);
+    }
+
+    /// <summary>„Löschen": wirkt auf die gewählten Zeilen, sonst auf die Fokuszeile; Auslieferungssätze und verwendete bleiben.</summary>
+    private void BeiLoeschen()
+    {
+        if (Loeschen is null) return;
+        IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+        if (ziele.Count == 0) return;
+
+        var loeschbar = ziele.Where(z => !Geschuetzt(z) && Verwendungen(z) == 0).ToList();
+        var geschuetzt = ziele.Where(Geschuetzt).Select(z => ZeileZu(z)?.Bezeichner ?? z).ToList();
+        var verwendet = ziele.Where(z => !Geschuetzt(z) && Verwendungen(z) > 0).Select(z => ZeileZu(z)?.Bezeichner ?? z).ToList();
+        if (loeschbar.Count == 0) { Warnen(LoeschSperrgrund); return; }
+
+        _loeschziele = loeschbar;
+        _loeschBleiben = geschuetzt.Count + verwendet.Count;
+
+        var namen = loeschbar.Select(z => ZeileZu(z)?.Bezeichner ?? z).ToList();
+        string frage = namen.Count == 1
+            ? string.Format(CultureInfo.CurrentCulture, Texte.FrageLoeschen, namen[0])
+            : string.Format(CultureInfo.CurrentCulture, Resource.ADM_LOESCHEN_FRAGE_MEHR,
+                            namen.Count, string.Join(", ", namen));
+        if (geschuetzt.Count > 0)
+            frage += " " + string.Format(CultureInfo.CurrentCulture, Resource.ADM_LOESCHEN_BLEIBEN,
+                                         string.Join(", ", geschuetzt));
+        if (verwendet.Count > 0)
+            frage += " " + string.Format(CultureInfo.CurrentCulture, Texte.LoeschenBleibenVerwendet,
+                                         string.Join(", ", verwendet));
+        _loeschfrageText = frage;
+        _loeschfrage = true;
+    }
+
+    private void BeiLoeschfrage(bool? ja)
+    {
+        _loeschfrage = false;
+        if (ja != true || Loeschen is null) return;
+
+        int geloescht = 0;
+        string einzeln = "";
+        string fehler = "";
+        foreach (string s in _loeschziele)
+        {
+            Katalogfilterzeile? z = ZeileZu(s);
+            if (z is null) continue;
+            RueckkuehlwerkSpeicherErgebnis e = Katalogladung.Loeschen(() => Loeschen(z.Id), z.Bezeichner,
+                                                                       g => new RueckkuehlwerkSpeicherErgebnis(false, g, z.Id));
+            if (e.Ok) { geloescht++; einzeln = z.Bezeichner; }
+            else if (fehler.Length == 0) fehler = e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler;
+        }
+
+        int ziele = _loeschziele.Count + _loeschBleiben;
+        int blieben = ziele - geloescht;
+        _loeschziele = new List<string>();
+
+        if (geloescht > 0) ListeLaden();
+        if (fehler.Length > 0) Warnen(fehler);
+        if (geloescht == 0) return;
+
+        _status = ziele == 1
+            ? string.Format(CultureInfo.CurrentCulture, Texte.Geloescht, einzeln)
+            : blieben > 0
+                ? string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_GELOESCHT_BLEIBEN, geloescht, blieben)
+                : string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_GELOESCHT, geloescht);
+    }
+
+    private void BeiDuplizieren()
+    {
+        if (Duplizieren is null) return;
+        if (_geaendert) { Warnen(Resource.ADM_MSG_UNGESPEICHERT); return; }
+        IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+        if (ziele.Count != 1) return;
+
+        _duplizierQuelle = ziele[0];
+        _meldung = "";
+        _kopievorschlag = Katalogkopie.Namensvorschlag(ZeileZu(_duplizierQuelle)?.Bezeichner ?? "", NameVergeben);
+        _duplizierfrage = true;
+    }
+
+    /// <summary>Belegt ist ein Name, den ein anderer Satz schon trägt (der Name ist im Katalog eindeutig).</summary>
+    private bool NameVergeben(string name) => _katalog.Any(z => z.Bezeichner == name);
+
+    private string? NameBelegt(string name) => NameVergeben(name) ? Texte.NameBelegt : null;
+
+    private void BeiDuplizierName(string? name)
+    {
+        _duplizierfrage = false;
+        if (name is null || Duplizieren is null) return;
+
+        Katalogfilterzeile? zeile = ZeileZu(_duplizierQuelle);
+        if (zeile is null) return;
+
+        RueckkuehlwerkSpeicherErgebnis e = Katalogladung.Schreiben(() => Duplizieren(zeile.Id, name), name,
+                                                                    g => new RueckkuehlwerkSpeicherErgebnis(false, g, 0));
+        if (!e.Ok) { Warnen(e.Meldung.Length > 0 ? e.Meldung : Texte.Fehler); return; }
+
+        _auswahl.Aufheben();
+        _vergleichszeilen = null;
+        ListeLaden(e.Id.ToString(CultureInfo.InvariantCulture));
+        _status = string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_DUPLIZIERT, zeile.Bezeichner, name.Trim());
+    }
+
+    // =====================================================================
+    // „Schloss setzen…" / „Schloss aufheben…"
+    // =====================================================================
+
+    private IReadOnlyList<Katalogfilterzeile> SchlossZiele
+        => Schlossumschaltung.Zeilen(_auswahl.Ziele(_gewaehlt), _katalog);
+
+    private void BeiSchloss()
+    {
+        string? grund = _schloss.Fragen(Schloss, SchlossZiele, _geaendert);
+        if (grund is not null) { Warnen(grund); return; }
+        _meldung = "";
+    }
+
+    private void BeiSchlossAntwort(bool? antwort)
+    {
+        Schlossausgang a = _schloss.Beantwortet(antwort, Schloss);
+        if (!a.Geschrieben)
+        {
+            if (a.Fehler.Length > 0) Warnen(a.Fehler);
+            return;
+        }
+        ListeLaden();
+        _meldung = "";
+        _status = a.Status;
+    }
+
+    // =====================================================================
+    // Schluss
+    // =====================================================================
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape" || _neuOffen || _loeschfrage || _duplizierfrage || _schloss.FrageOffen)
+            return Task.CompletedTask;
+
+        if (_auswahl.BlattOffen)
+        {
+            _auswahl.BlattOffen = false;
+            return Task.CompletedTask;
+        }
+        return Schliessen();
+    }
+
+    /// <summary>Schließen — von „Beenden", Esc und dem Schliesskreuz, immer mit <c>true</c>. Geänderte Werte halten an.</summary>
+    private Task Schliessen()
+    {
+        if (_geaendert)
+        {
+            Warnen(Resource.ADM_MSG_UNGESPEICHERT);
+            return Task.CompletedTask;
+        }
+        return Geschlossen.InvokeAsync(true);
+    }
+}

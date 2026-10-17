@@ -475,6 +475,18 @@ namespace WindowsFormsApplication1
 
             z.Add(Zahl("BETRIEBSKOSTEN", MyResource.Resource.WIRT_ZEILE_BETRIEBSKOSTEN,
                        e => e.BetriebskostenJahr));
+
+            // Welle KB-7c1 (Entwurf KB-7, Abschnitt 5): die Wasserkosten des Rückkühlwerks als Unterzeile der
+            // Betriebskosten — der Betrag steckt schon in der Zeile darüber (nie in der Summe), dazu auf Wunsch
+            // die Herleitung „Menge × Preis". Nur, wenn ein Stand der Gruppe Wasserkosten führt.
+            if (Irgendein(menge, e => Wasserkosten.NachweisIn(e) != null))
+            {
+                z.Add(Unter("BETRIEBSKOSTEN_WASSER_RKW", MyResource.Resource.WIRT_ZEILE_WASSER_RKW,
+                            e => Wasserkosten.NachweisIn(e)?.BetragJahr, ""));
+                if (mitHerleitung)
+                    z.Add(UnterText("BETRIEBSKOSTEN_WASSER_RKW_HERLEITUNG", MyResource.Resource.WIRT_ZEILE_WASSER_RKW_HERLEITUNG,
+                                    e => Wasserkosten.Herleitung(Wasserkosten.NachweisIn(e), BerichtTexte.Kultur), ""));
+            }
             z.Add(Zahl("ENERGIEKOSTEN", MyResource.Resource.WIRT_ZEILE_ENERGIEKOSTEN,
                        e => e.EnergiekostenJahr));
 

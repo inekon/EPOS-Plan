@@ -57,8 +57,14 @@ namespace WindowsFormsApplication1
         /// <summary>Kleinster zulässiger Kaltwasservorlauf [°C].</summary>
         public double? Kaltwasser_Vorlauf_Min { get; set; }
 
-        /// <summary>Gerätepreis [€].</summary>
-        public double? Modulkosten { get; set; }
+        /// <summary>
+        /// <b>Die Gerätekosten als LESEWERT</b> [€] — die Investitionssumme der Satzvorlage
+        /// dieses Satzes (<see cref="KatalogkostensatzCtrl.Betrag"/>); <c>null</c> ohne
+        /// Vorlage oder Betrag. Die Spalte <c>Modulkosten</c> ist mit Welle KB-4 entfallen
+        /// (Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine Doppelhaltung"); gepflegt
+        /// wird der Wert in der Kostenverwaltung, kein Schreibweg schreibt ihn.
+        /// </summary>
+        public double? Geraetekosten { get; set; }
 
         /// <summary>Gehört zur Auslieferung (nur am Katalogsatz).</summary>
         public bool ReadOnly { get; set; }

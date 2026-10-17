@@ -1,0 +1,108 @@
+﻿@* BETRIEBSKALENDERWAHL (Konzept Kaeltebedarfsprofile 7.1, Welle KBP-1, Entscheid OE-4).
+
+   WOZU. Jede Bedarfsart mit Kalenderspalte an der Zuordnung (Brauchwasser, Prozesswaerme, Kaelte; Strom, sobald
+   seine Zuordnung eine Kalenderspalte fuehrt) waehlt den Betriebskalender ihrer markierten Projektzeile. Der
+   Baustein zeigt die Wahl, den Weg zu den Kalendern und den Hinweis, der zur Lage passt - an EINER Stelle statt
+   je Dialog.
+
+   AUFBAU. Die Auswahl ("ohne Kalender" und die angelegten Kalender), rechts daneben der Knopf "Betriebskalender…",
+   darunter der Hinweis als Herleitungszeile:
+   - keine Zeile markiert: "Kalender gelten je Projektzeile - erst eine Zeile waehlen." (die Wahl ist gesperrt);
+   - kein Kalender angelegt: "Noch kein Betriebskalender angelegt. …";
+   - sonst der Hinweis des Wirts (BPF_HINW_KALENDER).
+
+   KEINE DATENBANK. Liste und Kalenderdialog kommen ueber die Huelle (BetriebskalenderHuelle.WahlEinhaengen). Der
+   Knopf meldet nur "Oeffnen" - der Wirt tauscht seinen Inhalt gegen das BLATT mit dem BetriebskalenderDialog
+   (Baustein Blattwechsel, keine dritte Ueberlagerungsebene), denn ein Blatt tauscht den Inhalt des Wirts und damit
+   auch diesen Baustein. Nach dem OK des Blattes liest der Wirt die Liste neu; welcher Kalender neu angelegt wurde
+   und vorgewaehlt wird, sagt NeuerKalender - die Regel steht hier, einmal.
+
+   Kein Delegat, kein Knopf: Ohne Oeffnen steht nur die Wahl da. *@
+@namespace EPOS.UI.Bausteine
+
+<Gruppenkopf Titel="@Titel">
+    <KindInhalt>
+        <div class="epos-kontextleiste epos-kalenderwahl">
+            <Auswahlfeld Bezeichnung="@Bezeichnung" Eintraege="@WahlEintraege" Aktiv="@ZeileGewaehlt"
+                         Auswahl="@(Auswahl ?? 0)" AuswahlChanged="Gewaehlt" />
+            @if (Oeffnen.HasDelegate)
+            {
+                <button type="button" class="epos-knopf epos-kalenderwahl-knopf" title="@KnopfHinweis"
+                        @onclick="() => Oeffnen.InvokeAsync()">@KnopfText</button>
+            }
+        </div>
+        <Herleitungszeile Text="@Hinweis" />
+    </KindInhalt>
+</Gruppenkopf>
+
+@code {
+    /// <summary>Die angelegten Kalender als (ID, Bezeichner) — ohne den Eintrag „ohne Kalender“.</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Eintraege { get; set; } = Array.Empty<(int, string)>();
+
+    /// <summary>Der Kalender der markierten Zeile; <c>null</c> = ohne.</summary>
+    [Parameter] public int? Auswahl { get; set; }
+
+    /// <summary>Die Wahl: ID des Kalenders, <c>null</c> = ohne Kalender.</summary>
+    [Parameter] public EventCallback<int?> AuswahlChanged { get; set; }
+
+    /// <summary>Ist eine Projektzeile markiert? Ohne Zeile ist die Wahl gesperrt und der Hinweis nennt den Grund.</summary>
+    [Parameter] public bool ZeileGewaehlt { get; set; }
+
+    /// <summary>Der Knopf „Betriebskalender…“: der Wirt öffnet das Blatt. Ohne Delegat kein Knopf.</summary>
+    [Parameter] public EventCallback Oeffnen { get; set; }
+
+    /// <summary><c>BPF_GRP_KALENDER</c></summary>
+    [Parameter] public string Titel { get; set; } = Resource.BPF_GRP_KALENDER;
+
+    /// <summary><c>BPF_LBL_KALENDER</c></summary>
+    [Parameter] public string Bezeichnung { get; set; } = Resource.BPF_LBL_KALENDER;
+
+    /// <summary><c>BPF_KALENDER_KEINER</c> — der Eintrag „ohne Kalender“.</summary>
+    [Parameter] public string TextOhneKalender { get; set; } = Resource.BPF_KALENDER_KEINER;
+
+    /// <summary><c>BKW_BTN_KALENDER</c></summary>
+    [Parameter] public string KnopfText { get; set; } = Resource.BKW_BTN_KALENDER;
+
+    /// <summary><c>BKW_BTN_KALENDER_HINWEIS</c></summary>
+    [Parameter] public string KnopfHinweis { get; set; } = Resource.BKW_BTN_KALENDER_HINWEIS;
+
+    /// <summary><c>BPF_HINW_KALENDER</c> — der Hinweis, wenn eine Zeile markiert ist und Kalender bestehen.</summary>
+    [Parameter] public string HinweisNormal { get; set; } = Resource.BPF_HINW_KALENDER;
+
+    /// <summary><c>BKW_HINW_KEINE_ZEILE</c></summary>
+    [Parameter] public string HinweisKeineZeile { get; set; } = Resource.BKW_HINW_KEINE_ZEILE;
+
+    /// <summary><c>BKW_HINW_KEIN_KALENDER</c></summary>
+    [Parameter] public string HinweisKeinKalender { get; set; } = Resource.BKW_HINW_KEIN_KALENDER;
+
+    /// <summary>Der Hinweis zur Lage: erst die Zeile, dann der fehlende Kalender, sonst der Hinweis des Wirts.</summary>
+    public string Hinweis
+        => !ZeileGewaehlt ? HinweisKeineZeile : Eintraege.Count == 0 ? HinweisKeinKalender : HinweisNormal;
+
+    /// <summary>Die Einträge der Wahl: 0 = ohne Kalender, dann die angelegten.</summary>
+    private IReadOnlyList<(int Id, string Text)> WahlEintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>(Eintraege.Count + 1) { (0, TextOhneKalender) };
+            l.AddRange(Eintraege);
+            return l;
+        }
+    }
+
+    private Task Gewaehlt(int? id) => AuswahlChanged.InvokeAsync(id is > 0 ? id : null);
+
+    /// <summary>
+    /// Der neu angelegte Kalender nach dem Blatt „Betriebskalender…“: unter den Kalendern, die <paramref name="vorher"/>
+    /// nicht kannte, der jüngste (größte ID); <c>null</c> = keiner neu.
+    /// </summary>
+    public static int? NeuerKalender(IReadOnlyList<(int Id, string Text)>? vorher, IReadOnlyList<(int Id, string Text)>? nachher)
+    {
+        if (nachher is null || nachher.Count == 0) return null;
+        var bekannt = new HashSet<int>((vorher ?? Array.Empty<(int, string)>()).Select(k => k.Id));
+        int? neu = null;
+        foreach ((int id, _) in nachher)
+            if (id > 0 && !bekannt.Contains(id) && (neu is null || id > neu)) neu = id;
+        return neu;
+    }
+}

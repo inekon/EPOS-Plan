@@ -225,7 +225,7 @@ namespace WindowsFormsApplication1
                 // Vorgang. Die Straenge bleiben an der Anlage im Projekt.
                 ["RueckwegWege"] = mitKopie ? RueckwegWege() : null,
                 ["RueckwegBleibtText"] = Text_("PVD_RUECK_BLEIBT",
-                    "Im Projekt bleiben: Stränge und Wechselrichterzuordnung, Neigung, Azimut, Anzahl Module, Ertragsmodell und Energieträger der Anlage. Alle Modulwerte samt den Temperaturkoeffizienten und den Modulkosten gehen mit."),
+                    "Im Projekt bleiben: Stränge und Wechselrichterzuordnung, Neigung, Azimut, Anzahl Module, Ertragsmodell und Energieträger der Anlage. Alle Modulwerte samt den Temperaturkoeffizienten gehen mit."),
 
                 // Loeschen im Katalogfuss (samt Satzvorlage, KA-E-16): leer = geloescht, sonst der Grund.
                 ["KatalogLoeschen"] = new Func<int, string>(KatalogLoeschen),
@@ -751,6 +751,15 @@ namespace WindowsFormsApplication1
             Auslegungstemperaturen t = temperaturen ?? Auslegungstemperaturen.Vorgabe;
             StrangAuslegung.Vorschlag v = StrangAuslegung.Vorschlagen(modul, geraet, Modulzahl(zeile),
                                                                       t.KaltOderVorgabe, t.HeissOderVorgabe);
+            // Scheitert die Aufteilung nur an Grenzen aus fehlenden Katalogangaben,
+            // rechnet sie ohne sie - dieselbe Regel wie "Wechselrichter vorschlagen"
+            // (bedingt geeignet, Angaben fehlen).
+            if (!v.Moeglich && WechselrichterVorschlag.Lueckengeraet(geraet) is WechselrichterModel luecke)
+            {
+                StrangAuslegung.Vorschlag ohneLuecke = StrangAuslegung.Vorschlagen(modul, luecke, Modulzahl(zeile),
+                                                                                   t.KaltOderVorgabe, t.HeissOderVorgabe);
+                if (ohneLuecke.Moeglich) v = ohneLuecke;
+            }
             if (!v.Moeglich)
                 return new StrangVorschlag(false, new List<StrangVorgabe>(),
                     string.Format(CultureInfo.CurrentCulture,
@@ -803,7 +812,7 @@ namespace WindowsFormsApplication1
                 liste.Add(new WechselrichterVorschlagZeile(
                     k.Geraet.m_ID, namen[k.Geraet.m_ID], k.Geraet.m_szFirma ?? "",
                     (Wechselrichtereignung)(int)k.Stufe,
-                    WechselrichterVorschlag.StufeText(k.Stufe),
+                    WechselrichterVorschlag.StufeText(k),
                     WechselrichterVorschlag.GrundText(k),
                     WechselrichterVorschlag.DcAcText(k),
                     k.Geraete,

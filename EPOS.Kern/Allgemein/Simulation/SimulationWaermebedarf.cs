@@ -608,7 +608,7 @@ namespace WindowsFormsApplication1
 
             // Wärmebedarf extern 
             waectrl = new Z_ProjektGebGanglinieCtrl();
-            waectrl.ReadAll("select * from Z_ProjektWaermebedarf where ID_Projekt=" + m_ID_Projekt);
+            waectrl.ReadAll("SELECT * FROM Z_ProjektWaermebedarf WHERE ID_Projekt = ?", new DbParam("@id", m_ID_Projekt));
 
             Waermebedarf_Extern_Gesamt = 0;
             rs = new RecordSet();
@@ -628,7 +628,8 @@ namespace WindowsFormsApplication1
                 // Tab_WaermebedarfDaten.ID). Jet loest das auf, SQLite nicht - eine Sicht hat
                 // nur ihre eigenen Ausgabespalten ("no such column: Tab_Waermebedarf.ID").
                 // Die Sicht heisst die zweite ID jetzt ID_Daten (002_views.sql).
-                rs.Open("select * from Abfrage_ProjektGebaeudeGanglinie where ID=" + waectrl.items[n].m_ID_Ganglinie + " order by ID_Daten");
+                rs.Open("SELECT * FROM Abfrage_ProjektGebaeudeGanglinie WHERE ID = ? ORDER BY ID_Daten",
+                        new DbParam("@id", waectrl.items[n].m_ID_Ganglinie));
 
                 int index = 0;
                 double wert = 0;
@@ -1987,8 +1988,13 @@ namespace WindowsFormsApplication1
         /// Jahressummen je Profilname [MWh] aus dem offenen Dialog, die der gespeicherten
         /// Zuordnung vorgehen (<see cref="ProfilQuelle.Jahressummen"/>); <c>null</c> im Lauf.
         /// </param>
+        /// <param name="arbeitsstaende">
+        /// Der Arbeitsstand des offenen Dialogs je Profilname — hier der Betriebskalender der Zeile
+        /// (<see cref="ProfilQuelle.Arbeitsstaende"/>); <c>null</c> im Lauf.
+        /// </param>
         public void Prozesswaerme_berechnen(List<string> list = null,
-                                            IReadOnlyDictionary<string, double> jahressummen = null)
+                                            IReadOnlyDictionary<string, double> jahressummen = null,
+                                            IReadOnlyDictionary<string, ProfilArbeitsstand> arbeitsstaende = null)
         {
             try
             {
@@ -2010,6 +2016,7 @@ namespace WindowsFormsApplication1
 
                 ProfilQuelle quelle = ProfilQuelle.Prozesswaerme(modus);
                 quelle.Jahressummen = jahressummen;
+                quelle.Arbeitsstaende = arbeitsstaende;
 
                 // PW1 Stufe 1: das Temperaturniveau des Prozesskanals - nur im Lauf. Jedes
                 // gerechnete Profil mit vollständigem Paar trägt seine Stunden bei; ohne ein
@@ -2084,8 +2091,13 @@ namespace WindowsFormsApplication1
         /// Jahressummen je Profilname [MWh] aus dem offenen Dialog
         /// (<see cref="ProfilQuelle.Jahressummen"/>); <c>null</c> im Lauf.
         /// </param>
+        /// <param name="arbeitsstaende">
+        /// Der Arbeitsstand des offenen Dialogs je Profilname — hier der Betriebskalender der Zeile
+        /// (<see cref="ProfilQuelle.Arbeitsstaende"/>); <c>null</c> im Lauf.
+        /// </param>
         public void Brauchwasserwaerme_berechnen(List<string> list = null,
-                                                 IReadOnlyDictionary<string, double> jahressummen = null)
+                                                 IReadOnlyDictionary<string, double> jahressummen = null,
+                                                 IReadOnlyDictionary<string, ProfilArbeitsstand> arbeitsstaende = null)
         {
             Brauchwasser_Zirkulation_Mwh = 0;
             Array.Clear(Waermebedarf_Brauchwasser_Zirkulation_Monat, 0, Waermebedarf_Brauchwasser_Zirkulation_Monat.Length);
@@ -2120,6 +2132,7 @@ namespace WindowsFormsApplication1
 
                 ProfilQuelle quelle = ProfilQuelle.Brauchwasser(modus);
                 quelle.Jahressummen = jahressummen;
+                quelle.Arbeitsstaende = arbeitsstaende;
                 ProfilBedarf.Rechnen(quelle, m_ID_Projekt, list,
                                      wochentag, mo_anfang, mo_ende,
                                      brauchwasserwerte, Waermebedarf_Brauchwasser_Monat);

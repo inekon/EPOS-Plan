@@ -5,10 +5,10 @@
    Stammsaetze, rechts ihre Felder, darunter zwei Kennlinienbilder in zwei
    Reiterblaettern und der Umschalter Waerme/Kuehlung.
 
-   ZWEI UEBERLAGERUNGEN. "Kennliniendaten Ansicht/Bearbeiten..." zeigt den
-   KennlinienEditorDialog (W7.2), "Modul-Katalog..." den
-   WaermepumpenKatalogDialog (W7.1) - beide IM selben Fenster (Risiko R2),
-   nicht als zweites Fenster wie im Vorlaeufer.
+   EINE UEBERLAGERUNG. "Kennliniendaten Ansicht/Bearbeiten..." zeigt den
+   KennlinienEditorDialog (W7.2) - IM selben Fenster (Risiko R2), nicht als
+   zweites Fenster wie im Vorlaeufer. Der Katalog steht in der Liste dieses
+   Dialogs selbst (Katalogfilter S2.2), ein "Modul-Katalog..." gibt es nicht.
 
    DIE BILDER KOMMEN FERTIG. Der Vorlaeufer baute zwei WinForms-Charts aus
    einer DataTable auf (InitChart:243-331); hier baut
@@ -22,14 +22,14 @@
    zu speichern oder zu loeschen wird abgelehnt, seine Kennlinien sind nur
    ansehbar.
 
-   MODULKOSTEN STEHEN NUR LESEND DA (Anwenderentscheid W14a-O-1 vom
-   06.09.2026). Ä19 der Welle 7 nahm das Feld ganz aus der Maske
-   ("Geraetekosten laufen ueber die Kostenverwaltung"); seither lief der Wert
-   verborgen mit, und niemand sah, warum die Kostenuebernahme keinen Planwert
-   vorschlug. Der Wert ist deshalb WIEDER SICHTBAR - als
-   Lesewert im Raster mit Herleitungszeile darunter, ohne Eingabefeld und ohne
-   Schreibweg. Ä19 bleibt damit gewahrt: Hier tippt niemand Kosten ein, er
-   sieht nur, woher der Planwert kommt bzw. warum keiner kommt. Die
+   DER KOSTENSATZ STEHT NUR LESEND DA (Anwenderentscheid W14a-O-1 vom
+   06.09.2026). Ä19 der Welle 7 nahm das Kostenfeld ganz aus der Maske
+   ("Geraetekosten laufen ueber die Kostenverwaltung"); seither sah niemand,
+   warum die Kostenuebernahme keinen Planwert vorschlug. Der Wert ist deshalb
+   WIEDER SICHTBAR - als Lesewert im Raster mit Herleitungszeile darunter, ohne
+   Eingabefeld und ohne Schreibweg. Seit Welle KB-4 ist seine Quelle die
+   SATZVORLAGE der Kostenverwaltung (Schemaschritt 228 nahm die Geraetespalte
+   fort), also genau die Zahl, die dort gepflegt wird. Die
    Pflichtpruefung des Vorlaeufers auf das frueher pflegbare Feld bleibt
    entfallen (A-14) - es gibt nichts zu pruefen, was der Anwender eingegeben
    haette.
@@ -136,10 +136,10 @@
                           Zeigeanlass="@_auswahl.Uebernahmen">
                 <Werkzeug>
                     @* "NUR MIT KUEHLFUNKTION" (Konzept Administrationsdialoge 3.1, Zone 2;
-                       Stufe 4): derselbe Schalter wie in der Katalogauswahl des
-                       Anlagendialogs (WaermepumpenKatalogDialog). Er fuehrt keinen eigenen
-                       Zustand, er setzt den Trichter ">0" auf die Spalte Kuehlleistung -
-                       nie ein zweiter Filterweg; "Filter zuruecksetzen" nimmt ihn mit. *@
+                       Stufe 4): der Schnellfilter ueber der Katalogliste. Er fuehrt keinen
+                       eigenen Zustand, er setzt den Trichter ">0" auf die Spalte
+                       Kuehlleistung - nie ein zweiter Filterweg; "Filter zuruecksetzen"
+                       nimmt ihn mit. *@
                     <Schalter Bezeichnung="@SchalterNurKuehlung" Wert="@NurMitKuehlung"
                               WertChanged="NurMitKuehlungGesetzt" />
                 </Werkzeug>
@@ -231,7 +231,7 @@
                        Stufe 3 haelt ein geaendertes Feld Zeilenwechsel, Neu,
                        Duplizieren... und Beenden an ("Speichern oder Verwerfen") - bis
                        dahin verwarf ein Zeilenwechsel die Eingabe still. *@
-                    <WaermepumpeStammFelder Daten="@Daten" Texte="@_felderTexte" MitModulkosten="false"
+                    <WaermepumpeStammFelder Daten="@Daten" Texte="@_felderTexte" MitKostensatz="false"
                                             Typen="@Typen" Leistungsstufen="@Leistungsstufen"
                                             Aufstellungen="@Aufstellungen" Baujahre="@Baujahre"
                                             Aktiv="@(!NurLesbar)" Geaendert="BeiFeldAenderung" />
@@ -488,12 +488,10 @@
     [Parameter] public string LabelKuehlleistung { get; set; } = "Kühlleistung";
 
     /// <summary>
-    /// Beschriftung des Lesewerts (W14a‑O‑1). Der Schlüssel ist <c>MODK_LBL_MODULKOSTEN</c>
-    /// — derselbe, den der Verwendungskatalog für diese Spalte führt
-    /// (<c>ParameterVerwendung.Waermepumpe</c>); Raster und Aufklapper nennen den
-    /// Parameter damit wortgleich.
+    /// Beschriftung des Lesewerts der Gruppe „Kosten" (W14a‑O‑1). Der Schlüssel ist
+    /// <c>MODK_LBL_KOSTENSATZ</c> — derselbe, den die Modulkataloge führen.
     /// </summary>
-    [Parameter] public string LabelModulkosten { get; set; } = "Modulkosten";
+    [Parameter] public string LabelKostensatz { get; set; } = "Kostensatz";
 
     [Parameter] public string LabelKennlinien { get; set; } = "Kenndaten Kennlinien:";
     [Parameter] public string OptionWaerme { get; set; } = "Wärme";
@@ -504,25 +502,19 @@
     [Parameter] public string EinheitKw { get; set; } = "kW";
 
     /// <summary>
-    /// Einheit der Modulkosten. Sie steht in beiden Sprachen gleich und braucht
-    /// deshalb — wie <see cref="EinheitKw"/> — keinen Ressourcenschlüssel.
-    /// </summary>
-    [Parameter] public string EinheitEuro { get; set; } = "€";
-
-    /// <summary>
-    /// Die Herleitungszeile unter den Modulkosten (<c>WPS_HERL_MODULKOSTEN</c>,
+    /// Die Herleitungszeile unter dem Kostensatz (<c>WPS_HERL_KOSTENSATZ</c>,
     /// W14a‑O‑1). Sie steht IMMER da: Ihre zweite Hälfte ist die Auskunft aus Ä19 —
     /// wer hier Kosten pflegen will, findet den Weg dorthin.
     /// </summary>
-    [Parameter] public string HerleitungModulkosten { get; set; } =
-        "aus dem Datenbestand; Gerätekosten werden in der Kostenverwaltung gepflegt";
+    [Parameter] public string HerleitungKostensatz { get; set; } =
+        "aus der Satzvorlage; Gerätekosten werden in der Kostenverwaltung gepflegt";
 
     /// <summary>
-    /// Die zweite, leise Zeile bei einem Wert von 0 (<c>WPS_HINWEIS_MODULKOSTEN_LEER</c>,
+    /// Die zweite, leise Zeile ohne gepflegten Satz (<c>WPS_HINWEIS_KOSTENSATZ_LEER</c>,
     /// W14a‑O‑1) — die Antwort auf „warum schlägt die Kostenübernahme nichts vor?".
     /// </summary>
-    [Parameter] public string HinweisModulkostenLeer { get; set; } =
-        "kein Planwert im Datenbestand";
+    [Parameter] public string HinweisKostensatzLeer { get; set; } =
+        "kein Kostensatz in der Kostenverwaltung";
     /// <summary>
     /// Der KURZE Knopftext der Fußleiste. Der volle Wortlaut des Vorläufers
     /// („Kennliniendaten Ansicht/Bearbeiten…") steht als Titel der Überlagerung
@@ -605,8 +597,8 @@
 
     /// <summary>
     /// Steht „nur mit Kühlfunktion"? <b>Der Schalter führt keinen eigenen Zustand</b> —
-    /// er LIEST den Filterstand (Muster <c>WaermepumpenKatalogDialog</c>): „Filter
-    /// zurücksetzen" und der Trichter der Spalte ändern denselben Stand.
+    /// er LIEST den Filterstand: „Filter zurücksetzen" und der Trichter der Spalte
+    /// ändern denselben Stand.
     /// </summary>
     public bool NurMitKuehlung
         => _filterstand.Ausdruck(Katalogfilterprofil.SpKuehlleistung) ==
@@ -902,8 +894,9 @@
                                d.Heizstab?.ToString(CultureInfo.CurrentCulture) ?? ""),
             new Vergleichsfeld("KUEHLLEISTUNG", LabelKuehlleistung + kw,
                                d.Kuehlleistung.ToString(CultureInfo.CurrentCulture)),
-            new Vergleichsfeld("MODULKOSTEN", LabelModulkosten + " [" + EinheitEuro + "]",
-                               d.Modulkosten.ToString(CultureInfo.CurrentCulture)),
+            new Vergleichsfeld("KOSTENSATZ", LabelKostensatz +
+                               (string.IsNullOrEmpty(d.KostensatzEinheit) ? "" : " [" + d.KostensatzEinheit + "]"),
+                               d.Kostensatz ?? ""),
             new Vergleichsfeld(HERKUNFT, Resource.ADM_VG_HERKUNFT,
                                geschuetzt ? Resource.ADM_SB_AUSLIEFERUNG : Resource.ADM_SB_EIGENER_SATZ)
         };
@@ -919,17 +912,17 @@
     private WaermepumpeStammFelderTexte _felderTexte = new();
 
     /// <summary>
-    /// <b>Die eigene Gruppe „Kosten"</b> (Konzept Administrationsdialoge, Stufe 4): Die
-    /// Modulkosten standen bis hierher zwischen den Kenndaten; jetzt stehen sie wie bei
-    /// den Gerätekatalogen in der festen Gruppe Kosten des Stammblatts — als LESEWERT mit
-    /// Herleitung, denn gepflegt werden sie in der Kostenverwaltung (W14a-O-1).
+    /// <b>Die eigene Gruppe „Kosten"</b> (Konzept Administrationsdialoge, Stufe 4): Der
+    /// Kostensatz steht wie bei den Gerätekatalogen in der festen Gruppe Kosten des
+    /// Stammblatts — als LESEWERT mit Herleitung, denn gepflegt wird er in der
+    /// Kostenverwaltung (W14a-O-1); seine Quelle ist die Satzvorlage (Welle KB-4).
     /// </summary>
     private RenderFragment KostenInhalt => @<div class="epos-wp-kosten">
         <Stammblattwerte Werte="@WaermepumpeStammFelder.Kostenwerte(Daten, _felderTexte)" />
-        <Herleitungszeile Text="@_felderTexte.HerleitungModulkosten" />
-        @if (Daten.Modulkosten <= 0)
+        <Herleitungszeile Text="@_felderTexte.HerleitungKostensatz" />
+        @if (string.IsNullOrEmpty(Daten.Kostensatz))
         {
-            <Herleitungszeile Text="@_felderTexte.HinweisModulkostenLeer" />
+            <Herleitungszeile Text="@_felderTexte.HinweisKostensatzLeer" />
         }
     </div>;
 
@@ -954,11 +947,10 @@
         _felderTexte.LabelNennleistung = LabelNennleistung;
         _felderTexte.LabelHeizstab = LabelHeizstab;
         _felderTexte.LabelKuehlleistung = LabelKuehlleistung;
-        _felderTexte.LabelModulkosten = LabelModulkosten;
-        _felderTexte.HerleitungModulkosten = HerleitungModulkosten;
-        _felderTexte.HinweisModulkostenLeer = HinweisModulkostenLeer;
+        _felderTexte.LabelKostensatz = LabelKostensatz;
+        _felderTexte.HerleitungKostensatz = HerleitungKostensatz;
+        _felderTexte.HinweisKostensatzLeer = HinweisKostensatzLeer;
         _felderTexte.EinheitKw = EinheitKw;
-        _felderTexte.EinheitEuro = EinheitEuro;
     }
 
     /// <summary>KT-3: der Grund, wenn das Lesen der Katalogliste geworfen hat; leer = gelesen.</summary>

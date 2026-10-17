@@ -96,6 +96,12 @@ namespace EPOS.Kern.Tests
             double wirkungsgradRt, double ladezustand, double modulkosten, double leistungskosten,
             double investitionFix, double standbyW)
         {
+            // Die vier Kostenspalten sind entfallen (StromspeicherKostenSchema): Der Satz wird im älteren Stand
+            // MIT ihnen angelegt, und der Sicherheitslauf des Schritts sät daraus die Satzvorlagen und entfernt
+            // die Spalten wieder — derselbe Weg, auf dem eine ältere Datenbank ihre Kosten mitnimmt.
+            foreach (string spalte in new[] { "Modulkosten", "Verschleisskosten", "Leistungskosten", "Investition_Fix" })
+                if (!DataRepository.SpalteVorhanden(StromspeicherKostenSchema.TAB_STAMM, spalte))
+                    Sql("ALTER TABLE Tab_Stromspeicher_STAMM ADD COLUMN " + spalte + " REAL");
             Sql("INSERT INTO Tab_Stromspeicher_STAMM " +
                 "(ID, Bezeichner, Typ, Leistung, Energie, Degradation, Ladezustand, Modulkosten, " +
                 " ReadOnly, Wirkungsgrad_RT, Zyklen_Zugesichert, Verschleisskosten, Leistungskosten, " +
@@ -104,6 +110,8 @@ namespace EPOS.Kern.Tests
                 Z(1.5) + ", " + Z(ladezustand) + ", " + Z(modulkosten) + ", 0, " + Z(wirkungsgradRt) +
                 ", 6000, " + Z(0.03) + ", " + Z(leistungskosten) + ", " + Z(investitionFix) + ", " +
                 Z(standbyW) + ", 'Prüfhersteller')");
+            StromspeicherKostenSchema.Lauf(null);
+            Assert.True(StromspeicherKostenSchema.Vollstaendig());
         }
 
         private static List<FlottenEinheit> Vorbelegung()

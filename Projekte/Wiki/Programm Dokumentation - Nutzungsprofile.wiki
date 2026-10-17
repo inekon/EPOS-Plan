@@ -23,7 +23,7 @@ Das Blatt trägt zwei Reiter: ''Profile'' mit Katalogbaum und Profileditor und '
 Links stehen die Kategorien mit ihren Profilen, nach Nummer und Name sortiert. Die Suche findet Nummer und Name.
 
 * '''EPOS-Muster''' – ausgelieferte Muster zum Einstieg, schreibgeschützt (Schloss).
-* '''DIN/TS 18599-10''' – ausgeliefert sind Nummern und Namen der 43 Nutzungen der Ausgabe 2025-10 und, am Ende der Kategorie ohne Nummer, die Wohngebäude nach Tabelle 5 (Einfamilienhaus, Mehrfamilienhaus), alle ohne Werte. Die Werte aus Ihrer eigenen Ausgabe der Norm lesen Sie mit ''Normwerte einlesen…'' ein (siehe [[#normwerte-einlesen|Normwerte einlesen]]) oder tragen sie in eine Kopie ein (''Duplizieren'').
+* '''DIN/TS 18599-10''' – ausgeliefert sind die 43 Nutzungen der Ausgabe 2025-10 und, am Ende der Kategorie ohne Nummer, die Wohngebäude nach Tabelle 5 (Einfamilienhaus, Mehrfamilienhaus), jeweils mit den Werten der Norm. Das Wochenmuster der Nutzungstage folgt aus den Nutzungstagen je Jahr, die die Norm nennt: 365 Tage ergeben sieben Tage je Woche, 300 Tage sechs (Montag bis Samstag), 250, 230, 200 und 150 Tage fünf (Montag bis Freitag); bei einer Nutzung ohne Angabe der Nutzungstage bleibt das Wochenmuster leer. Werte aus Ihrer eigenen Ausgabe der Norm gleichen Sie mit ''Normwerte einlesen…'' ab (siehe [[#normwerte-einlesen|Normwerte einlesen]]) oder tragen sie in eine Kopie ein (''Duplizieren'').
 * '''Eigene Kategorien''' – Ihre eigenen Kataloge, frei bearbeitbar; auch für Werte aus weiteren Normen und Richtlinien, die Sie lizenziert haben (anlegen, duplizieren oder per CSV einlesen).
 
 Unter dem Baum stehen ''Neue Kategorie…'', ''Neues Profil…'', ''Duplizieren'' (auch in eine andere Kategorie), ''Umbenennen'' und ''Löschen''. Ausgelieferte Kategorien und Profile lassen sich nur duplizieren. Ist die Kategorie ''DIN/TS 18599-10'' gewählt, stehen dort zusätzlich ''Normwerte einlesen…'' und ''Eingelesene Werte entfernen…''. Profile mit eingelesenen Werten tragen die Marke ''eingelesen''.
@@ -34,7 +34,7 @@ Rechts steht das gewählte Profil: Kategorie, Nummer, Name, Beschreibung und Que
 
 * '''Nutzungszeit und Woche''' – ''Nutzung von'' und ''bis'', ''Betrieb von'' und ''bis'', die ''Nutzungstage der Woche'' und ''Feiertage wie Sonntag''.
 * '''Sollwerte Heizen und Kühlen''' – ''Heizen im Betrieb'' und ''Heizen außerhalb'' (oder ''Heizen außerhalb aus''), ebenso für das Kühlen.
-* '''Außenluft''' – ''Außenluft im Betrieb'' und ''außerhalb'' mit der ''Einheit der Außenluft'': Luftwechsel in 1/h oder Volumenstrom je Fläche in m³/(h·m²); diese braucht die lichte Höhe des Ziels. Dazu ''Außenluft je Person'' in m³/(h·Person); sie gilt nur, wenn keine Außenluft im Betrieb angegeben ist, und wird mit der Fläche je Person und der lichten Höhe in einen Luftwechsel umgerechnet.
+* '''Außenluft''' – ''Außenluft im Betrieb'' und ''außerhalb'' mit der ''Einheit der Außenluft'': Luftwechsel in 1/h oder Volumenstrom je Fläche in m³/(h·m²); diese braucht die lichte Höhe des Ziels. Dazu ''Außenluft je Person'' in m³/(h·Person); sie gilt nur, wenn keine Außenluft im Betrieb angegeben ist, und wird mit der Fläche je Person und der lichten Höhe in einen Luftwechsel umgerechnet. Fehlt die Fläche je Person, lässt sie sich nicht umrechnen, und die Übernahme meldet es, statt etwas anzunehmen.
 * '''Personen, Geräte und Beleuchtung''' – ''Fläche je Person'', ''Wärme je Person'', ''Gerätelast'', je der Anteil ''im Betrieb'' und ''außerhalb'', dazu ''Beleuchtung'' und ''Gleichzeitigkeit der Beleuchtung''. Die Beleuchtung zählt zu den Geräten: Deren Nennwert am Ziel ist Gerätelast plus Beleuchtung mal Gleichzeitigkeit, mal Fläche.
 
 ''Speichern'' schreibt den Entwurf des Profils in den Katalog, ''Abbrechen'' verwirft den Entwurf, ''Vorschau'' rechnet die Vorschau neu.
@@ -66,14 +66,24 @@ Die Nutzung einer Vorlage ist ein freier Text; beim Eintippen bietet das Program
 === Normwerte einlesen ===
 {{Anker|normwerte-einlesen}}
 
-Die Profile der Kategorie ''DIN/TS 18599-10'' werden ohne Werte ausgeliefert. ''Normwerte einlesen…'' füllt sie mit den Werten aus Ihrer eigenen Quelle; der Dialog öffnet sich im Blatt und schreibt erst mit ''Übernehmen''.
+Die Profile der Kategorie ''DIN/TS 18599-10'' werden mit den Werten der Fassung 2025-10 ausgeliefert. ''Normwerte einlesen…'' gleicht eigene Werte aus Ihrer Quelle dagegen ab; der Dialog öffnet sich im Blatt und schreibt erst mit ''Übernehmen''.
 
 # '''Vorlage holen''' – ''Vorlage speichern…'' schreibt die CSV-Datei der Kategorie mit Nummern und Namen, ohne Werte. Tragen Sie die Werte aus Ihrer Ausgabe der Norm ein; Nummer und Name bleiben, wie sie sind. Das Format steht unter [[#csv-format|CSV-Format]], die Außenluft je Person in der Spalte <code>Aussenluft_Person</code>.
 # '''Quelle wählen''' – ''CSV-Datei wählen…'' liest Ihre Datei, ''Projektdatei wählen…'' eine Projektdatei (.sqproj), deren Nutzungsprofile die DIN-Nummer tragen.
 # '''Vorschau prüfen''' – die Tabelle ''Treffer'' nennt je Profil Nummer, Name, Stand (ohne Werte, Werte vorhanden, eingelesene Werte vorhanden) und die Spalten, deren Wert vom vorhandenen abweicht; darunter die Abweichungen je Spalte. Die Tabelle ''Nicht übernommen'' nennt unbekannte Nummern, Profile ohne Wert, doppelte Nummern und weitere Meldungen.
 # '''Übernehmen''' – zugeordnet wird über die Nummer, die zwei Wohnprofile ohne Nummer über ihren Namen. Vorhandene Werte bleiben, solange ''vorhandene Werte überschreiben'' nicht gesetzt ist. Die Meldung nennt die Zahl der gefüllten und der übersprungenen Profile.
 
-Die eingelesenen Profile tragen die Marke ''eingelesen'' mit Datei und Tag; sie bleiben schreibgeschützt. ''Eingelesene Werte entfernen…'' stellt nach einer Rückfrage alle eingelesenen Profile wieder ohne Werte.
+Die eingelesenen Profile tragen die Marke ''eingelesen'' mit Datei und Tag; sie bleiben schreibgeschützt. ''Eingelesene Werte entfernen…'' stellt nach einer Rückfrage die ausgelieferten Werte aller eingelesenen Profile wieder her.
+
+=== Profil je Zone ===
+{{Anker|profil-je-zone}}
+
+Eine Zone bekommt ihr Profil an drei Stellen: im Zonenbaum des [[Programm Dokumentation/Gebäudeimport|Gebäudeimports]], mit ''Nutzungsprofil übernehmen…'' im Reiter ''Konditionierung'' und für alle Zonen eines Gebäudes zugleich im Blatt [[Programm Dokumentation/Gebäude#nutzung-und-kalender|Nutzung und Kalender]] (''Profil zuweisen…'' oder ''Vorschlag übernehmen''). In jedem Fall erzeugt der Generator die Kalender der Zone aus dem Profil, mit Fläche und lichter Höhe der Zone. Eine Zone ohne eigenes Profil rechnet mit dem Profil der Regel.
+
+=== Vorschlag der Profilregel ===
+{{Anker|profilregel}}
+
+Die Profilregel schlägt einer Zone ein Profil in dieser Reihenfolge vor: (1) das Profil der DIN-Nummer, die die Importdatei der Zone oder ihren Räumen gibt; (2) das Profil zum Raumtyp bzw. zur Nutzungsklasse der Datei, wie die Tabelle im Reiter ''Zuordnung'' sie führt; (3) das Profil der Gebäudeart (Wohnbauten: Wohnen, Schule: Schule, Verwaltung: Büro); (4) das EPOS-Muster ''Wohnen'' bei Wohngebäuden, sonst ''Sonstige''. Die Modellprüfung zeigt den Vorschlag als Herkunft („Profil … aus der DIN-Nummer“, „… aus dem Raumtyp der Quelle“, „… aus der Gebäudeart“, „EPOS-Muster …“) und übernimmt ihn auf Wunsch, siehe [[Programm Dokumentation/Gebäude#modell-pruefen|Modell prüfen]].
 
 === CSV importieren und exportieren ===
 
@@ -100,8 +110,9 @@ Nummer;Bezeichner;Beschreibung;Stunden_PERSONEN_WERKTAG;Zeile_HEIZSOLL_TAG
 == Hinweise ==
 * Die Jahresprofile von Strom, Warmwasser und Prozesswärme eines Projekts wählt der Dialog der Bedarfsprofile mit Projektliste, Katalog und Zusammenfassung des gewählten Satzes ([[Strombedarf erfassen#dialog-strombedarf|Strombedarf]], [[Wärmebedarf erfassen#dialog-bedarfsprofile|Warmwasser und Prozesswärme]]).
 * Ausgelieferte Profile sind schreibgeschützt; ändern lässt sich nur eine Kopie.
-* Ein Profil ohne Werte, etwa ein DIN-Profil, überträgt nichts. Die Vorschau zeigt das an.
-* Im Gebäudeimport mit nur einer Zone setzt das Programm kein Profil von selbst; es nennt den Vorschlag, den Sie im Gebäudeeditor zuweisen.
+* Ein Profil ohne Werte überträgt nichts. Die Vorschau zeigt das an.
+* Im Austausch von Gebäuden schreibt der Export die DIN-Profilnummer der Zone mit, und der Import liest sie wieder; Näheres unter [[Programm Dokumentation/Gebäudeimport#profil-beim-import|Nutzungsprofil je Zone beim Import]].
+* Im Gebäudeimport mit nur einer Zone setzt das Programm kein Profil von selbst, außer beim Import aus einer Projektdatei mit dem Haken ''Profil als Vorgabe setzen''; sonst nennt es den Vorschlag, den Sie im Gebäudeeditor oder im Blatt ''Nutzung und Kalender'' zuweisen.
 
 == Siehe auch ==
 {{Anker|siehe-auch}}

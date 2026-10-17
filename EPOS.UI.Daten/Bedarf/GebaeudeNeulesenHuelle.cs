@@ -115,12 +115,14 @@ namespace WindowsFormsApplication1
             {
                 case NeulesenZustand.Passend:
                     string regel = GebaeudeZuordnungsModell.ZonenregelText(e.Zonenregel);
+                    GebaeudeAnsichtDaten roh = GebaeudeImportAnsicht.AnsichtDaten(e.Geometrie, false, null, e.Gebaeude);
                     return new GebaeudeNeulesestand
                     {
                         Zustand = GebaeudeNeulesezustand.Passend,
                         Hinweis = Formatieren(MyResource.Resource.GEB_NL_PASSEND, name),
                         Zonenhinweis = Formatieren(e.Hottcad ? MyResource.Resource.GEB_NL_NUR_GEOMETRIE : MyResource.Resource.GEB_NL_ZONENREGEL, regel),
-                        Ansicht = AufbauAusProjekt(GebaeudeImportAnsicht.AnsichtDaten(e.Geometrie, false, null, e.Gebaeude), q),
+                        Ansicht = AufbauAusProjekt(roh, q),
+                        AnsichtNeuLesen = () => AufbauAusProjekt(roh, q),
                         GrundrissRaeume = Nachtragbar(e, q) ? e.Raumgrundrisse.Count(GebaeudeImportCtrl.Speicherbar) : 0,
                         GrundrissNachtragen = Nachtragbar(e, q) ? () => GrundrissNachtragenAsync(e, q) : null,
                     };
@@ -162,14 +164,84 @@ namespace WindowsFormsApplication1
                 List<BauteilModel> bauteile = new GebaeudeZonenCtrl().LesenJeGebaeude(q.ID_Gebaeude).SelectMany(z => z.Bauteile).ToList();
                 var aufbauCtrl = new BauteilaufbauCtrl();
                 var baustoffCtrl = new BaustoffCtrl();
-                return AufbauAusBauteilen(ansicht, bauteile, kurz, id => aufbauCtrl.LesenProjektsatz(id),
-                                          id => baustoffCtrl.LesenProjektsatz(id)?.Bezeichner);
+                GebaeudeAnsichtDaten mitAufbau = AufbauAusBauteilen(ansicht, bauteile, kurz, id => aufbauCtrl.LesenProjektsatz(id),
+                                                                    id => baustoffCtrl.LesenProjektsatz(id)?.Bezeichner);
+                // N1 (MA-5): die Räume der Datei kennen ihre Zone über die Paarungen der Quelle (Ziel Zone) — so findet die
+                // Ansicht auch eine nach dem Import umbenannte Zone.
+                Dictionary<string, int> raumZonen = new GebaeudeImportCtrl().LesenZuordnungen(q.ID)
+                    .Where(z => z.ID_Zone.HasValue && !z.ID_Bauteil.HasValue && !string.IsNullOrEmpty(z.Quellkennung))
+                    .GroupBy(z => z.Quellkennung, StringComparer.Ordinal)
+                    .ToDictionary(g => g.Key, g => g.First().ID_Zone.Value, StringComparer.Ordinal);
+                return MitNutzung(mitAufbau, q.ID_Gebaeude, raumZonen);
             }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
                 // Ohne lesbare Projektdaten bleibt die Ansicht ohne Stufen — „Aufbau" ist dann benannt gesperrt.
                 return ansicht;
             }
+        }
+
+        /// <summary>
+        /// MA-5: Zonen und Nutzung des gespeicherten Gebäudes in die Ansicht — je Zone der Ansicht die gespeicherte Zone gleichen
+        /// Namens und ihr Nutzungsprofil (<see cref="ZonenNutzungCtrl.Lesen"/>). Liest nur; ohne lesbaren Stand bleibt die Ansicht.
+        /// <paramref name="raumZonen"/> (N1): Kennung eines Raums oder einer Zone der Datei → <c>Tab_Zone.ID</c> aus
+        /// <c>Tab_Importzuordnung</c>; diese Zuordnung geht vor dem Namen.
+        /// </summary>
+        internal static GebaeudeAnsichtDaten MitNutzung(GebaeudeAnsichtDaten ansicht, int idGebaeude,
+                                                        IReadOnlyDictionary<string, int> raumZonen = null)
+        {
+            if (ansicht == null || idGebaeude <= 0) return ansicht;
+            try
+            {
+                ZonenNutzungsstand stand = new ZonenNutzungCtrl(idGebaeude).Lesen();
+                return MitNutzung(ansicht, stand?.Zonen, raumZonen);
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                // Ohne lesbare Zonen bleibt „Nutzung" benannt gesperrt.
+                return ansicht;
+            }
+        }
+
+        /// <summary>
+        /// Der datenbankfreie Teil von <see cref="MitNutzung(GebaeudeAnsichtDaten, int, IReadOnlyDictionary{string, int})"/>:
+        /// je Zone der Ansicht zuerst über die Kennung (die Zone selbst, sonst die Mehrheit ihrer Räume in
+        /// <paramref name="raumZonen"/>), dann über den Zonennamen.
+        /// </summary>
+        internal static GebaeudeAnsichtDaten MitNutzung(GebaeudeAnsichtDaten ansicht, IReadOnlyList<ZonenNutzungszeile> zonen,
+                                                        IReadOnlyDictionary<string, int> raumZonen = null)
+        {
+            if (ansicht == null || zonen == null || zonen.Count == 0) return ansicht;
+            var jeName = new Dictionary<string, ZonenNutzungszeile>(StringComparer.Ordinal);
+            var jeId = new Dictionary<int, ZonenNutzungszeile>();
+            foreach (ZonenNutzungszeile z in zonen)
+            {
+                jeId.TryAdd(z.IdZone, z);
+                if (!string.IsNullOrWhiteSpace(z.Zone)) jeName.TryAdd(z.Zone.Trim(), z);
+            }
+            var ids = new Dictionary<string, int>(StringComparer.Ordinal);
+            var nutzung = new Dictionary<string, GebaeudeAnsichtNutzung>(StringComparer.Ordinal);
+            foreach (GebaeudeAnsichtZone a in ansicht.Zonen)
+            {
+                ZonenNutzungszeile z = UeberKennung(ansicht, a, raumZonen, jeId);
+                if (z == null && (string.IsNullOrWhiteSpace(a.Name) || !jeName.TryGetValue(a.Name.Trim(), out z))) continue;
+                ids[a.Schluessel] = z.IdZone;
+                nutzung[a.Schluessel] = new GebaeudeAnsichtNutzung(z.Profil ?? "", z.Kategorie ?? "");
+            }
+            return ids.Count == 0 ? ansicht : ansicht with { ZonenIds = ids, Nutzungen = nutzung };
+        }
+
+        /// <summary>Die gespeicherte Zone einer Zone der Ansicht über die Kennungen der Datei; <c>null</c> = keine.</summary>
+        private static ZonenNutzungszeile UeberKennung(GebaeudeAnsichtDaten ansicht, GebaeudeAnsichtZone a,
+                                                       IReadOnlyDictionary<string, int> raumZonen, Dictionary<int, ZonenNutzungszeile> jeId)
+        {
+            if (raumZonen == null || raumZonen.Count == 0) return null;
+            if (raumZonen.TryGetValue(a.Schluessel, out int eigen) && jeId.TryGetValue(eigen, out ZonenNutzungszeile direkt)) return direkt;
+            int? mehrheit = ansicht.Geschosse.SelectMany(g => g.Raeume)
+                .Where(r => string.Equals(r.Zone, a.Schluessel, StringComparison.Ordinal) && raumZonen.ContainsKey(r.Kennung))
+                .Select(r => raumZonen[r.Kennung]).Where(jeId.ContainsKey)
+                .GroupBy(i => i).OrderByDescending(g => g.Count()).ThenBy(g => g.Key).Select(g => (int?)g.Key).FirstOrDefault();
+            return mehrheit is int id ? jeId[id] : null;
         }
 
         /// <summary>

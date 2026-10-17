@@ -270,7 +270,7 @@ namespace WindowsFormsApplication1
         internal const string SQL_ZEILE_UMHAENGEN =
             "UPDATE " + PufferAuslegungSchema.TAB + " SET ID_Pufferspeicher = ? WHERE ID_Projekt = ? AND ID_Pufferspeicher IS NULL";
         internal const string SQL_PUFFER_STAMMWERTE =
-            "SELECT Bezeichner, Hersteller, Speichertyp, Investitionskosten, Vorlauf, Ruecklauf, Schwelle_Ein, " +
+            "SELECT Bezeichner, Hersteller, Speichertyp, Vorlauf, Ruecklauf, Schwelle_Ein, " +
             "Schwelle_Aus, Schwelle_Aus_Nachrang, Entladeprio, Schwelle_Reserve FROM Tab_Pufferspeicher WHERE ID = ? AND ID_Projekt = ?";
 
         // =================================================================================
@@ -325,7 +325,7 @@ namespace WindowsFormsApplication1
                 PufferSpCtrl.KlassenSet ks = PufferSpCtrl.KlassenSetAusZeile(pz);
                 kH = ks.Heizung; kB = ks.Brauchwasser; kP = ks.Prozess;
                 if (!kH && !kB && !kP) kH = true;
-                H("Klassen", PufferHerkunftsquelle.PUFFER, T("PAUS_HERK_KLASSEN_PUFFER", "Klassen-Set des Puffers (Nutzung_Heizung/_Brauchwasser/_Prozess)"));
+                H("Klassen", PufferHerkunftsquelle.PUFFER, T("PAUS_HERK_KLASSEN_PUFFER", "Klassen-Set des Puffers (Nutzung Heizung, Brauchwasser, Prozess)"));
             }
             else
             {
@@ -435,7 +435,7 @@ namespace WindowsFormsApplication1
                 }
             H(nameof(PufferAuslegungEingang.Vorlage), rang1 == 0 && !(kP && !kH && !kB) ? PufferHerkunftsquelle.VORGABE : PufferHerkunftsquelle.KASKADE, vText);
             if (sperre.Count > 0)
-                H(nameof(PufferAuslegungEingang.Sperrfenster), PufferHerkunftsquelle.KASKADE, T("PAUS_HERK_SPERRE_ANLAGE", "Sperrzeit der Anlage an Rang 1 (Sperrzeit_von/_bis)"));
+                H(nameof(PufferAuslegungEingang.Sperrfenster), PufferHerkunftsquelle.KASKADE, T("PAUS_HERK_SPERRE_ANLAGE", "Sperrzeit der Anlage an Rang 1"));
             else
                 H(nameof(PufferAuslegungEingang.Sperrfenster), PufferHerkunftsquelle.VORGABE, T("PAUS_HERK_SPERRE_KEINE", "keine Sperrzeit gepflegt"));
 
@@ -450,7 +450,7 @@ namespace WindowsFormsApplication1
                   : T("PAUS_HERK_UEBERGABE_KEINE", "keine Übergabeart gepflegt: ideal, rechnet wie FLAECHE (Hinweis {0})",
                       PufferWarncode.UEBERGABE_UNBEKANNT));
             H(nameof(PufferAuslegungEingang.AnlagenvolumenL), PufferHerkunftsquelle.VORGABE,
-              T("PAUS_HERK_ANLAGENVOLUMEN", "Übergabeart × Auslegungsheizlast (Anlagenvolumen.<Übergabe>_l_kW)"));
+              T("PAUS_HERK_ANLAGENVOLUMEN", "Übergabeart × Auslegungsheizlast (Vorgabe Anlagenvolumen in l/kW)"));
             H(nameof(PufferAuslegungEingang.AuslegungsheizlastKw), PufferHerkunftsquelle.REIHE, T("PAUS_HERK_HEIZLAST_REIHE", "Maximum der Heizreihe"));
 
             // ---- Zapfprofil ----
@@ -460,7 +460,7 @@ namespace WindowsFormsApplication1
             IReadOnlyList<double> nenn = Nenninhalte(h);
             IReadOnlyList<PufferKatalogsatz> katalog = Katalog();
             H(nameof(PufferAuslegungEingang.Katalog), PufferHerkunftsquelle.KATALOG,
-              T("PAUS_HERK_KATALOG_PUFFER", "{0} Katalogpuffer aus Tab_Pufferspeicher_STAMM", katalog.Count));
+              T("PAUS_HERK_KATALOG_PUFFER", "{0} Katalogpuffer aus dem Pufferkatalog", katalog.Count));
 
             // ---- Nutzungsprofil ----
             PufferNutzungsprofilAbleitung np = global::WindowsFormsApplication1.Nutzungsprofil.Ableiten(
@@ -471,8 +471,8 @@ namespace WindowsFormsApplication1
             // ---- Aufheizbemessung KP3 (Kriterium K12, V30) ----
             var (aufheizKw, aufheizH, aufheizGebaeude) = Aufheizbemessung(idProjekt);
             H(nameof(PufferAuslegungEingang.AufheizleistungKw), aufheizKw.HasValue ? PufferHerkunftsquelle.GEBAEUDE : PufferHerkunftsquelle.VORGABE,
-              aufheizKw.HasValue ? T("PAUS_HERK_AUFHEIZ_KP3", "Aufheizbemessung KP3 des letzten Laufs: Summe Aufheiz_Leistung_Kw über {0} Gebäude, längste Aufheizzeit", aufheizGebaeude)
-                                 : T("PAUS_HERK_AUFHEIZ_KEINE", "keine Aufheizbemessung im letzten Lauf (Kriterium K12 bemisst nicht)"));
+              aufheizKw.HasValue ? T("PAUS_HERK_AUFHEIZ_KP3", "Aufheizbemessung des letzten Laufs: Summe der Aufheizleistung über {0} Gebäude, längste Aufheizzeit", aufheizGebaeude)
+                                 : T("PAUS_HERK_AUFHEIZ_KEINE", "keine Aufheizbemessung im letzten Lauf (das Kriterium „Aufheizen nach Absenkung“ bemisst nicht)"));
 
             if (reihen != null)
                 H("Reihen", PufferHerkunftsquelle.REIHE, reihen.Vorhanden
@@ -607,7 +607,7 @@ namespace WindowsFormsApplication1
                 int typ = TypAusKaskade(eintrag);
                 if (typ != 0 && anlagen.Any(a => a.Typ == typ))
                 {
-                    text = T("PAUS_HERK_RANG1_KASKADE", "Rang 1 der Kaskade: {0} (Tab_Einstellungen.Tool_{1})", Erzeugertext(typ, eintrag), i);
+                    text = T("PAUS_HERK_RANG1_KASKADE", "Rang 1 der Kaskade: {0} (Kaskadenplatz {1})", Erzeugertext(typ, eintrag), i);
                     return typ;
                 }
             }
@@ -985,7 +985,7 @@ namespace WindowsFormsApplication1
             if (w.Liste != null)
             {
                 h.Add(new PufferAuslegungHerkunft(nameof(PufferAuslegungEingang.Nenninhalte), PufferHerkunftsquelle.PARAMETER,
-                                                  T("PAUS_HERK_NENNINHALTE_PARAMETER", "Speicherauslegung.Nenninhalt.* ({0})", w.Quelle)));
+                                                  T("PAUS_HERK_NENNINHALTE_PARAMETER", "Nenninhaltsliste der Speicherauslegung ({0})", w.Quelle)));
                 return w.Liste.WerteL;
             }
             h.Add(new PufferAuslegungHerkunft(nameof(PufferAuslegungEingang.Nenninhalte), PufferHerkunftsquelle.VORGABE,
@@ -1437,9 +1437,13 @@ namespace WindowsFormsApplication1
         /// Übernimmt die Empfehlung in den Projektpuffer (<paramref name="idPuffer"/>) bzw. legt einen
         /// neuen an (<c>null</c>), über <see cref="PufferSpCtrl.ProjektPufferAendern"/> und
         /// <see cref="PufferSpCtrl.ProjektPufferAnlegen"/>: Volumen = Empfehlung, Bereitschaftsverlust aus
-        /// dem Katalogvorschlag, sonst aus der Kennzahl, Klassen-Set aus den gerechneten Zonen, beim
-        /// Kombipuffer Schichtung mit mindestens zwei Schichten und den Zonenanteilen als Entnahmehöhen.
-        /// Schwellen, Temperaturpaar, Hersteller, Speichertyp und Kosten bleiben beim Ändern unverändert
+        /// dem Katalogvorschlag, sonst aus der Kennzahl, Klassen-Set aus den gerechneten Zonen. Beim
+        /// Kombipuffer (Heiz- und Brauchwasserzone, auch mit Prozesszone) setzt sie die Schichtung
+        /// vollständig (<see cref="KombiSchichtung"/>): mindestens zwei Schichten, die Zonenanteile von oben
+        /// mit der Brauchwasserzone oben in ihrem Volumen nach Auslegung, die Entnahme des Brauchwassers
+        /// ganz oben und die Entnahme von Heizung (und Prozesswärme) in der Mitte der obersten Zone darunter
+        /// — so erreicht die Heizung die Brauchwasserzone nicht. Höhe, λ, Nutztemperatur, Leistungsgrenzen
+        /// und die übrigen Pufferoptionen bleiben, wie sie gepflegt sind. Schwellen, Temperaturpaar, Hersteller, Speichertyp und Kosten bleiben beim Ändern unverändert
         /// (eine leere Schwelle wird mit ihrer Vorgabe geschrieben, mit der die Simulation sie ohnehin
         /// liest); beim Neuanlegen gelten die Vorgaben. Mit <paramref name="katalogsatz"/> und einem
         /// Katalogvorschlag merkt der Puffer den Katalogsatz (<c>Tab_Pufferspeicher.ID_Stamm</c>, Welle P4c),
@@ -1470,9 +1474,17 @@ namespace WindowsFormsApplication1
             {
                 if (!anteilH.HasValue) return null;
                 PufferSpCtrl.Schichtdaten s = alt ?? new PufferSpCtrl.Schichtdaten();
-                s.Schichten = PufferSpCtrl.SchichtenKlemmen(Math.Max(s.Schichten, Math.Max(2, ergebnis.Kennzahlen.SchichtenMindest)));
-                s.EntnahmeHeizung = anteilH.Value;
+                int n = PufferSpCtrl.SchichtenKlemmen(Math.Max(s.Schichten, Math.Max(2, ergebnis.Kennzahlen.SchichtenMindest)));
+                // Die Brauchwasserzone behält oben ihr Volumen nach Auslegung; ein aufgerundeter Nenninhalt
+                // geht an die Zonen darunter, eine gekappte Empfehlung teilt nach den Zonen der Auslegung.
+                double vB = ergebnis.Zone(PufferZone.Brauchwasser)?.VolumenL ?? 0;
+                double bezug = Math.Max(volumen, ergebnis.Zonen?.Sum(z => z.VolumenL) ?? 0);
+                (double[] anteile, double entnahmeUnten) = KombiSchichtung(n, bezug > 0 ? vB / bezug : 1.0 - anteilH.Value);
+                s.Schichten = n;
+                s.SchichtAnteile = PufferOptionen.AnteileText(anteile);
+                s.EntnahmeHeizung = entnahmeUnten;
                 s.EntnahmeBW = 1.0;
+                if (p) s.EntnahmeProzess = entnahmeUnten;
                 return s;
             }
 
@@ -1483,9 +1495,12 @@ namespace WindowsFormsApplication1
                 string name = string.IsNullOrWhiteSpace(bezeichner) ? Text(r, "Bezeichner") : bezeichner;
                 double? vl = ZahlOderNull(r, "Vorlauf"), rl = ZahlOderNull(r, "Ruecklauf");
                 double? sEin = ZahlOderNull(r, "Schwelle_Ein"), sAus = ZahlOderNull(r, "Schwelle_Aus");
+                // DIE EINE KOSTENBASIS (Welle KB-4): Der Puffer fuehrt keine Investition mehr.
+                // Was er kostet, steht in der Kostenverwaltung - Satzvorlage des Katalogsatzes
+                // oder Investitionsposition der Anlage; die Auslegung schreibt keinen Betrag.
                 bool ok = PufferSpCtrl.ProjektPufferAendern(
                     idPuffer.Value, idProjekt, name, Text(r, "Hersteller"), Text(r, "Speichertyp"), volumen, verluste,
-                    ZahlOderNull(r, "Investitionskosten") ?? 0, verwendung,
+                    verwendung,
                     vl.HasValue ? (int?)(int)vl.Value : null, rl.HasValue ? (int?)(int)rl.Value : null,
                     sEin > 0 ? sEin.Value : ProjektPuffer.SCHWELLE_EIN_DEFAULT,
                     sAus > 0 ? sAus.Value : ProjektPuffer.SCHWELLE_AUS_DEFAULT,
@@ -1498,13 +1513,47 @@ namespace WindowsFormsApplication1
             string neuName = string.IsNullOrWhiteSpace(bezeichner) ? "Pufferspeicher " + volumen + " l" : bezeichner;
             int neu = PufferSpCtrl.ProjektPufferAnlegen(
                 idProjekt, neuName, "", anteilH.HasValue ? DbWerte.PSP_SPEICHERTYP_KOMBI : DbWerte.PSP_SPEICHERTYP_PUFFER,
-                volumen, verluste, 0, verwendung, PufferSpCtrl.SystemVorlauf(idProjekt), PufferSpCtrl.SystemRuecklauf(idProjekt),
+                volumen, verluste, verwendung, PufferSpCtrl.SystemVorlauf(idProjekt), PufferSpCtrl.SystemRuecklauf(idProjekt),
                 ProjektPuffer.SCHWELLE_EIN_DEFAULT, ProjektPuffer.SCHWELLE_AUS_DEFAULT, null, 0,
                 ProjektPuffer.SCHWELLE_RESERVE_DEFAULT, h, b, p, Schicht(null));
             // Die Auslegungszeile „neu anlegen“ gehört ab jetzt zum angelegten Puffer.
             if (neu > 0 && DataRepository.TabelleVorhanden(PufferAuslegungSchema.TAB))
                 DataRepository.ExecuteNonQuery(SQL_ZEILE_UMHAENGEN, P("@puffer", neu), P("@projekt", idProjekt));
             return neu;
+        }
+
+        /// <summary>
+        /// Die Zonenteilung eines Kombipuffers mit <paramref name="schichten"/> Zonen (≥ 2): Die oberen
+        /// Zonen bilden die Brauchwasserzone mit dem Volumenanteil <paramref name="anteilBrauchwasser"/>,
+        /// die übrigen teilen den Rest darunter gleich. Die Zahl der Brauchwasserzonen folgt dem Anteil
+        /// (mindestens eine, höchstens <c>schichten − 1</c>). Die Anteile stehen auf vier Nachkommastellen
+        /// mit der Summe 1, damit Text und Lauf dieselbe Grenze sehen. Die Entnahmehöhe der unteren Kanäle
+        /// liegt in der Mitte der obersten Zone unter der Brauchwasserzone — nie auf einer Zonengrenze, die
+        /// der Lauf nur einer der beiden Zonen zuschlägt.
+        /// </summary>
+        /// <returns>Die Anteile von oben und die Entnahmehöhe (0…1, 1 = oben) für Heizung und Prozesswärme.</returns>
+        internal static (double[] Anteile, double EntnahmeUnten) KombiSchichtung(int schichten, double anteilBrauchwasser)
+        {
+            const double KORN = 1e-4;
+            int n = Math.Max(2, PufferSpCtrl.SchichtenKlemmen(schichten));
+            double aB = double.IsNaN(anteilBrauchwasser) ? 0.5 : anteilBrauchwasser;
+            int kB = Math.Min(n - 1, Math.Max(1, (int)Math.Round(n * aB, MidpointRounding.AwayFromZero)));
+            aB = Math.Min(1.0 - KORN * (n - kB), Math.Max(KORN * kB, aB));
+
+            var anteile = new double[n];
+            double summe = 0;
+            for (int i = 0; i < n - 1; i++)
+            {
+                double a = i < kB ? aB / kB : (1.0 - aB) / (n - kB);
+                anteile[i] = Math.Max(KORN, Math.Round(a, 4, MidpointRounding.AwayFromZero));
+                summe += anteile[i];
+            }
+            anteile[n - 1] = Math.Round(1.0 - summe, 4, MidpointRounding.AwayFromZero);
+
+            double oben = 0;
+            for (int i = 0; i < kB; i++) oben += anteile[i];
+            double entnahme = Math.Round(1.0 - oben - anteile[kB] / 2.0, 4, MidpointRounding.AwayFromZero);
+            return (anteile, entnahme);
         }
 
         /// <summary>

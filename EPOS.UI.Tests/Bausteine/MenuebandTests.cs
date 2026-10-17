@@ -207,7 +207,8 @@ public class MenuebandTests : EposBunitContext
         // zu Menuetabelle.Sichtbar weiter unten und EntwicklerbereicheWacheTests.
         // Administration und Support, Stufe 2: „Fernwartung…" unter Hilfe (78 -> 79, 63 -> 64).
         // KM4-E3-c: die Verwaltung „Kältemittel…" unter „Daten & Import" (79 -> 80, 64 -> 65).
-        Assert.Equal(82, Punkte.Count);                 // K5b: + „Kältebedarf“; BK-3: + „Bauteilkatalog einlesen…“
+        // K-F5a: + „Rückkühlwerke…" unter „Daten & Import" (82 -> 83, 67 -> 68).
+        Assert.Equal(83, Punkte.Count);                 // K5b: + „Kältebedarf“; BK-3: + „Bauteilkatalog einlesen…“
 
         // Sechs Trenner standen im Designer, zwei haengten BaueVariantenMenue
         // und InitKiHilfe programmatisch ein. W16c-E-2 bringt keinen neuen.
@@ -468,6 +469,8 @@ public class MenuebandTests : EposBunitContext
             "MenuItem_TrennerImportDubletten",
             // KM4-E3-c: die Verwaltung der Kältemittel vor der Pflege der eingelesenen Kataloge.
             "MenuItem_Kaeltemittel",
+            // K-F5a: die Verwaltung der Rückkühlwerke gleich hinter den Kältemitteln.
+            "MenuItem_Rueckkuehlwerk",
             "MenuItem_KatalogDubletten",
             // KU1 Stufe 1: der Abgleich mit dem Katalogpaket, hinter der Dublettenpruefung.
             "MenuItem_Katalogabgleich",
@@ -909,6 +912,8 @@ public class MenuebandTests : EposBunitContext
             Seitenschluessel.KaeltemaschineKatalog,
             // KM4-E3-c: das NEUE Ziel „Kältemittel…" unter „Daten & Import".
             Seitenschluessel.Kaeltemittel,
+            // K-F5a: das NEUE Ziel „Rückkühlwerke…" unter „Daten & Import".
+            Seitenschluessel.Rueckkuehlwerk,
             Seitenschluessel.HeizkesselAdmin,
             Seitenschluessel.HeizkesselImport,
             // KU1 Stufe 1: das NEUE Ziel „Katalog aktualisieren…".
@@ -1059,18 +1064,21 @@ public class MenuebandTests : EposBunitContext
         Assert.Equal(Seitenschluessel.Katalogabgleich, kinder[^1].Ziel);
         Assert.Equal("KABG_MENUE", kinder[^1].TextSchluessel);
         Assert.Equal("MenuItem_KatalogDubletten", kinder[^2].Name);
-        // KM4-E3-c: davor die Verwaltung der Kältemittel, dann der Trennstrich.
-        Assert.Equal("MenuItem_Kaeltemittel", kinder[^3].Name);
-        Assert.Equal(Seitenschluessel.Kaeltemittel, kinder[^3].Ziel);
-        Assert.Equal("KMT_MENUE", kinder[^3].TextSchluessel);
-        Assert.True(kinder[^4].Trenner);
+        // K-F5a: davor die Verwaltung der Rückkühlwerke, KM4-E3-c: davor die der Kältemittel, dann der Trennstrich.
+        Assert.Equal("MenuItem_Rueckkuehlwerk", kinder[^3].Name);
+        Assert.Equal(Seitenschluessel.Rueckkuehlwerk, kinder[^3].Ziel);
+        Assert.Equal("RKW_MENUE", kinder[^3].TextSchluessel);
+        Assert.Equal("MenuItem_Kaeltemittel", kinder[^4].Name);
+        Assert.Equal(Seitenschluessel.Kaeltemittel, kinder[^4].Ziel);
+        Assert.Equal("KMT_MENUE", kinder[^4].TextSchluessel);
+        Assert.True(kinder[^5].Trenner);
         Assert.Equal(Seitenschluessel.KatalogDubletten, kinder[^2].Ziel);
         Assert.Equal("ADM_DUBLETTEN_MENUE", kinder[^2].TextSchluessel);
         Assert.Equal("", kinder[^2].Bild);
 
         // Acht Importe davor, in der Reihenfolge der Kataloge (E119: der Import fuer
         // Kaelteanlagen hinter dem Waermepumpenimport, K-C: der Kaeltemaschinenimport dahinter).
-        Assert.Equal(8, kinder.Take(kinder.Count - 4).Count());
+        Assert.Equal(8, kinder.Take(kinder.Count - 5).Count());
 
         // Und nicht mehr in der obersten Ebene des Kopfes.
         Assert.DoesNotContain("MenuItem_KatalogDubletten", Kinder(Administration));
@@ -1309,7 +1317,7 @@ public class MenuebandTests : EposBunitContext
         // „Fernwartung…" (Administration und Support, Stufe 2) ist ein echter Weg (63 -> 64).
         //
         // Die Verwaltung der Kältemittel (KM4-E3-c) ist ein echter Weg (64 -> 65).
-        Assert.Equal(67, Punkte.Count(p => !p.Klappt)); // K5b: + „Kältebedarf“; BK-3: + „Bauteilkatalog einlesen…“
+        Assert.Equal(68, Punkte.Count(p => !p.Klappt)); // K-F5a: + „Rückkühlwerke…“; K5b: + „Kältebedarf“; BK-3: + „Bauteilkatalog einlesen…“
     }
 
     // =====================================================================
@@ -1323,9 +1331,9 @@ public class MenuebandTests : EposBunitContext
 
         // 80 - 8 = 72 Punkte, 15 - 2 = 13 Trenner, 65 - 7 = 58 handelnde: der Stand vor Stufe 1
         // samt „Fernwartung…" (Stufe 2, fuer den Anwender sichtbar) und „Kältemittel…" (KM4-E3-c).
-        Assert.Equal(74, anwender.Count(p => !p.Trenner)); // K5b: + „Kältebedarf“; BK-3: + „Bauteilkatalog einlesen…“
+        Assert.Equal(75, anwender.Count(p => !p.Trenner)); // K-F5a: + „Rückkühlwerke…“; K5b: + „Kältebedarf“; BK-3: + „Bauteilkatalog einlesen…“
         Assert.Equal(13, anwender.Count(p => p.Trenner));
-        Assert.Equal(60, anwender.Count(p => !p.Trenner && !p.Klappt)); // K5b: + „Kältebedarf“; BK-3: + „Bauteilkatalog einlesen…“
+        Assert.Equal(61, anwender.Count(p => !p.Trenner && !p.Klappt)); // K-F5a: + „Rückkühlwerke…“; K5b: + „Kältebedarf“; BK-3: + „Bauteilkatalog einlesen…“
         Assert.Equal(new[] { "Projekte", "Administration", "Help", "Sprache" },
                      Menuetabelle.Sichtbar(Freigabestufe.Anwender).Select(p => p.Name).ToArray());
         Assert.All(anwender, p => Assert.Equal(Freigabestufe.Anwender, p.Stufe));
@@ -1338,7 +1346,7 @@ public class MenuebandTests : EposBunitContext
         List<Menuepunkt> alle = Menuetabelle.Alle.ToList();
 
         Assert.Equal(alle.Select(p => p.Name), entwickler.Select(p => p.Name));
-        Assert.Equal(82, entwickler.Count(p => !p.Trenner)); // K5b: + „Kältebedarf“; BK-3: + „Bauteilkatalog einlesen…“
+        Assert.Equal(83, entwickler.Count(p => !p.Trenner)); // K-F5a: + „Rückkühlwerke…“; K5b: + „Kältebedarf“; BK-3: + „Bauteilkatalog einlesen…“
         Assert.Equal(15, entwickler.Count(p => p.Trenner));
     }
 

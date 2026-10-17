@@ -266,6 +266,18 @@ namespace WindowsFormsApplication1
                                           arb.VerkaufAcKwh));
             }
 
+            // EB-3: der Standby des Speichersystems als LETZTE Spalte je Intervall [kWh] (dieselbe Reihe wie im
+            // Betriebsbild, mal Intervalldauer) - die bisherigen Spalten bleiben, wie sie waren, der Rückweg eigener
+            // Exporte damit auch. Ohne Standby keine Spalte.
+            double[] standbyKw = erg.SoCKwh == null ? null : SpeicherStandbyKw(erg.SoCKwh.Length);
+            if (standbyKw != null)
+            {
+                SpeicherParameter par = sim.Speicherkontext?.Parameter;
+                double dt = par != null && par.DtH > 0.0 ? par.DtH : StromspeicherSimCtrl.INTERVALL_H;
+                spalten.Add(new CsvSpalte(MyResource.Resource.SP_CSV_STANDBY,
+                                          standbyKw.Select(kw => kw * dt).ToArray()));
+            }
+
             CsvExportClass.Export(
                 string.Format(MyResource.Resource.SP_DATEI_STROMSPEICHER, m_ID_Projekt),
                 _waermebedarf.Stundentemperatur, spalten, true);
@@ -372,10 +384,36 @@ namespace WindowsFormsApplication1
             }
 
             var spalten = new List<CsvSpalte>();
+            SimulationErgebnisCtrl.Netzreihen netz = null;   // Welle RZ: erst gelesen, wenn eine Netzreihe gewählt ist
             foreach (string s in reihen ?? new List<string>())
             {
                 switch (s)
                 {
+                    case REIHE_NETZBEZUG:
+                        // Welle RZ: dieselbe Reihe wie im Bild - nur, wenn gewählt.
+                        netz ??= SimulationErgebnisCtrl.NetzreihenViertelstunde(sim);
+                        if (netz?.NetzbezugKw != null)
+                            spalten.Add(new CsvSpalte(MyResource.Resource.CHART_LEGENDE_NETZBEZUG, netz.NetzbezugKw));
+                        break;
+                    case REIHE_NETZEINSPEISUNG:
+                        netz ??= SimulationErgebnisCtrl.NetzreihenViertelstunde(sim);
+                        if (netz?.EinspeisungKw != null)
+                            spalten.Add(new CsvSpalte(MyResource.Resource.CHART_LEGENDE_NETZEINSPEISUNG,
+                                                      netz.EinspeisungKw));
+                        break;
+                    case REIHE_BHKW_EINSPEISUNG:
+                        // EB-2: dieselben Reihen wie im Bild - nur, wenn gewählt.
+                        netz ??= SimulationErgebnisCtrl.NetzreihenViertelstunde(sim);
+                        if (netz?.BhkwEinspeisungKw != null)
+                            spalten.Add(new CsvSpalte(MyResource.Resource.CHART_LEGENDE_BHKW_EINSPEISUNG,
+                                                      netz.BhkwEinspeisungKw));
+                        break;
+                    case REIHE_PV_ABREGELUNG:
+                        netz ??= SimulationErgebnisCtrl.NetzreihenViertelstunde(sim);
+                        if (netz?.PvAbregelungKw != null)
+                            spalten.Add(new CsvSpalte(MyResource.Resource.CHART_LEGENDE_PV_ABREGELUNG,
+                                                      netz.PvAbregelungKw));
+                        break;
                     case "PROFIL_LASTGANG":
                         spalten.Add(new CsvSpalte(MyResource.Resource.CHART_LEGENDE_PROFIL_LASTGANG,
                                                   _strombedarf.Strombedarf_viertelStundenwerte));
@@ -387,6 +425,12 @@ namespace WindowsFormsApplication1
                     case "HEIZSTAB":
                         spalten.Add(new CsvSpalte(MyResource.Resource.CHART_SEGMENT_HEIZSTAB,
                                                   sim.simulation_wp.Heizstab_stuendlich));
+                        break;
+                    case REIHE_KUEHLUNG_DEZENTRAL:
+                        // K6b: die ganze Split-Reihe - dieselbe wie im Bild; ohne Split-Zeile gibt es die Wahl nicht.
+                        if (sim.Kaeltestrom_Dezentral_stuendlich != null)
+                            spalten.Add(new CsvSpalte(MyResource.Resource.SIMUEB_LBL_KUEHLUNG_DEZENTRAL,
+                                                      sim.Kaeltestrom_Dezentral_stuendlich));
                         break;
                     case "HEIZKESSEL":
                         // E29 (#536, N9): der Stromverbrauch des Kessels, nicht sein

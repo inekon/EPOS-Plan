@@ -72,6 +72,33 @@ public sealed class BauteilschichtenTexte
     /// <summary><c>BTA_SUMME_RT</c> — „R_T = R_si + R + R_se = {0} m²K/W".</summary>
     public string SummeRt { get; set; } = Resource.BTA_SUMME_RT;
 
+    /// <summary><c>BTA_SUMME_RT_OBEN</c> — „R'_T oberer Grenzwert = {0} m²K/W" (BK-5).</summary>
+    public string SummeRtOben { get; set; } = Resource.BTA_SUMME_RT_OBEN;
+
+    /// <summary><c>BTA_SUMME_RT_UNTEN</c> — „R''_T unterer Grenzwert = {0} m²K/W" (BK-5).</summary>
+    public string SummeRtUnten { get; set; } = Resource.BTA_SUMME_RT_UNTEN;
+
+    /// <summary><c>BTA_SUMME_RT_MITTEL</c> — „R_T = (R'_T + R''_T) / 2 = {0} m²K/W" (BK-5).</summary>
+    public string SummeRtMittel { get; set; } = Resource.BTA_SUMME_RT_MITTEL;
+
+    /// <summary><c>BTA_SUMME_FEHLERSCHRANKE</c> — „Fehlerschranke e = (R'_T − R''_T) / (2 R_T) = {0} %" (BK-8b).</summary>
+    public string SummeFehlerschranke { get; set; } = Resource.BTA_SUMME_FEHLERSCHRANKE;
+
+    /// <summary><c>BTA_SP_ABSCHNITT</c> — die Abschnittsnummer einer inhomogenen Schicht (BK-5).</summary>
+    public string SpalteAbschnitt { get; set; } = Resource.BTA_SP_ABSCHNITT;
+
+    /// <summary><c>BTA_SP_FLAECHENANTEIL</c> — der Flächenanteil des Abschnitts (BK-5).</summary>
+    public string SpalteFlaechenanteil { get; set; } = Resource.BTA_SP_FLAECHENANTEIL;
+
+    /// <summary><c>BTA_ABSCHNITT_NEU</c> — „Abschnitt daneben anlegen" (BK-5).</summary>
+    public string AbschnittNeu { get; set; } = Resource.BTA_ABSCHNITT_NEU;
+
+    /// <summary><c>BTA_ABS_EBENENSUMME</c> — „Σ Flächenanteile der Ebene = {0}" (BK-5).</summary>
+    public string Ebenensumme { get; set; } = Resource.BTA_ABS_EBENENSUMME;
+
+    /// <summary><c>BTA_ABS_EBENENSUMME_WARN</c> — die Summe außerhalb 1 ± 0,01 (BK-5).</summary>
+    public string EbenensummeWarnung { get; set; } = Resource.BTA_ABS_EBENENSUMME_WARN;
+
     /// <summary><c>BTA_RICHTUNG</c> — die Richtungsangabe innen → außen über dem Raster.</summary>
     public string Richtung { get; set; } = Resource.BTA_RICHTUNG;
 

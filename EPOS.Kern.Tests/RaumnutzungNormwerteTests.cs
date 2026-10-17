@@ -41,12 +41,14 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Die_Testdatenbank_traegt_die_DIN_Profile_ohne_Werte_und_ohne_Herkunft()
+        public void Die_Testdatenbank_traegt_die_DIN_Profile_mit_den_gesaeten_Werten_ohne_Herkunft()
         {
             if (!_db.Vorhanden) return;
             List<Raumnutzungsprofil> din = RaumnutzungNormwerte.DinProfile();
             Assert.Equal(RaumnutzungSaat.Din.Count + RaumnutzungNormkategorienSchema.WOHNPROFILE.Count, din.Count);
-            Assert.All(din, p => Assert.True(p.IstLeer && p.Werte_Herkunft == null && p.Ausgeliefert));
+            // DA-6 (E135): ausgeliefert mit den Werten der Saat, Herkunft leer = wie ausgeliefert.
+            Assert.All(din, p => Assert.True(!p.IstLeer && p.Werte_Herkunft == null && p.Ausgeliefert));
+            Assert.Empty(RaumnutzungDinWerteSchema.Abweichungen());
             Assert.Equal(0, RaumnutzungNormwerte.Eingelesene());
         }
 
@@ -61,9 +63,11 @@ namespace EPOS.Kern.Tests
             Assert.Equal("probe.csv", v.Quelle);
             Assert.Equal(new[] { "1", null }, v.Treffer.Select(t => t.Nummer));
             Assert.Single(v.Unbekannt);
-            Assert.Equal(0, v.MitWerten);
+            Assert.Equal(2, v.MitWerten);                          // die gesäten Werte (DA-6)
+            Assert.Equal((0, 2), (RaumnutzungNormwerte.Einlesen(v, ueberschreiben: false, TAG).Geschrieben,
+                                  RaumnutzungNormwerte.Einlesen(v, ueberschreiben: false, TAG).Uebersprungen));
 
-            RaumnutzungNormwerte.Bilanz b = RaumnutzungNormwerte.Einlesen(v, ueberschreiben: false, TAG);
+            RaumnutzungNormwerte.Bilanz b = RaumnutzungNormwerte.Einlesen(v, ueberschreiben: true, TAG);
             Assert.True(b.Ok, b.Meldung);
             Assert.Equal(2, b.Geschrieben);
             Assert.Equal(2, RaumnutzungNormwerte.Eingelesene());
@@ -83,7 +87,7 @@ namespace EPOS.Kern.Tests
         public void Vorhandene_Werte_werden_nur_auf_Wunsch_ueberschrieben_und_die_Abweichung_benannt()
         {
             if (!_db.Vorhanden) return;
-            Assert.Equal(1, RaumnutzungNormwerte.Einlesen(RaumnutzungNormwerte.AusCsv(Csv("1;a;21;30"), "eins.csv"), false, TAG).Geschrieben);
+            Assert.Equal(1, RaumnutzungNormwerte.Einlesen(RaumnutzungNormwerte.AusCsv(Csv("1;a;21;30"), "eins.csv"), true, TAG).Geschrieben);
 
             RaumnutzungNormwerte.Vorschau zweite = RaumnutzungNormwerte.AusCsv(Csv("1;a;22;30"), "zwei.csv");
             Assert.Equal(1, zweite.MitWerten);
@@ -100,19 +104,45 @@ namespace EPOS.Kern.Tests
             Assert.Equal("zwei.csv", Din("1").Werte_Quelle);
         }
 
+        /// <summary>DA-6: Die Vorschau nennt die Abweichung der Quelle gegen die gesäten Werte; ohne Haken bleibt die Saat.</summary>
+        [Fact]
+        public void Die_Vorschau_zeigt_Abweichungen_gegen_die_gesaeten_Werte()
+        {
+            if (!_db.Vorhanden) return;
+            Raumnutzungsprofil saat = RaumnutzungDinSaat.Zu("1", null);
+            Assert.NotNull(saat.Heiz_Soll);
+            Raumnutzungsprofil eins = saat.Kopie(), zwei = RaumnutzungDinSaat.Zu("2", null).Kopie();
+            eins.Heiz_Soll = saat.Heiz_Soll.Value - 1.0;
+            RaumnutzungNormwerte.Vorschau v = RaumnutzungNormwerte.AusCsv(RaumnutzungCsv.SchreibenBytes(new[] { eins, zwei }), "probe.csv");
+            Assert.True(v.Ok, v.Meldung);
+            Assert.Equal(2, v.MitWerten);
+            Assert.Equal(new[] { "Heiz_Soll" }, v.Treffer.Single(t => t.Nummer == "1").Abweichungen);
+            Assert.False(v.Treffer.Single(t => t.Nummer == "1").Eingelesen);
+            Assert.Equal(1, v.MitAbweichung);
+            Assert.Equal((0, 2), (RaumnutzungNormwerte.Einlesen(v, false, TAG).Geschrieben, RaumnutzungNormwerte.Einlesen(v, false, TAG).Uebersprungen));
+            Assert.Equal(saat.Heiz_Soll, Din("1").Heiz_Soll);
+        }
+
         [Fact]
         public void Entfernen_nimmt_alle_eingelesenen_Werte_zurueck()
         {
             if (!_db.Vorhanden) return;
-            RaumnutzungNormwerte.Einlesen(RaumnutzungNormwerte.AusCsv(Csv("1;a;21;30", "2;b;20;40"), "probe.csv"), false, TAG);
+            RaumnutzungNormwerte.Einlesen(RaumnutzungNormwerte.AusCsv(Csv("1;a;21;30", "2;b;20;40"), "probe.csv"), true, TAG);
             Assert.Equal(2, RaumnutzungNormwerte.Eingelesene());
+            Assert.Equal(2, RaumnutzungDinWerteSchema.Abweichungen().Count);
 
             RaumnutzungNormwerte.Bilanz b = RaumnutzungNormwerte.Entfernen();
             Assert.True(b.Ok, b.Meldung);
             Assert.Equal(2, b.Geschrieben);
             Assert.Equal(0, RaumnutzungNormwerte.Eingelesene());
-            Assert.All(RaumnutzungNormwerte.DinProfile(), p => Assert.True(p.IstLeer && p.Werte_Herkunft == null &&
+            // DA-6: Die Rücknahme stellt die gesäten Werte wieder her, nicht die Leere.
+            Assert.Empty(RaumnutzungDinWerteSchema.Abweichungen());
+            Assert.All(RaumnutzungNormwerte.DinProfile(), p => Assert.True(!p.IstLeer && p.Werte_Herkunft == null &&
                                                                           p.Werte_Quelle == null && p.Werte_Datum == null));
+            Raumnutzungsprofil saat = RaumnutzungDinSaat.Zu("1", null);
+            Assert.Equal(saat.Heiz_Soll, Din("1").Heiz_Soll);
+            Assert.Equal(saat.Aussenluft_Person, Din("1").Aussenluft_Person);
+            Assert.Equal(saat.Beschreibung, Din("1").Beschreibung);
         }
 
         /// <summary>
@@ -144,7 +174,8 @@ namespace EPOS.Kern.Tests
 
             Assert.False(RaumnutzungNormwerteHuelle.Einlesen(null, false).Ok);
             Assert.NotNull(RaumnutzungNormwerteHuelle.Weg(ios: false));
-            Assert.Equal(1, RaumnutzungNormwerteHuelle.Einlesen(v, false).Id);
+            Assert.Equal(0, RaumnutzungNormwerteHuelle.Einlesen(v, false).Id);   // gesät: ohne Haken übersprungen
+            Assert.Equal(1, RaumnutzungNormwerteHuelle.Einlesen(v, true).Id);
             Assert.Equal(1, RaumnutzungNormwerte.Eingelesene());
         }
 
@@ -176,11 +207,32 @@ namespace EPOS.Kern.Tests
             };
             RaumnutzungNormwerte.Vorschau v = RaumnutzungNormwerte.AusProjektdatei(satz);
             Assert.True(v.Ok, v.Meldung);
-            Assert.Equal("2", v.Treffer.Single().Nummer);
-            Assert.Single(v.Unbekannt);
-            Assert.Equal(1, RaumnutzungNormwerte.Einlesen(v, false, TAG).Geschrieben);
+            Assert.Equal(2, v.Treffer.Count);
+            Assert.Contains(v.Treffer, t => t.Nummer == "2");
+            Assert.Contains(v.Treffer, t => t.Bezeichner == RaumnutzungNormkategorienSchema.WOHNEN_EFH);
+            Assert.Empty(v.Unbekannt);
+            Assert.Equal(2, RaumnutzungNormwerte.Einlesen(v, true, TAG).Geschrieben);
             Assert.Equal(25.0, Din("2").Aussenluft_Person);
             Assert.Equal("probe.sqproj", Din("2").Werte_Quelle);
+            Assert.Equal(20.0, Wohnen().Heiz_Soll);
+        }
+
+        [Fact]
+        public void Die_Nummern_70_und_71_der_Projektdatei_treffen_die_Wohnprofile()
+        {
+            Assert.Equal(RaumnutzungNormkategorienSchema.WOHNEN_EFH, RaumnutzungNormwerte.WohnprofilAusNummer("70"));
+            Assert.Equal(RaumnutzungNormkategorienSchema.WOHNEN_MFH, RaumnutzungNormwerte.WohnprofilAusNummer(" 071 "));
+            Assert.Null(RaumnutzungNormwerte.WohnprofilAusNummer("72"));
+            Assert.Null(RaumnutzungNormwerte.WohnprofilAusNummer(null));
+            // Die Raumzuordnung auf das Muster Wohnen bleibt unberührt.
+            Assert.True(Gebaeudeverwendung.WohnenAusDinNummer(70));
+            Assert.True(Gebaeudeverwendung.WohnenAusDinNummer(71));
+            if (!_db.Vorhanden) return;
+            RaumnutzungNormwerte.Vorschau v = RaumnutzungNormwerte.AusCsv(Csv("71;Mehrfamilienhaus der Datei;21;"), "probe.csv");
+            Assert.True(v.Ok, v.Meldung);
+            RaumnutzungNormwerte.Treffer t = v.Treffer.Single();
+            Assert.Null(t.Nummer);
+            Assert.Equal(RaumnutzungNormkategorienSchema.WOHNEN_MFH, t.Bezeichner);
         }
 
         [Fact]

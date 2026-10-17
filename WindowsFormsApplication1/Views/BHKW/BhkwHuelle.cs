@@ -104,8 +104,8 @@ namespace WindowsFormsApplication1
                 // Aufklapper "Alle Daten anzeigen" gepflegt; gerechnet wird ohnehin mit
                 // dem Faktor des Energieträgers aus dem Emissionskatalog (W14a-E-8-B1).
                 //
-                // Ebenso ohne die Umrechnung der Investition: Sie stand schon bisher im
-                // Kern (BHKWKosten) und wird auf dem Schreibweg dort gezogen.
+                // Ebenso ohne jede Kostenumrechnung: Mit Welle KB-4 fuehrt der Satz keine
+                // Kostenspalte mehr - die Satzvorlage des Katalogsatzes ist die eine Basis.
 
                 ["TitelText"] = Text_("BHKWK_TITEL", "BHKW Eigenschaften"),
                 ["GruppeBezeichnung"] = Text_("BHKWK_GRP_BEZEICHNUNG", "Modul"),
@@ -208,15 +208,8 @@ namespace WindowsFormsApplication1
             d.Vorlauf = m.m_Vorlauf;
             d.Ruecklauf = m.m_Ruecklauf;
             d.RuecklaufMax = m.m_Ruecklauf_Max;   // UB-E3-b: leer bleibt leer (keine Grenze)
-            d.KostenModul = m.m_Kosten_Modul;
-            d.KostenMontage = m.m_Kosten_Montage;
-            d.KostenLieferung = m.m_Kosten_Lieferung;
-            d.KostenSchallschutzhaube = m.m_Kosten_Schallschutzhaube;
-            d.KostenAbgasreinigung = m.m_Kosten_Abgasreinigung;
             d.Raumbedarf = m.m_Raumbedarf;
-            d.WartungskostenJeKWhel = m.m_Wartungskosten_kWhel;
             d.Nutzungsdauer = m.m_Nutzungsdauer;
-            d.InvestitionJeKWel = m.m_Investition_KWel;
             d.CO2 = m.m_CO2;
             d.SO2 = m.m_SO2;
             d.NOx = m.m_NOx;
@@ -237,16 +230,11 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Oberfläche → Kern. Hier gilt „leer = 0"; der Wert je kWel entsteht NEU aus den
-        /// Posten und Pel (<c>EingabenPruefen</c>, Z. 355) und nicht aus dem Anzeigefeld.
+        /// Oberfläche → Kern. Hier gilt „leer = 0". Kostenfelder reisen seit Welle KB-4 nicht
+        /// mehr mit: Der Satz führt keine Kostenspalte, die eine Basis ist seine Satzvorlage.
         /// </summary>
         private static BHKWStammModel NachModell(BhkwKatalogDaten d)
         {
-            double modul = d.KostenModul ?? 0;
-            double montage = d.KostenMontage ?? 0;
-            double lieferung = d.KostenLieferung ?? 0;
-            double schall = d.KostenSchallschutzhaube ?? 0;
-            double abgas = d.KostenAbgasreinigung ?? 0;
             double pel = d.Pel ?? 0;
 
             return new BHKWStammModel
@@ -266,23 +254,13 @@ namespace WindowsFormsApplication1
                 m_Grenzleistung = d.Grenzleistung ?? 0,
                 m_Vorlauf = d.Vorlauf ?? 0,
                 m_Ruecklauf = d.Ruecklauf ?? 0,
-                m_Kosten_Modul = modul,
-                m_Kosten_Montage = montage,
-                m_Kosten_Lieferung = lieferung,
-                m_Kosten_Schallschutzhaube = schall,
-                m_Kosten_Abgasreinigung = abgas,
                 m_Raumbedarf = d.Raumbedarf ?? 0,
-                m_Wartungskosten_kWhel = d.WartungskostenJeKWhel ?? 0,
                 m_Nutzungsdauer = d.Nutzungsdauer ?? 0,
                 m_CO2 = d.CO2 ?? 0,
                 m_SO2 = d.SO2 ?? 0,
                 m_NOx = d.NOx ?? 0,
                 m_CO = d.CO ?? 0,
                 m_Staub = d.Staub ?? 0,
-
-                // Abgeleitet, nie aus dem Anzeigefeld gelesen.
-                m_Investition_KWel = BHKWKosten.JeKWel(
-                    BHKWKosten.Summe(modul, montage, lieferung, schall, abgas), pel),
 
                 // InitDatensatzUpdate: SelectedIndex OHNE + 1, ohne Wahl die 1.
                 m_Brennstoff = d.Brennstoff ?? 1,

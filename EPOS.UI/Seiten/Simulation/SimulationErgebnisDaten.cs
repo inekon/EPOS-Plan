@@ -400,6 +400,30 @@ public sealed class KaelteDaten
 
     /// <summary>BV-E6: der Hinweis der Marken der Stufe „ähnlich“; sonst leer.</summary>
     public string KennzahlHinweis = "";
+
+    // ---- K6b (Konzept Kältebedarf 4.3): Herkunft und dezentrale (Split-)Deckung ---------------------------------
+    // Nur mit Split-Zeile belegt; ohne sie bleibt jede Zeile, jede Gruppe und jedes Bild, wie es war.
+
+    /// <summary>Hat der Lauf eine dezentral (Split) gedeckte Zeile gerechnet?</summary>
+    public bool MitDezentral;
+
+    /// <summary>Kältebedarf der Gebäude, der Lastgänge und der Kältebedarfsprofile [MWh/a] (je zentral und dezentral).</summary>
+    public double GebaeudeMwh, ExternMwh, ProfilMwh;
+
+    /// <summary>Dezentral (Split) gedeckte Kälte, ihr Strom und dessen Netzbezug [MWh/a].</summary>
+    public double DezentralMwh, DezentralStromMwh, DezentralNetzbezugMwh;
+
+    /// <summary>Jahres-EER der dezentralen Deckung; <c>null</c> ohne Strom.</summary>
+    public double? JahresEerDezentral;
+
+    /// <summary>„davon Kältefolge“ [%] unter der Hauptzahl <see cref="DeckungsgradProzent"/>; <c>null</c> ohne Split oder ohne Kälteerzeuger.</summary>
+    public double? DeckungsgradKaeltefolgeProzent;
+
+    /// <summary>Die Split-Zeilen als Zeilen der Kältetabelle der Übersicht (ohne Vorlauf).</summary>
+    public IReadOnlyList<KaelteerzeugerAnzeige> Dezentral = Array.Empty<KaelteerzeugerAnzeige>();
+
+    /// <summary>Der Satz zur dezentralen Deckung; leer ohne Split.</summary>
+    public string DezentralHinweis = "";
 }
 
 /// <summary>
@@ -744,6 +768,12 @@ public sealed class StromgangDaten
 /// </summary>
 public sealed class SpeicherErgebnisDaten
 {
+    /// <summary>
+    /// EB-2: Führt der Lauf einen Standby des Speichersystems als Reihe? Nur dann bietet das Betriebsbild die
+    /// zuschaltbare Reihe „Standby Speichersystem“ an (ab Werk aus).
+    /// </summary>
+    public bool MitStandby;
+
     /// <summary>Übernommene Projektflotte und tatsächlicher letzter Flottenlauf.</summary>
     public bool FlotteImProjektAktiv;
     public SpeicherEngine.FlottenStudieKonfiguration? AktiveFlotte;
@@ -990,6 +1020,16 @@ public sealed class SimulationErgebnisDaten
     public bool Speichertemperaturen;
 
     /// <summary>
+    /// Welle RZ (Teil b): die Speicher des Temperaturbilds zur AUSWAHL — Schlüssel (der Speicher-
+    /// schlüssel des Laufs, <c>PUFFER_…</c>) und Anzeigename, in der Reihenfolge des Bildes. Der
+    /// Reiter gibt die gewählten Schlüssel als <see cref="Bildauftrag.Reihen"/> weiter; sind alle
+    /// gewählt (ab Werk), bleibt die Liste <c>null</c> und das Bild wie zuvor. Die Quelltemperaturen
+    /// sind keine Speicher und stehen immer im Bild. Leer = keine Wahl.
+    /// </summary>
+    public IReadOnlyList<(string Schluessel, string Name)> Speicherwahl =
+        Array.Empty<(string Schluessel, string Name)>();
+
+    /// <summary>
     /// BV-E6: der Platzhalter des Speichertemperaturbilds — nur beim Stammprojekt
     /// (<c>stamm.bild.speichertemperaturen</c>, „ähnlich“); leer = keine Marke.
     /// </summary>
@@ -1020,6 +1060,8 @@ public sealed class SimulationErgebnisDaten
 /// <param name="Kanal">Bedarfsart des Wärmegangs; −1 = Produktion.</param>
 /// <param name="Reihen">Die gewaehlten Serienschluessel; leer = alle.</param>
 /// <param name="Zahl">Freier Zahlenparameter (Was-wäre-wenn-Kapazitaet der Autarkie).</param>
+/// <param name="PvAufgeteilt">Reiter Photovoltaik: die Erzeugung als Stapel aus Eigenverbrauch,
+/// Einspeisung und Abregelung statt als eine Linie (Schalter „PV aufteilen“).</param>
 /// <remarks>
 /// <b>DER RUNDLAUF-DATENZOOM IST ENTFALLEN</b> (Entscheid DG-E3-9, Konzept Diagramme
 /// § 6). Bis zur Etappe DG-E3 trug der Auftrag einen sechsten Wert
@@ -1031,12 +1073,13 @@ public sealed class SimulationErgebnisDaten
 /// kannten nie einen Bereich.
 /// </remarks>
 public sealed record Bildauftrag(string Bild, bool Sortiert = false, int Kanal = -1,
-                                 IReadOnlyList<string>? Reihen = null, double Zahl = 0.0)
+                                 IReadOnlyList<string>? Reihen = null, double Zahl = 0.0,
+                                 bool PvAufgeteilt = false)
 {
     /// <summary>Der Zwischenspeicherschluessel — er trennt zwei Schalterstellungen.</summary>
     public string Schluessel =>
         Bild + "|" + (Sortiert ? "1" : "0") + "|" + Kanal + "|" + Zahl.ToString("R") + "|" +
-        (Reihen is null ? "" : string.Join(",", Reihen));
+        (Reihen is null ? "" : string.Join(",", Reihen)) + (PvAufgeteilt ? "|PV" : "");
 }
 
 /// <summary>Die sprachneutralen Bildschluessel der Ergebnisseite.</summary>
@@ -1073,6 +1116,18 @@ public static class Bilder
 
     /// <summary>Die Kälteproduktion des Ergebnisreiters — nur, wenn das Projekt Kälte rechnet.</summary>
     public const string Kaeltegang = "KAELTEGANG";
+}
+
+/// <summary>
+/// Welle RZ (Teil b): die sprachneutralen Schlüssel der ZUSCHALTBAREN Reihen in
+/// <see cref="Bildauftrag.Reihen"/> und in den Reihenlisten der Bilddelegaten von Gebäude- und
+/// Quellprofildialog. Eine Zusatzreihe ist ab Werk AUS: Ohne sie im Auftrag zeichnet jedes Bild
+/// wie zuvor.
+/// </summary>
+public static class Zusatzreihen
+{
+    /// <summary>Die Außentemperatur des Klimakalenders — Orientierung neben Raum- und Quelltemperatur.</summary>
+    public const string Aussentemperatur = "AUSSENTEMPERATUR";
 }
 
 // Das Ergebnis eines Schreib- oder Rechenwegs meldet der Datensatz

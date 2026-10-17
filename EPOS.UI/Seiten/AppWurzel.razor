@@ -184,6 +184,10 @@ else if (_ansicht == Seitenschluessel.Kaeltemittel && _kaeltemittel is not null)
 {
     <EPOS.UI.Dialoge.Admin.KaeltemittelDialog @attributes="_kaeltemittel" Geschlossen="BeiKaeltemittelFertig" />
 }
+else if (_ansicht == Seitenschluessel.Rueckkuehlwerk && _rueckkuehlwerk is not null)
+{
+    <EPOS.UI.Dialoge.Erzeuger.RueckkuehlwerkDialog @attributes="_rueckkuehlwerk" Geschlossen="BeiRueckkuehlwerkFertig" />
+}
 else if (_ansicht == Seitenschluessel.Gesetzeskatalog && _gesetzeskatalog is not null)
 {
     <EPOS.UI.Dialoge.Wirtschaftlichkeit.GesetzeskatalogDialog @attributes="_gesetzeskatalog"
@@ -468,6 +472,7 @@ else
     private IReadOnlyDictionary<string, object>? _kostenverwaltung;
     private IReadOnlyDictionary<string, object>? _nutzungsdauern;
     private IReadOnlyDictionary<string, object>? _kaeltemittel;
+    private IReadOnlyDictionary<string, object>? _rueckkuehlwerk;
     private IReadOnlyDictionary<string, object>? _gesetzeskatalog;
 
     // Die ZWEI Kataloge der Gebaeudesimulation (G3). Derselbe Lebenslauf.
@@ -1288,6 +1293,14 @@ else
             return true;
         }
 
+        if (maske == Seitenschluessel.Projektgebaeude)
+        {
+            // GD-N: Die Gebaeude des Projekts oeffnet die Windows-Schale als Fenster (GebaeudeFenster.ProjektOeffnen);
+            // auf iOS pflegt sie der Assistent. Kein stiller Rueckfall - der Grund steht im Banner.
+            _statuszeile = Resource.WURZEL_PROJEKTGEBAEUDE_NICHT;
+            return false;
+        }
+
         if (maske == Seitenschluessel.PeakShaving)
         {
             _peakShaving = Quelle.PeakShavingGaben(_projekt?.Id ?? 0);
@@ -1327,6 +1340,16 @@ else
         {
             _kaeltemittel = Quelle.KaeltemittelGaben();
             if (_kaeltemittel is null) { _statuszeile = KeinKaeltemittelText; return false; }
+            _ansicht = maske;
+            return true;
+        }
+
+        // K-F5a: die Verwaltung der Rueckkuehlwerke (Menue „Daten & Import"). Unter Windows faengt die Huelle den
+        // Schluessel vorher ab und oeffnet ihr Fenster; hier landet er auf iOS.
+        if (maske == Seitenschluessel.Rueckkuehlwerk)
+        {
+            _rueckkuehlwerk = Quelle.RueckkuehlwerkGaben();
+            if (_rueckkuehlwerk is null) { _statuszeile = KeinRueckkuehlwerkText; return false; }
             _ansicht = maske;
             return true;
         }
@@ -1621,6 +1644,7 @@ else
         _kostenverwaltung = null;
         _nutzungsdauern = null;
         _kaeltemittel = null;
+        _rueckkuehlwerk = null;
         _gesetzeskatalog = null;
 
         // Und fuer die zwei Kataloge der Gebaeudesimulation (G3) sowie den Katalog der
@@ -1688,6 +1712,9 @@ else
 
     /// <summary>Die Kaeltemittel sind zu (KM4-E3-c).</summary>
     private void BeiKaeltemittelFertig(bool geschrieben) => ZurueckZurListe();
+
+    /// <summary>Die Rueckkuehlwerke sind zu (K-F5a).</summary>
+    private void BeiRueckkuehlwerkFertig(bool geschrieben) => ZurueckZurListe();
 
     /// <summary>Der Gesetzeskatalog ist zu.</summary>
     private void BeiGesetzeskatalogFertig(bool ok) => ZurueckZurListe();
@@ -2019,6 +2046,8 @@ else
            || maske == Seitenschluessel.NutzungsdauerVerwaltung
            // KM4-E3-c: die Kaeltemittel (Menue „Daten & Import").
            || maske == Seitenschluessel.Kaeltemittel
+           // K-F5a: die Rueckkuehlwerke (Menue „Daten & Import").
+           || maske == Seitenschluessel.Rueckkuehlwerk
            || maske == Seitenschluessel.Gesetzeskatalog
 
            // Die zwei Kataloge der Gebaeudesimulation (G3) - Menue und
@@ -2036,7 +2065,11 @@ else
            // faengt die Schale den Schluessel vorher ab und oeffnet ihr
            // Fenster; hier landet er auf dem iPad und aus dem
            // Hilfe-Assistenten (KiMaskenziele.BRAUCHWASSER_NUTZUNGSARTEN).
-           || maske == Seitenschluessel.BrauchwasserNutzungsarten;
+           || maske == Seitenschluessel.BrauchwasserNutzungsarten
+
+           // Die Gebaeude des Projekts mit Sprungziel (GD-N): unter Windows faengt die Schale den
+           // Schluessel ab; hier fuehrt die Wurzel ihn, um ihn benannt abzulehnen.
+           || maske == Seitenschluessel.Projektgebaeude;
 
     /// <summary>
     /// Das offene Projekt: das in der Projektliste gewählte (iOS), sonst das des Projektkontexts im
@@ -2319,6 +2352,9 @@ else
 
     /// <summary>Meldung, wenn die Kaeltemittel nicht aufzubauen sind (KM4-E3-c).</summary>
     [Parameter] public string KeinKaeltemittelText { get; set; } = Resource.KMT_NICHT_VERFUEGBAR;
+
+    /// <summary>Meldung, wenn die Rueckkuehlwerke nicht aufzubauen sind (K-F5a).</summary>
+    [Parameter] public string KeinRueckkuehlwerkText { get; set; } = Resource.RKW_NICHT_VERFUEGBAR;
 
     /// <summary>Meldung, wenn der Gesetzeskatalog nicht aufzubauen ist.</summary>
     [Parameter] public string KeinGesetzeskatalogText { get; set; } =

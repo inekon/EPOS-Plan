@@ -53,3 +53,12 @@ Schritt 6 rechnet dieselben Projekte mit `--stoerung ulp` (±1 ulp an Exp, Sin, 
 Naht `Plattformrundung`) und vergleicht mit dem ungestörten Lauf aus Schritt 5; erwartet ist GESAMT PASS
 (Abschnitt „Der Plattformnachweis“ in `Referenzlaeufe/LIESMICH.md`). Ein FAIL dort ist eine Entscheidung,
 die am letzten Bit kippt.
+
+## Skripte der Sitzung Gebäudesimulation
+
+Orchestrierungsskripte für Integrationsrunden; keine absoluten Pfade, Worktree und Log kommen als Argumente.
+
+- `nachgate_gebaeudesimulation.sh <Worktree> <Gatelog>`: Nachgate nach Merges. Wartet auf `GATE-ENDE` im Gatelog, dann Schritt 0 Marker und BOM, 1 Designer, 2 SQL-Prüfer, 3 Bau Kern-Filter, 4 Bau Windows-Schale, 5 UI-Tests voll, 6 Kern-Tests gefiltert (`KERN_VOLL=1`: voll), 7 Referenzlauf der Projekte der CI-Auswahl (nur mit `REF=1`; die Liste liest das Skript aus der Zeile `--projekte … --ziel artifacts/reflauf/…_kern` des Referenzlauf-Schritts in `.github/workflows/kern.yml` und bricht Schritt 7 mit einer Meldung ab, wenn es dort nicht genau eine solche Zeile findet). Basis über `REFBASIS` (Vorgabe `Referenzlaeufe/2026-10-17_R59_Ergebnisreihen`; die aktuelle Basis steht in `Referenzlaeufe/LIESMICH.md`), Ausgabeordner über `ZIEL`. Das Log liegt als `nachgate_<Worktree>.log` neben dem Worktree; Ende an der Zeile `NACHGATE-ENDE`, Ergebnisse am Ende unter „ZUSAMMENFASSUNG“.
+- `status_merge.py <datei> --zuerst theirs --kopf theirs`: löst nach einem Merge-Konflikt der Statusdatei die Tabellenzeilen auf. Der Kopf („Schemaschritt angemeldet“) kommt von origin, fremde Zeilen stehen zuerst, eigene Zeilen folgen auf den nächsten freien Nummern; gibt die Nummernzuordnung aus, Rückgabe 1 bei unerwarteter Struktur.
+- `resx_merge.py <resx…>`: löst Konflikte am Dateiende einer `.resx` (Anhänge beider Seiten) auf, eigene Seite zuerst; Zeilenende und BOM bleiben. Danach `designer_neu.py schreiben` ziehen.
+- `nachweis.py <Status_iOS_Migration.md> <gatelog> <sha> <zeilen>`: ersetzt in den genannten Statuszeilen (Nummern kommagetrennt) den Platzhalter „**Nachweis:** Gate läuft, wird nachgetragen.“ durch den Nachweis aus dem Gatelog; optional `--zusatz "Text"`.

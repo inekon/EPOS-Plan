@@ -130,6 +130,17 @@ public class ZweispaltenauswahlTests : EposBunitContext
                      cut.Find(".epos-zweispalten-bereich--satz .epos-zweispalten-marke--satz").TextContent);
     }
 
+    /// <summary>Die Katalogmarke trägt den Hinweis als Mouse-over (<c>title</c>).</summary>
+    [Fact]
+    public void Katalogmarke_traegt_den_Hinweis_als_title()
+    {
+        var cut = Aufbauen();
+
+        IElement marke = cut.Find(".epos-zweispalten-marke--katalog");
+
+        Assert.Equal(Resource.AUSWAHL_MARKE_KATALOG_HINWEIS, marke.GetAttribute("title"));
+    }
+
     /// <summary>
     /// Jeder Knopf steht in der Kopfleiste des Bereichs, auf den er wirkt (KA‑E‑1):
     /// „Entfernen" beim Projekt, „Übernehmen" beim Katalog — Zeichen plus Klartext,
@@ -350,6 +361,42 @@ public class ZweispaltenauswahlTests : EposBunitContext
         cut.Find(".epos-zweispalten-satzzeile").Click();
         Assert.True(cut.Find(".epos-zweispalten-satz").HasAttribute("hidden"));
         Assert.False(gemeldet);
+    }
+
+    /// <summary>Kuerzt die Satzzeile den Namen mit „…", steht er voll im title des Namens - auch neben den
+    /// Kopfknoepfen des Wirts; ohne Namen traegt der Leertext keinen title.</summary>
+    [Fact]
+    public void Der_Satzname_traegt_den_vollen_Namen_im_Title()
+    {
+        const string lang = "Kältemaschine Baureihe Nord 120 kW luftgekühlt mit Freikühlung";
+        var cut = Aufbauen(mehr: p => p.Add(x => x.SatzName, lang)
+                                       .Add(x => x.SatzKopfKnoepfe, (RenderFragment)(b => b.AddMarkupContent(0, "<button class=\"probe-info\">i</button>"))));
+
+        IElement name = cut.Find(".epos-zweispalten-satzname");
+        Assert.Equal(lang, name.TextContent);
+        Assert.Equal(lang, name.GetAttribute("title"));
+        Assert.Single(cut.FindAll(".epos-zweispalten-satzkopfknoepfe .probe-info"));
+
+        Assert.False(Aufbauen().Find(".epos-zweispalten-satzname").HasAttribute("title"));
+    }
+
+    /// <summary>Am Satz gibt der Name nach, sobald die Kenndaten ganz gekuerzt sind - er kuerzt mit „…", statt
+    /// hinter den Kopfknoepfen des Wirts angeschnitten zu werden (flex-shrink 1, min-width 0, text-overflow);
+    /// die Kenndaten geben zuerst nach. Gemessen im Browser: Kaeltemaschine 1024 x 768, Name 118 statt 200 px
+    /// breit, rechte Kante 264 px vor den Infoknoepfen bei 292 px.</summary>
+    [Fact]
+    public void Der_Satzname_kuerzt_am_Satz_mit_Auslassung_statt_abzuschneiden()
+    {
+        string css = Quelltextleser.Stilblatt();
+        string name = Block(css, ".epos-zweispalten--knopfleiste-am-satz .epos-zweispalten-satzname {");
+        Assert.Contains("flex: 0 1 auto !important", name);
+        Assert.Contains("min-width: 0", name);
+        Assert.Contains("max-width: 24ch", name);
+        Assert.Contains("flex-shrink: 1000000 !important",
+                        Block(css, ".epos-zweispalten--knopfleiste-am-satz .epos-zweispalten-satzkenndaten {"));
+        string grund = Block(css, ".epos-zweispalten-satzname {");
+        Assert.Contains("overflow: hidden", grund);
+        Assert.Contains("text-overflow: ellipsis", grund);
     }
 
     /// <summary>Ohne Satzname sagt die Zeile „Kein Satz gewählt"; ohne Satz fehlt die Zeile.</summary>
@@ -643,7 +690,7 @@ public class ZweispaltenauswahlTests : EposBunitContext
         Assert.Contains("overflow: auto", Stilblock(".epos-zweispalten-satz {"));
     }
 
-    /// <summary>Die Kopfleisten brechen nicht um (4.8) und sind kein Rollbereich.</summary>
+    /// <summary>Die Kopfleisten brechen in der Grundregel nicht um (4.8) und sind kein Rollbereich.</summary>
     [Fact]
     public void Die_Kopfleiste_bricht_nicht_um_und_rollt_nicht()
     {
@@ -651,6 +698,106 @@ public class ZweispaltenauswahlTests : EposBunitContext
         Assert.Contains("flex-wrap: nowrap", leiste);
         Assert.Contains("overflow: clip", leiste);
         Assert.DoesNotContain("overflow: auto", leiste);
+    }
+
+    /// <summary>
+    /// Die Kopfleiste des KATALOGS schneidet bei der festen Dialogbreite (1160 px) nichts ab: Sie
+    /// bricht zwischen ihren Kindern um, statt Überschrift, Platzhalter oder Knöpfe zu kürzen, und
+    /// das Suchfeld trägt seinen Platzhalter ganz — außerhalb der Kompaktstufe. Die Regel steht NACH
+    /// der Grundregel (die Wache oben liest den ersten Block). Gemessen im Browser:
+    /// Proben/Rasterprobe/kopfleistenprobe.mjs.
+    /// </summary>
+    [Fact]
+    public void Die_Kopfleiste_des_Katalogs_bricht_um_statt_abzuschneiden()
+    {
+        string css = Stilblatt();
+        const string regel = ".epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste {";
+        Assert.True(css.IndexOf(".epos-zweispalten-kopfleiste {", StringComparison.Ordinal)
+                    < css.IndexOf(regel, StringComparison.Ordinal), "Die Katalogregel steht vor der Grundregel.");
+        string katalog = Stilblock(regel);
+        Assert.Contains("flex-wrap: wrap", katalog);
+        Assert.DoesNotContain("overflow", katalog);
+        // Nur außerhalb der Kompaktstufe: im kleineren Fenster fehlt die Höhe für eine zweite Zeile.
+        Assert.Contains("@media (min-width: 1280px) and (min-height: 800px) {\n    " + regel, css);
+        Assert.Contains("@media (max-width: 1279.98px), (max-height: 799.98px) {", css);
+
+        string suchfeld = Stilblock(".epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste .epos-katalog-suchfeld {");
+        Assert.Contains("flex: 0 0 12.5rem !important", suchfeld);
+        Assert.Contains("min-width: 12.5rem", suchfeld);
+    }
+
+    /// <summary>
+    /// Nach #968, Mangel c: In der Kompaktstufe gibt das Suchfeld der Katalog-Kopfleiste nur bis
+    /// 11.25rem nach — der Platzhalter „Suchen – * und ? erlaubt" (176 px) steht ganz; die
+    /// Grundregel (flex 0 3 16rem, Untergrenze 7rem) bleibt unverändert. Gemessen:
+    /// Proben/Rasterprobe/kopfleistenprobe.mjs bei 1 024 x 700 und 1 024 x 768.
+    /// </summary>
+    [Fact]
+    public void Das_Suchfeld_der_Katalogauswahl_traegt_in_der_Kompaktstufe_den_Platzhalter_ganz()
+    {
+        string css = Stilblatt();
+        const string grund = ".epos-zweispalten-kopfleiste .epos-katalog-suchfeld {";
+        const string kompakt = ".epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste > .epos-katalog-suchzeile > .epos-katalog-suchfeld {";
+        const string medium = "@media not ((min-width: 1280px) and (min-height: 800px)) {\n    " + kompakt;
+
+        Assert.Contains("flex: 0 3 16rem !important", Stilblock(grund));
+        Assert.Contains(medium, css);
+        string block = Stilblock(kompakt);
+        Assert.Contains("min-width: 11.25rem", block);
+        Assert.Contains("width: 11.25rem", block);
+        Assert.DoesNotContain("!important", block);
+        Assert.DoesNotContain("flex", block);
+        // Steht nach der Grundregel (gleiche Wirkung, höhere Spezifität) und vor der Normalstufe.
+        Assert.True(css.IndexOf(grund, StringComparison.Ordinal) < css.IndexOf(medium, StringComparison.Ordinal));
+        Assert.True(css.IndexOf(medium, StringComparison.Ordinal)
+                    < css.IndexOf("@media (min-width: 1280px) and (min-height: 800px) {\n    .epos-zweispalten-bereich--katalog", StringComparison.Ordinal));
+        // Die Suchzeile bleibt nie schmaler als ihre starren Kinder (KA-E-27).
+        Assert.Contains("min-width: min-content", Stilblock(".epos-zweispalten-kopfleiste > .epos-katalog-suchzeile {"));
+    }
+
+    /// <summary>
+    /// Nach #968 c, Weg B1: In der Kompaktstufe geben nach Suchfeld (Faktor 1) und Überschrift (0.001) die
+    /// Knöpfe der Katalog-Kopfleiste nach (0.000001) und kürzen ihren Text mit Auslassung bis 5.5rem —
+    /// der Pfeil bleibt, der Text steht in .epos-zweispalten-knopftext.
+    /// </summary>
+    [Fact]
+    public void Die_Knoepfe_der_Katalog_Kopfleiste_kuerzen_in_der_Kompaktstufe_zuletzt()
+    {
+        string css = Stilblatt();
+        const string medium = "@media not ((min-width: 1280px) and (min-height: 800px)) {";
+        const string knopf = ".epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste > .epos-knopf {";
+        const string titel = ".epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste > .epos-zweispalten-titel {";
+        const string text = ".epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste > .epos-knopf > .epos-zweispalten-knopftext {";
+
+        int m = css.IndexOf(medium, StringComparison.Ordinal);
+        Assert.True(m >= 0);
+        int ende = css.IndexOf("\n}", m, StringComparison.Ordinal);
+        foreach (var s in new[] { knopf, titel, text })
+        {
+            int i = css.IndexOf(s, StringComparison.Ordinal);
+            Assert.True(i > m && i < ende, $"{s} steht nicht im Block der Kompaktstufe");
+        }
+        string k = Stilblock(knopf);
+        Assert.Contains("flex: 0 0.000001 auto", k);
+        Assert.Contains("min-width: 5.5rem", k);
+        Assert.Contains("overflow: hidden", k);
+        Assert.Contains("flex-shrink: 0.001 !important", Stilblock(titel));
+        string t = Stilblock(text);
+        Assert.Contains("text-overflow: ellipsis", t);
+        Assert.Contains("min-width: 0", t);
+    }
+
+    /// <summary>Gekürzt nennt der title des Übernahmeknopfes den vollen Text (Nach #968 c).</summary>
+    [Fact]
+    public void Der_Uebernahmeknopf_nennt_im_title_den_vollen_Text()
+    {
+        var cut = Render<Zweispaltenauswahl>(p => p
+            .Add(x => x.Dialogname, "")
+            .Add(x => x.UebernehmenText, "In das Projekt übernehmen")
+            .Add(x => x.UebernehmenHinweis, "Den markierten Eintrag übernehmen"));
+        var knopf = cut.Find(".epos-zweispalten-knopf--uebernehmen");
+        Assert.Equal("In das Projekt übernehmen – Den markierten Eintrag übernehmen", knopf.GetAttribute("title"));
+        Assert.Contains("In das Projekt übernehmen", knopf.TextContent);
     }
 
     /// <summary>Die Haftregel „Dialog im eigenen Fenster" nimmt diese Dialoge aus — sie füllen ihr Fenster.</summary>

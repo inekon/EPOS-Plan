@@ -18,6 +18,10 @@ namespace EPOS.Kern.Tests
     ///   dieselben Flags und dieselbe Komponente) — ohne die <c>LIESMICH.md</c>.</item>
     ///   <item>Die <b>A100-Vorlage</b> (Platzhalter) bleibt, wie sie ist, unter
     ///   <c>{app}\Vorlage\Katalogpaket_A100</c>.</item>
+    ///   <item>Die <b>DIN-4708-Vorlage</b> (Platzhalter, ZB7) geht nach demselben Muster samt
+    ///   <c>LIESMICH.md</c> nach <c>{app}\Vorlage\Katalogpaket_DIN4708</c>.</item>
+    ///   <item>Die <b>Typtag-Vorlage VDI 4655</b> (Platzhalter, ZB11) ebenso nach
+    ///   <c>{app}\Vorlage\Typtagpaket_VDI4655</c>.</item>
     ///   <item>Nichts aus den <b>lokalen Normdaten</b> (<c>Referenzlaeufe/Normzahlen/</c>, dort liegt auch
     ///   das gefüllte A100-Paket) gerät in das Setup, in die Bauanleitung des Setups oder in die
     ///   eingebetteten Ressourcen des Kerns; die Auslieferungsvorlage verweigert eine Eingabe von
@@ -50,6 +54,47 @@ namespace EPOS.Kern.Tests
             string ordner = Pfad("Referenzlaeufe", "Katalogpaket_frei");
             Assert.True(Directory.GetFiles(ordner, "*.csv").Length >= 7, "Der freie Paketteil fuehrt keine sieben CSV-Dateien.");
             Assert.True(File.Exists(Path.Combine(ordner, "LIESMICH.md")), "Die LIESMICH.md des freien Paketteils fehlt.");
+        }
+
+        [Fact]
+        public void Das_Setup_liefert_die_DIN4708_Vorlage_nach_dem_Muster_der_A100_Vorlage()
+        {
+            string iss = Lesen("Setup", "EPOS-Plan.iss");
+
+            Assert.Matches(new Regex(@"^#define KatalogVorlageDin4708\s+RepoDir \+ ""Referenzlaeufe\\Katalogpaket_Vorlage_DIN4708""\s*$", RegexOptions.Multiline), iss);
+            Assert.Matches(new Regex(@"^#if !DirExists\(KatalogVorlageDin4708\)\s*\n\s*#error [^\n]+\n#endif", RegexOptions.Multiline), iss.Replace("\r\n", "\n"));
+
+            Match din = Eintrag(iss, "KatalogVorlageDin4708");
+            Match a100 = Eintrag(iss, "KatalogVorlageA100");
+            Assert.True(din.Success, "Kein [Files]-Eintrag fuer {#KatalogVorlageDin4708}.");
+            Assert.Equal(@"\*", din.Groups["muster"].Value);                      // samt LIESMICH.md, wie A100
+            Assert.Equal(@"{app}\Vorlage\Katalogpaket_DIN4708", din.Groups["ziel"].Value);
+            Assert.Equal(a100.Groups["rest"].Value, din.Groups["rest"].Value);     // dieselben Flags, dieselbe Komponente
+
+            string ordner = Pfad("Referenzlaeufe", "Katalogpaket_Vorlage_DIN4708");
+            foreach (string datei in new[] { "Tab_TwwDin4708Wert_STAMM.csv", "Tab_TwwParameter_STAMM.csv", "LIESMICH.md" })
+                Assert.True(File.Exists(Path.Combine(ordner, datei)), "Der DIN-4708-Vorlage fehlt " + datei + ".");
+        }
+
+        [Fact]
+        public void Das_Setup_liefert_die_Typtagvorlage_VDI4655_nach_dem_Muster_der_A100_Vorlage()
+        {
+            string iss = Lesen("Setup", "EPOS-Plan.iss");
+
+            Assert.Matches(new Regex(@"^#define TyptagVorlageVdi4655\s+RepoDir \+ ""Referenzlaeufe\\Typtagpaket_Vorlage_VDI4655""\s*$", RegexOptions.Multiline), iss);
+            Assert.Matches(new Regex(@"^#if !DirExists\(TyptagVorlageVdi4655\)\s*\n\s*#error [^\n]+\n#endif", RegexOptions.Multiline), iss.Replace("\r\n", "\n"));
+
+            Match vdi = Eintrag(iss, "TyptagVorlageVdi4655");
+            Match a100 = Eintrag(iss, "KatalogVorlageA100");
+            Assert.True(vdi.Success, "Kein [Files]-Eintrag fuer {#TyptagVorlageVdi4655}.");
+            Assert.Equal(@"\*", vdi.Groups["muster"].Value);                      // samt LIESMICH.md, wie A100
+            Assert.Equal(@"{app}\Vorlage\Typtagpaket_VDI4655", vdi.Groups["ziel"].Value);
+            Assert.Equal(a100.Groups["rest"].Value, vdi.Groups["rest"].Value);     // dieselben Flags, dieselbe Komponente
+
+            string ordner = Pfad("Referenzlaeufe", "Typtagpaket_Vorlage_VDI4655");
+            foreach (string datei in WindowsFormsApplication1.Normformvektorleser.PFLICHTDATEIEN
+                         .Concat(new[] { WindowsFormsApplication1.Normformvektorleser.DATEI_GAENGE, "LIESMICH.md" }))
+                Assert.True(File.Exists(Path.Combine(ordner, datei)), "Der Typtag-Vorlage fehlt " + datei + ".");
         }
 
         [Fact]

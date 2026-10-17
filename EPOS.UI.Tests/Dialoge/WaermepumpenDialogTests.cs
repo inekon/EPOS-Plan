@@ -113,7 +113,8 @@ public class WaermepumpenDialogTests : EposBunitContext
 
     private static WaermepumpeStammDaten Stamm(string name, string firma, int nennleistung) => new()
     {
-        Id = 1, Name = name, Firma = firma, Nennleistung = nennleistung, Heizstab = 6, Modulkosten = 9000
+        Id = 1, Name = name, Firma = firma, Nennleistung = nennleistung, Heizstab = 6,
+        Kostensatz = "9000", KostensatzEinheit = "€"
     };
 
     private static Satzbearbeitungswege Wege(List<(int Id, IReadOnlyList<BrowserFeldwert> Felder)>? gespeichert = null)
@@ -122,7 +123,7 @@ public class WaermepumpenDialogTests : EposBunitContext
             Lesen = id => new List<BrowserFeldwert>
             {
                 new() { Schluessel = "Firma", Bezeichnung = "Hersteller:", Art = BrowserFeldArt.Text, Editierbar = true, Wert = "Alpha" },
-                new() { Schluessel = "Modulkosten", Bezeichnung = "Modulkosten:", Art = BrowserFeldArt.Zahl, Editierbar = true, Wert = "100" },
+                new() { Schluessel = "Nennleistung", Bezeichnung = "Nennleistung:", Art = BrowserFeldArt.Zahl, Editierbar = true, Wert = "100" },
             },
             Speichern = l => { gespeichert?.AddRange(l); return new KatalogSpeicherErgebnis(true, "gespeichert", ""); }
         };
@@ -669,6 +670,28 @@ public class WaermepumpenDialogTests : EposBunitContext
         Assert.Equal("true", zeilen[2].QuerySelector(".epos-zeilenzelle")!.GetAttribute("aria-current"));
         Assert.Equal("WP C", cut.Find(".epos-zweispalten-satzname").TextContent);
         Assert.Equal(0, cut.Instance.ProjektWahl.Anzahl);
+    }
+
+    /// <summary>
+    /// KA‑E‑17: Ankreuzen wählt nicht — ist Zeile 1 gewählt, setzt das Kästchen von Zeile 2 nur ihr Kreuz;
+    /// Hervorhebung, <c>aria-current</c> und Detailzeile bleiben bei Zeile 1.
+    /// </summary>
+    [Fact]
+    public void KA_E_17_Ankreuzen_waehlt_nicht()
+    {
+        var cut = Aufbauen(DreiPumpen());
+        Projektwahl(cut, 0).Click();
+
+        ProjektAnkreuzen(cut, 1);
+
+        var zeilen = cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr").ToList();
+        Assert.Equal("true", zeilen[1].QuerySelector(".epos-wahlkaestchen")!.GetAttribute("aria-checked"));
+        Assert.Equal(1, cut.Instance.ProjektWahl.Anzahl);
+        Assert.Single(zeilen, tr => tr.ClassList.Contains("epos-zeile--gewaehlt"));
+        Assert.Contains("epos-zeile--gewaehlt", zeilen[0].ClassList);
+        Assert.Equal("true", zeilen[0].QuerySelector(".epos-zeilenzelle")!.GetAttribute("aria-current"));
+        Assert.Null(zeilen[1].QuerySelector(".epos-zeilenzelle")!.GetAttribute("aria-current"));
+        Assert.Equal("WP A", cut.Find(".epos-zweispalten-satzname").TextContent);
     }
 
     /// <summary>AW1: Die Projektliste ist ein Tabulatorhalt; ↑ ↓ Pos1 Ende bewegen die Wahl.</summary>

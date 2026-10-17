@@ -563,10 +563,14 @@ namespace WindowsFormsApplication1
             {
                 string baujahr = !string.IsNullOrWhiteSpace(_g.BaujahrText) ? _g.BaujahrText.Trim() : _g.Baujahr?.ToString(CultureInfo.InvariantCulture);
                 Ergaenzen(b, "Pset_BuildingCommon", baujahr == null ? null : Neben("YearOfConstruction", new IfcLabel(baujahr)));
-                Eigen(b, IfcSchreiber.EPOS_GEBAEUDE,
-                      Wert("Kennung", new IfcIdentifier(_g.Kennung)),
-                      string.IsNullOrWhiteSpace(_g.Art) ? null : Wert("Gebaeudeart", new IfcLabel(_g.Art.Trim())),
-                      string.IsNullOrWhiteSpace(_g.Baualtersklasse) ? null : Wert("Baualtersklasse", new IfcLabel(_g.Baualtersklasse.Trim())));
+                Eigen(b, IfcSchreiber.EPOS_GEBAEUDE, new[]
+                      {
+                          Wert("Kennung", new IfcIdentifier(_g.Kennung)),
+                          string.IsNullOrWhiteSpace(_g.Art) ? null : Wert("Gebaeudeart", new IfcLabel(_g.Art.Trim())),
+                          string.IsNullOrWhiteSpace(_g.Baualtersklasse) ? null : Wert("Baualtersklasse", new IfcLabel(_g.Baualtersklasse.Trim())),
+                      }
+                      // Nachzug N2 (DA-4): das Erdreich (G3, G4) als Text — derselbe Weg wie der Schreiber.
+                      .Concat(GebaeudeRestdaten.Werte(_g.Erdreich).Select(p => Wert(p.Schluessel, new IfcText(p.Wert)))).ToArray());
                 Ergebnis(b, _g.Kennung, null);
                 Rechenlauf(b);
             }
@@ -584,6 +588,9 @@ namespace WindowsFormsApplication1
                                   Temperatur("SpaceTemperatureSummerMax", r.SollKuehlenC),
                                   r.Nachtabsenkung.HasValue ? Wert("DiscontinuedHeating", new IfcBoolean(r.Nachtabsenkung.Value)) : null,
                                   r.LuftwechselNutzerJeH.HasValue ? Wert("NaturalVentilationRate", new IfcNumericMeasure(Endlich(r.LuftwechselNutzerJeH.Value))) : null);
+                    // Welle DA-3: Belegung, Lasten, Auslegung und Licht als Standardsätze — ergänzt, eine vorhandene Eigenschaft ersetzt.
+                    foreach ((string satz, List<IfcSatzwert> werte) in IfcStandardsaetze.Raumsaetze(r))
+                        Ergaenzen(s, satz, werte.Select(Satzwert).ToArray());
                 }
                 var zone = new List<Angabe>
                 {
@@ -593,8 +600,12 @@ namespace WindowsFormsApplication1
                     Zahl("Personen", r.Personen, null),
                     Zahl("GeraeteWm2", r.GeraeteWm2, null),
                     Zahl("LichtWm2", r.LichtWm2, null),
+                    Zahl(IfcStandardsaetze.EPOS_AUSSENLUFT_PERSON, r.GbxmlLasten?.AussenluftJePersonM3h, null),
+                    Zahl(IfcStandardsaetze.EPOS_WAERME_PERSON, r.GbxmlLasten?.WaermeJePersonW, null),
                 };
                 zone.AddRange(IfcKonditionierungssatz.Zonenwerte(r.Konditionierung).Select(Satzwert));
+                // Nachzug N2 (DA-4): die Restdaten der Zone als Text — derselbe Weg wie der Schreiber.
+                zone.AddRange(GebaeudeRestdaten.Werte(r.Rest).Select(p => Wert(p.Schluessel, new IfcText(p.Wert))));
                 Eigen(o, IfcSchreiber.EPOS_ZONE, zone.ToArray());
                 // Die Kalendersätze (6.3, 16.3): je Größe der Satz eines früheren Durchlaufs ersetzt, ein überholter entfernt —
                 // nie doppelt.
@@ -620,7 +631,9 @@ namespace WindowsFormsApplication1
                 if (klasse != null)
                     Ergaenzen(e, "Pset_" + klasse + "Common",
                               u.HasValue ? Wert("ThermalTransmittance", new IfcThermalTransmittanceMeasure(u.Value)) : null,
-                              Neben("IsExternal", new IfcBoolean(aussen)));
+                              Neben("IsExternal", new IfcBoolean(aussen)),
+                              klasse == "Window" && IfcStandardsaetze.Glasanteil(b) is double glas
+                                  ? Wert(IfcStandardsaetze.FENSTER_GLASANTEIL, new IfcNormalisedRatioMeasure(glas)) : null);
                 if ((klasse == "Window" || klasse == "Door") && b.GWert.HasValue)
                     Ergaenzen(e, "Pset_DoorWindowGlazingType",
                               Wert("SolarHeatGainTransmittance", new IfcNormalisedRatioMeasure(Endlich(b.GWert.Value))));
@@ -659,6 +672,8 @@ namespace WindowsFormsApplication1
                       Winkel("Neigung", b.NeigungGrad, "GEXP_IFC_NEIGUNG_BEZUG"),
                       Wert("IstZusammenfassung", new IfcBoolean(zusammen)),
                       Zahl("WaermebrueckeUA", b.WaermebrueckeWK, "GEXP_IFC_WAERMEBRUECKE"),
+                      Zahl(IfcStandardsaetze.EPOS_ABSORPTION, b.AbsorptionsgradSolar, null),
+                      Zahl(IfcStandardsaetze.EPOS_EMISSION, b.Emissionsgrad, null),
                       schichten ? Wert("Schichtrichtung", new IfcLabel(IfcSchreiber.SCHICHTRICHTUNG_AUSSEN_INNEN), null, "GEXP_IFC_SCHICHTRICHTUNG") : null,
                       a != null ? Wert("Ersatzschichtung", new IfcBoolean(a.IstErsatz)) : null,
                       herkunft != null ? Wert("Materialherkunft", new IfcLabel(herkunft), null, "GEXP_IFC_ANR_MATERIALHERKUNFT") : null);
@@ -788,6 +803,10 @@ namespace WindowsFormsApplication1
                           s.RhoKgM3 > 0.0 ? Neu<IfcPropertySingleValue>(p => { p.Name = "MassDensity"; p.NominalValue = new IfcMassDensityMeasure(Endlich(s.RhoKgM3.Value)); }) : null);
                 Stoffsatz(m, IfcSchreiber.EPOS_BAUSTOFF,
                           s.RWertM2KW > 0.0 ? Neu<IfcPropertySingleValue>(p => { p.Name = "Waermedurchlasswiderstand"; p.NominalValue = new IfcThermalResistanceMeasure(Endlich(s.RWertM2KW.Value)); }) : null);
+                // Welle DA-3 (E138 F8 b): die Konstanten des Rechenwegs als optische Werte — durchgereicht, ohne Feld.
+                Stoffsatz(m, IfcStandardsaetze.OPTIK, IfcStandardsaetze.Optikwerte()
+                    .Select(w => Neu<IfcPropertySingleValue>(p => { p.Name = w.Name; p.NominalValue = new IfcNormalisedRatioMeasure(w.Zahl.Value); }))
+                    .ToArray());
                 return m;
             }
 

@@ -12,7 +12,7 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Rückweg „In die Datenbank übernehmen…" der Solarkollektoren</b> (Konzept Projektdialoge mit Katalogauswahl 5.2, 5.7,
     /// KA‑E‑9; Kernweg <see cref="Katalogrueckweg"/>, Gewerk <see cref="SolarkollektorenStammCtrl.Rueckweg"/>): neu, überschreiben,
-    /// die drei Sperrgründe, Namenszusatz, die Investitionskosten und die Kennwerte, Kosten als Satzvorlagen samt
+    /// die drei Sperrgründe, Namenszusatz, die Kennwerte (ohne Kostenspalte, Welle KB-4), Kosten als Satzvorlagen samt
     /// Investitionspositionen (KA‑E‑14) und Vorrang, Name der Kopie bleibt (KA‑E‑15), Löschen mit Satzvorlage (KA‑E‑16),
     /// Katalogpaket und die Transaktion. Nach dem Muster der <c>BhkwRueckwegTests</c>; geschrieben wird in der Kopie der Testdatenbank, an Kopien anderer Projekte als 1049 — der Kollektorsatz von 1049 bleibt.
     /// </summary>
@@ -272,10 +272,12 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
             IReadOnlyList<string> spalten = Katalogrueckweg.Spalten(SolarkollektorenStammCtrl.Rueckweg());
             foreach (string aus in new[] { "ID", "ID_Projekt", "ID_Stamm", "ReadOnly", "ID_KostenVorlage", "ID_KostenVorlageInvestition", "Bezeichner",
-                                           "Katalog_Schluessel", "Katalog_Pruefsumme", "Katalog_Ausgelaufen" })
+                                           "Katalog_Schluessel", "Katalog_Pruefsumme", "Katalog_Ausgelaufen",
+                                           // Welle KB-4: die Kostenspalte ist entfallen
+                                           "Investitionskosten" })
                 Assert.DoesNotContain(aus, spalten);
             foreach (string mit in new[] { "Kollektortyp", "Firma", "Beschreibung", "Modulflaeche", "Aperturflaeche", "h0", "k1", "k2",
-                                           "Kdir", "Kdfu", "Investitionskosten", "Bezugsflaeche" })
+                                           "Kdir", "Kdfu", "Bezugsflaeche" })
                 Assert.Contains(mit, spalten);
             Assert.Empty(SolarkollektorenStammCtrl.Rueckweg().Kinder);
         }
@@ -414,11 +416,11 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Investitionskosten_und_Kennwerte_gehen_mit_der_Name_der_Kopie_bleibt()
+        public void Kennwerte_gehen_mit_der_Name_der_Kopie_bleibt()
         {
             if (!_db.Vorhanden) return;
             var k = Kopie();
-            Sql("UPDATE Tab_Solarkollektoren SET Investitionskosten = 1234, h0 = 0.71, k1 = 3.2, k2 = 0.011, Kdir = 0.93, " +
+            Sql("UPDATE Tab_Solarkollektoren SET h0 = 0.71, k1 = 3.2, k2 = 0.011, Kdir = 0.93, " +
                 "Kdfu = 0.88, Bezugsflaeche = 'brutto' WHERE ID = ?", k.Id);
 
             Rueckwegergebnis e = Neu(k.Id, "Rueckweg Kennwerte");
@@ -426,7 +428,6 @@ namespace EPOS.Kern.Tests
             int satz = e.Saetze[0].IdKatalog;
             double Z(string spalte) => Convert.ToDouble(Wert("SELECT " + spalte + " FROM Tab_Solarkollektoren_STAMM WHERE ID = ?", satz),
                                                         CultureInfo.InvariantCulture);
-            Assert.Equal(1234, Z("Investitionskosten"));
             Assert.Equal(0.71, Z("h0"), 9);
             Assert.Equal(3.2, Z("k1"), 9);
             Assert.Equal(0.011, Z("k2"), 9);

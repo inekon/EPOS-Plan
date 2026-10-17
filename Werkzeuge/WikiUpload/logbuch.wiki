@@ -1,0 +1,51 @@
+== Version 1.2.0.11 – Oktober 2026 ==
+{{Anker|version-1-2-0-11-oktober-2026|v1-2-0-11}}
+
+* Seit 13.10.2026: Der Gebäudedialog prüft ein Gebäude mit „Modell prüfen…“ auf Rechenfähigkeit, zeigt je Prüfgruppe eine Ampel, schlägt fehlende Hüllflächen und Aufbauten nach Namen und Baualtersklasse vor und übernimmt die Vorschläge mit einem Klick; nach einem Import öffnet die Prüfung von selbst.
+* Seit 13.10.2026: Aus „Modell prüfen“ öffnet „Ansicht…“ die Gebäudeansicht mit den betroffenen Flächen und Zonen hervorgehoben; Zonen, Legendeneinträge und Bauteilgruppen lassen sich ein- und ausblenden, und der neue Farbmodus „Nutzung“ zeigt die Nutzungsprofile.
+* Seit 13.10.2026: Das neue Blatt „Nutzung und Kalender“ zeigt Nutzungsprofil, Kalender, Sollwerte, Ferien und Heizperiode aller Zonen eines Gebäudes mit einem Kurzbild der Woche und weist sie mehreren Zonen in einem Schritt zu.
+* Seit 13.10.2026: Im Gebäudeeditor übernimmt „Vorgaben der Baualtersklasse übernehmen…“ U-Werte, Wärmebrücken, Fensterdurchlassgrad, Bauart und Nutzungsprofil nach Vorschau mit einem Klick, auch im Stammblatt der Gebäudeverwaltung.
+* Seit 12.10.2026: Der Gebäudeeditor trennt „Beschreibung und Einordnung“ von den „Rechengrößen“ und kennzeichnet an jedem Wert, woher er kommt oder dass der Rechenweg ihn nicht liest.
+* Seit 13.10.2026: Der Gebäudeimport liest aus gbXML-Dateien Lasten, Sollwerte und Zeitpläne und legt daraus die Konditionierungskalender der Zonen an; mit einer Profilnummer oder einem Raumtyp ordnet er das Nutzungsprofil der DIN/TS 18599-10 zu.
+* Seit 12.10.2026: Der Import aus einer Projektdatei übernimmt Verwendung, Gebäudeart, Energiestandard und Bauweise, platziert Räume ohne Zone selbst, und bei einem erneuten Import bleiben Änderungen an den Zonen erhalten.
+* Seit 14.10.2026: Der Gebäudeexport in gbXML und IFC nimmt die Kalender, Lasten, Vorheizzeit, Übergabe, Luftströme und Erdreichangaben der Zonen mit, der Import liest sie wieder ein.
+* Seit 13.10.2026: Im Gebäudedialog lassen sich alle oder die gewählten Gebäude des Projekts aus der Kopfleiste simulieren, und die Zusammenfassung zeigt den Jahreswärmebedarf des letzten Laufs.
+* Seit 12.10.2026: „Administration › Gebäude › Bauteilkatalog einlesen…“ liest einen Bauteilkatalog aus CSV-Dateien in den Baustoff- und Aufbaukatalog ein; ein erneuter Import erkennt zusammengeführte Baustoffe wieder.
+* Seit 16.10.2026: Ein Bauteilaufbau kann inhomogene Schichten mit Abschnitten und Flächenanteilen führen; der U-Wert folgt dem oberen und unteren Grenzwert nach DIN EN ISO 6946, und der Bauteilkatalog-Import teilt solche Aufbauten normgerecht.
+* Seit 16.10.2026: Ein Fensteraufbau führt U_g, U_f, g-Wert, Rahmenanteil und ψ_g; im Bauteildialog übernimmt das Fenster g-Wert, Rahmenanteil und das daraus nach DIN EN ISO 10077-1 gerechnete U_w.
+* Seit 16.10.2026: Die Nutzungsprofile der DIN/TS 18599-10 sind mit den Normwerten der Ausgabe 2025-10 ausgeliefert, das Wochenmuster folgt aus den Nutzungstagen je Jahr.
+* Seit 16.10.2026: „Bauteilkatalog einlesen…“ nennt die Teilkataloge der Quelle und liest auch den Unterordner „Export“ des Katalogexports.
+* Seit 12.10.2026: „Normwerte einlesen…“ füllt die Profile der DIN/TS 18599-10 aus Ihrer eigenen CSV-Datei oder Projektdatei; die leeren Kategorien SIA 2024 und VDI 2078 entfallen im Katalog der Nutzungsprofile.
+* Seit 11.10.2026: Saison, Ferien, Zeiträume und Einzeltage der Kalender nehmen Tag und Monat als „TT.MM.“ an und prüfen die Eingabe erst beim Verlassen des Feldes.
+* Seit 11.10.2026: Die Gruppe „Aufheizen vor Nutzungsbeginn“ in der Simulationskonfiguration bietet drei Verfahren (Sollwertrampe, Vorheizzeit vorgeben, Vorheizzeit berechnen); Sprung, Regelgenauigkeit und Geltung sind je Gebäude oder Zone einstellbar, jede Zone kann eine eigene Vorheizzeit haben.
+* Seit 11.10.2026: Bericht, Kurzbericht, Kennzahlen, Variantenvergleich und Datenexport zeigen die Vorheizgrößen; die Berichtsvorlagen kennen dazu neue Platzhalter.
+* Seit 13.10.2026: Kältebedarf, der dezentral über Split-Geräte gedeckt wird, erscheint im Kältegang, in der Kältelast, in der Strombilanz, im Deckungsgrad Kälte, im Anlagenschema und im Bericht; der Strom wird je Kühlträger und Zähler abgerechnet.
+* Seit 11.10.2026: Kältemaschine und Wärmepumpe wählen ihr Kältemittel aus einer Kältemitteltabelle mit GWP und Kennzeichen, die sich unter „Daten & Import → Kältemittel…“ pflegen lässt; mit einem Inbetriebnahmejahr weist EPOS-Plan auf Stichtage der F-Gas-Verordnung hin.
+* Seit 13.10.2026: Im Dialog Brauchwasser-Zapfprofil sind die Eingaben in aufklappbare Karten gegliedert; die Karte „Kalender“ nimmt beliebig viele eigene Ferienzeiträume auf, und leere Felder für Tagesbedarf, Ladeleistung, Zirkulationsleistung und Leitungsinhalt rechnen mit dem Vorschlag des Programms.
+* Seit 13.10.2026: Der Katalogimport der Brauchwasser-Nutzungsarten spielt auch die Kennwerte nach DIN 4708 ein; für sie und für die Typtage nach VDI 4655 liegt je eine Paketvorlage bei.
+* Seit 14.10.2026: Die mitgelieferten Brauchwasser-Nutzungsarten rechnen im Zapfprofil-Dialog in der Stufe „Einfach“ ohne zusätzlichen Katalog.
+* Seit 16.10.2026: In der Stufe „Einfach“ empfiehlt die Speicherauslegung im Brauchwasser-Zapfprofil auch ohne externes Katalogpaket einen Speicher-Nenninhalt, gekennzeichnet als Schnellauslegung nach Vorlage V4.
+* Seit 13.10.2026: Der Reiter „Übersicht“ unter „Berichte & Kosten“ stellt die Komponenten je Gewerk mit ihren Kennwerten nebeneinander, hebt Abweichungen zum Stammprojekt hervor und vergleicht die Energie-Ergebnisse der Versionen als Tabelle oder Balkengrafik; über „Anzeige anpassen…“ wählt jeder Benutzer die Kennzahlen.
+* Seit 13.10.2026: Varianten werden über die Dialoge „Variante anlegen…“, „Umbenennen…“ und „Löschen…“ verwaltet; eine neue Variante entsteht aus dem Stammprojekt oder aus einer vorhandenen Variante.
+* Seit 13.10.2026: In den Zeitreihendiagrammen stehen Bedarfe als Linie über den Erzeugungsflächen, die Zeitachse der Jahresdiagramme ist zwischen Datum und Stunde im Jahr umschaltbar, und im Reiter Photovoltaik zeigt „PV aufteilen“ die Erzeugung als Stapel aus Eigenverbrauch, Einspeisung und Abregelung.
+* Seit 13.10.2026: Der Arbeitspreis eines Energieträgers wird bei neuer Auswahl in €/kWh angezeigt und mit dem Heizwert umgerechnet.
+* Seit 13.10.2026: In den Dialogen mit Katalogauswahl sind die Kästchen der Liste „Im Projekt“ runde Knöpfe, angekreuzt dunkelblau mit weißem Haken.
+* Seit 13.10.2026: Der Kostendialog und die Kostenseite gleichen die Kosten einer Anlage mit dem zentralen Kostenkatalog ab („Mit dem Kostenkatalog abgleichen…“).
+* Seit 13.10.2026: Arbeits-, Grund- und Leistungspreis eines Brennstoffs stehen allein in der Karte seines Energieträgers.
+* Seit 14.10.2026: Die Gerätekataloge führen keine Kostenfelder mehr; die Kosten eines Geräts stehen allein in der Kostenverwaltung, die Maske zeigt die Gerätekosten bzw. den Kostensatz aus der Satzvorlage des Katalogsatzes.
+* Seit 16.10.2026: Auch die Kosten des Stromspeichers stehen wie bei den übrigen Gewerken allein in der Kostenverwaltung; der Katalogsatz führt keine Kostenfelder mehr.
+* Seit 16.10.2026: Die Wasserkosten des Rückkühlwerks werden mit dem Preis des Trägers Wasser als Betriebskosten gerechnet.
+* Seit 16.10.2026: In den Bedarfsprofilen vergleicht „Vergleichen…“ zwei bis drei Projektzeilen und Katalogsätze nebeneinander; Kopfzeile und Knöpfe folgen den übrigen Dialogen mit Katalogauswahl.
+* Seit 16.10.2026: Jahressummen und Jahresarbeit in MWh stehen in Auswahllisten, Katalog und Satzzeile einheitlich als ganze Zahl mit Tausendertrennzeichen.
+* Seit 16.10.2026: Achsenbeschriftungen und Texte der Ganglinien in den Bedarfs- und Ganglinien-Dialogen stehen in der Schriftgröße der Oberfläche, auch im Projektassistenten.
+* Seit 17.10.2026: In einer Variantengruppe einer Berichtsvorlage fragen Bedingungen wie „hat Tabelle …“ die Varianten der Gruppe und das Stammprojekt.
+* Seit 17.10.2026: Das Häkchen „Deckblatt“ ist nur noch ausgegraut, wenn die Word-Vorlage den Berichtstitel als Platzhalter enthält.
+* Seit 17.10.2026: Im Excel-Bericht zeigen die Diagramme die Einspeisung der Strombilanz als Nebenbalken, die Beträge an Brücke und Spanne und die Ersatzjahre des Zahlungsstroms wie der Word-Bericht.
+* Seit 17.10.2026: Deckungsgrad und Jahresarbeitszahl der Kälte zeigen in der Übersicht und im Bericht denselben Wert; die Jahresarbeitszahl Kälte gilt für alle Kälteerzeuger.
+* Seit 17.10.2026: Der Hilfsstrom von BHKW und Heizkessel geht in die CO₂-Bilanz ein, seine Stromsteuer wird angesetzt, soweit der Strompreis sie nicht enthält, und der Bericht weist Hilfsstrom, CO₂ und Stromsteuer als eigene Kennzahlen aus.
+* Seit 17.10.2026: Eine einzeln weitergegebene Variante führt am Ziel die Photovoltaik-Vergütung ihres Stammprojekts als eigene Angaben.
+* Seit 17.10.2026: Ein Wechselrichter, dem im Katalog Angaben zu MPP-Trackern oder Kurzschlussstrom fehlen, heißt beim Wechselrichtervorschlag „bedingt geeignet (Angaben fehlen)“ statt ungeeignet.
+* Seit 17.10.2026: Der Hilfe-Assistent wählt im Photovoltaik-Dialog auch Modul und Wechselrichter eines Strangs; eine ungeeignete Wahl lehnt er mit Grund ab.
+* Seit 17.10.2026: Auch Strom-, Solar- und PV-Ganglinie stellen mit „Vergleichen…“ zwei oder mehr angekreuzte Ganglinien des Projekts oder des Katalogs nebeneinander.
+
+

@@ -49,6 +49,9 @@ namespace WindowsFormsApplication1
         /// <summary>Zahl der geschriebenen Tageswerte.</summary>
         public int Tageswerte;
 
+        /// <summary>Geschriebene Stunden der Rohtabelle (KD-4); 0 ohne Schemaschritt.</summary>
+        public int Rohstunden;
+
         /// <summary>Der fertige Meldungstext; leer heißt: nichts zu melden.</summary>
         public string Meldung = "";
 
@@ -56,9 +59,11 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
-    /// Was die REGIONSVORSCHAU zurückgibt (Auftrag KL-3, Anwenderentscheid 19.09.2026
-    /// Punkt b): welche TRY-Region der eingetragene Standort trifft — <b>bevor</b>
-    /// eingelesen wird.
+    /// Was die VORSCHAU zurückgibt (Auftrag KL-3, erweitert in KD-2 nach Entscheid
+    /// KD-Q3): welchen Datensatz der eingetragene Standort trifft — <b>gelesen</b>, bevor
+    /// eingelesen wird, für alle drei Quellen. Der Import übernimmt den gelesenen Satz
+    /// ohne zweiten Abruf und ohne zweite Geokodierung, solange
+    /// <see cref="PasstZu"/> gilt.
     /// </summary>
     public sealed class KlimaVorschauErgebnis
     {
@@ -68,14 +73,96 @@ namespace WindowsFormsApplication1
         /// <summary>Die fertige Ergebnis- oder Fehlerzeile; leer heißt: nichts zu melden.</summary>
         public string Meldung = "";
 
-        /// <summary>Die getroffene Region; <c>null</c>, wenn keine ermittelt wurde.</summary>
+        /// <summary>Die getroffene TRY-Region (nur Regionalweg); sonst <c>null</c>.</summary>
         public TryRegion Region;
 
-        /// <summary>Was das Paket für diese Region führt — Jahr und Szenario.</summary>
+        /// <summary>Was das Paket für diese Region führt — Jahr und Szenario (nur Regionalweg).</summary>
         public IReadOnlyList<TryAusfuehrung> Ausfuehrungen = new List<TryAusfuehrung>();
 
+        /// <summary>Die Quelle, aus der gelesen wurde.</summary>
+        public KlimaQuelle Quelle;
+
+        /// <summary>Bezugsjahr der gewählten Ausführung (Regionalweg) bzw. aus dem Dateikopf; sonst <c>null</c>.</summary>
+        public int? Bezugsjahr;
+
+        /// <summary>Szenario der gewählten Ausführung (nur Regionalweg).</summary>
+        public TrySzenario Szenario;
+
+        /// <summary>
+        /// Gibt es die GEWÄHLTE Ausführung? Im Regionalweg: Jahr und Szenario im Paket
+        /// für die getroffene Region. Bei Datei und PVGIS: Der Satz trägt Stunden.
+        /// Nein heißt: <see cref="Grund"/> sagt warum, im Regionalweg stehen die
+        /// vorhandenen Ausführungen in <see cref="Ausfuehrungen"/>.
+        /// </summary>
+        public bool AusfuehrungGefunden;
+
+        /// <summary>Der benannte Grund, wenn <see cref="AusfuehrungGefunden"/> nein ist.</summary>
+        public string Grund = "";
+
+        /// <summary>Der gesuchte Standort: Koordinate, Anzeigename der Geokodierung, Höhe.</summary>
+        public KlimaStandort Standort;
+
+        /// <summary>Der Bezugspunkt des Datensatzes: Station, Dateistandort oder PVGIS-Punkt.</summary>
+        public KlimaBezugspunkt Bezugspunkt;
+
+        /// <summary>Höhe des Bezugspunkts minus Höhe des Standorts [m]; <c>null</c>, wenn eine fehlt.</summary>
+        public double? HoehenunterschiedM;
+
+        /// <summary>Die Kennzahlen des gelesenen Satzes; <c>null</c> ohne Stunden.</summary>
+        public KlimaKennzahlen Kennzahlen;
+
+        /// <summary>Welche Größen die Quelle führt.</summary>
+        public IReadOnlyList<KlimaParameterEintrag> Parameterbestand = new List<KlimaParameterEintrag>();
+
+        /// <summary>Steht die Rohtabelle (KD-4)? Dann sagt der Parameterbestand je Größe, ob sie gespeichert wird.</summary>
+        public bool RohwerteGespeichert;
+
+        /// <summary>Regionalweg: „nächste Repräsentanzstation, nicht die amtliche Klimaregion" (KD-Q1).</summary>
+        public bool Repraesentanzhinweis;
+
+        /// <summary>
+        /// Bezugspunkt nicht ortstypisch — ab <see cref="KlimaVorschauFestwerte.HINWEIS_ENTFERNUNG_KM"/>
+        /// oder <see cref="KlimaVorschauFestwerte.HINWEIS_HOEHE_M"/> (KD-Q1, KD-Q9).
+        /// </summary>
+        public bool Ortshinweis;
+
+        /// <summary>Die Hinweistexte in Anzeigereihenfolge (leise Zeilen, kein Banner).</summary>
+        public IReadOnlyList<string> Hinweise = new List<string>();
+
+        /// <summary>Der gelesene Satz für den Import — nie in der Oberfläche.</summary>
+        internal KlimaImportAblauf.Lesesatz Satz;
+
+        /// <summary>Der Schlüssel der Eingaben, aus denen die Vorschau gelesen hat.</summary>
+        internal string Schluessel = "";
+
         public bool Erfolgreich => Ausgang == KlimaImportAusgang.Erfolg;
+
+        /// <summary>Kann ein Import diesen Satz übernehmen?</summary>
+        public bool Importierbar => Erfolgreich && AusfuehrungGefunden && Satz != null &&
+                                    Satz.Stunden != null && Satz.Stunden.Count > 0;
+
+        /// <summary>
+        /// Gehört die Vorschau zu diesem Auftrag? Nein, sobald Ort, Koordinaten, Quelle,
+        /// Datei, Jahr oder Szenario anders sind — dann ist sie VERFALLEN, und der Import
+        /// liest selbst. Koordinaten von Hand passen auch, wenn sie genau den
+        /// geokodierten Standort der Vorschau tragen (die Felder sind damit befüllt).
+        /// </summary>
+        public bool PasstZu(KlimaImportAuftrag auftrag)
+        {
+            if (auftrag == null || !Erfolgreich || Schluessel.Length == 0) return false;
+            if (Schluessel == KlimaImportAblauf.Vorschauschluessel(auftrag)) return true;
+
+            return auftrag.Art == KlimaImportArt.AusKoordinaten && Standort != null &&
+                   Schluessel.EndsWith(KlimaImportAblauf.Quellenteil(auftrag), StringComparison.Ordinal) &&
+                   auftrag.Longitude == Standort.Longitude && auftrag.Latitude == Standort.Latitude;
+        }
     }
+
+    /// <summary>
+    /// Ein PVGIS-Abruf SAMT KOPF (Auftrag KD-2) — die Naht der Vorschau. Unter Windows
+    /// <c>PVGIS_EPW_Downloader.GetTmyAbruf</c>, in der Probe die eingefrorene Antwort.
+    /// </summary>
+    public delegate Task<PvgisAbruf> IPvgisAbruf(double lon, double lat, int azimut);
 
     /// <summary>
     /// Woher die Koordinaten kommen — die zwei Zweige des Vorläufers.
@@ -132,6 +219,12 @@ namespace WindowsFormsApplication1
 
         public double Longitude;
         public double Latitude;
+
+        /// <summary>
+        /// Höhe des Standorts über NN [m], wenn der Anwender sie kennt (Auftrag KD-2);
+        /// <c>null</c> heißt unbekannt. Sie wirkt nur auf den Höhenhinweis der Vorschau.
+        /// </summary>
+        public double? StandortHoeheM;
 
         /// <summary>
         /// Woher die Stundenwerte kommen. <b>Vorgabe <see cref="KlimaQuelle.PvgisTmy"/></b> —
@@ -257,17 +350,24 @@ namespace WindowsFormsApplication1
         /// <b>Als LETZTER Parameter mit Vorgabe</b>, damit jeder bestehende Aufruf
         /// unverändert gültig bleibt; ohne ihn steht nur der Weg über eine lokale
         /// <c>data.zip</c> offen.</param>
+        /// <param name="vorschau">Eine Vorschau (Auftrag KD-2, Entscheid KD-Q3): Passt sie
+        /// zum Auftrag (<see cref="KlimaVorschauErgebnis.PasstZu"/>) und ist sie
+        /// importierbar, übernimmt der Import ihren gelesenen Satz — <b>ohne zweiten Abruf
+        /// und ohne zweite Geokodierung</b>. Eine verfallene Vorschau wird übergangen.</param>
         public static async Task<KlimaImportErgebnis> Laufen(
             KlimaImportAuftrag auftrag,
             ITmyQuelle tmy,
             IOrtsQuelle orte = null,
             IProgress<ImportFortschritt> melder = null,
             CancellationToken abbruch = default,
-            INetzbereich bereich = null)
+            INetzbereich bereich = null,
+            KlimaVorschauErgebnis vorschau = null)
         {
             var erg = new KlimaImportErgebnis();
             if (auftrag == null) return Abbruch(erg);
-            if (tmy == null && auftrag.Quelle == KlimaQuelle.PvgisTmy) return Abbruch(erg);
+
+            bool mitVorschau = vorschau != null && vorschau.Importierbar && vorschau.PasstZu(auftrag);
+            if (!mitVorschau && tmy == null && auftrag.Quelle == KlimaQuelle.PvgisTmy) return Abbruch(erg);
 
             // ---- Schritt 1: Koordinaten -------------------------------------
             Melden(melder, 1, "KLIMA_SCHRITT_KOORDINATEN");
@@ -279,20 +379,32 @@ namespace WindowsFormsApplication1
             if (auftrag.Art == KlimaImportArt.AusOrtsname)
             {
                 string ort = (auftrag.Ortsname ?? "").Trim();
-                if (ort.Length == 0 || orte == null) return Fehler(erg,
-                    KlimaImportAusgang.Eingabefehler, MyResource.Resource.KLIMA_MSG_EINGABEN_PRUEFEN);
+                if (mitVorschau)
+                {
+                    // KD-Q3: KEINE zweite Geokodierung - der Ort ist der der Vorschau.
+                    lon = vorschau.Satz.Lon;
+                    lat = vorschau.Satz.Lat;
+                    details = vorschau.Satz.Anzeigename;
+                }
+                else
+                {
+                    if (ort.Length == 0 || orte == null) return Fehler(erg,
+                        KlimaImportAusgang.Eingabefehler, MyResource.Resource.KLIMA_MSG_EINGABEN_PRUEFEN);
 
-                var antwort = await orte(ort).ConfigureAwait(false);
-                if (!antwort.Success)
-                    return Fehler(erg, KlimaImportAusgang.OrtUnbekannt,
-                        string.Format(CultureInfo.CurrentCulture,
-                                      MyResource.Resource.KLIMA_MSG_ORT_UNBEKANNT,
-                                      ort, antwort.DisplayName ?? ""));
+                    var antwort = await orte(ort).ConfigureAwait(false);
+                    if (!antwort.Success)
+                        return Fehler(erg, KlimaImportAusgang.OrtUnbekannt,
+                            string.Format(CultureInfo.CurrentCulture,
+                                          MyResource.Resource.KLIMA_MSG_ORT_UNBEKANNT,
+                                          ort, antwort.DisplayName ?? ""));
 
-                lat = antwort.Lat;
-                lon = antwort.Lon;
-                details = antwort.DisplayName ?? "";
-                bezeichner = ort;
+                    lat = antwort.Lat;
+                    lon = antwort.Lon;
+                    details = antwort.DisplayName ?? "";
+                }
+                // KD-4 (Nachzug KD-3): Eine eingegebene Bezeichnung wird der Regionsname; leer bleibt es der Ortsname.
+                string bezeichnung = (auftrag.Bezeichnung ?? "").Trim();
+                bezeichner = bezeichnung.Length > 0 ? bezeichnung : ort;
             }
             else
             {
@@ -315,205 +427,45 @@ namespace WindowsFormsApplication1
             if (abbruch.IsCancellationRequested) return Abbruch(erg);
 
             // ---- Schritt 2: die Stundenwerte (eine der DREI Quellen) --------
-            List<TmyHourlyData> stunden;
-            string herkunft = "";          // der Herkunftsvermerk der TRY-Quellen
+            Lesesatz satz;
+            if (mitVorschau)
+            {
+                Melden(melder, 2, Schrittschluessel(auftrag.Quelle));
+                satz = vorschau.Satz;
+            }
+            else
+            {
+                IPvgisAbruf pvgis = tmy == null ? null : AusTmyQuelle(tmy);
+                satz = await DatensatzLesen(auftrag, lon, lat, pvgis, bereich, melder, abbruch)
+                       .ConfigureAwait(false);
+
+                if (satz.Ausgang == KlimaImportAusgang.Abgebrochen) return Abbruch(erg);
+                if (satz.Ausgang != KlimaImportAusgang.Erfolg) return Fehler(erg, satz.Ausgang, satz.Meldung);
+
+                // Fehlt die gewaehlte Ausfuehrung, bricht der Import BENANNT ab - mit
+                // demselben Grund, den die Vorschau zeigt.
+                // (Nur im Regionalweg: Eine leere PVGIS-Antwort laeuft wie bisher weiter.)
+                if (!satz.Gefunden && auftrag.Quelle == KlimaQuelle.TryRegional)
+                    return Fehler(erg, KlimaImportAusgang.Dateifehler, satz.Grund);
+            }
+
+            // Der Import rechnet auf einer KOPIE: Die Vorschau behaelt ihren Satz, wie
+            // er gelesen wurde (DirektNormal und Sonnenstaende aendern die Stunden).
+            List<TmyHourlyData> stunden = new List<TmyHourlyData>(satz.Stunden.Count);
+            foreach (TmyHourlyData h in satz.Stunden) stunden.Add(h.Kopie());
+
+            lon = satz.Lon;
+            lat = satz.Lat;
+            string herkunft = satz.Herkunft;
 
             // Schemaschritt 97 (Auftrag KL-6): WELCHES Wetterjahr die Reihe
             // beschreibt. Leer bzw. null heisst "sagt nichts dazu" - so bleibt es
             // bei PVGIS, das keine TRY-Szenarien kennt.
-            string szenario = "";
-            int? bezugsjahr = null;
+            string szenario = satz.Szenario;
+            int? bezugsjahr = satz.Bezugsjahr;
 
-            if (auftrag.Quelle == KlimaQuelle.PvgisTmy)
-            {
-                // ---- PVGIS: EIN Abruf (A-10), unveraendert ------------------
-                Melden(melder, 2, "KLIMA_SCHRITT_ABRUF");
-
-                try
-                {
-                    stunden = await tmy(lon, lat, AZIMUT_SUED).ConfigureAwait(false)
-                              ?? new List<TmyHourlyData>();
-                }
-                catch (ArgumentException ex)
-                {
-                    return Fehler(erg, KlimaImportAusgang.Netzfehler,
-                        string.Format(CultureInfo.CurrentCulture,
-                                      MyResource.Resource.KLIMA_MSG_PVGIS_EINGABE, ex.Message));
-                }
-                catch (Exception ex)
-                {
-                    return Fehler(erg, KlimaImportAusgang.Netzfehler,
-                        string.Format(CultureInfo.CurrentCulture,
-                                      MyResource.Resource.KLIMA_MSG_DOWNLOAD_FEHLER, ex.Message));
-                }
-            }
-            else if (auftrag.Quelle == KlimaQuelle.TryDatei)
-            {
-                // ---- DWD-TRY-Datei: KEIN Netz ------------------------------
-                Melden(melder, 2, "KLIMA_SCHRITT_DATEI");
-
-                string pfad = (auftrag.TryPfad ?? "").Trim();
-                if (pfad.Length == 0)
-                    return Fehler(erg, KlimaImportAusgang.Eingabefehler,
-                        MyResource.Resource.KLIMA_MSG_EINGABEN_PRUEFEN);
-
-                TryKopf kopf;
-                try
-                {
-                    stunden = DwdTryLeser.LesenDatei(pfad, out kopf);
-                }
-                catch (FileNotFoundException)
-                {
-                    return Fehler(erg, KlimaImportAusgang.Eingabefehler,
-                        string.Format(CultureInfo.CurrentCulture,
-                                      MyResource.Resource.KLIMA_TRY_DATEI_FEHLT, pfad));
-                }
-                catch (FormatException ex)
-                {
-                    return Fehler(erg, KlimaImportAusgang.Dateifehler,
-                        string.Format(CultureInfo.CurrentCulture,
-                                      MyResource.Resource.KLIMA_TRY_FORMATFEHLER, ex.Message));
-                }
-                catch (Exception ex)
-                {
-                    return Fehler(erg, KlimaImportAusgang.Dateifehler,
-                        string.Format(CultureInfo.CurrentCulture,
-                                      MyResource.Resource.KLIMA_TRY_FORMATFEHLER, ex.Message));
-                }
-
-                // ---- der STANDORT (Auftrag KL-2) ---------------------------
-                // Der Auftrag hat Vorrang: Was der Anwender eingetragen oder ueber
-                // den Ortsnamen geholt hat, bleibt stehen. Erst wenn er KEINE
-                // Koordinaten mitbringt, kommt der Standort aus dem Dateikopf
-                // (Lambert -> Laenge/Breite). Beides wird BENANNT vermerkt.
-                bool ausKopf = false;
-                if (auftrag.Art == KlimaImportArt.AusKoordinaten && lon == 0 && lat == 0)
-                {
-                    if (!kopf.StandortBekannt)
-                        return Fehler(erg, KlimaImportAusgang.Eingabefehler,
-                            MyResource.Resource.KLIMA_TRY_STANDORT_FEHLT);
-
-                    lon = kopf.Laenge!.Value;
-                    lat = kopf.Breite!.Value;
-                    ausKopf = true;
-                }
-
-                string standort = ausKopf
-                    ? string.Format(CultureInfo.CurrentCulture,
-                        MyResource.Resource.KLIMA_TRY_STANDORT_KOPF,
-                        kopf.Rechtswert, kopf.Hochwert,
-                        lon.ToString("F4", CultureInfo.CurrentCulture),
-                        lat.ToString("F4", CultureInfo.CurrentCulture))
-                    : MyResource.Resource.KLIMA_TRY_STANDORT_ANWENDER;
-
-                herkunft = string.Format(CultureInfo.CurrentCulture,
-                    MyResource.Resource.KLIMA_TRY_DETAILS_DATEI,
-                    Path.GetFileName(pfad),
-                    DateTime.Now.ToString("d", CultureInfo.CurrentCulture),
-                    MyResource.Resource.KLIMA_TRY_LIZENZ,
-                    string.Format(CultureInfo.CurrentCulture,
-                                  MyResource.Resource.KLIMA_TRY_VERWORFEN, kopf.VerworfenText))
-                    + " · " + standort;
-
-                // Der Bezugszeitraum WOERTLICH im Herkunftsvermerk: Das Bezugsjahr
-                // unten ist daraus abgeleitet, also bleibt die Herleitung in der
-                // Zeile nachlesbar (Auftrag KL-7).
-                string zeitraum = (kopf.Bezugszeitraum ?? "").Trim();
-                if (zeitraum.Length > 0)
-                    herkunft += " · " + string.Format(CultureInfo.CurrentCulture,
-                        MyResource.Resource.KLIMA_TRY_BEZUGSZEITRAUM, zeitraum);
-
-                // Schemaschritt 97: Das SZENARIO steht im Dateikopf ("Art des TRY"),
-                // das Bezugsjahr steht dort als ZEITRAUM ("1995-2012", "2031-2060").
-                // Die Zuordnung Zeitraum -> Jahr ist die DWD-Konvention und eine
-                // benannte Tabelle (Anwenderentscheid vom 20.09.2026); ein Zeitraum,
-                // der nicht darin steht, ergibt kein Jahr - nie die Vorgabe.
-                szenario = SzenarioschluesselAusKopf(kopf.Art);
-                bezugsjahr = BezugsjahrAusZeitraum(kopf.Bezugszeitraum);
-
+            if (auftrag.Quelle != KlimaQuelle.PvgisTmy)
                 DwdTryLeser.DirektNormal(stunden, lon, lat);
-            }
-            else
-            {
-                // ---- TRY-Regionaldaten: Bereichsabruf ODER lokale data.zip --
-                Melden(melder, 2, "KLIMA_SCHRITT_PAKET");
-
-                string paket = (auftrag.TryPaketPfad ?? "").Trim();
-                string quelle;
-                TryPaketErgebnis paketErg;
-
-                try
-                {
-                    if (paket.Length > 0)
-                    {
-                        quelle = Path.GetFileName(paket);
-                        paketErg = TryPaketLeser.LesenAusDatei(
-                            paket, lon, lat, auftrag.TryJahr, auftrag.Szenario);
-                    }
-                    else
-                    {
-                        if (bereich == null)
-                            return Fehler(erg, KlimaImportAusgang.Eingabefehler,
-                                MyResource.Resource.KLIMA_TRY_KEIN_BEREICH);
-
-                        quelle = Adresse();
-                        paketErg = await TryPaketLeser.LesenAusNetzAsync(
-                            bereich, quelle, lon, lat, auftrag.TryJahr, auftrag.Szenario,
-                            abbruch).ConfigureAwait(false);
-                    }
-                }
-                catch (OperationCanceledException) { return Abbruch(erg); }
-                catch (FileNotFoundException)
-                {
-                    return Fehler(erg, KlimaImportAusgang.Eingabefehler,
-                        string.Format(CultureInfo.CurrentCulture,
-                                      MyResource.Resource.KLIMA_TRY_DATEI_FEHLT, paket));
-                }
-                catch (FormatException ex)
-                {
-                    return Fehler(erg, KlimaImportAusgang.Dateifehler,
-                        string.Format(CultureInfo.CurrentCulture,
-                                      MyResource.Resource.KLIMA_TRY_FORMATFEHLER, ex.Message));
-                }
-                catch (InvalidOperationException ex)
-                {
-                    // Keine Teilabrufe, keine Region, kein Szenario - alles BENANNT.
-                    return Fehler(erg, KlimaImportAusgang.Dateifehler, ex.Message);
-                }
-                catch (Exception ex)
-                {
-                    return Fehler(erg, KlimaImportAusgang.Netzfehler,
-                        string.Format(CultureInfo.CurrentCulture,
-                                      MyResource.Resource.KLIMA_MSG_DOWNLOAD_FEHLER, ex.Message));
-                }
-
-                stunden = paketErg.Stunden;
-
-                // Die Region wird mit NAMEN genannt (Auftrag KL-3): "14 Stoetten"
-                // statt "14" - die Nummer allein sagt einem Anwender nichts. Die
-                // ZUORDNUNG bleibt der naechste Stationsmittelpunkt aus dem Paket.
-                herkunft = string.Format(CultureInfo.CurrentCulture,
-                    MyResource.Resource.KLIMA_TRY_DETAILS_REGIONAL,
-                    paketErg.Region.Bezeichnung,
-                    paketErg.Region.Koordinatentext,
-                    paketErg.Region.EntfernungKm.ToString("F0", CultureInfo.CurrentCulture),
-                    SzenarioText(auftrag.Szenario),
-                    auftrag.TryJahr.ToString(CultureInfo.CurrentCulture),
-                    quelle,
-                    DateTime.Now.ToString("d", CultureInfo.CurrentCulture),
-                    MyResource.Resource.KLIMA_TRY_LIZENZ,
-                    string.Format(CultureInfo.CurrentCulture,
-                                  MyResource.Resource.KLIMA_TRY_VERWORFEN,
-                                  paketErg.Kopf.VerworfenText));
-
-                // Schemaschritt 97: Bei den Regionaldaten steht beides im AUFTRAG -
-                // der Anwender hat Jahr und Szenario gewaehlt, und genau danach ist
-                // das Paket gelesen worden.
-                szenario = Szenarioschluessel(auftrag.Szenario);
-                bezugsjahr = auftrag.TryJahr;
-
-                DwdTryLeser.DirektNormal(stunden, lon, lat);
-            }
 
             if (herkunft.Length > 0)
                 details = details.Length > 0 ? details + " · " + herkunft : herkunft;
@@ -530,6 +482,12 @@ namespace WindowsFormsApplication1
             catch (OperationCanceledException) { return Abbruch(erg); }
 
             if (abbruch.IsCancellationRequested) return Abbruch(erg);
+
+            // KD-4: Rohwerte und Herkunft nur, wenn der Schemaschritt steht - die Auskunft VOR dem Vorgang (eigene
+            // Verbindung). Sonst benannt uebersprungen: Die Rechenspalten entstehen in beiden Faellen gleich.
+            bool rohwerte = KlimaRohwerteSchema.SchemaVollstaendig();
+            KlimaRohreihe rohreihe = rohwerte ? RohreiheBilden(auftrag.Quelle, satz) : null;
+            KlimaRegionsherkunft herkunftSatz = rohwerte ? HerkunftBilden(auftrag, satz) : null;
 
             // ---- Schritte 4 bis 6: EINE Transaktion ------------------------
             var ctrl = new KlimaregionStammCtrl();
@@ -566,6 +524,12 @@ namespace WindowsFormsApplication1
                     // A-11 (Befund W14c-B31): der Listbezeichner, nicht comboBox_Ort.Text.
                     repo.SaveTmyData(tage, bezeichner, "Tab_Klimadaten_STAMM", id, v);
 
+                    if (rohwerte)
+                    {
+                        KlimaRohwerteSchema.HerkunftSchreiben(v, id, herkunftSatz);
+                        erg.Rohstunden = KlimaRohwerteSchema.RohwerteSchreiben(v, id, rohreihe);
+                    }
+
                     v.Commit();
                     erg.Id = id;
                 }
@@ -600,43 +564,454 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
-        //  Die REGIONSVORSCHAU (Auftrag KL-3, Anwenderentscheid 19.09.2026 b)
+        //  Der gemeinsame LESEWEG von Vorschau und Import (Auftrag KD-2)
         // =====================================================================
 
         /// <summary>
-        /// Sagt VOR dem Import, welche TRY-Region der eingetragene Standort trifft.
-        ///
-        /// <para><b>Wozu.</b> Die Regionaldaten ordnen einen Ort der nächstgelegenen
-        /// Repräsentanzstation zu. Welche das ist, stand bisher erst NACH dem Einlesen
-        /// im Herkunftsvermerk — wer 8 760 Stunden einliest, um zu erfahren, dass es
-        /// die falsche Region war, hat sie umsonst eingelesen.</para>
-        ///
-        /// <para><b>Ohne einen Eintrag zu entpacken.</b> Gelesen wird allein das
-        /// Zentralverzeichnis des Pakets (<see cref="TryPaketLeser.RegionErmitteln"/>);
-        /// die Stundenreihe bleibt liegen. Der spätere Import liest das Paket ein
-        /// ZWEITES Mal — ein zweiter Bereichsabruf über einige hundert Kilobyte, vom
-        /// Anwender angenommen. Der Lauf nimmt dieselbe Regionswahl, weil beide
-        /// dieselbe Funktion rufen.</para>
-        ///
-        /// <para><b>Die Geokodierung läuft wie im Import</b>: Ein Ortsname wird über
-        /// <paramref name="orte"/> aufgelöst, Koordinaten gelten unverändert.</para>
+        /// Ein gelesener Datensatz — die Stunden WIE GELESEN (vor <c>DirektNormal</c> und
+        /// den Sonnenständen), dazu Standort, Herkunft und Wetterjahr. Vorschau und Import
+        /// lesen über <see cref="DatensatzLesen"/>; eine Vorschau trägt ihren Satz zum
+        /// Import (Entscheid KD-Q3).
         /// </summary>
-        /// <param name="auftrag">Standort, Bezugsjahr und — wenn vorhanden — der Pfad
-        /// einer lokalen <c>data.zip</c>.</param>
+        internal sealed class Lesesatz
+        {
+            public KlimaImportAusgang Ausgang = KlimaImportAusgang.Erfolg;
+            public string Meldung = "";
+
+            /// <summary>Der Rechenstandort — bei einer TRY-Datei ohne Koordinaten aus dem Kopf.</summary>
+            public double Lon, Lat;
+
+            /// <summary>Anzeigename der Geokodierung; leer bei Koordinaten von Hand.</summary>
+            public string Anzeigename = "";
+
+            /// <summary>Kommt der Standort aus dem Dateikopf (TRY-Datei ohne Koordinaten)?</summary>
+            public bool StandortAusKopf;
+
+            public List<TmyHourlyData> Stunden = new List<TmyHourlyData>();
+            public string Herkunft = "";
+            public string Szenario = "";
+            public int? Bezugsjahr;
+
+            /// <summary>Gibt es die gewählte Ausführung? Nein: <see cref="Grund"/>.</summary>
+            public bool Gefunden = true;
+            public string Grund = "";
+
+            /// <summary>Kopf der TRY-Datei bzw. des Paketeintrags; <c>null</c> bei PVGIS.</summary>
+            public TryKopf Kopf;
+
+            /// <summary>Das Ergebnis des Paketlesers (nur Regionalweg).</summary>
+            public TryPaketErgebnis Paket;
+
+            /// <summary>Der PVGIS-Abruf samt Kopf (nur PVGIS).</summary>
+            public PvgisAbruf Pvgis;
+
+            /// <summary>Dateiname der TRY-Datei (nur Datei).</summary>
+            public string Dateiname = "";
+        }
+
+        /// <summary>Der Fortschrittsschlüssel des zweiten Schritts je Quelle.</summary>
+        private static string Schrittschluessel(KlimaQuelle quelle)
+        {
+            switch (quelle)
+            {
+                case KlimaQuelle.TryDatei: return "KLIMA_SCHRITT_DATEI";
+                case KlimaQuelle.TryRegional: return "KLIMA_SCHRITT_PAKET";
+                default: return "KLIMA_SCHRITT_ABRUF";
+            }
+        }
+
+        /// <summary>Die Naht des Imports (<see cref="ITmyQuelle"/>) als Abruf ohne Kopf.</summary>
+        public static IPvgisAbruf AusTmyQuelle(ITmyQuelle tmy)
+        {
+            if (tmy == null) return null;
+            return async (lon, lat, azimut) => new PvgisAbruf
+            {
+                Stunden = await tmy(lon, lat, azimut).ConfigureAwait(false) ?? new List<TmyHourlyData>()
+            };
+        }
+
+        /// <summary>
+        /// Liest den Datensatz einer der drei Quellen — <b>der eine Leseweg</b> von
+        /// Vorschau und Import. Fehler kommen BENANNT im Satz zurück, wie sie der Import
+        /// schon immer meldete; eine fehlende Ausführung des Regionalpakets ist kein
+        /// Fehler, sondern <see cref="Lesesatz.Gefunden"/> = nein mit Grund.
+        /// </summary>
+        internal static async Task<Lesesatz> DatensatzLesen(
+            KlimaImportAuftrag auftrag, double lon, double lat,
+            IPvgisAbruf pvgis, INetzbereich bereich,
+            IProgress<ImportFortschritt> melder, CancellationToken abbruch)
+        {
+            var satz = new Lesesatz { Lon = lon, Lat = lat };
+
+            if (auftrag.Quelle == KlimaQuelle.PvgisTmy)
+            {
+                // ---- PVGIS: EIN Abruf (A-10), unveraendert ------------------
+                Melden(melder, 2, "KLIMA_SCHRITT_ABRUF");
+
+                if (pvgis == null) return SatzFehler(satz, KlimaImportAusgang.Abgebrochen,
+                                                     MyResource.Resource.KLIMA_MSG_ABGEBROCHEN);
+                try
+                {
+                    satz.Pvgis = await pvgis(lon, lat, AZIMUT_SUED).ConfigureAwait(false) ?? new PvgisAbruf();
+                    satz.Stunden = satz.Pvgis.Stunden ?? new List<TmyHourlyData>();
+                }
+                catch (ArgumentException ex)
+                {
+                    return SatzFehler(satz, KlimaImportAusgang.Netzfehler,
+                        string.Format(CultureInfo.CurrentCulture,
+                                      MyResource.Resource.KLIMA_MSG_PVGIS_EINGABE, ex.Message));
+                }
+                catch (Exception ex)
+                {
+                    return SatzFehler(satz, KlimaImportAusgang.Netzfehler,
+                        string.Format(CultureInfo.CurrentCulture,
+                                      MyResource.Resource.KLIMA_MSG_DOWNLOAD_FEHLER, ex.Message));
+                }
+
+                if (satz.Stunden.Count == 0)
+                {
+                    satz.Gefunden = false;
+                    satz.Grund = MyResource.Resource.KLIMA_VORSCHAU_LEER;
+                }
+                return satz;
+            }
+
+            if (auftrag.Quelle == KlimaQuelle.TryDatei)
+            {
+                // ---- DWD-TRY-Datei: KEIN Netz ------------------------------
+                Melden(melder, 2, "KLIMA_SCHRITT_DATEI");
+
+                string pfad = (auftrag.TryPfad ?? "").Trim();
+                if (pfad.Length == 0)
+                    return SatzFehler(satz, KlimaImportAusgang.Eingabefehler,
+                        MyResource.Resource.KLIMA_MSG_EINGABEN_PRUEFEN);
+
+                TryKopf kopf;
+                try
+                {
+                    satz.Stunden = DwdTryLeser.LesenDatei(pfad, out kopf);
+                }
+                catch (FileNotFoundException)
+                {
+                    return SatzFehler(satz, KlimaImportAusgang.Eingabefehler,
+                        string.Format(CultureInfo.CurrentCulture,
+                                      MyResource.Resource.KLIMA_TRY_DATEI_FEHLT, pfad));
+                }
+                catch (Exception ex)
+                {
+                    return SatzFehler(satz, KlimaImportAusgang.Dateifehler,
+                        string.Format(CultureInfo.CurrentCulture,
+                                      MyResource.Resource.KLIMA_TRY_FORMATFEHLER, ex.Message));
+                }
+
+                satz.Kopf = kopf;
+                satz.Dateiname = Path.GetFileName(pfad);
+
+                // ---- der STANDORT (Auftrag KL-2) ---------------------------
+                // Der Auftrag hat Vorrang: Was der Anwender eingetragen oder ueber
+                // den Ortsnamen geholt hat, bleibt stehen. Erst wenn er KEINE
+                // Koordinaten mitbringt, kommt der Standort aus dem Dateikopf
+                // (Lambert -> Laenge/Breite). Beides wird BENANNT vermerkt.
+                if (auftrag.Art == KlimaImportArt.AusKoordinaten && lon == 0 && lat == 0)
+                {
+                    if (!kopf.StandortBekannt)
+                        return SatzFehler(satz, KlimaImportAusgang.Eingabefehler,
+                            MyResource.Resource.KLIMA_TRY_STANDORT_FEHLT);
+
+                    satz.Lon = kopf.Laenge!.Value;
+                    satz.Lat = kopf.Breite!.Value;
+                    satz.StandortAusKopf = true;
+                }
+
+                string standort = satz.StandortAusKopf
+                    ? string.Format(CultureInfo.CurrentCulture,
+                        MyResource.Resource.KLIMA_TRY_STANDORT_KOPF,
+                        kopf.Rechtswert, kopf.Hochwert,
+                        satz.Lon.ToString("F4", CultureInfo.CurrentCulture),
+                        satz.Lat.ToString("F4", CultureInfo.CurrentCulture))
+                    : MyResource.Resource.KLIMA_TRY_STANDORT_ANWENDER;
+
+                satz.Herkunft = string.Format(CultureInfo.CurrentCulture,
+                    MyResource.Resource.KLIMA_TRY_DETAILS_DATEI,
+                    satz.Dateiname,
+                    DateTime.Now.ToString("d", CultureInfo.CurrentCulture),
+                    MyResource.Resource.KLIMA_TRY_LIZENZ,
+                    VerworfenTeil(kopf))
+                    + " · " + standort;
+
+                // Der Bezugszeitraum WOERTLICH im Herkunftsvermerk: Das Bezugsjahr
+                // unten ist daraus abgeleitet, also bleibt die Herleitung in der
+                // Zeile nachlesbar (Auftrag KL-7).
+                string zeitraum = (kopf.Bezugszeitraum ?? "").Trim();
+                if (zeitraum.Length > 0)
+                    satz.Herkunft += " · " + string.Format(CultureInfo.CurrentCulture,
+                        MyResource.Resource.KLIMA_TRY_BEZUGSZEITRAUM, zeitraum);
+
+                // Schemaschritt 97: Das SZENARIO steht im Dateikopf ("Art des TRY"),
+                // das Bezugsjahr steht dort als ZEITRAUM ("1995-2012", "2031-2060").
+                // Die Zuordnung Zeitraum -> Jahr ist die DWD-Konvention und eine
+                // benannte Tabelle (Anwenderentscheid vom 20.09.2026); ein Zeitraum,
+                // der nicht darin steht, ergibt kein Jahr - nie die Vorgabe.
+                satz.Szenario = SzenarioschluesselAusKopf(kopf.Art);
+                satz.Bezugsjahr = BezugsjahrAusZeitraum(kopf.Bezugszeitraum);
+                return satz;
+            }
+
+            // ---- TRY-Regionaldaten: Bereichsabruf ODER lokale data.zip --------
+            Melden(melder, 2, "KLIMA_SCHRITT_PAKET");
+
+            string paket = (auftrag.TryPaketPfad ?? "").Trim();
+            string quelle;
+            TryPaketErgebnis paketErg;
+
+            try
+            {
+                if (paket.Length > 0)
+                {
+                    quelle = Path.GetFileName(paket);
+                    paketErg = TryPaketLeser.VorschauAusDatei(
+                        paket, lon, lat, auftrag.TryJahr, auftrag.Szenario);
+                }
+                else
+                {
+                    if (bereich == null)
+                        return SatzFehler(satz, KlimaImportAusgang.Eingabefehler,
+                            MyResource.Resource.KLIMA_TRY_KEIN_BEREICH);
+
+                    quelle = Adresse();
+                    paketErg = await TryPaketLeser.VorschauAusNetzAsync(
+                        bereich, quelle, lon, lat, auftrag.TryJahr, auftrag.Szenario,
+                        abbruch).ConfigureAwait(false);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                return SatzFehler(satz, KlimaImportAusgang.Abgebrochen,
+                                  MyResource.Resource.KLIMA_MSG_ABGEBROCHEN);
+            }
+            catch (FileNotFoundException)
+            {
+                return SatzFehler(satz, KlimaImportAusgang.Eingabefehler,
+                    string.Format(CultureInfo.CurrentCulture,
+                                  MyResource.Resource.KLIMA_TRY_DATEI_FEHLT, paket));
+            }
+            catch (FormatException ex)
+            {
+                return SatzFehler(satz, KlimaImportAusgang.Dateifehler,
+                    string.Format(CultureInfo.CurrentCulture,
+                                  MyResource.Resource.KLIMA_TRY_FORMATFEHLER, ex.Message));
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Keine Teilabrufe, keine Region, ausserhalb 300 km - alles BENANNT.
+                return SatzFehler(satz, KlimaImportAusgang.Dateifehler, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return SatzFehler(satz, KlimaImportAusgang.Netzfehler,
+                    string.Format(CultureInfo.CurrentCulture,
+                                  MyResource.Resource.KLIMA_MSG_DOWNLOAD_FEHLER, ex.Message));
+            }
+
+            satz.Paket = paketErg;
+            satz.Gefunden = paketErg.AusfuehrungGefunden;
+            satz.Grund = paketErg.Grund ?? "";
+            if (!satz.Gefunden) return satz;
+
+            satz.Stunden = paketErg.Stunden;
+            satz.Kopf = paketErg.Kopf;
+
+            // Die Region wird mit NAMEN genannt (Auftrag KL-3): "14 Stoetten"
+            // statt "14" - die Nummer allein sagt einem Anwender nichts. Die
+            // ZUORDNUNG bleibt der naechste Stationsmittelpunkt aus dem Paket.
+            satz.Herkunft = string.Format(CultureInfo.CurrentCulture,
+                MyResource.Resource.KLIMA_TRY_DETAILS_REGIONAL,
+                paketErg.Region.Bezeichnung,
+                paketErg.Region.Koordinatentext,
+                paketErg.Region.EntfernungKm.ToString("F0", CultureInfo.CurrentCulture),
+                SzenarioText(auftrag.Szenario),
+                auftrag.TryJahr.ToString(CultureInfo.CurrentCulture),
+                quelle,
+                DateTime.Now.ToString("d", CultureInfo.CurrentCulture),
+                MyResource.Resource.KLIMA_TRY_LIZENZ,
+                VerworfenTeil(paketErg.Kopf));
+
+            // Schemaschritt 97: Bei den Regionaldaten steht beides im AUFTRAG -
+            // der Anwender hat Jahr und Szenario gewaehlt, und genau danach ist
+            // das Paket gelesen worden.
+            satz.Szenario = Szenarioschluessel(auftrag.Szenario);
+            satz.Bezugsjahr = auftrag.TryJahr;
+            return satz;
+        }
+
+        /// <summary>
+        /// Der Teil des Herkunftsvermerks zu den Feldern ohne Rechenspalte: Steht die Rohtabelle (KD-4), heißt er
+        /// „alle Felder als Rohwerte gespeichert“; sonst nennt er die nicht übernommenen Größen wie bisher.
+        /// </summary>
+        internal static string VerworfenTeil(TryKopf kopf)
+        {
+            if (KlimaRohwerteSchema.SchemaVollstaendig()) return MyResource.Resource.KLIMA_TRY_ROHWERTE_GESPEICHERT;
+            return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.KLIMA_TRY_VERWORFEN,
+                                 (kopf ?? new TryKopf()).VerworfenText);
+        }
+
+        /// <summary>
+        /// Der Bezugspunkt eines gelesenen Satzes (Station, Dateistandort oder PVGIS-Punkt) — EINE Stelle für Vorschau
+        /// und Import (KD-4). <paramref name="standortHoehe"/> wird ergänzt, wo die Quelle die Höhe des Standorts
+        /// selbst nennt (TRY-Kopf als Standort, PVGIS).
+        /// </summary>
+        internal static KlimaBezugspunkt BezugspunktBilden(KlimaQuelle quelle, Lesesatz satz, ref double? standortHoehe)
+        {
+            var bezug = new KlimaBezugspunkt();
+            double? kopfHoehe = satz.Kopf != null ? KlimaVorschauFestwerte.HoeheAusText(satz.Kopf.Hoehe) : null;
+
+            if (quelle == KlimaQuelle.TryRegional)
+            {
+                TryRegion region = satz.Paket.Region;
+                bezug.Art = KlimaBezugspunktArt.Repraesentanzstation;
+                bezug.Name = region.Bezeichnung;
+                bezug.Latitude = region.Latitude;
+                bezug.Longitude = region.Longitude;
+                bezug.EntfernungKm = region.EntfernungKm;
+                bezug.HoeheM = kopfHoehe;
+            }
+            else if (quelle == KlimaQuelle.TryDatei)
+            {
+                bezug.Art = KlimaBezugspunktArt.Dateistandort;
+                bezug.Name = satz.Dateiname;
+                bezug.Latitude = satz.Kopf?.Breite;
+                bezug.Longitude = satz.Kopf?.Laenge;
+                bezug.HoeheM = kopfHoehe;
+                if (satz.StandortAusKopf && !standortHoehe.HasValue)
+                    standortHoehe = kopfHoehe;
+            }
+            else
+            {
+                PvgisOrt ort = satz.Pvgis?.Ort;
+                bezug.Art = KlimaBezugspunktArt.PvgisPunkt;
+                bezug.Name = (satz.Pvgis?.MeteoDatenbank ?? "").Trim(' ', '-');
+                bezug.Latitude = ort?.Latitude ?? satz.Lat;
+                bezug.Longitude = ort?.Longitude ?? satz.Lon;
+                bezug.HoeheM = ort?.Elevation;
+                // PVGIS rechnet AM Standort: Seine Hoehe ist die des Standorts.
+                if (!standortHoehe.HasValue) standortHoehe = ort?.Elevation;
+            }
+
+            if (!bezug.EntfernungKm.HasValue && bezug.Latitude.HasValue && bezug.Longitude.HasValue)
+                bezug.EntfernungKm = TryPaketLeser.EntfernungKm(
+                    satz.Lat, satz.Lon, bezug.Latitude.Value, bezug.Longitude.Value);
+            return bezug;
+        }
+
+        /// <summary>
+        /// Die Herkunft einer Region aus dem gelesenen Satz (KD-4): Standorthöhe, Bezugspunkt und Ausführung — die
+        /// TRY-Datei bzw. der Paketeintrag, bei PVGIS die Datenbanken der Antwort.
+        /// </summary>
+        internal static KlimaRegionsherkunft HerkunftBilden(KlimaImportAuftrag auftrag, Lesesatz satz)
+        {
+            double? hoehe = auftrag.StandortHoeheM;
+            KlimaBezugspunkt b = BezugspunktBilden(auftrag.Quelle, satz, ref hoehe);
+            string ausfuehrung = auftrag.Quelle == KlimaQuelle.TryRegional ? satz.Paket?.Eintrag
+                               : auftrag.Quelle == KlimaQuelle.TryDatei ? satz.Dateiname
+                               : (satz.Pvgis?.MeteoDatenbank ?? "").Trim(' ', '-');
+            return new KlimaRegionsherkunft
+            {
+                StandortHoeheM = hoehe,
+                BezugspunktArt = KlimaRohwerteSchema.Artschluessel(b.Art),
+                BezugspunktName = b.Name,
+                BezugspunktLatitude = b.Latitude,
+                BezugspunktLongitude = b.Longitude,
+                BezugspunktHoeheM = b.HoeheM,
+                EntfernungKm = b.EntfernungKm,
+                Ausfuehrung = ausfuehrung ?? ""
+            };
+        }
+
+        /// <summary>Die Rohreihe eines gelesenen Satzes: TRY aus dem Kopf (MEZ), PVGIS aus der Antwort (UTC).</summary>
+        internal static KlimaRohreihe RohreiheBilden(KlimaQuelle quelle, Lesesatz satz)
+        {
+            if (quelle == KlimaQuelle.PvgisTmy) return KlimaRohreihe.AusPvgis(satz.Stunden);
+            return satz.Kopf?.Rohwerte ?? new KlimaRohreihe { Zeitbezug = KlimaRohwerteSchema.ZEITBEZUG_MEZ };
+        }
+
+        private static Lesesatz SatzFehler(Lesesatz satz, KlimaImportAusgang ausgang, string meldung)
+        {
+            satz.Ausgang = ausgang;
+            satz.Meldung = meldung ?? "";
+            return satz;
+        }
+
+        /// <summary>
+        /// Der Teil des Vorschauschlüssels, der die QUELLE beschreibt: Quelle, Datei bzw.
+        /// Paket, im Regionalweg Jahr und Szenario.
+        /// </summary>
+        internal static string Quellenteil(KlimaImportAuftrag a)
+        {
+            switch (a.Quelle)
+            {
+                case KlimaQuelle.TryDatei:
+                    return "|Q=TryDatei|" + (a.TryPfad ?? "").Trim();
+                case KlimaQuelle.TryRegional:
+                    return "|Q=TryRegional|" + (a.TryPaketPfad ?? "").Trim() + "|" +
+                           a.TryJahr.ToString(CultureInfo.InvariantCulture) + "|" + a.Szenario;
+                default:
+                    return "|Q=Pvgis";
+            }
+        }
+
+        /// <summary>
+        /// Der Schlüssel der Eingaben, aus denen eine Vorschau liest — Ort bzw.
+        /// Koordinaten und <see cref="Quellenteil"/>. Ändert sich einer davon, verfällt
+        /// die Vorschau. Bezeichnung und Standorthöhe gehören nicht dazu: Sie ändern den
+        /// gelesenen Satz nicht.
+        /// </summary>
+        internal static string Vorschauschluessel(KlimaImportAuftrag a)
+        {
+            string ort = a.Art == KlimaImportArt.AusOrtsname
+                ? "O=" + (a.Ortsname ?? "").Trim()
+                : "K=" + a.Longitude.ToString("R", CultureInfo.InvariantCulture) + ";" +
+                         a.Latitude.ToString("R", CultureInfo.InvariantCulture);
+            return ort + Quellenteil(a);
+        }
+
+        // =====================================================================
+        //  Die VORSCHAU (Auftrag KL-3, gelesen seit KD-2)
+        // =====================================================================
+
+        /// <summary>
+        /// Sucht VOR dem Import den Datensatz des eingetragenen Standorts und LIEST ihn —
+        /// für alle drei Quellen (Auftrag KD-2, Entscheid KD-Q3): PVGIS ruft die API, die
+        /// TRY-Datei liest die Datei, der Regionalweg liest einen Eintrag des Pakets
+        /// (rund 155 KB). <b>Nichts wird gespeichert.</b>
+        ///
+        /// <para>Zurück kommen Standort (Koordinate, Anzeigename, Höhe), Bezugspunkt
+        /// (Station, Dateistandort oder PVGIS-Punkt mit Höhe und Entfernung),
+        /// <see cref="KlimaVorschauErgebnis.AusfuehrungGefunden"/>, Kennzahlen,
+        /// Parameterbestand und die Hinweise nach KD-Q1. Der gelesene Satz wandert mit;
+        /// <see cref="Laufen"/> übernimmt ihn, solange
+        /// <see cref="KlimaVorschauErgebnis.PasstZu"/> gilt.</para>
+        /// </summary>
+        /// <param name="auftrag">Standort, Quelle, bei TRY Datei bzw. Paket, Jahr und Szenario.</param>
         /// <param name="orte">Die Ortsauflösung; nur für <c>AusOrtsname</c> nötig.</param>
         /// <param name="abbruch">Abbruchmarke.</param>
-        /// <param name="bereich">Der Bereichsabruf; ohne ihn steht nur der Weg über
+        /// <param name="bereich">Der Bereichsabruf; ohne ihn steht im Regionalweg nur
         /// eine lokale <c>data.zip</c> offen.</param>
+        /// <param name="pvgis">Der PVGIS-Abruf samt Kopf; ohne ihn bricht die Vorschau
+        /// einer PVGIS-Quelle ab.</param>
         public static async Task<KlimaVorschauErgebnis> RegionErmittelnAsync(
             KlimaImportAuftrag auftrag,
             IOrtsQuelle orte = null,
             CancellationToken abbruch = default,
-            INetzbereich bereich = null)
+            INetzbereich bereich = null,
+            IPvgisAbruf pvgis = null)
         {
             var erg = new KlimaVorschauErgebnis();
             if (auftrag == null) return VorschauFehler(erg, KlimaImportAusgang.Abgebrochen, "");
 
+            erg.Quelle = auftrag.Quelle;
             double lon, lat;
+            string anzeigename = "";
+            bool geokodiert = false;
 
             if (auftrag.Art == KlimaImportArt.AusOrtsname)
             {
@@ -654,6 +1029,8 @@ namespace WindowsFormsApplication1
 
                 lon = antwort.Lon;
                 lat = antwort.Lat;
+                anzeigename = antwort.DisplayName ?? "";
+                geokodiert = true;
             }
             else
             {
@@ -665,59 +1042,86 @@ namespace WindowsFormsApplication1
                 return VorschauFehler(erg, KlimaImportAusgang.Abgebrochen,
                                       MyResource.Resource.KLIMA_MSG_ABGEBROCHEN);
 
-            string paket = (auftrag.TryPaketPfad ?? "").Trim();
-            TryRegionVorschau vorschau;
+            Lesesatz satz = await DatensatzLesen(auftrag, lon, lat, pvgis, bereich, null, abbruch)
+                            .ConfigureAwait(false);
+            if (satz.Ausgang != KlimaImportAusgang.Erfolg)
+                return VorschauFehler(erg, satz.Ausgang, satz.Meldung);
 
-            try
-            {
-                if (paket.Length > 0)
-                {
-                    vorschau = TryPaketLeser.RegionErmittelnAusDatei(paket, lon, lat, auftrag.TryJahr);
-                }
-                else
-                {
-                    if (bereich == null)
-                        return VorschauFehler(erg, KlimaImportAusgang.Eingabefehler,
-                            MyResource.Resource.KLIMA_TRY_KEIN_BEREICH);
-
-                    vorschau = await TryPaketLeser.RegionErmittelnAusNetzAsync(
-                        bereich, Adresse(), lon, lat, auftrag.TryJahr, abbruch).ConfigureAwait(false);
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                return VorschauFehler(erg, KlimaImportAusgang.Abgebrochen,
-                                      MyResource.Resource.KLIMA_MSG_ABGEBROCHEN);
-            }
-            catch (FileNotFoundException)
-            {
-                return VorschauFehler(erg, KlimaImportAusgang.Eingabefehler,
-                    string.Format(CultureInfo.CurrentCulture,
-                                  MyResource.Resource.KLIMA_TRY_DATEI_FEHLT, paket));
-            }
-            catch (InvalidOperationException ex)
-            {
-                // Keine Teilabrufe, keine Region fuer das Jahr, ausserhalb 300 km -
-                // alles BENANNT, mit dem Text des Kerns.
-                return VorschauFehler(erg, KlimaImportAusgang.Dateifehler, ex.Message);
-            }
-            catch (FormatException ex)
-            {
-                return VorschauFehler(erg, KlimaImportAusgang.Dateifehler,
-                    string.Format(CultureInfo.CurrentCulture,
-                                  MyResource.Resource.KLIMA_TRY_FORMATFEHLER, ex.Message));
-            }
-            catch (Exception ex)
-            {
-                return VorschauFehler(erg, KlimaImportAusgang.Netzfehler,
-                    string.Format(CultureInfo.CurrentCulture,
-                                  MyResource.Resource.KLIMA_MSG_DOWNLOAD_FEHLER, ex.Message));
-            }
+            satz.Anzeigename = anzeigename;
 
             erg.Ausgang = KlimaImportAusgang.Erfolg;
-            erg.Region = vorschau.Region;
-            erg.Ausfuehrungen = vorschau.Ausfuehrungen;
-            erg.Meldung = Vorschauzeile(vorschau);
+            erg.Satz = satz;
+            erg.Schluessel = Vorschauschluessel(auftrag);
+            erg.AusfuehrungGefunden = satz.Gefunden;
+            erg.Grund = satz.Grund;
+            erg.Szenario = auftrag.Szenario;
+            erg.Bezugsjahr = satz.Bezugsjahr;
+
+            // ---- Standort ----------------------------------------------------
+            erg.Standort = new KlimaStandort
+            {
+                Longitude = satz.Lon,
+                Latitude = satz.Lat,
+                Anzeigename = anzeigename,
+                AusGeokodierung = geokodiert,
+                HoeheM = auftrag.StandortHoeheM
+            };
+
+            // ---- Bezugspunkt -------------------------------------------------
+            if (auftrag.Quelle == KlimaQuelle.TryRegional)
+            {
+                erg.Region = satz.Paket.Region;
+                erg.Ausfuehrungen = satz.Paket.Ausfuehrungen;
+            }
+            double? standortHoehe = erg.Standort.HoeheM;
+            KlimaBezugspunkt bezug = BezugspunktBilden(auftrag.Quelle, satz, ref standortHoehe);
+            erg.Standort.HoeheM = standortHoehe;
+
+            erg.Bezugspunkt = bezug;
+            erg.HoehenunterschiedM = bezug.HoeheM.HasValue && erg.Standort.HoeheM.HasValue
+                ? bezug.HoeheM.Value - erg.Standort.HoeheM.Value
+                : (double?)null;
+
+            // ---- Kennzahlen und Parameterbestand -----------------------------
+            // KD-8: Die TRY-Datei führt die Direktstrahlung horizontal; die Monatsreihe
+            // „Direkt normal“ rechnet auf einer Kopie wie der Import (DirektNormal).
+            List<TmyHourlyData> direktNormal = null;
+            if (auftrag.Quelle != KlimaQuelle.PvgisTmy && satz.Stunden != null)
+            {
+                direktNormal = new List<TmyHourlyData>(satz.Stunden.Count);
+                foreach (TmyHourlyData h in satz.Stunden) direktNormal.Add(h.Kopie());
+                DwdTryLeser.DirektNormal(direktNormal, satz.Lon, satz.Lat);
+            }
+            // KD-8 Teil B: die Rohwert-Groessen der Vorschau aus derselben Rohreihe, die der Import schreibt.
+            erg.Kennzahlen = KlimaKennzahlen.Rechnen(satz.Stunden, direktNormal, RohreiheBilden(auftrag.Quelle, satz));
+            erg.RohwerteGespeichert = KlimaRohwerteSchema.SchemaVollstaendig();
+            erg.Parameterbestand = KlimaParameterbestand.Fuer(auftrag.Quelle, satz.Stunden, erg.RohwerteGespeichert);
+
+            // ---- Hinweise (KD-Q1, KD-Q9) -------------------------------------
+            var hinweise = new List<string>();
+            erg.Repraesentanzhinweis = auftrag.Quelle == KlimaQuelle.TryRegional;
+            if (erg.Repraesentanzhinweis) hinweise.Add(MyResource.Resource.KLIMA_VORSCHAU_REPRAESENTANZ);
+
+            erg.Ortshinweis = KlimaVorschauFestwerte.NichtOrtstypisch(bezug.EntfernungKm, erg.HoehenunterschiedM);
+            if (erg.Ortshinweis) hinweise.Add(MyResource.Resource.KLIMA_VORSCHAU_NICHT_ORTSTYPISCH);
+            erg.Hinweise = hinweise;
+
+            // ---- die Zeile ---------------------------------------------------
+            string zeile;
+            if (auftrag.Quelle == KlimaQuelle.TryRegional)
+                zeile = Vorschauzeile(new TryRegionVorschau
+                {
+                    Region = erg.Region,
+                    Ausfuehrungen = erg.Ausfuehrungen
+                });
+            else
+                zeile = satz.Herkunft;
+
+            var teile = new List<string>();
+            if (!string.IsNullOrEmpty(zeile)) teile.Add(zeile);
+            if (!erg.AusfuehrungGefunden && erg.Grund.Length > 0) teile.Add(erg.Grund);
+            teile.AddRange(hinweise);
+            erg.Meldung = string.Join(" · ", teile);
             return erg;
         }
 

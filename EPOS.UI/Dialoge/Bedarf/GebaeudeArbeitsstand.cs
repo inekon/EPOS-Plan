@@ -74,6 +74,7 @@ public sealed class GebaeudeArbeitsstand
         BandFrei = false;
         _heizkurveVorgeschlagen = false;
         BauweiseNachfuehren = (neu && !Stand.BauweiseAusDatei) || Stand.Bauweise <= 0;
+        _vorgabenschritt = null;
         Fehlerfelder.Clear();
         _uebergabeFehlerfelder.Clear();
         _kuehlFehlerfelder.Clear();
@@ -590,6 +591,82 @@ public sealed class GebaeudeArbeitsstand
 
     /// <summary>Das Baujahr — ein neues Jahr setzt die Klasse auf seinen Vorschlag.</summary>
     public void BaujahrSetzen(int? jahr) => Stand.BaujahrUebernehmen(jahr);
+
+    // ---- Vorgaben der Baualtersklasse im Einzonenweg (MA-7) ----------------------------------
+
+    /// <summary>Der letzte Schritt „Vorgaben der Baualtersklasse übernehmen“: Werte davor und danach, Bauweise davor.</summary>
+    private sealed record Vorgabenschritt(Einzonenwerte Vorher, Einzonenwerte Nachher, double BauweiseVorher, bool NachfuehrenVorher);
+
+    private Vorgabenschritt? _vorgabenschritt;
+
+    /// <summary>Die Werte des Einzonenwegs, die eine Baualtersklasse vorgibt, wie sie jetzt im Arbeitsstand stehen.</summary>
+    public Einzonenwerte Einzonenwerte()
+        => new(Stand.UWertAussenwand, Stand.UWertFenster, Stand.UWertDachflaeche, Stand.UWertGrundflaeche, Stand.UWertSonstiges,
+               Stand.WbvkFensterWand, Stand.WbvkAussenwandKeller, Stand.WbvkWandDach, Stand.Fensterdurchlassgrad, Stand.Bauart);
+
+    /// <summary>Die Vorgabe der gewählten Baualtersklasse (mit dem Vorrang des Energiestandards, E47); <c>null</c> = keine.</summary>
+    public Einzonenvorgabe? Einzonenvorgabe => Einzonenvorgaben.Fuer(Stand.Baualtersklasse, Stand.Energiestandard);
+
+    /// <summary>Warum die Übernahme nicht geht: Zonen (dann gilt der Zonenweg), keine Klasse, keine Werte.</summary>
+    public Einzonensperre Einzonensperre => Einzonenvorgaben.Sperre(Zonen.Count, Stand.KlasseGesetzt, Einzonenvorgabe);
+
+    /// <summary>Die Vorschau der Übernahme: je Feld mit Vorgabe der Wert jetzt und der neue.</summary>
+    public IReadOnlyList<Einzonenposten> Einzonenvorschau()
+        => Einzonenvorgabe is Einzonenvorgabe v ? Einzonenvorgaben.Vorschau(Einzonenwerte(), v) : Array.Empty<Einzonenposten>();
+
+    /// <summary>
+    /// <b>„Übernehmen“</b>: trägt die Vorgabe der Klasse in den Arbeitsstand — die U-Werte der Hüllgruppen, die drei ψ, den
+    /// Fensterdurchlassgrad und die Bauart (die Bauweise folgt ihr). Geschrieben wird mit dem OK des Editors; ein Schritt,
+    /// den <see cref="EinzonenvorgabenZuruecknehmen"/> zurücknimmt. <c>false</c> = gesperrt (<see cref="Einzonensperre"/>).
+    /// </summary>
+    public bool EinzonenvorgabenUebernehmen()
+    {
+        if (Einzonensperre != Einzonensperre.Keine || Einzonenvorgabe is not Einzonenvorgabe v) return false;
+        Einzonenwerte vorher = Einzonenwerte();
+        double bauweise = Stand.Bauweise;
+        bool nachfuehren = BauweiseNachfuehren;
+        EinzonenwerteSetzen(Einzonenvorgaben.Anwenden(vorher, v));
+        _vorgabenschritt = new Vorgabenschritt(vorher, Einzonenwerte(), bauweise, nachfuehren);
+        return true;
+    }
+
+    /// <summary>Gibt es eine Übernahme, die <see cref="EinzonenvorgabenZuruecknehmen"/> zurücknimmt?</summary>
+    public bool KannEinzonenvorgabenZuruecknehmen => _vorgabenschritt is not null;
+
+    /// <summary>
+    /// <b>„Zurücknehmen“</b> (Muster MA-1a, eine Stufe): Jedes Feld, das noch so steht, wie die Übernahme es hinterließ,
+    /// bekommt seinen Wert von davor; die Bauart samt der Bauweise von davor. Ein Feld, das der Anwender danach geändert hat,
+    /// bleibt.
+    /// </summary>
+    public bool EinzonenvorgabenZuruecknehmen()
+    {
+        Vorgabenschritt? s = _vorgabenschritt;
+        if (s is null) return false;
+        _vorgabenschritt = null;
+        bool bauartZurueck = Stand.Bauart == s.Nachher.Bauart && s.Vorher.Bauart != s.Nachher.Bauart;
+        EinzonenwerteSetzen(Einzonenvorgaben.Zuruecknehmen(Einzonenwerte(), s.Vorher, s.Nachher));
+        if (bauartZurueck)
+        {
+            Stand.Bauweise = s.BauweiseVorher;
+            BauweiseNachfuehren = s.NachfuehrenVorher;
+        }
+        return true;
+    }
+
+    /// <summary>Setzt die Werte; eine geänderte Bauart geht den Weg der Klappliste (die Bauweise folgt).</summary>
+    private void EinzonenwerteSetzen(Einzonenwerte w)
+    {
+        Stand.UWertAussenwand = w.UAussenwand;
+        Stand.UWertFenster = w.UFenster;
+        Stand.UWertDachflaeche = w.UDach;
+        Stand.UWertGrundflaeche = w.UGrund;
+        Stand.UWertSonstiges = w.USonstige;
+        Stand.WbvkFensterWand = w.PsiFensterWand;
+        Stand.WbvkAussenwandKeller = w.PsiAussenwandKeller;
+        Stand.WbvkWandDach = w.PsiWandDach;
+        Stand.Fensterdurchlassgrad = w.Fensterdurchlassgrad;
+        if (w.Bauart is int b && b != Stand.Bauart) BauartWaehlen(b);
+    }
 
     /// <summary>
     /// Die Herleitungszeile unter der Klappliste der Klasse: mit Baujahr „Vorschlag aus dem Baujahr 1985:

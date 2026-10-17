@@ -236,6 +236,12 @@ public sealed class BauteilDaten
     /// <summary>Wärmebrücke ψ·L [W/K]; <c>null</c> = keine.</summary>
     public double? PsiL { get; set; }
 
+    /// <summary>DA-8: Absorptionsgrad der Außenfläche für Solarstrahlung [–]; <c>null</c> = der des Aufbaus, sonst die Vorgabe.</summary>
+    public double? AbsorptionsgradSolar { get; set; }
+
+    /// <summary>DA-8: langwelliger Emissionsgrad der Außenfläche [–]; <c>null</c> = der des Aufbaus, sonst die Vorgabe.</summary>
+    public double? Emissionsgrad { get; set; }
+
     /// <summary>Aufbau des Projekts (<c>Tab_Bauteilaufbau.ID</c>); <c>null</c> = keiner bzw. einer aus dem Katalog.</summary>
     public int? IdAufbau { get; set; }
 
@@ -253,6 +259,12 @@ public sealed class BauteilDaten
 
     /// <summary>Herkunft (Persistenzwert) — reist unverändert mit.</summary>
     public string? Herkunft { get; set; }
+
+    /// <summary>
+    /// MA-6b: Die gespeicherte Herkunft des U-Werts (Persistenzwert, <c>Tab_Bauteil.U_Herkunft</c>) — nur gelesen; der
+    /// Schreibweg leitet sie im Kern neu ab. Der Hilfe-Assistent zeigt sie im Bauteildialog.
+    /// </summary>
+    public string? UHerkunft { get; set; }
 
     /// <summary>Kennung eines Imports — reist unverändert mit.</summary>
     public string? Quellkennung { get; set; }
@@ -282,7 +294,8 @@ public sealed class BauteilDaten
            && Verschattung == b.Verschattung && Azimut == b.Azimut && Neigung == b.Neigung
            && Randbedingung == b.Randbedingung && PsiL == b.PsiL && IdAufbau == b.IdAufbau
            && IdAufbauStamm == b.IdAufbauStamm && IdNachbarzone == b.IdNachbarzone
-           && TrennflaecheZuordnung == b.TrennflaecheZuordnung;
+           && TrennflaecheZuordnung == b.TrennflaecheZuordnung
+           && AbsorptionsgradSolar == b.AbsorptionsgradSolar && Emissionsgrad == b.Emissionsgrad;
 
     /// <summary>Die Angaben für die Prüfregeln des Kerns (<c>GebaeudeZonenCtrl.BauteilPruefen</c>).</summary>
     public Bauteilangabe Angabe()
@@ -295,10 +308,11 @@ public sealed class BauteilDaten
 /// <c>false</c>) oder aus dem Stammkatalog; <see cref="UWert"/> im Kern gerechnet, <c>null</c> =
 /// nicht bestimmbar. <see cref="Ungeeignet"/> ist das Kennzeichen „für die Gebäudesimulation meist nicht geeignet" des
 /// Kerns (BK-2b) — die Wahl blendet solche Aufbauten aus, bis der Schalter sie zeigt; ihr U ist das U der Quelle.
-/// <see cref="Grund"/> sagt, warum <see cref="UWert"/> leer ist.
+/// <see cref="Grund"/> sagt, warum <see cref="UWert"/> leer ist. <see cref="Fenster"/> trägt die Fensterwerte eines
+/// Fensteraufbaus (BK-6) — sie gehen beim Zuweisen an das Bauteil über; <c>null</c> = keine.
 /// </summary>
 public sealed record AufbauWahl(int Id, bool Katalog, string Text, string Bauteilart, double? UWert, bool Ersatz = false,
-                                bool Ungeeignet = false, string Grund = "");
+                                bool Ungeeignet = false, string Grund = "", WindowsFormsApplication1.Fensteraufbau? Fenster = null);
 
 /// <summary>
 /// <b>Ein Luftstrom zwischen zwei Zonen</b> eines Gebäudes (Stufe G6b; <c>Tab_Zonenluftstrom</c>) — das

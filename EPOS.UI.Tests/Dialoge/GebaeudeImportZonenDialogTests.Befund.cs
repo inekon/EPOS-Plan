@@ -9,8 +9,8 @@ namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
 /// G5-3b: In der Liste „Flächen je Zone" steht nach der Fläche ihre Herkunft („Fläche aus": Mengensatz, Raumgrenze, Körper,
-/// schematisch), und neben den vorhandenen Filtern schränkt „Nur Bauteile mit Befund" auf die Bauteile ein, die im Farbmodus
-/// „Befund" orange oder rot stehen. Das Profil ist das der Hülle.
+/// schematisch), und neben den vorhandenen Filtern schränkt „Nur unvollständige Bauteile" auf die Bauteile ein, die im Farbmodus
+/// „Vollständigkeit" orange oder rot stehen. Das Profil ist das der Hülle.
 /// </summary>
 public partial class GebaeudeImportZonenDialogTests
 {
@@ -50,14 +50,14 @@ public partial class GebaeudeImportZonenDialogTests
         Assert.Equal(4, cut.FindAll(".epos-gebimport-flaechenfilter label.epos-schalter").Count);
 
         Assert.Equal(30, cut.Instance.Flaechenzeilen.Count);
-        Schalter(cut, "Nur Bauteile mit Befund").WechselAbgewartet(true);
+        Schalter(cut, "Nur unvollständige Bauteile").WechselAbgewartet(true);
         Assert.Equal(8, cut.Instance.Flaechenzeilen.Count);              // 0, 4, …, 28
         Assert.Equal(8, cut.FindComponent<Katalogliste>().Instance.Angezeigt.Count);
         // Zusammen mit „ohne Nachbarfläche" gilt „und": 0, 12, 24.
         Schalter(cut, "Nur Flächen ohne Nachbarfläche").WechselAbgewartet(true);
         Assert.Equal(3, cut.Instance.Flaechenzeilen.Count);
         Schalter(cut, "Nur Flächen ohne Nachbarfläche").WechselAbgewartet(false);
-        Schalter(cut, "Nur Bauteile mit Befund").WechselAbgewartet(false);
+        Schalter(cut, "Nur unvollständige Bauteile").WechselAbgewartet(false);
         Assert.Equal(30, cut.Instance.Flaechenzeilen.Count);
     }
 

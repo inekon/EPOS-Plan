@@ -82,11 +82,18 @@ namespace WindowsFormsApplication1
         public double[] Kaeltestrom_Stufenrechnung_stuendlich;
 
         /// <summary>
-        /// Der Strom der dezentralen (Split-)Deckung [kWh je Stunde] (K3, Konzept Kältebedarf 4.2) — ein Teil von
-        /// <see cref="Kaeltestrom_Stufenrechnung_stuendlich"/>, hier für Strombilanz und Ergebnis gesondert. <c>null</c>
-        /// ohne dezentral gedeckte Zeile.
+        /// Der GANZE Strom der dezentralen (Split-)Deckung [kWh je Stunde] (K3, Konzept Kältebedarf 4.2), für Strombilanz und
+        /// Ergebnis gesondert — auch der Strom der Zeilen mit eigenem Zähler. <c>null</c> ohne dezentral gedeckte Zeile.
         /// </summary>
         public double[] Kaeltestrom_Dezentral_stuendlich;
+
+        /// <summary>
+        /// Der Teil von <see cref="Kaeltestrom_Dezentral_stuendlich"/>, der durch die Stufenrechnung läuft [kWh je Stunde] und
+        /// damit in <see cref="Kaeltestrom_Stufenrechnung_stuendlich"/> steht — ohne die Zeilen mit eigenem Zähler (E34). Die
+        /// Strombilanz zieht ihn vom Kältestrom der Stufe ab, um den Split-Strom nicht doppelt zu zählen. <c>null</c> ohne
+        /// dezentral gedeckte Zeile.
+        /// </summary>
+        public double[] Kaeltestrom_Dezentral_Stufenrechnung_stuendlich;
 
         /// <summary>Den Kältezustand des Vorlaufs verwerfen — am Beginn von <see cref="Kaskade_Zweikanalig"/>.</summary>
         private void KaelteseiteZuruecksetzen()
@@ -97,6 +104,7 @@ namespace WindowsFormsApplication1
             _waermekanalAbweichungen = 0;
             Kaeltestrom_Stufenrechnung_stuendlich = null;
             Kaeltestrom_Dezentral_stuendlich = null;
+            Kaeltestrom_Dezentral_Stufenrechnung_stuendlich = null;
         }
 
         private static string Anzeigename(WErzeugerModel m)
@@ -528,14 +536,15 @@ namespace WindowsFormsApplication1
             if (!a.IdRueckkuehlwerk.HasValue) return;
             Rueckkuehlwerk r = Rueckkuehlwerk.AusModell(RueckkuehlwerkCtrl.LadenStill(a.IdRueckkuehlwerk.Value));
             if (r == null) return;
-            if (string.Equals(k.Rueckkuehlart, KaeltemaschineSchema.RUECKKUEHLART_LUFT, StringComparison.Ordinal))
+            if (KaeltemaschineSchema.IstLuftgekuehlt(k.Rueckkuehlart))
             {
                 Protokoll.HinweisEinmal("kuehl-rkw-luft-" + a.AnlagenId,
                     string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_LUFT_IGNORIERT,
                                   k.Bezeichner, r.Bezeichner));
                 return;
             }
-            r.WasserpreisEurM3 = a.WasserpreisEurM3;
+            // Welle KB-7b: Der Lauf liest keinen Wasserpreis - die Wasserkosten (Menge x Preis des Wassertraegers, Preismodell
+            // WATER) bucht allein die Wirtschaftlichkeit in die Betriebskosten (Wasserkosten).
             k.RueckkuehlwerkSetzen(r);
             // K-F3 (Entwurf 5.5): Teil-Freikühlung in Reihe - die Auslegungsspreizung der Kühlübergabe, sonst die Vorgabe, benannt.
             if (r.Reihe)
@@ -570,8 +579,8 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// K-F2 (Entwurf 5.3, 5.8, Frage KD-Q8): die Meldungen des Rückkühlwerks nach der Kaskade — Wasser samt Kosten (leer
-        /// Preis = keine Kosten, benannt) und die Stunden über der Nennleistung.
+        /// K-F2 (Entwurf 5.3, 5.8, Frage KD-Q8): die Meldungen des Rückkühlwerks nach der Kaskade — Wassermenge und
+        /// Nassstunden (die Kosten stehen in der Wirtschaftlichkeit, Welle KB-7b) und die Stunden über der Nennleistung.
         /// </summary>
         private void RueckkuehlwerkMelden(Kaelteerzeuger e)
         {
@@ -580,13 +589,9 @@ namespace WindowsFormsApplication1
             if (r.Verdunstungskuehlanlage && e.RkWasserM3 > 0)
             {
                 string menge = e.RkWasserM3.ToString("N1", CultureInfo.CurrentCulture);
-                double? kosten = Rueckkuehlwerk.WasserkostenEur(e.RkWasserM3, r.WasserpreisEurM3);
-                Protokoll.HinweisEinmal("kuehl-rkw-wasser-" + e.AnlagenID, kosten.HasValue
-                    ? string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_WASSER_KOSTEN,
-                                    e.Bezeichner, r.Bezeichner, menge, e.RkStundenNass,
-                                    kosten.Value.ToString("N0", CultureInfo.CurrentCulture))
-                    : string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_WASSER_OHNE_PREIS,
-                                    e.Bezeichner, r.Bezeichner, menge, e.RkStundenNass));
+                Protokoll.HinweisEinmal("kuehl-rkw-wasser-" + e.AnlagenID,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_WASSER,
+                                  e.Bezeichner, r.Bezeichner, menge, e.RkStundenNass));
             }
             if (e.RkStundenUeberlast > 0)
                 Protokoll.HinweisEinmal("kuehl-rkw-ueberlast-" + e.AnlagenID,
@@ -1019,13 +1024,15 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>Der Strom der dezentralen (Split-)Deckung</b> (K3, Konzept Kältebedarf 4.2) — neben der Kaskade, aber an
-        /// derselben Stelle in die Stufenrechnung wie der Kältestrom der Kaskade: Jahressumme in <see cref="ReststromMwh"/>,
+        /// <b>Der Strom der dezentralen (Split-)Deckung</b> (K3, Konzept Kältebedarf 4.2; Schritt 223) — neben der Kaskade, aber
+        /// an derselben Stelle in die Stufenrechnung wie der Kältestrom der Kaskade: Jahressumme in <see cref="ReststromMwh"/>,
         /// Viertelstundenverlauf in den Rest, die Reihe in <see cref="Kaeltestrom_Stufenrechnung_stuendlich"/> (Lastreihe des
         /// Stromspeichers, Strombilanz). Gerufen nach der Kältekaskade und vor dem Abschluss der Kälteseite, auch ohne
         /// Kälteerzeuger. Ohne dezentral gedeckte Zeile ein sofortiger Rücksprung — der Lauf bleibt Zeichen für Zeichen.
-        /// <para>Ein abweichender Kühlträger der Zeile wird benannt: Die Ergebniszeile kennt je Träger keine dezentrale Menge,
-        /// deshalb rechnet der Strom mit dem Stromträger des Projekts (offener Punkt, Konzept Kältebedarf 4.2).</para>
+        /// <para>Je Zeile entscheidet ihr Kühlträger, wie bei Wärmepumpe und Kältemaschine (E34): Leer oder der Stromträger
+        /// des Projekts läuft wie bisher anteilig; ein abweichender Träger mit eigenem Zähler läuft NEBEN der Stufenrechnung
+        /// (weder in den Rest noch in die Lastreihe), ein abweichender Träger ohne eigenen Zähler bleibt in ihr und bepreist
+        /// am Laufende seinen Anteil am Netzbezug (<see cref="KaeltestromNetzbezugAufteilen"/>).</para>
         /// </summary>
         private void DezentralenKaeltestromBuchen()
         {
@@ -1033,10 +1040,13 @@ namespace WindowsFormsApplication1
             SimulationKaeltebedarf kaelte = simulation_Waermebedarf != null ? simulation_Waermebedarf.Kaelteseite : null;
             if (kaelte == null || !kaelte.Gerechnet || !kaelte.MitDezentral) return;
 
-            double[] reihe = (double[])kaelte.Strom_Dezentral.Clone();
-            double summeKwh = 0.0;
-            for (int h = 0; h < Kanalsatz.STUNDEN_JAHR; h++) summeKwh += reihe[h];
-            Kaeltestrom_Dezentral_stuendlich = reihe;
+            kaelte.KuehltraegerFestlegen(Kaeltestromabrechnung.Projekttraeger(m_ID_Projekt));
+            Kaeltestrom_Dezentral_stuendlich = (double[])kaelte.Strom_Dezentral.Clone();
+
+            double summeKwh;
+            double[] reihe = kaelte.StromDerStufenrechnung(out summeKwh);
+            Kaeltestrom_Dezentral_Stufenrechnung_stuendlich = reihe;
+            if (!kaelte.DezentraleZeilen.Exists(z => !z.NebenDerStufenrechnung)) return;   // alles über eigene Zähler
 
             if (Kaeltestrom_Stufenrechnung_stuendlich == null)
                 Kaeltestrom_Stufenrechnung_stuendlich = (double[])reihe.Clone();
@@ -1046,14 +1056,6 @@ namespace WindowsFormsApplication1
             ReststromMwh += summeKwh / 1000.0;
             Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich,
                                                             Stundenwerte_zu_viertelstunden(reihe));
-
-            int projekttraeger = Kaeltestromabrechnung.Projekttraeger(m_ID_Projekt);
-            foreach (SimulationKaeltebedarf.DezentraleZeile z in kaelte.DezentraleZeilen)
-                if (Kaeltestromabrechnung.Abweichend(z.KuehlIdCarrier, projekttraeger))
-                    Protokoll.Hinweis(string.Format(CultureInfo.CurrentCulture,
-                        MyResource.Resource.SIMENG_KAELTE_DEZENTRAL_KUEHLTRAEGER, z.Bezeichner,
-                        (z.StromKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
-                        Emissionsquelle.TraegerName(z.KuehlIdCarrier.Value)));
         }
 
         // =====================================================================
@@ -1071,17 +1073,21 @@ namespace WindowsFormsApplication1
         /// gemeinsam, ohne Vorrang (E34, Wahl 1).
         ///
         /// <para><b>Nur eine Aufteilung, kein zweiter Rechenweg:</b> Rest, Netzbezug und
-        /// <see cref="ReststromMwh"/> bleiben, wie sie sind. Ohne Kältekaskade ein sofortiger
-        /// Rücksprung. Bepreist und bewertet wird die Menge einmal, im <c>KostenEmissionRechner</c>
-        /// — mit dem Kühlträger, wo er abweicht, sonst mit dem Stromträger des Projekts.</para>
+        /// <see cref="ReststromMwh"/> bleiben, wie sie sind. Die Split-Zeilen (Schritt 223) teilt dieselbe Regel auf, auch
+        /// ohne Kälteerzeuger; ohne Kältekaskade und ohne Split-Zeile ein sofortiger Rücksprung. Bepreist und bewertet wird
+        /// die Menge einmal, im <c>KostenEmissionRechner</c> — mit dem Kühlträger, wo er abweicht, sonst mit dem Stromträger
+        /// des Projekts.</para>
         /// </summary>
         private void KaeltestromNetzbezugAufteilen()
         {
-            if (m_bError || _kaelteerzeuger == null || _kaelteerzeuger.Count == 0) return;
+            if (m_bError) return;
             SimulationKaeltebedarf kaelte = simulation_Waermebedarf != null ? simulation_Waermebedarf.Kaelteseite : null;
+            double[] last = null;
+            // Schritt 223: die Split-Zeilen nach derselben Regel - auch ohne Kälteerzeuger; ohne Split-Zeile ein Rücksprung.
+            if (kaelte != null && kaelte.Gerechnet && kaelte.MitDezentral) DezentralenNetzbezugAufteilen(kaelte, ref last);
+            if (_kaelteerzeuger == null || _kaelteerzeuger.Count == 0) return;
             if (kaelte == null || kaelte.Kaskade == null) return;
 
-            double[] last = null;
             foreach (Kaelteerzeuger e in kaelte.Kaskade.Erzeuger)
             {
                 if (e.NebenDerStufenrechnung) { e.NetzbezugKwh = e.StromGesamtKwh; }
@@ -1096,6 +1102,37 @@ namespace WindowsFormsApplication1
                 if (e.Kuehltraeger > 0)
                     Protokoll.Hinweis(KuehltraegerMengeHinweis(e, Emissionsquelle.TraegerName(e.Kuehltraeger)));
             }
+        }
+
+        /// <summary>
+        /// Der Netzbezug je Split-Zeile (Schritt 223; E34): mit eigenem Zähler der ganze Strom, sonst anteilig über die
+        /// Stufenrechnung (<see cref="Kaeltekaskade.NetzbezugAnteilKwh"/>, dieselbe Lastreihe wie bei den Kälteerzeugern). Eine
+        /// Zeile mit abweichendem Kühlträger nennt ihre Menge.
+        /// </summary>
+        private void DezentralenNetzbezugAufteilen(SimulationKaeltebedarf kaelte, ref double[] last)
+        {
+            foreach (SimulationKaeltebedarf.DezentraleZeile z in kaelte.DezentraleZeilen)
+            {
+                if (z.NebenDerStufenrechnung) z.NetzbezugKwh = z.StromKwh;
+                else if (!(z.StromKwh > 0)) z.NetzbezugKwh = 0.0;
+                else
+                {
+                    if (last == null) last = new StromspeicherSimCtrl().BaueLastreihe(this);
+                    z.NetzbezugKwh = Kaeltekaskade.NetzbezugAnteilKwh(Rest_Strombedarf_viertelstuendlich, last, z.Strom_stuendlich);
+                }
+
+                if (z.Kuehltraeger > 0)
+                    Protokoll.Hinweis(KuehltraegerMengeHinweis(z, Emissionsquelle.TraegerName(z.Kuehltraeger)));
+            }
+        }
+
+        /// <summary>Der Hinweis zum Netzbezug des Stroms einer Split-Zeile mit abweichendem Kühlträger.</summary>
+        internal static string KuehltraegerMengeHinweis(SimulationKaeltebedarf.DezentraleZeile z, string traeger)
+        {
+            return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_DEZENTRAL_KUEHLTRAEGER, z.Bezeichner,
+                (z.NetzbezugKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
+                (z.StromKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
+                traeger);
         }
 
         /// <summary>
@@ -1206,14 +1243,8 @@ namespace WindowsFormsApplication1
             }
             else
             {
-                Protokoll.Hinweis(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_DECKUNG,
-                    (k.DeckungGesamtKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
-                    kaelte.Kaeltebedarf_Gesamt.ToString("N2", CultureInfo.CurrentCulture),
-                    SimulationRunner.DeckungProzent(k.DeckungGesamtKwh / 1000.0, kaelte.Kaeltebedarf_Gesamt)
-                                    .ToString("N1", CultureInfo.CurrentCulture),
-                    (k.StromGesamtKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
-                    k.EerJahreswert.ToString("N2", CultureInfo.CurrentCulture),
-                    k.AnzahlKuehltage));
+                Protokoll.Hinweis(KaeltedeckungMeldung(k.DeckungGesamtKwh / 1000.0, kaelte.Kaeltebedarf_Dezentral_Gesamt,
+                    kaelte.Kaeltebedarf_Gesamt, k.StromGesamtKwh / 1000.0, k.EerJahreswert, k.AnzahlKuehltage));
 
                 if (k.RestGesamtKwh > 0)
                     Protokoll.Warnung(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_UNTERDECKUNG,
@@ -1225,6 +1256,56 @@ namespace WindowsFormsApplication1
             }
 
             DeckungsprobeKaelteAusfuehren(kaelte, kanaele);
+        }
+
+        /// <summary>
+        /// <b>Die Laufmeldung der Kälteerzeugung</b> (F-K12; K6c-N). Ohne dezentrale (Split-)Deckung steht sie wörtlich
+        /// wie immer: die Deckung der Kältefolge am Gesamtbedarf — die gespeicherte Größe <c>Kaelte.DeckungsgradProzent</c>.
+        /// Mit Split-Zeile nennt sie wie die Übersicht die Hauptzahl nach <see cref="KaelteDeckungsgrad.Hauptzahl"/>
+        /// (Kältefolge + dezentral am Gesamtbedarf), dazu „davon Kältefolge“ nach
+        /// <see cref="KaelteDeckungsgrad.DavonKaeltefolge"/> und die dezentral gedeckte Menge; bleibt kein zentral zu
+        /// deckender Bedarf, entfällt „davon Kältefolge“.
+        /// </summary>
+        /// <param name="kaeltefolgeMwh">Die Deckung der Kältefolge [MWh/a].</param>
+        /// <param name="dezentralMwh">Die dezentral (Split) gedeckte Kälte [MWh/a]; 0 ohne Split-Zeile.</param>
+        /// <param name="gesamtMwh">Der Kältebedarf gesamt samt dezentraler Zeilen [MWh/a].</param>
+        /// <param name="stromMwh">Der Kältestrom der Kältefolge [MWh/a].</param>
+        /// <param name="eerJahreswert">Der EER-Jahreswert der Kältefolge.</param>
+        /// <param name="kuehltage">Die Zahl der Kühltage.</param>
+        public static string KaeltedeckungMeldung(double kaeltefolgeMwh, double dezentralMwh, double gesamtMwh,
+                                                   double stromMwh, double eerJahreswert, int kuehltage)
+        {
+            CultureInfo kultur = CultureInfo.CurrentCulture;
+            double? hauptzahl = KaelteDeckungsgrad.Hauptzahl(kaeltefolgeMwh, dezentralMwh, gesamtMwh);
+            if (hauptzahl == null)
+                return string.Format(kultur, MyResource.Resource.SIMENG_KAELTE_DECKUNG,
+                    kaeltefolgeMwh.ToString("N2", kultur),
+                    gesamtMwh.ToString("N2", kultur),
+                    SimulationRunner.DeckungProzent(kaeltefolgeMwh, gesamtMwh).ToString("N1", kultur),
+                    stromMwh.ToString("N2", kultur),
+                    eerJahreswert.ToString("N2", kultur),
+                    kuehltage);
+
+            double? davon = KaelteDeckungsgrad.DavonKaeltefolge(kaeltefolgeMwh, dezentralMwh, gesamtMwh);
+            string gedeckt = (kaeltefolgeMwh + dezentralMwh).ToString("N2", kultur);
+            if (davon == null)
+                return string.Format(kultur, MyResource.Resource.SIMENG_KAELTE_DECKUNG_SPLIT_NUR_DEZENTRAL,
+                    gedeckt,
+                    gesamtMwh.ToString("N2", kultur),
+                    hauptzahl.Value.ToString("N1", kultur),
+                    dezentralMwh.ToString("N2", kultur),
+                    stromMwh.ToString("N2", kultur),
+                    eerJahreswert.ToString("N2", kultur),
+                    kuehltage);
+            return string.Format(kultur, MyResource.Resource.SIMENG_KAELTE_DECKUNG_SPLIT,
+                gedeckt,
+                gesamtMwh.ToString("N2", kultur),
+                hauptzahl.Value.ToString("N1", kultur),
+                davon.Value.ToString("N1", kultur),
+                dezentralMwh.ToString("N2", kultur),
+                stromMwh.ToString("N2", kultur),
+                eerJahreswert.ToString("N2", kultur),
+                kuehltage);
         }
 
         /// <summary>

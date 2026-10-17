@@ -165,7 +165,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>Ein Wert der Datei: Dezimalkomma, Format <c>0.0##</c>; nicht endlich = leere Zelle.</summary>
         private static string Zahl(double wert, CultureInfo kultur)
-            => double.IsFinite(wert) ? wert.ToString("0.0##", kultur) : "";
+            => double.IsFinite(wert) ? wert.ToString(ZAHLFORMAT, kultur) : "";
+
+        /// <summary>Das Zahlformat der Datei — geteilt mit <see cref="KlimaCsv"/>.</summary>
+        internal const string ZAHLFORMAT = "0.0##";
 
         /// <summary>
         /// <b>Die Tafel eines Kalenderteppichs</b> — eine Tabelle wie das Bild: Kopf
@@ -227,6 +230,16 @@ namespace WindowsFormsApplication1
         /// <summary>Ein Kopftext ohne Trennzeichen und Umbruch.</summary>
         private static string Entschaerft(string text)
             => (text ?? "").Replace(SEP, ",").Replace("\r", " ").Replace("\n", " ").Trim();
+
+        /// <summary>
+        /// Ein Kopftext ohne das gewählte Trennzeichen und ohne Umbruch — für <see cref="KlimaCsv"/> mit wählbarem
+        /// Trennzeichen: Semikolon wird Komma (wie oben), Komma wird Semikolon, Tabulator wird Leerzeichen.
+        /// </summary>
+        internal static string Entschaerft(string text, string sep)
+        {
+            string ersatz = sep == ";" ? "," : sep == "," ? ";" : " ";
+            return (text ?? "").Replace(sep, ersatz).Replace("\t", " ").Replace("\r", " ").Replace("\n", " ").Trim();
+        }
 
         /// <summary>„Name [Einheit]“, entschärft (kein Trennzeichen, kein Umbruch) und eindeutig (_2, _3 …).</summary>
         private static string Spaltenkopf(ZeitreihenSpalte s, Dictionary<string, int> zaehler)

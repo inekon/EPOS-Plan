@@ -373,7 +373,6 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(z.Hersteller);
             Assert.NotNull(z.Speichertyp);
             Assert.True(z.Bereitschaftsverluste >= 0);
-            Assert.True(z.Investitionskosten >= 0);
         }
     }
 }

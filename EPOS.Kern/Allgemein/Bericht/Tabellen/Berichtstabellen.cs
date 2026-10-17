@@ -52,7 +52,11 @@ namespace WindowsFormsApplication1
             (KennzahlenKatalog.GR_KOSTEN, "kosten"),
         };
 
-        /// <summary>Die Gewerke der Kenndatentafeln (<see cref="ProjektDetails.GewerkTabellen"/>) und ihre Schlüssel im Katalog.</summary>
+        /// <summary>
+        /// Die Gewerke der Kenndatentafeln (<see cref="ProjektDetails.GewerkTabellen"/>) und ihre Schlüssel im Katalog,
+        /// die Kältemaschine eingeschlossen (Katalogfassung 24,
+        /// <see cref="Vorlagenfeldkatalog.FASSUNG_KAELTEMASCHINE_GEWERK"/>); ihre Tafel ist leer, wenn kein Stand sie verbaut.
+        /// </summary>
         public static IReadOnlyList<(string Gewerk, string Schluessel)> Gewerke
         {
             get
@@ -216,6 +220,9 @@ namespace WindowsFormsApplication1
 
             foreach (KeyValuePair<string, string> g in ProjektDetails.GewerkTabellen)
             {
+                // Die Kältemaschine steht nur in der Tafel, wenn ein Stand sie verbaut.
+                if (ProjektDetails.NurWennVerbaut(g.Key) && !spalten.Any(v => v.Details != null && v.Details.HatGewerk(g.Key)))
+                    continue;
                 var zellen = new List<Tabellenzelle> { Zellen.Text(g.Key) };
                 foreach (VariantenDaten v in spalten)
                 {

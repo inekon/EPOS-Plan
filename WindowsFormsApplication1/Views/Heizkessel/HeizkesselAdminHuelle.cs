@@ -19,9 +19,11 @@ namespace WindowsFormsApplication1
     /// <para><b>Der Speicherweg vom 18.08.2026 bleibt — und trägt jetzt das volle
     /// Profil.</b> Editierbar sind die zwanzig Spalten, die
     /// <see cref="KatalogBrowserProfil"/> als <c>Editierbar</c> führt (Beschreibung,
-    /// Leistung, Investitionskosten, Brennwert, Vor- und Rücklauf sowie Hersteller,
+    /// Leistung, Brennwert, Vor- und Rücklauf sowie Hersteller,
     /// Energieträger, Wirkungsgrade, Betriebsbereitschaftsverlust, Raumbedarf,
-    /// Wartungskosten, Nutzungsdauer und die fünf Emissionsfaktoren); geschrieben wird über
+    /// Nutzungsdauer und die fünf Emissionsfaktoren — die Kostenspalten sind mit Welle
+    /// KB-4 entfallen, die Gerätekosten stehen nur noch als Lesewert der Satzvorlage da);
+    /// geschrieben wird über
     /// <see cref="HeizkesselStammCtrl.AnzeigefelderSchreiben"/> — samt Dublettenklammer
     /// und Lesen-Ändern-Schreiben.</para>
     /// </summary>
@@ -115,12 +117,12 @@ namespace WindowsFormsApplication1
         /// <para><b>Gelesen wird genau, was das Profil als <c>Editierbar</c> führt</b>
         /// (Anwenderentscheid 15.09.2026): zu den sechs Feldern von 2026-08-18 kommen
         /// Hersteller, Energieträger, die beiden Wirkungsgrade, der
-        /// Betriebsbereitschaftsverlust, Raumbedarf, Wartungskosten samt Bezugsgröße,
-        /// Nutzungsdauer und die fünf Emissionsfaktoren — zwanzig Spalten. Blieben sie
+        /// Betriebsbereitschaftsverlust, Raumbedarf,
+        /// Nutzungsdauer und die fünf Emissionsfaktoren. Blieben sie
         /// hier stehen, verfielen die Änderungen des Aufklappers STILL: Die Komponente
         /// gibt alle Felder zurück, die Hülle las nur sechs davon.</para>
         /// <para><b>Ein leeres Textfeld heißt „unverändert lassen".</b> Energieträger und
-        /// Bezugsgröße der Wartungskosten sind Nachschlagewerte; kommen sie leer herein,
+        /// Einheit des Bereitschaftsverlusts sind Nachschlagewerte; kommen sie leer herein,
         /// rührt <c>KatalogFeldPruefung.AusListe</c> die Spalte nicht an — so bleibt ein
         /// Altbestandssatz mit einem Wert außerhalb der Liste in seinen übrigen Feldern
         /// pflegbar.</para>
@@ -154,7 +156,6 @@ namespace WindowsFormsApplication1
             return new HeizkesselStammCtrl.AnzeigefelderHeizkessel(
                 KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldBeschreibung),
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldPtherm),
-                KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldInvestitionskosten),
                 KatalogBrowserHuelle.Schalter(felder, KatalogBrowserProfil.FeldBrennwert),
                 KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldVorlauf),
                 KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldRuecklauf),
@@ -167,10 +168,6 @@ namespace WindowsFormsApplication1
                 Betriebsbereitschaftverlust:
                     KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldBBVerlust),
                 Raumbedarf: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldRaumbedarf),
-                Wartungskosten:
-                    KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldWartungskosten),
-                WartungskostenEinheit:
-                    KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldWartungEinheit),
                 Nutzungsdauer:
                     KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldNutzungsdauer),
                 CO2: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldCo2),

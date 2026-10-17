@@ -93,7 +93,7 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Energieanlagen WHERE \"" + s + "\" IS NOT NULL"));
             List<string> anlagen = DataRepository.SpaltenVonTabelle(ErdsondenfeldSchema.TAB_ANLAGEN);
             // Dahinter stehen allein die zwei Anlagenspalten der Uebergabegrenze (Schritt 205) und der Rang der
-            // Kaeltefolge (Schritt 212) und Verweis und Wasserpreis des Rueckkuehlwerks (K-F1).
+            // Kaeltefolge (Schritt 212) und Verweis des Rueckkuehlwerks (K-F1).
             int ub = UebergabegrenzeSchema.SPALTEN_ANLAGE.Count + KaelteRangSchema.SPALTEN.Count +
                      RueckkuehlwerkSchema.SPALTEN_ANLAGE.Count;
             Assert.Equal(ErdsondenfeldSchema.Spaltennamen().ToArray(), anlagen.Skip(anlagen.Count - ub - 6).Take(6).ToArray());

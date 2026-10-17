@@ -46,10 +46,14 @@ namespace WindowsFormsApplication1
         private static bool? _nutzungsprofilVorhanden;
         private static string _pfadFlaechenherkunft;
         private static bool? _flaechenherkunftVorhanden;
+        private static string _pfadUHerkunft;
+        private static bool? _uHerkunftVorhanden;
         private static string _pfadNordherkunft;
         private static bool? _nordherkunftVorhanden;
         private static string _pfadVorheizzeit;
         private static bool? _vorheizzeitVorhanden;
+        private static string _pfadLastfelder;
+        private static bool? _lastfelderVorhanden;
 
         /// <summary>
         /// Gibt es <c>Tab_Zone</c> in der Datenbank des aktuellen Pfads? <c>false</c> heißt
@@ -97,10 +101,14 @@ namespace WindowsFormsApplication1
                 _nutzungsprofilVorhanden = null;
                 _pfadFlaechenherkunft = null;
                 _flaechenherkunftVorhanden = null;
+                _pfadUHerkunft = null;
+                _uHerkunftVorhanden = null;
                 _pfadNordherkunft = null;
                 _nordherkunftVorhanden = null;
                 _pfadVorheizzeit = null;
                 _vorheizzeitVorhanden = null;
+                _pfadLastfelder = null;
+                _lastfelderVorhanden = null;
             }
         }
 
@@ -223,6 +231,28 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Trägt <c>Tab_Zone</c> die Lastfelder (Schritt <see cref="ZonenLastfelderSchema.SCHRITT"/>, DA-2)?
+        /// Gemerkt je Datenbankpfad wie <see cref="NutzungsprofilVorhanden"/>; <see cref="ProbeVerwerfen"/> verwirft auch diese Probe.
+        /// </summary>
+        internal static bool LastfelderVorhanden()
+        {
+            string pfad = Pfad();
+            lock (_sperre)
+            {
+                if (_lastfelderVorhanden.HasValue && string.Equals(pfad, _pfadLastfelder, StringComparison.OrdinalIgnoreCase))
+                    return _lastfelderVorhanden.Value;
+            }
+
+            bool da = ZonenLastfelderSchema.Lesbar();
+            lock (_sperre)
+            {
+                _pfadLastfelder = pfad;
+                _lastfelderVorhanden = da;
+            }
+            return da;
+        }
+
+        /// <summary>
         /// Trägt <c>Tab_Bauteil</c> die Spalte <c>Flaechenherkunft</c> (Schritt <see cref="FlaechenherkunftSchema.SCHRITT"/>)?
         /// Gemerkt je Datenbankpfad wie <see cref="NutzungsprofilVorhanden"/>; <see cref="ProbeVerwerfen"/> verwirft auch diese Probe.
         /// </summary>
@@ -240,6 +270,29 @@ namespace WindowsFormsApplication1
             {
                 _pfadFlaechenherkunft = pfad;
                 _flaechenherkunftVorhanden = da;
+            }
+            return da;
+        }
+
+        /// <summary>
+        /// Tragen <c>Tab_Bauteil</c> und <c>Tab_Bauteil_STAMM</c> die Spalte <c>U_Herkunft</c> (Schritt
+        /// <see cref="BauteilUHerkunftSchema.SCHRITT"/>)? Gemerkt je Datenbankpfad wie <see cref="FlaechenherkunftVorhanden"/>;
+        /// <see cref="ProbeVerwerfen"/> verwirft auch diese Probe.
+        /// </summary>
+        internal static bool UHerkunftVorhanden()
+        {
+            string pfad = Pfad();
+            lock (_sperre)
+            {
+                if (_uHerkunftVorhanden.HasValue && string.Equals(pfad, _pfadUHerkunft, StringComparison.OrdinalIgnoreCase))
+                    return _uHerkunftVorhanden.Value;
+            }
+
+            bool da = BauteilUHerkunftSchema.Vollstaendig();
+            lock (_sperre)
+            {
+                _pfadUHerkunft = pfad;
+                _uHerkunftVorhanden = da;
             }
             return da;
         }

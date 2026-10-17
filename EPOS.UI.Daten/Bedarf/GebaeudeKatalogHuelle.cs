@@ -140,9 +140,26 @@ namespace WindowsFormsApplication1
                         ? Schreiben(d, true, bez, KonditionierungCtrl.Eigner.Gebaeude(idGebaeude))
                         : ProjektSchreiben(idProjekt, idGebaeude, d)),
                 ["Zonen"] = Zonenweg(idProjekt, idZ, idGebaeude),
+                // N3: nach einer Übernahme, Rücknahme oder Nordrichtungs-Bestätigung der Modellprüfung liest der Editor die
+                // Gebäudefelder, die eine Übernahme schreiben kann, aus der Projektkopie neu (OK schriebe sonst den alten Stand).
+                ["GebaeudeNeulesen"] = new Func<GebaeudeKatalogDaten>(() => ProjektNeulesen(idGebaeude)),
                 ["HilfeSchluessel"] = HILFE_PROJEKT
             };
             return gaben;
+        }
+
+        /// <summary>
+        /// <b>Liest die Projektkopie neu</b> (N3): die Gebäudedaten samt Konditionierung der Gebäudeebene, wie
+        /// <see cref="ProjektGaben"/> sie beim Öffnen liefert; <c>null</c>, wenn die Kopie nicht (mehr) zu lesen ist. Der Editor
+        /// übernimmt daraus nur die Felder, die eine Übernahme der Modellprüfung schreiben kann (Feiertagsland, Konditionierung).
+        /// </summary>
+        internal static GebaeudeKatalogDaten ProjektNeulesen(int idGebaeude)
+        {
+            GebaeudeModel kopie = idGebaeude > 0 ? GebaeudeStammCtrl.LiesProjektkopie(idGebaeude) : null;
+            if (kopie == null) return null;
+            GebaeudeKatalogDaten daten = AusModell(kopie);
+            daten.Konditionierung = KonditionierungHuelle.Lesen(KonditionierungCtrl.Eigner.Gebaeude(idGebaeude));
+            return daten;
         }
 
         /// <summary>
@@ -330,10 +347,14 @@ namespace WindowsFormsApplication1
                         Neigung = b.Neigung,
                         Randbedingung = b.Randbedingung,
                         PsiL = b.Psi_L,
+                        AbsorptionsgradSolar = b.Absorptionsgrad_Solar,
+                        Emissionsgrad = b.Emissionsgrad,
                         IdAufbau = b.ID_Aufbau,
                         AufbauText = a?.Text ?? "",
                         UAufbau = a?.UWert,
                         Herkunft = b.Herkunft,
+                        // MA-6b: die Herkunft des U-Werts nur zum Lesen (Assistent); der Schreibweg leitet sie neu ab.
+                        UHerkunft = b.U_Herkunft,
                         Quellkennung = b.Quellkennung,
                         IdNachbarzone = b.ID_Nachbarzone,
                         TrennflaecheZuordnung = b.Trennflaeche_Zuordnung
@@ -436,6 +457,8 @@ namespace WindowsFormsApplication1
                         Azimut = b.Azimut,
                         Randbedingung = b.Randbedingung,
                         Psi_L = b.PsiL,
+                        Absorptionsgrad_Solar = b.AbsorptionsgradSolar,
+                        Emissionsgrad = b.Emissionsgrad,
                         Herkunft = b.Herkunft,
                         Quellkennung = b.Quellkennung,
                         ID_Nachbarzone = b.IdNachbarzone,
@@ -585,8 +608,10 @@ namespace WindowsFormsApplication1
             string text = a.Bezeichner ?? "";
             if (!string.IsNullOrEmpty(a.Bauteilart)) text += " · " + BauteilaufbauCtrl.BauteilartText(a.Bauteilart);
             if (ungeeignet) text += " · " + MyResource.Resource.BKAT_MARKE_UNGEEIGNET;
+            // BK-6: Ein Fensteraufbau reicht seine Fensterwerte mit; sie gehen beim Zuweisen an das Bauteil über.
+            Fensteraufbau fenster = Fensterkennwerte.IstFensterart(a.Bauteilart) ? Fensterkennwerte.AusAufbau(a) : null;
             return new AufbauWahl(a.ID, katalog, text, a.Bauteilart ?? "", u, !string.IsNullOrEmpty(a.Typaufbau),
-                                  ungeeignet, u.HasValue ? "" : grund ?? "");
+                                  ungeeignet, u.HasValue ? "" : grund ?? "", fenster is { Vorhanden: true } ? fenster : null);
         }
 
         /// <summary>Die Baustoffe des Projekts — die Schichten eines Projektaufbaus zeigen auf sie.</summary>
@@ -1137,23 +1162,34 @@ namespace WindowsFormsApplication1
 
             var zeilen = new List<BedarfsProfilZeile>();
             foreach (Z_ProjektBrauchwasserModel m in ziel)
-                zeilen.Add(new BedarfsProfilZeile
+            {
+                var z = new BedarfsProfilZeile
                 {
                     IdZ = m.ID_Z, IdStamm = m.ID_Brauchwasser,
                     Name = m.szBezeichner ?? "", Summe = m.Summe,
                     KalenderId = m.ID_Betriebskalender
-                });
+                };
+                // KBP-5a: Eingabeart, Monatsanteile und Wochenprofil der Projektkopie (OE-5).
+                BedarfsprofilEingabeAbbildung.InZeile(z, BedarfsArt.Brauchwasser, projektId, m.Eingabeart,
+                                                      m.Monatsanteile, m.Wochenprofil);
+                zeilen.Add(z);
+            }
 
             Action geaendert = () =>
             {
                 ziel.Clear();
                 foreach (BedarfsProfilZeile z in zeilen)
+                {
+                    // KBP-5a: die Eingabeart immer, Monate und Woche nur nach einer Bearbeitung.
+                    (string eingabeart, double[] monate, double[] woche) = BedarfsprofilEingabeAbbildung.AusZeile(z);
                     ziel.Add(new Z_ProjektBrauchwasserModel
                     {
                         ID_Z = z.IdZ, ID_Projekt = projektId, ID_Brauchwasser = z.IdStamm,
                         szBezeichner = z.Name, Summe = z.Summe,
-                        ID_Betriebskalender = z.KalenderId
+                        ID_Betriebskalender = z.KalenderId,
+                        Eingabeart = eingabeart, Monatsanteile = monate, Wochenprofil = woche
                     });
+                }
             };
 
             return Gebaeudewege.BrauchwasserGaben?.Invoke(projektId, zeilen, geaendert, zapfprofil);
@@ -1241,6 +1277,8 @@ namespace WindowsFormsApplication1
                 Verwendung = string.IsNullOrEmpty(m.Wohngebaeude_Nicht_Wohngebaeude)
                     ? VERWENDUNGSWERTE[0] : m.Wohngebaeude_Nicht_Wohngebaeude,
                 Baualtersklasse = GebaeudeStammCtrl.KlassenIndex(m.Baualtersklasse),
+                // MA-7: eine leere Spalte heißt „keine Klasse“ - die Vorgaben der Klasse sind dann gesperrt.
+                KlasseGesetzt = !string.IsNullOrWhiteSpace(m.Baualtersklasse),
                 // G4a: das Baujahr neben der Klasse - NULL bleibt null (unbekannt); die gespeicherte
                 // Klasse gilt, das Baujahr schlaegt beim Aendern nur vor.
                 Baujahr = m.Baujahr,

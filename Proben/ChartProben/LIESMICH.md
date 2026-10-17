@@ -30,7 +30,7 @@ dotnet run --project Proben/ChartProben -c Release
 | `--hashes <datei>` | schreibt die **Hash-Messlatte**: je Bild eine Zeile aus SHA-256, zwei Leerzeichen und `<name>.png`, nach Name geordnet, mit LF und ohne BOM — das Format von `sha256sum`, also mit `sha256sum -c` im Ablageordner nachrechenbar |
 | `--svg <datei>` | schreibt den Jahresgang der Klimadaten **einmal** als SVG-Text (UTF-8 ohne BOM, LF) und nennt Größe und Knotenzahl — zum Ansehen im Browser und als Nachweis der SVG-Gegenprobe |
 | `--svg-alle <ordner>` | schreibt **jedes** Modell mit SVG-Gegenprobe als eigene `.svg` in diesen Ordner (Dateiname = Bildname ohne `svg_` bzw. `svg_c_`) — für die Sichtprüfung gegen das Skia-Bild aus `--ablage`; daneben `<name>_druck.svg`, der SVG-Teil des Wortberichts (`SvgSchreiber.Drucktext`, Reihen als Pixelpfade ohne `vector-effect`). Kein Teil der Prüfung: Es entsteht kein PNG und keine Hashzeile |
-| `--wiki <ordner>` | schreibt nur die Wiki-Fassungen der Diagramme mit sprechenden Beschriftungen (`Diagramm_Bivalenz.png` — dieselbe Probe wie `bivalenzdiagramm` mit eigenen Marken — sowie `Diagramm_Waerme_Jahresverlauf.png` und `Diagramm_Strombilanz_Monate.png` aus einem eigenen Satz, in dem eine Kaskade stündlich genau den Bedarf deckt, `Diagramm_Speicherverlauf.png` aus drei Speichern mit stimmigem Wochengang, `Diagramm_Kapitalwert_Bruecke.png` mit ausgeschriebenen Texten und `Diagramm_Zapfprofil_Dauerlinie.png` ohne Perzentilmarken; keine Jahresdauerlinie Wärme, deren je Reihe geordnete Kurven sich kreuzen) in diesen Ordner und endet; keine Probe, keine Hashzeile |
+| `--wiki <ordner>` | schreibt nur die Wiki-Fassungen der Diagramme mit sprechenden Beschriftungen (`Diagramm_Bivalenz.png` — dieselbe Probe wie `bivalenzdiagramm` mit eigenen Marken — sowie `Diagramm_Waerme_Jahresverlauf.png` und `Diagramm_Strombilanz_Monate.png` aus einem eigenen Satz, in dem eine Kaskade stündlich genau den Bedarf deckt, `Diagramm_Speicherverlauf.png` aus drei Speichern mit stimmigem Wochengang, `Diagramm_Kapitalwert_Bruecke.png` mit ausgeschriebenen Texten und `Diagramm_Zapfprofil_Dauerlinie.png` ohne Perzentilmarken; keine Jahresdauerlinie Wärme) in diesen Ordner und endet; keine Probe, keine Hashzeile |
 
 Ohne `--ablage` und ohne `--hashes` verhält sich die Probe unverändert.
 
@@ -38,14 +38,14 @@ Ohne `--ablage` und ohne `--hashes` verhält sich die Probe unverändert.
 # Messlatte erzeugen und gegen den Bestand halten
 dotnet run --project Proben/ChartProben -c Release -- \
     --ablage /tmp/chartbilder --hashes /tmp/neu.sha256
-diff Proben/ChartProben/Messlatte_2026-10-10.sha256 /tmp/neu.sha256
+diff Proben/ChartProben/Messlatte_2026-10-16.sha256 /tmp/neu.sha256
 ```
 
 ---
 
 ## Die Hash-Messlatte
 
-`Messlatte_2026-10-10.sha256` ist der eingefrorene Stand **aller** Probebilder. Sie ist die
+`Messlatte_2026-10-16.sha256` ist der eingefrorene Stand **aller** Probebilder. Sie ist die
 Abnahme des Umbaus auf das **Zeichenmodell**
 ([Konzept DG-1](../../Dokumentation/aktuell/Konzept_Diagramme_Interaktiv_EPOS-Plan.md),
 Etappe E1): Dort wird der Renderer hinter einem Modell aus Primitiven zerlegt, **ohne dass
@@ -58,10 +58,10 @@ gegen diese Datei.
 - **Warum alle Bilder und nicht nur die 51 Maßproben.** Was die Messlatte nicht nennt, kann
   sich beim Umbau unbemerkt ändern. Deshalb stehen auch die Bilder der Gegen- und
   Versatzproben darin, die im Bestand nur miteinander verglichen und nie geschrieben werden.
-- **Umfang.** Ein Lauf prüft **254 Bilder**; **222** davon zeichnen ein PNG — Maßproben, die
+- **Umfang.** Ein Lauf prüft **277 Bilder**; **250** davon zeichnen ein PNG — Maßproben, die
   beiden Bilder jeder Gegenprobe und die der Versatzprobe — und stehen als Zeilen in der Messlatte.
   Die SVG-Gegenproben und die Schriftproben der Bildgröße Stufe 2 (`stufe2_…_schrift`) zeichnen
-  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-10-10.sha256` nennt alle 222 Bilder
+  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-10-16.sha256` nennt alle 250 Bilder
   aller Abschnitte unten.
 - **Die Messlatte gilt für die Vorgabe-Palette.** Die Farben der Diagramme sind eine
   Anwendungseinstellung (Rubrik „Diagramme"); die Probe setzt deshalb zu Beginn ausdrücklich
@@ -79,7 +79,7 @@ gegen diese Datei.
   `Messlatte_<Datum>.sha256`; jede Zeile der bisherigen Datei muss darin unverändert stehen —
   sonst hat sich ein Bild geändert —, die neuen Zeilen sind die neuen Proben. Die neue Datei
   ersetzt die alte im selben Schritt, die Begründung (wie viele neu, keines geändert) steht in der
-  Commit-Nachricht. Wer Proben hinzufügt, nennt sie im Abschnitt seiner Etappe unten.
+  Commit-Nachricht. Wer Proben hinzufügt, nennt sie im Abschnitt seiner Etappe unten. Die Hashliste steht auch im Job-Protokoll des ubuntu-Laufs (Gruppe „ChartProben-Hashliste ubuntu“), sodass eine neue Messlatte auch ohne Artefakt-Download geschrieben werden kann.
 - Die Datei steht als `text eol=lf` in `.gitattributes`: Ein Auschecken mit `autocrlf`
   machte sonst CRLF daraus, und der Vergleich schlüge in jeder Zeile fehl.
 - **Die Messlatte ist plattformgebunden.** Sie ist auf dem Linux-Läufer der CI eingefroren.
@@ -460,7 +460,7 @@ von der Achse, die oberste zuerst — keine Lücke, nichts scheint durch, die Su
 auf der Oberkante. Unter dem Achsentitel steht „je Tag die Stunde der Tagesspitze“
 (`CHART_HINWEIS_STUFE_TAG`). Die überlagerte Produktion der Wärmepumpenseite (eine Säulengruppe
 über einer Flächengruppe) steht als Kanten über dem Bedarf, nicht halbtransparent. Die
-Dauerlinie stapelt nicht.
+Dauerlinie stapelt in der Stundenfolge ihrer Bezugsgröße (Abschnitt „Dauerlinie nach dem Bedarf“ unten).
 
 **Eine Lücke bleibt Lücke.** Ein nicht endlicher Wert (NaN — etwa „aus“ einer Kalenderwoche)
 wählt keine Spitzenstunde; eine Stufe ohne endlichen Bezugswert nimmt ihre erste Stunde. Steht
@@ -605,7 +605,7 @@ gleich.
 den Bereichsflächen „nur Kessel“ (`WAERME_KESSEL`), „Vorwärmung“ (`UEBERSCHUSS`), „parallel“ (`SERIE_3`) und „Wärmepumpe
 allein“ (`SERIE_2`), der Heizlast (`BEDARF`), dem Kennfeld bei Höchstvorlauf (gestrichelt, `SERIE_3`), der Übergabegrenze
 (gepunktet, `SERIE_8`), der Wärmepumpe als Fläche (`SERIE_2`), wahlweise den Stundenpunkten (`SERIE_5`) und den Marken
-θ_biv,1, θ_biv,2, Abschaltpunkt und „nach Kennfeld“. Ohne Übergabedaten steht der Platzhalter „kein Bivalenzdiagramm —
+„Kessel hilft unter …“, „Kessel allein unter …“, Abschaltpunkt und „Kennfeld …“. Ohne Übergabedaten steht der Platzhalter „kein Bivalenzdiagramm —
 Kopplung aus“. Herleitung und Modell rechnet der Kern aus dem Zahlenbeispiel des Fachkonzepts (Heizkörper 75/60/20 °C,
 10 kW; Gebäude 10 kW bei −12 °C; Kennfeld 7 bis 9 kW; σ_min 3 K; teilparallel mit Vorwärmbetrieb, Abschaltpunkt −10 °C);
 die Proben stehen in `Program.Bivalenzdiagramm.cs`:
@@ -638,3 +638,109 @@ Monatsachse der Vollansicht bleiben ohne Datum, ebenso Wochen- und Tagesprofile 
 Keine Probe kommt hinzu; **29 Bilder ändern sich bewusst** — alle mit Stundenachse oder Ausschnitt einer
 Jahresreihe: `erzeugerstapel_fenster`, `erzeugerstapel_fenster_a`, `erzeugerstapel_fenster_b`, `erzeugerstapel_solar_zwei_linien`, `ganglinie_normiert_fenster`, `ganglinie_normiert_fenster_a`, `ganglinie_normiert_fenster_b`, `jahresgang_fenster_b`, `jahresverlauf_tag`, `jahresverlauf_tag_fenster_a`, `jahresverlauf_tag_fenster_b`, `jahresverlauf_woche`, `jahresverlauf_woche_fenster_b`, `klimadaten_temperatur_fenster`, `kuehlvorlauf_auslegung_wirkt_a`, `kuehlvorlauf_auslegung_wirkt_b`, `kuehlvorlauf_luecke_wirkt_a`, `kuehlvorlauf_luecke_wirkt_b`, `kuehlvorlauf_ruecklauf_gebaeude`, `raumtemperatur_gebaeude`, `raumtemperatur_sollband_wirkt_a`, `raumtemperatur_sollband_wirkt_b`, `temperaturverlauf_ein_speicher`, `temperaturverlauf_zwei_speicher`, `vorlauf_auslegung_wirkt_a`, `vorlauf_auslegung_wirkt_b`, `vorlauf_luecke_wirkt_a`, `vorlauf_luecke_wirkt_b`, `vorlauf_ruecklauf_gebaeude`. Die übrigen 193 Zeilen von `Messlatte_2026-10-09.sha256` stehen unverändert in
 `Messlatte_2026-10-10.sha256`. Die Windows-Messliste des Gates ist auf Windows neu zu ziehen: genau diese Zeilen ändern sich.
+
+## Dauerlinie nach dem Bedarf, Abstände und sprechende Bivalenzmarken (Auftrag 16.10.2026)
+
+**Die Dauerlinie eines Stapels.** Die Stunden werden **einmal** nach der Bezugsgröße absteigend geordnet
+(`ChartRenderer.Dauerlinienfolge`: stabil, nicht endliche Werte zuletzt) — der Bedarfslinie, sonst der Kontur bzw.
+Summenlinie, sonst der Oberkante des Stapels —, und **alle** Reihen stehen in derselben Stundenfolge
+(`ChartRenderer.Umgeordnet`). Der Stapel bleibt Stapel, seine Oberkante ist die Dauerlinie des Bedarfs, und keine
+Fläche kreuzt eine andere. Die Regel gilt für die Jahresdauerlinie Wärme des Berichts (Bild und Excel-Diagramm:
+Erzeuger als gestapelte Fläche, Bedarf als Linie), für jede sortierte Ansicht des Erzeugerstapels (Wärme, Strom,
+Kälte der Simulationsreiter) und für die sortierte normierte Ganglinie mit Flächenreihen (Bedarfsseite). Ein Bild
+**ohne** Stapel sortiert weiter jede Linie für sich (`ganglinie_normiert_sortiert`, Kälteprofil, Speicherbetrieb).
+Die Stufen einer dichten Dauerlinie zählen Ränge, keine Tage; sie trägt deshalb keinen Hinweis „je Tag …“.
+
+**Abstände.** Steht ein Achsentitel im Bild, beginnt die Kopflegende der Zeitreihenbilder (Erzeugerstapel,
+normierte Ganglinie, Verlaufsbild) bei 58 statt 66 Bildpunkten (`LegendeOben`) und berührt den Achsentitel nicht
+mehr. Die Kennlinienlegende schreibt „35 °C“ mit Abstand. Die Namen der Kapitalwert-Brücke trennt ein Wort, das
+allein breiter ist als seine Spalte, gierig von hinten an der spätesten Fuge, die noch passt, eine Kompositionsfuge
+vor einer Silbenfuge („Energie-“ / „kosten“, „Ersatz-“ / „beschaf-“ / „fungen“, `Zerlegt`; hinter einer Fuge bleiben mindestens vier Zeichen); ein Name steht
+in höchstens drei Zeilen, die Schrift bleibt 15 pt, und braucht ein Name die dritte Zeile, wächst das Bild um so
+viel, wie Fuß und Legende tiefer rücken. Ein Minderungsbetrag steht unter seiner Säule, nie auf der Nulllinie.
+
+**Bivalenzmarken.** Die Vorgabetexte (`BivalenzdiagrammTexte`, `BER_BILD_BIVALENZ_MARKE_*`) sprechen wie die
+Wiki-Fassung: „Kessel hilft unter … °C“, „Kessel allein unter … °C“, „Kennfeld … °C“; die Kennzahl- und
+Tabellentexte der Bivalenzpunkte ebenso; die Probebilder und die Wiki-Fassung (`--wiki`) lauten gleich. Eine
+Markenbeschriftung kreuzt keine Linie: Liegt ihr Platz auf Heizlast, Kennfeld, Übergabegrenze, Wärmepumpenfläche,
+einer fremden Marke oder einer anderen Beschriftung, nimmt sie die andere Seite, sonst die nächste freie Zeile;
+kreuzt jeder Platz eine fremde Marke, steht sie hell hinterlegt über ihr. Die Probe `bivalenz_marken_frei` prüft das am Zeichenmodell, ihre Gegenprobe
+`bivalenz_marken_frei_gegenprobe` zeichnet ohne Ausweichen und muss dieselbe Prüfung rot machen.
+
+| Art | Probe | Aussage |
+|---|---|---|
+| Maßprobe | `ganglinie_normiert_gestapelt_sortiert` | die Bedarfsarten als Dauerlinie: in der Stundenfolge der Summe gestapelt |
+
+Das ist **1 neues Bild**; **68 Bilder ändern sich bewusst**: `bhkw_strom_ganglinie`, `bhkw_strom_reihenwahl_wirkt_a`, `bhkw_strom_reihenwahl_wirkt_b`, `bhkw_strom_sortiert`, `bhkw_strom_sortiert_wirkt_a`, `bhkw_strom_sortiert_wirkt_b`, `bivalenz_kennfeld_wirkt_a`, `bivalenz_kennfeld_wirkt_b`, `bivalenz_platzhalter_wirkt_a`, `bivalenz_stunden_wirkt_a`, `bivalenz_stunden_wirkt_b`, `bivalenz_vorwaermung_wirkt_a`, `bivalenz_vorwaermung_wirkt_b`, `bivalenzdiagramm`, `bivalenzdiagramm_stunden`, `dauerlinie_waerme`, `erzeugerstapel_fenster`, `erzeugerstapel_fenster_a`, `erzeugerstapel_fenster_b`, `erzeugerstapel_kessel_sortiert`, `erzeugerstapel_neun_reihen`, `erzeugerstapel_neun_reihen_viele`, `erzeugerstapel_neun_reihen_wenige`, `erzeugerstapel_solar_zwei_linien`, `erzeugerstapel_strom_viertelstunden`, `erzeugerstapel_waerme`, `erzeugerstapel_zwei_speicher`, `erzeugerstapel_zweite_achse_a`, `erzeugerstapel_zweite_achse_b`, `ganglinie_normiert_chronologisch`, `ganglinie_normiert_fenster`, `ganglinie_normiert_fenster_a`, `ganglinie_normiert_fenster_b`, `ganglinie_normiert_gestapelt`, `ganglinie_normiert_sortiert`, `kaelte_produktion`, `kaelte_produktion_dezentral`, `kaelte_produktion_ohne_erzeuger`, `kaelte_produktion_split_a`, `kaelte_produktion_split_b`, `kapitalwert_bruecke`, `kapitalwert_bruecke_reihenfolge_wirkt_a`, `kapitalwert_bruecke_reihenfolge_wirkt_b`, `kapitalwert_bruecke_schritt_wirkt_a`, `kapitalwert_bruecke_schritt_wirkt_b`, `kapitalwert_bruecke_unter_referenz`, `kennlinien_cop`, `kennlinien_leistung`, `komfortwoche_gebaeude`, `komfortwoche_markierung_wirkt_a`, `komfortwoche_markierung_wirkt_b`, `kuehlvorlauf_auslegung_wirkt_a`, `kuehlvorlauf_auslegung_wirkt_b`, `kuehlvorlauf_luecke_wirkt_a`, `kuehlvorlauf_luecke_wirkt_b`, `kuehlvorlauf_ruecklauf_gebaeude`, `raumtemperatur_gebaeude`, `raumtemperatur_sollband_wirkt_a`, `raumtemperatur_sollband_wirkt_b`, `stufe2_dauerlinie_waerme_halb`, `stufe2_dauerlinie_waerme_hoch`, `stufe2_kapitalwert_bruecke_halb`, `stufe2_kapitalwert_bruecke_hoch`, `vorlauf_auslegung_wirkt_a`, `vorlauf_auslegung_wirkt_b`, `vorlauf_luecke_wirkt_a`, `vorlauf_luecke_wirkt_b`, `vorlauf_ruecklauf_gebaeude`. Die übrigen
+157 Zeilen von `Messlatte_2026-10-14.sha256` stehen unverändert in `Messlatte_2026-10-16.sha256`. Die
+Windows-Messliste des Gates ist auf Windows neu zu ziehen: genau diese Zeilen ändern sich, eine kommt hinzu.
+
+---
+
+## Oberflächenmodus (Oberflächenregel) — kein Bild ändert sich
+
+Die Oberfläche (`DiagrammSvg`) zeigt jedes Modell nach der **Oberflächenregel** (`Zeichnung/Oberflaechenregel.cs`,
+`Zeichenmodell.Darstellung = Interaktiv`): Bedarf als Linie über den Flächen, Erzeugung als durchscheinende Fläche
+(die größere hinten), Stapel bleibt Stapel, dichte Jahresreihen als Tagesband (`Pfadregel.Tagesband`, `SvgSchreiber.Bandpfad`).
+Die Regel wirkt **allein auf die `Datenreihe`n** eines neuen Modells; die Befehlsliste — das, was `SkiaMaler.Png` und das
+Druck-SVG zeichnen — ist dieselbe Instanz wie im Berichtsmodell. Deshalb ändert sich **kein Bild dieser Probe**, und die
+Messlatte bleibt unberührt; der Nachweis ist ein leerer Diff der Hashlisten vor und nach dem Umbau auf demselben
+Rechner (`--hashes` zweimal, Windows wie Linux), dazu `EPOS.Kern.Tests/OberflaechenregelTests.Der_Berichtsweg_bleibt_unberuehrt`
+(Befehle referenzgleich, Drucktext byte-gleich). Keine Probe kommt hinzu.
+
+## Rasterkarte der Größensuche: die Höhe folgt der Fußzeile
+
+Die Rasterkarte (`ChartRenderer.OptimierungsrasterModell`) vermisst ihre Fußzeile — den SP‑O‑4-Hinweis, mit
+oder ohne Zusatz „bestes Ergebnis aus dem Feinraster“ — vor dem Zeichnen und wächst so weit, dass jede Zeile ganz
+im Bild steht (höchstens vier Zeilen je Teil). Die Breite bleibt 860; die Höhe hängt von der Schrift ab (auf
+Liberation Sans braucht der Hinweis zwei Zeilen und das Bild 584 Punkte). Die drei Maßproben
+`flottenraster_schraffur`, `flottenraster_leistung` und `flotte_stueckzahlraster` halten deshalb die Höhe, die das
+Zeichenmodell für denselben Hinweis nennt; ihre Bilder und `flottenraster_zusatzzeile_wirkt_a` stehen mit dem
+gewachsenen Maß in der Messlatte. Die Gegenprobe `flottenraster_fusszeile_letzte_zeile_steht_im_bild` zeichnet einen
+Hinweis über drei Zeilen ohne Zusatz zweimal, nur im letzten Wort verschieden — die zwei Bilder müssen sich
+unterscheiden, die letzte Zeile steht also im Bild.
+
+---
+
+## Energieflussbild (Sankey, Schritte SK-2, SK-2c und SK-2d)
+
+`ChartRenderer.EnergieflussModell` zeichnet Strom, Wärme und Kälte eines Jahres als gestraffte Kette (Variante A,
+Konzept Energieflussbild 3): so viele Spalten, wie die Anlage braucht (längster Weg zur Senke), in jeder Spalte die
+Spuren Strom, Gemischt, Wärme, Kälte, Bänder über Wegpunkte, Wandler als beschriftete Kästen, Verluste als kurze
+Abzweige ohne Knotenbalken, Farbe nach Energieform, Legende unter dem Bild — und als Darstellung „Stufen“ (Variante B,
+SK-Q17) vier feste Spalten Einsatz | Anlagen | Energieform | Nutzen mit Titeln, in denen der Strom an Wärmepumpe,
+Heizstab und Kältemaschine ein Verbinder ist (Stummel „→ Gerät“ am Bus, Stummel „Strom“ am Gerät, beide unter einer
+Marke). Dieselbe Verbinderregel gilt in der schmalen Fassung. Der Formfilter (`EnergieflussAbbildung.Gefiltert`) macht
+aus den Gaben die Bilddaten einer Energieform; ein Filter ohne Fluss trägt nur seinen Hinweis. Die Gaben
+(`Program.Energiefluss.cs`) sind synthetisch und fest verdrahtet: Netz, Photovoltaik, BHKW und Kessel am Erdgas,
+Wärmepumpe, Heizstab, Kältemaschine, Wärme-, Kälte- und Strombus mit Speicherverlust (die Speicher sind in ihren Bus
+gefaltet), ein Band „nicht zugeordnet“ am Strombus, die vier Stufentitel. Erwartete Farben: `KNOTEN`, `TEXT` (die Bänder
+sind halbdurchsichtig, Verluste haben keinen Balken); der leere Filter nur `TEXT`.
+
+| Art | Probe | Aussage |
+|---|---|---|
+| Maßprobe | `energiefluss` | breite Fassung 1180 × 460, nur Namen an den Knoten, Legende |
+| Maßprobe | `energiefluss_schmal` | schmale Fassung 680 × 560, Kurznamen, Strom an die Wandler als Verbinder (die Kette wird vier Spalten kurz) |
+| Maßprobe | `energiefluss_bericht` | Berichtsfassung 1240 × 490, Jahressumme an Knoten, Kästen und Verlusten |
+| Maßprobe | `energiefluss_kaelte_split` | ein Split-Gerät neben der Kältemaschine |
+| Maßprobe | `energiefluss_stufen` | Darstellung Stufen breit: vier Spalten mit Titeln, drei Verbinder am Strombus |
+| Maßprobe | `energiefluss_stufen_schmal` | Darstellung Stufen schmal 680 × 560 |
+| Maßprobe | `energiefluss_filter_strom` | Formfilter Strom in der Kette: Strombänder, BHKW mit Einsatz, Wärme und Verlust, Wärmepumpe, Heizstab und Kältemaschine nur mit ihrem Strom |
+| Maßprobe | `energiefluss_filter_leer` | Formfilter Kälte auf den Stromgaben: leeres Bild mit dem Hinweis „Kälte: keine Flüsse in dieser Version“ |
+| Gegenprobe | `energiefluss_speicher_wirkt` | Wärmebus mit und ohne Speicher (Zusatz „· Speicher“, Speicherverlust) |
+| Gegenprobe | `energiefluss_rest_wirkt` | geschlossen und mit Band „nicht zugeordnet“ |
+| Gegenprobe | `energiefluss_schmal_wirkt` | breit und schmal |
+| Gegenprobe | `energiefluss_knotenwerte_wirkt` | Bericht ohne und mit Knotenwerten |
+| Gegenprobe | `energiefluss_stufen_wirkt` | Kette und Stufen |
+| Gegenprobe | `energiefluss_filter_wirkt` | Alle und Filter Strom |
+| Gegenprobe | `energiefluss_filter_waerme_wirkt` | Filter Strom und Filter Wärme |
+| SVG | `svg_energiefluss` | je Band und Knoten Marke und `data-wert`, je Energieform ein Legendenfeld, byte-gleich, keine Zahl im Bildschirmbild, nur die drei topologisch unvermeidbaren Kreuzungen der Kette (Strom → Kältemaschine durch die Wärmespur); in den Stufen vier Titel (`stufe:<Spalte>`), die drei Verbinder als je drei Pfade und ein Kreis unter einer Marke mit einem Wert, keine Kreuzung; schmal derselbe Verbinder ohne Titel; der Filter Strom ohne Kessel und ohne Abgaben des Wärme- und Kältebusses, der leere Filter benannt |
+
+Das sind **22 Zeilen** am Ende von `Messlatte_2026-10-16.sha256`; die 226 älteren Zeilen bleiben unverändert.
+Schritt SK-12 hatte zehn der damals zwölf Zeilen ersetzt (innere Beschriftung bis 1,5 Spaltenabstände), Schritt SK-2c
+alle zwölf (Variante A: Spalten nach Bedarf statt sieben feste, Speicher am Bus, Verlustabzweige, Farbe nach Energieform
+mit den Rollen `STROM` und `WAERME`, Legende, Maße 1180 × 460, 680 × 560 und 1240 × 490). Schritt SK-2d ersetzt
+`energiefluss_schmal` und `energiefluss_schmal_wirkt_b` (Verbinderregel der schmalen Fassung) sowie
+`energiefluss_kaelte_split` (Balken sind Beschriftungsplätze, Verlustziel nach der Spaltenlücke) und fügt zehn Zeilen
+hinzu (Stufen breit und schmal, Filter Strom, leerer Filter, drei Gegenproben); `energiefluss`, `energiefluss_bericht`
+und die übrigen Gegenproben der Kette sind byte-gleich geblieben.

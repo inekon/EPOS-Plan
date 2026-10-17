@@ -14,19 +14,26 @@ namespace WindowsFormsApplication1
         /// Netzbezug und der Stromträger (Kühlkonzept 8.4) aus den Modulzeilen des Ergebnisses des Stamms. Die Namen der
         /// Träger kommen aus dem Wertesatz (<paramref name="traegername"/>). KM4-E2 (Konzept Kältemittel als Stammdatum 5.3):
         /// Führt ein Erzeuger einen Kältemittel-Code (<paramref name="kaeltemittel"/>), steht die Spalte „Kältemittel“ dabei;
-        /// ein Erzeuger der Ergebnisklasse 2 trägt einen Stern, die Fußnote steht unter der Tafel.
+        /// ein Erzeuger der Ergebnisklasse 2 trägt einen Stern, die Fußnote steht unter der Tafel. Schritt 223: Nach den
+        /// Erzeugern steht je dezentral (Split) gedeckter Kältebedarfszeile (<paramref name="dezentral"/>) eine Zeile mit Kälte,
+        /// Strom, Jahres-EER, Netzbezug und Träger — ohne Kältemittel, die Geräte sind nicht erfasst.
         /// </summary>
         public static Berichtstabelle Kaelteerzeuger(ErgebnisWaermepumpeModel wp, Func<int, string> traegername,
                                                      bool englisch, CultureInfo kultur,
                                                      IReadOnlyList<ErgebnisKaeltemaschineModel> maschinen = null,
-                                                     IReadOnlyList<KaeltemittelBerichtszeile> kaeltemittel = null)
+                                                     IReadOnlyList<KaeltemittelBerichtszeile> kaeltemittel = null,
+                                                     IReadOnlyList<ErgebnisKaelteDezentralModel> dezentral = null,
+                                                     IReadOnlyList<RueckkuehlwerkBerichtszeile> rueckkuehlwerke = null)
         {
             var zeilen = (wp?.Module ?? new List<ErgebnisWaermepumpeModulModel>())
                 .Where(m => m != null && m.Kaelteproduktion.HasValue && m.Kaelteproduktion.Value > 0).ToList();
             // KU3-4: die Kältemaschinen nach den Wärmepumpen - Netzbezug und Träger seit Schritt 184 (KU3-4d).
             var km = (maschinen ?? Array.Empty<ErgebnisKaeltemaschineModel>())
                 .Where(k => k != null && k.Kaelteproduktion_MWh > 0).ToList();
-            if (zeilen.Count == 0 && km.Count == 0) return Leer(nameof(RR.BV_GRUND_TABELLE_LEER), kultur);
+            // Schritt 223: die Split-Zeilen nach den Kältemaschinen; ein Lauf ohne Split-Zeile bringt keine.
+            var split = (dezentral ?? Array.Empty<ErgebnisKaelteDezentralModel>())
+                .Where(d => d != null && d.Kaelte_MWh > 0).ToList();
+            if (zeilen.Count == 0 && km.Count == 0 && split.Count == 0) return Leer(nameof(RR.BV_GRUND_TABELLE_LEER), kultur);
 
             // KM4-E2: Code je Zeile - die Wärmepumpe über den Anlagennamen der Modulzeile, die Kältemaschine über ihr Gerät.
             Func<ErgebnisWaermepumpeModulModel, KaeltemittelBerichtszeile> kmWp = m => kaeltemittel?.FirstOrDefault(
@@ -91,8 +98,55 @@ namespace WindowsFormsApplication1
                         : Tabellenzelle.STRICH),
                 }));
             }
+            foreach (ErgebnisKaelteDezentralModel d in split)
+            {
+                string name = (string.IsNullOrEmpty(d.Bezeichner) ? Tabellenzelle.STRICH : d.Bezeichner) + " (Split)";
+                t.Zeile(MitKaeltemittel(mitKaeltemittel, Zellen.Text(Tabellenzelle.STRICH), new[]
+                {
+                    Zellen.Text(name),
+                    zahl(d.Kaelte_MWh, "MWh/a"),
+                    zahl(d.Strom_MWh, "MWh/a"),
+                    zahl(d.Strom_MWh > 0 ? d.Kaelte_MWh / d.Strom_MWh : (double?)null, null),
+                    zahl(d.Kaeltestrom_Netzbezug_MWh, "MWh/a"),
+                    Zellen.Text(ProjektbeschreibungBaustein.KuehltraegerText(d.Kuehl_CarrierId, d.Kuehl_EigenerZaehler, traegername)),
+                }));
+            }
             if (stern) t.Hinweis(BerichtTexte.T(FUSSNOTE_KAELTEMITTEL, englisch));
+            // K-F5b (Entwurf Split/VRF/Rückkühlwerk 5.8): je Kältemaschine mit Rückkühlwerk eine Zeile unter der Tafel -
+            // Bauart, Ventilatorstrom, Wasser, Teil-Freikühlung, mittlere Rückkühltemperatur. Ohne Rückkühlwerk keine.
+            foreach (ErgebnisKaeltemaschineModel k in km)
+            {
+                string zeile = RueckkuehlwerkZeile(k, rueckkuehlwerke, englisch, kultur);
+                if (zeile != null) t.Hinweis(zeile);
+            }
             return t;
+        }
+
+        /// <summary>K-F5b: das Muster der Zeile „Rückkühlwerk“ unter der Tafel der Kälteerzeuger (Text über <see cref="BerichtTexte"/>).</summary>
+        public const string MUSTER_RUECKKUEHLWERK =
+            "Rückkühlwerk an „{0}“ ({1}): Ventilatorstrom {2} MWh/a · Wasser {3} m³/a · Teil-Freikühlung {4} MWh/a · mittlere Rückkühltemperatur {5} °C";
+
+        /// <summary>
+        /// K-F5b: die Zeile „Rückkühlwerk“ einer Kältemaschine — nur, wenn ihr Ergebnis die Größen des Rückkühlwerks trägt
+        /// (Schemaschritt K-F2: allein mit Rückkühlwerk an der Anlagenzeile belegt); sonst <c>null</c>. Name und Bauart kommen
+        /// aus <paramref name="rueckkuehlwerke"/> (über Gerät und Anlagenname), ohne Treffer „—“.
+        /// </summary>
+        public static string RueckkuehlwerkZeile(ErgebnisKaeltemaschineModel k, IReadOnlyList<RueckkuehlwerkBerichtszeile> rueckkuehlwerke,
+                                                 bool englisch, CultureInfo kultur)
+        {
+            if (k == null || !(k.Ventilatorstrom_MWh.HasValue || k.Wasser_m3.HasValue || k.Rueckkuehltemperatur_Mittel.HasValue
+                               || k.TeilFreikuehlung_MWh.HasValue))
+                return null;
+            RueckkuehlwerkBerichtszeile r = rueckkuehlwerke?.FirstOrDefault(z => z != null && z.IdKaeltemaschine == k.ID_Kaeltemaschine
+                                                                               && string.Equals(z.Anlage, k.Bezeichner, StringComparison.Ordinal))
+                                            ?? rueckkuehlwerke?.FirstOrDefault(z => z != null && z.IdKaeltemaschine.HasValue
+                                                                                  && z.IdKaeltemaschine == k.ID_Kaeltemaschine);
+            string art = r == null ? Tabellenzelle.STRICH
+                : (string.IsNullOrEmpty(r.Bezeichner) ? "" : r.Bezeichner + ", ") + BerichtTexte.T(RueckkuehlwerkBerichtszeile.BauartText(r.Bauart), englisch);
+            Func<double?, int, string> f = (w, dez) => w.HasValue ? Tabellenformat.F(w.Value, dez, kultur) : Tabellenzelle.STRICH;
+            string name = string.IsNullOrEmpty(k.Bezeichner) ? Tabellenzelle.STRICH : k.Bezeichner;
+            return string.Format(kultur, BerichtTexte.T(MUSTER_RUECKKUEHLWERK, englisch), name, art,
+                                 f(k.Ventilatorstrom_MWh, 2), f(k.Wasser_m3, 0), f(k.TeilFreikuehlung_MWh, 2), f(k.Rueckkuehltemperatur_Mittel, 1));
         }
 
         /// <summary>KM4-E2: Die Fußnote des Sterns an der Spalte „Kältemittel“ (Text über <see cref="BerichtTexte"/>).</summary>

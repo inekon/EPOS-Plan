@@ -452,6 +452,80 @@ public class DiagrammSvgTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Befund 17.10.2026: der Zeigertext steht unter dem Zeiger.</b> Er steht als eigenes Element
+    /// in der Zeile UNTER dem Bild, mit <c>left: p%</c> und <c>translate: −p%</c>, p = Anteil der
+    /// Zeigerstelle an der Bildbreite: mittig bei 50 %, bündig an den Rändern, nie außerhalb der
+    /// Zeile. Eine Stelle jenseits der Daten wird an deren Rand geklemmt.
+    /// </summary>
+    [Fact]
+    public async Task Befund_Der_Zeigertext_steht_mittig_unter_dem_Zeiger_und_geklemmt()
+    {
+        var modell = Modell();
+        var cut = Zeige(modell: modell, einheit: "°C");
+        Assert.Empty(cut.FindAll(".epos-diagramm-zeigertext"));
+
+        Rahmen r = modell.Flaeche!.Bild;
+        Datenfenster d = modell.Flaeche.Daten;
+        double Erwartet(double stelle)
+            => (r.X + Math.Clamp((stelle - d.XVon) / (d.XBis - d.XVon), 0.0, 1.0) * r.Breite) / modell.Breite * 100.0;
+
+        async Task<double> Lage(double stelle)
+        {
+            await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(stelle));
+            IElement text = cut.Find(".epos-diagramm-zeigerzeile > .epos-diagramm-zeigertext");
+            string stil = text.GetAttribute("style") ?? "";
+            var m = System.Text.RegularExpressions.Regex.Match(stil, @"^left: ([0-9.]+)%; translate: -([0-9.]+)% 0$");
+            Assert.True(m.Success, stil);
+            // Anker und Verschiebung sind DERSELBE Anteil - das haelt den Text ueber der Stelle und in der Zeile.
+            Assert.Equal(m.Groups[1].Value, m.Groups[2].Value);
+            return double.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture);
+        }
+
+        double mitte = (d.XVon + d.XBis) / 2.0;
+        Assert.Equal(Erwartet(mitte), await Lage(mitte), 2);
+        Assert.Equal(Erwartet(0), await Lage(0), 2);
+        Assert.Equal(Erwartet(d.XBis), await Lage(d.XBis), 2);
+        // Geklemmt: links und rechts jenseits der Daten steht der Text an deren Rand, nie ausserhalb 0 … 100 %.
+        Assert.Equal(Erwartet(d.XVon), await Lage(d.XVon - 5000), 2);
+        Assert.Equal(Erwartet(d.XBis), await Lage(d.XBis + 5000), 2);
+        Assert.InRange(await Lage(d.XBis + 5000), 0.0, 100.0);
+
+        // Die Zeile steht UNTER dem Bild: sie ist ein Geschwister NACH der Zeichenflaeche.
+        IElement zeile = cut.Find(".epos-diagramm-zeigerzeile");
+        Assert.Contains("epos-diagramm-svg-flaeche", zeile.PreviousElementSibling!.ClassName);
+
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(null));
+        Assert.Empty(cut.FindAll(".epos-diagramm-zeigertext"));
+    }
+
+    /// <summary>
+    /// <b>Befund 17.10.2026: die Achse des Bildes liegt in seiner viewBox.</b> Die nachgezeichnete
+    /// Tick-Zeile und der Achsentitel (im Ausschnitt) enden über der unteren Kante der viewBox des
+    /// äußeren SVG — der Zeichenbereich trägt sie ganz, nichts davon fällt unter das Bild.
+    /// </summary>
+    [Fact]
+    public async Task Befund_Die_viewBox_traegt_Tick_Zeile_und_Achsentitel()
+    {
+        var cut = Zeige();
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(3000, 3400));
+
+        IElement svg = cut.Find(".epos-diagramm-svg-flaeche > svg");
+        string[] vb = svg.GetAttribute("viewBox")!.Split(' ');
+        double hoehe = double.Parse(vb[3], CultureInfo.InvariantCulture);
+
+        var ticks = cut.FindAll(".epos-diagramm-ticks text");
+        Assert.NotEmpty(ticks);
+        Assert.NotEmpty(cut.FindAll(".epos-diagramm-ticks text.epos-diagramm-achsentitel"));
+        foreach (IElement t in ticks)
+        {
+            // dominant-baseline text-before-edge: der Text reicht von y bis y + Schriftgroesse.
+            double y = double.Parse(t.GetAttribute("y")!, CultureInfo.InvariantCulture);
+            double groesse = double.Parse(t.GetAttribute("font-size")!.Replace("px", ""), CultureInfo.InvariantCulture);
+            Assert.True(y + groesse <= hoehe, $"{t.TextContent}: {y} + {groesse} > {hoehe}");
+        }
+    }
+
+    /// <summary>
     /// <b>Auftrag GX: der Zeiger läuft ohne Rundlauf.</b> Der Baustein gibt dem Modul die
     /// Zeigertafel EINMAL je Zeichnen — die Reihen beim ersten Mal, danach nur den
     /// geänderten Zustand —, und nimmt das Modul sie an, führt ES Balken und Zeile: Der
@@ -554,43 +628,39 @@ public class DiagrammSvgTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// Im Fenster gilt die Monatsteilung des Bildes nicht mehr: Die Komponente
-    /// blendet die Elemente mit der Marke <c>xachse</c> aus und zeichnet die
-    /// Ticks aus <c>ChartRenderer.Jahresstundenteilung</c> nach — dieselbe
-    /// Regel, mit der der Renderer sie ins PNG setzt.
+    /// Die Komponente blendet an einer Zeitachse eines Jahresrasters die Elemente mit der
+    /// Marke <c>xachse</c> aus und zeichnet die Teilung der gewählten Skala nach
+    /// (<see cref="Zeitachse.Teilung"/>, Vorgabe Datum) — schon in der Vollansicht
+    /// (Monatsanfänge) und im Fenster mit der Teilung des Ausschnitts.
     /// </summary>
     [Fact]
     public async Task DS5_Ein_Fenster_blendet_die_Monatsachse_aus_und_zeichnet_Ticks()
     {
         var fenster = new List<ChartRenderer.Achsenfenster?>();
         var cut = Zeige(fensterGeaendert: f => fenster.Add(f));
+        float breite = cut.Instance.Bild!.Flaeche!.Bild.Breite;
 
         Assert.NotEmpty(cut.FindAll("[data-marke='xachse']"));
         Assert.All(cut.FindAll("[data-marke='xachse']"),
-                   e => Assert.False(e.HasAttribute("display")));
-        Assert.Empty(cut.FindAll(".epos-diagramm-ticks"));
+                   e => Assert.Equal("none", e.GetAttribute("display")));
+        Assert.Equal(Zeitachse.Teilung(Zeitachseneinheit.Datum, 0, 8759, breite).Count,
+                     cut.FindAll(".epos-diagramm-ticks line").Count);
 
         await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(3000, 3400));
 
         Assert.All(cut.FindAll("[data-marke='xachse']"),
                    e => Assert.Equal("none", e.GetAttribute("display")));
 
-        var ticks = ChartRenderer.Jahresstundenteilung(3000, 3400);
+        var ticks = Zeitachse.Teilung(Zeitachseneinheit.Datum, 3000, 3400, breite);
         Assert.NotEmpty(ticks);
         Assert.Equal(ticks.Count, cut.FindAll(".epos-diagramm-ticks line").Count);
 
-        // Die Beschriftungen sind die der Teilung, je Marke mit Datumszeile (Auftrag GX),
-        // dazu der Achsentitel.
+        // Die Beschriftungen sind die der Teilung (Datum ohne Jahr), dazu der Achsentitel.
         var texte = cut.FindAll(".epos-diagramm-ticks text").Select(t => t.TextContent).ToList();
-        Assert.Equal(2 * ticks.Count + 1, texte.Count);
-        foreach ((int stunde, string text) in ticks)
-        {
-            Assert.Contains(text, texte);
-            Assert.Contains(Zeitachse.Markentext(stunde, 400), texte);
-        }
-        Assert.Equal(ticks.Count, cut.FindAll(".epos-diagramm-ticks text.epos-diagramm-datum").Count);
-        Assert.Contains("6. Mai", texte);   // Stunde 3 000 = Tag 125 = 6. Mai
-        Assert.Contains(Resource.CHART_ACHSE_JAHRESSTUNDEN_DATUM, texte);
+        Assert.Equal(ticks.Count + 1, texte.Count);
+        foreach (Zeitachse.Achsenmarke m in ticks)
+            Assert.Contains(m.Text, texte);
+        Assert.Contains(Resource.CHART_ACHSE_DATUM, texte);
 
         Assert.Equal((3000, 3400), cut.Instance.Fenster);
         Assert.Single(fenster);
@@ -600,8 +670,8 @@ public class DiagrammSvgTests : EposBunitContext
 
     /// <summary>
     /// Deckt das gemeldete Fenster das ganze Bild ab, ist das die Vollansicht:
-    /// Die Monatsachse steht wieder, die Ticks fallen, und der Wirt bekommt
-    /// <c>null</c>.
+    /// Die Achse steht wieder mit der Teilung des ganzen Jahres (Monatsanfänge der
+    /// Skala Datum), und der Wirt bekommt <c>null</c>.
     /// </summary>
     [Fact]
     public async Task DS5_Der_Vollbereich_stellt_die_Monatsachse_her_und_meldet_null()
@@ -612,9 +682,9 @@ public class DiagrammSvgTests : EposBunitContext
         await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(3000, 3400));
         await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(0, 8759));
 
-        Assert.All(cut.FindAll("[data-marke='xachse']"),
-                   e => Assert.False(e.HasAttribute("display")));
-        Assert.Empty(cut.FindAll(".epos-diagramm-ticks"));
+        Assert.Equal(Zeitachse.Teilung(Zeitachseneinheit.Datum, 0, 8759, cut.Instance.Bild!.Flaeche!.Bild.Breite).Count,
+                     cut.FindAll(".epos-diagramm-ticks line").Count);
+        Assert.Contains(Zeitachse.DatumKurz(31 * 24), cut.FindAll(".epos-diagramm-ticks text").Select(t => t.TextContent));
         Assert.Null(cut.Instance.Fenster);
 
         Assert.Equal(2, fenster.Count);
@@ -1289,7 +1359,14 @@ public class DiagrammSvgTests : EposBunitContext
     [Fact]
     public async Task DS8_Eine_rohe_Reihe_wird_nicht_nachgeladen()
     {
-        var cut = Zeige();   // zwei Reihen, 8 760 Stuetzstellen - also roh
+        // Im BERICHTSMODUS: zwei Reihen, 8 760 Stuetzstellen - also roh. Im Oberflaechenmodus
+        // traegt dieselbe Reihe das Tagesband und wird nachgerechnet (DS12).
+        var cut = Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, Modell());
+            p.Add(x => x.Kennung, "probe");
+            p.Add(x => x.Darstellung, Darstellung.Bericht);
+        });
 
         await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(3000, 3400));
 
@@ -1978,7 +2055,8 @@ public class DiagrammSvgTests : EposBunitContext
 
         Assert.False(cut.Instance.IstAus(MIT_ROLLE));
         Assert.Null(cut.Instance.Fenster);
-        Assert.Empty(cut.FindAll(".epos-diagramm-ticks"));
+        Assert.Equal(Zeitachse.Teilung(Zeitachseneinheit.Datum, 0, 8759, cut.Instance.Bild!.Flaeche!.Bild.Breite).Count,
+                     cut.FindAll(".epos-diagramm-ticks line").Count);
         Assert.Empty(cut.FindAll(".epos-farbwahl"));
     }
 
@@ -2184,5 +2262,213 @@ public class DiagrammSvgTests : EposBunitContext
         Assert.Equal(366, zeilen.Length);
         Assert.Equal(26, zeilen[1].Split(';').Length);
         Assert.StartsWith("01.01.;Do;20,0;", zeilen[1], StringComparison.Ordinal);
+    }
+
+    // =====================================================================
+    //  DS-12  Die Oberflächenregel und die Wahl „Datum | Stunde im Jahr“
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der Oberflächenmodus ist gesetzt</b>: Der Baustein zeigt das Modell nach der
+    /// Oberflächenregel — ein Bedarf als Linie zuletzt, eine Erzeugung als Fläche mit Tagesband —
+    /// und sagt es am Bild (<c>data-darstellung</c>). Die Gabe bleibt unverändert.
+    /// </summary>
+    [Fact]
+    public void DS12_Der_Oberflaechenmodus_ist_gesetzt_und_die_Gabe_bleibt()
+    {
+        Zeichenmodell modell = PvModell();
+        var cut = Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, modell);
+            p.Add(x => x.Kennung, "pv");
+        });
+
+        Assert.Equal("interaktiv", cut.Find("svg[data-darstellung]").GetAttribute("data-darstellung"));
+        Assert.Same(modell, cut.Instance.Modell);
+        Assert.Equal(Darstellung.Bericht, modell.Darstellung);
+        Assert.Equal(Darstellung.Interaktiv, cut.Instance.Bild!.Darstellung);
+
+        var pfade = cut.FindAll("svg.epos-flaeche path.epos-reihe");
+        Assert.Equal(3, pfade.Count);
+        Assert.Equal("Photovoltaik", pfade[0].GetAttribute("data-reihe"));   // die groessere Flaeche hinten
+        Assert.Equal("Überschuss", pfade[1].GetAttribute("data-reihe"));
+        Assert.Equal("Strombedarf", pfade[2].GetAttribute("data-reihe"));   // der Bedarf zuletzt
+        Assert.NotEqual("none", pfade[0].GetAttribute("fill"));
+        Assert.Equal("none", pfade[2].GetAttribute("fill"));
+        Assert.Equal(3, cut.FindAll("svg.epos-flaeche path.epos-band").Count);
+        Assert.Single(cut.FindAll("path[data-band='Strombedarf']"));
+    }
+
+    /// <summary><b>Der Berichtsmodus ist unverändert</b>: dieselben Reihen in der Reihenfolge des Renderers, alle Linien, kein Band.</summary>
+    [Fact]
+    public void DS12_Der_Berichtsmodus_zeigt_das_Modell_wie_der_Renderer()
+    {
+        Zeichenmodell modell = PvModell();
+        var cut = Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, modell);
+            p.Add(x => x.Kennung, "pv");
+            p.Add(x => x.Darstellung, Darstellung.Bericht);
+        });
+
+        Assert.Empty(cut.FindAll("svg[data-darstellung]"));
+        Assert.Same(modell, cut.Instance.Bild);
+        var pfade = cut.FindAll("svg.epos-flaeche path.epos-reihe");
+        Assert.Equal(new[] { "Überschuss", "Strombedarf", "Photovoltaik" },
+                     pfade.Select(p => p.GetAttribute("data-reihe")).ToArray());
+        Assert.All(pfade, p => Assert.Equal("none", p.GetAttribute("fill")));
+        Assert.Empty(cut.FindAll("path.epos-band"));
+        Assert.Equal(SvgSchreiber.Text(modell, null, "pv").Length > 0, true);
+    }
+
+    /// <summary>Der Legendenklick schaltet Band und Kern derselben Reihe gemeinsam.</summary>
+    [Fact]
+    public void DS12_Der_Legendenklick_schaltet_auch_das_Band()
+    {
+        var cut = Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, PvModell());
+            p.Add(x => x.Kennung, "pv");
+        });
+        cut.Find("text[data-legende='Strombedarf']").Click();
+        Assert.Equal("none", cut.Find("path[data-reihe='Strombedarf']").GetAttribute("display"));
+        Assert.Equal("none", cut.Find("path[data-band='Strombedarf']").GetAttribute("display"));
+        Assert.False(cut.Find("path[data-band='Photovoltaik']").HasAttribute("display"));
+    }
+
+    /// <summary>
+    /// Im Oberflächenmodus ist ein Tagesband nie roh: Ab dem Vierfachen rechnet der Baustein
+    /// Kern und Band nach — die Stunden kommen zurück, das Band wird leer.
+    /// </summary>
+    [Fact]
+    public async Task DS12_Das_Tagesband_wird_im_Ausschnitt_nachgerechnet()
+    {
+        var cut = Zeige();   // zwei Reihen, 8 760 Stuetzstellen - im Berichtsmodus roh, hier Tagesband
+        Assert.Equal(2, cut.FindAll("path.epos-band").Count);
+        string band = cut.Find("path[data-band='" + MIT_ROLLE + "']").GetAttribute("d")!;
+        Assert.EndsWith(" Z", band);
+
+        // 400 Stunden auf voller Breite: ein Tag ist breiter als vier Spalten - Stunden statt Band.
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(3000, 3400));
+
+        Assert.Equal(2, cut.Instance.Ausschnittpfade.Count);
+        Assert.Equal(2, cut.Instance.Bandpfade.Count);
+        Assert.Equal("", cut.Instance.Bandpfade[MIT_ROLLE]);
+        Assert.Equal("", cut.Find("path[data-band='" + MIT_ROLLE + "']").GetAttribute("d"));
+        Datenreihe reihe = cut.Instance.Bild!.Reihen.Single(r => r.Name == MIT_ROLLE);
+        Assert.Equal(SvgSchreiber.Reihenpfad(reihe, cut.Instance.Bild.Flaeche, 3000, 3400, true),
+                     cut.Find("path[data-reihe='" + MIT_ROLLE + "']").GetAttribute("d"));
+
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(0, 8759));
+        Assert.Empty(cut.Instance.Bandpfade);
+        Assert.Equal(band, cut.Find("path[data-band='" + MIT_ROLLE + "']").GetAttribute("d"));
+    }
+
+    /// <summary>
+    /// <b>Die Wahl „Datum | Stunde im Jahr“ wirkt auf die Achse</b> (Anwenderentscheid
+    /// 13.10.2026): Vorgabe ist das Datum — schon in der Vollansicht zeichnet der Baustein die
+    /// Achse selbst (Monatsanfänge „01.01.“ …, Titel „Datum“) und blendet die Monatsachse des
+    /// Bildes aus. „Stunde im Jahr“ zählt die Jahresstunden in runden Schritten; die Wahl gilt
+    /// im Ausschnitt weiter, dort mit Tagen bzw. Stunden.
+    /// </summary>
+    [Fact]
+    public async Task DS12_Die_Wahl_Datum_Stunde_im_Jahr_wirkt_auf_die_Achse()
+    {
+        var cut = Zeige();
+        float breite = cut.Instance.Bild!.Flaeche!.Bild.Breite;
+
+        Assert.True(cut.Instance.MitZeiteinheit);
+        Assert.Equal(2, cut.FindAll("button[data-einheit]").Count);
+        Assert.Equal(Zeitachseneinheit.Datum, cut.Instance.Zeiteinheit);
+        Assert.Equal("true", cut.Find("button[data-einheit='datum']").GetAttribute("aria-pressed"));
+        Assert.True(cut.Instance.AchseNachgezeichnet);
+        Assert.All(cut.FindAll("[data-marke='xachse']"), e => Assert.Equal("none", e.GetAttribute("display")));
+        var monate = Zeitachse.Teilung(Zeitachseneinheit.Datum, 0, 8759, breite);
+        Assert.Equal(monate.Count, cut.FindAll(".epos-diagramm-ticks line").Count);
+        var texte = cut.FindAll(".epos-diagramm-ticks text").Select(t => t.TextContent).ToList();
+        Assert.Contains(Zeitachse.DatumKurz(0), texte);
+        Assert.Contains(Zeitachse.DatumKurz(31 * 24), texte);
+        Assert.Contains(Resource.CHART_ACHSE_DATUM, texte);
+
+        cut.Find("button[data-einheit='stunde']").Click();
+        Assert.Equal(Zeitachseneinheit.StundeImJahr, cut.Instance.Zeiteinheit);
+        Assert.Equal("true", cut.Find("button[data-einheit='stunde']").GetAttribute("aria-pressed"));
+        var stunden = Zeitachse.Teilung(Zeitachseneinheit.StundeImJahr, 0, 8759, breite);
+        Assert.Equal(stunden.Count, cut.FindAll(".epos-diagramm-ticks line").Count);
+        Assert.Contains(Resource.CHART_ACHSE_STUNDE_IM_JAHR,
+                        cut.FindAll(".epos-diagramm-ticks text").Select(t => t.TextContent));
+
+        // Im Ausschnitt bleibt die Wahl stehen; zurueck auf Datum zeichnet er Tage.
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(0, 2000));
+        Assert.Equal(Zeitachseneinheit.StundeImJahr, cut.Instance.Zeiteinheit);
+        Assert.Equal(Zeitachse.Teilung(Zeitachseneinheit.StundeImJahr, 0, 2000, breite).Count,
+                     cut.FindAll(".epos-diagramm-ticks line").Count);
+        cut.Find("button[data-einheit='datum']").Click();
+        var tage = Zeitachse.Teilung(Zeitachseneinheit.Datum, 0, 2000, breite);
+        Assert.Equal(tage.Count, cut.FindAll(".epos-diagramm-ticks line").Count);
+        Assert.Contains(Resource.CHART_ACHSE_DATUM, cut.FindAll(".epos-diagramm-ticks text").Select(t => t.TextContent));
+    }
+
+    /// <summary>Ohne Zeitachse eines Jahresrasters gibt es die Wahl nicht (Stundenprofil über 168 Stunden, Indexachse).</summary>
+    [Fact]
+    public void DS12_Ohne_Jahresraster_keine_Wahl()
+    {
+        var cut = Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, Stapelmodell());
+            p.Add(x => x.Kennung, "stapel");
+        });
+        Assert.False(cut.Instance.MitZeiteinheit);
+        Assert.Empty(cut.FindAll("button[data-einheit]"));
+    }
+
+    /// <summary>
+    /// <b>Die nachgezeichnete Achse schreibt in der Schrift des Bildes</b> (Stromganglinie im
+    /// aufgeklappten Satz): Ein Ganglinienbild im Behältermaß schreibt jeden Text in der Schrift
+    /// der Oberfläche (13 px, kompakt 12 px); die Achsenteilung, die der Baustein selbst zeichnet,
+    /// stand in 20 px darunter. Sie nimmt jetzt den <c>Schriftmassstab</c> des Modells — im
+    /// Vorgabebild ohne Maß bleiben 20 px.
+    /// </summary>
+    [Theory]
+    [InlineData(1200, 600, "13px")]
+    [InlineData(1200, 200, "12px")]
+    [InlineData(0, 0, "20px")]
+    public void DS13_Nachgezeichnete_Achse_in_der_Schrift_des_Bildes(int breite, int hoehe, string soll)
+    {
+        var werte = new double[8760];
+        for (int i = 0; i < werte.Length; i++) werte[i] = 20.0 - 12.0 * Math.Cos(2 * Math.PI * i / 8760.0);
+        Zeichenmodell modell = ChartRenderer.GanglinieNormiertModell("Jahresganglinie",
+            new[] { new ChartRenderer.Reihe("Leistung", werte, ChartRenderer.C_BEDARF) },
+            "kW", ChartRenderer.Achse.Monate, false, breite: breite, hoehe: hoehe);
+
+        var cut = Zeige(modell);
+
+        Assert.True(cut.Instance.AchseNachgezeichnet);
+        var ticks = cut.FindAll(".epos-diagramm-ticks text");
+        Assert.NotEmpty(ticks);
+        Assert.All(ticks, t => Assert.Equal(soll, t.GetAttribute("font-size")));
+    }
+
+    /// <summary>Das PV-Bild der Simulation: drei Linien über Viertelstunden, der Speicher rechts.</summary>
+    private static Zeichenmodell PvModell()
+    {
+        var pv = new double[35040];
+        var bedarf = new double[35040];
+        var ueberschuss = new double[35040];
+        for (int i = 0; i < 35040; i++)
+        {
+            double stunde = (i % 96) / 4.0;
+            pv[i] = 8.0 * Math.Max(0.0, Math.Sin((stunde - 6.0) / 12.0 * Math.PI));
+            bedarf[i] = 3.0 + (stunde > 6 && stunde < 22 ? 2.0 : 0.0);
+            ueberschuss[i] = Math.Max(0.0, pv[i] - bedarf[i]);
+        }
+        var linien = new List<ChartRenderer.Reihe>
+        {
+            new ChartRenderer.Reihe("Überschuss", ueberschuss, Farbrolle.UEBERSCHUSS),
+            new ChartRenderer.Reihe("Strombedarf", bedarf, Farbrolle.BEDARF),
+            new ChartRenderer.Reihe("Photovoltaik", pv, Farbrolle.STROM_PV)
+        };
+        return ChartRenderer.ErzeugerStapelModell("PV", new List<ChartRenderer.Reihe>(), linien, null,
+                                                  "Leistung [kW]", ChartRenderer.Achse.Monate, false);
     }
 }

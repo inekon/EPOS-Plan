@@ -1,5 +1,7 @@
 Die '''Projektverwaltung''' hält alle Daten eines Vorhabens zusammen. Fünf Dialoge teilen sich diese Seite: die Projektliste hinter {{Menü|Projekt|Öffnen…}}, ''Projekt Speichern unter'' für die Kopie unter neuem Namen, das Detailformular ''Konfiguration Projekt'', der Austauschdialog ''Projekt exportieren / importieren'' und dessen Konfliktliste.
 
+[[Datei:Bildschirmfoto_Projektverwaltung.png|mini|zentriert|800px|Projekt öffnen mit Projektliste – Bildschirmfoto mit Beispieldaten.]]
+
 == Eingaben ==
 
 * '''Projektliste''' – der Dialog ''Projekt öffnen'' führt die Spalten ''Projektname'', ''Kunde'' und ''Geändert''. Ein Klick auf einen Spaltenkopf sortiert um, ein zweiter kehrt die Richtung um; unter der Liste steht die Anzahl der angezeigten Projekte.
@@ -28,8 +30,8 @@ Die Dialoge im Einzelnen beschreibt [[Programm Dokumentation/Projekttransfer|Pro
 
 Bringt das Paket Datensätze mit, die in der Zieldatenbank bereits vorhanden sein können, prüft der Import jeden einzeln:
 
-* '''Konfliktliste beim Import''' – je geprüftem Datensatz stehen Name, Befund und Aktion nebeneinander.
-* '''Befund''' – ob der Datensatz neu ist, identisch vorliegt, denselben Inhalt unter anderem Namen hat, ob der Name bereits vergeben ist oder in der Auswahl mehrfach vorkommt.
+* '''Konfliktliste beim Import''' – je geprüftem Datensatz stehen Name, Hinweis und Aktion nebeneinander.
+* '''Hinweis''' – ob der Datensatz neu ist, identisch vorliegt, denselben Inhalt unter anderem Namen hat, ob der Name bereits vergeben ist oder in der Auswahl mehrfach vorkommt.
 * '''Aktion''' – importieren, auslassen, überschreiben oder unter neuem Namen umbenennen; ''Alle auslassen'' setzt jede Konfliktzeile auf ''auslassen''.
 * '''Schreibgeschützte Datensätze''' – mitgelieferte Katalogeinträge werden nicht überschrieben; der Dialog weist darauf hin.
 

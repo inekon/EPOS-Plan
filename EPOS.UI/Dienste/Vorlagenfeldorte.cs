@@ -161,6 +161,9 @@ public static class Vorlagenfeldorte
         // Die Gegenüberstellung der Komponenten je Version (ähnlich: im Bericht die
         // Komponentenmatrix des Kapitels „Projekt“ mit allen Merkmalen).
         O("tabelle.komponenten.matrix", ANSICHT_BERICHTE, REITER_UEBERSICHT, "tafel.komponenten");
+        // Das Energieflussbild der gewählten Version, Ansicht „Fluss“ (Katalog v25, SK-4; ähnlich: im Bericht tragen die
+        // Knoten ihre Jahressumme).
+        O("stand.bild.energiefluss", ANSICHT_BERICHTE, REITER_UEBERSICHT, "bild.energiefluss");
 
         // ---- Berichte & Kosten › Wirtschaftlichkeit: die Vergleichsgruppe --------------
         // Die App listet alle Stände zur Wahl, der Bericht die gewählten (ähnlich).
@@ -214,6 +217,8 @@ public static class Vorlagenfeldorte
             O(Kennzahl(stamm, "kaelte.spitze"), ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "kennzahl.kaeltelast");
             O(Kennzahl(stamm, "kaelte.rest"), ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "kennzahl.kaelte_ungedeckt");
             O(Kennzahl(stamm, "kaelte.deckungsgrad"), ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "kennzahl.kaelte_deckung");
+            // K6d (Katalog v23): mit Split-Zeile steht an derselben Stelle die Hauptzahl samt dezentraler Deckung.
+            O(Kennzahl(stamm, "kaelte.deckungsgrad_gesamt"), ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "kennzahl.kaelte_deckung");
             O(Kennzahl(stamm, "kaelte.strom"), ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "kennzahl.kaeltestrom");
             O(Kennzahl(stamm, "kaelte.jaz"), ANSICHT_SIMULATION, Ergebnisblatt(BLATT_UEBERSICHT), "kennzahl.jaz_kaelte");
         }

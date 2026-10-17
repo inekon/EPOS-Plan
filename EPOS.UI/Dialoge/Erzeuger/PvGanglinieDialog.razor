@@ -4,7 +4,9 @@
    der Katalog (Baustein GanglinieKatalogseite mit Raster, Beschreibung, Jahresarbeit und Spitze,
    Vergleichen, Schloss, Loeschen, Import...), dazwischen die Uebernahmeleiste. Die Knoepfe der
    Seite stehen in den Slots der Zweispaltenauswahl (Katalogauswahl V1, Stufe 4): links in der
-   Katalog-Fussleiste Vergleichen..., Nennleistung..., Schloss, Loeschen (auf der Auswahl), rechts
+   Katalog-Fussleiste Vergleichen... (KA-E-19: ab zwei angekreuzten Saetzen im Bereich des gewaehlten
+   Satzes - beim Projektsatz die Projektzeilen mit Raster, Nennleistung, Jahresarbeit, Spitze und
+   Vollbenutzungsstunden), Nennleistung..., Schloss, Loeschen (auf der Auswahl), rechts
    Import..., der Formathinweis als Infoknopf im Katalogkopf; beide Listen mit Kaestchen und Stift
    (Ansicht in der Satz-Ueberlagerung). Eine PV-Ganglinie
    ist die AC-Leistung der Anlage in kW im Raster der Datei (Stunde oder Viertelstunde); ist eine
@@ -235,12 +237,14 @@
                                        ZeileGewaehlt="BeiKatalogzeile"
                                        ImProjekt="@ProjektBezeichner" Listenname="@TitelText"
                                        FussImWirt="true" Sperrgrund="@(() => KatalogSperrgrund)" ZustandGeaendert="Nachgezogen"
+                                       Projektvergleichszahl="@ProjektVergleichszahl" Projektvergleichswerte="@ProjektVergleichswerte"
                                        Stift="BeiKatalogStift" Formathinweis="@formathinweis"
                                        Geaendert="BeiKatalogGeaendert" />
             </Rechts>
 
-            @* DIE KNOPFLEISTE AM GEWAEHLTEN SATZ (AW3b): die Knoepfe der Katalogseite (Vergleichen…, Schloss…,
-               Loeschen; beim Projektsatz weich gesperrt bzw. ohne Vergleich) und Bearbeiten… - dasselbe wie der
+            @* DIE KNOPFLEISTE AM GEWAEHLTEN SATZ (AW3b): die Knoepfe der Katalogseite (Vergleichen… vorn - KA-E-19,
+               beim Projektsatz auf den angekreuzten Projektzeilen -, Nennleistung…, Schloss…, Loeschen; beim
+               Projektsatz weich gesperrt) und Bearbeiten… - dasselbe wie der
                Stift der Zeile: die Ganglinie als Ansicht (kein Katalogeditor, kein Neu…). *@
             <KatalogFuss>
                 @_seite?.Fuss
@@ -563,13 +567,11 @@
          : _katalogZeile is not null ? BeiKatalogStift(_katalogZeile)
          : Task.CompletedTask;
 
-    private void BeiWahlGeaendert(Auswahlbereich bereich)
-    {
-        if (bereich != Auswahlbereich.Projekt || _projektWahl.Zuletzt is not string s) return;
-        if (!_projektWahl.IstGewaehlt(s)) return;
-        ErzeugerZeile? zeile = Zeilen.FirstOrDefault(z => Projektschluessel(z) == s);
-        if (zeile is not null && zeile != _projektZeile) ProjektZeileWaehlen(zeile);
-    }
+    /// <summary>
+    /// Ein Kästchen hat geschaltet: Der Wirt zeichnet neu, die Sperren seiner Bereichsknöpfe folgen der Wahl. Die
+    /// gewählte Zeile bleibt — Ankreuzen wählt nicht (KA‑E‑17), die Zeile wählt allein der Klick in die Zeile.
+    /// </summary>
+    private void BeiWahlGeaendert(Auswahlbereich bereich) { }
 
     /// <summary>Die Katalogseite hat ihre Fragmente geändert: der Wirt zeichnet die Slots nach.</summary>
     private void Nachgezogen() { }
@@ -601,6 +603,9 @@
     private string _beschreibung = "";
     private string _raster = "";
     private string _jahresarbeit = "";
+
+    /// <summary>Die Jahresarbeit für den Assistenten — genau (eine Nachkommastelle), die Anzeige rundet (BP-3).</summary>
+    private string _jahresarbeitGenau = "";
     private string _nennleistung = "";
 
     /// <summary>Die gewählte Projektzeile — Prüfhilfe für die Tests.</summary>
@@ -751,7 +756,7 @@
             ProjektganglinieLesen = () => _projektZeile?.Bezeichner ?? "",
             QuelleLesen = () => _beschreibung,
             AufloesungLesen = () => _raster,
-            JahressummeLesen = () => _jahresarbeit,
+            JahressummeLesen = () => _jahresarbeitGenau,
             NennleistungLesen = () => _nennleistung,
             ImProjektLesen = () => _name.Length > 0
                 && Zeilen.Any(z => string.Equals(z.Bezeichner, _name, StringComparison.Ordinal)),
@@ -809,8 +814,43 @@
         _name = zeile.Bezeichner;
         _beschreibung = BeschreibungZu(zeile.Bezeichner);
         Kennwerte(KatalogzeileZu(zeile.Bezeichner));
-        // Eine noch nicht gespeicherte Zeile traegt die Katalog-Id: dann ueber den Namen den Katalogsatz.
-        GrafikAnstossen(new GanglinienWahl(false, IstUngespeichert(zeile) ? 0 : zeile.GeraetId, zeile.Bezeichner));
+        GrafikAnstossen(WahlZu(zeile));
+    }
+
+    /// <summary>
+    /// Die Ganglinie einer Projektzeile. Eine noch nicht gespeicherte Zeile traegt die Katalog-Id: dann ueber den
+    /// Namen den Katalogsatz.
+    /// </summary>
+    private GanglinienWahl WahlZu(ErzeugerZeile zeile)
+        => new(false, IstUngespeichert(zeile) ? 0 : zeile.GeraetId, zeile.Bezeichner);
+
+    // --- Vergleichen… (KA-E-19) -------------------------------------------------------
+
+    /// <summary>Beim Projektsatz die Zahl der angekreuzten Projektzeilen, sonst <c>null</c> (Katalogseite).</summary>
+    private int? ProjektVergleichszahl() => SatzArt == Satzmarke.Projektsatz ? ProjektZiele().Count : null;
+
+    /// <summary>
+    /// Die angekreuzten Projektzeilen im Vergleich: je Zeile Raster und Nennleistung (aus dem Katalogsatz gleichen
+    /// Namens, wie die Kennwertzeile der Detailzeile) und Jahresarbeit, Spitze, Vollbenutzungsstunden (die Kennzahlen
+    /// der Grafik). Wirft das Lesen, nennt der Banner den Grund.
+    /// </summary>
+    private async Task<IReadOnlyList<(string Name, IReadOnlyList<(string Beschriftung, string Wert)> Werte)>> ProjektVergleichswerte()
+    {
+        var (saetze, grund) = await Ganglinienvergleich.SaetzeAsync(ProjektZiele(), z => z.Bezeichner, WahlZu, Kennzahlen,
+            (z, k) =>
+            {
+                Katalogfilterzeile? kat = KatalogzeileZu(z.Bezeichner);
+                var werte = new List<(string Beschriftung, string Wert)>
+                {
+                    (Ganglinienvergleich.Beschriftung(LabelRaster), kat is null ? "" : Rastertext(kat)),
+                    (Ganglinienvergleich.Beschriftung(LabelNennleistung), kat is null ? "" : Nennleistungstext(kat))
+                };
+                Ganglinienvergleich.Kennzahlen(werte, k, Einheit, LabelGrafikJahresarbeit, LabelSpitze, LabelVollbenutzung,
+                                               "kW", EinheitStunden);
+                return werte;
+            });
+        _satzFehler = grund;
+        return saetze;
     }
 
     /// <summary>Die Wahl über den Bezeichner — der Weg des Assistenten.</summary>
@@ -867,13 +907,27 @@
     private void Kennwerte(Katalogfilterzeile? k)
     {
         var kultur = System.Globalization.CultureInfo.CurrentCulture;
-        if (k is null) { _raster = ""; _jahresarbeit = ""; _nennleistung = ""; return; }
-        double? raster = k.Zahl(Katalogfilterprofil.SpZeitintervall);
-        _raster = raster is null ? "" : raster.Value == 15 ? Resource.PVG_RASTER_VIERTEL : Resource.PVG_RASTER_STUNDE;
+        if (k is null) { _raster = ""; _jahresarbeit = ""; _jahresarbeitGenau = ""; _nennleistung = ""; return; }
+        _raster = Rastertext(k);
         double? mwh = k.Zahl(Katalogfilterprofil.SpJahresarbeitMwh);
-        _jahresarbeit = mwh is null ? "" : mwh.Value.ToString("N1", kultur) + " MWh";
+        _jahresarbeit = mwh is null ? "" : Energieeinheit.MWh.FormatiereJahreswert(mwh.Value) + " " + Energieeinheit.MWh.Text;
+        _jahresarbeitGenau = mwh is null ? "" : mwh.Value.ToString("N1", kultur) + " " + Energieeinheit.MWh.Text;
+        _nennleistung = Nennleistungstext(k);
+    }
+
+    /// <summary>Das Raster der Ganglinie aus ihrer Katalogzeile (Stunde oder Viertelstunde); ohne Angabe leer.</summary>
+    private static string Rastertext(Katalogfilterzeile k)
+    {
+        double? raster = k.Zahl(Katalogfilterprofil.SpZeitintervall);
+        return raster is null ? "" : raster.Value == 15 ? Resource.PVG_RASTER_VIERTEL : Resource.PVG_RASTER_STUNDE;
+    }
+
+    /// <summary>Die Nennleistung aus der Katalogzeile; nicht gepflegt sagt, was der Lauf statt ihrer nimmt.</summary>
+    private static string Nennleistungstext(Katalogfilterzeile k)
+    {
         double? nenn = k.Zahl(Katalogfilterprofil.SpNennleistungKwp);
-        _nennleistung = nenn is null ? Resource.PVG_NENN_NICHT_GEPFLEGT : nenn.Value.ToString("N2", kultur) + " kWp";
+        return nenn is null ? Resource.PVG_NENN_NICHT_GEPFLEGT
+                            : nenn.Value.ToString("N2", System.Globalization.CultureInfo.CurrentCulture) + " kWp";
     }
 
     /// <summary>„In das Projekt übernehmen" — die Auswahl des Katalogs (Kästchen, sonst die Wahl).</summary>

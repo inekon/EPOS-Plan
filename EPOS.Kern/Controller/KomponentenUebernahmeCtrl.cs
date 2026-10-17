@@ -23,7 +23,8 @@ namespace WindowsFormsApplication1
     /// DIE KETTE JE GEWERK (<see cref="GewerkPlan"/>): die Gerätezeile(n) der
     /// Gerätetabelle (Projektkopie mit NEUER ID nach dem <c>MAX(ID)+1</c>-Hausmuster —
     /// Quell-IDs werden nie übernommen), deren gewerkspezifische Kindtabellen
-    /// (Wärmepumpe: <c>Tab_Kenndaten</c> und <c>Tab_Kenndaten_Kuehlung</c>), die
+    /// (Wärmepumpe: <c>Tab_Kenndaten</c> und <c>Tab_Kenndaten_Kuehlung</c>; Kältemaschine:
+    /// <c>Tab_Kenndaten_Kaeltemaschine</c>), die
     /// zugehörigen Zeilen in <c>Tab_Energieanlagen</c> über
     /// <see cref="AnlagenSql.SQL_ANLAGE_INSERT"/> mit
     /// <see cref="AnlagenSql.AnlagenParameter"/> — dieselbe eine Einfügeanweisung wie
@@ -91,6 +92,20 @@ namespace WindowsFormsApplication1
 
             /// <summary>Fremdschlüsselspalte der Kindtabellen auf die Gerätezeile.</summary>
             public string KindFk;
+
+            /// <summary>
+            /// Die Spalte von <c>Tab_Energieanlagen</c>, die die STÜCKZAHL gleicher Geräte einer
+            /// Anlagenzeile führt (<c>Kaeltemaschine_Anzahl</c>); <c>null</c> = eine Anlagenzeile
+            /// ist ein Stück.
+            ///
+            /// <para>
+            /// Sie gehört zum BESTAND: Der Komponentenvergleich zeigt sie („2 × Kältemaschine"),
+            /// die Bestandsgleichheit (<see cref="AnlagenKennungen"/>) prüft sie mit — sonst
+            /// meldete eine Übernahme bei gleicher Anlagenzahl und abweichender Stückzahl
+            /// „nichts zu tun".
+            /// </para>
+            /// </summary>
+            public string Stueckzahlspalte;
         }
 
         private const string TAB_ANLAGEN = "Tab_Energieanlagen";
@@ -118,7 +133,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Unterstützte Gewerke. Was hier nicht steht, ist auf der Oberfläche gesperrt
         /// (ehrlicher Hinweis statt halber Kette) — die Liste deckt alle Gewerke ab, die
-        /// <see cref="ProjektDetails.GewerkTabellen"/> führt.
+        /// <see cref="ProjektDetails.GewerkTabellen"/> führt, die Kältemaschine eingeschlossen
+        /// (KN1).
         /// </summary>
         public static readonly Dictionary<string, GewerkPlan> Plaene =
             new Dictionary<string, GewerkPlan>(StringComparer.OrdinalIgnoreCase)
@@ -156,8 +172,34 @@ namespace WindowsFormsApplication1
             { "Stromspeicher", new GewerkPlan {
                 Gewerk = "Stromspeicher", Geraetetabelle = "Tab_Stromspeicher", AnlagenFk = "ID_SP",
                 AnlagenTypen = new[] { WizardItemClass.SP_TYP, WizardItemClass.REF_SP_TYP },
-                Kindtabellen = new string[0], KindFk = null } }
+                Kindtabellen = new string[0], KindFk = null } },
+
+            // KN1: Die Kältemaschine wie jedes andere Gewerk — Anlagenzeile samt Stückzahl,
+            // Kühlträger und Abrechnungsart, Projektkopie Tab_Kaeltemaschine samt Kennlinie.
+            // Ihr Geräteverweis ID_Kaeltemaschine steht nicht im Modell, sondern in den
+            // Fachspalten; der Austausch setzt ihn deshalb nach (siehe
+            // GeraetefkInFachspalten).
+            { ProjektDetails.GEWERK_KAELTEMASCHINE, new GewerkPlan {
+                Gewerk = ProjektDetails.GEWERK_KAELTEMASCHINE,
+                Geraetetabelle = KaeltemaschineSchema.TAB_PROJEKT,
+                AnlagenFk = KaeltemaschineAnlageSchema.SPALTE_ID_KAELTEMASCHINE,
+                AnlagenTypen = new[] { KaeltemaschineAnlageSchema.TYP_KAELTEMASCHINE },
+                Kindtabellen = new[] { "Tab_Kenndaten_Kaeltemaschine" },
+                KindFk = KaeltemaschineAnlageSchema.SPALTE_ID_KAELTEMASCHINE,
+                Stueckzahlspalte = KaeltemaschineAnlageSchema.SPALTE_ANZAHL } }
         };
+
+        /// <summary>
+        /// Die Kette, über die der VERBAUTE Bestand eines Gewerks gelesen wird; null für ein
+        /// unbekanntes Gewerk. Seit KN1 dieselbe Kette wie die der Übernahme
+        /// (<see cref="Plaene"/>) — der Name bleibt, weil Komponentenbestand und
+        /// Komponentenvergleich ausdrücklich LESEN.
+        /// </summary>
+        public static GewerkPlan Leseplan(string gewerk)
+        {
+            GewerkPlan plan;
+            return !string.IsNullOrEmpty(gewerk) && Plaene.TryGetValue(gewerk, out plan) ? plan : null;
+        }
 
         /// <summary>Ist die Komponenten-Übernahme für dieses Gewerk umgesetzt?</summary>
         public static bool Unterstuetzt(string gewerk)
@@ -241,7 +283,32 @@ namespace WindowsFormsApplication1
             foreach (string k in plan.Kindtabellen) sb.AppendLine("  · " + k);
             sb.AppendLine("  · " + TAB_ANLAGEN);
             if (IstStromspeicher(plan)) sb.AppendLine("  · " + StromspeicherVarianteCtrl.TABLE);
+
+            // Was die Uebernahme NICHT kann, steht schon im Bestaetigungsdialog - sonst
+            // erfuehre es der Anwender erst nach dem Schreiben (Grenzen benennen, nicht
+            // still uebergehen).
+            string grenze = Grenzenhinweis(plan);
+            if (grenze != null) { sb.AppendLine(); sb.AppendLine(grenze); }
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Was die Übernahme dieses Gewerks NICHT mitnimmt — als Satz für Dialog und
+        /// Hinweiskanal; <c>null</c>, wenn die Kette des Gewerks vollständig ist.
+        ///
+        /// <para>
+        /// KÄLTEMASCHINE (KN1): Die Kaskade des Projekts (<c>Tab_Einstellungen.Tool_1…6</c>)
+        /// gehört dem PROJEKT, nicht dem Gewerk; ein Kältespeicher ist eine Zeile des Gewerks
+        /// Pufferspeicher; und der Rang der Kältefolge (<c>Kaelte_Rang</c>) kommt als Fachspalte
+        /// aus der Quelle, ordnet im Ziel aber zwischen Erzeugern, die die Übernahme nicht
+        /// anfasst. Keines davon wird geraten — es wird benannt.
+        /// </para>
+        /// </summary>
+        private static string Grenzenhinweis(GewerkPlan plan)
+        {
+            return plan != null &&
+                   string.Equals(plan.Gewerk, ProjektDetails.GEWERK_KAELTEMASCHINE, StringComparison.Ordinal)
+                ? MyResource.Resource.BK_KOMP_HINW_KAELTESEITE : null;
         }
 
         // ------------------------------------------------------------------ Ausführen
@@ -311,6 +378,12 @@ namespace WindowsFormsApplication1
             // Die Fachspalten, die das Modell nicht traegt (Sondenfeld, KWKG, Steuer,
             // Quellangaben) - aus dem Schema, VOR dem Vorgang erfragt (AnlagenFachspalten).
             List<string> fachspalten = AnlagenFachspalten.UebertragbareSpalten();
+            // KN1: Steht der Geraeteverweis des Gewerks in den Fachspalten (Kaeltemaschine),
+            // wird er dort HERAUSGENOMMEN und nach dem Einfuegen gesetzt - Begruendung in
+            // GeraetefkInFachspalten.
+            bool fkNachsetzen = GeraetefkInFachspalten(plan);
+            if (fkNachsetzen)
+                fachspalten.RemoveAll(sp => string.Equals(sp, plan.AnlagenFk, StringComparison.OrdinalIgnoreCase));
             int bezuegeVerloren = 0, bezuegeKopiert = 0;
             // Die Kindzeilen jeder Anlage (Kernweg AnlagenFachspalten.AnlagenkinderUebertragen);
             // ihre Hinweise gehen erst nach dem Commit in den Kanal.
@@ -421,6 +494,16 @@ namespace WindowsFormsApplication1
                     bezuegeVerloren += aus.Verloren;
                     bezuegeKopiert += aus.Kopiert;
 
+                    // Der Geraeteverweis aus den Fachspalten: auf die eben angelegte
+                    // Geraetekopie, bestimmt ueber die Abbildung nach ID (fkZiel). Eine Anlage
+                    // ohne Geraet bleibt ohne - die Spalte steht unter einer Beziehung und
+                    // kennt keine 0.
+                    if (fkNachsetzen)
+                        Ausfuehren(v,
+                            "UPDATE [" + TAB_ANLAGEN + "] SET [" + plan.AnlagenFk + "] = ? WHERE ID = ?",
+                            new DbParam("@fk", fkZiel > 0 ? (object)fkZiel : DBNull.Value),
+                            new DbParam("@id", neueAnlage));
+
                     // Die Kindzeilen der Anlage (Betriebsfuehrung, Senken, Pufferverbund,
                     // Straenge, Sperrfenster) - DERSELBE Kernweg wie bei der Flottenstudie,
                     // ueber Projektgrenzen umgeschluesselt. Die Kostenpositionen bleiben
@@ -456,6 +539,8 @@ namespace WindowsFormsApplication1
                     warnungen.Add(string.Format(CultureInfo.CurrentCulture,
                         MyResource.Resource.BK_KOMP_HINW_PROJEKTKOPIE, bezuegeKopiert));
                 warnungen.AddRange(kinderHinweise);
+                string grenze = Grenzenhinweis(plan);
+                if (grenze != null) warnungen.Add(grenze);
             }
             catch (Exception ex)
             {
@@ -719,15 +804,35 @@ namespace WindowsFormsApplication1
         private static List<string> AnlagenKennungen(int idProjekt, GewerkPlan plan)
         {
             var liste = new List<string>();
+            // Die Stückzahl gehört zur Kennung, wo das Gewerk eine führt (Kältemaschine):
+            // zwei Anlagenzeilen mit gleichem Namen und verschiedener Stückzahl sind nicht
+            // derselbe Bestand (siehe GewerkPlan.Stueckzahlspalte).
+            bool mitStueck = !string.IsNullOrEmpty(plan.Stueckzahlspalte);
             DataTable dt = DataRepository.GetDataTable(
-                "SELECT ID_Type, Bezeichner FROM [" + TAB_ANLAGEN + "] WHERE ID_Projekt = ? AND " +
+                "SELECT ID_Type, Bezeichner" +
+                (mitStueck ? ", [" + plan.Stueckzahlspalte + "]" : "") +
+                " FROM [" + TAB_ANLAGEN + "] WHERE ID_Projekt = ? AND " +
                 TypFilter(plan) + " ORDER BY ID",
                 new DbParam("@p", idProjekt));
             if (dt != null)
                 foreach (DataRow r in dt.Rows)
                     liste.Add(Ganz(r, "ID_Type").ToString(CultureInfo.InvariantCulture) + "|" +
-                              Text(r, SPALTE_BEZEICHNER));
+                              Text(r, SPALTE_BEZEICHNER) +
+                              (mitStueck ? "|" + Stueckzahl(r, plan).ToString(CultureInfo.InvariantCulture) : ""));
             return liste;
+        }
+
+        /// <summary>
+        /// Die Stückzahl einer Anlagenzeile: der Wert der <see cref="GewerkPlan.Stueckzahlspalte"/>,
+        /// leer oder kleiner 1 zählt als 1 — dieselbe Lesart wie im Komponentenvergleich
+        /// (<c>KomponentenVergleich.Stueckzahl</c>).
+        /// </summary>
+        private static int Stueckzahl(DataRow zeile, GewerkPlan plan)
+        {
+            if (zeile == null || string.IsNullOrEmpty(plan.Stueckzahlspalte)) return 1;
+            if (!zeile.Table.Columns.Contains(plan.Stueckzahlspalte)) return 1;
+            int n = Ganz(zeile, plan.Stueckzahlspalte);
+            return n > 1 ? n : 1;
         }
 
         private static bool Gleich(object a, object b)
@@ -1050,6 +1155,7 @@ namespace WindowsFormsApplication1
                 case "ID_PV": return a.ID_PV;
                 case "ID_SP": return a.ID_SP;
                 case "ID_PUFFER": return a.ID_PUFFER;
+                case "ID_Kaeltemaschine": return a.ID_Kaeltemaschine ?? 0;
                 default: return 0;
             }
         }
@@ -1065,7 +1171,30 @@ namespace WindowsFormsApplication1
                 case "ID_PV": a.ID_PV = neu; break;
                 case "ID_SP": a.ID_SP = neu; break;
                 case "ID_PUFFER": a.ID_PUFFER = neu; break;
+                // Nur das Modell: In die Datenbank kommt die Spalte nicht über
+                // AnlagenSql.Einfuegen, sondern über die Nachsetzung (GeraetefkInFachspalten).
+                case "ID_Kaeltemaschine": a.ID_Kaeltemaschine = neu > 0 ? (int?)neu : null; break;
             }
+        }
+
+        /// <summary>
+        /// Steht der Geräteverweis des Gewerks in den FACHSPALTEN statt im Modell der
+        /// Einfügeanweisung (<see cref="AnlagenSql.SQL_ANLAGE_INSERT"/>)? Gilt für die
+        /// Kältemaschine (<c>ID_Kaeltemaschine</c>).
+        ///
+        /// <para>
+        /// FOLGE FÜR DEN AUSTAUSCH: Die Spalte wird aus der Fachspaltenliste genommen und nach
+        /// dem Einfügen ausdrücklich gesetzt. Sonst bildete der Fachspaltenweg sie als
+        /// Projektverweis über die GLEICHNAMIGE Zielzeile ab
+        /// (<see cref="AnlagenFachspalten.PROJEKTBEZUG"/>) — zwei gleichnamige Maschinen der
+        /// Quelle zeigten danach auf dieselbe Kopie, und eine dritte Kopie entstünde obendrein.
+        /// Maßgeblich ist allein die Abbildung nach ID (<see cref="GeraetefkZiel"/>).
+        /// </para>
+        /// </summary>
+        private static bool GeraetefkInFachspalten(GewerkPlan plan)
+        {
+            return plan != null && !string.IsNullOrEmpty(plan.AnlagenFk) &&
+                   !AnlagenFachspalten.Modellspalten().Contains(plan.AnlagenFk);
         }
 
         // ------------------------------------------------------------- Kindzeilen

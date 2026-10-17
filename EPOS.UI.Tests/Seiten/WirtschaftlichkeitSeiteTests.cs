@@ -725,7 +725,7 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
     }
 
     /// <summary>
-    /// ETAPPE E13 (E7c3‑Q6 a): Was die Hülle an Lade-, Speicher- und Vorsorgegründen in
+    /// ETAPPE E13 (E7c3‑Q6 a): Was die Hülle an Lade- und Speichergründen in
     /// die Statuszeile schreibt, zeigt die Seite genau so — ohne Warnzeichen, also ohne
     /// den Anstoß „neu berechnen", der für einen Lesefehler nicht stimmt.
     /// </summary>
@@ -735,7 +735,7 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
         WirtschaftlichkeitStand stand = Standard();
         stand.Statuszeile = "Gespeicherte Ergebnisse vom 24.09.2026 17:20. "
             + "Gespeicherte Ergebnisse nicht vollständig gelesen: FormatException: kaputt "
-            + "Tabellenvorsorge unvollständig: SqliteException: database is locked";
+            + "Speichern gescheitert: SqliteException: database is locked";
         var cut = Zeige(stand: stand);
 
         Assert.Equal(stand.Statuszeile, cut.Instance.Status);

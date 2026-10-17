@@ -239,8 +239,9 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Kein stiller Rückfall, aber kein Abbruch (2.2, N8): Fehlt ein Parameter, den nur eine
-        /// Zone braucht, trägt diese Zone 0 und steht mit ihrem Namen und dem Schlüssel als
-        /// Warnung im Protokoll; die rechenbare Zone rechnet, der Lauf geht weiter.
+        /// Zone braucht, und lässt er sich nicht aus dem freien Paketteil nachtragen, trägt diese Zone 0
+        /// und steht mit ihrem Namen und dem Schlüssel als Warnung im Protokoll; die rechenbare Zone
+        /// rechnet, der Lauf geht weiter.
         /// </summary>
         [Fact]
         public void Ein_fehlender_Parameter_nennt_die_Zone_und_sie_traegt_null()
@@ -254,6 +255,10 @@ namespace EPOS.Kern.Tests
             Assert.True(DataRepository.ExecuteSQL(
                 "DELETE FROM Tab_TwwParameter_STAMM WHERE Schluessel = ? AND Katalogversion = ?",
                 new DbParam("@s", ZapfParameter.KALTWASSER_MITTEL), new DbParam("@k", VERSION)));
+            // Den Schlüssel trüge Verfuegbar() aus dem freien Paketteil nach (TwwPaketteilCtrl.ParameterNachtragen);
+            // hier weist die Datei jedes Einfügen in den Parameterkatalog ab — er bleibt fehlend.
+            DataRepository.ExecuteNonQuery("CREATE TRIGGER \"Probe_Abweisen\" BEFORE INSERT ON \"Tab_TwwParameter_STAMM\" " +
+                                           "BEGIN SELECT RAISE(ABORT, 'Probe weist ab'); END");
 
             SimulationProtokoll.NeuStarten();
             var waerme = new SimulationWaermebedarf();
@@ -460,12 +465,13 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// Kein Projekt der Referenzbasis — die sechs der CI und die übrigen, deren Ordner
         /// <c>Projekt_*</c> unter <c>Referenzlaeufe/</c> liegen — trägt eine Zeile in
-        /// <c>Tab_TwwProjekt</c> oder eine Zone (3.4), außer dem Referenzprojekt des Generators
-        /// (1045, ZU7); dessen gesäte Zeilen hält <see cref="ZapfprofilReferenzprojektWacheTests"/>.
+        /// <c>Tab_TwwProjekt</c> oder eine Zone (3.4), außer den Referenzprojekten des Generators
+        /// (1045, ZU7; 1066 bis 1071, ZB12); ihre gesäten Zeilen halten <see cref="ZapfprofilReferenzprojektWacheTests"/>
+        /// und <see cref="ZapfprofilOptionenReferenzprojekteWacheTests"/>.
         /// Gelesen wird eine Arbeitskopie.
         /// </summary>
         [Fact]
-        public void Kein_Referenzprojekt_ausser_1045_hat_eine_Projektzeile()
+        public void Kein_Referenzprojekt_ausser_denen_des_Generators_hat_eine_Projektzeile()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -480,6 +486,12 @@ namespace EPOS.Kern.Tests
             Assert.Contains(ZapfprofilReferenzprojektWacheTests.PROJEKT, projekte);
             Assert.Equal(BrauchwasserWeg.Generator, ZapfprofilCtrl.Weg(ZapfprofilReferenzprojektWacheTests.PROJEKT));
             projekte.Remove(ZapfprofilReferenzprojektWacheTests.PROJEKT);
+            foreach (int p in ZapfprofilOptionenReferenzprojekteWacheTests.PROJEKTE)
+            {
+                Assert.Contains(p, projekte);
+                Assert.Equal(BrauchwasserWeg.Generator, ZapfprofilCtrl.Weg(p));
+                projekte.Remove(p);
+            }
 
             foreach (int p in projekte)
             {

@@ -71,6 +71,28 @@ namespace WindowsFormsApplication1
         public string Abgelehnt { get; internal set; }
         /// <summary>Die Quellangabe der Sätze („Hottgenroth-Katalog, Datenstand JJJJ-MM“).</summary>
         public string Quelle { get; internal set; } = "";
+        /// <summary>Der gelesene Ordner (BK-7: bei fehlender <c>Baustoffe.csv</c> der Unterordner <c>Export</c>).</summary>
+        public string Ordner { get; internal set; } = "";
+        /// <summary><c>true</c>, wenn der Unterordner <c>Export</c> gelesen wurde (BK-7).</summary>
+        public bool UnterordnerExport { get; internal set; }
+        /// <summary>Die Zahl der Teilkataloge, die geplanten Sätzen zugeordnet sind (BK-7).</summary>
+        public int Teilkataloge { get; internal set; }
+        /// <summary>Geplante Baustoffe mit Teilkatalog in der Quelle (BK-7).</summary>
+        public int BaustoffeMitTeilkatalog { get; internal set; }
+        /// <summary>Geplante Aufbauten mit Teilkatalog in der Quelle (BK-7).</summary>
+        public int AufbautenMitTeilkatalog { get; internal set; }
+        /// <summary>Die Teilkataloge mit Kennung und Name in <c>Katalog.csv</c> (BK-7b).</summary>
+        public int TeilkatalogeInQuelle { get; internal set; }
+        /// <summary>Wahr, wenn die Teilkataloge aus <c>Katalog_Zuordnung.csv</c> stammen, sonst aus <c>Katalog_Inhalt.csv</c> (BK-7b).</summary>
+        public bool TeilkatalogeAusZuordnung { get; internal set; }
+        /// <summary>Geplante Baustoffe mit zwei oder mehr Teilkatalogen (BK-7b; die Quelle nennt alle).</summary>
+        public int BaustoffeMitMehrerenTeilkatalogen { get; internal set; }
+        /// <summary>Geplante Aufbauten mit zwei oder mehr Teilkatalogen (BK-7b).</summary>
+        public int AufbautenMitMehrerenTeilkatalogen { get; internal set; }
+        /// <summary>Geplante Baustoffe ohne Teilkatalog (BK-7b).</summary>
+        public int BaustoffeOhneTeilkatalog { get; internal set; }
+        /// <summary>Geplante Aufbauten ohne Teilkatalog (BK-7b).</summary>
+        public int AufbautenOhneTeilkatalog { get; internal set; }
         /// <summary>Zahlen der Baustoffe.</summary>
         public BauteilkatalogZaehlung Baustoffe { get; } = new BauteilkatalogZaehlung();
         /// <summary>Zahlen der Aufbauten.</summary>
@@ -83,6 +105,70 @@ namespace WindowsFormsApplication1
         public int Gekennzeichnet { get; internal set; }
         /// <summary>Schichten, die über den Namen (N1–N3) einen Baustoff derselben Gruppe treffen.</summary>
         public int SchichtenMitBaustoff { get; internal set; }
+        /// <summary>Baustoffe, deren λ als Skalenfehler der Quelle durch 1 000 geteilt wurde (E134; je Zeile im Protokoll).</summary>
+        public int LambdaSkaliert { get; internal set; }
+        /// <summary>
+        /// Aufbauten, deren Abschnitte an gemeinsamen Schichtgrenzen geteilt wurden (BK-8, BK-8b): verschiedene Schichtzahl oder
+        /// gleiche Schichtzahl mit versetzten Grenzen.
+        /// </summary>
+        public int SchichtzahlAngeglichen { get; internal set; }
+        /// <summary>Schichten, die das Teilen an gemeinsamen Schichtgrenzen zusätzlich anlegt (BK-8).</summary>
+        public int Teilschichten { get; internal set; }
+        /// <summary>Abschnitte, deren fehlender Flächenanteil als Rest zu 1 eingesetzt wurde (BK-8).</summary>
+        public int AnteilErgaenzt { get; internal set; }
+        /// <summary>
+        /// Abschnitte mit Flächenanteil genau 0, die weggelassen wurden, weil die übrigen Anteile 1 ± Toleranz ergeben
+        /// (BK-10, DIN EN ISO 6946, 6.7.2: ein Abschnitt geht nur mit seinem Anteil ein); je Aufbau eine Protokollzeile.
+        /// </summary>
+        public int AbschnitteOhneBeitrag { get; internal set; }
+        /// <summary>
+        /// Wiedererkannte Aufbauten, die die Übernahme ändert (BK-11): ein Importsatz, dessen <c>Quelle</c> (samt Teilkatalog),
+        /// Bezeichner, Schicht- oder Abschnittzahl oder Gesamtdicke der Schichten vom Katalog abweicht — die Übernahme ersetzt
+        /// Kopf, Schichten und Abschnitte —, und ein Satz eigener Herkunft, dessen <c>Quelle</c> die Übernahme ergänzt (seine
+        /// Schichten bleiben). Nach einer Übernahme zählt eine zweite Vorschau derselben Quelle 0.
+        /// </summary>
+        public int AufbautenAktualisiert { get; internal set; }
+        /// <summary>
+        /// Wiederimport (BK-8b): Aufbauten, die schon als Importsatz im Katalog stehen und durch die Teilung an gemeinsamen
+        /// Schichtgrenzen andere Schichten bekämen; nur die Vorschau zählt sie (<see cref="BauteilkatalogImport.Vorschau"/>).
+        /// </summary>
+        public int WiederimportGeteilt { get; internal set; }
+        /// <summary>
+        /// Wiederimport (BK-8c): davon die Aufbauten, deren U-Wert verglichen wurde — gegen das U, das der Kern für den
+        /// Katalogsatz rechnet, sonst gegen den gespeicherten U-Wert der Quelle.
+        /// </summary>
+        public int WiederimportVerglichen { get; internal set; }
+        /// <summary>Wiederimport (BK-8c): davon die Aufbauten, die gegen den gespeicherten U-Wert der Quelle verglichen wurden.</summary>
+        public int WiederimportGegenQuelle { get; internal set; }
+        /// <summary>Wiederimport (BK-8b): davon die Aufbauten, deren U-Wert sich um mehr als 1 % ändert.</summary>
+        public int WiederimportUGeaendert { get; internal set; }
+        /// <summary>Wiederimport (BK-8b): die größte Änderung des U-Werts in % (Betrag); <c>null</c> = keiner verglichen.</summary>
+        public double? WiederimportUMaxProzent { get; internal set; }
+        /// <summary>
+        /// Wiederimport (BK-8c): davon die Aufbauten ohne Vergleichswert — weder der Katalogsatz noch der neue Stand ergeben
+        /// ein U, und die Quelle hat keinen U-Wert gespeichert.
+        /// </summary>
+        public int WiederimportOhneVergleichswert { get; internal set; }
+        /// <summary>
+        /// Importsätze (<c>IMPORT</c>) des Katalogs mit Name und Gruppe eines Auslieferungssatzes (<c>VORGABE</c>) — vermutete
+        /// Dubletten, nur gezählt (BK-3d); die Vorschau nennt die Zahl im Protokoll, gelöscht wird nichts.
+        /// </summary>
+        public int DublettenImKatalog { get; internal set; }
+        /// <summary>
+        /// Importsätze des Katalogs, deren Bezeichner und Gruppe ein Importsatz anderer Quellkennung teilt — nur gezählt (BK-3d);
+        /// die Quelle trennt gleichnamige Sätze mit Werten außerhalb der Dublettenregel als eigene Stoffe.
+        /// </summary>
+        public int NamensgleicheImporte { get; internal set; }
+        /// <summary>Baustoffe der Klasse Haustechnik (Basis-Codes 14, 19, 29, 30).</summary>
+        public int HaustechnikBaustoffe { get; internal set; }
+        /// <summary>Aufbauten der Klasse Haustechnik (Basis-Codes 14, 19, 29, 30).</summary>
+        public int HaustechnikAufbauten { get; internal set; }
+        /// <summary>Luftdurchlässe (Basis-Code 19) unter den Aufbauten — immer gekennzeichnet.</summary>
+        public int Luftdurchlaesse { get; internal set; }
+        /// <summary>Geplante Baustoffe je „Gruppe/Klasse“ (Codes; Klasse leer = „-“).</summary>
+        public SortedDictionary<string, int> BaustoffGliederung { get; } = new SortedDictionary<string, int>(StringComparer.Ordinal);
+        /// <summary>Geplante Aufbauten je „Gruppe/Klasse“ (Codes; Klasse leer = „-“).</summary>
+        public SortedDictionary<string, int> AufbauGliederung { get; } = new SortedDictionary<string, int>(StringComparer.Ordinal);
         /// <summary>Codes ohne Deutung („Datei Spalte Code“ → Anzahl); sie fallen auf „Sonstige“.</summary>
         public SortedDictionary<string, int> CodesOhneDeutung { get; } = new SortedDictionary<string, int>(StringComparer.Ordinal);
         /// <summary>Die Stichprobe der Richtung (Regel 7).</summary>
@@ -121,6 +207,12 @@ namespace WindowsFormsApplication1
         public string Quellkennung { get; set; }
         /// <summary>Die Quelle.</summary>
         public string Quelle { get; set; }
+        /// <summary>Aufbau: die Zahl seiner Schichten im Katalog (BK-11).</summary>
+        public int Schichten { get; set; }
+        /// <summary>Aufbau: die Zahl seiner Abschnitte im Katalog (BK-11).</summary>
+        public int Abschnitte { get; set; }
+        /// <summary>Aufbau: die Summe der Schichtdicken aller Abschnitte in m (BK-11).</summary>
+        public double Dicke { get; set; }
     }
 
     /// <summary>Der Abzug des Katalogs, gegen den geplant wird.</summary>
@@ -147,30 +239,115 @@ namespace WindowsFormsApplication1
         /// <summary>c bis zu diesem Wert steht in kJ/(kg·K) und wird mit 1 000 multipliziert (Regel 2).</summary>
         public const double CP_KJ_GRENZE = 10.0;
 
-        /// <summary>λ darüber nur bei Metallen (Regel 3).</summary>
+        /// <summary>λ darüber nur bei Metallen (Regel 3, E134: erkannt an der Rohdichte).</summary>
         public const double LAMBDA_METALL_GRENZE = 10.0;
+
+        /// <summary>Rohdichte [kg/m³], ab der ein Stoff mit λ &gt; 10 als Metall gilt (E134).</summary>
+        public const double RHO_METALL_MIN = 2500.0;
+
+        /// <summary>λ darüber kann bei einem Nichtmetall ein Skalenfehler der Quelle sein (Faktor 1 000, E134).</summary>
+        public const double LAMBDA_SKALENFEHLER_MIN = 60.0;
+
+        /// <summary>Der Faktor des Skalenfehlers.</summary>
+        public const double LAMBDA_SKALENFAKTOR = 1000.0;
+
+        /// <summary>Band, in dem λ/1 000 liegen muss, damit der Skalenfehler als erkannt gilt [W/(m·K)].</summary>
+        public const double LAMBDA_SKALIERT_MIN = 0.02, LAMBDA_SKALIERT_MAX = 0.5;
+
+        /// <summary>Ablehnungsgrund eines Baustoffs mit λ &gt; 10, der weder Metall noch erkannter Skalenfehler ist.</summary>
+        public const string GRUND_LAMBDA = "λ > 10 ohne Metall (ρ < 2 500 kg/m³) und ohne erkennbaren Skalenfehler";
 
         /// <summary>Rsi und Rse, wenn die Quelle sie am Aufbau nicht nennt (DIN EN ISO 6946, horizontal).</summary>
         public const double RSI_VORGABE = 0.13, RSE_VORGABE = 0.04;
 
         /// <summary>
-        /// <b>Stoffgruppencode der Quelle → Gruppe</b> (Regel 5; Deutung nach DIN 4108-4 Tabelle 1, Vermutung des
-        /// Feldinventars): 0 gemischt, 1 Putze/Mörtel/Estriche, 2 Beton, 3 Bauplatten, 4 Mauerwerk, 5 Dämmstoffe,
-        /// 6 Holz, 7 Beläge und Abdichtungen, 8 sonstige Stoffe (Metalle, Glas, Erdreich).
+        /// <b>Stoffgruppencode der Quelle → Gruppe</b> (Regel 5, Code-Tafel nach E134): 1 Putze, Mörtel, Estriche, 2 Beton,
+        /// 3 Dämmstoffe mit Bauplatten (Bauplatten), 4 Mauerwerk, 5 Dämmstoffe, 6 Holz, 7 Beläge und Abdichtungen, 8 Sonstige;
+        /// 0 und leer gehören nicht zur Tafel — sie werden über <c>Basis_Auszug</c> (TcBasis) nachgetragen, sonst „Sonstige“.
         /// </summary>
         public static readonly IReadOnlyDictionary<int, string> STOFFGRUPPE_AUS_CODE = new Dictionary<int, string>
         {
-            [0] = "SONSTIGE", [1] = "PUTZE", [2] = "BETON", [3] = "PLATTEN", [4] = "MAUERWERK",
+            [1] = "PUTZE", [2] = "BETON", [3] = "PLATTEN", [4] = "MAUERWERK",
             [5] = "DAEMMSTOFFE", [6] = "HOLZ", [7] = "ABDICHTUNGEN", [8] = "SONSTIGE"
         };
 
-        /// <summary>Der Stoffgruppencode, unter dem λ &gt; 10 zulässig ist (sonstige Stoffe: Metalle).</summary>
-        public const int CODE_SONSTIGE_STOFFE = 8;
+        /// <summary>
+        /// <b>Nachbargruppen eines Stoffgruppencodes</b>: die Tafel fasst zusammen, was der Katalog trennt (Putz und Estrich,
+        /// Dämmstoff und Bauplatte, Belag und Abdichtung, sonstige Stoffe mit Metallen und Erdreich). Trifft die Klasse aus dem
+        /// Namen eine dieser Gruppen, gilt sie; sonst die Gruppe der Tafel.
+        /// </summary>
+        public static readonly IReadOnlyDictionary<int, string[]> NACHBARGRUPPEN_AUS_CODE = new Dictionary<int, string[]>
+        {
+            [1] = new[] { "ESTRICHE" },
+            [3] = new[] { "DAEMMSTOFFE" },
+            [7] = new[] { "BODENBELAEGE" },
+            [8] = new[] { "METALLE", "ERDREICH" }
+        };
+
+        /// <summary>Basis-Codes (<c>Basis_Auszug</c> GroupType) der Haustechnik-Werkstoffe und ihres Zubehörs (E134).</summary>
+        public static readonly IReadOnlyCollection<int> HAUSTECHNIK_CODES = new HashSet<int> { 14, 19, 29, 30 };
+
+        /// <summary>Basis-Code der Luftdurchlässe: an Aufbauten gekennzeichnet (E134).</summary>
+        public const int CODE_LUFTDURCHLASS = 19;
+
+        /// <summary>Die Klasse „Haustechnik“ (Schritt 222, <see cref="BauteilkatalogHaustechnikSchema"/>).</summary>
+        public const string KLASSE_HAUSTECHNIK = BauteilkatalogHaustechnikSchema.KLASSE;
 
         /// <summary>
-        /// <b>Bauteilart aus <c>Basis_Auszug</c> GroupType/SubType</b> (Regel 6): 1 Wände (Untertyp 2 Innenwand,
-        /// sonst Außenwand), 2 Türen, 3 Fenster, 4 Decken und Böden, 5 Dächer; 17 Wärmebrücken und 19 Luftdurchlässe
-        /// sind gedeutet, aber kein Aufbau der Hülle → Sonstiges; alles Übrige ist ungedeutet → Sonstiges mit Protokoll.
+        /// Die Klasse eines Haustechnik-Satzes in der Gruppe „Sonstige“ — für Baustoff und Aufbau dieselbe
+        /// (<see cref="KLASSE_HAUSTECHNIK"/>); über den Klassenfilter der Kataloge ausblendbar.
+        /// </summary>
+        public static string KlasseHaustechnik(bool baustoff) => KLASSE_HAUSTECHNIK;
+
+        /// <summary>
+        /// <b>Gruppe und Klasse eines Baustoffs aus Code und Name</b> (Regel 5, E134). Ein Haustechnik-Code → „Sonstige“ mit
+        /// Klasse Haustechnik; ein Code der Tafel → seine Gruppe, die Klasse aus dem Namen auch in einer Nachbargruppe;
+        /// leer, 0 oder unbekannt → „Sonstige“ (<paramref name="gedeutet"/> = <c>false</c> nur für einen unbekannten Code).
+        /// </summary>
+        public static (string Gruppe, string Klasse, bool Haustechnik) GliederungAusCode(int? code, string schluessel, out bool gedeutet)
+        {
+            gedeutet = true;
+            if (code.HasValue && HAUSTECHNIK_CODES.Contains(code.Value))
+                return (Bauteilkatalog.GRUPPE_SONSTIGE, KlasseHaustechnik(true), true);
+            string gruppe = Bauteilkatalog.GRUPPE_SONSTIGE;
+            if (code.HasValue && code.Value != 0)
+            {
+                if (STOFFGRUPPE_AUS_CODE.TryGetValue(code.Value, out string g)) gruppe = g;
+                else gedeutet = false;
+            }
+            string klasse = KlasseAusName(schluessel, gruppe);
+            if (klasse == null && code.HasValue && NACHBARGRUPPEN_AUS_CODE.TryGetValue(code.Value, out string[] nachbarn))
+                foreach (string n in nachbarn)
+                {
+                    klasse = KlasseAusName(schluessel, n);
+                    if (klasse != null) { gruppe = n; break; }
+                }
+            return (gruppe, klasse, false);
+        }
+
+        /// <summary>Befund der λ-Plausibilität (E134).</summary>
+        public enum LambdaBefund { Gueltig, Metall, Skaliert, Abgelehnt }
+
+        /// <summary>
+        /// <b>λ-Plausibilität</b> (Regel 3, E134): λ ≤ 10 gilt; λ &gt; 10 nur bei ρ ≥ 2 500 kg/m³ (Metall); ein Nichtmetall mit
+        /// λ &gt; 60, dessen λ/1 000 im Band 0,02–0,5 liegt, ist ein Skalenfehler der Quelle und wird durch 1 000 geteilt;
+        /// jedes übrige λ &gt; 10 wird abgelehnt (Rückgabe <c>null</c>). λ ≤ 0 oder leer bleibt „kein Wert“ des Aufrufers.
+        /// </summary>
+        public static (double? Lambda, LambdaBefund Befund) LambdaPruefen(double? lambda, double? rho)
+        {
+            if (!(lambda > LAMBDA_METALL_GRENZE)) return (lambda, LambdaBefund.Gueltig);
+            if (rho >= RHO_METALL_MIN) return (lambda, LambdaBefund.Metall);
+            double skaliert = lambda.Value / LAMBDA_SKALENFAKTOR;
+            if (lambda.Value > LAMBDA_SKALENFEHLER_MIN && skaliert >= LAMBDA_SKALIERT_MIN && skaliert <= LAMBDA_SKALIERT_MAX)
+                return (skaliert, LambdaBefund.Skaliert);
+            return (null, LambdaBefund.Abgelehnt);
+        }
+
+        /// <summary>
+        /// <b>Bauteilart aus <c>Basis_Auszug</c> GroupType/SubType</b> (Regel 6, E134): 1 Wände (Untertyp 2 Innenwand,
+        /// sonst Außenwand), 2 Türen, 3 Fenster, 4 Decken und Böden, 5 Dächer, 15|0 und 16|0 Wände (Außenwand); 17 Wärmebrücken
+        /// und die Haustechnik-Codes 14, 19 (Luftdurchlässe), 29, 30 sind gedeutet, aber kein Aufbau der Hülle → Sonstiges;
+        /// alles Übrige ist ungedeutet → Sonstiges mit Protokoll.
         /// </summary>
         public static (string Bauteilart, bool Gedeutet) BauteilartAusBasis(int? gruppe, int? untertyp)
         {
@@ -181,8 +358,15 @@ namespace WindowsFormsApplication1
                 case 3: return (DbWerte.BAUTEILART_FENSTER, true);
                 case 4: return (DbWerte.BAUTEILART_DECKE, true);
                 case 5: return (DbWerte.BAUTEILART_DACH, true);
+                case 15:
+                case 16:
+                    if (untertyp.GetValueOrDefault() == 0) return (DbWerte.BAUTEILART_AUSSENWAND, true);
+                    return (DbWerte.BAUTEILART_SONSTIGES, false);
+                case 14:
                 case 17:
-                case 19: return (DbWerte.BAUTEILART_SONSTIGES, true);
+                case 19:
+                case 29:
+                case 30: return (DbWerte.BAUTEILART_SONSTIGES, true);
                 default: return (DbWerte.BAUTEILART_SONSTIGES, false);
             }
         }
@@ -275,13 +459,17 @@ namespace WindowsFormsApplication1
             internal string Schluessel;
             internal string Gruppe;
             internal int? Quellcode;
+            internal bool Haustechnik;
+            internal bool Luftdurchlass;
             internal Dictionary<string, object> Werte = new Dictionary<string, object>(StringComparer.Ordinal);
             internal string Aktion; // NEU, AKTUALISIEREN, ERGAENZEN, AUS (übergangen)
             internal long ZielId;
             internal Satz Vertreter;          // Schicht → Baustoff, Schicht/Abschnitt → Aufbau
             internal Satz Abschnitt;          // Schicht → Abschnitt
+            internal bool Geteilt;            // Aufbau: an gemeinsamen Schichtgrenzen geteilt (BK-8b)
             internal BauteilkatalogBestand Bestand;
             internal List<Satz> Schichten = new List<Satz>();
+            internal SortedSet<string> Teilkataloge = new SortedSet<string>(StringComparer.Ordinal); // BK-7
             internal double? Lambda => W("Lambda");
             internal double? Rho => W("Rho");
             internal double? Cp => W("cp");
@@ -342,6 +530,8 @@ namespace WindowsFormsApplication1
         {
             var p = new Plan();
             BauteilkatalogVorschau v = p.Vorschau;
+            v.Ordner = q.Ordner ?? "";
+            v.UnterordnerExport = q.AusUnterordnerExport;
             if (q.Abgelehnt != null) { v.Abgelehnt = q.Abgelehnt; return p; }
             v.Protokoll.AddRange(q.Hinweise);
             stand ??= new BauteilkatalogStand();
@@ -381,6 +571,34 @@ namespace WindowsFormsApplication1
                 }
             }
 
+            // BK-7: Teilkataloge - Kennung (Satz oder Basiszeile) -> Saetze, dann die Zuordnung aus Katalog_Zuordnung.csv
+            // (BK-7b) oder Katalog_Inhalt.csv.
+            var ziele = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+            void Ziel(string von, string satz)
+            {
+                if (von == null || satz == null) return;
+                if (!ziele.TryGetValue(von, out List<string> l)) ziele[von] = l = new List<string>();
+                if (!l.Contains(satz)) l.Add(satz);
+            }
+            foreach (string[] z in tb.Zeilen) { string k = tb.Kennung(z, "UId"); Ziel(k, k); }
+            foreach (string[] z in ta.Zeilen)
+            {
+                string k = ta.Kennung(z, "UId");
+                Ziel(k, k);
+                Ziel(ta.Kennung(z, "BasisUId"), k);
+            }
+            foreach (string[] z in tz.Zeilen) Ziel(tz.Kennung(z, "UId"), tz.Kennung(z, "MaterialUId"));
+            // BK-7b: Katalog_Zuordnung.csv trifft mit BasisUId und DimensionUId dieselben Ziele (Basiszeile -> Baustoff,
+            // Aufbau-BasisUId -> Aufbau, UId -> Satz).
+            BauteilkatalogTeilkataloge.Ergebnis zuordnung = BauteilkatalogTeilkataloge.Zuordnen(q, ziele, v.Protokoll);
+            Dictionary<string, SortedSet<string>> teil = zuordnung.Saetze;
+            v.TeilkatalogeInQuelle = zuordnung.InQuelle;
+            v.TeilkatalogeAusZuordnung = zuordnung.AusZuordnung;
+            void TeilkatalogeSetzen(Satz s)
+            {
+                if (teil.TryGetValue(s.Kennung, out SortedSet<string> namen)) s.Teilkataloge.UnionWith(namen);
+            }
+
             // ---- Baustoffe ----
             var gesehen = new HashSet<string>(StringComparer.Ordinal);
             var vertreter = new Dictionary<(string, string), List<Satz>>();
@@ -395,44 +613,50 @@ namespace WindowsFormsApplication1
 
                 int? code = tb.Ganz(z, "MaterialGroupType");
                 string wo = "Baustoffe.csv MaterialGroupType";
-                if (!code.HasValue && basisStoff.TryGetValue(k, out Dictionary<int, int> codes))
+                // 0 und leer gehören nicht zur Tafel: über die Basiszeilen (TcBasis) nachtragen (E134).
+                if (code.GetValueOrDefault() == 0 && basisStoff.TryGetValue(k, out Dictionary<int, int> codes))
                 {
                     if (codes.Count > 1) widerspruch++;
                     code = codes.OrderByDescending(c => c.Value).ThenBy(c => c.Key).First().Key;
                     wo = "Basis_Auszug.csv GroupType";
                 }
-                string gruppe = Bauteilkatalog.GRUPPE_SONSTIGE;
-                if (code.HasValue)
-                {
-                    if (STOFFGRUPPE_AUS_CODE.TryGetValue(code.Value, out string g)) gruppe = g;
-                    else v.Code(wo, code.Value.ToString(CultureInfo.InvariantCulture));
-                }
+                string schluessel = Baustoffabgleich.Schluessel(name);
+                (string gruppe, string klasse, bool haustechnik) = GliederungAusCode(code, schluessel, out bool gedeutet);
+                if (!gedeutet) v.Code(wo, code.Value.ToString(CultureInfo.InvariantCulture));
 
                 double? lambda = tb.Zahl(z, "HeatConductivity");
                 if (lambda.HasValue && lambda.Value <= 0) { lambda = null; Zaehle("Baustoff: λ ≤ 0 als kein Wert gelesen"); }
-                if (lambda > LAMBDA_METALL_GRENZE && gruppe != "METALLE" && code != CODE_SONSTIGE_STOFFE)
-                {
-                    v.Baustoffe.Ablehnen("λ > 10 außerhalb der Metalle");
-                    continue;
-                }
                 double? rho = tb.Zahl(z, "Density");
                 if (rho <= 0) rho = null;
+                (double? lambdaGeprueft, LambdaBefund befund) = LambdaPruefen(lambda, rho);
+                if (befund == LambdaBefund.Abgelehnt)
+                {
+                    v.Baustoffe.Ablehnen(GRUND_LAMBDA);
+                    continue;
+                }
+                if (befund == LambdaBefund.Skaliert)
+                {
+                    v.LambdaSkaliert++;
+                    v.Protokoll.Add("λ als Skalenfehler ÷ 1 000 (" + Zahl3(lambda.Value) + " → " + Zahl3(lambdaGeprueft.Value) +
+                                    " W/(m·K)): Baustoff " + k + " „" + Kuerzen(name, 80) + "“");
+                }
+                lambda = lambdaGeprueft;
                 double? cRoh = tb.Zahl(z, "HeatCapacity");
                 double? cp = CpNormieren(cRoh);
                 if (cRoh > 0 && cRoh <= CP_KJ_GRENZE) Zaehle("Baustoff: c in kJ/(kg·K) gelesen, × 1 000");
 
-                string schluessel = Baustoffabgleich.Schluessel(name);
-                var s = new Satz { Kennung = k, Schluessel = schluessel, Gruppe = gruppe, Quellcode = code };
+                var s = new Satz { Kennung = k, Schluessel = schluessel, Gruppe = gruppe, Quellcode = code, Haustechnik = haustechnik };
                 s.Werte["Bezeichner"] = Kuerzen(name, 80);
                 s.Werte["Gruppe"] = Bauteilkatalog.StoffgruppeAusGruppe(gruppe);
                 s.Werte["Lambda"] = lambda;
                 s.Werte["Rho"] = rho;
                 s.Werte["cp"] = cp;
                 s.Werte[BauteilkatalogSchema.SPALTE_GRUPPE] = gruppe;
-                s.Werte[BauteilkatalogSchema.SPALTE_KLASSE] = KlasseAusName(schluessel, gruppe);
+                s.Werte[BauteilkatalogSchema.SPALTE_KLASSE] = klasse;
                 Felder(s, tb, z, BAUSTOFF_FELDER, BauteilkatalogSchema.TAB_BAUSTOFF_STAMM, Zaehle);
                 s.Werte["Quelle"] = v.Quelle;
                 s.Werte["Quellkennung"] = k;
+                TeilkatalogeSetzen(s);
 
                 var schl = (schluessel, gruppe);
                 if (!vertreter.TryGetValue(schl, out List<Satz> liste)) vertreter[schl] = liste = new List<Satz>();
@@ -441,24 +665,19 @@ namespace WindowsFormsApplication1
                 {
                     foreach (KeyValuePair<string, object> w in s.Werte)
                         if (gleich.Werte.TryGetValue(w.Key, out object alt) && alt == null) gleich.Werte[w.Key] = w.Value;
+                    gleich.Teilkataloge.UnionWith(s.Teilkataloge); // Entwurf 2.3: die Quelle nennt alle Teilkataloge
                     v.Baustoffe.InQuelle++;
                     continue;
                 }
                 liste.Add(s);
                 p.Baustoffe.Add(s);
             }
+            foreach (Satz s in p.Baustoffe) s.Werte["Quelle"] = BauteilkatalogTeilkataloge.QuelleMit(v.Quelle, s.Teilkataloge);
             if (widerspruch > 0)
                 v.Protokoll.Add("Baustoffe mit widersprüchlicher Stoffgruppe in Basis_Auszug (häufigste gewählt): " + Zahl(widerspruch));
 
             // Gegen den Katalog: Quellkennung, dann Dublettenregel.
             Dictionary<string, BauteilkatalogBestand> nachKennung = NachKennung(stand.Baustoffe);
-            var nachName = new Dictionary<(string, string), List<BauteilkatalogBestand>>();
-            foreach (BauteilkatalogBestand b in stand.Baustoffe)
-            {
-                var schl = (Baustoffabgleich.Schluessel(b.Bezeichner ?? ""), b.Gruppe ?? Bauteilkatalog.GRUPPE_SONSTIGE);
-                if (!nachName.TryGetValue(schl, out List<BauteilkatalogBestand> l)) nachName[schl] = l = new List<BauteilkatalogBestand>();
-                l.Add(b);
-            }
             foreach (Satz s in p.Baustoffe)
             {
                 if (nachKennung.TryGetValue(s.Kennung, out BauteilkatalogBestand b))
@@ -466,11 +685,31 @@ namespace WindowsFormsApplication1
                     s.Bestand = b;
                     s.Aktion = b.Herkunft == BauteilkatalogSchema.HERKUNFT_IMPORT ? AKTUALISIEREN : ERGAENZEN;
                     v.Baustoffe.Wiedererkannt++;
-                    continue;
                 }
-                if (nachName.TryGetValue((s.Schluessel, s.Gruppe), out List<BauteilkatalogBestand> kandidaten))
+            }
+            // BK-3d: Die Dublettenregel prüft gegen den Stand NACH diesem Lauf. Ein Importsatz, den ein Satz der Quelle per
+            // Quellkennung aktualisiert, trägt danach dessen Name, Gruppe und Werte; an seinen alten Werten gebunden, zählte
+            // ein zweiter Satz jetzt „zusammengeführt“ und im nächsten Lauf „neu“ - der Wiederimport konvergierte nicht.
+            var aktualisiert = new Dictionary<long, Satz>();
+            foreach (Satz s in p.Baustoffe)
+                if (s.Aktion == AKTUALISIEREN) aktualisiert[s.Bestand.Id] = s;
+            var nachName = new Dictionary<(string, string), List<(BauteilkatalogBestand B, double? L, double? R, double? C)>>();
+            foreach (BauteilkatalogBestand b in stand.Baustoffe)
+            {
+                bool neuStand = aktualisiert.TryGetValue(b.Id, out Satz a);
+                var schl = neuStand
+                    ? (Baustoffabgleich.Schluessel(a.Werte["Bezeichner"] as string ?? ""), a.Gruppe)
+                    : (Baustoffabgleich.Schluessel(b.Bezeichner ?? ""), b.Gruppe ?? Bauteilkatalog.GRUPPE_SONSTIGE);
+                if (!nachName.TryGetValue(schl, out var l)) nachName[schl] = l = new List<(BauteilkatalogBestand, double?, double?, double?)>();
+                l.Add(neuStand ? (b, a.Lambda, a.Rho, a.Cp) : (b, b.Lambda, b.Rho, b.Cp));
+            }
+            foreach (Satz s in p.Baustoffe)
+            {
+                if (s.Aktion != null) continue;
+                BauteilkatalogBestand b;
+                if (nachName.TryGetValue((s.Schluessel, s.Gruppe), out var kandidaten))
                 {
-                    b = kandidaten.FirstOrDefault(x => WerteGleich(x.Lambda, x.Rho, x.Cp, s.Lambda, s.Rho, s.Cp));
+                    b = kandidaten.FirstOrDefault(x => WerteGleich(x.L, x.R, x.C, s.Lambda, s.Rho, s.Cp)).B;
                     if (b != null)
                     {
                         s.Bestand = b;
@@ -482,17 +721,21 @@ namespace WindowsFormsApplication1
                 s.Aktion = NEU;
                 v.Baustoffe.Neu++;
             }
+            DublettenZaehlen(v, stand.Baustoffe);
 
             // ---- Aufbauten ----
-            var fenster = new Dictionary<string, (double? Ug, double? G)>(StringComparer.Ordinal);
+            // BK-6: dazu psi des Glasrands (EdgePsiValue), wenn die Quelle ihn fuehrt.
+            var fenster = new Dictionary<string, (double? Ug, double? G, double? Psi)>(StringComparer.Ordinal);
             if (tf != null)
                 foreach (string[] z in tf.Zeilen)
                 {
                     string d = tf.Kennung(z, "DimensionUId");
                     if (d == null) continue;
-                    fenster.TryGetValue(d, out (double? Ug, double? G) alt);
-                    fenster[d] = (alt.Ug ?? tf.Zahl(z, "GlazingUValue"), alt.G ?? tf.Zahl(z, "GlazingGValue"));
+                    fenster.TryGetValue(d, out (double? Ug, double? G, double? Psi) alt);
+                    fenster[d] = (alt.Ug ?? tf.Zahl(z, "GlazingUValue"), alt.G ?? tf.Zahl(z, "GlazingGValue"),
+                                  alt.Psi ?? tf.Zahl(z, "EdgePsiValue"));
                 }
+            bool mitGlasrand = BauteilkatalogAbschnittSchema.Lesbar();
             Dictionary<string, BauteilkatalogBestand> aufbauNachKennung = NachKennung(stand.Aufbauten);
             var aufbauten = new Dictionary<string, Satz>(StringComparer.Ordinal);
             gesehen.Clear();
@@ -505,34 +748,44 @@ namespace WindowsFormsApplication1
                 if (name == null) { v.Aufbauten.Ablehnen("ohne Namen"); continue; }
                 string basis = ta.Kennung(z, "BasisUId");
                 string art = DbWerte.BAUTEILART_SONSTIGES;
+                bool haustechnik = false, luftdurchlass = false;
                 if (basis != null && basisAufbau.TryGetValue(basis, out (int? G, int? U) bt))
                 {
                     (string a, bool gedeutet) = BauteilartAusBasis(bt.G, bt.U);
                     art = a;
+                    haustechnik = bt.G.HasValue && HAUSTECHNIK_CODES.Contains(bt.G.Value);
+                    luftdurchlass = bt.G == CODE_LUFTDURCHLASS;
                     if (!gedeutet)
                         v.Code("Basis_Auszug.csv GroupType|SubType", (bt.G?.ToString(CultureInfo.InvariantCulture) ?? "") + "|" +
                                                                      (bt.U?.ToString(CultureInfo.InvariantCulture) ?? ""));
                 }
                 else Zaehle("Aufbau ohne Basiszeile, Bauteilart Sonstiges");
 
-                var s = new Satz { Kennung = k };
-                (string gruppe, string klasse) = Bauteilkatalog.GliederungAusBauteilart(art, null);
+                var s = new Satz { Kennung = k, Haustechnik = haustechnik, Luftdurchlass = luftdurchlass };
+                (string gruppe, string klasse) = haustechnik
+                    ? (Bauteilkatalog.GRUPPE_SONSTIGE, KlasseHaustechnik(false))
+                    : Bauteilkatalog.GliederungAusBauteilart(art, null);
                 s.Werte["Bezeichner"] = Kuerzen(name, 80);
                 s.Werte["Beschreibung"] = Kuerzen(ta.Text(z, "LongDesc"), 250);
                 s.Werte["Bauteilart"] = art;
                 s.Werte[BauteilkatalogSchema.SPALTE_GRUPPE] = gruppe;
                 s.Werte[BauteilkatalogSchema.SPALTE_KLASSE] = klasse;
                 Felder(s, ta, z, AUFBAU_FELDER, BauteilkatalogSchema.TAB_AUFBAU_STAMM, Zaehle);
-                if (fenster.TryGetValue(k, out (double? Ug, double? G) fl))
+                if (mitGlasrand) s.Werte[BauteilkatalogAbschnittSchema.SPALTE_PSI_GLASRAND] = null;
+                if (fenster.TryGetValue(k, out (double? Ug, double? G, double? Psi) fl))
                 {
                     if (s.Werte["Ug"] == null) s.Werte["Ug"] = Bereinigen(BauteilkatalogSchema.TAB_AUFBAU_STAMM, "Ug", fl.Ug, Zaehle);
                     if (s.Werte["g_Wert"] == null) s.Werte["g_Wert"] = Bereinigen(BauteilkatalogSchema.TAB_AUFBAU_STAMM, "g_Wert", fl.G, Zaehle);
+                    if (mitGlasrand)
+                        s.Werte[BauteilkatalogAbschnittSchema.SPALTE_PSI_GLASRAND] =
+                            Bereinigen(BauteilkatalogSchema.TAB_AUFBAU_STAMM, BauteilkatalogAbschnittSchema.SPALTE_PSI_GLASRAND, fl.Psi, Zaehle);
                 }
                 DateTime? von = ta.Datum(z, "ValidStartDate"), bis = ta.Datum(z, "ValidEndDate");
                 s.Werte["Gueltigkeit"] = von.HasValue || bis.HasValue
                     ? (von?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "") + " bis " + (bis?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "")
                     : null;
-                s.Werte["Quelle"] = v.Quelle;
+                TeilkatalogeSetzen(s);
+                s.Werte["Quelle"] = BauteilkatalogTeilkataloge.QuelleMit(v.Quelle, s.Teilkataloge);
                 s.Werte["Quellkennung"] = k;
                 if (aufbauNachKennung.TryGetValue(k, out BauteilkatalogBestand b))
                 {
@@ -544,7 +797,6 @@ namespace WindowsFormsApplication1
                 aufbauten[k] = s;
                 p.Aufbauten.Add(s);
             }
-
             // ---- Abschnitte ----
             var abschnitte = new Dictionary<string, Satz>(StringComparer.Ordinal);
             if (tx != null)
@@ -594,26 +846,26 @@ namespace WindowsFormsApplication1
 
                 string name = ts.Text(z, "ShortDesc") ?? ts.Text(z, "LongDesc") ?? "";
                 int? code = ts.Ganz(z, "MaterialGroupType");
-                string gruppe = Bauteilkatalog.GRUPPE_SONSTIGE;
-                if (code.HasValue)
-                {
-                    if (STOFFGRUPPE_AUS_CODE.TryGetValue(code.Value, out string g)) gruppe = g;
-                    else v.Code("Schichten.csv MaterialGroupType", code.Value.ToString(CultureInfo.InvariantCulture));
-                }
+                string schluessel = Baustoffabgleich.Schluessel(name);
+                (string gruppe, _, _) = GliederungAusCode(code, schluessel, out bool gedeutet);
+                if (!gedeutet) v.Code("Schichten.csv MaterialGroupType", code.Value.ToString(CultureInfo.InvariantCulture));
                 double? lambda = ts.Zahl(z, "ThermalConductivity");
                 if (lambda <= 0) lambda = null;
-                if (lambda > LAMBDA_METALL_GRENZE && gruppe != "METALLE" && code != CODE_SONSTIGE_STOFFE)
-                {
-                    lambda = null;
-                    Zaehle("Schicht: λ > 10 außerhalb der Metalle verworfen");
-                }
                 double? rho = ts.Zahl(z, "Density");
                 if (rho <= 0) rho = null;
+                (double? lambdaGeprueft, LambdaBefund befund) = LambdaPruefen(lambda, rho);
+                if (befund == LambdaBefund.Abgelehnt) Zaehle("Schicht: λ > 10 ohne Metall und ohne Skalenfehler verworfen");
+                if (befund == LambdaBefund.Skaliert)
+                {
+                    Zaehle("Schicht: λ als Skalenfehler ÷ 1 000");
+                    v.Protokoll.Add("λ als Skalenfehler ÷ 1 000 (" + Zahl3(lambda.Value) + " → " + Zahl3(lambdaGeprueft.Value) +
+                                    " W/(m·K)): Schicht " + k);
+                }
+                lambda = lambdaGeprueft;
                 double? cRoh = ts.Zahl(z, "HeatCapacity");
                 if (cRoh > 0 && cRoh <= CP_KJ_GRENZE) Zaehle("Schicht: c in kJ/(kg·K) gelesen, × 1 000");
                 double? dicke = ts.Zahl(z, "Thickness");
                 if (!dicke.HasValue || dicke.Value < 0) { dicke = 0; Zaehle("Schicht ohne Dicke (0 m, R der Quelle bleibt)"); }
-                string schluessel = Baustoffabgleich.Schluessel(name);
 
                 var s = new Satz { Kennung = k, Schluessel = schluessel, Gruppe = gruppe, Vertreter = auf, Abschnitt = abschnitt };
                 s.Werte["Dicke"] = dicke.Value;
@@ -666,6 +918,26 @@ namespace WindowsFormsApplication1
                 }
             }
             if (luecken > 0) v.Protokoll.Add("Schichtgruppen neu nummeriert: " + Zahl(luecken));
+            AbschnittePruefen(p, v);
+            AktualisierteZaehlen(p, v);
+            // BK-9: die Teilkatalog-Zählungen erst nach dem Verwerfen - Vorschau und Übernahme zählen dieselben Sätze.
+            v.BaustoffeMitTeilkatalog = p.Baustoffe.Count(x => x.Teilkataloge.Count > 0);
+            v.AufbautenMitTeilkatalog = p.Aufbauten.Count(x => x.Teilkataloge.Count > 0);
+            v.Teilkataloge = p.Baustoffe.Concat(p.Aufbauten).SelectMany(x => x.Teilkataloge).Distinct(StringComparer.Ordinal).Count();
+            v.BaustoffeMitMehrerenTeilkatalogen = p.Baustoffe.Count(x => x.Teilkataloge.Count > 1);
+            v.AufbautenMitMehrerenTeilkatalogen = p.Aufbauten.Count(x => x.Teilkataloge.Count > 1);
+            v.BaustoffeOhneTeilkatalog = p.Baustoffe.Count - v.BaustoffeMitTeilkatalog;
+            v.AufbautenOhneTeilkatalog = p.Aufbauten.Count - v.AufbautenMitTeilkatalog;
+            if (v.Teilkataloge > 0)
+            {
+                v.Protokoll.Add("Teilkataloge: " + Zahl(v.Teilkataloge) + ", in der Quelle genannt an " + Zahl(v.BaustoffeMitTeilkatalog) +
+                                " Baustoffen und " + Zahl(v.AufbautenMitTeilkatalog) + " Aufbauten");
+                v.Protokoll.Add("Teilkataloge in " + BauteilkatalogQuelle.DATEI_KATALOG + ": " + Zahl(v.TeilkatalogeInQuelle) + "; aus " +
+                                (v.TeilkatalogeAusZuordnung ? BauteilkatalogQuelle.DATEI_KATALOG_ZUORDNUNG : BauteilkatalogQuelle.DATEI_KATALOG_INHALT) +
+                                "; mit zwei oder mehr Teilkatalogen " + Zahl(v.BaustoffeMitMehrerenTeilkatalogen) + " Baustoffe und " +
+                                Zahl(v.AufbautenMitMehrerenTeilkatalogen) + " Aufbauten; ohne Teilkatalog " + Zahl(v.BaustoffeOhneTeilkatalog) +
+                                " Baustoffe und " + Zahl(v.AufbautenOhneTeilkatalog) + " Aufbauten");
+            }
 
             // ---- Kennzeichen (allein der Kern) ----
             foreach (Satz a in p.Aufbauten)
@@ -680,9 +952,23 @@ namespace WindowsFormsApplication1
                         IstLuftschicht = (int)s.Werte["IstLuftschicht"] == 1, Lambda = s.Lambda,
                         Dicke = s.W("Dicke") ?? 0.0, Rho = s.W("Rho"), Cp = s.W("cp")
                     });
-                bool ungeeignet = Bauteilkatalog.MeistUngeeignet(m);
+                // E134: ein Luftdurchlass trägt keine Bauphysik der Hülle - gekennzeichnet auch mit Schichten.
+                bool ungeeignet = Bauteilkatalog.MeistUngeeignet(m) || a.Luftdurchlass;
                 a.Werte[BauteilkatalogSchema.SPALTE_UNGEEIGNET] = ungeeignet ? 1 : 0;
                 if (ungeeignet) v.Gekennzeichnet++;
+            }
+
+            // ---- Gliederung der geplanten Sätze (Zählungen für die Vorschau) ----
+            foreach (Satz b in p.Baustoffe)
+            {
+                Gliederung(v.BaustoffGliederung, b);
+                if (b.Haustechnik) v.HaustechnikBaustoffe++;
+            }
+            foreach (Satz a in p.Aufbauten)
+            {
+                Gliederung(v.AufbauGliederung, a);
+                if (a.Haustechnik) v.HaustechnikAufbauten++;
+                if (a.Luftdurchlass) v.Luftdurchlaesse++;
             }
 
             Richtungsprobe(p);
@@ -691,6 +977,366 @@ namespace WindowsFormsApplication1
             v.Protokoll.Add("Einheiten wie Quelle: Feuchtegehalt, Rauheit, Elastizität, Längenausdehnung, OI3 (unverändert übernommen)");
             return p;
         }
+
+        private static void Gliederung(SortedDictionary<string, int> ziel, Satz s)
+        {
+            string schl = (s.Werte.TryGetValue(BauteilkatalogSchema.SPALTE_GRUPPE, out object g) ? g as string : null) + "/" +
+                          ((s.Werte.TryGetValue(BauteilkatalogSchema.SPALTE_KLASSE, out object k) ? k as string : null) ?? "-");
+            ziel[schl] = ziel.TryGetValue(schl, out int n) ? n + 1 : 1;
+        }
+
+        /// <summary>
+        /// Die zulässige Abweichung der Gesamtdicken der Abschnitte eines Aufbaus mit verschiedener Schichtzahl (BK-8):
+        /// höchstens 1 mm oder 1 % der größten Gesamtdicke, das größere Maß — die Quelle führt Dicken in Millimetern, und 1 %
+        /// entspricht der Toleranz der Flächenanteile (<see cref="InhomogeneSchichten.ANTEIL_TOLERANZ"/>).
+        /// </summary>
+        internal const double DICKE_TOLERANZ_M = 0.001, DICKE_TOLERANZ_ANTEIL = 0.01;
+
+        /// <summary>Schichtgrenzen, die in der genormten Lage (0…1) näher als dieses Maß liegen, sind dieselbe Grenze.</summary>
+        private const double GRENZE_GLEICH = 1e-9;
+
+        /// <summary>
+        /// <b>BK-5/BK-8: Aufbauten mit Abschnitten</b> werden übernommen, wenn sie sich als Ebenen lesen lassen: jede Schicht liegt in
+        /// einem Abschnitt (ein Abschnitt ist ein Streifen mit eigener Schichtfolge, nummeriert je Abschnitt), die k-te Schicht jedes
+        /// Abschnitts bildet die Ebene k, und die Flächenanteile der Abschnitte ergeben 1 ± 0,01.
+        /// <para><b>Fehlender Flächenanteil (BK-8).</b> Fehlt er (leer oder 0) bei genau einem Abschnitt und lassen die übrigen mehr
+        /// als die Toleranz bis 1 offen, trägt dieser Abschnitt den Rest 1 − Σ (Hinweis); sonst wird verworfen.</para>
+        /// <para><b>Gemeinsame Schichtgrenzen (BK-8, BK-8b, DIN EN ISO 6946, 6.7.2.3).</b> Für den unteren Grenzwert werden die
+        /// Schichten an den Grenzen aller übrigen Abschnitte geteilt: Die Schichtgrenzen aller Abschnitte werden vereinigt und jede
+        /// Schicht an den Grenzen der übrigen geteilt — in der auf die eigene Gesamtdicke genormten Lage, so behält jeder Abschnitt
+        /// seine Dicke und seinen Widerstand, und der obere Grenzwert bleibt gleich; danach führt jeder Abschnitt gleich viele
+        /// Schichten. Das gilt bei verschiedener wie bei gleicher Schichtzahl. Liegen bei gleicher Schichtzahl alle Grenzen
+        /// innerhalb der Toleranz (<see cref="DICKE_TOLERANZ_M"/>, <see cref="DICKE_TOLERANZ_ANTEIL"/>) übereinander, bleibt der
+        /// Aufbau, wie er ist. Verworfen wird, wenn geteilt werden muss und die Gesamtdicken nicht zusammenpassen, eine Schicht
+        /// neben verschiedener Schichtzahl keine Dicke hat oder eine ruhende Luftschicht (Widerstand nach Tabelle, nicht
+        /// dickenproportional) geteilt werden müsste. Bei gleicher Schichtzahl mit einer Schicht ohne Dicke ist die Lage der Grenzen
+        /// unbestimmt; der Aufbau bleibt, wie er ist.</para>
+        /// Sonst wird der Aufbau samt Abschnitten und Schichten benannt verworfen.
+        /// </summary>
+        private static void AbschnittePruefen(Plan p, BauteilkatalogVorschau v)
+        {
+            foreach (Satz a in p.Aufbauten.ToList())
+            {
+                if (a.Aktion == ERGAENZEN || !a.Schichten.Any(s => s.Abschnitt != null)) continue;
+                string grund = null;
+                Satz ergaenzt = null;
+                double rest = 0.0;
+                List<Satz> teile = null;
+                List<Satz> streifen = a.Schichten.Where(s => s.Abschnitt != null).Select(s => s.Abschnitt).Distinct()
+                                       .OrderBy(x => (int)x.Werte["Nummer"]).ToList();
+                if (!a.Schichten.Any(s => s.Abschnitt == null) && OhneBeitragWeglassen(p, v, a, streifen))
+                {
+                    streifen = a.Schichten.Select(s => s.Abschnitt).Distinct().OrderBy(x => (int)x.Werte["Nummer"]).ToList();
+                    if (streifen.Count == 1)
+                    {
+                        // Ein Abschnitt bleibt: der Aufbau ist homogen (Schichten ohne Abschnitt, wie ein Aufbau der Quelle ohne Abschnitte).
+                        p.Abschnitte.Remove(streifen[0]);
+                        Abziehen(v.Abschnitte, a, 1); // BK-11: der Abschnitt wird nicht geschrieben
+                        foreach (Satz s in a.Schichten) s.Abschnitt = null;
+                        continue;
+                    }
+                }
+                if (a.Schichten.Any(s => s.Abschnitt == null))
+                    grund = "inhomogen: durchgehende Schicht neben Abschnitten, Lage unbestimmt";
+                else
+                {
+                    grund = AnteilePruefen(streifen, out ergaenzt, out rest);
+                    if (grund == null && streifen.Count > 1)
+                        grund = Angleichen(a, streifen, out teile);
+                }
+                if (grund == null)
+                {
+                    if (ergaenzt != null)
+                    {
+                        ergaenzt.Werte["Flaechenanteil"] = rest;
+                        v.AnteilErgaenzt++;
+                        v.Protokoll.Add(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BKI_PROT_ANTEIL,
+                                                      (int)ergaenzt.Werte["Nummer"], rest.ToString("0.###", CultureInfo.CurrentCulture), a.Kennung));
+                    }
+                    if (teile != null)
+                    {
+                        int vorher = a.Schichten.Count;
+                        HashSet<Satz> alt = a.Schichten.ToHashSet();
+                        p.Schichten.RemoveAll(alt.Contains);
+                        a.Schichten = teile;
+                        a.Geteilt = true;
+                        p.Schichten.AddRange(teile);
+                        v.SchichtzahlAngeglichen++;
+                        v.Teilschichten += teile.Count - vorher;
+                        v.Protokoll.Add(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BKI_PROT_GETEILT,
+                                                      Zahl(vorher), Zahl(teile.Count), a.Kennung));
+                    }
+                    continue;
+                }
+                v.Aufbauten.Ablehnen(grund);
+                if (a.Aktion == NEU) v.Aufbauten.Neu--; else v.Aufbauten.Wiedererkannt--;
+                p.Aufbauten.Remove(a);
+                p.Abschnitte.RemoveAll(x => x.Vertreter == a);
+                p.Schichten.RemoveAll(x => x.Vertreter == a);
+                v.Protokoll.Add("Aufbau verworfen (" + grund + "): " + a.Kennung);
+            }
+        }
+
+        /// <summary>
+        /// <b>Abschnitte ohne Beitrag</b> (BK-10, DIN EN ISO 6946, 6.7.2): Ein Abschnitt geht in den oberen und den unteren
+        /// Grenzwert nur mit seinem Flächenanteil ein; ein Anteil von genau 0 trägt nichts bei. Haben alle Abschnitte einen Anteil
+        /// (keiner leer), sind einige genau 0 und ergeben die übrigen 1 ± <see cref="InhomogeneSchichten.ANTEIL_TOLERANZ"/>,
+        /// werden die Abschnitte mit Anteil 0 samt ihren Schichten weggelassen (Rückgabe <c>true</c>, eine Protokollzeile).
+        /// Sonst bleibt alles, wie es ist, und die Anteilsprüfung entscheidet wie bisher.
+        /// </summary>
+        private static bool OhneBeitragWeglassen(Plan p, BauteilkatalogVorschau v, Satz a, List<Satz> streifen)
+        {
+            if (streifen.Any(x => x.W("Flaechenanteil") == null)) return false;
+            List<Satz> null0 = streifen.Where(x => x.W("Flaechenanteil").Value == 0.0).ToList();
+            if (null0.Count == 0 || null0.Count == streifen.Count) return false;
+            double summe = streifen.Except(null0).Sum(x => x.W("Flaechenanteil").Value);
+            if (Math.Abs(summe - 1.0) > InhomogeneSchichten.ANTEIL_TOLERANZ + 1e-12) return false;
+            var weg = null0.ToHashSet();
+            List<Satz> schichten = a.Schichten.Where(s => weg.Contains(s.Abschnitt)).ToList();
+            var wegSchichten = schichten.ToHashSet();
+            a.Schichten.RemoveAll(wegSchichten.Contains);
+            p.Schichten.RemoveAll(wegSchichten.Contains);
+            p.Abschnitte.RemoveAll(weg.Contains);
+            // BK-11: Weggelassenes zählt weder neu noch wiedererkannt - Vorschau und Übernahme zählen dieselben Sätze.
+            Abziehen(v.Abschnitte, a, weg.Count);
+            Abziehen(v.Schichten, a, schichten.Count);
+            v.AbschnitteOhneBeitrag += weg.Count;
+            v.Protokoll.Add(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BKI_PROT_OHNE_BEITRAG,
+                                          Zahl(weg.Count), Zahl(schichten.Count), a.Kennung));
+            return true;
+        }
+
+        /// <summary>Nimmt <paramref name="n"/> Sätze des Aufbaus <paramref name="a"/> aus der Zählung neu bzw. wiedererkannt (BK-11).</summary>
+        private static void Abziehen(BauteilkatalogZaehlung z, Satz a, int n)
+        {
+            if (a.Aktion == NEU) z.Neu -= n; else z.Wiedererkannt -= n;
+        }
+
+        /// <summary>
+        /// <b>Aktualisiert</b> (BK-11): zählt die wiedererkannten Aufbauten, die die Übernahme ändert. Ein Importsatz
+        /// (<see cref="AKTUALISIEREN"/>) zählt, wenn Quelle oder Bezeichner, die Zahl der Schichten oder Abschnitte oder die
+        /// Gesamtdicke (auf 1e-6 m) vom Katalog abweichen; ein ergänzter Satz (<see cref="ERGAENZEN"/>), wenn seine Quelle
+        /// angehängt wird. Ohne Katalogstand zählt nichts.
+        /// </summary>
+        private static void AktualisierteZaehlen(Plan p, BauteilkatalogVorschau v)
+        {
+            Dictionary<Satz, int> abschnitte = p.Abschnitte.GroupBy(x => x.Vertreter).ToDictionary(g => g.Key, g => g.Count());
+            foreach (Satz a in p.Aufbauten)
+            {
+                BauteilkatalogBestand b = a.Bestand;
+                if (b == null) continue;
+                string quelle = a.Werte.TryGetValue("Quelle", out object q) ? q as string : null;
+                bool anders;
+                if (a.Aktion == AKTUALISIEREN)
+                    anders = !string.Equals(quelle, b.Quelle, StringComparison.Ordinal) ||
+                             !string.Equals(a.Werte["Bezeichner"] as string, b.Bezeichner, StringComparison.Ordinal) ||
+                             a.Schichten.Count != b.Schichten ||
+                             (abschnitte.TryGetValue(a, out int n) ? n : 0) != b.Abschnitte ||
+                             Math.Abs(a.Schichten.Sum(s => s.W("Dicke") ?? 0.0) - b.Dicke) > 1e-6;
+                else
+                {
+                    string eigene = string.IsNullOrEmpty(quelle) ? v.Quelle : quelle;
+                    anders = !string.Equals(QuelleAnhaengen(b.Quelle, eigene), b.Quelle, StringComparison.Ordinal);
+                }
+                if (anders) v.AufbautenAktualisiert++;
+            }
+            if (v.AufbautenAktualisiert > 0)
+                v.Protokoll.Add("Wiedererkannte Aufbauten, die die Übernahme ändert: " + Zahl(v.AufbautenAktualisiert));
+        }
+
+        /// <summary>
+        /// Die Flächenanteile der Abschnitte (BK-8): <c>null</c> = in Ordnung; fehlt der Anteil (leer oder 0) bei genau einem
+        /// Abschnitt und bleibt bis 1 mehr als die Toleranz offen, nennt <paramref name="ergaenzt"/> ihn und
+        /// <paramref name="rest"/> den Rest 1 − Σ. Bleibt höchstens die Toleranz offen, ist der fehlende Anteil unbestimmt.
+        /// </summary>
+        private static string AnteilePruefen(List<Satz> streifen, out Satz ergaenzt, out double rest)
+        {
+            ergaenzt = null;
+            rest = 0.0;
+            List<Satz> fehlend = streifen.Where(x => !(x.W("Flaechenanteil") > 0)).ToList();
+            double summe = streifen.Where(x => x.W("Flaechenanteil") > 0).Sum(x => x.W("Flaechenanteil").Value);
+            if (fehlend.Count == 1 && 1.0 - summe > InhomogeneSchichten.ANTEIL_TOLERANZ + 1e-12)
+            {
+                ergaenzt = fehlend[0];
+                rest = 1.0 - summe;
+                return null;
+            }
+            if (fehlend.Count > 0) return "inhomogen: Abschnitt ohne Flächenanteil";
+            return Math.Abs(summe - 1.0) > InhomogeneSchichten.ANTEIL_TOLERANZ + 1e-12 ? "inhomogen: Flächenanteile ergeben nicht 1 ± 0,01" : null;
+        }
+
+        /// <summary>
+        /// <b>Gemeinsame Schichtgrenzen</b> (BK-8, BK-8b, DIN EN ISO 6946, 6.7.2.3) für Abschnitte eines Aufbaus: <c>null</c> und in
+        /// <paramref name="teile"/> die Schichten aller Abschnitte, geteilt an der Vereinigung der Grenzen (Lage je Abschnitt auf
+        /// seine Gesamtdicke genormt), mit der Ebene als <c>Reihenfolge</c>; <c>null</c> und <paramref name="teile"/> <c>null</c>,
+        /// wenn nichts zu teilen ist (gleiche Schichtzahl, Grenzen übereinander); sonst der Ablehnungsgrund.
+        /// <para><b>Übereinander.</b> Grenzen verschiedener Abschnitte, die in der genormten Lage höchstens die Dickentoleranz
+        /// (bezogen auf die größte Gesamtdicke) auseinanderliegen, sind eine gemeinsame Grenze an ihrem Mittel; zwei Grenzen
+        /// desselben Abschnitts bleiben immer getrennt (eine dünne Folie bleibt eine Schicht).</para>
+        /// Ein Teil trägt den Anteil der Dicke und, wo die Quelle ihn nennt, denselben Anteil von <c>R_Quelle</c>; die Teile einer
+        /// Schicht ergeben ihre Dicke, so bleibt R'_T jedes Abschnitts gleich.
+        /// </summary>
+        private static string Angleichen(Satz a, List<Satz> streifen, out List<Satz> teile)
+        {
+            teile = null;
+            var folgen = streifen.ToDictionary(x => x, x => a.Schichten.Where(s => s.Abschnitt == x)
+                                                                   .OrderBy(s => (int)s.Werte["Reihenfolge"]).ToList());
+            bool gleicheZahl = folgen.Values.Select(f => f.Count).Distinct().Count() == 1;
+            if (folgen.Values.SelectMany(f => f).Any(s => !(s.W("Dicke") > 0)))
+                return gleicheZahl ? null : MyResource.Resource.BKI_GRUND_OHNE_DICKE;
+            var dicke = folgen.ToDictionary(f => f.Key, f => f.Value.Sum(s => s.W("Dicke").Value));
+            double groesste = dicke.Values.Max(), kleinste = dicke.Values.Min();
+            double toleranz = Math.Max(DICKE_TOLERANZ_M, DICKE_TOLERANZ_ANTEIL * groesste);
+
+            // Die inneren Grenzen in genormter Lage, je Abschnitt und Index; zu Gruppen gemeinsamer Grenzen gefasst.
+            var grenzen = new List<(double Lage, Satz Streifen, int Index)>();
+            foreach (KeyValuePair<Satz, List<Satz>> f in folgen)
+            {
+                double z = 0.0;
+                for (int i = 0; i < f.Value.Count - 1; i++)
+                {
+                    z += f.Value[i].W("Dicke").Value;
+                    grenzen.Add((z / dicke[f.Key], f.Key, i));
+                }
+            }
+            double tolN = toleranz / groesste + GRENZE_GLEICH;
+            var gruppen = new List<(double Beginn, List<double> Lagen, HashSet<Satz> Streifen)>();
+            var gruppeVon = new Dictionary<(Satz, int), int>();
+            foreach ((double lage, Satz st, int index) in grenzen.OrderBy(g => g.Lage))
+            {
+                bool dazu = gruppen.Count > 0 && lage - gruppen[gruppen.Count - 1].Beginn <= tolN &&
+                            !gruppen[gruppen.Count - 1].Streifen.Contains(st);
+                if (!dazu) gruppen.Add((lage, new List<double>(), new HashSet<Satz>()));
+                gruppen[gruppen.Count - 1].Lagen.Add(lage);
+                gruppen[gruppen.Count - 1].Streifen.Add(st);
+                gruppeVon[(st, index)] = gruppen.Count - 1;
+            }
+
+            // Liegen bei gleicher Schichtzahl alle Grenzen übereinander, bleibt der Aufbau (Schicht k neben Schicht k).
+            if (gleicheZahl && gruppen.All(g => g.Streifen.Count == folgen.Count)) return null;
+            if (groesste - kleinste > toleranz + 1e-12) return MyResource.Resource.BKI_GRUND_DICKEN;
+
+            var ebenen = gruppen.Select(g => g.Lagen.Average()).ToList();
+            ebenen.Add(1.0);
+            var ergebnis = new List<Satz>();
+            foreach (KeyValuePair<Satz, List<Satz>> f in folgen)
+            {
+                double z = 0.0;
+                for (int i = 0; i < f.Value.Count; i++)
+                {
+                    Satz s = f.Value[i];
+                    double t0 = z / dicke[f.Key];
+                    z += s.W("Dicke").Value;
+                    bool letzte = i == f.Value.Count - 1;
+                    double t1 = letzte ? 1.0 : z / dicke[f.Key];
+                    int von = i == 0 ? -1 : gruppeVon[(f.Key, i - 1)];
+                    int bis = letzte ? ebenen.Count - 1 : gruppeVon[(f.Key, i)];
+                    var stuecke = new List<double> { t0 };
+                    for (int g = von + 1; g < bis; g++) stuecke.Add(ebenen[g]);
+                    stuecke.Add(t1);
+                    bool ruhendeLuft = (int)s.Werte["IstLuftschicht"] == 1 && !(s.Lambda > 0);
+                    if (stuecke.Count > 2 && ruhendeLuft) return MyResource.Resource.BKI_GRUND_LUFTSCHICHT;
+                    for (int k = 0; k < stuecke.Count - 1; k++)
+                    {
+                        double anteil = (stuecke[k + 1] - stuecke[k]) / (t1 - t0);
+                        Satz t = stuecke.Count == 2 ? s : Teil(s, anteil);
+                        t.Werte["Reihenfolge"] = von + 2 + k;
+                        ergebnis.Add(t);
+                    }
+                }
+            }
+            if (ergebnis.GroupBy(s => s.Abschnitt).Any(g => g.Count() != ebenen.Count))
+                throw new InvalidOperationException("Ebenen des Abschnitts unvollständig: " + a.Kennung);
+            teile = ergebnis.OrderBy(s => (int)s.Werte["Reihenfolge"]).ThenBy(s => (int)s.Abschnitt.Werte["Nummer"]).ToList();
+            return null;
+        }
+
+        /// <summary>Ein Teil einer Schicht: dieselben Werte, Dicke und <c>R_Quelle</c> mit <paramref name="anteil"/>.</summary>
+        private static Satz Teil(Satz s, double anteil)
+        {
+            var t = new Satz
+            {
+                Kennung = s.Kennung, Schluessel = s.Schluessel, Gruppe = s.Gruppe, Quellcode = s.Quellcode, Vertreter = s.Vertreter,
+                Abschnitt = s.Abschnitt, Werte = new Dictionary<string, object>(s.Werte, StringComparer.Ordinal)
+            };
+            t.Werte["Dicke"] = s.W("Dicke").Value * anteil;
+            if (s.W("R_Quelle") is double r) t.Werte["R_Quelle"] = r * anteil;
+            return t;
+        }
+
+        /// <summary>Die Änderung des U-Werts, ab der der Wiederimport-Vergleich einen Aufbau zählt: 1 %.</summary>
+        internal const double WIEDERIMPORT_U_SCHWELLE = 0.01;
+
+        /// <summary>
+        /// <b>Wiederimport-Vergleich</b> (BK-8b): Für jeden geteilten Aufbau, der als Importsatz schon im Katalog steht
+        /// (<see cref="AKTUALISIEREN"/>) und andere Schichten bekäme, als <paramref name="alt"/> liest, zählt die Vorschau ihn und —
+        /// ändert sich U um mehr als <see cref="WIEDERIMPORT_U_SCHWELLE"/> — als geändert, dazu die größte Änderung in %.
+        /// Ergänzte Sätze (<see cref="ERGAENZEN"/>) behalten ihre Schichten und zählen nicht. Schreibt nichts.
+        ///
+        /// <para><b>Vergleichswert</b> (BK-8c): das U, das der Kern für den Katalogsatz heute rechnet (derselbe Weg wie der
+        /// Aufbaueditor, <see cref="BauteilaufbauCtrl.Kennwerte"/>); lässt sich keins rechnen — etwa ein Satz eines frühen
+        /// Imports mit Abschnitten verschiedener Schichtzahl, den die Abschnittsprüfung ablehnt —, der gespeicherte U-Wert der
+        /// Quelle am Katalogsatz (<see cref="BauteilkatalogSchema.SPALTE_U_QUELLE"/>). Fehlt auch der oder ergibt der neue Stand
+        /// kein U, zählt der Aufbau „ohne Vergleichswert“ statt still zu fehlen.</para>
+        /// </summary>
+        internal static void WiederimportVergleichen(Plan p, Func<long, BauteilaufbauModel> alt)
+        {
+            BauteilkatalogVorschau v = p.Vorschau;
+            foreach (Satz a in p.Aufbauten.Where(x => x.Geteilt && x.Aktion == AKTUALISIEREN && x.Bestand != null))
+            {
+                BauteilaufbauModel vorher = alt(a.Bestand.Id), nachher = ModellAusPlan(p, a);
+                if (vorher == null || GleicheSchichten(vorher, nachher)) continue;
+                v.WiederimportGeteilt++;
+                double? uAlt = BauteilaufbauCtrl.Kennwerte(vorher, false).U_WM2K, uNeu = BauteilaufbauCtrl.Kennwerte(nachher, false).U_WM2K;
+                bool gegenQuelle = false;
+                if (!(uAlt > 0))
+                {
+                    uAlt = Bauteilkatalog.Zahl(vorher.Zusatz, BauteilkatalogSchema.SPALTE_U_QUELLE);
+                    gegenQuelle = true;
+                }
+                if (!(uAlt > 0) || !(uNeu > 0))
+                {
+                    v.WiederimportOhneVergleichswert++;
+                    continue;
+                }
+                v.WiederimportVerglichen++;
+                if (gegenQuelle) v.WiederimportGegenQuelle++;
+                double aenderung = Math.Abs(uNeu.Value - uAlt.Value) / uAlt.Value;
+                v.WiederimportUMaxProzent = Math.Max(v.WiederimportUMaxProzent ?? 0.0, aenderung * 100.0);
+                if (aenderung > WIEDERIMPORT_U_SCHWELLE + 1e-12) v.WiederimportUGeaendert++;
+            }
+            if (v.WiederimportGeteilt > 0)
+                v.Protokoll.Add("Wiederimport-Vergleich: " + Zahl(v.WiederimportVerglichen) + " verglichen, davon " +
+                                Zahl(v.WiederimportGegenQuelle) + " gegen den U-Wert der Quelle; ohne Vergleichswert " +
+                                Zahl(v.WiederimportOhneVergleichswert));
+        }
+
+        /// <summary>Dieselben Schichten: gleiche Zahl, je Zeile Ebene, Abschnitt und Dicke (auf 1e-9 m) gleich.</summary>
+        private static bool GleicheSchichten(BauteilaufbauModel x, BauteilaufbauModel y)
+        {
+            List<BauteilschichtModel> a = x.Schichten.Where(s => s != null).OrderBy(s => s.Reihenfolge).ThenBy(s => s.Abschnitt).ToList();
+            List<BauteilschichtModel> b = y.Schichten.Where(s => s != null).OrderBy(s => s.Reihenfolge).ThenBy(s => s.Abschnitt).ToList();
+            return a.Count == b.Count && a.Zip(b, (s, t) => s.Reihenfolge == t.Reihenfolge && s.Abschnitt == t.Abschnitt &&
+                                                           Math.Abs(s.Dicke - t.Dicke) <= 1e-9).All(g => g);
+        }
+
+        /// <summary>Der geplante Aufbau <paramref name="a"/> als Modell, wie ihn der Katalog nach dem Schreiben liest.</summary>
+        internal static BauteilaufbauModel ModellAusPlan(Plan p, Satz a) => new BauteilaufbauModel
+        {
+            Bezeichner = a.Werte.TryGetValue("Bezeichner", out object n) ? n as string ?? "" : "",
+            Bauteilart = a.Werte.TryGetValue("Bauteilart", out object art) ? art as string : null,
+            Schichten = a.Schichten.OrderBy(s => (int)s.Werte["Reihenfolge"]).ThenBy(s => s.Abschnitt == null ? 0 : (int)s.Abschnitt.Werte["Nummer"])
+                                   .Select(s => new BauteilschichtModel
+                                   {
+                                       Reihenfolge = (int)s.Werte["Reihenfolge"], Dicke = s.W("Dicke") ?? 0.0, Lambda = s.Lambda, Rho = s.Rho,
+                                       Cp = s.Cp, IstLuftschicht = (int)s.Werte["IstLuftschicht"] == 1,
+                                       Abschnitt = s.Abschnitt == null ? null : (int)s.Abschnitt.Werte["Nummer"]
+                                   }).ToList(),
+            Abschnitte = p.Abschnitte.Where(x => x.Vertreter == a).Select(x => new BauteilabschnittModel
+            {
+                Nummer = (int)x.Werte["Nummer"], Flaechenanteil = x.W("Flaechenanteil")
+            }).ToList()
+        };
 
         /// <summary>Regel 7: Dämmlage hinter tragender Schicht (Außenwände) und U aus Schichten gegen U der Quelle.</summary>
         private static void Richtungsprobe(Plan p)
@@ -739,6 +1385,30 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Zählt vermutete Dubletten im Katalog (BK-3d), ohne etwas zu ändern: Importsätze mit Bezeichner und Gruppe eines
+        /// Auslieferungssatzes und Importsätze, deren Bezeichner und Gruppe ein Importsatz anderer Quellkennung teilt.
+        /// Bezeichner ohne Randleerzeichen und ohne Groß/Klein verglichen.
+        /// </summary>
+        private static void DublettenZaehlen(BauteilkatalogVorschau v, IEnumerable<BauteilkatalogBestand> bestand)
+        {
+            (string, string) Schl(BauteilkatalogBestand b) =>
+                ((b.Bezeichner ?? "").Trim().ToUpperInvariant(), b.Gruppe ?? Bauteilkatalog.GRUPPE_SONSTIGE);
+            List<BauteilkatalogBestand> alle = bestand.ToList();
+            var vorgabe = new HashSet<(string, string)>(alle.Where(b => b.Herkunft == BauteilkatalogSchema.HERKUNFT_VORGABE).Select(Schl));
+            List<BauteilkatalogBestand> import = alle.Where(b => b.Herkunft == BauteilkatalogSchema.HERKUNFT_IMPORT).ToList();
+            v.DublettenImKatalog = import.Count(b => vorgabe.Contains(Schl(b)));
+            v.NamensgleicheImporte = import.GroupBy(Schl)
+                                           .Where(g => g.Select(b => b.Quellkennung ?? "").Distinct(StringComparer.Ordinal).Count() > 1)
+                                           .Sum(g => g.Count());
+            if (v.DublettenImKatalog > 0)
+                v.Protokoll.Add("Hinweis: Importsätze mit Name und Gruppe eines Auslieferungssatzes: " + Zahl(v.DublettenImKatalog) +
+                                " (nur gezählt, nichts geändert)");
+            if (v.NamensgleicheImporte > 0)
+                v.Protokoll.Add("Hinweis: Importsätze mit Name und Gruppe eines Importsatzes anderer Quellkennung: " +
+                                Zahl(v.NamensgleicheImporte) + " (gleicher Name, Werte außerhalb der Dublettenregel; nur gezählt)");
+        }
+
         private static Dictionary<string, BauteilkatalogBestand> NachKennung(IEnumerable<BauteilkatalogBestand> liste)
         {
             var d = new Dictionary<string, BauteilkatalogBestand>(StringComparer.Ordinal);
@@ -775,7 +1445,7 @@ namespace WindowsFormsApplication1
         internal static object Bereinigen(string tabelle, string spalte, object w, Action<string> zaehle)
         {
             if (w == null) return null;
-            BauteilkatalogSchema.Spalte sp = BauteilkatalogSchema.SpaltenVon(tabelle).FirstOrDefault(x => x.Name == spalte);
+            BauteilkatalogSchema.Spalte sp = Bauteilkatalog.Spalten(tabelle).FirstOrDefault(x => x.Name == spalte);
             if (sp == null) return w;
             string typ = sp.Typ;
             bool verworfen = false;
@@ -804,6 +1474,8 @@ namespace WindowsFormsApplication1
 
         private static string Zahl(int n) => n.ToString("N0", CultureInfo.InvariantCulture);
 
+        private static string Zahl3(double d) => d.ToString("0.####", CultureInfo.InvariantCulture);
+
         // ---- Datenbank ---------------------------------------------------------------------
 
         /// <summary>Der Abzug des Katalogs im Vorgang <paramref name="v"/>.</summary>
@@ -830,6 +1502,19 @@ namespace WindowsFormsApplication1
                     Bezeichner = r["Bezeichner"] as string,
                     Herkunft = r["Herkunft"] as string, Quellkennung = r["Quellkennung"] as string, Quelle = r["Quelle"] as string
                 });
+            // BK-11: Schichtzahl, Gesamtdicke und Abschnittzahl je Aufbau - der Vergleich für „aktualisiert“.
+            Dictionary<long, BauteilkatalogBestand> nachId = st.Aufbauten.ToDictionary(x => x.Id);
+            foreach (DataRow r in v.Lese("SELECT \"ID_Aufbau\", COUNT(*) AS \"Anzahl\", TOTAL(\"Dicke\") AS \"Dicke\" FROM \"" +
+                                         BauteilkatalogSchema.TAB_SCHICHT_STAMM + "\" GROUP BY \"ID_Aufbau\"").Rows)
+                if (r["ID_Aufbau"] != DBNull.Value && nachId.TryGetValue(Convert.ToInt64(r["ID_Aufbau"], CultureInfo.InvariantCulture), out BauteilkatalogBestand ab))
+                {
+                    ab.Schichten = Convert.ToInt32(r["Anzahl"], CultureInfo.InvariantCulture);
+                    ab.Dicke = Dbl(r["Dicke"]) ?? 0.0;
+                }
+            foreach (DataRow r in v.Lese("SELECT \"ID_Aufbau\", COUNT(*) AS \"Anzahl\" FROM \"" + BauteilkatalogSchema.TAB_ABSCHNITT_STAMM +
+                                         "\" GROUP BY \"ID_Aufbau\"").Rows)
+                if (r["ID_Aufbau"] != DBNull.Value && nachId.TryGetValue(Convert.ToInt64(r["ID_Aufbau"], CultureInfo.InvariantCulture), out BauteilkatalogBestand ab))
+                    ab.Abschnitte = Convert.ToInt32(r["Anzahl"], CultureInfo.InvariantCulture);
             return st;
         }
 
@@ -850,7 +1535,9 @@ namespace WindowsFormsApplication1
                     stand = StandLesen(v);
                     v.Rollback();
                 }
-            BauteilkatalogVorschau vs = Planen(q, stand).Vorschau;
+            Plan p = Planen(q, stand);
+            if (q.Abgelehnt == null) WiederimportVergleichen(p, id => new BauteilaufbauCtrl().LesenKatalogsatz((int)id));
+            BauteilkatalogVorschau vs = p.Vorschau;
             vs.DauerMs = uhr.ElapsedMilliseconds;
             return vs;
         }
@@ -892,7 +1579,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Spalten eines Kopfsatzes in Schreibreihenfolge (ohne Herkunft, ReadOnly).</summary>
         private static List<string> Spalten(string[] kopf, string tabelle) =>
-            kopf.Concat(BauteilkatalogSchema.SpaltenVon(tabelle).Where(s => s.Art != BauteilkatalogSchema.Spaltenart.Verweis &&
+            kopf.Concat(Bauteilkatalog.Spalten(tabelle).Where(s => s.Art != BauteilkatalogSchema.Spaltenart.Verweis &&
                                                                             !kopf.Contains(s.Name)).Select(s => s.Name)).ToList();
 
         /// <summary>Schreibt den Plan im Vorgang <paramref name="v"/> (vorbereitete Anweisungen, Parameter mit „?“).</summary>
@@ -959,7 +1646,8 @@ namespace WindowsFormsApplication1
             List<string> leer = spalten.Where(x => s.Werte.ContainsKey(x) && x != "Bezeichner" && x != "Quelle" &&
                                                    x != BauteilkatalogSchema.SPALTE_UNGEEIGNET).ToList();
             var q = Parameter(leer, s.Werte).ToList();
-            q.Add(new DbParam("@q", QuelleAnhaengen(s.Bestand.Quelle, quelle)));
+            string eigene = s.Werte.TryGetValue("Quelle", out object qs) && qs is string text && text.Length > 0 ? text : quelle; // BK-7
+            q.Add(new DbParam("@q", QuelleAnhaengen(s.Bestand.Quelle, eigene)));
             q.Add(new DbParam("@id", s.ZielId));
             v.Ausfuehren("UPDATE \"" + tabelle + "\" SET " + string.Join(", ", leer.Select(x => "\"" + x + "\" = COALESCE(\"" + x + "\", ?)")) +
                          ", \"Quelle\" = ? WHERE \"ID\" = ?", q.ToArray());

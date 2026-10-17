@@ -33,8 +33,8 @@ namespace EPOS.Kern.Tests.Pufferauslegung
             Assert.True(k.Aktiv && k.Gueltig && k.EnthaeltNutzanteil);
             Assert.Equal(3042.6, k.VolumenL.Value, 1);
             Assert.Equal("PAUS_HERK_K12", k.HerkunftBaustein.Schluessel);
-            Assert.Contains("V30", k.Herkunft);
-            Assert.Contains("Aufheizdauer aus KP3", k.Rechenweg);
+            Assert.Contains("Aufheizbemessung der Gebäude", k.Herkunft);
+            Assert.Contains("Aufheizdauer aus der Aufheizbemessung", k.Rechenweg);
             // K12 bemisst die Heizzone (größer als K2/K3 der geregelten Wärmepumpe).
             Assert.Equal(PufferKriteriumKennung.K12, r.Zone(PufferZone.Heizung).Bemessend);
             Assert.Equal(3042.6, r.SummeL, 1);
@@ -46,7 +46,7 @@ namespace EPOS.Kern.Tests.Pufferauslegung
             PufferAuslegungErgebnis r = PufferAuslegung.Rechnen(Buero() with { AufheizdauerH = null });
             PufferKriterium k = r.Zone(PufferZone.Heizung).Kriterium(PufferKriteriumKennung.K12);
             Assert.Equal(3042.6, k.VolumenL.Value, 1);
-            Assert.Contains("Aufheiz.Dauer_h", k.Rechenweg);
+            Assert.Contains("Vorgabe Aufheizdauer", k.Rechenweg);
             Assert.Equal(2, PufferAuslegungParameter.Vorgabe().Wert(PufferAuslegungVorgaben.AUFHEIZ_DAUER));
             // Rückfall und Saat aus derselben Liste (Schemaschritt 179): Dauer und fünf Nutzungsschalter.
             Assert.Equal(6, System.Linq.Enumerable.Count(PufferAuslegungVorgaben.EINTRAEGE, v => v.Schluessel.Contains("Aufheiz", StringComparison.Ordinal)));

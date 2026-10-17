@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -159,7 +160,6 @@ namespace WindowsFormsApplication1
             {
                 Schluessel = "WP",
                 Tabelle = WPStammCtrl.TABLE,                       // Tab_WP_STAMM
-                AusschlussSpalten = new[] { "Modulkosten" },
                 Datenbloecke = new[]
                 {
                     new KatalogDatenblock
@@ -184,8 +184,9 @@ namespace WindowsFormsApplication1
             {
                 Schluessel = "HEIZKESSEL",
                 Tabelle = SchemaKatalog.TAB_HEIZKESSEL_STAMM,
-                AusschlussSpalten = new[] { "Investitionskosten", "Wartungskosten",
-                    "Wartungskosten_Einheit", "Nutzungsdauer" },
+                // Die Kostenspalten sind mit Welle KB-4 entfallen; geblieben ist das eine
+                // Anwenderfeld, das der Import nicht ueberschreiben darf.
+                AusschlussSpalten = new[] { "Nutzungsdauer" },
                 // Konzept Kesselkennlinie 3.4 (Etappe E1): Brennwert aus der Bauart, eta30 und
                 // Mindestleistung aus Satz 710.01 - HeizkesselImportSatz.Vergleichswerte.
                 ImportSpalten = new[] { "Firma", "Ptherm", "Brennstoff", "Wirkungsgrad_Gas",
@@ -197,7 +198,8 @@ namespace WindowsFormsApplication1
             {
                 Schluessel = "PUFFERSPEICHER",
                 Tabelle = "Tab_Pufferspeicher_STAMM",
-                AusschlussSpalten = new[] { "Investitionskosten" },
+                // Die Kostenspalte ist mit Welle KB-4 entfallen; kein Anwenderfeld bleibt.
+                AusschlussSpalten = new string[0],
                 ImportSpalten = new[] { "Hersteller", "Speichertyp", "Bereitschaftsverluste",
                     "Gesamtvolumen" }
             },
@@ -205,7 +207,8 @@ namespace WindowsFormsApplication1
             {
                 Schluessel = "SOLARKOLLEKTOREN",
                 Tabelle = "Tab_Solarkollektoren_STAMM",
-                AusschlussSpalten = new[] { "Investitionskosten" },
+                // Die Kostenspalte ist mit Welle KB-4 entfallen; kein Anwenderfeld bleibt.
+                AusschlussSpalten = new string[0],
                 // ST6 (Welle M2): die Bezugsflaeche der Kennwerte setzt der Import, wo die Quelle sie nennt.
                 ImportSpalten = new[] { "Firma", "Kollektortyp", "Modulflaeche", "Aperturflaeche",
                     "h0", "k1", "k2", "Kdir", "Kdfu", SolarthermieFelderSchema.SPALTE_BEZUGSFLAECHE }
@@ -214,7 +217,6 @@ namespace WindowsFormsApplication1
             {
                 Schluessel = "PV",
                 Tabelle = SchemaKatalog.TAB_PV_STAMM,
-                AusschlussSpalten = new[] { "Modulkosten" },
                 // "Technologie" (Migrationsschritt 63, Stufe E2.3) gehoert in die
                 // Import-Schnittmenge: Beide Importe liefern sie (CEC "Technology",
                 // PAN "Technol"), und das erweiterte Rechenmodell waehlt daran den
@@ -228,11 +230,6 @@ namespace WindowsFormsApplication1
             {
                 Schluessel = "WECHSELRICHTER",
                 Tabelle = SchemaKatalog.TAB_WECHSELRICHTER_STAMM,
-                // "Kosten" ist ein ANWENDERFELD - wie "Modulkosten" bei der
-                // Photovoltaik und aus demselben Grund ausgeschlossen: Der Import
-                // liefert keinen Preis, und zwei Saetze, die sich nur im Preis
-                // unterscheiden, sind derselbe Wechselrichter (Konzept 5.4).
-                AusschlussSpalten = new[] { "Kosten" },
                 // Die Sandia-Spalten stehen bewusst NICHT hier: Zwei Katalogsaetze,
                 // die sich nur in C3 unterscheiden, rechnen in EPOS-Plan identisch
                 // (Konzept 3.3.2) - sie als verschieden zu melden waere falscher
@@ -250,10 +247,11 @@ namespace WindowsFormsApplication1
             },
             new KatalogDefinition
             {
-                // KU3-1: die Kaeltemaschine. "Modulkosten" ist ein Anwenderfeld wie bei der Waermepumpe.
+                // KU3-1: die Kaeltemaschine. Die Kostenspalte ist mit Welle KB-4 entfallen;
+                // kein Anwenderfeld bleibt.
                 Schluessel = "KAELTEMASCHINE",
                 Tabelle = KaeltemaschineSchema.TAB_STAMM,
-                AusschlussSpalten = new[] { KaeltemaschineSchema.SPALTE_MODULKOSTEN },
+                AusschlussSpalten = new string[0],
                 Datenbloecke = new[]
                 {
                     new KatalogDatenblock
@@ -297,16 +295,17 @@ namespace WindowsFormsApplication1
             {
                 Schluessel = "BHKW",
                 Tabelle = "Tab_BHKW_STAMM",
-                AusschlussSpalten = new[] { "Investition_kwel", "Wartungskosten_kwhel",
-                    "Nutzungsdauer", "Kosten_Modul", "Kosten_Montage", "Kosten_Lieferung",
-                    "Kosten_Schallschutzhaube", "Kosten_Abgasreinigung" }
+                // Die Kostenspalten sind mit Welle KB-4 entfallen; geblieben ist das eine
+                // Anwenderfeld, das der Import nicht ueberschreiben darf.
+                AusschlussSpalten = new[] { "Nutzungsdauer" }
             },
             new KatalogDefinition
             {
                 Schluessel = "STROMSPEICHER",
                 Tabelle = SchemaKatalog.TAB_STROMSPEICHER_STAMM,
-                AusschlussSpalten = new[] { "Modulkosten", "Verschleisskosten",
-                    "Leistungskosten", "Investition_Fix" }
+                // Welle KB-5: Die vier Kostenspalten sind entfallen (StromspeicherKostenSchema); die Kosten
+                // stehen in der Satzvorlage, die keine Katalogspalte ist.
+                AusschlussSpalten = new string[0]
             },
             new KatalogDefinition
             {
@@ -377,7 +376,11 @@ namespace WindowsFormsApplication1
                 Tabelle = "Tab_Klimaregion_STAMM",
                 IdSpalte = "ID_Klimaregion",
                 NamensSpalte = "Name",
-                AusschlussSpalten = new[] { "Details" },
+                // KD-4: Die Herkunftsspalten (Standorthoehe, Bezugspunkt, Ausfuehrung, Zeitbezug, Rohdaten) sind wie
+                // Details ein Vermerk und kein Vergleichsmerkmal; die Rohtabelle ist kein Datenblock (nur Export).
+                AusschlussSpalten = new[] { "Details" }
+                    .Concat(KlimaRohwerteSchema.REGIONSSPALTEN.Select(s => s.Spalte))
+                    .Concat(KlimaRohwerteSchema.KATALOGSPALTEN.Select(s => s.Spalte)).ToArray(),
                 Datenbloecke = new[]
                 {
                     new KatalogDatenblock

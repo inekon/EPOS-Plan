@@ -155,14 +155,10 @@ namespace WindowsFormsApplication1
         /// ETAPPE E4: die drei Steuergutschriften des ersten Betrachtungsjahres und die
         /// Herkunft der verwendeten Sätze in <see cref="TAB_ERGEBNIS"/>.
         ///
-        /// <para><b>Warum über <c>SpalteSicher</c> und nicht über einen
-        /// Migrationsschritt.</b> Dieses Modul führt seine ERGEBNIStabelle seit W1 selbst
-        /// und hat sie so schon zwanzigmal additiv nachgerüstet — zuletzt in E2 mit
-        /// <see cref="SPALTE_KWKG_VBH_EL"/>. Ein Migrationsschritt dafür wäre der dritte
-        /// Mechanismus für EINE Tabelle. Die PARAMETERtabelle geht denselben Weg
-        /// zusätzlich über Migrationsschritt 20 — dort verlangt der Auftrag den
-        /// Schemastand, und dort ist er auch fachlich richtig: Es sind Eingabedaten des
-        /// Anwenders, keine wiederherstellbaren Rechenergebnisse.</para>
+        /// <para><b>Die Ergebnisspalten legt das Schema an.</b> Die Ergebnistabelle steht im
+        /// Grundschema; ihre Spalten ohne Grundschema legt ein Schemaschritt an (die vier
+        /// jüngsten: <see cref="ErgebnisWirtschaftlichkeitSpaltenSchema"/>). Ein Ergebnis ist
+        /// wiederherstellbar, die Parametertabelle trägt dagegen Eingabedaten des Anwenders.</para>
         /// </summary>
         public const string SPALTE_ENERGIESTEUER = "EnergiesteuerErloes";
 
@@ -187,9 +183,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// ETAPPE E5: vermiedene Kosten (Arbeit, Leistung, Summe) und der Betrag der
-        /// berücksichtigten Aufschläge in <see cref="TAB_ERGEBNIS"/>. Über
-        /// <c>SpalteSicher</c> — dieselbe Begründung wie bei
-        /// <see cref="SPALTE_ENERGIESTEUER"/>.
+        /// berücksichtigten Aufschläge in <see cref="TAB_ERGEBNIS"/>.
         /// </summary>
         public const string SPALTE_VERMIEDEN_ARBEIT = "VermiedenArbeit";
 
@@ -204,16 +198,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// ETAPPE W5‑B‑10 (VALERI): Barwert der Ersatzbeschaffungen in
-        /// <see cref="TAB_ERGEBNIS"/> [€]. Über <c>SpalteSicher</c> — dieselbe
-        /// Begründung wie bei <see cref="SPALTE_ENERGIESTEUER"/>: Ergebnisspalten führt
-        /// dieses Modul selbst, Eingabespalten der Migrationskatalog.
+        /// <see cref="TAB_ERGEBNIS"/> [€].
         /// </summary>
         public const string SPALTE_ERSATZ_BARWERT = "ErsatzBarwert";
 
         /// <summary>
         /// ETAPPE E7: Aufschlüsselung des Einspeiseerlöses in PV-Überschuss und
-        /// KWK-Einspeisung in <see cref="TAB_ERGEBNIS"/>. Über <c>SpalteSicher</c> —
-        /// dieselbe Begründung wie bei <see cref="SPALTE_ENERGIESTEUER"/>. Die Summe der
+        /// KWK-Einspeisung in <see cref="TAB_ERGEBNIS"/>. Die Summe der
         /// beiden Spalten ist der bereits vorhandene <c>Einspeiseerloes</c>; sie sind
         /// Zerlegung, keine zusätzliche Zahlung.
         /// </summary>
@@ -224,8 +215,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// ETAPPE K5 (Konzept § 7.4, L7): der angesetzte Investitionszuschuss in
-        /// <see cref="TAB_ERGEBNIS"/> [€], positiv. Über <c>SpalteSicher</c> — dieselbe
-        /// Begründung wie bei <see cref="SPALTE_ENERGIESTEUER"/>.
+        /// <see cref="TAB_ERGEBNIS"/> [€], positiv.
         ///
         /// <para><b>Warum eine eigene Spalte und nicht die Differenz.</b> Ohne sie
         /// stünde in <c>Investition</c> entweder der Bruttobetrag (dann fehlte der
@@ -237,8 +227,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// ETAPPE P6 (PV-Konzept § 6.4): Ausweis des PV-Vergütungsdialogs in
-        /// <see cref="TAB_ERGEBNIS"/>. Über <c>SpalteSicher</c> — dieselbe
-        /// Begründung wie bei <see cref="SPALTE_ENERGIESTEUER"/>. Gefüllt nur bei
+        /// <see cref="TAB_ERGEBNIS"/>. Gefüllt nur bei
         /// aktivem Dialog (Form leer = Bestandsweg ohne Dialog).
         /// </summary>
         /// <summary>
@@ -247,8 +236,7 @@ namespace WindowsFormsApplication1
         /// (<see cref="ErgebnisNachweisUmschlag"/>), der die Zeilenlisten eines Laufs
         /// traegt — Modulnachweis, Energiekosten je Anlage, Betriebskostenpositionen,
         /// Kohaerenzzeilen — und die vier Skalare, die es bis B7P ebenfalls nur im
-        /// frischen Lauf gab. Ueber <c>SpalteSicher</c> — dieselbe Begruendung wie bei
-        /// <see cref="SPALTE_ENERGIESTEUER"/>.
+        /// frischen Lauf gab.
         ///
         /// <para><b>Warum ein Umschlag und nicht dreissig Spalten.</b> Es sind LISTEN
         /// mit je einem Dutzend Feldern, deren Laenge an der Zahl der Anlagen und
@@ -264,7 +252,6 @@ namespace WindowsFormsApplication1
         /// Anwenderentscheid 02.10.2026 (Register EZ‑19) — der <b>Laufvermerk</b> einer Zeile in
         /// <see cref="TAB_ERGEBNIS"/>: die Stände des Laufs, aus dem sie stammt (Stamm, angehakte
         /// Varianten, Referenz), aufsteigend mit Komma (<see cref="Laufvermerk.Schreiben"/>).
-        /// Über <c>SpalteSicher</c> — dieselbe Begründung wie bei <see cref="SPALTE_ENERGIESTEUER"/>.
         /// NULL heißt „Altbestand ohne Vermerk": Die Seite nimmt dann wie zuvor die Wahl beim
         /// ersten Laden als Lauf der gespeicherten Ergebnisse.
         /// </summary>
@@ -332,124 +319,46 @@ namespace WindowsFormsApplication1
 
         // ------------------------------------------------------------- Tabellen
 
-        /// <summary>
-        /// Zieht die drei Ergebnisspalten nach, die kein Schemaschritt führt, und sät den
-        /// Katalog gesetzlicher Parameter. <b>Die Tabellen selbst legt sie nicht an.</b>
-        /// </summary>
-        /// <remarks>
-        /// <para><b>Warum die fünf Tabellen hier nicht entstehen.</b> <see cref="TAB_PARAMETER"/>,
-        /// <see cref="TAB_ERGEBNIS"/>, <see cref="TAB_SENS"/>, <see cref="TAB_TARIF"/> und
-        /// <see cref="TAB_MATRIX"/> stehen im Grundschema (<c>sql/schema/001_grundschema.sql</c>),
-        /// aus dem jede Datenbank hervorgeht — unter Windows über die Auslieferungsvorlage
-        /// (<see cref="Erstbereitstellung"/>), auf iOS über die Seed-Kopie, in Tests und
-        /// Referenzlauf über die Testdatenbank. Alle fünf sind dort <c>STRICT</c>; Parameter-
-        /// und Tariftabelle tragen ihren Fremdschlüssel auf <c>Tab_Projekt</c> mit
-        /// <c>ON DELETE CASCADE</c> seit dem Grundschema, die drei Ergebnistabellen bekommen ihn
-        /// in Schemaschritt 96 (<see cref="ProjektFremdschluessel"/>). Eine Anlage an dieser
-        /// Stelle entstünde ohne Fremdschlüssel und ohne <c>STRICT</c>, und Schritt 96 baute eine
-        /// solche Tabelle nicht um, sondern bräche an ihr ab
-        /// (<see cref="ProjektFremdschluessel.Zieltext"/>) — die Simulation bliebe gesperrt.
-        /// Fehlt eine Tabelle doch, nennen Laden und Speichern den Datenbankfehler
-        /// (<see cref="Ladefehler"/>, <see cref="Speicherfehler"/>).</para>
-        ///
-        /// <para><b>Warum die Eingabespalten hier nicht nachgezogen werden.</b> Jede Spalte, die
-        /// ein Schemaschritt anlegt (20, 21, 22, 23, 28, 61, 71, 72, 88, 89, 92, 93, 105, 116,
-        /// 118, 125), ist auf jeder Datenbank garantiert, auf der dieser Controller läuft: Die
-        /// Windows-Schale führt <c>SchemaMigration.Ausfuehren</c> bei jedem Start vor dem ersten
-        /// Fenster aus und sperrt bei Fehlschlag die Simulation
-        /// (<see cref="SchemaStand.SimulationGesperrt"/>); die Seed-Datenbank der iOS-Hülle und
-        /// die Testdatenbank stehen auf <see cref="SchemaStand.Zielversion"/>. Ein zweiter
-        /// DDL-Ort holte zudem Entferntes zurück: <see cref="SchemaKatalog.Schritt21_Tarifmodell"/>
-        /// führt <c>Aufschlaege_Anwenden</c>, das Schemaschritt 85 entfernt hat — ein Nachzug aus
-        /// dieser Liste legte die Spalte bei jedem Zugriff wieder an (Wache:
-        /// <c>WirtschaftlichkeitCtrlTabellenTests</c>).</para>
-        ///
-        /// <para><b>Was bleibt, und warum.</b> Vier Ergebnisspalten führt weder das Grundschema
-        /// noch ein Schemaschritt: <see cref="SPALTE_STROMST_MODUS"/> (Etappe B6),
-        /// <see cref="SPALTE_ERSATZ_BARWERT"/> (W5-B-10), <see cref="SPALTE_NACHWEIS_JSON"/>
-        /// (B7P) und <see cref="SPALTE_LAUF_STAENDE"/> (Register EZ‑19). Die Testdatenbank bekommt
-        /// sie einzeln über <c>Werkzeuge/Testdatenbankschema</c>,
-        /// eine Anwenderdatenbank aus einer älteren Auslieferungsvorlage nur hier. Bis ein
-        /// Schemaschritt sie führt, bleibt dieser additive Nachzug (<see cref="SpalteSicher"/>:
-        /// <c>ALTER TABLE … ADD COLUMN</c> nur bei nachweislichem Fehlen, kein DML); ein
-        /// Fehlschlag steht in <see cref="Vorsorgewarnung"/>.</para>
-        /// </remarks>
-        public void StelleTabellenSicher()
-        {
-            // ETAPPE E13 (E7c3-Q6): Die Warnung gilt für DIESE Vorsorge — seit die
-            // Oberfläche sie zeigt, darf ein längst behobener Fehler nicht stehen bleiben.
-            Vorsorgewarnung = null;
-
-            SpalteSicher(TAB_ERGEBNIS, SPALTE_STROMST_MODUS, "TEXT(20)");   // B6
-            SpalteSicher(TAB_ERGEBNIS, SPALTE_ERSATZ_BARWERT, "DOUBLE");    // W5-B-10
-            SpalteSicher(TAB_ERGEBNIS, SPALTE_NACHWEIS_JSON, "LONGTEXT");   // B7P
-            SpalteSicher(TAB_ERGEBNIS, SPALTE_LAUF_STAENDE, "TEXT");        // EZ‑19
-
-            // Katalog gesetzlicher Parameter (Etappe E1, Leitentscheidung L2). Eigene
-            // Verbindung, eigener Fang: Ein Fehlschlag darf die Spalten oben nicht
-            // gefährden, und umgekehrt.
-            GesetzKatalog.StelleKatalogSicher();
-        }
-
-        /// <summary>
-        /// ETAPPE E7c3 (Befund B‑6) — der letzte Fehler der Schemavorsorge
-        /// (<see cref="StelleTabellenSicher"/>, <see cref="SpalteSicher"/>); <c>null</c> =
-        /// keiner. Die Vorsorge bleibt still (kein Dialog beim Start), aber der Grund ist
-        /// abrufbar statt verschluckt; die Folgen nennen Laden und Speichern selbst.
-        /// ETAPPE E13: Jede Vorsorge setzt sie zu Beginn zurück; Statuszeile der
-        /// Ergebnisseite und BHKW-Dialog zeigen sie (<see cref="Fehlergrund.Anzeigezeilen"/>).
-        /// </summary>
-        public static string Vorsorgewarnung { get; private set; }
-
-        private static void Vorsorgefehler(Exception ex)
-        {
-            Vorsorgewarnung = Fehlergrund.Text(ex);
-        }
-
-        /// <summary>Fügt eine fehlende Spalte per ALTER TABLE hinzu (still, additiv).
-        /// Liefert true, wenn die Spalte JETZT neu angelegt wurde (Migrations-Anker).
-        ///
-        /// ARBEITSPAKET S4b: Schemaprobe über <see cref="StilleDb.SpaltenNamen"/> statt
-        /// <c>GetOleDbSchemaTable(Columns, …)</c>; die Access-Typangabe wird beim
-        /// Verbrauch nach SQLite übersetzt.</summary>
-        private static bool SpalteSicher(string tabelle, string spalte, string typ)
-        {
-            try
-            {
-                HashSet<string> vorhanden = StilleDb.SpaltenNamen(tabelle);
-
-                // Wie bisher: Nur ein NACHWEISLICHES Fehlen loest das ALTER aus. null
-                // hiess frueher "Schema nicht lesbar / Tabelle fehlt" - dann meldete
-                // GetOleDbSchemaTable keine Zeile und das ALTER lief in seinen catch.
-                if (vorhanden != null && vorhanden.Contains(spalte)) return false;
-
-                Ddl(StilleDb.AlterTableAddColumn(tabelle, spalte, typ));
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Vorsorgefehler(ex);   // E7c3 (B‑6): benannt — der Rückgabewert ist nur Migrationsanker
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Eine DDL-Anweisung, still. <see cref="StilleDb"/> wirft nicht; geworfen wird hier
-        /// von Hand, damit der Fang in <see cref="SpalteSicher"/> greift: Ein misslungenes
-        /// ALTER meldet „nicht neu angelegt" und nennt den Grund in
-        /// <see cref="Vorsorgewarnung"/>.
-        /// </summary>
-        private static void Ddl(string sql)
-        {
-            if (StilleDb.NonQuery(sql) < 0)
-                throw new InvalidOperationException("Anweisung fehlgeschlagen: " + sql);
-        }
+        // Tabellen und Spalten dieses Moduls legt allein die Schemamigration an; der Controller zieht keine Spalte nach.
+        // Vor Laden, Speichern und Rechnen sät er nur den Katalog gesetzlicher Parameter (GesetzKatalog.StelleKatalogSicher).
+        //
+        // Warum die fünf Tabellen hier nicht entstehen. TAB_PARAMETER,
+        // TAB_ERGEBNIS, TAB_SENS, TAB_TARIF und
+        // TAB_MATRIX stehen im Grundschema (sql/schema/001_grundschema.sql),
+        // aus dem jede Datenbank hervorgeht — unter Windows über die Auslieferungsvorlage
+        // (Erstbereitstellung), auf iOS über die Seed-Kopie, in Tests und
+        // Referenzlauf über die Testdatenbank. Alle fünf sind dort STRICT; Parameter-
+        // und Tariftabelle tragen ihren Fremdschlüssel auf Tab_Projekt mit
+        // ON DELETE CASCADE seit dem Grundschema, die drei Ergebnistabellen bekommen ihn
+        // in Schemaschritt 96 (ProjektFremdschluessel). Eine Anlage an dieser
+        // Stelle entstünde ohne Fremdschlüssel und ohne STRICT, und Schritt 96 baute eine
+        // solche Tabelle nicht um, sondern bräche an ihr ab
+        // (ProjektFremdschluessel.Zieltext) — die Simulation bliebe gesperrt.
+        // Fehlt eine Tabelle doch, nennen Laden und Speichern den Datenbankfehler
+        // (Ladefehler, Speicherfehler).
+        //
+        // Warum die Eingabespalten hier nicht nachgezogen werden. Jede Spalte, die
+        // ein Schemaschritt anlegt (20, 21, 22, 23, 28, 61, 71, 72, 88, 89, 92, 93, 105, 116,
+        // 118, 125), ist auf jeder Datenbank garantiert, auf der dieser Controller läuft: Die
+        // Windows-Schale führt SchemaMigration.Ausfuehren bei jedem Start vor dem ersten
+        // Fenster aus und sperrt bei Fehlschlag die Simulation
+        // (SchemaStand.SimulationGesperrt); die Seed-Datenbank der iOS-Hülle und
+        // die Testdatenbank stehen auf SchemaStand.Zielversion. Ein zweiter
+        // DDL-Ort holte zudem Entferntes zurück: SchemaKatalog.Schritt21_Tarifmodell
+        // führt Aufschlaege_Anwenden, das Schemaschritt 85 entfernt hat — ein Nachzug aus
+        // dieser Liste legte die Spalte bei jedem Zugriff wieder an (Wache:
+        // WirtschaftlichkeitCtrlTabellenTests).
+        //
+        // Die Ergebnisspalten. Auch die vier Ergebnisspalten ohne Grundschema - SPALTE_STROMST_MODUS (Etappe
+        // B6), SPALTE_ERSATZ_BARWERT (W5-B-10), SPALTE_NACHWEIS_JSON (B7P) und SPALTE_LAUF_STAENDE (Register EZ-19) - legt
+        // ein Schemaschritt an (ErgebnisWirtschaftlichkeitSpaltenSchema). Fehlt eine Spalte doch, nennen Laden und
+        // Speichern den Datenbankfehler.
 
         // ------------------------------------------------------------- Parameter
 
         public WirtschaftlichkeitParameter LadeParameter(int idStamm)
         {
-            StelleTabellenSicher();
+            GesetzKatalog.StelleKatalogSicher();
             var p = new WirtschaftlichkeitParameter { IdStamm = idStamm };
             try
             {
@@ -858,7 +767,7 @@ namespace WindowsFormsApplication1
         {
             Speicherfehler = null;   // ETAPPE E7c3 (B‑6)
             if (p == null || p.IdStamm <= 0) return false;
-            StelleTabellenSicher();
+            GesetzKatalog.StelleKatalogSicher();
             try
             {
                 int rows = DataRepository.ExecuteNonQuery(
@@ -1270,7 +1179,7 @@ namespace WindowsFormsApplication1
 
         public TarifParameter LadeTarif(int idStamm)
         {
-            StelleTabellenSicher();
+            GesetzKatalog.StelleKatalogSicher();
             var t = new TarifParameter { IdStamm = idStamm };
             try
             {
@@ -1335,7 +1244,7 @@ namespace WindowsFormsApplication1
         {
             Speicherfehler = null;   // ETAPPE E7c3 (B‑6)
             if (t == null || t.IdStamm <= 0) return false;
-            StelleTabellenSicher();
+            GesetzKatalog.StelleKatalogSicher();
             try
             {
                 // Spaltenliste und Werte entstehen aus EINER Quelle — bei 40 Spalten
@@ -1546,7 +1455,7 @@ namespace WindowsFormsApplication1
             sensitivitaet = sens;
             var matrizen = new Dictionary<int, StromMatrix>();   // W3: je Projekt (szenariounabhängig)
             if (daten == null || daten.Varianten.Count == 0 || p == null) return alle;
-            StelleTabellenSicher();
+            GesetzKatalog.StelleKatalogSicher();
             ZuordnungenHeilen(daten);
             TarifParameter tarif = LadeTarif(daten.IdStamm);      // W3: gilt für die ganze Gruppe
             _staffelCache = null; _pelCache.Clear(); _oelCache.Clear();
@@ -1607,6 +1516,16 @@ namespace WindowsFormsApplication1
                         matrizen[v.IdProjekt] = eingabe.Matrix;
                     WirtschaftlichkeitErgebnis erg = RechneProjekt(vs, ps, eingabe,
                         szenario, out KapitalwertRechner.Zahlungsbild bild);
+                    // 6b (Katalog v26): die Stromsteuer des Hilfsstroms im Erwartungsfall als Ausweis am
+                    // Stand und in seinen Kennzahlen — dieselbe Rechnung wie die Nachweiszeile.
+                    if (string.Equals(szenario, WirtschaftlichkeitSzenario.ERWARTET, StringComparison.Ordinal))
+                    {
+                        HilfsstromStromsteuer.Ergebnis st = eingabe.StromsteuerHilfsstrom;
+                        bool mitSatz = st != null && st.RegelsatzEurJeMWh.HasValue && st.RegelsatzEurJeMWh.Value > 0;
+                        v.HilfsstromStromsteuerGesondert = mitSatz ? st.GesondertEur : (double?)null;
+                        v.HilfsstromStromsteuerGesamt = mitSatz ? st.SteuerEur : (double?)null;
+                        KennzahlenKatalog.NachWirtschaftlichkeit(v);
+                    }
                     alle.Add(erg);
                     eingaben.Add(eingabe); bilder.Add(bild); ergebnisse.Add(erg);
                 }
@@ -2100,6 +2019,10 @@ namespace WindowsFormsApplication1
             /// <summary>Betriebskostenpositionen mit Kostenart und Herleitung (E3 → E7).</summary>
             public List<KostenPositionNachweis> Betriebskosten = new List<KostenPositionNachweis>();
 
+            /// <summary>6b: die Stromsteuer des Hilfsstroms (<see cref="HilfsstromStromsteuer"/>);
+            /// <c>null</c> ohne Hilfsstrom. Ihr gesonderter Betrag steht in <see cref="Endenergie"/>.</summary>
+            public HilfsstromStromsteuer.Ergebnis StromsteuerHilfsstrom;
+
             /// <summary>
             /// ETAPPE B2 — die Eingabe der Steuerrechnung dieses Laufs (Anlagen mit
             /// Träger, Heizwerten und Katalogschlüsseln, gewählte Norm, Netzbezug).
@@ -2323,6 +2246,27 @@ namespace WindowsFormsApplication1
             // Szenarios statt immer an der des Erwartungsfalls.
             BetriebsTopfe topfe = LiesBetriebskostenTopfe(v.IdProjekt, szenario, satz);
             if (topfe.Fehler != null) Stufenfehler(v.IdProjekt, STUFE_BETRIEBSKOSTEN, topfe.Fehler);   // E7c3 (B‑6)
+            // Welle KB-7b: die Wasserkosten des Rückkühlwerks — Menge des Laufs (dieser Stand ist bereits
+            // szenarioskaliert) × Arbeitspreis des Wasserträgers mit den Trägerpreisen dieses Szenarios
+            // (derselbe Schlüssel wie die Energiekosten in Szenariodaten). Genau eine Buchung: in den
+            // Betriebs-Topf, sofort wirksam, Steigerung p_B (Entscheid F3). Ohne Wasser bleibt der Topf
+            // unberührt — die Summe ist dann bitgenau die von vorher.
+            Wasserkosten.Ergebnis wasser = null;
+            try { wasser = Wasserkosten.Rechne(v.IdProjekt, v, satz != null ? szenario : null); }
+            catch (Exception ex) { Stufenfehler(v.IdProjekt, STUFE_BETRIEBSKOSTEN, Fehlergrund.Text(ex)); }
+            if (wasser != null && wasser.KostenEur > 0) topfe.BetriebSofort += wasser.KostenEur;
+            // 6b (Anwenderentscheid 16.10.2026): die Stromsteuer des Hilfsstroms — nur der Teil,
+            // den der Arbeitspreis des Netzträgers nicht schon enthält (HilfsstromStromsteuer), im
+            // Endenergie-Topf neben den Hilfsenergiekosten. Ohne Hilfsstrom bitgleich.
+            if (v.HilfsstromMWh > 0)
+            {
+                if (_gesetze == null) _gesetze = new GesetzKatalog();
+                e.StromsteuerHilfsstrom = HilfsstromStromsteuer.Rechne(v.HilfsstromMWh,
+                    _gesetze.Wert(DbWerte.GESETZ_STROMST_REGELSATZ, Foerderbeginn(p)),
+                    StromsteueranteilNetzEurJeMWh(v.IdProjekt, v.EnergiekostenJeTraeger));
+                if (e.StromsteuerHilfsstrom != null)
+                    topfe.EndenergieSofort += e.StromsteuerHilfsstrom.GesondertEur;
+            }
             e.Betrieb = topfe.BetriebSofort;
             e.BetriebAbJahr = topfe.BetriebAbJahr;
             e.Endenergie = topfe.EndenergieSofort;
@@ -2360,6 +2304,15 @@ namespace WindowsFormsApplication1
             // eine zweite, ausschließlich beschreibende Sicht, statt die Rechnung auf
             // einen neuen Leseweg umzustellen.
             e.Betriebskosten = LiesBetriebskostenPositionen(v.IdProjekt, szenario, satz);
+            // Welle KB-7b: die Nachweiszeile der Wasserkosten — die Gliederung trifft damit die Summe des
+            // Betriebs-Topfes; ohne Preis keine Kosten, aber ein Hinweis mit der Menge (benannt, KD‑Q8).
+            KostenPositionNachweis wasserZeile = Wasserkosten.Nachweis(wasser);
+            if (wasserZeile != null) e.Betriebskosten.Add(wasserZeile);
+            Melde(e, Wasserkosten.HinweisOhnePreis(wasser));
+            // 6b: die Nachweiszeile der Stromsteuer des Hilfsstroms — sie trifft den Endenergie-Topf.
+            KostenPositionNachweis steuerZeile = HilfsstromStromsteuer.Nachweis(e.StromsteuerHilfsstrom);
+            if (steuerZeile != null) e.Betriebskosten.Add(steuerZeile);
+            Melde(e, HilfsstromStromsteuer.HinweisOhneSatz(e.StromsteuerHilfsstrom));
             e.Energie = v.Energiekosten;   // KostenEmissionRechner (Phase 5)
 
             double pvUeberschussMWh = v.Ergebnis.Photovoltaik != null ? v.Ergebnis.Photovoltaik.Ueberschuss : 0;
@@ -4940,7 +4893,7 @@ namespace WindowsFormsApplication1
         /// <c>KWKG_VBH_JAHRESDECKEL</c>, gelesen über <see cref="GesetzKatalog"/>. Die
         /// Alttabelle <c>Tab_KWKG_Staffel</c> wird seit Etappe K1 (19.08.2026) auch
         /// nicht mehr ANGELEGT: Konstante und DDL/Saat sind aus
-        /// <c>StelleTabellenSicher</c> entfernt (Konzept Kosten/Energieträger, HF1).
+        /// der früheren Tabellenvorsorge des Controllers entfernt (Konzept Kosten/Energieträger, HF1).
         /// Seit Etappe K6 ist sie ganz weg — Migrationsschritt 29 (M-E) droppt sie.
         /// </para>
         ///
@@ -7071,6 +7024,9 @@ namespace WindowsFormsApplication1
             w.Betrieb = topfe.BetriebSofort;
             w.BetriebAbJahr = topfe.BetriebAbJahr;
             w.Endenergie = topfe.EndenergieSofort;
+            // 6b: die gesonderte Stromsteuer des Hilfsstroms gehört zur Wärmeerzeugung wie die
+            // Hilfsenergiekosten selbst (BHKW und Kessel zählen dort).
+            if (gesamt.StromsteuerHilfsstrom != null) w.Endenergie += gesamt.StromsteuerHilfsstrom.GesondertEur;
             w.EndenergieAbJahr = topfe.EndenergieAbJahr;
             w.InvestGekoppelt = topfe.InvestGekoppeltSofort;
             w.InvestGekoppeltAbJahr = topfe.InvestGekoppeltAbJahr;
@@ -7860,6 +7816,9 @@ namespace WindowsFormsApplication1
                         KomponenteUndAnlage(r, out komponenteZ, out anlageZ);
                         if (!zaehlt(komponenteZ, anlageZ)) continue;
                     }
+                    // Welle KB-5: Die Verschleißposition des Stromspeichers bucht der Lauf (eine Quelle,
+                    // eine Buchung) — die Kostenrechnung zählt sie nicht ein zweites Mal.
+                    if (mitBemessung && VomLaufGebucht(r)) continue;
                     double wert = Szenariowert(r, szenario, "EingegebenerWert", "BestCase", "WorstCase");
                     int start = StartJahrDerZeile(r);
                     double beitrag;
@@ -8060,11 +8019,10 @@ namespace WindowsFormsApplication1
             var liste = new List<KostenPositionNachweis>();
             bool mitBemessung = false;
             try { mitBemessung = KostenPositionCtrl.StelleSpaltenSicher(); }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // ETAPPE E7c3 (B‑6): benannt — ohne Bemessungsspalten keine Gliederung;
-                // die Summenrechnung (LiesBetriebskostenTopfe) nennt denselben Grund.
-                Vorsorgefehler(ex);
+                // ETAPPE E7c3 (B‑6): ohne Bemessungsspalten keine Gliederung; den Grund
+                // nennt die Summenrechnung (LiesBetriebskostenTopfe, topfe.Fehler).
             }
             if (!mitBemessung) return liste;   // ohne Schritt 19 gibt es nichts zu gliedern
 
@@ -8112,6 +8070,8 @@ namespace WindowsFormsApplication1
 
                 foreach (DataRow r in dt.Rows)
                 {
+                    // Welle KB-5: dieselbe Ausnahme wie in der Summenschleife — die Nachweisliste trifft deren Summe.
+                    if (VomLaufGebucht(r)) continue;
                     double wert = Szenariowert(r, szenario, "EingegebenerWert", "BestCase", "WorstCase");
                     string bem = Text(r, SchemaKatalog.SPALTE_PW_BEMESSUNG);
                     if (string.IsNullOrEmpty(bem)) bem = DbWerte.BEMESSUNG_BETRAG;
@@ -8456,6 +8416,30 @@ namespace WindowsFormsApplication1
         {
             return EndenergieAufloeser.FuerProjekt(idProjekt, szenario,
                                                   satz != null ? satz.MengeFaktor : 1.0);
+        }
+
+        /// <summary>
+        /// <b>Welle KB-5 — „vom Lauf gebucht"</b>: Die Betriebsposition des Stromspeichers „je entladener kWh"
+        /// (<c>EUR_PRO_KWH_ELEKTRISCH</c> an Komponente 5) ist die QUELLE des Verschleißsatzes c_ver; gebucht
+        /// wird der Verschleiß vom Lauf als eigene Betriebskostenzeile (<c>StromspeicherSimCtrl</c>,
+        /// c_ver × entladene kWh). Die Kostenrechnung bucht dieselbe Position deshalb nicht ein zweites Mal —
+        /// eine Quelle, eine Buchung. Ein Erlös ist kein Verschleiß und bleibt.
+        /// </summary>
+        internal static bool VomLaufGebucht(int komponente, int kategorie, string bemessung, bool erloes)
+            => komponente == EndenergieAufloeser.KOMPONENTE_STROMSPEICHER &&
+               kategorie == DbWerte.KOSTEN_KATEGORIE_BETRIEB && !erloes &&
+               string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, StringComparison.Ordinal);
+
+        /// <summary><see cref="VomLaufGebucht(int,int,string,bool)"/> für eine Betriebszeile aus <c>Tab_ProjektWerte</c>.</summary>
+        private static bool VomLaufGebucht(DataRow r)
+        {
+            if (!r.Table.Columns.Contains("KomponentenID") ||
+                !r.Table.Columns.Contains(SchemaKatalog.SPALTE_PW_BEMESSUNG)) return false;
+            int komponente, idAnlage;
+            KomponenteUndAnlage(r, out komponente, out idAnlage);
+            return VomLaufGebucht(komponente, DbWerte.KOSTEN_KATEGORIE_BETRIEB,
+                                  Text(r, SchemaKatalog.SPALTE_PW_BEMESSUNG),
+                                  B(r, SchemaKatalog.SPALTE_PW_IST_ERLOES));
         }
 
         /// <summary>Komponente und Anlage der Positionszeile (0 = nicht gesetzt bzw.
@@ -9073,7 +9057,7 @@ namespace WindowsFormsApplication1
 
             // DER ZEITSTEMPEL DES LAUFS ENTSTEHT HIER, AM ENDE DER RECHNUNG - nach jedem
             // Schreibvorgang, den die Rechnung selbst auslöst (die Katalogsaat in
-            // StelleTabellenSicher stempelt Tab_Gesetzesparameter). Bis dahin trug jede Zeile die
+            // GesetzKatalog.StelleKatalogSicher stempelt Tab_Gesetzesparameter). Bis dahin trug jede Zeile die
             // Zeit, zu der ihr Ergebnisobjekt entstand; gegen die Änderungsstempel gehalten
             // (KostenAenderungsstempel) hätte sich eine Rechnung damit selbst als veraltet
             // gestempelt. Alle Zeilen eines Laufs tragen dieselbe Sekunde - die Auflösung, in der
@@ -9312,7 +9296,7 @@ namespace WindowsFormsApplication1
             var liste = new List<WirtschaftlichkeitErgebnis>();
             Ladefehler = null;   // ETAPPE E7c3 (B‑6)
             if (projektIds == null || projektIds.Count == 0) return liste;
-            StelleTabellenSicher();
+            GesetzKatalog.StelleKatalogSicher();
             try
             {
                 foreach (int idProjekt in projektIds)
@@ -9470,7 +9454,7 @@ namespace WindowsFormsApplication1
             var liste = new List<SensitivitaetZeile>();
             Ladefehler = null;   // ETAPPE E7c3 (B‑6): gilt für DIESES Laden
             if (projektIds == null || projektIds.Count == 0) return liste;
-            StelleTabellenSicher();
+            GesetzKatalog.StelleKatalogSicher();
             try
             {
                 foreach (int idProjekt in projektIds)
@@ -9525,7 +9509,7 @@ namespace WindowsFormsApplication1
             var map = new Dictionary<int, StromMatrix>();
             Ladefehler = null;   // ETAPPE E7c3 (B‑6): gilt für DIESES Laden
             if (projektIds == null || projektIds.Count == 0) return map;
-            StelleTabellenSicher();
+            GesetzKatalog.StelleKatalogSicher();
             try
             {
                 foreach (int idProjekt in projektIds)

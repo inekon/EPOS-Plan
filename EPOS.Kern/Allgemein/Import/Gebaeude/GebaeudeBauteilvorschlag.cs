@@ -61,8 +61,22 @@ namespace WindowsFormsApplication1
 
         private Flaechenherkunft? _flaechenherkunft;
 
-        /// <summary>Herkunft des U-Werts — auch, wenn er aus den Schichten folgt (die Schichten stammen aus der Datei).</summary>
-        internal Importherkunft HerkunftU { get; set; }
+        /// <summary>
+        /// Herkunft des U-Werts — auch, wenn er aus den Schichten folgt (die Schichten stammen aus der Datei). Das Setzen schreibt
+        /// den gespeicherten Wert (<see cref="ImportherkunftWerte.Wert"/>) zugleich in <see cref="BauteilModel.U_Herkunft"/> der
+        /// Zeile — so schreibt die Übernahme ihn nach <c>Tab_Bauteil.U_Herkunft</c> (Schemaschritt <see cref="BauteilUHerkunftSchema"/>).
+        /// </summary>
+        internal Importherkunft HerkunftU
+        {
+            get => _herkunftU;
+            set
+            {
+                _herkunftU = value;
+                if (Bauteil != null) Bauteil.U_Herkunft = ImportherkunftWerte.Wert(value);
+            }
+        }
+
+        private Importherkunft _herkunftU;
 
         /// <summary>Herkunft des g-Werts; <see cref="Importherkunft.Leer"/> = Wert des Gebäudes.</summary>
         internal Importherkunft HerkunftG { get; set; }
@@ -519,10 +533,15 @@ namespace WindowsFormsApplication1
         // Stufe G6c: der Vorschlag mehrerer Zonen.
         /// <summary>I — {0} Zahl der Zonen, {1} Regel, {2} Zahl der Trennflächenzeilen: Der Vorschlag mehrerer Zonen.</summary>
         internal const string MEHRZONEN = "IMP_BAUTEIL_PROT_MEHRZONEN";
+
+        /// <summary>Welle DA-4: ein Luftstrom der Datei, dessen Partnerzone die Datei nicht führt (oder doppelt) — übergangen.</summary>
+        internal const string LUFTSTROM_PARTNER = "IMP_BAUTEIL_PROT_LUFTSTROM_PARTNER";
         /// <summary>F — {0} Zahl der Zonen, {1} Grenze, {2} vorgeschlagene Regel: Mehr Zonen, als das Gebäude rechnet (M12).</summary>
         internal const string ZU_VIELE_ZONEN = "IMP_BAUTEIL_PROT_ZU_VIELE_ZONEN";
         /// <summary>F — {0} Zone: Ab zwei Zonen trägt jede eine Nutzfläche (N1.56 Nr. 14).</summary>
         internal const string ZONE_OHNE_NUTZFLAECHE = "IMP_BAUTEIL_PROT_ZONE_OHNE_NUTZFLAECHE";
+        /// <summary>W — {0} Zone: Der Einzonenweg übernimmt die Zeitpläne der Datei nicht (N7); als Zonen übernommen kommen sie an.</summary>
+        internal const string EINZONE_ZEITPLAENE = "IMP_BAUTEIL_PROT_EINZONE_ZEITPLAENE";
         /// <summary>F — {0} Σ Zonen [m²], {1} Σ Räume [m²]: Die Zonenflächen summieren nicht die Raumflächen (5.3).</summary>
         internal const string ZONENFLAECHE_ABWEICHUNG = "IMP_BAUTEIL_PROT_ZONENFLAECHE_ABWEICHUNG";
 
@@ -653,6 +672,21 @@ namespace WindowsFormsApplication1
         internal IReadOnlyList<Zonenkonditionierung> Zonenkonditionierungen => _projektdatei;
 
         private readonly List<Zonenkonditionierung> _projektdatei = new List<Zonenkonditionierung>();
+
+        /// <summary>
+        /// Welle DA-4: die Restdaten der Datei je Zone in der Reihenfolge von <see cref="Zonen"/> (<c>null</c> = keine) — Zeilenbild
+        /// und benannte Wochen schreibt <see cref="ZonenplanCtrl.RestUebernehmen"/> nach der Konditionierung der Datei.
+        /// </summary>
+        internal IReadOnlyList<AbbildZonenrest> Zonenreste => _zonenreste;
+
+        private readonly List<AbbildZonenrest> _zonenreste = new List<AbbildZonenrest>();
+
+        /// <summary>
+        /// Welle DA-4: die Luftströme der Datei zwischen den Zonen, über die vorläufigen Ids der Zonen (−1, −2, …); leer = keine.
+        /// </summary>
+        internal IReadOnlyList<ZonenluftstromModel> Luftstroeme => _luftstroeme;
+
+        private readonly List<ZonenluftstromModel> _luftstroeme = new List<ZonenluftstromModel>();
 
         // ==================================================================
         //  Inhalt
@@ -1075,6 +1109,24 @@ namespace WindowsFormsApplication1
                 _v.HerkunftNutzflaeche = nf.Wert > 0.0 ? nf.Herkunft : Importherkunft.Leer;
                 _v.HerkunftVolumen = vol.Wert > 0.0 ? vol.Herkunft : Importherkunft.Leer;
                 _v.HerkunftRaumhoehe = rh.Wert > 0.0 ? rh.Herkunft : Importherkunft.Leer;
+                // Welle DA-2: die Lastfelder der einen Zone aus den beheizten Räumen der Datei (gbXML; ohne Lasten bleiben sie leer).
+                GbxmlKonditionierung.Lastfelder(_v.Zone, _g.Raeume.Where(IstBeheizt), _v.Zone.Nutzflaeche);
+                // Welle DA-4: Vorheizzeit, Höchstleistungen und Übergabe aus den Restdaten; die eine Zone trägt keinen Luftstrom.
+                GebaeudeRestdaten.Setzen(_v.Zone, _g.Raeume.Where(IstBeheizt));
+                _v._zonenreste.Clear();
+                // N8 (E160): Tragen alle beheizten Räume mit Kalendern denselben, nimmt die eine Zone ihn (Konditionierung und Rest der
+                // Datei wie eine Zone des Mehrzonenwegs); weichen sie ab, nimmt sie keinen — benannt, mit dem Hinweis auf eine
+                // Zonenregel für mehrere Zonen —, und auch die Wochen und das Zeilenbild eines einzelnen Raums bleiben draußen.
+                List<AbbildRaum> warm = _g.Raeume.Where(IstBeheizt).ToList();
+                Zonenkonditionierung datei = GebaeudeZonierung.Einzonenkonditionierung(_v.Zone.Bezeichner, warm, out bool abweichend);
+                _v._projektdatei.Clear();
+                _v._projektdatei.Add(datei);
+                AbbildZonenrest rest = GebaeudeRestdaten.Rest(warm);
+                _v._zonenreste.Add(abweichend ? GebaeudeRestdaten.OhneKonditionierung(rest) : rest);
+                if (abweichend)
+                    Warnung(EINZONE_ZEITPLAENE, _v.Zone.Bezeichner);
+                else if (datei?.AusGbxml == true || datei?.AusIfcStandard == true)
+                    _v._meldungen.AddRange(datei.Meldungen);
             }
 
             /// <summary>
@@ -1173,7 +1225,7 @@ namespace WindowsFormsApplication1
                     hn = _datei;
                 }
 
-                GebaeudeBauteilzeile z = NeueZeile(Lesename(s), art, flaeche, rand, p.Summenfeld, s.Quelltyp, s.Kennung, null);
+                GebaeudeBauteilzeile z = NeueZeile(Lesename(s), art, flaeche, rand, p.Summenfeld, s.Quelltyp, s.Kennung, null, quelle: s);
                 z.HerkunftFlaeche = herkunftFlaeche;
                 z.Flaechenherkunft = ImportherkunftWerte.IstVorgabe(herkunftFlaeche) ? Flaechenherkunft.Schematisch : s.Flaechenherkunft;
                 Setzen(z, neigung, hn, azimut, ha);
@@ -1208,7 +1260,7 @@ namespace WindowsFormsApplication1
                 (double? azimut, Importherkunft ha) = Azimut(s.AzimutGrad, gespiegelt);
 
                 GebaeudeBauteilzeile z = NeueZeile(Lesename(s), Bauteilart.Vorhangfassade, flaeche, rand, p.Summenfeld,
-                                                   s.Quelltyp, s.Kennung, null);
+                                                   s.Quelltyp, s.Kennung, null, quelle: s);
                 z.HerkunftFlaeche = herkunftFlaeche;
                 z.Flaechenherkunft = ImportherkunftWerte.IstVorgabe(herkunftFlaeche) ? Flaechenherkunft.Schematisch : s.Flaechenherkunft;
                 Setzen(z, neigung, hn, azimut, ha);
@@ -1242,7 +1294,7 @@ namespace WindowsFormsApplication1
                 }
 
                 GebaeudeBauteilzeile z = NeueZeile(Lesename(f), Bauteilart.Fenster, f.BruttoflaecheM2.Value, rand,
-                                                   GebaeudeZielfelder.FENSTER_GESAMT, f.Quelltyp, f.Kennung, null);
+                                                   GebaeudeZielfelder.FENSTER_GESAMT, f.Quelltyp, f.Kennung, null, quelle: f);
                 z.HerkunftFlaeche = _datei;
                 z.Flaechenherkunft = f.Flaechenherkunft;
                 Setzen(z, neigung, hn, azimut, ha);
@@ -1272,7 +1324,7 @@ namespace WindowsFormsApplication1
                 }
 
                 GebaeudeBauteilzeile z = NeueZeile(Lesename(t), Bauteilart.Tuer, t.BruttoflaecheM2.Value, rand,
-                                                   GebaeudeZielfelder.FLAECHE_SONSTIGE, t.Quelltyp, t.Kennung, null);
+                                                   GebaeudeZielfelder.FLAECHE_SONSTIGE, t.Quelltyp, t.Kennung, null, quelle: t);
                 z.HerkunftFlaeche = _datei;
                 z.Flaechenherkunft = t.Flaechenherkunft;
                 Setzen(z, neigung, hn, azimut, ha);
@@ -1402,13 +1454,28 @@ namespace WindowsFormsApplication1
                         Quellkennung = string.IsNullOrEmpty(iz.Quellkennung) ? null : WindowsFormsApplication1.Quellkennung.Kuerzen(iz.Quellkennung),
                     };
                     if (satz.CadSollwertAktiv && iz.IstBeheizt) ZonensollwertAusDatei(m, iz);
+                    // Welle DA-2: Licht, Wärme und Außenluft je Person der Datei in die Lastfelder der Zone (zusätzlich zum Kalender).
+                    GbxmlKonditionierung.Lastfelder(m, iz.Raeume, m.Nutzflaeche);
                     _v._zonen.Add(m);
                     _v._profile.Add(iz.Profil);
                     _v._projektdatei.Add(iz.Projektdatei);
+                    // Welle DA-4: Vorheizzeit, Höchstleistungen und Übergabe der Zone aus den Restdaten der Datei.
+                    GebaeudeRestdaten.Setzen(m, iz.Raeume);
+                    _v._zonenreste.Add(GebaeudeRestdaten.Rest(iz.Raeume));
+                    if (iz.Projektdatei?.AusGbxml == true || iz.Projektdatei?.AusIfcStandard == true)
+                    {
+                        // Welle DA-1: Zähler, Verdichtungen und Verwürfe je Zone, dazu die Abweichungen vom Profil (E138 F2).
+                        _v._meldungen.AddRange(iz.Projektdatei.Meldungen);
+                        if (iz.Profil?.Id is long idProfil)
+                            _v._meldungen.AddRange(GbxmlKonditionierung.Profilabgleich(iz.Projektdatei,
+                                Raumnutzungsvorbelegung.Lesen().Profil(idProfil), m.Nutzflaeche));
+                    }
                     foreach (AbbildRaum r in iz.Raeume)
                         _v._raeume.Add(new GebaeudeQuellzuordnung(r.Quelltyp, r.Kennung, ImportZiel.Zone, m.ID));
                     if (!(m.Nutzflaeche > 0.0)) Fehler(ZONE_OHNE_NUTZFLAECHE, m.Bezeichner);
                 }
+                // Welle DA-4: die Luftströme der Datei zwischen den Zonen — die Partnerzone über die Kennung ihres Rests.
+                _v._luftstroeme.AddRange(GebaeudeRestdaten.Luftstroeme(_v._zonen.Select(z => z.ID).ToList(), _v._zonenreste, _v._meldungen));
                 _v.Zone = _v._zonen[0];
                 _v.HerkunftNutzflaeche = _datei;
                 _v.HerkunftVolumen = _v._zonen.All(z => z.Volumen.HasValue) ? _datei : Importherkunft.Leer;
@@ -1654,7 +1721,7 @@ namespace WindowsFormsApplication1
                     hn = _datei;
                 }
                 (double? azimut, Importherkunft ha) = seite != null ? Azimut(seite.AzimutGrad, false) : Azimut(s.AzimutGrad, gespiegelt);
-                GebaeudeBauteilzeile z = NeueZeile(Lesename(s), art, flaeche, rand, feld, s.Quelltyp, s.Kennung, null);
+                GebaeudeBauteilzeile z = NeueZeile(Lesename(s), art, flaeche, rand, feld, s.Quelltyp, s.Kennung, null, quelle: s);
                 z.Bauteil.ID_Nachbarzone = nachbar;
                 z.HerkunftFlaeche = _datei;
                 z.Flaechenherkunft = weg;
@@ -1691,7 +1758,7 @@ namespace WindowsFormsApplication1
                 (double? neigung, Importherkunft hn) = seite != null ? Neigung(seite.NeigungGrad, false) : Neigung(o.NeigungGrad ?? wirt.NeigungGrad, gespiegelt);
                 (double? azimut, Importherkunft ha) = seite != null ? Azimut(seite.AzimutGrad, false) : Azimut(wirt.AzimutGrad ?? o.AzimutGrad, gespiegelt);
                 string feld = fenster ? GebaeudeZielfelder.FENSTER_GESAMT : GebaeudeZielfelder.FLAECHE_SONSTIGE;
-                GebaeudeBauteilzeile z = NeueZeile(Lesename(o), o.Art, flaeche, rand, feld, o.Quelltyp, o.Kennung, null);
+                GebaeudeBauteilzeile z = NeueZeile(Lesename(o), o.Art, flaeche, rand, feld, o.Quelltyp, o.Kennung, null, quelle: o);
                 z.Bauteil.ID_Nachbarzone = nachbar;
                 z.HerkunftFlaeche = _datei;
                 z.Flaechenherkunft = o.Flaechenherkunft;
@@ -2441,10 +2508,13 @@ namespace WindowsFormsApplication1
             // ------------------------------------------------------------------
 
             private GebaeudeBauteilzeile NeueZeile(string name, Bauteilart art, double flaeche, Bauteilrand rand, string summenfeld,
-                                                  string quelltyp, string kennung, string seite)
+                                                  string quelltyp, string kennung, string seite, AbbildBauteil quelle = null)
             {
                 var b = new BauteilModel
                 {
+                    // DA-8: Absorptions- und Emissionsgrad der Datei (leer = Vorgabe).
+                    Absorptionsgrad_Solar = quelle?.AbsorptionsgradSolar,
+                    Emissionsgrad = quelle?.Emissionsgrad,
                     ID = _naechsteZeile--,
                     Bezeichner = Kuerzen(name, BaustoffSchema.LAENGE_BEZEICHNER),
                     Bauteilart = GebaeudeZonenabbildung.ArtFuerZeile(art),

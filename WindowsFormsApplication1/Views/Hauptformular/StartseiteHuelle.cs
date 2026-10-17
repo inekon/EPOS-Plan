@@ -229,56 +229,17 @@ namespace WindowsFormsApplication1
             {
                 if (_berichte == null)
                 {
-                    // E3/8: Die Huelle liegt plattformfrei in EPOS.UI.Daten; die
-                    // zwei Wege, die nur Windows kennt, kommen als benannte Naht
-                    // herein - der Variantendialog als zweites Fenster (Regel (b):
-                    // eine Nachricht spaeter) und das Umbenennen mit Nachlauf.
-                    _berichte = new BerichteKostenHuelle(VarianteAnlegenAusUebersicht,
-                                                         ProjektUmbenennen);
+                    // E3/8: Die Huelle liegt plattformfrei in EPOS.UI.Daten; die zwei
+                    // Nachlaeufe, die nur Windows kennt, kommen als benannte Naht herein -
+                    // der Projektkontext nach dem Umbenennen und die Variantenanzeige
+                    // der Startseite nach Anlegen, Umbenennen und Loeschen. Geschrieben
+                    // wird im Kern; die Dialoge der Uebersicht sind Ueberlagerungen.
+                    _berichte = new BerichteKostenHuelle(VarianteUmbenanntNachziehen,
+                                                         VariantenAnzeigeAktualisieren);
                     _berichte.SetzeProjekt(_kontext.Id, _kontext.Name);
                 }
                 return _berichte;
             }
-        }
-
-        /// <summary>
-        /// Der WINDOWS-Weg in den Variantendialog, den die Übersichtsseite von
-        /// „Berichte &amp; Kosten" ruft (E3/8; bis dahin stand er in
-        /// <c>UebersichtSeiteGaben</c> selbst).
-        ///
-        /// <para><b>Eine Nachricht später</b> (<see cref="Blazorsprung"/>, Befund
-        /// W16b‑B‑1): Aus dem Blazor-Klick heraus bliebe das Fenster der zweiten
-        /// WebView leer. Der Seite antwortet deshalb eine Zusage, die erst fällt,
-        /// wenn der Dialog wieder zu ist — sie lädt danach ihre Liste neu.</para>
-        ///
-        /// <para><b>Und sie fällt auf jeden Fall.</b> <c>Blazorsprung</c> führt
-        /// einen Riegel: Steht schon ein Sprung an, wird dieser still verworfen.
-        /// Ohne Rückfall bliebe die Zusage dann für immer offen, und die Seite
-        /// stünde bis zu ihrem nächsten Aufbau auf „läuft" (Knöpfe gesperrt).
-        /// Läuft der Sprung nicht binnen fünf Sekunden an — das ist die Frist,
-        /// nach der auch der Riegel selbst verfällt —, antwortet die Zusage
-        /// <c>false</c>.</para>
-        /// </summary>
-        private Task<bool> VarianteAnlegenAusUebersicht(int idStamm, string stammName)
-        {
-            var zusage = new TaskCompletionSource<bool>();
-            int gestartet = 0;
-
-            Blazorsprung.Verzoegert(_besitzer?.Invoke(), () =>
-            {
-                System.Threading.Interlocked.Exchange(ref gestartet, 1);
-                bool angelegt = false;
-                try { angelegt = AlsVarianteHuelle.Zeige(_besitzer?.Invoke(), idStamm, stammName); }
-                finally { zusage.TrySetResult(angelegt); }
-            });
-
-            // Rueckfall fuer den verworfenen Sprung (siehe oben).
-            Task.Delay(TimeSpan.FromSeconds(5)).ContinueWith(_ =>
-            {
-                if (System.Threading.Volatile.Read(ref gestartet) == 0) zusage.TrySetResult(false);
-            });
-
-            return zusage.Task;
         }
 
         // =====================================================================
@@ -500,17 +461,14 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der gemeinsame Umbenennweg von Kopfband und Übersicht: Kern, dann der Kontext,
-        /// wenn das umbenannte Projekt das geöffnete ist, dann die Anzeige.
+        /// Der Nachlauf der Übersicht nach dem Umbenennen einer Variante (geschrieben hat
+        /// der Kern): der Kontext, wenn das umbenannte Projekt das geöffnete ist — er hängt
+        /// am Projektnamen —, dann die Variantenanzeige.
         /// </summary>
-        internal string ProjektUmbenennen(int idProjekt, string neuerBezeichner, string bisher)
+        internal void VarianteUmbenanntNachziehen(int idProjekt, string neuerName)
         {
-            string fehler, neuerName;
-            if (!new VariantenCtrl().Umbenennen(idProjekt, neuerBezeichner, out fehler, out neuerName))
-                return fehler ?? "";
             if (idProjekt == _kontext.Id) _kontext.Setzen(neuerName);
             VariantenAnzeigeAktualisieren();
-            return string.Format(MyResource.Resource.VAR_MSG_UMBENANNT, bisher ?? "", (neuerBezeichner ?? "").Trim());
         }
 
         private IReadOnlyList<(int Id, string Name)> Varianten()
@@ -873,17 +831,12 @@ namespace WindowsFormsApplication1
 
         private void Gebaeude(IWin32Window wirt, string sprungziel)
         {
-            List<Z_ProjGebModel> liste = Z_ProjGebCtrl.LiesProjekt(_kontext.Id);
-
-            if (!GebaeudeFenster.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste, sprungziel)) return;
-
-            // Abgleich in EINEM Vorgang (Konzept Administrationsdialoge 7.1 (a)):
-            // unveraenderte Zuordnungen behalten ihre Projektkopie, ein Fehlschlag rollt
-            // alles zurueck. Der Grund kommt als Fehlerbanner auf die Seite; das
+            // Derselbe Weg wie der Maskenschluessel Masken.Projektgebaeude (GD-N): Fenster mit Sprungziel, danach der
+            // Abgleich in EINEM Vorgang (Konzept Administrationsdialoge 7.1 (a)); unveraenderte Zuordnungen behalten ihre
+            // Projektkopie, ein Fehlschlag rollt alles zurueck. Der Grund kommt als Fehlerbanner auf die Seite; das
             // Auffrischen am Ende von KachelwegJetzt holt ihn ab.
-            (bool gelungen, string meldung) =
-                new WizardCtrl().Speichere_Projekt_Gebaeudeliste(_kontext.Id, liste);
-            if (!gelungen) _fehlerhinweis = meldung ?? "";
+            (bool ok, string meldung) = GebaeudeFenster.ProjektOeffnen(wirt, _kontext.Id, _kontext.Name, sprungziel);
+            if (ok && !string.IsNullOrEmpty(meldung)) _fehlerhinweis = meldung;
         }
 
         private void WaermebedarfDaten(IWin32Window wirt)
@@ -904,6 +857,12 @@ namespace WindowsFormsApplication1
             if (grund != null) _fehlerhinweis = grund;
         }
 
+        /// <summary>
+        /// Kachel „Prozesswärme“ — der Bedarfsprofile-Dialog. Die Zuordnungen schreibt die Hülle beim OK über
+        /// den hereingereichten Weg, BEVOR sie die Projektkopievormerkung abschließt: Sonst hielte die noch
+        /// stehende alte Zuordnung die Projektkopie einer entfernten Zeile fest, und sie bliebe als Waise im
+        /// Projekt (<c>Projektkopievormerkung.Schliessen</c>).
+        /// </summary>
         private void Prozesswaerme(IWin32Window wirt)
         {
             // Woertlich pBox_Prozess_Click (:213-237).
@@ -911,11 +870,11 @@ namespace WindowsFormsApplication1
 
             List<Z_ProjektProzesswaermeModel> liste = Z_ProjektProzesswaermeCtrl.LiesProjekt(_kontext.Id);
 
-            if (BedarfsProfileHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste))
+            BedarfsProfileHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste, () =>
             {
                 wizctrl.Del_Projekt_Prozess(_kontext.Id);
                 wizctrl.Add_Projekt_Prozess(_kontext.Id, liste);
-            }
+            });
         }
 
         private void Brauchwasser(IWin32Window wirt)
@@ -939,28 +898,53 @@ namespace WindowsFormsApplication1
         /// </summary>
         private void KaeltebedarfExtern(IWin32Window wirt)
         {
-            List<Z_ProjWaermebedarfModel> liste = WaermebedarfExternAbbildung.Modelle(
-                Z_ProjektGebGanglinieCtrl.LiesProjekt(_kontext.Id), WaermebedarfExternModus.NurKuehlung);
+            string grund = KaeltebedarfExternOeffnen(wirt, _kontext.Id, _kontext.Name);
+            if (grund != null) _fehlerhinweis = grund;
+        }
 
-            if (WaermebedarfExternHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste,
-                                                 WaermebedarfExternModus.NurKuehlung))
-                Speichern(liste, WaermebedarfExternModus.NurKuehlung);
+        /// <summary>
+        /// Der Weg der Kachel „Kältebedarf extern“ ohne Startseite — auch „Bearbeiten…“ einer Lastgangzeile der Gruppe
+        /// „Dezentrale Kältedeckung“ der Simulationskonfiguration (K6b-N, <c>SimulationHuelle</c>). Rückgabe: der Grund
+        /// eines gescheiterten Speicherns, sonst <c>null</c> (auch nach Abbrechen).
+        /// </summary>
+        internal static string KaeltebedarfExternOeffnen(IWin32Window wirt, int idProjekt, string projektName)
+        {
+            List<Z_ProjWaermebedarfModel> liste = WaermebedarfExternAbbildung.Modelle(
+                Z_ProjektGebGanglinieCtrl.LiesProjekt(idProjekt), WaermebedarfExternModus.NurKuehlung);
+
+            if (!WaermebedarfExternHuelle.Oeffnen(wirt, idProjekt, projektName, liste, WaermebedarfExternModus.NurKuehlung))
+                return null;
+            return WaermebedarfExternAbbildung.Speichern(idProjekt, liste, WaermebedarfExternModus.NurKuehlung);
         }
 
         /// <summary>
         /// Kachel „Kältebedarfsprofile“ — der Bedarfsprofile-Dialog mit <c>BedarfsArt.Kaelte</c>
         /// (<see cref="BedarfsProfileHuelle"/>). Löschen und Neuschreiben der Zuordnungen laufen in EINEM
         /// Vorgang (<see cref="KaeltebedarfsprofilAbbildung.Speichern"/>): Scheitert ein Schritt oder steht eine Zeile
-        /// auf „Split ohne EER“, nennt der Fehlerbanner den Grund und die alten Zeilen bleiben stehen.
+        /// auf „Split ohne EER“, nennt der Fehlerbanner den Grund und die alten Zeilen bleiben stehen. Geschrieben
+        /// wird beim OK, BEVOR die Hülle die Projektkopievormerkung abschließt — sonst hielte die noch stehende
+        /// alte Zuordnung die Projektkopie einer entfernten Zeile fest (<c>Projektkopievormerkung.Schliessen</c>).
         /// </summary>
         private void Kaeltebedarfsprofile(IWin32Window wirt)
         {
-            List<Z_ProjektKaeltebedarfModel> liste = Z_ProjektKaeltebedarfCtrl.LiesProjekt(_kontext.Id);
+            string grund = KaeltebedarfsprofileOeffnen(wirt, _kontext.Id, _kontext.Name);
+            if (grund != null) _fehlerhinweis = grund;
+        }
+
+        /// <summary>
+        /// Der Weg der Kachel „Kältebedarfsprofile“ ohne Startseite — auch „Bearbeiten…“ einer Profilzeile der Gruppe
+        /// „Dezentrale Kältedeckung“ der Simulationskonfiguration (K6b-N, <c>SimulationHuelle</c>). Rückgabe: der Grund
+        /// eines gescheiterten Speicherns, sonst <c>null</c> (auch nach Abbrechen).
+        /// </summary>
+        internal static string KaeltebedarfsprofileOeffnen(IWin32Window wirt, int idProjekt, string projektName)
+        {
+            List<Z_ProjektKaeltebedarfModel> liste = Z_ProjektKaeltebedarfCtrl.LiesProjekt(idProjekt);
 
             // K5b: Speichern ueber die Abbildung - „Split ohne EER" lehnt sie benannt ab (Grund im Fehlerbanner).
-            if (!BedarfsProfileHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste)) return;
-            string grund = KaeltebedarfsprofilAbbildung.Speichern(_kontext.Id, liste);
-            if (grund != null) _fehlerhinweis = grund;
+            string grund = null;
+            BedarfsProfileHuelle.Oeffnen(wirt, idProjekt, projektName, liste,
+                                         () => grund = KaeltebedarfsprofilAbbildung.Speichern(idProjekt, liste));
+            return grund;
         }
 
         /// <summary>
@@ -971,6 +955,11 @@ namespace WindowsFormsApplication1
 
         // ---- Reiter 3: Strombedarf -----------------------------------------
 
+        /// <summary>
+        /// Kachel „Standardlastprofil“ — der Bedarfsprofile-Dialog mit den Stromverbrauchern. Die Zuordnungen
+        /// schreibt die Hülle beim OK über den hereingereichten Weg, BEVOR sie die Projektkopievormerkung
+        /// abschließt (wie die Prozesswärme).
+        /// </summary>
         private void Standardlastprofil(IWin32Window wirt)
         {
             // Woertlich pBox_StdLastProfil_Click (:414-439).
@@ -979,11 +968,11 @@ namespace WindowsFormsApplication1
             List<Z_ProjektStromverbraucherModel> liste =
                 Z_ProjektStromverbraucherCtrl.LiesProjekt(_kontext.Id);
 
-            if (BedarfsProfileHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste))
+            BedarfsProfileHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste, () =>
             {
                 wizctrl.Del_Projekt_Stromverbraucher(_kontext.Id);
                 wizctrl.Add_Projekt_Stromverbraucher(_kontext.Id, liste);
-            }
+            });
         }
 
         private void Stromganglinie(IWin32Window wirt)

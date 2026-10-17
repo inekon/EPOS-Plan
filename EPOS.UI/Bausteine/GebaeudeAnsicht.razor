@@ -141,6 +141,7 @@
         {
             <p class="epos-leisezeile epos-gebansicht-sperrmeldung" role="status">@_sperrmeldung</p>
         }
+        @Pruefzeile(daten)
         @if (!daten.Umhaengbar)
         {
             <p class="epos-leisezeile epos-gebansicht-nuranzeige">@Texte.NurAnzeige</p>
@@ -187,6 +188,9 @@
 
     /// <summary>Der Schlüssel des Farbmodus „Befund" (Farbe je Befund des Bauteils, G5-3).</summary>
     internal const string FARBMODUS_BEFUND = "befund";
+
+    /// <summary>Der Schlüssel des Farbmodus „Nutzung" (Farbe je Nutzungsprofil der Zone, MA-5).</summary>
+    internal const string FARBMODUS_NUTZUNG = "nutzung";
 
     /// <summary>Das Modul der Körperansicht (statisches Web-Asset der Bibliothek).</summary>
     public const string MODUL_KOERPER = "./_content/EPOS.UI/epos-gebaeude-koerper.js";
@@ -301,7 +305,11 @@
     /// </summary>
     public string Farbmodus => Daten is { RandbedingungWaehlbar: true } && _farbmodus == FARBMODUS_RAND ? FARBMODUS_RAND
         : Daten is { AufbauWaehlbar: true } && _farbmodus == FARBMODUS_AUFBAU ? FARBMODUS_AUFBAU
-        : Daten is { BefundWaehlbar: true } && _farbmodus == FARBMODUS_BEFUND ? FARBMODUS_BEFUND : FARBMODUS_ZONEN;
+        : Daten is { BefundWaehlbar: true } && _farbmodus == FARBMODUS_BEFUND ? FARBMODUS_BEFUND
+        : Daten is { NutzungWaehlbar: true } && _farbmodus == FARBMODUS_NUTZUNG ? FARBMODUS_NUTZUNG : FARBMODUS_ZONEN;
+
+    /// <summary>Ist der Farbmodus „Nutzung" gezeigt (MA-5)?</summary>
+    private bool ImNutzungsmodus => string.Equals(Farbmodus, FARBMODUS_NUTZUNG, StringComparison.Ordinal);
 
     /// <summary>Ist der Farbmodus „Befund" gezeigt?</summary>
     private bool ImBefundmodus => string.Equals(Farbmodus, FARBMODUS_BEFUND, StringComparison.Ordinal);
@@ -340,6 +348,27 @@
     /// <summary>Der Sprung des Steckbriefs in den Bauteildialog (Id des gespeicherten Bauteils); ohne Delegat kein Knopf.</summary>
     [Parameter] public EventCallback<int> ZumBauteil { get; set; }
 
+    /// <summary>
+    /// MA-1b: der Farbmodus, mit dem die Ansicht öffnet (<see cref="FARBMODUS_ZONEN"/>, <see cref="FARBMODUS_RAND"/>,
+    /// <see cref="FARBMODUS_AUFBAU"/>, <see cref="FARBMODUS_BEFUND"/>) — der Sprung aus dem Blatt „Modell prüfen“; <c>null</c> = die
+    /// Wahl des Anwenders.
+    /// </summary>
+    [Parameter] public string? FarbmodusVorgabe { get; set; }
+
+    /// <summary>
+    /// MA-5: die Prüfgruppe, aus der die Ansicht geöffnet ist — ihre Befunde heben Flächen und Zonen hervor, die Legenden nennen je
+    /// Zeile die Vorschläge; <c>null</c> = ohne Prüfung (keine Hervorhebung, keine Knöpfe).
+    /// </summary>
+    [Parameter] public GebaeudeAnsichtPruefung? Pruefung { get; set; }
+
+    /// <summary>MA-5: „Übernehmen" an einer Legendenzeile — der Wirt führt die Auswahl über den Kern aus; ohne Delegat kein Knopf.</summary>
+    [Parameter] public EventCallback<ModellpruefungAuswahl> PruefungUebernehmen { get; set; }
+
+    /// <summary>MA-5: „Verwerfen" an einer Legendenzeile — der Wirt verwirft die Auswahl über den Kern; ohne Delegat kein Knopf.</summary>
+    [Parameter] public EventCallback<ModellpruefungAuswahl> PruefungVerwerfen { get; set; }
+
+    private string? _gezeigteVorgabe;
+
     /// <summary>Ist der Farbmodus „Randbedingung" gezeigt?</summary>
     private bool ImRandmodus => string.Equals(Farbmodus, FARBMODUS_RAND, StringComparison.Ordinal);
 
@@ -375,7 +404,8 @@
     /// Ordnet ein Raumklick zu? Ohne Zielwahl wie <see cref="Bedienbar"/>; mit Zielwahl nur bei gewähltem Ziel und im Farbmodus
     /// „Zonen".
     /// </summary>
-    public bool OrdnetZu => Bedienbar && (!ZielBedienung || (GewaehltesZiel is not null && !ImGruppenmodus));
+    public bool OrdnetZu => Bedienbar && !ImAusblendwerkzeug && !ImNutzungsmodus
+                            && (!ZielBedienung || (GewaehltesZiel is not null && !ImGruppenmodus));
 
     /// <summary>Sind die Räume ohne Zone hervorgehoben (Eintrag „nicht zugeordnet")? Prüfhilfe für Tests.</summary>
     public bool OhneZoneHervorgehoben => _ohneHervor;
@@ -383,11 +413,123 @@
     /// <summary>Der Schalter des Eintrags „nicht zugeordnet": hebt die Räume ohne Zone im Grundriss hervor.</summary>
     private bool _ohneHervor;
 
+    // =====================================================================
+    //  Ein- und Ausblenden in der Körperansicht (Auftrag AB4) — reine Anzeige, nichts wird gespeichert
+    // =====================================================================
+
+    /// <summary>Der Schlüssel des Werkzeugs „Zuordnen" (die Legende wählt das Ziel, Auftrag AB2).</summary>
+    internal const string WERKZEUG_ZUORDNEN = "zuordnen";
+
+    /// <summary>Der Schlüssel des Werkzeugs „Ein-/Ausblenden" (die Legende schaltet die Sichtbarkeit ihrer Körper).</summary>
+    internal const string WERKZEUG_AUSBLENDEN = "ausblenden";
+
+    /// <summary>Der Zonenschlüssel der Räume ohne Zone in der Menge der ausgeblendeten Zonen.</summary>
+    internal const string OHNE_ZONE = "";
+
+    /// <summary>Das gewählte Werkzeug der Legende; Vorgabe „Zuordnen".</summary>
+    private string _werkzeug = WERKZEUG_ZUORDNEN;
+
+    /// <summary>Das gewählte Werkzeug der Legende (Prüfhilfe für Tests).</summary>
+    public string Werkzeug => _werkzeug;
+
+    /// <summary>Wirkt das Werkzeug „Ein-/Ausblenden"? Nur in der Körperansicht — dort ordnet ein Klick nichts zu.</summary>
+    private bool ImAusblendwerkzeug => KoerperGezeigt && string.Equals(_werkzeug, WERKZEUG_AUSBLENDEN, StringComparison.Ordinal);
+
+    /// <summary>Die ausgeblendeten Zonen (Schlüssel; <see cref="OHNE_ZONE"/> = die Räume ohne Zone).</summary>
+    private readonly HashSet<string> _zonenAus = new(StringComparer.Ordinal);
+
+    /// <summary>Je Bauteilgruppe eingeblendet? Die Kästchenliste neben der Legende — unabhängig vom Farbmodus.</summary>
+    private readonly bool[] _bauteilgruppeSichtbar = Enumerable.Repeat(true, GebaeudeAnsichtBauteilartgruppen.ZAHL).ToArray();
+
+    /// <summary>Ist die Zone eingeblendet (Prüfhilfe für Tests)? <c>null</c> bzw. eine unbekannte Zone = die Räume ohne Zone.</summary>
+    public bool ZoneSichtbar(string? zone) => !_zonenAus.Contains(Zonenschluessel(Daten, zone));
+
+    /// <summary>Ist die Bauteilgruppe eingeblendet (Prüfhilfe für Tests)?</summary>
+    public bool BauteilgruppeSichtbar(Bauteilartgruppe g) => _bauteilgruppeSichtbar[(int)g];
+
+    /// <summary>
+    /// Ist der Körper eines Bauteils sichtbar? <b>Legende UND Gruppe</b>: Im Farbmodus „Randbedingung", „Aufbau" bzw. „Befund"
+    /// muss sein Eintrag der Legende (und der Schalter der Bauteilkörper) eingeblendet sein, dazu seine Bauteilgruppe; im Farbmodus
+    /// „Zonen" zählt allein die Gruppe. Ein Bauteil ohne bekannte Art hat keine Gruppe und folgt nur der Legende.
+    /// </summary>
+    public bool BauteilSichtbar(string bauteil)
+    {
+        if (Daten is not { } daten) return false;
+        bool legende = Farbmodus switch
+        {
+            FARBMODUS_RAND => _bauteileSichtbar
+                              && (daten.Bauteilkoerper.FirstOrDefault(b => string.Equals(b.Bauteil, bauteil, StringComparison.Ordinal)) is not { } k
+                                  || _sichtbar[(int)k.Gruppe]),
+            FARBMODUS_AUFBAU => _bauteileSichtbar && _stufeSichtbar[(int)daten.StufeVon(bauteil)],
+            FARBMODUS_BEFUND => _bauteileSichtbar && _befundSichtbar[(int)daten.BefundVon(bauteil)],
+            _ => true,
+        };
+        return legende && GruppeSichtbar(daten.BauteilartgruppeVon(bauteil));
+    }
+
+    /// <summary>Ist der Raumkörper sichtbar? Die Zone seines Raums muss eingeblendet sein (Legende im Farbmodus „Zonen").</summary>
+    public bool RaumSichtbar(string raum)
+        => Daten?.Raum(raum) is GebaeudeAnsichtRaum r && ZoneSichtbar(r.Zone);
+
+    private bool GruppeSichtbar(Bauteilartgruppe? g) => g is not Bauteilartgruppe x || _bauteilgruppeSichtbar[(int)x];
+
+    /// <summary>Der Schlüssel einer Zone in der Menge der ausgeblendeten; ohne bzw. unbekannt <see cref="OHNE_ZONE"/>.</summary>
+    private static string Zonenschluessel(GebaeudeAnsichtDaten? daten, string? zone)
+        => daten?.Zone(zone) is GebaeudeAnsichtZone z ? z.Schluessel : OHNE_ZONE;
+
+    /// <summary>Ist überhaupt etwas ausgeblendet (Legende oder Gruppe)?</summary>
+    private bool EtwasAusgeblendet
+        => _zonenAus.Count > 0 || !_bauteileSichtbar || _sichtbar.Contains(false) || _stufeSichtbar.Contains(false)
+           || _befundSichtbar.Contains(false) || _bauteilgruppeSichtbar.Contains(false);
+
+    private void BeiWerkzeug(string schluessel) => _werkzeug = schluessel;
+
+    /// <summary>Ein Klick auf einen Eintrag der Zonenlegende im Werkzeug „Ein-/Ausblenden": schaltet die Zone; keine Zuordnung.</summary>
+    private void BeiZonensicht(string schluessel)
+    {
+        if (!_zonenAus.Remove(schluessel)) _zonenAus.Add(schluessel);
+    }
+
+    private void BeiBauteilgruppe(Bauteilartgruppe g) => _bauteilgruppeSichtbar[(int)g] = !_bauteilgruppeSichtbar[(int)g];
+
+    /// <summary>Setzt die Sichtbarkeit der Legende zurück (Wechsel des Farbmodus); die Gruppenwahl bleibt.</summary>
+    private void LegendeZuruecksetzen()
+    {
+        Array.Fill(_sichtbar, true);
+        Array.Fill(_stufeSichtbar, true);
+        Array.Fill(_befundSichtbar, true);
+        _bauteileSichtbar = true;
+        _zonenAus.Clear();
+    }
+
+    /// <summary>„Alle zeigen": jeder Eintrag der Legende und jede Bauteilgruppe wieder eingeblendet.</summary>
+    private void BeiAlleZeigen()
+    {
+        LegendeZuruecksetzen();
+        Array.Fill(_bauteilgruppeSichtbar, true);
+    }
+
+    /// <summary>Die Sichtbarkeit als Zeichenkette (Vergleich, ob das Modul neu zu versorgen ist): Zonen und Gruppen.</summary>
+    private string Sichtstand => string.Join(",", _zonenAus.OrderBy(x => x, StringComparer.Ordinal)) + "|"
+                                 + string.Concat(_bauteilgruppeSichtbar.Select(x => x ? '1' : '0'));
+
     /// <summary>Das gezeigte Geschoss (Prüfhilfe für Tests und Wirt).</summary>
     public GebaeudeAnsichtGeschoss? GezeigtesGeschoss => Daten?.GeschossOderVorgabe(_geschoss);
 
     protected override void OnParametersSet()
     {
+        // MA-1b: der Sprung aus dem Blatt „Modell prüfen“ setzt den Farbmodus der Prüfgruppe — je neuer Vorgabe einmal; die
+        // Wahl des Anwenders danach bleibt. Ein nicht wählbarer Modus fällt wie gewählt auf „Zonen“ zurück.
+        if (!string.Equals(FarbmodusVorgabe, _gezeigteVorgabe, StringComparison.Ordinal))
+        {
+            _gezeigteVorgabe = FarbmodusVorgabe;
+            if (FarbmodusVorgabe is { Length: > 0 } v && !string.Equals(_farbmodus, v, StringComparison.Ordinal))
+            {
+                _treffer = null;
+                LegendeZuruecksetzen();
+                _farbmodus = v;
+            }
+        }
         if (!string.Equals(Geschoss, _geschossParameter, StringComparison.Ordinal))
         {
             _geschossParameter = Geschoss;
@@ -488,6 +630,10 @@
             {
                 @Randlegende(daten, false)
             }
+            else if (ImNutzungsmodus)
+            {
+                @Nutzungslegende(daten)
+            }
             else if (ImAufbaumodus)
             {
                 @Aufbaulegende(daten)
@@ -557,6 +703,13 @@
                     aria-pressed="@(ImBefundmodus ? "true" : "false")" aria-disabled="@(daten.BefundWaehlbar ? null : "true")"
                     title="@(daten.BefundWaehlbar ? null : BefundGrund(daten))"
                     @onclick="() => BeiFarbmodus(FARBMODUS_BEFUND)">@Texte.FarbmodusBefund</button>
+            @if (daten.NutzungWaehlbar)
+            {
+                @* MA-5: „Nutzung" nur mit gelesenen Zonen des gespeicherten Gebäudes - der Importvorschlag kennt keine Profile. *@
+                <button type="button" class="epos-diagramm-knopf epos-gebansicht-farbmodusknopf" data-farbmodus="@FARBMODUS_NUTZUNG"
+                        aria-pressed="@(ImNutzungsmodus ? "true" : "false")"
+                        @onclick="() => BeiFarbmodus(FARBMODUS_NUTZUNG)">@Texte.FarbmodusNutzung</button>
+            }
         </div>
     };
 
@@ -642,7 +795,8 @@
                 {
                     if (gruppen[pi][e] is not Randgruppe g || !_sichtbar[(int)g]) continue;
                     GebaeudeAnsichtZeichnung.Strecke s = GebaeudeAnsichtZeichnung.StreckeVon(polygon, e, 0.0, 1.0);
-                    <line class="epos-gebansicht-kante" data-gruppe="@g" data-kante="@(pi.ToString(CultureInfo.InvariantCulture) + ":" + e.ToString(CultureInfo.InvariantCulture))"
+                    string? kb = angaben.Kantenbauteile is { } kbs && pi < kbs.Count && e < kbs[pi].Count ? kbs[pi][e] : null;
+                    <line class="@Kantenklasse(kb)" data-gruppe="@g" data-kante="@(pi.ToString(CultureInfo.InvariantCulture) + ":" + e.ToString(CultureInfo.InvariantCulture))"
                           x1="@s.X1" y1="@s.Y1" x2="@s.X2" y2="@s.Y2" stroke="@GebaeudeAnsichtRandgruppen.Farbe(g)" />
                 }
             }
@@ -668,7 +822,12 @@
         if (schluessel == FARBMODUS_AUFBAU && Daten is { } d2 && !d2.AufbauWaehlbar) { _sperrmeldung = AufbauGrund(d2); return; }
         if (schluessel == FARBMODUS_BEFUND && Daten is { } d3 && !d3.BefundWaehlbar) { _sperrmeldung = BefundGrund(d3); return; }
         if (Daten is null) return;
-        if (!string.Equals(_farbmodus, schluessel, StringComparison.Ordinal)) _treffer = null;
+        if (!string.Equals(_farbmodus, schluessel, StringComparison.Ordinal))
+        {
+            _treffer = null;
+            // AB4: ein anderer Farbmodus hat eine andere Legende — ihre Sichtbarkeit beginnt neu, die Bauteilgruppen bleiben.
+            LegendeZuruecksetzen();
+        }
         _farbmodus = schluessel;
     }
 
@@ -679,7 +838,8 @@
     /// <summary>Die Schalter als Zeichenkette (Vergleich, ob das Modul neu zu versorgen ist); zuletzt der Bauteilschalter.</summary>
     private string Schalterstand => string.Concat(_sichtbar.Select(x => x ? '1' : '0')) + (_bauteileSichtbar ? 'b' : '-')
                                     + string.Concat(_stufeSichtbar.Select(x => x ? '1' : '0'))
-                                    + string.Concat(_befundSichtbar.Select(x => x ? '1' : '0'));
+                                    + string.Concat(_befundSichtbar.Select(x => x ? '1' : '0')) + "|" + Sichtstand
+                                    + "|" + (Daten is { } d && Hervorhebung(d) is { } h ? h.Schluessel : "");
 
     /// <summary>Warum „Aufbau" nicht wählbar ist — ohne Stufen, sonst der Grund von „Randbedingung".</summary>
     private string AufbauGrund(GebaeudeAnsichtDaten daten)
@@ -725,6 +885,10 @@
                     <th>@Texte.AufbauLegende</th>
                     <th class="epos-gebimport-zahl">@Texte.AufbauAussen</th>
                     <th class="epos-gebimport-zahl">@Texte.AufbauInnen</th>
+                    @if (MitVorschlagsspalte(daten))
+                    {
+                        <th class="epos-gebansicht-vorschlagskopf">@Texte.PruefVorschlaege</th>
+                    }
                 </tr>
             </thead>
             <tbody>
@@ -744,9 +908,13 @@
                         </td>
                         <td class="epos-gebimport-zahl epos-gebansicht-aufbau-aussen">@Format(Texte.AufbauZahl, eintrag.ZahlAussen, eintrag.FlaecheAussenM2.ToString("N1", CultureInfo.CurrentCulture))</td>
                         <td class="epos-gebimport-zahl epos-gebansicht-aufbau-innen">@Format(Texte.AufbauZahl, eintrag.ZahlInnen, eintrag.FlaecheInnenM2.ToString("N1", CultureInfo.CurrentCulture))</td>
+                        @if (MitVorschlagsspalte(daten))
+                        {
+                            @Vorschlagszelle(daten, name, Pruefung!.AuswahlBauteile(daten, k => daten.StufeVon(k) == stufe))
+                        }
                     </tr>
                 }
-                @OhneBezugzeile(daten, GebaeudeAnsichtAufbaustufen.Farbe(Aufbaustufe.OhneBauteil), 3)
+                @OhneBezugzeile(daten, GebaeudeAnsichtAufbaustufen.Farbe(Aufbaustufe.OhneBauteil), MitVorschlagsspalte(daten) ? 4 : 3)
             </tbody>
         </table>
     };
@@ -773,6 +941,10 @@
                 <tr>
                     <th>@Texte.BefundLegende</th>
                     <th class="epos-gebimport-zahl">@Texte.BefundBauteile</th>
+                    @if (MitVorschlagsspalte(daten))
+                    {
+                        <th class="epos-gebansicht-vorschlagskopf">@Texte.PruefVorschlaege</th>
+                    }
                 </tr>
             </thead>
             <tbody>
@@ -793,9 +965,13 @@
                             </button>
                         </td>
                         <td class="epos-gebimport-zahl epos-gebansicht-befund-zahl">@Format(Texte.AufbauZahl, eintrag.Zahl, eintrag.FlaecheM2.ToString("N1", CultureInfo.CurrentCulture))</td>
+                        @if (MitVorschlagsspalte(daten))
+                        {
+                            @Vorschlagszelle(daten, name, Pruefung!.AuswahlBauteile(daten, k => daten.BefundVon(k) == stufe))
+                        }
                     </tr>
                 }
-                @OhneBezugzeile(daten, GebaeudeAnsichtBefundstufen.Farbe(Bauteilbefundstufe.OhneBauteil), 2)
+                @OhneBezugzeile(daten, GebaeudeAnsichtBefundstufen.Farbe(Bauteilbefundstufe.OhneBauteil), MitVorschlagsspalte(daten) ? 3 : 2)
             </tbody>
         </table>
     };
@@ -815,7 +991,7 @@
                     Bauteilbefundstufe befund = daten.BefundVon(bauteil);
                     if (!_befundSichtbar[(int)befund]) continue;
                     GebaeudeAnsichtZeichnung.Strecke s = GebaeudeAnsichtZeichnung.StreckeVon(polygon, e, 0.0, 1.0);
-                    <line class="epos-gebansicht-kante" data-befund="@GebaeudeAnsichtBefundstufen.Schluessel(befund)" data-bauteil="@bauteil"
+                    <line class="@Kantenklasse(bauteil)" data-befund="@GebaeudeAnsichtBefundstufen.Schluessel(befund)" data-bauteil="@bauteil"
                           data-kante="@(pi.ToString(CultureInfo.InvariantCulture) + ":" + e.ToString(CultureInfo.InvariantCulture))"
                           x1="@s.X1" y1="@s.Y1" x2="@s.X2" y2="@s.Y2" stroke="@GebaeudeAnsichtBefundstufen.Farbe(befund)"
                           @onclick="() => SteckbriefOeffnen(bauteil)" @onclick:stopPropagation="true" />
@@ -850,7 +1026,7 @@
                     Aufbaustufe stufe = daten.StufeVon(bauteil);
                     if (!_stufeSichtbar[(int)stufe]) continue;
                     GebaeudeAnsichtZeichnung.Strecke s = GebaeudeAnsichtZeichnung.StreckeVon(polygon, e, 0.0, 1.0);
-                    <line class="epos-gebansicht-kante" data-stufe="@GebaeudeAnsichtAufbaustufen.Schluessel(stufe)" data-bauteil="@bauteil"
+                    <line class="@Kantenklasse(bauteil)" data-stufe="@GebaeudeAnsichtAufbaustufen.Schluessel(stufe)" data-bauteil="@bauteil"
                           data-kante="@(pi.ToString(CultureInfo.InvariantCulture) + ":" + e.ToString(CultureInfo.InvariantCulture))"
                           x1="@s.X1" y1="@s.Y1" x2="@s.X2" y2="@s.Y2" stroke="@GebaeudeAnsichtAufbaustufen.Farbe(stufe)"
                           @onclick="() => SteckbriefOeffnen(bauteil)" @onclick:stopPropagation="true" />
@@ -871,6 +1047,169 @@
             }
         }
     };
+
+    // =====================================================================
+    //  MA-5: Prüfzeile, Vorschläge an der Legende, Farbmodus „Nutzung"
+    // =====================================================================
+
+    /// <summary>
+    /// Die Zeile der Prüfgruppe über dem Bild: was hervorgehoben ist (Gruppe, Zahl der Bauteile und Zonen) bzw. dass kein Befund
+    /// der Gruppe in der Ansicht liegt; dazu „Übernehmen" und „Verwerfen" für alle Vorschläge der Gruppe, die die Ansicht zeigt.
+    /// </summary>
+    private RenderFragment Pruefzeile(GebaeudeAnsichtDaten daten) => __builder =>
+    {
+        if (Pruefung is { } p)
+        {
+            int bauteile = p.Bauteilkennungen(daten).Count;
+            int zonen = p.Zonenschluessel(daten).Count;
+            ModellpruefungAuswahl alle = p.AuswahlAlle(daten);
+            <div class="epos-gebansicht-pruefzeile" role="status" data-gruppe="@((int)p.Gruppe)"
+                 data-bauteile="@bauteile" data-zonen="@zonen">
+                <span class="epos-gebansicht-pruefmarke" aria-hidden="true"></span>
+                <span class="epos-gebansicht-prueftext">@(bauteile + zonen > 0 ? Format(Texte.PruefHervor, p.Name, bauteile, zonen) : Format(Texte.PruefOhne, p.Name))</span>
+                @if (p.Vorschlaege(alle) > 0)
+                {
+                    @Vorschlagsknoepfe(p.Name, alle, p.Vorschlaege(alle))
+                }
+            </div>
+        }
+    };
+
+    /// <summary>Trägt die Legende eine Spalte „Vorschläge"? Nur mit Prüfung und mindestens einem Vorschlag in der Ansicht.</summary>
+    private bool MitVorschlagsspalte(GebaeudeAnsichtDaten daten)
+        => Pruefung is { } p && p.Vorschlaege(p.AuswahlAlle(daten)) > 0;
+
+    /// <summary>Die Zelle „Vorschläge" einer Legendenzeile: Zahl und die beiden Knöpfe; leer ohne Vorschlag.</summary>
+    private RenderFragment Vorschlagszelle(GebaeudeAnsichtDaten daten, string zeile, ModellpruefungAuswahl auswahl) => __builder =>
+    {
+        int n = Pruefung?.Vorschlaege(auswahl) ?? 0;
+        <td class="epos-gebansicht-vorschlag" data-vorschlaege="@n">
+            @if (n > 0)
+            {
+                @Vorschlagsknoepfe(zeile, auswahl, n)
+            }
+        </td>
+    };
+
+    /// <summary>Zahl der Vorschläge, „Übernehmen" und „Verwerfen" — ohne Delegat des Wirts kein Knopf.</summary>
+    private RenderFragment Vorschlagsknoepfe(string zeile, ModellpruefungAuswahl auswahl, int n) => __builder =>
+    {
+        <span class="epos-gebansicht-vorschlagszahl">@Format(Texte.PruefZahl, n)</span>
+        @if (PruefungUebernehmen.HasDelegate)
+        {
+            <button type="button" class="epos-knopf epos-gebansicht-uebernehmen" title="@Format(Texte.PruefUebernehmenHinweis, zeile)"
+                    aria-label="@Format(Texte.PruefUebernehmenHinweis, zeile)" disabled="@_pruefungLaeuft"
+                    @onclick="() => BeiVorschlaegen(PruefungUebernehmen, auswahl)">@Texte.PruefUebernehmen</button>
+        }
+        @if (PruefungVerwerfen.HasDelegate)
+        {
+            <button type="button" class="epos-knopf epos-gebansicht-verwerfen" title="@Format(Texte.PruefVerwerfenHinweis, zeile)"
+                    aria-label="@Format(Texte.PruefVerwerfenHinweis, zeile)" disabled="@_pruefungLaeuft"
+                    @onclick="() => BeiVorschlaegen(PruefungVerwerfen, auswahl)">@Texte.PruefVerwerfen</button>
+        }
+    };
+
+    private bool _pruefungLaeuft;
+
+    /// <summary>Reicht die Auswahl an den Wirt; der setzt danach neue Daten und eine neue Prüfung (die Ansicht zeichnet neu).</summary>
+    private async Task BeiVorschlaegen(EventCallback<ModellpruefungAuswahl> weg, ModellpruefungAuswahl auswahl)
+    {
+        if (_pruefungLaeuft) return;
+        _pruefungLaeuft = true;
+        try { await weg.InvokeAsync(auswahl); }
+        finally { _pruefungLaeuft = false; }
+    }
+
+    /// <summary>
+    /// Die Legende „Nutzung": je Profil Farbe, Name, Kategorie und Zahl der Zonen, zuletzt „ohne Profil" in der Farbe „fehlt";
+    /// mit Prüfung je Zeile die Vorschläge der Zonen dieser Zeile.
+    /// </summary>
+    private RenderFragment Nutzungslegende(GebaeudeAnsichtDaten daten) => __builder =>
+    {
+        bool spalte = MitVorschlagsspalte(daten);
+        <table class="epos-raster epos-gebansicht-nutzungslegende" aria-label="@Texte.NutzungLegende">
+            <thead>
+                <tr>
+                    <th>@Texte.NutzungLegende</th>
+                    <th class="epos-gebimport-zahl">@Texte.NutzungZonenKopf</th>
+                    @if (spalte)
+                    {
+                        <th class="epos-gebansicht-vorschlagskopf">@Texte.PruefVorschlaege</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (GebaeudeAnsichtNutzungssumme s in daten.Nutzungssummen())
+                {
+                    GebaeudeAnsichtNutzungssumme eintrag = s;
+                    <tr class="epos-gebansicht-nutzungseintrag" data-stelle="@eintrag.Stelle">
+                        <td>
+                            <span class="@("epos-gebansicht-farbfeld epos-gebansicht-zone--" + (eintrag.Stelle % PALETTE).ToString(CultureInfo.InvariantCulture))" aria-hidden="true"></span>
+                            <span class="epos-gebansicht-zonenname">@eintrag.Profil</span>
+                            @if (eintrag.Kategorie.Length > 0)
+                            {
+                                <span class="epos-gebansicht-marke">@eintrag.Kategorie</span>
+                            }
+                        </td>
+                        <td class="epos-gebimport-zahl epos-gebansicht-nutzung-zahl">@Format(Texte.NutzungZonen, eintrag.Zonen)</td>
+                        @if (spalte)
+                        {
+                            @Vorschlagszelle(daten, eintrag.Profil, Pruefung!.AuswahlZonen(daten, z => daten.Nutzungsstelle(z) == eintrag.Stelle))
+                        }
+                    </tr>
+                }
+                @if (daten.ZonenOhneProfil > 0)
+                {
+                    <tr class="epos-gebansicht-nutzungseintrag epos-gebansicht-nutzungseintrag--fehlt" data-stelle="-1">
+                        <td>
+                            <span class="epos-gebansicht-farbfeld epos-gebansicht-zone--ohne" aria-hidden="true"></span>
+                            <span class="epos-gebansicht-zonenname">@Texte.NutzungFehlt</span>
+                        </td>
+                        <td class="epos-gebimport-zahl epos-gebansicht-nutzung-zahl">@Format(Texte.NutzungZonen, daten.ZonenOhneProfil)</td>
+                        @if (spalte)
+                        {
+                            @Vorschlagszelle(daten, Texte.NutzungFehlt, Pruefung!.AuswahlZonen(daten, z => daten.Nutzungsstelle(z) < 0))
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    };
+
+    /// <summary>Die Farbklasse einer Zone im Farbmodus „Nutzung": Stelle ihres Profils in der Zonenpalette, ohne Profil „ohne".</summary>
+    private static string Nutzungsklasse(GebaeudeAnsichtDaten daten, string? zone)
+        => daten.Nutzungsstelle(zone) is int s and >= 0
+            ? "epos-gebansicht-zone--" + (s % PALETTE).ToString(CultureInfo.InvariantCulture)
+            : "epos-gebansicht-zone--ohne";
+
+    /// <summary>Hervorgehoben oder gedimmt: der Raum im Licht der Prüfgruppe; ohne Prüfung oder ohne Treffer nichts.</summary>
+    private string Hervorklasse(GebaeudeAnsichtDaten daten, GebaeudeAnsichtRaum r)
+    {
+        if (Hervorhebung(daten) is not { } h) return "";
+        return h.Raeume.Contains(r.Kennung) ? " epos-gebansicht-raum--geprueft" : " epos-gebansicht-raum--gedimmt";
+    }
+
+    /// <summary>Die Klasse einer Grundrisskante: hervorgehoben, wenn ihr Bauteil einen Befund der Prüfgruppe trägt.</summary>
+    private string Kantenklasse(string? bauteil)
+        => bauteil is not null && Daten is { } d && Hervorhebung(d) is { } h && h.Bauteile.Contains(bauteil)
+            ? "epos-gebansicht-kante epos-gebansicht-kante--geprueft" : "epos-gebansicht-kante";
+
+    private GebaeudeAnsichtDaten? _hervorDaten;
+    private GebaeudeAnsichtPruefung? _hervorPruefung;
+    private GebaeudeAnsichtHervorhebung? _hervor;
+
+    /// <summary>Die Hervorhebung der Prüfgruppe in diesen Daten (gemerkt je Daten und Prüfung); <c>null</c> = nichts hervorgehoben.</summary>
+    internal GebaeudeAnsichtHervorhebung? Hervorhebung(GebaeudeAnsichtDaten daten)
+    {
+        if (Pruefung is null) return null;
+        if (!ReferenceEquals(daten, _hervorDaten) || !ReferenceEquals(Pruefung, _hervorPruefung))
+        {
+            _hervorDaten = daten;
+            _hervorPruefung = Pruefung;
+            _hervor = GebaeudeAnsichtHervorhebung.Von(daten, Pruefung);
+        }
+        return _hervor;
+    }
 
     /// <summary>Öffnet den Steckbrief eines Bauteils, wenn die Daten einen tragen; sonst bleibt der offene stehen.</summary>
     private void SteckbriefOeffnen(string? bauteil)
@@ -1096,9 +1435,15 @@
                 }
                 @Steckbriefblock()
             }
+            @Werkzeugleiste()
+            <div class="epos-gebansicht-legendenblock">
             @if (ImRandmodus)
             {
                 @Randlegende(daten, ImDateimodus && daten.Bauteilkoerper.Count > 0)
+            }
+            else if (ImNutzungsmodus)
+            {
+                @Nutzungslegende(daten)
             }
             else if (ImAufbaumodus)
             {
@@ -1107,6 +1452,10 @@
             else if (ImBefundmodus)
             {
                 @Befundlegende(daten)
+            }
+            else if (ImAusblendwerkzeug)
+            {
+                @Sichtlegende(daten, koerper)
             }
             else
             {
@@ -1139,6 +1488,8 @@
                 @Ohnezoneneintrag(koerper.Count(k => daten.Zone(k.Raum.Zone) is null))
             </ul>
             }
+            @Bauteilgruppenliste(daten)
+            </div>
             @if (koerper.Count > 0 && (ImDateimodus || koerper.Any(k => k.Herkunft == Koerperherkunft.Grundriss)))
             {
                 <details class="epos-gebansicht-raumherkunft">
@@ -1160,6 +1511,88 @@
                 </details>
             }
         </div>
+    };
+
+    // =====================================================================
+    //  Werkzeug, Sichtlegende und Bauteilgruppen der Körperansicht (Auftrag AB4)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Werkzeugwahl an der Legende: im Farbmodus „Zonen" „Zuordnen | Ein-/Ausblenden" (<c>aria-pressed</c>), in jedem
+    /// Farbmodus „Alle zeigen". Die Legenden der übrigen Farbmodi schalten ihre Einträge ohnehin.
+    /// </summary>
+    private RenderFragment Werkzeugleiste() => __builder =>
+    {
+        <div class="epos-gebansicht-werkzeug" role="group" aria-label="@Texte.Werkzeug" data-werkzeug="@_werkzeug">
+            @if (!ImGruppenmodus && !ImNutzungsmodus)
+            {
+                @foreach ((string schluessel, string titel) in new[] { (WERKZEUG_ZUORDNEN, Texte.WerkzeugZuordnen), (WERKZEUG_AUSBLENDEN, Texte.WerkzeugAusblenden) })
+                {
+                    string s = schluessel;
+                    <button type="button" class="epos-diagramm-knopf epos-gebansicht-modusknopf epos-gebansicht-werkzeugknopf" data-werkzeug="@s"
+                            aria-pressed="@(string.Equals(_werkzeug, s, StringComparison.Ordinal) ? "true" : "false")"
+                            @onclick="() => BeiWerkzeug(s)">@titel</button>
+                }
+            }
+            <button type="button" class="epos-diagramm-knopf epos-gebansicht-modusknopf epos-gebansicht-allezeigen"
+                    data-ausgeblendet="@(EtwasAusgeblendet ? "true" : "false")" @onclick="BeiAlleZeigen">@Texte.AlleZeigen</button>
+        </div>
+    };
+
+    /// <summary>
+    /// Die Zonenlegende im Werkzeug „Ein-/Ausblenden": je Zone mit Körpern ein Knopf (<c>aria-pressed</c> = sichtbar), dazu
+    /// „nicht zugeordnet"; ein Klick schaltet die Körper der Zone, ausgeblendet steht der Eintrag gedimmt und durchgestrichen.
+    /// </summary>
+    private RenderFragment Sichtlegende(GebaeudeAnsichtDaten daten, IReadOnlyList<GebaeudeAnsichtDateiraum> koerper) => __builder =>
+    {
+        <ul class="epos-gebansicht-legende epos-gebansicht-legende--zielwahl epos-gebansicht-sichtlegende" aria-label="@Texte.Legende">
+            @foreach (GebaeudeAnsichtZone zone in daten.Zonen.Where(z => koerper.Any(k => string.Equals(k.Raum.Zone, z.Schluessel, StringComparison.Ordinal))))
+            {
+                GebaeudeAnsichtZone z = zone;
+                @Sichteintrag(z.Schluessel, z.Name, Zonenklasse(daten, z.Schluessel))
+            }
+            @{ int ohne = koerper.Count(k => daten.Zone(k.Raum.Zone) is null); }
+            @if (ohne > 0)
+            {
+                @Sichteintrag(OHNE_ZONE, Format(Texte.NichtZugeordnet, ohne), "epos-gebansicht-zone--ohne")
+            }
+        </ul>
+    };
+
+    private RenderFragment Sichteintrag(string schluessel, string name, string farbklasse) => __builder =>
+    {
+        bool sichtbar = !_zonenAus.Contains(schluessel);
+        string titel = Format(sichtbar ? Texte.Ausblenden : Texte.Einblenden, name);
+        <li @key="@("sicht:" + schluessel)" class="@("epos-gebansicht-legendeneintrag epos-gebansicht-legendeneintrag--zielwahl" + (sichtbar ? "" : " epos-gebansicht-legendeneintrag--aus"))"
+            data-zone="@schluessel">
+            <button type="button" class="epos-gebansicht-zielknopf epos-gebansicht-sichtknopf" aria-pressed="@(sichtbar ? "true" : "false")"
+                    title="@titel" aria-label="@titel" @onclick="() => BeiZonensicht(schluessel)">
+                <span class="@("epos-gebansicht-farbfeld " + farbklasse)" aria-hidden="true"></span>
+                <span class="epos-gebansicht-zonenname">@name</span>
+            </button>
+        </li>
+    };
+
+    /// <summary>
+    /// Die Kästchenliste „Bauteilgruppen" neben der Legende: je im Modell vorkommender Gruppe ein Kästchen mit Zahl; abgewählt
+    /// fallen alle Körper und Flächen dieser Gruppe aus dem Bild, gleich welcher Farbmodus und welcher Legendeneintrag.
+    /// </summary>
+    private RenderFragment Bauteilgruppenliste(GebaeudeAnsichtDaten daten) => __builder =>
+    {
+        IReadOnlyList<(Bauteilartgruppe Gruppe, int Zahl)> gruppen = daten.Bauteilgruppenzahlen();
+        if (gruppen.Count == 0) return;
+        <fieldset class="epos-gebansicht-bauteilgruppen">
+            <legend>@Texte.Bauteilgruppen</legend>
+            @foreach ((Bauteilartgruppe gruppe, int zahl) in gruppen)
+            {
+                Bauteilartgruppe g = gruppe;
+                <label class="epos-gebansicht-bauteilgruppe" data-gruppe="@GebaeudeAnsichtBauteilartgruppen.Schluessel(g)"
+                       data-zahl="@zahl.ToString(CultureInfo.InvariantCulture)">
+                    <input type="checkbox" checked="@_bauteilgruppeSichtbar[(int)g]" @onchange="() => BeiBauteilgruppe(g)" />
+                    <span>@Format(Texte.BauteilgruppeZahl, Texte.Bauteilartgruppenname(g), zahl)</span>
+                </label>
+            }
+        </fieldset>
     };
 
     /// <summary>Die Vermerke aller gezeigten Dateikörper, ohne Doppel, in der Reihenfolge der Vermerke des Kerns.</summary>
@@ -1194,11 +1627,14 @@
     /// </summary>
     public static object Szene(GebaeudeAnsichtDaten daten, string? ziel, string farbmodus = FARBMODUS_ZONEN,
                                IReadOnlyList<bool>? sichtbar = null, bool bauteilesichtbar = true,
-                               IReadOnlyList<bool>? stufensichtbar = null, IReadOnlyList<bool>? befundsichtbar = null) => new
+                               IReadOnlyList<bool>? stufensichtbar = null, IReadOnlyList<bool>? befundsichtbar = null,
+                               IReadOnlyCollection<string>? zonenAus = null, IReadOnlyList<bool>? bauteilgruppensichtbar = null,
+                               GebaeudeAnsichtHervorhebung? hervorhebung = null) => new
     {
         ziel,
         modus = MODUS_EXPORTMODELL,
-        koerper = daten.Koerper().Select(k => Prisma(daten, k)).ToList(),
+        koerper = daten.Koerper().Where(k => Zoneneingeblendet(daten, k.Raum.Zone, zonenAus))
+                       .Select(k => Prisma(daten, k, bauteilgruppensichtbar, farbmodus, hervorhebung)).ToList(),
         farbmodus,
         randfarben = GebaeudeAnsichtRandgruppen.FARBEN,
         randsichtbar = Sichtbar(sichtbar),
@@ -1207,7 +1643,21 @@
         aufbausichtbar = Stufensichtbar(stufensichtbar),
         befundfarben = GebaeudeAnsichtBefundstufen.FARBEN,
         befundsichtbar = Befundsichtbar(befundsichtbar),
+        bauteilgruppensichtbar = Bauteilgruppensichtbar(bauteilgruppensichtbar),
+        // MA-5: die Hervorhebung der Prüfgruppe — je Körper hervor; ohne Hervorhebung zeichnet das Modul wie bisher.
+        hervorhebung = hervorhebung is not null,
     };
+
+    /// <summary>AB4: ist die Zone eines Raums eingeblendet? Ohne Menge alle.</summary>
+    private static bool Zoneneingeblendet(GebaeudeAnsichtDaten daten, string? zone, IReadOnlyCollection<string>? zonenAus)
+        => zonenAus is null || zonenAus.Count == 0 || !zonenAus.Contains(Zonenschluessel(daten, zone));
+
+    /// <summary>AB4: ist die Bauteilgruppe einer Art bzw. eines Bauteils eingeblendet? Ohne Gruppe (unbekannt) immer.</summary>
+    private static bool Gruppeneingeblendet(Bauteilartgruppe? g, IReadOnlyList<bool>? sichtbar)
+        => g is not Bauteilartgruppe x || sichtbar is null || (int)x >= sichtbar.Count || sichtbar[(int)x];
+
+    private static bool[] Bauteilgruppensichtbar(IReadOnlyList<bool>? sichtbar)
+        => Enumerable.Range(0, GebaeudeAnsichtBauteilartgruppen.ZAHL).Select(i => sichtbar is null || i >= sichtbar.Count || sichtbar[i]).ToArray();
 
     private static bool[] Befundsichtbar(IReadOnlyList<bool>? sichtbar)
         => Enumerable.Range(0, GebaeudeAnsichtBefundstufen.ZAHL).Select(i => sichtbar is null || i >= sichtbar.Count || sichtbar[i]).ToArray();
@@ -1233,7 +1683,8 @@
     public static object SzeneDatei(GebaeudeAnsichtDaten daten, string? ziel, GebaeudeAnsichtKoerperfeld feld,
                                     string farbmodus = FARBMODUS_ZONEN, IReadOnlyList<bool>? sichtbar = null,
                                     bool bauteilesichtbar = true, IReadOnlyList<bool>? stufensichtbar = null,
-                                    IReadOnlyList<bool>? befundsichtbar = null)
+                                    IReadOnlyList<bool>? befundsichtbar = null, IReadOnlyCollection<string>? zonenAus = null,
+                                    IReadOnlyList<bool>? bauteilgruppensichtbar = null, GebaeudeAnsichtHervorhebung? hervorhebung = null)
     {
         IReadOnlyList<GebaeudeAnsichtDateiraum> raeume = daten.Dateiansicht();
         var verzeichnis = new Dictionary<string, GebaeudeAnsichtKoerperfeldEintrag>(StringComparer.Ordinal);
@@ -1243,21 +1694,25 @@
             ziel,
             modus = MODUS_DATEIKOERPER,
             bezugspunkt = daten.Bezugspunkt.ToArray(),
-            koerper = raeume.Where(r => r.Prisma is not null).Select(r => Prisma(daten, r.Prisma!)).ToList(),
-            dateikoerper = raeume.Where(r => r.Datei is not null && verzeichnis.ContainsKey(r.Raum.Kennung)).Select(r =>
+            koerper = raeume.Where(r => r.Prisma is not null && Zoneneingeblendet(daten, r.Raum.Zone, zonenAus))
+                            .Select(r => Prisma(daten, r.Prisma!, bauteilgruppensichtbar, farbmodus, hervorhebung)).ToList(),
+            dateikoerper = raeume.Where(r => r.Datei is not null && verzeichnis.ContainsKey(r.Raum.Kennung)
+                                             && Zoneneingeblendet(daten, r.Raum.Zone, zonenAus)).Select(r =>
             {
                 GebaeudeAnsichtKoerperfeldEintrag e = verzeichnis[r.Raum.Kennung];
                 return new
                 {
                     raum = r.Raum.Kennung,
                     zone = r.Raum.Zone,
-                    stelle = Farbstelle(daten, r.Raum.Zone),
+                    stelle = Farbstelle(daten, r.Raum.Zone, farbmodus),
                     punkteAb = e.PunkteAb, punktZahl = e.PunktZahl,
                     dreieckeAb = e.DreieckeAb, dreieckZahl = e.DreieckZahl,
                     kantenAb = e.KantenAb, kantenZahl = e.KantenZahl,
                     gruppenAb = e.GruppenAb,
                     stufenAb = e.StufenAb,
                     befundAb = e.BefundAb,
+                    bauteilgruppenAb = e.BauteilgruppenAb,
+                    hervor = hervorhebung?.Raeume.Contains(r.Raum.Kennung) ?? false,
                 };
             }).ToList(),
             farbmodus,
@@ -1268,7 +1723,9 @@
             aufbausichtbar = Stufensichtbar(stufensichtbar),
             befundfarben = GebaeudeAnsichtBefundstufen.FARBEN,
             befundsichtbar = Befundsichtbar(befundsichtbar),
-            bauteile = feld.Bauteile.Select(e => new
+            bauteilgruppensichtbar = Bauteilgruppensichtbar(bauteilgruppensichtbar),
+            // AB4: ein Bauteilkörper einer ausgeblendeten Bauteilgruppe fällt heraus (auch für den Klick).
+            bauteile = feld.Bauteile.Where(e => Gruppeneingeblendet(daten.BauteilartgruppeVon(e.Bauteil), bauteilgruppensichtbar)).Select(e => new
             {
                 bauteil = e.Bauteil,
                 gruppe = e.Gruppe,
@@ -1278,24 +1735,40 @@
                 stufe = e.Stufe,
                 befund = e.Befund,
             }).ToList(),
+            hervorhebung = hervorhebung is not null,
+            // MA-5: die hervorgehobenen Bauteilkörper (Kennungen); das Modul zieht ihre Kanten dunkel und dimmt die übrigen.
+            hervorBauteile = hervorhebung?.Bauteile.OrderBy(b => b, StringComparer.Ordinal).ToArray() ?? Array.Empty<string>(),
         };
     }
 
     private static int Farbstelle(GebaeudeAnsichtDaten daten, string? zone)
         => daten.Zone(zone) is GebaeudeAnsichtZone z ? Math.Abs(z.Stelle) % PALETTE : -1;
 
-    private static object Prisma(GebaeudeAnsichtDaten daten, GebaeudeAnsichtKoerper k) => new
+    /// <summary>Die Farbstelle im Farbmodus: „Nutzung" nach dem Profil der Zone (−1 = ohne Profil), sonst nach der Zone.</summary>
+    private static int Farbstelle(GebaeudeAnsichtDaten daten, string? zone, string farbmodus)
+        => string.Equals(farbmodus, FARBMODUS_NUTZUNG, StringComparison.Ordinal)
+            ? (daten.Nutzungsstelle(zone) is int s and >= 0 ? s % PALETTE : -1)
+            : Farbstelle(daten, zone);
+
+    /// <summary>AB4: die Art einer Platte, wenn ihre Bauteilgruppe eingeblendet ist; sonst <c>null</c> (keine Platte).</summary>
+    private static string? Plattenart(string? art, IReadOnlyList<bool>? sichtbar)
+        => art is not null && Gruppeneingeblendet(GebaeudeAnsichtBauteilartgruppen.Von(art), sichtbar) ? art : null;
+
+    private static object Prisma(GebaeudeAnsichtDaten daten, GebaeudeAnsichtKoerper k, IReadOnlyList<bool>? gruppensichtbar = null,
+                                 string farbmodus = FARBMODUS_ZONEN, GebaeudeAnsichtHervorhebung? hervorhebung = null) => new
         {
             raum = k.Raum.Kennung,
             zone = k.Raum.Zone,
-            stelle = Farbstelle(daten, k.Raum.Zone),
+            stelle = Farbstelle(daten, k.Raum.Zone, farbmodus),
             unterkante = k.UnterkanteM,
             hoehe = k.HoeheM,
             schematisch = k.Schematisch,
             polygone = k.Raum.Polygone.Select(p => p.Select(q => new { x = q.X, y = q.Y }).ToList()).ToList(),
-            kanten = k.Angaben?.Kanten,
-            boden = k.Angaben?.Boden,
-            decke = k.Angaben?.Decke,
+            kanten = gruppensichtbar is null || !gruppensichtbar.Contains(false) ? k.Angaben?.Kanten
+                : k.Angaben?.Kanten.Select(p => (IReadOnlyList<string?>)p.Select(a => Plattenart(a, gruppensichtbar)).ToList()).ToList(),
+            boden = Plattenart(k.Angaben?.Boden, gruppensichtbar),
+            decke = Plattenart(k.Angaben?.Decke, gruppensichtbar),
+            hervor = hervorhebung?.Raeume.Contains(k.Raum.Kennung) ?? false,
         };
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -1312,8 +1785,8 @@
                 _modul ??= await Js.InvokeAsync<IJSObjectReference>("import", MODUL_KOERPER);
                 _rueckweg ??= DotNetObjectReference.Create(this);
                 bool gezeichnet = Dateinetze(daten) is { } feld
-                    ? await _modul.InvokeAsync<bool>("erzeugen", _canvas, SzeneDatei(daten, GewaehlteZone, feld, Farbmodus, _sichtbar, _bauteileSichtbar, _stufeSichtbar, _befundSichtbar), _rueckweg, feld.Bytes)
-                    : await _modul.InvokeAsync<bool>("erzeugen", _canvas, Szene(daten, GewaehlteZone, Farbmodus, _sichtbar, _bauteileSichtbar, _stufeSichtbar, _befundSichtbar), _rueckweg);
+                    ? await _modul.InvokeAsync<bool>("erzeugen", _canvas, SzeneDatei(daten, GewaehlteZone, feld, Farbmodus, _sichtbar, _bauteileSichtbar, _stufeSichtbar, _befundSichtbar, _zonenAus, _bauteilgruppeSichtbar, Hervorhebung(daten)), _rueckweg, feld.Bytes)
+                    : await _modul.InvokeAsync<bool>("erzeugen", _canvas, Szene(daten, GewaehlteZone, Farbmodus, _sichtbar, _bauteileSichtbar, _stufeSichtbar, _befundSichtbar, _zonenAus, _bauteilgruppeSichtbar, Hervorhebung(daten)), _rueckweg);
                 if (!gezeichnet)
                 {
                     _koerperFehlt = true;
@@ -1331,9 +1804,9 @@
                 // gegen ihn, nicht gegen den vorigen.
                 Merken(daten);
                 if (Dateinetze(daten) is { } feld)
-                    await _modul!.InvokeVoidAsync("aktualisieren", SzeneDatei(daten, GewaehlteZone, feld, Farbmodus, _sichtbar, _bauteileSichtbar, _stufeSichtbar, _befundSichtbar), feld.Bytes);
+                    await _modul!.InvokeVoidAsync("aktualisieren", SzeneDatei(daten, GewaehlteZone, feld, Farbmodus, _sichtbar, _bauteileSichtbar, _stufeSichtbar, _befundSichtbar, _zonenAus, _bauteilgruppeSichtbar, Hervorhebung(daten)), feld.Bytes);
                 else
-                    await _modul!.InvokeVoidAsync("aktualisieren", Szene(daten, GewaehlteZone, Farbmodus, _sichtbar, _bauteileSichtbar, _stufeSichtbar, _befundSichtbar));
+                    await _modul!.InvokeVoidAsync("aktualisieren", Szene(daten, GewaehlteZone, Farbmodus, _sichtbar, _bauteileSichtbar, _stufeSichtbar, _befundSichtbar, _zonenAus, _bauteilgruppeSichtbar, Hervorhebung(daten)));
                 return;
             }
             Merken(daten);
@@ -1430,7 +1903,8 @@
         => GewaehlteZone is not null && string.Equals(schluessel, GewaehlteZone, StringComparison.Ordinal);
 
     private string Raumklasse(GebaeudeAnsichtDaten daten, GebaeudeAnsichtRaum r)
-        => "epos-gebansicht-raum " + Zonenklasse(daten, r.Zone)
+        => "epos-gebansicht-raum " + (ImNutzungsmodus ? Nutzungsklasse(daten, r.Zone) : Zonenklasse(daten, r.Zone))
+           + Hervorklasse(daten, r)
            + (r.Schematisch ? " epos-gebansicht-raum--schematisch" : "")
            + (IstZiel(r.Zone) ? " epos-gebansicht-raum--ziel" : "")
            + (_ohneHervor && daten.Zone(r.Zone) is null ? " epos-gebansicht-raum--hervor" : "")

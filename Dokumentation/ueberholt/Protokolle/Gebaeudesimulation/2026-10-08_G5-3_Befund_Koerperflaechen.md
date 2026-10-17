@@ -1,7 +1,7 @@
 # Protokoll G5-3 — Befund je Bauteil, Farbmodus „Befund“, Bauteilflächen je Raum aus Körpern, IFC-Korrektur G5-3d (08.10.2026)
 
 **Sitzung:** IFC / Gebäudeimport, Statuszeile **#814**. Zweig `g5-3`: 3a `f48341a14`/`d5edac556`, 3b `b09596272`/`2cfc67a73`, 3c `5606ff5d7` bis `5afafdd29`, Merge-Fix `84327615b`; G5-3d `8df4753be`, `bc0936b99`, `f38e59aa1`. Integration `integration-g5pk` `796afb72c`, im Hauptbaum `08ea6386e`.
-**Entscheid:** E101; Abstimmung [G5 IFC](../../../aktuell/Gebaeudesimulation/2026-10-07_Abstimmung_G5_IFC.md). Abschnitt 8.
+**Entscheid:** E101; Abstimmung [G5 IFC](../../2026-10-07_Abstimmung_G5_IFC.md). Abschnitt 8.
 
 ## 1 Anlass
 

@@ -24,6 +24,8 @@ namespace WindowsFormsApplication1
             if (projektId <= 0) return null;
             var traeger = Kaeltestromabrechnung.StromtraegerDesProjekts(projektId)
                 .Select(t => (t.Key, t.Value)).ToList();
+            // K-F5c: der Stand des Rückkühlwerks je Anlage vor dem ersten Schreiben dieser Dialogsitzung.
+            var sitzung = new Rueckkuehlwerksitzung();
             return new Dictionary<string, object>
             {
                 ["Anlagen"] = new Func<IReadOnlyList<KaeltemaschineAnlageDaten>>(() => Liste(projektId)),
@@ -36,7 +38,7 @@ namespace WindowsFormsApplication1
                 ["KuehltraegerVorauswahl"] = (int?)Vorauswahl(projektId),
                 ["Pruefen"] = new Func<KaeltemaschineAnlageDaten, string>(Pruefen),
                 ["Anlegen"] = new Func<int, string, int>((stammId, name) => KaeltemaschineAnlageCtrl.Anlegen(projektId, stammId, name)),
-                ["Speichern"] = new Func<KaeltemaschineAnlageDaten, string>(Speichern),
+                ["Speichern"] = new Func<KaeltemaschineAnlageDaten, string>(d => Speichern(d, sitzung)),
                 ["Loeschen"] = new Action<int>(KaeltemaschineAnlageCtrl.Loeschen),
                 // KT: "Typkennfelder laden..." in der Katalogwahl - derselbe Weg wie in der Verwaltung.
                 ["TypkennfelderLaden"] = new Func<KaeltemaschineTypkennfelderErgebnis>(KaeltemaschineKatalogHuelle.TypkennfelderLaden),
@@ -52,6 +54,12 @@ namespace WindowsFormsApplication1
                 ["KaelteRaenge"] = new Func<IReadOnlyDictionary<int, int>>(() => KuehlerzeugerKatalogCtrl.Raenge(projektId)),
                 ["KaelteRaengeWiederherstellen"] = new Func<IReadOnlyDictionary<int, int>, string>(
                     r => KaeltefolgeCtrl.RaengeWiederherstellen(projektId, r)),
+                // KM-K2: der Bearbeitungsweg einer Wärmepumpen-Anlagenzeile (Naht WaermepumpeAnlageGaben) -
+                // plattformfrei über WaermepumpeAnlagenaht; ohne Anlagenzeile null, dann bleibt die Sperre.
+                // KM-K2: die Verwendungsmarke der Wärmepumpe je Projektkopie (nicht erst nach Kühlbetrieb).
+                ["WaermepumpeKopien"] = new Func<IReadOnlyList<string>>(() => KuehlerzeugerKatalogCtrl.ProjektkopienNamen(projektId)),
+                ["WaermepumpeAnlageGaben"] = new Func<int, WaermepumpeAnlagegaben>(
+                    idWp => WaermepumpeAnlagenaht.Gaben(projektId, idWp)),
                 ["SchlossWaermepumpe"] = Schlosswege.Aus(WPStammCtrl.SchlossSetzen),
                 ["WpKatalogLoeschen"] = new Func<int, string>(WpKatalogLoeschen),
                 ["VergleichsparameterWp"] = new Func<string, IReadOnlyList<Parameterwert>>(
@@ -67,10 +75,24 @@ namespace WindowsFormsApplication1
                 ["Schloss"] = Schlosswege.Aus(KaeltemaschineStammCtrl.SchlossSetzen),
                 ["KatalogLoeschen"] = new Func<int, string>(KatalogLoeschen),
                 ["KatalogGaben"] = new Func<IReadOnlyDictionary<string, object>>(KaeltemaschineKatalogHuelle.Gaben),
+                // KD1 (Anwenderentscheid 13.10.2026): der Weg hinter „Energiekosten..." - die TRAEGERKARTE des
+                // Kuehltraegers der Anlage. Er ist PLATTFORMFREI, weil die Energietraegerverwaltung mit ihrer
+                // Huelle selbst in EPOS.UI.Daten liegt (dieselbe Gabe wie auf der Kostenseite, KD6a); die Huelle
+                // fuellt ihn deshalb selbst - Muster der Naht WaermepumpeAnlageGaben -, Windows und iOS reichen
+                // ihn nur durch. Die Komponente engt den Katalog auf STROM ein (EnergietraegerZulaessigkeit),
+                // das Geraet ist die Projektkopie der Maschine. Ohne Traeger kein Satz: dann bleibt die
+                // benannte Sperre im Dialog stehen.
+                ["EnergietraegerGaben"] = new Func<int, int, IReadOnlyDictionary<string, object>>(
+                    (traegerId, geraeteId) => traegerId <= 0
+                        ? null
+                        : new EnergietraegerHuelle(projektId).Gaben(traegerId, DbWerte.ERZEUGER_KAELTEMASCHINE,
+                                                                    geraeteId)),
                 // Die Kostensummen der Anlage (Kostenkomponente 11) fuer die Zusammenfassung der Detailzeile.
                 ["Kostensumme"] = new Func<int, (double Invest, double Betrieb)>(id => Kostensumme(projektId, id)),
                 // Die Kenndaten als Bild: Kennlinie (EER, Kaelteleistung) und Teillastkurve - je Projektkopie
                 // (katalogsatz = false) oder Stammsatz (true), dieselben Modelle wie in der Verwaltung.
+                // K-F5b: die Gruppe „Rückkühlung“ - Katalogsätze samt Lesezeilen und die Luftfeuchte des Projektklimas.
+                ["Rueckkuehlung"] = new Func<RueckkuehlungGaben>(() => Rueckkuehlung(projektId)),
                 ["Kennlinienbilder"] = new Func<int, bool, KaeltemaschineKennlinienbilder>(
                     (id, katalog) => Satz(id, katalog) is KaeltemaschineModel m
                         ? KaeltemaschineKennlinienbild.Modelle(KaeltemaschineKatalogHuelle.AlsDaten(m)) : null),
@@ -107,7 +129,8 @@ namespace WindowsFormsApplication1
         {
             KuehlerzeugerKatalogCtrl.Uebernahme u = KuehlerzeugerKatalogCtrl.WaermepumpeUebernehmen(projektId, stammId, BivalenzAbbildung.Vorbelegen);
             bool angelegt = u.KopieNeu || u.NeueAnlagen.Count > 0;
-            return new KuehlWpUebernahme(u.Ok, u.IdWp, u.Bezeichner ?? "", u.SchonImProjekt, u.Meldung, angelegt ? u : null);
+            return new KuehlWpUebernahme(u.Ok, u.IdWp, u.Bezeichner ?? "", u.SchonImProjekt, u.Meldung, angelegt ? u : null,
+                                         u.Hinweis);
         }
 
         /// <summary>KM-K1: löscht einen Katalogsatz der Wärmepumpe (Katalogweg des Wärmepumpendialogs); "" = gelöscht.</summary>
@@ -164,14 +187,76 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Prüfregeln des Kerns (<see cref="KaeltemaschineAnlageCtrl.Pruefen"/>).</summary>
         internal static string Pruefen(KaeltemaschineAnlageDaten d)
-            => KaeltemaschineAnlageCtrl.Pruefen(d == null ? null : AlsModell(d, null));
+        {
+            string grund = KaeltemaschineAnlageCtrl.Pruefen(d == null ? null : AlsModell(d, null));
+            if (!string.IsNullOrEmpty(grund) || d?.RueckkuehlwerkWahl is not int) return grund;
+            // K-F5b: dieselbe Verträglichkeit wie der Schreibweg - eine luftgekühlte Maschine bekommt kein Rückkühlwerk.
+            return d.Geraet is { Luftgekuehlt: true } ? MyResource.Resource.RKW_MSG_LUFT_UNVERTRAEGLICH : null;
+        }
 
-        /// <summary>Schreibt eine gespeicherte Anlage; liefert den Prüftext oder <c>null</c>.</summary>
-        internal static string Speichern(KaeltemaschineAnlageDaten d)
+        /// <summary>
+        /// K-F5c: die Sitzung eines Dialogs „Kältemaschinen im Projekt“ (je Aufruf von <see cref="Gaben"/> eine) — je Anlage
+        /// der Stand des Rückkühlwerks vor dem ersten Schreiben der Sitzung samt der Wahl, die ihm entspricht. Abbrechen
+        /// schreibt den Stand beim Öffnen über <see cref="Speichern(KaeltemaschineAnlageDaten, Rueckkuehlwerksitzung)"/>
+        /// zurück; mit dieser Wahl stellt die Hülle die Projektkopie exakt wieder her.
+        /// </summary>
+        internal sealed class Rueckkuehlwerksitzung
+        {
+            internal readonly Dictionary<int, (int? Wahl, KaeltemaschineAnlageCtrl.RueckkuehlwerkStand Stand)> Staende = new();
+        }
+
+        /// <summary>Schreibt eine gespeicherte Anlage ohne Dialogsitzung; liefert den Prüftext oder <c>null</c>.</summary>
+        internal static string Speichern(KaeltemaschineAnlageDaten d) => Speichern(d, null);
+
+        /// <summary>
+        /// Schreibt eine gespeicherte Anlage; liefert den Prüftext oder <c>null</c>. Mit <paramref name="sitzung"/> hält das
+        /// erste Schreiben einer Anlage den Stand ihres Rückkühlwerks fest (K-F5c).
+        /// </summary>
+        internal static string Speichern(KaeltemaschineAnlageDaten d, Rueckkuehlwerksitzung sitzung)
         {
             KaeltemaschineAnlageModel gelesen = d == null ? null : KaeltemaschineAnlageCtrl.Laden(d.AnlagenId);
             if (gelesen == null) return MyResource.Resource.KM_ANLAGE_FEHLT;
-            return KaeltemaschineAnlageCtrl.Speichern(AlsModell(d, gelesen));
+            (int? Wahl, KaeltemaschineAnlageCtrl.RueckkuehlwerkStand Stand) start = default;
+            if (sitzung != null && !sitzung.Staende.TryGetValue(gelesen.AnlagenId, out start))
+            {
+                start = (GelesenWahl(gelesen), KaeltemaschineAnlageCtrl.RueckkuehlwerkSchnappschuss(gelesen.AnlagenId));
+                sitzung.Staende[gelesen.AnlagenId] = start;
+            }
+            string grund = KaeltemaschineAnlageCtrl.Speichern(AlsModell(d, gelesen));
+            if (!string.IsNullOrEmpty(grund)) return grund;
+            return RueckkuehlwerkSchreiben(d, gelesen, start.Stand, start.Wahl);
+        }
+
+        /// <summary>
+        /// K-F5b: der Schreibschritt der Wahl des Rückkühlwerks im OK-Weg — nur, wenn die Wahl von der gespeicherten
+        /// abweicht (ein zweites OK wiederholt nichts, die Projektkopie bleibt mit ihren Werten stehen). Der Kernweg
+        /// <see cref="KaeltemaschineAnlageCtrl.RueckkuehlwerkWaehlen"/> legt die Projektkopie an bzw. löst sie.
+        /// K-F5c: Ist die Wahl wieder die des festgehaltenen Stands (<paramref name="start"/>, Abbrechen nach einer
+        /// Zwischenspeicherung oder Rückkehr zur Wahl beim Öffnen), die Anlage führt aber eine andere Kopie, schreibt
+        /// <see cref="KaeltemaschineAnlageCtrl.RueckkuehlwerkWiederherstellen"/> den Stand exakt zurück — dieselbe Kopie
+        /// mit allen Feldern, auch ohne Katalogsatz, oder „keins“.
+        /// </summary>
+        internal static string RueckkuehlwerkSchreiben(KaeltemaschineAnlageDaten d, KaeltemaschineAnlageModel gelesen,
+                                                       KaeltemaschineAnlageCtrl.RueckkuehlwerkStand start = null, int? startWahl = null)
+        {
+            if (d == null || gelesen == null) return null;
+            if (start != null && d.RueckkuehlwerkWahl == startWahl && gelesen.IdRueckkuehlwerk != start.KopieId)
+                return KaeltemaschineAnlageCtrl.RueckkuehlwerkWiederherstellen(start);
+            if (d.RueckkuehlwerkWahl == KaeltemaschineAnlageDaten.RUECKKUEHLWERK_PROJEKTKOPIE && gelesen.IdRueckkuehlwerk.HasValue)
+                return null;
+            if (d.RueckkuehlwerkWahl == GelesenWahl(gelesen)) return null;
+            int? stamm = d.RueckkuehlwerkWahl is int id && id > 0 ? id : (int?)null;
+            return KaeltemaschineAnlageCtrl.RueckkuehlwerkWaehlen(gelesen.AnlagenId, stamm);
+        }
+
+        /// <summary>Die Wahl, die der gespeicherten Projektkopie entspricht: ihr Katalogsatz oder die Marke der Kopie.</summary>
+        internal static int? GelesenWahl(KaeltemaschineAnlageModel m)
+        {
+            if (m?.IdRueckkuehlwerk is not int idKopie) return null;
+            RueckkuehlwerkModel kopie = RueckkuehlwerkCtrl.LadenStill(idKopie);
+            if (kopie == null) return null;
+            return kopie.IdStamm is int stamm && stamm > 0 && RueckkuehlwerkStammCtrl.Laden(stamm) != null
+                ? stamm : KaeltemaschineAnlageDaten.RUECKKUEHLWERK_PROJEKTKOPIE;
         }
 
         /// <summary>Modell → Feldsatz samt Kennwerten der Projektkopie.</summary>
@@ -192,7 +277,10 @@ namespace WindowsFormsApplication1
                 // KM4-E3-b: die Lesezeile „Zulässigkeit“ (Konzept Kaeltemittel als Stammdatum 7.2).
                 Zulaessigkeit = m.IdProjekt > 0 && m.AnlagenId > 0
                     ? KaeltemittelZulaessigkeitszeile.Anlage(m.IdProjekt, m.AnlagenId)
-                    : ""
+                    : "",
+                // K-F5b: die Wahl und die Lesezeilen der gespeicherten Projektkopie des Rückkühlwerks.
+                RueckkuehlwerkWahl = GelesenWahl(m),
+                Rueckkuehlwerk = m.IdRueckkuehlwerk is int idRkw ? Lesung(RueckkuehlwerkCtrl.LadenStill(idRkw)) : null
             };
         }
 
@@ -231,6 +319,73 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Die Kennwerte eines Geräts für die Anzeige; <c>null</c> bleibt <c>null</c>.</summary>
+        // =================================================================== K-F5b: Rückkühlung
+
+        /// <summary>
+        /// Die Gaben der Gruppe „Rückkühlung“: alle Katalogsätze der Rückkühlwerke samt Lesezeilen und ob das Klima des
+        /// Projekts eine Luftfeuchte führt (<see cref="KaeltemaschineAnlageCtrl.KlimaMitFeuchte"/>). Vor dem Schemaschritt
+        /// <c>null</c> — dann keine Gruppe.
+        /// </summary>
+        internal static RueckkuehlungGaben Rueckkuehlung(int projektId)
+        {
+            if (!RueckkuehlwerkSchema.AnlagenspaltenVorhanden()) return null;
+            var katalog = RueckkuehlwerkStammCtrl.Liste()
+                .Select(z => RueckkuehlwerkStammCtrl.Laden(z.Id))
+                .Where(m => m != null)
+                .Select(m => new RueckkuehlwerkEintrag(m.Id, Eintragstext(m), Lesung(m, m.Id)))
+                .ToList();
+            bool feuchte;
+            try { feuchte = KaeltemaschineAnlageCtrl.KlimaMitFeuchte(projektId); }
+            catch { feuchte = false; }
+            return new RueckkuehlungGaben { Katalog = katalog, KlimaMitFeuchte = feuchte };
+        }
+
+        private static string Eintragstext(RueckkuehlwerkModel m)
+            => (m.Bezeichner ?? "") + " · " + RueckkuehlwerkStammCtrl.BauartText(m.Bauart);
+
+        /// <summary>
+        /// Die Lesezeilen eines Rückkühlwerks — Bauart, Nennleistung, Annäherung samt Weg, Ventilator samt Regelung,
+        /// Schaltung der freien Kühlung; ein leeres Feld zeigt „Vorgabe: …“ mit dem Wert des Rechenwegs
+        /// (<see cref="Rueckkuehlwerk.AusModell"/>), wie die Verwaltung. <c>null</c> bleibt <c>null</c>.
+        /// </summary>
+        internal static RueckkuehlwerkLesung Lesung(RueckkuehlwerkModel m, int? stammId = null)
+        {
+            if (m == null) return null;
+            var kultur = System.Globalization.CultureInfo.CurrentCulture;
+            Rueckkuehlwerk r = Rueckkuehlwerk.AusModell(m);
+            Func<string, string> vorgabe = t => string.Format(kultur, MyResource.Resource.RKW_VORGABE, t);
+            Func<double, string, string> zahl = (w, f) => w.ToString(f, kultur);
+
+            string bauart = string.IsNullOrEmpty(m.Bauart) ? vorgabe(RueckkuehlwerkStammCtrl.BauartText(null))
+                                                         : RueckkuehlwerkStammCtrl.BauartText(m.Bauart);
+            string nenn = m.Nennleistung_kW is double kw ? zahl(kw, "0.#") + " kW" : "–";
+            string annaeherung = (m.Annaeherung_Nenn_K is double k ? zahl(k, "0.#") + " K" : vorgabe(zahl(r.AnnaeherungK, "0.#") + " K"))
+                                 + " · " + (string.IsNullOrEmpty(m.Annaeherung_Weg) ? vorgabe(RueckkuehlwerkStammCtrl.WegText(null))
+                                                                                     : RueckkuehlwerkStammCtrl.WegText(m.Annaeherung_Weg));
+            string regelung = string.IsNullOrEmpty(m.Ventilator_Regelung) ? vorgabe(RueckkuehlwerkStammCtrl.RegelungText(null))
+                                                                          : RueckkuehlwerkStammCtrl.RegelungText(m.Ventilator_Regelung);
+            string ventilator = m.Ventilator_Nenn_kW is double v
+                ? zahl(v, "0.##") + " kW · " + regelung
+                : MyResource.Resource.RKW_VORGABE_VENTILATOR;
+            string schaltung = string.IsNullOrEmpty(m.Freikuehlung_Schaltung) ? vorgabe(RueckkuehlwerkStammCtrl.SchaltungText(null))
+                                                                              : RueckkuehlwerkStammCtrl.SchaltungText(m.Freikuehlung_Schaltung);
+            return new RueckkuehlwerkLesung
+            {
+                Bezeichner = m.Bezeichner ?? "",
+                StammId = stammId ?? (m.IdStamm is int s && s > 0 ? s : (int?)null),
+                Zeilen = new List<(string, string)>
+                {
+                    (MyResource.Resource.RKW_LBL_BAUART, bauart),
+                    (MyResource.Resource.RKW_LBL_NENNLEISTUNG, nenn),
+                    (MyResource.Resource.RKW_GRUPPE_ANNAEHERUNG, annaeherung),
+                    (MyResource.Resource.RKW_GRUPPE_VENTILATOR, ventilator),
+                    (MyResource.Resource.RKW_GRUPPE_FREIKUEHLUNG, schaltung),
+                },
+                Verdunstungskuehlanlage = r.Verdunstungskuehlanlage,
+                VentilatorKw = m.Ventilator_Nenn_kW
+            };
+        }
+
         internal static KaeltemaschineGeraetwerte Werte(KaeltemaschineModel m)
         {
             if (m == null) return null;
@@ -257,6 +412,9 @@ namespace WindowsFormsApplication1
                 Geraeteart = string.IsNullOrEmpty(m.Geraeteart) ? "" : KaeltemaschineStammCtrl.GeraeteartText(m.Geraeteart),
                 Kaeltemittel = m.Kaeltemittel ?? "",
                 Gwp = m.Kaeltemittel_GWP,
+                Geraetekosten = m.Geraetekosten,
+                // Die eine Regel des Kerns - wie der Lauf rechnet eine leere Rückkühlart luftgekühlt.
+                Luftgekuehlt = KaeltemaschineSchema.IstLuftgekuehlt(m.Rueckkuehlart),
                 Kaltwasserstuetzstellen = (m.Kennlinie ?? new List<KaeltemaschineKenndatenModel>())
                     .Select(k => k.Kaltwassertemperatur).Distinct().OrderBy(t => t).ToList()
             };

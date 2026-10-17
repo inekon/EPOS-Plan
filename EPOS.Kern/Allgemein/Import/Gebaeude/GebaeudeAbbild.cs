@@ -298,6 +298,9 @@ namespace WindowsFormsApplication1
         /// Wasserzeichen der Testlizenz, Vermerke; G7a); <c>null</c> = keiner. Der Leser lässt ihn leer.
         /// </summary>
         public string Beschreibung { get; set; }
+
+        /// <summary>Das Erdreich des Gebäudes (Welle DA-4, Inventar G3, G4); <c>null</c> = keines.</summary>
+        public AbbildErdreich Erdreich { get; set; }
     }
 
     /// <summary>Ein Geschoss des Abbilds (IFC: <c>IfcBuildingStorey</c>).</summary>
@@ -469,6 +472,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         public AbbildKonditionierung Konditionierung { get; set; }
 
+        /// <summary>
+        /// Lasten, Außenluft und Zeitpläne des Raums aus einer gbXML-Datei (Welle DA-1); <c>null</c> = keine. Der Zonenplan bildet
+        /// daraus je Zone die Konditionierung (<see cref="GbxmlKonditionierung.Bilden"/>, Datei vor Profil).
+        /// </summary>
+        public GbxmlRaumlasten GbxmlLasten { get; set; }
+
         /// <summary>Kennung des Geschosses; <c>null</c> = keine.</summary>
         public string GeschossKennung { get; set; }
 
@@ -535,6 +544,10 @@ namespace WindowsFormsApplication1
         /// <c>Pset_SpaceCommon.Category</c> bzw. <c>ObjectType</c> — er benennt die Nutzungsklasse der Regel Z6.
         /// </summary>
         public double? RaumtemperaturC { get; set; }
+
+        /// <summary>Die Restdaten der Zone dieses Raums (Welle DA-4: Vorheizzeit, Höchstleistungen, Übergabe, Luftströme,
+        /// Zeilenbild, benannte Wochen); <c>null</c> = keine.</summary>
+        public AbbildZonenrest Rest { get; set; }
     }
 
     /// <summary>Ein Nachbarraum eines Bauteils samt der Sicht dieses Raums auf die Fläche.</summary>
@@ -562,6 +575,18 @@ namespace WindowsFormsApplication1
     {
         /// <summary>Kennung aus der Datei, ungekürzt.</summary>
         public string Kennung { get; set; } = "";
+
+        /// <summary>
+        /// DA-8: Absorptionsgrad der Außenfläche für Solarstrahlung a_F [–], eingetragen am Bauteil oder seinem Aufbau;
+        /// <c>null</c> = die Vorgabe (<see cref="BauteilStrahlungSchema.VORGABE_ABSORPTION"/>).
+        /// </summary>
+        public double? AbsorptionsgradSolar { get; set; }
+
+        /// <summary>
+        /// DA-8: langwelliger Emissionsgrad der Außenfläche ε_F [–], eingetragen am Bauteil oder seinem Aufbau; <c>null</c> =
+        /// die Vorgabe (<see cref="BauteilStrahlungSchema.VORGABE_EMISSION"/>).
+        /// </summary>
+        public double? Emissionsgrad { get; set; }
 
         /// <summary>Typ der Quellentität (<c>Surface</c>, <c>Opening</c> …).</summary>
         public string Quelltyp { get; set; } = "";
@@ -878,6 +903,12 @@ namespace WindowsFormsApplication1
         /// <summary>Der eingetragene U-Wert [W/(m²K)]; er hat Vorrang vor der Rechnung aus den Schichten.</summary>
         public double? UWertWm2K { get; set; }
 
+        /// <summary>DA-8: Absorptionsgrad solar der Datei, wo er von der Vorgabe abweicht; <c>null</c> = Vorgabe. Nur der Leser setzt ihn.</summary>
+        public double? AbsorptionsgradSolar { get; set; }
+
+        /// <summary>DA-8: Emissionsgrad der Datei, wo er von der Vorgabe abweicht; <c>null</c> = Vorgabe. Nur der Leser setzt ihn.</summary>
+        public double? Emissionsgrad { get; set; }
+
         /// <summary>Die Schichten in der Richtung <see cref="Richtung"/>.</summary>
         public List<AbbildSchicht> Schichten { get; } = new List<AbbildSchicht>();
 
@@ -973,6 +1004,12 @@ namespace WindowsFormsApplication1
         /// <summary>Luftwechsel der Nutzer [1/h] — die Zelle LUEFTUNG/TAG.</summary>
         public double? LuftwechselNutzerJeH { get; set; }
 
+        /// <summary>
+        /// Die Nummer des DIN/TS-18599-10-Profils der Zone (<c>EPOS_Zone.DinNummer</c>, Welle DA-5); <c>null</c> = keine. Der
+        /// Export schreibt sie, wenn die Zone ein Profil der DIN-Kategorie trägt; der Import ordnet über sie das Profil zu.
+        /// </summary>
+        public int? DinNummer { get; set; }
+
         /// <summary>Die Kalender in der Reihenfolge der Größen (<see cref="Konditionierungsgroessen.Alle"/>).</summary>
         public List<AbbildKalender> Kalender { get; } = new List<AbbildKalender>();
 
@@ -980,7 +1017,7 @@ namespace WindowsFormsApplication1
         internal AbbildKalender KalenderVon(Konditionierungsgroesse g) => Kalender.Find(k => k.Kalender.Groesse == g);
 
         /// <summary>Trägt die Zone etwas — eine Zelle, eine Nutzung oder einen Kalender?</summary>
-        internal bool Traegt => Nutzung != null || HeizsollTagC.HasValue || HeizsollNachtC.HasValue || KuehlsollC.HasValue
+        internal bool Traegt => Nutzung != null || DinNummer.HasValue || HeizsollTagC.HasValue || HeizsollNachtC.HasValue || KuehlsollC.HasValue
                                 || LuftwechselNutzerJeH.HasValue || Kalender.Count > 0;
 
         /// <summary>

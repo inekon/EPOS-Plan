@@ -9,7 +9,7 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Mehrfach-Bearbeiten der Wärmepumpen in EINER Transaktion</b> (Konzept Projektdialoge mit Katalogauswahl 4.6,
     /// Entscheid KA‑E‑8, Stufe 3): <see cref="WPStammCtrl.SammelfelderSchreibenAlle"/> schreibt Hersteller, Beschreibung
-    /// und Modulkosten aller Sätze — Projektkopien oder Katalogsätze — oder keinen; Name, Kennlinien und übrige Spalten
+    /// aller Sätze — Projektkopien oder Katalogsätze — oder keinen; Name, Kennlinien und übrige Spalten
     /// bleiben. Geschrieben wird in der Kopie der Testdatenbank (<see cref="TestDatenbank"/>), nie an den Geräten der
     /// Referenzprojekte.
     /// </summary>
@@ -70,15 +70,14 @@ namespace EPOS.Kern.Tests
 
             var e = WPStammCtrl.SammelfelderSchreibenAlle(true, new[]
             {
-                new WPStammCtrl.Sammelaenderung(ids[0], new WPStammCtrl.Sammelfelder("Neuwerk", "Text A", 12000)),
-                new WPStammCtrl.Sammelaenderung(ids[1], new WPStammCtrl.Sammelfelder("Neuwerk", "Text B", null)),
+                new WPStammCtrl.Sammelaenderung(ids[0], new WPStammCtrl.Sammelfelder("Neuwerk", "Text A")),
+                new WPStammCtrl.Sammelaenderung(ids[1], new WPStammCtrl.Sammelfelder("Neuwerk", "Text B")),
             });
 
             Assert.True(e.Ok, e.Meldung);
             Assert.Equal("Neuwerk", Roh("Tab_WP", ids[0], "Firma"));
             Assert.Equal("Text B", Roh("Tab_WP", ids[1], "Beschreibung"));
-            Assert.Equal(12000.0, Convert.ToDouble(Roh("Tab_WP", ids[0], "Modulkosten"), CultureInfo.InvariantCulture));
-            Assert.Equal(DBNull.Value, Roh("Tab_WP", ids[1], "Modulkosten") ?? DBNull.Value);
+            Assert.Equal("Text A", Roh("Tab_WP", ids[0], "Beschreibung"));
             Assert.Equal(name0, Roh("Tab_WP", ids[0], "Bezeichner"));
             Assert.Equal(kennlinien0, Kennlinienzeilen("Tab_Kenndaten", ids[0]));
             Assert.Equal(leistung0, Roh("Tab_WP", ids[0], "Nennleistung"));
@@ -95,8 +94,8 @@ namespace EPOS.Kern.Tests
 
             var e = WPStammCtrl.SammelfelderSchreibenAlle(false, new[]
             {
-                new WPStammCtrl.Sammelaenderung(frei, new WPStammCtrl.Sammelfelder("Neuwerk", "", 1)),
-                new WPStammCtrl.Sammelaenderung(gesperrt, new WPStammCtrl.Sammelfelder("Neuwerk", "", 1)),
+                new WPStammCtrl.Sammelaenderung(frei, new WPStammCtrl.Sammelfelder("Neuwerk", "")),
+                new WPStammCtrl.Sammelaenderung(gesperrt, new WPStammCtrl.Sammelfelder("Neuwerk", "")),
             });
 
             Assert.False(e.Ok);
@@ -105,23 +104,18 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Negative_Modulkosten_und_fehlende_ID_schreiben_nichts()
+        public void Eine_fehlende_ID_schreibt_nichts()
         {
             if (!_db.Vorhanden) return;
             var ids = Kopien(1);
             object vorher = Roh("Tab_WP", ids[0], "Firma");
 
-            var negativ = WPStammCtrl.SammelfelderSchreibenAlle(true, new[]
-            {
-                new WPStammCtrl.Sammelaenderung(ids[0], new WPStammCtrl.Sammelfelder("Neuwerk", "", -5)),
-            });
             var fehlt = WPStammCtrl.SammelfelderSchreibenAlle(true, new[]
             {
-                new WPStammCtrl.Sammelaenderung(ids[0], new WPStammCtrl.Sammelfelder("Neuwerk", "", 5)),
-                new WPStammCtrl.Sammelaenderung(987654, new WPStammCtrl.Sammelfelder("Neuwerk", "", 5)),
+                new WPStammCtrl.Sammelaenderung(ids[0], new WPStammCtrl.Sammelfelder("Neuwerk", "")),
+                new WPStammCtrl.Sammelaenderung(987654, new WPStammCtrl.Sammelfelder("Neuwerk", "")),
             });
 
-            Assert.False(negativ.Ok);
             Assert.False(fehlt.Ok);
             Assert.Contains("987654", fehlt.Meldung);
             Assert.Equal(vorher, Roh("Tab_WP", ids[0], "Firma"));

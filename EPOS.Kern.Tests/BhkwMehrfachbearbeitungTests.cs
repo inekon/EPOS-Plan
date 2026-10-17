@@ -9,8 +9,9 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Mehrfach-Bearbeiten der BHKW-Module in EINER Transaktion</b> (Konzept Projektdialoge mit
     /// Katalogauswahl 4.6, Entscheid KA‑E‑8, Stufe 3): <see cref="BHKWStammCtrl.AnzeigefelderSchreibenAlle"/>
-    /// schreibt alle geänderten Sätze — Projektkopien oder Katalogsätze — oder keinen; die fünf Kostenposten gehen
-    /// mit, die Investition je kWel wird nachgerechnet.
+    /// schreibt alle geänderten Sätze — Projektkopien oder Katalogsätze — oder keinen; die mitgehenden
+    /// Gerätefelder werden geschrieben. Kostenfelder führt der Satz seit Welle KB-4 nicht mehr
+    /// (Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine Doppelhaltung").
     /// </summary>
     [Collection("Testdatenbank")]
     public class BhkwMehrfachbearbeitungTests : IDisposable
@@ -19,15 +20,12 @@ namespace EPOS.Kern.Tests
         public void Dispose() => _db.Dispose();
 
         private static BHKWStammCtrl.AnzeigefelderBhkw Satz(string beschreibung, double ptherm = 80, double pel = 40,
-                                                            double? modul = null, double? montage = null,
-                                                            double? lieferung = null, double? schall = null,
-                                                            double? abgas = null, double? wartung = null,
+                                                            double? raumbedarf = null, int? nutzungsdauer = null,
                                                             string anfahr = null)
             => new BHKWStammCtrl.AnzeigefelderBhkw("Musterwerk", ptherm, pel, 30, 80, 60,
                                                    Beschreibung: beschreibung,
-                                                   KostenModul: modul, KostenMontage: montage, KostenLieferung: lieferung,
-                                                   KostenSchallschutzhaube: schall, KostenAbgasreinigung: abgas,
-                                                   WartungskostenJeKWhel: wartung, AnfahrverlustKwh: anfahr);
+                                                   Raumbedarf: raumbedarf, Nutzungsdauer: nutzungsdauer,
+                                                   AnfahrverlustKwh: anfahr);
 
         private static List<int> Ids(string tabelle, int anzahl)
         {
@@ -50,7 +48,7 @@ namespace EPOS.Kern.Tests
                                          new DbParam("?", gesperrt ? 1 : 0), new DbParam("?", id));
 
         [Fact]
-        public void SatzAnzeige_liest_Projektkopie_und_Katalogsatz_nach_ID_samt_Nebenposten()
+        public void SatzAnzeige_liest_Projektkopie_und_Katalogsatz_nach_ID_samt_Geraetekosten()
         {
             if (!_db.Vorhanden) return;
             int p = Ids(BHKWStammCtrl.TABELLE_PROJEKT, 1)[0];
@@ -60,16 +58,14 @@ namespace EPOS.Kern.Tests
             Assert.Equal(np, Feld(true, p, KatalogBrowserProfil.FeldBezeichner));
             Assert.Equal(nk, Feld(false, k, KatalogBrowserProfil.FeldBezeichner));
             var anzeige = BHKWStammCtrl.SatzAnzeige(true, p);
-            foreach (string f in new[] { KatalogBrowserProfil.FeldKostenModul, KatalogBrowserProfil.FeldKostenMontage,
-                                         KatalogBrowserProfil.FeldKostenLieferung, KatalogBrowserProfil.FeldKostenSchallschutz,
-                                         KatalogBrowserProfil.FeldKostenAbgasreinigung, KatalogBrowserProfil.FeldInvestitionJeKwel,
-                                         KatalogBrowserProfil.FeldWartungJeKwhel, KatalogBrowserProfil.FeldGrenzleistung })
+            foreach (string f in new[] { KatalogBrowserProfil.FeldGeraetekosten, KatalogBrowserProfil.FeldRaumbedarf,
+                                         KatalogBrowserProfil.FeldNutzungsdauer, KatalogBrowserProfil.FeldGrenzleistung })
                 Assert.True(anzeige.ContainsKey(f), f);
             Assert.Null(BHKWStammCtrl.SatzAnzeige(true, 987654));
         }
 
         [Fact]
-        public void Alle_Projektkopien_werden_samt_Nebenposten_geschrieben_der_Katalog_bleibt()
+        public void Alle_Projektkopien_werden_samt_Geraetefeldern_geschrieben_der_Katalog_bleibt()
         {
             if (!_db.Vorhanden) return;
             var ids = Ids(BHKWStammCtrl.TABELLE_PROJEKT, 2);
@@ -79,19 +75,16 @@ namespace EPOS.Kern.Tests
 
             var e = BHKWStammCtrl.AnzeigefelderSchreibenAlle(true, new[]
             {
-                new BHKWStammCtrl.Satzaenderung(ids[0], Satz("Sammel 1", modul: 30000, montage: 4000, lieferung: 1000,
-                                                             schall: 3000, abgas: 2000, wartung: 0.025, anfahr: "1,5")),
+                new BHKWStammCtrl.Satzaenderung(ids[0], Satz("Sammel 1", raumbedarf: 7.5, nutzungsdauer: 18,
+                                                             anfahr: "1,5")),
                 new BHKWStammCtrl.Satzaenderung(ids[1], Satz("Sammel 2"))
             });
 
             Assert.True(e.Ok, e.Meldung);
             Assert.Equal("Sammel 1", Feld(true, ids[0], KatalogBrowserProfil.FeldBeschreibung));
             Assert.Equal("Sammel 2", Feld(true, ids[1], KatalogBrowserProfil.FeldBeschreibung));
-            Assert.Equal(3000, Spalte("Tab_BHKW", ids[0], "Kosten_Schallschutzhaube"));
-            Assert.Equal(2000, Spalte("Tab_BHKW", ids[0], "Kosten_Abgasreinigung"));
-            Assert.Equal(0.025, Spalte("Tab_BHKW", ids[0], "Wartungskosten_kwhel"), 9);
-            // Die Investition je kWel ist die Ableitung der fünf Posten: 40 000 € / 40 kWel.
-            Assert.Equal(1000, Spalte("Tab_BHKW", ids[0], "Investition_kwel"), 6);
+            Assert.Equal(7.5, Spalte("Tab_BHKW", ids[0], "Raumbedarf"), 9);
+            Assert.Equal(18, Spalte("Tab_BHKW", ids[0], "Nutzungsdauer"), 9);
             Assert.Equal(1.5, Spalte("Tab_BHKW", ids[0], "Anfahrverlust_kWh"), 9);
             Assert.Equal(katalogVorher, Feld(false, katalog, KatalogBrowserProfil.FeldBeschreibung));
         }

@@ -5,10 +5,13 @@ using System.Linq;
 using System.Threading;
 using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Packaging;
+using C = DocumentFormat.OpenXml.Drawing.Charts;
+using Xdr = DocumentFormat.OpenXml.Drawing.Spreadsheet;
 using WindowsFormsApplication1;
 using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 using Xunit.Abstractions;
+using R = WindowsFormsApplication1.MyResource.Resource;
 
 namespace EPOS.Kern.Tests
 {
@@ -39,7 +42,7 @@ namespace EPOS.Kern.Tests
         private static readonly Dictionary<string, string[]> Arten = new Dictionary<string, string[]>(StringComparer.Ordinal)
         {
             ["stand.bild.waerme_jahresverlauf"] = new[] { "areaChart", "lineChart" },
-            ["stand.bild.waerme_dauerlinie"] = new[] { "lineChart" },
+            ["stand.bild.waerme_dauerlinie"] = new[] { "areaChart", "lineChart" },
             ["stand.bild.strombilanz_monate"] = new[] { "barChart", "lineChart" },
             ["stand.bild.speicherverlauf"] = new[] { "lineChart" },
             ["stamm.bild.speichertemperaturen"] = new[] { "lineChart" },
@@ -146,6 +149,167 @@ namespace EPOS.Kern.Tests
             Assert.Equal(3, diagramme.Count(d => d.Name == "stand.bild.zahlungsstrom"));
             Assert.Equal(3, diagramme.Count(d => d.Name == "stand.bild.waerme_dauerlinie"));
             PruefeRundlauf(pfad);
+        }
+
+        /// <summary>
+        /// Excel zeigt dasselbe wie Word: die Einspeisung der Strombilanz als Nebenbalken rechts des Stapels (eigene
+        /// Säulengruppe auf einer unsichtbaren Zweitachse mit derselben Skala, drei leere Plätze davor), die Beträge an Brücke
+        /// (mit Vorzeichen, die Ergebnissäule ohne) und Spanne (Erwartungsfall in €) und die Ersatzjahre des Zahlungsstroms
+        /// als Band über die ganze Höhe ihres Jahres.
+        /// </summary>
+        [Fact]
+        public void Excel_zeigt_Nebenbalken_Betraege_und_Ersatzjahre_wie_Word()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            BerichtsDaten daten = Gruppe3();
+            // Die Einspeisung als Nebenbalken braucht den PV-Überschuss ohne gesamte Netzeinspeisung (Reihen der Strombilanz).
+            foreach (VariantenDaten v in daten.Varianten.Where(v => v.Zeitreihen != null))
+            {
+                v.Zeitreihen.Reihen.Remove(ZeitreihenSatz.NETZEINSPEISUNG);
+                v.Zeitreihen.Reihen[ZeitreihenSatz.PV_UEBERSCHUSS] = Enumerable.Repeat(0.4, ZeitreihenSatz.Stunden).ToArray();
+            }
+            string pfad = Erzeuge(daten, "angleich_gruppe3.xlsx");
+            Assert.Empty(Exceldiagrammbefund.Validierungsfehler(pfad));
+            using var wb = new XLWorkbook(pfad);
+            using SpreadsheetDocument doc = SpreadsheetDocument.Open(pfad, false);
+            List<(string Name, C.ChartSpace Raum)> diagramme = Diagrammraeume(doc);
+            var kultur = BerichtTexte.Kultur;
+
+            // Strombilanz: Stapel in der Hauptgruppe, Einspeisung als vierter Platz der Zweitgruppe, gleiche Skala.
+            List<C.ChartSpace> strom = diagramme.Where(x => x.Name == "stand.bild.strombilanz_monate").Select(x => x.Raum).ToList();
+            Assert.NotEmpty(strom);
+            foreach (C.ChartSpace raum in strom)
+            {
+                List<C.BarChart> gruppen = raum.Descendants<C.BarChart>().ToList();
+                Assert.Equal(2, gruppen.Count);
+                Assert.Equal(C.BarGroupingValues.Stacked, gruppen[0].BarGrouping.Val.Value);
+                Assert.Equal(C.BarGroupingValues.Clustered, gruppen[1].BarGrouping.Val.Value);
+                List<C.BarChartSeries> neben = gruppen[1].Elements<C.BarChartSeries>().ToList();
+                Assert.Equal(4, neben.Count);
+                Assert.Equal(ChartRenderer.EINSPEISUNG_NEBENBALKEN, neben[3].SeriesText.Descendants<C.StringPoint>().Single().InnerText);
+                Assert.All(neben.Take(3), r => Assert.NotNull(r.ChartShapeProperties.GetFirstChild<DocumentFormat.OpenXml.Drawing.NoFill>()));
+                Assert.DoesNotContain(raum.Descendants<C.LineChartSeries>(),
+                                      r => r.SeriesText.InnerText.Contains(ChartRenderer.EINSPEISUNG_NEBENBALKEN, StringComparison.Ordinal));
+                List<C.ValueAxis> achsen = raum.Descendants<C.ValueAxis>().ToList();
+                Assert.Equal(2, achsen.Count);
+                Assert.False(achsen[0].Delete.Val.Value);
+                Assert.True(achsen[1].Delete.Val.Value);
+                Assert.Equal(achsen[0].Scaling.GetFirstChild<C.MaxAxisValue>().Val.Value, achsen[1].Scaling.GetFirstChild<C.MaxAxisValue>().Val.Value);
+                Assert.Equal(0.0, achsen[1].Scaling.GetFirstChild<C.MinAxisValue>().Val.Value);
+            }
+
+            // Brücke: je Schritt der Betrag mit Vorzeichen, die Ergebnissäule mit der Summe.
+            C.ChartSpace bruecke = diagramme.Single(x => x.Name == "bild.wirtschaft.bruecke").Raum;
+            Exceldiagrammbefund bBefund = Exceldiagrammbefund.Lies(pfad).Single(x => x.Name == "bild.wirtschaft.bruecke");
+            List<double?> beitraege = Exceldiagrammbefund.Zahlen(wb, SpalteDerReihe(wb, bBefund, 0, "Beitrag [€]"));
+            // Ein Schritt ohne Betrag hat keine Säule und darum keine Beschriftung.
+            var erwartet = beitraege.Take(beitraege.Count - 1).Where(x => Math.Abs(x ?? 0.0) > 1e-12)
+                                    .Select(x => x.Value.ToString("+#,##0;−#,##0;0", kultur)).ToList();
+            if (Math.Abs(beitraege.Last() ?? 0.0) > 1e-12) erwartet.Add(beitraege.Last().Value.ToString("#,##0;−#,##0;0", kultur));
+            Assert.NotEmpty(erwartet);
+            List<string> texte = Beschriftungstexte(bruecke);
+            _ausgabe.WriteLine("Brücke: " + string.Join(" | ", texte));
+            Assert.Equal(erwartet.OrderBy(x => x, StringComparer.Ordinal), texte.OrderBy(x => x, StringComparer.Ordinal));
+
+            // Spanne: je Stand mit Erwartungsfall sein Betrag in €.
+            C.ChartSpace spanne = diagramme.Single(x => x.Name == "bild.wirtschaft.spanne").Raum;
+            Exceldiagrammbefund sBefund = Exceldiagrammbefund.Lies(pfad).Single(x => x.Name == "bild.wirtschaft.spanne");
+            List<double?> erwartetFall = Exceldiagrammbefund.Zahlen(wb, SpalteDerReihe(wb, sBefund, 0, R.WIRT_SZEN_ERWARTET));
+            List<string> spannentexte = Beschriftungstexte(spanne);
+            _ausgabe.WriteLine("Spanne: " + string.Join(" | ", spannentexte));
+            Assert.Equal(erwartetFall.Where(x => x.HasValue).Select(x => x.Value.ToString("N0", kultur) + " €").OrderBy(x => x, StringComparer.Ordinal),
+                         spannentexte.OrderBy(x => x, StringComparer.Ordinal));
+
+            // Zahlungsstrom: die Ersatzjahre als Band (Zweitachse 0 bis 1, Wert 1 im Ersatzjahr) — so viele Bänder wie
+            // Stände mit Ersatzjahren. In der Prüfgruppe 1040–1042 (Arbeitskopie) halten die Investitionen der Variante A acht
+            // Jahre — Ersatz in den Jahren 8 und 16 des Betrachtungszeitraums von 20 Jahren.
+            DataRepository.ExecuteNonQuery("UPDATE Tab_ProjektWerte SET Nutzungsdauer = ? WHERE ProjektID = ? AND " +
+                                           "Kostenart = 'KAPITALGEBUNDEN' AND EingegebenerWert > 0",
+                                           new DbParam("@n", 8.0), new DbParam("@p", 1041));
+            daten = BerichtBlattstrukturWacheTests.GruppeMitSaetzen(new[] { 1040, 1041, 1042 }, new[] { 12000.0, 9000.0, 7000.0 });
+            pfad = Erzeuge(daten, "angleich_ersatz.xlsx");
+            Assert.Empty(Exceldiagrammbefund.Validierungsfehler(pfad));
+            using SpreadsheetDocument doc2 = SpreadsheetDocument.Open(pfad, false);
+            diagramme = Diagrammraeume(doc2);
+            WirtschaftsBerichtswerte w = daten.Wirtschaft ?? WirtschaftsBerichtswerte.Von(daten);
+            int mitErsatz = daten.Varianten.Count(v => (ChartRenderer.Zahlungsstromreihe.Ersatzjahre(Berichtsbilder.Mehrjahrestafel(w.Verlauf, v.IdProjekt))
+                                                        ?? new List<int>()).Count > 0);
+            List<C.ChartSpace> stroeme = diagramme.Where(x => x.Name == "stand.bild.zahlungsstrom").Select(x => x.Raum).ToList();
+            int baender = 0;
+            foreach (C.ChartSpace raum in stroeme)
+            {
+                List<C.BarChart> gruppen = raum.Descendants<C.BarChart>().ToList();
+                if (gruppen.Count < 2) continue;
+                baender++;
+                C.BarChartSeries band = gruppen[1].Elements<C.BarChartSeries>().Single();
+                Assert.Equal(R.WIRT_ZS_ERSATZJAHR, band.SeriesText.Descendants<C.StringPoint>().Single().InnerText);
+                List<C.NumericPoint> punkte = band.GetFirstChild<C.Values>().Descendants<C.NumericPoint>().ToList();
+                Assert.NotEmpty(punkte);
+                Assert.All(punkte, p => Assert.Equal("1", p.NumericValue.Text));
+                C.ValueAxis zweit = raum.Descendants<C.ValueAxis>().Last();
+                Assert.Equal(1.0, zweit.Scaling.GetFirstChild<C.MaxAxisValue>().Val.Value);
+            }
+            _ausgabe.WriteLine("Zahlungsströme mit Ersatzjahr-Band: " + baender + " von " + stroeme.Count);
+            Assert.True(mitErsatz > 0, "Die Prüfgruppe 1040–1042 führt kein Ersatzjahr.");
+            Assert.Equal(mitErsatz, baender);
+        }
+
+        /// <summary>
+        /// Die Netzeinspeisung der Speicherflotte steht im Excel-Diagramm wie im Bild im Nebenbalken der Einspeisung: als
+        /// vierter Platz der Säulengruppe auf der Zweitachse, nicht im Stapel und nicht als Linie.
+        /// </summary>
+        [Fact]
+        public void Excel_zeigt_Flotteneinspeisung_im_Nebenbalken()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            BerichtsDaten daten = Gruppe3();
+            // Mit gesamter Netzeinspeisung (Speicherflotte) tritt sie an die Stelle der PV-Einspeisung.
+            foreach (VariantenDaten v in daten.Varianten.Where(v => v.Zeitreihen != null))
+                v.Zeitreihen.Reihen[ZeitreihenSatz.NETZEINSPEISUNG] = Enumerable.Repeat(0.3, ZeitreihenSatz.Stunden).ToArray();
+            string pfad = Erzeuge(daten, "flotte_nebenbalken.xlsx");
+            Assert.Empty(Exceldiagrammbefund.Validierungsfehler(pfad));
+            using SpreadsheetDocument doc = SpreadsheetDocument.Open(pfad, false);
+            List<(string Name, C.ChartSpace Raum)> diagramme = Diagrammraeume(doc);
+            List<C.ChartSpace> strom = diagramme.Where(x => x.Name == "stand.bild.strombilanz_monate").Select(x => x.Raum).ToList();
+            Assert.NotEmpty(strom);
+            foreach (C.ChartSpace raum in strom)
+            {
+                List<C.BarChart> gruppen = raum.Descendants<C.BarChart>().ToList();
+                Assert.Equal(2, gruppen.Count);
+                Assert.DoesNotContain(gruppen[0].Elements<C.BarChartSeries>(),
+                                      r => r.SeriesText.InnerText.Contains(ChartRenderer.NETZEINSPEISUNG_GESAMT, StringComparison.Ordinal));
+                List<C.BarChartSeries> neben = gruppen[1].Elements<C.BarChartSeries>().ToList();
+                Assert.Equal(4, neben.Count);
+                Assert.Equal(ChartRenderer.NETZEINSPEISUNG_GESAMT, neben[3].SeriesText.Descendants<C.StringPoint>().Single().InnerText);
+                Assert.DoesNotContain(raum.Descendants<C.LineChartSeries>(),
+                                      r => r.SeriesText.InnerText.Contains(ChartRenderer.NETZEINSPEISUNG_GESAMT, StringComparison.Ordinal));
+            }
+        }
+
+        /// <summary>Die Diagramme der Mappe mit ihrem Namen (Bildschlüssel).</summary>
+        private static List<(string, C.ChartSpace)> Diagrammraeume(SpreadsheetDocument doc)
+        {
+            var l = new List<(string, C.ChartSpace)>();
+            foreach (WorksheetPart teil in doc.WorkbookPart.WorksheetParts)
+            {
+                if (teil.DrawingsPart?.WorksheetDrawing == null) continue;
+                foreach (Xdr.TwoCellAnchor anker in teil.DrawingsPart.WorksheetDrawing.Elements<Xdr.TwoCellAnchor>())
+                {
+                    C.ChartReference bezug = anker.Descendants<C.ChartReference>().FirstOrDefault();
+                    if (bezug == null) continue;
+                    var chart = (ChartPart)teil.DrawingsPart.GetPartById(bezug.Id);
+                    l.Add((anker.Descendants<Xdr.NonVisualDrawingProperties>().First().Name?.Value, chart.ChartSpace));
+                }
+            }
+            return l;
+        }
+
+        /// <summary>Die festen Texte der Datenbeschriftungen eines Diagramms.</summary>
+        private static List<string> Beschriftungstexte(C.ChartSpace raum)
+        {
+            return raum.Descendants<C.DataLabel>().Select(l => string.Concat(l.Descendants<DocumentFormat.OpenXml.Drawing.Text>().Select(t => t.Text))).ToList();
         }
 
         // =====================================================================

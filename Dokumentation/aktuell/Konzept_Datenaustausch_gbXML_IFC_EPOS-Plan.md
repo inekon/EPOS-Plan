@@ -94,7 +94,7 @@ Die Befunde, auf denen jede Aussage dieses Papiers steht:
 | [`Gebaeudesimulation/2026-09-15_Befund_R_gbXML_Schema_Werkzeuge.md`](Gebaeudesimulation/2026-09-15_Befund_R_gbXML_Schema_Werkzeuge.md) | gbXML: Schema, Pflichtangaben, Beispieldateien ausgezählt, Zielwerkzeuge, .NET-Umsetzung, Abbildung, Aufwand |
 | [`Gebaeudesimulation/2026-09-15_Befund_S_IFC-Export_ohne_Geometriekernel.md`](Gebaeudesimulation/2026-09-15_Befund_S_IFC-Export_ohne_Geometriekernel.md) | IFC-Export: geometrieloses IFC4, logische Raumgrenzen, `EPOS_Ergebnis`, GUID und `OwnerHistory`, Round-Trip, Stufen S1–S3 |
 | [`Gebaeudesimulation/2026-09-15_Befund_N_IFC-Import_Entwurf.md`](Gebaeudesimulation/2026-09-15_Befund_N_IFC-Import_Entwurf.md) | Importmuster Ablauf/Profil/Satz, Paketwahl, Klassen, Herkunft je Feld, Plattformnaht |
-| [`Gebaeudesimulation/2026-09-15_Befund_C_IFC-Recherche.md`](Gebaeudesimulation/2026-09-15_Befund_C_IFC-Recherche.md) | IFC-Schema, Psets/Qtos, gbXML-Einordnung, Bibliotheken, Testdateien und ihre Lizenzen |
+| [`../ueberholt/2026-09-15_Befund_C_IFC-Recherche.md`](../ueberholt/2026-09-15_Befund_C_IFC-Recherche.md) | IFC-Schema, Psets/Qtos, gbXML-Einordnung, Bibliotheken, Testdateien und ihre Lizenzen |
 | [`Gebaeudesimulation/2026-09-15_Befund_P_IFC_Zonen_Materialien.md`](Gebaeudesimulation/2026-09-15_Befund_P_IFC_Zonen_Materialien.md) | Zonen, Grenzflächen und Stoffwerte an vier IFC-Dateien gemessen |
 
 Die beiden Bauweisen, die dieses Papier voraussetzt, sind als Entscheidungsvermerk festgehalten:

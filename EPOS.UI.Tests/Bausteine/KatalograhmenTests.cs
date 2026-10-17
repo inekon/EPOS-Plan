@@ -228,10 +228,10 @@ public class KatalograhmenTests : EposBunitContext
     }
 
     /// <summary>
-    /// Die Regeln gelten nur für das Paar. Zwei Masken setzen
+    /// Die Regeln gelten nur für das Paar. Eine Maske setzt
     /// <c>epos-katalog-fuellend</c> auf eine bloße Liste
-    /// (<c>GesetzeskatalogDialog</c>, <c>WaermepumpenKatalogDialog</c>); die gemeinsame
-    /// Klasse trägt deshalb kein <c>overflow</c>.
+    /// (<c>GesetzeskatalogDialog</c>); die gemeinsame Klasse trägt deshalb kein
+    /// <c>overflow</c>.
     /// </summary>
     [Fact]
     public void Die_gemeinsame_Fuellklasse_bleibt_unberuehrt()

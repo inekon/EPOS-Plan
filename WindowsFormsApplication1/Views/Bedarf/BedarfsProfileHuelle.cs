@@ -59,20 +59,30 @@ namespace WindowsFormsApplication1
         // Einstiege
         // =================================================================================
 
-        /// <summary>Die PROZESSWÄRME eines Projekts.</summary>
+        /// <summary>
+        /// Die PROZESSWÄRME eines Projekts. <paramref name="zuordnungenSchreiben"/> schreibt die Zuordnungen
+        /// des Projekts; die Hülle ruft es beim OK, BEVOR sie die Projektkopievormerkung abschließt
+        /// (<see cref="Projektkopievormerkung.Schliessen"/>).
+        /// </summary>
         internal static bool Oeffnen(IWin32Window besitzer, int projektId, string projektName,
-                                     List<Z_ProjektProzesswaermeModel> modelle)
+                                     List<Z_ProjektProzesswaermeModel> modelle,
+                                     Action zuordnungenSchreiben)
         {
-            List<BedarfsProfilZeile> zeilen = ProzessZeilen(modelle);
+            List<BedarfsProfilZeile> zeilen = ProzessZeilen(modelle, projektId);
             Action geaendert = ProzessRueckweg(projektId, zeilen, modelle);
 
             return Zeigen(besitzer, BedarfsArt.Prozesswaerme, projektId, zeilen, geaendert,
-                          wizard: false);
+                          wizard: false, zuordnungenSchreiben: zuordnungenSchreiben);
         }
 
-        /// <summary>Die STROMVERBRAUCHER eines Projekts.</summary>
+        /// <summary>
+        /// Die STROMVERBRAUCHER eines Projekts. <paramref name="zuordnungenSchreiben"/> schreibt die
+        /// Zuordnungen des Projekts; die Hülle ruft es beim OK, BEVOR sie die Projektkopievormerkung
+        /// abschließt (<see cref="Projektkopievormerkung.Schliessen"/>).
+        /// </summary>
         internal static bool Oeffnen(IWin32Window besitzer, int projektId, string projektName,
-                                     List<Z_ProjektStromverbraucherModel> modelle)
+                                     List<Z_ProjektStromverbraucherModel> modelle,
+                                     Action zuordnungenSchreiben)
         {
             var zeilen = new List<BedarfsProfilZeile>();
             foreach (Z_ProjektStromverbraucherModel m in modelle)
@@ -96,7 +106,7 @@ namespace WindowsFormsApplication1
             };
 
             return Zeigen(besitzer, BedarfsArt.Stromverbraucher, projektId, zeilen, geaendert,
-                          wizard: false);
+                          wizard: false, zuordnungenSchreiben: zuordnungenSchreiben);
         }
 
         /// <summary>
@@ -111,23 +121,34 @@ namespace WindowsFormsApplication1
         {
             var zeilen = new List<BedarfsProfilZeile>();
             foreach (Z_ProjektBrauchwasserModel m in modelle)
-                zeilen.Add(new BedarfsProfilZeile
+            {
+                var z = new BedarfsProfilZeile
                 {
                     IdZ = m.ID_Z, IdStamm = m.ID_Brauchwasser,
                     Name = m.szBezeichner ?? "", Summe = m.Summe,
                     KalenderId = m.ID_Betriebskalender
-                });
+                };
+                // KBP-5a: Eingabeart, Monatsanteile und Wochenprofil der Projektkopie (OE-5).
+                BedarfsprofilEingabeAbbildung.InZeile(z, BedarfsArt.Brauchwasser, projektId, m.Eingabeart,
+                                                      m.Monatsanteile, m.Wochenprofil);
+                zeilen.Add(z);
+            }
 
             Action geaendert = () =>
             {
                 modelle.Clear();
                 foreach (BedarfsProfilZeile z in zeilen)
+                {
+                    // KBP-5a: die Eingabeart immer, Monate und Woche nur nach einer Bearbeitung.
+                    (string eingabeart, double[] monate, double[] woche) = BedarfsprofilEingabeAbbildung.AusZeile(z);
                     modelle.Add(new Z_ProjektBrauchwasserModel
                     {
                         ID_Z = z.IdZ, ID_Projekt = projektId, ID_Brauchwasser = z.IdStamm,
                         szBezeichner = z.Name, Summe = z.Summe,
-                        ID_Betriebskalender = z.KalenderId
+                        ID_Betriebskalender = z.KalenderId,
+                        Eingabeart = eingabeart, Monatsanteile = monate, Wochenprofil = woche
                     });
+                }
             };
 
             return Zeigen(besitzer, BedarfsArt.Brauchwasser, projektId, zeilen, geaendert,
@@ -139,15 +160,19 @@ namespace WindowsFormsApplication1
         /// <c>BedarfsArt.Kaelte</c>, Temperaturpaar wie die Prozesswärme (als Angabe). Die Feldgruppe
         /// „Deckung“ (Konzept 3.4) bearbeitet der Dialog in der Überlagerung „Deckung…“; der Rückweg schreibt
         /// sie mit Name, Kopie, Summe, Temperaturpaar, Kalender und Kälte-Art in die Modelle des Aufrufers zurück.
+        /// <paramref name="zuordnungenSchreiben"/> schreibt die Zuordnungen des Projekts; die Hülle ruft es beim
+        /// OK, BEVOR sie die Projektkopievormerkung abschließt (<see cref="Projektkopievormerkung.Schliessen"/>).
         /// </summary>
         internal static bool Oeffnen(IWin32Window besitzer, int projektId, string projektName,
-                                     List<Z_ProjektKaeltebedarfModel> modelle)
+                                     List<Z_ProjektKaeltebedarfModel> modelle,
+                                     Action zuordnungenSchreiben)
         {
             // K5b: Abbildung samt den acht Deckungsfeldern plattformfrei (KaeltebedarfsprofilAbbildung).
             List<BedarfsProfilZeile> zeilen = KaeltebedarfsprofilAbbildung.Zeilen(modelle);
             Action geaendert = KaeltebedarfsprofilAbbildung.Rueckweg(zeilen, modelle, projektId);
 
-            return Zeigen(besitzer, BedarfsArt.Kaelte, projektId, zeilen, geaendert, wizard: false);
+            return Zeigen(besitzer, BedarfsArt.Kaelte, projektId, zeilen, geaendert, wizard: false,
+                          zuordnungenSchreiben: zuordnungenSchreiben);
         }
 
         /// <summary>
@@ -160,7 +185,7 @@ namespace WindowsFormsApplication1
         internal static IReadOnlyDictionary<string, object> AssistentGabenProzess(
             int projektId, List<Z_ProjektProzesswaermeModel> modelle)
         {
-            List<BedarfsProfilZeile> zeilen = ProzessZeilen(modelle);
+            List<BedarfsProfilZeile> zeilen = ProzessZeilen(modelle, projektId);
             Action geaendert = ProzessRueckweg(projektId, zeilen, modelle);
 
             return Gaben(null, BedarfsArt.Prozesswaerme, projektId, zeilen, geaendert,
@@ -171,18 +196,24 @@ namespace WindowsFormsApplication1
         /// Die Zeilen der Prozesswärme samt Temperaturpaar der Projektkopie (PW1 Stufe 1) — EINE
         /// Stelle für Verwaltung und Assistent.
         /// </summary>
-        private static List<BedarfsProfilZeile> ProzessZeilen(List<Z_ProjektProzesswaermeModel> modelle)
+        private static List<BedarfsProfilZeile> ProzessZeilen(List<Z_ProjektProzesswaermeModel> modelle, int projektId)
         {
             var zeilen = new List<BedarfsProfilZeile>();
             foreach (Z_ProjektProzesswaermeModel m in modelle)
-                zeilen.Add(new BedarfsProfilZeile
+            {
+                var z = new BedarfsProfilZeile
                 {
                     IdZ = m.ID_Z, IdStamm = m.ID_Prozesswaerme,
                     Name = m.szProzessname ?? "", Summe = m.Summe,
                     Vorlauf = m.Vorlauf, Ruecklauf = m.Ruecklauf,
                     TemperaturGeaendert = m.TemperaturGeaendert,
                     KalenderId = m.ID_Betriebskalender
-                });
+                };
+                // KBP-5a: Eingabeart, Monatsanteile und Wochenprofil der Projektkopie (OE-5).
+                BedarfsprofilEingabeAbbildung.InZeile(z, BedarfsArt.Prozesswaerme, projektId, m.Eingabeart,
+                                                      m.Monatsanteile, m.Wochenprofil);
+                zeilen.Add(z);
+            }
             return zeilen;
         }
 
@@ -198,6 +229,9 @@ namespace WindowsFormsApplication1
             {
                 modelle.Clear();
                 foreach (BedarfsProfilZeile z in zeilen)
+                {
+                    // KBP-5a: die Eingabeart immer, Monate und Woche nur nach einer Bearbeitung.
+                    (string eingabeart, double[] monate, double[] woche) = BedarfsprofilEingabeAbbildung.AusZeile(z);
                     modelle.Add(new Z_ProjektProzesswaermeModel
                     {
                         ID_Z = z.IdZ, ID_Projekt = projektId,
@@ -205,8 +239,10 @@ namespace WindowsFormsApplication1
                         szProzessname = z.Name, Summe = z.Summe,
                         Vorlauf = z.Vorlauf, Ruecklauf = z.Ruecklauf,
                         TemperaturGeaendert = z.TemperaturGeaendert,
-                        ID_Betriebskalender = z.KalenderId
+                        ID_Betriebskalender = z.KalenderId,
+                        Eingabeart = eingabeart, Monatsanteile = monate, Wochenprofil = woche
                     });
+                }
             };
         }
 
@@ -242,9 +278,13 @@ namespace WindowsFormsApplication1
 
         // =================================================================================
 
+        /// <param name="zuordnungenSchreiben">Schreibt die Zuordnungen des Projekts (Stromverbraucher,
+        /// Prozesswärme, Kältebedarf) — gerufen beim OK, VOR dem Abschluss der Vormerkung;
+        /// <c>null</c> beim Brauchwasser, das im OK des Dialogs schreibt.</param>
         private static bool Zeigen(IWin32Window besitzer, BedarfsArt art, int projektId,
                                    List<BedarfsProfilZeile> zeilen, Action geaendert, bool wizard,
-                                   ZapfprofilBehaelter behaelter = null)
+                                   ZapfprofilBehaelter behaelter = null,
+                                   Action zuordnungenSchreiben = null)
         {
             bool ok = false;
             BlazorDialogForm<BedarfsProfileDialog> dlg = null;
@@ -255,9 +295,9 @@ namespace WindowsFormsApplication1
             // „Aus dem Projekt entfernen" nimmt der Dialog selbst aus der Zeilenliste; der Bestand beim Öffnen
             // zeigt nach dem Schließen, welche Kopien keine Zeile mehr hat (Muster HeizkesselHuelle.Entfernen:
             // nur VORMERKEN, geloescht wird beim OK). Im Assistenten zeigt IdStamm auf den Katalog. Geloescht
-            // wird nur eine Kopie ohne Zuordnung in der Datenbank (ProjektkopieEntfernen): Das Brauchwasser
-            // schreibt seine Zuordnungen im OK des Dialogs, die uebrigen Arten schreibt der Aufrufer erst nach
-            // dem Schliessen - dort bleibt die Kopie einer entfernten Zeile stehen.
+            // wird nur eine Kopie ohne Zuordnung in der Datenbank (ProjektkopieEntfernen) - deshalb schreibt
+            // „zuordnungenSchreiben" die Zuordnungen VOR dem Abschluss (Vormerkung.Schliessen): Das Brauchwasser
+            // schreibt sie im OK des Dialogs (Delegat null), die drei uebrigen Arten reicht der Aufrufer herein.
             List<(string Bezeichner, int KopieId)> bestand = !wizard && projektId > 0
                 ? zeilen.Select(z => (z.Name ?? "", z.IdStamm)).ToList()
                 : null;
@@ -285,8 +325,8 @@ namespace WindowsFormsApplication1
             {
                 if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
             }
-            vormerkung.EntferntGegenueber(bestand, id => zeilen.Exists(z => z.IdStamm == id));
-            vormerkung.Abschliessen(ok, id => zeilen.Exists(z => z.IdStamm == id));
+            vormerkung.Schliessen(ok, zuordnungenSchreiben, bestand,
+                                  id => zeilen.Exists(z => z.IdStamm == id));
             return ok;
         }
 
@@ -334,6 +374,12 @@ namespace WindowsFormsApplication1
                 // Quelle wie die Parameteruebersicht (W14a-E-8) - keine zweite Liste.
                 ["Vergleichsparameter"] = new Func<string, IReadOnlyList<Parameterwert>>(
                     n => BedarfStammCtrl.Vergleichszeilen(art, n, BedarfAdminHuelle.Filtertext)),
+                // BP-2 (KA-E-24): die Projektzeile im Vergleich - dieselbe Liste aus der Projektkopie samt
+                // den Werten der Zuordnung, wie der Dialog sie gerade haelt.
+                ["VergleichsparameterProjekt"] = new Func<BedarfsProfilZeile, IReadOnlyList<Parameterwert>>(
+                    z => BedarfStammCtrl.VergleichszeilenProjekt(art, Vergleichsangaben(z),
+                        !wizard && projektId > 0 && ProjektCtrl.Existiert(projektId) ? projektId : 0,
+                        BedarfAdminHuelle.Filtertext)),
                 ["Info"] = new Func<string, BedarfsProfilInfo>(name => Info(art, name)),
                 ["Jahressumme"] = new Func<string, double>(
                     name => BedarfStammCtrl.Jahressumme(art, name)),
@@ -356,7 +402,7 @@ namespace WindowsFormsApplication1
                     () => TypStammHuelle.ProfilGaben(art)),
 
                 ["TitelText"] = Titel(art),
-                ["KopfbandText"] = Titel(art),
+                ["KopfbandText"] = Kopfband(art),
                 ["LabelProjektliste"] = Text_(art, "BPF_LBL_PROJEKTLISTE",
                     "Ausgewählte Prozesse im Projekt",
                     "Ausgewählte Strombedarfe im Projekt",
@@ -445,7 +491,7 @@ namespace WindowsFormsApplication1
 
             // PW2/BW2: die Betriebskalender zur Wahl je Zuordnung - nur, wenn es die Tabelle gibt.
             if (BetriebskalenderCtrl.TabelleVorhanden())
-                BetriebskalenderHuelle.WahlEinhaengen(gaben);
+                BetriebskalenderHuelle.WahlEinhaengen(gaben, projektId);
 
             // PW1 Stufe 1: das Temperaturpaar je Prozess - die Pruefung steht im Kern
             // (Prozesstemperatur.Paarpruefung), dieselbe wie die Pruefklauseln des Schemas.
@@ -467,6 +513,25 @@ namespace WindowsFormsApplication1
                 // K5b (Konzept 3.4): die Stromtraeger des Projekts fuer den Kuehltraeger der Feldgruppe „Deckung".
                 gaben["Stromtraeger"] = (IReadOnlyList<(int Id, string Text)>)Kaeltestromabrechnung
                     .StromtraegerDesProjekts(projektId).Select(t => (t.Key, t.Value)).ToList();
+                // K6b (E34): der Stromtraeger des Projekts - der eigene Zaehler wirkt nur bei abweichendem Kuehltraeger.
+                gaben["ProjektStromtraeger"] = Kaeltestromabrechnung.Projekttraeger(projektId);
+                // KBP-3b (Konzept Kaeltebedarfsprofile 5): die vier Blaetter und die Kennzahlenzeile der markierten
+                // Kaeltezeile - gerechnet im Kern mit dem Arbeitsstand des Dialogs: Jahressummen, Kalender und die dort
+                // bearbeiteten (noch ungespeicherten) Monatsanteile und Wochenprofile.
+                // KBP-4b (Konzept Kaeltebedarfsprofile 3.4): die Eingabeart Typtage steht, sobald die Datenbank ihre
+                // Tabellen fuehrt (Schemaschritt KaeltetyptagSchema); sonst benannt gesperrt.
+                gaben["TyptageVerfuegbar"] = KaeltetyptagCtrl.Verfuegbar();
+                gaben["KaelteGrafik"] = new Func<BedarfsProfilZeile, IReadOnlyList<BedarfsProfilZeile>, Kaelteprofilbilder>(
+                    (markiert, alle) =>
+                    {
+                        // KBP-4b: dazu Eingabeart und bearbeitete Typtage des Arbeitsstands; KV8: die Projektkopie fuer den
+                        // Normkalender als Vorgabe (Zeile mit Normtagen ohne gewaehlten Kalender).
+                        var zeilenDesDialogs = alle.Select(z => new Kaeltegrafikzeile(z.Name, z.Summe, z.KalenderId,
+                            z.ProfilGeaendert ? z.Monatsanteile : null, z.ProfilGeaendert ? z.Wochenprofil : null,
+                            z.Eingabeart, z.TyptageGeaendert ? z.Typtage : null, z.IdStamm)).ToList();
+                        int platz = alle.ToList().IndexOf(markiert);
+                        return platz < 0 ? null : KaelteprofilgrafikCtrl.Rechnen(projektId, zeilenDesDialogs, zeilenDesDialogs[platz]);
+                    });
             }
 
             // Brauchwasser (5.2): Das OK schreibt Zuordnungen und Zapfprofil in EINEM Vorgang,
@@ -535,6 +600,12 @@ namespace WindowsFormsApplication1
                 return summen;
             }
 
+            /// <summary>Der Betriebskalender je Profilname, wie ihn der Dialog gerade zeigt (Arbeitsstand).</summary>
+            private IReadOnlyDictionary<string, ProfilArbeitsstand> Kalender()
+                => BedarfsVorschauCtrl.KalenderDesDialogs(
+                       (_zeilen ?? (IReadOnlyList<BedarfsProfilZeile>)Array.Empty<BedarfsProfilZeile>())
+                       .Select(z => (z.Name, z.KalenderId)));
+
             /// <summary>Die Meldung des letzten Laufs (Zapfprofilweg); leer = keine.</summary>
             internal string Meldung { get; private set; } = "";
 
@@ -542,9 +613,11 @@ namespace WindowsFormsApplication1
             {
                 // Beim Brauchwasser mit dem ARBEITSSTAND des Zapfprofils (5.2): null = der
                 // gespeicherte Stand; steht er auf dem Generator, rechnet der Zapfprofilweg.
+                // Der Betriebskalender je Zeile, wie der Dialog ihn zeigt - auch der gerade gewaehlte oder im Blatt
+                // "Betriebskalender..." angelegte, noch nicht gespeicherte; der Lauf nimmt ihn nach dem Speichern.
                 BedarfsVorschau v = BedarfsVorschauCtrl.ProjektVorschau(_art, _projektId, namen,
                                                                        _zapfprofil?.Arbeitsstand,
-                                                                       Jahressummen());
+                                                                       Jahressummen(), Kalender());
                 Meldung = _zapfprofil != null ? ZapfprofilHuelle.Leistenmeldung(v) : "";
                 if (!v.Erfolgreich) return null;
 
@@ -650,7 +723,7 @@ namespace WindowsFormsApplication1
 
             // PW1 Stufe 1: die Vorbelegung des Katalogs - die Kopie übernimmt sie beim Speichern.
             (double? vorlauf, double? ruecklauf) = BedarfStammCtrl.Temperaturpaar(art, name);
-            return new BedarfsProfilZeile
+            var zeile = new BedarfsProfilZeile
             {
                 IdZ = naechsteId[0]++,      // noch nicht gespeichert, also noch unbekannt
                 IdStamm = idStamm,
@@ -659,6 +732,11 @@ namespace WindowsFormsApplication1
                 Vorlauf = vorlauf,
                 Ruecklauf = ruecklauf
             };
+            // KBP-5b: im gespeicherten Projekt waehlt eine Vorlage mit Normtagen ihren Normkalender vor.
+            if (art == BedarfsArt.Kaelte) KaeltebedarfsprofilAbbildung.Aufgenommen(zeile, name, wizard ? 0 : projektId);
+            // KBP-5a: Prozesswaerme und Brauchwasser - Eingabeart 'jahr' und das Profil der neuen Projektkopie.
+            else if (!wizard) BedarfsprofilEingabeAbbildung.Aufgenommen(zeile, art, projektId);
+            return zeile;
         }
 
         private static bool KatalogLoeschen(BedarfsArt art, string name)
@@ -699,6 +777,36 @@ namespace WindowsFormsApplication1
         {
             return Text_(art, "BPF_TITEL", "Prozesswärme", "Standard Stromprofil",
                          "Brauchwasserwärme", "Kältebedarfsprofile");
+        }
+
+        /// <summary>BP-1: die Hinweiszeile im Dialogkopf je Art, wie bei den Erzeugern.</summary>
+        internal static string Kopfband(BedarfsArt art)
+        {
+            return Text_(art, "BPF_KOPFBAND", "Geben Sie die Daten der Prozesswärmeprofile ein",
+                         "Geben Sie die Daten der Stromverbraucher ein",
+                         "Geben Sie die Daten der Brauchwasserprofile ein",
+                         "Geben Sie die Daten der Kältebedarfsprofile ein");
+        }
+
+        /// <summary>BP-2: die Werte einer Zuordnung für den Vergleich (Kern-Controller).</summary>
+        private static BedarfStammCtrl.Zuordnungsangaben Vergleichsangaben(BedarfsProfilZeile z)
+        {
+            return new BedarfStammCtrl.Zuordnungsangaben
+            {
+                IdKopie = z.IdStamm,
+                Bezeichner = z.Name ?? "",
+                Summe = z.Summe,
+                KalenderId = z.KalenderId,
+                Vorlauf = z.Vorlauf,
+                Ruecklauf = z.Ruecklauf,
+                KaelteArt = z.KaelteArt,
+                Deckung = z.Deckung?.Deckungsart,
+                EerWeg = z.Deckung?.EerWeg,
+                Eer1 = z.Deckung?.Eer1,
+                Taussen1 = z.Deckung?.Taussen1,
+                Eer2 = z.Deckung?.Eer2,
+                Taussen2 = z.Deckung?.Taussen2
+            };
         }
 
         private static string HilfeSchluessel(BedarfsArt art)

@@ -326,23 +326,32 @@ mit ihr die Deckung der Erzeuger, den Speicherzustand, Netzbezug, Kosten und CO�
 > **Wer gesäte Zapfprofil-Eingaben eines Referenzprojekts in der Testdatenbank ändert, friert im
 > selben Schritt die Basis neu ein und begründet den Wechsel hier.**
 >
-> Betroffen ist jede Änderung an `Tab_TwwProjekt` (`Weg`, Seed, Realisierungen, Perzentil,
-> Zirkulationsmethode, Speicherart, Personen-Automatik, Typtage-Schalter) und an den Zonen
-> (`Tab_TwwZone`: Bezugsmenge, Niveau, Topologie, Zirkulation, Tagesbedarf-Automatik, gebundene
-> Nutzungsart) eines Referenzprojekts, dazu die Katalogzeilen, die eine solche Zone benutzt
-> (`Tab_TwwNutzungsart_STAMM` samt ihrem Tagesgangsatz `Tab_TwwTagesgang_STAMM`) und die drei
-> Kaltwasser-Parameter der Bilanz (`ZapfParameter.KALTWASSER_*`). Ebenso betroffen sind die
+> Betroffen ist jede Änderung an `Tab_TwwProjekt` (`Weg`, Seed, Realisierungen, Perzentil, Jahresreihe
+> stochastisch, Zirkulation samt Methode, Länge, Verlust, Laufzeit und manueller Leistung, Speicherart,
+> Personen-Automatik, Typtagwahl mit Klimazone und Gebäudeart, Bedarfstag und Laufangaben der Auslegung) und an den
+> Zonen (`Tab_TwwZone`: Bezugsmenge, Niveau, Topologie, Zirkulation, Tagesbedarf-Automatik und manueller Tagesbedarf,
+> Jahresmesswert samt Einheit und Bilanzgrenze, Zapftemperatur, Kaltwasser, Auslastungsgang, gebundenes Gebäude,
+> gebundene Nutzungsart) eines Referenzprojekts, an ihren Wohnungstypen (`Tab_TwwWohnungstyp`) und den eigenen
+> Ferienzeiträumen ihrer Zonen (`Tab_TwwZonenferien`), dazu die Katalogzeilen, die eine solche Zone benutzt
+> (`Tab_TwwNutzungsart_STAMM` samt ihrem Tagesgangsatz `Tab_TwwTagesgang_STAMM`, die Belegung und Ausstattung in
+> `Tab_TwwDin4708Wert_STAMM`, der gewählte Bedarfstag in `Tab_TwwBedarfstag_STAMM`), die drei
+> Kaltwasser-Parameter der Bilanz (`ZapfParameter.KALTWASSER_*`) und der eingespielte Typtagsatz
+> `Tab_TwwTyptag_IMPORT` — in der Testdatenbank ein **erfundener** Satz (Quelle „Referenztyptage (fiktiv)“, eine
+> Klimazone, eine Gebäudeart, sechs Kategorien, runde Werte; kein Wert einer Richtlinie). Ebenso betroffen sind die
 > Feiertagsregeln des Kerns (`Feiertage`, `Landesfeiertage`) und an den Gebäuden der Referenzprojekte mit
 > Zapfprofilgenerator das Feiertagsland (`Tab_Gebaeude.Feiertagsland`) und die Wochenmaske
 > (`Wochenendtage`) — ein Feiertag zählt im Zapfkalender unter jeder Wochenendmaske als Sonntag —, dazu das
 > Umstellen eines Referenzprojekts auf den Generator oder zurück auf den Bestandsweg.
 >
-> **Rechenwirkung hat allein Projekt 1045 „Prüfprojekt Ost/West Stränge"**: eine Projektzeile mit
-> `Weg = GENERATOR` und eine Zone der Nutzungsart „Wohnen groß (abgeleitet)" am Gebäude 10651 —
-> zwei Zeilen samt der Begründung der Werte in
+> **Rechenwirkung haben Projekt 1045 „Prüfprojekt Ost/West Stränge" und seine sechs Kopien 1066 bis 1071.** 1045: eine
+> Projektzeile mit `Weg = GENERATOR` und eine Zone der Nutzungsart „Wohnen groß (abgeleitet)" am Gebäude 10651 — zwei
+> Zeilen samt der Begründung der Werte in
 > [`Skripte/referenzprojekt_zapfprofil.py`](Skripte/referenzprojekt_zapfprofil.py), wiederholbar
-> und gehalten von `EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests`. Die übrigen vierzehn
-> Referenzprojekte tragen weder eine Projektzeile noch eine Zone und rechnen unverändert auf dem
+> und gehalten von `EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests`. 1066 bis 1071: je eine Option des
+> Zapfprofils, gesät von
+> [`Skripte/referenzprojekte_zapfprofil_optionen.cs`](Skripte/referenzprojekte_zapfprofil_optionen.cs) und gehalten
+> von `EPOS.Kern.Tests/ZapfprofilOptionenReferenzprojekteWacheTests` (Abschnitt „Die Referenzprojekte 1066 bis 1071“
+> unten). Die übrigen Referenzprojekte tragen weder eine Projektzeile noch eine Zone und rechnen unverändert auf dem
 > Bestandsweg (gehalten von `ZapfprofilCtrlTests`/`ZapfprofilWeicheTests`).
 >
 > **Nicht** betroffen sind Projekte außerhalb der Referenzliste (etwa 1006, 1009 — Träger der
@@ -479,6 +488,9 @@ Emissionen.
 > Gehalten werden die Zellen von `EPOS.Kern.Tests/ZonenReferenzprojektWacheTests` (jede gesäte Zelle gegen den Bauplan,
 > derselbe Bauweg auf einer Kopie bitgleich, Zonenschleife deterministisch, `Tab_ErgebnisZone` nach dem Lauf); die
 > Zeilen von 1052 legt [`Skripte/referenzprojekt_1052_zonen.cs`](Skripte/referenzprojekt_1052_zonen.cs) an.
+>
+> Letzter Wechsel nach dieser Regel: R53 → R54 (E141) — die Dächer der beheizten Zonen von 1052 und 1054 als Satteldach
+> mit 42° in zwei Hälften nach Nord und Süd (Abschnitt „Aktuelle Basis“).
 
 ## Die Einfrierregel „gesäte Konditionierungsdaten“
 
@@ -619,6 +631,42 @@ Heizwärme, Spitze, Nächte ohne Absenkung und damit Erzeuger und Emissionen.
 > Lauf mit berechneter Vorheizzeit gegen die Kennzahlen der Basis, die Schlüssel `Geb[0].Vorheiz*` gegen die Basis). Die
 > Vorlage 1051 bleibt bei der Sollwertrampe; für 1065 gelten daneben die Regeln „gesäte Gebäudedaten“ und „gesäte
 > Konditionierungsdaten“ wie für 1051.
+>
+> **Schnellaufheizung (Referenzprojekt 1073).** Dieselbe Regel gilt für die Schnellaufheizung: an `Tab_Einstellungen`
+> `Aufheiz_Schnellaufheizung` und `Aufheiz_Ueberhoehung_K` eines Referenzprojekts, die Vorgabe der Überhöhung 2 K
+> (`Vorheizvorgabe.UEBERHOEHUNG_VORGABE_K`) und das Anlegen oder Entfernen eines Referenzprojekts mit Schnellaufheizung.
+> Projekt 1073 „Referenzprojekt Schnellaufheizung“ (Kopie von 1054, Verfahren `BERECHNET`, Schnellaufheizung an, Δθ 3 K)
+> legt [`Skripte/referenzprojekt_1073_schnellaufheizung.cs`](Skripte/referenzprojekt_1073_schnellaufheizung.cs) an;
+> gehalten wird es von `EPOS.Kern.Tests/SchnellaufheizungReferenzprojektWacheTests`. Als Kopie von 1054 gelten für 1073
+> daneben „gesäte Zonendaten“ und „gesäte Auslegungsdaten der Übergabe“ wie für 1054.
+
+## Die Einfrierregel „gesäte Kältebedarfs-Zuordnungen“ (Referenzprojekt 1072)
+
+Weiterer Ort derselben Falle. Projekt 1072 „Referenzprojekt Kältebedarf dezentral“ ist das einzige Referenzprojekt mit
+Kältebedarfsprofilen: eines zentral über die Kältefolge, zwei dezentral über Split-Geräte neben der Kältefolge — mit festem
+EER anteilig über den Stromträger des Projekts und mit linearem EER über einen eigenen Zähler auf einem abweichenden
+Kühlträger. Summe, Typprofil, Deckungsart, EER-Weg und -Werte, Träger und Zähler verschieben Kältebedarf, Kälteerzeugung,
+Split-Strom, Netzbezug, Strombilanz, Kosten und Emissionen.
+
+> **Wer gesäte Kältebedarfs-Zuordnungen eines Referenzprojekts in der Testdatenbank ändert, friert im selben Schritt die
+> Basis neu ein und begründet den Wechsel hier.**
+>
+> Betroffen sind die Zuordnungszeilen `Z_Projekt_Kaeltebedarf` (ID der Projektkopie, `Summe`, `ID_Betriebskalender`,
+> `Kaelte_Art` und die Deckungsspalten `Deckung`, `Split_EER_Weg`, `Split_EER_1`, `Split_Taussen_1`, `Split_EER_2`,
+> `Split_Taussen_2`, `Kuehl_ID_Carrier`, `Kuehl_EigenerZaehler`), die Projektkopien `Tab_Kaeltebedarf` (Monatsanteile,
+> `ID_Stamm`) und `Tab_Kaeltetyp` (168 Wochenstunden), die Katalogzeilen `Tab_Kaeltebedarf_STAMM` und
+> `Tab_Kaeltetyp_STAMM`, die sie benutzen („Raumkühlung Büro“, „Serverraum“), und der Festwert
+> `KaeltebedarfFestwerte.EER_MIN`. Ebenso betroffen ist das Anlegen oder Entfernen eines Referenzprojekts mit
+> Kältebedarfsprofil oder Split-Zeile; deckt ein Referenzprojekt einen Kühllastgang dezentral, gilt die Regel auch für die
+> Deckungsspalten seiner Kühlzeilen in `Z_ProjektWaermebedarf`. Neue Vorlagen des Kältebedarfskatalogs kommen als neue
+> Katalogzeilen mit neuen IDs; die benutzten Zeilen bleiben unverändert.
+>
+> Die Zeilen legt [`Skripte/referenzprojekt_1072_kaeltebedarf.cs`](Skripte/referenzprojekt_1072_kaeltebedarf.cs) an
+> (unten); gehalten werden sie von `EPOS.Kern.Tests/KaelteDezentralReferenzprojektWacheTests` (jede gesäte Zelle, die Kopie
+> von 1055, ein Lauf mit dem zentralen Profil in der Kältefolge, zwei Zeilen in `Tab_ErgebnisKaelteDezentral`, eigener
+> Zähler neben der Stufenrechnung, Hauptzahl des Deckungsgrads, eingefrorene Jahreswerte). Die Vorlage 1055 bleibt
+> unverändert; für 1072 gelten daneben die Regeln „gesäte Kältemaschinendaten“, „gesäte Gebäudedaten“ und „gesäte
+> Kältedaten“ wie für 1055.
 
 ## Die Einfrierregel „Freigabe der Konditionierung“ (Zonensperre)
 
@@ -745,11 +793,32 @@ empfohlener Typnamen (nur Namen) stehen in ihrer `LIESMICH.md`; die **gefüllte*
 ins Repositorium. Zwei Fälle in `EPOS.Kern.Tests/TwwKatalogimportTests` halten die Vorlage: Sie
 spielt ohne Ablehnung ein, und jede ihrer Zahlen ist ein Platzhalter.
 
+## Paketvorlage der DIN-4708-Katalogwerte (`Katalogpaket_Vorlage_DIN4708/`)
+
+Belegung je Raumzahl, Ausstattungsklassen und Parameter der Kennzahl nach DIN 4708 kommen ebenso
+**nicht** aus dem Repositorium, sondern über den Katalogimport aus einem eigenen Paket des Anwenders
+(ZB7). Im Repositorium liegt allein die Vorlage
+[`Katalogpaket_Vorlage_DIN4708/`](Katalogpaket_Vorlage_DIN4708/LIESMICH.md):
+`Tab_TwwDin4708Wert_STAMM.csv` und `Tab_TwwParameter_STAMM.csv` mit vollständigen Kopfzeilen und
+Beispielzeilen, deren Spalte `Wert` leer ist — keine Normzahl. Unverändert lehnt der Import jede
+Zeile benannt ab und schreibt nichts; `EPOS.Kern.Tests/TwwKatalogimportDin4708Tests` hält das und
+die Platzhalter.
+
+## Paketvorlage der Typtage nach VDI 4655 (`Typtagpaket_Vorlage_VDI4655/`)
+
+Die Typtage nach VDI 4655 kommen allein aus dem lizenzierten Exemplar des Anwenders (ZU22). Im
+Repositorium liegt nur die Vorlage
+[`Typtagpaket_Vorlage_VDI4655/`](Typtagpaket_Vorlage_VDI4655/LIESMICH.md): die sechs CSV-Dateien
+des Typtag-Paketlesers mit vollständigen Kopfzeilen und Platzhaltern (alle Werte leer), dazu die
+Fundstellen der Richtlinie je Datei — keine Zahl der Richtlinie, kein abgeleiteter Wert. Unverändert
+lehnt die Prüfung sie benannt ab; `EPOS.Kern.Tests/TwwTyptagVorlageTests` hält das.
+
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-10-11_R52_Vorheizen`, `Kenndaten_Test.sqlite`,
-`Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Skripte` und `LIESMICH.md`
+Basen aufräumt, lässt `2026-10-17_R59_Ergebnisreihen`, `Kenndaten_Test.sqlite`,
+`Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Katalogpaket_Vorlage_DIN4708`,
+`Typtagpaket_Vorlage_VDI4655`, `Messreihen_INEKON`, `Normzahlen`, `Schemakopien`, `Skripte` und `LIESMICH.md`
 stehen.**
 
 Außer der aktuellen liegt hier keine Basis mehr: Die 24 historischen Referenzbasen (7 731
@@ -763,11 +832,11 @@ gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026,
 `2026-09-26_R22_Solarthermie` am 26.09.2026, `2026-09-26_R23_KesselBereitschaft`, `2026-09-27_R24_Heizgrenze` und `2026-09-29_R25_Plattformrand` am 29.09.2026,
 `2026-09-29_R26_Kesselrest`, `2026-09-30_R27_Kesselteillast`, `2026-09-30_R28_Kesselbrennwert` und
 `2026-09-30_R29_Kesseltakten` am 30.09.2026, `2026-09-30_R30_Stromverbraucher`,
-`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich`, `2026-10-04_R35_Zonenuebergabe`, die Basis R36 (Kältemaschine) und `2026-10-05_R37_Fahrplan` am 05.10.2026, die Basis R38 (Vorlaufwahl) am 06.10.2026, die Basis R39 (Auslegungsheizlast), die Basis R40 (Erdreichquellen), die Basis R41 (Erdreichprüfung) und die Basis R42 (Vorlaufinterpolation AK3) am 07.10.2026, die Basis R43 (Kälteseite AK3K) am 08.10.2026, die Basis R44 (Kühlkurve), die Basis R45 (Übergabegrenze), die Basis R46 (Gerätegrenzen) und die Basis R47 (Zapffeiertage) am 09.10.2026**
-(64 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
+`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich`, `2026-10-04_R35_Zonenuebergabe`, die Basis R36 (Kältemaschine) und `2026-10-05_R37_Fahrplan` am 05.10.2026, die Basis R38 (Vorlaufwahl) am 06.10.2026, die Basis R39 (Auslegungsheizlast), die Basis R40 (Erdreichquellen), die Basis R41 (Erdreichprüfung) und die Basis R42 (Vorlaufinterpolation AK3) am 07.10.2026, die Basis R43 (Kälteseite AK3K) am 08.10.2026, die Basis R44 (Kühlkurve), die Basis R45 (Übergabegrenze), die Basis R46 (Gerätegrenzen) und die Basis R47 (Zapffeiertage) am 09.10.2026, die Basis R48 (Gemeinjahr), die Basis R49 (Kältemaschine Teillast) und die Basis R50 (Wochentagsraster) am 10.10.2026, die Basis R51 (freie Kühlung) am 11.10.2026, die Basis R52 (Vorheizen) am 13.10.2026, die Basis R53 (Zapfprofiloptionen) und die Basis R54 (Dachflächen) am 14.10.2026, die Basis R55 (Kältebedarf dezentral) und die Basis R56 (Wasserkosten) am 16.10.2026, die Basis R57 (Schnellaufheizung) am 17.10.2026**
+(74 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
 eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine
 alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 64 Basen samt der Tabelle Basis → Datum → Zweck →
+Erhalten sind die **Protokolle** aller 74 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
@@ -777,13 +846,13 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-10-11_R52_Vorheizen/`** — **dreißig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
-1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063, 1064, 1065), **979 CSV**, **6 777 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 11.10.2026, Stand `59ce46fc6`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **215**, 96 546 816 Byte, LFS-SHA-256
-`832fda5088ad3bb21b3e7ec55dec715b573afe22a9c952d2e2730d3a78595f3f`, mit den Projekten 1053 bis 1065; die Nachträge der
-Schemaschritte 211 bis 215 unten sind darin enthalten; Nachträge 216 und 217 unten). Gegen diese Basis hält
-`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065) jeden Push und rechnet dieselben Projekte
+**`2026-10-17_R59_Ergebnisreihen/`** — **achtunddreißig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063, 1064, 1065, 1066, 1067, 1068, 1069, 1070, 1071, 1072, 1073), **1 233 CSV**, **8 630 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 17.10.2026, Stand `79cf8532c`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **239**, 109 608 960 Byte, LFS-SHA-256 `5bfedf09…`, mit den Projekten 1053 bis 1073,
+dem erfundenen Typtagsatz und den Satteldächern von 1052 und 1054; die Nachträge der Schemaschritte unten sind darin
+enthalten). Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065, 1066 bis 1071 und 1073) jeden Push und rechnet dieselben Projekte
 ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
 `EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045 (Feiertage zählen im
@@ -811,45 +880,34 @@ von Projekt 1059, `EPOS.Kern.Tests/KuehlkurveReferenzprojektWacheTests` die Küh
 Rücklaufstufe „Vorwärmer“ von Projekt 1060 samt Rücklauf- und Spreizungsgrenze und
 `EPOS.Kern.Tests/KaeltemaschineTeillastReferenzprojektWacheTests` Teillastkurve, Takten und Gütegrad-Extrapolation der
 Kältemaschine von Projekt 1063 und `EPOS.Kern.Tests/FreieKuehlungReferenzprojektWacheTests` die freie Kühlung über die
-Wärmequelle von Projekt 1064 und `EPOS.Kern.Tests/VorheizReferenzprojektWacheTests` die berechnete Vorheizzeit von
-Projekt 1065. 1050, 1052, 1054,
-1055, 1056, 1057, 1059, 1061, 1062 und 1064 stehen nicht in der CI-Auswahl; `Werkzeuge/Gate/gate_linux.sh` rechnet alle
-dreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
+Wärmequelle von Projekt 1064, `EPOS.Kern.Tests/VorheizReferenzprojektWacheTests` die berechnete Vorheizzeit von
+Projekt 1065 und `EPOS.Kern.Tests/ZapfprofilOptionenReferenzprojekteWacheTests` die Zapfprofile der Projekte 1066 bis
+1071 samt Generator-Bilanz und den eingefrorenen Auslegungswerten von 1071 und
+`EPOS.Kern.Tests/KaelteDezentralReferenzprojektWacheTests` die Kältebedarfsprofile und die dezentrale Deckung von
+Projekt 1072 und `EPOS.Kern.Tests/SchnellaufheizungReferenzprojektWacheTests` die Schnellaufheizung von Projekt 1073, `EPOS.Kern.Tests/ErgebnisreihenLaufTests` die drei Ergebnisreihen des Schemaschritts 239 (BHKW-Einspeisung von 1018, Standby von 1046, Abregelung an 1040 mit synthetischer Einspeisegrenze) und `EPOS.Kern.Tests/EnergieflussReferenzprojektWacheTests` das Energieflussbild von 1018, 1046, 1058 und 1063 mit direkter Einspeisung und benanntem Standby. 1050, 1052, 1054, 1055, 1056, 1057, 1059, 1061, 1062, 1064 und 1072 stehen nicht in der CI-Auswahl;
+`Werkzeuge/Gate/gate_linux.sh` rechnet alle achtunddreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
 
-> **Anlass: das Referenzprojekt 1065 „Referenzprojekt Vorheizen“ (Entwurf Vorheizrampe, Abschnitt 4, Entscheid F9) —
-> das Vorheizen vor dem Kalendersprung mit berechneter Vorheizzeit rechnete bis dahin kein Referenzprojekt.** 1065 ist
-> die Kopie von 1051; an `Tab_Einstellungen` steht `Aufheiz_Verfahren` `BERECHNET`, die übrigen sechs Vorheizzellen
-> sind leer (Vorgaben: Toleranz 20 %, ε 1 K, Geltung Gebäude, Heizkreis einbezogen; Abschnitt „Das Referenzprojekt
-> 1065“ unten). 1051 bleibt bei der Sollwertrampe. Die Testdatenbank wächst um die Kopie (`832fda50…`, Schemastand 215).
->
-> Gegen R51 sind alle neunundzwanzig Projekte byte-gleich (943/943 CSV; `vergleich`: 29 PASS, einziger Befund
-> „Projekt_1065 nur im Vergleichslauf vorhanden“); hinzu kommt 1065 mit 36 CSV und 209 Skalaren, darunter erstmals die
-> achtzehn Schlüssel `Geb[0].Vorheiz*`:
->
-> | Größe | 1051 | 1065 |
-> |---|---|---|
-> | Verfahren | Sollwertrampe | berechnet |
-> | Φ_K,max / Deckel P_K (kW) | — | 23,62 / 28,34 |
-> | Vorheizzeit t_V (h), größter Bedarf (h) | — | 2, 5 |
-> | Tage über t_V / ohne Ankunft / Nächte ohne Absenkung | — | 5 / 5 / 0 |
-> | Spitze des Gebäudes (kW) | 30,00 | 28,34 |
-> | Heizwärme (MWh) | 24,22 | 24,67 (+0,45, +1,9 %) |
->
-> Gegen 1051 ändern sich die Reihen des Gebäudes und der Erzeuger; 1051 selbst ist byte-gleich zu R51.
->
-> Zwei Läufe sind byte-gleich (979/979 CSV); der gestörte Lauf (`--stoerung ulp`) ist GESAMT PASS, 934/979 CSV
-> byte-gleich (1065: 35/36, `heizstab.csv` innerhalb der Toleranz).
+> **Anlass: Welle EB „Ergebnisreihen“ (Schemaschritt 239, Anwenderentscheide vom 17.10.2026), eingefroren auf R58.** Der Lauf
+> schreibt die Einspeisung des BHKW, den Standby des Speichersystems und die PV-Abregelung als Jahressummen in die
+> Ergebniszeilen (`Tab_ErgebnisBHKW.Stromeinspeisung`, `Tab_ErgebnisStromspeicher.Eigenverbrauch_System`,
+> `Tab_ErgebnisPhotovoltaik.Abregelung`); der Rechenweg ist unverändert. Weil der Export `SELECT *` liest, bekommt
+> `aggregate.csv` die Schlüssel `BHKW.Stromeinspeisung` (je BHKW-Projekt) und `Photovoltaik.Abregelung` (je PV-Projekt,
+> überall 0 — kein Referenzprojekt trägt eine Einspeisegrenze): 34 Einträge in 38 Projekten, 8 630 statt 8 596 Skalare.
+> R59 setzt auf R58 nach dem Nachtrag „8d einheitlich“ auf (Kältesummen ungerundet, zwölf `aggregate.csv` nachgeführt):
+> Der Vergleich der 38 Projekte gegen R58 ist mit `--ohne BHKW.Stromeinspeisung,Photovoltaik.Abregelung` PASS
+> (13 025 990 Werte), 1 199 der 1 233 CSV sind byte-gleich, die 34 übrigen sind die `aggregate.csv` mit den neuen
+> Schlüsseln; kein bisheriger Wert hat sich geändert. Der Lauf aus der Oberfläche rechnet den Standby des Speichersystems
+> seit EB-4 auch über die vorbelegte Flotte (Standby und Selbstentladung je Anlage); der Referenzlauf rechnet über
+> `SimulationRunner` und war davon nie berührt. Konzept:
+> [`2026-10-17_Konzept_Ergebnisreihen_Einspeisung_Standby_Abregelung.md`](../Dokumentation/aktuell/Dialoge/2026-10-17_Konzept_Ergebnisreihen_Einspeisung_Standby_Abregelung.md).
 >
 > ```bash
 > dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
 > dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
->   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063,1064,1065 \
->   --ziel Referenzlaeufe/2026-10-11_R52_Vorheizen
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063,1064,1065,1066,1067,1068,1069,1070,1071,1072,1073 \
+>   --ziel Referenzlaeufe/2026-10-17_R59_Ergebnisreihen
 > ```
->
-> Die Regel steht im Protokoll [AH-V7](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-11_AH_V7_Referenzprojekt_R52.md)
-> und im [Entwurf Vorheizrampe](../Dokumentation/aktuell/Gebaeudesimulation/2026-10-10_Entwurf_Vorheizrampe.md), Abschnitt 4.
 
 
 > **Nachtrag — Schemaschritte 177 bis 179 (Sperrfenster der Wärmepumpe, Nutzungsprofile, Ergänzungen der
@@ -1273,14 +1331,201 @@ dreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
 > `615aec8f6f42b63ed00084dcdcd0b4c66a370de023d75d95a7cd51149123cf5b`**. Alle dreißig Projekte rechnen gegen R52
 > GESAMT PASS und byte-gleich
 > ([Protokoll](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-11_SA2_Schema217.md)).
+> **Nachtrag — Schema 222 (Klasse „Haustechnik“, BK-3c, 13.10.2026, hängt an 221 `BauteilkatalogSchema`), Basis R52 unverändert.**
+> `BauteilkatalogHaustechnikSchema` führt `HAUSTECHNIK` in den Klassenlisten und der Prüfklausel `Klasse_Code` an
+> `Tab_Baustoff(_STAMM)` und `Tab_Bauteilaufbau(_STAMM)`; die vier Tabellen sind neu gebaut, Zeilen und IDs bleiben. Die
+> Testdatenbank steht auf **222** (`integrity_check` ok, `foreign_key_check` leer): **96 604 160 Byte, LFS-SHA-256
+> `03ba8220…`**, Katalog 132 Baustoffe und 9 Aufbauten; kein Rechenweg liest die Klasse
+> ([Protokoll](../Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/2026-10-12_BK-3_Import.md)).
+> **Nachtrag — Schema 223 (Abrechnung des Split-Stroms, K6, 13.10.2026, hängt an 222 `BauteilkatalogHaustechnikSchema`), Basis R52
+> unverändert.** `KaeltebedarfSplitAbrechnungSchema` (223 = `BauteilkatalogHaustechnikSchema.SCHRITT + 1`) legt
+> `Tab_ErgebnisKaelteDezentral` an (STRICT, eine Ergebniszeile je dezentral gedeckter Kältebedarfszeile eines Laufs; Prüfklauseln
+> an `Quelle` und `Kuehl_EigenerZaehler`, Verweis allein am Lauf). Gehoben aus der Fassung 222 (`03ba8220…`) mit
+> `Werkzeuge/Testdatenbankschema`; der Inhaltsvergleich aller Tabellen zeigt nur `Tab_Applikation.SchemaVersion`, die neue
+> Tabelle ist leer (kein Referenzprojekt führt eine Split-Zeile). Die Testdatenbank steht auf **223** (`integrity_check` ok,
+> `foreign_key_check` leer): **96 608 256 Byte, LFS-SHA-256 `05b14e070bea540996ffdaa2a96c67369bc924a562c5069e6f2c16d7e8658ad6`**.
+> Die zwölf Projekte der CI-Auswahl rechnen gegen R52 GESAMT PASS und byte-gleich.
+> **Nachtrag — Schema 224 (Zonenferien als Liste, ZB5/ZB‑Q3 B, 13.10.2026, hängt an 223 `KaeltebedarfSplitAbrechnungSchema`),
+> ergebnisneutral.** `TwwZonenferienSchema` (224 = `KaeltebedarfSplitAbrechnungSchema.SCHRITT + 1`) legt `Tab_TwwZonenferien` an
+> (STRICT; `ID_Zone` mit Kaskade, `Reihenfolge` ≥ 1, `Name`, `Beginn` 1 … 365 oder leer, `Ende` 1 … 365; eindeutig je Zone und
+> Reihenfolge), überträgt die vier Spaltenpaare `Ferienbeginn_n`/`Ferienende_n` von `Tab_TwwZone` und baut sie über das
+> Neubau-Rezept ab (IDs bleiben). Gehoben aus der Fassung 223 (`05b14e07…`) mit `Werkzeuge/Testdatenbankschema`: die eine Zone
+> der Fassung davor (Projekt 1045) trägt keine eigenen Ferien, 0 Zeiträume übertragen; der Inhaltsvergleich zeigt nur
+> `Tab_TwwZone` ohne die acht Spalten, die neue leere Tabelle und `Tab_Applikation.SchemaVersion`. Danach säte
+> [`Skripte/referenzprojekte_zapfprofil_optionen.cs`](Skripte/referenzprojekte_zapfprofil_optionen.cs) die Projekte 1066 bis
+> 1071 (Basis R53, Abschnitt „Die Referenzprojekte 1066 bis 1071“). Die Testdatenbank steht auf **224** (`integrity_check` ok,
+> `foreign_key_check` leer): **108 412 928 Byte, LFS-SHA-256 `6ef7aa68317c37e1dd34e726b5ee7cce3debc8edd9061686ccb0a8993fc4260f`**.
+> **Nachtrag — Schema 226 und 227 (KB-3 Saat der Katalogkosten-Satzvorlagen, KB-2 Brennstoffpreise in der Trägerkarte,
+> 13.10.2026, hängen an 225 `ZonenLastfelderSchema`), Basis R53 unverändert.** `KatalogkostenSaatSchema` (226 =
+> `ZonenLastfelderSchema.SCHRITT + 1`) legt `ID_KostenVorlage` und `ID_KostenVorlageInvestition` an den acht Projektkopien mit
+> Kosten an und sät je Satz mit Kosten und ohne Verweis eine Satzvorlage je Art samt Position; `BrennstoffpreiseTraegerkarteSchema`
+> (227 = `KatalogkostenSaatSchema.SCHRITT + 1`) überträgt leere Trägerpreise aus dem Katalogbrennstoff nach
+> `energy_carrier.price_*` und entfernt `Standard_Arbeitspreis`, `Standard_Grundpreis` und `Standard_Leistungspreis` an
+> `Tab_Brennstoff(_Stamm)`. Gehoben aus der Fassung 225 (107 827 200 Byte) mit `Werkzeuge/Testdatenbankschema`; der
+> Inhaltsvergleich aller Tabellen zeigt nur die sechzehn neuen Verweisspalten der Projektkopien, **176 Satzvorlagen mit 176
+> Positionen** samt ihren Verweisen an den Katalog- und Projektsätzen (sieben `_STAMM`-Kataloge), den Wegfall der sechs
+> Preisspalten (0 Preise übertragen, `energy_carrier` unverändert) und `Tab_Applikation.SchemaVersion`. Die Testdatenbank steht
+> auf **227** (`integrity_check` ok, `foreign_key_check` leer): **107 864 064 Byte, LFS-SHA-256
+> `fb42e2f3b6cf1a010ec3bac6bb654523e5d9701c3bd5a57fa676b03052911f46`**. Die achtzehn Projekte der CI-Auswahl rechnen gegen R53
+> GESAMT PASS.
 
-### Die Vorgängerbasis R51 (freie Kühlung)
+> **Nachtrag — Schema 228 (KB-4 eine Kostenbasis an den Gerätekatalogen, 14.10.2026, hängt an 227
+> `BrennstoffpreiseTraegerkarteSchema`), Basis R55 unverändert.** `GeraetekostenEntfallSchema` (228 =
+> `BrennstoffpreiseTraegerkarteSchema.SCHRITT + 1`) legt `ID_KostenVorlageInvestition` an `Tab_Wechselrichter(_STAMM)` an, sät je
+> Wechselrichter mit Kosten eine Satzvorlage mit einer Position (`EUR_PRO_KW_ELEKTRISCH`, 480 €/kW), prüft, dass kein Satz mit
+> Kosten > 0 ohne Verweis bleibt, entfernt die 32 Kostenspalten an BHKW, Heizkessel, Wärmepumpe, PV-Modul, Wechselrichter,
+> Solarkollektoren, Pufferspeicher und Kältemaschine (Katalog und Projektkopie) und bildet die Katalogprüfsummen neu. Gehoben aus der
+> Fassung 227 der Basis R55 (108 720 128 Byte) mit `Werkzeuge/Testdatenbankschema`; der Inhaltsvergleich aller Tabellen zeigt den
+> neuen Verweis (1 Katalog- und 7 Projektsätze), **8 Satzvorlagen mit 8 Positionen**, den Wegfall der 32 Spalten, die neu gebildeten
+> `Katalog_Pruefsumme` (75 BHKW, 8 Wärmepumpen, 1 Wechselrichter), `Tab_Applikation.SchemaVersion` und — aus dem wiederholten
+> Schritt 75 — die Nutzungsdauer-Zuordnung von 125 mit Schritt 226 gesäten Auslieferungspositionen (`NutzungsdauerID`). Die
+> Testdatenbank steht auf **228** (`integrity_check` ok, `foreign_key_check` leer): **108 687 360 Byte, LFS-SHA-256
+> `04080c4e53b1b1c2956cf25cb7f58320023142173846bf4d576898c813dbf6e3`**.
 
-Neunundzwanzig Projekte, 943 CSV, 6 568 Skalare, auf Linux eingefroren gegen die Testdatenbank `3b9097b6…`
-(Schemastand 210); mit R52 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Referenzprojekt 1064 mit freier Kühlung
-über die Wärmequelle) unter
-[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R52 ist
-das Referenzprojekt 1065 mit berechneter Vorheizzeit; die neunundzwanzig Projekte von R51 sind byte-gleich.
+> **Nachtrag — Schema 229 (KB-5 Stromspeicher-Kosten auf Position, 16.10.2026, hängt an 228
+> `GeraetekostenEntfallSchema`), Basis R55 unverändert.** `StromspeicherKostenSchema` (229 =
+> `GeraetekostenEntfallSchema.SCHRITT + 1`) nimmt die Kosten der Stromspeicher von den vier Spalten `Modulkosten`,
+> `Leistungskosten`, `Investition_Fix` und `Verschleisskosten` auf Position und Satzvorlage; die acht Spalten an
+> `Tab_Stromspeicher` und `Tab_Stromspeicher_STAMM` entfallen. Die Saat der Satzvorlagen stand schon mit Schritt 226; die
+> Nutzungsdauer der gesäten Positionen ist gesetzt (8 Positionen, `NutzungsdauerID` 18). Gehoben aus der Fassung 228
+> (108 687 360 Byte) mit `Werkzeuge/Testdatenbankschema`; der Inhaltsvergleich aller Tabellen zeigt allein den Wegfall der acht
+> Spalten, die acht Nutzungsdauer-Zuordnungen und `Tab_Applikation.SchemaVersion`, alle übrigen Spalten und Zeilen sind
+> wertgleich. Die Testdatenbank steht auf **229** (`integrity_check` ok, `foreign_key_check` leer): **108 687 360 Byte,
+> LFS-SHA-256 `7ef1762a5e89c365d195ccd48085d7c670b4a05a7b1ce904ae2bf4b273253823`**. Der Referenzlauf aller siebenunddreißig
+> Projekte gegen R55 bleibt PASS.
+
+> **Nachtrag — Schema 230 (KBP-2 Kältebedarfsvorlagen und Eingabeart, 16.10.2026, hängt an 229
+> `StromspeicherKostenSchema`), Basis R55 unverändert.** `KaeltebedarfsprofilVorlagenSchema` (230 =
+> `StromspeicherKostenSchema.SCHRITT + 1`) legt `Z_Projekt_Kaeltebedarf.Eingabeart` (Vorgabe `'jahr'`) und den
+> Art-Vorschlag `Kaelte_Art` an `Tab_Kaeltebedarf_STAMM` und `Tab_Kaeltebedarf` an und sät die Vorlagen 7–16 samt
+> Wochenprofil in `Tab_Kaeltebedarf_STAMM` und `Tab_Kaeltetyp_STAMM` (`ReadOnly` = 1, mit Schlüssel und Prüfsumme). Gehoben
+> aus der Fassung 229 (108 687 360 Byte) mit `Werkzeuge/Testdatenbankschema`; der Inhaltsvergleich aller Tabellen zeigt allein
+> die drei neuen Spalten, die zehn neuen Zeilen je Katalogtabelle und `Tab_Applikation.SchemaVersion`, alle übrigen Spalten
+> und Zeilen sind wertgleich (192 von 195 Tabellen unberührt, die Vorlagen 1–6 bytegleich). Die Testdatenbank steht auf
+> **230** (`integrity_check` ok, `foreign_key_check` leer): **108 720 128 Byte, LFS-SHA-256
+> `a901f445a430231ab6c68c1cc0e3a1ef71a3717cc922bb07c426328b27b3b3f1`**. Der Referenzlauf der CI-Auswahl gegen R55 bleibt PASS
+> (11 Projekte, 373 CSV byte-gleich).
+
+> **Nachtrag — Schema 231 und 232 (DA-6 Werte der DIN-Nutzungsprofile und BK-5/BK-6 Fenster im Aufbaukatalog, 16.10.2026,
+> hängt an 230 `KaeltebedarfsprofilVorlagenSchema`), Basis R55 unverändert.** `RaumnutzungDinWerteSchema` (231 =
+> `KaeltebedarfsprofilVorlagenSchema.SCHRITT + 1`) sät die Werte der 45 ausgelieferten Profile der Kategorie DIN/TS 18599-10
+> in der Fassung 2025-10 in `Tab_Raumnutzungsprofil`, nur wo kein Wert steht; `BauteilkatalogAbschnittSchema` (232 =
+> `RaumnutzungDinWerteSchema.SCHRITT + 1`) legt `Psi_Glasrand` an `Tab_Bauteilaufbau_STAMM` und `Tab_Bauteilaufbau` leer an.
+> Kein Referenzprojekt nutzt ein Nutzungsprofil oder führt einen Aufbau. Gehoben aus der Fassung 230 (108 720 128 Byte) mit
+> `Werkzeuge/Testdatenbankschema` auf **232** (45 Profile gesät, 2 Spalten angelegt, `integrity_check` ok, 108 728 320 Byte).
+> Größe und LFS-SHA-256 der eingecheckten Fassung stehen im Nachtrag des folgenden Schritts, der die Datei in einem Zug weiterhebt.
+
+> **Nachtrag — Schema 233 (MA-6b Herkunft des U-Werts, 16.10.2026, hängt an 232 `BauteilkatalogAbschnittSchema`), Basis
+> R55 unverändert.** Kette 230 `KaeltebedarfsprofilVorlagenSchema` → 231 `RaumnutzungDinWerteSchema` → 232
+> `BauteilkatalogAbschnittSchema` → 233 `BauteilUHerkunftSchema` (233 = `BauteilkatalogAbschnittSchema.SCHRITT + 1`), das
+> `U_Herkunft` an `Tab_Bauteil` und `Tab_Bauteil_STAMM` leer anlegt (kein DML; leer heißt Bestand). Gehoben aus der Fassung
+> 230 (108 720 128 Byte, `a901f445…`) in einem Zug mit `Werkzeuge/Testdatenbankschema` über 231 und 232 auf 233 (45
+> DIN-Profile gesät, 4 Spalten angelegt; ein zweiter Lauf ist inhaltsgleich). Die Testdatenbank steht auf **233**
+> (`integrity_check` ok, `foreign_key_check` leer): **108 728 320 Byte, LFS-SHA-256
+> `95d1dd45028454d9f83cf3db22123beb4d3525f80f0c79c973b865ab188432da`**. Der Referenzlauf gegen R55 läuft im Gate.
+>
+> **Saatstand zu 233 (16.10.2026), Basis R55 unverändert.** Die gesäten Bauteile der Zonen-Referenzprojekte 1052, 1054
+> und 1062 tragen `U_Herkunft` so, wie ihre Baupläne es über die Programmwege schreiben: die Kopien der Übernahme
+> („Gebäude als eine Zone übernehmen“, `GebaeudeZonenabbildung.AlsBauteilModel`) `VORGABE`, die von Hand angelegten
+> Zeilen (Kellerdecke, Trennwand Gastronomie, Kellerboden, Kellerwände; Trennwand Nord/Ost) `MANUELL`
+> (`GebaeudeZonenCtrl.UHerkunftNeu`) — 72 und 11 Zeilen; `Skripte/referenzprojekt_1052_bauplan.cs` nennt die Herkunft
+> der Handzeilen ausdrücklich. Gesät mit `Werkzeuge/Testdatenbankschema` (Block nach Schritt 233, nur diese Projekte,
+> nur `U_Herkunft`, wiederholbar; keine Datenmigration für Anwenderdatenbanken, deren Bestand bleibt leer). Der
+> Rechenweg liest die Spalte nicht. `integrity_check` ok, `foreign_key_check` leer, außer `Tab_Bauteil` jede Tabelle
+> inhaltsgleich: **108 728 320 Byte, LFS-SHA-256
+> `e6aef7ded55a644cab3d70e1f49fd76f63376e6efd035191a96fcfbad5e08562`**.
+
+> **Nachtrag — Einheit von `DIN4708.p_b` im Testkatalog (16.10.2026, Schemastand 233), Basis R55 unverändert.** Der
+> fiktive Parameter `DIN4708.p_b` trägt die Einheit „P“ wie in `TwwParameterschluessel` statt „Personen“; nachgezogen in
+> `Skripte/tww_testkatalog_fiktiv.py` und darüber gesät (ein zweiter Lauf meldet 0 nachgeführt). Der Zellvergleich aller
+> Tabellen zeigt allein diese Zelle in `Tab_TwwParameter_STAMM`. Die Einheit ist Beschreibung, kein Rechenwert — deshalb
+> kein Neueinfrieren. Die Testdatenbank: **108 728 320 Byte, LFS-SHA-256
+> `6cb9f52c7e14d2d835434e10850374b7a4a549b5e84e70cd8974e4d11ccf9b00`** (auf der Fassung des Saatstands zu 233 gesät). Der Referenzlauf aller siebenunddreißig Projekte
+> gegen R55 bleibt PASS und byte-gleich (1 205 CSV; in `Projekt_1072/aggregate.csv` allein die zwei Schlüssel, die R55
+> nicht führt).
+
+> **Nachtrag — Schema 234 (KBP-5a bis KBP-5d Eingabeart der Bedarfsprofile, 16.10.2026, hängt an 233
+> `BauteilUHerkunftSchema`), Basis R55 unverändert.** `BedarfsprofilEingabeartSchema` (234 =
+> `BauteilUHerkunftSchema.SCHRITT + 1`) legt `Eingabeart` an `Z_Projekt_Prozesswaerme` und `Z_Projekt_Brauchwasser`
+> (Vorgabe `'jahr'`), `Nutzungstage_Norm` an `Tab_Kaeltebedarf_STAMM` und `Tab_Kaeltebedarf` und `Ferien_wie_Sonntag` an
+> `Tab_Betriebskalender` an und sät allein an der Kältevorlage 8 230 Nutzungstage (ihre Prüfsumme neu gebildet). Gehoben
+> aus der Fassung 233 (108 728 320 Byte, `6cb9f52c…`) mit `Werkzeuge/Testdatenbankschema`; der Inhaltsvergleich aller
+> Tabellen zeigt allein die fünf neuen Spalten (Zuordnungen durchweg `'jahr'`, 28 Brauchwasser, 1 Prozesswärme), die
+> Zeile 8 von `Tab_Kaeltebedarf_STAMM` und `Tab_Applikation.SchemaVersion` (189 von 195 Tabellen unberührt, die
+> Kältevorlagen 1–6 bytegleich, die Einheit „P“ von `DIN4708.p_b` erhalten). Die Testdatenbank steht auf **234**
+> (`integrity_check` ok, `foreign_key_check` leer): **108 728 320 Byte, LFS-SHA-256
+> `b2b4e116659076d866bec69d8b25e1443d697e33186550d9562643429e18fbfe`**. Der Referenzlauf der CI-Auswahl gegen R55 bleibt PASS (18 Projekte, 601 CSV byte-gleich).
+
+> **Nachtrag — Schema 235 (KB-7a Wasserpreis in der Trägerkarte, 16.10.2026, hängt an 234
+> `BedarfsprofilEingabeartSchema`), Basis R55 unverändert.** `WasserpreisTraegerkarteSchema` (235 =
+> `BedarfsprofilEingabeartSchema.SCHRITT + 1`) legt den Träger „Wasser“ in `energy_carrier` (Preismodell `WATER`,
+> Einheit m³) und die Zeile `WATER` in `pricing_model` an, übernimmt die Wasserpreise der Anlagen in
+> `energy_project_settings` und lässt `Tab_Energieanlagen.Wasserpreis_EUR_m3` fallen. Gehoben aus der Fassung 234
+> (108 728 320 Byte, `b2b4e116…`) mit `Werkzeuge/Testdatenbankschema`; keine Anlage der Testdatenbank führte einen
+> Wasserpreis, der Inhaltsvergleich aller Tabellen zeigt allein die neue Trägerzeile, die neue Preismodellzeile, den
+> Spaltenwegfall an `Tab_Energieanlagen` (übrige Zellen gleich), `sqlite_sequence` und `Tab_Applikation.SchemaVersion`
+> (die Zapfprofil-Zellen und die Einheit „P“ von `DIN4708.p_b` erhalten). Kein Referenzprojekt rechnet ein Rückkühlwerk;
+> der Schritt wirkt auf kein Rechenergebnis. Die Testdatenbank steht auf **235** (`integrity_check` ok,
+> `foreign_key_check` leer): **108 744 704 Byte, LFS-SHA-256
+> `3478881f3c518127442c49a09b928edeba9b83f520ef100ba08c908ed61d15dc`**. Der Referenzlauf aller siebenunddreißig
+> Projekte gegen R55 bleibt PASS und byte-gleich (1 205 CSV; in `Projekt_1072/aggregate.csv` allein die zwei Schlüssel,
+> die R55 nicht führt).
+
+> **Nachtrag — Schema 236 (KBP-4a Typtage der Kältebedarfszuordnung, 16.10.2026, hängt an 235
+> `WasserpreisTraegerkarteSchema`), Basis R56 unverändert.** `KaeltetyptagSchema` (236 =
+> `WasserpreisTraegerkarteSchema.SCHRITT + 1`) legt `Tab_Kaeltetyptag` (bis zu sechs Typtage je Projektkopie
+> `Tab_Kaeltebedarf`) und `Tab_Kaeltetyptag_Matrix` (Zuordnung Monat × Tagesart → Typtag) an, beide `STRICT` und leer,
+> samt zwei Indizes; kein DML. Gehoben aus der Fassung 235 (108 744 704 Byte, `3478881f…`) mit
+> `Werkzeuge/Testdatenbankschema`; der Inhaltsvergleich aller Tabellen zeigt allein die zwei neuen Tabellen mit ihren
+> Indizes und `Tab_Applikation.SchemaVersion` (195 von 196 gemeinsamen Tabellen wertgleich, die Einheit „P“ von
+> `DIN4708.p_b` in `Tab_TwwParameter_STAMM` erhalten). Keine Zuordnung trägt Eingabeart `'typtag'`; der Schritt wirkt
+> auf kein Rechenergebnis. Die Testdatenbank steht auf **236** (`integrity_check` ok, `foreign_key_check` leer):
+> **108 773 376 Byte, LFS-SHA-256 `c403eb645c9a9731e32cb49d74f2339516b1d6c3efd4a0914bae09118f6f9cfe`**. Der Referenzlauf
+> der CI-Auswahl gegen R56 bleibt PASS (18 Projekte, 601 CSV byte-gleich).
+
+> **Nachtrag — Schema 237 (DA-8 Absorptions- und Emissionsgrad je Bauteil, 16.10.2026, hängt an 236
+> `KaeltetyptagSchema`), Basis R57 unverändert.** `BauteilStrahlungSchema` (237 = `KaeltetyptagSchema.SCHRITT + 1`) legt
+> `Absorptionsgrad_Solar` und `Emissionsgrad` (REAL, `CHECK` 0 bis 1, leer heißt Festwert) an `Tab_Bauteilaufbau(_STAMM)`
+> und `Tab_Bauteil(_STAMM)` an, acht leere Spalten, kein DML. Gehoben aus der origin-Fassung 236 (`c403eb64…`) mit
+> `Werkzeuge/Testdatenbankschema`; Tabellen- und Indexliste und die Zeilenzahl jeder Tabelle bleiben gleich, die Größe
+> ändert sich nicht. Danach ist das Referenzprojekt 1073 mit seinem Skript nachgesät (Abschnitt „Das Referenzprojekt
+> 1073“). Die Testdatenbank steht auf **237** (`integrity_check` ok, `foreign_key_check` leer): **109 617 152 Byte,
+> LFS-SHA-256 `75fb0a61eca6bfad163e5ca3581d2e7bb6a29937169b19c2cb4b8252a0f9d15e`**.
+
+> **Nachtrag — Schema 238 (KD-4 Rohwerte des Klimadatenimports, 16.10.2026, hängt an 237
+> `BauteilStrahlungSchema`), Basis R57 unverändert.** `KlimaRohwerteSchema` (238 = `BauteilStrahlungSchema.SCHRITT + 1`) legt
+> `Tab_Klimastunde_STAMM` leer an (`STRICT`, Primärschlüssel Region und Stunde 1 … 8760, Fremdschlüssel auf
+> `Tab_Klimaregion_STAMM` mit Kaskade, vierzehn nullbare Rohspalten mit der Einheit im Namen) und ergänzt zehn nullbare Spalten
+> an `Tab_Klimaregion_STAMM` und acht an `Tab_Klimaregion` (Standorthöhe, Bezugspunkt, Ausführung; am Katalog dazu `Zeitbezug`
+> und `Rohdaten`, Vorgabe 0); kein DML, kein Nachladen (KD-Q7): alle 32 Katalogregionen tragen `Rohdaten = 0`, die Rohtabelle
+> bleibt leer, auch die Auslieferungsvorlage führt sie leer (198 `STRICT`-Tabellen). Gehoben aus der origin-Fassung 237
+> (`75fb0a61…`) mit `Werkzeuge/Testdatenbankschema` (18 Spalten, 1 Tabelle angelegt); die Zeilenzahl jeder Bestandstabelle
+> bleibt gleich. Kein Rechenweg liest die Rohtabelle oder die neuen Regionsspalten (Wache in `KlimaRohwerteTests`); Leser sind
+> der Import (Schreibweg), der Export (KD-5) und der Reiter „Weitere Reihen“ (KD-8 Teil B). Die Testdatenbank steht auf **238**
+> (`integrity_check` ok, `foreign_key_check` leer): **109 604 864 Byte, LFS-SHA-256
+> `20c0a3fe4d7a399fe18ed20fc11725639c50b3eba10eb0ba704b8900399ebe35`**. Der Referenzlauf der 38 Projekte gegen R57 bleibt
+> PASS.
+
+> **Nachtrag — Schema 239 (EB-1/EB-4 Ergebnisreihen, 17.10.2026, hängt an 238 `KlimaRohwerteSchema`), Basis R59.**
+> `ErgebnisreihenSchema` (239 = `KlimaRohwerteSchema.SCHRITT + 1`) legt `Stromeinspeisung` an `Tab_ErgebnisBHKW` [MWh/a],
+> `Abregelung` an `Tab_ErgebnisPhotovoltaik` [MWh/a] und `Eigenverbrauch_System` an `Tab_ErgebnisStromspeicher` [kWh/a] an
+> (REAL, nullbar, `CHECK >= 0`, NULL = nicht erhoben); kein DML. Gehoben aus der origin-Fassung 238 (`c8befb51…`, mit der Datenbereinigung 8e) mit
+> `Werkzeuge/Testdatenbankschema` (3 Spalten); Tabellen- und Indexliste (198 Tabellen) und die Zeilenzahl jeder Tabelle
+> bleiben gleich. Der Rechenweg bleibt unverändert, der Lauf schreibt nur zusätzlich, was er schon rechnet — deshalb
+> bekommt `aggregate.csv` die Schlüssel `BHKW.Stromeinspeisung` und `Photovoltaik.Abregelung` (34 Einträge in 38
+> Projekten), und die Basis ist als R59 neu eingefroren (Abschnitt „Aktuelle Basis“). Die Testdatenbank steht auf **239**
+> (`integrity_check` ok, `foreign_key_check` leer): **109 608 960 Byte, LFS-SHA-256
+> `5bfedf09beef9ccf636f6f0272b46d7fa632e66b22b044713cf717e20fbb1fa2`**.
+
+### Die Vorgängerbasis R58 (Kältesummen)
+
+Achtunddreißig Projekte, 1 233 CSV, 8 596 Skalare, auf Linux eingefroren gegen die Testdatenbank `c8befb51…`
+(Schemastand 238, mit der Datenbereinigung 8e); mit R59 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Anwenderentscheid
+vom 16.10.2026, Punkt 8d: Kältesummen ungerundet gespeichert) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R59
+nimmt allein die neuen Ergebnisschlüssel des Schemaschritts 239 auf (`BHKW.Stromeinspeisung`, `Photovoltaik.Abregelung`);
+alle Rechenwerte von R58 sind unverändert — 1 199 der 1 233 CSV byte-gleich, die 34 übrigen sind die `aggregate.csv`
+mit den neuen Schlüsseln.
 
 ## Was hier liegt
 
@@ -1292,7 +1537,7 @@ das Referenzprojekt 1065 mit berechneter Vorheizzeit; die neunundzwanzig Projekt
 | `Arbeitskopie/` | Die Kopie der Datenbank, auf der gerechnet wird. Wird bei jedem `lauf` neu angelegt. Nicht im Git (`Kenndaten.accdb` ist in `.gitignore`) |
 | `Katalogpaket_frei/` | Der freie Paketteil des Zapfprofilgenerators (CSV im Paketformat N2): Quelle der freien Zeilen der Auslieferungsvorlage und der Testdatenbank |
 | `Kenndaten_Test.sqlite` | Die reduzierte Testdatenbank, gegen die der plattformfreie `EPOS.Referenzlauf` und der SQL-Dialektprüfer laufen. **Versioniert** — eine Änderung daran gehört in einen eigenen Commit |
-| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `anlagenkopplung_1047_referenzprojekt.py` (Referenzprojekt der Anlagenkopplung, Kopie von 1017), `pruefprojekt_1048_pv_preise.cs` (dotnet-Dateiskript: Prüfprojekt 1048 „PV mit Preisen“, ohne Referenzrolle), `pruefprojekt_1053_bhkw_pv.cs` (dotnet-Dateiskript: Prüfprojekt 1053 „Test BHKW mit PV ohne Kaskade“, Kopie von 1018 mit Viertelstunden-Lastgang, ohne Referenzrolle), `referenzprojekt_1049_solarthermie.cs` (dotnet-Dateiskript: Referenzprojekt 1049 „Solarthermie“, Kopie von 1018; die Einfrierregel „gesäte Solardaten“ oben), `referenzprojekt_1050_kesselkennlinie.cs` (dotnet-Dateiskript: Referenzprojekt 1050 „Kesselkennlinie“, Kopie von 1023; die Einfrierregel „gesäte Kesseldaten“ oben), `referenzprojekt_1052_zonen.cs` mit `referenzprojekt_1052_bauplan.cs` (dotnet-Dateiskript samt Bauplan: Zonenprojekt 1052, Kopie von 1018, noch nicht in der Basis; die Einfrierregel „gesäte Zonendaten“ oben), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D), `gebaeude_10612_233_bauweise.py` (dieselbe Korrektur an 1009 und Katalogsatz 233, Basis unverändert), `tww_testkatalog_fiktiv.py` (Testkatalog des Zapfprofilgenerators samt abgeleiteten VDI-Werten und den Zeilen des freien Paketteils, Schemastand 115) `normzahlen_abgeleitet_bauen.py` (nur lokal: abgeleitete VDI-6002-Werte nach `tww_katalogwerte_abgeleitet.json` und abgeleitete VDI-4655-Werte nach `vdi4655_abgeleitet.json`, ZU19; `--norm vdi6002|vdi4655|beide`) `referenzprojekt_1055_kaeltemaschine.py` (Referenzprojekt 1055 „Kältemaschine mit Kältespeicher“, Kopie von 1017; die Einfrierregel „gesäte Kältemaschinendaten“ oben), `referenzprojekt_1056_fahrplan.py` (Referenzprojekt 1056 „Referenz Kopplung mit Fahrplan“, Kopie von 1047; die Einfrierregel „gesäte Auslegungsdaten der Übergabe“ oben), `referenzprojekt_1058_ak3.py` (Referenzprojekt 1058 „Referenzprojekt AK3“, Kopie von 1056 auf Stufe AK3 mit Heizungspuffer; dieselbe Einfrierregel) `referenzprojekt_zapfprofil.py` (stellt Projekt 1045 auf den Zapfprofilgenerator um, ZU7; die Einfrierregel „gesäte Zapfprofil-Eingaben" oben) und `erdreichquellen_referenzprojekte.py` (Erdsonden an den Sole-Wärmepumpen der Referenzprojekte, Klimazone 6, Referenzprojekt 1057 als Kopie von 1029; die Einfrierregel „gesäte Erdreichquellen“ oben) |
+| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `anlagenkopplung_1047_referenzprojekt.py` (Referenzprojekt der Anlagenkopplung, Kopie von 1017), `pruefprojekt_1048_pv_preise.cs` (dotnet-Dateiskript: Prüfprojekt 1048 „PV mit Preisen“, ohne Referenzrolle), `pruefprojekt_1053_bhkw_pv.cs` (dotnet-Dateiskript: Prüfprojekt 1053 „Test BHKW mit PV ohne Kaskade“, Kopie von 1018 mit Viertelstunden-Lastgang, ohne Referenzrolle), `referenzprojekt_1049_solarthermie.cs` (dotnet-Dateiskript: Referenzprojekt 1049 „Solarthermie“, Kopie von 1018; die Einfrierregel „gesäte Solardaten“ oben), `referenzprojekt_1050_kesselkennlinie.cs` (dotnet-Dateiskript: Referenzprojekt 1050 „Kesselkennlinie“, Kopie von 1023; die Einfrierregel „gesäte Kesseldaten“ oben), `referenzprojekt_1052_zonen.cs` mit `referenzprojekt_1052_bauplan.cs` (dotnet-Dateiskript samt Bauplan: Zonenprojekt 1052, Kopie von 1018, noch nicht in der Basis; die Einfrierregel „gesäte Zonendaten“ oben), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D), `gebaeude_10612_233_bauweise.py` (dieselbe Korrektur an 1009 und Katalogsatz 233, Basis unverändert), `tww_testkatalog_fiktiv.py` (Testkatalog des Zapfprofilgenerators samt abgeleiteten VDI-Werten und den Zeilen des freien Paketteils, Schemastand 115) `normzahlen_abgeleitet_bauen.py` (nur lokal: abgeleitete VDI-6002-Werte nach `tww_katalogwerte_abgeleitet.json` und abgeleitete VDI-4655-Werte nach `vdi4655_abgeleitet.json`, ZU19; `--norm vdi6002|vdi4655|beide`) `referenzprojekt_1055_kaeltemaschine.py` (Referenzprojekt 1055 „Kältemaschine mit Kältespeicher“, Kopie von 1017; die Einfrierregel „gesäte Kältemaschinendaten“ oben), `referenzprojekt_1056_fahrplan.py` (Referenzprojekt 1056 „Referenz Kopplung mit Fahrplan“, Kopie von 1047; die Einfrierregel „gesäte Auslegungsdaten der Übergabe“ oben), `referenzprojekt_1058_ak3.py` (Referenzprojekt 1058 „Referenzprojekt AK3“, Kopie von 1056 auf Stufe AK3 mit Heizungspuffer; dieselbe Einfrierregel) `referenzprojekt_zapfprofil.py` (stellt Projekt 1045 auf den Zapfprofilgenerator um, ZU7; die Einfrierregel „gesäte Zapfprofil-Eingaben" oben), `referenzprojekte_zapfprofil_optionen.cs` (dotnet-Dateiskript: die Referenzprojekte 1066 bis 1071 der Zapfprofil-Optionen samt erfundenem Typtagsatz, ZB12; dieselbe Einfrierregel), `referenzprojekt_1072_kaeltebedarf.cs` (dotnet-Dateiskript: Referenzprojekt 1072 „Referenzprojekt Kältebedarf dezentral“, Kopie von 1055 mit drei Kältebedarfsprofilen, K6c; die Einfrierregel „gesäte Kältebedarfs-Zuordnungen“ oben) und `erdreichquellen_referenzprojekte.py` (Erdsonden an den Sole-Wärmepumpen der Referenzprojekte, Klimazone 6, Referenzprojekt 1057 als Kopie von 1029; die Einfrierregel „gesäte Erdreichquellen“ oben) |
 
 Der Werkzeugcode liegt in `../Referenzlauf/`.
 
@@ -1395,8 +1640,8 @@ Zuordnung 500 m² mit dem Faktor 500 / 1 975,34 = 0,25312) und der OK-Weg der Zo
 
 | Zone | Nutzfläche | Bauteile | gesät |
 |---|---|---|---|
-| 1 Gästezimmer, beheizt | 60 % = 300 m² | 15 | 60 % jeder Außenfläche (Wände, Fenster, Sonstiges je Richtung, Dach; ψ·L anteilig), Kellerdecke 60 % der Bodenplatte (318,93 m², U 0,55, `ZONE` → Keller), Trennwand zur Gastronomie 30 m², U 0,6 W/(m²K), Gruppe nach der 4-K-Regel |
-| 2 Gastronomie und Verwaltung, beheizt | 40 % = 200 m² | 14 | 40 % derselben Außenflächen, Kellerdecke 212,62 m² |
+| 1 Gästezimmer, beheizt | 60 % = 300 m² | 16 | 60 % jeder Außenfläche (Wände, Fenster, Sonstiges je Richtung; ψ·L anteilig), das Dach als Satteldach 42° in zwei Hälften (Nord, Süd; je 214,14 m²), Kellerdecke 60 % der Bodenplatte (318,93 m², U 0,55, `ZONE` → Keller), Trennwand zur Gastronomie 30 m², U 0,6 W/(m²K), Gruppe nach der 4-K-Regel |
+| 2 Gastronomie und Verwaltung, beheizt | 40 % = 200 m² | 15 | 40 % derselben Außenflächen, Dach Nord und Süd je 142,76 m², Kellerdecke 212,62 m² |
 | 3 Keller, unbeheizt | 531,55 m² (= Bodenplatte) | 2 | Kellerboden 531,55 m² und Kellerwände 230,6 m² (Umfang des flächengleichen Quadrats × 2,5 m), beide U 0,55 am Erdreich; innere Gewinne 0, Bewohner 0, Infiltration 0,2 1/h, Nutzerluftwechsel 0 |
 
 Zwischen Gästezimmern und Gastronomie strömen **150 m³/h** (`Tab_Zonenluftstrom`). Jede beheizte Zone trägt einen
@@ -1432,7 +1677,7 @@ Nach einer Neufassung der Testdatenbank wird es auf der neuen Fassung erneut gez
 ### Das Referenzprojekt 1054 „Zonen mit Heizkreis“
 
 Projekt **1054 „Referenzprojekt Zonen mit Heizkreis“** ist die gekoppelte Fassung des Zonenprojekts: Kopie von 1052 auf
-dem Kopierweg des Programms (`ProjektDuplizierenCtrl`) — dieselben drei Zonen, 31 Bauteile mit drei Trennflächen, der
+dem Kopierweg des Programms (`ProjektDuplizierenCtrl`) — dieselben drei Zonen, 33 Bauteile mit drei Trennflächen, der
 Luftstrom, die zwei Zonenkalender samt neun Perioden und zwei Vorgaben, Kaskade, Kühlbetrieb (aus) und
 Aufheizoptimierung (an) wie kopiert. 1052 bleibt unverändert und trägt weiter den Nachweis der Aufheizoptimierung mit
 Zonen. Gesät sind:
@@ -1789,6 +2034,122 @@ ohne `VACUUM`, prüft Vorlage, Zeilenzahlen der Kopie, jede gesäte Zelle, `fore
 vorausgesetzt ist 1063 als höchste. Nach einer Neufassung der Testdatenbank wird es nach 1063 gezogen. Die Testdatenbank
 mit 1064 (Schemastand 210, `integrity_check` ok, `foreign_key_check` leer): **95 629 312 Byte, LFS-SHA-256
 `3b9097b6a5ee6e9b2495dd9c18ab6682c53952b58d02f6a563963df77bf70cdb`**.
+
+### Die Referenzprojekte 1066 bis 1071 „Zapfprofil-Optionen“
+
+Sechs Kopien des Projekts 1045 auf dem Kopierweg des Programms (`ProjektDuplizierenCtrl`: Anlage, Gebäude, Klima; je
+Projekttabelle so viele Zeilen wie die Vorlage), an jeder das Zapfprofil einer Optionsgruppe, gespeichert über den
+Schreibweg des Kerns (`ZapfprofilCtrl.Speichern`: Projektzeile, Zonen, Wohnungstypen und Ferienzeiträume in einem
+Vorgang). Alle Katalogzeilen kommen aus dem Testkatalog `TEST-1`, gesucht über Bezeichner und Katalogversion; jede
+Zone rechnet ohne Ablehnung.
+
+| Projekt | Name | Gesät |
+|---|---|---|
+| 1066 | Referenzprojekt Zapfprofil Mischnutzung | Zonen Wohnen („Wohnen groß (abgeleitet)“, am Gebäude, Wohnungstabelle 4 × 2, 2 × 3, 3 × 4 Räume mit Belegung nach Raumzahl aus dem Katalog und Ausstattung „Testklasse A“), Büro (40 Beschäftigte), Hotel (20 Zimmer), Schule (150 Personen, ohne Zirkulation); Zirkulation nach Leitungslänge 120 m × 10 W/m in 18 h, aufgeteilt auf die drei Zonen mit Zirkulation |
+| 1067 | Referenzprojekt Zapfprofil Kalender | Zone Schule (200 Personen) ohne Gebäude mit dem Kalender ihrer Nutzungsart (Schulferien) und fünf eigenen Ferienzeiträumen (Weihnachten 355–6 über den Jahreswechsel, 44–48, 90–103, 146–151, 205–247; 85 Ruhetage); Zone Büro (30 Beschäftigte) am Gebäude, das Gebäude mit Feiertagsland `BY` und Wochenmaske 64 (nur Sonntag); an den Feiertagen Bayerns (etwa dem 6. Januar) zapft die Bürozone nicht |
+| 1068 | Referenzprojekt Zapfprofil Stochastisch | Zone Wohnen wie 1045; Jahresreihe stochastisch, Seed 1068, 10 Realisierungen |
+| 1069 | Referenzprojekt Zapfprofil Typtage | Zone Wohnen wie 1045; Typtagweg mit Klimazone 4 und Gebäudeart „referenzhaus“ des erfundenen Typtagsatzes |
+| 1070 | Referenzprojekt Zapfprofil Kalibrierung | Zone „Wohnen gemessen“ (10 Personen, Jahresmesswert 7 000 kWh/a an der Zapfstelle, Quelle „Ablesung (fiktiv)“; Kalibrierfaktor 1,1605); Zone „Gewerbe manuell“ („Gewerbe Schichtbetrieb (Setzung)“, 20 Beschäftigte, Tagesbedarf manuell 15 kWh/d, Zapftemperatur 55 °C, Kaltwasser 12 °C ± 4 K, Auslastungsgang mit Sommerdelle); Zirkulation manuell 0,8 kW in 16 h |
+| 1071 | Referenzprojekt Zapfprofil Auslegung | Zonen mit Wohnungstabelle je Topologie: Speicher („Wohnen groß“, 6 × 3 und 4 × 4 Räume, am Gebäude), Frischwasserstation („Studentenwohnheim“, 8 × 2 Räume), Durchfluss („Ein- und Zweifamilienhaus“, 1 × 4 Räume), Wohnungsstation („Wohnen groß“, 4 × 3 Räume mit eigener Personenzahl 2); Bedarfstag Ecodesign „Ecodesign-Zapfprofil L“ aus dem freien Paketteil, Erzeugerart Wärmepumpe, Werkstoff Edelstahl |
+
+**Der erfundene Typtagsatz** (für 1069, eingespielt über `TwwTyptagCtrl.Importieren` mit einem im Skript gebauten
+ZIP-Paket): Quelle „Referenztyptage (fiktiv)“, Ausgabe 2026-10, Klimazone 4, Gebäudeart „referenzhaus“, sechs
+Kategorien ohne Bewölkung (Übergang, Sommer, Winter je Werktag und Sonntag) mit 90, 20, 100, 25, 105 und 25
+Kalendertagen und den Faktoren 0,00005, −0,0001, −0,0001, −0,0002, 0,0001 und 0,00008 (Σ n·F = 0), Wintergrenze 2 °C,
+Heizgrenze 16 °C, keine Tagesgänge. Kein Wert stammt aus einer Richtlinie oder aus `Skripte/vdi4655_abgeleitet.json`.
+Das Wetter des Projekts ordnet die Tage anders zu als die Tabelle; der Hinweis darauf und die Skalierung der
+Tagesmengen auf die Jahresmenge (Faktor 1,0016) gehören zum Nachweis.
+
+**Die Auslegung von 1071** wirkt nicht auf die Simulation; `ZapfprofilOptionenReferenzprojekteWacheTests` hält sie
+stochastisch gerechnet eingefroren: Speicher Summenlinie 1 175,8 l bei 6,63 kW (Nenninhalt 1 500 l), Perzentil
+463,8 l, Normvergleich 246,1 l; Frischwasserstation Minutenspitze 173,04 kW (Perzentil 77,28 kW), Durchfluss 21,63 kW
+(59,56 kW), Wohnungsstation 86,52 kW (72,90 kW); der Normvergleich liegt bei den drei Durchflusstopologien außerhalb
+seines Gültigkeitsbereichs.
+
+```bash
+dotnet run Referenzlaeufe/Skripte/referenzprojekte_zapfprofil_optionen.cs -- Referenzlaeufe/Kenndaten_Test.sqlite [--trocken]
+```
+
+Das Skript prüft vor dem ersten Schreiben, dass keines der sechs Projekte steht (sonst benannter Abbruch mit Rückgabe
+2), dass 1065 die höchste Projekt-ID ist, dass 1045 auf dem Generator rechnet, dass keine Typtage eingespielt sind und
+dass jede Katalogzeile genau einmal steht. Es schreibt in eine Arbeitsdatei, rechnet jedes Projekt über den
+Brauchwasserweg des Laufs und 1071 die Auslegung, prüft `integrity_check` und `foreign_key_check` und ersetzt erst dann
+die Datenbank. Für einen zweiten Lauf die Sicherung zurücklegen; nach einer Neufassung der Testdatenbank wird es nach
+`referenzprojekt_1065_vorheizen.cs` gezogen.
+
+### Das Referenzprojekt 1072 „Referenzprojekt Kältebedarf dezentral“
+
+Projekt **1072** ist die Kopie des Referenzprojekts 1055 „Kältemaschine mit Kältespeicher“ auf dem Kopierweg des Programms
+(`ProjektDuplizierenCtrl`, Zeilenzahlen je Projekttabelle gleich der Vorlage) — dasselbe Gebäude mit Kühlung, dieselbe
+Kältemaschine 20 kW mit Trockenkühler und eigenem Zähler auf Träger 58, derselbe Kaltwasserspeicher; die Wärmepumpe heizt
+nur, `Tab_Einstellungen.Kuehlbetrieb` = 1. Dazu drei Kältebedarfsprofile, je als Projektkopie des Katalogsatzes samt
+Typprofil über den Programmweg (`KaeltebedarfStammCtrl.CopyFromStamm`, `ID_Stamm` = Katalogsatz), umbenannt und über
+`WizardCtrl.Add_Projekt_Kaelte` zugeordnet:
+
+| `Z_Projekt_Kaeltebedarf` | Projektkopie `Tab_Kaeltebedarf` | Katalogsatz | `Summe` | `Deckung` | EER | `Kuehl_ID_Carrier` / `Kuehl_EigenerZaehler` |
+|---|---|---|---|---|---|---|
+| 1 | 1 „Büro Kälteprofil“ | 1 „Raumkühlung Büro“ | 1,0 MWh/a | `zentral` | – | leer / 0 |
+| 2 | 2 „Split Büro“ | 1 „Raumkühlung Büro“ | 3,0 MWh/a | `split` | `fest` 3,0 (Bemessung 35 °C) | leer = Stromträger des Projekts / 0 |
+| 3 | 3 „Split Serverraum“ | 6 „Serverraum“ | 2,0 MWh/a | `split` | `linear` 4,0 bei 10 °C, 2,5 bei 35 °C | 58 „Elektrische Energie 2“ / 1 |
+
+Art aller drei Zeilen Raum, kein Betriebskalender; die Temperaturpaare der Kopien (16/19 °C bzw. 18/24 °C) reisen mit und
+sind Angabe ohne Wirkung (E-K3). Die Summen bleiben klein: Die Kältefolge deckt Gebäude und zentrales Profil voll, die
+Split-Zeilen laufen ohne Leistungsgrenze neben ihr. Gerechnet: Kältebedarf 10,05 MWh, davon Kältefolge 5,05 MWh (1055:
+4,05) und dezentral 5,00 MWh (Spitze 4,8 kW); Kälte der Maschine 5,14 MWh, Kältestrom 1,51 MWh, 478 Taktstunden;
+Split-Strom 1,53 MWh (Jahres-EER 3,27), Netzbezug des Split-Stroms 0,88 MWh anteilig („Split Büro“) und 0,53 MWh über den
+eigenen Zähler mit Träger 58 („Split Serverraum“); Deckungsgrad 100 % (Hauptzahl), davon Kältefolge 100 %; kein Befund
+der dezentralen Kälte.
+
+```bash
+dotnet run Referenzlaeufe/Skripte/referenzprojekt_1072_kaeltebedarf.cs -- Referenzlaeufe/Kenndaten_Test.sqlite
+```
+
+Das Skript ist wiederholbar (steht 1072 schon mit allen Zellen, Rückgabe 0 ohne Schreiben), schreibt in eine Arbeitsdatei
+neben der Datenbank, prüft Vorlage, Katalogsätze, Kühlträger, jede gesäte Zelle, die Zeilenzahlen der Kopie,
+`integrity_check` und `foreign_key_check`, rechnet einen Probelauf auf einer Wegwerfkopie (Kältefolge voll gedeckt, zwei
+Zeilen in `Tab_ErgebnisKaelteDezentral`, Hauptzahl gesetzt, kein Befund der dezentralen Kälte) und ersetzt erst dann das
+Original. Vorausgesetzt ist 1071 als höchste Projekt-ID; nach einer Neufassung der Testdatenbank wird es nach
+`referenzprojekte_zapfprofil_optionen.cs` gezogen. 1072 steht in der Basis R56 und nicht in der CI-Auswahl; es gilt die
+Einfrierregel „gesäte Kältebedarfs-Zuordnungen“ oben.
+
+### Das Referenzprojekt 1073 „Referenzprojekt Schnellaufheizung“
+
+Projekt **1073 „Referenzprojekt Schnellaufheizung“** ist die Kopie des Zonenprojekts mit Heizkreis 1054 auf dem Kopierweg
+des Programms (`ProjektDuplizierenCtrl`, je Projekttabelle so viele Zeilen wie die Vorlage, drei Zonen mit 33 Bauteilen,
+Luftstrom und Zonenkalendern) — das Hotel in drei Zonen mit Anlagenkopplung AK1, Radiator und Heizkurve am Gebäude, einer
+Zone mit eigener Übergabe und eingeschalteter Aufheizoptimierung, dieselben Erzeuger (Kessel, BHKW). 1054 bleibt bei der
+Sollwertrampe (Verfahren leer). Die Schnellaufheizung wirkt nur an Zonen mit wirksamem Heizkreis und nur mit einem
+Verfahren „Vorheizzeit vorgeben/berechnen“; 1054 ist die Vorlage, an der sie am deutlichsten wirkt (Messung SA1b). Gesät sind:
+
+| Ort | Zelle | Wert |
+|---|---|---|
+| `Tab_Einstellungen` | `Aufheizoptimierung` | 1 (wie 1054) |
+| | `Aufheiz_Verfahren` | `BERECHNET` (1054: leer) |
+| | `Aufheiz_Schnellaufheizung` | 1 |
+| | `Aufheiz_Ueberhoehung_K` | 3 (rund, über der Vorgabe 2 K: prüft den Weg über die Spalte) |
+| | `Aufheiz_Vorheizzeit_H`, `Aufheiz_Toleranz_Art`, `Aufheiz_Toleranz`, `Aufheiz_Regelgenauigkeit_K`, `Aufheiz_Geltung`, `Aufheiz_Heizkreis_Einbeziehen` | leer — Vorgaben: Toleranz 20 % (Prozent), ε 1 K, Geltung Gebäude, Heizkreis einbezogen |
+| `Tab_Projekt` | `Beschreibung`; `Kosten_Geaendert` | Zweck des Projekts; Kostenstempel leer |
+
+Gerechnet: Vorheizzeit t_V 5 h (größter Bedarf 9 h), keine Nacht ohne Absenkung, 302 überhöhte Fensterstunden mit
+höchstem Vorlauf 58 °C (Mittel des Kreises 40,75 °C), keine Stunde an der Vorlaufgrenze, keine wirkungslose; Spitze
+26,37 kW, Heizwärme 50,79 MWh. Gegenlauf derselben Kopie ohne Schalter: t_V 9 h (Bedarf 12 h), 365 Nächte ohne Absenkung,
+Spitze 23,64 kW, Heizwärme 52,28 MWh — die Überhöhung spart 2,85 % Heizwärme und erhält jede Nachtabsenkung, die Spitze
+steigt um 12 %. Gegen die Vorlage 1054 (Sollwertrampe, 47,59 MWh, Spitze 27,47 kW) heizt 1073 mehr, weil es vorheizt. 1073
+steht in der aktuellen Basis und in der CI-Auswahl (kein anderes CI-Projekt rechnet die Überhöhung; Lauf rund 2 s, der
+gestörte Lauf ist PASS); es gilt die Einfrierregel „gesäte Vorheizdaten“ samt Absatz Schnellaufheizung oben, als Kopie von
+1054 dazu „gesäte Zonendaten“ und „gesäte Auslegungsdaten der Übergabe“.
+
+```bash
+dotnet run Referenzlaeufe/Skripte/referenzprojekt_1073_schnellaufheizung.cs -- Referenzlaeufe/Kenndaten_Test.sqlite [--trocken]
+```
+
+Das Skript ist wiederholbar (steht 1073 schon, Abbruch ohne Schreiben mit Rückgabe 0, ein zweiter Lauf lässt die Datei
+byte-gleich), schreibt in eine Arbeitsdatei neben der Datenbank ohne `VACUUM`, prüft Vorlage (Sollwertrampe, AK1),
+Zeilenzahlen der Kopie, Zonen und Bauteile, jede gesäte Zelle, `foreign_key_check` und `integrity_check` und ersetzt erst
+dann das Original. Die Kopie fällt auf die nächste freie Projekt-ID; vorausgesetzt ist 1072 als höchste. Nach einer
+Neufassung der Testdatenbank wird es nach 1072 gezogen. Die Testdatenbank mit 1073 (Schemastand 237, `integrity_check` ok,
+`foreign_key_check` leer): **109 617 152 Byte, LFS-SHA-256
+`75fb0a61eca6bfad163e5ca3581d2e7bb6a29937169b19c2cb4b8252a0f9d15e`**.
 
 ## Die wichtigste Regel
 

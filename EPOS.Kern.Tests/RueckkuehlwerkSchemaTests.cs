@@ -10,7 +10,7 @@ namespace EPOS.Kern.Tests
 {
     /// <summary>
     /// <b>Der Schemaschritt des Rückkühlwerks</b> (<see cref="RueckkuehlwerkSchema"/>; Welle K-F1, Entscheid E120):
-    /// Katalog und Projektkopie (STRICT, leer), Verweis und Wasserpreis an der Anlagenzeile, sechs Kennzahlen am Ergebnis
+    /// Katalog und Projektkopie (STRICT, leer), Verweis an der Anlagenzeile, sechs Kennzahlen am Ergebnis
     /// der Kältemaschine; dazu die Datenwege (Katalog, Projektkopie, Anlagenzeile samt Verträglichkeit, Löschen, Duplizieren).
     /// Reines DDL, wiederholbar, ergebnisneutral.
     /// </summary>
@@ -60,8 +60,8 @@ namespace EPOS.Kern.Tests
                 Assert.DoesNotContain("NOT NULL", typ, StringComparison.Ordinal);
                 Assert.DoesNotContain("DEFAULT", typ, StringComparison.Ordinal);
             }
-            Assert.Equal(new[] { "ID_Rueckkuehlwerk", "Wasserpreis_EUR_m3" },
-                         RueckkuehlwerkSchema.SPALTEN_ANLAGE.Select(s => s.Spalte));
+            // Der Wasserpreis steht in der Traegerkarte (WasserpreisTraegerkarteSchema); der Schritt legt ihn nicht mehr an.
+            Assert.Equal(new[] { "ID_Rueckkuehlwerk" }, RueckkuehlwerkSchema.SPALTEN_ANLAGE.Select(s => s.Spalte));
             Assert.All(RueckkuehlwerkSchema.SPALTEN_ANLAGE, s => Assert.Equal("Tab_Energieanlagen", s.Tabelle));
             Assert.Contains("REFERENCES \"Tab_Rueckkuehlwerk\" (\"ID\") ON DELETE SET NULL", RueckkuehlwerkSchema.SPALTEN_ANLAGE[0].Typ,
                             StringComparison.Ordinal);
@@ -106,8 +106,6 @@ namespace EPOS.Kern.Tests
             Ausfuehren(c, "CREATE TABLE \"Tab_Energieanlagen\" (ID INTEGER PRIMARY KEY) STRICT");
             Ausfuehren(c, "INSERT INTO Tab_Energieanlagen (ID) VALUES (1)");
             foreach (var s in RueckkuehlwerkSchema.SPALTEN_ANLAGE) Ausfuehren(c, RueckkuehlwerkSchema.Anlegen(s));
-            Ausfuehren(c, "UPDATE Tab_Energieanlagen SET Wasserpreis_EUR_m3 = 4.5");
-            Assert.Throws<SqliteException>(() => Ausfuehren(c, "UPDATE Tab_Energieanlagen SET Wasserpreis_EUR_m3 = -0.1"));
         }
 
         [Fact]
@@ -122,16 +120,22 @@ namespace EPOS.Kern.Tests
             Assert.Equal(WindowsFormsApplication1.MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG, RueckkuehlwerkStammCtrl.Pruefen(new RueckkuehlwerkModel { Bezeichner = " " }));
             Assert.Equal(WindowsFormsApplication1.MyResource.Resource.RKW_MSG_BAUART_UNGUELTIG,
                          RueckkuehlwerkStammCtrl.Pruefen(new RueckkuehlwerkModel { Bezeichner = "RK", Bauart = "LUFT" }));
-            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.RKW_MSG_AUSWAHL_UNGUELTIG,
-                         RueckkuehlwerkStammCtrl.Pruefen(new RueckkuehlwerkModel { Bezeichner = "RK", Freikuehlung_Schaltung = "SERIE" }));
-            foreach (RueckkuehlwerkModel m in new[]
+            // K-F5a: Die Meldungen nennen Feld und Wert bzw. Feld und Bereich (benannte Meldungen der Verwaltung).
+            string auswahl = RueckkuehlwerkStammCtrl.Pruefen(new RueckkuehlwerkModel { Bezeichner = "RK", Freikuehlung_Schaltung = "SERIE" });
+            Assert.Contains(WindowsFormsApplication1.MyResource.Resource.RKW_LBL_FREIKUEHLUNG_SCHALTUNG, auswahl, StringComparison.Ordinal);
+            Assert.Contains("SERIE", auswahl, StringComparison.Ordinal);
+            foreach ((RueckkuehlwerkModel m, string feld) in new[]
                      {
-                         new RueckkuehlwerkModel { Bezeichner = "RK", Ventilator_Stufen = 1 },
-                         new RueckkuehlwerkModel { Bezeichner = "RK", Eindickung = 1 },
-                         new RueckkuehlwerkModel { Bezeichner = "RK", Nennleistung_kW = double.NaN },
-                         new RueckkuehlwerkModel { Bezeichner = "RK", Annaeherung_Nenn_K = 31 },
+                         (new RueckkuehlwerkModel { Bezeichner = "RK", Ventilator_Stufen = 1 }, WindowsFormsApplication1.MyResource.Resource.RKW_LBL_VENTILATOR_STUFEN),
+                         (new RueckkuehlwerkModel { Bezeichner = "RK", Eindickung = 1 }, WindowsFormsApplication1.MyResource.Resource.RKW_LBL_EINDICKUNG),
+                         (new RueckkuehlwerkModel { Bezeichner = "RK", Nennleistung_kW = double.NaN }, WindowsFormsApplication1.MyResource.Resource.RKW_LBL_NENNLEISTUNG),
+                         (new RueckkuehlwerkModel { Bezeichner = "RK", Annaeherung_Nenn_K = 31 }, WindowsFormsApplication1.MyResource.Resource.RKW_LBL_ANNAEHERUNG_NENN),
                      })
-                Assert.Equal(WindowsFormsApplication1.MyResource.Resource.RKW_MSG_WERT_UNGUELTIG, RueckkuehlwerkStammCtrl.Pruefen(m));
+            {
+                string befund = RueckkuehlwerkStammCtrl.Pruefen(m);
+                Assert.NotNull(befund);
+                Assert.StartsWith(feld, befund, StringComparison.Ordinal);
+            }
         }
 
         [Fact]
@@ -139,8 +143,19 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(WindowsFormsApplication1.MyResource.Resource.RKW_MSG_LUFT_UNVERTRAEGLICH, KaeltemaschineAnlageCtrl.RueckkuehlwerkPruefen("LUFT", true));
             Assert.Null(KaeltemaschineAnlageCtrl.RueckkuehlwerkPruefen("LUFT", false));
-            foreach (string art in new[] { "WASSER", "TROCKENKUEHLER", "NASSKUEHLER", null })
+            foreach (string art in new[] { "WASSER", "TROCKENKUEHLER", "NASSKUEHLER" })
                 Assert.Null(KaeltemaschineAnlageCtrl.RueckkuehlwerkPruefen(art, true));
+            // K-F5c: leer rechnet der Lauf luftgekühlt - die Prüfung lehnt dann mit derselben Meldung ab.
+            foreach (string leer in new[] { null, "" })
+            {
+                Assert.True(KaeltemaschineSchema.IstLuftgekuehlt(leer));
+                Assert.Equal(WindowsFormsApplication1.MyResource.Resource.RKW_MSG_LUFT_UNVERTRAEGLICH,
+                             KaeltemaschineAnlageCtrl.RueckkuehlwerkPruefen(leer, true));
+                Assert.Null(KaeltemaschineAnlageCtrl.RueckkuehlwerkPruefen(leer, false));
+            }
+            Assert.True(KaeltemaschineSchema.IstLuftgekuehlt("LUFT"));
+            foreach (string art in new[] { "WASSER", "TROCKENKUEHLER", "NASSKUEHLER" })
+                Assert.False(KaeltemaschineSchema.IstLuftgekuehlt(art));
             Assert.Contains("Rückkühlwerk", WindowsFormsApplication1.MyResource.Resource.RKW_MSG_LUFT_UNVERTRAEGLICH, StringComparison.Ordinal);
         }
 
@@ -164,9 +179,12 @@ namespace EPOS.Kern.Tests
                 Assert.EndsWith("STRICT", Convert.ToString(DataRepository.ExecuteScalar(
                     "SELECT sql FROM sqlite_master WHERE name = ?", new DbParam("@n", t)), CultureInfo.InvariantCulture).TrimEnd(),
                     StringComparison.Ordinal);
-            // Die Spalten haengen hinten an: an der Anlagenzeile die zwei des Schritts, am Ergebnis die sechs.
+            // Die Spalten haengen hinten an: an der Anlagenzeile der Verweis (der Wasserpreis dahinter ist mit
+            // WasserpreisTraegerkarteSchema fort), am Ergebnis die sechs.
             List<string> anlagen = DataRepository.SpaltenVonTabelle(RueckkuehlwerkSchema.TAB_ANLAGEN);
-            Assert.Equal(RueckkuehlwerkSchema.SPALTEN_ANLAGE.Select(s => s.Spalte), anlagen.Skip(anlagen.Count - 2));
+            Assert.Equal(RueckkuehlwerkSchema.SPALTEN_ANLAGE.Select(s => s.Spalte),
+                         anlagen.Skip(anlagen.Count - RueckkuehlwerkSchema.SPALTEN_ANLAGE.Count));
+            Assert.DoesNotContain(WasserpreisTraegerkarteSchema.ALTSPALTE, anlagen);
             List<string> ergebnis = DataRepository.SpaltenVonTabelle(RueckkuehlwerkSchema.TAB_ERGEBNIS);
             Assert.Equal(RueckkuehlwerkSchema.SPALTEN_ERGEBNIS.Select(s => s.Spalte), ergebnis.Skip(ergebnis.Count - 6));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM pragma_foreign_key_check"));
@@ -182,11 +200,12 @@ namespace EPOS.Kern.Tests
 
             foreach (var s in RueckkuehlwerkSchema.SPALTEN_ERGEBNIS)
                 DataRepository.ExecuteNonQuery("ALTER TABLE \"" + s.Tabelle + "\" DROP COLUMN \"" + s.Spalte + "\"");
-            DataRepository.ExecuteNonQuery("ALTER TABLE \"Tab_Energieanlagen\" DROP COLUMN \"Wasserpreis_EUR_m3\"");
             Assert.False(RueckkuehlwerkSchema.Vollstaendig());
-            Assert.Equal(7, RueckkuehlwerkSchema.Ausfuehren(null));
+            Assert.Equal(6, RueckkuehlwerkSchema.Ausfuehren(null));
             Assert.True(RueckkuehlwerkSchema.Vollstaendig());
             Assert.Equal(0, RueckkuehlwerkSchema.ZeilenMitWert());
+            // Der erneute Lauf nach dem Entfall des Wasserpreises legt die Spalte NICHT wieder an.
+            Assert.False(DataRepository.SpalteVorhanden(WasserpreisTraegerkarteSchema.TAB_ANLAGEN, WasserpreisTraegerkarteSchema.ALTSPALTE));
         }
 
         // =================================================================
@@ -233,19 +252,15 @@ namespace EPOS.Kern.Tests
             int anlage = KaeltemaschineAnlageCtrl.Anlegen(PROJEKT, StammKm(TROCKENKUEHLER), "KM wassergekühlt");
             KaeltemaschineAnlageModel a = KaeltemaschineAnlageCtrl.Laden(anlage);
             Assert.Null(a.IdRueckkuehlwerk);
-            Assert.Null(a.WasserpreisEurM3);
             Assert.Equal("TROCKENKUEHLER", a.Rueckkuehlart);
 
             Assert.Null(KaeltemaschineAnlageCtrl.RueckkuehlwerkWaehlen(anlage, stamm));
-            Assert.Null(KaeltemaschineAnlageCtrl.WasserpreisSetzen(anlage, 4.2));
             a = KaeltemaschineAnlageCtrl.Laden(anlage);
             Assert.True(a.IdRueckkuehlwerk.HasValue);
-            Assert.Equal(4.2, a.WasserpreisEurM3);
             RueckkuehlwerkModel kopie = RueckkuehlwerkCtrl.Laden(a.IdRueckkuehlwerk.Value);
             Assert.Equal((PROJEKT, stamm, "ADIABAT", 24.0), (kopie.IdProjekt.Value, kopie.IdStamm.Value, kopie.Bauart, kopie.Befeuchtung_Ab_C.Value));
-            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.RKW_MSG_WERT_UNGUELTIG, KaeltemaschineAnlageCtrl.WasserpreisSetzen(anlage, -1));
 
-            // Speichern der Anlagenzeile (Weg der Huelle) laesst Rueckkuehlwerk und Preis stehen.
+            // Speichern der Anlagenzeile (Weg der Huelle) laesst das Rueckkuehlwerk stehen.
             a.Anzahl = 2;
             Assert.Null(KaeltemaschineAnlageCtrl.Speichern(a));
             Assert.Equal(kopie.Id, KaeltemaschineAnlageCtrl.Laden(anlage).IdRueckkuehlwerk);
@@ -270,12 +285,18 @@ namespace EPOS.Kern.Tests
             KaeltemaschineAnlageCtrl.Loeschen(anlage);
             Assert.Null(RueckkuehlwerkCtrl.Laden(vierte));
 
-            // Loeschen des Katalogsatzes laesst eine Projektkopie stehen, ohne Katalogverweis.
+            // K-F5a: Ein Katalogsatz mit Projektkopie ist verwendet - Loeschen lehnt benannt ab; ohne Kopie geht es.
             int anlage2 = KaeltemaschineAnlageCtrl.Anlegen(PROJEKT, StammKm(TROCKENKUEHLER), "KM 2");
             Assert.Null(KaeltemaschineAnlageCtrl.RueckkuehlwerkWaehlen(anlage2, stamm));
             int fuenfte = KaeltemaschineAnlageCtrl.Laden(anlage2).IdRueckkuehlwerk.Value;
+            Assert.Equal(1, RueckkuehlwerkStammCtrl.Verwendungen(stamm));
+            RueckkuehlwerkStammCtrl.SpeicherErgebnis abgelehnt = RueckkuehlwerkStammCtrl.Loeschen(stamm);
+            Assert.False(abgelehnt.Ok);
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, WindowsFormsApplication1.MyResource.Resource.RKW_MSG_VERWENDET, 1), abgelehnt.Meldung);
+            Assert.Equal(stamm, RueckkuehlwerkCtrl.Laden(fuenfte).IdStamm);
+            KaeltemaschineAnlageCtrl.Loeschen(anlage2);
+            Assert.Equal(0, RueckkuehlwerkStammCtrl.Verwendungen(stamm));
             Assert.True(RueckkuehlwerkStammCtrl.Loeschen(stamm).Ok);
-            Assert.Null(RueckkuehlwerkCtrl.Laden(fuenfte).IdStamm);
         }
 
         [Fact]
@@ -290,13 +311,32 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Eine_Anlage_mit_leerer_Rueckkuehlart_lehnt_das_Rueckkuehlwerk_ab_wie_eine_luftgekuehlte()
+        {
+            if (!_db.Vorhanden) return;
+            int stamm = RueckkuehlwerkStammCtrl.Speichern(new RueckkuehlwerkModel { Bezeichner = "RK leer" }).Id;
+            int anlage = KaeltemaschineAnlageCtrl.Anlegen(PROJEKT, StammKm(TROCKENKUEHLER), "KM ohne Rückkühlart");
+            int geraet = KaeltemaschineAnlageCtrl.Laden(anlage).IdKaeltemaschine.Value;
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Kaeltemaschine SET Rueckkuehlart = NULL WHERE ID = ?", new DbParam("?", geraet));
+
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.RKW_MSG_LUFT_UNVERTRAEGLICH, KaeltemaschineAnlageCtrl.RueckkuehlwerkWaehlen(anlage, stamm));
+            Assert.Null(KaeltemaschineAnlageCtrl.Laden(anlage).IdRueckkuehlwerk);
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Rueckkuehlwerk"));
+
+            // Die wassergekühlte Art bleibt zugelassen.
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Kaeltemaschine SET Rueckkuehlart = ? WHERE ID = ?",
+                new DbParam("?", KaeltemaschineSchema.RUECKKUEHLART_WASSER), new DbParam("?", geraet));
+            Assert.Null(KaeltemaschineAnlageCtrl.RueckkuehlwerkWaehlen(anlage, stamm));
+            Assert.True(KaeltemaschineAnlageCtrl.Laden(anlage).IdRueckkuehlwerk.HasValue);
+        }
+
+        [Fact]
         public void Duplizieren_des_Projekts_nimmt_die_Projektkopie_mit()
         {
             if (!_db.Vorhanden) return;
             int stamm = RueckkuehlwerkStammCtrl.Speichern(new RueckkuehlwerkModel { Bezeichner = "RK Duplikat", Bauart = "HYBRID" }).Id;
             int anlage = KaeltemaschineAnlageCtrl.Anlegen(PROJEKT, StammKm(TROCKENKUEHLER), "KM Duplikat");
             Assert.Null(KaeltemaschineAnlageCtrl.RueckkuehlwerkWaehlen(anlage, stamm));
-            Assert.Null(KaeltemaschineAnlageCtrl.WasserpreisSetzen(anlage, 3.0));
             string name = Convert.ToString(DataRepository.ExecuteScalar("SELECT Projektname FROM Tab_Projekt WHERE ID = ?",
                                                                         new DbParam("?", PROJEKT)), CultureInfo.InvariantCulture);
 
@@ -307,7 +347,6 @@ namespace EPOS.Kern.Tests
             Assert.NotEqual(KaeltemaschineAnlageCtrl.Laden(anlage).IdRueckkuehlwerk, kopie.IdRueckkuehlwerk);
             RueckkuehlwerkModel rk = RueckkuehlwerkCtrl.Laden(kopie.IdRueckkuehlwerk.Value);
             Assert.Equal((neu, "HYBRID", "RK Duplikat"), (rk.IdProjekt.Value, rk.Bauart, rk.Bezeichner));
-            Assert.Equal(3.0, kopie.WasserpreisEurM3);
         }
 
         // =================================================================

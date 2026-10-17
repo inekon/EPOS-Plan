@@ -136,6 +136,16 @@ namespace WindowsFormsApplication1
                 grund = string.Format("{0} Kältebedarfszeile(n) verweisen auf den Träger.", kaelte);
                 return false;
             }
+            // Schritt 223: Auch eine gespeicherte Split-Ergebniszeile hält ihren Kühlträger - ohne ihn verlöre die Abrechnung
+            // des Laufs Preis und Faktor.
+            int splitErgebnis = KaeltebedarfSplitAbrechnungSchema.TabelleVorhanden()
+                ? Zaehle("SELECT COUNT(*) FROM " + KaeltebedarfSplitAbrechnungSchema.TAB_ERGEBNIS + " WHERE Kuehl_ID_Carrier = ?", carrierId)
+                : 0;
+            if (splitErgebnis > 0 && projekte == 0 && anlagen == 0)
+            {
+                grund = string.Format("{0} Ergebniszeile(n) dezentraler Kälte verweisen auf den Träger.", splitErgebnis);
+                return false;
+            }
             if (projekte > 0 || anlagen > 0)
             {
                 grund = string.Format(
@@ -199,9 +209,17 @@ namespace WindowsFormsApplication1
             }
             catch { }
 
+            // Welle KB-7c1: Der Wasserträger (Preismodell WATER) wird nur angeboten, wo er in die Karte gehört —
+            // im Projekt mit Kältemaschine samt Rückkühlwerk (ProjektEnergietraegerCtrl.WasserTraegerInKarte).
+            bool wasser = ProjektEnergietraegerCtrl.WasserTraegerInKarte(projektId) > 0;
+
             var frei = new List<EnergyCarrier>();
             foreach (EnergyCarrier c in KostenSummenCtrl.GetAllCarriers(0))
-                if (!zugeordnet.Contains(c.ID)) frei.Add(c);
+            {
+                if (zugeordnet.Contains(c.ID)) continue;
+                if (!wasser && Wasserkosten.IstWasserPreismodell(c.PricingModel)) continue;
+                frei.Add(c);
+            }
             return frei;
         }
 

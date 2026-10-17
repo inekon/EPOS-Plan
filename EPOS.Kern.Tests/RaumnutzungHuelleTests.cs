@@ -66,7 +66,7 @@ namespace EPOS.Kern.Tests
             RaumnutzungKategorieDaten din = w.Kategorien().Single(k => k.Art == RaumnutzungArt.Din18599);
             IReadOnlyList<RaumnutzungProfilDaten> dinprofile = w.Profile(din.Id);
             Assert.NotEmpty(dinprofile);
-            Assert.All(dinprofile, p => Assert.True(p.IstLeer, p.Bezeichner + " trägt Werte"));
+            Assert.All(dinprofile, p => Assert.False(p.IstLeer, p.Bezeichner + " ohne die gesäten Werte (DA-6)"));
             // Die Nummer der Quelle ist Text und bleibt es (NP-F5).
             Assert.Contains(dinprofile, p => p.Nummer == "1");
         }

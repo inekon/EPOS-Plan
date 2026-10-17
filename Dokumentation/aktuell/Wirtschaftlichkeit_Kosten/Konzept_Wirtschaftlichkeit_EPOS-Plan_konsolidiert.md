@@ -138,6 +138,15 @@ verändert oder nur erklärt.
    Eine Novelle ist eine neue Jahreszeile, kein Überschreiben
 ```
 
+**Die Gerätewelt führt keine Preise.** Die Gerätekataloge (`Tab_BHKW`, `Tab_Heizkessel`, `Tab_WP`,
+`Tab_PV`, `Tab_Wechselrichter`, `Tab_Solarkollektoren`, `Tab_Pufferspeicher`,
+`Tab_Kaeltemaschine` — je samt `_STAMM`) beschreiben Technik: Leistungen, Wirkungsgrade, Maße,
+Emissionen. Ihre Kosten stehen in der **Vorlagenwelt** ②: je Katalogsatz eine Satzvorlage je Art,
+verwiesen über `ID_KostenVorlageInvestition` bzw. `ID_KostenVorlage` (§ 2.14a). Derselbe Kostensatz
+steht damit an **einer** Stelle — die eine Kostenbasis des Anwenderentscheids vom 13.10.2026. Der
+Stromspeicher ist der letzte Rest: Seine vier Kostenspalten tragen noch seine eigene
+Speicherrechnung.
+
 Dazu die **Projektrahmen-Zeile** `Tab_ProjektWirtschaftlichkeit` — **eine Zeile je Stammprojekt**,
 gültig für die ganze Vergleichsgruppe (Befund R-1), und seit Schema 61 die **neun
 `KWKG_*`-Spalten** an `Tab_Energieanlagen` samt `Energiesteuer_Wahl`, `Aufteilung_Methode`,
@@ -1504,6 +1513,160 @@ eine Fehlanzeige.
 aber nur, wenn die Gruppe **nirgends** eine Position mit Wert führt; sonst bleibt sie vollständig
 stehen, denn dort ist die Hauptkomponentenzeile die Überschrift ihrer Positionen.
 
+## 2.14a Eine Kostenbasis — Katalogkosten als Satzvorlage, Abgleich je Anlage
+
+**Grundsatz.** Anwenderentscheid 13.10.2026: Für alle Anlagen gilt die zentrale Verwaltung
+der Energie-, Betriebs- und Investitionskosten; die Gerätekosten werden nicht doppelt gehalten, und
+die Kosten einer Anlage sollen sich mit dem zentralen Kostenkatalog **abgleichen können** — je
+Katalogsatz genau ein Verweis dorthin, keine mehrfache Kostenposition.
+
+**Die Saat (Schemaschritt `KatalogkostenSaatSchema`).** Jeder Katalogsatz mit mindestens einem
+Kostenwert größer null bekommt **genau eine** Satzvorlage je Art: eine Investitionsvorlage
+(`ID_KostenVorlageInvestition`) und eine Betriebsvorlage (`ID_KostenVorlage`), beide Verweise aus
+den Schritten 208/209. Dieselben zwei Spalten tragen auch die acht **Projektkopien** mit
+Kosten — ihr Ursprung ist meist unbekannt, und ohne eigene Vorlage stünden ihre gepflegten Werte
+ohne die Kostenspalten nirgends. Je gepflegter Kostenspalte entsteht eine
+Position; ihre Bemessung ist die des Rechenwegs (§ 3.2), nicht eine neue:
+
+| Gerätespalte | Kategorie | Bemessung | Satz |
+|---|---|---|---|
+| BHKW `Kosten_Modul` und die vier Nebenposten, Kessel- und Pufferspeicher-`Investitionskosten`, Wärmepumpe `Modulkosten`, Stromspeicher `Investition_Fix` | Investition | `BETRAG` | der Spaltenwert |
+| Photovoltaik `Modulkosten` (Preis je Modul) | Investition | `EUR_PRO_KWP` | Spaltenwert ÷ (Modulleistung ÷ 1000) |
+| Solarthermie `Investitionskosten` (Preis je Kollektor) | Investition | `EUR_PRO_M2_KOLLEKTOR` | Spaltenwert ÷ Aperturfläche |
+| Kältemaschine `Modulkosten` (Preis je Gerät) | Investition | `EUR_PRO_KW_LEISTUNG` | Spaltenwert ÷ Nennkälteleistung |
+| Stromspeicher `Modulkosten` [€/kWh] · `Leistungskosten` [€/kW] | Investition | `EUR_PRO_KWH_KAPAZITAET` · `EUR_PRO_KW_LEISTUNG` | der Spaltenwert |
+| BHKW `Wartungskosten_kwhel`, Stromspeicher `Verschleisskosten` | Betrieb | `EUR_PRO_KWH_ELEKTRISCH` | der Spaltenwert |
+| Kessel `Wartungskosten` | Betrieb | nach `Wartungskosten_Einheit`: `JAHRESBETRAG` · `EUR_PRO_KWH_THERMISCH` · `PROZENT_INVESTITION` | der Spaltenwert |
+
+Ein **Stückpreis** wird damit zum spezifischen Satz, indem er durch die Baugröße **eines** Stücks
+geteilt wird — Satz × Bezugsgröße ergibt wieder Stückpreis × Stückzahl, also dieselbe Zahl, die der
+Planwert zeigt. `Tab_BHKW.Investition_kwel` wird **nicht** gesät: Der Wert ist aus den fünf
+Posten abgeleitet und wäre eine zweite Zählung. Fehlt einem Stückpreis seine Baugröße, entsteht
+**keine** Position mit Fantasiesatz; die Zeile steht benannt im Migrationsbericht. Die Saat ist
+wiederholbar (Schlüssel ist der Verweis), überschreibt keine gepflegte Vorlage und gibt einem Satz
+ohne Kosten keine leere Vorlage. Sie ist **ergebnisneutral**: Gerechnet wird aus
+`Tab_ProjektWerte`, die beiden Verweise sind Metaspalten der Katalogfassung, und `Tab_KostenVorlage`
+reist in keinem Katalogpaket — eine neue Katalogfassung entsteht dadurch nicht.
+
+**Der Abgleich (`Katalogkostenabgleich`).** Er hält die Positionen **einer Anlage** gegen die
+Satzvorlagen des Katalogsatzes, aus dem ihre Projektkopie stammt (`ID_Stamm`). Je Vorlagenposition
+eines von drei Ergebnissen: **fehlt** · **weicht ab** (mit Projekt- und Katalogwert) · **gleich**.
+Verglichen wird das Feld, das die Bemessung meint — ein Betrag gegen `EingegebenerWert`, ein Satz
+gegen `Einheitpreis`; Menge und Bezugsgröße bleiben, wie sie gepflegt sind. **Er läuft nie von
+selbst:** Die Vorschau liest nur; erst das ausdrückliche Ausführen legt die fehlenden Positionen an
+(über denselben Weg wie die Übernahme einer Vorlage, vorhandene bleiben unberührt) und setzt die
+abweichenden auf den Katalogwert. Deshalb bleibt jeder gerechnete Kapitalwert unverändert, solange
+niemand abgleicht. Benannte Absagen statt stiller Leere: kein Gewerk mit Ursprung, keine Zuordnung
+zum Katalog, kein Katalogsatz mit Satzvorlage.
+
+**Bedienung an zwei Orten, eine Mechanik.** Im Kostendialog der Anlage steht unter dem
+Positionsraster „Mit dem Kostenkatalog abgleichen…"; auf der Kostenseite (Berichte & Kosten →
+Kosten) trägt die Aktionenspalte derselben Anlagenzeile denselben Abgleich, und wo eine Anlage keine
+Position führt, ihr Katalogsatz aber eine Satzvorlage, steht in der Wertzelle statt „—" der Hinweis
+**„Satzvorlage vorhanden"**. Beide
+Wege zeigen vor dem Schreiben dieselbe Vorschau in derselben Rückfrage.
+
+**Grenzen des Abgleichs.** Kältemaschine und Rückkühlwerk tragen
+ihre Satzvorlage, führen aber keinen Ursprung an der Anlage — für sie ist der Abgleich erst möglich,
+wenn der Rückweg sie aufnimmt.
+
+**Die Investitionsgewerke führen keine Kostenspalten.** Schemaschritt
+`GeraetekostenEntfallSchema`: Der Wechselrichter bekommt seinen Investitionsverweis und seine
+Satzvorlage (`Kosten` ÷ `P_AC_Nenn` → `EUR_PRO_KW_LEISTUNG`, dieselbe Bauform wie bei der
+Kältemaschine), die Saat aller acht Gewerke läuft noch einmal, und danach fallen ihre
+**32 Kostenspalten** an Katalog und Projektkopie. Mit `Kosten_Modul` fällt auch die daraus
+abgeleitete `Investition_kwel`; mit `Wartungskosten` fällt `Wartungskosten_Einheit`, denn ihren
+Zeitbezug trägt die **Bemessung** der Position.
+
+**Der Stromspeicher wie die übrigen Gewerke.** Auch der Stromspeicher führt keine Kostenspalten
+(Modulkosten, Leistungskosten, Investition fix, Verschleißkosten). Jeder Katalogsatz trägt je einen
+Verweis auf eine Satzvorlage: die Investition mit bis zu drei Positionen — je kWh Kapazität, je kW
+Leistung, fester Betrag — und den Betrieb mit dem Verschleiß je entladener kWh (dieselbe Größe wie
+€ je kWh Nennkapazität und Vollzyklus). Der Katalogdialog zeigt die Kosten als gesperrten Lesewert
+mit Vermerk auf die Kostenverwaltung. Der Verschleiß wird genau einmal gebucht, vom Simulationslauf;
+der feste Investitionsanteil geht nicht in die Speicherauslegung ein. Die Speicherflotte liest die
+Kosten ihrer Einheiten aus der Satzvorlage und schreibt bei der Übernahme einer Flotte
+Kostenpositionen der Anlage nur, wenn die Einheit „eigene Kosten“ hat. Der Abgleich zwischen Katalog
+und Kostenverwaltung geschieht nie automatisch. Umsetzungsvermerk: KB-5, Schritt 229.
+
+- **Eine Wache vor dem Entfall.** Trägt nach der Saat noch eine Zeile einen Kostenwert ohne
+  Satzvorlage, bricht der Schritt **benannt** ab und lässt die Spalten stehen. Das trifft auch den
+  Fall ohne Bezugsgröße, den die Saat bewusst ungesät lässt — hier wäre er ein stiller
+  Datenverlust.
+- **Der Planwert liest die Satzvorlage.** `TechnikPlanwertCtrl` bildet die Kostenbasis einer
+  Gerätezeile aus den Positionen ihrer Vorlage: eine absolute Position ist der Betrag, eine
+  satzbasierte wird mit der Baugröße **eines** Stücks und der Stückzahl der Anlage multipliziert —
+  die Umkehrung der Saat, also dieselbe Zahl. Welche Gerätespalte eine Bemessung meint, steht in
+  derselben Feldliste, aus der die Saat gerechnet hat. Ohne Verweis entsteht keine Basis; die
+  Abweichungsanzeige des Kostendialogs bleibt, wie sie ist. Die vier BHKW-Nebenposten bleiben über
+  ihre gesäte Bezeichnung Nebenposten. Ebenso umgestellt: der Wechselrichter, die BHKW-Wartung und
+  die Kessel-Wartung samt ihrem Zeitbezug.
+- **Eine neue Katalogfassung.** Die Kostenspalten standen in der Fachspaltenliste ihres Katalogs und
+  trugen — auch leer — zur Prüfsumme bei; mit ihrem Entfall ändert sich die Prüfsumme jedes Satzes
+  der acht Kataloge. Der Schritt bildet sie für jeden Satz neu, dessen Summe vorher stimmte, damit
+  ein unveränderter Satz nicht als „vom Anwender geändert" gilt. Die alte Spaltenfolge steht allein
+  im Schritt; das Register führt sie nicht mehr.
+- **Die Masken zeigen die Satzvorlage, sie pflegen sie nicht.** Katalogdialoge, Stammblätter,
+  Aufklapper des Katalogbrowsers und der KI-Katalog führen kein Kostenfeld zum Eintippen. Wo eine
+  Maske Kosten zeigt, ist es ein **Lesewert** aus der Investitions-Satzvorlage des Satzes, gelesen
+  über die eine Leseklasse `KatalogkostensatzCtrl` in zwei Formen: der **Kostensatz** je
+  Bemessungsgröße, so wie er in der Kostenverwaltung steht (Wärmepumpe, Photovoltaik in €/kWp,
+  Wechselrichter in €/kW), und die **Gerätekosten** eines Stücks — absolute Positionen wie
+  eingetragen, spezifische mal Baugröße des Satzes (Heizkessel, BHKW, Pufferspeicher,
+  Solarkollektor, Kältemaschine). Ohne Verweis, ohne Vorlage oder ohne Bezugsgröße bleibt das Feld
+  leer, nie 0. Gepflegt wird allein in der Kostenverwaltung. Eine Kopie eines Katalogsatzes
+  übernimmt den Verweis nicht, damit ein Rückweg auf einen der beiden Sätze nie die Vorlage des
+  anderen umschreibt; der Rückweg einer Projektkopie in den Katalog legt aus den Positionen der
+  Anlage die Satzvorlagen des Satzes an.
+- **Die Auslieferung räumt die Waisen ab.** Nach dem Bereinigen entfernt
+  `Werkzeuge/Auslieferungsvorlage` jede Satzvorlage, auf die kein Katalogsatz und keine Projektzeile
+  mehr verweist und die nicht Standard und nicht gesperrt ist — eine Waise ist ein Kostensatz ohne
+  Gerät.
+- **Die Kostenverwaltung gruppiert.** Satzvorlagen, die zu einem Katalogsatz gehören, stehen in der
+  Variantenliste als eigene Gruppe **„Katalogsätze"** hinter den freien Varianten, mit einer
+  Gruppenzeile davor statt dazwischengemischt.
+- **Grenzen.** Der Stromspeicher behält seine vier Kostenspalten, bis sein Rechenweg und die
+  Flotte des Referenzprojekts 1046 auf die Positionen umgestellt sind. `Tab_Rueckkuehlwerk.Modulkosten`
+  bleibt eine Gerätespalte. `Tab_Rueckkuehlwerk` bleibt außen
+  vor: Es hat keine Zeile, keinen Leser und keine Saat.
+- **Ergebnisneutral.** Kein Rechenweg der acht Gewerke liest eine der Spalten; der Referenzlauf
+  bleibt byte-gleich.
+
+**Wie gebaut (KB-2) — die Preise des Brennstoffs wandern in die Trägerkarte.** Derselbe Entscheid
+gilt den Energiepreisen: `Tab_Brennstoff_Stamm` und seine Projektkopie `Tab_Brennstoff` führten je
+einen `Standard_Arbeitspreis`, `Standard_Grundpreis` und `Standard_Leistungspreis`. **Kein
+Rechenweg las sie.** Ihr einziger Weg in die Welt war die **Saat** einer Energieträger-Variante
+(`EnergietraegerVarianteCtrl.Anlegen`, `WizardCtrl.TraegerSatzAnlegen`); gerechnet wird allein aus
+der Trägerwelt — Projektwert `custom_price_*` vor Katalogwert `energy_carrier.price_*` (§ 2.14).
+Ein Preis am Stoff war damit eine zweite, stumme Kostenbasis neben der Karte des Trägers.
+
+- **Die Saat hat eine Quelle.** Arbeits-, Grund- und Leistungspreis der Projektzeilen
+  (`energy_price`, `energy_project_settings`) kommen aus `energy_carrier.price_work`,
+  `price_base` und `price_power` — der Karte des Trägers, auf dem die Zuordnung sitzt. Der
+  **Zeitbezug** des Leistungspreises bleibt, wo er hingehört: an `price_power_modus` der Karte
+  (`JAHR` = €/(kW·a), Vorgabe; `MONAT` = €/(kW·Monat) × 12). Die Projektzeile führt die Zahl in
+  derselben Einheit und braucht ihn nicht zu wiederholen. Ein **neu angelegter** Träger entsteht
+  ohne Preise; sie werden in seiner Karte gepflegt.
+- **Der Schemaschritt** `BrennstoffpreiseTraegerkarteSchema` überträgt zuerst und entfernt dann:
+  Je Träger mit `ID_Brennstoff` und noch **leerem** Preis übernimmt die Karte den Standardwert des
+  verknüpften Katalogbrennstoffs, wenn dieser größer als 0 ist; mit einem übertragenen
+  Leistungspreis bekommt ein leerer Modus den Zeitbezug `JAHR`. Ein **gepflegter** Trägerwert wird
+  nie überschrieben, der Schritt ist wiederholbar. Danach fallen die drei Spalten an Katalog und
+  Projektkopie (`DROP COLUMN`, kein Tabellenneubau).
+- **Nur Katalog zu Katalog.** `energy_carrier` ist ein Katalog ohne Projektbezug; die Projektebene
+  des Trägers ist `energy_project_settings`. Die Werte der **Projektkopien** gehen deshalb
+  nirgends hin: `custom_price_*` ist die oberste Ebene der Lesekette, ein Übertrag dorthin würde
+  die Kosten jedes Projekts mit abweichender Kopie verschieben — eine Saat darf kein Ergebnis
+  bewegen (dieselbe Regel wie beim Emissionsentscheid vom 30.08.2026).
+- **Neue Katalogfassung.** Die drei Spalten standen in der Prüfsumme des Brennstoffkatalogs und
+  trugen auch mit dem Wert 0 je eine Zeile bei; mit ihrem Entfall ändert sich die Prüfsumme jedes
+  ausgelieferten Brennstoffs. Der Schritt bildet sie für jeden Satz neu, dessen gespeicherte Summe
+  vorher stimmte — ein vom Anwender geänderter Satz bleibt als geändert erkennbar. Die nächste
+  Auslieferung trägt damit eine neue Fassung (`--katalogfassung`, Setup-Kette).
+- **Im Dialog** „Brennstoffe des Projekts" entfallen die drei Preisspalten; `PreisEinheit` bleibt,
+  sie ist Katalogtext (die Abrechnungseinheit zeigt die Anzeige aus `energy_carrier.billing_unit`).
+  Gepflegt werden die Preise in der **Energieträgerverwaltung**.
+
 ## 2.15 Vergleichssicht der Ergebnisansicht — alle Varianten gegen die Referenz oder zwei Stände
 
 > **Stand: umgesetzt.** Sicht, A und B liegen als Sitzungswahl in `Vergleichsauswahl.Sicht`
@@ -1562,7 +1725,7 @@ seine Zahlen hängen an der Regel. Ein Haken ohne Wirkung auf die Regel meldet n
 Zuruf. **Den Lauf gespeicherter Ergebnisse nennt ihr Laufvermerk** (→ Register R‑EZ, EZ‑19): Jede Zeile von
 `Tab_ErgebnisWirtschaftlichkeit` trägt die Stände des Laufs, aus dem sie stammt — Stamm, angehakte Varianten,
 Referenz —, aufsteigend mit Komma in der Spalte `Lauf_Staende` (`WirtschaftlichkeitCtrl.SPALTE_LAUF_STAENDE`, eine
-Ergebnisspalte ohne Schemaschritt, die `StelleTabellenSicher` nachzieht; `WirtschaftlichkeitErgebnis.LaufStaende`).
+Ergebnisspalte, die der Schemaschritt `ErgebnisWirtschaftlichkeitSpaltenSchema` anlegt; `WirtschaftlichkeitErgebnis.LaufStaende`).
 Die Seite prüft deshalb gegen den Lauf jedes gewählten Standes, auch nach einem Wechsel zu „Übersicht" oder
 „Kosten" und für einen neu angehakten Stand aus einem älteren Lauf; tragen die gewählten Stände verschiedene
 Vermerke, wird jeder dieser Läufe gegen die Wahl geprüft, und ein Band steht, sobald einer die Gruppenregel ändert
@@ -2073,6 +2236,8 @@ offen E8c‑Q1 und E8c‑Q2, → Register R‑E8c):
 - **Nachweis:** Das Startjahr reist je Position im Nachweisumschlag (Fassung 9, nur bei ≥ 2 geschrieben). Ein älterer
   Umschlag liest seine Positionen als „ab dem ersten Jahr", die Probe vergleicht dort alle Positionen; das betrifft nur
   den Rückfall des Berichts auf den gespeicherten Stand, denn der Bericht rechnet frisch.
+
+**Wasserkosten des Rückkühlwerks.** Wasserkosten = Wassermenge der Rückkühlwerke im Jahr × Arbeitspreis des Trägers Wasser (€/m³, Abwasseranteil im Preis; der Preis gilt je Projekt und steht in der Trägerkarte, nicht am Gerät). Sie zählen zum bedarfsgebundenen Betriebs-Topf p_B, steigen mit der Preissteigerung der Betriebskosten und werden einmal gebucht: im Kapitalwert, nicht in Energiekosten, CO₂ oder CO₂-Abgabe. Unter den Betriebskosten steht die Unterzeile „davon Wasser Rückkühlwerk“ mit Menge × Preis. Ohne Preis entstehen keine Kosten; ein Hinweis nennt die Wassermenge.
 
 ## 3.5 Energiekosten und CO₂
 
@@ -2790,16 +2955,16 @@ weiterreicht (E7c3‑Q4, → Register R‑E7c3). Die Emissionsbilanz nennt eine 
 („Emissionsbilanz — Stufe „X" nicht ausführbar: ‹Grund›"), die Herkunft eines Emissionsfaktors einen Lesefehler
 („… — Brennstoffkatalog nicht lesbar: ‹Grund›"). Gründe ohne eigene Zeile tragen die Eigenschaften `Lesefehler`
 (Parametersatz, Tarif, Emissionsfaktoren, Gesetzeskatalog), `LetzterFehler` (Pflegewege des Gesetzeskatalogs),
-`Katalogfehler` (Kraftwerksparks), `Ladefehler`, `Speicherfehler` und `Vorsorgewarnung` (Wirtschaftlichkeit). Die
-letzten drei zeigt die Oberfläche (E7c3‑Q6 a, gebaut #474, → Register R‑E7c3): `Fehlergrund.Anzeigezeilen` bildet je
-Grund eine Zeile — Laden, Speichern, Vorsorge —, derselbe Grund aus zwei Quellen ist eine Zeile, der Text ist der des
+`Katalogfehler` (Kraftwerksparks), `Ladefehler` und `Speicherfehler` (Wirtschaftlichkeit). Die
+letzten zwei zeigt die Oberfläche (E7c3‑Q6 a, gebaut #474, → Register R‑E7c3): `Fehlergrund.Anzeigezeilen` bildet je
+Grund eine Zeile — Laden, Speichern —, derselbe Grund aus zwei Quellen ist eine Zeile, der Text ist der des
 Kerns ohne Stapel und ohne „neu berechnen"-Hinweis. Die **Statuszeile der Ergebnisseite** nennt beim Laden den
-`Ladefehler` von `LadeErgebnisse`/`LadeSensitivitaet` und die `Vorsorgewarnung`, einen Speicherfehler der Referenzwahl
+`Ladefehler` von `LadeErgebnisse`/`LadeSensitivitaet`, einen Speicherfehler der Referenzwahl
 einmal beim folgenden Laden und den der nicht monetären Wirkungen beim Schreiben; der **Dialog BHKW-Wirtschaftlichkeit**
-zeigt Lade- und Vorsorgegrund als Warnband (es entfällt, wenn eine Kohärenzzeile denselben Grund nennt) und hängt einen
+zeigt den Ladegrund als Warnband (es entfällt, wenn eine Kohärenzzeile denselben Grund nennt) und hängt einen
 Speicherfehler an die Fehlermeldung von „OK". Einen Datenbankfehler beim Schreiben meldet `DataRepository` selbst,
 einmal; `Speicherfehler` trägt nur Fehler außerhalb der Datenbankanweisung, und nach einem gescheiterten UPDATE folgt
-kein INSERT mehr. `StelleTabellenSicher` setzt die `Vorsorgewarnung` zu Beginn zurück. Ein nicht lesbarer Tarif gilt
+kein INSERT mehr. Ein nicht lesbarer Tarif gilt
 als nicht aktiv. Ohne
 Fehler steht keine dieser Zeilen; die dreizehn Basisprojekte sind Zeile für Zeile unverändert.
 
@@ -3146,8 +3311,8 @@ Stromverwender nicht ansetzt — Satz, Staffel am zugeordneten Träger, Satz je 
 Hinweisliste —, EZ‑17; der Rollentarif ohne Leistungsanteil samt Hinweis mit dem Modell, die Kohärenz der § 9b-Entlastung
 am Rückfallträger und das Veraltet-Band nach einem Haken samt Referenzwahl und „Berechnen", EZ‑18; der Laufvermerk
 ohne Datenbank, seine Rundreise durch `Persistiere` und `LadeErgebnisse`, die Prüfung je Lauf und das Band nach einem
-Seitenwechsel, EZ‑19), `WirtschaftlichkeitCtrlTabellenTests` (die Vorsorge legt `Lauf_Staende` an, ein zweiter Lauf
-ändert nichts), dazu
+Seitenwechsel, EZ‑19), `ErgebnisWirtschaftlichkeitSpaltenSchemaTests` (der Schemaschritt legt `Lauf_Staende` und die
+drei übrigen Ergebnisspalten an, ein zweiter Lauf ändert nichts), dazu
 `SzenarioAbdeckungTests` (56, der Rückfallträger von 1018 zählt wie ein zugeordneter Stromträger),
 `EnergiekostenGrundTests` (die Stromseite der Kohärenz am Rückfallträger, auch unter der Gruppenregel) und bUnit
 `WirtschaftlichkeitErgebnisansichtTests` (das Band am Haken der einzigen Stromvariante, „Neu berechnen" räumt es; neu
@@ -3426,7 +3591,7 @@ Es gilt heute nur noch, was hier ohne Einschränkung steht:
 | Stromsteuersatz an zwei Orten — Katalog `STROMST_REGELSATZ` und `STROMST_REDUZIERT_SATZ` gegen die `const double` in `StrompreisZerlegungModel` | wertgleich und **gekoppelt durch zwei Wachen** (E18, #492): `StrompreisZerlegungTests` hält die Konstanten gegen die älteste Zeile je Schlüssel in der Saat (`GesetzKatalog.Vorbelegung`) und im Katalog der Testdatenbank (`Tab_Gesetzesparameter`: `STROMST_REGELSATZ`, `STROMST_REDUZIERT_SATZ`, dazu die drei Umlagen); rot nennt die Meldung die drei nachzuziehenden Orte. Eine Novelle ist eine spätere Jahreszeile und lässt die Rückfallebene stehen; die Konstante greift nur für Jahre vor 2026 oder ohne Katalogzeile (§ 6.3 Nr. 14) |
 | „Energieintensiv" an drei Orten — Unternehmensart, Schnellwahl im Trägerdialog, Katalogsatz | seit B4 liest die Schnellwahl den Katalog und die Unternehmensart hebt den passenden Knopf hervor; umgekehrt zeigt der Dialog „BHKW-Wirtschaftlichkeit" den erfassten Stromsteueranteil gegen die gewählte Unternehmensart (E18, #492, § 2.2 Gruppe 4) — ein Hinweis ohne Sperre; ohne BHKW steht die Unternehmensart mit derselben Anzeige im Parameterdialog, Gruppe Strom (E19, #498, § 2.4) — je Projektlage eine Pflegestelle; gekoppelt ist weiterhin nichts |
 | BHKW-Einspeisevergütung an **drei** Orten | aktiver Tarif (`Tab_ProjektTarif.Einsp_Arbeit`) · Projektparameter (`Einspeiseverguetung_KWK`) · Anlage (`KWKG_Satz_Einspeisung`); Vorrang eindeutig (aktiver Tarif schlägt Parameterwert). Der vierte Ort (`energy_project_settings.Verguetung_BHKW`) ist mit Schritt 84/85 entfallen |
-| Zwei Migrationsmechanismen — `SchemaMigration` gegen Selbst-DDL in `WirtschaftlichkeitCtrl` | aufgelöst mit #501 (Cloud-Sitzung, 25.09.2026: „Ad-hoc-DDL der fünf Tabellen entfernt“) bis auf vier Ergebnisspalten: die fünf Tabellen stehen im Grundschema (STRICT, Fremdschlüssel auf `Tab_Projekt`), jede Eingabespalte allein in ihrem Schemaschritt; `StelleTabellenSicher` zieht nur noch `StromsteuerBefreiungModus`, `ErsatzBarwert`, `Nachweis_Json` und `Lauf_Staende` nach, bis ein Schemaschritt sie führt (Wache `WirtschaftlichkeitCtrlTabellenTests`). Neue Eingabespalten gehören allein in den Schemaschritt |
+| Zwei Migrationsmechanismen — `SchemaMigration` gegen Selbst-DDL in `WirtschaftlichkeitCtrl` | **aufgelöst** (#501, KB-8): die fünf Tabellen stehen im Grundschema (STRICT, Fremdschlüssel auf `Tab_Projekt`), jede Eingabespalte allein in ihrem Schemaschritt, die vier Ergebnisspalten `StromsteuerBefreiungModus`, `ErsatzBarwert`, `Nachweis_Json` und `Lauf_Staende` im Schemaschritt `ErgebnisWirtschaftlichkeitSpaltenSchema`; der Controller führt keine DDL (Wache `WirtschaftlichkeitCtrlTabellenTests`). Neue Spalten gehören allein in einen Schemaschritt |
 | Zwei Lesewege auf die Kostenposition | der direkte Zugriff ist der Normalfall; daneben die gespeicherte **Sicht** `Abfrage_Kostenfaktoren` (`sql/schema/002_views.sql`) — kein Access-Artefakt mehr, sie liegt im Repo, kennt die neuen Spalten nicht und ließe sich erweitern; beim Tabellenumbau wird sie eigens behandelt (`ProjektWerteLoeschschutz`) |
 | ~~Komponenten-IDs hart verdrahtet gegen dynamisch gelesen (`Form_Kosten` gegen `UcBkKosten`)~~ | **gegenstandslos** — beide Klassen gibt es nicht mehr: Die Unterscheidung liegt im Kern (`KostenVorlagenCtrl.IstErfassungsgruppe`), die Oberfläche in `EPOS.UI/Dialoge/Kosten/` |
 | Vorrang Projekt vor Katalog in **zwei** Implementierungen | `KostenEmissionRechner`, `StromPreisCtrl`; dazu die Sicht `Abfrage_Energietraeger_Effektiv` (`sql/schema/002_views.sql:26`) |

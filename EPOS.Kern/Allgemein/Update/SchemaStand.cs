@@ -1046,7 +1046,97 @@ namespace WindowsFormsApplication1
         /// <see cref="BauteilkatalogSchema.SCHRITT"/>: Herkunft EIGEN/IMPORT, Gruppe und Klasse, das Kennzeichen „für die
         /// Gebäudesimulation meist nicht geeignet“, die Felder der Quelle und die Abschnittstabellen
         /// (<see cref="BauteilkatalogSchema"/>). <b>Ergebnisneutral:</b> Der Bauteilweg liest keine neue Spalte.
-        public const int Zielversion = BauteilkatalogSchema.SCHRITT;
+        /// Danach, mit der KLASSE HAUSTECHNIK (BK-3c, E134), steht das Ziel auf <see cref="BauteilkatalogHaustechnikSchema.SCHRITT"/>:
+        /// die Klasse <c>HAUSTECHNIK</c> in der Prüfklausel von <c>Klasse_Code</c> an Baustoff- und Aufbaukatalog samt
+        /// Projektkopien (<see cref="BauteilkatalogHaustechnikSchema"/>). <b>Ergebnisneutral:</b> Der Bauteilweg liest keine
+        /// Gliederung.
+        /// Danach, mit der ABRECHNUNG DES SPLIT-STROMS (K6, Konzept Kältebedarf 4.2/4.3, E34/E35), steht das Ziel auf
+        /// <see cref="KaeltebedarfSplitAbrechnungSchema.SCHRITT"/>: die Ergebnistabelle <c>Tab_ErgebnisKaelteDezentral</c> je
+        /// dezentral (Split) gedeckter Kältebedarfszeile eines Laufs (<see cref="KaeltebedarfSplitAbrechnungSchema"/>).
+        /// <b>Ergebnisneutral:</b> Kein Referenzprojekt führt eine Split-Zeile; die Tabelle bleibt leer.
+        /// Danach, mit den ZONENFERIEN ALS LISTE (ZB5, ZB‑Q3 B), steht das Ziel auf <see cref="TwwZonenferienSchema.SCHRITT"/>:
+        /// die Tabelle <c>Tab_TwwZonenferien</c> (beliebig viele eigene Ferienzeiträume je Zone), in die der Schritt die vier
+        /// Spaltenpaare von <c>Tab_TwwZone</c> überträgt und sie danach abbaut (<see cref="TwwZonenferienSchema"/>).
+        /// <b>Ergebnisneutral:</b> Der Zapfkalender rechnet über die Liste dieselben Fenster.
+        /// Danach, mit den LASTFELDERN DER ZONE (DA-2, E138 F5), steht das Ziel auf <see cref="ZonenLastfelderSchema.SCHRITT"/>:
+        /// <c>Aussenluft_Person</c>, <c>Licht_W_m2</c> und <c>Personen_Waerme_W</c> an <c>Tab_Zone</c> und <c>Tab_Zone_STAMM</c>
+        /// (<see cref="ZonenLastfelderSchema"/>). <b>Ergebnisneutral:</b> Der Rechenweg liest keine der drei Spalten.
+        /// Danach, mit der SAAT DER KATALOGKOSTEN-SATZVORLAGEN (KB-3), steht das Ziel auf
+        /// <see cref="KatalogkostenSaatSchema.SCHRITT"/>: die zwei Verweise
+        /// <c>ID_KostenVorlage</c>/<c>ID_KostenVorlageInvestition</c> an den acht Projektkopien mit Kosten und je
+        /// Katalogsatz mit Kosten genau eine Satzvorlage je Art (<see cref="KatalogkostenSaatSchema"/>).
+        /// <b>Ergebnisneutral:</b> Gerechnet wird aus <c>Tab_ProjektWerte</c>; eine Satzvorlage wirkt erst beim
+        /// Übernehmen oder Abgleichen.
+        /// Danach, mit den BRENNSTOFFPREISEN IN DER TRÄGERKARTE (KB-2), steht das Ziel auf
+        /// <see cref="BrennstoffpreiseTraegerkarteSchema.SCHRITT"/>: <c>Standard_Arbeitspreis</c>,
+        /// <c>Standard_Grundpreis</c> und <c>Standard_Leistungspreis</c> gehen an
+        /// <c>energy_carrier.price_work</c>/<c>price_base</c>/<c>price_power</c> über und fallen an
+        /// <c>Tab_Brennstoff_Stamm</c> und <c>Tab_Brennstoff</c> weg
+        /// (<see cref="BrennstoffpreiseTraegerkarteSchema"/>). <b>Ergebnisneutral:</b> Kein Rechenweg liest die
+        /// drei Spalten; sie waren allein Saat der Energieträger-Variante. <b>Neue Katalogfassung:</b> Die
+        /// Prüfsumme jedes Brennstoffs ändert sich, der Schritt bildet sie für unveränderte Sätze neu.
+        /// Danach, mit dem ENTFALL DER GERÄTEKOSTENSPALTEN (KB-4), steht das Ziel auf
+        /// <see cref="GeraetekostenEntfallSchema.SCHRITT"/>: der Investitionsverweis und die Saat am
+        /// Wechselrichter, dann der Entfall der 32 Kostenspalten an den acht Investitionsgewerken und ihren
+        /// Projektkopien (<see cref="GeraetekostenEntfallSchema"/>). <b>Ergebnisneutral:</b> Kein Rechenweg
+        /// dieser Gewerke liest eine der Spalten; Planwert, Dialoge und Berichte lesen die Satzvorlage.
+        /// <b>Neue Katalogfassung:</b> Die Prüfsumme jedes Satzes der acht Kataloge ändert sich, der Schritt
+        /// bildet sie für unveränderte Sätze neu.
+        /// Danach, mit dem ENTFALL DER STROMSPEICHER-KOSTENSPALTEN (KB-5), steht das Ziel auf
+        /// <see cref="StromspeicherKostenSchema.SCHRITT"/>: Sicherheitslauf der Saat, dann der Entfall von
+        /// <c>Modulkosten</c>, <c>Leistungskosten</c>, <c>Investition_Fix</c> und <c>Verschleisskosten</c> an
+        /// Katalog und Projektkopie (<see cref="StromspeicherKostenSchema"/>). <b>Ergebnisgleich:</b> Der Rechenweg
+        /// liest dieselben Sätze aus Position und Satzvorlage. <b>Neue Katalogfassung:</b> Die Prüfsumme jedes
+        /// Stromspeichers ändert sich, der Schritt bildet sie für unveränderte Sätze neu.
+        /// Danach, mit SCHEMASCHRITT A DER KÄLTEBEDARFSPROFILE (KBP-2), steht das Ziel auf
+        /// <see cref="KaeltebedarfsprofilVorlagenSchema.SCHRITT"/>: <c>Z_Projekt_Kaeltebedarf.Eingabeart</c> (Vorgabe 'jahr'), der
+        /// Art-Vorschlag <c>Kaelte_Art</c> an <c>Tab_Kaeltebedarf_STAMM</c> und <c>Tab_Kaeltebedarf</c> und die Saat der
+        /// Vorlagen 7–16 (<see cref="KaeltebedarfsprofilVorlagenSchema"/>). <b>Ergebnisneutral:</b> Jede Zuordnung rechnet weiter mit
+        /// der Jahressumme, die Zeilen 1–6 bleiben bytegleich samt Prüfsumme.
+        /// Danach, mit der SAAT DER DIN-NUTZUNGSPROFILE (DA-6, E135), steht das Ziel auf <see cref="RaumnutzungDinWerteSchema.SCHRITT"/>:
+        /// Die 45 ausgelieferten Profile der Kategorie DIN/TS 18599-10 tragen die Werte der Fassung 2025-10
+        /// (<see cref="RaumnutzungDinSaat"/>), nur wo kein Wert stand. <b>Ergebnisneutral:</b> Kein Referenzprojekt nutzt ein
+        /// Nutzungsprofil.
+        /// Danach, mit der INHOMOGENEN SCHICHT UND DEN FENSTERN IM AUFBAUKATALOG (BK-5/BK-6), steht das Ziel auf
+        /// <see cref="BauteilkatalogAbschnittSchema.SCHRITT"/>: ψ des Glasrands am Aufbau (<see cref="BauteilkatalogAbschnittSchema"/>).
+        /// <b>Ergebnisneutral:</b> Kein Referenzprojekt führt einen Aufbau.
+        /// Danach, mit der HERKUNFT DES U-WERTS (MA-6b, E149), steht das Ziel auf <see cref="BauteilUHerkunftSchema.SCHRITT"/>:
+        /// <c>U_Herkunft</c> an <c>Tab_Bauteil(_STAMM)</c> (<see cref="BauteilUHerkunftSchema"/>) — ein von Hand gesetzter U-Wert
+        /// bleibt beim Wiederimport. <b>Ergebnisneutral:</b> Die Spalte entsteht leer, der Rechenweg liest sie nicht.
+        /// Danach, mit der EINGABEART DER BEDARFSPROFILE (KBP-5a bis KBP-5d), steht das Ziel auf
+        /// <see cref="BedarfsprofilEingabeartSchema.SCHRITT"/>: <c>Eingabeart</c> an <c>Z_Projekt_Prozesswaerme</c> und
+        /// <c>Z_Projekt_Brauchwasser</c>, <c>Nutzungstage_Norm</c> an <c>Tab_Kaeltebedarf(_STAMM)</c> (Saat allein an Vorlage 8),
+        /// <c>Ferien_wie_Sonntag</c> am Betriebskalender (<see cref="BedarfsprofilEingabeartSchema"/>). <b>Ergebnisneutral:</b>
+        /// Jede Zuordnung rechnet mit Eingabeart 'jahr', die Nutzungstage liest kein Rechenweg.
+        /// Danach, mit dem WASSERPREIS IN DER TRÄGERKARTE (KB-7a), steht das Ziel auf
+        /// <see cref="WasserpreisTraegerkarteSchema.SCHRITT"/>: Träger „Wasser“ (Preismodell <c>WATER</c>, Einheit m³),
+        /// Übernahme der Anlagenpreise in <c>energy_project_settings</c> (je Projekt die Anlage mit der kleinsten ID,
+        /// ein gepflegter Kartenpreis bleibt), dann der Entfall von <c>Tab_Energieanlagen.Wasserpreis_EUR_m3</c>
+        /// (<see cref="WasserpreisTraegerkarteSchema"/>). <b>Ergebnisneutral:</b> Kein Referenzprojekt rechnet ein
+        /// Rückkühlwerk; keine neue Katalogfassung.
+        /// Danach, mit den TYPTAGEN DER KÄLTEBEDARFSZUORDNUNG (KBP-4a), steht das Ziel auf
+        /// <see cref="KaeltetyptagSchema.SCHRITT"/>: <c>Tab_Kaeltetyptag</c> und <c>Tab_Kaeltetyptag_Matrix</c>, zwei leere
+        /// Tabellen (<see cref="KaeltetyptagSchema"/>). <b>Ergebnisneutral:</b> Keine Zuordnung trägt Eingabeart 'typtag'.
+        /// Danach, mit ABSORPTIONS- UND EMISSIONSGRAD JE BAUTEIL (DA-8), steht das Ziel auf
+        /// <see cref="BauteilStrahlungSchema.SCHRITT"/>: <c>Absorptionsgrad_Solar</c> und <c>Emissionsgrad</c> an Aufbau und Bauteil
+        /// (<see cref="BauteilStrahlungSchema"/>). <b>Ergebnisneutral:</b> Die Spalten entstehen leer, leer heißt Festwert.
+        /// Danach, mit den ROHWERTEN DES KLIMAIMPORTS (KD-4), steht das Ziel auf <see cref="KlimaRohwerteSchema.SCHRITT"/>:
+        /// <c>Tab_Klimastunde_STAMM</c> (leer, nur Katalog) und die Herkunftsspalten an <c>Tab_Klimaregion(_STAMM)</c>
+        /// (<see cref="KlimaRohwerteSchema"/>). <b>Ergebnisneutral:</b> Bestandsregionen bleiben ohne Rohwerte, kein
+        /// Rechenweg liest die Rohtabelle.
+        /// Danach, mit den ERGEBNISREIHEN (EB-1), steht das Ziel auf <see cref="ErgebnisreihenSchema.SCHRITT"/>:
+        /// <c>Stromeinspeisung</c> an <c>Tab_ErgebnisBHKW</c>, <c>Abregelung</c> an <c>Tab_ErgebnisPhotovoltaik</c>,
+        /// <c>Eigenverbrauch_System</c> an <c>Tab_ErgebnisStromspeicher</c> (<see cref="ErgebnisreihenSchema"/>).
+        /// <b>Ergebnisneutral:</b> Der Rechenweg bleibt, der Lauf schreibt nur zusätzlich, was er schon rechnet;
+        /// Altergebnisse bleiben leer.
+        /// Danach, mit den ERGEBNISSPALTEN DER WIRTSCHAFTLICHKEIT (KB-8), steht das Ziel auf
+        /// <see cref="ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT"/>: <c>StromsteuerBefreiungModus</c>, <c>ErsatzBarwert</c>,
+        /// <c>Nachweis_Json</c> und <c>Lauf_Staende</c> an <c>Tab_ErgebnisWirtschaftlichkeit</c>, jede nur, wenn sie fehlt
+        /// (<see cref="ErgebnisWirtschaftlichkeitSpaltenSchema"/>). <b>Ergebnisneutral:</b> kein DML, Bestandszeilen bleiben
+        /// leer. Das Ziel ist das Ende der Kette; umgehängt wird allein am Vorgänger
+        /// <see cref="ErgebnisreihenSchema.SCHRITT"/>.
+        /// </summary>
+        public const int Zielversion = ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

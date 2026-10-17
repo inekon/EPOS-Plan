@@ -72,6 +72,14 @@ namespace WindowsFormsApplication1
             Array.Empty<(string, string, string)>();
         /// <summary>Prüfregel einer Zeile der Kopie; leer = in Ordnung. Läuft vor dem Vorgang.</summary>
         public Func<DataRow, string> Pruefung { get; init; }
+        /// <summary>
+        /// <b>Die Satzvorlagen der Kopie gehen mit</b> (Welle KB-5, Stromspeicher): Ein Gewerk, dessen Kosten nur in den
+        /// Satzvorlagen stehen, verlöre sonst seine Kosten, wenn die Anlage keine eigene Kostenposition führt. Je Kategorie
+        /// ohne Position der Anlage übernimmt der Katalogsatz deshalb den Verweis der Kopie (<c>ID_KostenVorlage</c>,
+        /// <c>ID_KostenVorlageInvestition</c>) — derselbe Verweis, den die Übernahme Katalog → Kopie mitkopiert (Muster
+        /// Wechselrichter, KB-4b). Positionen der Anlage gehen weiterhin vor.
+        /// </summary>
+        public bool KostenverweisMitnehmen { get; init; }
     }
 
     /// <summary>Eine Zeile der Rückfrage: die Kopie, ihr Ursprung, ob er überschrieben werden kann, der Namensvorschlag.</summary>
@@ -356,7 +364,11 @@ namespace WindowsFormsApplication1
             object anlage = v.Skalar("SELECT MIN(\"ID\") FROM \"Tab_Energieanlagen\" WHERE \"ID_Projekt\" = ? AND \"" +
                                      g.Anlagenverweis + "\" = ?", new DbParam("@p", idProjekt),
                                      new DbParam("@k", Convert.ToInt32(kopie["ID"], CultureInfo.InvariantCulture)));
-            if (anlage == null || anlage == DBNull.Value) return 0;
+            if (anlage == null || anlage == DBNull.Value)
+            {
+                VerweiseDerKopieMitnehmen(v, g, kopie, idKatalog);
+                return 0;
+            }
             int idAnlage = Convert.ToInt32(anlage, CultureInfo.InvariantCulture);
             var positionen = new Dictionary<int, DataTable>();
             foreach (int kategorie in KATEGORIEN)
@@ -370,7 +382,11 @@ namespace WindowsFormsApplication1
                         new DbParam("@c", g.KomponentenId), new DbParam("@k", kategorie))
                     : null;
             int gesamt = positionen.Values.Sum(t => t?.Rows.Count ?? 0);
-            if (gesamt == 0) return 0;
+            if (gesamt == 0)
+            {
+                VerweiseDerKopieMitnehmen(v, g, kopie, idKatalog);
+                return 0;
+            }
 
             string bemerkung = F(MyResource.Resource.KATRUECK_BEMERKUNG_VORLAGE, Projektname(v, idProjekt), heute);
             string vorlagenname = name.Length > NAME_VORLAGE_MAX ? name.Substring(0, NAME_VORLAGE_MAX) : name;
@@ -387,6 +403,15 @@ namespace WindowsFormsApplication1
 
                 if (!hatPositionen)
                 {
+                    int? ausKopie = g.KostenverweisMitnehmen ? VerweisDerKopie(kopie, spalte) : null;
+                    if (ausKopie.HasValue)
+                    {
+                        if (alt == ausKopie) continue;
+                        v.Ausfuehren("UPDATE \"" + g.Katalogtabelle + "\" SET \"" + spalte + "\" = ? WHERE \"ID\" = ?",
+                                     new DbParam("@v", ausKopie.Value), new DbParam("@id", idKatalog));
+                        if (idVorlage > 0) Abraeumen(v, idVorlage);
+                        continue;
+                    }
                     if (!alt.HasValue) continue;
                     v.Ausfuehren("UPDATE \"" + g.Katalogtabelle + "\" SET \"" + spalte + "\" = NULL WHERE \"ID\" = ?",
                                  new DbParam("@id", idKatalog));
@@ -414,6 +439,35 @@ namespace WindowsFormsApplication1
                              new DbParam("@v", idVorlage), new DbParam("@id", idKatalog));
             }
             return gesamt;
+        }
+
+        /// <summary>
+        /// Führt die Anlage keine Kostenposition (oder gibt es keine Anlage), übernimmt ein Gewerk mit
+        /// <see cref="Rueckweggewerk.KostenverweisMitnehmen"/> je Kategorie den Verweis der Kopie — nur, wo die Kopie einen
+        /// führt; ein Verweis des Katalogsatzes ohne Gegenstück an der Kopie bleibt stehen.
+        /// </summary>
+        private static void VerweiseDerKopieMitnehmen(DbVorgang v, Rueckweggewerk g, DataRow kopie, int idKatalog)
+        {
+            if (!g.KostenverweisMitnehmen) return;
+            foreach (int kategorie in KATEGORIEN)
+            {
+                if (!VerweisLesbar(g.Katalogtabelle, kategorie)) continue;
+                string spalte = Verweisspalte(kategorie);
+                int? ausKopie = VerweisDerKopie(kopie, spalte);
+                if (!ausKopie.HasValue || Verweis(v, g.Katalogtabelle, spalte, idKatalog) == ausKopie) continue;
+                v.Ausfuehren("UPDATE \"" + g.Katalogtabelle + "\" SET \"" + spalte + "\" = ? WHERE \"ID\" = ?",
+                             new DbParam("@v", ausKopie.Value), new DbParam("@id", idKatalog));
+            }
+        }
+
+        /// <summary>Der Verweis der Kopie auf ihre Satzvorlage der Spalte <paramref name="spalte"/>; <c>null</c>, wenn leer.</summary>
+        private static int? VerweisDerKopie(DataRow kopie, string spalte)
+        {
+            if (!kopie.Table.Columns.Contains(spalte)) return null;
+            object o = kopie[spalte];
+            if (o == null || o == DBNull.Value) return null;
+            int id = Convert.ToInt32(o, CultureInfo.InvariantCulture);
+            return id > 0 ? id : (int?)null;
         }
 
         /// <summary>Die Kategorien der Satzvorlagen: Betrieb, Investition.</summary>
@@ -530,6 +584,62 @@ namespace WindowsFormsApplication1
             return Satzvorlagenabbau.Geloescht;
         }
 
+        /// <summary>
+        /// <b>Räumt jede verwaiste Satzvorlage ab</b> — die Vorlagen, auf die kein Katalogsatz und keine
+        /// Projektzeile mehr verweist und die nicht Standard und nicht gesperrt sind
+        /// (<see cref="Abraeumen"/> je Vorlage). Gibt die Zahl der gelöschten Vorlagen zurück.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Wofür.</b> Die Auslieferungsvorlage entfernt die Projektdaten und die nicht ausgelieferten
+        /// Katalogsätze; deren Satzvorlagen bleiben sonst als Waisen in <c>Tab_KostenVorlage</c> stehen und
+        /// reisen in die Auslieferung. Seit Welle KB-4 ist die Satzvorlage die EINE Kostenbasis eines
+        /// Katalogsatzes — eine Waise ist damit ein Kostensatz ohne Gerät.
+        /// </para>
+        /// <para>
+        /// <b>Dieselbe Regel wie beim Löschen eines Satzes</b>, nur über alle Vorlagen: Standard- und
+        /// gesperrte Vorlagen bleiben, ebenso jede Vorlage mit einem Verweis oder einer Projektzeile.
+        /// </para>
+        /// </remarks>
+        public static int SatzvorlagenAbraeumen(DbVorgang v)
+        {
+            if (v == null) return 0;
+            DataTable dt = v.Lese("SELECT \"ID\" FROM \"" + SchemaKatalog.TAB_KOSTENVORLAGE +
+                                  "\" WHERE IFNULL(\"IstStandard\", 0) = 0 AND IFNULL(\"ReadOnly\", 0) = 0 " +
+                                  "ORDER BY \"ID\"", null);
+            if (dt == null) return 0;
+            int geloescht = 0;
+            foreach (DataRow r in dt.Rows)
+            {
+                int id = Convert.ToInt32(r["ID"], CultureInfo.InvariantCulture);
+                if (Abraeumen(v, id) == Satzvorlagenabbau.Geloescht) geloescht++;
+            }
+            return geloescht;
+        }
+
+        /// <summary>
+        /// <see cref="SatzvorlagenAbraeumen(DbVorgang)"/> in einem eigenen Vorgang — der Weg der
+        /// Auslieferungsvorlage, die keinen offenen Vorgang führt.
+        /// </summary>
+        public static int SatzvorlagenAbraeumen()
+        {
+            if (!DataRepository.TabelleVorhanden(SchemaKatalog.TAB_KOSTENVORLAGE)) return 0;
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    int n = SatzvorlagenAbraeumen(v);
+                    v.Commit();
+                    return n;
+                }
+                catch
+                {
+                    v.Rollback();
+                    throw;
+                }
+            }
+        }
+
         /// <summary>Die Meldung zum Ausgang von <see cref="SatzvorlageBeimLoeschen"/>; leer, wenn nichts zu sagen ist.</summary>
         public static string SatzvorlagenMeldung(Satzvorlagenabbau abbau, string satzname)
             => abbau == Satzvorlagenabbau.BleibtProjektzeilen ? F(MyResource.Resource.KATRUECK_LOESCHEN_VORLAGE_PROJEKT, satzname) : "";
@@ -590,6 +700,29 @@ namespace WindowsFormsApplication1
         /// <summary>Die Betriebs-Satzvorlage (sonst die Investitions-Satzvorlage) der Anlage; <c>null</c> = keine.</summary>
         public static KostenVorlageKopf SatzvorlageDerAnlage(int idAnlage, int idType, int komponentenId)
             => SatzvorlagenDerAnlage(idAnlage, idType, komponentenId).FirstOrDefault();
+
+        /// <summary>
+        /// Trägt eine Anlage dieser Art (<c>Tab_Energieanlagen.ID_Type</c>) einen Ursprung und damit eine Satzvorlage?
+        /// Die Liste steht in <see cref="ANLAGEN"/> — sie ist die EINE Landkarte Anlage → Projektkopie → Katalog
+        /// (KB-3: der Abgleich fragt sie, statt eine zweite zu führen).
+        /// </summary>
+        public static bool Gewerkbekannt(int idType) => ANLAGEN.ContainsKey(idType);
+
+        /// <summary>
+        /// Die ID des Katalogsatzes, aus dem das Gerät der Anlage <paramref name="idAnlage"/> stammt; <b>0</b> = kein
+        /// Ursprung (<c>ID_Stamm</c> leer, der Satz ist gelöscht, oder die Spalte fehlt).
+        /// </summary>
+        public static int UrsprungsSatz(int idAnlage, int idType)
+        {
+            if (idAnlage <= 0 || !ANLAGEN.TryGetValue(idType, out var a)) return 0;
+            if (!KatalogkostenUrsprungSchema.UrsprungLesbar(a.Kopietabelle)) return 0;
+            object o = DataRepository.ExecuteScalar(
+                "SELECT s.\"ID\" FROM \"Tab_Energieanlagen\" e " +
+                "JOIN \"" + a.Kopietabelle + "\" k ON k.\"ID\" = e.\"" + a.Verweis + "\" " +
+                "JOIN \"" + a.Katalogtabelle + "\" s ON s.\"ID\" = k.\"ID_Stamm\" WHERE e.\"ID\" = ?",
+                new DbParam("@a", idAnlage));
+            return o == null || o == DBNull.Value ? 0 : Convert.ToInt32(o, CultureInfo.InvariantCulture);
+        }
 
         // ---------------------------------------------------------------- Hilfen ---
 

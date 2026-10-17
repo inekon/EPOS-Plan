@@ -121,7 +121,7 @@
                                           Bedarf="@_daten.Bedarf"
                                           RingWaerme="@(ErgebnisSteht ? Modell(Bilder.RingWaerme) : null)"
                                           RingStrom="@(ErgebnisSteht ? Modell(Bilder.RingStrom) : null)"
-                                          RingKaelte="@(ErgebnisSteht && (_daten.Bedarf?.Kaelte?.Erzeuger.Count ?? 0) > 0 ? Modell(Bilder.RingKaelte) : null)"
+                                          RingKaelte="@(ErgebnisSteht && ((_daten.Bedarf?.Kaelte?.Erzeuger.Count ?? 0) > 0 || _daten.Bedarf?.Kaelte?.MitDezentral == true) ? Modell(Bilder.RingKaelte) : null)"
                                           BedarfDetails="@(BedarfGabenDa ? EventCallback.Factory.Create(this, () => BedarfOeffnen(true)) : default)"
                                           StromDetails="@(BedarfGabenDa ? EventCallback.Factory.Create(this, () => BedarfOeffnen(false)) : default)"
                                           Aufnehmen="@ErzeugerAufnehmen" />
@@ -154,6 +154,7 @@
                                                FarbeSetzen="@Dienste?.FarbeSetzen"
                                                FarbeZuruecksetzen="@Dienste?.FarbeZuruecksetzen"
                                                Speichertemperaturen="@_daten.Speichertemperaturen"
+                                               Speicherwahl="@_daten.Speicherwahl"
                                                SpeichertemperaturFeld="@_daten.SpeichertemperaturFeld"
                                                ModulOeffnen="@(WpGabenDa ? EventCallback.Factory.Create(this, WaermepumpeOeffnen) : default)"
                                                Csv="@Rueckruf(Dienste?.CsvWaermepumpe)" />
@@ -920,7 +921,7 @@
 
     // Der Kaeltegang steht nur, wenn das Projekt Kaelte rechnet: Bedarf.Kaelte ist
     // null, solange der Projektschalter Kuehlbetrieb aus ist (nicht erhoben).
-    private RenderFragment Kaeltegang => @<KaeltegangReiter Modell="ModellHolen" Teillast="@_daten.Bedarf?.Kaelte?.Teillast"
+    private RenderFragment Kaeltegang => @<KaeltegangReiter Modell="ModellHolen" Teillast="@_daten.Bedarf?.Kaelte?.Teillast" Kaelte="@_daten.Bedarf?.Kaelte"
         FarbeSetzen="@Dienste?.FarbeSetzen" FarbeZuruecksetzen="@Dienste?.FarbeZuruecksetzen" />;
 
     private Ganglinienexport? _ganglinienexport;

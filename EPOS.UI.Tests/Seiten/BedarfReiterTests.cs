@@ -455,4 +455,24 @@ public class BedarfReiterTests : EposBunitContext
 
         Assert.Equal(1, n);
     }
+
+    /// <summary>
+    /// K6b (Konzept Kältebedarf 4.3): mit Split-Zeile stehen die Herkunft (Gebäude, Lastgänge, Profile) und „davon
+    /// dezentral (Split)“ unter der Kanalzeile; ohne sie bleibt die Gruppe, wie sie war.
+    /// </summary>
+    [Fact]
+    public void K6b_Kaeltegruppe_zeigt_Herkunft_und_Split_nur_mit_Split_Zeile()
+    {
+        string davon = WindowsFormsApplication1.MyResource.Resource.SIMERG_LBL_KAELTE_DAVON_DEZENTRAL;
+        var ohne = ZeichnenMitKaelte(MitKaelte());
+        Assert.DoesNotContain(davon, ohne.Markup);
+
+        BedarfDaten d = MitKaelte();
+        d.Kaelte!.MitDezentral = true;
+        d.Kaelte.GebaeudeMwh = 8.0; d.Kaelte.ExternMwh = 2.5; d.Kaelte.ProfilMwh = 2.0; d.Kaelte.DezentralMwh = 3.0;
+        var mit = ZeichnenMitKaelte(d);
+        Assert.Contains(davon, mit.Markup);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMERG_LBL_KAELTE_DAVON_GEBAEUDE, mit.Markup);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMERG_LBL_KAELTE_DAVON_PROFIL, mit.Markup);
+    }
 }

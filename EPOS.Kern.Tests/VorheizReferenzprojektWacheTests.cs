@@ -21,7 +21,9 @@ namespace EPOS.Kern.Tests
     /// <list type="bullet">
     /// <item><b>Jede gesäte Zelle</b> steht wie im Skript; jede übrige Fachzelle der Einstellungen und des Gebäudes steht
     /// wie in 1051.</item>
-    /// <item><b>1065 ist das einzige Projekt mit Vorheizen</b>; 1051 rechnet weiter die Sollwertrampe (Bestand, F9).</item>
+    /// <item><b>1065 ist das einzige Projekt mit Vorheizen ohne Heizkreis</b> (die Kopie 1073 von 1054 heizt mit Heizkreis und
+    /// Schnellaufheizung vor, <see cref="SchnellaufheizungReferenzprojektWacheTests"/>); 1051 rechnet weiter die Sollwertrampe
+    /// (Bestand, F9).</item>
     /// <item><b>Ein Lauf aus der Datenbank</b> bemisst t_V = 2 h als 95-%-Quantil, den Deckel aus Φ_K,max mit 20 %
     /// Toleranz, hält die Spitze am Deckel, schreibt die Spalten <c>Vorheiz*</c> und braucht rund 0,45 MWh mehr Heizwärme
     /// als 1051; 1051 schreibt keine Vorheizgröße.</item>
@@ -48,7 +50,7 @@ namespace EPOS.Kern.Tests
         private const int PROJEKT = 1065, VORLAGE = 1051;
         private const string NAME = "Referenzprojekt Vorheizen";
 
-        // Die Kennzahlen der Basis R52 (Referenzlaeufe/2026-10-11_R52_Vorheizen/Projekt_1065/aggregate.csv).
+        // Die Kennzahlen der Basis R52 (Referenzlaeufe/2026-10-17_R59_Ergebnisreihen/Projekt_1065/aggregate.csv, unverändert seit R52).
         private const int R52_VORHEIZZEIT_H = 2, R52_BEDARF_MAX_H = 5, R52_TAGE_UEBER = 5, R52_TAGE_VERFEHLT = 5;
         private const double R52_BEZUG_KW = 23.6166077, R52_DECKEL_KW = 28.3399293;
         private const double R52_HEIZWAERME_1065_MWH = 24.6731709, R52_HEIZWAERME_1051_MWH = 24.223504;
@@ -142,9 +144,11 @@ namespace EPOS.Kern.Tests
         public void Das_Projekt_ist_das_einzige_mit_Vorheizen()
         {
             if (!_db.Vorhanden) return;
-            string bedingung = string.Join(" OR ", VORHEIZSPALTEN.Select(s => s + " IS NOT NULL"));
+            // Neben 1065 trägt allein das Referenzprojekt 1073 (Schnellaufheizung, mit Heizkreis) Vorheizzellen.
+            string bedingung = "(" + string.Join(" OR ", VORHEIZSPALTEN.Select(s => s + " IS NOT NULL")) + ") AND ID_Projekt <> 1073";
             Assert.Equal((long)PROJEKT, Zahl("SELECT ID_Projekt FROM Tab_Einstellungen WHERE " + bedingung));
             Assert.Equal(1L, Zahl("SELECT COUNT(*) FROM Tab_Einstellungen WHERE " + bedingung));
+            Assert.Null(KonfigurationCtrl.AnlagenkopplungLesen(PROJEKT));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Zone WHERE Vorheizzeit_H IS NOT NULL"));
         }
 

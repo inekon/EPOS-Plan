@@ -337,7 +337,7 @@ public class WaermebedarfAdminDialogTests : EposBunitContext
 
         var kz = cut.FindAll(".epos-stammblatt-kennzahl");
         Assert.Equal(3, kz.Count);
-        Assert.Equal("6.137,6 MWh", kz[0].QuerySelector("dd")!.TextContent);
+        Assert.Equal("6.138 MWh", kz[0].QuerySelector("dd")!.TextContent); // BP-3: N0
         Assert.Equal("Jahresarbeit", kz[0].QuerySelector("dt")!.TextContent);
         Assert.Equal("2.782 h", kz[2].QuerySelector("dd")!.TextContent);
 

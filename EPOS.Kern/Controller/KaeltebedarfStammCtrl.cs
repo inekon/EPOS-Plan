@@ -63,6 +63,47 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Das Temperaturpaar (Angabe) einer PROJEKTKOPIE (<c>Tab_Kaeltebedarf.ID</c>).</summary>
+        /// <summary>
+        /// Der Art-Vorschlag eines Katalogsatzes (KBP-2, Konzept Kältebedarfsprofile 6.2): <see cref="KaelteArtSchema.RAUM"/>,
+        /// <see cref="KaelteArtSchema.PROZESS"/> oder null, wenn der Satz keinen trägt oder der Schritt noch nicht steht.
+        /// Ein Vorschlag — die Kälte-Art der Zuordnung setzt der Anwender.
+        /// </summary>
+        public static string ArtVorschlag(string szBezeichner)
+        {
+            if (!Da || !KaeltebedarfsprofilVorlagenSchema.ArtVorschlagLesbar()) return null;
+            // Ganze Zeile lesen: Die Spalte entsteht erst im Schemaschritt, ein Text mit ihrem Namen fiele auf einem
+            // aelteren Stand (und im SQL-Dialekt-Pruefer gegen die Testdatenbank) durch.
+            DataTable dt = DataRepository.GetDataTable("SELECT * FROM " + TABLE + " WHERE Bezeichner = ?",
+                                                       new DbParam("@bez", szBezeichner ?? ""));
+            if (dt == null || dt.Rows.Count == 0) return null;
+            return KaeltebedarfsprofilVorlagenSchema.ArtVorschlag(ColOrNull(dt.Rows[0], KaeltebedarfsprofilVorlagenSchema.SPALTE_ART));
+        }
+
+        /// <summary>
+        /// KBP-5a: die Nutzungstage nach Norm eines Katalogsatzes (<c>Tab_Kaeltebedarf_STAMM.Nutzungstage_Norm</c>,
+        /// Schritt <see cref="BedarfsprofilEingabeartSchema.SCHRITT"/>); <c>null</c>, wenn der Satz keine trägt oder der
+        /// Schritt noch nicht steht. Grundlage des Kalendervorschlags (KBP-5b).
+        /// </summary>
+        public static int? Nutzungstage(string szBezeichner)
+        {
+            if (!Da || !BedarfsprofilEingabeartSchema.NutzungstageLesbar()) return null;
+            // Ganze Zeile lesen: Die Spalte entsteht erst im Schemaschritt.
+            DataTable dt = DataRepository.GetDataTable("SELECT * FROM " + TABLE + " WHERE Bezeichner = ?",
+                                                       new DbParam("@bez", szBezeichner ?? ""));
+            if (dt == null || dt.Rows.Count == 0) return null;
+            return BedarfsprofilEingabeartSchema.Nutzungstage(ColOrNull(dt.Rows[0], BedarfsprofilEingabeartSchema.SPALTE_NUTZUNGSTAGE));
+        }
+
+        /// <summary>KBP-5a: die Nutzungstage nach Norm einer PROJEKTKOPIE (<c>Tab_Kaeltebedarf.ID</c>); <c>null</c> = keine.</summary>
+        public static int? ProjektNutzungstage(int idKopie)
+        {
+            if (idKopie <= 0 || !DataRepository.SpalteVorhanden(TABLE_PROJ, BedarfsprofilEingabeartSchema.SPALTE_NUTZUNGSTAGE))
+                return null;
+            DataTable dt = DataRepository.GetDataTable("SELECT * FROM " + TABLE_PROJ + " WHERE ID = ?", new DbParam("@id", idKopie));
+            if (dt == null || dt.Rows.Count == 0) return null;
+            return BedarfsprofilEingabeartSchema.Nutzungstage(ColOrNull(dt.Rows[0], BedarfsprofilEingabeartSchema.SPALTE_NUTZUNGSTAGE));
+        }
+
         public static (double? Vorlauf, double? Ruecklauf) ProjektTemperaturpaar(int idKopie)
         {
             if (idKopie <= 0 || !DataRepository.TabelleVorhanden(TABLE_PROJ)) return (null, null);
@@ -82,6 +123,126 @@ namespace WindowsFormsApplication1
                 new DbParam("@v", (object)vorlauf ?? DBNull.Value),
                 new DbParam("@r", (object)ruecklauf ?? DBNull.Value),
                 new DbParam("@id", idKopie));
+        }
+
+        // ---- KBP-3a: Monatswerte und Wochenprofil der PROJEKTKOPIE (Konzept Kaeltebedarfsprofile 3.2, 3.3, 3.5) ----------
+
+        /// <summary>
+        /// Die Monatsanteile <c>Monat_1…12</c> [%] einer PROJEKTKOPIE (<c>Tab_Kaeltebedarf.ID</c>); <c>null</c> ohne Kopie
+        /// oder Schritt. Ein leerer Monat zählt 0.
+        /// </summary>
+        public static double[] ProjektMonate(int idKopie)
+        {
+            if (idKopie <= 0 || !DataRepository.TabelleVorhanden(TABLE_PROJ)) return null;
+            DataTable dt = DataRepository.GetDataTable("SELECT * FROM " + TABLE_PROJ + " WHERE ID = ?", new DbParam("@id", idKopie));
+            if (dt == null || dt.Rows.Count == 0) return null;
+            var m = new double[Kaelteprofileingabe.MONATE];
+            for (int i = 0; i < m.Length; i++)
+                m[i] = Zahl(dt.Rows[0], "Monat_" + (i + 1).ToString(CultureInfo.InvariantCulture)) ?? 0.0;
+            return m;
+        }
+
+        /// <summary>
+        /// Das Wochenprofil <c>"1"…"168"</c> der PROJEKTKOPIE (erste Typzeile von <c>Tab_Kaeltetyp</c> mit diesem
+        /// <c>ID_Kaeltebedarf</c>); <c>null</c> ohne Typzeile. Eine leere Stunde zählt 0.
+        /// </summary>
+        public static double[] ProjektWoche(int idKopie)
+        {
+            if (idKopie <= 0 || !DataRepository.TabelleVorhanden(TYP_PROJ)) return null;
+            DataTable dt = DataRepository.GetDataTable("SELECT * FROM " + TYP_PROJ + " WHERE ID_Kaeltebedarf = ? ORDER BY ID",
+                                                       new DbParam("@id", idKopie));
+            if (dt == null || dt.Rows.Count == 0) return null;
+            var w = new double[Kaelteprofileingabe.WOCHE];
+            for (int h = 0; h < w.Length; h++)
+                w[h] = Zahl(dt.Rows[0], (h + 1).ToString(CultureInfo.InvariantCulture)) ?? 0.0;
+            return w;
+        }
+
+        /// <summary>
+        /// Schreibt Monatsanteile und/oder Wochenprofil in die PROJEKTKOPIE <paramref name="idKopie"/> — nie in den Katalog.
+        /// <c>null</c> lässt die jeweilige Größe stehen. Läuft in der Vorgangsklammer des Aufrufers
+        /// (<see cref="WizardCtrl.Add_Projekt_Kaelte"/>); ohne Typzeile wird keine angelegt (Rückgabe <c>false</c>).
+        /// </summary>
+        public static bool ProjektProfilSchreiben(int idKopie, double[] monate, double[] woche)
+        {
+            if (idKopie <= 0 || !DataRepository.TabelleVorhanden(TABLE_PROJ)) return false;
+            if (monate != null)
+            {
+                if (monate.Length != Kaelteprofileingabe.MONATE) return false;
+                var p = new List<DbParam>();
+                for (int i = 0; i < monate.Length; i++)
+                    p.Add(new DbParam("@m" + (i + 1).ToString("D2", CultureInfo.InvariantCulture), monate[i]));
+                p.Add(new DbParam("@id", idKopie));
+                if (!DataRepository.ExecuteSQL(
+                        "UPDATE Tab_Kaeltebedarf SET Monat_1 = ?, Monat_2 = ?, Monat_3 = ?, Monat_4 = ?, Monat_5 = ?, Monat_6 = ?, " +
+                        "Monat_7 = ?, Monat_8 = ?, Monat_9 = ?, Monat_10 = ?, Monat_11 = ?, Monat_12 = ? WHERE ID = ?", p.ToArray()))
+                    return false;
+            }
+            if (woche != null)
+            {
+                if (woche.Length != Kaelteprofileingabe.WOCHE) return false;
+                object typId = DataRepository.ExecuteScalar(
+                    "SELECT ID FROM Tab_Kaeltetyp WHERE ID_Kaeltebedarf = ? ORDER BY ID LIMIT 1", new DbParam("@kb", idKopie));
+                if (typId == null || typId == DBNull.Value) return false;
+                var satz = new StringBuilder();
+                var p = new List<DbParam>();
+                for (int h = 0; h < woche.Length; h++)
+                {
+                    if (h > 0) satz.Append(", ");
+                    satz.Append('"').Append((h + 1).ToString(CultureInfo.InvariantCulture)).Append("\" = ?");
+                    p.Add(new DbParam("@h" + (h + 1).ToString("D3", CultureInfo.InvariantCulture), woche[h]));
+                }
+                p.Add(new DbParam("@tid", typId));
+                if (!DataRepository.ExecuteSQL("UPDATE " + TYP_PROJ + " SET " + satz + " WHERE ID = ?", p.ToArray()))
+                    return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// <b>Kopie bei Bearbeitung</b> (Konzept 3.5): legt von der PROJEKTKOPIE <paramref name="idKopie"/> eine eigene
+        /// Projektkopie desselben Projekts an — Kopf mit allen Spalten (gleicher Bezeichner, gleicher Ursprung) und alle
+        /// Typzeilen — und gibt ihre ID zurück; 0 bei Fehler. Läuft in der Vorgangsklammer des Aufrufers.
+        /// </summary>
+        public static int ProjektkopieAbspalten(int idKopie, int idProjekt)
+        {
+            if (idKopie <= 0 || idProjekt <= 0 || !DataRepository.TabelleVorhanden(TABLE_PROJ)) return 0;
+            DataTable kopf = DataRepository.GetDataTable("SELECT * FROM " + TABLE_PROJ + " WHERE ID = ? AND ID_Projekt = ?",
+                                                         new DbParam("@id", idKopie), new DbParam("@proj", idProjekt));
+            if (kopf == null || kopf.Rows.Count == 0) return 0;
+            int neuId = DataRepository.GetMaxID(TABLE_PROJ, "ID") + 1;
+            if (!ZeileKopieren(TABLE_PROJ, kopf.Rows[0], new Dictionary<string, object> { ["ID"] = neuId })) return 0;
+
+            DataTable typen = DataRepository.GetDataTable("SELECT * FROM " + TYP_PROJ + " WHERE ID_Kaeltebedarf = ? ORDER BY ID",
+                                                          new DbParam("@kb", idKopie));
+            if (typen != null)
+                foreach (DataRow t in typen.Rows)
+                {
+                    int neuTyp = DataRepository.GetMaxID(TYP_PROJ, "ID") + 1;
+                    if (!ZeileKopieren(TYP_PROJ, t, new Dictionary<string, object> { ["ID"] = neuTyp, ["ID_Kaeltebedarf"] = neuId }))
+                        return 0;
+                }
+            // KBP-4a (Konzept 3.5, 8.2): Typtage und Matrix reisen mit der eigenen Kopie.
+            if (!KaeltetyptagCtrl.Kopieren(idKopie, neuId, idProjekt)) return 0;
+            return neuId;
+        }
+
+        /// <summary>Fügt die Zeile <paramref name="r"/> mit allen ihren Spalten in <paramref name="tabelle"/> ein, <paramref name="ersetzt"/> überschreibt einzelne Werte.</summary>
+        private static bool ZeileKopieren(string tabelle, DataRow r, Dictionary<string, object> ersetzt)
+        {
+            var cols = new StringBuilder();
+            var vals = new StringBuilder();
+            var p = new List<DbParam>();
+            int k = 0;
+            foreach (DataColumn c in r.Table.Columns)
+            {
+                if (k > 0) { cols.Append(", "); vals.Append(", "); }
+                cols.Append('"').Append(c.ColumnName).Append('"');
+                vals.Append('?');
+                object wert = ersetzt.TryGetValue(c.ColumnName, out object e) ? e : r[c];
+                p.Add(new DbParam("@c" + (k++).ToString("D3", CultureInfo.InvariantCulture), wert ?? DBNull.Value));
+            }
+            return DataRepository.ExecuteSQL("INSERT INTO " + tabelle + " (" + cols + ") VALUES (" + vals + ")", p.ToArray());
         }
 
         public void ReadAll()
@@ -187,6 +348,8 @@ namespace WindowsFormsApplication1
             string typName = h["Typ"] != DBNull.Value ? h["Typ"].ToString() : "";
             DataTable dtTyp = string.IsNullOrEmpty(typName) ? null
                 : DataRepository.GetDataTable("SELECT * FROM " + TYP_STAMM + " WHERE Bezeichner = ?", new DbParam("@bez", typName));
+            bool artProj = DataRepository.SpalteVorhanden(TABLE_PROJ, KaeltebedarfsprofilVorlagenSchema.SPALTE_ART);
+            bool tageProj = DataRepository.SpalteVorhanden(TABLE_PROJ, BedarfsprofilEingabeartSchema.SPALTE_NUTZUNGSTAGE);
 
             using (DbVorgang v = DataRepository.Vorgang())
             {
@@ -211,6 +374,18 @@ namespace WindowsFormsApplication1
                     p.Add(new DbParam("@hvl", ColOrNull(h, KaeltebedarfSchema.SPALTE_VORLAUF)));
                     p.Add(new DbParam("@hrl", ColOrNull(h, KaeltebedarfSchema.SPALTE_RUECKLAUF)));
                     p.Add(new DbParam("@hstamm", Convert.ToInt64(h["ID"], CultureInfo.InvariantCulture)));
+                    // KBP-2: der Art-Vorschlag reist mit der Kopie, wenn beide Tabellen ihn fuehren.
+                    if (artProj && h.Table.Columns.Contains(KaeltebedarfsprofilVorlagenSchema.SPALTE_ART))
+                    {
+                        cols.Append(", " + KaeltebedarfsprofilVorlagenSchema.SPALTE_ART); vals.Append(", ?");
+                        p.Add(new DbParam("@hart", ColOrNull(h, KaeltebedarfsprofilVorlagenSchema.SPALTE_ART)));
+                    }
+                    // KBP-5a: die Nutzungstage nach Norm reisen ebenso mit der Kopie.
+                    if (tageProj && h.Table.Columns.Contains(BedarfsprofilEingabeartSchema.SPALTE_NUTZUNGSTAGE))
+                    {
+                        cols.Append(", " + BedarfsprofilEingabeartSchema.SPALTE_NUTZUNGSTAGE); vals.Append(", ?");
+                        p.Add(new DbParam("@htage", ColOrNull(h, BedarfsprofilEingabeartSchema.SPALTE_NUTZUNGSTAGE)));
+                    }
                     v.Ausfuehren("INSERT INTO " + TABLE_PROJ + " (" + cols + ") VALUES (" + vals + ")", p.ToArray());
 
                     if (dtTyp != null && dtTyp.Rows.Count > 0)

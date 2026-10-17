@@ -105,7 +105,7 @@ namespace WindowsFormsApplication1
         /// <c>Straenge_Je_Mppt</c> — die Prüfungen P4/P5 rechnen dann auf EINEM MPPT,
         /// dem konservativen Fall, und melden es. Ebenso <c>S_AC_Max</c>: <c>Paco</c>
         /// ist Wirkleistung, nicht Scheinleistung. Dazu <c>P_DC_Max</c>,
-        /// <c>U_Start</c> und <c>Kosten</c>.</para>
+        /// <c>U_Start</c>.</para>
         ///
         /// <para><b><c>Eta_Max</c> ist das Maximum der sechs Stützstellen</b>, nicht der
         /// wahre Scheitel: Die CEC-Liste führt keinen Maximalwirkungsgrad, und der
@@ -144,7 +144,6 @@ namespace WindowsFormsApplication1
 
             m.m_P_Standby = Pso != 0.0 ? (double?)Pso : null;
             m.m_P_Nacht = Pnt != 0.0 ? (double?)Pnt : null;
-            m.m_Kosten = null;
 
             m.m_Sandia_Pdco = Pdco != 0.0 ? (double?)Pdco : null;
             m.m_Sandia_Vdco = Vdco != 0.0 ? (double?)Vdco : null;

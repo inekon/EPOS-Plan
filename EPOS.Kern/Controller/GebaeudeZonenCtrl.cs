@@ -92,9 +92,18 @@ namespace WindowsFormsApplication1
                 ? new[] { VorheizenSchema.SPALTE_ZONE_VORHEIZZEIT }
                 : (IReadOnlyList<string>)Array.Empty<string>();
 
-        /// <summary>Alle Spalten der Zone hinter <see cref="ZonenSchema.Zonenspalten"/>: Kühlübergabe, Übergabe je Zone, Nutzungsprofil, Vorheizzeit.</summary>
+        /// <summary>
+        /// Die Lastfelder der Zone (DA-2, <see cref="ZonenLastfelderSchema"/>) — Datenaustausch, vom Lauf nicht gelesen; leer, solange
+        /// die Datenbank den Schritt nicht trägt. NULL bleibt NULL.
+        /// </summary>
+        private static IReadOnlyList<string> Lastspalten()
+            => GebaeudeZonenanschluss.LastfelderVorhanden()
+                ? ZonenLastfelderSchema.SPALTEN.Select(s => s.Spalte).ToList()
+                : (IReadOnlyList<string>)Array.Empty<string>();
+
+        /// <summary>Alle Spalten der Zone hinter <see cref="ZonenSchema.Zonenspalten"/>: Kühlübergabe, Übergabe je Zone, Nutzungsprofil, Vorheizzeit, Lastfelder.</summary>
         private static IReadOnlyList<string> Zusatzspalten()
-            => Kuehlspalten().Concat(Uebergabespalten()).Concat(Nutzungsprofilspalten()).Concat(Vorheizspalten()).ToList();
+            => Kuehlspalten().Concat(Uebergabespalten()).Concat(Nutzungsprofilspalten()).Concat(Vorheizspalten()).Concat(Lastspalten()).ToList();
 
         /// <summary>Die Werte zu <paramref name="zusatz"/> (aus <see cref="Zusatzspalten"/>) in derselben Reihenfolge.</summary>
         private static IEnumerable<DbParam> Zusatzwerte(ZoneModel z, IReadOnlyList<string> zusatz)
@@ -109,6 +118,10 @@ namespace WindowsFormsApplication1
                 {
                     Wert = z.Vorheizzeit_H.HasValue ? (object)z.Vorheizzeit_H.Value : DBNull.Value
                 });
+            if (zusatz.Contains(ZonenLastfelderSchema.SPALTE_LICHT))
+                werte = werte.Append(BaustoffCtrl.Zahl("@al", z.Aussenluft_Person))
+                             .Append(BaustoffCtrl.Zahl("@lw", z.Licht_W_m2))
+                             .Append(BaustoffCtrl.Zahl("@pw", z.Personen_Waerme_W));
             return werte;
         }
 
@@ -129,6 +142,9 @@ namespace WindowsFormsApplication1
                 ? ZonenSchema.Bauteilspalten.Concat(ZonenkopplungSchema.SpaltenBauteil.Select(s => s.Key))
                 : ZonenSchema.Bauteilspalten;
             if (GebaeudeZonenanschluss.FlaechenherkunftVorhanden()) spalten = spalten.Append(FlaechenherkunftSchema.SPALTE);
+            if (GebaeudeZonenanschluss.UHerkunftVorhanden()) spalten = spalten.Append(BauteilUHerkunftSchema.SPALTE);
+            // DA-8: Absorptions- und Emissionsgrad, wenn der Schritt steht (BauteilStrahlungSchema).
+            if (BauteilStrahlungSchema.Lesbar()) spalten = spalten.Concat(BauteilStrahlungSchema.SPALTEN.Select(s => s.Name));
             return spalten.ToList();
         }
 
@@ -139,6 +155,39 @@ namespace WindowsFormsApplication1
         /// <summary>Führt die Spaltenliste <paramref name="bauteilspalten"/> die Flächenherkunft (Schritt 197)?</summary>
         private static bool MitFlaechenherkunft(IReadOnlyList<string> bauteilspalten)
             => bauteilspalten.Contains(FlaechenherkunftSchema.SPALTE);
+
+        /// <summary>Führt die Spaltenliste <paramref name="bauteilspalten"/> Absorptions- und Emissionsgrad (DA-8)?</summary>
+        private static bool MitStrahlung(IReadOnlyList<string> bauteilspalten)
+            => bauteilspalten.Contains(BauteilStrahlungSchema.SPALTE_EMISSION);
+
+        /// <summary>Führt die Spaltenliste <paramref name="bauteilspalten"/> die Herkunft des U-Werts (MA-6b)?</summary>
+        private static bool MitUHerkunft(IReadOnlyList<string> bauteilspalten)
+            => bauteilspalten.Contains(BauteilUHerkunftSchema.SPALTE);
+
+        /// <summary>
+        /// <b>Die Herkunft des U-Werts nach einer Änderung in der Pflege</b> (MA-6b, E149): Bleiben Aufbau und U-Wert, bleibt die
+        /// gespeicherte Herkunft. Wird ein anderer Aufbau gewählt, stammt der U-Wert aus dem Aufbau (<c>KATALOG</c>); ändert sich
+        /// sonst der U-Wert, ist er von Hand gesetzt (<c>MANUELL</c>). Ohne U-Wert und ohne Aufbau gibt es keine Herkunft.
+        /// Verglichen mit dem Rand von <c>1e-9</c> relativ (mindestens <c>1e-9</c>) wie die Fläche.
+        /// </summary>
+        internal static string UHerkunftNachPflege(string gespeichert, int? gespeicherterAufbau, double? gespeicherterU,
+                                                   int? neuerAufbau, double? neuerU)
+        {
+            bool aufbauGleich = gespeicherterAufbau == neuerAufbau;
+            bool uGleich = gespeicherterU.HasValue == neuerU.HasValue &&
+                           (!neuerU.HasValue || Math.Abs(gespeicherterU.Value - neuerU.Value) <=
+                                                Math.Max(1e-9, 1e-9 * Math.Abs(gespeicherterU.Value)));
+            if (aufbauGleich && uGleich) return gespeichert;
+            if (!aufbauGleich && neuerAufbau.HasValue) return DbWerte.HERKUNFT_KATALOG;
+            return neuerU.HasValue ? DbWerte.HERKUNFT_MANUELL : neuerAufbau.HasValue ? DbWerte.HERKUNFT_KATALOG : null;
+        }
+
+        /// <summary>
+        /// Die Herkunft des U-Werts eines Bauteils, das die Pflege neu anlegt (MA-6b): eine mitgebrachte Herkunft bleibt, sonst
+        /// stammt der U-Wert aus dem gewählten Aufbau (<c>KATALOG</c>) oder ist von Hand eingetragen (<c>MANUELL</c>).
+        /// </summary>
+        internal static string UHerkunftNeu(BauteilModel b)
+            => b.U_Herkunft ?? (b.ID_Aufbau.HasValue ? DbWerte.HERKUNFT_KATALOG : b.U_Wert.HasValue ? DbWerte.HERKUNFT_MANUELL : null);
 
         /// <summary>
         /// <b>Die Flächenherkunft nach einer Änderung in der Pflege</b> (Abstimmung G5, A4): Bleibt die gespeicherte
@@ -714,6 +763,8 @@ namespace WindowsFormsApplication1
             IEnumerable<DbParam> Werte(ZoneModel z) => Zonenwerte(z).Concat(Zusatzwerte(z, zusatz));
             IReadOnlyList<string> bauteilspalten = Bauteilspalten();
             bool flaechenherkunft = MitFlaechenherkunft(bauteilspalten);
+            bool uHerkunft = MitUHerkunft(bauteilspalten);
+            bool strahlung = MitStrahlung(bauteilspalten);
 
             try
             {
@@ -742,6 +793,7 @@ namespace WindowsFormsApplication1
                         .Rows.Cast<DataRow>().Select(r => Convert.ToInt32(r[0], CultureInfo.InvariantCulture)));
                     DataTable bauteilTabelle = v.Lese(
                         "SELECT b.\"ID\", b.\"Flaeche\"" + (flaechenherkunft ? ", b.\"" + FlaechenherkunftSchema.SPALTE + "\"" : "") +
+                        (uHerkunft ? ", b.\"ID_Aufbau\", b.\"U_Wert\", b.\"" + BauteilUHerkunftSchema.SPALTE + "\"" : "") +
                         " FROM \"" + tab.Bauteil + "\" b INNER JOIN \"" + tab.Zone + "\" z " +
                         "ON z.\"ID\" = b.\"ID_Zone\" WHERE z.\"ID_Gebaeude\" = ?", new DbParam("@g", idGebaeude));
                     var bauteilBestand = new HashSet<int>(bauteilTabelle
@@ -753,6 +805,14 @@ namespace WindowsFormsApplication1
                         foreach (DataRow r in bauteilTabelle.Rows)
                             herkunftBestand[Convert.ToInt32(r[0], CultureInfo.InvariantCulture)] =
                                 (BaustoffCtrl.ZahlAus(r, "Flaeche"), BaustoffCtrl.TextAus(r, FlaechenherkunftSchema.SPALTE));
+                    // MA-6b: Aufbau, U-Wert und seine Herkunft je Bauteil - ein U-Wert, der sich von Hand aendert, wird MANUELL
+                    // (UHerkunftNachPflege).
+                    var uBestand = new Dictionary<int, (int? Aufbau, double? U, string Herkunft)>();
+                    if (uHerkunft)
+                        foreach (DataRow r in bauteilTabelle.Rows)
+                            uBestand[Convert.ToInt32(r[0], CultureInfo.InvariantCulture)] =
+                                (BaustoffCtrl.GanzAus(r, "ID_Aufbau"), BaustoffCtrl.ZahlAus(r, "U_Wert"),
+                                 BaustoffCtrl.TextAus(r, BauteilUHerkunftSchema.SPALTE));
 
                     // Fremde Ids und fremde Aufbauten weist der Abgleich ab, bevor er schreibt. Im Katalog gilt der
                     // Aufbaukatalog (ZK-b): ein Bauteil einer Katalogzone zeigt nie auf einen Projektaufbau.
@@ -850,19 +910,22 @@ namespace WindowsFormsApplication1
                             {
                                 if (flaechenherkunft && herkunftBestand.TryGetValue(b.ID, out var alt))
                                     b.Flaechenherkunft = FlaechenherkunftNachPflege(alt.Herkunft, alt.Flaeche, b.Flaeche);
+                                if (uHerkunft && uBestand.TryGetValue(b.ID, out var altU))
+                                    b.U_Herkunft = UHerkunftNachPflege(altU.Herkunft, altU.Aufbau, altU.U, b.ID_Aufbau, b.U_Wert);
                                 v.Ausfuehren("UPDATE \"" + tab.Bauteil + "\" SET " +
                                              string.Join(", ", bauteilspalten.Select(s => "\"" + s + "\" = ?")) +
                                              " WHERE \"ID\" = ?",
-                                             Bauteilwerte(b, kopplung, flaechenherkunft).Append(new DbParam("@id", b.ID)).ToArray());
+                                             Bauteilwerte(b, kopplung, flaechenherkunft, uHerkunft, strahlung).Append(new DbParam("@id", b.ID)).ToArray());
                             }
                             else
                             {
                                 // Von Hand angelegt (auch als Kopie einer Zeile): die Flaeche stammt nicht aus der Datei.
                                 b.Flaechenherkunft = null;
+                                b.U_Herkunft = UHerkunftNeu(b);
                                 b.ID = v.EinfuegenUndId("INSERT INTO \"" + tab.Bauteil + "\" (" +
                                                         string.Join(", ", bauteilspalten.Select(s => "\"" + s + "\"")) +
                                                         ") VALUES (" + BaustoffCtrl.Fragezeichen(bauteilspalten.Count) + ")",
-                                                        Bauteilwerte(b, kopplung, flaechenherkunft).ToArray());
+                                                        Bauteilwerte(b, kopplung, flaechenherkunft, uHerkunft, strahlung).ToArray());
                             }
                         }
                         z.Bauteile = z.Bauteile.Where(x => x != null).ToList();
@@ -905,6 +968,44 @@ namespace WindowsFormsApplication1
             {
                 return Ergebnis.Fehler(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.ZONE_MSG_NICHT_GESPEICHERT, ex.Message));
             }
+        }
+
+        /// <summary>
+        /// <b>Hat der Zonendialog ein Feld von Hand geändert, das auch eine Datei tragen kann?</b> (Nachzug N2, MA-6 c) — Übergabe
+        /// (sieben Spalten), Kühlübergabe (drei), Vorheizzeit, Höchstleistungen, Sollwerte und Höchsttemperatur, dazu (Nachzug N6)
+        /// Beheizung, Kühlung, Strahlungsanteil, Luftwechsel, interne Gewinne, Bewohner, Nutzungsprofil und Profilwerte, verglichen mit
+        /// dem gespeicherten Stand (Zahlen mit dem Rand 1e-9 relativ). Nutzfläche, Raumhöhe und Volumen zählen nicht.
+        /// </summary>
+        internal static bool HandfelderGeaendert(ZoneModel alt, ZoneModel neu)
+        {
+            if (alt == null || neu == null) return false;
+            static bool Z(double? a, double? b)
+                => a.HasValue != b.HasValue || (a.HasValue && Math.Abs(a.Value - b.Value) > 1e-9 * Math.Max(1.0, Math.Abs(a.Value)));
+            static bool T(string a, string b)
+                => !string.Equals(string.IsNullOrWhiteSpace(a) ? null : a.Trim(), string.IsNullOrWhiteSpace(b) ? null : b.Trim(), StringComparison.Ordinal);
+            return T(alt.Uebergabe_Art, neu.Uebergabe_Art) || Z(alt.Uebergabe_Exponent, neu.Uebergabe_Exponent)
+                   || Z(alt.Uebergabe_Leistung_Nenn, neu.Uebergabe_Leistung_Nenn) || Z(alt.Auslegung_Vorlauf, neu.Auslegung_Vorlauf)
+                   || Z(alt.Auslegung_Ruecklauf, neu.Auslegung_Ruecklauf) || Z(alt.Auslegung_Raumtemperatur, neu.Auslegung_Raumtemperatur)
+                   || Z(alt.Regler_Proportionalband, neu.Regler_Proportionalband)
+                   || T(alt.Kuehl_Uebergabe_Art, neu.Kuehl_Uebergabe_Art) || Z(alt.Kuehl_Uebergabe_Exponent, neu.Kuehl_Uebergabe_Exponent)
+                   || Z(alt.Kuehl_Uebergabe_Leistung_Nenn, neu.Kuehl_Uebergabe_Leistung_Nenn)
+                   || alt.Vorheizzeit_H != neu.Vorheizzeit_H
+                   || Z(alt.Heizleistung_Max, neu.Heizleistung_Max) || Z(alt.Kuehlleistung_Max, neu.Kuehlleistung_Max)
+                   || Z(alt.Raumsolltemperatur_Tag, neu.Raumsolltemperatur_Tag)
+                   || Z(alt.Raumsolltemperatur_Nachtabsenkung, neu.Raumsolltemperatur_Nachtabsenkung)
+                   || Z(alt.Raumsolltemperatur_Wochenende, neu.Raumsolltemperatur_Wochenende)
+                   || Z(alt.Raumsolltemperatur_Ferien, neu.Raumsolltemperatur_Ferien)
+                   || Z(alt.Kuehl_Sollwert, neu.Kuehl_Sollwert) || Z(alt.Kuehl_Sollwert_Nacht, neu.Kuehl_Sollwert_Nacht)
+                   || Z(alt.Maximaleraumtemperatur, neu.Maximaleraumtemperatur)
+                   // Nachzug N6 (MA-6 c): auch die übrigen Felder des Dialogs, die eine Datei tragen kann - Beheizung, Kühlung,
+                   // Strahlungsanteil, Luftwechsel, interne Gewinne, Bewohner, Nutzungsprofil und die Profilwerte.
+                   || alt.IstBeheizt != neu.IstBeheizt || alt.Kuehlung_Aktiv != neu.Kuehlung_Aktiv
+                   || Z(alt.Heizung_Strahlungsanteil, neu.Heizung_Strahlungsanteil)
+                   || Z(alt.Luftwechsel_Infiltration, neu.Luftwechsel_Infiltration) || Z(alt.Luftwechsel_Nutzer, neu.Luftwechsel_Nutzer)
+                   || Z(alt.Interne_Waermegewinne, neu.Interne_Waermegewinne) || Z(alt.Bewohner, neu.Bewohner)
+                   || Z(alt.Aussenluft_Person, neu.Aussenluft_Person) || Z(alt.Licht_W_m2, neu.Licht_W_m2)
+                   || Z(alt.Personen_Waerme_W, neu.Personen_Waerme_W)
+                   || T(alt.Nutzungsprofil, neu.Nutzungsprofil);
         }
 
         /// <summary>
@@ -953,6 +1054,18 @@ namespace WindowsFormsApplication1
             List<ZoneModel> liste = (zonen ?? new List<ZoneModel>()).Where(z => z != null).ToList();
             var zonenVorher = liste.Select(z => (Zone: z, Id: z.ID)).ToList();
 
+            // Nachzug N2 (MA-6 c): Ändert der Zonendialog an einer Projektzone ein Feld, das auch eine Datei tragen kann
+            // (Übergabe, Kühlübergabe, Vorheizzeit, Höchstleistungen, Sollwerte), wird die Zone MANUELL - der Wiederimport
+            // bewahrt sie dann. Geometrie (Fläche, Höhe, Volumen) kommt immer aus der Datei und markiert nicht.
+            bool projekt = ebene == Zonenebene.Projekt;
+            if (projekt && liste.Any(z => z.ID > 0))
+            {
+                Dictionary<int, ZoneModel> gespeichert = LesenJeGebaeude(idGebaeude).ToDictionary(z => z.ID);
+                foreach (ZoneModel z in liste)
+                    if (z.ID > 0 && gespeichert.TryGetValue(z.ID, out ZoneModel alt) && HandfelderGeaendert(alt, z))
+                        z.Herkunft = DbWerte.HERKUNFT_MANUELL;
+            }
+
             using (DbVorgang v = DataRepository.Vorgang())
             using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(v))
             {
@@ -992,6 +1105,16 @@ namespace WindowsFormsApplication1
                                     MyResource.Resource.ZONE_MSG_NICHT_GESPEICHERT, k.Meldung));
                             }
                             if (zeile) geschrieben++;
+                            // Nachzug N2 (MA-6 a): Hat der Kalendereditor die Konditionierung einer bestehenden Projektzone
+                            // geändert (Vorgabezeilen, Kalender, Perioden, Wochen), wird die Zone MANUELL - wie im Blatt
+                            // „Nutzung und Kalender“ (ZonenNutzungCtrl); der Wiederimport bewahrt dann ihre Kalender.
+                            if (zeile && projekt && p.Key > 0)
+                            {
+                                ZoneModel markiert = liste.First(z => z.ID == id);
+                                markiert.Herkunft = DbWerte.HERKUNFT_MANUELL;
+                                v.Ausfuehren("UPDATE \"Tab_Zone\" SET \"Herkunft\" = ? WHERE \"ID\" = ?",
+                                             new DbParam("@h", DbWerte.HERKUNFT_MANUELL), new DbParam("@z", id));
+                            }
                         }
                     }
 
@@ -1073,7 +1196,10 @@ namespace WindowsFormsApplication1
         /// <param name="idGebaeude">Die Projektkopie (<c>Tab_Gebaeude.ID</c>).</param>
         /// <param name="vorschlag">Der Vorschlag.</param>
         /// <param name="vorgang">Der Vorgang des Aufrufers; <c>null</c> = ein eigener.</param>
-        internal Vorschlagsergebnis VorschlagSchreiben(int idGebaeude, GebaeudeBauteilvorschlag vorschlag, DbVorgang vorgang = null)
+        /// <param name="bestandZulassen">MA-6: <c>true</c> schreibt neben die vorhandenen Zonen (die Zusammenführung des
+        /// Wiederimports, <see cref="MehrzonenuebernahmeCtrl.Zusammenfuehren"/>); <c>false</c> lehnt ein Gebäude mit Zonen ab.</param>
+        internal Vorschlagsergebnis VorschlagSchreiben(int idGebaeude, GebaeudeBauteilvorschlag vorschlag, DbVorgang vorgang = null,
+                                                       bool bestandZulassen = false)
         {
             if (vorschlag == null) throw new ArgumentNullException(nameof(vorschlag));
             if (vorschlag.Abgelehnt)
@@ -1092,6 +1218,8 @@ namespace WindowsFormsApplication1
             IReadOnlyList<string> bauteilspalten = Bauteilspalten();
             bool kopplung = MitKopplung(bauteilspalten);
             bool flaechenherkunft = MitFlaechenherkunft(bauteilspalten);
+            bool uHerkunft = MitUHerkunft(bauteilspalten);
+            bool strahlung = MitStrahlung(bauteilspalten);
             // Ohne Schritt S-G keine Trennfläche — benannt, bevor etwas geschrieben ist.
             if (!kopplung && zonen.SelectMany(z => z.Bauteile).Any(b => b.ID_Nachbarzone.HasValue || b.Randbedingung == DbWerte.RANDBEDINGUNG_ZONE))
                 return Vorschlagsergebnis.Fehler(GebaeudeBauteilvorschlag.NICHT_GESCHRIEBEN,
@@ -1119,7 +1247,7 @@ namespace WindowsFormsApplication1
                     long vorhanden = Convert.ToInt64(v.Skalar(
                         "SELECT COUNT(*) FROM \"" + ZonenSchema.TAB_ZONE + "\" WHERE \"ID_Gebaeude\" = ?", new DbParam("@g", idGebaeude)),
                         CultureInfo.InvariantCulture);
-                    if (vorhanden > 0)
+                    if (vorhanden > 0 && !bestandZulassen)
                     {
                         v.Rollback();
                         return Vorschlagsergebnis.Fehler(GebaeudeBauteilvorschlag.ZONE_VORHANDEN, id,
@@ -1188,9 +1316,20 @@ namespace WindowsFormsApplication1
                             b.ID = v.EinfuegenUndId("INSERT INTO \"" + ZonenSchema.TAB_BAUTEIL + "\" (" +
                                                     string.Join(", ", bauteilspalten.Select(s => "\"" + s + "\"")) +
                                                     ") VALUES (" + BaustoffCtrl.Fragezeichen(bauteilspalten.Count) + ")",
-                                                    Bauteilwerte(b, kopplung, flaechenherkunft).ToArray());
+                                                    Bauteilwerte(b, kopplung, flaechenherkunft, uHerkunft, strahlung).ToArray());
                         }
                     }
+
+                    // 3b) Welle DA-4: die Luftströme der Datei zwischen den Zonen (S-G), auf A < B gedreht; ohne Kopplung keiner.
+                    if (kopplung)
+                        foreach (ZonenluftstromModel l in vorschlag.Luftstroeme)
+                        {
+                            if (!zoneJeVorlaeufig.TryGetValue(l.ID_ZoneA, out int a) || !zoneJeVorlaeufig.TryGetValue(l.ID_ZoneB, out int b)) continue;
+                            v.EinfuegenUndId("INSERT INTO \"" + ZonenkopplungSchema.TAB_LUFTSTROM + "\" " +
+                                             "(\"ID_ZoneA\", \"ID_ZoneB\", \"Volumenstrom\") VALUES (?, ?, ?)",
+                                             new[] { new DbParam("@a", Math.Min(a, b)), new DbParam("@b", Math.Max(a, b)),
+                                                     new DbParam("@v", DbParamTyp.Double) { Wert = l.Volumenstrom } });
+                        }
 
                     // 4) Je Zone das Nutzungsprofil des Zonenplans über den Generator (Fläche und lichte Höhe der Zone) und
                     //    danach die Konditionierung der HottCAD-Projektdatei (SQ-1), die die Kopien des Profils ersetzt, wo
@@ -1205,6 +1344,12 @@ namespace WindowsFormsApplication1
                                 ? ZonenplanCtrl.NutzungUebernehmen(idGebaeude, zonen[i].ID, profil, zonen[i].Nutzflaeche, zonen[i].Raumhoehe)
                                 : ZonenplanCtrl.ProjektdateiUebernehmen(idGebaeude, zonen[i].ID, datei, profil, zonen[i].Nutzflaeche, zonen[i].Raumhoehe);
                             if (fehlerZone != null) throw new InvalidOperationException(fehlerZone);
+                            // Welle DA-4: Zeilenbild und benannte Wochen der Datei nach der Konditionierung (Datei vor Profil).
+                            if (i < vorschlag.Zonenreste.Count && vorschlag.Zonenreste[i] is AbbildZonenrest rest && rest.TraegtKonditionierung)
+                            {
+                                string fehlerRest = ZonenplanCtrl.RestUebernehmen(idGebaeude, zonen[i].ID, rest);
+                                if (fehlerRest != null) throw new InvalidOperationException(fehlerRest);
+                            }
                         }
                     }
 
@@ -1362,7 +1507,8 @@ namespace WindowsFormsApplication1
         /// (<see cref="ZonenkopplungSchema.SpaltenBauteil"/>), mit <paramref name="flaechenherkunft"/> zuletzt
         /// <c>Flaechenherkunft</c> (Schritt <see cref="FlaechenherkunftSchema.SCHRITT"/>); NULL bleibt NULL.
         /// </summary>
-        private static IEnumerable<DbParam> Bauteilwerte(BauteilModel b, bool kopplung, bool flaechenherkunft)
+        private static IEnumerable<DbParam> Bauteilwerte(BauteilModel b, bool kopplung, bool flaechenherkunft, bool uHerkunft,
+                                                         bool strahlung)
         {
             foreach (DbParam p in Bauteilwerte(b)) yield return p;
             if (kopplung)
@@ -1371,6 +1517,58 @@ namespace WindowsFormsApplication1
                 yield return BaustoffCtrl.Text("@tz", b.Trennflaeche_Zuordnung);
             }
             if (flaechenherkunft) yield return BaustoffCtrl.Text("@fh", b.Flaechenherkunft);
+            if (uHerkunft) yield return BaustoffCtrl.Text("@uh", b.U_Herkunft);
+            if (strahlung)
+            {
+                yield return BaustoffCtrl.Zahl("@as", b.Absorptionsgrad_Solar);
+                yield return BaustoffCtrl.Zahl("@em", b.Emissionsgrad);
+            }
+        }
+
+        /// <summary>
+        /// <b>Legt ein einzelnes Bauteil an</b> (Projektebene, im Vorgang <paramref name="v"/>) — für die Übernahme eines
+        /// Vorschlags der Modellprüfung (MA-3, fehlendes Hüllbauteil); dieselben Spalten und Werte wie das Speichern der Zone.
+        /// Liefert die neue Id.
+        /// </summary>
+        internal static int BauteilEinfuegen(DbVorgang v, BauteilModel b)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            if (b == null) throw new ArgumentNullException(nameof(b));
+            IReadOnlyList<string> spalten = Bauteilspalten();
+            b.ID = v.EinfuegenUndId("INSERT INTO \"" + ZonenSchema.TAB_BAUTEIL + "\" (" +
+                                    string.Join(", ", spalten.Select(s => "\"" + s + "\"")) +
+                                    ") VALUES (" + BaustoffCtrl.Fragezeichen(spalten.Count) + ")",
+                                    Bauteilwerte(b, MitKopplung(spalten), MitFlaechenherkunft(spalten), MitUHerkunft(spalten), MitStrahlung(spalten)).ToArray());
+            return b.ID;
+        }
+
+        /// <summary>
+        /// <b>Schreibt ein vorhandenes Bauteil</b> mit allen Spalten des Speicherns zurück (Projektebene, im Vorgang
+        /// <paramref name="v"/>) — für die Zusammenführung des Wiederimports (MA-6).
+        /// </summary>
+        internal static void BauteilAktualisieren(DbVorgang v, BauteilModel b)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            if (b == null) throw new ArgumentNullException(nameof(b));
+            IReadOnlyList<string> spalten = Bauteilspalten();
+            v.Ausfuehren("UPDATE \"" + ZonenSchema.TAB_BAUTEIL + "\" SET " + string.Join(", ", spalten.Select(s => "\"" + s + "\" = ?")) +
+                         " WHERE \"ID\" = ?",
+                         Bauteilwerte(b, MitKopplung(spalten), MitFlaechenherkunft(spalten), MitUHerkunft(spalten), MitStrahlung(spalten)).Append(new DbParam("@id", b.ID)).ToArray());
+        }
+
+        /// <summary>
+        /// <b>Schreibt eine vorhandene Zone</b> mit allen Spalten des Speicherns zurück (Projektebene, im Vorgang
+        /// <paramref name="v"/>) — für die Zusammenführung des Wiederimports (MA-6). Die Bauteile bleiben unberührt.
+        /// </summary>
+        internal static void ZoneAktualisieren(DbVorgang v, ZoneModel z)
+        {
+            if (v == null) throw new ArgumentNullException(nameof(v));
+            if (z == null) throw new ArgumentNullException(nameof(z));
+            IReadOnlyList<string> zusatz = Zusatzspalten();
+            List<string> spalten = ZonenSchema.Zonenspalten.Concat(zusatz).ToList();
+            v.Ausfuehren("UPDATE \"" + ZonenSchema.TAB_ZONE + "\" SET " + string.Join(", ", spalten.Select(s => "\"" + s + "\" = ?")) +
+                         " WHERE \"ID\" = ?",
+                         Zonenwerte(z).Concat(Zusatzwerte(z, zusatz)).Append(new DbParam("@id", z.ID)).ToArray());
         }
 
         /// <summary>Die Werte eines Bauteils in der Reihenfolge von <see cref="ZonenSchema.Bauteilspalten"/>; NULL bleibt NULL.</summary>
@@ -1440,7 +1638,10 @@ namespace WindowsFormsApplication1
                     Herkunft = BaustoffCtrl.TextAus(r, "Herkunft"),
                     Quellkennung = BaustoffCtrl.TextAus(r, "Quellkennung"),
                     Nutzungsprofil = BaustoffCtrl.TextAus(r, RaumnutzungSchema.SPALTE_ZONE_NUTZUNGSPROFIL),
-                    Vorheizzeit_H = BaustoffCtrl.GanzAus(r, VorheizenSchema.SPALTE_ZONE_VORHEIZZEIT)
+                    Vorheizzeit_H = BaustoffCtrl.GanzAus(r, VorheizenSchema.SPALTE_ZONE_VORHEIZZEIT),
+                    Aussenluft_Person = BaustoffCtrl.ZahlAus(r, ZonenLastfelderSchema.SPALTE_AUSSENLUFT_PERSON),
+                    Licht_W_m2 = BaustoffCtrl.ZahlAus(r, ZonenLastfelderSchema.SPALTE_LICHT),
+                    Personen_Waerme_W = BaustoffCtrl.ZahlAus(r, ZonenLastfelderSchema.SPALTE_PERSONEN_WAERME),
                 };
                 liste.Add(z);
                 jeId[z.ID] = z;
@@ -1469,7 +1670,10 @@ namespace WindowsFormsApplication1
                         Psi_L = BaustoffCtrl.ZahlAus(r, "Psi_L"),
                         Herkunft = BaustoffCtrl.TextAus(r, "Herkunft"),
                         Quellkennung = BaustoffCtrl.TextAus(r, "Quellkennung"),
-                        Flaechenherkunft = BaustoffCtrl.TextAus(r, FlaechenherkunftSchema.SPALTE)
+                        Flaechenherkunft = BaustoffCtrl.TextAus(r, FlaechenherkunftSchema.SPALTE),
+                        U_Herkunft = BaustoffCtrl.TextAus(r, BauteilUHerkunftSchema.SPALTE),
+                        Absorptionsgrad_Solar = BaustoffCtrl.ZahlAus(r, BauteilStrahlungSchema.SPALTE_ABSORPTION),
+                        Emissionsgrad = BaustoffCtrl.ZahlAus(r, BauteilStrahlungSchema.SPALTE_EMISSION)
                     };
                     if (jeId.TryGetValue(b.ID_Zone, out ZoneModel z)) z.Bauteile.Add(b);
                 }

@@ -101,7 +101,7 @@ namespace WindowsFormsApplication1
         public static readonly Textbaustein HERKUNFT_ANHANG_F = T("PAUS_HERK_VDI_ANHANG_F", "VDI 4645 E 2026-03, Anhang F");
         public static readonly Textbaustein HERKUNFT_VDI_88 = T("PAUS_HERK_VDI_88", "VDI 4645 E 2026-03, 8.8");
         public static readonly Textbaustein HERKUNFT_WHITEPAPER = T("PAUS_HERK_WHITEPAPER", "VDI-Whitepaper Thermische Speicher in Wärmepumpensystemen");
-        public static readonly Textbaustein HERKUNFT_K12 = T("PAUS_HERK_K12", "Konzept Pufferauslegung V30 / KP3 (Aufheizbemessung der Gebäude)");
+        public static readonly Textbaustein HERKUNFT_K12 = T("PAUS_HERK_K12", "Aufheizbemessung der Gebäude (letzte Simulation)");
 
         /// <summary>Faktor der DIN-EN-303-5-Formel [l/kWh] (Zitat der Formel, Konzept K9).</summary>
         public const double DIN_EN_303_5_FAKTOR = 15.0;
@@ -326,7 +326,7 @@ namespace WindowsFormsApplication1
                     RechenwegBaustein = T("PAUS_WEG_K1", "V_Hz = {0} l {1} {2} l/kW · {3} kW = {4} l{5}",
                                           vHz, positiv ? "≥" : "<", p.Wert(PufferAuslegungVorgaben.VORPRUEFUNG), nenn, grenze,
                                           e.Einzelraumregelung
-                                              ? T("PAUS_WEG_K1_EINZELRAUM", "; Einzelraumregelung: absperrbar, keine Gutschrift für K1")
+                                              ? T("PAUS_WEG_K1_EINZELRAUM", "; Einzelraumregelung: absperrbar, keine Gutschrift bei der Vorprüfung Anlagenvolumen")
                                               : Leer)
                 });
                 if (positiv && z.Geregelt)
@@ -447,8 +447,8 @@ namespace WindowsFormsApplication1
                         HerkunftBaustein = HERKUNFT_K12,
                         RechenwegBaustein = T("PAUS_WEG_K12", "({0} kW − {1} kW) · {2} h ({3}) / ({4} · {5} K · {6})",
                                               phi, nenn, n,
-                                              e.AufheizdauerH.HasValue ? T("PAUS_WEG_K12_DAUER_KP3", "Aufheizdauer aus KP3")
-                                                                       : T("PAUS_WEG_K12_DAUER_VORGABE", "Vorgabe Aufheiz.Dauer_h"),
+                                              e.AufheizdauerH.HasValue ? T("PAUS_WEG_K12_DAUER_KP3", "Aufheizdauer aus der Aufheizbemessung")
+                                                                       : T("PAUS_WEG_K12_DAUER_VORGABE", "Vorgabe Aufheizdauer"),
                                               g.C, g.DeltaT, g.Eta)
                     });
                 }
@@ -458,7 +458,7 @@ namespace WindowsFormsApplication1
                     {
                         Kennung = PufferKriteriumKennung.K12, Bezeichnung = "Aufheizen nach Absenkung", VolumenL = null,
                         Aktiv = false, Gueltig = false, HerkunftBaustein = HERKUNFT_K12,
-                        RechenwegBaustein = T("PAUS_WEG_K12_KEINE", "keine KP3-Aufheizbemessung der Gebäude")
+                        RechenwegBaustein = T("PAUS_WEG_K12_KEINE", "keine Aufheizbemessung der Gebäude")
                     });
                     g.Warnung(PufferWarncode.AUFHEIZ_KEINE_BEMESSUNG, PufferStufe.Hinweis,
                               Textbaustein.T("PA_AUFHEIZ_KEINE_BEMESSUNG_TEXT", "Das Aufheizkriterium ist eingeschaltet, aber keine Aufheizbemessung der Gebäude liegt vor: Es bemisst nicht. Erst die Simulation mit Aufheizoptimierung liefert Φ_n."),

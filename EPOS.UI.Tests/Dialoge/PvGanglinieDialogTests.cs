@@ -146,7 +146,7 @@ public class PvGanglinieDialogTests : EposBunitContext
         cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr")[0].QuerySelector(".epos-zeilenzelle--name, .epos-anlagenwahl, .epos-projektzeile")!.Click();
         var werte = cut.FindAll("input[readonly]").Select(e => e.GetAttribute("value")).ToList();
         Assert.Contains(Resource.PVG_RASTER_VIERTEL, werte);
-        Assert.Contains("9,5 MWh", werte);
+        Assert.Contains("10 MWh", werte); // BP-3: Jahresarbeit in MWh ganzzahlig
         Assert.Contains("12,00 kWp", werte);
 
         cut.FindAll(".epos-raster")[1].QuerySelectorAll("tbody tr")[1].QuerySelector(".epos-zeilenzelle--name, .epos-anlagenwahl, .epos-projektzeile")!.Click();
@@ -573,5 +573,49 @@ public class PvGanglinieDialogTests : EposBunitContext
         cut.Find(".epos-pvg-erneuernknopf").Click();
         cut.Find(".epos-dialog").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
         Assert.Null(geschlossen);
+    }
+
+    // =================================================================================
+    // KA-E-19: Vergleichen… beim Projektsatz
+    // =================================================================================
+
+    private IRenderedComponent<PvGanglinieDialog> MitKennzahlen()
+        => Render<PvGanglinieDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { Zeile(1, "PV Dach Ost", 31), Zeile(2, "PV Dach West", 32) })
+            .Add(x => x.Katalogwege, new GanglinienKatalogwege { Katalogzeilen = () => Task.FromResult(Katalog) })
+            .Add(x => x.Katalogprofil, Zeitreihenproben.ProjektProfil(Zeitreihenart.PvGanglinie))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Kennzahlen, (GanglinienWahl w) => Task.FromResult<GanglinienKennzahlen?>(
+                w.Bezeichner == "PV Dach Ost" ? new GanglinienKennzahlen(9.5, 10.0, 950.0)
+                                              : new GanglinienKennzahlen(8.8, 9.0, 977.78))));
+
+    [Fact]
+    public void Vergleichen_steht_vorn_in_der_Knopfleiste_am_Satz()
+        => GanglinienVergleichPruefung.StehtVorn(MitKennzahlen());
+
+    /// <summary>
+    /// Projektsatz: zwei angekreuzte Projektzeilen mit Raster und Nennleistung (aus dem Katalogsatz) und Jahresarbeit,
+    /// Spitze, Vollbenutzungsstunden (Kennzahlen der Grafik).
+    /// </summary>
+    [Fact]
+    public void Vergleichen_beim_Projektsatz_stellt_die_angekreuzten_Projektzeilen_nebeneinander()
+    {
+        var cut = MitKennzahlen();
+        GanglinienVergleichPruefung.Projektseite(cut, () => cut.FindComponent<Katalogliste>().Instance,
+            Ganglinienvergleich.Beschriftung(Resource.STROMGL_LBL_SPITZE),
+            "10 kW", "9 kW");
+        var vergleich = cut.FindComponent<Katalogliste>().Instance.Vergleich;
+        Assert.Equal(5, vergleich.Count);
+        Assert.Equal(Ganglinienvergleich.Beschriftung(Resource.PVG_LBL_RASTER), vergleich[0].Name);
+        Assert.Equal(Ganglinienvergleich.Beschriftung(Resource.PVG_LBL_NENNLEISTUNG), vergleich[1].Name);
+        Assert.Equal(new[] { "950 h/a", "977,78 h/a" }.Select(t => t.Replace("h/a", Resource.GEBB_EINHEIT_STUNDEN)),
+                     vergleich[4].Werte);
+    }
+
+    [Fact]
+    public void Vergleichen_beim_Katalogsatz_stellt_die_angekreuzten_Katalogsaetze_nebeneinander()
+    {
+        var cut = MitKennzahlen();
+        GanglinienVergleichPruefung.Katalogseite(cut, () => cut.FindComponent<Katalogliste>().Instance);
     }
 }

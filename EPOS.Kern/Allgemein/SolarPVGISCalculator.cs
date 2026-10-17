@@ -25,6 +25,45 @@ namespace WindowsFormsApplication1
     {
         // Innerhalb von "inputs" liegt "meteo_data"
         public MeteoData Meteo_Data { get; set; }
+
+        /// <summary>
+        /// Der Punkt, für den PVGIS gerechnet hat — Breite, Länge und Höhe über NN
+        /// (<c>inputs.location</c>, Auftrag KD-2). Die Vorschau zeigt ihn als
+        /// Bezugspunkt; der Rechenweg liest ihn nicht.
+        /// </summary>
+        [JsonPropertyName("location")]
+        public PvgisOrt Location { get; set; }
+    }
+
+    /// <summary>Der Ortsblock <c>inputs.location</c> einer PVGIS-Antwort.</summary>
+    public class PvgisOrt
+    {
+        [JsonPropertyName("latitude")]
+        public double? Latitude { get; set; }
+
+        [JsonPropertyName("longitude")]
+        public double? Longitude { get; set; }
+
+        /// <summary>Höhe des Punkts über NN [m]; <c>null</c>, wenn die Antwort keine nennt.</summary>
+        [JsonPropertyName("elevation")]
+        public double? Elevation { get; set; }
+    }
+
+    /// <summary>
+    /// Ein PVGIS-Abruf samt Kopf (Auftrag KD-2): die Stundenreihe wie bei
+    /// <c>GetTMY</c>, dazu der gerechnete Punkt und die Wetterdatenbank — die
+    /// Vorschau zeigt beides, ohne ein zweites Mal abzurufen.
+    /// </summary>
+    public sealed class PvgisAbruf
+    {
+        /// <summary>Die Stundenwerte, wie <c>GetTMY</c> sie liefert.</summary>
+        public List<TmyHourlyData> Stunden = new List<TmyHourlyData>();
+
+        /// <summary>Der gerechnete Punkt; <c>null</c>, wenn die Antwort keinen nennt.</summary>
+        public PvgisOrt Ort;
+
+        /// <summary>Die Herkunftsangabe „meteo_db - radiation_db".</summary>
+        public string MeteoDatenbank = "";
     }
 
     public class MeteoData
@@ -99,6 +138,20 @@ namespace WindowsFormsApplication1
         [JsonPropertyName("WS10m")]
         public double WindSpeed { get; set; } // Windgeschwindigkeit [m/s]
 
+        /// <summary>
+        /// Windrichtung [Grad] — PVGIS <c>WD10m</c> (Auftrag KD-4). Allein Rohwert für
+        /// die Rohtabelle des Klimaimports; kein Rechenweg liest ihn. <c>null</c> = nicht geliefert.
+        /// </summary>
+        [JsonPropertyName("WD10m")]
+        public double? Windrichtung { get; set; }
+
+        /// <summary>
+        /// Luftdruck am Boden [Pa] — PVGIS <c>SP</c> (Auftrag KD-4). Allein Rohwert (gespeichert in hPa);
+        /// kein Rechenweg liest ihn. <c>null</c> = nicht geliefert.
+        /// </summary>
+        [JsonPropertyName("SP")]
+        public double? Luftdruck_Pa { get; set; }
+
         public double Sol_sued;
         public double Sol_ost;
         public double Sol_nord;
@@ -108,6 +161,12 @@ namespace WindowsFormsApplication1
         public int TagTyp_W;
         public int TagTyp_NW;
         public double Sonnenwinkel;
+
+        /// <summary>
+        /// Eine flache Kopie (alle Felder sind Werte oder Texte) — die Vorschau behält
+        /// ihren gelesenen Satz unverändert, der Import rechnet auf der Kopie (Auftrag KD-2).
+        /// </summary>
+        public TmyHourlyData Kopie() => (TmyHourlyData)MemberwiseClone();
     }
 
     public class PVGIS_EPW_Downloader
@@ -120,6 +179,17 @@ namespace WindowsFormsApplication1
         private static readonly HttpClient client = new HttpClient();
 
         public static async Task<List<TmyHourlyData>> GetTMY(double lon, double lat, int Azimut)
+        {
+            PvgisAbruf abruf = await GetTmyAbruf(lon, lat, Azimut);
+            return abruf.Stunden;
+        }
+
+        /// <summary>
+        /// Der Abruf wie <see cref="GetTMY"/>, dazu der Kopf der Antwort (Punkt, Höhe,
+        /// Wetterdatenbank) — Auftrag KD-2. <see cref="GetTMY"/> ruft genau diesen Weg;
+        /// Adresse, Fehlermeldungen und <see cref="meteoDb"/> bleiben, wie sie waren.
+        /// </summary>
+        public static async Task<PvgisAbruf> GetTmyAbruf(double lon, double lat, int Azimut)
         {
             try
             {
@@ -164,10 +234,9 @@ namespace WindowsFormsApplication1
                     }
 
                     // Deserialisierung des JSON absichern
-                    string db;
-                    List<TmyHourlyData> stunden = AusJson(jsonString, out db);
-                    meteoDb = db;      // globale Variable wie bisher setzen
-                    return stunden;
+                    PvgisAbruf abruf = AusJsonAbruf(jsonString);
+                    meteoDb = abruf.MeteoDatenbank;      // globale Variable wie bisher setzen
+                    return abruf;
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
@@ -212,15 +281,30 @@ namespace WindowsFormsApplication1
         /// <param name="meteoDatenbank">Die Herkunftsangabe „meteo_db - radiation_db".</param>
         public static List<TmyHourlyData> AusJson(string jsonText, out string meteoDatenbank)
         {
+            PvgisAbruf abruf = AusJsonAbruf(jsonText);
+            meteoDatenbank = abruf.MeteoDatenbank;
+            return abruf.Stunden;
+        }
+
+        /// <summary>
+        /// Liest eine PVGIS-TMY-Antwort samt Kopf (<c>inputs.location</c>,
+        /// <c>inputs.meteo_data</c>) — derselbe Leser wie <see cref="AusJson"/>, der ihn ruft
+        /// (Auftrag KD-2).
+        /// </summary>
+        public static PvgisAbruf AusJsonAbruf(string jsonText)
+        {
             try
             {
                 var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                 var result = JsonSerializer.Deserialize<PvgisResponse>(jsonText, options);
 
-                meteoDatenbank = result?.Inputs?.Meteo_Data?.Meteo_Db + " - " +
-                                 result?.Inputs?.Meteo_Data?.RadiationDb;
-
-                return result?.Outputs?.TmyHourly ?? new List<TmyHourlyData>();
+                return new PvgisAbruf
+                {
+                    Stunden = result?.Outputs?.TmyHourly ?? new List<TmyHourlyData>(),
+                    Ort = result?.Inputs?.Location,
+                    MeteoDatenbank = result?.Inputs?.Meteo_Data?.Meteo_Db + " - " +
+                                     result?.Inputs?.Meteo_Data?.RadiationDb
+                };
             }
             catch (JsonException)
             {

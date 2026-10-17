@@ -272,11 +272,13 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
             IReadOnlyList<string> spalten = Katalogrueckweg.Spalten(StromspeicherStammCtrl.Rueckweg());
             foreach (string aus in new[] { "ID", "ID_Projekt", "ID_Stamm", "ReadOnly", "ID_KostenVorlage", "ID_KostenVorlageInvestition", "Bezeichner",
-                                           "Katalog_Schluessel", "Katalog_Pruefsumme", "Katalog_Ausgelaufen" })
+                                           "Katalog_Schluessel", "Katalog_Pruefsumme", "Katalog_Ausgelaufen",
+                                           // Die vier Kostenspalten sind entfallen (StromspeicherKostenSchema).
+                                           "Modulkosten", "Verschleisskosten", "Leistungskosten", "Investition_Fix" })
                 Assert.DoesNotContain(aus, spalten);
-            foreach (string mit in new[] { "Typ", "Firma", "Energie", "Leistung", "Degradation", "Ladezustand", "Modulkosten",
-                                           "Wirkungsgrad_RT", "Zyklen_Zugesichert", "Verschleisskosten", "Leistungskosten",
-                                           "Investition_Fix", "Standby_Verbrauch", "Selbstentladung_Prozent_Monat" })
+            foreach (string mit in new[] { "Typ", "Firma", "Energie", "Leistung", "Degradation", "Ladezustand",
+                                           "Wirkungsgrad_RT", "Zyklen_Zugesichert",
+                                           "Standby_Verbrauch", "Selbstentladung_Prozent_Monat" })
                 Assert.Contains(mit, spalten);
             Assert.Empty(StromspeicherStammCtrl.Rueckweg().Kinder);
         }
@@ -290,6 +292,45 @@ namespace EPOS.Kern.Tests
             int neueKopie = new StromspeicherCtrl().CopyFromStamm(satz, k.Projekt);
             Assert.True(neueKopie > 0);
             Assert.Equal(satz, Anzahl("SELECT ID_Stamm FROM Tab_Stromspeicher WHERE ID = ?", neueKopie));
+        }
+
+        /// <summary>
+        /// Welle KB-5 (Entscheid Rückweg): Der Stromspeicher führt keine Kostenspalte mehr — ohne eigene Kostenposition der
+        /// Anlage übernimmt der Katalogsatz die Verweise der Kopie auf ihre Satzvorlagen und rechnet denselben Kostensatz;
+        /// beim Überschreiben gilt das je Kategorie, Positionen der Anlage gehen vor.
+        /// </summary>
+        [Fact]
+        public void Ohne_Kostenposition_der_Anlage_gehen_die_Satzvorlagen_der_Kopie_mit()
+        {
+            if (!_db.Vorhanden) return;
+            var k = Kopie();
+            Sql("DELETE FROM Tab_ProjektWerte WHERE ID_Anlage = ?", k.Anlage);
+            int invest = Anzahl("SELECT MIN(ID) FROM Tab_KostenVorlage WHERE KomponentenID = 5 AND KategorieID = ? AND IstStandard = 0",
+                                DbWerte.KOSTEN_KATEGORIE_INVESTITION);
+            int betrieb = Anzahl("SELECT MIN(ID) FROM Tab_KostenVorlage WHERE KomponentenID = 5 AND KategorieID = ?",
+                                 DbWerte.KOSTEN_KATEGORIE_BETRIEB);
+            Sql("UPDATE Tab_Stromspeicher SET ID_KostenVorlageInvestition = ?, ID_KostenVorlage = ? WHERE ID = ?", invest, betrieb, k.Id);
+
+            Rueckwegergebnis e = Neu(k.Id, "Rueckweg Verweis");
+            Assert.True(e.Ok, e.Meldung);
+            int satz = e.Saetze[0].IdKatalog;
+            Assert.Equal(0, e.Saetze[0].Kostenpositionen);
+            Assert.Equal(invest, Invest(satz));
+            Assert.Equal(betrieb, Vorlage(satz));
+            double? kopieSatz = KatalogkostensatzCtrl.Stromspeicher(KOPIE, k.Id).CCapEurProKwh;
+            Assert.True(kopieSatz > 0);
+            Assert.Equal(kopieSatz, KatalogkostensatzCtrl.Stromspeicher(KATALOG, satz).CCapEurProKwh);
+
+            // Überschreiben mit einer Betriebsposition: Betrieb kommt aus der Anlage, die Investition aus der Kopie.
+            Positionen(k, 1, 0);
+            Rueckwegergebnis u = Ueberschreiben(k.Id);
+            Assert.True(u.Ok, u.Meldung);
+            Assert.Equal(satz, u.Saetze[0].IdKatalog);
+            Assert.Equal(invest, Invest(satz));
+            Assert.NotEqual(betrieb, Vorlage(satz));
+            Assert.Equal(1, Positionenzahl(Vorlage(satz)));
+            // Die gemeinsame Satzvorlage bleibt unberührt stehen.
+            Assert.Equal(1, Anzahl("SELECT COUNT(*) FROM Tab_KostenVorlage WHERE ID = ?", invest));
         }
 
         // ------------------------------------------------ KA-E-14: Investitionspositionen ---
@@ -415,12 +456,14 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Die_vier_Kostenposten_und_die_Geraetewerte_gehen_mit_der_Name_der_Kopie_bleibt()
+        public void Die_Geraetewerte_gehen_mit_der_Name_der_Kopie_bleibt()
         {
             if (!_db.Vorhanden) return;
             var k = Kopie();
-            Sql("UPDATE Tab_Stromspeicher SET Modulkosten = 450, Leistungskosten = 120, Investition_Fix = 3000, " +
-                "Verschleisskosten = 0.04, Wirkungsgrad_RT = 0.91, Zyklen_Zugesichert = 7000, Standby_Verbrauch = 25, " +
+            // Die Kosten des Stromspeichers stehen nicht mehr am Gerät (StromspeicherKostenSchema): Sie laufen über
+            // die Satzvorlage oder die Kostenposition der Anlage und gehen den Rückweg nicht mit.
+            Sql("UPDATE Tab_Stromspeicher SET " +
+                "Wirkungsgrad_RT = 0.91, Zyklen_Zugesichert = 7000, Standby_Verbrauch = 25, " +
                 "Selbstentladung_Prozent_Monat = 2 WHERE ID = ?", k.Id);
 
             Rueckwegergebnis e = Neu(k.Id, "Rueckweg Kostenposten");
@@ -428,10 +471,8 @@ namespace EPOS.Kern.Tests
             int satz = e.Saetze[0].IdKatalog;
             double Z(string spalte) => Convert.ToDouble(Wert("SELECT " + spalte + " FROM Tab_Stromspeicher_STAMM WHERE ID = ?", satz),
                                                         CultureInfo.InvariantCulture);
-            Assert.Equal(450, Z("Modulkosten"));
-            Assert.Equal(120, Z("Leistungskosten"));
-            Assert.Equal(3000, Z("Investition_Fix"));
-            Assert.Equal(0.04, Z("Verschleisskosten"), 9);
+            foreach (string entfallen in new[] { "Modulkosten", "Leistungskosten", "Investition_Fix", "Verschleisskosten" })
+                Assert.False(DataRepository.SpalteVorhanden("Tab_Stromspeicher_STAMM", entfallen));
             Assert.Equal(0.91, Z("Wirkungsgrad_RT"), 9);
             Assert.Equal(7000, Z("Zyklen_Zugesichert"));
             Assert.Equal(25, Z("Standby_Verbrauch"));

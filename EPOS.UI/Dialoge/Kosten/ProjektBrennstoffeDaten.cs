@@ -32,19 +32,13 @@ public static class ProjektBrennstoffFelder
     /// <summary>Primärenergiefaktor.</summary>
     public const string Pe = "PE_Faktor";
 
-    /// <summary>Grundpreis.</summary>
-    public const string Grundpreis = "Standard_Grundpreis";
-
-    /// <summary>Arbeitspreis.</summary>
-    public const string Arbeitspreis = "Standard_Arbeitspreis";
-
-    /// <summary>Leistungspreis.</summary>
-    public const string Leistungspreis = "Standard_Leistungspreis";
+    // Welle KB-2 (Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine Doppelhaltung"): Arbeits-, Grund-
+    // und Leistungspreis fuehrt dieser Dialog nicht mehr - sie stehen in der Karte des Energietraegers.
 
     /// <summary>Alle Felder in der Folge der Spalten.</summary>
     public static IReadOnlyList<string> Alle { get; } = new[]
     {
-        Hi, Hs, Co2, So2, Nox, Staub, Pe, Grundpreis, Arbeitspreis, Leistungspreis
+        Hi, Hs, Co2, So2, Nox, Staub, Pe
     };
 }
 
@@ -121,7 +115,7 @@ public sealed class ProjektBrennstoffeTexte
     /// <summary><c>PBRS_SP_EINHEIT</c></summary>
     public string SpalteEinheit { get; init; } = "Einheit";
 
-    /// <summary>Die Spaltenköpfe der bearbeitbaren Felder (<c>PBRS_SP_HI</c> … <c>PBRS_SP_LEISTUNGSPREIS</c>).</summary>
+    /// <summary>Die Spaltenköpfe der bearbeitbaren Felder (<c>PBRS_SP_HI</c> … <c>PBRS_SP_PE</c>).</summary>
     public IReadOnlyDictionary<string, string> Felder { get; init; } = new Dictionary<string, string>
     {
         [ProjektBrennstoffFelder.Hi] = "Hi [kWh/Einheit]",
@@ -131,9 +125,6 @@ public sealed class ProjektBrennstoffeTexte
         [ProjektBrennstoffFelder.Nox] = "NOₓ [mg/kWh]",
         [ProjektBrennstoffFelder.Staub] = "Staub [mg/kWh]",
         [ProjektBrennstoffFelder.Pe] = "Primärenergiefaktor",
-        [ProjektBrennstoffFelder.Grundpreis] = "Grundpreis [€/a]",
-        [ProjektBrennstoffFelder.Arbeitspreis] = "Arbeitspreis [€/Einheit]",
-        [ProjektBrennstoffFelder.Leistungspreis] = "Leistungspreis [€/kW]",
     };
 
     /// <summary><c>PBRS_SP_STAND</c></summary>

@@ -127,8 +127,8 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(1L, Convert.ToInt64(DataRepository.ExecuteScalar(
                     "SELECT COUNT(*) FROM Tab_Raumnutzungsprofil WHERE ID_Katalog = ? AND Nummer = ? AND Bezeichner = ?",
                     new DbParam("@k", k), new DbParam("@n", p.Nummer), new DbParam("@b", p.Bezeichner)), CultureInfo.InvariantCulture));
-            // Kein Wert, kein Zeilenbild, kein Stundenprofil in der Kategorie (E90).
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil WHERE ID_Katalog = " + k + " AND (" +
+            // Die gesäten Werte (DA-6, E135), kein Zeilenbild, kein Stundenprofil in der Kategorie.
+            Assert.Equal((long)RaumnutzungDinSaat.ANZAHL, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsprofil WHERE ID_Katalog = " + k + " AND (" +
                                   string.Join(" OR ", RaumnutzungSchema.SPALTEN_KENNWERTE.Select(s => s.Spalte + " IS NOT NULL")) + ")"));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungszeile z JOIN Tab_Raumnutzungsprofil p ON p.ID = z.ID_Profil WHERE p.ID_Katalog = " + k));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Raumnutzungsstunden z JOIN Tab_Raumnutzungsprofil p ON p.ID = z.ID_Profil WHERE p.ID_Katalog = " + k));

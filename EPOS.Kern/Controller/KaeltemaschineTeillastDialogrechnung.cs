@@ -143,7 +143,6 @@ namespace WindowsFormsApplication1
                 Mindestteillast_Prozent = quelle.Mindestteillast_Prozent,
                 Hilfsstrom_Rueckkuehlung_kW = quelle.Hilfsstrom_Rueckkuehlung_kW,
                 Kaltwasser_Vorlauf_Min = quelle.Kaltwasser_Vorlauf_Min,
-                Modulkosten = null,
                 ReadOnly = false,
                 Teillast_Weg = quelle.Teillast_Weg,
                 Teillastkurve_a = quelle.Teillastkurve_a,

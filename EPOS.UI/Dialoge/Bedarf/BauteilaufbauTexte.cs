@@ -47,6 +47,42 @@ public sealed class BauteilaufbauTexte
     /// <summary><c>BTA_LBL_BESCHREIBUNG</c></summary>
     public string LabelBeschreibung { get; set; } = Resource.BTA_LBL_BESCHREIBUNG;
 
+    /// <summary><c>BTA_GRUPPE_FENSTER</c> — die Gruppe der Fensterwerte (BK-6).</summary>
+    public string GruppeFenster { get; set; } = Resource.BTA_GRUPPE_FENSTER;
+
+    /// <summary><c>BTA_LBL_UG</c> (BK-6)</summary>
+    public string LabelUg { get; set; } = Resource.BTA_LBL_UG;
+
+    /// <summary><c>BTA_LBL_UF</c> (BK-6)</summary>
+    public string LabelUf { get; set; } = Resource.BTA_LBL_UF;
+
+    /// <summary><c>BTA_LBL_GWERT</c> (BK-6)</summary>
+    public string LabelGWert { get; set; } = Resource.BTA_LBL_GWERT;
+
+    /// <summary><c>BTA_LBL_RAHMENANTEIL</c> (BK-6)</summary>
+    public string LabelRahmenanteil { get; set; } = Resource.BTA_LBL_RAHMENANTEIL;
+
+    /// <summary><c>BTA_LBL_PSI_GLASRAND</c> (BK-6)</summary>
+    public string LabelPsiGlasrand { get; set; } = Resource.BTA_LBL_PSI_GLASRAND;
+
+    /// <summary><c>BTA_FENSTER_HINWEIS</c> — die Übernahme an das Bauteil und die Formel für U_w (BK-6).</summary>
+    public string FensterHinweis { get; set; } = Resource.BTA_FENSTER_HINWEIS;
+
+    /// <summary><c>BTA_GRUPPE_STRAHLUNG</c> (DA-8)</summary>
+    public string GruppeStrahlung { get; set; } = Resource.BTA_GRUPPE_STRAHLUNG;
+
+    /// <summary><c>BTA_LBL_ABSORPTION</c> (DA-8)</summary>
+    public string LabelAbsorption { get; set; } = Resource.BTA_LBL_ABSORPTION;
+
+    /// <summary><c>BTA_LBL_EMISSION</c> (DA-8)</summary>
+    public string LabelEmission { get; set; } = Resource.BTA_LBL_EMISSION;
+
+    /// <summary><c>BTA_PLATZHALTER_STRAHLUNG</c> (DA-8) — {0} ist die Vorgabe.</summary>
+    public string PlatzhalterStrahlung { get; set; } = Resource.BTA_PLATZHALTER_STRAHLUNG;
+
+    /// <summary><c>BTA_STRAHLUNG_HINWEIS</c> (DA-8)</summary>
+    public string StrahlungHinweis { get; set; } = Resource.BTA_STRAHLUNG_HINWEIS;
+
     /// <summary><c>BTA_LBL_QUELLE</c></summary>
     public string LabelQuelle { get; set; } = Resource.BTA_LBL_QUELLE;
 

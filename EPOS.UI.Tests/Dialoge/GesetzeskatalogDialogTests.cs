@@ -116,6 +116,11 @@ public class GesetzeskatalogDialogTests : EposBunitContext
             .Add(x => x.Klassenvorrat, VORRAT.ToList())
             .Add(x => x.Einheiten, EINHEITEN)
             .Add(x => x.Statuswerte, STATUS)
+            // Die Vorbelegung der Einheit (Anwenderentscheid 14.10.2026): KWKG schlaegt
+            // ct/kWh vor - eine neue KWKG-Zeile ist damit ohne weitere Wahl speicherbar.
+            .Add(x => x.Vorschlagsdaten, () => Task.FromResult(new GesetzVorschlagsdaten(
+                new List<GesetzSchluesselStand>(),
+                new Dictionary<string, string> { ["KWKG"] = "ct/kWh" })))
             .Add(x => x.Vorwahl, vorwahl)
             .Add(x => x.AktuellesJahr, aktuellesJahr)
             .Add(x => x.Anlegen, anlegen ?? (_ => Task.FromResult(true)))

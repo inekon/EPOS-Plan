@@ -118,6 +118,14 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
+        /// <b>Die eine Regel „ist luftgekühlt“</b> (K-F5c): <see cref="RUECKKUEHLART_LUFT"/> oder eine leere Rückkühlart —
+        /// leer rechnet der Lauf luftgekühlt (<c>Kaeltemaschine.AusModell</c>). Lauf, Hülle (Gruppe „Rückkühlung“) und die
+        /// Verträglichkeitsprüfung des Rückkühlwerks (<c>KaeltemaschineAnlageCtrl.RueckkuehlwerkPruefen</c>) nehmen sie.
+        /// </summary>
+        public static bool IstLuftgekuehlt(string rueckkuehlart) =>
+            string.IsNullOrEmpty(rueckkuehlart) || string.Equals(rueckkuehlart, RUECKKUEHLART_LUFT, System.StringComparison.Ordinal);
+
+        /// <summary>
         /// Die Fachspalten von Katalog und Projektkopie in Schemareihenfolge — die EINE Liste, an der
         /// Projektkopie, Schreibwege und Katalogfassung hängen (ohne <c>ID</c>, <c>ID_Projekt</c>,
         /// <c>ID_Stamm</c>, <c>ReadOnly</c> und die Katalogspalten).
@@ -125,7 +133,7 @@ namespace WindowsFormsApplication1
         public static readonly string[] Fachspalten;
 
         /// <summary>
-        /// Die zwölf Grundspalten des Kopfs, die seit diesem Schritt stehen — der Kopf, den die Schreibwege in EINER
+        /// Die elf Grundspalten des Kopfs, die seit diesem Schritt stehen — der Kopf, den die Schreibwege in EINER
         /// Anweisung schreiben. Die acht Spalten von Teillast und Takten (<see cref="KaeltemaschineTeillastSchema"/>,
         /// Schritt 210) schreiben sie in einem eigenen Schritt, nur wenn die Spalten stehen.
         /// </summary>
@@ -133,8 +141,7 @@ namespace WindowsFormsApplication1
         {
             "Bezeichner", "Firma", "Typ", "Beschreibung",
             SPALTE_NENNKAELTELEISTUNG, SPALTE_NENN_EER, SPALTE_KAELTEMITTEL, SPALTE_RUECKKUEHLART,
-            SPALTE_MINDESTTEILLAST, SPALTE_HILFSSTROM_RUECKKUEHLUNG, SPALTE_KALTWASSER_VORLAUF_MIN,
-            SPALTE_MODULKOSTEN
+            SPALTE_MINDESTTEILLAST, SPALTE_HILFSSTROM_RUECKKUEHLUNG, SPALTE_KALTWASSER_VORLAUF_MIN
         };
 
         static KaeltemaschineSchema()

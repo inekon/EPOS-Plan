@@ -80,9 +80,12 @@ namespace EPOS.Kern.Tests
             // von 10662 im Referenzprojekt AK3-K 1059 und die Kopien von 10664 in den Referenzprojekten der Kühlkurve 1061 und 1062
             // (KK5a) und die Kopie von 10662 im Referenzprojekt Übergabegrenze 1060 (UB-E2-d) und die Kopie im Referenzprojekt
             // Kältemaschine mit Teillast 1063 (KM3, Kopie von 1055) und die Kopie von 10599 im Referenzprojekt Freie Kühlung 1064
-            // (FK) und die Kopie des Gebäudes von 1051 im Referenzprojekt Vorheizen 1065 - jede mit dem Verweis ihrer Vorlage: 45.
-            Assert.Equal(45L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude"));
-            Assert.Equal(45L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude g INNER JOIN Tab_Gebaeude_STAMM s " +
+            // (FK) und die Kopie des Gebäudes von 1051 im Referenzprojekt Vorheizen 1065 und die sechs Kopien des Gebäudes von 1045 in den
+            // Referenzprojekten der Zapfprofil-Optionen 1066 bis 1071 (ZB12) und die Kopie von 10661 im Referenzprojekt
+            // Kältebedarf dezentral 1072 (K6c, Kopie von 1055) und die Kopie von 1054 im Referenzprojekt Schnellaufheizung 1073 (SA4)
+            // - jede mit dem Verweis ihrer Vorlage: 53.
+            Assert.Equal(53L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude"));
+            Assert.Equal(53L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude g INNER JOIN Tab_Gebaeude_STAMM s " +
                                    "ON s.ID = g.ID_Gebaeude_Stamm WHERE s.Bezeichner = g.Gebaeudename"));
             Assert.Equal(0L, Zahl(GebaeudeKatalogverweis.ZaehlungOhneVerweis()));
             Assert.Equal((long)STAMM_EFH, Zahl("SELECT ID_Gebaeude_Stamm FROM Tab_Gebaeude WHERE ID = ?", GEBAEUDE_1007));
@@ -125,11 +128,11 @@ namespace EPOS.Kern.Tests
             // Referenzprojekt 1056 (AK2-4), die Kopie des Gebäudes von 1029 im Referenzprojekt 1057 und die Kopie von 10662 im
             // Referenzprojekt 1058 (AK3-W5a) und die Kopie von 10662 im Referenzprojekt 1059 (AK3-K) und die Kopien in 1061 und 1062
             // (KK5a) und die Kopie in 1060 (UB-E2-d) und die Kopie in 1063 (KM3) und die Kopie in 1064 (FK) und die Kopie in 1065:
-            // 41 = 45 - 1 - 3.
-            Assert.Equal(41L, Zahl(GebaeudeKatalogverweis.Zaehlung()));
+            // und die sechs Kopien in 1066 bis 1071 (ZB12) und die Kopie in 1072 (K6c) und die Kopie in 1073 (SA4): 49 = 53 - 1 - 3.
+            Assert.Equal(49L, Zahl(GebaeudeKatalogverweis.Zaehlung()));
             GebaeudeKatalogverweis.Bericht b = GebaeudeKatalogverweis.Ausfuehren();
 
-            Assert.Equal(41L, b.Nachgetragen);   // 27 + das Gebäude von 1051 (KP3, RP1) + die Kopien in 1053, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063 (KM3), 1064 (FK) und 1065
+            Assert.Equal(49L, b.Nachgetragen);   // 27 + das Gebäude von 1051 (KP3, RP1) + die Kopien in 1066 bis 1071 (ZB12), 1072 (K6c), 1073 (SA4), 1053, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063 (KM3), 1064 (FK) und 1065
             Assert.Equal(3L, b.OhneVerweis);                 // 1 ohne Katalogsatz + 2 mehrdeutig
             Assert.Null(Wert("SELECT ID_Gebaeude_Stamm FROM Tab_Gebaeude WHERE ID = ?", GEBAEUDE_1007));
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude WHERE Gebaeudename = 'MFH-H-U-112' " +

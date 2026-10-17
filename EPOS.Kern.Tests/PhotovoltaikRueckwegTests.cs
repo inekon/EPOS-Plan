@@ -12,7 +12,7 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Rückweg „In die Datenbank übernehmen…" der Photovoltaik</b> (Konzept Projektdialoge mit Katalogauswahl 5.2, 5.9,
     /// KA‑E‑9; Kernweg <see cref="Katalogrueckweg"/>, Gewerk <see cref="PhotovoltaikStammCtrl.Rueckweg"/>): neu, überschreiben,
-    /// die drei Sperrgründe, Namenszusatz, alle Modulwerte samt Temperaturkoeffizienten und Modulkosten, Kosten als
+    /// die drei Sperrgründe, Namenszusatz, alle Modulwerte samt Temperaturkoeffizienten, Kosten als
     /// Satzvorlagen samt Investitionspositionen (KA‑E‑14) und Vorrang, Name der Kopie bleibt (KA‑E‑15), die Stränge bleiben
     /// an der Anlage im Projekt, Löschen mit Satzvorlage (KA‑E‑16), Katalogpaket und die Transaktion. Nach dem Muster der
     /// <c>PhotovoltaikRueckwegTests</c>; geschrieben wird in der Kopie der Testdatenbank. Die Modulkoeffizienten der
@@ -278,8 +278,10 @@ namespace EPOS.Kern.Tests
                 Assert.DoesNotContain(aus, spalten);
             foreach (string mit in new[] { "Firma", "Beschreibung", "Leistung", "Wirkungsgrad", "U_Mpp", "U_Leerlauf", "I_Mpp",
                                            "I_Kurzschluss", "alpha_SC", "beta_OC", "gamma_PMP", "T_NOCT", "Laenge", "Breite",
-                                           "Modulkosten", "Technologie" })
+                                           "Technologie" })
                 Assert.Contains(mit, spalten);
+            // Welle KB-4: Die Kostenspalte ist entfallen; der Rueckweg traegt sie nicht mehr.
+            Assert.DoesNotContain("Modulkosten", spalten);
             // Die Stränge hängen an der Anlage (Z_AnlageStrang) und sind keine Kindzeile der Kopie.
             Assert.Empty(PhotovoltaikStammCtrl.Rueckweg().Kinder);
         }
@@ -418,11 +420,11 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Alle_Modulwerte_samt_Koeffizienten_und_Modulkosten_gehen_mit_der_Name_der_Kopie_bleibt()
+        public void Alle_Modulwerte_samt_Koeffizienten_gehen_mit_der_Name_der_Kopie_bleibt()
         {
             if (!_db.Vorhanden) return;
             var k = Kopie();
-            Sql("UPDATE Tab_PV SET Modulkosten = 150, alpha_SC = 0.0051, beta_OC = -0.13, gamma_PMP = -0.37, T_NOCT = 44.5, " +
+            Sql("UPDATE Tab_PV SET alpha_SC = 0.0051, beta_OC = -0.13, gamma_PMP = -0.37, T_NOCT = 44.5, " +
                 "U_Mpp = 31.5, I_Kurzschluss = 9.8, Laenge = 1.7, Breite = 1.05, Technologie = 'Mono-c-Si' WHERE ID = ?", k.Id);
 
             Rueckwegergebnis e = Neu(k.Id, "Rueckweg Modulwerte");
@@ -430,7 +432,6 @@ namespace EPOS.Kern.Tests
             int satz = e.Saetze[0].IdKatalog;
             double Z(string spalte) => Convert.ToDouble(Wert("SELECT " + spalte + " FROM Tab_PV_STAMM WHERE ID = ?", satz),
                                                         CultureInfo.InvariantCulture);
-            Assert.Equal(150, Z("Modulkosten"));
             Assert.Equal(0.0051, Z("alpha_SC"), 12);
             Assert.Equal(-0.13, Z("beta_OC"), 12);
             Assert.Equal(-0.37, Z("gamma_PMP"), 12);

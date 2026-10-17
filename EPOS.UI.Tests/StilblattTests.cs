@@ -124,7 +124,7 @@ public sealed class StilblattTests
     [Fact]
     public void Die_Wache_findet_die_fehlende_Klammer_von_epos_mehrzeilig()
     {
-        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+        string css = Quelltextleser.Stilblatt();
 
         // Die Regel steht genau einmal und ist heil — sonst prüft der Fall
         // nicht das, was er zu prüfen vorgibt.
@@ -313,7 +313,7 @@ public sealed class StilblattTests
 
     /// <summary>Liest <paramref name="dateiname"/> aus <c>EPOS.UI/wwwroot</c> und prüft ihn.</summary>
     private static IReadOnlyList<Fund> PruefeDatei(string dateiname)
-        => Pruefe(File.ReadAllText(Path.Combine(Wwwroot(), dateiname)));
+        => Pruefe(Quelltextleser.Stilblatt(dateiname));
 
     /// <summary>Ab dem Anführungszeichen bis hinter das schließende; liefert dessen Stelle.</summary>
     private static int UeberliesZeichenkette(string css, int i, ref int zeile)
@@ -373,19 +373,10 @@ public sealed class StilblattTests
     // ---------------------------------------------------------------------
 
     /// <summary>
-    /// <c>EPOS.UI/wwwroot</c>, gefunden über denselben Aufstieg wie in
-    /// <c>KostenSeiteTests.Stilblock</c>: vom Ausgabeverzeichnis so lange
-    /// aufwärts, bis das Hausblatt dasteht.
+    /// <c>EPOS.UI/wwwroot</c> über <see cref="Quelltextleser"/>; jeder Text dieser
+    /// Klasse wird dort mit Zeilenenden <c>\n</c> gelesen (Windows-Klon mit CRLF).
     /// </summary>
-    private static string Wwwroot()
-    {
-        DirectoryInfo? d = new DirectoryInfo(AppContext.BaseDirectory);
-        while (d is not null && !File.Exists(Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css")))
-            d = d.Parent;
-
-        Assert.NotNull(d);   // das Stilblatt muss im Baum stehen
-        return Path.Combine(d!.FullName, "EPOS.UI", "wwwroot");
-    }
+    private static string Wwwroot() => Quelltextleser.Wwwroot();
 
     /// <summary>Alle Stilblätter unter <c>EPOS.UI/wwwroot</c>, nach Namen sortiert.</summary>
     private static string[] Stilblaetter()
@@ -454,7 +445,7 @@ public sealed class StilblattTests
         Assert.Contains("white-space: normal", block, StringComparison.Ordinal);
         Assert.Contains("width: 1%", block, StringComparison.Ordinal);
 
-        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css"));
+        string css = Quelltextleser.Stilblatt();
         Assert.Contains(".epos-strangtabelle td.epos-strangtabelle-zahl", css, StringComparison.Ordinal);
     }
 
@@ -479,7 +470,7 @@ public sealed class StilblattTests
         Assert.Contains("text-align: right", block, StringComparison.Ordinal);
         Assert.Contains("font-variant-numeric: tabular-nums", block, StringComparison.Ordinal);
 
-        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css"));
+        string css = Quelltextleser.Stilblatt();
         Assert.Contains(".epos-raster th.epos-simerg-zahl", css, StringComparison.Ordinal);
     }
 
@@ -500,7 +491,7 @@ public sealed class StilblattTests
         string koepfe = Regelblock(".epos-simerg-kennzahlen th.epos-simerg-zahl");
         Assert.Contains("text-align: right", koepfe, StringComparison.Ordinal);
 
-        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css"));
+        string css = Quelltextleser.Stilblatt();
         Assert.Contains(".epos-simerg-vergleich th.epos-simerg-zahl", css, StringComparison.Ordinal);
     }
 
@@ -587,7 +578,7 @@ public sealed class StilblattTests
         Assert.Contains("var(--epos-quelle-text)", Regelblock(".epos-gebimport-herkunft--gbxml,"), StringComparison.Ordinal);
         Assert.Contains("font-weight: 600", Regelblock(".epos-gebimport-herkunft--manuell"), StringComparison.Ordinal);
 
-        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css"));
+        string css = Quelltextleser.Stilblatt();
         int kontrast = css.IndexOf(".epos-gebimport-zeile--gelb > td:first-child { border-left: 4px dashed CanvasText; }", StringComparison.Ordinal);
         Assert.True(kontrast > css.LastIndexOf("@media (forced-colors: active)", kontrast, StringComparison.Ordinal),
                     "Der Kontrastmodus des Gebäudeimports fehlt");
@@ -618,7 +609,7 @@ public sealed class StilblattTests
         // Das Hexfeld des Farbwaehlers bleibt markierbar.
         Assert.Contains("user-select: text", Regelblock(".epos-diagramm-svg-flaeche .epos-farbwahl"), StringComparison.Ordinal);
 
-        string js = File.ReadAllText(Path.Combine(Wwwroot(), "epos-diagramm.js"));
+        string js = Quelltextleser.Lesen(Path.Combine(Wwwroot(), "epos-diagramm.js"));
         int a = js.IndexOf("an(flaeche, \"selectstart\"", StringComparison.Ordinal);
         Assert.True(a >= 0, "epos-diagramm.js faengt selectstart nicht ab");
         Assert.Contains("e.preventDefault()", js.Substring(a, Math.Min(200, js.Length - a)), StringComparison.Ordinal);
@@ -641,7 +632,7 @@ public sealed class StilblattTests
         Assert.Contains("width: 100%", block, StringComparison.Ordinal);
         Assert.Contains("height: auto", block, StringComparison.Ordinal);
 
-        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css"));
+        string css = Quelltextleser.Stilblatt();
         Assert.DoesNotContain("\n.epos-diagramm-svg-flaeche svg {", css, StringComparison.Ordinal);
     }
 
@@ -670,7 +661,7 @@ public sealed class StilblattTests
         Assert.Contains("background: var(--epos-gebansicht-farbe)", Regelblock(".epos-gebansicht-farbfeld {"), StringComparison.Ordinal);
         Assert.Contains("fill: var(--epos-text)", Regelblock(".epos-gebansicht-raum text {"), StringComparison.Ordinal);
 
-        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css"));
+        string css = Quelltextleser.Stilblatt();
         int kontrast = css.IndexOf(".epos-gebansicht-raum polygon { fill: Canvas; stroke: CanvasText; }", StringComparison.Ordinal);
         Assert.True(kontrast > 0 && kontrast > css.LastIndexOf("@media (forced-colors: active)", kontrast, StringComparison.Ordinal),
                     "Der Kontrastmodus des Grundrisses fehlt");
@@ -720,7 +711,7 @@ public sealed class StilblattTests
         // Kein anderes Hausblatt setzt einen transform auf die Ueberlagerung.
         foreach (string datei in Stilblaetter())
         {
-            string css = File.ReadAllText(datei);
+            string css = Quelltextleser.Lesen(datei);
             foreach (Match m in Regex.Matches(css, @"[^{}]*\.epos-ueberlagerung[^{}]*\{([^}]*)\}"))
                 Assert.DoesNotContain("transform:", m.Groups[1].Value, StringComparison.Ordinal);
         }
@@ -751,13 +742,18 @@ public sealed class StilblattTests
         Assert.Contains("position: sticky", zeiger, StringComparison.Ordinal);
         Assert.Contains("bottom: var(--epos-ueberlagerung-fuss)", zeiger, StringComparison.Ordinal);
 
+        // Befund 17.10.2026: Im Reiterblatt (overflow: auto) ist DAS der Bezug von sticky; der Fussabstand
+        // der Ueberlagerung hob die Zeile dort ueber Achse und Tick-Beschriftung (fensterprobe.mjs, bedarfgrafik).
+        string imReiter = Regelblock(".epos-ueberlagerung-inhalt .epos-reiter-blatt .epos-diagramm-zeigerzeile {");
+        Assert.Contains("bottom: 0", imReiter, StringComparison.Ordinal);
+
         Assert.Contains("--epos-ueberlagerung-fuss: 0px", Regelblock(".epos-ueberlagerung {"), StringComparison.Ordinal);
         Assert.Contains("--epos-ueberlagerung-fuss: calc(", Regelblock(
             ".epos-ueberlagerung:has(> .epos-ueberlagerung-inhalt > .epos-dialog > .epos-leiste > .epos-status) {"),
             StringComparison.Ordinal);
 
         // Die SpeichernLeiste traegt ihre Statusspanne als direktes Kind - daran haengt die Regel.
-        string leiste = File.ReadAllText(Path.Combine(Wwwroot(), "..", "Bausteine", "SpeichernLeiste.razor"));
+        string leiste = Quelltextleser.Lesen(Path.Combine(Wwwroot(), "..", "Bausteine", "SpeichernLeiste.razor"));
         Assert.Matches(@"<div class=""epos-leiste"">[\s\S]*?<span class=""epos-status ", leiste);
     }
 
@@ -794,7 +790,7 @@ public sealed class StilblattTests
         Assert.Contains("padding: 0", dialog, StringComparison.Ordinal);
 
         // Der Baustein traegt die Klassen, an denen die Regeln haengen.
-        string blatt = File.ReadAllText(Path.Combine(Wwwroot(), "..", "Bausteine", "Blattwechsel.razor"));
+        string blatt = Quelltextleser.Lesen(Path.Combine(Wwwroot(), "..", "Bausteine", "Blattwechsel.razor"));
         Assert.Contains("class=\"epos-blatt-inhalt\"", blatt, StringComparison.Ordinal);
         Assert.Contains("class=\"epos-blatt @ZusatzKlasse\"", blatt, StringComparison.Ordinal);
     }
@@ -810,7 +806,7 @@ public sealed class StilblattTests
     {
         // Zeilenenden normalisieren: Der Windows-Arbeitsbaum haelt das Blatt mit CRLF,
         // die mehrzeiligen Suchtexte unten stehen mit LF.
-        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+        string css = Quelltextleser.Stilblatt();
         Assert.DoesNotContain(".epos-navigation", css, StringComparison.Ordinal);
         Assert.DoesNotContain("#23282d", css, StringComparison.OrdinalIgnoreCase);
 
@@ -845,7 +841,7 @@ public sealed class StilblattTests
     [Fact]
     public void Die_Bereichszeile_hebt_die_Reiterzeile_ueber_Token_hervor()
     {
-        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+        string css = Quelltextleser.Stilblatt();
         Assert.Contains("--epos-schriftgroesse-bereichsreiter: 15px;", css, StringComparison.Ordinal);
 
         const string Wurzel = ".epos-reiter--bereich > .epos-reiter > .epos-reiter-kopfzeile";
@@ -894,7 +890,7 @@ public sealed class StilblattTests
     [Fact]
     public void KP2_Das_Wochenraster_bricht_am_Behaelter_um_und_aus_ist_ein_eigener_Zustand()
     {
-        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+        string css = Quelltextleser.Stilblatt();
 
         string wurzel = Regelblock(".epos-wochenraster--umbrechend {");
         Assert.Contains("container-type: inline-size", wurzel, StringComparison.Ordinal);
@@ -942,7 +938,7 @@ public sealed class StilblattTests
     [Fact]
     public void KP2_Der_Reiter_Konditionierung_bricht_am_Behaelter_bei_900_px_um()
     {
-        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+        string css = Quelltextleser.Stilblatt();
 
         string wurzel = Regelblock(".epos-kond {");
         Assert.Contains("container-type: inline-size", wurzel, StringComparison.Ordinal);
@@ -1010,10 +1006,44 @@ public sealed class StilblattTests
     /// über Tokens und sichert Warnung und Wahl für erzwungene Farben. Ihr Block steht VOR dem Reiterblock, damit
     /// zwischen .epos-kond und dem Formularraster keine Medienabfrage steht.
     /// </summary>
+    /// <summary>
+    /// Zapfprofil ZB4 (a): Die waagerechte Optionsgruppe bricht um, haelt das Beruehrungsmass je
+    /// Eintrag, kennzeichnet die Wahl mit dem Marken-Token und unter forced-colors mit Highlight.
+    /// </summary>
+    [Fact]
+    public void ZB4_Die_waagerechte_Optionsgruppe_bricht_um_und_kennzeichnet_die_Wahl()
+    {
+        string css = Quelltextleser.Stilblatt();
+        string zeile = Regelblock(".epos-optionsgruppe-zeile {");
+        Assert.Contains("flex-direction: row", zeile, StringComparison.Ordinal);
+        Assert.Contains("flex-wrap: wrap", zeile, StringComparison.Ordinal);
+        Assert.Contains("min-height: var(--epos-touchziel)", Regelblock(".epos-optionsgruppe-zeile .epos-option {"), StringComparison.Ordinal);
+        Assert.Contains("var(--epos-marke)", Regelblock(".epos-optionsgruppe-zeile .epos-option--gewaehlt {"), StringComparison.Ordinal);
+        Assert.Contains("@media (forced-colors: active) {\n    .epos-optionsgruppe-zeile .epos-option {\n        border-color: CanvasText;\n    }\n\n"
+                        + "    .epos-optionsgruppe-zeile .epos-option--gewaehlt {\n        border: 2px solid Highlight;", css, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// Zapfprofil ZB6 / N13 (u): Die Wohnungstabelle fuellt ihre Zelle mit festen Spaltenanteilen, jedes
+    /// Feld nimmt die Breite seiner Zelle — sie rollt im Eingabeblock nicht quer (Sichtprobe bei 1 500
+    /// und 900 px: 0 px).
+    /// </summary>
+    [Fact]
+    public void ZB6_Die_Wohnungstabelle_fuellt_ihre_Zelle_statt_quer_zu_rollen()
+    {
+        string tabelle = Regelblock(".epos-zapfprofil-wohnungen table.quickgrid {");
+        Assert.Contains("table-layout: fixed", tabelle, StringComparison.Ordinal);
+        Assert.Contains("width: 100%", tabelle, StringComparison.Ordinal);
+        string feld = Regelblock(".epos-zapfprofil-wohnungen .epos-raster input.epos-eingabe,\n.epos-zapfprofil-wohnungen .epos-raster select.epos-eingabe {");
+        Assert.Contains("min-width: 0", feld, StringComparison.Ordinal);
+        Assert.Contains("width: 100%", feld, StringComparison.Ordinal);
+        Assert.Contains("white-space: normal", Regelblock(".epos-zapfprofil-wohnungen .epos-raster th .col-header-content {"), StringComparison.Ordinal);
+    }
+
     [Fact]
     public void K1b_Die_Kalenderbedienung_haelt_das_Beruehrungsmass_und_rollt_im_eigenen_Kasten()
     {
-        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+        string css = Quelltextleser.Stilblatt();
         Assert.Contains("min-height: var(--epos-touchziel)", Regelblock(".epos-kalb-zelle {"), StringComparison.Ordinal);
         Assert.Contains("min-height: var(--epos-touchziel)", Regelblock(".epos-kalb-jahrtag {"), StringComparison.Ordinal);
         Assert.Contains("repeat(7, minmax(var(--epos-touchziel), 1fr))", Regelblock(".epos-kalb-woche {"), StringComparison.Ordinal);
@@ -1049,7 +1079,7 @@ public sealed class StilblattTests
     [Fact]
     public void KP2_U3_Die_Periodenliste_bricht_schmal_nicht_im_Wort()
     {
-        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+        string css = Quelltextleser.Stilblatt();
         Assert.Contains("table-layout: fixed", Regelblock(".epos-kond-periodentabelle {"), StringComparison.Ordinal);
         Assert.Contains("container-name: epos-kond-perioden", Regelblock(".epos-kond-perioden {"), StringComparison.Ordinal);
         Assert.Contains("display: none", Regelblock(".epos-kond-periode-zeitraum-schmal {"), StringComparison.Ordinal);
@@ -1081,7 +1111,7 @@ public sealed class StilblattTests
         Assert.Contains("width: var(--epos-touchziel)", ring, StringComparison.Ordinal);
         Assert.Contains("height: var(--epos-touchziel)", ring, StringComparison.Ordinal);
 
-        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css"));
+        string css = Quelltextleser.Stilblatt();
         Assert.DoesNotContain("var(--epos-infoknopf)", css, StringComparison.Ordinal);
     }
 
@@ -1111,7 +1141,7 @@ public sealed class StilblattTests
         Assert.Contains("grid-template-columns: minmax(0, 1fr) minmax(420px, 480px)", raster, StringComparison.Ordinal);
         Assert.Contains("min-width: 0", Regelblock(".epos-bericht-spalte {"), StringComparison.Ordinal);
 
-        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+        string css = Quelltextleser.Stilblatt();
         int regel = css.IndexOf("\n.epos-bericht-raster {", StringComparison.Ordinal);
         string schmal = Abfrageblock(css.Substring(regel), "@media (max-width: 900px) {");
         Assert.Contains(".epos-bericht-raster {\n        grid-template-columns: minmax(0, 1fr);", schmal, StringComparison.Ordinal);
@@ -1130,6 +1160,124 @@ public sealed class StilblattTests
         string hoch = Abfrageblock(css.Substring(regel), "@media (forced-colors: active) {");
         Assert.Contains(".epos-bericht-karte {\n        border: 1px solid CanvasText;", hoch, StringComparison.Ordinal);
     }
+
+    /// <summary>
+    /// <b>SK-3: das Energieflussbild breit und schmal</b> (Konzept Energieflussbild 4.3, SK-Q8): beide Modelle stehen im Baum,
+    /// das schmale ist ausgeblendet und tauscht unter 900 px mit dem breiten — eine Regel, kein JS. Keine sichtbare
+    /// Wertetabelle (SK-Q12): die Textalternative nimmt die Sprachausgabe-Klasse, das Stilblatt kennt keine Wertetabelle
+    /// des Flusses. Keine Farbe als Rückfall.
+    /// </summary>
+    [Fact]
+    public void SK3_Das_Energieflussbild_tauscht_unter_900_px_das_schmale_Modell_ein()
+    {
+        Assert.Contains("display: none", Regelblock(".epos-ergebnis-fluss-mass--schmal {"), StringComparison.Ordinal);
+        Assert.Contains("max-width: 1180px", Regelblock(".epos-ergebnis-fluss-bild {"), StringComparison.Ordinal);
+
+        string css = Quelltextleser.Stilblatt();
+        int regel = css.IndexOf("\n.epos-ergebnis-fluss {", StringComparison.Ordinal);
+        Assert.True(regel > 0);
+        string schmal = Abfrageblock(css.Substring(regel), "@media (max-width: 899.98px) {");
+        Assert.Contains(".epos-ergebnis-fluss-mass--breit {\n        display: none;", schmal, StringComparison.Ordinal);
+        Assert.Contains(".epos-ergebnis-fluss-mass--schmal {\n        display: block;", schmal, StringComparison.Ordinal);
+        Assert.DoesNotContain("epos-ergebnis-fluss-wertetabelle", css, StringComparison.Ordinal);
+        foreach (string r in new[] { ".epos-ergebnis-fluss {", ".epos-ergebnis-fluss-kopf {", ".epos-ergebnis-fluss-bild {",
+                                     ".epos-ergebnis-fluss-mass--schmal {" })
+            Assert.DoesNotContain("#", Regelblock(r), StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>SK-2d-2: Knopfgruppen und Abblendregel des Energieflussbilds.</b> Der Kopf hat keine Höchstbreite mehr (Version,
+    /// „Kette | Stufen“ und Filter stehen nebeneinander und brechen um); die Hervorhebung blendet über die Deckkraft ab — nur
+    /// Bänder und Knoten ohne <c>epos-fluss-an</c>, solange die figure markiert ist; keine Farbe, Legende und Stufentitel
+    /// bleiben unberührt (die Regel nennt nur <c>fluss:</c> und <c>knoten:</c>).
+    /// </summary>
+    [Fact]
+    public void SK2d2_Die_Hervorhebung_blendet_nur_Baender_und_Knoten_ab()
+    {
+        Assert.DoesNotContain("max-width", Regelblock(".epos-ergebnis-fluss-kopf {"), StringComparison.Ordinal);
+        Assert.Contains("flex-wrap: wrap", Regelblock(".epos-ergebnis-fluss-wahl {"), StringComparison.Ordinal);
+        string css = Quelltextleser.Stilblatt();
+        const string kopf = ".epos-ergebnis-fluss-bild--hervor [data-marke^=\"fluss:\"]:not(.epos-fluss-an),\n"
+                          + ".epos-ergebnis-fluss-bild--hervor [data-marke^=\"knoten:\"]:not(.epos-fluss-an) {";
+        int i = css.IndexOf(kopf, StringComparison.Ordinal);
+        Assert.True(i > 0, "Abblendregel fehlt");
+        string regel = css.Substring(i, css.IndexOf('}', i) - i);
+        Assert.Contains("opacity: 0.18", regel, StringComparison.Ordinal);
+        Assert.DoesNotContain("#", regel, StringComparison.Ordinal);
+        Assert.DoesNotContain("legende", regel, StringComparison.Ordinal);
+        Assert.DoesNotContain("stufe:", regel, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Kästchen und Kopfhäkchen der Projektliste im Schema des runden Wahlknopfs</b> (KA‑E‑28): ein Kreis mit
+    /// Rand, angekreuzt — auch ▣, eine Teilwahl — in den Farben des Primärknopfs, Schwebe und Fokus eigen, im
+    /// Hochkontrast die Systemfarben der Wahl. Die Zeile trägt die Berührungsgröße, das Kopfhäkchen ist kleiner
+    /// (32 px) in einer Kopfzelle mit 2 px Polsterung oben und unten, die ihre Höhe behält; die Spalte fasst
+    /// den Kreis mit der Polsterung des Hauses, die Zeilenhöhe misst die Rollbereichprobe.
+    /// </summary>
+    [Fact]
+    public void KR1_Das_Kaestchen_der_Zeile_ist_rund_und_das_Kopfhaekchen_rund()
+    {
+        string kreis = Regelblock(".epos-wahlkaestchen {");
+        foreach (string wert in new[] { "border-radius: 50%", "width: var(--epos-touchziel)", "height: var(--epos-touchziel)",
+                                        "border: 1px solid var(--epos-rahmen)", "background: var(--epos-flaeche)" })
+            Assert.Contains(wert, kreis, StringComparison.Ordinal);
+        string kopf = Regelblock(".epos-wahlkaestchen--kopf {");
+        Assert.Contains("height: 32px", kopf, StringComparison.Ordinal);
+        Assert.Contains("font-size: 16px", kopf, StringComparison.Ordinal);
+        Assert.DoesNotContain("border-radius", kopf, StringComparison.Ordinal);
+        Assert.DoesNotContain("transparent", kopf, StringComparison.Ordinal);
+
+        string css = Quelltextleser.Stilblatt();
+        Assert.Contains(".epos-wahlkaestchen[aria-checked=\"true\"],\n.epos-wahlkaestchen[aria-checked=\"mixed\"] {", css, StringComparison.Ordinal);
+        string primaer = Regelblock(".epos-knopf--primaer {");
+        string gewaehlt = Regelblock(".epos-wahlkaestchen[aria-checked=\"true\"],");
+        foreach (string wert in new[] { "color: var(--epos-gruppenkopf-text)", "background: var(--epos-karte-titel)", "border-color: var(--epos-karte-titel)" })
+        {
+            Assert.Contains(wert, primaer, StringComparison.Ordinal);
+            Assert.Contains(wert, gewaehlt, StringComparison.Ordinal);
+        }
+        Assert.Contains("background: var(--epos-quelle-text)", Regelblock(".epos-wahlkaestchen[aria-checked=\"true\"]:hover,"), StringComparison.Ordinal);
+        Assert.Contains("outline: 2px solid", Regelblock(".epos-wahlkaestchen:focus-visible {"), StringComparison.Ordinal);
+
+        string hoch = Abfrageblock(css.Substring(css.IndexOf("\n.epos-wahlkaestchen {", StringComparison.Ordinal)), "@media (forced-colors: active) {");
+        Assert.Contains("background: Highlight;", hoch, StringComparison.Ordinal);
+        Assert.Contains("color: HighlightText;", hoch, StringComparison.Ordinal);
+
+        string spalte = Regelblock(".epos-zweispalten-inhalt--zeilenwahl table.epos-raster > thead > tr > th.epos-spalte-kaestchen,");
+        Assert.Contains("width: calc(var(--epos-touchziel) + 16px)", spalte, StringComparison.Ordinal);
+        Assert.DoesNotContain("padding-top", spalte, StringComparison.Ordinal);
+        string kopfzelle = Regelblock(".epos-zweispalten-inhalt--zeilenwahl table.epos-raster > thead > tr > th.epos-spalte-kaestchen {");
+        Assert.Contains("padding-top: 2px", kopfzelle, StringComparison.Ordinal);
+        Assert.Contains("padding-bottom: 2px", kopfzelle, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>Der Primärknopf behält beim Überfahren seine Füllung</b> (KR1b): Seine Schwebe-Regel wiegt mehr als die
+    /// aller Knöpfe (<c>.epos-knopf:hover</c> mit zwei <c>:not</c>) — sonst gewänne deren helle Fläche, und die weiße
+    /// Schrift verschwände darauf. Gezählt wird das Gewicht der Klassenstufe (Klassen, Attribute, Pseudoklassen ohne
+    /// <c>:not</c> selbst).
+    /// </summary>
+    [Fact]
+    public void KR1b_Der_Primaerknopf_behaelt_beim_Ueberfahren_seine_Fuellung()
+    {
+        const string allgemein = ".epos-knopf:hover:not(:disabled):not([aria-disabled=\"true\"])";
+        const string primaer = ".epos-knopf.epos-knopf--primaer:hover:not(:disabled):not([aria-disabled=\"true\"])";
+        Assert.Contains("background: var(--epos-karte-flaeche-hover)", Regelblock(allgemein + " {"), StringComparison.Ordinal);
+        string regel = Regelblock(primaer + " {");
+        Assert.Contains("background: var(--epos-quelle-text)", regel, StringComparison.Ordinal);
+        Assert.Contains("border-color: var(--epos-quelle-text)", regel, StringComparison.Ordinal);
+        Assert.True(Klassengewicht(primaer) > Klassengewicht(allgemein),
+                    Klassengewicht(primaer) + " gegen " + Klassengewicht(allgemein));
+
+        string css = Quelltextleser.Stilblatt();
+        Assert.DoesNotContain("\n.epos-knopf--primaer:hover", css, StringComparison.Ordinal);
+    }
+
+    /// <summary>Gewicht der Klassenstufe eines einfachen Selektors: Klassen, Attribute und Pseudoklassen, <c>:not</c> selbst zählt nicht.</summary>
+    private static int Klassengewicht(string selektor)
+        => selektor.Count(c => c == '.') + selektor.Count(c => c == '[')
+           + Regex.Matches(selektor, @"(?<!:):(?!:)").Count - Regex.Matches(selektor, @":not\(").Count;
 
     /// <summary>
     /// Der Rumpf einer At-Regel (<c>@container …</c>, <c>@media …</c>) samt ihrer Regeln — bis zur
@@ -1156,7 +1304,7 @@ public sealed class StilblattTests
     /// <summary>Der Rumpf der Regel zu <paramref name="selektor"/> in diesem Stilblatt.</summary>
     private static string Regelblock(string selektor, string datei)
     {
-        string css = File.ReadAllText(Path.Combine(Wwwroot(), datei));
+        string css = Quelltextleser.Stilblatt(datei);
 
         int a = css.IndexOf("\n" + selektor, StringComparison.Ordinal);
         Assert.True(a >= 0, "Die Regel \"" + selektor + "\" steht nicht in " + datei);

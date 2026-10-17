@@ -40,7 +40,7 @@ namespace EPOS.Kern.Tests
         }
 
         private static int KaeltespeicherAnlegen(int projekt, int volumen) =>
-            PufferSpCtrl.ProjektPufferAnlegen(projekt, "Kaltwasserspeicher Test", "", "", volumen, 2.0, 0,
+            PufferSpCtrl.ProjektPufferAnlegen(projekt, "Kaltwasserspeicher Test", "", "", volumen, 2.0,
                                               DbWerte.PSP_VERWENDUNG_KAELTE, 6, 12, 10, 95, null, 0);
 
         [Fact]

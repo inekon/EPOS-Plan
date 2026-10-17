@@ -461,12 +461,14 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Ohne aktive Stammzeile gibt es keine Beilage</b> (§ 2.16): Es ist nichts
-        /// zu uebernehmen — beide rechnen Flat. Der Import sagt es, statt es still zu
-        /// lassen, und die Variante bleibt ohne Zeile.
+        /// <b>Ohne Stammzeile reist eine leere Beilage</b> (28b, Anwenderentscheid
+        /// 16.10.2026): Der Stamm fuehrt keine Verguetungszeile, die Variante uebernimmt.
+        /// Am Ziel bekommt sie trotzdem eine EIGENE Zeile mit den Stammwerten — ohne
+        /// Stammzeile die Vorbelegung, nicht aktiv (beide rechnen Flat) —, und der Bericht
+        /// meldet die Uebernahme statt eines Hinweises.
         /// </summary>
         [Fact]
-        public void P10_Ohne_Stammzeile_gibt_es_keine_Beilage_sondern_eine_Meldung()
+        public void P10_Ohne_Stammzeile_legt_der_Import_die_Vorbelegung_als_eigene_Zeile_an()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -475,25 +477,73 @@ namespace EPOS.Kern.Tests
             int idStamm = Id(STAMM);
             PvLoeschen(idStamm); PvLoeschen(Id(VARIANTE_1));
 
-            string paket = ordner.Datei("ohnebeilage.wpx");
+            string paket = ordner.Datei("leerebeilage.wpx");
             var io = new ProjektExportImportCtrl();
             Assert.True(io.Exportieren(VARIANTE_1, paket));
 
-            Assert.Equal(0, Manifest(paket).GetProperty("pvVerguetungStamm").GetArrayLength());
-            Assert.DoesNotContain("pvstamm/0.json", Eintraege(paket).Keys);
+            Assert.Equal(1, Manifest(paket).GetProperty("pvVerguetungStamm").GetArrayLength());
+            Assert.Contains("pvstamm/0.json", Eintraege(paket).Keys);
 
             int neu; string fehler;
             Umbenennen(idStamm, STAMM + " (nicht im Ziel)");
             try
             {
-                neu = io.Importieren(paket, "Ohne Beilage P10",
+                neu = io.Importieren(paket, "Leere Beilage P10",
                                      ProjektExportImportCtrl.BeiVorhandenem.NeuerName, null, out fehler);
             }
             finally { Umbenennen(idStamm, STAMM); }
             Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
 
-            Assert.Null(new ProjektPhotovoltaikCtrl().Lies(neu));
-            Assert.Contains(io.LetzterBericht, z => z == Ressource("TRANSFER_PV_OHNE_BEILAGE"));
+            ProjektPhotovoltaikModel eigen = new ProjektPhotovoltaikCtrl().Lies(neu);
+            Assert.NotNull(eigen);
+            Assert.Equal(neu, eigen.ID_Projekt);
+            Assert.False(eigen.UebernahmeStamm);
+            Assert.False(eigen.Aktiv);
+            Assert.Equal(DbWerte.PV_EINSPEISEART_UEBERSCHUSS, eigen.Einspeiseart);
+            Assert.Equal(0.40, eigen.DvEntgelt);
+            Assert.Equal(20.0, eigen.AusfallanteilProzent);
+            Assert.Contains(io.LetzterBericht,
+                            z => z == string.Format(Ressource("TRANSFER_PV_BEILAGE"), STAMM));
+            Assert.DoesNotContain(io.LetzterBericht, z => z == Ressource("TRANSFER_PV_OHNE_BEILAGE"));
+        }
+
+        /// <summary>
+        /// <b>Eine nicht aktive Stammzeile reist mit</b> (28b): Die Variante bekommt am
+        /// Ziel deren Werte als eigene Zeile — nicht aktiv, mit dem Anlagenwert des Stamms.
+        /// </summary>
+        [Fact]
+        public void P10b_Eine_nicht_aktive_Stammzeile_wird_zur_eigenen_Zeile()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int idStamm = Id(STAMM);
+            PvLoeschen(idStamm); PvLoeschen(Id(VARIANTE_1));
+            PvSchreiben(idStamm, aktiv: false, aw: 6.25);
+
+            string paket = ordner.Datei("inaktiv.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(VARIANTE_1, paket));
+            Assert.Equal(1, Manifest(paket).GetProperty("pvVerguetungStamm").GetArrayLength());
+
+            int neu; string fehler;
+            Umbenennen(idStamm, STAMM + " (nicht im Ziel)");
+            try
+            {
+                neu = io.Importieren(paket, "Inaktiv P10b",
+                                     ProjektExportImportCtrl.BeiVorhandenem.NeuerName, null, out fehler);
+            }
+            finally { Umbenennen(idStamm, STAMM); }
+            Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+
+            ProjektPhotovoltaikModel eigen = new ProjektPhotovoltaikCtrl().Lies(neu);
+            Assert.NotNull(eigen);
+            Assert.False(eigen.UebernahmeStamm);
+            Assert.False(eigen.Aktiv);
+            Assert.Equal(6.25, eigen.AwOverride);
+            Assert.Contains(io.LetzterBericht,
+                            z => z == string.Format(Ressource("TRANSFER_PV_BEILAGE"), STAMM));
         }
 
         /// <summary>

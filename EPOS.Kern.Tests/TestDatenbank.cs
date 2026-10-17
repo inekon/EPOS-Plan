@@ -1023,8 +1023,8 @@ namespace EPOS.Kern.Tests
                 // Schritt KaeltebedarfSchema.SCHRITT (K1): Kaeltebedarfsprofile, Typkatalog, Zuordnung mit Deckungsart,
                 // Deckungsspalten an Z_ProjektWaermebedarf ('zentral'), Saat der sechs Typsaetze. Wiederholbar.
                 KaeltebedarfSchema.Ausfuehren(null);
-                // Schritt RueckkuehlwerkSchema.SCHRITT (K-F1): Katalog und Projektkopie des Rueckkuehlwerks, Verweis und
-                // Wasserpreis an der Anlage, Kennzahlen am Ergebnis der Kaeltemaschine, leer, reines DDL. Wiederholbar.
+                // Schritt RueckkuehlwerkSchema.SCHRITT (K-F1): Katalog und Projektkopie des Rueckkuehlwerks, Verweis an der
+                // Anlage, Kennzahlen am Ergebnis der Kaeltemaschine, leer, reines DDL. Wiederholbar.
                 RueckkuehlwerkSchema.Ausfuehren(null);
                 // Schritt VorheizenSchema.SCHRITT (AH-V4): sieben Einstellungsspalten, Vorheizzeit der Zone, achtzehn
                 // Ergebnisspalten je Gebaeude und Zone, leer, reines DDL. Wiederholbar.
@@ -1047,6 +1047,65 @@ namespace EPOS.Kern.Tests
                 // Schritt BauteilkatalogSchema.SCHRITT (BK-2, E132): Herkunft, Gliederung, Kennzeichen und Felder der Quelle am
                 // Baustoff- und Bauteilkatalog, Abschnittstabellen. Wiederholbar, ergebnisneutral.
                 BauteilkatalogSchema.Ausfuehren(null);
+                // Schritt BauteilkatalogHaustechnikSchema.SCHRITT (BK-3c, E134): Klasse Haustechnik in der Pruefklausel von
+                // Klasse_Code (Neubau der vier Kopftabellen). Wiederholbar, ergebnisneutral.
+                BauteilkatalogHaustechnikSchema.Ausfuehren(null);
+                // Schritt KaeltebedarfSplitAbrechnungSchema.SCHRITT (K6): Tab_ErgebnisKaelteDezentral, leer, reines DDL.
+                // Wiederholbar, ergebnisneutral.
+                KaeltebedarfSplitAbrechnungSchema.Ausfuehren(null);
+                // Schritt TwwZonenferienSchema.SCHRITT (ZB5, ZB-Q3 B): Zonenferien als Liste - Tab_TwwZonenferien, die vier
+                // Spaltenpaare von Tab_TwwZone uebertragen und abgebaut. Wiederholbar, ergebnisneutral.
+                TwwZonenferienSchema.Ausfuehren(null);
+                // Schritt ZonenLastfelderSchema.SCHRITT (DA-2, E138 F5): Aussenluft je Person, Licht und Waerme je Person an
+                // Tab_Zone und Tab_Zone_STAMM, leer, reines DDL. Wiederholbar, ergebnisneutral.
+                ZonenLastfelderSchema.Ausfuehren(null);
+                // Schritt KatalogkostenSaatSchema.SCHRITT (KB-3): die zwei Verweise an den acht Projektkopien mit
+                // Kosten, dazu je Satz mit Kosten genau eine Satzvorlage je Art. Wiederholbar, ergebnisneutral.
+                KatalogkostenSaatSchema.Ausfuehren(null);
+                // Schritt BrennstoffpreiseTraegerkarteSchema.SCHRITT (KB-2): die drei Standardpreise des Brennstoffs
+                // gehen in die Traegerkarte und fallen an Katalog und Projektkopie weg. Wiederholbar, ergebnisneutral.
+                BrennstoffpreiseTraegerkarteSchema.Ausfuehren(null);
+                // Schritt GeraetekostenEntfallSchema.SCHRITT (KB-4): Investitionsverweis und Saat am Wechselrichter,
+                // dann Entfall der 32 Kostenspalten der acht Investitionsgewerke. Wiederholbar, ergebnisneutral.
+                GeraetekostenEntfallSchema.Ausfuehren(null);
+                // Schritt StromspeicherKostenSchema.SCHRITT (KB-5): Sicherheitslauf der Saat und Entfall der vier
+                // Kostenspalten des Stromspeichers. Wiederholbar, ergebnisgleich.
+                StromspeicherKostenSchema.Ausfuehren(null);
+                // Schritt KaeltebedarfsprofilVorlagenSchema.SCHRITT (KBP-2): Eingabeart der Kaeltebedarfszuordnung, Art-Vorschlag am
+                // Kaeltekatalog und Saat der Vorlagen 7-16. Wiederholbar, ergebnisneutral.
+                KaeltebedarfsprofilVorlagenSchema.Ausfuehren(null);
+                // Schritt RaumnutzungDinWerteSchema.SCHRITT (DA-6, E135): die 45 DIN-Nutzungsprofile mit den Werten der
+                // Saat, nur wo kein Wert steht. Wiederholbar, ergebnisneutral.
+                RaumnutzungDinWerteSchema.Ausfuehren(null);
+                // Schritt BauteilkatalogAbschnittSchema.SCHRITT (BK-5/BK-6): Psi_Glasrand am Aufbaukatalog, leer, reines DDL.
+                // Wiederholbar, ergebnisneutral.
+                BauteilkatalogAbschnittSchema.Ausfuehren(null);
+                // Schritt BauteilUHerkunftSchema.SCHRITT (MA-6b, E149): U_Herkunft an Tab_Bauteil(_STAMM), leer, reines DDL.
+                // Wiederholbar, ergebnisneutral.
+                BauteilUHerkunftSchema.Ausfuehren(null);
+                // Schritt BedarfsprofilEingabeartSchema.SCHRITT (KBP-5a bis KBP-5d): Eingabeart an Prozesswaerme und
+                // Brauchwasser, Nutzungstage nach Norm an den Kaeltevorlagen (Saat Vorlage 8), Ferien wie Sonntag am
+                // Betriebskalender. Wiederholbar, ergebnisneutral.
+                BedarfsprofilEingabeartSchema.Ausfuehren(null);
+                // Schritt WasserpreisTraegerkarteSchema.SCHRITT (KB-7a): Traeger Wasser, Uebernahme der Anlagenpreise in
+                // die Traegerkarte, Entfall von Wasserpreis_EUR_m3. Wiederholbar, ergebnisneutral.
+                WasserpreisTraegerkarteSchema.Ausfuehren(null);
+                // Schritt KaeltetyptagSchema.SCHRITT (KBP-4a): Typtage und Matrix der Kaeltebedarfszuordnung,
+                // zwei leere Tabellen. Wiederholbar, ergebnisneutral.
+                KaeltetyptagSchema.Ausfuehren(null);
+                // Schritt BauteilStrahlungSchema.SCHRITT (DA-8): Absorptionsgrad_Solar und Emissionsgrad an Aufbau und Bauteil,
+                // leer, reines DDL. Wiederholbar, ergebnisneutral.
+                BauteilStrahlungSchema.Ausfuehren(null);
+                // Schritt KlimaRohwerteSchema.SCHRITT (KD-4): Tab_Klimastunde_STAMM (leer) und die Herkunftsspalten der
+                // Klimaregion. Wiederholbar, ergebnisneutral.
+                KlimaRohwerteSchema.Ausfuehren(null);
+                // Schritt ErgebnisreihenSchema.SCHRITT (EB-1): Stromeinspeisung, Abregelung und Eigenverbrauch_System an
+                // den Ergebniszeilen, leer, reines DDL. Wiederholbar, ergebnisneutral.
+                ErgebnisreihenSchema.Ausfuehren(null);
+
+                // Schritt ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT (KB-8): die vier Ergebnisspalten der
+                // Wirtschaftlichkeit, nur wenn sie fehlen. Wiederholbar, ergebnisneutral.
+                ErgebnisWirtschaftlichkeitSpaltenSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

@@ -147,6 +147,24 @@ namespace WindowsFormsApplication1
         /// <summary>Leistung je Fläche W/m² (<c>powerPerAreaUnitEnum</c>).</summary>
         public const string WattPerSquareMeter = "WattPerSquareMeter";
 
+        /// <summary>Leistung in W (<c>PeopleHeatGain/@unit</c>, Welle DA-2; <c>powerUnitEnum</c>, Annahme ohne Schemakopie).</summary>
+        public const string W = "W";
+
+        /// <summary>Sensible Wärmeabgabe (<c>PeopleHeatGain/@heatGainType</c>, Welle DA-2; Annahme ohne Schemakopie).</summary>
+        public const string Sensible = "Sensible";
+
+        /// <summary>Volumenstrom in m³/h (<c>OAFlowPerPerson/@unit</c>, Welle DA-2; <c>flowUnitEnum</c>, Annahme ohne Schemakopie).</summary>
+        public const string CubicMPerHr = "CubicMPerHr";
+
+        /// <summary>Volumenstrom je Fläche in m³/(h·m²) (<c>OAFlowPerArea/@unit</c>, Welle DA-2; Annahme ohne Schemakopie).</summary>
+        public const string CubicMPerHrSquareM = "CubicMPerHrSquareM";
+
+        /// <summary>Solarer Absorptionsgrad außen (<c>Absorptance/@type</c>, Welle DA-2, E138 F8 (b); Annahme ohne Schemakopie).</summary>
+        public const string ExtSolar = "ExtSolar";
+
+        /// <summary>Absorptionsgrad außen im Infraroten = langwelliger Emissionsgrad (<c>Absorptance/@type</c>; Annahme ohne Schemakopie).</summary>
+        public const string ExtIR = "ExtIR";
+
         // ------------------------------------------------------------------
         //  Mengen
         // ------------------------------------------------------------------

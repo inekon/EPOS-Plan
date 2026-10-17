@@ -64,5 +64,37 @@
         /// <c>Kaeltebedarf_Prozess</c> mitgeführt.
         /// </summary>
         public string KaelteArt = KaelteArtSchema.RAUM;
+
+        /// <summary>
+        /// Eingabeart der Zuordnung (KBP-2, Schritt <see cref="KaeltebedarfsprofilVorlagenSchema.SCHRITT"/>): 'jahr' (Vorgabe, Jahressumme
+        /// mit Vorlage), 'monat', 'woche' oder 'typtag'. Gewählt im Bedarfsprofil-Dialog (KBP-3a), geschrieben von
+        /// <see cref="WizardCtrl.Add_Projekt_Kaelte"/>.
+        /// </summary>
+        public string Eingabeart = KaeltebedarfsprofilVorlagenSchema.EINGABE_JAHR;
+
+        /// <summary>
+        /// KBP-3a: bearbeitete Monatsanteile [%] der Projektkopie (12 Werte); <c>null</c> = unverändert. Geschrieben von
+        /// <see cref="WizardCtrl.Add_Projekt_Kaelte"/> in <c>Tab_Kaeltebedarf.Monat_1…12</c> der Kopie (Konzept 3.2).
+        /// </summary>
+        public double[] Monatsanteile;
+
+        /// <summary>
+        /// KBP-3a: bearbeitetes Wochenprofil der Projektkopie (168 Werte, Montag 0 Uhr zuerst); <c>null</c> = unverändert.
+        /// Geschrieben in <c>Tab_Kaeltetyp."1"…"168"</c> der Kopie (Konzept 3.3).
+        /// </summary>
+        public double[] Wochenprofil;
+
+        /// <summary>
+        /// KBP-4b: bearbeitete Typtage samt Zuordnungsmatrix der Projektkopie (Konzept 3.4); <c>null</c> = unverändert.
+        /// Geschrieben von <see cref="WizardCtrl.Add_Projekt_Kaelte"/> über <see cref="KaeltetyptagCtrl.Schreiben"/>.
+        /// </summary>
+        public KaeltetyptagEingabe Typtage;
+
+        /// <summary>
+        /// KBP-5a: die Nutzungstage nach Norm der Projektkopie (<c>Tab_Kaeltebedarf.Nutzungstage_Norm</c>, Schritt
+        /// <see cref="BedarfsprofilEingabeartSchema.SCHRITT"/>); <c>null</c> = keine Angabe. Nur gelesen — Grundlage des
+        /// Kalendervorschlags beim Übernehmen (KBP-5b), kein Rechenweg liest sie.
+        /// </summary>
+        public int? NutzungstageNorm;
     }
 }

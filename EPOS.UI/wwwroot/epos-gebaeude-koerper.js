@@ -44,6 +44,11 @@
 // des Bytefelds), je Bauteilkoerper e.befund -, der Farbtafel daten.befundfarben (GebaeudeAnsichtBefundstufen.FARBEN) und
 // den Schaltern daten.befundsichtbar. Halbtransparent ist die neutrale Innenflaeche (Byte 4). Der Klick wie in "aufbau".
 //
+// EIN- UND AUSBLENDEN (Auftrag AB4). Ausgeblendete Zonen und Bauteilkoerper ausgeblendeter Bauteilgruppen laesst schon die
+// Komponente aus der Szene; Platten einer ausgeblendeten Gruppe kommen ohne Art. Hier faellt je Raumkoerper jedes Dreieck
+// heraus, dessen Bauteilgruppe (Bytes ab e.bauteilgruppenAb, sechster Teil des Bytefelds) in daten.bauteilgruppensichtbar
+// aus ist - in jedem Farbmodus; was nicht gebaut ist, trifft auch der Klick nicht.
+//
 // DETERMINISTISCH. Keine Zufallsfarben, keine Animation: gezeichnet wird bei Aenderung (Kamera,
 // Groesse, Daten). Kann die Umgebung kein WebGL, wirft erzeugen() nicht, sondern gibt false zurueck -
 // der Baustein meldet das benannt statt eines leeren Bildes.
@@ -68,6 +73,25 @@ const KEINE = 255;
 const GRUPPEN = 8;
 /** Die Deckung von R0: die Huelle bleibt von aussen und innen lesbar. */
 const R0_DECKUNG = 0.28;
+
+/** MA-5: die Kante eines hervorgehobenen Koerpers (dunkel wie die Zielzone) und Deckung und Kante der gedimmten uebrigen. */
+const HERVOR_KANTE = 0x000000;
+const GEDIMMT_KANTE = 0xbbbbbb;
+const GEDIMMT_DECKUNG = 0.18;
+
+/**
+ * MA-5: die Stufe eines Koerpers unter der Hervorhebung der Pruefgruppe (reine Funktion, ohne three.js): 'hervor', wenn die
+ * Szene hervorhebt und der Koerper getroffen ist, 'gedimmt', wenn sie hervorhebt und er es nicht ist, sonst null (wie bisher).
+ */
+export function hervorstufe(daten, e) {
+    if (!daten || daten.hervorhebung !== true) return null;
+    return e && e.hervor === true ? 'hervor' : 'gedimmt';
+}
+
+/** Die Kantenfarbe unter der Hervorhebung; ohne Hervorhebung die bisherige. */
+function kantenfarbe(stufe, bisher) {
+    return stufe === 'hervor' ? HERVOR_KANTE : stufe === 'gedimmt' ? GEDIMMT_KANTE : bisher;
+}
 
 let zustand = null;
 
@@ -146,11 +170,13 @@ function gruppeSichtbar(daten, gruppe) {
  * uebergebenen Folge (dreieckUrsprung) zurueck.
  * Ausgeblendete Gruppen fallen ganz heraus - so trifft sie auch der Klick nicht. Ohne Gruppenbytes ist jedes Dreieck 255.
  */
-export function randaufbau(dreiecke, gruppen, sichtbar) {
+export function randaufbau(dreiecke, gruppen, sichtbar, dreieckSichtbar) {
     const zahl = Math.floor(dreiecke.length / 3);
     const je = new Uint32Array(256);
     const gruppeVon = i => (gruppen && i < gruppen.length ? gruppen[i] : KEINE);
-    for (let i = 0; i < zahl; i++) je[gruppeVon(i)]++;
+    // AB4: ein Dreieck einer ausgeblendeten Bauteilgruppe faellt heraus wie eine ausgeblendete Gruppe.
+    const drin = i => !dreieckSichtbar || dreieckSichtbar(i);
+    for (let i = 0; i < zahl; i++) if (drin(i)) je[gruppeVon(i)]++;
     // Reihenfolge: R0 bis R7, dann alle uebrigen Werte (255 = entartet) - eine feste, deterministische Folge.
     const start = new Int32Array(256).fill(-1);
     let summe = 0;
@@ -166,6 +192,7 @@ export function randaufbau(dreiecke, gruppen, sichtbar) {
     const dreieckUrsprung = new Uint32Array(summe);
     const stelle = start.slice();
     for (let i = 0; i < zahl; i++) {
+        if (!drin(i)) continue;
         const g = gruppeVon(i);
         const d = stelle[g];
         if (d < 0) continue;
@@ -187,11 +214,11 @@ export function randaufbau(dreiecke, gruppen, sichtbar) {
  * alle Dreiecke durchscheinend zu sortieren. Gruppen trennen das sauber, Ausblenden ist ein fehlender Abschnitt, und der
  * Index bleibt geteilt (keine verdreifachten Ecken).
  */
-function randmaterial(daten, gruppe, bauteil) {
+function randmaterial(daten, gruppe, bauteil, gedimmt) {
     const z = zustand;
     const aufbau = imAufbaumodus(daten);
     const befund = imBefundmodus(daten);
-    const schluessel = (befund ? 'f' : aufbau ? 'a' : 'g') + gruppe + (bauteil ? '|b' : '|r');
+    const schluessel = (befund ? 'f' : aufbau ? 'a' : 'g') + gruppe + (bauteil ? '|b' : '|r') + (gedimmt ? '|d' : '');
     let m = z.randmaterial.get(schluessel);
     if (m) return m;
     const tafel = befund ? (Array.isArray(daten.befundfarben) ? daten.befundfarben : [])
@@ -200,9 +227,11 @@ function randmaterial(daten, gruppe, bauteil) {
     const grenze = befund || aufbau ? tafel.length : GRUPPEN;
     const farbwert = gruppe >= 0 && gruppe < grenze && tafel[gruppe] ? tafel[gruppe] : farbe(z.canvas, -1);
     const r0 = gruppe === durchsichtigerWert(daten);
+    // MA-5: gedimmt (nicht getroffen von der Hervorhebung) durchscheinend ohne depthWrite wie R0, in derselben Farbe.
+    const durch = r0 || gedimmt === true;
     m = new THREE.MeshLambertMaterial({
         color: new THREE.Color(farbwert), side: THREE.DoubleSide, flatShading: true,
-        transparent: r0, opacity: r0 ? R0_DECKUNG : 1, depthWrite: !r0,
+        transparent: durch, opacity: gedimmt ? Math.min(GEDIMMT_DECKUNG, r0 ? R0_DECKUNG : 1) : r0 ? R0_DECKUNG : 1, depthWrite: !durch,
         // Bauteilkoerper liegen an den Raumflaechen an: leicht nach hinten versetzt, damit die Raumflaeche vorn bleibt.
         polygonOffset: bauteil, polygonOffsetFactor: bauteil ? 1 : 0, polygonOffsetUnits: bauteil ? 1 : 0,
     });
@@ -211,14 +240,14 @@ function randmaterial(daten, gruppe, bauteil) {
 }
 
 /** Baut aus Lage und Aufbau eine Geometrie mit je Gruppe einem Abschnitt und dem passenden Material. */
-function randgeometrie(position, aufbau, daten, bauteil) {
+function randgeometrie(position, aufbau, daten, bauteil, gedimmt) {
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', position);
     g.setIndex(new THREE.BufferAttribute(aufbau.index, 1));
     const materialien = [];
     aufbau.abschnitte.forEach((a, i) => {
         g.addGroup(a.ab, a.zahl, i);
-        materialien.push(randmaterial(daten, a.gruppe, bauteil));
+        materialien.push(randmaterial(daten, a.gruppe, bauteil, gedimmt));
     });
     g.computeVertexNormals();
     return { geometrie: g, materialien };
@@ -252,18 +281,20 @@ function deckflaeche(punkte, z, material) {
 }
 
 /** Ein Prisma aus dem Umriss: je Polygon extrudiert, Kanten, mit Platten nur im Exportmodell. */
-function prisma(k, ziel, mitPlatten, box, rand) {
+function prisma(k, ziel, mitPlatten, box, rand, daten) {
     const z = zustand;
     const zielzone = ziel !== null && k.zone === ziel;
+    const stufe = hervorstufe(daten, k);
+    const gedimmt = stufe === 'gedimmt';
     // Im Randmodus kennt ein Prisma keine Gruppen: neutral grau wie ein Raum ohne Zone.
     const grundfarbe = new THREE.Color(farbe(z.canvas, rand ? -1 : k.stelle));
     const material = new THREE.MeshLambertMaterial({
-        color: grundfarbe, transparent: true, opacity: k.schematisch ? 0.45 : 0.8,
-        side: THREE.DoubleSide, depthWrite: !k.schematisch,
+        color: grundfarbe, transparent: true, opacity: gedimmt ? GEDIMMT_DECKUNG : k.schematisch ? 0.45 : 0.8,
+        side: THREE.DoubleSide, depthWrite: !k.schematisch && !gedimmt,
     });
     const linie = k.schematisch
-        ? new THREE.LineDashedMaterial({ color: 0x333333, dashSize: 0.4, gapSize: 0.25 })
-        : new THREE.LineBasicMaterial({ color: zielzone ? 0x000000 : 0x555555 });
+        ? new THREE.LineDashedMaterial({ color: kantenfarbe(stufe, 0x333333), dashSize: 0.4, gapSize: 0.25 })
+        : new THREE.LineBasicMaterial({ color: kantenfarbe(stufe, zielzone ? 0x000000 : 0x555555) });
 
     (k.polygone ?? []).forEach((polygon, pi) => {
         if (!polygon || polygon.length < 3) return;
@@ -310,6 +341,18 @@ function abschnitt(feld, ab, zahl, Art) {
     return new Art(bytes.buffer, bytes.byteOffset, zahl);
 }
 
+/**
+ * AB4: der Filter der Bauteilgruppen eines Raumkoerpers - (i) => ist Dreieck i sichtbar? - aus den Bauteilgruppenbytes ab
+ * e.bauteilgruppenAb (ein Byte je Dreieck, 255 = ohne Bauteil, immer sichtbar) und den Schaltern
+ * daten.bauteilgruppensichtbar; null, wenn nichts ausgeblendet ist oder der Koerper keine Bytes traegt.
+ */
+export function bauteilgruppenFilter(daten, feld, e) {
+    const s = daten.bauteilgruppensichtbar;
+    if (!Array.isArray(s) || !s.includes(false) || !feld || !Number.isInteger(e.bauteilgruppenAb) || e.bauteilgruppenAb < 0) return null;
+    const bytes = feld.slice(e.bauteilgruppenAb, e.bauteilgruppenAb + e.dreieckZahl);
+    return i => { const b = i < bytes.length ? bytes[i] : KEINE; return b >= s.length || s[b] !== false; };
+}
+
 /** Der Dateikoerper eines Raums: Netz relativ zum Bezugspunkt, Mesh am Bezugspunkt, Randkanten als Linien. */
 function dateinetz(e, feld, bezug, ziel, box, daten) {
     const z = zustand;
@@ -328,6 +371,9 @@ function dateinetz(e, feld, bezug, ziel, box, daten) {
     const dreiecke = abschnitt(feld, e.dreieckeAb, e.dreieckZahl * 3, Int32Array);
     const bauteil = e.bauteil ?? null;
     const ort = v3(bezug[0], bezug[1], bezug[2]);
+    const dreieckSichtbar = bauteilgruppenFilter(daten, feld, e);
+    const stufe = hervorstufe(daten, e);
+    const gedimmt = stufe === 'gedimmt';
     let g, mesh;
     if (rand) {
         // Gruppen je Dreieck: Raeume aus dem dritten Teil des Felds, ein Bauteilkoerper traegt seine eine Gruppe.
@@ -338,8 +384,8 @@ function dateinetz(e, feld, bezug, ziel, box, daten) {
         const eine = befundmodus ? e.befund : aufbaumodus ? e.stufe : e.gruppe;
         if (bauteil !== null) gruppen = new Uint8Array(e.dreieckZahl).fill(Number.isInteger(eine) && eine >= 0 ? eine : KEINE);
         else if (Number.isInteger(ab) && ab >= 0) gruppen = feld.slice(ab, ab + e.dreieckZahl);
-        const aufbau = randaufbau(dreiecke, gruppen, gr => gruppeSichtbar(daten, gr));
-        const netz = randgeometrie(position, aufbau, daten, bauteil !== null);
+        const aufbau = randaufbau(dreiecke, gruppen, gr => gruppeSichtbar(daten, gr), dreieckSichtbar);
+        const netz = randgeometrie(position, aufbau, daten, bauteil !== null, gedimmt);
         g = netz.geometrie;
         mesh = new THREE.Mesh(g, netz.materialien);
         mesh.userData = {
@@ -349,14 +395,16 @@ function dateinetz(e, feld, bezug, ziel, box, daten) {
     } else {
         g = new THREE.BufferGeometry();
         g.setAttribute('position', position);
-        g.setIndex(new THREE.BufferAttribute(new Uint32Array(dreiecke), 1));
+        // AB4: ohne ausgeblendete Bauteilgruppe der Index der Datei; sonst ohne deren Dreiecke (der Klick trifft sie nicht).
+        const aufbau = dreieckSichtbar ? randaufbau(dreiecke, null, () => true, dreieckSichtbar) : null;
+        g.setIndex(new THREE.BufferAttribute(aufbau ? aufbau.index : new Uint32Array(dreiecke), 1));
         g.computeVertexNormals();
         const material = new THREE.MeshLambertMaterial({
-            color: new THREE.Color(farbe(z.canvas, e.stelle)), transparent: true, opacity: 0.8,
-            side: THREE.DoubleSide, flatShading: true,
+            color: new THREE.Color(farbe(z.canvas, e.stelle)), transparent: true, opacity: gedimmt ? GEDIMMT_DECKUNG : 0.8,
+            side: THREE.DoubleSide, flatShading: true, depthWrite: !gedimmt,
         });
         mesh = new THREE.Mesh(g, material);
-        mesh.userData = { zone: e.zone ?? null, raum: e.raum, gruppen: null, bauteil: null };
+        mesh.userData = { zone: e.zone ?? null, raum: e.raum, gruppen: null, bauteil: null, ursprung: aufbau ? aufbau.dreieckUrsprung : null };
     }
     mesh.position.copy(ort);
     z.gruppe.add(mesh);
@@ -366,7 +414,7 @@ function dateinetz(e, feld, bezug, ziel, box, daten) {
     k.setAttribute('position', position);
     k.setIndex(new THREE.BufferAttribute(new Uint32Array(abschnitt(feld, e.kantenAb, e.kantenZahl * 2, Int32Array)), 1));
     const zielzone = ziel !== null && e.zone === ziel;
-    const kanten = new THREE.LineSegments(k, new THREE.LineBasicMaterial({ color: zielzone ? 0x000000 : 0x555555 }));
+    const kanten = new THREE.LineSegments(k, new THREE.LineBasicMaterial({ color: kantenfarbe(stufe, zielzone ? 0x000000 : 0x555555) }));
     kanten.position.copy(ort);
     z.gruppe.add(kanten);
 
@@ -385,7 +433,7 @@ function bauen(daten, feld) {
     const dateimodus = daten.modus === 'dateikoerper';
 
     const rand = imGruppenmodus(daten);
-    for (const k of daten.koerper ?? []) prisma(k, ziel, !dateimodus && !rand, box, rand);
+    for (const k of daten.koerper ?? []) prisma(k, ziel, !dateimodus && !rand, box, rand, daten);
     if (dateimodus && feld) {
         const bezug = daten.bezugspunkt ?? [0, 0, 0];
         for (const e of daten.dateikoerper ?? []) dateinetz(e, feld, bezug, ziel, box, daten);
@@ -393,7 +441,8 @@ function bauen(daten, feld) {
         if (rand && daten.bauteilesichtbar !== false) {
             for (const b of daten.bauteile ?? []) {
                 if (!gruppeSichtbar(daten, bauteilwert(daten, b)) || !(b.dreieckZahl > 0)) continue;
-                dateinetz({ ...b, raum: null, zone: null }, feld, bezug, ziel, box, daten);
+                dateinetz({ ...b, raum: null, zone: null, hervor: Array.isArray(daten.hervorBauteile) && daten.hervorBauteile.includes(b.bauteil) },
+                    feld, bezug, ziel, box, daten);
             }
         }
     }

@@ -801,6 +801,28 @@ namespace WindowsFormsApplication1
                             });
             }
 
+            // Schritt 223 (Konzept Kältebedarf 4.2): das Ergebnis je Split-Zeile - nur mit dezentral gedeckter Zeile; ohne sie
+            // (jedes Bestandsprojekt) bleibt die Liste leer und der Lauf schreibt keine Zeile.
+            {
+                SimulationKaeltebedarf kk = sim.simulation_Waermebedarf != null ? sim.simulation_Waermebedarf.Kaelteseite : null;
+                if (kk != null && kk.Gerechnet && kk.MitDezentral)
+                    foreach (SimulationKaeltebedarf.DezentraleZeile z in kk.DezentraleZeilen)
+                        m.KaelteDezentral.Add(new ErgebnisKaelteDezentralModel
+                        {
+                            Quelle = z.Profil ? KaeltebedarfSplitAbrechnungSchema.QUELLE_PROFIL : KaeltebedarfSplitAbrechnungSchema.QUELLE_LASTGANG,
+                            ID_Zuordnung = z.IdZuordnung,
+                            Bezeichner = z.Bezeichner ?? "",
+                            Kaelte_MWh = z.KaelteKwh / 1000.0,
+                            Strom_MWh = z.StromKwh / 1000.0,
+                            Kaelte_Spitze_kW = z.KaelteMaxKw,
+                            Jahres_EER = z.StromKwh > 0 ? z.JahresEer : (double?)null,
+                            Kaeltestrom_Netzbezug_MWh = z.NetzbezugKwh / 1000.0,
+                            Kuehl_CarrierId = z.Kuehltraeger > 0 ? (int?)z.Kuehltraeger : null,
+                            Kuehl_EigenerZaehler = z.Kuehltraeger > 0 ? (bool?)z.EigenerZaehler : null,
+                            Stromspitze_kW = Kaeltestromabrechnung.Stundenspitze(z.Strom_stuendlich),
+                        });
+            }
+
             // Detail: BHKW (nur wenn gerechnet). Werte wie in der BHKW-Ergebnisansicht (MWh/a).
             if (sim.bSimulationBHKW && sim.simulation_bhkw != null)
             {
@@ -826,6 +848,9 @@ namespace WindowsFormsApplication1
                 b.Waermeproduktion = bh.Waermeproduktion_BHKW_MWh;
                 b.Waermeueberschuss = bh.WaermeueberschussKwh / 1000.0;
                 b.Stromproduktion = bh.Stromproduktion_BHKW_MWh;
+                // EB-1: die Einspeisung des Laufs [MWh/a] - dieselbe Quelle wie Reiter, Kennzahl und Reihe
+                // BHKW_UEBERSCHUSS; rein additiv, kein bestehender Wert dieser Zeile aendert sich.
+                b.StromeinspeisungMwh = SimulationErgebnisCtrl.BhkwEinspeisungMwh(sim);
                 b.Betriebsstunden_Gesamt = bh.Betriebsstunden;
                 b.Betriebsstunden_Durchschnitt = bh.dLaufzeiten;
 
@@ -1255,6 +1280,9 @@ namespace WindowsFormsApplication1
                 pvm.Strombedarfsdeckung = (pvBedarfKwh > 0)
                     ? pvs.Stromproduktion.Sum() * 100.0 / pvBedarfKwh : 0;
                 pvm.MaxSolareLeistung = pvs.MaxPSolar;
+                // EB-1: die Abregelung an der Einspeisegrenze [MWh/a] - dieselbe Formel wie der Reiter
+                // (SimulationErgebnisCtrl.Photovoltaik) und die Reihe PV_ABREGELUNG; 0 ohne Grenze. Rein additiv.
+                pvm.AbregelungMwh = SimulationErgebnisCtrl.PvAbregelungMwh(sim);
 
                 if (pvs.Modul_Ergebnisse != null)
                     foreach (PVModulErgebnis p in pvs.Modul_Ergebnisse)
@@ -1346,8 +1374,15 @@ namespace WindowsFormsApplication1
             // bleibt die Detailzeile aus - genauso wie bei einem Lauf ohne Speicher.
             if (sim.bSimulationSSP && sim.Speicherergebnis != null && Speicherergebnismodell != null)
             {
-                m.Stromspeicher.Add(Speicherergebnismodell(
-                    sim.Speicherergebnis, sim.Speicherkontext));
+                ErgebnisStromspeicherModel es = Speicherergebnismodell(sim.Speicherergebnis, sim.Speicherkontext);
+                if (es != null)
+                {
+                    // EB-1: der Standby des Speichersystems [kWh/a] (Einheit der Zeile) - Standby aus PV und Netz,
+                    // im Flottenpfad der Hilfsverbrauch der Einheiten; dieselbe Menge wie die Reihe
+                    // SPEICHER_EIGENVERBRAUCH. Eine Zeile je Lauf. Rein additiv.
+                    es.EigenverbrauchSystemKwh = sim.SpeichersystemEigenverbrauchKwh;
+                    m.Stromspeicher.Add(es);
+                }
             }
 
             return m;

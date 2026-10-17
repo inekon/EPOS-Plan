@@ -273,7 +273,7 @@
             {
                 <WaermebedarfExternFelder Zeile="@_gewaehlt" Bezeichner="@(SatzName ?? "")" NurLesen="@SatzNurLesen"
                                           Modus="@Modus" Kanaele="@Kanaele" KaelteArten="@KaelteArten"
-                                          Stromtraeger="@Stromtraeger" KanalBezeichnung="@KanalBezeichnung"
+                                          Stromtraeger="@Stromtraeger" ProjektStromtraeger="@ProjektStromtraeger" KanalBezeichnung="@KanalBezeichnung"
                                           KaelteArtBezeichnung="@KaelteArtBezeichnung" HinweisKaelteArt="@HinweisKaelteArt"
                                           HinweisKanalKuehlung="@HinweisKanalKuehlung" HinweisKaelteExtern="@HinweisKaelteExtern"
                                           Ganglinienknoepfe="@Ganglinienknoepfe" Ganglinie="@Ganglinienbild"
@@ -586,6 +586,9 @@
     /// <summary>Die Stromträger des Projekts (Id, Anzeigetext) — die Auswahl des Kühlträgers der Feldgruppe „Deckung“.</summary>
     [Parameter] public IReadOnlyList<(int Id, string Text)> Stromtraeger { get; set; } = Array.Empty<(int, string)>();
 
+    /// <summary>K6b: der Stromträger des Projekts — der eigene Zähler wirkt nur bei abweichendem Kühlträger (E34).</summary>
+    [Parameter] public int ProjektStromtraeger { get; set; }
+
     /// <summary>OP-2: die Infozeile im Modus „Alle“ bei Kanal Kühlung (<c>WBX_HRL_KAELTE_EXTERN</c>).</summary>
     [Parameter] public string HinweisKaelteExtern { get; set; } = Resource.WBX_HRL_KAELTE_EXTERN;
 
@@ -793,13 +796,11 @@
     private Task BeiKatalogBearbeiten()
         => _katalogZeile is null ? Task.CompletedTask : BeiKatalogStift(_katalogZeile);
 
-    private async Task BeiWahlGeaendert(Auswahlbereich bereich)
-    {
-        if (bereich != Auswahlbereich.Projekt || _projektWahl.Zuletzt is not string s) return;
-        if (!_projektWahl.IstGewaehlt(s)) return;
-        WaermebedarfExternZeile? zeile = SichtbareZeilen.FirstOrDefault(z => Projektschluessel(z) == s);
-        if (zeile is not null && zeile != _gewaehlt) await ProjektZeileWaehlen(zeile);
-    }
+    /// <summary>
+    /// Ein Kästchen hat geschaltet: Der Wirt zeichnet neu, die Sperren seiner Bereichsknöpfe folgen der Wahl. Die
+    /// gewählte Zeile bleibt — Ankreuzen wählt nicht (KA‑E‑17), die Zeile wählt allein der Klick in die Zeile.
+    /// </summary>
+    private void BeiWahlGeaendert(Auswahlbereich bereich) { }
 
     private void BeiKatalogKaestchen(IReadOnlyList<string> gewaehlt)
     {
@@ -1388,7 +1389,7 @@
     private static string Beschriftung(string text) => (text ?? "").Trim().TrimEnd(':').TrimEnd();
 
     private string Jahresarbeitstext(GanglinienKennzahlen k)
-        => Anzeigeeinheit.Formatiere(Anzeigeeinheit.AusMWh(k.JahresarbeitMwh)) + " " + Anzeigeeinheit.Text;
+        => Anzeigeeinheit.FormatiereJahreswert(Anzeigeeinheit.AusMWh(k.JahresarbeitMwh)) + " " + Anzeigeeinheit.Text;
 
     /// <summary>Die Grafik merkt die gewählte Einheit — Zusammenfassung und Hülle folgen.</summary>
     private void BeiEinheitGewaehlt(Energieeinheit einheit)

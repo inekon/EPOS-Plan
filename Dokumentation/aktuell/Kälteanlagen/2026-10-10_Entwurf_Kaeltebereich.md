@@ -2,7 +2,7 @@
 
 **Stand 10.10.2026 · Entwurf, nichts gebaut.** Gelesen auf `8100e397` (Zweig `ios_migration_september`, Basis R50, R51 für
 FK angemeldet). Auftrag der Sitzung Gebäudesimulation; die Katalogauswahl der Kältemaschine ist Stufe 5 des
-[Konzepts Projektdialoge Katalogauswahl](../Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md), das der Sitzung „Dialoge und
+[Konzepts Projektdialoge Katalogauswahl](../../ueberholt/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md), das der Sitzung „Dialoge und
 Korrekturen“ gehört — Abschnitt 4 schlägt den Schnitt zwischen beiden Sitzungen vor.
 
 **Anforderungen des Anwenders (Wortlaut, 10.10.2026):**

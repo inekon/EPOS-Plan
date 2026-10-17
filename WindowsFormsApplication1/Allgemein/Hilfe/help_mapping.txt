@@ -297,6 +297,10 @@ Form_EingGebTyp.btn_Help = Gebäude#gebaeudetypen
 Form_Gebaeude1.btn_Help = Gebäude#katalogeditor
 Form_Gebaeude2.btn_Help = Gebäude#temperaturen-und-ferien
 Form_GebWohnflaeche.btn_Help = Gebäude#verbrauch
+# Das Blatt „Modell prüfen“ des Gebäudedialogs zeigt auf seinen Abschnitt.
+Modellpruefung.btn_Help = Gebäude#modell-pruefen
+# Das Blatt „Nutzung und Kalender“ (alle Zonen, Mehrfachwahl) zeigt auf seinen Abschnitt.
+ZonenNutzung.btn_Help = Gebäude#nutzung-und-kalender
 # Huelle und Zonen eines Projektgebaeudes (G3, Welle D2): Der Gebaeudeeditor im
 # Projekt springt auf seinen Abschnitt; Zonen- und Bauteildialog sind Razor-Masken
 # ohne WinForms-Vorlaeufer, der Schluessel steht in der Komponente (HilfeSchluessel).
@@ -312,6 +316,9 @@ Luftaustausch.btn_Help = Gebäude#zonen
 # und Bauteilaufbauten.wiki), je Maske ein Abschnitt.
 BaustoffKatalog.btn_Help = Baustoffe und Bauteilaufbauten#baustoffe
 Bauteilaufbau.btn_Help = Baustoffe und Bauteilaufbauten#bauteilaufbauten
+# Der Dialog "Bauteilkatalog einlesen..." (BK-7): Abschnitt derselben Seite; der Bereich des
+# Assistenten folgt dem Praefix "Bauteil".
+BauteilkatalogImport.btn_Help = Baustoffe und Bauteilaufbauten#bauteilkatalog-einlesen
 # Das Blatt "Nutzungsprofile" (Katalog und Zuordnung der Nutzungsprofile, aus dem Gebaeudeeditor und
 # dem Gebaeudeimport): Razor-Komponente ohne WinForms-Vorlaeufer, der Schluessel steht in der Komponente
 # (HilfeSchluessel); die Seite hat eine Repo-Quelle (Projekte/Wiki/Programm Dokumentation - Nutzungsprofile.wiki).
@@ -848,6 +855,7 @@ Form_Simulation_Config_Aufheizung.btn_Help = Gebäudemodell VDI 6007
 # Kaeltemaschine: Katalogdialog und Anlagendialog (KU3-4b).
 KaeltemaschineKatalog.btn_Help = Kälteerzeugung#kaeltemaschine-katalog
 Kaeltemittel.btn_Help = Gerätekataloge#kaeltemittel
+Rueckkuehlwerk.btn_Help = Gerätekataloge#rueckkuehlwerke
 KaeltemaschineAnlage.btn_Help = Kälteerzeugung#kaeltemaschine-anlage
 
 # Fernwartung (Hilfe, Fernwartung...): Dialog der Stufe 2.

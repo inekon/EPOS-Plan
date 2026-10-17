@@ -255,7 +255,20 @@ namespace Auslieferungsvorlage.Tests
             // 193 seit dem Schemaschritt 221 (BauteilkatalogSchema, BK-2): Tab_Bauteilabschnitt(_STAMM), STRICT von ihrer
             // ersten Zeile an und in der Vorlage LEER.
             //
-            Assert.Equal(193, befund.Strict);
+            // 194 seit dem Schemaschritt 223 (KaeltebedarfSplitAbrechnungSchema, K6): Tab_ErgebnisKaelteDezentral, STRICT von ihrer
+            // ersten Zeile an und in der Vorlage LEER.
+            //
+            // 195 seit dem Schemaschritt 224 (TwwZonenferienSchema, ZB5): Tab_TwwZonenferien, STRICT von ihrer ersten
+            // Zeile an und in der Vorlage LEER (Projektdaten).
+            //
+            // 197 seit dem Schemaschritt 236 (KaeltetyptagSchema, KBP-4): +2 Tab_Kaeltetyptag, Tab_Kaeltetyptag_Matrix
+            // (Projektdaten, in der Vorlage leer).
+            //
+            // 198 seit dem Schemaschritt 238 (KlimaRohwerteSchema, KD-4): +1 Tab_Klimastunde_STAMM (Rohwerte des
+            // Klimaimports), STRICT von ihrer ersten Zeile an und in der Vorlage LEER - die Auslieferung der Rohwerte
+            // ist vertagt.
+            //
+            Assert.Equal(198, befund.Strict);
         }
 
         // =============================================================================

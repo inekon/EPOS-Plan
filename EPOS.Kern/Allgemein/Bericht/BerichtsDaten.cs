@@ -158,6 +158,14 @@ namespace WindowsFormsApplication1
         /// <summary>Kompletter Ergebnisbaum des letzten Simulationslaufs (null = keiner).</summary>
         public ErgebnisModel Ergebnis;
 
+        /// <summary>
+        /// EB-2 (EB-Q3): die KWK-Einspeisung der gespeicherten Strommatrix [MWh/a] — der Rückfall der Kennzahl
+        /// „Einspeisung BHKW“ für ein Ergebnis, das die Einspeisung noch nicht führt
+        /// (<see cref="ErgebnisBHKWModel.StromeinspeisungMwh"/> = <c>null</c>). <c>null</c> ohne Matrix; dann zeigt die
+        /// Kennzahl „—“, nie eine stille Null.
+        /// </summary>
+        public double? BhkwEinspeisungStrommatrixMwh;
+
         /// <summary>Zeitstempel des Simulationslaufs (null = kein Ergebnis).</summary>
         public DateTime? SimulationsStand;
 
@@ -177,6 +185,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         public List<KaeltemittelBerichtszeile> Kaeltemittel;
 
+        /// <summary>
+        /// K-F5b (Entwurf Split/VRF/Rückkühlwerk 5.8): je Kältemaschinen-Anlage mit Rückkühlwerk dessen Name und Bauart —
+        /// für die Zeile „Rückkühlwerk“ der Tafel der Kälteerzeuger; <c>null</c> = nicht gesammelt.
+        /// </summary>
+        public List<RueckkuehlwerkBerichtszeile> Rueckkuehlwerke;
+
         /// <summary>Detail-Daten (Klimaregion, Gebäude, Anlage, Komponenten) für
         /// Projektbeschreibung, Kenndaten-Tabellen und Abweichungserkennung (Phase 2).</summary>
         public ProjektDetails Details;
@@ -190,6 +204,13 @@ namespace WindowsFormsApplication1
         /// und Tafel „Bivalenz und Übergabe“; <c>null</c> = keine Wärmepumpe mit Einbindung oder nicht erhoben.
         /// </summary>
         public BivalenzBerichtswerte Bivalenz;
+
+        /// <summary>
+        /// SK‑4 (Konzept Energieflussbild 5): die Energieflussbilanz des Stands, beim Sammeln in der Berichtssprache gebaut
+        /// (<see cref="Energiefluss.Aus(VariantenDaten, bool, string)"/>) für Bild und Schalter <c>stand.bild.energiefluss</c>;
+        /// <c>null</c> = nicht gesammelt (dann baut <see cref="Berichtsbilder.Energiefluss"/> sie aus dem Ergebnisbaum).
+        /// </summary>
+        public EnergieflussBilanz Energieflussbilanz;
 
         /// <summary>
         /// KM3‑E3‑b: die Lesewerte der Teillastrechnung je Projektkopie einer Kältemaschine (<c>ID_Kaeltemaschine</c>) für
@@ -667,6 +688,47 @@ namespace WindowsFormsApplication1
         public double? KaeltestromCO2t;
 
         /// <summary>
+        /// 6b: Hilfsstrom von BHKW und Brennstoffkesseln aus dem Hilfsenergieanteil ihrer
+        /// Anlagen [MWh/a] (<c>HilfsstromRechner.SummeMWh</c>). Die Simulation führt ihn nicht
+        /// im Netzbezug; die CO₂-Bilanz setzt ihn mit dem Faktor des Netzstroms an
+        /// (<see cref="HilfsstromCO2t"/>), die Wirtschaftlichkeit seine Stromsteuer
+        /// (<c>HilfsstromStromsteuer</c>). 0 = kein Anteil gepflegt.
+        /// </summary>
+        public double HilfsstromMWh;
+
+        /// <summary>
+        /// 6b: die Emissionen des Hilfsstroms [t/a] (CO₂ bzw. im Modus CO2E das Äquivalent):
+        /// <see cref="HilfsstromMWh"/> × Faktor des Netzstroms. In <see cref="CO2Gesamt"/>
+        /// enthalten — ein AUSWEIS wie <see cref="KaeltestromCO2t"/>.
+        /// </summary>
+        public double HilfsstromCO2t;
+
+        /// <summary>
+        /// 6b (Katalog v26): die Stromsteuer des Hilfsstroms [€/a], die die Wirtschaftlichkeit im
+        /// Erwartungsfall GESONDERT ansetzt — der Teil des Regelsatzes, den der Arbeitspreis des
+        /// Netzträgers nicht schon enthält (<c>HilfsstromStromsteuer.Ergebnis.GesondertEur</c>).
+        /// <c>null</c> ohne Hilfsstrom, ohne Regelsatz oder solange die Wirtschaftlichkeit nicht
+        /// gerechnet ist.
+        /// </summary>
+        public double? HilfsstromStromsteuerGesondert;
+
+        /// <summary>
+        /// 6b (Katalog v26): die Stromsteuer des Hilfsstroms zum Regelsatz [€/a], enthaltener und
+        /// gesonderter Teil zusammen (<c>HilfsstromStromsteuer.Ergebnis.SteuerEur</c>); <c>null</c>
+        /// wie <see cref="HilfsstromStromsteuerGesondert"/>.
+        /// </summary>
+        public double? HilfsstromStromsteuerGesamt;
+
+        /// <summary>
+        /// Die Wasserkosten der Rückkühlwerke [€/a] im ersten Betrachtungsjahr (KB-7c2): Wasser des Laufs ×
+        /// Arbeitspreis des Wasserträgers mit den Trägerpreisen des gerechneten Szenarios — dieselbe Rechnung
+        /// (<c>Wasserkosten.Rechne</c>) wie die Nachweiszeile der Wirtschaftlichkeit. Ein AUSWEIS: Die Kosten
+        /// stehen in den Betriebskosten, nicht in <see cref="Energiekosten"/>. <c>null</c> = kein Wasser oder
+        /// kein Preis (ohne Preis fehlen die Kosten benannt, im Hinweis der Wirtschaftlichkeit).
+        /// </summary>
+        public double? WasserkostenRueckkuehlwerk;
+
+        /// <summary>
         /// Die Kosten der ABWEICHENDEN Kühlträger [€/a] (E34) — ihr Arbeitspreis und, bei eigenem
         /// Zähler, Grund- und Leistungspreis je Zähler (E35) — der Teil von
         /// <see cref="Energiekosten"/>, der NICHT in <see cref="StromkostenNetz"/> steht. Ein
@@ -891,6 +953,12 @@ namespace WindowsFormsApplication1
         /// <summary>Katalog v12: Präfix der Kältedeckung je Kälteerzeuger (<c>KAELTE_&lt;n&gt;</c>, n ab 1 in der Folge
         /// der Kältekaskade); der Anzeigetext ist der Bezeichner der Wärmepumpe (<see cref="Beschriftungen"/>).</summary>
         public const string KAELTE_PRAEFIX = "KAELTE_";
+
+        /// <summary>
+        /// K6b: die <b>dezentral (Split) gedeckte Kälte</b> je Stunde [kWh] (<c>SimulationKaeltebedarf.Kaeltebedarf_Dezentral</c>).
+        /// Steht nur im Satz, wenn der Lauf eine Split-Zeile gerechnet hat; ohne sie fehlt der Schlüssel.
+        /// </summary>
+        public const string KAELTE_DEZENTRAL = "KaelteDezentral";
 
         /// <summary>Die Schlüssel der Kältedeckung je Erzeuger in der Folge der Kältekaskade (Katalog v12).</summary>
         public List<string> Kaeltereihen = new List<string>();

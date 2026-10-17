@@ -5,8 +5,10 @@
    Beschreibung als Anzeige. Die Katalogpflege steht an der Katalogseite selbst
    (Baustein GanglinieKatalogseite): Liste mit Beschreibung, Jahresarbeit und
    Spitze; ihre Knoepfe legt der Wirt in die Slots der Zweispaltenauswahl
-   (Katalogauswahl V1, Stufe 4): links in der Katalog-Fussleiste Vergleichen...,
-   Schloss setzen/aufheben..., Loeschen (auf der Auswahl, eine Rueckfrage), rechts
+   (Katalogauswahl V1, Stufe 4): links in der Katalog-Fussleiste Vergleichen... (KA-E-19: ab
+   zwei angekreuzten Saetzen im Bereich des gewaehlten Satzes - beim Projektsatz die Projektzeilen
+   mit Jahresarbeit, Spitze und Vollbenutzungsstunden), Schloss setzen/aufheben..., Loeschen (auf
+   der Auswahl, eine Rueckfrage), rechts
    Import..., der Formathinweis als Infoknopf im Katalogkopf. Beide Listen fuehren
    Kaestchen und je Zeile den Stift: er oeffnet die Ganglinie als Ansicht in der
    Satz-Ueberlagerung (kein Katalogeditor, keine Projektkopie vor dem OK).
@@ -192,11 +194,13 @@
                                        ZeileGewaehlt="BeiKatalogzeile"
                                        ImProjekt="@ProjektBezeichner" Listenname="@TitelText"
                                        FussImWirt="true" Sperrgrund="@(() => KatalogSperrgrund)" ZustandGeaendert="Nachgezogen"
+                                       Projektvergleichszahl="@ProjektVergleichszahl" Projektvergleichswerte="@ProjektVergleichswerte"
                                        Stift="BeiKatalogStift" Formathinweis="@formathinweis" />
             </Rechts>
 
-            @* DIE KNOPFLEISTE AM GEWAEHLTEN SATZ (AW3b): die Knoepfe der Katalogseite (Vergleichen…, Schloss…,
-               Loeschen; beim Projektsatz weich gesperrt bzw. ohne Vergleich) und Bearbeiten… - dasselbe wie der
+            @* DIE KNOPFLEISTE AM GEWAEHLTEN SATZ (AW3b): die Knoepfe der Katalogseite (Vergleichen… vorn - KA-E-19,
+               beim Projektsatz auf den angekreuzten Projektzeilen -, Schloss…, Loeschen; beim Projektsatz weich
+               gesperrt) und Bearbeiten… - dasselbe wie der
                Stift der Zeile: die Ganglinie als Ansicht (kein Katalogeditor, kein Neu…). *@
             <KatalogFuss>
                 @_seite?.Fuss
@@ -413,13 +417,11 @@
          : _katalogZeile is not null ? BeiKatalogStift(_katalogZeile)
          : Task.CompletedTask;
 
-    private void BeiWahlGeaendert(Auswahlbereich bereich)
-    {
-        if (bereich != Auswahlbereich.Projekt || _projektWahl.Zuletzt is not string s) return;
-        if (!_projektWahl.IstGewaehlt(s)) return;
-        ErzeugerZeile? zeile = Zeilen.FirstOrDefault(z => Projektschluessel(z) == s);
-        if (zeile is not null && zeile != _projektZeile) ProjektZeileWaehlen(zeile);
-    }
+    /// <summary>
+    /// Ein Kästchen hat geschaltet: Der Wirt zeichnet neu, die Sperren seiner Bereichsknöpfe folgen der Wahl. Die
+    /// gewählte Zeile bleibt — Ankreuzen wählt nicht (KA‑E‑17), die Zeile wählt allein der Klick in die Zeile.
+    /// </summary>
+    private void BeiWahlGeaendert(Auswahlbereich bereich) { }
 
     /// <summary>Die Katalogseite hat ihre Fragmente geändert: der Wirt zeichnet die Slots nach.</summary>
     private void Nachgezogen() { }
@@ -589,7 +591,34 @@
         _katalogGewaehlt = "";
         _name = zeile.Bezeichner;
         _beschreibung = BeschreibungZu(zeile.Bezeichner);
-        GrafikAnstossen(new GanglinienWahl(false, _gespeichert.Contains(zeile) ? zeile.GeraetId : 0, zeile.Bezeichner));
+        GrafikAnstossen(WahlZu(zeile));
+    }
+
+    /// <summary>Die Ganglinie einer Projektzeile; eine noch nicht gespeicherte Zeile über den Namen des Katalogsatzes.</summary>
+    private GanglinienWahl WahlZu(ErzeugerZeile zeile)
+        => new(false, _gespeichert.Contains(zeile) ? zeile.GeraetId : 0, zeile.Bezeichner);
+
+    // --- Vergleichen… (KA-E-19) -------------------------------------------------------
+
+    /// <summary>Beim Projektsatz die Zahl der angekreuzten Projektzeilen, sonst <c>null</c> (Katalogseite).</summary>
+    private int? ProjektVergleichszahl() => SatzArt == Satzmarke.Projektsatz ? ProjektZiele().Count : null;
+
+    /// <summary>
+    /// Die angekreuzten Projektzeilen im Vergleich: je Zeile Jahresarbeit, Spitze und Vollbenutzungsstunden —
+    /// dieselben Kennzahlen wie die Grafik der Detailzeile. Wirft das Lesen, nennt der Banner den Grund.
+    /// </summary>
+    private async Task<IReadOnlyList<(string Name, IReadOnlyList<(string Beschriftung, string Wert)> Werte)>> ProjektVergleichswerte()
+    {
+        var (saetze, grund) = await Ganglinienvergleich.SaetzeAsync(ProjektZiele(), z => z.Bezeichner, WahlZu, Kennzahlen,
+            (_, k) =>
+            {
+                var werte = new List<(string Beschriftung, string Wert)>();
+                Ganglinienvergleich.Kennzahlen(werte, k, Einheit, LabelJahresarbeit, LabelSpitze, LabelVollbenutzung,
+                                               "kW", EinheitStunden);
+                return werte;
+            });
+        _satzFehler = grund;
+        return saetze;
     }
 
     /// <summary>Die Wahl über den Bezeichner — der Weg des Assistenten.</summary>

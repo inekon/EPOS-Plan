@@ -78,6 +78,68 @@ public class BauteilkatalogImportDialogTests : BauteilkatalogImportProbe
     }
 
     [Fact]
+    public void Die_Vorschau_zeigt_die_Zahl_der_aktualisierten_Aufbauten_nur_wenn_die_Huelle_sie_nennt()
+    {
+        var z = new Zaehler();
+        IRenderedComponent<BauteilkatalogImportDialog> ohne = Dialog(z);
+        Knopf(ohne, "Vorschau").Click();
+        Assert.Empty(ohne.FindAll("p.epos-bki-aktualisiert"));
+        IRenderedComponent<BauteilkatalogImportDialog> mit = Dialog(z, Probe() with { Aktualisiert = "Aktualisiert: 7 von 8 427" });
+        Knopf(mit, "Vorschau").Click();
+        Assert.Equal("Aktualisiert: 7 von 8 427", mit.Find("p.epos-bki-aktualisiert").TextContent);
+    }
+
+    [Fact]
+    public void Die_Vorschau_nennt_den_gelesenen_Ordner_und_die_Teilkataloge_nur_wenn_vorhanden()
+    {
+        var z = new Zaehler();
+        IRenderedComponent<BauteilkatalogImportDialog> ohne = Dialog(z);
+        Knopf(ohne, "Vorschau").Click();
+        Assert.Empty(ohne.FindAll("p.epos-bki-ordner"));
+        Assert.Empty(ohne.FindAll("p.epos-bki-teilkataloge"));
+
+        BauteilkatalogVorschauDaten mit = Probe() with
+        {
+            Ordner = "Baustoffe.csv liegt im Unterordner Export; gelesen wird dieser Ordner: /probe/Export",
+            Teilkataloge = "Teilkataloge: 2; die Quelle nennt sie an 3 Baustoffen und 1 Aufbauten."
+        };
+        IRenderedComponent<BauteilkatalogImportDialog> cut = Dialog(z, mit);
+        Knopf(cut, "Vorschau").Click();
+        Assert.Contains("Unterordner Export", cut.Find("p.epos-bki-ordner").TextContent);
+        Assert.Contains("Teilkataloge: 2", cut.Find("p.epos-bki-teilkataloge").TextContent);
+    }
+
+    [Fact]
+    public void Der_Dialog_traegt_den_eigenen_Hilfeschluessel_auf_den_Abschnitt_Bauteilkatalog_einlesen()
+    {
+        IRenderedComponent<BauteilkatalogImportDialog> cut = Dialog(new Zaehler());
+        Assert.Equal("BauteilkatalogImport.btn_Help", cut.Instance.HilfeSchluessel);
+        Assert.Contains("Unterordner Export", cut.Find("p.epos-hinweis").TextContent);
+    }
+
+    [Fact]
+    public void Die_Vorschau_zeigt_Skalenfehler_Haustechnik_und_Gliederung_nur_wenn_vorhanden()
+    {
+        var z = new Zaehler();
+        IRenderedComponent<BauteilkatalogImportDialog> ohne = Dialog(z);
+        Knopf(ohne, "Vorschau").Click();
+        Assert.Empty(ohne.FindAll("p.epos-bki-skaliert"));
+        Assert.Empty(ohne.FindAll("p.epos-bki-haustechnik"));
+        Assert.Empty(ohne.FindAll("details.epos-bki-gliederung"));
+
+        BauteilkatalogVorschauDaten mit = Probe() with
+        {
+            LambdaSkaliert = 2, Haustechnik = "Haustechnik: 3 Baustoffe", Gliederung = new[] { "Baustoffe: Sonstige (3)" }
+        };
+        IRenderedComponent<BauteilkatalogImportDialog> cut = Dialog(z, mit);
+        Knopf(cut, "Vorschau").Click();
+        Assert.Contains("2 Baustoffe mit einem Skalenfehler", cut.Find("p.epos-bki-skaliert").TextContent);
+        Assert.Contains("Haustechnik: 3 Baustoffe", cut.Find("p.epos-bki-haustechnik").TextContent);
+        Assert.Contains("Sätze je Gruppe und Klasse", cut.Find("details.epos-bki-gliederung summary").TextContent);
+        Assert.Single(cut.FindAll("details.epos-bki-gliederung li"));
+    }
+
+    [Fact]
     public void Uebernehmen_ist_ohne_Vorschau_weich_gesperrt_und_schreibt_danach_genau_einmal()
     {
         var z = new Zaehler();

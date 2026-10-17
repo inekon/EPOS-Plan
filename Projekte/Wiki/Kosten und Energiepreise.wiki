@@ -30,7 +30,7 @@ In der ''Energieträgerverwaltung'' werden je Energieträger Arbeits-, Grund- un
 == Nutzungsdauern und gesetzliche Parameter ==
 {{Anker|nutzungsdauern-und-gesetzliche-parameter}}
 
-Im Menü {{Menü|Administration|Kosten}} stehen außerdem die ''Brennstoffe des Projekts'', die ''Nutzungsdauern (AfA)'' je Technik und Positionsart mit den Sätzen für Instandsetzung und Wartung – sie steuern Ersatzbeschaffung und Restwert – und der Katalog der [[Programm Dokumentation/Gesetzesparameter|gesetzlichen Parameter]].
+Im Menü {{Menü|Administration|Kosten}} stehen außerdem die ''Brennstoffe des Projekts'' – die Projektkopien des Brennstoffkatalogs mit Heizwerten, Emissionsfaktoren und Primärenergiefaktor; die Energiepreise gehören zum Energieträger und stehen in der ''Energieträgerverwaltung'' –, die ''Nutzungsdauern (AfA)'' je Technik und Positionsart mit den Sätzen für Instandsetzung und Wartung – sie steuern Ersatzbeschaffung und Restwert – und der Katalog der [[Programm Dokumentation/Gesetzesparameter|gesetzlichen Parameter]].
 
 == Siehe auch ==
 {{Anker|siehe-auch}}

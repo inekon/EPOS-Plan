@@ -104,6 +104,8 @@ namespace WindowsFormsApplication1
                 ["Modus"] = modus,
                 ["Stromtraeger"] = (IReadOnlyList<(int Id, string Text)>)Kaeltestromabrechnung
                     .StromtraegerDesProjekts(projektId).Select(t => (t.Key, t.Value)).ToList(),
+                // K6b (E34): der Stromtraeger des Projekts - der eigene Zaehler wirkt nur bei abweichendem Kuehltraeger.
+                ["ProjektStromtraeger"] = Kaeltestromabrechnung.Projekttraeger(projektId),
                 ["Geaendert"] = geaendert,
 
                 // iU9-W9-E-3: DIESELBE Katalogquelle wie die Verwaltung - samt

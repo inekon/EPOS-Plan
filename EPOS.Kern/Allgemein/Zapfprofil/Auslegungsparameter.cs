@@ -104,7 +104,7 @@ namespace WindowsFormsApplication1
         /// <summary>Zapfperiode z [h].</summary>
         internal const string DIN4708_Z = "DIN4708.z";
 
-        /// <summary>Belegung der Einheitswohnung p_b [Personen].</summary>
+        /// <summary>Belegung der Einheitswohnung p_b [P].</summary>
         internal const string DIN4708_PB = "DIN4708.p_b";
 
         /// <summary>Zapfstellenbedarf der Einheitswohnung w_b [Wh].</summary>
@@ -126,6 +126,25 @@ namespace WindowsFormsApplication1
 
         /// <summary>Vorgabe des nutzbaren Speicheranteils f_nutz [-] (INEKON-Setzung aus V4).</summary>
         internal const string NUTZANTEIL = "Speicherauslegung.Nutzanteil";
+
+        /// <summary>
+        /// <b>Die Auslegungswerte der A100, ohne die keine Summenlinie rechnet</b> (4.5 a): Ladungsfaktor,
+        /// Sensorhöhe, Verzögerung und Übertemperatur des Übertragers. Fehlt einer in der Katalogversion,
+        /// nimmt die Stufe Einfach den Nenninhalt des Bandes nach V4 als Empfehlung (Schnellauslegung V4).
+        /// </summary>
+        internal static readonly string[] SUMMENLINIE_A100 =
+        {
+            LADUNGSFAKTOR, SENSORHOEHE, VERZOEGERUNG, UEBERTRAGER_UEBERTEMPERATUR
+        };
+
+        /// <summary>Fehlt dem Satz einer der Auslegungswerte der A100 (<see cref="SUMMENLINIE_A100"/>)?</summary>
+        internal static bool A100Fehlt(Parametersatz ps)
+        {
+            if (ps == null) return true;
+            foreach (string k in SUMMENLINIE_A100)
+                if (!ps.Enthaelt(k)) return true;
+            return false;
+        }
 
         /// <summary>Vorgabe des Sicherheitszuschlags z_S [-] (INEKON-Setzung aus V4).</summary>
         internal const string ZUSCHLAG = "Speicherauslegung.Zuschlag";

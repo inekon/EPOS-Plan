@@ -143,6 +143,7 @@ namespace WindowsFormsApplication1
             _abbild.VolumenFaktorNachM3 = _einheiten.Volumen;
             _winkel = IfcRaumkoerper.Winkelfaktor(projekt);
             Kontext(projekt);
+            Lage();
 
             List<IIfcBuilding> gebaeude = Sortiert<IIfcBuilding>().ToList();
             if (gebaeude.Count == 0)
@@ -158,6 +159,7 @@ namespace WindowsFormsApplication1
             Untergeschosse();
             Zonen();
             for (int i = 0; i < gebaeude.Count; i++) Flaechenart(i);
+            StandardsaetzeAbbilden();
             Melden(0.2);
 
             Raumbezuege();
@@ -253,6 +255,7 @@ namespace WindowsFormsApplication1
             _abbild.Gebaeude.Add(g);
 
             Baujahr(b, g);
+            EposGebaeudeLesen(b, g);
             _gelaende[index] = Gelaendehoehe(b);
 
             var besucht = new HashSet<int>();
@@ -516,6 +519,7 @@ namespace WindowsFormsApplication1
             r.Klassifikation = Klassifikation(s);
             RaumtypLesen(s, r);
             r.Konditionierung = KonditionierungLesen(s, r, g);
+            StandardsaetzeLesen(s, r);
 
             g.Raeume.Add(r);
             _raum[s.EntityLabel] = r;
@@ -732,7 +736,10 @@ namespace WindowsFormsApplication1
                 // (KOERPER_ABWEICHUNG*), keine Fläche aus dem Körper (Herkunft KOERPER).
                 if (!koerper.Any(Dateikoerper.Beleg)) continue;
                 if (!schwerpunkte.TryGetValue(gi, out double[] g)) schwerpunkte[gi] = g = Gebaeudeschwerpunkt(gi);
-                Bauteilkoerperflaeche kf = Vereinigt(koerper.Where(Dateikoerper.Beleg).Select(k => IfcBauteilkoerper.Auswerten(k, art, g, _drehung)).Where(x => x != null).ToList());
+                // DA-4 (Befund DA-7): Eine Außenwand zeigt von IHREM Raum weg — der Gebäudeschwerpunkt liegt bei angebauten Zonen
+                // jenseits der Wand (die Ostwand kam als West zurück). Mit genau einem Raum mit Körper gilt dessen Mitte.
+                double[] bezug = art == Bauteilkoerperart.Wand ? Wandbezug(b, gi) ?? g : g;
+                Bauteilkoerperflaeche kf = Vereinigt(koerper.Where(Dateikoerper.Beleg).Select(k => IfcBauteilkoerper.Auswerten(k, art, bezug, _drehung)).Where(x => x != null).ToList());
                 if (kf == null)
                 {
                     // G5-3: ein Körper mit Dreiecken, aber ohne maßgebliche Fläche ist entartet.
@@ -1363,6 +1370,21 @@ namespace WindowsFormsApplication1
         /// <summary>Die Mitte eines Körpers (umschließender Quader) [m]; <c>null</c> ohne Körper.</summary>
         private static double[] Mitte(Dateikoerper k) => k == null || k.PunkteM.Count == 0 ? null : IfcBauteilkoerper.Mitte(k);
 
+        /// <summary>
+        /// Der Bezugspunkt einer Außenwand [m] (DA-4): die Mitte ihres einen Raums (Nachbar oder Raumgrenze) mit Körper; <c>null</c>
+        /// bei keinem oder mehreren Räumen — dann gilt der Gebäudeschwerpunkt.
+        /// </summary>
+        private double[] Wandbezug(AbbildBauteil b, int gi)
+        {
+            if (gi < 0 || gi >= _abbild.Gebaeude.Count
+                || !(b.Randbedingung == Randbedingung.Aussenluft || b.Randbedingung == Randbedingung.Erdreich)) return null;
+            var kennungen = new HashSet<string>(b.Nachbarn.Select(n => n.Kennung).Concat(b.Grenzen.Select(x => x.RaumKennung))
+                                                 .Where(k => k != null), StringComparer.Ordinal);
+            if (kennungen.Count != 1) return null;
+            return IfcBauteilkoerper.Schwerpunkt(_abbild.Gebaeude[gi].Raeume.Where(r => kennungen.Contains(r.Kennung))
+                                                                             .Select(r => r.Koerper).Where(k => k != null));
+        }
+
         /// <summary>Der Gebäudeschwerpunkt [m]: das Mittel der Raumkörper, ohne sie der vorgemerkten Bauteilkörper (alle Gebäude bei −1).</summary>
         private double[] Gebaeudeschwerpunkt(int gi)
         {
@@ -1711,7 +1733,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Die Zonen der Datei</b> (Regel Z1, Mehrzonenkonzept 6.1): <c>IfcSpatialZone</c> mit
-        /// <c>THERMAL</c> (Räume über <c>IfcRelReferencedInSpatialStructure</c>), sonst <c>IfcZone</c>
+        /// <c>THERMAL</c> (Räume über <c>IfcRelReferencedInSpatialStructure</c>, in beiden Richtungen: Zone → Räume oder
+        /// schemagültig Raum → Zone), sonst <c>IfcZone</c>
         /// (Räume über <c>IfcRelAssignsToGroup</c>). Zonen werden entschachtelt — es zählen die obersten,
         /// die Räume über den transitiven Abschluss; ein Raum in mehreren obersten Zonen gehört in keine
         /// (<c>IMP_IFC_PROT_RAUM_MEHRFACH</c>).
@@ -1734,6 +1757,13 @@ namespace WindowsFormsApplication1
                     if (!bezug.TryGetValue(rel.RelatingStructure.EntityLabel, out HashSet<int> m))
                         bezug[rel.RelatingStructure.EntityLabel] = m = new HashSet<int>();
                     foreach (IIfcSpace s in rel.RelatedElements.OfType<IIfcSpace>()) m.Add(s.EntityLabel);
+                    // Die schemagültige Richtung (WR31, Export DA-3): der Raum verweist auf die Zone.
+                    if (rel.RelatingStructure is IIfcSpace raum)
+                        foreach (IIfcSpatialZone z in rel.RelatedElements.OfType<IIfcSpatialZone>())
+                        {
+                            if (!bezug.TryGetValue(z.EntityLabel, out HashSet<int> n)) bezug[z.EntityLabel] = n = new HashSet<int>();
+                            n.Add(raum.EntityLabel);
+                        }
                 }
                 foreach (IIfcSpatialZone z in thermisch)
                     zonen.Add((z.GlobalId.ToString(), IfcEigenschaften.Text(z.LongName) ?? IfcEigenschaften.Text(z.Name),
@@ -1829,6 +1859,14 @@ namespace WindowsFormsApplication1
                 k.HeizsollNachtC = W(IfcKonditionierungssatz.HEIZSOLL_NACHT)?.Zahl;
                 k.KuehlsollC = W(IfcKonditionierungssatz.KUEHLSOLL)?.Zahl;
                 k.LuftwechselNutzerJeH = W(IfcKonditionierungssatz.LUFTWECHSEL_NUTZER)?.Zahl;
+                // Welle DA-4: die Restdaten der Zone (Text-Werte von EPOS_Zone).
+                var rest = new List<string>();
+                r.Rest = GebaeudeRestdaten.ZoneLesen(zone.Where(w => w.Text != null).Select(w => (w.Name, w.Text)), rest);
+                if (rest.Count > 0)
+                    g.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "RESTDATEN_UEBERSPRUNGEN", r.Name ?? r.Kennung,
+                        Ganz(rest.Count), string.Join(", ", rest)));
+                // Welle DA-5: die DIN-Nummer des Profils (Rangstufe 1 der Profilzuordnung, Konzept DA 4.3).
+                k.DinNummer = IfcKonditionierungssatz.DinNummerLesen(W(IfcKonditionierungssatz.DIN_NUMMER));
             }
             var uebersprungen = new List<string>();
             foreach (Konditionierungsgroesse groesse in Konditionierungsgroessen.Alle)
@@ -3390,6 +3428,7 @@ namespace WindowsFormsApplication1
             IfcFund g = IfcEigenschaften.Finden(_bezuege, o, "Pset_DoorWindowGlazingType", "SolarHeatGainTransmittance");
             b.GWert = g == null ? null : Zahl(g);
             Rahmenanteil(o, b);
+            FensterStandardLesen(o, b);
             Bauteilkoerper(o, b, gi);
             GrenzenUebernehmen(b, GrenzenVon(o));
             b.GeschossKennung = _elementGeschoss.TryGetValue(o.EntityLabel, out string geschoss) ? geschoss : wirt.GeschossKennung;
@@ -3460,6 +3499,7 @@ namespace WindowsFormsApplication1
         /// <returns>Bleibt das Bauteil ohne U-Wert, weil die Datei ihn null oder kleiner angibt?</returns>
         private bool UWert(IIfcElement e, string satz, AbbildBauteil b)
         {
+            EposBauteilLesen(e, b);
             (IfcFund gewaehlt, double? u, string nichtPositiv, List<string> abweichend) = UWertWaehlen(e, satz);
             foreach (string a in abweichend.Distinct())
             {
@@ -3733,7 +3773,9 @@ namespace WindowsFormsApplication1
                     LambdaWmK = lambda,
                     RhoKgM3 = rho,
                     CpJkgK = cp,
+                    RWertM2KW = StoffWiderstand(stoff),
                 });
+                OptikPruefen(stoff);
             }
             // Eine Meldung je Aufbau: Autorensysteme schreiben je Bauteil einen eigenen Schichtsatz gleichen Namens und Inhalts.
             if (rueckfall != null && _cpRueckfallSignaturen.Add((a.Name ?? a.Kennung) + "\u0001" + string.Join("\u0001", rueckfall)))

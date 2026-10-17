@@ -112,10 +112,10 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   `max-height: var(--epos-listenhoehe)`, `overflow: auto` und einen stehenden Spaltenkopf — eine
   Höchsthöhe, Rückweg `Begrenzt="false"`; im `Katalograhmen` (siehe unten) fällt die Höchsthöhe.
 - **Projekt ↔ Datenbank immer über `Zweispaltenauswahl`** (Katalogauswahl V1 „Gerahmt und
-  gestapelt", [Konzept](../Dokumentation/aktuell/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md)):
+  gestapelt", [Konzept](../Dokumentation/ueberholt/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md)):
   drei gerahmte Bereiche mit Kopfleiste und Kennfarbe — „Im Projekt" (mit „▼ Aus dem Projekt
   entfernen"), darunter die ziehbare Trennlinie (Höhe je Dialog über `Dienste.Einstellungen`,
-  Schlüssel `Katalogauswahl.Trenner.<Dialogname>`), „Katalog (Datenbank)" (mit „▲ In das Projekt
+  Schlüssel `Katalogauswahl.Trenner.<Dialogname>`), „Katalog (DB)" (mit „▲ In das Projekt
   übernehmen", Enter und Doppelklick übernehmen) und die zugeklappte Detailzeile „gewählter Satz".
   Der Wirt nennt `Dialogname` und reicht Projektliste (`Links`), Katalogliste samt Fußleiste
   (`Rechts`) und seinen Detailblock (`Satz`) hinein; die Zeichen ▲/▼ stehen als
@@ -252,6 +252,22 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   - **Die Farbwahl am Bild steht einmal** in `Bausteine/Farbwahlwirt.cs`: Ein Wirt schreibt
     `@inherits Farbwahlwirt` und reicht `FarbwahlErlaubt`/`FarbeGewaehlt`/`FarbeZurueckgesetzt`
     samt `Palette` durch. **Kein Delegat, kein Wähler.**
+  - **Die Oberfläche zeigt jedes Modell nach der OBERFLÄCHENREGEL, der Bericht nicht:**
+    `DiagrammSvg` rechnet aus der Gabe `Modell` sein wirksames `Bild`
+    (`Oberflaechenregel.Anwenden`, Parameter `Darstellung`, Vorgabe `Interaktiv`) — Bedarf als
+    Linie über den Flächen, Erzeugung als durchscheinende Fläche (die größere hinten), Stapel
+    bleibt Stapel, dichte Jahresreihen als Tagesband (Minimum bis Maximum, Mittel als Kern;
+    beim Zoom die Stunden). Die Regel liest `Datenreihe.Reihenrolle`, die aus der Farbrolle
+    folgt; **eine Hülle nennt die Rolle nur dort, wo die Farbrolle sie nicht sagt**
+    (`Reihe.MitRolle`). Kein Einzelfall-Code je Dialog, kein Umbau im Renderer: Die
+    Befehlsliste des Berichts bleibt dieselbe Instanz, jedes PNG byte-gleich.
+  - **Die Zeitachse eines Jahresbildes hat zwei Skalen** — die Wahl „Datum | Stunde im Jahr“
+    in der Leiste (`Zeitachse.Teilung`), Vorgabe Datum: Sie gilt je Baustein und Sitzung und
+    zeichnet die Achse in der Vollansicht wie im Ausschnitt selbst (die Achse des Bildes bleibt
+    dem Bericht). „Datum“ beschriftet `TT.MM.` ohne Jahr (`Zeitachse.DatumKurz`), im ganzen Jahr
+    an den Monatsanfängen, im Ausschnitt an Tagen und innerhalb eines Tages mit Uhrzeit
+    (`TT.MM. hh:00`); „Stunde im Jahr“ zählt die Jahresstunden in runden Schritten. Zwei Marken
+    liegen mindestens `Zeitachse.MARKE_MIN_PX` (72 px) auseinander, mit Uhrzeit 144 px.
 - **Eine Summenlinie heißt nach dem, was sie summiert, und ist abschaltbar wie ihre
   Summanden.** Der Name folgt der Summenbildung im Code, nicht der Gewohnheit: Ein
   Schlüssel „Gesamt" für drei verschiedene Summen benennt keine davon — je Diagramm ein

@@ -20,7 +20,7 @@ nach `Dokumentation/ueberholt/`, sobald die Fortsetzung die Sichtabnahmen aus Ab
 | Statuszeilen | höchste vergebene beim Schreiben #833; Entscheide bis E108 (E108 gehört der Sitzung IFC), **E109 frei** |
 | Laufende Arbeit | keine: kein Agent, kein Worktree im Repositorium, kein offener CI-Lauf, kein angemeldeter Schemaschritt, keine Routine dieser Sitzung |
 | Lokale Zweige des alten Containers | `np5c-zuordnung-hilfe` (inhaltsgleich auf origin), `sicherung/pb1-cloud`, `sicherung/vor-601` (Sicherungen vom 29.09., überholt) — nichts davon wird gebraucht |
-| Parallele Sitzungen | „IFC / Gebäudeimport“ und „Berichterstellung_Wirtschaftlichkeit“ sind am 08.10. ebenfalls übergeben worden ([IFC](../aktuell/Gebaeudesimulation/2026-10-08_Uebergabe_IFC_Gebaeudeimport.md), [Berichterstellung](../aktuell/Uebergabe_Cloud_Berichterstellung_2026-10-08.md)); „Dialoge und Korrekturen“ arbeitet weiter (#829, #830). Alle pushen auf denselben Zweig |
+| Parallele Sitzungen | „IFC / Gebäudeimport“ und „Berichterstellung_Wirtschaftlichkeit“ sind am 08.10. ebenfalls übergeben worden ([IFC](2026-10-08_Uebergabe_IFC_Gebaeudeimport.md), [Berichterstellung](../aktuell/Uebergabe_Cloud_Berichterstellung_2026-10-08.md)); „Dialoge und Korrekturen“ arbeitet weiter (#829, #830). Alle pushen auf denselben Zweig |
 
 ## 2. Was die Sitzung seit dem 03.10.2026 gebaut hat
 
@@ -133,7 +133,7 @@ aber erst auf Auftrag des Anwenders.
   `[skip ci]`; den doppelten Lauf auf dem Sitzungszweig nach einem Push beider Zweige abbrechen
   (`gh api -X POST repos/inekon/EPOS-Plan/actions/runs/<id>/cancel`). Warten auf Läufe mit einem einzigen Hintergrundbefehl.
 - **Abgrenzung:** Der Import (`EPOS.Kern/Allgemein/Import/Ifc/`, `…/Import/Gebaeude/`, `…/Import/Sqproj/`) gehört der Sitzung
-  „IFC / Gebäudeimport“; Befunde dorthin über ein Abstimmungspapier (Muster: [Abstimmung G5](../aktuell/Gebaeudesimulation/2026-10-07_Abstimmung_G5_IFC.md)).
+  „IFC / Gebäudeimport“; Befunde dorthin über ein Abstimmungspapier (Muster: [Abstimmung G5](2026-10-07_Abstimmung_G5_IFC.md)).
   Anwenderdateien (`.wpx`, `.sqproj`) werden nie committet; Werte und Namen aus ihnen gehören nicht in Code, Tests oder Protokolle.
 - **Rückfragepflicht:** vor jedem macOS- oder iOS-Lauf und dem Setup-Lauf (jedes Mal), vor Basiswechseln ohne Auftrag, vor
   dem Aufweiten von Testbändern, vor Wiki-Uploads. Keine Pull Requests, kein Force-Push, keine Tags.

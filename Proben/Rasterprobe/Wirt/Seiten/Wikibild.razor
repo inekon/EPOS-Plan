@@ -2,6 +2,8 @@
 @using Microsoft.AspNetCore.WebUtilities
 @using EPOS.UI.Dialoge.Bedarf
 @using EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Dialoge.Klimadaten
+@using EPOS.UI.Dialoge.Strom
 @using EPOS.UI.Dialoge.Solarthermie
 @using EPOS.UI.Dialoge.Waermepumpe
 @inject NavigationManager Navigation
@@ -15,21 +17,36 @@
     Sie ist KEINE Messprobe; die Proben (/katalogprobe usw.) bleiben unberuehrt.
 
     Gaben: ?bild=heizkessel|bhkw|waermepumpe|pufferspeicher|stromspeicher|photovoltaik|
-                 solarkollektoren|brauchwasser|prozesswaerme|gebaeude|kaeltemaschine
+                 solarkollektoren|brauchwasser|prozesswaerme|gebaeude|kaeltemaschine|
+                 klimadaten|kaeltebedarf|betriebskalender|waermebedarf|strombedarf|zapfprofil|baustoffe
+                 (die Beispieldaten der zweiten Reihe stehen in Wikibild.Weitere.cs)
+                 |einstellungen|lizenz|projektverwaltung|varianten|projekttransfer|erdreich|simulation|pufferauslegung
+                 (die übrigen Bilder stehen in Wikibild.Uebrige.cs)
            ?kultur=de-DE   (die Kultur des Wirtes, siehe Program.cs)
 *@
 
-@* Die Kopfzeile der Katalogliste (Titel, Suchfeld, Zähler, Spalten…, Vergleichen, Übernehmen)
-   braucht bei den Bedarfsdialogen, der Wärmepumpe und dem Stromspeicher mehr als die 1160 px des Hausblatts, sonst kürzt sie Titel
-   und Suchfeld und schiebt „Vergleichen" an den Rand. Nur fürs Bild: der Dialog darf breiter, das Suchfeld
-   trägt seinen Platzhalter ganz. *@
+@* Die Kopfzeile der Katalogliste (Titel, Suchfeld, Zähler, Spalten…, Übernehmen) bricht bei den
+   Bedarfsdialogen, der Wärmepumpe und dem Stromspeicher in den 1160 px des Hausblatts in eine zweite Zeile um
+   (gemessen mit kopfleistenprobe.mjs, die data-breit abnimmt). Nur fürs Bild: der Dialog darf breiter, damit
+   die Kopfzeile EINE Zeile bleibt wie in den übrigen Bildern. *@
 <style>
     .epos-wikibild[data-breit] .epos-dialog { max-width: 1380px; }
     .epos-wikibild[data-breit] .epos-zweispalten-kopfleiste .epos-katalog-suchfeld { flex: 0 0 14rem !important; }
+    /* Brennstoffe des Projekts: zwölf Spalten samt Aktionen stehen erst mit schmalerem Zellenrand ganz im Bild. */
+    .epos-wikibild[data-bild="brennstoffe"] .epos-pbrs-liste :is(th, td) { padding-inline: 0.35rem; }
+    .epos-wikibild[data-bild="brennstoffe"] .epos-pbrs-liste .epos-pbrs-bearbeiten { white-space: nowrap; }
+    /* Pufferspeicher-Auslegung: die Spalte „Wirkung" der Nachbarstufen bricht um, statt über den Rand zu laufen. */
+    .epos-wikibild[data-bild="pufferauslegung"] .epos-pausl-nachbarstufe-jaz { white-space: normal; }
 </style>
 <div class="epos-probe-wirt epos-wikibild" data-bild="@_bild" data-breit="@(Breit ? "" : null)">
     @switch (_bild)
     {
+        // Die Bilder der Kostenbasis (Energieträger, Brennstoffe, Kostenverwaltung,
+        // Wirtschaftlichkeit, Tarifstruktur, Emissionen, Gesetzesparameter) zeichnet WikibildKosten.
+        case var kosten when WikibildKosten.Namen.Contains(kosten):
+            <WikibildKosten Bild="@kosten" />
+            break;
+
         case "heizkessel":
             <HeizkesselDialog Zeilen="@_kessel"
                               Katalogprofil="@Profil(Anlagenart.Heizkessel)"
@@ -155,7 +172,7 @@
                Brauchwasser „Zapfprofil erzeugen…" und der Rechenweg Brauchwasser). *@
             <BedarfsProfileDialog Art="@_bedarfArt"
                                   TitelText="@BpfText("BPF_TITEL", "Prozesswärme", "Brauchwasserwärme")"
-                                  KopfbandText="@BpfText("BPF_TITEL", "Prozesswärme", "Brauchwasserwärme")"
+                                  KopfbandText="@BpfText("BPF_KOPFBAND", "Geben Sie die Daten der Prozesswärmeprofile ein", "Geben Sie die Daten der Brauchwasserprofile ein")"
                                   LabelProjektliste="@BpfText("BPF_LBL_PROJEKTLISTE", "Ausgewählte Prozesse im Projekt", "Ausgewählte Profile im Projekt")"
                                   LabelKatalog="@BpfText("BPF_LBL_KATALOG", "Datenbank Prozesswärme", "Datenbank Profile")"
                                   GruppeInfo="@Einfach("BPF_GRP_INFO", "Profil")"
@@ -172,11 +189,11 @@
                                   SpalteTyp="@Einfach("BPF_SP_TYP", "Typ")"
                                   BtnHinzuText="@Einfach("AUSWAHL_BTN_UEBERNEHMEN", "In das Projekt übernehmen")"
                                   BtnEntfernenText="@Einfach("AUSWAHL_BTN_ENTFERNEN", "Aus dem Projekt entfernen")"
-                                  BtnDbAendernText="@BpfText("BPF_BTN_DB_AENDERN", "Prozess in DB ändern", "Profil in DB ändern")"
-                                  BtnDbNeuText="@BpfText("BPF_BTN_DB_NEU", "Prozess in DB neu", "Profil in DB neu")"
-                                  BtnDbLoeschenText="@BpfText("BPF_BTN_DB_LOESCHEN", "Prozess in DB löschen", "Profil in DB löschen")"
-                                  BtnTypAendernText="@BpfText("BPF_BTN_TYP_AENDERN", "Typ in DB ändern", "Typ in DB ändern")"
-                                  BtnSimulationText="@BpfText("BPF_BTN_SIMULATION", "Simulation", "Simulation")"
+                                  BtnDbAendernText="@Einfach("BPF_BTN_KAT_DB_AENDERN", "DB ändern…")"
+                                  BtnDbNeuText="@Einfach("BPF_BTN_KAT_NEU", "Neu…")"
+                                  BtnDbLoeschenText="@Einfach("BPF_BTN_KAT_LOESCHEN", "Löschen")"
+                                  BtnTypAendernText="@Einfach("BPF_BTN_KAT_TYP_AENDERN", "Typ ändern…")"
+                                  BtnSimulationText="@Einfach("BPF_BTN_SIMULATION_LEISTE", "Simulation…")"
                                   BtnUebernehmenText="@Einfach("BPF_BTN_UEBERNEHMEN", "Übernehmen")"
                                   OkText="@Resource.ALLG_BTN_OK"
                                   AbbrechenText="@Resource.ALLG_BTN_ABBRECHEN"
@@ -237,8 +254,116 @@
                                         Geschlossen="@(b => { })" />
             break;
 
+        case "klimadaten":
+            <KlimadatenDialog Regionen="@KlimaRegionen" Ansicht="@KlimaAnsicht"
+                              Filterstandvorgabe="@_filterstand"
+                              Importieren="@((_, _) => Task.FromResult(new KlimaImportErgebnis()))"
+                              Loeschen="@(_ => Task.FromResult(true))"
+                              Schloss="@Schloss"
+                              Ortsvorschlaege="@(new[] { "Beispielort" })" Geschlossen="@(b => { })" />
+            break;
+
+        case "kaeltebedarf":
+            <BedarfsProfileDialog Art="BedarfsArt.Kaelte"
+                                  TitelText="@Einfach("BPF_TITEL_KAELTE", "Kältebedarfsprofile")"
+                                  KopfbandText="@Einfach("BPF_KOPFBAND_KAELTE", "Geben Sie die Daten der Kältebedarfsprofile ein")"
+                                  LabelProjektliste="@Einfach("BPF_LBL_PROJEKTLISTE_KAELTE", "Ausgewählte Profile im Projekt")"
+                                  LabelKatalog="@Einfach("BPF_LBL_KATALOG_KAELTE", "Datenbank Profile")"
+                                  GruppeInfo="@Einfach("BPF_GRP_INFO", "Profil")"
+                                  GruppeVerbrauch="@Einfach("BPF_GRP_VERBRAUCH", "Ändern des Jahresverbrauchs")"
+                                  LabelName="@Einfach("BTYP_LBL_NAME", "Name:")"
+                                  LabelTyp="@Einfach("BPF_LBL_TYP", "Typ:")"
+                                  LabelBeschreibung="@Einfach("BTYP_LBL_BESCHREIBUNG", "Beschreibung:")"
+                                  LabelJahresverbrauch="@Einfach("BPF_LBL_JAHRESVERBRAUCH_KAELTE", "jährlicher Kältebedarf:")"
+                                  LabelSumme="@Einfach("BPF_LBL_SUMME_KAELTE", "Summe Kältebedarfsprofile:")"
+                                  LabelNeuerWert="@Einfach("BPF_LBL_NEUER_WERT", "neuer Wert")"
+                                  LabelEinheit="@Einfach("ALLG_LBL_EINHEIT", "Einheit:")"
+                                  SpalteWahl="@Einfach("KFAK_SP_WAHL", "Wahl")"
+                                  SpalteName="@Einfach("BHKWV_SP_NAME", "Name")"
+                                  SpalteTyp="@Einfach("BPF_SP_TYP", "Typ")"
+                                  BtnHinzuText="@Einfach("AUSWAHL_BTN_UEBERNEHMEN", "In das Projekt übernehmen")"
+                                  BtnEntfernenText="@Einfach("AUSWAHL_BTN_ENTFERNEN", "Aus dem Projekt entfernen")"
+                                  BtnDbAendernText="@Einfach("BPF_BTN_KAT_DB_AENDERN", "DB ändern…")"
+                                  BtnDbNeuText="@Einfach("BPF_BTN_KAT_NEU", "Neu…")"
+                                  BtnDbLoeschenText="@Einfach("BPF_BTN_KAT_LOESCHEN", "Löschen")"
+                                  BtnTypAendernText="@Einfach("BPF_BTN_KAT_TYP_AENDERN", "Typ ändern…")"
+                                  BtnSimulationText="@Einfach("BPF_BTN_SIMULATION_LEISTE", "Simulation…")"
+                                  BtnUebernehmenText="@Einfach("BPF_BTN_UEBERNEHMEN", "Übernehmen")"
+                                  OkText="@Resource.ALLG_BTN_OK"
+                                  AbbrechenText="@Resource.ALLG_BTN_ABBRECHEN"
+                                  JaText="@Resource.ALLG_BTN_JA"
+                                  NeinText="@Resource.ALLG_BTN_NEIN"
+                                  Zeilen="@KaelteZeilen"
+                                  Katalogzeilen="@(() => Wikibeispiele.BedarfZeilen(Kaeltesaetze))"
+                                  Katalogprofil="@KaelteBedarfProfil"
+                                  Filterstandvorgabe="@_filterstand"
+                                  Info="@KaelteInfo"
+                                  Jahressumme="@KaelteSumme"
+                                  KatalogLoeschen="@(_ => true)"
+                                  ProjektGespeichert="@(() => true)"
+                                  SummeSichern="@((_, _) => { })"
+                                  TemperaturPruefen="@((v, r) => null)"
+                                  KaelteArten="@KaelteArtenListe"
+                                  Betriebskalender="@Kalenderliste()"
+                                  BetriebskalenderNeuLesen="@Kalenderliste"
+                                  BetriebskalenderGaben="@KalenderGaben"
+                                  TypStammGaben="@((_, _, _, _) => new Dictionary<string, object>())"
+                                  TypProfilGaben="@(() => new Dictionary<string, object>())"
+                                  KaelteGrafik="@KaelteGrafik"
+                                  TyptageVerfuegbar="true"
+                                  Einheit="Energieeinheit.MWh"
+                                  EinheitGewaehlt="@(_ => { })"
+                                  Schloss="@Schloss"
+                                  Geschlossen="@(b => { })" />
+            break;
+
+        case "betriebskalender":
+            <BetriebskalenderDialog @attributes="KalenderGaben()" Geschlossen="@(b => { })" />
+            break;
+
+        case "waermebedarf":
+            <WaermebedarfExternDialog Zeilen="@_waermeExtern" Katalogprofil="@WaermeGangProfil"
+                                      Katalogzeilen="@(() => Task.FromResult(Gangkatalog(Waermelastgaenge, false)))"
+                                      Filterstandvorgabe="@_filterstand" Geschlossen="@(b => { })"
+                                      Kennzahlen="@GangKennzahlen" Bildauftrag="@GangBild" BildauftragMass="@GangBildMass"
+                                      DateiWaehlen="@KeineDatei" Einlesen="@KeinImport" Kopieren="@KeineKopie"
+                                      KatalogLoeschen="@(_ => false)"
+                                      Schloss="@KeinSchloss" Kanaele="@Kanaele" />
+            break;
+
+        case "strombedarf":
+            <StromganglinieDialog Zeilen="@_stromGang" Katalogprofil="@StromGangProfil"
+                                  Katalogzeilen="@(() => Task.FromResult(Gangkatalog(Stromlastgaenge, true)))"
+                                  Filterstandvorgabe="@_filterstand" Geschlossen="@(b => { })"
+                                  Kennzahlen="@GangKennzahlen" Bildauftrag="@GangBild" BildauftragMass="@GangBildMass"
+                                  DateiWaehlen="@KeineDatei" Einlesen="@KeinImport" Kopieren="@KeineKopie"
+                                  Loeschen="@(_ => Task.FromResult(false))" Verwaltung="@(new Dictionary<string, object>())"
+                                  Schloss="@KeinSchloss" />
+            break;
+
+        case "zapfprofil":
+            <ZapfprofilDialog Daten="@Zapf" Texte="@(new ZapfprofilTexte())" Vorschau="@ZapfVorschau"
+                              Pruefen="@(_ => Array.Empty<ZapfprofilMeldung>())" EntprellungMs="0"
+                              Geschlossen="@(e => { })" />
+            break;
+
+        case "baustoffe":
+            <BaustoffKatalogDialog Katalogzeilen="@BaustoffZeilen" Katalogprofil="@BaustoffProfil"
+                                   Filterstandvorgabe="@_filterstand"
+                                   Lies="@BaustoffLesen"
+                                   Geschlossen="@(b => { })" />
+            break;
+
         default:
-            <p>Unbekanntes Bild „@_bild“.</p>
+            @* Die übrigen Bilder (Beispieldaten und Parametersatz in Wikibild.Uebrige.cs). *@
+            @if (Uebrig is { } uebrig)
+            {
+                <DynamicComponent Type="@uebrig.Typ" Parameters="@uebrig.Gaben" />
+            }
+            else
+            {
+                <p>Unbekanntes Bild „@_bild“.</p>
+            }
             break;
     }
 </div>
@@ -247,7 +372,8 @@
     private string _bild = "";
 
     // Die Bilder, deren Katalog-Kopfzeile erst im breiten Dialog ungekürzt steht (wikibilder.mjs: BREIT).
-    private bool Breit => _bild is "brauchwasser" or "prozesswaerme" or "waermepumpe" or "stromspeicher";
+    private bool Breit => _bild is "brauchwasser" or "prozesswaerme" or "waermepumpe" or "stromspeicher" or "kaeltebedarf" or "waermebedarf" or "strombedarf"
+                         or "brennstoffe";
     private readonly Katalogfilterstand _filterstand = new();
     private BedarfsArt _bedarfArt = BedarfsArt.Brauchwasser;
 

@@ -182,6 +182,22 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// KB-7c2: Der Ausweis der Wasserkosten der Rückkühlwerke [€/a] für die Kennzahl
+        /// <see cref="KennzahlenKatalog.SCHLUESSEL_RK_WASSER_KOSTEN"/> — genau die Rechnung der Wirtschaftlichkeit
+        /// (<see cref="Wasserkosten.Rechne"/>, Menge des Standes × Arbeitspreis des Wasserträgers im Szenario).
+        /// <c>null</c> ohne Wasser, ohne Preis oder bei einem Lesefehler — nie still 0.
+        /// </summary>
+        private static double? WasserkostenAusweis(VariantenDaten v, string szenario)
+        {
+            try
+            {
+                Wasserkosten.Ergebnis w = Wasserkosten.Rechne(v.IdProjekt, v, szenario);
+                return w.MengeM3 > 0 && w.PreisEurM3.HasValue ? w.KostenEur : (double?)null;
+            }
+            catch (Exception) { return null; }
+        }
+
         /// <summary>Setzt die Ausweisfelder des Kältestroms auf „nicht gerechnet" (KU2 Welle 3, E34).</summary>
         private static void KaeltestromZuruecksetzen(VariantenDaten v)
         {
@@ -328,6 +344,8 @@ namespace WindowsFormsApplication1
                 v.Energiekosten = null; v.StromkostenNetz = null;
                 v.EnergieLeistungsanteil = null;
                 v.CO2Gesamt = null; v.CO2Spezifisch = null; v.CO2Brennstoff = null;
+                v.HilfsstromMWh = 0; v.HilfsstromCO2t = 0;   // 6b
+                v.HilfsstromStromsteuerGesondert = null; v.HilfsstromStromsteuerGesamt = null;
                 v.BiogenMengeMWh = 0; v.BiogenBehgMengeMWh = 0;
                 v.EmissionsModus = DbWerte.EMISSION_MODUS_CO2;
                 v.CO2StrommixRueckfall = false;
@@ -344,6 +362,7 @@ namespace WindowsFormsApplication1
                 v.LeistungspreisNichtAngesetztTraeger = null;
                 v.LeistungspreisNichtAngesetztMonatssatz = null;
                 KaeltestromZuruecksetzen(v);
+                v.WasserkostenRueckkuehlwerk = null;             // KB-7c2
                 v.EnergiekostenJeTraeger = new List<EnergieTraegerNachweis>();
                 v.EnergiekostenGrund = GRUND_RECHENFEHLER;
             }
@@ -357,6 +376,10 @@ namespace WindowsFormsApplication1
             v.SzenarioLeistungspreisOhneWirkung = new List<string>();     // E9a
             v.StromTraegerRueckfall = null;
             v.CO2TraegerRueckfall = null;        // Auftrag #293
+            v.HilfsstromMWh = 0;                 // 6b
+            v.HilfsstromCO2t = 0;
+            v.HilfsstromStromsteuerGesondert = null;   // 6b: setzt die Wirtschaftlichkeit
+            v.HilfsstromStromsteuerGesamt = null;
             v.StrombedarfOhneVerwendungMWh = null;   // Anwenderentscheid 22.09.2026
             v.StromGruppenregelMWh = null;           // Gruppenregel (nur im Vergleich gesetzt)
             v.LeistungspreisOhneSpitze = null;
@@ -365,6 +388,7 @@ namespace WindowsFormsApplication1
             v.LeistungspreisNichtAngesetztTraeger = null;
             v.LeistungspreisNichtAngesetztMonatssatz = null;
             KaeltestromZuruecksetzen(v);              // KU2 Welle 3, E34
+            v.WasserkostenRueckkuehlwerk = WasserkostenAusweis(v, szenario);   // KB-7c2
             v.EnergiekostenJeTraeger = new List<EnergieTraegerNachweis>();
 
             // DIE AUFSTELLUNG JE TRÄGER (Herleitungszeile „Menge × Preis" unter den Energiekosten,
@@ -895,15 +919,24 @@ namespace WindowsFormsApplication1
                 else if (co2ImVergleichGeliehen && netzbezugBewertet > 0)
                     v.CO2TraegerRueckfall = TraegerName(co2Traeger);
             }
+            // 6b (Anwenderentscheid 16.10.2026): der Hilfsstrom von BHKW und Brennstoffkesseln
+            // aus dem Hilfsenergieanteil ihrer Anlagen. Die Simulation führt ihn nicht im
+            // Netzbezug; er ist bezogener Strom und geht mit dem Faktor des Netzstroms in die
+            // Bilanz — derselbe Faktor wie der Netzbezug des Projekts. Ohne Anteil 0 (bitgleich).
+            double hilfsMWh = stromOhneVerwendung ? 0.0 : HilfsstromRechner.SummeMWh(m, stromkessel);
+            double hilfsCO2t = hilfsMWh * stromCO2 / 1000.0;
+            v.HilfsstromMWh = hilfsMWh;
+            v.HilfsstromCO2t = hilfsCO2t;
+
             // Ohne (bewerteten) Netzbezug ändert der Vorgabewert nichts - dann ist er kein
             // Rückfall, sondern eine Zahl, die mit 0 MWh multipliziert wird.
-            v.CO2StrommixRueckfall = strommixRueckfall && netzbezugProjektBewertet > 0;
+            v.CO2StrommixRueckfall = strommixRueckfall && (netzbezugProjektBewertet > 0 || hilfsMWh > 0);
 
             // E34: der Stromträger des Projekts trägt den Netzbezug ohne den Anteil der
             // abweichenden Kühlträger; die tragen ihre Menge mit IHREM Faktor (dieselbe Stufenfolge,
             // Emissionsquelle.Netzstrom - ein Kühlträger ohne Faktor rechnet mit dem Vorgabewert
             // und meldet das wie der Träger des Projekts).
-            double netzCO2t = netzbezugProjektBewertet * stromCO2 / 1000.0;
+            double netzCO2t = netzbezugProjektBewertet * stromCO2 / 1000.0 + hilfsCO2t;
 
             double kuehlKosten = 0.0, kuehlCO2t = 0.0;
             var kuehlOhnePreis = new List<string>();
@@ -1753,25 +1786,50 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Kühlträger der Anlagen mit eigenem Zähler (E34, E35) — nur Wärmepumpen im Kühlbetrieb
-        /// und nur ein vom Projektträger abweichender Träger (sonst wirkt die Abrechnungsart nicht).
+        /// Die Kühlträger mit eigenem Zähler (E34, E35) — Wärmepumpen im Kühlbetrieb, Kältemaschinen (KU3-4d) und dezentral
+        /// (Split) gedeckte Kältebedarfszeilen (Schritt 223, Profil- und Lastgangzeilen), je nur mit einem vom Projektträger
+        /// abweichenden Träger (sonst wirkt die Abrechnungsart nicht). Eine Datenbank ohne die Spalten eines Schritts liefert
+        /// dessen Anlagen nicht.
         /// </summary>
         private static List<int> KuehltraegerEigenerZaehler(int idProjekt, int projekttraeger)
         {
             var liste = new List<int>();
-            DataTable dt = DataRepository.GetDataTable(
+            void Lesen(DataTable dt)
+            {
+                if (dt == null) return;
+                foreach (DataRow r in dt.Rows)
+                {
+                    if (r["traeger"] == DBNull.Value) continue;
+                    int k = Convert.ToInt32(r["traeger"], System.Globalization.CultureInfo.InvariantCulture);
+                    if (Kaeltestromabrechnung.Abweichend(k, projekttraeger) && !liste.Contains(k)) liste.Add(k);
+                }
+            }
+
+            Lesen(DataRepository.GetDataTable(
                 "SELECT DISTINCT ea.Kuehl_ID_Carrier AS traeger FROM Tab_Energieanlagen AS ea " +
                 "INNER JOIN Tab_WP AS wp ON wp.ID = ea.ID_WP " +
                 "WHERE ea.ID_Projekt = ? AND ea.Kuehl_EigenerZaehler = 1 AND wp.Kuehlbetrieb = 1 " +
                 "AND ea.Kuehl_ID_Carrier IS NOT NULL ORDER BY ea.Kuehl_ID_Carrier",
-                new DbParam("@p", idProjekt));
-            if (dt == null) return liste;
-            foreach (DataRow r in dt.Rows)
-            {
-                if (r["traeger"] == DBNull.Value) continue;
-                int k = Convert.ToInt32(r["traeger"], System.Globalization.CultureInfo.InvariantCulture);
-                if (Kaeltestromabrechnung.Abweichend(k, projekttraeger)) liste.Add(k);
-            }
+                new DbParam("@p", idProjekt)));
+            if (DataRepository.SpalteVorhanden(KaeltemaschineAnlageSchema.TAB_ANLAGEN, KaeltemaschineAnlageSchema.SPALTE_ID_KAELTEMASCHINE))
+                Lesen(DataRepository.GetDataTable(
+                    "SELECT DISTINCT Kuehl_ID_Carrier AS traeger FROM Tab_Energieanlagen " +
+                    "WHERE ID_Projekt = ? AND Kuehl_EigenerZaehler = 1 AND ID_Kaeltemaschine IS NOT NULL " +
+                    "AND Kuehl_ID_Carrier IS NOT NULL ORDER BY Kuehl_ID_Carrier",
+                    new DbParam("@p", idProjekt)));
+            if (KaeltebedarfSchema.TabellenVorhanden() &&
+                DataRepository.SpalteVorhanden(KaeltebedarfSchema.TAB_ZUORDNUNG, KaeltebedarfSchema.SPALTE_KUEHL_ID_CARRIER))
+                Lesen(DataRepository.GetDataTable(
+                    "SELECT DISTINCT Kuehl_ID_Carrier AS traeger FROM Z_Projekt_Kaeltebedarf " +
+                    "WHERE ID_Projekt = ? AND Deckung = 'split' AND Kuehl_EigenerZaehler = 1 " +
+                    "AND Kuehl_ID_Carrier IS NOT NULL ORDER BY Kuehl_ID_Carrier",
+                    new DbParam("@p", idProjekt)));
+            if (DataRepository.SpalteVorhanden(KaeltebedarfSchema.TAB_LASTGANG, KaeltebedarfSchema.SPALTE_KUEHL_ID_CARRIER))
+                Lesen(DataRepository.GetDataTable(
+                    "SELECT DISTINCT Kuehl_ID_Carrier AS traeger FROM Z_ProjektWaermebedarf " +
+                    "WHERE ID_Projekt = ? AND Kanal = ? AND Deckung = 'split' AND Kuehl_EigenerZaehler = 1 " +
+                    "AND Kuehl_ID_Carrier IS NOT NULL ORDER BY Kuehl_ID_Carrier",
+                    new DbParam("@p", idProjekt), new DbParam("@k", DbWerte.KANAL_KUEHLUNG)));
             return liste;
         }
 

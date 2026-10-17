@@ -26,6 +26,8 @@ Absatz [EPOSKapitelkopf] Berechnungsergebnisse je Variante
 Absatz [Heading2] Stamm — Stamm
 Absatz [Hinweis] Simulationsstand: —
 Absatz [Normal] Keine Kennzahlen verfügbar.
+Bild 620×245 px, SVG ja
+Absatz [Beschriftung] Energiefluss (Jahresbilanz Strom, Wärme, Kälte; Umweltanteil nach Jahresarbeitszahl)
 Bild 620×280 px, SVG ja
 Absatz [Beschriftung] Wärmeerzeugung im Jahresverlauf (gestapelte Erzeuger, Bedarf als Linie, Tagesmittel)
 Bild 620×280 px, SVG ja

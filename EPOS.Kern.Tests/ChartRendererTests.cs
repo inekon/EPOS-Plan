@@ -1087,14 +1087,24 @@ namespace EPOS.Kern.Tests
             }
             Assert.InRange(m.Reihen[3].Werte.Max(), 99.999, 100.001);
 
-            // Dauerlinie: keine Flaeche, jede Reihe fuer sich sortiert - und keine Huelle.
+            // Dauerlinie: der Stapel bleibt, die Stunden einmal nach der Summe geordnet. Die
+            // Summe faellt monoton, die Oberkante IST sie in jedem Rang, und jede Schicht
+            // traegt in einem Rang den Wert DERSELBEN Stunde wie die Summe.
             Zeichenmodell dauer = ChartRenderer.GanglinieNormiertModell(
                 "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Jahresstunden, true);
-            Assert.All(dauer.Reihen, r => Assert.Equal(Reihenart.Linie, r.Art));
-            Assert.All(dauer.Reihen, r => Assert.False(r.Huelle));
-            Assert.All(dauer.Reihen, r => Assert.Null(r.Bezug));
-            Assert.Equal(17.0 / bezug * 100.0,
-                         dauer.Reihen.Single(r => r.Name == "Prozess").Werte[100], 9);
+            Assert.Equal(Reihenart.Linie, dauer.Reihen[0].Art);
+            Assert.All(dauer.Reihen.Skip(1), r => Assert.Equal(Reihenart.Flaeche, r.Art));
+            double[] dSumme = dauer.Reihen[0].Werte;
+            for (int i = 1; i < dSumme.Length; i++) Assert.True(dSumme[i] <= dSumme[i - 1] + 1e-12);
+            int[] folge = Enumerable.Range(0, N).OrderByDescending(h => summe[h]).ToArray();
+            foreach (int rang in new[] { 0, 100, 4380, 8759 })
+            {
+                int h = folge[rang];
+                Assert.Equal(summe[h] / bezug * 100.0, dSumme[rang], 9);
+                Assert.Equal(heizung[h] / bezug * 100.0, dauer.Reihen[1].Werte[rang], 9);
+                Assert.Equal(dSumme[rang], dauer.Reihen[3].Werte[rang], 9);
+            }
+            Assert.All(dauer.Reihen, r => Assert.Same(dSumme, r.Bezug));
 
             // Der Bezugswert haelt den Massstab, wenn die Summe abgewaehlt ist und
             // eine Schicht fehlt - er ist eine Untergrenze, kein Deckel.

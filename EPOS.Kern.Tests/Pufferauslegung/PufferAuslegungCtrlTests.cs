@@ -324,8 +324,10 @@ namespace EPOS.Kern.Tests.Pufferauslegung
             Assert.Equal(1500, Convert.ToDouble(r["Gesamtvolumen"]));
             Assert.Equal(2.5, Convert.ToDouble(r["Bereitschaftsverluste"]), 9);
             foreach (string spalte in new[] { "Bezeichner", "Vorlauf", "Ruecklauf", "Schwelle_Ein", "Schwelle_Aus", "Schwelle_Aus_Nachrang",
-                                              "Entladeprio", "Schwelle_Reserve", "Hersteller", "Speichertyp", "Investitionskosten" })
+                                              "Entladeprio", "Schwelle_Reserve", "Hersteller", "Speichertyp" })
                 Assert.True(Equals(alt[spalte], r[spalte]), spalte + ": " + alt[spalte] + " → " + r[spalte]);
+            // Welle KB-4: Der Puffer fuehrt keine Investition mehr - die Auslegung schreibt keinen Betrag.
+            Assert.False(r.Table.Columns.Contains("Investitionskosten"));
             Assert.Equal(1, Convert.ToInt32(r["Nutzung_Heizung"]));
             Assert.Equal(0, Convert.ToInt32(r["Nutzung_Brauchwasser"]));
 
@@ -333,13 +335,15 @@ namespace EPOS.Kern.Tests.Pufferauslegung
             Assert.Equal(Convert.ToDouble(alt["Gesamtvolumen"]),
                          Zahl("SELECT Gesamtvolumen FROM Tab_Pufferspeicher WHERE ID = ?", PUFFER_1045_HEIZUNG));
 
-            // Kombipuffer: Klassen-Set, mindestens zwei Schichten, Zonenanteil als Entnahmehöhe.
+            // Kombipuffer: Klassen-Set, mindestens zwei Schichten, Zonenanteile, die Heizung unter der
+            // Brauchwasserzone (600 von 1 500 l oben), das Brauchwasser oben.
             Assert.Equal(puffer, PufferAuslegungCtrl.Uebernehmen(kopie, puffer, Ergebnis(1500, true), null));
             PufferSpCtrl.KlassenSet ks = PufferSpCtrl.KlassenSetLesen(puffer);
             Assert.True(ks.Heizung && ks.Brauchwasser && !ks.Prozess);
             PufferSpCtrl.Schichtdaten s = PufferSpCtrl.SchichtdatenLesen(puffer);
             Assert.True(s.Schichten >= 2);
-            Assert.Equal(0.6, s.EntnahmeHeizung.Value, 12);
+            Assert.False(string.IsNullOrEmpty(s.SchichtAnteile));
+            Assert.True(s.EntnahmeHeizung.Value < 0.6);
             Assert.Equal(1.0, s.EntnahmeBW.Value, 12);
 
             // Neu anlegen: ein weiterer Puffer, die Zeile „neu“ hängt danach an ihm.
@@ -359,6 +363,110 @@ namespace EPOS.Kern.Tests.Pufferauslegung
             // Ohne Empfehlung und mit fremdem Puffer: nichts übernommen.
             Assert.Equal(-1, PufferAuslegungCtrl.Uebernehmen(kopie, puffer, new PufferAuslegungErgebnis(), null));
             Assert.Equal(-1, PufferAuslegungCtrl.Uebernehmen(kopie, PUFFER_1045_HEIZUNG, Ergebnis(1500, false), null));
+        }
+
+        /// <summary>Eine Kombipuffer-Auslegung mit Heizzone, Brauchwasserzone und optional Prozesszone [l].</summary>
+        private static PufferAuslegungErgebnis Kombiergebnis(double empfehlungL, double vH, double vB, double vP = 0)
+        {
+            var zonen = new System.Collections.Generic.List<PufferZonenergebnis>
+            {
+                new PufferZonenergebnis { Zone = PufferZone.Heizung, VolumenL = vH },
+                new PufferZonenergebnis { Zone = PufferZone.Brauchwasser, VolumenL = vB }
+            };
+            if (vP > 0) zonen.Add(new PufferZonenergebnis { Zone = PufferZone.Prozess, VolumenL = vP });
+            return new PufferAuslegungErgebnis
+            {
+                Zonen = zonen.ToArray(),
+                SummeL = vH + vB + vP,
+                EmpfehlungL = empfehlungL,
+                Kennzahlen = new PufferKennzahlen
+                {
+                    Verlust = new PufferVerlust { VolumenL = empfehlungL, KwhJeTag = 2.5 },
+                    ZonenanteilHeizung = vH / (vH + vB),
+                    SchichtenMindest = 2
+                }
+            };
+        }
+
+        /// <summary>
+        /// Der Schichtspeicher des Laufs aus der gespeicherten Schichtung — dieselben Spalten, die
+        /// <c>SimulationControl</c> liest —, voll geladen. Liefert, was die Heizung erreichen kann, und
+        /// den Volumenanteil der Zonen oberhalb ihrer Entnahme.
+        /// </summary>
+        private static (double HeizungKwh, double QmaxKwh, double AnteilOberhalb, double ProzessKwh) Lauf(int puffer, double volumenL)
+        {
+            PufferSpCtrl.Schichtdaten s = PufferSpCtrl.SchichtdatenLesen(puffer);
+            var sp = new SimulationPufferspeicher();
+            sp.Init(volumenL, 60, 30, 0);
+            sp.SchichtenAnzahl = s.Schichten;
+            double[] a = null;
+            if (!string.IsNullOrWhiteSpace(s.SchichtAnteile))
+                Assert.Null(PufferOptionen.AnteilePruefen(s.SchichtAnteile, s.Schichten, out a));
+            sp.SchichtAnteile = a;
+            sp.Entnahmehoehe[Kanal.HEIZUNG] = s.EntnahmeHeizung ?? 0.5;
+            sp.Entnahmehoehe[Kanal.BRAUCHWASSER] = s.EntnahmeBW ?? 1.0;
+            sp.Entnahmehoehe[Kanal.PROZESS] = s.EntnahmeProzess ?? 0.5;
+            sp.SchichtenAufbauen();
+            sp.Laden(sp.Q_max, 0);
+            double heizung = sp.EntladefaehigkeitKanal(Kanal.HEIZUNG);
+            double oberhalb = 1.0 - heizung / sp.Q_max;
+            return (heizung, sp.Q_max, oberhalb, sp.EntladefaehigkeitKanal(Kanal.PROZESS));
+        }
+
+        /// <summary>
+        /// Nach #968 (e): Die Übernahme einer Kombipuffer-Auslegung setzt die Schichtung vollständig —
+        /// Schichten, Zonenanteile von oben und Entnahmehöhen —, damit die Heizung nur aus ihrer Zone
+        /// entnimmt und die Brauchwasserzone oben ihr Volumen nach Auslegung behält; beim Ändern wie
+        /// beim Neuanlegen, auch mit einer Prozesszone und mit gepflegter höherer Schichtenzahl. Werte,
+        /// die nicht zur Zonenteilung gehören, bleiben stehen. Nur auf einer Projektkopie von 1045.
+        /// </summary>
+        [Fact]
+        public void Uebernehmen_eines_Kombipuffers_haelt_die_Heizung_aus_der_Brauchwasserzone()
+        {
+            if (!_db.Vorhanden) return;
+            string name = Projektname(P_ZAPF);
+            int kopie = new ProjektDuplizierenCtrl().Duplizieren(name, name + " Kombischichtung");
+            Assert.True(kopie > 0, "Duplizieren fehlgeschlagen.");
+            int puffer = PufferDerKopie(kopie, PUFFER_1045_HEIZUNG);
+
+            // Ändern: 600 l Heizzone, 400 l Brauchwasserzone - die Brauchwasserzone oben behält 0,4.
+            Assert.Equal(puffer, PufferAuslegungCtrl.Uebernehmen(kopie, puffer, Kombiergebnis(1000, 600, 400), null));
+            PufferSpCtrl.Schichtdaten s = PufferSpCtrl.SchichtdatenLesen(puffer);
+            Assert.Equal(2, s.Schichten);
+            Assert.Equal("0,40;0,60", s.SchichtAnteile);
+            Assert.Equal(1.0, s.EntnahmeBW.Value, 12);
+            var lauf = Lauf(puffer, 1000);
+            Assert.Equal(0.4, lauf.AnteilOberhalb, 9);
+            Assert.True(lauf.HeizungKwh < lauf.QmaxKwh);
+
+            // Gepflegte Schichtung: vier Schichten, Höhe, λ und Nutztemperatur bleiben, die Zonen teilen neu.
+            s.Schichten = 4;
+            s.Hoehe = 1.8;
+            s.LambdaEff = 2.0;
+            s.TNutzBW = 50;
+            s.SchichtAnteile = "0,25;0,25;0,25;0,25";
+            Assert.True(PufferSpCtrl.SchichtdatenSchreiben(puffer, s));
+            Assert.Equal(puffer, PufferAuslegungCtrl.Uebernehmen(kopie, puffer, Kombiergebnis(1000, 800, 200), null));
+            s = PufferSpCtrl.SchichtdatenLesen(puffer);
+            Assert.Equal(4, s.Schichten);
+            Assert.Equal(1.8, s.Hoehe.Value, 12);
+            Assert.Equal(2.0, s.LambdaEff.Value, 12);
+            Assert.Equal(50, s.TNutzBW.Value, 12);
+            Assert.Equal(0.2, Lauf(puffer, 1000).AnteilOberhalb, 9);
+
+            // Mit Prozesszone: Heizung und Prozess teilen sich den Bereich unter der Brauchwasserzone.
+            Assert.Equal(puffer, PufferAuslegungCtrl.Uebernehmen(kopie, puffer, Kombiergebnis(2000, 900, 600, 500), null));
+            var drei = Lauf(puffer, 2000);
+            Assert.Equal(0.3, drei.AnteilOberhalb, 9);
+            Assert.Equal(drei.HeizungKwh, drei.ProzessKwh, 9);
+            Assert.True(PufferSpCtrl.KlassenSetLesen(puffer).Prozess);
+
+            // Neu anlegen: dieselbe Teilung, aufgerundetes Volumen geht an die Heizung.
+            int neu = PufferAuslegungCtrl.Uebernehmen(kopie, null, Kombiergebnis(1200, 600, 400), "Kombi aus Auslegung");
+            Assert.True(neu > 0);
+            s = PufferSpCtrl.SchichtdatenLesen(neu);
+            Assert.True(s.Schichten >= 2);
+            Assert.Equal(400.0 / 1200.0, Lauf(neu, 1200).AnteilOberhalb, 3);
         }
 
         // =============================================================================

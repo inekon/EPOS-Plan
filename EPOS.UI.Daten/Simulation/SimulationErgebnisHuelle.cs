@@ -475,17 +475,23 @@ namespace WindowsFormsApplication1
                 k.BedarfFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_JAHRESBEDARF);
                 k.LastFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_SPITZE);
                 k.RestFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_REST);
+                // K6d (Katalog v23): mit Split-Zeile ist die Deckungszahl die Hauptzahl samt Split — ihr Platzhalter ist
+                // kaelte.deckungsgrad_gesamt; sie steht auch ohne Kälteerzeuger. Ohne Split bleibt alles, wie es war.
+                if (k.MitDezentral)
+                {
+                    k.DeckungFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_DECKUNGSGRAD_GESAMT);
+                    k.DeckungStufe = Vorlagenfeldstufe.Aehnlich;
+                    k.KennzahlHinweis = MyResource.Resource.VF_ORT_KENNZAHL_RECHENWEG;
+                }
                 if (k.Erzeuger.Count > 0)
                 {
-                    k.DeckungFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_DECKUNGSGRAD);
+                    if (!k.MitDezentral)
+                        k.DeckungFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_DECKUNGSGRAD);
                     k.StromFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_STROM);
                     k.JazFeld = EPOS.UI.Dienste.Vorlagenfeldorte.Kennzahl(stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_JAZ);
-                    // Der Katalog bildet Deckungsgrad und EER-Jahreswert aus den gespeicherten Summen
-                    // (Kennzahlenkatalog), das Dashboard aus dem Lauf: In 1017 weichen sie in der
-                    // letzten Stelle ab (98,4 gegen 98,5 %, 4,52 gegen 4,51) — „ähnlich im Bericht“.
-                    k.DeckungStufe = Vorlagenfeldstufe.Aehnlich;
-                    k.JazStufe = Vorlagenfeldstufe.Aehnlich;
-                    k.KennzahlHinweis = MyResource.Resource.VF_ORT_KENNZAHL_RECHENWEG;
+                    // 8d: Deckungsgrad und EER-Jahreswert der Kältefolge kommen aus EINER Rechnung
+                    // (KaelteDeckungsgrad, ungerundet gespeicherte Kältesummen) — der Bericht zeigt genau
+                    // diese Zahlen. „Ähnlich“ bleibt allein die Hauptzahl samt Split (oben).
                 }
             }
             d.SpeichertemperaturFeld = stamm && d.Speichertemperaturen ? "stamm.bild.speichertemperaturen" : "";
@@ -554,14 +560,24 @@ namespace WindowsFormsApplication1
             // Die Reiterleiste folgt derselben Regel wie die Menüliste des Vorläufers
             // (BefuelleQuellenListe :2876-2970) - samt der drei Zweige für PV und
             // Speicher (Befund W11-B6, wörtlich übernommen).
-            d.ReiterWaermepumpe = ErzeugerGewaehlt(tool, DbWerte.ERZEUGER_WAERMEPUMPE);
-            d.ReiterHeizkessel = ErzeugerGewaehlt(tool, DbWerte.ERZEUGER_HEIZKESSEL);
-            d.ReiterBhkw = ErzeugerGewaehlt(tool, DbWerte.ERZEUGER_BHKW);
-            d.ReiterSolarthermie = ErzeugerGewaehlt(tool, DbWerte.ERZEUGER_SOLARTHERMIE);
-            d.ReiterPhotovoltaik = tool[4] == DbWerte.ERZEUGER_PHOTOVOLTAIK || tool[4] == "true"
-                                   || tool.Contains(DbWerte.ERZEUGER_PHOTOVOLTAIK);
-            d.ReiterStromspeicher = tool[5] == DbWerte.ERZEUGER_STROMSPEICHER || tool[5] == "true"
-                                    || tool.Contains(DbWerte.ERZEUGER_STROMSPEICHER);
+            // Ein Reiter steht nur, wenn der Erzeuger im Projekt auch als Anlage angelegt
+            // ist: Eine Kaskade, die Solarthermie oder Photovoltaik waehlt, ohne dass es
+            // ein Kollektorfeld oder einen Generator gibt, zeigte sonst leere Reiter. Der
+            // Stromspeicher zaehlt auch ueber eine aktive Speicherflotte. Laesst sich der
+            // Bestand nicht lesen, blendet die Leiste nichts aus.
+            ErgebnisPraesenz bestand = ErgebnisPraesenz.Anlagenbestand(idProjekt);
+            bool Hat(Func<ErgebnisPraesenz, bool> art) => bestand == null || art(bestand);
+
+            d.ReiterWaermepumpe = ErzeugerGewaehlt(tool, DbWerte.ERZEUGER_WAERMEPUMPE) && Hat(b => b.Waermepumpe);
+            d.ReiterHeizkessel = ErzeugerGewaehlt(tool, DbWerte.ERZEUGER_HEIZKESSEL) && Hat(b => b.Heizkessel);
+            d.ReiterBhkw = ErzeugerGewaehlt(tool, DbWerte.ERZEUGER_BHKW) && Hat(b => b.BHKW);
+            d.ReiterSolarthermie = ErzeugerGewaehlt(tool, DbWerte.ERZEUGER_SOLARTHERMIE) && Hat(b => b.Solarthermie);
+            d.ReiterPhotovoltaik = (tool[4] == DbWerte.ERZEUGER_PHOTOVOLTAIK || tool[4] == "true"
+                                    || tool.Contains(DbWerte.ERZEUGER_PHOTOVOLTAIK))
+                                   && Hat(b => b.Photovoltaik);
+            d.ReiterStromspeicher = (tool[5] == DbWerte.ERZEUGER_STROMSPEICHER || tool[5] == "true"
+                                     || tool.Contains(DbWerte.ERZEUGER_STROMSPEICHER))
+                                    && (Hat(b => b.Stromspeicher) || SpeicherFlottenProjektCtrl.IstAktiv(idProjekt));
 
             // ---- Die Zahlen der Reiter ------------------------------------
             // DER BEDARF STEHT IN JEDEM ZUSTAND (#236). Er haengt nicht am Lauf,
@@ -615,6 +631,7 @@ namespace WindowsFormsApplication1
                 d.ErdreichWarnung = d.Waermepumpe.ErdreichWarnung;
             }
             d.Speichertemperaturen = Temperaturreihen().Count > 0;
+            d.Speicherwahl = Speicherwahl();
 
             d.Speicher = SpeicherDaten();
             d.Speicher.AktiveFlotte = SpeicherFlottenProjektCtrl.AktiveKonfiguration(m_ID_Projekt);

@@ -78,7 +78,10 @@ namespace EPOS.Kern.Tests
             // Stufe Z5: die gemessene Reihe, ihr Vergleich gegen die JAHRESREIHE der Bilanz und die
             // Kalibrierung des MENGENGERÜSTS sind Bilanz — die Auslegung (Bedarfstag, Summenlinie,
             // Speicher) bleibt unberührt; kein Auslegungstyp nennt eine Messreihe.
-            "Messreihe.cs", "Messvergleich.cs", "Messkalibrierung.cs"
+            "Messreihe.cs", "Messvergleich.cs", "Messkalibrierung.cs",
+            // Die Vorprüfung einer Zone liest die Regeln des Mengengerüsts (S1) ohne Ausnahme — Bilanz;
+            // die Auslegung ruft sie wie das Mengengerüst selbst.
+            "Zonenvorpruefung.cs"
         };
 
         /// <summary>Die Dateien, deren Typen Minuten- bzw. Stundenwerte tragen dürfen.</summary>

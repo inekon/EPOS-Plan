@@ -222,6 +222,13 @@ public static class Seitenschluessel
     /// <summary>Lastspitzenkappung; Argument: Projekt-Id (Razor seit W12.6).</summary>
     public const string PeakShaving = WindowsFormsApplication1.Masken.PeakShaving;
 
+    /// <summary>
+    /// Die Gebaeude des offenen Projekts (<c>GebaeudeDialog</c>) mit einem Sprungziel als Argument
+    /// (<c>Sprungziele.Kuehlung</c>). Unter Windows faengt die Schale den Schluessel ab und oeffnet ihr Fenster; die
+    /// Wurzel (iOS) lehnt ihn benannt ab.
+    /// </summary>
+    public const string Projektgebaeude = WindowsFormsApplication1.Masken.Projektgebaeude;
+
     /// <summary>Stammdaten Gebaeude (Razor seit W9.2).</summary>
     public const string GebaeudeAdmin = WindowsFormsApplication1.Masken.GebaeudeAdmin;
 
@@ -456,6 +463,17 @@ public static class Seitenschluessel
     public const string Kaeltemittel = "KAELTEMITTEL";
 
     /// <summary>
+    /// Menue „Administration -> Daten &amp; Import -> Rückkühlwerke…" (<c>RueckkuehlwerkDialog</c>, K-F5a; Entwurf
+    /// Split/VRF/Rückkühlwerk 8; <c>KiMaskenziele.RUECKKUEHLWERK</c>).
+    /// </summary>
+    /// <remarks>
+    /// Unter Windows oeffnet die Huelle (<c>HauptfensterHuelle.Weg</c>) ein modales Fenster; auf iOS zeigt
+    /// <see cref="AppWurzel"/> den Dialog aus <c>IProjektQuelle.RueckkuehlwerkGaben</c>. Benannt, damit ein Knopf
+    /// „Rückkühlwerke…" (Rückkühlgruppe der Kältemaschine) dieselbe Ansicht öffnet.
+    /// </remarks>
+    public const string Rueckkuehlwerk = "RUECKKUEHLWERK";
+
+    /// <summary>
     /// Menue „Administration -> Daten &amp; Import -> Katalog aktualisieren…"
     /// (<c>KatalogabgleichDialog</c>, Entscheidungsvorlage Modellgrenzen KU1 Stufe 1).
     /// </summary>
@@ -534,7 +552,7 @@ public static class Seitenschluessel
         SimulationKonfiguration, SimulationErgebnis, Simulation,
         KiAssistent, Assistent,
         Startseite, BerichteKosten, Varianten, StromspeicherAuslegung, PufferAuslegung,
-        WpAdministration, StromspeicherAdmin, PeakShaving, GebaeudeAdmin,
+        WpAdministration, StromspeicherAdmin, PeakShaving, GebaeudeAdmin, Projektgebaeude,
         GebaeudetypenAdmin, WaermebedarfExternAdmin, ProzesswaermeAdmin, KaeltebedarfAdmin,
         StromverbraucherAdmin, StromganglinieAdmin, SolarganglinieAdmin, PvGanglinieAdmin,
         WpImport, WpKaelteImport, KaeltemaschineImport, HeizkesselAdmin, BhkwAdmin, SolarkollektorenAdmin, PvAdmin,
@@ -548,7 +566,7 @@ public static class Seitenschluessel
         ProjektLoeschen, ProjektTransfer, ProjektAlsVariante, Klimadaten,
         BaustoffKatalog, BauteilaufbauKatalog, BauteilkatalogImport, Betriebskalender, KaeltemaschineKatalog, KaeltemaschineAnlage,
         Kostenverwaltung, EnergietraegerVerwaltung, ProjektBrennstoffe, NutzungsdauerVerwaltung, Einstellungen,
-        Gesetzeskatalog, Kaeltemittel, KatalogDubletten, Katalogabgleich, LizenzVerwaltung, Lizenztext,
+        Gesetzeskatalog, Kaeltemittel, Rueckkuehlwerk, KatalogDubletten, Katalogabgleich, LizenzVerwaltung, Lizenztext,
         Version, Dokumentation, Fernwartung, SpracheDeutsch, SpracheEnglisch,
         EntwAusnahmeprotokoll, EntwProtokollordner, EntwDatenbankordner, EntwDiagnosedaten,
         EntwWebWerkzeuge, EntwModusAus

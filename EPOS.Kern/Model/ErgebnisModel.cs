@@ -39,6 +39,10 @@ namespace WindowsFormsApplication1
         // KU3-4 (Schemaschritt 183): eine Zeile je Kaeltemaschine (Tab_ErgebnisKaeltemaschine); leer = keine gerechnet.
         public List<ErgebnisKaeltemaschineModel> Kaeltemaschinen = new List<ErgebnisKaeltemaschineModel>();
 
+        // Schemaschritt 223 (Konzept Kältebedarf 4.2): eine Zeile je dezentral (Split) gedeckter Kältebedarfszeile
+        // (Tab_ErgebnisKaelteDezentral); leer = keine Split-Zeile gerechnet oder ein Lauf vor dem Schritt.
+        public List<ErgebnisKaelteDezentralModel> KaelteDezentral = new List<ErgebnisKaelteDezentralModel>();
+
         // Pufferspeicher des Laufs (Tab_ErgebnisPufferspeicher, Konzept 6.6):
         // eine Zeile je beteiligtem Speicher - Senkenspeicher UND Quellspeicher.
         // Leere Liste = dieser Lauf hatte keinen Speicher.
@@ -771,6 +775,36 @@ namespace WindowsFormsApplication1
         public int? TeilFreikuehlung_Stunden;
     }
 
+    /// <summary>
+    /// <b>Das Ergebnis einer dezentral (Split) gedeckten Kältebedarfszeile</b> (Schemaschritt 223,
+    /// <c>Tab_ErgebnisKaelteDezentral</c>; Konzept Kältebedarf 4.2, Entscheide E34/E35): Mengen in MWh/a, Spitzen in kW. Die
+    /// Abrechnung liest die Zeile wie die einer Kältemaschine (<see cref="Kaeltestromabrechnung"/>).
+    /// </summary>
+    public class ErgebnisKaelteDezentralModel
+    {
+        /// <summary>Art der Zuordnung: <see cref="KaeltebedarfSplitAbrechnungSchema.QUELLE_LASTGANG"/> oder <see cref="KaeltebedarfSplitAbrechnungSchema.QUELLE_PROFIL"/>.</summary>
+        public string Quelle = KaeltebedarfSplitAbrechnungSchema.QUELLE_PROFIL;
+        /// <summary>ID der Zuordnungszeile (<c>Z_ProjektWaermebedarf</c> bzw. <c>Z_Projekt_Kaeltebedarf</c>); ohne Verweis gespeichert.</summary>
+        public int? ID_Zuordnung;
+        public string Bezeichner = "";
+        /// <summary>Kälte der Zeile [MWh/a].</summary>
+        public double Kaelte_MWh;
+        /// <summary>Strom der Zeile [MWh/a].</summary>
+        public double Strom_MWh;
+        /// <summary>Spitze der Kälte der Zeile [kW].</summary>
+        public double? Kaelte_Spitze_kW;
+        /// <summary>Jahres-EER der Zeile = Kälte / Strom; <c>null</c> ohne Strom.</summary>
+        public double? Jahres_EER;
+        /// <summary>Der Netzbezug ihres Stroms [MWh/a] — anteilig ein Teil von <c>Stromrestbedarf</c>, mit eigenem Zähler daneben.</summary>
+        public double? Kaeltestrom_Netzbezug_MWh;
+        /// <summary>Der ABWEICHENDE Kühlträger (<c>energy_carrier.id</c>); <c>null</c> = Stromträger des Projekts.</summary>
+        public int? Kuehl_CarrierId;
+        /// <summary>Abrechnung über einen eigenen Zähler; nur mit abweichendem Kühlträger belegt.</summary>
+        public bool? Kuehl_EigenerZaehler;
+        /// <summary>Die Spitze ihres Stroms je Stunde [kW] — der Leistungspreis eines eigenen Zählers.</summary>
+        public double? Stromspitze_kW;
+    }
+
     // Detail: Waermepumpe-Aggregat (Tab_ErgebnisWaermepumpe) + Modulliste.
     public class ErgebnisWaermepumpeModel
     {
@@ -994,6 +1028,13 @@ namespace WindowsFormsApplication1
         public double Waermeproduktion;             // MWh/a
         public double Waermeueberschuss;            // MWh/a
         public double Stromproduktion;              // MWh/a
+
+        /// <summary>
+        /// EB-1: die Einspeisung des BHKW-Stroms ins Netz [MWh/a] (<c>Tab_ErgebnisBHKW.Stromeinspeisung</c>, Schemaschritt
+        /// 239) — dieselbe Menge wie die Laufreihe <c>BHKW_UEBERSCHUSS</c> (<c>SimulationErgebnisCtrl.BhkwEinspeisungMwh</c>).
+        /// <c>null</c> = nicht erhoben (Ergebnis vor Schritt 239): das Energieflussbild bilanziert sie dann am Stromknoten.
+        /// </summary>
+        public double? StromeinspeisungMwh;
         // ETAPPE E2 - WAS DIESE BEIDEN FELDER SIND (und was nicht):
         // Betriebsstunden_Gesamt ist die SUMME der THERMISCHEN Vollbenutzungsstunden
         // ueber alle Module (SimulationBHKW.Laufzeiten[] = Waerme / Waermeleistung),
@@ -1209,6 +1250,14 @@ namespace WindowsFormsApplication1
         public double Ueberschuss;           // MWh/a
         public double MaxSolareLeistung;     // W/m^2
 
+        /// <summary>
+        /// EB-1: die an der Einspeisegrenze abgeregelte PV-Energie [MWh/a] (<c>Tab_ErgebnisPhotovoltaik.Abregelung</c>,
+        /// Schemaschritt 239) — dieselbe Menge wie die Laufreihe <c>PV_ABREGELUNG</c>; sie steckt in
+        /// <see cref="Stromproduktion"/> (Erzeugung der Module) und fehlt in <see cref="Ueberschuss"/>. 0 ohne Grenze,
+        /// <c>null</c> = nicht erhoben (Ergebnis vor Schritt 239).
+        /// </summary>
+        public double? AbregelungMwh;
+
         public List<ErgebnisPhotovoltaikModulModel> Module = new List<ErgebnisPhotovoltaikModulModel>();
     }
 
@@ -1266,6 +1315,14 @@ namespace WindowsFormsApplication1
         public double Einspeisung_Ohne;      // kWh/a ohne Speicher
         public double Eigenverbrauchsquote;  // % (mit Speicher)
         public double Autarkiegrad;          // % (mit Speicher)
+
+        /// <summary>
+        /// EB-1: der Standby (Eigenverbrauch) des Speichersystems [kWh/a] (<c>Tab_ErgebnisStromspeicher.Eigenverbrauch_System</c>,
+        /// Schemaschritt 239) — <c>SimulationControl.SpeichersystemEigenverbrauchKwh</c>, dieselbe Menge wie die Laufreihe
+        /// <c>SPEICHER_EIGENVERBRAUCH</c>; eine Zeile je Lauf. 0 ohne Standby, <c>null</c> = nicht erhoben (Ergebnis vor
+        /// Schritt 239).
+        /// </summary>
+        public double? EigenverbrauchSystemKwh;
 
         // --- Speicher (7.1, Block 2) ---
 

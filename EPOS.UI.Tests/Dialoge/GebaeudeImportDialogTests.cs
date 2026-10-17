@@ -1272,8 +1272,8 @@ public class GebaeudeImportDialogTests : EposBunitContext
         Assert.Contains(cut.FindAll("h2, h3, .epos-gruppenkopf"), k => k.TextContent.Trim() == "Bauteilaufbauten");
         IReadOnlyList<IElement> zeilen = cut.FindAll(".epos-gebimport-aufbauten tr.epos-gebimport-aufbauzeile").ToList();
         Assert.Equal(new[] { "b", "c", "a" }, zeilen.Select(z => z.GetAttribute("data-stufe")));
-        Assert.Equal(new[] { "Stufe", "Aufbau", "Bauteilart", "Bauteile", "Fläche [m²]", "U Datei [W/(m²K)]", "U Schichten [W/(m²K)]",
-                             "C₁,korr [kJ/(m²K)]", "Es fehlt", "Handlung" },
+        Assert.Equal(new[] { "Stufe", "Aufbau", "Bauteilart", "Bauteile", "Fläche [m²]", "U Datei [W/(m²·K)]", "U Schichten [W/(m²·K)]",
+                             "C₁,korr [kJ/(m²·K)]", "Es fehlt", "Handlung" },
                      cut.FindAll(".epos-gebimport-aufbauten thead th").Select(t => t.TextContent.Trim()));
         List<string> a = zeilen[2].QuerySelectorAll("td").Select(t => t.TextContent.Trim()).ToList();
         Assert.Equal(("AW massiv", "4", "120", "0,28", "0,3", "61,2"), (a[1], a[3], a[4], a[5], a[6], a[7]));
@@ -1316,5 +1316,33 @@ public class GebaeudeImportDialogTests : EposBunitContext
         Einlesen(cut);
         Assert.Equal("Keine Aufbauten im Vorschlag.", cut.Find(".epos-gebimport-aufbauten-leer").TextContent.Trim());
         Assert.Empty(cut.FindAll(".epos-gebimport-aufbauten"));
+    }
+
+    /// <summary>
+    /// GD-6a: „Baustoff-Zuordnungen…" steht an der Liste „Bauteilaufbauten" — mit dem durchgereichten Parametersatz;
+    /// ohne ihn (Katalogverwaltung, Assistent) kein Knopf. Der Klick öffnet die Ansicht als Überlagerung.
+    /// </summary>
+    [Fact]
+    public void GD6a_Baustoff_Zuordnungen_stehen_an_der_Liste_Bauteilaufbauten()
+    {
+        var ohne = Bauen(new Protokoll(), zuordnen: a => MitBaustoffen(a));
+        Einlesen(ohne);
+        Assert.NotEmpty(ohne.FindAll(".epos-gebimport-aufbauten"));
+        Assert.Empty(ohne.FindAll("button.epos-gebaeude-baustoffzuordnungen"));
+
+        int gelesen = 0;
+        var cut = Bauen(new Protokoll(), zuordnen: a => MitBaustoffen(a));
+        cut.Render(p => p.Add(x => x.BaustoffzuordnungenGaben,
+                              () => { gelesen++; return new Dictionary<string, object>(); }));
+        Einlesen(cut);
+
+        IElement knopf = cut.Find(".epos-gebimport-baustoffzuordnungen-leiste button.epos-gebaeude-baustoffzuordnungen");
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.GEB_BTN_BAUSTOFFZUORDNUNGEN, knopf.TextContent.Trim());
+        string markup = cut.Markup;
+        Assert.True(markup.IndexOf("epos-gebimport-baustoffzuordnungen-leiste", StringComparison.Ordinal)
+                    < markup.IndexOf("epos-gebimport-aufbauten\"", StringComparison.Ordinal));
+        knopf.Click();
+        Assert.Equal(1, gelesen);
+        Assert.True(cut.Instance.BaustoffzuordnungenOffen);
     }
 }

@@ -91,7 +91,7 @@ melden sie im Takt des Bildaufbaus.
 | T3 | derselbe Katalog mit 40 Sätzen (unter der Schwelle, das Maß eines ausgelieferten Katalogs), 1 088 × 624 |
 | GD1 / GD2 | 6 654 Gebäude in der Katalogliste des **Gebäude-Projektdialogs** „Eingabe der Gebäudedaten" (Seite `/katalogprobe?maske=projekt-gebaeude`; Projektliste oben, Übernahmeleiste, Katalog darunter), 1 088 × 624 und 400 × 624 — gemessen nur in der Katalogliste (`bereich: '.epos-katalogliste'`, die Projektliste darüber trägt ebenfalls eine Hülle); Sollwerte: Rollbehälter = Hülle, Zeile **53 px** (Projektdialog: die Wahlspalte bleibt), keine Tastaturprobe |
 | GD3 | derselbe Dialog mit 269 Gebäuden (das Maß der Testdatenbank, weiter virtualisiert), 1 088 × 624 |
-| Z1 / Z2 | die **Wohnungstabelle** der Stufe Erweitert im Zapfprofil-Dialog (Seite `maske=wohnungen`; die Probe klickt die Stufe „Erweitert"), 12 Wohnungstypen, 1 088 × 624 und 400 × 624 — Sollwerte (l) |
+| Z1 / Z2 | die **Wohnungstabelle** der Stufe Erweitert im Zapfprofil-Dialog (Seite `maske=wohnungen`; die Probe klickt die Stufe „Erweitert" und klappt die Karte „Belegung" auf, `aufklappen`), 12 Wohnungstypen, 1 088 × 624 und 400 × 624 — Sollwerte (l) |
 | Z3 / Z4 / Z5 | das **Raster der Zapfkategorien** für sich (Seite `maske=kategorien`), 10 Kategorien, bearbeitbar 1 088 × 624 und 400 × 624, lesend (`art=lesen`) 1 088 × 624 — Sollwerte (l) |
 | Z6 / Z7 | dasselbe Raster **in seiner Überlagerung** „Kategorien…" des Katalogdialogs (Seite `maske=tww`), 1 088 × 624 (dazu `querMax` 1 px; das Raster trägt dafür `--col-gap: 0px` wie die Katalogliste, Summe der Mindestbreiten 970 px in der 988 px breiten Hülle) und 400 × 624 — Sollwerte (l) |
 | Z8 | **Gegenprobe** zu Z7: die versteckte Feldbeschriftung ohne positionierten Vorfahren (`position: static`). Sie MUSS die Sollwerte verfehlen |
@@ -333,9 +333,9 @@ Kinder des Rasterpaares bekommen ihre selbsttätige Mindestgröße zurück
 (`min-height: auto`), damit jede Reihe ihre Inhaltshöhe behält; und der Rahmen rollt in
 sich (`overflow: auto`), statt die Maske länger zu machen — sonst stünde „Beenden" 850 px
 unter dem Fensterrand und wäre so unerreichbar wie vorher. Keine Positionierung, keine
-feste Pixelhöhe. Die zwei Masken, die `epos-katalog-fuellend` auf eine bloße Liste setzen
-(`GesetzeskatalogDialog`, `WaermepumpenKatalogDialog`), haben keine zweite Reihe und
-bleiben unberührt; die neun Fälle von `rasterprobe.mjs` bleiben grün.
+feste Pixelhöhe. Die Maske, die `epos-katalog-fuellend` auf eine bloße Liste setzt
+(`GesetzeskatalogDialog`), hat keine zweite Reihe und bleibt unberührt; die neun Fälle
+von `rasterprobe.mjs` bleiben grün.
 
 ### Der Wirt trägt auch die SVG-Probe (DG-1)
 
@@ -663,6 +663,27 @@ Port 5361):
 
 Offen: Die Wohnungstabelle rollt im Eingabeblock des Zapfprofil-Dialogs bei 1 088 px noch 102 px quer
 („Entfernen" teils hinter dem Rand) — fünf Spalten mit Auswahlfeld und Knopf passen nicht in 498 px.
+
+**Karte „Belegung" (Zapfprofil W4).** Die Wohnungstabelle steht in der Klappgruppe „Belegung", die
+beim Öffnen zu ist. Das Fallfeld `aufklappen` nennt die Klasse der Karte
+(`.epos-zapfprofil-karte--belegung`); die Probe drückt den Kopfknopf der Klappgruppe nur bei
+`aria-expanded="false"` und verlangt danach `aria-expanded="true"`. Fehlt die Karte oder bleibt sie
+zu, steht kein Raster da: Der Fall endet mit einer Zeitüberschreitung und der Lauf mit Rückgabe 2.
+
+**Ergebnis vom 16.10.2026** (Chromium headless, Playwright 1.56.1, Wirt auf Port 5471, `--nur Z`):
+Z1 und Z2 grün — 12 von 12 echten Zeilen, Zeile 47,4 px, Hülle rollt weder senkrecht noch quer,
+Seite quer 0. Gegenprobe aus einer Kopie der Probe: Karte unter falscher Klasse → `ABBRUCH`
+nach 20 s, Rückgabe 2; ohne `aufklappen` (Karte zu) → ebenso Rückgabe 2. Z3, Z4, Z5, Z7 grün,
+Z8 zeigt den Fehler wie erwartet. **Z6 rot:** Die Hülle rollt 2 px quer (Soll ≤ 1). Ursache ist
+das Maß `--epos-rand` (Commit `27a7fd4b6`, 10 → 20 px): Der Körper der Gruppe „Zapfkategorien"
+polstert seither 20 px je Seite, die Hülle ist 968 statt 988 px breit, die Summe der
+Mindestbreiten bleibt 970 px. Gemessen mit dem Stilblatt des Vorgängers `14f0764e9`: quer 0.
+
+**Behebung Z6 (örtlich).** `--epos-rand` bleibt im Haus 20 px; allein im Kategoriendialog polstert
+der Körper der Gruppe seitlich 10 px (`.epos-zapfprofil-kategorien > .epos-gruppenkopf >
+.epos-gruppenkopf-koerper { padding-inline: 10px }`), die Hülle ist wieder 988 px breit.
+Ergebnis: **Rasterprobe 0 (29 von 29 Fällen)**, Z6 Hülle quer 0, Z7 Hülle quer 642 px bei
+Überlagerung quer 0, Gegenprobe Z8 rot (Überlagerung quer 330 px); Fensterprobe 0 (Gegenprobe rot).
 
 ## Gebäudesimulation G3, Welle K — die Katalogseite des Gebäudedialogs (GD1–GD3)
 
@@ -1089,10 +1110,13 @@ Datenbank. bunit misst weder Lage noch Rollstand; die Voraussetzungen der Regel 
 |---|---|
 | `/fensterprobe?fall=heizkessel` | `HeizkesselDialog`, zwei Projektzeilen, 40 Katalogzeilen, Kostenknöpfe (eine Knopfzeile mitten im Inhalt) |
 | `…?fall=bhkw` | `BhkwDialog`, ebenso |
-| `…?fall=waermepumpen` | `WaermepumpenDialog` mit eingebetteter Detailansicht; die Temperaturprüfung schlägt an (Warnband im Fußblock der Detailansicht) |
+| `…?fall=waermepumpen` | `WaermepumpenDialog`, Katalogauswahl wie Heizkessel und BHKW |
 | `…?fall=gebaeude` | `GebaeudeDialog`; „Simulation…" öffnet den Wärmebedarf als Überlagerung |
 | `…?fall=dubletten` | `KatalogDublettenDialog` — das Protokoll steht **unter** der Schlussleiste |
 | `…?fall=katalog` | `BedarfAdminDialog` (Katalogdialog, `.epos-katalog-dialog`) |
+| `…?fall=kaelteprofile` | `BedarfsProfileDialog` der Art Kälte mit dem Baustein `Betriebskalenderwahl`; „Betriebskalender…“ öffnet das Blatt mit dem `BetriebskalenderDialog` samt „Aus Gebäude übernehmen…“ (Ablage im Speicher); `&kalender=leer` ohne Kalender, `&gebaeude=0` ohne Gebäude; die Bearbeiten-Überlagerung einer Projektzeile zeigt die Eingabeart samt den Editoren Monatswerte und Wochenprofil (KBP-3a) und die Kältegrafik (KBP-3b: Kennzahlen, Jahresgang, Monate, Woche mit Wahl der Kalenderwoche und Tagesarten als Hintergrund, Dauerlinie) aus einer synthetischen Reihe, die dem Arbeitsstand folgt; in der Fallliste der Katalogauswahl und Gegenstand des Falls `kaeltegrafik` |
+| `…?fall=klimaimport` | `KlimadatenDialog` (Katalogdialog); „Import…“ öffnet die Überlagerung „Klimadaten einlesen“ (`.epos-einlesen`, Leiste ohne Statusspanne) — Gegenstand des Falls `klimaimport` |
+| `…?fall=klimareihen` | derselbe `KlimadatenDialog` mit einer Region samt gespeicherten Rechenspalten (Bedeckungsgrad leer) — Reiter „Weitere Reihen“ mit der Reihenwahl, Gegenstand des Falls `klimareihen` |
 | `…&lizenz=1` | das Lizenzbanner der `AppWurzel` (Baustein `Lizenzbanner`, Lesemodus-Satz) als erstes Kind von `#app` vor dem Dialog |
 | `…&marke=0` | ohne Fenstermarke — der Dialog steht wie ohne die Regel |
 | `…?meldung=liste` | statt des Falls ein langer Dialog aus Hausbausteinen, dessen `Warnbanner` 30 Hinweise aufgeklappt zeigt (Fall „Meldungsliste" unten) |
@@ -1107,14 +1131,67 @@ Je Fensterdialog: die Marke steht in `#app` hinter dem Dialog, der Dialog ist h�
 Mitte und Ende steht der Kopf bei `top 0` und die Schlussleiste mit `bottom` = Fensterhöhe (± 1 px), beide
 über die volle Breite der Wurzel; am Ende steht alles, was im Markup vor der Leiste kommt, über ihr; keine
 andere Leiste haftet, genau ein haftender Kopf; der Tabulator durch den ganzen Dialog legt kein Feld unter
-Kopf oder Fuß und rollt nicht, wenn er in Kopf oder Fuß landet. Wärmepumpen: OK bei Rollstand 0 — das Band
-des Wirts steht oben im Bild, das Band der Detailansicht über der Schlussleiste und unverdeckt
-(`elementFromPoint`). Dublettenprüfung: oben haftet der Fuß, am Ende steht er ganz im Bild und das Protokoll
-frei darunter. Überlagerung (Gebäude → „Simulation…"): sie rollt nicht als Ganzes, nur ihr Rollkörper
+Kopf oder Fuß und rollt nicht, wenn er in Kopf oder Fuß landet. Dublettenprüfung: oben haftet der Fuß, am Ende steht er ganz im Bild an seinem Platz und das Protokoll
+frei darunter, im Zeilenabstand der Wurzel. Überlagerung (Gebäude → „Simulation…"): sie rollt nicht als Ganzes, nur ihr Rollkörper
 (`.epos-dialog-rollkoerper`) rollt, ihr Fuß steht oben wie nach dem Rollen an ihrem Boden, der Kopf des
 Unterdialogs haftet nicht, Kopf und Fuß des Fensters liegen unter der Abdunkelung, das Dokument rollt nicht —
 und jede Zahl ist dieselbe wie mit `marke=0`. Katalogdialog: Kopf und Fuß statisch, das Dokument rollt nicht,
 jede Zahl dieselbe wie mit `marke=0`.
+
+**Fall `kaeltegrafik`** (`--nur kaeltegrafik`, bei **1 088 × 624** und **520 × 624**; Nacharbeit KBP-3b): in
+`?fall=kaelteprofile` die Bearbeiten-Überlagerung der ersten Kältezeile, Blatt Woche. Die Wahl der Kalenderwoche führt
+53 Wochen (1. Januar ein Donnerstag); gewählt wird KW 1 (29.12. bis 04.01.: drei Tage außerhalb des Jahres, Donnerstag
+und Freitag Werktag, Samstag, Sonntag). Je Tag liest die Probe einen Bildpunkt im oberen Zehntel der Zeichenfläche (das
+innere `<svg>`) um 6 Uhr aus dem Bildschirmfoto (PNG 1 × 1 px, ohne Zusatzbibliothek gelesen); er muss die Farbe der
+Tagesart tragen (`--epos-kalb-saison`, `-grundwoche`, `-wochenende`, `-feiertag`, Toleranz 3 je Kanal). Foto
+`kaeltegrafik_*`. Gegenprobe: ohne den Hintergrund (`background-image: none`) muss die Woche rot sein. Der Fall
+`kaelteprofile` steht zudem in der Fallliste der Katalogauswahl (nichts rollt außer den Listen) und, wie
+`bedarfsprofile`, in `ZUSAMMENFASSUNG`. **Ergebnis vom 16.10.2026:** beide Fenster erfüllt (53 Wochen, sieben
+Bildpunkte je Fenster in der Farbe ihrer Tagesart), Gegenprobe ohne Hintergrund rot (5 Verstöße — der Werktag bleibt
+weiß wie `--epos-kalb-grundwoche`); `kaelteprofile` in der Katalogauswahl 0 Verstöße in drei Fenstern.
+
+**Fall `kaeltedeckung`** (`--nur kaeltedeckung`, bei **1 088 × 624**, **520 × 624** und **1 194 × 834** samt iPad): in
+`?fall=kaelteprofile` die Bearbeiten-Überlagerung der ersten Kältezeile mit aufgeklappter Deckungsgruppe (Baustein
+`DeckungsartFelder`, Klasse `.epos-deckung`; die Wirtszeilen tragen dazu einen `DeckungsartDaten`-Satz). Gemessen bei
+Rollstand oben, Mitte, Ende des Körpers und mit der Gruppe am unteren Körperrand: Kopf und Schlussleiste wandern nicht und
+stehen im Bild; die Gruppe liegt im rollenden Körper und lässt sich ganz hineinrollen; Körper, Gruppe und Dokument rollen
+nicht waagerecht; „Abbrechen“ und „OK“ stehen im Bild und werden nicht überdeckt (`elementFromPoint`). Foto
+`kaeltedeckung_*`. Gegenprobe: ein Körper ohne Rollen (`overflow: visible`) muss rot sein. **Ergebnis vom 17.10.2026:**
+alle drei Fenster erfüllt (Rollweg 1 494, 1 730 und 1 353 px im Körper von 483, 483 und 649 px; Gruppe 95, 132 und 95 px
+hoch), Gegenprobe 22 Verstöße, Rückgabe 0.
+
+**Fall `klimaimport`** (`--nur klimaimport`, bei **1 088 × 624**, **520 × 624**, **1 194 × 834** mit sicheren
+Abständen und **787 × 520** — das Fenstermaß 1 180 × 780 bei 150 % Anzeigeskalierung; KD-1, Anwenderbefund
+16.10.2026 „Schlussleiste des Klimadaten-Imports abgeschnitten“): `?fall=klimaimport`, „Import…“, dann (KD-3) Ort
+„Ort 1“ und „Datensatz suchen“ — der Wirt liefert eine volle Vorschau mit neutralen Werten, gemessen wird die
+Überlagerung in ihrer höchsten Gestalt MIT Vorschaukarte. Die Überlagerung
+„Klimadaten einlesen“ trägt `.epos-einlesen` statt eines `.epos-dialog` und eine Leiste ohne Statusspanne; ihre
+Schlussleiste haftet über die Regel `.epos-ueberlagerung-inhalt > .epos-einlesen > .epos-leiste:last-child`
+(`epos-ui.css`, gilt für alle sechs Einlese-Überlagerungen). Gemessen bei Rollstand oben und Ende der Überlagerung:
+sie steht zwischen den sicheren Abständen, die Schlussleiste steht ganz in ihr und endet an ihrem Boden, der
+Primärknopf steht ganz im Bild, am Ende steht der Inhalt davor über der Leiste. Foto `klimaimport_*`. Gegenprobe:
+die Leiste mit `position: static` muss in jedem Fenster rot sein. **Ergebnis vom 16.10.2026:** vorher (ohne die
+Regel) 13 Verstöße — die Leiste lag oben bei 736–887 px unter dem Boden der Überlagerung (592 bzw. 493 px);
+nachher 0 Verstöße: Überlagerung 31–593 px (787 × 520: 26–494 px), Rollhöhe 774/560 px (520 px breit 881/560,
+787 × 520 862/466, iPad 774/749), Leiste 523–592 px oben wie am Ende (iPad 724–793, 787 × 520 424–493), Inhalt am
+Ende bis 483 px; Gegenprobe 4 Verstöße je Fenster. Zugleich misst der Fall `dubletten` am Ende den ganzen Abstand
+der Wurzel (`gap`) zwischen Schlussleiste und Protokoll: Die Gegenprobe „Fuß mit negativem Rand“ blieb vorher bei
+1 088 und 520 px grün (der Rand rückt das Protokoll nur 16 px in die 20-px-Lücke, es überdeckt nichts), jetzt
+1, 1 und 3 Verstöße.
+
+**Fall `klimareihen`** (`--nur klimareihen`, in denselben vier Fenstern wie `klimaimport`; KD-8 Teil A):
+`?fall=klimareihen`, im schmalen Rahmen „Stammblatt ›“, dann der Reiter „Weitere Reihen“. Gemessen: Kein Chip und
+kein Gruppenname der Reihenwahl ragt aus ihrem Kasten, kein Vorfahr und nicht das Dokument rollt quer, das Bild ist
+mindestens 50 px hoch, die Schlussleiste des Dialogs steht ganz im Fenster, und die Reihenfolge stimmt: im Fenster
+bis 600 px Breite steht das Bild über der Wahl (Medienregel `.epos-reihenbild`, `order`), breiter die Wahl über dem
+Bild. Foto `klimareihen_*`. Gegenproben im Fenster 520 × 624: die Gruppen ohne Umbruch (`flex-wrap: nowrap`) und die
+Wahl ohne Reihenfolgeregel (`order: 0`) müssen rot sein. **Ergebnis vom 16.10.2026:** 0 Verstöße; 10 Chips (1 weich
+gesperrt: Bedeckungsgrad „Quelle führt die Größe nicht“; die Rohwerte haben bis zur Rohwerttabelle keinen Chip), Wahl
+476/449/472/331 px hoch, ragt 0 px, Bild 113/150/126/240 px, im Fenster 520 × 624 Bild zuerst, Leiste 564–608 px (iPad
+754–798, 787 × 520 460–504); Gegenproben 2 bzw. 1 Verstoß. Der Fall `klimaimport` misst seitdem die Vorschaukarte mit
+der Reihenwahl unter dem Bild (der Wirt liefert alle Monatsreihen von Teil A): Rollhöhe 2 008/560 px (520 px breit
+2 530/560, iPad 2 008/749, 787 × 520 2 327/466), Leiste oben wie am Ende haftend, 0 Verstöße, Gegenprobe 4 Verstöße je
+Fenster.
 
 **Fall `wp-steckbrief`** (`--nur wp-steckbrief`, bei **1 280 × 800** und **1 194 × 834** mit sicheren Abständen):
 die Satz-Überlagerung der Wärmepumpe („Bearbeiten…" der Projektkopie) mit dem Gerätesteckbrief links unter
@@ -1138,8 +1215,10 @@ Gegenprobe: je Wirt ein Steckbrief mit `min-width: 1600px` ohne Umbruch muss rot
 
 **Gegenprobe** (läuft mit): dieselben Fensterdialoge mit `marke=0` müssen die Haft-Kriterien verfehlen; mit
 Marke, aber `scroll-padding: 0` muss der Tabulator Felder unter Kopf oder Fuß legen; das eingebettete
-Warnband mit `bottom: 0` muss verdeckt sein; der Fuß der Dublettenprüfung mit negativem Rand muss das
-Protokoll überdecken. Rückgabe `0` = kein Verstoß **und** Gegenprobe rot, `1` = Verstoß oder Gegenprobe
+Warnband mit `bottom: 0` muss verdeckt sein; der Fuß der Dublettenprüfung mit negativem Rand muss rot sein. Er
+überdeckt das Protokoll nicht (Zeilenabstand der Wurzel 20 px, Kartenrand 16 px: es bleiben 4 px), rückt aber aus
+seinem Platz — deshalb verlangt die Probe am Ende zwischen Fuß und Protokoll genau den Zeilenabstand (`row-gap`)
+der Wurzel (± 1 px), nicht nur, dass nichts überdeckt ist. Die Leiste mit `position: static` in der Klimadaten-Importüberlagerung muss rot sein. Rückgabe `0` = kein Verstoß **und** Gegenprobe rot, `1` = Verstoß oder Gegenprobe
 grün, `2` = Aufbaufehler. Die Probe steht in keiner CI.
 
 **Ergebnis vom 30.09.2026** (Wirt Release auf Port 5299, Chromium headless über das globale Playwright,
@@ -1158,14 +1237,12 @@ grün, `2` = Aufbaufehler. Die Probe steht in keiner CI.
 | Gebäude | 520 × 624 | 71 / **125** px (zweizeilig) | 1 665 / 1 041 px | Inhalt bis 464 px, Leiste 499–624 px | 65, 0, 0 |
 | Dublettenprüfung | 520 × 624 | 71 / 125 px | 883 / 259 px | Leiste 292–417 px, Protokoll 427–608 px | 8, 0, 0 |
 
-Wärmepumpen, Band der Detailansicht: 515–555 px bei 1 088 px (Leiste ab 555), 497–555 px bei 520 px;
-das Band des Wirts steht bei Rollstand 0 unter dem Kopf (109–149 px). Überlagerung: 31–593 px hoch, ihr Fuß
+Überlagerung: 31–593 px hoch, ihr Fuß
 523–592 px oben wie unten gerollt (Boden der Überlagerung 592 px), Kopf des Unterdialogs `static`, Fenster-
 kopf und -fuß unter der Abdunkelung; mit und ohne Marke dieselben Zahlen. Katalogdialog: Kopf 16–62 px,
 Fuß 564–608 px, Dokument 624 px, beide `static`; mit und ohne Marke dieselben Zahlen. Gegenprobe: ohne Marke
 12 Haft-Verstöße je Fensterdialog (Dublettenprüfung 7 bzw. 8), ohne `scroll-padding` 5 bis 10 verdeckte
-Felder je Dialog, eingebettetes Band mit `bottom: 0` verdeckt, Dublettenfuß mit negativem Rand über dem
-Protokoll.
+Felder je Dialog, Dublettenfuß mit negativem Rand über dem Protokoll.
 
 **Grenzen.** Einen **schreibgeschützten** Textbereich rollt Chromium beim Fokus nicht ins Bild (ein
 bearbeitbarer rollt) — mit und ohne die Regel; die Probe misst dort nur, ob Kopf oder Fuß verdecken, was von
@@ -1282,7 +1359,7 @@ Polster oben rechnet eine Bannerzeile; ein mehrzeiliges Banner lässt dem angesp
 ## Rollbereichprobe „kein Rollbereich im Rollbereich" — Seiten `/rollbereichprobe`, `/fensterprobe`
 
 **Zweck.** Die Projektdialoge mit Katalogauswahl (Baustein `Zweispaltenauswahl`, Variante V1 „Gerahmt und
-gestapelt", [Konzept](../../Dokumentation/aktuell/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md)
+gestapelt", [Konzept](../../Dokumentation/ueberholt/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md)
 Abschnitt 4 und 8) füllen ihr Fenster; es rollen allein Projektliste, Katalogliste und die aufgeklappte
 Detailzeile, keine in der anderen. bunit sieht weder Lage noch Rollbereich — die Probe misst es im echten
 Chromium. Die Seite `/rollbereichprobe?fall=…` trägt ohne Datenbank Pufferspeicher, Stromspeicher,
@@ -1721,6 +1798,27 @@ rot mit 103 Verstößen** (Rückgabe 0).
 | 480 voll | 478 / 478 / 478 px | unter | 1,27 Zeilen | 13 |
 | 360 voll | 358 / 358 / 358 px | unter | 2,00 Zeilen | 15 |
 
+## Fensterprobe, Fall `bedarfgrafik` (Grafik des Ergebnisdialogs in der Überlagerung)
+
+**Wozu.** Im Dialog „Standard Stromprofil“ → „Simulation…“ steht der `BedarfErgebnisDialog` als `Ueberlagerung`; sein
+Reiter „Grafik“ zeigt das Bild in einem `.epos-reiter-blatt` (`overflow: auto`). Die Zeigerzeile unter dem Bild haftet in
+Überlagerungen mit dem Fußabstand der Schlussleiste (`--epos-ueberlagerung-fuss`) — `sticky` bezieht sich aber auf den
+nächsten Rollbehälter, hier das Reiterblatt, dessen Unterkante mit der des Bildes zusammenfällt. Die Zeile stand so mit
+ihrer Fläche über Achsenlinie, Tick-Beschriftung und Säulenfuß. Die Seite `/fensterprobe?fall=bedarfgrafik` stellt den
+Dialog mit echten Modellen des Kerns (Jahresgang, Säulenstapel) über einen Fensterdialog.
+
+```bash
+node fensterprobe.mjs --url http://127.0.0.1:5299 --nur bedarfgrafik [--fotos <ordner außerhalb des Repositorys>]
+```
+
+**Sollwerte** je Raster Jahr | Monat | Woche | Tag, in 1 088 × 624 und 1 600 × 1 000: Die Zeigerzeile beginnt nicht über
+der untersten Textzeile des SVG, und nach dem Rollen ans Ende steht diese Textzeile ganz im sichtbaren Rollbereich über
+der Schlussleiste. **Gegenprobe:** die Zeigerzeile im Reiterblatt mit dem Fußabstand der Überlagerung muss rot sein.
+
+**Ergebnis vom 17.10.2026** (Linux-Container, Chromium headless): vorher 8 Verstöße (alle vier Raster in beiden Fenstern,
+etwa Monat 1 600 × 1 000: Zeile ab 662,8 px über Text bis 683,7 px); nachher 0 Verstöße (Zeile ab 715,8 px unter Text bis
+683,7 px), Gegenprobe je Fenster 4 Verstöße (richtig).
+
 ## Diagrammprobe (Zeigerbalken im Zoom, Auftrag GX) — Seite `/diagrammsvg`
 
 **Wozu.** Der senkrechte Balken an der Mausstelle eines Diagramms (`DiagrammSvg`) soll der Maus im selben Bild
@@ -1740,12 +1838,73 @@ unmittelbar nach der Bewegung: Balken sichtbar und **|Balkenmitte − Maus x| �
 nennt die Zeile **Stunde und Datum**. Über die ganze Bewegung: die Pfade der Reihen sind **dieselben Elemente** mit
 unverändertem `d`, **0 Mutationen** (MutationObserver auf der Datenfläche).
 
+**Zeigertext unter dem Zeiger (Befund 17.10.2026).** Je Schritt außerdem: Der Zeigertext (`.epos-diagramm-zeigertext`)
+steht in der Zeile **unter** dem Bild (nicht über Tick-Beschriftung und Achsentitel), ganz in der Zeile, und mittig unter
+der Maus (**|Textmitte − Maus x| ≤ 1 px**) — wo er sonst aus der Zeile liefe, bündig an ihrem linken bzw. rechten Rand.
+Ergebnis vom 17.10.2026: mittig 22, links geklemmt 8, rechts geklemmt 11 von 41 Schritten; die Gegenprobe ohne Tafel
+verfehlt auch hier (0 von 41). Vorher gab es kein eigenes Element: Die Zeile stand linksbündig unter dem Bild.
+
 **Gegenprobe** (läuft mit): Die Probe liefert das Modul so aus, dass es die Tafel ablehnt — dann zeichnet der Baustein
 Linie und Zeile nach einem Rundlauf selbst, und die Linie steht nicht im Bild der Maus. Sie muss verfehlen.
 
 **Ergebnis vom 10.10.2026** (Linux-Container, Chromium headless, Wirt Blazor Server): Stufe ×12, 41 Schritte,
 größter Abstand **0,50 px**, Zeile mit Datum **41/41**, 3 Pfade, **0 Mutationen** — Rückgabe 0. Gegenprobe:
 13 von 41 Schritten über 1 px (verfehlt, richtig).
+
+**Die Seite trägt die Oberflächenregel** (Bedarf als Linie, Erzeugung als Fläche, Tagesband, Wahl
+„Datum | Stunde im Jahr“): `?bild=photovoltaik` stellt Strombedarf, Photovoltaik und Überschuss als drei dichte
+Viertelstundenlinien samt Speicherfüllstand — den Fall der Anwenderrückmeldung —, `&aufteilen=1` dazu die Erzeugung als
+Stapel aus Eigenverbrauch, Einspeisung (Grenze 4 kW) und Abregelung (der Schalter „PV aufteilen“), `?darstellung=bericht` zeigt
+dasselbe Modell ohne die Regel (das Bild des Berichts). Die Probe misst den Zeigerbalken weiter am Jahresgang; mit
+der Regel zählt sie je Reihe zwei Pfade (Band und Kern), und auch die Bänder bleiben über die Bewegung dieselben
+Elemente.
+
+**Fall `fluss` (`--fall fluss`, Energieflussbild der Übersicht) — Seite `/uebersichtprobe?ansicht=fluss`.** Das
+Energieflussbild ist ein Bild **ohne** Zeichenfläche: Die Zeigerzeile nennt den Zeigertext des Bandes oder Knotens
+unter der Maus (Werte nur im Zeigertext, keine Zahlen im Bild). Die Seite stellt den Abschnitt „Ergebnisse — Energie“
+mit der echten Hülle `UebersichtErgebnisGaben` und synthetischen Ergebnissen (`?version=<id>` wählt die Version,
+Vorgabe Stamm). Die Probe tastet das breite Bild in einem Raster von 80 × 40 Punkten ab und nimmt je getroffenem Band
+oder Knoten einen Punkt; je Element: Maus auf einen freien Punkt des Bildes — die Zeile ist leer; Maus auf das
+Element — die Zeile nennt binnen 2 s einen Text mit „MWh/a“, ein Band („Von → Nach“) steht bis „%)“ wortgleich in
+der verborgenen Textalternative, ein Knoten mit seinem Namen. Sollwerte: jedes Element mit Zeigertext, mindestens
+3 Bänder und 3 Knoten, das erste Element nennt beim zweiten Mal denselben Text. Abgetastet werden nur Elemente mit der
+Marke `fluss:` oder `knoten:` — Farbfelder der Legende und Stufentitel tragen keinen Zeigertext. **Gegenprobe:**
+dieselben Punkte mit `pointer-events: none` auf den Elementen des Bildes — die Zeile bleibt leer, die Probe muss verfehlen.
+
+```bash
+node diagrammprobe.mjs --url http://127.0.0.1:5299 --fall fluss [--fotos <ordner außerhalb des Repositorys>]
+```
+
+**Ergebnis vom 16.10.2026** (Linux-Container, Chromium headless, Wirt Blazor Server): 24 Elemente, **12 Bänder und
+12 Knoten** mit Zeigertext, alle in der Textalternative (24 Zeilen) — Rückgabe 0. Gegenprobe: 24 von 24 Elementen
+ohne Zeigertext (verfehlt, richtig). Der Fall `zoom` (Vorgabe) am selben Stand unverändert: ×12, 41 Schritte,
+größter Abstand 0,50 px, Zeile mit Datum 41/41, 0 Mutationen; Gegenprobe verfehlt.
+
+**Fall `hervorhebung` (`--fall hervorhebung`, Konzept Energieflussbild 3.3) — dieselbe Seite.** Das Modul
+`EPOS.UI/wwwroot/epos-energiefluss.js` hebt beim Überfahren oder Antippen das Umfeld eines Knotens hervor (bis zum
+nächsten Bus) und blendet den Rest über die Stilregel ab. Die Seite legt in der Ansicht „fluss“ das Soll verborgen ab
+(`#uep-umfeld-soll`: je Knoten des Stamms Art und `EnergieflussAbbildung.Umfeld` des Kerns). Die Probe fährt auf den
+Wandler mit dem größten Umfeld und auf einen Bus und vergleicht die Menge der Bandmarken mit `epos-fluss-an` mit dem
+Soll (soweit gezeichnet); jedes Band außerhalb hat eine Deckkraft unter 0,5, jedes hervorgehobene 1, Legende und
+Stufentitel bleiben voll. Danach schaltet sie auf „Stufen“ und fährt auf ein Verbinderband (eine Marke, mehrere Pfade):
+genau diese Marke leuchtet, mit allen ihren Pfaden. Maus aus dem Bild — nichts bleibt abgeblendet. **Gegenproben:** ohne
+das Modul (Abruf verweigert) und ohne die Abblendregel (Deckkraft per Stilblatt auf 1 gezwungen) — beide müssen verfehlen.
+
+**Fall `wahl` (`--fall wahl`) — dieselbe Seite.** Die Knopfgruppen über dem Bild: Vorgabe Kette und „Alle“ ohne
+Stufentitel; „Stufen“ zeichnet vier Titel; „Strom“ behält weniger Bänder als „Alle“; „Kälte“ (die Probe kennt keine
+Kälte) zeigt den Hinweis im Bild (Marke `hinweis`) und als leise Zeile `.epos-ergebnis-fluss-filterhinweis`; Pfeil
+links wechselt auf „Wärme“ und lässt den Fokus auf dem Knopf. `?darstellung=stufen` und `?filter=…` stellen beide Wahlen
+beim Laden; der Wirt setzt sie je Seitenaufruf zurück.
+
+```bash
+node diagrammprobe.mjs --url http://127.0.0.1:5299 --fall hervorhebung [--fotos <ordner außerhalb des Repositorys>]
+node diagrammprobe.mjs --url http://127.0.0.1:5299 --fall wahl
+```
+
+**Ergebnis vom 16.10.2026 (SK-2d-2):** `hervorhebung` — Wandler `wp_heizen` 3/3 Bänder, Bus `strom` 6/6 Bänder,
+Verbinder `fluss:strom:wp_heizen` 3/3 Pfade, Rückgabe 0; Gegenproben ohne Modul und ohne Regel verfehlt (richtig).
+`wahl` — Kette 12 Bänder, Stufen 4 Titel, Strom 6 Bänder, Kälte mit Hinweis, Rückgabe 0. `fluss` 24 Elemente
+(12 Bänder, 12 Knoten), `zoom` unverändert erfüllt.
 
 ---
 
@@ -1865,6 +2024,80 @@ P_th, σ, η und Motortyp, bei 1 280 × 800 am BHKW neben Motortyp, am Heizkesse
 
 ---
 
+## Übersichtsprobe (Berichte & Kosten, Reiter „Übersicht“) — Seite `/uebersichtprobe`
+
+Der echte Rahmen `BerichteKostenSeite` mit der Seite „Übersicht“: Kopf in drei Teilen
+(Projektwahl, Variantenverwaltung, Lauf) und die Gegenüberstellung je Gewerk mit Stamm und
+Varianten, ein Gewerk weicht ab. Synthetische Stände ohne Datenbank, neutrale Namen.
+Adressgaben: `?varianten=<n>` (Vorgabe 1, höchstens 8), `?nurunterschiede=1` und `?variante=<i>`
+(wählt unter „Detail-Unterschiede für Variante“ die i-te Variante und zeigt die Unterschiedstabelle;
+ohne die Gabe steht die Vorgabe „— keine —“, der Komponentenvergleich; die Wahl im Feld wirkt auch
+von Hand). Die drei Knöpfe der Gruppe „Variante verwalten“ öffnen ihre Dialoge als Überlagerung
+(Anlegen mit Quelle und Bezeichner, Umbenennen und Löschen mit der Variantenwahl); sie wirken auf
+die synthetische Gruppe der Seite, ohne Datenbank. Der Schalter „nur Unterschiede“ steht in der Zeile „Im Vergleich“.
+Die Probe führt den Brennstoffeinsatz des Kessels passend zur Trägerzeile Erdgas (37,2 bzw. 24,6 MWh/a). Zu prüfen
+bei 1 800, 940 und 700 px: Kopf- und Rumpfzellen der Tabelle stehen an denselben linken
+Kanten, die Tabelle füllt die Hülle, die Seite rollt nie quer (mit sechs Varianten rollt
+allein die Hülle, die Gewerkspalte haftet), kein Feld des Kopfes ragt über das Fenster.
+Darunter steht der Abschnitt „Ergebnisse — Energie“ aus der echten Hülle `UebersichtErgebnisGaben`
+mit synthetischen Ergebnissen (Variante 1 simuliert und abweichend, weitere Varianten nicht
+simuliert, mit einer Trägerzeile „Endenergie Erdgas“ und der Gruppe „Kälte“); `?offen=alle` klappt alle
+zugeklappten Gruppen auf, `?offen=<schluessel,…>` die genannten (Gruppenschlüssel des Kerns, etwa
+`kaelte,emissionen`). `?anpassen=1` öffnet beim Laden den Dialog „Anzeige anpassen…“ (Zustand je Gruppe,
+Kennzahlen je Haken, „Zeilen ohne Wert ausblenden“, „Standard wiederherstellen“); `?anzeige=beispiel` legt eine
+angepasste Anzeige in die Einstellungsablage der Probe (Deckung ausgeblendet, Stromlast abgewählt, Kälte offen) —
+die Ablage ist eine Attrappe der Naht und wird je Seitenaufruf geleert, OK im Dialog wirkt bis zum nächsten Aufruf.
+Unter der Tafel steht leise „n Kennzahlen ohne Wert ausgeblendet“. Zu prüfen bei 1 800, 940 und 700 px: die Kennzahlspalte haftet und ist in allen
+Tafeln gleich breit (20rem, unter 760 px 12rem), die Versionsspalten sind gleich breit, Spaltenkopf und
+Wert stehen rechtsbündig an derselben Kante, die nicht simulierte Version zeigt leise Striche und
+„nicht simuliert“ fett im Kopf, die Seite rollt nie quer.
+`?ansicht=grafik` stellt den Abschnitt auf die Grafik (Umschalter „Tabelle | Grafik“, im Wirt je Sitzung):
+je Gruppe und Einheit ein Balkendiagramm, eine Serie je Version, die Legende der Versionen einmal oben, die nicht
+simulierte Version grau mit „nicht simuliert“ und ohne Balken. Zu prüfen bei 1 800, 1 280, 940 und 700 px: die
+Diagramme teilen sich die Breite (ab 440 px je Spalte, darunter eine Spalte), nichts rollt quer, Legende und
+Beschriftungen überlappen nicht, die Farben bleiben unterscheidbar; mit `?varianten=6` bleiben die Balken lesbar.
+
+## Sichtprobe „Dezentrale Kälte“ (K6b) — Seite `/kaeltedezentralprobe`
+
+Ein synthetischer Lauf mit Split-Zeile, ohne Datenbank, mit neutralen Namen; gemessen wird nichts, die Seite dient den
+Bildschirmfotos. Sie zeigt die Übersicht (Posten „Kühlung dezentral“ in der Strombilanz, Deckungsgrad Kälte samt
+„davon Kältefolge“), die echte Konfigurationsseite mit der Gruppe „Dezentrale Kältedeckung“ samt „Bearbeiten…“ (der Weg
+schreibt nur Quelle und Zuordnung unter die Seite), das Anlagenschema aus einem Modell im Speicher, angeordnet von
+`SchemaLayout` (Kältekreis mit „davon Lastgang/Profil“, Knoten „Kältebedarf dezentral (Split)“), dann Kältegang,
+Kältegruppe des Bedarfsreiters und Stromgang.
+
+## Kopfleistenprobe (Katalogauswahl schneidet nichts ab) — Seiten `/wikibild`, `/fensterprobe`
+
+**Zweck.** Die Kopfleisten der `Zweispaltenauswahl` tragen Marke, Überschrift, die Suchzeile der
+`Katalogliste` (Suchfeld, Trefferzahl, Legende, „Spalten…“), Knöpfe des Wirts und „In das Projekt
+übernehmen“. Bei der festen Dialogbreite (`.epos-dialog { max-width: 1160px }`) passt das nicht in jedem
+Dialog in eine Zeile; die Kopfleiste des Katalogs bricht dann zwischen ihren Kindern um, und das Suchfeld
+trägt seinen Platzhalter ganz (`epos-ui.css`, Regel `.epos-zweispalten-bereich--katalog >
+.epos-zweispalten-kopfleiste` in `@media (min-width: 1280px) and (min-height: 800px)`). In der Kompaktstufe
+(unter 1 280 × 800) bleibt sie einzeilig nach 4.8, weil eine zweite Zeile dort die Listenhöhe kostet
+(`rollbereichprobe.mjs`; Fall „lizenzbanner“ der `fensterprobe.mjs` bei 520 × 624). Die
+`rollbereichprobe.mjs` lässt deshalb nur für die Kopfleiste des Katalogs ab 1 280 × 800 zwei Zeilen zu
+(höchstens 93 px). bunit misst keine Breite; die Regel hält
+`ZweispaltenauswahlTests.Die_Kopfleiste_des_Katalogs_bricht_um_statt_abzuschneiden`.
+
+```bash
+node kopfleistenprobe.mjs --url http://127.0.0.1:5299 [--fotos <ordner außerhalb des Repositorys>] [--nur <fall>] [--ohne-gegenprobe]
+```
+
+Fälle: die elf Projektdialoge der Seite `/wikibild` (ohne `data-breit`, also in der Hausbreite) und die
+Katalogauswahl der `/fensterprobe` (Heizkessel, BHKW, Wärmepumpen, Gebäude, Kälteprofile; die ersten drei
+auch en-US), je bei 1 400 × 820 und 1 280 × 800 (Normalmaß, Dialog 1 160 px). Je Knopf, Feld, Überschrift, Marke und Zähler: ganz in der Leiste und im clippenden
+Vorfahren, Text nicht gekürzt, Platzhalter ganz, keine Überlappung. Die Gegenprobe läuft mit (die Regeln
+von vorher: Katalogleiste ohne Umbruch, Suchfeld `0 3 16rem`, Untergrenze 7rem) und muss rot sein.
+Rückgabe `0` = alles steht und die Gegenprobe ist rot, `1` = Verstoß, `2` = Aufruf- oder Verbindungsfehler.
+
+Ergebnis vom 16.10.2026: vorher bei 1 160 px Dialogbreite gekürzte Überschriften („Wärmepumpen aus
+Datenbank“ 231 > 218 px, „Stromspeicher aus Datenbank“ 227 > 215 px, „Kältemaschinen in der Datenbank“
+254 > 174 px), der Suchplatzhalter in allen Dialogen gekürzt (189 px Bedarf, 94 bis 186 px Platz) und
+bei der Kältemaschine „Spalten…“ 69 px unter „Katalogverwaltung…“ und abgeschnitten; nachher 38 von 38
+Fällen ohne Verstoß, die Gegenprobe rot (48 Verstöße). Wärmepumpe, Stromspeicher, Prozesswärme und
+Kältemaschine stehen bei 1 160 px zweizeilig (92 statt 44 px), die übrigen einzeilig.
+
 ## Bildschirmfotos fürs Wiki: Seite `/wikibild` und `wikibilder.mjs`
 
 Keine Messprobe, sondern die Quelle der Bildschirmfotos der Wiki-Seiten (Regel: Konzept
@@ -1878,7 +2111,9 @@ das Skript aus `/konditionierungsprobe`, deren Satz ebenfalls neutral ist. Die A
 
 Gaben von `bild`: `heizkessel`, `bhkw`, `waermepumpe`, `pufferspeicher`, `stromspeicher`,
 `photovoltaik`, `solarkollektoren`, `brauchwasser`, `prozesswaerme`, `gebaeude`,
-`kaeltemaschine`; die Kultur wie überall mit `kultur=de-DE`.
+`kaeltemaschine` (dazu die Gaben der zweiten Reihe und der übrigen Bilder, siehe Kopf von
+`Wirt/Seiten/Wikibild.razor`, darunter `pufferauslegung`: die freie Ansicht der Pufferspeicher-Auslegung in
+Schritt 4, deren Ergebnis der Kern ohne Datenbank aus synthetischen Jahresreihen rechnet); die Kultur wie überall mit `kultur=de-DE`.
 
 ```bash
 # Wirt wie oben bauen und starten, dann:
@@ -1890,7 +2125,7 @@ Das Skript nimmt je Bild das Dialogelement auf (nicht die leere Seite), Fenster 
 bei `deviceScaleFactor` 1 (die Reiter des Gebäudeeditors in einem hohen Fenster, damit ihr
 Inhalt ganz darin steht); Brauchwasser, Prozesswärme, Wärmepumpe und Stromspeicher in 1400 × 800 mit
 einem auf 1380 px verbreiterten Dialog und festem Suchfeld (Attribut `data-breit` der Seite), damit
-Katalogtitel, Suchplatzhalter und alle Knöpfe der Kopfzeile ungekürzt stehen. Bei Brauchwasser und
+die Kopfzeile des Katalogs in einer Zeile steht (bei 1160 px bricht sie um, siehe Kopfleistenprobe). Bei Brauchwasser und
 Prozesswärme gibt die Seite die Delegaten und Texte der Hülle mit Beispielwerten mit („Typ in DB
 ändern“, beim Brauchwasser Rechenweg und „Zapfprofil erzeugen…“), klappt bei den Erzeugern mit Satzbeschreibung und bei Brauchwasser
 und Prozesswärme den Bereich „Gewählter Satz“ auf und schreibt `Bildschirmfoto_<Maske>.png`.

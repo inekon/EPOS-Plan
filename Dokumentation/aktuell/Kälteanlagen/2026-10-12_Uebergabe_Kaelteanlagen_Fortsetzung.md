@@ -24,6 +24,8 @@ Sitzungszweig mit demselben Commit.
 | K‑F3 | #1005 | Teil-Freikühlung `REIHE` (Vorkühlung mit dem Massenstrom der Stunde), Ventilatorstrom der freien Kühlung, Ergebnisse, Kennzahlen; Berichtskatalogfassung 22 | — | 38184507448 |
 | KWN‑0 | #1006 | Prozesskälte als Unterposten des Kühlkanals (`Kaelte_Art` Raum/Prozess), Feld „Art“ in Kältebedarf extern und Kältebedarfsprofile | 218 | 38184507448 |
 | Fix | #1007 | Kältebedarf extern: Speichern über den Dialog behält die Deckungsfelder (Split, EER, Kühlträger, Zähler) | — | 38184507448 |
+| K‑F5 | #1189 | Rückkühlwerk in der Oberfläche: Verwaltung „Rückkühlwerke“ unter „Daten & Import“, Gruppe „Rückkühlung“ an der Kältemaschine, Berichtszeile unter „Kälteerzeuger“, Wiki-Quellen (Upload ausstehend), Wiederherstellen beim Abbrechen, Regel „luftgekühlt“ (K‑F5c); Basis unverändert | — | ausstehend |
+| KWN‑1a | #1190 | Rechenklasse `KaelteWaermeKopplung` (Schnittmenge, kälte-/wärmegeführt, Hub- und Gerätegrenze, Stromaufteilung nach Nutzenergie), 22 Rechenproben; nicht im Lauf verdrahtet | — | ausstehend |
 
 Die Protokolle liegen unter `Dokumentation/ueberholt/Protokolle/Kaelteanlagen/`; die KM4-Papiere „wie gebaut“ unter
 [`ueberholt/Konzept_Kaeltemittel_Stammdatum_EPOS-Plan.md`](../../ueberholt/Konzept_Kaeltemittel_Stammdatum_EPOS-Plan.md) und
@@ -53,12 +55,14 @@ Prozesskältezeile oder ein Inbetriebnahmejahr.
 
 ## 4. Nächste Arbeit (Empfehlung)
 
-1. **KWN‑1** Kopplungsvorstufe an der **Kältemaschine** (Fälle a, b, c; Kühlkonzept 5.6.6 und 5.6.13): Schema `KWN-S1`
-   (`Kopplung_*` an `Tab_Energieanlagen`, Kälteziele in `Z_AnlageSenke`), Kopplungsbuchung und Kopplungsprobe, Strom einmal
-   gebucht und nach Nutzenergie aufgeteilt, Temperaturpaar der Prozesskälte wirksam für gekoppelte Geräte. Schemanummer vor
-   dem Bau anmelden (zuletzt frei: 221; 220 hält die Sitzung Gebäudesimulation).
-2. **K‑F5** Oberfläche des Rückkühlwerks (Katalog, Gruppe „Rückkühlung“ in der Anlage), Berichtszeile, Wasserkosten als
-   Kostenkomponente, Wiki. Parallel zu KWN‑1 möglich.
+1. **KWN‑1** Kopplungsvorstufe an der **Kältemaschine** (Fälle a, b, c; Kühlkonzept 5.6.6 und 5.6.13). **KWN‑1a gebaut**
+   (#1190): Rechenklasse `KaelteWaermeKopplung` samt Rechenproben, ohne Schema, nicht im Lauf. **KWN‑1b** Schema
+   (Schritt 242 angemeldet; `Kopplung_*` an `Tab_Energieanlagen`, Kälteziele in `Z_AnlageSenke`) wartet, bis die Schritte
+   240 und 241 auf `origin` liegen (239 liegt dort); danach **KWN‑1c** Kopplungsbuchung und Kopplungsprobe im Lauf, Strom
+   einmal gebucht und nach Nutzenergie aufgeteilt, Temperaturpaar der Prozesskälte wirksam für gekoppelte Geräte.
+2. **K‑F5 gebaut** (#1189): Verwaltung „Rückkühlwerke“, Gruppe „Rückkühlung“ an der Kältemaschine, Berichtszeile,
+   Wiki-Quellen (Upload ausstehend); die Wasserkosten kamen mit #1125. K‑F5c stellt beim Abbrechen das Rückkühlwerk über
+   einen Schnappschuss exakt wieder her und führt die Regel `IstLuftgekuehlt` (leer oder Luft) für Lauf, Hülle und Prüfung.
 3. **K‑F4** Referenzprojekt mit Rückkühlwerk und Feuchtesaat (1055 erzeugt bei 6 °C Kaltwasser keine Mischstunde), neue
    Basis; Nummer mit der Sitzung Gebäudesimulation abstimmen, die R53 vorbereitet.
 4. Danach KWN‑2 (Wärmepumpe direkt), KWN‑2S (Kältespeicher als Quelle; die Quellenwahl `QuellePufferspeicherHuelle` listet
@@ -71,6 +75,10 @@ Prozesskältezeile oder ein Inbetriebnahmejahr.
 - **Sitzung „Dialoge und Korrekturen“:** Kältedialoge (KM5, Katalogauswahl). Nicht erreichbar gewesen; Änderungen an deren
   Rahmen nur nach Freigabe des Anwenders.
 - **Befund für eine andere Sitzung:** `PlatzhalterkatalogDialog` setzt kein `aria-selected` an der gewählten Zeile.
+- **Wasserpreis am Rückkühlwerk (Teil von K‑F5):** **erledigt mit #1125 (Kostenbasis)**; lag bei der Sitzung „Dialoge und Korrekturen — Anlagendialog, Kältebedarf,
+  Kostenbasis“ (`session_01LxWpn8bgrFYtFBXppoeoCL`), Anwenderentscheid 16.10.2026: Wasser als Träger der Trägerkarte, Wassermenge als
+  Betriebskosten mit Wirkung im Kapitalwert, Preisfeld an der Anlage entfällt (Welle KB-7, Schritt 235). Oberfläche des Rückkühlwerks
+  und Berichtszeile aus K‑F5 bleiben Kältethemen; die Kostenseite dort nicht doppelt bauen.
 
 ## 6. Arbeitsweise (Erfahrungen dieser Sitzung)
 

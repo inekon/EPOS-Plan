@@ -16,7 +16,13 @@ namespace WindowsFormsApplication1
         Perzentil = 3,
 
         /// <summary>Normvergleich nach DIN 4708.</summary>
-        Normvergleich = 4
+        Normvergleich = 4,
+
+        /// <summary>
+        /// Nenninhalt des Bandes der Speicherauslegung nach der Vorlage V4 — Topologie Speicher, nur als
+        /// Empfehlung der Stufe Einfach ohne die Auslegungswerte der A100 (Schnellauslegung V4, 4.5).
+        /// </summary>
+        VorlageV4 = 5
     }
 
     /// <summary>Der Stand eines Werts der Dreiergruppe.</summary>

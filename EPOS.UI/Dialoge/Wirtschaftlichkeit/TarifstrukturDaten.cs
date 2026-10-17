@@ -65,7 +65,7 @@ public sealed class TarifstrukturTexte
 
     // ------------------------------------------------------- Rollenmodell
     public string GRollen { get; } = T("TARIF_G_ROLLEN",
-        "Rollenmodell (Etappe E5) — Differenzmethode „vermiedene Kosten“");
+        "Rollenmodell — Differenzmethode „vermiedene Kosten“");
     public string RolleBezug { get; } = T("TARIF_ROLLE_BEZUG", "Bezugstarif OHNE BHKW (Referenz)");
     public string RolleReststrom { get; } = T("TARIF_ROLLE_REST",
         "Reststromtarif MIT BHKW (kleinere Abnahme, meist teurer)");

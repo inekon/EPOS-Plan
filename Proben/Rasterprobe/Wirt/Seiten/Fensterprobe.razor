@@ -26,7 +26,21 @@
                            "Simulation..." (Waermebedarf als Ueberlagerung darueber), Stift, Rueckfrage des Rueckwegs
       ?fall=dubletten      KatalogDublettenDialog - das Protokoll steht UNTER der Schlussleiste
       ?fall=katalog        BedarfAdminDialog (Katalogdialog, .epos-katalog-dialog)
-      ?meldung=1           fuer die Bannerprobe (bannerprobe.mjs): Heizkessel und BHKW melden bei
+      ?fall=kaelteprofile  BedarfsProfileDialog der Art Kaelte mit dem Baustein Betriebskalenderwahl (KBP-1): der Knopf
+                           "Betriebskalender…" oeffnet das Blatt mit dem BetriebskalenderDialog samt "Aus Gebaeude
+                           uebernehmen…" (zwei Gebaeude, eines mit sechs Ferienzeitraeumen); Ablage im Speicher.
+                           &kalender=leer: noch kein Kalender angelegt; &gebaeude=0: das Projekt hat kein Gebaeude.
+                           Die Bearbeiten-Ueberlagerung einer Zeile zeigt die Kaeltegrafik (KBP-3b) aus einer
+                           synthetischen Reihe, die dem Arbeitsstand folgt (Jahressumme, Monatsanteile, Kalender 2 =
+                           Betriebsferien); Blatt Woche mit Wahl der Kalenderwoche (fensterprobe.mjs, Fall kaeltegrafik).
+                           KBP-4b: Die Eingabeart Typtage ist waehlbar (TyptageVerfuegbar); der Editor mit der Matrix
+                           12 Monate x 3 Tagesarten steht in derselben Ueberlagerung (fensterprobe.mjs, Fall kaeltetyptage)
+      ?fall=klimaimport    KlimadatenDialog (Katalogdialog); "Import..." oeffnet die Ueberlagerung "Klimadaten
+                           einlesen" (.epos-einlesen) - ihre Schlussleiste haftet am Boden (KD-1)
+      ?fall=klimareihen    derselbe KlimadatenDialog mit einer Region samt gespeicherten Reihen (KD-8 Teil A):
+                           Reiter "Weitere Reihen" mit der Reihenwahl ueber dem Bild (fensterprobe.mjs, Fall
+                           klimareihen)
+      ?meldung=1          fuer die Bannerprobe (bannerprobe.mjs): Heizkessel und BHKW melden bei
                            "Hinzufuegen" einen Fehler der Traegerwahl, der Gebaeudedialog traegt
                            "In DB uebernehmen" (weich gesperrt - der Versuch meldet den Grund);
                            ohne den Schalter steht alles wie fuer die Fensterprobe
@@ -37,6 +51,8 @@
       ?lizenz=1            das Lizenzbanner der AppWurzel (Baustein Lizenzbanner, Lesemodus-Satz) als
                            erstes Kind von #app vor dem Dialog - fuer den Fall „lizenzbanner" der
                            fensterprobe.mjs (mit ?marke=0 wie in der AppWurzel auf iOS)
+      ?fall=bedarfgrafik   Wirt im eigenen Fenster mit der Ueberlagerung "Simulation..." (BedarfErgebnisDialog,
+                           Reiter "Grafik Strombedarf", Jahr | Monat | Woche | Tag) - fensterprobe.mjs, Fall bedarfgrafik
       ?marke=0             OHNE Fenstermarke - die Gegenprobe: der Dialog steht wie ohne die Regel
       ?zeilen=40           Katalogzeilen
       ?verwendet=1         Heizkessel und BHKW: die erste Projektzeile heisst wie die zweite
@@ -144,6 +160,7 @@
             @* Stufe 5: der Erzeugerdialog der Kaeltemaschinen als Wirt der Zweispaltenauswahl, ohne Datenbank. *@
             <KaeltemaschineAnlageDialog Katalogprofil="@KmProfil" Katalogzeilen="@(() => KmKatalog)"
                                         Anlagen="@KmAnlagen" Katalogwerte="@(_ => KmGeraet)"
+                                        Rueckkuehlung="@(() => RkGaben())"
                                         Stromtraeger="@(new[] { (5, "Strom") })" ProjektStromtraeger="5"
                                         Anlegen="@((_, _) => -1)" Speichern="@(_ => null)" Loeschen="@(_ => { })"
                                         KatalogLoeschen="@(_ => "")" Kostensumme="@(_ => (1000.0, 50.0))"
@@ -184,6 +201,75 @@
                                Geschlossen="@(b => Beendet(b))" />
             break;
 
+        case "kaelteprofile":
+            <BedarfsProfileDialog Art="BedarfsArt.Kaelte" TitelText="Kältebedarfsprofile"
+                                  Zeilen="@KpZeilen" Katalogprofil="@KpProfil"
+                                  Katalogzeilen="@(() => KpKatalog)" Filterstandvorgabe="@_filterstand"
+                                  Info="@(n => new BedarfsProfilInfo(n, "Raumkühlung eines Bürogeschosses, Mo–Fr 7–19 Uhr", "Raumkühlung Büro", 16, 19))"
+                                  Jahressumme="@(_ => 40.0)"
+                                  TemperaturPruefen="@((v, r) => null)"
+                                  KaelteArten="@(new[] { (WindowsFormsApplication1.DbWerte.KAELTE_ART_RAUM, "Raumkühlung"), (WindowsFormsApplication1.DbWerte.KAELTE_ART_PROZESS, "Prozesskälte") })"
+                                  Betriebskalender="@KpKalenderliste()"
+                                  BetriebskalenderNeuLesen="@KpKalenderliste"
+                                  BetriebskalenderGaben="@KpKalenderGaben"
+                                  TypStammGaben="@((n, b, t, neu) => new Dictionary<string, object>())"
+                                  TypProfilGaben="@(() => new Dictionary<string, object>())"
+                                  KaelteGrafik="@KpGrafik"
+                                  TyptageVerfuegbar="true"
+                                  Geschlossen="@(b => Beendet(b))" />
+            break;
+
+        case "klimaimport":
+            @* KD-1: Die Ueberlagerung "Klimadaten einlesen" traegt .epos-einlesen statt eines
+               .epos-dialog und eine Leiste ohne Statusspanne - die Probe misst, dass ihre
+               Schlussleiste dennoch am Boden der Ueberlagerung haftet. *@
+            <EPOS.UI.Dialoge.Klimadaten.KlimadatenDialog
+                Regionen="@(() => Task.FromResult<IReadOnlyList<Katalogfilterzeile>>(new[] { new Katalogfilterzeile(1, "Region 1") }))"
+                Filterstandvorgabe="@_filterstand"
+                Importieren="@((_, _) => Task.FromResult(new KlimaImportErgebnis()))"
+                DateiWaehlen="@(_ => Task.FromResult<string?>(null))"
+                RegionErmitteln="@KlimaVorschau"
+                Loeschen="@(_ => Task.FromResult(true))"
+                ExportLesen="@KlimaExportProbe"
+                ExportSpeichern="@((_, _) => Task.FromResult(EPOS.UI.Dialoge.Export.KlimaExportErgebnis.Abgebrochen))"
+                Geschlossen="@(b => Beendet(b))" />
+            break;
+
+        case "klimareihen":
+            @* KD-8 Teil A: der Reiter "Weitere Reihen" der Detailkarte - die Reihenwahl bricht um, statt
+               quer zu rollen, und die Schlussleiste bleibt im Fenster. *@
+            <EPOS.UI.Dialoge.Klimadaten.KlimadatenDialog
+                Regionen="@(() => Task.FromResult<IReadOnlyList<Katalogfilterzeile>>(new[] { new Katalogfilterzeile(1, "Region 1") }))"
+                Filterstandvorgabe="@_filterstand"
+                Ansicht="@KlimaReihenAnsicht"
+                Importieren="@((_, _) => Task.FromResult(new KlimaImportErgebnis()))"
+                DateiWaehlen="@(_ => Task.FromResult<string?>(null))"
+                RegionErmitteln="@KlimaVorschau"
+                Loeschen="@(_ => Task.FromResult(true))"
+                Geschlossen="@(b => Beendet(b))" />
+            break;
+
+        case "bedarfgrafik":
+            @* Befund 17.10.2026: der Reiter "Grafik" des Ergebnisdialogs (Standard Stromprofil -> "Simulation...")
+               als Ueberlagerung ueber einem Dialog im eigenen Fenster, mit echten Modellen des Kerns wie die
+               Huelle (Jahresgang, Saeulenstapel). fensterprobe.mjs, Fall bedarfgrafik, misst, dass die unterste
+               Textzeile des Bildes (Tick-Beschriftung, Achsentitel) im sichtbaren Rollbereich steht. *@
+            <div class="epos-dialog" tabindex="-1">
+                <div class="epos-dialog-kopf">
+                    <h1 class="epos-dialog-titel">Standard Stromprofil</h1>
+                    <Schliesskreuz Geschlossen="@(() => Beendet(false))" />
+                </div>
+                <p>Wirt des Ergebnisdialogs.</p>
+                <SpeichernLeiste Ergebnis="@(b => Beendet(b))" />
+            </div>
+            <Ueberlagerung Offen="true" Titel="Simulation…" Geschlossen="@(() => Beendet(false))">
+                <KindInhalt>
+                    <BedarfErgebnisDialog Daten="@BgDaten" TitelAnzeigen="false" ReiterKennzahlen="Strombedarf Ergebnisse"
+                                          ReiterGrafik="Grafik Strombedarf" Geschlossen="@(b => Beendet(b))" />
+                </KindInhalt>
+            </Ueberlagerung>
+            break;
+
         default:
             <p>unbekannter Fall: @_fall</p>
             break;
@@ -197,6 +283,123 @@
 <p id="probe-ausgang" hidden data-ausgang="@_ausgang"></p>
 
 @code {
+    /// <summary>
+    /// KD-3: eine volle Vorschau fuer "Datensatz suchen" im Fall klimaimport - neutrale Werte
+    /// (Station 1, 56 km, 734 m), Kennzahlen mit Monatsreihen, Parameterbestand und Hinweise.
+    /// So misst die Probe die Ueberlagerung MIT Vorschaukarte, ihrer hoechsten Gestalt.
+    /// </summary>
+    /// <summary>
+    /// KD-5: eine Region MIT Rohdaten fuer "Exportieren..." im Fall klimaimport - erfundene Reihen, die laengste
+    /// Parameterliste (vier Gruppen) und eine volle Vorschau; so misst die Probe den Export in seiner hoechsten Gestalt.
+    /// </summary>
+    private static Task<WindowsFormsApplication1.KlimaExportDaten?> KlimaExportProbe(string region)
+    {
+        var d = new WindowsFormsApplication1.KlimaExportDaten
+        {
+            IdRegion = 1, Name = region, Quelle = "TRY_Datei", Ausfuehrung = "Probe.dat", Latitude = 50.0, Longitude = 10.0,
+            StandortHoeheM = 300, Rohdaten = true, RohZeitbezug = WindowsFormsApplication1.KlimaRohwerteSchema.ZEITBEZUG_MEZ
+        };
+        foreach (var g in WindowsFormsApplication1.KlimaExportOptionen.Groessen)
+            if (g.Art == WindowsFormsApplication1.KlimaWertart.Rechenwert)
+                d.Rechenwerte[g.Spalte] = Enumerable.Range(0, 8760).Select(i => 10.0 + i % 24).ToArray();
+        foreach (string s in WindowsFormsApplication1.KlimaRohwerteSchema.ROHSPALTEN)
+            d.Rohwerte[s] = Enumerable.Range(0, 8760).Select(i => 1000.0 + i % 24).ToArray();
+        return Task.FromResult<WindowsFormsApplication1.KlimaExportDaten?>(d);
+    }
+
+    private static Task<WindowsFormsApplication1.KlimaVorschauErgebnis> KlimaVorschau(WindowsFormsApplication1.KlimaImportAuftrag a)
+    {
+        var kz = new WindowsFormsApplication1.KlimaKennzahlen
+        {
+            Stunden = 8760, Tage = 365, TemperaturMittel = 9.9, TemperaturMin = -12.4, TemperaturMax = 34.3,
+            GlobalstrahlungKwhM2 = 1147, GradtagzahlKdA = 3105, Heiztage = 209
+        };
+        for (int m = 0; m < 12; m++)
+        {
+            kz.MonatsmittelTemperatur[m] = 10 - 9 * Math.Cos(2 * Math.PI * (m + 0.5) / 12);
+            kz.MonatssummeGlobalstrahlungKwhM2[m] = 95 - 70 * Math.Cos(2 * Math.PI * (m + 0.5) / 12);
+        }
+        // KD-8 Teil A: die weiteren Monatsreihen, damit die Reihenwahl unter dem Bild voll steht.
+        kz.Monatsreihen[WindowsFormsApplication1.KlimaReihenkatalog.R_LUFTFEUCHTE] = Enumerable.Repeat(75.0, 12).ToArray();
+        kz.Monatsreihen[WindowsFormsApplication1.KlimaReihenkatalog.R_DIREKT_NORMAL] = kz.MonatssummeGlobalstrahlungKwhM2.Select(w => w * 0.6).ToArray();
+        kz.Monatsreihen[WindowsFormsApplication1.KlimaReihenkatalog.R_DIFFUS] = kz.MonatssummeGlobalstrahlungKwhM2.Select(w => w * 0.4).ToArray();
+        kz.Monatsreihen[WindowsFormsApplication1.KlimaReihenkatalog.R_GEGENSTRAHLUNG] = Enumerable.Repeat(220.0, 12).ToArray();
+        kz.Monatsreihen[WindowsFormsApplication1.KlimaReihenkatalog.R_BEDECKUNG] = Enumerable.Repeat(5.0, 12).ToArray();
+        // KD-8 Teil B: die Rohwert-Reihen der Vorschau (Marke "R") - der Satz speichert sie (Schritt 238 steht).
+        kz.Monatsreihen[WindowsFormsApplication1.KlimaReihenkatalog.ROH_PREFIX + WindowsFormsApplication1.KlimaRohwerteSchema.SPALTE_LUFTDRUCK] = Enumerable.Repeat(1013.0, 12).ToArray();
+        kz.Monatsreihen[WindowsFormsApplication1.KlimaReihenkatalog.ROH_PREFIX + WindowsFormsApplication1.KlimaRohwerteSchema.SPALTE_WINDGESCHWINDIGKEIT] = Enumerable.Repeat(3.2, 12).ToArray();
+        kz.Monatsreihen[WindowsFormsApplication1.KlimaReihenkatalog.ROH_PREFIX + WindowsFormsApplication1.KlimaRohwerteSchema.SPALTE_WASSERDAMPF] = Enumerable.Repeat(5.5, 12).ToArray();
+        kz.Monatsreihen[WindowsFormsApplication1.KlimaReihenkatalog.ROH_PREFIX + WindowsFormsApplication1.KlimaRohwerteSchema.SPALTE_AUSSTRAHLUNG] = Enumerable.Repeat(60.0, 12).ToArray();
+        kz.Monatsreihen[WindowsFormsApplication1.KlimaReihenkatalog.ROH_PREFIX + WindowsFormsApplication1.KlimaRohwerteSchema.SPALTE_DIREKT_HORIZONTAL] = kz.MonatssummeGlobalstrahlungKwhM2.Select(w => w * 0.5).ToArray();
+        var bestand = new List<WindowsFormsApplication1.KlimaParameterEintrag>();
+        foreach (WindowsFormsApplication1.KlimaParameter p in Enum.GetValues<WindowsFormsApplication1.KlimaParameter>())
+            bestand.Add(new() { Parameter = p, Stand = WindowsFormsApplication1.KlimaParameterStand.Gefuehrt });
+        return Task.FromResult(new WindowsFormsApplication1.KlimaVorschauErgebnis
+        {
+            Ausgang = WindowsFormsApplication1.KlimaImportAusgang.Erfolg,
+            Quelle = a.Quelle,
+            Bezugsjahr = a.TryJahr,
+            Szenario = a.Szenario,
+            AusfuehrungGefunden = true,
+            Standort = new WindowsFormsApplication1.KlimaStandort
+            {
+                Latitude = 48.7289, Longitude = 9.1085, Anzeigename = "Ort 1, Land 1", AusGeokodierung = true, HoeheM = 450
+            },
+            Bezugspunkt = new WindowsFormsApplication1.KlimaBezugspunkt
+            {
+                Art = WindowsFormsApplication1.KlimaBezugspunktArt.Repraesentanzstation, Name = "Station 1",
+                Latitude = 48.6536, Longitude = 9.8666, HoeheM = 734, EntfernungKm = 56
+            },
+            HoehenunterschiedM = 284,
+            Kennzahlen = kz,
+            RohwerteGespeichert = true,
+            Parameterbestand = bestand,
+            Repraesentanzhinweis = true,
+            Ortshinweis = true
+        });
+    }
+
+    /// <summary>
+    /// KD-8 Teil A: eine Region mit gespeicherten Rechenspalten - neutrale Tagesgaenge, Bedeckungsgrad
+    /// leer (die Quelle fuehrt ihn nicht, sein Chip ist weich gesperrt).
+    /// </summary>
+    private static Task<EPOS.UI.Dialoge.Klimadaten.KlimadatenDialog.Regionsansicht> KlimaReihenAnsicht(string name)
+    {
+        var zeilen = Enumerable.Range(0, 8760).Select(i => new WindowsFormsApplication1.SolardatenModel
+        {
+            Außen_Temp = 10 - 9 * Math.Cos(2 * Math.PI * i / 8760.0), Luftfeuchte = 70 + 10 * Math.Sin(2 * Math.PI * i / 24.0),
+            Globalstrahlung = Math.Max(0, 600 * Math.Sin(Math.PI * (i % 24 - 6) / 12.0)),
+            Direktstrahlung = Math.Max(0, 400 * Math.Sin(Math.PI * (i % 24 - 6) / 12.0)),
+            Diffusstrahlung = Math.Max(0, 200 * Math.Sin(Math.PI * (i % 24 - 6) / 12.0)),
+            Gegenstrahlung = 300, Sol_Sued = Math.Max(0, 300 * Math.Sin(Math.PI * (i % 24 - 6) / 12.0)),
+            Sol_West = 150, Sol_Ost = 150, Sol_Nord = 60
+        }).ToList();
+        return Task.FromResult(new EPOS.UI.Dialoge.Klimadaten.KlimadatenDialog.Regionsansicht(
+            "TRY-Datensatz " + name + ", Quelle 1, Bezugsjahr 2015", 9.18, 48.77, null, null, "")
+        {
+            Jahresmittel = 9.9, Tiefstwert = -12.4, Hoechstwert = 34.3,
+            // KD-8 Teil B: dahinter die Rohwert-Reihen (Marke "R"); zwei davon fuehrt die Region nicht (weich gesperrt).
+            Reihenbestand = WindowsFormsApplication1.KlimaReihenkatalog.AusRechenspalten(zeilen)
+                .Concat(WindowsFormsApplication1.KlimaReihenkatalog.AusRohwerten(KlimaRohwerteProbe())).ToList()
+        });
+    }
+
+    /// <summary>
+    /// KD-8 Teil B: die Rohwerte der Probe-Region - Luftdruck, Wind und Wasserdampf gefuehrt, Ausstrahlung und
+    /// Direktstrahlung horizontal nicht (NULL in jeder Stunde, wie bei einer PVGIS-Region; ihre Chips sind weich gesperrt).
+    /// </summary>
+    private static WindowsFormsApplication1.KlimaExportDaten KlimaRohwerteProbe()
+    {
+        var d = new WindowsFormsApplication1.KlimaExportDaten { IdRegion = 1, Rohdaten = true };
+        d.Rohwerte[WindowsFormsApplication1.KlimaRohwerteSchema.SPALTE_LUFTDRUCK] =
+            Enumerable.Range(0, 8760).Select(i => 1000.0 + 15 * Math.Sin(2 * Math.PI * i / 720.0)).ToArray();
+        d.Rohwerte[WindowsFormsApplication1.KlimaRohwerteSchema.SPALTE_WINDGESCHWINDIGKEIT] =
+            Enumerable.Range(0, 8760).Select(i => 3.0 + 2 * Math.Sin(2 * Math.PI * i / 24.0)).ToArray();
+        d.Rohwerte[WindowsFormsApplication1.KlimaRohwerteSchema.SPALTE_WASSERDAMPF] =
+            Enumerable.Range(0, 8760).Select(i => 5.0 + 3 * Math.Sin(2 * Math.PI * i / 8760.0)).ToArray();
+        return d;
+    }
+
     /// <summary>VG1 (KA-E-24): eine kleine Parameterliste für „Vergleichen…" über beide Listen — neutrale Werte.</summary>
     private static IReadOnlyList<WindowsFormsApplication1.Parameterwert> VglWerte(string name, int leistung)
     {
@@ -232,6 +435,8 @@
     {
         var abfrage = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
         if (abfrage.TryGetValue("fall", out var f)) _fall = f.ToString();
+        if (abfrage.TryGetValue("kalender", out var kl) && kl.ToString() == "leer") _kpKalender.Clear();
+        if (abfrage.TryGetValue("gebaeude", out var gb) && gb.ToString() == "0") _kpGebaeude.Clear();
         _steckbrief = abfrage.TryGetValue("steckbrief", out var sb) && sb == "1";   // WP1b: voller Feldsatz
         if (abfrage.TryGetValue("marke", out var m)) _marke = m.ToString() != "0";
         if (abfrage.TryGetValue("meldung", out var g)) { _meldung = g.ToString() == "1"; _meldungListe = g.ToString() == "liste"; }
@@ -330,8 +535,8 @@
     {
         new BrowserFeldwert { Schluessel = KatalogBrowserProfil.FeldFirma, Bezeichnung = "Hersteller:",
                               Art = BrowserFeldArt.Text, Editierbar = true, Wert = "Musterwerk" },
-        new BrowserFeldwert { Schluessel = KatalogBrowserProfil.FeldInvestitionskosten, Bezeichnung = "Investitionskosten:",
-                              Einheit = "€", Art = BrowserFeldArt.Zahl, Editierbar = true, Wert = "12000" },
+        new BrowserFeldwert { Schluessel = KatalogBrowserProfil.FeldPtherm, Bezeichnung = "Leistung:",
+                              Einheit = "kW", Art = BrowserFeldArt.Zahl, Editierbar = true, Wert = "12000" },
     };
 
     // ------------------------------------------------------- Waermepumpen
@@ -365,12 +570,13 @@
 
     private static readonly KaeltemaschineGeraetwerte KmGeraet = new()
     {
-        Bezeichner = "Kältemaschine", Firma = "Musterwerk", Rueckkuehlart = "Luft", Nennkaelteleistung = 100, NennEer = 3.2
+        Bezeichner = "Kältemaschine", Firma = "Musterwerk", Rueckkuehlart = "Wasser", Luftgekuehlt = false, Nennkaelteleistung = 100, NennEer = 3.2
     };
 
     private static IReadOnlyList<KaeltemaschineAnlageDaten> KmAnlagen() => Enumerable.Range(1, 2)
         .Select(i => new KaeltemaschineAnlageDaten { AnlagenId = i, GeraetId = 100 + i, Bezeichner = "KM " + i, Anzahl = 1,
-                                                    KuehlCarrierId = 5, Geraet = KmGeraet })
+                                                    KuehlCarrierId = 5, Geraet = KmGeraet,
+                                                    RueckkuehlwerkWahl = i == 1 ? 8 : null, Rueckkuehlwerk = i == 1 ? RkLesung("Kühlturm 1", 8, true, 2.5) : null })
         .ToList();
 
     private Katalogfilterprofil? _wpProfil;
@@ -489,6 +695,155 @@
         };
     }
 
+    // ------------------------------------------------------ Kaeltebedarfsprofile mit Betriebskalenderwahl (KBP-1)
+    private Katalogfilterprofil? _kpProfil;
+    private Katalogfilterprofil KpProfil => _kpProfil ??= Katalogfilterprofil.FuerBedarf(BedarfsArt.Kaelte, Uebersetzt);
+    private IReadOnlyList<Katalogfilterzeile>? _kpKatalog;
+    private IReadOnlyList<Katalogfilterzeile> KpKatalog => _kpKatalog ??= Zeilenbau.Voll(KpProfil, _anzahl);
+    private List<BedarfsProfilZeile>? _kpZeilen;
+    private List<BedarfsProfilZeile> KpZeilen => _kpZeilen ??= Enumerable.Range(1, 2)
+        .Select(i => new BedarfsProfilZeile
+        {
+            IdZ = i, IdStamm = 200 + i, Name = "Kälte " + i, Summe = 40 * i, Vorlauf = 16, Ruecklauf = 19,
+            // Deckungsgruppe (Fall kaeltedeckung): die Feldgruppe der Bearbeiten-Ueberlagerung braucht einen Feldsatz.
+            Deckung = new DeckungsartDaten(),
+            // KBP-3a: Eingabeart, Monatsanteile und Wochenprofil der Projektkopie fuer die beiden Editoren.
+            Eingabeart = WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_JAHR,
+            Monatsanteile = new double[] { 1, 2, 4, 7, 11, 15, 18, 17, 12, 7, 4, 2 },
+            Wochenprofil = WindowsFormsApplication1.Kaelteprofileingabe.WocheAusTagen(
+                Enumerable.Range(0, 24).Select(h => h >= 7 && h < 19 ? 1.0 : 0.2).ToArray(),
+                Enumerable.Range(0, 24).Select(h => h >= 8 && h < 14 ? 0.5 : 0.2).ToArray(),
+                Enumerable.Repeat(0.2, 24).ToArray())
+        })
+        .ToList();
+
+    /// <summary>
+    /// KBP-3b: die Grafik der markierten Kaeltezeile aus einer synthetischen Reihe - werktags 7 bis 19 Uhr Volllast
+    /// mit Sommeranstieg, sonst ein Fuenftel, auf die Jahressumme der Zeile skaliert; der Kalender 2 legt Betriebsferien.
+    /// Nacharbeit: Bearbeitete Monatsanteile (Arbeitsstand der Ueberlagerung) verteilen die Monate um, wie im Kern.
+    /// </summary>
+    /// <summary>Fall bedarfgrafik: Strombedarf als synthetische Jahresreihe, Bilder wie die Huelle.</summary>
+    private BedarfErgebnisDaten? _bgDaten;
+    private BedarfErgebnisDaten BgDaten => _bgDaten ??= BgBauen();
+
+    private static BedarfErgebnisDaten BgBauen()
+    {
+        var reihe = new double[8760];
+        for (int i = 0; i < reihe.Length; i++)
+            reihe[i] = 20.0 + 8.0 * Math.Sin(Math.PI * 2 * i / 8760.0) + ((i % 24) is >= 7 and < 19 ? 6.0 : 0.0);
+        double[] Summen(Bedarfsraster raster, Energieeinheit e)
+        {
+            int n = raster switch { Bedarfsraster.Monat => 12, Bedarfsraster.Woche => 52, _ => 365 };
+            var s = new double[n];
+            for (int h = 0; h < 8760; h++)
+            {
+                int tag = h / 24;
+                int k = raster switch { Bedarfsraster.Monat => Math.Min(11, tag * 12 / 365), Bedarfsraster.Woche => Math.Min(51, tag / 7), _ => tag };
+                s[k] += reihe[h] / (e == Energieeinheit.KWh ? 1.0 : 1000.0);
+            }
+            return s;
+        }
+        var quelle = new Bedarfsgrafikquelle
+        {
+            MitReihe = new[] { 0 },
+            Titel = (_, raster) => raster == Bedarfsraster.Jahr ? "Strombedarf Jahresganglinie" : "Strombedarf " + raster,
+            Modell = (_, raster, einheit) =>
+            {
+                if (raster == Bedarfsraster.Jahr)
+                    return ChartRenderer.JahresgangModell("Strombedarf Jahresganglinie",
+                        new[] { new ChartRenderer.Reihe("Strombedarf", reihe, Farbrolle.HEIZWAERME) }, "Stunde", "kW", minimumNull: true);
+                Energieeinheit e = einheit ?? Energieeinheit.Vorgabe;
+                double[] s = Summen(raster, e);
+                string[] namen = Enumerable.Range(1, s.Length).Select(i => raster == Bedarfsraster.Monat
+                    ? CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(i) : i.ToString(CultureInfo.InvariantCulture)).ToArray();
+                return ChartRenderer.SaeulenstapelModell("Strombedarf " + raster, e.Text,
+                    new[] { new ChartRenderer.Reihe("Strombedarf", s, Farbrolle.HEIZWAERME) }, namen, namen);
+            }
+        };
+        return new BedarfErgebnisDaten
+        {
+            Sicht = ErgebnisSicht.Strom,
+            StartReiter = 2,
+            Kennzahlen = new[] { new ErgebnisKennzahl("max. Leistung:", "34,00", "kW") { Art = Kennzahlart.Leistung } },
+            Sichten = new[] { new Monatssicht("Strombedarf", null, null) },
+            Grafik = quelle
+        };
+    }
+
+    private WindowsFormsApplication1.Kaelteprofilbilder? KpGrafik(BedarfsProfilZeile markiert, IReadOnlyList<BedarfsProfilZeile> alle)
+    {
+        static double[] Reihe(double summeMwh, int versatz)
+        {
+            var r = new double[8760];
+            for (int d = 0; d < 365; d++)
+            {
+                double saison = 0.4 + 0.6 * Math.Max(0.0, Math.Sin(Math.PI * (d - 60) / 245.0));
+                for (int h = 0; h < 24; h++)
+                    r[d * 24 + h] = saison * ((d + 3) % 7 < 5 && h >= 7 + versatz && h < 19 ? 1.0 : 0.2);
+            }
+            double s = r.Sum();
+            for (int i = 0; i < r.Length; i++) r[i] *= summeMwh * 1000.0 / s;
+            return r;
+        }
+        byte[]? arten = null;
+        if (markiert.KalenderId == 2)
+        {
+            arten = new byte[365];
+            for (int d = 212; d < 233; d++) arten[d] = WindowsFormsApplication1.Betriebskalender.TAG_FERIEN;
+        }
+        static double[] Monate(BedarfsProfilZeile z, double[] r)
+        {
+            if (!z.ProfilGeaendert || z.Monatsanteile is not { Length: 12 } a || a.Sum() <= 0) return r;
+            int h = 0;
+            for (int m = 0; m < 12; m++)
+            {
+                int ende = h + new[] { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }[m] * 24;
+                double ist = 0;
+                for (int i = h; i < ende; i++) ist += r[i];
+                double soll = z.Summe * 1000.0 * a[m] / a.Sum();
+                for (int i = h; i < ende; i++) r[i] = ist > 0 ? r[i] * soll / ist : 0;
+                h = ende;
+            }
+            return r;
+        }
+        int platz = alle.ToList().IndexOf(markiert);
+        return WindowsFormsApplication1.Kaelteprofilgrafik.Bilder(Monate(markiert, Reihe(markiert.Summe, platz)),
+            alle.Select((z, i) => (z.Name, Monate(z, Reihe(z.Summe, i)))).ToList(), 3, arten);
+    }
+
+    private readonly List<BetriebskalenderDaten> _kpKalender = new()
+    {
+        new BetriebskalenderDaten { Id = 1, Bezeichner = "Werkskalender", Bundesland = "BY" },
+        new BetriebskalenderDaten { Id = 2, Bezeichner = "Betriebsferien Sommer", Von = new int?[] { 213, null, null, null }, Bis = new int?[] { 233, null, null, null } }
+    };
+
+    private readonly List<BetriebskalenderGebaeude> _kpGebaeude = new()
+    {
+        new BetriebskalenderGebaeude("Bürogebäude", "BY", new[] { (1, 6), (54, 58), (90, 101), (146, 157), (211, 254), (300, 306) }),
+        new BetriebskalenderGebaeude("Halle", "NW", new[] { (172, 184), (355, 2) })
+    };
+
+    private IReadOnlyList<(int Id, string Text)> KpKalenderliste()
+        => _kpKalender.OrderBy(k => k.Bezeichner).Select(k => (k.Id, k.Bezeichner)).ToList();
+
+    private IReadOnlyDictionary<string, object> KpKalenderGaben() => new Dictionary<string, object>
+    {
+        ["Laden"] = new Func<IReadOnlyList<BetriebskalenderDaten>>(() => _kpKalender.OrderBy(k => k.Bezeichner).Select(k => k.Kopie()).ToList()),
+        ["Laender"] = (IReadOnlyList<Bundeslandeintrag>)new[] { new Bundeslandeintrag("BY", "Bayern"), new Bundeslandeintrag("HE", "Hessen"), new Bundeslandeintrag("NW", "Nordrhein-Westfalen") },
+        ["Pruefen"] = new Func<BetriebskalenderDaten, string?>(d => string.IsNullOrWhiteSpace(d.Bezeichner) ? "Bitte eine Bezeichnung eingeben." : null),
+        ["Speichern"] = new Func<BetriebskalenderDaten, string?>(d =>
+        {
+            if (d.Id <= 0) d.Id = _kpKalender.Count == 0 ? 1 : _kpKalender.Max(k => k.Id) + 1;
+            _kpKalender.RemoveAll(k => k.Id == d.Id);
+            _kpKalender.Add(d.Kopie());
+            return null;
+        }),
+        ["Loeschen"] = new Func<int, string?>(id => { _kpKalender.RemoveAll(k => k.Id == id); return null; }),
+        ["Verwendungen"] = new Func<int, int>(_ => 1),
+        ["Herleitung"] = new Func<BetriebskalenderDaten, string>(d => "Im Gemeinjahr (1. Januar ein Donnerstag): Feiertage und Ferientage nach den Regeln des Kerns."),
+        ["Gebaeude"] = new Func<IReadOnlyList<BetriebskalenderGebaeude>>(() => _kpGebaeude)
+    };
+
     // ------------------------------------------------------ Katalogdialog
     private Katalogfilterprofil? _bedarfProfil;
     private Katalogfilterprofil BedarfProfil
@@ -496,4 +851,27 @@
 
     private IReadOnlyList<Katalogfilterzeile>? _bedarfZeilen;
     private IReadOnlyList<Katalogfilterzeile> BedarfZeilen => _bedarfZeilen ??= Zeilenbau.Voll(BedarfProfil, _anzahl);
+    /// <summary>K-F5b: die Gaben der Gruppe „Rückkühlung“ — ein trockener und ein nasser Katalogsatz, Klima ohne Feuchte.</summary>
+    private static RueckkuehlungGaben RkGaben() => new()
+    {
+        KlimaMitFeuchte = false,
+        Katalog = new[]
+        {
+            new RueckkuehlwerkEintrag(7, "Rückkühler 1 · Trockenkühler", RkLesung("Rückkühler 1", 7, false, null)),
+            new RueckkuehlwerkEintrag(8, "Kühlturm 1 · Kühlturm, offen", RkLesung("Kühlturm 1", 8, true, 2.5)),
+        }
+    };
+
+    private static RueckkuehlwerkLesung RkLesung(string name, int stamm, bool nass, double? ventilator) => new()
+    {
+        Bezeichner = name, StammId = stamm, Verdunstungskuehlanlage = nass, VentilatorKw = ventilator,
+        Zeilen = new List<(string, string)>
+        {
+            ("Bauart", nass ? "Kühlturm, offen" : "Vorgabe: Trockenkühler"), ("Nennleistung (abzuführende Wärme)", "150 kW"),
+            ("Annäherung", "Vorgabe: 5 K · Vorgabe: fest"),
+            ("Ventilator", ventilator is double v ? v + " kW · Drehzahl" : "Vorgabe: Hilfsstrom der Rückkühlung an der Kältemaschine"),
+            ("Freikühlung", "Vorgabe: parallel"),
+        }
+    };
+
 }

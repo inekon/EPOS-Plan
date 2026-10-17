@@ -96,9 +96,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(4 + KaeltemaschineAnlageSchema.ErgebnisSpalten.Length + KaeltestromabrechnungSchema.SPALTEN.Count +
                          KaeltemaschineTeillastSchema.ERGEBNIS_SPALTEN.Count + RueckkuehlwerkSchema.SPALTEN_ERGEBNIS.Count,
                          DataRepository.SpaltenVonTabelle(KaeltemaschineAnlageSchema.TAB_ERGEBNIS).Count);
-            // Eine Anlagenzeile der Kältemaschine führen allein die Referenzprojekte 1055 (KU3-4b), 1059 (AK3-K-K5a) und 1063 (KM3).
+            // Eine Anlagenzeile der Kältemaschine führen allein die Referenzprojekte 1055 (KU3-4b), 1059 (AK3-K-K5a), 1063 (KM3) und 1072 (K6c).
             Assert.Equal(0L, Convert.ToInt64(DataRepository.ExecuteScalar(
-                "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE (ID_Kaeltemaschine IS NOT NULL OR ID_Type = ?) AND ID_Projekt NOT IN (1055, 1059, 1063)", new DbParam("?", 13))));
+                "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE (ID_Kaeltemaschine IS NOT NULL OR ID_Type = ?) AND ID_Projekt NOT IN (1055, 1059, 1063, 1072)", new DbParam("?", 13))));
             Assert.Equal(0L, Convert.ToInt64(DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM Tab_Energieanlagen WHERE Kaeltemaschine_Anzahl <> 1")));
 

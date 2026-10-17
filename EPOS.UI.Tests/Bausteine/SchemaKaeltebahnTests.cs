@@ -254,4 +254,32 @@ public class SchemaKaeltebahnTests : BunitContext
         Kasten(mit, "Kältemaschine 10 kW").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Enter" });
         Assert.Equal(new[] { "KERZEUGER_7" }, gemeldet);
     }
+
+    /// <summary>
+    /// K6b-N: der Knoten „Dezentral (Split)“ in der Kältebahn — im Kasten die kurzen Zeilen des Kerns
+    /// (<c>SchemaModell.KaelteDezentralZeilen</c>: je Split-Zeile eine, dann die Sammelzeile zum Strom), im Tooltipp der volle
+    /// Text; keine Kante.
+    /// </summary>
+    [Fact]
+    public void K6bN_Der_Split_Knoten_zeigt_kurze_Zeilen_und_im_Tooltipp_den_vollen_Text()
+    {
+        string titel = WindowsFormsApplication1.MyResource.Resource.SIM_SCHEMA_ABNEHMER_KAELTE_DEZENTRAL;
+        System.Collections.Generic.List<string> zeilen = WindowsFormsApplication1.SchemaModell.KaelteDezentralZeilen(
+            new[] { ("Raumkühlung Bürotrakt", "3,0", (int?)null), ("Serverraum", "3,0–4,0", (int?)7) }, 3);
+        const string VOLL = "Raumkühlung Bürotrakt: EER fest 3,0";
+
+        SchemaBild bild = Bild(true);
+        var knoten = bild.Knoten.ToList();
+        knoten.Add(new SchemaKnoten("ABNEHMER_KAELTE_DEZENTRAL", SchemaKnotenart.Abnehmer, 740, 240, 132, 80,
+                                    "", titel, WindowsFormsApplication1.SchemaLayout.TitelKuerzen(titel, 116), zeilen, Leer,
+                                    VOLL + "\nKühlträger: Stromträger des Projekts", false, "", false, false) { Kaelte = true });
+        var cut = Render<Schema>(p => p.Add(x => x.Layout, bild with { Knoten = knoten }));
+
+        var g = cut.FindAll("g.epos-schema-knoten--kaelte").Single(e => e.QuerySelector("text.epos-schema-titel")!.TextContent == titel);
+        Assert.Equal(zeilen.ToArray(), g.QuerySelectorAll("text.epos-schema-zeile").Select(t => t.TextContent).ToArray());
+        Assert.Equal(3, zeilen.Count);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KONF_KS_DEZENTRAL_STROM_TRAEGER.Replace("{0}", "2"), zeilen[2]);
+        Assert.Contains(VOLL, g.QuerySelector("title")!.TextContent);
+        Assert.Equal(4, cut.FindAll("path.epos-schema-kante").Count);   // keine Kante zum Split-Knoten
+    }
 }

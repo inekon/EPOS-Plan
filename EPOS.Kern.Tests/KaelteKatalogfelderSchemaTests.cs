@@ -48,8 +48,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(FELDER, KaelteKatalogfelderSchema.SPALTEN.Where(x => x.Tabelle == "Tab_Kaeltemaschine").Select(x => x.Spalte));
             Assert.All(KaelteKatalogfelderSchema.SPALTEN, x => Assert.DoesNotContain("NOT NULL", x.Typ, StringComparison.Ordinal));
             Assert.All(KaelteKatalogfelderSchema.SPALTEN, x => Assert.DoesNotContain("DEFAULT", x.Typ, StringComparison.Ordinal));
-            Assert.Equal(FELDER, KaeltemaschineSchema.Fachspalten.Skip(20).Take(FELDER.Length));
-            Assert.Equal(FELDER, Katalogfassung.Tabelle(KaeltemaschineSchema.TAB_STAMM).Fachspalten.Skip(20).Take(FELDER.Length));
+            // KB-4: Modulkosten ist aus den Grundspalten gefallen - elf Grund-, acht Teillastspalten davor.
+            Assert.Equal(FELDER, KaeltemaschineSchema.Fachspalten.Skip(19).Take(FELDER.Length));
+            Assert.Equal(FELDER, Katalogfassung.Tabelle(KaeltemaschineSchema.TAB_STAMM).Fachspalten.Skip(19).Take(FELDER.Length));
         }
 
         /// <summary>Die Geräteart kennt die Folgestufen schon: Split, Multisplit und VRF (K-D, K-E) und Absorption (K-G).</summary>
@@ -114,7 +115,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0, KaelteKatalogfelderSchema.ZeilenOhneGeraeteart());
             Assert.Equal(12L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE Geraeteart = 'KWS_LUFT' AND Rueckkuehlart = 'LUFT'"));
             Assert.Equal(25L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine_STAMM WHERE Geraeteart = 'KWS_WASSER' AND Rueckkuehlart <> 'LUFT'"));
-            Assert.Equal(3L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine WHERE Geraeteart = 'KWS_WASSER'"));
+            Assert.Equal(4L, Zahl("SELECT COUNT(*) FROM Tab_Kaeltemaschine WHERE Geraeteart = 'KWS_WASSER'"));   // 1055, 1059, 1063, 1072 (K6c)
             foreach (string t in KaelteKatalogfelderSchema.Voraussetzungen())
                 foreach (string s in FELDER.Skip(1))
                     Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM \"" + t + "\" WHERE \"" + s + "\" IS NOT NULL"));
@@ -145,7 +146,7 @@ namespace EPOS.Kern.Tests
             KaelteKatalogfelderSchema.Laufergebnis e = KaelteKatalogfelderSchema.Ausfuehren(bericht);
             Assert.Equal(10, e.Angelegt);
             Assert.Equal(37, e.KatalogRueckgefuellt);
-            Assert.Equal(3, e.ProjektRueckgefuellt);
+            Assert.Equal(4, e.ProjektRueckgefuellt);   // 1055, 1059, 1063, 1072 (K6c)
             Assert.Equal(37, e.PruefsummenNeu);
             Assert.True(KaelteKatalogfelderSchema.Vollstaendig());
             Assert.Equal(0, KaelteKatalogfelderSchema.ZeilenOhneGeraeteart());

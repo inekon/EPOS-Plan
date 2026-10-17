@@ -267,6 +267,9 @@ public class ErzeugerReiterTests : EposBunitContext
                          Resource.SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG,
                          Resource.SIMERG_LBL_WAERMEPRODUKTION_SPK,
                          Resource.SIM_KESSEL_QUELLWAERME,
+                         Resource.SIMERG_LBL_GEDECKT,
+                         Resource.SIMERG_LBL_DAVON_HEIZUNG,
+                         Resource.SIMERG_LBL_DAVON_WARMWASSER,
                          Resource.SIMERG_LBL_RESTWAERMEBEDARF_NACH_KESSEL,
                          Resource.SIMERG_LBL_DAVON_PUFFER_ANDERE
                      },
@@ -452,6 +455,20 @@ public class ErzeugerReiterTests : EposBunitContext
     /// ihrer Rasterzeile. Kein <c>h3</c> bleibt
     /// übrig; die Zeilenfolge JEDER Gruppe ist die von W11b‑B‑15.
     /// </summary>
+    /// <summary>
+    /// Kommt beim Kessel der ganze Projektbedarf an, heißt der Stufeneingang
+    /// „Gesamtwärmebedarf“; sonst „Restwärmebedarf vor dem Kessel“.
+    /// </summary>
+    [Fact]
+    public void Kessel_nennt_den_Stufeneingang_Gesamtwaermebedarf_nur_wenn_er_es_ist()
+    {
+        var erg = Kessel();
+        Assert.Equal("Restwärmebedarf vor dem Kessel:", Zeilen(KesselZeichnen(erg), 0)[1]);
+
+        erg.StufeneingangIstGesamtbedarf = true;
+        Assert.Equal("Gesamtwärmebedarf:", Zeilen(KesselZeichnen(erg), 0)[1]);
+    }
+
     [Fact]
     public void Kessel_gliedert_seine_Felder_in_vier_Gruppen_mit_Balken()
     {
@@ -474,8 +491,9 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.Equal(5, listen.Count);          // vier Gruppen + der Brennstoffblock
 
         Assert.Equal(
-            new[] { "Wärmebedarfsdeckung:", "Restwärmebedarf (Stufeneingang):",
+            new[] { "Wärmebedarfsdeckung:", "Restwärmebedarf vor dem Kessel:",
                     "Wärmeproduktion der Spitzenkessel:", "Quellwärme aus Kaskade:",
+                    "Gedeckter Wärmebedarf:", "davon Heizung:", "davon Warmwasser:",
                     "Restwärmebedarf nach Kessel:", "davon aus Puffer (andere Erzeuger):" },
             listen[0].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
         Assert.Equal(
@@ -1520,7 +1538,7 @@ public class ErzeugerReiterTests : EposBunitContext
     {
         var seite = PvZeichnen();
 
-        Assert.Equal(new[] { "sortiert" }, Schalterzeile(seite, 0));
+        Assert.Equal(new[] { "sortiert", Resource.SIM_CHK_PV_AUFTEILEN }, Schalterzeile(seite, 0));
         _auftraege.Clear();
 
         Kasten(seite, 0, 0).Change(true);
@@ -1529,6 +1547,29 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.Contains(_auftraege, a => a.Bild == Bilder.Photovoltaik && a.Sortiert);
         Assert.Equal(new[] { "STROMBEDARF", "PHOTOVOLTAIK" },
                      _auftraege.Last(a => a.Bild == Bilder.Photovoltaik).Reihen!.ToArray());
+    }
+
+    /// <summary>
+    /// <b>Der Schalter „PV aufteilen“</b> (Anwenderentscheid 13.10.2026) steht aus; an trägt
+    /// der Bildauftrag ihn — mit denselben Reihen — und der Schlüssel des Zwischenspeichers
+    /// trennt beide Stellungen.
+    /// </summary>
+    [Fact]
+    public void Photovoltaik_wechselt_den_Bildauftrag_mit_dem_Aufteilschalter()
+    {
+        var seite = PvZeichnen();
+        Assert.False(seite.Instance.Aufgeteilt);
+        Assert.False(_auftraege.Last(a => a.Bild == Bilder.Photovoltaik).PvAufgeteilt);
+        string aus = _auftraege.Last(a => a.Bild == Bilder.Photovoltaik).Schluessel;
+        _auftraege.Clear();
+
+        Kasten(seite, 1, 0).Change(true);
+
+        Assert.True(seite.Instance.Aufgeteilt);
+        Bildauftrag an = _auftraege.Last(a => a.Bild == Bilder.Photovoltaik);
+        Assert.True(an.PvAufgeteilt);
+        Assert.Equal(new[] { "STROMBEDARF", "PHOTOVOLTAIK" }, an.Reihen!.ToArray());
+        Assert.NotEqual(aus, an.Schluessel);
     }
 
     /// <summary>

@@ -325,6 +325,15 @@
             <button type="button" class="epos-knopf"
                     @onclick="VorbelegenAngefordert">@(_stand.SaetzeVorbelegbar ? SaetzeVorbelegenText : VorbelegenText)</button>
         }
+        @* KB-3 (Anwenderentscheid 13.10.2026): Der Abgleich mit dem zentralen Kostenkatalog -
+           NUR AUF KNOPFDRUCK und nur, wo er wirkt (Projektmodus an einer gewaehlten Anlage).
+           Ohne Delegat kein Knopf (Hausregel); die Vorschau steht in der Rueckfrage, geschrieben
+           wird erst nach "Ja". *@
+        @if (KatalogAbgleich is not null && _stand.KatalogAbgleichbar)
+        {
+            <button type="button" class="epos-knopf"
+                    @onclick="KatalogAbgleichAngefordert">@KatalogAbgleichText</button>
+        }
     </div>
 
         </KindInhalt>
@@ -612,6 +621,33 @@
     [Parameter] public string PositionNeuText { get; set; } = "+ Position hinzufügen";
     [Parameter] public string PositionNeuVorgabe { get; set; } = "Neue Position";
     [Parameter] public string UebernahmeText { get; set; } = "In Projekt übernehmen…";
+
+    /// <summary>
+    /// KB-3: Der Abgleich mit dem zentralen Kostenkatalog. <c>false</c> = Vorschau (schreibt
+    /// nichts), <c>true</c> = ausführen. <b><c>null</c> heißt: kein Knopf.</b>
+    /// </summary>
+    [Parameter] public Func<bool, KatalogAbgleichStand>? KatalogAbgleich { get; set; }
+
+    /// <summary>Beschriftung des Abgleichknopfes (<c>KAT_ABGLEICH_BTN</c>).</summary>
+    [Parameter] public string KatalogAbgleichText { get; set; } = "Mit dem Kostenkatalog abgleichen…";
+
+    /// <summary>Hinweis, wenn es nichts abzugleichen gibt (<c>KAT_ABGLEICH_KEINE</c>).</summary>
+    [Parameter] public string KatalogAbgleichKeine { get; set; }
+        = "Die Kostenpositionen dieser Anlage stimmen mit dem Kostenkatalog überein.";
+
+    /// <summary>Die Rückfrage mit der Vorschau — {0} fehlt, {1} weicht ab, {2} die Zeilen
+    /// (<c>KAT_ABGLEICH_FRAGE</c>).</summary>
+    [Parameter] public string KatalogAbgleichFrage { get; set; } = "{0} fehlen, {1} weichen ab:\n{2}\nAbgleichen?";
+
+    /// <summary>Die Statuszeile nach dem Abgleich — {0} angelegt, {1} gesetzt
+    /// (<c>KAT_ABGLEICH_STATUS</c>).</summary>
+    [Parameter] public string KatalogAbgleichStatus { get; set; }
+        = "Abgleich: {0} Position(en) angelegt, {1} auf den Katalogwert gesetzt.";
+
+    /// <summary>Die Meldung, wenn eine Zeile nicht geschrieben werden konnte
+    /// (<c>KAT_ABGLEICH_FEHLER</c>).</summary>
+    [Parameter] public string KatalogAbgleichFehler { get; set; }
+        = "Mindestens eine Position konnte nicht geschrieben werden; der Abgleich ist unvollständig.";
     [Parameter] public string KatalogText { get; set; } = "Positionskatalog…";
     [Parameter] public string EditorKurztext { get; set; } = "Position bearbeiten";
     [Parameter] public string ZeileLoeschenKurztext { get; set; } = "Position löschen";
@@ -1205,6 +1241,42 @@
                 SummenNachziehen();
                 StatusSetzen(string.Format(status,
                                            ergebnis.Gefuellt + zweiter.Gefuellt));
+            }
+            return Task.CompletedTask;
+        };
+    }
+
+    /// <summary>
+    /// KB-3: Der Abgleich mit dem zentralen Kostenkatalog — erst die Vorschau, dann die
+    /// Rückfrage mit ihren Zeilen, erst danach das Schreiben. Eine Absage der Hülle (keine
+    /// Zuordnung, kein Katalogsatz mit Vorlage) erscheint benannt in der Fußzeile.
+    /// </summary>
+    private void KatalogAbgleichAngefordert()
+    {
+        if (KatalogAbgleich is null) return;
+
+        KatalogAbgleichStand vorschau = KatalogAbgleich(false);
+        if (!string.IsNullOrEmpty(vorschau.Absage))
+        {
+            Melden(vorschau.Absage, WarnStufe.Hinweis);
+            return;
+        }
+        if (vorschau.Fehlt + vorschau.WeichtAb == 0)
+        {
+            Melden(KatalogAbgleichKeine, WarnStufe.Hinweis);
+            return;
+        }
+
+        Melden("");
+        _frage = string.Format(KatalogAbgleichFrage, vorschau.Fehlt, vorschau.WeichtAb, vorschau.Vorschau);
+        _frageJa = () =>
+        {
+            if (KatalogAbgleich is not null)
+            {
+                KatalogAbgleichStand getan = KatalogAbgleich(true);
+                if (getan.Fehler) Melden(KatalogAbgleichFehler, WarnStufe.Warnung);
+                StatusSetzen(string.Format(KatalogAbgleichStatus, getan.Angelegt, getan.Gesetzt));
+                KontextLaden(_stand.VarianteId, eingabenUebernehmen: false);
             }
             return Task.CompletedTask;
         };

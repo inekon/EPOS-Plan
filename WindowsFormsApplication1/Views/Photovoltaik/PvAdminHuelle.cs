@@ -177,7 +177,6 @@ namespace WindowsFormsApplication1
                 m_Temp_Coeff_Pmax = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldTempKoeff),
                 m_Laenge = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldLaenge),
                 m_Breite = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldBreite),
-                m_Modulkosten = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldModulkosten),
                 // Paket A/B des PV-Ertragsmodells (Merge 5): NOCT (0 = nicht gepflegt) und
                 // Zelltechnologie (leer = NULL, siehe PhotovoltaikStammCtrl.TechnologieParam).
                 m_T_NOCT = ModulKatalogHuelle.Zahl(felder, ModulKatalogProfil.FeldTNoct),

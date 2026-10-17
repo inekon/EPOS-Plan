@@ -1,7 +1,7 @@
 <!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Gerätekataloge
      Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Gerätekataloge.wiki
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
-Die '''Gerätekataloge''' führen die technischen Daten der Anlagenkomponenten, mit denen EPOS-Plan rechnet: Heizkessel, BHKW, Solarkollektoren, Pufferspeicher, Wärmepumpen, PV-Module, Wechselrichter und Stromspeicher. Jeder Katalog trägt zwei Arten von Sätzen: die schreibgeschützten Sätze der Auslieferung und eigene, frei bearbeitbare Sätze. Ein Katalogsatz wird nie unmittelbar im Projekt verwendet — die Übernahme in ein Projekt legt eine eigene Kopie an, die sich unabhängig vom Katalog ändern lässt.
+Die '''Gerätekataloge''' führen die technischen Daten der Anlagenkomponenten, mit denen EPOS-Plan rechnet: Heizkessel, BHKW, Solarkollektoren, Pufferspeicher, Wärmepumpen, PV-Module, Wechselrichter und Stromspeicher. Jeder Katalog trägt zwei Arten von Sätzen: die schreibgeschützten Sätze der Auslieferung und eigene, frei bearbeitbare Sätze. Ein Katalogsatz wird nie unmittelbar im Projekt verwendet — die Übernahme in ein Projekt legt eine eigene Kopie an, die sich unabhängig vom Katalog ändern lässt. Die '''Kosten''' eines Katalogsatzes stehen nicht im Katalog, sondern im Kostenkatalog: Jeder Satz führt dort eine Satzvorlage mit seinen Investitions- und Betriebskosten, und die Anlage im Projekt gleicht ihre Kostenpositionen damit ab (siehe [[Programm Dokumentation/Kosten|Kosten]]).
 
 == Aufruf ==
 {{Anker|aufruf}}
@@ -42,7 +42,7 @@ Der Heizkesselkatalog führt die Kenndaten von Heizkesseln. Der Editor zeigt:
 ** '''Anfahrverlust je Start''' – in kWh; '''Mindestlaufzeit''' – in Minuten, 1 bis 60.
 : Die Simulation rechnet mit dieser Kennlinie: Der Wirkungsgrad einer Laufstunde folgt der Laststufe zwischen dem Wert bei 30&nbsp;% Last und dem Volllastwert aus ''Wirkungsgrad Gas…'' bzw. ''Wirkungsgrad Öl'', beim Brennwertkessel mit Brennwertkennlinie zusätzlich dem Rücklauf der Stunde. Unter der Mindestleistung taktet der Kessel, und je Start kommt der Anfahrverlust auf den Brennstoff. Ein leeres Feld rechnet mit der Vorgabe ([[Programm Dokumentation/Berechnung/Heizkessel|Berechnung: Heizkessel]]).
 
-Der Aufklapper ''Alle Daten anzeigen'' des Projektdialogs führt die Felder der Kennlinie ebenfalls und zusätzlich Raumbedarf (m³), Wartungskosten samt ihrer Einheit, ''Nutzungsdauer (Gerätedaten)'' in Jahren und die Emissionsfaktoren CO₂, SO₂, NOx, CO und Staub (je g/MWh) — Herstellerangaben, die die Simulation nicht selbst verwendet: Sie rechnet mit dem Emissionsfaktor des gewählten Energieträgers. Auch die Nutzungsdauer rechnet nicht; für Ersatzbeschaffung und Restwert der Wirtschaftlichkeit maßgeblich ist die Tabelle [[Programm Dokumentation/Kosten#nutzungsdauern|Nutzungsdauern (AfA)]], und der Kurztext am Feld sagt es. Ein neuer Kessel mit der Wartungseinheit %/a übernimmt den Wartungssatz dieser Tabelle, wenn sie für den Heizkessel einen führt.
+Der Aufklapper ''Alle Daten anzeigen'' des Projektdialogs führt die Felder der Kennlinie ebenfalls und zusätzlich Raumbedarf (m³), ''Nutzungsdauer (Gerätedaten)'' in Jahren und die Emissionsfaktoren CO₂, SO₂, NOx, CO und Staub (je g/MWh) — Herstellerangaben, die die Simulation nicht selbst verwendet: Sie rechnet mit dem Emissionsfaktor des gewählten Energieträgers. Auch die Nutzungsdauer rechnet nicht; für Ersatzbeschaffung und Restwert der Wirtschaftlichkeit maßgeblich ist die Tabelle [[Programm Dokumentation/Kosten#nutzungsdauern|Nutzungsdauern (AfA)]], und der Kurztext am Feld sagt es. Der Katalogdialog führt keine Kostenfelder; er zeigt den Lesewert ''Gerätekosten'' aus der Investitions-Satzvorlage des Satzes (Verweis auf den Kostenkatalog), ohne Verweis bleibt das Feld leer.
 
 Fußleiste der Verwaltung: ''Speichern'' und ''Verwerfen'' (beide nur bei ungespeicherten Eingaben), ''Neu…'', ''Import…'', ''Beenden''; ''Duplizieren…'', ''Schloss aufheben…''/''Schloss setzen…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
@@ -65,7 +65,7 @@ Der BHKW-Katalog führt die Kenndaten von Blockheizkraftwerk-Modulen. Der Editor
 ** '''Mindestlaufzeit''' – in Minuten, ganzzahlig, höchstens 60; leer = 10 Minuten, sobald ein Anfahrverlust gepflegt ist.
 : Mit Anfahrverlust oder Mindestlaufzeit taktet das Modul unter seiner Untergrenze, statt in der Stunde auszubleiben, sobald der Wärmeraum der Stunde einen Mindestlauf aufnimmt ([[Programm Dokumentation/BHKW#teillast|BHKW: Teillast und Takten]]). Dieselben vier Felder stehen im Aufklapper ''Alle Daten anzeigen''; ein dort geleertes Feld wird als „nicht gepflegt" gespeichert.
 
-Darunter führt eine eigene Knopfleiste zu Investitions-, Betriebs- und Energiekosten. Der Aufklapper ''Alle Daten anzeigen'' des Projektdialogs zeigt zusätzlich die fünf Kostenposten Modul, Montage und Inbetriebnahme, Lieferung, Schallschutzhaube und Abgasreinigung (je €), daraus abgeleitet die Investition je kW elektrisch (nur Anzeige), Wartungskosten (€/kWh elektrisch), Raumbedarf (m³), ''Nutzungsdauer (Gerätedaten)'' in Jahren sowie die Emissionsfaktoren NOx, SO₂, CO, CO₂ und Staub (je g/MWh, Herstellerangaben, ohne Wirkung auf den Rechenweg). Auch die Nutzungsdauer rechnet nicht; maßgeblich ist die Tabelle [[Programm Dokumentation/Kosten#nutzungsdauern|Nutzungsdauern (AfA)]].
+Darunter führt eine eigene Knopfleiste zu Investitions-, Betriebs- und Energiekosten des Projekts. Der Aufklapper ''Alle Daten anzeigen'' des Projektdialogs zeigt zusätzlich Raumbedarf (m³), ''Nutzungsdauer (Gerätedaten)'' in Jahren sowie die Emissionsfaktoren NOx, SO₂, CO, CO₂ und Staub (je g/MWh, Herstellerangaben, ohne Wirkung auf den Rechenweg). Auch die Nutzungsdauer rechnet nicht; maßgeblich ist die Tabelle [[Programm Dokumentation/Kosten#nutzungsdauern|Nutzungsdauern (AfA)]]. Das BHKW führt keine Kostenfelder; der Lesewert ''Gerätekosten'' zeigt den Betrag der Investitions-Satzvorlage des Satzes.
 
 Fußleiste der Verwaltung: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Beenden''; ''Duplizieren…'', ''Schloss aufheben…''/''Schloss setzen…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
@@ -79,7 +79,7 @@ Der Kollektorkatalog führt die Kenndaten von Sonnenkollektoren samt ihrer Kennl
 * '''Modulfläche''' und '''Aperturfläche''' – je in m².
 * Die Kennlinienparameter '''<math>h_{0}</math>''' (optischer Wirkungsgrad), '''<math>k_{1}</math>''' (in W/(m²·K)) und '''<math>k_{2}</math>''' (in W/(m²·K²)) sowie die Einfallswinkel-Korrekturfaktoren '''<math>K_{\mathrm{dir}}</math>''' und '''<math>K_{\mathrm{diff}}</math>''' (<math>K_{\mathrm{diff}}</math> bei einem Einfallswinkel von 50°).
 
-Investitionskosten (€) stehen im Aufklapper ''Alle Daten anzeigen'' des Projektdialogs.
+Der Lesewert ''Gerätekosten'' zeigt die Investition aus der Satzvorlage des Satzes, bei Solarkollektoren je m² mal Aperturfläche; ohne Verweis auf den Kostenkatalog bleibt das Feld leer. Gepflegt werden die Kosten in der Kostenverwaltung.
 
 Fußleiste der Verwaltung: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Import…'', ''Beenden''; ''Duplizieren…'', ''Schloss aufheben…''/''Schloss setzen…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
@@ -93,7 +93,7 @@ Der Pufferspeicherkatalog führt die sechs Gerätewerte, mit denen ein Speicher 
 * '''Betriebsbereitschaftsverluste''' – in kWh je Tag.
 * '''Gesamtvolumen''' – in Litern, ganzzahlig.
 
-Investitionskosten (€) stehen im Aufklapper ''Alle Daten anzeigen'' des Projektdialogs.
+Der Lesewert ''Gerätekosten'' zeigt die Investition aus der Satzvorlage des Satzes; ohne Verweis auf den Kostenkatalog bleibt das Feld leer. Gepflegt werden die Kosten in der Kostenverwaltung.
 
 Fußleiste der Verwaltung: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Import…'', ''Beenden''; ''Duplizieren…'', ''Schloss aufheben…''/''Schloss setzen…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
@@ -108,7 +108,7 @@ Die Stammdatenpflege der Wärmepumpen führt neben den Kenndaten auch die Heiz- 
 * '''Gerätegrenzen''' – eine eigene Gruppe mit Auslegungs-, größter und kleinster Spreizung, Mindestvolumenstrom, größtem Rücklauf, Bezugsrücklauf, Abwertung je Kelvin Rücklauf und Kältemittel; Bedeutung unter [[Programm Dokumentation/Wärmepumpe#geraetegrenzen|Wärmepumpe: Gerätegrenzen]]; das Kältemittel wählt die Klappliste der Kältemittelliste ([[#kaeltemittel|Kältemittel]]).
 * {{Anker|wp-mindestleistung}}'''Mindestleistung''' – in kW, die kleinste Leistung, auf die das Gerät herunterregelt; leer = es moduliert bis null. Unter ihr taktet das Gerät, und die Simulation rechnet den Taktverlust ([[Programm Dokumentation/Wärmepumpe#takten|Wärmepumpe: Takten]]).
 * '''Teillastkoeffizient C_d''' – Faktor zwischen 0 und 1 für den Taktverlust nach EN 14825; leer gilt die Vorgabe 0,9 der Norm. In den Projektdialogen stehen beide Werte nur lesend.
-* '''Modulkosten''' – in einer eigenen Gruppe ''Kosten'', nur lesend, mit einer Herleitungszeile darunter: Gerätekosten laufen über die Kostenverwaltung und nicht über ein Eingabefeld dieser Maske.
+* '''Kostensatz''' – in €/kW, gesperrt, mit dem Vermerk, dass der Satz aus der Satzvorlage stammt und in der Kostenverwaltung gepflegt wird; ohne Verweis auf den Kostenkatalog bleibt das Feld leer.
 
 ''Kennliniendaten Ansicht/Bearbeiten…'' zeigt die Heizkennlinie und, wenn zur gewählten Pumpe Kühlkenndaten vorliegen, über einen Umschalter auch die Kühlkennlinie, als Diagramm. ''Modul-Katalog…'' öffnet eine durchsuchbare Auswahl aus dem Stammkatalog: eine Suchzeile über alle Spalten, dazu die Spalten Hersteller, Quelle, Nennleistung, Vorlauf minimal und maximal sowie Zuheizung; Bauart, Auslegung, Aufstellung und Regelung stehen im Kenndatenblock der gewählten Pumpe statt als eigene Spalte.
 
@@ -140,6 +140,17 @@ Die Verwaltung ''Kältemittel'' (Administration → Daten & Import → ''Kältem
 
 Fehlende Angaben (leeres GWP, leeres F-Gas-Kennzeichen) heißen ''unbekannt''; die Zulässigkeitsprüfung stuft ein solches Kältemittel dann als nicht prüfbar ein ([[Programm Dokumentation/Kälteerzeugung#kaeltemittel-zulaessigkeit|Kälteerzeugung: Zulässigkeit des Kältemittels]]). Hat eine Datenbank keine Kältemitteltabelle, meldet die Verwaltung das und bleibt leer.
 
+== Rückkühlwerke ==
+{{Anker|rueckkuehlwerke}}
+
+Die Verwaltung ''Rückkühlwerke'' (Administration → Daten & Import → ''Rückkühlwerke…'') pflegt die Rückkühlwerke, die eine wassergekühlte Kältemaschine als eigenes Glied an ihre Rückkühlung bekommen kann. Die Liste zeigt je Satz ''Name'', ''Bauart'', ''Nennleistung'', ''Annäherung'', ''Ventilator'' und ''Freikühlung''. Das Stammblatt gliedert die Angaben in die Gruppen ''Bauart und Nennpunkt'', ''Annäherung'', ''Ventilator'', ''Befeuchtung und Wasser'' (nur bei adiabaten und hybriden Kühlern und bei Kühltürmen) und ''Freikühlung''.
+
+* '''Leere Felder''' heißen Vorgabe: Das Feld zeigt den Wert, mit dem gerechnet wird, als Platzhalter, etwa die Annäherung der passenden Rückkühlart.
+* '''Nasse Bauarten''' (adiabat, hybrid, Kühlturm) sind Verdunstungskühlanlagen im Sinn der 42. BImSchV; das Stammblatt weist darauf hin.
+* '''Ausgelieferte Sätze''' tragen das Schloss und sind nur lesbar; ''Duplizieren…'' legt eine eigene Kopie an, ''Schloss aufheben…'' macht den Satz zu einem eigenen.
+* '''Löschen''' geht nur für einen Satz, den kein Projekt gewählt hat; sonst nennt die Verwaltung die Zahl der Projektanlagen.
+* '''Wahl an der Kältemaschine''' – gewählt wird ein Rückkühlwerk in der Gruppe ''Rückkühlung'' der Kältemaschine; die Anlage bekommt eine eigene Projektkopie ([[Programm Dokumentation/Kälteerzeugung#rueckkuehlwerk|Kälteerzeugung: Rückkühlwerk]]).
+
 == PV-Module ==
 {{Anker|pv-module}}
 
@@ -152,7 +163,7 @@ Der Modulkatalog der Photovoltaik führt eine Zeile je Modul. Einziges Pflichtfe
 * '''Strom im MPP (Impp)''' und '''Kurzschlussstrom (Isc)''' – in A.
 * '''Temp.-Koeffizient Pmax''' – in %/K.
 * '''Länge''' und '''Breite''' – in m.
-* '''Modulkosten''' – in €.
+* '''Kostensatz''' – in €/kWp, gesperrt, mit Vermerk auf die Kostenverwaltung; er stammt aus der Satzvorlage des Satzes, ohne Verweis bleibt das Feld leer.
 * '''Zelltemperatur NOCT''' – in °C.
 * '''Zelltechnologie''' – Auswahl.
 
@@ -163,14 +174,14 @@ Fußleiste: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Import…'', ''Beenden''
 
 Der Wechselrichterkatalog gliedert sich in drei Gruppen. Die Liste führt einen Herstellerfilter, weil die CEC-Liste über zweitausend Geräte umfasst.
 
-'''Gerät''': Bezeichner, Hersteller, Beschreibung, '''AC-Nennleistung''' (kW, das einzige Pflichtfeld), max. AC-Scheinleistung (kVA), max. DC-Leistung (kW), Gerätepreis (€), Herkunft (eine Auskunft — der Import setzt sie, eine von Hand gepflegte Zeile trägt „HAND").
+'''Gerät''': Bezeichner, Hersteller, Beschreibung, '''AC-Nennleistung''' (kW, das einzige Pflichtfeld), max. AC-Scheinleistung (kVA), max. DC-Leistung (kW), Kostensatz (gesperrt, aus der Satzvorlage, Pflege in der Kostenverwaltung), Herkunft (eine Auskunft — der Import setzt sie, eine von Hand gepflegte Zeile trägt „HAND").
 
 '''Eingang''' (Werte je MPPT): MPP-Fenster von und bis, max. DC-Spannung, Einschaltspannung (je in V), max. DC-Strom je MPPT und max. Kurzschlussstrom je MPPT (je in A), Anzahl MPPT, Stränge je MPPT.
 
 Die drei letzten Felder begrenzen die Stränge, die ein Gerät aufnimmt, und bleiben leer, wenn das Datenblatt sie nicht nennt; das leere Feld zeigt, womit dann gerechnet wird:
 * '''Max. Kurzschlussstrom''' – die Stromgrenze je MPPT. Ohne Angabe gilt der max. DC-Strom (Betriebsstrom) als Grenze. Weder die CEC-Liste noch eine ''.OND''-Datei führen ihn; er ist von Hand zu ergänzen.
 * '''Anzahl MPPT''' – ohne Angabe wird mit einem Tracker gerechnet. Der ''.OND''-Import übernimmt die Zahl aus der Datei, die CEC-Liste führt sie nicht.
-* '''Stränge je MPPT''' – ohne Angabe gibt es keine Grenze für die Strangzahl je Tracker. Der ''.OND''-Import setzt sie, wenn sich die Stringeingänge der Datei gleichmäßig auf die Tracker verteilen. Fehlt die Anzahl MPPT, stuft der Wechselrichtervorschlag der [[Programm Dokumentation/Photovoltaik#wechselrichtervorschlag|Photovoltaik]] das Gerät höchstens als „bedingt“ ein, mit dem Grund „Katalogwerte unvollständig“.
+* '''Stränge je MPPT''' – ohne Angabe gibt es keine Grenze für die Strangzahl je Tracker. Der ''.OND''-Import setzt sie, wenn sich die Stringeingänge der Datei gleichmäßig auf die Tracker verteilen. Fehlen die Anzahl MPPT, die Stränge je MPPT oder der Kurzschlussstrom je MPPT, stuft der Wechselrichtervorschlag der [[Programm Dokumentation/Photovoltaik#wechselrichtervorschlag|Photovoltaik]] ein Gerät, das nur an der fehlenden Angabe scheitern würde, als „bedingt geeignet (Angaben fehlen)“ ein, mit dem Grund „Katalogwerte unvollständig“.
 
 '''Wirkungsgrad''': die Teillastwirkungsgrade bei 5, 10, 20, 30, 50 und 100 % Auslastung, dazu Euro- und Maximalwirkungsgrad — alle als Faktor zwischen 0 und 1, nicht in Prozent —, sowie Standby- und Nachtverbrauch (je in W).
 
@@ -181,9 +192,11 @@ Fußleiste: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Import…'', ''Beenden''
 
 Der Stromspeicherkatalog führt das Gerät — nicht die im Projekt geplante Speicherflotte, dafür [[Programm Dokumentation/Stromspeicher]]. Zwei Gruppen:
 
-'''Speicherdaten''' (alle fünf Felder Pflicht): Bezeichner, Hersteller, Typ (Zelltechnologie, Auswahl), Energie/Kapazität (kWh), Leistung (kW), Ladezustand (%), Degradation (%), Modulkosten (€/kWh).
+'''Speicherdaten''' (alle fünf Felder Pflicht): Bezeichner, Hersteller, Typ (Zelltechnologie, Auswahl), Energie/Kapazität (kWh), Leistung (kW), Ladezustand (%), Degradation (%).
 
-'''Gerätetechnik''' (alle sechs Felder dürfen leer bleiben und heißen dann nicht gepflegt): Wirkungsgrad (Round-Trip), Zyklen (zugesichert), Verschleißkosten (€/(kWh·Zyklus)), Leistungskosten (€/kW), Investition fix (€), Standby-Verbrauch (W).
+'''Gerätetechnik''' (alle Felder dürfen leer bleiben und heißen dann nicht gepflegt): Wirkungsgrad (Round-Trip), Zyklen (zugesichert), Standby-Verbrauch (W), Selbstentladung (%/Monat).
+
+'''Kosten''': Der Satz führt keine Kostenfelder. Die Maske zeigt den Kostensatz je kWh als gesperrten Lesewert mit Vermerk auf die Kostenverwaltung; sie stammen aus der Satzvorlage des Satzes – Investition je kWh Kapazität, je kW Leistung und als fester Betrag, Betrieb als Verschleiß je entladener kWh –, ohne Verweis auf den Kostenkatalog bleibt das Feld leer. Gepflegt werden die Kosten in der Kostenverwaltung.
 
 Fußleiste: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Import…'', ''Beenden''; ''Duplizieren…'', ''Schloss aufheben…''/''Schloss setzen…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
@@ -197,7 +210,7 @@ Die Kataloge der '''Solarthermie-Ganglinien''' (Menü ''Solarthermieganglinie'')
 
 Vier Kataloge lesen sich aus Herstellerdateien nach VDI 3805 ein: Heizkessel (Blatt 3), Pufferspeicher (Blatt 20), Solarkollektoren (Blatt 19) und Wärmepumpen (Blatt 22, samt Kennlinien). PV-Module und Wechselrichter lesen sich wahlweise aus der CEC-Liste (Netzabruf oder Datei) oder aus PVsyst-Dateien ein — Module aus ''.PAN'', Wechselrichter aus ''.OND''. Stromspeicher haben keine VDI-3805-Vorlage; sie lesen sich aus der CEC Energy Storage System List und aus einer offenen Bibliothek von Batteriespezifikationen (bslib, CC BY 4.0).
 
-Der Ablauf ist bei allen Importen derselbe: Datei wählen oder Quelle abrufen, die gefundenen Sätze in einer Liste mit Kontrollkästchen mehrfach auswählen (ein Klick schaltet die Markierung um, ein Doppelklick übernimmt die angeklickte Zeile sofort, ohne die übrige Auswahl zu leeren), eine Vorprüfung auf Dubletten, bei einem Fund ein eigener Konfliktdialog, danach die Übernahme mit einer Sammelmeldung. Der Dialog bleibt nach jeder Übernahme offen, damit sich mehrere Sätze nacheinander übernehmen lassen. Was eine Quelle nicht liefert — bei den Stromspeichern etwa Verschleißkosten oder Zyklen —, sagt eine Hinweiszeile am Import.
+Der Ablauf ist bei allen Importen derselbe: Datei wählen oder Quelle abrufen, die gefundenen Sätze in einer Liste mit Kontrollkästchen mehrfach auswählen (ein Klick schaltet die Markierung um, ein Doppelklick übernimmt die angeklickte Zeile sofort, ohne die übrige Auswahl zu leeren), eine Vorprüfung auf Dubletten, bei einem Fund ein eigener Konfliktdialog, danach die Übernahme mit einer Sammelmeldung. Der Dialog bleibt nach jeder Übernahme offen, damit sich mehrere Sätze nacheinander übernehmen lassen. Was eine Quelle nicht liefert — bei den Stromspeichern etwa die zugesicherten Zyklen —, sagt eine Hinweiszeile am Import.
 
 {{Anker|import-heizkessel}}Beim Heizkessel liest der Import aus dem Leistungssatz 710.01 den Wirkungsgrad bei Nennlast, den Wirkungsgrad bei 30 % Last und die kleinste Leistung, jeweils vom Temperaturpaar mit dem niedrigsten Rücklauf; führt der Satz keinen Nennlastwert, gilt der Wirkungsgrad des Gerätesatzes 700. Prozentangaben werden zu Faktoren, ein unplausibler Teillastwert bleibt leer. Die Bauart „Brennwert…“ setzt den Schalter '''Brennwertkessel'''; die '''Brennwertkennlinie''' bleibt aus, Anfahrverlust und Mindestlaufzeit bleiben leer.
 
@@ -223,7 +236,7 @@ Ein Katalogsatz wird nie unmittelbar im Projekt verwendet: Die Übernahme im Erz
 
 Die Dialoge der Erzeuger im Projekt ([[Programm Dokumentation/Heizkessel|Heizkessel]], [[Programm Dokumentation/BHKW|BHKW]], [[Programm Dokumentation/Wärmepumpe|Wärmepumpen]], [[Programm Dokumentation/Pufferspeicher|Pufferspeicher]], [[Programm Dokumentation/Stromspeicher|Stromspeicher]], [[Programm Dokumentation/Solarthermie|Solarkollektoren]], [[Programm Dokumentation/Photovoltaik|Photovoltaik-Module]], [[Programm Dokumentation/Kälteerzeugung#kaeltemaschine-anlage|Kältemaschinen]]) wählen den Katalogsatz alle auf dieselbe Weise; die Einzelseiten beschreiben nur, was beim jeweiligen Gerät hinzukommt.
 
-* '''Drei Bereiche.''' Oben steht ''Im Projekt'' mit den Geräten des Projekts und der Summe ihrer Leistung bzw. ihres Volumens, darunter ''Katalog (Datenbank)'' mit dem Katalog und einem Suchfeld über alle Spalten; die Trennlinie dazwischen lässt sich ziehen und merkt sich ihre Höhe je Dialog. Darunter fasst der Bereich ''Gewählter Satz'' den zuletzt gewählten Satz in einer Zeile zusammen, mit der Marke ''Projektsatz'' oder ''Katalogsatz''. Auf kleinen Bildschirmen (iPad) werden die Elemente kompakter, Rollbalken erscheinen nur dort, wo sie nötig sind.
+* '''Drei Bereiche.''' Oben steht ''Im Projekt'' mit den Geräten des Projekts und der Summe ihrer Leistung bzw. ihres Volumens, darunter ''Katalog (DB)'' mit dem Katalog und einem Suchfeld über alle Spalten; die Trennlinie dazwischen lässt sich ziehen und merkt sich ihre Höhe je Dialog. Darunter fasst der Bereich ''Gewählter Satz'' den zuletzt gewählten Satz in einer Zeile zusammen, mit der Marke ''Projektsatz'' oder ''Katalogsatz''. Auf kleinen Bildschirmen (iPad) werden die Elemente kompakter, Rollbalken erscheinen nur dort, wo sie nötig sind.
 * '''Mehrfachwahl.''' Beide Listen tragen ein Kästchen je Zeile; ein Kästchen im Spaltenkopf wählt alle sichtbaren Sätze, Strg-Klick und Umschalt-Klick wählen einzelne Zeilen und Bereiche. Die Knöpfe eines Bereichs wirken auf alle gewählten Zeilen, ohne Kästchen auf die zuletzt angeklickte.
 * '''Spalten….''' Der Knopf in der Kopfleiste des Katalogs öffnet die Auswahl der angezeigten Spalten (''Angezeigte Spalten''): ein Kästchen je Spalte, ''Standard'' stellt die Vorgabe wieder her. Der Bezeichner steht immer. In einem schmalen Fenster blendet der Dialog Spalten von geringerem Rang aus; die Auswahl nennt sie mit dem Zusatz „bei dieser Breite ausgeblendet“. Die gewählten Spalten merkt sich der Dialog für den nächsten Aufruf. Die Spalten sortieren und filtern wie in jedem Katalog; eine Spalte ''im Projekt verwendet'' lässt sich dazuschalten.
 * '''Verwendungsmarke.''' Ein Katalogsatz, der im Projekt verwendet ist, trägt hinter dem Bezeichner einen Punkt in der Projektfarbe (Hinweis ''Im Projekt verwendet''), die Zeile ist leicht getönt; die Legende ''● im Projekt'' steht neben der Trefferzahl.

@@ -371,6 +371,61 @@
                                 }
                             </div>
                         </div>
+
+                        @* K6b (Konzept Kaeltebedarf 6): die Gruppe „Dezentrale Kaeltedeckung" - je Split-Zeile Bezeichner,
+                           Quelle, Jahressumme, EER-Weg, Kuehltraeger und Zaehler, nur lesend (gepflegt wird in den Dialogen
+                           der Zeilen), dazu die Summe und die Zeile „Kaeltebedarf zentral". Ohne Split-Zeile keine Gruppe;
+                           bei „aus" klappt sie mit dem Bereich zusammen. *@
+                        @if (_daten.Kaeltebereich.Dezentral.Count > 0)
+                        {
+                            <section class="epos-simkonfig-kaelte-dezentral" aria-label="@Resource.SIMKONF_KAELTE_DEZENTRAL">
+                                <h3 class="epos-simkonfig-gruppe">@Resource.SIMKONF_KAELTE_DEZENTRAL</h3>
+                                <div class="epos-simkonfig-kaelte-dezentral-huelle">
+                                    <table class="epos-raster epos-simkonfig-kaelte-dezentral-tabelle">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">@Resource.SIMKONF_KAELTE_DEZ_SP_ZEILE</th>
+                                                <th scope="col">@Resource.SIMKONF_KAELTE_DEZ_SP_QUELLE</th>
+                                                <th scope="col" class="epos-zahl">@Resource.SIMKONF_KAELTE_DEZ_SP_SUMME [MWh/a]</th>
+                                                <th scope="col">@Resource.SIMKONF_KAELTE_DEZ_SP_EER</th>
+                                                <th scope="col">@Resource.SIMKONF_KAELTE_DEZ_SP_TRAEGER</th>
+                                                <th scope="col">@Resource.SIMKONF_KAELTE_DEZ_SP_ZAEHLER</th>
+                                                @if (Dienste?.KaelteDezentralBearbeiten is not null)
+                                                {
+                                                    <th scope="col"><span class="epos-zeilenstift-kopf">@Resource.AUSWAHL_BTN_BEARBEITEN</span></th>
+                                                }
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (KaelteDezentralAnzeige z in _daten.Kaeltebereich.Dezentral)
+                                            {
+                                                <tr data-zuordnung="@z.IdZuordnung">
+                                                    <td>@z.Bezeichner</td>
+                                                    <td>@z.Quelle</td>
+                                                    <td class="epos-zahl">@(z.SummeMwh is double s ? s.ToString("N2", System.Globalization.CultureInfo.CurrentCulture) : "—")</td>
+                                                    <td>@z.Eer</td>
+                                                    <td>@z.Traeger</td>
+                                                    <td>@z.Zaehler</td>
+                                                    @if (Dienste?.KaelteDezentralBearbeiten is not null)
+                                                    {
+                                                        KaelteDezentralAnzeige zeile = z;
+                                                        <td>
+                                                            <button type="button" class="epos-knopf epos-simkonfig-kaelte-dezentral-bearbeiten"
+                                                                    disabled="@_daten.Gesperrt"
+                                                                    title="@Resource.SIMKONF_KAELTE_DEZ_TIP_BEARBEITEN"
+                                                                    @onclick="() => KaelteDezentralBearbeiten(zeile)">@Resource.AUSWAHL_BTN_BEARBEITEN</button>
+                                                        </td>
+                                                    }
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <p class="epos-simkonfig-hinweis">@_daten.Kaeltebereich.DezentralSumme</p>
+                                <Herleitungszeile Text="@_daten.Kaeltebereich.ZentralZeile" />
+                                <Herleitungszeile Text="@Resource.SIMKONF_KAELTE_DEZ_HRL" />
+                            </section>
+                        }
                     }
                 </section>
             }
@@ -859,6 +914,7 @@
                         Daten="@_kmArbeit" Stromtraeger="@_kmGaben.Stromtraeger"
                         ProjektStromtraeger="@_kmGaben.ProjektStromtraeger"
                         AnlagenJeKopie="@_kaelteAnlagenJeKopie" GeraetZeigen="true"
+                        Rueckkuehlung="@_kmGaben.Rueckkuehlung"
                         Aktiv="@(!_daten.Gesperrt)" />
                     <SpeichernLeiste OkText="@Resource.ALLG_BTN_OK" AbbrechenText="@Resource.ALLG_BTN_ABBRECHEN"
                                      OkErlaubt="@(!_daten.Gesperrt)" Ergebnis="KaeltemaschineKonfigFertig" />
@@ -1713,6 +1769,38 @@
         KachelnNeuladen();
         KiZeichnen();
         return null;
+    }
+
+    /// <summary>
+    /// K6b-N (Konzept Kältebedarf 6): „Bearbeiten…“ an einer Zeile der Gruppe „Dezentrale Kältedeckung“ — der Dialog ihrer
+    /// Quelle über den Weg der Hülle (<see cref="SimulationKonfigDienste.KaelteDezentralBearbeiten"/>). Geht er nicht auf,
+    /// steht der Grund im Banner; schließt er, liest der Bereich frisch (der Nachzug kommt vom Faden der Schale und
+    /// zeichnet deshalb über <c>InvokeAsync</c>), und ein gescheitertes Speichern steht im Banner.
+    /// </summary>
+    private void KaelteDezentralBearbeiten(KaelteDezentralAnzeige z)
+    {
+        Func<bool, int, Action<string?>, string?>? weg = Dienste?.KaelteDezentralBearbeiten;
+        if (weg is null || _daten.Gesperrt) return;
+
+        string? grund;
+        try { grund = weg(z.Profil, z.IdZuordnung, KaelteDezentralNachzug); }
+        catch (Exception ex) { grund = ex.Message; }
+
+        if (!string.IsNullOrEmpty(grund))
+            Melden(string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                 Resource.SIMKONF_KAELTE_DEZ_MSG_FEHLER, z.Bezeichner, grund), WarnStufe.Warnung);
+    }
+
+    /// <summary>K6b-N: der Nachzug nach dem Dialog einer Split-Zeile — Bereich frisch lesen, Speichergrund ins Banner.</summary>
+    private void KaelteDezentralNachzug(string? grund)
+    {
+        _ = InvokeAsync(() =>
+        {
+            KachelnNeuladen();
+            if (!string.IsNullOrEmpty(grund)) Melden(grund, WarnStufe.Warnung);
+            KiZeichnen();
+            StateHasChanged();
+        });
     }
 
     // ---- Die Überlagerung der Konfiguration eines Kälteerzeugers ----

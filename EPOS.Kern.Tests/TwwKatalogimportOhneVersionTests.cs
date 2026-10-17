@@ -186,7 +186,9 @@ namespace EPOS.Kern.Tests
         /// <b>Der Anlass der Regel:</b> Der Ordner <c>Referenzlaeufe/Katalogpaket_frei/</c> —
         /// unverändert, als Dateiwahl im Ordner — geht durch den Katalogimport. Die Testdatenbank
         /// trägt seine Zeilen schon (das Saatskript spielt sie in der Version <c>TEST-1</c> ein),
-        /// also ist NICHTS angelegt und NICHTS ersetzt: jede Zeile übersprungen.
+        /// also ist NICHTS angelegt: jede Zeile übersprungen — außer den Parametern, die der fiktive
+        /// Testkatalog mit eigenen Werten führt (<see cref="TwwKatalogWacheTests.FIKTIV_VOR_PAKETTEIL"/>);
+        /// weicht ihr Wert ab, ersetzt der Import sie am Platz, und nur sie ändern sich.
         /// </summary>
         [Fact]
         public void Der_freie_Paketteil_geht_gegen_die_Testdatenbank_ohne_Fehler_durch()
@@ -204,7 +206,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(7, dateien.Count);
 
             string ziel = ZapfprofilCtrl.Zielkatalogversion();
-            string vorher = Abbild();
+            string vorher = Abbild(true);
             TwwKatalogimportBericht b = TwwNutzungsartCtrl.Importieren(dateien);
 
             Assert.Null(b.Abbruch);
@@ -214,13 +216,13 @@ namespace EPOS.Kern.Tests
             // Jede Zeile steht schon so im Katalog - nichts angelegt, nichts ersetzt.
             Assert.Equal(9, b.ZeilenVon(TwwImportbereich.Nutzungsart).Count);
             Assert.Equal(9, b.ZeilenVon(TwwImportbereich.Bedarfstag).Count);
-            Assert.Equal(42, b.ZeilenVon(TwwImportbereich.Parameter).Count);
+            Assert.Equal(49, b.ZeilenVon(TwwImportbereich.Parameter).Count);
             Assert.Equal(0, b.Angelegt);
-            Assert.Equal(0, b.Ersetzt);
-            Assert.Equal(b.Zeilen.Count, b.Uebersprungen);
+            NurFiktivVorPaketteilErsetzt(b);
 
-            // Der Zellvergleich: JEDE Zelle jeder Tww-Katalogtabelle steht danach, wie sie stand.
-            Assert.Equal(vorher, Abbild());
+            // Der Zellvergleich: JEDE Zelle jeder Tww-Katalogtabelle steht danach, wie sie stand
+            // (ohne die Parameter, die der fiktive Testkatalog mit eigenen Werten führt).
+            Assert.Equal(vorher, Abbild(true));
         }
 
         /// <summary>
@@ -248,7 +250,7 @@ namespace EPOS.Kern.Tests
 
                 Assert.Null(b.Abbruch);
                 Assert.Equal(0, b.Abgelehnt);
-                Assert.Equal(b.Zeilen.Count, b.Uebersprungen);
+                NurFiktivVorPaketteilErsetzt(b);
             }
             finally
             {
@@ -278,10 +280,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(b.Zeilen.Count, b.Angelegt);
             Assert.All(b.Zeilen, z => Assert.Equal(RUECKFALL, z.Katalogversion));
 
-            // Die neun Nutzungsarten (sechs, dazu Büro/Schule/Gewerbe, V31), die neun Ecodesign-Bedarfstage und die 42 Parameter.
+            // Die neun Nutzungsarten (sechs, dazu Büro/Schule/Gewerbe, V31), die neun Ecodesign-Bedarfstage und die 49 Parameter.
             Assert.Equal(9, b.ZeilenVon(TwwImportbereich.Nutzungsart).Count);
             Assert.Equal(9, b.ZeilenVon(TwwImportbereich.Bedarfstag).Count);
-            Assert.Equal(42, b.ZeilenVon(TwwImportbereich.Parameter).Count);
+            Assert.Equal(49, b.ZeilenVon(TwwImportbereich.Parameter).Count);
             Assert.Equal(8L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM));
             Assert.Equal(32L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_TAGESGANG_STAMM));
             Assert.Equal(161L, Zahl("SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM));
@@ -339,7 +341,24 @@ namespace EPOS.Kern.Tests
         /// Jede Zelle der sieben Tww-Katalogtabellen als Text, nach <c>ID</c> geordnet — der
         /// Zellvergleich vorher/nachher (Muster <c>TwwKatalogWacheTests.Abbild</c>).
         /// </summary>
-        private static string Abbild()
+        /// <summary>
+        /// Der Import des freien Paketteils gegen die Testdatenbank: jede Zeile übersprungen, außer
+        /// Parametern aus <see cref="TwwKatalogWacheTests.FIKTIV_VOR_PAKETTEIL"/> mit abweichendem Wert —
+        /// die ersetzt er.
+        /// </summary>
+        private static void NurFiktivVorPaketteilErsetzt(TwwKatalogimportBericht b)
+        {
+            List<TwwImportzeile> anders = b.Zeilen.Where(z => z.Ausgang != TwwImportausgang.Uebersprungen).ToList();
+            Assert.NotEmpty(anders);
+            Assert.All(anders, z =>
+            {
+                Assert.Equal(TwwImportausgang.Ersetzt, z.Ausgang);
+                Assert.Equal(TwwImportbereich.Parameter, z.Bereich);
+                Assert.Contains(z.Nutzungsart, TwwKatalogWacheTests.FIKTIV_VOR_PAKETTEIL);
+            });
+        }
+
+        private static string Abbild(bool ohneFiktivVorPaketteil = false)
         {
             var sb = new System.Text.StringBuilder();
             foreach (string t in TwwNutzungsartCtrl.IMPORT_TABELLEN)
@@ -347,6 +366,9 @@ namespace EPOS.Kern.Tests
                 System.Data.DataTable dt = DataRepository.GetDataTable("SELECT * FROM " + t + " ORDER BY ID");
                 foreach (System.Data.DataRow r in dt.Rows)
                 {
+                    if (ohneFiktivVorPaketteil && t == TwwSchema.TAB_TWW_PARAMETER_STAMM &&
+                        TwwKatalogWacheTests.FIKTIV_VOR_PAKETTEIL.Contains(Convert.ToString(r["Schluessel"], CultureInfo.InvariantCulture)))
+                        continue;
                     sb.Append(t);
                     foreach (System.Data.DataColumn s in dt.Columns)
                         sb.Append('|').Append(r[s] == DBNull.Value

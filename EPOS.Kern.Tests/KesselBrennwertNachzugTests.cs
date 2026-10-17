@@ -32,7 +32,7 @@ namespace EPOS.Kern.Tests
         public void Dispose() => _db.Dispose();
 
         /// <summary>Die Elektrokessel der Testdatenbank (1017, 1024, 1047) — ihr Katalogsatz ist keiner.</summary>
-        private static readonly int[] ELEKTROKESSEL = { 1017237, 1018320, 1018344, 1018352, 1018353, 1018355, 1018356, 1018357, 1018358, 1018360, 1018361 };   // 1018361: Kopie in 1064 (FK, Kopie von 1017), 1018360: Kopie in 1063 (KM3, Kopie von 1055), 1018352: Kopie in 1055 (KU3-4b), 1018353: Kopie in 1056 (AK2-4), 1018355: Kopie in 1058 (AK3-W5a), 1018356: Kopie in 1059 (AK3-K), 1018357: Kopie in 1061 (KK5a, RP-KK), 1018358: Kopie in 1062 (KK5a, RP-KKZ)
+        private static readonly int[] ELEKTROKESSEL = { 1017237, 1018320, 1018344, 1018352, 1018353, 1018355, 1018356, 1018357, 1018358, 1018360, 1018361, 1018369 };   // 1018369: Kopie in 1072 (K6c, Kopie von 1055), 1018361: Kopie in 1064 (FK, Kopie von 1017), 1018360: Kopie in 1063 (KM3, Kopie von 1055), 1018352: Kopie in 1055 (KU3-4b), 1018353: Kopie in 1056 (AK2-4), 1018355: Kopie in 1058 (AK3-W5a), 1018356: Kopie in 1059 (AK3-K), 1018357: Kopie in 1061 (KK5a, RP-KK), 1018358: Kopie in 1062 (KK5a, RP-KKZ)
 
         /// <summary>Die Projektkopie ohne Katalogsatz („… (2)“ in 1009), Beschreibung „Brennwert-Kombi-Kessel“.</summary>
         private const int OHNE_KATALOG = 1018328;
@@ -142,19 +142,20 @@ namespace EPOS.Kern.Tests
             var zeilen = new List<string>();
             KesselBrennwertNachzug.Bericht b = KesselBrennwertNachzug.Ausfuehren(zeilen);
             Assert.Equal(kopien, b.Geprueft);
-            Assert.Equal(28, b.AusKatalog.Count);   // 23 + die Kopie des Kessels von 1007 im Referenzprojekt 1051 (KP3, RP1)
+            Assert.Equal(35, b.AusKatalog.Count);   // 23 + die Kopie des Kessels von 1007 im Referenzprojekt 1051 (KP3, RP1) + der Kessel der Kopie 1073 von 1054 (SA4)
                                                     // + deren Kopie im Referenzprojekt Vorheizen 1065
                                                     // + die Kopie des Kessels von 1018 im Prüfprojekt 1053
                                                     // + die Kopie des Kessels von 1029 im Referenzprojekt Erdsonde 1057
                                                     // + die Kopie im Referenzprojekt 1054 (AK1z, Kopie von 1052)
+                                                    // + die sechs Kopien des Kessels von 1045 in 1066 bis 1071 (ZB12)
             // Ohne Katalogsatz gleichen Namens: der Prüfkessel und der neutrale Brennwertkessel des Referenzprojekts
             // Übergabegrenze 1060 (UB-E2-d).
             Assert.Equal(2, b.AusBeschreibung.Count);
             Assert.Contains(b.AusBeschreibung, z => z.Contains("Kessel " + OHNE_KATALOG));
             Assert.Empty(b.OhneZuordnung);
             Assert.Empty(b.Mehrdeutig);
-            Assert.Equal(30, b.Gesetzt);   // 24 + 1051 (KP3, RP1) + 1053 + 1054 (AK1z) + 1057 + 1060 (UB-E2-d) + 1065
-            Assert.StartsWith("30 von " + kopien, zeilen[0]);
+            Assert.Equal(37, b.Gesetzt);   // 24 + 1051 (KP3, RP1) + 1053 + 1054 (AK1z) + 1057 + 1060 (UB-E2-d) + 1065 + 1066 bis 1071 (ZB12) + 1073 (SA4)
+            Assert.StartsWith("37 von " + kopien, zeilen[0]);
             Assert.Contains(zeilen, z => z.Contains(OHNE_KATALOG.ToString(CultureInfo.InvariantCulture)));
 
             Assert.Equal(kopien - ELEKTROKESSEL.Length, Zahl("SELECT COUNT(*) FROM Tab_Heizkessel WHERE Brennwert = 1"));
@@ -226,7 +227,7 @@ namespace EPOS.Kern.Tests
             verbindung.Open();
             Assert.True(Repo(verbindung, "SELECT SchemaVersion FROM Tab_Applikation") >= KesselBrennwertNachzug.SCHRITT);
             Assert.Equal(0L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_Heizkessel WHERE Brennwert = 0 AND Brennstoff <> 13"));
-            Assert.Equal(11L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_Heizkessel WHERE Brennwert = 0 AND Brennstoff = 13"));   // + 1064 (FK), + 1063 (KM3), + 1055 (KU3-4b), + 1056 (AK2-4), + 1058 (AK3-W5a), + 1059 (AK3-K), + 1061, + 1062 (KK5a)
+            Assert.Equal(12L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_Heizkessel WHERE Brennwert = 0 AND Brennstoff = 13"));   // + 1072 (K6c), + 1064 (FK), + 1063 (KM3), + 1055 (KU3-4b), + 1056 (AK2-4), + 1058 (AK3-W5a), + 1059 (AK3-K), + 1061, + 1062 (KK5a)
             // Der Schalter der Brennwertkennlinie steht allein an 1050 (Konzept 3.1) und am Brennwertkessel des
             // Referenzprojekts Übergabegrenze 1060 (Rücklaufstufe „Vorwärmer“, UB-E2-d).
             Assert.Equal(2L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_Heizkessel WHERE Kennlinie_Brennwert = 1"));

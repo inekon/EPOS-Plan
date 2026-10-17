@@ -261,7 +261,7 @@ namespace EPOS.Kern.Tests
             (_, IReadOnlyDictionary<string, object> gaben) = await Gelesen("ifc4_zonen.ifc");
             GebaeudeZonierungDaten zon = Zuordnen(gaben, "Z1")!.Zonierung!;
             Assert.Equal("Z1 – one zone per zone of the file", zon.RegelText);
-            Assert.Equal(new[] { "Zone", "Component", "Adjacent zone", "Finding" },
+            Assert.Equal(new[] { "Zone", "Component", "Adjacent zone", "Note" },
                          new[] { GebaeudeImportZonen.SP_ZONE, Katalogfilterprofil.SpBezeichner, GebaeudeImportZonen.SP_NACHBARZONE, GebaeudeImportZonen.SP_BEFUND }
                              .Select(s => zon.Flaechenprofil!.Spalte(s).Titel));
             Assert.Contains(zon.Flaechen, f => f.Zeile.Text(GebaeudeImportZonen.SP_BEFUND).Contains("no counterpart"));

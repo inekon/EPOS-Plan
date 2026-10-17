@@ -147,7 +147,7 @@ public static class Wikibeispiele
         name, "",
         new[] { ("Typ:", "LFP"), ("Leistung [kW]:", "50"),
                 ("Energie (Kapazität) [kWh]:", "100"), ("Degradation [%/a]:", "1,0"),
-                ("Ladezustand [%]:", "50"), ("Modulkosten [€/kWh]:", "500") });
+                ("Ladezustand [%]:", "50"), ("Kostensatz [€/kWh]:", "500") });
 
     // ------------------------------------------------------------------ Photovoltaik
     public static readonly Satz[] Photovoltaik =
@@ -199,7 +199,7 @@ public static class Wikibeispiele
 
     private static Satz Wpsatz(string name, string firma, string quelle, double kw, double cop, double kuehl) => new(name,
         (Katalogfilterprofil.SpHersteller, firma), (Katalogfilterprofil.SpQuelle, quelle),
-        (Katalogfilterprofil.SpNennleistung, kw), (Katalogfilterprofil.SpVlMin, 25), (Katalogfilterprofil.SpVlMax, 60),
+        (Katalogfilterprofil.SpNennleistung, kw), (Katalogfilterprofil.SpVlMin, 25), (Katalogfilterprofil.SpVlMax, 55),
         (Katalogfilterprofil.SpZuheizung, 6.0), (Katalogfilterprofil.SpKuehlleistung, kuehl), (Katalogfilterprofil.SpCop, cop));
 
     public static WaermepumpeAnlageDaten WaermepumpeAnlage() => new()
@@ -218,7 +218,7 @@ public static class Wikibeispiele
 
     public static WaermepumpeStammDaten WaermepumpeStamm(string name, string firma, int kw) => new()
     {
-        Id = 1, Name = name, Firma = firma, Nennleistung = kw, Heizstab = 6, Modulkosten = 10000
+        Id = 1, Name = name, Firma = firma, Nennleistung = kw, Heizstab = 6, Kostensatz = "10000", KostensatzEinheit = "€"
     };
 
     // ------------------------------------------------------------------ Kältemaschine
@@ -257,7 +257,7 @@ public static class Wikibeispiele
         => saetze.Select((s, i) => new Katalogfilterzeile(i + 1, s.Name)
                 .MitText(Katalogfilterprofil.SpBezeichner, s.Name)
                 .MitText(Katalogfilterprofil.SpTyp, s.Typ)
-                .MitZahl(Katalogfilterprofil.SpJahressummeMwh, s.Mwh, 3)
+                .MitZahl(Katalogfilterprofil.SpJahressummeMwh, s.Mwh, Energieeinheit.JAHRESWERT_MWH_NACHKOMMASTELLEN)
                 .MitText(Katalogfilterprofil.SpBeschreibung, s.Beschreibung)
                 .MitKennzeichen(Katalogfilterprofil.SpAuslieferung, i < 2))
             .ToList();

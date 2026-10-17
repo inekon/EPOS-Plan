@@ -72,6 +72,24 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
+        /// <b>Die Parameter, die der freie Paketteil nach seiner ersten Auslieferung hinzubekommen hat</b>
+        /// (Anwenderentscheid 14.10.2026: Kaltwasser und Zirkulation, ohne die die Stufe Einfach mit dem
+        /// Paketteil allein nicht rechnet; Anwenderauftrag 16.10.2026: das Kaltwasser der Auslegung, ohne das
+        /// die Speicherauslegung der Stufe Einfach nicht rechnet). Eine Datenbank, die den Paketteil in einem früheren Stand trägt,
+        /// führt schon eine Katalogversion; <see cref="TwwPaketteilCtrl.Nachladen"/> fasst sie nicht an.
+        /// <see cref="TwwPaketteilCtrl.ParameterNachtragen"/> trägt ihr diese Schlüssel nach, wo sie ihrer
+        /// Katalogversion fehlen — sonst nichts. Jeder Schlüssel steht in
+        /// <c>Referenzlaeufe/Katalogpaket_frei/Tab_TwwParameter_STAMM.csv</c> (Wache
+        /// <c>EPOS.Kern.Tests/TwwPaketteilParameterNachtragTests</c>).
+        /// </summary>
+        internal static readonly IReadOnlyList<string> PARAMETER = new[]
+        {
+            ZapfParameter.KALTWASSER_MITTEL, ZapfParameter.KALTWASSER_AMPLITUDE, ZapfParameter.KALTWASSER_MONAT_MAXIMUM,
+            ZapfParameter.ZIRKULATION_LAUFZEIT, ZapfParameter.ZIRKULATION_ANTEIL, ZapfParameter.ZIRKULATION_VERLUST_JE_METER,
+            ZapfAuslegungParameter.KALTWASSER_AUSLEGUNG,
+        };
+
+        /// <summary>
         /// <b>Trifft die Regel eine Zeile?</b> Die Angaben so, wie die Zeile sie trägt (Texte der
         /// Tabelle bzw. des Pakets): Bezeichner, Bezugsart, Status, Version und Herkunftsart der
         /// Wertgruppe Bedarf. Liefert den Eintrag oder <c>null</c> — dann bleibt die Zeile, wie sie ist.

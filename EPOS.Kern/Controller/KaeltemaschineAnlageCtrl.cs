@@ -46,12 +46,6 @@ namespace WindowsFormsApplication1
         /// </summary>
         public int? IdRueckkuehlwerk { get; set; }
 
-        /// <summary>
-        /// Wasserpreis der Anlage [€/m³] (<c>Wasserpreis_EUR_m3</c>, Frage KD-Q8); <c>null</c> = keine Wasserkosten. Nur
-        /// gelesen — geschrieben über <see cref="KaeltemaschineAnlageCtrl.WasserpreisSetzen"/>.
-        /// </summary>
-        public double? WasserpreisEurM3 { get; set; }
-
         /// <summary>Rückkühlart der Projektkopie der Kältemaschine (Anzeige und Verträglichkeitsprüfung).</summary>
         public string Rueckkuehlart { get; set; }
     }
@@ -68,8 +62,11 @@ namespace WindowsFormsApplication1
             "SELECT a.ID, a.ID_Projekt, a.Bezeichner, a.ID_Kaeltemaschine, a.Kaeltemaschine_Anzahl, a.Kuehl_ID_Carrier, " +
             "a.Kuehl_EigenerZaehler, k.Kuehl_Vorlauf, k.Kuehl_Hilfsstromanteil, k.Rueckkuehlart";
 
-        /// <summary>Die zwei Spalten des Rückkühlwerks (Schritt <see cref="RueckkuehlwerkSchema.SCHRITT"/>), wenn sie stehen.</summary>
-        private const string SQL_LISTE_RUECKKUEHLWERK = ", a.ID_Rueckkuehlwerk, a.Wasserpreis_EUR_m3";
+        /// <summary>
+        /// Der Verweis auf das Rückkühlwerk (Schritt <see cref="RueckkuehlwerkSchema.SCHRITT"/>), wenn er steht. Der Wasserpreis
+        /// steht nicht an der Anlage, sondern in der Trägerkarte (<see cref="WasserpreisTraegerkarteSchema"/>).
+        /// </summary>
+        private const string SQL_LISTE_RUECKKUEHLWERK = ", a.ID_Rueckkuehlwerk";
 
         private const string SQL_LISTE_FUSS =
             " FROM Tab_Energieanlagen a LEFT JOIN Tab_Kaeltemaschine k ON k.ID = a.ID_Kaeltemaschine ";
@@ -193,17 +190,17 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
-        //  Rückkühlwerk und Wasserpreis (K-F1)
+        //  Rückkühlwerk (K-F1)
         // =================================================================
 
         /// <summary>
         /// <b>Verträglichkeit</b> von Kältemaschine und Rückkühlwerk — ohne Datenbank: Eine luftgekühlte Maschine
-        /// (Rückkühlart <c>LUFT</c>) trägt ihren Verflüssiger selbst und bekommt kein Rückkühlwerk. <c>null</c> = verträglich,
-        /// sonst der Meldungstext.
+        /// (Rückkühlart <c>LUFT</c> oder leer, <see cref="KaeltemaschineSchema.IstLuftgekuehlt"/> — wie der Lauf) trägt ihren
+        /// Verflüssiger selbst und bekommt kein Rückkühlwerk. <c>null</c> = verträglich, sonst der Meldungstext.
         /// </summary>
         public static string RueckkuehlwerkPruefen(string rueckkuehlart, bool mitRueckkuehlwerk)
         {
-            if (mitRueckkuehlwerk && string.Equals(rueckkuehlart, KaeltemaschineSchema.RUECKKUEHLART_LUFT, StringComparison.Ordinal))
+            if (mitRueckkuehlwerk && KaeltemaschineSchema.IstLuftgekuehlt(rueckkuehlart))
                 return MyResource.Resource.RKW_MSG_LUFT_UNVERTRAEGLICH;
             return null;
         }
@@ -248,18 +245,66 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Setzt den Wasserpreis einer Anlage [€/m³]; <c>null</c> = keine Wasserkosten. Liefert <c>null</c> oder den
-        /// Meldungstext.
+        /// Der Stand des Rückkühlwerks einer Anlage (K-F5c): die Projektkopie, auf die sie zeigt, mit allen Feldern
+        /// (<see cref="RueckkuehlwerkModel"/> samt <c>ID</c>, <c>ID_Projekt</c>, <c>ID_Stamm</c>); <c>KopieId</c> und
+        /// <c>Kopie</c> <c>null</c> = keins gewählt.
         /// </summary>
-        public static string WasserpreisSetzen(int anlagenId, double? preisEurM3)
+        public sealed record RueckkuehlwerkStand(int AnlagenId, int? KopieId, RueckkuehlwerkModel Kopie);
+
+        /// <summary>
+        /// Hält den Stand des Rückkühlwerks einer Anlage fest (K-F5c) — der Dialog nimmt ihn vor dem ersten Schreiben einer
+        /// Sitzung, damit Abbrechen ihn mit <see cref="RueckkuehlwerkWiederherstellen"/> exakt zurückschreibt. <c>null</c> vor
+        /// dem Schritt oder ohne Anlage. Ein Verweis auf eine fehlende Kopie gilt als „keins“.
+        /// </summary>
+        public static RueckkuehlwerkStand RueckkuehlwerkSchnappschuss(int anlagenId)
         {
+            if (!RueckkuehlwerkSchema.AnlagenspaltenVorhanden()) return null;
+            KaeltemaschineAnlageModel a = Laden(anlagenId);
+            if (a == null) return null;
+            RueckkuehlwerkModel kopie = a.IdRueckkuehlwerk is int id ? RueckkuehlwerkCtrl.Laden(id) : null;
+            return new RueckkuehlwerkStand(anlagenId, kopie?.Id, kopie);
+        }
+
+        /// <summary>
+        /// Schreibt einen festgehaltenen Stand zurück (K-F5c, Abbrechen nach einer Zwischenspeicherung): dieselbe Projektkopie
+        /// unter ihrer ID mit allen Feldern — auch ohne Katalogsatz — oder „keins“. Ist die Kopie noch da, bekommt sie ihre Felder
+        /// zurück; sonst entsteht sie unter ihrer alten ID neu. Die Kopie, die die Anlage bis dahin
+        /// führte, geht, wenn keine Anlagenzeile sie mehr führt — es bleibt keine Waise. Keine Verträglichkeitsprüfung: Der
+        /// Stand beim Öffnen gilt. Ein Katalogsatz, den es nicht mehr gibt, wird als <c>ID_Stamm</c> nicht wieder gesetzt.
+        /// Liefert <c>null</c> oder den Meldungstext.
+        /// </summary>
+        public static string RueckkuehlwerkWiederherstellen(RueckkuehlwerkStand stand)
+        {
+            if (stand == null) return null;
             if (!RueckkuehlwerkSchema.AnlagenspaltenVorhanden())
                 return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.RKW_MSG_SCHEMA_FEHLT, RueckkuehlwerkSchema.SCHRITT);
-            if (preisEurM3.HasValue && (double.IsNaN(preisEurM3.Value) || double.IsInfinity(preisEurM3.Value) || preisEurM3.Value < 0))
-                return MyResource.Resource.RKW_MSG_WERT_UNGUELTIG;
-            DataRepository.ExecuteNonQuery("UPDATE Tab_Energieanlagen SET Wasserpreis_EUR_m3 = ? WHERE ID = ? AND ID_Type = ?",
-                new DbParam("?", preisEurM3.HasValue ? (object)preisEurM3.Value : DBNull.Value), new DbParam("?", anlagenId),
-                new DbParam("?", KaeltemaschineAnlageSchema.TYP_KAELTEMASCHINE));
+            KaeltemaschineAnlageModel a = Laden(stand.AnlagenId);
+            if (a == null) return MyResource.Resource.KM_ANLAGE_FEHLT;
+            int? alt = a.IdRueckkuehlwerk;
+            RueckkuehlwerkModel kopie = stand.Kopie;
+            if (kopie != null && kopie.IdStamm is int stamm && RueckkuehlwerkStammCtrl.Laden(stamm) == null) kopie.IdStamm = null;
+            bool vorhanden = kopie != null && RueckkuehlwerkCtrl.Laden(kopie.Id) != null;
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    int? ziel = null;
+                    if (kopie != null)
+                        ziel = RueckkuehlwerkStammCtrl.KopfSchreiben(v, RueckkuehlwerkCtrl.TABLE, kopie, !vorhanden,
+                                                                     vorhanden ? null : kopie.IdProjekt ?? a.IdProjekt,
+                                                                     vorhanden ? (int?)null : kopie.Id);
+                    v.Ausfuehren("UPDATE Tab_Energieanlagen SET ID_Rueckkuehlwerk = ? WHERE ID = ? AND ID_Type = ?",
+                        new DbParam("?", ziel.HasValue ? (object)ziel.Value : DBNull.Value), new DbParam("?", stand.AnlagenId),
+                        new DbParam("?", KaeltemaschineAnlageSchema.TYP_KAELTEMASCHINE));
+                    if (alt.HasValue && alt != ziel) RueckkuehlwerkAufraeumen(v, alt.Value);
+                    v.Commit();
+                }
+                catch
+                {
+                    v.Rollback();
+                    throw;
+                }
+            }
             return null;
         }
 
@@ -269,6 +314,25 @@ namespace WindowsFormsApplication1
             v.Ausfuehren("DELETE FROM Tab_Rueckkuehlwerk WHERE ID = ? AND NOT EXISTS " +
                          "(SELECT 1 FROM Tab_Energieanlagen WHERE ID_Rueckkuehlwerk = ?)",
                 new DbParam("?", idRueckkuehlwerk), new DbParam("?", idRueckkuehlwerk));
+        }
+
+        /// <summary>
+        /// <b>Führt das Klima des Projekts eine Luftfeuchte?</b> (K-F5b, Entwurf Split/VRF/Rückkühlwerk 5.3/5.4) — dieselbe
+        /// Bedingung wie der Lauf (<c>SimulationWaermebedarf.Luftfeuchte_stuendlich</c>): Jede Stunde der Projektkopie des
+        /// Klimas (<c>Tab_Solar</c> der Klimaregion des Projekts) trägt einen Wert. Sonst rechnet ein nasses Rückkühlwerk
+        /// über den Ausweichweg trocken; der Dialog nennt das schon beim Wählen. Ohne Spalte oder Zeilen <c>false</c>.
+        /// </summary>
+        public static bool KlimaMitFeuchte(int projektId)
+        {
+            if (projektId <= 0 || !DataRepository.SpalteVorhanden("Tab_Solar", SchemaKatalog.SPALTE_SOLAR_LUFTFEUCHTE)) return false;
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT COUNT(*) AS Stunden, COUNT(s.Luftfeuchte) AS MitFeuchte FROM Tab_Solar s " +
+                "WHERE s.ID_Klimaregion = (SELECT p.ID_Klimaregion FROM Tab_Projekt p WHERE p.ID = ?)",
+                new DbParam("?", projektId));
+            if (dt == null || dt.Rows.Count == 0) return false;
+            long stunden = Convert.ToInt64(dt.Rows[0]["Stunden"], CultureInfo.InvariantCulture);
+            long mitFeuchte = Convert.ToInt64(dt.Rows[0]["MitFeuchte"], CultureInfo.InvariantCulture);
+            return stunden > 0 && mitFeuchte == stunden;
         }
 
         /// <summary>
@@ -325,7 +389,6 @@ namespace WindowsFormsApplication1
                 KuehlHilfsstromanteil = Z("Kuehl_Hilfsstromanteil"),
                 Rueckkuehlart = KaeltemaschineStammCtrl.Text(r[KaeltemaschineSchema.SPALTE_RUECKKUEHLART]),
                 IdRueckkuehlwerk = rkw.HasValue ? (int?)(int)rkw.Value : null,
-                WasserpreisEurM3 = mitRkw ? Z(RueckkuehlwerkSchema.SPALTE_WASSERPREIS) : null,
             };
         }
     }

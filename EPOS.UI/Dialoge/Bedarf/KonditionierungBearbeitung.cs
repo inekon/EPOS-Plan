@@ -996,9 +996,34 @@ public sealed partial class KonditionierungBearbeitung
     /// </summary>
     public string Vorschauschluessel(KonditionierungGroesse g)
         => string.Join("|", (Daten?.Fassung ?? -1).ToString(CultureInfo.InvariantCulture),
+                       Lesestand.ToString(CultureInfo.InvariantCulture),
                        GewaehlteVorlage(g)?.Id.ToString(CultureInfo.InvariantCulture) ?? "-",
                        Stand.KuehlungAktiv ? "k" : "-", Stand.HeizkreisAktiv ? "h" : "-",
-                       Stand.UebergabeArt ?? "", Stand.Sollwertprofil ?? "");
+                       Stand.UebergabeArt ?? "", Stand.Sollwertprofil ?? "",
+                       Weg.WochentagJan1?.ToString(CultureInfo.InvariantCulture) ?? "-",
+                       Weg.Bezugsjahr?.ToString(CultureInfo.InvariantCulture) ?? "-");
+
+    /// <summary>
+    /// N5: zählt jeden neu gelesenen Konditionierungssatz. Ein Neulesen (N3: nach einer Übernahme der Modellprüfung oder einem
+    /// Wechsel der Klimaregion) bringt einen neuen Satz mit Fassung 0 — die Fassung allein ändert den Schlüssel dann nicht, und
+    /// die Vorschau zeigte bis zur nächsten Handlung die alte Woche. Erkannt wird der neue Satz an seiner Identität.
+    /// </summary>
+    private int Lesestand
+    {
+        get
+        {
+            KonditionierungDaten? d = Daten;
+            if (!ReferenceEquals(d, _datenZuletzt))
+            {
+                _datenZuletzt = d;
+                _lesestand++;
+            }
+            return _lesestand;
+        }
+    }
+
+    private KonditionierungDaten? _datenZuletzt;
+    private int _lesestand;
 
     /// <summary>Die 168 Werte eines Kalenders: Woche, Wert oder „aus"; <c>null</c> ohne Kalender.</summary>
     private static double[]? Wochenwerte(KonditionierungKalender? k)

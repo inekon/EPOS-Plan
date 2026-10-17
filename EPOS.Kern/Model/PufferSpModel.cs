@@ -13,7 +13,8 @@ namespace WindowsFormsApplication1
         public string Speichertyp;
         public double Betriebsbereitschaftverlust;
         public int Gesamtvolumen;
-        public double Investitionskosten;
+        // HIER STAND Investitionskosten - die Spalte ist mit Welle KB-4 entfallen
+        // (GeraetekostenEntfallSchema); die Geraetekosten traegt die Satzvorlage.
 
         // =====================================================================
         // Klassen-Set (Migrationsschritt 49, Paket K2)
@@ -138,7 +139,6 @@ namespace WindowsFormsApplication1
             Speichertyp = "";
             Betriebsbereitschaftverlust = 0;
             Gesamtvolumen = 0;
-            Investitionskosten = 0;
 
             // Vorbelegung = Rückfallregel für eine unbekannte Verwendung: {Heizung}.
             // Ein frisch erzeugtes Modell trägt damit nie das leere Set.

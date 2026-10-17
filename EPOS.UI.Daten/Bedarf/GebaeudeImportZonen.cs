@@ -136,9 +136,9 @@ namespace WindowsFormsApplication1
                     Nutzung = pz.Profil?.Schluessel,
                     Beheizt = plan.ZoneBeheizt(pz.Schluessel),
                     Raeume = raeume.Count.ToString(CultureInfo.CurrentCulture),
-                    Flaeche = MitEinheit(flaeche, "m²"),
-                    Sollwert = pz.Projektdatei?.HeizsollTag is double sq ? MitEinheit(sq, "°C")
-                             : zonen.FirstOrDefault(x => x.Schluessel == ansicht && ansicht.Length > 0)?.Sollwert is { Length: > 0 } sw ? sw : Leer,
+                    Flaeche = OhneEinheit(MitEinheit(flaeche, "m²"), "m²"),
+                    Sollwert = pz.Projektdatei?.HeizsollTag is double sq ? OhneEinheit(MitEinheit(sq, "°C"), "°C")
+                             : zonen.FirstOrDefault(x => x.Schluessel == ansicht && ansicht.Length > 0)?.Sollwert is { Length: > 0 } sw ? OhneEinheit(sw, "°C") : Leer,
                     Raumliste = raeume.Select(r => Planraum(plan, r)).ToList(),
                     AusProjektdatei = pz.Projektdatei != null && !pz.Projektdatei.AusIfc,
                     Herkunft = pz.Projektdatei == null || pz.Projektdatei.AusIfc ? ""
@@ -484,7 +484,7 @@ namespace WindowsFormsApplication1
                                   rang: Katalogspaltenrang.Breit),
                 new Katalogspalte(SP_RAND, MyResource.Resource.GIMP_DLG_SP_RAND),
                 new Katalogspalte(SP_NACHBARZONE, MyResource.Resource.GIMP_FL_SP_NACHBARZONE, rang: Katalogspaltenrang.BeiPlatz),
-                new Katalogspalte(SP_UWERT, MyResource.Resource.GIMP_DLG_SP_UWERT, "W/(m²K)", Katalogspaltenart.Zahl),
+                new Katalogspalte(SP_UWERT, MyResource.Resource.GIMP_DLG_SP_UWERT, "W/(m²·K)", Katalogspaltenart.Zahl),
                 new Katalogspalte(SP_AUFBAU, MyResource.Resource.GIMP_FL_SP_AUFBAU, rang: Katalogspaltenrang.Breit),
                 new Katalogspalte(SP_HERKUNFT, MyResource.Resource.GIMP_DLG_SP_HERKUNFT, rang: Katalogspaltenrang.Breit),
                 new Katalogspalte(SP_BEFUND, MyResource.Resource.GIMP_FL_SP_BEFUND),
@@ -573,6 +573,12 @@ namespace WindowsFormsApplication1
 
         private static string MitEinheit(double? wert, string einheit)
             => wert.HasValue ? GebaeudeZuordnungsModell.ZahlText(Math.Round(wert.Value, 2)) + " " + einheit : Leer;
+
+        /// <summary>Nimmt die Einheit am Ende eines Zellwerts ab: Sie steht im Kopf der Spalte.</summary>
+        private static string OhneEinheit(string text, string einheit)
+            => text != null && text.EndsWith(" " + einheit, StringComparison.Ordinal)
+                ? text.Substring(0, text.Length - einheit.Length - 1)
+                : text;
 
         private static string Formatieren(string vorlage, params object[] werte)
         {

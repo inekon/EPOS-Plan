@@ -176,6 +176,10 @@ namespace WindowsFormsApplication1
         public const string U_GRUND = "U_GRUND";
         /// <summary>Randbedingung der Grundfläche, <c>DbWerte.GRUND_*</c> (<c>Grundflaeche_Randbedingung</c>).</summary>
         public const string GRUND_RANDBEDINGUNG = "GRUND_RANDBEDINGUNG";
+        /// <summary>Welle DA-4: der wirksame U-Wert am Erdreich (<c>Erdreich_U_Wirksam</c>, Inventar G4).</summary>
+        public const string ERDREICH_U_WIRKSAM = "ERDREICH_U_WIRKSAM";
+        /// <summary>Welle DA-4: die Kellertemperatur (<c>Kellertemperatur</c>, Inventar G4).</summary>
+        public const string KELLERTEMPERATUR = "KELLERTEMPERATUR";
 
         // ------------------------------------------------------------------ Sonstige
 
@@ -228,6 +232,11 @@ namespace WindowsFormsApplication1
         public const string NACHT_BEGINN = "NACHT_BEGINN";
         /// <summary>Ende der Nachtabsenkung [h, Stunde des Tages] (<c>Nachtabsenkung_Ende</c>) — die Vorgabe <see cref="Nachtzeit.VORGABE_ENDE"/> als ausdrücklicher Wert (E43).</summary>
         public const string NACHT_ENDE = "NACHT_ENDE";
+        /// <summary>
+        /// Nachzug N4: die obere Raumtemperatur des Gebäudes [°C] (<c>Maximaleraumtemperatur</c>, Inventar B10) — nur, was die
+        /// Datei trägt (gbXML-Block <c>EPOS:</c>, IFC <c>EPOS_Gebaeude</c>); ohne bleibt die Zeile leer.
+        /// </summary>
+        public const string MAX_RAUMTEMPERATUR = "MAX_RAUMTEMPERATUR";
 
         // ------------------------------------------------------------------ Aufzählungswerte
 
@@ -304,6 +313,8 @@ namespace WindowsFormsApplication1
                 F(FLAECHE_GRUND, GRUPPE_GRUND, "m²"),
                 F(U_GRUND, GRUPPE_GRUND, "W/(m²K)"),
                 F(GRUND_RANDBEDINGUNG, GRUPPE_GRUND, "", text: true),
+                F(ERDREICH_U_WIRKSAM, GRUPPE_GRUND, "W/(m²K)"),
+                F(KELLERTEMPERATUR, GRUPPE_GRUND, "°C"),
 
                 F(FLAECHE_SONSTIGE, GRUPPE_SONSTIGE, "m²"),
                 F(U_SONSTIGE, GRUPPE_SONSTIGE, "W/(m²K)"),
@@ -323,6 +334,7 @@ namespace WindowsFormsApplication1
                 F(SOLL_NACHT, GRUPPE_SOLLWERTE, "°C"),
                 F(NACHT_BEGINN, GRUPPE_SOLLWERTE, "h"),
                 F(NACHT_ENDE, GRUPPE_SOLLWERTE, "h"),
+                F(MAX_RAUMTEMPERATUR, GRUPPE_SOLLWERTE, "°C"),
             };
         }
     }

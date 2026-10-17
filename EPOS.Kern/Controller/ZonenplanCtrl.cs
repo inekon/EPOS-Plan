@@ -7,6 +7,20 @@ using System.Linq;
 namespace WindowsFormsApplication1
 {
     /// <summary>
+    /// Der zuletzt gespeicherte Zonenplan eines Projektgebäudes (<see cref="ZonenplanCtrl.GespeichertJeGebaeude"/>).
+    /// </summary>
+    /// <param name="Plan">Der Plan: Zonen des Gebäudes, Räume über ihre gespeicherte Paarung.</param>
+    /// <param name="Dateiname">Der Dateiname der Quelle, aus der der Plan stammt.</param>
+    /// <param name="Zeitpunkt">Der Zeitpunkt jenes Imports (<c>Tab_Importquelle.Zeitpunkt</c>).</param>
+    /// <param name="HashGespeichert">SHA-256 jener Quelle.</param>
+    /// <param name="HashDatei">SHA-256 der gewählten Datei.</param>
+    /// <param name="PruefsummeAbweichend">Weicht die Prüfsumme der gewählten Datei ab?</param>
+    /// <param name="Raeume">Räume der Datei, die ihre gespeicherte Zone wiederfinden.</param>
+    /// <param name="Verloren">Gespeicherte Paarungen, deren Raum die Datei nicht mehr führt oder deren Zone fehlt.</param>
+    internal sealed record Zonenplanvorlage(Zonenplan Plan, string Dateiname, string Zeitpunkt, string HashGespeichert,
+                                            string HashDatei, bool PruefsummeAbweichend, int Raeume, int Verloren);
+
+    /// <summary>
     /// <b>Der Datenbankweg des Zonenplans</b> (Mehrzonenkonzept 6.4, Konzept Nutzungsprofile NP-F16, NP-F23): das
     /// Nutzungsprofil einer gespeicherten Zone über den Generator (<see cref="NutzungUebernehmen"/>), die Konditionierung der
     /// Projektdatei davor (<see cref="ProjektdateiUebernehmen"/>, Datei vor Profil) und der gespeicherte Plan eines früheren
@@ -109,6 +123,81 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Welle DA-4: Zeilenbild und benannte Wochen aus einer Datei</b> (gbXML-Block <c>EPOS:</c>, IFC <c>EPOS_Zone</c>) in die
+        /// Konditionierung einer Zone — über denselben Weg wie die Bedienung (<see cref="Konditionierungsarbeit.ZelleSetzen"/>,
+        /// <see cref="Konditionierungsstand.MitWochen"/>), im Vorgang des Aufrufers. Eine Woche gleichen Namens und gleicher Größe wird
+        /// ersetzt. <c>null</c> = geschrieben (oder nichts zu tun), sonst die Meldung.
+        /// </summary>
+        internal static string RestUebernehmen(int idGebaeude, int idZone, AbbildZonenrest rest)
+        {
+            if (rest == null || !rest.TraegtKonditionierung) return null;
+            var kond = new KonditionierungCtrl();
+            Konditionierungsarbeitsstand stand = kond.ArbeitsstandLesen(idGebaeude, null, out string gelesen);
+            if (stand?.Zone(idZone) == null) return gelesen ?? "";
+            foreach (Vorgabezeile z in rest.Zeilenbild)
+            {
+                if (!Konditionierungsgroessen.AusKennwort(z.Groesse, out Konditionierungsgroesse g)) continue;
+                Konditionierungsschritt schritt = Konditionierungsarbeit.ZelleSetzen(stand, new Konditionierungsort(g, idZone), z.Zeile,
+                                                                                    Konditionierungsstand.Zelle(z));
+                if (schritt.Rueckfrage)
+                {
+                    Konditionierungsschritt geteilt = Konditionierungsarbeit.LuftwechselAufteilen(stand);
+                    if (!geteilt.Ok) return geteilt.Meldung;
+                    schritt = Konditionierungsarbeit.ZelleSetzen(geteilt.Stand, new Konditionierungsort(g, idZone), z.Zeile,
+                                                                 Konditionierungsstand.Zelle(z));
+                }
+                if (!schritt.Ok || schritt.Rueckfrage) return schritt.Meldung ?? "";
+                stand = schritt.Stand;
+            }
+            if (rest.Wochen.Count > 0)
+            {
+                Konditionierungsstand ebene = stand.Zone(idZone).Stand;
+                var wochen = ebene.Wochen.Where(w => !rest.Wochen.Any(n => n.Groesse == w.Groesse && n.Name == w.Name)).ToList();
+                long neu = Math.Min(0, wochen.Count == 0 ? 0 : wochen.Min(w => w.Id));
+                foreach (BenannteWoche w in rest.Wochen) wochen.Add(w with { Id = --neu });
+                ebene = ebene.MitWochen(wochen);
+                // Nachzug N2 (DA-4): eine Periode, die in der Datei auf eine benannte Woche verweist, verweist wieder auf sie
+                // (ID_Woche) statt eine eigene Woche einzubetten — gefunden über Größe, Beginn, Ende und Bezeichner.
+                foreach (IGrouping<Konditionierungsgroesse, AbbildPeriodenwoche> je in rest.Periodenwochen.GroupBy(p => p.Groesse))
+                {
+                    Konditionierungskalender k = ebene.Kalender(je.Key);
+                    if (k == null) continue;
+                    bool geaendert = false;
+                    var perioden = k.Perioden.Select(r =>
+                    {
+                        // Nachzug N4: eine Feiertagsperiode über ihre Feiertagsregel — zuerst mit gleichem Bezeichner, sonst die Regel
+                        // allein (gbXML führt die Feiertage als Tagtyp Holiday, der Import benennt sie nach der Saat).
+                        AbbildPeriodenwoche p = r.IstFeiertag
+                            ? je.FirstOrDefault(x => x.Feiertagsregel == r.Feiertagsregel && x.Bezeichner == r.Bezeichner)
+                              ?? je.FirstOrDefault(x => x.Feiertagsregel == r.Feiertagsregel)
+                            : je.FirstOrDefault(x => !x.IstFeiertag && x.Beginn == r.Beginn && x.Ende == r.Ende && x.Bezeichner == r.Bezeichner);
+                        BenannteWoche w = p == null ? null : ebene.Wochen.FirstOrDefault(x => x.Groesse == je.Key && x.Name == p.Woche);
+                        if (w == null) return r;
+                        geaendert = true;
+                        return Kalenderbedienung.MitAngabe(r, Kalenderangabe.AusBenannterWoche(w.Id, w.Werte));
+                    }).ToList();
+                    if (geaendert)
+                        ebene = ebene.MitKalender(je.Key, new Konditionierungskalender(k.Groesse, k.Grundangabe, k.Nennwert, perioden),
+                                                  ebene.Herkunft(je.Key));
+                }
+                stand = stand.MitEbene(idZone, ebene);
+            }
+            using (DbVorgang v = DataRepository.Vorgang())
+            using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(v))
+            {
+                KonditionierungCtrl.Ergebnis e = kond.StandSchreiben(v, KonditionierungCtrl.Eigner.Gebaeude(idGebaeude), stand.Gebaeude, true, out _);
+                if (e.Ok) e = kond.StandSchreiben(v, KonditionierungCtrl.Eigner.Zone(idGebaeude, idZone), stand.Zone(idZone).Stand, true, out _);
+                if (!e.Ok)
+                {
+                    v.Rollback();
+                    return e.Meldung;
+                }
+                v.Commit();
+            }
+            return null;
+        }
+
+        /// <summary>
         /// <b>Gibt einer Zone die Konditionierung aus der HottCAD-Projektdatei</b> (Datenaustauschkonzept 16.3, SQ-1) — mit
         /// <paramref name="profil"/> zuerst das Nutzungsprofil der Zone (<see cref="NutzungUebernehmen"/>, Fläche und lichte
         /// Höhe), dann über dieselben reinen Schritte der Konditionierung die Datei (Rangfolge „Datei vor Profil“, NP-F16):
@@ -154,7 +243,8 @@ namespace WindowsFormsApplication1
                 if (g.Herkunft == Konditionierungsherkunft.Vorlage) continue;
                 if (zone != null && !zone.IstBeheizt && (g.Groesse == Konditionierungsgroesse.Heizsoll || g.Groesse == Konditionierungsgroesse.Kuehlsoll)) continue;
                 var ort = new Konditionierungsort(g.Groesse, idZone);
-                if (Ebene(stand).Kalender(g.Groesse) != null)
+                Konditionierungskalender bisher = Ebene(stand).Kalender(g.Groesse);
+                if (bisher != null)
                 {
                     Konditionierungsschritt weg = Konditionierungsarbeit.Verwerfen(stand, ort);
                     if (!weg.Ok) return weg.Meldung ?? "";
@@ -172,10 +262,17 @@ namespace WindowsFormsApplication1
                     if (!schritt.Ok || schritt.Rueckfrage) return schritt.Meldung ?? "";
                     stand = schritt.Stand;
                 }
-                if (g.Kalender != null)
+                // Ein Nennwert der Datei ohne Zeitplan (gbXML, E138 F2): der Zeitplan der Profilkopie bleibt, sonst „immer 1“.
+                Konditionierungskalender neu = g.Kalender;
+                if (neu == null && g.NennwertDatei is double nennwert && Konditionierungsgroessen.HatNennwert(g.Groesse))
+                    neu = bisher != null
+                        ? new Konditionierungskalender(g.Groesse, bisher.Grundangabe, nennwert, bisher.Perioden)
+                        : new Konditionierungskalender(g.Groesse, Kalenderangabe.AusWert(1.0), nennwert, null);
+                if (neu != null)
                 {
                     Konditionierungsstand ebene = Ebene(stand);
-                    stand = stand.MitEbene(idZone, ebene.MitKalender(g.Groesse, g.Kalender, new Kalenderherkunft(null, g.Bemerkung)));
+                    string bemerkung = g.Kalender != null ? g.Bemerkung : g.BemerkungText;
+                    stand = stand.MitEbene(idZone, ebene.MitKalender(g.Groesse, neu, new Kalenderherkunft(null, bemerkung)));
                     kalender.Add(g.Groesse);
                 }
                 geschrieben++;
@@ -227,6 +324,49 @@ namespace WindowsFormsApplication1
             List<(int Id, string Name, string Nutzung)> zonen = new GebaeudeZonenCtrl().LesenJeGebaeude(treffer.IdGebaeude)
                 .Select(z => (z.ID, z.Bezeichner, Zonennutzung(z.ID))).ToList();
             return Zonenplan.AusGespeichert(abbild, index, quelle.Zonenregel, haken, zonen, paarungen);
+        }
+
+        /// <summary>
+        /// <b>Der zuletzt gespeicherte Zonenplan eines Projektgebäudes</b> (GD-N, Nachzug aus GD-4) — die Vorbelegung von „Als
+        /// Mehrzonenmodell übernehmen…“: die jüngste Importquelle des Gebäudes, deren Raumpaarungen auf Zonen zeigen, die Zonen
+        /// des Gebäudes in ihrer Reihenfolge mit Bezeichner und Nutzung und die Regel der Quelle
+        /// (<see cref="Zonenplan.AusGespeichert"/>). Weicht die Prüfsumme der gewählten Datei von der dieser Quelle ab, ist der
+        /// Plan trotzdem vorgelegt — über die Raumkennungen, die die Datei noch führt — und die Abweichung benannt
+        /// (<see cref="Zonenplanvorlage.PruefsummeAbweichend"/>). <c>null</c> ohne Gebäude, ohne Quelle mit Paarung oder ohne
+        /// eine Paarung, die einen Raum der Datei trifft.
+        /// </summary>
+        /// <param name="idGebaeude">Das Projektgebäude (<c>Tab_Gebaeude.ID</c>).</param>
+        /// <param name="hashDatei">SHA-256 der gewählten Datei (Kleinbuchstaben; leer = unbekannt, gilt als abweichend).</param>
+        internal static Zonenplanvorlage GespeichertJeGebaeude(int idGebaeude, string hashDatei, GebaeudeAbbild abbild, int index,
+                                                               IReadOnlyDictionary<string, bool> haken = null)
+        {
+            if (idGebaeude <= 0 || abbild == null || index < 0 || index >= abbild.Gebaeude.Count) return null;
+            if (!ImportzuordnungSchema.Vollstaendig()) return null;
+            var import = new GebaeudeImportCtrl();
+            var jeKurz = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (AbbildRaum r in abbild.Gebaeude[index].Raeume)
+                jeKurz.TryAdd(Quellkennung.Kuerzen(r.Kennung), r.Kennung);
+            foreach (ImportquelleModel quelle in import.LesenQuellen(idGebaeude))
+            {
+                var alle = import.LesenZuordnungen(quelle.ID).Where(p => p.ID_Zone.HasValue).ToList();
+                if (alle.Count == 0) continue;   // eine Quelle ohne Zonenplan (etwa der Einzonenweg) - die nächst ältere
+                List<(string Raum, int IdZone)> paarungen = alle.Where(p => jeKurz.ContainsKey(p.Quellkennung))
+                                                                .Select(p => (jeKurz[p.Quellkennung], p.ID_Zone.Value)).ToList();
+                if (paarungen.Count == 0) return null;
+                List<(int Id, string Name, string Nutzung)> zonen = new GebaeudeZonenCtrl().LesenJeGebaeude(idGebaeude)
+                    .Select(z => (z.ID, z.Bezeichner, Zonennutzung(z.ID))).ToList();
+                var bekannte = new HashSet<int>(zonen.Select(z => z.Id));
+                int getroffen = paarungen.Count(p => bekannte.Contains(p.IdZone));
+                if (getroffen == 0) return null;
+                Zonenplan plan = Zonenplan.AusGespeichert(abbild, index, quelle.Zonenregel, haken, zonen, paarungen);
+                if (plan == null) return null;
+                string gespeichert = (quelle.Hash ?? "").Trim().ToLowerInvariant();
+                string datei = (hashDatei ?? "").Trim().ToLowerInvariant();
+                return new Zonenplanvorlage(plan, quelle.Dateiname ?? "", quelle.Zeitpunkt ?? "", gespeichert, datei,
+                                            !string.Equals(gespeichert, datei, StringComparison.Ordinal) || datei.Length == 0,
+                                            getroffen, alle.Count - getroffen);
+            }
+            return null;
         }
 
         /// <summary>

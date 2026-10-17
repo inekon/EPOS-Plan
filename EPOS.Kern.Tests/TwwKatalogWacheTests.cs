@@ -932,7 +932,9 @@ namespace EPOS.Kern.Tests
         /// jede Nutzungsart trägt genau den Vorgabesatz der Zapfkategorien
         /// <b>ihrer Gruppe</b> (Wohnen oder Nichtwohnen, Stufe Z5), und keine
         /// weitere Zeile trägt <c>FREI</c> oder <c>EIGENKONSTRUKTION</c>. Status und ReadOnly folgen der Regel der Testdatenbank
-        /// (<c>EIGEN</c>, 0). Ohne Python und ohne die VDI-Originale — die Wache läuft in jeder CI.
+        /// (<c>EIGEN</c>, 0). Ausgenommen sind die Parameter <see cref="FIKTIV_VOR_PAKETTEIL"/>: Dort bleibt
+        /// die fiktive Zeile des Testkatalogs, und die des Paketteils tritt zurück. Ohne Python und ohne
+        /// die VDI-Originale — die Wache läuft in jeder CI.
         /// </summary>
         [Fact]
         public void Die_freien_Zeilen_der_Testdatenbank_gleichen_dem_Paketteil()
@@ -996,6 +998,20 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        /// <summary>
+        /// <b>Die Parameter, die Paketteil und fiktiver Testkatalog zugleich führen</b> (Anwenderentscheid
+        /// 14.10.2026: Kaltwasser und Zirkulation der Stufe Einfach). In der Testdatenbank bleibt die
+        /// fiktive Zeile (Herkunftsart <c>FIKTIV</c>, eigene Werte), die gleiche Zeile des Paketteils tritt
+        /// zurück — dieselbe Liste wie <c>FIKTIV_VOR_PAKETTEIL</c> in
+        /// <c>Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py</c>.
+        /// </summary>
+        internal static readonly string[] FIKTIV_VOR_PAKETTEIL =
+        {
+            "Kaltwasser.Bilanz.Mittel", "Kaltwasser.Bilanz.Amplitude", "Kaltwasser.Bilanz.MonatMaximum",
+            "Zirkulation.Laufzeit", "Zirkulation.Anteil", "Zirkulation.VerlustJeMeter",
+            "A100.Kaltwasser.Auslegung"
+        };
+
         /// <summary>Die Abweichungen der freien Zeilen einer Datenbank vom Paketteil (leer = gleich).</summary>
         private static List<string> PaketteilAbweichungen(string pfad, string ordner)
         {
@@ -1010,6 +1026,19 @@ namespace EPOS.Kern.Tests
             {
                 List<Dictionary<string, string>> soll = Paketteil(ordner, tabelle);
                 Assert.NotEmpty(soll);
+                if (tabelle == TwwSchema.TAB_TWW_PARAMETER_STAMM)
+                {
+                    // Der fiktive Testkatalog geht vor: Die Testdatenbank führt die fiktive Zeile, nicht die des Paketteils.
+                    foreach (string k in FIKTIV_VOR_PAKETTEIL)
+                    {
+                        if (!soll.Any(z => z[schluessel] == k)) funde.Add(tabelle + " \"" + k + "\": fehlt im Paketteil");
+                        List<Dictionary<string, object>> fiktiv = Zeilen(c, "SELECT * FROM \"" + tabelle + "\" WHERE \"" + schluessel +
+                                                                            "\" = $w AND \"Katalogversion\" = 'TEST-1'", k);
+                        if (fiktiv.Count != 1 || Convert.ToString(fiktiv[0]["Herkunftsart"]) != TwwSchema.HERKUNFT_FIKTIV)
+                            funde.Add(tabelle + " \"" + k + "\": nicht genau eine fiktive Zeile des Testkatalogs");
+                    }
+                    soll = soll.Where(z => !FIKTIV_VOR_PAKETTEIL.Contains(z[schluessel])).ToList();
+                }
                 foreach (Dictionary<string, string> z in soll)
                 {
                     List<Dictionary<string, object>> ist = Zeilen(c, "SELECT * FROM \"" + tabelle + "\" WHERE \"" + schluessel +

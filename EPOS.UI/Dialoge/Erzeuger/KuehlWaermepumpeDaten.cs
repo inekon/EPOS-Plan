@@ -26,4 +26,25 @@ public sealed record KuehlWaermepumpeZeile(int IdWp, int? IdStamm, string Bezeic
 /// sonst nennt <paramref name="Meldung"/> den Grund (Ablehnung des Kerns oder Fehler). <paramref name="Merker"/> ist der
 /// Zettel der Hülle für „Abbrechen nimmt die Übernahme zurück“.
 /// </summary>
-public sealed record KuehlWpUebernahme(bool Ok, int IdWp, string Bezeichner, bool SchonImProjekt, string? Meldung, object? Merker);
+/// <param name="Hinweis">
+/// KM‑K2: ein Hinweis zur übernommenen Wärmepumpe, der keine Ablehnung ist — etwa der fehlende Platz der Wärmekaskade
+/// (ohne ihn kühlt sie nicht). <c>null</c> = kein Hinweis.
+/// </param>
+public sealed record KuehlWpUebernahme(bool Ok, int IdWp, string Bezeichner, bool SchonImProjekt, string? Meldung,
+                                       object? Merker, string? Hinweis = null);
+
+/// <summary>
+/// <b>Der Bearbeitungsweg einer Wärmepumpen-Anlagenzeile</b> (KM‑K2, Naht <c>WaermepumpeAnlageGaben</c>): Der Wirt
+/// reicht den Parametersatz der Anlagenfelder (<c>WaermepumpeAnlageFelder</c>) samt dem Schreibweg herein, dann öffnet
+/// „Bearbeiten…" einer Wärmepumpe im Kältemaschinen-Dialog dieselbe Überlagerung wie der Wärmepumpendialog
+/// (Gerätesteckbrief, Klappgruppe „Kühlbetrieb", Betriebszeiten). Ohne die Naht bleibt die benannte Sperre stehen.
+/// </summary>
+/// <param name="IdAnlage">Die bearbeitete Anlagenzeile (<c>Tab_Energieanlagen.ID</c>).</param>
+/// <param name="Bezeichner">Der Name der Anlage — der Titel der Überlagerung.</param>
+/// <param name="Gaben">Der Parametersatz der Anlagenfelder; <c>Daten</c> ist der Feldsatz, in den sie schreiben.</param>
+/// <param name="Schreiben">
+/// Schreibt den Feldsatz dieser Gaben; <c>null</c> = geschrieben, sonst der Grund der Ablehnung (er bleibt in der
+/// Überlagerung stehen). Plattformfrei — die Datenseite liegt im Kern, nicht in der Schale.
+/// </param>
+public sealed record WaermepumpeAnlagegaben(int IdAnlage, string Bezeichner,
+                                            IReadOnlyDictionary<string, object> Gaben, Func<string?> Schreiben);

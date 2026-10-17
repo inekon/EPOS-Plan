@@ -1,0 +1,103 @@
+﻿@* DIE VORSCHAU „VORGABEN DER BAUALTERSKLASSE“ (MA-7, Nachzug N1): Herkunftszeile, je Feld der Wert jetzt und der neue,
+   Hinweis, „Übernehmen“ und „Abbrechen“. Gemeinsam fuer den Gebaeudeeditor und das Stammblatt der Gebaeudeverwaltung - beide
+   tragen die Uebernahme in ihren Arbeitsstand (GebaeudeArbeitsstand), geschrieben wird mit OK bzw. Speichern des Wirts.
+   Zeigt nur; der Wirt fuehrt die Uebernahme aus und meldet. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using WindowsFormsApplication1
+@using WindowsFormsApplication1.MyResource
+
+<p class="epos-herleitung"><span class="epos-herleitung-text epos-gebk-vorgaben-herkunft">@Herkunft(Arbeit)</span></p>
+<table class="epos-raster epos-gebk-vorgaben-tabelle">
+    <thead>
+        <tr>
+            <th>@Resource.GEBV_SP_FELD</th>
+            <th class="epos-zahl">@Resource.GEBV_SP_JETZT</th>
+            <th class="epos-zahl">@Resource.GEBV_SP_NEU</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (Einzonenposten p in Arbeit.Einzonenvorschau())
+        {
+            <tr data-feld="@p.Feld" class="@(p.Aendert ? "epos-gebk-vorgaben-aendert" : "epos-gebk-vorgaben-gleich")">
+                <th scope="row">@Feldtext(p.Feld)</th>
+                <td class="epos-zahl">@Wert(p.Feld, p.Alt)</td>
+                <td class="epos-zahl">@(p.Aendert ? Wert(p.Feld, p.Neu) : Resource.GEBV_TXT_GLEICH)</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<Herleitungszeile Text="@Resource.GEBV_TXT_HINWEIS" />
+<div class="epos-gebk-vorgaben-leiste">
+    <button type="button" class="epos-knopf epos-knopf--primaer epos-gebk-vorgaben-uebernehmen"
+            @onclick="() => Uebernehmen.InvokeAsync()">@Resource.GEBV_BTN_UEBERNEHMEN</button>
+    <button type="button" class="epos-knopf" @onclick="() => Abbrechen.InvokeAsync()">@Resource.GEBV_BTN_ABBRECHEN</button>
+</div>
+
+@code {
+    /// <summary>Der Arbeitsstand des Wirts (Vorgabe, Vorschau).</summary>
+    [Parameter, EditorRequired] public GebaeudeArbeitsstand Arbeit { get; set; } = new();
+
+    /// <summary>Die Texte der Hüllzeilen (U-Werte, ψ).</summary>
+    [Parameter] public GebaeudeHuelleTexte Huelletexte { get; set; } = new();
+
+    /// <summary>Die Beschriftung der Bauart (ohne Doppelpunkt).</summary>
+    [Parameter] public string LabelBauart { get; set; } = "";
+
+    /// <summary>Die Beschriftung des Fensterdurchlassgrads (ohne Doppelpunkt).</summary>
+    [Parameter] public string LabelFensterdurchlassgrad { get; set; } = "";
+
+    /// <summary>Die Einträge der Bauart-Klappliste (Index → Text).</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Bauarten { get; set; } = Array.Empty<(int, string)>();
+
+    [Parameter] public EventCallback Uebernehmen { get; set; }
+
+    [Parameter] public EventCallback Abbrechen { get; set; }
+
+    /// <summary>Warum die Übernahme nicht geht; <c>null</c> = sie geht.</summary>
+    public static string? Grund(Einzonensperre sperre) => sperre switch
+    {
+        Einzonensperre.Zonen => Resource.GEBV_GRUND_ZONEN,
+        Einzonensperre.OhneKlasse => Resource.GEBV_GRUND_KLASSE,
+        Einzonensperre.OhneWerte => Resource.GEBV_GRUND_WERTE,
+        _ => null
+    };
+
+    /// <summary>Die Herkunftszeile der Vorgabe: Klasse bzw. Energiestandard, Katalogmedian oder freier Wert.</summary>
+    public static string Herkunft(GebaeudeArbeitsstand arbeit)
+    {
+        if (arbeit.Einzonenvorgabe is not Einzonenvorgabe v) return "";
+        CultureInfo c = CultureInfo.CurrentCulture;
+        if (v.Frei) return string.Format(c, Resource.GEBV_HERKUNFT_FREI, v.Kennung);
+        return v.AusStandard
+            ? string.Format(c, Resource.GEBV_HERKUNFT_STANDARD, Energiestandard.Text(v.Kennung), v.Katalogsaetze)
+            : string.Format(c, Resource.GEBV_HERKUNFT_KLASSE, v.Kennung, v.Katalogsaetze);
+    }
+
+    private string Feldtext(Einzonenfeld f) => f switch
+    {
+        Einzonenfeld.UAussenwand => Huelletexte.Zeile(Huellbauteil.Aussenwand),
+        Einzonenfeld.UFenster => Huelletexte.Zeile(Huellbauteil.Fenster),
+        Einzonenfeld.UDach => Huelletexte.Zeile(Huellbauteil.Dach),
+        Einzonenfeld.UGrund => Huelletexte.Zeile(Huellbauteil.Bodenplatte),
+        Einzonenfeld.USonstige => Huelletexte.Zeile(Huellbauteil.Sonstiges),
+        Einzonenfeld.PsiFensterWand => Huelletexte.Zeile(Huellbauteil.WaermebrueckeFensterWand),
+        Einzonenfeld.PsiAussenwandKeller => Huelletexte.Zeile(Huellbauteil.WaermebrueckeAussenwandKeller),
+        Einzonenfeld.PsiWandDach => Huelletexte.Zeile(Huellbauteil.WaermebrueckeWandDach),
+        Einzonenfeld.Fensterdurchlassgrad => LabelFensterdurchlassgrad.TrimEnd(' ', ':'),
+        _ => LabelBauart.TrimEnd(' ', ':')
+    };
+
+    private string Wert(Einzonenfeld f, double? w)
+    {
+        if (w is not double x) return "—";
+        return f switch
+        {
+            Einzonenfeld.Bauart => Bauarten.FirstOrDefault(e => e.Id == (int)Math.Round(x)).Text ?? "—",
+            Einzonenfeld.Fensterdurchlassgrad => GebaeudeArbeitsstand.Zahl(x, 2),
+            Einzonenfeld.PsiFensterWand or Einzonenfeld.PsiAussenwandKeller or Einzonenfeld.PsiWandDach => GebaeudeArbeitsstand.Zahl(x, 3) + " W/(mK)",
+            _ => GebaeudeArbeitsstand.Zahl(x, 2) + " W/(m²K)"
+        };
+    }
+}

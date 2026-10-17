@@ -117,7 +117,7 @@ public class GebaeudeBefundAnsichtTests : EposBunitContext
         IElement gesperrt = Knopf(ohne);
         Assert.Equal("true", gesperrt.GetAttribute("aria-disabled"));
         Assert.Equal(new GebaeudeAnsichtTexte().BefundOhne, gesperrt.GetAttribute("title"));
-        Assert.Equal("Befund", gesperrt.TextContent.Trim());
+        Assert.Equal("Vollständigkeit", gesperrt.TextContent.Trim());
         gesperrt.Click();
         Assert.Equal("zonen", ohne.Instance.Farbmodus);
 
@@ -141,7 +141,7 @@ public class GebaeudeBefundAnsichtTests : EposBunitContext
         Assert.Equal(new[] { "ohne", "koerper", "eigenschaften" }, zeilen.Select(z => z.GetAttribute("data-befund")));
         Assert.Equal(new[] { "1 · 48,0 m²", "1 · 1,5 m²", "1 · 12,5 m²" },
                      zeilen.Select(z => z.QuerySelector(".epos-gebansicht-befund-zahl")!.TextContent.Trim()));
-        Assert.Equal(new[] { "Ohne Befund", "Körper unlesbar", "Ohne Eigenschaften" },
+        Assert.Equal(new[] { "vollständig", "Körper unlesbar", "Ohne Eigenschaften" },
                      zeilen.Select(z => z.QuerySelector(".epos-gebansicht-zonenname")!.TextContent.Trim()));
         // Die Farben kommen allein aus der Tafel; das Farbfeld trägt den Stufenschlüssel für den Kontrastmodus.
         for (int i = 0; i < zeilen.Count; i++)
@@ -213,7 +213,7 @@ public class GebaeudeBefundAnsichtTests : EposBunitContext
     {
         IRenderedComponent<Bauteilsteckbrief> cut = Render<Bauteilsteckbrief>(c => c.Add(x => x.Daten, SteckbriefBoden));
         IReadOnlyList<string> begriffe = cut.FindAll(".epos-steckbrief-werte dt").Select(d => d.TextContent.Trim()).ToList();
-        Assert.Contains("Befund", begriffe);
+        Assert.Contains("Vollständigkeit", begriffe);
         Assert.Contains("Herkunft der Fläche", begriffe);
         // Ohne Namen vom Wirt steht der Schlüssel; ohne Herkunft bleibt die Zeile leer und ohne Wert.
         Assert.Equal("ohne", cut.Find(".epos-steckbrief-befundname").TextContent.Trim());

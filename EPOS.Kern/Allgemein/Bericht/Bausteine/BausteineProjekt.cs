@@ -104,6 +104,14 @@ namespace WindowsFormsApplication1
                         k.F(stamm.Details.ProzessVorlaufMax.Value, 0) + " / " +
                         k.F(stamm.Details.ProzessRuecklaufMin.Value, 0) + " °C");
 
+                // K6b (Konzept Kältebedarf 4.3): der Kältebedarf aus Profilen und die dezentrale (Split-)Deckung - nur mit
+                // Wert (Spalten aus Schritt 213); ohne Profil- und Split-Zeile bleibt die Tafel, wie sie war.
+                List<string> kaelteProfil = KaeltebedarfZeilen(k, e);
+                if (kaelteProfil.Count > 0) k.Eigenschaften(kaelteProfil.ToArray());
+                // K6b: die Eingabeseite - Kältebedarfsprofile und je Split-Zeile EER-Weg, Kühlträger und Zähler.
+                List<string> kaelteEingabe = KaeltebedarfEingabe(k, stamm.Details);
+                if (kaelteEingabe.Count > 0) k.Eigenschaften(kaelteEingabe.ToArray());
+
                 // BW4: Netzverluste je Kanal und die Zirkulation des Bestandswegs - nur, wenn das
                 // Projekt sie fuehrt; sonst bleibt die Tafel, wie sie war.
                 Netzverlustvorgabe nv = stamm.Details?.Netzkanaele;
@@ -423,6 +431,8 @@ namespace WindowsFormsApplication1
                 "davon Kühlung", KanalWertKaelte(k, e),
                 "Kältelast max.", k.F(spitze, 1) + " kW",
             };
+            // K6b: Profile und dezentrale (Split-)Deckung - nur mit Wert.
+            paare.AddRange(KaeltebedarfZeilen(k, e));
             double? stunden = stamm.Kennzahlen.TryGetValue(KennzahlenKatalog.SCHLUESSEL_KAELTE_STUNDEN, out double? s) ? s : null;
             if (stunden.HasValue)
             {
@@ -447,11 +457,29 @@ namespace WindowsFormsApplication1
             bool mitWp = wp != null && wp.Kaelteproduktion_WP.HasValue;
             bool mitKm = km.Count > 0;
             bool mitErzeugung = mitWp || mitKm;
-            if (mitErzeugung)
+            // K6b (Frage 1 des Plans K6): mit Split-Zeile die Hauptzahl samt Split-Deckung und darunter die Kältefolge am
+            // zentral gedeckten Bedarf; ohne sie der Deckungsgrad des Kühlkanals wie zuvor.
+            bool mitSplit = e.KaeltebedarfDezentralMwh > 0;
+            if (mitSplit)
+            {
+                // K6d (Katalog v23): die zwei Zahlen aus dem Kennzahlenkatalog — kaelte.deckungsgrad_gesamt und
+                // kaelte.deckungsgrad_kaeltefolge; beide bildet KaelteDeckungsgrad, dieselbe Stelle wie Reiter und Ring.
+                paare.Add("Deckungsgrad Kälte");
+                paare.Add(KennzahlWert(k, stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_DECKUNGSGRAD_GESAMT, 1, "%"));
+                if (mitErzeugung)
+                {
+                    paare.Add("davon Kältefolge");
+                    paare.Add(KennzahlWert(k, stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_DECKUNGSGRAD_KAELTEFOLGE, 1, "%"));
+                }
+            }
+            else if (mitErzeugung)
             {
                 paare.Add("Deckungsgrad Kühlung");
                 paare.Add(KennzahlWert(k, stamm, KennzahlenKatalog.SCHLUESSEL_KAELTE_DECKUNGSGRAD, 1, "%"));
             }
+            // Schritt 223: die Split-Zeilen des Laufs - der Kältestromblock steht mit ihnen auch ohne Kälteerzeuger.
+            List<ErgebnisKaelteDezentralModel> split = stamm.Ergebnis.KaelteDezentral ?? new List<ErgebnisKaelteDezentralModel>();
+            bool mitKaeltestrom = mitErzeugung || split.Count > 0;
             if (mitWp)
             {
                 paare.Add("Kälteerzeugung Wärmepumpe");
@@ -488,7 +516,7 @@ namespace WindowsFormsApplication1
                 paare.Add("Stunden an der Leistungsgrenze");
                 paare.Add(k.F(km.Sum(x => x.Stunden_Leistungsgrenze), 0) + " h/a");
             }
-            if (mitErzeugung)
+            if (mitKaeltestrom)
             {
                 paare.Add("Netzbezug Kältestrom");
                 paare.Add(Wert(k, stamm.KaeltestromNetzbezugMWh, 2, "MWh/a"));
@@ -500,14 +528,70 @@ namespace WindowsFormsApplication1
 
             k.Ueberschrift2(UEBERSCHRIFT_KAELTE);
             k.Eigenschaften(paare.ToArray());
-            if (mitErzeugung) KaelteerzeugerSchreiben(k, wp, traegername, km, stamm?.Kaeltemittel);
+            // Schritt 223: die Split-Zeilen stehen in derselben Tafel - auch ohne Kälteerzeuger.
+            if (mitKaeltestrom) KaelteerzeugerSchreiben(k, wp, traegername, km, stamm?.Kaeltemittel, split, stamm?.Rueckkuehlwerke);
             k.HinweisRoh(!(jahr > 0) ? MyResource.Resource.SIMERG_HRL_KAELTE_LEER
                          : mitErzeugung ? string.Format(k.Kultur, MyResource.Resource.SIMERG_HRL_KAELTE_GEDECKT,
                                                         k.F(wp.Kaelteproduktion_WP.Value, 2),
                                                         k.F(SimulationRunner.DeckungProzent(wp.Kaelteproduktion_WP.Value, jahr), 1))
                          : MyResource.Resource.SIMERG_HRL_KAELTE_UNGEDECKT);
+            // K6b: die dezentrale Deckung als eigener Satz - nur mit Split-Zeile.
+            if (mitSplit && jahr > 0)
+                k.HinweisRoh(string.Format(k.Kultur, MyResource.Resource.SIMERG_HRL_KAELTE_DEZENTRAL,
+                                           k.F(e.KaeltebedarfDezentralMwh.Value, 2),
+                                           k.F(SimulationRunner.DeckungProzent(e.KaeltebedarfDezentralMwh.Value, jahr), 1),
+                                           k.F(e.StromDezentralMwh ?? 0.0, 2)));
             k.HinweisRoh(SimulationKaeltebedarf.GrenzeFeuchte);
             if (mitErzeugung) k.Hinweis(HINWEIS_KAELTEMITTEL);
+        }
+
+        /// <summary>
+        /// K6b (Konzept Kältebedarf 4.3): die Zeilen „Kältebedarf aus Profilen“, „davon dezentral (Split)“, „Strom dezentral“
+        /// und „Jahres-EER dezentral“ — jede nur mit Wert (Spalten aus Schritt 213); ohne Profil- und Split-Zeile leer.
+        /// Energiebedarf und Kälteblock nehmen dieselben Zeilen.
+        /// </summary>
+        private static List<string> KaeltebedarfEingabe(WordKontext k, ProjektDetails d)
+        {
+            var paare = new List<string>();
+            if (d == null) return paare;
+            if (d.KaelteProfilZeilen > 0)
+            {
+                paare.Add("Kältebedarfsprofile");
+                paare.Add(k.F(d.KaelteProfilZeilen, 0) + " · " + k.F(d.KaelteProfilSummeMwh, 1) + " MWh/a");
+            }
+            foreach (ProjektDetails.KaelteDezentralEingabe z in d.KaelteDezentral)
+            {
+                paare.Add("dezentral (Split): " + z.Bezeichner);
+                paare.Add("EER " + z.Eer + " · " + z.Traeger);
+            }
+            return paare;
+        }
+
+        private static List<string> KaeltebedarfZeilen(WordKontext k, ErgebnisEnergiebedarfModel e)
+        {
+            var paare = new List<string>();
+            if (e == null) return paare;
+            if (e.KaeltebedarfProfilMwh.HasValue)
+            {
+                paare.Add("Kältebedarf aus Profilen");
+                paare.Add(k.F(e.KaeltebedarfProfilMwh.Value, 1) + " MWh/a");
+            }
+            if (e.KaeltebedarfDezentralMwh.HasValue)
+            {
+                paare.Add("davon dezentral (Split)");
+                paare.Add(k.F(e.KaeltebedarfDezentralMwh.Value, 1) + " MWh/a");
+            }
+            if (e.StromDezentralMwh.HasValue)
+            {
+                paare.Add("Strom dezentral");
+                paare.Add(k.F(e.StromDezentralMwh.Value, 2) + " MWh/a");
+            }
+            if (e.JahresEerDezentral.HasValue)
+            {
+                paare.Add("Jahres-EER dezentral");
+                paare.Add(k.F(e.JahresEerDezentral.Value, 2));
+            }
+            return paare;
         }
 
         /// <summary>
@@ -519,10 +603,14 @@ namespace WindowsFormsApplication1
         private static void KaelteerzeugerSchreiben(WordKontext k, ErgebnisWaermepumpeModel wp,
                                                     Func<int, string> traegername,
                                                     IReadOnlyList<ErgebnisKaeltemaschineModel> maschinen = null,
-                                                    IReadOnlyList<KaeltemittelBerichtszeile> kaeltemittel = null)
+                                                    IReadOnlyList<KaeltemittelBerichtszeile> kaeltemittel = null,
+                                                    IReadOnlyList<ErgebnisKaelteDezentralModel> dezentral = null,
+                                                    IReadOnlyList<RueckkuehlwerkBerichtszeile> rueckkuehlwerke = null)
         {
-            // BV-E5: dieselbe Tafel wie {{tabelle.kaelteerzeuger}} - KU3-4 samt Kältemaschinen, KM4-E2 samt Kältemittel.
-            Berichtstabelle t = Berichtstabellen.Kaelteerzeuger(wp, traegername, BerichtTexte.Englisch, k.Kultur, maschinen, kaeltemittel);
+            // BV-E5: dieselbe Tafel wie {{tabelle.kaelteerzeuger}} - KU3-4 samt Kältemaschinen, KM4-E2 samt Kältemittel,
+            // Schritt 223 samt Split-Zeilen.
+            Berichtstabelle t = Berichtstabellen.Kaelteerzeuger(wp, traegername, BerichtTexte.Englisch, k.Kultur, maschinen, kaeltemittel,
+                                                                dezentral, rueckkuehlwerke);
             if (t.IstLeer) return;
 
             k.Ueberschrift3(UEBERSCHRIFT_KAELTEERZEUGER);

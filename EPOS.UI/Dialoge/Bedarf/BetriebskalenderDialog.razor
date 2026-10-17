@@ -11,7 +11,16 @@
    den uebrigen Verwaltungsdialogen; "Loeschen" fragt zurueck und schreibt sofort, die Zuordnungen,
    die den Kalender nutzen, stehen danach ohne ihn.
 
-   TASTATUR: Esc schliesst zuerst eine offene Rueckfrage, dann den Dialog. *@
+   AUS GEBAEUDE UEBERNEHMEN (Konzept Kaeltebedarfsprofile 7.2, Entscheid OE-6). Der Knopf neben "Loeschen" waehlt
+   in einer kurzen Ueberlagerung ein Projektgebaeude und schreibt dessen Feiertagsland und Ferien als KOPIE in den
+   Arbeitsstand - nie als Verweis (Festlegung KP1b 6: Herkunft nie als ID am Ziel). Der Kalender nimmt vier
+   Ferienzeitraeume auf; fuehrt das Gebaeude mehr, kommen die ersten vier, und der Banner nennt, wie viele fehlen.
+   Ohne Gebaeude im Projekt ist der Knopf weich gesperrt und nennt den Grund; ohne Gabe steht er nicht da.
+
+   IM BLATT (Bedarfsprofil-Dialog, Baustein Blattwechsel) traegt der Dialog keinen Titel und kein Kreuz
+   (TitelAnzeigen="false"); Rueckknopf und Esc des Blattes fuehren zurueck.
+
+   TASTATUR: Esc schliesst zuerst eine offene Rueckfrage oder die Gebaeudewahl, dann den Dialog. *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using System.Globalization
@@ -20,10 +29,16 @@
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    <div class="epos-dialog-kopf">
-        <h1 class="epos-dialog-titel">@Resource.BKAL_TITEL</h1>
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Resource.BKAL_TITEL</h1>
+        }
         <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@Resource.BKAL_TITEL" />
-        <Schliesskreuz Geschlossen="@(() => Beenden(false))" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="@(() => Beenden(false))" />
+        }
     </div>
 
     <p class="epos-kontextzeile">@Resource.BKAL_KONTEXT</p>
@@ -40,6 +55,13 @@
         <button type="button" class="epos-knopf" @onclick="Neu">@Resource.BKAL_BTN_NEU</button>
         <button type="button" class="epos-knopf" aria-disabled="@(_satz.Id > 0 ? null : "true")"
                 title="@Resource.BKAL_BTN_LOESCHEN" @onclick="LoeschenFragen">@Resource.BKAL_BTN_LOESCHEN</button>
+        @if (Gebaeude is not null)
+        {
+            <button type="button" class="epos-knopf epos-knopf--aus-gebaeude"
+                    aria-disabled="@(_gebaeude.Count > 0 ? null : "true")"
+                    title="@(_gebaeude.Count > 0 ? Resource.BKAL_HINW_AUS_GEBAEUDE : Resource.BKAL_SPERRE_KEIN_GEBAEUDE)"
+                    @onclick="GebaeudewahlOeffnen">@Resource.BKAL_BTN_AUS_GEBAEUDE</button>
+        }
     </div>
 
     <Formularraster>
@@ -50,6 +72,8 @@
                          Auswahl="@LandIndex" AuswahlChanged="LandGewaehlt" />
             <Schalter Bezeichnung="@Resource.BKAL_LBL_FEIERTAG" Wert="@_satz.FeiertagWieSonntag"
                       WertChanged="@(w => Feld(() => _satz.FeiertagWieSonntag = w))" />
+            <Schalter Bezeichnung="@Resource.BKAL_LBL_FERIEN_SONNTAG" Wert="@_satz.FerienWieSonntag"
+                      WertChanged="@(w => Feld(() => _satz.FerienWieSonntag = w))" />
             @for (int i = 0; i < FERIEN; i++)
             {
                 int ii = i;
@@ -66,13 +90,15 @@
             }
             <Zahlenfeld Bezeichnung="@Resource.BKAL_LBL_FAKTOR" Feldname="@Resource.BKAL_LBL_FAKTOR" Einheit="%"
                         Min="0" Max="100" Nachkommastellen="0" Wert="@_satz.FerienfaktorProzent"
+                        Aktiv="@(!_satz.FerienWieSonntag)"
                         WertChanged="@(w => Feld(() => _satz.FerienfaktorProzent = w ?? 0))" />
             <Schalter Bezeichnung="@Resource.BKAL_LBL_KUERZEN" Wert="@_satz.FerienKuerzen"
                       WertChanged="@(w => Feld(() => _satz.FerienKuerzen = w))" />
         </KindInhalt>
     </Formularraster>
     <Herleitungszeile Text="@Resource.BKAL_HRL_FEIERTAG" />
-    <Herleitungszeile Text="@Resource.BKAL_HRL_FAKTOR" />
+    <Herleitungszeile Text="@Resource.BKAL_HRL_FERIEN_SONNTAG" />
+    <Herleitungszeile Text="@(_satz.FerienWieSonntag ? Resource.BKAL_HRL_FAKTOR_GESPERRT : Resource.BKAL_HRL_FAKTOR)" />
     <Herleitungszeile Text="@Resource.BKAL_HRL_KUERZEN" />
     @if (Herleitung is not null)
     {
@@ -83,6 +109,29 @@
                      Geaendert="@_geaendert" Gespeichertwerden="@(() => { SpeichernKlick(); })"
                      OkText="@Resource.ALLG_BTN_OK" AbbrechenText="@Resource.ALLG_BTN_ABBRECHEN"
                      Ergebnis="Beenden" />
+
+    @* Die Gebaeudewahl: eine kurze Ueberlagerung ohne eigene Unterdialoge. Die Zeile ist die Wahl,
+       OK uebernimmt die Kopie in den Arbeitsstand, Abbrechen, Kreuz und Esc lassen ihn stehen. *@
+    <Ueberlagerung Offen="@_gebaeudewahlOffen" Titel="@Resource.BKAL_TITEL_AUS_GEBAEUDE"
+                   Geschlossen="GebaeudewahlSchliessen">
+        <KindInhalt>
+            <div class="epos-dialog epos-kalender-gebaeudewahl">
+                <p class="epos-kontextzeile">@Resource.BKAL_TXT_GEBAEUDE_WAHL</p>
+                <div class="epos-kalender-gebaeudeliste" role="radiogroup" aria-label="@Resource.BKAL_TITEL_AUS_GEBAEUDE">
+                    @for (int i = 0; i < _gebaeude.Count; i++)
+                    {
+                        int ii = i;
+                        <Zeilenwahl Gewaehlt="@(_gebaeudeIndex == ii)" Kurztext="@_gebaeude[ii].Bezeichner"
+                                    Beschriftung="@GebaeudeZeile(_gebaeude[ii])"
+                                    Gewaehltwerden="@(() => _gebaeudeIndex = ii)"
+                                    Doppelklick="@(() => GebaeudeUebernehmen(ii))" />
+                    }
+                </div>
+                <SpeichernLeiste OkText="@Resource.ALLG_BTN_OK" AbbrechenText="@Resource.ALLG_BTN_ABBRECHEN"
+                                 Ergebnis="GebaeudewahlErgebnis" />
+            </div>
+        </KindInhalt>
+    </Ueberlagerung>
 
     <Rueckfrage Offen="@(_frage.Length > 0)" Frage="@_frage" TitelText="@Resource.BKAL_TITEL"
                 JaText="@Resource.ALLG_BTN_JA" NeinText="@Resource.ALLG_BTN_NEIN"
@@ -118,6 +167,15 @@
     /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
 
+    /// <summary>
+    /// Die Gebäude des Projekts als Quellen für „Aus Gebäude übernehmen…“ (Konzept Kältebedarfsprofile 7.2);
+    /// <c>null</c> = kein Knopf, leer = der Knopf ist weich gesperrt und nennt den Grund.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<BetriebskalenderGebaeude>>? Gebaeude { get; set; }
+
+    /// <summary><c>false</c> im Blatt oder in einer betitelten Überlagerung: kein eigener Titel, kein eigenes Kreuz.</summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
     /// <summary>Der Hilfeschlüssel des Infoknopfs.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Betriebskalender.btn_Help";
 
@@ -140,6 +198,13 @@
     private WarnStufe _meldungStufe = WarnStufe.Hinweis;
     private string _frage = "";
 
+    private IReadOnlyList<BetriebskalenderGebaeude> _gebaeude = Array.Empty<BetriebskalenderGebaeude>();
+    private bool _gebaeudewahlOffen;
+    private int _gebaeudeIndex = -1;
+
+    /// <summary>Steht die Gebäudewahl? (Prüfhilfe für Tests.)</summary>
+    public bool GebaeudewahlOffen => _gebaeudewahlOffen;
+
     /// <summary>Der Arbeitsstand (Prüfhilfe für Tests).</summary>
     public BetriebskalenderDaten Satz => _satz;
 
@@ -152,6 +217,7 @@
     protected override void OnInitialized()
     {
         Nachladen(0);
+        _gebaeude = Gebaeude?.Invoke() ?? Array.Empty<BetriebskalenderGebaeude>();
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.BETRIEBSKALENDER, () => KiSicht(), KiHaken());
     }
 
@@ -187,6 +253,8 @@
                 LaenderEintraege, z => z.Id == 0 ? "" : Laender[z.Id - 1].Kennung, z => z.Text),
             FeiertagLesen = () => _satz.FeiertagWieSonntag,
             FeiertagSetzen = w => Feld(() => _satz.FeiertagWieSonntag = w),
+            FerienSonntagLesen = () => _satz.FerienWieSonntag,
+            FerienSonntagSetzen = w => Feld(() => _satz.FerienWieSonntag = w),
             VonLesen = i => _satz.Von[i],
             VonSetzen = (i, w) => Feld(() => _satz.Von[i] = w),
             BisLesen = i => _satz.Bis[i],
@@ -348,6 +416,74 @@
         Melden(Resource.BKAL_MSG_GELOESCHT, WarnStufe.Hinweis);
     }
 
+    // =====================================================================
+    // Aus Gebäude übernehmen (Konzept Kältebedarfsprofile 7.2, OE-6)
+    // =====================================================================
+
+    /// <summary>Die Zeile der Gebäudewahl: Name, Land, Zahl der Ferienzeiträume.</summary>
+    private string GebaeudeZeile(BetriebskalenderGebaeude g)
+    {
+        string land = string.IsNullOrEmpty(g.Bundesland)
+            ? Resource.BKAL_BUNDESLAND_KEINES
+            : Laender.FirstOrDefault(l => l.Kennung == g.Bundesland)?.Name ?? g.Bundesland!;
+        return string.Format(CultureInfo.CurrentCulture, Resource.BKAL_GEBAEUDE_ZEILE, g.Bezeichner, land, g.Ferien.Count);
+    }
+
+    /// <summary>Der Knopf: ohne Gebäude meldet er den Grund (weiche Sperre), sonst geht die Wahl auf.</summary>
+    private void GebaeudewahlOeffnen()
+    {
+        if (_gebaeude.Count == 0)
+        {
+            Melden(Resource.BKAL_SPERRE_KEIN_GEBAEUDE, WarnStufe.Hinweis);
+            return;
+        }
+        _gebaeudeIndex = _gebaeude.Count == 1 ? 0 : -1;
+        _gebaeudewahlOffen = true;
+    }
+
+    private void GebaeudewahlSchliessen() => _gebaeudewahlOffen = false;
+
+    private void GebaeudewahlErgebnis(bool ok)
+    {
+        if (!ok)
+        {
+            GebaeudewahlSchliessen();
+            return;
+        }
+        GebaeudeUebernehmen(_gebaeudeIndex);
+    }
+
+    /// <summary>
+    /// Schreibt Feiertagsland und Ferien des Gebäudes als KOPIE in den Arbeitsstand — die ersten vier Zeiträume,
+    /// die übrigen Paare leer; die Herkunft steht nirgends am Kalender. Geschrieben wird mit „Speichern“ oder OK.
+    /// </summary>
+    private void GebaeudeUebernehmen(int index)
+    {
+        if (index < 0 || index >= _gebaeude.Count)
+        {
+            Melden(Resource.BKAL_MSG_GEBAEUDE_WAEHLEN, WarnStufe.Hinweis);
+            return;
+        }
+        BetriebskalenderGebaeude g = _gebaeude[index];
+        Feld(() =>
+        {
+            _satz.Bundesland = string.IsNullOrEmpty(g.Bundesland) || !Laender.Any(l => l.Kennung == g.Bundesland)
+                ? null : g.Bundesland;
+            for (int i = 0; i < FERIEN; i++)
+            {
+                _satz.Von[i] = i < g.Ferien.Count ? g.Ferien[i].Von : null;
+                _satz.Bis[i] = i < g.Ferien.Count ? g.Ferien[i].Bis : null;
+            }
+        });
+        _gebaeudewahlOffen = false;
+        int fehlen = g.Ferien.Count - FERIEN;
+        if (fehlen > 0)
+            Melden(string.Format(CultureInfo.CurrentCulture, Resource.BKAL_MSG_FERIEN_FEHLEN, g.Bezeichner, g.Ferien.Count, fehlen),
+                   WarnStufe.Warnung);
+        else
+            Melden(string.Format(CultureInfo.CurrentCulture, Resource.BKAL_MSG_UEBERNOMMEN, g.Bezeichner), WarnStufe.Hinweis);
+    }
+
     private void Melden(string text, WarnStufe stufe)
     {
         _meldung = text ?? "";
@@ -370,6 +506,11 @@
         if (_frage.Length > 0)
         {
             _frage = "";
+            return;
+        }
+        if (_gebaeudewahlOffen)
+        {
+            GebaeudewahlSchliessen();
             return;
         }
         await Beenden(false);

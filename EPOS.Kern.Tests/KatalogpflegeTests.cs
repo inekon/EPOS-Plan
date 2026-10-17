@@ -885,33 +885,34 @@ namespace EPOS.Kern.Tests
         // ==================================================================
 
         /// <summary>
-        /// <b>Der Klassenvorrat des Zeilendialogs: neun Klassen in dieser Reihenfolge.</b>
-        /// Sie standen bisher als Quelltextliste in der Maske (Befund W14c-B5). KM4-E2-a hängt
-        /// <c>FGAS</c> an — die Regeln nach Anhang IV pflegt die Hand in der Pflegemaske (KM4-Q4 b).
+        /// <b>Der Klassenvorrat des Zeilendialogs: elf Klassen in dieser Reihenfolge.</b>
+        /// <c>FGAS</c> pflegt die Hand in der Pflegemaske (KM4-Q4 b); <c>EEG</c> und
+        /// <c>UMLAGEN</c> stehen im Vorrat, weil keine andere Maske ihre Zeilen schreibt.
         /// </summary>
         [Fact]
-        public void DerKlassenvorratFuehrtNeunKlassenInFesterReihenfolge()
+        public void DerKlassenvorratFuehrtElfKlassenInFesterReihenfolge()
         {
             Assert.Equal(new[]
             {
                 "KWKG", "STROMSTEUER", "ENERGIESTEUER", "CO2_PREIS",
-                "EF_NACHWEIS", "EF_BILANZ", "PEF_NACHWEIS", "UMSATZSTEUER", "FGAS"
+                "EF_NACHWEIS", "EF_BILANZ", "PEF_NACHWEIS", "UMSATZSTEUER", "FGAS",
+                "EEG", "UMLAGEN"
             }, GesetzKatalog.KlassenVorrat().ToArray());
         }
 
         /// <summary>
-        /// <b>Vorrat und Datenbank sind gewollt verschieden</b> (Befund W14c-B5): In der
-        /// Datenbank steht <c>EEG</c>, im Vorrat des Zeilendialogs nicht. Die Vermessung
-        /// hat das als Fehlerbild gemeldet; die Welle uebernimmt es woertlich und macht
-        /// den Unterschied hier sichtbar, statt ihn beilaeufig zu heilen.
+        /// <b>Jede gesetzliche Klasse der Datenbank ist wählbar</b> — eine neue EEG- oder
+        /// Umlagezeile lässt sich anlegen. Draußen bleibt allein die technische Klasse
+        /// <c>SYSTEM</c> (Markerzeile der Nachsaat), die auch <c>Klassen()</c> nicht führt.
         /// </summary>
         [Fact]
-        public void DerVorratEnthaeltEegNichtObwohlDieDatenbankEsFuehrt()
+        public void JedeGesetzlicheKlasseDerDatenbankIstWaehlbar()
         {
+            Assert.DoesNotContain(DbWerte.GESETZ_KLASSE_SYSTEM, GesetzKatalog.KlassenVorrat());
             if (!_db.Vorhanden) return;
 
-            Assert.DoesNotContain(DbWerte.GESETZ_KLASSE_EEG, GesetzKatalog.KlassenVorrat());
-            Assert.Contains(DbWerte.GESETZ_KLASSE_EEG, new GesetzKatalog().Klassen());
+            foreach (string k in new GesetzKatalog().Klassen())
+                Assert.Contains(k, GesetzKatalog.KlassenVorrat());
         }
 
         /// <summary>Die fuenfzehn Einheiten und die vier Statuswerte, eingefroren samt
@@ -949,7 +950,8 @@ namespace EPOS.Kern.Tests
                 Assert.Equal("KWK-Gesetz", GesetzKatalog.KlasseAnzeige(DbWerte.GESETZ_KLASSE_KWKG));
                 Assert.Equal("Stromsteuer", GesetzKatalog.KlasseAnzeige(DbWerte.GESETZ_KLASSE_STROMSTEUER));
                 Assert.Equal("F-Gase (VO 2024/573, Anhang IV)", GesetzKatalog.KlasseAnzeige(DbWerte.GESETZ_KLASSE_FGAS));
-                Assert.Equal("EEG", GesetzKatalog.KlasseAnzeige(DbWerte.GESETZ_KLASSE_EEG));   // unbekannt = Rohwert
+                Assert.Equal("Erneuerbare-Energien-Gesetz (EEG)", GesetzKatalog.KlasseAnzeige(DbWerte.GESETZ_KLASSE_EEG));
+                Assert.Equal("SYSTEM", GesetzKatalog.KlasseAnzeige(DbWerte.GESETZ_KLASSE_SYSTEM));   // unbekannt = Rohwert
                 Assert.Equal("", GesetzKatalog.KlasseAnzeige(null));
 
                 foreach (string k in GesetzKatalog.KlassenVorrat())
@@ -1582,7 +1584,12 @@ namespace EPOS.Kern.Tests
 
                     Assert.Contains("CC BY 4.0", details);
                     Assert.Contains("Deutscher Wetterdienst", details);
-                    Assert.Contains("IL", details);                 // die verworfenen Groessen
+                    // die verworfenen Groessen - oder, sobald die Rohtabelle steht (KD-4), der Vermerk, dass alle Felder
+                    // als Rohwerte gespeichert sind
+                    if (KlimaRohwerteSchema.SchemaVollstaendig())
+                        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.KLIMA_TRY_ROHWERTE_GESPEICHERT, details);
+                    else
+                        Assert.Contains("IL", details);
                     Assert.Contains(Path.GetFileName(pfad), details);
                     Assert.Contains("CC BY 4.0", erg.Meldung);
                 }

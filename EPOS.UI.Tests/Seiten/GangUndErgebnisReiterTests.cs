@@ -1004,4 +1004,34 @@ public class GangUndErgebnisReiterTests : EposBunitContext
                                        .Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
         Assert.Equal(spalten.Max(s => s.Werte.Length) + 1, zeilen.Length);
     }
+
+    /// <summary>
+    /// K6b: unter dem Kältegang die Kachel der dezentralen (Split-)Deckung — Kälte, Strom, Jahres-EER, Netzbezug; ohne
+    /// Split-Zeile steht sie nicht da.
+    /// </summary>
+    [Fact]
+    public void K6b_Kaeltegang_zeigt_die_Split_Kachel_nur_mit_Split_Zeile()
+    {
+        var ohne = Render<KaeltegangReiter>(p =>
+        {
+            p.Add(x => x.Modell, Modell);
+            p.Add(x => x.Gedaechtnis, _kaelteStand);
+            p.Add(x => x.Kaelte, new KaelteDaten { KaeltebedarfMwh = 10.0 });
+        });
+        Assert.Empty(ohne.FindAll("[data-kachel='kaelte-dezentral']"));
+
+        var mit = Render<KaeltegangReiter>(p =>
+        {
+            p.Add(x => x.Modell, Modell);
+            p.Add(x => x.Gedaechtnis, _kaelteStand);
+            p.Add(x => x.Kaelte, new KaelteDaten
+            {
+                KaeltebedarfMwh = 10.0, MitDezentral = true, DezentralMwh = 3.0, DezentralStromMwh = 1.0,
+                JahresEerDezentral = 3.0, DezentralNetzbezugMwh = 0.5
+            });
+        });
+        var kachel = mit.Find("[data-kachel='kaelte-dezentral']");
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.SIMERG_LBL_EER_DEZENTRAL, kachel.TextContent);
+        Assert.Contains(3.0.ToString("N2"), kachel.TextContent);
+    }
 }

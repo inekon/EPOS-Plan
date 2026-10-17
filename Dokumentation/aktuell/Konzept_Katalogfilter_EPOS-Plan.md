@@ -86,7 +86,7 @@ Herstellerimport steht (CEC-Zahlen aus den Auslieferungsdateien unter `VDI-3805-
 |---|---|---|---|---|---|---|
 | 1 | Brauchwasser | `Bedarf/BedarfAdminDialog` (Brauchwasser) | Wahl, **Bezeichner** | **keine** | 16 | — |
 | 2 | Heizkessel | `Erzeuger/KatalogBrowserDialog` (Heizkessel) | Wahl, **Bezeichner** | 2 Klapplisten: Brennstoffgruppe (13), Leistungsstufe (6 feste Stufen) | 63 | VDI 3805, je Hersteller |
-| 3 | Wärmepumpe | `Waermepumpe/WaermepumpeStammDialog`, Katalog als Überlagerung `WaermepumpenKatalogDialog` | Stammliste: **Bezeichner**. Katalog: Hersteller, Modell, VL max, VL min, Leistung, Zuheizung, Bauart | Stammliste **keine**; Katalog: **7 Klapplisten + 4 Zahlenfelder + Suche** | 51 (+ 1 960 Kennlinienzeilen) | VDI 3805 |
+| 3 | Wärmepumpe | `Waermepumpe/WaermepumpeStammDialog` (Katalogliste im Dialog selbst) | Hersteller, Modell, Quelle, Nennleistung, VL min, VL max, Zuheizung, Kühlleistung, COP | Suche über alle Spalten, Trichter je Spalte, Schalter „nur mit Kühlfunktion" | 51 (+ 1 960 Kennlinienzeilen) | VDI 3805 |
 | 4 | BHKW | `Erzeuger/KatalogBrowserDialog` (BHKW) | Wahl, **Bezeichner**, Eigenschaften (4 Zeilen in EINER Zelle) | 2 Klapplisten: Brennstoffgruppe, Leistungsstufe | 79 | — |
 | 5 | Solarkollektoren | `Erzeuger/KatalogBrowserDialog` (Solarkollektoren) | Wahl, **Bezeichner**, Eigenschaften | **keine** (`KatalogFilterArt.Keiner`) | 7 | VDI 3805 |
 | 6 | Wärmebedarf Lastgang | `Bedarf/WaermebedarfAdminDialog` | Wahl, **Bezeichner** | **keine** (das `Filter=` dort ist der Dateiwähler) | 4 | — |
@@ -345,7 +345,7 @@ W14a‑E‑10 sitzt das Bild im Spaltenkopf des vorhandenen `Raster` (5.6.7).*
 
 Regel **F4** des Wellenplans gilt weiter: *Die Komponente filtert nicht selbst.* Sie sammelt
 die Kriterien ein und ruft `Katalogfilter.Anwenden(zeilen, kriterien)` — genau so, wie es
-`WaermepumpenKatalogDialog` heute schon mit `WaermepumpenKatalogFilter` tut.
+die `Katalogliste` mit `Katalogfilter.Anwenden` tut.
 
 ### 3.2 Was in einem Filterprofil steht
 
@@ -408,8 +408,8 @@ ihnen sortieren.
   eine Überlagerung nicht hat) — dieselbe Zeile, überall.
 - **„Kein Treffer."** Statt einer leeren Liste steht der Satz aus `EnergietraegerDialog`
   (`ETV_SUCHE_LEER`).
-- **Zurücksetzen.** Ein Knopf am Ende der Leiste, wie in `ModulImportDialog` und
-  `WaermepumpenKatalogDialog`. Er setzt auf die Profilvorbelegung zurück, nicht auf leer.
+- **Zurücksetzen.** Ein Knopf am Ende der Leiste, wie in `ModulImportDialog`. Er setzt auf
+  die Profilvorbelegung zurück, nicht auf leer.
 - **Sortierung.** Über die Spaltenköpfe des `Raster` (QuickGrid kann das; `ProjektListe` macht
   es seit W15a samt Gleichstandsauflösung über den Namen). Ein Klick auf den Kopf sortiert
   auf, ein zweiter ab. Die Sortierung ist **kein** Chip — sie blendet nichts aus.

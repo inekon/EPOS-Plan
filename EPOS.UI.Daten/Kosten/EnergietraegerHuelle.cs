@@ -144,6 +144,12 @@ namespace WindowsFormsApplication1
         /// <summary>Der vorgewählte Träger der Komponente — er bleibt in der Liste, auch wenn er nicht passt.</summary>
         private int _vorwahl;
 
+        /// <summary>
+        /// Welle KB-7c1: der Wasserträger, der in der Liste steht, ohne dem Projekt zugeordnet zu sein
+        /// (Kältemaschine mit Rückkühlwerk, <see cref="ProjektEnergietraegerCtrl.WasserTraegerInKarte"/>); 0 = keiner.
+        /// </summary>
+        private int _wasserOffen;
+
         // ---- Fehlende und geliehene Werte ------------------------------------
         //
         // Was die LESEKETTE zu den drei Größen sagt, gelesen beim Trägerwechsel.
@@ -473,6 +479,7 @@ namespace WindowsFormsApplication1
         private void ListeLaden()
         {
             _verwendung.Clear();
+            _wasserOffen = 0;
 
             // ET-2 (08.09.2026): Die elektrische Welt bekommt ihren Stromtraeger, BEVOR die
             // Liste gelesen wird - das Projekt des Anwenderbefunds (1026: Waermepumpe, PV,
@@ -504,6 +511,21 @@ namespace WindowsFormsApplication1
                     }
                 }
                 catch { _verwendung.Clear(); }
+
+                // Welle KB-7c1: Der Wasserträger steht in der Karte, wenn das Projekt ihn führt oder eine
+                // Kältemaschine mit Rückkühlwerk hat (die Regel steht im Kern). Ist er noch nicht zugeordnet,
+                // steht er markiert da wie ein verwendeter Träger; Speichern ordnet ihn zu. Er kehrt nicht in
+                // die Verwendung zurück — Wasser ist Betriebsmittel, kein Träger eines Erzeugers.
+                try
+                {
+                    int wasser = ProjektEnergietraegerCtrl.WasserTraegerInKarte(_projektId);
+                    if (wasser > 0 && !_traeger.Exists(c => c.ID == wasser))
+                    {
+                        EnergyCarrier frei = KostenSummenCtrl.GetAllCarriers(0).Find(c => c.ID == wasser);
+                        if (frei != null) { _traeger.Add(frei); _wasserOffen = wasser; }
+                    }
+                }
+                catch { _wasserOffen = 0; }
             }
 
             // Auftrag 268: Mit Komponentenkontext bleiben nur die zulaessigen Traeger
@@ -550,6 +572,9 @@ namespace WindowsFormsApplication1
         private string ListenKurztext(int id)
         {
             ProjektEnergietraegerCtrl.Verwendung v;
+            if (_projektId > 0 && id == _wasserOffen)
+                return T("KDLG_ET_WASSER_RUECKKUEHLWERK", "Wasser der Rückkühlwerke") + " — " +
+                       T("KDLG_ET_NICHT_ZUGEORDNET", "nicht zugeordnet");
             if (_projektId <= 0 || !_verwendung.TryGetValue(id, out v)) return "";
             string text = string.Format(CultureInfo.CurrentCulture,
                 T("KDLG_ET_VERWENDET_VON", "verwendet von: {0}"), v.BeitraegerText);
@@ -560,6 +585,7 @@ namespace WindowsFormsApplication1
         private bool ListenZugeordnet(int id)
         {
             ProjektEnergietraegerCtrl.Verwendung v;
+            if (_projektId > 0 && id == _wasserOffen) return false;
             return _projektId <= 0 || !_verwendung.TryGetValue(id, out v) || v.Zugeordnet;
         }
 
@@ -826,17 +852,24 @@ namespace WindowsFormsApplication1
 
             _umrechnungen = EnergietraegerPreisCtrl.Umrechnungen(_gewaehlt.ID_Brennstoff);
             _idBrennstoff = _gewaehlt.ID_Brennstoff;
-            _abrechnungseinheit = _gewaehlt.BillingUnit ?? "";
+            // Welle KB-7c1: Der Wasserträger rechnet je m³ ab — am Preismodell erkannt, nie am Namen.
+            _abrechnungseinheit = EnergietraegerPreiskarte.Abrechnungseinheit(_gewaehlt.PricingModel, _gewaehlt.BillingUnit);
+            bool wasser = EnergietraegerPreiskarte.IstWasser(_gewaehlt.PricingModel);
 
             var stand = new EnergietraegerStand
             {
                 TraegerZeile = _gewaehlt.Name + "  (VDI 3805 " + _gewaehlt.Code + ")",
                 GruppeZeile = "Gruppe: " + _gewaehlt.GroupCode,
-                MitHeizwert = _gewaehlt.HasHi,
-                MitBrennwert = _gewaehlt.HasHs,
-                MitLeistungspreis = _gewaehlt.HasPowerPrice,
-                MitFormel = _gewaehlt.HasHi,
-                Basiseinheit = _gewaehlt.BillingUnit ?? "",
+                MitHeizwert = _gewaehlt.HasHi && !wasser,
+                MitBrennwert = _gewaehlt.HasHs && !wasser,
+                MitLeistungspreis = _gewaehlt.HasPowerPrice && !wasser,
+                MitFormel = _gewaehlt.HasHi && !wasser,
+                // Welle KB-7c1 (Entscheide F1/F5): am Wasserträger ein Arbeitspreis je m³ samt Szenariopreisen —
+                // kein Grundpreis, keine Emissionen, keine Einheitenkette bis kWh.
+                MitGrundpreis = EnergietraegerPreiskarte.MitGrundpreis(_gewaehlt.PricingModel),
+                MitEmissionen = EnergietraegerPreiskarte.MitEmissionen(_gewaehlt.PricingModel),
+                MitUmrechnung = EnergietraegerPreiskarte.MitKwhKette(_gewaehlt.PricingModel),
+                Basiseinheit = _abrechnungseinheit,
                 GueltigAb = DateOnly.FromDateTime(DateTime.Now),
                 EinheitGrundpreis = "€/a",
                 // B3: Katalogwerte holen kann nur, wer ein Projekt pflegt - im
@@ -915,12 +948,24 @@ namespace WindowsFormsApplication1
                 stand.AltSO2 = _gewaehlt.SO2;
                 stand.AltNOx = _gewaehlt.NOx;
 
-                gemerkteBasis = _gewaehlt.BillingUnit;
+                // Ohne Projektzeile ist nichts gemerkt: Die Vorgabe (unten) gilt.
+                gemerkteBasis = null;
 
                 // ETAPPE E9b: ohne Projektzeile gibt es keine Szenariopreise.
                 _baseSzArbeitBest = null;
                 _baseSzArbeitWorst = null;
             }
+
+            // Vorgabe €/kWh: Eine gemerkte Preisbasis bleibt; nur eine neue Auswahl
+            // oder ein leerer Wert steht in €/kWh — umgerechnet mit dem Heizwert
+            // (Faktor, AnzeigeAusBasis). Ohne Heizwert bleibt die Abrechnungseinheit,
+            // ebenso ohne Spalte (Schemastand vor 112): Dort sagt die Herleitungszeile
+            // ausdrücklich, dass die Karte die Abrechnungseinheit zeigt.
+            if (projekt != null && projekt.PreisbasisSpalteFehlt)
+                gemerkteBasis = _gewaehlt.BillingUnit;
+            else
+                gemerkteBasis = EnergietraegerPreiskarte.VorgabePreisbasis(
+                    gemerkteBasis, _gewaehlt.BillingUnit, _gewaehlt.HasHi, stand.Heizwert);
 
             // UR-1: Die Preisbasis „kWh" traegt den HEIZWERT als Faktor, nicht den
             // Faktor einer Umrechnungsregel. Die Liste kann deshalb erst stehen,
@@ -1053,8 +1098,9 @@ namespace WindowsFormsApplication1
         /// <param name="einheit">Die Einheit, die gewählt bleiben soll; leer = Mengeneinheit.</param>
         private void PreisbasenBauen(EnergietraegerStand stand, double heizwert, string einheit)
         {
-            double hi = _gewaehlt.HasHi ? heizwert : 0.0;
-            _preisbasen = EnergietraegerPreisCtrl.Preisbasen(_gewaehlt.BillingUnit, _umrechnungen, hi);
+            // Welle KB-7c1: Der Wasserträger hat keinen Heizwert — seine Liste führt allein m³.
+            double hi = _gewaehlt.HasHi && !EnergietraegerPreiskarte.IstWasser(_gewaehlt.PricingModel) ? heizwert : 0.0;
+            _preisbasen = EnergietraegerPreisCtrl.Preisbasen(_abrechnungseinheit, _umrechnungen, hi);
 
             var basen = new List<ValueTuple<int, string>>();
             for (int i = 0; i < _preisbasen.Count; i++)
@@ -1352,7 +1398,7 @@ namespace WindowsFormsApplication1
             // €/(kW·Monat), der Grundpreis in €/a. Allein der ARBEITSPREIS
             // folgt der Klappliste.
             _stand.EinheitArbeitspreis = EnergietraegerPreiskarte.ArbeitspreisEinheit(
-                AktuelleEinheit(), _gewaehlt.HasHi);
+                AktuelleEinheit(), _gewaehlt.HasHi, _gewaehlt.PricingModel);
             _stand.EinheitHeizwert = EnergietraegerPreiskarte.HeizwertEinheit(_abrechnungseinheit);
             _stand.EinheitBrennwert = _stand.EinheitHeizwert;
             _stand.EinheitLeistungspreis = EnergietraegerPreiskarte.LeistungspreisEinheit(
@@ -1417,8 +1463,9 @@ namespace WindowsFormsApplication1
             _stand.EffektivText = EnergietraegerPreiskarte.Effektivzeile(
                 _abrechnungseinheit, _baseHi, _baseHs);
 
+            // Welle KB-7c1: Der Wasserträger erreicht kWh nie — für ihn gilt die Kette nicht.
             string grund;
-            _stand.VerstossText = EnergieEinheitenPruefung.ErreichtKwh(
+            _stand.VerstossText = !_stand.MitUmrechnung || EnergieEinheitenPruefung.ErreichtKwh(
                 _abrechnungseinheit, _baseHi, _baseHs, _regeln, out grund) ? "" : grund;
         }
 
@@ -1597,8 +1644,10 @@ namespace WindowsFormsApplication1
             if (_stand == null || _gewaehlt == null) return true;
 
             // ETAPPE K3: die BLOCKIERENDE Prüfung. Der Träger muss kWh erreichen.
+            // Welle KB-7c1: Der Wasserträger (Abrechnung je m³) ist von der kWh-Kette ausgenommen.
             string grund;
-            if (!EnergieEinheitenPruefung.ErreichtKwh(_abrechnungseinheit, _baseHi,
+            if (_stand.MitUmrechnung &&
+                !EnergieEinheitenPruefung.ErreichtKwh(_abrechnungseinheit, _baseHi,
                                                       _baseHs, _regeln, out grund))
             {
                 _stand.VerstossText = grund;

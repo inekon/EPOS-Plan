@@ -131,6 +131,38 @@ public sealed class KaeltemaschineAnlageTexte
     public string KostenInvest { get; set; } = Resource.KDLG_KNOPF_INVEST;
     /// <summary>Kostenknopf Betrieb (KDLG_KNOPF_BETRIEB).</summary>
     public string KostenBetrieb { get; set; } = Resource.KDLG_KNOPF_BETRIEB;
+    /// <summary>Kostenknopf Energie (KDLG_KNOPF_ENERGIE) — KD1, derselbe Schlüssel wie bei Wärmepumpe und BHKW.</summary>
+    public string KostenEnergie { get; set; } = Resource.KDLG_KNOPF_ENERGIE;
+    /// <summary>Titel der Trägerkarte in der Überlagerung (KDLG_ET_TITEL).</summary>
+    public string TitelEnergietraeger { get; set; } = Resource.KDLG_ET_TITEL;
+
+    // ------------------------------------------------------------ K-F5b: Gruppe „Rückkühlung“
+    /// <summary>Titel der Gruppe (KMK_RKW_GRUPPE).</summary>
+    public string GruppeRueckkuehlung { get; set; } = Resource.KMK_RKW_GRUPPE;
+    /// <summary>Klappliste (KMK_RKW_LABEL).</summary>
+    public string LabelRueckkuehlwerk { get; set; } = Resource.KMK_RKW_LABEL;
+    /// <summary>Eintrag „keins“ (KMK_RKW_KEINS).</summary>
+    public string RueckkuehlwerkKeins { get; set; } = Resource.KMK_RKW_KEINS;
+    /// <summary>Eintrag der Projektkopie ohne Katalogsatz (KMK_RKW_PROJEKTKOPIE, {0} = Name).</summary>
+    public string RueckkuehlwerkProjektkopie { get; set; } = Resource.KMK_RKW_PROJEKTKOPIE;
+    /// <summary>Hinweis statt der Gruppe bei luftgekühlten Maschinen (KMK_RKW_HINWEIS_LUFT).</summary>
+    public string HinweisRkwLuft { get; set; } = Resource.KMK_RKW_HINWEIS_LUFT;
+    /// <summary>Ohne Rückkühlwerk gelten die Festwerte (KMK_RKW_HINWEIS_KEINS).</summary>
+    public string HinweisRkwKeins { get; set; } = Resource.KMK_RKW_HINWEIS_KEINS;
+    /// <summary>Die Wahl schreibt erst OK (KMK_RKW_HINWEIS_WAHL).</summary>
+    public string HinweisRkwWahl { get; set; } = Resource.KMK_RKW_HINWEIS_WAHL;
+    /// <summary>Luftfeuchte fehlt bei nasser Bauart (KMK_RKW_HINWEIS_FEUCHTE).</summary>
+    public string HinweisRkwFeuchte { get; set; } = Resource.KMK_RKW_HINWEIS_FEUCHTE;
+    /// <summary>42. BImSchV bei nasser Bauart (RKW_HINWEIS_BIMSCHV — derselbe Text wie in der Verwaltung).</summary>
+    public string HinweisRkwBimschv { get; set; } = Resource.RKW_HINWEIS_BIMSCHV;
+    /// <summary>Ventilator ersetzt den Hilfsstrom der Rückkühlung (KMK_RKW_HINWEIS_VENTILATOR, {0} = kW).</summary>
+    public string HinweisRkwVentilator { get; set; } = Resource.KMK_RKW_HINWEIS_VENTILATOR;
+    /// <summary>Knopf zur Verwaltung (RKW_MENUE — derselbe Text wie im Menü).</summary>
+    public string KnopfRueckkuehlwerke { get; set; } = Resource.RKW_MENUE;
+    /// <summary>Die Verwaltung öffnet nicht (KMK_RKW_MSG_VERWALTUNG_NICHT).</summary>
+    public string RueckkuehlwerkeNicht { get; set; } = Resource.KMK_RKW_MSG_VERWALTUNG_NICHT;
+    /// <summary>Ungespeicherte Änderungen halten den Sprung an (KMK_RKW_MSG_UNGESPEICHERT).</summary>
+    public string RueckkuehlwerkeUngespeichert { get; set; } = Resource.KMK_RKW_MSG_UNGESPEICHERT;
 
     // ------------------------------------------------------------ Einheiten (Symbole)
     public string EinheitKw { get; set; } = "kW";

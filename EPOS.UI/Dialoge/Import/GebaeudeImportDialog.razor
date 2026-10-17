@@ -266,6 +266,16 @@
                 @* DIE WAHL DER AUFBAUQUELLE (Anwenderentscheid vom 08.10.2026): nach angeschlagener Standpruefung die Rueckfrage mit
                    drei Wegen ohne Vorgabe; danach die gewaehlte Quelle als leise Zeile, aenderbar bis zur Uebernahme. Solange die
                    Rueckfrage steht, traegt sie den Befund - das Banner derselben Warnung entfaellt. *@
+                @if (sq.Pruefbefund.Count > 0)
+                {
+                    @* GD-N: der Pruefbefund der Projektdatei beim Weg "Gebaeudedatei + Projektdatei" der Mehrzonenuebernahme. *@
+                    <ul class="epos-gebimport-sqbefund" data-bereich="projektdatei-pruefung">
+                        @foreach (string zeile in sq.Pruefbefund)
+                        {
+                            <li>@zeile</li>
+                        }
+                    </ul>
+                }
                 <Aufbauquellenwahl Pruefung="@sq.Standpruefung" Wahl="@sq.Aufbauquelle" Texte="@Texte"
                                    Aktiv="@(!Beschaeftigt && AufbauquelleWaehlen is not null)"
                                    Gewaehlt="BeiAufbauquelle" NeuExportierenGewaehlt="BeiNeuExport" />
@@ -504,6 +514,17 @@
                Knopf ist ein Schritt am Zonenplan des Kerns; lehnt er ab, steht seine Meldung als Banner, bei
                ungleicher Beheizung mit dem Raumhaken als Ausweg. *@
             <Gruppenkopf Titel="@Texte.GruppeZonen" />
+            @if (zplan.Planvorlage.Length > 0)
+            {
+                @* GD-N: der Zonenplan eines frueheren Imports ist vorgelegt; eine abweichende Pruefsumme steht benannt darueber. *@
+                <div class="epos-gebimport-planvorlage" data-abweichend="@(zplan.PlanvorlageAbweichung.Length > 0 ? "ja" : "nein")">
+                    @if (zplan.PlanvorlageAbweichung.Length > 0)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@zplan.PlanvorlageAbweichung" />
+                    }
+                    <Herleitungszeile Text="@zplan.Planvorlage" />
+                </div>
+            }
             @* Stufe NP3b (Konzept Nutzungsprofile 6.2, NP-F22): der Katalog der Nutzungsprofile als Überlagerung; nach dem
                Schließen liest der Plan Katalog und Zuordnung neu. Kein Delegat, kein Knopf. *@
             @if (Raumnutzung is not null)
@@ -534,9 +555,9 @@
                                     <th>@Texte.SpalteZone</th>
                                     <th>@Texte.SpalteNutzung</th>
                                     <th>@Texte.SpalteBeheizt</th>
-                                    <th class="epos-gebimport-zahl">@Texte.SpalteFlaeche</th>
+                                    <th class="epos-gebimport-zahl">@Texte.SpalteFlaeche [m²]</th>
                                     <th class="epos-gebimport-zahl">@Texte.SpalteRaeume</th>
-                                    <th class="epos-gebimport-zahl">@Texte.SpalteSollwert</th>
+                                    <th class="epos-gebimport-zahl">@Texte.SpalteSollwert [°C]</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -924,6 +945,12 @@
         </div>
     }
 
+    @if (_wiederimport is not null)
+    {
+        @* MA-6: die Vorschau des Wiederimports nach dem ersten OK; das zweite OK merkt die Zusammenfuehrung vor. *@
+        <WiederimportVorschau Daten="_wiederimport" />
+    }
+
     <SpeichernLeiste OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen" OkErlaubt="@(!Beschaeftigt)"
                      OkSperrgrund="@OkSperrgrund" Ergebnis="BeiLeiste" />
 
@@ -948,6 +975,18 @@
                 Beantwortet="SqZonierungBeantwortet" JaText="@Texte.Ja" NeinText="@Texte.Nein" />
 </div>
 
+
+@* GD-6a: die Baustoff-Zuordnungen des Projekts als Überlagerung - geschrieben mit deren OK. *@
+<Ueberlagerung Offen="@(_baustoffzuordnungenGaben is not null)" Titel="@Resource.BSZU_TITEL"
+               Geschlossen="() => BaustoffzuordnungenFertig(null)">
+    <KindInhalt>
+        @if (_baustoffzuordnungenGaben is not null)
+        {
+            <EPOS.UI.Dialoge.Bedarf.BaustoffzuordnungenDialog @attributes="_baustoffzuordnungenGaben" TitelAnzeigen="false"
+                                                             Geschlossen="BaustoffzuordnungenFertig" />
+        }
+    </KindInhalt>
+</Ueberlagerung>
 
 @* Stufe NP3b: der Katalog der Nutzungsprofile als Überlagerung des Zonenbaums. *@
 <Ueberlagerung Offen="@_nutzungsblatt" Titel="@RaumnutzungTexte.Blatt" Zusatzklasse="epos-gebimport-nutzungsblatt"
@@ -999,6 +1038,17 @@
 
     /// <summary>Der Dialog ist zu: das Ergebnis nach einer Übernahme, <c>null</c> bei Abbrechen, ✕ und Esc.</summary>
     [Parameter] public EventCallback<GebaeudeImportErgebnis?> Geschlossen { get; set; }
+
+    /// <summary>
+    /// MA-6: die Vorschau des Wiederimports in ein Gebäude mit Bestand. Gesetzt, zeigt das erste OK die Unterschiede
+    /// (<see cref="WiederimportVorschau"/>), erst das zweite ruft <see cref="Uebernehmen"/>; <c>null</c> = ohne Vorschau.
+    /// </summary>
+    [Parameter] public Func<GebaeudeImportErgebnis, GebaeudeWiederimportDaten?>? Wiederimport { get; set; }
+
+    private GebaeudeWiederimportDaten? _wiederimport;
+
+    /// <summary>Die stehende Vorschau des Wiederimports (Prüfhilfe für Tests).</summary>
+    public GebaeudeWiederimportDaten? Wiederimportvorschau => _wiederimport;
 
     /// <summary>
     /// Entwicklerbereich <c>PROJEKTDATEI_IMPORT</c>: die Projektdatei des CAD-Programms anlegen — Quellenwahl „mit/nur
@@ -1082,6 +1132,35 @@
     {
         _nutzungsblatt = false;
         NeuZuordnen();
+    }
+
+    /// <summary>
+    /// „Baustoff-Zuordnungen…" an der Liste „Bauteilaufbauten" (GD-6a): der Parametersatz der Ansicht der gemerkten
+    /// Zuordnungen des Projekts — vom Gebäudedialog durchgereicht, je Klick neu gelesen. Kein Delegat = kein Knopf
+    /// (Katalogverwaltung, Assistent).
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? BaustoffzuordnungenGaben { get; set; }
+
+    private IReadOnlyDictionary<string, object>? _baustoffzuordnungenGaben;
+
+    /// <summary>Steht die Ansicht der Baustoff-Zuordnungen? Prüfhilfe für die Tests.</summary>
+    public bool BaustoffzuordnungenOffen => _baustoffzuordnungenGaben is not null;
+
+    private void BeiBaustoffzuordnungen()
+    {
+        if (BaustoffzuordnungenGaben is null) return;
+        _baustoffzuordnungenGaben = BaustoffzuordnungenGaben();
+    }
+
+    /// <summary>Die Ansicht ist zu: nach OK mit der Zahl der entfernten Zuordnungen, sonst <c>null</c>.</summary>
+    private void BaustoffzuordnungenFertig(int? entfernt)
+    {
+        _baustoffzuordnungenGaben = null;
+        if (entfernt is > 0)
+        {
+            _meldung = string.Format(CultureInfo.CurrentCulture, Resource.GEB_MSG_BAUSTOFFZUORDNUNGEN_ENTFERNT, entfernt.Value);
+            _meldungStufe = WarnStufe.Hinweis;
+        }
     }
 
     /// <summary>
@@ -1655,6 +1734,7 @@
     private void StandUebernehmen(GebaeudeImportStand stand)
     {
         _stand = stand;
+        _wiederimport = null;   // MA-6: eine neue Zuordnung braucht eine neue Vorschau.
         _zeilen = stand.Zeilen.Select(z => MitHandaenderungen(z, stand.ManuellHerkunftText)).ToList();
         if (!_nameGeaendert) _name = stand.Vorschlagsname ?? "";
         FlaechenFiltern();
@@ -2515,6 +2595,19 @@
             return;
         }
 
+        // MA-6: erst die Unterschiede zum Bestand, dann das Vormerken.
+        if (Wiederimport is not null && _wiederimport is null)
+        {
+            GebaeudeWiederimportDaten? vorschau = Wiederimport(ergebnis);
+            if (vorschau is not null)
+            {
+                if (vorschau.Meldung.Length > 0) { Melden(vorschau.Meldung, WarnStufe.Fehler); return; }
+                _wiederimport = vorschau;
+                _meldung = "";
+                return;
+            }
+        }
+
         _schreibt = true;
         _meldung = "";
         string? grund;
@@ -2567,7 +2660,7 @@
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
-        if (_nutzungsblatt) return Task.CompletedTask;   // die Überlagerung der Nutzungsprofile schließt selbst
+        if (_nutzungsblatt || _baustoffzuordnungenGaben is not null) return Task.CompletedTask;   // die Überlagerung der Nutzungsprofile schließt selbst
         if (_regelFrage is not null || _aufhebenFrage || _neuExportFrage) return Task.CompletedTask;   // die Rückfrage antwortet „Nein"
         if (_laeuft) { _abbruch?.Cancel(); return Task.CompletedTask; }
         if (_schreibt) return Task.CompletedTask;
@@ -2783,6 +2876,15 @@
         IReadOnlyList<GebaeudeAufbaulistenzeileDaten> zeilen = stand.Aufbauten;
         <Gruppenkopf Titel="@Texte.GruppeAufbauten" />
         <p class="epos-leisezeile epos-gebimport-verwaltungshinweis">@Texte.AbVerwaltungHinweis</p>
+        @* GD-6a: die gemerkten Baustoff-Zuordnungen des Projekts an der Liste, an der sie entstehen. *@
+        @if (BaustoffzuordnungenGaben is not null)
+        {
+            <div class="epos-leiste epos-gebimport-baustoffzuordnungen-leiste">
+                <button type="button" class="epos-knopf epos-gebaeude-baustoffzuordnungen"
+                        title="@Resource.GEB_BTN_BAUSTOFFZUORDNUNGEN_HINWEIS"
+                        @onclick="BeiBaustoffzuordnungen">@Resource.GEB_BTN_BAUSTOFFZUORDNUNGEN</button>
+            </div>
+        }
         @if (zeilen.Count == 0)
         {
             <p class="epos-leisezeile epos-gebimport-aufbauten-leer">@Texte.AbLeer</p>

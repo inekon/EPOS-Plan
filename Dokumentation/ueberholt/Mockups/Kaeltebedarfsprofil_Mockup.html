@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kältebedarfsprofil-Mockup EPOS-Plan</title>
+<!--
+  MOCKUP zum Konzept Kaeltebedarfsprofile (Dokumentation/ueberholt/Konzept_Kaeltebedarfsprofile_EPOS-Plan.md).
+
+  Anwenderwunsch: "Die Bedarfsprofile sollte aehnlich dem der Waermebedarfsprofile sein - Funktionalitaet -
+  Darstellung in Grafik, Eingabe mit Monatswerte, Tageswerte, Wochenwerte ... Vorlagen fuer Bedarfsprofile
+  erweitern (Krankenhaus, Industrieunternehmen,...)" und die Frage nach dem Kalender an der Kachel Kuehlung.
+
+  SPIELBAR: Eingabeart (Jahressumme mit Vorlage | Monatswerte | Wochenprofil | Typtage), Vorlagenwahl,
+  Grafik (Jahresgang mit Tagesband, Monate, Woche, Dauerlinie) mit Achswahl "Datum | Stunde im Jahr",
+  Knopf "Betriebskalender..." mit kleinem Kalenderdialog (Feiertage, Ferien, Ferienfaktor). Die Feldgruppe
+  "Deckung" steht ausgegraut da - sie bleibt wie heute.
+
+  EIGENSTAENDIG: kein CDN, kein Rahmenwerk, keine Schriftdatei von aussen. Farben und Masse aus
+  EPOS.UI/wwwroot/epos-ui.css (Kopfbaender #0F1F3D, Flaeche #f5f4ef, Rahmen #b4b2a9, Kalenderfarben
+  --epos-kalb-*). Rechnung synthetisch im Browser: festes Raster 8760 h, kein Schaltjahr, 1. Januar
+  Donnerstag (wie die Klimaregion der Testdatenbank), Ostersonntag = Sonntag am naechsten zum Jahrestag 98.
+  Die Vorlagenwerte sind Formangaben (Richtwerte), keine Produktdaten.
+-->
+<style>
+:root {
+    --epos-schrift: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+    --epos-schriftgroesse: 13px;
+    --epos-rahmen: #b4b2a9;
+    --epos-rahmen-leise: #d9d7cf;
+    --epos-text: #2c2c2a;
+    --epos-text-leise: #5f5e5a;
+    --epos-text-sehr-leise: #888780;
+    --epos-flaeche: #f5f4ef;
+    --epos-quelle-rahmen: #378ADD;
+    --epos-quelle-text: #185FA5;
+    --epos-badge-flaeche: #FAECE7;
+    --epos-badge-text: #712B13;
+    --epos-warn-rahmen: rgb(200, 138, 0);
+    --epos-warn-flaeche: rgb(255, 246, 224);
+    --epos-warn-text: rgb(138, 91, 0);
+    --epos-kalb-grundwoche: #ffffff;
+    --epos-kalb-wochenende: #e4e2da;
+    --epos-kalb-ferien: #fff1c7;
+    --epos-kalb-feiertag: #f3d3c6;
+    --epos-gruppenkopf-flaeche: #0F1F3D;
+    --epos-gruppenkopf-text: #ffffff;
+    --epos-gruppenkopf-summe: #93C5FD;
+    --epos-karte-rahmen: #D1D5DB;
+    --epos-reiterband: #f0f8ff;
+    --kaelte: #378ADD;
+    --kaelte-band: #cfe2f6;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #e9e8e3; color: var(--epos-text); font-family: var(--epos-schrift); font-size: var(--epos-schriftgroesse); }
+.seite { display: flex; gap: 16px; padding: 16px; align-items: flex-start; max-width: 1280px; margin: 0 auto; }
+.dialog { flex: 1 1 auto; min-width: 0; background: #fff; border: 1px solid var(--epos-rahmen); border-radius: 6px; overflow: hidden; }
+.dialogkopf { background: var(--epos-gruppenkopf-flaeche); color: var(--epos-gruppenkopf-text); padding: 10px 14px; font-size: 15px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+.dialogkopf small { color: var(--epos-gruppenkopf-summe); font-weight: 400; font-size: 12px; }
+.inhalt { display: grid; grid-template-columns: 330px 1fr; gap: 0; }
+.links { border-right: 1px solid var(--epos-rahmen-leise); padding: 10px 12px; }
+.rechts { padding: 10px 12px; min-width: 0; }
+.gruppenkopf { background: var(--epos-gruppenkopf-flaeche); color: #fff; font-weight: 600; padding: 6px 10px; border-radius: 4px; margin: 10px 0 6px; display: flex; justify-content: space-between; }
+.gruppenkopf .summe { color: var(--epos-gruppenkopf-summe); font-weight: 400; }
+.zeile { display: grid; grid-template-columns: 120px 1fr; gap: 6px; align-items: center; margin: 5px 0; }
+.zeile label { color: var(--epos-text-leise); }
+select, input[type=number], input[type=text] { font: inherit; padding: 4px 6px; border: 1px solid var(--epos-rahmen); border-radius: 4px; background: #fff; min-height: 28px; width: 100%; }
+input.kurz { width: 8em; }
+button { font: inherit; background: var(--epos-flaeche); border: 1px solid var(--epos-rahmen); border-radius: 6px; padding: 5px 10px; cursor: pointer; min-height: 30px; color: var(--epos-text); }
+button:hover { border-color: var(--epos-quelle-rahmen); }
+button.primaer { background: var(--epos-gruppenkopf-flaeche); color: #fff; border-color: var(--epos-gruppenkopf-flaeche); }
+.segment { display: flex; flex-wrap: wrap; border: 1px solid var(--epos-rahmen); border-radius: 6px; overflow: hidden; }
+.segment button { border: 0; border-radius: 0; border-right: 1px solid var(--epos-rahmen-leise); flex: 1 1 auto; padding: 5px 6px; font-size: 12px; }
+.segment button:last-child { border-right: 0; }
+.segment button[aria-pressed=true] { background: var(--epos-gruppenkopf-flaeche); color: #fff; }
+.herleitung { color: var(--epos-text-sehr-leise); font-size: 12px; margin: 3px 0 6px; line-height: 1.35; }
+.hinweis { background: var(--epos-warn-flaeche); border: 1px solid var(--epos-warn-rahmen); color: var(--epos-warn-text); border-radius: 4px; padding: 6px 8px; font-size: 12px; margin: 4px 0; }
+.projektliste { border: 1px solid var(--epos-rahmen); border-radius: 4px; }
+.projektliste div { padding: 5px 8px; border-bottom: 1px solid var(--epos-rahmen-leise); display: flex; justify-content: space-between; }
+.projektliste div:last-child { border-bottom: 0; }
+.projektliste .gewaehlt { background: #EFF6FF; outline: 1px solid var(--epos-quelle-rahmen); }
+.leise { color: var(--epos-text-sehr-leise); }
+table.raster { border-collapse: collapse; width: 100%; font-size: 11px; }
+table.raster th, table.raster td { border: 1px solid var(--epos-rahmen-leise); padding: 1px; text-align: center; }
+table.raster th { background: var(--epos-flaeche); font-weight: 600; color: var(--epos-text-leise); }
+table.raster input { width: 100%; min-height: 22px; padding: 1px 2px; border: 0; font-size: 11px; text-align: right; background: transparent; }
+table.raster input:focus { outline: 2px solid var(--epos-quelle-rahmen); background: #fff; }
+table.raster td.kopf { text-align: left; white-space: nowrap; padding: 2px 4px; background: var(--epos-flaeche); }
+.tabellenrolle { overflow-x: auto; }
+.deckung { opacity: .55; pointer-events: none; position: relative; }
+.badge { display: inline-block; background: var(--epos-badge-flaeche); color: var(--epos-badge-text); border-radius: 10px; padding: 1px 8px; font-size: 11px; font-weight: 600; }
+.reiter { display: flex; gap: 2px; background: var(--epos-reiterband); padding: 4px 4px 0; border-radius: 4px 4px 0 0; border: 1px solid var(--epos-rahmen-leise); border-bottom: 0; }
+.reiter button { border-radius: 4px 4px 0 0; border-bottom: 0; background: transparent; border-color: transparent; }
+.reiter button[aria-pressed=true] { background: #fff; border-color: var(--epos-rahmen-leise); font-weight: 600; }
+.grafikrahmen { border: 1px solid var(--epos-rahmen-leise); border-radius: 0 0 4px 4px; padding: 8px; }
+.grafikleiste { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+.einheiten button { font-size: 12px; padding: 3px 8px; min-height: 26px; }
+.einheiten button[aria-pressed=true] { background: var(--epos-gruppenkopf-flaeche); color: #fff; }
+.kennzahlen { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 6px 0 8px; }
+.kennzahl { border: 1px solid var(--epos-karte-rahmen); border-radius: 6px; padding: 5px 8px; }
+.kennzahl b { display: block; font-size: 16px; color: var(--epos-gruppenkopf-flaeche); }
+.kennzahl span { color: var(--epos-text-leise); font-size: 11px; }
+svg { display: block; width: 100%; height: auto; }
+svg text { font-family: var(--epos-schrift); font-size: 10px; fill: var(--epos-text-leise); }
+.legende { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--epos-text-leise); margin-top: 4px; }
+.legende i { display: inline-block; width: 12px; height: 10px; border: 1px solid var(--epos-rahmen); margin-right: 4px; vertical-align: -1px; }
+.fuss { display: flex; justify-content: flex-end; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--epos-rahmen-leise); background: #fbfbf9; }
+.tafel { flex: 0 0 280px; background: #fff; border: 1px solid var(--epos-rahmen); border-radius: 6px; overflow: hidden; }
+.tafel h2 { margin: 0; background: var(--epos-gruppenkopf-flaeche); color: #fff; font-size: 13px; padding: 8px 10px; }
+.tafel ul { margin: 0; padding: 8px 10px 10px 26px; line-height: 1.45; }
+.tafel li { margin-bottom: 5px; }
+.tafel .neu { color: var(--epos-quelle-text); font-weight: 600; }
+.tafel p { margin: 0; padding: 0 10px 10px; color: var(--epos-text-leise); font-size: 12px; }
+.ueberlagerung { position: fixed; inset: 0; background: rgba(15,31,61,.35); display: none; align-items: flex-start; justify-content: center; padding-top: 60px; z-index: 10; }
+.ueberlagerung.offen { display: flex; }
+.kaldialog { background: #fff; border: 1px solid var(--epos-rahmen); border-radius: 6px; width: 560px; max-width: calc(100vw - 32px); overflow: hidden; }
+.kaldialog .koerper { padding: 10px 14px; }
+.ferienzeile { display: grid; grid-template-columns: 70px 1fr 1fr; gap: 6px; align-items: center; margin: 4px 0; }
+.monatskarte { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; font-size: 10px; margin-top: 6px; }
+.monatskarte div { text-align: center; padding: 2px 0; border: 1px solid var(--epos-rahmen-leise); }
+@media (max-width: 900px) {
+    .seite { flex-direction: column; }
+    .tafel { flex: 1 1 auto; width: 100%; }
+    .inhalt { grid-template-columns: 1fr; }
+    .links { border-right: 0; border-bottom: 1px solid var(--epos-rahmen-leise); }
+}
+</style>
+</head>
+<body>
+<div class="seite">
+  <section class="dialog" aria-label="Kältebedarfsprofile">
+    <div class="dialogkopf"><span>Kältebedarfsprofile — Projekt „Beispielprojekt“</span><small>Kachel „Kühlung und Kälteanlagen“ · Bearbeiten-Überlagerung der Projektzeile</small></div>
+    <div class="inhalt">
+      <div class="links">
+        <div class="gruppenkopf"><span>Ausgewählt im Projekt</span><span class="summe" id="kopfSumme"></span></div>
+        <div class="projektliste">
+          <div class="gewaehlt"><span id="zeileName">Kälte 1</span><span class="leise" id="zeileSumme"></span></div>
+          <div><span>Kühlraum Küche</span><span class="leise">40,0 MWh</span></div>
+        </div>
+
+        <div class="gruppenkopf"><span>Profil</span></div>
+        <div class="zeile"><label for="vorlage">Vorlage</label><select id="vorlage"></select></div>
+        <div class="herleitung" id="vorlageText"></div>
+        <div class="zeile"><label>Eingabeart</label>
+          <div class="segment" role="group" aria-label="Eingabeart" id="eingabeart">
+            <button data-art="jahr" aria-pressed="true">Jahressumme</button>
+            <button data-art="monat" aria-pressed="false">Monate</button>
+            <button data-art="woche" aria-pressed="false">Woche</button>
+            <button data-art="typtag" aria-pressed="false">Typtage</button>
+          </div>
+        </div>
+        <div id="eingabe"></div>
+
+        <div class="gruppenkopf"><span>Kalender</span></div>
+        <div class="zeile"><label for="kalenderwahl">Betriebskalender</label>
+          <select id="kalenderwahl"></select>
+        </div>
+        <div class="zeile"><span></span><div><button id="kalKnopf" title="Betriebskalender anlegen und bearbeiten">Betriebskalender…</button></div></div>
+        <div id="kalHinweis"></div>
+
+        <div class="gruppenkopf"><span>Deckung</span><span class="badge">bleibt wie heute</span></div>
+        <div class="deckung" aria-disabled="true">
+          <div class="zeile"><label>Deckungsart</label><select disabled><option>zentral (Kältefolge)</option></select></div>
+          <div class="zeile"><label>EER-Weg</label><select disabled><option>fest</option></select></div>
+          <div class="zeile"><label>EER (fest)</label><input type="text" disabled value="3,0 · 35 °C"></div>
+          <div class="zeile"><label>Kühlträger</label><select disabled><option>Stromträger des Projekts</option></select></div>
+          <div class="herleitung">Feldgruppe und Naht „KaelteDezentralBearbeiten“ unverändert (Konzept Kältebedarf 3.4).</div>
+        </div>
+      </div>
+
+      <div class="rechts">
+        <div class="kennzahlen">
+          <div class="kennzahl"><b id="kzSumme">–</b><span>Jahressumme [MWh]</span></div>
+          <div class="kennzahl"><b id="kzSpitze">–</b><span>Spitze [kW]</span></div>
+          <div class="kennzahl"><b id="kzVbh">–</b><span>Vollbenutzung [h]</span></div>
+          <div class="kennzahl"><b id="kzGrund">–</b><span>Grundlast-Anteil</span></div>
+        </div>
+        <div class="reiter" role="tablist" id="blaetter">
+          <button data-blatt="jahr" aria-pressed="true">Jahresgang</button>
+          <button data-blatt="monate" aria-pressed="false">Monate</button>
+          <button data-blatt="woche" aria-pressed="false">Woche</button>
+          <button data-blatt="dauer" aria-pressed="false">Dauerlinie</button>
+        </div>
+        <div class="grafikrahmen">
+          <div class="grafikleiste">
+            <span id="grafikTitel" style="font-weight:600"></span>
+            <span id="werkzeug"></span>
+          </div>
+          <div id="grafik"></div>
+          <div class="legende" id="legende"></div>
+        </div>
+        <div class="herleitung" style="margin-top:8px">Alle Bilder über <code>DiagrammSvg</code>: Jahresgang und Woche tragen die Achswahl „Datum | Stunde im Jahr“ von selbst. Raster 8 760 h ohne Schaltjahr, Wochentage nach der Klimaregion (1. Januar = Donnerstag), Feiertage nach der Gemeinjahr-Konvention.</div>
+      </div>
+    </div>
+    <div id="eingabeBreit" style="display:none; padding: 0 12px 10px; border-top: 1px solid var(--epos-rahmen-leise)"></div>
+    <div class="fuss"><button>Simulation</button><button>Abbrechen</button><button class="primaer">OK</button></div>
+  </section>
+
+  <aside class="tafel" aria-label="Gegenüber Wärmebedarfsprofil">
+    <h2>Gegenüber Wärmebedarfsprofil</h2>
+    <ul>
+      <li>Derselbe Dialog <code>BedarfsProfileDialog</code>, dieselbe Hülle, dieselbe Kette <code>ProfilBedarf</code>: Monatsanteile × Wochenprofil × Kalender, normiert auf die Jahressumme.</li>
+      <li>Katalog und Projektkopie wie Prozesswärme: Kopf mit zwölf Monaten, Typ mit 168 Stunden, Zuordnung mit Summe und Kalender.</li>
+      <li>Grafik wie im Ergebnisdialog der Wärme, über <code>DiagrammSvg</code>.</li>
+      <li>Wochenprofil-Editor wie der Typprofil-Dialog (24 Werte je Tag, Tag kopieren).</li>
+      <li>Betriebskalender wie Brauchwasser und Prozesswärme — <span class="neu">neu: Knopf „Betriebskalender…“ als Baustein für alle Bedarfsprofile</span>.</li>
+      <li><span class="neu">Neu für alle:</span> Eingabeart an der Projektzeile (Monate, Woche, Typtage), Blätter Woche und Dauerlinie.</li>
+      <li>Nur Kälte: Art (Raum/Prozess), Temperaturpaar als Angabe, Feldgruppe „Deckung“.</li>
+      <li>Keine Witterungsführung — wie bei der Wärme.</li>
+    </ul>
+    <p>Vorlagenwerte sind Formangaben (Richtwerte, Quelle prüfen); Nutzungszeiten nach den Nutzungsprofilen der DIN V 18599-10.</p>
+  </aside>
+</div>
+
+<div class="ueberlagerung" id="kalUeberlagerung" role="dialog" aria-modal="true" aria-label="Betriebskalender">
+  <div class="kaldialog">
+    <div class="dialogkopf"><span>Betriebskalender</span><button id="kalZu" style="min-height:24px;padding:0 8px">✕</button></div>
+    <div class="koerper">
+      <div class="zeile"><label for="kalName">Bezeichner</label><input type="text" id="kalName" value="Betrieb Bayern"></div>
+      <div class="zeile"><label for="kalLand">Bundesland</label>
+        <select id="kalLand"><option value="">bundesweit</option><option value="BY" selected>Bayern</option><option value="NW">Nordrhein-Westfalen</option><option value="SN">Sachsen</option></select></div>
+      <div class="zeile"><label for="kalSonntag">Feiertage</label><label style="color:var(--epos-text)"><input type="checkbox" id="kalSonntag" checked> wie Sonntag rechnen</label></div>
+      <div class="gruppenkopf"><span>Betriebsferien (bis zu vier Zeiträume)</span></div>
+      <div id="ferienFelder"></div>
+      <div class="zeile"><label for="kalFaktor">Ferienfaktor</label><div><input type="number" id="kalFaktor" class="kurz" min="0" max="100" step="5" value="30"> % des Werktags</div></div>
+      <div class="herleitung">Aus Gebäude übernehmen… kopiert Feiertagsland und Ferien eines Projektgebäudes als Kopie, ohne Verweis.</div>
+      <div class="gruppenkopf"><span>Vorschau</span><span class="summe" id="kalZaehler"></span></div>
+      <div style="display:flex; gap:6px; align-items:center"><button id="kalMonatZurueck">◀</button><b id="kalMonatName" style="min-width:90px;text-align:center"></b><button id="kalMonatVor">▶</button></div>
+      <div class="monatskarte" id="kalKarte"></div>
+    </div>
+    <div class="fuss"><button disabled>Aus Gebäude übernehmen…</button><button id="kalAbbrechen">Abbrechen</button><button class="primaer" id="kalOk">OK</button></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+// ---------- Raster ----------
+const MONATSTAGE = [31,28,31,30,31,30,31,31,30,31,30,31];
+const MONATE = ["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
+const MONATE_LANG = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+const TAGE = ["Mo","Di","Mi","Do","Fr","Sa","So"];
+const STUNDEN = Array.from({ length: 24 }, (_, i) => i);
+const WOCHENTAG_1JAN = 3; // Donnerstag (0 = Montag)
+const monatsbeginn = []; { let s = 0; for (const t of MONATSTAGE) { monatsbeginn.push(s); s += t; } }
+function wochentag(d) { return (WOCHENTAG_1JAN + d) % 7; }         // d = 0..364
+function monatVon(d) { let m = 0; while (m < 11 && d >= monatsbeginn[m + 1]) m++; return m; }
+function jahrestag(m, t) { return monatsbeginn[m] + t - 1; }        // 0-basiert
+function fmt(x, n = 1) { return x.toLocaleString("de-DE", { minimumFractionDigits: n, maximumFractionDigits: n }); }
+
+// Ostersonntag im Gemeinjahr: Sonntag am naechsten zum Jahrestag 98 (1-basiert)
+function ostersonntag() {
+  let best = null;
+  for (let d = 80; d <= 115; d++) if (wochentag(d - 1) === 6 && (best === null || Math.abs(d - 98) < Math.abs(best - 98))) best = d;
+  return best - 1; // 0-basiert
+}
+function feiertage(land) {
+  const o = ostersonntag();
+  const f = [
+    [jahrestag(0,1), "Neujahr"], [o - 2, "Karfreitag"], [o + 1, "Ostermontag"], [jahrestag(4,1), "Tag der Arbeit"],
+    [o + 39, "Christi Himmelfahrt"], [o + 50, "Pfingstmontag"], [jahrestag(9,3), "Tag der Deutschen Einheit"],
+    [jahrestag(11,25), "1. Weihnachtstag"], [jahrestag(11,26), "2. Weihnachtstag"]];
+  if (land === "BY" || land === "NW") f.push([o + 60, "Fronleichnam"], [jahrestag(10,1), "Allerheiligen"]);
+  if (land === "BY") f.push([jahrestag(0,6), "Heilige Drei Könige"]);
+  if (land === "SN") { f.push([jahrestag(9,31), "Reformationstag"]);
+    let b = jahrestag(10,22); while (wochentag(b) !== 2) b--; f.push([b, "Buß- und Bettag"]); }
+  return f;
+}
+
+// ---------- Vorlagen (Formangaben, Richtwerte) ----------
+// tag(werk, sa, so): je Tagesart [von, bis, Hoehe] + Grundlast g (Anteil der Spitze)
+function wochenform(spec) {
+  const w = new Array(168).fill(0);
+  for (let t = 0; t < 7; t++) {
+    const art = t < 5 ? spec.werk : t === 5 ? spec.sa : spec.so;
+    for (let h = 0; h < 24; h++) {
+      let v = spec.g;
+      for (const [von, bis, hoehe] of art) if (h >= von && h < bis) v = Math.max(v, hoehe);
+      w[t * 24 + h] = v;
+    }
+  }
+  return w;
+}
+function monate(arr) { const s = arr.reduce((a, b) => a + b, 0); return arr.map(x => 100 * x / s); }
+const SOMMER = monate([0,0,2,6,10,16,22,22,14,6,2,0]);
+const RAUM_GRUND = (g) => monate([g,g,g+1,g+4,g+8,g+14,g+20,g+20,g+12,g+4,g+1,g].map(x => x));
+const VORLAGEN = [
+  { id: 1, name: "Raumkühlung Büro", bestand: true, art: "Raum", summe: 120, mon: monate([0,0,0,0,8.7,19.6,28.9,28.9,14,0,0,0]),
+    w: wochenform({ g: 0, werk: [[7,19,0.8],[13,17,1]], sa: [], so: [] }), text: "Bestand (ID 1) — Mo–Fr 7–19 Uhr, Mai–September." },
+  { id: 2, name: "Raumkühlung Handel", bestand: true, art: "Raum", summe: 150, mon: monate([0,0,0,5.9,12.2,17.6,20.3,20.3,15.7,8.1,0,0]),
+    w: wochenform({ g: 0, werk: [[8,21,1]], sa: [[8,21,1]], so: [] }), text: "Bestand (ID 2) — Mo–Sa 8–21 Uhr." },
+  { id: 3, name: "Prozesskälte Dauerlast", bestand: true, art: "Prozess", summe: 300, mon: monate(MONATSTAGE),
+    w: wochenform({ g: 1, werk: [], sa: [], so: [] }), text: "Bestand (ID 3) — 168 Stunden gleich." },
+  { id: 6, name: "Serverraum", bestand: true, art: "Prozess", summe: 80, mon: monate(MONATSTAGE),
+    w: wochenform({ g: 1, werk: [], sa: [], so: [] }), text: "Bestand (ID 6) — 168 Stunden gleich." },
+  { id: 7, name: "Krankenhaus", art: "Raum", summe: 600, mon: RAUM_GRUND(8),
+    w: wochenform({ g: 0.6, werk: [[7,20,1]], sa: [[7,20,1]], so: [[7,20,1]] }), text: "Neu (ID 7) — 0–24 h, 365 d (DIN V 18599-10); Tag 1,0 / Nacht 0,6; Grundlast 40 % (Richtwert, Quelle prüfen)." },
+  { id: 8, name: "Industrie Prozesskälte einschichtig", art: "Prozess", summe: 250, mon: monate([9,9,9,9.5,10,10.5,11,11,10.5,9.5,9,9]),
+    w: wochenform({ g: 0.1, werk: [[6,14,1]], sa: [], so: [] }), text: "Neu (ID 8) — Mo–Fr 6–14 Uhr, Grundlast 10 % (Richtwert, Quelle prüfen)." },
+  { id: 9, name: "Industrie Prozesskälte zweischichtig", art: "Prozess", summe: 400, mon: monate([9,9,9,9.5,10,10.5,11,11,10.5,9.5,9,9]),
+    w: wochenform({ g: 0.15, werk: [[6,22,1]], sa: [], so: [] }), text: "Neu (ID 9) — Mo–Fr 6–22 Uhr, Grundlast 15 % (Richtwert, Quelle prüfen)." },
+  { id: 10, name: "Industrie Prozesskälte dreischichtig", art: "Prozess", summe: 600, mon: monate([9,9,9,9.5,10,10.5,11,11,10.5,9.5,9,9]),
+    w: wochenform({ g: 0.2, werk: [[0,24,1]], sa: [], so: [] }), text: "Neu (ID 10) — Mo–Fr 0–24 Uhr, Sa/So Grundlast 20 % (Richtwert, Quelle prüfen)." },
+  { id: 11, name: "Rechenzentrum", art: "Prozess", summe: 900, mon: monate(MONATSTAGE),
+    w: wochenform({ g: 0.85, werk: [[8,18,1]], sa: [], so: [] }), text: "Neu (ID 11) — 0–24 h, 365 d (DIN V 18599-10); Mo–Fr 8–18 Uhr +15 % (Richtwert, Quelle prüfen)." },
+  { id: 12, name: "Büro/Verwaltung", art: "Raum", summe: 100, mon: RAUM_GRUND(1),
+    w: wochenform({ g: 0.1, werk: [[7,18,0.75],[13,16,1]], sa: [], so: [] }), text: "Neu (ID 12) — 7–18 Uhr, 250 d (DIN V 18599-10); Grundlast 10 % (Richtwert, Quelle prüfen)." },
+  { id: 13, name: "Hotel", art: "Raum", summe: 200, mon: monate([1,1,2,4,9,16,22,22,14,5,2,1]),
+    w: wochenform({ g: 0.25, werk: [[7,17,0.6],[17,23,1]], sa: [[7,17,0.6],[17,23,1]], so: [[7,17,0.6],[17,23,1]] }), text: "Neu (ID 13) — Zimmer 21–8 Uhr (DIN V 18599-10), Spitze 17–23 Uhr; Grundlast 25 % (Richtwert, Quelle prüfen)." },
+  { id: 14, name: "Lebensmitteleinzelhandel mit Gewerbekälte", art: "Prozess", summe: 350, mon: monate([7.5,7.5,8,8,8.5,9,9.5,9.5,8.5,8,8,8]),
+    w: wochenform({ g: 0.6, werk: [[7,21,1]], sa: [[7,21,1]], so: [] }), text: "Neu (ID 14) — Verkauf Mo–Sa 7–21 Uhr, Kühlmöbel 0–24 h; Grundlast 60 % (Richtwert, Quelle prüfen)." },
+  { id: 15, name: "Schule/Hochschule", art: "Raum", summe: 60, mon: monate([0,0,1,6,14,22,24,18,12,3,0,0]),
+    w: wochenform({ g: 0.05, werk: [[8,16,1]], sa: [], so: [] }), text: "Neu (ID 15) — 8–15/18 Uhr (DIN V 18599-10). Ferien über den Betriebskalender wählen, nicht in den Monaten." },
+  { id: 16, name: "Labor", art: "Raum", summe: 180, mon: RAUM_GRUND(10),
+    w: wochenform({ g: 0.4, werk: [[7,18,1]], sa: [], so: [] }), text: "Neu (ID 16) — 7–18 Uhr, 250 d (DIN V 18599-10); Grundlast 40 % (Richtwert, Quelle prüfen)." }
+];
+
+// ---------- Zustand ----------
+const zustand = {
+  vorlage: VORLAGEN[4], art: "jahr", summe: 600,
+  monatMWh: null, woche3: null, woche168: null, wocheAnsicht: "3",
+  typtage: null, matrix: null,
+  kalender: [], kalenderId: 0, blatt: "jahr", einheit: "datum", kw: 27
+};
+function ausVorlage() {
+  const v = zustand.vorlage;
+  zustand.summe = v.summe;
+  zustand.monatMWh = v.mon.map(a => v.summe * a / 100);
+  zustand.woche168 = v.w.slice();
+  zustand.woche3 = [v.w.slice(0, 24), v.w.slice(120, 144), v.w.slice(144, 168)];
+  const werk = v.w.slice(0, 24), wochenende = v.w.slice(144, 168);
+  zustand.typtage = [
+    { name: "Sommerwerktag", f: werk.slice(), g: 1.0 },
+    { name: "Winterwerktag", f: werk.map(x => x * 0.5 + 0.02), g: 0.35 },
+    { name: "Wochenende", f: wochenende.map(x => x + 0.02), g: 0.3 }];
+  zustand.matrix = MONATE.map((_, m) => ({ werk: (m >= 4 && m <= 8) ? 0 : 1, sa: 2, so: 2 }));
+}
+
+// ---------- Rechnung ----------
+function tagesarten() {
+  const art = new Array(365).fill(0); // 0 normal, 1 Feiertag, 2 Ferien
+  const k = zustand.kalender.find(x => x.id === zustand.kalenderId);
+  if (!k) return { art, k: null };
+  for (const f of k.ferien) {
+    if (!f.von || !f.bis) continue;
+    const a = jahrestag(f.von[0], f.von[1]), b = jahrestag(f.bis[0], f.bis[1]);
+    for (let d = 0; d < 365; d++) if (a <= b ? (d >= a && d <= b) : (d >= a || d <= b)) art[d] = 2;
+  }
+  for (const [d] of feiertage(k.land)) art[d] = 1;
+  return { art, k };
+}
+function reihe() {
+  const { art, k } = tagesarten();
+  const roh = new Array(8760).fill(0);
+  const eingabeart = zustand.art;
+  let w168 = zustand.woche168;
+  if (eingabeart === "woche" && zustand.wocheAnsicht === "3") {
+    w168 = []; for (let t = 0; t < 7; t++) w168.push(...zustand.woche3[t < 5 ? 0 : t === 5 ? 1 : 2]);
+  }
+  if (eingabeart === "jahr" || eingabeart === "monat") w168 = zustand.vorlage.w;
+  for (let d = 0; d < 365; d++) {
+    let wt = wochentag(d), faktor = 1;
+    if (k && art[d] === 1 && k.sonntag) wt = 6;
+    if (k && art[d] === 2) faktor = k.faktor / 100;
+    for (let h = 0; h < 24; h++) {
+      let v;
+      if (eingabeart === "typtag") {
+        const m = monatVon(d), z = zustand.matrix[m];
+        const tt = zustand.typtage[wt < 5 ? z.werk : wt === 5 ? z.sa : z.so];
+        const s = tt.f.reduce((a, b) => a + b, 0) || 1;
+        v = tt.g * tt.f[h] / s;
+      } else v = w168[wt * 24 + h];
+      roh[d * 24 + h] = v * faktor;
+    }
+  }
+  const out = new Array(8760).fill(0);
+  if (eingabeart === "typtag") {
+    const s = roh.reduce((a, b) => a + b, 0) || 1;
+    for (let i = 0; i < 8760; i++) out[i] = roh[i] / s * zustand.summe * 1000;
+  } else {
+    const mMWh = eingabeart === "jahr" ? zustand.vorlage.mon.map(a => zustand.summe * a / 100) : zustand.monatMWh;
+    for (let m = 0; m < 12; m++) {
+      const a = monatsbeginn[m] * 24, b = a + MONATSTAGE[m] * 24;
+      let s = 0; for (let i = a; i < b; i++) s += roh[i];
+      for (let i = a; i < b; i++) out[i] = s > 0 ? roh[i] / s * mMWh[m] * 1000 : 0;
+    }
+  }
+  return { werte: out, art };
+}
+
+// ---------- Eingabefelder ----------
+const el = (id) => document.getElementById(id);
+function zahl(v, n = 1) { return Number.isFinite(v) ? v.toFixed(n).replace(".", ",") : ""; }
+function lies(s) { const x = parseFloat(String(s).replace(",", ".")); return Number.isFinite(x) && x >= 0 ? x : 0; }
+function eingabeZeichnen() {
+  const e = el("eingabe"); let h = "", breit = "";
+  if (zustand.art === "jahr") {
+    h += `<div class="zeile"><label for="summe">Jahressumme</label><div><input type="number" id="summe" class="kurz" min="0" step="10" value="${zustand.summe}"> MWh</div></div>
+      <div class="herleitung">Monatsanteile und Wochenprofil aus der Vorlage; normiert je Monat auf Jahressumme × Anteil. Heutiger Weg — jede bestehende Zuordnung steht hier.</div>`;
+  } else if (zustand.art === "monat") {
+    const summe = zustand.monatMWh.reduce((a, b) => a + b, 0);
+    h += `<div class="herleitung">Zwölf Monatswerte [MWh]; Jahressumme = Σ. Wochenprofil aus der Vorlage.</div><div class="tabellenrolle"><table class="raster"><tr>${MONATE.slice(0,6).map(m => `<th>${m}</th>`).join("")}</tr><tr>`;
+    for (let m = 0; m < 6; m++) h += `<td><input data-monat="${m}" value="${zahl(zustand.monatMWh[m])}" aria-label="${MONATE_LANG[m]} MWh"></td>`;
+    h += `</tr><tr>${MONATE.slice(6).map(m => `<th>${m}</th>`).join("")}</tr><tr>`;
+    for (let m = 6; m < 12; m++) h += `<td><input data-monat="${m}" value="${zahl(zustand.monatMWh[m])}" aria-label="${MONATE_LANG[m]} MWh"></td>`;
+    h += `</tr></table></div><div class="herleitung">Summe: <b id="monSumme">${fmt(summe)}</b> MWh · Umschalter „MWh | %“ wie im Katalog.</div>`;
+  } else if (zustand.art === "woche") {
+    h += `<div class="zeile"><label>Ansicht</label><div class="segment" id="wochenansicht"><button data-a="3" aria-pressed="${zustand.wocheAnsicht === "3"}">Werktag | Sa | So</button><button data-a="168" aria-pressed="${zustand.wocheAnsicht === "168"}">168 h</button></div></div>
+      <div class="zeile"><label for="summe">Jahressumme</label><div><input type="number" id="summe" class="kurz" min="0" step="10" value="${zustand.summe}"> MWh</div></div>`;
+    const reihen = zustand.wocheAnsicht === "3" ? [["Werktag", zustand.woche3[0]], ["Samstag", zustand.woche3[1]], ["Sonntag", zustand.woche3[2]]]
+      : TAGE.map((t, i) => [t, zustand.woche168.slice(i * 24, i * 24 + 24)]);
+    h += `<div class="herleitung">Stundenwerte unten in der Tabelle über die ganze Breite (Prozent der Spitze, wie im Typprofil); Monatsanteile aus der Vorlage bzw. aus „Monate“.</div>`;
+    breit += `<div class="gruppenkopf"><span>Wochenprofil — ${zustand.wocheAnsicht === "3" ? "Werktag | Samstag | Sonntag" : "168 Stunden"}</span><span class="summe">[% der Spitze]</span></div>
+      <div class="tabellenrolle"><table class="raster"><tr><th></th>${STUNDEN.map(x => `<th>${x}</th>`).join("")}</tr>`;
+    reihen.forEach(([n, r], i) => { breit += `<tr><td class="kopf">${n}</td>${r.map((v, s) => `<td><input data-w="${i}" data-h="${s}" value="${Math.round(v * 100)}" aria-label="${n} ${s} Uhr"></td>`).join("")}</tr>`; });
+    breit += `</table></div>`;
+  } else {
+    h += `<div class="zeile"><label for="summe">Jahressumme</label><div><input type="number" id="summe" class="kurz" min="0" step="10" value="${zustand.summe}"> MWh</div></div>
+      <div class="herleitung">Typtage und Zuordnung unten; die Reihe wird über das Jahr auf die Jahressumme normiert, Monatsanteile entfallen.</div>`;
+    breit += `<div class="gruppenkopf"><span>Typtage</span><span class="summe">Menge relativ · Stunden in % der Tagesspitze</span></div>
+      <div class="tabellenrolle"><table class="raster"><tr><th>Typtag</th><th>Menge</th>${STUNDEN.map(x => `<th>${x}</th>`).join("")}</tr>`;
+    zustand.typtage.forEach((t, i) => { breit += `<tr><td class="kopf">${i + 1} ${t.name}</td><td><input data-tg="${i}" value="${zahl(t.g, 2)}" aria-label="Tagesmenge ${t.name}"></td>${t.f.map((v, s) => `<td><input data-tt="${i}" data-h="${s}" value="${Math.round(v * 100)}" aria-label="${t.name} ${s} Uhr"></td>`).join("")}</tr>`; });
+    breit += `</table></div><div class="herleitung" style="margin-top:6px">Zuordnung Monat × Tagesart → Typtag (1 = Sommerwerktag, 2 = Winterwerktag, 3 = Wochenende). Typtage sind eine Projekteingabe (Entscheid OE-1).</div><div class="tabellenrolle"><table class="raster"><tr><th></th>${MONATE.map(m => `<th>${m}</th>`).join("")}</tr>`;
+    for (const [schl, n] of [["werk","Werktag"],["sa","Samstag"],["so","So/Feiertag"]]) {
+      breit += `<tr><td class="kopf">${n}</td>${zustand.matrix.map((z, m) => `<td><select data-mx="${m}" data-ta="${schl}" style="min-height:22px;padding:0;font-size:11px;border:0" aria-label="${MONATE_LANG[m]} ${n}">${zustand.typtage.map((t, i) => `<option value="${i}" ${z[schl] === i ? "selected" : ""}>${i + 1}</option>`).join("")}</select></td>`).join("")}</tr>`;
+    }
+    breit += `</table></div>`;
+  }
+  e.innerHTML = h;
+  const eb = el("eingabeBreit"); eb.innerHTML = breit; eb.style.display = breit ? "block" : "none";
+  [e, eb].forEach(x => x.querySelectorAll("input,select").forEach(i => i.addEventListener("input", eingabeGeaendert)));
+  e.querySelectorAll("#wochenansicht button").forEach(b => b.addEventListener("click", () => {
+    zustand.wocheAnsicht = b.dataset.a;
+    if (b.dataset.a === "168") { const w = []; for (let t = 0; t < 7; t++) w.push(...zustand.woche3[t < 5 ? 0 : t === 5 ? 1 : 2]); zustand.woche168 = w; }
+    else zustand.woche3 = [zustand.woche168.slice(0, 24), zustand.woche168.slice(120, 144), zustand.woche168.slice(144, 168)];
+    eingabeZeichnen(); alles();
+  }));
+}
+function eingabeGeaendert(ev) {
+  const t = ev.target, d = t.dataset;
+  if (t.id === "summe") zustand.summe = lies(t.value);
+  else if (d.monat !== undefined) { zustand.monatMWh[+d.monat] = lies(t.value); zustand.summe = zustand.monatMWh.reduce((a, b) => a + b, 0); const s = el("monSumme"); if (s) s.textContent = fmt(zustand.summe); }
+  else if (d.w !== undefined) { if (zustand.wocheAnsicht === "3") zustand.woche3[+d.w][+d.h] = lies(t.value) / 100; else zustand.woche168[+d.w * 24 + +d.h] = lies(t.value) / 100; }
+  else if (d.tt !== undefined) zustand.typtage[+d.tt].f[+d.h] = lies(t.value) / 100;
+  else if (d.tg !== undefined) zustand.typtage[+d.tg].g = lies(t.value);
+  else if (d.mx !== undefined) zustand.matrix[+d.mx][d.ta] = +t.value;
+  alles();
+}
+
+// ---------- Kalender ----------
+function kalenderZeichnen() {
+  const s = el("kalenderwahl");
+  s.innerHTML = `<option value="0">ohne Kalender</option>` + zustand.kalender.map(k => `<option value="${k.id}" ${k.id === zustand.kalenderId ? "selected" : ""}>${k.name}</option>`).join("");
+  const h = el("kalHinweis");
+  if (zustand.kalender.length === 0)
+    h.innerHTML = `<div class="hinweis">Noch kein Betriebskalender angelegt. Mit „Betriebskalender…“ Feiertage und Ferien anlegen.</div>`;
+  else
+    h.innerHTML = `<div class="herleitung">Feiertage und Betriebsferien des Kalenders liegen auf dem Wochenprofil dieser Zeile; gespeichert wird mit OK.</div>`;
+}
+let kalEntwurf = null, kalMonat = 6;
+function datumFeld(wert, schl, i) {
+  const [m, t] = wert || [null, null];
+  return `<div style="display:flex;gap:4px"><select data-f="${i}" data-s="${schl}m" aria-label="Monat">${["–", ...MONATE].map((n, j) => `<option value="${j - 1}" ${m === j - 1 ? "selected" : ""}>${n}</option>`).join("")}</select>
+    <input type="number" min="1" max="31" data-f="${i}" data-s="${schl}t" value="${t || ""}" style="width:4.5em" aria-label="Tag"></div>`;
+}
+function kalDialogZeichnen() {
+  let h = "";
+  kalEntwurf.ferien.forEach((f, i) => { h += `<div class="ferienzeile"><span class="leise">Zeitraum ${i + 1}</span>${datumFeld(f.von, "von", i)}${datumFeld(f.bis, "bis", i)}</div>`; });
+  el("ferienFelder").innerHTML = h;
+  el("ferienFelder").querySelectorAll("select,input").forEach(x => x.addEventListener("input", (ev) => {
+    const d = ev.target.dataset, f = kalEntwurf.ferien[+d.f], wo = d.s.startsWith("von") ? "von" : "bis";
+    const alt = f[wo] || [null, null];
+    if (d.s.endsWith("m")) alt[0] = +ev.target.value < 0 ? null : +ev.target.value; else alt[1] = +ev.target.value || null;
+    f[wo] = (alt[0] === null || !alt[1]) ? (alt[0] === null && !alt[1] ? null : alt) : [alt[0], Math.min(alt[1], MONATSTAGE[alt[0]])];
+    kalKarte();
+  }));
+  kalKarte();
+}
+function kalKarte() {
+  kalEntwurf.land = el("kalLand").value; kalEntwurf.sonntag = el("kalSonntag").checked; kalEntwurf.faktor = lies(el("kalFaktor").value);
+  const alt = { k: zustand.kalender, id: zustand.kalenderId };
+  zustand.kalender = [kalEntwurf]; zustand.kalenderId = kalEntwurf.id;
+  const { art } = tagesarten();
+  zustand.kalender = alt.k; zustand.kalenderId = alt.id;
+  const namen = Object.fromEntries(feiertage(kalEntwurf.land).map(([d, n]) => [d, n]));
+  let h = TAGE.map(t => `<div style="font-weight:600;background:var(--epos-flaeche)">${t}</div>`).join("");
+  const a = monatsbeginn[kalMonat];
+  for (let i = 0; i < wochentag(a); i++) h += `<div style="border:0"></div>`;
+  for (let t = 0; t < MONATSTAGE[kalMonat]; t++) {
+    const d = a + t, wt = wochentag(d);
+    const farbe = art[d] === 1 ? "var(--epos-kalb-feiertag)" : art[d] === 2 ? "var(--epos-kalb-ferien)" : wt >= 5 ? "var(--epos-kalb-wochenende)" : "var(--epos-kalb-grundwoche)";
+    h += `<div style="background:${farbe}" title="${namen[d] || ""}">${t + 1}</div>`;
+  }
+  el("kalKarte").innerHTML = h;
+  el("kalMonatName").textContent = MONATE_LANG[kalMonat];
+  el("kalZaehler").textContent = `${art.filter(x => x === 1).length} Feiertage · ${art.filter(x => x === 2).length} Ferientage`;
+}
+function kalOeffnen() {
+  const vorh = zustand.kalender.find(k => k.id === zustand.kalenderId);
+  kalEntwurf = vorh ? JSON.parse(JSON.stringify(vorh)) : { id: zustand.kalender.length + 1, name: "Betrieb Bayern", land: "BY", sonntag: true, faktor: 30,
+    ferien: [{ von: [7, 3], bis: [7, 21] }, { von: [11, 24], bis: [0, 6] }, { von: null, bis: null }, { von: null, bis: null }] };
+  el("kalName").value = kalEntwurf.name; el("kalLand").value = kalEntwurf.land; el("kalSonntag").checked = kalEntwurf.sonntag; el("kalFaktor").value = kalEntwurf.faktor;
+  kalMonat = 7; kalDialogZeichnen();
+  el("kalUeberlagerung").classList.add("offen"); el("kalName").focus();
+}
+function kalSchliessen(ok) {
+  if (ok) {
+    kalEntwurf.name = el("kalName").value.trim() || "Kalender " + kalEntwurf.id;
+    kalKarte();
+    const i = zustand.kalender.findIndex(k => k.id === kalEntwurf.id);
+    if (i >= 0) zustand.kalender[i] = kalEntwurf; else zustand.kalender.push(kalEntwurf);
+    zustand.kalenderId = kalEntwurf.id; // neu angelegt: fuer die markierte Zeile vorgewaehlt
+  }
+  el("kalUeberlagerung").classList.remove("offen");
+  kalenderZeichnen(); alles(); el("kalKnopf").focus();
+}
+
+// ---------- Grafik ----------
+const B = 560, H = 230, L = 46, R = 10, O = 12, U = 34;
+function achse(maxY, einheit) {
+  const ib = B - L - R, ih = H - O - U;
+  const schritt = schoeneTeilung(maxY);
+  let s = `<rect x="${L}" y="${O}" width="${ib}" height="${ih}" fill="#fff" stroke="#d9d7cf"/>`;
+  for (let y = 0; y <= maxY + 1e-9; y += schritt) {
+    const py = O + ih - y / maxY * ih;
+    s += `<line x1="${L}" x2="${L + ib}" y1="${py}" y2="${py}" stroke="#eeede8"/><text x="${L - 4}" y="${py + 3}" text-anchor="end">${fmt(y, schritt < 1 ? 1 : 0)}</text>`;
+  }
+  s += `<text x="4" y="${O + 8}">${einheit}</text>`;
+  return { s, ib, ih };
+}
+function schoeneTeilung(max) { const roh = max / 5, p = Math.pow(10, Math.floor(Math.log10(roh || 1))); const n = roh / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p; }
+function zeitachse(ib, ih) {
+  let s = "";
+  if (zustand.einheit === "datum") {
+    for (let m = 0; m < 12; m++) { const x = L + monatsbeginn[m] / 365 * ib; s += `<line x1="${x}" x2="${x}" y1="${O}" y2="${O + ih}" stroke="#eeede8"/><text x="${x + MONATSTAGE[m] / 365 * ib / 2}" y="${O + ih + 14}" text-anchor="middle">${MONATE[m]}</text>`; }
+    s += `<text x="${L + ib}" y="${H - 4}" text-anchor="end">Datum</text>`;
+  } else {
+    for (let h = 0; h <= 8760; h += 1000) { const x = L + h / 8760 * ib; s += `<line x1="${x}" x2="${x}" y1="${O}" y2="${O + ih}" stroke="#eeede8"/><text x="${x}" y="${O + ih + 14}" text-anchor="middle">${h}</text>`; }
+    s += `<text x="${L + ib}" y="${H - 4}" text-anchor="end">Stunde im Jahr</text>`;
+  }
+  return s;
+}
+function grafik(r) {
+  const w = r.werte, g = el("grafik"); let s = "", leg = "", werkzeug = "";
+  const einheitenKnopf = `<span class="einheiten" role="group" aria-label="Zeitachse"><button data-e="datum" aria-pressed="${zustand.einheit === "datum"}">Datum</button> <button data-e="stunde" aria-pressed="${zustand.einheit === "stunde"}">Stunde im Jahr</button></span>`;
+  if (zustand.blatt === "jahr") {
+    el("grafikTitel").textContent = "Jahresgang — Tagesband und Tagesmittel";
+    werkzeug = einheitenKnopf;
+    const min = [], max = [], mit = [];
+    for (let d = 0; d < 365; d++) { const t = w.slice(d * 24, d * 24 + 24); min.push(Math.min(...t)); max.push(Math.max(...t)); mit.push(t.reduce((a, b) => a + b, 0) / 24); }
+    const maxY = Math.max(...max) * 1.08 || 1;
+    const a = achse(maxY, "kW"); s += a.s + zeitachse(a.ib, a.ih);
+    const px = (d) => L + (d + 0.5) / 365 * a.ib, py = (v) => O + a.ih - v / maxY * a.ih;
+    let band = ""; for (let d = 0; d < 365; d++) band += `${px(d)},${py(max[d])} `; for (let d = 364; d >= 0; d--) band += `${px(d)},${py(min[d])} `;
+    s += `<polygon points="${band}" fill="var(--kaelte-band)" stroke="none"/>`;
+    s += `<polyline points="${mit.map((v, d) => `${px(d)},${py(v)}`).join(" ")}" fill="none" stroke="var(--kaelte)" stroke-width="1.3"/>`;
+    for (let d = 0; d < 365; d++) if (r.art[d]) s += `<rect x="${px(d) - 0.8}" y="${O + a.ih - 5}" width="1.6" height="5" fill="${r.art[d] === 1 ? "#D85A30" : "rgb(200,138,0)"}"/>`;
+    leg = `<span><i style="background:var(--kaelte-band)"></i>Tagesband (Min–Max)</span><span><i style="background:var(--kaelte)"></i>Tagesmittel</span><span><i style="background:#D85A30"></i>Feiertag</span><span><i style="background:rgb(200,138,0)"></i>Ferien</span>`;
+  } else if (zustand.blatt === "monate") {
+    el("grafikTitel").textContent = "Monatssummen [MWh]";
+    const mw = MONATE.map((_, m) => { let x = 0; for (let i = monatsbeginn[m] * 24; i < (monatsbeginn[m] + MONATSTAGE[m]) * 24; i++) x += w[i]; return x / 1000; });
+    const maxY = Math.max(...mw) * 1.12 || 1; const a = achse(maxY, "MWh"); s += a.s;
+    const bw = a.ib / 12;
+    mw.forEach((v, m) => { const hgt = v / maxY * a.ih; s += `<rect x="${L + m * bw + bw * 0.15}" y="${O + a.ih - hgt}" width="${bw * 0.7}" height="${hgt}" fill="var(--kaelte)"><title>${MONATE_LANG[m]}: ${fmt(v)} MWh</title></rect><text x="${L + m * bw + bw / 2}" y="${O + a.ih + 14}" text-anchor="middle">${MONATE[m]}</text>`;
+      if (v > 0) s += `<text x="${L + m * bw + bw / 2}" y="${O + a.ih - hgt - 3}" text-anchor="middle">${fmt(v, v < 10 ? 1 : 0)}</text>`; });
+    leg = `<span><i style="background:var(--kaelte)"></i>diese Zuordnung — bei mehreren Zuordnungen gestapelt</span>`;
+  } else if (zustand.blatt === "woche") {
+    el("grafikTitel").textContent = `Woche ${zustand.kw} der gerechneten Reihe`;
+    werkzeug = `<label class="leise">KW <input type="range" id="kwRegler" min="1" max="52" value="${zustand.kw}" style="vertical-align:middle;width:140px"></label>`;
+    let start = 0; while (wochentag(start) !== 0) start++; start += (zustand.kw - 1) * 7; start = Math.min(start, 365 - 7);
+    const t = w.slice(start * 24, start * 24 + 168);
+    const maxY = Math.max(...t, 0.001) * 1.12; const a = achse(maxY, "kW"); s += a.s;
+    for (let i = 0; i < 7; i++) {
+      const d = start + i, x = L + i / 7 * a.ib, wt = wochentag(d);
+      const farbe = r.art[d] === 1 ? "var(--epos-kalb-feiertag)" : r.art[d] === 2 ? "var(--epos-kalb-ferien)" : wt >= 5 ? "var(--epos-kalb-wochenende)" : "var(--epos-kalb-grundwoche)";
+      const m = monatVon(d);
+      s += `<rect x="${x}" y="${O}" width="${a.ib / 7}" height="${a.ih}" fill="${farbe}" opacity=".9"/><text x="${x + a.ib / 14}" y="${O + a.ih + 14}" text-anchor="middle">${TAGE[wt]} ${d - monatsbeginn[m] + 1}.${m + 1}.</text>`;
+    }
+    s += `<polyline points="${t.map((v, h) => `${L + (h + 0.5) / 168 * a.ib},${O + a.ih - v / maxY * a.ih}`).join(" ")}" fill="none" stroke="var(--kaelte)" stroke-width="1.5"/>`;
+    leg = `<span><i style="background:var(--epos-kalb-grundwoche)"></i>Werktag</span><span><i style="background:var(--epos-kalb-wochenende)"></i>Wochenende</span><span><i style="background:var(--epos-kalb-ferien)"></i>Ferien (Ferienfaktor)</span><span><i style="background:var(--epos-kalb-feiertag)"></i>Feiertag (wie Sonntag)</span>`;
+  } else {
+    el("grafikTitel").textContent = "Dauerlinie — 8 760 Stunden absteigend";
+    const sort = w.slice().sort((x, y) => y - x); const maxY = sort[0] * 1.08 || 1; const a = achse(maxY, "kW"); s += a.s;
+    for (let h = 0; h <= 8760; h += 1000) { const x = L + h / 8760 * a.ib; s += `<text x="${x}" y="${O + a.ih + 14}" text-anchor="middle">${h}</text>`; }
+    s += `<text x="${L + a.ib}" y="${H - 4}" text-anchor="end">Stunden (sortiert)</text>`;
+    let pts = ""; for (let i = 0; i < 8760; i += 10) pts += `${L + i / 8760 * a.ib},${O + a.ih - sort[i] / maxY * a.ih} `;
+    s += `<polygon points="${L},${O + a.ih} ${pts} ${L + a.ib},${O + a.ih}" fill="var(--kaelte-band)"/><polyline points="${pts}" fill="none" stroke="var(--kaelte)" stroke-width="1.5"/>`;
+    leg = `<span>keine Zeitachse — daher ohne Achswahl</span>`;
+  }
+  g.innerHTML = `<svg viewBox="0 0 ${B} ${H}" role="img" aria-label="${el("grafikTitel").textContent}">${s}</svg>`;
+  el("legende").innerHTML = leg; el("werkzeug").innerHTML = werkzeug;
+  el("werkzeug").querySelectorAll("button[data-e]").forEach(b => b.addEventListener("click", () => { zustand.einheit = b.dataset.e === "datum" ? "datum" : "stunde"; grafik(r); }));
+  const kw = el("kwRegler"); if (kw) kw.addEventListener("input", () => { zustand.kw = +kw.value; grafik(r); });
+}
+function kennzahlen(w) {
+  const summe = w.reduce((a, b) => a + b, 0), spitze = Math.max(...w), grund = Math.min(...w);
+  el("kzSumme").textContent = fmt(summe / 1000); el("kzSpitze").textContent = fmt(spitze);
+  el("kzVbh").textContent = spitze > 0 ? fmt(summe / spitze, 0) : "–";
+  el("kzGrund").textContent = summe > 0 ? fmt(100 * grund * 8760 / summe, 0) + " %" : "–";
+  el("zeileSumme").textContent = fmt(summe / 1000) + " MWh"; el("kopfSumme").textContent = fmt(summe / 1000 + 40) + " MWh";
+}
+function alles() { const r = reihe(); kennzahlen(r.werte); grafik(r); }
+
+// ---------- Verdrahtung ----------
+el("vorlage").innerHTML = `<optgroup label="Bestand (IDs 1–6, unverändert)">${VORLAGEN.filter(v => v.bestand).map(v => `<option value="${v.id}">${v.name}</option>`).join("")}</optgroup>
+  <optgroup label="Neu (ab ID 7)">${VORLAGEN.filter(v => !v.bestand).map(v => `<option value="${v.id}">${v.name}</option>`).join("")}</optgroup>`;
+el("vorlage").value = "7";
+el("vorlage").addEventListener("change", () => { zustand.vorlage = VORLAGEN.find(v => v.id === +el("vorlage").value); el("vorlageText").textContent = zustand.vorlage.text + " Art: " + zustand.vorlage.art + "."; ausVorlage(); eingabeZeichnen(); alles(); });
+el("eingabeart").querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+  zustand.art = b.dataset.art; el("eingabeart").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  eingabeZeichnen(); alles(); }));
+el("blaetter").querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+  zustand.blatt = b.dataset.blatt; el("blaetter").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); alles(); }));
+el("kalenderwahl").addEventListener("change", () => { zustand.kalenderId = +el("kalenderwahl").value; alles(); });
+el("kalKnopf").addEventListener("click", kalOeffnen);
+el("kalOk").addEventListener("click", () => kalSchliessen(true));
+el("kalAbbrechen").addEventListener("click", () => kalSchliessen(false));
+el("kalZu").addEventListener("click", () => kalSchliessen(false));
+["kalLand", "kalSonntag", "kalFaktor"].forEach(id => el(id).addEventListener("input", kalKarte));
+el("kalMonatZurueck").addEventListener("click", () => { kalMonat = (kalMonat + 11) % 12; kalKarte(); });
+el("kalMonatVor").addEventListener("click", () => { kalMonat = (kalMonat + 1) % 12; kalKarte(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape" && el("kalUeberlagerung").classList.contains("offen")) kalSchliessen(false); });
+
+zustand.vorlage = VORLAGEN.find(v => v.id === 7);
+el("vorlageText").textContent = zustand.vorlage.text + " Art: " + zustand.vorlage.art + ".";
+ausVorlage(); eingabeZeichnen(); kalenderZeichnen(); alles();
+</script>
+</body>
+</html>

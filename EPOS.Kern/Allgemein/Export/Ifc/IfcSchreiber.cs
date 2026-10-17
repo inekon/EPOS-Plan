@@ -614,9 +614,14 @@ namespace WindowsFormsApplication1
                 Satz(b, g.Kennung, "Pset_BuildingCommon",
                      baujahr == null ? null : Wert("YearOfConstruction", new IfcLabel(baujahr)));
                 Satz(b, g.Kennung, EPOS_GEBAEUDE,
-                     Wert("Kennung", new IfcIdentifier(g.Kennung)),
-                     string.IsNullOrWhiteSpace(g.Art) ? null : Wert("Gebaeudeart", new IfcLabel(g.Art.Trim())),
-                     string.IsNullOrWhiteSpace(g.Baualtersklasse) ? null : Wert("Baualtersklasse", new IfcLabel(g.Baualtersklasse.Trim())));
+                     new[]
+                     {
+                         Wert("Kennung", new IfcIdentifier(g.Kennung)),
+                         string.IsNullOrWhiteSpace(g.Art) ? null : Wert("Gebaeudeart", new IfcLabel(g.Art.Trim())),
+                         string.IsNullOrWhiteSpace(g.Baualtersklasse) ? null : Wert("Baualtersklasse", new IfcLabel(g.Baualtersklasse.Trim())),
+                     }
+                     // Welle DA-4: das Erdreich (G3, G4) als Text.
+                     .Concat(GebaeudeRestdaten.Werte(g.Erdreich).Select(p => Wert(p.Schluessel, new IfcText(p.Wert)))).ToArray());
                 Ergebnis(b, g.Kennung, null);
                 Rechenlauf(b, g.Kennung, mitLauf: true);
                 return b;
@@ -646,6 +651,9 @@ namespace WindowsFormsApplication1
                          Temperatur("SpaceTemperatureSummerMax", r.SollKuehlenC),
                          r.Nachtabsenkung.HasValue ? Wert("DiscontinuedHeating", new IfcBoolean(r.Nachtabsenkung.Value)) : null,
                          r.LuftwechselNutzerJeH.HasValue ? Wert("NaturalVentilationRate", new IfcNumericMeasure(Endlich(r.LuftwechselNutzerJeH.Value))) : null);
+                // Welle DA-3: Belegung, Lasten, Auslegung und Licht als Standardsätze (E138 F6 a; die Zeitpläne in EPOS_Kalender_*).
+                foreach ((string satz, List<IfcSatzwert> werte) in IfcStandardsaetze.Raumsaetze(r))
+                    Satz(s, r.Kennung, satz, werte.Select(Satzwert).ToArray());
                 var zone = new List<IfcPropertySingleValue>
                 {
                     Wert("IstBeheizt", new IfcBoolean(r.Beheizt)),
@@ -654,9 +662,13 @@ namespace WindowsFormsApplication1
                     Zahl("Personen", r.Personen, null),
                     Zahl("GeraeteWm2", r.GeraeteWm2, null),
                     Zahl("LichtWm2", r.LichtWm2, null),
+                    Zahl(IfcStandardsaetze.EPOS_AUSSENLUFT_PERSON, r.GbxmlLasten?.AussenluftJePersonM3h, null),
+                    Zahl(IfcStandardsaetze.EPOS_WAERME_PERSON, r.GbxmlLasten?.WaermeJePersonW, null),
                 };
                 // Nutzung, Matrixzellen und Kalender der Zone (6.3, 16.3); ohne Konditionierung bleibt die Datei byte-gleich.
                 zone.AddRange(IfcKonditionierungssatz.Zonenwerte(r.Konditionierung).Select(Satzwert));
+                // Welle DA-4: die Restdaten der Zone (Vorheizzeit, Höchstleistungen, Übergabe, Luftströme, Zeilenbild, Wochen) als Text.
+                zone.AddRange(GebaeudeRestdaten.Werte(r.Rest).Select(p => Wert(p.Schluessel, new IfcText(p.Wert))));
                 Satz(s, r.Kennung, EPOS_ZONE, zone.ToArray());
                 if (r.Konditionierung != null)
                     foreach (AbbildKalender k in r.Konditionierung.Kalender)
@@ -685,6 +697,22 @@ namespace WindowsFormsApplication1
                         r.RelatingGroup = zone;
                         r.RelatedObjects.AddRange(gruppe.Select(x => _raeume[x.Kennung]));
                     });
+                    // Welle DA-3: dieselbe Zone als IfcSpatialZone THERMAL (Regel Z1 des Lesers). Ein Raum ist ein Element der
+                    // räumlichen Struktur und darf nicht Glied eines Verweises sein (WR31): Jeder Raum verweist auf die Zone.
+                    IfcSpatialZone raumzone = Wurzel<IfcSpatialZone>(gruppe.Key, "SpatialZone", z =>
+                    {
+                        z.Name = Label(erster.ZonenName ?? erster.Name ?? gruppe.Key);
+                        z.Description = Text(erster.ZonenBeschreibung);
+                        z.PredefinedType = IfcSpatialZoneTypeEnum.THERMAL;
+                        IfcLocalPlacement lage = Lage();
+                        if (lage != null) z.ObjectPlacement = lage;
+                    });
+                    foreach (AbbildRaum x in gruppe)
+                        Wurzel<IfcRelReferencedInSpatialStructure>(x.Kennung, "RelSpatialZone", r =>
+                        {
+                            r.RelatingStructure = _raeume[x.Kennung];
+                            r.RelatedElements.Add(raumzone);
+                        });
                 }
             }
 
@@ -831,7 +859,9 @@ namespace WindowsFormsApplication1
                 // Standardsätze nach 6.3.
                 Satz(e, b.Kennung, "Pset_" + klasse + "Common",
                      u.HasValue ? Wert("ThermalTransmittance", new IfcThermalTransmittanceMeasure(u.Value)) : null,
-                     Wert("IsExternal", new IfcBoolean(aussen)));
+                     Wert("IsExternal", new IfcBoolean(aussen)),
+                     klasse == "Window" && IfcStandardsaetze.Glasanteil(b) is double glas
+                         ? Wert(IfcStandardsaetze.FENSTER_GLASANTEIL, new IfcNormalisedRatioMeasure(glas)) : null);
                 if (klasse == "Window" && b.GWert.HasValue)
                     Satz(e, b.Kennung, "Pset_DoorWindowGlazingType",
                          Wert("SolarHeatGainTransmittance", new IfcNormalisedRatioMeasure(Endlich(b.GWert.Value))));
@@ -860,6 +890,8 @@ namespace WindowsFormsApplication1
                      Wert("IstZusammenfassung", new IfcBoolean(zusammen)),
                      zusammen ? null : Wert("AnzahlTeilflaechen", new IfcInteger(1)),
                      Zahl("WaermebrueckeUA", b.WaermebrueckeWK, "GEXP_IFC_WAERMEBRUECKE"),
+                     Zahl(IfcStandardsaetze.EPOS_ABSORPTION, b.AbsorptionsgradSolar, null),
+                     Zahl(IfcStandardsaetze.EPOS_EMISSION, b.Emissionsgrad, null),
                      a != null && a.Schichten.Count > 0 ? Wert("Schichtrichtung", new IfcLabel(SCHICHTRICHTUNG_AUSSEN_INNEN), null, "GEXP_IFC_SCHICHTRICHTUNG") : null,
                      a != null ? Wert("Ersatzschichtung", new IfcBoolean(a.IstErsatz)) : null,
                      b.Nachbarn.Count > 0 ? Wert("Raumgrenze", new IfcLabel(RAUMGRENZE_LOGISCH), null, "GEXP_IFC_RAUMGRENZE") : null);
@@ -978,6 +1010,8 @@ namespace WindowsFormsApplication1
                           s.RhoKgM3 > 0.0 ? Wert("MassDensity", new IfcMassDensityMeasure(Endlich(s.RhoKgM3.Value))) : null);
                 Stoffsatz(m, EPOS_BAUSTOFF,
                           s.RWertM2KW > 0.0 ? Wert("Waermedurchlasswiderstand", new IfcThermalResistanceMeasure(Endlich(s.RWertM2KW.Value))) : null);
+                // Welle DA-3 (E138 F8 b): die Konstanten des Rechenwegs als optische Werte — durchgereicht, ohne Feld.
+                Stoffsatz(m, IfcStandardsaetze.OPTIK, IfcStandardsaetze.Optikwerte().Select(w => Wert(w.Name, new IfcNormalisedRatioMeasure(w.Zahl.Value))).ToArray());
                 return m;
             }
 

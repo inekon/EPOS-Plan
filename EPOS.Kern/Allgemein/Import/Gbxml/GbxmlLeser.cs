@@ -150,6 +150,7 @@ namespace WindowsFormsApplication1
 
             private string _laenge, _flaeche, _volumen, _temperatur;
             private bool _laengeGilt, _flaecheGilt, _volumenGilt, _temperaturGilt;
+            private Dictionary<string, GbxmlZeitplan> _plaene = new Dictionary<string, GbxmlZeitplan>(StringComparer.Ordinal);
 
             internal Lesung(GbxmlAbbild abbild, IProgress<ImportFortschritt> melder, CancellationToken abbruch)
             {
@@ -170,6 +171,10 @@ namespace WindowsFormsApplication1
                 Version(wurzel);
                 Einheiten(wurzel);
                 Kataloge(wurzel);
+                // Welle DA-1: die Zeitplankette vollständig; Temperaturpläne in der globalen Temperatureinheit (Annahme).
+                _plaene = GbxmlZeitplanleser.Lesen(wurzel,
+                    t => _temperaturGilt ? GbxmlEinheiten.Temperatur(t, _temperatur) : null,
+                    (stufe, name, werte) => Datei(stufe, name, werte));
 
                 List<XElement> campusse = Kinder(wurzel, "Campus").ToList();
                 if (!campusse.SelectMany(c => Kinder(c, "Building")).Any())
@@ -280,6 +285,17 @@ namespace WindowsFormsApplication1
             //  Gebäude und Räume
             // --------------------------------------------------------------
 
+            /// <summary>Welle DA-4: die Zonen, deren übersprungene Restdaten schon gemeldet sind (eine Meldung je Zone).</summary>
+            private readonly HashSet<string> _restGemeldet = new HashSet<string>(StringComparer.Ordinal);
+
+            /// <summary>Welle DA-4: nicht lesbare Werte des Blocks EPOS: benannt (<c>RESTDATEN_UEBERSPRUNGEN</c>).</summary>
+            private static void Restmeldung(AbbildGebaeude g, string wo, List<string> uebersprungen)
+            {
+                if (uebersprungen.Count > 0)
+                    g.Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, P + "RESTDATEN_UEBERSPRUNGEN", wo ?? "",
+                        uebersprungen.Count.ToString(System.Globalization.CultureInfo.InvariantCulture), string.Join(", ", uebersprungen)));
+            }
+
             private void Gebaeude(XElement building)
             {
                 int index = _abbild.Gebaeude.Count;
@@ -289,6 +305,11 @@ namespace WindowsFormsApplication1
                     Name = Text(Kind(building, "Name")),
                     Art = Attr(building, "buildingType"),
                 };
+                // Welle DA-4: das Erdreich aus dem Block EPOS: der Beschreibung (die Beschreibung selbst liest der Leser nicht).
+                GebaeudeRestdaten.OhneBlock(Text(Kind(building, "Description")), out List<(string, string)> erdreich);
+                var uebersprungen = new List<string>();
+                g.Erdreich = GebaeudeRestdaten.ErdreichLesen(erdreich, uebersprungen);
+                Restmeldung(g, g.Kennung, uebersprungen);
                 _abbild.Gebaeude.Add(g);
 
                 foreach (XElement space in Kinder(building, "Space"))
@@ -332,6 +353,18 @@ namespace WindowsFormsApplication1
                 r.LichtWm2 = PflichtEinheit(Kind(space, "LightPowerPerArea"), GbxmlEinheiten.LeistungJeFlaeche, id);
                 r.GeraeteWm2 = PflichtEinheit(Kind(space, "EquipPowerPerArea"), GbxmlEinheiten.LeistungJeFlaeche, id);
                 Personen(Kind(space, "PeopleNumber"), r);
+                var lasten = new GbxmlRaumlasten
+                {
+                    AussenluftJePersonM3h = PflichtEinheit(Kind(space, "OAFlowPerPerson"), GbxmlEinheiten.Volumenstrom, id),
+                    AussenluftJeFlaecheM3hM2 = PflichtEinheit(Kind(space, "OAFlowPerArea"), GbxmlEinheiten.VolumenstromJeFlaeche, id),
+                    PersonenPlan = Plan(space, "peopleScheduleIdRef", id),
+                    GeraetePlan = Plan(space, "equipmentScheduleIdRef", id),
+                    LichtPlan = Plan(space, "lightScheduleIdRef", id),
+                };
+                XElement waerme = Kind(space, "PeopleHeatGain");
+                double? jePerson = PflichtEinheit(waerme, GbxmlEinheiten.Leistung, id);
+                lasten.WaermeJePersonW = jePerson > 0.0 ? jePerson : null;
+                lasten.WaermeArt = Attr(waerme, "heatGainType");
 
                 // Beheizt (3.3): Unconditioned, Vented, NaturallyVentedOnly → unbeheizt, alles andere
                 // beheizt; ohne Attribut entscheidet der Name (Musterliste des IFC-Wegs).
@@ -365,12 +398,38 @@ namespace WindowsFormsApplication1
                     if (_zone.TryGetValue(r.ZonenKennung, out XElement zone))
                     {
                         r.ZonenName = Text(Kind(zone, "Name"));
+                        // Welle DA-4: die Restdaten der Zone aus dem Block EPOS: der Beschreibung.
+                        GebaeudeRestdaten.OhneBlock(Text(Kind(zone, "Description")), out List<(string, string)> rest);
+                        var uebersprungen = new List<string>();
+                        r.Rest = GebaeudeRestdaten.ZoneLesen(rest, uebersprungen);
+                        if (!_restGemeldet.Contains(r.ZonenKennung)) Restmeldung(g, r.ZonenKennung, uebersprungen);
+                        _restGemeldet.Add(r.ZonenKennung);
                         r.SollHeizenC = MitEinheit(Kind(zone, "DesignHeatT"), _temperatur, _temperaturGilt, GbxmlEinheiten.Temperatur, r.ZonenKennung);
                         r.SollKuehlenC = MitEinheit(Kind(zone, "DesignCoolT"), _temperatur, _temperaturGilt, GbxmlEinheiten.Temperatur, r.ZonenKennung);
+                        // Welle DA-1: Lüftung und Pläne der Zone; Außenluft der Zone nur, wo der Raum keine trägt.
+                        lasten.ZonenLuftwechselJeH = Zahl(Kind(zone, "AirChangesPerHour"), r.ZonenKennung);
+                        lasten.AussenluftJePersonM3h ??= PflichtEinheit(Kind(zone, "OAFlowPerPerson"), GbxmlEinheiten.Volumenstrom, r.ZonenKennung);
+                        lasten.AussenluftJeFlaecheM3hM2 ??= PflichtEinheit(Kind(zone, "OAFlowPerArea"), GbxmlEinheiten.VolumenstromJeFlaeche, r.ZonenKennung);
+                        lasten.HeizPlan = Plan(zone, "heatSchedIdRef", r.ZonenKennung);
+                        lasten.KuehlPlan = Plan(zone, "coolSchedIdRef", r.ZonenKennung);
+                        lasten.LueftungPlan = Plan(zone, "airChangesSchedIdRef", r.ZonenKennung);
                     }
                     else VerweisLeer("zoneIdRef", r.ZonenKennung, id);
                 }
+                // Der Satz der Lasten (DA-1): wo die Datei Lasten oder Pläne trägt — auch nur Personen, Geräte, Licht des Bestands.
+                if (lasten.Traegt || r.Personen.HasValue || r.FlaecheJePersonM2.HasValue || r.GeraeteWm2.HasValue || r.LichtWm2.HasValue)
+                    r.GbxmlLasten = lasten;
                 return r;
+            }
+
+            /// <summary>Der Zeitplan eines Verweisattributs; ein Verweis ohne <c>Schedule</c> wird benannt (<c>VERWEIS_LEER</c>).</summary>
+            private GbxmlZeitplan Plan(XElement e, string attribut, string wo)
+            {
+                string kennung = Attr(e, attribut);
+                if (kennung == null) return null;
+                if (_plaene.TryGetValue(kennung, out GbxmlZeitplan p)) return p;
+                VerweisLeer(attribut, kennung, wo);
+                return null;
             }
 
             /// <summary><c>PeopleNumber</c> in drei Einheiten (Befund R 5.1): umrechnen, nicht raten.</summary>
@@ -432,6 +491,8 @@ namespace WindowsFormsApplication1
                 {
                     b.Aufbau = Aufbau(kref);
                     if (b.Aufbau.UWertWm2K.HasValue) { b.UWertWm2K = b.Aufbau.UWertWm2K; b.UWertQuelle = "Construction"; }
+                    b.AbsorptionsgradSolar = b.Aufbau.AbsorptionsgradSolar;
+                    b.Emissionsgrad = b.Aufbau.Emissionsgrad;
                 }
 
                 foreach (XElement o in Kinder(s, "Opening"))
@@ -500,6 +561,8 @@ namespace WindowsFormsApplication1
                     {
                         b.Aufbau = Aufbau(kref);
                         if (!u.HasValue && b.Aufbau.UWertWm2K.HasValue) { u = b.Aufbau.UWertWm2K; quelle = "Construction"; }
+                        b.AbsorptionsgradSolar = b.Aufbau.AbsorptionsgradSolar;
+                        b.Emissionsgrad = b.Aufbau.Emissionsgrad;
                     }
                 }
                 b.UWertWm2K = u;
@@ -677,6 +740,7 @@ namespace WindowsFormsApplication1
                     RichtungAngenommen = true,
                 };
                 _aufbauten[kref] = a;
+                Absorptionsgrade(k, kref, a);
 
                 bool luecke = false;
                 foreach (XElement li in Kinder(k, "LayerId"))
@@ -806,6 +870,41 @@ namespace WindowsFormsApplication1
                     Datei(PruefStufe.Info, "KENNUNG_GEKUERZT", quelltyp, Quellkennung.Kuerzen(id), Ganz(id.Length));
                 return id;
             }
+
+            /// <summary>
+            /// DA-8: Der Absorptionsgrad (solar, <c>ExtSolar</c>) und der Emissionsgrad (<c>ExtIR</c>) einer <c>Construction</c>
+            /// werden gelesen und am Aufbau des Abbilds geführt, wo sie von der Vorgabe des Rechenwegs abweichen
+            /// (<see cref="GebaeudeFestwerte.ABSORPTIONSGRAD_OPAK"/>, <see cref="GebaeudeFestwerte.EMISSIONSGRAD_AUSSEN"/>); die
+            /// Bauteile mit diesem Aufbau übernehmen sie. Gleich der Vorgabe bleibt das Feld leer. Ein Wert außerhalb 0 … 1 wird
+            /// verworfen und gemeldet.
+            /// </summary>
+            private void Absorptionsgrade(XElement k, string kref, AbbildAufbau a)
+            {
+                foreach (XElement e in Kinder(k, "Absorptance"))
+                {
+                    string typ = Attr(e, "type");
+                    double konstante = string.Equals(typ, GbxmlVokabular.ExtSolar, StringComparison.OrdinalIgnoreCase) ? GebaeudeFestwerte.ABSORPTIONSGRAD_OPAK
+                                     : string.Equals(typ, GbxmlVokabular.ExtIR, StringComparison.OrdinalIgnoreCase) ? GebaeudeFestwerte.EMISSIONSGRAD_AUSSEN
+                                     : double.NaN;
+                    if (double.IsNaN(konstante)) continue;
+                    double? wert = Zahl(e, kref);
+                    if (string.Equals(Attr(e, "unit"), "Percent", StringComparison.OrdinalIgnoreCase)) wert /= 100.0;
+                    if (!wert.HasValue) continue;
+                    if (!(wert.Value >= 0.0 && wert.Value <= 1.0))
+                    {
+                        if (_gemeldet.Add("A|" + kref + "|" + typ))
+                            Datei(PruefStufe.Warnung, "ABSORPTION_ABWEICHUNG", a.Name ?? kref, typ,
+                                  wert.Value.ToString("0.###", CultureInfo.CurrentCulture), konstante.ToString("0.###", CultureInfo.CurrentCulture));
+                        continue;
+                    }
+                    if (Math.Abs(wert.Value - konstante) <= ABSORPTION_TOLERANZ) continue;
+                    if (konstante == GebaeudeFestwerte.ABSORPTIONSGRAD_OPAK) a.AbsorptionsgradSolar = wert.Value;
+                    else a.Emissionsgrad = wert.Value;
+                }
+            }
+
+            /// <summary>Die Abweichung von der Vorgabe des Rechenwegs, bis zu der ein Grad als Vorgabe gilt (das Feld bleibt leer).</summary>
+            internal const double ABSORPTION_TOLERANZ = 1e-9;
 
             private void VerweisLeer(string art, string ziel, string wo)
             {

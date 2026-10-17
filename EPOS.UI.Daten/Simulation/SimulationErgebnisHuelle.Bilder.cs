@@ -76,6 +76,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static readonly SKColor R_REST_GRAU = SKColor.Parse("#D9DEE5");
 
+        // K6b: das Segment „dezentral (Split)“ des Kälterings - der Ton der Hausfarbe der Rolle KAELTE_DEZENTRAL.
+        private static readonly SKColor R_KAELTE_DEZENTRAL = SKColor.Parse("#4BACC6");
+
         // =================================================================
         // Ein Bild
         // =================================================================
@@ -222,6 +225,7 @@ namespace WindowsFormsApplication1
         {
             SimulationErgebnisCtrl.KaelteErgebnis k = SimulationErgebnisCtrl.Kaelte(_waermebedarf);
             if (k == null) return null;
+            if (k.MitDezentral) return ModellBedarfKaelteHerkunft(k, a);
 
             var reihen = new List<ChartRenderer.Reihe>
             {
@@ -233,6 +237,37 @@ namespace WindowsFormsApplication1
                 MyResource.Resource.CHART_ACHSE_KAELTELAST,
                 a.Sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
                 a.Sortiert);
+        }
+
+        /// <summary>
+        /// K6b (Konzept Kältebedarf 4.3): die Kältelast MIT Split-Zeile — die Herkunft als gestapelte Flächen (Gebäude,
+        /// Lastgänge, Kältebedarfsprofile; je nur mit Bedarf), die Summe als Linie darüber und die dezentral (Split)
+        /// gedeckte Kälte als eigene Linie. 100 % ist der Jahreshöchstwert der Summe, wie im Wärmebild. Ohne Split-Zeile
+        /// zeichnet <see cref="ModellBedarfKaelte"/> das Bild, wie es war.
+        /// </summary>
+        private static Zeichenmodell ModellBedarfKaelteHerkunft(SimulationErgebnisCtrl.KaelteErgebnis k, Bildauftrag a)
+        {
+            var reihen = new List<ChartRenderer.Reihe>
+            {
+                Reihe(MyResource.Resource.CHART_ACHSE_KAELTELAST, k.KaeltebedarfKwh, Farbrolle.BEDARF, breite: 3f)
+            };
+            void Flaeche(string name, double[] werte, Farbrolle rolle)
+            {
+                if (werte != null && werte.Sum() > 0)
+                    reihen.Add(Reihe(name, werte, rolle, ChartRenderer.Stapelart.Flaeche));
+            }
+            Flaeche(MyResource.Resource.CHART_LEGENDE_KAELTE_GEBAEUDE, k.GebaeudeKwh, Farbrolle.SERIE_3);
+            Flaeche(MyResource.Resource.CHART_LEGENDE_KAELTE_LASTGANG, k.ExternKwh, Farbrolle.SERIE_6);
+            Flaeche(MyResource.Resource.CHART_LEGENDE_KAELTE_PROFIL, k.ProfilKwh, Farbrolle.SERIE_5);
+            reihen.Add(Reihe(MyResource.Resource.CHART_LEGENDE_KAELTE_DEZENTRAL, k.DezentralKwh, Farbrolle.KAELTE_DEZENTRAL,
+                             breite: 2f));
+
+            double bezug = k.KaeltebedarfKwh != null && k.KaeltebedarfKwh.Length > 0 ? k.KaeltebedarfKwh.Max() : 0;
+            return ChartRenderer.GanglinieNormiertModell(
+                MyResource.Resource.CHART_TITEL_KAELTELAST_JAHRESGANGLINIE, reihen,
+                MyResource.Resource.CHART_ACHSE_KAELTELAST,
+                a.Sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
+                a.Sortiert, null, bezug);
         }
 
         private Zeichenmodell ModellBedarfStrom(Bildauftrag a)
@@ -322,6 +357,10 @@ namespace WindowsFormsApplication1
                     string.IsNullOrEmpty(z.Bezeichner) ? MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE : z.Bezeichner,
                     z.KaelteMwh, farben[i % farben.Length]));
             }
+            // K6b: die dezentral (Split) gedeckte Kälte - ein eigenes Segment, nur mit Split-Zeile.
+            if (k.MitDezentral)
+                segmente.Add(new ChartRenderer.Ringsegment(
+                    MyResource.Resource.CHART_LEGENDE_KAELTE_DEZENTRAL, k.DezentralMwh, R_KAELTE_DEZENTRAL));
             segmente.Add(new ChartRenderer.Ringsegment(
                 MyResource.Resource.SIMUEB_LEGENDE_REST, k.KaelterestbedarfMwh, R_REST_GRAU));
             return segmente;
@@ -334,10 +373,11 @@ namespace WindowsFormsApplication1
         private Zeichenmodell ModellRingKaelte()
         {
             SimulationErgebnisCtrl.KaelteErgebnis k = SimulationErgebnisCtrl.Kaelte(_waermebedarf);
-            if (k == null || k.Erzeuger.Count == 0 || !(k.KaeltebedarfMwh > 0)) return null;
+            // K6b: mit Split-Zeile auch ohne Kälteerzeuger, in der Mitte die Hauptzahl nach KaelteDeckungsgrad.
+            if (k == null || (k.Erzeuger.Count == 0 && !k.MitDezentral) || !(k.KaeltebedarfMwh > 0)) return null;
 
             return ChartRenderer.RingModell(MyResource.Resource.SIMUEB_RING_KAELTE_TITEL,
-                                            SegmenteKaelte(k), k.DeckungsgradProzent ?? 0.0, "%",
+                                            SegmenteKaelte(k), (k.MitDezentral ? k.DeckungsgradGesamtProzent : k.DeckungsgradProzent) ?? 0.0, "%",
                                             MyResource.Resource.SIMUEB_RING_GEDECKT, false);
         }
 
@@ -462,10 +502,52 @@ namespace WindowsFormsApplication1
             double[] gesamt = _strombedarf.AddVectors(sim.simulation_wp.WP_Strombedarf_stuendlich,
                                                      sim.simulation_wp.Heizstab_stuendlich);
 
+            // Welle RZ: „Wärmepumpe und Heizstab getrennt" - die beiden Summanden als Stapel, ihre Summe als
+            // Kontur darüber, dieselbe Bauart wie der Stromgang. Ohne Reihenwahl (der Schalter steht ab Werk
+            // aus) bleibt es die EINE Linie, das Bild byte-gleich.
+            if (WpStromGetrennt(a))
+            {
+                var stapel = new List<ChartRenderer.Reihe>();
+                if (a.Reihen.Contains(REIHE_WP_STROM))
+                    stapel.Add(Reihe(MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE,
+                                     sim.simulation_wp.WP_Strombedarf_stuendlich, Farbrolle.WAERME_WP,
+                                     ChartRenderer.Stapelart.Saeule));
+                if (a.Reihen.Contains(REIHE_HEIZSTAB_STROM))
+                    stapel.Add(Reihe(MyResource.Resource.CHART_SEGMENT_HEIZSTAB,
+                                     sim.simulation_wp.Heizstab_stuendlich, Farbrolle.HEIZSTAB,
+                                     ChartRenderer.Stapelart.Saeule));
+                ChartRenderer.Reihe kontur = a.Reihen.Contains(REIHE_WP_STROM_SUMME)
+                    ? new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_SUMME_STROM_WP, Kopie(gesamt),
+                                              Farbrolle.VERBRAUCH_GESAMT, ChartRenderer.Stapelart.Keine,
+                                              ChartRenderer.Strichart.Durchgezogen, 2f)
+                    : null;
+                return ChartRenderer.ErzeugerStapelModell(
+                    MyResource.Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE,
+                    stapel, new List<ChartRenderer.Reihe>(), kontur,
+                    MyResource.Resource.CHART_ACHSE_STROMBEDARF, ChartRenderer.Achse.Monate, false);
+            }
+
             return ChartRenderer.JahresverlaufModell(
                 MyResource.Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE,
                 Kopie(gesamt), MyResource.Resource.CHART_ACHSE_STROMBEDARF, Farbrolle.BEDARF);
         }
+
+        /// <summary>Welle RZ: die Reihe „Strom Wärmepumpe" im getrennten Stromverbrauchsbild.</summary>
+        internal const string REIHE_WP_STROM = "WP_STROM";
+
+        /// <summary>Welle RZ: die Reihe „Heizstab" im getrennten Stromverbrauchsbild.</summary>
+        internal const string REIHE_HEIZSTAB_STROM = "HEIZSTAB_STROM";
+
+        /// <summary>Welle RZ: die Summenkontur „Wärmepumpe und Heizstab" im getrennten Bild.</summary>
+        internal const string REIHE_WP_STROM_SUMME = "WP_STROM_SUMME";
+
+        /// <summary>
+        /// Zeigt der Auftrag das Stromverbrauchsbild GETRENNT? Nur mit einer Reihenwahl, die eine der drei
+        /// Reihen nennt — ohne Wahl (<c>null</c>) gilt die Vorgabe, die eine Linie.
+        /// </summary>
+        internal static bool WpStromGetrennt(Bildauftrag a)
+            => a?.Reihen != null && (a.Reihen.Contains(REIHE_WP_STROM) || a.Reihen.Contains(REIHE_HEIZSTAB_STROM)
+                                     || a.Reihen.Contains(REIHE_WP_STROM_SUMME));
 
         /// <summary>
         /// B4 — die Streuwolke „Leistung über Außentemperatur". Die drei Reihen sind
@@ -533,12 +615,19 @@ namespace WindowsFormsApplication1
         /// </summary>
         private Zeichenmodell ModellTemperaturen(Bildauftrag a)
         {
+            // Welle RZ (Teil b): die Auswahl je Speicher. Ohne Reihenliste (ab Werk) alle Speicher;
+            // mit Liste nur die genannten - die Farbrolle bleibt die des Speichers (vergeben über ALLE),
+            // und die Quelltemperaturen sind keine Speicher und bleiben stehen.
+            bool alle = Alle(a);
             var reihen = new List<ChartRenderer.Reihe>();
             foreach (Temperaturreihe r in Temperaturreihen())
+            {
+                if (r.Speicher != null && !Gewaehlt(a, alle, r.Speicher)) continue;
                 reihen.Add(new ChartRenderer.Reihe(r.Legende, Kopie(r.Werte), r.Rolle,
                                                    ChartRenderer.Stapelart.Keine,
                                                    r.Gestrichelt ? ChartRenderer.Strichart.Gestrichelt
                                                                  : ChartRenderer.Strichart.Durchgezogen));
+            }
 
             return ChartRenderer.TemperaturverlaufModell(
                 MyResource.Resource.CHART_TITEL_SPEICHERTEMPERATUR, reihen, true);
@@ -741,7 +830,14 @@ namespace WindowsFormsApplication1
             // die Tabelle darunter wies 13 MWh aus. Der Vorlaeufer (:4574) zeichnete
             // dieselbe genutzte Reihe; das war seine Schwaeche, nicht die des Ports.
             // SB1 (a): die glatte Viertelstundenreihe, mit der die Bilanz rechnet.
-            if (Gewaehlt(a, alle, "PHOTOVOLTAIK"))
+            // Schalter „PV aufteilen" (Anwenderentscheid 13.10.2026): die Erzeugung als STAPEL
+            // aus Eigenverbrauch, Einspeisung und - wo die Einspeisegrenze greift - Abregelung.
+            // Die Schichten rechnet der Kern (SimulationControl.PvErzeugungAufteilen); ihre
+            // Summe ist je Viertelstunde die Erzeugung.
+            var stapel = new List<ChartRenderer.Reihe>();
+            if (Gewaehlt(a, alle, "PHOTOVOLTAIK") && a != null && a.PvAufgeteilt)
+                stapel.AddRange(PvSchichten());
+            else if (Gewaehlt(a, alle, "PHOTOVOLTAIK"))
                 linien.Add(Reihe(MyResource.Resource.SIM_PHOTOVOLTAIK,
                                  sim.simulation_pv.Stromproduktion_Theoretisch_viertelstunde, Farbrolle.STROM_PV));
 
@@ -755,11 +851,33 @@ namespace WindowsFormsApplication1
 
             return ChartRenderer.ErzeugerStapelModell(
                 MyResource.Resource.CHART_TITEL_STROMBEDARF_PV_JAHRESGANGLINIE,
-                new List<ChartRenderer.Reihe>(), linien, null,
+                stapel, linien, null,
                 MyResource.Resource.CHART_ACHSE_LEISTUNG,
                 sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
                 sortiert,
-                zweite, MyResource.Resource.CHART_ACHSE_SPEICHER_KWH);
+                zweite, MyResource.Resource.CHART_ACHSE_SPEICHER_KWH,
+                stufenNachStapel: stapel.Count > 0);
+        }
+
+        /// <summary>
+        /// Die Schichten der aufgeteilten PV-Erzeugung von unten nach oben: Eigenverbrauch
+        /// (direkt genutzt und Speicherladung), Einspeisung (Überschuss) und — nur wenn die
+        /// Einspeisegrenze im Jahr greift — Abregelung. Gestapelte Flächen.
+        /// </summary>
+        internal IReadOnlyList<ChartRenderer.Reihe> PvSchichten()
+        {
+            sim.PvErzeugungAufteilen(out double[] eigen, out double[] einspeisung, out double[] abregelung);
+            var schichten = new List<ChartRenderer.Reihe>
+            {
+                Reihe(MyResource.Resource.CHART_LEGENDE_PV_EIGENVERBRAUCH, eigen, Farbrolle.STROM_PV,
+                      ChartRenderer.Stapelart.Flaeche),
+                Reihe(MyResource.Resource.CHART_LEGENDE_PV_EINSPEISUNG, einspeisung, Farbrolle.UEBERSCHUSS,
+                      ChartRenderer.Stapelart.Flaeche)
+            };
+            if (abregelung.Any(w => w > 0.0))
+                schichten.Add(Reihe(MyResource.Resource.CHART_LEGENDE_PV_ABREGELUNG, abregelung, Farbrolle.REST,
+                                    ChartRenderer.Stapelart.Flaeche));
+            return schichten;
         }
 
         /// <summary>
@@ -794,13 +912,33 @@ namespace WindowsFormsApplication1
             // DIE REIHEN KOMMEN AUS DERSELBEN STELLE WIE FUER DAS PNG
             // (SpeicherBetriebsbild) - nur der Ausgabeweg ist ein anderer: Das
             // Modell geht in den SVG-Baustein, die Bytes weiter in den Bericht.
+            // EB-2: der Standby des Speichersystems - nur gewählt (ab Werk aus), sonst bleibt das Bild, wie es war.
+            List<ChartRenderer.Reihe> leistungen = SpeicherBetriebsbild.Leistungsreihen(eingang, erg, dt, a.Reihen);
+            double[] standby = a.Reihen != null && a.Reihen.Contains(REIHE_SPEICHER_STANDBY)
+                ? SpeicherStandbyKw(eingang.Anzahl)
+                : null;
+            if (standby != null)
+                leistungen.Add(Reihe(MyResource.Resource.CHART_LEGENDE_SPEICHER_STANDBY, standby, Farbrolle.REST));
+
             return ChartRenderer.SpeicherbetriebModell(
                 MyResource.Resource.SP_CHART_TITEL_BETRIEB,
-                SpeicherBetriebsbild.Leistungsreihen(eingang, erg, dt, a.Reihen),
+                leistungen,
                 MyResource.Resource.PEAK_CHART_Y,
                 SpeicherBetriebsbild.Ladezustand(erg, a.Reihen),
                 MyResource.Resource.PEAK_CHART_Y2,
                 a.Sortiert);
+        }
+
+        /// <summary>
+        /// EB-2: der Standby des Speichersystems je Intervall [kW] (<c>ZeitreihenExtraktor.SpeichersystemEigenverbrauchKw</c>,
+        /// dieselbe Reihe wie <c>SPEICHER_EIGENVERBRAUCH</c>); <c>null</c> ohne Standby oder bei einem anderen Raster als
+        /// dem des Bildes (<paramref name="laenge"/>).
+        /// </summary>
+        internal double[] SpeicherStandbyKw(int laenge)
+        {
+            if (sim == null || !sim.bSimulationSSP || !(sim.SpeichersystemEigenverbrauchKwh > 0.0)) return null;
+            double[] r = ZeitreihenExtraktor.SpeichersystemEigenverbrauchKw(sim);
+            return r != null && r.Length == laenge && laenge > 0 ? r : null;
         }
 
         // ---- B6: der Monatsstapel der Autarkie-Analyse -------------------
@@ -1039,7 +1177,8 @@ namespace WindowsFormsApplication1
                 Achse = MyResource.Resource.CHART_ACHSE_LEISTUNG,
                 Bedarf = MyResource.Resource.CHART_LEGENDE_KAELTEBEDARF,
                 Rest = MyResource.Resource.CHART_LEGENDE_KAELTE_UNGEDECKT,
-                Erzeuger = MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE
+                Erzeuger = MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE,
+                Dezentral = MyResource.Resource.CHART_LEGENDE_KAELTE_DEZENTRAL
             }, a.Sortiert);
         }
 
@@ -1054,6 +1193,24 @@ namespace WindowsFormsApplication1
         /// Strom-Stufeneingang des Kessels, der Rest aller Verbraucher davor (1030: 4.790 MWh
         /// statt 0, 1017: 635,2 statt 20,12). Bild, Summenlinie und CSV lesen diese eine Stelle.
         /// </summary>
+        /// <summary>K6b: der Reihenschlüssel des Postens „Kühlung dezentral“ im Stromgang (Bild und CSV).</summary>
+        internal const string REIHE_KUEHLUNG_DEZENTRAL = "KUEHLUNG_DEZENTRAL";
+
+        /// <summary>Welle RZ: der Netzbezug im Stromgang — zuschaltbar, ab Werk aus.</summary>
+        internal const string REIHE_NETZBEZUG = "NETZBEZUG";
+
+        /// <summary>Welle RZ: die Netzeinspeisung im Stromgang — zuschaltbar, ab Werk aus.</summary>
+        internal const string REIHE_NETZEINSPEISUNG = "NETZEINSPEISUNG";
+
+        /// <summary>EB-2: der BHKW-Anteil der Netzeinspeisung („Stromeinspeisung BHKW“) im Stromgang — zuschaltbar, ab Werk aus.</summary>
+        internal const string REIHE_BHKW_EINSPEISUNG = "BHKW_EINSPEISUNG";
+
+        /// <summary>EB-2: die PV-Abregelung an der Einspeisegrenze im Stromgang — zuschaltbar, ab Werk aus.</summary>
+        internal const string REIHE_PV_ABREGELUNG = "PV_ABREGELUNG";
+
+        /// <summary>EB-2: der Standby des Speichersystems im Betriebsbild des Stromspeichers — zuschaltbar, ab Werk aus.</summary>
+        internal const string REIHE_SPEICHER_STANDBY = "SPEICHER_STANDBY";
+
         internal static double[] StromverbrauchKessel(SimulationControl sim)
             => sim.simulation_spk.Stromverbrauch_stuendlich;
 
@@ -1079,6 +1236,11 @@ namespace WindowsFormsApplication1
                    Viertel(sim.simulation_wp.Heizstab_stuendlich), Farbrolle.HEIZSTAB);
             Stapel("HEIZKESSEL", MyResource.Resource.SIM_ERZEUGERNAME_HEIZKESSEL,
                    Viertel(StromverbrauchKessel(sim)), Farbrolle.WAERME_KESSEL);
+            // K6b: der Posten „Kühlung dezentral“ - die ganze Split-Reihe; ohne Split-Zeile ist sie null.
+            double[] dezentral = sim.Kaeltestrom_Dezentral_stuendlich;
+            if (dezentral != null)
+                Stapel(REIHE_KUEHLUNG_DEZENTRAL, MyResource.Resource.SIMUEB_LBL_KUEHLUNG_DEZENTRAL,
+                       Viertel(dezentral), Farbrolle.KAELTE_DEZENTRAL);
 
             var linien = new List<ChartRenderer.Reihe>();
             if (wahl.Contains("BHKW_STROM"))
@@ -1087,6 +1249,30 @@ namespace WindowsFormsApplication1
             if (wahl.Contains("PV"))
                 linien.Add(Reihe(MyResource.Resource.SIM_PHOTOVOLTAIK,
                                  sim.simulation_pv.Stromproduktion_viertelstunde, Farbrolle.STROM_PV));
+
+            // Welle RZ: „woher kommt der Strom" samt Netz - Bezug und Einspeisung als Linien, nur gewählt. Ohne
+            // Wahl bleibt die Linienliste, wie sie war (das Bild byte-gleich).
+            if (wahl.Contains(REIHE_NETZBEZUG) || wahl.Contains(REIHE_NETZEINSPEISUNG)
+                || wahl.Contains(REIHE_BHKW_EINSPEISUNG) || wahl.Contains(REIHE_PV_ABREGELUNG))
+            {
+                SimulationErgebnisCtrl.Netzreihen netz = SimulationErgebnisCtrl.NetzreihenViertelstunde(sim);
+                if (wahl.Contains(REIHE_NETZBEZUG) && netz?.NetzbezugKw != null)
+                    linien.Add(Reihe(MyResource.Resource.CHART_LEGENDE_NETZBEZUG, netz.NetzbezugKw,
+                                     Farbrolle.STROM_NETZ));
+                if (wahl.Contains(REIHE_NETZEINSPEISUNG) && netz?.EinspeisungKw != null)
+                    linien.Add(Reihe(MyResource.Resource.CHART_LEGENDE_NETZEINSPEISUNG, netz.EinspeisungKw,
+                                     Farbrolle.UEBERSCHUSS));
+                // EB-2: der BHKW-Anteil der Einspeisung und die Abregelung - nur gewählt. Der Anteil steckt in der
+                // Netzeinspeisung (keine zweite Einspeisung), die Abregelung nicht.
+                if (wahl.Contains(REIHE_BHKW_EINSPEISUNG) && netz?.BhkwEinspeisungKw != null)
+                    linien.Add(new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_BHKW_EINSPEISUNG,
+                                                       Kopie(netz.BhkwEinspeisungKw), Farbrolle.STROM_BHKW,
+                                                       ChartRenderer.Stapelart.Keine,
+                                                       ChartRenderer.Strichart.Gestrichelt, 0f));
+                if (wahl.Contains(REIHE_PV_ABREGELUNG) && netz?.PvAbregelungKw != null)
+                    linien.Add(Reihe(MyResource.Resource.CHART_LEGENDE_PV_ABREGELUNG, netz.PvAbregelungKw,
+                                     Farbrolle.REST));
+            }
 
             // „GESAMT" ist die Kontrolllinie über allem (:220-221). Sie addiert
             // Lastgang, Wärmepumpe, Heizstab und Heizkessel - das ist der
@@ -1100,6 +1286,8 @@ namespace WindowsFormsApplication1
                                             Viertel(sim.simulation_wp.WP_Strombedarf_stuendlich)),
                     _strombedarf.AddVectors(Viertel(sim.simulation_wp.Heizstab_stuendlich),
                                             Viertel(StromverbrauchKessel(sim))));   // E29 (#536, N9)
+                // K6b: mit Split-Zeile gehört ihr Strom zur Summe des Verbrauchs - ohne sie bleibt die Linie, wie sie war.
+                if (dezentral != null) gesamt = _strombedarf.AddVectors(gesamt, Viertel(dezentral));
 
                 kontur = new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_SUMME_STROMVERBRAUCH,
                                                  Kopie(gesamt), Farbrolle.VERBRAUCH_GESAMT,

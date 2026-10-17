@@ -207,8 +207,25 @@ namespace WindowsFormsApplication1
                                               && h?.Vorschlag != null;
                         return GebaeudeBedarfHuelle.Gaben(z, projektId, out bedarfBefund, zoneAusstehend);
                     }),
+                // MA-1b: das Blatt „Modell prüfen" für das Projektgebäude der Zeile (Ampel je Prüfgruppe, Vorschläge mit
+                // Rücknahme); eine Zeile ohne gespeicherte Projektkopie hat keinen Weg.
+                ["ModellpruefungGaben"] = new Func<GebaeudeProjektZeile, ModellpruefungWeg>(
+                    z => { idsNachziehen(); return ModellpruefungHuelle.Weg(z, AusrichtungsGebaeude(z)); }),
+                // MA-2: das Blatt „Nutzung und Kalender" für alle Zonen des Projektgebäudes der Zeile (Mehrfachwahl, Rücknahme);
+                // eine Zeile ohne gespeicherte Projektkopie hat keinen Weg.
+                ["ZonenNutzungGaben"] = new Func<GebaeudeProjektZeile, ZonenNutzungWeg>(
+                    z => { idsNachziehen(); return ZonenNutzungHuelle.Weg(AusrichtungsGebaeude(z), z?.Name ?? ""); }),
+                // N5: „Klimaregion wählen…" aus Gruppe 4 des Ampelblatts - die Liste der Kopfleiste, der Speicherweg der
+                // Kopfleiste; im Assistenten kein Weg (dort gibt es kein Ampelblatt).
+                ["KlimaregionGaben"] = new Func<GebaeudeKlimaregionWeg>(() => wizard ? null : KlimaregionWeg(projektId)),
                 // Stufe G6a: der benannte Grund des letzten Aufrufs ohne Zahl (etwa mehrere Zonen).
                 ["BedarfBefund"] = new Func<string>(() => bedarfBefund),
+                // GD-N: der Jahreswärmebedarf des letzten Laufs je Gebäude (sonst der Projektwert mit Hinweis) für die
+                // Zusammenfassung; eine Zeile ohne Projektkopie hat keinen Lauf.
+                ["Jahreswaermebedarf"] = new Func<GebaeudeProjektZeile, GebaeudeJahreswaermebedarf>(z => Jahreswaermebedarf(z, projektId)),
+                // GD-N: das zuletzt gewählte Gebäude je Projekt über das Öffnen hinaus (Sprung „Kühlung“).
+                ["ZuletztGewaehlt"] = new Func<int?>(() => ZuletztGewaehlt(projektId)),
+                ["GewaehltMerken"] = new Action<int>(idZ => GewaehltMerken(projektId, idZ)),
                 ["MeldungKeinBedarfGrund"] = Text_("GEB_MSG_KEIN_BEDARF_GRUND",
                     "Für dieses Gebäude lässt sich kein Wärmebedarf berechnen: {0}"),
                 // Stufe G6a (Anwenderentscheid A2): „Aus dem Projekt entfernen" fragt bei Zonen nach.
@@ -501,6 +518,7 @@ namespace WindowsFormsApplication1
             GebaeudeVorbelegung vorbelegung = null;
             GebaeudeImportHerkunft herkunft = null;
             string angelegt = null;
+            IReadOnlyList<Zonenquellhinweis> hinweise = null;
 
             Func<GebaeudeImportErgebnis, Task<string>> uebernehmen = ergebnis =>
             {
@@ -517,6 +535,7 @@ namespace WindowsFormsApplication1
 
                 vorbelegung = import.Vorbelegung(ergebnis);
                 herkunft = import.Herkunft;
+                hinweise = ModellpruefungHuelle.HinweiseAus(import.Plan);
                 return Task.FromResult<string>(null);
             };
 
@@ -546,6 +565,8 @@ namespace WindowsFormsApplication1
                 GebaeudeProjektZeile zeile = Aufnehmen(angelegt, projektId, naechsteId);
                 if (zeile == null) return null;
                 zeile.Herkunftsschluessel = Vormerken(ausstehend, herkunft);
+                // MA-1b: DIN-Nummer und Raumtyp je Zone für die Profilregel des Blatts „Modell prüfen".
+                ModellpruefungHuelle.HinweiseMerken(zeile, hinweise);
                 herkunft = null;
                 angelegt = null;
                 return zeile;
@@ -674,6 +695,83 @@ namespace WindowsFormsApplication1
                 Jahresnutzungsgrad = m.Jahresnutzungsgrad,
                 DezentralWarmwasser = m.DezentralWarmwasser
             };
+        }
+
+        /// <summary>Der Schlüssel der Einstellung „zuletzt gewähltes Projektgebäude“ je Projekt (GD-N).</summary>
+        internal static string SchluesselZuletzt(int projektId)
+            => "Gebaeudedialog_Zuletzt_" + projektId.ToString(CultureInfo.InvariantCulture);
+
+        /// <summary>Das zuletzt gewählte Projektgebäude (Zuordnungsschlüssel); <c>null</c> = keins gemerkt.</summary>
+        internal static int? ZuletztGewaehlt(int projektId)
+        {
+            if (projektId <= 0) return null;
+            int id = Dienste.Einstellungen.LiesZahl(SchluesselZuletzt(projektId), 0);
+            return id > 0 ? id : null;
+        }
+
+        /// <summary>Merkt das gewählte Projektgebäude; eine geratene Id einer ungespeicherten Zeile wird nicht gemerkt.</summary>
+        internal static void GewaehltMerken(int projektId, int idZ)
+        {
+            if (projektId <= 0 || idZ <= 0 || idZ >= STARTINDEX) return;
+            Dienste.Einstellungen.SchreibZahl(SchluesselZuletzt(projektId), idZ);
+        }
+
+        /// <summary>
+        /// Der Jahreswärmebedarf des letzten Laufs für die Zusammenfassung (<see cref="GebaeudeJahresbedarfCtrl.Letzter"/>);
+        /// <c>null</c> = noch nicht gerechnet.
+        /// </summary>
+        internal static GebaeudeJahreswaermebedarf Jahreswaermebedarf(GebaeudeProjektZeile z, int projektId)
+        {
+            if (z == null) return null;
+            GebaeudeJahresbedarf b = GebaeudeJahresbedarfCtrl.Letzter(projektId, z.HatProjektkopie ? z.IdGebaeude : 0);
+            return b == null ? null : new GebaeudeJahreswaermebedarf(b.HeizwaermeMwh, b.Zeitpunkt, b.Projektwert);
+        }
+
+        /// <summary>
+        /// N5: „Klimaregion wählen…" im Ampelblatt — die Liste der Kopfleiste (<see cref="StartseiteCtrl.KlimaregionAuswahlzeilen"/>,
+        /// die eine Quelle wie im Projektassistenten, #527), vorbelegt mit der Stammregion des Projekts
+        /// (<see cref="StartseiteCtrl.ProjektKlimaregionStammId"/>), und der Speicherweg der Kopfleiste
+        /// (<see cref="StartseiteCtrl.KlimaregionSpeichern(int, string, int)"/>). Nach dem Speichern zieht der Projektkontext nach
+        /// (Kopfband, Klimaregion) — über die bestehende Methode <c>Uebernehmen</c>, keine neue Schnittstelle. <c>null</c> ohne Projekt.
+        /// </summary>
+        internal static GebaeudeKlimaregionWeg KlimaregionWeg(int projektId)
+        {
+            if (projektId <= 0) return null;
+            var eintraege = new List<(int Id, string Text)>();
+            foreach ((int Id, string Name, string Anzeige) z in StartseiteCtrl.KlimaregionAuswahlzeilen())
+                eintraege.Add((z.Id, z.Anzeige));
+            int stamm = StartseiteCtrl.ProjektKlimaregionStammId(projektId);
+            return new GebaeudeKlimaregionWeg
+            {
+                Eintraege = eintraege,
+                Gewaehlt = stamm > 0 ? stamm : (int?)null,
+                Speichern = id => KlimaregionSpeichern(projektId, id),
+                // Nachzug N6: die Herkunftszeile wie unter der Kopfleiste und im Projektassistenten.
+                Herkunftszeile = id => EPOS.UI.Seiten.Start.KlimaHerkunftGaben.Zeile(ProjektKopfHuelle.Herkunft(id),
+                    MyResource.Resource.START_KLIMA_HERKUNFT, MyResource.Resource.START_KLIMA_HERKUNFT_KURZ),
+            };
+        }
+
+        /// <summary>Schreibt die Stammregion an das Projekt; <c>null</c> = gespeichert, sonst der Grund (Texte der Kopfleiste).</summary>
+        internal static string KlimaregionSpeichern(int projektId, int stammRegionId)
+        {
+            string name = StartseiteCtrl.Projektname(projektId);
+            switch (StartseiteCtrl.KlimaregionSpeichern(projektId, name, stammRegionId))
+            {
+                case KlimaStand.Gespeichert:
+                    // Der Kontext fuehrt die Klimazone (Kopfband); nur das offene Projekt zieht nach.
+                    if (Dienste.Projekt.Id == projektId) Dienste.Projekt.Uebernehmen(projektId, name);
+                    return null;
+                case KlimaStand.KeinProjekt:
+                    return Text_("Text_Form_Start_MessageBox1", "Bitte zuerst ein Projekt auswählen!");
+                case KlimaStand.KeineRegion:
+                    return Text_("Text_Form_Start_KlimaregionAuswaehlen", "Bitte eine Klimaregion auswählen.");
+                case KlimaStand.RegionNichtGefunden:
+                    return Text_("Text_Form_Start_KlimaregionNichtGefunden", "Die gewählte Klimaregion wurde nicht gefunden.");
+                default:
+                    return Text_("Text_Form_Start_KlimaregionNichtUebernommen",
+                                 "Die Klimaregion konnte nicht in das Projekt übernommen werden.");
+            }
         }
 
         /// <summary>

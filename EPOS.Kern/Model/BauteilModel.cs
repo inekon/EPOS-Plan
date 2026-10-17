@@ -85,6 +85,27 @@
         /// </summary>
         public string Flaechenherkunft;
 
+        /// <summary>
+        /// Woher der U-Wert stammt (<c>Tab_Bauteil.U_Herkunft</c>, Schemaschritt <see cref="BauteilUHerkunftSchema"/>; Werte
+        /// <see cref="DbWerte.HERKUENFTE"/>): von Hand (<c>MANUELL</c>), Aufbau aus dem Katalog (<c>KATALOG</c>), Datei
+        /// (<c>IFC</c>, <c>GBXML</c>, <c>SQPROJ</c>) oder Vorgabe (<c>VORGABE</c>). <c>null</c> = unbekannt (Bestand). Die Pflege
+        /// leitet den Wert beim Speichern aus dem gespeicherten Stand ab (<c>GebaeudeZonenCtrl.UHerkunftNachPflege</c>); ein
+        /// U-Wert <c>MANUELL</c> bleibt beim Wiederimport.
+        /// </summary>
+        public string U_Herkunft;
+
+        /// <summary>
+        /// Absorptionsgrad der Außenfläche für Solarstrahlung a_F [–] (<c>Tab_Bauteil.Absorptionsgrad_Solar</c>, Schemaschritt
+        /// <see cref="BauteilStrahlungSchema"/>); <c>null</c> = der Wert des Aufbaus, ohne ihn der Festwert.
+        /// </summary>
+        public double? Absorptionsgrad_Solar;
+
+        /// <summary>
+        /// Langwelliger Emissionsgrad der Außenfläche ε_F [–] (<c>Tab_Bauteil.Emissionsgrad</c>, Schemaschritt
+        /// <see cref="BauteilStrahlungSchema"/>); <c>null</c> = der Wert des Aufbaus, ohne ihn der Festwert.
+        /// </summary>
+        public double? Emissionsgrad;
+
         /// <summary>Eine entkoppelte Kopie.</summary>
         public BauteilModel Kopie() => (BauteilModel)MemberwiseClone();
     }

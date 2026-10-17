@@ -429,7 +429,8 @@ public class GebaeudeDialogAusrichtungTests : EposBunitContext
             .Add(x => x.ZeileAuffrischen, z => p.Aufgefrischt.Add(z.IdZ)));
 
     private static void Zeile(IRenderedComponent<GebaeudeDialog> cut, int index)
-        => cut.FindAll(".epos-raster-huelle table.epos-raster tbody tr")[index].QuerySelector("button")!.Click();
+        // Die Zeile ist die Wahl (KA-E-17): Klick in die Namenszelle, nicht auf das Kaestchen - Ankreuzen waehlt nicht.
+        => cut.FindAll(".epos-raster-huelle table.epos-raster tbody tr")[index].QuerySelector(".epos-projektzeile")!.Click();
 
     private static string Banner(IRenderedComponent<GebaeudeDialog> cut) => cut.Find(".epos-warnbanner-text").TextContent;
 

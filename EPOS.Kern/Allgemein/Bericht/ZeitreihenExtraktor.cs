@@ -177,6 +177,18 @@ namespace WindowsFormsApplication1
                     }
                 }
 
+                // Schritt 223: die Split-Zeilen mit eigenem Zähler unter ihrem Schlüssel - der Platz in der Ergebnisliste
+                // KaelteDezentral (dieselbe Folge wie im SimulationRunner). Ohne Split-Zeile kein Eintrag.
+                SimulationKaeltebedarf kaelteseite = runner.simulation_Kaeltebedarf;
+                if (kaelteseite != null && kaelteseite.Gerechnet && kaelteseite.MitDezentral)
+                    for (int i = 0; i < kaelteseite.DezentraleZeilen.Count; i++)
+                    {
+                        SimulationKaeltebedarf.DezentraleZeile d = kaelteseite.DezentraleZeilen[i];
+                        if (!d.NebenDerStufenrechnung) continue;
+                        Netzbezugsspitze s = Netzbezugsspitze.AusReihe(d.Strom_stuendlich);
+                        if (s != null) z.Kaeltestromspitzen[Kaeltestromabrechnung.SchluesselDezentral(i)] = s;
+                    }
+
                 // Katalog v12: die Kälteproduktion des Kältereiters — je Kälteerzeuger die gedeckte Kälte, dazu die
                 // ungedeckte Kälte; dieselben Reihen wie das Bild der Seite (KaelteProduktionBild.AusLauf). Nur,
                 // wenn das Projekt Kälte rechnet; der Kältebedarf steht als Kanalreihe BEDARF_KUEHLUNG im Satz.
@@ -336,6 +348,8 @@ namespace WindowsFormsApplication1
                 z.Kaeltereihen.Add(schluessel);
             }
             z.Reihen[ZeitreihenSatz.KAELTEREST] = r.Rest;
+            // K6b: die Split-Deckung - nur mit Split-Zeile; ohne sie bleibt der Satz, wie er war.
+            if (r.Dezentral.Length > 0) z.Reihen[ZeitreihenSatz.KAELTE_DEZENTRAL] = r.Dezentral;
         }
 
         /// <summary>Eine Deckungsreihe eintragen — nur, wenn sie überhaupt Werte trägt.</summary>
@@ -408,7 +422,7 @@ namespace WindowsFormsApplication1
         /// Der Eigenverbrauch des Speichersystems je Viertelstunde [kW] (SP1): Standby aus PV plus aus dem
         /// Netz, im Flottenpfad der Hilfsverbrauch der Einheiten; <c>null</c> ohne Reihe.
         /// </summary>
-        private static double[] SpeichersystemEigenverbrauchKw(SimulationControl sim)
+        internal static double[] SpeichersystemEigenverbrauchKw(SimulationControl sim)
         {
             if (sim.SpeichersystemStandbyAusPvKw != null && sim.SpeichersystemStandbyAusNetzKw != null &&
                 sim.SpeichersystemStandbyAusPvKw.Length == sim.SpeichersystemStandbyAusNetzKw.Length)

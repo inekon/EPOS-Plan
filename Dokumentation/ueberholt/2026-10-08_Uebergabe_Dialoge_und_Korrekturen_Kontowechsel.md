@@ -67,7 +67,7 @@ bleibt `CLAUDE.md`. Es löst das Papier vom 05.10.2026
   bleiben.
 
 **Katalogauswahl** (Anwenderentscheid 08.10.2026; Konzept
-[`Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md`](../aktuell/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md),
+[`Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md`](Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md),
 Abschnitt 3, KA‑E‑1 bis KA‑E‑11)
 
 - **Variante V1 „Gerahmt und gestapelt“** für alle zwölf Projektdialoge mit Katalogauswahl und die
@@ -207,6 +207,6 @@ Erste Schritte: (1) Stand prüfen: `git status` sauber, keine Konfliktmarker, ke
 gebliebene AGENT_LAEUFT, die Zeilen der Übergabe tragen ihren CI-Vermerk. (2) Den Stand in
 höchstens fünf Zeilen melden. (3) Die offenen Punkte aus Abschnitt 4 der Übergabe mit dem
 Anwender abstimmen, zuerst: Soll die Katalogauswahl V1 umgesetzt werden (Konzept
-`Dokumentation/aktuell/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md`, spielbare Mockups
+`Dokumentation/ueberholt/Konzept_Projektdialoge_Katalogauswahl_EPOS-Plan.md`, spielbare Mockups
 `Dokumentation/aktuell/Mockups/Projektdialog_Katalogauswahl_Uebersicht.html`)?
 ```

@@ -155,6 +155,9 @@ public class KiDialogkatalogTests : IDisposable
         // KM4-E3-c: die Verwaltung der Kältemittel.
         { KiMaskennamen.KAELTEMITTEL,
           typeof(EPOS.UI.Dialoge.Admin.KaeltemittelKiSicht) },
+        // K-F5a: die Verwaltung der Rückkühlwerke.
+        { KiMaskennamen.RUECKKUEHLWERK,
+          typeof(EPOS.UI.Dialoge.Erzeuger.RueckkuehlwerkKiSicht) },
         { KiMaskennamen.KAELTEMASCHINE_ANLAGE,
           typeof(EPOS.UI.Dialoge.Erzeuger.KaeltemaschineAnlageKiSicht) },
         { KiMaskennamen.BAUTEILAUFBAU,
@@ -177,6 +180,9 @@ public class KiDialogkatalogTests : IDisposable
         // die Bestaetigung der Meldungen nur zu lesen.
         { KiMaskennamen.GEBAEUDE_EXPORT,
           typeof(EPOS.UI.Dialoge.Export.GebaeudeExportKiSicht) },
+        // KD-5: der Klimaexport - Formatfelder als Steuerwerte, Parameter als Schluesselliste.
+        { KiMaskennamen.KLIMA_EXPORT,
+          typeof(EPOS.UI.Dialoge.Export.KlimaExportKiSicht) },
         { KiMaskennamen.TYPPROFIL,
           typeof(EPOS.UI.Dialoge.Bedarf.TypProfilKiSicht) },
 
@@ -510,7 +516,7 @@ public class KiDialogkatalogTests : IDisposable
         // Welle M3b (PW2, BW2): die Verwaltung der Betriebskalender. Stufe P2 der
         // Pufferspeicher-Auslegung: ihre Ansicht.
         // KM4-E3-c: + Kältemittel.
-        Assert.Equal(104, katalog.Anzahl);                            // K5b: + Kältebedarf-Katalog;                            // KU3-1: + Kältemaschinen; KU3-4c: + Kältemaschinen im Projekt; PVG: + PV-Ganglinien; Importoptionen: + 4; Teil C: + 4; Teil B: + Gebäudeimport
+        Assert.Equal(106, katalog.Anzahl);  // K-F5a: + Rückkühlwerke; KD-5: + Klimaexport                            // K5b: + Kältebedarf-Katalog;                            // KU3-1: + Kältemaschinen; KU3-4c: + Kältemaschinen im Projekt; PVG: + PV-Ganglinien; Importoptionen: + 4; Teil C: + 4; Teil B: + Gebäudeimport
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -689,7 +695,7 @@ public class KiDialogkatalogTests : IDisposable
     }
 
     [Fact]
-    public void Die_vier_Startmasken_fuehren_17_18_5_und_13_Felder()
+    public void Die_vier_Startmasken_fuehren_17_20_5_und_20_Felder()
     {
         // Der Feldumfang ist mit #200 NICHT gewachsen — sonst liesse sich hinterher
         // nicht sagen, was den Feldblock verändert hat: der Umfang oder der
@@ -715,14 +721,16 @@ public class KiDialogkatalogTests : IDisposable
         // Bereitschaftsverlusts (Anwenderentscheid 02.10.2026) auf 17.
         //
         // Die Photovoltaik fuehrt dazu die Bodenalbedo der Anlage (Entscheidungsvorlage
-        // Modellgrenzen, PV4): 18.
+        // Modellgrenzen, PV4): 18, und die zwei Wahlspalten Wechselrichter und Modul je
+        // Strang (Anwenderentscheid 16.10.2026, Wahl ueber den Uebernahmeweg): 20.
         Assert.Equal(17, KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL)!.Felder.Count);
-        Assert.Equal(18, KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!.Felder
+        Assert.Equal(20, KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!.Felder
                              .Count(f => !IstAlleDaten(f)));
         Assert.Equal(5, KiDialoge.Katalog.Finde(KiMaskennamen.PUFFERSPEICHER)!.Felder.Count);
         // Die Waermepumpe fuehrt dazu Mindestleistung und C_d (Welle M4, WP1) und die acht
-        // Geraetegrenzen der Uebergabegrenze (UB-E3-b): 21.
-        Assert.Equal(21, KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE)!.Felder.Count);
+        // Geraetegrenzen der Uebergabegrenze (UB-E3-b), ohne Kostenfeld (Welle KB-4: die
+        // Geraetespalte Modulkosten ist entfallen, der Satz steht in der Satzvorlage): 20.
+        Assert.Equal(20, KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE)!.Felder.Count);
 
         // Die Ueberlagerung „Anlagenwerte" fuehrt die VIER Kennwerte des
         // Wechselrichters - Nennleistung und die drei Punkte der Teillastkennlinie.
@@ -768,22 +776,20 @@ public class KiDialogkatalogTests : IDisposable
     }
 
     /// <summary>
-    /// <b>Die MODULKOSTEN der Wärmepumpenverwaltung sind nur lesbar</b>
-    /// (Anwenderentscheid 21.09.2026, KI‑D‑Q7).
+    /// <b>Beide Wärmepumpenmasken führen kein Kostenfeld</b> (Welle KB-4,
+    /// Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine Doppelhaltung").
     /// </summary>
     /// <remarks>
-    /// Die Maske zeigt sie als Lesewert mit Herleitungszeile — gepflegt werden sie in
-    /// der Kostenverwaltung. Der Katalog führte sie bis dahin setzbar und bot damit an,
-    /// eine Zahl zu ändern, für die es auf der Maske kein Eingabefeld gibt; bei
-    /// <c>Form_WP_Anlage</c> war dieselbe Größe schon vorher <c>nurLesen</c>.
+    /// Die Gerätespalte <c>Modulkosten</c> ist entfallen; die Masken zeigen den Kostensatz
+    /// der Satzvorlage als Lesewert mit Herleitungszeile, gepflegt wird er in der
+    /// Kostenverwaltung — die als eigene Maske im Katalog steht.
     /// </remarks>
     [Fact]
-    public void Die_Modulkosten_beider_Waermepumpenmasken_sind_nur_lesbar()
+    public void Beide_Waermepumpenmasken_fuehren_kein_Kostenfeld()
     {
-        Assert.True(KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE)!
-                              .FindeFeld("modulkosten")!.NurLesen);
-        Assert.True(KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE_ANLAGE)!
-                              .FindeFeld("modulkosten")!.NurLesen);
+        Assert.Null(KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE)!.FindeFeld("modulkosten"));
+        Assert.Null(KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE_ANLAGE)!.FindeFeld("modulkosten"));
+        Assert.NotNull(KiDialoge.Katalog.Finde(KiMaskennamen.KOSTENVERWALTUNG));
 
         // Die Nennleistung derselben Maske bleibt setzbar — der Feldsatz ist nicht
         // insgesamt gesperrt, nur diese eine Anzeige.
@@ -806,7 +812,7 @@ public class KiDialogkatalogTests : IDisposable
     /// auf und nicht beim Anwender.</para>
     /// </remarks>
     [Fact]
-    public void Die_fuenf_Erzeugerkataloge_fuehren_17_12_15_15_und_26_Felder()
+    public void Die_fuenf_Erzeugerkataloge_fuehren_18_12_15_12_und_26_Felder()
     {
         // BHKW-Editor: dreizehn plus die Gruppe „Teillast und Takten" (Welle M4: BH1, BH2) plus die
         // Abschaltgrenze des Ruecklaufs (UB-E3-b).
@@ -814,18 +820,19 @@ public class KiDialogkatalogTests : IDisposable
         // Kollektoreditor: elf plus die Bezugsfläche der Kennwerte (Welle M2, ST6).
         Assert.Equal(12, KiDialoge.Katalog.Finde(KiMaskennamen.SOLARKOLLEKTOR)!.Felder.Count);
         Assert.Equal(15, KiDialoge.Katalog.Finde(KiMaskennamen.PV_MODULKATALOG)!.Felder.Count);
-        // Stromspeicherkatalog: vierzehn plus die Selbstentladung (Welle M5, SP1).
-        Assert.Equal(15, KiDialoge.Katalog.Finde(KiMaskennamen.STROMSPEICHER_KATALOG)!.Felder.Count);
+        // Stromspeicherkatalog: zwoelf - die vier Kostenspalten sind entfallen, der
+        // Kostensatz der Satzvorlage steht gesperrt da (Welle KB-5).
+        Assert.Equal(12, KiDialoge.Katalog.Finde(KiMaskennamen.STROMSPEICHER_KATALOG)!.Felder.Count);
         Assert.Equal(26, KiDialoge.Katalog.Finde(KiMaskennamen.WECHSELRICHTER_KATALOG)!.Felder.Count);
     }
 
     /// <summary>
-    /// <b>Die drei Strommasken der Welle KI‑F6 führen 22, 18 und 2 Felder.</b>
+    /// <b>Die drei Strommasken der Welle KI‑F6 führen 24, 18 und 2 Felder.</b>
     /// </summary>
     /// <remarks>
-    /// <para>Die LASTSPITZENKAPPUNG führt achtzehn Eingaben und vier Anzeigen (Quelle,
-    /// Ganglinie und die achtzehn Zahlen und Schalter; dazu Reihenzeile, Herkunft und
-    /// das offene Blatt).</para>
+    /// <para>Die LASTSPITZENKAPPUNG führt zwanzig Eingaben und vier Anzeigen (Quelle,
+    /// Ganglinie und die zwanzig Zahlen und Schalter — mit den zwei Bildschaltern der Welle RZ,
+    /// Lade-/Entladeleistung und Schwelle; dazu Reihenzeile, Herkunft und das offene Blatt).</para>
     /// <para>Die ZEITREIHEN-Leseregeln führen sechzehn Einstellwerte und zwei
     /// Anzeigen; Datei und Rolle kommen vom Wirt.</para>
     /// <para>Die STROMGANGLINIEN-Verwaltung führt genau EINEN Einstellwert — das
@@ -833,13 +840,13 @@ public class KiDialogkatalogTests : IDisposable
     /// Suche, Auswahl und Ladevorgang (KI‑D‑Q5).</para>
     /// </remarks>
     [Fact]
-    public void Die_drei_Strommasken_fuehren_22_18_und_2_Felder()
+    public void Die_drei_Strommasken_fuehren_24_18_und_2_Felder()
     {
         KiDialog peak = KiDialoge.Katalog.Finde(KiMaskennamen.PEAK_SHAVING)!;
         KiDialog reihe = KiDialoge.Katalog.Finde(KiMaskennamen.SPEICHER_ZEITREIHEN)!;
         KiDialog admin = KiDialoge.Katalog.Finde(KiMaskennamen.STROMGANGLINIE_ADMIN)!;
 
-        Assert.Equal(22, peak.Felder.Count);
+        Assert.Equal(24, peak.Felder.Count);
         Assert.Equal(18, reihe.Felder.Count);
         Assert.Equal(2, admin.Felder.Count);
 
@@ -932,6 +939,8 @@ public class KiDialogkatalogTests : IDisposable
         Assert.Equal(KiMaskenziele.KAELTEMASCHINE_KATALOG, KiMaskenziele.Ziel(KiMaskennamen.KAELTEMASCHINE_KATALOG));
         Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.Kaeltemittel, KiMaskenziele.KAELTEMITTEL);
         Assert.Equal(KiMaskenziele.KAELTEMITTEL, KiMaskenziele.Ziel(KiMaskennamen.KAELTEMITTEL));
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.Rueckkuehlwerk, KiMaskenziele.RUECKKUEHLWERK);
+        Assert.Equal(KiMaskenziele.RUECKKUEHLWERK, KiMaskenziele.Ziel(KiMaskennamen.RUECKKUEHLWERK));
         Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.KaeltemaschineAnlage, KiMaskenziele.KAELTEMASCHINE_ANLAGE);
         Assert.Equal(KiMaskenziele.KAELTEMASCHINE_ANLAGE, KiMaskenziele.Ziel(KiMaskennamen.KAELTEMASCHINE_ANLAGE));
         Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.Betriebskalender, KiMaskenziele.BETRIEBSKALENDER);
@@ -1022,11 +1031,12 @@ public class KiDialogkatalogTests : IDisposable
     }
 
     /// <summary>
-    /// <b>Die vier Masken der Welle KI‑F6, Schritt 2, führen 6, 8, 5 und 4 Felder.</b>
+    /// <b>Die vier Masken der Welle KI‑F6, Schritt 2, führen 8, 9, 5 und 4 Felder.</b>
     /// </summary>
     /// <remarks>
     /// <para>Das Reiterblatt „Übersicht" führt vier Einstellwerte (Stammprojekt,
-    /// Filter, markierte Version, Bezeichner) und zwei Anzeigen; „Bericht" fünf
+    /// Filter, markierte Version, „nur Unterschiede") und vier Anzeigen
+    /// (Simulationsstand, Gegenüberstellung je Gewerk, Statuszeile, Energievergleich); „Bericht" fünf
     /// Einstellwerte (Ausgabe, Zielordner, das Szenario des Wirtschaftlichkeitsberichts — Fachvorgabe E31 — und —
     /// Berichtsvorlagen BV-E1 und BV-E7 — die Word- und die Excel-Vorlage, jeweils als Wahl, sowie die Suche des
     /// Platzhalterkatalogs) und drei Anzeigen — die zwei Mengen stehen als Aufstellung.</para>
@@ -1034,14 +1044,18 @@ public class KiDialogkatalogTests : IDisposable
     /// speichern" drei Einstellwerte und den gerechneten Zielnamen.</para>
     /// </remarks>
     [Fact]
-    public void Die_vier_Berichts_und_Projektmasken_fuehren_6_8_5_und_4_Felder()
+    public void Die_vier_Berichts_und_Projektmasken_fuehren_8_9_5_und_4_Felder()
     {
         KiDialog ueb = KiDialoge.Katalog.Finde(KiMaskennamen.BERICHTE_UEBERSICHT)!;
         KiDialog ber = KiDialoge.Katalog.Finde(KiMaskennamen.BERICHTSEITE)!;
         KiDialog kop = KiDialoge.Katalog.Finde(KiMaskennamen.PROJEKT_KOPIE)!;
         KiDialog var = KiDialoge.Katalog.Finde(KiMaskennamen.PROJEKT_VARIANTE)!;
 
-        Assert.Equal(6, ueb.Felder.Count);
+        // Anwenderauftrag 13.10.2026: kein Feld "bezeichner" mehr - der Bezeichner ist eine
+        // Angabe der Dialoge "Variante anlegen" und "Umbenennen" (8 -> 7); dazu der Energievergleich
+        // "ergebnisse" (7 -> 8).
+        Assert.Equal(8, ueb.Felder.Count);
+        Assert.Null(ueb.FindeFeld("bezeichner"));
         Assert.Equal(9, ber.Felder.Count);
         Assert.Equal(KiParameterTyp.Wahl, ber.FindeFeld("szenario")!.Typ);
         Assert.Equal("BerichtSeiteKiSicht.Szenario", ber.FindeFeld("szenario")!.Eigenschaftspfad);
@@ -1055,7 +1069,7 @@ public class KiDialogkatalogTests : IDisposable
         Assert.Equal(5, kop.Felder.Count);
         Assert.Equal(4, var.Felder.Count);
 
-        Assert.Equal(2, ueb.Felder.Count(f => f.NurLesen));
+        Assert.Equal(4, ueb.Felder.Count(f => f.NurLesen));
         Assert.Equal(3, ber.Felder.Count(f => f.NurLesen));
         Assert.Empty(kop.Felder.Where(f => f.NurLesen));
         Assert.Single(var.Felder.Where(f => f.NurLesen));
@@ -1498,18 +1512,18 @@ public class KiDialogkatalogTests : IDisposable
     }
 
     /// <summary>
-    /// <b>Die Photovoltaik führt ELF Felder mehr als die drei der Startmaske</b> (Welle
-    /// KI‑F1): die drei Modellfelder samt der Wechselrichterwahl und die SIEBEN Spalten
+    /// <b>Die Photovoltaik führt DREIZEHN Felder mehr als die drei der Startmaske</b> (Welle
+    /// KI‑F1): die drei Modellfelder samt der Wechselrichterwahl und die NEUN Spalten
     /// der Strangliste.
     /// </summary>
     /// <remarks>
     /// Die Strangfelder sind SPALTEN (<c>ErzeugerZeile.Straenge[].Mppt</c>): Je
     /// vorhandener Strangzeile wird daraus ein gewöhnliches Feld, und das
     /// Zeilenkennzeichen ist der Bezeichner des Strangs. Ohne diesen Fall bliebe
-    /// unbemerkt, wenn eines der sieben wieder zu einem flachen Feld würde.
+    /// unbemerkt, wenn eines der neun wieder zu einem flachen Feld würde.
     /// </remarks>
     [Fact]
-    public void Die_Photovoltaikmaske_fuehrt_die_Modellfelder_und_sieben_Strangspalten()
+    public void Die_Photovoltaikmaske_fuehrt_die_Modellfelder_und_neun_Strangspalten()
     {
         KiDialog pv = KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!;
 
@@ -1524,7 +1538,8 @@ public class KiDialogkatalogTests : IDisposable
         string[] spalten =
         {
             "strang", "strang_geraet", "strang_mppt", "strang_module_reihe",
-            "strang_parallel", "strang_neigung", "strang_azimut"
+            "strang_parallel", "strang_neigung", "strang_azimut",
+            "strang_wechselrichter", "strang_modul"
         };
 
         foreach (string name in spalten)
@@ -1764,6 +1779,9 @@ public class KiDialogkatalogTests : IDisposable
         [KiMaskennamen.BAUSTOFF_KATALOG] =
             "bindet über die Sichtklasse BaustoffKatalogKiSicht auf die Satzwahl und den " +
             "Arbeitsstand des Stammblatts; Zeuge ist BaustoffKatalogDialogTests",
+        [KiMaskennamen.RUECKKUEHLWERK] =
+            "bindet über die Sichtklasse RueckkuehlwerkKiSicht auf die Satzwahl und den Arbeitsstand des Stammblatts " +
+            "(sechzehn Felder, Wahlen über den Persistenzwert); Zeuge ist RueckkuehlwerkDialogTests",
         [KiMaskennamen.KAELTEMITTEL] =
             "bindet über die Sichtklasse KaeltemittelKiSicht auf die Satzwahl und den privaten Arbeitsstand des " +
             "Satzbereichs (zwölf Felder, Wahlen über den Persistenzwert); Zeuge ist KaeltemittelDialogTests",
@@ -1775,21 +1793,24 @@ public class KiDialogkatalogTests : IDisposable
             "bindet über die Sichtklasse KaeltemaschineAnlageKiSicht auf die Anlagenwahl und den Arbeitsstand der " +
             "gewählten Anlage (Kühlträger über die Id); Zeuge ist KaeltemaschineAnlageDialogTests",
         [KiMaskennamen.BAUTEILAUFBAU] =
-            "bindet über die Sichtklasse BauteilaufbauKiSicht auf die Satzwahl, den Kopf und das " +
-            "Schichtenraster des Arbeitsstands; Zeuge ist BauteilaufbauDialogTests",
+            "bindet über die Sichtklasse BauteilaufbauKiSicht auf die Satzwahl, den Kopf samt Fensterteil, das " +
+            "Schichtenraster samt Abschnitten des Arbeitsstands und den Summenfuß zum Lesen; Zeuge ist BauteilaufbauDialogTests",
         [KiMaskennamen.ZONE] =
             "bindet über die Sichtklasse ZonenKiSicht auf Bezeichnung, Nutzfläche, die Werte der Zone " +
             "und das Bauteilraster zum Lesen; Zeuge ist ZonenDialogTests",
         [KiMaskennamen.BAUTEIL] =
             "bindet über die Sichtklasse BauteilKiSicht auf die Listenplätze von Art, " +
-            "Randbedingung, Nachbarzone, Zuordnung und Aufbau und den Arbeitsstand des Bauteils; " +
-            "Zeuge ist BauteilDialogTests",
+            "Randbedingung, Nachbarzone, Zuordnung und Aufbau, den Arbeitsstand des Bauteils und die " +
+            "Herkunft des U-Werts zum Lesen; Zeuge ist BauteilDialogTests",
         [KiMaskennamen.LUFTAUSTAUSCH] =
             "bindet über die Sichtklasse LuftaustauschKiSicht auf das Raster der Luftströme " +
             "(Zonen zum Lesen, Volumenstrom setzbar); Zeuge ist LuftaustauschDialogTests",
         [KiMaskennamen.GEBAEUDE_EXPORT] =
             "bindet über die Sichtklasse GebaeudeExportKiSicht auf die Postleitzahl (setzbar) und die " +
             "Bestätigung der Meldungen (nur zu lesen); Zeuge ist GebaeudeExportDialogTests",
+        [KiMaskennamen.KLIMA_EXPORT] =
+            "bindet über die Sichtklasse KlimaExportKiSicht auf die Formatfelder (Steuerwerte der Optionsgruppen) " +
+            "und die Parameterwahl als Schlüsselliste; Zeuge ist KlimaExportDialogTests",
         [KiMaskennamen.TYPPROFIL] =
             "bindet über die Sichtklasse TypProfilKiSicht auf die Listenwahl der " +
             "Maske; Zeuge ist TypProfilDialogTests",
@@ -1974,9 +1995,9 @@ public class KiDialogkatalogTests : IDisposable
 
         // Welle KI-F6, Schritt 2
         [KiMaskennamen.BERICHTE_UEBERSICHT] =
-            "bindet über die Sichtklasse UebersichtSeiteKiSicht auf die vier Wahlwege " +
-            "der Seite; sie schreibt nicht in ihren Stand, sondern meldet an die " +
-            "Hülle. Zeuge ist UebersichtSeiteTests",
+            "bindet über die Sichtklasse UebersichtSeiteKiSicht auf die drei Wahlwege " +
+            "der Seite und den Schalter „nur Unterschiede“; sie schreibt nicht in ihren Stand, " +
+            "sondern meldet an die Hülle. Zeuge ist UebersichtSeiteTests",
         [KiMaskennamen.BERICHTSEITE] =
             "bindet über die Sichtklasse BerichtSeiteKiSicht auf Ausgabeform, " +
             "Zielordner, die Vorlagenwahl der Gruppe „Vorlage“ (Ids der Hülle), die Suche des " +

@@ -23,7 +23,9 @@ namespace WindowsFormsApplication1
         public double m_T_NOCT;
         public double m_Laenge;
         public double m_Breite;
-        public double m_Modulkosten;
+        /// <summary>Der Verweis auf die Investitions-Satzvorlage des Satzes (Welle KB-4);
+        /// 0 = keine. Die Kostenspalte <c>Modulkosten</c> ist mit Schemaschritt 228 entfallen.</summary>
+        public int IdKostenVorlageInvestition;
 
         /// <summary>
         /// Zelltechnologie des Moduls (Spalte <c>Technologie</c>, Migrationsschritt 63,
@@ -59,7 +61,7 @@ namespace WindowsFormsApplication1
             m_T_NOCT = 0.0;
             m_Laenge = 0.0;
             m_Breite = 0.0;
-            m_Modulkosten = 0.0;
+            IdKostenVorlageInvestition = 0;
             m_Technologie = null;   // null = nicht gepflegt (siehe Feldkommentar)
         }
     }

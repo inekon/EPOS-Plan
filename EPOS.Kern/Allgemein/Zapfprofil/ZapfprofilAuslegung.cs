@@ -127,16 +127,19 @@ namespace WindowsFormsApplication1
                     Ablehnen(w, ZapfSatz.Neu("EINGABE_ZONE_OHNE_ANGABEN"), ablehnungen);
                     continue;
                 }
+                // Vorprüfung ohne Ausnahme (2.2): Ein Zwischenstand fällt mit benanntem Grund aus seiner Gruppe.
+                ZapfAblehnung vorab = Zonenvorpruefung.Pruefen(z, katalog, e.Tagesgangsaetze, ps, belegung);
+                if (vorab != null)
+                {
+                    Ablehnen(w, vorab.Satz, ablehnungen);
+                    continue;
+                }
                 try
                 {
-                    w.Art = Suchen(katalog, z.IdNutzungsart)
-                            ?? throw new ZapfprofilEingabeException(ZapfEingabefehler.NutzungsartFehlt, w.Name,
-                                   ZapfSatz.Neu("EINGABE_NUTZUNGSART_FEHLT", w.Name));
-                    Tagesgangsatz satz = w.Art.Tagesgaenge;
-                    if (z.IdTagesgangsatz.HasValue)
-                        satz = SuchenSatz(e.Tagesgangsaetze, z.IdTagesgangsatz.Value)
-                               ?? throw new ZapfprofilEingabeException(ZapfEingabefehler.TagesgangsatzFehlt, w.Name,
-                                      ZapfSatz.Neu("EINGABE_TAGESGANGSATZ_FEHLT", z.IdTagesgangsatz.Value, w.Name));
+                    ZapfAblehnung grund = Zonenvorpruefung.NutzungsartBefund(z, katalog, out w.Art);
+                    if (grund != null) throw grund.Ausnahme();
+                    grund = Zonenvorpruefung.TagesgangsatzBefund(z, w.Art, e.Tagesgangsaetze, out Tagesgangsatz satz);
+                    if (grund != null) throw grund.Ausnahme();
                     w.Temperaturen = Mengengeruest.Temperaturen(z, w.Art, ps, prot);
                     w.Menge = Mengengeruest.JahresenergieKwh(z, w.Art, w.Temperaturen, ps, belegung, prot, zapfHinweise);
                     w.Struktur = Formvektor.Bilden(z, w.Art, satz, ps, prot, zapfHinweise);
@@ -162,19 +165,18 @@ namespace WindowsFormsApplication1
             }
             Zirkulationsansatz ansatz = null;
             double zirkVorschlagKw = 0.0;
-            try
+            ZapfAblehnung zirkulationsgrund = Zirkulationskanal.Befund(p, anteile, ps);
+            if (zirkulationsgrund != null) hinweise.Add(new Auslegungshinweis("ZIRKULATION_NICHT_RECHENBAR", zirkulationsgrund.Satz, true));
+            else try
             {
                 ansatz = Zirkulationskanal.Ansetzen(p, anteile, ps, prot, zapfHinweise);
                 for (int i = 0; i < anteilIndex.Count; i++) anteilIndex[i].ZirkulationKwh = ansatz.AnteilJeZoneKwh[i];
                 zirkVorschlagKw = ansatz.LeistungKw;
                 if (!p.ZirkAuto)
                 {
-                    try
-                    {
-                        zirkVorschlagKw = Zirkulationskanal.Ansetzen(p with { ZirkAuto = true }, anteile, ps, null, null).LeistungKw;
-                    }
-                    catch (ZapfprofilEingabeException) { }
-                    catch (ParametersatzException) { }
+                    // Der Vorschlag der Methode — ohne Wurf, wenn sie (noch) nicht rechnet.
+                    Zirkulationsansatz vorschlag = Zirkulationskanal.Vorschlag(p, anteile, ps);
+                    if (vorschlag != null) zirkVorschlagKw = vorschlag.LeistungKw;
                 }
             }
             catch (ZapfprofilEingabeException ex) { hinweise.Add(new Auslegungshinweis("ZIRKULATION_NICHT_RECHENBAR", ex.Satz, true)); }
@@ -184,6 +186,12 @@ namespace WindowsFormsApplication1
             foreach (Zonenarbeit w in arbeit)
             {
                 if (w.Abgelehnt || w.Messwert == null) continue;
+                ZapfAblehnung kalibriergrund = Mengengeruest.KalibrierBefund(w.Messwert, w.ZapfungKwh, w.ZirkulationKwh, w.Name);
+                if (kalibriergrund != null)
+                {
+                    Ablehnen(w, kalibriergrund.Satz, ablehnungen);
+                    continue;
+                }
                 try
                 {
                     Kalibrierergebnis k = Mengengeruest.Kalibrieren(w.Messwert, w.ZapfungKwh, w.ZirkulationKwh, w.Name);
@@ -268,6 +276,12 @@ namespace WindowsFormsApplication1
         /// Wohneinheiten linear skaliert (Folgeposten #546) — ein Hinweis, keine Sperre.
         /// </summary>
         internal const string HINWEIS_ECODESIGN_SKALIERT = "ECODESIGN_SKALIERT";
+
+        /// <summary>
+        /// Kennung: Schnellauslegung nach Vorlage V4, ohne Summenlinie — in der Stufe Einfach fehlen die
+        /// Auslegungswerte der A100, empfohlen ist der Nenninhalt des Bandes der Speicherauslegung (4.5).
+        /// </summary>
+        internal const string HINWEIS_EMPFEHLUNG_V4 = "EMPFEHLUNG_VORLAGE_V4";
 
         /// <summary>
         /// <b>Die Grenze des Skalierungshinweises</b> [Wohneinheiten] (numerische Setzung, Folgeposten
@@ -498,8 +512,9 @@ namespace WindowsFormsApplication1
                 {
                     haupt = new Auslegungswert(ZapfAuslegungsverfahren.Summenlinie, Auslegungsstatus.NichtRechenbar, null, null,
                                                false, slGrund);
-                    empfehlung = new Auslegungsempfehlung(ZapfAuslegungsverfahren.Summenlinie, false, null, null, null, false,
-                                                          new ZapfSatz[0], slGrund);
+                    empfehlung = SchnellauslegungV4(a, ps, sa, prot, h)
+                                 ?? new Auslegungsempfehlung(ZapfAuslegungsverfahren.Summenlinie, false, null, null, null, false,
+                                                             new ZapfSatz[0], slGrund);
                 }
 
                 // --- Großanlage ------------------------------------------------------------------
@@ -702,6 +717,34 @@ namespace WindowsFormsApplication1
             {
                 Ablehnung = ablehnung
             };
+        }
+
+        /// <summary>
+        /// <b>Die Schnellauslegung nach Vorlage V4</b> (4.5, Anwenderentscheid 16.10.2026): nur in der Stufe
+        /// Einfach, nur ohne Summenlinie und nur, wenn der Katalogversion die Auslegungswerte der A100 fehlen
+        /// (<see cref="ZapfAuslegungParameter.A100Fehlt"/>). Dann ist der Nenninhalt des Bandes der
+        /// Speicherauslegung nach V4 die Empfehlung — mit der angesetzten Ladeleistung, dem Vermerk
+        /// „Schnellauslegung nach Vorlage V4, ohne Summenlinie", dem Hinweis <see cref="HINWEIS_EMPFEHLUNG_V4"/>
+        /// und einem Eintrag im Herkunftsprotokoll. Sonst <c>null</c>: Die Empfehlung bleibt benannt offen.
+        /// </summary>
+        private static Auslegungsempfehlung SchnellauslegungV4(Auslegungseingang a, Parametersatz ps,
+                                                               Speicherauslegungsergebnis sa, Herkunftsprotokoll prot,
+                                                               List<Auslegungshinweis> h)
+        {
+            if (a.Stufe != ZapfStufe.Einfach || !ZapfAuslegungParameter.A100Fehlt(ps)) return null;
+            if (sa?.NenninhaltL is not double nenn || !(nenn > 0) || sa.BandMaxL is not double band) return null;
+            double leistung = sa.Ladeleistung.Angesetzt;
+            Provenienz quelle = ps.Enthaelt(ZapfAuslegungParameter.NUTZANTEIL)
+                ? ps.Lies(ZapfAuslegungParameter.NUTZANTEIL).Herkunft : null;
+            prot?.Vermerken("", ZapfFeld.AUSLEGUNG_EMPFEHLUNG, nenn, "l", Wertstatus.Vorgabe, quelle,
+                            ZapfSatz.Neu("HERKUNFT_EMPFEHLUNG_V4", nenn, band));
+            h.Add(new Auslegungshinweis(HINWEIS_EMPFEHLUNG_V4, ZapfSatz.Neu("AUSHINWEIS_EMPFEHLUNG_V4", nenn, band)));
+            var vermerke = new List<ZapfSatz>
+            {
+                ZapfSatz.Neu("AUSTEXT_VERMERK_SCHNELLAUSLEGUNG"), ZapfSatz.Neu("AUSTEXT_VERMERK_VORLAGE_V4")
+            };
+            return new Auslegungsempfehlung(ZapfAuslegungsverfahren.VorlageV4, true, nenn, leistung, nenn, true,
+                                            vermerke.AsReadOnly(), null);
         }
 
         /// <summary>
@@ -937,19 +980,5 @@ namespace WindowsFormsApplication1
                     ps, prot, ZapfFeld.AUSLEGUNG_LADEFENSTER_BEGINN, "h", ZapfSatz.Neu("BEGRIFF_LADEFENSTER_BEGINN")),
                 ZapfAuslegungParameter.ProjektOderParameter(p.LadefensterH, ZapfAuslegungParameter.LADEFENSTER_LAENGE,
                     ps, prot, ZapfFeld.AUSLEGUNG_LADEFENSTER, "h", ZapfSatz.Neu("BEGRIFF_LADEFENSTER_LAENGE")));
-
-        private static Nutzungsart Suchen(IReadOnlyList<Nutzungsart> katalog, int id)
-        {
-            if (katalog == null) return null;
-            foreach (Nutzungsart n in katalog) if (n != null && n.Id == id) return n;
-            return null;
-        }
-
-        private static Tagesgangsatz SuchenSatz(IReadOnlyList<Tagesgangsatz> saetze, int id)
-        {
-            if (saetze == null) return null;
-            foreach (Tagesgangsatz s in saetze) if (s != null && s.Id == id) return s;
-            return null;
-        }
     }
 }

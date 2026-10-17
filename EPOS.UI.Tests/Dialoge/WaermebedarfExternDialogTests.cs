@@ -1266,4 +1266,32 @@ public class WaermebedarfExternDialogTests : EposBunitContext
         KnopfleisteAmSatzPruefung.KatalogsatzFrei(cut);
         KnopfleisteAmSatzPruefung.Schlussleiste(cut, "OK", "Abbrechen");
     }
+
+    /// <summary>
+    /// BP-3 (Anwenderentscheid 16.10.2026): Die Jahresarbeit in MWh steht in Katalogliste und Satzzeile
+    /// als ganze Zahl mit Tausendertrennung der Kultur — de „1.200“, en-US „1,200“.
+    /// </summary>
+    [Theory]
+    [InlineData("de-DE", "1.234", "1.200 MWh")]   // Katalog „Ganglinie A“ 1.234,5 MWh
+    [InlineData("en-US", "1,234", "1,200 MWh")]
+    public void BP3_Katalog_und_Satzzeile_zeigen_die_Jahresarbeit_ganzzahlig(string kultur, string katalog, string satz)
+    {
+        try
+        {
+            Kultur(kultur);
+            var cut = ZeigeMitGrafik(kennzahlen: new()
+            {
+                ["Ganglinie A"] = new GanglinienKennzahlen(1200.4, 500.0, 2400.8)
+            });
+
+            Assert.Contains(katalog, cut.FindAll(".epos-katalogliste tbody td").Select(td => td.TextContent.Trim()));
+
+            cut.FindAll(".epos-projektzeile")[0].Click();
+            cut.WaitForAssertion(() => Assert.Contains(satz, cut.Find(".epos-satzzusammenfassung").TextContent));
+        }
+        finally
+        {
+            DeutscheOberflaeche();
+        }
+    }
 }

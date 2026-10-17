@@ -1023,7 +1023,7 @@ public class KatalogImportDialogTests : EposBunitContext
 
     /// <summary>
     /// <b>Die Liste zeigt die Kennwerte in der ZEILE.</b> Sieben Spalten neben
-    /// dem Bezeichner — Quelle, Hersteller, Modell, kWh, kW, η_RT und Chemie;
+    /// dem Bezeichner — Quelle, Hersteller, Modell, kWh, kW, Wirkungsgrad Laden/Entladen und Chemie;
     /// die zwei Bestandsspalten der VDI-Masken reichen für 6 654 Geräte nicht.
     /// </summary>
     [Fact]
@@ -1042,7 +1042,7 @@ public class KatalogImportDialogTests : EposBunitContext
                                            ?? t).TextContent.Trim()).ToArray();
 
         Assert.Equal(new[] { "Wahl", "Eintrag", "Quelle", "Hersteller", "Modell",
-                             "kWh", "kW", "η_RT", "Zellchemie" }, koepfe);
+                             "Kapazität [kWh]", "Leistung [kW]", "Wirkungsgrad Laden/Entladen", "Zellchemie" }, koepfe);
 
         // Und die WERTE stehen darin - die Zeile aus bslib traegt ihren
         // gemessenen Wirkungsgrad, die aus der CEC-Liste ohne Angabe nichts.

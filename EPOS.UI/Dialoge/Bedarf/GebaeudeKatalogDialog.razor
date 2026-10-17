@@ -184,6 +184,24 @@
                         </KindInhalt>
                     </Gruppenkopf>
 
+                    @* MA-7: „Vorgaben der Baualtersklasse übernehmen…“ - der Einzonenweg in einer Minute (Entwurf Geführter
+                       Modellaufbau 2.1). Mit Zonen oder ohne Klasse gesperrt, der Grund steht daneben; die Übernahme trägt
+                       in den Arbeitsstand, das OK schreibt. *@
+                    <div class="epos-gebk-vorgaben" data-teil="vorgaben">
+                        <button type="button" class="epos-knopf epos-gebk-vorgaben-knopf"
+                                disabled="@(VorgabenGrund is not null || IstGesperrt)" title="@(VorgabenGrund ?? "")"
+                                @onclick="VorgabenOeffnen">@Resource.GEBV_BTN_OEFFNEN</button>
+                        @if (_arbeit.KannEinzonenvorgabenZuruecknehmen)
+                        {
+                            <button type="button" class="epos-knopf epos-gebk-vorgaben-zurueck"
+                                    @onclick="VorgabenZuruecknehmen">@Resource.GEBV_BTN_ZURUECKNEHMEN</button>
+                        }
+                        @if (VorgabenGrund is string grund)
+                        {
+                            <span class="epos-herleitung-text epos-gebk-vorgaben-grund">@grund</span>
+                        }
+                    </div>
+
                     <Gruppenkopf Titel="@GruppeKopf">
                         <KindInhalt>
                             <Formularraster>
@@ -675,6 +693,13 @@
                     <Gruppenkopf Titel="@ZonenTexte.Gruppe">
                         <KindInhalt>
                             <Herleitungszeile Text="@Huellwegzeile" />
+                            @* N1 (Entwurf 2.2): die Ampelleiste der Modellpruefung des gespeicherten Gebaeudes - ein Klick oeffnet das
+                               Ampelblatt auf der Gruppe; nur mit Weg des Gebaeudedialogs (nicht im Assistenten, nicht im Katalog). *@
+                            @if (PruefleisteSichtbar)
+                            {
+                                <Modellpruefungsleiste Stand="@_pruefstand" Sperre="@Leistensperre"
+                                                       GruppeOeffnen="BeiPruefgruppe" Gesperrt="g => Melden(g, WarnStufe.Hinweis)" />
+                            }
                             @if (_arbeit.Zonen.Count > 0)
                             {
                                 IReadOnlyList<Zonenkennwerte> kennliste = _arbeit.Kennwerte;
@@ -760,6 +785,26 @@
                                 @Uebernahmeblock
                             }
                             @Neuezonenblock
+                            @* MA-2: Nutzung und Kalender aller Zonen auf einem Blatt (Mehrfachwahl); mit ungespeicherten Zonen
+                               gesperrt, damit das Blatt und der Arbeitsstand nicht gegeneinander schreiben. *@
+                            @if (ZonenNutzungGaben is not null && _arbeit.Zonen.Count > 0)
+                            {
+                                <div class="epos-leiste epos-gebaeude-zonennutzung-leiste">
+                                    <button type="button" class="epos-knopf epos-gebaeude-zonennutzung"
+                                            aria-disabled="@(_arbeit.ZonenGeaendert ? "true" : null)"
+                                            title="@(_arbeit.ZonenGeaendert ? Resource.GEB_SPERRE_ZONENNUTZUNG : Resource.GEB_BTN_ZONENNUTZUNG_HINWEIS)"
+                                            @onclick="BeiZonenNutzung">@Resource.GEB_BTN_ZONENNUTZUNG</button>
+                                </div>
+                            }
+                            @* GD-6a: die gemerkten Baustoff-Zuordnungen des Projekts bei Bauteilen und Aufbauten der Zonen. *@
+                            @if (BaustoffzuordnungenGaben is not null)
+                            {
+                                <div class="epos-leiste epos-gebaeude-baustoffzuordnungen-leiste">
+                                    <button type="button" class="epos-knopf epos-gebaeude-baustoffzuordnungen"
+                                            title="@Resource.GEB_BTN_BAUSTOFFZUORDNUNGEN_HINWEIS"
+                                            @onclick="BeiBaustoffzuordnungen">@Resource.GEB_BTN_BAUSTOFFZUORDNUNGEN</button>
+                                </div>
+                            }
                         </KindInhalt>
                     </Gruppenkopf>
                 </KindInhalt>
@@ -767,6 +812,59 @@
 
         </KindInhalt>
     </Reiter>
+
+    @* --- Ueberlagerung: Nutzung und Kalender aller Zonen (MA-2) - schreibt je Handlung; danach liest der Reiter die Zonen neu --- *@
+    <Ueberlagerung Offen="@(_zonenNutzung is not null)" Titel="@Resource.ZNB_TITEL" Zusatzklasse="epos-ueberlagerung--breit"
+                   Geschlossen="ZonenNutzungFertig">
+        <KindInhalt>
+            @if (_zonenNutzung is not null)
+            {
+                <ZonenNutzungsblatt Weg="@_zonenNutzung" ZoneOeffnen="ZonenNutzungZone" Geaendert="() => _zonenNutzungGeschrieben = true" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung: Vorgaben der Baualtersklasse (MA-7) - Vorschau alt -> neu je Feld, Uebernahme nur auf Klick,
+           dazu das Profil der Gebaeudeart ueber den Generator der Konditionierung ("Nutzungsprofil übernehmen…") --- *@
+    <Ueberlagerung Offen="@_vorgabenOffen" Titel="@Resource.GEBV_TITEL" Geschlossen="() => _vorgabenOffen = false">
+        <KindInhalt>
+            @if (_vorgabenOffen)
+            {
+                <div class="epos-gebk-vorgabenblatt" data-teil="vorgabenblatt">
+                    <EinzonenvorgabenVorschau Arbeit="@_arbeit" Huelletexte="@Texte" LabelBauart="@LabelBauart"
+                                              LabelFensterdurchlassgrad="@LabelFensterdurchlassgrad" Bauarten="@Bauarteintraege"
+                                              Uebernehmen="VorgabenUebernehmen" Abbrechen="() => _vorgabenOffen = false" />
+
+                    <Gruppenkopf Titel="@Resource.GEBV_GRUPPE_PROFIL">
+                        <KindInhalt>
+                            @if (_vorgabenProfil is KonditionierungProfilwahl profil)
+                            {
+                                <p class="epos-herleitung"><span class="epos-herleitung-text epos-gebk-vorgaben-profil">@string.Format(CultureInfo.CurrentCulture, Resource.GEBV_TXT_PROFIL, _stand.Gebaeudeart, profil.Anzeige)</span></p>
+                                <button type="button" class="epos-knopf epos-gebk-vorgaben-profilknopf"
+                                        @onclick="VorgabenProfilUebernehmen">@Resource.GEBV_BTN_PROFIL</button>
+                            }
+                            else
+                            {
+                                <p class="epos-herleitung"><span class="epos-herleitung-text epos-gebk-vorgaben-profilgrund">@VorgabenProfilGrund</span></p>
+                            }
+                        </KindInhalt>
+                    </Gruppenkopf>
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Ueberlagerung: die Baustoff-Zuordnungen des Projekts (GD-6a) - geschrieben mit deren OK ---- *@
+    <Ueberlagerung Offen="@(_baustoffzuordnungenGaben is not null)" Titel="@Resource.BSZU_TITEL"
+                   Geschlossen="() => BaustoffzuordnungenFertig(null)">
+        <KindInhalt>
+            @if (_baustoffzuordnungenGaben is not null)
+            {
+                <BaustoffzuordnungenDialog @attributes="_baustoffzuordnungenGaben" TitelAnzeigen="false"
+                                           Geschlossen="BaustoffzuordnungenFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 
     @* --- Ueberlagerung: die Brauchwasser-Profilliste des Projekts (W9.5) ---- *@
     <Ueberlagerung Offen="@(_brauchwasserGaben is not null)"
@@ -1062,6 +1160,12 @@
     /// <c>false</c> bei Abbrechen, Esc und dem Kreuz — dann ist nichts geschrieben.
     /// </summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>
+    /// MA-1b: meldet dem Wirt, dass „Als Mehrzonenmodell übernehmen…“ im OK-Weg geschrieben hat — der Gebäudedialog öffnet danach
+    /// das Blatt „Modell prüfen“ für dieses Gebäude. <c>null</c> = kein Wirt hört zu.
+    /// </summary>
+    [Parameter] public Action? MehrzonenGeschrieben { get; set; }
 
     // --- Texte -----------------------------------------------------------------
 
@@ -1726,6 +1830,7 @@
             ZonenNeulesung? n = Katalogladung.Satz(() => Zonen.Neulesen(), _ursprungsname, out string fehler);
             if (n is not null) _arbeit.ZonenLaden(n.Zonen, true, n.Luftstroeme, katalog: false);
         }
+        MehrzonenGeschrieben?.Invoke();
         return true;
     }
 
@@ -1868,6 +1973,7 @@
     /// <summary>Die Feldnamen und Meldungen der Prüfung folgen den Parametern.</summary>
     protected override void OnParametersSet()
     {
+        PruefFassungNachfuehren();
         _prueftexte = new GebaeudePrueftexte
         {
             MeldungNameFehlt = MeldungNameFehlt,
@@ -1935,6 +2041,12 @@
         // Stufe G3: die Zonen eines Gebaeudes im Projekt; Welle ZK-b: auch die eines Katalogsatzes.
         _arbeit.ZonenLaden(Zonen?.Zonen, Zonen is not null, Zonen?.Luftstroeme, katalog: Modus != GebaeudeKatalogModus.Projekt);
         _projektaufbauten = (Zonen?.Projektaufbauten ?? Array.Empty<AufbauWahl>()).ToList();
+        // N1: der Sprung „Zone…" aus dem Ampelblatt - der Editor geht auf dem Reiter „Zonen" mit der Zone im Zonendialog auf.
+        if (StartZone is int startZone && _arbeit.ZoneMitId(startZone) is not null)
+        {
+            _reiter = REITER_ZONEN;
+            ZoneOeffnen(startZone);
+        }
 
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE_KATALOG,
                                           () => KiSicht(), KiHaken(), KiVorlagenlisten());
@@ -1945,6 +2057,7 @@
     {
         _arbeit.Laden(satz, Modus == GebaeudeKatalogModus.Neu);
         _ursprungsname = _stand.Name ?? "";
+        _feiertagslandGelesen = _stand.Feiertagsland;
     }
 
     // =================================================================================
@@ -2568,6 +2681,66 @@
         Melden(string.Format(CultureInfo.CurrentCulture, Texte.MeldungSpeichernUnterAngelegt, neu), WarnStufe.Erfolg);
     }
 
+    // =================================================================================
+    // Vorgaben der Baualtersklasse im Einzonenweg (MA-7)
+    // =================================================================================
+
+    private bool _vorgabenOffen;
+    private KonditionierungProfilwahl? _vorgabenProfil;
+
+    /// <summary>Steht das Blatt „Vorgaben der Baualtersklasse“? Prüfhilfe für die Tests.</summary>
+    public bool VorgabenOffen => _vorgabenOffen;
+
+    /// <summary>Warum „Vorgaben der Baualtersklasse übernehmen…“ nicht geht; <c>null</c> = es geht.</summary>
+    public string? VorgabenGrund => EinzonenvorgabenVorschau.Grund(_arbeit.Einzonensperre);
+
+    /// <summary>Warum das Profil der Gebäudeart nicht angeboten wird.</summary>
+    private string VorgabenProfilGrund
+        => _kond.Weg.ProfilDerGebaeudeart is null || !_kond.MitProfilen
+            ? Resource.GEBV_GRUND_PROFIL_WEG
+            : string.Format(CultureInfo.CurrentCulture, Resource.GEBV_GRUND_PROFIL_KEINS, _stand.Gebaeudeart);
+
+    /// <summary>Öffnet das Blatt; das Profil der Gebäudeart wird einmal gelesen.</summary>
+    private void VorgabenOeffnen()
+    {
+        if (VorgabenGrund is string grund)
+        {
+            Melden(grund, WarnStufe.Hinweis);
+            return;
+        }
+        _vorgabenProfil = null;
+        if (_kond.MitProfilen && _kond.Weg.ProfilDerGebaeudeart is Func<string, long?> regel && regel(_stand.Gebaeudeart) is long id)
+            _vorgabenProfil = _kond.Profile().FirstOrDefault(p => p.Id == id);
+        _vorgabenOffen = true;
+    }
+
+    /// <summary>„Übernehmen“: die Vorgabe in den Arbeitsstand; die Meldung nennt die Zahl der geänderten Felder.</summary>
+    private void VorgabenUebernehmen()
+    {
+        int geaendert = _arbeit.Einzonenvorschau().Count(p => p.Aendert);
+        string kennung = _arbeit.Einzonenvorgabe?.Kennung ?? "";
+        if (!_arbeit.EinzonenvorgabenUebernehmen()) return;
+        _vorgabenOffen = false;
+        Melden(string.Format(CultureInfo.CurrentCulture, Resource.GEBV_MELDUNG_UEBERNOMMEN, kennung, geaendert), WarnStufe.Erfolg);
+    }
+
+    /// <summary>„Vorgaben zurücknehmen“ (eine Stufe).</summary>
+    private void VorgabenZuruecknehmen()
+    {
+        if (_arbeit.EinzonenvorgabenZuruecknehmen()) Melden(Resource.GEBV_MELDUNG_ZURUECK, WarnStufe.Hinweis);
+    }
+
+    /// <summary>
+    /// „Profil übernehmen…“: wählt das Profil der Gebäudeart und stellt die Rückfrage der Konditionierung (derselbe Generator
+    /// wie „Nutzungsprofil übernehmen…“, mit deren Rücknahme); der Reiter „Konditionierung“ zeigt sie.
+    /// </summary>
+    private void VorgabenProfilUebernehmen()
+    {
+        if (_vorgabenProfil is not KonditionierungProfilwahl p || !_kond.ProfilWaehlen(p.Id)) return;
+        _vorgabenOffen = false;
+        if (_kond.ProfilUebernehmenFragen(RaumnutzungTexte)) _reiter = REITER_KONDITIONIERUNG;
+    }
+
     private void Melden(string text, WarnStufe stufe)
     {
         _meldung = text ?? "";
@@ -2579,7 +2752,8 @@
         // Die Ueberlagerungen und Rueckfragen werten Esc zuerst fuer sich aus (Esc kaskadiert).
         if (e.Key != "Escape" || _brauchwasserGaben is not null || _zoneOffen is not null || _vorschlag is not null
             || _entfernId is not null || _speichernUnterFrage || _nachFrage is not null || _luftOffen
-            || _kond.OffeneFrage is not null || _vorlagenBlatt is not null || _nutzungsblatt) return Task.CompletedTask;
+            || _kond.OffeneFrage is not null || _vorlagenBlatt is not null || _nutzungsblatt
+            || _baustoffzuordnungenGaben is not null || _vorgabenOffen) return Task.CompletedTask;
         return Abbrechen();
     }
 
@@ -2618,6 +2792,193 @@
         _kondVorn = KonditionierungGroesse.Heizen;
         _kondAufgeklappt = KonditionierungGroesse.Heizen;
         _reiter = REITER_KONDITIONIERUNG;
+    }
+
+    /// <summary>
+    /// „Baustoff-Zuordnungen…" im Reiter „Zonen" (GD-6a): der Parametersatz der Ansicht der gemerkten Zuordnungen des
+    /// Projekts — vom Gebäudedialog durchgereicht, je Klick neu gelesen. Kein Delegat = kein Knopf
+    /// (Katalogverwaltung, Assistent).
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? BaustoffzuordnungenGaben { get; set; }
+
+    private IReadOnlyDictionary<string, object>? _baustoffzuordnungenGaben;
+
+    /// <summary>Steht die Ansicht der Baustoff-Zuordnungen? Prüfhilfe für die Tests.</summary>
+    public bool BaustoffzuordnungenOffen => _baustoffzuordnungenGaben is not null;
+
+    private void BeiBaustoffzuordnungen()
+    {
+        if (BaustoffzuordnungenGaben is null) return;
+        _baustoffzuordnungenGaben = BaustoffzuordnungenGaben();
+    }
+
+    /// <summary>Die Ansicht ist zu: nach OK mit der Zahl der entfernten Zuordnungen, sonst <c>null</c>.</summary>
+    private void BaustoffzuordnungenFertig(int? entfernt)
+    {
+        _baustoffzuordnungenGaben = null;
+        if (entfernt is > 0)
+            Melden(string.Format(CultureInfo.CurrentCulture, Resource.GEB_MSG_BAUSTOFFZUORDNUNGEN_ENTFERNT, entfernt.Value),
+                   WarnStufe.Hinweis);
+    }
+
+    /// <summary>
+    /// „Nutzung und Kalender…" im Reiter „Zonen" (MA-2): der Weg des Blatts für das Projektgebäude — vom Gebäudedialog
+    /// durchgereicht. Kein Delegat = kein Knopf (Katalogverwaltung, Assistent).
+    /// </summary>
+    [Parameter] public Func<ZonenNutzungWeg?>? ZonenNutzungGaben { get; set; }
+
+    private ZonenNutzungWeg? _zonenNutzung;
+    private bool _zonenNutzungGeschrieben;
+
+    /// <summary>Steht das Blatt „Nutzung und Kalender"? Prüfhilfe für die Tests.</summary>
+    public bool ZonenNutzungOffen => _zonenNutzung is not null;
+
+    private void BeiZonenNutzung()
+    {
+        if (ZonenNutzungGaben is null) return;
+        if (_arbeit.ZonenGeaendert) { Melden(Resource.GEB_SPERRE_ZONENNUTZUNG, WarnStufe.Hinweis); return; }
+        ZonenNutzungWeg? weg;
+        try { weg = ZonenNutzungGaben(); }
+        catch (Exception ex) when (ex is not OutOfMemoryException) { Melden(ex.Message, WarnStufe.Warnung); return; }
+        if (weg is null) { Melden(Resource.GEB_SPERRE_ZONENNUTZUNG, WarnStufe.Hinweis); return; }
+        _zonenNutzungGeschrieben = false;
+        _zonenNutzung = weg;
+    }
+
+    /// <summary>Das Blatt ist zu: hat es geschrieben, liest der Reiter die Zonen neu (Profil, Sollwerte).</summary>
+    private void ZonenNutzungFertig()
+    {
+        _zonenNutzung = null;
+        if (_zonenNutzungGeschrieben) PruefstandLesen();
+        if (!_zonenNutzungGeschrieben || Zonen?.Neulesen is null) return;
+        _zonenNutzungGeschrieben = false;
+        ZonenNeulesung? n = Katalogladung.Satz(() => Zonen.Neulesen(), _ursprungsname, out string fehler);
+        if (n is not null) _arbeit.ZonenLaden(n.Zonen, true, n.Luftstroeme, katalog: false);
+        else if (fehler.Length > 0) Melden(fehler, WarnStufe.Warnung);
+    }
+
+    /// <summary>„Zone…" im Blatt: das Blatt schließt, der Zonendialog öffnet die Zone.</summary>
+    private void ZonenNutzungZone(int id)
+    {
+        ZonenNutzungFertig();
+        ZoneOeffnen(id);
+    }
+
+    // =====================================================================
+    //  N1: Ampelleiste im Reiter „Zonen" (Entwurf Geführter Modellaufbau 2.2)
+    // =====================================================================
+
+    /// <summary>
+    /// Der Prüfstand des gespeicherten Gebäudes (Weg <c>ModellpruefungWeg.Pruefen</c> der Hülle, vom Gebäudedialog
+    /// durchgereicht); <c>null</c> = keine Leiste (Assistent, Katalog).
+    /// </summary>
+    [Parameter] public Func<ModellpruefungStand?>? ModellpruefungLesen { get; set; }
+
+    /// <summary>Der Klick auf eine Gruppe der Leiste: der Gebäudedialog öffnet das Ampelblatt auf ihr.</summary>
+    [Parameter] public EventCallback<Pruefgruppe> PruefgruppeOeffnen { get; set; }
+
+    /// <summary>
+    /// Zählt der Wirt hoch, wenn er am gespeicherten Gebäude geschrieben hat (Übernahme, Rücknahme, Nutzung und Kalender):
+    /// die Leiste prüft neu, und ohne ungespeicherte Zonen liest der Reiter die Zonen neu.
+    /// </summary>
+    [Parameter] public int PruefFassung { get; set; }
+
+    /// <summary>N1: die Zone, die der Editor gleich im Zonendialog öffnet (Sprung „Zone…" aus dem Ampelblatt); <c>null</c> = keine.</summary>
+    [Parameter] public int? StartZone { get; set; }
+
+    /// <summary>
+    /// N3: liest die Projektkopie neu (Hülle <c>GebaeudeKatalogHuelle.ProjektNeulesen</c>) — nach einer neuen Prüffassung
+    /// übernimmt der Editor daraus die Gebäudefelder, die eine Übernahme der Modellprüfung schreiben kann; <c>null</c> = kein
+    /// Neulesen (Katalog, Assistent).
+    /// </summary>
+    [Parameter] public Func<GebaeudeKatalogDaten?>? GebaeudeNeulesen { get; set; }
+
+    private ModellpruefungStand? _pruefstand;
+    private int _gelesenePruefFassung = -1;
+
+    /// <summary>Das Feiertagsland, wie es zuletzt gelesen wurde (Öffnen bzw. Neulesen nach einer Prüffassung).</summary>
+    private string? _feiertagslandGelesen;
+
+    /// <summary>
+    /// N3: Hat der Anwender Gebäudefelder geändert, die eine Übernahme der Modellprüfung schreiben kann (Feiertagsland der
+    /// Gruppe 4, die Konditionierung der Gebäudeebene mit Ferien und Saison der Gruppe 3)? Dann liest der Editor sie nicht neu
+    /// und die Leiste ist weich gesperrt — eine Übernahme würde sonst still überschrieben.
+    /// </summary>
+    public bool PrueffelderGeaendert
+        => !string.Equals(_stand.Feiertagsland ?? "", _feiertagslandGelesen ?? "", StringComparison.Ordinal)
+           || (_stand.Konditionierung?.Fassung ?? 0) > 0;
+
+    /// <summary>Der Grund der weichen Sperre der Leiste: ungespeicherte Zonen bzw. Gebäudefelder; <c>null</c> = frei.</summary>
+    private string? Leistensperre
+        => _arbeit.ZonenGeaendert ? Resource.GEB_SPERRE_ZONENNUTZUNG
+           : PrueffelderGeaendert ? Resource.GEB_SPERRE_PRUEFFELDER : null;
+
+    /// <summary>Der Prüfstand der Leiste (Prüfhilfe für die Tests).</summary>
+    public ModellpruefungStand? Pruefstand => _pruefstand;
+
+    private bool PruefleisteSichtbar => ModellpruefungLesen is not null && PruefgruppeOeffnen.HasDelegate && _pruefstand is not null;
+
+    /// <summary>Liest den Prüfstand neu; ein Fehler des Wegs lässt die Leiste weg.</summary>
+    private void PruefstandLesen()
+    {
+        if (ModellpruefungLesen is null) { _pruefstand = null; return; }
+        try { _pruefstand = ModellpruefungLesen(); }
+        catch (Exception ex) when (ex is not OutOfMemoryException) { _pruefstand = null; }
+    }
+
+    /// <summary>
+    /// Hat der Wirt geschrieben, prüft die Leiste neu, der Editor liest die Gebäudefelder einer Übernahme (N3) und der Reiter
+    /// die gespeicherten Zonen neu — beides nur ohne ungespeicherte Änderungen daran.
+    /// </summary>
+    private void PruefFassungNachfuehren()
+    {
+        if (_gelesenePruefFassung == PruefFassung) return;
+        bool erstes = _gelesenePruefFassung < 0;
+        _gelesenePruefFassung = PruefFassung;
+        PruefstandLesen();
+        if (erstes) return;
+        PrueffelderNeulesen();
+        if (_arbeit.ZonenGeaendert || Zonen?.Neulesen is null) return;
+        ZonenNeulesung? n = Katalogladung.Satz(() => Zonen.Neulesen(), _ursprungsname, out string fehler);
+        if (n is not null) _arbeit.ZonenLaden(n.Zonen, true, n.Luftstroeme, katalog: false);
+        else if (fehler.Length > 0) Melden(fehler, WarnStufe.Warnung);
+    }
+
+    /// <summary>
+    /// N3: übernimmt aus der neu gelesenen Projektkopie die Gebäudefelder, die eine Übernahme der Modellprüfung schreiben kann —
+    /// das Feiertagsland (Gruppe 4) und die Konditionierung der Gebäudeebene (Ferien und Saison der Gruppe 3). Nordrichtung,
+    /// Aufbauten und Hüllbauteile stehen an den Bauteilen der Zonen und kommen mit deren Neulesen. Mit ungespeicherten
+    /// Änderungen an diesen Feldern bleibt der Arbeitsstand, wie er ist (die Leiste ist dann gesperrt).
+    /// </summary>
+    private void PrueffelderNeulesen()
+    {
+        if (GebaeudeNeulesen is null || PrueffelderGeaendert) return;
+        GebaeudeKatalogDaten? frisch = Katalogladung.Satz(() => GebaeudeNeulesen(), _ursprungsname, out string fehler);
+        if (frisch is null)
+        {
+            if (fehler.Length > 0) Melden(fehler, WarnStufe.Warnung);
+            return;
+        }
+        _stand.Feiertagsland = frisch.Feiertagsland;
+        _feiertagslandGelesen = frisch.Feiertagsland;
+        if (frisch.Konditionierung is not null) _stand.Konditionierung = frisch.Konditionierung;
+    }
+
+    private async Task BeiPruefgruppe(Pruefgruppe g)
+    {
+        if (Leistensperre is string grund) { Melden(grund, WarnStufe.Hinweis); return; }
+        await PruefgruppeOeffnen.InvokeAsync(g);
+    }
+
+    /// <summary>
+    /// Öffnet eine Zone im Zonendialog von außen (N1: „Zone…" im Blatt „Nutzung und Kalender" über dem Ampelblatt, während
+    /// der Editor offen ist): der Reiter „Zonen", dann die Zone.
+    /// </summary>
+    public void ZoneVonAussenOeffnen(int id)
+    {
+        _reiter = REITER_ZONEN;
+        ZoneOeffnen(id);
+        StateHasChanged();
     }
 
     /// <summary>Steht der Nutzungsprofilkatalog als Blatt (Stufe NP3a)?</summary>

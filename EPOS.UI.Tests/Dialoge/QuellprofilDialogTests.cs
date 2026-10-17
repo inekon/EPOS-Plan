@@ -858,4 +858,58 @@ public class QuellprofilDialogTests : EposBunitContext
         Assert.Equal(Hilfe.KiReihenhilfe.Folge(12, 1.5), stand.Gespeichert!.Werte);
         Assert.Null(KiMaskenbruecke.Haken(KiMaskennamen.QUELLPROFIL).Speichern);
     }
+
+    // ================================================================== Welle RZ (Teil b)
+
+    /// <summary>Ohne Reihendelegat kein Schalter „Außentemperatur" im Grafikblatt.</summary>
+    [Fact]
+    public void Ohne_Reihendelegat_kein_Schalter_Aussentemperatur()
+    {
+        var cut = Zeige(Neu(), new Pruefstand(), mitBild: true);
+        cut.FindAll("button[role=tab]").First(b => b.TextContent.Contains("Grafik")).Click();
+
+        Assert.DoesNotContain(cut.FindAll("label.epos-schalter"), l => l.TextContent.Contains("Außentemperatur"));
+        Assert.Same(MODELL, cut.Instance.Modell);
+    }
+
+    /// <summary>
+    /// Die Außentemperatur ist ab Werk AUS — das Bild kommt über den Bestandsdelegaten; an ruft
+    /// den Reihendelegaten mit dem Schlüssel der Außentemperatur, aus führt zurück.
+    /// </summary>
+    [Fact]
+    public void Aussentemperatur_ab_Werk_aus_und_zuschaltbar()
+    {
+        var mit = ChartRenderer.TemperaturverlaufModell("Quellprofil",
+            new[] { new ChartRenderer.Reihe("Außentemperatur", new double[] { 1, 2, 3 }, Farbrolle.AUSSENTEMPERATUR) }, true);
+        var auftraege = new List<string[]>();
+        var cut = Render<QuellprofilDialog>(p =>
+        {
+            p.Add(x => x.Jahresbild, (_, _) => Task.FromResult<Zeichenmodell?>(MODELL));
+            p.Add(x => x.JahresbildReihen, (_, _, r) => { auftraege.Add(r.ToArray()); return Task.FromResult<Zeichenmodell?>(mit); });
+            p.Add(x => x.LabelAussentemperatur, "Außentemperatur");
+            p.Add(x => x.Daten, Neu());
+            p.Add(x => x.Profile, Array.Empty<QuellprofilZeile>());
+            p.Add(x => x.Betriebsarten, new[] { MONAT, TAG, STUNDE });
+            p.Add(x => x.Werteanzahl, Anzahl);
+        });
+        cut.FindAll("button[role=tab]").First(b => b.TextContent.Contains("Grafik")).Click();
+
+        Assert.False(cut.Instance.MitAussentemperatur);
+        Assert.Same(MODELL, cut.Instance.Modell);
+        Assert.Empty(auftraege);
+
+        Kasten(cut).Change(true);
+        Assert.True(cut.Instance.MitAussentemperatur);
+        Assert.Equal(new[] { "AUSSENTEMPERATUR" }, Assert.Single(auftraege));
+        Assert.Same(mit, cut.Instance.Modell);
+
+        Kasten(cut).Change(false);
+        Assert.Same(MODELL, cut.Instance.Modell);
+        Assert.Single(auftraege);
+    }
+
+    private static AngleSharp.Dom.IElement Kasten(IRenderedComponent<QuellprofilDialog> cut)
+        => cut.FindAll("label.epos-schalter")
+              .First(l => l.TextContent.Contains("Außentemperatur"))
+              .QuerySelector("input[type=checkbox]")!;
 }

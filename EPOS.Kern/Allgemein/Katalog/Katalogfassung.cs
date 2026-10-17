@@ -65,6 +65,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Spalte des Ziels mit dem stabilen Namen.</summary>
         public string Zielspalte { get; }
+
+        /// <summary>
+        /// Ein Verweis auf eine GESCHWISTERZEILE desselben Eigentümers (BK-5: die Schicht auf den Abschnitt ihres Aufbaus):
+        /// Der Name des Ziels ist nur unter diesem Eigentümer eindeutig, das Schreiben sucht das Ziel mit
+        /// <c>"Eigentuemerspalte" = ID des Eigentümers</c>. <c>null</c> = das Ziel ist ein eigener Katalogsatz.
+        /// </summary>
+        public string Eigentuemerspalte { get; init; }
     }
 
     /// <summary>Eine Kindtabelle eines Katalogsatzes (etwa die Kennlinie der Wärmepumpe).</summary>
@@ -113,6 +120,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Eine eingefügte Kindzeile trägt <c>ReadOnly = 1</c> (wo die Tabelle das Kennzeichen pflegt).</summary>
         public bool GesperrtEinfuegen { get; init; }
+
+        /// <summary>
+        /// <c>true</c> = die Prüfsumme nimmt den Kopf dieses Kindes nur, wenn es Zeilen hat (BK-5: die Abschnitte eines
+        /// Aufbaus). So behält jeder Satz ohne solche Zeilen die Prüfsumme, die er vor der Aufnahme des Kindes trug.
+        /// </summary>
+        public bool NurMitZeilen { get; init; }
 
         /// <summary>Eine einspaltige Reihe ohne Enkel und Verweis — im Paket als bloße Werteliste.</summary>
         public bool Reihe => Geordnet && Fachspalten.Count == 1 && Enkel.Count == 0 && Verweise.Count == 0;
@@ -243,7 +256,7 @@ namespace WindowsFormsApplication1
                 new[]
                 {
                     "Bezeichner", "Firma", "Beschreibung", "Typ", "Baujahr", "Aufstellung", "Nennleistung",
-                    "maxPtherm", "Heizung", "Regelung", "Modulkosten", "Laenge", "Breite", "Hoehe", "Gewicht",
+                    "maxPtherm", "Heizung", "Regelung", "Laenge", "Breite", "Hoehe", "Gewicht",
                     "Raum", "Kuehlleistung", "Bauart", "Kuehlbetrieb", "Kuehl_Vorlauf", "Kuehl_Hilfsstromanteil",
                     "Mindestleistung_kW", "Taktverlustfaktor_Cd",
                     // UebergabegrenzeSchema (Schritt 205): die acht Geraetespalten; leer tragen sie nichts zur Pruefsumme bei.
@@ -258,9 +271,9 @@ namespace WindowsFormsApplication1
                 new[]
                 {
                     "Bezeichner", "Firma", "Beschreibung", "Ptherm", "Brennstoff", "Wirkungsgrad_Gas",
-                    "Wirkungsgrad_Öl", "Investitionskosten", "Raumbedarf", "Wartungskosten", "Nutzungsdauer",
+                    "Wirkungsgrad_Öl", "Raumbedarf", "Nutzungsdauer",
                     "CO2", "SO2", "NOx", "CO", "Staub", "Betriebsbereitschaftverlust", "Brennwert", "Vorlauf",
-                    "Ruecklauf", "Wartungskosten_Einheit", "Wirkungsgrad_Teillast30", "Kennlinie_Brennwert",
+                    "Ruecklauf", "Wirkungsgrad_Teillast30", "Kennlinie_Brennwert",
                     "Mindestleistung", "Anfahrverlust_kWh", "Mindestlaufzeit_min", "Bereitschaft_Einheit"
                 })
             { Anzeigeschluessel = "KABG_KATALOG_KESSEL" },
@@ -268,9 +281,8 @@ namespace WindowsFormsApplication1
                 new[]
                 {
                     "Bezeichner", "Firma", "Beschreibung", "Ptherm", "Pel", "Brennstoff", "Wirkungsgrad",
-                    "Investition_kwel", "Raumbedarf", "Wartungskosten_kwhel", "Nutzungsdauer", "NOX", "SO2", "CO",
-                    "CO2", "Staub", "Motortyp", "Grenzleistung", "Kosten_Modul", "Kosten_Montage",
-                    "Kosten_Lieferung", "Kosten_Schallschutzhaube", "Kosten_Abgasreinigung", "Vorlauf",
+                    "Raumbedarf", "Nutzungsdauer", "NOX", "SO2", "CO",
+                    "CO2", "Staub", "Motortyp", "Grenzleistung", "Vorlauf",
                     "Ruecklauf", "Wirkungsgrad_el", "Wirkungsgrad_th", "Wirkungsgrad_el_Teillast50",
                     "Wirkungsgrad_th_Teillast50", "Anfahrverlust_kWh", "Mindestlaufzeit_min",
                     // UebergabegrenzeSchema (Schritt 205): die Ruecklaufgrenze; leer traegt sie nichts zur Pruefsumme bei.
@@ -282,7 +294,7 @@ namespace WindowsFormsApplication1
                 {
                     "Bezeichner", "Firma", "Beschreibung", "Leistung", "Wirkungsgrad", "U_Mpp", "U_Leerlauf",
                     "I_Mpp", "I_Kurzschluss", "alpha_SC", "beta_OC", "gamma_PMP", "T_NOCT", "Laenge", "Breite",
-                    "Modulkosten", "Technologie"
+                    "Technologie"
                 })
             { Anzeigeschluessel = "KABG_KATALOG_PV" },
             new Katalogtabelle("Tab_Brauchwasser_STAMM", "BW",
@@ -344,21 +356,39 @@ namespace WindowsFormsApplication1
             { Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_BAUSTOFF" },
             new Katalogtabelle("Tab_Bauteilaufbau_STAMM", "BTA",
                 new[] { "Bezeichner", "Beschreibung", "Bauteilart", "Quelle", "Herkunft", "Quellkennung", "Typaufbau" }
-                    .Concat(BauteilkatalogSchema.AUFBAU_SPALTEN.Select(s => s.Name)).ToArray(),
+                    .Concat(BauteilkatalogSchema.AUFBAU_SPALTEN.Select(s => s.Name))
+                    .Concat(BauteilkatalogAbschnittSchema.AUFBAU_SPALTEN.Select(s => s.Name))
+                    // DA-8 (BauteilStrahlungSchema): Absorptions- und Emissionsgrad; leer tragen sie nichts zur Pruefsumme bei.
+                    .Concat(BauteilStrahlungSchema.SPALTEN.Select(s => s.Name)).ToArray(),
+                // BK-5: Die Abschnitte stehen VOR den Schichten - der Abgleich legt sie zuerst an, die Schicht findet ihren
+                // Abschnitt dann ueber die Nummer unter demselben Aufbau. Ohne Abschnitt bleibt die Pruefsumme des Aufbaus.
+                new Katalogkind(BauteilkatalogSchema.TAB_ABSCHNITT_STAMM, "ID_Aufbau",
+                    new[] { "Nummer", "Flaechenanteil", "Text", "Quellkennung" })
+                { NurMitZeilen = true },
                 new Katalogkind("Tab_Bauteilschicht_STAMM", "ID_Aufbau",
                     new[] { "Reihenfolge", "ID_Baustoff", "Dicke", "IstLuftschicht", "Lambda", "Rho", "cp" }
-                        .Concat(BauteilkatalogSchema.SCHICHT_SPALTEN.Select(s => s.Name)).ToArray())
+                        .Concat(BauteilkatalogSchema.SCHICHT_SPALTEN.Select(s => s.Name))
+                        .Append(BauteilkatalogSchema.SPALTE_ID_ABSCHNITT).ToArray())
                 {
-                    Verweise = new[] { new Katalogverweis("ID_Baustoff", "Tab_Baustoff_STAMM", SPALTE_SCHLUESSEL) },
-                    // BK-2: Der Abschnittsverweis reist erst mit den Abschnitten (BK-5); bis dahin laesst der Abgleich ihn leer.
-                    Nebenspalten = new[] { BauteilkatalogSchema.SPALTE_ID_ABSCHNITT }
+                    Verweise = new[]
+                    {
+                        new Katalogverweis("ID_Baustoff", "Tab_Baustoff_STAMM", SPALTE_SCHLUESSEL),
+                        // BK-5: der Abschnitt als seine Nummer unter demselben Aufbau; eine homogene Schicht bleibt leer.
+                        new Katalogverweis(BauteilkatalogSchema.SPALTE_ID_ABSCHNITT, BauteilkatalogSchema.TAB_ABSCHNITT_STAMM, "Nummer")
+                        { Eigentuemerspalte = "ID_Aufbau" }
+                    }
                 })
             { Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_BAUTEILAUFBAU" },
+            // BrennstoffpreiseTraegerkarteSchema (Schritt 227, KB-2): Standard_Grundpreis, Standard_Arbeitspreis und
+            // Standard_Leistungspreis sind fort - die Preise stehen in der Karte des Energietraegers. Sie trugen je
+            // eine Zeile zur Pruefsumme bei, auch mit dem Wert 0: Die Pruefsumme jedes Brennstoffs aendert sich
+            // deshalb, und der Schritt bildet sie fuer jeden unveraenderten Satz neu. PreisEinheit bleibt
+            // (Katalogtext, kein Preis).
             new Katalogtabelle("Tab_Brennstoff_Stamm", "BRS",
                 new[]
                 {
                     "ID_Kategorie", "Bezeichner", "Einheit", "PreisEinheit", "Hi", "Hs", "CO2", "SO2", "NOx", "Staub",
-                    "PE_Faktor", "Standard_Grundpreis", "Standard_Arbeitspreis", "Standard_Leistungspreis"
+                    "PE_Faktor"
                 })
             {
                 Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_BRENNSTOFF",
@@ -406,7 +436,7 @@ namespace WindowsFormsApplication1
                 Konditionierung("ID_Vorlage", "ID_Gebaeude_Stamm"))
             { Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_KONDITIONIERUNGSVORLAGE", Namensspalten = new[] { "Groesse", "Bezeichner" } },
             new Katalogtabelle("Tab_Pufferspeicher_STAMM", "PS",
-                new[] { "Bezeichner", "Hersteller", "Speichertyp", "Bereitschaftsverluste", "Gesamtvolumen", "Investitionskosten" })
+                new[] { "Bezeichner", "Hersteller", "Speichertyp", "Bereitschaftsverluste", "Gesamtvolumen" })
             { Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_PUFFER" },
             new Katalogtabelle("Tab_PufferAuslegungParameter_STAMM", "PAP",
                 new[] { "Schluessel", "Wert", "Einheit", "Quelle", "Herkunftsart" })
@@ -415,7 +445,7 @@ namespace WindowsFormsApplication1
                 new[]
                 {
                     "Bezeichner", "Firma", "Beschreibung", "Kollektortyp", "Modulflaeche", "Aperturflaeche", "h0",
-                    "k1", "k2", "Kdir", "Kdfu", "Investitionskosten", "Bezugsflaeche"
+                    "k1", "k2", "Kdir", "Kdfu", "Bezugsflaeche"
                 })
             { Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_SOLARKOLLEKTOR" },
             new Katalogtabelle("Tab_Solarganglinie_STAMM", "SOLGL",
@@ -429,9 +459,8 @@ namespace WindowsFormsApplication1
             new Katalogtabelle("Tab_Stromspeicher_STAMM", "SSP",
                 new[]
                 {
-                    "Bezeichner", "Typ", "Leistung", "Energie", "Degradation", "Ladezustand", "Modulkosten",
-                    "Wirkungsgrad_RT", "Zyklen_Zugesichert", "Verschleisskosten", "Leistungskosten",
-                    "Investition_Fix", "Standby_Verbrauch", "Firma", "Selbstentladung_Prozent_Monat"
+                    "Bezeichner", "Typ", "Leistung", "Energie", "Degradation", "Ladezustand",
+                    "Wirkungsgrad_RT", "Zyklen_Zugesichert", "Standby_Verbrauch", "Firma", "Selbstentladung_Prozent_Monat"
                 })
             { Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_STROMSPEICHER" },
             new Katalogtabelle("Tab_Stromverbrauchertyp_STAMM", "SVT",
@@ -454,7 +483,7 @@ namespace WindowsFormsApplication1
                     "Bezeichner", "Firma", "Beschreibung", "P_AC_Nenn", "S_AC_Max", "P_DC_Max", "U_Mpp_Min",
                     "U_Mpp_Max", "U_Dc_Max", "U_Start", "I_Dc_Max", "Anzahl_Mppt", "Straenge_Je_Mppt", "Eta05",
                     "Eta10", "Eta20", "Eta30", "Eta50", "Eta100", "Eta_Euro", "Eta_Max", "P_Standby", "P_Nacht",
-                    "Kosten", "Sandia_Pdco", "Sandia_Vdco", "Sandia_Pso", "Sandia_C0", "Sandia_C1", "Sandia_C2",
+                    "Sandia_Pdco", "Sandia_Vdco", "Sandia_Pso", "Sandia_C0", "Sandia_C1", "Sandia_C2",
                     "Sandia_C3", "Herkunft", "I_Sc_Max"
                 })
             { Stufe = 2, Anzeigeschluessel = "KABG_KATALOG_WECHSELRICHTER" },
@@ -500,7 +529,13 @@ namespace WindowsFormsApplication1
         {
             new Katalogtabelle(KaeltebedarfSchema.TAB_KOPF_STAMM, "KB",
                 Verbinden(new[] { "Bezeichner", "Typ", "Beschreibung" }, Monate12(),
-                          new[] { KaeltebedarfSchema.SPALTE_VORLAUF, KaeltebedarfSchema.SPALTE_RUECKLAUF }))
+                          new[] { KaeltebedarfSchema.SPALTE_VORLAUF, KaeltebedarfSchema.SPALTE_RUECKLAUF,
+                                  // KBP-2 (KaeltebedarfsprofilVorlagenSchema): der Art-Vorschlag; leer an den Zeilen 1-6, eine leere
+                                  // Fachspalte traegt nichts zur Pruefsumme bei - deren Summen bleiben.
+                                  KaeltebedarfsprofilVorlagenSchema.SPALTE_ART,
+                                  // KBP-5a (BedarfsprofilEingabeartSchema): die Nutzungstage nach Norm; gesetzt allein an
+                                  // Vorlage 8 (der Schritt bildet deren Pruefsumme neu), leer an allen anderen Zeilen.
+                                  BedarfsprofilEingabeartSchema.SPALTE_NUTZUNGSTAGE }))
             { Stufe = 4, Anzeigeschluessel = "KABG_KATALOG_KB" },
             new Katalogtabelle(KaeltebedarfSchema.TAB_TYP_STAMM, "KBT",
                 Verbinden(new[] { "Bezeichner", "Beschreibung" }, Stunden168()))
@@ -568,15 +603,12 @@ namespace WindowsFormsApplication1
             "ID_Zone_Stamm aus seinen Kindern.";
 
         /// <summary>Grund der Ausnahme der Abschnitte inhomogener Schichten (Schritt 221, BK-2).</summary>
-        public const string GRUND_ABSCHNITTE =
-            "Abschnitte inhomogener Schichten (Schritt 221, BK-2): Die Schicht verweist ueber ID_Abschnitt auf den Abschnitt " +
-            "desselben Aufbaus; diesen Verweis bildet der Paketweg erst mit BK-5 ab. Bis dahin tragen weder Pruefsumme noch Paket " +
-            "des Aufbaus Abschnitte, der Verweis ist Nebenspalte der Schicht.";
-
         private static IReadOnlyDictionary<string, string> AusnahmenBauen()
         {
             var d = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (string t in new[] { "Tab_Klimaregion_STAMM", "Tab_Klimadaten_STAMM", "Tab_Solar_STAMM" })
+            // KD-4: die Rohtabelle der Klimaregion gehoert zum Klimakatalog (gleicher Grund).
+            foreach (string t in new[] { "Tab_Klimaregion_STAMM", "Tab_Klimadaten_STAMM", "Tab_Solar_STAMM",
+                                         KlimaRohwerteSchema.TAB_ROH })
                 d[t] = GRUND_KLIMA;
             foreach (string t in new[]
                      {
@@ -588,7 +620,6 @@ namespace WindowsFormsApplication1
             d[ProzessNutzungSchema.TAB_PROFIL] = GRUND_NUTZUNGSPROFIL;
             foreach (string t in new[] { ZonenKatalogSchema.TAB_ZONE, ZonenKatalogSchema.TAB_BAUTEIL, ZonenKatalogSchema.TAB_LUFTSTROM })
                 d[t] = GRUND_KATALOGZONEN;
-            d[BauteilkatalogSchema.TAB_ABSCHNITT_STAMM] = GRUND_ABSCHNITTE;
             return d;
         }
 
@@ -734,9 +765,10 @@ namespace WindowsFormsApplication1
             Zeilen(sb, t.Fachspalten, werte);
             foreach (Katalogkind k in t.Kinder)
             {
-                sb.Append("#").Append(k.Tabelle).Append('\n');
                 IReadOnlyList<IReadOnlyDictionary<string, object>> zeilen = null;
                 kinder?.TryGetValue(k.Tabelle, out zeilen);
+                if (k.NurMitZeilen && (zeilen == null || zeilen.Count == 0)) continue;
+                sb.Append("#").Append(k.Tabelle).Append('\n');
                 foreach (string z in Kindtexte(k, zeilen)) sb.Append(z).Append('\n');
             }
             return Hex(sb.ToString());
@@ -856,13 +888,22 @@ namespace WindowsFormsApplication1
         /// es das Ziel nicht gibt), sonst der Wert.
         /// </summary>
         internal static object Schreibwert(IReadOnlyList<Katalogverweis> verweise, IReadOnlyDictionary<string, object> werte,
-                                           string spalte, Func<string, DbParam[], DataTable> lese)
+                                           string spalte, Func<string, DbParam[], DataTable> lese, long? eigentuemer = null)
         {
             object w = werte != null && werte.TryGetValue(spalte, out object x) && x != null ? x : null;
             Katalogverweis v = verweise.FirstOrDefault(z => string.Equals(z.Spalte, spalte, StringComparison.OrdinalIgnoreCase));
             if (v == null || w == null) return w ?? DBNull.Value;
             if (!DataRepository.TabelleVorhanden(v.Zieltabelle) || !DataRepository.SpalteVorhanden(v.Zieltabelle, v.Zielspalte))
                 return DBNull.Value;
+            if (v.Eigentuemerspalte != null)
+            {
+                // BK-5: Das Ziel ist eine Geschwisterzeile - sein Name gilt nur unter demselben Eigentümer.
+                if (!eigentuemer.HasValue) return DBNull.Value;
+                DataTable g = lese("SELECT ID FROM \"" + v.Zieltabelle + "\" WHERE \"" + v.Zielspalte + "\" = ? AND \"" +
+                                   v.Eigentuemerspalte + "\" = ? ORDER BY ID LIMIT 1",
+                                   new[] { new DbParam("@n", w), new DbParam("@e", eigentuemer.Value) });
+                return g != null && g.Rows.Count > 0 ? g.Rows[0][0] : DBNull.Value;
+            }
             DataTable dt = lese("SELECT ID FROM \"" + v.Zieltabelle + "\" WHERE \"" + v.Zielspalte + "\" = ? ORDER BY ID LIMIT 1",
                                 new[] { new DbParam("@n", w) });
             return dt != null && dt.Rows.Count > 0 ? dt.Rows[0][0] : DBNull.Value;

@@ -21,16 +21,19 @@ namespace EPOS.Kern.Tests
     internal static class Zonenbestand
     {
         /// <summary>Die Zonenprojekte der Testdatenbank.</summary>
-        internal static readonly long[] PROJEKTE = { Zonenprojekt1052.NEU, Zonenprojekt1054.NEU, KUEHLKURVE };
+        internal static readonly long[] PROJEKTE = { Zonenprojekt1052.NEU, Zonenprojekt1054.NEU, KUEHLKURVE, SCHNELLAUFHEIZUNG };
 
         /// <summary>Das Referenzprojekt der Kühlkurve mit Zonen (KK5a): Zonen und Trennfläche, kein Luftstrom, kein Zonenkalender.</summary>
         internal const long KUEHLKURVE = 1062;
 
-        /// <summary>Die Zonenprojekte mit Luftströmen und Zonenkalendern (1052 und seine Kopie 1054).</summary>
-        internal static readonly long[] PROJEKTE_MIT_KALENDER = { Zonenprojekt1052.NEU, Zonenprojekt1054.NEU };
+        /// <summary>Das Referenzprojekt der Schnellaufheizung (SA4): Kopie von 1054 samt Zonen, Luftströmen und Zonenkalendern.</summary>
+        internal const long SCHNELLAUFHEIZUNG = 1073;
+
+        /// <summary>Die Zonenprojekte mit Luftströmen und Zonenkalendern (1052, seine Kopie 1054 und deren Kopie 1073).</summary>
+        internal static readonly long[] PROJEKTE_MIT_KALENDER = { Zonenprojekt1052.NEU, Zonenprojekt1054.NEU, SCHNELLAUFHEIZUNG };
 
         /// <summary>Die Gebäude der Zonenprojekte.</summary>
-        internal const string GEBAEUDE_ZONENPROJEKTE = "SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt IN (1052, 1054, 1062)";
+        internal const string GEBAEUDE_ZONENPROJEKTE = "SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt IN (1052, 1054, 1062, 1073)";
 
         /// <summary>Die Zonen der Zonenprojekte.</summary>
         internal const string ZONEN_ZONENPROJEKTE = "SELECT ID FROM Tab_Zone WHERE ID_Gebaeude IN (" + GEBAEUDE_ZONENPROJEKTE + ")";
@@ -149,7 +152,18 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { Zonenprojekt1052.ZONE_GAESTE, Zonenprojekt1052.ZONE_GASTRO, Zonenprojekt1052.ZONE_KELLER },
                          z.Select(x => x.Bezeichner).ToArray());
             Assert.Equal(new[] { true, true, false }, z.Select(x => x.IstBeheizt).ToArray());
-            Assert.Equal(new[] { 15, 14, 2 }, z.Select(x => x.Bauteile.Count).ToArray());
+            Assert.Equal(new[] { 16, 15, 2 }, z.Select(x => x.Bauteile.Count).ToArray());
+            // Die beheizten Zonen tragen ein Satteldach mit 42° in zwei gleichen Hälften nach Nord und Süd; ihre Hülle
+            // schließt senkrecht (Σ oben gegen Σ unten unter 10 %).
+            for (int i = 0; i < 2; i++)
+            {
+                BauteilModel nord = z[i].Bauteile.Single(b => b.Bezeichner == Zonenprojekt1052.DACH_NORD);
+                BauteilModel sued = z[i].Bauteile.Single(b => b.Bezeichner == Zonenprojekt1052.DACH_SUED);
+                Assert.Equal(new double?[] { 42.0, 42.0 }, new[] { nord.Neigung, sued.Neigung });
+                Assert.Equal(new double?[] { 0.0, 180.0 }, new[] { nord.Azimut, sued.Azimut });
+                Assert.Equal(nord.Flaeche, sued.Flaeche);
+                Assert.False(Zonenkopplungsregeln.SenkrechtOffen(Zonenkopplungsregeln.Bilanz(z, i)), z[i].Bezeichner);
+            }
             Assert.Equal(300.0, z[0].Nutzflaeche.Value, 9);
             Assert.Equal(200.0, z[1].Nutzflaeche.Value, 9);
             Assert.Equal(531.554, z[2].Nutzflaeche.Value, 3);

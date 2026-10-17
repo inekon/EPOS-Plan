@@ -95,8 +95,10 @@ namespace WindowsFormsApplication1
     /// <para><b>Übertragen, nicht nachgemalt:</b> Gestapelte Flächen, Säulen und Balken, Linien mit Strichart und Kreise
     /// werden Excel-Diagramme derselben Art in den Farben der Farbrollen. Die Drei-Wochen-Bilder werden eine Linie je
     /// Speicher und Woche (Strichart = Woche), die Brücke und die Spanne Schwebebalken aus gestapelten Säulen bzw. Balken
-    /// mit unsichtbarer Basis (Hilfsspalten). Die Einspeisung der Strombilanz ist in Excel eine gestrichelte Linie statt
-    /// des schmalen Nebenbalkens.</para>
+    /// mit unsichtbarer Basis (Hilfsspalten), beschriftet mit den Beträgen des Bildes. Die Einspeisung der Strombilanz ist
+    /// wie im Bild ein schmaler Nebenbalken rechts des Stapels (eine eigene Säulengruppe auf einer unsichtbaren Zweitachse
+    /// mit derselben Skala), die Ersatzjahre des Zahlungsstroms ein durchscheinendes Band über dem ganzen Jahr — Excel legt
+    /// es über die Säulen, nicht dahinter.</para>
     /// </summary>
     internal static class Exceldiagrammquellen
     {
@@ -236,12 +238,16 @@ namespace WindowsFormsApplication1
             {
                 Kategorienkopf = k.T(nameof(R.BV_XL_DG_RANG)),
                 Wertachse = "kW",
+                Gestapelt = true,
                 Beschriftungsabstand = 730,
             };
+            // Wie das Bild: die Erzeuger als Stapel in der Stundenfolge des Bedarfs, der Bedarf als Linie.
             Zahlenkategorien(d, 1, reihen[0].Werte.Length);
-            for (int i = 0; i < reihen.Count; i++)
-                d.Reihe(reihen[i].Name, Exceldiagramm.Endlich(reihen[i].Werte), Excelreihenart.Linie, Hex(reihen[i].Farbe))
-                 .Staerke = i == 0 ? 2.25 : 1.5;
+            // Der Bedarf bleibt die erste Spalte; als Linie liegt er im Diagramm über den Flächen.
+            d.Reihe(reihen[0].Name, Exceldiagramm.Endlich(reihen[0].Werte), Excelreihenart.Linie, Hex(reihen[0].Farbe))
+             .Staerke = 2.25;
+            for (int i = 1; i < reihen.Count; i++)
+                d.Reihe(reihen[i].Name, Exceldiagramm.Endlich(reihen[i].Werte), Excelreihenart.Flaeche, Hex(reihen[i].Farbe));
             return d;
         }
 
@@ -259,10 +265,43 @@ namespace WindowsFormsApplication1
                 Gestapelt = true,
             };
             foreach (string m in ChartRenderer.MONATE) d.Kategorien.Add(m);
-            foreach (ChartRenderer.Reihe r in serien.Where(s => s.Name != ChartRenderer.EINSPEISUNG_NEBENBALKEN))
+            List<ChartRenderer.Reihe> stapel = serien.Where(s => !ChartRenderer.IstEinspeisungNebenbalken(s)).ToList();
+            List<ChartRenderer.Reihe> neben = serien.Where(ChartRenderer.IstEinspeisungNebenbalken).ToList();
+            foreach (ChartRenderer.Reihe r in stapel)
                 d.Reihe(r.Name, Exceldiagramm.Endlich(r.Werte), Excelreihenart.Saeule, Hex(r.Farbe));
-            foreach (ChartRenderer.Reihe r in serien.Where(s => s.Name == ChartRenderer.EINSPEISUNG_NEBENBALKEN))
-                d.Reihe(r.Name, Exceldiagramm.Endlich(r.Werte), Excelreihenart.Linie, Hex(r.Farbe)).Strich = Excelstrich.Gestrichelt;
+            if (neben.Count > 0)
+            {
+                // Der Nebenbalken wie im Bild (PV-Einspeisung oder Netzeinspeisung der Speicherflotte): eine eigene
+                // Säulengruppe auf der Zweitachse mit derselben Skala — vier Plätze je
+                // Monat, drei leere (Hilfsspalten) und die Einspeisung als vierter rechts des Stapels, der schmaler steht.
+                double max = 0.0;
+                for (int m = 0; m < 12; m++)
+                {
+                    double summe = stapel.Sum(r => m < r.Werte.Length && double.IsFinite(r.Werte[m]) ? r.Werte[m] : 0.0);
+                    max = Math.Max(max, summe);
+                    if (bedarf != null && m < bedarf.Length && double.IsFinite(bedarf[m])) max = Math.Max(max, bedarf[m]);
+                    foreach (ChartRenderer.Reihe r in neben)
+                        if (m < r.Werte.Length && double.IsFinite(r.Werte[m])) max = Math.Max(max, r.Werte[m]);
+                }
+                max = Skala.Nice(max);
+                if (max > 0.0)
+                {
+                    d.Wertmin = 0.0;
+                    d.Wertmax = max;
+                    d.ZweitMin = 0.0;
+                    d.ZweitMax = max;
+                }
+                d.Luecke = 150;
+                d.ZweitLuecke = 40;
+                for (int i = 0; i < 3; i++)
+                {
+                    Excelreihe abstand = d.Reihe(k.T(nameof(R.BV_XL_DG_ABSTAND)), new double?[12], Excelreihenart.Saeule, null);
+                    Unsichtbar(abstand);
+                    abstand.Zweitachse = true;
+                }
+                foreach (ChartRenderer.Reihe r in neben)
+                    d.Reihe(r.Name, Exceldiagramm.Endlich(r.Werte), Excelreihenart.Saeule, Hex(r.Farbe)).Zweitachse = true;
+            }
             if (bedarf != null)
                 d.Reihe("Strombedarf", Exceldiagramm.Endlich(bedarf), Excelreihenart.Linie, Hex(ChartRenderer.C_BEDARF)).Staerke = 2.25;
             return d;
@@ -477,8 +516,28 @@ namespace WindowsFormsApplication1
             farben.Add(Rollenfarbe(Farbrolle.STAMM));
 
             d.Reihe(k.T(nameof(R.BV_XL_DG_BEITRAG)), werte, Excelreihenart.Saeule, null).NurDaten = true;
-            Schwebebalken(k, d, Excelreihenart.Saeule, grenzen, new[] { texte?.ErgebnisLegende ?? "" },
-                          (kat, seg) => farben[kat]);
+            (Excelreihe[] oben, Excelreihe[] unten) = Schwebebalken(k, d, Excelreihenart.Saeule, grenzen,
+                                                                     new[] { texte?.ErgebnisLegende ?? "" }, (kat, seg) => farben[kat]);
+
+            // Die Beträge wie im Bild: ein Schritt am Ende seiner Bewegung — eine Mehrung oben, eine Minderung unten —,
+            // die Ergebnissäule an ihrem Ende; mit Vorzeichen wie im Bild.
+            for (int i = 0; i < grenzen.Count; i++)
+            {
+                bool ergebnis = i == grenzen.Count - 1;
+                double wert = werte[i] ?? 0.0;
+                double lo = grenzen[i][0], hi = grenzen[i][1];
+                string text = wert.ToString(ergebnis ? "#,##0;−#,##0;0" : "+#,##0;−#,##0;0", k.Kultur);
+                if (wert >= 0.0)
+                {
+                    if (ergebnis || hi > 0.0) Beschrifte(oben[0], i, text, Excelbeschriftungslage.InnenEnde);
+                    else Beschrifte(unten[0], i, text, Excelbeschriftungslage.InnenBasis);
+                }
+                else
+                {
+                    if (ergebnis || lo < 0.0) Beschrifte(unten[0], i, text, Excelbeschriftungslage.InnenEnde);
+                    else Beschrifte(oben[0], i, text, Excelbeschriftungslage.InnenBasis);
+                }
+            }
             return d;
         }
 
@@ -517,10 +576,28 @@ namespace WindowsFormsApplication1
                 else grenzen.Add(new[] { b.Von.Value, b.Bis.Value, b.Bis.Value });
             }
             string hell = Hex(Farbpalette.Aktuell.Loese(Farbton.Aus(Farbrolle.STAMM)));
-            Schwebebalken(k, d, Excelreihenart.Balken, grenzen,
+            (Excelreihe[] oben, Excelreihe[] unten) = Schwebebalken(k, d, Excelreihenart.Balken, grenzen,
                           new[] { texte.Spanne + " — " + k.T(nameof(R.BV_XL_DG_BIS_ERWARTET)),
                                   texte.Spanne + " — " + k.T(nameof(R.BV_XL_DG_AB_ERWARTET)) },
                           (kat, seg) => hell, seg => seg == 0 ? (byte)(ChartRenderer.SPANNE_BAND_DECKUNG * 2) : (byte)255);
+
+            // Der Betrag des Erwartungsfalls wie im Bild am Punkt: an der Grenze der beiden Abschnitte.
+            for (int i = 0; i < balken.Count; i++)
+            {
+                double? punkt = balken[i].Punkt;
+                if (!punkt.HasValue || grenzen[i] == null || grenzen[i].Length < 3 || !balken[i].Von.HasValue) continue;
+                string text = punkt.Value.ToString("N0", k.Kultur) + " €";
+                if (punkt.Value > 0.0)
+                {
+                    if (oben[0].Werte[i].HasValue) Beschrifte(oben[0], i, text, Excelbeschriftungslage.InnenEnde);
+                    else Beschrifte(oben[1], i, text, Excelbeschriftungslage.InnenBasis);
+                }
+                else
+                {
+                    if (unten[0].Werte[i].HasValue) Beschrifte(unten[0], i, text, Excelbeschriftungslage.InnenBasis);
+                    else Beschrifte(unten[1], i, text, Excelbeschriftungslage.InnenEnde);
+                }
+            }
             return d;
         }
 
@@ -561,7 +638,39 @@ namespace WindowsFormsApplication1
                 for (int t = 0; t < n; t++) werte[t] = t < r.JeJahr.Length ? ChartRenderer.Zahlungsbetrag(r, t) : (double?)null;
                 d.Reihe(r.Name ?? "", werte, Excelreihenart.Saeule, Hex(ChartRenderer.Zahlungsstromfarbe(r.Schluessel, i)));
             }
+
+            // Die Ersatzjahre wie im Bild als Band über die ganze Höhe ihres Jahres: eine durchscheinende Säule mit dem Wert 1
+            // auf der Zweitachse (0 bis 1); ihre Spalte trägt die 1 als Marke.
+            List<int> ersatzjahre = ChartRenderer.Zahlungsstromreihe.Ersatzjahre(bild);
+            if (ersatzjahre != null && ersatzjahre.Any(t => t >= 0 && t < n))
+            {
+                var marke = new double?[n];
+                foreach (int t in ersatzjahre) if (t >= 0 && t < n) marke[t] = 1.0;
+                Excelreihe band = d.Reihe(k.T(nameof(R.WIRT_ZS_ERSATZJAHR)), marke, Excelreihenart.Saeule, ERSATZJAHR_FARBE);
+                band.Deckung = ERSATZJAHR_DECKUNG;
+                band.Hilfsreihe = true;
+                band.Zweitachse = true;
+                d.ZweitMin = 0.0;
+                d.ZweitMax = 1.0;
+                d.ZweitLuecke = 10;
+            }
             return d;
+        }
+
+        /// <summary>Die Farbe des Ersatzjahr-Bands — die des Bildes (Firebrick).</summary>
+        private const string ERSATZJAHR_FARBE = "B22222";
+
+        /// <summary>Die Deckung des Ersatzjahr-Bands — die des Bildes (40 von 255).</summary>
+        private const byte ERSATZJAHR_DECKUNG = 40;
+
+        /// <summary>Setzt die Beschriftung eines Punkts.</summary>
+        private static void Beschrifte(Excelreihe r, int punkt, string text, Excelbeschriftungslage lage)
+        {
+            if (r == null || punkt < 0 || punkt >= r.Werte.Length || !r.Werte[punkt].HasValue) return;
+            r.Beschriftungen ??= new string[r.Werte.Length];
+            r.Beschriftungslagen ??= new Excelbeschriftungslage[r.Werte.Length];
+            r.Beschriftungen[punkt] = text;
+            r.Beschriftungslagen[punkt] = lage;
         }
 
         // =====================================================================
@@ -575,8 +684,9 @@ namespace WindowsFormsApplication1
         /// eine unsichtbare Basis über null, die Abschnitte über null, eine unsichtbare Basis unter null und die Abschnitte
         /// unter null von oben nach unten. Jeder Abschnitt, der die Nulllinie kreuzt, steht in beiden Stapeln.
         /// </summary>
-        private static void Schwebebalken(Diagrammkontext k, Exceldiagramm d, Excelreihenart art, List<double[]> grenzen,
-                                          string[] abschnittsnamen, Func<int, int, string> farbe, Func<int, byte> deckung = null)
+        private static (Excelreihe[] Oben, Excelreihe[] Unten) Schwebebalken(Diagrammkontext k, Exceldiagramm d, Excelreihenart art,
+                                          List<double[]> grenzen, string[] abschnittsnamen, Func<int, int, string> farbe,
+                                          Func<int, byte> deckung = null)
         {
             int m = abschnittsnamen.Length, n = grenzen.Count;
             var basisOben = new double?[n];
@@ -600,12 +710,21 @@ namespace WindowsFormsApplication1
             }
 
             string basis = k.T(nameof(R.BV_XL_DG_BASIS));
+            var reihenOben = new Excelreihe[m];
+            var reihenUnten = new Excelreihe[m];
             Unsichtbar(d.Reihe(basis + " +", basisOben, art, null));
             for (int s = 0; s < m; s++)
-                Abschnitt(d.Reihe(k.T(nameof(R.BV_XL_DG_UEBER_NULL), abschnittsnamen[s]), oben[s], art, farbe(0, s)), n, s, farbe, deckung, true);
+            {
+                reihenOben[s] = d.Reihe(k.T(nameof(R.BV_XL_DG_UEBER_NULL), abschnittsnamen[s]), oben[s], art, farbe(0, s));
+                Abschnitt(reihenOben[s], n, s, farbe, deckung, true);
+            }
             Unsichtbar(d.Reihe(basis + " −", basisUnten, art, null));
             for (int s = m - 1; s >= 0; s--)
-                Abschnitt(d.Reihe(k.T(nameof(R.BV_XL_DG_UNTER_NULL), abschnittsnamen[s]), unten[s], art, farbe(0, s)), n, s, farbe, deckung, false);
+            {
+                reihenUnten[s] = d.Reihe(k.T(nameof(R.BV_XL_DG_UNTER_NULL), abschnittsnamen[s]), unten[s], art, farbe(0, s));
+                Abschnitt(reihenUnten[s], n, s, farbe, deckung, false);
+            }
+            return (reihenOben, reihenUnten);
         }
 
         private static void Unsichtbar(Excelreihe r)

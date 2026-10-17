@@ -212,6 +212,36 @@
                                                          FarbeZurueckgesetzt="FarbeVerwerfen" />
                                         </KindInhalt>
                                     </Reiterblatt>
+                                    @* WEITERE REIHEN (KD-8 Teil A, KD-Q13): die gespeicherten
+                                       Rechenspalten der Region ausser Temperatur und Sonnenwinkel,
+                                       eine Einheit je Bild, bis zu drei Reihen (KD-Q11). Jede neue
+                                       Wahl ist ein neues Modell - DiagrammSvg baut neu, der Zoom
+                                       kehrt auf x1 zurueck. *@
+                                    <Reiterblatt Schluessel="WEITERE" Titel="@ReiterWeitereText">
+                                        <KindInhalt>
+                                            @* Wahl ueber dem Bild wie im Mockup; im schmalen Fenster (unter 600 px)
+                                               stellt .epos-reihenbild das Bild nach oben (CSS order, ein Markup). *@
+                                            <div class="epos-reihenbild">
+                                                @if (_reihenbestand.Count > 0)
+                                                {
+                                                    <Reihenwahl Kennung="klima-jahr" Bezeichnung="@WahlJahrText"
+                                                                Kopf="@KopfJahrText"
+                                                                Kopfhinweis="@string.Format(CultureInfo.CurrentCulture, HinweisJahrText, JahrEinheit)"
+                                                                Leise="@GleicheEinheitText"
+                                                                RohwertText="@RohwertMarkeText"
+                                                                Chips="@JahrChips" Umschalten="JahrUmschalten" />
+                                                }
+                                                <DiagrammSvg Modell="@_modellReihen" Kennung="klima-reihen"
+                                                             Bezeichnung="@DiagrammReihenText"
+                                                             PlatzhalterText="@KeineDatenText"
+                                                             Einheit="@JahrEinheit"
+                                                             Palette="@Farbpalette.Aktuell"
+                                                             FarbwahlErlaubt="@FarbwahlMoeglich"
+                                                             FarbeGewaehlt="FarbeUebernehmen"
+                                                             FarbeZurueckgesetzt="FarbeVerwerfen" />
+                                            </div>
+                                        </KindInhalt>
+                                    </Reiterblatt>
                                 </KindInhalt>
                             </Reiter>
                         </KindInhalt>
@@ -288,20 +318,6 @@
                                            KnopfText="@WaehlenText" Pfad="@_tryPaketPfad"
                                            Waehlen="@DateiWaehlen" PfadChanged="BeiTryPaket"
                                            Aktiv="@(!_laeuft)" />
-
-                                @* Die REGIONSVORSCHAU (Auftrag KL-3): Welche Region der
-                                   Standort trifft, steht sonst erst NACH dem Einlesen im
-                                   Herkunftsvermerk. Der Knopf gehoert zu seinen Feldern
-                                   und bleibt deshalb im Blatt (Konzept Knopfleisten). *@
-                                <div class="epos-leiste">
-                                    <button type="button" class="epos-knopf" disabled="@(!RegionErlaubt)"
-                                            @onclick="BeiRegion">@RegionErmittelnText</button>
-                                </div>
-
-                                @if (_regionszeile.Length > 0)
-                                {
-                                    <Herleitungszeile Text="@_regionszeile" />
-                                }
                             }
                         </KindInhalt>
                     </Formularraster>
@@ -335,11 +351,11 @@
                                        gilt SEIN Wert - und die Herkunftszeile der Datei stimmt
                                        nicht mehr (KL-2). *@
                                     <Zahlenfeld Bezeichnung="@LabelLongitudeText" Wert="@_longitude"
-                                                WertChanged="@(w => { _longitude = w; _importMeldung = ""; _tryStandort = ""; _regionszeile = ""; })"
+                                                WertChanged="@(w => { _longitude = w; _importMeldung = ""; _tryStandort = ""; })"
                                                 Feldname="@FeldLongitudeText" FehlerZustand="BeiFehler"
                                                 Aktiv="@(!_laeuft)" />
                                     <Zahlenfeld Bezeichnung="@LabelLatitudeText" Wert="@_latitude"
-                                                WertChanged="@(w => { _latitude = w; _importMeldung = ""; _tryStandort = ""; _regionszeile = ""; })"
+                                                WertChanged="@(w => { _latitude = w; _importMeldung = ""; _tryStandort = ""; })"
                                                 Feldname="@FeldLatitudeText" FehlerZustand="BeiFehler"
                                                 Aktiv="@(!_laeuft)" />
                                     <Textfeld Bezeichnung="@LabelBezeichnungText" Wert="@_bezeichnung"
@@ -347,13 +363,166 @@
                                 </KindInhalt>
                             </Formulargruppe>
 
+                            @* Die HOEHE des Ortes (KD-3): Sie geht in den Auftrag und macht den
+                               Hoehenunterschied zum Bezugspunkt erst moeglich. Leer = unbekannt. *@
+                            <Zahlenfeld Bezeichnung="@LabelHoeheText" Wert="@_hoehe"
+                                        WertChanged="@(w => { _hoehe = w; _importMeldung = ""; })"
+                                        Feldname="@FeldHoeheText" FehlerZustand="BeiFehler"
+                                        Min="-500" Max="9000" Nachkommastellen="0"
+                                        Aktiv="@(!_laeuft)" />
+
                             @* Der Standort einer TRY-Datei kommt aus IHREM Kopf (KL-2). *@
                             @if (_tryStandort.Length > 0)
                             {
                                 <Herleitungszeile Text="@_tryStandort" />
                             }
+                            @if (_felderAusSuche)
+                            {
+                                <Herleitungszeile Text="@FeldherkunftText" />
+                            }
                         </KindInhalt>
                     </Formularraster>
+
+                    @* ---- DATENSATZ SUCHEN und die VORSCHAUKARTE (Auftrag KD-3) -----
+                           Der Knopf gilt fuer alle drei Quellen: PVGIS ruft die API, die
+                           TRY-Datei liest die Datei, der Regionalweg liest das Paket. Nichts
+                           wird gespeichert; "Daten einlesen" uebernimmt den gelesenen Satz.
+                           Die Zahlen rechnet der Kern (KlimaKennzahlen), hier wird nur
+                           formatiert. Aendert der Anwender Ort, Koordinaten, Quelle, Datei,
+                           Jahr oder Szenario, VERFAELLT die Karte sichtbar. *@
+                    <div class="epos-klimavorschau-suche">
+                        <button type="button" class="epos-knopf" disabled="@(!SuchenErlaubt)"
+                                @onclick="BeiSuchen">@RegionErmittelnText</button>
+                        <span class="epos-klimavorschau-leise" role="status">@(_sucht ? RegionLaeuftText : SuchhinweisText)</span>
+                    </div>
+
+                    @if (_vorschau is not null && VorschauVerfallen)
+                    {
+                        <p class="epos-klimavorschau-leise epos-klimavorschau-verfallen">@VerfallenText</p>
+                    }
+                    else if (_vorschau is not null && !_vorschau.Erfolgreich)
+                    {
+                        <Herleitungszeile Text="@VorschauFehlertext" />
+                    }
+                    else if (_vorschau is not null)
+                    {
+                        <section class="epos-klimavorschau" aria-label="@VorschauTitelText">
+                            <h5 class="epos-klimavorschau-titel">@VorschauTitelText</h5>
+
+                            @if (_vorschau.AusfuehrungGefunden)
+                            {
+                                <div class="epos-klimavorschau-treffer epos-klimavorschau-treffer--ja">
+                                    <span class="epos-klimavorschau-zeichen" aria-hidden="true">✓</span>
+                                    <span>@string.Format(CultureInfo.CurrentCulture, GefundenText, Ausfuehrungstext)</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="epos-klimavorschau-treffer epos-klimavorschau-treffer--nein">
+                                    <span class="epos-klimavorschau-zeichen" aria-hidden="true">✕</span>
+                                    <span>@string.Format(CultureInfo.CurrentCulture, NichtImPaketText, Ausfuehrungstext)</span>
+                                    @if (_vorschau.Ausfuehrungen.Count > 0)
+                                    {
+                                        <span>@VorhandenText</span>
+                                        @foreach (TryAusfuehrung a in _vorschau.Ausfuehrungen)
+                                        {
+                                            <button type="button" class="epos-knopf epos-klimavorschau-wahl"
+                                                    disabled="@(!SuchenErlaubt)"
+                                                    @onclick="() => AusfuehrungWaehlen(a)">@TryText(a.Jahr, a.Szenario)</button>
+                                        }
+                                    }
+                                </div>
+                                @if (_vorschau.Grund.Length > 0)
+                                {
+                                    <Herleitungszeile Text="@_vorschau.Grund" />
+                                }
+                            }
+
+                            <div class="epos-klimavorschau-raster">
+                                <div class="epos-klimavorschau-block">
+                                    <b>@StandortText</b>
+                                    <dl>
+                                        @if (_vorschau.Standort is { } st)
+                                        {
+                                            @if (st.Anzeigename.Length > 0)
+                                            {
+                                                <dt>@OrtText</dt><dd>@st.Anzeigename</dd>
+                                            }
+                                            <dt>@KoordinateText</dt><dd>@Koordinate(st.Latitude, st.Longitude)</dd>
+                                        }
+                                        <dt>@HoeheText</dt><dd>@Meter(StandortHoehe)</dd>
+                                    </dl>
+                                </div>
+                                @if (_vorschau.Bezugspunkt is { } bp)
+                                {
+                                    <div class="epos-klimavorschau-block">
+                                        <b>@BezugspunktTitel(bp.Art)</b>
+                                        <dl>
+                                            @if (bp.Name.Length > 0)
+                                            {
+                                                <dt>@NameText</dt><dd>@bp.Name</dd>
+                                            }
+                                            @if (bp.Latitude.HasValue && bp.Longitude.HasValue)
+                                            {
+                                                <dt>@KoordinateText</dt><dd>@Koordinate(bp.Latitude.Value, bp.Longitude.Value)</dd>
+                                            }
+                                            @if (bp.EntfernungKm.HasValue)
+                                            {
+                                                <dt>@EntfernungText</dt><dd>@Kilometer(bp.EntfernungKm.Value)</dd>
+                                            }
+                                            <dt>@HoeheText</dt><dd>@Meter(bp.HoeheM)</dd>
+                                            @if (Hoehenunterschied.HasValue)
+                                            {
+                                                <dt>@HoehenunterschiedText</dt><dd>@MeterMitVorzeichen(Hoehenunterschied.Value)</dd>
+                                            }
+                                        </dl>
+                                    </div>
+                                }
+                            </div>
+
+                            @foreach (string h in Hinweiszeilen)
+                            {
+                                <Herleitungszeile Text="@h" />
+                            }
+
+                            @if (_vorschau.Kennzahlen is { Stunden: > 0 } kz)
+                            {
+                                <div class="epos-klimavorschau-kennzahlen">
+                                    <div><b>@Grad(kz.TemperaturMittel)</b><span>@KzMittelText</span></div>
+                                    <div><b>@(Zahl(kz.TemperaturMin, 1) + " / " + Grad(kz.TemperaturMax))</b><span>@KzMinMaxText</span></div>
+                                    <div><b>@(Zahl(kz.GlobalstrahlungKwhM2, 0) + " kWh/m²a")</b><span>@KzGlobalText</span></div>
+                                    <div><b>@(Zahl(kz.GradtagzahlKdA, 0) + " Kd/a")</b><span>@KzGradtagText</span></div>
+                                    <div><b>@kz.Heiztage.ToString(CultureInfo.CurrentCulture)</b><span>@KzHeiztageText</span></div>
+                                </div>
+                                <DiagrammSvg Modell="@_vorschaubild" Kennung="klima-vorschau"
+                                             Bezeichnung="@BildBezeichnungText"
+                                             PlatzhalterText="@KeineDatenText" />
+                                @* KD-8 Teil A: die Reihenwahl des Monatsbilds; hoechstens zwei
+                                   Einheiten, eine dritte ist weich gesperrt (KD-Q10). *@
+                                <Reihenwahl Kennung="klima-vorschau" Bezeichnung="@WahlVorschauText"
+                                            Kopf="@KopfVorschauText" Kopfhinweis="@HinweisVorschauText"
+                                            RohwertText="@RohwertMarkeText"
+                                            Chips="@VorschauChips(kz)" Umschalten="VorschauUmschalten"
+                                            Vorgabe="VorschauVorgabe" />
+                            }
+
+                            @if (_vorschau.Parameterbestand.Count > 0)
+                            {
+                                <div class="epos-klimavorschau-bestand">
+                                    <b>@BestandText</b>
+                                    <ul>
+                                        @foreach (KlimaParameterEintrag p in _vorschau.Parameterbestand)
+                                        {
+                                            <li class="@("epos-klimavorschau-stand--" + p.Stand.ToString().ToLowerInvariant())">
+                                                @Parametername(p.Parameter) <span>(@Standtext(p.Stand)@Speichertext(p))</span>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+                        </section>
+                    }
+
 
                     <Fortschritt Sichtbar="@_laeuft" Anteil="@_anteil" Text="@_fortschrittText"
                                  Abbrechen="@(Abbrechen is null ? null : EventCallback.Factory.Create(this, BeiAbbrechen))"
@@ -362,10 +531,14 @@
                     @* Die Knopfleiste der Ueberlagerung: Abbrechen schliesst ohne zu lesen,
                        "Daten einlesen" liest und schreibt sofort. Enter bleibt unbelegt. *@
                     <div class="epos-leiste">
-                        <span class="epos-leiste-fueller"></span>
+                        <span class="epos-leiste-fueller" role="status">@_importSperrzeile</span>
                         <button type="button" class="epos-knopf" disabled="@_laeuft"
                                 @onclick="ImportSchliessen">@AbbrechenText</button>
+                        @* Ohne gueltige, passende Vorschau WEICH gesperrt (aria-disabled): Der
+                           Knopf bleibt anklickbar, sein title und die Zeile links nennen den Grund. *@
                         <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@(!ImportErlaubt)"
+                                aria-disabled="@(ImportWeichGesperrt ? "true" : null)"
+                                title="@(ImportWeichGesperrt ? ImportSperrgrund : null)"
                                 @onclick="BeiImport">@ImportText</button>
                     </div>
                 </div>
@@ -383,11 +556,25 @@
             {
                 <DiagrammSvg Modell="@GrossModell" Kennung="@("klima-gross-" + _reiter.ToLowerInvariant())"
                              Bezeichnung="@GrossTitel" PlatzhalterText="@KeineDatenText"
-                             Einheit="@(_reiter == "SONNENWINKEL" ? EinheitWinkelText : EinheitTemperaturText)"
+                             Einheit="@(_reiter == "SONNENWINKEL" ? EinheitWinkelText : _reiter == "WEITERE" ? JahrEinheit : EinheitTemperaturText)"
                              Palette="@Farbpalette.Aktuell"
                              FarbwahlErlaubt="@FarbwahlMoeglich"
                              FarbeGewaehlt="FarbeUebernehmen"
                              FarbeZurueckgesetzt="FarbeVerwerfen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- KD-5: der CSV-Export der markierten Region (Handlung "Exportieren..." der Auswahlleiste).
+           Die Ueberlagerung traegt Titel und Kreuz, der Dialog darin keinen eigenen Kopf. *@
+    <Ueberlagerung Offen="@(_exportRegion is not null)" Titel="@Resource.KEXP_TITEL"
+                   Geschlossen="() => ExportFertig(null)">
+        <KindInhalt>
+            @if (_exportRegion is not null)
+            {
+                <EPOS.UI.Dialoge.Export.KlimaExportDialog @key="_exportRegion" Lesen="@ExportLesenFuer(_exportRegion)"
+                                                          Speichern="@ExportSpeichern" TitelAnzeigen="false"
+                                                          Geschlossen="ExportFertig" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -439,6 +626,12 @@
 
         /// <summary>Der Höchstwert der Außentemperatur [°C]; <c>null</c> = keine Stundenwerte.</summary>
         public double? Hoechstwert { get; init; }
+
+        /// <summary>
+        /// Die gespeicherten Reihen der Region für den Reiter „Weitere Reihen“ (KD-8 Teil A,
+        /// <c>KlimaReihenkatalog.AusRechenspalten</c>); leer = kein Reiterinhalt.
+        /// </summary>
+        public IReadOnlyList<KlimaReihenwerte> Reihenbestand { get; init; } = Array.Empty<KlimaReihenwerte>();
     }
 
     // =====================================================================
@@ -518,6 +711,15 @@
     [Parameter] public Func<string, Task<bool>>? Loeschen { get; set; }
 
     /// <summary>
+    /// KD-5: liest eine Katalogregion für den CSV-Export (<c>KlimaExportCtrl.Lesen</c>). Ohne ihn — oder ohne
+    /// <see cref="ExportSpeichern"/> — steht „Exportieren…" nicht in der Auswahlleiste.
+    /// </summary>
+    [Parameter] public Func<string, Task<KlimaExportDaten?>>? ExportLesen { get; set; }
+
+    /// <summary>KD-5: der Speicherweg des Exports (Inhalt, Dateivorschlag) — Dateiwahl der Plattform, Schreiben, Teilen.</summary>
+    [Parameter] public Func<string, string, Task<EPOS.UI.Dialoge.Export.KlimaExportErgebnis>>? ExportSpeichern { get; set; }
+
+    /// <summary>
     /// <b>„Schloss setzen…" / „Schloss aufheben…"</b> (Entscheid AD-Q15): das
     /// Auslieferungskennzeichen der gewählten Regionen umschalten — nur der Kopfsatz, die
     /// Klimadaten bleiben (<c>KlimaregionStammCtrl.SchlossSetzen</c> über
@@ -577,6 +779,15 @@
 
     [Parameter] public string ReiterTemperaturText { get; set; } = Resource.KLIMA_REITER_TEMPERATUR;
     [Parameter] public string ReiterSonnenwinkelText { get; set; } = Resource.KLIMA_REITER_SONNENWINKEL;
+    [Parameter] public string ReiterWeitereText { get; set; } = Resource.KLIMA_RW_REITER;
+    [Parameter] public string DiagrammReihenText { get; set; } = Resource.KLIMA_RW_DIA_BEZEICHNUNG;
+    [Parameter] public string WahlJahrText { get; set; } = Resource.KLIMA_RW_WAHL_JAHR;
+    [Parameter] public string KopfJahrText { get; set; } = Resource.KLIMA_RW_KOPF_JAHR;
+    [Parameter] public string HinweisJahrText { get; set; } = Resource.KLIMA_RW_HINWEIS_JAHR;
+    [Parameter] public string GleicheEinheitText { get; set; } = Resource.KLIMA_RW_GLEICHE_EINHEIT;
+    [Parameter] public string WahlVorschauText { get; set; } = Resource.KLIMA_RW_WAHL_VORSCHAU;
+    [Parameter] public string KopfVorschauText { get; set; } = Resource.KLIMA_RW_KOPF_VORSCHAU;
+    [Parameter] public string HinweisVorschauText { get; set; } = Resource.KLIMA_RW_HINWEIS_VORSCHAU;
     [Parameter] public string DiagrammTemperaturText { get; set; } = Resource.KLIMA_DIA_TEMPERATUR;
     [Parameter] public string DiagrammSonnenwinkelText { get; set; } = Resource.KLIMA_DIA_SONNENWINKEL;
     [Parameter] public string KeineDatenText { get; set; } = Resource.KLIMA_MSG_KEINE_DATEN;
@@ -626,6 +837,47 @@
     [Parameter] public string RegionErmittelnText { get; set; } = Resource.KLIMA_TRY_BTN_REGION;
     [Parameter] public string RegionLaeuftText { get; set; } = Resource.KLIMA_TRY_VORSCHAU_LAEUFT;
 
+    // ---- Vorschaukarte (Auftrag KD-3) ------------------------------------
+    [Parameter] public string SuchhinweisText { get; set; } = Resource.KLIMA_VK_SUCHHINWEIS;
+    [Parameter] public string VorschauTitelText { get; set; } = Resource.KLIMA_VK_TITEL;
+    [Parameter] public string GefundenText { get; set; } = Resource.KLIMA_VK_GEFUNDEN;
+    [Parameter] public string NichtImPaketText { get; set; } = Resource.KLIMA_VK_NICHT_IM_PAKET;
+    [Parameter] public string VorhandenText { get; set; } = Resource.KLIMA_VK_VORHANDEN;
+    [Parameter] public string AusfuehrungTryText { get; set; } = Resource.KLIMA_VK_AUSFUEHRUNG_TRY;
+    [Parameter] public string AusfuehrungDateiText { get; set; } = Resource.KLIMA_VK_AUSFUEHRUNG_DATEI;
+    [Parameter] public string AusfuehrungPvgisText { get; set; } = Resource.KLIMA_VK_AUSFUEHRUNG_PVGIS;
+    [Parameter] public string StandortText { get; set; } = Resource.KLIMA_VK_STANDORT;
+    [Parameter] public string OrtText { get; set; } = Resource.KLIMA_VK_ORT;
+    [Parameter] public string KoordinateText { get; set; } = Resource.KLIMA_VK_KOORDINATE;
+    [Parameter] public string HoeheText { get; set; } = Resource.KLIMA_VK_HOEHE;
+    [Parameter] public string UnbekanntText { get; set; } = Resource.KLIMA_VK_UNBEKANNT;
+    [Parameter] public string BezugStationText { get; set; } = Resource.KLIMA_VK_BEZUG_STATION;
+    [Parameter] public string BezugDateiText { get; set; } = Resource.KLIMA_VK_BEZUG_DATEI;
+    [Parameter] public string BezugPvgisText { get; set; } = Resource.KLIMA_VK_BEZUG_PVGIS;
+    [Parameter] public string NameText { get; set; } = Resource.KLIMA_VK_NAME;
+    [Parameter] public string EntfernungText { get; set; } = Resource.KLIMA_VK_ENTFERNUNG;
+    [Parameter] public string HoehenunterschiedText { get; set; } = Resource.KLIMA_VK_HOEHENUNTERSCHIED;
+    [Parameter] public string KzMittelText { get; set; } = Resource.KLIMA_VK_KZ_MITTEL;
+    [Parameter] public string KzMinMaxText { get; set; } = Resource.KLIMA_VK_KZ_MINMAX;
+    [Parameter] public string KzGlobalText { get; set; } = Resource.KLIMA_VK_KZ_GLOBAL;
+    [Parameter] public string KzGradtagText { get; set; } = Resource.KLIMA_VK_KZ_GRADTAG;
+    [Parameter] public string KzHeiztageText { get; set; } = Resource.KLIMA_VK_KZ_HEIZTAGE;
+    [Parameter] public string BildBezeichnungText { get; set; } = Resource.KLIMA_VK_BILD_BEZEICHNUNG;
+    [Parameter] public string BestandText { get; set; } = Resource.KLIMA_VK_BESTAND;
+    [Parameter] public string GefuehrtText { get; set; } = Resource.KLIMA_VK_GEFUEHRT;
+    /// <summary>KD-8 Teil B: der Titel der Marke „R“ an einem Rohwert-Chip (KLIMA_RW_ROHWERT_MARKE).</summary>
+    [Parameter] public string RohwertMarkeText { get; set; } = Resource.KLIMA_RW_ROHWERT_MARKE;
+    [Parameter] public string GerechnetText { get; set; } = Resource.KLIMA_VK_GERECHNET;
+    [Parameter] public string GespeichertText { get; set; } = Resource.KLIMA_VK_GESPEICHERT;
+    [Parameter] public string NichtGespeichertText { get; set; } = Resource.KLIMA_VK_NICHT_GESPEICHERT;
+    [Parameter] public string FehltText { get; set; } = Resource.KLIMA_VK_FEHLT;
+    [Parameter] public string VerfallenText { get; set; } = Resource.KLIMA_VK_VERFALLEN;
+    [Parameter] public string ErstSuchenText { get; set; } = Resource.KLIMA_VK_ERST_SUCHEN;
+    [Parameter] public string NichtImportierbarText { get; set; } = Resource.KLIMA_VK_NICHT_IMPORTIERBAR;
+    [Parameter] public string FeldherkunftText { get; set; } = Resource.KLIMA_VK_FELDHERKUNFT;
+    [Parameter] public string LabelHoeheText { get; set; } = Resource.KLIMA_LBL_HOEHE;
+    [Parameter] public string FeldHoeheText { get; set; } = Resource.KLIMA_FELD_HOEHE;
+
     // ---- Standort aus der TRY-Datei (Auftrag KL-2) ----------------------
     [Parameter] public string StandortHinweisText { get; set; } = Resource.KLIMA_TRY_STANDORT_HINWEIS;
     [Parameter] public string StandortUnlesbarText { get; set; } = Resource.KLIMA_TRY_STANDORT_UNLESBAR;
@@ -655,6 +907,12 @@
     private string _details = "";
     private Zeichenmodell? _modellTemperatur;
     private Zeichenmodell? _modellSonnenwinkel;
+
+    // KD-8 Teil A: Reiter „Weitere Reihen“ und Reihenwahl der Vorschau.
+    private IReadOnlyList<KlimaReihenwerte> _reihenbestand = Array.Empty<KlimaReihenwerte>();
+    private IReadOnlyList<string> _jahrWahl = KlimaReihenkatalog.VORGABE_JAHRESVERLAUF;
+    private Zeichenmodell? _modellReihen;
+    private List<string> _vorschauWahl = new(KlimaReihenkatalog.VORGABE_VORSCHAU);
     private double? _jahresmittel;
     private double? _tiefstwert;
     private double? _hoechstwert;
@@ -691,6 +949,33 @@
 
     private EventCallback _vergleichen;
     private EventCallback _loeschenWeg;
+    private EventCallback _exportWeg;
+
+    // =====================================================================
+    // „Exportieren…" (Auftrag KD-5): eine Region je Datei (KD-Q6)
+    // =====================================================================
+
+    /// <summary>Die Region, deren Export offen ist; <c>null</c> = keine Überlagerung.</summary>
+    private string? _exportRegion;
+
+    /// <summary>Öffnet die Überlagerung für die eine Zielregion (Kästchen oder Fokuszeile).</summary>
+    private void ExportOeffnen()
+    {
+        IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+        if (ziele.Count != 1) { Warnen(Resource.KEXP_HANDLUNG_GRUND); return; }
+        _exportRegion = ziele[0];
+    }
+
+    /// <summary>Schließt den Export; eine Rückmeldung (Pfad) steht danach als Hinweis.</summary>
+    private void ExportFertig(string? rueckmeldung)
+    {
+        _exportRegion = null;
+        if (!string.IsNullOrEmpty(rueckmeldung)) Melden(rueckmeldung, WarnStufe.Hinweis);
+    }
+
+    /// <summary>Der Leseweg der Überlagerung für die offene Region.</summary>
+    private Func<Task<KlimaExportDaten?>>? ExportLesenFuer(string region)
+        => ExportLesen is null ? null : () => ExportLesen(region);
     private EventCallback _schlossHandlung;
 
     /// <summary>„Schloss setzen…" / „Schloss aufheben…" (AD-Q15) — Rückfrage und die in dieser Sitzung entsperrten Sätze.</summary>
@@ -720,14 +1005,44 @@
     /// <summary>Die gewählte Klimaquelle (Prüfhilfe für Tests).</summary>
     public KlimaQuelle Quelle => _quelle;
 
-    /// <summary>Die Ergebnis- oder Fehlerzeile der Regionsvorschau; leer = keine.</summary>
-    private string _regionszeile = "";
+    // ---- Vorschaukarte (Auftrag KD-3) ------------------------------------
 
-    /// <summary>Läuft gerade eine Regionsvorschau?</summary>
-    private bool _regionLaeuft;
+    /// <summary>Die zuletzt gelesene VORSCHAU; <c>null</c> = keine.</summary>
+    private KlimaVorschauErgebnis? _vorschau;
 
-    /// <summary>Die Zeile der Regionsvorschau (Prüfhilfe für Tests).</summary>
-    public string Regionsvorschau => _regionszeile;
+    /// <summary>
+    /// Der Eingabeschlüssel, aus dem <see cref="_vorschau"/> gelesen wurde — NACH dem
+    /// Befüllen der Felder gebildet. Weicht der Schlüssel der Felder ab, ist die Karte
+    /// VERFALLEN (dieselbe Regel wie <c>KlimaVorschauErgebnis.PasstZu</c> im Kern).
+    /// </summary>
+    private string _vorschauSchluessel = "";
+
+    /// <summary>Das Bild der Karte (Monatsreihen, aus dem Kern).</summary>
+    private Zeichenmodell? _vorschaubild;
+
+    /// <summary>Läuft gerade eine Suche?</summary>
+    private bool _sucht;
+
+    /// <summary>Stehen Longitude, Latitude und Bezeichnung aus der Suche in den Feldern?</summary>
+    private bool _felderAusSuche;
+
+    /// <summary>Die Höhe des Ortes [m]; leer = unbekannt.</summary>
+    private double? _hoehe;
+
+    /// <summary>Der Grund der weichen Sperre, nachdem „Daten einlesen" gedrückt wurde.</summary>
+    private string _importSperrzeile = "";
+
+    /// <summary>Die Vorschau (Prüfhilfe für Tests).</summary>
+    public KlimaVorschauErgebnis? Vorschau => _vorschau;
+
+    /// <summary>Gilt die Vorschau für die Felder und trägt sie einen Satz? (Prüfhilfe.)</summary>
+    public bool VorschauGueltig => VorschauPasst && VorschauTauglich(_vorschau!);
+
+    /// <summary>Steht eine Vorschau, die nicht mehr zu den Feldern passt? (Prüfhilfe.)</summary>
+    public bool VorschauVerfallen => _vorschau is not null && !VorschauPasst;
+
+    private bool VorschauPasst => _vorschau is not null && _vorschauSchluessel.Length > 0 &&
+                                  _vorschauSchluessel == Eingabeschluessel();
 
     private IReadOnlyList<(int Id, string Text)> Quelleneintraege => new[]
     {
@@ -852,9 +1167,47 @@
     private bool StandortFuerVorschau =>
         _ortsname.Trim().Length > 0 || (_longitude.HasValue && _latitude.HasValue);
 
-    /// <summary>„Region ermitteln" braucht die Regionaldaten als Quelle und einen Standort.</summary>
-    private bool RegionErlaubt => !_laeuft && !_regionLaeuft && RegionErmitteln is not null &&
-        _quelle == KlimaQuelle.TryRegional && _fehlerFelder.Count == 0 && StandortFuerVorschau;
+    /// <summary>
+    /// „Datensatz suchen" (KD-3) gilt für ALLE drei Quellen und braucht einen Standort,
+    /// bei der TRY-Datei dazu ihren Pfad.
+    /// </summary>
+    private bool SuchenErlaubt => !_laeuft && !_sucht && RegionErmitteln is not null &&
+        _fehlerFelder.Count == 0 && StandortFuerVorschau &&
+        (_quelle != KlimaQuelle.TryDatei || _tryPfad.Trim().Length > 0);
+
+    /// <summary>
+    /// „Daten einlesen" ist WEICH gesperrt, solange keine gültige, passende Vorschau
+    /// steht — aber nur, wo es eine Vorschau gibt (Delegat <see cref="RegionErmitteln"/>);
+    /// ohne ihn liest der Import selbst wie zuvor.
+    /// </summary>
+    private bool ImportWeichGesperrt => RegionErmitteln is not null && !VorschauGueltig;
+
+    /// <summary>Warum „Daten einlesen" weich gesperrt ist.</summary>
+    private string ImportSperrgrund =>
+        _vorschau is not null && VorschauPasst ? NichtImportierbarText : ErstSuchenText;
+
+    /// <summary>Taugt die Vorschau zum Übernehmen? Gefunden, gelesen, mit Stundenwerten.</summary>
+    private static bool VorschauTauglich(KlimaVorschauErgebnis v)
+        => v.Erfolgreich && v.AusfuehrungGefunden && v.Kennzahlen is { Stunden: > 0 };
+
+    /// <summary>
+    /// Der Schlüssel der Felder, aus denen eine Vorschau liest: Ort ODER Koordinaten,
+    /// Quelle und ihre Angaben. Bezeichnung und Höhe gehören nicht dazu.
+    /// </summary>
+    private string Eingabeschluessel()
+    {
+        var k = CultureInfo.InvariantCulture;
+        string ort = _ortsname.Trim().Length > 0
+            ? "O=" + _ortsname.Trim()
+            : "K=" + (_longitude?.ToString("R", k) ?? "") + ";" + (_latitude?.ToString("R", k) ?? "");
+        return _quelle switch
+        {
+            KlimaQuelle.TryDatei => ort + "|D|" + _tryPfad.Trim(),
+            KlimaQuelle.TryRegional => ort + "|R|" + _tryPaketPfad.Trim() + "|" +
+                                       (_tryJahr ?? KlimaImportAuftrag.TRY_JAHR_VORGABE).ToString(k) + "|" + _szenario,
+            _ => ort + "|P"
+        };
+    }
 
     // =====================================================================
     // Stammblatt (Stufe 4): Kopf, Kennzahlen, Herkunft
@@ -906,7 +1259,12 @@
     /// <summary>Gibt es ein Bild zum Vergrößern?</summary>
     private bool HatBild => _modellTemperatur is not null || _modellSonnenwinkel is not null;
 
-    private Zeichenmodell? GrossModell => _reiter == "SONNENWINKEL" ? _modellSonnenwinkel : _modellTemperatur;
+    private Zeichenmodell? GrossModell => _reiter switch
+    {
+        "SONNENWINKEL" => _modellSonnenwinkel,
+        "WEITERE" => _modellReihen,
+        _ => _modellTemperatur
+    };
 
     private string GrossTitel => _gewaehlt.Length == 0
         ? GruppeJahresverlaufText
@@ -933,6 +1291,9 @@
         // AD-Q15: die Beschriftung folgt der Auswahl; hart gesperrt, solange eingelesen wird.
         if (_schloss.Handlung(Schloss, _schlossHandlung, SchlossZiele, _laeuft) is { } schloss)
             liste.Add(schloss);
+        // KD-5: Exportieren gilt für genau eine Region (KD-Q6); ohne beide Gaben steht die Handlung nicht da.
+        if (ExportLesen is not null && ExportSpeichern is not null)
+            liste.Add(new(Resource.KEXP_HANDLUNG, _exportWeg) { Hoechstens = 1, ZahlGrund = Resource.KEXP_HANDLUNG_GRUND, Aus = _laeuft });
         if (Loeschen is not null)
             liste.Add(new(LoeschenText, _loeschenWeg) { Sperrgrund = LoeschSperrgrund, Aus = _laeuft });
         return liste;
@@ -1042,6 +1403,7 @@
     {
         _vergleichen = EventCallback.Factory.Create(this, BeiVergleichen);
         _loeschenWeg = EventCallback.Factory.Create(this, BeiLoeschen);
+        _exportWeg = EventCallback.Factory.Create(this, ExportOeffnen);
         _schlossHandlung = EventCallback.Factory.Create(this, BeiSchloss);
         _blattOeffnen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = true);
         _blattSchliessen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = false);
@@ -1090,6 +1452,9 @@
             BreitengradLesen = () => _latitude,
             BreitengradSetzen = w => { _latitude = w; KiStandortGeaendert(); },
 
+            HoeheLesen = () => _hoehe,
+            HoeheSetzen = w => { _hoehe = w; _importMeldung = ""; },
+
             JahrLesen = () => _tryJahr,
             JahrSetzen = BeiTryJahr,
             JahrEintraege = () => KiMaskenanmeldung.Eintraege(
@@ -1110,7 +1475,6 @@
     {
         _ortsname = wert ?? "";
         _importMeldung = "";
-        _regionszeile = "";
     }
 
     /// <summary>Eine geänderte Koordinate verwirft Meldung, Standort und Regionszeile.</summary>
@@ -1118,7 +1482,6 @@
     {
         _importMeldung = "";
         _tryStandort = "";
-        _regionszeile = "";
     }
 
     /// <summary>
@@ -1170,6 +1533,8 @@
         _details = "";
         _modellTemperatur = null;
         _modellSonnenwinkel = null;
+        _reihenbestand = Array.Empty<KlimaReihenwerte>();
+        _modellReihen = null;
         _jahresmittel = _tiefstwert = _hoechstwert = null;
         _grossOffen = false;
     }
@@ -1210,6 +1575,8 @@
         _details = a.Details ?? "";
         _modellTemperatur = a.ModellTemperatur;
         _modellSonnenwinkel = a.ModellSonnenwinkel;
+        _reihenbestand = a.Reihenbestand ?? Array.Empty<KlimaReihenwerte>();
+        JahrWahlPruefen();
         _jahresmittel = a.Jahresmittel;
         _tiefstwert = a.Tiefstwert;
         _hoechstwert = a.Hoechstwert;
@@ -1281,7 +1648,6 @@
     {
         _ortsname = e.Value?.ToString() ?? "";
         _importMeldung = "";
-        _regionszeile = "";
     }
 
     private void BeiFehler((string Feld, bool Fehlerhaft) f)
@@ -1302,7 +1668,6 @@
             _ => KlimaQuelle.PvgisTmy
         };
         _importMeldung = "";
-        _regionszeile = "";
     }
 
     private void BeiTryPfad(string pfad)
@@ -1359,14 +1724,12 @@
     {
         _tryPaketPfad = pfad ?? "";
         _importMeldung = "";
-        _regionszeile = "";
     }
 
     private void BeiTryJahr(int? jahr)
     {
         _tryJahr = jahr ?? KlimaImportAuftrag.TRY_JAHR_VORGABE;
         _importMeldung = "";
-        _regionszeile = "";
     }
 
     private void BeiSzenario(int? id)
@@ -1381,69 +1744,15 @@
     }
 
     // =====================================================================
-    // Regionsvorschau (Auftrag KL-3)
+    // Datensatz suchen und die Vorschaukarte (Auftrag KD-3)
     // =====================================================================
 
     /// <summary>
-    /// Ermittelt die TRY-Region zum eingetragenen Standort und schreibt das Ergebnis
-    /// als Herleitungszeile unter die Auswahl. <b>Ein Fehlschlag ist kein Absturz und
-    /// keine Sperre</b>: Er steht als Zeile da, und einlesen darf der Anwender weiterhin.
+    /// Der Auftrag aus den Feldern — für die Suche und für „Daten einlesen" derselbe,
+    /// samt der Höhe des Ortes (<see cref="KlimaImportAuftrag.StandortHoeheM"/>).
     /// </summary>
-    private async Task BeiRegion()
+    private KlimaImportAuftrag AuftragBauen()
     {
-        if (!RegionErlaubt) return;
-
-        var auftrag = _ortsname.Trim().Length > 0
-            ? new KlimaImportAuftrag
-              {
-                  Art = KlimaImportArt.AusOrtsname,
-                  Ortsname = _ortsname.Trim()
-              }
-            : new KlimaImportAuftrag
-              {
-                  Art = KlimaImportArt.AusKoordinaten,
-                  Bezeichnung = _bezeichnung.Trim(),
-                  Longitude = _longitude ?? 0,
-                  Latitude = _latitude ?? 0
-              };
-
-        auftrag.Quelle = KlimaQuelle.TryRegional;
-        auftrag.TryPaketPfad = _tryPaketPfad.Trim();
-        auftrag.TryJahr = _tryJahr ?? KlimaImportAuftrag.TRY_JAHR_VORGABE;
-        auftrag.Szenario = _szenario;
-
-        _regionLaeuft = true;
-        _regionszeile = RegionLaeuftText;
-        _importMeldung = "";
-        await InvokeAsync(StateHasChanged);
-
-        try
-        {
-            KlimaVorschauErgebnis erg = await RegionErmitteln!(auftrag);
-            _regionszeile = erg.Meldung ?? "";
-            if (!erg.Erfolgreich && _regionszeile.Length == 0)
-                _regionszeile = EingabenPruefenText;
-        }
-        finally
-        {
-            _regionLaeuft = false;
-        }
-    }
-
-    // =====================================================================
-    // Import (btn_Import_Click)
-    // =====================================================================
-
-    /// <summary>
-    /// „Daten einlesen" in der Überlagerung. <b>Gelingt es</b>, schließt die
-    /// Überlagerung, die neue Region steht gewählt in der Liste, und die Statuszeile
-    /// meldet sie (V14). <b>Scheitert es</b>, bleibt die Überlagerung offen und meldet
-    /// den Grund in ihrem eigenen Warnband — das des Dialogs läge unter ihr.
-    /// </summary>
-    private async Task BeiImport()
-    {
-        if (!ImportErlaubt) return;
-
         var auftrag = _ortsname.Trim().Length > 0
             ? new KlimaImportAuftrag
               {
@@ -1461,6 +1770,7 @@
         // Die Quelle und ihre Angaben (Auftrag KL1-B). Bei PVGIS bleiben die
         // Vorgaben stehen - der Auftrag sieht dann aus wie vor KL1-B.
         auftrag.Quelle = _quelle;
+        auftrag.StandortHoeheM = _hoehe;
         if (_quelle == KlimaQuelle.TryDatei)
         {
             auftrag.TryPfad = _tryPfad.Trim();
@@ -1471,6 +1781,199 @@
             auftrag.TryJahr = _tryJahr ?? KlimaImportAuftrag.TRY_JAHR_VORGABE;
             auftrag.Szenario = _szenario;
         }
+        return auftrag;
+    }
+
+    /// <summary>
+    /// „Datensatz suchen": geokodiert, wählt den Bezugspunkt und LIEST den Datensatz
+    /// (Kern, <c>KlimaImportAblauf.RegionErmittelnAsync</c>). Gespeichert wird nichts.
+    /// Gelingt es, stehen Longitude, Latitude und — wenn leer — die Bezeichnung als
+    /// Vorschlag in den Feldern; alles bleibt änderbar. <b>Ein Fehlschlag ist keine
+    /// Ausnahme</b>: Er steht als Zeile in der Karte.
+    /// </summary>
+    private async Task BeiSuchen()
+    {
+        if (!SuchenErlaubt) return;
+
+        KlimaImportAuftrag auftrag = AuftragBauen();
+        _sucht = true;
+        _importMeldung = "";
+        _importSperrzeile = "";
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            KlimaVorschauErgebnis erg = await RegionErmitteln!(auftrag);
+            _vorschau = erg;
+            VorschauWahlPruefen();
+            VorschaubildBauen();
+            if (erg.Erfolgreich) FelderAusVorschau(erg);
+            _vorschauSchluessel = Eingabeschluessel();
+        }
+        finally
+        {
+            _sucht = false;
+        }
+    }
+
+    /// <summary>Setzt Longitude, Latitude und eine leere Bezeichnung aus dem Standort der Vorschau.</summary>
+    private void FelderAusVorschau(KlimaVorschauErgebnis erg)
+    {
+        if (erg.Standort is not { } st) return;
+        _longitude = st.Longitude;
+        _latitude = st.Latitude;
+        _fehlerFelder.Remove(FeldLongitudeText);   // die gesetzten Werte sind gueltig
+        _fehlerFelder.Remove(FeldLatitudeText);
+
+        if (_bezeichnung.Trim().Length == 0)
+        {
+            // Auf dem Ortsweg heisst die Region wie der Ort (so legt der Kern sie an);
+            // auf dem Koordinatenweg traegt sie den Namen des Bezugspunkts.
+            string vorschlag = _ortsname.Trim().Length > 0 ? _ortsname.Trim() : (erg.Bezugspunkt?.Name ?? "");
+            if (vorschlag.Length == 0 && st.Anzeigename.Length > 0) vorschlag = st.Anzeigename.Split(',')[0].Trim();
+            _bezeichnung = vorschlag;
+        }
+        _felderAusSuche = true;
+    }
+
+    /// <summary>Ein Wahlknopf der vorhandenen Ausführungen: Jahr und Szenario setzen, neu suchen.</summary>
+    private async Task AusfuehrungWaehlen(TryAusfuehrung a)
+    {
+        _tryJahr = a.Jahr;
+        _szenario = a.Szenario;
+        _importMeldung = "";
+        await BeiSuchen();
+    }
+
+    /// <summary>Die Ausführung, nach der gesucht wurde, als Text.</summary>
+    private string Ausfuehrungstext => _vorschau?.Quelle switch
+    {
+        KlimaQuelle.TryRegional => TryText(_vorschau.Bezugsjahr ?? _tryJahr ?? KlimaImportAuftrag.TRY_JAHR_VORGABE,
+                                           _vorschau.Szenario),
+        KlimaQuelle.TryDatei => string.Format(CultureInfo.CurrentCulture, AusfuehrungDateiText,
+                                              _vorschau.Bezugspunkt?.Name ?? ""),
+        _ => AusfuehrungPvgisText
+    };
+
+    /// <summary>„TRY 2045 · sommerwarm".</summary>
+    private string TryText(int jahr, TrySzenario sz)
+        => string.Format(CultureInfo.CurrentCulture, AusfuehrungTryText,
+                         jahr.ToString(CultureInfo.InvariantCulture), Szenariotext(sz));
+
+    private string Szenariotext(TrySzenario sz) => sz switch
+    {
+        TrySzenario.Sommerwarm => SzSommerwarmText,
+        TrySzenario.Winterkalt => SzWinterkaltText,
+        _ => SzMittelText
+    };
+
+    /// <summary>Die Fehlerzeile einer misslungenen Suche (Ort unbekannt, Datei unlesbar …).</summary>
+    private string VorschauFehlertext =>
+        _vorschau is { Meldung.Length: > 0 } v ? v.Meldung : EingabenPruefenText;
+
+    private string BezugspunktTitel(KlimaBezugspunktArt art) => art switch
+    {
+        KlimaBezugspunktArt.Repraesentanzstation => BezugStationText,
+        KlimaBezugspunktArt.Dateistandort => BezugDateiText,
+        _ => BezugPvgisText
+    };
+
+    /// <summary>Die Höhe des Ortes: die Eingabe, sonst die der Quelle (PVGIS, Dateikopf).</summary>
+    private double? StandortHoehe => _hoehe ?? _vorschau?.Standort?.HoeheM;
+
+    /// <summary>
+    /// Der Höhenunterschied Bezugspunkt − Ort, mit der AKTUELLEN Höhe des Ortes — die
+    /// Höhe gehört nicht zum Schlüssel der Vorschau, ihre Änderung lässt die Karte stehen.
+    /// </summary>
+    private double? Hoehenunterschied =>
+        _vorschau?.Bezugspunkt?.HoeheM is double b && StandortHoehe is double o ? b - o : null;
+
+    /// <summary>
+    /// Die leisen Hinweiszeilen: Repräsentanzstation, nicht ortstypisch (Schwellen des
+    /// Kerns, <c>KlimaVorschauFestwerte</c>, mit der aktuellen Höhe) und weitere des Kerns.
+    /// </summary>
+    private IEnumerable<string> Hinweiszeilen
+    {
+        get
+        {
+            if (_vorschau is null) yield break;
+            string repr = Resource.KLIMA_VORSCHAU_REPRAESENTANZ, ort = Resource.KLIMA_VORSCHAU_NICHT_ORTSTYPISCH;
+            if (_vorschau.Repraesentanzhinweis) yield return repr;
+            if (KlimaVorschauFestwerte.NichtOrtstypisch(_vorschau.Bezugspunkt?.EntfernungKm, Hoehenunterschied))
+                yield return ort;
+            foreach (string h in _vorschau.Hinweise)
+                if (h != repr && h != ort && h.Length > 0) yield return h;
+        }
+    }
+
+    private static string Zahl(double w, int stellen)
+        => w.ToString("N" + stellen.ToString(CultureInfo.InvariantCulture), CultureInfo.CurrentCulture);
+
+    private static string Grad(double w) => Zahl(w, 1) + " °C";
+
+    private string Meter(double? m) => m.HasValue ? Zahl(m.Value, 0) + " m" : UnbekanntText;
+
+    private static string MeterMitVorzeichen(double m) => (m > 0 ? "+" : "") + Zahl(m, 0) + " m";
+
+    private static string Kilometer(double km) => Zahl(km, km < 10 ? 1 : 0) + " km";
+
+    private static string Koordinate(double lat, double lon) => Zahl(lat, 4) + "° / " + Zahl(lon, 4) + "°";
+
+    /// <summary>
+    /// KD-4: Steht die Rohtabelle, sagt die Karte je Größe, ob der Import sie speichert (Rechenspalte oder Rohwert);
+    /// ohne Rohtabelle bleibt die Zeile wie zuvor.
+    /// </summary>
+    private string Speichertext(KlimaParameterEintrag p) =>
+        _vorschau is { RohwerteGespeichert: true } ? " · " + (p.Gespeichert ? GespeichertText : NichtGespeichertText) : "";
+
+    private string Standtext(KlimaParameterStand s) => s switch
+    {
+        KlimaParameterStand.Gefuehrt => GefuehrtText,
+        KlimaParameterStand.Gerechnet => GerechnetText,
+        _ => FehltText
+    };
+
+    private static string Parametername(KlimaParameter p) => p switch
+    {
+        KlimaParameter.Lufttemperatur => Resource.KLIMA_PAR_LUFTTEMPERATUR,
+        KlimaParameter.Luftfeuchte => Resource.KLIMA_PAR_LUFTFEUCHTE,
+        KlimaParameter.Globalstrahlung => Resource.KLIMA_PAR_GLOBALSTRAHLUNG,
+        KlimaParameter.DirektstrahlungNormal => Resource.KLIMA_PAR_DIREKTSTRAHLUNGNORMAL,
+        KlimaParameter.DirektstrahlungHorizontal => Resource.KLIMA_PAR_DIREKTSTRAHLUNGHORIZONTAL,
+        KlimaParameter.Diffusstrahlung => Resource.KLIMA_PAR_DIFFUSSTRAHLUNG,
+        KlimaParameter.Gegenstrahlung => Resource.KLIMA_PAR_GEGENSTRAHLUNG,
+        KlimaParameter.Bedeckungsgrad => Resource.KLIMA_PAR_BEDECKUNGSGRAD,
+        KlimaParameter.Luftdruck => Resource.KLIMA_PAR_LUFTDRUCK,
+        KlimaParameter.Windgeschwindigkeit => Resource.KLIMA_PAR_WINDGESCHWINDIGKEIT,
+        KlimaParameter.Windrichtung => Resource.KLIMA_PAR_WINDRICHTUNG,
+        KlimaParameter.Wasserdampfgehalt => Resource.KLIMA_PAR_WASSERDAMPFGEHALT,
+        KlimaParameter.Ausstrahlung => Resource.KLIMA_PAR_AUSSTRAHLUNG,
+        _ => Resource.KLIMA_PAR_QUALITAETSTRAHLUNG
+    };
+
+    // =====================================================================
+    // Import (btn_Import_Click)
+    // =====================================================================
+
+    /// <summary>
+    /// „Daten einlesen" in der Überlagerung. <b>Gelingt es</b>, schließt die
+    /// Überlagerung, die neue Region steht gewählt in der Liste, und die Statuszeile
+    /// meldet sie (V14). <b>Scheitert es</b>, bleibt die Überlagerung offen und meldet
+    /// den Grund in ihrem eigenen Warnband — das des Dialogs läge unter ihr.
+    /// </summary>
+    private async Task BeiImport()
+    {
+        if (!ImportErlaubt) return;
+
+        // KD-3: ohne gueltige, passende Vorschau WEICH gesperrt - der Klick nennt den Grund.
+        if (ImportWeichGesperrt)
+        {
+            _importSperrzeile = ImportSperrgrund;
+            return;
+        }
+        _importSperrzeile = "";
+
+        KlimaImportAuftrag auftrag = AuftragBauen();
 
         _laeuft = true;
         _anteil = null;
@@ -1495,8 +1998,10 @@
                 // ANWENDERWUNSCH 19.09.2026, Punkt 2: Die Felder BLEIBEN stehen - vor
                 // einem Doppelimport schuetzt der Dublettenschutz des Ablaufs
                 // (KlimaImportAusgang.Dublette), nicht das Leeren des Formulars.
-                // Die Regionszeile der Vorschau geht weg: Sie gehoerte zum Lauf.
-                _regionszeile = "";
+                // Die Vorschaukarte geht weg: Sie gehoerte zum Lauf.
+                _vorschau = null;
+                _vorschaubild = null;
+                _felderAusSuche = false;
                 _importOffen = false;
 
                 // V14: die neue Region steht gewaehlt, die Kaestchen fallen - die
@@ -1637,7 +2142,7 @@
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
-        if (_loeschfrageOffen || _schloss.FrageOffen || _laeuft || _importOffen || _grossOffen)
+        if (_loeschfrageOffen || _schloss.FrageOffen || _laeuft || _importOffen || _grossOffen || _exportRegion is not null)
             return Task.CompletedTask;
 
         if (_auswahl.BlattOffen)
@@ -1646,5 +2151,169 @@
             return Task.CompletedTask;
         }
         return BeiSchliessen();
+    }
+
+    // =====================================================================
+    // KD-8 Teil A: weitere Reihen (Konzept Klimadatenimport § 4a)
+    // =====================================================================
+
+    /// <summary>Die CSS-Farbe einer Reihe aus der aktuellen Palette (Punkt am Chip).</summary>
+    private static string Chipfarbe(KlimaReihe r)
+    {
+        if (r.Rolle == Farbrolle.UNBENANNT || !Farbpalette.Aktuell.Kennt(r.Rolle)) return "";
+        Farbe f = Farbpalette.Aktuell[r.Rolle];
+        return string.Create(CultureInfo.InvariantCulture, $"rgb({f.R},{f.G},{f.B})");
+    }
+
+    /// <summary>Die Größen der Vorschau mit Monatsreihe, die der Parameterbestand nicht als „fehlt“ führt.</summary>
+    private IEnumerable<KlimaReihe> VorschauReihen(KlimaKennzahlen kz)
+    {
+        var fehlt = new HashSet<KlimaParameter>((_vorschau?.Parameterbestand ?? Array.Empty<KlimaParameterEintrag>())
+            .Where(p => p.Stand == KlimaParameterStand.Fehlt).Select(p => p.Parameter));
+        // KD-8 Teil B: Rohwerte nur, wenn der gelesene Satz sie auch speichert (Schritt 238 steht - Datenstand).
+        bool rohwerte = _vorschau?.RohwerteGespeichert == true;
+        return KlimaReihenkatalog.Reihen.Where(r => r.InVorschau && KlimaReihenkatalog.Sichtbar(r, rohwerte) &&
+                                                    kz.Monatsreihe(r.Schluessel) != null &&
+                                                    !(r.Parameter is { } p && fehlt.Contains(p)));
+    }
+
+    /// <summary>Die Chips der Vorschau: Achsenregel und letzte Reihe aus dem Kern.</summary>
+    private IReadOnlyList<Reihenwahl.Reihenchip> VorschauChips(KlimaKennzahlen kz)
+    {
+        var liste = new List<Reihenwahl.Reihenchip>();
+        foreach (KlimaReihe r in VorschauReihen(kz))
+        {
+            bool an = _vorschauWahl.Contains(r.Schluessel);
+            string titel = an ? Resource.KLIMA_RW_ABWAEHLEN : Resource.KLIMA_RW_ZUSCHALTEN;
+            string zusatz = "";
+            if (kz.Reihenstunden.TryGetValue(r.Schluessel, out int n) && n < kz.Stunden)
+                zusatz = string.Format(CultureInfo.CurrentCulture, Resource.KLIMA_RW_TEILFUELLUNG,
+                                               n.ToString("N0", CultureInfo.CurrentCulture),
+                                               kz.Stunden.ToString("N0", CultureInfo.CurrentCulture));
+            liste.Add(new Reihenwahl.Reihenchip(r.Schluessel, r.Kurzname(), r.Monatseinheit,
+                                                KlimaReihenkatalog.Gruppenname(r.Gruppe))
+            {
+                Gewaehlt = an,
+                Sperrgrund = KlimaReihenkatalog.SperrgrundMonatsbild(r.Schluessel, _vorschauWahl),
+                Titel = titel,
+                Zusatz = zusatz,
+                Rohwert = r.IstRohwert,
+                Farbe = Chipfarbe(r)
+            });
+        }
+        return liste;
+    }
+
+    /// <summary>Hält die Wahl der Vorschau auf Größen, die der gelesene Satz trägt; leer → Vorgabe.</summary>
+    private void VorschauWahlPruefen()
+    {
+        if (_vorschau?.Kennzahlen is not { Stunden: > 0 } kz) return;
+        var da = VorschauReihen(kz).Select(r => r.Schluessel).ToHashSet();
+        _vorschauWahl = _vorschauWahl.Where(da.Contains).ToList();
+        if (_vorschauWahl.Count == 0)
+            _vorschauWahl = new List<string>(KlimaReihenkatalog.VORGABE_VORSCHAU);
+    }
+
+    private void VorschaubildBauen()
+    {
+        _vorschaubild = _vorschau?.Kennzahlen is { Stunden: > 0 } kz
+            ? KlimaVorschaubild.Modell(kz, _vorschauWahl)
+            : null;
+    }
+
+    private void VorschauUmschalten(string schluessel)
+    {
+        if (_vorschauWahl.Contains(schluessel))
+        {
+            if (_vorschauWahl.Count <= 1) return;
+            _vorschauWahl = _vorschauWahl.Where(k => k != schluessel).ToList();
+        }
+        else if (KlimaReihenkatalog.SperrgrundMonatsbild(schluessel, _vorschauWahl).Length == 0)
+        {
+            _vorschauWahl = _vorschauWahl.Append(schluessel).ToList();
+        }
+        VorschaubildBauen();
+    }
+
+    private void VorschauVorgabe()
+    {
+        _vorschauWahl = new List<string>(KlimaReihenkatalog.VORGABE_VORSCHAU);
+        VorschauWahlPruefen();
+        VorschaubildBauen();
+    }
+
+    /// <summary>
+    /// Die Reihen der Region, wie die Hülle sie liefert: die Rechenspalten (Teil A) und, sobald der Schritt 238
+    /// steht, die Rohwert-Reihen (Teil B, aus dem Datenstand, § 4a.3) — eine Rohwert-Reihe ohne Werte ist
+    /// weich gesperrt („führt nicht“), die Marke „R“ nennt den Rohwert.
+    /// </summary>
+    private IReadOnlyList<KlimaReihenwerte> SichtbarerBestand => _reihenbestand;
+
+    /// <summary>Die Einheit des Bildes „Weitere Reihen“ (die der ersten gewählten Reihe).</summary>
+    private string JahrEinheit => _jahrWahl.Count > 0 ? KlimaReihenkatalog.Reihe(_jahrWahl[0])?.Einheit ?? "" : "";
+
+    /// <summary>Die Chips des Reiters „Weitere Reihen“ (KD-Q11).</summary>
+    private IReadOnlyList<Reihenwahl.Reihenchip> JahrChips
+    {
+        get
+        {
+            string einheit = JahrEinheit;
+            var liste = new List<Reihenwahl.Reihenchip>();
+            foreach (KlimaReihenwerte w in SichtbarerBestand)
+            {
+                KlimaReihe r = w.Reihe;
+                bool an = _jahrWahl.Contains(r.Schluessel);
+                bool fremd = r.Einheit != einheit;
+                string grund = !w.Gefuehrt ? Resource.KLIMA_RW_FUEHRT_NICHT
+                    : an && _jahrWahl.Count <= 1 ? Resource.KLIMA_RW_LETZTE_BLEIBT
+                    : !an && !fremd && _jahrWahl.Count >= KlimaReihenkatalog.JAHRESVERLAUF_REIHEN_MAX
+                        ? Resource.KLIMA_RW_DREI_REIHEN : "";
+                string titel = an ? Resource.KLIMA_RW_ABWAEHLEN
+                    : fremd ? string.Format(CultureInfo.CurrentCulture, Resource.KLIMA_RW_ANDERE_EINHEIT, r.Name())
+                    : Resource.KLIMA_RW_HINZUFUEGEN;
+                liste.Add(new Reihenwahl.Reihenchip(r.Schluessel, r.Kurzname(), r.Einheit,
+                                                    KlimaReihenkatalog.Gruppenname(r.Gruppe))
+                {
+                    Gewaehlt = an,
+                    Sperrgrund = grund,
+                    Titel = titel,
+                    Rohwert = r.IstRohwert,
+                    Farbe = Chipfarbe(r)
+                });
+            }
+            return liste;
+        }
+    }
+
+    /// <summary>
+    /// Wechselt die Region, bleibt die Wahl, soweit die neue Region die Reihen führt; fällt alles
+    /// weg, gilt die Vorgabe (sonst die erste geführte Reihe). Danach ein neues Modell.
+    /// </summary>
+    private void JahrWahlPruefen()
+    {
+        var gefuehrt = SichtbarerBestand.Where(w => w.Gefuehrt).Select(w => w.Reihe.Schluessel).ToList();
+        var wahl = _jahrWahl.Where(gefuehrt.Contains).ToList();
+        if (wahl.Count == 0)
+            wahl = KlimaReihenkatalog.VORGABE_JAHRESVERLAUF.Where(gefuehrt.Contains).ToList();
+        if (wahl.Count == 0 && gefuehrt.Count > 0) wahl.Add(gefuehrt[0]);
+        _jahrWahl = wahl.Count > 0 ? wahl : KlimaReihenkatalog.VORGABE_JAHRESVERLAUF;
+        ReihenbildBauen();
+    }
+
+    private void ReihenbildBauen()
+    {
+        var gewaehlt = _jahrWahl.Select(k => SichtbarerBestand.FirstOrDefault(w => w.Reihe.Schluessel == k && w.Gefuehrt))
+                                .Where(w => w is not null).Select(w => w!).ToList();
+        _modellReihen = gewaehlt.Count > 0 ? KlimaVorschaubild.Jahresverlauf(gewaehlt) : null;
+    }
+
+    private void JahrUmschalten(string schluessel)
+    {
+        KlimaReihenwerte? w = SichtbarerBestand.FirstOrDefault(x => x.Reihe.Schluessel == schluessel);
+        if (w is null || !w.Gefuehrt) return;
+        IReadOnlyList<string> neu = KlimaReihenkatalog.JahresverlaufKlick(_jahrWahl, schluessel, out string grund);
+        if (grund.Length > 0) return;
+        _jahrWahl = neu;
+        ReihenbildBauen();
     }
 }

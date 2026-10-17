@@ -290,13 +290,20 @@ namespace WindowsFormsApplication1
             SPALTE_I_DC_MAX, SPALTE_ANZAHL_MPPT, SPALTE_STRAENGE_JE_MPPT,
             SPALTE_ETA05, SPALTE_ETA10, SPALTE_ETA20, SPALTE_ETA30, SPALTE_ETA50,
             SPALTE_ETA100, SPALTE_ETA_EURO, SPALTE_ETA_MAX,
-            SPALTE_P_STANDBY, SPALTE_P_NACHT, SPALTE_KOSTEN,
+            // Welle KB-4: SPALTE_KOSTEN ist mit Schemaschritt 228 entfallen - der Kostensatz
+            // steht in der Satzvorlage (ID_KostenVorlageInvestition). Die DDL dieses Schritts
+            // bleibt, wie sie war; diese Liste fuehrt die Spalten der GEGENWART.
+            SPALTE_P_STANDBY, SPALTE_P_NACHT,
             SPALTE_SANDIA_PDCO, SPALTE_SANDIA_VDCO, SPALTE_SANDIA_PSO,
             SPALTE_SANDIA_C0, SPALTE_SANDIA_C1, SPALTE_SANDIA_C2, SPALTE_SANDIA_C3,
             SPALTE_HERKUNFT,
             // Schritt 70 (W6-B-10) - als LETZTE, weil ADD COLUMN im Bestand hinten
             // anhaengt und diese Liste die SCHEMAREIHENFOLGE beider Wege nennt.
-            SPALTE_I_SC_MAX
+            SPALTE_I_SC_MAX,
+            // Schritt 228 (Welle KB-4): der Verweis auf die Satzvorlage der Investition - wie an den
+            // acht Gewerken von KB-3 hinter allen Fachspalten (ADD COLUMN). Die Projektkopie zieht ihn
+            // mit (CopyFromStamm); der Import schreibt ihn nicht (WechselrichterStammCtrl.Importspalten).
+            KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION
         };
     }
 }

@@ -4,8 +4,9 @@
    .designer.cs (128 Z., 7 Kartenzeilen, 0 MessageBox).
 
    WOZU. Links die dem Projekt schon zugeordneten Ganglinien, rechts der
-   Katalog, dazwischen "◀" und "▶"; unter dem Katalog die vier Knoepfe der
-   Datenbankseite.
+   Katalog, dazwischen "◀" und "▶"; am gewaehlten Satz die Knopfleiste
+   Vergleichen..., Vergroessern, Speichern unter..., Schloss..., Loeschen,
+   Bearbeiten..., rechts Importieren... (siehe KatalogFuss).
 
    DER DIALOG SCHREIBT NICHTS AN DER ZUORDNUNG - woertlich wie der Vorlaeufer.
    Er pflegt die GETEILTE Liste; geschrieben wird beim Aufrufer (Form_Start bzw.
@@ -151,8 +152,8 @@
     }
 
     @* Stufe 4 der Katalogauswahl (Konzept 4.2, 4.9): K = Kopf- und Fussleiste des Katalogs
-       (Formathinweis als Infoknopf im Kopf; Speichern unter, Schloss, Loeschen, Bearbeiten
-       links, Importieren rechts im Fuss), S = Detailzeile mit der Ganglinie. Beide Listen
+       (Formathinweis als Infoknopf im Kopf; Vergleichen, Vergroessern, Speichern unter, Schloss,
+       Loeschen, Bearbeiten links, Importieren rechts im Fuss), S = Detailzeile mit der Ganglinie. Beide Listen
        fuehren eine Mehrfachwahl und je Zeile einen Stift. *@
     <Zweispaltenauswahl Dialogname="Stromganglinie" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
                         KatalogZeile="@((int)EPOS.UI.Bausteine.Katalogliste.ZEILENHOEHE_ZEILENWAHL)"
@@ -234,6 +235,13 @@
         </KatalogKopf>
 
         <KatalogFuss>
+            @* VERGLEICHEN… (KA-E-19) steht vorn: zwei oder mehr angekreuzte Saetze im Bereich des gewaehlten Satzes
+               nebeneinander - beim Projektsatz die angekreuzten Projektzeilen mit Jahresarbeit, Spitze und
+               Vollbenutzungsstunden, sonst die angekreuzten Katalogsaetze mit den Spalten des Katalogs; unter zwei
+               gesperrt. Ankreuzen waehlt nicht (KA-E-17). *@
+            <button type="button" class="epos-knopf epos-knopf--vergleichen"
+                    title="@Resource.AUSWAHL_BTN_VERGLEICHEN_HINWEIS"
+                    disabled="@(VergleichsZahl < 2)" @onclick="BeiVergleichen">@Resource.AUSWAHL_BTN_VERGLEICHEN</button>
             @* VERGROESSERN (UeS1) bleibt: Mit der Knopfleiste am Satz entfaellt der Knopf des Bausteins; die
                Ganglinie des gewaehlten Satzes - auch eines ungesperrten Katalogsatzes, dessen Bearbeiten… die
                Verwaltung oeffnet - steht weiter als Ueberlagerung ueber dem ganzen Dialog. *@
@@ -251,7 +259,7 @@
             @* DIE KNOPFLEISTE AM GEWAEHLTEN SATZ (AW3b): Schloss… und Loeschen nur auf Katalogsaetze - beim
                Projektsatz weich gesperrt mit dem Grund „Katalogsatz waehlen"; Bearbeiten… je Satzart (Projektsatz:
                die Ganglinie in der Ueberlagerung zur Ansicht; Katalogsatz: ungesperrt die Verwaltung ohne Vorwahl,
-               gesperrt die Ansicht) - dasselbe wie der Stift der Zeile. Einen Vergleich fuehrt der Dialog nicht. *@
+               gesperrt die Ansicht) - dasselbe wie der Stift der Zeile. *@
             <Katalogschloss @ref="_katalogschloss" Weg="@Schloss" Zeile="@_katalogZeile"
                             Sperrgrund="@KatalogSperrgrund"
                             JaText="@JaText" NeinText="@NeinText"
@@ -791,13 +799,11 @@
         return Task.CompletedTask;
     }
 
-    private async Task BeiWahlGeaendert(Auswahlbereich bereich)
-    {
-        if (bereich != Auswahlbereich.Projekt || _projektWahl.Zuletzt is not string s) return;
-        if (!_projektWahl.IstGewaehlt(s)) return;
-        GanglinienProjektZeile? zeile = Zeilen.FirstOrDefault(z => Projektschluessel(z) == s);
-        if (zeile is not null && zeile != _projektZeile) await ProjektZeileWaehlen(zeile);
-    }
+    /// <summary>
+    /// Ein Kästchen hat geschaltet: Der Wirt zeichnet neu, die Sperren seiner Bereichsknöpfe folgen der Wahl. Die
+    /// gewählte Zeile bleibt — Ankreuzen wählt nicht (KA‑E‑17), die Zeile wählt allein der Klick in die Zeile.
+    /// </summary>
+    private void BeiWahlGeaendert(Auswahlbereich bereich) { }
 
     private void BeiKatalogKaestchen(IReadOnlyList<string> gewaehlt)
     {
@@ -898,7 +904,42 @@
         _projektZeile = zeile;
         _katalogZeile = null;
         _katalogGewaehlt = "";
-        return GrafikLaden(new GanglinienWahl(false, zeile.GanglinieId, zeile.Bezeichner));
+        return GrafikLaden(WahlZu(zeile));
+    }
+
+    /// <summary>Die Ganglinie einer Projektzeile (über ihren Katalogeintrag).</summary>
+    private static GanglinienWahl WahlZu(GanglinienProjektZeile zeile)
+        => new(false, zeile.GanglinieId, zeile.Bezeichner);
+
+    // --- Vergleichen… (KA-E-19) -------------------------------------------------------
+
+    /// <summary>Wie viele Sätze „Vergleichen…" im Bereich des gewählten Satzes vergleichen würde.</summary>
+    private int VergleichsZahl => SatzArt == Satzmarke.Projektsatz ? ProjektZiele().Count : KatalogZiele().Count;
+
+    /// <summary>
+    /// „Vergleichen…" — zwei oder mehr Sätze nebeneinander im Bereich des gewählten Satzes: beim Projektsatz die
+    /// angekreuzten Zuordnungen mit Jahresarbeit, Spitze und Vollbenutzungsstunden (dieselben Kennzahlen wie die
+    /// Grafik, <c>Katalogliste.VergleichenWerte</c>), sonst die angekreuzten Katalogsätze mit den Spalten des Katalogs.
+    /// </summary>
+    private async Task BeiVergleichen()
+    {
+        if (_katalogliste is null) return;
+        if (SatzArt != Satzmarke.Projektsatz)
+        {
+            List<Katalogfilterzeile> ziele = KatalogZiele();
+            if (ziele.Count >= 2) _katalogliste.Vergleichen(ziele.Select(z => z.Schluessel).ToList());
+            return;
+        }
+        var (saetze, grund) = await Ganglinienvergleich.SaetzeAsync(ProjektZiele(), z => z.Bezeichner, WahlZu, Kennzahlen,
+            (_, k) =>
+            {
+                var werte = new List<(string Beschriftung, string Wert)>();
+                Ganglinienvergleich.Kennzahlen(werte, k, Einheit, LabelJahresarbeit, LabelSpitze, LabelVollbenutzung,
+                                               EinheitKw, EinheitStunden);
+                return werte;
+            });
+        _satzFehler = grund;
+        if (saetze.Count >= 2) _katalogliste.VergleichenWerte(saetze);
     }
 
     private Task KatalogZeileWaehlen(string bezeichner)

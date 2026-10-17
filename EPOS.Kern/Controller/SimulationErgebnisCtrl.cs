@@ -102,6 +102,26 @@ namespace WindowsFormsApplication1
             public double KaeltestromStufeMwh;
 
             /// <summary>
+            /// K6b: der Strom der dezentralen (Split-)Deckung [MWh/a] — die ganze Split-Reihe
+            /// (<c>SimulationControl.Kaeltestrom_Dezentral_stuendlich</c>), der Posten „Kühlung dezentral“ der
+            /// Strombilanz; 0 ohne Split-Zeile.
+            /// </summary>
+            public double KaeltestromDezentralMwh;
+
+            /// <summary>
+            /// K6b: der Teil von <see cref="KaeltestromDezentralMwh"/>, der durch die Stufenrechnung läuft und damit in
+            /// <see cref="KaeltestromStufeMwh"/> steht (<c>Kaeltestrom_Dezentral_Stufenrechnung_stuendlich</c>) — er wird
+            /// vom Posten „Kältestrom“ abgezogen, damit nichts doppelt zählt. Der Rest läuft über eigene Zähler.
+            /// </summary>
+            public double KaeltestromDezentralStufeMwh;
+
+            /// <summary>K6b: der Kältestrom der Kälteerzeuger in der Stufenrechnung [MWh/a] — ohne den Split-Anteil.</summary>
+            public double KaeltestromErzeugerStufeMwh => KaeltestromStufeMwh - KaeltestromDezentralStufeMwh;
+
+            /// <summary>K6b: der Split-Strom, der über eigene Zähler neben der Stufenrechnung läuft [MWh/a].</summary>
+            public double KaeltestromDezentralEigenerZaehlerMwh => KaeltestromDezentralMwh - KaeltestromDezentralStufeMwh;
+
+            /// <summary>
             /// Die GEDECKTE Strommenge [MWh/a]: Photovoltaik, BHKW und die
             /// Speicherentladung — der Zähler des Strom-Rings.
             /// </summary>
@@ -215,6 +235,10 @@ namespace WindowsFormsApplication1
             // STROMBEDARF_GESAMT. Der Kältestrom mit eigenem Zähler (E34) läuft neben der
             // Stufenrechnung und bleibt draußen. Ohne Kälte + 0,0: bitgleich.
             u.KaeltestromStufeMwh = KaeltestromStufeMwh(sim);
+            // K6b: der Posten „Kühlung dezentral“ - die ganze Split-Reihe, und ihr Anteil in der Stufenrechnung. Ohne
+            // Split-Zeile bleiben beide Reihen null und die Felder 0; der Nenner bleibt, wie er war.
+            u.KaeltestromDezentralMwh = ReiheMwh(sim.Kaeltestrom_Dezentral_stuendlich);
+            u.KaeltestromDezentralStufeMwh = ReiheMwh(sim.Kaeltestrom_Dezentral_Stufenrechnung_stuendlich);
             u.StrombedarfMitEigenverbrauchMwh = u.StrombedarfGesamtMwh
                                               + u.WpStromverbrauchMwh
                                               + u.HeizstabStromverbrauchMwh
@@ -256,6 +280,15 @@ namespace WindowsFormsApplication1
         /// Der Kältestrom der Stufenrechnung [MWh/a] (E29 #536, N6) —
         /// <c>SimulationControl.Kaeltestrom_Stufenrechnung_stuendlich</c>, 0 ohne Kälte.
         /// </summary>
+        /// <summary>K6b: die Jahressumme einer Stundenreihe [kWh] als [MWh]; 0 ohne Reihe.</summary>
+        private static double ReiheMwh(double[] reihe)
+        {
+            double summe = 0.0;
+            if (reihe == null) return summe;
+            foreach (double k in reihe) summe += k;
+            return summe / 1000.0;
+        }
+
         private static double KaeltestromStufeMwh(SimulationControl sim)
         {
             double summe = 0.0;
@@ -351,6 +384,32 @@ namespace WindowsFormsApplication1
             public double StromverbrauchMwh;
             public double HeizstabStromverbrauchMwh;
             public double WaermeproduktionMwh;
+
+            /// <summary>
+            /// Die Wärme der Heizstäbe [MWh/a]. Der Heizstab gibt so viel Wärme ab, wie er Strom
+            /// aufnimmt (<see cref="Jahresarbeitszahl"/>); <see cref="WaermeproduktionMwh"/> enthält sie nicht.
+            /// </summary>
+            public double HeizstabWaermeproduktionMwh => HeizstabStromverbrauchMwh;
+
+            /// <summary>
+            /// Quellwärme aus der Kaskade [MWh/a] — was ein Booster aus dem Puffer eines anderen
+            /// Erzeugers bezieht; in <see cref="WaermeproduktionMwh"/> enthalten
+            /// (<c>SimulationWaermepumpe.QuellwaermeKaskadeKwh</c>).
+            /// </summary>
+            public double QuellwaermeKaskadeMwh;
+
+            /// <summary>
+            /// Der GEDECKTE Wärmebedarf [MWh/a] — der Eigenanteil der Wärmepumpe samt Heizstab
+            /// (<see cref="SimulationRunner.EigenanteilWpMwh"/>), aus dem auch
+            /// <see cref="DeckungProzent"/> und <see cref="RestwaermeMwh"/> folgen.
+            /// </summary>
+            public double GedecktMwh;
+
+            /// <summary>
+            /// Dieselbe Deckung je Kanal [MWh/a], Index nach <see cref="Kanal"/>: Direktdeckung,
+            /// zugerechnete Speicherentladung und Heizstab des Kanals.
+            /// </summary>
+            public double[] GedecktKanalMwh = new double[Kanal.ANZAHL];
 
             /// <summary>
             /// Die Jahresarbeitszahl der Wärmepumpe allein [–] = <see cref="WaermeproduktionMwh"/> ÷
@@ -449,6 +508,9 @@ namespace WindowsFormsApplication1
             e.RestwaermeMwh = SimulationRunner.RestNachEigenanteil(e.StufeneingangMwh, eigen);
             e.DeckungProzent = SimulationRunner.DeckungProzent(
                 eigen, wb != null ? wb.Waermebedarf_Gesamt : 0.0);
+            e.GedecktMwh = eigen;
+            e.GedecktKanalMwh = KanalMwh(SimulationRunner.Summiere(
+                wp.Direktdeckung_Kanal, wp.Speicherentladung_Kanal, wp.Heizstab_Kanal));
 
             e.BivalenzpunktVorhanden = wp.Bivalenzpunkt != -100;
             e.Bivalenzpunkt = wp.Bivalenzpunkt;
@@ -456,6 +518,7 @@ namespace WindowsFormsApplication1
             e.StromverbrauchMwh = wp.WpStrombedarfGesamtKwh / 1000.0;
             e.HeizstabStromverbrauchMwh = wp.HeizstabGesamtKwh / 1000.0;
             e.WaermeproduktionMwh = wp.WpWaermeproduktionGesamtKwh / 1000.0;
+            e.QuellwaermeKaskadeMwh = wp.QuellwaermeKaskadeKwh / 1000.0;
 
             // UB-E4 (FK 7.1): die Betriebsbereiche - dieselbe Abbildung wie das gespeicherte Ergebnis (SimulationRunner).
             e.Bereiche = BereicheDerWaermepumpe(wp);
@@ -592,6 +655,25 @@ namespace WindowsFormsApplication1
         {
             public double DeckungProzent;
             public double StufeneingangMwh;
+
+            /// <summary>
+            /// Kommt beim Kessel der ganze Projektwärmebedarf an? Dann rechnet er in derselben
+            /// Stufe wie die übrigen Erzeuger, und der Reiter nennt den Stufeneingang
+            /// „Gesamtwärmebedarf“; sonst ist er der Rest nach den vorgelagerten Erzeugern.
+            /// </summary>
+            public bool StufeneingangIstGesamtbedarf;
+
+            /// <summary>
+            /// Der GEDECKTE Wärmebedarf [MWh/a] — der Eigenanteil der Kessel
+            /// (<see cref="SimulationRunner.EigenanteilKesselMwh"/>).
+            /// </summary>
+            public double GedecktMwh;
+
+            /// <summary>
+            /// Dieselbe Deckung je Kanal [MWh/a], Index nach <see cref="Kanal"/>: Direktdeckung
+            /// und zugerechnete Speicherentladung des Kanals.
+            /// </summary>
+            public double[] GedecktKanalMwh = new double[Kanal.ANZAHL];
             public double RestwaermeMwh;
             public double WaermeproduktionMwh;
             public double StrombedarfMwh;
@@ -756,6 +838,12 @@ namespace WindowsFormsApplication1
         /// <para><b>W11-B19 behoben:</b> Der Vorläufer setzte <c>tb_Koks</c> ZWEIMAL mit
         /// demselben Wert (:4418 und :4425). Ein DTO-Feld gibt es nur einmal.</para>
         /// </summary>
+        /// <summary>
+        /// Gleichheitsrand zwischen Stufeneingang und Projektwärmebedarf [MWh/a] — die halbe
+        /// letzte Anzeigestelle: Beide sind Summen derselben Stundenreihe, nur getrennt gebildet.
+        /// </summary>
+        private const double STUFENEINGANG_GLEICH_MWH = 0.005;
+
         public static HeizkesselErgebnis Heizkessel(SimulationControl sim, SimulationWaermebedarf wb)
         {
             if (sim == null || !sim.bSimulationKessel) return null;
@@ -765,9 +853,14 @@ namespace WindowsFormsApplication1
 
             double eigen = SimulationRunner.EigenanteilKesselMwh(spk);
             e.StufeneingangMwh = spk.WaermebedarfGesamtMwh;
+            e.StufeneingangIstGesamtbedarf = wb != null && wb.Waermebedarf_Gesamt > 0 &&
+                Math.Abs(e.StufeneingangMwh - wb.Waermebedarf_Gesamt) < STUFENEINGANG_GLEICH_MWH;
             e.RestwaermeMwh = SimulationRunner.RestNachEigenanteil(e.StufeneingangMwh, eigen);
             e.DeckungProzent = SimulationRunner.DeckungProzent(
                 eigen, wb != null ? wb.Waermebedarf_Gesamt : 0.0);
+            e.GedecktMwh = eigen;
+            e.GedecktKanalMwh = KanalMwh(SimulationRunner.Summiere(
+                spk.Direktdeckung_Kanal, spk.Speicherentladung_Kanal));
 
             e.WaermeproduktionMwh = spk.SWaermeSpkMwh;
             e.StrombedarfMwh = spk.StrombedarfGesamtKwh / 1000.0;
@@ -1150,6 +1243,20 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die PV-Abregelung des Laufs [MWh/a] an der Einspeisegrenze (PV3, EB-1): nach der Speicherladung (Laden vor
+        /// Abregeln), im Flottenpfad die Abregelung der Flotte — dieselbe Menge wie die Laufreihe <c>PV_ABREGELUNG</c>.
+        /// 0 ohne Photovoltaik oder ohne Grenze. Eine Formel für Reiter, Ergebniszeile und Referenzlauf.
+        /// </summary>
+        internal static double PvAbregelungMwh(SimulationControl sim)
+        {
+            if (sim == null || !sim.bSimulationPV || sim.simulation_pv == null) return 0.0;
+            if (sim.Speicherflottennetzbilanz != null)
+                return sim.Speicherflottennetzbilanz.PvAbregelungKwh / 1000.0;
+            sim.PvEinspeisungAufteilen(out _, out double[] abregelungKw);
+            return SimulationPV.ViertelstundenKwh(abregelungKw) / 1000.0;
+        }
+
+        /// <summary>
         /// Die BHKW-Einspeisung des Laufs [MWh/a] (E29 #536): mit Speicherflotte deren
         /// BHKW-Einspeisung (Entscheid E29‑Q3 a, dieselbe Quelle wie die Reihe
         /// <c>BHKW_UEBERSCHUSS</c>), sonst die Viertelstundenbilanz des Laufs
@@ -1259,6 +1366,73 @@ namespace WindowsFormsApplication1
                 r.Reststrombedarf[h] = Math.Max(0.0, bed - erz);
                 r.Einspeisung[h] = einspeisung != null && h < einspeisung.Length ? einspeisung[h] : 0.0;
             }
+            return r;
+        }
+
+        /// <summary>
+        /// Die zwei Netzreihen des Stromgangs [kW je Viertelstunde] — Netzbezug und Netzeinspeisung, wie der
+        /// Lauf sie schon führt (Welle RZ, zuschaltbare Reihen). Keine neue Rechnung, nur das Lesen.
+        /// </summary>
+        public sealed class Netzreihen
+        {
+            /// <summary>Der Netzbezug: der Reststrom des Laufs (<see cref="SimulationControl.Rest_Strombedarf_viertelstuendlich"/>),
+            /// dieselbe Reihe wie <c>ZeitreihenSatz.NETZBEZUG</c> und die Bezugsspitze.</summary>
+            public double[] NetzbezugKw;
+
+            /// <summary>
+            /// Die Netzeinspeisung: mit Speicherflotte deren gesamte Netzeinspeisung, sonst die PV-Einspeisung nach
+            /// Speicherladung und Einspeisegrenze (<see cref="SimulationControl.PvEinspeisungAufteilen"/>) plus die
+            /// BHKW-Einspeisung der Viertelstundenbilanz; <c>null</c>, wenn der Lauf weder Photovoltaik noch BHKW noch
+            /// Flotte führt.
+            /// </summary>
+            public double[] EinspeisungKw;
+
+            /// <summary>
+            /// EB-2: der BHKW-Anteil der Netzeinspeisung („Stromeinspeisung BHKW“) — mit Speicherflotte deren
+            /// BHKW-Einspeisung, sonst die BHKW-Einspeisung der Viertelstundenbilanz; dieselbe Menge wie
+            /// <see cref="BhkwEinspeisungMwh"/>. Ein Anteil von <see cref="EinspeisungKw"/>, keine weitere Einspeisung.
+            /// <c>null</c> ohne BHKW.
+            /// </summary>
+            public double[] BhkwEinspeisungKw;
+
+            /// <summary>
+            /// EB-2: die PV-Abregelung an der Einspeisegrenze — mit Speicherflotte deren Abregelung, sonst die Abregelung
+            /// nach der Speicherladung (<see cref="SimulationControl.PvEinspeisungAufteilen"/>); dieselbe Menge wie
+            /// <see cref="PvAbregelungMwh"/>. Nicht Teil der Einspeisung. <c>null</c> ohne Photovoltaik.
+            /// </summary>
+            public double[] PvAbregelungKw;
+        }
+
+        /// <summary>Die Netzreihen des Laufs (<see cref="Netzreihen"/>); <c>null</c> ohne Lauf.</summary>
+        public static Netzreihen NetzreihenViertelstunde(SimulationControl sim)
+        {
+            if (sim == null) return null;
+            var r = new Netzreihen { NetzbezugKw = sim.Rest_Strombedarf_viertelstuendlich };
+            if (sim.Speicherflottennetzbilanz != null)
+            {
+                SpeicherFlottenNetzbilanz f = sim.Speicherflottennetzbilanz;
+                r.EinspeisungKw = f.NetzeinspeisungKw;
+                r.BhkwEinspeisungKw = sim.bSimulationBHKW ? f.BhkwNetzeinspeisungKw : null;
+                r.PvAbregelungKw = sim.bSimulationPV ? f.PvAbregelungKw : null;
+                return r;
+            }
+
+            double[] pv = null;
+            if (sim.bSimulationPV && sim.simulation_pv != null)
+            {
+                sim.PvEinspeisungAufteilen(out pv, out double[] abregelung);
+                r.PvAbregelungKw = abregelung;
+            }
+            double[] bhkw = sim.bSimulationBHKW ? sim.BhkwEinspeisung_viertelstuendlich : null;
+            r.BhkwEinspeisungKw = bhkw;
+            if (pv == null && bhkw == null) return r;
+
+            int n = Math.Max(pv?.Length ?? 0, bhkw?.Length ?? 0);
+            var summe = new double[n];
+            for (int q = 0; q < n; q++)
+                summe[q] = (pv != null && q < pv.Length ? pv[q] : 0.0)
+                         + (bhkw != null && q < bhkw.Length ? bhkw[q] : 0.0);
+            r.EinspeisungKw = summe;
             return r;
         }
 
@@ -1412,18 +1586,16 @@ namespace WindowsFormsApplication1
             if (sim.Speicherflottennetzbilanz != null)
             {
                 e.UeberschussMwh = sim.Speicherflottennetzbilanz.PvNetzeinspeisungKwh / 1000.0;
-                e.AbregelungMwh = sim.Speicherflottennetzbilanz.PvAbregelungKwh / 1000.0;
             }
             else
             {
                 // Der Reiter zeigt den Überschuss VOR der Speicherladung (die Einspeisung mit
-                // Speicher steht im Reiter „Stromspeicher"). PV3: die Abregelung je Viertelstunde
-                // nach der Speicherladung (Laden vor Abregeln) - dieselbe Aufteilung wie
-                // SimulationRunner.
+                // Speicher steht im Reiter „Stromspeicher").
                 e.UeberschussMwh = pv.Ueberschuss.Sum() / 1000.0;
-                sim.PvEinspeisungAufteilen(out _, out double[] abregelungKw);
-                e.AbregelungMwh = SimulationPV.ViertelstundenKwh(abregelungKw) / 1000.0;
             }
+            // PV3: die Abregelung je Viertelstunde nach der Speicherladung (Laden vor Abregeln) - EINE Formel für
+            // Reiter, Ergebniszeile (SimulationRunner, EB-1) und Referenzlauf.
+            e.AbregelungMwh = PvAbregelungMwh(sim);
             e.AbregelungProzent = erzeugungKwh > 0 ? e.AbregelungMwh * 1000.0 / erzeugungKwh * 100.0 : 0.0;
             e.DeckungProzent = bedarfKwh > 0 ? genutztKwh * 100.0 / bedarfKwh : 0.0;
             // E28 (#535, E28‑Q3 a): dieselbe Klemme wie die Ergebniszeile (SimulationRunner).
@@ -1555,6 +1727,82 @@ namespace WindowsFormsApplication1
 
             /// <summary>Die Kälteerzeuger in Kaskadenreihenfolge — die Zeilen der Kälteerzeugertabelle (#32).</summary>
             public List<KaelteerzeugerZeile> Erzeuger = new List<KaelteerzeugerZeile>();
+
+            // ---- Kältebedarf ohne Gebäudemodell und dezentrale Deckung (K6b; Konzept Kältebedarf 4.3) --------------
+            // Nur mit Split-Zeile (MitDezentral) belegt: Ohne sie bleiben die Felder leer, und jede Anzeige bleibt, wie sie war.
+
+            /// <summary>Hat der Lauf eine dezentral (Split) gedeckte Zeile gerechnet?</summary>
+            public bool MitDezentral;
+
+            /// <summary>Davon aus Kältebedarfsprofilen [MWh] (zentral und dezentral).</summary>
+            public double ProfilMwh;
+
+            /// <summary>Dezentral (Split) gedeckte Kälte [MWh].</summary>
+            public double DezentralMwh;
+
+            /// <summary>Spitze der dezentral gedeckten Kälte [kW].</summary>
+            public double DezentralSpitzeKw;
+
+            /// <summary>Strom der dezentralen Deckung [MWh].</summary>
+            public double DezentralStromMwh;
+
+            /// <summary>Jahres-EER der dezentralen Deckung; <c>null</c> ohne Strom.</summary>
+            public double? JahresEerDezentral;
+
+            /// <summary>Der Netzbezug des Split-Stroms [MWh] — anteilig bzw. über eigene Zähler (E34).</summary>
+            public double DezentralNetzbezugMwh;
+
+            /// <summary>Der Split-Strom mit eigenem Zähler neben der Stufenrechnung [MWh].</summary>
+            public double DezentralEigenerZaehlerMwh;
+
+            /// <summary>Hauptzahl „Deckungsgrad Kälte“ [%] nach <see cref="KaelteDeckungsgrad.Hauptzahl"/>; <c>null</c> ohne Split.</summary>
+            public double? DeckungsgradGesamtProzent;
+
+            /// <summary>„davon Kältefolge“ [%] nach <see cref="KaelteDeckungsgrad.DavonKaeltefolge"/>; <c>null</c> ohne Split.</summary>
+            public double? DeckungsgradKaeltefolgeProzent;
+
+            /// <summary>Die Kältelast der Gebäude je Stunde [kWh] — nur mit Split (Kältelastbild, CSV).</summary>
+            public double[] GebaeudeKwh = new double[0];
+
+            /// <summary>Die Kältelast der Lastgänge je Stunde [kWh] — nur mit Split.</summary>
+            public double[] ExternKwh = new double[0];
+
+            /// <summary>Die Kältelast der Kältebedarfsprofile je Stunde [kWh] — nur mit Split.</summary>
+            public double[] ProfilKwh = new double[0];
+
+            /// <summary>Die dezentral gedeckte Kälte je Stunde [kWh] — nur mit Split.</summary>
+            public double[] DezentralKwh = new double[0];
+
+            /// <summary>Die Split-Zeilen in Buchungsfolge (Lastgänge, dann Profile).</summary>
+            public List<KaelteDezentralZeile> Dezentral = new List<KaelteDezentralZeile>();
+        }
+
+        /// <summary>K6b: eine dezentral (Split) gedeckte Zeile des Laufs — Mengen in MWh.</summary>
+        public sealed class KaelteDezentralZeile
+        {
+            /// <summary>Bezeichner der Zeile.</summary>
+            public string Bezeichner = "";
+
+            /// <summary><c>true</c> = Kältebedarfsprofil, <c>false</c> = Lastgang.</summary>
+            public bool Profil;
+
+            /// <summary>Kälte der Zeile [MWh].</summary>
+            public double KaelteMwh;
+
+            /// <summary>Strom der Zeile [MWh].</summary>
+            public double StromMwh;
+
+            /// <summary>Jahres-EER; <c>null</c> ohne Strom.</summary>
+            public double? Eer;
+
+            /// <summary>Netzbezug ihres Stroms [MWh].</summary>
+            public double NetzbezugMwh;
+
+            /// <summary>Abweichender Kühlträger (<c>energy_carrier.id</c>); 0 = Stromträger des Projekts.</summary>
+            public int Kuehltraeger;
+
+            /// <summary>Läuft ihr Strom über einen eigenen Zähler neben der Stufenrechnung (E34)?</summary>
+            public bool EigenerZaehler;
         }
 
         /// <summary>Eine Zeile der Kälteerzeugertabelle (Stufe KU2 Welle 3) — Mengen in MWh.</summary>
@@ -1619,12 +1867,23 @@ namespace WindowsFormsApplication1
         public static List<CsvSpalte> KaelteCsvSpalten(KaelteErgebnis k)
         {
             if (k == null) return new List<CsvSpalte>();
-            return new List<CsvSpalte>
+            var spalten = new List<CsvSpalte>
             {
                 new CsvSpalte(MyResource.Resource.CHART_CSV_KAELTELAST, k.KaeltebedarfKwh),
                 new CsvSpalte(MyResource.Resource.CHART_CSV_KAELTELAST + " " + Warnkriterien.KanalAnzeige(Kanal.KUEHLUNG),
                               k.KaeltebedarfKwh)
             };
+            // K6b: mit Split-Zeile die Herkunft (Gebäude, Lastgänge, Profile) und die dezentrale Deckung - dieselben
+            // Reihen wie das Bild; ohne Split bleibt die Tabelle, wie sie war.
+            if (k.MitDezentral)
+            {
+                string kopf = MyResource.Resource.CHART_CSV_KAELTELAST + " ";
+                spalten.Add(new CsvSpalte(kopf + MyResource.Resource.CHART_LEGENDE_KAELTE_GEBAEUDE, k.GebaeudeKwh));
+                spalten.Add(new CsvSpalte(kopf + MyResource.Resource.CHART_LEGENDE_KAELTE_LASTGANG, k.ExternKwh));
+                spalten.Add(new CsvSpalte(kopf + MyResource.Resource.CHART_LEGENDE_KAELTE_PROFIL, k.ProfilKwh));
+                spalten.Add(new CsvSpalte(kopf + MyResource.Resource.CHART_LEGENDE_KAELTE_DEZENTRAL, k.DezentralKwh));
+            }
+            return spalten;
         }
 
         /// <summary>
@@ -1661,7 +1920,8 @@ namespace WindowsFormsApplication1
                 e.DeckungsgradProzent = k.Kaeltebedarf_Gesamt > 0
                     ? SimulationRunner.DeckungKuehlkanalProzent(k) : (double?)null;
                 e.KaeltestromMwh = kaskade.StromGesamtKwh / 1000.0;
-                e.EerJahreswert = kaskade.StromGesamtKwh > 0 ? kaskade.EerJahreswert : (double?)null;
+                // 8d: dieselbe Formel wie kaelte.jaz im Kennzahlenkatalog (KaelteDeckungsgrad.Jahresarbeitszahl).
+                e.EerJahreswert = KaelteDeckungsgrad.Jahresarbeitszahl(kaskade.DeckungGesamtKwh / 1000.0, kaskade.StromGesamtKwh / 1000.0);
                 double netz = 0.0;
                 foreach (Kaelteerzeuger z in kaskade.Erzeuger)
                 {
@@ -1699,7 +1959,52 @@ namespace WindowsFormsApplication1
                 }
                 e.KaeltestromNetzbezugMwh = netz / 1000.0;
             }
+
+            // K6b (Konzept Kältebedarf 4.3): die dezentrale (Split-)Deckung - nur mit Split-Zeile.
+            if (k.MitDezentral) DezentralUebernehmen(k, e);
             return e;
+        }
+
+        /// <summary>
+        /// K6b: die Split-Seite des Laufs in die Kälteseite — Mengen, Reihen, Zeilen und der Deckungsgrad nach
+        /// <see cref="KaelteDeckungsgrad"/>. Gerufen nur mit Split-Zeile.
+        /// </summary>
+        private static void DezentralUebernehmen(SimulationKaeltebedarf k, KaelteErgebnis e)
+        {
+            e.MitDezentral = true;
+            e.ProfilMwh = k.Kaeltebedarf_Profil_Gesamt;
+            e.DezentralMwh = k.Kaeltebedarf_Dezentral_Gesamt;
+            e.DezentralSpitzeKw = k.Kaelte_Dezentral_Max;
+            e.DezentralStromMwh = k.Strom_Dezentral_Gesamt;
+            e.JahresEerDezentral = k.Strom_Dezentral_Gesamt > 0 ? k.Jahres_EER_Dezentral : (double?)null;
+            e.GebaeudeKwh = (double[])k.Kaeltebedarf_Gebaeude.Clone();
+            e.ExternKwh = (double[])k.Kaeltebedarf_Extern.Clone();
+            e.ProfilKwh = (double[])k.Kaeltebedarf_Profil.Clone();
+            e.DezentralKwh = (double[])k.Kaeltebedarf_Dezentral.Clone();
+
+            double netz = 0.0, zaehler = 0.0;
+            foreach (SimulationKaeltebedarf.DezentraleZeile z in k.DezentraleZeilen)
+            {
+                netz += z.NetzbezugKwh;
+                if (z.NebenDerStufenrechnung) zaehler += z.StromKwh;
+                e.Dezentral.Add(new KaelteDezentralZeile
+                {
+                    Bezeichner = z.Bezeichner ?? "",
+                    Profil = z.Profil,
+                    KaelteMwh = z.KaelteKwh / 1000.0,
+                    StromMwh = z.StromKwh / 1000.0,
+                    Eer = z.StromKwh > 0 ? z.JahresEer : (double?)null,
+                    NetzbezugMwh = z.NetzbezugKwh / 1000.0,
+                    Kuehltraeger = z.Kuehltraeger,
+                    EigenerZaehler = z.NebenDerStufenrechnung,
+                });
+            }
+            e.DezentralNetzbezugMwh = netz / 1000.0;
+            e.DezentralEigenerZaehlerMwh = zaehler / 1000.0;
+
+            // Frage 1 (Plan K6): die Hauptzahl mit der Split-Deckung, darunter die Kältefolge am zentral gedeckten Bedarf.
+            e.DeckungsgradGesamtProzent = KaelteDeckungsgrad.Hauptzahl(e.KaeltedeckungMwh, e.DezentralMwh, e.KaeltebedarfMwh);
+            e.DeckungsgradKaeltefolgeProzent = KaelteDeckungsgrad.DavonKaeltefolge(e.KaeltedeckungMwh, e.DezentralMwh, e.KaeltebedarfMwh);
         }
 
         /// <summary>

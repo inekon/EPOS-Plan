@@ -69,13 +69,15 @@
    uebrigen vier Ueberlagerungen - gegen das Blatt (siehe unten); das haelt die Ebenen
    flach (Gebaeudekatalog -> "Brauchwasser..." -> Zapfprofil statt einer dritten
    verschachtelten Ueberlagerung, Befund #572) und zeigt zugleich nur EINE Fussleiste. *@
-@if (!ZapfprofilOffen)
+@if (!BlattOffen)
 {
     <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
         @if (!string.IsNullOrEmpty(TitelText))
         {
             <h1 class="epos-dialog-titel">@TitelText</h1>
         }
+        @* BP-1: Der Titel steht EINMAL; daneben die Hinweiszeile je Art im Dialogkopf wie bei den Erzeugern. *@
+        <span class="epos-dialog-kontext" title="@Kopfband">@Kopfband</span>
         <InfoKnopf Schluessel="@HilfeSchluessel" />
         @* H13: der Rechenweg der Auspraegung (Monatswerte mal Wochenprofil, Skalierung auf die
            Jahressumme, monatsweise Normierung) steht im Kopf der Detailzeile (SatzKopfKnoepfe). *@
@@ -84,8 +86,6 @@
             <Schliesskreuz Geschlossen="Abbrechen" />
         }
     </div>
-
-    <p class="epos-kontextzeile">@KopfbandText</p>
 
     @if (_meldung.Length > 0)
     {
@@ -141,6 +141,9 @@
                         SatzUebernommen="BeiSatzUebernommen" SatzVerworfen="BeiSatzVerworfen"
                         SatzZusammenfassung="@Zusammenfassung()"
                         KnopfleisteAmSatz="true"
+                        VergleichProjekt="@(VergleichsparameterProjekt is null ? null : VergleichProjektsatz)"
+                        VergleichKatalog="@VergleichKatalogsatz"
+                        KatalogGewaehlt="@_katalogzeile?.Schluessel" VergleichAbgelehnt="BeiSchlossAbgelehnt"
                         ProjektGewaehlt="@(_gewaehlt is null ? null : Projektschluessel(_gewaehlt))"
                         ProjektGewaehltChanged="BeiProjektTastenwahl"
                         @ref="_zweispalten">
@@ -182,7 +185,7 @@
                               @onclick="() => ProjektZeileKlick(context)">@context.Name</span>
                     </TemplateColumn>
                     <PropertyColumn TGridItem="BedarfsProfilZeile" TProp="string"
-                                    Property="@(z => SummeText(z.Summe))" Title="@Resource.BPF_ZF_JAHRESSUMME" />
+                                    Property="@(z => SummeText(z.Summe))" Title="@(Resource.BPF_ZF_JAHRESSUMME + " [" + _einheit.Text + "]")" />
                     @* UeS2: der Stift je Projektzeile - die Zuordnung in der Satz-Ueberlagerung. *@
                     <TemplateColumn TGridItem="BedarfsProfilZeile" Class="epos-spalte-stift">
                         <HeaderTemplate>
@@ -203,22 +206,19 @@
             <Katalogliste @ref="_katalogliste" Profil="@Katalogprofil" Zeilen="@_katalog"
                           Filterstand="@_filterstand" Texte="@Filtertexte"
                           Gewaehlt="@_katalogGewaehlt" GewaehltChanged="KatalogzeileWaehlen"
-                          Vergleichsparameter="@Vergleichsparameter"
+                          Vergleichsparameter="@_vergleichsgabe"
                           ZeileIstWahl="true" Kaestchen="true" Gewaehlte="@_katalogKaestchen"
                           GewaehlteChanged="BeiKatalogKaestchen"
                           Bearbeiten="BeiKatalogStift" BearbeitenHinweis="@Resource.AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS" />
         </Rechts>
 
         <KatalogFuss>
-            @if (TypProfilGaben is not null)
-            {
-                <button type="button" class="epos-knopf epos-knopf--typ-aendern" title="@Resource.BPF_HINW_TYP_AENDERN"
-                        @onclick="() => _typProfilOffen = true">@BtnTypAendernText</button>
-            }
-            @* DIE KNOPFLEISTE AM GEWAEHLTEN SATZ (AW3b): Schloss… und Loeschen nur auf Katalogsaetze - beim
-               Projektsatz weich gesperrt mit dem Grund „Katalogsatz waehlen"; Bearbeiten… je Satzart (Projekt-
-               satz: die Zuordnung in der Ueberlagerung, genau eine Zeile; Katalogsatz: der Katalogeditor
-               „DB ändern…", gesperrt nur lesend). Einen Vergleich fuehrt der Dialog nicht. *@
+            @* DIE KNOPFLEISTE AM GEWAEHLTEN SATZ (AW3b, BP-2 in der Reihenfolge der Erzeuger): Vergleichen… (fuehrt
+               die Zweispaltenauswahl als ersten Knopf, KA-E-24: angekreuzte Projektzeilen und Katalogsaetze zusammen),
+               Schloss setzen…, Loeschen, Bearbeiten…, Typ ändern…, rechts Neu…. Schloss… und Loeschen nur auf
+               Katalogsaetze - beim Projektsatz weich gesperrt mit dem Grund „Katalogsatz waehlen"; Bearbeiten… je
+               Satzart (Projektsatz: die Zuordnung in der Ueberlagerung, genau eine Zeile; Katalogsatz: der
+               Katalogeditor, gesperrt nur lesend). *@
             <Katalogschloss @ref="_katalogschloss" Weg="@Schloss" Zeile="@_katalogzeile"
                             Sperrgrund="@KatalogSperrgrund"
                             JaText="@JaText" NeinText="@NeinText"
@@ -244,6 +244,11 @@
                 <button type="button" class="epos-knopf epos-knopf--bearbeiten-katalog epos-knopf--db-aendern"
                         title="@(KatalogZiele().Count > 0 && KatalogZiele().All(z => z.Geschuetzt) ? Resource.ADM_SCHLOSS_ERST_AUFHEBEN : Resource.BPF_HINW_DB_AENDERN)"
                         disabled="@(KatalogZiele().Count == 0)" @onclick="BeiKatalogBearbeiten">@Resource.AUSWAHL_BTN_BEARBEITEN</button>
+            }
+            @if (TypProfilGaben is not null)
+            {
+                <button type="button" class="epos-knopf epos-knopf--typ-aendern" title="@Resource.BPF_HINW_TYP_AENDERN"
+                        @onclick="() => _typProfilOffen = true">@BtnTypAendernText</button>
             }
         </KatalogFuss>
 
@@ -295,6 +300,33 @@
        den Stand beim Oeffnen wieder her. Geschrieben wird mit dem OK des Dialogs. *@
     @if (_gewaehlt is not null)
     {
+    @* KBP-3a (Konzept Kaeltebedarfsprofile 3): die Eingabeart der Kaeltezeile ueber den Eingabefeldern - Jahressumme
+       mit Vorlage (Vorgabe), Monatswerte, Wochenprofil, Typtage (KBP-4b; nur Kaelte, sobald die Datenbank sie fuehrt,
+       sonst benannt gesperrt). Arbeitsstand bis OK. *@
+    @* KBP-5a (Entscheid OE-5): dieselbe Wahl fuer Prozesswaerme und Brauchwasser. Rechnet das Brauchwasser mit dem
+       Zapfprofilgenerator, gilt die Eingabeart nicht - statt der Wahl steht der Grund. *@
+    @if (_eingabeartArbeit is not null && Zapfprofilweg)
+    {
+        <Herleitungszeile Text="@Resource.KBP_HINW_EINGABEART_ZAPFPROFIL" />
+    }
+    @if (EingabeartAngeboten)
+    {
+        <Gruppenkopf Titel="@Resource.KBP_GRUPPE_EINGABEART">
+            <KindInhalt>
+                <Formularraster>
+                    <KindInhalt>
+                <Auswahlfeld Bezeichnung="@Resource.KBP_LBL_EINGABEART" Eintraege="@EingabeartEintraege"
+                             Auswahl="@EingabeartIndex" AuswahlChanged="EingabeartGewaehlt"
+                             GesperrteEintraege="@EingabeartGesperrt" GesperrtHinweis="@TyptagSperrgrund" />
+                    </KindInhalt>
+                </Formularraster>
+                <Herleitungszeile Text="@Resource.KBP_HINW_EINGABEART" />
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
+    @if (VerbrauchSichtbar)
+    {
     <Gruppenkopf Titel="@GruppeVerbrauch">
         <KindInhalt>
             <Formularraster>
@@ -310,6 +342,39 @@
                     @onclick="BeiUebernehmen">@BtnUebernehmenText</button>
         </KindInhalt>
     </Gruppenkopf>
+    }
+
+    @if (EingabeartAngeboten && _eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_MONAT && _monateArbeit is not null)
+    {
+        <Gruppenkopf Titel="@Resource.KBP_GRUPPE_MONATE">
+            <KindInhalt>
+                <KaelteMonatswerteEditor Werte="@_monateArbeit" Prozent="@_monateProzent"
+                                         ProzentChanged="MonatseinheitGewaehlt" JahressummeMwh="@AktuelleSummeMwh"
+                                         Geaendert="() => _monateBearbeitet = true" />
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
+    @if (EingabeartAngeboten && _eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_WOCHE && _wocheArbeit is not null)
+    {
+        <Gruppenkopf Titel="@Resource.KBP_GRUPPE_WOCHE">
+            <KindInhalt>
+                <KaelteWochenprofilEditor Werte="@_wocheArbeit" DreiTage="@_wocheDreiTage"
+                                          DreiTageChanged="d => _wocheDreiTage = d"
+                                          Geaendert="() => _wocheBearbeitet = true" />
+            </KindInhalt>
+        </Gruppenkopf>
+    }
+
+    @if (EingabeartAngeboten && _eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_TYPTAG && _typtageArbeit is not null)
+    {
+        <Gruppenkopf Titel="@Resource.KBP_GRUPPE_TYPTAGE">
+            <KindInhalt>
+                <KaelteTyptagEditor Werte="@_typtageArbeit" Name="@(_gewaehlt?.Name ?? "")" Vorbelegt="@_typtageVorbelegt"
+                                    Geaendert="() => _typtageBearbeitet = true" />
+            </KindInhalt>
+        </Gruppenkopf>
+    }
 
     @if (MitTemperatur)
     {
@@ -346,20 +411,28 @@
         </Gruppenkopf>
     }
 
-    @if (Betriebskalender is not null)
-    {
-        <Gruppenkopf Titel="@GruppeKalender">
-            <KindInhalt>
-                <Formularraster>
-                    <KindInhalt>
-                <Auswahlfeld Bezeichnung="@LabelKalender" Eintraege="@KalenderWahlEintraege"
-                             Auswahl="@(_gewaehlt?.KalenderId ?? 0)" AuswahlChanged="KalenderGewaehlt" />
-                    </KindInhalt>
-                </Formularraster>
-                <Herleitungszeile Text="@HinweisKalender" />
-            </KindInhalt>
-        </Gruppenkopf>
     }
+
+    @* KBP-1 (Konzept Kaeltebedarfsprofile 7.1): der Baustein Betriebskalenderwahl - Wahl, Knopf
+       „Betriebskalender…" (das BLATT unten) und der Hinweis zur Lage; er steht auch ohne markierte
+       Projektzeile da und sagt dann, dass Kalender je Zeile gelten. *@
+    @if (KalenderListe is not null)
+    {
+        <Betriebskalenderwahl Eintraege="@KalenderListe" Auswahl="@_gewaehlt?.KalenderId"
+                              AuswahlChanged="KalenderGewaehlt" ZeileGewaehlt="@(_gewaehlt is not null)"
+                              Oeffnen="@(BetriebskalenderGaben is null ? default(EventCallback) : EventCallback.Factory.Create(this, KalenderblattOeffnen))"
+                              Titel="@GruppeKalender" Bezeichnung="@LabelKalender"
+                              TextOhneKalender="@TextOhneKalender" HinweisNormal="@HinweisKalender" />
+        @* KBP-5b (Entscheid 16.10.2026): Traegt die Zeile eine Vorlage mit Nutzungstagen nach Norm, nennt die Zeile die
+           Normtage und den Normkalender, den die Uebernahme vorgewaehlt hat; die Wahl darueber bleibt frei. *@
+        @if (HinweisNormkalender is string normhinweis)
+        {
+            <Herleitungszeile Text="@normhinweis" />
+        }
+    }
+
+    @if (_gewaehlt is not null)
+    {
 
     @* K5b (Konzept Kaeltebedarf 3.4, Anwenderentscheid: wie der Waermepumpendialog alle Einzelheiten in der EINEN
        Bearbeiten-Ueberlagerung): die Feldgruppe „Deckung" der Kaeltezeile als Klappgruppe unter den Projektfeldern.
@@ -367,7 +440,20 @@
        Abbrechen verwirft. *@
     @if (DeckungSichtbar && _deckungArbeit is not null)
     {
-        <DeckungsartFelder Daten="@_deckungArbeit" Stromtraeger="@Stromtraeger" Klappbar="true" />
+        <DeckungsartFelder Daten="@_deckungArbeit" Stromtraeger="@Stromtraeger" ProjektStromtraeger="@ProjektStromtraeger" Klappbar="true" />
+    }
+
+    @* KBP-3b (Konzept Kaeltebedarfsprofile 5): die Kennzahlenzeile und die vier Blaetter der markierten Kaeltezeile.
+       Gerechnet wird im Kern ueber den Weg der Huelle (KaelteGrafik) mit dem Arbeitsstand: Jahressummen, Kalender und
+       Monatswerte/Wochenprofil, auch die gerade in der Ueberlagerung bearbeiteten (GrafikZeile); das Ergebnis bleibt
+       liegen, bis sich dieser Stand aendert (eine Referenz je Rechenstand). *@
+    @if (GrafikSichtbar)
+    {
+        <Gruppenkopf Titel="@Resource.KBP_GRAFIK_GRUPPE">
+            <KindInhalt>
+                <KaelteProfilgrafik Bilder="@GrafikBilder()" />
+            </KindInhalt>
+        </Gruppenkopf>
     }
     }
     </div>
@@ -435,7 +521,7 @@
        Blattwechsel tauscht den Inhalt DIESES Dialogs (siehe @if oben) gegen das Blatt;
        derselbe ZapfprofilDialog, dieselbe Geschlossen-Behandlung wie zuvor (OK uebernimmt,
        Abbrechen verwirft, beide fuehren zurueck) - nur eine Ebene flacher. *@
-    <Blattwechsel Offen="@ZapfprofilOffen" WirtTitel="@KopfbandText"
+    <Blattwechsel Offen="@ZapfprofilOffen" WirtTitel="@Wirttitel"
                   Titel="@ZapfprofilEinstiegTexte.Titel" ZusatzKlasse="epos-blatt--breit"
                   Zurueck="ZapfprofilZurueck">
         <KindInhalt>
@@ -443,6 +529,21 @@
             {
                 <ZapfprofilDialog @attributes="_zapfprofilGaben" TitelAnzeigen="false"
                                   Geschlossen="ZapfprofilGeschlossen" />
+            }
+        </KindInhalt>
+    </Blattwechsel>
+
+    @* --- Das BLATT „Betriebskalender…" (KBP-1, Konzept Kaeltebedarfsprofile 7.1) ---
+       derselbe Tausch wie beim Zapfprofil: keine dritte Ueberlagerungsebene. OK (oder ein Schreiben im Blatt)
+       liest die Liste neu und waehlt einen neu angelegten Kalender fuer die markierte Zeile vor; danach geht die
+       Satz-Ueberlagerung mit ihrem Stand beim Oeffnen (Merker) wieder auf. *@
+    <Blattwechsel Offen="@KalenderblattOffen" WirtTitel="@Wirttitel"
+                  Titel="@Resource.BKAL_TITEL" Zurueck="KalenderblattZurueck">
+        <KindInhalt>
+            @if (_kalenderGaben is not null)
+            {
+                <BetriebskalenderDialog @attributes="_kalenderGaben" TitelAnzeigen="false"
+                                        Geschlossen="KalenderblattGeschlossen" />
             }
         </KindInhalt>
     </Blattwechsel>
@@ -492,6 +593,13 @@
     /// </summary>
     [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Vergleichsparameter { get; set; }
 
+    /// <summary>
+    /// BP-2 (KA-E-24): die Kennwerte einer PROJEKTZEILE für „Vergleichen…" — dieselbe Parameterliste wie
+    /// <see cref="Vergleichsparameter"/>, aus der Projektkopie samt den Werten der Zuordnung (Kern-Controller,
+    /// gereicht von der Hülle). Ohne diese Gabe vergleicht „Vergleichen…" nur Katalogsätze.
+    /// </summary>
+    [Parameter] public Func<BedarfsProfilZeile, IReadOnlyList<Parameterwert>>? VergleichsparameterProjekt { get; set; }
+
 
     /// <summary>Die Beschriftungen der Katalogliste — sie füllen sich selbst aus <c>MyResource</c>.</summary>
     [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
@@ -539,6 +647,15 @@
     /// </summary>
     [Parameter] public IReadOnlyList<(int Id, string Text)>? Betriebskalender { get; set; }
 
+    /// <summary>
+    /// KBP-1: liest die Kalender nach dem Blatt „Betriebskalender…“ neu (<c>BetriebskalenderHuelle.WahlEinhaengen</c>);
+    /// <c>null</c> = die Liste bleibt, wie sie hereinkam.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<(int Id, string Text)>>? BetriebskalenderNeuLesen { get; set; }
+
+    /// <summary>KBP-1: der Parametersatz des <see cref="BetriebskalenderDialog"/> im Blatt; <c>null</c> = kein Knopf.</summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? BetriebskalenderGaben { get; set; }
+
     /// <summary><c>BPF_GRP_KALENDER</c></summary>
     [Parameter] public string GruppeKalender { get; set; } = Resource.BPF_GRP_KALENDER;
 
@@ -551,6 +668,9 @@
     /// <summary>Die Stromträger des Projekts (Id, Anzeigetext) — der Kühlträger der Feldgruppe „Deckung“ (K5b).</summary>
     [Parameter] public IReadOnlyList<(int Id, string Text)> Stromtraeger { get; set; } = Array.Empty<(int, string)>();
 
+    /// <summary>K6b: der Stromträger des Projekts — der eigene Zähler wirkt nur bei abweichendem Kühlträger (E34).</summary>
+    [Parameter] public int ProjektStromtraeger { get; set; }
+
     /// <summary>Die Ablehnung „Split ohne EER“ (<c>DECK_MSG_OHNE_EER</c>); der Bezeichner der Zeile folgt in Klammern.</summary>
     [Parameter] public string MeldungDeckungOhneEer { get; set; } = Resource.DECK_MSG_OHNE_EER;
 
@@ -562,6 +682,111 @@
 
     /// <summary><c>KAELTE_ART_HINWEIS</c></summary>
     [Parameter] public string HinweisKaelteArt { get; set; } = Resource.KAELTE_ART_HINWEIS;
+
+    /// <summary>
+    /// KBP-3b (Konzept Kältebedarfsprofile 5): Kennzahlen und die vier Bilder der markierten Kältezeile — der Weg der
+    /// Hülle in den Kern (<c>KaelteprofilgrafikCtrl</c>) mit der markierten Zeile und allen Zeilen des Dialogs;
+    /// <c>null</c> = keine Grafik (andere Bedarfsarten).
+    /// </summary>
+    [Parameter] public Func<BedarfsProfilZeile, IReadOnlyList<BedarfsProfilZeile>, WindowsFormsApplication1.Kaelteprofilbilder?>? KaelteGrafik { get; set; }
+
+    /// <summary>
+    /// KBP-4b: Führt die Datenbank die Typtage (Schemaschritt <c>KaeltetyptagSchema</c>)? Nur dann ist die Eingabeart
+    /// Typtage bei Kältezeilen wählbar; sonst benannt gesperrt. Gesetzt von der Hülle.
+    /// </summary>
+    [Parameter] public bool TyptageVerfuegbar { get; set; }
+
+    /// <summary>Steht die Grafik der markierten Kältezeile in der Bearbeiten-Überlagerung?</summary>
+    private bool GrafikSichtbar => Art == BedarfsArt.Kaelte && KaelteGrafik is not null && _gewaehlt is not null;
+
+    private WindowsFormsApplication1.Kaelteprofilbilder? _grafik;
+    private string? _grafikStand;
+
+    /// <summary>
+    /// Die Bilder zum gegenwärtigen Arbeitsstand: neu gerechnet nur, wenn sich markierte Zeile, Namen, Jahressummen,
+    /// Kalender, Monatswerte oder Wochenprofil geändert haben — sonst dieselbe Referenz (DiagrammSvg baut seinen Baum nur
+    /// bei neuer Referenz neu und behält Zoom, Zeigerstelle und abgewählte Reihen). Die markierte Zeile geht als
+    /// <see cref="GrafikZeile"/> hinein. Ein Fehler des Wegs zeigt „kein Profil“.
+    /// </summary>
+    private WindowsFormsApplication1.Kaelteprofilbilder? GrafikBilder()
+    {
+        if (KaelteGrafik is null || _gewaehlt is null) return null;
+        BedarfsProfilZeile markiert = GrafikZeile(_gewaehlt);
+        var zeilen = Zeilen.Select(z => ReferenceEquals(z, _gewaehlt) ? markiert : z).ToList();
+        var inv = System.Globalization.CultureInfo.InvariantCulture;
+        var stand = new System.Text.StringBuilder();
+        stand.Append(Zeilen.IndexOf(_gewaehlt)).Append('|');
+        foreach (BedarfsProfilZeile z in zeilen)
+        {
+            stand.Append(z.Name).Append('\u001f').Append(z.Summe.ToString("R", inv))
+                 .Append('\u001f').Append(z.KalenderId).Append('\u001f').Append(z.ProfilGeaendert)
+                 .Append('\u001f').Append(z.Eingabeart).Append('\u001f').Append(z.TyptageGeaendert);
+            if (z.ProfilGeaendert)
+                foreach (double w in (z.Monatsanteile ?? Array.Empty<double>()).Concat(z.Wochenprofil ?? Array.Empty<double>()))
+                    stand.Append(';').Append(w.ToString("R", inv));
+            if (z.TyptageGeaendert && z.Typtage is not null) TyptageSchluessel(stand, z.Typtage);
+            stand.Append('\u001e');
+        }
+        string schluessel = stand.ToString();
+        if (schluessel == _grafikStand) return _grafik;
+        _grafikStand = schluessel;
+        try { _grafik = KaelteGrafik(markiert, zeilen); }
+        catch (Exception) { _grafik = null; }
+        return _grafik;
+    }
+
+    /// <summary>KBP-4b: Typtage und Matrix in den Schlüssel des Rechenstands.</summary>
+    private static void TyptageSchluessel(System.Text.StringBuilder stand, WindowsFormsApplication1.KaeltetyptagEingabe e)
+    {
+        var inv = System.Globalization.CultureInfo.InvariantCulture;
+        foreach (WindowsFormsApplication1.Kaeltetyptag t in e.Typtage)
+        {
+            stand.Append('|').Append(t.Nr).Append(':').Append(t.Bezeichner).Append(':').Append(t.Tagesmenge.ToString("R", inv));
+            foreach (double f in t.Stunden ?? Array.Empty<double>()) stand.Append(',').Append(f.ToString("R", inv));
+        }
+        foreach (int nr in e.Matrix) stand.Append('#').Append(nr);
+    }
+
+    /// <summary>
+    /// Nacharbeit KBP-3b: die markierte Zeile, wie die Grafik sie rechnet — mit den Monatswerten und dem Wochenprofil,
+    /// die in der Überlagerung gerade bearbeitet und gültig sind (dieselben Prüfungen wie das OK der Überlagerung).
+    /// Ohne solche Eingabe die Zeile selbst; sonst eine Kopie, die Zeile bleibt unangetastet.
+    /// </summary>
+    private BedarfsProfilZeile GrafikZeile(BedarfsProfilZeile z)
+    {
+        double[]? monate = null, woche = null;
+        double summe = z.Summe;
+        if (_eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_MONAT && _monateArbeit is not null &&
+            _monateBearbeitet && WindowsFormsApplication1.Kaelteprofileingabe.PruefeMonate(_monateArbeit, _monateProzent) is null)
+        {
+            if (_monateProzent) monate = _monateArbeit.Select(a => a ?? 0.0).ToArray();
+            else (summe, monate) = WindowsFormsApplication1.Kaelteprofileingabe.AusMwh(_monateArbeit);
+        }
+        if (_eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_WOCHE && _wocheArbeit is not null &&
+            _wocheBearbeitet && WindowsFormsApplication1.Kaelteprofileingabe.PruefeWoche(_wocheArbeit) is null)
+            woche = (double[])_wocheArbeit.Clone();
+        // KBP-4b: die Typtage des Arbeitsstands, sobald sie bearbeitet (oder vorbelegt) und zulässig sind.
+        WindowsFormsApplication1.KaeltetyptagEingabe? typtage = null;
+        if (_eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_TYPTAG && _typtageArbeit is not null &&
+            _typtageBearbeitet && _typtageArbeit.Pruefen() is null)
+            typtage = WindowsFormsApplication1.Kaeltetyptageingabe.Kopie(_typtageArbeit);
+        // Der Wechsel von oder zu Typtagen ändert den Rechenweg der Zeile; die übrigen Wechsel rechnen gleich.
+        bool artAnders = _eingabeartArbeit is not null &&
+                         (_eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_TYPTAG) !=
+                         (z.Eingabeart == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_TYPTAG);
+        if (monate is null && woche is null && typtage is null && !artAnders) return z;
+        return new BedarfsProfilZeile
+        {
+            IdZ = z.IdZ, IdStamm = z.IdStamm, Name = z.Name, Summe = summe, KalenderId = z.KalenderId, KaelteArt = z.KaelteArt,
+            Eingabeart = _eingabeartArbeit ?? z.Eingabeart, ProfilGeaendert = monate is not null || woche is not null || z.ProfilGeaendert,
+            Monatsanteile = monate ?? (z.ProfilGeaendert ? z.Monatsanteile : null),
+            Wochenprofil = woche ?? (z.ProfilGeaendert ? z.Wochenprofil : null),
+            Typtage = typtage ?? z.Typtage, TyptageGeaendert = typtage is not null || z.TyptageGeaendert
+        };
+    }
+
+    /// <summary>Die Bilder des letzten Rechenstands — Prüfhilfe für die Tests.</summary>
+    public WindowsFormsApplication1.Kaelteprofilbilder? Grafikstand => _grafik;
 
     /// <summary><c>BPF_LBL_KALENDER</c></summary>
     [Parameter] public string LabelKalender { get; set; } = Resource.BPF_LBL_KALENDER;
@@ -694,7 +919,10 @@
     // --- Texte -----------------------------------------------------------------
 
     [Parameter] public string TitelText { get; set; } = "Prozesswärme";
-    [Parameter] public string KopfbandText { get; set; } = "Prozesswärme";
+    /// <summary>
+    /// BP-1: die Hinweiszeile im Dialogkopf, wie bei den Erzeugern; leer = die Zeile der Art (<c>BPF_KOPFBAND_*</c>).
+    /// </summary>
+    [Parameter] public string KopfbandText { get; set; } = "";
     [Parameter] public string LabelProjektliste { get; set; } = "Ausgewählte Prozesse im Projekt";
     [Parameter] public string LabelKatalog { get; set; } = "Datenbank Prozesswärme";
     [Parameter] public string GruppeInfo { get; set; } = "Profil";
@@ -881,6 +1109,13 @@
     public string Jahresverbrauch => _jahresverbrauchMWh is null
         ? "" : _einheit.Formatiere(_einheit.AusMWh(_jahresverbrauchMWh.Value));
 
+    /// <summary>
+    /// Der Jahresverbrauch in der Satzzeile (Projekt- wie Katalogsatz) — Format der Jahreswerte
+    /// (BP-3: MWh ganzzahlig mit Tausendertrennung). Der Lesewert der Überlagerung bleibt genau.
+    /// </summary>
+    public string JahresverbrauchSatz => _jahresverbrauchMWh is null
+        ? "" : _einheit.FormatiereJahreswert(_einheit.AusMWh(_jahresverbrauchMWh.Value));
+
     /// <summary>Die gewählte Anzeigeeinheit — Prüfhilfe für die Tests.</summary>
     public Energieeinheit Anzeigeeinheit => _einheit;
 
@@ -896,10 +1131,26 @@
     /// <summary>Steht das Zapfprofil? Prüfhilfe für die Tests.</summary>
     public bool ZapfprofilOffen => _zapfprofilGaben is not null;
 
+    /// <summary>Steht das Blatt „Betriebskalender…“? Prüfhilfe für die Tests.</summary>
+    public bool KalenderblattOffen => _kalenderGaben is not null;
+
+    /// <summary>Steht ein Blatt (Zapfprofil oder Betriebskalender)? Dann zeichnet der Dialog seinen Haupt-Inhalt nicht.</summary>
+    private bool BlattOffen => ZapfprofilOffen || KalenderblattOffen;
+
+    /// <summary>Die Kalender der Wahl — nach dem Blatt die neu gelesenen, sonst die Gabe der Hülle. Prüfhilfe für die Tests.</summary>
+    public IReadOnlyList<(int Id, string Text)>? KalenderListe => _kalenderGelesen ?? Betriebskalender;
+
+    private IReadOnlyDictionary<string, object>? _kalenderGaben;
+    private IReadOnlyList<(int Id, string Text)>? _kalenderGelesen;
+    private IReadOnlyList<(int Id, string Text)>? _kalenderVorher;
+    private bool _satzWiederOeffnen;
+    private bool _satzRueckkehr;
+
     /// <summary>Der gewählte Rechenweg des Brauchwassers — Prüfhilfe für die Tests.</summary>
     public ZapfprofilWeg Rechenweg => _rechenweg;
 
-    private string Gesamtsumme => _einheit.Formatiere(_einheit.AusMWh(Summe()));
+    /// <summary>Die Summe im Listenkopf — Format der Jahreswerte (BP-3: MWh ganzzahlig mit Tausendertrennung).</summary>
+    public string Gesamtsumme => _einheit.FormatiereJahreswert(_einheit.AusMWh(Summe()));
 
     private string Loeschfrage
     {
@@ -943,6 +1194,12 @@
 
     protected override void OnParametersSet()
     {
+        // KT-9: die Vergleichsgabe der Katalogliste gefangen (einmal je Gabe des Wirtes gebaut).
+        if (!ReferenceEquals(_vergleichsgabeQuelle, Vergleichsparameter))
+        {
+            _vergleichsgabeQuelle = Vergleichsparameter;
+            _vergleichsgabe = Katalogladung.Vergleichsgabe(Vergleichsparameter, VergleichsfehlerMelden);
+        }
         // Der Kopf der WAHLSPALTE kommt weiter ueber den eigenen Text des Wirtes.
         Filtertexte.SpalteWahl = SpalteWahl;
         if (TitelDbAendern.Length == 0) TitelDbAendern = BtnDbAendernText;
@@ -997,7 +1254,7 @@
             TypLesen = () => _infoTyp,
             BeschreibungLesen = () => _infoBeschreibung,
             JahresverbrauchLesen = () => Jahresverbrauch,
-            SummeLesen = () => Gesamtsumme,
+            SummeLesen = () => _einheit.Formatiere(_einheit.AusMWh(Summe())),
             BedarfsartLesen = () => Art.ToString(),
 
             RechenwegLesen = () => MitRechenweg ? (int)_rechenweg : null,
@@ -1013,6 +1270,11 @@
             KaelteArtSetzen = KaelteArtGewaehlt,
             KaelteArtEintraege = () => KiMaskenanmeldung.Eintraege(
                 KaelteArtEintraege, e => e.Id, e => e.Text),
+            // KBP-3a: die Eingabeart der markierten Kaeltezeile - derselbe Weg wie die Wahl der Ueberlagerung.
+            EingabeartLesen = () => EingabeartIndex,
+            EingabeartSetzen = EingabeartGewaehlt,
+            EingabeartEintraege = () => KiMaskenanmeldung.Eintraege(
+                EingabeartEintraege.Where(e => !EingabeartGesperrt.Contains(e.Id)).ToList(), e => e.Id, e => e.Text),
             KalenderEintraege = () => KiMaskenanmeldung.Eintraege(
                 KalenderWahlEintraege, e => e.Id, e => e.Text),
             // K5b: die Feldgruppe „Deckung" der markierten Kaeltezeile - dieselben Felder wie die Ueberlagerung.
@@ -1094,7 +1356,18 @@
             return;
         }
 
-        if (_fokusZurueckNoetig && !ZapfprofilOffen)
+        if (_satzWiederOeffnen && !BlattOffen && _zweispalten is not null)
+        {
+            // KBP-1: Die Satz-Ueberlagerung stand vor dem Kalenderblatt offen; sie geht mit ihrem Merker wieder auf.
+            _satzWiederOeffnen = false;
+            _fokusZurueckNoetig = false;
+            _satzRueckkehr = _satzGross;
+            _satzGross = false;
+            await _zweispalten.SatzUeberlagerungOeffnen();
+            return;
+        }
+
+        if (_fokusZurueckNoetig && !BlattOffen)
         {
             // Ohne Rollen: Den Rollstand stellt der Blattwechsel wieder her; ein Fokus auf die
             // (hohe) Wurzel liesse den Browser ihn sonst neu bestimmen.
@@ -1196,7 +1469,7 @@
         get
         {
             var l = new List<(int, string)> { (0, TextOhneKalender) };
-            if (Betriebskalender is not null) l.AddRange(Betriebskalender);
+            if (KalenderListe is not null) l.AddRange(KalenderListe);
             return l;
         }
     }
@@ -1398,13 +1671,11 @@
         return BeiKatalogStift(ziele.FirstOrDefault(z => !z.Geschuetzt) ?? ziele[0]);
     }
 
-    private void BeiWahlGeaendert(Auswahlbereich bereich)
-    {
-        if (bereich != Auswahlbereich.Projekt || _projektWahl.Zuletzt is not string s) return;
-        if (!_projektWahl.IstGewaehlt(s)) return;
-        BedarfsProfilZeile? zeile = Zeilen.FirstOrDefault(z => Projektschluessel(z) == s);
-        if (zeile is not null && zeile != _gewaehlt) ProjektzeileWaehlen(zeile);
-    }
+    /// <summary>
+    /// Ein Kästchen hat geschaltet: Der Wirt zeichnet neu, die Sperren seiner Bereichsknöpfe folgen der Wahl. Die
+    /// gewählte Zeile bleibt — Ankreuzen wählt nicht (KA‑E‑17), die Zeile wählt allein der Klick in die Zeile.
+    /// </summary>
+    private void BeiWahlGeaendert(Auswahlbereich bereich) { }
 
     private void BeiKatalogKaestchen(IReadOnlyList<string> gewaehlt)
     {
@@ -1412,13 +1683,71 @@
         _katalogWahl.Setzen(gewaehlt);
     }
 
+    // --- Vergleichen… (BP-2, KA-E-24 wie bei den Erzeugern) ----------------------------
+
+    /// <summary>KT-9: die Gabe des Wirtes, aus der <see cref="_vergleichsgabe"/> gebaut ist.</summary>
+    private Func<string, IReadOnlyList<Parameterwert>>? _vergleichsgabeQuelle;
+
+    /// <summary>KT-9: die gefangene Vergleichsgabe — wirft die Abfrage eines Satzes, nennt der Banner den Grund.</summary>
+    private Func<string, IReadOnlyList<Parameterwert>>? _vergleichsgabe;
+
+    /// <summary>KT-9: Der Grund einer geworfenen Vergleichsabfrage geht in den Banner des Dialogs.</summary>
+    private void VergleichsfehlerMelden(string grund)
+    {
+        Melden(grund, WarnStufe.Warnung);
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>
+    /// Die Kennwerte einer Projektzeile für „Vergleichen…" (KA-E-24): dieselbe Parameterliste wie die des
+    /// Katalogsatzes, aus der Projektkopie samt Jahressumme, Kalender, Temperaturen und Deckung der Zuordnung.
+    /// </summary>
+    private Vergleichssatz? VergleichProjektsatz(string schluessel)
+    {
+        BedarfsProfilZeile? z = Zeilen.FirstOrDefault(r => Projektschluessel(r) == schluessel);
+        if (z is null || VergleichsparameterProjekt is null) return null;
+        string grund = "";
+        IReadOnlyList<Parameterwert>? werte = Katalogladung.SatzDazu(() => VergleichsparameterProjekt(z), z.Name, ref grund);
+        if (grund.Length > 0) VergleichsfehlerMelden(grund);
+        return Vergleichssatz.AusParametern(Satzmarke.Projektsatz, z.Name, werte);
+    }
+
+    /// <summary>Die Kennwerte eines Katalogsatzes für „Vergleichen…" — die Parameterliste, ohne sie die Profilspalten.</summary>
+    private Vergleichssatz? VergleichKatalogsatz(string schluessel)
+    {
+        Katalogfilterzeile? k = _katalog.FirstOrDefault(z => z.Schluessel == schluessel);
+        if (k is null) return null;
+        return _vergleichsgabe is not null
+            ? Vergleichssatz.AusParametern(Satzmarke.Katalogsatz, k.Bezeichner, _vergleichsgabe(k.Bezeichner))
+            : Vergleichssatz.AusSpalten(Satzmarke.Katalogsatz, Katalogprofil, k);
+    }
+
+    /// <summary>Die Hinweiszeile im Kopf: die des Wirtes, sonst die der Art.</summary>
+    private string Kopfband => !string.IsNullOrEmpty(KopfbandText) ? KopfbandText : Art switch
+    {
+        BedarfsArt.Kaelte => Resource.BPF_KOPFBAND_KAELTE,
+        BedarfsArt.Stromverbraucher => Resource.BPF_KOPFBAND_STROM,
+        BedarfsArt.Brauchwasser => Resource.BPF_KOPFBAND_BW,
+        _ => Resource.BPF_KOPFBAND_PROZ
+    };
+
+    /// <summary>Der Titel des Dialogs für den Rückknopf der Blätter: der Titel, eingebettet (ohne Titel) der Name der Art.</summary>
+    private string Wirttitel => !string.IsNullOrEmpty(TitelText) ? TitelText : Art switch
+    {
+        BedarfsArt.Kaelte => Resource.BPF_TITEL_KAELTE,
+        BedarfsArt.Stromverbraucher => Resource.BPF_TITEL_STROM,
+        BedarfsArt.Brauchwasser => Resource.BPF_TITEL_BW,
+        _ => Resource.BPF_TITEL_PROZ
+    };
+
     private void KatalogKaestchenLeeren()
     {
         _katalogWahl.Leeren();
         _katalogKaestchen = new List<string>();
     }
 
-    private string SummeText(double mwh) => _einheit.Formatiere(_einheit.AusMWh(mwh));
+    /// <summary>Die Jahressumme einer Projektzeile in der Liste — Format der Jahreswerte (BP-3).</summary>
+    internal string SummeText(double mwh) => _einheit.FormatiereJahreswert(_einheit.AusMWh(mwh));
 
     /// <summary>Die Kenndaten der zugeklappten Zeile: Typ und Jahressumme, beim gesperrten Satz der Hinweis.</summary>
     private string? SatzKenndaten
@@ -1428,7 +1757,7 @@
             if (SatzArt == Satzmarke.Keiner) return null;
             var teile = new List<string>();
             if (_infoTyp.Length > 0) teile.Add(_infoTyp);
-            teile.Add(Jahresverbrauch);
+            teile.Add(JahresverbrauchSatz);
             if (_katalogzeile?.Geschuetzt == true) teile.Add(Resource.AUSWAHL_SATZ_NUR_LESEN);
             return string.Join(" · ", teile);
         }
@@ -1444,7 +1773,7 @@
         var l = new List<Satzangabe>();
         if (SatzArt == Satzmarke.Keiner) return l;
         if (_infoTyp.Length > 0) l.Add(new(Resource.BPF_ZF_TYP, _infoTyp));
-        l.Add(new(Resource.BPF_ZF_JAHRESSUMME, Jahresverbrauch));
+        l.Add(new(Resource.BPF_ZF_JAHRESSUMME, JahresverbrauchSatz));
         if (MitTemperatur && _infoTemperatur.Length > 0 && _infoTemperatur != TextOhneTemperatur)
             l.Add(new(Resource.AUSWAHL_ZF_VORLAUF_RUECKLAUF, _infoTemperatur));
         if (_gewaehlt is not null && Betriebskalender is not null)
@@ -1463,9 +1792,210 @@
     {
         _satzGross = true;
         _satzUeberlagerungFehler = null;
+        if (_satzRueckkehr)
+        {
+            // KBP-1: zurück vom Kalenderblatt - Merker, angefangene Eingaben und Deckung bleiben, wie sie waren.
+            _satzRueckkehr = false;
+            return;
+        }
         _merker = _gewaehlt is not null ? Satzmerker.Von(_gewaehlt) : null;
         if (_gewaehlt is not null) { _neuVorlauf = _gewaehlt.Vorlauf; _neuRuecklauf = _gewaehlt.Ruecklauf; }
         _deckungArbeit = DeckungSichtbar ? _gewaehlt!.Deckung!.Kopie() : null;
+        EingabeArbeitsstandSetzen();
+    }
+
+    // ---- KBP-3a: Eingabeart, Monatswerte und Wochenprofil der Kaeltezeile (Arbeitsstand bis OK) -----------------
+
+    private string? _eingabeartArbeit;
+    private double?[]? _monateArbeit;
+    private bool _monateProzent;
+    private bool _monateBearbeitet;
+    private double[]? _wocheArbeit;
+    private bool _wocheDreiTage;
+    private bool _wocheBearbeitet;
+    private WindowsFormsApplication1.KaeltetyptagEingabe? _typtageArbeit;
+    private bool _typtageBearbeitet;
+    private bool _typtageVorbelegt;
+
+    /// <summary>KBP-4b: der Arbeitsstand der Typtage in der Überlagerung (Prüfhilfe); <c>null</c> = keiner.</summary>
+    public WindowsFormsApplication1.KaeltetyptagEingabe? TyptageArbeitsstand => _typtageArbeit;
+
+    private static readonly string[] EINGABEARTEN =
+    {
+        WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_JAHR, WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_MONAT,
+        WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_WOCHE, WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_TYPTAG,
+    };
+
+    private static readonly IReadOnlyList<(int Id, string Text)> EingabeartEintraege = new[]
+    {
+        (0, Resource.KBP_EINGABE_JAHR), (1, Resource.KBP_EINGABE_MONAT),
+        (2, Resource.KBP_EINGABE_WOCHE), (3, Resource.KBP_EINGABE_TYPTAG),
+    };
+
+    /// <summary>
+    /// KBP-4b: Typtage gibt es für Kältezeilen, sobald die Datenbank sie führt (<see cref="TyptageVerfuegbar"/>); sonst
+    /// ausgegraut mit Grund, solange die aktuelle Zeile nicht schon so steht.
+    /// </summary>
+    private IReadOnlyCollection<int> EingabeartGesperrt
+        => TyptageAngeboten || _eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_TYPTAG
+            ? Array.Empty<int>() : new[] { 3 };
+
+    /// <summary>KBP-4b: Typtage sind wählbar — Kältezeile und Datenbank mit Typtagen.</summary>
+    private bool TyptageAngeboten => Art == BedarfsArt.Kaelte && TyptageVerfuegbar;
+
+    /// <summary>KBP-4b: der Grund der Sperre der Typtage.</summary>
+    private string TyptagSperrgrund => Art == BedarfsArt.Kaelte ? Resource.KBP_HINW_TYPTAG_FOLGT : Resource.KBP_HINW_TYPTAG_NUR_KAELTE;
+
+    private int? EingabeartIndex => _eingabeartArbeit is null ? null : Math.Max(0, Array.IndexOf(EINGABEARTEN, _eingabeartArbeit));
+
+    /// <summary>
+    /// KBP-5a: Die Wahl steht, wenn die Zeile eine Eingabeart führt (Kälte, Prozesswärme, Brauchwasser mit Projektkopie)
+    /// und das Brauchwasser nicht mit dem Zapfprofilgenerator rechnet — dort gilt die Eingabeart nicht.
+    /// </summary>
+    private bool EingabeartAngeboten => _eingabeartArbeit is not null && !Zapfprofilweg;
+
+    /// <summary>
+    /// KBP-5b: die Herleitungszeile am Kalender, wenn die markierte Zeile eine Vorlage mit Nutzungstagen nach Norm trägt
+    /// (<c>KBP_HINW_NORMKALENDER</c>: Normtage und Name des Normkalenders); sonst <c>null</c>. KBP-5c: Der Name ist der
+    /// tatsächliche der Zeile (<see cref="BedarfsProfilZeile.Normkalender"/>, mit Feiertagsland); ohne ihn der
+    /// bundesweite Name (<c>KBP_KALENDER_NORM_NAME</c> mit <c>KBP_KALENDER_NORM_BUNDESWEIT</c>).
+    /// </summary>
+    /// <remarks>KV8 (Entscheid des Anwenders vom 17.10.2026): Ohne gewählten Kalender rechnet die Zeile mit dem
+    /// Normkalender als Vorgabe — die Zeile sagt das sichtbar (<c>KBP_HINW_NORMKALENDER_VORGABE</c>), nichts still.</remarks>
+    public string? HinweisNormkalender
+        => _gewaehlt?.Normtage is int tage && tage > 0
+            ? !(_gewaehlt.KalenderId > 0)
+                ? string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.KBP_HINW_NORMKALENDER_VORGABE, tage)
+                : string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.KBP_HINW_NORMKALENDER, tage,
+                            string.IsNullOrWhiteSpace(_gewaehlt.Normkalender)
+                                ? string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.KBP_KALENDER_NORM_NAME,
+                                                tage, Resource.KBP_KALENDER_NORM_BUNDESWEIT)
+                                : _gewaehlt.Normkalender)
+            : null;
+
+    /// <summary>Die Jahressumme gilt als Eingabe nicht bei Monatswerten in MWh — dort ist sie die Summe der Monate.</summary>
+    private bool VerbrauchSichtbar => !(EingabeartAngeboten && _eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_MONAT && !_monateProzent);
+
+    /// <summary>Die Jahressumme der Zeile [MWh] samt angefangener Eingabe im Feld „neuer Wert“.</summary>
+    private double AktuelleSummeMwh => _neuerWert is double w && w >= 0 ? _einheit.NachMWh(w) : _gewaehlt?.Summe ?? 0.0;
+
+    /// <summary>Der Arbeitsstand der Überlagerung aus der Zeile: Monate in MWh (Vorlage · Summe), Woche als Kopie.</summary>
+    private void EingabeArbeitsstandSetzen()
+    {
+        _eingabeartArbeit = _gewaehlt?.Eingabeart;
+        _monateProzent = false;
+        _monateBearbeitet = false;
+        _wocheBearbeitet = false;
+        _typtageBearbeitet = false;
+        _typtageVorbelegt = false;
+        _typtageArbeit = null;
+        if (_eingabeartArbeit is null) { _monateArbeit = null; _wocheArbeit = null; return; }
+        // KBP-4b: die Typtage als Kopie (nur Kälte).
+        if (Art == BedarfsArt.Kaelte) _typtageArbeit = WindowsFormsApplication1.Kaeltetyptageingabe.Kopie(_gewaehlt!.Typtage);
+        _monateArbeit = WindowsFormsApplication1.Kaelteprofileingabe.NachMwh(
+            _gewaehlt!.Monatsanteile ?? new double[WindowsFormsApplication1.Kaelteprofileingabe.MONATE], _gewaehlt.Summe);
+        _wocheArbeit = (double[])(_gewaehlt.Wochenprofil ?? new double[WindowsFormsApplication1.Kaelteprofileingabe.WOCHE]).Clone();
+        _wocheDreiTage = WindowsFormsApplication1.Kaelteprofileingabe.WerktageGleich(_wocheArbeit);
+    }
+
+    private void EingabeArbeitsstandVerwerfen()
+    {
+        _eingabeartArbeit = null; _monateArbeit = null; _wocheArbeit = null; _typtageArbeit = null;
+        _monateBearbeitet = false; _wocheBearbeitet = false; _typtageBearbeitet = false; _typtageVorbelegt = false;
+    }
+
+    /// <summary>
+    /// Die Wahl der Eingabeart — in den Arbeitsstand. KBP-4b: Typtage nur, wenn angeboten; führt die Zeile noch keine,
+    /// belegt der erste Wechsel sie aus dem Wochenprofil vor (Werktag, Samstag, Sonn-/Feiertag als drei Typtage, in
+    /// allen Monaten gleich zugeordnet — <see cref="WindowsFormsApplication1.Kaeltetyptageingabe.AusWoche"/>).
+    /// </summary>
+    private void EingabeartGewaehlt(int? index)
+    {
+        if (_gewaehlt is null || !EingabeartAngeboten || index is not int i || i < 0 || i >= EINGABEARTEN.Length) return;
+        if (EINGABEARTEN[i] == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_TYPTAG &&
+            _eingabeartArbeit != WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_TYPTAG)
+        {
+            if (!TyptageAngeboten) return;
+            _typtageArbeit ??= new WindowsFormsApplication1.KaeltetyptagEingabe();
+            if (_typtageArbeit.Typtage.Count == 0)
+            {
+                double[]? woche = _wocheArbeit is not null && WindowsFormsApplication1.Kaelteprofileingabe.PruefeWoche(_wocheArbeit) is null
+                    ? _wocheArbeit : _gewaehlt.Wochenprofil;
+                _typtageArbeit = WindowsFormsApplication1.Kaeltetyptageingabe.AusWoche(
+                    woche, (Resource.KBP_TYPTAG_TAGESARTEN ?? "").Split(';'));
+                _typtageBearbeitet = true;
+                _typtageVorbelegt = true;
+            }
+        }
+        _eingabeartArbeit = EINGABEARTEN[i];
+    }
+
+    /// <summary>MWh ↔ %: die Werte werden umgerechnet (Bezug: Jahressumme der Zeile bzw. Summe der Monate).</summary>
+    private void MonatseinheitGewaehlt(bool prozent)
+    {
+        if (_monateArbeit is null || prozent == _monateProzent) return;
+        _monateArbeit = prozent
+            ? WindowsFormsApplication1.Kaelteprofileingabe.AusMwh(_monateArbeit).Anteile.Select(a => (double?)a).ToArray()
+            : WindowsFormsApplication1.Kaelteprofileingabe.NachMwh(
+                  _monateArbeit.Select(a => a ?? 0.0).ToArray(), AktuelleSummeMwh);
+        _monateProzent = prozent;
+    }
+
+    /// <summary>
+    /// OK der Überlagerung, Teil KBP-3a: prüft und übernimmt Monatswerte und Wochenprofil in die Zeile (die Kopie schreibt
+    /// erst das OK des Dialogs) und setzt die Eingabeart. Leer = übernommen, sonst der Grund.
+    /// </summary>
+    private string EingabeAnwenden(BedarfsProfilZeile z)
+    {
+        // KBP-5a: beim Zapfprofilgenerator gilt die Eingabeart nicht - nichts zu übernehmen.
+        if (!EingabeartAngeboten) return "";
+        if (_eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_MONAT && _monateArbeit is not null && _monateBearbeitet)
+        {
+            string? g = WindowsFormsApplication1.Kaelteprofileingabe.PruefeMonate(_monateArbeit, _monateProzent);
+            if (g is not null) return g;
+            if (_monateProzent)
+                z.Monatsanteile = _monateArbeit.Select(a => a ?? 0.0).ToArray();
+            else
+            {
+                (double summe, double[] anteile) = WindowsFormsApplication1.Kaelteprofileingabe.AusMwh(_monateArbeit);
+                z.Monatsanteile = anteile;
+                z.Summe = summe;
+                _jahresverbrauchMWh = summe;
+            }
+            z.ProfilGeaendert = true;
+            _monateBearbeitet = false;
+            Geaendert?.Invoke();
+        }
+        if (_eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_WOCHE && _wocheArbeit is not null && _wocheBearbeitet)
+        {
+            string? g = WindowsFormsApplication1.Kaelteprofileingabe.PruefeWoche(_wocheArbeit);
+            if (g is not null) return g;
+            z.Wochenprofil = (double[])_wocheArbeit.Clone();
+            z.ProfilGeaendert = true;
+            _wocheBearbeitet = false;
+            Geaendert?.Invoke();
+        }
+        // KBP-4b: Typtage samt Matrix - die Regeln des Schemas halten die Ueberlagerung offen; leere Zellen und Typtage
+        // ohne Stunden sind erlaubt (Hinweis im Editor wie im Lauf).
+        if (_eingabeartArbeit == WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_TYPTAG && _typtageArbeit is not null && _typtageBearbeitet)
+        {
+            string? g = _typtageArbeit.Pruefen();
+            if (g is not null) return string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.KBP_MSG_TYPTAGE, g);
+            if (!z.TyptageGeaendert || !WindowsFormsApplication1.Kaeltetyptageingabe.Gleich(z.Typtage, _typtageArbeit))
+            {
+                z.Typtage = WindowsFormsApplication1.Kaeltetyptageingabe.Kopie(_typtageArbeit);
+                z.TyptageGeaendert = true;
+                Geaendert?.Invoke();
+            }
+            _typtageBearbeitet = false;
+            _typtageVorbelegt = false;
+        }
+        if (!string.Equals(z.Eingabeart, _eingabeartArbeit, StringComparison.Ordinal))
+        {
+            z.Eingabeart = _eingabeartArbeit;
+            Geaendert?.Invoke();
+        }
+        return "";
     }
 
     /// <summary>
@@ -1489,6 +2019,7 @@
         _satzUeberlagerungFehler = null;
         _merker = null;
         _deckungArbeit = null;
+        EingabeArbeitsstandVerwerfen();
     }
 
     /// <summary>Die angefangenen Eingaben der Überlagerung; leer = übernommen, sonst der Grund.</summary>
@@ -1516,7 +2047,8 @@
             if (_deckungArbeit.Pruefgrund() is not null) return MeldungDeckungOhneEer;
             if (!DeckungGleich(z.Deckung, _deckungArbeit)) { z.Deckung.Uebernehmen(_deckungArbeit); Geaendert?.Invoke(); }
         }
-        return "";
+        // KBP-3a: Eingabeart, Monatswerte und Wochenprofil - eine verletzte Regel haelt die Ueberlagerung offen.
+        return EingabeAnwenden(z);
     }
 
     /// <summary>Abbrechen, ✕, Esc oder Schließen: der Stand beim Öffnen kommt zurück (Merker).</summary>
@@ -1532,6 +2064,7 @@
         _merker = null;
         _neuerWert = null;
         _deckungArbeit = null;
+        EingabeArbeitsstandVerwerfen();
     }
 
     /// <summary>„Bearbeiten…" der Projekt-Kopfleiste: EINE Projektzeile in der Satz-Überlagerung.</summary>
@@ -1623,6 +2156,11 @@
             neue.Add(neu);
         }
         if (neue.Count == 0) return;
+
+        // KBP-5b: Hat die Uebernahme einen Normkalender angelegt, kennt die Wahl ihn noch nicht - die Liste neu lesen.
+        if (BetriebskalenderNeuLesen is not null && KalenderListe is not null &&
+            neue.Any(z => z.KalenderId is int id && !KalenderListe.Any(k => k.Id == id)))
+            _kalenderGelesen = BetriebskalenderNeuLesen();
 
         KatalogKaestchenLeeren();
         if (neue.Count > 1) _projektWahl.Setzen(neue.Select(Projektschluessel).ToList());
@@ -1895,6 +2433,41 @@
     /// „der Wirt schließt dafür selbst"): kein Übernehmen, kein Rechenweg-Wechsel.
     /// </summary>
     private void ZapfprofilZurueck() => ZapfprofilGeschlossen(null);
+
+    /// <summary>
+    /// KBP-1: „Betriebskalender…“ des Bausteins — der Dialog tauscht seinen Inhalt gegen das Blatt; die Liste davor
+    /// merkt er sich für die Vorwahl eines neu angelegten Kalenders.
+    /// </summary>
+    private void KalenderblattOeffnen()
+    {
+        if (BetriebskalenderGaben is null) return;
+        _kalenderVorher = KalenderListe ?? Array.Empty<(int, string)>();
+        _satzWiederOeffnen = _satzGross;
+        _kalenderGaben = BetriebskalenderGaben();
+    }
+
+    /// <summary>
+    /// KBP-1: das Blatt schließt. Nach OK (oder einem Schreiben im Blatt) liest der Dialog die Liste neu und wählt
+    /// einen neu angelegten Kalender für die markierte Zeile vor (<see cref="Betriebskalenderwahl.NeuerKalender"/>) —
+    /// in den Arbeitsstand, geschrieben wird mit OK.
+    /// </summary>
+    private void KalenderblattGeschlossen(bool geschrieben)
+    {
+        _kalenderGaben = null;
+        _fokusZurueckNoetig = true;
+        // Auch der Rueckknopf liest neu: „Speichern“ im Blatt hat dann schon geschrieben.
+        if (BetriebskalenderNeuLesen is null) return;
+        IReadOnlyList<(int Id, string Text)> neu = BetriebskalenderNeuLesen();
+        int? vorwahl = Betriebskalenderwahl.NeuerKalender(_kalenderVorher, neu);
+        _kalenderGelesen = neu;
+        // Ein geloeschter Kalender steht danach an keiner Zeile mehr (ON DELETE SET NULL) - der Arbeitsstand folgt.
+        foreach (BedarfsProfilZeile z in Zeilen)
+            if (z.KalenderId is int id && !neu.Any(k => k.Id == id)) z.KalenderId = null;
+        if (geschrieben && vorwahl is int v && _gewaehlt is not null) KalenderGewaehlt(v);
+    }
+
+    /// <summary>KBP-1: Rückknopf und Esc des Kalenderblattes — zurück; die Liste wird neu gelesen, vorgewählt wird nichts.</summary>
+    private void KalenderblattZurueck() => KalenderblattGeschlossen(false);
 
     /// <summary>Die Optionsgruppe: stellt nur den Weg um, die Zonen bleiben (ZU4).</summary>
     private void RechenwegWaehlen(int? id)

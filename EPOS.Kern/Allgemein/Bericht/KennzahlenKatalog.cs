@@ -140,13 +140,57 @@ namespace WindowsFormsApplication1
             return werte.Count == 0 ? (double?)null : werte.Sum();
         }
         private static ErgebnisBHKWModel BH(VariantenDaten v) { return v?.Ergebnis?.BHKW; }
+
+        /// <summary>EB-2: Schlüssel der Kennzahl „Einspeisung BHKW“ [MWh/a].</summary>
+        public const string SCHLUESSEL_BHKW_EINSPEISUNG = "energie.bhkw_einspeisung";
+
+        /// <summary>EB-2: Schlüssel der Kennzahl „Abregelung PV“ [MWh/a].</summary>
+        public const string SCHLUESSEL_PV_ABREGELUNG = "energie.pv_abregelung";
+
+        /// <summary>EB-2: Schlüssel der Kennzahl „Standby Speichersystem“ [kWh/a].</summary>
+        public const string SCHLUESSEL_SPEICHER_STANDBY = "energie.speicher_standby";
+
+        /// <summary>
+        /// Die BHKW-Einspeisung [MWh/a]: die Ergebniszeile (<see cref="ErgebnisBHKWModel.StromeinspeisungMwh"/>), bei
+        /// einem Ergebnis ohne Wert die KWK-Einspeisung der Strommatrix (<see cref="VariantenDaten.BhkwEinspeisungStrommatrixMwh"/>,
+        /// EB-Q3), ohne beide <c>null</c> („—“). <c>null</c> ohne BHKW.
+        /// </summary>
+        internal static double? BhkwEinspeisungMwh(VariantenDaten v)
+        {
+            ErgebnisBHKWModel b = BH(v);
+            if (b == null) return null;
+            return b.StromeinspeisungMwh ?? v.BhkwEinspeisungStrommatrixMwh;
+        }
+
+        /// <summary>
+        /// Der Standby des Speichersystems [kWh/a] über alle Speicherzeilen des Laufs; <c>null</c> ohne Wert über 0 oder
+        /// bei einem Ergebnis, das ihn nicht erhoben hat.
+        /// </summary>
+        internal static double? SpeicherStandbyKwh(VariantenDaten v)
+        {
+            var liste = v?.Ergebnis?.Stromspeicher;
+            if (liste == null) return null;
+            double summe = 0.0;
+            bool erhoben = false;
+            foreach (ErgebnisStromspeicherModel s in liste)
+            {
+                if (s?.EigenverbrauchSystemKwh is double w) { summe += w; erhoben = true; }
+            }
+            return erhoben && summe > 0.0 ? summe : (double?)null;
+        }
         private static ErgebnisHeizkesselModel HK(VariantenDaten v) { return v?.Ergebnis?.Heizkessel; }
         private static ErgebnisSolarthermieModel SO(VariantenDaten v) { return v?.Ergebnis?.Solarthermie; }
         private static ErgebnisPhotovoltaikModel PV(VariantenDaten v) { return v?.Ergebnis?.Photovoltaik; }
 
-        /// <summary>Die abgeregelte PV-Energie des Laufs [MWh/a] aus den Zeitreihen; 0 ohne Reihe.</summary>
+        /// <summary>
+        /// Die abgeregelte PV-Energie des Laufs [MWh/a]: die gespeicherte Jahressumme der Ergebniszeile
+        /// (<see cref="ErgebnisPhotovoltaikModel.AbregelungMwh"/>, EB-1); ein Altergebnis ohne Wert nimmt die Zeitreihe
+        /// <c>PV_ABREGELUNG</c>, ohne Reihe 0.
+        /// </summary>
         private static double AbregelungMwh(VariantenDaten v)
         {
+            double? gespeichert = PV(v)?.AbregelungMwh;
+            if (gespeichert.HasValue) return gespeichert.Value;
             double[] r = v?.Zeitreihen?.Hole(ZeitreihenSatz.PV_ABREGELUNG);
             if (r == null) return 0.0;
             double summe = 0.0;
@@ -336,11 +380,108 @@ namespace WindowsFormsApplication1
         /// <summary>Wasser der Rückkühlwerke [m³/a] — Verdunstung, Abflutung, Drift (K-F2, Katalog v20).</summary>
         public const string SCHLUESSEL_RK_WASSER = "kaelte.rk.wasser_m3";
 
+        /// <summary>
+        /// Wasserkosten der Rückkühlwerke [€/a] im ersten Betrachtungsjahr = Wasser × Arbeitspreis des Wasserträgers
+        /// (<see cref="VariantenDaten.WasserkostenRueckkuehlwerk"/>, gerechnet von <see cref="Wasserkosten.Rechne"/>);
+        /// null ohne Wasser und ohne Preis (KB-7c2, Katalog v24).
+        /// </summary>
+        public const string SCHLUESSEL_RK_WASSER_KOSTEN = "kaelte.rk.wasser_kosten";
+
+        /// <summary>
+        /// Hilfsstrom von BHKW und Brennstoffkesseln [MWh/a] aus dem Hilfsenergieanteil ihrer Anlagen
+        /// (<see cref="VariantenDaten.HilfsstromMWh"/>); null ohne Hilfsstrom (6b, Katalog v26).
+        /// </summary>
+        public const string SCHLUESSEL_HILFSSTROM = "energie.hilfsstrom";
+
+        /// <summary>Emissionen des Hilfsstroms [t/a] (<see cref="VariantenDaten.HilfsstromCO2t"/>, in
+        /// <c>em.co2</c> enthalten); null ohne Hilfsstrom oder ohne Faktoren (6b, Katalog v26).</summary>
+        public const string SCHLUESSEL_HILFSSTROM_CO2 = "em.co2_hilfsstrom";
+
+        /// <summary>Stromsteuer des Hilfsstroms, gesondert angesetzt [€/a]
+        /// (<see cref="VariantenDaten.HilfsstromStromsteuerGesondert"/>, 6b, Katalog v26).</summary>
+        public const string SCHLUESSEL_HILFSSTROM_STROMSTEUER = "ko.stromsteuer_hilfsstrom";
+
+        /// <summary>Stromsteuer des Hilfsstroms zum Regelsatz, enthaltener und gesonderter Teil [€/a]
+        /// (<see cref="VariantenDaten.HilfsstromStromsteuerGesamt"/>, 6b, Katalog v26).</summary>
+        public const string SCHLUESSEL_HILFSSTROM_STROMSTEUER_GESAMT = "ko.stromsteuer_hilfsstrom_gesamt";
+
+        /// <summary>
+        /// Die Kennzahlen, deren Wert erst die Wirtschaftlichkeit setzt — sie werden nach ihr nachgetragen
+        /// (<see cref="NachWirtschaftlichkeit"/>).
+        /// </summary>
+        private static readonly string[] NACH_WIRTSCHAFTLICHKEIT =
+            { SCHLUESSEL_HILFSSTROM_STROMSTEUER, SCHLUESSEL_HILFSSTROM_STROMSTEUER_GESAMT };
+
         /// <summary>Kälte der Teil-Freikühlung in Reihe [MWh/a] — der vorgekühlte Anteil der Mischstunden (K-F3, Katalog v22).</summary>
         public const string SCHLUESSEL_RK_TEILFREI = "kaelte.rk.teilfrei";
 
         /// <summary>Mischstunden der Teil-Freikühlung in Reihe [h/a] (K-F3, Katalog v22).</summary>
         public const string SCHLUESSEL_RK_TEILFREI_STUNDEN = "kaelte.rk.teilfrei_stunden";
+
+        // ------------------------------------------------------------------
+        // K6d (Konzept Kältebedarf 4.3; Frage 1 des Plans K6, Katalog v23) — Kältebedarf ohne Gebäudemodell
+        // und dezentrale (Split-)Deckung. Jede Zahl nur mit Profil- bzw. Split-Zeile; ohne sie null, und
+        // jede Tafel, jeder Vergleich und jeder Bericht bleibt, wie er war.
+        // ------------------------------------------------------------------
+
+        /// <summary>Kältebedarf aus Kältebedarfsprofilen [MWh/a] (<c>Kaeltebedarf_Profil_MWh</c>); null ohne Profilzeile.</summary>
+        public const string SCHLUESSEL_KAELTE_PROFIL = "kaelte.profil";
+
+        /// <summary>Dezentral (Split) gedeckte Kälte [MWh/a] (<c>Kaeltebedarf_Dezentral_MWh</c>); null ohne Split-Zeile.</summary>
+        public const string SCHLUESSEL_KAELTE_DEZENTRAL = "kaelte.dezentral";
+
+        /// <summary>Strom der dezentralen Deckung [MWh/a] (<c>Strom_Dezentral_MWh</c>); null ohne Split-Zeile.</summary>
+        public const string SCHLUESSEL_KAELTE_DEZENTRAL_STROM = "kaelte.dezentral_strom";
+
+        /// <summary>Jahres-EER der dezentralen Deckung [–] (<c>Jahres_EER_Dezentral</c>); null ohne Split-Strom.</summary>
+        public const string SCHLUESSEL_KAELTE_DEZENTRAL_EER = "kaelte.dezentral_eer";
+
+        /// <summary>
+        /// Deckungsgrad Kälte samt dezentraler Deckung [%] = (Kältefolge + dezentral) / Kältebedarf gesamt
+        /// (<see cref="KaelteDeckungsgrad.Hauptzahl"/>); null ohne Split-Zeile.
+        /// </summary>
+        public const string SCHLUESSEL_KAELTE_DECKUNGSGRAD_GESAMT = "kaelte.deckungsgrad_gesamt";
+
+        /// <summary>
+        /// „davon Kältefolge“ [%] = Kältefolge / (Kältebedarf gesamt − dezentral)
+        /// (<see cref="KaelteDeckungsgrad.DavonKaeltefolge"/>); null ohne Split-Zeile oder ohne Kälteerzeuger.
+        /// </summary>
+        public const string SCHLUESSEL_KAELTE_DECKUNGSGRAD_KAELTEFOLGE = "kaelte.deckungsgrad_kaeltefolge";
+
+        /// <summary>
+        /// Die Kältefolge [MWh/a] aus dem gespeicherten Deckungsgrad des Kühlkanals (Kältefolge / Gesamtbedarf,
+        /// <see cref="DeckungKanalKaelte"/>); 0 ohne Kälteerzeugung. Dieselbe Herleitung wie der Bericht vor K6d.
+        /// </summary>
+        private static double KaeltefolgeMwh(VariantenDaten v, double gesamtMwh)
+        {
+            double? dg = MitKaelteerzeugung(v) ? DeckungKanalKaelte(v) : null;
+            return dg.HasValue ? dg.Value * gesamtMwh / 100.0 : 0.0;
+        }
+
+        /// <summary>
+        /// <c>kaelte.deckungsgrad_gesamt</c> [%]: die Hauptzahl nach <see cref="KaelteDeckungsgrad.Hauptzahl"/> mit der
+        /// Kältefolge aus <see cref="KaeltefolgeMwh"/>; null ohne Split-Zeile oder ohne erhobene Kälte.
+        /// </summary>
+        public static double? DeckungsgradKaelteGesamt(VariantenDaten v)
+        {
+            var e = E(v);
+            if (e?.KaeltebedarfDezentralMwh is not double dezentral || !e.Kaeltebedarf_Gesamt.HasValue) return null;
+            double gesamt = e.Kaeltebedarf_Gesamt.Value;
+            return KaelteDeckungsgrad.Hauptzahl(KaeltefolgeMwh(v, gesamt), dezentral, gesamt);
+        }
+
+        /// <summary>
+        /// <c>kaelte.deckungsgrad_kaeltefolge</c> [%]: „davon Kältefolge“ nach <see cref="KaelteDeckungsgrad.DavonKaeltefolge"/>;
+        /// null ohne Split-Zeile, ohne erhobene Kälte oder ohne Kälteerzeuger (wie die Zeile im Bericht).
+        /// </summary>
+        public static double? DeckungsgradKaelteKaeltefolge(VariantenDaten v)
+        {
+            var e = E(v);
+            if (e?.KaeltebedarfDezentralMwh is not double dezentral || !e.Kaeltebedarf_Gesamt.HasValue) return null;
+            if (!MitKaelteerzeugung(v)) return null;
+            double gesamt = e.Kaeltebedarf_Gesamt.Value;
+            return KaelteDeckungsgrad.DavonKaeltefolge(KaeltefolgeMwh(v, gesamt), dezentral, gesamt);
+        }
 
         /// <summary>Summe einer Größe über die Kältemaschinen mit Rückkühlwerk; <c>null</c> ohne solche.</summary>
         private static double? RkSumme(VariantenDaten v, Func<ErgebnisKaeltemaschineModel, double?> wert)
@@ -426,7 +567,7 @@ namespace WindowsFormsApplication1
         /// <summary>Ungedeckte Kälte [MWh/a] (<c>Kaelterestbedarf</c>) — Gegenstück zu <c>energie.waermerest</c>.</summary>
         public const string SCHLUESSEL_KAELTE_REST = "kaelte.rest";
 
-        /// <summary>Jahresarbeitszahl Kälte (EER-Jahreswert) = Kälteerzeugung / Kältestrom — Gegenstück zu <c>eff.jaz</c>.</summary>
+        /// <summary>Jahresarbeitszahl Kälte (EER-Jahreswert) = Kälte / Kältestrom der ganzen Kältefolge (<see cref="JahresarbeitszahlKaelte"/>) — Gegenstück zu <c>eff.jaz</c>.</summary>
         public const string SCHLUESSEL_KAELTE_JAZ = "kaelte.jaz";
 
         /// <summary>Kältestrom samt Hilfsstrom [MWh/a] (Kühlkonzept 6.1).</summary>
@@ -442,15 +583,18 @@ namespace WindowsFormsApplication1
         public const string SCHLUESSEL_KAELTE_CO2 = "kaelte.co2";
 
         /// <summary>
-        /// Jahresarbeitszahl Kälte aus dem gespeicherten Ergebnis: Kälteerzeugung / Kältestrom der
-        /// Wärmepumpen; <c>null</c> ohne Kälteerzeugung oder ohne Kältestrom.
+        /// Jahresarbeitszahl Kälte (<c>kaelte.jaz</c>) über die ganze Kältefolge: Kälte / Kältestrom der Wärmepumpen
+        /// und Kältemaschinen nach <see cref="KaelteDeckungsgrad.Jahresarbeitszahl"/> — dieselbe Formel und dieselben
+        /// Summen wie der EER-Jahreswert der Übersicht (die Kältespalten der Ergebnistabellen sind ungerundet
+        /// gespeichert). <c>null</c> ohne Kälteerzeugung oder ohne Kältestrom.
         /// </summary>
         public static double? JahresarbeitszahlKaelte(VariantenDaten v)
         {
+            if (!MitKaelteerzeugung(v)) return null;
             var w = WP(v);
-            if (w == null || !w.Kaelteproduktion_WP.HasValue || !w.Stromverbrauch_Kuehlung.HasValue) return null;
-            return w.Stromverbrauch_Kuehlung.Value > 0
-                ? (double?)(w.Kaelteproduktion_WP.Value / w.Stromverbrauch_Kuehlung.Value) : null;
+            double kaelte = (w?.Kaelteproduktion_WP ?? 0.0) + (KmSumme(v, k => k.Kaelteproduktion_MWh) ?? 0.0);
+            double strom = (w?.Stromverbrauch_Kuehlung ?? 0.0) + (KmSumme(v, k => k.Stromverbrauch_MWh) ?? 0.0);
+            return KaelteDeckungsgrad.Jahresarbeitszahl(kaelte, strom);
         }
 
         /// <summary>Nur mit gerechneter Kälteerzeugung (<c>Kaelteproduktion_WP</c> gesetzt) — sonst keine Kältezahl der Gruppe <see cref="GR_KAELTE"/>.</summary>
@@ -629,8 +773,31 @@ namespace WindowsFormsApplication1
                 v => (BH(v) == null && HK(v) == null) ? (double?)null : Brennstoffsumme(BH(v)) + Brennstoffsumme(HK(v))));
             l.Add(new Kennzahl("energie.netzbezug", "Netzbezug Strom", "Grid electricity import", "MWh/a", GR_ENERGIE, "N0", true,
                 v => E(v) == null ? (double?)null : E(v).Stromrestbedarf));
+            // 6b (Katalog v26): der Hilfsstrom von BHKW und Kesseln, den die Simulation nicht im Netzbezug führt.
+            l.Add(new Kennzahl(SCHLUESSEL_HILFSSTROM, "Hilfsstrom BHKW und Kessel", "Auxiliary electricity CHP and boilers",
+                "MWh/a", GR_ENERGIE, "N2", true,
+                v => v.HilfsstromMWh > 0 ? v.HilfsstromMWh : (double?)null)
+                { Seit = Vorlagenfeldkatalog.FASSUNG_HILFSSTROM });
             l.Add(new Kennzahl("energie.einspeisung", "Netzeinspeisung PV", "PV grid export", "MWh/a", GR_ENERGIE, "N0", true,
                 v => PV(v) == null ? (double?)null : PV(v).Ueberschuss));
+            // EB-2: die drei Ergebnisreihen des Laufs (Schemaschritt 239). Die Einspeisung BHKW aus der Ergebniszeile, bei
+            // einem Ergebnis ohne Wert aus der Strommatrix (EB-Q3), sonst „—“; die Abregelung nur mit Wert über 0; der
+            // Standby des Speichersystems nur mit Wert über 0, in kWh/a wie die Speicherzeile.
+            // Katalog v26.
+            {
+                Kennzahl R(Kennzahl k) { k.Seit = Vorlagenfeldkatalog.FASSUNG_ERGEBNISREIHEN; return k; }
+                l.Add(R(new Kennzahl(SCHLUESSEL_BHKW_EINSPEISUNG, "Einspeisung BHKW", "CHP grid export", "MWh/a", GR_ENERGIE,
+                    "N1", true, BhkwEinspeisungMwh)));
+                l.Add(R(new Kennzahl(SCHLUESSEL_PV_ABREGELUNG, "Abregelung PV", "PV curtailment", "MWh/a", GR_ENERGIE, "N1",
+                    true, v =>
+                    {
+                        if (PV(v) == null) return null;
+                        double a = AbregelungMwh(v);
+                        return a > 0.0 ? a : (double?)null;
+                    })));
+                l.Add(R(new Kennzahl(SCHLUESSEL_SPEICHER_STANDBY, "Standby Speichersystem", "Storage system standby", "kWh/a",
+                    GR_ENERGIE, "N0", true, SpeicherStandbyKwh)));
+            }
             l.Add(new Kennzahl("energie.waermerest", "Wärmerestbedarf (ungedeckt)", "Uncovered heat demand", "MWh/a", GR_ENERGIE, "N0", true,
                 v => E(v) == null ? (double?)null : E(v).Waermerestbedarf));
 
@@ -687,10 +854,10 @@ namespace WindowsFormsApplication1
                         "Operating range " + enB[j] + ", heat", "MWh/a", GR_EFFIZIENZ, "N2", true,
                         v => Bereiche(v)?.Mwh[j])));
                 }
-                l.Add(B(new Kennzahl(PRAEFIX_WP_BIVALENZ + "punkt_1", "Bivalenzpunkt θ_biv,1 (berechnet)",
-                    "Bivalence point θ_biv,1 (calculated)", "°C", GR_EFFIZIENZ, "N1", true, v => Bereichsmodul(v)?.Bivalenzpunkt_1)));
-                l.Add(B(new Kennzahl(PRAEFIX_WP_BIVALENZ + "punkt_2", "Bivalenzpunkt θ_biv,2 (berechnet)",
-                    "Bivalence point θ_biv,2 (calculated)", "°C", GR_EFFIZIENZ, "N1", true, v => Bereichsmodul(v)?.Bivalenzpunkt_2)));
+                l.Add(B(new Kennzahl(PRAEFIX_WP_BIVALENZ + "punkt_1", "Kessel hilft unter (Bivalenzpunkt 1, berechnet)",
+                    "Boiler assists below (bivalence point 1, calculated)", "°C", GR_EFFIZIENZ, "N1", true, v => Bereichsmodul(v)?.Bivalenzpunkt_1)));
+                l.Add(B(new Kennzahl(PRAEFIX_WP_BIVALENZ + "punkt_2", "Kessel allein unter (Bivalenzpunkt 2, berechnet)",
+                    "Boiler alone below (bivalence point 2, calculated)", "°C", GR_EFFIZIENZ, "N1", true, v => Bereichsmodul(v)?.Bivalenzpunkt_2)));
                 l.Add(B(new Kennzahl(PRAEFIX_WP_BIVALENZ + "uebergabe_max", "Übergabegrenze bei Auslegung",
                     "Heat emission limit at design", "kW", GR_EFFIZIENZ, "N1", true, v => Bereichsmodul(v)?.Uebergabe_Max_kW)));
                 l.Add(B(new Kennzahl(PRAEFIX_WP_BIVALENZ + "spreizung_unterschritten", "Stunden unter der Mindestspreizung",
@@ -720,8 +887,8 @@ namespace WindowsFormsApplication1
                 {
                     var p = PV(v);
                     if (p == null || p.Stromproduktion <= 0) return null;
-                    // PV3 (Welle M5): Abgeregelte Energie ist kein Eigenverbrauch. Sie steht nur in den
-                    // Zeitreihen des Laufs (PV_ABREGELUNG); ohne Reihe ist sie 0.
+                    // PV3 (Welle M5): Abgeregelte Energie ist kein Eigenverbrauch. Seit EB-1 steht sie als
+                    // Jahressumme in der Ergebniszeile; ein Altergebnis nimmt die Reihe PV_ABREGELUNG, ohne Reihe 0.
                     return (p.Stromproduktion - p.Ueberschuss - AbregelungMwh(v)) / p.Stromproduktion * 100.0;
                 }));
             // PAKET P2 (Konzept 7.4): die Temperaturen der obersten Speicherschicht. Sie
@@ -810,6 +977,15 @@ namespace WindowsFormsApplication1
                     "Heat rejection water use (sensible)", "m³/a", GR_KAELTE, "N1", true,
                     v => RkSumme(v, k => k.Wasser_m3))));
             }
+            // KB-7c2 (Entwurf KB7 Wasserkosten 5 und 9, Anwenderentscheid F4, Katalog v24): die Kosten des Wassers
+            // neben der Menge — dieselbe Rechnung wie die Nachweiszeile der Wirtschaftlichkeit, mit den Trägerpreisen
+            // des Szenarios, dessen Stand gerechnet wird; ohne Wasser oder ohne Preis null (kein „0 €“).
+            {
+                Kennzahl W(Kennzahl k) { k.Seit = Vorlagenfeldkatalog.FASSUNG_WASSERKOSTEN_RUECKKUEHLWERK; return k; }
+                l.Add(W(new Kennzahl(SCHLUESSEL_RK_WASSER_KOSTEN, "Wasserkosten Rückkühlwerke (sensibel)",
+                    "Heat rejection water cost (sensible)", "€/a", GR_KAELTE, "N0", true,
+                    v => v.WasserkostenRueckkuehlwerk)));
+            }
             // K-F3 (Entwurf Split/VRF/Rückkühlwerk 5.5, 5.8, Katalog v22): nur Maschinen mit Rückkühlwerk in Reihe; ohne sie null.
             {
                 Kennzahl F(Kennzahl k) { k.Seit = Vorlagenfeldkatalog.FASSUNG_TEILFREIKUEHLUNG; return k; }
@@ -819,6 +995,29 @@ namespace WindowsFormsApplication1
                 l.Add(F(new Kennzahl(SCHLUESSEL_RK_TEILFREI_STUNDEN, "Stunden Teil-Freikühlung Rückkühlwerke (sensibel)",
                     "Partial free cooling hours via heat rejection (sensible)", "h/a", GR_KAELTE, "N0", true,
                     v => RkSumme(v, k => k.TeilFreikuehlung_Stunden.HasValue ? (double?)k.TeilFreikuehlung_Stunden.Value : null))));
+            }
+            // K6d (Konzept Kältebedarf 4.3, Frage 1 des Plans K6, Katalog v23): Kältebedarf aus Profilen und die dezentrale
+            // (Split-)Deckung — nur mit Profil- bzw. Split-Zeile; ohne sie null (keine Zeile, kein „—“).
+            {
+                Kennzahl D(Kennzahl k) { k.Seit = Vorlagenfeldkatalog.FASSUNG_KAELTE_DEZENTRAL; return k; }
+                l.Add(D(new Kennzahl(SCHLUESSEL_KAELTE_PROFIL, "Kältebedarf aus Profilen (sensibel)",
+                    "Cooling demand from profiles (sensible)", "MWh/a", GR_KAELTE, "N1", true,
+                    v => E(v)?.KaeltebedarfProfilMwh)));
+                l.Add(D(new Kennzahl(SCHLUESSEL_KAELTE_DEZENTRAL, "Kälte dezentral gedeckt, Split (sensibel)",
+                    "Cooling covered locally, split (sensible)", "MWh/a", GR_KAELTE, "N1", true,
+                    v => E(v)?.KaeltebedarfDezentralMwh)));
+                l.Add(D(new Kennzahl(SCHLUESSEL_KAELTE_DEZENTRAL_STROM, "Strom dezentrale Kälte, Split (sensibel)",
+                    "Electricity local cooling, split (sensible)", "MWh/a", GR_KAELTE, "N2", true,
+                    v => E(v)?.StromDezentralMwh)));
+                l.Add(D(new Kennzahl(SCHLUESSEL_KAELTE_DEZENTRAL_EER, "Jahres-EER dezentrale Kälte, Split (sensibel)",
+                    "Seasonal EER local cooling, split (sensible)", "–", GR_KAELTE, "N2", true,
+                    v => E(v)?.JahresEerDezentral)));
+                l.Add(D(new Kennzahl(SCHLUESSEL_KAELTE_DECKUNGSGRAD_GESAMT, "Deckungsgrad Kälte samt dezentraler Deckung (sensibel)",
+                    "Cooling coverage incl. local cooling (sensible)", "%", GR_KAELTE, "N1", false,
+                    DeckungsgradKaelteGesamt)));
+                l.Add(D(new Kennzahl(SCHLUESSEL_KAELTE_DECKUNGSGRAD_KAELTEFOLGE, "davon Kältefolge am zentralen Bedarf (sensibel)",
+                    "of which cooling cascade on central demand (sensible)", "%", GR_KAELTE, "N1", false,
+                    DeckungsgradKaelteKaeltefolge)));
             }
             l.Add(new Kennzahl(SCHLUESSEL_KAELTE_REST, "Kältebedarf ungedeckt (sensibel)",
                 "Uncovered cooling demand (sensible)", "MWh/a", GR_KAELTE, "N1", true,
@@ -900,14 +1099,50 @@ namespace WindowsFormsApplication1
                 EmissionsAusweis.KennzahlSpezifisch(modus, true),
                 "g/kWh", GR_EMISSION, "N0", true,
                 v => v.CO2Spezifisch));
+            // 6b (Katalog v26): die Emissionen des Hilfsstroms von BHKW und Kesseln — ein Ausweis, in em.co2 enthalten.
+            l.Add(new Kennzahl(SCHLUESSEL_HILFSSTROM_CO2,
+                EmissionsAusweis.KennzahlHilfsstrom(modus, false),
+                EmissionsAusweis.KennzahlHilfsstrom(modus, true),
+                "t/a", GR_EMISSION, "N2", true,
+                v => v.HilfsstromMWh > 0 && v.CO2Gesamt.HasValue ? v.HilfsstromCO2t : (double?)null)
+                { Seit = Vorlagenfeldkatalog.FASSUNG_HILFSSTROM });
 
             // ---------------- Kosten einfach (KostenEmissionRechner; null = Preise fehlen) ----------------
             l.Add(new Kennzahl("ko.energie", "Energiekosten p. a.", "Annual energy cost", "€/a", GR_KOSTEN, "N0", true,
                 v => v.Energiekosten));
             l.Add(new Kennzahl("ko.stromsaldo", "Stromkosten Netzbezug", "Grid electricity cost", "€/a", GR_KOSTEN, "N0", true,
                 v => v.StromkostenNetz));
+            // 6b (Katalog v26): die Stromsteuer des Hilfsstroms — der gesondert angesetzte Betrag (er steht in den
+            // Kosten der Wirtschaftlichkeit) und der Betrag zum Regelsatz; gesetzt von der Wirtschaftlichkeit
+            // (Erwartungsfall), ohne Hilfsstrom oder Regelsatz null.
+            {
+                Kennzahl H(Kennzahl k) { k.Seit = Vorlagenfeldkatalog.FASSUNG_HILFSSTROM; return k; }
+                l.Add(H(new Kennzahl(SCHLUESSEL_HILFSSTROM_STROMSTEUER, "Stromsteuer Hilfsstrom, gesondert angesetzt",
+                    "Electricity tax on auxiliary electricity, charged separately", "€/a", GR_KOSTEN, "N0", true,
+                    v => v.HilfsstromStromsteuerGesondert)));
+                l.Add(H(new Kennzahl(SCHLUESSEL_HILFSSTROM_STROMSTEUER_GESAMT, "Stromsteuer Hilfsstrom zum Regelsatz",
+                    "Electricity tax on auxiliary electricity at the standard rate", "€/a", GR_KOSTEN, "N0", true,
+                    v => v.HilfsstromStromsteuerGesamt)));
+            }
 
             return l;
+        }
+
+        /// <summary>
+        /// Trägt die Kennzahlen nach, deren Wert erst die Wirtschaftlichkeit setzt (6b: Stromsteuer des Hilfsstroms) —
+        /// nur in ein bereits berechnetes Dictionary; ein leeres bleibt leer.
+        /// </summary>
+        internal static void NachWirtschaftlichkeit(VariantenDaten v)
+        {
+            if (v == null || v.Kennzahlen.Count == 0) return;
+            foreach (Kennzahl k in Alle())
+            {
+                if (Array.IndexOf(NACH_WIRTSCHAFTLICHKEIT, k.Schluessel) < 0) continue;
+                double? wert;
+                try { wert = k.Wert(v); }
+                catch { wert = null; }
+                v.Kennzahlen[k.Schluessel] = wert;
+            }
         }
 
         /// <summary>Berechnet alle Katalogwerte für ein Projekt in dessen Kennzahlen-Dictionary.</summary>

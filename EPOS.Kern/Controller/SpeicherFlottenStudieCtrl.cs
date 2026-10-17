@@ -130,6 +130,17 @@ public static partial class SpeicherFlottenStudieCtrl
     }
 
     /// <summary>Eine Flotteneinheit aus einem gelesenen Speicherparametersatz.</summary>
+    /// <remarks>
+    /// <para><b>Standby und Selbstentladung gehören dazu.</b> <c>LeseParameter</c> hat beide
+    /// geprüft (0 … 1 000 W, 0 … 20 %/Monat) und als <c>StandbyKw</c> und
+    /// <c>SelbstentladungProzentMonat</c> in den Satz gelegt; die Einheit trägt sie als
+    /// <see cref="FlottenEinheit.HilfsverbrauchKw"/> und
+    /// <see cref="FlottenEinheit.SelbstentladungProzentProMonat"/> — dieselbe Abbildung wie
+    /// <see cref="EinheitAusKatalogsatz"/>. Ohne sie rechnete die vorbelegte Flotte des
+    /// Laufs der Oberfläche (<c>SimulationControl.SpeicherflotteAusLaufVorbelegen</c>) den
+    /// Standby des Speichersystems stets mit 0, der Einzellauf derselben Anlage dagegen mit
+    /// ihrem Standby (Befund EB-2).</para>
+    /// </remarks>
     /// <param name="p">Der Parametersatz der Anlage.</param>
     /// <param name="kontext">Der Lesekontext mit Anlagenname und Anlagen-Id.</param>
     /// <param name="nummer">Laufende Nummer für den Namensrückfall.</param>
@@ -147,7 +158,9 @@ public static partial class SpeicherFlottenStudieCtrl
             KapazitaetKWh = p.CNomKwh, LadeleistungKw = p.PKw, EntladeleistungKw = p.PKw,
             Ladewirkungsgrad = p.EtaCh, Entladewirkungsgrad = p.EtaDis,
             SocMin = p.SoCMinKwh / p.CNomKwh, SocMax = p.SoCMaxKwh / p.CNomKwh,
-            SocStart = p.StartSoCEffektivKwh / p.CNomKwh
+            SocStart = p.StartSoCEffektivKwh / p.CNomKwh,
+            HilfsverbrauchKw = p.StandbyKw,
+            SelbstentladungProzentProMonat = p.SelbstentladungProzentMonat
         };
     }
 
@@ -257,14 +270,14 @@ public static partial class SpeicherFlottenStudieCtrl
     ///   <item><term><c>Wirkungsgrad_RT</c></term><description>→ beide Richtungen als <c>sqrt(eta_RT)</c> (<c>SpeicherParameter.EtaCh</c>/<c>EtaDis</c>); außerhalb (0…1] gelten die neutralen Vorgaben <c>FlottenGeraetevorgaben.LADEWIRKUNGSGRAD</c>/<c>ENTLADEWIRKUNGSGRAD</c></description></item>
     ///   <item><term>SoC-Band</term><description><c>FlottenGeraetevorgaben.SOC_MIN</c>/<c>SOC_MAX</c> — ein Katalogsatz hat keine Betriebsführung</description></item>
     ///   <item><term><c>Ladezustand</c> [%]</term><description>→ Start-SoC, in das Band geklemmt (im Bestand fast überall 0 und damit SoC_min — Entscheid AP0, Frage 8)</description></item>
-    ///   <item><term><c>Modulkosten</c> [€/kWh]</term><description>→ <see cref="FlottenEinheit.InvestitionEuroProKWh"/></description></item>
-    ///   <item><term><c>Leistungskosten</c> [€/kW]</term><description>→ <see cref="FlottenEinheit.InvestitionEuroProKw"/></description></item>
-    ///   <item><term><c>Investition_Fix</c> [€]</term><description>→ <see cref="FlottenEinheit.InvestitionEuro"/></description></item>
+    ///   <item><term>c_cap [€/kWh] der Satzvorlage</term><description>→ <see cref="FlottenEinheit.InvestitionEuroProKWh"/></description></item>
+    ///   <item><term>c_pow [€/kW] der Satzvorlage</term><description>→ <see cref="FlottenEinheit.InvestitionEuroProKw"/></description></item>
+    ///   <item><term>I_fix [€] der Satzvorlage</term><description>→ <see cref="FlottenEinheit.InvestitionEuro"/></description></item>
     ///   <item><term><c>Standby_Verbrauch</c> [W]</term><description>→ <see cref="FlottenEinheit.HilfsverbrauchKw"/> (W / 1000)</description></item>
     ///   <item><term><c>Selbstentladung_Prozent_Monat</c> [%/Monat]</term><description>→ <see cref="FlottenEinheit.SelbstentladungProzentProMonat"/> (außerhalb 0 … 20: 0)</description></item>
     /// </list>
-    /// <para><b>Was bewusst NICHT abgebildet wird.</b> <c>Verschleisskosten</c> steht im
-    /// Katalog in €/(kWh·Zyklus) und bezieht sich auf die NENNkapazität; die zwei
+    /// <para><b>Was bewusst NICHT abgebildet wird.</b> Der Verschleißsatz c_ver steht in der
+    /// Betriebs-Satzvorlage in €/(kWh·Zyklus) und bezieht sich auf die NENNkapazität; die zwei
     /// Kostenfelder der Flotte (<c>GrenzverschleissEuroProKWhEntladung</c>,
     /// <c>DurchsatzkostenEuroProKWhEntladung</c>) rechnen je abgegebener AC-kWh. Die
     /// Umrechnung hängt am nutzbaren Band und am Entladewirkungsgrad
@@ -301,7 +314,8 @@ public static partial class SpeicherFlottenStudieCtrl
     /// <param name="m">Der Katalogsatz; <c>null</c> liefert <c>null</c>.</param>
     /// <param name="neutraleKennwerte">Es musste wenigstens eine neutrale Vorgabe greifen.</param>
     internal static FlottenEinheit EinheitAusKatalogsatz(StromspeicherModel m,
-                                                         out bool neutraleKennwerte)
+                                                         out bool neutraleKennwerte,
+                                                         string tabelle = StromspeicherKostenSchema.TAB_STAMM)
     {
         neutraleKennwerte = false;
         if (m == null || !(m.m_Energie > 0)) return null;
@@ -331,7 +345,12 @@ public static partial class SpeicherFlottenStudieCtrl
         if (socStart < socMin) socStart = socMin;
         if (socStart > socMax) socStart = socMax;
 
-        bool kosten = m.m_Modulkosten > 0.0 || m.m_Leistungskosten > 0.0 || m.m_InvestitionFix > 0.0;
+        // Welle KB-5: die drei Investitionssätze aus der Satzvorlage des Satzes (StromspeicherKostenSchema) —
+        // derselbe Leser wie im Lauf. Der Satz ist ein Katalogsatz oder eine Projektkopie (Quelle der Kandidaten).
+        KatalogkostensatzCtrl.Stromspeichersaetze saetze = KatalogkostensatzCtrl.Stromspeicher(
+            tabelle ?? StromspeicherKostenSchema.TAB_STAMM, m.m_ID);
+        double cCap = saetze.CCapEurProKwh ?? 0.0, cPow = saetze.CPowEurProKw ?? 0.0, fix = saetze.IFixEur ?? 0.0;
+        bool kosten = cCap > 0.0 || cPow > 0.0 || fix > 0.0;
 
         return new FlottenEinheit
         {
@@ -349,9 +368,9 @@ public static partial class SpeicherFlottenStudieCtrl
                                              m.m_Selbstentladung <= StromViertelstundenSchema.SELBSTENTLADUNG_MAX_PROZENT
                 ? m.m_Selbstentladung : 0.0,
             EigeneKosten = kosten,
-            InvestitionEuro = kosten ? m.m_InvestitionFix : 0.0,
-            InvestitionEuroProKWh = kosten ? m.m_Modulkosten : 0.0,
-            InvestitionEuroProKw = kosten ? m.m_Leistungskosten : 0.0
+            InvestitionEuro = kosten ? fix : 0.0,
+            InvestitionEuroProKWh = kosten ? cCap : 0.0,
+            InvestitionEuroProKw = kosten ? cPow : 0.0
         };
     }
 

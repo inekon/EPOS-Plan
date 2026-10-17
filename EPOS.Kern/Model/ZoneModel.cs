@@ -122,6 +122,18 @@ namespace WindowsFormsApplication1
         /// Verfahren „Vorgabe“ mit Geltung Zone.</summary>
         public int? Vorheizzeit_H;
 
+        /// <summary>DA-2: Außenluft je Person [m³/(h·Person)]; <c>null</c> = keine. Nur Datenaustausch, der Lauf liest sie nicht.</summary>
+        public double? Aussenluft_Person;
+
+        /// <summary>
+        /// DA-2: Beleuchtungsleistung je Fläche [W/m²] — ein Teil der inneren Lasten (<see cref="Interne_Waermegewinne"/> bzw. der
+        /// Nennwert des Kalenders GERAETE bleiben die Summe); <c>null</c> = keine. Nur Datenaustausch, der Lauf liest sie nicht.
+        /// </summary>
+        public double? Licht_W_m2;
+
+        /// <summary>DA-2: Wärmeabgabe je Person [W]; <c>null</c> = keine. Nur Datenaustausch, der Lauf liest sie nicht.</summary>
+        public double? Personen_Waerme_W;
+
         /// <summary>Herkunft (<see cref="DbWerte.HERKUENFTE"/>); <c>null</c> = nicht angegeben.</summary>
         public string Herkunft;
 

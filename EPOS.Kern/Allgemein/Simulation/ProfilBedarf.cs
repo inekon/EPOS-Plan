@@ -153,6 +153,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         public IReadOnlyDictionary<string, double> Jahressummen;
 
+        /// <summary>
+        /// Der ungespeicherte Arbeitsstand je Profilname — Monatswerte, Wochenprofil und Betriebskalender, wie sie im
+        /// offenen Dialog stehen (Konzept Kältebedarfsprofile 5); <c>null</c> = allein der gespeicherte Stand. Er geht
+        /// Kopfsatz, Typprofil und Kalender der Zuordnung vor; die Jahressumme bleibt bei <see cref="Jahressummen"/>.
+        /// Der Lauf setzt ihn nie.
+        /// </summary>
+        public IReadOnlyDictionary<string, ProfilArbeitsstand> Arbeitsstaende;
+
         /// <summary>Protokollpräfix der Bedarfsart („Brauchwasser: " …) für die generischen Meldungen.</summary>
         public string Praefix = "";
 
@@ -324,6 +332,35 @@ namespace WindowsFormsApplication1
                 TextTypUndefiniert = MyResource.Resource.SIMENG_STROMPROFIL_TYP_UNDEFINIERT
             };
         }
+    }
+
+    /// <summary>
+    /// Der ungespeicherte Arbeitsstand EINES Profils für die Vorschau (<see cref="ProfilQuelle.Arbeitsstaende"/>): was
+    /// hier steht, ersetzt den Wert der Datenbank in derselben Rechenkette — die Monatswerte den Kopfsatz (danach wie
+    /// gespeichert auf die Jahressumme skaliert), das Wochenprofil das Typprofil, der Kalender den der Zuordnung.
+    /// </summary>
+    public sealed class ProfilArbeitsstand
+    {
+        /// <summary>Die zwölf Monatswerte (Anteile; nur das Verhältnis zählt); <c>null</c> = die des Kopfsatzes.</summary>
+        public double[] Monatswerte;
+
+        /// <summary>Die 168 Wochenwerte, Montag 0 Uhr zuerst; <c>null</c> = das Typprofil.</summary>
+        public double[] Wochenwerte;
+
+        /// <summary>Gilt <see cref="KalenderId"/> statt des Kalenders der Zuordnung?</summary>
+        public bool KalenderGesetzt;
+
+        /// <summary>Der Betriebskalender des Arbeitsstands; 0 = keiner. Wirkt nur mit <see cref="KalenderGesetzt"/>.</summary>
+        public int KalenderId;
+
+        /// <summary>
+        /// Die Eingabeart des Arbeitsstands (KBP-4a, nur Kälte); <c>null</c> = die gespeicherte der Zuordnung. Mit
+        /// <c>'typtag'</c> rechnet die Vorschau über die <see cref="Typtagschicht"/>.
+        /// </summary>
+        public string Eingabeart;
+
+        /// <summary>Die Typtage des Arbeitsstands (KBP-4a); <c>null</c> = die gespeicherten der Projektkopie.</summary>
+        public KaeltetyptagEingabe Typtage;
     }
 
     /// <summary>
@@ -549,6 +586,12 @@ namespace WindowsFormsApplication1
             /// des Kopfsatzes nachschlagen (Vorschau).
             /// </summary>
             public int? KalenderId;
+
+            /// <summary>
+            /// Eingabeart der Zuordnungszeile (KBP-4a, nur Kälte); <c>null</c> = über die ID des Kopfsatzes nachschlagen
+            /// (Vorschau) bzw. keine Spalte.
+            /// </summary>
+            public string Eingabeart;
         }
 
         /// <summary>
@@ -586,6 +629,13 @@ namespace WindowsFormsApplication1
                     KalenderId = mitKalender && row["KalenderId"] != DBNull.Value ? Convert.ToInt32(row["KalenderId"]) : 0
                 });
             }
+
+            // KBP-4a: die Eingabeart der Kältezuordnung - eigene Abfrage, damit der gemeinsame SELECT der drei
+            // Bedarfsarten unverändert bleibt. Nur 'typtag' ändert den Weg.
+            Dictionary<int, string> arten = EingabeartenLesen(quelle, idProjekt);
+            if (arten != null)
+                foreach (Profileintrag e in eintraege)
+                    e.Eingabeart = arten.TryGetValue(e.ZeilenId, out string art) ? art : KaeltebedarfsprofilVorlagenSchema.EINGABE_JAHR;
             return eintraege;
         }
 
@@ -727,10 +777,63 @@ namespace WindowsFormsApplication1
                 else if (idProjekt != 0)
                     pjv = ProjektJahressumme(satzquelle, idProjekt, kopf);
 
+                // Der ungespeicherte Arbeitsstand des Dialogs (nur Vorschau): Monatswerte, Wochenprofil, Kalender.
+                ProfilArbeitsstand arbeit = null;
+                quelle.Arbeitsstaende?.TryGetValue(name, out arbeit);
+                // KBP-4a: Zuordnungen mit Eingabeart 'typtag' (nur Kälte) rechnen über die Typtagschicht - Monatswerte
+                // und Wochenprofil entfallen dort, die Jahressumme bleibt.
+                if (string.Equals(arbeit?.Eingabeart ?? EingabeartDesEintrags(quelle, satzquelle, idProjekt, eintrag, kopf),
+                                  KaeltebedarfsprofilVorlagenSchema.EINGABE_TYPTAG, StringComparison.Ordinal))
+                {
+                    double summe = pjv;
+                    if (!(summe > 0))
+                        for (int i = 0; i < MONATE; i++) summe += Convert.ToDouble(kopf["Monat_" + (i + 1).ToString()]);
+                    KaeltetyptagEingabe typtage = arbeit?.Typtage ?? KaeltetyptagCtrl.Lies(KopfId(kopf));
+                    Betriebskalender kalT = arbeit != null && arbeit.KalenderGesetzt
+                        ? KalenderUeberId(arbeit.KalenderId, kalender)
+                        : KalenderDesEintrags(quelle, satzquelle, idProjekt, eintrag, kopf, kalender);
+                    kalT ??= Normvorgabe(quelle, satzquelle, idProjekt, kopf);
+                    byte[] artenT = null;
+                    if (kalT != null && !tagesarten.TryGetValue(Kalenderschluessel(kalT, kopf), out artenT))
+                    {
+                        artenT = kalT.Tagesarten(raster);
+                        tagesarten[Kalenderschluessel(kalT, kopf)] = artenT;
+                    }
+                    Typtagschicht.Ergebnis e = Typtagschicht.TyptageZuJahr(
+                        typtage, summe, jahreswerte, moAnfang, wochentagJan1, artenT,
+                        kalT?.Ferienfaktor ?? 1.0, kalT != null && kalT.FerienKuerzen,
+                        kalT != null && kalT.FerienWieSonntag);
+                    if (e.FehlendeZellen.Count > 0)
+                        SimulationProtokoll.Aktuell.Hinweis(string.Format(
+                            MyResource.Resource.SIMENG_TYPTAG_ZELLEN_LEER, quelle.Praefix, name,
+                            e.FehlendeZellen.Count, string.Join(", ", e.FehlendeZellen)));
+                    foreach (int nr in e.LeereTyptage)
+                        SimulationProtokoll.Aktuell.Hinweis(string.Format(
+                            MyResource.Resource.SIMENG_TYPTAG_OHNE_STUNDEN, quelle.Praefix, name, nr));
+                    if (e.FerienOhneWirkung)
+                        SimulationProtokoll.Aktuell.Hinweis(string.Format(
+                            MyResource.Resource.SIMENG_TYPTAG_FERIEN_OHNE_WIRKUNG, quelle.Praefix, name, kalT?.Bezeichner ?? ""));
+                    if (!e.Gerechnet)
+                    {
+                        SimulationProtokoll.Aktuell.Warnung(string.Format(
+                            MyResource.Resource.SIMENG_TYPTAG_OHNE_BEDARF, quelle.Praefix, name));
+                        if (info != null) info.Uebersprungen++;
+                        continue;
+                    }
+                    info?.JeProfil?.Invoke(kopf, jahreswerte);
+                    info?.JeZeile?.Invoke(eintrag.ZeilenId, kopf, jahreswerte);
+                    WPPlan.Core.BhkwPlan.VectorenAddieren(jahreswerte, ziel);
+                    if (info != null) info.Gerechnet++;
+                    continue;
+                }
+
+                bool monateAusArbeit = arbeit?.Monatswerte != null && arbeit.Monatswerte.Length == MONATE;
+                bool wocheAusArbeit = arbeit?.Wochenwerte != null && arbeit.Wochenwerte.Length == WOCHEN_STUNDEN;
+
                 double jv = 0;
                 for (int i = 0; i < MONATE; i++)
                 {
-                    double d = (double)kopf["Monat_" + (i + 1).ToString()];
+                    double d = monateAusArbeit ? arbeit.Monatswerte[i] : (double)kopf["Monat_" + (i + 1).ToString()];
                     monatswerte[i] = (double)d;
                     jv += monatswerte[i];
                 }
@@ -751,7 +854,7 @@ namespace WindowsFormsApplication1
                 }
 
                 object objTyp = kopf["Typ"];
-                if (DBNull.Value.Equals(objTyp) || objTyp == null)
+                if (!wocheAusArbeit && (DBNull.Value.Equals(objTyp) || objTyp == null))
                 {
                     // Ohne Typbezug gibt es keine Verteilung: DIESES Profil wird mit
                     // benannter Warnung übersprungen (Anteil 0), die übrigen rechnen
@@ -764,12 +867,14 @@ namespace WindowsFormsApplication1
                     continue;
                 }
 
-                string typ = objTyp.ToString();
+                string typ = objTyp == null || DBNull.Value.Equals(objTyp) ? "" : objTyp.ToString();
 
                 // V0-3: Wochenprofil vor JEDEM Ladevorgang nullen.
                 Array.Clear(wochenwerte, 0, wochenwerte.Length);
 
-                if (!WochenprofilLesen(satzquelle, idProjekt, typ, KopfId(kopf), wochenwerte))
+                if (wocheAusArbeit)
+                    Array.Copy(arbeit.Wochenwerte, wochenwerte, WOCHEN_STUNDEN);
+                else if (!WochenprofilLesen(satzquelle, idProjekt, typ, KopfId(kopf), wochenwerte))
                 {
                     if (projektmodus)
                         SimulationProtokoll.Aktuell.Warnung(string.Format(
@@ -794,7 +899,10 @@ namespace WindowsFormsApplication1
                 // Jahresverteilung gemäß Wochenprofil - mit dem Wochentag des 1. Januar (F3).
                 // PW2/BW2: Mit Betriebskalender legt die Kalenderschicht Feiertage und Ferien
                 // zwischen Kachelung und Monatsnormierung; ohne ihn rechnet der Weg wie zuvor.
-                Betriebskalender kal = KalenderDesEintrags(quelle, satzquelle, idProjekt, eintrag, kopf, kalender);
+                Betriebskalender kal = arbeit != null && arbeit.KalenderGesetzt
+                    ? KalenderUeberId(arbeit.KalenderId, kalender)
+                    : KalenderDesEintrags(quelle, satzquelle, idProjekt, eintrag, kopf, kalender);
+                kal ??= Normvorgabe(quelle, satzquelle, idProjekt, kopf);
                 if (kal == null)
                 {
                     WPPlan.Core.BhkwPlan.StromWocheToJahr(wochenwerte, monatswerte, jahreswerte,
@@ -802,14 +910,15 @@ namespace WindowsFormsApplication1
                 }
                 else
                 {
-                    if (!tagesarten.TryGetValue(kal.ID, out byte[] arten))
+                    if (!tagesarten.TryGetValue(Kalenderschluessel(kal, kopf), out byte[] arten))
                     {
                         arten = kal.Tagesarten(raster);
-                        tagesarten[kal.ID] = arten;
+                        tagesarten[Kalenderschluessel(kal, kopf)] = arten;
                     }
                     if (!Betriebskalenderschicht.WocheZuJahr(wochenwerte, monatswerte, jahreswerte,
                                                              moAnfang, moEnde, wochentagJan1,
-                                                             arten, kal.Ferienfaktor, kal.FerienKuerzen))
+                                                             arten, kal.Ferienfaktor, kal.FerienKuerzen,
+                                                             kal.FerienWieSonntag))
                         SimulationProtokoll.Aktuell.Hinweis(string.Format(
                             MyResource.Resource.SIMENG_KALENDER_MONAT_OHNE_BETRIEB,
                             quelle.Praefix, name, kal.Bezeichner));
@@ -853,6 +962,73 @@ namespace WindowsFormsApplication1
                     if (wert != null && wert != DBNull.Value) id = Convert.ToInt32(wert);
                 }
             }
+            return KalenderUeberId(id, cache);
+        }
+
+        /// <summary>
+        /// KBP-4a: die Eingabearten der Kältezuordnungen eines Projekts (Zeilen-ID → Wert); <c>null</c> für die übrigen
+        /// Bedarfsarten oder ohne die Spalte.
+        /// </summary>
+        private static Dictionary<int, string> EingabeartenLesen(ProfilQuelle quelle, int idProjekt)
+        {
+            if (!string.Equals(quelle.ZuordnungTabelle, KaeltebedarfSchema.TAB_ZUORDNUNG, StringComparison.OrdinalIgnoreCase) ||
+                !KaeltebedarfsprofilVorlagenSchema.EingabeartLesbar())
+                return null;
+            var je = new Dictionary<int, string>();
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT \"ID\", \"" + KaeltebedarfsprofilVorlagenSchema.SPALTE_EINGABEART + "\" FROM \"" +
+                KaeltebedarfSchema.TAB_ZUORDNUNG + "\" WHERE \"ID_Projekt\" = ?",
+                new DbParam("@p", idProjekt));
+            if (dt != null)
+                foreach (DataRow r in dt.Rows)
+                    je[Convert.ToInt32(r["ID"])] = KaeltebedarfsprofilVorlagenSchema.Eingabeart(r[1]);
+            return je;
+        }
+
+        /// <summary>
+        /// KBP-4a: die Eingabeart eines Eintrags — die der Zuordnungszeile, in der Projektvorschau über die ID des
+        /// Kopfsatzes nachgeschlagen (wie der Kalender); <c>null</c> außerhalb der Kälte oder in der Katalogvorschau.
+        /// </summary>
+        private static string EingabeartDesEintrags(ProfilQuelle quelle, ProfilQuelle satzquelle, int idProjekt,
+                                                    Profileintrag eintrag, DataRow kopf)
+        {
+            if (eintrag.Eingabeart != null) return eintrag.Eingabeart;
+            if (idProjekt == 0 || satzquelle.Modus == ProfilQuellmodus.Katalogvorschau ||
+                !string.Equals(quelle.ZuordnungTabelle, KaeltebedarfSchema.TAB_ZUORDNUNG, StringComparison.OrdinalIgnoreCase) ||
+                !KaeltebedarfsprofilVorlagenSchema.EingabeartLesbar())
+                return null;
+            int kopfId = KopfId(kopf);
+            if (kopfId <= 0) return null;
+            object wert = DataRepository.ExecuteScalar(
+                "SELECT \"" + KaeltebedarfsprofilVorlagenSchema.SPALTE_EINGABEART + "\" FROM \"" + KaeltebedarfSchema.TAB_ZUORDNUNG +
+                "\" WHERE \"ID_Projekt\" = ? AND \"" + KaeltebedarfSchema.SPALTE_ID_KAELTEBEDARF + "\" = ? ORDER BY \"ID\"",
+                new DbParam("@p", idProjekt), new DbParam("@kb", kopfId));
+            return wert == null || wert == DBNull.Value ? null : KaeltebedarfsprofilVorlagenSchema.Eingabeart(wert);
+        }
+
+        /// <summary>
+        /// Welle KV8 (Entscheid des Anwenders vom 17.10.2026): Eine Kältezeile ohne wirksamen Kalender, deren Projektkopie
+        /// Nutzungstage nach Norm trägt, rechnet mit dem Normkalender als Vorgabe (<see cref="NormkalenderCtrl.Vorgabe"/>,
+        /// im Speicher). Nur Kälte, nur aus der Projektkopie (nicht im Katalog und nicht im Rückfall auf ihn).
+        /// </summary>
+        private static Betriebskalender Normvorgabe(ProfilQuelle quelle, ProfilQuelle satzquelle, int idProjekt, DataRow kopf)
+        {
+            if (idProjekt <= 0 || !ReferenceEquals(quelle, satzquelle) || quelle.Modus == ProfilQuellmodus.Katalogvorschau ||
+                !string.Equals(quelle.ZuordnungTabelle, KaeltebedarfSchema.TAB_ZUORDNUNG, StringComparison.OrdinalIgnoreCase))
+                return null;
+            int kopfId = KopfId(kopf);
+            return kopfId > 0 ? NormkalenderCtrl.Vorgabe(idProjekt, kopfId) : null;
+        }
+
+        /// <summary>
+        /// Der Schlüssel der Tagesarten eines Kalenders in diesem Aufruf: seine ID; der Normkalender als Vorgabe (ID 0,
+        /// im Speicher) steht unter der negativen ID seiner Projektkopie.
+        /// </summary>
+        private static int Kalenderschluessel(Betriebskalender kal, DataRow kopf) => kal.ID > 0 ? kal.ID : -KopfId(kopf);
+
+        /// <summary>Der Betriebskalender <paramref name="id"/>, je Aufruf einmal gelesen; <c>null</c> bei 0 oder ohne Satz.</summary>
+        private static Betriebskalender KalenderUeberId(int id, Dictionary<int, Betriebskalender> cache)
+        {
             if (id <= 0) return null;
             if (!cache.TryGetValue(id, out Betriebskalender kal))
             {

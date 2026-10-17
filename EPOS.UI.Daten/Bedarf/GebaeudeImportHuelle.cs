@@ -537,6 +537,7 @@ namespace WindowsFormsApplication1
         {
             string name = GebaeudeQuelle.NurName(pfad ?? "");
             string fehler = null;
+            string hash = "";
             await Kulturweitergabe.Starten(() =>
             {
                 FileStream strom;
@@ -550,13 +551,66 @@ namespace WindowsFormsApplication1
                     fehler = ex.Message;
                     return 0;
                 }
-                using (strom) ProjektdateiLesen(strom, name, gebaeudeindex, abbruch);
+                using (strom)
+                {
+                    // GD-N: die Prüfsumme der Projektdatei für den Prüfbefund, dann derselbe Strom von vorn gelesen.
+                    if (ProjektdateiPruefen && strom.CanSeek)
+                    {
+                        hash = MehrzonenuebernahmeCtrl.Pruefsumme(strom);
+                        strom.Position = 0;
+                    }
+                    ProjektdateiLesen(strom, name, gebaeudeindex, abbruch);
+                }
                 return 0;
             }, abbruch);
-            if (fehler == null) return ProjektdateiDaten();
+            if (fehler == null)
+            {
+                _projektdateiBefund = ProjektdateiPruefen ? Projektdateibefund(name, null, hash) : Array.Empty<string>();
+                return ProjektdateiDaten();
+            }
             ProjektdateiEntfernen();
             GebaeudeImportMeldung grund = MeldungDaten(new PruefMeldung(PruefStufe.Fehler, SqprojProtokoll.LESEFEHLER, fehler));
-            return new GebaeudeProjektdateiDaten { Dateiname = name, Ablehnung = grund, Meldungen = new[] { grund }, Schwerste = grund };
+            return new GebaeudeProjektdateiDaten
+            {
+                Dateiname = name, Ablehnung = grund, Meldungen = new[] { grund }, Schwerste = grund,
+                Pruefbefund = ProjektdateiPruefen ? Projektdateibefund(name, fehler, "") : Array.Empty<string>(),
+            };
+        }
+
+        /// <summary>
+        /// <b>Prüft auch die Projektdatei</b> (GD-N, Weg „Gebäudedatei + Projektdatei“ der Mehrzonenübernahme): Gesetzt, trägt
+        /// der Stand der Projektdatei den <see cref="GebaeudeProjektdateiDaten.Pruefbefund"/>.
+        /// </summary>
+        internal bool ProjektdateiPruefen { get; set; }
+
+        private IReadOnlyList<string> _projektdateiBefund = Array.Empty<string>();
+
+        /// <summary>
+        /// Der Prüfbefund der Projektdatei: Vorhandensein, Lesbarkeit (Fassung bzw. Grund der Ablehnung), Zuordnung zur
+        /// Gebäudedatei (Räume mit Gegenstück; keine = passt nicht) und Prüfsumme. Die Prüfsumme der Projektdatei speichert
+        /// der Import nicht — sie steht zum Vergleich mit der Datei des ersten Imports, ein Abgleich mit der Datenbank entfällt.
+        /// </summary>
+        internal IReadOnlyList<string> Projektdateibefund(string name, string fehler, string hash)
+        {
+            var zeilen = new List<string>();
+            if (fehler != null)
+            {
+                zeilen.Add(Formatieren(MyResource.Resource.GEBMZ_SQ_FEHLT, name, fehler));
+                return zeilen;
+            }
+            zeilen.Add(Formatieren(MyResource.Resource.GEBMZ_SQ_VORHANDEN, name));
+            SqprojStand p = _ablauf.Projektdatei;
+            if (p == null || p.Abgelehnt)
+                zeilen.Add(Formatieren(MyResource.Resource.GEBMZ_SQ_NICHT_LESBAR, p?.Ablehnung is PruefMeldung ab ? GebaeudeZuordnungsModell.MeldungText(ab) : ""));
+            else
+            {
+                zeilen.Add(Formatieren(MyResource.Resource.GEBMZ_SQ_LESBAR, p.Fassung ?? ""));
+                zeilen.Add(p.Abgeglichen > 0
+                    ? Formatieren(MyResource.Resource.GEBMZ_SQ_ZUORDNUNG, p.Abgeglichen, p.NichtAbgeglichen, p.IfcOhneGegenstueck)
+                    : MyResource.Resource.GEBMZ_SQ_ZUORDNUNG_KEINE);
+            }
+            zeilen.Add(Formatieren(MyResource.Resource.GEBMZ_SQ_PRUEFSUMME, KurzHash(hash)));
+            return zeilen;
         }
 
         /// <summary>Lädt die Projektdatei aus einem Strom dazu (der Weg beider Plattformen und der Prüfstände).</summary>
@@ -574,6 +628,7 @@ namespace WindowsFormsApplication1
         internal void ProjektdateiEntfernen()
         {
             _ablauf.ProjektdateiEntfernen();
+            _projektdateiBefund = Array.Empty<string>();
             _sqZonen = null;
             _einzonenprofilAbgewaehlt = false;
         }
@@ -633,7 +688,8 @@ namespace WindowsFormsApplication1
             {
                 GebaeudeImportMeldung grund = MeldungDaten(p.Ablehnung);
                 if (!meldungen.Any(m => m.Kennung == grund.Kennung)) meldungen.Insert(0, grund);
-                return new GebaeudeProjektdateiDaten { Dateiname = p.Dateiname ?? "", Ablehnung = grund, Meldungen = meldungen, Schwerste = grund };
+                return new GebaeudeProjektdateiDaten { Dateiname = p.Dateiname ?? "", Ablehnung = grund, Meldungen = meldungen, Schwerste = grund,
+                                                       Pruefbefund = _projektdateiBefund };
             }
             var groessen = new List<GebaeudeProjektdateiGroesse>();
             if (_sqZonen != null)
@@ -669,6 +725,7 @@ namespace WindowsFormsApplication1
                                      .OrderBy(m => m.Stufe == WarnStufe.Fehler ? 0 : 1).FirstOrDefault(),
                 Standpruefung = StandpruefungDaten(p.Standpruefung),
                 Aufbauquelle = AufbauquelleSchluessel(p.Aufbauquelle),
+                Pruefbefund = _projektdateiBefund,
             };
         }
 
@@ -830,7 +887,9 @@ namespace WindowsFormsApplication1
                 Raeume = _ablauf.Raeume(anfrage.Gebaeudeindex, haken).Select(RaumDaten).ToList(),
                 Zeilen = satz.Zeilen.Select(ZeileDaten).ToList(),
                 // Die Verwendung, die die Datei hergibt, mit Herleitung (Anwenderwunsch 08.10.2026) - als letzte Meldung.
+                // N8: Die Einzonenwarnung zu den Kalendern der Datei steht auch hier, nicht nur im Zonierungsstand und bei den Bauteilen.
                 Meldungen = satz.Meldungen.Concat(satz.Verwendung?.Herleitung is PruefMeldung vm ? new[] { vm } : Array.Empty<PruefMeldung>())
+                                .Concat(Uebernahmemeldungen(_vorschlag))
                                 .Select(MeldungDaten).ToList(),
                 ManuellHerkunftText = GebaeudeZuordnungsModell.HerkunftText(Importherkunft.Manuell),
                 Bauteile = BauteileDaten(_vorschlag),
@@ -838,7 +897,7 @@ namespace WindowsFormsApplication1
                 Aufbauten = GebaeudeAufbauHuelle.Aufbauliste(_vorschlag),
                 KlasseDerDatei = GebaeudeZuordnungsModell.KlasseDerDatei(satz),
                 KlassenHinweis = GebaeudeZuordnungsModell.KlassenHinweis(satz),
-                Zonierung = GebaeudeImportZonen.ZonierungDaten(_zonierung, _vorschlag, haken, _plan, _schritt),
+                Zonierung = MitPlanvorlage(GebaeudeImportZonen.ZonierungDaten(_zonierung, _vorschlag, haken, _plan, _schritt)),
                 Ansicht = GebaeudeAufbauHuelle.MitAufbau(GebaeudeImportAnsicht.AnsichtDaten(_geometrie, umhaengbar,
                                                              GebaeudeImportZonen.Zonennamen(_zonierung, _vorschlag),
                                                              anfrage.Gebaeudeindex >= 0 && anfrage.Gebaeudeindex < (_ablauf.Abbild?.Gebaeude.Count ?? 0)
@@ -873,6 +932,7 @@ namespace WindowsFormsApplication1
             };
             _zonierung = Zonieren(_ablauf.Abbild, index, regel, haken, umhaengungen);
             _plan = null;
+            _planvorlage = null;
             _schritt = (null, false, 0);
             _sqZonen = null;
             if (_zonierung != null && _zonierung.Regeln.Count > 1 && !_zonierung.Abgelehnt)
@@ -880,10 +940,24 @@ namespace WindowsFormsApplication1
                 // DER ZONENPLAN (Zonenbaum): der Regelvorschlag mit den Haken vor dem ersten Schritt, darauf die Schritte
                 // in ihrer Reihenfolge, zuletzt die heutigen Haken. Ohne Schritt bleibt die Zonierung die der Regel.
                 bool mitSchritten = schritte is { Count: > 0 };
+                IReadOnlyDictionary<string, bool> starthaken = mitSchritten ? grundhaken ?? haken : haken;
                 List<Raumumhaengung> hand = umhaengungen?.Where(u => u != null).Select(u => new Raumumhaengung(u.Raum, u.Zielzone)).ToList();
-                _plan = Zonenplan.Vorschlag(_ablauf.Abbild, index, _zonierung.Regel, mitSchritten ? grundhaken ?? haken : haken, hand);
-                // Vorgaberegel 2.5: Zonen ohne Profil nehmen das der Gebäudeart — vor den Schritten, damit „keine“ von Hand gilt.
-                VorgabeAnwenden(_plan);
+                // GD-N: der gespeicherte Plan eines früheren Imports statt des Regelvorschlags - solange keine andere Regel
+                // gewählt und nichts von Hand umgehängt ist; er trägt seine Profile schon (keine Vorgaberegel darüber).
+                Zonenplanvorlage vorlage = Planvorlage != null && (hand == null || hand.Count == 0)
+                    ? Planvorlage(_ablauf.Abbild, index, starthaken) : null;
+                if (vorlage?.Plan != null && (regel == null || string.Equals(regel, vorlage.Plan.Regel, StringComparison.Ordinal)))
+                {
+                    _planvorlage = vorlage;
+                    _plan = vorlage.Plan;
+                }
+                else
+                {
+                    _plan = Zonenplan.Vorschlag(_ablauf.Abbild, index, _zonierung.Regel, starthaken, hand);
+                    // Vorgaberegel 2.5: Zonen ohne Profil nehmen das der Gebäudeart — vor den Schritten, damit „keine“ von Hand gilt.
+                    VorgabeAnwenden(_plan);
+                }
+                if (_planvorlage != null && !mitSchritten) _zonierung = _plan.Zonieren();
                 if (mitSchritten)
                 {
                     _schritt = Auflegen(_plan, schritte, ProjektdateiSchritt);
@@ -976,6 +1050,38 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Zonenplan der letzten Zuordnung bzw. Prüfung; <c>null</c> ohne.</summary>
         internal Zonenplan Plan => _plan;
+
+        /// <summary>
+        /// <b>Die Vorlage eines gespeicherten Zonenplans</b> (GD-N; „Als Mehrzonenmodell übernehmen…“): liefert zu Abbild,
+        /// Gebäudeindex und Haken den zuletzt gespeicherten Plan des Projektgebäudes; <c>null</c> = keiner. Gesetzt, legt der
+        /// Zonenbaum diesen Plan statt des Regelvorschlags vor — solange keine andere Regel gewählt und nichts von Hand
+        /// umgehängt ist; die Schritte des Baums setzen darauf auf.
+        /// </summary>
+        internal Func<GebaeudeAbbild, int, IReadOnlyDictionary<string, bool>, Zonenplanvorlage> Planvorlage { get; set; }
+
+        /// <summary>Die Vorlage, die der letzte Vorschlag vorgelegt hat; <c>null</c> = keine.</summary>
+        internal Zonenplanvorlage Vorgelegt => _planvorlage;
+
+        private Zonenplanvorlage _planvorlage;
+
+        /// <summary>Die Zeilen der Vorlage an den Zonierungsdaten (Vorbelegung, Abweichung der Prüfsumme).</summary>
+        private GebaeudeZonierungDaten MitPlanvorlage(GebaeudeZonierungDaten z)
+        {
+            if (z == null || _planvorlage is not Zonenplanvorlage v || v.Plan == null) return z;
+            string zeile = Formatieren(MyResource.Resource.GEBMZ_PLAN_VORLAGE, v.Dateiname, v.Zeitpunkt, v.Raeume, v.Plan.Zonen.Count);
+            if (v.Verloren > 0) zeile += " " + Formatieren(MyResource.Resource.GEBMZ_PLAN_VERLOREN, v.Verloren);
+            return z with
+            {
+                Planvorlage = zeile,
+                PlanvorlageAbweichung = v.PruefsummeAbweichend
+                    ? Formatieren(MyResource.Resource.GEBMZ_PLAN_PRUEFSUMME, KurzHash(v.HashDatei), KurzHash(v.HashGespeichert))
+                    : "",
+            };
+        }
+
+        private static string KurzHash(string hash)
+            => string.IsNullOrEmpty(hash) ? "—" : hash.Length <= MehrzonenuebernahmeCtrl.HASH_KURZ ? hash
+             : hash.Substring(0, MehrzonenuebernahmeCtrl.HASH_KURZ) + "…";
 
         /// <summary>
         /// Die Zonierung eines Gebäudes nach <paramref name="regel"/>, sonst nach der Vorgabe, mit den
@@ -1259,6 +1365,14 @@ namespace WindowsFormsApplication1
                 GebaeudeZuordnungsModell.RaumGrundText(r),
                 r.Uebersteuert);
 
+        /// <summary>
+        /// Die Meldungen des Bauteilvorschlags, die die ganze Übernahme betreffen und deshalb auch in der allgemeinen Meldungsliste
+        /// des Imports stehen (Nachzug N8): die Einzonenwarnung zu den Kalendern der Datei.
+        /// </summary>
+        internal static IEnumerable<PruefMeldung> Uebernahmemeldungen(GebaeudeBauteilvorschlag v)
+            => v == null ? Enumerable.Empty<PruefMeldung>()
+             : v.Meldungen.Where(m => m.Schluessel == GebaeudeBauteilvorschlag.EINZONE_ZEITPLAENE);
+
         internal static GebaeudeImportMeldung MeldungDaten(PruefMeldung m)
             => new GebaeudeImportMeldung(
                 m.Stufe == PruefStufe.Fehler ? WarnStufe.Fehler : m.Stufe == PruefStufe.Warnung ? WarnStufe.Warnung : WarnStufe.Hinweis,
@@ -1352,7 +1466,7 @@ namespace WindowsFormsApplication1
                 new Katalogspalte(Katalogfilterprofil.SpBezeichner, MyResource.Resource.GIMP_DLG_SP_BAUTEIL),
                 new Katalogspalte(GebaeudeImportZonen.SP_ART, MyResource.Resource.GIMP_DLG_SP_ART, rang: Katalogspaltenrang.BeiPlatz),
                 new Katalogspalte(GebaeudeImportZonen.SP_FLAECHE, MyResource.Resource.GIMP_DLG_SP_FLAECHE, "m²", Katalogspaltenart.Zahl),
-                new Katalogspalte(GebaeudeImportZonen.SP_UWERT, MyResource.Resource.GIMP_DLG_SP_UWERT, "W/(m²K)", Katalogspaltenart.Zahl),
+                new Katalogspalte(GebaeudeImportZonen.SP_UWERT, MyResource.Resource.GIMP_DLG_SP_UWERT, "W/(m²·K)", Katalogspaltenart.Zahl),
                 new Katalogspalte(GebaeudeImportZonen.SP_AZIMUT, MyResource.Resource.GIMP_DLG_SP_AZIMUT, "°", Katalogspaltenart.Zahl,
                                   rang: Katalogspaltenrang.BeiPlatz),
                 new Katalogspalte(GebaeudeImportZonen.SP_NEIGUNG, MyResource.Resource.GIMP_DLG_SP_NEIGUNG, "°", Katalogspaltenart.Zahl,
@@ -1633,6 +1747,11 @@ namespace WindowsFormsApplication1
                     case GebaeudeZielfelder.GRUND_RANDBEDINGUNG:
                         if (!string.IsNullOrEmpty(z.Textwert)) d.GrundflaecheRandbedingung = z.Textwert;
                         break;
+                    // Welle DA-4: wirksamer U-Wert am Erdreich und Kellertemperatur der Datei.
+                    case GebaeudeZielfelder.ERDREICH_U_WIRKSAM: d.ErdreichUWirksam = w; break;
+                    case GebaeudeZielfelder.KELLERTEMPERATUR: d.Kellertemperatur = w; break;
+                    // Nachzug N4: die obere Raumtemperatur des Gebäudes (Inventar B10).
+                    case GebaeudeZielfelder.MAX_RAUMTEMPERATUR: d.MaxTemperatur = w; break;
                     case GebaeudeZielfelder.FLAECHE_SONSTIGE: d.SonstigeFlaechen = w; break;
                     case GebaeudeZielfelder.U_SONSTIGE: d.UWertSonstiges = w; break;
 

@@ -44,9 +44,8 @@ namespace WindowsFormsApplication1
     /// deutschem Persistenzwert. Dieser Satz trägt die Quellwerte bereits in
     /// EPOS-Einheiten; <see cref="NachModell"/> setzt sie nur noch um.</para>
     ///
-    /// <para><b>Was der Satz NICHT trägt.</b> Kosten (<c>Modulkosten</c>,
-    /// <c>Leistungskosten</c>, <c>Investition_Fix</c>, <c>Verschleisskosten</c>),
-    /// Degradation, Start-Ladezustand und zugesicherte Zyklen. Keine der vier
+    /// <para><b>Was der Satz NICHT trägt.</b> Kosten (sie stehen in den Satzvorlagen
+    /// der Kostenverwaltung, Welle KB-5), Degradation, Start-Ladezustand und zugesicherte Zyklen. Keine der vier
     /// geprüften Quellen führt sie; sie blieben erfunden. Sie bleiben deshalb 0
     /// und fallen im Rechenweg auf die Vorgaben zurück
     /// (<see cref="StromspeicherModel.WIRKUNGSGRAD_RT_VORGABE"/>,
@@ -131,8 +130,8 @@ namespace WindowsFormsApplication1
             m.m_StandbyVerbrauch = StandbyW;
 
             // Bewusst NICHT gesetzt und deshalb Modell-Vorgabewert 0: Degradation,
-            // Ladezustand, Modulkosten, Zyklen_Zugesichert, Verschleisskosten,
-            // Leistungskosten, Investition_Fix. Siehe Klassenkommentar.
+            // Ladezustand, Zyklen_Zugesichert. Kosten fuehrt das Modell nicht (Satzvorlage).
+            // Siehe Klassenkommentar.
             return m;
         }
 

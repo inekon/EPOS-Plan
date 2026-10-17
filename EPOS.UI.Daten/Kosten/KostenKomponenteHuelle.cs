@@ -177,6 +177,9 @@ namespace WindowsFormsApplication1
                 ["NutzungsdauerVorbelegen"] =
                     new Func<bool, NutzungsdauerVorbelegung>(NutzungsdauerVorbelegen),
 
+                // KB-3 (Anwenderentscheid 13.10.2026): der Abgleich mit dem zentralen Kostenkatalog.
+                ["KatalogAbgleich"] = new Func<bool, KatalogAbgleichStand>(KatalogAbgleich),
+
                 ["CaseGaben"] = new Func<KostenPositionZeile, IReadOnlyDictionary<string, object>>(CaseGaben),
                 ["CaseFertig"] = new Action<KostenPositionZeile, CaseEingabeErgebnis>(CaseFertig),
                 ["EditorGaben"] = new Func<KostenPositionZeile, IReadOnlyDictionary<string, object>>(EditorGaben),
@@ -232,7 +235,7 @@ namespace WindowsFormsApplication1
                 ["GruppeErsatzTitel"] = T("ND_TAFEL_TITEL", "Ersatz und Restwert"),
                 ["SpalteErsatzPosition"] = T("ND_TAFEL_SP_POSITION", "Komponente / Position"),
                 ["SpalteErsatzBetrag"] = T("ND_TAFEL_SP_BETRAG", "Betrag [€]"),
-                ["SpalteErsatzDauer"] = T("ND_TAFEL_SP_DAUER", "Nutzungsdauer n"),
+                ["SpalteErsatzDauer"] = T("ND_TAFEL_SP_DAUER", "Nutzungsdauer n [a]"),
                 ["SpalteErsatzErsatz"] = T("ND_TAFEL_SP_ERSATZ", "Ersatzbeschaffung"),
                 ["SpalteErsatzHerkunft"] = T("ND_TAFEL_SP_HERKUNFT", "Herkunft der Dauer"),
                 ["VorbelegenText"] = T("ND_VORBELEGEN_BTN", "Nutzungsdauern vorbelegen…"),
@@ -245,6 +248,15 @@ namespace WindowsFormsApplication1
                     "{0} Position(en) tragen bereits eine Nutzungsdauer. Sollen auch diese "
                     + "aus der AfA-Tabelle überschrieben werden?"),
                 // ETAPPE E10 (Stufe S3): derselbe Knopf auf der Betriebsseite — die Sätze.
+                ["KatalogAbgleichText"] = T("KAT_ABGLEICH_BTN", "Mit dem Kostenkatalog abgleichen…"),
+                ["KatalogAbgleichKeine"] = T("KAT_ABGLEICH_KEINE",
+                    "Die Kostenpositionen dieser Anlage stimmen mit dem Kostenkatalog überein."),
+                ["KatalogAbgleichFrage"] = T("KAT_ABGLEICH_FRAGE", "{0} fehlen, {1} weichen ab:\n{2}\nAbgleichen?"),
+                ["KatalogAbgleichStatus"] = T("KAT_ABGLEICH_STATUS",
+                    "Abgleich: {0} Position(en) angelegt, {1} auf den Katalogwert gesetzt."),
+                ["KatalogAbgleichFehler"] = T("KAT_ABGLEICH_FEHLER",
+                    "Mindestens eine Position konnte nicht geschrieben werden; der Abgleich ist unvollständig."),
+
                 ["SaetzeVorbelegenText"] = T("ND_SAETZE_VORBELEGEN_BTN", "Sätze vorbelegen…"),
                 ["SaetzeVorbelegenStatus"] = T("ND_SAETZE_VORBELEGEN_STATUS",
                     "{0} Satz/Sätze (Instandsetzung, Wartung) aus der Nutzungsdauertabelle vorbelegt."),
@@ -548,7 +560,7 @@ namespace WindowsFormsApplication1
             if (eingaben.Count == 0) return;
 
             stand.SpalteRestwert = string.Format(CultureInfo.CurrentCulture,
-                T("ND_TAFEL_SP_RESTWERT", "Restwert Jahr {0}"), p.Betrachtungszeitraum);
+                T("ND_TAFEL_SP_RESTWERT", "Restwert Jahr {0} [€]"), p.Betrachtungszeitraum);
 
             var zeilen = new List<ErsatzRestwertZeile>();
             foreach (ErsatzRestwertTafel.Zeile z in ErsatzRestwertTafel.Zeilen(
@@ -729,9 +741,22 @@ namespace WindowsFormsApplication1
             _satztafel = null;      // E10: je Aufbau frisch gelesen
             _varianten = KostenVorlagenCtrl.Vorlagen(KomponentenId, KategorieId);
 
+            // KB-4: Die Satzvorlagen der Katalogsätze stehen hinter den Varianten (KostenVorlagenCtrl
+            // sortiert sie dorthin) und bekommen EINE Gruppenzeile davor, statt sich zwischen die freien
+            // Varianten zu mischen. Die Gruppenzeile trägt keinen Vorlagenschlüssel; wer sie wählt, bleibt
+            // bei der vorigen Wahl (die Zuordnung unten findet sie nicht).
             var eintraege = new List<ValueTuple<int, string>>();
+            bool gruppeGesetzt = false;
             foreach (KostenVorlageKopf v in _varianten)
+            {
+                if (KostenVorlagenCtrl.KATALOGSAETZE_GRUPPIEREN && v.IstKatalogsatz && !gruppeGesetzt)
+                {
+                    eintraege.Add(new ValueTuple<int, string>(KostenVorlagenCtrl.ID_GRUPPE_KATALOGSAETZE,
+                                                              MyResource.Resource.KDLG_VARIANTEN_GRUPPE_KATALOG));
+                    gruppeGesetzt = true;
+                }
                 eintraege.Add(new ValueTuple<int, string>(v.Id, v.Name));
+            }
             stand.Varianten = eintraege;
 
             _variante = null;
@@ -766,6 +791,8 @@ namespace WindowsFormsApplication1
             stand.VarianteId = null;
             stand.PositionNeuMoeglich = KomponentenId > 0;
             stand.VarianteLoeschbar = false;
+            // KB-3: Abgeglichen wird je ANLAGE - nur sie führt ein Gerät mit Katalogsatz.
+            stand.KatalogAbgleichbar = KomponentenId > 0 && AnlagenId > 0;
 
             List<KostenProjektPositionenCtrl.Zeile> zeilen = KomponentenId > 0
                 ? KostenProjektPositionenCtrl.Lies(_idProjekt, KomponentenId, KategorieId, AnlagenId)
@@ -1520,6 +1547,81 @@ namespace WindowsFormsApplication1
         {
             return wert.HasValue ? wert.Value.ToString("0.##", CultureInfo.CurrentCulture) : "";
         }
+
+        /// <summary>
+        /// KB-3 (Anwenderentscheid 13.10.2026): <b>Abgleich mit dem zentralen Kostenkatalog.</b>
+        /// <paramref name="ausfuehren"/> false liefert die Vorschau und schreibt nichts; true legt die
+        /// fehlenden Positionen an und setzt die abweichenden auf den Katalogwert.
+        ///
+        /// <para>Gerechnet wird im Kern (<c>Katalogkostenabgleich</c>) über die Satzvorlage des
+        /// Katalogsatzes, aus dem das Gerät dieser Anlage stammt. Die Hülle macht aus dem Befund nur
+        /// Text: je Unterschied eine Zeile, und eine Absage als fertigen Satz — die Komponente kennt
+        /// weder Datenbank noch Fachklasse (Hausregel EPOS.UI).</para>
+        /// </summary>
+        private KatalogAbgleichStand KatalogAbgleich(bool ausfuehren)
+        {
+            int idAnlage = AnlagenId, komponente = KomponentenId;
+            if (!ProjektModus || idAnlage <= 0 || komponente <= 0)
+                return new KatalogAbgleichStand(
+                    T("KAT_ABGLEICH_OHNE_GEWERK",
+                      "Für dieses Gewerk führt der Katalog keine Satzvorlage; ein Abgleich ist nicht möglich."),
+                    0, 0, 0, "", 0, 0, false);
+
+            Abgleichbefund befund = Katalogkostenabgleich.Vorschau(_idProjekt, idAnlage, komponente);
+            if (befund.Absage != Abgleichabsage.Keine)
+                return new KatalogAbgleichStand(Absagetext(befund.Absage), 0, 0, 0, "", 0, 0, false);
+
+            if (!ausfuehren)
+                return new KatalogAbgleichStand("", befund.Fehlt, befund.WeichtAb, befund.Gleich,
+                                                Vorschautext(befund), 0, 0, false);
+
+            Abgleichergebnis e = Katalogkostenabgleich.Ausfuehren(_idProjekt, idAnlage, komponente);
+            if (e.Absage != Abgleichabsage.Keine)
+                return new KatalogAbgleichStand(Absagetext(e.Absage), 0, 0, 0, "", 0, 0, e.Fehler);
+            return new KatalogAbgleichStand("", befund.Fehlt, befund.WeichtAb, befund.Gleich, "",
+                                            e.Angelegt, e.Gesetzt, e.Fehler);
+        }
+
+        /// <summary>Die benannte Absage als fertiger Satz (beide Sprachen).</summary>
+        internal static string Absagetext(Abgleichabsage grund)
+        {
+            switch (grund)
+            {
+                case Abgleichabsage.KeineZuordnung:
+                    return T("KAT_ABGLEICH_OHNE_ZUORDNUNG",
+                             "Diese Anlage kennt ihren Katalogsatz nicht — ohne Zuordnung zum Katalog gibt es nichts abzugleichen.");
+                case Abgleichabsage.KeineSatzvorlage:
+                    return T("KAT_ABGLEICH_OHNE_VORLAGE",
+                             "Der Katalogsatz dieser Anlage führt keine Kosten und damit keine Satzvorlage.");
+                default:
+                    return T("KAT_ABGLEICH_OHNE_GEWERK",
+                             "Für dieses Gewerk führt der Katalog keine Satzvorlage; ein Abgleich ist nicht möglich.");
+            }
+        }
+
+        /// <summary>Je Unterschied eine Zeile — fehlende zuerst, dann die abweichenden mit beiden Zahlen.</summary>
+        internal static string Vorschautext(Abgleichbefund befund)
+        {
+            var zeilen = new List<string>();
+            foreach (Abgleichzeile z in befund.Zeilen)
+            {
+                if (z.Art == Abgleichart.Gleich) continue;
+                string bemessung = BemessungKatalog.Anzeige(z.Bemessung);
+                if (string.IsNullOrEmpty(bemessung)) bemessung = z.Bemessung;
+                zeilen.Add(z.Art == Abgleichart.Fehlt
+                    ? string.Format(MyResource.Resource.Culture,
+                                    T("KAT_ABGLEICH_ZEILE_FEHLT", "fehlt: {0} ({1}) — Katalog {2}"),
+                                    z.Bezeichnung, bemessung, Z(z.Katalogwert))
+                    : string.Format(MyResource.Resource.Culture,
+                                    T("KAT_ABGLEICH_ZEILE_ABWEICHUNG",
+                                      "weicht ab: {0} ({1}) — Projekt {2}, Katalog {3}"),
+                                    z.Bezeichnung, bemessung, Z(z.Projektwert), Z(z.Katalogwert)));
+            }
+            return string.Join("\n", zeilen);
+        }
+
+        private static string Z(double? wert)
+            => wert.HasValue ? wert.Value.ToString("N2", MyResource.Resource.Culture) : "—";
 
         private static string T(string schluessel, string rueckfall)
         {
