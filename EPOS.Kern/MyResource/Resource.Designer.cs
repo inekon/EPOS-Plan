@@ -122629,6 +122629,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herleitung der Nutzwärme ähnelt.
+        /// </summary>
+        public static string SIMERG_GRP_HERLEITUNG_NUTZWAERME {
+            get {
+                return ResourceManager.GetString("SIMERG_GRP_HERLEITUNG_NUTZWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kälte ähnelt.
         /// </summary>
         public static string SIMERG_GRP_KAELTE {
@@ -123199,6 +123208,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_LBL_NETZ_DEZENTRAL {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_NETZ_DEZENTRAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erzeugte Nutzwärme Heizkessel: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_NUTZWAERME_SPK {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_NUTZWAERME_SPK", resourceCulture);
             }
         }
         
@@ -124018,6 +124036,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_TIP_SPALTE_JAZ_HEIZSTAB {
             get {
                 return ResourceManager.GetString("SIMERG_TIP_SPALTE_JAZ_HEIZSTAB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärme der Kessel, die in Speichern verloren geht oder am Jahresende noch darin steht, also keinen Bedarf deckt. Gerechnet als Wärmeproduktion minus Nutzwärme. ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_SPEICHERVERLUSTE_SPK {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_SPEICHERVERLUSTE_SPK", resourceCulture);
             }
         }
         

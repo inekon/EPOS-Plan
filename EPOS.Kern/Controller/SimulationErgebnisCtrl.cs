@@ -684,6 +684,13 @@ namespace WindowsFormsApplication1
             public double[] GedecktKanalMwh = new double[Kanal.ANZAHL];
             public double RestwaermeMwh;
             public double WaermeproduktionMwh;
+
+            /// <summary>
+            /// Die Speicherverluste der Kessel [MWh/a]: der Teil ihrer eigenen Produktion, der in
+            /// Speichern verloren geht oder am Jahresende noch darin steht. Die Herleitung im Reiter:
+            /// Produktion − Speicherverluste = <see cref="GedecktMwh"/>.
+            /// </summary>
+            public double SpeicherverlusteMwh => WaermeproduktionMwh - GedecktMwh;
             public double StrombedarfMwh;
             public double ReststrombedarfMwh;
             public double GasMwh;

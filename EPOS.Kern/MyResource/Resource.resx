@@ -58244,4 +58244,13 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="SIMERG_TIP_NUTZWAERME_WP" xml:space="preserve">
     <value>Der Teil des Wärmebedarfs, den die Wärmepumpe deckt: direkt abgegebene Wärme plus die ihr zugerechnete Entladung der Speicher, samt Heizstab. Jede Kilowattstunde zählt einmal, auch wenn ein Booster sie ein zweites Mal angehoben hat. Grundlage der Wärmebedarfsdeckung.</value>
   </data>
+  <data name="SIMERG_GRP_HERLEITUNG_NUTZWAERME" xml:space="preserve">
+    <value>Herleitung der Nutzwärme</value>
+  </data>
+  <data name="SIMERG_LBL_NUTZWAERME_SPK" xml:space="preserve">
+    <value>Erzeugte Nutzwärme Heizkessel:</value>
+  </data>
+  <data name="SIMERG_TIP_SPEICHERVERLUSTE_SPK" xml:space="preserve">
+    <value>Wärme der Kessel, die in Speichern verloren geht oder am Jahresende noch darin steht, also keinen Bedarf deckt. Gerechnet als Wärmeproduktion minus Nutzwärme.</value>
+  </data>
 </root>
