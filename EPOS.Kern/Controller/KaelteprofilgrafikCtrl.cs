@@ -56,7 +56,8 @@ namespace WindowsFormsApplication1
             }
             if (reiheMarkiert == null) return null;
 
-            Gemeinjahrkalender raster = Konditionierungdatenweg.Raster(idProjekt, ProfilBedarf.WOCHENTAG_ALTKONVENTION);
+            // KV8-N: das Wochentagsraster des Projekts — dasselbe, in dem Vorschau und Lauf die Reihe rechnen.
+            Gemeinjahrkalender raster = Konditionierungdatenweg.Raster(idProjekt);
             // KV8: der wirksame Kalender — der gewählte, sonst der Normkalender als Vorgabe (derselbe Weg wie die Rechnung).
             Betriebskalender kalender = markiert.IdKopie > 0
                 ? NormkalenderCtrl.Wirksam(idProjekt, markiert.IdKopie, markiert.KalenderId)
@@ -68,7 +69,7 @@ namespace WindowsFormsApplication1
             // — gezählt im Wochentagsraster des Projekts, in dem der Normkalender gebildet ist und die Rechnung läuft.
             if (bilder != null && kalender != null && markiert.IdKopie > 0 &&
                 KaeltebedarfStammCtrl.ProjektNutzungstage(markiert.IdKopie) is int norm && norm > 0)
-                bilder = bilder with { Nutzungstage = NormkalenderCtrl.Nutzungstage(kalender, Konditionierungdatenweg.Raster(idProjekt)) };
+                bilder = bilder with { Nutzungstage = NormkalenderCtrl.Nutzungstage(kalender, raster) };
             return bilder;
         }
 

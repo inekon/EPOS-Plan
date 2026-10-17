@@ -277,7 +277,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Der Kältebedarf</b> (Welle K2, Konzept Kältebedarf 3.3): dieselbe Profilrechnung wie die Prozesswärme
         /// (<see cref="ProfilBedarf.Rechnen"/>) über <see cref="ProfilQuelle.Kaelte"/>, im Quellmodus der Namensliste
-        /// (<see cref="ProfilBedarf.Vorschaumodus"/>) und mit dem Kalender der Altkonvention wie die übrigen Vorschauen.
+        /// (<see cref="ProfilBedarf.Vorschaumodus"/>) und im Wochentagsraster des Projekts wie der Lauf
+        /// (<see cref="Konditionierungdatenweg.Raster(int)"/>; im Katalog das Rückfallraster der Altkonvention).
         /// Kein Teiler, keine Deckung, keine Erzeuger — die Vorschau zeigt den Bedarf; was zentral und was dezentral
         /// gedeckt wird, bucht erst der Lauf (Stufe K3). Meldet die Profilroutine ein unvollständiges Profil, steht
         /// <see cref="BedarfsVorschau.Erfolgreich"/> auf <c>false</c> (die Meldung gibt die Routine selbst).
@@ -298,7 +299,11 @@ namespace WindowsFormsApplication1
 
             var stunde = new double[8760];
             var monat = new double[12];
-            bool ok = ProfilBedarf.Rechnen(quelle, idProjekt, liste, ProfilBedarf.WOCHENTAG_ALTKONVENTION,
+            // KV8-N: Die Projektvorschau rechnet im Wochentagsraster des Projekts — derselbe w₀ wie der Lauf
+            // (SimulationWaermebedarf.RasterUebernehmen: Klimaregion, mit Preisreihenjahr das Jahr). Die
+            // Katalogvorschau (idProjekt 0) bleibt beim Rückfallraster der Altkonvention.
+            int wochentag = Konditionierungdatenweg.Raster(idProjekt).W0;
+            bool ok = ProfilBedarf.Rechnen(quelle, idProjekt, liste, wochentag,
                                            moAnfang, moEnde, stunde, monat);
 
             ergebnis.KaelteStunde = stunde;
