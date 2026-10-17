@@ -120,16 +120,22 @@ namespace EPOS.Kern.Tests
             Assert.Equal(WindowsFormsApplication1.MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG, RueckkuehlwerkStammCtrl.Pruefen(new RueckkuehlwerkModel { Bezeichner = " " }));
             Assert.Equal(WindowsFormsApplication1.MyResource.Resource.RKW_MSG_BAUART_UNGUELTIG,
                          RueckkuehlwerkStammCtrl.Pruefen(new RueckkuehlwerkModel { Bezeichner = "RK", Bauart = "LUFT" }));
-            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.RKW_MSG_AUSWAHL_UNGUELTIG,
-                         RueckkuehlwerkStammCtrl.Pruefen(new RueckkuehlwerkModel { Bezeichner = "RK", Freikuehlung_Schaltung = "SERIE" }));
-            foreach (RueckkuehlwerkModel m in new[]
+            // K-F5a: Die Meldungen nennen Feld und Wert bzw. Feld und Bereich (benannte Meldungen der Verwaltung).
+            string auswahl = RueckkuehlwerkStammCtrl.Pruefen(new RueckkuehlwerkModel { Bezeichner = "RK", Freikuehlung_Schaltung = "SERIE" });
+            Assert.Contains(WindowsFormsApplication1.MyResource.Resource.RKW_LBL_FREIKUEHLUNG_SCHALTUNG, auswahl, StringComparison.Ordinal);
+            Assert.Contains("SERIE", auswahl, StringComparison.Ordinal);
+            foreach ((RueckkuehlwerkModel m, string feld) in new[]
                      {
-                         new RueckkuehlwerkModel { Bezeichner = "RK", Ventilator_Stufen = 1 },
-                         new RueckkuehlwerkModel { Bezeichner = "RK", Eindickung = 1 },
-                         new RueckkuehlwerkModel { Bezeichner = "RK", Nennleistung_kW = double.NaN },
-                         new RueckkuehlwerkModel { Bezeichner = "RK", Annaeherung_Nenn_K = 31 },
+                         (new RueckkuehlwerkModel { Bezeichner = "RK", Ventilator_Stufen = 1 }, WindowsFormsApplication1.MyResource.Resource.RKW_LBL_VENTILATOR_STUFEN),
+                         (new RueckkuehlwerkModel { Bezeichner = "RK", Eindickung = 1 }, WindowsFormsApplication1.MyResource.Resource.RKW_LBL_EINDICKUNG),
+                         (new RueckkuehlwerkModel { Bezeichner = "RK", Nennleistung_kW = double.NaN }, WindowsFormsApplication1.MyResource.Resource.RKW_LBL_NENNLEISTUNG),
+                         (new RueckkuehlwerkModel { Bezeichner = "RK", Annaeherung_Nenn_K = 31 }, WindowsFormsApplication1.MyResource.Resource.RKW_LBL_ANNAEHERUNG_NENN),
                      })
-                Assert.Equal(WindowsFormsApplication1.MyResource.Resource.RKW_MSG_WERT_UNGUELTIG, RueckkuehlwerkStammCtrl.Pruefen(m));
+            {
+                string befund = RueckkuehlwerkStammCtrl.Pruefen(m);
+                Assert.NotNull(befund);
+                Assert.StartsWith(feld, befund, StringComparison.Ordinal);
+            }
         }
 
         [Fact]
@@ -268,12 +274,18 @@ namespace EPOS.Kern.Tests
             KaeltemaschineAnlageCtrl.Loeschen(anlage);
             Assert.Null(RueckkuehlwerkCtrl.Laden(vierte));
 
-            // Loeschen des Katalogsatzes laesst eine Projektkopie stehen, ohne Katalogverweis.
+            // K-F5a: Ein Katalogsatz mit Projektkopie ist verwendet - Loeschen lehnt benannt ab; ohne Kopie geht es.
             int anlage2 = KaeltemaschineAnlageCtrl.Anlegen(PROJEKT, StammKm(TROCKENKUEHLER), "KM 2");
             Assert.Null(KaeltemaschineAnlageCtrl.RueckkuehlwerkWaehlen(anlage2, stamm));
             int fuenfte = KaeltemaschineAnlageCtrl.Laden(anlage2).IdRueckkuehlwerk.Value;
+            Assert.Equal(1, RueckkuehlwerkStammCtrl.Verwendungen(stamm));
+            RueckkuehlwerkStammCtrl.SpeicherErgebnis abgelehnt = RueckkuehlwerkStammCtrl.Loeschen(stamm);
+            Assert.False(abgelehnt.Ok);
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, WindowsFormsApplication1.MyResource.Resource.RKW_MSG_VERWENDET, 1), abgelehnt.Meldung);
+            Assert.Equal(stamm, RueckkuehlwerkCtrl.Laden(fuenfte).IdStamm);
+            KaeltemaschineAnlageCtrl.Loeschen(anlage2);
+            Assert.Equal(0, RueckkuehlwerkStammCtrl.Verwendungen(stamm));
             Assert.True(RueckkuehlwerkStammCtrl.Loeschen(stamm).Ok);
-            Assert.Null(RueckkuehlwerkCtrl.Laden(fuenfte).IdStamm);
         }
 
         [Fact]

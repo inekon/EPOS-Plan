@@ -320,7 +320,8 @@
                     @* Die Betriebseingaben: dieselbe Komponente wie im Bereich „Kälte" der Simulations-
                        konfiguration; sie schreibt in den Arbeitsstand der gewaehlten Anlage. *@
                     <KaeltemaschineKonfiguration @key="a.Schluessel" Daten="@a.Arbeit" Texte="@Texte" Stromtraeger="@Stromtraeger"
-                                                 ProjektStromtraeger="@ProjektStromtraeger" Geaendert="Nachziehen" />
+                                                 ProjektStromtraeger="@ProjektStromtraeger" Geaendert="Nachziehen"
+                                                 Rueckkuehlung="@_rueckkuehlung" RueckkuehlwerkeOeffnen="@RueckkuehlwerkeWeg" />
                 }
                 else if (KatalogsatzGesperrt)
                 {
@@ -546,6 +547,12 @@
     /// </summary>
     [Parameter] public Func<int, int, IReadOnlyDictionary<string, object>?>? EnergietraegerGaben { get; set; }
 
+    /// <summary>
+    /// K-F5b: die Gaben der Gruppe „Rückkühlung“ an der Kältemaschine (Katalogsätze der Rückkühlwerke samt Lesezeilen,
+    /// Luftfeuchte des Projektklimas) — gelesen beim Öffnen und nach „Rückkühlwerke…“; <c>null</c> = keine Gruppe.
+    /// </summary>
+    [Parameter] public Func<RueckkuehlungGaben?>? Rueckkuehlung { get; set; }
+
     /// <summary>Die Kennlinienbilder eines Satzes (Id, <c>true</c> = Katalogsatz); ohne sie kein Bild.</summary>
     [Parameter] public Func<int, bool, KaeltemaschineKennlinienbilder?>? Kennlinienbilder { get; set; }
 
@@ -735,6 +742,7 @@
             _wp.Clear();
             fehler.Add(string.Format(CultureInfo.CurrentCulture, Texte.WaermepumpenLadenFehler, ex.Message));
         }
+        RueckkuehlungLesen(fehler);
         _meldung = string.Join(" ", fehler);
         _filterstand = Profil.Schluessel.StartsWith("ANLAGE_", StringComparison.Ordinal)
             ? Katalogfilterregister.Stand(Profil.Art) : Katalogfilterregister.Stand(Profil.Schluessel);
@@ -1701,6 +1709,42 @@
         if (!offen) Melden(Texte.VerwaltungNicht, true);
     }
 
+    // =====================================================================
+    // K-F5b: die Gruppe „Rückkühlung“ — Gaben lesen, „Rückkühlwerke…“ öffnen
+    // =====================================================================
+
+    /// <summary>Die Gaben der Gruppe „Rückkühlung“ (Katalogsätze, Luftfeuchte); <c>null</c> = keine Gruppe.</summary>
+    private RueckkuehlungGaben? _rueckkuehlung;
+
+    private void RueckkuehlungLesen(List<string>? fehler)
+    {
+        if (Rueckkuehlung is null) { _rueckkuehlung = null; return; }
+        try { _rueckkuehlung = Rueckkuehlung(); }
+        catch (Exception ex)
+        {
+            _rueckkuehlung = null;
+            fehler?.Add(string.Format(CultureInfo.CurrentCulture, Texte.LadenFehler, ex.Message));
+        }
+    }
+
+    /// <summary>Der Weg hinter „Rückkühlwerke…“ — nur mit den Gaben der Rückkühlung (kein Delegat, kein Knopf).</summary>
+    private EventCallback RueckkuehlwerkeWeg
+        => Rueckkuehlung is null ? default : EventCallback.Factory.Create(this, RueckkuehlwerkeOeffnen);
+
+    /// <summary>
+    /// „Rückkühlwerke…“ in der Gruppe „Rückkühlung“: öffnet die Verwaltung über die Naht <c>Dienste.Navigation</c>
+    /// (<c>Seitenschluessel.Rueckkuehlwerk</c>; Windows: eigenes Fenster, iOS: freie Ansicht der Wurzel). Ungespeicherte
+    /// Änderungen halten an wie bei der Katalogverwaltung; danach liest der Dialog die Katalogsätze neu.
+    /// </summary>
+    internal void RueckkuehlwerkeOeffnen()
+    {
+        if (ArbeitsstandGeaendert) { Melden(Texte.RueckkuehlwerkeUngespeichert, true); return; }
+        bool offen = WindowsFormsApplication1.Dienste.Navigation
+            .OeffneMaske(EPOS.UI.Seiten.Seitenschluessel.Rueckkuehlwerk, "");
+        if (!offen) { Melden(Texte.RueckkuehlwerkeNicht, true); return; }
+        RueckkuehlungLesen(null);
+    }
+
     /// <summary>Steht im Arbeitsstand etwas, das erst der OK-Weg schreibt (oder Abbrechen zurücknimmt)?</summary>
     private bool ArbeitsstandGeaendert
         => _wp.Any(w => w.Entfernt) || _wpUebernahmen.Count > 0 || _wpEingeschaltet.Count > 0 || _zeilen.Any(z => z.Entfernt || z.Neu || z.Gespeichert || !z.Arbeit.GleicheEingaben(z.Gelesen));
@@ -1827,6 +1871,7 @@
             AnlageEintraege = () => KiMaskenanmeldung.Eintraege(Sichtbare, z => z.Schluessel, z => z.Arbeit.Bezeichner),
             Stromtraeger = () => Stromtraeger,
             ArbeitLesen = () => Aktuell?.Arbeit,
+            Rueckkuehlwerke = () => _rueckkuehlung,
             Geaendert = () => _ = InvokeAsync(StateHasChanged)
         };
     }

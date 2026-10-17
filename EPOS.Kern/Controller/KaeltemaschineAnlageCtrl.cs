@@ -253,6 +253,25 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Führt das Klima des Projekts eine Luftfeuchte?</b> (K-F5b, Entwurf Split/VRF/Rückkühlwerk 5.3/5.4) — dieselbe
+        /// Bedingung wie der Lauf (<c>SimulationWaermebedarf.Luftfeuchte_stuendlich</c>): Jede Stunde der Projektkopie des
+        /// Klimas (<c>Tab_Solar</c> der Klimaregion des Projekts) trägt einen Wert. Sonst rechnet ein nasses Rückkühlwerk
+        /// über den Ausweichweg trocken; der Dialog nennt das schon beim Wählen. Ohne Spalte oder Zeilen <c>false</c>.
+        /// </summary>
+        public static bool KlimaMitFeuchte(int projektId)
+        {
+            if (projektId <= 0 || !DataRepository.SpalteVorhanden("Tab_Solar", SchemaKatalog.SPALTE_SOLAR_LUFTFEUCHTE)) return false;
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT COUNT(*) AS Stunden, COUNT(s.Luftfeuchte) AS MitFeuchte FROM Tab_Solar s " +
+                "WHERE s.ID_Klimaregion = (SELECT p.ID_Klimaregion FROM Tab_Projekt p WHERE p.ID = ?)",
+                new DbParam("?", projektId));
+            if (dt == null || dt.Rows.Count == 0) return false;
+            long stunden = Convert.ToInt64(dt.Rows[0]["Stunden"], CultureInfo.InvariantCulture);
+            long mitFeuchte = Convert.ToInt64(dt.Rows[0]["MitFeuchte"], CultureInfo.InvariantCulture);
+            return stunden > 0 && mitFeuchte == stunden;
+        }
+
+        /// <summary>
         /// Löscht die Anlagenzeile — und ihre Projektkopie, wenn keine andere Anlagenzeile sie mehr führt; ebenso die
         /// Projektkopie ihres Rückkühlwerks.
         /// </summary>

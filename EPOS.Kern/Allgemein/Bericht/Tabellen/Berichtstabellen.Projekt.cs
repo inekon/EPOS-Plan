@@ -22,7 +22,8 @@ namespace WindowsFormsApplication1
                                                      bool englisch, CultureInfo kultur,
                                                      IReadOnlyList<ErgebnisKaeltemaschineModel> maschinen = null,
                                                      IReadOnlyList<KaeltemittelBerichtszeile> kaeltemittel = null,
-                                                     IReadOnlyList<ErgebnisKaelteDezentralModel> dezentral = null)
+                                                     IReadOnlyList<ErgebnisKaelteDezentralModel> dezentral = null,
+                                                     IReadOnlyList<RueckkuehlwerkBerichtszeile> rueckkuehlwerke = null)
         {
             var zeilen = (wp?.Module ?? new List<ErgebnisWaermepumpeModulModel>())
                 .Where(m => m != null && m.Kaelteproduktion.HasValue && m.Kaelteproduktion.Value > 0).ToList();
@@ -111,7 +112,41 @@ namespace WindowsFormsApplication1
                 }));
             }
             if (stern) t.Hinweis(BerichtTexte.T(FUSSNOTE_KAELTEMITTEL, englisch));
+            // K-F5b (Entwurf Split/VRF/Rückkühlwerk 5.8): je Kältemaschine mit Rückkühlwerk eine Zeile unter der Tafel -
+            // Bauart, Ventilatorstrom, Wasser, Teil-Freikühlung, mittlere Rückkühltemperatur. Ohne Rückkühlwerk keine.
+            foreach (ErgebnisKaeltemaschineModel k in km)
+            {
+                string zeile = RueckkuehlwerkZeile(k, rueckkuehlwerke, englisch, kultur);
+                if (zeile != null) t.Hinweis(zeile);
+            }
             return t;
+        }
+
+        /// <summary>K-F5b: das Muster der Zeile „Rückkühlwerk“ unter der Tafel der Kälteerzeuger (Text über <see cref="BerichtTexte"/>).</summary>
+        public const string MUSTER_RUECKKUEHLWERK =
+            "Rückkühlwerk an „{0}“ ({1}): Ventilatorstrom {2} MWh/a · Wasser {3} m³/a · Teil-Freikühlung {4} MWh/a · mittlere Rückkühltemperatur {5} °C";
+
+        /// <summary>
+        /// K-F5b: die Zeile „Rückkühlwerk“ einer Kältemaschine — nur, wenn ihr Ergebnis die Größen des Rückkühlwerks trägt
+        /// (Schemaschritt K-F2: allein mit Rückkühlwerk an der Anlagenzeile belegt); sonst <c>null</c>. Name und Bauart kommen
+        /// aus <paramref name="rueckkuehlwerke"/> (über Gerät und Anlagenname), ohne Treffer „—“.
+        /// </summary>
+        public static string RueckkuehlwerkZeile(ErgebnisKaeltemaschineModel k, IReadOnlyList<RueckkuehlwerkBerichtszeile> rueckkuehlwerke,
+                                                 bool englisch, CultureInfo kultur)
+        {
+            if (k == null || !(k.Ventilatorstrom_MWh.HasValue || k.Wasser_m3.HasValue || k.Rueckkuehltemperatur_Mittel.HasValue
+                               || k.TeilFreikuehlung_MWh.HasValue))
+                return null;
+            RueckkuehlwerkBerichtszeile r = rueckkuehlwerke?.FirstOrDefault(z => z != null && z.IdKaeltemaschine == k.ID_Kaeltemaschine
+                                                                               && string.Equals(z.Anlage, k.Bezeichner, StringComparison.Ordinal))
+                                            ?? rueckkuehlwerke?.FirstOrDefault(z => z != null && z.IdKaeltemaschine.HasValue
+                                                                                  && z.IdKaeltemaschine == k.ID_Kaeltemaschine);
+            string art = r == null ? Tabellenzelle.STRICH
+                : (string.IsNullOrEmpty(r.Bezeichner) ? "" : r.Bezeichner + ", ") + BerichtTexte.T(RueckkuehlwerkBerichtszeile.BauartText(r.Bauart), englisch);
+            Func<double?, int, string> f = (w, dez) => w.HasValue ? Tabellenformat.F(w.Value, dez, kultur) : Tabellenzelle.STRICH;
+            string name = string.IsNullOrEmpty(k.Bezeichner) ? Tabellenzelle.STRICH : k.Bezeichner;
+            return string.Format(kultur, BerichtTexte.T(MUSTER_RUECKKUEHLWERK, englisch), name, art,
+                                 f(k.Ventilatorstrom_MWh, 2), f(k.Wasser_m3, 0), f(k.TeilFreikuehlung_MWh, 2), f(k.Rueckkuehltemperatur_Mittel, 1));
         }
 
         /// <summary>KM4-E2: Die Fußnote des Sterns an der Spalte „Kältemittel“ (Text über <see cref="BerichtTexte"/>).</summary>

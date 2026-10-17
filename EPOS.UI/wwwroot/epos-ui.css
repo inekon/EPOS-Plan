@@ -4566,6 +4566,7 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 /* Der Geraetesteckbrief der Kaeltemaschine (KA-E-25): links neben den Feldern der Satz-Ueberlagerung, schmal unter 900 px. */
 .epos-kaeltemaschine-satz--steckbrief { display: grid; grid-template-columns: minmax(220px, 280px) minmax(0, 1fr); gap: var(--epos-rand); align-items: start; }
 .epos-kaeltemaschine-satzfelder { min-width: 0; }
+.epos-kaeltemaschine-rueckkuehlung-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 @media (max-width: 900px) { .epos-kaeltemaschine-satz--steckbrief { grid-template-columns: minmax(0, 1fr); } }
 /* Die Zeile ist die Wahl auch in der Projektliste (AW1): die Klickflaeche fuellt die Namenszelle. */
 .epos-zweispalten-inhalt--zeilenwahl table.epos-raster.quickgrid > tbody > tr > td.epos-spalte-zeilenzelle { padding: 0; }

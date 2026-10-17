@@ -170,6 +170,8 @@ online; ihre späteren Änderungen der Hauptlinie bleiben ausstehend. Nicht hoch
 unverändert ausstehend sind Simulationsergebnisse, Wirtschaftlichkeit, Gebäude,
 Brauchwasser-Zapfprofil, Berichtsvorlagen, Mehrzonenmodell und Projekttransfer.
 
+**K‑F5b — Rückkühlung an der Kältemaschine (Upload ausstehend):** Kälteerzeugung (neuer Abschnitt „Rückkühlwerk“, Anker `rueckkuehlwerk`: Gruppe „Rückkühlung“ mit Wahl, Lesezeilen, Hinweisen, Knopf „Rückkühlwerke…“, Ergebnissen und Kennzahlen; Punkt „Bericht“ der Ergebnisse um die Zeile „Rückkühlwerk an …“ ergänzt), Gerätekataloge (Punkt „Wahl an der Kältemaschine“ im Abschnitt „Rückkühlwerke“).
+
 ## 2 Logbuch-Einträge für die Wiki-Seite „Update-Logbuch“
 
 Die Abschnitte 1.2.6 und 1.2.0.5 stehen seit dem 29.09.2026 im Wiki (Revision 723). Die Blöcke 1.2.0.6 bis 1.2.0.9 und "Version offen" sind am 10.10.2026 (#889, Revision 827) veröffentlicht, zusammengefasst nach Regel 13.4 (70 Sätze) und unter den Versionsnummern laut Anwenderentscheid 10.10.2026 "letzte Stelle um eins erhöhen": 1.2.0.10 (29 Sätze aus den Blöcken 1.2.0.9 und „Version offen“), 1.2.0.9 (1 Satz: BDEW-Standardlastprofile Strom 2025), 1.2.0.8 (4 Sätze: Berichtsseite mit vier Karten, Wirtschaftlichkeitsbericht mit drei Szenarien, Pufferspeicher-Auslegung, Sperrfenster der Wärmepumpe), 1.2.0.7 (36 Sätze: Block 1.2.0.6 und die nie veröffentlichten Sätze aus 1.2.0.5). Die Entwürfe unten bleiben als Geschichte stehen. Ein neuer Satz gehört in einen
@@ -211,6 +213,11 @@ Sammel-Upload vom 14.10.2026 21:20 UTC (Brauchwasser-Zapfprofil Revision 1000, U
 ### Entwürfe für die nächste Version (Versionsnummer vom Anwender)
 
 Alle Blöcke dieser Gruppe sind nicht hochgeladen; die Version erfragt die Sitzung beim Anwender.
+
+#### Version offen — Rückkühlung an der Kältemaschine (Entwurf, Upload ausstehend)
+
+- Seit 17.10.2026: Eine wassergekühlte Kältemaschine wählt in der Gruppe „Rückkühlung“ ihr Rückkühlwerk aus der Verwaltung „Rückkühlwerke“ und zeigt seine Daten samt Hinweisen.
+- Seit 17.10.2026: Der Bericht nennt unter der Tabelle „Kälteerzeuger“ je Kältemaschine mit Rückkühlwerk Bauart, Ventilatorstrom, Wasser, Teil-Freikühlung und mittlere Rückkühltemperatur.
 
 #### Version offen — Eingabearten und Normkalender der Bedarfsprofile (Entwurf, Upload ausstehend)
 

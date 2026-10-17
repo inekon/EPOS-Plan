@@ -409,6 +409,11 @@ namespace WindowsFormsApplication1
                 case Seitenschluessel.Kaeltemittel:
                     return () => KaeltemittelFenster.Oeffnen(_besitzer?.Invoke());
 
+                // K-F5a: die Verwaltung der Rueckkuehlwerke (Menue „Daten & Import") - die Datenseite liegt
+                // plattformfrei in RueckkuehlwerkHuelle (EPOS.UI.Daten), hier nur das Fenster.
+                case Seitenschluessel.Rueckkuehlwerk:
+                    return () => RueckkuehlwerkFenster.Oeffnen(_besitzer?.Invoke());
+
                 case Seitenschluessel.Einstellungen:
                     return () => EinstellungenHuelle.Oeffnen(_besitzer?.Invoke());
 

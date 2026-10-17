@@ -56,9 +56,70 @@
             {
                 <Herleitungszeile Text="@Daten.Zulaessigkeit" />
             }
+            @* K-F5b: Eine luftgekuehlte Maschine bekommt keine Gruppe „Rueckkuehlung“, sondern diesen Hinweis. *@
+            @if (Rueckkuehlung is not null && Daten.Geraet is { Luftgekuehlt: true })
+            {
+                <Herleitungszeile Text="@Texte.HinweisRkwLuft" />
+            }
         </div>
     </KindInhalt>
 </Formulargruppe>
+
+@* K-F5b (Entwurf Split/VRF/Rueckkuehlwerk 5.2-5.8, 8): DIE GRUPPE „RUECKKUEHLUNG“ - nur bei einer Kaeltemaschine mit
+   wassergekuehlter Rueckkuehlart und nur mit den Gaben der Huelle (Waermepumpen-Zeilen zeigen diese Komponente nicht).
+   Die Wahl schreibt in den Arbeitsstand; die Projektkopie legt bzw. loest erst der OK-Weg des Wirts
+   (KaeltemaschineAnlageCtrl.RueckkuehlwerkWaehlen ueber die Huelle). Lesezeilen und Hinweise kommen fertig aus der
+   Huelle; keine Datenbank. *@
+@if (Rueckkuehlung is RueckkuehlungGaben rk && Daten.Geraet is { Luftgekuehlt: false })
+{
+    <Formulargruppe Titel="@Texte.GruppeRueckkuehlung">
+        <KindInhalt>
+            <div class="epos-kaeltemaschine-rueckkuehlung">
+                <Auswahlfeld Bezeichnung="@Texte.LabelRueckkuehlwerk" Eintraege="@RueckkuehlwerkEintraege(rk)"
+                             Auswahl="@Daten.RueckkuehlwerkWahl" Platzhalter="@Texte.RueckkuehlwerkKeins"
+                             Aktiv="@Aktiv" AuswahlChanged="BeiRueckkuehlwerk" />
+                @if (GewaehlteLesung(rk) is RueckkuehlwerkLesung l)
+                {
+                    <Formularraster>
+                        <KindInhalt>
+                            @foreach ((string bezeichnung, string wert) in l.Zeilen)
+                            {
+                                <Textfeld @key="bezeichnung" Bezeichnung="@bezeichnung" Wert="@wert" NurLesen="true" />
+                            }
+                        </KindInhalt>
+                    </Formularraster>
+                    @if (l.Verdunstungskuehlanlage && !rk.KlimaMitFeuchte)
+                    {
+                        <Herleitungszeile Text="@Texte.HinweisRkwFeuchte" />
+                    }
+                    @if (l.Verdunstungskuehlanlage)
+                    {
+                        <Herleitungszeile Text="@Texte.HinweisRkwBimschv" />
+                    }
+                    @if (l.VentilatorKw is double kw)
+                    {
+                        <Herleitungszeile Text="@string.Format(CultureInfo.CurrentCulture, Texte.HinweisRkwVentilator, Zahl(kw, 2))" />
+                    }
+                }
+                else
+                {
+                    <Herleitungszeile Text="@Texte.HinweisRkwKeins" />
+                }
+                @if (RueckkuehlwerkGeaendert)
+                {
+                    <Herleitungszeile Text="@Texte.HinweisRkwWahl" />
+                }
+                @if (RueckkuehlwerkeOeffnen.HasDelegate)
+                {
+                    <div class="epos-kaeltemaschine-rueckkuehlung-knoepfe">
+                        <button type="button" class="epos-knopf epos-kaeltemaschine-rueckkuehlwerke"
+                                title="@Texte.KnopfRueckkuehlwerke" @onclick="() => RueckkuehlwerkeOeffnen.InvokeAsync()">@Texte.KnopfRueckkuehlwerke</button>
+                    </div>
+                }
+            </div>
+        </KindInhalt>
+    </Formulargruppe>
+}
 
 @code {
     /// <summary>Der bearbeitete Feldsatz — die Arbeitskopie des Wirts; die Komponente schreibt hinein.</summary>
@@ -117,7 +178,59 @@
     private Task BeiTraeger(int? id) { Daten.KuehlCarrierId = id; return Melden(); }
     private Task BeiZaehler(bool wert) { Daten.KuehlEigenerZaehler = wert; return Melden(); }
 
+    private Task BeiRueckkuehlwerk(int? id) { Daten.RueckkuehlwerkWahl = id; return Melden(); }
+
     private Task Melden() => Geaendert.InvokeAsync();
+
+    /// <summary>
+    /// K-F5b: die Gaben der Gruppe „Rückkühlung“ (Katalogsätze, Luftfeuchte des Klimas); <c>null</c> = keine Gruppe.
+    /// </summary>
+    [Parameter] public RueckkuehlungGaben? Rueckkuehlung { get; set; }
+
+    /// <summary>
+    /// K-F5b: „Rückkühlwerke…“ öffnet die Verwaltung (<c>Seitenschluessel.Rueckkuehlwerk</c>) — der Wirt entscheidet über
+    /// ungespeicherte Änderungen. Kein Delegat, kein Knopf.
+    /// </summary>
+    [Parameter] public EventCallback RueckkuehlwerkeOeffnen { get; set; }
+
+    /// <summary>Die Einträge der Klappliste: die Katalogsätze, dazu eine gespeicherte Projektkopie ohne Katalogsatz.</summary>
+    internal IReadOnlyList<(int Id, string Text)> RueckkuehlwerkEintraege(RueckkuehlungGaben rk)
+    {
+        var l = rk.Katalog.Select(e => (e.Id, e.Text)).ToList();
+        if (Daten.Rueckkuehlwerk is RueckkuehlwerkLesung kopie
+            && (Daten.RueckkuehlwerkWahl == KaeltemaschineAnlageDaten.RUECKKUEHLWERK_PROJEKTKOPIE || kopie.StammId is null
+                || !l.Any(e => e.Id == kopie.StammId)))
+            l.Insert(0, (KaeltemaschineAnlageDaten.RUECKKUEHLWERK_PROJEKTKOPIE,
+                         string.Format(CultureInfo.CurrentCulture, Texte.RueckkuehlwerkProjektkopie, kopie.Bezeichner)));
+        if (Daten.RueckkuehlwerkWahl is int id && !l.Any(e => e.Id == id))
+            l.Add((id, "#" + id.ToString(CultureInfo.InvariantCulture)));
+        return l;
+    }
+
+    /// <summary>
+    /// Die Lesezeilen der Wahl: die gespeicherte Projektkopie, solange die Wahl auf ihren Katalogsatz (oder auf sie selbst)
+    /// zeigt, sonst der gewählte Katalogsatz; <c>null</c> = keins gewählt.
+    /// </summary>
+    internal RueckkuehlwerkLesung? GewaehlteLesung(RueckkuehlungGaben rk)
+    {
+        if (Daten.RueckkuehlwerkWahl is not int id) return null;
+        RueckkuehlwerkLesung? kopie = Daten.Rueckkuehlwerk;
+        if (kopie is not null && (id == KaeltemaschineAnlageDaten.RUECKKUEHLWERK_PROJEKTKOPIE || kopie.StammId == id)) return kopie;
+        return rk.Katalog.FirstOrDefault(e => e.Id == id)?.Lesung;
+    }
+
+    /// <summary>Weicht die Wahl von der gespeicherten Projektkopie ab? Dann schreibt erst OK.</summary>
+    private bool RueckkuehlwerkGeaendert
+    {
+        get
+        {
+            RueckkuehlwerkLesung? kopie = Daten.Rueckkuehlwerk;
+            int? gelesen = kopie is null ? null : kopie.StammId ?? KaeltemaschineAnlageDaten.RUECKKUEHLWERK_PROJEKTKOPIE;
+            int? wahl = Daten.RueckkuehlwerkWahl;
+            if (kopie is not null && wahl == KaeltemaschineAnlageDaten.RUECKKUEHLWERK_PROJEKTKOPIE) return false;
+            return wahl != gelesen;
+        }
+    }
 
     /// <summary>Der Hilfsstromanteil in Prozent — gespeichert wird der Anteil [—].</summary>
     public static double? AnteilAlsProzent(double? anteil) => anteil is double x ? Math.Round(x * 100.0, 6) : null;
