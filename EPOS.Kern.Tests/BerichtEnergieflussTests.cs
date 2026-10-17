@@ -65,7 +65,7 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(schalter);
             Assert.Equal(Vorlagenfeldart.Schalter, schalter.Art);
             Assert.Equal(25, schalter.Seit);
-            Assert.Equal(25, Vorlagenfeldkatalog.KatalogfassungWord);
+            Assert.True(Vorlagenfeldkatalog.KatalogfassungWord >= 25);   // v26 (6b) kam danach
 
             // Das Kapitel „Ergebnisse je Variante“ deckt Bild und Schalter (der Baustein schreibt das Bild).
             IReadOnlyList<string> deckt = Vorlagenfeldkatalog.Finde(Berichtskapitel.Alle

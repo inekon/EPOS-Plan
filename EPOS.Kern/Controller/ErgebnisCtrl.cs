@@ -309,7 +309,7 @@ namespace WindowsFormsApplication1
                             p.Add(new DbParam("@a4", DbParamTyp.Double) { Wert = R(m.Energiebedarf.Strombedarf_Max) });
                             p.Add(new DbParam("@a5", DbParamTyp.Double) { Wert = R(m.Energiebedarf.Waermerestbedarf) });
                             p.Add(new DbParam("@a6", DbParamTyp.Double) { Wert = R(m.Energiebedarf.Stromrestbedarf) });
-                            KanalParameter(p, m.Energiebedarf.Waermebedarf_Kanal, kaelteErhoben);
+                            KanalParameter(p, m.Energiebedarf.Waermebedarf_Kanal, kaelteErhoben, ungerundet: false);
                             p.Add(new DbParam("@c1", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.Kaeltebedarf_Gesamt) });
                             p.Add(new DbParam("@c2", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.Kaeltelast_Max) });
                             p.Add(new DbParam("@c3", DbParamTyp.Double) { Wert = WertOderNull(m.Energiebedarf.Kaelterestbedarf) });
@@ -403,9 +403,9 @@ namespace WindowsFormsApplication1
                                 new DbParam("@km", DbParamTyp.Integer) { Wert = km.ID_Kaeltemaschine.HasValue ? (object)km.ID_Kaeltemaschine.Value : DBNull.Value },
                                 new DbParam("@b", DbParamTyp.VarWChar) { Wert = (object)(km.Bezeichner ?? "") },
                                 new DbParam("@n", DbParamTyp.Integer) { Wert = km.Anzahl },
-                                new DbParam("@k", DbParamTyp.Double) { Wert = R(km.Kaelteproduktion_MWh) },
-                                new DbParam("@s", DbParamTyp.Double) { Wert = R(km.Stromverbrauch_MWh) },
-                                new DbParam("@h", DbParamTyp.Double) { Wert = R(km.Hilfsstrom_MWh) },
+                                new DbParam("@k", DbParamTyp.Double) { Wert = km.Kaelteproduktion_MWh },
+                                new DbParam("@s", DbParamTyp.Double) { Wert = km.Stromverbrauch_MWh },
+                                new DbParam("@h", DbParamTyp.Double) { Wert = km.Hilfsstrom_MWh },
                                 new DbParam("@f", DbParamTyp.Double) { Wert = R(km.FreieKuehlung_MWh) },
                                 new DbParam("@fs", DbParamTyp.Integer) { Wert = km.FreieKuehlung_Stunden },
                                 new DbParam("@t", DbParamTyp.Integer) { Wert = km.Taktstunden },
@@ -413,18 +413,20 @@ namespace WindowsFormsApplication1
                                 new DbParam("@l", DbParamTyp.Integer) { Wert = km.Stunden_Leistungsgrenze },
                             };
                             // KU3-4d (Schritt 184): Netzbezug, abweichender Kuehltraeger samt Abrechnungsart, Stromspitze.
+                            // 8d: die Stromspalten der Kaeltemaschine (Strom, Hilfsstrom, Netzbezug, Spitze, Taktstrom,
+                            // Ventilatorstrom) ungerundet wie Kaelte und Strom - eine Rechnung, ungerundete Kaeltesummen.
                             if (kmAbrechnung)
                             {
                                 bool traeger = km.Kuehl_CarrierId.HasValue && km.Kuehl_CarrierId.Value > 0;
-                                pk.Add(new DbParam("@nb", DbParamTyp.Double) { Wert = km.Kaeltestrom_Netzbezug_MWh.HasValue ? (object)R(km.Kaeltestrom_Netzbezug_MWh.Value) : DBNull.Value });
+                                pk.Add(new DbParam("@nb", DbParamTyp.Double) { Wert = UngerundetOderNull(km.Kaeltestrom_Netzbezug_MWh) });
                                 pk.Add(new DbParam("@kc", DbParamTyp.Integer) { Wert = traeger ? (object)km.Kuehl_CarrierId.Value : DBNull.Value });
                                 pk.Add(new DbParam("@kz", DbParamTyp.Integer) { Wert = traeger && km.Kuehl_EigenerZaehler.HasValue ? (object)(km.Kuehl_EigenerZaehler.Value ? 1 : 0) : DBNull.Value });
-                                pk.Add(new DbParam("@sp", DbParamTyp.Double) { Wert = km.Stromspitze_kW.HasValue ? (object)R(km.Stromspitze_kW.Value) : DBNull.Value });
+                                pk.Add(new DbParam("@sp", DbParamTyp.Double) { Wert = UngerundetOderNull(km.Stromspitze_kW) });
                             }
                             // KM3 (Schritt 210): ohne Teillast_Weg NULL - der Satz bleibt wie ohne KM3.
                             if (kmTeillast)
                             {
-                                pk.Add(new DbParam("@tm", DbParamTyp.Double) { Wert = WertOderNull(km.Taktstrom_MWh) });
+                                pk.Add(new DbParam("@tm", DbParamTyp.Double) { Wert = UngerundetOderNull(km.Taktstrom_MWh) });
                                 pk.Add(new DbParam("@st", DbParamTyp.Integer) { Wert = GanzOderDbNull(km.Starts) });
                                 pk.Add(new DbParam("@tl", DbParamTyp.Integer) { Wert = GanzOderDbNull(km.Teillaststunden) });
                                 pk.Add(new DbParam("@lg", DbParamTyp.Double) { Wert = WertOderNull(km.Lastgrad_Mittel) });
@@ -433,7 +435,7 @@ namespace WindowsFormsApplication1
                             // K-F2 (Schritt 214): ohne Rueckkuehlwerk NULL - der Satz bleibt wie ohne K-F2.
                             if (kmRueckkuehlung)
                             {
-                                pk.Add(new DbParam("@rv", DbParamTyp.Double) { Wert = WertOderNull(km.Ventilatorstrom_MWh) });
+                                pk.Add(new DbParam("@rv", DbParamTyp.Double) { Wert = UngerundetOderNull(km.Ventilatorstrom_MWh) });
                                 pk.Add(new DbParam("@rw", DbParamTyp.Double) { Wert = WertOderNull(km.Wasser_m3) });
                                 pk.Add(new DbParam("@rn", DbParamTyp.Integer) { Wert = GanzOderDbNull(km.Stunden_Nass) });
                                 pk.Add(new DbParam("@rt", DbParamTyp.Double) { Wert = WertOderNull(km.Rueckkuehltemperatur_Mittel) });
@@ -507,8 +509,8 @@ namespace WindowsFormsApplication1
                             p.Add(new DbParam("@a10", DbParamTyp.Double) { Wert = m.Waermepumpe.Bivalenzpunkt.HasValue ? (object)R(m.Waermepumpe.Bivalenzpunkt.Value) : DBNull.Value });
                             KanalParameter(p, m.Waermepumpe.Deckung_Kanal, kaelteErhoben);
                             // Schritt 119: die Kaelteseite - NULL, solange keine Kaelteerzeugung gerechnet ist.
-                            p.Add(new DbParam("@c1", DbParamTyp.Double) { Wert = WertOderNull(m.Waermepumpe.Kaelteproduktion_WP) });
-                            p.Add(new DbParam("@c2", DbParamTyp.Double) { Wert = WertOderNull(m.Waermepumpe.Stromverbrauch_Kuehlung) });
+                            p.Add(new DbParam("@c1", DbParamTyp.Double) { Wert = UngerundetOderNull(m.Waermepumpe.Kaelteproduktion_WP) });
+                            p.Add(new DbParam("@c2", DbParamTyp.Double) { Wert = UngerundetOderNull(m.Waermepumpe.Stromverbrauch_Kuehlung) });
                             // Schritt 187 (KU3-6a): die freie Kuehlung - NULL, solange sie nicht erhoben ist.
                             if (freieKuehlungWp)
                             {
@@ -2477,14 +2479,16 @@ namespace WindowsFormsApplication1
         /// hat, sonst NULL - "nicht erhoben" (Kuehlkonzept 7.4). Heizkessel, BHKW und
         /// Solarthermie tragen dort dauerhaft 0, sobald erhoben wird: Sie decken keine Kaelte.
         /// </summary>
-        private static void KanalParameter(List<DbParam> p, double[] werte, bool kaelteErhoben)
+        /// <param name="ungerundet">8d: die Deckungsspalten der Kälte ungerundet (Erzeugerzeilen) — aus ihnen bildet der
+        /// Kennzahlenkatalog den Deckungsgrad Kälte; der Bedarf bleibt gerundet wie <c>Kaeltebedarf_Gesamt</c>.</param>
+        private static void KanalParameter(List<DbParam> p, double[] werte, bool kaelteErhoben, bool ungerundet = true)
         {
             WaermekanalParameter(p, werte);
             foreach (int k in Kanal.KANAELE_KAELTE)
             {
                 double wert = (werte != null && k < werte.Length) ? werte[k] : 0.0;
                 p.Add(new DbParam("@k" + k, DbParamTyp.Double)
-                    { Wert = kaelteErhoben ? (object)R(wert) : DBNull.Value });
+                    { Wert = kaelteErhoben ? (ungerundet ? (object)wert : R(wert)) : DBNull.Value });
             }
         }
 
@@ -2543,6 +2547,16 @@ namespace WindowsFormsApplication1
         private static object WertOderNull(double? wert)
         {
             return wert.HasValue ? (object)R(wert.Value) : DBNull.Value;
+        }
+
+        /// <summary>
+        /// 8d: eine nullbare Größe UNGERUNDET oder NULL — für die Kältesummen, aus denen der Kennzahlenkatalog
+        /// Deckungsgrad und Jahresarbeitszahl Kälte bildet. Gerundete Summen ergäben im Quotienten einen anderen Wert
+        /// als die Übersicht, die mit den Summen des Laufs rechnet.
+        /// </summary>
+        private static object UngerundetOderNull(double? wert)
+        {
+            return wert.HasValue ? (object)wert.Value : DBNull.Value;
         }
 
         /// <summary>

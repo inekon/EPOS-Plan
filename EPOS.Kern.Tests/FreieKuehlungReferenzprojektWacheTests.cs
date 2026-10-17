@@ -44,7 +44,7 @@ namespace EPOS.Kern.Tests
         private const string NAME = "Referenzprojekt Freie Kühlung";
         private const double GRAEDIGKEIT_K = 4.0, LEISTUNG_KW = 4.0;
 
-        // Die Jahreswerte der Basis R51 (Referenzlaeufe/2026-10-16_R57_Schnellaufheizung/Projekt_1064/aggregate.csv, unverändert seit R51).
+        // Die Jahreswerte der Basis R51 (Referenzlaeufe/2026-10-17_R58_Kaeltesummen/Projekt_1064/aggregate.csv, unverändert seit R51).
         private const int R51_FREI_STUNDEN = 125;
         private const double R51_FREI_MWH = 0.277361939;
         private const double R51_KAELTE_MWH = 4.05051694;

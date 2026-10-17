@@ -79,7 +79,14 @@ namespace WindowsFormsApplication1
         {
             ProjektPhotovoltaikModel m = Lies(idProjekt);
             if (m != null) return m;
+            return Vorbelegung(idProjekt);
+        }
 
+        /// <summary>Die Vorbelegung einer neuen Zeile (<see cref="LiesOderVorbelegt"/>), ohne
+        /// zu lesen — auch für den Import (28b), dessen Projekt erst in der offenen
+        /// Transaktion steht.</summary>
+        internal static ProjektPhotovoltaikModel Vorbelegung(int idProjekt)
+        {
             return new ProjektPhotovoltaikModel
             {
                 ID = 0,
@@ -275,7 +282,33 @@ namespace WindowsFormsApplication1
                 object max = DataRepository.ExecuteScalar("SELECT MAX(ID) FROM [" + TABELLE + "]");
                 m.ID = (max == null || max == DBNull.Value ? 0 : Convert.ToInt32(max)) + 1;
 
-                return DataRepository.ExecuteSQL(
+                return DataRepository.ExecuteSQL(EinfuegeSql(mitSzenario), ParameterInsert(m, mitSzenario));
+            }
+            catch (Exception ex)
+            {
+                DataRepository.FehlerMelden("Die PV-Vergütungsangaben konnten nicht gespeichert werden: " + ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 28b: legt die Zeile in einem laufenden Vorgang an (Import, eine Transaktion) —
+        /// derselbe Einfügebefehl wie <see cref="Speichern"/>. Vergibt <c>MAX(ID)+1</c> im
+        /// Vorgang und schreibt die Id ins Modell.
+        /// </summary>
+        internal static void Einfuegen(DbVorgang v, ProjektPhotovoltaikModel m)
+        {
+            bool mitSzenario = SzenarioSpaltenVorhanden();
+            object max = v.Skalar("SELECT MAX(ID) FROM [" + TABELLE + "]");
+            m.ID = (max == null || max == DBNull.Value ? 0 : Convert.ToInt32(max)) + 1;
+            if (!m.GeaendertAm.HasValue) m.GeaendertAm = DateTime.Now;
+            v.Ausfuehren(EinfuegeSql(mitSzenario), ParameterInsert(m, mitSzenario));
+        }
+
+        /// <summary>Der Einfügebefehl der Zeile, Parameter aus <see cref="ParameterInsert"/>.</summary>
+        private static string EinfuegeSql(bool mitSzenario)
+        {
+            return
                     "INSERT INTO [" + TABELLE + "] (ID, ID_Projekt, Aktiv, Vermarktungsform, " +
                     "Einspeiseart, Inbetriebnahme, KwpOverride, AwOverride, DvEntgelt, PpaPreis, " +
                     "PpaSpotAufschlag, Par51_Anwenden, IMSys_Einbaujahr, AusfallanteilProzent, " +
@@ -290,14 +323,7 @@ namespace WindowsFormsApplication1
                         : "") +
                     "GeaendertAm) " +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?" +
-                    (mitSzenario ? ", ?, ?, ?, ?" : "") + ")",
-                    ParameterInsert(m, mitSzenario));
-            }
-            catch (Exception ex)
-            {
-                DataRepository.FehlerMelden("Die PV-Vergütungsangaben konnten nicht gespeichert werden: " + ex.Message);
-                return false;
-            }
+                    (mitSzenario ? ", ?, ?, ?, ?" : "") + ")";
         }
 
         // =====================================================================

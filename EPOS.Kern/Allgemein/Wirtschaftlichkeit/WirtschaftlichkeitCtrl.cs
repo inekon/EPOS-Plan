@@ -1607,6 +1607,16 @@ namespace WindowsFormsApplication1
                         matrizen[v.IdProjekt] = eingabe.Matrix;
                     WirtschaftlichkeitErgebnis erg = RechneProjekt(vs, ps, eingabe,
                         szenario, out KapitalwertRechner.Zahlungsbild bild);
+                    // 6b (Katalog v26): die Stromsteuer des Hilfsstroms im Erwartungsfall als Ausweis am
+                    // Stand und in seinen Kennzahlen — dieselbe Rechnung wie die Nachweiszeile.
+                    if (string.Equals(szenario, WirtschaftlichkeitSzenario.ERWARTET, StringComparison.Ordinal))
+                    {
+                        HilfsstromStromsteuer.Ergebnis st = eingabe.StromsteuerHilfsstrom;
+                        bool mitSatz = st != null && st.RegelsatzEurJeMWh.HasValue && st.RegelsatzEurJeMWh.Value > 0;
+                        v.HilfsstromStromsteuerGesondert = mitSatz ? st.GesondertEur : (double?)null;
+                        v.HilfsstromStromsteuerGesamt = mitSatz ? st.SteuerEur : (double?)null;
+                        KennzahlenKatalog.NachWirtschaftlichkeit(v);
+                    }
                     alle.Add(erg);
                     eingaben.Add(eingabe); bilder.Add(bild); ergebnisse.Add(erg);
                 }
@@ -2100,6 +2110,10 @@ namespace WindowsFormsApplication1
             /// <summary>Betriebskostenpositionen mit Kostenart und Herleitung (E3 → E7).</summary>
             public List<KostenPositionNachweis> Betriebskosten = new List<KostenPositionNachweis>();
 
+            /// <summary>6b: die Stromsteuer des Hilfsstroms (<see cref="HilfsstromStromsteuer"/>);
+            /// <c>null</c> ohne Hilfsstrom. Ihr gesonderter Betrag steht in <see cref="Endenergie"/>.</summary>
+            public HilfsstromStromsteuer.Ergebnis StromsteuerHilfsstrom;
+
             /// <summary>
             /// ETAPPE B2 — die Eingabe der Steuerrechnung dieses Laufs (Anlagen mit
             /// Träger, Heizwerten und Katalogschlüsseln, gewählte Norm, Netzbezug).
@@ -2332,6 +2346,18 @@ namespace WindowsFormsApplication1
             try { wasser = Wasserkosten.Rechne(v.IdProjekt, v, satz != null ? szenario : null); }
             catch (Exception ex) { Stufenfehler(v.IdProjekt, STUFE_BETRIEBSKOSTEN, Fehlergrund.Text(ex)); }
             if (wasser != null && wasser.KostenEur > 0) topfe.BetriebSofort += wasser.KostenEur;
+            // 6b (Anwenderentscheid 16.10.2026): die Stromsteuer des Hilfsstroms — nur der Teil,
+            // den der Arbeitspreis des Netzträgers nicht schon enthält (HilfsstromStromsteuer), im
+            // Endenergie-Topf neben den Hilfsenergiekosten. Ohne Hilfsstrom bitgleich.
+            if (v.HilfsstromMWh > 0)
+            {
+                if (_gesetze == null) _gesetze = new GesetzKatalog();
+                e.StromsteuerHilfsstrom = HilfsstromStromsteuer.Rechne(v.HilfsstromMWh,
+                    _gesetze.Wert(DbWerte.GESETZ_STROMST_REGELSATZ, Foerderbeginn(p)),
+                    StromsteueranteilNetzEurJeMWh(v.IdProjekt, v.EnergiekostenJeTraeger));
+                if (e.StromsteuerHilfsstrom != null)
+                    topfe.EndenergieSofort += e.StromsteuerHilfsstrom.GesondertEur;
+            }
             e.Betrieb = topfe.BetriebSofort;
             e.BetriebAbJahr = topfe.BetriebAbJahr;
             e.Endenergie = topfe.EndenergieSofort;
@@ -2374,6 +2400,10 @@ namespace WindowsFormsApplication1
             KostenPositionNachweis wasserZeile = Wasserkosten.Nachweis(wasser);
             if (wasserZeile != null) e.Betriebskosten.Add(wasserZeile);
             Melde(e, Wasserkosten.HinweisOhnePreis(wasser));
+            // 6b: die Nachweiszeile der Stromsteuer des Hilfsstroms — sie trifft den Endenergie-Topf.
+            KostenPositionNachweis steuerZeile = HilfsstromStromsteuer.Nachweis(e.StromsteuerHilfsstrom);
+            if (steuerZeile != null) e.Betriebskosten.Add(steuerZeile);
+            Melde(e, HilfsstromStromsteuer.HinweisOhneSatz(e.StromsteuerHilfsstrom));
             e.Energie = v.Energiekosten;   // KostenEmissionRechner (Phase 5)
 
             double pvUeberschussMWh = v.Ergebnis.Photovoltaik != null ? v.Ergebnis.Photovoltaik.Ueberschuss : 0;
@@ -7085,6 +7115,9 @@ namespace WindowsFormsApplication1
             w.Betrieb = topfe.BetriebSofort;
             w.BetriebAbJahr = topfe.BetriebAbJahr;
             w.Endenergie = topfe.EndenergieSofort;
+            // 6b: die gesonderte Stromsteuer des Hilfsstroms gehört zur Wärmeerzeugung wie die
+            // Hilfsenergiekosten selbst (BHKW und Kessel zählen dort).
+            if (gesamt.StromsteuerHilfsstrom != null) w.Endenergie += gesamt.StromsteuerHilfsstrom.GesondertEur;
             w.EndenergieAbJahr = topfe.EndenergieAbJahr;
             w.InvestGekoppelt = topfe.InvestGekoppeltSofort;
             w.InvestGekoppeltAbJahr = topfe.InvestGekoppeltAbJahr;

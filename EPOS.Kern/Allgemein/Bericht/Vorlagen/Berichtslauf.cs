@@ -120,6 +120,22 @@ namespace WindowsFormsApplication1
             LeereZusammengefasst = FasseLeereZusammen(Leere, Stellen, Englisch);
         }
 
+        /// <summary>
+        /// Die Teile der Wirtschaftlichkeitsdaten, die der Schreiber nach der Datensammlung nachrechnete
+        /// (<see cref="WirtschaftsBerichtswerte.Nachgeholt"/>); leer im Regelfall. Die Laufmeldung nennt sie.
+        /// </summary>
+        public IReadOnlyList<string> Nachgeholt { get; private set; } = Array.Empty<string>();
+
+        /// <summary>Übernimmt die nachgerechneten Teile aus dem Wertesatz der Daten; gibt sich selbst zurück.</summary>
+        internal Berichtslauf MitNachgeholt(BerichtsDaten daten)
+        {
+            IReadOnlyList<string> teile = daten?.Wirtschaft?.Nachgeholt;
+            Nachgeholt = teile == null || teile.Count == 0
+                ? Array.Empty<string>()
+                : teile.Where(t => !string.IsNullOrWhiteSpace(t)).Distinct(StringComparer.Ordinal).ToList();
+            return this;
+        }
+
         /// <summary>Die geschriebene Berichtsdatei.</summary>
         public string Pfad { get; }
 

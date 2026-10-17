@@ -11481,6 +11481,12 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="HILFS_ANTEIL_HERKUNFT" xml:space="preserve">
     <value>Satz aus dem Hilfsenergieanteil der Anlage</value>
   </data>
+  <data name="HILFS_STROMSTEUER_POSITION" xml:space="preserve">
+    <value>Stromsteuer auf Hilfsstrom ({0} €/MWh, davon {1} €/MWh im Arbeitspreis enthalten)</value>
+  </data>
+  <data name="HILFS_STROMSTEUER_OHNE_SATZ" xml:space="preserve">
+    <value>Stromsteuer auf {0} MWh/a Hilfsstrom nicht angesetzt: Der Gesetzkatalog führt keinen Regelsatz der Stromsteuer.</value>
+  </data>
   <data name="KOH_HILFSENERGIE_DOPPELT" xml:space="preserve">
     <value>Hilfsenergie doppelt gepflegt (Menge an der Anlage und Kostenposition {0}): {1} führt einen Hilfsenergieanteil von {2} % und zugleich eine aktive Hilfsenergie-Kostenposition. Die Kosten rechnet die Kostenposition; der Anteil an der Anlage mindert nur den KWK-Zuschlag und wird nicht zusätzlich bepreist.</value>
   </data>
@@ -12023,7 +12029,7 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
     <value>BHKW — KWKG, Energie- und Stromsteuer</value>
   </data>
   <data name="BHW_PARAM_VERWEIS" xml:space="preserve">
-    <value>Diese Angaben stehen seit Etappe B5 im eigenen Dialog „BHKW-Wirtschaftlichkeit“ — dort zusammen mit den Werten je BHKW-Modul, den Herleitungen und der Vorschau.</value>
+    <value>Diese Angaben stehen im eigenen Dialog „BHKW-Wirtschaftlichkeit“ — dort zusammen mit den Werten je BHKW-Modul, den Herleitungen und der Vorschau.</value>
   </data>
   <data name="VPOS_TITEL" xml:space="preserve">
     <value>Position bearbeiten</value>
@@ -20490,6 +20496,9 @@ Bitte die Projektseite erneut durchlaufen, damit die Daten des gewählten Projek
   <data name="KI_FRAGE_BV_LAUF_WARNUNGEN" xml:space="preserve">
     <value>Die Laufmeldung nennt Warnungen beim Füllen der Vorlage. Was ist zu tun?</value>
   </data>
+  <data name="KI_FRAGE_BV_LAUF_NACHGEHOLT" xml:space="preserve">
+    <value>Die Laufmeldung nennt nachgerechnete Teile der Wirtschaftlichkeitsdaten. Was bedeutet das?</value>
+  </data>
   <data name="KI_FRAGE_BV_START_SICHT" xml:space="preserve">
     <value>Die Vorprüfung meldet, dass meine Vorlage den Paarvergleich nutzt. Was muss ich einstellen?</value>
   </data>
@@ -21311,9 +21320,6 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="FLOTTE_OPT_MARKE_FEIN" xml:space="preserve">
     <value>Feinraster</value>
-  </data>
-  <data name="FLOTTE_OPT_KEIN_ERGEBNIS" xml:space="preserve">
-    <value>Noch keine Suche gerechnet.</value>
   </data>
   <data name="FLOTTE_ED_KOSTEN_EINHEIT" xml:space="preserve">
     <value>Kosten dieser Einheit</value>
@@ -23414,6 +23420,30 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_PV_STRANG_ERL" xml:space="preserve">
     <value>Der Name dieses Strangs, etwa „Dach Süd“; leer zeigt die Maske als Rangnummer.</value>
+  </data>
+  <data name="KI_DLG_PV_STRANG_WR_ERL" xml:space="preserve">
+    <value>Der Wechselrichter des Strangs aus dem Katalog, gewählt über denselben Weg wie in der Klappliste der Strangtabelle. Ein Gerät, das für das Modulfeld der Anlage ungeeignet ist, wird abgelehnt; 0 nimmt das Gerät aus dem Strang.</value>
+  </data>
+  <data name="KI_DLG_PV_STRANG_MODUL_ERL" xml:space="preserve">
+    <value>Der Modultyp des Strangs aus den Modulen des Projekts; 0 ist das Modul der Anlage. Eine Wahl, mit der die Strangprüfung einen neuen roten Befund meldet, wird abgelehnt.</value>
+  </data>
+  <data name="KI_PVS_WR_UNBEKANNT" xml:space="preserve">
+    <value>Den Wechselrichter {0} führt der Katalog nicht.</value>
+  </data>
+  <data name="KI_PVS_WR_UNGEEIGNET" xml:space="preserve">
+    <value>Der Wechselrichter „{0}“ ist für das Modulfeld dieser Anlage ungeeignet: {1}</value>
+  </data>
+  <data name="KI_PVS_WR_OHNE_BEWERTUNG" xml:space="preserve">
+    <value>Die Eignung des Wechselrichters lässt sich nicht prüfen – die Anlage braucht dafür ein Modul und eine Modulzahl. Ohne Prüfung wählt der Assistent kein Gerät.</value>
+  </data>
+  <data name="KI_PVS_MODUL_UNBEKANNT" xml:space="preserve">
+    <value>Das Modul {0} ist dem Projekt nicht zugeordnet; ein Strang nimmt nur Module des Projekts.</value>
+  </data>
+  <data name="KI_PVS_MODUL_UNVERTRAEGLICH" xml:space="preserve">
+    <value>Das Modul „{0}“ passt nicht zu diesem Strang: {1}</value>
+  </data>
+  <data name="KI_PVS_STRANG_OHNE_ABSCHNITT" xml:space="preserve">
+    <value>Modul und Wechselrichter eines Strangs wählt der Assistent im Abschnitt „Wechselrichter und Stränge“; der Abschnitt steht gerade nicht offen.</value>
   </data>
   <data name="KI_DLG_PV_STRANG_GERAET_ERL" xml:space="preserve">
     <value>Welches physische Gerät dieses Typs den Strang trägt, ganze Zahl ab 1; leer bedeutet 1.</value>
@@ -37558,6 +37588,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="BV_LAUF_WARNUNGEN" xml:space="preserve">
     <value>Warnungen beim Füllen der Vorlage: {0}</value>
   </data>
+  <data name="BV_LAUF_NACHGEHOLT" xml:space="preserve">
+    <value>Hinweis: {0} Teil(e) der Wirtschaftlichkeitsdaten fehlten nach der Datensammlung und wurden beim Schreiben nachgerechnet – der Bericht ist vollständig.</value>
+  </data>
   <data name="BV_LAUF_PUNKT_UNBEKANNT" xml:space="preserve">
     <value>{0} – {1}; {2}</value>
   </data>
@@ -40522,6 +40555,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   <data name="BV_XL_DG_BASIS" xml:space="preserve">
     <value>Basis (Hilfsspalte)</value>
   </data>
+  <data name="BV_XL_DG_ABSTAND" xml:space="preserve">
+    <value>Abstand (Hilfsspalte)</value>
+  </data>
   <data name="BV_XL_DG_UEBER_NULL" xml:space="preserve">
     <value>{0} (über null)</value>
   </data>
@@ -40953,6 +40989,9 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
   </data>
   <data name="PVS_WRV_BEDINGT" xml:space="preserve">
     <value>bedingt</value>
+  </data>
+  <data name="PVS_WRV_BEDINGT_ANGABEN" xml:space="preserve">
+    <value>bedingt geeignet (Angaben fehlen)</value>
   </data>
   <data name="PVS_WRV_UNGEEIGNET" xml:space="preserve">
     <value>ungeeignet</value>

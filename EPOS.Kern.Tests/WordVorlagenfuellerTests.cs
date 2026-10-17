@@ -25,7 +25,7 @@ namespace EPOS.Kern.Tests
     /// <para><b>(a) Standardvorlage.</b> Die Standardvorlage im vollen Aufbau (BV-E2: Deckblatt aus
     /// Platzhaltern, Kapitel einzeln unter Kapitelköpfen) füllt für 1030 und die Gruppe jede Stelle; den
     /// Rumpf Zeile für Zeile hält die Messlatte des Vorlagenwegs (<see cref="BerichtVorlagenMesslatteTests"/>),
-    /// die Fußzeile trägt Firma, Berichtsdatum statt DATE-Feld und „Seite“. (b) Beispielvorlage: Deckblatt
+    /// die Fußzeile trägt Firma, Berichtsdatum statt DATE-Feld und „Seite“. (b) Standardvorlage ohne Häkchen: Deckblatt
     /// gefüllt, Kapitel ohne Häkchen entfallen samt Kapitelkopf. (c) Schmutzige Vorlagen, hier per SDK
     /// gebaut. (d) Leerwerte und Ausnahmen. (e) Kapitel an der falschen Stelle. (f) Kapitel einzeln:
     /// Folge, Entfall, doppelt, <c>|ohne titel</c>, <c>|ebene n</c>, Umbruch vor dem Kapitelkopf des
@@ -123,23 +123,23 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
-        //  (b) Beispielvorlage
+        //  (b) Standardvorlage ohne Häkchen
         // =====================================================================
 
         /// <summary>
-        /// Die Beispielvorlage (voller Aufbau, Katalog v2 kennt ihre Kapitel): jeder Einzelplatzhalter des
+        /// Die Standardvorlage (voller Aufbau, der Katalog kennt ihre Kapitel): jeder Einzelplatzhalter des
         /// Deckblatts gefüllt, keine Stelle bleibt gelb. Ohne gesetztes Häkchen entfällt jedes Kapitel samt
-        /// seinem Kapitelkopf — keine verwaiste Überschrift. Die Kommentare der Vorlage sind entfernt.
+        /// seinem Kapitelkopf — keine verwaiste Überschrift. Kein Kommentar bleibt im Ergebnis.
         /// </summary>
         [Fact]
-        public void Beispielvorlage_fuellt_das_Deckblatt_und_laesst_Kapitel_ohne_Haekchen_entfallen()
+        public void Standardvorlage_fuellt_das_Deckblatt_und_laesst_Kapitel_ohne_Haekchen_entfallen()
         {
-            byte[] vorlage = Repovorlage(BerichtsvorlageDateiWacheTests.BEISPIEL);
+            byte[] vorlage = Repovorlage(BerichtsvorlageDateiWacheTests.STANDARD);
             if (vorlage == null) return;
 
             BerichtsDaten daten = Berichtsdatenproben.Gruppendaten(2);
             daten.ErstelltAm = new DateTime(2026, 9, 25);
-            string ziel = Ziel("beispiel.docx");
+            string ziel = Ziel("standard_ohne_haekchen.docx");
             Fuellergebnis e = Fuelle(vorlage, daten, Konfig(), ziel);
 
             Assert.Empty(Validierungsfehler(ziel));
@@ -592,7 +592,7 @@ namespace EPOS.Kern.Tests
         /// (<see cref="Vorlagenteile.Kommentarzahl"/>) — die Prüfzeile und die Laufmeldung nennen
         /// dieselbe Zahl. Die Probe trägt zwei Einträge im Kommentarteil und drei Bereichsmarken; die
         /// dritte Marke ohne Eintrag entfällt beim Füllen mit, zählt aber nicht (Word zeigt sie nicht
-        /// als Kommentar). Gegenprobe: die Beispielvorlage des Repositoriums.
+        /// als Kommentar). Gegenprobe: der Kurzbericht des Repositoriums.
         /// </summary>
         [Fact]
         public void Kommentare_zaehlen_in_Engine_und_Pruefer_gleich()
@@ -622,10 +622,10 @@ namespace EPOS.Kern.Tests
                 Assert.Empty(body.Descendants<CommentReference>());
             }
 
-            byte[] beispiel = Repovorlage(BerichtsvorlageDateiWacheTests.BEISPIEL);
-            if (beispiel == null) return;
-            Fuellergebnis b = Fuelle(beispiel, Gruppe(), Konfig(), Ziel("beispiel_zaehlung.docx"));
-            Assert.Equal(Vorlagenpruefer.Pruefe(beispiel, Pruefstufe.Schnell, null).Kommentare, b.EntfernteKommentare);
+            byte[] kurzbericht = Repovorlage(BerichtsvorlageDateiWacheTests.KURZBERICHT);
+            if (kurzbericht == null) return;
+            Fuellergebnis b = Fuelle(kurzbericht, Gruppe(), Konfig(), Ziel("kurzbericht_zaehlung.docx"));
+            Assert.Equal(Vorlagenpruefer.Pruefe(kurzbericht, Pruefstufe.Schnell, null).Kommentare, b.EntfernteKommentare);
         }
 
         /// <summary>Konzept 6.1: ein verknüpftes Bild wird entfernt und als Warnung gemeldet, der Verweis
@@ -1536,6 +1536,27 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>Ein Absatz ohne Format mit einem Text.</summary>
+        /// <summary>
+        /// Gegenprobe zur Deckblatt-Regel: Eine Vorlage mit Datum und Kunde, aber ohne <c>{{bericht.titel}}</c>, trägt
+        /// kein eigenes Deckblatt — ohne Häkchen „Deckblatt“ steht es nicht im Bericht; mit dem Titel steht es da.
+        /// </summary>
+        [Fact]
+        public void Ohne_Berichtstitel_traegt_die_Vorlage_kein_Deckblatt()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            byte[] ohneTitel = KapitelVorlage(TextAbsatz("{{bericht.datum}}"), TextAbsatz("{{projekt.kunde}}"),
+                                              TextAbsatz("{{kapitel.anhang}}"));
+            Fuellergebnis ohne = Fuelle(ohneTitel, Berichtsdatenproben.Gruppendaten(), Konfig(BerichtsKonfiguration.B_ANHANG),
+                                        Ziel("ohne_titel.docx"));
+            Assert.Null(ohne.Kapitelstellen[BerichtsKonfiguration.B_DECKBLATT]);
+
+            byte[] mitTitel = KapitelVorlage(TextAbsatz("{{bericht.titel}}"), TextAbsatz("{{kapitel.anhang}}"));
+            Fuellergebnis mit = Fuelle(mitTitel, Berichtsdatenproben.Gruppendaten(), Konfig(BerichtsKonfiguration.B_ANHANG),
+                                       Ziel("mit_titel.docx"));
+            Assert.Equal("Deckblatt", mit.Kapitelstellen[BerichtsKonfiguration.B_DECKBLATT]);
+        }
+
         private static string TextAbsatz(string text)
         {
             return "<w:p><w:r><w:t xml:space=\"preserve\">" + text + "</w:t></w:r></w:p>";

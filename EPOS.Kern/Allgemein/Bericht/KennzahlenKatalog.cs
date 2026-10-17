@@ -343,6 +343,31 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string SCHLUESSEL_RK_WASSER_KOSTEN = "kaelte.rk.wasser_kosten";
 
+        /// <summary>
+        /// Hilfsstrom von BHKW und Brennstoffkesseln [MWh/a] aus dem Hilfsenergieanteil ihrer Anlagen
+        /// (<see cref="VariantenDaten.HilfsstromMWh"/>); null ohne Hilfsstrom (6b, Katalog v26).
+        /// </summary>
+        public const string SCHLUESSEL_HILFSSTROM = "energie.hilfsstrom";
+
+        /// <summary>Emissionen des Hilfsstroms [t/a] (<see cref="VariantenDaten.HilfsstromCO2t"/>, in
+        /// <c>em.co2</c> enthalten); null ohne Hilfsstrom oder ohne Faktoren (6b, Katalog v26).</summary>
+        public const string SCHLUESSEL_HILFSSTROM_CO2 = "em.co2_hilfsstrom";
+
+        /// <summary>Stromsteuer des Hilfsstroms, gesondert angesetzt [€/a]
+        /// (<see cref="VariantenDaten.HilfsstromStromsteuerGesondert"/>, 6b, Katalog v26).</summary>
+        public const string SCHLUESSEL_HILFSSTROM_STROMSTEUER = "ko.stromsteuer_hilfsstrom";
+
+        /// <summary>Stromsteuer des Hilfsstroms zum Regelsatz, enthaltener und gesonderter Teil [€/a]
+        /// (<see cref="VariantenDaten.HilfsstromStromsteuerGesamt"/>, 6b, Katalog v26).</summary>
+        public const string SCHLUESSEL_HILFSSTROM_STROMSTEUER_GESAMT = "ko.stromsteuer_hilfsstrom_gesamt";
+
+        /// <summary>
+        /// Die Kennzahlen, deren Wert erst die Wirtschaftlichkeit setzt — sie werden nach ihr nachgetragen
+        /// (<see cref="NachWirtschaftlichkeit"/>).
+        /// </summary>
+        private static readonly string[] NACH_WIRTSCHAFTLICHKEIT =
+            { SCHLUESSEL_HILFSSTROM_STROMSTEUER, SCHLUESSEL_HILFSSTROM_STROMSTEUER_GESAMT };
+
         /// <summary>Kälte der Teil-Freikühlung in Reihe [MWh/a] — der vorgekühlte Anteil der Mischstunden (K-F3, Katalog v22).</summary>
         public const string SCHLUESSEL_RK_TEILFREI = "kaelte.rk.teilfrei";
 
@@ -498,7 +523,7 @@ namespace WindowsFormsApplication1
         /// <summary>Ungedeckte Kälte [MWh/a] (<c>Kaelterestbedarf</c>) — Gegenstück zu <c>energie.waermerest</c>.</summary>
         public const string SCHLUESSEL_KAELTE_REST = "kaelte.rest";
 
-        /// <summary>Jahresarbeitszahl Kälte (EER-Jahreswert) = Kälteerzeugung / Kältestrom — Gegenstück zu <c>eff.jaz</c>.</summary>
+        /// <summary>Jahresarbeitszahl Kälte (EER-Jahreswert) = Kälte / Kältestrom der ganzen Kältefolge (<see cref="JahresarbeitszahlKaelte"/>) — Gegenstück zu <c>eff.jaz</c>.</summary>
         public const string SCHLUESSEL_KAELTE_JAZ = "kaelte.jaz";
 
         /// <summary>Kältestrom samt Hilfsstrom [MWh/a] (Kühlkonzept 6.1).</summary>
@@ -514,15 +539,18 @@ namespace WindowsFormsApplication1
         public const string SCHLUESSEL_KAELTE_CO2 = "kaelte.co2";
 
         /// <summary>
-        /// Jahresarbeitszahl Kälte aus dem gespeicherten Ergebnis: Kälteerzeugung / Kältestrom der
-        /// Wärmepumpen; <c>null</c> ohne Kälteerzeugung oder ohne Kältestrom.
+        /// Jahresarbeitszahl Kälte (<c>kaelte.jaz</c>) über die ganze Kältefolge: Kälte / Kältestrom der Wärmepumpen
+        /// und Kältemaschinen nach <see cref="KaelteDeckungsgrad.Jahresarbeitszahl"/> — dieselbe Formel und dieselben
+        /// Summen wie der EER-Jahreswert der Übersicht (die Kältespalten der Ergebnistabellen sind ungerundet
+        /// gespeichert). <c>null</c> ohne Kälteerzeugung oder ohne Kältestrom.
         /// </summary>
         public static double? JahresarbeitszahlKaelte(VariantenDaten v)
         {
+            if (!MitKaelteerzeugung(v)) return null;
             var w = WP(v);
-            if (w == null || !w.Kaelteproduktion_WP.HasValue || !w.Stromverbrauch_Kuehlung.HasValue) return null;
-            return w.Stromverbrauch_Kuehlung.Value > 0
-                ? (double?)(w.Kaelteproduktion_WP.Value / w.Stromverbrauch_Kuehlung.Value) : null;
+            double kaelte = (w?.Kaelteproduktion_WP ?? 0.0) + (KmSumme(v, k => k.Kaelteproduktion_MWh) ?? 0.0);
+            double strom = (w?.Stromverbrauch_Kuehlung ?? 0.0) + (KmSumme(v, k => k.Stromverbrauch_MWh) ?? 0.0);
+            return KaelteDeckungsgrad.Jahresarbeitszahl(kaelte, strom);
         }
 
         /// <summary>Nur mit gerechneter Kälteerzeugung (<c>Kaelteproduktion_WP</c> gesetzt) — sonst keine Kältezahl der Gruppe <see cref="GR_KAELTE"/>.</summary>
@@ -701,6 +729,11 @@ namespace WindowsFormsApplication1
                 v => (BH(v) == null && HK(v) == null) ? (double?)null : Brennstoffsumme(BH(v)) + Brennstoffsumme(HK(v))));
             l.Add(new Kennzahl("energie.netzbezug", "Netzbezug Strom", "Grid electricity import", "MWh/a", GR_ENERGIE, "N0", true,
                 v => E(v) == null ? (double?)null : E(v).Stromrestbedarf));
+            // 6b (Katalog v26): der Hilfsstrom von BHKW und Kesseln, den die Simulation nicht im Netzbezug führt.
+            l.Add(new Kennzahl(SCHLUESSEL_HILFSSTROM, "Hilfsstrom BHKW und Kessel", "Auxiliary electricity CHP and boilers",
+                "MWh/a", GR_ENERGIE, "N2", true,
+                v => v.HilfsstromMWh > 0 ? v.HilfsstromMWh : (double?)null)
+                { Seit = Vorlagenfeldkatalog.FASSUNG_HILFSSTROM });
             l.Add(new Kennzahl("energie.einspeisung", "Netzeinspeisung PV", "PV grid export", "MWh/a", GR_ENERGIE, "N0", true,
                 v => PV(v) == null ? (double?)null : PV(v).Ueberschuss));
             l.Add(new Kennzahl("energie.waermerest", "Wärmerestbedarf (ungedeckt)", "Uncovered heat demand", "MWh/a", GR_ENERGIE, "N0", true,
@@ -1004,14 +1037,50 @@ namespace WindowsFormsApplication1
                 EmissionsAusweis.KennzahlSpezifisch(modus, true),
                 "g/kWh", GR_EMISSION, "N0", true,
                 v => v.CO2Spezifisch));
+            // 6b (Katalog v26): die Emissionen des Hilfsstroms von BHKW und Kesseln — ein Ausweis, in em.co2 enthalten.
+            l.Add(new Kennzahl(SCHLUESSEL_HILFSSTROM_CO2,
+                EmissionsAusweis.KennzahlHilfsstrom(modus, false),
+                EmissionsAusweis.KennzahlHilfsstrom(modus, true),
+                "t/a", GR_EMISSION, "N2", true,
+                v => v.HilfsstromMWh > 0 && v.CO2Gesamt.HasValue ? v.HilfsstromCO2t : (double?)null)
+                { Seit = Vorlagenfeldkatalog.FASSUNG_HILFSSTROM });
 
             // ---------------- Kosten einfach (KostenEmissionRechner; null = Preise fehlen) ----------------
             l.Add(new Kennzahl("ko.energie", "Energiekosten p. a.", "Annual energy cost", "€/a", GR_KOSTEN, "N0", true,
                 v => v.Energiekosten));
             l.Add(new Kennzahl("ko.stromsaldo", "Stromkosten Netzbezug", "Grid electricity cost", "€/a", GR_KOSTEN, "N0", true,
                 v => v.StromkostenNetz));
+            // 6b (Katalog v26): die Stromsteuer des Hilfsstroms — der gesondert angesetzte Betrag (er steht in den
+            // Kosten der Wirtschaftlichkeit) und der Betrag zum Regelsatz; gesetzt von der Wirtschaftlichkeit
+            // (Erwartungsfall), ohne Hilfsstrom oder Regelsatz null.
+            {
+                Kennzahl H(Kennzahl k) { k.Seit = Vorlagenfeldkatalog.FASSUNG_HILFSSTROM; return k; }
+                l.Add(H(new Kennzahl(SCHLUESSEL_HILFSSTROM_STROMSTEUER, "Stromsteuer Hilfsstrom, gesondert angesetzt",
+                    "Electricity tax on auxiliary electricity, charged separately", "€/a", GR_KOSTEN, "N0", true,
+                    v => v.HilfsstromStromsteuerGesondert)));
+                l.Add(H(new Kennzahl(SCHLUESSEL_HILFSSTROM_STROMSTEUER_GESAMT, "Stromsteuer Hilfsstrom zum Regelsatz",
+                    "Electricity tax on auxiliary electricity at the standard rate", "€/a", GR_KOSTEN, "N0", true,
+                    v => v.HilfsstromStromsteuerGesamt)));
+            }
 
             return l;
+        }
+
+        /// <summary>
+        /// Trägt die Kennzahlen nach, deren Wert erst die Wirtschaftlichkeit setzt (6b: Stromsteuer des Hilfsstroms) —
+        /// nur in ein bereits berechnetes Dictionary; ein leeres bleibt leer.
+        /// </summary>
+        internal static void NachWirtschaftlichkeit(VariantenDaten v)
+        {
+            if (v == null || v.Kennzahlen.Count == 0) return;
+            foreach (Kennzahl k in Alle())
+            {
+                if (Array.IndexOf(NACH_WIRTSCHAFTLICHKEIT, k.Schluessel) < 0) continue;
+                double? wert;
+                try { wert = k.Wert(v); }
+                catch { wert = null; }
+                v.Kennzahlen[k.Schluessel] = wert;
+            }
         }
 
         /// <summary>Berechnet alle Katalogwerte für ein Projekt in dessen Kennzahlen-Dictionary.</summary>

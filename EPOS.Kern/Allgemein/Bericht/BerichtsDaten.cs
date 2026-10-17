@@ -674,6 +674,38 @@ namespace WindowsFormsApplication1
         public double? KaeltestromCO2t;
 
         /// <summary>
+        /// 6b: Hilfsstrom von BHKW und Brennstoffkesseln aus dem Hilfsenergieanteil ihrer
+        /// Anlagen [MWh/a] (<c>HilfsstromRechner.SummeMWh</c>). Die Simulation führt ihn nicht
+        /// im Netzbezug; die CO₂-Bilanz setzt ihn mit dem Faktor des Netzstroms an
+        /// (<see cref="HilfsstromCO2t"/>), die Wirtschaftlichkeit seine Stromsteuer
+        /// (<c>HilfsstromStromsteuer</c>). 0 = kein Anteil gepflegt.
+        /// </summary>
+        public double HilfsstromMWh;
+
+        /// <summary>
+        /// 6b: die Emissionen des Hilfsstroms [t/a] (CO₂ bzw. im Modus CO2E das Äquivalent):
+        /// <see cref="HilfsstromMWh"/> × Faktor des Netzstroms. In <see cref="CO2Gesamt"/>
+        /// enthalten — ein AUSWEIS wie <see cref="KaeltestromCO2t"/>.
+        /// </summary>
+        public double HilfsstromCO2t;
+
+        /// <summary>
+        /// 6b (Katalog v26): die Stromsteuer des Hilfsstroms [€/a], die die Wirtschaftlichkeit im
+        /// Erwartungsfall GESONDERT ansetzt — der Teil des Regelsatzes, den der Arbeitspreis des
+        /// Netzträgers nicht schon enthält (<c>HilfsstromStromsteuer.Ergebnis.GesondertEur</c>).
+        /// <c>null</c> ohne Hilfsstrom, ohne Regelsatz oder solange die Wirtschaftlichkeit nicht
+        /// gerechnet ist.
+        /// </summary>
+        public double? HilfsstromStromsteuerGesondert;
+
+        /// <summary>
+        /// 6b (Katalog v26): die Stromsteuer des Hilfsstroms zum Regelsatz [€/a], enthaltener und
+        /// gesonderter Teil zusammen (<c>HilfsstromStromsteuer.Ergebnis.SteuerEur</c>); <c>null</c>
+        /// wie <see cref="HilfsstromStromsteuerGesondert"/>.
+        /// </summary>
+        public double? HilfsstromStromsteuerGesamt;
+
+        /// <summary>
         /// Die Wasserkosten der Rückkühlwerke [€/a] im ersten Betrachtungsjahr (KB-7c2): Wasser des Laufs ×
         /// Arbeitspreis des Wasserträgers mit den Trägerpreisen des gerechneten Szenarios — dieselbe Rechnung
         /// (<c>Wasserkosten.Rechne</c>) wie die Nachweiszeile der Wirtschaftlichkeit. Ein AUSWEIS: Die Kosten

@@ -7377,7 +7377,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Angaben stehen seit Etappe B5 im eigenen Dialog „BHKW-Wirtschaftlichkeit“ — dort zusammen mit den Werten je BHKW-Modul, den Herleitungen und der Vorschau. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Angaben stehen im eigenen Dialog „BHKW-Wirtschaftlichkeit“ — dort zusammen mit den Werten je BHKW-Modul, den Herleitungen und der Vorschau. ähnelt.
         /// </summary>
         public static string BHW_PARAM_VERWEIS {
             get {
@@ -19720,6 +19720,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hinweis: {0} Teil(e) der Wirtschaftlichkeitsdaten fehlten nach der Datensammlung und wurden beim Schreiben nachgerechnet – der Bericht ist vollständig. ähnelt.
+        /// </summary>
+        public static string BV_LAUF_NACHGEHOLT {
+            get {
+                return ResourceManager.GetString("BV_LAUF_NACHGEHOLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ließ sich nicht füllen: {1} ähnelt.
         /// </summary>
         public static string BV_LAUF_NICHT_FUELLBAR {
@@ -21646,6 +21655,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BV_XL_BLATT_VORLAGE {
             get {
                 return ResourceManager.GetString("BV_XL_BLATT_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abstand (Hilfsspalte) ähnelt.
+        /// </summary>
+        public static string BV_XL_DG_ABSTAND {
+            get {
+                return ResourceManager.GetString("BV_XL_DG_ABSTAND", resourceCulture);
             }
         }
         
@@ -32206,15 +32224,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string FLOTTE_OPT_KEINE_GERAETE {
             get {
                 return ResourceManager.GetString("FLOTTE_OPT_KEINE_GERAETE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Noch keine Suche gerechnet. ähnelt.
-        /// </summary>
-        public static string FLOTTE_OPT_KEIN_ERGEBNIS {
-            get {
-                return ResourceManager.GetString("FLOTTE_OPT_KEIN_ERGEBNIS", resourceCulture);
             }
         }
         
@@ -49124,6 +49133,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string HILFS_ANTEIL_POSITION {
             get {
                 return ResourceManager.GetString("HILFS_ANTEIL_POSITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer auf {0} MWh/a Hilfsstrom nicht angesetzt: Der Gesetzkatalog führt keinen Regelsatz der Stromsteuer. ähnelt.
+        /// </summary>
+        public static string HILFS_STROMSTEUER_OHNE_SATZ {
+            get {
+                return ResourceManager.GetString("HILFS_STROMSTEUER_OHNE_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromsteuer auf Hilfsstrom ({0} €/MWh, davon {1} €/MWh im Arbeitspreis enthalten) ähnelt.
+        /// </summary>
+        public static string HILFS_STROMSTEUER_POSITION {
+            get {
+                return ResourceManager.GetString("HILFS_STROMSTEUER_POSITION", resourceCulture);
             }
         }
         
@@ -73858,6 +73885,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Modultyp des Strangs aus den Modulen des Projekts; 0 ist das Modul der Anlage. Eine Wahl, mit der die Strangprüfung einen neuen roten Befund meldet, wird abgelehnt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_STRANG_MODUL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_STRANG_MODUL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der MPPT-Eingang des Geräts, an dem der Strang hängt, ganze Zahl ab 1; leer bedeutet 1. ähnelt.
         /// </summary>
         public static string KI_DLG_PV_STRANG_MPPT_ERL {
@@ -73890,6 +73926,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_PV_STRANG_REIHE_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_PV_STRANG_REIHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wechselrichter des Strangs aus dem Katalog, gewählt über denselben Weg wie in der Klappliste der Strangtabelle. Ein Gerät, das für das Modulfeld der Anlage ungeeignet ist, wird abgelehnt; 0 nimmt das Gerät aus dem Strang. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_STRANG_WR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_STRANG_WR_ERL", resourceCulture);
             }
         }
         
@@ -80734,6 +80779,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Laufmeldung nennt nachgerechnete Teile der Wirtschaftlichkeitsdaten. Was bedeutet das? ähnelt.
+        /// </summary>
+        public static string KI_FRAGE_BV_LAUF_NACHGEHOLT {
+            get {
+                return ResourceManager.GetString("KI_FRAGE_BV_LAUF_NACHGEHOLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Laufmeldung nennt einen Rückfall bei der Vorlagenwahl. Was ist passiert? ähnelt.
         /// </summary>
         public static string KI_FRAGE_BV_LAUF_RUECKFALL {
@@ -82677,6 +82731,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_PTR_LAEUFT {
             get {
                 return ResourceManager.GetString("KI_PTR_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Modul {0} ist dem Projekt nicht zugeordnet; ein Strang nimmt nur Module des Projekts. ähnelt.
+        /// </summary>
+        public static string KI_PVS_MODUL_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_PVS_MODUL_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Modul „{0}“ passt nicht zu diesem Strang: {1} ähnelt.
+        /// </summary>
+        public static string KI_PVS_MODUL_UNVERTRAEGLICH {
+            get {
+                return ResourceManager.GetString("KI_PVS_MODUL_UNVERTRAEGLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Modul und Wechselrichter eines Strangs wählt der Assistent im Abschnitt „Wechselrichter und Stränge“; der Abschnitt steht gerade nicht offen. ähnelt.
+        /// </summary>
+        public static string KI_PVS_STRANG_OHNE_ABSCHNITT {
+            get {
+                return ResourceManager.GetString("KI_PVS_STRANG_OHNE_ABSCHNITT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Eignung des Wechselrichters lässt sich nicht prüfen – die Anlage braucht dafür ein Modul und eine Modulzahl. Ohne Prüfung wählt der Assistent kein Gerät. ähnelt.
+        /// </summary>
+        public static string KI_PVS_WR_OHNE_BEWERTUNG {
+            get {
+                return ResourceManager.GetString("KI_PVS_WR_OHNE_BEWERTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Wechselrichter {0} führt der Katalog nicht. ähnelt.
+        /// </summary>
+        public static string KI_PVS_WR_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_PVS_WR_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wechselrichter „{0}“ ist für das Modulfeld dieser Anlage ungeeignet: {1} ähnelt.
+        /// </summary>
+        public static string KI_PVS_WR_UNGEEIGNET {
+            get {
+                return ResourceManager.GetString("KI_PVS_WR_UNGEEIGNET", resourceCulture);
             }
         }
         
@@ -113091,6 +113199,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVS_WRV_BEDINGT {
             get {
                 return ResourceManager.GetString("PVS_WRV_BEDINGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bedingt geeignet (Angaben fehlen) ähnelt.
+        /// </summary>
+        public static string PVS_WRV_BEDINGT_ANGABEN {
+            get {
+                return ResourceManager.GetString("PVS_WRV_BEDINGT_ANGABEN", resourceCulture);
             }
         }
         

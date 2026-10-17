@@ -142,6 +142,12 @@ namespace WindowsFormsApplication1
         private Berichtslauf Fuelle(BerichtsDaten daten, BerichtsKonfiguration konfig, Vorlagenwahl wahl,
                                     byte[] bytes, string lesefehler, List<string> rueckfaelle, bool englisch)
         {
+            return FuelleVorlage(daten, konfig, wahl, bytes, lesefehler, rueckfaelle, englisch).MitNachgeholt(daten);
+        }
+
+        private Berichtslauf FuelleVorlage(BerichtsDaten daten, BerichtsKonfiguration konfig, Vorlagenwahl wahl,
+                                           byte[] bytes, string lesefehler, List<string> rueckfaelle, bool englisch)
+        {
             string ordner = Zielordner(konfig);
             string basis = Dateistamm(daten);
 
@@ -547,6 +553,11 @@ namespace WindowsFormsApplication1
                 liste.Add(new Berichtsmeldung(KiMeldungskennung.BV_LAUF_WARNUNGEN,
                                               Tk(englisch, nameof(R.BV_LAUF_WARNUNGEN), lauf.Warnungen.Count),
                                               Kappe(lauf.Warnungen, englisch)));
+            // Was der Schreiber nach der Datensammlung nachrechnete, nennt eine Hinweiszeile.
+            if (lauf.Nachgeholt.Count > 0)
+                liste.Add(new Berichtsmeldung(KiMeldungskennung.BV_LAUF_NACHGEHOLT,
+                                              Tk(englisch, nameof(R.BV_LAUF_NACHGEHOLT), lauf.Nachgeholt.Count),
+                                              Kappe(lauf.Nachgeholt, englisch)));
             return liste;
         }
 
@@ -624,6 +635,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         public Berichtslauf ErzeugeExcelLauf(BerichtsDaten daten, BerichtsKonfiguration konfig, Excelstartbefund start,
                                              bool ohneVorlage, Berichtssprache sprache = null)
+        {
+            return ErzeugeMappe(daten, konfig, start, ohneVorlage, sprache).MitNachgeholt(daten);
+        }
+
+        private Berichtslauf ErzeugeMappe(BerichtsDaten daten, BerichtsKonfiguration konfig, Excelstartbefund start,
+                                          bool ohneVorlage, Berichtssprache sprache)
         {
             string ordner = Zielordner(konfig);
             string basis = Dateistamm(daten);

@@ -5,7 +5,7 @@
 set -u
 export DOTNET_ROOT=/usr/lib/dotnet DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1 PYTHONIOENCODING=utf-8
 WT="$1"; GATELOG="$2"; LOG="$(dirname "$WT")/nachgate_$(basename "$WT").log"
-REFBASIS="${REFBASIS:-Referenzlaeufe/2026-10-16_R57_Schnellaufheizung}"  # aktuelle Basis aus Referenzlaeufe/LIESMICH.md
+REFBASIS="${REFBASIS:-Referenzlaeufe/2026-10-17_R58_Kaeltesummen}"  # aktuelle Basis aus Referenzlaeufe/LIESMICH.md
 XU='-- xUnit.ParallelizeTestCollections=false xUnit.MaxParallelThreads=2'
 until grep -q 'GATE-ENDE' "$GATELOG"; do sleep 30; done
 cd "$WT" || exit 2

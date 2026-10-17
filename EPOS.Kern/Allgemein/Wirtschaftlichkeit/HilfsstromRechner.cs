@@ -319,5 +319,60 @@ namespace WindowsFormsApplication1
             if (waerme <= 0 || m.Jahresnutzungsgrad <= 0) return 0;
             return waerme / (m.Jahresnutzungsgrad / 100.0);
         }
+
+        // =====================================================================
+        // 6b: der Hilfsstrom des ganzen Laufs
+        // =====================================================================
+
+        /// <summary>
+        /// 6b (Anwenderentscheid 16.10.2026) — der Hilfsstrom aller BHKW- und
+        /// Brennstoffkessel-Module eines Laufs [MWh/a]: dieselbe Formel und dieselbe
+        /// Zuordnung Modul ↔ Anlage wie der Speicherweg (<see cref="JeModul"/>), bemessen am
+        /// Brennstoff der Modulzeilen (beim BHKW <c>Verbrauch</c>, beim Kessel
+        /// <see cref="KesselBrennstoffMWh"/>). Ein Elektrokessel zählt nicht (E30‑Q3 a): Sein
+        /// Einsatz ist Netzstrom und steht schon im Netzbezug.
+        ///
+        /// <para>Gerechnet wird am Ergebnis, das der Aufrufer hält — im Szenariolauf also an
+        /// den skalierten Mengen. 0 ohne gepflegten Anteil (der ganze Bestand der
+        /// Testdatenbank).</para>
+        /// </summary>
+        /// <param name="m">Das Ergebnis des Laufs.</param>
+        /// <param name="stromkessel">Modulnamen der Elektrokessel; <c>null</c> erlaubt.</param>
+        internal static double SummeMWh(ErgebnisModel m, ICollection<string> stromkessel)
+        {
+            if (m == null) return 0;
+            double summe = 0;
+
+            if (m.BHKW != null && m.BHKW.Module != null && m.BHKW.Module.Count > 0)
+            {
+                int n = m.BHKW.Module.Count;
+                var namen = new string[n];
+                var brennstoff = new double[n];
+                for (int i = 0; i < n; i++)
+                {
+                    namen[i] = m.BHKW.Module[i].Modul ?? "";
+                    brennstoff[i] = Math.Max(0, m.BHKW.Module[i].Verbrauch);
+                }
+                foreach (double h in JeModul(m.ID_Projekt, WizardItemClass.BHKW_TYP, namen, brennstoff))
+                    summe += h;
+            }
+
+            if (m.Heizkessel != null && m.Heizkessel.Module != null && m.Heizkessel.Module.Count > 0)
+            {
+                int n = m.Heizkessel.Module.Count;
+                var namen = new string[n];
+                var brennstoff = new double[n];
+                for (int i = 0; i < n; i++)
+                {
+                    ErgebnisHeizkesselModulModel mo = m.Heizkessel.Module[i];
+                    namen[i] = mo.Modul ?? "";
+                    bool elektro = stromkessel != null && stromkessel.Contains(namen[i].Trim());
+                    brennstoff[i] = elektro ? 0 : KesselBrennstoffMWh(mo);
+                }
+                foreach (double h in JeModul(m.ID_Projekt, WizardItemClass.KESSEL_TYP, namen, brennstoff))
+                    summe += h;
+            }
+            return summe;
+        }
     }
 }

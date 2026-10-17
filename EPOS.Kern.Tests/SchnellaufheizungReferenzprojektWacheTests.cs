@@ -51,7 +51,7 @@ namespace EPOS.Kern.Tests
         private const string NAME = "Referenzprojekt Schnellaufheizung";
         private const double UEBERHOEHUNG_K = 3.0;
 
-        // Die Kennzahlen der Basis R57 (Referenzlaeufe/2026-10-16_R57_Schnellaufheizung/Projekt_1073/aggregate.csv).
+        // Die Kennzahlen der Basis R57 (unverändert in R58, Referenzlaeufe/2026-10-17_R58_Kaeltesummen/Projekt_1073/aggregate.csv).
         private const int R57_VORHEIZZEIT_H = 5, R57_BEDARF_MAX_H = 9, R57_UEBERHOEHUNG_H = 302;
         private const double R57_HEIZWAERME_MWH = 50.7924533;
         // Der Gegenlauf ohne Schalter (dieselbe Kopie, Schnellaufheizung aus), gemessen mit R57.

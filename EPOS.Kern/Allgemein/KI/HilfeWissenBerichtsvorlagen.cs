@@ -542,6 +542,17 @@ namespace WindowsFormsApplication1
                     "Dokumentation/Bericht#vorlage.",
                     WIKI_BERICHT),
 
+                new WissensAbschnitt(KiMeldungskennung.BV_LAUF_NACHGEHOLT,
+                    "Meldung BV_LAUF_NACHGEHOLT: Teile der Wirtschaftlichkeitsdaten nachgerechnet",
+                    KiChatKontext.B_BERICHT,
+                    "BEDEUTUNG: Beim Schreiben las der Bericht Teile der Wirtschaftlichkeitsdaten, die die Datensammlung " +
+                    "nicht geliefert hatte, und rechnete sie nach; die Meldung nennt sie. Der Bericht ist vollständig. " +
+                    "URSACHE: Ein Teil der Datensammlung scheiterte, oder statt der geprüften Vorlage sprang die " +
+                    "Standardvorlage ein, die mehr braucht als die gewählte. ABHILFE: Nichts zu tun; tritt die Meldung " +
+                    "bei jedem Lauf auf, die Vorlage prüfen und den Bericht erneut erstellen. WIKI: Programm " +
+                    "Dokumentation/Bericht#vorlage.",
+                    WIKI_BERICHT),
+
                 new WissensAbschnitt(KiMeldungskennung.BV_LAUF_WARNUNGEN,
                     "Meldung BV_LAUF_WARNUNGEN: Warnungen beim Füllen der Vorlage",
                     KiChatKontext.B_BERICHT,

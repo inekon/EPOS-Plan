@@ -305,7 +305,7 @@ namespace WindowsFormsApplication1
                                    nID_Klimaregion + ").");
 
             KlimaregionCtrl ctrlklima = new KlimaregionCtrl();
-            ctrlklima.ReadSingle("select * from Tab_Klimaregion where ID=" + nID_Klimaregion);
+            ctrlklima.ReadSingle("SELECT * FROM Tab_Klimaregion WHERE ID = ?", new DbParam("@id", nID_Klimaregion));
 
             if (ctrlklima.rows > 0)
             {

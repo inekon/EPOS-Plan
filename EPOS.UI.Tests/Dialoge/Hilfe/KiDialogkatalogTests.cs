@@ -692,7 +692,7 @@ public class KiDialogkatalogTests : IDisposable
     }
 
     [Fact]
-    public void Die_vier_Startmasken_fuehren_17_18_5_und_13_Felder()
+    public void Die_vier_Startmasken_fuehren_17_20_5_und_20_Felder()
     {
         // Der Feldumfang ist mit #200 NICHT gewachsen — sonst liesse sich hinterher
         // nicht sagen, was den Feldblock verändert hat: der Umfang oder der
@@ -718,9 +718,10 @@ public class KiDialogkatalogTests : IDisposable
         // Bereitschaftsverlusts (Anwenderentscheid 02.10.2026) auf 17.
         //
         // Die Photovoltaik fuehrt dazu die Bodenalbedo der Anlage (Entscheidungsvorlage
-        // Modellgrenzen, PV4): 18.
+        // Modellgrenzen, PV4): 18, und die zwei Wahlspalten Wechselrichter und Modul je
+        // Strang (Anwenderentscheid 16.10.2026, Wahl ueber den Uebernahmeweg): 20.
         Assert.Equal(17, KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL)!.Felder.Count);
-        Assert.Equal(18, KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!.Felder
+        Assert.Equal(20, KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!.Felder
                              .Count(f => !IstAlleDaten(f)));
         Assert.Equal(5, KiDialoge.Katalog.Finde(KiMaskennamen.PUFFERSPEICHER)!.Felder.Count);
         // Die Waermepumpe fuehrt dazu Mindestleistung und C_d (Welle M4, WP1) und die acht
@@ -1506,18 +1507,18 @@ public class KiDialogkatalogTests : IDisposable
     }
 
     /// <summary>
-    /// <b>Die Photovoltaik führt ELF Felder mehr als die drei der Startmaske</b> (Welle
-    /// KI‑F1): die drei Modellfelder samt der Wechselrichterwahl und die SIEBEN Spalten
+    /// <b>Die Photovoltaik führt DREIZEHN Felder mehr als die drei der Startmaske</b> (Welle
+    /// KI‑F1): die drei Modellfelder samt der Wechselrichterwahl und die NEUN Spalten
     /// der Strangliste.
     /// </summary>
     /// <remarks>
     /// Die Strangfelder sind SPALTEN (<c>ErzeugerZeile.Straenge[].Mppt</c>): Je
     /// vorhandener Strangzeile wird daraus ein gewöhnliches Feld, und das
     /// Zeilenkennzeichen ist der Bezeichner des Strangs. Ohne diesen Fall bliebe
-    /// unbemerkt, wenn eines der sieben wieder zu einem flachen Feld würde.
+    /// unbemerkt, wenn eines der neun wieder zu einem flachen Feld würde.
     /// </remarks>
     [Fact]
-    public void Die_Photovoltaikmaske_fuehrt_die_Modellfelder_und_sieben_Strangspalten()
+    public void Die_Photovoltaikmaske_fuehrt_die_Modellfelder_und_neun_Strangspalten()
     {
         KiDialog pv = KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!;
 
@@ -1532,7 +1533,8 @@ public class KiDialogkatalogTests : IDisposable
         string[] spalten =
         {
             "strang", "strang_geraet", "strang_mppt", "strang_module_reihe",
-            "strang_parallel", "strang_neigung", "strang_azimut"
+            "strang_parallel", "strang_neigung", "strang_azimut",
+            "strang_wechselrichter", "strang_modul"
         };
 
         foreach (string name in spalten)

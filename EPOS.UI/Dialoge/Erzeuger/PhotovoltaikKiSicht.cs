@@ -87,6 +87,13 @@ public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
     /// <summary>Die Feldtafel des Aufklappers „Alle Daten" (Welle #458, Stufe 2).</summary>
     public AlleDatenTafel? AlleDaten { get; init; }
 
+    /// <summary>
+    /// Der Übernahmeweg des Strangbausteins für Modul und Wechselrichter eines Strangs
+    /// (Anwenderentscheid 16.10.2026); <c>null</c> = der Abschnitt steht nicht offen,
+    /// dann lehnt jede Wahl benannt ab.
+    /// </summary>
+    public Func<IStrangwahl?>? Strangwahl { get; init; }
+
     /// <inheritdoc/>
     public object? Lesen(string schluessel) => AlleDaten?.Lesen(schluessel);
 
@@ -207,13 +214,36 @@ public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
     }
 
     /// <summary>
-    /// Die Stränge der Anlage — die LEBENDE Liste der Zeile, nicht eine Kopie: Der
-    /// Anwender legt Stränge an und löscht sie, während der Dialog steht, und der
-    /// Katalog löst seine Spalten bei jedem Zugriff neu auf.
+    /// Die Stränge der Anlage — je Strang der LEBENDEN Liste der Zeile eine
+    /// <see cref="StrangKiZeile"/>, die jeden Wert unverändert durchreicht: Der Anwender
+    /// legt Stränge an und löscht sie, während der Dialog steht, und der Katalog löst
+    /// seine Spalten bei jedem Zugriff neu auf. Die Hülle je Zeile ist nötig, weil Modul
+    /// und Wechselrichter nicht als Id gesetzt werden, sondern über den Übernahmeweg.
     /// </summary>
-    public List<StrangZeile> Straenge => Zeile?.Straenge ?? LEER;
+    public List<StrangKiZeile> Straenge
+    {
+        get
+        {
+            var liste = new List<StrangKiZeile>();
+            foreach (StrangZeile s in Zeile?.Straenge ?? LEER) liste.Add(new StrangKiZeile(s, this));
+            return liste;
+        }
+    }
 
     private static readonly List<StrangZeile> LEER = new();
+
+    /// <summary>Die Einträge der Wahlspalte „Wechselrichter" — die Geräte des Katalogs.</summary>
+    public IReadOnlyList<KiWahleintrag> WechselrichterWahl
+        => Strangwahl?.Invoke()?.GeraeteEintraege() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Die Einträge der Wahlspalte „Modul" — „Modul der Anlage" (0) und die Module des Projekts.</summary>
+    public IReadOnlyList<KiWahleintrag> ModulWahl
+        => Strangwahl?.Invoke()?.ModulEintraege() ?? Array.Empty<KiWahleintrag>();
+
+    internal IStrangwahl Wahlweg
+        => Strangwahl?.Invoke()
+           ?? throw new InvalidOperationException(
+                  WindowsFormsApplication1.MyResource.Resource.KI_PVS_STRANG_OHNE_ABSCHNITT);
 
     // =====================================================================
     //  Die zwei Auslegungstemperaturen — sie gehören dem PROJEKT
@@ -237,5 +267,90 @@ public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
     {
         get => Zeile is null ? null : HeissLesen?.Invoke();
         set => Schreibe(_ => HeissSetzen?.Invoke(value), uebernehmen: false);
+    }
+}
+
+/// <summary>
+/// Der Übernahmeweg des Strangbausteins für die zwei Katalogverweise eines Strangs —
+/// dieselbe Klappliste, dieselbe Projektkopie und dieselbe Bewertung wie bei der Wahl
+/// durch den Anwender. Eine ungeeignete Wahl wirft eine
+/// <see cref="InvalidOperationException"/> mit dem Grund.
+/// </summary>
+public interface IStrangwahl
+{
+    /// <summary>Die Geräte des Katalogs (Schlüssel = Stamm-Id).</summary>
+    IReadOnlyList<KiWahleintrag> GeraeteEintraege();
+
+    /// <summary>„Modul der Anlage" (0) und die Module des Projekts (Stamm-Id).</summary>
+    IReadOnlyList<KiWahleintrag> ModulEintraege();
+
+    /// <summary>Der gewählte Katalogeintrag des Geräts; 0 = keins, <c>null</c> = nicht im Katalog.</summary>
+    int? GeraetAuswahl(StrangZeile strang);
+
+    /// <summary>Der gewählte Eintrag des Moduls; 0 = das Modul der Anlage.</summary>
+    int? ModulAuswahl(StrangZeile strang);
+
+    /// <summary>Wählt das Gerät; 0 nimmt es heraus. Wirft bei ungeeigneter Wahl.</summary>
+    void GeraetWaehlen(StrangZeile strang, int stammId);
+
+    /// <summary>Wählt das Modul; 0 = das Modul der Anlage. Wirft bei unverträglicher Wahl.</summary>
+    void ModulWaehlen(StrangZeile strang, int stammId);
+}
+
+/// <summary>
+/// Ein Strang, wie der Assistent ihn sieht: die Werte der <see cref="StrangZeile"/>
+/// unverändert durchgereicht, dazu Wechselrichter und Modul als WAHL über den
+/// Übernahmeweg (<see cref="IStrangwahl"/>), nie als gesetzte Id.
+/// </summary>
+public sealed class StrangKiZeile
+{
+    private readonly StrangZeile _s;
+    private readonly PhotovoltaikKiSicht _sicht;
+
+    internal StrangKiZeile(StrangZeile strang, PhotovoltaikKiSicht sicht)
+    {
+        _s = strang;
+        _sicht = sicht;
+    }
+
+    /// <summary>Freitext („Dach Süd") — das Zeilenkennzeichen.</summary>
+    public string Bezeichner { get => _s.Bezeichner; set => _s.Bezeichner = value ?? ""; }
+
+    /// <summary>Welches physische Gerät dieses Typs; <c>null</c> = 1.</summary>
+    public int? Geraetenummer { get => _s.Geraetenummer; set => _s.Geraetenummer = value; }
+
+    /// <summary>MPPT-Eingang; <c>null</c> = 1.</summary>
+    public int? Mppt { get => _s.Mppt; set => _s.Mppt = value; }
+
+    /// <summary>Module in Reihe.</summary>
+    public int? ModuleReihe { get => _s.ModuleReihe; set => _s.ModuleReihe = value; }
+
+    /// <summary>Parallel geschaltete Stränge; <c>null</c> = 1.</summary>
+    public int? StraengeParallel { get => _s.StraengeParallel; set => _s.StraengeParallel = value; }
+
+    /// <summary>Neigung des Teilfelds [°]; <c>null</c> = der Anlagenwert.</summary>
+    public int? Neigung { get => _s.Neigung; set => _s.Neigung = value; }
+
+    /// <summary>Azimut des Teilfelds [°]; <c>null</c> = der Anlagenwert.</summary>
+    public int? Azimut { get => _s.Azimut; set => _s.Azimut = value; }
+
+    /// <summary>
+    /// Der Wechselrichter als Katalogeintrag (Stamm-Id); 0 = keiner. Gesetzt wird über
+    /// den Übernahmeweg — ein ungeeignetes Gerät lehnt er benannt ab.
+    /// </summary>
+    public int? Wechselrichter
+    {
+        get => _sicht.Strangwahl?.Invoke()?.GeraetAuswahl(_s) ?? (_s.WechselrichterId > 0 ? null : 0);
+        set => _sicht.Wahlweg.GeraetWaehlen(_s, value ?? 0);
+    }
+
+    /// <summary>
+    /// Das Modul als Eintrag (Stamm-Id); 0 = das Modul der Anlage. Gesetzt wird über den
+    /// Übernahmeweg — ein unverträgliches Modul lehnt er benannt ab.
+    /// </summary>
+    public int? Modul
+    {
+        get => _sicht.Strangwahl?.Invoke()?.ModulAuswahl(_s) ?? (_s.ModulId > 0 ? null : 0);
+        set => _sicht.Wahlweg.ModulWaehlen(_s, value ?? 0);
     }
 }

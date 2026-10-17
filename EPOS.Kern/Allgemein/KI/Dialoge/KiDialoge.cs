@@ -8652,9 +8652,13 @@ namespace WindowsFormsApplication1
         /// <b>Die STRAENGE sind eine LISTE</b> und damit die zweite Maske mit Spalten
         /// (nach der Kostenverwaltung): Je Strangzeile wird aus jeder Spaltendeklaration
         /// ein gewoehnliches Feld, und das Zeilenkennzeichen ist der Bezeichner des
-        /// Strangs („Dach Sued") statt seiner Nummer. Das MODUL und das GERAET eines
-        /// Strangs fehlen dabei: Beide sind Verweise in kontextabhaengige Katalogauswahlen
-        /// und stehen im Daten-Objekt allein als Id — dieselbe Regel wie ueberall.
+        /// Strangs („Dach Sued") statt seiner Nummer. Das MODUL und der WECHSELRICHTER
+        /// eines Strangs sind WAHLspalten (Anwenderentscheid 16.10.2026): Der Assistent
+        /// waehlt sie ueber den UEBERNAHMEWEG des Strangbausteins — dieselbe Klappliste,
+        /// dieselbe Projektkopie, dieselbe Bewertung wie bei der Wahl durch den Anwender —,
+        /// nie ueber einen direkten Setzer der Id. Ein fuer das Modulfeld ungeeignetes
+        /// Geraet und ein Modul, mit dem die Strangpruefung einen neuen roten Befund
+        /// meldet, lehnt er benannt ab.
         /// </para>
         /// <para>
         /// <b>Die Anlagenwerte des Wechselrichters haben einen EIGENEN Schluessel</b>
@@ -8740,6 +8744,14 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.PvStrangName, KiParameterTyp.Text,
                                      KiDialogTexte.PvStrangErl,
                                      leerErlaubt: true, zeilenkennzeichen: STRANGKENNZEICHEN),
+                    new KiDialogFeld("strang_wechselrichter", "PhotovoltaikKiSicht.Straenge[].Wechselrichter",
+                                     KiDialogTexte.PvStrangWrName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.PvStrangWrErl,
+                                     zeilenkennzeichen: STRANGKENNZEICHEN),
+                    new KiDialogFeld("strang_modul", "PhotovoltaikKiSicht.Straenge[].Modul",
+                                     KiDialogTexte.PvStrangModulName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.PvStrangModulErl,
+                                     zeilenkennzeichen: STRANGKENNZEICHEN),
                     new KiDialogFeld("strang_geraet", "PhotovoltaikKiSicht.Straenge[].Geraetenummer",
                                      KiDialogTexte.PvStrangGeraetName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.PvStrangGeraetErl,
