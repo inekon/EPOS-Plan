@@ -122942,6 +122942,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon aus Puffer: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_DAVON_AUS_PUFFER_WP {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_DAVON_AUS_PUFFER_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die davon Heizung: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_DAVON_HEIZUNG {
@@ -123955,6 +123964,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_TIP_BRENNWERT_SPK {
             get {
                 return ResourceManager.GetString("SIMERG_TIP_BRENNWERT_SPK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Teil der Nutzwärme, den die Speicher aus der Ladung der Wärmepumpen an den Bedarf abgegeben haben. Den Rest liefern die Wärmepumpen direkt. Im Heizkesselreiter ist dieser Wert in „davon aus Puffer (andere Erzeuger)“ enthalten. ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_DAVON_AUS_PUFFER_WP {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_DAVON_AUS_PUFFER_WP", resourceCulture);
             }
         }
         

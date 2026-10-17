@@ -58255,4 +58255,10 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="SIMERG_TIP_SPEICHERVERLUSTE_SPK" xml:space="preserve">
     <value>Boiler heat that is lost in storage or still stored at the end of the year and so covers no demand. Calculated as heat production minus useful heat.</value>
   </data>
+  <data name="SIMERG_LBL_DAVON_AUS_PUFFER_WP" xml:space="preserve">
+    <value>of which from buffer:</value>
+  </data>
+  <data name="SIMERG_TIP_DAVON_AUS_PUFFER_WP" xml:space="preserve">
+    <value>The part of the useful heat that the storage tanks delivered to the demand from the heat pumps' charge. The heat pumps deliver the rest directly. In the boiler tab this value is part of “of which from buffer (other generators)”.</value>
+  </data>
 </root>

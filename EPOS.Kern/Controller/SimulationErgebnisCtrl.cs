@@ -405,6 +405,13 @@ namespace WindowsFormsApplication1
             public bool MitKaskade;
 
             /// <summary>
+            /// Der Teil der Nutzwärme [MWh/a], den die Speicher aus der Ladung der Wärmepumpen an den
+            /// Bedarf abgegeben haben (<c>SimulationWaermepumpe.Speicherentladung_Anteil</c>); der Rest
+            /// ist Direktdeckung und Heizstab. Im Kesselreiter Teil von „davon aus Puffer (andere Erzeuger)“.
+            /// </summary>
+            public double AusPufferMwh;
+
+            /// <summary>
             /// Der GEDECKTE Wärmebedarf [MWh/a] — der Eigenanteil der Wärmepumpe samt Heizstab
             /// (<see cref="SimulationRunner.EigenanteilWpMwh"/>), aus dem auch
             /// <see cref="DeckungProzent"/> und <see cref="RestwaermeMwh"/> folgen.
@@ -534,6 +541,7 @@ namespace WindowsFormsApplication1
             e.WaermeproduktionMwh = wp.WpWaermeproduktionGesamtKwh / 1000.0;
             e.QuellwaermeKaskadeMwh = wp.QuellwaermeKaskadeKwh / 1000.0;
             e.MitKaskade = wp.Quellspeicher.Any(q => q != null && !q.IstQuelle);
+            e.AusPufferMwh = wp.Speicherentladung_Anteil / 1000.0;
 
             // UB-E4 (FK 7.1): die Betriebsbereiche - dieselbe Abbildung wie das gespeicherte Ergebnis (SimulationRunner).
             e.Bereiche = BereicheDerWaermepumpe(wp);

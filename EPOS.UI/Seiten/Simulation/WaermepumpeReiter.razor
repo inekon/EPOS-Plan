@@ -69,6 +69,8 @@
                     {
                         @Wertzeile(text, Zahl(wert), MWH)
                     }
+                    @Wertzeile(Resource.SIMERG_LBL_DAVON_AUS_PUFFER_WP, Zahl(Daten.AusPufferMwh), MWH,
+                               titel: Resource.SIMERG_TIP_DAVON_AUS_PUFFER_WP)
                     @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, Zahl(Daten.RestwaermeMwh), MWH, betont: true)
 
                     @* Die Herleitung der Nutzwärme als eigener Block: Produktion − Quellwärme
