@@ -4265,6 +4265,8 @@ namespace WindowsFormsApplication1
                 // Den Temperaturpaar-Rückfall meldet der Registry-Aufbau selbst
                 // (RueckfallMelden, mit dem Q_max des Laufs) - hier stünde er doppelt.
                 if (b.Kriterium == Warnkriterien.PUFFER_OHNE_TEMPERATURPAAR) continue;
+                // SOK-0: Die Geräteart Absorption meldet der Kältezweig als Hinweis (KaeltemaschinenVorbereiten).
+                if (b.Kriterium == Warnkriterien.KAELTEMASCHINE_SORPTION_ELEKTRISCH) continue;
 
                 Protokoll.WarnungEinmal(
                     "warnkriterium-" + b.Kriterium + "-" + b.ID_Anlage + "-" + b.ID_Puffer,

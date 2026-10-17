@@ -158,10 +158,15 @@ namespace WindowsFormsApplication1
                 d.Von[i] = k.Ferien[i].Von;
                 d.Bis[i] = k.Ferien[i].Bis;
             }
+            foreach (Betriebsferien b in k.Ferienliste ?? new List<Betriebsferien>())
+                if (b != null) d.Liste.Add(new BetriebsferienZeile { Name = b.Name, Von = b.Von, Bis = b.Bis });
             return d;
         }
 
-        /// <summary>Das DTO als Kernmodell — die Paare, die beide Grenzen tragen, in ihrer Reihenfolge.</summary>
+        /// <summary>
+        /// Das DTO als Kernmodell — die Paare, die beide Grenzen tragen, in ihrer Reihenfolge, danach die Zeilen der Liste
+        /// mit beiden Grenzen (Name getrimmt, leer = ohne Namen).
+        /// </summary>
         internal static Betriebskalender AlsModell(BetriebskalenderDaten d)
         {
             var k = new Betriebskalender
@@ -177,6 +182,10 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < BetriebskalenderDaten.FERIEN; i++)
                 if (d.Von[i].HasValue && d.Bis[i].HasValue)
                     k.Ferien.Add(new Ferienzeitraum(d.Von[i].Value, d.Bis[i].Value));
+            foreach (BetriebsferienZeile z in d.Liste ?? new List<BetriebsferienZeile>())
+                if (z != null && z.Von.HasValue && z.Bis.HasValue)
+                    k.Ferienliste.Add(new Betriebsferien(string.IsNullOrWhiteSpace(z.Name) ? null : z.Name.Trim(),
+                                                         z.Von.Value, z.Bis.Value));
             return k;
         }
     }

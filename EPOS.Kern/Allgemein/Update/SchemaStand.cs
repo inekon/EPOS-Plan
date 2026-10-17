@@ -1133,10 +1133,13 @@ namespace WindowsFormsApplication1
         /// <see cref="ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT"/>: <c>StromsteuerBefreiungModus</c>, <c>ErsatzBarwert</c>,
         /// <c>Nachweis_Json</c> und <c>Lauf_Staende</c> an <c>Tab_ErgebnisWirtschaftlichkeit</c>, jede nur, wenn sie fehlt
         /// (<see cref="ErgebnisWirtschaftlichkeitSpaltenSchema"/>). <b>Ergebnisneutral:</b> kein DML, Bestandszeilen bleiben
-        /// leer. Das Ziel ist das Ende der Kette; umgehängt wird allein am Vorgänger
-        /// <see cref="ErgebnisreihenSchema.SCHRITT"/>.
+        /// leer.
+        /// Danach, mit der FERIENLISTE DES BETRIEBSKALENDERS, steht das Ziel auf
+        /// <see cref="BetriebskalenderFerienlisteSchema.SCHRITT"/>: <c>Tab_Betriebskalenderferien</c>, leer
+        /// (<see cref="BetriebskalenderFerienlisteSchema"/>). <b>Ergebnisneutral:</b> Kein Referenzprojekt trägt einen
+        /// Betriebskalender. Das Ziel ist das Ende der Kette; umgehängt wird allein am Vorgänger.
         /// </summary>
-        public const int Zielversion = ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT;
+        public const int Zielversion = BetriebskalenderFerienlisteSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

@@ -149,8 +149,8 @@ Priorität aus Sicht der Datenlage und des Nutzens für Planungsprojekte (A hoch
 | VRF/VRV | Kombinationsverhältnis, Leitungskorrektur, Teillastkurven | **nein** | auf K-D: Außengerät mit vielen Innengeräten, Korrekturen (K-E) | Eurovent VRF (Vertrag), Herstellerprogramme, offene Kurven | C |
 | Rooftop / Kompaktklimagerät | Luftvolumenstrom, Außenluftanteil, Feuchte | **nein** | RLT als Gewerk — §14 schließt aus | — | nicht verfolgen |
 | Rückkühlwerk (Trocken, hybrid/adiabat, Kühlturm) | Approach, Feuchtkugel, Ventilator, Wasser | **teilweise** (fester Zuschlag) | eigenes Glied mit Katalog (K-F) | Herstellerdatenblätter, Eurovent HE/CT (Vertrag) | B |
-| Absorption (LiBr, NH₃) | Antriebswärme als Senke, Kennfeld Antrieb × Rückkühl × Kaltwasser, größere Rückkühlung | **nein** | neue Anlagenart mit Wärmesenke an Puffer/BHKW/Solar/Fernwärme, Rückkühlung dimensioniert für Kälte + Antrieb (K-G) | Herstellerdatenblätter; EnergyPlus-Kurven (abgasbefeuert, indirekt); charakteristische Gleichung aus der Forschung | C |
-| Adsorption | wie Absorption, kleiner, zyklisch | **nein** | wie K-G | Herstellerdatenblätter, Forschungsmodelle | C |
+| Absorption (LiBr, NH₃) | Antriebswärme als Senke, Kennfeld Antrieb × Rückkühl × Kaltwasser, größere Rückkühlung | **nein** | neue Anlagenart mit Wärmesenke an Puffer/BHKW/Solar/Fernwärme, Rückkühlung dimensioniert für Kälte + Antrieb (K-G) — **abgelöst durch SOK** ([Konzept Sorptionskälte](2026-10-17_Konzept_Sorptionskaelte.md)) | Herstellerdatenblätter; EnergyPlus-Kurven (abgasbefeuert, indirekt); charakteristische Gleichung aus der Forschung | C |
+| Adsorption | wie Absorption, kleiner, zyklisch | **nein** | wie K-G — **abgelöst durch SOK** ([Konzept Sorptionskälte](2026-10-17_Konzept_Sorptionskaelte.md)) | Herstellerdatenblätter, Forschungsmodelle | C |
 | CO₂-Kälte (R744, transkritisch) | eigener Kreisprozess | **nein** | Recherche Stufe 7 | Herstellerkennfelder | C |
 
 ---
@@ -178,7 +178,7 @@ Nutzungsrecht = Recherchestand, nicht anwaltlich geprüft. Eignung: **S** Startk
 | Auslegungsprogramme der Hersteller | Leistungstabellen (CSV/Excel) für das ausgelegte Gerät | Export beim Anwender | Anwenderseite | nein | **ja** (CSV-Vorlage, vorhanden) | nein |
 | AHRI Directory | US-zertifizierte Kälte- und Klimageräte | Abo | nur mit kostenpflichtiger Lizenz | nein | nein | nein |
 | ENERGY STAR ([data.energystar.gov](https://data.energystar.gov)), AU Energy Rating ([reg.energyrating.gov.au](https://reg.energyrating.gov.au)), UK ETL Packaged Chillers ([etl.energysecurity.gov.uk](https://etl.energysecurity.gov.uk)) | Nennwerte nach US-, AU- bzw. UK-Prüfnormen | Open Data / Liste | offen (Open Data), Prüfbedingungen abweichend | nein (Prüfnormen) | bedingt | nein |
-| Absorption/Adsorption | Herstellerdatenblätter, Forschungsmodelle (charakteristische Gleichung) | PDF, Literatur | Herstellerdaten bzw. Veröffentlichung | nein | ja (CSV-Variante, K-G) | nein |
+| Absorption/Adsorption | Herstellerdatenblätter, Forschungsmodelle (charakteristische Gleichung) | PDF, Literatur | Herstellerdaten bzw. Veröffentlichung | nein | ja (CSV-Variante, K-G — abgelöst durch SOK, [Konzept Sorptionskälte](2026-10-17_Konzept_Sorptionskaelte.md) 8.3) | nein |
 
 Normen, die die Stufen berühren (nur Nummer und Gegenstand): EN 14825 (saisonale Kennzahlen und
 Teillastprüfung von Klimageräten, Kaltwassersätzen und Wärmepumpen), EN 14511 (Prüfung bei Volllast),
@@ -199,7 +199,7 @@ VDI 3805 Blätter 6, 18, 22, 27, 37.
 | **K-D** | Split und Multisplit als neue Anlagenart: Erzeuger ohne Kaltwasser, Kennfeld Außenluft × Raumluft (Teillast A–D), Übergabe „Umluftgerät am Raum“ ohne Kanal, Zuordnung Außengerät ↔ Zonen, Kombinationsfaktor | 5 | neuer Erzeugerzweig in der Kältekaskade, neue Übergabeart neben `Kuehluebergabe`, Deckung je Zone | neue Anlagenart in `Tab_Typ_Energieanlagen`, `Tab_Klimageraet(_STAMM)` mit Kennfeld, Zuordnung Gerät ↔ Zone; Register in der Katalogfassung | Katalogdialog, Erzeugerdialog, Kälte-Bereich, Bericht | neues Referenzprojekt → neue Basis; bestehende Projekte bitgleich | 18–26 PT | Entscheid §14 (Frage 3), K-A |
 | **K-E** | VRF: ein Außengerät, viele Innengeräte, Kombinationsverhältnis, Leitungskorrektur | 7 (VRF) | Ausbau von K-D | Innengerätetabelle | wie K-D | neues Referenzprojekt | 8–12 PT | K-D |
 | **K-F** | Rückkühlwerk als eigenes Glied: Trocken, hybrid/adiabat, Kühlturm; Approach lastabhängig, Feuchtkugel, Ventilatorstrom, Wasserverbrauch; WASSER an die Quelle gekoppelt | 3 | Rückkühlung aus `KaelteFestwerte` in eine Klasse mit Katalog; Festwerte als Vorgabe | `Tab_Rueckkuehler(_STAMM)`, Verweis an der Kältemaschinen-Anlage | Katalog, Anlagenschema (Kältebahn) | mit Vorgaben = Festwerte bitgleich; Teil-Freikühlung neue Basis | 8–12 PT | Folgeentscheid zu E33/K8 (Frage 5), FK |
-| **K-G** (zurückgestellt, E118) | Absorptions-/Adsorptionskälte: Antriebswärme als Senke an Puffer/BHKW/Solar/Fernwärme, Kennfeld Antrieb × Rückkühl × Kaltwasser, Rückkühlung für Kälte + Antriebswärme | — (neu) | neue Anlagenart, Senke im Wärmenetz (`Z_AnlageSenke`), Kopplung Kälte- und Wärmeseite | neue Tabellen mit Kennfeld | Katalog, Erzeugerdialog | neues Referenzprojekt | 15–22 PT | K-F; Frage 6 |
+| **K-G** (zurückgestellt, E118; **abgelöst durch SOK**, [Konzept Sorptionskälte](2026-10-17_Konzept_Sorptionskaelte.md), E168) | Absorptions-/Adsorptionskälte: Antriebswärme als Senke an Puffer/BHKW/Solar/Fernwärme, Kennfeld Antrieb × Rückkühl × Kaltwasser, Rückkühlung für Kälte + Antriebswärme | — (neu) | neue Anlagenart, Senke im Wärmenetz (`Z_AnlageSenke`), Kopplung Kälte- und Wärmeseite | neue Tabellen mit Kennfeld | Katalog, Erzeugerdialog | neues Referenzprojekt | 15–22 PT | K-F; Frage 6 |
 | **K-H** | EPREL-Abruf je Registriernummer: Stammdaten eines Splitgeräts übernehmen, A–D aus dem Datenblatt nachtragen | 5 (Daten) | Abrufnaht (plattformfrei, über benannten Dienst), JSON-Leser | keines über K-D hinaus | Feld „Registriernummer“ im Katalogdialog | keine | 2–4 PT | K-D; Frage 4 |
 
 Summe ohne K-G: rund 42–63 PT; der Teil für die vorhandenen Kaltwassersätze (K-A bis K-C) rund 6–9 PT.
@@ -232,7 +232,7 @@ Kaltwasser, ohne Puffer und ohne Kanal. Validierung an einem frei zugänglichen 
 **K-F Rückkühlwerk** löst die festen Grädigkeiten durch ein Glied mit Katalog ab; die heutigen Festwerte
 werden Vorgaben, damit die Referenzprojekte bitgleich bleiben, solange kein Rückkühler gewählt ist.
 
-**K-G Absorption** ist der einzige Weg, Abwärme (BHKW, Solar, Fernwärme) in Kälte zu wandeln; sie lohnt nur
+**K-G Absorption** (abgelöst durch SOK, [Konzept Sorptionskälte](2026-10-17_Konzept_Sorptionskaelte.md)) ist der einzige Weg, Abwärme (BHKW, Solar, Fernwärme) in Kälte zu wandeln; sie lohnt nur
 für Projekte mit Wärmeüberschuss im Sommer.
 
 **K-H EPREL-Abruf** setzt einen API-Schlüssel und die gelesenen Nutzungsbedingungen voraus; ohne beides bleibt
@@ -257,6 +257,6 @@ Kurzzeichen **KKP** (Konzeptprüfung Kälte); jede Frage mit Empfehlung.
 | KKP-Q3 | Abgrenzung Kühlkonzept §14 lockern: (a) Direktverdampfer mit Umluftgerät am Raum ohne Kanal zulassen; (b) Kältemittel und GWP als beschreibendes Stammdatum zulassen; direkte Treibhauswirkung, Luftführung mit Kanal und RLT bleiben ausgeschlossen? | **Ja zu (a) und (b)** in diesem Umfang; §14 wird im selben Schritt fortgeschrieben<br>**entschieden (E118): Ausschluss in Kühlkonzept §14 aufgehoben für Direktverdampfer (Split, Multisplit, VRF) und für Kältemittel als Stammdatum (Kältemittel, GWP, Füllmenge).** |
 | KKP-Q4 | EPREL-API-Schlüssel beantragen (K-H)? | **Ja, beantragen, aber K-H erst nach K-D bauen** — der Antrag klärt Bedingungen und Rate-Limits ohne Kosten<br>**entschieden (E118): EPREL-Schlüssel beantragt der Anwender; K-H nach K-D.** |
 | KKP-Q5 | Rückkühlwerk als eigenes Glied (K-F) — E33/K8 („Rückkühlung Bestandteil der Kältemaschine“) entsprechend fortschreiben? | **Ja, nach FK** — Vorgaben gleich den heutigen Festwerten, damit die Basis hält<br>**entschieden (E118): Ja, K-F nach FK; E33/K8 wird fortgeschrieben, Vorgaben gleich den heutigen Festwerten.** |
-| KKP-Q6 | Absorptions-/Adsorptionskälte (K-G)? | **Zurückstellen**, bis ein Projekt mit sommerlichem Wärmeüberschuss ansteht<br>**entschieden (E118): K-G zurückgestellt.** |
+| KKP-Q6 | Absorptions-/Adsorptionskälte (K-G)? | **Zurückstellen**, bis ein Projekt mit sommerlichem Wärmeüberschuss ansteht<br>**entschieden (E118): K-G zurückgestellt; abgelöst durch SOK ([Konzept Sorptionskälte](2026-10-17_Konzept_Sorptionskaelte.md), E168).** |
 | KKP-Q7 | Herstellernamen: im Katalog bei Anwenderimporten ja, in ausgelieferten Typkennfeldern und im Wiki nein? | **Ja** — Katalog ja (Anwenderdaten), Auslieferung neutral, Wiki nach Produktdatenregel ohne Hersteller<br>**entschieden (E118): Ja — Katalog bei Anwenderimporten, nicht in Auslieferung und Wiki.** |
 | KKP-Q8 | Papierpflege: E74 im Status als abgelöst vermerken (die Einfrierregeln stehen bereits in `CLAUDE.md`)? | **Ja**, als kleine Papierpflege mit dem nächsten Statusschritt<br>**entschieden (E118): E74 ist abgelöst (Status E74 vermerkt).** |

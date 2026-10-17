@@ -8,7 +8,8 @@ namespace EPOS.UI.Dialoge.Bedarf;
 ///
 /// <para><b>Ein Satz, kein Raster.</b> Die Maske zeigt EINEN Kalender zur Zeit; gewählt wird er über
 /// <see cref="Kalender"/>. Die vier Ferienzeiträume stehen als Jahrestage 1 … 365 im Gemeinjahr da
-/// (<c>Ferien1Von</c> … <c>Ferien4Bis</c>), der Ferienfaktor in Prozent. Geschrieben wird erst mit
+/// (<c>Ferien1Von</c> … <c>Ferien4Bis</c>), die weiteren Betriebsferien als Tabelle <see cref="WeitereFerien"/>
+/// (Name, von, bis je Zeile; Zeilen fügt der Anwender an), der Ferienfaktor in Prozent. Geschrieben wird erst mit
 /// „Speichern" oder OK.</para>
 ///
 /// <para><b>Sie hält keinen Zustand</b>: Jede Eigenschaft ruft bei jedem Zugriff ihren
@@ -40,6 +41,7 @@ public sealed class BetriebskalenderKiSicht
     public Action<int, int?>? VonSetzen { get; init; }
     public Func<int, int?>? BisLesen { get; init; }
     public Action<int, int?>? BisSetzen { get; init; }
+    public Func<IReadOnlyList<BetriebsferienKiZeile>>? ListeLesen { get; init; }
 
     public Func<double?>? FaktorLesen { get; init; }
     public Action<double?>? FaktorSetzen { get; init; }
@@ -94,6 +96,13 @@ public sealed class BetriebskalenderKiSicht
     public int? Ferien4Von { get => VonLesen?.Invoke(3); set => VonSetzen?.Invoke(3, value); }
     public int? Ferien4Bis { get => BisLesen?.Invoke(3); set => BisSetzen?.Invoke(3, value); }
 
+    /// <summary>
+    /// Die weiteren Betriebsferien (Liste „Weitere Betriebsferien“) als TABELLE — Zeilen mit der Nummer als Kennzeichen,
+    /// Spalten Name, von und bis (Jahrestag). Die Zellen sind dieselben Felder wie die Eingaben der Maske.
+    /// </summary>
+    public IReadOnlyList<BetriebsferienKiZeile> WeitereFerien
+        => ListeLesen?.Invoke() ?? Array.Empty<BetriebsferienKiZeile>();
+
     /// <summary>Der Ferienfaktor in Prozent des Tagesmittels (0 … 100).</summary>
     public double? Ferienfaktor
     {
@@ -113,5 +122,45 @@ public sealed class BetriebskalenderKiSicht
     {
         get => KuerzenLesen?.Invoke() ?? false;
         set => KuerzenSetzen?.Invoke(value);
+    }
+}
+
+/// <summary>
+/// EINE Zeile der Liste „Weitere Betriebsferien“ für den Hilfe-Assistenten — eine Zeile der Tabelle
+/// <see cref="BetriebskalenderKiSicht.WeitereFerien"/>. Sie hält keinen Zustand: Jede Zelle liest und schreibt über ihren
+/// Delegaten den Arbeitsstand der Maske.
+/// </summary>
+public sealed class BetriebsferienKiZeile
+{
+    public Func<string>? NummerLesen { get; init; }
+    public Func<string>? NameLesen { get; init; }
+    public Action<string>? NameSetzen { get; init; }
+    public Func<int?>? VonLesen { get; init; }
+    public Action<int?>? VonSetzen { get; init; }
+    public Func<int?>? BisLesen { get; init; }
+    public Action<int?>? BisSetzen { get; init; }
+
+    /// <summary>Die Nummer der Zeile (1 …) — das Zeilenkennzeichen.</summary>
+    public string Nummer => NummerLesen?.Invoke() ?? "";
+
+    /// <summary>Der wahlfreie Name des Zeitraums.</summary>
+    public string Name
+    {
+        get => NameLesen?.Invoke() ?? "";
+        set => NameSetzen?.Invoke(value);
+    }
+
+    /// <summary>Beginn als Tag im Jahr (1 bis 365); leer = nicht eingetragen.</summary>
+    public int? Von
+    {
+        get => VonLesen?.Invoke();
+        set => VonSetzen?.Invoke(value);
+    }
+
+    /// <summary>Ende als Tag im Jahr (1 bis 365); leer = nicht eingetragen.</summary>
+    public int? Bis
+    {
+        get => BisLesen?.Invoke();
+        set => BisSetzen?.Invoke(value);
     }
 }

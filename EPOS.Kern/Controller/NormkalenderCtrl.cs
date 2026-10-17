@@ -293,13 +293,14 @@ namespace WindowsFormsApplication1
             return genutzt;
         }
 
-        /// <summary>Gleicher Inhalt: Land, Ferien in Reihenfolge, Faktor und die drei Schalter.</summary>
+        /// <summary>Gleicher Inhalt: Land, Ferien (Spalten und Liste) in Reihenfolge, Faktor und die drei Schalter.</summary>
         private static bool Gleich(Betriebskalender a, Betriebskalender b)
             => string.Equals(a.Bundesland, b.Bundesland, StringComparison.Ordinal)
                && Math.Abs(a.Ferienfaktor - b.Ferienfaktor) < 1e-9
                && a.FeiertagWieSonntag == b.FeiertagWieSonntag
                && a.FerienWieSonntag == b.FerienWieSonntag
                && a.FerienKuerzen == b.FerienKuerzen
-               && (a.Ferien ?? new List<Ferienzeitraum>()).SequenceEqual(b.Ferien ?? new List<Ferienzeitraum>());
+               && (a.Ferien ?? new List<Ferienzeitraum>()).SequenceEqual(b.Ferien ?? new List<Ferienzeitraum>())
+               && (a.Ferienliste ?? new List<Betriebsferien>()).SequenceEqual(b.Ferienliste ?? new List<Betriebsferien>());
     }
 }

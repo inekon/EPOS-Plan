@@ -3,8 +3,8 @@
 **Stand 17.10.2026** · Anlass: Anwenderauftrag vom 17.10.2026 („erstelle ein Konzept die Absorptionskälte mit
 aufzunehmen. Gibt es zu diesen Anlagen Daten?“) · Codestand `f791209c0` (Zweig `ios_migration_september`) · nimmt die
 zurückgestellte Stufe **K-G** der [Konzeptprüfung Kälteanlagen](2026-10-10_Konzeptpruefung_Kaelteanlagen_Katalog_Import.md)
-(5.1, Frage KKP-Q6, Entscheid E118) auf und schlägt vor, sie durch den Stufenplan **SOK** (Sorptionskälte) zu ersetzen ·
-Vorlage zur Entscheidung, kein Code geändert.
+(5.1, Frage KKP-Q6, Entscheid E118) auf und ersetzt sie durch den Stufenplan **SOK** (Sorptionskälte) · Fragen SOK-Q1
+bis Q11 entschieden mit **E168** (Abschnitt 12).
 
 Externe Angaben sind Recherchestand vom 17.10.2026, viele nur aus Suchauszügen (die meisten Fachseiten waren aus der
 Sitzung nicht abrufbar; abgerufen wurden Dateien auf GitHub). Normen werden nur mit Fundstelle genannt, ihre Inhalte
@@ -44,10 +44,15 @@ Rechenbeispiel aus einem veröffentlichten Forschungsgerät.
 Datenblatts, ist der tragfähige Rückfall — wie die neutralen Typkennfelder der elektrischen Kältemaschine (KM1). Eigene
 Datenblattpunkte passen die sechs Parameter an.
 
-**Empfehlung:** zuerst die **einstufige LiBr/H₂O-Maschine mit Heizwasserantrieb**, gerechnet mit der charakteristischen
-Gleichung, in zwei Antriebswegen: **extern** über einen Energieträger (Fernwärme, Abwärme) an ihrem Platz in der
-Kältefolge und **gekoppelt** an Erzeuger des Projekts (BHKW, Solarthermie) über eine Vorstufe vor beiden Kaskaden.
-Stufenplan SOK-0 bis SOK-6, rund 25–35 PT (Abschnitt 11); jedes bestehende Referenzprojekt bleibt byte-gleich.
+**Entschieden (E168, Abschnitt 12):** SOK ersetzt K-G und beginnt nach KWN-1c. Die erste Stufe rechnet die
+**einstufige H₂O/LiBr-Maschine mit Heizwasserantrieb** und die **Adsorptionsmaschine** (Silicagel oder Zeolith, ohne
+Typkennfeld, nur aus Datenblattpunkten angepasst, 4.6) mit der charakteristischen Gleichung als einzigem Rechenweg, in zwei
+Antriebswegen: **extern** über einen Energieträger (Fernwärme, Abwärme) an ihrem Platz in der Kältefolge und
+**gekoppelt** an Erzeuger des Projekts (BHKW, Solarthermie; Kessel nur ausdrücklich gebunden) über eine Vorstufe vor
+beiden Kaskaden, dort **kälte- oder wärmegeführt** — die wärmegeführte Mitnahme nimmt ohne Puffer nur die Wärme, die eine
+gebundene Quelle in der Stunde ohnehin übrig hat (6.4). Stufenplan SOK-0 bis SOK-6, rund 30–42 PT (Abschnitt 11); jedes
+bestehende Referenzprojekt bleibt byte-gleich. Bis SOK rechnet, meldet die Konfigurationsprüfung eine Kältemaschine mit
+Geräteart `ABSORPTION` als elektrisch gerechnet (Hinweis, ohne Zahlenwirkung).
 
 ---
 
@@ -74,8 +79,8 @@ Stufenplan SOK-0 bis SOK-6, rund 25–35 PT (Abschnitt 11); jedes bestehende Ref
   nur in Katalogfilter und Kältemittelprüfung; die Simulation liest sie nicht. Wer über die CSV-Vorlage eine
   Absorptionsmaschine einspielt und das Wärmeverhältnis in die EER-Spalte schreibt, bekommt einen Kältestrom von Q₀/ζ
   (bei ζ = 0,75 das 1,3-Fache der Kälte) statt eines Hilfsstroms von wenigen Prozent; wer einen „elektrischen“ EER
-  einträgt, bekommt keine Antriebswärme. Empfehlung: Hinweis in der Konfigurationsprüfung, bis SOK rechnet (Frage
-  SOK-Q10).
+  einträgt, bekommt keine Antriebswärme. Entschieden (SOK-Q10, E168) und mit SOK-0 gebaut: Hinweis in der
+  Konfigurationsprüfung und im Laufprotokoll, bis SOK rechnet (ohne Zahlenwirkung).
 - **Testdatenbank:** 37 Kältemaschinen im Katalog (12 `KWS_LUFT`, 25 `KWS_WASSER`), 4 Projektkopien (`KWS_WASSER`),
   keine mit Absorption; kein Typ, keine Beschreibung nennt Sorption. Das Referenzprojekt **1055** (und seine Kopie
   **1063**, in der CI-Auswahl) trägt Kühlbetrieb, Kältemaschine mit Trocken-Rückkühler, Kältespeicher **und ein BHKW** —
@@ -133,13 +138,21 @@ und die Regelung.
 
 ### 2.4 Was zuerst kommt — und was nicht
 
-**Empfehlung: einstufig H₂O/LiBr mit Heizwasserantrieb** (SOK-Q2). Gründe: (1) Sie ist die Bauart der Anwendungen, für
+**Erste Stufe (E168): einstufig H₂O/LiBr mit Heizwasserantrieb** (SOK-Q2) **und Adsorption mit Heizwasserantrieb**
+(SOK-Q4), beide Antriebswege (EXTERN, GEKOPPELT) und beide Führungen (kälte- und wärmegeführt, SOK-Q3). Gründe für
+LiBr: (1) Sie ist die Bauart der Anwendungen, für
 die EPOS-Plan die Quellen schon rechnet — BHKW, Solarthermie, Fernwärme. (2) Für sie gibt es die meisten offenen
 Parametersätze (3.3) und die Prüfnorm AHRI 560. (3) Ihr Kaltwasser liegt im Band der Klimakälte und der Kühlkurve
 (Kühlkonzept), es braucht keine Sole. (4) Das Modell (charakteristische Gleichung) trägt Adsorption und zweistufige
-Maschinen mit anderen Parametern ohne Codeänderung — das Datenmodell wird dafür offen angelegt.
+Maschinen mit anderen Parametern ohne Codeänderung — das Datenmodell wird dafür offen angelegt. **Adsorption** kommt in
+derselben Stufe, aber mit eigener Eingabe: Es gibt keinen freien Parametersatz, also kein Typkennfeld; die sechs
+Parameter entstehen nur aus Datenblattpunkten, und ohne ausreichende Punkte wird das Gerät benannt abgewiesen (4.6).
+**Wärmegeführt** heißt in der ersten Stufe Mitnahme ohne Puffer: Die Maschine nimmt nur die Wärme, die eine gebundene
+Quelle in der Stunde ohnehin übrig hat, und erzeugt damit Kälte höchstens bis zum Bedarf der Stunde (6.4).
 
-**Nicht in der ersten Stufe:** Dampf und Abgas als Antrieb, direkt befeuerte Geräte (benannt, Datenmodell offen),
+**Nicht in der ersten Stufe:** Dampf und Abgas als Antrieb, direkt befeuerte Geräte (`DIREKT` benannt abgelehnt,
+Datenmodell offen), der Antriebspuffer und das Ladeangebot der gekoppelten Maschine an den Kältespeicher (SOK-7),
+Abwärme mit stündlicher Verfügbarkeit (Lastgang) als Antrieb (SOK-Q11),
 NH₃/H₂O unter 0 °C (braucht Prozesskälte mit Soletemperatur, KWN-Q7), Absorptionswärmepumpen und -transformatoren (Wärme
 als Nutzen), Nutzung der Rückkühlwärme der Sorptionsmaschine für Niedertemperaturwärme, Fahrplanoptimierung über mehrere
 Stunden, die Dynamik eines Adsorptionszyklus innerhalb der Stunde.
@@ -278,6 +291,51 @@ Kenntnis, nicht am DOE-2-Text geprüft).
 **Eingabewege**, keine Rechenwege: Der Import passt die sechs Parameter an Datenblattpunkte, eine Leistungstabelle oder
 ein Kurvenprodukt an (multiple Regression nach [L3]) und schreibt Anpassungsgüte und Herkunft ins Protokoll — das Muster
 von KM1, das Copper-Kurven in das Kennfeld der Kältemaschine überführt, hier in umgekehrter Richtung.
+
+### 4.6 Adsorption: dieselbe Gleichung als Zyklusmittel
+
+**Gilt die Gleichung für zyklische Adsorber?** Als **Stundenmittel ja, mit Vorbehalt.** Ein Adsorber arbeitet in Zyklen
+von wenigen Minuten (5–7 min [L12]) mit wechselnden Kammern; in einer Stunde laufen damit rund zehn Zyklen, und die
+Stunde sieht nur deren Mittel. Die Herleitung der Gleichung [L1] beruht auf linearen Wärmeübertragergleichungen und einer
+linearen Dampfdruckbeziehung (Dühring-Darstellung); für das Gleichgewicht eines Adsorptionspaars gilt die
+Dühring-Darstellung der Isosteren ebenfalls näherungsweise linear. Was beim Adsorber hinzukommt, ist die Kinetik: Die
+Beladungsbreite je Zyklus hängt von Zykluszeit und Wärmerückgewinnung ab. Daraus folgt: Die Gleichung beschreibt die
+**zyklusgemittelte** Kälteleistung und Antriebswärme **bei der Zyklussteuerung des Herstellers**, und ihre Parameter sind
+empirisch — sie werden an Datenblattpunkte angepasst und sind zwischen Geräten nicht übertragbar. Gestützt wird das durch
+die Prüfverfahren für diskontinuierliche Sorptionsmaschinen (IEA SHC Task 48, Subtask A1 [L4]), die Adsorber über
+gemittelte Leistungen bei festen äußeren Temperaturen kennzeichnen, und durch die Bandbreiten ζ 0,2–0,6 bei
+Antriebstemperaturen von 50–95 °C ([L8], [H4]). **Nicht am Wortlaut geprüft:** die Linearität für Adsorber ist eigene
+Herleitung aus [L1]; eine veröffentlichte Anpassung der charakteristischen Gleichung an einen Adsorber mit Parametern
+wurde in der Recherche nicht gefunden (3.3), die Aussage zu Task 48 stammt aus einem Suchauszug. SOK-1 sucht eine
+Fundstelle und trägt sie in Abschnitt 14 nach; bis dahin gilt der Vorbehalt im Bericht als Herkunft „Datenblatt,
+Adsorption“.
+
+**Teillast und Takt:** Wie bei der Absorption über die Antriebstemperatur (5.6) als Näherung; Hersteller regeln Adsorber
+auch über die Zykluszeit, was das Stundenmittel ähnlich senkt. Unter der Mindestteillast taktet die Maschine (5.6). Für
+Adsorber gibt es keine Kristallisation; die Grenze KALTWASSER gilt wie bei LiBr (Wasser als Kältemittel).
+
+**Grenzen der Eingabe:**
+
+- **Kein Typkennfeld, kein „Nennwerte allein“.** Ohne freien Parametersatz gibt es keine a und e der Bauart; ein Gerät
+  der Bauart `ADSORPTION_SILIKAGEL` oder `ADSORPTION_ZEOLITH` braucht Datenblattpunkte (Herkunft `DATENBLATT` oder
+  `TABELLE`); `TYPKENNFELD` wird für Adsorption benannt abgelehnt.
+- **Mindestzahl Stützstellen:** sechs Parameter, je Punkt zwei Gleichungen (Kälteleistung, Antriebswärme). Verlangt werden
+  **mindestens fünf Punkte** samt Nennpunkt, darunter je mindestens zwei verschiedene Antriebs- und Kühlwassertemperaturen — sonst sind s/r und a (Kühlwasser)
+  nicht bestimmt. Drei Punkte träfen die sechs Parameter genau und ließen keine Güte zu; die zwei weiteren machen die
+  Anpassung prüfbar.
+- **Eine Kaltwassertemperatur ist zugelassen (SOK-Q13).** Nennt das Datenblatt nur eine Kaltwassertemperatur, rechnet die
+  Maschine mit ihr als fester Größe: Die Kaltwasserabhängigkeit der Gleichung entfällt (e wird nicht angepasst), die
+  Parameteranpassung nutzt nur Antrieb und Kühlwasser. Verlangt die Simulation eine andere Kaltwassertemperatur, wird auf
+  den Datenblattwert geklemmt; die Stunden werden gezählt und gemeldet. Mit mindestens zwei Kaltwassertemperaturen bleibt
+  die volle Anpassung.
+- **Anpassung:** kleinste Quadrate wie 8.2 ([L3]; Kälte- und Wärmegleichung getrennt, a und e gemeinsam); verlangt sind
+  der volle Rang der Regressionsmatrix, höchstens 5 % Abweichung am Nennpunkt, höchstens 10 % an jedem Punkt (Vorgabe, Festwert
+  in SOK-1), ζ an jedem Punkt im Band der Bauart und s_E, s_G > 0.
+- **Einsatzgrenzen sind Pflicht** (`Antrieb_Min_C`, `Antrieb_Max_C`, `Kuehlwasser_Min_C`, `Kuehlwasser_Max_C` aus dem
+  Datenblatt); es gibt keine Vorgabe. Linear fortgesetzt wird nur innerhalb dieser Grenzen.
+- **Ablehnung:** Fehlt eine Bedingung, wird das Gerät beim Speichern und beim Import benannt abgewiesen („Adsorption
+  braucht mindestens fünf Datenblattpunkte mit verschiedenen Antriebs- und Kühlwassertemperaturen (die Kaltwassertemperatur
+  darf einzig sein) und die Einsatzgrenzen; ein Typkennfeld gibt es nicht“); der Lauf rechnet eine abgewiesene Maschine nicht und meldet sie.
 
 ---
 
@@ -436,8 +494,9 @@ getrennt: Die Antriebswärme ist Endenergie wie der Strom einer Kältemaschine, 
    Funktion von Vektoren, ohne Speicherzustand.
 4. **Wärmekaskade** wie heute, dazu je Sorptionsanlage eine **Antriebssenke** mit dem Stundenbedarf Q_H,plan. Bedient
    wird sie nur von den Quellen, deren Senkenliste (`Z_AnlageSenke`) eine Zeile mit Ziel `Sorptionsantrieb` und dem
-   **Verweis auf diese Sorptionsanlage** trägt, in deren Senkenrang. Ergebnis je Stunde: gedeckte Antriebswärme
-   Q_H,ist ≤ Q_H,plan und die Vorlauftemperatur der deckenden Quellen (mengengewichtet).
+   **Verweis auf diese Sorptionsanlage** trägt — kältegeführt in deren Senkenrang, wärmegeführt als Mitnahmesenke hinter
+   allen übrigen Senken der Quelle (6.4). Ergebnis je Stunde: gedeckte Antriebswärme Q_H,ist ≤ Q_H,plan und die
+   Vorlauftemperatur der deckenden Quellen (mengengewichtet).
 5. **Sorptionsnachstufe:** tatsächliche Kälte aus der gedeckten Antriebswärme — Umkehrung von 4.1
    (ΔΔt' = (Q̇_H,ist − r_G)/s_G, Q̇₀ = s_E · ΔΔt' + r_E), mit der tatsächlichen Antriebstemperatur in **genau einem
    Schritt**. Liegt sie unter t_H,plan (Kollektorfeld kühler als geplant), nimmt die Maschine höchstens
@@ -455,11 +514,35 @@ als Antrieb, Wechselwirkung entsteht nur über den gemeinsamen Restbedarf.
 | Führung | Antriebssenke in der Wärmekaskade | Kessel | Wann |
 |---|---|---|---|
 | **kältegeführt** (Vorgabe) | wie jede Wärmesenke: Sie darf eine gebundene Quelle **starten** (BHKW läuft mehr, solange sein Senkenrang reicht) | nur wenn ausdrücklich gebunden, mit Hinweis „Antrieb aus Kessel“ | KWKK mit BHKW, Fernwärme-Übergabe als Kessel |
-| **wärmegeführt (Mitnahme)** | nur Wärme, die eine gebundene Quelle in der Stunde **ohnehin** bereitstellen kann — eine laufende Quelle bis zu ihrer Leistung, Solarertrag immer; kein Start allein für den Antrieb | nicht zulässig (benannt abgelehnt) | „Überschusswärme in Kälte“ — BHKW, das für Heizung und Brauchwasser ohnehin läuft, solare Kühlung |
+| **wärmegeführt (Mitnahme)** | nur Wärme, die eine gebundene Quelle in der Stunde **ohnehin** bereitstellen kann — eine laufende Quelle bis zu ihrer Leistung, Solarertrag immer; kein Start allein für den Antrieb; höchstens Q_H,plan | nicht zulässig (benannt abgelehnt) | „Überschusswärme in Kälte“ — BHKW, das für Heizung und Brauchwasser ohnehin läuft, solare Kühlung |
 
-Der Senkenrang an der Quelle entscheidet über den Vorrang gegenüber Heizung, Brauchwasser und Prozesswärme; Vorgabe beim
-Anlegen: Antrieb **hinter** allen bestehenden Senken. Die Mitnahme ist eine neue Eigenschaft der Senke („nicht
-startauslösend“) und deshalb die aufwendigere Führung (SOK-Q3).
+Beide Führungen kommen mit der ersten Stufe (SOK-Q3, E168). Kältegeführt entscheidet der Senkenrang an der Quelle über
+den Vorrang gegenüber Heizung, Brauchwasser und Prozesswärme; Vorgabe beim Anlegen: Antrieb **hinter** allen bestehenden
+Senken.
+
+**Wärmegeführt ohne Puffer — wie die Mitnahme greift:**
+
+- **Plan wie kältegeführt.** Die Vorstufe (6.3, Schritt 3) rechnet für beide Führungen denselben Antriebsbedarf
+  Q_H,plan aus der Restkälte der gebundenen Kältesenke und der Gerätegrenze. Q_H,plan ist die **Obergrenze** der Mitnahme:
+  Die Maschine nimmt nie mehr Wärme, als sie für den Kältebedarf der Stunde braucht.
+- **Neue Senkeneigenschaft „Mitnahme“ (nicht startauslösend).** Die Antriebssenke einer wärmegeführten Anlage geht nicht
+  in die Lauf- und Leistungsentscheidung der Quelle ein: Die Wärmekaskade entscheidet Start, Laufzeit und Takt der Quelle
+  allein mit ihren übrigen Senken. Erst danach bedient die Quelle die Mitnahmesenke mit dem, was in der Stunde übrig ist —
+  beim BHKW, das ohnehin läuft, die Differenz zwischen seiner Leistung und der Wärme an die übrigen Senken — es moduliert
+  bis zur Leistung des BHKW hoch, löst nie einen Start aus, und Strom und Brennstoff des BHKW steigen entsprechend; beim
+  Kollektorfeld der Solarertrag, den Direktsenken und Puffer nicht abnehmen. Eine stehende Quelle liefert nichts; die
+  Mitnahme verlängert keine Laufzeit und zählt keinen Start. Die Mitnahmesenke steht deshalb immer **hinter allen**
+  Senken der Quelle (Senkenrang nur unter mehreren Mitnahmesenken). Kessel: benannt abgelehnt. Die Eigenschaft folgt aus
+  `Antrieb_Fuehrung = WAERME` der Zielanlage, ohne neue Spalte an `Z_AnlageSenke`.
+- **Überschüssige Kälte gibt es nicht.** Weil Q_H,plan aus dem Kältebedarf der Stunde kommt und die Mitnahme ihn nicht
+  übersteigt, liefert die Nachstufe höchstens den Bedarf. Wärme über Q_H,plan bleibt bei der Quelle und wird gebucht wie
+  heute (Überschuss bzw. Stagnation). Ohne Kältespeicher ist das zwingend; mit Kältespeicher bleibt das Ladeangebot ebenfalls
+  bei SOK-7 (Muster KWN-5) — die erste Stufe lädt ihn aus der gekoppelten Maschine nicht.
+- **Reihenfolge unverändert:** Vorstufe → Wärmekaskade → Nachstufe. Die Führung ändert nur, wie die Antriebssenke in der
+  Wärmekaskade bedient wird; die Nachstufe kehrt Q_H,ist um wie beim kältegeführten Weg (Takt unter der Mindestteillast
+  eingeschlossen) und gibt die Restkälte an die Kältekaskade. Keine Iteration, keine Rückwirkung.
+- **Byte-Gleichheit:** Ohne Sorptionsanlage gibt es keine Mitnahmesenke; der Zweig in der Kaskadenschleife wird nur
+  betreten, wenn eine Senke diese Eigenschaft trägt.
 
 ### 6.5 Rang, freie Kühlung, Kältespeicher
 
@@ -478,8 +561,10 @@ startauslösend“) und deshalb die aufwendigere Führung (SOK-Q3).
 Ein Puffer zwischen BHKW bzw. Kollektorfeld und Sorptionsmaschine glättet den Antrieb und ist bei Solar praktisch
 immer vorhanden. Er braucht eine Nutzung „Sorption“ (`Nutzung_Sorption`, 0/1 mit `CHECK`) und ein Pufferziel; die
 Antriebstemperatur folgt dann der oberen Schicht (Muster: Arbeitstemperatur des Solarkreises aus der Pufferzone, 1049).
-Erste Stufe ohne Puffer: BHKW und Kollektorfeld decken die Antriebssenke **direkt** (Direktsenke wie `Prozesswaerme`);
-der Antriebspuffer kommt mit SOK-7.
+Erste Stufe ohne Puffer: BHKW und Kollektorfeld decken die Antriebssenke **direkt** (Direktsenke wie `Prozesswaerme`),
+kälte- wie wärmegeführt. Ohne Puffer verwertet die Mitnahme nur den Überschuss **derselben** Stunde (6.4); Überschuss in
+Stunden ohne Kältebedarf bleibt ungenutzt. Der Antriebspuffer kommt mit SOK-7 und verschiebt diesen Überschuss in
+spätere Stunden — erst dann zeigt die Mitnahme beim Kollektorfeld ihren vollen Nutzen.
 
 ### 6.7 Rückkühlung
 
@@ -540,7 +625,11 @@ Boolesche Spalten mit `CHECK (spalte IN (0,1))`, Wertemengen mit `CHECK … IN (
 **Empfehlung (c):** `Tab_Kaeltemaschine_Sorption(_STAMM)` mit `ID_Kaeltemaschine` (`UNIQUE`, `ON DELETE CASCADE`). Die
 Geräteart bleibt `ABSORPTION` als Oberbegriff „Sorption“ (Anzeigetext „Sorption (Absorption/Adsorption)“); die Bauart
 steht in der Kindtabelle — so braucht `ADSORPTION` keinen Neubau der `STRICT`-Tabelle wegen einer geänderten
-`CHECK`-Klausel.
+`CHECK`-Klausel. Die Bauarten `ADSORPTION_SILIKAGEL` und `ADSORPTION_ZEOLITH` sind ab SOK-2 freigegeben (E168), mit den
+Pflichten aus 4.6: `Kennlinie_Herkunft` nur `DATENBLATT` oder `TABELLE`, mindestens fünf Stützstellen in
+`Tab_Kenndaten_Sorption` mit Variation aller drei Temperaturen, Einsatzgrenzen gefüllt; das ζ-Band der Bauart (Adsorption
+0,2–0,7 als Prüfrand um [L8], Festwert in SOK-1) prüft jeder Punkt. Die Prüfregel des Controllers weist ein
+Adsorptionsgerät ohne diese Angaben benannt ab.
 
 | Spalte | Bedeutung |
 |---|---|
@@ -554,13 +643,14 @@ steht in der Kindtabelle — so braucht `ADSORPTION` keinen Neubau der `STRICT`-
 | `Hilfsstrom_kW` | interne Aufnahme p_int (5.5) |
 | `Anfahrverlust_kWh`, `Mindestlaufzeit_min` | Takt (5.6, 5.7); Mindestteillast bleibt `Mindestteillast_Prozent` am Kopf |
 | `Kennlinie_a`, `Kennlinie_e`, `Kennlinie_sE_rel`, `Kennlinie_rE_rel`, `Kennlinie_sG_rel`, `Kennlinie_rG_rel` | Parameter der Gleichung, s und r **bezogen auf die Nennkälteleistung** [1/K bzw. –], damit ein Typkennfeld skaliert; leer = aus Typkennfeld der Bauart und Nennpunkt (7.4) |
-| `Kennlinie_Herkunft` | `TYPKENNFELD`, `DATENBLATT`, `TABELLE`, `KURVEN` |
+| `Kennlinie_Herkunft` | `TYPKENNFELD`, `DATENBLATT`, `TABELLE`, `KURVEN` (Adsorption: nur `DATENBLATT`, `TABELLE`) |
 | `Kennlinie_Guete` | Bestimmtheitsmaß bzw. größte Abweichung der Anpassung [%] |
 | `Brenner_Wirkungsgrad` | nur `DIREKT` (später) |
 
 **Stützstellen** (optional) `Tab_Kenndaten_Sorption(_STAMM)`: `ID_Kaeltemaschine`, `Antrieb_C`, `Kuehlwasser_C`,
 `Kaltwasser_C`, `Kaelteleistung_kW`, `Antriebswaerme_kW`. Der Rechenweg liest nur die Parameter; die Stützstellen sind
-Herkunft und Anzeige (Dialog: Punkte gegen Gerade). Der Controller passt beim Speichern an (8.2).
+Herkunft und Anzeige (Dialog: Punkte gegen Gerade), bei Adsorption zudem Pflicht (4.6). Der Controller passt beim
+Speichern an (8.2).
 
 **Abwägung „dritte Kennfelddimension oder Parameter“:** Eine dritte Achse in `Tab_Kenndaten_Kaeltemaschine` wäre
 formal klein, verlangte aber einen vollen 3D-Raster (den kein Datenblatt liefert) und würde am Rand konstant statt
@@ -576,7 +666,7 @@ An `Tab_Energieanlagen` (Zeile der Anlagenart 13 mit Sorptionsgerät):
 | `Antrieb_ID_Carrier` | Träger der Antriebswärme bei `EXTERN` (Verweis auf `energy_carrier`, z. B. Fernwärme) |
 | `Antrieb_Vorlauf_C` | Vorgabe Heizwassereintritt; leer = Nennpunkt |
 | `Antrieb_Leistung_Max_kW` | Anschlussleistung bei `EXTERN`; leer = unbegrenzt |
-| `Antrieb_Fuehrung` | `KAELTE` (leer), `WAERME` — nur `GEKOPPELT` |
+| `Antrieb_Fuehrung` | `KAELTE` (leer), `WAERME` (Mitnahme, 6.4) — nur `GEKOPPELT`, nicht mit Kessel als Quelle |
 | `Freigabe_Aussen_C` | Sorption nur ab dieser Außentemperatur; leer = immer |
 | `Kaelte_Art_Bindung` | `RAUM`, `PROZESS`, leer = beide (welche Kältesenke die Vorstufe bedient; AK3: nur `PROZESS`) |
 
@@ -604,7 +694,7 @@ Katalogschlüssel und Prüfsumme über die Katalogfassung, Register „KM“). S
 |---|---|---|
 | Absorption einstufig | Kühn/Ziegler (10 kW) und Puig-Arnavat (4,5 / 15 kW), Satznamen neutralisiert; der große Satz aus [D1] erst nach Klärung des Fehlers (3.3) | 15, 50, 150 kW; Klassen ab 500 kW erst mit einem geprüften großen Satz — ein auf das Hundertfache skaliertes Kleingerät überschätzt die relativen Verluste r_G |
 | Absorption zweistufig | Puig-Arnavat (1 163 kW) | 500, 1 500 kW |
-| Adsorption | **offen** — kein freier Parametersatz gefunden; Anpassung an ein Datenblatt nötig (SOK-Q4) | — |
+| Adsorption | **keines** — kein freier Parametersatz; freigegeben nur mit Anpassung an Datenblattpunkte, Kaltwassertemperatur darf einzig sein (4.6, SOK-Q4, SOK-Q13) | — |
 | NH₃/H₂O | offen | — |
 
 Aus Nennkälteleistung, ζ_N und Nennpunkt eines Datenblatts entsteht ein **Typkennfeld aus Nennwerten**: a und e der
@@ -635,6 +725,9 @@ Kaltwassertemperatur samt Spreizung, Rückkühlwärme (nur zur Bilanzprobe), Hil
 min./max., Kühlwasser min./max.), Mindestteillast. **An der Anlage:** Antriebsweg, Träger oder Quellen, Antriebsvorlauf,
 Führung, Freigabe, Rückkühlwerk.
 
+**Adsorption:** mindestens fünf Punkte mit je mindestens zwei Antriebs- und Kühlwassertemperaturen; eine einzige
+Kaltwassertemperatur ist zugelassen (4.6).
+
 **Empfohlen:** zwei bis fünf Punkte aus den Leistungskorrekturdiagrammen (Kälteleistung und ζ bei anderer Heiz- bzw.
 Kühlwassertemperatur) — sie machen aus dem Typkennfeld ein Gerätekennfeld.
 
@@ -643,8 +736,10 @@ Kühlwassertemperatur) — sie machen aus dem Typkennfeld ein Gerätekennfeld.
 Ohne Korrekturpunkte: a und e der Bauart, s und r aus Nennpunkt und ζ_N (7.4), Vorgaben für Grenzen, Anfahrverlust und
 Mindestlaufzeit. Mit Korrekturpunkten: Anpassung aller sechs Parameter nach der Methode der kleinsten Quadrate
 ([L3]; Kälte- und Wärmegleichung getrennt, a und e gemeinsam), Rückfall auf a und e der Bauart, wenn die Punkte sie
-nicht bestimmen (alle bei derselben Kaltwassertemperatur → e bleibt Vorgabe). Anpassungsgüte und Herkunft gehen ins
-Leseprotokoll und in `Kennlinie_Guete`; eine Abweichung über 5 % am Nennpunkt ist ein Fehler der Eingabe.
+nicht bestimmen (alle bei derselben Kaltwassertemperatur → e bleibt Vorgabe; bei Adsorption entfällt e ganz, 4.6). Anpassungsgüte und Herkunft gehen ins
+Leseprotokoll und in `Kennlinie_Guete`; eine Abweichung über 5 % am Nennpunkt ist ein Fehler der Eingabe. Für
+Adsorption gibt es diesen Rückfall nicht: ohne die Punkte aus 4.6 keine Anpassung und kein Gerät; eine einzige Kaltwassertemperatur ist dort
+zugelassen (feste Größe, Klemmung, Zählung und Meldung).
 
 ### 8.3 Import
 
@@ -727,6 +822,7 @@ das ist die Abnahme jeder Welle bis SOK-6.
 |---|---|---|---|---|
 | **gekoppelt, BHKW** | 1055 (BHKW, Kältemaschine mit Trocken-Rückkühler, Kältespeicher, Kühlbetrieb) | eine Sorptionsanlage (Typkennfeld einstufig, Nennpunkt aus Datenblattmuster) vor der vorhandenen Kältemaschine, Antrieb aus dem BHKW kältegeführt (Senkenzeile `Sorptionsantrieb` hinter den bestehenden), Rückkühlwerk nass bzw. hybrid, Freigabe ab 18 °C | `SorptionGekoppeltReferenzprojektWacheTests` | **ja** (Hauptweg) |
 | **extern, Fernwärme** | 1055 | Sorptionsanlage mit Antrieb über den Träger Fernwärme, Anschlussleistung begrenzt, Rang vor der Kältemaschine | `SorptionExternReferenzprojektWacheTests` | nein |
+| **gekoppelt, wärmegeführt, Adsorption** | 1055 | Adsorptionsmaschine aus einem erfundenen, neutral benannten Punktesatz (fünf Punkte, runde Werte), Antrieb aus dem BHKW als Mitnahme, Freigabe ab 18 °C | `SorptionMitnahmeReferenzprojektWacheTests` | nein |
 | *solar (spätere Welle)* | 1049 (Kollektorfeld vor BHKW und Kessel) | Kühlbetrieb und Sorptionsanlage mit Antrieb aus dem Kollektorfeld, Mitnahme | — | — |
 
 **Einfrierregel (Entwurf, für `CLAUDE.md`):** gesäte Sorptionsdaten eines Referenzprojekts: die Kindzeile seiner
@@ -748,20 +844,22 @@ Energieflussbild (#1162–#1165), „SOK“ kommt nirgends vor.
 
 | Welle | Inhalt | Aufwand | Abnahme | hängt an |
 |---|---|---|---|---|
-| **SOK-0** | Konzeptentscheide (Fragen 12); Papierpflege: K-G in der Konzeptprüfung als „abgelöst durch SOK“, Entscheid im Status; auf Wunsch der Hinweis „Geräteart Absorption rechnet als elektrische Kältemaschine“ in der Konfigurationsprüfung (ohne Zahlenwirkung) | 0,5–1 PT | `DokumentationLinkWacheTests`; mit Hinweis: Kern-Filter grün, Referenzlauf byte-gleich | — |
-| **SOK-1** | Reine Rechenklasse `Sorptionskaeltemaschine` (`EPOS.Kern/Allgemein/Simulation/Kaelte/`): Gleichung, Mitteltemperaturen aus Nennspreizungen, Gerätegrenze, Einsatzgrenzen mit Gründen, Teillast über Antriebstemperatur, Takten mit Anfahrverlust, Umkehrung Antrieb → Kälte, Rückkühlbilanz, Hilfsstrom; Anpassung der Parameter an Punkte; Typkennfeld aus Nennwerten; Festwerte in `KaelteFestwerte` | 3–4 PT | 25–30 Rechenproben ohne Datenbank: Gegenprobe der Werte aus 5.9, Bilanz je Stunde, Umkehrung (Kälte → Antrieb → Kälte identisch), Grenzen an beiden Seiten, Takt und Starts, Anpassung trifft erzeugte Punkte, fehlerhafter Satz (ζ ≡ 1) wird abgewiesen; Kern-Filter grün | — |
-| **SOK-2** | Schema SOK-S1 und SOK-S2 (je ein Schritt, Anmeldung vor dem Bau), Modelle, Controller mit Prüfregeln (Kopf konsistent, ζ-Band, Grenzen, Rückkühlart, Weg und Quellen), Projektkopie und Übernahme aus dem Katalog, Register in der Katalogfassung, Testdatenbank gehoben | 3–4 PT | Schematests, `SqlDialektPruefer`, Rundreise Katalog → Projekt, Prüfregeln; Referenzlauf byte-gleich | KWN-1b gemergt (`Z_AnlageSenke`) |
+| **SOK-0** | Konzeptentscheide (Fragen 12); Papierpflege: K-G in der Konzeptprüfung als „abgelöst durch SOK“, Entscheid im Status; der Hinweis „Geräteart Absorption rechnet als elektrische Kältemaschine“ in der Konfigurationsprüfung (ohne Zahlenwirkung) | 0,5–1 PT | `DokumentationLinkWacheTests`; mit Hinweis: Kern-Filter grün, Referenzlauf byte-gleich | — |
+| **SOK-1** | Reine Rechenklasse `Sorptionskaeltemaschine` (`EPOS.Kern/Allgemein/Simulation/Kaelte/`): Gleichung, Mitteltemperaturen aus Nennspreizungen, Gerätegrenze, Einsatzgrenzen mit Gründen, Teillast über Antriebstemperatur, Takten mit Anfahrverlust, Umkehrung Antrieb → Kälte, Rückkühlbilanz, Hilfsstrom; Anpassung der Parameter an Punkte; Typkennfeld aus Nennwerten; **Adsorption** als Zyklusmittel mit Pflichtanpassung (Mindestpunkte, Variation aller drei Temperaturen, Güte, Ablehnung, ζ-Band, 4.6) und Fundstelle zu 4.6; Festwerte in `KaelteFestwerte` | 4–5 PT | 30–36 Rechenproben ohne Datenbank: Gegenprobe der Werte aus 5.9, Bilanz je Stunde, Umkehrung (Kälte → Antrieb → Kälte identisch), Grenzen an beiden Seiten, Takt und Starts, Anpassung trifft erzeugte Punkte, fehlerhafter Satz (ζ ≡ 1) wird abgewiesen, Adsorption mit vier Punkten oder ohne Kaltwasservariation abgewiesen, mit fünf angepasst; Kern-Filter grün | — |
+| **SOK-2** | Schema SOK-S1 und SOK-S2 (je ein Schritt, Anmeldung vor dem Bau), Modelle, Controller mit Prüfregeln (Kopf konsistent, ζ-Band je Bauart, Grenzen, Rückkühlart, Weg und Quellen, Führung `WAERME` nur gekoppelt und ohne Kessel, Adsorption nur mit Punkten und Einsatzgrenzen), Projektkopie und Übernahme aus dem Katalog samt Stützstellen, Register in der Katalogfassung, Testdatenbank gehoben | 3,5–5 PT | Schematests, `SqlDialektPruefer`, Rundreise Katalog → Projekt, Prüfregeln; Referenzlauf byte-gleich | KWN-1b gemergt (`Z_AnlageSenke`) |
 | **SOK-3a** | Einbau **EXTERN**: Sorptionsmaschine in der Kältefolge an ihrem Rang, Träger der Antriebswärme in Kosten und Emissionen, Rückkühlwerk mit Q_C, Hilfsstrom, Ergebnisspalten, Deckungsprobe | 3–4 PT | Lauftests (Rang, Kältespeicher wird geladen, Anschlussleistung greift), Deckungsprobe ohne Fehler; Referenzlauf byte-gleich | SOK-1, SOK-2; K-F (gebaut) |
-| **SOK-3b** | Einbau **GEKOPPELT**: Sorptionsvorstufe, Antriebssenke in der Wärmekaskade (kältegeführt), Nachstufe, Antriebsbuchung, Sorptionsprobe, Ergebnis je Quelle; Freigabe; AK3 nur Prozesskälte | 6–9 PT | Rechen- und Lauftests (Antrieb voll, Antrieb fehlt, Antrieb zu kalt, Freigabe, BHKW-Mehrlaufzeit), Sorptions- und Deckungsprobe ohne Fehler; Referenzlauf byte-gleich | SOK-3a; **KWN-1c gemergt** (Ort der Vorstufe, Muster Buchung und Probe) |
-| **SOK-4** | Typkennfelder (einstufig, zweistufig; neutral, eingebettet, Register), CSV-Variante „Sorption“ mit Anpassung und Leseprotokoll, Vorlage unter `Quellen/`, Menüpunkt im Import | 3–4 PT | Importtests (Nennwerte allein, Punkte, Tabelle), Typkennfeld-Wache (Quelle, Lizenz, keine Firma), `WikiProduktdatenWacheTests`; Referenzlauf byte-gleich | SOK-2 |
-| **SOK-5** | Oberfläche: Gruppe „Sorption“ im Katalog- und Erzeugerdialog (Bauart, Nennpunkt, Grenzen, Punkte gegen Gerade), Antriebsweg und Quellen in der Senkenwahl, Kälte-Bereich; Bericht (Tafel, Deckungsbilder, Energieflussbild), Kennzahlen, Ressourcen in beiden Sprachen, Wiki-Quellen, Logbuch-Entwurf | 4–6 PT | bunit der Dialoge; Schale auf Linux gebaut (0 Fehler); `designer_neu.py`; `BerichtSchreiberOhneDatenbankWacheTests`; ChartProben; Wiki-Gegenlesen | SOK-3b, SOK-4 |
-| **SOK-6** | Referenzprojekte gekoppelt (CI) und extern, Wachen, Einfrierregel in `CLAUDE.md`, neue Basis | 2–3 PT | Wachen grün; Referenzlauf aller Projekte gegen die neue Basis, Begründung in `Referenzlaeufe/LIESMICH.md` | SOK-3b, SOK-4 |
-| *SOK-7* | Antriebspuffer (`Nutzung_Sorption`, Pufferziel) und Ladeangebot an den Kältespeicher; Führung wärmegeführt (Mitnahme) | 3–5 PT | Speicherbilanz-Proben; Referenzlauf | SOK-6; Muster KWN-5 |
+| **SOK-3b** | Einbau **GEKOPPELT**: Sorptionsvorstufe, Antriebssenke in der Wärmekaskade kältegeführt und als **Mitnahmesenke** wärmegeführt (nicht startauslösend, hinter allen Senken der Quelle, 6.4), Nachstufe, Antriebsbuchung, Sorptionsprobe, Ergebnis je Quelle; Freigabe; AK3 nur Prozesskälte | 8–12 PT | Rechen- und Lauftests (Antrieb voll, Antrieb fehlt, Antrieb zu kalt, Freigabe, BHKW-Mehrlaufzeit kältegeführt; wärmegeführt: Starts und Laufstunden der Quelle unverändert, Mitnahme nur aus Überschuss, Kälte ≤ Bedarf, Solarüberschuss), Sorptions- und Deckungsprobe ohne Fehler; Referenzlauf byte-gleich | SOK-3a; **KWN-1c gemergt** (Ort der Vorstufe, Muster Buchung und Probe) |
+| **SOK-4** | Typkennfelder (einstufig, zweistufig; neutral, eingebettet, Register), CSV-Variante „Sorption“ mit Anpassung und Leseprotokoll (Adsorption mit der Punktepflicht aus 4.6), Vorlage unter `Quellen/`, Menüpunkt im Import | 3–4 PT | Importtests (Nennwerte allein, Punkte, Tabelle), Typkennfeld-Wache (Quelle, Lizenz, keine Firma), `WikiProduktdatenWacheTests`; Referenzlauf byte-gleich | SOK-2 |
+| **SOK-5** | Oberfläche: Gruppe „Sorption“ im Katalog- und Erzeugerdialog (Bauart samt Adsorption, Nennpunkt, Grenzen, Punkte gegen Gerade mit Punktepflicht und Gütezeile), Antriebsweg, Führung und Quellen in der Senkenwahl (Mitnahme als eigene Kennzeichnung), Kälte-Bereich; Bericht (Tafel, Deckungsbilder, Energieflussbild, Mitnahmewärme je Quelle), Kennzahlen, Ressourcen in beiden Sprachen, Wiki-Quellen, Logbuch-Entwurf | 4,5–7 PT | bunit der Dialoge; Schale auf Linux gebaut (0 Fehler); `designer_neu.py`; `BerichtSchreiberOhneDatenbankWacheTests`; ChartProben; Wiki-Gegenlesen | SOK-3b, SOK-4 |
+| **SOK-6** | Referenzprojekte gekoppelt (CI), extern und gekoppelt wärmegeführt mit Adsorption (Abschnitt 10), Wachen, Einfrierregel in `CLAUDE.md`, neue Basis | 3–4 PT | Wachen grün; Referenzlauf aller Projekte gegen die neue Basis, Begründung in `Referenzlaeufe/LIESMICH.md` | SOK-3b, SOK-4 |
+| *SOK-7* | Antriebspuffer (`Nutzung_Sorption`, Pufferziel) und Ladeangebot an den Kältespeicher | 2–4 PT | Speicherbilanz-Proben; Referenzlauf | SOK-6; Muster KWN-5 |
 | *SOK-8* | AK3: Sorption als Verfügbarkeit in der Kälteschranke, Antrieb in der Wärmeschranke | 3–5 PT | Komfortkennzahlen; 1058/1059 byte-gleich | SOK-6; Muster KWN-7 |
-| *SOK-9* | weitere Bauarten: Adsorption (nach Validierung an einem Datenblatt), NH₃/H₂O mit Sole, direkt befeuert (Brennstoffträger, GUE), Dampf | je 2–3 PT | Rechenproben je Bauart; Referenzlauf | SOK-6 |
+| *SOK-9* | weitere Bauarten: NH₃/H₂O mit Sole, direkt befeuert (Brennstoffträger, GUE), Dampf; Abwärme mit Lastgang als Antrieb (SOK-Q11) | je 2–3 PT | Rechenproben je Bauart; Referenzlauf | SOK-6 |
 
-**Summe SOK-0 bis SOK-6: 25–35 PT**, mit SOK-7 bis SOK-9 rund 35–50 PT. Gegenüber der Schätzung K-G (15–22 PT) kommen
-der Weg EXTERN, die Anpassung an Datenblattpunkte und Oberfläche/Bericht hinzu. **Voraussetzungen:** K-F gebaut
+**Summe SOK-0 bis SOK-6: 30–42 PT**, mit SOK-7 bis SOK-9 rund 40–60 PT. Gegenüber der Schätzung K-G (15–22 PT) kommen
+der Weg EXTERN, die Anpassung an Datenblattpunkte und Oberfläche/Bericht hinzu; die Entscheide SOK-Q3 und SOK-Q4 ziehen
+die Mitnahme und die Adsorption in die erste Stufe (rund 5–7 PT mehr in SOK-1 bis SOK-6, SOK-7 und SOK-9 entsprechend
+kürzer). **Voraussetzungen:** K-F gebaut
 (Rückkühlwerk), KWN-1b und KWN-1c auf `ios_migration_september`. **Abgrenzung:** keine Fahrplanoptimierung, keine
 Nutzung der Rückkühlwärme, keine Dynamik innerhalb der Stunde; ein iOS-Lauf ist für keine Welle begründet (keine
 Änderung an der iOS-Hülle).
@@ -770,19 +868,23 @@ Nutzung der Rückkühlwärme, keine Dynamik innerhalb der Stunde; ein iOS-Lauf i
 
 ## 12. Fragen an den Anwender
 
-| Kennung | Frage | Empfehlung |
-|---|---|---|
-| **SOK-Q1** | K-G (zurückgestellt mit E118) wieder aufnehmen und durch den Stufenplan SOK ersetzen? | **Ja**, Reihenfolge nach KWN-1c; K-G in der Konzeptprüfung als abgelöst vermerken |
-| **SOK-Q2** | Umfang der ersten Stufe? | **Einstufig H₂O/LiBr mit Heizwasser**, beide Wege EXTERN (Fernwärme, Abwärme als Träger) und GEKOPPELT (BHKW, Solarthermie direkt); Kessel nur ausdrücklich gebunden mit Hinweis; Datenmodell offen für die übrigen Bauarten |
-| **SOK-Q3** | Wärme- oder kältegeführt? | **Kältegeführt als Vorgabe** (SOK-3b); wärmegeführt als Mitnahme mit SOK-7, weil sie eine neue Senkeneigenschaft braucht und erst mit Puffer ihren Nutzen zeigt |
-| **SOK-Q4** | Adsorption gleich mit? | **Nein, aber vorbereitet**: Bauart und Parameter im Schema ab SOK-2; Typkennfeld und Freigabe erst nach Gegenrechnung eines Datenblatts (SOK-9) — es gibt keinen freien Parametersatz |
-| **SOK-Q5** | Direkt befeuerte Geräte? | **Später** (SOK-9) als EXTERN mit Brennstoffträger und GUE; erste Stufe lehnt `DIREKT` benannt ab |
-| **SOK-Q6** | Rang: GEKOPPELT vor der ganzen Kältefolge, mit Freigabe ab Außentemperatur; EXTERN an ihrem `Kaelte_Rang`? | **Ja** — deterministisch und vom Planer steuerbar; die freie Kühlung der Kältemaschinen bleibt über die Freigabe geschützt |
-| **SOK-Q7** | Rechenmodell: charakteristische Gleichung als einziger Rechenweg, Tabellen und Kurven nur als Eingabe (Anpassung)? | **Ja** (4.5) |
-| **SOK-Q8** | Typkennfelder aus offenen Parametersätzen (Kühn/Ziegler, Puig-Arnavat über oemof-thermal, MIT), neutral benannt, ohne den fehlerhaften Satz? | **Ja**; Lizenz- und Quellvermerk wie bei den Copper-Typkennfeldern |
-| **SOK-Q9** | Referenzprojekte als Kopien von 1055, das gekoppelte in der CI-Auswahl? | **Ja** — 1055 trägt BHKW, Kältemaschine, Rückkühler und Kältespeicher; das solare Projekt (Kopie von 1049) folgt mit SOK-7 |
-| **SOK-Q10** | Hinweis jetzt: Kältemaschinen mit Geräteart `ABSORPTION` rechnen als elektrische Maschine? | **Ja**, als Hinweis ohne Zahlenwirkung in SOK-0 — schützt vor einer falsch eingespielten Maschine, bis SOK rechnet |
-| **SOK-Q11** | Abwärme mit stündlicher Verfügbarkeit (Lastgang) als Antrieb? | **Später**; erste Stufe EXTERN mit Träger und Anschlussleistung |
+Entschieden vom Anwender am 17.10.2026, jede Frage einzeln (Entscheid **E168**).
+
+| Kennung | Frage | Empfehlung | Entscheid |
+|---|---|---|---|
+| **SOK-Q1** | K-G (zurückgestellt mit E118) wieder aufnehmen und durch den Stufenplan SOK ersetzen? | **Ja**, Reihenfolge nach KWN-1c; K-G in der Konzeptprüfung als abgelöst vermerken | E168 — Anwender 17.10.2026: wie empfohlen: SOK ersetzt K-G, Beginn nach KWN-1c; K-G in der Konzeptprüfung als „abgelöst durch SOK“ vermerkt |
+| **SOK-Q2** | Umfang der ersten Stufe? | **Einstufig H₂O/LiBr mit Heizwasser**, beide Wege EXTERN (Fernwärme, Abwärme als Träger) und GEKOPPELT (BHKW, Solarthermie direkt); Kessel nur ausdrücklich gebunden mit Hinweis; Datenmodell offen für die übrigen Bauarten | E168 — Anwender 17.10.2026: wie empfohlen: einstufig H₂O/LiBr mit Heizwasser, Wege EXTERN und GEKOPPELT; Kessel nur ausdrücklich gebunden, mit Hinweis |
+| **SOK-Q3** | Wärme- oder kältegeführt? | **Kältegeführt als Vorgabe** (SOK-3b); wärmegeführt als Mitnahme mit SOK-7, weil sie eine neue Senkeneigenschaft braucht und erst mit Puffer ihren Nutzen zeigt | E168 — Anwender 17.10.2026: **abweichend: kälte- und wärmegeführt beide in der ersten Stufe** — die Mitnahme ohne Puffer kommt mit SOK-3b (6.4), nicht erst mit SOK-7 |
+| **SOK-Q4** | Adsorption gleich mit? | **Nein, aber vorbereitet**: Bauart und Parameter im Schema ab SOK-2; Typkennfeld und Freigabe erst nach Gegenrechnung eines Datenblatts (SOK-9) — es gibt keinen freien Parametersatz | E168 — Anwender 17.10.2026: **abweichend: Adsorption gleich mit freigegeben** — Eingabe aus dem Datenblatt mit angepassten Parametern; ohne freien Parametersatz kein Typkennfeld (4.6); Freigabe mit SOK-2, nicht erst mit SOK-9 |
+| **SOK-Q5** | Direkt befeuerte Geräte? | **Später** (SOK-9) als EXTERN mit Brennstoffträger und GUE; erste Stufe lehnt `DIREKT` benannt ab | E168 — Anwender 17.10.2026: wie empfohlen: direkt befeuerte Geräte später; die erste Stufe lehnt `DIREKT` benannt ab |
+| **SOK-Q6** | Rang: GEKOPPELT vor der ganzen Kältefolge, mit Freigabe ab Außentemperatur; EXTERN an ihrem `Kaelte_Rang`? | **Ja** — deterministisch und vom Planer steuerbar; die freie Kühlung der Kältemaschinen bleibt über die Freigabe geschützt | E168 — Anwender 17.10.2026: wie empfohlen: GEKOPPELT vor der Kältefolge mit Freigabe ab Außentemperatur; EXTERN an seinem `Kaelte_Rang` |
+| **SOK-Q7** | Rechenmodell: charakteristische Gleichung als einziger Rechenweg, Tabellen und Kurven nur als Eingabe (Anpassung)? | **Ja** (4.5) | E168 — Anwender 17.10.2026: wie empfohlen: charakteristische Gleichung als einziger Rechenweg |
+| **SOK-Q8** | Typkennfelder aus offenen Parametersätzen (Kühn/Ziegler, Puig-Arnavat über oemof-thermal, MIT), neutral benannt, ohne den fehlerhaften Satz? | **Ja**; Lizenz- und Quellvermerk wie bei den Copper-Typkennfeldern | E168 — Anwender 17.10.2026: wie empfohlen: Typkennfelder aus offenen Parametersätzen, neutral benannt, ohne den fehlerhaften Satz; Lizenz- und Quellvermerk |
+| **SOK-Q9** | Referenzprojekte als Kopien von 1055, das gekoppelte in der CI-Auswahl? | **Ja** — 1055 trägt BHKW, Kältemaschine, Rückkühler und Kältespeicher; das solare Projekt (Kopie von 1049) folgt mit SOK-7 | E168 — Anwender 17.10.2026: wie empfohlen: Referenzprojekte als Kopien von 1055, das gekoppelte in der CI-Auswahl |
+| **SOK-Q10** | Hinweis jetzt: Kältemaschinen mit Geräteart `ABSORPTION` rechnen als elektrische Maschine? | **Ja**, als Hinweis ohne Zahlenwirkung in SOK-0 — schützt vor einer falsch eingespielten Maschine, bis SOK rechnet | E168 — Anwender 17.10.2026: wie empfohlen: Hinweis jetzt, ohne Zahlenwirkung (gebaut mit SOK-0) |
+| **SOK-Q11** | Abwärme mit stündlicher Verfügbarkeit (Lastgang) als Antrieb? | **Später**; erste Stufe EXTERN mit Träger und Anschlussleistung | E168 — Anwender 17.10.2026: wie empfohlen: Abwärme mit Lastgang später |
+| **SOK-Q12** | Mitnahme beim BHKW (wärmegeführt): darf ein ohnehin laufendes BHKW für die Sorptionsmaschine bis zu seiner Leistung hochmodulieren? | **Ja** — nie startauslösend; Strom und Brennstoff steigen entsprechend (6.4) | E168 — Anwender 17.10.2026: bestätigt, wie im Konzept: ein ohnehin laufendes BHKW moduliert bis zu seiner Leistung hoch; die Sorptionsmaschine löst nie einen Start aus; Strom und Brennstoff des BHKW steigen |
+| **SOK-Q13** | Adsorption mit nur einer Kaltwassertemperatur im Datenblatt zulassen? | **Ja**, mit fester Kaltwassertemperatur, Klemmung, Zählung und Meldung (4.6) | E168 — Anwender 17.10.2026: **zugelassen**: die Maschine rechnet mit der Kaltwassertemperatur des Datenblatts als fester Größe; andere verlangte Werte werden geklemmt, die Stunden gezählt und gemeldet; die Pflicht „je mindestens zwei Kaltwassertemperaturen“ entfällt dafür, für Antrieb und Kühlwasser bleiben je mindestens zwei Werte Pflicht; übrige Prüfregeln bleiben |
 
 ---
 
@@ -793,7 +895,8 @@ Nutzung der Rückkühlwärme, keine Dynamik innerhalb der Stunde; ein iOS-Lauf i
 | Typkennfelder aus wenigen Forschungs- und Katalogsätzen | Kälteleistung außerhalb des Nennpunkts unsicher | Anpassung an Datenblattpunkte empfehlen; Gütewert und Herkunft im Bericht zeigen |
 | Rückkühltemperatur bestimmt die Kälteleistung stark (5.3) | zu kleines oder trockenes Rückkühlwerk überschätzt die Kälte | Prüfregel Rückkühlwerk, Grenzstunden, lastabhängige Annäherung (K-F) |
 | Antriebstemperatur in der Vorstufe nur Plan (Gerätedaten der Quellen) | Kollektorfeld liefert kühler als geplant, Antrieb teils nicht verwertbar | Nachstufe begrenzt in einem Schritt; nicht verwertbare Wärme gebucht, gezählt, gemeldet |
-| Mitnahme (wärmegeführt) braucht eine neue Senkeneigenschaft | Eingriff in die Kaskadenschleife | erst SOK-7, nach dem kältegeführten Weg |
+| Mitnahme (wärmegeführt) braucht eine neue Senkeneigenschaft | Eingriff in die Kaskadenschleife | in SOK-3b als nicht startauslösende Senke hinter allen Senken der Quelle, nur betreten mit Sorptionsanlage; Proben: Starts und Laufstunden der Quelle unverändert, Kälte ≤ Bedarf |
+| Adsorption ohne freien Parametersatz, Linearität nur als Zyklusmittel und nicht am Wortlaut belegt (4.6) | Kälteleistung abseits der Datenblattpunkte unsicher | Punktepflicht mit Variation von Antrieb und Kühlwasser (Kaltwasser darf einzig sein: feste Größe, Klemmung gezählt und gemeldet, SOK-Q13), Gütegrenzen, Einsatzgrenzen als Pflicht, benannte Ablehnung; Fundstelle in SOK-1 |
 | Doppelbuchung Wärme/Kälte | stille Fehler in Bilanz und Kennzahlen | Antriebsbuchung, Sorptionsprobe, Deckungsprobe (6.9) |
 
 ---

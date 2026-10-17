@@ -33,7 +33,7 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(240, ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT);
             Assert.Equal(ErgebnisreihenSchema.SCHRITT + 1, ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT);
-            Assert.Equal(ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT, SchemaStand.Zielversion);
+            Assert.True(SchemaStand.Zielversion >= ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT);
             Paketanhebung.Stufe stufe = Paketanhebung.Stufen.Single(x => x.Nr == ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT);
             Assert.Equal(Paketanhebung.Art.Ddl, stufe.Wirkung);
             Assert.Equal(TABELLE, WirtschaftlichkeitCtrl.TAB_ERGEBNIS);

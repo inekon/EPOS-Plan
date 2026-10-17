@@ -2679,6 +2679,14 @@
         internal static string BkalVonName => MyResource.Resource.BKAL_LBL_FERIEN_VON;
         internal static string BkalBisName => MyResource.Resource.BKAL_LBL_FERIEN_BIS;
         internal static string BkalFerienErl => MyResource.Resource.KI_DLG_BKAL_FERIEN_ERL;
+        // Die Liste „Weitere Betriebsferien“ (Tab_Betriebskalenderferien): Spaltennamen mit „n“ für die Zeilennummer.
+        internal static string BkalListeNameName =>
+            string.Format(System.Globalization.CultureInfo.CurrentCulture, MyResource.Resource.BKAL_LBL_LISTE_NAME, "n");
+        internal static string BkalListeVonName =>
+            string.Format(System.Globalization.CultureInfo.CurrentCulture, MyResource.Resource.BKAL_LBL_LISTE_VON, "n");
+        internal static string BkalListeBisName =>
+            string.Format(System.Globalization.CultureInfo.CurrentCulture, MyResource.Resource.BKAL_LBL_LISTE_BIS, "n");
+        internal static string BkalListeErl => MyResource.Resource.KI_DLG_BKAL_FERIENLISTE_ERL;
         internal static string BkalFaktorName => MyResource.Resource.BKAL_LBL_FAKTOR;
         internal static string BkalFaktorErl => MyResource.Resource.BKAL_HRL_FAKTOR;
         internal static string BkalKuerzenName => MyResource.Resource.BKAL_LBL_KUERZEN;

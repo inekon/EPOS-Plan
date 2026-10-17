@@ -43093,7 +43093,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>The holiday factor lies between 0 and 100 %.</value>
   </data>
   <data name="BKAL_MSG_FERIEN_ANZAHL" xml:space="preserve">
-    <value>An operating calendar holds at most four holiday periods.</value>
+    <value>The four fields hold at most four holiday periods; further ones belong in the list "Further company holidays".</value>
   </data>
   <data name="BKAL_MSG_FERIEN_DATUM" xml:space="preserve">
     <value>A holiday period needs a start and an end as a valid date (without 29 February).</value>
@@ -46646,6 +46646,9 @@ chart</value>
   </data>
   <data name="SIMWARN_KAELTESPEICHER_OHNE_ERZEUGER" xml:space="preserve">
     <value>Cold storage “{0}”: no cooling generator (heat pump in cooling mode or chiller) charges it — it is not calculated.</value>
+  </data>
+  <data name="SIMWARN_KAELTE_KM_SORPTION_ELEKTRISCH" xml:space="preserve">
+    <value>Chiller “{0}”: device type absorption is not yet calculated as sorption cooling, but like an electric chiller (rated values and performance map of the record).</value>
   </data>
   <data name="SIMWARN_KAELTESPEICHER_OHNE_KUEHLUNG" xml:space="preserve">
     <value>Cold storage “{0}”: cooling is switched off for the project — it is not calculated.</value>
@@ -58239,6 +58242,42 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="KI_DLG_KMA_RKW_ERL" xml:space="preserve">
     <value>Catalogue record of the heat rejection unit of the water-cooled chiller (id); empty = none, then the fixed values of the heat rejection type apply. With OK the plant gets its own project copy.</value>
+  </data>
+  <data name="BKAL_MSG_FERIEN_UEBERSCHNEIDUNG" xml:space="preserve">
+    <value>Holiday periods {0} and {1} overlap (counted are the four fields, then the list "Further company holidays").</value>
+  </data>
+  <data name="BKAL_MSG_FERIEN_NAME_LANG" xml:space="preserve">
+    <value>The name of a holiday period has at most 100 characters.</value>
+  </data>
+  <data name="BKAL_LBL_FERIENLISTE" xml:space="preserve">
+    <value>Further company holidays</value>
+  </data>
+  <data name="BKAL_LBL_LISTE_NAME" xml:space="preserve">
+    <value>Further holidays {0} name</value>
+  </data>
+  <data name="BKAL_LBL_LISTE_VON" xml:space="preserve">
+    <value>Further holidays {0} from</value>
+  </data>
+  <data name="BKAL_LBL_LISTE_BIS" xml:space="preserve">
+    <value>Further holidays {0} to</value>
+  </data>
+  <data name="BKAL_BTN_ZEILE_HINZU" xml:space="preserve">
+    <value>Add row</value>
+  </data>
+  <data name="BKAL_BTN_ZEILE_ENTFERNEN" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="BKAL_LISTE_LEER" xml:space="preserve">
+    <value>No further company holidays.</value>
+  </data>
+  <data name="BKAL_HRL_FERIENLISTE" xml:space="preserve">
+    <value>The four fields and the list "Further company holidays" act together; no holiday may lie in two periods.</value>
+  </data>
+  <data name="BKAL_MSG_UEBERNOMMEN_LISTE" xml:space="preserve">
+    <value>Holiday state and holidays of "{0}" copied: {1} holiday periods, the first four in the fields, {2} in the list "Further company holidays"; saved with "Save" or OK.</value>
+  </data>
+  <data name="KI_DLG_BKAL_FERIENLISTE_ERL" xml:space="preserve">
+    <value>A row of the list "Further company holidays": name (optional), start and end as day of the year (1 to 365, without 29 February); start after end = across the turn of the year. The user adds rows with "Add row".</value>
   </data>
   <data name="ZPG_FELD_BEREICH" xml:space="preserve">
     <value>{0}, area {1}</value>

@@ -349,6 +349,15 @@ namespace WindowsFormsApplication1
         public const string KAELTEMITTEL_STICHTAG = "KAELTEMITTEL_STICHTAG";
 
         /// <summary>
+        /// SOK-0 (Konzept Sorptionskälte 1.2, Frage SOK-Q10; E168): Eine Kältemaschine des Projekts trägt die Geräteart
+        /// <see cref="KaelteKatalogfelderSchema.GERAETEART_ABSORPTION"/>, wird bis zum Bau von SOK aber wie eine elektrische
+        /// Kältemaschine gerechnet (Nennwerte und Kennlinie des Satzes). WEICH, ohne Zahlenwirkung: Die Konfiguration
+        /// zeigt den Befund an der Anlage; den Lauf meldet der Kältezweig als Hinweis
+        /// (<c>SimulationControl.KaeltemaschinenVorbereiten</c>), der Katalog am Laufstart überspringt ihn.
+        /// </summary>
+        public const string KAELTEMASCHINE_SORPTION_ELEKTRISCH = "KAELTEMASCHINE_SORPTION_ELEKTRISCH";
+
+        /// <summary>
         /// Untergrenze [MWh/a], ab der ein Kanal als „mit Bedarf" gilt. Darunter liegt
         /// nur Rundungsrauschen der Netzverlustverteilung; gemeldet würde sonst
         /// „0,0 MWh/a".
@@ -438,8 +447,42 @@ namespace WindowsFormsApplication1
             KaeltespeicherPruefen(idProjekt, befunde);
             DezentraleKaeltePruefen(idProjekt, befunde);
             KaeltemittelPruefen(idProjekt, befunde);
+            SorptionGeraeteartPruefen(idProjekt, befunde);
 
             return befunde;
+        }
+
+        /// <summary>
+        /// Rechnet eine Kältemaschine dieser Geräteart bis zum Bau von SOK als elektrische Kältemaschine? Wahr für
+        /// <see cref="KaelteKatalogfelderSchema.GERAETEART_ABSORPTION"/> — der Wertebereich von K-A (Schritt 211) kennt
+        /// keine eigene Geräteart Adsorption. Rein, ohne Datenbank.
+        /// </summary>
+        public static bool SorptionAlsElektrisch(string geraeteart)
+            => string.Equals((geraeteart ?? "").Trim(), KaelteKatalogfelderSchema.GERAETEART_ABSORPTION,
+                             StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>Der Text des Hinweises <see cref="KAELTEMASCHINE_SORPTION_ELEKTRISCH"/> für die Maschine <paramref name="name"/>.</summary>
+        public static string SorptionAlsElektrischText(string name)
+            => string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMWARN_KAELTE_KM_SORPTION_ELEKTRISCH, name ?? "");
+
+        /// <summary>
+        /// <see cref="KAELTEMASCHINE_SORPTION_ELEKTRISCH"/> — je Kältemaschinen-Anlage, deren Projektkopie die Geräteart
+        /// Absorption trägt, ein weicher Befund mit <c>ID_Anlage</c>. Name wie in der Kältemittelprüfung: Anlage, sonst
+        /// Gerät, sonst Kennung. Ohne Kältemaschine eine Abfrage und kein Befund.
+        /// </summary>
+        public static void SorptionGeraeteartPruefen(int idProjekt, List<Warnbefund> befunde)
+        {
+            if (idProjekt <= 0 || befunde == null) return;
+            foreach (KaeltemaschineAnlageModel a in KaeltemaschineAnlageCtrl.ListeStill(idProjekt))
+            {
+                if (a == null || a.AnlagenId <= 0 || !a.IdKaeltemaschine.HasValue) continue;
+                KaeltemaschineModel m = KaeltemaschineCtrl.LadenStill(a.IdKaeltemaschine.Value);
+                if (m == null || !SorptionAlsElektrisch(m.Geraeteart)) continue;
+                string name = !string.IsNullOrWhiteSpace(a.Bezeichner) ? a.Bezeichner
+                            : !string.IsNullOrWhiteSpace(m.Bezeichner) ? m.Bezeichner
+                            : a.AnlagenId.ToString(CultureInfo.CurrentCulture);
+                befunde.Add(Befund(KAELTEMASCHINE_SORPTION_ELEKTRISCH, false, a.AnlagenId, 0, SorptionAlsElektrischText(name)));
+            }
         }
 
         /// <summary>

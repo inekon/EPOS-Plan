@@ -14,10 +14,34 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Ohne Tabelle</b> (Datenbank vor dem Schemaschritt) liefern die Leser leer und die
     /// Schreiber <c>false</c> — der Rechenweg rechnet dann ohne Kalender wie zuvor.</para>
+    ///
+    /// <para><b>Die Ferienliste</b> (<c>Tab_Betriebskalenderferien</c>, <see cref="BetriebskalenderFerienlisteSchema"/>)
+    /// lesen und schreiben dieselben Wege mit: Lesen hängt sie in ihrer Reihenfolge an, Speichern ersetzt sie im selben
+    /// Vorgang wie die Kalenderzeile, Löschen nimmt sie mit. Vor dem Schritt liest sich die Liste leer; eine gefüllte Liste
+    /// wird dann benannt abgelehnt, nie still verworfen.</para>
     /// </summary>
     public static class BetriebskalenderCtrl
     {
         private const string TAB = BedarfNetzKalenderSchema.TAB_KALENDER;
+        private const string TAB_FERIEN = BetriebskalenderFerienlisteSchema.TAB_FERIEN;
+
+        private const string SQL_FERIEN_LESEN =
+            "SELECT \"" + BetriebskalenderFerienlisteSchema.SPALTE_KALENDER + "\", \"" + BetriebskalenderFerienlisteSchema.SPALTE_NAME +
+            "\", \"" + BetriebskalenderFerienlisteSchema.SPALTE_BEGINN + "\", \"" + BetriebskalenderFerienlisteSchema.SPALTE_ENDE +
+            "\" FROM \"" + TAB_FERIEN + "\"";
+
+        private const string SQL_FERIEN_ORDNUNG =
+            " ORDER BY \"" + BetriebskalenderFerienlisteSchema.SPALTE_KALENDER + "\", \"" +
+            BetriebskalenderFerienlisteSchema.SPALTE_REIHENFOLGE + "\", \"ID\"";
+
+        private const string SQL_FERIEN_LOESCHEN =
+            "DELETE FROM \"" + TAB_FERIEN + "\" WHERE \"" + BetriebskalenderFerienlisteSchema.SPALTE_KALENDER + "\" = ?";
+
+        private const string SQL_FERIEN_EINFUEGEN =
+            "INSERT INTO \"" + TAB_FERIEN + "\" (\"" + BetriebskalenderFerienlisteSchema.SPALTE_KALENDER + "\", \"" +
+            BetriebskalenderFerienlisteSchema.SPALTE_REIHENFOLGE + "\", \"" + BetriebskalenderFerienlisteSchema.SPALTE_NAME + "\", \"" +
+            BetriebskalenderFerienlisteSchema.SPALTE_BEGINN + "\", \"" + BetriebskalenderFerienlisteSchema.SPALTE_ENDE +
+            "\") VALUES (?, ?, ?, ?, ?)";
 
         /// <summary>Gibt es die Tabelle?</summary>
         public static bool TabelleVorhanden() => DataRepository.TabelleVorhanden(TAB);
@@ -30,6 +54,9 @@ namespace WindowsFormsApplication1
             DataTable dt = DataRepository.GetDataTable("SELECT * FROM " + TAB + " ORDER BY Bezeichner, ID");
             if (dt == null) return liste;
             foreach (DataRow r in dt.Rows) liste.Add(AusZeile(r));
+            Dictionary<int, List<Betriebsferien>> ferien = FerienlistenLesen(null);
+            foreach (Betriebskalender k in liste)
+                if (ferien.TryGetValue(k.ID, out List<Betriebsferien> l)) k.Ferienliste = l;
             return liste;
         }
 
@@ -38,7 +65,34 @@ namespace WindowsFormsApplication1
         {
             if (id <= 0 || !TabelleVorhanden()) return null;
             DataTable dt = DataRepository.GetDataTable("SELECT * FROM " + TAB + " WHERE ID = ?", new DbParam("?", id));
-            return dt != null && dt.Rows.Count > 0 ? AusZeile(dt.Rows[0]) : null;
+            if (dt == null || dt.Rows.Count == 0) return null;
+            Betriebskalender k = AusZeile(dt.Rows[0]);
+            if (FerienlistenLesen(id).TryGetValue(id, out List<Betriebsferien> l)) k.Ferienliste = l;
+            return k;
+        }
+
+        /// <summary>
+        /// Die Ferienlisten je Kalender (Schlüssel = ID des Kalenders), in ihrer Reihenfolge; <paramref name="id"/> = ein
+        /// Kalender, <c>null</c> = alle. Leer vor dem Schemaschritt.
+        /// </summary>
+        private static Dictionary<int, List<Betriebsferien>> FerienlistenLesen(int? id)
+        {
+            var karte = new Dictionary<int, List<Betriebsferien>>();
+            if (!BetriebskalenderFerienlisteSchema.TabelleVorhanden()) return karte;
+            DataTable dt = id.HasValue
+                ? DataRepository.GetDataTable(SQL_FERIEN_LESEN + " WHERE \"" + BetriebskalenderFerienlisteSchema.SPALTE_KALENDER +
+                                              "\" = ?" + SQL_FERIEN_ORDNUNG, new DbParam("?", id.Value))
+                : DataRepository.GetDataTable(SQL_FERIEN_LESEN + SQL_FERIEN_ORDNUNG);
+            if (dt == null) return karte;
+            foreach (DataRow r in dt.Rows)
+            {
+                int kalender = Convert.ToInt32(r[0], CultureInfo.InvariantCulture);
+                if (!karte.TryGetValue(kalender, out List<Betriebsferien> l)) karte[kalender] = l = new List<Betriebsferien>();
+                l.Add(new Betriebsferien(r[1] == DBNull.Value ? null : Convert.ToString(r[1], CultureInfo.InvariantCulture),
+                                         Convert.ToInt32(r[2], CultureInfo.InvariantCulture),
+                                         Convert.ToInt32(r[3], CultureInfo.InvariantCulture)));
+            }
+            return karte;
         }
 
         /// <summary>
@@ -84,23 +138,69 @@ namespace WindowsFormsApplication1
                 return 0;
             }
 
-            if (k.ID > 0)
+            // Die Ferienliste entsteht erst im Schemaschritt der Ferienliste: ohne Tabelle nur eine leere Liste zulässig -
+            // eine gefüllte wird benannt abgelehnt, statt still zu entfallen.
+            bool mitListe = BetriebskalenderFerienlisteSchema.TabelleVorhanden();
+            List<Betriebsferien> liste = k.Ferienliste ?? new List<Betriebsferien>();
+            if (!mitListe && liste.Count > 0)
             {
-                werte.Add(new DbParam("?", k.ID));
-                string sql = "UPDATE " + TAB + " SET " + string.Join(" = ?, ", spalten) + " = ? WHERE ID = ?";
-                return DataRepository.ExecuteNonQuery(sql, werte.ToArray()) > 0 ? k.ID : 0;
+                DataRepository.FehlerMelden("Die Ferienliste des Betriebskalenders laesst sich erst nach Schemaschritt " +
+                                            BetriebskalenderFerienlisteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture) +
+                                            " speichern (" + TAB_FERIEN + ").");
+                return 0;
             }
 
-            string einfuegen = "INSERT INTO " + TAB + " (" + string.Join(", ", spalten) + ") VALUES (" +
-                               string.Join(", ", spalten.ConvertAll(_ => "?")) + ")";
-            int neu = DataRepository.ExecuteInsertAndGetId(einfuegen, werte.ToArray());
-            if (neu > 0) k.ID = neu;
-            return neu > 0 ? neu : 0;
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    int id;
+                    if (k.ID > 0)
+                    {
+                        werte.Add(new DbParam("?", k.ID));
+                        string sql = "UPDATE " + TAB + " SET " + string.Join(" = ?, ", spalten) + " = ? WHERE ID = ?";
+                        id = v.Ausfuehren(sql, werte.ToArray()) > 0 ? k.ID : 0;
+                    }
+                    else
+                    {
+                        string einfuegen = "INSERT INTO " + TAB + " (" + string.Join(", ", spalten) + ") VALUES (" +
+                                           string.Join(", ", spalten.ConvertAll(_ => "?")) + ")";
+                        id = v.EinfuegenUndId(einfuegen, werte.ToArray());
+                    }
+                    if (id <= 0)
+                    {
+                        v.Rollback();
+                        return 0;
+                    }
+                    if (mitListe)
+                    {
+                        v.Ausfuehren(SQL_FERIEN_LOESCHEN, new DbParam("?", id));
+                        int reihe = 0;
+                        foreach (Betriebsferien b in liste)
+                        {
+                            string name = (b.Name ?? "").Trim();
+                            v.Ausfuehren(SQL_FERIEN_EINFUEGEN,
+                                         new DbParam("?", id), new DbParam("?", ++reihe),
+                                         new DbParam("?", name.Length == 0 ? (object)DBNull.Value : name),
+                                         new DbParam("?", b.Von), new DbParam("?", b.Bis));
+                        }
+                    }
+                    v.Commit();
+                    k.ID = id;
+                    return id;
+                }
+                catch (Exception ex)
+                {
+                    v.Rollback();
+                    DataRepository.FehlerMelden("Betriebskalender nicht gespeichert: " + ex.Message);
+                    return 0;
+                }
+            }
         }
 
         /// <summary>
-        /// Löscht einen Kalender. Die Zuordnungen, die ihn nutzen, stehen danach ohne Kalender
-        /// (<c>ON DELETE SET NULL</c>; ohne scharfe Fremdschlüssel setzt der Weg sie selbst leer).
+        /// Löscht einen Kalender samt Ferienliste. Die Zuordnungen, die ihn nutzen, stehen danach ohne Kalender
+        /// (<c>ON DELETE SET NULL</c>; ohne scharfe Fremdschlüssel setzt der Weg sie selbst leer, ebenso die Liste).
         /// </summary>
         public static bool Loeschen(int id)
         {
@@ -111,6 +211,8 @@ namespace WindowsFormsApplication1
                         "UPDATE " + z + " SET " + BedarfNetzKalenderSchema.SPALTE_ID_KALENDER +
                         " = NULL WHERE " + BedarfNetzKalenderSchema.SPALTE_ID_KALENDER + " = ?",
                         new DbParam("?", id));
+            if (BetriebskalenderFerienlisteSchema.TabelleVorhanden())
+                DataRepository.ExecuteNonQuery(SQL_FERIEN_LOESCHEN, new DbParam("?", id));
             return DataRepository.ExecuteNonQuery("DELETE FROM " + TAB + " WHERE ID = ?", new DbParam("?", id)) > 0;
         }
 

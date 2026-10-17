@@ -382,7 +382,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("KaelteProfilgrafik", 1, "Nacharbeit KBP-3b: die Wahl der Kalenderwoche ist Anzeige des Blatts Woche (kein Einstellwert, nichts wird gespeichert)"),
         // PW2/BW2: die Verwaltung der Betriebskalender - Kalender, Bezeichnung, Bundesland, Feiertagsregel, die
         // Ferienfelder (eine Schleife über vier Paare), Ferienfaktor und Kürzen; Katalog Form_Betriebskalender.
-        new("BetriebskalenderDialog", 9),
+        new("BetriebskalenderDialog", 12, "die Zeile der Liste „Weitere Betriebsferien“ (Name, von, bis) steht einmal im Markup; der Assistent pflegt ihre Zellen über die drei Katalogfelder der Liste mit Zeilenkennzeichen Nummer"),
         new("BedarfstagKonstruktor", 10, "Zapfprofil Z4, Gruppe 2b: Bezugsart und Bezugsmenge des Tags (Felder bezugsart, bezugsmenge)"),
         // Berichtsvorlagen BV-E6 (Konzept 9.4, 9.7): die Anzeigestufe der Platzhalter in der Kopfzeile.
         new("BerichteKostenSeite", 1, "die Anzeigestufe der Platzhalter (Vorlagenfeldumschalter) ist eine Sitzungseinstellung der Ansicht — kein Katalogfeld"),

@@ -268,7 +268,10 @@ namespace Auslieferungsvorlage.Tests
             // Klimaimports), STRICT von ihrer ersten Zeile an und in der Vorlage LEER - die Auslieferung der Rohwerte
             // ist vertagt.
             //
-            Assert.Equal(198, befund.Strict);
+            // 199 seit dem Schemaschritt 241 (BetriebskalenderFerienlisteSchema): +1 Tab_Betriebskalenderferien (Ferienliste
+            // des Betriebskalenders, Projektdaten), STRICT von ihrer ersten Zeile an und in der Vorlage LEER.
+            //
+            Assert.Equal(199, befund.Strict);
         }
 
         // =============================================================================
