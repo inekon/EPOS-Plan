@@ -1480,7 +1480,7 @@
                     }
                     <table class="epos-raster epos-zapfprofil-ablage-summe">
                         <tbody>
-                            <tr><th scope="row">@Texte.ProfilLabelJahressumme</th><td class="epos-zahl">@Mwh(ps.JahressummeMwh * 1000.0)</td></tr>
+                            <tr><th scope="row">@Texte.ProfilLabelJahressumme</th><td class="epos-zahl">@Zahl(ps.JahressummeMwh, "N1") MWh</td></tr>
                             <tr><th scope="row">@Texte.ProfilLabelSpitze</th><td>@ps.SpitzenstundeText</td></tr>
                         </tbody>
                     </table>
