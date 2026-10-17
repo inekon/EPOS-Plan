@@ -1534,6 +1534,43 @@
         internal static string KmtQuelleErl => MyResource.Resource.KI_KMT_ERL_QUELLE;
         internal static string KmtSortierungName => MyResource.Resource.KMT_SP_SORTIERUNG;
         internal static string KmtSortierungErl => MyResource.Resource.KI_KMT_ERL_SORTIERUNG;
+
+        // ---- Verwaltung „Rückkühlwerke" (K-F5a): Feldnamen sind die Beschriftungen des Stammblatts ----
+        internal static string MaskeRueckkuehlwerk => MyResource.Resource.KI_DLG_MASKE_RKW;
+        internal static string RkwSatzName => MyResource.Resource.RKW_TITEL;
+        internal static string RkwSatzErl => MyResource.Resource.KI_RKW_ERL_SATZ;
+        internal static string RkwBezeichnerName => MyResource.Resource.RKW_LBL_BEZEICHNER;
+        internal static string RkwBezeichnerErl => MyResource.Resource.KI_RKW_ERL_BEZEICHNER;
+        internal static string RkwBeschreibungName => MyResource.Resource.RKW_LBL_BESCHREIBUNG;
+        internal static string RkwBeschreibungErl => MyResource.Resource.KI_RKW_ERL_BESCHREIBUNG;
+        internal static string RkwBauartName => MyResource.Resource.RKW_LBL_BAUART;
+        internal static string RkwBauartErl => MyResource.Resource.KI_RKW_ERL_BAUART;
+        internal static string RkwNennleistungName => MyResource.Resource.RKW_LBL_NENNLEISTUNG;
+        internal static string RkwNennleistungErl => MyResource.Resource.KI_RKW_ERL_NENNLEISTUNG;
+        internal static string RkwAnnaeherungNennName => MyResource.Resource.RKW_LBL_ANNAEHERUNG_NENN;
+        internal static string RkwAnnaeherungNennErl => MyResource.Resource.KI_RKW_ERL_ANNAEHERUNG_NENN;
+        internal static string RkwAnnaeherungWegName => MyResource.Resource.RKW_LBL_ANNAEHERUNG_WEG;
+        internal static string RkwAnnaeherungWegErl => MyResource.Resource.KI_RKW_ERL_ANNAEHERUNG_WEG;
+        internal static string RkwVentilatorNennName => MyResource.Resource.RKW_LBL_VENTILATOR_NENN;
+        internal static string RkwVentilatorNennErl => MyResource.Resource.KI_RKW_ERL_VENTILATOR_NENN;
+        internal static string RkwVentilatorRegelungName => MyResource.Resource.RKW_LBL_VENTILATOR_REGELUNG;
+        internal static string RkwVentilatorRegelungErl => MyResource.Resource.KI_RKW_ERL_VENTILATOR_REGELUNG;
+        internal static string RkwVentilatorStufenName => MyResource.Resource.RKW_LBL_VENTILATOR_STUFEN;
+        internal static string RkwVentilatorStufenErl => MyResource.Resource.KI_RKW_ERL_VENTILATOR_STUFEN;
+        internal static string RkwVentilatorDrehzahlMinName => MyResource.Resource.RKW_LBL_VENTILATOR_DREHZAHL_MIN;
+        internal static string RkwVentilatorDrehzahlMinErl => MyResource.Resource.KI_RKW_ERL_VENTILATOR_DREHZAHL_MIN;
+        internal static string RkwBefeuchtungWirkungsgradName => MyResource.Resource.RKW_LBL_BEFEUCHTUNG_WIRKUNGSGRAD;
+        internal static string RkwBefeuchtungWirkungsgradErl => MyResource.Resource.KI_RKW_ERL_BEFEUCHTUNG_WIRKUNGSGRAD;
+        internal static string RkwBefeuchtungAbName => MyResource.Resource.RKW_LBL_BEFEUCHTUNG_AB;
+        internal static string RkwBefeuchtungAbErl => MyResource.Resource.KI_RKW_ERL_BEFEUCHTUNG_AB;
+        internal static string RkwVerdunstungFaktorName => MyResource.Resource.RKW_LBL_VERDUNSTUNG_FAKTOR;
+        internal static string RkwVerdunstungFaktorErl => MyResource.Resource.KI_RKW_ERL_VERDUNSTUNG_FAKTOR;
+        internal static string RkwEindickungName => MyResource.Resource.RKW_LBL_EINDICKUNG;
+        internal static string RkwEindickungErl => MyResource.Resource.KI_RKW_ERL_EINDICKUNG;
+        internal static string RkwDriftAnteilName => MyResource.Resource.RKW_LBL_DRIFT_ANTEIL;
+        internal static string RkwDriftAnteilErl => MyResource.Resource.KI_RKW_ERL_DRIFT_ANTEIL;
+        internal static string RkwFreikuehlungSchaltungName => MyResource.Resource.RKW_LBL_FREIKUEHLUNG_SCHALTUNG;
+        internal static string RkwFreikuehlungSchaltungErl => MyResource.Resource.KI_RKW_ERL_FREIKUEHLUNG_SCHALTUNG;
         internal static string KmGeraetName => MyResource.Resource.KI_DLG_KM_GERAET_NAME;
 
         // ---- KU3-4c: der Erzeugerdialog „Kältemaschinen im Projekt" ----

@@ -267,6 +267,14 @@ public sealed class KiMaskenabdeckungWacheTests
         new("KaeltemittelDialog", 12),
         // ---- Ende KM4-E3-c ----
 
+        // ---- K-F5a (Verwaltung „Rückkühlwerke") ----
+        // Das Stammblatt: Name und Beschreibung (Textfeld), Bauart, Weg der Annäherung, Ventilatorregelung und Schaltung
+        // der freien Kühlung (Auswahlfeld), Nennleistung, Annäherung, Ventilatorleistung, kleinste Drehzahl, die zwei
+        // Felder der Befeuchtung und die drei der Wasserbilanz (Zahlenfeld), die Stufen (Ganzzahlfeld). Die Feldkarte
+        // (KiDialoge, Maske Rueckkuehlwerk) führt alle sechzehn, dazu die Satzwahl.
+        new("RueckkuehlwerkDialog", 16),
+        // ---- Ende K-F5a ----
+
         // ---- ETAPPE E17 (V-G11, nicht monetarisierbare Wirkungen) ----
         // Der Freitext der Seite (ein mehrzeiliges Textfeld) weicht der Liste im Baustein
         // WirkungenListe: je Zeile Kategorie, Beschreibung, Dauer und drei Wirkungsgrade -

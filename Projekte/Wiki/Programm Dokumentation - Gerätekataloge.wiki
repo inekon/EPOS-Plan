@@ -140,6 +140,16 @@ Die Verwaltung ''Kältemittel'' (Administration → Daten & Import → ''Kältem
 
 Fehlende Angaben (leeres GWP, leeres F-Gas-Kennzeichen) heißen ''unbekannt''; die Zulässigkeitsprüfung stuft ein solches Kältemittel dann als nicht prüfbar ein ([[Programm Dokumentation/Kälteerzeugung#kaeltemittel-zulaessigkeit|Kälteerzeugung: Zulässigkeit des Kältemittels]]). Hat eine Datenbank keine Kältemitteltabelle, meldet die Verwaltung das und bleibt leer.
 
+== Rückkühlwerke ==
+{{Anker|rueckkuehlwerke}}
+
+Die Verwaltung ''Rückkühlwerke'' (Administration → Daten & Import → ''Rückkühlwerke…'') pflegt die Rückkühlwerke, die eine wassergekühlte Kältemaschine als eigenes Glied an ihre Rückkühlung bekommen kann. Die Liste zeigt je Satz ''Name'', ''Bauart'', ''Nennleistung'', ''Annäherung'', ''Ventilator'' und ''Freikühlung''. Das Stammblatt gliedert die Angaben in die Gruppen ''Bauart und Nennpunkt'', ''Annäherung'', ''Ventilator'', ''Befeuchtung und Wasser'' (nur bei adiabaten und hybriden Kühlern und bei Kühltürmen) und ''Freikühlung''.
+
+* '''Leere Felder''' heißen Vorgabe: Das Feld zeigt den Wert, mit dem gerechnet wird, als Platzhalter, etwa die Annäherung der passenden Rückkühlart.
+* '''Nasse Bauarten''' (adiabat, hybrid, Kühlturm) sind Verdunstungskühlanlagen im Sinn der 42. BImSchV; das Stammblatt weist darauf hin.
+* '''Ausgelieferte Sätze''' tragen das Schloss und sind nur lesbar; ''Duplizieren…'' legt eine eigene Kopie an, ''Schloss aufheben…'' macht den Satz zu einem eigenen.
+* '''Löschen''' geht nur für einen Satz, den kein Projekt gewählt hat; sonst nennt die Verwaltung die Zahl der Projektanlagen.
+
 == PV-Module ==
 {{Anker|pv-module}}
 
