@@ -207,3 +207,28 @@ Bitte:
      allgemeinen Meldungsliste ja/nein (wie oft), Zonenperioden aus der Datei an der Zone (erwartet 0);
    - nur gbXML: Wird **X1** angeboten? Mit X1: Zonenzahl gleich dem Ausgangsgebäude ja/nein, Zonenperioden je Zone (Anzahl).
 4. Kopie und Dateien in `C:\Temp\N4\` liegen lassen. Nichts committen, nichts pushen; nur Zählungen und Ja/Nein.
+
+## 12 · 2026-10-17 06:41 UTC · Prüfung: Abweichung von 7 bei der Teilkatalog-Zählung (nur lesen)
+
+Bei der Übernahme des Bauteilkatalogs (E159, 16.10.) zählte die Vorschau **7 913** Aufbauten mit Teilkatalog, die Datenbank hat
+danach **7 906** Aufbauten mit Teilkatalog in der Quellenangabe. Zugleich blieben **7** Aufbauten abgelehnt („Abschnitt ohne
+Flächenanteil“). Vermutung: Die Vorschau zählt jeden Aufbau mit Eintrag in `Katalog_Zuordnung.csv`, auch die abgelehnten;
+geschrieben wird der Teilkatalog nur in übernommene Sätze. Bitte prüfen, ob das stimmt.
+
+**Nur lesen.** `Kenndaten.sqlite` des Anwenders nur lesend öffnen (`mode=ro`) oder auf einer frischen Kopie arbeiten; der
+Bauteilkatalog-Import nur als Vorschau („Darf schreiben: False“). Nichts schreiben, nichts committen, nichts pushen. In der Antwort
+nur Zählungen und Ja/Nein — keine Namen, keine Werte, keine Kennungen.
+
+Bitte:
+1. Stand: Klon per Fast-Forward auf mindestens `61ee18040` (Bau nur, falls für die Vorschau nötig).
+2. **Vorschau** des Bauteilkatalog-Imports über denselben Export samt `Katalog_Zuordnung.csv` wie bei E159, gegen die
+   Datenbank des Anwenders. Melden: Aufbauten abgelehnt (Anzahl, Gründe mit Anzahl); Aufbauten mit Teilkatalog laut Vorschau.
+3. **Menge A:** die Kennungen der Quelle der abgelehnten Aufbauten (aus der Vorschau).
+   **Menge B:** die Aufbauten, die in `Katalog_Zuordnung.csv` einen Teilkatalog haben, in der Datenbank aber **keinen**
+   Teilkatalog in der Quellenangabe tragen (Zuordnung Quelle ↔ Datenbanksatz über die Wiedererkennung des Imports).
+   Melden: |A|, |B|, |A ∩ B|. Erwartet 7 / 7 / 7.
+4. Falls nicht gleich: die Sätze in B ohne A nach Ursache zählen, z. B. als Dublette zusammengeführt, nicht wiedererkannt,
+   Quellenangabe von Hand geändert (Herkunft MANUELL), Teilkatalog-Kennung ohne Eintrag in `Katalog.csv`, sonstiges.
+5. Zusätzlich je Satz in A (nur Zählung): Wie viele Abschnitte hat er, und wie vielen fehlt der Flächenanteil? Melden als
+   Verteilung, z. B. „2 Abschnitte / 2 fehlen: n“.
+6. Hilfsprogramme danach löschen; Repository unverändert lassen.
