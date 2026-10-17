@@ -389,6 +389,19 @@ namespace WindowsFormsApplication1
                             spalten.Add(new CsvSpalte(MyResource.Resource.CHART_LEGENDE_NETZEINSPEISUNG,
                                                       netz.EinspeisungKw));
                         break;
+                    case REIHE_BHKW_EINSPEISUNG:
+                        // EB-2: dieselben Reihen wie im Bild - nur, wenn gewählt.
+                        netz ??= SimulationErgebnisCtrl.NetzreihenViertelstunde(sim);
+                        if (netz?.BhkwEinspeisungKw != null)
+                            spalten.Add(new CsvSpalte(MyResource.Resource.CHART_LEGENDE_BHKW_EINSPEISUNG,
+                                                      netz.BhkwEinspeisungKw));
+                        break;
+                    case REIHE_PV_ABREGELUNG:
+                        netz ??= SimulationErgebnisCtrl.NetzreihenViertelstunde(sim);
+                        if (netz?.PvAbregelungKw != null)
+                            spalten.Add(new CsvSpalte(MyResource.Resource.CHART_LEGENDE_PV_ABREGELUNG,
+                                                      netz.PvAbregelungKw));
+                        break;
                     case "PROFIL_LASTGANG":
                         spalten.Add(new CsvSpalte(MyResource.Resource.CHART_LEGENDE_PROFIL_LASTGANG,
                                                   _strombedarf.Strombedarf_viertelStundenwerte));

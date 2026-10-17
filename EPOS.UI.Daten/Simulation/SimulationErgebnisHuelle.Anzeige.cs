@@ -746,6 +746,8 @@ namespace WindowsFormsApplication1
             d.MitVergleich = vergleich != null;
             d.Kacheln = Kacheln(k, erg, kontext);
             d.Kennzahlen = SpeicherKennzahlenBlock.Zeilen(k, erg, kontext, kv, vergleich);
+            // EB-2: die Standby-Reihe ist wählbar, wenn sie im Raster des Betriebsbilds vorliegt.
+            d.MitStandby = kontext?.Eingang != null && SpeicherStandbyKw(kontext.Eingang.Anzahl) != null;
             Ampel(d, k, kontext);
 
             // Warnzeile für einen Lauf ohne jede Erzeugung (Abnahmebefund 2). Bedingung
@@ -1044,6 +1046,14 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
+        /// <summary>Trägt die Reihe einen Wert über 0? (EB-2: eine Abregelung ohne Grenze ist keine Wahl.)</summary>
+        private static bool HatWerte(double[] werte)
+        {
+            if (werte == null) return false;
+            foreach (double w in werte) if (w > 0.0) return true;
+            return false;
+        }
+
         private StromgangDaten StromgangDaten(ErgebnisPraesenz p)
         {
             var d = new StromgangDaten
@@ -1075,6 +1085,12 @@ namespace WindowsFormsApplication1
                                             netz?.NetzbezugKw != null));
             mitNetz.Add(new Ganglinienreihe(REIHE_NETZEINSPEISUNG, MyResource.Resource.CHART_LEGENDE_NETZEINSPEISUNG,
                                             netz?.EinspeisungKw != null));
+            // EB-2: der BHKW-Anteil der Einspeisung („eingespeister Strom“) und die PV-Abregelung, ebenfalls ab Werk aus;
+            // die Abregelung nur, wenn der Lauf eine hat (Einspeisegrenze).
+            mitNetz.Add(new Ganglinienreihe(REIHE_BHKW_EINSPEISUNG, MyResource.Resource.CHART_LEGENDE_BHKW_EINSPEISUNG,
+                                            netz?.BhkwEinspeisungKw != null));
+            mitNetz.Add(new Ganglinienreihe(REIHE_PV_ABREGELUNG, MyResource.Resource.CHART_LEGENDE_PV_ABREGELUNG,
+                                            HatWerte(netz?.PvAbregelungKw)));
             d.Reihen = mitNetz;
             return d;
         }

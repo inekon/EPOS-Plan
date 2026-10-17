@@ -54,6 +54,9 @@ namespace WindowsFormsApplication1
         /// <summary>Die Fassung der Kennzahl Wasserkosten des Rückkühlwerks (Katalog v24, KB-7c2).</summary>
         internal const int FASSUNG_WASSERKOSTEN_RUECKKUEHLWERK = 24;
 
+        /// <summary>Die Fassung der Kennzahlen Einspeisung BHKW, Abregelung PV und Standby Speichersystem (Katalog v26, EB-2).</summary>
+        internal const int FASSUNG_ERGEBNISREIHEN = 26;
+
         /// <summary>
         /// Die Kennzahlen der Kältemaschine als Anlage (Schemaschritt 183) kamen mit Katalog v12 — ihre erzeugten
         /// Einträge (Stammzahl, Beschriftung, Einheit) stehen erst ab dieser Fassung, frühere Listen bleiben, wie sie

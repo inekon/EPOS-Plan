@@ -1326,6 +1326,21 @@ namespace WindowsFormsApplication1
             /// Flotte führt.
             /// </summary>
             public double[] EinspeisungKw;
+
+            /// <summary>
+            /// EB-2: der BHKW-Anteil der Netzeinspeisung („eingespeister Strom“) — mit Speicherflotte deren
+            /// BHKW-Einspeisung, sonst die BHKW-Einspeisung der Viertelstundenbilanz; dieselbe Menge wie
+            /// <see cref="BhkwEinspeisungMwh"/>. Ein Anteil von <see cref="EinspeisungKw"/>, keine weitere Einspeisung.
+            /// <c>null</c> ohne BHKW.
+            /// </summary>
+            public double[] BhkwEinspeisungKw;
+
+            /// <summary>
+            /// EB-2: die PV-Abregelung an der Einspeisegrenze — mit Speicherflotte deren Abregelung, sonst die Abregelung
+            /// nach der Speicherladung (<see cref="SimulationControl.PvEinspeisungAufteilen"/>); dieselbe Menge wie
+            /// <see cref="PvAbregelungMwh"/>. Nicht Teil der Einspeisung. <c>null</c> ohne Photovoltaik.
+            /// </summary>
+            public double[] PvAbregelungKw;
         }
 
         /// <summary>Die Netzreihen des Laufs (<see cref="Netzreihen"/>); <c>null</c> ohne Lauf.</summary>
@@ -1335,14 +1350,21 @@ namespace WindowsFormsApplication1
             var r = new Netzreihen { NetzbezugKw = sim.Rest_Strombedarf_viertelstuendlich };
             if (sim.Speicherflottennetzbilanz != null)
             {
-                r.EinspeisungKw = sim.Speicherflottennetzbilanz.NetzeinspeisungKw;
+                SpeicherFlottenNetzbilanz f = sim.Speicherflottennetzbilanz;
+                r.EinspeisungKw = f.NetzeinspeisungKw;
+                r.BhkwEinspeisungKw = sim.bSimulationBHKW ? f.BhkwNetzeinspeisungKw : null;
+                r.PvAbregelungKw = sim.bSimulationPV ? f.PvAbregelungKw : null;
                 return r;
             }
 
             double[] pv = null;
             if (sim.bSimulationPV && sim.simulation_pv != null)
-                sim.PvEinspeisungAufteilen(out pv, out _);
+            {
+                sim.PvEinspeisungAufteilen(out pv, out double[] abregelung);
+                r.PvAbregelungKw = abregelung;
+            }
             double[] bhkw = sim.bSimulationBHKW ? sim.BhkwEinspeisung_viertelstuendlich : null;
+            r.BhkwEinspeisungKw = bhkw;
             if (pv == null && bhkw == null) return r;
 
             int n = Math.Max(pv?.Length ?? 0, bhkw?.Length ?? 0);

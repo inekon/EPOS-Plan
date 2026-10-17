@@ -406,6 +406,13 @@
     // die Reihenliste und nicht eine zweite Liste, die man mitpflegen muss.
     private readonly HashSet<string> _abgewaehlt = new HashSet<string>(StringComparer.Ordinal);
 
+    // EB-2: die zuschaltbaren Reihen (ab Werk aus) - gemerkt wird hier die Zuwahl. Ohne Zuwahl bleibt das Bild,
+    // wie es war.
+    private readonly HashSet<string> _zugeschaltet = new HashSet<string>(StringComparer.Ordinal);
+
+    /// <summary>Der Schlüssel der zuschaltbaren Standby-Reihe (EB-2).</summary>
+    public const string REIHE_STANDBY = "SPEICHER_STANDBY";
+
     /// <summary>
     /// Die wählbaren Reihen in der Reihenfolge des Bildes, jede mit DERSELBEN
     /// Ressource, die auch in der Legende steht (Doku_Simulationsergebnis_Darstellung.md,
@@ -413,7 +420,7 @@
     /// Berechnungsart der Auslegungsoptimierung — der Simulationslauf fährt
     /// Dauernutzung oder Preissteuerung.
     /// </summary>
-    private static IEnumerable<(string Schluessel, string Text)> Reihenwahl
+    private IEnumerable<(string Schluessel, string Text)> Reihenwahl
     {
         get
         {
@@ -425,13 +432,24 @@
                           Resource.OPT_BETRIEB_R_LEISTUNG);
             yield return (WindowsFormsApplication1.SpeicherBetriebsbild.REIHE_SOC,
                           Resource.PEAK_CHART_Y2);
+            // EB-2: der Standby des Speichersystems - nur, wenn der Lauf einen führt; ab Werk aus.
+            if (Daten.MitStandby)
+                yield return (REIHE_STANDBY, Resource.CHART_LEGENDE_SPEICHER_STANDBY);
         }
     }
 
-    private bool ReiheAn(string schluessel) => !_abgewaehlt.Contains(schluessel);
+    private static bool Zuschaltbar(string schluessel) => schluessel == REIHE_STANDBY;
+
+    private bool ReiheAn(string schluessel)
+        => Zuschaltbar(schluessel) ? _zugeschaltet.Contains(schluessel) : !_abgewaehlt.Contains(schluessel);
 
     private void ReiheGesetzt(string schluessel, bool an)
     {
+        if (Zuschaltbar(schluessel))
+        {
+            if (an) _zugeschaltet.Add(schluessel); else _zugeschaltet.Remove(schluessel);
+            return;
+        }
         if (an) _abgewaehlt.Remove(schluessel); else _abgewaehlt.Add(schluessel);
     }
 

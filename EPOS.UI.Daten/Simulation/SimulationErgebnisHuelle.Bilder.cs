@@ -912,13 +912,33 @@ namespace WindowsFormsApplication1
             // DIE REIHEN KOMMEN AUS DERSELBEN STELLE WIE FUER DAS PNG
             // (SpeicherBetriebsbild) - nur der Ausgabeweg ist ein anderer: Das
             // Modell geht in den SVG-Baustein, die Bytes weiter in den Bericht.
+            // EB-2: der Standby des Speichersystems - nur gewählt (ab Werk aus), sonst bleibt das Bild, wie es war.
+            List<ChartRenderer.Reihe> leistungen = SpeicherBetriebsbild.Leistungsreihen(eingang, erg, dt, a.Reihen);
+            double[] standby = a.Reihen != null && a.Reihen.Contains(REIHE_SPEICHER_STANDBY)
+                ? SpeicherStandbyKw(eingang.Anzahl)
+                : null;
+            if (standby != null)
+                leistungen.Add(Reihe(MyResource.Resource.CHART_LEGENDE_SPEICHER_STANDBY, standby, Farbrolle.REST));
+
             return ChartRenderer.SpeicherbetriebModell(
                 MyResource.Resource.SP_CHART_TITEL_BETRIEB,
-                SpeicherBetriebsbild.Leistungsreihen(eingang, erg, dt, a.Reihen),
+                leistungen,
                 MyResource.Resource.PEAK_CHART_Y,
                 SpeicherBetriebsbild.Ladezustand(erg, a.Reihen),
                 MyResource.Resource.PEAK_CHART_Y2,
                 a.Sortiert);
+        }
+
+        /// <summary>
+        /// EB-2: der Standby des Speichersystems je Intervall [kW] (<c>ZeitreihenExtraktor.SpeichersystemEigenverbrauchKw</c>,
+        /// dieselbe Reihe wie <c>SPEICHER_EIGENVERBRAUCH</c>); <c>null</c> ohne Standby oder bei einem anderen Raster als
+        /// dem des Bildes (<paramref name="laenge"/>).
+        /// </summary>
+        internal double[] SpeicherStandbyKw(int laenge)
+        {
+            if (sim == null || !sim.bSimulationSSP || !(sim.SpeichersystemEigenverbrauchKwh > 0.0)) return null;
+            double[] r = ZeitreihenExtraktor.SpeichersystemEigenverbrauchKw(sim);
+            return r != null && r.Length == laenge && laenge > 0 ? r : null;
         }
 
         // ---- B6: der Monatsstapel der Autarkie-Analyse -------------------
@@ -1182,6 +1202,15 @@ namespace WindowsFormsApplication1
         /// <summary>Welle RZ: die Netzeinspeisung im Stromgang — zuschaltbar, ab Werk aus.</summary>
         internal const string REIHE_NETZEINSPEISUNG = "NETZEINSPEISUNG";
 
+        /// <summary>EB-2: der BHKW-Anteil der Netzeinspeisung („eingespeister Strom“) im Stromgang — zuschaltbar, ab Werk aus.</summary>
+        internal const string REIHE_BHKW_EINSPEISUNG = "BHKW_EINSPEISUNG";
+
+        /// <summary>EB-2: die PV-Abregelung an der Einspeisegrenze im Stromgang — zuschaltbar, ab Werk aus.</summary>
+        internal const string REIHE_PV_ABREGELUNG = "PV_ABREGELUNG";
+
+        /// <summary>EB-2: der Standby des Speichersystems im Betriebsbild des Stromspeichers — zuschaltbar, ab Werk aus.</summary>
+        internal const string REIHE_SPEICHER_STANDBY = "SPEICHER_STANDBY";
+
         internal static double[] StromverbrauchKessel(SimulationControl sim)
             => sim.simulation_spk.Stromverbrauch_stuendlich;
 
@@ -1223,7 +1252,8 @@ namespace WindowsFormsApplication1
 
             // Welle RZ: „woher kommt der Strom" samt Netz - Bezug und Einspeisung als Linien, nur gewählt. Ohne
             // Wahl bleibt die Linienliste, wie sie war (das Bild byte-gleich).
-            if (wahl.Contains(REIHE_NETZBEZUG) || wahl.Contains(REIHE_NETZEINSPEISUNG))
+            if (wahl.Contains(REIHE_NETZBEZUG) || wahl.Contains(REIHE_NETZEINSPEISUNG)
+                || wahl.Contains(REIHE_BHKW_EINSPEISUNG) || wahl.Contains(REIHE_PV_ABREGELUNG))
             {
                 SimulationErgebnisCtrl.Netzreihen netz = SimulationErgebnisCtrl.NetzreihenViertelstunde(sim);
                 if (wahl.Contains(REIHE_NETZBEZUG) && netz?.NetzbezugKw != null)
@@ -1232,6 +1262,16 @@ namespace WindowsFormsApplication1
                 if (wahl.Contains(REIHE_NETZEINSPEISUNG) && netz?.EinspeisungKw != null)
                     linien.Add(Reihe(MyResource.Resource.CHART_LEGENDE_NETZEINSPEISUNG, netz.EinspeisungKw,
                                      Farbrolle.UEBERSCHUSS));
+                // EB-2: der BHKW-Anteil der Einspeisung und die Abregelung - nur gewählt. Der Anteil steckt in der
+                // Netzeinspeisung (keine zweite Einspeisung), die Abregelung nicht.
+                if (wahl.Contains(REIHE_BHKW_EINSPEISUNG) && netz?.BhkwEinspeisungKw != null)
+                    linien.Add(new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_BHKW_EINSPEISUNG,
+                                                       Kopie(netz.BhkwEinspeisungKw), Farbrolle.STROM_BHKW,
+                                                       ChartRenderer.Stapelart.Keine,
+                                                       ChartRenderer.Strichart.Gestrichelt, 0f));
+                if (wahl.Contains(REIHE_PV_ABREGELUNG) && netz?.PvAbregelungKw != null)
+                    linien.Add(Reihe(MyResource.Resource.CHART_LEGENDE_PV_ABREGELUNG, netz.PvAbregelungKw,
+                                     Farbrolle.REST));
             }
 
             // „GESAMT" ist die Kontrolllinie über allem (:220-221). Sie addiert

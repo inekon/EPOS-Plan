@@ -56326,6 +56326,12 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="CHART_LEGENDE_PV_ABREGELUNG" xml:space="preserve">
     <value>PV curtailment</value>
   </data>
+  <data name="CHART_LEGENDE_BHKW_EINSPEISUNG" xml:space="preserve">
+    <value>Electricity fed in (CHP share)</value>
+  </data>
+  <data name="CHART_LEGENDE_SPEICHER_STANDBY" xml:space="preserve">
+    <value>Storage system standby</value>
+  </data>
   <data name="SIM_CHK_PV_AUFTEILEN" xml:space="preserve">
     <value>Split PV (self-consumption + surplus)</value>
   </data>

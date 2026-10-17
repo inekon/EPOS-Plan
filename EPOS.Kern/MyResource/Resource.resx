@@ -56333,6 +56333,12 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="CHART_LEGENDE_PV_ABREGELUNG" xml:space="preserve">
     <value>PV-Abregelung</value>
   </data>
+  <data name="CHART_LEGENDE_BHKW_EINSPEISUNG" xml:space="preserve">
+    <value>eingespeister Strom (BHKW-Anteil)</value>
+  </data>
+  <data name="CHART_LEGENDE_SPEICHER_STANDBY" xml:space="preserve">
+    <value>Standby Speichersystem</value>
+  </data>
   <data name="SIM_CHK_PV_AUFTEILEN" xml:space="preserve">
     <value>PV aufteilen (Eigenverbrauch + Überschuss)</value>
   </data>

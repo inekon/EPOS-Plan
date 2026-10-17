@@ -23252,6 +23252,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eingespeister Strom (BHKW-Anteil) ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_BHKW_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_BHKW_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eigenverbrauch (Direkt) ähnelt.
         /// </summary>
         public static string CHART_LEGENDE_EIGENVERBRAUCH_DIREKT {
@@ -23437,6 +23446,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_LEGENDE_SOLAR_SPEICHER {
             get {
                 return ResourceManager.GetString("CHART_LEGENDE_SOLAR_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standby Speichersystem ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_SPEICHER_STANDBY {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_SPEICHER_STANDBY", resourceCulture);
             }
         }
         

@@ -158,6 +158,14 @@ namespace WindowsFormsApplication1
         /// <summary>Kompletter Ergebnisbaum des letzten Simulationslaufs (null = keiner).</summary>
         public ErgebnisModel Ergebnis;
 
+        /// <summary>
+        /// EB-2 (EB-Q3): die KWK-Einspeisung der gespeicherten Strommatrix [MWh/a] — der Rückfall der Kennzahl
+        /// „Einspeisung BHKW“ für ein Ergebnis, das die Einspeisung noch nicht führt
+        /// (<see cref="ErgebnisBHKWModel.StromeinspeisungMwh"/> = <c>null</c>). <c>null</c> ohne Matrix; dann zeigt die
+        /// Kennzahl „—“, nie eine stille Null.
+        /// </summary>
+        public double? BhkwEinspeisungStrommatrixMwh;
+
         /// <summary>Zeitstempel des Simulationslaufs (null = kein Ergebnis).</summary>
         public DateTime? SimulationsStand;
 
