@@ -1828,6 +1828,12 @@ unmittelbar nach der Bewegung: Balken sichtbar und **|Balkenmitte − Maus x| �
 nennt die Zeile **Stunde und Datum**. Über die ganze Bewegung: die Pfade der Reihen sind **dieselben Elemente** mit
 unverändertem `d`, **0 Mutationen** (MutationObserver auf der Datenfläche).
 
+**Zeigertext unter dem Zeiger (Befund 17.10.2026).** Je Schritt außerdem: Der Zeigertext (`.epos-diagramm-zeigertext`)
+steht in der Zeile **unter** dem Bild (nicht über Tick-Beschriftung und Achsentitel), ganz in der Zeile, und mittig unter
+der Maus (**|Textmitte − Maus x| ≤ 1 px**) — wo er sonst aus der Zeile liefe, bündig an ihrem linken bzw. rechten Rand.
+Ergebnis vom 17.10.2026: mittig 22, links geklemmt 8, rechts geklemmt 11 von 41 Schritten; die Gegenprobe ohne Tafel
+verfehlt auch hier (0 von 41). Vorher gab es kein eigenes Element: Die Zeile stand linksbündig unter dem Bild.
+
 **Gegenprobe** (läuft mit): Die Probe liefert das Modul so aus, dass es die Tafel ablehnt — dann zeichnet der Baustein
 Linie und Zeile nach einem Rundlauf selbst, und die Linie steht nicht im Bild der Maus. Sie muss verfehlen.
 

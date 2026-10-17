@@ -2226,6 +2226,22 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     font-variant-numeric: tabular-nums;
 }
 
+/* DER ZEIGERTEXT STEHT UNTER DEM ZEIGER (Befund 17.10.2026). Er steht in der eigenen Zeile
+   UNTER dem Bild - unter Tick-Beschriftung und Achsentitel, nie darueber - und rueckt
+   (position: relative, left) unter die Zeigerstelle: Das Modul setzt left auf den Bildpunkt
+   genau (Mitte unter dem Balken, an den Raendern in die Zeile geklemmt), ohne Modul setzt der
+   Baustein left p % mit translate -p %. Ein langer Text bricht in der Zeile um, statt aus
+   dem Bild zu laufen. Die eigene Flaeche trennt ihn von allem, was darunter liegt. */
+.epos-diagramm-zeigertext {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    padding: 0 4px;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-karte-flaeche);
+}
+
 /* DER FARBWAEHLER AM BILD - eine kleine Ueberlagerung am Legendeneintrag.
    Die Lage kommt als Prozentwert vom Aufrufer (das SVG skaliert mit seiner
    Breite), das Mass steht hier. */
@@ -4737,6 +4753,15 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 }
 :is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-zeigerzeile:empty {
     display: none;
+}
+/* In der Kennzahlenecke steht der Zeigertext als Kasten oben rechts im Bild, nicht unter dem
+   Zeiger: Lage und Flaeche der Zeile gelten, die Lage des Moduls bzw. Bausteins nicht. */
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-zeigerzeile > .epos-diagramm-zeigertext {
+    position: static !important;
+    translate: none !important;
+    padding: 0;
+    border: 0;
+    background: none;
 }
 :is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-svg-flaeche,
 :is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-chartbild-platzhalter {
