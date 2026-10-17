@@ -612,6 +612,36 @@ namespace WindowsFormsApplication1
                                       .Where(b => b.Raum != null && offen.Contains(b.Raum.Kennung)).ToList();
         }
 
+        /// <summary>
+        /// <b>Ordnet Räume der Zone eines Profils zu, ohne den Plan neu zu bilden</b> (F7, ZZ-B Nachzug): für die Räume ohne Zone
+        /// der Projektdatei — deren Zonen und alle Schritte von Hand bleiben. Ziel ist die erste Zone mit diesem Profil und
+        /// gleicher Beheizung (leer zählt als passend); fehlt sie, wird eine Zone mit dem Profilnamen angelegt. Alle oder keiner:
+        /// lehnt <see cref="Zuordnen"/> ab, entfällt auch die eben angelegte Zone. Ein leerer oder unbekannter Schlüssel lehnt ab.
+        /// </summary>
+        internal Planschritt InProfilzoneZuordnen(IEnumerable<string> raeume, string profilschluessel)
+        {
+            string s = (profilschluessel ?? "").Trim();
+            Planprofil profil = s.Length == 0 ? null : Raumprofilschluessel.Profil(Vorbelegung, s);
+            if (profil == null) return Ab(PLAN_PROFIL_UNBEKANNT, s);
+            List<AbbildRaum> ziel = (raeume ?? Enumerable.Empty<string>()).Distinct(StringComparer.Ordinal)
+                .Select(k => Gebaeude.Raeume.FirstOrDefault(r => string.Equals(r.Kennung, k, StringComparison.Ordinal))).Where(r => r != null).ToList();
+            if (ziel.Count == 0) return Ab(PLAN_RAUM_UNBEKANNT, string.Join(", ", raeume ?? Enumerable.Empty<string>()));
+            bool warm = Beheizt(ziel[0]);
+            Planzone zone = _zonen.FirstOrDefault(z => z.Profil != null
+                                                      && (z.Profil == profil || string.Equals(Raumprofilschluessel.AusProfil(Vorbelegung, z.Profil), s, StringComparison.Ordinal))
+                                                      && (ZoneBeheizt(z.Schluessel) is not bool b || b == warm));
+            bool neu = zone == null;
+            if (neu)
+            {
+                Planschritt angelegt = ProfilzoneAnlegen(FreierName(profil.Name), profil);
+                if (!angelegt.Ok) return angelegt;
+                zone = Zone(angelegt.Schluessel);
+            }
+            Planschritt e = Zuordnen(ziel.Select(r => r.Kennung), zone.Schluessel);
+            if (!e.Ok && neu) _zonen.Remove(zone);
+            return e.Ok ? new Planschritt(true, null, zone.Schluessel) : e;
+        }
+
         /// <summary><b>Nimmt alle Wahlen von Hand zurück</b> — der Plan zeigt wieder die Vorschläge der Rangfolge.</summary>
         internal Planschritt VorschlaegeZuruecknehmen()
         {

@@ -68,6 +68,46 @@ namespace EPOS.Kern.Tests
             Assert.Equal(e.Raumvorschlaege.Select(b => b.Raum.Kennung), plan.Restvorschlaege().Select(b => b.Raum.Kennung));
         }
 
+        /// <summary>
+        /// ZZ-B Nachzug: <see cref="Zonenplan.InProfilzoneZuordnen"/> ordnet einen Raum ohne Zone der Zone seines Profils zu, ohne
+        /// den Plan neu zu bilden — die Zone der Projektdatei bleibt, die übrigen Räume bleiben offen; ein unbekannter Schlüssel
+        /// lehnt ab und ändert nichts.
+        /// </summary>
+        [Fact]
+        public void Raum_ohne_Zone_geht_in_die_Zone_seines_Profils_ohne_Neubildung()
+        {
+            string p = SqprojProbenErzeuger.TempPfad("raumvorschlag");
+            _pfade.Add(p);
+            SqprojAbbild projekt = SqprojLeser.Lesen(SqprojProbenErzeuger.Unvollstaendig().Schreiben(p));
+            GebaeudeAbbild a = SqprojProbenErzeuger.IfcAbbild();
+            a.Gebaeude[0].Raeume.Single(r => r.Name == "Raum X").Raumtyp = "mrtConference";   // eindeutig 4
+            Zonenplan plan = Zonenplan.Vorschlag(a, 0, vorbelegung: Raumnutzungsvorbelegung.Vorgabe);
+            SqprojZonen.Uebernehmen(plan, projekt, SqprojRaumabgleich.Bilden(projekt, a.Gebaeude[0]));
+            Planzone simulation = Assert.Single(plan.Zonen);
+
+            Assert.False(plan.InProfilzoneZuordnen(new[] { plan.Gebaeude.Raeume.Single(r => r.Name == "Raum C").Kennung }, "kein Profil").Ok);
+            Assert.False(plan.InProfilzoneZuordnen(new[] { "unbekannt" }, "4").Ok);
+            Assert.Single(plan.Zonen);
+
+            Raumprofilbefund x = plan.Restvorschlaege().Single(b => b.Raum.Name == "Raum X");
+            Planschritt s = plan.InProfilzoneZuordnen(new[] { x.Raum.Kennung }, x.Vorschlag);
+            Assert.True(s.Ok);
+            Planzone ziel = plan.Zone(s.Schluessel);
+            Assert.Equal(Raumprofilschluessel.Profil(plan.Vorbelegung, "4"), ziel.Profil);
+            Assert.Equal(s.Schluessel, plan.ZoneVon(x.Raum.Kennung));
+            Assert.Equal("Simulation", simulation.Name);
+            Assert.Contains("Raum A", plan.RaeumeVon(simulation.Schluessel).Select(r => r.Name));
+            Assert.Equal(new[] { "raum b ", "Raum C", "Raum Y" }, plan.NichtZugeordnet.Select(r => r.Name));
+            Assert.DoesNotContain(plan.Restvorschlaege(), b => b.Raum.Name == "Raum X");
+
+            // Ein zweiter Raum mit demselben Profil geht in dieselbe Zone, es entsteht keine weitere.
+            int zonen = plan.Zonen.Count;
+            Planschritt c = plan.InProfilzoneZuordnen(new[] { plan.Gebaeude.Raeume.Single(r => r.Name == "Raum C").Kennung }, "4");
+            Assert.True(c.Ok);
+            Assert.Equal(s.Schluessel, c.Schluessel);
+            Assert.Equal(zonen, plan.Zonen.Count);
+        }
+
         [Fact]
         public void Ohne_offene_Raeume_gibt_es_keinen_Vorschlag_und_keine_Meldung()
         {
