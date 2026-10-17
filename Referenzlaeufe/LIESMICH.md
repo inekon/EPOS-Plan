@@ -849,7 +849,7 @@ danach im Wegweiser desselben Ordners.
 **`2026-10-17_R59_Ergebnisreihen/`** — **achtunddreißig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063, 1064, 1065, 1066, 1067, 1068, 1069, 1070, 1071, 1072, 1073), **1 233 CSV**, **8 630 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 17.10.2026, Stand `79cf8532c`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **239**, 109 608 960 Byte, LFS-SHA-256 `5bfedf09…`, mit den Projekten 1053 bis 1073,
+gegen `Kenndaten_Test.sqlite` (Schemastand **241**, 109 621 248 Byte, LFS-SHA-256 `0f80eaf4…`, mit den Projekten 1053 bis 1073,
 dem erfundenen Typtagsatz und den Satteldächern von 1052 und 1054; die Nachträge der Schemaschritte unten sind darin
 enthalten). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065, 1066 bis 1071 und 1073) jeden Push und rechnet dieselben Projekte
@@ -1516,6 +1516,22 @@ Projekt 1072 und `EPOS.Kern.Tests/SchnellaufheizungReferenzprojektWacheTests` di
 > Projekten), und die Basis ist als R59 neu eingefroren (Abschnitt „Aktuelle Basis“). Die Testdatenbank steht auf **239**
 > (`integrity_check` ok, `foreign_key_check` leer): **109 608 960 Byte, LFS-SHA-256
 > `5bfedf09beef9ccf636f6f0272b46d7fa632e66b22b044713cf717e20fbb1fa2`**.
+
+> **Nachtrag — Schema 240 (KB-8 Ergebnisspalten der Wirtschaftlichkeit, 17.10.2026, hängt an 239 `ErgebnisreihenSchema`), Basis unverändert.**
+> `ErgebnisWirtschaftlichkeitSpaltenSchema` (240 = `ErgebnisreihenSchema.SCHRITT + 1`) legt `StromsteuerBefreiungModus`, `ErsatzBarwert`,
+> `Nachweis_Json` und `Lauf_Staende` an `Tab_ErgebnisWirtschaftlichkeit` an, jede nur, wenn sie fehlt; kein DML. In der Testdatenbank standen
+> die vier Spalten bereits (0 Spalten angelegt, `sqlite_master` und die Zeilenzahl jeder Tabelle gleich). Gehoben aus dem Stand 239
+> (`5bfedf09…`) mit `Werkzeuge/Testdatenbankschema`; die Testdatenbank steht auf **240**: **109 608 960 Byte, LFS-SHA-256
+> `4a744a9e67563d3e3587e376094ce9bcc0a156a9307e7a231e52033f9eb9484a`**.
+
+> **Nachtrag — Schema 241 (Ferienliste des Betriebskalenders, 17.10.2026, hängt an 240 `ErgebnisWirtschaftlichkeitSpaltenSchema`), Basis unverändert.**
+> `BetriebskalenderFerienlisteSchema` (241 = `ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT + 1`) legt `Tab_Betriebskalenderferien` an
+> (STRICT; `ID_Betriebskalender` mit Kaskade am Kalender, `Reihenfolge` ≥ 1 und eindeutig je Kalender, `Name` bis 100 Zeichen, `Beginn` und
+> `Ende` als Jahrestag 1 bis 365) samt Index `Tab_Betriebskalenderferien_Kalender`; kein DML, die Tabelle entsteht leer. Gehoben aus dem
+> Stand 240 (`4a744a9e…`) mit `Werkzeuge/Testdatenbankschema` (1 Tabelle, 1 Index); 200 Tabellen, die Zeilenzahl jeder Tabelle bleibt
+> gleich, kein Referenzprojekt trägt einen Betriebskalender — der Referenzlauf der achtunddreißig Projekte gegen R59 bleibt in Toleranz
+> (38/38 GESAMT PASS, 1 233 von 1 233 CSV byte-gleich). Die Testdatenbank steht auf **241** (`integrity_check` ok, `foreign_key_check` leer): **109 621 248 Byte,
+> LFS-SHA-256 `0f80eaf47491ff576cddcd7fda439f5933632b82d32da13e8de3ca65cd5aeb8c`**.
 
 ### Die Vorgängerbasis R58 (Kältesummen)
 
