@@ -48,7 +48,7 @@ namespace EPOS.Kern.Tests
         private const int TYP_KAELTEMASCHINE = 13, KUEHLTRAEGER = 58;
         private const string BUERO = "Büro Kälteprofil", SPLIT_BUERO = "Split Büro", SPLIT_SERVER = "Split Serverraum";
 
-        // Die Jahreswerte der Basis R56 (unverändert in R57, Referenzlaeufe/2026-10-16_R57_Schnellaufheizung/Projekt_1072), je Split-Zeile
+        // Die Jahreswerte der Basis R56 (unverändert in R57, Referenzlaeufe/2026-10-17_R59_Ergebnisreihen/Projekt_1072), je Split-Zeile
         // aus dem Lauf: Kälte, Strom und Netzbezug [MWh/a].
         private const double R55_DEZENTRAL_MWH = 5.0;
         private const double R55_STROM_DEZENTRAL_MWH = 1.52919445;

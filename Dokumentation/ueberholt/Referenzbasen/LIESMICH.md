@@ -1,6 +1,6 @@
-# Die Protokolle der 59 entfernten Referenzbasen
+# Die Protokolle der 60 entfernten Referenzbasen
 
-**Was hier liegt.** Für jede der **59 historischen Referenzbasen** unter `Referenzlaeufe/` das
+**Was hier liegt.** Für jede der **60 historischen Referenzbasen** unter `Referenzlaeufe/` das
 Protokoll ihrer Entstehung — `lauf_protokoll.md` beziehungsweise `protokoll.txt`, byte-gleich
 aus dem Stand `b02f986^` (= dem letzten Commit vor der Löschung) gesichert; das Protokoll von R7 kam am
 16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026, das von R11 und das von R12 am 23.09.2026, das von R13 am 24.09.2026, das von R14, das von R15, das von R16, das von R17 und das von R18 am 25.09.2026, das von R19, das von R20, das von R21 und das von R22 am 26.09.2026, das von R23 am 29.09.2026, das von R24 und das von R25 am 29.09.2026, das von R26, das von R27, das von R28 und das von R29 am 30.09.2026, das von R30, das von R31 und das von R32 am 02.10.2026. **51 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-10-16_R57_Schnellaufheizung`](../../../Referenzlaeufe/2026-10-16_R57_Schnellaufheizung/);
+> [`Referenzlaeufe/2026-10-17_R59_Ergebnisreihen`](../../../Referenzlaeufe/2026-10-17_R59_Ergebnisreihen/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -102,6 +102,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-10-14_R54_Dachflaechen` | 14.10.2026 | Basis mit den Satteldächern 42° der Zonenprojekte 1052 und 1054 (Anwenderentscheid E141), auf Linux eingefroren; Testdatenbank `1f2cf95f…` (Schemastand 227); sechsunddreißig Projekte, 1 171 CSV, 7 983 Skalare — abgelöst durch R55 am 14.10.2026 | [`2026-10-14_R54_Dachflaechen/protokoll.txt`](2026-10-14_R54_Dachflaechen/protokoll.txt) |
 | `2026-10-14_R55_KaeltebedarfDezentral` | 14.10.2026 | Basis mit dem Referenzprojekt 1072 (Kältebedarfsprofile und dezentrale Deckung, Stufe K6 des Konzepts Kältebedarf), auf Linux eingefroren; Testdatenbank `aee043d0…` (Schemastand 227), Nachträge bis Schemastand 235 (`3478881f…`); siebenunddreißig Projekte, 1 205 CSV, 8 259 Skalare — abgelöst durch R56 am 16.10.2026 | [`2026-10-14_R55_KaeltebedarfDezentral/protokoll.txt`](2026-10-14_R55_KaeltebedarfDezentral/protokoll.txt) |
 | `2026-10-16_R56_Wasserkosten` | 16.10.2026 | Basis nach Schemaschritt 235 (KB-7, Wasserkosten des Rückkühlwerks) mit den zwei Schlüsseln des Kältedeckungsgrads von 1072, auf Linux eingefroren; Testdatenbank `3478881f…` (Schemastand 235); siebenunddreißig Projekte, 1 205 CSV, 8 261 Skalare — abgelöst durch R57 am 16.10.2026 | [`2026-10-16_R56_Wasserkosten/protokoll.txt`](2026-10-16_R56_Wasserkosten/protokoll.txt) |
+| `2026-10-16_R57_Schnellaufheizung` | 16.10.2026 | Basis mit dem Referenzprojekt 1073 (Schnellaufheizung, Stufe SA4, E128 und E153), auf Linux eingefroren; Testdatenbank `75fb0a61…` (Schemastand 237), Nachtrag 238 (`20c0a3fe…`); achtunddreißig Projekte, 1 233 CSV, 8 596 Skalare — abgelöst durch R59 am 17.10.2026 | [`2026-10-16_R57_Schnellaufheizung/protokoll.txt`](2026-10-16_R57_Schnellaufheizung/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -5995,6 +5996,75 @@ Projekt 1072. 1050, 1052, 1054, 1055, 1056, 1057, 1059, 1061, 1062, 1064 und 107
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063,1064,1065,1066,1067,1068,1069,1070,1071,1072 \
 >   --ziel Referenzlaeufe/2026-10-16_R56_Wasserkosten
+> ```
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R57 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat am 16.10.2026 die Basis R57 beschrieben — den Anlass (Referenzprojekt 1073 „Referenzprojekt Schnellaufheizung“, Stufe SA4 der Schnellaufheizung, E128 und E153) mit dem Lauf-Rezept. Er steht unten im Wortlaut; die Nachträge der Schemaschritte bleiben in `Referenzlaeufe/LIESMICH.md`.
+
+**Abgelöst wurde R57 durch `2026-10-17_R59_Ergebnisreihen`** (Welle EB-1 „Ergebnisreihen“, Schemaschritt 239, Anwenderentscheide vom 17.10.2026): Der Lauf schreibt die Einspeisung des BHKW, den Standby des Speichersystems und die PV-Abregelung als Jahressummen in die Ergebniszeilen, der Rechenweg ist unverändert; `aggregate.csv` bekommt die Schlüssel `BHKW.Stromeinspeisung` und `Photovoltaik.Abregelung` (34 Einträge in 38 Projekten, 8 630 statt 8 596 Skalare). Der Vergleich der 38 Projekte gegen R57 ist mit `--ohne BHKW.Stromeinspeisung,Photovoltaik.Abregelung` PASS (13 025 990 Werte), 1 199 der 1 233 CSV byte-gleich; kein bisheriger Wert hat sich geändert.
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-10-16_R57_Schnellaufheizung/`** — **achtunddreißig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063, 1064, 1065, 1066, 1067, 1068, 1069, 1070, 1071, 1072, 1073), **1 233 CSV**, **8 596 Skalare**, gerechnet mit dem
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 16.10.2026, Stand `18a3d1d72`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **237**, 109 617 152 Byte, LFS-SHA-256 `75fb0a61…`, mit den Projekten 1053 bis 1073,
+dem erfundenen Typtagsatz und den Satteldächern von 1052 und 1054; die Nachträge der Schemaschritte unten sind darin
+enthalten). Gegen diese Basis hält
+`.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065, 1066 bis 1071 und 1073) jeden Push und rechnet dieselben Projekte
+ein zweites Mal gestört (Abschnitt „Der Plattformnachweis“), `ios.yml` den iZ6-Vergleich für 1030,
+`EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040,
+`EPOS.Kern.Tests/ZapfprofilReferenzprojektWacheTests` die Generator-Bilanz von Projekt 1045 (Feiertage zählen im
+Zapfkalender als Sonntag und liegen nach der Konvention des Gemeinjahrs im Wochentagsraster der Klimaregion), `EPOS.Kern.Tests/FeiertageTests` die Konvention selbst,
+`EPOS.Kern.Tests/SolarWaermeMonateTests` die Solarbilanz von Projekt 1049 samt der Anker (genutzte Solarwärme,
+Überschuss, mittlere Arbeitstemperatur des Felds), `EPOS.Kern.Tests/StromViertelstundenTests` die PV-Bilanz der
+Projekte 1045 und 1046 (Erzeugung, Einspeisung, Restbezug),
+`EPOS.Kern.Tests/PlattformrandTests` die Betriebsstunden der Wärmepumpe am Quellspeicher von Projekt 1042 und
+die Kesselstunden von Projekt 1024, `EPOS.Kern.Tests/KesselKennlinieTests` die Teillastkennlinie an 1023 und 1007,
+das Takten mit den Normvorgaben an 1023 sowie Brennwertkennlinie und Takten des Referenzprojekts 1050,
+`EPOS.Kern.Tests/KesselBrennwertNachzugTests` das Brennwertkennzeichen der Projektkessel,
+`EPOS.Kern.Tests/StromverbraucherZuordnungTests` die Stromverbraucher-Zuordnung über die ID an 1017, 1043 und
+1046, `EPOS.Kern.Tests/BhkwLeistungsgrenzeTests` die Rangfolge der BHKW-Untergrenze (Anlagenfeld, Katalog,
+Projekt) in allen drei Betriebsarten, `EPOS.Kern.Tests/KonditionierungReferenzprojektWacheTests` die Kalender,
+die Nachtzeile der Lüftung und die Aufheizoptimierung von Projekt 1051 und
+`EPOS.Kern.Tests/ZonenReferenzprojektWacheTests` die Zonen von Projekt 1052 und `EPOS.Kern.Tests/ZonenHeizkreisReferenzprojektWacheTests` Kopplung, Heizkurve und die
+Zonenübergabe von Projekt 1054, `EPOS.Kern.Tests/KaeltemaschineReferenzprojektWacheTests` die Kältemaschine von Projekt 1055
+`EPOS.Kern.Tests/FahrplanReferenzprojektWacheTests` Sperrzeit, Zeitprogramme, Vorlaufgrenze und Komfortstunden von
+Projekt 1056, `EPOS.Kern.Tests/ErdsondeReferenzprojektWacheTests` die Erdreichquellen der Referenzprojekte und das
+Sondenfeld von Projekt 1057 und `EPOS.Kern.Tests/Ak3ReferenzprojektWacheTests` Stufe AK3, Heizungspuffer, Raumeinfluss
+und Kennzahlen des Kreises von Projekt 1058, `EPOS.Kern.Tests/Ak3KReferenzprojektWacheTests` die Kälteseite im Kreis
+von Projekt 1059, `EPOS.Kern.Tests/KuehlkurveReferenzprojektWacheTests` die Kühlkurve von Projekt 1061 und
+`EPOS.Kern.Tests/ZonenKuehlkurveReferenzprojektWacheTests` die Kühlübergabe je Zone von Projekt 1062 und
+`EPOS.Kern.Tests/UebergabegrenzeReferenzprojektWacheTests` Übergabegrenze, Betriebsbereiche, Bivalenzpunkte und die
+Rücklaufstufe „Vorwärmer“ von Projekt 1060 samt Rücklauf- und Spreizungsgrenze und
+`EPOS.Kern.Tests/KaeltemaschineTeillastReferenzprojektWacheTests` Teillastkurve, Takten und Gütegrad-Extrapolation der
+Kältemaschine von Projekt 1063 und `EPOS.Kern.Tests/FreieKuehlungReferenzprojektWacheTests` die freie Kühlung über die
+Wärmequelle von Projekt 1064, `EPOS.Kern.Tests/VorheizReferenzprojektWacheTests` die berechnete Vorheizzeit von
+Projekt 1065 und `EPOS.Kern.Tests/ZapfprofilOptionenReferenzprojekteWacheTests` die Zapfprofile der Projekte 1066 bis
+1071 samt Generator-Bilanz und den eingefrorenen Auslegungswerten von 1071 und
+`EPOS.Kern.Tests/KaelteDezentralReferenzprojektWacheTests` die Kältebedarfsprofile und die dezentrale Deckung von
+Projekt 1072 und `EPOS.Kern.Tests/SchnellaufheizungReferenzprojektWacheTests` die Schnellaufheizung von Projekt 1073. 1050, 1052, 1054, 1055, 1056, 1057, 1059, 1061, 1062, 1064 und 1072 stehen nicht in der CI-Auswahl;
+`Werkzeuge/Gate/gate_linux.sh` rechnet alle achtunddreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass: Referenzprojekt 1073 „Referenzprojekt Schnellaufheizung“ (Stufe SA4, E128, E153).** Neu ist allein das
+> Projekt 1073, die Kopie von 1054 mit „Vorheizzeit berechnet“ und Schnellaufheizung um 3 K (Abschnitt „Das
+> Referenzprojekt 1073“ unten). Der Referenzlauf der siebenunddreißig Projekte von R56 gegen R56 ist PASS (37 von 37,
+> 12 736 541 Werte) und byte-gleich (1 205/1 205 CSV); 1073 bringt 28 CSV und 335 Skalare dazu. Zwei Läufe sind
+> byte-gleich (1 233/1 233 CSV), der gestörte Lauf von 1073 (`--stoerung ulp`) ist gegen den ungestörten PASS.
+> Neu eingefroren auf der Testdatenbank 237 (Fassung 236 von origin, Schritt 237 und die Saat 1073 nachgezogen): die
+> siebenunddreißig Projekte von R56 sind gegen R56 PASS (12 736 541 Werte) und byte-gleich, 1073 ist gegen die erste
+> Fassung von R57 byte-gleich (1 233/1 233 CSV gleich, allein `protokoll.txt` neu); die Schritte 236 und 237 wirken auf
+> kein Rechenergebnis.
+>
+> ```bash
+> dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
+> dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063,1064,1065,1066,1067,1068,1069,1070,1071,1072,1073 \
+>   --ziel Referenzlaeufe/2026-10-16_R57_Schnellaufheizung
 > ```
 
 <!-- ÜBERNOMMENER ABSCHNITT, ENDE -->

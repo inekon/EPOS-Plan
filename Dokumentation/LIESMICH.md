@@ -41,6 +41,7 @@ und `README.md`.
 | [`aktuell/Dialoge/2026-10-14_Uebergabe_Dialoge_Kostenbasis_KB4_KB5.md`](aktuell/Dialoge/2026-10-14_Uebergabe_Dialoge_Kostenbasis_KB4_KB5.md) | Dialoge und Korrekturen, Übergabe Kostenbasis KB-4/KB-5 (14.10.2026) auf ein anderes Konto: Stand, Entscheide, Regeln, offene Punkte, Aufträge der Wellen, Einstiegs-Prompt | 2026-10-14 |
 | [`aktuell/Dialoge/2026-10-14_Uebergabe_Dialoge_Anlagendialog_Kaeltebedarf.md`](aktuell/Dialoge/2026-10-14_Uebergabe_Dialoge_Anlagendialog_Kaeltebedarf.md) | Dialoge und Korrekturen, Übergabe Anlagendialog, Kältebedarf, Katalogauswahl (14.10.2026) auf ein anderes Konto: Stand (K6, Referenzprojekt 1072, Basis R55, Messlatte), Entscheide, offene Punkte, Einstiegs-Prompt | 2026-10-14 |
 | [`aktuell/Dialoge/2026-10-14_Uebergabe_KB5_Inventar.md`](aktuell/Dialoge/2026-10-14_Uebergabe_KB5_Inventar.md) | Inventar KB-5 Stromspeicher-Kosten auf Position: Leser und Schreiber der vier Kostenspalten, Rechenwege, Flotte, Testdatenbank, Tests, offene Fachfragen | 2026-10-14 |
+| [`aktuell/Dialoge/2026-10-17_Konzept_Ergebnisreihen_Einspeisung_Standby_Abregelung.md`](aktuell/Dialoge/2026-10-17_Konzept_Ergebnisreihen_Einspeisung_Standby_Abregelung.md) | Kurzkonzept Ergebnisreihen (Welle EB): BHKW-Einspeisung, Standby des Speichersystems und PV-Abregelung als Jahressummen im Ergebnis (Schemaschritt 239, Basis R59), Energieflussbild ohne „nicht zugeordnet“, Schnittstelle und Umfang von EB-2 (Oberfläche), Entscheide EB-Q | 2026-10-17 |
 | [`aktuell/BETRIEB_SQLITE.md`](aktuell/BETRIEB_SQLITE.md) | Betrieb der SQLite-Datenbank: Ablage, Sicherung, Migration, SQL-Dialektregeln (§ 6) | 2026-09-11 |
 | [`aktuell/Doku_Mehrspeicher_Konzept_und_Umsetzung.md`](aktuell/Doku_Mehrspeicher_Konzept_und_Umsetzung.md) | Mehrspeicher: Konzept, Umsetzung und Prüfumfang — der implementierte Flottenstand | 2026-09-12 |
 | [`aktuell/Doku_PV_Strangauslegung_EPOS-Plan.md`](aktuell/Doku_PV_Strangauslegung_EPOS-Plan.md) | Modul, Strang und Wechselrichter — Regeln, Meldungen, Auslegung | 2026-09-09 |
@@ -344,7 +345,7 @@ Der Wegweiser des Ordners ist
 [`ueberholt/Referenzbasen/LIESMICH.md`](ueberholt/Referenzbasen/LIESMICH.md) mit der Tabelle
 Basis → Datum → Zweck; hier stehen die Dateien selbst. Sie sind **byte-gleiche Kopien** — auch
 in ihren Verweisen, von denen fünf ins Leere zeigen (die Wache führt sie als vorbestehende
-Lücken). Die aktuelle, lauffähige Basis `2026-10-16_R57_Schnellaufheizung` ist nicht abgelöst und
+Lücken). Die aktuelle, lauffähige Basis `2026-10-17_R59_Ergebnisreihen` ist nicht abgelöst und
 liegt deshalb nicht hier, sondern unter [`Referenzlaeufe/`](../Referenzlaeufe/LIESMICH.md).
 
 | Basis | gesichertes Protokoll |
