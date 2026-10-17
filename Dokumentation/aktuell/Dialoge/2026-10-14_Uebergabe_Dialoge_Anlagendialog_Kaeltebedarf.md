@@ -61,7 +61,7 @@ Die Regeln der Sitzung über `CLAUDE.md` hinaus stehen im Einstiegs-Prompt (Absc
 6. KBP‑3b: Kältegrafik — Monatswerte und Wochenprofil erst nach Speichern, Woche als Reihen statt Hintergrund (Rest gegen #1108 prüfen).
 7. Kern-Test Betriebskalender mit mehr als vier Ferienzeiträumen, sobald die Testdatenbank eine Ferienliste führt.
 8. Gemessene Kälte-Lastgänge für Richtwerte der Vorlagen (beim Anwender).
-9. Wiki-Bilder neu ziehen (offen).
+9. Wiki-Bilder neu ziehen (erledigt mit WK3, siehe Teil 3).
 10. Sichtabnahme Windows Dialoge #1034–#1042 und Kostenmasken KB‑4 (beim Anwender).
 11. Setup-Skript der Cloud-Umgebung (beim Anwender).
 12. Kältevorlage 8: Anwenderentscheid 17.10.: Norm 230 Nutzungstage; Umsetzung in Welle KV8.
