@@ -160,6 +160,63 @@ namespace EPOS.Kern.Tests
             Assert.Equal(12, k.Randkanten.Count);
         }
 
+        [Fact]
+        public void Boden_und_Decke_an_weiteren_Quellflaechen_geteilt_geschlossen_mit_Teilflaechen()
+        {
+            // L-förmiger Raum; der Boden liegt teils über dem Erdreich (Rest „BE“), teils über einem unbeheizten Raum (Ring
+            // „BU“ ragt über das Polygon hinaus, wie Außenmaße es tun), die Decke trägt zwei Flächen nebeneinander.
+            var punkte = new List<double[]> { Q(0, 0), Q(6, 0), Q(6, 2), Q(2, 2), Q(2, 5), Q(0, 5) };
+            var raum = new Raumpolygon
+            {
+                Kennung = "L", Aussen = Raumring.Eben(punkte, 0.0, 2.5), BodenKennung = "BE", DeckenKennung = "DA",
+                Bodenteile = new[] { new Grundrissteil { Kennung = "BU", Ring = new[] { Q(3.5, -0.3), Q(6.3, -0.3), Q(6.3, 2.3), Q(3.5, 2.3) } } },
+                Deckenteile = new[] { new Grundrissteil { Kennung = "DB", Ring = new[] { Q(-0.3, 3.0), Q(2.3, 3.0), Q(2.3, 5.3), Q(-0.3, 5.3) } } },
+            };
+            Koerperergebnis e = Koerperbildner.Raumprisma(new[] { raum });
+            Assert.True(e.Gebildet, e.ToString());
+            Dateikoerper k = e.Koerper;
+            GeschlossenNachAussen(k);
+            Assert.Equal(18.0 * 2.5, Volumen(k), 6);
+            double Flaeche(string q) => Enumerable.Range(0, k.DreieckZahl).Where(t => k.Quellflaechen[t] == q).Sum(t => Dreiecksflaeche(k, t));
+            Assert.Equal(5.0, Flaeche("BU"), 6);
+            Assert.Equal(13.0, Flaeche("BE"), 6);
+            Assert.Equal(4.0, Flaeche("DB"), 6);
+            Assert.Equal(14.0, Flaeche("DA"), 6);
+            Assert.All(Enumerable.Range(0, k.DreieckZahl).Where(t => k.Quellflaechen[t] == "BU"),
+                       t => Assert.All(k.Dreiecke[t], i => Assert.True(k.PunkteM[i][0] >= 3.5 - 1e-9 && Math.Abs(k.PunkteM[i][2]) < 1e-9)));
+            // Ohne Teile: wie bisher eine Quellfläche je Boden und Decke, gleich viele Dreiecke wie der Ohrenschnitt.
+            Dateikoerper einfach = Koerperbildner.Raumprisma(new[] { new Raumpolygon { Kennung = "L", Aussen = Raumring.Eben(punkte, 0.0, 2.5), BodenKennung = "BE", DeckenKennung = "DA" } }).Koerper;
+            Assert.Equal(new[] { "BE", "DA" }, einfach.Quellflaechen.Where(q => q.Length == 2).Distinct().OrderBy(q => q, StringComparer.Ordinal).ToArray());
+            Assert.Equal(einfach.Text(), Koerperbildner.Raumprisma(new[] { new Raumpolygon { Kennung = "L", Aussen = Raumring.Eben(punkte, 0.0, 2.5), BodenKennung = "BE", DeckenKennung = "DA" } }).Koerper.Text());
+        }
+
+        [Fact]
+        public void Geteilte_Decke_folgt_der_geneigten_Ebene()
+        {
+            // Pultdach: Decke von 2,5 m (y = 0) auf 3,5 m (y = 4); die Teilfläche liegt in derselben Ebene.
+            var punkte = new List<double[]> { Q(0, 0), Q(4, 0), Q(4, 4), Q(0, 4) };
+            var raum = new Raumpolygon
+            {
+                Kennung = "P", Aussen = new Raumring { Punkte = punkte, Boden = new[] { 0.0, 0.0, 0.0, 0.0 }, Decke = new[] { 2.5, 2.5, 3.5, 3.5 } },
+                BodenKennung = "BP", DeckenKennung = "D1",
+                Deckenteile = new[] { new Grundrissteil { Kennung = "D2", Ring = new[] { Q(-1, 1), Q(5, 1), Q(5, 3), Q(-1, 3) } } },
+            };
+            Koerperergebnis e = Koerperbildner.Raumprisma(new[] { raum });
+            Assert.True(e.Gebildet, e.ToString());
+            GeschlossenNachAussen(e.Koerper);
+            Dateikoerper k = e.Koerper;
+            Assert.Equal(4.0 * 4.0 * 3.0, Volumen(k), 6);
+            foreach (int t in Enumerable.Range(0, k.DreieckZahl).Where(t => k.Quellflaechen[t] == "D2"))
+                Assert.All(k.Dreiecke[t], i => Assert.Equal(2.5 + 0.25 * k.PunkteM[i][1], k.PunkteM[i][2], 9));
+        }
+
+        private static double Dreiecksflaeche(Dateikoerper k, int t)
+        {
+            double[] a = k.PunkteM[k.Dreiecke[t][0]], b = k.PunkteM[k.Dreiecke[t][1]], c = k.PunkteM[k.Dreiecke[t][2]];
+            double[] n = Polygonnetz.Kreuz(Polygonnetz.Minus(b, a), Polygonnetz.Minus(c, a));
+            return Math.Sqrt(Polygonnetz.Punkt(n, n)) / 2.0;
+        }
+
         [Theory]
         [InlineData(false)]
         [InlineData(true)]

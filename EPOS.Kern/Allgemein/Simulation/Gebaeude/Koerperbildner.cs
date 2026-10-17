@@ -90,6 +90,23 @@ namespace WindowsFormsApplication1
         internal string BodenKennung { get; init; } = "";
 
         internal string DeckenKennung { get; init; } = "";
+
+        /// <summary>
+        /// Weitere Quellflächen des Bodens mit ihrem Ring im Grundriss: Der Teil des Bodens innerhalb eines Rings trägt dessen
+        /// Kennung (der erste Ring gewinnt), der Rest <see cref="BodenKennung"/>; leer = der ganze Boden trägt <see cref="BodenKennung"/>.
+        /// </summary>
+        internal IReadOnlyList<Grundrissteil> Bodenteile { get; init; } = Array.Empty<Grundrissteil>();
+
+        /// <summary>Weitere Quellflächen der Decke, wie <see cref="Bodenteile"/>; der Rest trägt <see cref="DeckenKennung"/>.</summary>
+        internal IReadOnlyList<Grundrissteil> Deckenteile { get; init; } = Array.Empty<Grundrissteil>();
+    }
+
+    /// <summary>Eine Quellfläche von Boden oder Decke eines Raumpolygons: Kennung und Ring im Grundriss (x, y) [m].</summary>
+    internal sealed class Grundrissteil
+    {
+        internal string Kennung { get; init; } = "";
+
+        internal IReadOnlyList<double[]> Ring { get; init; } = Array.Empty<double[]>();
     }
 
     /// <summary>
@@ -266,8 +283,8 @@ namespace WindowsFormsApplication1
                 List<double[]> boden = Enumerable.Range(0, eben.Count).Select(HoeheBoden).ToList();
                 List<double[]> decke = Enumerable.Range(0, eben.Count).Select(HoeheDecke).ToList();
                 if (!Eben(boden) || !Eben(decke)) vermerke.Add(Koerpervermerk.Uneben);
-                teile.Add(new Teilflaeche(boden, deckel, rand, Kennung(p.BodenKennung, kennung + ":Boden")));
-                teile.Add(new Teilflaeche(decke, deckel, rand, Kennung(p.DeckenKennung, kennung + ":Decke")));
+                teile.AddRange(Deckelflaechen(eben, deckel, boden, rand, Kennung(p.BodenKennung, kennung + ":Boden"), p.Bodenteile));
+                teile.AddRange(Deckelflaechen(eben, deckel, decke, rand, Kennung(p.DeckenKennung, kennung + ":Decke"), p.Deckenteile));
 
                 // Mantel je Kante: Boden am Anfang, Boden am Ende, Decke am Ende, Decke am Anfang.
                 for (int r = 0; r < ringe.Count; r++)
@@ -541,6 +558,102 @@ namespace WindowsFormsApplication1
             internal List<int[]> Rand { get; }
 
             internal string Kennung { get; }
+        }
+
+        /// <summary>
+        /// Boden oder Decke eines Polygons nach Quellflächen geteilt: Ohne <paramref name="teile"/> eine Teilfläche mit
+        /// <paramref name="kennung"/>. Sonst wird jedes Deckeldreieck an den Kanten der Ringe, die es schneiden, in konvexe
+        /// Zellen zerlegt; jede Zelle trägt die Kennung des ersten Rings, der ihren Schwerpunkt enthält, sonst
+        /// <paramref name="kennung"/>, und liegt in der Ebene ihres Dreiecks (baryzentrisch gehoben). Neue Punkte auf dem Rand
+        /// teilt die Hüllprüfung als T-Stöße.
+        /// </summary>
+        private static List<Teilflaeche> Deckelflaechen(List<double[]> eben, List<int[]> deckel, List<double[]> hoch, List<int[]> rand,
+                                                        string kennung, IReadOnlyList<Grundrissteil> teile)
+        {
+            List<Grundrissteil> ringe = (teile ?? Array.Empty<Grundrissteil>())
+                .Where(t => t != null && t.Ring != null && t.Ring.Count >= 3 && !string.IsNullOrEmpty(t.Kennung) && t.Kennung != kennung).ToList();
+            if (ringe.Count == 0) return new List<Teilflaeche> { new Teilflaeche(hoch, deckel, rand, kennung) };
+            var kanten = new List<(double[] A, double[] B)>();
+            foreach (Grundrissteil t in ringe)
+                for (int i = 0; i < t.Ring.Count; i++)
+                {
+                    double[] a = t.Ring[i], b = t.Ring[(i + 1) % t.Ring.Count];
+                    if (Math.Abs(b[0] - a[0]) + Math.Abs(b[1] - a[1]) > 1e-9) kanten.Add((a, b));
+                }
+            var punkte = new List<double[]>(hoch);
+            var jeKennung = new List<(string Kennung, List<int[]> Dreiecke)> { (kennung, new List<int[]>()) };
+            jeKennung.AddRange(ringe.Select(t => t.Kennung).Distinct(StringComparer.Ordinal).Select(k => (k, new List<int[]>())));
+            foreach (int[] d in deckel)
+            {
+                double[] a = eben[d[0]], b = eben[d[1]], c = eben[d[2]];
+                double nenner = (b[1] - c[1]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[1] - c[1]);
+                if (Math.Abs(nenner) < 1e-15) { jeKennung[0].Dreiecke.Add(d); continue; }
+                var zellen = new List<List<double[]>> { new List<double[]> { a, b, c } };
+                foreach ((double[] p, double[] q) in kanten)
+                {
+                    if (Math.Max(p[0], q[0]) < Math.Min(a[0], Math.Min(b[0], c[0])) - 1e-9 || Math.Min(p[0], q[0]) > Math.Max(a[0], Math.Max(b[0], c[0])) + 1e-9
+                        || Math.Max(p[1], q[1]) < Math.Min(a[1], Math.Min(b[1], c[1])) - 1e-9 || Math.Min(p[1], q[1]) > Math.Max(a[1], Math.Max(b[1], c[1])) + 1e-9)
+                        continue;
+                    zellen = zellen.SelectMany(z => Zerschneiden(z, p, q)).ToList();
+                }
+                foreach (List<double[]> z in zellen)
+                {
+                    double[] m = { z.Average(x => x[0]), z.Average(x => x[1]) };
+                    Grundrissteil traeger = ringe.FirstOrDefault(t => Innen2D(t.Ring, m));
+                    List<int[]> ziel = jeKennung.First(j => j.Kennung == (traeger?.Kennung ?? kennung)).Dreiecke;
+                    var stellen = new List<int>();
+                    foreach (double[] x in z)
+                    {
+                        // Baryzentrisch im Ausgangsdreieck: die Zelle bleibt in dessen Ebene.
+                        double la = ((b[1] - c[1]) * (x[0] - c[0]) + (c[0] - b[0]) * (x[1] - c[1])) / nenner;
+                        double lb = ((c[1] - a[1]) * (x[0] - c[0]) + (a[0] - c[0]) * (x[1] - c[1])) / nenner;
+                        double lc = 1.0 - la - lb;
+                        stellen.Add(punkte.Count);
+                        punkte.Add(new[] { x[0], x[1], la * hoch[d[0]][2] + lb * hoch[d[1]][2] + lc * hoch[d[2]][2] });
+                    }
+                    for (int i = 1; i + 1 < stellen.Count; i++) ziel.Add(new[] { stellen[0], stellen[i], stellen[i + 1] });
+                }
+            }
+            return jeKennung.Select((j, i) => new Teilflaeche(punkte, j.Dreiecke, i == 0 ? rand : new List<int[]>(), j.Kennung)).ToList();
+        }
+
+        /// <summary>Eine konvexe Zelle, an der Geraden durch <paramref name="p"/> und <paramref name="q"/> geteilt; Splitter ohne Fläche entfallen.</summary>
+        private static IEnumerable<List<double[]>> Zerschneiden(List<double[]> zelle, double[] p, double[] q)
+        {
+            double Seite(double[] x) => (q[0] - p[0]) * (x[1] - p[1]) - (q[1] - p[1]) * (x[0] - p[0]);
+            double laenge = Math.Sqrt((q[0] - p[0]) * (q[0] - p[0]) + (q[1] - p[1]) * (q[1] - p[1]));
+            double[] s = zelle.Select(x => Seite(x) / laenge).ToArray();
+            // Punkte näher als zwei Toleranzen an der Geraden gelten als auf ihr: kein Schnittpunkt fällt in die Toleranz eines Eckpunkts.
+            const double auf = 2.0 * TOLERANZ_M;
+            if (s.All(v => v >= -auf) || s.All(v => v <= auf)) return new[] { zelle };
+            var links = new List<double[]>();
+            var rechts = new List<double[]>();
+            for (int i = 0; i < zelle.Count; i++)
+            {
+                int j = (i + 1) % zelle.Count;
+                double si = Math.Abs(s[i]) <= auf ? 0.0 : s[i], sj = Math.Abs(s[j]) <= auf ? 0.0 : s[j];
+                if (si >= 0.0) links.Add(zelle[i]);
+                if (si <= 0.0) rechts.Add(zelle[i]);
+                if (si * sj < 0.0)
+                {
+                    double t = si / (si - sj);
+                    double[] x = { zelle[i][0] + (zelle[j][0] - zelle[i][0]) * t, zelle[i][1] + (zelle[j][1] - zelle[i][1]) * t };
+                    links.Add(x);
+                    rechts.Add(x);
+                }
+            }
+            return new[] { links, rechts }.Where(z => z.Count >= 3 && Math.Abs(Polygonnetz.Flaeche2D(z)) > 1e-10);
+        }
+
+        /// <summary>Liegt der Punkt (x, y) im Ring (Strahlverfahren)?</summary>
+        private static bool Innen2D(IReadOnlyList<double[]> ring, double[] x)
+        {
+            bool innen = false;
+            for (int i = 0, j = ring.Count - 1; i < ring.Count; j = i++)
+                if ((ring[i][1] > x[1]) != (ring[j][1] > x[1])
+                    && x[0] < (ring[j][0] - ring[i][0]) * (x[1] - ring[i][1]) / (ring[j][1] - ring[i][1]) + ring[i][0])
+                    innen = !innen;
+            return innen;
         }
 
         private static string Kennung(string gegeben, string abgeleitet) => string.IsNullOrEmpty(gegeben) ? abgeleitet : gegeben;
