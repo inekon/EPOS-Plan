@@ -48363,6 +48363,312 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Vorschläge übernehmen ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_ALLE_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_ALLE_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zurücknehmen ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_ALLE_ZURUECK {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_ALLE_ZURUECK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Räume tragen ein gesetztes Profil. ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_AMPEL_GRUEN {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_AMPEL_GRUEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume ohne eindeutiges Profil — bitte unter „Nutzungsprofile zuordnen…“ wählen. ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_AMPEL_RUECKFRAGE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_AMPEL_RUECKFRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume tragen einen unbestätigten Vorschlag — der Import ist möglich; bestätigen unter „Nutzungsprofile zuordnen…“. ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_AMPEL_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_AMPEL_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnung aufheben ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_AUFHEBEN {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_AUFHEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Räume der Datei ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_BUENDEL_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_BUENDEL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gemischt ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_GEMISCHT {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_GEMISCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bündel gewählt ({1} Räume) ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_GEWAEHLT {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_GEWAEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bündel ankreuzen, dann im Katalog ein Profil anklicken. ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_HINWEIS_WAHL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_HINWEIS_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_KATALOG {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Profil passt zur Suche. ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_KATALOG_LEER {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_KATALOG_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Nutzung ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_KEINE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein offenes Bündel. ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_KEIN_BUENDEL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_KEIN_BUENDEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} °C · {1}–{2} h ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_KENNWERTE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_KENNWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofile zuordnen… ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_KNOPF {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofile zuordnen… ({0} offen) ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_KNOPF_OFFEN {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_KNOPF_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur offene ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_NUR_OFFENE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_NUR_OFFENE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumart {0} ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_RAUMART {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_RAUMART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kandidaten: ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_SCHNELLWAHL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_SCHNELLWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bündel ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_SP_BUENDEL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_SP_BUENDEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche [m²] ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_SP_FLAECHE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_SP_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Räume ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_SP_RAEUME {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_SP_RAEUME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_SP_STAND {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_SP_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil / Vorschlag ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_SP_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_SP_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eindeutig ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_STAND_EINDEUTIG {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_STAND_EINDEUTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die von Hand ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_STAND_HAND {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_STAND_HAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückfrage ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_STAND_OFFEN {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_STAND_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Kandidat ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_STAND_OHNE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_STAND_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_STAND_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_STAND_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil suchen (Nummer oder Name) ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_SUCHE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_SUCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofile zuordnen ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die übernehmen ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} eindeutig · {1} Vorschlag · {2} Rückfrage · {3} ohne · {4} von Hand ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_ZAEHLER {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_ZAEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die keine Angabe — als beheizt angenommen ähnelt.
         /// </summary>
         public static string GIMP_RAUM_GRUND_ANNAHME {

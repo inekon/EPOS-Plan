@@ -58310,4 +58310,106 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="RNP_GRUPPE_WOHNEN" xml:space="preserve">
     <value>Wohnen</value>
   </data>
+  <data name="GIMP_PZ_TITEL" xml:space="preserve">
+    <value>Nutzungsprofile zuordnen</value>
+  </data>
+  <data name="GIMP_PZ_KNOPF" xml:space="preserve">
+    <value>Nutzungsprofile zuordnen…</value>
+  </data>
+  <data name="GIMP_PZ_KNOPF_OFFEN" xml:space="preserve">
+    <value>Nutzungsprofile zuordnen… ({0} offen)</value>
+  </data>
+  <data name="GIMP_PZ_KATALOG" xml:space="preserve">
+    <value>Katalog</value>
+  </data>
+  <data name="GIMP_PZ_SUCHE" xml:space="preserve">
+    <value>Profil suchen (Nummer oder Name)</value>
+  </data>
+  <data name="GIMP_PZ_KATALOG_LEER" xml:space="preserve">
+    <value>Kein Profil passt zur Suche.</value>
+  </data>
+  <data name="GIMP_PZ_BUENDEL_TITEL" xml:space="preserve">
+    <value>Räume der Datei</value>
+  </data>
+  <data name="GIMP_PZ_SP_BUENDEL" xml:space="preserve">
+    <value>Bündel</value>
+  </data>
+  <data name="GIMP_PZ_SP_RAEUME" xml:space="preserve">
+    <value>Räume</value>
+  </data>
+  <data name="GIMP_PZ_SP_FLAECHE" xml:space="preserve">
+    <value>Fläche [m²]</value>
+  </data>
+  <data name="GIMP_PZ_SP_STAND" xml:space="preserve">
+    <value>Stand</value>
+  </data>
+  <data name="GIMP_PZ_SP_VORSCHLAG" xml:space="preserve">
+    <value>Profil / Vorschlag</value>
+  </data>
+  <data name="GIMP_PZ_STAND_EINDEUTIG" xml:space="preserve">
+    <value>eindeutig</value>
+  </data>
+  <data name="GIMP_PZ_STAND_VORSCHLAG" xml:space="preserve">
+    <value>Vorschlag</value>
+  </data>
+  <data name="GIMP_PZ_STAND_OFFEN" xml:space="preserve">
+    <value>Rückfrage</value>
+  </data>
+  <data name="GIMP_PZ_STAND_OHNE" xml:space="preserve">
+    <value>ohne Kandidat</value>
+  </data>
+  <data name="GIMP_PZ_STAND_HAND" xml:space="preserve">
+    <value>von Hand</value>
+  </data>
+  <data name="GIMP_PZ_GEMISCHT" xml:space="preserve">
+    <value>gemischt</value>
+  </data>
+  <data name="GIMP_PZ_KEINE" xml:space="preserve">
+    <value>keine Nutzung</value>
+  </data>
+  <data name="GIMP_PZ_NUR_OFFENE" xml:space="preserve">
+    <value>nur offene</value>
+  </data>
+  <data name="GIMP_PZ_ALLE_UEBERNEHMEN" xml:space="preserve">
+    <value>Alle Vorschläge übernehmen</value>
+  </data>
+  <data name="GIMP_PZ_ALLE_ZURUECK" xml:space="preserve">
+    <value>Zurücknehmen</value>
+  </data>
+  <data name="GIMP_PZ_UEBERNEHMEN" xml:space="preserve">
+    <value>übernehmen</value>
+  </data>
+  <data name="GIMP_PZ_AUFHEBEN" xml:space="preserve">
+    <value>Zuordnung aufheben</value>
+  </data>
+  <data name="GIMP_PZ_SCHNELLWAHL" xml:space="preserve">
+    <value>Kandidaten:</value>
+  </data>
+  <data name="GIMP_PZ_HINWEIS_WAHL" xml:space="preserve">
+    <value>Bündel ankreuzen, dann im Katalog ein Profil anklicken.</value>
+  </data>
+  <data name="GIMP_PZ_GEWAEHLT" xml:space="preserve">
+    <value>{0} Bündel gewählt ({1} Räume)</value>
+  </data>
+  <data name="GIMP_PZ_ZAEHLER" xml:space="preserve">
+    <value>{0} eindeutig · {1} Vorschlag · {2} Rückfrage · {3} ohne · {4} von Hand</value>
+  </data>
+  <data name="GIMP_PZ_KEIN_BUENDEL" xml:space="preserve">
+    <value>Kein offenes Bündel.</value>
+  </data>
+  <data name="GIMP_PZ_RAUMART" xml:space="preserve">
+    <value>Raumart {0}</value>
+  </data>
+  <data name="GIMP_PZ_KENNWERTE" xml:space="preserve">
+    <value>{0} °C · {1}–{2} h</value>
+  </data>
+  <data name="GIMP_PZ_AMPEL_VORSCHLAG" xml:space="preserve">
+    <value>{0} Räume tragen einen unbestätigten Vorschlag — der Import ist möglich; bestätigen unter „Nutzungsprofile zuordnen…“.</value>
+  </data>
+  <data name="GIMP_PZ_AMPEL_RUECKFRAGE" xml:space="preserve">
+    <value>{0} Räume ohne eindeutiges Profil — bitte unter „Nutzungsprofile zuordnen…“ wählen.</value>
+  </data>
+  <data name="GIMP_PZ_AMPEL_GRUEN" xml:space="preserve">
+    <value>Alle Räume tragen ein gesetztes Profil.</value>
+  </data>
 </root>

@@ -227,6 +227,17 @@ public static class GebaeudePlanschrittArt
     /// danach nicht zugeordnet, eine dadurch leere Restzone entfällt.
     /// </summary>
     public const string RUECKNAHME = "RUECKNAHME";
+    /// <summary>
+    /// Ein Nutzungsprofil Räumen von Hand zuordnen (Räume, Nutzung = Profilschlüssel des Katalogbaums; leer = „keine“); der Plan
+    /// bildet sich nach seiner Regel neu (Zuordnungsdialog, Entwurf Zonenzuordnung IFC 6).
+    /// </summary>
+    public const string PROFIL = "PROFIL";
+    /// <summary>Die Wahl von Hand für Räume zurücknehmen (Räume) — sie bekommen wieder den Befund der Rangfolge.</summary>
+    public const string PROFIL_ZURUECK = "PROFIL_ZURUECK";
+    /// <summary>Alle Vorschläge als Wahl von Hand übernehmen (F2, F6).</summary>
+    public const string VORSCHLAEGE = "VORSCHLAEGE";
+    /// <summary>Alle Wahlen von Hand zurücknehmen — der Plan zeigt wieder die Vorschläge.</summary>
+    public const string VORSCHLAEGE_ZURUECK = "VORSCHLAEGE_ZURUECK";
 }
 
 /// <summary>
@@ -893,6 +904,12 @@ public sealed record GebaeudeZonenplanDaten
 
     /// <summary>Wie viele frühere Schritte sich nicht mehr auflegen ließen.</summary>
     public int Verworfen { get; init; }
+
+    /// <summary>
+    /// Die Profilzuordnung je Raum für „Nutzungsprofile zuordnen…“ (Bündel, Katalogbaum, Zähler, Ampel); <c>null</c>, wenn die
+    /// Datei keine Raumprofile trägt.
+    /// </summary>
+    public GebaeudeProfilzuordnungDaten? Profilzuordnung { get; init; }
 }
 
 /// <summary>Ein Raum einer Zone (aufgeklappt): Name, Geschoss, Fläche, Beheizungsregel und ihr Beleg.</summary>

@@ -173,6 +173,7 @@ namespace WindowsFormsApplication1
                 Schrittmeldung = schritt.Meldung == null ? null : GebaeudeImportHuelle.MeldungDaten(schritt.Meldung),
                 LetzterAbgelehnt = schritt.Abgelehnt,
                 Verworfen = schritt.Verworfen,
+                Profilzuordnung = GebaeudeImportProfilzuordnung.Daten(plan),
             };
         }
 

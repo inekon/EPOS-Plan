@@ -58303,4 +58303,106 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="RNP_GRUPPE_WOHNEN" xml:space="preserve">
     <value>Residential</value>
   </data>
+  <data name="GIMP_PZ_TITEL" xml:space="preserve">
+    <value>Assign usage profiles</value>
+  </data>
+  <data name="GIMP_PZ_KNOPF" xml:space="preserve">
+    <value>Assign usage profiles…</value>
+  </data>
+  <data name="GIMP_PZ_KNOPF_OFFEN" xml:space="preserve">
+    <value>Assign usage profiles… ({0} open)</value>
+  </data>
+  <data name="GIMP_PZ_KATALOG" xml:space="preserve">
+    <value>Catalogue</value>
+  </data>
+  <data name="GIMP_PZ_SUCHE" xml:space="preserve">
+    <value>Search profile (number or name)</value>
+  </data>
+  <data name="GIMP_PZ_KATALOG_LEER" xml:space="preserve">
+    <value>No profile matches the search.</value>
+  </data>
+  <data name="GIMP_PZ_BUENDEL_TITEL" xml:space="preserve">
+    <value>Rooms of the file</value>
+  </data>
+  <data name="GIMP_PZ_SP_BUENDEL" xml:space="preserve">
+    <value>Group</value>
+  </data>
+  <data name="GIMP_PZ_SP_RAEUME" xml:space="preserve">
+    <value>Rooms</value>
+  </data>
+  <data name="GIMP_PZ_SP_FLAECHE" xml:space="preserve">
+    <value>Area [m²]</value>
+  </data>
+  <data name="GIMP_PZ_SP_STAND" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="GIMP_PZ_SP_VORSCHLAG" xml:space="preserve">
+    <value>Profile / proposal</value>
+  </data>
+  <data name="GIMP_PZ_STAND_EINDEUTIG" xml:space="preserve">
+    <value>unambiguous</value>
+  </data>
+  <data name="GIMP_PZ_STAND_VORSCHLAG" xml:space="preserve">
+    <value>Proposal</value>
+  </data>
+  <data name="GIMP_PZ_STAND_OFFEN" xml:space="preserve">
+    <value>Query</value>
+  </data>
+  <data name="GIMP_PZ_STAND_OHNE" xml:space="preserve">
+    <value>no candidate</value>
+  </data>
+  <data name="GIMP_PZ_STAND_HAND" xml:space="preserve">
+    <value>manual</value>
+  </data>
+  <data name="GIMP_PZ_GEMISCHT" xml:space="preserve">
+    <value>mixed</value>
+  </data>
+  <data name="GIMP_PZ_KEINE" xml:space="preserve">
+    <value>no usage</value>
+  </data>
+  <data name="GIMP_PZ_NUR_OFFENE" xml:space="preserve">
+    <value>open only</value>
+  </data>
+  <data name="GIMP_PZ_ALLE_UEBERNEHMEN" xml:space="preserve">
+    <value>Accept all proposals</value>
+  </data>
+  <data name="GIMP_PZ_ALLE_ZURUECK" xml:space="preserve">
+    <value>Revert</value>
+  </data>
+  <data name="GIMP_PZ_UEBERNEHMEN" xml:space="preserve">
+    <value>accept</value>
+  </data>
+  <data name="GIMP_PZ_AUFHEBEN" xml:space="preserve">
+    <value>Remove assignment</value>
+  </data>
+  <data name="GIMP_PZ_SCHNELLWAHL" xml:space="preserve">
+    <value>Candidates:</value>
+  </data>
+  <data name="GIMP_PZ_HINWEIS_WAHL" xml:space="preserve">
+    <value>Tick groups, then click a profile in the catalogue.</value>
+  </data>
+  <data name="GIMP_PZ_GEWAEHLT" xml:space="preserve">
+    <value>{0} groups selected ({1} rooms)</value>
+  </data>
+  <data name="GIMP_PZ_ZAEHLER" xml:space="preserve">
+    <value>{0} unambiguous · {1} proposal · {2} query · {3} none · {4} manual</value>
+  </data>
+  <data name="GIMP_PZ_KEIN_BUENDEL" xml:space="preserve">
+    <value>No open group.</value>
+  </data>
+  <data name="GIMP_PZ_RAUMART" xml:space="preserve">
+    <value>Room type {0}</value>
+  </data>
+  <data name="GIMP_PZ_KENNWERTE" xml:space="preserve">
+    <value>{0} °C · {1}–{2} h</value>
+  </data>
+  <data name="GIMP_PZ_AMPEL_VORSCHLAG" xml:space="preserve">
+    <value>{0} rooms carry an unconfirmed proposal — the import is possible; confirm under “Assign usage profiles…”.</value>
+  </data>
+  <data name="GIMP_PZ_AMPEL_RUECKFRAGE" xml:space="preserve">
+    <value>{0} rooms without an unambiguous profile — please choose under “Assign usage profiles…”.</value>
+  </data>
+  <data name="GIMP_PZ_AMPEL_GRUEN" xml:space="preserve">
+    <value>All rooms carry a set profile.</value>
+  </data>
 </root>

@@ -1005,6 +1005,7 @@ namespace WindowsFormsApplication1
         {
             if (s == null) return new Planschritt(true);
             IReadOnlyList<string> raeume = s.Raeume ?? Array.Empty<string>();
+            if (GebaeudeImportProfilzuordnung.Schritt(plan, s) is Planschritt profil) return profil;
             switch (s.Art)
             {
                 case GebaeudePlanschrittArt.ANLEGEN: return plan.ZoneAnlegen(s.Name, s.Nutzung);
