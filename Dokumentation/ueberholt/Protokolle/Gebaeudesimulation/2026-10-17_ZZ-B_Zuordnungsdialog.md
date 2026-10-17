@@ -58,21 +58,59 @@ vorhandenen Nutzungsprofilen zugeordnet werden können — mit strukturierter Au
   Überlagerung mit Grund), Kommentare ohne Formatnamen (`Im_Quelltext_der_Komponente_steht_kein_Formatname`).
 - `EPOS.Kern.Tests` mit Filter `DokumentationLinkWache|RepositoryOrdnungWache`: 24 bestanden.
 
-## 5. Offene Reste
+## 5. Offene Reste und Nachzug
 
-1. **Handänderungen am Zonenbaum vor einer Profilwahl:** Der Kern bildet den Plan bei jeder Profiloperation nach seiner Regel
-   neu; frühere Schritte von Hand (Umhängen, Umbenennen) gehen dabei verloren, spätere bleiben. Eine Rückfrage wie vor dem
-   Regelwechsel fehlt noch.
-2. **Einzelraum im Bündel:** Das Aufklappen eines Bündels auf seine Räume (Abweichung eines Einzelraums, Anzeige
-   „gemischt“) ist in der Hülle vorbereitet (`Gemischt`, Raumkennungen je Bündel), im Dialog aber nicht gebaut.
-3. Filter „nur Vorschläge“ und „nur beheizte“ des Entwurfs fehlen; „nur offene“ ist gebaut.
+Nachzug auf `zonb` nach dem Merge mit `zon` (ZZ-A Kern samt Rest). Kein Schemaschritt.
+
+1. **Handschritte vor einer Profiloperation — erledigt (Rückfrage).** Die vier Profiloperationen (`PROFIL`,
+   `PROFIL_ZURUECK`, `VORSCHLAEGE`, `VORSCHLAEGE_ZURUECK`) gehen im Importdialog über `Profilschritt`: stehen nach der letzten
+   Neubildung Schritte von Hand (`GebaeudePlanschrittArt.Gefaehrdet`: alle Schritte nach der letzten Profiloperation außer
+   `HAKEN`, den der Plan durch die Neubildung trägt; `PROJEKTDATEI` und `RESTPROFIL` zählen mit), fragt der Dialog wie vor dem
+   Regelwechsel (`Rueckfrage`, Vorgabe „Nein“, Texte `GIMP_PZ_FRAGE_TITEL`, `GIMP_PZ_FRAGE` mit Zahl); „Ja“ führt den Schritt aus,
+   „Nein“ und Esc lassen den Plan. Frühere Schritte sind schon verworfen und lösen keine neue Frage aus.
+   **Entscheid:** Unberührte Handschritte erhalten wird nicht gebaut. Die Schritte von Hand tragen Zonenschlüssel des Plans zu
+   ihrer Zeit; die Neubildung vergibt neue Schlüssel und verschiebt unter Z7 Räume zwischen Zonen, sodass ein Wiedereinspielen
+   eine Abbildung alter auf neue Zonen bräuchte (Umbau des Zonenplans). Die Rückfrage genügt für den Schutz.
+2. **Einzelraum im Bündel — erledigt.** Jedes Bündel trägt `Raumzeilen` (Kennung, Name, Fläche, Stand, Profil); der Knopf
+   „Räume einzeln“ (`GIMP_PZ_AUFKLAPPEN`) klappt auf, jeder Raum ist einzeln wählbar und bekommt mit Katalogklick oder
+   Schnellwahl sein eigenes Profil (`ProfilZuordnen` mit der Raumliste). Gemischte Bündel stehen aufgeklappt und zeigen ihre
+   Räume mit Profil.
+3. **Filter — erledigt.** „nur Vorschläge“ (`GIMP_PZ_NUR_VORSCHLAEGE`) und „nur beheizte“ (`GIMP_PZ_NUR_BEHEIZTE`, Bündel mit
+   mindestens einem beheizten Raum, `GebaeudeProfilbuendelDaten.Beheizt`) neben „nur offene“; sie wirken zusammen.
 4. Infoknopf auf die Hilfeseite „Gebäudeimport“ und der Abschnitt der Wiki-Quelle (`Projekte/Wiki/`) stehen aus; Bedienung
-   oben ist die Vorlage.
-5. Die Zähler der Hüllenprobe hängen am Stand der Rangfolge aus ZZ-A; ändert der Kern-Rest (Gebäudeart, F7) die Zählung der
-   Verwaltung, prüft der Test nur Beziehungen und Summen (113, Übernahme verschiebt Vorschläge nach „von Hand“), nicht die
-   absoluten Zahlen.
-6. **Neue Mitglieder aus dem Kern-Rest ZZ-A (Zweig `zon`, nach dem Abzweig von `zonb`):** `Planzone.Dateivorschlag` (Zonen mit
-   Bezeichnung der Datei als `RAUMPROFIL_VORSCHLAG`, Herkunft „Bezeichnung der Datei“) und `SqprojZonenergebnis.Raumvorschlaege`
-   (F7, Vorschläge für Räume ohne Zone im Projektdatei-Weg) gibt es auf `zonb` nicht, deshalb zeigt der Dialog sie nicht. Nach
-   dem Merge: die Herkunft im Zonenbaum zeigen und in der Ampel zählen, die Raumvorschläge des Projektdatei-Wegs als Bündel
-   oder als Hinweis zeigen.
+   oben ist die Vorlage, ergänzt um Einzelraum, Filter und die zwei Hinweisblöcke.
+5. Die Hüllenprobe prüft Beziehungen und Summen. Verwaltung nach dem Merge unverändert: 113 Räume in 17 Bündeln; vorher
+   66 · 4 · 43 · 0 · 0 (Ampel rot), nach „Alle Vorschläge übernehmen“ 66 · 0 · 43 · 0 · 4, nach den Kandidaten 66 · 0 · 0 · 0 · 47
+   (grün); die Datei trägt keine Zone mit Bezeichnung der Datei.
+6. **Mitglieder aus ZZ-A — erledigt.**
+   - (a) `Planzone.Dateivorschlag`: Die Hülle zählt jeden beheizten Raum einer solchen Zone als Vorschlag (gelb), solange er
+     keine Wahl von Hand trägt, auch ohne Befund je Raum (gbXML); dann liefert die Hülle die Profilzuordnung auch ohne
+     Raumprofile. Der Hinweisblock „Zonen mit Bezeichnung der Datei“ (`GIMP_PZ_DATEIZONEN_TITEL`) zeigt Zone, Räume,
+     Fläche, Vorschlag und Begründung mit „übernehmen“ (Schritt `PROFIL`); „Alle Vorschläge übernehmen“ bestätigt sie (Kern).
+   - (b) `SqprojZonenergebnis.Raumvorschlaege`: Im Projektdatei-Weg (eine Zone mit `Projektdatei.Zonierung`) zeigt der
+     Hinweisblock „Räume ohne Zone der Projektdatei“ (`GIMP_PZ_RESTRAEUME_TITEL`, `GIMP_PZ_RESTRAEUME_HINWEIS`) je Raum den
+     Befund aus `Zonenplan.Restvorschlaege()` mit Vorschlag bzw. Kandidaten und Begründung; nie automatisch. Der Kern bot dafür
+     nur `Zuordnen` in eine bestehende Zone und `ProfilzoneAnlegen` getrennt — eine Profiloperation hätte die Zonen der
+     Projektdatei durch die Regelbildung ersetzt. **Neu im Kern:** `Zonenplan.InProfilzoneZuordnen(raeume, profilschluessel)`
+     ordnet ohne Neubildung der ersten Zone mit dem Profil und gleicher Beheizung zu, sonst einer neuen Zone mit dem
+     Profilnamen (alle oder keiner). Schritt `RESTPROFIL`, Knopf „in Zone „…““ (`GIMP_PZ_IN_ZONE`), ohne Rückfrage, weil er
+     nichts neu bildet. Test in `SqprojRaumvorschlagTests`.
+
+Neue Ressourcen (de/en, Designer erzeugt): `GIMP_PZ_NUR_VORSCHLAEGE`, `GIMP_PZ_NUR_BEHEIZTE`, `GIMP_PZ_AUFKLAPPEN`,
+`GIMP_PZ_DATEIZONEN_TITEL`, `GIMP_PZ_RESTRAEUME_TITEL`, `GIMP_PZ_RESTRAEUME_HINWEIS`, `GIMP_PZ_IN_ZONE`, `GIMP_PZ_FRAGE_TITEL`,
+`GIMP_PZ_FRAGE`.
+
+Neue Tests: `SqprojRaumvorschlagTests.Raum_ohne_Zone_geht_in_die_Zone_seines_Profils_ohne_Neubildung` und die Hülle im
+bestehenden F7-Fall; `GebaeudeProfilzuordnungDialogTests` (Einzelraum und gemischte Bündel, Filter, Hinweisblöcke);
+`GebaeudeProfilzuordnungHuelleTests` (Raumzeilen, gemischtes Bündel nach Einzelwahl, Rückfrage im Importdialog mit „Nein“ und
+„Ja“, `Gefaehrdet`).
+
+Abnahme des Nachzugs:
+
+- `dotnet build WP-Plan.Kern.slnf -c Release`: 0 Fehler.
+- Windows-Schale `WindowsFormsApplication1.csproj -c Debug -p:Platform=x64 -p:EnableWindowsTargeting=true`: 0 Fehler.
+- `EPOS.UI.Tests` mit Filter `GebaeudeImport|Profilzuordnung|Zonenbaum|Modellpruefung|Wache|Ueberlagerungstitel`: 290 bestanden,
+  0 übersprungen. Nachgezogen: `KiMaskenabdeckungWacheTests` (`GebaeudeProfilzuordnung` 3 → 6 Eingabestellen: zwei Filter und
+  der Haken je Raum, Vermerk erweitert).
+- `EPOS.Kern.Tests` mit Filter `Zonenplan|Raumprofil|Sqproj|Zonierung|Quellenprobe|DokumentationLinkWache|RepositoryOrdnungWache`:
+  339 bestanden, 0 rot.
