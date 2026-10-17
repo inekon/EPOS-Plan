@@ -101,7 +101,7 @@ public partial class ZapfprofilDialogTests : EposBunitContext
             summe += kwh;
             v.Zonen.Add(new ZapfprofilZonenwertDaten { IdZone = e.Zonen[i].Id, Position = i, Zone = e.Zonen[i].Name, JahresbedarfZapfungKwh = kwh });
         }
-        v.Ansichten.Add(Ansicht("Summe aller Zonen", summe));
+        v.Ansichten.Add(Ansicht("Summe aller Bereiche", summe));
         for (int i = 0; i < e.Zonen.Count; i++) v.Ansichten.Add(Ansicht(e.Zonen[i].Name, v.Zonen[i].JahresbedarfZapfungKwh));
         v.Meldungen.AddRange(meldungen);
         return v;
@@ -172,19 +172,19 @@ public partial class ZapfprofilDialogTests : EposBunitContext
         IElement tabelle = cut.Find("table.epos-zapfprofil-zonen");
         Assert.Equal(2, tabelle.QuerySelectorAll("tbody tr.epos-zapfprofil-bereich").Length);
         Assert.Single(tabelle.QuerySelectorAll("tbody tr.epos-zapfprofil-bereichdetail"));
-        Assert.Contains("Summe 2 Zonen", tabelle.QuerySelector("tfoot")!.TextContent);
+        Assert.Contains("Summe 2 Bereiche", tabelle.QuerySelector("tfoot")!.TextContent);
         Assert.Contains("70,0", tabelle.QuerySelector("tfoot")!.TextContent);   // 20 + 50 MWh/a aus der Prüfvorschau
         Assert.Contains("Wohnen A", tabelle.TextContent);
         Assert.Equal("20", Feld(cut, "Bezugsgröße, Bereich 1").GetAttribute("value"));
         Assert.Contains("Wohneinheiten", tabelle.QuerySelector("tbody tr.epos-zapfprofil-bereich")!.TextContent);
-        Assert.NotNull(Knopf(cut, "Zone hinzufügen"));
+        Assert.NotNull(Knopf(cut, "Bereich hinzufügen"));
         Assert.NotNull(Knopf(cut, "Duplizieren"));
         Assert.NotNull(Knopf(cut, "Entfernen"));
 
         // Je Zeile Nutzungsart, Bezugsgröße und Niveau als Felder; der Name steht in der Detailzeile (ZC-Q3 B).
-        Assert.DoesNotContain("Zone „Zone 1“", cut.Markup);
+        Assert.DoesNotContain("Bereich „Zone 1“", cut.Markup);
         Assert.Equal(2, cut.FindAll("input[inputmode=decimal]").Count);
-        Assert.Equal("Zone 1", Feld(cut, "Zonenname").GetAttribute("value"));
+        Assert.Equal("Zone 1", Feld(cut, "Bereichsname").GetAttribute("value"));
         Assert.NotNull(cut.Find(".epos-zapfprofil-bereichdetail").QuerySelector("input"));
         Assert.Contains("Nutzungsart", cut.Markup);
         Assert.Equal(new[] { "niedrig", "mittel", "hoch" },
@@ -244,7 +244,7 @@ public partial class ZapfprofilDialogTests : EposBunitContext
         Assert.Equal("Die Dauerlinie zeigt die Stufe Experte.", cut.Instance.Hinweis);
         Assert.Equal("tagesgang", cut.Instance.AktiverReiter);
 
-        Assert.Contains("Unterschrift Tagesgang Summe aller Zonen", cut.Markup);
+        Assert.Contains("Unterschrift Tagesgang Summe aller Bereiche", cut.Markup);
         Assert.Contains("Zapfung 70,0 MWh/a", cut.Find(".epos-zapfprofil-kurzkennzahlen").TextContent);
 
         // Kennzahlen: der größte Stundenwert trägt seinen Vermerk.
@@ -653,8 +653,8 @@ public partial class ZapfprofilDialogTests : EposBunitContext
     [Fact]
     public void Fehlende_Zapfkategorien_stehen_benannt_an_der_Zone()
     {
-        const string SATZ = "Zone „Zone 1“ trägt 0: Für die Nutzungsart „Wohnen A“ (Katalogversion TEST-1) stehen keine "
-                            + "Zapfkategorien im Katalog — die Zone rechnet nicht stochastisch.";
+        const string SATZ = "Bereich „Zone 1“ trägt 0: Für die Nutzungsart „Wohnen A“ (Katalogversion TEST-1) stehen keine "
+                            + "Zapfkategorien im Katalog — der Bereich rechnet nicht stochastisch.";
         var ablehnung = new ZapfprofilMeldung("ZPG_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN", "Zone 1", SATZ,
                                               ZapfprofilMeldungsart.Ablehnung, "Kernsatz", 0);
         var cut = Aufbauen(jahresreihe: (e, _) => Task.FromResult(Gezogen(e, ablehnung)));
@@ -818,7 +818,7 @@ public partial class ZapfprofilDialogTests : EposBunitContext
 
     private static ZapfprofilAuslegungStartDaten AuslegungStart(ZapfprofilAuslegungEingabeDaten? eingabe) => new()
     {
-        Kontext = "Summe aller Zonen",
+        Kontext = "Summe aller Bereiche",
         Eingabe = eingabe ?? new ZapfprofilAuslegungEingabeDaten { SpeicherC = 60 },
         Verfuegbar = true,
         Ergebnis = new ZapfprofilAuslegungDaten
@@ -944,7 +944,7 @@ public partial class ZapfprofilDialogTests : EposBunitContext
         Assert.Equal(300, cut.Instance.Eingabe.Auslegung!.PunktVolumenL);
 
         // Der Name einer Zone ändert die Auslegung nicht — der Punkt bleibt.
-        Feld(cut, "Zonenname").Input("Zone Nord");
+        Feld(cut, "Bereichsname").Input("Zone Nord");
         Assert.Equal(300, cut.Instance.Eingabe.Auslegung!.PunktVolumenL);
         Assert.False(cut.Instance.Eingabe.PunktUeberholt);
         Assert.Empty(cut.FindAll(".epos-zapfprofil-punktueberholt"));
@@ -966,7 +966,7 @@ public partial class ZapfprofilDialogTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-zapfprofil-punktueberholt"));
 
         // Eine neue Zone macht ihn wieder überholt; das OK trägt die Marke zum Wirt.
-        Knopf(cut, "Zone hinzufügen").Click();
+        Knopf(cut, "Bereich hinzufügen").Click();
         Assert.True(cut.Instance.Eingabe.PunktUeberholt);
         Feld(cut, "Bezugsgröße").Input("10");
         Niveau(cut).Change("3");
@@ -1024,9 +1024,9 @@ public partial class ZapfprofilDialogTests : EposBunitContext
     {
         ZapfprofilEingabeDaten e = Eingabe();
         var hinweis = new ZapfprofilMeldung("ZPG_HINW_BEDARF_AUSSERHALB_BANDBREITE", "Zone 1",
-                                            "Zone „Zone 1“: Bedarf außerhalb der Bandbreite.", ZapfprofilMeldungsart.Hinweis);
+                                            "Bereich „Zone 1“: Bedarf außerhalb der Bandbreite.", ZapfprofilMeldungsart.Hinweis);
         var ablehnung = new ZapfprofilMeldung("ZPG_EINGABE_BEZUGSMENGE_FEHLT", "Zone 2",
-                                              "Zone „Zone 2“ trägt 0: Bezugsmenge fehlt.", ZapfprofilMeldungsart.Ablehnung);
+                                              "Bereich „Zone 2“ trägt 0: Bezugsmenge fehlt.", ZapfprofilMeldungsart.Ablehnung);
         var cut = Aufbauen(Daten(e, Vorschau(e, hinweis, ablehnung)));
 
         IElement feld = cut.Find(".epos-zapfprofil-feldhinweis");
@@ -1034,7 +1034,7 @@ public partial class ZapfprofilDialogTests : EposBunitContext
         Assert.Contains("Bedarf außerhalb der Bandbreite", feld.TextContent);
 
         // Die Ablehnung der nicht gewählten Zone steht benannt in der Vorschau.
-        Assert.Contains("Zone „Zone 2“ trägt 0: Bezugsmenge fehlt.", cut.Find(".epos-warnbanner").TextContent);
+        Assert.Contains("Bereich „Zone 2“ trägt 0: Bezugsmenge fehlt.", cut.Find(".epos-warnbanner").TextContent);
 
         // Nicht blockierend: OK geht durch.
         ZapfprofilErgebnisDaten? ergebnis = null;
@@ -1131,11 +1131,11 @@ public partial class ZapfprofilDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        Knopf(cut, "Zone hinzufügen").Click();
+        Knopf(cut, "Bereich hinzufügen").Click();
         Assert.Equal(3, cut.Instance.Eingabe.Zonen.Count);
         // ZC-Q3 B: Der Name ist automatisch „Bereich n" und steht in der Detailzeile der neuen, markierten Zeile.
         Assert.Equal("Bereich 3", cut.Instance.Eingabe.Zonen[2].Name);
-        Assert.Equal("Bereich 3", Feld(cut, "Zonenname").GetAttribute("value"));
+        Assert.Equal("Bereich 3", Feld(cut, "Bereichsname").GetAttribute("value"));
 
         cut.FindAll("table.epos-zapfprofil-zonen tbody button")[0].Click();
         Knopf(cut, "Duplizieren").Click();
@@ -1157,13 +1157,13 @@ public partial class ZapfprofilDialogTests : EposBunitContext
     {
         bool gerufen = false;
         var fehler = new ZapfprofilMeldung("ZPG_MSG_ZONE_OHNE_BEZUGSMENGE", "Zone 1",
-                                           "Zone „Zone 1“: Bitte eine Bezugsgröße größer 0 eingeben.", ZapfprofilMeldungsart.Fehler);
+                                           "Bereich „Zone 1“: Bitte eine Bezugsgröße größer 0 eingeben.", ZapfprofilMeldungsart.Fehler);
         var cut = Aufbauen(pruefen: _ => new[] { fehler }, geschlossen: _ => gerufen = true);
 
         Knopf(cut, "OK").Click();
 
         Assert.False(gerufen);
-        Assert.Equal("Zone „Zone 1“: Bitte eine Bezugsgröße größer 0 eingeben.", cut.Instance.OkMeldung);
+        Assert.Equal("Bereich „Zone 1“: Bitte eine Bezugsgröße größer 0 eingeben.", cut.Instance.OkMeldung);
         Assert.Contains("Bitte eine Bezugsgröße größer 0 eingeben.", cut.Find(".epos-warnbanner").TextContent);
     }
 
@@ -1225,7 +1225,7 @@ public partial class ZapfprofilDialogTests : EposBunitContext
         Assert.Contains("Brauchwasser-Zapfprofil", cut.Markup);
         Assert.Empty(cut.FindAll("table.epos-zapfprofil-zonen tbody tr.epos-zapfprofil-bereich"));
         Assert.NotNull(cut.Find(".epos-zapfprofil-ohnevorschau"));
-        Assert.NotNull(Knopf(cut, "Zone hinzufügen"));
+        Assert.NotNull(Knopf(cut, "Bereich hinzufügen"));
     }
 
     // =================================================================================
@@ -1342,7 +1342,7 @@ public partial class ZapfprofilDialogTests : EposBunitContext
         Setze("zone", "Zone 2");
         cut.Render();
         Assert.Equal(2, Zugang("zone").Lesen());
-        Assert.Equal("Zone 2", Feld(cut, "Zonenname").GetAttribute("value"));
+        Assert.Equal("Zone 2", Feld(cut, "Bereichsname").GetAttribute("value"));
 
         // „Anzeigen für" wählt die Ansicht der Vorschau.
         Setze("ansicht", "Wohnen");

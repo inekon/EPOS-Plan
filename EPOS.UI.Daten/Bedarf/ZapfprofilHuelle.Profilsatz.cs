@@ -248,7 +248,7 @@ namespace WindowsFormsApplication1
         {
             string keinErgebnis = Text_(PS_MSG_KEIN_ERGEBNIS, "Es ist kein Zapfprofil gerechnet — ohne Ergebnis kein Profilsatz.");
             if (eingabe == null || eingabe.Zonen.Count == 0)
-                return (PS_MSG_KEIN_ERGEBNIS, keinErgebnis + " " + Text_("ZPG_MSG_KEINE_ZONE", "Es ist keine Zone angelegt."), null);
+                return (PS_MSG_KEIN_ERGEBNIS, keinErgebnis + " " + Text_("ZPG_MSG_KEINE_ZONE", "Es ist kein Bereich angelegt."), null);
 
             ZapfVerfuegbarkeit verfuegbar = ZapfprofilCtrl.Verfuegbar();
             if (!verfuegbar.Ja) return (PS_MSG_KEIN_ERGEBNIS, keinErgebnis + " " + Verfuegbarkeitsgrund(verfuegbar), null);

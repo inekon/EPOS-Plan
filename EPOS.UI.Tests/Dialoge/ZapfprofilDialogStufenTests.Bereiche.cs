@@ -56,7 +56,7 @@ public partial class ZapfprofilDialogStufenTests
         Assert.Single(cut.FindAll("tr.epos-zapfprofil-bereichdetail"));
         Assert.Same(Bereichzeilen(cut)[0], detail.PreviousElementSibling);
         Assert.Equal("5", detail.QuerySelector("td")!.GetAttribute("colspan"));
-        Assert.Equal("Wohnen", Feld(cut, "Zonenname").GetAttribute("value"));
+        Assert.Equal("Wohnen", Feld(cut, "Bereichsname").GetAttribute("value"));
         // Einfach: kein „Katalog…" in der Detailzeile, die Stufe Experte bringt ihn.
         Assert.Empty(detail.QuerySelectorAll(".epos-zapfprofil-katalogknopf"));
 
@@ -65,10 +65,10 @@ public partial class ZapfprofilDialogStufenTests
         detail = cut.Find("tr.epos-zapfprofil-bereichdetail");
         Assert.Single(cut.FindAll("tr.epos-zapfprofil-bereichdetail"));
         Assert.Same(Bereichzeilen(cut)[1], detail.PreviousElementSibling);
-        Assert.Equal("Büro", Feld(cut, "Zonenname").GetAttribute("value"));
+        Assert.Equal("Büro", Feld(cut, "Bereichsname").GetAttribute("value"));
 
         // Der Name ändert sich in der Detailzeile; die Zeile selbst trägt keinen Namen (ZC-Q3 B).
-        Feld(cut, "Zonenname").Input("Büro Nord");
+        Feld(cut, "Bereichsname").Input("Büro Nord");
         Assert.Equal("Büro Nord", cut.Instance.Eingabe.Zonen[1].Name);
         Assert.DoesNotContain("Büro Nord", Bereichzeilen(cut)[1].TextContent);
 
@@ -83,7 +83,7 @@ public partial class ZapfprofilDialogStufenTests
         sprung.SetupVoid("feldFokus", _ => true);
         var cut = AufbauenGefuehrt();
 
-        Knopf(cut, "Zone hinzufügen").Click();
+        Knopf(cut, "Bereich hinzufügen").Click();
 
         IElement neue = Bereichzeilen(cut)[2];
         Assert.Contains("epos-zeile--markiert", neue.ClassName ?? "");
@@ -92,7 +92,7 @@ public partial class ZapfprofilDialogStufenTests
         // Die neue Zeile ist leer: keine Nutzungsart, keine Bezugsgröße.
         Assert.Equal("", Auswahl(cut, "Nutzungsart, Bereich 3").GetAttribute("value") ?? "");
         Assert.Equal("", Feld(cut, "Bezugsgröße, Bereich 3").GetAttribute("value") ?? "");
-        Assert.Equal("Zone „Bereich 3“: Bitte eine Nutzungsart wählen.",
+        Assert.Equal("Bereich „Bereich 3“: Bitte eine Nutzungsart wählen.",
                      cut.Find("tr.epos-zapfprofil-bereichdetail .epos-zapfprofil-naechsterschritt").TextContent.Trim());
 
         // Der Fokus geht in die Klappliste Nutzungsart der MARKIERTEN Zeile — der neuen.

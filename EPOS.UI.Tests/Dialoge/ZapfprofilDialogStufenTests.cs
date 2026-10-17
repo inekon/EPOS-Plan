@@ -87,7 +87,7 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
             mengen.Add(menge);
             summe += menge * 1000;
         }
-        v.Ansichten.Add(Ansicht("Summe aller Zonen", summe, null));
+        v.Ansichten.Add(Ansicht("Summe aller Bereiche", summe, null));
         for (int i = 0; i < e.Zonen.Count; i++)
         {
             ZapfprofilZoneDaten z = e.Zonen[i];
@@ -251,7 +251,7 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
 
         // ZB3: in Einfach nur die Karte „Nutzung" (ohne Klappe), keine Gruppe „Gebäude und Anlage", kein Katalogknopf.
         // ZC2: Einfach zeigt den Block der Nutzungsbereiche und die Vorschau; die Karte „Nutzung" gibt es nicht mehr.
-        Assert.Equal(new[] { "Nutzungszonen", "Vorschau" }, Gruppen(cut));
+        Assert.Equal(new[] { "Nutzungsbereiche", "Vorschau" }, Gruppen(cut));
         Assert.Empty(cut.FindAll(".epos-zapfprofil-karte--nutzung"));
         Assert.Empty(cut.FindAll(".epos-zapfprofil .epos-klappgruppe"));
         Assert.Empty(cut.FindAll(".epos-zapfprofil-katalogknopf"));
@@ -273,9 +273,9 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
         Stufe(cut, "Experte", aufklappen: false);
 
         // ZB3: zwei Ebenen - der Block der Zone und die Gruppe „Gebäude und Anlage", je als Karten, alle zugeklappt.
-        Assert.Equal(new[] { "Nutzungszonen", "Zone „Wohnen“", "Gebäude und Anlage", "Vorschau" }, Gruppen(cut));
+        Assert.Equal(new[] { "Nutzungsbereiche", "Bereich „Wohnen“", "Gebäude und Anlage", "Vorschau" }, Gruppen(cut));
         string[] Karten(string block) => cut.FindAll(block + " .epos-klappgruppe-text").Select(k => k.TextContent.Trim()).ToArray();
-        Assert.Equal(new[] { "Belegung", "Kalender", "Messwert", "Tagesbedarf", "Fachwerte der Zone" }, Karten(".epos-zapfprofil-zonenblock"));
+        Assert.Equal(new[] { "Belegung", "Kalender", "Messwert", "Tagesbedarf", "Fachwerte des Bereichs" }, Karten(".epos-zapfprofil-zonenblock"));
         Assert.Equal(new[] { "Zirkulation", "Ladeleistung und Ladefenster", "Leitungsinhalt", "Fachwerte · Gebäude", "Stochastik · Jahresreihe" },
                      Karten(".epos-zapfprofil-gebaeudeblock"));
         Assert.All(cut.FindAll(".epos-zapfprofil-karte .epos-klappgruppe-knopf"), k => Assert.Equal("false", k.GetAttribute("aria-expanded")));
@@ -399,21 +399,21 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
         // ZC2: Der Block bleibt fünfspaltig; Topologie, Anteil und Rechenweg stehen bis W9 (ZC5) als leise
         // Zeile in der Detailzeile der markierten Zeile.
         IElement tabelle = cut.Find("table.epos-zapfprofil-zonen");
-        Assert.Equal(new[] { "Zone", "Nutzungsart", "Bezugsgröße", "Niveau", "MWh/a" },
+        Assert.Equal(new[] { "Bereich", "Nutzungsart", "Bezugsgröße", "Niveau", "MWh/a" },
                      tabelle.QuerySelectorAll("thead th").Select(t => t.TextContent.Trim()).ToArray());
         string kennzeile = tabelle.QuerySelector(".epos-zapfprofil-bereichkennzeile")!.TextContent;
         Assert.Contains("Topologie Speicher", kennzeile);
         Assert.Contains("Anteil 29 %", kennzeile);   // 20 von 70 MWh/a
         Assert.Contains("Rechenweg Katalog", kennzeile);
         Assert.Single(tabelle.QuerySelectorAll(".epos-zapfprofil-bereichkennzeile"));
-        Assert.Contains("Summe 2 Zonen", tabelle.QuerySelector("tfoot")!.TextContent);
+        Assert.Contains("Summe 2 Bereiche", tabelle.QuerySelector("tfoot")!.TextContent);
 
         // Zone hinzufügen und entfernen: die Summe zählt mit.
-        Knopf(cut, "Zone hinzufügen").Click();
-        Assert.Contains("Summe 3 Zonen", cut.Find("table.epos-zapfprofil-zonen tfoot").TextContent);
+        Knopf(cut, "Bereich hinzufügen").Click();
+        Assert.Contains("Summe 3 Bereiche", cut.Find("table.epos-zapfprofil-zonen tfoot").TextContent);
         Assert.NotNull(cut.Instance.Eingabe.Zonen[2].Angaben);
         Knopf(cut, "Entfernen").Click();
-        Assert.Contains("Summe 2 Zonen", cut.Find("table.epos-zapfprofil-zonen tfoot").TextContent);
+        Assert.Contains("Summe 2 Bereiche", cut.Find("table.epos-zapfprofil-zonen tfoot").TextContent);
 
         // Tagesbedarf manuell (die gewählte Zone ist nach dem Entfernen „Büro"): Die Liste nennt den Rechenweg der Zone.
         Feld(cut, "Tagesbedarf").Input("50");

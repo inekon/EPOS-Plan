@@ -48,7 +48,7 @@ public partial class ZapfprofilDialogStufenTests
                      quelle.QuerySelectorAll("label.epos-option").Select(l => l.TextContent.Trim()).ToArray());
         Assert.Empty(cut.FindAll(".epos-zapfprofil-kalender-gebaeude"));
         // ZB8: Format und Vorrang der eigenen Ferien stehen im title, nicht als Dauerzeile.
-        Assert.Contains("Eigene Ferien der Zone gehen vor", Karte(cut).QuerySelector(".epos-zapfprofil-ferien-neu")!.GetAttribute("title"));
+        Assert.Contains("Eigene Ferien des Bereichs gehen vor", Karte(cut).QuerySelector(".epos-zapfprofil-ferien-neu")!.GetAttribute("title"));
     }
 
     [Fact]
@@ -74,7 +74,7 @@ public partial class ZapfprofilDialogStufenTests
         Knopf(cut, "+ Ferien").Click();
         Datumsfelder(cut, "bis")[0].Change("06.01.");
         Assert.Equal("wie Gebäude „Haus Nord“ · 1 eigener Ferienzeitraum · Feiertage Baden-Württemberg", Zusammenfassung(cut));
-        Assert.Contains("Die Zone trägt eigene Ferien; die Ferien des Gebäudes gelten nicht.", cut.Markup);
+        Assert.Contains("Der Bereich trägt eigene Ferien; die Ferien des Gebäudes gelten nicht.", cut.Markup);
 
         // Zurück auf den Kalender der Nutzungsart löst die Bindung.
         Option(cut, "Quelle", "Kalender der Nutzungsart · Wohnen", "0");

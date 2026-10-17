@@ -68,7 +68,7 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
                 IdZone = e.Zonen[i].Id, Position = i, Zone = e.Zonen[i].Name,
                 JahresbedarfZapfungKwh = (e.Zonen[i].Bezugsmenge ?? 0) * 1000
             });
-        v.Ansichten.Add(Ansicht("Summe aller Zonen"));
+        v.Ansichten.Add(Ansicht("Summe aller Bereiche"));
         for (int i = 0; i < e.Zonen.Count; i++) v.Ansichten.Add(Ansicht(e.Zonen[i].Name));
         return v;
     }
@@ -481,7 +481,7 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
         string[] zeilen = cut.FindAll(".epos-zapfprofil-vergleichzeile").Select(z => z.TextContent.Trim()).ToArray();
         Assert.Equal(8, zeilen.Length);
         string streuung = Assert.Single(zeilen, z => z.StartsWith("Streuung der Realisierungsspitzen"));
-        Assert.Contains("mehrere stochastische Zonen", streuung);
+        Assert.Contains("mehrere stochastische Bereiche", streuung);
         Assert.DoesNotContain("ohne Ensemble", streuung);
         // Ein Strich statt Zahlen — geschaetzt wird nichts.
         Assert.Contains("–", streuung);
@@ -498,7 +498,7 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
         string leer = Assert.Single(cut2.FindAll(".epos-zapfprofil-vergleichzeile").Select(z => z.TextContent.Trim()),
                                     z => z.StartsWith("Streuung der Realisierungsspitzen"));
         Assert.Contains("ohne Ensemble", leer);
-        Assert.DoesNotContain("mehrere stochastische Zonen", leer);
+        Assert.DoesNotContain("mehrere stochastische Bereiche", leer);
     }
 
     [Fact]

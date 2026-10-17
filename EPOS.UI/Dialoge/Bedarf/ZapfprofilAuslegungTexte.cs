@@ -42,7 +42,7 @@ public sealed class ZapfprofilAuslegungTexte
     public string OptionVorgaberegel { get; set; } = "Vorgaberegel (Wohnen: DIN-4708-Profil, sonst Konstruktor)";
 
     /// <summary><c>ZPG_AUS_OPT_STUNDENPROFIL</c></summary>
-    public string OptionStundenprofil { get; set; } = "Stundenprofil der Zonen (Spitzen unterschätzt)";
+    public string OptionStundenprofil { get; set; } = "Stundenprofil der Bereiche (Spitzen unterschätzt)";
 
     /// <summary><c>ZPG_AUS_OPT_DIN4708</c></summary>
     public string OptionDin4708 { get; set; } = "DIN-4708-Profil aus der Wohnungstabelle";
@@ -160,7 +160,7 @@ public sealed class ZapfprofilAuslegungTexte
     // ------------------------------------------------------------ Gruppen und Karten
 
     /// <summary><c>ZPG_AUS_GRP_TOPOLOGIE</c></summary>
-    public string GruppeTopologie { get; set; } = "{0} · Zonen: {1}";
+    public string GruppeTopologie { get; set; } = "{0} · Bereiche: {1}";
 
     /// <summary><c>ZPG_AUS_BEDARFSTAG_GRUPPE</c></summary>
     public string BedarfstagGruppe { get; set; } = "Bedarfstag: {0}";
@@ -253,7 +253,7 @@ public sealed class ZapfprofilAuslegungTexte
     public string SpitzeJeEinheit { get; set; } = "Minutenspitze P{0} je Wohnungsstation";
 
     /// <summary><c>ZPG_AUS_SPITZE_JE_EINHEIT_ZONE</c></summary>
-    public string SpitzeJeEinheitZone { get; set; } = "Auslegungsgröße jeder Wohnungsstation; maßgebend ist die Zone „{0}“.";
+    public string SpitzeJeEinheitZone { get; set; } = "Auslegungsgröße jeder Wohnungsstation; maßgebend ist der Bereich „{0}“.";
 
     /// <summary><c>ZPG_AUS_WURZEL_N</c></summary>
     public string WurzelN { get; set; } = "Einzelstatistik μ + z·σ/√N: {0} kW (Hinweis)";
@@ -444,7 +444,7 @@ public sealed class ZapfprofilAuslegungTexte
     public string HerkunftSpalteWert { get; set; } = "Wert";
 
     /// <summary><c>ZPG_AUS_HERKUNFT_SP_ZONE</c></summary>
-    public string HerkunftSpalteZone { get; set; } = "Zone";
+    public string HerkunftSpalteZone { get; set; } = "Bereich";
 
     /// <summary><c>ZPG_AUS_HERKUNFT_SP_STAND</c></summary>
     public string HerkunftSpalteStand { get; set; } = "Stand";
@@ -627,7 +627,7 @@ public sealed class ZapfprofilAuslegungTexte
     public string HerleitungLadefenster { get; set; } = "leer = Vorgabe des Katalogs; dieselben Werte wie „Ladezeitfenster“ im Zapfprofil";
 
     /// <summary><c>ZPG_AUS_HERL_PERSONEN</c></summary>
-    public string HerleitungPersonen { get; set; } = "auto = aus dem Mengengerüst der Zonen: {0}; angesetzt: {1}";
+    public string HerleitungPersonen { get; set; } = "auto = aus dem Mengengerüst der Bereiche: {0}; angesetzt: {1}";
 
     /// <summary><c>ZPG_AUS_HERL_ANGESETZT</c></summary>
     public string HerleitungAngesetzt { get; set; } = "leer = Vorgabe des Katalogs; angesetzt: {0}";

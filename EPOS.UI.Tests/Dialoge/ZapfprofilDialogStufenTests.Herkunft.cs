@@ -64,7 +64,7 @@ public partial class ZapfprofilDialogStufenTests
         Assert.Equal("Der Katalogwert ist auf 50 °C gebracht.", zellen[4]);
 
         // Die Spaltenköpfe stehen einmal, in der Reihenfolge der Zeilen.
-        Assert.Equal(new[] { "Größe", "Wert", "Zone", "Stand", "Quelle", "Vermerk" },
+        Assert.Equal(new[] { "Größe", "Wert", "Bereich", "Stand", "Quelle", "Vermerk" },
                      karte.QuerySelectorAll("thead th").Select(t => t.TextContent.Trim()).ToArray());
     }
 
@@ -121,7 +121,7 @@ public partial class ZapfprofilDialogStufenTests
 
         IElement karte = cut.Find("details.epos-zapfprofil-herkunft");
         Assert.Equal("Origin", karte.QuerySelector("summary")!.TextContent.Trim());
-        Assert.Equal(new[] { "Quantity", "Value", "Zone", "State", "Source", "Note" },
+        Assert.Equal(new[] { "Quantity", "Value", "Area", "State", "Source", "Note" },
                      karte.QuerySelectorAll("thead th").Select(t => t.TextContent.Trim()).ToArray());
         Assert.Contains("Where every value", karte.TextContent, StringComparison.Ordinal);
         Assert.Equal(3, cut.FindAll("tr.epos-zapfprofil-herkunftzeile").Count);

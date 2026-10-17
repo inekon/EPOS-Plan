@@ -322,7 +322,7 @@ namespace EPOS.Kern.Tests
             Assert.All(s.Bedarfstage.Where(t => t.Quelle == ZapfprofilBedarfstagquelle.Din4708Profil), t => Assert.False(t.Waehlbar));
             Assert.Contains(s.Regeln, r => r.Name == "Probebrause" && r.VolumenJeVorgangL == 40.0);
             Assert.Equal("Eigener Bedarfstag", s.NameVorschlag);
-            Assert.Contains("1 Zonen", s.Kontext);
+            Assert.Contains("1 Bereiche", s.Kontext);
 
             ZapfprofilAuslegungDaten e = s.Ergebnis;
             Assert.Equal(ZapfprofilAuslegungZustand.Gerechnet, e.Zustand);

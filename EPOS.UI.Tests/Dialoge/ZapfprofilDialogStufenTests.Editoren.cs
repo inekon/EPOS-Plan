@@ -133,7 +133,7 @@ public partial class ZapfprofilDialogStufenTests
         Assert.False(cut.Instance.TagesgangOffen);
         Assert.Equal(99, cut.Instance.Eingabe.Zonen[0].IdNutzungsart);
         Assert.Contains(cut.Instance.KatalogAktuell, n => n.Id == 99);
-        Assert.Equal("Tagesgang gespeichert — die Zone „Wohnen“ rechnet mit „Wohnen A · TEST-1-E1“.",
+        Assert.Equal("Tagesgang gespeichert — der Bereich „Wohnen“ rechnet mit „Wohnen A · TEST-1-E1“.",
                      cut.Find(".epos-zapfprofil-editorstatus").TextContent.Trim());
         // Die zweite Zone bleibt, wie sie war.
         Assert.Equal(2, cut.Instance.Eingabe.Zonen[1].IdNutzungsart);
@@ -175,7 +175,7 @@ public partial class ZapfprofilDialogStufenTests
 
         Assert.False(cut.Instance.KategorienOffen);
         Assert.Equal(99, cut.Instance.Eingabe.Zonen[0].IdNutzungsart);
-        Assert.Equal("Zapfkategorien gespeichert — die Zone „Wohnen“ rechnet mit „Wohnen A · TEST-1-E1“.",
+        Assert.Equal("Zapfkategorien gespeichert — der Bereich „Wohnen“ rechnet mit „Wohnen A · TEST-1-E1“.",
                      cut.Find(".epos-zapfprofil-editorstatus").TextContent.Trim());
     }
 

@@ -59,13 +59,13 @@ public sealed class ZapfprofilTexte
     // ------------------------------------------------------------ Zonenliste
 
     /// <summary><c>ZPG_GRP_ZONEN</c></summary>
-    public string GruppeZonen { get; set; } = "Nutzungszonen";
+    public string GruppeZonen { get; set; } = "Nutzungsbereiche";
 
     /// <summary><c>ZPG_GRP_ZONEN_SUMME</c></summary>
     public string GruppeZonenSumme { get; set; } = "{0} MWh/a Zapfung";
 
     /// <summary><c>ZPG_GRP_ZONE</c></summary>
-    public string GruppeZone { get; set; } = "Zone „{0}“";
+    public string GruppeZone { get; set; } = "Bereich „{0}“";
 
     /// <summary><c>ZPG_GRP_GEBAEUDE_ANLAGE</c></summary>
     public string GruppeGebaeudeAnlage { get; set; } = "Gebäude und Anlage";
@@ -122,10 +122,10 @@ public sealed class ZapfprofilTexte
     public string KnopfKatalog { get; set; } = "Katalog…";
 
     /// <summary><c>ZPG_KATALOG_BLATT_HINWEIS</c></summary>
-    public string KatalogBlattHinweis { get; set; } = "Eine Zeile wählen setzt die Nutzungsart der Zone „{0}“.";
+    public string KatalogBlattHinweis { get; set; } = "Eine Zeile wählen setzt die Nutzungsart des Bereichs „{0}“.";
 
     /// <summary><c>ZPG_SP_ZONE</c></summary>
-    public string SpalteZone { get; set; } = "Zone";
+    public string SpalteZone { get; set; } = "Bereich";
 
     /// <summary><c>ZPG_SP_NUTZUNGSART</c></summary>
     public string SpalteNutzungsart { get; set; } = "Nutzungsart";
@@ -140,10 +140,10 @@ public sealed class ZapfprofilTexte
     public string SpalteNiveau { get; set; } = "Niveau";
 
     /// <summary><c>ZPG_SUMME_ZONEN</c></summary>
-    public string SummeZonen { get; set; } = "Summe {0} Zonen";
+    public string SummeZonen { get; set; } = "Summe {0} Bereiche";
 
     /// <summary><c>ZPG_BTN_ZONE_NEU</c></summary>
-    public string KnopfZoneNeu { get; set; } = "Zone hinzufügen";
+    public string KnopfZoneNeu { get; set; } = "Bereich hinzufügen";
 
     /// <summary><c>ZPG_BTN_ZONE_DUPLIZIEREN</c></summary>
     public string KnopfZoneDuplizieren { get; set; } = "Duplizieren";
@@ -160,7 +160,7 @@ public sealed class ZapfprofilTexte
     // ------------------------------------------------------------ Felder der Stufe Einfach
 
     /// <summary><c>ZPG_LBL_ZONENNAME</c></summary>
-    public string LabelZonenname { get; set; } = "Zonenname";
+    public string LabelZonenname { get; set; } = "Bereichsname";
 
     /// <summary><c>ZPG_LBL_NUTZUNGSART</c></summary>
     public string LabelNutzungsart { get; set; } = "Nutzungsart";
@@ -222,7 +222,7 @@ public sealed class ZapfprofilTexte
     public string LabelAnzeigenFuer { get; set; } = "Anzeigen für";
 
     /// <summary><c>ZPG_ANSICHT_SUMME</c></summary>
-    public string AnsichtSumme { get; set; } = "Summe aller Zonen";
+    public string AnsichtSumme { get; set; } = "Summe aller Bereiche";
 
     /// <summary><c>ZPG_REITER_TAGESGANG</c></summary>
     public string ReiterTagesgang { get; set; } = "Tagesgang";
@@ -421,7 +421,7 @@ public sealed class ZapfprofilTexte
     public string AuslegungOhnePunkt { get; set; } = "Eingaben ohne Punkt";
 
     /// <summary><c>ZPG_PUNKT_UEBERHOLT</c></summary>
-    public string PunktUeberholt { get; set; } = "Die Zonen haben sich geändert — der Auslegungspunkt ist überholt und wird beim Speichern verworfen. „Auslegung…“ öffnen und neu übernehmen.";
+    public string PunktUeberholt { get; set; } = "Die Bereiche haben sich geändert — der Auslegungspunkt ist überholt und wird beim Speichern verworfen. „Auslegung…“ öffnen und neu übernehmen.";
 
     /// <summary><c>ZPG_STATUS_VORSCHAU</c></summary>
     public string StatusVorschau { get; set; } = "Vorschau aktuell · deterministisch · Stochastik noch nicht gerechnet";
@@ -511,7 +511,7 @@ public sealed class ZapfprofilTexte
 
     // was die Wohnungstabelle bewirkt (ZB6).
     /// <summary><c>ZPG_HINW_WOHNUNGEN</c></summary>
-    public string HinweisWohnungen { get; set; } = "Statt einer Bezugsgröße die Wohnungen nach Typ angeben: Die Zone rechnet dann mit ihrer Summe, und die Auslegung bildet daraus die Bedarfskennzahl nach DIN 4708.";
+    public string HinweisWohnungen { get; set; } = "Statt einer Bezugsgröße die Wohnungen nach Typ angeben: Der Bereich rechnet dann mit ihrer Summe, und die Auslegung bildet daraus die Bedarfskennzahl nach DIN 4708.";
 
     /// <summary><c>ZPG_SP_WOHNUNG_ANZAHL</c></summary>
     public string SpalteWohnungAnzahl { get; set; } = "Anzahl [WE]";
@@ -571,7 +571,7 @@ public sealed class ZapfprofilTexte
     public string AusstattungVorgabe { get; set; } = "Vorgabeklasse";
 
     /// <summary><c>ZPG_HINW_WOHNUNGSTABELLE_LEER</c></summary>
-    public string HinweisWohnungstabelleLeer { get; set; } = "Keine Wohnungen angegeben — die Zone rechnet mit der Bezugsgröße.";
+    public string HinweisWohnungstabelleLeer { get; set; } = "Keine Wohnungen angegeben — der Bereich rechnet mit der Bezugsgröße.";
 
     /// <summary><c>ZPG_LBL_PERSONEN_JE_WE</c></summary>
     public string LabelPersonenJeWe { get; set; } = "Personen je Wohneinheit";
@@ -598,7 +598,7 @@ public sealed class ZapfprofilTexte
     public string LabelZirkulationVorhanden { get; set; } = "Zirkulation vorhanden";
 
     /// <summary><c>ZPG_HINW_ZIRKULATION_VORHANDEN</c></summary>
-    public string HinweisZirkulationVorhanden { get; set; } = "Vorgabe · ja; „nein“ nimmt die Zone aus dem Zirkulationsanteil.";
+    public string HinweisZirkulationVorhanden { get; set; } = "Vorgabe · ja; „nein“ nimmt den Bereich aus dem Zirkulationsanteil.";
 
     /// <summary><c>ZPG_LBL_KALENDER</c></summary>
     public string LabelKalender { get; set; } = "Kalender";
@@ -610,7 +610,7 @@ public sealed class ZapfprofilTexte
     public string KalenderGebaeude { get; set; } = "Gebäude „{0}“";
 
     /// <summary><c>ZPG_HINW_KALENDER</c></summary>
-    public string HinweisKalender { get; set; } = "Die Quelle bestimmt Wochenende, Feiertage und Ferien der Zone: der Kalender der Nutzungsart oder ein Gebäude des Projekts. Ein Gebäude belegt Ferien und Fläche nur vor.";
+    public string HinweisKalender { get; set; } = "Die Quelle bestimmt Wochenende, Feiertage und Ferien des Bereichs: der Kalender der Nutzungsart oder ein Gebäude des Projekts. Ein Gebäude belegt Ferien und Fläche nur vor.";
 
     /// <summary><c>ZPG_LBL_KAL_QUELLE</c></summary>
     public string LabelKalenderQuelle { get; set; } = "Quelle";
@@ -634,7 +634,7 @@ public sealed class ZapfprofilTexte
     public string KalenderKeineFerien { get; set; } = "keine";
 
     /// <summary><c>ZPG_KAL_FERIEN_ZONE_VOR</c></summary>
-    public string KalenderFerienZoneVor { get; set; } = "Die Zone trägt eigene Ferien; die Ferien des Gebäudes gelten nicht.";
+    public string KalenderFerienZoneVor { get; set; } = "Der Bereich trägt eigene Ferien; die Ferien des Gebäudes gelten nicht.";
 
     /// <summary><c>ZPG_KAL_SUM_GEBAEUDE</c></summary>
     public string SummeGebaeude { get; set; } = "wie Gebäude „{0}“";
@@ -667,7 +667,7 @@ public sealed class ZapfprofilTexte
     public string SummeBundeseinheitlich { get; set; } = "bundeseinheitliche Feiertage";
 
     /// <summary><c>ZPG_LBL_KAL_EIGENE_FERIEN</c></summary>
-    public string LabelEigeneFerien { get; set; } = "Eigene Ferien der Zone";
+    public string LabelEigeneFerien { get; set; } = "Eigene Ferien des Bereichs";
 
     /// <summary><c>ZPG_LBL_FERIEN</c></summary>
     public string LabelFerien { get; set; } = "Ferien {0}";
@@ -688,16 +688,16 @@ public sealed class ZapfprofilTexte
     public string KnopfFerienEntfernen { get; set; } = "Entfernen";
 
     /// <summary><c>ZPG_HINW_FERIEN</c></summary>
-    public string HinweisFerien { get; set; } = "Eigene Ferien der Zone gehen vor: Trägt die Zone einen Zeitraum, gelten die Ferien des Gebäudes nicht. Ein Zeitraum zählt, sobald er ein Ende hat; über den Jahreswechsel beginnt er im Dezember, ohne Beginn läuft er vom 1. Januar an. Gerechnet wird im Jahr ohne Schalttag.";
+    public string HinweisFerien { get; set; } = "Eigene Ferien des Bereichs gehen vor: Trägt der Bereich einen Zeitraum, gelten die Ferien des Gebäudes nicht. Ein Zeitraum zählt, sobald er ein Ende hat; über den Jahreswechsel beginnt er im Dezember, ohne Beginn läuft er vom 1. Januar an. Gerechnet wird im Jahr ohne Schalttag.";
 
     /// <summary><c>ZPG_LBL_JAHRESRASTER</c></summary>
-    public string LabelJahresraster { get; set; } = "Jahresraster der Zone";
+    public string LabelJahresraster { get; set; } = "Jahresraster des Bereichs";
 
     /// <summary><c>ZPG_TAGTYP_FERIEN</c></summary>
     public string TagtypFerien { get; set; } = "Ferien";
 
     /// <summary><c>ZPG_HINW_JAHRESRASTER</c></summary>
-    public string HinweisJahresraster { get; set; } = "Je Tag der Tagtyp, mit dem die Zone rechnet — aus Wochenende, Feiertagen und Ferien, wie die Vorschau sie liest.";
+    public string HinweisJahresraster { get; set; } = "Je Tag der Tagtyp, mit dem der Bereich rechnet — aus Wochenende, Feiertagen und Ferien, wie die Vorschau sie liest.";
 
     /// <summary><c>ZPG_HINW_JAHRESRASTER_OHNE</c></summary>
     public string HinweisJahresrasterOhne { get; set; } = "Das Jahresraster erscheint mit der Vorschau.";
@@ -751,7 +751,7 @@ public sealed class ZapfprofilTexte
     public string LabelMesswertZeitraum { get; set; } = "Zeitraum des Messwerts";
 
     /// <summary><c>ZPG_HINW_JAHRESMESSWERT</c></summary>
-    public string HinweisJahresmesswert { get; set; } = "Leer = kein Messwert. Ein Messwert skaliert die Zone mit einem ausgewiesenen Faktor; ein Volumen gilt an der Zapfstelle und wird über Zapf- und Kaltwassertemperatur umgerechnet.";
+    public string HinweisJahresmesswert { get; set; } = "Leer = kein Messwert. Ein Messwert skaliert den Bereich mit einem ausgewiesenen Faktor; ein Volumen gilt an der Zapfstelle und wird über Zapf- und Kaltwassertemperatur umgerechnet.";
 
     // ------------------------------------------------------------ Tagesbedarf, Ladeleistung, Zirkulation (Experte)
 
@@ -854,7 +854,7 @@ public sealed class ZapfprofilTexte
     // ------------------------------------------------------------ Fachwerte (Experte)
 
     /// <summary><c>ZPG_GRP_FACHWERTE</c></summary>
-    public string GruppeFachwerte { get; set; } = "Fachwerte der Zone";
+    public string GruppeFachwerte { get; set; } = "Fachwerte des Bereichs";
 
     /// <summary><c>ZPG_LBL_BEDARF_SPEZ</c></summary>
     public string LabelBedarfSpez { get; set; } = "Spezifischer Bedarf";
@@ -905,7 +905,7 @@ public sealed class ZapfprofilTexte
     public string LabelTyptageGebaeudeart { get; set; } = "Gebäudeart";
 
     /// <summary><c>ZPG_HINW_TYPTAGE</c></summary>
-    public string HinweisTyptage { get; set; } = "Eine Angabe des Projekts: Der Jahresgang jeder Zone entsteht dann aus den Typtagen des eingespielten Pakets und dem Wetter der Klimaregion. Die Auslegung bleibt unberührt.";
+    public string HinweisTyptage { get; set; } = "Eine Angabe des Projekts: Der Jahresgang jedes Bereichs entsteht dann aus den Typtagen des eingespielten Pakets und dem Wetter der Klimaregion. Die Auslegung bleibt unberührt.";
 
     /// <summary><c>ZPG_HINW_TYPTAGE_OHNE</c></summary>
     public string HinweisTyptageOhne { get; set; } = "Ohne eingespielte Typtage ist dieser Weg nicht verfügbar — „VDI-4655-Typtage…“ spielt ein Paket ein.";
@@ -962,13 +962,13 @@ public sealed class ZapfprofilTexte
     public string DauerlinieSchwelle { get; set; } = "{0} Stunden über {1} kW";
 
     /// <summary><c>ZPG_DAUERLINIE_OHNE</c></summary>
-    public string DauerlinieOhne { get; set; } = "Die Zone trägt 0 — keine Dauerlinie.";
+    public string DauerlinieOhne { get; set; } = "Der Bereich trägt 0 — keine Dauerlinie.";
 
     /// <summary><c>ZPG_GRP_WARNLISTE</c></summary>
     public string GruppeWarnliste { get; set; } = "Hinweise der Bilanz";
 
     /// <summary><c>ZPG_WARNLISTE_UNTER</c></summary>
-    public string WarnlisteUnter { get; set; } = "Nicht blockierend; die Hinweise einer Zone stehen auch an ihrem Eingabeblock.";
+    public string WarnlisteUnter { get; set; } = "Nicht blockierend; die Hinweise eines Bereichs stehen auch an ihrem Eingabeblock.";
 
     /// <summary><c>ZPG_WARNLISTE_LEER</c></summary>
     public string WarnlisteLeer { get; set; } = "Keine Hinweise.";
@@ -991,7 +991,7 @@ public sealed class ZapfprofilTexte
     public string HerkunftSpalteWert { get; set; } = "Wert";
 
     /// <summary><c>ZPG_HERKUNFT_SP_ZONE</c></summary>
-    public string HerkunftSpalteZone { get; set; } = "Zone";
+    public string HerkunftSpalteZone { get; set; } = "Bereich";
 
     /// <summary><c>ZPG_HERKUNFT_SP_STAND</c></summary>
     public string HerkunftSpalteStand { get; set; } = "Stand";
@@ -1080,7 +1080,7 @@ public sealed class ZapfprofilTexte
     public string TgeGrundVorlage { get; set; } = "Zuerst einen Tagesgangsatz wählen.";
 
     /// <summary><c>ZPG_TGE_STATUS_GESPEICHERT</c></summary>
-    public string TgeStatusGespeichert { get; set; } = "Tagesgang gespeichert — die Zone „{0}“ rechnet mit „{1}“.";
+    public string TgeStatusGespeichert { get; set; } = "Tagesgang gespeichert — der Bereich „{0}“ rechnet mit „{1}“.";
 
     /// <summary><c>ZPG_BTN_ZURUECKSETZEN</c></summary>
     public string KnopfZuruecksetzen { get; set; } = "Zurücksetzen";
@@ -1092,7 +1092,7 @@ public sealed class ZapfprofilTexte
     public string LabelKatalogversion { get; set; } = "Katalogversion der Kopie";
 
     /// <summary><c>ZPG_HINW_KOPIE</c></summary>
-    public string HinweisKopie { get; set; } = "„OK“ legt die Nutzungsart unter dieser Katalogversion neu an (Status eigen) und stellt die Zone auf sie um; die gesperrte bleibt, wie sie ist.";
+    public string HinweisKopie { get; set; } = "„OK“ legt die Nutzungsart unter dieser Katalogversion neu an (Status eigen) und stellt den Bereich auf sie um; die gesperrte bleibt, wie sie ist.";
 
     /// <summary><c>ZPG_HINW_FREI</c></summary>
     public string HinweisFrei { get; set; } = "„OK“ schreibt an Ort und Stelle in den Katalog — in einer Transaktion; der Freigabevermerk der Nutzungsart entfällt.";
@@ -1149,7 +1149,7 @@ public sealed class ZapfprofilTexte
     public string KatKnopfRunter { get; set; } = "Nach unten";
 
     /// <summary><c>ZPG_KATEG_GRUND_LETZTE</c></summary>
-    public string KatGrundLetzte { get; set; } = "Die letzte Kategorie bleibt — ohne Kategorie rechnet die Zone nicht stochastisch.";
+    public string KatGrundLetzte { get; set; } = "Die letzte Kategorie bleibt — ohne Kategorie rechnet der Bereich nicht stochastisch.";
 
     /// <summary><c>ZPG_KATEG_GRUND_RAND</c></summary>
     public string KatGrundRand { get; set; } = "Die Kategorie steht schon am Rand der Liste.";
@@ -1170,7 +1170,7 @@ public sealed class ZapfprofilTexte
     public string KatLeer { get; set; } = "Die Nutzungsart führt keine Zapfkategorien — „Vorgabesatz laden“ oder „Kategorie hinzufügen“.";
 
     /// <summary><c>ZPG_KATEG_STATUS_GESPEICHERT</c></summary>
-    public string KatStatusGespeichert { get; set; } = "Zapfkategorien gespeichert — die Zone „{0}“ rechnet mit „{1}“.";
+    public string KatStatusGespeichert { get; set; } = "Zapfkategorien gespeichert — der Bereich „{0}“ rechnet mit „{1}“.";
 
     // =====================================================================
     // Vergleich mit einer Messreihe und Kalibrierung (Stufe Z5, Gruppe 3)
@@ -1271,7 +1271,7 @@ public sealed class ZapfprofilTexte
     public string VermerkOhneEnsemble { get; set; } = "ohne Ensemble nicht entscheidbar";
 
     /// <summary><c>ZPG_VERGL_ENSEMBLE_ZONEN</c></summary>
-    public string VermerkEnsembleZonen { get; set; } = "mehrere stochastische Zonen — Stichprobe nicht bildbar";
+    public string VermerkEnsembleZonen { get; set; } = "mehrere stochastische Bereiche — Stichprobe nicht bildbar";
 
     /// <summary><c>ZPG_VERGL_OHNE_WERT</c></summary>
     public string VermerkOhneWert { get; set; } = "nicht entschieden";
@@ -1301,7 +1301,7 @@ public sealed class ZapfprofilTexte
     public string HinweisKalibrieren { get; set; } = "Der Jahresmesswert kommt aus der Messreihe, die der Reiter „Kennzahlen“ nennt; ein Teiljahr wird über den Jahresgang der Rechnung hochgerechnet, und ein Hinweis nennt den Bias.";
 
     /// <summary><c>ZPG_FRAGE_KALIBRIEREN</c></summary>
-    public string FrageKalibrieren { get; set; } = "Der Jahresmesswert der Zone „{0}“ wird aus der Messreihe „{1}“ gesetzt; ein vorhandener Wert fällt weg. Übernehmen?";
+    public string FrageKalibrieren { get; set; } = "Der Jahresmesswert des Bereichs „{0}“ wird aus der Messreihe „{1}“ gesetzt; ein vorhandener Wert fällt weg. Übernehmen?";
 
     /// <summary><c>ZPG_STATUS_KALIBRIERT</c></summary>
     public string StatusKalibriert { get; set; } = "Jahresmesswert aus „{0}“ übernommen";
@@ -1340,16 +1340,16 @@ public sealed class ZapfprofilTexte
     public string VorschlagStunde { get; set; } = "Stunde";
 
     /// <summary><c>ZPG_VORSCHLAG_HINWEIS</c></summary>
-    public string VorschlagHinweis { get; set; } = "Die Übernahme legt eine eigene Nutzungsart an; die Vorlage bleibt unberührt, und die Zone rechnet danach mit der Kopie.";
+    public string VorschlagHinweis { get; set; } = "Die Übernahme legt eine eigene Nutzungsart an; die Vorlage bleibt unberührt, und der Bereich rechnet danach mit der Kopie.";
 
     /// <summary><c>ZPG_BTN_VORSCHLAG_UEBERNEHMEN</c></summary>
     public string KnopfVorschlagUebernehmen { get; set; } = "Übernehmen";
 
     /// <summary><c>ZPG_FRAGE_VORSCHLAG</c></summary>
-    public string FrageVorschlag { get; set; } = "Aus der Messreihe „{0}“ entsteht die Nutzungsart „{1}“; die Zone rechnet danach mit ihr, die Vorlage bleibt unberührt. Übernehmen?";
+    public string FrageVorschlag { get; set; } = "Aus der Messreihe „{0}“ entsteht die Nutzungsart „{1}“; der Bereich rechnet danach mit ihr, die Vorlage bleibt unberührt. Übernehmen?";
 
     /// <summary><c>ZPG_VORSCHLAG_OHNE</c></summary>
-    public string VorschlagOhne { get; set; } = "Für diese Zone gibt es keinen Vorschlag: {0}";
+    public string VorschlagOhne { get; set; } = "Für diesen Bereich gibt es keinen Vorschlag: {0}";
 
     // ------------------------------------------------------------ Profil ablegen (ZC6)
 

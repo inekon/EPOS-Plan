@@ -2307,7 +2307,7 @@ namespace WindowsFormsApplication1
         {
             string zone = a?.Zone ?? "";
             string text = a?.Klartext ?? "";
-            return zone.Length > 0 ? "Zone „" + zone + "“ trägt 0: " + text : "Anteil trägt 0: " + text;
+            return zone.Length > 0 ? "Bereich „" + zone + "“ trägt 0: " + text : "Anteil trägt 0: " + text;
         }
 
         /// <summary>Meldet den Grund als Fehler, setzt <see cref="Fehlertext"/> und lässt den Kanal leer.</summary>

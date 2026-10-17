@@ -28,7 +28,7 @@ public partial class ZapfprofilDialogStufenTests
         // „Nutzung" hat keine Klappe: Ihre Felder stehen in jeder Stufe.
         Assert.Empty(cut.FindAll(".epos-zapfprofil-karte--nutzung .epos-klappgruppe-knopf"));
         Assert.True(HatFeld(cut, "Bezugsgröße"));
-        Assert.Equal(new[] { "Belegung", "Kalender", "Messwert", "Tagesbedarf", "Fachwerte der Zone", "Zirkulation",
+        Assert.Equal(new[] { "Belegung", "Kalender", "Messwert", "Tagesbedarf", "Fachwerte des Bereichs", "Zirkulation",
                              "Ladeleistung und Ladefenster", "Leitungsinhalt", "Fachwerte · Gebäude", "Stochastik · Jahresreihe" },
                      Kartentitel(cut));
         // Der Typtagweg ist eine Angabe des Projekts: Er steht bei der Jahresreihe, nicht bei den Fachwerten der Zone.
@@ -50,7 +50,7 @@ public partial class ZapfprofilDialogStufenTests
 
         // Zonenwechsel: Die Karten der neuen Zone stehen wie zuvor - offen, was offen war.
         cut.FindAll("table.epos-zapfprofil-zonen tbody tr.epos-zapfprofil-bereich")[1].QuerySelector("button")!.Click();
-        Assert.Equal("Zone „Büro“", Gruppen(cut)[1]);
+        Assert.Equal("Bereich „Büro“", Gruppen(cut)[1]);
         Assert.Equal("true", ZapfprofilKarten.Knopf(cut, "messwert").GetAttribute("aria-expanded"));
         Assert.Equal("false", ZapfprofilKarten.Knopf(cut, "belegung").GetAttribute("aria-expanded"));
         Assert.True(HatFeld(cut, "Jahresmesswert"));
@@ -154,7 +154,7 @@ public partial class ZapfprofilDialogStufenTests
         IElement blatt = cut.Find(".epos-blatt.epos-zapfprofil-katalogblatt");
         Assert.Equal("Katalog der Nutzungsarten", blatt.QuerySelector(".epos-blatt-titel")!.TextContent.Trim());
         Assert.Contains("‹ Brauchwasser-Zapfprofil – Beispielprojekt", blatt.QuerySelector(".epos-blatt-zurueck")!.TextContent);
-        Assert.Contains("Nutzungsart der Zone „Wohnen“", blatt.TextContent);
+        Assert.Contains("Nutzungsart des Bereichs „Wohnen“", blatt.TextContent);
         IElement[] zeilen = blatt.QuerySelectorAll("tbody tr").ToArray();
         Assert.Equal(2, zeilen.Length);
         Assert.Contains("Arbeitstage", zeilen[1].TextContent);

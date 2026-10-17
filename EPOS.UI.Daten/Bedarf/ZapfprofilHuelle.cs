@@ -863,7 +863,7 @@ namespace WindowsFormsApplication1
         {
             if (eingabe == null || eingabe.Zonen.Count == 0)
                 return OhneVorschau(ZapfprofilVorschauZustand.NichtGerechnet, "ZPG_MSG_KEINE_ZONE",
-                                    Text_("ZPG_MSG_KEINE_ZONE", "Es ist keine Zone angelegt."), "");
+                                    Text_("ZPG_MSG_KEINE_ZONE", "Es ist kein Bereich angelegt."), "");
 
             ZapfVerfuegbarkeit verfuegbar = ZapfprofilCtrl.Verfuegbar();
             if (!verfuegbar.Ja)
@@ -909,7 +909,7 @@ namespace WindowsFormsApplication1
         {
             if (eingabe == null || eingabe.Zonen.Count == 0)
                 return OhneJahresreihe(ZapfprofilVorschauZustand.NichtGerechnet, "ZPG_MSG_KEINE_ZONE",
-                                       Text_("ZPG_MSG_KEINE_ZONE", "Es ist keine Zone angelegt."), "");
+                                       Text_("ZPG_MSG_KEINE_ZONE", "Es ist kein Bereich angelegt."), "");
 
             ZapfVerfuegbarkeit verfuegbar = ZapfprofilCtrl.Verfuegbar();
             if (!verfuegbar.Ja)
@@ -992,7 +992,7 @@ namespace WindowsFormsApplication1
                 Status = Text_("ZPG_STATUS_VORSCHAU", "Vorschau aktuell · deterministisch · Stochastik noch nicht gerechnet")
             };
 
-            string summe = Text_("ZPG_ANSICHT_SUMME", "Summe aller Zonen");
+            string summe = Text_("ZPG_ANSICHT_SUMME", "Summe aller Bereiche");
             ZapfprofilAnsichtDaten gesamt = Ansicht(0, summe, false, e.Zapfung, e.Zirkulation, kalender, wochentagJan1, bildtexte);
             gesamt.Kennzahlen = Kennzahlen(e.Kennzahlen);
             gesamt.Dauerlinie = AlsDauerlinie(e.Dauerlinie, bildtexte);
@@ -1334,7 +1334,7 @@ namespace WindowsFormsApplication1
             var m = new List<ZapfprofilMeldung>();
             if (eingabe == null || eingabe.Zonen.Count == 0)
             {
-                m.Add(Fehler("ZPG_MSG_KEINE_ZONE", "", Text_("ZPG_MSG_KEINE_ZONE", "Es ist keine Zone angelegt.")));
+                m.Add(Fehler("ZPG_MSG_KEINE_ZONE", "", Text_("ZPG_MSG_KEINE_ZONE", "Es ist kein Bereich angelegt.")));
                 return m;
             }
             // Bezugsart je Nutzungsart — EINE Stelle entscheidet, ob die Wohnungstabelle einer Zone
@@ -1348,13 +1348,13 @@ namespace WindowsFormsApplication1
                 string name = (z.Name ?? "").Trim();
                 int anfang = m.Count;
                 if (name.Length == 0)
-                    m.Add(Fehler("ZPG_MSG_ZONE_OHNE_NAME", "", Text_("ZPG_MSG_ZONE_OHNE_NAME", "Eine Zone hat keinen Namen.")));
+                    m.Add(Fehler("ZPG_MSG_ZONE_OHNE_NAME", "", Text_("ZPG_MSG_ZONE_OHNE_NAME", "Ein Bereich hat keinen Namen.")));
                 if (z.IdNutzungsart <= 0)
                     m.Add(Fehler("ZPG_MSG_ZONE_OHNE_NUTZUNGSART", name,
-                        Format(Text_("ZPG_MSG_ZONE_OHNE_NUTZUNGSART", "Zone „{0}“: Bitte eine Nutzungsart wählen."), name)));
+                        Format(Text_("ZPG_MSG_ZONE_OHNE_NUTZUNGSART", "Bereich „{0}“: Bitte eine Nutzungsart wählen."), name)));
                 if (!(z.Bezugsmenge > 0) || double.IsInfinity(z.Bezugsmenge.Value))
                     m.Add(Fehler("ZPG_MSG_ZONE_OHNE_BEZUGSMENGE", name,
-                        Format(Text_("ZPG_MSG_ZONE_OHNE_BEZUGSMENGE", "Zone „{0}“: Bitte eine Bezugsgröße größer 0 eingeben."), name)));
+                        Format(Text_("ZPG_MSG_ZONE_OHNE_BEZUGSMENGE", "Bereich „{0}“: Bitte eine Bezugsgröße größer 0 eingeben."), name)));
                 bool wohnungstabelleWirksam = bezugJeNutzungsart.TryGetValue(z.IdNutzungsart, out ZapfBezugsart bezug)
                                               && Mengengeruest.WohnungstabelleWirksam(bezug);
                 if (z.Angaben != null) AngabenPruefen(z.Angaben, name, wohnungstabelleWirksam, m);
@@ -1367,7 +1367,7 @@ namespace WindowsFormsApplication1
                                                     .Where(g => g.Count() > 1)
                                                     .Select(g => g.First()))
                 m.Add(Fehler("ZPG_MSG_ZONE_NAME_DOPPELT", doppelt,
-                    Format(Text_("ZPG_MSG_ZONE_NAME_DOPPELT", "Zone „{0}“: Der Name ist mehrfach vergeben — bitte jeder Zone einen eigenen Namen geben."), doppelt)));
+                    Format(Text_("ZPG_MSG_ZONE_NAME_DOPPELT", "Bereich „{0}“: Der Name ist mehrfach vergeben — bitte jedem Bereich einen eigenen Namen geben."), doppelt)));
 
             // Zirkulation manuell (gebäudeweit, Stufe Experte): dieselbe Regel wie der
             // Rechenweg (Zirkulationskanal.ManuellGueltig, Z4, Gruppe 2a Punkt 7).
@@ -1403,7 +1403,7 @@ namespace WindowsFormsApplication1
                 for (int i = 0; i < (a.Wohnungen?.Count ?? 0); i++)
                     if (!(a.Wohnungen[i]?.Anzahl > 0))
                         m.Add(Fehler("ZPG_MSG_WOHNUNG_OHNE_ANZAHL", name,
-                            Format(Text_("ZPG_MSG_WOHNUNG_OHNE_ANZAHL", "Zone „{0}“: Wohnungstyp {1} braucht eine Anzahl größer 0."),
+                            Format(Text_("ZPG_MSG_WOHNUNG_OHNE_ANZAHL", "Bereich „{0}“: Wohnungstyp {1} braucht eine Anzahl größer 0."),
                                    name, i + 1)));
 
             for (int i = 0; i < (a.Ferien?.Count ?? 0); i++)
@@ -1415,7 +1415,7 @@ namespace WindowsFormsApplication1
                 if (!beginnGut || !endeGut)
                     m.Add(Fehler("ZPG_MSG_FERIEN_UNGUELTIG", name,
                         Format(Text_("ZPG_MSG_FERIEN_UNGUELTIG",
-                                     "Zone „{0}“: Ferienzeitraum {1} braucht ein Ende („bis“); Beginn und Ende sind Tage des Jahres ohne Schalttag."),
+                                     "Bereich „{0}“: Ferienzeitraum {1} braucht ein Ende („bis“); Beginn und Ende sind Tage des Jahres ohne Schalttag."),
                                name, i + 1)));
             }
 
@@ -1424,29 +1424,29 @@ namespace WindowsFormsApplication1
                 double w = a.Jahresmesswert.Value;
                 if (!(w > 0) || double.IsInfinity(w))
                     m.Add(Fehler("ZPG_MSG_MESSWERT_NICHT_POSITIV", name,
-                        Format(Text_("ZPG_MSG_MESSWERT_NICHT_POSITIV", "Zone „{0}“: Der Jahresmesswert muss größer 0 sein."), name)));
+                        Format(Text_("ZPG_MSG_MESSWERT_NICHT_POSITIV", "Bereich „{0}“: Der Jahresmesswert muss größer 0 sein."), name)));
                 if (!a.JahresmesswertEinheit.HasValue)
                     m.Add(Fehler("ZPG_MSG_MESSWERT_OHNE_EINHEIT", name,
-                        Format(Text_("ZPG_MSG_MESSWERT_OHNE_EINHEIT", "Zone „{0}“: Bitte die Einheit des Jahresmesswerts wählen."), name)));
+                        Format(Text_("ZPG_MSG_MESSWERT_OHNE_EINHEIT", "Bereich „{0}“: Bitte die Einheit des Jahresmesswerts wählen."), name)));
                 else if (a.JahresmesswertEinheit == ZapfprofilMesswerteinheit.KwhJeJahr && !a.JahresmesswertBilanzgrenze.HasValue)
                     m.Add(Fehler("ZPG_MSG_MESSWERT_OHNE_GRENZE", name,
-                        Format(Text_("ZPG_MSG_MESSWERT_OHNE_GRENZE", "Zone „{0}“: Bitte die Bilanzgrenze des Jahresmesswerts wählen."), name)));
+                        Format(Text_("ZPG_MSG_MESSWERT_OHNE_GRENZE", "Bereich „{0}“: Bitte die Bilanzgrenze des Jahresmesswerts wählen."), name)));
                 if (a.JahresmesswertEinheit == ZapfprofilMesswerteinheit.KwhJeJahr
                     && a.JahresmesswertBilanzgrenze == ZapfprofilBilanzgrenze.MitSpeicher && !(a.SpeicherverlustKwhJeJahr >= 0))
                     m.Add(Fehler("ZPG_MSG_MESSWERT_OHNE_SPEICHERVERLUST", name,
                         Format(Text_("ZPG_MSG_MESSWERT_OHNE_SPEICHERVERLUST",
-                                     "Zone „{0}“: Ein Messwert mit Speicherverlust braucht den Speicherverlust in kWh/a."), name)));
+                                     "Bereich „{0}“: Ein Messwert mit Speicherverlust braucht den Speicherverlust in kWh/a."), name)));
             }
 
             if (a.Auslastung != null && a.Auslastung.Any(x => x.HasValue && (x.Value < 0 || double.IsNaN(x.Value) || double.IsInfinity(x.Value))))
                 m.Add(Fehler("ZPG_MSG_AUSLASTUNG_NEGATIV", name,
-                    Format(Text_("ZPG_MSG_AUSLASTUNG_NEGATIV", "Zone „{0}“: Ein Faktor des Auslastungsgangs ist kleiner als 0."), name)));
+                    Format(Text_("ZPG_MSG_AUSLASTUNG_NEGATIV", "Bereich „{0}“: Ein Faktor des Auslastungsgangs ist kleiner als 0."), name)));
 
             // Tagesbedarf manuell: dieselbe Regel wie der Rechenweg (Mengengeruest.TagesbedarfManuellGueltig,
             // Z4, Gruppe 2a Punkt 7) — keine zweite Regelsammlung.
             if (!a.TagesbedarfAuto && !Mengengeruest.TagesbedarfManuellGueltig(a.TagesbedarfManuellKwh))
                 m.Add(Fehler("ZPG_MSG_TAGESBEDARF_MANUELL_UNGUELTIG", name,
-                    Format(Text_("ZPG_MSG_TAGESBEDARF_MANUELL_UNGUELTIG", "Zone „{0}“: Bitte den manuellen Tagesbedarf (kWh/d, ≥ 0) angeben."), name)));
+                    Format(Text_("ZPG_MSG_TAGESBEDARF_MANUELL_UNGUELTIG", "Bereich „{0}“: Bitte den manuellen Tagesbedarf (kWh/d, ≥ 0) angeben."), name)));
         }
 
         private static ZapfprofilMeldung Fehler(string kennung, string zone, string text)
@@ -1791,7 +1791,7 @@ namespace WindowsFormsApplication1
         {
             string text = string.IsNullOrEmpty(a.Zone)
                 ? Format(Text_("ZPG_MSG_ANTEIL_TRAEGT_NULL", "Die Zirkulation trägt 0: {0}"), Satztext(a.Satz))
-                : MitZone(a.Zone, a.Satz, "ZPG_MSG_ZONE_TRAEGT_NULL", "Zone „{0}“ trägt 0: {1}");
+                : MitZone(a.Zone, a.Satz, "ZPG_MSG_ZONE_TRAEGT_NULL", "Bereich „{0}“ trägt 0: {1}");
             return new ZapfprofilMeldung(Satzkennung(a.Satz, "ZPG_MSG_ZONE_TRAEGT_NULL"), a.Zone ?? "", text,
                                          ZapfprofilMeldungsart.Ablehnung, a.Klartext ?? "");
         }

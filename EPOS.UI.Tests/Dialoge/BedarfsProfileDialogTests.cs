@@ -1301,7 +1301,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
     {
         var antworten = new Queue<string>(new[]
         {
-            "Das Zapfprofil wurde nicht gespeichert — Zone „Zone 1“: Die Nutzungsart steht nicht im Katalog.",
+            "Das Zapfprofil wurde nicht gespeichert — Bereich „Zone 1“: Die Nutzungsart steht nicht im Katalog.",
             ""
         });
         int geschrieben = 0;

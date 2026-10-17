@@ -127,7 +127,7 @@ namespace WindowsFormsApplication1
             {
                 Stufe = stufe,
                 Eingabe = anfang,
-                Kontext = Format(Text_("ZPG_AUS_KONTEXT", "Summe aller Zonen · {0} Zonen · Stufe {1}"),
+                Kontext = Format(Text_("ZPG_AUS_KONTEXT", "Summe aller Bereiche · {0} Bereiche · Stufe {1}"),
                                  eingabe.Zonen.Count.ToString(CultureInfo.CurrentCulture), Stufenname(stufe))
             };
 
@@ -299,7 +299,7 @@ namespace WindowsFormsApplication1
             rechenprojekt = null;
             if (eingabe == null || eingabe.Zonen.Count == 0)
                 return OhneAuslegung(ZapfprofilAuslegungZustand.NichtGerechnet, "ZPG_AUS_MSG_KEINE_ZONE",
-                    Text_("ZPG_AUS_MSG_KEINE_ZONE", "Es ist keine Zone angelegt — ohne Zone keine Auslegung."), "");
+                    Text_("ZPG_AUS_MSG_KEINE_ZONE", "Es ist kein Bereich angelegt — ohne Bereich keine Auslegung."), "");
 
             ZapfVerfuegbarkeit verfuegbar = ZapfprofilCtrl.Verfuegbar();
             if (!verfuegbar.Ja)
@@ -395,7 +395,7 @@ namespace WindowsFormsApplication1
 
             foreach (Auslegungsablehnung a in r.Ergebnis.Ablehnungen)
                 d.Meldungen.Add(new ZapfprofilMeldung("ZPG_AUS_ZONE_ABGELEHNT", a.Zone ?? "",
-                    MitZone(a.Zone, a.Satz, "ZPG_AUS_ZONE_ABGELEHNT", "Zone „{0}“ fehlt in der Auslegung: {1}"),
+                    MitZone(a.Zone, a.Satz, "ZPG_AUS_ZONE_ABGELEHNT", "Bereich „{0}“ fehlt in der Auslegung: {1}"),
                     ZapfprofilMeldungsart.Ablehnung, a.Klartext ?? ""));
             foreach (Auslegungshinweis h in r.Ergebnis.Hinweise)
             {
@@ -566,7 +566,7 @@ namespace WindowsFormsApplication1
         /// oder ohne Satz.
         /// </summary>
         private static string AblehnungsSatz(ZapfAblehnung a)
-            => a?.Satz == null ? null : MitZone(a.Zone, a.Satz, "ZPG_MSG_ZONE", "Zone „{0}“: {1}");
+            => a?.Satz == null ? null : MitZone(a.Zone, a.Satz, "ZPG_MSG_ZONE", "Bereich „{0}“: {1}");
 
         /// <summary>Der Verfahrensvergleich nach V4 als DTO samt Wochenbild; der größte Wert im Band ist markiert.</summary>
         private static ZapfprofilVergleichDaten Vergleich(Speicherauslegungsergebnis sa, Wochenreihe woche, Din4708Ergebnis din,
