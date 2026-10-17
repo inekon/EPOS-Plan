@@ -58235,4 +58235,7 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="ZPG_PS_MSG_PROJEKT_HINZUGEFUEGT" xml:space="preserve">
     <value>„{0}“ steht als Brauchwasserprofil im Projekt.</value>
   </data>
+  <data name="ZPG_PS_WOCHENTAGE" xml:space="preserve">
+    <value>Mo,Di,Mi,Do,Fr,Sa,So</value>
+  </data>
 </root>

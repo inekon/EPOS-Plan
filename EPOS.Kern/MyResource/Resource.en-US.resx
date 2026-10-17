@@ -58228,4 +58228,7 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="ZPG_PS_MSG_PROJEKT_HINZUGEFUEGT" xml:space="preserve">
     <value>“{0}” is now a domestic hot water profile of the project.</value>
   </data>
+  <data name="ZPG_PS_WOCHENTAGE" xml:space="preserve">
+    <value>Mon,Tue,Wed,Thu,Fri,Sat,Sun</value>
+  </data>
 </root>

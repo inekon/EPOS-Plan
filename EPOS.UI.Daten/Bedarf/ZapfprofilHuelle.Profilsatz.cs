@@ -22,6 +22,7 @@ namespace WindowsFormsApplication1
         internal const string PS_VARIANTE_OHNE = "ZPG_PS_VARIANTE_OHNE";
         internal const string PS_BESCHREIBUNG = "ZPG_PS_BESCHREIBUNG";
         internal const string PS_SPITZE = "ZPG_PS_SPITZE";
+        internal const string PS_WOCHENTAGE = "ZPG_PS_WOCHENTAGE";
         internal const string PS_MSG_KEIN_ERGEBNIS = "ZPG_PS_MSG_KEIN_ERGEBNIS";
         internal const string PS_MSG_OHNE_BEDARF = "ZPG_PS_MSG_OHNE_BEDARF";
         internal const string PS_MSG_NAME_LEER = "ZPG_PS_MSG_NAME_LEER";
@@ -312,8 +313,9 @@ namespace WindowsFormsApplication1
         {
             int tag = Math.Clamp(index, 0, ZapfprofilProfilsatzAbbildung.WOCHENSTUNDEN - 1) / ZapfprofilProfilsatzAbbildung.STUNDEN_TAG;
             int stunde = Math.Clamp(index, 0, ZapfprofilProfilsatzAbbildung.WOCHENSTUNDEN - 1) % ZapfprofilProfilsatzAbbildung.STUNDEN_TAG;
-            // .NET zählt Sonntag = 0, das Wochenraster Montag = 0.
-            string name = CultureInfo.CurrentUICulture.DateTimeFormat.AbbreviatedDayNames[(tag + 1) % 7];
+            // Eigene Kurznamen statt der Kulturdaten: ICU und Windows kürzen verschieden ("Mo." gegen "Mo").
+            string[] namen = Text_(PS_WOCHENTAGE, "Mo,Di,Mi,Do,Fr,Sa,So").Split(',');
+            string name = namen.Length == ZapfprofilProfilsatzAbbildung.WOCHENTAGE ? namen[tag].Trim() : (tag + 1).ToString(CultureInfo.CurrentCulture);
             return Format(Text_(PS_SPITZE, "{0} {1:00}–{2:00} Uhr: {3:N1} kW"), name, stunde, stunde + 1, kw);
         }
 

@@ -165739,6 +165739,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mo,Di,Mi,Do,Fr,Sa,So ähnelt.
+        /// </summary>
+        public static string ZPG_PS_WOCHENTAGE {
+            get {
+                return ResourceManager.GetString("ZPG_PS_WOCHENTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonen haben sich geändert — der Auslegungspunkt ist überholt und wird beim Speichern verworfen. „Auslegung…“ öffnen und neu übernehmen. ähnelt.
         /// </summary>
         public static string ZPG_PUNKT_UEBERHOLT {
