@@ -5929,6 +5929,9 @@ namespace WindowsFormsApplication1
                                      KiParameterTyp.Wahl, KiDialogTexte.KmaTraegerErl, leerErlaubt: true),
                     new KiDialogFeld("eigener_zaehler", SICHT + "EigenerZaehler", KiDialogTexte.KmaZaehlerName,
                                      KiParameterTyp.Wahrheitswert, KiDialogTexte.KmaZaehlerErl),
+                    // K-F5b: das Rückkühlwerk der Gruppe „Rückkühlung“ - eine WAHL über die Id des Katalogsatzes, leer = keins.
+                    new KiDialogFeld("rueckkuehlwerk", SICHT + "Rueckkuehlwerk", KiDialogTexte.KmaRueckkuehlwerkName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.KmaRueckkuehlwerkErl, leerErlaubt: true),
                     // KM3-E3-b (Fachkonzept Teillast und Takten 7.3): die Lesewerte der Projektkopie, Spaltennamen als Schluessel.
                     new KiDialogFeld("teillast_weg", SICHT + "TeillastWeg", KiDialogTexte.KmaTeillastWegName,
                                      KiParameterTyp.Text, KiDialogTexte.KmaTeillastWegErl, leerErlaubt: true, nurLesen: true),

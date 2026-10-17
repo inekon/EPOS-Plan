@@ -58133,4 +58133,43 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="EF_FORMEL_EINSPEISUNG_BHKW" xml:space="preserve">
     <value>BHKW-Überschuss des Laufs − BHKW-Ladung des Speichers</value>
   </data>
+  <data name="KMK_RKW_GRUPPE" xml:space="preserve">
+    <value>Rückkühlung</value>
+  </data>
+  <data name="KMK_RKW_LABEL" xml:space="preserve">
+    <value>Rückkühlwerk</value>
+  </data>
+  <data name="KMK_RKW_KEINS" xml:space="preserve">
+    <value>— keins (Festwerte der Rückkühlart) —</value>
+  </data>
+  <data name="KMK_RKW_PROJEKTKOPIE" xml:space="preserve">
+    <value>{0} (Projektkopie)</value>
+  </data>
+  <data name="KMK_RKW_HINWEIS_LUFT" xml:space="preserve">
+    <value>Luftgekühlte Maschine: Sie trägt ihren Verflüssiger selbst und bekommt kein Rückkühlwerk.</value>
+  </data>
+  <data name="KMK_RKW_HINWEIS_KEINS" xml:space="preserve">
+    <value>Ohne Rückkühlwerk rechnet die Maschine mit den Festwerten ihrer Rückkühlart.</value>
+  </data>
+  <data name="KMK_RKW_HINWEIS_WAHL" xml:space="preserve">
+    <value>Die Wahl wird mit OK geschrieben; die Anlage bekommt dann eine eigene Projektkopie des Katalogsatzes.</value>
+  </data>
+  <data name="KMK_RKW_HINWEIS_FEUCHTE" xml:space="preserve">
+    <value>Luftfeuchte fehlt: Das Klima des Projekts führt keine Luftfeuchte – das Rückkühlwerk rechnet dann trocken, ohne Befeuchtung und ohne Wasserverbrauch.</value>
+  </data>
+  <data name="KMK_RKW_HINWEIS_VENTILATOR" xml:space="preserve">
+    <value>Der Ventilator des Rückkühlwerks ({0} kW) ersetzt den Hilfsstrom der Rückkühlung der Kältemaschine – er wird nicht doppelt gezählt.</value>
+  </data>
+  <data name="KMK_RKW_MSG_VERWALTUNG_NICHT" xml:space="preserve">
+    <value>Die Verwaltung der Rückkühlwerke lässt sich hier nicht öffnen.</value>
+  </data>
+  <data name="KMK_RKW_MSG_UNGESPEICHERT" xml:space="preserve">
+    <value>Es gibt ungespeicherte Änderungen. Übernehmen Sie sie mit OK oder verwerfen Sie sie mit Abbrechen, bevor Sie die Rückkühlwerke öffnen.</value>
+  </data>
+  <data name="KI_DLG_KMA_RKW_NAME" xml:space="preserve">
+    <value>Rückkühlwerk</value>
+  </data>
+  <data name="KI_DLG_KMA_RKW_ERL" xml:space="preserve">
+    <value>Katalogsatz des Rückkühlwerks der wassergekühlten Kältemaschine (Id); leer = keins, dann gelten die Festwerte der Rückkühlart. Mit OK bekommt die Anlage eine eigene Projektkopie.</value>
+  </data>
 </root>

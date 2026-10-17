@@ -70429,6 +70429,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogsatz des Rückkühlwerks der wassergekühlten Kältemaschine (Id); leer = keins, dann gelten die Festwerte der Rückkühlart. Mit OK bekommt die Anlage eine eigene Projektkopie. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_RKW_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_RKW_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückkühlwerk ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_RKW_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_RKW_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Teillastrechnung der Projektkopie samt Herkunft der Kurve (wie bisher, linear, Kurve, Vorgabekurve, verworfen) — nur zu lesen, gepflegt in der Verwaltung „Kältemaschinen“. ähnelt.
         /// </summary>
         public static string KI_DLG_KMA_TEILLAST_WEG_ERL {
@@ -88613,6 +88631,105 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KMK_GERAET_ZEILE {
             get {
                 return ResourceManager.GetString("KMK_GERAET_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückkühlung ähnelt.
+        /// </summary>
+        public static string KMK_RKW_GRUPPE {
+            get {
+                return ResourceManager.GetString("KMK_RKW_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftfeuchte fehlt: Das Klima des Projekts führt keine Luftfeuchte – das Rückkühlwerk rechnet dann trocken, ohne Befeuchtung und ohne Wasserverbrauch. ähnelt.
+        /// </summary>
+        public static string KMK_RKW_HINWEIS_FEUCHTE {
+            get {
+                return ResourceManager.GetString("KMK_RKW_HINWEIS_FEUCHTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Rückkühlwerk rechnet die Maschine mit den Festwerten ihrer Rückkühlart. ähnelt.
+        /// </summary>
+        public static string KMK_RKW_HINWEIS_KEINS {
+            get {
+                return ResourceManager.GetString("KMK_RKW_HINWEIS_KEINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftgekühlte Maschine: Sie trägt ihren Verflüssiger selbst und bekommt kein Rückkühlwerk. ähnelt.
+        /// </summary>
+        public static string KMK_RKW_HINWEIS_LUFT {
+            get {
+                return ResourceManager.GetString("KMK_RKW_HINWEIS_LUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Ventilator des Rückkühlwerks ({0} kW) ersetzt den Hilfsstrom der Rückkühlung der Kältemaschine – er wird nicht doppelt gezählt. ähnelt.
+        /// </summary>
+        public static string KMK_RKW_HINWEIS_VENTILATOR {
+            get {
+                return ResourceManager.GetString("KMK_RKW_HINWEIS_VENTILATOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wahl wird mit OK geschrieben; die Anlage bekommt dann eine eigene Projektkopie des Katalogsatzes. ähnelt.
+        /// </summary>
+        public static string KMK_RKW_HINWEIS_WAHL {
+            get {
+                return ResourceManager.GetString("KMK_RKW_HINWEIS_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die — keins (Festwerte der Rückkühlart) — ähnelt.
+        /// </summary>
+        public static string KMK_RKW_KEINS {
+            get {
+                return ResourceManager.GetString("KMK_RKW_KEINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückkühlwerk ähnelt.
+        /// </summary>
+        public static string KMK_RKW_LABEL {
+            get {
+                return ResourceManager.GetString("KMK_RKW_LABEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt ungespeicherte Änderungen. Übernehmen Sie sie mit OK oder verwerfen Sie sie mit Abbrechen, bevor Sie die Rückkühlwerke öffnen. ähnelt.
+        /// </summary>
+        public static string KMK_RKW_MSG_UNGESPEICHERT {
+            get {
+                return ResourceManager.GetString("KMK_RKW_MSG_UNGESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Verwaltung der Rückkühlwerke lässt sich hier nicht öffnen. ähnelt.
+        /// </summary>
+        public static string KMK_RKW_MSG_VERWALTUNG_NICHT {
+            get {
+                return ResourceManager.GetString("KMK_RKW_MSG_VERWALTUNG_NICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Projektkopie) ähnelt.
+        /// </summary>
+        public static string KMK_RKW_PROJEKTKOPIE {
+            get {
+                return ResourceManager.GetString("KMK_RKW_PROJEKTKOPIE", resourceCulture);
             }
         }
         

@@ -58126,4 +58126,43 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="EF_FORMEL_EINSPEISUNG_BHKW" xml:space="preserve">
     <value>CHP surplus of the run − CHP charging of the storage</value>
   </data>
+  <data name="KMK_RKW_GRUPPE" xml:space="preserve">
+    <value>Heat rejection</value>
+  </data>
+  <data name="KMK_RKW_LABEL" xml:space="preserve">
+    <value>Heat rejection unit</value>
+  </data>
+  <data name="KMK_RKW_KEINS" xml:space="preserve">
+    <value>— none (fixed values of the heat rejection type) —</value>
+  </data>
+  <data name="KMK_RKW_PROJEKTKOPIE" xml:space="preserve">
+    <value>{0} (project copy)</value>
+  </data>
+  <data name="KMK_RKW_HINWEIS_LUFT" xml:space="preserve">
+    <value>Air-cooled chiller: it carries its own condenser and gets no heat rejection unit.</value>
+  </data>
+  <data name="KMK_RKW_HINWEIS_KEINS" xml:space="preserve">
+    <value>Without a heat rejection unit the chiller uses the fixed values of its heat rejection type.</value>
+  </data>
+  <data name="KMK_RKW_HINWEIS_WAHL" xml:space="preserve">
+    <value>The choice is written with OK; the plant then gets its own project copy of the catalogue record.</value>
+  </data>
+  <data name="KMK_RKW_HINWEIS_FEUCHTE" xml:space="preserve">
+    <value>Humidity missing: the project climate carries no relative humidity – the unit is then calculated dry, without humidification and without water consumption.</value>
+  </data>
+  <data name="KMK_RKW_HINWEIS_VENTILATOR" xml:space="preserve">
+    <value>The fan of the heat rejection unit ({0} kW) replaces the auxiliary power of heat rejection of the chiller – it is not counted twice.</value>
+  </data>
+  <data name="KMK_RKW_MSG_VERWALTUNG_NICHT" xml:space="preserve">
+    <value>The heat rejection unit management cannot be opened here.</value>
+  </data>
+  <data name="KMK_RKW_MSG_UNGESPEICHERT" xml:space="preserve">
+    <value>There are unsaved changes. Apply them with OK or discard them with Cancel before opening the heat rejection units.</value>
+  </data>
+  <data name="KI_DLG_KMA_RKW_NAME" xml:space="preserve">
+    <value>Heat rejection unit</value>
+  </data>
+  <data name="KI_DLG_KMA_RKW_ERL" xml:space="preserve">
+    <value>Catalogue record of the heat rejection unit of the water-cooled chiller (id); empty = none, then the fixed values of the heat rejection type apply. With OK the plant gets its own project copy.</value>
+  </data>
 </root>

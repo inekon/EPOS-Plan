@@ -674,6 +674,61 @@ public class KaeltemaschineAnlageKatalogwegeTests : EposBunitContext
         Assert.Equal(new[] { EPOS.UI.Seiten.Seitenschluessel.KaeltemaschineKatalog }, Navigation.Masken);
     }
 
+    /// <summary>K-F5b: eine wassergekühlte Anlage mit Gruppe „Rückkühlung“ in der Satz-Überlagerung.</summary>
+    private IRenderedComponent<KaeltemaschineAnlageDialog> MitRueckkuehlung(List<KaeltemaschineAnlageDaten> gespeichert)
+    {
+        var cut = Render<KaeltemaschineAnlageDialog>(b => b
+            .Add(x => x.Anlagen, () => gespeichert.Select(a => a.Kopie()).ToList())
+            .Add(x => x.Stromtraeger, new[] { (KaeltemaschineAnlageDialogTests.STROM, "Strom") })
+            .Add(x => x.Speichern, d => { gespeichert[0] = d.Kopie(); return null; })
+            .Add(x => x.Rueckkuehlung, () => KaeltemaschineRueckkuehlungTests.Gaben()));
+        cut.Find(".epos-zweispalten-bereich--projekt").QuerySelectorAll(".epos-zeilenstift")[0].Click();
+        return cut;
+    }
+
+    private static List<KaeltemaschineAnlageDaten> Wassergekuehlt() => new()
+    {
+        new KaeltemaschineAnlageDaten
+        {
+            AnlagenId = 9, GeraetId = 90, Bezeichner = "KM Wasser", Anzahl = 1, KuehlCarrierId = KaeltemaschineAnlageDialogTests.STROM,
+            Geraet = new KaeltemaschineGeraetwerte { Bezeichner = "KM 150", Rueckkuehlart = "Wasser", Luftgekuehlt = false }
+        }
+    };
+
+    [Fact]
+    public void Rueckkuehlwerke_in_der_Gruppe_ruft_die_Naht_der_Verwaltung()
+    {
+        var cut = MitRueckkuehlung(Wassergekuehlt());
+        Assert.NotEmpty(cut.FindAll(".epos-satzueberlagerung-koerper .epos-kaeltemaschine-rueckkuehlung"));
+        cut.Find(".epos-kaeltemaschine-rueckkuehlwerke").Click();
+        Assert.Equal(new[] { EPOS.UI.Seiten.Seitenschluessel.Rueckkuehlwerk }, Navigation.Masken);
+        // Der Knopf steht in der Gruppe, nicht in der Knopfleiste am Satz.
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satzknoepfe .epos-kaeltemaschine-rueckkuehlwerke"));
+    }
+
+    [Fact]
+    public void Eine_geaenderte_Wahl_haelt_den_Sprung_zur_Verwaltung_an_und_OK_reicht_sie_der_Huelle()
+    {
+        var gespeichert = Wassergekuehlt();
+        var cut = MitRueckkuehlung(gespeichert);
+        cut.Find(".epos-kaeltemaschine-rueckkuehlung select").Change("8");
+        cut.Find(".epos-kaeltemaschine-rueckkuehlwerke").Click();
+        Assert.Empty(Navigation.Masken);
+        Assert.Contains(R.KMK_RKW_MSG_UNGESPEICHERT, cut.Markup);
+
+        cut.Find(".epos-satzueberlagerung-ok").Click();
+        Assert.Equal(8, gespeichert[0].RueckkuehlwerkWahl);
+    }
+
+    [Fact]
+    public void Lehnt_die_Plattform_die_Rueckkuehlwerke_ab_nennt_es_der_Banner()
+    {
+        Navigation.Antwort = false;
+        var cut = MitRueckkuehlung(Wassergekuehlt());
+        cut.Find(".epos-kaeltemaschine-rueckkuehlwerke").Click();
+        Assert.Contains(R.KMK_RKW_MSG_VERWALTUNG_NICHT, cut.Markup);
+    }
+
     [Fact]
     public void Lehnt_die_Plattform_ab_nennt_es_der_Banner()
     {

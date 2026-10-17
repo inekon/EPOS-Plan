@@ -1589,6 +1589,8 @@
         internal static string KmaTraegerErl => MyResource.Resource.KI_DLG_KMA_TRAEGER_ERL;
         internal static string KmaZaehlerName => MyResource.Resource.KI_DLG_KMA_ZAEHLER_NAME;
         internal static string KmaZaehlerErl => MyResource.Resource.KI_DLG_KMA_ZAEHLER_ERL;
+        internal static string KmaRueckkuehlwerkName => MyResource.Resource.KI_DLG_KMA_RKW_NAME;
+        internal static string KmaRueckkuehlwerkErl => MyResource.Resource.KI_DLG_KMA_RKW_ERL;
         // KM3-E3-b: die Lesewerte der Teillastrechnung im Anlagendialog.
         internal static string KmaTeillastWegName => MyResource.Resource.KI_DLG_KMA_TEILLAST_WEG_NAME;
         internal static string KmaTeillastWegErl => MyResource.Resource.KI_DLG_KMA_TEILLAST_WEG_ERL;

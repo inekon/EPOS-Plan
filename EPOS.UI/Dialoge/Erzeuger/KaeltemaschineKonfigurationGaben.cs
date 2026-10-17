@@ -19,4 +19,7 @@ public sealed class KaeltemaschineKonfigurationGaben
 
     /// <summary>Der Stromträger des Projekts; 0 = keiner.</summary>
     public int ProjektStromtraeger;
+
+    /// <summary>K-F5b: die Gaben der Gruppe „Rückkühlung“; <c>null</c> = keine Gruppe.</summary>
+    public RueckkuehlungGaben? Rueckkuehlung;
 }

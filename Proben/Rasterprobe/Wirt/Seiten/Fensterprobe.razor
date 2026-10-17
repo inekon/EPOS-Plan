@@ -158,6 +158,7 @@
             @* Stufe 5: der Erzeugerdialog der Kaeltemaschinen als Wirt der Zweispaltenauswahl, ohne Datenbank. *@
             <KaeltemaschineAnlageDialog Katalogprofil="@KmProfil" Katalogzeilen="@(() => KmKatalog)"
                                         Anlagen="@KmAnlagen" Katalogwerte="@(_ => KmGeraet)"
+                                        Rueckkuehlung="@(() => RkGaben())"
                                         Stromtraeger="@(new[] { (5, "Strom") })" ProjektStromtraeger="5"
                                         Anlegen="@((_, _) => -1)" Speichern="@(_ => null)" Loeschen="@(_ => { })"
                                         KatalogLoeschen="@(_ => "")" Kostensumme="@(_ => (1000.0, 50.0))"
@@ -546,12 +547,13 @@
 
     private static readonly KaeltemaschineGeraetwerte KmGeraet = new()
     {
-        Bezeichner = "Kältemaschine", Firma = "Musterwerk", Rueckkuehlart = "Luft", Nennkaelteleistung = 100, NennEer = 3.2
+        Bezeichner = "Kältemaschine", Firma = "Musterwerk", Rueckkuehlart = "Wasser", Luftgekuehlt = false, Nennkaelteleistung = 100, NennEer = 3.2
     };
 
     private static IReadOnlyList<KaeltemaschineAnlageDaten> KmAnlagen() => Enumerable.Range(1, 2)
         .Select(i => new KaeltemaschineAnlageDaten { AnlagenId = i, GeraetId = 100 + i, Bezeichner = "KM " + i, Anzahl = 1,
-                                                    KuehlCarrierId = 5, Geraet = KmGeraet })
+                                                    KuehlCarrierId = 5, Geraet = KmGeraet,
+                                                    RueckkuehlwerkWahl = i == 1 ? 8 : null, Rueckkuehlwerk = i == 1 ? RkLesung("Kühlturm 1", 8, true, 2.5) : null })
         .ToList();
 
     private Katalogfilterprofil? _wpProfil;
@@ -776,4 +778,27 @@
 
     private IReadOnlyList<Katalogfilterzeile>? _bedarfZeilen;
     private IReadOnlyList<Katalogfilterzeile> BedarfZeilen => _bedarfZeilen ??= Zeilenbau.Voll(BedarfProfil, _anzahl);
+    /// <summary>K-F5b: die Gaben der Gruppe „Rückkühlung“ — ein trockener und ein nasser Katalogsatz, Klima ohne Feuchte.</summary>
+    private static RueckkuehlungGaben RkGaben() => new()
+    {
+        KlimaMitFeuchte = false,
+        Katalog = new[]
+        {
+            new RueckkuehlwerkEintrag(7, "Rückkühler 1 · Trockenkühler", RkLesung("Rückkühler 1", 7, false, null)),
+            new RueckkuehlwerkEintrag(8, "Kühlturm 1 · Kühlturm, offen", RkLesung("Kühlturm 1", 8, true, 2.5)),
+        }
+    };
+
+    private static RueckkuehlwerkLesung RkLesung(string name, int stamm, bool nass, double? ventilator) => new()
+    {
+        Bezeichner = name, StammId = stamm, Verdunstungskuehlanlage = nass, VentilatorKw = ventilator,
+        Zeilen = new List<(string, string)>
+        {
+            ("Bauart", nass ? "Kühlturm, offen" : "Vorgabe: Trockenkühler"), ("Nennleistung (abzuführende Wärme)", "150 kW"),
+            ("Annäherung", "Vorgabe: 5 K · Vorgabe: fest"),
+            ("Ventilator", ventilator is double v ? v + " kW · Drehzahl" : "Vorgabe: Hilfsstrom der Rückkühlung an der Kältemaschine"),
+            ("Freikühlung", "Vorgabe: parallel"),
+        }
+    };
+
 }
