@@ -506,6 +506,9 @@ namespace WindowsFormsApplication1
             // leere Rohtabelle und die Herkunftsspalten am Ziel an (Bestandsregionen bleiben Rohdaten = 0).
             new Stufe(KlimaRohwerteSchema.SCHRITT, Art.Ddl,
                       "Rohwerte des Klimaimports und Herkunft der Klimaregion (KD-4)"),
+            // KETTE (KB-8): Die Stufe des Schritts ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT (240, Art Ddl, "Die vier
+            // Ergebnisspalten der Wirtschaftlichkeit (KB-8)") kommt erst mit dem Umhaengen hinter die Stufe 239 - das Register
+            // muss lueckenlos bis zum Zielstand stehen.
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>
