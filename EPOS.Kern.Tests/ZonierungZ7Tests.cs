@@ -86,18 +86,19 @@ namespace EPOS.Kern.Tests
             GebaeudeZonierung z = GebaeudeZonierung.Bilden(Buerohaus(), 0, Z7);
             Assert.False(z.Abgelehnt);
             Assert.Equal(Z7, z.Regel);
-            // gesetzt/Vorschlag nach Fläche: Werkstatt 120 (Vorschlag 23), Besprechung 40 (4), Flure 30 (19), WC 6 (16); dann offen Büros 75; dann unbeheizt.
-            Assert.Equal(new[] { "Profil Nr. 23", "Profil Nr. 4", "Profil Nr. 19", "Profil Nr. 16", "Büroraum", "unbeheizt" }, z.Zonen.Select(x => x.Name));
+            // gesetzt/Vorschlag nach Fläche: Werkstatt 120 (Vorschlag 23), Besprechung 40 (4), Flure 30 (19), WC 6 (16); dann offen Büros 75.
+            // Die Zone „unbeheizt“ wird gebildet und entfällt ohne jede Fläche (das Haus trägt keine Bauteile, Mehrzonenkonzept 6.5):
+            // der Keller bleibt außerhalb der Zonen, benannt.
+            Assert.Equal(new[] { "Profil Nr. 23", "Profil Nr. 4", "Profil Nr. 19", "Profil Nr. 16", "Büroraum" }, z.Zonen.Select(x => x.Name));
             Assert.Equal(new[] { "w1" }, z.Zonen[0].Raeume.Select(r => r.Kennung));
             Assert.Equal(new[] { "f1", "f2" }, z.Zonen[2].Raeume.Select(r => r.Kennung));
             Assert.Equal(new[] { "b1", "b2", "b3" }, z.Zonen[4].Raeume.Select(r => r.Kennung));
-            Assert.Equal(new[] { "l1" }, z.Zonen[5].Raeume.Select(r => r.Kennung));
-            Assert.False(z.Zonen[5].IstBeheizt);
+            Assert.DoesNotContain(z.Zonen, x => x.Raeume.Any(r => r.Kennung == "l1"));
+            Assert.Contains(z.Meldungen, x => x.Schluessel == I + GebaeudeZonierung.ZONE_OHNE_FLAECHEN && x.Werte[0] == "unbeheizt");
             Assert.Equal(Raumprofilstand.Vorschlag, z.Zonen[0].Raumprofil.Stand);
             Assert.Equal(Raumprofilstand.Eindeutig, z.Zonen[1].Raumprofil.Stand);
             Assert.Equal(Raumprofilstand.Offen, z.Zonen[4].Raumprofil.Stand);
             Assert.Null(z.Zonen[4].Raumprofil.Vorschlag);
-            Assert.Null(z.Zonen[5].Raumprofil);
             // die Meldung je Gebäude: 5 eindeutig (Besprechung, 2 Flure, WC, Keller als Lager), 1 Vorschlag, 3 offen, 0 ohne
             PruefMeldung m = Assert.Single(z.Meldungen, x => x.Schluessel == I + Raumprofilzuordnung.PROFILE_ZUGEORDNET);
             Assert.Equal(new[] { "5", "1", "3", "0" }, m.Werte.Take(4));
@@ -113,7 +114,8 @@ namespace EPOS.Kern.Tests
             Zonenplan plan = Zonenplan.Vorschlag(Buerohaus(), 0, Z7, vorbelegung: Raumnutzungsvorbelegung.Vorgabe);
             Assert.Equal(Z7, plan.Regel);
             Assert.Null(plan.Ablehnung);
-            Planzone werkstatt = plan.Zonen[0], besprechung = plan.Zonen[1], buero = plan.Zonen[4], keller = plan.Zonen[5];
+            Planzone werkstatt = plan.Zonen[0], besprechung = plan.Zonen[1], buero = plan.Zonen[4];
+            Assert.Equal(5, plan.Zonen.Count);   // die unbeheizte Zone entfällt ohne Flächen, der Keller steht außerhalb
             // Ohne Katalog löst die Vorgabe im Code nur Nummern mit alter Kennung auf (4 → BUERO); 23 und 19 bleiben ohne Profil, die Quelle steht.
             Assert.Equal(Raumprofilzuordnung.QUELLE_VORSCHLAG, werkstatt.Quelle.Art);
             Assert.Equal("Raumart Workshop", werkstatt.Quelle.Schluessel);
@@ -122,8 +124,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Raumprofilzuordnung.QUELLE_OFFEN, buero.Quelle.Art);
             Assert.Null(buero.Profil);
             Assert.Equal("Profil Nr. 1 / Profil Nr. 2 / Profil Nr. 3", buero.Quelle.Schluessel);
-            Assert.Null(keller.Quelle);
-            Assert.Null(keller.Profil);
+            Assert.Equal(new[] { "l1" }, plan.RaeumeAusserhalb.Select(r => r.Kennung));
             Assert.Empty(plan.NichtZugeordnet);   // offene Räume stehen in ihrer Zone, keine Sperre (F6)
             Assert.Null(plan.Abschlusspruefung());
         }

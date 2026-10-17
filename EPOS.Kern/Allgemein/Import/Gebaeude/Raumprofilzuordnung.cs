@@ -75,14 +75,17 @@ namespace WindowsFormsApplication1
             => s == WOHNEN_EFH ? RaumnutzungNormkategorienSchema.WOHNEN_EFH : s == WOHNEN_MFH ? RaumnutzungNormkategorienSchema.WOHNEN_MFH : null;
 
         /// <summary>
-        /// <b>Das Profil eines Schlüssels</b>: DIN-Nummer → <see cref="Raumnutzungsvorbelegung.DinTreffer"/>; Wohnprofil → das
+        /// <b>Das Profil eines Schlüssels</b>: DIN-Nummer → das Profil der Kategorie DIN/TS 18599-10 dieser Nummer
+        /// (<see cref="Raumnutzungsvorbelegung.AusDinKatalog"/>, Anwenderentscheid F2: der Vorschlag nennt das DIN-Profil, die
+        /// <c>DIN_NUMMER</c>-Zeilen des Katalogs bleiben dem Bestandsweg), ohne DIN-Katalog
+        /// <see cref="Raumnutzungsvorbelegung.DinTreffer"/>; Wohnprofil → das
         /// Katalogprofil dieses Namens, ohne Katalog die Kennung Wohnen; <c>#Id</c> → dieses Profil. <c>null</c> ohne Treffer.
         /// </summary>
         internal static Planprofil Profil(Raumnutzungsvorbelegung v, string schluessel)
         {
             v ??= Raumnutzungsvorbelegung.Vorgabe;
             if (string.IsNullOrEmpty(schluessel) || schluessel == WOHNEN) return null;
-            if (DinNummer(schluessel) is int n) return v.DinTreffer(n);
+            if (DinNummer(schluessel) is int n) return v.AusDinKatalog(n) ?? v.DinTreffer(n);
             if (Wohnname(schluessel) is string name)
             {
                 Planprofil p = v.AusText(name);
