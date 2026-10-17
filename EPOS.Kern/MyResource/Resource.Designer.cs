@@ -165604,6 +165604,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt rechnet auf dem Bestandsweg bereits eine Zirkulation. Mit Zirkulation im Profil zählt der Verlust doppelt — empfohlen: ohne Zirkulation. ähnelt.
+        /// </summary>
+        public static string ZPG_PS_HINWEIS_ZIRK_DOPPELT {
+            get {
+                return ResourceManager.GetString("ZPG_PS_HINWEIS_ZIRK_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Als Katalogsatz speichern… ähnelt.
         /// </summary>
         public static string ZPG_PS_KNOPF_KATALOG {

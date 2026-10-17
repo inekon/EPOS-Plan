@@ -263,9 +263,6 @@ namespace EPOS.Kern.Tests
             Assert.Equal(ZapfprofilHuelle.PS_MSG_NAME_VORHANDEN, vorhanden.Kennung);
             Assert.Equal("Ein Katalogsatz „EFH Wohnen, 1 Person“ ist schon vorhanden.", vorhanden.Text);
 
-            ZapfprofilProfilsatzErgebnis typBelegt = ZapfprofilHuelle.AlsKatalogsatzSpeichern(PROJEKT, Eingabe(), basis, "Neuer Satz", "Hotel", null, true);
-            Assert.False(typBelegt.Erfolg);
-            Assert.Equal(ZapfprofilHuelle.PS_MSG_TYP_VORHANDEN, typBelegt.Kennung);
 
             ZapfprofilProfilsatzErgebnis ohne = ZapfprofilHuelle.AlsKatalogsatzSpeichern(PROJEKT, null, basis, "Neuer Satz", null, null, true);
             Assert.False(ohne.Erfolg);
@@ -274,6 +271,55 @@ namespace EPOS.Kern.Tests
 
             Assert.Equal(koepfe, Zeilen("Tab_Brauchwasser_STAMM"));
             Assert.Equal(typen, Zeilen("Tab_Brauchwassertyp_STAMM"));
+        }
+
+        [Fact]
+        public void Ein_belegter_Typname_wird_mit_Zaehler_eindeutig_statt_abgelehnt()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            ZapfprofilStand basis = ZapfprofilCtrl.Lies(PROJEKT);
+            (string, double[,])? hotelVorher = TypProfilCtrl.Lies(BedarfsArt.Brauchwasser, "Hotel");
+
+            ZapfprofilProfilsatzErgebnis r = ZapfprofilHuelle.AlsKatalogsatzSpeichern(PROJEKT, Eingabe(), basis, "Neuer Satz", "Hotel", null, true);
+            Assert.True(r.Erfolg, r.Text);
+            DataTable kopf = DataRepository.GetDataTable("SELECT * FROM Tab_Brauchwasser_STAMM WHERE ID = ?", new DbParam("@id", r.Id));
+            Assert.Equal("Hotel (2)", kopf.Rows[0]["Typ"]);
+            Assert.NotNull(TypProfilCtrl.Lies(BedarfsArt.Brauchwasser, "Hotel (2)"));
+
+            // Das Wochenprofil des belegten Typs bleibt unberührt.
+            Assert.Equal(hotelVorher.Value.Item2.Cast<double>(), TypProfilCtrl.Lies(BedarfsArt.Brauchwasser, "Hotel").Value.Werte.Cast<double>());
+
+            // Ein zweiter Satz mit demselben Typ bekommt den nächsten Zähler.
+            ZapfprofilProfilsatzErgebnis zweit = ZapfprofilHuelle.AlsKatalogsatzSpeichern(PROJEKT, Eingabe(), basis, "Zweiter Satz", "Hotel", null, false);
+            Assert.True(zweit.Erfolg, zweit.Text);
+            DataTable kopf2 = DataRepository.GetDataTable("SELECT * FROM Tab_Brauchwasser_STAMM WHERE ID = ?", new DbParam("@id", zweit.Id));
+            Assert.Equal("Hotel (3)", kopf2.Rows[0]["Typ"]);
+            Assert.Equal("Hotel (4)", ZapfprofilHuelle.TypnameEindeutig("Hotel"));
+        }
+
+        [Fact]
+        public void Die_Vorschau_warnt_vor_doppelter_Zirkulation_wenn_der_Bestandsweg_eine_fuehrt()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            ZapfprofilStand basis = ZapfprofilCtrl.Lies(PROJEKT);
+
+            Assert.True(KonfigurationCtrl.NetzverlustvorgabeSchreiben(PROJEKT, Netzverlustvorgabe.Leer));
+            ZapfprofilProfilsatzVorschauDaten ohne = ZapfprofilHuelle.ProfilsatzVorschau(PROJEKT, Eingabe(), basis, true);
+            Assert.False(ohne.BestandswegHatZirkulation);
+            Assert.Equal("", ohne.HinweisZirkulationDoppelt);
+
+            Assert.True(KonfigurationCtrl.NetzverlustvorgabeSchreiben(PROJEKT,
+                Netzverlustvorgabe.Leer with { ZirkulationLeistungKw = 2.0, ZirkulationLaufzeitHd = 16.0 }));
+            ZapfprofilProfilsatzVorschauDaten mit = ZapfprofilHuelle.ProfilsatzVorschau(PROJEKT, Eingabe(), basis, true);
+            Assert.True(mit.BestandswegHatZirkulation);
+            Assert.Equal("Das Projekt rechnet auf dem Bestandsweg bereits eine Zirkulation. Mit Zirkulation im Profil zählt der Verlust doppelt — empfohlen: ohne Zirkulation.",
+                         mit.HinweisZirkulationDoppelt);
+            // Die Abbildung selbst bleibt unberührt — die Vorgabe „ohne“ setzt der Dialog.
+            Assert.Equal(ohne.JahressummeMwh, mit.JahressummeMwh, ohne.JahressummeMwh * REL);
         }
 
         [Fact]

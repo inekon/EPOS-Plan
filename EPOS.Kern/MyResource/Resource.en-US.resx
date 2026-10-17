@@ -58231,4 +58231,7 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="ZPG_PS_WOCHENTAGE" xml:space="preserve">
     <value>Mon,Tue,Wed,Thu,Fri,Sat,Sun</value>
   </data>
+  <data name="ZPG_PS_HINWEIS_ZIRK_DOPPELT" xml:space="preserve">
+    <value>The project already calculates a circulation on the standard-profile path. With circulation in the profile the loss is counted twice — recommended: without circulation.</value>
+  </data>
 </root>

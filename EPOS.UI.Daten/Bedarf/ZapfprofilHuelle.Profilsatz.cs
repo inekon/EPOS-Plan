@@ -17,6 +17,7 @@ namespace WindowsFormsApplication1
         internal const string PS_WARNUNG_PROJEKT = "ZPG_PS_WARNUNG_PROJEKT";
         internal const string PS_HINWEIS_GENERATOR = "ZPG_PS_HINWEIS_WEG_GENERATOR";
         internal const string PS_HINWEIS_BESTAND = "ZPG_PS_HINWEIS_WEG_BESTAND";
+        internal const string PS_HINWEIS_ZIRK_DOPPELT = "ZPG_PS_HINWEIS_ZIRK_DOPPELT";
         internal const string PS_NAME_PROJEKT = "ZPG_PS_NAME_PROJEKT";
         internal const string PS_VARIANTE_MIT = "ZPG_PS_VARIANTE_MIT";
         internal const string PS_VARIANTE_OHNE = "ZPG_PS_VARIANTE_OHNE";
@@ -41,6 +42,7 @@ namespace WindowsFormsApplication1
                                                                               ZapfprofilStand basis, bool mitZirkulation)
         {
             bool generator = RechenwegIstGenerator(idProjekt);
+            bool bestandZirkulation = BestandswegHatZirkulation(idProjekt);
             var d = new ZapfprofilProfilsatzVorschauDaten
             {
                 MitZirkulation = mitZirkulation,
@@ -52,6 +54,10 @@ namespace WindowsFormsApplication1
                 WarnungProjekt = Text_(PS_WARNUNG_PROJEKT, "Das Profil steht dann nur in diesem Projekt, nicht im Katalog. Es rechnet als Bestandsprofil ohne Ferien, Feiertage, Stochastik und Typtage."),
                 KnopfKatalog = Text_(PS_KNOPF_KATALOG, "Als Katalogsatz speichern…"),
                 KnopfProjekt = Text_(PS_KNOPF_PROJEKT, "Zum Projekt hinzufügen"),
+                BestandswegHatZirkulation = bestandZirkulation,
+                HinweisZirkulationDoppelt = bestandZirkulation
+                    ? Text_(PS_HINWEIS_ZIRK_DOPPELT, "Das Projekt rechnet auf dem Bestandsweg bereits eine Zirkulation. Mit Zirkulation im Profil zählt der Verlust doppelt — empfohlen: ohne Zirkulation.")
+                    : "",
             };
 
             (string kennung, string grund, ZapfprofilProfilsatz satz) = ProfilsatzRechnen(idProjekt, eingabe, basis, mitZirkulation);
@@ -94,9 +100,9 @@ namespace WindowsFormsApplication1
             if (stamm.Exists(n))
                 return Abgelehnt(PS_MSG_NAME_VORHANDEN,
                                  Format(Text_(PS_MSG_NAME_VORHANDEN, "Ein Katalogsatz „{0}“ ist schon vorhanden."), n), n);
-            if (TypProfilCtrl.TypExists(BedarfsArt.Brauchwasser, t))
-                return Abgelehnt(PS_MSG_TYP_VORHANDEN,
-                                 Format(Text_(PS_MSG_TYP_VORHANDEN, "Ein Wochenprofil „{0}“ ist schon vorhanden — bitte einen anderen Typ angeben."), t), n);
+            // Ein belegter Typname wird wie der Projektname eindeutig gemacht („ (2)“, „ (3)“ …),
+            // statt das Wochenprofil fremder Sätze zu überschreiben.
+            t = TypnameEindeutig(t);
 
             (string kennung, string grund, ZapfprofilProfilsatz satz) = ProfilsatzRechnen(idProjekt, eingabe, basis, mitZirkulation);
             if (satz == null) return Abgelehnt(kennung, grund, n);
@@ -264,6 +270,25 @@ namespace WindowsFormsApplication1
             if (!(satz.JahressummeKwh > 0.0))
                 return (PS_MSG_OHNE_BEDARF, Text_(PS_MSG_OHNE_BEDARF, "Das Zapfprofil trägt keinen Bedarf — es gibt nichts abzulegen."), null);
             return ("", "", satz);
+        }
+
+        /// <summary>Der Typname <paramref name="t"/> oder, wenn belegt, mit dem ersten freien Zähler „ (2)“, „ (3)“ …</summary>
+        internal static string TypnameEindeutig(string t)
+        {
+            string n = t;
+            for (int i = 2; TypProfilCtrl.TypExists(BedarfsArt.Brauchwasser, n); i++)
+                n = t + " (" + i.ToString(CultureInfo.InvariantCulture) + ")";
+            return n;
+        }
+
+        /// <summary>
+        /// Führt das Projekt auf dem Bestandsweg eine feste Zirkulation (Leistung und Laufzeit in
+        /// <c>Tab_Einstellungen</c>, dieselbe Vorgabe, die <c>SimulationWaermebedarf.BestandswegZirkulation</c> liest)?
+        /// </summary>
+        internal static bool BestandswegHatZirkulation(int idProjekt)
+        {
+            try { return KonfigurationCtrl.NetzverlustvorgabeLesen(idProjekt)?.MitZirkulation == true; }
+            catch (Exception) { return false; }
         }
 
         /// <summary>Gilt im Projekt der Generatorweg? Ohne lesbaren Weg: nein (Bestandsprofile).</summary>

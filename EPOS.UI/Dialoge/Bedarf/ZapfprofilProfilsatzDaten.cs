@@ -37,6 +37,13 @@ public sealed class ZapfprofilProfilsatzVorschauDaten
     public string WarnungProjekt { get; set; } = "";
     public string KnopfKatalog { get; set; } = "";
     public string KnopfProjekt { get; set; } = "";
+    /// <summary>
+    /// Rechnet das Projekt auf dem Bestandsweg schon eine feste Zirkulation? Dann zählte ein Profil mit
+    /// Zirkulation den Verlust doppelt; der Dialog schlägt „ohne Zirkulation“ vor.
+    /// </summary>
+    public bool BestandswegHatZirkulation { get; set; }
+    /// <summary>Der Hinweis dazu; leer, wenn der Bestandsweg keine Zirkulation führt.</summary>
+    public string HinweisZirkulationDoppelt { get; set; } = "";
     /// <summary>Der Name, den „Zum Projekt hinzufügen" vergäbe.</summary>
     public string NameProjekt { get; set; } = "";
 }
