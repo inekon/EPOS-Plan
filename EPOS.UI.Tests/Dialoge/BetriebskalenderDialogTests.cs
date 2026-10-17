@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using AngleSharp.Dom;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dienste;
 using Microsoft.Extensions.DependencyInjection;
@@ -302,9 +303,10 @@ public class BetriebskalenderDialogTests : EposBunitContext
     }
 
     [Fact]
-    public void Mehr_als_vier_Zeitraeume_uebernehmen_die_ersten_vier_und_nennen_die_fehlenden()
+    public void Mehr_als_vier_Zeitraeume_gehen_die_ersten_vier_in_die_Felder_die_weiteren_in_die_Liste()
     {
-        var cut = MitGebaeude(new Ablage(), new[] { HALLE });
+        var a = new Ablage();
+        var cut = MitGebaeude(a, new[] { HALLE });
         Knopf(cut, "Aus Gebäude übernehmen…").Click();
         // ein einziges Gebäude ist vorgewählt
         cut.FindAll(".epos-kalender-gebaeudewahl button").First(b => b.TextContent.Trim() == "OK").Click();
@@ -313,8 +315,119 @@ public class BetriebskalenderDialogTests : EposBunitContext
         Assert.Equal("NW", s.Bundesland);
         Assert.Equal(new int?[] { 1, 30, 60, 90 }, s.Von);
         Assert.Equal(new int?[] { 5, 35, 65, 95 }, s.Bis);
-        Assert.Contains("Das Gebäude führt 6 Ferienzeiträume", cut.Instance.Meldung);
-        Assert.Contains("2 fehlen", cut.Instance.Meldung);
+        Assert.Equal(new[] { (200, 210), (355, 3) }, s.Liste.Select(z => (z.Von!.Value, z.Bis!.Value)));
+        Assert.Equal(WarnStufe.Hinweis, cut.FindComponent<Warnbanner>().Instance.Stufe);
+        Assert.Contains("6 Ferienzeiträume", cut.Instance.Meldung);
+        Assert.Contains("2 in der Liste", cut.Instance.Meldung);
+        Assert.Equal(8 + 4, cut.FindAll(".epos-gemeinjahrdatum").Count);   // vier Paare und zwei Zeilen der Liste
+
+        cut.Find("input[type=text]").Input("Halle");
+        Knopf(cut, "OK").Click();
+        Assert.Equal(new[] { (200, 210), (355, 3) },
+                     Assert.Single(a.Saetze).Liste.Select(z => (z.Von!.Value, z.Bis!.Value)));
+    }
+
+    // =============================================================================
+    //  Die Liste „Weitere Betriebsferien“ (Tab_Betriebskalenderferien)
+    // =============================================================================
+
+    [Fact]
+    public void Ohne_Zeilen_nennt_die_Liste_sich_leer_und_bietet_Zeile_hinzufuegen()
+    {
+        var cut = Verwaltung(new Ablage());
+        Assert.Contains("Weitere Betriebsferien", cut.Markup);
+        Assert.Contains("Keine weiteren Betriebsferien.", cut.Markup);
+        Assert.Empty(cut.FindAll(".epos-kalender-ferienzeile"));
+        Knopf(cut, "Zeile hinzufügen");
+    }
+
+    [Fact]
+    public void Zeile_hinzufuegen_entfernen_und_durchreichen()
+    {
+        var a = new Ablage();
+        bool? ergebnis = null;
+        var cut = Verwaltung(a, b => ergebnis = b);
+        cut.Find("input[type=text]").Input("Werk West");
+
+        Knopf(cut, "Zeile hinzufügen").Click();
+        Knopf(cut, "Zeile hinzufügen").Click();
+        Assert.Equal(2, cut.FindAll(".epos-kalender-ferienzeile").Count);
+        Assert.Equal(8 + 4, cut.FindAll(".epos-gemeinjahrdatum").Count);
+        Assert.DoesNotContain("Keine weiteren Betriebsferien.", cut.Markup);
+
+        // Zeile 1: Name, von, bis; Zeile 2 wird wieder entfernt.
+        var zeile1 = cut.FindAll(".epos-kalender-ferienzeile")[0];
+        zeile1.QuerySelector("input[type=text]")!.Input("Inventur");
+        cut.FindAll(".epos-kalender-ferienzeile")[0].QuerySelectorAll(".epos-gemeinjahrdatum input")[0].Change("02.01.");
+        cut.FindAll(".epos-kalender-ferienzeile")[0].QuerySelectorAll(".epos-gemeinjahrdatum input")[1].Change("04.01.");
+        cut.FindAll(".epos-kalender-ferienzeile")[1].QuerySelector(".epos-kalender-ferien-entfernen")!.Click();
+        Assert.Single(cut.FindAll(".epos-kalender-ferienzeile"));
+
+        Knopf(cut, "OK").Click();
+        Assert.True(ergebnis);
+        BetriebsferienZeile z = Assert.Single(Assert.Single(a.Saetze).Liste);
+        Assert.Equal(("Inventur", 2, 4), (z.Name, z.Von, z.Bis));
+    }
+
+    [Fact]
+    public void Ein_halber_Zeitraum_in_der_Liste_haelt_den_Dialog_offen()
+    {
+        var a = new Ablage();
+        bool? ergebnis = null;
+        var cut = Verwaltung(a, b => ergebnis = b);
+        cut.Find("input[type=text]").Input("Werk Ost");
+        Knopf(cut, "Zeile hinzufügen").Click();
+        cut.FindAll(".epos-kalender-ferienzeile")[0].QuerySelectorAll(".epos-gemeinjahrdatum input")[0].Change("02.01.");
+
+        Knopf(cut, "OK").Click();
+        Assert.Null(ergebnis);
+        Assert.Contains("Ferienzeitraum", cut.Instance.Meldung);
+        Assert.Empty(a.Saetze);
+    }
+
+    [Fact]
+    public void Der_Grund_der_Kernpruefung_haelt_den_Dialog_offen()
+    {
+        var a = new Ablage();
+        bool? ergebnis = null;
+        var cut = Render<BetriebskalenderDialog>(p => p
+            .Add(x => x.Laden, a.Laden)
+            .Add(x => x.Pruefen, d => d.Liste.Any(z => z.Von <= d.Bis[0] && z.Bis >= d.Von[0]) ? "Überschneidung" : null)
+            .Add(x => x.Speichern, a.Speichern)
+            .Add(x => x.Geschlossen, b => ergebnis = b));
+        cut.Find("input[type=text]").Input("Werk");
+        cut.FindAll(".epos-gemeinjahrdatum input")[0].Change("01.08.");
+        cut.FindAll(".epos-gemeinjahrdatum input")[1].Change("21.08.");
+        Knopf(cut, "Zeile hinzufügen").Click();
+        cut.FindAll(".epos-kalender-ferienzeile")[0].QuerySelectorAll(".epos-gemeinjahrdatum input")[0].Change("10.08.");
+        cut.FindAll(".epos-kalender-ferienzeile")[0].QuerySelectorAll(".epos-gemeinjahrdatum input")[1].Change("30.08.");
+
+        Knopf(cut, "OK").Click();
+        Assert.Null(ergebnis);
+        Assert.Equal("Überschneidung", cut.Instance.Meldung);
+        Assert.Empty(a.Saetze);
+    }
+
+    [Fact]
+    public void Ein_gespeicherter_Kalender_zeigt_seine_Liste_und_die_KI_Sicht_nennt_sie()
+    {
+        var a = new Ablage();
+        a.Saetze.Add(new BetriebskalenderDaten
+        {
+            Id = 1, Bezeichner = "Werk",
+            Liste = new List<BetriebsferienZeile> { new() { Name = "Inventur", Von = 2, Bis = 4 }, new() { Von = 300, Bis = 305 } }
+        });
+        var cut = Verwaltung(a);
+        Assert.Equal(2, cut.FindAll(".epos-kalender-ferienzeile").Count);
+        Assert.Equal("Inventur", cut.FindAll(".epos-kalender-ferienzeile")[0].QuerySelector("input[type=text]")!.GetAttribute("value"));
+
+        var sicht = (BetriebskalenderKiSicht)typeof(BetriebskalenderDialog)
+            .GetMethod("KiSicht", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .Invoke(cut.Instance, null)!;
+        Assert.Equal(new[] { "1", "2" }, sicht.WeitereFerien.Select(z => z.Nummer));
+        Assert.Equal(("Inventur", 2, 4), (sicht.WeitereFerien[0].Name, sicht.WeitereFerien[0].Von, sicht.WeitereFerien[0].Bis));
+        cut.InvokeAsync(() => sicht.WeitereFerien[1].Bis = 306);
+        Assert.Equal(306, cut.Instance.Satz.Liste[1].Bis);
     }
 
     [Fact]

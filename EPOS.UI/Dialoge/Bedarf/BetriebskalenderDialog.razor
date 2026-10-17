@@ -2,9 +2,10 @@
    Simulationsablauf 17) - der Verwaltungsdialog der Tabelle Tab_Betriebskalender.
 
    WOZU. Ein Wochenprofil von 168 Stunden gilt sonst fuer alle 52 Wochen. Ein Betriebskalender legt
-   Feiertage (bundeseinheitlich, mit Bundesland dazu die Landesfeiertage) und bis zu vier
-   Betriebsferien auf das Wochenprofil einer Profilzuordnung - Brauchwasser, Prozesswaerme oder
-   Strom. Gewaehlt wird er je Zuordnung im Bedarfsprofil-Dialog des Projekts.
+   Feiertage (bundeseinheitlich, mit Bundesland dazu die Landesfeiertage) und Betriebsferien - vier
+   Spaltenpaare und darunter die Liste "Weitere Betriebsferien" (Tab_Betriebskalenderferien, beliebig
+   viele Zeilen mit Name, von, bis) - auf das Wochenprofil einer Profilzuordnung - Brauchwasser,
+   Prozesswaerme oder Strom. Gewaehlt wird er je Zuordnung im Bedarfsprofil-Dialog des Projekts.
 
    AUFBAU. Oben die Wahl des Kalenders mit "Neu" und "Loeschen", darunter die Felder des gewaehlten
    Satzes. Eine Aenderung lebt bis "Speichern" (oder OK) im Arbeitsstand - dieselbe Regel wie in
@@ -13,8 +14,9 @@
 
    AUS GEBAEUDE UEBERNEHMEN (Konzept Kaeltebedarfsprofile 7.2, Entscheid OE-6). Der Knopf neben "Loeschen" waehlt
    in einer kurzen Ueberlagerung ein Projektgebaeude und schreibt dessen Feiertagsland und Ferien als KOPIE in den
-   Arbeitsstand - nie als Verweis (Festlegung KP1b 6: Herkunft nie als ID am Ziel). Der Kalender nimmt vier
-   Ferienzeitraeume auf; fuehrt das Gebaeude mehr, kommen die ersten vier, und der Banner nennt, wie viele fehlen.
+   Arbeitsstand - nie als Verweis (Festlegung KP1b 6: Herkunft nie als ID am Ziel). Alle Ferienzeitraeume des
+   Gebaeudes kommen mit: die ersten vier in die Spaltenpaare, die weiteren in ihrer Reihenfolge in die Liste
+   (Regel des Kerns, Betriebskalender.FerienAufteilen); der Banner nennt, wie viele in der Liste stehen.
    Ohne Gebaeude im Projekt ist der Knopf weich gesperrt und nennt den Grund; ohne Gabe steht er nicht da.
 
    IM BLATT (Bedarfsprofil-Dialog, Baustein Blattwechsel) traegt der Dialog keinen Titel und kein Kreuz
@@ -88,6 +90,48 @@
                                  Platzhalter="@Resource.KOND_TXT_PLATZHALTER_DATUM_ENDE"
                                  Wert="@_satz.Bis[ii]" WertChanged="@(w => Feld(() => _satz.Bis[ii] = w))" />
             }
+        </KindInhalt>
+    </Formularraster>
+
+    @* Die weiteren Betriebsferien (Tab_Betriebskalenderferien): beliebig viele Zeilen nach den vier Paaren,
+       dieselbe Formatregel und Hilfezeile wie die Spalten. *@
+    <section class="epos-kalender-ferienliste" aria-label="@Resource.BKAL_LBL_FERIENLISTE">
+        <h2 class="epos-kond-abschnitt-titel">@Resource.BKAL_LBL_FERIENLISTE</h2>
+        @if (_satz.Liste.Count == 0)
+        {
+            <p class="epos-leisezeile epos-kalender-ferienliste-leer">@Resource.BKAL_LISTE_LEER</p>
+        }
+        @for (int i = 0; i < _satz.Liste.Count; i++)
+        {
+            int ii = i;
+            BetriebsferienZeile z = _satz.Liste[ii];
+            <div class="epos-kalender-ferienzeile" data-ferien="@(ii + 1)" @key="z">
+                <Textfeld Bezeichnung="@string.Format(CultureInfo.CurrentCulture, Resource.BKAL_LBL_LISTE_NAME, ii + 1)"
+                          Wert="@(z.Name ?? "")" Hoechstlaenge="100"
+                          WertChanged="@(w => Feld(() => z.Name = string.IsNullOrWhiteSpace(w) ? null : w))" />
+                <Gemeinjahrdatum Bezeichnung="@string.Format(CultureInfo.CurrentCulture, Resource.BKAL_LBL_LISTE_VON, ii + 1)"
+                                 Feldname="@("liste" + (ii + 1) + "_von")" Meldung="@Resource.KOND_TXT_GEMEINJAHR"
+                                 Hinweis="@Resource.KOND_TXT_DATUM_FORMAT" JahrHinweis="@Resource.KOND_TXT_DATUM_JAHR"
+                                 Platzhalter="@Resource.KOND_TXT_PLATZHALTER_DATUM_BEGINN"
+                                 Wert="@z.Von" WertChanged="@(w => Feld(() => z.Von = w))" />
+                <Gemeinjahrdatum Bezeichnung="@string.Format(CultureInfo.CurrentCulture, Resource.BKAL_LBL_LISTE_BIS, ii + 1)"
+                                 Feldname="@("liste" + (ii + 1) + "_bis")" Meldung="@Resource.KOND_TXT_GEMEINJAHR"
+                                 Hinweis="@Resource.KOND_TXT_DATUM_FORMAT" JahrHinweis="@Resource.KOND_TXT_DATUM_JAHR"
+                                 Platzhalter="@Resource.KOND_TXT_PLATZHALTER_DATUM_ENDE"
+                                 Wert="@z.Bis" WertChanged="@(w => Feld(() => z.Bis = w))" />
+                <button type="button" class="epos-knopf epos-kalender-ferien-entfernen"
+                        aria-label="@(string.Format(CultureInfo.CurrentCulture, Resource.BKAL_LBL_LISTE_NAME, ii + 1) + " · " + Resource.BKAL_BTN_ZEILE_ENTFERNEN)"
+                        @onclick="() => ListeEntfernen(ii)">@Resource.BKAL_BTN_ZEILE_ENTFERNEN</button>
+            </div>
+        }
+        <div class="epos-zeilenknoepfe">
+            <button type="button" class="epos-knopf epos-kalender-ferien-neu" title="@Resource.KOND_TXT_DATUM_FORMAT"
+                    @onclick="ListeHinzufuegen">@Resource.BKAL_BTN_ZEILE_HINZU</button>
+        </div>
+    </section>
+
+    <Formularraster>
+        <KindInhalt>
             <Zahlenfeld Bezeichnung="@Resource.BKAL_LBL_FAKTOR" Feldname="@Resource.BKAL_LBL_FAKTOR" Einheit="%"
                         Min="0" Max="100" Nachkommastellen="0" Wert="@_satz.FerienfaktorProzent"
                         Aktiv="@(!_satz.FerienWieSonntag)"
@@ -97,6 +141,7 @@
         </KindInhalt>
     </Formularraster>
     <Herleitungszeile Text="@Resource.BKAL_HRL_FEIERTAG" />
+    <Herleitungszeile Text="@Resource.BKAL_HRL_FERIENLISTE" />
     <Herleitungszeile Text="@Resource.BKAL_HRL_FERIEN_SONNTAG" />
     <Herleitungszeile Text="@(_satz.FerienWieSonntag ? Resource.BKAL_HRL_FAKTOR_GESPERRT : Resource.BKAL_HRL_FAKTOR)" />
     <Herleitungszeile Text="@Resource.BKAL_HRL_KUERZEN" />
@@ -259,6 +304,16 @@
             VonSetzen = (i, w) => Feld(() => _satz.Von[i] = w),
             BisLesen = i => _satz.Bis[i],
             BisSetzen = (i, w) => Feld(() => _satz.Bis[i] = w),
+            ListeLesen = () => _satz.Liste.Select((z, i) => new BetriebsferienKiZeile
+            {
+                NummerLesen = () => (i + 1).ToString(CultureInfo.InvariantCulture),
+                NameLesen = () => z.Name ?? "",
+                NameSetzen = w => Feld(() => z.Name = string.IsNullOrWhiteSpace(w) ? null : w),
+                VonLesen = () => z.Von,
+                VonSetzen = w => Feld(() => z.Von = w),
+                BisLesen = () => z.Bis,
+                BisSetzen = w => Feld(() => z.Bis = w)
+            }).ToList(),
             FaktorLesen = () => _satz.FerienfaktorProzent,
             FaktorSetzen = w => Feld(() => _satz.FerienfaktorProzent = w ?? 0),
             KuerzenLesen = () => _satz.FerienKuerzen,
@@ -349,12 +404,22 @@
         _leiste?.Leeren();
     }
 
-    /// <summary>Ein halber Zeitraum ist eine Fehleingabe — benannt, nicht still verworfen.</summary>
+    /// <summary>Ein halber Zeitraum (Spalte oder Zeile der Liste) ist eine Fehleingabe — benannt, nicht still verworfen.</summary>
     private bool HalberZeitraum()
     {
         for (int i = 0; i < FERIEN; i++)
             if (_satz.Von[i].HasValue != _satz.Bis[i].HasValue) return true;
-        return false;
+        return _satz.Liste.Any(z => z.Von.HasValue != z.Bis.HasValue);
+    }
+
+    /// <summary>„Zeile hinzufügen“: eine leere Zeile am Ende der Liste.</summary>
+    private void ListeHinzufuegen() => Feld(() => _satz.Liste.Add(new BetriebsferienZeile()));
+
+    /// <summary>„Entfernen“: die Zeile fällt weg, die übrigen rücken auf.</summary>
+    private void ListeEntfernen(int index)
+    {
+        if (index < 0 || index >= _satz.Liste.Count) return;
+        Feld(() => _satz.Liste.RemoveAt(index));
     }
 
     private void Nachladen(int auswahl)
@@ -454,8 +519,10 @@
     }
 
     /// <summary>
-    /// Schreibt Feiertagsland und Ferien des Gebäudes als KOPIE in den Arbeitsstand — die ersten vier Zeiträume,
-    /// die übrigen Paare leer; die Herkunft steht nirgends am Kalender. Geschrieben wird mit „Speichern“ oder OK.
+    /// Schreibt Feiertagsland und Ferien des Gebäudes als KOPIE in den Arbeitsstand — alle Zeiträume nach der Regel des
+    /// Kerns (<see cref="Betriebskalender.FerienAufteilen"/>): die ersten vier in die Paare (übrige Paare leer), die
+    /// weiteren in ihrer Reihenfolge in die Liste, die sie ersetzen; die Herkunft steht nirgends am Kalender. Geschrieben
+    /// wird mit „Speichern“ oder OK.
     /// </summary>
     private void GebaeudeUebernehmen(int index)
     {
@@ -465,21 +532,22 @@
             return;
         }
         BetriebskalenderGebaeude g = _gebaeude[index];
+        var (spalten, liste) = Betriebskalender.FerienAufteilen(g.Ferien.Select(f => new Ferienzeitraum(f.Von, f.Bis)));
         Feld(() =>
         {
             _satz.Bundesland = string.IsNullOrEmpty(g.Bundesland) || !Laender.Any(l => l.Kennung == g.Bundesland)
                 ? null : g.Bundesland;
             for (int i = 0; i < FERIEN; i++)
             {
-                _satz.Von[i] = i < g.Ferien.Count ? g.Ferien[i].Von : null;
-                _satz.Bis[i] = i < g.Ferien.Count ? g.Ferien[i].Bis : null;
+                _satz.Von[i] = i < spalten.Count ? spalten[i].Von : null;
+                _satz.Bis[i] = i < spalten.Count ? spalten[i].Bis : null;
             }
+            _satz.Liste = liste.Select(f => new BetriebsferienZeile { Von = f.Von, Bis = f.Bis }).ToList();
         });
         _gebaeudewahlOffen = false;
-        int fehlen = g.Ferien.Count - FERIEN;
-        if (fehlen > 0)
-            Melden(string.Format(CultureInfo.CurrentCulture, Resource.BKAL_MSG_FERIEN_FEHLEN, g.Bezeichner, g.Ferien.Count, fehlen),
-                   WarnStufe.Warnung);
+        if (liste.Count > 0)
+            Melden(string.Format(CultureInfo.CurrentCulture, Resource.BKAL_MSG_UEBERNOMMEN_LISTE, g.Bezeichner, g.Ferien.Count,
+                                 liste.Count), WarnStufe.Hinweis);
         else
             Melden(string.Format(CultureInfo.CurrentCulture, Resource.BKAL_MSG_UEBERNOMMEN, g.Bezeichner), WarnStufe.Hinweis);
     }

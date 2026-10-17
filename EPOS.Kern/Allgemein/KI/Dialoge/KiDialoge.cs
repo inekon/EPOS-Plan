@@ -3287,8 +3287,8 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Betriebskalender der Bedarfsprofile — die Felder aus
         /// <c>EPOS.UI.Dialoge.Bedarf.BetriebskalenderKiSicht</c>: die Wahl des Kalenders, Bezeichnung,
-        /// Bundesland, Feiertagsregel, vier Ferienzeiträume als Jahrestag, Ferienfaktor in Prozent und
-        /// der Schalter „Ferien kürzen die Monatsmenge".
+        /// Bundesland, Feiertagsregel, vier Ferienzeiträume als Jahrestag, die Liste „Weitere Betriebsferien“ als Tabelle
+        /// (Name, von, bis je Zeile), Ferienfaktor in Prozent und der Schalter „Ferien kürzen die Monatsmenge".
         /// </summary>
         /// <remarks>
         /// <b>Geschrieben wird mit „Speichern" oder OK</b> über <c>dialog_speichern</c>; „Löschen" bleibt
@@ -3337,6 +3337,16 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("ferien4_bis", "BetriebskalenderKiSicht.Ferien4Bis",
                                      string.Format(System.Globalization.CultureInfo.CurrentCulture, KiDialogTexte.BkalBisName, 4), KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.BkalFerienErl, leerErlaubt: true, min: 1, max: 365),
+                    // ---- Die Liste „Weitere Betriebsferien“: Zeilen fügt der Anwender an, der Assistent pflegt die Zellen --
+                    new KiDialogFeld("weitere_ferien_name", "BetriebskalenderKiSicht.WeitereFerien[].Name",
+                                     KiDialogTexte.BkalListeNameName, KiParameterTyp.Text,
+                                     KiDialogTexte.BkalListeErl, leerErlaubt: true, zeilenkennzeichen: "Nummer"),
+                    new KiDialogFeld("weitere_ferien_von", "BetriebskalenderKiSicht.WeitereFerien[].Von",
+                                     KiDialogTexte.BkalListeVonName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.BkalListeErl, leerErlaubt: true, zeilenkennzeichen: "Nummer", min: 1, max: 365),
+                    new KiDialogFeld("weitere_ferien_bis", "BetriebskalenderKiSicht.WeitereFerien[].Bis",
+                                     KiDialogTexte.BkalListeBisName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.BkalListeErl, leerErlaubt: true, zeilenkennzeichen: "Nummer", min: 1, max: 365),
                     new KiDialogFeld("ferienfaktor", "BetriebskalenderKiSicht.Ferienfaktor",
                                      KiDialogTexte.BkalFaktorName, KiParameterTyp.Zahl,
                                      KiDialogTexte.BkalFaktorErl, einheit: KiDialogTexte.EINHEIT_PROZENT,
