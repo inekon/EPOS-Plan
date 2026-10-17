@@ -130,7 +130,8 @@ public class ErzeugerReiterTests : EposBunitContext
             GasMwh = 190.0,
             MaxKesselleistungKw = 250.0,
             GasspitzeKw = 210.5,
-            QuellwaermeMwh = 0.0
+            QuellwaermeMwh = 0.0,
+            MitKaskade = true
         };
         e.Module.Add(new SimulationErgebnisCtrl.KesselModulZeile("Kessel 1", 190.0, 0.0, 91.7));
         return e;
@@ -469,6 +470,17 @@ public class ErzeugerReiterTests : EposBunitContext
 
         erg.StufeneingangIstGesamtbedarf = true;
         Assert.Equal("Gesamtwärmebedarf:", Zeilen(KesselZeichnen(erg), 0)[1]);
+    }
+
+    /// <summary>Ohne Kaskade weist der Kesselreiter keine Quellwärme aus.</summary>
+    [Fact]
+    public void Kessel_ohne_Kaskade_zeigt_keine_Quellwaerme()
+    {
+        var erg = Kessel();
+        erg.MitKaskade = false;
+
+        Assert.DoesNotContain(Resource.SIM_KESSEL_QUELLWAERME, Zeilen(KesselZeichnen(erg), 0));
+        Assert.Contains(Resource.SIM_KESSEL_QUELLWAERME, Zeilen(KesselZeichnen(Kessel()), 0));
     }
 
     [Fact]
