@@ -47,6 +47,7 @@ namespace WindowsFormsApplication1
             {
                 MitZirkulation = mitZirkulation,
                 Variante = Variantentext(mitZirkulation),
+                Beschreibung = Beschreibungstext(mitZirkulation),
                 RechenwegGenerator = generator,
                 HinweisRechenweg = generator
                     ? Text_(PS_HINWEIS_GENERATOR, "Das Projekt rechnet sein Brauchwasser gerade über den Zapfprofilgenerator; ein abgelegter Profilsatz rechnet erst mit, wenn der Rechenweg auf Bestandsprofile steht.")
@@ -342,6 +343,27 @@ namespace WindowsFormsApplication1
             string[] namen = Text_(PS_WOCHENTAGE, "Mo,Di,Mi,Do,Fr,Sa,So").Split(',');
             string name = namen.Length == ZapfprofilProfilsatzAbbildung.WOCHENTAGE ? namen[tag].Trim() : (tag + 1).ToString(CultureInfo.CurrentCulture);
             return Format(Text_(PS_SPITZE, "{0} {1:00}–{2:00} Uhr: {3:N1} kW"), name, stunde, stunde + 1, kw);
+        }
+
+        /// <summary>
+        /// Die Zeile einer Brauchwasser-Zuordnung des Projekts, wie sie der Bedarfsprofil-Dialog führt —
+        /// für den Wirt nach „Zum Projekt hinzufügen": Er nimmt die neue Zeile in seine Projektliste, sonst
+        /// löschte sein OK sie wieder (der Schreibweg setzt die Zuordnungen aus der Liste neu). <c>null</c>,
+        /// wenn es die Zeile nicht gibt.
+        /// </summary>
+        internal static BedarfsProfilZeile Projektzeile(int idProjekt, int idZ)
+        {
+            Z_ProjektBrauchwasserModel m = Z_ProjektBrauchwasserCtrl.LiesProjekt(idProjekt).FirstOrDefault(x => x.ID_Z == idZ);
+            if (m == null) return null;
+            var z = new BedarfsProfilZeile
+            {
+                IdZ = m.ID_Z, IdStamm = m.ID_Brauchwasser,
+                Name = m.szBezeichner ?? "", Summe = m.Summe,
+                KalenderId = m.ID_Betriebskalender
+            };
+            BedarfsprofilEingabeAbbildung.InZeile(z, BedarfsArt.Brauchwasser, idProjekt, m.Eingabeart,
+                                                  m.Monatsanteile, m.Wochenprofil);
+            return z;
         }
 
         private static ZapfprofilProfilsatzErgebnis Abgelehnt(string kennung, string text, string name)

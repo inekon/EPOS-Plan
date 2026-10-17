@@ -58280,4 +58280,34 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="ZPG_PS_HINWEIS_ZIRK_DOPPELT" xml:space="preserve">
     <value>Das Projekt rechnet auf dem Bestandsweg bereits eine Zirkulation. Mit Zirkulation im Profil zählt der Verlust doppelt — empfohlen: ohne Zirkulation.</value>
   </data>
+  <data name="ZPG_PS_TITEL_KATALOG" xml:space="preserve">
+    <value>Als Katalogsatz speichern</value>
+  </data>
+  <data name="ZPG_PS_LBL_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="ZPG_PS_LBL_TYP" xml:space="preserve">
+    <value>Typ (Wochenprofil)</value>
+  </data>
+  <data name="ZPG_PS_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Beschreibung</value>
+  </data>
+  <data name="ZPG_PS_LBL_ZIRKULATION" xml:space="preserve">
+    <value>mit Zirkulation</value>
+  </data>
+  <data name="ZPG_PS_LBL_JAHRESSUMME" xml:space="preserve">
+    <value>Jahressumme</value>
+  </data>
+  <data name="ZPG_PS_LBL_SPITZE" xml:space="preserve">
+    <value>Spitzenstunde der mittleren Woche</value>
+  </data>
+  <data name="ZPG_PS_BTN_SPEICHERN" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="ZPG_PS_BTN_WEITER" xml:space="preserve">
+    <value>Weiter</value>
+  </data>
+  <data name="ZPG_PS_GRUND_FEHLEINGABE" xml:space="preserve">
+    <value>Erst die Fehleingaben beheben — mit ihnen gibt es kein Profil zum Ablegen.</value>
+  </data>
 </root>

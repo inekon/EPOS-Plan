@@ -140,6 +140,16 @@ namespace WindowsFormsApplication1
                 ["VorschlagUebernehmen"] = new Func<ZapfprofilEingabeDaten, string, int, ZapfprofilVorschlagErgebnisDaten>(
                     (e, r, zone) => VorschlagUebernehmen(idProjekt, e, basis, r, zone)),
                 ["Ladevorschlag"] = new Func<ZapfprofilEingabeDaten, ZapfprofilSchaetzhilfeDaten>(e => Ladevorschlag(idProjekt, e, basis)),
+                // Profil ablegen (ZC6): Vorschau des Profilsatzes, Katalogsatz und Projektzeile. Beide Schreibwege
+                // schreiben SOFORT in einem eigenen Vorgang und ändern den Rechenweg nicht; die Projektzeile nimmt
+                // der Wirt danach in seine Liste (ZapfprofilProjektzeile).
+                ["ProfilsatzVorschau"] = new Func<ZapfprofilEingabeDaten, bool, ZapfprofilProfilsatzVorschauDaten>(
+                    (e, mitZirkulation) => ProfilsatzVorschau(idProjekt, e, basis, mitZirkulation)),
+                ["ProfilsatzKatalog"] = new Func<ZapfprofilEingabeDaten, string, string, string, bool, ZapfprofilProfilsatzErgebnis>(
+                    (e, name, typ, beschreibung, mitZirkulation) =>
+                        AlsKatalogsatzSpeichern(idProjekt, e, basis, name, typ, beschreibung, mitZirkulation)),
+                ["ProfilsatzProjekt"] = new Func<ZapfprofilEingabeDaten, bool, ZapfprofilProfilsatzErgebnis>(
+                    (e, mitZirkulation) => ZumProjektHinzufuegen(idProjekt, e, basis, mitZirkulation)),
                 ["HilfeSchluessel"] = HILFE_DIALOG,
                 ["HilfeRechenweg"] = HILFE_RECHENWEG
             };
@@ -1471,6 +1481,8 @@ namespace WindowsFormsApplication1
             gaben["RechenwegBrauchwasser"] = behaelter.Weg;
             gaben["RechenwegGesetzt"] = new Action<ZapfprofilWeg>(behaelter.WegSetzen);
             gaben["ZapfprofilZonen"] = (behaelter.Arbeitsstand ?? ZapfprofilCtrl.Lies(idProjekt)).Zonen?.Count ?? 0;
+            // ZC6: die Zeile, die „Zum Projekt hinzufügen" angelegt hat, für die Projektliste des Wirts.
+            gaben["ZapfprofilProjektzeile"] = new Func<int, BedarfsProfilZeile>(idZ => Projektzeile(idProjekt, idZ));
         }
 
         /// <summary>Die Beschriftungen des Einstiegs in der Oberflächensprache; fehlt ein Schlüssel, bleibt der deutsche Rückfall.</summary>
@@ -2280,6 +2292,21 @@ namespace WindowsFormsApplication1
             t.KatNeuName = Text_("ZPG_KATEG_NEU_NAME", t.KatNeuName);
             t.KatLeer = Text_("ZPG_KATEG_LEER", t.KatLeer);
             t.KatStatusGespeichert = Text_("ZPG_KATEG_STATUS_GESPEICHERT", t.KatStatusGespeichert);
+            t.KnopfProfilKatalog = Text_("ZPG_PS_KNOPF_KATALOG", t.KnopfProfilKatalog);
+            t.KnopfProfilProjekt = Text_("ZPG_PS_KNOPF_PROJEKT", t.KnopfProfilProjekt);
+            t.ProfilKatalogTitel = Text_("ZPG_PS_TITEL_KATALOG", t.ProfilKatalogTitel);
+            t.ProfilLabelName = Text_("ZPG_PS_LBL_NAME", t.ProfilLabelName);
+            t.ProfilLabelTyp = Text_("ZPG_PS_LBL_TYP", t.ProfilLabelTyp);
+            t.ProfilLabelBeschreibung = Text_("ZPG_PS_LBL_BESCHREIBUNG", t.ProfilLabelBeschreibung);
+            t.ProfilLabelZirkulation = Text_("ZPG_PS_LBL_ZIRKULATION", t.ProfilLabelZirkulation);
+            t.ProfilLabelJahressumme = Text_("ZPG_PS_LBL_JAHRESSUMME", t.ProfilLabelJahressumme);
+            t.ProfilLabelSpitze = Text_("ZPG_PS_LBL_SPITZE", t.ProfilLabelSpitze);
+            t.ProfilKnopfSpeichern = Text_("ZPG_PS_BTN_SPEICHERN", t.ProfilKnopfSpeichern);
+            t.ProfilKnopfWeiter = Text_("ZPG_PS_BTN_WEITER", t.ProfilKnopfWeiter);
+            t.ProfilGrundKeinErgebnis = Text_("ZPG_PS_MSG_KEIN_ERGEBNIS", t.ProfilGrundKeinErgebnis);
+            t.ProfilGrundFehleingabe = Text_("ZPG_PS_GRUND_FEHLEINGABE", t.ProfilGrundFehleingabe);
+            t.ProfilHinweisWegGenerator = Text_("ZPG_PS_HINWEIS_WEG_GENERATOR", t.ProfilHinweisWegGenerator);
+            t.ProfilHinweisWegBestand = Text_("ZPG_PS_HINWEIS_WEG_BESTAND", t.ProfilHinweisWegBestand);
             return t;
         }
 

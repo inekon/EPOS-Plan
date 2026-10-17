@@ -160,6 +160,13 @@
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@_okMeldung" Kennung="@_okKennung" />
     }
 
+    @* ZC6: das Ergebnis von „Als Katalogsatz speichern…" bzw. „Zum Projekt hinzufügen" - nach dem Versuch, verfallend. *@
+    @if (_ablageMeldung.Length > 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_ablageMeldung" Kennung="@_ablageKennung"
+                    Verfaellt="@ABLAGE_VERFALL" Verfallen="() => _ablageMeldung = string.Empty" />
+    }
+
     @if (_hinweis.Length > 0)
     {
         <p class="epos-leisezeile epos-zapfprofil-hinweis" role="status">@_hinweis</p>
@@ -1209,6 +1216,12 @@
         </div>
     </div>
 
+    @* ZC6: welcher Rechenweg gerade gilt - die Ablage eines Profils ändert ihn nicht. *@
+    @if (AblageAngeboten)
+    {
+        <p class="epos-leisezeile epos-zapfprofil-ablage-weg">@AblageHinweisWeg</p>
+    }
+
     <SpeichernLeiste @ref="_leiste" OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis">
         <Aktionen>
             @if (StochastikMoeglich)
@@ -1235,6 +1248,19 @@
             {
                 <button type="button" class="epos-knopf" aria-disabled="true" title="@Texte.GrundNochNicht"
                         @onclick="NochNicht">@Texte.KnopfAuslegung</button>
+            }
+            @* ZC6: das erzeugte Profil ablegen - weich gesperrt ohne gerechnetes Ergebnis; kein Delegat, kein Knopf. *@
+            @if (ProfilsatzVorschau is not null && ProfilsatzKatalog is not null)
+            {
+                <button type="button" class="epos-knopf epos-zapfprofil-ablage-katalog"
+                        aria-disabled="@(AblageBereit ? null : "true")" title="@(AblageBereit ? null : AblageGrund)"
+                        @onclick="() => AblageOeffnen(ABLAGE_KATALOG)">@Texte.KnopfProfilKatalog</button>
+            }
+            @if (ProfilsatzVorschau is not null && ProfilsatzProjekt is not null)
+            {
+                <button type="button" class="epos-knopf epos-zapfprofil-ablage-projekt"
+                        aria-disabled="@(AblageBereit ? null : "true")" title="@(AblageBereit ? null : AblageGrund)"
+                        @onclick="() => AblageOeffnen(ABLAGE_PROJEKT)">@Texte.KnopfProfilProjekt</button>
             }
         </Aktionen>
     </SpeichernLeiste>
@@ -1420,6 +1446,68 @@
         </KindInhalt>
     </Ueberlagerung>
 
+    @* --- Ueberlagerung: das Profil ablegen (ZC6) --------------------------------------
+       „Als Katalogsatz speichern…" mit Name, Typ, Beschreibung; „Zum Projekt hinzufügen" erst mit der
+       Warnung, dann Weiter. Beide mit dem Schalter „mit Zirkulation" (aus, wenn der Bestandsweg schon
+       eine Zirkulation rechnet) und der Zusammenfassung. Beide Schreibwege schreiben sofort; der
+       Rechenweg des Projekts bleibt. *@
+    <Ueberlagerung Offen="@(_ablage != ABLAGE_ZU && _psVorschau is not null)" Titel="@AblageTitel"
+                   Geschlossen="AblageSchliessen">
+        <KindInhalt>
+            @if (_psVorschau is { } ps)
+            {
+                <div class="epos-zapfprofil-ablage">
+                    @if (_ablage == ABLAGE_PROJEKT)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@ps.WarnungProjekt" />
+                    }
+                    <Formularraster>
+                        <KindInhalt>
+                            @if (_ablage == ABLAGE_KATALOG)
+                            {
+                                <Textfeld Bezeichnung="@Texte.ProfilLabelName" Wert="@_psName" WertChanged="AblageNameSetzen" />
+                                <Textfeld Bezeichnung="@Texte.ProfilLabelTyp" Wert="@_psTyp" WertChanged="v => _psTyp = v" />
+                                <Textfeld Bezeichnung="@Texte.ProfilLabelBeschreibung" Wert="@_psBeschreibung"
+                                          WertChanged="v => _psBeschreibung = v" />
+                            }
+                            <Schalter Bezeichnung="@Texte.ProfilLabelZirkulation" Wert="@_psZirkulation"
+                                      WertChanged="AblageZirkulationSetzen" />
+                        </KindInhalt>
+                    </Formularraster>
+                    @if (ps.HinweisZirkulationDoppelt.Length > 0)
+                    {
+                        <p class="epos-leisezeile epos-zapfprofil-ablage-zirkulation">@ps.HinweisZirkulationDoppelt</p>
+                    }
+                    <table class="epos-raster epos-zapfprofil-ablage-summe">
+                        <tbody>
+                            <tr><th scope="row">@Texte.ProfilLabelJahressumme</th><td class="epos-zahl">@Mwh(ps.JahressummeMwh * 1000.0)</td></tr>
+                            <tr><th scope="row">@Texte.ProfilLabelSpitze</th><td>@ps.SpitzenstundeText</td></tr>
+                        </tbody>
+                    </table>
+                    @if (_psFehler.Length > 0)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_psFehler" Kennung="@_psFehlerKennung" />
+                    }
+                    <div class="epos-leiste">
+                        <span class="epos-leiste-fueller"></span>
+                        <button type="button" class="epos-knopf epos-zapfprofil-ablage-abbrechen"
+                                @onclick="AblageSchliessen">@AbbrechenText</button>
+                        @if (_ablage == ABLAGE_KATALOG)
+                        {
+                            <button type="button" class="epos-knopf epos-knopf--primaer epos-zapfprofil-ablage-speichern"
+                                    @onclick="AblageKatalogSpeichern">@Texte.ProfilKnopfSpeichern</button>
+                        }
+                        else
+                        {
+                            <button type="button" class="epos-knopf epos-knopf--primaer epos-zapfprofil-ablage-weiter"
+                                    @onclick="AblageProjektHinzufuegen">@Texte.ProfilKnopfWeiter</button>
+                        }
+                    </div>
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
     @* --- Ueberlagerung: die Messreihen des Projekts (Stufe Z5) ---------------- *@
     @* Das Kreuz der Ueberlagerung geht denselben Weg wie "Beenden" des eingebetteten Dialogs: Der
        schreibt SOFORT (Einspielen, Loeschen), also ist nach dem Kreuz alles moeglich geschehen -
@@ -1572,6 +1660,31 @@
     /// Experte. Kein Delegat = kein Vorschlag, die leise Zeile nennt den Grund.
     /// </summary>
     [Parameter] public Func<ZapfprofilEingabeDaten, ZapfprofilSchaetzhilfeDaten?>? Ladevorschlag { get; set; }
+
+    /// <summary>
+    /// Die Vorschau des Profilsatzes zum Arbeitsstand und zum Schalter „mit Zirkulation" (ZC6,
+    /// <c>ZapfprofilHuelle.ProfilsatzVorschau</c>); sie rechnet den Generatorweg, deshalb erst beim
+    /// Öffnen der Ablage und beim Umschalten. Kein Delegat, keine Ablage.
+    /// </summary>
+    [Parameter] public Func<ZapfprofilEingabeDaten, bool, ZapfprofilProfilsatzVorschauDaten>? ProfilsatzVorschau { get; set; }
+
+    /// <summary>
+    /// „Als Katalogsatz speichern…" (Arbeitsstand, Name, Typ, Beschreibung, mit Zirkulation) — schreibt
+    /// sofort in einem eigenen Vorgang (<c>ZapfprofilHuelle.AlsKatalogsatzSpeichern</c>). Kein Delegat, kein Knopf.
+    /// </summary>
+    [Parameter] public Func<ZapfprofilEingabeDaten, string, string, string, bool, ZapfprofilProfilsatzErgebnis>? ProfilsatzKatalog { get; set; }
+
+    /// <summary>
+    /// „Zum Projekt hinzufügen" (Arbeitsstand, mit Zirkulation) — schreibt sofort eine Zuordnungszeile
+    /// samt Projektkopie (<c>ZapfprofilHuelle.ZumProjektHinzufuegen</c>). Kein Delegat, kein Knopf.
+    /// </summary>
+    [Parameter] public Func<ZapfprofilEingabeDaten, bool, ZapfprofilProfilsatzErgebnis>? ProfilsatzProjekt { get; set; }
+
+    /// <summary>
+    /// Meldet dem Wirt die Zeile, die „Zum Projekt hinzufügen" angelegt hat — er nimmt sie beim
+    /// Schließen des Blatts in seine Projektliste (sonst setzte sein OK die Zuordnungen ohne sie neu).
+    /// </summary>
+    [Parameter] public EventCallback<ZapfprofilProfilsatzErgebnis> ProjektzeileAngelegt { get; set; }
 
     [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
     [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
@@ -3489,6 +3602,143 @@
         offen.Dispose();
     }
 
+    // =================================================================================
+    // Profil ablegen (ZC6)
+    // =================================================================================
+
+    private const int ABLAGE_ZU = 0;
+    private const int ABLAGE_KATALOG = 1;
+    private const int ABLAGE_PROJEKT = 2;
+
+    /// <summary>Die Erfolgsmeldung der Ablage verfällt (Banner erst nach dem Versuch, mit Verfall).</summary>
+    private static readonly TimeSpan ABLAGE_VERFALL = TimeSpan.FromSeconds(8);
+
+    /// <summary>Welche Ablage gerade offen ist (<see cref="ABLAGE_ZU"/> = keine).</summary>
+    private int _ablage = ABLAGE_ZU;
+    private ZapfprofilProfilsatzVorschauDaten? _psVorschau;
+    private bool _psZirkulation = true;
+    private string _psName = "";
+    private string _psTyp = "";
+    private string _psBeschreibung = "";
+    private string _psFehler = "";
+    private string? _psFehlerKennung;
+    private string _ablageMeldung = "";
+    private string? _ablageKennung;
+
+    /// <summary>Gibt es überhaupt eine Ablage (Vorschau und mindestens ein Schreibweg)?</summary>
+    private bool AblageAngeboten => ProfilsatzVorschau is not null && (ProfilsatzKatalog is not null || ProfilsatzProjekt is not null);
+
+    /// <summary>Ist ein Ergebnis gerechnet und steht keine Fehleingabe? Sonst sind beide Knöpfe weich gesperrt.</summary>
+    private bool AblageBereit
+        => _vorschau?.Zustand == ZapfprofilVorschauZustand.Gerechnet && _fehlfelder.Count == 0
+           && !_zeilenfehler.Any(z => _eingabe.Zonen.Contains(z));
+
+    private string AblageGrund
+        => _vorschau?.Zustand != ZapfprofilVorschauZustand.Gerechnet ? Texte.ProfilGrundKeinErgebnis : Texte.ProfilGrundFehleingabe;
+
+    private string AblageHinweisWeg
+        => Daten.Eingabe?.Weg == ZapfprofilWeg.Generator ? Texte.ProfilHinweisWegGenerator : Texte.ProfilHinweisWegBestand;
+
+    private string AblageTitel => _ablage == ABLAGE_KATALOG ? Texte.ProfilKatalogTitel : Texte.KnopfProfilProjekt;
+
+    /// <summary>
+    /// Öffnet die Ablage: rechnet eine veraltete Vorschau sofort nach, holt die Vorschau des Profilsatzes
+    /// (Schalter an; aus, wenn der Bestandsweg schon eine Zirkulation rechnet) und belegt die Vorgaben.
+    /// Ohne Ergebnis meldet der Versuch den Grund.
+    /// </summary>
+    private void AblageOeffnen(int art)
+    {
+        _ablageMeldung = "";
+        if (ProfilsatzVorschau is null) return;
+        if (AblageBereit && !_vorschauAktuell && Vorschau is not null)
+        {
+            EntprellungAbbrechen();
+            VorschauRechnen();
+        }
+        if (!AblageBereit)
+        {
+            _hinweis = AblageGrund;
+            return;
+        }
+        _hinweis = "";
+        ZapfprofilProfilsatzVorschauDaten ps = ProfilsatzVorschau(_eingabe.Kopie(), true);
+        if (ps.BestandswegHatZirkulation) ps = ProfilsatzVorschau(_eingabe.Kopie(), false);
+        if (!ps.Gerechnet)
+        {
+            _hinweis = ps.Grund.Length > 0 ? ps.Grund : Texte.ProfilGrundKeinErgebnis;
+            return;
+        }
+        _psVorschau = ps;
+        _psZirkulation = ps.MitZirkulation;
+        _psName = ps.NameProjekt.Length > 0 ? ps.NameProjekt : Texte.ProfilKatalogTitel;
+        _psTyp = _psName;
+        _psBeschreibung = ps.Beschreibung;
+        _psFehler = "";
+        _psFehlerKennung = null;
+        _ablage = art;
+    }
+
+    /// <summary>Der Name; der Typ folgt ihm, solange er die Vorgabe (= der Name) trägt.</summary>
+    private void AblageNameSetzen(string wert)
+    {
+        if (_psTyp == _psName) _psTyp = wert;
+        _psName = wert;
+    }
+
+    /// <summary>Der Schalter „mit Zirkulation" rechnet die Zusammenfassung neu; eine unberührte Beschreibung folgt.</summary>
+    private void AblageZirkulationSetzen(bool wert)
+    {
+        _psZirkulation = wert;
+        if (ProfilsatzVorschau is null || _psVorschau is null) return;
+        bool beschreibungVorgabe = _psBeschreibung == _psVorschau.Beschreibung;
+        ZapfprofilProfilsatzVorschauDaten ps = ProfilsatzVorschau(_eingabe.Kopie(), wert);
+        if (!ps.Gerechnet)
+        {
+            _psFehler = ps.Grund;
+            _psFehlerKennung = ps.Kennung;
+            return;
+        }
+        _psVorschau = ps;
+        if (beschreibungVorgabe) _psBeschreibung = ps.Beschreibung;
+    }
+
+    private void AblageSchliessen()
+    {
+        _ablage = ABLAGE_ZU;
+        _psVorschau = null;
+        _psFehler = "";
+        _psFehlerKennung = null;
+    }
+
+    /// <summary>Speichern: Erfolg schließt und meldet im Banner, eine Ablehnung bleibt in der Ablage stehen.</summary>
+    private void AblageKatalogSpeichern()
+    {
+        if (ProfilsatzKatalog is null) return;
+        AblageErgebnis(ProfilsatzKatalog(_eingabe.Kopie(), _psName, _psTyp, _psBeschreibung, _psZirkulation));
+    }
+
+    /// <summary>Weiter nach der Warnung: legt die Zeile an und meldet sie dem Wirt.</summary>
+    private async Task AblageProjektHinzufuegen()
+    {
+        if (ProfilsatzProjekt is null) return;
+        ZapfprofilProfilsatzErgebnis e = ProfilsatzProjekt(_eingabe.Kopie(), _psZirkulation);
+        AblageErgebnis(e);
+        if (e.Erfolg) await ProjektzeileAngelegt.InvokeAsync(e);
+    }
+
+    private void AblageErgebnis(ZapfprofilProfilsatzErgebnis e)
+    {
+        if (!e.Erfolg)
+        {
+            _psFehler = e.Text;
+            _psFehlerKennung = e.Kennung;
+            return;
+        }
+        AblageSchliessen();
+        _ablageMeldung = e.Text;
+        _ablageKennung = e.Kennung;
+    }
+
     private void VorschauRechnen()
     {
         if (Vorschau is null) return;
@@ -3573,6 +3823,7 @@
     private Task BeiTaste(KeyboardEventArgs e)
         => e.Key == "Escape" && _auslegungGaben is null && _tagesgangGaben is null && _kategorienGaben is null
            && _typtagGaben is null && _messreihenGaben is null && _vorschlag is null && !_frageOffen
+           && _ablage == ABLAGE_ZU
             ? Abbrechen() : Task.CompletedTask;
 
     /// <summary>

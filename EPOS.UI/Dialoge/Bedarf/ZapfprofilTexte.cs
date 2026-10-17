@@ -1350,4 +1350,51 @@ public sealed class ZapfprofilTexte
 
     /// <summary><c>ZPG_VORSCHLAG_OHNE</c></summary>
     public string VorschlagOhne { get; set; } = "Für diese Zone gibt es keinen Vorschlag: {0}";
+
+    // ------------------------------------------------------------ Profil ablegen (ZC6)
+
+    /// <summary><c>ZPG_PS_KNOPF_KATALOG</c></summary>
+    public string KnopfProfilKatalog { get; set; } = "Als Katalogsatz speichern…";
+
+    /// <summary><c>ZPG_PS_KNOPF_PROJEKT</c></summary>
+    public string KnopfProfilProjekt { get; set; } = "Zum Projekt hinzufügen";
+
+    /// <summary><c>ZPG_PS_TITEL_KATALOG</c></summary>
+    public string ProfilKatalogTitel { get; set; } = "Als Katalogsatz speichern";
+
+    /// <summary><c>ZPG_PS_LBL_NAME</c></summary>
+    public string ProfilLabelName { get; set; } = "Name";
+
+    /// <summary><c>ZPG_PS_LBL_TYP</c></summary>
+    public string ProfilLabelTyp { get; set; } = "Typ (Wochenprofil)";
+
+    /// <summary><c>ZPG_PS_LBL_BESCHREIBUNG</c></summary>
+    public string ProfilLabelBeschreibung { get; set; } = "Beschreibung";
+
+    /// <summary><c>ZPG_PS_LBL_ZIRKULATION</c></summary>
+    public string ProfilLabelZirkulation { get; set; } = "mit Zirkulation";
+
+    /// <summary><c>ZPG_PS_LBL_JAHRESSUMME</c></summary>
+    public string ProfilLabelJahressumme { get; set; } = "Jahressumme";
+
+    /// <summary><c>ZPG_PS_LBL_SPITZE</c></summary>
+    public string ProfilLabelSpitze { get; set; } = "Spitzenstunde der mittleren Woche";
+
+    /// <summary><c>ZPG_PS_BTN_SPEICHERN</c></summary>
+    public string ProfilKnopfSpeichern { get; set; } = "Speichern";
+
+    /// <summary><c>ZPG_PS_BTN_WEITER</c></summary>
+    public string ProfilKnopfWeiter { get; set; } = "Weiter";
+
+    /// <summary><c>ZPG_PS_MSG_KEIN_ERGEBNIS</c></summary>
+    public string ProfilGrundKeinErgebnis { get; set; } = "Es ist kein Zapfprofil gerechnet — ohne Ergebnis kein Profilsatz.";
+
+    /// <summary><c>ZPG_PS_GRUND_FEHLEINGABE</c></summary>
+    public string ProfilGrundFehleingabe { get; set; } = "Erst die Fehleingaben beheben — mit ihnen gibt es kein Profil zum Ablegen.";
+
+    /// <summary><c>ZPG_PS_HINWEIS_WEG_GENERATOR</c></summary>
+    public string ProfilHinweisWegGenerator { get; set; } = "Das Projekt rechnet sein Brauchwasser gerade über den Zapfprofilgenerator; ein abgelegter Profilsatz rechnet erst mit, wenn der Rechenweg auf Bestandsprofile steht.";
+
+    /// <summary><c>ZPG_PS_HINWEIS_WEG_BESTAND</c></summary>
+    public string ProfilHinweisWegBestand { get; set; } = "Das Projekt rechnet sein Brauchwasser gerade über die Bestandsprofile; ein Profilsatz, der dem Projekt hinzugefügt wird, rechnet mit.";
 }
