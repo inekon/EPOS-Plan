@@ -299,9 +299,9 @@ namespace WindowsFormsApplication1
         /// Der Teil von <see cref="Entladung_gesamt"/> [kWh], den eine Wärmepumpe als
         /// QUELLWÄRME aus diesem Speicher entnommen hat (Booster-Kette). Er deckt keinen
         /// Bedarf und steht deshalb in keiner Kanalzeile: Σ <see cref="Entladung_Kanal"/>
-        /// + Quellentnahme_gesamt = Entladung_gesamt.
+        /// + QuellentnahmeGesamtKwh = Entladung_gesamt.
         /// </summary>
-        public double Quellentnahme_gesamt = 0;
+        public double QuellentnahmeGesamtKwh = 0;
 
         /// <summary>
         /// PAKET E1 (Konzept 4.4): dieselbe Jahressumme wie
@@ -511,7 +511,7 @@ namespace WindowsFormsApplication1
             SOC = 0;
             Ladung_gesamt = 0;
             Entladung_gesamt = 0;
-            Quellentnahme_gesamt = 0;
+            QuellentnahmeGesamtKwh = 0;
             Verluste_gesamt = 0;
             SOC_Mittel = 0;
             SOC_Max = 0;
@@ -650,11 +650,11 @@ namespace WindowsFormsApplication1
         ///
         /// <para>VORBELEGUNG <see cref="Kanal.HEIZUNG"/>. Die Entnahme eines Erzeugers aus
         /// seinem QUELLpuffer trägt keinen Bedarfskanal; sie kommt mit
-        /// <c>quellentnahme: true</c> und steht in <see cref="Quellentnahme_gesamt"/>.</para>
+        /// <c>quellentnahme: true</c> und steht in <see cref="QuellentnahmeGesamtKwh"/>.</para>
         /// </param>
         /// <param name="quellentnahme">
         /// Die Entnahme einer Wärmepumpe aus ihrem Quellpuffer: Physik und Schichtebene wie
-        /// über <paramref name="kanal"/>, gebucht aber in <see cref="Quellentnahme_gesamt"/>
+        /// über <paramref name="kanal"/>, gebucht aber in <see cref="QuellentnahmeGesamtKwh"/>
         /// statt in einer Kanalzeile.
         /// </param>
         public double Entladen(double energieKWh, int stunde, int kanal = Kanal.HEIZUNG, bool quellentnahme = false)
@@ -691,7 +691,7 @@ namespace WindowsFormsApplication1
             // durch die Aufteilung nicht um die Rundung einer Summe verschieben (dieselbe
             // Regel wie bei Kaskadenschleife._entladungJeArt).
             // Eine Quellentnahme deckt keinen Bedarf und steht in keiner Kanalzeile.
-            if (quellentnahme) Quellentnahme_gesamt += umsatz;
+            if (quellentnahme) QuellentnahmeGesamtKwh += umsatz;
             else
             {
                 if (kanal >= 0 && kanal < Kanal.ANZAHL) Entladung_Kanal[kanal] += umsatz;

@@ -3202,7 +3202,7 @@ namespace WindowsFormsApplication1
             {
                 if (sp == null) continue;
                 pruefen("Puffer " + sp.ID_Pufferspeicher + ".Entladung",
-                        sp.Entladung_KanalStuendlich, sp.Entladung_Kanal, sp.Entladung_gesamt - sp.Quellentnahme_gesamt);
+                        sp.Entladung_KanalStuendlich, sp.Entladung_Kanal, sp.Entladung_gesamt - sp.QuellentnahmeGesamtKwh);
             }
 
             sb.AppendLine(string.Format(
