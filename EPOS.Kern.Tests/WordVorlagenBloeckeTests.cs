@@ -272,9 +272,10 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Bedingungen <c>hat.*</c> fragen im Rahmen ihres Blocks: in der Gruppe <c>{{#je variante|block 2}}</c> nach den
-        /// Varianten dieser Gruppe, in <c>{{#je variante}}</c> nach der laufenden Variante, außerhalb nach dem ganzen
-        /// Bericht. Gegenprobe: Eine Gruppe ohne den Inhalt bekommt keinen Abschnitt, auch wenn der Stamm oder eine
-        /// Variante einer anderen Gruppe ihn hat.
+        /// Varianten dieser Gruppe und dem Stammprojekt (8a, Nachentscheid 17.10.2026), in <c>{{#je variante}}</c> nach
+        /// der laufenden Variante, außerhalb nach dem ganzen Bericht. Der veraltete Stamm gibt jeder Gruppe den
+        /// Abschnitt; Gegenprobe: Haben weder Stamm noch eine Variante der Gruppe den Inhalt, bekommt sie keinen
+        /// Abschnitt, auch wenn eine Variante einer anderen Gruppe ihn hat.
         /// </summary>
         [Fact]
         public void Bedingungen_im_Gruppenblock_gelten_je_Gruppe()
@@ -298,11 +299,30 @@ namespace EPOS.Kern.Tests
             using WordprocessingDocument doc = Pruefe(ziel, e);
             Assert.Equal(new[]
             {
-                "Gruppe", "Gruppe mit Fehler",                 // A, B: A hat den Fehler
-                "Gruppe",                                      // C, D: kein Fehler, der veraltete Stamm zählt nicht
+                "Gruppe", "Gruppe mit Fehler", "Gruppe veraltet",  // A, B: A hat den Fehler, der Stamm ist veraltet
+                "Gruppe", "Gruppe veraltet",                   // C, D: kein Fehler, der veraltete Stamm zählt mit
                 "Variante A", "Variante mit Fehler", "Variante B", "Variante C", "Variante D",
                 "Bericht mit Fehler", "Bericht veraltet",
             }, Absaetze(doc));
+        }
+
+        /// <summary>
+        /// Gegenprobe zu <see cref="Bedingungen_im_Gruppenblock_gelten_je_Gruppe"/>: Ist weder der Stamm noch eine
+        /// Variante veraltet, bekommt keine Gruppe den Abschnitt „veraltet".
+        /// </summary>
+        [Fact]
+        public void Gruppenblock_ohne_veralteten_Stamm_bleibt_ohne_Abschnitt()
+        {
+            byte[] v = Vorlage(
+                Absatz("{{#je variante|block 2}}"), Absatz("Gruppe"),
+                Absatz("{{#wenn hat.veraltet}}"), Absatz("Gruppe veraltet"), Absatz("{{/wenn}}"),
+                Absatz("{{/je}}"));
+            BerichtsDaten daten = Daten(4);
+            string ziel = Ziel("gruppe_hat_ohne_stamm.docx");
+            Fuellergebnis e = Fuelle(v, daten, ziel);
+
+            using WordprocessingDocument doc = Pruefe(ziel, e);
+            Assert.Equal(new[] { "Gruppe", "Gruppe" }, Absaetze(doc));
         }
 
         // =====================================================================

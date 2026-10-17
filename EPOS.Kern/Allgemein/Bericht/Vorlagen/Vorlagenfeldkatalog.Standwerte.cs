@@ -700,7 +700,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Datenschalter <c>hat.*</c> (Konzept 4.5, 4.7): im Block <c>je stand</c> bzw. <c>je variante</c> für den laufenden
-        /// Stand, im Gruppenblock <c>je variante|block n</c> für die Varianten der Gruppe, außerhalb für den ganzen Bericht —
+        /// Stand, im Gruppenblock <c>je variante|block n</c> für die Varianten der Gruppe samt Stammprojekt, außerhalb für den ganzen Bericht —
         /// wahr, sobald irgendein Stand die Bedingung erfüllt. Kontext Gruppe: gültig überall.
         /// </summary>
         private static IEnumerable<Vorlagenfeld> Datenschalter()
@@ -1143,12 +1143,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Ein Datenschalter: im Standblock für den laufenden Stand, im Gruppenblock <c>{{#je variante|block n}}</c>
-        /// für irgendeine Variante der Gruppe, sonst für irgendeinen Stand des Berichts.
+        /// für irgendeine Variante der Gruppe oder das Stammprojekt (8a, Nachentscheid 17.10.2026: der Stamm zählt
+        /// in jeder Gruppe mit), sonst für irgendeinen Stand des Berichts.
         /// </summary>
         private static object Hat(Berichtswerte w, Func<VariantenDaten, bool> bedingung)
         {
             if (w.LaufenderStand != null) return bedingung(w.LaufenderStand);
-            if (w.LaufendeGruppe != null) return w.LaufendeGruppe.Any(bedingung);
+            if (w.LaufendeGruppe != null)
+                return w.LaufendeGruppe.Any(bedingung) || (w.Stamm != null && bedingung(w.Stamm));
             return w.Staende.Any(bedingung);
         }
 

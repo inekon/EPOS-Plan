@@ -208,7 +208,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Varianten der laufenden Gruppe in <c>{{#je variante|block n}}</c>; <c>null</c> außerhalb eines
-        /// Gruppenblocks. Die Datenschalter <c>hat.*</c> werten in der Gruppe über deren Varianten.
+        /// Gruppenblocks. Die Datenschalter <c>hat.*</c> werten in der Gruppe über deren Varianten und das Stammprojekt.
         /// </summary>
         public IReadOnlyList<VariantenDaten> LaufendeGruppe { get; private set; }
 

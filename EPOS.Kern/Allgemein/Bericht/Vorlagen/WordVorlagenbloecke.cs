@@ -524,7 +524,7 @@ namespace WindowsFormsApplication1
                             var gruppen = new List<Blockkontext>();
                             for (int i = 0; i < varianten.Count; i += n)
                             {
-                                // Die Gruppe trägt ihren Kontext: hat.* wertet über die Varianten der Gruppe.
+                                // Die Gruppe trägt ihren Kontext: hat.* wertet über die Varianten der Gruppe und den Stamm.
                                 List<VariantenDaten> gruppe = varianten.Skip(i).Take(n).ToList();
                                 gruppen.Add(new Blockkontext(w.MitGruppe(gruppe), gruppe, ebene));
                             }
