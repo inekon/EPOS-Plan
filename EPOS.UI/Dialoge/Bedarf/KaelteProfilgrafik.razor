@@ -1,0 +1,156 @@
+﻿@* KBP-3b (Konzept Kaeltebedarfsprofile 5): die Grafik der markierten Kaeltezeile in der Bearbeiten-Ueberlagerung des
+   BedarfsProfileDialog - die Kennzahlenzeile (Jahressumme, Spitze, Vollbenutzungsstunden, Grundlast-Anteil) ueber den
+   vier Blaettern Jahresgang, Monate, Woche und Dauerlinie. NUR ANZEIGE: Kennzahlen und Zeichenmodelle rechnet der Kern
+   (Kaelteprofilgrafik), der Wirt reicht sie herein; jedes Bild steht in DiagrammSvg und wird dort nach der
+   Oberflaechenregel gezeigt (Jahresgang mit Tagesband und der Wahl „Datum | Stunde im Jahr“, Monate als Stapel je Zeile,
+   Dauerlinie ohne Zeitachse). Die Modelle bleiben je Rechenstand dieselben Referenzen (Zwischenspeicher des Wirts).
+   Nacharbeit KBP-3b: Die Woche ist eine waehlbare Kalenderwoche (Vorgabe die Woche der Spitze); die Tagesarten liegen
+   als farbiger Hintergrund (--epos-kalb-*) unter der Zeichenflaeche, nicht als Reihen - das Modell ist durchsichtig, der
+   Verlauf steht ueber den Lagen der Zeichenflaeche aus dem Kern (Kaeltewochenbild.Flaechenlage). *@
+@using System.Globalization
+@using WindowsFormsApplication1
+
+<div class="epos-kbp-grafik" data-kbp="grafik">
+    @if (Bilder is null)
+    {
+        <p class="epos-leisezeile">@Resource.KBP_GRAFIK_OHNE</p>
+    }
+    else
+    {
+        <div class="epos-kbp-kennzahlen" role="group" aria-label="@Resource.KBP_GRAFIK_GRUPPE">
+            <Kennzahlkachel Titel="@Resource.KBP_KZ_SUMME" Wert="@Zahl(Bilder.Kennzahlen.JahressummeMwh, "N2", "MWh/a")" />
+            <Kennzahlkachel Titel="@Resource.KBP_KZ_SPITZE" Wert="@Zahl(Bilder.Kennzahlen.SpitzeKw, "N1", "kW")" />
+            <Kennzahlkachel Titel="@Resource.KBP_KZ_VBH" Wert="@Zahl(Bilder.Kennzahlen.VollbenutzungsstundenH, "N0", "h/a")" />
+            <Kennzahlkachel Titel="@Resource.KBP_KZ_GRUNDLAST" Wert="@Zahl(Bilder.Kennzahlen.GrundlastAnteilProzent, "N1", "%")" />
+            @* KV8: bei einer Zeile mit Nutzungstagen nach Norm die Nutzungstage des wirksamen Kalenders. *@
+            @if (Bilder.Nutzungstage is int tage)
+            {
+                <Kennzahlkachel Titel="@Resource.KBP_KZ_NUTZUNGSTAGE" Wert="@Zahl(tage, "N0", Resource.KBP_KZ_NUTZUNGSTAGE_EINHEIT)" />
+            }
+        </div>
+
+        <Reiter Aktiv="@_reiter" AktivChanged="r => _reiter = r" Bezeichnung="@Resource.KBP_GRAFIK_GRUPPE" Kennung="kbp-grafik">
+            <KindInhalt>
+                <Reiterblatt Schluessel="@REITER_JAHR" Titel="@Resource.KBP_REITER_JAHRESGANG">
+                    <KindInhalt>
+                        <DiagrammSvg Modell="@Bilder.Jahresgang" Kennung="kbp-jahresgang" Bezeichnung="@Resource.KBP_TITEL_JAHRESGANG" />
+                    </KindInhalt>
+                </Reiterblatt>
+                <Reiterblatt Schluessel="@REITER_MONATE" Titel="@Resource.KBP_REITER_MONATE">
+                    <KindInhalt>
+                        <DiagrammSvg Modell="@Bilder.Monate" Kennung="kbp-monate" Bezeichnung="@Resource.KBP_TITEL_MONATE" />
+                    </KindInhalt>
+                </Reiterblatt>
+                <Reiterblatt Schluessel="@REITER_WOCHE" Titel="@Resource.KBP_REITER_WOCHE">
+                    <KindInhalt>
+                        <Formularraster>
+                            <KindInhalt>
+                                <Auswahlfeld Bezeichnung="@Resource.KBP_LBL_KALENDERWOCHE" Eintraege="@Bilder.Wocheneintraege"
+                                             Auswahl="@Kalenderwoche" AuswahlChanged="WocheGewaehlt" />
+                            </KindInhalt>
+                        </Formularraster>
+                        <div class="epos-kbp-woche" data-kbp="woche" data-kw="@Wochenbild.Kalenderwoche" style="@Hintergrundstil">
+                            <DiagrammSvg Modell="@Wochenbild.Modell" Kennung="@("kbp-woche-" + Wochenbild.Kalenderwoche)"
+                                         Bezeichnung="@Resource.KBP_TITEL_WOCHE" OhneZoom="true" />
+                        </div>
+                        <ul class="epos-kbp-tagesarten" aria-label="@Resource.KBP_HINW_GRAFIKWOCHE">
+                            @foreach ((byte art, string klasse, string text) in TAGESARTEN)
+                            {
+                                if (!Wochenbild.Tagesarten.Contains(art)) continue;
+                                <li class="epos-kbp-tagesart @klasse" @key="klasse">@text</li>
+                            }
+                        </ul>
+                        <Herleitungszeile Text="@Resource.KBP_HINW_GRAFIKWOCHE" />
+                    </KindInhalt>
+                </Reiterblatt>
+                <Reiterblatt Schluessel="@REITER_DAUER" Titel="@Resource.KBP_REITER_DAUERLINIE">
+                    <KindInhalt>
+                        <DiagrammSvg Modell="@Bilder.Dauerlinie" Kennung="kbp-dauerlinie" Bezeichnung="@Resource.KBP_TITEL_DAUERLINIE" />
+                    </KindInhalt>
+                </Reiterblatt>
+            </KindInhalt>
+        </Reiter>
+        <Herleitungszeile Text="@Resource.KBP_GRAFIK_HERLEITUNG_ARBEIT" />
+    }
+</div>
+
+@code {
+    /// <summary>Schlüssel des Blatts Jahresgang.</summary>
+    public const string REITER_JAHR = "jahresgang";
+
+    /// <summary>Schlüssel des Blatts Monate.</summary>
+    public const string REITER_MONATE = "monate";
+
+    /// <summary>Schlüssel des Blatts Woche.</summary>
+    public const string REITER_WOCHE = "woche";
+
+    /// <summary>Schlüssel des Blatts Dauerlinie.</summary>
+    public const string REITER_DAUER = "dauerlinie";
+
+    /// <summary>Kennzahlen und Bilder der markierten Zeile aus dem Kern; <c>null</c> = kein Profil.</summary>
+    [Parameter] public Kaelteprofilbilder? Bilder { get; set; }
+
+    private string _reiter = REITER_JAHR;
+    private int? _woche;
+
+    /// <summary>Die Tagesarten der Woche: Kennwert des Kerns, Klasse des Hintergrunds (Farbe aus --epos-kalb-*) und Text.</summary>
+    private static readonly (byte Art, string Klasse, string Text)[] TAGESARTEN =
+    {
+        (Kaelteprofilgrafik.WERKTAG, "epos-kbp-tagesart--werktag", Resource.KBP_TAGESART_WERKTAG),
+        (Kaelteprofilgrafik.SAMSTAG, "epos-kbp-tagesart--samstag", Resource.KBP_TAGESART_SAMSTAG),
+        (Kaelteprofilgrafik.SONNTAG, "epos-kbp-tagesart--sonntag", Resource.KBP_TAGESART_SONNTAG),
+        (Kaelteprofilgrafik.FERIEN, "epos-kbp-tagesart--ferien", Resource.KBP_TAGESART_FERIEN),
+        (Kaelteprofilgrafik.AUSSERHALB, "epos-kbp-tagesart--ausserhalb", Resource.KBP_TAGESART_AUSSERHALB),
+    };
+
+    /// <summary>Die Farbe je Tagesart als Variable des Stilblatts (die Farben des Kalenderbausteins, keine neuen).</summary>
+    private static string Farbe(byte art) => art switch
+    {
+        Kaelteprofilgrafik.WERKTAG => "var(--epos-kalb-grundwoche)",
+        Kaelteprofilgrafik.SAMSTAG => "var(--epos-kalb-wochenende)",
+        Kaelteprofilgrafik.SONNTAG => "var(--epos-kalb-feiertag)",
+        Kaelteprofilgrafik.FERIEN => "var(--epos-kalb-ferien)",
+        _ => "var(--epos-kalb-saison)"
+    };
+
+    /// <summary>Die gezeigte Kalenderwoche: die gewählte, sonst die Vorgabe des Kerns (Woche der Spitze).</summary>
+    public int Kalenderwoche => Bilder is null ? 0 : Math.Clamp(_woche ?? Bilder.Vorgabewoche, 1, Bilder.Wochenzahl);
+
+    /// <summary>Das Bild der gezeigten Woche — je Woche dieselbe Referenz aus dem Kern.</summary>
+    public Kaeltewochenbild Wochenbild => Bilder!.Wochenbild(Kalenderwoche);
+
+    private void WocheGewaehlt(int? kw)
+    {
+        if (kw is int k) _woche = k;
+    }
+
+    /// <summary>
+    /// Der Hintergrund der Zeichenfläche: sieben Streifen je Tagesart, waagerecht und senkrecht genau über der
+    /// Zeichenfläche des Bildes (Anteile aus dem Kern), als Variablen für die Regel <c>.epos-kbp-woche</c>.
+    /// </summary>
+    private string Hintergrundstil
+    {
+        get
+        {
+            Kaeltewochenbild w = Wochenbild;
+            (double links, double oben, double breite, double hoehe) = w.Flaechenlage;
+            var inv = CultureInfo.InvariantCulture;
+            string P(double anteil) => (anteil * 100.0).ToString("0.###", inv) + "%";
+            var streifen = new System.Text.StringBuilder("linear-gradient(to right, transparent 0% ").Append(P(links));
+            for (int t = 0; t < 7; t++)
+                streifen.Append(", ").Append(Farbe(w.Tagesarten[t])).Append(' ')
+                        .Append(P(links + breite * t / 7.0)).Append(' ').Append(P(links + breite * (t + 1) / 7.0));
+            streifen.Append(", transparent ").Append(P(links + breite)).Append(" 100%)");
+            // background-position in Prozent setzt den Punkt p des Bildes auf den Punkt p der Fläche: oben / (1 − Höhe).
+            double lage = hoehe < 1.0 ? oben / (1.0 - hoehe) : 0.0;
+            return "--epos-kbp-tagesarten: " + streifen + "; --epos-kbp-tagesarten-hoehe: " + P(hoehe)
+                   + "; --epos-kbp-tagesarten-lage: " + P(lage);
+        }
+    }
+
+    /// <summary>Das gewählte Blatt — Prüfhilfe für die Tests.</summary>
+    public string AktivesBlatt => _reiter;
+
+    private static string Zahl(double wert, string format, string einheit)
+        => wert.ToString(format, CultureInfo.CurrentCulture) + " " + einheit;
+}

@@ -27,6 +27,18 @@ namespace WindowsFormsApplication1
         internal SimulationStrombedarf Strom;
 
         /// <summary>
+        /// Der Kältebedarf je Stunde [kWh] — nur bei <see cref="BedarfsArt.Kaelte"/> (Konzept Kältebedarf 3.3, Welle K2):
+        /// sensible Kälte aus den Profilen (<see cref="ProfilQuelle.Kaelte"/>), ohne Deckung und ohne Erzeuger.
+        /// </summary>
+        internal double[] KaelteStunde;
+
+        /// <summary>Monatssummen des Kältebedarfs [MWh] — nur bei <see cref="BedarfsArt.Kaelte"/>.</summary>
+        internal double[] KaelteMonat;
+
+        /// <summary>Jahressumme des Kältebedarfs [MWh] — nur bei <see cref="BedarfsArt.Kaelte"/>.</summary>
+        internal double Kaeltebedarf;
+
+        /// <summary>
         /// Rechnet die Vorschau den Zapfprofilweg (Umsetzungskonzept Zapfprofilgenerator 2.2,
         /// 5.2)? Dann trägt <see cref="Waerme"/> die Monatssummen von Zapfung und Zirkulation
         /// und <c>Waerme.Zapfprofil</c> das Ergebnis des Generators.
@@ -91,6 +103,7 @@ namespace WindowsFormsApplication1
             var liste = new List<string> { bezeichner };
 
             if (art == BedarfsArt.Stromverbraucher) return Strom(ergebnis, idProjekt, liste);
+            if (art == BedarfsArt.Kaelte) return Kaelte(ergebnis, idProjekt, liste);
             return Waerme(ergebnis, art, idProjekt, liste);
         }
 
@@ -129,10 +142,17 @@ namespace WindowsFormsApplication1
         /// Zuordnung vor (<see cref="ProfilQuelle.Jahressummen"/>): Die Vorschau zeigt, was
         /// der Lauf nach dem Speichern rechnet. <c>null</c> = allein der gespeicherte Stand.
         /// </param>
+        /// <param name="arbeitsstaende">
+        /// Der Arbeitsstand je Profilname, wie er im offenen Dialog steht (<see cref="ProfilQuelle.Arbeitsstaende"/>);
+        /// <c>null</c> = der gespeicherte Stand. Bei allen Bedarfsarten gilt daraus der Betriebskalender der Zeile — auch
+        /// der gerade gewählte oder neu angelegte, noch nicht gespeicherte (<see cref="KalenderDesDialogs"/>); Monatswerte,
+        /// Wochenprofil und Eingabeart bringt nur die Kälte mit (Konzept Kältebedarfsprofile 5).
+        /// </param>
         internal static BedarfsVorschau ProjektVorschau(BedarfsArt art, int idProjekt,
                                                        IReadOnlyList<string> namen,
                                                        ZapfprofilStand zapfprofil = null,
-                                                       IReadOnlyDictionary<string, double> jahressummen = null)
+                                                       IReadOnlyDictionary<string, double> jahressummen = null,
+                                                       IReadOnlyDictionary<string, ProfilArbeitsstand> arbeitsstaende = null)
         {
             var ergebnis = new BedarfsVorschau { Art = art };
 
@@ -146,13 +166,16 @@ namespace WindowsFormsApplication1
 
             var liste = new List<string>(namen);
 
-            if (art == BedarfsArt.Stromverbraucher) return Strom(ergebnis, idProjekt, liste, jahressummen);
+            if (art == BedarfsArt.Stromverbraucher) return Strom(ergebnis, idProjekt, liste, jahressummen, arbeitsstaende);
+
+            // K2: Die Kaelte rechnet ueber ihre eigene Profilquelle - sie faellt NICHT in den Brauchwasserzweig darunter.
+            if (art == BedarfsArt.Kaelte) return Kaelte(ergebnis, idProjekt, liste, jahressummen, arbeitsstaende);
 
             var sim = new SimulationWaermebedarf { m_ID_Projekt = idProjekt };
 
             if (art == BedarfsArt.Prozesswaerme)
             {
-                sim.Prozesswaerme_berechnen(liste, jahressummen);
+                sim.Prozesswaerme_berechnen(liste, jahressummen, arbeitsstaende);
 
                 // W9-O-3 (04.09.2026): Die Prozesssumme geht ueber die EINHEITENKLASSE in
                 // die Einheit, die der Kern fuer Waermebedarf_Prozess fuehrt - MWh.
@@ -166,7 +189,7 @@ namespace WindowsFormsApplication1
                 // Summe geht ueber die EINHEITENKLASSE in die Einheit, die der Kern
                 // fuer Waermebedarf_Brauchwasser fuehrt (MWh). Vorher stand hier die
                 // nackte Summe in kWh, waehrend der Lauf MWh auswies.
-                sim.Brauchwasserwaerme_berechnen(liste, jahressummen);
+                sim.Brauchwasserwaerme_berechnen(liste, jahressummen, arbeitsstaende);
                 sim.BrauchwassersummeUebernehmen();
                 WPPlan.Core.BhkwPlan.MonatsSumme(sim.brauchwasserwerte,
                                                  sim.Waermebedarf_Brauchwasser_Monat,
@@ -225,6 +248,7 @@ namespace WindowsFormsApplication1
         private static BedarfsVorschau Waerme(BedarfsVorschau ergebnis, BedarfsArt art,
                                               int idProjekt, List<string> liste)
         {
+            if (art == BedarfsArt.Kaelte) return Kaelte(ergebnis, idProjekt, liste);
             var sim = new SimulationWaermebedarf { m_ID_Projekt = idProjekt };
 
             if (art == BedarfsArt.Prozesswaerme)
@@ -253,6 +277,64 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Der Betriebskalender je Profilname, wie ihn der offene Dialog zeigt, als Arbeitsstand der Profilroutine
+        /// (<see cref="ProfilArbeitsstand.KalenderGesetzt"/>): Die Wahl der Zeile gilt immer — auch „keiner“ (0) und ein
+        /// gerade im Blatt „Betriebskalender…“ angelegter, noch nicht gespeicherter. So rechnet „Simulation…“ mit dem
+        /// Kalender, den der Lauf nach dem Speichern über <c>ID_Betriebskalender</c> der Zuordnung nimmt — derselbe Weg
+        /// (<see cref="Betriebskalenderschicht"/>) in Vorschau und Lauf. Monatswerte und Wochenprofil bleiben die der
+        /// Projektkopie. Zeilen ohne Namen fallen weg; bei gleichem Namen gilt die letzte Zeile.
+        /// </summary>
+        internal static IReadOnlyDictionary<string, ProfilArbeitsstand> KalenderDesDialogs(
+            IEnumerable<(string Name, int? KalenderId)> zeilen)
+        {
+            var je = new Dictionary<string, ProfilArbeitsstand>(StringComparer.Ordinal);
+            if (zeilen == null) return je;
+            foreach ((string name, int? kalenderId) in zeilen)
+                if (!string.IsNullOrEmpty(name))
+                    je[name] = new ProfilArbeitsstand { KalenderGesetzt = true, KalenderId = kalenderId ?? 0 };
+            return je;
+        }
+
+        /// <summary>
+        /// <b>Der Kältebedarf</b> (Welle K2, Konzept Kältebedarf 3.3): dieselbe Profilrechnung wie die Prozesswärme
+        /// (<see cref="ProfilBedarf.Rechnen"/>) über <see cref="ProfilQuelle.Kaelte"/>, im Quellmodus der Namensliste
+        /// (<see cref="ProfilBedarf.Vorschaumodus"/>) und im Wochentagsraster des Projekts wie der Lauf
+        /// (<see cref="Konditionierungdatenweg.Raster(int)"/>; im Katalog das Rückfallraster der Altkonvention).
+        /// Kein Teiler, keine Deckung, keine Erzeuger — die Vorschau zeigt den Bedarf; was zentral und was dezentral
+        /// gedeckt wird, bucht erst der Lauf (Stufe K3). Meldet die Profilroutine ein unvollständiges Profil, steht
+        /// <see cref="BedarfsVorschau.Erfolgreich"/> auf <c>false</c> (die Meldung gibt die Routine selbst).
+        /// </summary>
+        private static BedarfsVorschau Kaelte(BedarfsVorschau ergebnis, int idProjekt, List<string> liste,
+                                              IReadOnlyDictionary<string, double> jahressummen = null,
+                                              IReadOnlyDictionary<string, ProfilArbeitsstand> arbeitsstaende = null)
+        {
+            if (!KaeltebedarfSchema.TabellenVorhanden()) return ergebnis;
+
+            var moAnfang = new int[12];
+            var moEnde = new int[12];
+            new Classes.Simulation.Init().Monatswerte_berechnen(moAnfang, moEnde);
+
+            ProfilQuelle quelle = ProfilQuelle.Kaelte(ProfilBedarf.Vorschaumodus(liste, idProjekt));
+            quelle.Jahressummen = jahressummen;
+            quelle.Arbeitsstaende = arbeitsstaende;
+
+            var stunde = new double[8760];
+            var monat = new double[12];
+            // KV8-N: Die Projektvorschau rechnet im Wochentagsraster des Projekts — derselbe w₀ wie der Lauf
+            // (SimulationWaermebedarf.RasterUebernehmen: Klimaregion, mit Preisreihenjahr das Jahr). Die
+            // Katalogvorschau (idProjekt 0) bleibt beim Rückfallraster der Altkonvention.
+            int wochentag = Konditionierungdatenweg.Raster(idProjekt).W0;
+            bool ok = ProfilBedarf.Rechnen(quelle, idProjekt, liste, wochentag,
+                                           moAnfang, moEnde, stunde, monat);
+
+            ergebnis.KaelteStunde = stunde;
+            ergebnis.KaelteMonat = monat;
+            ergebnis.Kaeltebedarf = stunde.Sum() / 1000;
+            ergebnis.Erfolgreich = ok;
+            return ergebnis;
+        }
+
+        /// <summary>
         /// Der Stromverbraucher — die längste der drei Rechnungen
         /// (<c>Form_Stromverbraucher_Admin</c>:95‑109).
         ///
@@ -270,11 +352,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static BedarfsVorschau Strom(BedarfsVorschau ergebnis, int idProjekt,
                                              List<string> liste,
-                                             IReadOnlyDictionary<string, double> jahressummen = null)
+                                             IReadOnlyDictionary<string, double> jahressummen = null,
+                                             IReadOnlyDictionary<string, ProfilArbeitsstand> arbeitsstaende = null)
         {
             var sim = new SimulationStrombedarf { m_ID_Projekt = idProjekt };
 
-            double[] reihe = sim.Stromprofil_Strombedarf_berechnen(liste, jahressummen);
+            double[] reihe = sim.Stromprofil_Strombedarf_berechnen(liste, jahressummen, arbeitsstaende);
             if (reihe == null) return ergebnis;
 
             sim.ProfilbedarfUebernehmen(reihe);

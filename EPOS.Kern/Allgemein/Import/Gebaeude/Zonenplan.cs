@@ -1,0 +1,1060 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using SpeicherEngine;
+
+namespace WindowsFormsApplication1
+{
+    /// <summary>
+    /// <b>Eine freie Zone des Zonenplans</b> (Mehrzonenkonzept 6.4): Schlüssel, Name, Nutzung und Herkunft. Welche Räume sie
+    /// trägt, hält der <see cref="Zonenplan"/>; ihre Beheizung folgt aus den Räumen.
+    /// </summary>
+    internal sealed class Planzone
+    {
+        /// <summary>Der stabile, sprachneutrale Schlüssel <c>Z:&lt;n&gt;</c>; innerhalb eines Plans nie wiederverwendet.</summary>
+        internal string Schluessel { get; set; } = "";
+
+        /// <summary>Der Name der Zone (<c>Tab_Zone.Bezeichner</c> beim Speichern); im Plan eindeutig ohne Unterschied der Schreibung.</summary>
+        internal string Name { get; set; } = "";
+
+        /// <summary>
+        /// Das Nutzungsprofil (Konzept Nutzungsprofile NP-F23): Id und Name eines Profils des Katalogs, ohne Katalog eine
+        /// der alten Kennungen, ein Text ohne Profil mit Befund „nicht im Katalog“; <c>null</c> = keine.
+        /// </summary>
+        internal Planprofil Profil { get; set; }
+
+        /// <summary>Der Name der Nutzung (<see cref="Planprofil.Name"/>); <c>null</c> = keine.</summary>
+        internal string Nutzung => Profil?.Name;
+
+        /// <summary>
+        /// Woher das Profil kommt (Herleitungszeile des Zonenbaums): Zuordnung mit Schlüssel, Datei, gespeicherter Plan oder
+        /// Hand; <c>null</c> = keine Quelle (keine Nutzung, keine Regel mit Vorbelegung).
+        /// </summary>
+        internal Profilquelle Quelle { get; set; }
+
+        /// <summary>Der Schlüssel der Regelzone, aus der sie stammt (<see cref="Importzone.Schluessel"/>); <c>null</c> = von Hand angelegt.</summary>
+        internal string Herkunft { get; set; }
+
+        /// <summary>Die Kennung der Datei, die die Zone trägt (Zone, Geschoss, Raum, Gebäude); <c>null</c> = aus den Räumen.</summary>
+        internal string Quellkennung { get; set; }
+
+        /// <summary>Von Hand angelegt (<see cref="Zonenplan.ZoneAnlegen"/>) — bleibt beim Aufheben der Zonierung stehen.</summary>
+        internal bool Angelegt { get; set; }
+
+        /// <summary>Von Hand verändert (Räume hinein oder heraus) — unter der Mindestgröße eine Warnung statt eines Zuschlags.</summary>
+        internal bool Geaendert { get; set; }
+
+        /// <summary>Die Konditionierung aus der HottCAD-Projektdatei (Stufe SQ-1); <c>null</c> = keine.</summary>
+        internal Zonenkonditionierung Projektdatei { get; set; }
+
+        /// <summary>Hat der Schritt „Rest platzieren“ die Zone angelegt (Restzone „unbeheizt“ bzw. je Geschoss)?</summary>
+        internal bool AusPlatzierung { get; set; }
+
+        /// <summary>
+        /// Der Profilschlüssel, den die <b>Bezeichnung der Datei</b> für diese Zone vorschlägt (Anwenderentscheid F2:
+        /// <c>EPOS_Zone.DinNummer</c>/<c>EPOS_Zone.Nutzung</c> der IFC-Datei, DIN-Nummer des gbXML-Raumtyps) — vorbelegt, aber
+        /// nicht still gesetzt; <c>null</c> = keiner oder bestätigt.
+        /// </summary>
+        internal string Dateivorschlag { get; set; }
+
+        internal Planzone Kopie() => (Planzone)MemberwiseClone();
+
+        public override string ToString() => Schluessel + " " + Name + (Nutzung == null ? "" : " [" + Nutzung + "]");
+    }
+
+    /// <summary>Ein Schritt am Zonenplan: gelungen oder benannt abgelehnt; mit dem Schlüssel einer neuen Zone.</summary>
+    /// <param name="Ok">Gelungen? Abgelehnt heißt: der Plan ist unverändert.</param>
+    /// <param name="Meldung">Die Ablehnung (Fehler) oder ein Hinweis zum gelungenen Schritt; <c>null</c> = keiner.</param>
+    /// <param name="Schluessel">Der Schlüssel der angelegten Zone; sonst <c>null</c>.</param>
+    internal sealed record Planschritt(bool Ok, PruefMeldung Meldung = null, string Schluessel = null);
+
+    /// <summary>Warum der Schritt „Rest platzieren“ einen Raum wohin legte (Entwurf GD 2.3, E130/F3).</summary>
+    internal enum Platzierungsgrund
+    {
+        /// <summary>Der Raum ist unbeheizt — in die gemeinsame Zone „unbeheizt“.</summary>
+        Unbeheizt = 0,
+        /// <summary>Beheizt mit Nachbarraum in einer beheizten Zone — in die mit der größten gemeinsamen Fläche.</summary>
+        Nachbarzone = 1,
+        /// <summary>Beheizt ohne beheizte Nachbarzone — in die Restzone seines Geschosses.</summary>
+        Geschoss = 2,
+    }
+
+    /// <summary>
+    /// <b>Eine automatische Platzierung</b>: Raum, Grund, Zielzone (Schlüssel) und die gemeinsame Fläche mit der Nachbarzone
+    /// (nur beim Grund <see cref="Platzierungsgrund.Nachbarzone"/>).
+    /// </summary>
+    internal sealed record Restplatzierung(string Raum, Platzierungsgrund Grund, string Zone, double? GemeinsamM2 = null);
+
+    /// <summary>Eine Zeile der Flächenbilanz des Plans — auch eine Zone ohne Raum (0 m²).</summary>
+    internal sealed record Planbilanzzeile(string Schluessel, string Name, string Nutzung, bool? Beheizt, int Raeume, double FlaecheM2);
+
+    /// <summary>
+    /// <b>Der Zonenplan eines importierten Gebäudes</b> (Mehrzonenkonzept 6.4): eine geordnete Liste freier Zonen
+    /// (<see cref="Planzone"/>) und die Zuordnung Raum → Zone, ein Raum <b>nicht zugeordnet</b> oder <b>außerhalb</b> (von
+    /// der Regel bewusst draußen gelassen, etwa die unbeheizten Räume im Einzonenweg). Er entsteht aus dem Regelvorschlag
+    /// (<see cref="Vorschlag"/>; jede Vorschlagszone wird eine freie Zone mit ihrem Namen, unter Z6 mit der Nutzung aus der
+    /// Nutzungsklasse) und wird dann nur noch von Hand geändert. Jede Operation ist deterministisch und lehnt benannt ab,
+    /// statt still zu wirken; eine abgelehnte Operation lässt den Plan unverändert. Die Zonierung entsteht aus dem Plan
+    /// (<see cref="Zonieren"/>); gespeichert wird nur ein Plan ohne nicht zugeordneten Raum (<see cref="Abschlusspruefung"/>).
+    /// Ohne Datenbank und ohne Oberfläche.
+    /// </summary>
+    internal sealed class Zonenplan
+    {
+        /// <summary>Das Präfix der Zonenschlüssel.</summary>
+        internal const string SCHLUESSEL_PRAEFIX = "Z:";
+
+        /// <summary>
+        /// Die alten Kennungen der Nutzung — wählbar nur ohne Katalog (Vorgabe im Code); mit Katalog wählt die Zone ein Profil
+        /// (<see cref="Raumnutzungsvorbelegung"/>). Die Kennungen bleiben, weil Bestandswerte sie tragen.
+        /// </summary>
+        internal static readonly IReadOnlyList<string> NUTZUNGEN = new[] { DbWerte.KOND_NUTZUNG_WOHNEN, DbWerte.KOND_NUTZUNG_BUERO, DbWerte.KOND_NUTZUNG_SCHULE };
+
+        /// <summary>Meldung (F): Speichern mit nicht zugeordneten Räumen — Zahl und bis fünf Namen.</summary>
+        internal const string ZUORDNUNG_UNVOLLSTAENDIG = "ZUORDNUNG_UNVOLLSTAENDIG";
+        /// <summary>Ablehnung: Zonenname leer.</summary>
+        internal const string PLAN_NAME_LEER = "PLAN_NAME_LEER";
+        /// <summary>Ablehnung: Zonenname schon vergeben.</summary>
+        internal const string PLAN_NAME_DOPPELT = "PLAN_NAME_DOPPELT";
+        /// <summary>Ablehnung: Nutzung nicht wählbar.</summary>
+        internal const string PLAN_NUTZUNG_UNGUELTIG = "PLAN_NUTZUNG_UNGUELTIG";
+        /// <summary>Ablehnung: Zone unbekannt.</summary>
+        internal const string PLAN_ZONE_UNBEKANNT = "PLAN_ZONE_UNBEKANNT";
+        /// <summary>Ablehnung: Raum nicht in diesem Gebäude.</summary>
+        internal const string PLAN_RAUM_UNBEKANNT = "PLAN_RAUM_UNBEKANNT";
+        /// <summary>Ablehnung: Geschoss ohne Raum in diesem Gebäude.</summary>
+        internal const string PLAN_GESCHOSS_UNBEKANNT = "PLAN_GESCHOSS_UNBEKANNT";
+        /// <summary>Ablehnung: Raum und Zielzone (bzw. die gewählten Räume untereinander) nicht gleich beheizt.</summary>
+        internal const string PLAN_BEHEIZUNG = "PLAN_BEHEIZUNG";
+        /// <summary>Hinweis (W): Räume eines Geschosses anderer Beheizung blieben, wo sie waren.</summary>
+        internal const string PLAN_BEHEIZUNG_TEIL = "PLAN_BEHEIZUNG_TEIL";
+        /// <summary>Ablehnung: mehr Zonen als die Pflegegrenze.</summary>
+        internal const string PLAN_ZU_VIELE_ZONEN = "PLAN_ZU_VIELE_ZONEN";
+        /// <summary>Ablehnung: die Regel trägt das Gebäude nicht.</summary>
+        internal const string PLAN_REGEL_UNGUELTIG = "PLAN_REGEL_UNGUELTIG";
+        /// <summary>Hinweis (I): Räume, die die Regel außerhalb der Zonen lässt.</summary>
+        internal const string PLAN_REST_AUSSERHALB = "PLAN_REST_AUSSERHALB";
+
+        private readonly GebaeudeAbbild _abbild;
+        private readonly int _index;
+        private readonly Dictionary<string, bool> _haken;
+        private readonly string _praefix;
+        private readonly List<Planzone> _zonen = new List<Planzone>();
+        private readonly Dictionary<string, string> _zoneJeRaum = new Dictionary<string, string>(StringComparer.Ordinal);
+        private readonly HashSet<string> _ausserhalb = new HashSet<string>(StringComparer.Ordinal);
+        private readonly Dictionary<string, Restplatzierung> _platziert = new Dictionary<string, Restplatzierung>(StringComparer.Ordinal);
+        private int _naechste = 1;
+        private Raumnutzungsvorbelegung _vorbelegung;
+        private readonly Dictionary<string, string> _profilwahl = new Dictionary<string, string>(StringComparer.Ordinal);
+        private IReadOnlyList<Raumprofilbefund> _raumprofile = Array.Empty<Raumprofilbefund>();
+
+        private Zonenplan(GebaeudeAbbild abbild, int index, IReadOnlyDictionary<string, bool> haken,
+                          Raumnutzungsvorbelegung vorbelegung = null)
+        {
+            _vorbelegung = vorbelegung;
+            _abbild = abbild;
+            _index = index;
+            _haken = haken == null ? new Dictionary<string, bool>(StringComparer.Ordinal)
+                                   : new Dictionary<string, bool>(haken.ToDictionary(p => p.Key, p => p.Value), StringComparer.Ordinal);
+            _praefix = string.Equals(abbild?.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal)
+                ? IfcImportProfil.MELDUNGSPRAEFIX : GbxmlImportProfil.MELDUNGSPRAEFIX;
+        }
+
+        /// <summary>Die Regel des Startvorschlags (bzw. der letzten Neubildung).</summary>
+        internal string Regel { get; private set; } = "";
+
+        /// <summary>Die Ablehnung des Regelvorschlags, aus dem der Plan entstand; <c>null</c> = keine.</summary>
+        internal PruefMeldung Ablehnung { get; private set; }
+
+        /// <summary>Das Gebäude der Datei.</summary>
+        internal AbbildGebaeude Gebaeude => _abbild.Gebaeude[_index];
+
+        /// <summary>Die Zonen in Planreihenfolge.</summary>
+        internal IReadOnlyList<Planzone> Zonen => _zonen;
+
+        /// <summary>
+        /// Die Vorbelegung der Nutzung (Zuordnung vor Vorgabe im Code, NP-F12): die übergebene, sonst beim ersten Bedarf aus
+        /// der Datenbank gelesen (<see cref="Raumnutzungsvorbelegung.Lesen"/>; ohne Datenbank die Vorgabe).
+        /// </summary>
+        internal Raumnutzungsvorbelegung Vorbelegung => _vorbelegung ??= Raumnutzungsvorbelegung.Lesen();
+
+        /// <summary>Die Haken der Raumliste, mit denen der Plan gebildet ist; <c>null</c> = wie gelesen.</summary>
+        internal IReadOnlyDictionary<string, bool> Haken => _haken;
+
+        /// <summary>Der Schlüssel der Zone eines Raums; <c>null</c> = keine (nicht zugeordnet oder außerhalb).</summary>
+        internal string ZoneVon(string raum) => raum != null && _zoneJeRaum.TryGetValue(raum, out string z) ? z : null;
+
+        /// <summary>Liegt ein Raum nach der Regel bewusst außerhalb der Zonen?</summary>
+        internal bool Ausserhalb(string raum) => raum != null && _ausserhalb.Contains(raum);
+
+        /// <summary>Die Räume einer Zone in Dateireihenfolge; leer für eine unbekannte Zone.</summary>
+        internal IReadOnlyList<AbbildRaum> RaeumeVon(string schluessel)
+            => Gebaeude.Raeume.Where(r => string.Equals(ZoneVon(r.Kennung), schluessel, StringComparison.Ordinal)).ToList();
+
+        /// <summary>Die Räume in keiner Zone und nicht außerhalb, in Dateireihenfolge — sie sperren das Speichern.</summary>
+        internal IReadOnlyList<AbbildRaum> NichtZugeordnet
+            => Gebaeude.Raeume.Where(r => ZoneVon(r.Kennung) == null && !_ausserhalb.Contains(r.Kennung)).ToList();
+
+        /// <summary>Die Räume, die die Regel außerhalb der Zonen lässt, in Dateireihenfolge.</summary>
+        internal IReadOnlyList<AbbildRaum> RaeumeAusserhalb => Gebaeude.Raeume.Where(r => _ausserhalb.Contains(r.Kennung)).ToList();
+
+        /// <summary>Die Geschosskennungen mit Räumen, in Dateireihenfolge.</summary>
+        internal IReadOnlyList<string> Geschosse
+            => Gebaeude.Raeume.Select(r => r.GeschossKennung).Where(g => g != null).Distinct(StringComparer.Ordinal).ToList();
+
+        /// <summary>Die Zone eines Schlüssels; <c>null</c> = keine.</summary>
+        internal Planzone Zone(string schluessel) => _zonen.FirstOrDefault(z => string.Equals(z.Schluessel, schluessel, StringComparison.Ordinal));
+
+        /// <summary>Ist ein Raum wirksam beheizt (mit den Haken des Plans)?</summary>
+        internal bool Beheizt(AbbildRaum r) => GebaeudeRaumzeile.BeheiztWirksam(r, _haken);
+
+        /// <summary>Die Beheizung einer Zone aus ihren Räumen; <c>null</c> ohne Raum.</summary>
+        internal bool? ZoneBeheizt(string schluessel)
+        {
+            IReadOnlyList<AbbildRaum> raeume = RaeumeVon(schluessel);
+            return raeume.Count == 0 ? (bool?)null : raeume.Any(Beheizt);
+        }
+
+        /// <summary>Der Anzeigename eines Raums: sein Name, sonst seine Kennung.</summary>
+        internal static string Raumname(AbbildRaum r) => r == null ? "" : string.IsNullOrWhiteSpace(r.Name) ? r.Kennung : r.Name.Trim();
+
+        // ==================================================================
+        //  Entstehen
+        // ==================================================================
+
+        /// <summary>
+        /// <b>Der Plan aus dem Regelvorschlag</b>: die Zonierung nach <paramref name="regel"/> (<c>null</c> = Vorgabe der Datei)
+        /// mit den Haken und den Umhängungen (der Eingang der gespeicherten Zuordnungen von Hand, in ihrer Reihenfolge), jede
+        /// Zone eine freie Zone mit ihrem Namen — unter Z6 mit dem Profil der Nutzungsklasse (<see cref="NutzungAus"/>: Zuordnung
+        /// vor <see cref="NutzungAusKlasse"/>), sonst ohne. Räume, die der Vorschlag außerhalb lässt, liegen außerhalb.
+        /// <c>null</c> ohne Gebäude.
+        /// </summary>
+        internal static Zonenplan Vorschlag(GebaeudeAbbild abbild, int index, string regel = null,
+                                            IReadOnlyDictionary<string, bool> haken = null,
+                                            IReadOnlyList<Raumumhaengung> umhaengungen = null,
+                                            Raumnutzungsvorbelegung vorbelegung = null)
+        {
+            if (abbild == null || index < 0 || index >= abbild.Gebaeude.Count) return null;
+            var plan = new Zonenplan(abbild, index, haken, vorbelegung);
+            plan.AusRegelBilden(regel, umhaengungen);
+            return plan;
+        }
+
+        /// <summary>
+        /// <b>Der gespeicherte Plan</b> eines früheren Imports derselben Datei: die Zonen in der gespeicherten Reihenfolge mit
+        /// Namen und Nutzung (der gespeicherte Text als Profil, <see cref="Raumnutzungsvorbelegung.AusText"/>: Profilname →
+        /// Profil, alte Kennung → EPOS-Muster, sonst „nicht im Katalog“), die Räume über ihre Paarung (Raumkennung → Zonen-Id). Ein Raum ohne Paarung liegt außerhalb,
+        /// wenn die gespeicherte Regel ihn draußen lässt, sonst ist er nicht zugeordnet; eine Paarung auf eine unbekannte
+        /// Zone oder einen fremden Raum bleibt unbeachtet. <c>null</c> ohne Gebäude.
+        /// </summary>
+        internal static Zonenplan AusGespeichert(GebaeudeAbbild abbild, int index, string regel, IReadOnlyDictionary<string, bool> haken,
+                                                 IReadOnlyList<(int Id, string Name, string Nutzung)> zonen,
+                                                 IReadOnlyList<(string Raum, int IdZone)> paarungen,
+                                                 Raumnutzungsvorbelegung vorbelegung = null)
+        {
+            if (abbild == null || index < 0 || index >= abbild.Gebaeude.Count) return null;
+            var plan = new Zonenplan(abbild, index, haken, vorbelegung);
+            (IReadOnlyList<string> regeln, string vorgabe, bool _) = GebaeudeZonierung.Waehlbar(abbild, index);
+            plan.Regel = regel != null && regeln.Contains(regel) ? regel : vorgabe;
+            var jeId = new Dictionary<int, string>();
+            foreach ((int id, string name, string nutzung) in zonen ?? Array.Empty<(int, string, string)>())
+            {
+                if (jeId.ContainsKey(id)) continue;
+                Planzone z = plan.Neu(plan.FreierName(name), string.IsNullOrWhiteSpace(nutzung) ? null : plan.Vorbelegung.AusText(nutzung),
+                                      null, null, angelegt: false);
+                if (z.Profil != null) z.Quelle = new Profilquelle(Profilquelle.GESPEICHERT);
+                jeId[id] = z.Schluessel;
+            }
+            var eigene = new HashSet<string>(plan.Gebaeude.Raeume.Select(r => r.Kennung), StringComparer.Ordinal);
+            foreach ((string raum, int idZone) in paarungen ?? Array.Empty<(string, int)>())
+                if (raum != null && eigene.Contains(raum) && jeId.TryGetValue(idZone, out string s) && !plan._zoneJeRaum.ContainsKey(raum))
+                    plan._zoneJeRaum[raum] = s;
+            // N7: Der gespeicherte Plan trägt Namen, Nutzung und Räume; Kalender und Zeitpläne der Datei kommen wie im Regelvorschlag
+            // aus den Räumen der Zone (sonst schriebe der Wiederimport an einer Zone ohne Handmarke die Kalender der Datei nicht).
+            foreach (Planzone z in plan._zonen)
+            {
+                var iz = new Importzone();
+                iz.Raeume.AddRange(plan.Gebaeude.Raeume.Where(r => plan._zoneJeRaum.TryGetValue(r.Kennung, out string sz) &&
+                                                                    string.Equals(sz, z.Schluessel, StringComparison.Ordinal)));
+                if (iz.Raeume.Count > 0) z.Projektdatei = GebaeudeZonierung.Dateikonditionierung(z.Name, iz);
+            }
+            GebaeudeZonierung vorschlag = GebaeudeZonierung.Bilden(abbild, index, plan.Regel, haken);
+            foreach (AbbildRaum r in plan.Gebaeude.Raeume)
+                if (!plan._zoneJeRaum.ContainsKey(r.Kennung) && !vorschlag.Abgelehnt && vorschlag.ZoneVon(r.Kennung) < 0)
+                    plan._ausserhalb.Add(r.Kennung);
+            return plan;
+        }
+
+        /// <summary>Eine tiefe Kopie — für Rückgängig im Dialog.</summary>
+        internal Zonenplan Kopie()
+        {
+            var k = new Zonenplan(_abbild, _index, _haken, _vorbelegung) { Regel = Regel, Ablehnung = Ablehnung, _naechste = _naechste, _raumprofile = _raumprofile };
+            k._zonen.AddRange(_zonen.Select(z => z.Kopie()));
+            foreach (KeyValuePair<string, string> p in _profilwahl) k._profilwahl[p.Key] = p.Value;
+            foreach (KeyValuePair<string, string> p in _zoneJeRaum) k._zoneJeRaum[p.Key] = p.Value;
+            k._ausserhalb.UnionWith(_ausserhalb);
+            foreach (KeyValuePair<string, Restplatzierung> p in _platziert) k._platziert[p.Key] = p.Value;
+            return k;
+        }
+
+        private void AusRegelBilden(string regel, IReadOnlyList<Raumumhaengung> umhaengungen)
+        {
+            _zonen.Clear();
+            _zoneJeRaum.Clear();
+            _ausserhalb.Clear();
+            _platziert.Clear();
+            GebaeudeZonierung zon = GebaeudeZonierung.Bilden(_abbild, _index, regel, _haken, umhaengungen, null, Bedarf(regel), _profilwahl);
+            Regel = zon.Regel;
+            Ablehnung = zon.Meldungen.FirstOrDefault(m => m.Stufe == PruefStufe.Fehler);
+            _raumprofile = zon.Raumprofile;
+            if (zon.Abgelehnt) return;
+            foreach (Importzone iz in zon.Zonen)
+            {
+                (Planprofil vorbelegt, Profilquelle quelle) = NutzungMitQuelle(zon.Regel, iz, Bedarf(zon.Regel));
+                Planzone z = Neu(FreierName(iz.Name), vorbelegt, iz.Schluessel, iz.Quellkennung,
+                                 angelegt: iz.Schluessel.StartsWith(GebaeudeZonierung.HAND_PRAEFIX, StringComparison.Ordinal));
+                z.Quelle = quelle;
+                z.Geaendert = iz.Handgeaendert;
+                foreach (AbbildRaum r in iz.Raeume) _zoneJeRaum[r.Kennung] = z.Schluessel;
+                // Die Konditionierung aus einer IFC-Datei von EPOS-Plan (EPOS_Zone, EPOS_Kalender_*): die des ersten Raums der
+                // Zone, der sie trägt — Rangfolge Projektdatei (ersetzt die Zonierung, SqprojZonen) vor IFC-EPOS_* vor Profil.
+                // EPOS_Zone.Nutzung: Profilname → Profil, alte Kennung → EPOS-Muster, sonst bleibt der Text (NP-F23).
+                // Welle DA-1: sonst Lasten und Zeitpläne einer gbXML-Datei je Zone (Datei vor Profil, E138 F2) — derselbe Weg wie die
+                // Regelzonierung (GebaeudeZonierung.Dateikonditionierung, N7), hier mit dem Namen der Planzone.
+                z.Projektdatei = GebaeudeZonierung.Dateikonditionierung(z.Name, iz);
+                if (iz.Raeume.Select(r => r.Konditionierung).FirstOrDefault(k => k != null) is AbbildKonditionierung k &&
+                    z.Profil == null && !string.IsNullOrWhiteSpace(k.Nutzung))
+                {
+                    z.Profil = Vorbelegung.AusText(k.Nutzung);
+                    z.Quelle = new Profilquelle(Profilquelle.DATEI);
+                }
+                DinNummerAnwenden(z, iz);
+                MehrheitAnwenden(z, iz, zon);
+                DateibezeichnungAlsVorschlag(z, iz);
+            }
+            foreach (AbbildRaum r in Gebaeude.Raeume)
+                if (!_zoneJeRaum.ContainsKey(r.Kennung)) _ausserhalb.Add(r.Kennung);
+        }
+
+        /// <summary>
+        /// <b>Das Mehrheitsprofil einer gemischten Zone</b> (Entwurf ZZ 5.2, Befund B4; Z4, Z1 bis Z3): eine beheizte Zone einer
+        /// IFC-Datei ohne Profil bekommt das Profil der flächengewichteten Mehrheit ihrer Raumbefunde
+        /// (<see cref="Raumprofilzuordnung.Mehrheit"/>, Schwelle 50 %) — gesetzt, wenn jeder Raum eindeutig dasselbe trägt,
+        /// sonst als Vorschlag mit Anteil. Nur, wenn die Datei Raumarten oder eigene Nutzungsangaben trägt (F3: eine Bezeichnung
+        /// erlaubt die Zuordnung; Dateien mit bloßen Raumnamen bleiben wie bisher ohne Profil). Unter Z7 trägt die Zone ihr Profil
+        /// schon aus <see cref="NutzungMitQuelle"/>; Z6 behält seinen Weg über die Nutzungsklasse.
+        /// </summary>
+        private void MehrheitAnwenden(Planzone z, Importzone iz, GebaeudeZonierung zon)
+        {
+            if (!iz.IstBeheizt || z.Profil != null || zon.Raumprofile.Count == 0) return;
+            if (string.Equals(zon.Regel, IfcImportProfil.ZONENREGEL_Z7, StringComparison.Ordinal)
+                || string.Equals(zon.Regel, IfcImportProfil.ZONENREGEL_Z6, StringComparison.Ordinal)) return;
+            if (!zon.Raumprofile.Any(b => b.Raumart.Length > 0 || b.EigeneAngabe)) return;
+            if (z.Quelle?.Art == Profilquelle.HAND) return;
+            var kennungen = new HashSet<string>(iz.Raeume.Select(r => r.Kennung), StringComparer.Ordinal);
+            List<Raumprofilbefund> befunde = zon.Raumprofile.Where(b => b.Raum != null && kennungen.Contains(b.Raum.Kennung) && Beheizt(b.Raum)).ToList();
+            (string schluessel, int prozent, bool eindeutig) = Raumprofilzuordnung.Mehrheit(befunde);
+            if (schluessel == null) return;
+            Planprofil p = Raumprofilschluessel.Profil(Vorbelegung, schluessel);
+            if (p == null || p.NichtImKatalog) return;
+            Raumprofilbefund erster = befunde.First(b => b.Vorschlag == schluessel);
+            string begruendung = Raumprofilzuordnung.Begruendungstext(erster.Begruendung);
+            z.Profil = p;
+            z.Quelle = eindeutig && prozent >= 100
+                ? new Profilquelle(Raumprofilzuordnung.QUELLE, begruendung)
+                : new Profilquelle(Raumprofilzuordnung.QUELLE_MEHRHEIT,
+                                   (Raumprofilzuordnung.Ressource("RNP_IMP_BEGR_MEHRHEIT", prozent.ToString(CultureInfo.InvariantCulture)) ?? prozent + " %")
+                                   + " · " + begruendung);
+            iz.Raumprofil = new Raumprofilgruppe(schluessel, eindeutig ? Raumprofilstand.Eindeutig : Raumprofilstand.Vorschlag, schluessel,
+                                                 new[] { schluessel }, erster.Begruendung, prozent);
+        }
+
+        /// <summary>
+        /// <b>Rangstufe 1 der Profilzuordnung</b> (Welle DA-5, Konzept DA 4.3, E135): die DIN-Nummer der Datei — IFC
+        /// <c>EPOS_Zone.DinNummer</c>, sonst der gbXML-Raumtyp über die Raumtyptafel (<see cref="GbxmlRaumtyptafel"/>) — des
+        /// flächengrößten Raums der Zone, der eine trägt. Sie geht der Regel des Raumtyps (Z6) vor; nur ein Profilname aus
+        /// <c>EPOS_Zone.Nutzung</c> mit Katalogtreffer bleibt (er ist das Profil selbst). Die Quelle ist die Zuordnung
+        /// <c>DIN_NUMMER</c> mit der Nummer, auch ohne Katalogtreffer (dann bleibt die Zone ohne Profil; die Modellprüfung
+        /// schlägt das nächstliegende Profil der DIN-Kategorie vor). Nur beheizte Zonen.
+        /// </summary>
+        private void DinNummerAnwenden(Planzone z, Importzone iz)
+        {
+            if (!iz.IstBeheizt) return;
+            if (z.Quelle?.Art == Profilquelle.DATEI && z.Profil != null && !z.Profil.NichtImKatalog) return;
+            // Befund B4 (Entwurf ZZ 5.2): die gbXML-Raumtyptafel gilt nicht für IFC-Raumtypen — dort entscheidet die Profilzuordnung je Raum.
+            bool ifc = string.Equals(_abbild?.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal);
+            int? din = DateiDinNummer(iz.Raeume, gbxmlTafel: !ifc);
+            if (din is not int n) return;
+            Planprofil p = Vorbelegung.DinTreffer(n);
+            z.Profil = p == null || p.NichtImKatalog ? null : p;
+            z.Quelle = new Profilquelle(RaumnutzungSchema.ZUORDNUNG_DIN, n.ToString(CultureInfo.InvariantCulture));
+        }
+
+        /// <summary>
+        /// <b>Die Bezeichnung der Datei ist ein Vorschlag</b> (Anwenderentscheid F2, Entwurf ZZ 5.3 Stufe 0): Trägt eine Zone ihr
+        /// Profil aus der eigenen Angabe der Datei — <c>EPOS_Zone.Nutzung</c> mit Katalogtreffer (<see cref="Profilquelle.DATEI"/>)
+        /// oder der DIN-Nummer aus <c>EPOS_Zone.DinNummer</c> bzw. dem gbXML-Raumtyp (<c>DIN_NUMMER</c>) —, bleibt das Profil
+        /// vorbelegt (der Rechenweg ändert sich nicht), die Quelle wird aber ein Vorschlag mit Herkunft „Bezeichnung der Datei“
+        /// (<see cref="Raumprofilzuordnung.QUELLE_VORSCHLAG"/>, Ampel gelb), bis der Anwender ihn bestätigt: Tragen alle
+        /// beheizten Räume der Zone die Wahl von Hand mit demselben Schlüssel (<see cref="VorschlaegeUebernehmen"/>,
+        /// <see cref="ProfilZuordnen"/>), ist er gesetzt (<see cref="Raumprofilzuordnung.QUELLE"/>). Eine DIN-Nummer ohne
+        /// Katalogtreffer behält ihre Quelle (die Modellprüfung schlägt das nächstliegende DIN-Profil vor); die Zonen der
+        /// Projektdatei (<see cref="SqprojZonen"/>) laufen nicht hier durch.
+        /// </summary>
+        private void DateibezeichnungAlsVorschlag(Planzone z, Importzone iz)
+        {
+            z.Dateivorschlag = null;
+            if (z.Profil == null || z.Profil.NichtImKatalog || z.Quelle == null) return;
+            string bezeichnung;
+            string schluessel;
+            if (string.Equals(z.Quelle.Art, RaumnutzungSchema.ZUORDNUNG_DIN, StringComparison.Ordinal)
+                && int.TryParse(z.Quelle.Schluessel, NumberStyles.Integer, CultureInfo.InvariantCulture, out int n))
+            {
+                bezeichnung = "DIN " + n.ToString(CultureInfo.InvariantCulture);
+                schluessel = Raumprofilschluessel.Din(n);
+            }
+            else if (string.Equals(z.Quelle.Art, Profilquelle.DATEI, StringComparison.Ordinal))
+            {
+                bezeichnung = iz.Raeume.Select(r => r.Konditionierung?.Nutzung).FirstOrDefault(t => !string.IsNullOrWhiteSpace(t))?.Trim() ?? z.Profil.Name;
+                schluessel = Raumprofilschluessel.AusProfil(Vorbelegung, z.Profil);
+            }
+            else return;
+            string text = Raumprofilzuordnung.Begruendungstext(new[] { new Raumprofilgrund(Raumprofilstufe.Datei, bezeichnung) });
+            List<AbbildRaum> beheizt = iz.Raeume.Where(Beheizt).ToList();
+            bool bestaetigt = schluessel != null && beheizt.Count > 0
+                              && beheizt.All(r => _profilwahl.TryGetValue(r.Kennung, out string w) && string.Equals(w, schluessel, StringComparison.Ordinal));
+            z.Quelle = new Profilquelle(bestaetigt ? Raumprofilzuordnung.QUELLE : Raumprofilzuordnung.QUELLE_VORSCHLAG, text);
+            if (!bestaetigt) z.Dateivorschlag = schluessel;
+        }
+
+        /// <summary>
+        /// Die DIN-Nummer der Datei für eine Zone: je Raum (flächengrößter zuerst, dann in der Ordnung der Datei) die Nummer aus
+        /// <c>EPOS_Zone</c>, sonst die des gbXML-Raumtyps; <c>null</c> = keine.
+        /// </summary>
+        internal static int? DateiDinNummer(IEnumerable<AbbildRaum> raeume, bool gbxmlTafel = true)
+            => (raeume ?? Enumerable.Empty<AbbildRaum>()).Select((r, i) => (R: r, I: i))
+                   .OrderByDescending(x => x.R.FlaecheM2 > 0.0 ? x.R.FlaecheM2.Value : 0.0).ThenBy(x => x.I)
+                   .Select(x => x.R.Konditionierung?.DinNummer ?? (gbxmlTafel ? GbxmlRaumtyptafel.DinNummer(x.R.Raumtyp) : null))
+                   .FirstOrDefault(n => n.HasValue);
+
+        private Planzone Neu(string name, Planprofil profil, string herkunft, string quellkennung, bool angelegt)
+        {
+            var z = new Planzone
+            {
+                Schluessel = SCHLUESSEL_PRAEFIX + (_naechste++).ToString(CultureInfo.InvariantCulture),
+                Name = name, Profil = profil, Herkunft = herkunft, Quellkennung = quellkennung, Angelegt = angelegt,
+            };
+            _zonen.Add(z);
+            return z;
+        }
+
+        /// <summary>Ein im Plan freier Name: der Wunsch, sonst mit „ 2“, „ 3“ …</summary>
+        private string FreierName(string wunsch)
+        {
+            string basis = string.IsNullOrWhiteSpace(wunsch) ? GebaeudeZonenuebernahme.ZONE_BEZEICHNUNG : wunsch.Trim();
+            string name = basis;
+            for (int n = 2; NameVergeben(name, null); n++) name = basis + " " + n.ToString(CultureInfo.InvariantCulture);
+            return name;
+        }
+
+        private bool NameVergeben(string name, string ausser)
+            => _zonen.Any(z => !string.Equals(z.Schluessel, ausser, StringComparison.Ordinal)
+                               && string.Equals(z.Name, name, StringComparison.OrdinalIgnoreCase));
+
+        // ==================================================================
+        //  Nutzung aus der Regel
+        // ==================================================================
+
+        /// <summary>
+        /// Die Nutzung einer Nutzungsklasse (Z6): Büro → <c>BUERO</c>; Wohnen, Schlafen, Küche → <c>WOHNEN</c>; Sanitär,
+        /// Verkehr, Lager, Technik, Sport, Gastronomie und Sonstige allein ergeben keine (<c>null</c>).
+        /// <para><b>Vorgabe im Code</b> (NP-F12): Vorrang hat die Zuordnung <c>IFC_KLASSE</c> (<see cref="Raumnutzungsvorbelegung"/>).</para>
+        /// </summary>
+        internal static string NutzungAusKlasse(string klasse)
+        {
+            switch (klasse)
+            {
+                case "Buero": return DbWerte.KOND_NUTZUNG_BUERO;
+                case "Wohnen":
+                case "Schlafen":
+                case "Kueche": return DbWerte.KOND_NUTZUNG_WOHNEN;
+                default: return null;
+            }
+        }
+
+        /// <summary>
+        /// Das Profil einer Vorschlagszone: unter Z6 das des Zuordnungsschlüssels mit der größten Fläche (Gleichstand: mehr
+        /// Räume, dann Schlüssel ordinal — dieselbe Ordnung wie der Zonenname), unter jeder anderen Regel keins. Der Schlüssel
+        /// eines Raums ist sein Raumtyp, wenn die Zuordnung eine Zeile <c>HOTTCAD_RAUMTYP</c> dafür trägt, sonst seine
+        /// Nutzungsklasse (<see cref="Raumnutzungsvorbelegung.Herleitung"/>); aufgelöst wird über die Zuordnung vor der
+        /// Vorgabe im Code (<see cref="NutzungAusKlasse"/>). Vorbelegt wird nur eine beheizte Zone; eine unbeheizte bekommt
+        /// keine Nutzung. Ohne <paramref name="vorbelegung"/> gilt die Vorgabe im Code.
+        /// </summary>
+        internal static Planprofil NutzungAus(string regel, Importzone zone, Raumnutzungsvorbelegung vorbelegung = null)
+            => NutzungMitQuelle(regel, zone, vorbelegung).Profil;
+
+        /// <summary>
+        /// Wie <see cref="NutzungAus"/>, dazu der Zuordnungsschlüssel, aus dem das Profil folgt (Art und Schlüssel: Raumtyp oder
+        /// Nutzungsklasse) — auch wenn er auf „keine“ führt; ohne Vorbelegung (unbeheizt, andere Regel) beides <c>null</c>.
+        /// </summary>
+        internal static (Planprofil Profil, Profilquelle Quelle) NutzungMitQuelle(string regel, Importzone zone, Raumnutzungsvorbelegung vorbelegung = null)
+        {
+            if (zone == null || !zone.IstBeheizt || zone.Raeume.Count == 0) return (null, null);
+            if (string.Equals(regel, IfcImportProfil.ZONENREGEL_Z7, StringComparison.Ordinal)) return Z7Nutzung(zone, vorbelegung ?? Raumnutzungsvorbelegung.Vorgabe);
+            if (!string.Equals(regel, IfcImportProfil.ZONENREGEL_Z6, StringComparison.Ordinal)) return (null, null);
+            Raumnutzungsvorbelegung v = vorbelegung ?? Raumnutzungsvorbelegung.Vorgabe;
+            (string Art, string Schluessel) schluessel = zone.Raeume.GroupBy(v.Herleitung)
+                .Select(gr => (Schluessel: gr.Key, A: gr.Sum(r => r.FlaecheM2 > 0.0 ? r.FlaecheM2.Value : 0.0), N: gr.Count()))
+                .OrderByDescending(k => k.A).ThenByDescending(k => k.N).ThenBy(k => k.Schluessel.Schluessel, StringComparer.Ordinal)
+                .ThenBy(k => k.Schluessel.Art, StringComparer.Ordinal)
+                .First().Schluessel;
+            return (v.Aufloesen(schluessel.Art, schluessel.Schluessel), new Profilquelle(schluessel.Art, schluessel.Schluessel));
+        }
+
+        /// <summary>
+        /// <b>Das Profil einer Z7-Zone</b> (Entwurf ZZ 5.1/5.3): aus dem gemeinsamen Befund ihrer Räume — gesetzt
+        /// (<see cref="Raumprofilzuordnung.QUELLE"/>, eindeutig oder von Hand), als Vorschlag mit Marke
+        /// (<see cref="Raumprofilzuordnung.QUELLE_VORSCHLAG"/>: eigene Bezeichnung der Datei F2, Hallen F5, Wohnprofil F4) oder
+        /// ohne Profil mit den Kandidaten als Rückfrage (<see cref="Raumprofilzuordnung.QUELLE_OFFEN"/>, F3). Ohne Kandidaten
+        /// beides <c>null</c>. Der Schlüssel der Quelle ist die Begründungskette bzw. die Kandidatenliste als Text.
+        /// </summary>
+        private static (Planprofil Profil, Profilquelle Quelle) Z7Nutzung(Importzone zone, Raumnutzungsvorbelegung v)
+        {
+            Raumprofilgruppe g = zone.Raumprofil;
+            if (g == null) return (null, null);
+            if (g.Vorschlag != null)
+            {
+                Planprofil p = Raumprofilschluessel.Profil(v, g.Vorschlag);
+                if (p == null || p.NichtImKatalog) p = null;
+                string art = g.Stand == Raumprofilstand.Eindeutig || g.Stand == Raumprofilstand.Hand ? Raumprofilzuordnung.QUELLE : Raumprofilzuordnung.QUELLE_VORSCHLAG;
+                return (p, new Profilquelle(art, Raumprofilzuordnung.Begruendungstext(g.Begruendung)));
+            }
+            if (g.Kandidaten.Count > 0)
+                return (null, new Profilquelle(Raumprofilzuordnung.QUELLE_OFFEN, Raumprofilzuordnung.Kandidatentext(v, g.Kandidaten)));
+            return (null, null);
+        }
+
+        /// <summary>Die Vorbelegung nur, wenn die Regel sie braucht (Z6, Z7; IFC für das Mehrheitsprofil) — sonst liest der Plan keine Datenbank.</summary>
+        private Raumnutzungsvorbelegung Bedarf(string regel)
+            => string.Equals(regel, IfcImportProfil.ZONENREGEL_Z6, StringComparison.Ordinal)
+               || string.Equals(regel, IfcImportProfil.ZONENREGEL_Z7, StringComparison.Ordinal)
+               || string.Equals(_abbild?.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal) ? Vorbelegung : null;
+
+        // ==================================================================
+        //  Profilzuordnung je Raum (Schnittstelle des Zuordnungsdialogs ZZ-B)
+        // ==================================================================
+
+        /// <summary>Kennung einer Ablehnung: ein unbekannter Profilschlüssel; {0} der Schlüssel.</summary>
+        internal const string PLAN_PROFIL_UNBEKANNT = "PLAN_PROFIL_UNBEKANNT";
+
+        /// <summary>Die Befunde der Profilzuordnung je Raum (Entwurf ZZ 5.3) der letzten Regelbildung, mit den Wahlen von Hand; leer für andere Formate.</summary>
+        internal IReadOnlyList<Raumprofilbefund> Raumprofile => _raumprofile;
+
+        /// <summary>Die Wahl von Hand je Raum (Raumkennung → Profilschlüssel, leer = „keine“).</summary>
+        internal IReadOnlyDictionary<string, string> Profilwahl => _profilwahl;
+
+        /// <summary>Die Bündel gleicher Raumart und gleichen Namensstamms (<see cref="Raumprofilzuordnung.Buendel"/>) — die Zeilen des Dialogs.</summary>
+        internal IReadOnlyList<Raumprofilbuendel> Buendel() => Raumprofilzuordnung.Buendel(_raumprofile);
+
+        /// <summary>Der Katalogbaum Kategorie → Gruppe der Norm → Profil (<see cref="Raumprofilzuordnung.Katalogbaum"/>).</summary>
+        internal IReadOnlyList<Katalogknoten> Katalogbaum() => Raumprofilzuordnung.Katalogbaum(Vorbelegung);
+
+        /// <summary>
+        /// <b>Ordnet Räumen ein Profil von Hand zu</b> (Bündel oder Einzelraum): <paramref name="profilschluessel"/> ist ein
+        /// Schlüssel des Katalogbaums (DIN-Nummer, Wohnprofil, <c>#Id</c>); leer = „keine“. Danach wird der Plan nach seiner Regel
+        /// neu gebildet (unter Z7 wandern die Räume in die Zone ihres Profils, sonst ändert sich das Mehrheitsprofil) —
+        /// Handänderungen am Zonenbaum gehen dabei verloren, wie beim Regelwechsel (Rückfrage im Dialog).
+        /// </summary>
+        internal Planschritt ProfilZuordnen(IEnumerable<string> raeume, string profilschluessel)
+        {
+            string s = (profilschluessel ?? "").Trim();
+            if (s.Length > 0 && Raumprofilschluessel.Profil(Vorbelegung, s) == null) return Ab(PLAN_PROFIL_UNBEKANNT, s);
+            var eigene = new HashSet<string>(Gebaeude.Raeume.Select(r => r.Kennung), StringComparer.Ordinal);
+            List<string> ziel = (raeume ?? Enumerable.Empty<string>()).Where(r => r != null && eigene.Contains(r)).ToList();
+            if (ziel.Count == 0) return Ab(PLAN_RAUM_UNBEKANNT, string.Join(", ", raeume ?? Enumerable.Empty<string>()));
+            foreach (string r in ziel) _profilwahl[r] = s;
+            AusRegelBilden(Regel, null);
+            return new Planschritt(true);
+        }
+
+        /// <summary><b>Nimmt die Wahl von Hand zurück</b> für die Räume — sie bekommen wieder den Befund der Rangfolge.</summary>
+        internal Planschritt ProfilzuordnungZuruecknehmen(IEnumerable<string> raeume)
+        {
+            foreach (string r in raeume ?? Enumerable.Empty<string>()) if (r != null) _profilwahl.Remove(r);
+            AusRegelBilden(Regel, null);
+            return new Planschritt(true);
+        }
+
+        /// <summary><b>Übernimmt alle Vorschläge</b> (Stand Vorschlag) als Wahl von Hand — ein Schritt für das ganze Gebäude (F2, F6).</summary>
+        internal Planschritt VorschlaegeUebernehmen()
+        {
+            foreach (Raumprofilbefund b in _raumprofile.Where(b => b.Stand == Raumprofilstand.Vorschlag && b.Vorschlag != null && b.Raum != null))
+                _profilwahl[b.Raum.Kennung] = b.Vorschlag;
+            // F2: die Vorschläge aus der Bezeichnung der Datei je Zone (auch gbXML, das keine Befunde je Raum trägt).
+            foreach (Planzone z in _zonen.Where(z => z.Dateivorschlag != null))
+                foreach (AbbildRaum r in RaeumeVon(z.Schluessel).Where(Beheizt))
+                    _profilwahl[r.Kennung] = z.Dateivorschlag;
+            AusRegelBilden(Regel, null);
+            return new Planschritt(true);
+        }
+
+        /// <summary>
+        /// <b>Die Vorschläge für die Räume ohne Zone</b> (Anwenderentscheid F7, Weg mit Projektdatei, Regel X1): je beheiztem,
+        /// nicht zugeordnetem Raum der Befund der Rangfolge (eigene Angabe, Raumart, Raumname, Gebäudeart aus allen Räumen) —
+        /// nur als Vorschlag, nie automatisch: Der Plan ordnet keinen Raum zu und lässt die Zonen unberührt; der Stand des
+        /// Befunds nennt allein, wie sicher die Rangfolge führt. Leer, wenn jeder beheizte Raum eine Zone hat.
+        /// </summary>
+        internal IReadOnlyList<Raumprofilbefund> Restvorschlaege()
+        {
+            var offen = new HashSet<string>(NichtZugeordnet.Where(Beheizt).Select(r => r.Kennung), StringComparer.Ordinal);
+            if (offen.Count == 0) return Array.Empty<Raumprofilbefund>();
+            return Raumprofilzuordnung.Befunde(Gebaeude, Beheizt, Vorbelegung, _profilwahl)
+                                      .Where(b => b.Raum != null && offen.Contains(b.Raum.Kennung)).ToList();
+        }
+
+        /// <summary>
+        /// <b>Ordnet Räume der Zone eines Profils zu, ohne den Plan neu zu bilden</b> (F7, ZZ-B Nachzug): für die Räume ohne Zone
+        /// der Projektdatei — deren Zonen und alle Schritte von Hand bleiben. Ziel ist die erste Zone mit diesem Profil und
+        /// gleicher Beheizung (leer zählt als passend); fehlt sie, wird eine Zone mit dem Profilnamen angelegt. Alle oder keiner:
+        /// lehnt <see cref="Zuordnen"/> ab, entfällt auch die eben angelegte Zone. Ein leerer oder unbekannter Schlüssel lehnt ab.
+        /// </summary>
+        internal Planschritt InProfilzoneZuordnen(IEnumerable<string> raeume, string profilschluessel)
+        {
+            string s = (profilschluessel ?? "").Trim();
+            Planprofil profil = s.Length == 0 ? null : Raumprofilschluessel.Profil(Vorbelegung, s);
+            if (profil == null) return Ab(PLAN_PROFIL_UNBEKANNT, s);
+            List<AbbildRaum> ziel = (raeume ?? Enumerable.Empty<string>()).Distinct(StringComparer.Ordinal)
+                .Select(k => Gebaeude.Raeume.FirstOrDefault(r => string.Equals(r.Kennung, k, StringComparison.Ordinal))).Where(r => r != null).ToList();
+            if (ziel.Count == 0) return Ab(PLAN_RAUM_UNBEKANNT, string.Join(", ", raeume ?? Enumerable.Empty<string>()));
+            bool warm = Beheizt(ziel[0]);
+            Planzone zone = _zonen.FirstOrDefault(z => z.Profil != null
+                                                      && (z.Profil == profil || string.Equals(Raumprofilschluessel.AusProfil(Vorbelegung, z.Profil), s, StringComparison.Ordinal))
+                                                      && (ZoneBeheizt(z.Schluessel) is not bool b || b == warm));
+            bool neu = zone == null;
+            if (neu)
+            {
+                Planschritt angelegt = ProfilzoneAnlegen(FreierName(profil.Name), profil);
+                if (!angelegt.Ok) return angelegt;
+                zone = Zone(angelegt.Schluessel);
+            }
+            Planschritt e = Zuordnen(ziel.Select(r => r.Kennung), zone.Schluessel);
+            if (!e.Ok && neu) _zonen.Remove(zone);
+            return e.Ok ? new Planschritt(true, null, zone.Schluessel) : e;
+        }
+
+        /// <summary><b>Nimmt alle Wahlen von Hand zurück</b> — der Plan zeigt wieder die Vorschläge der Rangfolge.</summary>
+        internal Planschritt VorschlaegeZuruecknehmen()
+        {
+            _profilwahl.Clear();
+            AusRegelBilden(Regel, null);
+            return new Planschritt(true);
+        }
+
+        // ==================================================================
+        //  Operationen
+        // ==================================================================
+
+        /// <summary><b>Legt eine Zone an</b> (am Ende, ohne Raum); der Schlüssel steht im Schritt.</summary>
+        internal Planschritt ZoneAnlegen(string name, string nutzung)
+        {
+            Planprofil profil = null;
+            if (!string.IsNullOrWhiteSpace(nutzung) && !Vorbelegung.Wahl(nutzung, null, out profil))
+                return Ab(PLAN_NUTZUNG_UNGUELTIG, nutzung);
+            return ProfilzoneAnlegen(name, profil);
+        }
+
+        /// <summary><b>Legt eine Zone mit einem Profil an</b> (am Ende, ohne Raum); der Schlüssel steht im Schritt.</summary>
+        internal Planschritt ProfilzoneAnlegen(string name, Planprofil nutzung)
+        {
+            string n = (name ?? "").Trim();
+            if (n.Length == 0) return Ab(PLAN_NAME_LEER);
+            if (NameVergeben(n, null)) return Ab(PLAN_NAME_DOPPELT, n);
+            if (_zonen.Count >= GebaeudeZonenregeln.PFLEGEGRENZE)
+                return Ab(PLAN_ZU_VIELE_ZONEN, GebaeudeZonenregeln.PFLEGEGRENZE.ToString(CultureInfo.InvariantCulture));
+            Planzone z = Neu(n, nutzung, null, null, angelegt: true);
+            z.Quelle = nutzung == null ? null : Profilquelle.Hand;
+            return new Planschritt(true, null, z.Schluessel);
+        }
+
+        /// <summary><b>Löscht eine Zone</b>; ihre Räume sind danach nicht zugeordnet.</summary>
+        internal Planschritt ZoneLoeschen(string schluessel)
+        {
+            Planzone z = Zone(schluessel);
+            if (z == null) return Ab(PLAN_ZONE_UNBEKANNT, schluessel ?? "");
+            foreach (string raum in _zoneJeRaum.Where(p => p.Value == z.Schluessel).Select(p => p.Key).ToList()) _zoneJeRaum.Remove(raum);
+            _zonen.Remove(z);
+            return new Planschritt(true);
+        }
+
+        /// <summary><b>Benennt eine Zone um</b> — nicht leer, im Plan eindeutig.</summary>
+        internal Planschritt ZoneUmbenennen(string schluessel, string name)
+        {
+            Planzone z = Zone(schluessel);
+            if (z == null) return Ab(PLAN_ZONE_UNBEKANNT, schluessel ?? "");
+            string n = (name ?? "").Trim();
+            if (n.Length == 0) return Ab(PLAN_NAME_LEER);
+            if (NameVergeben(n, z.Schluessel)) return Ab(PLAN_NAME_DOPPELT, n);
+            z.Name = n;
+            return new Planschritt(true);
+        }
+
+        /// <summary>
+        /// <b>Setzt die Nutzung einer Zone</b> über ihren Text (<see cref="Raumnutzungsvorbelegung.Wahl"/>: Auswahlschlüssel,
+        /// Profilname oder alte Kennung; ohne Katalog eine der <see cref="NUTZUNGEN"/>) oder <c>null</c> (keine). Ein Text ohne
+        /// Profil ist nur wählbar, wenn er schon an der Zone steht.
+        /// </summary>
+        internal Planschritt NutzungSetzen(string schluessel, string nutzung)
+        {
+            Planprofil profil = null;
+            if (!string.IsNullOrWhiteSpace(nutzung) && !Vorbelegung.Wahl(nutzung, Zone(schluessel)?.Profil, out profil))
+                return Ab(PLAN_NUTZUNG_UNGUELTIG, nutzung);
+            return ProfilSetzen(schluessel, profil);
+        }
+
+        /// <summary><b>Setzt das Profil einer Zone</b> oder <c>null</c> (keine).</summary>
+        internal Planschritt ProfilSetzen(string schluessel, Planprofil nutzung)
+        {
+            Planzone z = Zone(schluessel);
+            if (z == null) return Ab(PLAN_ZONE_UNBEKANNT, schluessel ?? "");
+            z.Profil = nutzung;
+            z.Quelle = nutzung == null ? null : Profilquelle.Hand;
+            return new Planschritt(true);
+        }
+
+        /// <summary>
+        /// <b>Stellt den Haken „beheizt“ eines Raums um</b> (der Ausweg bei ungleicher Beheizung): Der Raum bleibt in seiner
+        /// Zone; ist sie danach gemischt beheizt, warnt die Zonierung. Ein unbekannter Raum lehnt benannt ab.
+        /// </summary>
+        internal Planschritt BeheizungSetzen(string raum, bool beheizt)
+        {
+            if (raum == null || !Gebaeude.Raeume.Any(r => string.Equals(r.Kennung, raum, StringComparison.Ordinal)))
+                return Ab(PLAN_RAUM_UNBEKANNT, raum ?? "");
+            _haken[raum] = beheizt;
+            return new Planschritt(true);
+        }
+
+        /// <summary>
+        /// <b>Hebt die Zonierung auf</b>: Jeder Raum ist danach nicht zugeordnet (auch die bisher außerhalb); die Zonen aus dem
+        /// Regelvorschlag entfallen, die von Hand angelegten bleiben leer stehen.
+        /// </summary>
+        internal Planschritt ZonierungAufheben()
+        {
+            _zoneJeRaum.Clear();
+            _ausserhalb.Clear();
+            _platziert.Clear();
+            _zonen.RemoveAll(z => !z.Angelegt);
+            return new Planschritt(true);
+        }
+
+        /// <summary>
+        /// <b>Ordnet Räume einer Zone zu</b> — alle oder keinen: ein unbekannter Raum, eine unbekannte Zone oder ein Raum
+        /// anderer Beheizung als die Zone (bzw. als der erste gewählte, wenn die Zone leer ist) lehnt benannt ab; der Ausweg
+        /// ist der Haken „beheizt“ des Raums. <paramref name="zielzone"/> <c>null</c> = die Räume aus ihrer Zone nehmen
+        /// (danach nicht zugeordnet).
+        /// </summary>
+        internal Planschritt Zuordnen(IEnumerable<string> raeume, string zielzone)
+        {
+            List<AbbildRaum> wahl = new List<AbbildRaum>();
+            foreach (string k in (raeume ?? Array.Empty<string>()).Distinct(StringComparer.Ordinal))
+            {
+                AbbildRaum r = Gebaeude.Raeume.FirstOrDefault(x => string.Equals(x.Kennung, k, StringComparison.Ordinal));
+                if (r == null) return Ab(PLAN_RAUM_UNBEKANNT, k ?? "");
+                wahl.Add(r);
+            }
+            if (wahl.Count == 0) return new Planschritt(true);
+            if (zielzone == null)
+            {
+                foreach (AbbildRaum r in wahl) Herausnehmen(r);
+                return new Planschritt(true);
+            }
+            Planzone ziel = Zone(zielzone);
+            if (ziel == null) return Ab(PLAN_ZONE_UNBEKANNT, zielzone);
+            var wahlKennungen = new HashSet<string>(wahl.Select(r => r.Kennung), StringComparer.Ordinal);
+            List<AbbildRaum> bleibende = RaeumeVon(ziel.Schluessel).Where(r => !wahlKennungen.Contains(r.Kennung)).ToList();
+            bool warm = bleibende.Count > 0 ? bleibende.Any(Beheizt) : Beheizt(wahl[0]);
+            AbbildRaum anders = wahl.FirstOrDefault(r => Beheizt(r) != warm);
+            if (anders != null) return Ab(PLAN_BEHEIZUNG, Raumname(anders), ziel.Name);
+            foreach (AbbildRaum r in wahl) Hinein(r, ziel);
+            return new Planschritt(true);
+        }
+
+        /// <summary>
+        /// <b>Ordnet die Räume eines Geschosses einer Zone zu</b>: die gleich beheizten gehen hinein, die anderen bleiben, wo
+        /// sie sind — benannt (Warnung mit Zahl und Namen); passt keiner, ist der Schritt abgelehnt.
+        /// </summary>
+        internal Planschritt GeschossZuordnen(string geschoss, string zielzone)
+        {
+            List<AbbildRaum> raeume = Gebaeude.Raeume.Where(r => string.Equals(r.GeschossKennung, geschoss, StringComparison.Ordinal)).ToList();
+            if (geschoss == null || raeume.Count == 0) return Ab(PLAN_GESCHOSS_UNBEKANNT, geschoss ?? "");
+            Planzone ziel = Zone(zielzone);
+            if (ziel == null) return Ab(PLAN_ZONE_UNBEKANNT, zielzone ?? "");
+            var geschossKennungen = new HashSet<string>(raeume.Select(r => r.Kennung), StringComparer.Ordinal);
+            List<AbbildRaum> bleibende = RaeumeVon(ziel.Schluessel).Where(r => !geschossKennungen.Contains(r.Kennung)).ToList();
+            bool warm;
+            if (bleibende.Count > 0) warm = bleibende.Any(Beheizt);
+            else
+            {
+                // Eine leere Zone nimmt die Beheizung der größeren Fläche des Geschosses (Gleichstand: beheizt).
+                double a = raeume.Where(Beheizt).Sum(r => r.FlaecheM2 ?? 0.0), b = raeume.Where(r => !Beheizt(r)).Sum(r => r.FlaecheM2 ?? 0.0);
+                warm = raeume.Any(Beheizt) && a >= b;
+            }
+            List<AbbildRaum> passend = raeume.Where(r => Beheizt(r) == warm).ToList();
+            List<AbbildRaum> anders = raeume.Where(r => Beheizt(r) != warm).ToList();
+            if (passend.Count == 0) return Ab(PLAN_BEHEIZUNG, Raumname(anders[0]), ziel.Name);
+            foreach (AbbildRaum r in passend) Hinein(r, ziel);
+            return anders.Count == 0 ? new Planschritt(true)
+                : new Planschritt(true, Hinweis(PruefStufe.Warnung, PLAN_BEHEIZUNG_TEIL,
+                                                anders.Count.ToString(CultureInfo.InvariantCulture), Liste(anders), ziel.Name));
+        }
+
+        /// <summary>
+        /// <b>Ordnet die nicht zugeordneten Räume nach einer Regel zu</b>: je Raum seine Zone im Vorschlag der Regel — in die
+        /// Planzone, die aus derselben Regelzone stammt, sonst in die gleichnamige gleicher Beheizung, sonst in eine neue
+        /// (Name und Nutzung der Regelzone). Was die Regel außerhalb lässt, liegt danach außerhalb (Hinweis). Die übrigen
+        /// Räume bleiben, wo sie sind.
+        /// </summary>
+        internal Planschritt RestNachRegelZuordnen(string regel)
+        {
+            (IReadOnlyList<string> regeln, string _, bool _) = GebaeudeZonierung.Waehlbar(_abbild, _index);
+            if (regel == null || !regeln.Contains(regel)) return Ab(PLAN_REGEL_UNGUELTIG, regel ?? "", string.Join(", ", regeln));
+            IReadOnlyList<AbbildRaum> rest = NichtZugeordnet;
+            if (rest.Count == 0) return new Planschritt(true);
+            GebaeudeZonierung zon = GebaeudeZonierung.Bilden(_abbild, _index, regel, _haken);
+            var draussen = new List<AbbildRaum>();
+            foreach (AbbildRaum r in rest)
+            {
+                int i = zon.ZoneVon(r.Kennung);
+                if (i < 0)
+                {
+                    _ausserhalb.Add(r.Kennung);
+                    draussen.Add(r);
+                    continue;
+                }
+                Importzone iz = zon.Zonen[i];
+                bool warm = Beheizt(r);
+                Planzone ziel = _zonen.FirstOrDefault(z => z.Herkunft == iz.Schluessel && Passt(z, warm))
+                                ?? _zonen.FirstOrDefault(z => string.Equals(z.Name, iz.Name, StringComparison.OrdinalIgnoreCase) && Passt(z, warm))
+                                ?? Neu(FreierName(iz.Name), NutzungAus(regel, iz, Bedarf(regel)), iz.Schluessel, iz.Quellkennung, angelegt: false);
+                _zoneJeRaum[r.Kennung] = ziel.Schluessel;
+            }
+            return draussen.Count == 0 ? new Planschritt(true)
+                : new Planschritt(true, Hinweis(PruefStufe.Info, PLAN_REST_AUSSERHALB,
+                                                draussen.Count.ToString(CultureInfo.InvariantCulture), Liste(draussen), regel));
+        }
+
+        // ==================================================================
+        //  Rest platzieren (Entwurf GD 2.3, E130/F3)
+        // ==================================================================
+
+        /// <summary>Die Meldungskennung der Zusammenfassung von <see cref="RestPlatzieren"/>.</summary>
+        internal const string PLAN_REST_PLATZIERT = "PLAN_REST_PLATZIERT";
+
+        /// <summary>Die automatische Platzierung eines Raums; <c>null</c> = nicht automatisch platziert.</summary>
+        internal Restplatzierung Platzierung(string raum)
+            => raum != null && _platziert.TryGetValue(raum, out Restplatzierung p) ? p : null;
+
+        /// <summary>Die automatischen Platzierungen in Dateireihenfolge der Räume.</summary>
+        internal IReadOnlyList<Restplatzierung> Platzierungen
+            => Gebaeude.Raeume.Where(r => _platziert.ContainsKey(r.Kennung)).Select(r => _platziert[r.Kennung]).ToList();
+
+        /// <summary>
+        /// <b>Platziert die nicht zugeordneten Räume selbst</b> (Entwurf GD 2.3, Anwenderentscheid E130 zu F3), in fester Folge
+        /// und deterministisch (Dateireihenfolge der Räume, Planreihenfolge der Zonen):
+        /// <list type="number">
+        /// <item><b>unbeheizt</b> → die gemeinsame Zone „unbeheizt“ (eine schon platzierte wird weiter belegt, sonst angelegt);</item>
+        /// <item><b>beheizt mit Nachbarraum in einer beheizten Zone</b> (gemeinsames Bauteil der Datei,
+        ///   <see cref="AbbildBauteil.Nachbarn"/>) → die Nachbarzone mit der größten gemeinsamen Fläche (Gleichstand: die
+        ///   erste im Plan); wiederholt, bis kein Raum mehr eine Nachbarzone findet — so wachsen Raumketten mit;</item>
+        /// <item><b>sonst</b> → die Restzone seines Geschosses („Rest EG“ …) ohne Profil.</item>
+        /// </list>
+        /// Jeder platzierte Raum trägt Grund und Ziel (<see cref="Platzierung"/>); die Zusammenfassung steht als Info im Schritt.
+        /// Ohne nicht zugeordneten Raum geschieht nichts. Räume außerhalb bleiben außerhalb.
+        /// </summary>
+        internal Planschritt RestPlatzieren()
+        {
+            List<AbbildRaum> rest = NichtZugeordnet.ToList();
+            if (rest.Count == 0) return new Planschritt(true);
+            int unbeheizt = 0, nachbar = 0, geschoss = 0;
+
+            // 1) Unbeheizt → eine gemeinsame Zone „unbeheizt“.
+            foreach (AbbildRaum r in rest.Where(r => !Beheizt(r)).ToList())
+            {
+                Platzieren(r, Restzone(MyResource.Resource.GIMP_PLAN_ZONE_UNBEHEIZT, false), Platzierungsgrund.Unbeheizt, null);
+                rest.Remove(r);
+                unbeheizt++;
+            }
+
+            // 2) Beheizt mit Nachbarraum in einer beheizten Zone → die Nachbarzone mit der größten gemeinsamen Fläche.
+            Dictionary<string, Dictionary<string, double>> gemeinsam = GemeinsameFlaechen();
+            for (bool weiter = true; weiter;)
+            {
+                weiter = false;
+                foreach (AbbildRaum r in rest.ToList())
+                {
+                    if (!gemeinsam.TryGetValue(r.Kennung, out Dictionary<string, double> nachbarn)) continue;
+                    var jeZone = new Dictionary<string, double>(StringComparer.Ordinal);
+                    foreach (KeyValuePair<string, double> n in nachbarn)
+                        if (ZoneVon(n.Key) is string z && ZoneBeheizt(z) == true)
+                            jeZone[z] = (jeZone.TryGetValue(z, out double a) ? a : 0.0) + n.Value;
+                    if (jeZone.Count == 0) continue;
+                    double groesste = jeZone.Values.Max();
+                    Planzone ziel = _zonen.First(z => jeZone.TryGetValue(z.Schluessel, out double a) && a == groesste);
+                    Platzieren(r, ziel, Platzierungsgrund.Nachbarzone, groesste);
+                    rest.Remove(r);
+                    nachbar++;
+                    weiter = true;
+                }
+            }
+
+            // 3) Sonst → die Restzone des Geschosses.
+            foreach (AbbildRaum r in rest)
+            {
+                string gname = Gebaeude.Geschosse.FirstOrDefault(g => string.Equals(g.Kennung, r.GeschossKennung, StringComparison.Ordinal))?.Anzeigename
+                               ?? (string.IsNullOrWhiteSpace(r.GeschossName) ? null : r.GeschossName.Trim());
+                string name = gname == null ? MyResource.Resource.GIMP_PLAN_ZONE_REST
+                                            : string.Format(CultureInfo.CurrentCulture, MyResource.Resource.GIMP_PLAN_ZONE_REST_GESCHOSS, gname);
+                Platzieren(r, Restzone(name, true), Platzierungsgrund.Geschoss, null);
+                geschoss++;
+            }
+            string Z(int n) => n.ToString(CultureInfo.InvariantCulture);
+            return new Planschritt(true, Hinweis(PruefStufe.Info, PLAN_REST_PLATZIERT,
+                                                 Z(unbeheizt + nachbar + geschoss), Z(unbeheizt), Z(nachbar), Z(geschoss)));
+        }
+
+        /// <summary>
+        /// <b>Nimmt eine automatische Platzierung zurück</b>: Der Raum ist danach nicht zugeordnet; eine Restzone, die dadurch
+        /// leer wird, entfällt. Ein unbekannter oder nicht automatisch platzierter Raum lehnt benannt ab.
+        /// </summary>
+        internal Planschritt PlatzierungZuruecknehmen(string raum)
+        {
+            AbbildRaum r = raum == null ? null : Gebaeude.Raeume.FirstOrDefault(x => string.Equals(x.Kennung, raum, StringComparison.Ordinal));
+            if (r == null || !_platziert.ContainsKey(r.Kennung)) return Ab(PLAN_RAUM_UNBEKANNT, raum ?? "");
+            string zone = ZoneVon(r.Kennung);
+            _platziert.Remove(r.Kennung);
+            _zoneJeRaum.Remove(r.Kennung);
+            if (Zone(zone) is Planzone z && z.AusPlatzierung && RaeumeVon(z.Schluessel).Count == 0) _zonen.Remove(z);
+            return new Planschritt(true);
+        }
+
+        /// <summary>Die Restzone eines Namens und einer Beheizung: eine schon platzierte wird weiter belegt, sonst angelegt.</summary>
+        private Planzone Restzone(string name, bool warm)
+        {
+            Planzone z = _zonen.FirstOrDefault(x => x.AusPlatzierung && string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase) && Passt(x, warm));
+            if (z != null) return z;
+            z = Neu(FreierName(name), null, null, null, angelegt: false);
+            z.AusPlatzierung = true;
+            return z;
+        }
+
+        private void Platzieren(AbbildRaum r, Planzone ziel, Platzierungsgrund grund, double? gemeinsamM2)
+        {
+            _zoneJeRaum[r.Kennung] = ziel.Schluessel;
+            _platziert[r.Kennung] = new Restplatzierung(r.Kennung, grund, ziel.Schluessel, gemeinsamM2);
+        }
+
+        /// <summary>
+        /// Je Raum die gemeinsame Fläche mit jedem Nachbarraum aus den Bauteilen der Datei, die beide als Nachbarn führen
+        /// (Nettofläche, sonst Brutto, sonst 0 — ein gemeinsames Bauteil ohne Fläche zählt als Nachbarschaft mit 0 m²).
+        /// </summary>
+        private Dictionary<string, Dictionary<string, double>> GemeinsameFlaechen()
+        {
+            var eigene = new HashSet<string>(Gebaeude.Raeume.Select(r => r.Kennung), StringComparer.Ordinal);
+            var e = new Dictionary<string, Dictionary<string, double>>(StringComparer.Ordinal);
+            foreach (AbbildBauteil b in Gebaeude.Bauteile)
+            {
+                List<string> raeume = b.Nachbarn.Select(n => n.Kennung).Where(k => k != null && eigene.Contains(k)).Distinct(StringComparer.Ordinal).ToList();
+                if (raeume.Count < 2) continue;
+                double flaeche = Math.Max(0.0, b.NettoflaecheM2 ?? b.BruttoflaecheM2 ?? 0.0);
+                foreach (string a in raeume)
+                    foreach (string c in raeume.Where(x => !string.Equals(x, a, StringComparison.Ordinal)))
+                    {
+                        if (!e.TryGetValue(a, out Dictionary<string, double> m)) e[a] = m = new Dictionary<string, double>(StringComparer.Ordinal);
+                        m[c] = (m.TryGetValue(c, out double v) ? v : 0.0) + flaeche;
+                    }
+            }
+            return e;
+        }
+
+        /// <summary>
+        /// <b>Bildet den Plan nach einer Regel neu</b> (der Regelwechsel des Dialogs, dort mit Rückfrage): alle Handänderungen
+        /// gehen verloren; die Schlüssel zählen weiter.
+        /// </summary>
+        internal Planschritt NachRegelNeuBilden(string regel)
+        {
+            (IReadOnlyList<string> regeln, string _, bool _) = GebaeudeZonierung.Waehlbar(_abbild, _index);
+            if (regel == null || !regeln.Contains(regel)) return Ab(PLAN_REGEL_UNGUELTIG, regel ?? "", string.Join(", ", regeln));
+            AusRegelBilden(regel, null);
+            return new Planschritt(true);
+        }
+
+        private bool Passt(Planzone z, bool warm)
+        {
+            bool? b = ZoneBeheizt(z.Schluessel);
+            return !b.HasValue || b.Value == warm;
+        }
+
+        private void Herausnehmen(AbbildRaum r)
+        {
+            _ausserhalb.Remove(r.Kennung);
+            _platziert.Remove(r.Kennung);
+            if (_zoneJeRaum.TryGetValue(r.Kennung, out string alt))
+            {
+                _zoneJeRaum.Remove(r.Kennung);
+                Planzone z = Zone(alt);
+                if (z != null) z.Geaendert = true;
+            }
+        }
+
+        private void Hinein(AbbildRaum r, Planzone ziel)
+        {
+            if (string.Equals(ZoneVon(r.Kennung), ziel.Schluessel, StringComparison.Ordinal)) return;
+            Herausnehmen(r);
+            _zoneJeRaum[r.Kennung] = ziel.Schluessel;
+            ziel.Geaendert = true;
+        }
+
+        // ==================================================================
+        //  Ergebnis
+        // ==================================================================
+
+        /// <summary><b>Die Zonierung aus dem Plan</b> (<see cref="GebaeudeZonierung.Bilden"/> mit Plan); schreibt nichts.</summary>
+        internal GebaeudeZonierung Zonieren() => GebaeudeZonierung.Bilden(_abbild, _index, Regel, _haken, null, this, _vorbelegung, _profilwahl);
+
+        /// <summary>
+        /// <b>Die Prüfung am OK</b>: ein Plan mit nicht zugeordneten Räumen wird nicht gespeichert — benannt (Fehler, Zahl und
+        /// bis fünf Namen). <c>null</c> = speicherbar.
+        /// </summary>
+        internal PruefMeldung Abschlusspruefung()
+        {
+            IReadOnlyList<AbbildRaum> rest = NichtZugeordnet;
+            return rest.Count == 0 ? null
+                : Hinweis(PruefStufe.Fehler, ZUORDNUNG_UNVOLLSTAENDIG, rest.Count.ToString(CultureInfo.InvariantCulture), Liste(rest));
+        }
+
+        /// <summary>
+        /// <b>Die Flächenbilanz</b> in Planreihenfolge: je Zone Nutzung, Beheizung (<c>null</c> ohne Raum), Raumzahl und
+        /// Fläche — eine Zone ohne Raum mit 0 m². Nicht zugeordnete und außerhalb liegende Räume zählen in keiner Zone.
+        /// </summary>
+        internal IReadOnlyList<Planbilanzzeile> Bilanz()
+            => _zonen.Select(z =>
+            {
+                IReadOnlyList<AbbildRaum> raeume = RaeumeVon(z.Schluessel);
+                return new Planbilanzzeile(z.Schluessel, z.Name, z.Nutzung, ZoneBeheizt(z.Schluessel), raeume.Count,
+                                           raeume.Where(r => r.FlaecheM2 > 0.0).Sum(r => r.FlaecheM2.Value));
+            }).ToList();
+
+        private Planschritt Ab(string name, params string[] werte) => new Planschritt(false, Hinweis(PruefStufe.Fehler, name, werte));
+
+        private PruefMeldung Hinweis(PruefStufe stufe, string name, params string[] werte) => new PruefMeldung(stufe, _praefix + name, werte);
+
+        private static string Liste(IEnumerable<AbbildRaum> raeume)
+        {
+            List<string> namen = raeume.Select(Raumname).Distinct(StringComparer.Ordinal).ToList();
+            return namen.Count <= 5 ? string.Join(", ", namen) : string.Join(", ", namen.Take(5)) + ", …";
+        }
+
+        public override string ToString()
+            => Regel + ": " + string.Join("; ", _zonen.Select(z => z + " (" + RaeumeVon(z.Schluessel).Count.ToString(CultureInfo.InvariantCulture) + ")"))
+               + " | nicht zugeordnet " + NichtZugeordnet.Count.ToString(CultureInfo.InvariantCulture);
+    }
+}

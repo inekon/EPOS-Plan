@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using EPOS.UI.Dienste;
 
 namespace WindowsFormsApplication1
@@ -33,14 +34,26 @@ namespace WindowsFormsApplication1
         internal static Vorlagenfeldposition Aus(IReadOnlyList<VariantenCtrl.VarianteInfo> gruppe, int idProjekt)
         {
             if (gruppe == null) return null;
-            int varianten = 0;
-            for (int i = 0; i < gruppe.Count; i++)
+            return Je(gruppe.Select(vi => (vi.IdProjekt, vi.IstStamm)))
+                .TryGetValue(idProjekt, out Vorlagenfeldposition p) ? p : null;
+        }
+
+        /// <summary>
+        /// Die Positionen aller Projekte einer Gruppe in ihrer Folge (Stamm zuerst, dann die Varianten), je Projekt einmal —
+        /// für eine Seite, die mehrere Stände zeigt (Wirtschaftlichkeit: Sensitivität, Mehrjahrestafel, Zahlungsstrom).
+        /// </summary>
+        internal static Dictionary<int, Vorlagenfeldposition> Je(IEnumerable<(int IdProjekt, bool IstStamm)> gruppe)
+        {
+            var je = new Dictionary<int, Vorlagenfeldposition>();
+            if (gruppe == null) return je;
+            int stand = 0, varianten = 0;
+            foreach ((int id, bool istStamm) in gruppe)
             {
-                VariantenCtrl.VarianteInfo vi = gruppe[i];
-                if (!vi.IstStamm) varianten++;
-                if (vi.IdProjekt == idProjekt) return new Vorlagenfeldposition(i + 1, vi.IstStamm ? 0 : varianten);
+                stand++;
+                if (!istStamm) varianten++;
+                je.TryAdd(id, new Vorlagenfeldposition(stand, istStamm ? 0 : varianten));
             }
-            return null;
+            return je;
         }
     }
 }

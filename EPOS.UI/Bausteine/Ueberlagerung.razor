@@ -36,6 +36,12 @@
      Ueberlagerung braucht einen Grund und steht in der Ausnahmeliste der
      Wache SchliesskreuzWacheTests.
 
+   OFFENE BLAETTER (Anwenderwunsch 08.10.2026). Steht im Inhalt ein Blatt (Baustein
+   Blattwechsel), fuehren Kreuz, Esc und Hintergrund nur zum vorigen Blatt zurueck - erst vom
+   Wurzelblatt aus schliesst der Bereich. Dafuer reicht er seinen Blattstapel als
+   CascadingValue an den Inhalt; jeder Blattwechsel meldet sich mit seinem Rueckweg an, solange
+   sein Blatt steht. Das gilt fuer jeden Wirt, ohne dass er etwas davon wissen muss.
+
    WAS DER BAUSTEIN NICHT TUT. Er schliesst sich nicht selbst und er kennt kein
    Ergebnis: Offen gehoert dem Wirt, Geschlossen ist die Bitte, es auf false zu
    setzen. So bleibt genau eine Wahrheit darueber, welcher Bereich offen ist. *@
@@ -53,7 +59,15 @@
         @if (!string.IsNullOrEmpty(Titel) || Schliessbar)
         {
             <div class="epos-ueberlagerung-kopf">
+                @if (Kopfzusatz is not null)
+                {
+                    <span class="epos-ueberlagerung-kopfzusatz">@Kopfzusatz</span>
+                }
                 <h2 class="epos-ueberlagerung-titel">@Titel</h2>
+                @if (Kopfnachsatz is not null)
+                {
+                    <span class="epos-ueberlagerung-kopfnachsatz">@Kopfnachsatz</span>
+                }
                 @if (Schliessbar)
                 {
                     <button type="button" class="epos-knopf epos-ueberlagerung-zu"
@@ -63,7 +77,9 @@
         }
 
         <div class="epos-ueberlagerung-inhalt">
-            @KindInhalt
+            <CascadingValue Value="@_blaetter" IsFixed="true">
+                @KindInhalt
+            </CascadingValue>
         </div>
 
         <span class="epos-fokusfalle" tabindex="0" @onfocus="ZurWurzel"></span>
@@ -99,6 +115,18 @@
     /// <summary>Der Inhalt — ueblich ein vollstaendiger Dialog aus <c>Dialoge/</c>.</summary>
     [Parameter] public RenderFragment? KindInhalt { get; set; }
 
+    /// <summary>
+    /// Eine Marke vor dem Titel im Kopf (Katalogauswahl: „Projektsatz"/„Katalogsatz" sagt,
+    /// was gespeichert wird, KA‑E‑8). Ohne sie bleibt der Kopf, wie er war.
+    /// </summary>
+    [Parameter] public RenderFragment? Kopfzusatz { get; set; }
+
+    /// <summary>
+    /// Was nach dem Titel im Kopf steht (Satz-Überlagerung der Katalogauswahl: die Kenndaten).
+    /// Ohne ihn bleibt der Kopf, wie er war.
+    /// </summary>
+    [Parameter] public RenderFragment? Kopfnachsatz { get; set; }
+
     /// <summary>Zeigt das ✕ in der Kopfzeile. <c>false</c> = nur der Inhalt schliesst.</summary>
     [Parameter] public bool Schliessbar { get; set; } = true;
 
@@ -115,6 +143,12 @@
 
     private ElementReference _wurzel;
     private bool _warOffen;
+
+    /// <summary>Die Blätter, die im Inhalt stehen (Baustein <c>Blattwechsel</c> meldet sich an).</summary>
+    private readonly Blattstapel _blaetter = new();
+
+    /// <summary>Steht im Inhalt ein Blatt? Prüfhilfe für die Tests.</summary>
+    public bool BlattOffen => _blaetter.BlattOffen;
     private bool _fokusNoetig;
 
     protected override void OnParametersSet()
@@ -127,14 +161,14 @@
     {
         if (!_fokusNoetig || !Offen) return;
         _fokusNoetig = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
         await Geoeffnet.InvokeAsync();
     }
 
     private async Task ZurWurzel()
     {
         // Der Tabulator hat den Bereich verlassen wollen - er kommt zurueck.
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     private Task BeiHintergrund()
@@ -142,6 +176,8 @@
 
     private async Task BeiSchliessen()
     {
+        // Ein offenes Blatt geht zuerst zurueck; geschlossen wird erst vom Wurzelblatt aus.
+        if (await _blaetter.ZurueckZumVorigen()) return;
         if (OffenChanged.HasDelegate) await OffenChanged.InvokeAsync(false);
         await Geschlossen.InvokeAsync();
     }

@@ -296,7 +296,9 @@ namespace EPOS.Kern.Tests
 
             // In der Karte steht der Wert, die Lücke ist weg, und die Herleitung
             // sagt, woher er kommt.
-            Assert.Equal(0.84, stand.Arbeitspreis, 6);
+            // Die neu zugeordnete Zeile hat keine gemerkte Preisbasis: Die Karte zeigt
+            // den Arbeitspreis in der Vorgabe €/kWh, umgerechnet mit dem Heizwert.
+            Assert.Equal(0.84 / stand.Heizwert, stand.Arbeitspreis, 6);
             Wertluecke l = Zeile(stand, EnergietraegerRueckfall.GROESSE_ARBEITSPREIS);
             Assert.NotNull(l);
             Assert.Equal("", l.Hinweis);

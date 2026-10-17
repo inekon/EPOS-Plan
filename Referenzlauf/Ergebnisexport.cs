@@ -59,6 +59,33 @@ namespace WindowsFormsApplication1.Referenzlauf
             // begrenzter Kuehluebergabe - dieselbe Regel, sie stehen erst in aggregate.csv, wenn
             // ein Lauf die Kuehluebergabe rechnet.
             foreach (SchemaSpalte s in KuehluebergabeSchema.Ergebnisspalten) namen.Add(s.Name);
+            // Schemaschritt 186 (AK2-1, Anlagenkopplung 8.3): Komfort und Fahrplanbegrenzung - dieselbe
+            // Regel, sie stehen erst in aggregate.csv, wenn ein Lauf gekoppelt rechnet.
+            foreach (string s in AnlagenfahrplanSchema.SPALTEN_ERGEBNIS) namen.Add(s);
+            // Schemaschritt 187 (KU3-6a): Kaelte und Stunden der freien Kuehlung ueber die Waermequelle an den
+            // Ergebnistabellen der Waermepumpe - dieselbe Regel, sie stehen erst in aggregate.csv, wenn ein Lauf sie
+            // erhebt. (Gleichnamige Spalten der Kaeltemaschine sind nie NULL und gehen unveraendert mit.)
+            foreach (string s in FreieKuehlungSoleSchema.SPALTEN_ERGEBNIS) namen.Add(s);
+            // Schemaschritt 188 (VW1a): der Ausweis der Vorlaufwahl an der Modulzeile der Waermepumpe - dieselbe
+            // Regel, er steht erst in aggregate.csv, wenn ein Modul am gerechneten Vorlauf waehlt. Der Text
+            // „Vorlauf:Stunden;...“ geht als Textskalar mit (DbWert setzt das Trennzeichen ';' auf ',').
+            foreach (string s in VorlaufwahlSchema.SPALTEN_ERGEBNIS) namen.Add(s);
+            // Stufe AK3 (Ak3Schema, Entwurf AK3 Festlegung 22): die Kennzahlen des geschlossenen Kreises - dieselbe
+            // Regel, sie stehen erst in aggregate.csv, wenn ein Lauf den Kreis rechnet (keine neuen Schluessel vor W5).
+            foreach (string s in Ak3Schema.SPALTEN_ERGEBNIS) namen.Add(s);
+            // AK3-K (Ak3KSchema, Festlegung 20): Zonensperre und Kaelteseite im Kreis - dieselbe Regel, sie stehen erst in
+            // aggregate.csv, wenn ein Lauf sie erhebt (beide Kernschalter bis K5 aus).
+            foreach (string s in Ak3KSchema.SPALTEN_ERGEBNIS) namen.Add(s);
+            // KK (KuehlkurveSchema, Festlegung 12): die Kennzahlen der Kuehlkurve - dieselbe Regel, sie stehen erst in
+            // aggregate.csv, wenn ein Lauf sie erhebt (Kernschalter bis KK5 aus).
+            foreach (string s in KuehlkurveSchema.SPALTEN_ERGEBNIS) namen.Add(s);
+            // UB-E2 (UebergabegrenzeSchema, Schritt 205): Betriebsbereiche, Bivalenzpunkte und Uebergabegrenze an beiden
+            // Ergebnistabellen der Waermepumpe - dieselbe Regel, sie stehen erst in aggregate.csv, wenn ein Modul mit
+            // gesetzter Einbindung rechnet (U-1); die Bestandsprojekte behalten ihre Schluessel.
+            foreach (string s in UebergabegrenzeSchema.SPALTEN_ERGEBNIS_MODUL) namen.Add(s);
+            // Schemaschritt 213 (K1, Konzept Kaeltebedarf 5): die Kennzahlen des Kaeltebedarfs ohne Gebaeudemodell - dieselbe
+            // Regel, sie stehen erst in aggregate.csv, wenn ein Lauf ein Kaelteprofil oder eine Split-Zeile rechnet (K3).
+            foreach (string s in KaeltebedarfSchema.ERGEBNISSPALTEN) namen.Add(s);
             return namen;
         }
 
@@ -139,7 +166,17 @@ namespace WindowsFormsApplication1.Referenzlauf
                 dateien += Vektor(zielOrdner, "wp_strom.csv", wp.WP_Strombedarf_stuendlich, summen);
                 dateien += Vektor(zielOrdner, "heizstab.csv", wp.Heizstab_stuendlich, summen);
                 dateien += Vektor(zielOrdner, "wp_restwaerme.csv", wp.waermerestbedarf_stuendlich, summen);
-                dateien += Vektor(zielOrdner, "wp_quellentemperatur.csv", wp.Temperatur, summen);
+                // Die TATSAECHLICHE Quelltemperatur, wie die Kaskade sie gerechnet hat
+                // (WaermequelleClass.Quelltemperatur bzw. stuendlich am geteilten
+                // Quellpuffer) - Regel: nur das ERSTE WP-Modul, weitere Module bekommen
+                // keine eigene Datei. Name und Aggregatschluessel bleiben, damit der
+                // Vergleich gegen die Basis moeglich bleibt. Die Aussentemperatur steht
+                // in stundentemperatur.csv.
+                IReadOnlyList<double[]> quelltemperaturen = wp.Quelltemperaturen;
+                double[] quelle = (quelltemperaturen != null && quelltemperaturen.Count > 0 &&
+                                   quelltemperaturen[0] != null)
+                    ? quelltemperaturen[0] : wp.Temperatur;
+                dateien += Vektor(zielOrdner, "wp_quellentemperatur.csv", quelle, summen);
                 dateien += Vektor(zielOrdner, "wp_warmwasserbedarf.csv", wp.Warmwasserbedarf_stuendlich, summen);
             }
 
@@ -285,8 +322,37 @@ namespace WindowsFormsApplication1.Referenzlauf
             skalare.Add(Neu("Sim.bSimulationWP", sim.bSimulationWP.ToString()));
             skalare.Add(Neu("Sim.bSimulationKessel", sim.bSimulationKessel.ToString()));
             skalare.Add(Neu("Sim.bSimulationSolarthermie", sim.bSimulationSolarthermie.ToString()));
+            // ST2 (Welle M2): die mittlere Arbeitstemperatur eines Kollektorfelds [Grad C], mit dem
+            // Potenzial gewichtet - NUR fuer Felder mit Arbeitstemperatur aus dem Speicher; ein Feld
+            // mit fester Arbeitstemperatur bekommt keinen Schluessel.
+            if (sim.bSimulationSolarthermie && sim.simulation_solarthermie != null)
+            {
+                var felder = sim.simulation_solarthermie.Kollektor_Ergebnisse;
+                for (int i = 0; i < felder.Count; i++)
+                    if (felder[i].ArbeitstemperaturAusSpeicher && !double.IsNaN(felder[i].ArbeitstemperaturMittelC))
+                        skalare.Add(Neu("Solarthermie.Feld[" + i.ToString(CultureInfo.InvariantCulture) +
+                                        "].ArbeitstemperaturMittelC", Zahl(felder[i].ArbeitstemperaturMittelC)));
+            }
+            // ST1 (Welle M2): der Pumpenstrom der Solarkreise [MWh/a] - NUR mit gepflegter Pumpe
+            // oder Hilfsenergieanteil; ohne beides kein Schluessel, die Basis bleibt byte-gleich.
+            if (sim.bSimulationSolarthermie && sim.simulation_solarthermie != null &&
+                sim.simulation_solarthermie.PumpenstromGesamtKwh > 0)
+                skalare.Add(Neu("Solarthermie.PumpenstromMwh",
+                                Zahl(sim.simulation_solarthermie.PumpenstromGesamtKwh / 1000.0)));
             skalare.Add(Neu("Sim.bSimulationBHKW", sim.bSimulationBHKW.ToString()));
             skalare.Add(Neu("Sim.bSimulationPV", sim.bSimulationPV.ToString()));
+            // PV3 (Welle M5): die Abregelung an der Einspeisegrenze [MWh/a] - nach der Speicherladung,
+            // im Flottenpfad die der Flotte. NUR bei > 0; ohne Einspeisegrenze kein Schluessel.
+            if (sim.bSimulationPV && sim.simulation_pv != null)
+            {
+                SimulationErgebnisCtrl.PhotovoltaikErgebnis pvErg = SimulationErgebnisCtrl.Photovoltaik(sim);
+                if (pvErg != null && pvErg.AbregelungMwh > 0)
+                    skalare.Add(Neu("Photovoltaik.AbregelungMwh", Zahl(pvErg.AbregelungMwh)));
+            }
+            // SP1 (Welle M5): der Eigenverbrauch des Speichersystems (Standby) [MWh/a] - NUR bei > 0.
+            if (sim.bSimulationSSP && sim.SpeichersystemEigenverbrauchKwh > 0)
+                skalare.Add(Neu("Stromspeicher.EigenverbrauchSystemMwh",
+                                Zahl(sim.SpeichersystemEigenverbrauchKwh / 1000.0)));
             skalare.Add(Neu("Sim.bSimulationSSP", sim.bSimulationSSP.ToString()));
             skalare.Add(Neu("Sim.PufferWP_vorhanden", (sim.puffer_wp != null).ToString()));
             if (sim.puffer_wp != null)
@@ -347,8 +413,14 @@ namespace WindowsFormsApplication1.Referenzlauf
                     skalare.Add(Neu(s.Key, Zahl(s.Value)));
                     // Der Rechenweg als Text steht gleich hinter der Kennung.
                     if (k == 0)
+                    {
                         skalare.Add(Neu("Geb[" + satz.Index.ToString(CultureInfo.InvariantCulture) + "].Modell",
                                         satz.Modell));
+                        // Stufe KP3 (Festlegung 28): Zustand, Bemessung und Quelle der Aufheizoptimierung als
+                        // Text daneben - nur bei eingeschalteter Aufheizoptimierung, sonst kein Schluessel.
+                        foreach (var t in satz.Texte)
+                            skalare.Add(Neu(t.Key, t.Value));
+                    }
                 }
             }
 
@@ -416,6 +488,43 @@ namespace WindowsFormsApplication1.Referenzlauf
                     skalare.Add(Neu(p + "Starts", Zahl(spk.Starts_Spk[i])));
                     skalare.Add(Neu(p + "Bereitschaftsstunden", Zahl(spk.Bereitschaftsstunden_Spk[i])));
                     skalare.Add(Neu(p + "BereitschaftKwh", Zahl(spk.Bereitschaftsverlust_KWh_Spk[i])));
+
+                    // Konzept Kesselkennlinie 4.1/5 (Etappe E2): die Stuetzwerte der
+                    // Teillastkennlinie, mit denen der Kessel rechnet (eta30 gepflegt oder
+                    // Normvorgabe nach Bauart), und was sie im Jahr bewirken - mittlerer
+                    // Wirkungsgrad und mittlere Laststufe der Laufstunden, Mehrbrennstoff aus
+                    // Teillast gegenueber eta100. Beim Elektrokessel ohne Kennlinie 0.
+                    bool kennlinie = !spk.IstStromkessel(i);
+                    skalare.Add(Neu(p + "Eta100", Zahl(spk.Nennwirkungsgrad(i))));
+                    skalare.Add(Neu(p + "Eta30", Zahl(kennlinie ? spk.Teillastwirkungsgrad(i) : 0)));
+                    skalare.Add(Neu(p + "EtaBetrieb", Zahl(kennlinie ? spk.WirkungsgradBetrieb(i) : 0)));
+                    skalare.Add(Neu(p + "LaststufeMittel", Zahl(kennlinie ? spk.LaststufeMittel(i) : 0)));
+                    skalare.Add(Neu(p + "TeillastKwh", Zahl(spk.TeillastMehrbrennstoff_KWh_Spk[i])));
+
+                    // Konzept Kesselkennlinie 4.1/5 (Etappe E3): was die Brennwertkennlinie im Jahr
+                    // bewirkt - mittlerer Ruecklauf der Laufstunden (waermegewichtet), Stunden und
+                    // Waerme im Brennwertbetrieb, Mehrbrennstoff aus Brennwertnutzung gegenueber der
+                    // trockenen Teillastkurve. JEDER Kessel fuehrt die Schluessel (ohne
+                    // Brennwertkennlinie 0) - dieselbe Regel wie oben: Ein spaeter eingeschalteter
+                    // Kessel aendert eine Zahl, statt einen Schluessel hinzuzufuegen.
+                    double ruecklauf = spk.RuecklaufMittel(i);
+                    skalare.Add(Neu(p + "RuecklaufMittel", Zahl(double.IsNaN(ruecklauf) ? 0 : ruecklauf)));
+                    skalare.Add(Neu(p + "Brennwertstunden", Zahl(spk.Brennwertstunden_Spk[i])));
+                    skalare.Add(Neu(p + "BrennwertWaermeKwh", Zahl(spk.BrennwertWaerme_KWh_Spk[i])));
+                    skalare.Add(Neu(p + "BrennwertKwh", Zahl(spk.BrennwertMehrbrennstoff_KWh_Spk[i])));
+
+                    // Konzept Kesselkennlinie 4.2/5 (Etappe E4): das Takten. "Starts" oben zaehlt seither die
+                    // Starts nach 4.2 (im Takt so viele, wie Mindestlaeufe die Waerme braucht); die
+                    // Uebergaenge aus -> an stehen als Laufphasen daneben. Dazu die Taktstunden, der
+                    // Anfahrverlust im Jahr und die drei Taktwerte, mit denen der Kessel rechnet (gepflegt
+                    // oder Normvorgabe). Der Elektrokessel ohne Taktmodell fuehrt die Schluessel mit 0 - bis
+                    // auf die Laufphasen, die er wie jeder Kessel zaehlt.
+                    skalare.Add(Neu(p + "Laufphasen", Zahl(spk.Laufphasen_Spk[i])));
+                    skalare.Add(Neu(p + "Taktstunden", Zahl(spk.Taktstunden_Spk[i])));
+                    skalare.Add(Neu(p + "AnfahrKwh", Zahl(spk.Anfahrverlust_KWh_Spk[i])));
+                    skalare.Add(Neu(p + "MindestleistungKw", Zahl(spk.Mindestleistung(i))));
+                    skalare.Add(Neu(p + "AnfahrverlustJeStartKwh", Zahl(spk.AnfahrverlustJeStart(i))));
+                    skalare.Add(Neu(p + "MindestlaufzeitMin", Zahl(spk.Mindestlaufzeit(i))));
                 }
             }
 
@@ -427,6 +536,58 @@ namespace WindowsFormsApplication1.Referenzlauf
                 skalare.Add(Neu("Em.Bhkw.NoxKg",   Zahl(bh.Em_NOX_BHKW)));
                 skalare.Add(Neu("Em.Bhkw.CoKg",    Zahl(bh.Em_CO_BHKW)));
                 skalare.Add(Neu("Em.Bhkw.StaubKg", Zahl(bh.Em_Staub_BHKW)));
+            }
+
+            // --- Erzeuger in Teillast (Welle M4: WP1, BH1, BH2) ----------------------------
+            //
+            // NUR BEI > 0: Die Schluessel entstehen allein fuer ein Modul, das die neue Rechnung
+            // tatsaechlich fuehrt - Starts nur mit gepflegter Mindestleistung (Waermepumpe) bzw.
+            // mit Anfahrverlust oder Mindestlaufzeit (BHKW), der Mehrbrennstoff der Kennlinie nur
+            // mit Teillastwirkungsgrad. Ein Bestandsprojekt ohne diese Felder bekommt keinen
+            // Schluessel; die Basis bleibt byte-gleich. EIGENES PRAEFIX "Takt." und "Teillast.",
+            // aus demselben Grund wie "Em." oben.
+            if (sim.bSimulationWP && sim.simulation_wp != null)
+            {
+                SimulationWaermepumpe wpT = sim.simulation_wp;
+                int module = Math.Min(wpT.wp_list.Count, SimulationWaermepumpe.MAX_WP);
+                for (int i = 0; i < module; i++)
+                {
+                    if (wpT.Starts_WP[i] <= 0) continue;
+                    string p = "Takt.Waermepumpe[" + i + "].";
+                    skalare.Add(Neu(p + "Starts", Zahl(wpT.Starts_WP[i])));
+                    skalare.Add(Neu(p + "Taktstunden", Zahl(wpT.Taktstunden_WP[i])));
+                    skalare.Add(Neu(p + "TaktstromKwh", Zahl(wpT.Taktstrom_KWh_WP[i])));
+                }
+            }
+            Kaeltekaskade kaskadeT = sim.simulation_Waermebedarf?.Kaelteseite?.Kaskade;
+            if (kaskadeT != null)
+                for (int k = 0; k < kaskadeT.Erzeuger.Count; k++)
+                {
+                    Kaelteerzeuger e = kaskadeT.Erzeuger[k];
+                    if (e == null || e.Starts <= 0) continue;
+                    string p = "Takt.Kaelte[" + k + "].";
+                    skalare.Add(Neu(p + "Starts", Zahl(e.Starts)));
+                    skalare.Add(Neu(p + "Taktstunden", Zahl(e.Taktstunden)));
+                    skalare.Add(Neu(p + "TaktstromKwh", Zahl(e.TaktstromKwh)));
+                }
+            if (sim.bSimulationBHKW && sim.simulation_bhkw != null)
+            {
+                SimulationBHKW bhT = sim.simulation_bhkw;
+                int module = Math.Min(bhT.bhkw_list.Count, SimulationBHKW.MAX_BHKW);
+                for (int i = 0; i < module; i++)
+                {
+                    if (bhT.Starts_BHKW[i] > 0)
+                    {
+                        string p = "Takt.Bhkw[" + i + "].";
+                        skalare.Add(Neu(p + "Starts", Zahl(bhT.Starts_BHKW[i])));
+                        skalare.Add(Neu(p + "Taktstunden", Zahl(bhT.Taktstunden_BHKW[i])));
+                        skalare.Add(Neu(p + "AnfahrKwh", Zahl(bhT.Anfahrverlust_KWh_BHKW[i])));
+                    }
+                    BhkwTeillast t = bhT.Teillast(i);
+                    if (t != null && t.MitKennlinie && bhT.TeillastMehrbrennstoff_KWh_BHKW[i] != 0)
+                        skalare.Add(Neu("Teillast.Bhkw[" + i + "].MehrbrennstoffKwh",
+                                        Zahl(bhT.TeillastMehrbrennstoff_KWh_BHKW[i])));
+                }
             }
 
             // --- Speicherflotte: Kennzahlen (Anwenderentscheid SP-O-8, 11.09.2026) --------

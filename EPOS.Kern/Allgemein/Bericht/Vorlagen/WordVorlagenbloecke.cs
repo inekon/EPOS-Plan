@@ -523,7 +523,11 @@ namespace WindowsFormsApplication1
                             int n = block.Zahl.Value;
                             var gruppen = new List<Blockkontext>();
                             for (int i = 0; i < varianten.Count; i += n)
-                                gruppen.Add(new Blockkontext(w, varianten.Skip(i).Take(n).ToList(), ebene));
+                            {
+                                // Die Gruppe trägt ihren Kontext: hat.* wertet über die Varianten der Gruppe und den Stamm.
+                                List<VariantenDaten> gruppe = varianten.Skip(i).Take(n).ToList();
+                                gruppen.Add(new Blockkontext(w.MitGruppe(gruppe), gruppe, ebene));
+                            }
                             return gruppen;
                         }
                     case "gebaeude":

@@ -319,18 +319,18 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            int leer = PufferSpCtrl.ProjektPufferAnlegen(PROJEKT, "Automatikpuffer", "", "", 1000, 1.0, 0,
+            int leer = PufferSpCtrl.ProjektPufferAnlegen(PROJEKT, "Automatikpuffer", "", "", 1000, 1.0,
                                                          "", 60, 40, 10, 95, null, 0);
             Assert.True(leer > 0);
             Assert.Equal(DBNull.Value, NachrangSpalte(leer));
 
             int gepflegt = PufferSpCtrl.ProjektPufferAnlegen(PROJEKT, "Gepflegter Puffer", "", "", 1000, 1.0,
-                                                             0, "", 60, 40, 10, 95, 40, 0);
+                                                             "", 60, 40, 10, 95, 40, 0);
             Assert.Equal(40.0, Convert.ToDouble(NachrangSpalte(gepflegt)));
 
             // Ändern mit leerem Feld macht aus dem gepflegten Wert wieder die Automatik.
             Assert.True(PufferSpCtrl.ProjektPufferAendern(gepflegt, PROJEKT, "Gepflegter Puffer", "", "",
-                                                          1000, 1.0, 0, "", 60, 40, 10, 95, null, 0));
+                                                          1000, 1.0, "", 60, 40, 10, 95, null, 0));
             Assert.Equal(DBNull.Value, NachrangSpalte(gepflegt));
 
             object stamm = DataRepository.ExecuteScalar("SELECT MIN(ID) FROM Tab_Pufferspeicher_STAMM");

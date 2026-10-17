@@ -172,6 +172,53 @@ namespace EPOS.Kern.Tests
             // Ohne Zonenzeilen bleibt es bei der Tabelle der Stufe G6a.
             (string ohne, _) = Schreibe(Daten(Details(mitZonen: true)));
             Assert.DoesNotContain("beheizt", ohne.Split('\n'));
+
+            // Ohne gekoppelte Zone keine Spalten des Heizkreises (AK1z).
+            Assert.DoesNotContain("Vorlauf Mittel [°C]", zeilen);
+            Assert.DoesNotContain("Übergabe begrenzt [h/a]", zeilen);
+        }
+
+        /// <summary>
+        /// <b>AK1z (E63): die Wärmeübergabe je Zone.</b> Rechnet eine Zone gekoppelt, trägt die Tabelle
+        /// Vorlauf- und Rücklaufmittel und die begrenzten Stunden — „—" für die unbeheizte Zone; die
+        /// Summenzeile nimmt Vorlauf und Rücklauf vom Gebäudekreis und das Maximum der Stunden. Die
+        /// Zeilensumme der Spaltenbreiten bleibt die der Vorlage.
+        /// </summary>
+        [Fact]
+        public void Mit_gekoppelter_Zone_traegt_die_Tabelle_Vorlauf_Ruecklauf_und_begrenzte_Stunden()
+        {
+            BerichtsDaten daten = Daten(Details(mitZonen: true));
+            var geb = new ErgebnisGebaeudeModel { ID_Gebaeude = 1, Merkplatz = 0, Gebaeudename = "Haus A",
+                                                  Rechenweg = DbWerte.GEBAEUDE_MODELL_VDI6007,
+                                                  UebergabeArt = DbWerte.UEBERGABE_RADIATOR,
+                                                  VorlaufMittelC = 52.34, RuecklaufMittelC = 41.06 };
+            geb.Zonen.Add(new ErgebnisZoneModel { ID_Zone = 11, Rang = 1, Bezeichner = "Erdgeschoss", IstBeheizt = true,
+                                                  HeizwaermeMwh = 12.5, SpitzeKw = 7.2,
+                                                  VorlaufMittelC = 53.71, RuecklaufMittelC = 42.44, UebergabeBegrenztH = 37 });
+            geb.Zonen.Add(new ErgebnisZoneModel { ID_Zone = 12, Rang = 2, Bezeichner = "Obergeschoss", IstBeheizt = false });
+            daten.Varianten[0].Ergebnis = new ErgebnisModel();
+            daten.Varianten[0].Ergebnis.Gebaeude.Add(geb);
+
+            using var ms = new MemoryStream();
+            using WordprocessingDocument doc = WordprocessingDocument.Create(ms, DocumentFormat.OpenXml.WordprocessingDocumentType.Document);
+            MainDocumentPart main = doc.AddMainDocumentPart();
+            main.Document = new Document(new Body());
+            new ProjektbeschreibungBaustein().SchreibeWord(new WordKontext(main, main.Document.Body, null), daten, BerichtsKonfiguration.Standard());
+
+            Table zonen = main.Document.Body.Descendants<Table>()
+                              .Single(t => t.Descendants<Text>().Any(x => x.Text == "H_ve [W/K]"));
+            List<TableRow> reihen = zonen.Elements<TableRow>().ToList();
+            Assert.Equal(4, reihen.Count);                      // Kopf, zwei Zonen, Summe
+            string[] Zellen(TableRow r) => r.Elements<TableCell>().Select(c => c.InnerText).ToArray();
+            string[] kopf = Zellen(reihen[0]);
+            Assert.Equal(12, kopf.Length);
+            Assert.Equal(new[] { "Vorlauf Mittel [°C]", "Rücklauf Mittel [°C]", "Übergabe begrenzt [h/a]" }, kopf[9..]);
+            Assert.Equal(new[] { "53,7", "42,4", "37" }, Zellen(reihen[1])[9..]);
+            Assert.Equal(new[] { "—", "—", "—" }, Zellen(reihen[2])[9..]);
+            Assert.Equal(new[] { "52,3", "41,1", "37" }, Zellen(reihen[3])[9..]);
+
+            int breite = reihen[0].Elements<TableCell>().Sum(c => int.Parse(c.TableCellProperties.TableCellWidth.Width.Value));
+            Assert.Equal(9355, breite);
         }
 
         [Fact]

@@ -386,5 +386,39 @@ namespace EPOS.Kern.Tests
 
             Assert.Empty(werte);
         }
+
+        // ==================================================================
+        //  Nichts zu aendern - neutral, nicht rot (Anwendermeldung 10.10.2026)
+        // ==================================================================
+
+        /// <summary>
+        /// Ein Schritt mit <see cref="KiErgebnis.Unveraendert"/> erscheint in normaler
+        /// Farbe (Rolle Assistent) mit dem Stand - weder rot als „Aktion nicht
+        /// ausgeführt" noch grün als „Aktion ausgeführt".
+        /// </summary>
+        [Fact]
+        public void Unveraendert_erscheint_neutral_und_nicht_als_Absage()
+        {
+            AufDeutsch(() =>
+            {
+                const string STAND = "In „Wärmepumpe im Projekt“ tragen die Felder bereits die genannten Werte: Vorlauf = 55, Rücklauf = 45. Keine Änderung nötig.";
+                var antwort = new KiAntwort { Erfolg = true, Text = "" };
+                antwort.Schritte.Add(new KiSchritt
+                {
+                    Aktion = "formular_ausfuellen",
+                    Ausgefuehrt = true,
+                    Ergebnis = KiErgebnis.OhneAenderung(STAND)
+                });
+
+                IReadOnlyList<KiVerlaufszeile> zeilen = KiVerlaufstexte.Schritte(antwort);
+
+                Assert.Contains(zeilen, z => z.Rolle == KiVerlaufsrolle.Assistent
+                                             && z.Text.Contains(STAND, StringComparison.Ordinal)
+                                             && z.Text.StartsWith("Unverändert", StringComparison.Ordinal));
+                Assert.DoesNotContain(zeilen, z => z.Rolle == KiVerlaufsrolle.Fehler);
+                Assert.DoesNotContain(zeilen, z => z.Rolle == KiVerlaufsrolle.Erfolg);
+                Assert.DoesNotContain(zeilen, z => z.Text.Contains("nicht ausgeführt", StringComparison.Ordinal));
+            });
+        }
     }
 }

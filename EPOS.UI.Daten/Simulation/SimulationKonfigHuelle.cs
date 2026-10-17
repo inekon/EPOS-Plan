@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Seiten.Simulation;
@@ -106,6 +107,15 @@ namespace WindowsFormsApplication1
         /// <summary>Der Weg in die Ansicht „Stromspeicher-Auslegung" (#274); <c>null</c> = kein Knopf.</summary>
         private Action _auslegungWeg;
 
+        /// <summary>K6b-N: der Weg „Bearbeiten…“ der dezentralen Kältedeckung (Naht der Schale); <c>null</c> = benannt abgelehnt.</summary>
+        private Func<int, bool, int, Action<string>, string> _kaelteDezentralWeg;
+
+        /// <summary>K6b-N: der Sperrgrund der Schale für diesen Weg; leer = die Vorgabe <c>SIM_MSG_WEG_NICHT_HIER</c>.</summary>
+        private string _kaelteDezentralSperrgrund = "";
+
+        /// <summary>Was nach einer Übernahme aus der Pufferspeicher-Auslegung nachzuziehen ist (Stufe P2).</summary>
+        private Action _pufferNachzug;
+
         /// <summary>
         /// Der Kanalbedarf des gerechneten, noch gültigen Laufs [MWh/a] — für die
         /// Abnehmer ohne Versorger im Schema. <c>null</c> (oder ein Weg, der <c>null</c>
@@ -151,10 +161,17 @@ namespace WindowsFormsApplication1
         /// selbst als gewählte Komponenten — auch ohne je gespeicherte Konfiguration.
         /// Eine gespeicherte Auswahl bleibt unangetastet, ergänzt wird nur Fehlendes.
         ///
-        /// <para>Genommen wird der ERSTE freie Platz in der Reihenfolge 1…4 — wörtlich
-        /// wie <c>VerbauteAnlagenVorwaehlen</c>:349-380 und damit ausdrücklich anders als
-        /// <c>Kaskade.Aufnehmen</c> (dort der erste freie Platz HINTER dem letzten
-        /// belegten, weil das die Bedienhandlung „+ aufnehmen" ist).</para>
+        /// <para><b>Vorgewählt wird in der Folge der Ladeprioritäten</b> (Anwenderentscheid
+        /// vom 29.09.2026): Solarthermie, Wärmepumpe, BHKW, Heizkessel — dieselbe Folge, in
+        /// der die Vorgabe-Ladeprioritäten (10, 20, 30, 40) die Erzeuger an den Puffer
+        /// lassen. Jeder verbaute, noch fehlende Erzeuger kommt über
+        /// <c>Kaskade.Vorwaehlen</c> vor den ersten belegten Platz mit schlechterer
+        /// Vorgabe-Ladepriorität, sonst ans Ende; schon belegte Plätze behalten ihre
+        /// Reihenfolge untereinander. Damit steht auch ein von
+        /// <c>KonfigurationCtrl.HeizkesselNachziehen</c> gesetzter Kessel hinter der
+        /// vorgewählten Wärmepumpe. Umordnen kann der Anwender mit den Pfeilen der
+        /// Erzeugerkarte (<c>Kaskade.Verschieben</c>); danach gilt die Kaskade als gepflegt
+        /// und wird nicht mehr vorgewählt.</para>
         ///
         /// <para><b>EINE GEPFLEGTE KASKADE WIRD NICHT VORGEWÄHLT</b> (Anwenderentscheid
         /// vom 16.09.2026, Merkspalte <c>Tab_Einstellungen.Kaskade_Gepflegt</c>). Die
@@ -175,17 +192,16 @@ namespace WindowsFormsApplication1
 
             try
             {
-                List<string> plaetze = Kaskade.Lesen(_konfiguration);
-
                 foreach (string erzeuger in ErzeugerKatalog.WAERMEERZEUGER)
                 {
-                    if (!TechnikPlanwertCtrl.Verbaut(m_ID_Projekt, erzeuger)) continue;
-                    if (plaetze.Contains(erzeuger)) continue;
-
-                    for (int i = 0; i < plaetze.Count; i++)
-                        if (string.IsNullOrEmpty(plaetze[i])) { plaetze[i] = erzeuger; break; }
+                    // Folgeauftrag 4: Eine vollständige Solarthermieganglinie rechnet auch
+                    // ohne Anlagenzeile - sie zählt für die Vorwahl wie ein Kollektorfeld.
+                    bool verbaut = TechnikPlanwertCtrl.Verbaut(m_ID_Projekt, erzeuger) ||
+                                   (erzeuger == DbWerte.ERZEUGER_SOLARTHERMIE &&
+                                    SolarganglinieWeiche.Lesen(m_ID_Projekt).Vollstaendig);
+                    if (!verbaut) continue;
+                    Kaskade.Vorwaehlen(_konfiguration, erzeuger);
                 }
-                Kaskade.Schreiben(_konfiguration, plaetze);
 
                 if (TechnikPlanwertCtrl.Verbaut(m_ID_Projekt, DbWerte.ERZEUGER_PHOTOVOLTAIK) &&
                     Kaskade.StromWert(_konfiguration, Kaskade.PLATZ_STROMERZEUGER) !=
@@ -276,6 +292,7 @@ namespace WindowsFormsApplication1
                 ["TipSpeicherAufklappen"] = MyResource.Resource.SIM_KARTE_TIP_AUFKLAPPEN,
                 ["BtnPufferVerwalten"] = MyResource.Resource.PSP_BTN_PUFFER_VERWALTEN,
                 ["BtnStromspeicherAuslegen"] = MyResource.Resource.SIM_BTN_SP_AUSLEGUNG,
+                ["BtnPufferAuslegen"] = MyResource.Resource.PAUS_BTN_KONFIG,
 
                 // ANWENDERWUNSCH 16.09.2026: der Knopf an der Erzeugerkarte, der den
                 // Konfigurationsdialog oeffnet - derselbe Wortlaut wie der Knopf in der
@@ -359,6 +376,26 @@ namespace WindowsFormsApplication1
                 Laden = Laden,
                 SchemaLaden = SchemaLaden,
 
+                // KB-A: der Kühlbetrieb einer Wärmepumpe im Bereich „Kälte“ - der Kernweg des Kühlschalters.
+                KuehlbetriebWpSchreiben = (idWp, an) => KuehlungKachelBau.KuehlbetriebSchreiben(m_ID_Projekt, idWp, an),
+                // KB-D: die pflegbare Folge der Kälteerzeuger - Pfeile und „Vorgabefolge“ schreiben sofort über den Kernweg.
+                KaelteVerschieben = (idAnlage, richtung) => KaeltefolgeCtrl.Verschieben(m_ID_Projekt, idAnlage,
+                    richtung < 0 ? KaeltefolgeCtrl.NACH_VORN : KaeltefolgeCtrl.NACH_HINTEN),
+                KaelteVorgabefolge = () => KaeltefolgeCtrl.VorgabeSetzen(m_ID_Projekt),
+
+                // KB-B: die Konfiguration einer Kältemaschine im Bereich „Kälte“ - dieselben Daten und Wege wie der
+                // Dialog „Kältemaschinen im Projekt“ (KaeltemaschineAnlageHuelle), ohne Plattformnaht.
+                KaeltemaschineKonfigurationLaden = KaeltemaschineKonfigurationLaden,
+                KaeltemaschineKonfigurationSpeichern = d =>
+                {
+                    string grund = KaeltemaschineAnlageHuelle.Pruefen(d);
+                    return string.IsNullOrEmpty(grund) ? KaeltemaschineAnlageHuelle.Speichern(d) : grund;
+                },
+
+                // K6b-N: „Bearbeiten…“ der Gruppe „Dezentrale Kältedeckung“ - in den Dialog der Quelle über die Naht der
+                // Schale; ohne sie steht der Knopf trotzdem da und nennt den Grund (keine stille Auslassung).
+                KaelteDezentralBearbeiten = KaelteDezentralBearbeiten,
+
                 // DIE DREI HANDGRIFFE AN DER KASKADE - und nur sie - machen die Kaskade
                 // zu einer GEPFLEGTEN (Anwenderentscheid 16.09.2026, Schemaschritt 82).
                 // Der Merkweg liegt an EINER Stelle (KaskadeGepflegtMerken); die
@@ -421,13 +458,23 @@ namespace WindowsFormsApplication1
                     }),
                 QuelleErdreichGaben = QuelleErdreichGaben,
                 QuelleErdreichSchreiben = QuelleErdreichSchreiben,
+                QuelleErdreichAbgebrochen = _ =>
+                {
+                    _erdreichSitzung?.Abgebrochen();
+                    _erdreichSitzung = null;
+                },
                 QuelleCsvWaehlen = QuelleCsvWaehlen,
 
                 WaermesenkeGaben = WaermesenkeGaben,
                 WaermesenkeFertig = WaermesenkeFertig,
 
                 PufferVerwaltungGaben = idPuffer =>
-                    PufferSpProjektHuelle.Gaben(m_ID_Projekt, null, idPuffer),
+                    PufferSpProjektHuelle.Gaben(m_ID_Projekt, null, idPuffer, PufferAuslegungOeffnen),
+
+                // Stufe P2: „Pufferspeicher auslegen…" neben der Pufferverwaltung. Der Weg ist
+                // plattformfrei (freie Ansicht der Wurzel); nach einer Uebernahme gilt ein
+                // gerechnetes Ergebnis als veraltet (Nachzug der Ergebnishuelle).
+                PufferAuslegungOeffnen = PufferAuslegungOeffnen,
 
                 // #274: „Stromspeicher auslegen…" neben der Pufferverwaltung. Ohne
                 // eingelegten Weg gibt es den Knopf nicht (Hausregel „kein Delegat,
@@ -570,6 +617,14 @@ namespace WindowsFormsApplication1
             // ARBEITSSTAND, nicht die Datenbank - ein Handgriff an der Kaskade setzt
             // die Marke, und die Zeile steht schon bei der naechsten Auffrischung da.
             d.KaskadeGepflegt = _konfiguration != null && _konfiguration.Kaskade_Gepflegt;
+
+            // KB-A: der Bereich „Kälte“ aus dem Kernleser der Kältefolge - dieselbe Folge wie der Lauf.
+            d.Kaeltebereich = KaeltebereichBau.Daten(m_ID_Projekt, SpeicherKarteDaten);
+
+            // KB-B (E117 F4): Ein Kältespeicher steht NUR im Bereich „Kälte“ - er puffert keine Wärme.
+            var kaeltespeicher = new HashSet<int>(d.Kaeltebereich.Kaeltespeicher.Select(s => s.IdPuffer));
+            if (kaeltespeicher.Count > 0)
+                d.Speicher = d.Speicher.Where(s => !kaeltespeicher.Contains(s.IdPuffer)).ToList();
 
             return d;
         }
@@ -1340,6 +1395,24 @@ namespace WindowsFormsApplication1
             chips.Add(new ChipDaten(text, stil));
         }
 
+        /// <summary>KB-B: die Gaben der Kältemaschinen-Konfiguration einer Anlage; <c>null</c> = nicht (mehr) im Projekt.</summary>
+        private EPOS.UI.Dialoge.Erzeuger.KaeltemaschineKonfigurationGaben KaeltemaschineKonfigurationLaden(int idAnlage)
+        {
+            if (m_ID_Projekt <= 0 || idAnlage <= 0) return null;
+            EPOS.UI.Dialoge.Erzeuger.KaeltemaschineAnlageDaten daten = KaeltemaschineAnlageHuelle.Liste(m_ID_Projekt)
+                .FirstOrDefault(a => a.AnlagenId == idAnlage);
+            if (daten == null) return null;
+            return new EPOS.UI.Dialoge.Erzeuger.KaeltemaschineKonfigurationGaben
+            {
+                Daten = daten,
+                Stromtraeger = Kaeltestromabrechnung.StromtraegerDesProjekts(m_ID_Projekt)
+                    .Select(t => (t.Key, t.Value)).ToList(),
+                ProjektStromtraeger = Kaeltestromabrechnung.Projekttraeger(m_ID_Projekt),
+                // K-F5b: dieselbe Gruppe „Rückkühlung“ wie im Dialog „Kältemaschinen im Projekt“ (ohne „Rückkühlwerke…“).
+                Rueckkuehlung = KaeltemaschineAnlageHuelle.Rueckkuehlung(m_ID_Projekt)
+            };
+        }
+
         // =================================================================
         // Die Speicherspalte (Konzept 3a)
         // =================================================================
@@ -1455,6 +1528,57 @@ namespace WindowsFormsApplication1
         internal void AuslegungWegSetzen(Action weg)
         {
             _auslegungWeg = weg;
+        }
+
+        /// <summary>
+        /// K6b-N: legt den Weg „Bearbeiten…“ der dezentralen Kältedeckung ein — die Naht der Schale
+        /// (<see cref="SimulationPlattformwege.KaelteDezentralBearbeiten"/>) samt ihrem Sperrgrund.
+        /// </summary>
+        internal void KaelteDezentralWegSetzen(Func<int, bool, int, Action<string>, string> weg, string sperrgrund)
+        {
+            _kaelteDezentralWeg = weg;
+            _kaelteDezentralSperrgrund = sperrgrund ?? "";
+        }
+
+        /// <summary>
+        /// K6b-N: „Bearbeiten…“ an einer Split-Zeile der Gruppe „Dezentrale Kältedeckung“ — öffnet über die Naht der
+        /// Schale den Dialog ihrer Quelle (<paramref name="profil"/>: Kältebedarfsprofile, sonst Kältebedarf extern).
+        /// Rückgabe <c>null</c> = der Dialog geht auf, <paramref name="nachher"/> läuft, wenn er schließt; sonst der
+        /// benannte Grund — auf einer Schale ohne den Weg ihr Sperrgrund, nie eine stille Auslassung.
+        /// </summary>
+        private string KaelteDezentralBearbeiten(bool profil, int idZuordnung, Action<string> nachher)
+        {
+            if (_kaelteDezentralWeg == null)
+                return string.IsNullOrWhiteSpace(_kaelteDezentralSperrgrund)
+                    ? MyResource.Resource.SIM_MSG_WEG_NICHT_HIER : _kaelteDezentralSperrgrund;
+            if (m_ID_Projekt <= 0) return MyResource.Resource.SIM_MSG_WEG_NICHT_HIER;
+            return _kaelteDezentralWeg(m_ID_Projekt, profil, idZuordnung, nachher);
+        }
+
+        /// <summary>
+        /// Legt den Nachzug nach einer Übernahme aus der Pufferspeicher-Auslegung ein — die
+        /// Ergebnishülle markiert ihren Lauf als veraltet (<c>SimulationAnsichtQuelle</c>).
+        /// </summary>
+        internal void PufferNachzugSetzen(Action nachzug)
+        {
+            _pufferNachzug = nachzug;
+        }
+
+        /// <summary>
+        /// Wechselt auf die Ansicht „Pufferspeicher-Auslegung" (Stufe P2) für den Projektpuffer
+        /// <paramref name="idPuffer"/> (<c>0</c> = einen neuen). Ohne angemeldete Wurzel geschieht
+        /// nichts — derselbe Ausgang wie bei jedem anderen Navigationsweg.
+        /// </summary>
+        private void PufferAuslegungOeffnen(int idPuffer)
+        {
+            if (m_ID_Projekt <= 0) return;
+            PufferAuslegungHuelle.Oeffnen(new PufferAuslegungAuftrag
+            {
+                IdProjekt = m_ID_Projekt,
+                IdPuffer = idPuffer > 0 ? idPuffer : (int?)null,
+                Einstieg = MyResource.Resource.PAUS_EINSTIEG_KONFIG,
+                Nachzug = _pufferNachzug
+            });
         }
 
         private void AuslegungOeffnen()
@@ -1795,6 +1919,10 @@ namespace WindowsFormsApplication1
 
             foreach (SchemaModell.Knoten k in modell.Knotenliste)
             {
+                // Auftrag KS: Die Kaeltebahn behaelt ihre eigenen Hinweise — die Kachelkurzinfo
+                // beschreibt die Waermeseite derselben Anlage.
+                if (k.Bahn != SchemaModell.Bahn.Waerme) continue;
+
                 string text;
                 if (k.Art == SchemaModell.Knotenart.Erzeuger && chips.TryGetValue(k.ID, out text))
                     k.Hinweis = text;
@@ -1806,9 +1934,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Bildet das angeordnete Layout des Kerns auf den Satz ab, den der Baustein
-        /// <c>Schema</c> zeichnet — eine Zuordnung ohne Rechnung.
+        /// <c>Schema</c> zeichnet — eine Zuordnung ohne Rechnung. <c>internal</c> für die
+        /// Sichtprobe des Probenwirts (K6b-N), die ein Modell im Speicher anordnet.
         /// </summary>
-        private static SchemaBild SchemaAbbilden(SchemaLayout l)
+        internal static SchemaBild SchemaAbbilden(SchemaLayout l)
         {
             if (l == null || l.IstLeer) return SchemaBild.Leer;
 
@@ -1820,7 +1949,10 @@ namespace WindowsFormsApplication1
                     k.Knoten.Rang, k.Knoten.Titel, k.TitelAnzeige,
                     k.Knoten.Zeilen, k.Knoten.Badges,
                     k.Knoten.Hinweis, k.Knoten.Warnung, k.Knoten.Warntext, k.Knoten.Kaskade,
-                    k.Knoten.ID_Type == ProjektPuffer.TYP_WP));
+                    k.Knoten.ID_Type == ProjektPuffer.TYP_WP)
+                {
+                    Kaelte = k.Knoten.Bahn == SchemaModell.Bahn.Kaelte
+                });
 
             List<SchemaKante> kanten = new List<SchemaKante>();
             foreach (SchemaLayout.Kantenzug z in l.Kanten)
@@ -1852,6 +1984,22 @@ namespace WindowsFormsApplication1
                                          SchemaKantenart.Kaskade, true)
             };
 
+            // Auftrag KS: Mit Kaeltebahn erklaert ein sechster Eintrag die Marke „Kaelte" —
+            // die Kanten der Kaeltebahn tragen dieselben Farben wie die der Waerme.
+            bool kaelte = l.KaelteOben >= 0;
+            if (kaelte)
+                legende.Add(new SchemaLegendeeintrag(MyResource.Resource.KONF_KS_LEGENDE,
+                                                     SchemaKantenart.Versorgung, false)
+                {
+                    Marke = true,
+                    MarkeText = MyResource.Resource.KONF_KS_KAELTE
+                });
+
+            List<string> kette = l.Modell != null ? l.Modell.KaelteKette : new List<string>();
+            string ketteText = kette.Count > 0
+                ? string.Format(MyResource.Resource.KONF_KS_KETTE, string.Join(" → ", kette))
+                : MyResource.Resource.KONF_KS_KEINE_KETTE;
+
             return new SchemaBild(
                 knoten, kanten, band, legende,
                 new List<string>
@@ -1866,7 +2014,22 @@ namespace WindowsFormsApplication1
                 l.InhaltBreite, l.Gesamthoehe, SchemaLayout.RAND, SchemaLayout.KOPF_HOEHE,
                 l.BandOben, l.LegendeOben,
                 SchemaLayout.LINIE_BREITE, SchemaLayout.LINIE_BREITE_HERVOR,
-                l.Modell != null && l.Modell.HatKaskade, false);
+                l.Modell != null && l.Modell.HatKaskade, false)
+            {
+                KaelteOben = l.KaelteOben,
+                KaelteTitel = kaelte ? MyResource.Resource.KONF_KS_KAELTE : "",
+                KaelteSpaltenkoepfe = kaelte
+                    ? new List<string>
+                    {
+                        MyResource.Resource.KONF_KS_SPALTE_QUELLE,
+                        MyResource.Resource.KONF_KS_SPALTE_ERZEUGER,
+                        MyResource.Resource.KONF_KS_SPALTE_SPEICHER,
+                        MyResource.Resource.SIM_SCHEMA_SPALTE_ABNEHMER
+                    }
+                    : new List<string>(),
+                KaelteKetteOben = l.KaelteKetteOben,
+                KaelteKetteText = kaelte ? ketteText : ""
+            };
         }
 
         /// <summary>
@@ -1915,6 +2078,9 @@ namespace WindowsFormsApplication1
         /// <para><b>Ebenso die Kopplungsstufe „Anlagenkopplung"</b> (Schemaschritt 122,
         /// Anlagenkopplung 8.1): nullbar, ohne Vorgabe — nachgereicht wird ein gesetzter Wert,
         /// NULL („aus") bleibt NULL.</para>
+        ///
+        /// <para><b>Ebenso die Aufheizoptimierung</b> (Schemaschritt KP-S2): die fünf Spalten in
+        /// einem <c>UPDATE</c>, wenn VOR dem Delete etwas anderes als „aus und leer" stand.</para>
         /// </summary>
         private bool Speichern()
         {
@@ -1935,6 +2101,10 @@ namespace WindowsFormsApplication1
             bool extrapolationErlaubt = KonfigurationCtrl.ExtrapolationErlaubtLesen(m_ID_Projekt);
             bool kuehlbetrieb = KonfigurationCtrl.KuehlbetriebLesen(m_ID_Projekt);
             string anlagenkopplung = KonfigurationCtrl.AnlagenkopplungLesen(m_ID_Projekt);
+            Aufheizvorgabe aufheizvorgabe = KonfigurationCtrl.AufheizvorgabeLesen(m_ID_Projekt);
+            Netzverlustvorgabe netzkanaele = KonfigurationCtrl.NetzverlustvorgabeLesen(m_ID_Projekt);
+            Einspeisegrenze einspeisegrenze = KonfigurationCtrl.EinspeisegrenzeLesen(m_ID_Projekt);
+            Desinfektionsvorgabe desinfektion = KonfigurationCtrl.DesinfektionLesen(m_ID_Projekt);
 
             ctrl.model = _konfiguration;
             if (!ctrl.Delete(m_ID_Projekt)) return false;
@@ -1954,6 +2124,26 @@ namespace WindowsFormsApplication1
             // VOR dem Delete in der Datenbank stand; NULL bleibt NULL.
             if (anlagenkopplung != null)
                 KonfigurationCtrl.AnlagenkopplungSchreiben(m_ID_Projekt, anlagenkopplung);
+
+            // DIE AUFHEIZOPTIMIERUNG REIST MIT (Schemaschritt KP-S2, Entwurf KP3): Die neue Zeile traegt
+            // den Schalter 0 und leere Spalten - nachgereicht wird der Stand VOR dem Delete, auch ein
+            // Schalter aus mit gepflegten Werten (Festlegung 24). Ohne Spalten liest sich „aus" und
+            // nichts ist zu schreiben.
+            if (!aufheizvorgabe.Equals(Aufheizvorgabe.Aus))
+                KonfigurationCtrl.AufheizvorgabeSchreiben(m_ID_Projekt, aufheizvorgabe);
+
+            // NETZVERLUSTE JE KANAL UND ZIRKULATION REISEN MIT (Schritt BedarfNetzKalenderSchema, BW4):
+            // Die neue Zeile traegt leere Spalten - nachgereicht wird der Stand VOR dem Delete.
+            if (!netzkanaele.Equals(Netzverlustvorgabe.Leer))
+                KonfigurationCtrl.NetzverlustvorgabeSchreiben(m_ID_Projekt, netzkanaele);
+            // DIE EINSPEISEGRENZE REIST MIT (Welle M5, PV3): Die neue Zeile traegt zwei NULL (= keine
+            // Grenze) - nachgereicht wird der Stand VOR dem Delete.
+            if (einspeisegrenze.Gesetzt)
+                KonfigurationCtrl.EinspeisegrenzeSchreiben(m_ID_Projekt, einspeisegrenze);
+            // DIE THERMISCHE DESINFEKTION REIST MIT (Welle M7, BW5): Die neue Zeile traegt fuenf NULL
+            // (= aus) - nachgereicht wird der Stand VOR dem Delete.
+            if (!desinfektion.Equals(Desinfektionsvorgabe.Aus))
+                KonfigurationCtrl.DesinfektionSchreiben(m_ID_Projekt, desinfektion);
 
             // DIE MERKSPALTE REIST MIT (Schemaschritt 82). Delete + Insert legt eine
             // NEUE Zeile an, und eine neue Zeile traegt die Vorbelegung 0 - ohne diese
@@ -1991,6 +2181,10 @@ namespace WindowsFormsApplication1
                 _konfiguration.Betriebsart = frisch.Betriebsart;
                 _konfiguration.Leistungsgrenze = frisch.Leistungsgrenze;
                 _konfiguration.m_Kessel_Betriebsbereitschaft = frisch.m_Kessel_Betriebsbereitschaft;
+
+                // Schemaschritt 154: die Heizgrenze der Kesselbereitschaft - ein Laufparameter
+                // derselben Art, geschrieben ueber die Ergebnishuelle; Insert reicht sie nach.
+                _konfiguration.Kessel_Heizgrenze = frisch.Kessel_Heizgrenze;
             }
             catch { /* Nachlesen ist Vorsorge - es darf das Speichern nie verhindern */ }
         }
@@ -2124,7 +2318,7 @@ namespace WindowsFormsApplication1
                     WaermequelleClass.WertLesen(idAnlage, "WQ_Wochenwerte") as string)
             };
 
-            return QuellprofilHuelle.Gaben(daten);
+            return QuellprofilHuelle.Gaben(daten, AussentemperaturLaden());
         }
 
         private IReadOnlyDictionary<string, object> QuelleErdreichGaben(int idAnlage)
@@ -2138,9 +2332,16 @@ namespace WindowsFormsApplication1
             object oAnzahl = WaermequelleClass.WertLesen(idAnlage, "WQ_Anzahl");
             string bodentyp = WaermequelleClass.WertLesen(idAnlage, "WQ_Bodentyp") as string;
             object oSpreiz = WaermequelleClass.WertLesen(idAnlage, "WQ_Spreizung");
+            ErdsondenfeldEingabe feld = ErdsondenfeldCtrl.Lesen(idAnlage);
 
             var daten = new EPOS.UI.Dialoge.Simulation.QuelleErdreichDaten
             {
+                Sondenabstand = feld.AbstandM,
+                Bohrlochdurchmesser = feld.BohrlochdurchmesserMm,
+                Bohrlochwiderstand = feld.Bohrlochwiderstand,
+                Kopfueberdeckung = feld.KopfueberdeckungM,
+                Betrachtungsjahr = feld.Betrachtungsjahr,
+                Sondenanordnung = feld.Anordnung?.ToString(),
                 WPName = info.Bezeichner,
                 IdProjekt = m_ID_Projekt,
                 IdAnlage = idAnlage,
@@ -2154,11 +2355,19 @@ namespace WindowsFormsApplication1
                 Klimazone = KlimaregionCtrl.KlimazoneJeProjekt(m_ID_Projekt),
                 Spreizung = (oSpreiz != null && Convert.ToDouble(oSpreiz) > 0)
                     ? Convert.ToDouble(oSpreiz) : 0.0,
-                Aussentemperatur = AussentemperaturLaden()
+                Aussentemperatur = AussentemperaturLaden(),
+                Auslegung = QuelleErdreichHuelle.Auslegung(m_ID_Projekt, idAnlage)
             };
 
-            return QuelleErdreichHuelle.Gaben(daten);
+            _erdreichSitzung = new ErdreichLaufsitzung(daten);
+            return QuelleErdreichHuelle.Gaben(daten, _erdreichSitzung);
         }
+
+        /// <summary>
+        /// Die Läufe des offenen Erdreichdialogs — sie entscheidet beim Abbrechen, ob ein Lauf mit
+        /// ungespeicherten Eingaben verworfen wird (<see cref="ErdreichLaufsitzung"/>).
+        /// </summary>
+        private ErdreichLaufsitzung _erdreichSitzung;
 
         /// <summary>
         /// Die Klimazone ist eine Eigenschaft der REGION, nicht der Anlage
@@ -2169,19 +2378,18 @@ namespace WindowsFormsApplication1
         {
             if (e == null) return;
 
+            // OK: Die Eingaben werden gespeichert, ein Lauf des Dialogs bleibt.
+            _erdreichSitzung = null;
+
             if (e.Klimazone != KlimaregionCtrl.KlimazoneJeProjekt(m_ID_Projekt))
                 KlimaregionCtrl.KlimazoneJeProjektSchreiben(m_ID_Projekt, e.Klimazone);
 
-            WaermequelleClass.QuelleSchreiben(idAnlage, new QuelleErgebnis
-            {
-                Typ = WaermequelleClass.TYP_ERDREICH,
-                Quellsystem = e.Quellsystem,
-                Tiefe = e.Tiefe,
-                Flaeche = e.Flaeche,
-                Anzahl = e.Anzahl,
-                Bodentyp = e.Bodentyp,
-                SpreizungErdreich = e.Spreizung
-            });
+            // Dieselbe Abbildung wie im Lauf aus dem Dialog (QuelleErdreichHuelle.Laufvorgabe).
+            WaermequelleClass.QuelleSchreiben(idAnlage, QuelleErdreichHuelle.Quelle(e));
+
+            // Das Sondenfeld je Anlage (Konzept 23.3) - nur beim Quellsystem Sonde; leer heisst Vorgabe.
+            ErdsondenfeldEingabe feld = QuelleErdreichHuelle.Sondenfeld(e);
+            if (feld != null) ErdsondenfeldCtrl.Schreiben(idAnlage, feld);
         }
 
         /// <summary>
@@ -2230,7 +2438,7 @@ namespace WindowsFormsApplication1
                 VerbundMitglieder = WaermesenkeClass.VerbundLesen(idAnlage)
             };
 
-            return WaermesenkeHuelle.Gaben(daten);
+            return WaermesenkeHuelle.Gaben(daten, Kaskade.Belegt(_konfiguration));
         }
 
         /// <summary>

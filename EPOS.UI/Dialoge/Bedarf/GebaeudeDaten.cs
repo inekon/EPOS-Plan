@@ -1,6 +1,15 @@
 ﻿namespace EPOS.UI.Dialoge.Bedarf;
 
 /// <summary>
+/// Der Jahreswärmebedarf eines Projektgebäudes aus dem letzten Rechenlauf des Projekts (GD-N; Zusammenfassung des
+/// Gebäudedialogs).
+/// </summary>
+/// <param name="Mwh">Der Wert [MWh/a].</param>
+/// <param name="Zeitpunkt">Der Zeitpunkt des Laufs; <c>null</c> = unbekannt.</param>
+/// <param name="Projektwert">Der Lauf führt keinen Wert je Gebäude — es ist der Heizwärmebedarf des Projekts.</param>
+public sealed record GebaeudeJahreswaermebedarf(double Mwh, DateTime? Zeitpunkt, bool Projektwert);
+
+/// <summary>
 /// EINE Zeile der Projektliste des Gebäudedialogs (iU9-W9.2) — das plattformfreie Abbild
 /// von <c>Z_ProjGebModel</c>.
 ///
@@ -83,6 +92,9 @@ public sealed class GebaeudeProjektZeile
     /// <summary>Die Zahl der Bauteile aller Zonen der Projektkopie (G6a) — für dieselbe Rückfrage.</summary>
     public int Bauteilzahl { get; set; }
 
+    /// <summary>Ist an der Projektkopie die Kühlung aktiv (<c>Kuehlung_Aktiv</c>)? Für die Zusammenfassung der Detailzeile.</summary>
+    public bool KuehlungAktiv { get; set; }
+
     /// <summary>
     /// Der UNDURCHSICHTIGE Schlüssel der ausstehenden Herkunft einer Zeile aus dem Gebäudeimport
     /// (Stufe G4, Welle 4); <c>null</c> = keine. Quelle und Paarungen selbst bleiben in der Hülle —
@@ -136,6 +148,18 @@ public sealed class GebaeudeImportweg
 /// <param name="Wohnflaeche">Die Gesamtfläche als Text.</param>
 /// <param name="Rechenweg">Der Rechenweg als Anzeigetext (Stufe G1).</param>
 /// <param name="HgesWK">Der Wärmeleitwert H_ges [W/K]; <c>null</c> = nicht bekannt.</param>
+/// <param name="UWerte">Die U-Werte kurz (Außenwand, Fenster, Dach, Grundfläche) als Anzeigetext; leer = nicht bekannt.</param>
+/// <param name="Zonenzahl">Die Zahl der Zonen des Katalogsatzes.</param>
 public sealed record GebaeudeStammDetail(
     string Name, string Art, string Beschreibung, string Wohnflaeche,
-    string Rechenweg = "", double? HgesWK = null);
+    string Rechenweg = "", double? HgesWK = null, string UWerte = "", int Zonenzahl = 0);
+
+/// <summary>
+/// Was „In DB übernehmen" ergeben hat — die Antwort der Hülle auf den Weg
+/// <c>GebaeudeStammCtrl.AusProjektUebernehmen</c>.
+/// </summary>
+/// <param name="Ok">Steht der neue Satz im Katalog?</param>
+/// <param name="Name">Der Name des neuen Katalogsatzes (der Schlüssel der Katalogliste).</param>
+/// <param name="Meldung">Bei Erfolg die Statuszeile, sonst die benannte Absage.</param>
+/// <param name="AmNamen">Steht die Absage am Namensfeld (leer oder vergeben)?</param>
+public sealed record GebaeudeDbUebernahme(bool Ok, string Name, string Meldung, bool AmNamen = false);

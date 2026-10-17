@@ -1,0 +1,192 @@
+﻿@* PROFILE AUS EINER PROJEKTDATEI (Stufe NP4b; Konzept Nutzungsprofile Q46, NP-F21) - ein Knopf und, nach dem Lesen,
+   die Vorschau darunter: Datei und Zielkategorie "Projektdatei <Datei>", je DIN-Nummer Name, Werte in Kurzform, Zonen und
+   Stand (neu | vorhanden), die Hinweise der Abbildung. Geschrieben wird erst mit "Uebernehmen"; besteht die Kategorie
+   schon, ist die Rueckfrage die Wahl "Ergaenzen | Ersetzen". Danach die Ergebniszeile und der Hinweis, die Zuordnung im
+   Blatt umzustellen - die Uebernahme stellt die Zuordnung der DIN-Nummern NICHT um.
+
+   ZWEI WIRTE: das Blatt "Nutzungsprofile" (Kopfknopf "Aus Projektdatei...", Dateiwahl ueber Dienste.Datei) und der
+   Gebaeudeimport mit geladener Projektdatei ("Nutzungsprofile der Datei uebernehmen..."). Nach der Uebernahme ruft die
+   Komponente "Uebernommen"; der Wirt liest Katalog und Zuordnung neu.
+
+   Keine Eingabefelder: Die Wahl ist ein Knopf. Weiche Sperre mit Grund (aria-disabled, title). Ohne Weg kein Knopf. *@
+
+@using System.Globalization
+
+@if (Weg?.Laden is not null && Weg.Uebernehmen is not null)
+{
+    <div class="epos-projektdateiprofile">
+        <button type="button" class="epos-knopf epos-projektdateiprofile-oeffnen" data-aktion="projektdateiprofile"
+                aria-disabled="@(_beschaeftigt ? "true" : null)" title="@(_beschaeftigt ? T.GrundBeschaeftigt : T.Tooltip)"
+                @onclick="Oeffnen">@(Knopftext ?? T.KnopfBlatt)</button>
+
+        @if (_vorschau is ProjektdateiProfileVorschau v)
+        {
+            <section class="epos-projektdateiprofile-vorschau" aria-live="polite">
+                <p class="epos-projektdateiprofile-kopf">@string.Format(CultureInfo.CurrentCulture, T.Ueberschrift, v.Dateiname, v.Kategorie)</p>
+                @if (v.Abgelehnt)
+                {
+                    <p class="epos-projektdateiprofile-ablehnung" role="alert">@v.Ablehnung</p>
+                }
+                else
+                {
+                    <p class="epos-leisezeile epos-projektdateiprofile-herkunft">@T.HinweisHerkunft</p>
+                    @if (v.Zeilen.Count > 0)
+                    {
+                        <div class="epos-raster-huelle epos-projektdateiprofile-rahmen">
+                        <table class="epos-raster epos-projektdateiprofile-tabelle">
+                            <thead>
+                                <tr>
+                                    <th scope="col">@T.SpalteNummer</th>
+                                    <th scope="col">@T.SpalteName</th>
+                                    <th scope="col">@T.SpalteWerte</th>
+                                    <th scope="col">@T.SpalteZonen</th>
+                                    <th scope="col">@T.SpalteStand</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (ProjektdateiProfilZeile z in v.Zeilen)
+                                {
+                                    <tr class="epos-projektdateiprofile-zeile" data-nummer="@z.Nummer" data-vorhanden="@(z.Vorhanden ? "1" : "0")">
+                                        <td>@z.Nummer</td>
+                                        <td>@z.Bezeichner</td>
+                                        <td class="epos-projektdateiprofile-werte">@z.Werte</td>
+                                        <td>@z.Zonen.ToString(CultureInfo.CurrentCulture)</td>
+                                        <td>@(z.Vorhanden ? T.StandVorhanden : T.StandNeu)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        </div>
+                    }
+                    @if (v.Meldungen.Count > 0)
+                    {
+                        <p class="epos-projektdateiprofile-meldungstitel">@T.Meldungen</p>
+                        <ul class="epos-projektdateiprofile-meldungen">
+                            @foreach (string m in v.Meldungen)
+                            {
+                                <li>@m</li>
+                            }
+                        </ul>
+                    }
+                    @if (_ergebnis is null)
+                    {
+                        @if (v.KategorieVorhanden)
+                        {
+                            <p class="epos-projektdateiprofile-frage" role="status">@string.Format(CultureInfo.CurrentCulture, T.KategorieVorhanden, v.Kategorie)</p>
+                        }
+                        <div class="epos-projektdateiprofile-knoepfe">
+                            @if (!v.KategorieVorhanden)
+                            {
+                                <button type="button" class="epos-knopf epos-projektdateiprofile-uebernehmen"
+                                        aria-disabled="@(UebernehmenSperre(v) is null ? null : "true")" title="@UebernehmenSperre(v)"
+                                        @onclick="() => Schreiben(false)">@T.KnopfUebernehmen</button>
+                            }
+                            else
+                            {
+                                <button type="button" class="epos-knopf epos-projektdateiprofile-ergaenzen"
+                                        aria-disabled="@(ErgaenzenSperre(v) is null ? null : "true")" title="@ErgaenzenSperre(v)"
+                                        @onclick="() => Schreiben(false)">@T.KnopfErgaenzen</button>
+                                <button type="button" class="epos-knopf epos-projektdateiprofile-ersetzen"
+                                        aria-disabled="@(UebernehmenSperre(v) is null ? null : "true")" title="@UebernehmenSperre(v)"
+                                        @onclick="() => Schreiben(true)">@T.KnopfErsetzen</button>
+                            }
+                        </div>
+                    }
+                }
+                @if (_sperrhinweis is not null)
+                {
+                    <p class="epos-projektdateiprofile-sperrhinweis" role="status">@_sperrhinweis</p>
+                }
+                @if (_ergebnis is ProjektdateiProfileErgebnis e)
+                {
+                    <p class="epos-projektdateiprofile-ergebnis" role="@(e.Ok ? "status" : "alert")" data-ok="@(e.Ok ? "1" : "0")">@e.Meldung</p>
+                    @if (e.Ok)
+                    {
+                        <p class="epos-projektdateiprofile-zuordnung">@T.HinweisZuordnung</p>
+                    }
+                    @foreach (string m in e.Meldungen)
+                    {
+                        <p class="epos-leisezeile">@m</p>
+                    }
+                }
+                <div class="epos-projektdateiprofile-knoepfe">
+                    <button type="button" class="epos-knopf epos-projektdateiprofile-schliessen" @onclick="Schliessen">@T.KnopfSchliessen</button>
+                </div>
+            </section>
+        }
+    </div>
+}
+
+@code {
+    /// <summary>Der Weg: Laden (Dateiwahl bzw. geladene Datei) und Übernehmen; ohne beide Delegaten kein Knopf.</summary>
+    [Parameter] public ProjektdateiProfileWeg? Weg { get; set; }
+
+    /// <summary>Die Beschriftung des Knopfs; <c>null</c> = „Aus Projektdatei…“.</summary>
+    [Parameter] public string? Knopftext { get; set; }
+
+    /// <summary>Nach einer gelungenen Übernahme: Der Wirt liest Katalog und Zuordnung neu.</summary>
+    [Parameter] public EventCallback Uebernommen { get; set; }
+
+    private ProjektdateiProfileTexte T => Weg?.Texte ?? new ProjektdateiProfileTexte();
+
+    private ProjektdateiProfileVorschau? _vorschau;
+    private ProjektdateiProfileErgebnis? _ergebnis;
+    private bool _beschaeftigt;
+    private string? _sperrhinweis;
+
+    /// <summary>Steht die Vorschau offen? Prüfhilfe für die Tests.</summary>
+    public bool VorschauOffen => _vorschau is not null;
+
+    private string? UebernehmenSperre(ProjektdateiProfileVorschau v)
+        => _beschaeftigt ? T.GrundBeschaeftigt : v.Zeilen.Count == 0 ? T.GrundKeine : null;
+
+    private string? ErgaenzenSperre(ProjektdateiProfileVorschau v)
+        => UebernehmenSperre(v) ?? (v.Neue == 0 ? T.GrundAlleDa : null);
+
+    private async Task Oeffnen()
+    {
+        if (Weg?.Laden is null) return;
+        if (_beschaeftigt)
+        {
+            _sperrhinweis = T.GrundBeschaeftigt;   // weiche Sperre: der Versuch wird gemeldet
+            return;
+        }
+        _sperrhinweis = null;
+        _beschaeftigt = true;
+        try
+        {
+            ProjektdateiProfileVorschau? v = await Weg.Laden();
+            if (v is null) return;   // abgebrochen - die alte Vorschau bleibt
+            _vorschau = v;
+            _ergebnis = null;
+        }
+        finally
+        {
+            _beschaeftigt = false;
+        }
+    }
+
+    private async Task Schreiben(bool ersetzen)
+    {
+        if (_vorschau is not ProjektdateiProfileVorschau v || Weg?.Uebernehmen is null) return;
+        _sperrhinweis = ersetzen || !v.KategorieVorhanden ? UebernehmenSperre(v) : ErgaenzenSperre(v);
+        if (_sperrhinweis is not null) return;   // weiche Sperre: der Grund steht unter den Knöpfen
+        _beschaeftigt = true;
+        try
+        {
+            _ergebnis = Weg.Uebernehmen(ersetzen);
+        }
+        finally
+        {
+            _beschaeftigt = false;
+        }
+        if (_ergebnis.Ok && Uebernommen.HasDelegate) await Uebernommen.InvokeAsync();
+    }
+
+    private void Schliessen()
+    {
+        _vorschau = null;
+        _ergebnis = null;
+        _sperrhinweis = null;
+    }
+}

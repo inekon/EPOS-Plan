@@ -103,7 +103,7 @@ public partial class ZapfprofilAuslegungDialogTests : EposBunitContext
 
     private static ZapfprofilAuslegungStartDaten Start(ZapfprofilAuslegungDaten? ergebnis = null, ZapfprofilAuslegungEingabeDaten? eingabe = null) => new()
     {
-        Kontext = "Summe aller Zonen · 2 Zonen · Stufe Einfach",
+        Kontext = "Summe aller Bereiche · 2 Bereiche · Stufe Einfach",
         Eingabe = eingabe ?? new ZapfprofilAuslegungEingabeDaten { SpeicherC = 60, ErzeugerKw = 25 },
         Bedarfstage =
         {
@@ -153,7 +153,7 @@ public partial class ZapfprofilAuslegungDialogTests : EposBunitContext
         var cut = Aufbauen(Start(Ergebnis(Speichergruppe(mitWoche: true))));
 
         Assert.Equal("Auslegung Brauchwasser", cut.Find("h1.epos-dialog-titel").TextContent);
-        Assert.Contains("2 Zonen", cut.Find(".epos-kontextzeile").TextContent);
+        Assert.Contains("2 Bereiche", cut.Find(".epos-kontextzeile").TextContent);
 
         // Drei Karten: Summenlinie, Perzentil, Normvergleich.
         IReadOnlyList<IElement> karten = cut.FindAll(".epos-zapfausl-karte");
@@ -200,6 +200,30 @@ public partial class ZapfprofilAuslegungDialogTests : EposBunitContext
     /// Stufe Z3: Vor „Stochastisch rechnen" ist das Perzentil offen — nicht mehr gesperrt, sondern
     /// mit dem Weg dorthin; die Übergabe bleibt benannt gesperrt.
     /// </summary>
+    /// <summary>
+    /// <b>Schnellauslegung nach Vorlage V4</b> (Stufe Einfach ohne die Auslegungswerte der A100): Der Punkt
+    /// trägt die sichtbare Marke „Schnellauslegung V4" mit dem Vermerk im Tooltip statt der Marke
+    /// „Schnellauslegung" und ohne den Entwurfsstand der Summenlinie.
+    /// </summary>
+    [Fact]
+    public void Die_Schnellauslegung_V4_zeigt_ihre_Herkunft_am_Punkt()
+    {
+        ZapfprofilAuslegungsgruppeDaten g = Speichergruppe();
+        g.Empfehlung = new ZapfprofilEmpfehlungDaten
+        {
+            Rechenbar = true, Speicher = true, VolumenL = 400, LeistungKw = 25, NenninhaltL = 400, Schnellauslegung = true,
+            VorlageV4 = true, Vermerk = "Schnellauslegung; Schnellauslegung nach Vorlage V4, ohne Summenlinie"
+        };
+        var cut = Aufbauen(Start(Ergebnis(g)));
+
+        IElement empfehlung = Assert.Single(cut.FindAll(".epos-zapfausl-empfehlung"));
+        IElement marke = Assert.Single(empfehlung.QuerySelectorAll(".epos-zapfausl-marke--schnell"));
+        Assert.Equal("Schnellauslegung V4", marke.TextContent);
+        Assert.Contains("ohne Summenlinie", marke.GetAttribute("title"));
+        Assert.Null(empfehlung.QuerySelector(".epos-zapfausl-entwurf"));
+        Assert.Contains("Speicher 400 l", empfehlung.TextContent);
+    }
+
     [Fact]
     public void Ohne_Lauf_ist_das_Perzentil_offen_und_die_Uebergabe_benannt_gesperrt()
     {
@@ -214,11 +238,11 @@ public partial class ZapfprofilAuslegungDialogTests : EposBunitContext
         IElement uebergabe = Knopf(cut, "An Speicherauslegung übergeben…");
         Assert.Equal("true", uebergabe.GetAttribute("aria-disabled"));
         Assert.False(uebergabe.HasAttribute("disabled"));
-        Assert.Equal("Die Übergabe an die Speicherauslegung kommt mit einer späteren Fassung.", uebergabe.GetAttribute("title"));
+        Assert.Equal("Die Übergabe öffnet die Pufferspeicher-Auslegung in einem eigenen Fenster; diese Plattform hat keines — die Auslegung steht in ① Konfiguration unter „Pufferspeicher auslegen…“.", uebergabe.GetAttribute("title"));
 
         uebergabe.Click();
-        Assert.Equal("Die Übergabe an die Speicherauslegung kommt mit einer späteren Fassung.", cut.Instance.Hinweis);
-        Assert.Contains("kommt mit einer späteren Fassung", cut.Find(".epos-zapfausl-hinweis").TextContent);
+        Assert.Equal("Die Übergabe öffnet die Pufferspeicher-Auslegung in einem eigenen Fenster; diese Plattform hat keines — die Auslegung steht in ① Konfiguration unter „Pufferspeicher auslegen…“.", cut.Instance.Hinweis);
+        Assert.Contains("in einem eigenen Fenster", cut.Find(".epos-zapfausl-hinweis").TextContent);
     }
 
     [Fact]
@@ -1012,7 +1036,7 @@ public partial class ZapfprofilAuslegungDialogTests : EposBunitContext
         IElement zeile = b.QuerySelector(".epos-zapfausl-je-einheit")!;
         Assert.Equal("Minutenspitze P99 je Wohnungsstation", zeile.QuerySelector("span")!.TextContent);
         Assert.Equal("21,5 kW", zeile.QuerySelector("b")!.TextContent);
-        Assert.Equal("Auslegungsgröße jeder Wohnungsstation; maßgebend ist die Zone „Zone Nord“.",
+        Assert.Equal("Auslegungsgröße jeder Wohnungsstation; maßgebend ist der Bereich „Zone Nord“.",
                      b.QuerySelector(".epos-zapfausl-je-einheit-zone")!.TextContent);
 
         // Ohne Wert (jede andere Topologie) keine Zeile.
@@ -1114,7 +1138,7 @@ public partial class ZapfprofilAuslegungDialogTests : EposBunitContext
         g.Perzentil = new ZapfprofilKarteDaten
         {
             Stand = ZapfprofilKartenstand.NichtRechenbar,
-            Text = "Nicht rechenbar — für die Nutzungsart „Wohnen A“ der Zone „Zone 1“ stehen keine Zapfkategorien im Katalog."
+            Text = "Nicht rechenbar — für die Nutzungsart „Wohnen A“ des Bereichs „Zone 1“ stehen keine Zapfkategorien im Katalog."
         };
         var cut = Aufbauen(StartMitStochastik(Ergebnis(g)));
 
@@ -1335,7 +1359,7 @@ public partial class ZapfprofilAuslegungDialogTests : EposBunitContext
         Setze("bedarfstag", "Tag A");
         Assert.Equal(5, cut.Instance.Eingabe.IdBedarfstag);
         Assert.Equal(ZapfprofilBedarfstagquelle.Konstruktor, cut.Instance.Eingabe.Quelle);
-        Setze("bedarfstag", "Stundenprofil der Zonen");
+        Setze("bedarfstag", "Stundenprofil der Bereiche");
         Assert.Equal(ZapfprofilBedarfstagquelle.Stundenprofil, cut.Instance.Eingabe.Quelle);
         Assert.Null(cut.Instance.Eingabe.IdBedarfstag);
 
@@ -1522,5 +1546,31 @@ public partial class ZapfprofilAuslegungDialogTests : EposBunitContext
         Knopf(cut.FindComponent<BedarfstagKonstruktor>(), "Abbrechen").Click();
         Assert.False(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.BEDARFSTAG_KONSTRUKTOR));
         Assert.Equal(KiMaskennamen.ZAPFPROFIL_AUSLEGUNG, KiMaskenbruecke.AktiveMaske());
+    }
+
+    /// <summary>
+    /// Stufe P2 der Pufferspeicher-Auslegung: Mit Weg ist „An Speicherauslegung übergeben…" aktiv,
+    /// übergibt die Eingaben der Auslegung und zeigt einen Grund, den die Hülle meldet.
+    /// </summary>
+    [Fact]
+    public void Mit_Weg_uebergibt_der_Knopf_die_Eingaben_an_die_Pufferauslegung()
+    {
+        var uebergeben = new List<ZapfprofilAuslegungEingabeDaten>();
+        string? antwort = null;
+        var cut = Render<ZapfprofilAuslegungDialog>(p => p
+            .Add(x => x.Daten, Start())
+            .Add(x => x.Texte, new ZapfprofilAuslegungTexte())
+            .Add(x => x.Uebergeben, e => { uebergeben.Add(e); return Task.FromResult(antwort); }));
+
+        IElement knopf = Knopf(cut, "An Speicherauslegung übergeben…");
+        Assert.Null(knopf.GetAttribute("aria-disabled"));
+        knopf.Click();
+        Assert.Single(uebergeben);
+        Assert.Equal("", cut.Instance.Hinweis);
+
+        antwort = "Kein Klimakalender für das Projekt.";
+        Knopf(cut, "An Speicherauslegung übergeben…").Click();
+        Assert.Equal(2, uebergeben.Count);
+        Assert.Equal("Kein Klimakalender für das Projekt.", cut.Instance.Hinweis);
     }
 }

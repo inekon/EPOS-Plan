@@ -39,13 +39,26 @@
 @namespace EPOS.UI.Bausteine
 @using EPOS.UI.Dienste
 @using WindowsFormsApplication1
+@using Microsoft.JSInterop
+@inject IJSRuntime Js
 @implements IDisposable
 
 @if (!_verfallen)
 {
-    <div class="epos-warnbanner epos-warnbanner--@Klasse" role="alert">
+    <div class="@Klassen" role="alert" @ref="_wurzel">
         <span class="epos-warnbanner-symbol" aria-hidden="true">@Zeichen</span>
         <span class="epos-warnbanner-text">@Text</span>
+        @* DIE HINWEISLISTE (Anwenderbefund 10.10.2026: rund 25 Hinweise eines
+           Simulationslaufs, zu einem Absatz verkettet, deckten die ganze Seite). Sie ist
+           die Klapp-Bauform des Hauses, der Baustein Hinweisklappe, eingebettet: Zugeklappt
+           traegt das Banner EINE Zeile - Kopftext, Zahl und Klapper -, aufgeklappt steht
+           die Liste darunter in ihrem Rollbereich (im Flexkasten des Banners nach hinten
+           geordnet, unter Handgriff und Kreuz). Ohne Hinweise zeichnet sie nichts. *@
+        <Hinweisklappe @ref="_klappe" Hinweise="@Hinweise" Eingebettet="true"
+                       Offen="@Anfangsoffen" EinzelnOffen="false"
+                       Klasse="epos-warnbanner-klapper" ListenKlasse="epos-warnbanner-liste"
+                       TextEiner="@ZahlEiner" TextMehrere="@ZahlMehrere"
+                       AnzeigenText="@AnzeigenText" AusblendenText="@AusblendenText" />
         @if (AktionSichtbar)
         {
             @* DER WEG VON DER MELDUNG ZUR HANDLUNG (Anwenderentscheid vom
@@ -74,6 +87,14 @@
             <button type="button" class="epos-warnbanner-erklaeren"
                     title="@ErklaerenKurztext" @onclick="Erklaeren">@ErklaerenText</button>
         }
+        @* MELDUNG AUSBLENDEN (Anwenderentscheid vom 06.10.2026: Meldungen in langen
+           Dialogen im eigenen Fenster muessen sichtbar sein). Dort haftet das Banner
+           unter dem Kopf (epos-ui.css, „Dialog im eigenen Fenster") - damit es nicht
+           dauerhaft Platz nimmt, laesst es sich wegklicken. Der Knopf steht immer im
+           Markup, sichtbar ist er nur, wo das Banner haftet; in Ueberlagerung, Blatt
+           und Seite rollt das Banner mit und braucht ihn nicht. *@
+        <button type="button" class="epos-warnbanner-schliessen" title="@SchliessenKurztext"
+                aria-label="@SchliessenKurztext" @onclick="Schliessen">✕</button>
     </div>
 }
 
@@ -239,8 +260,126 @@
         alt.Dispose();
     }
 
+    /// <summary>Kurztext und <c>aria-label</c> des Ausblendknopfs (<c>WARNBANNER_SCHLIESSEN_TOOLTIP</c>).</summary>
+    [Parameter] public string SchliessenKurztext { get; set; } =
+        Ressource("WARNBANNER_SCHLIESSEN_TOOLTIP", "Meldung ausblenden");
+
+    /// <summary>
+    /// Der Anwender blendet die Meldung aus: wie der Selbstverfall - das Banner
+    /// verschwindet, der Wirt erfaehrt es ueber <see cref="Verfallen"/> und darf seine
+    /// Meldung vergessen. Ein neuer Text zeigt es wieder.
+    /// </summary>
+    private async Task Schliessen()
+    {
+        Abbrechen();
+        _verfallen = true;
+        await Verfallen.InvokeAsync();
+    }
+
+    // =====================================================================
+    //  Die Hinweisliste (Anwenderbefund 10.10.2026)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Hinweise zur Meldung, ein Eintrag je Hinweis; <see cref="Text"/> ist dann der
+    /// Kopf (etwa die Statuszeile des Laufs). Leer oder <c>null</c> = das Banner zeigt
+    /// nur <see cref="Text"/>, wie es immer tat.
+    /// </summary>
+    /// <remarks>
+    /// <b>Die Liste kommt ausdruecklich, nicht als verketteter Absatz:</b> Die Huelle
+    /// kennt die Grenzen der Hinweise, das Banner muesste sie aus einem Fliesstext raten.
+    /// </remarks>
+    [Parameter] public IReadOnlyList<string>? Hinweise { get; set; }
+
+    /// <summary>
+    /// Anfangsstellung der Liste; <c>null</c> = nach der Stufe: Fehler und Warnung offen
+    /// (eine Fehlermeldung wird nicht versteckt), Hinweis und Erfolg zugeklappt.
+    /// </summary>
+    [Parameter] public bool? HinweiseOffen { get; set; }
+
+    /// <summary>Beschriftung des Klappers im zugeklappten Zustand (<c>WARNBANNER_HINWEISE_ANZEIGEN</c>).</summary>
+    [Parameter] public string AnzeigenText { get; set; } =
+        Ressource("WARNBANNER_HINWEISE_ANZEIGEN", "Hinweise anzeigen");
+
+    /// <summary>Beschriftung des Klappers im aufgeklappten Zustand (<c>WARNBANNER_HINWEISE_AUSBLENDEN</c>).</summary>
+    [Parameter] public string AusblendenText { get; set; } =
+        Ressource("WARNBANNER_HINWEISE_AUSBLENDEN", "Hinweise ausblenden");
+
+    /// <summary>Zahl bei genau einem Hinweis (<c>WARNBANNER_HINWEISE_EINER</c>).</summary>
+    [Parameter] public string ZahlEiner { get; set; } =
+        Ressource("WARNBANNER_HINWEISE_EINER", "1 Hinweis");
+
+    /// <summary>Zahl bei mehreren Hinweisen, {0} ist die Zahl (<c>WARNBANNER_HINWEISE_MEHRERE</c>).</summary>
+    [Parameter] public string ZahlMehrere { get; set; } =
+        Ressource("WARNBANNER_HINWEISE_MEHRERE", "{0} Hinweise");
+
+    /// <summary>Traegt das Banner eine Hinweisliste? (Pruefhilfe fuer Tests.)</summary>
+    public bool HatListe => Hinweise is { Count: > 0 };
+
+    /// <summary>
+    /// Steht die Liste offen? Die Stellung, die der Anwender waehlt, fuehrt die
+    /// Hinweisklappe; sie bleibt, solange das Banner lebt - auch ueber einen neuen Text;
+    /// gespeichert wird sie nicht.
+    /// </summary>
+    public bool IstOffen => HatListe && (_klappe?.IstOffen ?? Anfangsoffen);
+
+    /// <summary>Anfangsstellung der Liste nach <see cref="HinweiseOffen"/>, sonst nach der Stufe.</summary>
+    private bool Anfangsoffen => HinweiseOffen ?? Stufe is WarnStufe.Fehler or WarnStufe.Warnung;
+
+    private Hinweisklappe? _klappe;
+
+    // =====================================================================
+    //  Die gemessene Hoehe (scroll-padding-top im eigenen Fenster)
+    // =====================================================================
+
+    /// <summary>Der Pfad des Moduls, das die Höhe eines Banners an der Dialogwurzel als Token meldet.</summary>
+    public const string MODUL = "./_content/EPOS.UI/epos-warnbanner.js";
+
+    /// <summary>Das Token, mit dem das Polster des Fensters (<c>scroll-padding-top</c>) rechnet.</summary>
+    public const string TOKEN = "--epos-meldung-hoehe";
+
+    private ElementReference _wurzel;
+    private string? _gemeldet;
+    private IJSObjectReference? _modul;
+
+    /// <summary>
+    /// Meldet jedes neu gezeichnete Banner dem Hoehenmodul (<see cref="MODUL"/>,
+    /// <c>hoeheMelden</c>): Steht es als unmittelbares Kind der Dialogwurzel, setzt ein
+    /// ResizeObserver seine Hoehe als Token <see cref="TOKEN"/>, und das Polster des
+    /// Fensters (<c>scroll-padding-top</c>) rechnet damit - das angesprungene Feld steht unter
+    /// dem Banner, auch mit aufgeklappter Hinweisliste. An jeder anderen Stelle meldet das
+    /// Modul nichts. Ohne Modul (Huelle ohne Skripte, Test) gilt der Rueckfall des
+    /// Stilblatts: eine Bannerzeile.
+    /// </summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_verfallen || _wurzel.Id is null || _wurzel.Id == _gemeldet) return;
+        _gemeldet = _wurzel.Id;
+        try
+        {
+            _modul ??= await Js.InvokeAsync<IJSObjectReference>("import", MODUL);
+            await _modul.InvokeVoidAsync("hoeheMelden", _wurzel);
+        }
+        catch (Exception)
+        {
+            // Ohne das Modul steht das Banner trotzdem; das Polster rechnet eine Zeile.
+        }
+    }
+
     /// <inheritdoc/>
-    public void Dispose() => Abbrechen();
+    public void Dispose()
+    {
+        Abbrechen();
+        IJSObjectReference? modul = _modul;
+        _modul = null;
+        if (modul is not null) _ = Freigeben(modul);
+    }
+
+    private static async Task Freigeben(IJSObjectReference modul)
+    {
+        try { await modul.DisposeAsync(); }
+        catch (Exception) { /* Die WebView ist schon weg. */ }
+    }
 
     private string Klasse => Stufe switch
     {
@@ -249,6 +388,9 @@
         WarnStufe.Erfolg => "erfolg",
         _ => "warnung"
     };
+
+    private string Klassen => "epos-warnbanner epos-warnbanner--" + Klasse
+                              + (HatListe ? " epos-warnbanner--liste" : "");
 
     private string Zeichen => Stufe switch
     {

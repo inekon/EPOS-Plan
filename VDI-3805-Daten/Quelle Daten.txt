@@ -1,2 +1,7 @@
 https://www.bim4hvac.com/de-de/
 https://www.vdi3805-bim.de/
+
+Recherche 10.10.2026 (E119; Recherchestand, kein Rechtsrat; Hosts aus der Sitzung nicht erreichbar, nichts geladen):
+- https://www.bim4hvac.com/de-de/ (BDH): Online-Katalog, Export VDI 3805/IFC/Revit/DWG/STEP je Produkt oder Produktgruppe; Blatt 3, 19, 20, 22 (u. a. Daikin, Hoval, Vaillant, Stiebel Eltron, Wolf, Bosch, Buderus, Viessmann, Kermi, Weishaupt). Katalogadressen: siehe VDI3805_Datensaetze_Download-Links-1.xlsx. Nutzungsbedingungen der Seite nicht geprueft.
+- https://www.vdi3805-bim.de/ (ETU/Hottgenroth): direkter .vdi-Download, ueberwiegend Altstaende; neuere Blatt-22-Datei u. a. PART22_Viessmann_DE_DEU_201903_20240719_KATALOG.vdi (Bestand: 20201009), PART22_ROTEX_..._20190328, Kermi 20151002, Pollmann, Novelan, ELCO.
+- https://www.vdi3805.org/ und Herstellerseiten (z. B. Kermi: BIM-/VDI-3805-Datensaetze Waermepumpen): in der Recherche genannt, nicht geprueft.

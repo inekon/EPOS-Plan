@@ -34,23 +34,30 @@ namespace WindowsFormsApplication1
     /// (<c>F2</c>, der Bestand), kWh keine (<c>F0</c>) — 594,30 kWh sind nicht
     /// genauer als 594, und drei Stellen mehr vor dem Komma brauchen keine zwei
     /// dahinter.</para>
+    ///
+    /// <para><b>Zu jeder Energieeinheit gehört eine Leistungseinheit.</b> Eine
+    /// Ganglinie zeigt Leistung, keine Menge; sie folgt der Wahl trotzdem — MWh
+    /// zeigt MW, kWh zeigt kW (<see cref="Leistungstext"/>,
+    /// <see cref="LeistungAusKW"/>). Die Rechnung ist dieselbe wie bei der Menge,
+    /// auch hier ist die Identität bitgleich.</para>
     /// </summary>
     public sealed record Energieeinheit
     {
-        private Energieeinheit(string text, string format)
+        private Energieeinheit(string text, string format, string leistungstext)
         {
             Text = text;
             Format = format;
+            Leistungstext = leistungstext;
         }
 
         /// <summary>Megawattstunden — die VORGABE beider Bedarfsansichten.</summary>
-        public static readonly Energieeinheit MWh = new Energieeinheit("MWh", "F2");
+        public static readonly Energieeinheit MWh = new Energieeinheit("MWh", "F2", "MW");
 
         /// <summary>
         /// Kilowattstunden. Heißt in C# <c>KWh</c> und trägt „kWh" als
         /// <see cref="Text"/>; ein Bezeichner fängt hier groß an.
         /// </summary>
-        public static readonly Energieeinheit KWh = new Energieeinheit("kWh", "F0");
+        public static readonly Energieeinheit KWh = new Energieeinheit("kWh", "F0", "kW");
 
         private static readonly Energieeinheit[] ALLE = { MWh, KWh };
 
@@ -71,6 +78,31 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Formatangabe der Anzeige: <c>F2</c> bei MWh, <c>F0</c> bei kWh.</summary>
         public string Format { get; }
+
+        /// <summary>
+        /// Das Kürzel der zugehörigen LEISTUNGSEINHEIT: „MW" zu MWh, „kW" zu kWh —
+        /// die Achse einer Ganglinie in dieser Wahl.
+        /// </summary>
+        public string Leistungstext { get; }
+
+        /// <summary>
+        /// Eine Leistung in KILOWATT, ausgedrückt in der Leistungseinheit dieser
+        /// Einheit (<see cref="Leistungstext"/>); bei <see cref="KWh"/> bitgleich.
+        /// </summary>
+        public double LeistungAusKW(double kW)
+        {
+            return ReferenceEquals(this, KWh) ? kW : kW / 1000.0;
+        }
+
+        /// <summary>Eine Reihe von Leistungen in KILOWATT, Wert für Wert wie <see cref="LeistungAusKW"/>.</summary>
+        public double[] LeistungAusKW(double[] kW)
+        {
+            if (kW == null) return null;
+            if (ReferenceEquals(this, KWh)) return (double[])kW.Clone();
+            var aus = new double[kW.Length];
+            for (int i = 0; i < kW.Length; i++) aus[i] = kW[i] / 1000.0;
+            return aus;
+        }
 
         /// <summary>Ein Wert in KILOWATTSTUNDEN, ausgedrückt in dieser Einheit.</summary>
         public double AusKWh(double kWh)
@@ -111,6 +143,33 @@ namespace WindowsFormsApplication1
         public string Formatiere(double wert)
         {
             return wert.ToString(Format, CultureInfo.CurrentCulture);
+        }
+
+        /// <summary>
+        /// Nachkommastellen eines JAHRESWERTS in MWh in Projektliste, Katalogliste und
+        /// Satzzeile der Katalogdialoge (BP-3): keine.
+        /// </summary>
+        public const int JAHRESWERT_MWH_NACHKOMMASTELLEN = 0;
+
+        /// <summary>Das Zahlformat eines Jahreswerts in MWh (BP-3): ganze Zahl mit Tausendertrennung der Kultur.</summary>
+        public const string JAHRESWERT_MWH_FORMAT = "N0";
+
+        /// <summary>
+        /// Der Anzeigetext einer Jahressumme oder Jahresarbeit, die bereits in dieser
+        /// Einheit vorliegt, für Projektliste, Katalogliste, Summe im Listenkopf und
+        /// Satzzeile (BP-3): MWh als ganze Zahl mit Tausendertrennung der Kultur
+        /// (de „1.200“, en „1,200“), kWh wie <see cref="Formatiere"/>.
+        /// </summary>
+        /// <remarks>
+        /// Nur die Anzeige wird gerundet — Eingabefelder behalten ihre Genauigkeit,
+        /// gespeichert und gerechnet wird mit dem ungerundeten Wert. Ein Profil unter
+        /// 1 MWh steht als 0 oder 1 (Anwenderentscheid BP-3).
+        /// </remarks>
+        public string FormatiereJahreswert(double wert)
+        {
+            return ReferenceEquals(this, MWh)
+                ? wert.ToString(JAHRESWERT_MWH_FORMAT, CultureInfo.CurrentCulture)
+                : Formatiere(wert);
         }
 
         /// <summary>

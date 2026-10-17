@@ -23,7 +23,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <para>Die Vorschau kommt aus einem Prüfdelegaten — der Dialog rechnet nicht; die
 /// Entprellung steht auf 0, damit jede Eingabe sofort rechnet. Kultur de-DE.</para>
 /// </summary>
-public class ZapfprofilDialogTests : EposBunitContext
+public partial class ZapfprofilDialogTests : EposBunitContext
 {
     public ZapfprofilDialogTests()
     {
@@ -101,7 +101,7 @@ public class ZapfprofilDialogTests : EposBunitContext
             summe += kwh;
             v.Zonen.Add(new ZapfprofilZonenwertDaten { IdZone = e.Zonen[i].Id, Position = i, Zone = e.Zonen[i].Name, JahresbedarfZapfungKwh = kwh });
         }
-        v.Ansichten.Add(Ansicht("Summe aller Zonen", summe));
+        v.Ansichten.Add(Ansicht("Summe aller Bereiche", summe));
         for (int i = 0; i < e.Zonen.Count; i++) v.Ansichten.Add(Ansicht(e.Zonen[i].Name, v.Zonen[i].JahresbedarfZapfungKwh));
         v.Meldungen.AddRange(meldungen);
         return v;
@@ -167,25 +167,28 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Contains("Klimaregion Mitte", cut.Find(".epos-kontextzeile").TextContent);
         Assert.Contains("2 Werte überschrieben", cut.Markup);
 
-        // Die Zonenliste: zwei Zeilen, Summenzeile, eigene Listenleiste.
+        // ZC2: Der Block der Nutzungsbereiche - zwei Zeilen mit Feldern, eine Detailzeile unter der markierten,
+        // Summenzeile, eigene Listenleiste.
         IElement tabelle = cut.Find("table.epos-zapfprofil-zonen");
-        Assert.Equal(2, tabelle.QuerySelectorAll("tbody tr").Length);
-        Assert.Contains("Summe 2 Zonen", tabelle.QuerySelector("tfoot")!.TextContent);
+        Assert.Equal(2, tabelle.QuerySelectorAll("tbody tr.epos-zapfprofil-bereich").Length);
+        Assert.Single(tabelle.QuerySelectorAll("tbody tr.epos-zapfprofil-bereichdetail"));
+        Assert.Contains("Summe 2 Bereiche", tabelle.QuerySelector("tfoot")!.TextContent);
         Assert.Contains("70,0", tabelle.QuerySelector("tfoot")!.TextContent);   // 20 + 50 MWh/a aus der Prüfvorschau
         Assert.Contains("Wohnen A", tabelle.TextContent);
-        Assert.Contains("20 Wohneinheiten", tabelle.TextContent);
-        Assert.NotNull(Knopf(cut, "Zone hinzufügen…"));
+        Assert.Equal("20", Feld(cut, "Bezugsgröße, Bereich 1").GetAttribute("value"));
+        Assert.Contains("Wohneinheiten", tabelle.QuerySelector("tbody tr.epos-zapfprofil-bereich")!.TextContent);
+        Assert.NotNull(Knopf(cut, "Bereich hinzufügen"));
         Assert.NotNull(Knopf(cut, "Duplizieren"));
         Assert.NotNull(Knopf(cut, "Entfernen"));
 
-        // Der Eingabeblock der gewählten Zone: Zonenname, Nutzungsart, Bezugsgröße, Niveau.
-        Assert.Contains("Zone 1 · Nutzung", cut.Markup);
-        Assert.Single(cut.FindAll("input[inputmode=decimal]"));
-        Assert.Contains("Zonenname", cut.Markup);
+        // Je Zeile Nutzungsart, Bezugsgröße und Niveau als Felder; der Name steht in der Detailzeile (ZC-Q3 B).
+        Assert.DoesNotContain("Bereich „Zone 1“", cut.Markup);
+        Assert.Equal(2, cut.FindAll("input[inputmode=decimal]").Count);
+        Assert.Equal("Zone 1", Feld(cut, "Bereichsname").GetAttribute("value"));
+        Assert.NotNull(cut.Find(".epos-zapfprofil-bereichdetail").QuerySelector("input"));
         Assert.Contains("Nutzungsart", cut.Markup);
-        Assert.Contains("Bedarfsniveau", cut.Markup);
         Assert.Equal(new[] { "niedrig", "mittel", "hoch" },
-                     cut.FindAll("fieldset[aria-label='Bedarfsniveau'] .epos-feld-text").Select(e => e.TextContent).ToArray());
+                     Niveau(cut).QuerySelectorAll("option").Select(e => e.TextContent.Trim()).ToArray());
 
         // Herkunft und Status der Nutzungsart, die Vorgabe des Niveaus am Feld.
         Assert.Contains("Katalog · Eigenkonstruktion · Testquelle · Auslieferung · TEST-1", cut.Markup);
@@ -194,25 +197,25 @@ public class ZapfprofilDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// Der Hinweis der Hülle am Feld der Bezugsmenge (N34): Trägt die gewählte Nutzungsart einen —
-    /// Kennwerte je Zimmer unter der Bezugsart Betten —, steht er unter dem Feld; ohne Hinweis keine Zeile.
+    /// Die Einheit am Feld der Bezugsmenge kommt aus der Bezugsart der gewählten Nutzungsart (Auftrag
+    /// A2): Unter der Bezugsart Zimmer steht „Zimmer" hinter dem Feld — die Beschriftung trägt die
+    /// Aussage selbst, ein eigener Hinweis unter dem Feld entfällt.
     /// </summary>
     [Fact]
-    public void Der_Hinweis_der_Nutzungsart_steht_am_Feld_der_Bezugsmenge()
+    public void Die_Einheit_der_Bezugsmenge_nennt_die_Zimmer_der_Nutzungsart()
     {
-        const string hinweis = "Bezugsmenge ist die Zimmerzahl, nicht die Bettenzahl";
         ZapfprofilDaten daten = Daten();
         ZapfprofilNutzungsartDaten hotel = daten.Katalog[0];
         hotel.Name = "Hotel (je Zimmer)";
-        hotel.Bezugsart = 3;
-        hotel.Bezugsgroesse = "Betten";
-        hotel.HinweisBezugsmenge = hinweis;
+        hotel.Bezugsart = 8;
+        hotel.Bezugsgroesse = "Zimmer";
 
         var cut = Aufbauen(daten);
-        Assert.Contains(cut.FindAll(".epos-herleitung-text"), e => e.TextContent == hinweis);
+        Assert.Contains(cut.FindAll(".epos-einheit"), e => e.TextContent == "Zimmer");
+        Assert.DoesNotContain(cut.FindAll(".epos-herleitung-text"), e => e.TextContent.Contains("Zimmerzahl"));
 
         var ohne = Aufbauen();
-        Assert.DoesNotContain(hinweis, ohne.Markup);
+        Assert.DoesNotContain(ohne.FindAll(".epos-einheit"), e => e.TextContent == "Zimmer");
     }
 
     [Fact]
@@ -226,22 +229,22 @@ public class ZapfprofilDialogTests : EposBunitContext
     }
 
     [Fact]
-    public void Die_Vorschau_zeigt_fuenf_Reiter_und_die_Dauerlinie_erst_ab_Erweitert()
+    public void Die_Vorschau_zeigt_fuenf_Reiter_und_die_Dauerlinie_erst_ab_Experte()
     {
         var cut = Aufbauen();
 
         string[] reiter = cut.FindAll("[role=tab]").Select(b => b.TextContent.Trim()).ToArray();
         Assert.Equal(new[] { "Tagesgang", "Wochenprofil", "Jahresgang", "Dauerlinie", "Kennzahlen" }, reiter);
 
-        // Die Dauerlinie gehört zur Stufe Erweitert (Mockup „Die drei Tiefen"): in Einfach weich gesperrt mit Grund.
+        // Die Dauerlinie gehört zur Stufe Experte (Mockup „Die drei Tiefen"): in Einfach weich gesperrt mit Grund.
         IElement dauer = cut.FindAll("[role=tab]").First(b => b.TextContent.Trim() == "Dauerlinie");
         Assert.Equal("true", dauer.GetAttribute("aria-disabled"));
-        Assert.Equal("Die Dauerlinie zeigt die Stufe Erweitert.", dauer.GetAttribute("title"));
+        Assert.Equal("Die Dauerlinie zeigt die Stufe Experte.", dauer.GetAttribute("title"));
         dauer.Click();
-        Assert.Equal("Die Dauerlinie zeigt die Stufe Erweitert.", cut.Instance.Hinweis);
+        Assert.Equal("Die Dauerlinie zeigt die Stufe Experte.", cut.Instance.Hinweis);
         Assert.Equal("tagesgang", cut.Instance.AktiverReiter);
 
-        Assert.Contains("Unterschrift Tagesgang Summe aller Zonen", cut.Markup);
+        Assert.Contains("Unterschrift Tagesgang Summe aller Bereiche", cut.Markup);
         Assert.Contains("Zapfung 70,0 MWh/a", cut.Find(".epos-zapfprofil-kurzkennzahlen").TextContent);
 
         // Kennzahlen: der größte Stundenwert trägt seinen Vermerk.
@@ -290,7 +293,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         // der Grund statt einer Zahl — nie ein vorbelegtes Ergebnis.
         int vergleich = Array.FindIndex(texte, t => t.StartsWith("Vergleich mit der Messung"));
         Assert.Equal(stochastik + 2, vergleich);
-        Assert.Contains("steht ab der Stufe Erweitert", texte[vergleich + 1]);
+        Assert.Contains("steht ab der Stufe Experte", texte[vergleich + 1]);
         Assert.Equal(vergleich + 2, texte.Length);
 
         // Ohne Schwelle keine Zeile.
@@ -315,22 +318,30 @@ public class ZapfprofilDialogTests : EposBunitContext
     // Benannte Sperren
     // =================================================================================
 
-    /// <summary>Stufe Z4: Alle drei Stufen sind wählbar — keine trägt mehr eine Sperre.</summary>
+    /// <summary>
+    /// ZC3: Die Wahl der Stufe hat genau zwei Einträge, Einfach und Experte, beide ohne Sperre; der alte
+    /// Wert „Erweitert" (1) wird beim Wählen zu Experte.
+    /// </summary>
     [Fact]
-    public void Alle_drei_Stufen_sind_waehlbar()
+    public void Die_Stufenwahl_hat_genau_zwei_Eintraege_Einfach_und_Experte()
     {
         var cut = Aufbauen();
 
-        Assert.Null(Option(cut, "Erweitert").GetAttribute("aria-disabled"));
+        string[] eintraege = cut.Find("fieldset[aria-label='Stufe']").QuerySelectorAll("label.epos-option")
+                                .Select(l => l.TextContent.Trim()).ToArray();
+        Assert.Equal(new[] { "Einfach", "Experte" }, eintraege);
+        Assert.Null(Option(cut, "Einfach").GetAttribute("aria-disabled"));
         Assert.Null(Option(cut, "Experte").GetAttribute("aria-disabled"));
         Assert.True(Option(cut, "Einfach").HasAttribute("checked"));
 
-        Option(cut, "Erweitert").Change("1");
-        Assert.Equal(ZapfprofilStufe.Erweitert, cut.Instance.Stufe);
-        Assert.True(Option(cut, "Erweitert").HasAttribute("checked"));
+        // Der alte Wert 1 über den Assistenten oder einen alten Stand: Er gilt als Experte.
+        Option(cut, "Experte").Change("1");
+        Assert.Equal(ZapfprofilStufe.Experte, cut.Instance.Stufe);
         Assert.Equal("", cut.Instance.Hinweis);
 
+        Option(cut, "Einfach").Change("0");
         Option(cut, "Experte").Change("2");
+        ZapfprofilKarten.AlleAuf(cut);
         Assert.Equal(ZapfprofilStufe.Experte, cut.Instance.Stufe);
         Assert.True(Option(cut, "Experte").HasAttribute("checked"));
 
@@ -363,8 +374,8 @@ public class ZapfprofilDialogTests : EposBunitContext
         => cut.FindAll(".epos-feld-text").Any(t => t.TextContent.Trim() == bezeichnung);
 
     /// <summary>
-    /// 5.3: Der Rechenweg der Jahresreihe steht erst in der Stufe Experte (Erweitert ist noch
-    /// gesperrt), dazu immer der Seed — er gilt auch für das Ensemble der Auslegung —, die
+    /// 5.3: Der Rechenweg der Jahresreihe steht erst in der Stufe Experte, dazu
+    /// immer der Seed — er gilt auch für das Ensemble der Auslegung —, die
     /// Realisierungen der Jahresreihe nur bei „stochastisch"; mit der Vorgabe als Platzhalter
     /// und den Grenzen aus Schema und Kern. Die Stufe blendet nur aus: Zurück in Einfach bleibt
     /// der Rechenweg, und der Zähler zählt ihn.
@@ -379,14 +390,18 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.False(HatFeld(cut, "Zufallssaat (Seed)"));
 
         Option(cut, "Experte").Change("2");
-        Assert.Contains("Stochastik · Jahresreihe", cut.Markup);
-        Assert.Equal(new[] { "deterministisch", "stochastisch" },
+        ZapfprofilKarten.AlleAuf(cut);
+        // ZC5: der Rechenweg ist EINE Wahl in der Methode „Jahresreihe"; darunter nur die Felder des gewählten Wegs.
+        Assert.NotNull(cut.Find(".epos-zapfprofil-karte--jahresreihe fieldset[aria-label='Rechenweg der Jahresreihe']"));
+        Assert.Equal(new[] { "Norm-Jahresgang", "stochastisch", "Typtage VDI 4655" },
                      cut.FindAll("fieldset[aria-label='Rechenweg der Jahresreihe'] .epos-feld-text").Select(x => x.TextContent).ToArray());
-        Assert.True(Option(cut, "deterministisch").HasAttribute("checked"));
+        Assert.True(Option(cut, "Norm-Jahresgang").HasAttribute("checked"));
         Assert.Contains("Wählt nur, welche Reihe in die Bilanz geht", cut.Markup);
-        Assert.True(HatFeld(cut, "Zufallssaat (Seed)"));                  // der Seed auch deterministisch
-        Assert.Contains("— für die Jahresreihe und das Ensemble der Auslegung.", cut.Markup);
-        Assert.False(HatFeld(cut, "Realisierungen"));
+        // Seed und Realisierungen stehen bei jedem Weg - beim Norm-Jahresgang wirken sie nur auf das Ensemble der Auslegung.
+        Assert.True(HatFeld(cut, "Zufallssaat (Seed)"));
+        Assert.True(HatFeld(cut, "Realisierungen"));
+        Assert.Contains("Wirkt hier nur auf das Ensemble der Auslegung.", cut.Markup);
+        Assert.DoesNotContain("Die Konsistenzprobe steht nach dem Lauf im Reiter Kennzahlen.", cut.Markup);
         Assert.Empty(cut.FindAll(".epos-zapfprofil-vorschau-deterministisch"));
 
         Option(cut, "stochastisch").Change("1");
@@ -418,6 +433,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         ZapfprofilErgebnisDaten? ergebnis = null;
         var cut = Aufbauen(vorschau: e => { gesehen.Add(e); return Vorschau(e); }, geschlossen: x => ergebnis = x);
         Option(cut, "Experte").Change("2");
+        ZapfprofilKarten.AlleAuf(cut);
         Option(cut, "stochastisch").Change("1");
 
         Feld(cut, "Zufallssaat (Seed)").Input("7");
@@ -446,6 +462,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         ZapfprofilErgebnisDaten? ergebnis = null;
         var cut = Aufbauen(geschlossen: x => ergebnis = x);
         Option(cut, "Experte").Change("2");
+        ZapfprofilKarten.AlleAuf(cut);
         Option(cut, "stochastisch").Change("1");
 
         Feld(cut, "Realisierungen").Input("5000");                        // über der Obergrenze des Kerns
@@ -463,30 +480,34 @@ public class ZapfprofilDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// Umschalten leert nur die eigenen Fehlfelder: „deterministisch" nimmt die Realisierungen samt
-    /// Fehleingabe weg, der Seed bleibt stehen — seine Fehleingabe hält das OK weiter an.
+    /// Umschalten leert keine Fehlfelder (ZC5): Seed und Realisierungen stehen bei jedem Weg — ihre
+    /// Fehleingaben halten das OK auch beim Norm-Jahresgang an, bis sie berichtigt sind.
     /// </summary>
     [Fact]
-    public void Der_Rechenweg_leert_nur_die_Fehleingabe_der_Realisierungen()
+    public void Der_Rechenweg_Norm_behaelt_Seed_und_Realisierungen_samt_Fehleingabe()
     {
         ZapfprofilErgebnisDaten? ergebnis = null;
         var cut = Aufbauen(geschlossen: x => ergebnis = x);
         Option(cut, "Experte").Change("2");
+        ZapfprofilKarten.AlleAuf(cut);
         Option(cut, "stochastisch").Change("1");
         Feld(cut, "Zufallssaat (Seed)").Input("-1");
         Feld(cut, "Realisierungen").Input("5000");
 
-        Option(cut, "deterministisch").Change("0");
-        Assert.True(HatFeld(cut, "Zufallssaat (Seed)"));
+        Option(cut, "Norm-Jahresgang").Change("0");
         Assert.Contains("epos-fehleingabe", Feld(cut, "Zufallssaat (Seed)").ClassName);
+        Assert.Contains("epos-fehleingabe", Feld(cut, "Realisierungen").ClassName);
         Knopf(cut, "OK").Click();
         Assert.Null(ergebnis);
-        Assert.Equal("Bitte die markierten Felder berichtigen: Zufallssaat (Seed).", cut.Instance.OkMeldung);
+        Assert.Contains("Zufallssaat (Seed)", cut.Instance.OkMeldung);
+        Assert.Contains("Realisierungen", cut.Instance.OkMeldung);
 
         Feld(cut, "Zufallssaat (Seed)").Input("4");
+        Feld(cut, "Realisierungen").Input("20");
         Knopf(cut, "OK").Click();
         Assert.NotNull(ergebnis);
-        Assert.Equal(4, ergebnis!.Eingabe.Seed);
+        Assert.False(ergebnis!.Eingabe.JahresreiheStochastisch);
+        Assert.Equal(4, ergebnis.Eingabe.Seed);
     }
 
     /// <summary>
@@ -499,6 +520,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         ZapfprofilErgebnisDaten? ergebnis = null;
         var cut = Aufbauen(geschlossen: x => ergebnis = x);
         Option(cut, "Experte").Change("2");
+        ZapfprofilKarten.AlleAuf(cut);
         Option(cut, "stochastisch").Change("1");
         Feld(cut, "Zufallssaat (Seed)").Input("9");
         Feld(cut, "Zufallssaat (Seed)").Input("-1");
@@ -565,6 +587,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Empty(cut.FindAll("tr.epos-zapfprofil-konsistenz"));      // Einfach: keine Einzelwerte
 
         Option(cut, "Experte").Change("2");
+        ZapfprofilKarten.AlleAuf(cut);
         IElement[] zeilen = cut.FindAll("tr.epos-zapfprofil-konsistenz").ToArray();
         Assert.Equal(2, zeilen.Length);
         Assert.Equal("Konsistenzprobe Energie · Zone 1", zeilen[0].QuerySelector("th")!.TextContent);
@@ -615,6 +638,7 @@ public class ZapfprofilDialogTests : EposBunitContext
             .Add(x => x.EntprellungMs, 0));
 
         Option(cut, "Experte").Change("2");
+        ZapfprofilKarten.AlleAuf(cut);
         cut.FindAll("[role=tab]").First(b => b.TextContent.Trim() == "Kennzahlen").Click();
         Knopf(cut, "Stochastisch rechnen").Click();
         cut.WaitForAssertion(() => Assert.Single(cut.FindAll("tr.epos-zapfprofil-konsistenz")));
@@ -635,20 +659,21 @@ public class ZapfprofilDialogTests : EposBunitContext
     [Fact]
     public void Fehlende_Zapfkategorien_stehen_benannt_an_der_Zone()
     {
-        const string SATZ = "Zone „Zone 1“ trägt 0: Für die Nutzungsart „Wohnen A“ (Katalogversion TEST-1) stehen keine "
-                            + "Zapfkategorien im Katalog — die Zone rechnet nicht stochastisch.";
+        const string SATZ = "Bereich „Zone 1“ trägt 0: Für die Nutzungsart „Wohnen A“ (Katalogversion TEST-1) stehen keine "
+                            + "Zapfkategorien im Katalog — der Bereich rechnet nicht stochastisch.";
         var ablehnung = new ZapfprofilMeldung("ZPG_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN", "Zone 1", SATZ,
                                               ZapfprofilMeldungsart.Ablehnung, "Kernsatz", 0);
         var cut = Aufbauen(jahresreihe: (e, _) => Task.FromResult(Gezogen(e, ablehnung)));
         Assert.Empty(cut.FindAll(".epos-warnbanner"));
 
         Option(cut, "Experte").Change("2");
+        ZapfprofilKarten.AlleAuf(cut);
         Option(cut, "stochastisch").Change("1");
         Assert.Empty(cut.FindAll(".epos-warnbanner"));                     // die Vorschau zieht nichts
         Knopf(cut, "Stochastisch rechnen").Click();
         cut.WaitForAssertion(() => Assert.Contains(SATZ, cut.Find(".epos-blockspalte:first-child .epos-warnbanner").TextContent));
 
-        Option(cut, "deterministisch").Change("0");
+        Option(cut, "Norm-Jahresgang").Change("0");
         Assert.Null(cut.Instance.StochastikErgebnis);
         Assert.Empty(cut.FindAll(".epos-warnbanner"));
     }
@@ -708,7 +733,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         await Knopf(cut, "Stochastisch rechnen").ClickAsync(new());
         Assert.Equal(2, laeufe.Count);
         Assert.True(cut.Instance.JahresreiheLaeuft);
-        await Option(cut, "hoch").ChangeAsync("3");
+        await Niveau(cut).ChangeAsync("3");
         Assert.True(laeufe[1].Marke.IsCancellationRequested);
         Assert.False(cut.Instance.JahresreiheLaeuft);
         Assert.Null(cut.Instance.StochastikErgebnis);
@@ -799,7 +824,7 @@ public class ZapfprofilDialogTests : EposBunitContext
 
     private static ZapfprofilAuslegungStartDaten AuslegungStart(ZapfprofilAuslegungEingabeDaten? eingabe) => new()
     {
-        Kontext = "Summe aller Zonen",
+        Kontext = "Summe aller Bereiche",
         Eingabe = eingabe ?? new ZapfprofilAuslegungEingabeDaten { SpeicherC = 60 },
         Verfuegbar = true,
         Ergebnis = new ZapfprofilAuslegungDaten
@@ -900,8 +925,20 @@ public class ZapfprofilDialogTests : EposBunitContext
     }
 
     private static IElement Feld(IRenderedComponent<ZapfprofilDialog> cut, string bezeichnung)
-        => cut.FindAll("label").First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == bezeichnung)
-              .QuerySelector("input")!;
+        => (cut.FindAll("label").FirstOrDefault(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == bezeichnung)
+            ?? Zeilenlabel(cut, bezeichnung)).QuerySelector("input")!;
+
+    /// <summary>
+    /// ZC2: Ein Feld einer Zeile des Blocks heißt „Bezugsgröße, Bereich 2" — der bloße Spaltenname meint
+    /// das Feld der MARKIERTEN Zeile.
+    /// </summary>
+    private static IElement Zeilenlabel(IRenderedComponent<ZapfprofilDialog> cut, string spalte)
+        => cut.Find("tr.epos-zeile--markiert").QuerySelectorAll("label")
+              .First(l => (l.QuerySelector(".epos-feld-text")?.TextContent.Trim() ?? "").StartsWith(spalte + ", ", StringComparison.Ordinal));
+
+    /// <summary>Die Klappliste Bedarfsniveau der markierten Zeile (ZC2).</summary>
+    private static IElement Niveau(IRenderedComponent<ZapfprofilDialog> cut)
+        => Zeilenlabel(cut, "Bedarfsniveau").QuerySelector("select")!;
 
     [Fact]
     public void Eine_Zonenaenderung_macht_den_uebernommenen_Punkt_ueberholt()
@@ -913,7 +950,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Equal(300, cut.Instance.Eingabe.Auslegung!.PunktVolumenL);
 
         // Der Name einer Zone ändert die Auslegung nicht — der Punkt bleibt.
-        Feld(cut, "Zonenname").Input("Zone Nord");
+        Feld(cut, "Bereichsname").Input("Zone Nord");
         Assert.Equal(300, cut.Instance.Eingabe.Auslegung!.PunktVolumenL);
         Assert.False(cut.Instance.Eingabe.PunktUeberholt);
         Assert.Empty(cut.FindAll(".epos-zapfprofil-punktueberholt"));
@@ -935,10 +972,10 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-zapfprofil-punktueberholt"));
 
         // Eine neue Zone macht ihn wieder überholt; das OK trägt die Marke zum Wirt.
-        Knopf(cut, "Zone hinzufügen…").Click();
+        Knopf(cut, "Bereich hinzufügen").Click();
         Assert.True(cut.Instance.Eingabe.PunktUeberholt);
         Feld(cut, "Bezugsgröße").Input("10");
-        Option(cut, "hoch").Change("3");
+        Niveau(cut).Change("3");
         Knopf(cut, "OK").Click();
         Assert.True(ergebnis!.Eingabe.PunktUeberholt);
         Assert.Null(ergebnis.Eingabe.Auslegung!.PunktVolumenL);
@@ -952,14 +989,14 @@ public class ZapfprofilDialogTests : EposBunitContext
         var cut = Aufbauen(mitPunkt);
         Assert.Empty(cut.FindAll(".epos-zapfprofil-punktueberholt"));
 
-        Option(cut, "hoch").Change("3");
+        Niveau(cut).Change("3");
         Assert.True(cut.Instance.Eingabe.PunktUeberholt);
         Assert.Null(cut.Instance.Eingabe.Auslegung);                        // die Auslegung selbst bleibt unberührt
         Assert.Contains("beim Speichern verworfen", cut.Find(".epos-zapfprofil-punktueberholt").TextContent);
 
         // Ohne Punkt beim Öffnen ist nichts zu überholen.
         var ohne = Aufbauen();
-        Option(ohne, "hoch").Change("3");
+        Niveau(ohne).Change("3");
         Assert.False(ohne.Instance.Eingabe.PunktUeberholt);
         Assert.Empty(ohne.FindAll(".epos-zapfprofil-punktueberholt"));
     }
@@ -993,9 +1030,9 @@ public class ZapfprofilDialogTests : EposBunitContext
     {
         ZapfprofilEingabeDaten e = Eingabe();
         var hinweis = new ZapfprofilMeldung("ZPG_HINW_BEDARF_AUSSERHALB_BANDBREITE", "Zone 1",
-                                            "Zone „Zone 1“: Bedarf außerhalb der Bandbreite.", ZapfprofilMeldungsart.Hinweis);
+                                            "Bereich „Zone 1“: Bedarf außerhalb der Bandbreite.", ZapfprofilMeldungsart.Hinweis);
         var ablehnung = new ZapfprofilMeldung("ZPG_EINGABE_BEZUGSMENGE_FEHLT", "Zone 2",
-                                              "Zone „Zone 2“ trägt 0: Bezugsmenge fehlt.", ZapfprofilMeldungsart.Ablehnung);
+                                              "Bereich „Zone 2“ trägt 0: Bezugsmenge fehlt.", ZapfprofilMeldungsart.Ablehnung);
         var cut = Aufbauen(Daten(e, Vorschau(e, hinweis, ablehnung)));
 
         IElement feld = cut.Find(".epos-zapfprofil-feldhinweis");
@@ -1003,7 +1040,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Contains("Bedarf außerhalb der Bandbreite", feld.TextContent);
 
         // Die Ablehnung der nicht gewählten Zone steht benannt in der Vorschau.
-        Assert.Contains("Zone „Zone 2“ trägt 0: Bezugsmenge fehlt.", cut.Find(".epos-warnbanner").TextContent);
+        Assert.Contains("Bereich „Zone 2“ trägt 0: Bezugsmenge fehlt.", cut.Find(".epos-warnbanner").TextContent);
 
         // Nicht blockierend: OK geht durch.
         ZapfprofilErgebnisDaten? ergebnis = null;
@@ -1036,7 +1073,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Contains("Hinweis ohne Position.", cut.Markup);
 
         // Die zweite Zone gewählt: ihr Hinweis steht an ihrem Feld, der ohne Position nicht.
-        cut.FindAll(".epos-zapfprofil-zonen tbody tr")[1].QuerySelector("button, input")!.Click();
+        cut.FindAll(".epos-zapfprofil-zonen tbody tr.epos-zapfprofil-bereich")[1].QuerySelector("button, input")!.Click();
         string[] feld = cut.FindAll(".epos-blockspalte:first-child .epos-zapfprofil-feldhinweis")
                            .Select(x => x.TextContent.Trim()).ToArray();
         Assert.Equal(new[] { "Hinweis der zweiten Zone." }, feld);
@@ -1090,7 +1127,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Contains("80,0", cut.Find("table.epos-zapfprofil-zonen tfoot").TextContent);
 
         // Das Niveau ist eine Wahl im Arbeitsstand.
-        Option(cut, "hoch").Change("3");
+        Niveau(cut).Change("3");
         Assert.Equal(ZapfprofilNiveau.Hoch, cut.Instance.Eingabe.Zonen[0].Niveau);
         Assert.Equal(2, gerechnet.Count);
     }
@@ -1100,10 +1137,11 @@ public class ZapfprofilDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        Knopf(cut, "Zone hinzufügen…").Click();
+        Knopf(cut, "Bereich hinzufügen").Click();
         Assert.Equal(3, cut.Instance.Eingabe.Zonen.Count);
-        Assert.Equal("Zone 3", cut.Instance.Eingabe.Zonen[2].Name);
-        Assert.Contains("Zone 3 · Nutzung", cut.Markup);
+        // ZC-Q3 B: Der Name ist automatisch „Bereich n" und steht in der Detailzeile der neuen, markierten Zeile.
+        Assert.Equal("Bereich 3", cut.Instance.Eingabe.Zonen[2].Name);
+        Assert.Equal("Bereich 3", Feld(cut, "Bereichsname").GetAttribute("value"));
 
         cut.FindAll("table.epos-zapfprofil-zonen tbody button")[0].Click();
         Knopf(cut, "Duplizieren").Click();
@@ -1113,7 +1151,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Equal(11, kopie.IdVorlage);
 
         Knopf(cut, "Entfernen").Click();
-        Assert.Equal(new[] { "Zone 1", "Zone 2", "Zone 3" }, cut.Instance.Eingabe.Zonen.Select(z => z.Name).ToArray());
+        Assert.Equal(new[] { "Zone 1", "Zone 2", "Bereich 3" }, cut.Instance.Eingabe.Zonen.Select(z => z.Name).ToArray());
     }
 
     // =================================================================================
@@ -1125,13 +1163,13 @@ public class ZapfprofilDialogTests : EposBunitContext
     {
         bool gerufen = false;
         var fehler = new ZapfprofilMeldung("ZPG_MSG_ZONE_OHNE_BEZUGSMENGE", "Zone 1",
-                                           "Zone „Zone 1“: Bitte eine Bezugsgröße größer 0 eingeben.", ZapfprofilMeldungsart.Fehler);
+                                           "Bereich „Zone 1“: Bitte eine Bezugsgröße größer 0 eingeben.", ZapfprofilMeldungsart.Fehler);
         var cut = Aufbauen(pruefen: _ => new[] { fehler }, geschlossen: _ => gerufen = true);
 
         Knopf(cut, "OK").Click();
 
         Assert.False(gerufen);
-        Assert.Equal("Zone „Zone 1“: Bitte eine Bezugsgröße größer 0 eingeben.", cut.Instance.OkMeldung);
+        Assert.Equal("Bereich „Zone 1“: Bitte eine Bezugsgröße größer 0 eingeben.", cut.Instance.OkMeldung);
         Assert.Contains("Bitte eine Bezugsgröße größer 0 eingeben.", cut.Find(".epos-warnbanner").TextContent);
     }
 
@@ -1191,9 +1229,9 @@ public class ZapfprofilDialogTests : EposBunitContext
         var cut = Render<ZapfprofilDialog>();
 
         Assert.Contains("Brauchwasser-Zapfprofil", cut.Markup);
-        Assert.Empty(cut.FindAll("table.epos-zapfprofil-zonen tbody tr"));
+        Assert.Empty(cut.FindAll("table.epos-zapfprofil-zonen tbody tr.epos-zapfprofil-bereich"));
         Assert.NotNull(cut.Find(".epos-zapfprofil-ohnevorschau"));
-        Assert.NotNull(Knopf(cut, "Zone hinzufügen…"));
+        Assert.NotNull(Knopf(cut, "Bereich hinzufügen"));
     }
 
     // =================================================================================
@@ -1310,7 +1348,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         Setze("zone", "Zone 2");
         cut.Render();
         Assert.Equal(2, Zugang("zone").Lesen());
-        Assert.Equal("Zone 2", Feld(cut, "Zonenname").GetAttribute("value"));
+        Assert.Equal("Zone 2", Feld(cut, "Bereichsname").GetAttribute("value"));
 
         // „Anzeigen für" wählt die Ansicht der Vorschau.
         Setze("ansicht", "Wohnen");
@@ -1337,7 +1375,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Equal(1, cut.Instance.Eingabe.Zonen[0].IdNutzungsart);
 
         var rechenweg = Assert.Throws<InvalidOperationException>(() => Zugang("rechenweg_jahresreihe").Setzen(1));
-        Assert.Contains(texte.StufeErweitert, rechenweg.Message, StringComparison.Ordinal);
+        Assert.Contains(texte.StufeExperte, rechenweg.Message, StringComparison.Ordinal);
 
         var seed = Assert.Throws<InvalidOperationException>(() => Zugang("seed").Setzen(42));
         Assert.Contains(texte.LabelSeed, seed.Message, StringComparison.Ordinal);
@@ -1348,12 +1386,12 @@ public class ZapfprofilDialogTests : EposBunitContext
         cut.Render();
         Assert.Equal(ZapfprofilStufe.Experte, cut.Instance.Stufe);
 
+        // ZC5: Seed und Realisierungen stehen bei jedem Weg der Jahresreihe — der Assistent setzt sie ebenso.
         Setze("seed", "42");
         Assert.Equal(42, cut.Instance.Eingabe.Seed);
         Assert.Throws<InvalidOperationException>(() => Zugang("seed").Setzen(-1));
-
-        var ohneStochastik = Assert.Throws<InvalidOperationException>(() => Zugang("realisierungen").Setzen(20));
-        Assert.Contains(texte.OptionStochastisch, ohneStochastik.Message, StringComparison.Ordinal);
+        Setze("realisierungen", "15");
+        Assert.Equal(15, cut.Instance.Eingabe.Realisierungen);
 
         Setze("rechenweg_jahresreihe", "stochastisch");
         cut.Render();

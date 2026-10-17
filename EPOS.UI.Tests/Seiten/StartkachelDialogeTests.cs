@@ -14,7 +14,7 @@ using Xunit;
 namespace EPOS.UI.Tests.Seiten;
 
 /// <summary>
-/// Die HÜLLENGLEICHE Probe über die Ziele der 21 Startkacheln — Befund
+/// Die HÜLLENGLEICHE Probe über die Ziele der 24 Startkacheln — Befund
 /// <b>W16b‑B‑1</b> der Windows-Abnahme vom 05.09.2026.
 ///
 /// <para><b>Der Befund.</b> Ein aus der Startseite geöffneter Dialog stand am
@@ -43,7 +43,7 @@ public class StartkachelDialogeTests : EposBunitContext
     }
 
     /// <summary>
-    /// Die Ziele der 21 Kachelwege aus <c>StartseiteHuelle.Kachelweg</c> —
+    /// Die Ziele der 24 Kachelwege aus <c>StartseiteHuelle.Kachelweg</c> —
     /// dazu die zwei Assistentenseiten ohne eigene Kachel
     /// (<c>KomponentenauswahlDialog</c>, <c>ProjektKopfSeite</c>) und die
     /// Ergebnisblätter, die aus ihnen aufgehen.
@@ -53,11 +53,11 @@ public class StartkachelDialogeTests : EposBunitContext
         "AssistentSeite",            // Projekt neu / Projekt öffnen-bearbeiten
         "ProjektWahlDialog",         // Zuletzt geöffnet (Rückfall), Projekt löschen
         "ProjektKopieDialog",        // Speichern unter…
-        "GebaeudeDialog",            // Gebäudedaten
+        "GebaeudeDialog",            // Gebäudedaten, Gebäudekühlung (K4)
         "GebaeudeKatalogDialog",
         "GebaeudeWohnflaecheDialog",
-        "WaermebedarfExternDialog",  // Daten importieren
-        "BedarfsProfileDialog",      // Prozesswärme, Brauchwasser, Standardlastprofil
+        "WaermebedarfExternDialog",  // Daten importieren, Kältebedarf extern (K4)
+        "BedarfsProfileDialog",      // Prozesswärme, Brauchwasser, Standardlastprofil, Kältebedarfsprofile (K4)
         "BedarfErgebnisDialog",
         "TypStammDialog",            // Eigenes Profil (Stammdaten)
         "TypProfilDialog",

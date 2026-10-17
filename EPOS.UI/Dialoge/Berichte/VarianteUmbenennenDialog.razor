@@ -1,0 +1,189 @@
+﻿@* "Variante umbenennen" - der kleine Dialog der Gruppe "Variante verwalten" auf der Seite
+   "Uebersicht" des Reiters "Berichte & Kosten" (Anwenderauftrag 13.10.2026).
+
+   DIE VARIANTE STEHT ZUR WAHL. Das Feld "Variante" fuehrt nur die Varianten der Gruppe;
+   vorbelegt ist die im Feld "Detail-Unterschiede fuer Variante" gewaehlte, sonst die
+   erste. Bis dahin wirkte "Umbenennen" stumm auf jene Wahl, und der Anwender sah nicht,
+   WELCHE Variante den Bezeichner aus dem freien Feld bekam (Anwenderbefund 13.10.2026).
+
+   DER BEZEICHNER IST VORBELEGT mit dem bisherigen der gewaehlten Variante und folgt einem
+   Wechsel der Wahl - solange der Anwender nicht selbst getippt hat (Von-Hand-Merker, wie
+   im ProjektVarianteDialog). Der Zielname "<Stamm> - <Bezeichner>" kommt aus dem Kern
+   (VariantenCtrl.Zielname mit Ausnahme der eigenen Id); umbenannt wird, nicht kopiert.
+
+   DER WIRT SCHREIBT im OK-Weg; scheitert es, reicht er die Meldung herein, und der
+   Dialog bleibt offen. Keine Datenbank hier (Hausregel EPOS.UI).
+
+   TASTATUR: Enter bestaetigt, solange der Knopf frei ist; Esc bricht ab. *@
+
+@namespace EPOS.UI.Dialoge.Berichte
+@using EPOS.UI.Bausteine
+@using EPOS.UI.Seiten.Berichte
+
+<div class="epos-dialog epos-variantendialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
+        @if (!string.IsNullOrEmpty(HilfeSchluessel))
+        {
+            <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@TitelText" />
+        }
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <Schliesskreuz Geschlossen="@(() => BeiErgebnis(false))" />
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(HinweisZeile))
+    {
+        <Herleitungszeile Text="@HinweisZeile" />
+    }
+
+    <Auswahlfeld Bezeichnung="@LabelVariante" Eintraege="@Varianten"
+                 Auswahl="@_varianteId" AuswahlChanged="BeiVariante" />
+
+    <Textfeld Bezeichnung="@LabelBezeichner" Wert="@_bezeichner" WertChanged="BeiBezeichner" />
+
+    @if (!string.IsNullOrEmpty(Zielzeile))
+    {
+        <Herleitungszeile Text="@Zielzeile" />
+    }
+
+    @if (!string.IsNullOrEmpty(Meldung))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@Meldung" />
+    }
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText"
+                     OkErlaubt="@OkErlaubt" Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    /// <summary>Kopfzeile (<c>VAR_DLG_UMBENENNEN_TITEL</c>); leer = die Überlagerung trägt den Titel.</summary>
+    [Parameter] public string TitelText { get; set; } = "Variante umbenennen";
+
+    /// <summary>Die Varianten der Gruppe (Id = <c>Tab_Projekt.ID</c>, Text = bisheriger Bezeichner).</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Varianten { get; set; } = Array.Empty<(int, string)>();
+
+    /// <summary>Die vorbelegte Variante; <c>null</c> = die erste.</summary>
+    [Parameter] public int? VorgabeVariante { get; set; }
+
+    /// <summary>
+    /// Der Zielname zu Variante und Bezeichner — <c>VariantenCtrl.Zielname</c> mit
+    /// Ausnahme der eigenen Id. Ohne den Delegaten bleibt die Vorschauzeile leer.
+    /// </summary>
+    [Parameter] public Func<int, string, string>? Zielname { get; set; }
+
+    /// <summary>Die Meldung eines gescheiterten Umbenennens (der Dialog bleibt offen); leer = keine.</summary>
+    [Parameter] public string Meldung { get; set; } = "";
+
+    /// <summary>Die Antwort: Variante und neuer Bezeichner, oder <c>null</c> bei Abbruch.</summary>
+    [Parameter] public EventCallback<VarianteUmbenennenWahl?> Geschlossen { get; set; }
+
+    /// <summary>Der Satz über den Feldern (<c>VAR_DLG_UMBENENNEN_HINWEIS</c>); <c>{0}</c> = bisheriger Bezeichner. Leer = keiner.</summary>
+    [Parameter] public string HinweisFormat { get; set; } = "";
+
+    /// <summary>Beschriftung der Variantenwahl (<c>BK_LBL_VARIANTE_WAHL</c>).</summary>
+    [Parameter] public string LabelVariante { get; set; } = "Variante:";
+
+    /// <summary>Beschriftung des Bezeichnerfeldes (<c>BK_LBL_BEZEICHNER</c>).</summary>
+    [Parameter] public string LabelBezeichner { get; set; } = "Bezeichner:";
+
+    /// <summary>Die Vorschauzeile (<c>VAR_DLG_ZIELNAME</c>); <c>{0}</c> = Zielname.</summary>
+    [Parameter] public string ZielnameFormat { get; set; } = "Neuer Projektname: {0}";
+
+    /// <summary>Beschriftung des Knopfes (<c>VAR_BTN_UMBENENNEN</c>).</summary>
+    [Parameter] public string OkText { get; set; } = "Umbenennen";
+
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    /// <summary>Schlüssel des Hilfeknopfes; leer = kein Knopf.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+
+    private int? _varianteId;
+    private string _bezeichner = "";
+
+    /// <summary>Hat der Anwender den Bezeichner SELBST getippt? Dann überschreibt ihn kein Wahlwechsel mehr.</summary>
+    private bool _vonHand;
+
+    /// <summary>Die gewählte Variante, 0 = keine (Prüfhilfe).</summary>
+    public int VarianteId => _varianteId ?? 0;
+
+    /// <summary>Der Feldinhalt (Prüfhilfe).</summary>
+    public string Bezeichner => _bezeichner;
+
+    /// <summary>Ist „Umbenennen" gerade anklickbar? Variante gewählt und Bezeichner vorhanden.</summary>
+    public bool OkErlaubt => VarianteId > 0 && !string.IsNullOrWhiteSpace(_bezeichner);
+
+    /// <summary>Der Hinweissatz zur gewählten Variante; leer ohne Format oder ohne Wahl.</summary>
+    public string HinweisZeile
+        => string.IsNullOrEmpty(HinweisFormat) || VarianteId <= 0 ? "" : string.Format(HinweisFormat, Bisher(VarianteId));
+
+    /// <summary>Die Vorschauzeile; leer, solange kein Bezeichner dasteht.</summary>
+    public string Zielzeile
+    {
+        get
+        {
+            string b = (_bezeichner ?? "").Trim();
+            if (b.Length == 0 || Zielname is null || VarianteId <= 0) return "";
+            string ziel;
+            try { ziel = Zielname(VarianteId, b) ?? ""; }
+            catch { ziel = ""; }
+            return ziel.Length == 0 ? "" : string.Format(ZielnameFormat, ziel);
+        }
+    }
+
+    private string Bisher(int id)
+    {
+        foreach ((int Id, string Text) v in Varianten)
+            if (v.Id == id) return v.Text ?? "";
+        return "";
+    }
+
+    protected override void OnParametersSet()
+    {
+        // Die Vorgabe greift einmal; danach gehoert die Wahl dem Anwender.
+        if (_varianteId is not null) return;
+        _varianteId = VorgabeVariante ?? (Varianten.Count > 0 ? Varianten[0].Id : null);
+        if (_varianteId is not null) _bezeichner = Bisher(_varianteId.Value);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync(preventScroll: true);
+    }
+
+    private void BeiVariante(int? id)
+    {
+        _varianteId = id;
+        if (!_vonHand && id is not null) _bezeichner = Bisher(id.Value);
+    }
+
+    private void BeiBezeichner(string wert)
+    {
+        _bezeichner = wert ?? "";
+        _vonHand = true;
+    }
+
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (!ok) { await Geschlossen.InvokeAsync(null); return; }
+        if (!OkErlaubt) return;
+        await Geschlossen.InvokeAsync(new VarianteUmbenennenWahl(VarianteId, _bezeichner.Trim()));
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
+    {
+        "Enter" => OkErlaubt ? BeiErgebnis(true) : Task.CompletedTask,
+        "Escape" => BeiErgebnis(false),
+        _ => Task.CompletedTask
+    };
+}

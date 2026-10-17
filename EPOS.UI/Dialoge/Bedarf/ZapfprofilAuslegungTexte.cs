@@ -42,7 +42,7 @@ public sealed class ZapfprofilAuslegungTexte
     public string OptionVorgaberegel { get; set; } = "Vorgaberegel (Wohnen: DIN-4708-Profil, sonst Konstruktor)";
 
     /// <summary><c>ZPG_AUS_OPT_STUNDENPROFIL</c></summary>
-    public string OptionStundenprofil { get; set; } = "Stundenprofil der Zonen (Spitzen unterschätzt)";
+    public string OptionStundenprofil { get; set; } = "Stundenprofil der Bereiche (Spitzen unterschätzt)";
 
     /// <summary><c>ZPG_AUS_OPT_DIN4708</c></summary>
     public string OptionDin4708 { get; set; } = "DIN-4708-Profil aus der Wohnungstabelle";
@@ -160,7 +160,7 @@ public sealed class ZapfprofilAuslegungTexte
     // ------------------------------------------------------------ Gruppen und Karten
 
     /// <summary><c>ZPG_AUS_GRP_TOPOLOGIE</c></summary>
-    public string GruppeTopologie { get; set; } = "{0} · Zonen: {1}";
+    public string GruppeTopologie { get; set; } = "{0} · Bereiche: {1}";
 
     /// <summary><c>ZPG_AUS_BEDARFSTAG_GRUPPE</c></summary>
     public string BedarfstagGruppe { get; set; } = "Bedarfstag: {0}";
@@ -253,7 +253,7 @@ public sealed class ZapfprofilAuslegungTexte
     public string SpitzeJeEinheit { get; set; } = "Minutenspitze P{0} je Wohnungsstation";
 
     /// <summary><c>ZPG_AUS_SPITZE_JE_EINHEIT_ZONE</c></summary>
-    public string SpitzeJeEinheitZone { get; set; } = "Auslegungsgröße jeder Wohnungsstation; maßgebend ist die Zone „{0}“.";
+    public string SpitzeJeEinheitZone { get; set; } = "Auslegungsgröße jeder Wohnungsstation; maßgebend ist der Bereich „{0}“.";
 
     /// <summary><c>ZPG_AUS_WURZEL_N</c></summary>
     public string WurzelN { get; set; } = "Einzelstatistik μ + z·σ/√N: {0} kW (Hinweis)";
@@ -320,6 +320,9 @@ public sealed class ZapfprofilAuslegungTexte
     /// <summary><c>ZPG_AUS_SCHNELLAUSLEGUNG</c></summary>
     public string Schnellauslegung { get; set; } = "Schnellauslegung";
 
+    /// <summary><c>ZPG_AUS_SCHNELLAUSLEGUNG_V4</c></summary>
+    public string SchnellauslegungV4 { get; set; } = "Schnellauslegung V4";
+
     /// <summary><c>ZPG_AUS_ENTWURFSSTAND</c></summary>
     public string Entwurfsstand { get; set; } = "Entwurfsstand — A100/A1 sind Entwürfe, Anwendung besonders zu vereinbaren.";
 
@@ -353,7 +356,7 @@ public sealed class ZapfprofilAuslegungTexte
     public string SpalteVerfahren { get; set; } = "Verfahren";
 
     /// <summary><c>ZPG_AUS_SP_VOLUMEN</c></summary>
-    public string SpalteVolumen { get; set; } = "Volumen";
+    public string SpalteVolumen { get; set; } = "Volumen [l]";
 
     /// <summary><c>ZPG_AUS_SP_KENNWERT</c></summary>
     public string SpalteKennwert { get; set; } = "Kennwert";
@@ -410,7 +413,7 @@ public sealed class ZapfprofilAuslegungTexte
     public string KnopfUebergeben { get; set; } = "An Speicherauslegung übergeben…";
 
     /// <summary><c>ZPG_AUS_GRUND_UEBERGEBEN</c></summary>
-    public string GrundUebergeben { get; set; } = "Die Übergabe an die Speicherauslegung kommt mit einer späteren Fassung.";
+    public string GrundUebergeben { get; set; } = "Die Übergabe öffnet die Pufferspeicher-Auslegung in einem eigenen Fenster; diese Plattform hat keines — die Auslegung steht in ① Konfiguration unter „Pufferspeicher auslegen…“.";
 
     // ------------------------------------------------------------ Warnliste
 
@@ -441,7 +444,7 @@ public sealed class ZapfprofilAuslegungTexte
     public string HerkunftSpalteWert { get; set; } = "Wert";
 
     /// <summary><c>ZPG_AUS_HERKUNFT_SP_ZONE</c></summary>
-    public string HerkunftSpalteZone { get; set; } = "Zone";
+    public string HerkunftSpalteZone { get; set; } = "Bereich";
 
     /// <summary><c>ZPG_AUS_HERKUNFT_SP_STAND</c></summary>
     public string HerkunftSpalteStand { get; set; } = "Stand";
@@ -594,10 +597,19 @@ public sealed class ZapfprofilAuslegungTexte
     public string LabelPersonenManuell { get; set; } = "Personen manuell";
 
     /// <summary><c>ZPG_AUS_LBL_FUELLSTAND_BEZUG</c></summary>
-    public string LabelFuellstandBezug { get; set; } = "Bezug des Füllstands";
+    public string LabelFuellstandBezug { get; set; } = "Speichergröße der Füllstandslinie";
 
     /// <summary><c>ZPG_AUS_FUELLSTAND_VORGABE</c></summary>
     public string FuellstandVorgabe { get; set; } = "Vorgabe: Nenninhalt des Punkts, sonst der Punkt";
+
+    /// <summary><c>ZPG_AUS_FUELLSTAND_VORGABE_WAHL</c></summary>
+    public string FuellstandVorgabeWahl { get; set; } = "Vorgabe: {0} · {1} l";
+
+    /// <summary><c>ZPG_AUS_FUELLSTAND_WAHL</c></summary>
+    public string FuellstandWahl { get; set; } = "{0} · {1} l";
+
+    /// <summary><c>ZPG_AUS_FUELLSTAND_WAHL_GESPERRT</c></summary>
+    public string FuellstandWahlGesperrt { get; set; } = "{0} · nicht bestimmbar";
 
     /// <summary><c>ZPG_AUS_BTN_VORSCHLAG</c></summary>
     public string KnopfVorschlag { get; set; } = "Als manuellen Wert übernehmen";
@@ -615,13 +627,19 @@ public sealed class ZapfprofilAuslegungTexte
     public string HerleitungLadefenster { get; set; } = "leer = Vorgabe des Katalogs; dieselben Werte wie „Ladezeitfenster“ im Zapfprofil";
 
     /// <summary><c>ZPG_AUS_HERL_PERSONEN</c></summary>
-    public string HerleitungPersonen { get; set; } = "auto = aus dem Mengengerüst der Zonen: {0}; angesetzt: {1}";
+    public string HerleitungPersonen { get; set; } = "auto = aus dem Mengengerüst der Bereiche: {0}; angesetzt: {1}";
 
     /// <summary><c>ZPG_AUS_HERL_ANGESETZT</c></summary>
     public string HerleitungAngesetzt { get; set; } = "leer = Vorgabe des Katalogs; angesetzt: {0}";
 
     /// <summary><c>ZPG_AUS_HERL_FUELLSTAND</c></summary>
-    public string HerleitungFuellstand { get; set; } = "Auf dieses Volumen bezieht sich der Füllstand der Kachel; angesetzt: {0}";
+    public string HerleitungFuellstand { get; set; } = "Auf dieses Volumen beziehen sich Füllstandslinie und Kachel „Füllstand“; angesetzt: {0}";
+
+    /// <summary><c>ZPG_AUS_HERL_FUELLSTAND_GESPERRT</c></summary>
+    public string HerleitungFuellstandGesperrt { get; set; } = "{0} nicht bestimmbar: {1}";
+
+    /// <summary><c>ZPG_AUS_HERL_FUELLSTAND_GRUPPE</c></summary>
+    public string HerleitungFuellstandGruppe { get; set; } = "Speichergröße der Füllstandslinie: {0} — gewählt am ersten Wochenbild";
 
     /// <summary><c>ZPG_AUS_HERL_GESPEICHERT</c></summary>
     public string HerleitungGespeichert { get; set; } = "wird mit dem Projekt gespeichert; {0}";

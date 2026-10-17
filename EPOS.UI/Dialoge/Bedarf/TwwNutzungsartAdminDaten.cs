@@ -109,7 +109,7 @@ public sealed class TwwNutzungsartEntwurfDaten
     public string Bezeichner { get; set; } = "";
     public string Katalogversion { get; set; } = "";
 
-    /// <summary>Die Bezugsart (Id wie im Kern, 1 … 7); 0 = keine.</summary>
+    /// <summary>Die Bezugsart (Id wie im Kern, 1 … 8); 0 = keine.</summary>
     public int Bezugsart { get; set; }
 
     /// <summary>Bedarf je Einheit und Tag [kWh] je Niveau (niedrig, mittel, hoch).</summary>
@@ -215,7 +215,10 @@ public enum TwwImportbereichDaten
 {
     Nutzungsart = 0,
     Bedarfstag = 1,
-    Parameter = 2
+    Parameter = 2,
+
+    /// <summary>DIN-4708-Katalogwerte: Belegung je Raumzahl und Ausstattungsklassen.</summary>
+    Din4708 = 3
 }
 
 /// <summary>Eine Zeile des Importberichts — fertig formatiert.</summary>
@@ -233,7 +236,7 @@ public sealed record TwwImportzeileDaten(string Nutzungsart, TwwImportausgangDat
 
 /// <summary>
 /// <b>Der Bericht eines Katalogimports</b>: die Zusammenfassung, je Eintrag eine Zeile in ihrer
-/// Gruppe (Bedarfstage, Parameter, Nutzungsarten), die
+/// Gruppe (Bedarfstage, Parameter, DIN-4708-Katalogwerte, Nutzungsarten), die
 /// Hinweise (übergangene Dateien und Zeilen, Ersetzungen) und — wenn das Paket als Ganzes
 /// abgelehnt ist — der Grund; dann ist nichts geändert.
 /// </summary>

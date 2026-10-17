@@ -65,9 +65,15 @@ public enum Kennlinienherkunft
 /// vorhandene Gerätekopie im Projekt UND einen Katalogsatz mit Kennlinien voraus.
 /// Nur dann zeigt der Dialog den Knopf — ein Knopf ohne Ziel ist ein Versprechen.
 /// </param>
+/// <param name="KuehlNachholbar">
+/// Die Wärmekennlinien kommen aus dem Projekt, allein die KÜHLkennlinie fehlt dort und
+/// steht im Katalogsatz. Dann zeigt der Dialog eine eigene Herleitung und den Knopf
+/// „Kühlkennlinie aus dem Katalog übernehmen" — derselbe Schreibweg holt nur, was fehlt.
+/// </param>
 public sealed record KennlinienBilder(Zeichenmodell? Cop, Zeichenmodell? Leistung,
                                       Kennlinienherkunft Herkunft = Kennlinienherkunft.Ohne,
-                                      bool Nachholbar = false)
+                                      bool Nachholbar = false,
+                                      bool KuehlNachholbar = false)
 {
     /// <summary>Kein Bild — die Blätter zeigen dann ihren Platzhalter.</summary>
     public static readonly KennlinienBilder Leer = new(null, null);
@@ -159,24 +165,20 @@ public sealed class WaermepumpeStammDaten
     public double Kuehlleistung { get; set; }
 
     /// <summary>
-    /// Modulkosten [€] — ein Betrag JE GERÄT, nicht ein spezifischer Satz
-    /// (<c>TechnikPlanwertCtrl.BasenFuellen</c>, Fall <c>ERZEUGER_WAERMEPUMPE</c>: Basis
-    /// „Modulpreis", der Wert unverändert).
+    /// <b>Der Kostensatz des Satzes</b>, bereits in der Kultur des Anwenders gesetzt;
+    /// leere Zeichenkette = keiner gepflegt.
     ///
-    /// <para><b>Anwenderentscheid W14a‑O‑1 (06.09.2026):</b> Die Maske ZEIGT den Wert
-    /// wieder — als Lesewert mit Herleitungszeile. Ä19 bleibt gewahrt: Es gibt kein
-    /// Eingabefeld und keinen Schreibweg aus dem Dialog; gepflegt werden Gerätekosten
-    /// in der Kostenverwaltung. Der Wert läuft im Speicherweg unverändert mit; bei
-    /// einer Neuanlage ist er 0, und 0 heißt „kein Planwert"
-    /// (<c>TechnikPlanwertCtrl.Basis</c> verwirft Beträge ≤ 0).</para>
-    ///
-    /// <para><b>Befund W14a‑O‑2:</b> Woher ein Wert &gt; 0 stammt, ist der BESTAND —
-    /// Auslieferung, Migration oder die Maske vor Ä19. Kein Importweg schreibt die
-    /// Spalte: <c>KatalogImportSatz.NachStamm</c> setzt sie nicht, und
-    /// <c>WPStammCtrl.UpdateImport</c> lässt sie beim Überschreiben ausdrücklich
-    /// stehen. Ein neu importiertes Gerät bleibt damit dauerhaft bei 0.</para>
+    /// <para><b>Welle KB-4</b> (Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine
+    /// Doppelhaltung"): Die Gerätespalte <c>Modulkosten</c> ist mit Schemaschritt 228
+    /// entfallen. Der Wert kommt aus der Satzvorlage der Kostenverwaltung
+    /// (<c>KatalogkostensatzCtrl</c>); die Maske ZEIGT ihn als Lesewert mit
+    /// Herleitungszeile und hat weder Eingabefeld noch Schreibweg (Ä19).</para>
     /// </summary>
-    public int Modulkosten { get; set; }
+    public string Kostensatz { get; set; } = "";
+
+    /// <summary>Das Einheitenzeichen des Kostensatzes (Wärmepumpe: „€") — es gehört zur
+    /// Bemessung der Satzvorlage, nicht zur Maske.</summary>
+    public string KostensatzEinheit { get; set; } = "";
 
     /// <summary>
     /// Maximale thermische Leistung. Die Maske zeigt sie nicht; sie muss aber
@@ -186,6 +188,49 @@ public sealed class WaermepumpeStammDaten
 
     /// <summary>Bauart — die Maske zeigt sie nicht, das <c>INSERT</c> schreibt sie.</summary>
     public string Bauart { get; set; } = "";
+
+    /// <summary>
+    /// Kleinste Modulationsleistung [kW] (Welle M4, WP1). <c>null</c> = keine Taktrechnung — das
+    /// Gerät moduliert bis null.
+    /// </summary>
+    public double? MindestleistungKw { get; set; }
+
+    /// <summary>Teillastkoeffizient C_d nach EN 14825 (Welle M4, WP1); <c>null</c> = Vorgabe 0,9.</summary>
+    public double? TaktverlustfaktorCd { get; set; }
+
+    // ---------------------------------------------------------------------------------
+    //  Gerätegrenzen der Übergabegrenze (UB‑E3‑b) — nullbar, leer = Vorgabe des Kerns
+    // ---------------------------------------------------------------------------------
+
+    /// <summary>Kältemittelcode (<c>Kaeltemittel</c>); leer = nicht gewählt.</summary>
+    public string Kaeltemittel { get; set; } = "";
+
+    /// <summary>Auslegungsspreizung [K] (<c>Spreizung_Auslegung_K</c>, Bereich 3 … 8).</summary>
+    public double? SpreizungAuslegungK { get; set; }
+
+    /// <summary>Größte Spreizung [K] (<c>Spreizung_Max_K</c>, Bereich 5 … 40).</summary>
+    public double? SpreizungMaxK { get; set; }
+
+    /// <summary>Kleinste Spreizung [K] (<c>Spreizung_Min_K</c>, Bereich 0 … 8).</summary>
+    public double? SpreizungMinK { get; set; }
+
+    /// <summary>Mindestvolumenstrom [% des Nennvolumenstroms] (<c>Mindestvolumenstrom_Prozent</c>, Bereich 20 … 100).</summary>
+    public double? MindestvolumenstromProzent { get; set; }
+
+    /// <summary>Größter Rücklauf [°C] (<c>Ruecklauf_Max</c>, Bereich 20 … 70).</summary>
+    public double? RuecklaufMaxC { get; set; }
+
+    /// <summary>Bezugsrücklauf der Abwertung [°C] (<c>Ruecklauf_Bezug</c>, Bereich 20 … 40) — wirkt nur bei R744.</summary>
+    public double? RuecklaufBezugC { get; set; }
+
+    /// <summary>Abwertung je Kelvin Rücklauf [%/K] (<c>Ruecklauf_Abwertung_ProzentJeK</c>, Bereich 0 … 5) — nur bei R744.</summary>
+    public double? RuecklaufAbwertungProzentJeK { get; set; }
+
+    /// <summary>
+    /// Die Klappliste der Kältemittel samt Vorgaben der Klasse — von der Hülle aus dem Kern gesetzt (die Oberfläche
+    /// sieht die Vorgabentafel nicht); leer = keine Klappliste.
+    /// </summary>
+    public IReadOnlyList<KaeltemittelEintrag> Kaeltemittelliste { get; set; } = Array.Empty<KaeltemittelEintrag>();
 
     /// <summary>Auslieferungssatz? Dann sind Speichern und Löschen gesperrt.</summary>
     public bool NurLesen { get; set; }
@@ -204,9 +249,21 @@ public sealed class WaermepumpeStammDaten
         Heizstab = Heizstab,
         Regelung = Regelung,
         Kuehlleistung = Kuehlleistung,
-        Modulkosten = Modulkosten,
+        Kostensatz = Kostensatz,
+        KostensatzEinheit = KostensatzEinheit,
         MaxPtherm = MaxPtherm,
         Bauart = Bauart,
+        MindestleistungKw = MindestleistungKw,
+        TaktverlustfaktorCd = TaktverlustfaktorCd,
+        Kaeltemittel = Kaeltemittel,
+        SpreizungAuslegungK = SpreizungAuslegungK,
+        SpreizungMaxK = SpreizungMaxK,
+        SpreizungMinK = SpreizungMinK,
+        MindestvolumenstromProzent = MindestvolumenstromProzent,
+        RuecklaufMaxC = RuecklaufMaxC,
+        RuecklaufBezugC = RuecklaufBezugC,
+        RuecklaufAbwertungProzentJeK = RuecklaufAbwertungProzentJeK,
+        Kaeltemittelliste = Kaeltemittelliste,
         NurLesen = NurLesen
     };
 }

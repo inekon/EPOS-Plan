@@ -481,7 +481,7 @@
         </KindInhalt>
     </Gruppenkopf>
 
-    @* ETAPPE E13 (E7c3-Q6 a): Ladefehler und Vorsorgewarnung des Kerns, je Grund einmal. *@
+    @* ETAPPE E13 (E7c3-Q6 a): der Ladefehler des Kerns, je Grund einmal. *@
     @foreach (string zeile in Fehlergruende())
     {
         <Warnbanner Stufe="WarnStufe.Warnung" Text="@zeile" />
@@ -867,12 +867,6 @@
     [Parameter] public Func<string>? Ladefehler { get; set; }
 
     /// <summary>
-    /// ETAPPE E13 (E7c3‑Q6 a): die Warnung der Tabellenvorsorge beim Öffnen
-    /// (<c>WirtschaftlichkeitCtrl.Vorsorgewarnung</c>); leer = keine.
-    /// </summary>
-    [Parameter] public string Vorsorgewarnung { get; set; } = "";
-
-    /// <summary>
     /// ETAPPE E9b (E9a‑Q7): die Kohärenzzeilen des ±-Knopfes der Einspeisevergütung KWK —
     /// ist das Tarif-Rollenmodell wirksam, bewertet es die Einspeisung mit seinem
     /// Einspeisetarif, und eine Szenario-Einspeisevergütung bleibt ohne Wirkung
@@ -1111,7 +1105,7 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     // =====================================================================
@@ -2152,7 +2146,7 @@
     private string? _ladefehler;
 
     /// <summary>
-    /// ETAPPE E13 (E7c3‑Q6 a) — Ladefehler und Vorsorgewarnung des Kerns als Zeilen
+    /// ETAPPE E13 (E7c3‑Q6 a) — der Ladefehler des Kerns als Zeilen
     /// (<see cref="Fehlergrund.Anzeigezeilen"/>): jeder Grund einmal, mit dem Text des
     /// Kerns. Ein Grund, den schon eine Kohärenzzeile des Dialogs nennt („Rechenstufe
     /// „Laden der Ergebnisse“ nicht ausführbar: …"), erscheint nicht ein zweites Mal.
@@ -2169,11 +2163,7 @@
         if (!string.IsNullOrWhiteSpace(_ladefehler) &&
             !gezeigt.Exists(t => t.EndsWith(": " + _ladefehler!.Trim(), StringComparison.Ordinal)))
             lade.Add(_ladefehler!);
-        string vorsorge = Vorsorgewarnung;
-        if (!string.IsNullOrWhiteSpace(vorsorge) &&
-            gezeigt.Exists(t => t.EndsWith(": " + vorsorge.Trim(), StringComparison.Ordinal)))
-            vorsorge = "";
-        return Fehlergrund.Anzeigezeilen(lade, null, vorsorge);
+        return Fehlergrund.Anzeigezeilen(lade, null);
     }
 
     /// <summary>Die Modulzeile des zuletzt gebuchten Laufs zu einer Anlage - ueber den
@@ -2414,7 +2404,7 @@
         {
             _meldung = string.Format(_t.MsgFehler, fehler);
             // ETAPPE E13 (E7c3‑Q6 a): der Grund des Kerns, einmal, ohne Stapel.
-            foreach (string zeile in Fehlergrund.Anzeigezeilen(null, Speicherfehler?.Invoke(), null))
+            foreach (string zeile in Fehlergrund.Anzeigezeilen(null, Speicherfehler?.Invoke()))
                 _meldung += " " + zeile;
             _leiste?.Fehler();
             return;

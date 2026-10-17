@@ -33,7 +33,7 @@ namespace EPOS.Kern.Tests
         /// <summary>Klasse F im Index der Klappliste (1969 bis 1978) — eine andere Wahl als die der Datei.</summary>
         private const int KLASSE_F = 5;
 
-        private static async Task<GebaeudeImportStand> Stand(string probe, int? klasse)
+        private static async Task<GebaeudeImportStand> Stand(string probe, int? klasse, bool gewaehlt = false)
         {
             var h = new GebaeudeImportHuelle();
             IReadOnlyDictionary<string, object> gaben = h.Gaben();
@@ -41,7 +41,7 @@ namespace EPOS.Kern.Tests
             GebaeudeLesestand gelesen = await lesen(GbxmlImportTests.Probe(probe), null, CancellationToken.None);
             Assert.True(gelesen.Gelesen, string.Join(" | ", gelesen.Meldungen.Select(m => m.Text)));
             var zuordnen = (Func<GebaeudeZuordnungsanfrage, GebaeudeImportStand>)gaben["Zuordnen"];
-            return zuordnen(new GebaeudeZuordnungsanfrage(0, klasse, Keine));
+            return zuordnen(new GebaeudeZuordnungsanfrage(0, klasse, Keine, KlasseGewaehlt: gewaehlt));
         }
 
         /// <summary>Zählt die Klassenfelder des Stands nach Herkunft — Datei bzw. Vorgabe der Klasse.</summary>
@@ -75,9 +75,29 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public async Task Eine_ausdrueckliche_Wahl_gilt_vor_dem_Baujahr_der_Datei_und_nennt_den_Vorschlag()
+        {
+            // Anwenderwunsch 08.10.2026 (Nachzug zu E3): wie im Gebäudeeditor ist die Klasse immer wählbar —
+            // die Wahl gilt, die Zeile darunter nennt den Vorschlag aus dem Baujahr.
+            GebaeudeImportStand gewaehlt = await Stand("ifc4_haus.ifc", KLASSE_F, gewaehlt: true);
+            GebaeudeImportStand vorschlag = await Stand("ifc4_haus.ifc", null);
+
+            Assert.Null(gewaehlt.KlasseDerDatei);
+            GebaeudeFeldzeileDaten bak = gewaehlt.Zeilen.Single(z => z.Zielfeld == GebaeudeZielfelder.BAUALTERSKLASSE);
+            Assert.Equal(GebaeudeHerkunftSchluessel.Manuell, bak.HerkunftSchluessel);
+            (int ausDatei, int ausKlasse) = Zaehlen(gewaehlt);
+            Assert.Equal(Gebaeudeklassen.AusBaujahrText(1965) + " " + Wirkung(ausKlasse, ausDatei), gewaehlt.KlassenHinweis);
+
+            // Die Vorgabewerte der Klasse folgen der Wahl: mindestens ein Klassenfeld weicht ab, wenn die Klasse etwas füllt.
+            if (ausKlasse > 0)
+                Assert.NotEqual(vorschlag.Zeilen.Select(z => (z.Zielfeld, z.Wert)),
+                                gewaehlt.Zeilen.Select(z => (z.Zielfeld, z.Wert)));
+        }
+
+        [Fact]
         public async Task Das_Baujahr_der_Datei_fuehrt_auch_gegen_eine_gewaehlte_Klasse()
         {
-            // E47 (F2): Eine gewählte Klasse ersetzt die Klasse aus dem Baujahr der Datei nicht.
+            // E47 (F2): Eine VORGEGEBENE Klasse (nicht ausdrücklich gewählt) ersetzt die Klasse aus dem Baujahr der Datei nicht.
             GebaeudeImportStand gewaehlt = await Stand("ifc4_haus.ifc", KLASSE_F);
             GebaeudeImportStand ohne = await Stand("ifc4_haus.ifc", null);
 
@@ -144,16 +164,58 @@ namespace EPOS.Kern.Tests
 
         private const int PROJEKT = 1007;
 
+        /// <summary>
+        /// Eine ungespeicherte Zeile rechnet aus dem Arbeitsstand; fehlt ihr Katalogsatz, nennt
+        /// die Auskunft genau das — nicht „bitte speichern" (Verbesserungen 29.09.2026, A1).
+        /// </summary>
         [Fact]
-        public void Eine_ungespeicherte_Zeile_nennt_das_fehlende_OK()
+        public void Eine_ungespeicherte_Zeile_ohne_Katalogsatz_nennt_den_Katalogsatz()
         {
             if (!_db.Vorhanden) return;
 
             IReadOnlyDictionary<string, object> gaben = GebaeudeBedarfHuelle.Gaben(
-                new GebaeudeProjektZeile { IdZ = GebaeudeHuelle.STARTINDEX }, PROJEKT, out string befund);
+                new GebaeudeProjektZeile { IdZ = GebaeudeHuelle.STARTINDEX, Name = "A1 ohne Katalogsatz" },
+                PROJEKT, out string befund);
 
             Assert.Null(gaben);
-            Assert.Equal(R.GEB_MSG_BEDARF_UNGESPEICHERT, befund);
+            Assert.Equal(string.Format(R.GEB_MSG_BEDARF_OHNE_KATALOGSATZ, "A1 ohne Katalogsatz"), befund);
+            Assert.DoesNotContain("gespeichert", befund, StringComparison.Ordinal);
+        }
+
+        /// <summary>A1: Ohne Klimaregion des Projekts nennt die Auskunft die Klimaregion.</summary>
+        [Fact]
+        public void Ohne_Klimaregion_nennt_die_Auskunft_die_Klimaregion()
+        {
+            if (!_db.Vorhanden) return;
+            Assert.True(DataRepository.ExecuteSQL("UPDATE Tab_Projekt SET ID_Klimaregion = 0 WHERE ID = ?",
+                                                  new DbParam("@id", PROJEKT)));
+
+            IReadOnlyDictionary<string, object> gaben = GebaeudeBedarfHuelle.Gaben(
+                GebaeudeHuelle.AusModell(Z_ProjGebCtrl.LiesProjekt(PROJEKT)[0]), PROJEKT, out string befund);
+
+            Assert.Null(gaben);
+            Assert.Equal(R.GEB_MSG_BEDARF_OHNE_KLIMAREGION, befund);
+        }
+
+        /// <summary>A1: Eine gespeicherte Zuordnung, deren Projektkopie fehlt, nennt die Projektkopie.</summary>
+        [Fact]
+        public void Ohne_Projektkopie_nennt_die_Auskunft_die_Projektkopie()
+        {
+            if (!_db.Vorhanden) return;
+
+            IReadOnlyDictionary<string, object> gaben = GebaeudeBedarfHuelle.Gaben(
+                new GebaeudeProjektZeile { IdZ = GebaeudeHuelle.STARTINDEX - 1 }, PROJEKT, out string befund);
+
+            Assert.Null(gaben);
+            Assert.Equal(R.GEB_MSG_BEDARF_OHNE_PROJEKTKOPIE, befund);
+        }
+
+        /// <summary>A1: Ohne Projekt nennt die Auskunft das fehlende Projekt.</summary>
+        [Fact]
+        public void Ohne_Projekt_nennt_die_Auskunft_das_Projekt()
+        {
+            Assert.Null(GebaeudeBedarfHuelle.Gaben(new GebaeudeProjektZeile { IdZ = 1 }, 0, out string befund));
+            Assert.Equal(R.GEB_MSG_BEDARF_OHNE_PROJEKT, befund);
         }
 
         [Fact]

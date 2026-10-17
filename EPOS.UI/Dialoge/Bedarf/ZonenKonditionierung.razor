@@ -1,0 +1,164 @@
+﻿@* DIE ZONENMATRIX (Stufe KP2, Welle U4; Teilkonzept Konditionierungsprofile 3.4, 7.3; Entwurf KP2 D12,
+   Festlegungen 5 und 6) - die Konditionierung EINER Zone im Zonendialog.
+
+   DERSELBE BAUSTEIN WIE AM GEBAEUDE. Die Matrix ist KonditionierungMatrix, die Karten sind die
+   Kalenderkarten des Reiters; die Bearbeitung ist eine KonditionierungBearbeitung am Ort der Zone
+   (die Bestandszellen sind die Felder der Zone, die neuen Zellen und Kalender ihre Konditionierung).
+   Eine LEERE Zelle erbt: Der Platzhalter nennt, was sie vom Gebaeude bekaeme ("Vorgabe 20",
+   Personen-Nennwert im Flaechenanteil), ohne Angabe "wie Gebaeude"; eine eigene Zelle ueberschreibt,
+   eine geleerte erbt wieder.
+
+   JE GROESSE EINE ZUSTANDSZEILE: "vom Gebaeude" (das Gebaeude hat den Kalender angelegt, die Zone
+   keinen eigenen - dann sind die Zellen dieser Groesse OHNE WIRKUNG, die Zeile nennt den Grund, die
+   Spalte steht leise), "eigener Kalender" oder "aus der Matrix". "Vom Gebaeude uebernehmen und
+   anpassen" legt eine eigene Kopie an. Die Kuehlspalte der Zone (KU3-3) ist bedienbar, wenn die Zone
+   gekuehlt wird (eigener Schalter, leer = der des Gebaeudes); sonst ist sie weich gesperrt, an einer
+   unbeheizten Zone auch die Heizspalte; beide Groessen tragen dann keine Zustandszeile und keine Karte.
+
+   GESCHRIEBEN WIRD MIT DEM OK DES GEBAEUDEEDITORS. Der Zonendialog gibt seinen Arbeitsstand samt
+   Konditionierung zurueck; erst das OK des Editors schreibt (Schritt 3 mit Id-Zuordnung).
+   Rueckfragen stehen hier, wie im Reiter. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+
+<div class="epos-kond epos-kond-zone">
+
+    @* Stufe NP3b (Konzept Nutzungsprofile 6.2): „Nutzungsprofil übernehmen…" wie am Gebäude. *@
+    @if (Bearbeitung.MitWeg)
+    {
+        <NutzungsprofilUebernahme Bearbeitung="@Bearbeitung" Texte="@ProfilTexte" Geaendert="Geaendert" />
+    }
+
+    @if (Bearbeitung.Sperrgrund is string sperre)
+    {
+        <p class="epos-leisezeile epos-kond-sperrzeile">@sperre</p>
+    }
+
+    @* Die fuenf Reiter der schmalen Anordnung - breit blendet das Stilblatt sie aus. *@
+    <div class="epos-kond-groessen" role="tablist" aria-label="@Texte.LabelGroesse">
+        @foreach (KonditionierungGroesse g in KonditionierungDaten.Alle)
+        {
+            KonditionierungGroesse groesse = g;
+            bool aktiv = groesse == _groesse;
+            <button type="button" role="tab" class="epos-knopf epos-kond-groesse @(aktiv ? "epos-knopf--gewaehlt" : "")"
+                    aria-selected="@(aktiv ? "true" : "false")" tabindex="@(aktiv ? 0 : -1)"
+                    data-groesse="@((int)groesse)" @onclick="() => _groesse = groesse">@Bearbeitung.Groessenname(groesse)</button>
+        }
+    </div>
+
+    <KonditionierungMatrix Bearbeitung="@Bearbeitung" Texte="@Texte" HuelleTexte="@HuelleTexte"
+                           Kuehlsperre="@Kuehlsperre" Heizsperre="@Heizsperre"
+                           AktiveGroesse="@_groesse" Geaendert="Geaendert" FehlerZustand="FehlerZustand" />
+    <p class="epos-leisezeile epos-kond-zonenhinweis">@Texte.HinweisZoneMatrix</p>
+
+    @if (Bearbeitung.MitWeg)
+    {
+        <div class="epos-kond-zonenzustand" role="group" aria-label="@Texte.LabelZoneKalender">
+            <p class="epos-kond-zonenzustand-titel">@Texte.LabelZoneKalender</p>
+            @foreach (KonditionierungGroesse g in Groessen)
+            {
+                KonditionierungGroesse groesse = g;
+                bool vomGebaeude = Bearbeitung.VomGebaeude(groesse);
+                <div class="epos-kond-zonenzeile @(groesse == _groesse ? "epos-kond--aktiv" : "")" @key="groesse"
+                     data-groesse="@((int)groesse)">
+                    <span class="epos-kond-zonenzeile-name">@Bearbeitung.Groessenname(groesse)</span>
+                    <span class="epos-kond-zonenzeile-zustand">@Bearbeitung.Zonenzustand(groesse)</span>
+                    @if (vomGebaeude)
+                    {
+                        <span class="epos-leisezeile epos-kond-zonenzeile-grund">@Texte.GrundVomGebaeude</span>
+                        @if (Bearbeitung.Bietet(KonditionierungHandlung.VomGebaeude))
+                        {
+                            <button type="button" class="epos-knopf epos-kond-uebernehmen"
+                                    @onclick="() => Uebernehmen(groesse)">@Texte.KnopfUebernehmenAnpassen</button>
+                        }
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="epos-kond-karten">
+            @foreach (KonditionierungGroesse g in Groessen)
+            {
+                KonditionierungGroesse groesse = g;
+                <Kalenderkarte @key="groesse" Groesse="@groesse" Titel="@Bearbeitung.Groessenname(groesse)"
+                               Zustand="@Bearbeitung.Zustand(groesse)" Angelegt="@Bearbeitung.Angelegt(groesse)"
+                               Aktiv="@(groesse == _groesse)" Texte="@Texte"
+                               Anlegen="@Rueckruf(KonditionierungHandlung.Anlegen, () => Bearbeitung.Anlegen(groesse))"
+                               Verwerfen="@Rueckruf(KonditionierungHandlung.Verwerfen, () => Bearbeitung.Verwerfen(groesse))"
+                               MatrixErneut="@Rueckruf(KonditionierungHandlung.MatrixErneut, () => Bearbeitung.MatrixErneut(groesse))" />
+            }
+        </div>
+    }
+
+    <Rueckfrage Offen="@(Bearbeitung.OffeneFrage is not null)" TitelText="@(Bearbeitung.OffeneFrage?.Titel ?? "")"
+                Frage="@(Bearbeitung.OffeneFrage?.Text ?? "")" VorgabeNein="@(Bearbeitung.OffeneFrage?.VorgabeNein ?? true)"
+                Beantwortet="Beantwortet" JaText="@JaText" NeinText="@NeinText" />
+</div>
+
+@code {
+    /// <summary>Die Bearbeitung am Ort der Zone — der Zonendialog hält sie, damit auch der Assistent sie nimmt.</summary>
+    [Parameter, EditorRequired] public KonditionierungBearbeitung Bearbeitung { get; set; } = default!;
+
+    /// <summary>Die Texte der Konditionierung.</summary>
+    [Parameter] public KonditionierungTexte Texte { get; set; } = new();
+
+    /// <summary>Die Texte der VDI-Struktur (Platzhalter der Lüftung und der Kühlung).</summary>
+    [Parameter] public GebaeudeHuelleTexte HuelleTexte { get; set; } = new();
+
+    /// <summary>Die Texte von „Nutzungsprofil übernehmen…" (Bündel des Nutzungsprofilkatalogs, Präfix <c>RNP_</c>).</summary>
+    [Parameter] public RaumnutzungTexte ProfilTexte { get; set; } = new();
+
+    /// <summary>„Ja" der Rückfragen.</summary>
+    [Parameter] public string JaText { get; set; } = "Ja";
+
+    /// <summary>„Nein" der Rückfragen.</summary>
+    [Parameter] public string NeinText { get; set; } = "Nein";
+
+    /// <summary>Meldet jede Änderung — der Zonendialog zeichnet neu (Banner, Herleitungen).</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>Meldet den Fehlerzustand eines Felds an den Zonendialog (Sammelmeldung beim OK).</summary>
+    [Parameter] public EventCallback<(string Feld, bool Fehlerhaft)> FehlerZustand { get; set; }
+
+    /// <summary>Die Größe, deren Spalte schmal vorn steht.</summary>
+    private KonditionierungGroesse _groesse = KonditionierungGroesse.Heizen;
+
+    /// <summary>Die gewählte Größe der schmalen Anordnung. Prüfhilfe für die Tests.</summary>
+    public KonditionierungGroesse AktiveGroesse => _groesse;
+
+    private bool Beheizt => Bearbeitung.Zone?.IstBeheizt ?? true;
+
+    /// <summary>An einer unbeheizten Zone ist die Heizspalte weich gesperrt (Teilkonzept 3.4).</summary>
+    private string? Heizsperre => Beheizt ? null : Texte.HinweisUnbeheizt;
+
+    /// <summary>
+    /// Die Kühlspalte der Zone (KU3-3): bedienbar, wenn die beheizte Zone gekühlt wird — ihr eigener Schalter,
+    /// leer der des Gebäudes; sonst weich gesperrt mit dem Grund der Gebäudespalte.
+    /// </summary>
+    private string? Kuehlsperre => Beheizt && Bearbeitung.KuehlungAktivHier ? null : Texte.GrundKuehlenGesperrt;
+
+    /// <summary>
+    /// Die Größen, die die Zone trägt: Kühlen nur gekühlt (KU3-3), Heizen nur beheizt — für Zustandszeilen und
+    /// Karten; die Matrix zeigt alle fünf Spalten.
+    /// </summary>
+    private IEnumerable<KonditionierungGroesse> Groessen
+        => KonditionierungDaten.Alle.Where(g => (g != KonditionierungGroesse.Kuehlen || Kuehlsperre is null)
+                                                && (g != KonditionierungGroesse.Heizen || Beheizt));
+
+    /// <summary>Ein Rückruf nur, wenn der Weg die Handlung bietet („kein Delegat, kein Knopf").</summary>
+    private EventCallback Rueckruf(KonditionierungHandlung h, Action handlung)
+        => Bearbeitung.Bietet(h) ? EventCallback.Factory.Create(this, async () => { handlung(); await Geaendert.InvokeAsync(); })
+                                 : default;
+
+    private async Task Uebernehmen(KonditionierungGroesse g)
+    {
+        Bearbeitung.VomGebaeudeUebernehmen(g);
+        await Geaendert.InvokeAsync();
+    }
+
+    private async Task Beantwortet(bool? antwort)
+    {
+        Bearbeitung.Beantworten(antwort);
+        await Geaendert.InvokeAsync();
+    }
+}

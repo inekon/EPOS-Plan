@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 using EPOS.UI.Dialoge.Simulation;
 using Microsoft.AspNetCore.Components;
@@ -17,11 +18,12 @@ namespace WindowsFormsApplication1
     /// Delegaten; herauskommt die Id, die der Aufrufer an <c>WQ_ID_Quellprofil</c>
     /// schreibt.</para>
     ///
-    /// <para><b>Die Dateiwahl gehört der Plattform.</b> <c>CsvLesen</c> öffnet den
-    /// Wähler über <c>Dienste.Datei</c> und liest die Werte mit
-    /// <c>WaermequelleClass.WerteAusCsv</c> — beides kennt die Komponente nicht.
-    /// <c>null</c> heißt „nichts gelesen"; ein ABGEBROCHENER Wähler liefert dagegen ein
-    /// leeres Feld, damit der Dialog nicht meldet, wo nichts schiefging.</para>
+    /// <para><b>Die Dateiwahl gehört der Plattform.</b> <c>CsvWaehlen</c> öffnet den
+    /// Wähler über <c>Dienste.Datei</c>; gelesen wird über den Optionendialog „Format und
+    /// Vorschau“ mit der Formatbeschreibung des Quellprofils (IM-4) — die Wege dazu
+    /// (<c>CsvWege</c>) liegen hinter der Fangstelle der Importe (<see cref="GanglinienFormatnaht"/>):
+    /// Ein Lesefehler steht im Ausnahmeprotokoll und als Grund im Dialog. Ein ABGEBROCHENER
+    /// Wähler liefert einen leeren Pfad, damit der Dialog nicht meldet, wo nichts schiefging.</para>
     /// </summary>
     internal static class QuellprofilHuelle
     {
@@ -33,7 +35,12 @@ namespace WindowsFormsApplication1
         // getrennt gehalten (W10a, "Gaben ohne Geschlossen").
 
         /// <summary>Der PARAMETERSATZ des Dialogs — ohne <c>Geschlossen</c>.</summary>
-        internal static IReadOnlyDictionary<string, object> Gaben(QuellprofilDaten daten)
+        /// <param name="daten">Die Übergabefelder des Dialogs.</param>
+        /// <param name="aussentemperatur">Welle RZ (Teil b): die Außentemperatur des Projekts
+        /// (<c>KlimaregionCtrl.Aussentemperatur</c>, 8 760 Werte) für die zuschaltbare Reihe im
+        /// Jahresbild; <c>null</c> = keine Klimareihe, dann kein Schalter.</param>
+        internal static IReadOnlyDictionary<string, object> Gaben(QuellprofilDaten daten,
+                                                                  double[] aussentemperatur = null)
         {
             int idProjekt = daten?.IdProjekt ?? 0;
 
@@ -43,8 +50,13 @@ namespace WindowsFormsApplication1
                 ["Profile"] = Profile(idProjekt),
                 ["ProfilLesen"] = new Func<int, QuellprofilInhalt>(ProfilLesen),
                 ["Speichern"] = new Func<QuellprofilInhalt, int>(k => Speichern(idProjekt, k)),
-                ["CsvLesen"] = new Func<int, Task<double[]>>(CsvLesen),
+                ["CsvWaehlen"] = new Func<Task<string>>(CsvWaehlen),
+                ["CsvWege"] = GanglinienFormatnaht.Wege(),
+                ["CsvSpeichern"] = Diagrammexportnaht.Fuer(idProjekt),
                 ["Jahresbild"] = Bildzeichner(daten),
+                ["JahresbildReihen"] = aussentemperatur != null && aussentemperatur.Length > 1
+                    ? Bildzeichner(aussentemperatur) : null,
+                ["LabelAussentemperatur"] = MyResource.Resource.CHART_SERIE_AUSSENTEMPERATUR,
                 ["Werteanzahl"] = new Func<string, int>(DbWerte.QuellprofilWerteanzahl),
 
                 // Die drei Steuerwerte der Betriebsart - sprachneutral, nie ein
@@ -153,25 +165,18 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der CSV-Weg: Dateiwahl über <c>Dienste.Datei</c>, danach
-        /// <c>WaermequelleClass.WerteAusCsv</c>.
-        ///
-        /// <para>Ein ABGEBROCHENER Wähler liefert ein LEERES Feld, kein <c>null</c>: Der
-        /// Dialog soll nicht melden, wo nichts schiefgegangen ist — der Vorläufer kehrte
-        /// dort ebenfalls still zurück (<c>btnCsv_Click</c>:896).</para>
+        /// Die Dateiwahl des CSV-Wegs über <c>Dienste.Datei</c>; leer = abgebrochen (der
+        /// Vorläufer kehrte dort still zurück, <c>btnCsv_Click</c>:896). Gelesen wird danach über
+        /// den Optionendialog (<see cref="GanglinienFormatnaht"/>).
         /// </summary>
-        private static async Task<double[]> CsvLesen(int soll)
+        private static async Task<string> CsvWaehlen()
         {
             // Der Wähler läuft HINTER dem Blazor-Ereignis (Befund W13‑B‑1,
             // siehe IDateiDienst) - deshalb await statt eines synchronen Aufrufs.
             string pfad = await Dienste.Datei.DateiOeffnenAsync(
                 MyResource.Resource.SIMQ_CSV_DATEIDIALOG_TITEL,
                 MyResource.Resource.SIMQ_CSV_DATEIFILTER, null);
-
-            if (string.IsNullOrEmpty(pfad)) return new double[0];
-
-            return await SpeicherEngine.Kulturweitergabe.Starten(
-                () => WaermequelleClass.WerteAusCsv(pfad, soll));
+            return pfad ?? "";
         }
 
         /// <summary>
@@ -200,6 +205,46 @@ namespace WindowsFormsApplication1
                     MyResource.Resource.SIMQ_QUELLPROFIL_TAB_GRAFIK, jahr,
                     MyResource.Resource.CHART_ACHSE_QUELLTEMPERATUR,
                     Farbrolle.QUELLTEMPERATUR);
+            });
+        }
+
+        /// <summary>
+        /// Welle RZ (Teil b): das Jahresbild mit ZUSCHALTBARER Außentemperatur. Ohne den Schlüssel
+        /// <c>Zusatzreihen.Aussentemperatur</c> in der Reihenliste ist es Bild für Bild das Bestandsbild
+        /// (<see cref="Bildzeichner(QuellprofilDaten)"/>); mit ihm stehen Quelltemperatur und
+        /// Außentemperatur im Jahresgang wie im Vorschaubild des Erdreichdialogs
+        /// (<c>QuelleErdreichHuelle.Modellzeichner</c>) — dieselben Rollen, dieselbe Achse.
+        /// </summary>
+        private static Func<string, double[], IReadOnlyList<string>, Task<Zeichenmodell>> Bildzeichner(
+            double[] aussentemperatur)
+        {
+            return (betriebsart, werte, reihen) => SpeicherEngine.Kulturweitergabe.Starten(() =>
+            {
+                double[] profil = QuellprofilCtrl.Jahresprofil(betriebsart, werte);
+                if (profil == null) return null;
+
+                var jahr = new double[profil.Length];
+                for (int i = 0; i < profil.Length; i++) jahr[i] = profil[i];
+
+                bool mitAussen = reihen != null
+                                 && reihen.Contains(EPOS.UI.Seiten.Simulation.Zusatzreihen.Aussentemperatur);
+                if (!mitAussen)
+                    return ChartRenderer.JahresverlaufModell(
+                        MyResource.Resource.SIMQ_QUELLPROFIL_TAB_GRAFIK, jahr,
+                        MyResource.Resource.CHART_ACHSE_QUELLTEMPERATUR,
+                        Farbrolle.QUELLTEMPERATUR);
+
+                var liste = new List<ChartRenderer.Reihe>
+                {
+                    new ChartRenderer.Reihe(MyResource.Resource.CHART_SERIE_QUELLTEMPERATUR, jahr,
+                                            Farbrolle.QUELLTEMPERATUR),
+                    new ChartRenderer.Reihe(MyResource.Resource.CHART_SERIE_AUSSENTEMPERATUR,
+                                            (double[])aussentemperatur.Clone(), Farbrolle.AUSSENTEMPERATUR)
+                };
+                return ChartRenderer.JahresgangModell(
+                    MyResource.Resource.SIMQ_QUELLPROFIL_TAB_GRAFIK, liste,
+                    MyResource.Resource.CHART_ACHSE_MONAT,
+                    MyResource.Resource.CHART_ACHSE_QUELLTEMPERATUR);
             });
         }
 

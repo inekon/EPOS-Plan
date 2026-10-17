@@ -87,6 +87,12 @@ bringen — ein Loch im Raster bekommt `C_RASTER_LOCH`, nicht die Minimumfarbe. 
 **Schriftregel**: Rückfallkette über `SKFontManager`, Layout metrikgetrieben — **Textbreiten
 dürfen je Plattform abweichen**, verglichen wird über Struktur und Histogramm, nicht Pixel.
 
+**Die Farbe einer Reihe ist ihre Rolle:** Legendeneintrag über `Eintrag(r)`, Linie, Fläche, Säule
+und Achse über `Ton(r)` — nie `r.Farbe` in einen Befehl. `r.Farbe` ist gegen `Farbpalette.Aktuell`
+aufgelöst, die Rückwärtssuche kennt nur die Hausfarben und fände bei einer Anwenderpalette eine
+fremde Rolle; nur eine Reihe ohne Rolle geht durch sie (Wache
+`EPOS.Kern.Tests/ChartRendererRollenTests`).
+
 **Die Berichtsschreiber (Bausteine, Anhang E, Excel-Generator, Formelmappe, Vorlagenfüller) lesen
 nur `BerichtsDaten`** — alles aus der Datenbank sammelt `BerichtsDatenSammler.SammleFuerBericht`
 einmal in `BerichtsDaten.Wirtschaft`; Wache `EPOS.Kern.Tests/BerichtSchreiberOhneDatenbankWacheTests`.
@@ -187,7 +193,25 @@ bei der UNTERgrenze `EntnahmeObergrenze` vertauscht.
 `Q_max · SchwelleAus`), **und jeder Vergleich, dessen Operanden aus getrennten Rechenketten
 stammen.** Die Einschaltschwelle bleibt bewusst ohne — auf sie steuert keine Rechnung zu. **Wer
 eine neue Betriebsschwelle einführt, nimmt `Rechenrand.SchwelleErreicht` — nicht `>=`.**
-Nachweis: `RechenrandTests`, `RechenrandFahrweisenTests`.
+
+**Die Abschaltschwelle eines Speichers prüft genau eine Methode**,
+`SimulationPufferspeicher.AbschaltschwelleErreicht()`: Die Hysterese und die Abschaltprüfung der Phase G
+in `Kaskadenschleife` nehmen sie. **Ein Quellspeicher gilt unter `Rechenrand.ABSOLUT` als leer**
+(`SimulationWaermepumpe.QuellInhalt`); ein Rest von 10⁻¹⁶ kWh ist weder Wärmequelle noch Betriebsstunde.
+**Ein Kessel läuft erst ab `Rechenrand.ABSOLUT`** (`SimulationSPK.KesselLaeuft`); ein Rest darunter ist
+weder Laufstunde noch Start.
+
+**Eine Entscheidung am letzten Bit ist auch eine Plattformfrage.** `Math.Sin`, `Cos`, `Asin`, `Acos`,
+`Exp`, `Log` und `Pow` rechnen in der C-Bibliothek der Plattform (Windows UCRT, Linux glibc) und runden im
+letzten Bit verschieden. Was ohne Rand am letzten Bit entscheidet, rechnet deshalb auf Windows und Linux
+verschieden. Nachweis: `RechenrandTests`, `RechenrandFahrweisenTests`, `PlattformrandTests`.
+
+**Die Plattformnaht.** In Gebäudematrix (`Matrix2`), Sonnenstand (`SolarPVGISCalculator`), Erdreich,
+Kollektor (`SimulationSolarthermie`) und Tagesbilanz laufen `Exp`, `Sin`, `Cos`, `Asin` und `Acos`
+über `Allgemein/Simulation/Plattformrundung.cs`: ohne Schalter bitgleich `Math.*`, mit
+`EPOS.Referenzlauf lauf … --stoerung ulp` um ±1 ulp verschoben; `kern.yml` hält den gestörten
+gegen den ungestörten Lauf (GESAMT PASS). **Wer in diesen Dateien eine der fünf Funktionen
+aufruft, ruft sie über die Naht** — Wache `PlattformrundungTests`.
 
 ## Keine `(int)`-Abschneidung auf einer Rechengröße
 
@@ -209,6 +233,15 @@ Projekt `Projektvorschau`.
 wie im Lauf — und fällt nur für einen dem PROJEKT unbekannten Namen auf den `_STAMM`-Katalog
 zurück (`ProfilQuelle.Rueckfall`, mit **Kopf UND Typprofil**, sonst erscheint eine fremde
 Monatsverteilung). **Eine Zahl der Vorschau wird am Lauf gemessen, nicht am Katalog.**
+
+**Die Zuordnung Projekt ↔ Bedarfsprofil gilt über die ID, nicht über den Bezeichner** — bei
+Brauchwasser, Prozesswärme und Stromverbraucher gleich. `ID_Brauchwasser`, `ID_Prozesswaerme`
+und `ID_Stromverbraucher` der Zuordnungstabellen zeigen auf die Projektkopie; Lauf (je
+Zuordnungszeile), Vorschau, Summensicherung, Assistent, Komponentenbestand und Speichern gehen
+darüber (`ProfilQuelle.ZuordnungIdSpalte`, `GetProjektIdUeberId` der drei Stamm-Controller).
+Kopf- wie Typsatz werden nur im eigenen Projekt gelesen — nie die gleichnamige Kopie eines
+fremden Projekts —, und unter gleichnamigen Kopien desselben Projekts gilt die zugeordnete. Die
+Namenssichten `Abfrage_Monats*` liest der Kern nicht.
 
 ## Eine Auskunft ruft den Rechenweg des Laufs — sie schreibt ihn nicht ab
 

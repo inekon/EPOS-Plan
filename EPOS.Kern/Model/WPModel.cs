@@ -16,7 +16,6 @@
         public int maxPTherm;
         public double Heizung;
         public string Regelung;
-        public int Modulkosten;
         public string Leistungsstufen;
         public double Kuehlleistung;
         public int MaxVorlauf;
@@ -50,6 +49,24 @@
         /// Kuehlbetriebs, je Anlage (K23). <b><c>null</c> = kein Zuschlag.</b>
         /// </summary>
         public double? KuehlHilfsstromanteil;
+
+        /// <summary>
+        /// <c>Mindestleistung_kW</c> [kW] - die kleinste Modulationsleistung (Welle M4, WP1).
+        /// <b><c>null</c> = keine Taktrechnung</b>; das Gerät moduliert dann bis null wie zuvor.
+        /// </summary>
+        public double? MindestleistungKw;
+
+        /// <summary>
+        /// <c>Taktverlustfaktor_Cd</c> [-] - der Teillastkoeffizient nach EN 14825 (Welle M4, WP1).
+        /// <b><c>null</c> = Vorgabe 0,9.</b>
+        /// </summary>
+        public double? TaktverlustfaktorCd;
+
+        /// <summary>
+        /// Die acht Gerätespalten der Übergabegrenze (UB‑E3, <see cref="GeraetegrenzWerte"/>), soweit ein Speicherweg sie
+        /// mitbringt. <b><c>null</c> = nicht angefasst</b> — der Speicherweg lässt die Spalten dann stehen.
+        /// </summary>
+        internal Geraetespalten Grenzspalten;
         
         public WPModel()
         {
@@ -66,7 +83,6 @@
             maxPTherm = 0;
             Heizung = 0;
             Regelung = "";
-            Modulkosten = 0;
             Leistungsstufen = "";
             Kuehlleistung = 0;
             MaxVorlauf = 0;

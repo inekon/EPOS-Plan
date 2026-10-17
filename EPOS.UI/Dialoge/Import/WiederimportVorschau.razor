@@ -1,0 +1,86 @@
+﻿@* DIE VORSCHAU DES WIEDERIMPORTS (MA-6, Entwurf Gefuehrter Modellaufbau 2.6, E137 F7): vor dem zweiten OK im Importdialog je
+   Zone und Bauteil der Stand - neu, geaendert (welche Felder der Datei), unveraendert, entfaellt, bleibt (Hand) -, die Zahlen
+   je Gruppe und die Wahl, entfallende Elemente zu entfernen (Vorgabe: behalten). Keine Datenbank: die Daten kommen ueber die
+   Huelle (GebaeudeMehrzonenHuelle). *@
+
+@namespace EPOS.UI.Dialoge.Import
+@using System.Globalization
+@using WindowsFormsApplication1
+@using WindowsFormsApplication1.MyResource
+
+<section class="epos-wiederimport" aria-label="@Resource.GEBWI_TITEL">
+    <h3 class="epos-wiederimport-titel">@Resource.GEBWI_TITEL</h3>
+    <p class="epos-leisezeile epos-wiederimport-hinweis">@Resource.GEBWI_HINWEIS</p>
+    @if (Daten.GeaenderteFassung)
+    {
+        <p class="epos-wiederimport-fassung" role="status">@Resource.GEBWI_FASSUNG</p>
+    }
+    <p class="epos-wiederimport-zahlen" data-gruppe="zonen" role="status">@Zahlen(true)</p>
+    <p class="epos-wiederimport-zahlen" data-gruppe="bauteile" role="status">@Zahlen(false)</p>
+    <div class="epos-wiederimport-rahmen">
+        <table class="epos-tabelle epos-wiederimport-tabelle">
+            <thead>
+                <tr>
+                    <th>@Resource.GEBWI_SPALTE_ART</th>
+                    <th>@Resource.GEBWI_SPALTE_ZONE</th>
+                    <th>@Resource.GEBWI_SPALTE_NAME</th>
+                    <th>@Resource.GEBWI_SPALTE_STAND</th>
+                    <th>@Resource.GEBWI_SPALTE_FELDER</th>
+                    <th>@Resource.GEBWI_SPALTE_HAND</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (WiederimportZeile z in Daten.Zeilen)
+                {
+                    <tr class="epos-wiederimport-zeile" data-stand="@z.Stand">
+                        <td>@(z.IstZone ? Resource.GEBWI_ART_ZONE : Resource.GEBWI_ART_BAUTEIL)</td>
+                        <td>@z.Zone</td>
+                        <td>@z.Name</td>
+                        <td class="epos-wiederimport-stand">@Standtext(z.Stand)</td>
+                        <td>@string.Join(", ", z.Felder)</td>
+                        <td>@string.Join(", ", z.Hand)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    @if (Daten.MitEntfallenden)
+    {
+        <label class="epos-wiederimport-entfernen">
+            <input type="checkbox" checked="@Daten.Entfernen" @onchange="BeiEntfernen" />
+            @Resource.GEBWI_ENTFERNEN
+        </label>
+        <p class="epos-leisezeile">@Resource.GEBWI_ENTFERNEN_HINWEIS</p>
+    }
+    else
+    {
+        <p class="epos-leisezeile epos-wiederimport-ohne">@Resource.GEBWI_OHNE_ENTFALLENDE</p>
+    }
+</section>
+
+@code {
+    /// <summary>Die Vorschau der Hülle.</summary>
+    [Parameter, EditorRequired] public GebaeudeWiederimportDaten Daten { get; set; } = new();
+
+    /// <summary>Der Text eines Stands in der Anzeigekultur.</summary>
+    public static string Standtext(Wiederimportstand s) => s switch
+    {
+        Wiederimportstand.Neu => Resource.GEBWI_STAND_NEU,
+        Wiederimportstand.Geaendert => Resource.GEBWI_STAND_GEAENDERT,
+        Wiederimportstand.Unveraendert => Resource.GEBWI_STAND_UNVERAENDERT,
+        Wiederimportstand.Entfaellt => Resource.GEBWI_STAND_ENTFAELLT,
+        _ => Resource.GEBWI_STAND_BLEIBT
+    };
+
+    private string Zahlen(bool zonen)
+        => string.Format(CultureInfo.CurrentCulture, Resource.GEBWI_ZAHLEN, zonen ? Resource.GEBWI_ZONEN : Resource.GEBWI_BAUTEILE,
+                         Daten.Anzahl(Wiederimportstand.Neu, zonen), Daten.Anzahl(Wiederimportstand.Geaendert, zonen),
+                         Daten.Anzahl(Wiederimportstand.Unveraendert, zonen), Daten.Anzahl(Wiederimportstand.Entfaellt, zonen),
+                         Daten.Anzahl(Wiederimportstand.Bleibt, zonen));
+
+    private void BeiEntfernen(ChangeEventArgs e)
+    {
+        Daten.Entfernen = e.Value is bool b ? b : string.Equals(Convert.ToString(e.Value, CultureInfo.InvariantCulture), "true", StringComparison.OrdinalIgnoreCase);
+        Daten.EntfernenSetzen?.Invoke(Daten.Entfernen);
+    }
+}

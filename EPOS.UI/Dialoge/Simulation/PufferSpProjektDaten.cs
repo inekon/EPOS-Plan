@@ -4,8 +4,8 @@
 /// Eine Zeile des AUSLIEFERUNGSKATALOGS, so weit der Projektdialog sie braucht:
 /// Der Bezeichner steht in der Klappliste, die drei übrigen Felder wandern beim
 /// Auswählen in die Eingabefelder (<c>cbKatalog_SelectedIndexChanged</c>:1566-1591).
-/// Hersteller, Speichertyp und Investitionskosten bleiben in der Hülle — sie werden
-/// gespeichert, aber nie angezeigt.
+/// Hersteller und Speichertyp bleiben in der Hülle — sie werden gespeichert, aber nie
+/// angezeigt.
 /// </summary>
 public sealed record PspKatalogzeile(int Id, string Bezeichner, int Gesamtvolumen,
                                      double Bereitschaftsverluste);
@@ -27,6 +27,10 @@ public sealed record PspProjektzeile(int Id, string Anzeige);
 /// <para>Die beiden Leistungsgrenzen führen dagegen <c>0</c> für „unbegrenzt" und
 /// werden als LEERES Feld gezeigt: Eine „0" in einem Leistungsfeld liest sich wie
 /// „keine Leistung" und meint das Gegenteil.</para>
+///
+/// <para><b>Die Optionen der Welle M7</b> (Konzept Simulationsablauf 21) stehen dahinter, alle
+/// leer = Rechnung wie zuvor: Bereitschaftsweg (<c>tag</c>/<c>temperatur</c>), Aufstellraum [°C],
+/// Zonenanteile als Text, Frischwassermodul und seine Grädigkeit [K].</para>
 /// </summary>
 public sealed record PspSchichtdaten(
     int Schichten = 1,
@@ -37,7 +41,12 @@ public sealed record PspSchichtdaten(
     double? EntnahmeBW = null,
     double? EntnahmeProzess = null,
     double LadeleistungMax = 0,
-    double EntladeleistungMax = 0);
+    double EntladeleistungMax = 0,
+    string? BereitschaftWeg = null,
+    double? AufstellraumC = null,
+    string? SchichtAnteile = null,
+    bool Frischwassermodul = false,
+    double? FwmGraedigkeitK = null);
 
 /// <summary>
 /// Der vollständige Stand EINES Projektpuffers — was der Dialog beim Auswählen in
@@ -60,7 +69,9 @@ public sealed record PspPufferstand(
     bool Heizung,
     bool Brauchwasser,
     bool Prozess,
-    PspSchichtdaten Schicht);
+    PspSchichtdaten Schicht,
+    string? Katalogherkunft = null,
+    bool Kaelte = false);
 
 /// <summary>
 /// Was der Dialog beim Übernehmen aus seinen Feldern liest — der Satz, der an
@@ -75,8 +86,8 @@ public sealed record PspPufferstand(
 /// Fachwissen des Kerns und bleibt deshalb in der Hülle.</para>
 ///
 /// <para><b><see cref="Katalogzeile"/> ist der Listenplatz, nicht die Id.</b>
-/// <c>-1</c> heißt „freie Eingabe"; die Hülle holt sich Hersteller, Speichertyp und
-/// Investitionskosten daraus bzw. aus dem Bestand (<c>KatalogfelderLesen</c>).</para>
+/// <c>-1</c> heißt „freie Eingabe"; die Hülle holt sich Hersteller und Speichertyp
+/// daraus bzw. aus dem Bestand (<c>KatalogfelderLesen</c>).</para>
 /// </summary>
 public sealed record PspEingaben(
     string Bezeichner,
@@ -93,7 +104,8 @@ public sealed record PspEingaben(
     bool Brauchwasser,
     bool Prozess,
     PspSchichtdaten Schicht,
-    int Katalogzeile);
+    int Katalogzeile,
+    bool Kaelte = false);
 
 /// <summary>
 /// Eine Zeile der Kontrollanzeige „Ladereihenfolge dieses Speichers" — alle sechs

@@ -22,7 +22,7 @@ namespace EPOS.UI.Dialoge.Erzeuger;
 /// ihre eigenen Felder (<c>Form_AdminPV</c> fünfzehn, <c>Form_AdminStromspeicher</c>
 /// vierzehn, <c>Form_AdminWechselrichter</c> sechsundzwanzig); fünf Eigenschaften
 /// teilen sie sich, weil dieselben Profilschlüssel dahinterstehen (Bezeichner, Firma,
-/// Beschreibung, Leistung, Modulkosten). Eine Eigenschaft, deren Schlüssel die offene
+/// Beschreibung, Leistung, Kostensatz). Eine Eigenschaft, deren Schlüssel die offene
 /// Ausprägung nicht führt, liefert leer und nimmt nichts an — gelesen wird sie nie,
 /// weil kein Katalogeintrag sie nennt. Dasselbe Muster wie
 /// <c>BedarfAdminKiSicht</c>, die drei Bedarfskataloge trägt.</para>
@@ -157,12 +157,11 @@ public sealed class ModulKatalogKiSicht
         set => ZahlSetzen(ModulKatalogProfil.FeldLeistung, value);
     }
 
-    /// <summary>Die Modulkosten — Stromspeicher [€/kWh], PV-Modul [€].</summary>
-    public double? Modulkosten
-    {
-        get => Zahl(ModulKatalogProfil.FeldModulkosten);
-        set => ZahlSetzen(ModulKatalogProfil.FeldModulkosten, value);
-    }
+    /// <summary>
+    /// Der Kostensatz aus der Satzvorlage (Photovoltaik [€/kWp], Wechselrichter [€/kW],
+    /// Stromspeicher [€/kWh]) — eine ANZEIGE; gepflegt wird er in der Kostenverwaltung (Wellen KB-4, KB-5).
+    /// </summary>
+    public double? Kostensatz => Zahl(ModulKatalogProfil.FeldKostensatz);
 
     // ---- Nur der Stromspeicher ------------------------------------------
 
@@ -208,32 +207,18 @@ public sealed class ModulKatalogKiSicht
         set => GanzzahlSetzen(ModulKatalogProfil.FeldZyklen, value);
     }
 
-    /// <summary>Die Verschleisskosten je Zyklus.</summary>
-    public double? Verschleisskosten
-    {
-        get => Zahl(ModulKatalogProfil.FeldVerschleisskosten);
-        set => ZahlSetzen(ModulKatalogProfil.FeldVerschleisskosten, value);
-    }
-
-    /// <summary>Die leistungsbezogenen Kosten [€/kW].</summary>
-    public double? Leistungskosten
-    {
-        get => Zahl(ModulKatalogProfil.FeldLeistungskosten);
-        set => ZahlSetzen(ModulKatalogProfil.FeldLeistungskosten, value);
-    }
-
-    /// <summary>Der feste Investitionsanteil [€].</summary>
-    public double? InvestitionFix
-    {
-        get => Zahl(ModulKatalogProfil.FeldInvestitionFix);
-        set => ZahlSetzen(ModulKatalogProfil.FeldInvestitionFix, value);
-    }
-
     /// <summary>Die Bereitschaftsleistung [W].</summary>
     public double? Standby
     {
         get => Zahl(ModulKatalogProfil.FeldStandby);
         set => ZahlSetzen(ModulKatalogProfil.FeldStandby, value);
+    }
+
+    /// <summary>Die Selbstentladung [%/Monat] (Welle M5, SP1); leer = keine.</summary>
+    public double? Selbstentladung
+    {
+        get => Zahl(ModulKatalogProfil.FeldSelbstentladung);
+        set => ZahlSetzen(ModulKatalogProfil.FeldSelbstentladung, value);
     }
 
     // ---- Nur das PV-Modul -----------------------------------------------
@@ -333,13 +318,6 @@ public sealed class ModulKatalogKiSicht
     {
         get => Zahl(ModulKatalogProfil.FeldPDcMax);
         set => ZahlSetzen(ModulKatalogProfil.FeldPDcMax, value);
-    }
-
-    /// <summary>Der Gerätepreis [€].</summary>
-    public double? Kosten
-    {
-        get => Zahl(ModulKatalogProfil.FeldKosten);
-        set => ZahlSetzen(ModulKatalogProfil.FeldKosten, value);
     }
 
     /// <summary>Woher der Satz stammt — Auskunft des Imports, nur lesbar.</summary>

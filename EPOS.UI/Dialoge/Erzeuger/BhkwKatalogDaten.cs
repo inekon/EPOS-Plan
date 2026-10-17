@@ -4,18 +4,12 @@
 /// Der Feldsatz des BHKW-Katalogeditors — das plattformfreie Abbild von
 /// <c>BHKWStammModel</c> (iU9-W6.2).
 ///
-/// <para><b>Gespeichert werden die fünf Einzelposten.</b> Modul + Montage + Lieferung +
-/// Schallschutzhaube + Abgasreinigung ergeben die Investition;
-/// <see cref="InvestitionJeKWel"/> [€/kWel] ist daraus ABGELEITET (Nutzerentscheid
-/// 22.08.2026, Regel in <c>BHKWKosten</c>). Zuvor führten beide Wege dieselbe Größe
-/// und liefen auseinander.</para>
-///
-/// <para><b>Eingegeben wird sie seit W14a-E-8-B3 (07.09.2026) auf DREI Wegen:</b> als
-/// Gesamtsumme, als Wert je kW elektrisch oder als die fünf Posten — die zuletzt
-/// geänderte Eingabe führt. Der Feldsatz braucht dafür kein zusätzliches Feld: Der
-/// Ausgleich läuft über <see cref="KostenModul"/>, die zwei Aggregate rechnet der
-/// Dialog aus dem, was hier steht (<c>BHKWKosten.Gesamt</c>,
-/// <c>BHKWKosten.GesamtAusJeKWel</c>, <c>BHKWKosten.ModulAusGesamt</c>).</para>
+/// <para><b>Kein Kostenfeld.</b> Die fünf Einzelposten, die Wartung je kWhel und die daraus
+/// abgeleitete Investition je kWel sind mit Welle KB-4 entfallen (Anwenderentscheid
+/// 13.10.2026 „eine Kostenbasis, keine Doppelhaltung", Schemaschritt
+/// <c>GeraetekostenEntfallSchema</c>). Gepflegt werden die Gerätekosten in der
+/// Kostenverwaltung — der Weg dorthin steht als Knopfleiste unter den Gruppen —, und der
+/// Aufklapper „Alle Daten" zeigt die Summe der Satzvorlage als Lesewert.</para>
 ///
 /// <para><b>Die Emissionen sind ganzzahlig.</b> <c>BHKWStammModel</c> führt NOx, CO2,
 /// CO, SO2 und Staub als <c>int</c> — anders als der Heizkessel, der sie als
@@ -83,40 +77,44 @@ public sealed class BhkwKatalogDaten
     /// <summary>Rücklauftemperatur [°C], ganzzahlig.</summary>
     public int? Ruecklauf { get; set; }
 
-    // --- Gruppe 3: Kosten ------------------------------------------------------
+    /// <summary>
+    /// Höchster Rücklauf — die Abschaltgrenze [°C] (<c>Ruecklauf_Max</c>, Bereich 40 … 90; UB‑E3‑b, U‑3): Liegt der
+    /// Rücklauf zum Modul darüber, liefert es in der Stunde nichts. <c>null</c> = keine Grenze. Ein neuer Satz trägt
+    /// die Vorgabe 70 °C (<see cref="WindowsFormsApplication1.GeraetegrenzWerte.BHKW_RUECKLAUF_MAX_VORGABE_C"/>); ein
+    /// gelesener Satz überschreibt sie mit seinem Wert, auch mit leer.
+    /// </summary>
+    public double? RuecklaufMax { get; set; } = WindowsFormsApplication1.GeraetegrenzWerte.BHKW_RUECKLAUF_MAX_VORGABE_C;
 
-    /// <summary>Kosten des Moduls [€].</summary>
-    public double? KostenModul { get; set; }
+    // --- Gruppe „Teillast und Takten" (Welle M4: BH1, BH2) ---------------------
 
-    /// <summary>Montage und Inbetriebnahme [€].</summary>
-    public double? KostenMontage { get; set; }
+    /// <summary>
+    /// Elektrischer Wirkungsgrad bei 50 % elektrischer Last als Faktor (BH1). <c>null</c> = wie
+    /// Volllast; mit Wert rechnet das Modul die Teillastkennlinie.
+    /// </summary>
+    public double? WirkungsgradEl50 { get; set; }
 
-    /// <summary>Lieferung (50 km Umkreis) [€].</summary>
-    public double? KostenLieferung { get; set; }
+    /// <summary>Thermischer Wirkungsgrad bei 50 % elektrischer Last als Faktor (BH1); <c>null</c> = wie Volllast.</summary>
+    public double? WirkungsgradTh50 { get; set; }
 
-    /// <summary>Schallschutzhaube [€].</summary>
-    public double? KostenSchallschutzhaube { get; set; }
+    /// <summary>Anfahrverlust je Start [kWh Brennstoff] (BH2); <c>null</c> = nicht gepflegt.</summary>
+    public double? AnfahrverlustKwh { get; set; }
 
-    /// <summary>Abgasreinigung, z. B. Kat [€].</summary>
-    public double? KostenAbgasreinigung { get; set; }
+    /// <summary>
+    /// Mindestlaufzeit je Start [min] (BH2); <c>null</c> = nicht gepflegt. Mit Anfahrverlust oder
+    /// Mindestlaufzeit taktet das Modul unter seiner Untergrenze, sonst bleibt es dort aus.
+    /// </summary>
+    public int? MindestlaufzeitMin { get; set; }
+
+    // --- Gruppe 3: Gerätedaten ohne Kosten -------------------------------------
+    //
+    // Die sieben Kostenfelder sind mit Welle KB-4 entfallen; der Satz führt keine
+    // Kostenspalte mehr, also reist auch keine durch diesen Feldsatz.
 
     /// <summary>Raumbedarf [m³].</summary>
     public double? Raumbedarf { get; set; }
 
-    /// <summary>Wartungskosten [€/kWhel].</summary>
-    public double? WartungskostenJeKWhel { get; set; }
-
     /// <summary>Nutzungsdauer [Jahre], ganzzahlig.</summary>
     public int? Nutzungsdauer { get; set; }
-
-    /// <summary>
-    /// Der Wert je kWel [€/kWel]. Beim Laden steht hier der GESPEICHERTE Wert; er wird
-    /// angezeigt, solange nichts geändert wurde, und passt er nicht zur Summe, benennt
-    /// die Hinweiszeile das. Vor jedem Schreibvorgang entsteht er neu aus den Posten
-    /// und Pel — auch dann, wenn der Anwender ihn selbst eingegeben hat: Was er eingab,
-    /// steht dann längst als Modulpreis in <see cref="KostenModul"/>.
-    /// </summary>
-    public double? InvestitionJeKWel { get; set; }
 
     // --- Gruppe 4: Emissionsfaktoren -------------------------------------------
 

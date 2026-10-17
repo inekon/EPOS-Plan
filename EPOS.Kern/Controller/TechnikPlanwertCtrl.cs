@@ -163,7 +163,10 @@ namespace WindowsFormsApplication1
             { DbWerte.ERZEUGER_SOLARTHERMIE,            new Plan { Tabelle = "Tab_Solarkollektoren", Verweis = "ID_Solar",  Mengenspalte = "Kollektormodulanzahl" } },
             { DbWerte.ERZEUGER_STROMSPEICHER,           new Plan { Tabelle = "Tab_Stromspeicher",    Verweis = "ID_SP" } },
             { DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER, new Plan { Tabelle = "Tab_Pufferspeicher",   Verweis = "ID_PUFFER" } },
-            { DbWerte.ERZEUGER_BHKW,                    new Plan { Tabelle = "Tab_BHKW",             Verweis = "ID_BHKW" } }
+            { DbWerte.ERZEUGER_BHKW,                    new Plan { Tabelle = "Tab_BHKW",             Verweis = "ID_BHKW" } },
+            // KU3-4 (Kühlkonzept 6.2): die Kältemaschine - Gerät x Anzahl der Anlagenzeile.
+            { DbWerte.ERZEUGER_KAELTEMASCHINE,          new Plan { Tabelle = KaeltemaschineSchema.TAB_PROJEKT, Verweis = KaeltemaschineAnlageSchema.SPALTE_ID_KAELTEMASCHINE,
+                                                                   Mengenspalte = KaeltemaschineAnlageSchema.SPALTE_ANZAHL } }
         };
 
         /// <summary>Führt dieses Gewerk überhaupt Technik-Planwerte?</summary>
@@ -265,7 +268,7 @@ namespace WindowsFormsApplication1
                     Menge = Math.Truncate(Zahl(r, "Menge"))
                 };
 
-                BasenFuellen(komponente, r, a);
+                BasenFuellen(komponente, r, a, plan);
                 liste.Add(a);
             }
 
@@ -372,14 +375,13 @@ namespace WindowsFormsApplication1
                         Menge = geraete.Count
                     };
 
-                    // Kein Preis gepflegt: Basis verwirft 0 ohnehin - die Zeile bleibt
-                    // dann ohne Kostenbasis und traegt nichts bei, statt still ein
-                    // Geraet zu unterstellen (dieselbe Regel wie beim Stueckpreis).
-                    double preis = g.m_Kosten ?? 0.0;
-
-                    Basis(a, BASIS_SPEZIFISCH, preis * geraete.Count,
-                          Herleitung(MyResource.Resource.KOSTEN_PLANWERT_HERL_WECHSELRICHTER,
-                                     Z(preis, 2), Z(geraete.Count, 0)));
+                    // KB-4: Der Preis steht in der Satzvorlage des Geraets, nicht mehr in
+                    // Tab_Wechselrichter.Kosten (Schemaschritt GeraetekostenEntfallSchema.SCHRITT).
+                    // Keine Satzvorlage oder kein Satz: Basis verwirft 0 ohnehin - die Zeile
+                    // bleibt dann ohne Kostenbasis und traegt nichts bei, statt still ein Geraet
+                    // zu unterstellen (dieselbe Regel wie beim Stueckpreis).
+                    Satzvorlagenbasis(GeraetekostenEntfallSchema.GEWERK_WECHSELRICHTER,
+                                      Wechselrichterzeile(g.m_ID), a, true);
 
                     liste.Add(a);
                 }
@@ -389,6 +391,24 @@ namespace WindowsFormsApplication1
             catch { return new List<Anlage>(); }
 
             return liste;
+        }
+
+        /// <summary>
+        /// Die Gerätezeile eines Wechselrichters samt Verweis auf seine Satzvorlage und seiner
+        /// Bezugsgröße <c>P_AC_Nenn</c>; <c>null</c>, wenn es sie nicht gibt.
+        /// </summary>
+        private static DataRow Wechselrichterzeile(int idWechselrichter)
+        {
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT \"ID\", \"" + GeraetekostenEntfallSchema.SPALTE_WR_LEISTUNG + "\", \"" +
+                    KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION + "\" FROM \"" +
+                    GeraetekostenEntfallSchema.TAB_WR + "\" WHERE \"ID\" = ?",
+                    new DbParam("@id", idWechselrichter));
+                return (dt == null || dt.Rows.Count == 0) ? null : dt.Rows[0];
+            }
+            catch { return null; }
         }
 
         /// <summary>
@@ -421,14 +441,9 @@ namespace WindowsFormsApplication1
         /// schon gelesen werden.
         /// </para>
         /// <para>
-        /// <b>Stromspeicher</b> führt drei Kostenfelder, die zusammen EINE Formel bilden:
-        /// <c>Modulkosten</c> ist entgegen dem Namen ein SPEZIFISCHER Preis in €/kWh
-        /// (AP0-Entscheid vom 16.08.2026, umgesetzt in
-        /// <c>Form_AdminStromspeicher.EinheitenBeschriftungKorrigieren</c>),
-        /// <c>Leistungskosten</c> €/kW und <c>Investition_Fix</c> ein fester Anteil —
-        /// genau die Aufteilung, mit der <c>StromspeicherSimCtrl</c> rechnet. Der alte Weg
-        /// summierte <c>Modulkosten</c> als Euro-Betrag und war damit dimensional falsch;
-        /// hier entsteht nur EINE Basis, aber die richtige.
+        /// <b>Stromspeicher</b> führt drei Investitionssätze der Satzvorlage, die zusammen EINE Formel
+        /// bilden: Kapazitätssatz €/kWh, Leistungssatz €/kW und ein fester Betrag — genau die
+        /// Aufteilung, mit der <c>StromspeicherSimCtrl</c> rechnet; hier entsteht nur EINE Basis.
         /// </para>
         /// <para>
         /// <b>Die übrigen fünf Gewerke</b> führen genau ein Kostenfeld und bleiben einfeldrig
@@ -437,57 +452,155 @@ namespace WindowsFormsApplication1
         /// Basis je Anlage — <see cref="Anlage.Mehrdeutig"/> kann nicht mehr wahr werden.
         /// </para>
         /// </remarks>
-        private static void BasenFuellen(string komponente, DataRow r, Anlage a)
+        private static void BasenFuellen(string komponente, DataRow r, Anlage a, Plan plan)
         {
-            switch (komponente)
+            // Welle KB-5: Der Stromspeicher führt keine Kostenspalten mehr (StromspeicherKostenSchema). Die drei
+            // Investitionssätze kommen aus der Satzvorlage der Projektkopie bzw. ihres Katalogsatzes — OHNE die
+            // Positionsstufe: Der Planwert ist die Vorbelegung genau dieser Position und darf sich nicht selbst lesen.
+            if (string.Equals(komponente, DbWerte.ERZEUGER_STROMSPEICHER, StringComparison.Ordinal))
             {
-                case DbWerte.ERZEUGER_BHKW:
-                    {
-                        double modul = Zahl(r, "Kosten_Modul");
+                KatalogkostensatzCtrl.Stromspeichersaetze kosten =
+                    KatalogkostensatzCtrl.Stromspeicher(StromspeicherKostenSchema.TAB_KOPIE, Ganz(r, "ID"));
+                double cCap = kosten.CCapEurProKwh ?? 0.0;  // €/kWh
+                double energie = Zahl(r, "Energie");         // kWh
+                double cPow = kosten.CPowEurProKw ?? 0.0;    // €/kW
+                double leistung = Zahl(r, "Leistung");       // kW
+                double fix = kosten.IFixEur ?? 0.0;          // €
 
-                        Basis(a, BASIS_MODULPREIS, modul,
-                              Herleitung(MyResource.Resource.KOSTEN_PLANWERT_HERL_FELD, "Kosten_Modul"));
-
-                        Neben(a, DbWerte.KOSTENPOSTEN_MONTAGE, Zahl(r, "Kosten_Montage"));
-                        Neben(a, DbWerte.KOSTENPOSTEN_LIEFERUNG, Zahl(r, "Kosten_Lieferung"));
-                        Neben(a, DbWerte.KOSTENPOSTEN_SCHALLSCHUTZHAUBE, Zahl(r, "Kosten_Schallschutzhaube"));
-                        Neben(a, DbWerte.KOSTENPOSTEN_ABGASREINIGUNG, Zahl(r, "Kosten_Abgasreinigung"));
-                        break;
-                    }
-
-                case DbWerte.ERZEUGER_STROMSPEICHER:
-                    {
-                        double cCap = Zahl(r, "Modulkosten");        // €/kWh
-                        double energie = Zahl(r, "Energie");         // kWh
-                        double cPow = Zahl(r, "Leistungskosten");    // €/kW
-                        double leistung = Zahl(r, "Leistung");       // kW
-                        double fix = Zahl(r, "Investition_Fix");     // €
-
-                        Basis(a, BASIS_SPEZIFISCH, cCap * energie + cPow * leistung + fix,
-                              Herleitung(MyResource.Resource.KOSTEN_PLANWERT_HERL_SPEICHER,
-                                         Z(cCap, 2), Z(energie, 2), Z(cPow, 2), Z(leistung, 2), Z(fix, 2)));
-                        break;
-                    }
-
-                case DbWerte.ERZEUGER_WAERMEPUMPE:
-                    Basis(a, BASIS_MODULPREIS, Zahl(r, "Modulkosten"),
-                          Herleitung(MyResource.Resource.KOSTEN_PLANWERT_HERL_FELD, "Modulkosten"));
-                    break;
-
-                case DbWerte.ERZEUGER_PHOTOVOLTAIK:
-                    Stueckpreis(a, Zahl(r, "Modulkosten"));
-                    break;
-
-                case DbWerte.ERZEUGER_SOLARTHERMIE:
-                    Stueckpreis(a, Zahl(r, "Investitionskosten"));
-                    break;
-
-                case DbWerte.ERZEUGER_HEIZKESSEL:
-                case DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER:
-                    Basis(a, BASIS_MODULPREIS, Zahl(r, "Investitionskosten"),
-                          Herleitung(MyResource.Resource.KOSTEN_PLANWERT_HERL_FELD, "Investitionskosten"));
-                    break;
+                Basis(a, BASIS_SPEZIFISCH, cCap * energie + cPow * leistung + fix,
+                      Herleitung(MyResource.Resource.KOSTEN_PLANWERT_HERL_SPEICHER,
+                                 Z(cCap, 2), Z(energie, 2), Z(cPow, 2), Z(leistung, 2), Z(fix, 2)));
+                return;
             }
+
+            Katalogkostengewerk g = GewerkVon(plan);
+            if (g == null) return;
+            Satzvorlagenbasis(g, r, a, plan != null && plan.Mengenspalte != null);
+        }
+
+        /// <summary>
+        /// Das Gewerk der Satzvorlagen zu einer Gerätetabelle — die Landkarte
+        /// <see cref="Plaene"/> und die Gewerkliste der Welle KB-4 treffen sich über die Projektkopie.
+        /// </summary>
+        private static Katalogkostengewerk GewerkVon(Plan plan)
+        {
+            if (plan == null || string.IsNullOrEmpty(plan.Tabelle)) return null;
+            foreach (Katalogkostengewerk g in GeraetekostenEntfallSchema.GEWERKE)
+                if (string.Equals(g.Kopie, plan.Tabelle, StringComparison.Ordinal)) return g;
+            return null;
+        }
+
+        /// <summary>
+        /// <b>Die Kostenbasis EINER Gerätezeile aus ihrer Satzvorlage</b> — der Weg seit Welle KB-4
+        /// (Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine Doppelhaltung"). Die Kostenspalten der
+        /// Gerätetabellen sind mit Schemaschritt
+        /// <see cref="GeraetekostenEntfallSchema.SCHRITT"/> entfallen; die eine Basis ist die Satzvorlage
+        /// des zentralen Kostenkatalogs, auf die der Satz über
+        /// <c>ID_KostenVorlageInvestition</c> verweist.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Position × Bezugsgröße des Geräts — dieselbe Zahl wie vorher.</b> Eine absolute Position
+        /// (<c>BETRAG</c>) ist der Betrag selbst, so wie es der absolute Gerätepreis war. Eine
+        /// satzbasierte Position wird mit der Baugröße EINES Stücks und der Stückzahl der Anlage
+        /// multipliziert — genau die Umkehrung der Saat, die den Stückpreis durch die Baugröße eines
+        /// Stücks geteilt hat (<see cref="KatalogkostenSaatSchema"/>): Satz × Baugröße × Stückzahl ergibt
+        /// wieder Stückpreis × Stückzahl.
+        /// </para>
+        /// <para>
+        /// <b>Die Bemessung nennt die Bezugsgröße, nicht die Bezeichnung.</b> Welche Gerätespalte eine
+        /// Bemessung meint, steht in der Feldliste des Gewerks
+        /// (<see cref="Katalogkostenfeld.Bezugsspalte"/>) — der EINEN Liste, aus der auch die Saat
+        /// gerechnet hat. Eine Bemessung, die dieses Gewerk nicht kennt, trägt nichts bei: Lieber keine
+        /// Zahl als eine geratene Bezugsgröße.
+        /// </para>
+        /// <para>
+        /// <b>Die vier BHKW-Nebenposten bleiben Nebenposten.</b> Sie sind über ihre gespeicherte
+        /// Bezeichnung erkennbar (<see cref="DbWerte.KOSTENPOSTEN_MONTAGE"/> und die drei übrigen,
+        /// wortgleich gesät); jede andere Position zählt in die Hauptsumme. Mehr als eine Basis je Anlage
+        /// entsteht nicht — die Hauptsumme ist EINE Zahl.
+        /// </para>
+        /// <para>
+        /// <b>Ohne Verweis keine Basis.</b> Ein Gerät ohne Satzvorlage trägt nichts bei, statt still
+        /// einen Preis zu unterstellen; die Abweichungsanzeige des Kostendialogs meldet das wie bisher
+        /// jede fehlende Vorbelegung.
+        /// </para>
+        /// </remarks>
+        private static void Satzvorlagenbasis(Katalogkostengewerk g, DataRow r, Anlage a, bool mitMenge)
+        {
+            if (r == null) return;
+            int idVorlage = Ganz(r, KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION);
+            if (idVorlage <= 0) return;
+
+            string name = Vorlagenname(idVorlage);
+            double haupt = 0;
+            bool spezifisch = false;
+
+            foreach (KostenVorlagenPosition p in KostenVorlagenCtrl.Positionen(idVorlage))
+            {
+                if (p == null || p.IstErloes) continue;
+                double? betrag = Positionsbetrag(g, r, a, p, mitMenge);
+                if (!betrag.HasValue || betrag.Value <= 0) continue;
+
+                if (IstNebenposten(p.Bezeichnung)) { Neben(a, p.Bezeichnung, betrag.Value); continue; }
+
+                haupt += betrag.Value;
+                if (!Katalogkostenabgleich.Absolut(p.Bemessung)) spezifisch = true;
+            }
+
+            Basis(a, spezifisch ? BASIS_SPEZIFISCH : BASIS_MODULPREIS, haupt,
+                  Herleitung(MyResource.Resource.KOSTEN_PLANWERT_HERL_VORLAGE, name));
+        }
+
+        /// <summary>
+        /// Der Betrag EINER Vorlagenposition an diesem Gerät: ein absoluter Satz ist der Betrag, ein
+        /// spezifischer wird mit Baugröße und Stückzahl multipliziert. <c>null</c> = die Position trägt an
+        /// diesem Gewerk nichts bei (unbekannte Bemessung, fehlende oder leere Bezugsgröße).
+        /// </summary>
+        private static double? Positionsbetrag(Katalogkostengewerk g, DataRow r, Anlage a,
+                                               KostenVorlagenPosition p, bool mitMenge)
+        {
+            if (!p.Satz.HasValue) return null;
+            if (Katalogkostenabgleich.Absolut(p.Bemessung)) return p.Satz.Value;
+
+            Katalogkostenfeld f = null;
+            foreach (Katalogkostenfeld kandidat in g.Felder)
+                if (string.Equals(kandidat.Bemessung, p.Bemessung, StringComparison.Ordinal) &&
+                    !string.IsNullOrEmpty(kandidat.Bezugsspalte)) { f = kandidat; break; }
+            if (f == null) return null;
+
+            double groesse = Zahl(r, f.Bezugsspalte) / (f.Bezugsteiler == 0 ? 1.0 : f.Bezugsteiler);
+            if (groesse <= 0) return null;
+
+            // Ein Gewerk ohne Stückzahl beschreibt mit EINEM Gerät die ganze Anlage (Menge 1); führt es
+            // eine Stückzahl, gilt die Hausregel „Stückzahl 0 ergibt keine Basis".
+            double menge = mitMenge ? a.Menge : 1.0;
+            if (menge <= 0) return null;
+
+            return p.Satz.Value * groesse * menge;
+        }
+
+        /// <summary>Ist diese Positionsbezeichnung einer der vier BHKW-Nebenposten?</summary>
+        private static bool IstNebenposten(string bezeichnung)
+        {
+            if (string.IsNullOrEmpty(bezeichnung)) return false;
+            return string.Equals(bezeichnung, DbWerte.KOSTENPOSTEN_MONTAGE, StringComparison.Ordinal) ||
+                   string.Equals(bezeichnung, DbWerte.KOSTENPOSTEN_LIEFERUNG, StringComparison.Ordinal) ||
+                   string.Equals(bezeichnung, DbWerte.KOSTENPOSTEN_SCHALLSCHUTZHAUBE, StringComparison.Ordinal) ||
+                   string.Equals(bezeichnung, DbWerte.KOSTENPOSTEN_ABGASREINIGUNG, StringComparison.Ordinal);
+        }
+
+        /// <summary>Der Name einer Satzvorlage — der Text, den die Herleitung des Planwerts nennt.</summary>
+        private static string Vorlagenname(int idVorlage)
+        {
+            try
+            {
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT \"Name\" FROM \"" + KatalogkostenSaatSchema.TAB_KOSTENVORLAGE + "\" WHERE \"ID\" = ?",
+                    new DbParam("@v", idVorlage));
+                return (o == null || o == DBNull.Value) ? "" : (Convert.ToString(o, CultureInfo.InvariantCulture) ?? "");
+            }
+            catch { return ""; }
         }
 
         /// <summary>
@@ -636,6 +749,7 @@ namespace WindowsFormsApplication1
                 case 5: return DbWerte.ERZEUGER_STROMSPEICHER;
                 case 6: return DbWerte.KOSTEN_KOMPONENTE_PUFFERSPEICHER;
                 case 7: return DbWerte.ERZEUGER_BHKW;
+                case KaeltemaschineAnlageSchema.KOMPONENTE_KAELTEMASCHINE: return DbWerte.ERZEUGER_KAELTEMASCHINE;
                 default: return null;
             }
         }
@@ -807,6 +921,12 @@ namespace WindowsFormsApplication1
                 if (komponentenID == 2) return "Ptherm";         // Kessel: nur diese eine
                 if (komponentenID == 1) return "Nennleistung";   // WP: nur diese eine
                 if (komponentenID == 5) return "Leistung";       // Speicher: nur diese eine [kW]
+                // KU3-4: die Kältemaschine führt EINE Leistung - die Nennkälteleistung, mal Anzahl der Anlage.
+                if (komponentenID == KaeltemaschineAnlageSchema.KOMPONENTE_KAELTEMASCHINE)
+                {
+                    malModulanzahl = true;
+                    return KaeltemaschineSchema.SPALTE_NENNKAELTELEISTUNG;
+                }
 
                 // ANWENDERENTSCHEID 15.09.2026 — die beiden offenen Gewerke, wortgleich:
                 // „‚je kW Leistung' beim BHKW ist ‚je kW elektr. Leistung', beim
@@ -1344,9 +1464,10 @@ namespace WindowsFormsApplication1
         /// <para>
         /// Die übrigen Gewerke führen überhaupt kein Wartungsfeld in der Gerätetabelle
         /// (Wärmepumpe, PV, Solarthermie, Pufferspeicher). Der Stromspeicher führt
-        /// <c>Verschleisskosten</c>; die rechnet <c>StromspeicherSimCtrl</c> bereits selbst
-        /// in seine eigene Wirtschaftlichkeit ein — eine zweite, zusätzlich addierte
-        /// Kostenposition wäre Doppelzählung.
+        /// seinen Verschleiß als Betriebsposition „je entladener kWh" (Welle KB-5): Diese Position ist
+        /// die QUELLE von c_ver, gebucht wird sie vom Lauf (<c>StromspeicherSimCtrl</c>, eigene
+        /// Betriebskostenzeile); die Kostenrechnung bucht sie nicht ein zweites Mal
+        /// (<see cref="WirtschaftlichkeitCtrl.VomLaufGebucht(int,int,string,bool)"/>).
         /// </para>
         /// </remarks>
         /// <param name="komponentenID">
@@ -1364,7 +1485,10 @@ namespace WindowsFormsApplication1
 
             if (!string.Equals(komponente, DbWerte.ERZEUGER_BHKW, StringComparison.Ordinal))
             {
-                erg.Hinweis = MyResource.Resource.KOSTEN_BETRIEB_OHNE_WARTUNGSFELD;
+                // Welle KB-5: Am Stromspeicher ist die Verschleißposition die Quelle von c_ver, gebucht vom Lauf.
+                erg.Hinweis = string.Equals(komponente, DbWerte.ERZEUGER_STROMSPEICHER, StringComparison.Ordinal)
+                    ? MyResource.Resource.KOSTEN_BETRIEB_SPEICHER_VERSCHLEISS_QUELLE
+                    : MyResource.Resource.KOSTEN_BETRIEB_OHNE_WARTUNGSFELD;
                 return erg;
             }
 
@@ -1396,17 +1520,21 @@ namespace WindowsFormsApplication1
             var saetze = new List<double>();
             try
             {
+                // KB-4: Der Wartungssatz steht in der BETRIEBSvorlage des Geraets, nicht mehr in
+                // Tab_BHKW.Wartungskosten_kwhel (Schemaschritt GeraetekostenEntfallSchema.SCHRITT).
                 DataTable g = DataRepository.GetDataTable(
-                    "SELECT a.Bezeichner AS Anlage, b.Wartungskosten_kwhel AS Satz " +
+                    "SELECT a.Bezeichner AS Anlage, b.[" + KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE +
+                    "] AS Vorlage " +
                     "FROM Tab_Energieanlagen AS a INNER JOIN Tab_BHKW AS b ON a.ID_BHKW = b.ID " +
                     "WHERE a.ID_Projekt = ? AND a.ID_BHKW IS NOT NULL",
                     new DbParam("@p", (Int32)projektID));
                 if (g != null)
                     foreach (DataRow r in g.Rows)
                     {
-                        double satz = Zahl(r, "Satz");
-                        satzNachAnlage[Text(r, "Anlage")] = satz;
-                        saetze.Add(satz);
+                        double? satz = Vorlagensatz(Ganz(r, "Vorlage"), DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH);
+                        if (!satz.HasValue) continue;
+                        satzNachAnlage[Text(r, "Anlage")] = satz.Value;
+                        saetze.Add(satz.Value);
                     }
             }
             catch { }
@@ -1504,6 +1632,48 @@ namespace WindowsFormsApplication1
         /// </list>
         /// </para>
         /// </remarks>
+        /// <summary>
+        /// Der Satz EINER Position der Betriebsvorlage <paramref name="idVorlage"/> mit der gesuchten
+        /// Bemessung; <c>null</c>, wenn die Vorlage fehlt oder keine solche Position führt.
+        /// </summary>
+        private static double? Vorlagensatz(int idVorlage, string bemessung)
+        {
+            if (idVorlage <= 0) return null;
+            foreach (KostenVorlagenPosition p in KostenVorlagenCtrl.Positionen(idVorlage))
+                if (p != null && !p.IstErloes && p.Satz.HasValue &&
+                    string.Equals(p.Bemessung, bemessung, StringComparison.Ordinal))
+                    return p.Satz.Value;
+            return null;
+        }
+
+        /// <summary>
+        /// Die EINE Wartungsposition der Betriebsvorlage eines Kessels: ihr Satz und ihre Bemessung —
+        /// die Bemessung ist der Zeitbezug, den vorher <c>Wartungskosten_Einheit</c> trug. Führt die
+        /// Vorlage mehrere Positionen, gilt die erste mit einem Satz (die Vorlage der Saat führt genau eine).
+        /// </summary>
+        private static (double? Satz, string Bemessung) Wartungsposition(int idVorlage)
+        {
+            if (idVorlage <= 0) return (null, null);
+            foreach (KostenVorlagenPosition p in KostenVorlagenCtrl.Positionen(idVorlage))
+                if (p != null && !p.IstErloes && p.Satz.HasValue)
+                    return (p.Satz.Value, p.Bemessung);
+            return (null, null);
+        }
+
+        /// <summary>
+        /// Der gespeicherte Zeitbezug der Kessel-Wartung zu einer Bemessung — die Umkehrung der Saat
+        /// (<see cref="KatalogkostenSaatSchema"/>): je kWh thermisch heißt „auf die Wärmemenge", Prozent
+        /// der Investition heißt „Anteil je Jahr", alles andere ist ein fester Jahresbetrag.
+        /// </summary>
+        private static string KesselEinheit(string bemessung)
+        {
+            if (string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH, StringComparison.Ordinal))
+                return DbWerte.KESSEL_WARTUNG_EINHEIT_ARBEIT;
+            if (string.Equals(bemessung, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal))
+                return DbWerte.KESSEL_WARTUNG_EINHEIT_PROZENT;
+            return DbWerte.KESSEL_WARTUNG_EINHEIT_JAHR;
+        }
+
         private static Betriebsplanwert KesselPlanwert(int projektID, string komponente,
                                                        int komponentenID)
         {
@@ -1513,8 +1683,11 @@ namespace WindowsFormsApplication1
             DataTable dt;
             try
             {
+                // KB-4: Betrag UND Zeitbezug stehen in der BETRIEBSvorlage des Kessels, nicht mehr in
+                // Tab_Heizkessel.Wartungskosten und Wartungskosten_Einheit (Schemaschritt
+                // GeraetekostenEntfallSchema.SCHRITT). Die Bemessung der Position IST der Zeitbezug.
                 dt = DataRepository.GetDataTable(
-                    "SELECT k.Wartungskosten, k.[" + SchemaKatalog.SPALTE_KESSEL_WARTUNG_EINHEIT + "] AS Einheit " +
+                    "SELECT k.[" + KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE + "] AS Vorlage " +
                     "FROM (SELECT DISTINCT [ID_Kessel] FROM Tab_Energieanlagen " +
                     "      WHERE ID_Projekt = ? AND [ID_Kessel] IS NOT NULL) AS a " +
                     "     INNER JOIN [Tab_Heizkessel] AS k ON a.[ID_Kessel] = k.ID",
@@ -1532,15 +1705,15 @@ namespace WindowsFormsApplication1
 
             foreach (DataRow r in dt.Rows)
             {
-                double betrag = Zahl(r, "Wartungskosten");
-                if (betrag <= 0.0) continue;                  // 0 = ungepflegt
+                (double? wartungssatz, string bemessung) = Wartungsposition(Ganz(r, "Vorlage"));
+                if (!wartungssatz.HasValue || wartungssatz.Value <= 0.0) continue;    // 0/leer = ungepflegt
 
-                string e = HeizkesselCtrl.Einheit(Text(r, "Einheit"));
+                string e = HeizkesselCtrl.Einheit(KesselEinheit(bemessung));
                 if (einheit == null) einheit = e;
                 else if (!string.Equals(einheit, e, StringComparison.Ordinal)) gemischt = true;
 
-                summeJahr += betrag;
-                saetze.Add(betrag);
+                summeJahr += wartungssatz.Value;
+                saetze.Add(wartungssatz.Value);
             }
 
             if (einheit == null)

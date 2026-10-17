@@ -118,19 +118,26 @@ namespace WindowsFormsApplication1
         /// keine Kultur.</para>
         /// </summary>
         /// <param name="wochentagDesErstenTags">w₀: 0 = Montag … 6 = Sonntag für den 1. Januar.</param>
-        /// <param name="referenzjahr">Das Jahr, gegen das die Feiertagsregeln aufgelöst werden.</param>
+        /// <param name="referenzjahr">Das Jahr der Preisreihe, dessen Kalender gilt (w₀ muss das dieses Jahres sein);
+        /// 0 = Regelfall ohne Jahr (<see cref="Gemeinjahrkalender.Aus"/>, E114/E115).</param>
         /// <exception cref="ArgumentOutOfRangeException">w₀ liegt außerhalb 0 … 6.</exception>
+        /// <exception cref="ArgumentException">Ein Jahr mit fremdem w₀.</exception>
         public double[] Auswerten(int wochentagDesErstenTags, int referenzjahr)
+            => Auswerten(Gemeinjahrkalender.Aus(wochentagDesErstenTags, referenzjahr));
+
+        /// <summary>
+        /// Die 8760-Reihe nach der Konvention <paramref name="kalender"/> — Wochentagsraster und, wenn
+        /// vorhanden, das Jahr der Preisreihe (E114). Dieselbe Rechnung wie <see cref="Auswerten(int, int)"/>.
+        /// </summary>
+        public double[] Auswerten(Gemeinjahrkalender kalender)
         {
-            if (wochentagDesErstenTags < 0 || wochentagDesErstenTags > 6)
-                throw new ArgumentOutOfRangeException(nameof(wochentagDesErstenTags),
-                    "w₀ liegt zwischen 0 (Montag) und 6 (Sonntag).");
+            int wochentagDesErstenTags = kalender.W0;
 
             // Die Feiertagsregeln EINMAL je Lauf aufloesen, nicht je Tag.
             var feiertag0 = new int[_perioden.Length];
             for (int p = 0; p < _perioden.Length; p++)
                 feiertag0[p] = _perioden[p].IstFeiertag
-                    ? Feiertage.Jahrestag(_perioden[p].Feiertagsregel, referenzjahr) - 1
+                    ? Feiertage.Jahrestag(_perioden[p].Feiertagsregel, kalender) - 1
                     : -1;
 
             double ausWert = Konditionierungsgroessen.AusWert(Groesse);
@@ -166,13 +173,30 @@ namespace WindowsFormsApplication1
         /// („Quelle: Sommerferien“, Konzept 3.2); dieselbe Entscheidung wie in
         /// <see cref="Auswerten"/>.
         /// </summary>
-        public string Quelle(int tag0, int referenzjahr)
+        public string Quelle(int tag0, int referenzjahr) => Quellperiode(tag0, referenzjahr)?.Bezeichner;
+
+        /// <summary>Die Quelle eines Tags nach der Konvention <paramref name="kalender"/> (E114).</summary>
+        public string Quelle(int tag0, Gemeinjahrkalender kalender) => Quellperiode(tag0, kalender)?.Bezeichner;
+
+        /// <summary>
+        /// <b>Die Periode, die einen Tag bestimmt</b> — die ranghöchste, die ihn enthält und greift,
+        /// oder <c>null</c> für Standardwoche bzw. Grundangabe; dieselbe Entscheidung wie in
+        /// <see cref="Auswerten"/> und in <see cref="Quelle"/>, nur mit der ganzen Regel statt ihres
+        /// Bezeichners. Der Lauf fragt sie nach der <b>Saisonperiode</b> (Art
+        /// <see cref="DbWerte.KOND_ART_BETRIEBSPAUSE"/>), um die Tage außerhalb der Heizperiode zu
+        /// finden (E53).
+        /// </summary>
+        public Kalenderregel Quellperiode(int tag0, int referenzjahr)
+            => Quellperiode(tag0, referenzjahr > 0 ? Gemeinjahrkalender.Kalenderjahr(referenzjahr) : new Gemeinjahrkalender(0));
+
+        /// <summary>Die Periode eines Tags nach der Konvention <paramref name="kalender"/> (E114).</summary>
+        public Kalenderregel Quellperiode(int tag0, Gemeinjahrkalender kalender)
         {
             for (int p = 0; p < _perioden.Length; p++)
             {
                 Kalenderregel r = _perioden[p];
-                int f0 = r.IstFeiertag ? Feiertage.Jahrestag(r.Feiertagsregel, referenzjahr) - 1 : -1;
-                if (r.Enthaelt(tag0, f0) && r.Angabe.Greift(_woche)) return r.Bezeichner;
+                int f0 = r.IstFeiertag ? Feiertage.Jahrestag(r.Feiertagsregel, kalender) - 1 : -1;
+                if (r.Enthaelt(tag0, f0) && r.Angabe.Greift(_woche)) return r;
             }
             return null;
         }

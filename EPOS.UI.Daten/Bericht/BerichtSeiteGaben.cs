@@ -61,6 +61,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal Vergleichsauswahl Vergleich { get; set; } = new Vergleichsauswahl();
 
+        /// <summary>
+        /// Ein Bericht ist erfolgreich erstellt und sein Zeitpunkt gemerkt
+        /// (<see cref="BerichtCtrl.MerkeErstellt"/>) — der Wirt nennt ihn in der Statuszeile des
+        /// Reiters „Bericht" (Konzept Navigation Berichte &amp; Kosten, A3).
+        /// </summary>
+        internal event Action<DateTime> Erstellt;
+
         private CancellationTokenSource _cts;
 
         /// <param name="idStamm">Das Stammprojekt der Vergleichsgruppe.</param>
@@ -109,6 +116,7 @@ namespace WindowsFormsApplication1
                 ["LabelBausteine"] = MyResource.Resource.BK_BER_LBL_BAUSTEINE,
                 ["LabelRechnen"] = MyResource.Resource.BK_BER_LBL_RECHNEN,
                 ["LabelAusgabe"] = MyResource.Resource.BK_BER_LBL_AUSGABE,
+                ["LabelSzenario"] = MyResource.Resource.BK_BER_LBL_SZENARIO,
                 ["LabelZiel"] = MyResource.Resource.BK_BER_LBL_ZIEL,
                 ["LabelFortschritt"] = Text("BKS_LBL_FORTSCHRITT", "Fortschritt"),
                 ["SpalteArt"] = MyResource.Resource.BK_SP_ART,
@@ -200,6 +208,16 @@ namespace WindowsFormsApplication1
             stand.AktiveBausteine = aktiv;
 
             stand.AusgabeId = AusgabeNummer(konfig.Ausgabe);
+            // Fachvorgabe E31 (Nach #582): das Szenario des Wirtschaftlichkeitsberichts — dieselben Nummern und Namen
+            // (WIRT_SZEN_*) wie auf der Wirtschaftlichkeitsseite, gemerkt in der Konfiguration des Stammprojekts.
+            var szenarien = new List<(int, string)>();
+            for (int i = 0; i < SZENARIEN.Length; i++)
+                szenarien.Add((i, WirtschaftlichkeitSzenario.Name(SZENARIEN[i], MyResource.Resource.Culture)));
+            // VB‑Q1 a: der vierte Eintrag „Alle drei Szenarien (VALERI)“ — die Szenariodarstellung VALERI; zurückgelesen
+            // aus der Konfiguration (IstValeri) belegt er die Klappliste vor.
+            szenarien.Add((BerichtStand.SZENARIO_VALERI, MyResource.Resource.BK_BER_SZENARIO_VALERI));
+            stand.Szenarien = szenarien;
+            stand.SzenarioId = SzenarioNummer(konfig);
             // E3/8: Der Vorgabeordner kommt ueber Dienste.Pfade statt ueber
             // Environment.SpecialFolder - das ist Windows und in EPOS.UI.Daten
             // verboten (Waechter SimulationAnsichtQuelleTests). Unter Windows
@@ -229,7 +247,10 @@ namespace WindowsFormsApplication1
             // GESPEICHERTEN Konfiguration, nicht im Auftrag, und geht mit - in den Lauf und ins
             // Merken; sonst löschte jeder Lauf der Berichtsseite die Wahl.
             BerichtsKonfiguration konfig = AusAuftrag(auftrag);
-            VorlagenwahlUebernehmen(konfig, Lade());
+            BerichtsKonfiguration gespeichert = Lade();
+            VorlagenwahlUebernehmen(konfig, gespeichert);
+            // VB‑E5: In VALERI-Darstellung bleibt das gemerkte Szenario stehen (die Darstellung ist kein Szenario).
+            if (konfig.IstValeri) konfig.Szenario = gespeichert?.Szenario;
             try { _bericht.Speichere(_idStamm, konfig); } catch { }   // Auswahl merken (Kap. 8.4)
 
             // BV-E1 (Konzept 6.8, 10.2): die Vorprüfung VOR dem Sammeln. Der Befund, den die Seite
@@ -336,6 +357,19 @@ namespace WindowsFormsApplication1
                 }
 
                 string erster = wordPfad ?? excelPfad;
+
+                // A3 (Konzept Navigation Berichte & Kosten): Der Bericht steht — sein Zeitpunkt
+                // wird für die Gruppe gemerkt und dem Wirt gemeldet (Statuszeile „Bericht").
+                // Ein Fehler beim Merken kostet nur die Zeile, nie den Bericht.
+                if (erster != null)
+                {
+                    DateTime jetzt = DateTime.Now;
+                    bool gemerkt;
+                    try { gemerkt = _bericht.MerkeErstellt(_idStamm, jetzt); }
+                    catch (Exception) { gemerkt = false; }
+                    if (gemerkt) Erstellt?.Invoke(jetzt);
+                }
+
                 string meldung = Meldung(wordPfad, excelPfad, lauf, ungefragt, daten.Warnungen, englisch, excelLauf);
                 var dateien = new List<string>();
                 if (wordPfad != null) dateien.Add(wordPfad);
@@ -662,6 +696,42 @@ namespace WindowsFormsApplication1
             return nummer == 2 ? AUSGABE_BEIDE : (nummer == 1 ? AUSGABE_EXCEL : AUSGABE_WORD);
         }
 
+        /// <summary>
+        /// Die Szenarien der Wirtschaftlichkeit als Nummer — dieselbe Folge wie auf der Wirtschaftlichkeitsseite
+        /// (<c>WirtschaftlichkeitSeiteGaben.SZENARIEN</c>): 0 = Erwartet, 1 = Günstig, 2 = Ungünstig; so bildet die
+        /// Vorbelegung aus „Zum Bericht ›“ ihre Nummer ohne Umweg ab. Die PERSISTENZWERTE kennt nur diese Hülle.
+        /// </summary>
+        private static readonly string[] SZENARIEN =
+        {
+            WirtschaftlichkeitSzenario.ERWARTET,
+            WirtschaftlichkeitSzenario.BEST,
+            WirtschaftlichkeitSzenario.WORST
+        };
+
+        /// <summary>
+        /// Die Nummer der Klappliste zu einer Konfiguration: in VALERI-Darstellung <see cref="BerichtStand.SZENARIO_VALERI"/>
+        /// (VB‑Q1 a), sonst die Nummer ihres Szenarios.
+        /// </summary>
+        internal static int SzenarioNummer(BerichtsKonfiguration konfig)
+        {
+            if (konfig == null) return 0;
+            return konfig.IstValeri ? BerichtStand.SZENARIO_VALERI : SzenarioNummer(konfig.Szenario);
+        }
+
+        /// <summary>Die Nummer eines gemerkten Szenarios; ohne oder unbekannt 0 (Erwartet).</summary>
+        internal static int SzenarioNummer(string persistenz)
+        {
+            int i = Array.IndexOf(SZENARIEN, WirtschaftlichkeitSzenario.Normiere(persistenz));
+            return i < 0 ? 0 : i;
+        }
+
+        /// <summary>Der Schlüssel zu einer Nummer (Fachvorgabe E31: gespeichert wird der Schlüssel); eine unbekannte
+        /// Nummer heißt Erwartet.</summary>
+        internal static string SzenarioWert(int nummer)
+        {
+            return nummer > 0 && nummer < SZENARIEN.Length ? SZENARIEN[nummer] : WirtschaftlichkeitSzenario.ERWARTET;
+        }
+
         private static BerichtsKonfiguration AusAuftrag(BerichtAuftrag a)
         {
             var k = new BerichtsKonfiguration();
@@ -673,6 +743,15 @@ namespace WindowsFormsApplication1
             k.NeuRechnen = true;
             k.Ausgabe = AusgabeWert(a.AusgabeId);
             k.ZielOrdner = a.Zielordner ?? "";
+            // VB‑E5: Die drei Einzel-Einträge setzen Szenario und Einzeldarstellung, der vierte die VALERI-Darstellung;
+            // sein Szenario übernimmt Erstellen aus der gemerkten Konfiguration.
+            if (a.SzenarioId == BerichtStand.SZENARIO_VALERI)
+                k.Szenariodarstellung = BerichtsKonfiguration.DARSTELLUNG_VALERI;
+            else
+            {
+                k.Szenario = SzenarioWert(a.SzenarioId);
+                k.Szenariodarstellung = BerichtsKonfiguration.DARSTELLUNG_EINZELN;
+            }
             return k;
         }
 

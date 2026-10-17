@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Linq;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Allgemein;
 using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dialoge.Kosten;
@@ -74,12 +75,13 @@ public class HeizkesselDialogTests : EposBunitContext
     /// <summary>
     /// Der Detailblock, wie ihn <c>HeizkesselHuelle.DetailZu</c> baut: Brennstoff Typ,
     /// Leistung und der Schalter „Brennwertkessel". Ein Feld „Investitionskosten" steht
-    /// nicht darin — gepflegt wird der Preis im Aufklapper „Alle Daten anzeigen".
+    /// nicht darin — die Spalte ist mit Welle KB-4 entfallen, gepflegt werden die
+    /// Gerätekosten in der Kostenverwaltung.
     /// </summary>
     private static ErzeugerDetail Detail(string name) => new(
         name, "Beschreibung",
         new[] { ("Brennstoff Typ:", "Erdgas E"), ("Leistung [kW]:", "120,00") },
-        ("Brennwertkessel", true));
+        ("Brennwertkessel", true), new ErzeugerKennwerte { PthermKw = 120 });
 
     private IRenderedComponent<HeizkesselDialog> Aufbauen(
         List<ErzeugerZeile>? zeilen = null,
@@ -97,9 +99,18 @@ public class HeizkesselDialogTests : EposBunitContext
         Func<string, IReadOnlyList<BrowserFeldwert>?>? katalogfelder = null,
         Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>?
             katalogfelderSpeichern = null,
-        Func<IReadOnlyList<Katalogfilterzeile>>? katalogzeilen = null)
+        Func<IReadOnlyList<Katalogfilterzeile>>? katalogzeilen = null,
+        Satzbearbeitungswege? projektsatzWege = null,
+        Satzbearbeitungswege? katalogsatzWege = null,
+        Func<IReadOnlyDictionary<string, object>>? neuGaben = null,
+        Func<string>? summe = null,
+        Rueckwegwege? rueckwegWege = null,
+        Func<ErzeugerZeile, (double Invest, double Betrieb)>? kostensumme = null,
+        Schlossweg? schloss = null)
     {
         return Render<HeizkesselDialog>(p => p
+            .Add(x => x.Schloss, schloss)
+            .Add(x => x.Kostensumme, kostensumme)
             .Add(x => x.Zeilen, zeilen ?? new List<ErzeugerZeile> { Zeile(1, "Kessel A", 100) })
             .Add(x => x.Katalogprofil, Profil)
             .Add(x => x.Katalogzeilen, katalogzeilen ?? Katalogzeilen)
@@ -125,6 +136,11 @@ public class HeizkesselDialogTests : EposBunitContext
             .Add(x => x.EnergiekostenOeffnen, energiekosten)
             .Add(x => x.Katalogfelder, katalogfelder)
             .Add(x => x.KatalogfelderSpeichern, katalogfelderSpeichern)
+            .Add(x => x.ProjektsatzWege, projektsatzWege)
+            .Add(x => x.KatalogsatzWege, katalogsatzWege)
+            .Add(x => x.RueckwegWege, rueckwegWege)
+            .Add(x => x.NeuGaben, neuGaben)
+            .Add(x => x.SummePtherm, summe)
             .Add(x => x.Geschlossen, ok => geschlossen?.Invoke(ok)));
     }
 
@@ -133,7 +149,8 @@ public class HeizkesselDialogTests : EposBunitContext
 
     /// <summary>
     /// Die Felder des Aufklappers — ein Ausschnitt des Heizkesselprofils: ein Text,
-    /// eine Zahl und der Schalter „Brennwertkessel".
+    /// eine Zahl, der LESEWERT der Gerätekosten aus der Satzvorlage (Welle KB-4) und der
+    /// Schalter „Brennwertkessel".
     /// </summary>
     private static List<BrowserFeldwert> Felder() => new()
     {
@@ -147,11 +164,20 @@ public class HeizkesselDialogTests : EposBunitContext
         },
         new BrowserFeldwert
         {
-            Schluessel = KatalogBrowserProfil.FeldInvestitionskosten,
-            Bezeichnung = "Investitionskosten:",
-            Einheit = "€",
+            Schluessel = KatalogBrowserProfil.FeldRaumbedarf,
+            Bezeichnung = "Raumbedarf:",
+            Einheit = "m³",
             Art = BrowserFeldArt.Zahl,
             Editierbar = true,
+            Wert = "12"
+        },
+        new BrowserFeldwert
+        {
+            Schluessel = KatalogBrowserProfil.FeldGeraetekosten,
+            Bezeichnung = "Gerätekosten:",
+            Einheit = "€",
+            Art = BrowserFeldArt.Zahl,
+            Editierbar = false,
             Wert = "12000"
         },
         new BrowserFeldwert
@@ -164,9 +190,31 @@ public class HeizkesselDialogTests : EposBunitContext
         }
     };
 
+    /// <summary>
+    /// UeS2: Das Fragment des Satzes steht nur in der Satz-Überlagerung — „Bearbeiten…" der
+    /// Knopfleiste am Satz (AW1) öffnet sie (falls zu); zurück kommt ihr Körper.
+    /// </summary>
+    private static AngleSharp.Dom.IElement Satz(IRenderedComponent<HeizkesselDialog> cut)
+    {
+        if (cut.FindAll(".epos-satzueberlagerung-koerper").Count == 0)
+            cut.Find(BEARBEITEN_AM_SATZ).Click();
+        return cut.Find(".epos-satzueberlagerung-koerper");
+    }
+
+    /// <summary>„Bearbeiten…" der Knopfleiste am gewählten Satz (AW1), je nach Satzart.</summary>
+    private const string BEARBEITEN_AM_SATZ =
+        ".epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-projekt, .epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-katalog";
+
+    /// <summary>UeS2: Schließt eine offene Satz-Überlagerung wie Abbrechen bzw. Schließen.</summary>
+    private static void SatzZu(IRenderedComponent<HeizkesselDialog> cut)
+    {
+        var knopf = cut.FindAll(".epos-satzueberlagerung-abbrechen, .epos-satzueberlagerung-schliessen");
+        if (knopf.Count > 0) knopf[0].Click();
+    }
+
     /// <summary>Wählt die erste Katalogzeile — erst dann gibt es einen Aufklapper.</summary>
     private static void KatalogsatzWaehlen(IRenderedComponent<HeizkesselDialog> cut)
-        => cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        => cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[0].Click();
 
     // =================================================================================
     // Feldbestand
@@ -176,18 +224,19 @@ public class HeizkesselDialogTests : EposBunitContext
     public void Die_beiden_Listen_die_Pfeile_und_die_Filter_stehen()
     {
         var cut = Aufbauen();
+        Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
 
         Assert.Equal(2, cut.FindAll(".epos-raster").Count);
-        Assert.Equal(2, cut.FindAll(".epos-zweispalten-uebernahme button").Count);
+        Assert.Equal(2, cut.FindAll(".epos-zweispalten-knopf--richtung").Count);
         // Entscheid #76, Anordnung seit W14a-E-10-Q2 untereinander: Jeder Knopf
         // traegt EIN Zeichen (▲ hinauf ins Projekt, ▼ hinunter in den Katalog)
         // und dazu seine Aufgabe im Klartext.
-        Assert.Equal("▲", cut.FindAll(".epos-zweispalten-uebernahme button")[0].QuerySelector(".epos-zweispalten-pfeil")!.TextContent);
-        Assert.Equal("▼", cut.FindAll(".epos-zweispalten-uebernahme button")[1].QuerySelector(".epos-zweispalten-pfeil")!.TextContent);
+        Assert.Equal("▲", cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].QuerySelector(".epos-zweispalten-pfeil")!.TextContent);
+        Assert.Equal("▼", cut.FindAll(".epos-zweispalten-knopf--entfernen")[0].QuerySelector(".epos-zweispalten-pfeil")!.TextContent);
         Assert.Equal("In das Projekt übernehmen",
-                     cut.FindAll(".epos-zweispalten-uebernahme button")[0].QuerySelector(".epos-zweispalten-knopftext")!.TextContent);
+                     cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].QuerySelector(".epos-zweispalten-knopftext")!.TextContent);
         Assert.Equal("Aus dem Projekt entfernen",
-                     cut.FindAll(".epos-zweispalten-uebernahme button")[1].QuerySelector(".epos-zweispalten-knopftext")!.TextContent);
+                     cut.FindAll(".epos-zweispalten-knopf--entfernen")[0].QuerySelector(".epos-zweispalten-knopftext")!.TextContent);
 
         var ueberschriften = cut.FindAll(".epos-untergruppe").Select(e => e.TextContent).ToList();
         Assert.Contains("ausgewählt im Projekt", ueberschriften);
@@ -215,9 +264,12 @@ public class HeizkesselDialogTests : EposBunitContext
         // Name, Brennstoff Typ, Leistung, Beschreibung (mehrzeilig), Brennwertkessel
         // (Schalter), Brennstoff Variante (Auswahl). Ein nur lesbares Feld
         // „Investitionskosten" steht nicht mehr darunter (Anwenderentscheid
-        // 21.09.2026) — gepflegt wird der Preis im Aufklapper „Alle Daten anzeigen".
-        var gruppe = cut.Find(".epos-gruppenkopf-koerper");
-        Assert.Equal("Modul", cut.Find(".epos-gruppenkopf-titel").TextContent);
+        // 21.09.2026); mit Welle KB-4 fuehrt der Satz die Spalte gar nicht mehr -
+        // die Geraetekosten stehen als Lesewert der Satzvorlage im Aufklapper.
+        // Katalogauswahl V1, Stufe 2: Die Felder stehen in der Satzflaeche der Detailzeile;
+        // ihre Marke sagt „Projektsatz" (die erste Projektzeile ist beim Oeffnen gewaehlt).
+        var gruppe = Satz(cut);
+        Assert.Equal(Resource.AUSWAHL_MARKE_PROJEKTSATZ, cut.Find(".epos-zweispalten-satzzeile .epos-zweispalten-marke--satz").TextContent);
         Assert.Equal(3, gruppe.QuerySelectorAll("input[type=text][readonly]").Length);
         Assert.Single(gruppe.QuerySelectorAll("textarea"));
         Assert.Single(gruppe.QuerySelectorAll("input[type=checkbox]"));
@@ -258,6 +310,7 @@ public class HeizkesselDialogTests : EposBunitContext
     public void Ohne_Wege_bleibt_die_Kostenleiste_leer()
     {
         var cut = Aufbauen();
+        Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
 
         Assert.Empty(cut.FindAll(KOSTENKNOEPFE));
     }
@@ -267,6 +320,7 @@ public class HeizkesselDialogTests : EposBunitContext
     {
         var cut = Aufbauen(kostenOeffnen: (_, _) => Task.CompletedTask,
                            energiekosten: _ => Task.CompletedTask);
+                           Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
 
         var knoepfe = cut.FindAll(KOSTENKNOEPFE);
         Assert.Equal(3, knoepfe.Count);
@@ -286,6 +340,7 @@ public class HeizkesselDialogTests : EposBunitContext
         var cut = Aufbauen(
             kostenOeffnen: (z, b) => { gerufen.Add((z, b)); return Task.CompletedTask; },
             energiekosten: _ => Task.CompletedTask);
+            Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
 
         cut.FindAll(KOSTENKNOEPFE)[0].Click();
         cut.FindAll(KOSTENKNOEPFE)[1].Click();
@@ -305,6 +360,7 @@ public class HeizkesselDialogTests : EposBunitContext
         var cut = Aufbauen(
             kostenOeffnen: (_, _) => Task.CompletedTask,
             energiekosten: z => { gerufen++; mitgegeben = z; return Task.CompletedTask; });
+            Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
 
         cut.FindAll(KOSTENKNOEPFE)[2].Click();
 
@@ -314,27 +370,22 @@ public class HeizkesselDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// Ohne gewählte Projektzeile geht KEINE Zeile mit — die Verwaltung zeigt dann
-    /// die Komponente ohne Einengung (Muster der Kostenseite, Auftrag 268).
+    /// <b>Die Kostenknöpfe gehören dem Projektsatz</b> (Katalogauswahl V1, 4.2): Mit einer
+    /// Katalogzeile ist keine Projektzeile gewählt, und die Satzfläche trägt keine Kostenknöpfe.
     /// </summary>
     [Fact]
-    public void Ohne_Projektwahl_geht_keine_Zeile_mit()
+    public void Die_Kostenknoepfe_stehen_nur_beim_Projektsatz()
     {
-        ErzeugerZeile? mitgegeben = Zeile(99, "Platzhalter", 999);
-        ErzeugerZeile? beiEnergie = Zeile(99, "Platzhalter", 999);
         var cut = Aufbauen(
-            kostenOeffnen: (z, _) => { mitgegeben = z; return Task.CompletedTask; },
-            energiekosten: z => { beiEnergie = z; return Task.CompletedTask; });
+            kostenOeffnen: (_, _) => Task.CompletedTask,
+            energiekosten: _ => Task.CompletedTask);
+            Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
+        Assert.Equal(3, cut.FindAll(KOSTENKNOEPFE).Count);
 
         // Eine Katalogzeile loescht die Projektwahl (listBox_Kessel_DB_SelectedIndexChanged).
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[0].Click();
         Assert.Null(cut.Instance.Projektzeile);
-
-        cut.FindAll(KOSTENKNOEPFE)[0].Click();
-        cut.FindAll(KOSTENKNOEPFE)[2].Click();
-
-        Assert.Null(mitgegeben);
-        Assert.Null(beiEnergie);
+        Assert.Empty(cut.FindAll(KOSTENKNOEPFE));
     }
 
     /// <summary>
@@ -345,6 +396,7 @@ public class HeizkesselDialogTests : EposBunitContext
     public void Ein_fehlender_Weg_nimmt_seine_Knoepfe_mit()
     {
         var cut = Aufbauen(energiekosten: _ => Task.CompletedTask);
+        Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
 
         var knoepfe = cut.FindAll(KOSTENKNOEPFE);
         Assert.Single(knoepfe);
@@ -370,10 +422,11 @@ public class HeizkesselDialogTests : EposBunitContext
     {
         // listBox_Kessel_DB_SelectedIndexChanged: cmbBrennstoffArt.Visible = false.
         var cut = Aufbauen();
+        Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
         Assert.Contains("Brennstoff Variante:",
                         cut.FindAll(".epos-feld-text").Select(e => e.TextContent));
 
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[0].Click();
 
         Assert.Null(cut.Instance.Projektzeile);
         Assert.NotNull(cut.Instance.Katalogzeile);
@@ -391,7 +444,7 @@ public class HeizkesselDialogTests : EposBunitContext
         // btn_Kessel_Hinzu_Click: listBox_Kessel_DB.Text == "" -> return.
         var cut = Aufbauen();
 
-        Assert.True(cut.FindAll(".epos-zweispalten-uebernahme button")[0].HasAttribute("disabled"));
+        Assert.True(cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].HasAttribute("disabled"));
     }
 
     [Fact]
@@ -399,8 +452,8 @@ public class HeizkesselDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-zweispalten-uebernahme button")[0].Click();
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[0].Click();
+        cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
 
         Assert.True(cut.Instance.Traegerwahl);
         Assert.Single(cut.FindAll(".epos-ueberlagerung"));
@@ -418,8 +471,8 @@ public class HeizkesselDialogTests : EposBunitContext
             return new AufnahmeErgebnis(Zeile(9, "Kessel B", 200));
         });
 
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-zweispalten-uebernahme button")[0].Click();
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[0].Click();
+        cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
         cut.Find(".epos-ueberlagerung").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.False(cut.Instance.Traegerwahl);
@@ -434,8 +487,8 @@ public class HeizkesselDialogTests : EposBunitContext
         var cut = Aufbauen(zeilen,
             aufnehmen: (_, _) => new AufnahmeErgebnis(null, "Der Energieträger konnte nicht angelegt werden.", true));
 
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-zweispalten-uebernahme button")[0].Click();
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[0].Click();
+        cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
 
         // Der Traegerdialog laesst OK erst zu, wenn ein Variantenname dasteht.
         cut.Find(".epos-ueberlagerung input[type=text]").Input("Erdgas E Variante");
@@ -452,8 +505,8 @@ public class HeizkesselDialogTests : EposBunitContext
             Array.Empty<(int, string)>(), null,
             "Der ausgewählte Heizkessel wurde in den Stammdaten nicht gefunden."));
 
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-zweispalten-uebernahme button")[0].Click();
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[0].Click();
+        cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
 
         Assert.False(cut.Instance.Traegerwahl);
         Assert.Contains("nicht gefunden", cut.Instance.Meldung);
@@ -472,8 +525,8 @@ public class HeizkesselDialogTests : EposBunitContext
 
         // Die ZWEITE Zeile waehlen und entfernen - bei Namensgleichheit muss genau sie
         // gehen (der Bestand traf ueber ListViewItem.Tag, nicht ueber den Namen).
-        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[1].Click();
-        cut.FindAll(".epos-zweispalten-uebernahme button")[1].Click();
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-projektzeile")[1].Click();
+        cut.FindAll(".epos-zweispalten-knopf--entfernen")[0].Click();
 
         Assert.Single(zeilen);
         Assert.Equal(1, zeilen[0].Schluessel);
@@ -487,7 +540,7 @@ public class HeizkesselDialogTests : EposBunitContext
         var zeilen = new List<ErzeugerZeile> { Zeile(1, "Kessel A", 100), Zeile(2, "Kessel B", 200) };
         var cut = Aufbauen(zeilen);
 
-        cut.FindAll(".epos-zweispalten-uebernahme button")[1].Click();
+        cut.FindAll(".epos-zweispalten-knopf--entfernen")[0].Click();
 
         Assert.Single(zeilen);
         Assert.Equal(2, cut.Instance.Projektzeile!.Schluessel);
@@ -503,6 +556,7 @@ public class HeizkesselDialogTests : EposBunitContext
         // cmbBrennstoffArt_SelectedIndexChanged: UPDATE energy_Project_settings.
         (ErzeugerZeile Zeile, int Neu)? gemeldet = null;
         var cut = Aufbauen(traegerWechseln: (z, n) => gemeldet = (z, n));
+        Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
 
         // Seit S2.1 gibt es nur noch EINE Klappliste: die Trägerwahl. Die zwei
         // Filterlisten sind Spaltenköpfe geworden.
@@ -515,11 +569,45 @@ public class HeizkesselDialogTests : EposBunitContext
         Assert.Equal(6, cut.Instance.Projektzeile!.CarrierId);
     }
 
+    /// <summary>KT-8a: Wirft der Trägerwechsel (Datenbank), nennt der Banner den Grund, das Protokoll hat einen Vermerk, der Dialog bleibt offen, die Zeile behält ihren Träger.</summary>
+    [Fact]
+    public void KT8a_wirft_der_Traegerwechsel_nennt_der_Banner_den_Grund_und_der_Dialog_bleibt_offen()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        bool? geschlossen = null;
+        var cut = Aufbauen(traegerWechseln: (_, _) => throw new InvalidOperationException("Träger gesperrt"),
+                           geschlossen: ok => geschlossen = ok);
+        Satz(cut);
+        int vorher = cut.Instance.Projektzeile!.CarrierId;
+
+        cut.FindAll("select")[0].Change("6");
+
+        Assert.Contains(cut.FindAll(".epos-warnbanner-text"), b => b.TextContent.Contains("Träger gesperrt"));
+        Assert.True(vermerke.Enthaelt("Träger gesperrt"));
+        Assert.Null(geschlossen);
+        Assert.Equal(vorher, cut.Instance.Projektzeile!.CarrierId);
+    }
+
+    [Fact]
+    public void KT8a_ohne_Ausnahme_zeigt_der_Traegerwechsel_keinen_Banner()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var cut = Aufbauen(traegerWechseln: (_, _) => { });
+        Satz(cut);
+
+        cut.FindAll("select")[0].Change("6");
+
+        Assert.Empty(cut.FindAll(".epos-warnbanner-text"));
+        Assert.True(vermerke.Leer);
+        Assert.Equal(6, cut.Instance.Projektzeile!.CarrierId);
+    }
+
     [Fact]
     public void Vorlauf_und_Ruecklauf_wandern_ins_Modell()
     {
         var uebernommen = new List<ErzeugerZeile>();
         var cut = Aufbauen(uebernehmen: z => uebernommen.Add(z));
+        Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
 
         var felder = cut.FindAll("input[inputmode=numeric]");
         felder[0].Input("75");
@@ -528,6 +616,37 @@ public class HeizkesselDialogTests : EposBunitContext
         Assert.Equal(75, cut.Instance.Projektzeile!.Vorlauf);
         Assert.Equal(55, cut.Instance.Projektzeile!.Ruecklauf);
         Assert.Equal(2, uebernommen.Count);
+    }
+
+    /// <summary>KT-7: Wirft der Übernahmeweg, nennt der Banner den Grund, das Protokoll hat einen Vermerk, der Dialog bleibt offen.</summary>
+    [Fact]
+    public void KT7_wirft_die_Uebernahme_nennt_der_Banner_den_Grund_und_der_Dialog_bleibt_offen()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        bool? geschlossen = null;
+        var cut = Aufbauen(uebernehmen: _ => throw new InvalidOperationException("Modell gesperrt"),
+                           geschlossen: ok => geschlossen = ok);
+        Satz(cut);
+
+        cut.FindAll("input[inputmode=numeric]")[0].Input("75");
+
+        Assert.Contains(cut.FindAll(".epos-warnbanner-text"), b => b.TextContent.Contains("Modell gesperrt"));
+        Assert.True(vermerke.Enthaelt("Modell gesperrt"));
+        Assert.Null(geschlossen);
+        Assert.Equal(75, cut.Instance.Projektzeile!.Vorlauf);
+    }
+
+    [Fact]
+    public void KT7_ohne_Ausnahme_zeigt_die_Uebernahme_keinen_Banner()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var cut = Aufbauen(uebernehmen: _ => { });
+        Satz(cut);
+
+        cut.FindAll("input[inputmode=numeric]")[0].Input("75");
+
+        Assert.Empty(cut.FindAll(".epos-warnbanner-text"));
+        Assert.True(vermerke.Leer);
     }
 
     // =================================================================================
@@ -541,7 +660,7 @@ public class HeizkesselDialogTests : EposBunitContext
         var geloescht = new List<int>();
         var cut = Aufbauen(katalogLoeschen: id => { geloescht.Add(id); return true; });
 
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[0].Click();
         Knopf(cut, "Löschen").Click();
 
         Assert.Single(cut.FindAll(".epos-rueckfrage"));
@@ -558,7 +677,7 @@ public class HeizkesselDialogTests : EposBunitContext
         var geloescht = new List<int>();
         var cut = Aufbauen(katalogLoeschen: id => { geloescht.Add(id); return true; });
 
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[0].Click();
         Knopf(cut, "Löschen").Click();
         cut.FindAll(".epos-rueckfrage button")[1].Click();
 
@@ -575,7 +694,7 @@ public class HeizkesselDialogTests : EposBunitContext
             return new Dictionary<string, object> { ["Daten"] = new HeizkesselKatalogDaten() };
         });
 
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[0].Click();
         Knopf(cut, "Bearbeiten...").Click();
 
         Assert.Equal("Kessel A", gefragt);
@@ -641,8 +760,8 @@ public class HeizkesselDialogTests : EposBunitContext
             return new AufnahmeErgebnis(Zeile(9, "Kessel B", 200));
         });
 
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-zweispalten-uebernahme button")[0].Click();
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[0].Click();
+        cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
         Assert.True(cut.Instance.Traegerwahl);
 
         cut.Find(".epos-ueberlagerung-zu").Click();
@@ -659,7 +778,7 @@ public class HeizkesselDialogTests : EposBunitContext
         var cut = Aufbauen(editorGaben: _ =>
             new Dictionary<string, object> { ["Daten"] = new HeizkesselKatalogDaten() });
 
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[0].Click();
         Knopf(cut, "Bearbeiten...").Click();
         Assert.Single(cut.FindAll(".epos-ueberlagerung"));
 
@@ -678,8 +797,8 @@ public class HeizkesselDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
-        cut.FindAll(".epos-zweispalten-uebernahme button")[0].Click();
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[0].Click();
+        cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
 
         Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
         Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
@@ -693,7 +812,7 @@ public class HeizkesselDialogTests : EposBunitContext
         var cut = Aufbauen(editorGaben: _ =>
             new Dictionary<string, object> { ["Daten"] = new HeizkesselKatalogDaten() });
 
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[0].Click();
         Knopf(cut, "Bearbeiten...").Click();
 
         Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
@@ -772,15 +891,15 @@ public class HeizkesselDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        Katalogzeilen(cut)[0].QuerySelector(".epos-anlagenwahl")!.Click();
-        Assert.False(cut.FindAll(".epos-zweispalten-uebernahme button")[0].HasAttribute("disabled"));
+        Katalogzeilen(cut)[0].QuerySelector(".epos-zeilenzelle--name")!.Click();
+        Assert.False(cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].HasAttribute("disabled"));
 
         // Ein Filter, der GENAU diese Zeile ausblendet.
         _filterstand.Setzen(Katalogfilterprofil.SpBrennstoff, "Heizöl");
         cut.Render();
 
         Assert.Single(Katalogzeilen(cut));
-        Assert.False(cut.FindAll(".epos-zweispalten-uebernahme button")[0].HasAttribute("disabled"));
+        Assert.False(cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].HasAttribute("disabled"));
     }
 
     /// <summary>
@@ -790,19 +909,22 @@ public class HeizkesselDialogTests : EposBunitContext
     /// wäre nach der ersten Übernahme veraltet.
     /// </summary>
     [Fact]
-    public void S2_3_Die_Spalte_im_Projekt_verwendet_zaehlt_die_Projektliste()
+    public void S2_3_Die_Verwendungsmarke_zaehlt_die_Projektliste()
     {
         var cut = Aufbauen(zeilen: new List<ErzeugerZeile> { Zeile(1, "Kessel A", 100) });
 
         var kopf = cut.FindAll(".epos-raster")[1]
                       .QuerySelectorAll("th").Select(e => e.TextContent.Trim()).ToList();
-        Assert.Contains(kopf, k => k.StartsWith("im Projekt verwendet"));
+        // Konzept 4.10: die Verwendung steht als Marke am Bezeichner, die Spalte ist
+        // nur noch waehlbar (standardmaessig aus).
+        Assert.DoesNotContain(kopf, k => k.StartsWith("im Projekt verwendet"));
 
         var zeilen = Katalogzeilen(cut);
         Assert.Equal(2, zeilen.Count);
-        Assert.Equal(1, zeilen.Count(z => z.QuerySelectorAll("td").Last().TextContent.Trim() == "Ja"));
+        Assert.Equal(1, zeilen.Count(z => z.QuerySelector(".epos-verwendet-marke") is not null));
+        Assert.Equal(1, zeilen.Count(z => (z.ClassName ?? "").Contains("epos-zeile--verwendet")));
 
-        var traegt = zeilen.First(z => z.QuerySelectorAll("td").Last().TextContent.Trim() == "Ja");
+        var traegt = zeilen.First(z => z.QuerySelector(".epos-verwendet-marke") is not null);
         Assert.Contains("Kessel A", traegt.TextContent);
     }
 
@@ -846,6 +968,7 @@ public class HeizkesselDialogTests : EposBunitContext
     public void Ohne_Katalogfelder_gibt_es_keinen_Aufklapper()
     {
         var cut = Aufbauen();
+        Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
 
         KatalogsatzWaehlen(cut);
 
@@ -870,6 +993,7 @@ public class HeizkesselDialogTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-modulparameter"));
 
         KatalogsatzWaehlen(cut);
+        Satz(cut);   // UeS2: „Alle Daten" stehen in der Satz-Ueberlagerung
 
         Assert.Equal(1, rufe);
         Assert.True(cut.Instance.ParameterOffen);
@@ -887,6 +1011,7 @@ public class HeizkesselDialogTests : EposBunitContext
         var cut = Aufbauen(katalogfelder: _ => Felder());
 
         KatalogsatzWaehlen(cut);
+        Satz(cut);   // UeS2: „Alle Daten" stehen in der Satz-Ueberlagerung
 
         cut.Find(".epos-modulparameter-knopf").Click();
 
@@ -914,7 +1039,7 @@ public class HeizkesselDialogTests : EposBunitContext
         KatalogsatzWaehlen(cut);
         Assert.Equal(new[] { "Kessel A" }, gefragt);
 
-        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-anlagenwahl")[1].Click();
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[1].Click();
 
         Assert.Equal(new[] { "Kessel A", "Kessel B" }, gefragt);
         Assert.True(cut.Instance.ParameterOffen);
@@ -931,9 +1056,10 @@ public class HeizkesselDialogTests : EposBunitContext
         var cut = Aufbauen(katalogfelder: _ => Felder());
 
         KatalogsatzWaehlen(cut);
+        Satz(cut);   // UeS2: „Alle Daten" stehen in der Satz-Ueberlagerung
         Assert.NotEmpty(cut.Find(".epos-modulparameter").QuerySelectorAll(".epos-feld"));
 
-        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-projektzeile")[0].Click();
 
         // Ohne Katalogzeile zeichnet der Block gar nicht mehr - der Zustand "offen"
         // gehoert der Dialogsitzung und ueberlebt den Wechsel trotzdem.
@@ -949,6 +1075,7 @@ public class HeizkesselDialogTests : EposBunitContext
     public void Ohne_Speicherweg_ist_der_Aufklapper_nur_Anzeige()
     {
         var cut = Aufbauen(katalogfelder: _ => Felder());
+        Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
 
         KatalogsatzWaehlen(cut);
 
@@ -977,29 +1104,73 @@ public class HeizkesselDialogTests : EposBunitContext
             });
 
         KatalogsatzWaehlen(cut);
+        Satz(cut);   // UeS2: „Alle Daten" stehen in der Satz-Ueberlagerung
 
-        Assert.Equal("true", Knopf(cut, "Speichern").GetAttribute("aria-disabled"));
-        Assert.False(Knopf(cut, "Speichern").HasAttribute("disabled"));
+        // UeS2: In der Ueberlagerung speichert ihr OK - der Aufklapper traegt keinen eigenen Knopf.
+        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "Speichern");
 
         cut.Find(".epos-modulparameter input[inputmode=decimal]").Input("15000");
-        Assert.False(Knopf(cut, "Speichern").HasAttribute("aria-disabled"));
+        Assert.False(cut.Find(".epos-satzueberlagerung-ok").HasAttribute("disabled"));
 
-        Knopf(cut, "Speichern").Click();
+        cut.Find(".epos-satzueberlagerung-ok").Click();
 
         Assert.Equal("Kessel A", name);
         Assert.NotNull(geschrieben);
         Assert.Equal("15000",
-            geschrieben!.First(f => f.Schluessel == KatalogBrowserProfil.FeldInvestitionskosten).Wert);
+            geschrieben!.First(f => f.Schluessel == KatalogBrowserProfil.FeldRaumbedarf).Wert);
         Assert.Equal("", cut.Instance.Meldung);
-        Assert.StartsWith("Gespeichert um ", Vermerk(cut).TextContent);
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
     }
 
     /// <summary>
-    /// <b>Der Vermerk am Knopf</b> fällt mit der nächsten Eingabe weg; ohne Änderung ist
-    /// Speichern weich gesperrt, und ein Klick nennt den Grund, statt zu schreiben.
+    /// <b>KT-4: Wirft der Schreibweg</b>, nennt die Meldung den Grund, der geänderte Wert bleibt im
+    /// Aufklapper stehen und der Dialog offen; das Ausnahmeprotokoll hat einen Vermerk.
     /// </summary>
     [Fact]
-    public void Vermerk_am_Knopf_faellt_mit_der_Eingabe_und_ohne_Aenderung_nennt_der_Klick_den_Grund()
+    public void Wirft_Speichern_im_Aufklapper_bleibt_die_Eingabe_und_die_Meldung_nennt_den_Grund()
+    {
+        bool? geschlossen = null;
+        var cut = Aufbauen(
+            katalogfelder: _ => Felder(),
+            katalogfelderSpeichern: (_, _) => throw new InvalidOperationException("Datenbank gesperrt"),
+            geschlossen: e => geschlossen = e);
+        KatalogsatzWaehlen(cut);
+        Satz(cut);   // UeS2: „Alle Daten" stehen in der Satz-Ueberlagerung
+        cut.Find(".epos-modulparameter input[inputmode=decimal]").Input("15000");
+
+        var vermerke = new List<string>();
+        void Mit(string z) { lock (vermerke) vermerke.Add(z); }
+        Ausnahmeprotokoll.Vermerkt += Mit;
+        try { cut.Find(".epos-satzueberlagerung-ok").Click(); }
+        finally { Ausnahmeprotokoll.Vermerkt -= Mit; }
+
+        Assert.Equal(string.Format(Resource.WURZEL_SCHREIBEN_FEHLER, "Kessel A", "Datenbank gesperrt"), cut.Instance.Meldung);
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Equal("15000", cut.Find(".epos-modulparameter input[inputmode=decimal]").GetAttribute("value"));
+        Assert.Null(geschlossen);
+        Assert.Contains(vermerke, v => v.Contains("nicht gespeichert"));
+    }
+
+    [Fact]
+    public void Wirft_Loeschen_nennt_die_Meldung_den_Grund()
+    {
+        var cut = Aufbauen(katalogLoeschen: _ => throw new InvalidOperationException("Datenbank gesperrt"));
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name")[0].Click();
+        Knopf(cut, "Löschen").Click();
+        cut.FindAll(".epos-rueckfrage button")[0].Click();
+
+        Assert.Equal(string.Format(Resource.WURZEL_LOESCHEN_FEHLER, "Kessel A", "Datenbank gesperrt"), cut.Instance.Meldung);
+        Assert.NotEmpty(cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenzelle--name"));
+    }
+
+    /// <summary>
+    /// <b>Das OK der Satz-Überlagerung schreibt nur eine Änderung</b> (UeS2; der Knopf
+    /// „Speichern" des Aufklappers samt Vermerk steht in der Überlagerung nicht): ohne Änderung
+    /// schließt es, ohne zu schreiben, die nächste Eingabe schreibt wieder.
+    /// </summary>
+    [Fact]
+    public void UeS2_OK_schreibt_nur_eine_Aenderung_und_ein_zweites_Oeffnen_schreibt_nicht_erneut()
     {
         int schreibvorgaenge = 0;
         var cut = Aufbauen(
@@ -1007,25 +1178,24 @@ public class HeizkesselDialogTests : EposBunitContext
             katalogfelderSpeichern: (n, _) => { schreibvorgaenge++; return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n); });
 
         KatalogsatzWaehlen(cut);
+        Satz(cut);   // UeS2: „Alle Daten" stehen in der Satz-Ueberlagerung
         cut.Find(".epos-modulparameter input[inputmode=decimal]").Input("15000");
-        Knopf(cut, "Speichern").Click();
+        cut.Find(".epos-satzueberlagerung-ok").Click();
         Assert.Equal(1, schreibvorgaenge);
-        Assert.Equal("true", Knopf(cut, "Speichern").GetAttribute("aria-disabled"));
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
 
-        // Ein zweiter Klick schreibt nicht, er nennt den Grund am Knopf.
-        Knopf(cut, "Speichern").Click();
+        // Wieder geoeffnet und ohne Aenderung bestaetigt: kein zweiter Schreibvorgang.
+        Satz(cut);
+        cut.Find(".epos-satzueberlagerung-ok").Click();
         Assert.Equal(1, schreibvorgaenge);
-        Assert.Equal("Keine Änderung — es gibt nichts zu speichern.", Vermerk(cut).TextContent);
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
 
-        // Die naechste Eingabe nimmt den Vermerk zurueck und hebt die Sperre auf.
+        // Die naechste Eingabe schreibt wieder.
+        Satz(cut);
         cut.Find(".epos-modulparameter input[inputmode=decimal]").Input("1");
-        Assert.Empty(cut.FindAll(".epos-modulparameter .epos-speichervermerk [role=status]"));
-        Assert.False(Knopf(cut, "Speichern").HasAttribute("aria-disabled"));
+        cut.Find(".epos-satzueberlagerung-ok").Click();
+        Assert.Equal(2, schreibvorgaenge);
     }
-
-    /// <summary>Die Rückmeldung neben dem Knopf „Speichern" des Aufklappers.</summary>
-    private static AngleSharp.Dom.IElement Vermerk(Bunit.IRenderedComponent<HeizkesselDialog> cut)
-        => cut.Find(".epos-modulparameter .epos-speichervermerk [role=status]");
 
     /// <summary>
     /// <b>Ein abgelehnter Schreibvorgang lässt den Stand stehen</b> und meldet den
@@ -1040,16 +1210,19 @@ public class HeizkesselDialogTests : EposBunitContext
                 new KatalogSpeicherErgebnis(false, "„Investitionskosten“ darf nicht negativ sein.", ""));
 
         KatalogsatzWaehlen(cut);
+        Satz(cut);   // UeS2: „Alle Daten" stehen in der Satz-Ueberlagerung
         cut.Find(".epos-modulparameter input[inputmode=decimal]").Input("15000");
-        Knopf(cut, "Speichern").Click();
+        cut.Find(".epos-satzueberlagerung-ok").Click();
 
         Assert.Contains("darf nicht negativ sein", cut.Instance.Meldung);
         Assert.Equal("15000", cut.Find(".epos-modulparameter input[inputmode=decimal]")
                                  .GetAttribute("value"));
 
-        // Der Grund steht auch rot AM Knopf - das Band oben bleibt fuer den Fehler.
-        Assert.Contains("darf nicht negativ sein", Vermerk(cut).TextContent);
-        Assert.Contains("epos-status--fehler", Vermerk(cut).ClassName);
+        // Der Grund steht auch rot in der Fussleiste der Ueberlagerung, die offen bleibt (UeS2).
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        var grund = cut.Find(".epos-satzueberlagerung-hinweis");
+        Assert.Contains("darf nicht negativ sein", grund.TextContent);
+        Assert.Contains("epos-status--fehler", grund.ClassName);
     }
 
     /// <summary>
@@ -1065,9 +1238,10 @@ public class HeizkesselDialogTests : EposBunitContext
                                new KatalogSpeicherErgebnis(true, "ok", n));
 
         KatalogsatzWaehlen(cut);
+        Satz(cut);   // UeS2: „Alle Daten" stehen in der Satz-Ueberlagerung
 
         var block = cut.Find(".epos-modulparameter");
-        Assert.Equal(3, block.QuerySelectorAll(".epos-feld, .epos-schalter").Length);
+        Assert.Equal(4, block.QuerySelectorAll(".epos-feld, .epos-schalter").Length);
         Assert.NotEmpty(block.QuerySelectorAll("input[type=text]"));
         Assert.NotEmpty(block.QuerySelectorAll("input[inputmode=decimal]"));
         Assert.NotEmpty(block.QuerySelectorAll("input[type=checkbox]"));
@@ -1085,12 +1259,15 @@ public class HeizkesselDialogTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-modulparameter"));
 
         KatalogsatzWaehlen(cut);
+        Satz(cut);   // UeS2: „Alle Daten" stehen in der Satz-Ueberlagerung
 
         Assert.True(cut.Instance.ParameterOffen);
         Assert.Equal("true", cut.Find(".epos-modulparameter-knopf").GetAttribute("aria-expanded"));
         Assert.Equal("Alle Daten anzeigen",
                      cut.Find(".epos-modulparameter-knopf").QuerySelectorAll("span")[1].TextContent);
-        Assert.Equal(3, cut.Find(".epos-modulparameter")
+        // Vier Felder: Hersteller (Text), Raumbedarf (Zahl), Geraetekosten (Lesewert der
+        // Satzvorlage, Welle KB-4) und der Schalter „Brennwertkessel".
+        Assert.Equal(4, cut.Find(".epos-modulparameter")
                            .QuerySelectorAll(".epos-feld, .epos-schalter").Length);
     }
 
@@ -1102,43 +1279,426 @@ public class HeizkesselDialogTests : EposBunitContext
     // stehen, so dass er besser sichtbar ist."
 
     /// <summary>
-    /// <b>Die Knopfzeile steht als ERSTES unter dem Modulkopf</b>: links die
-    /// Kostenknöpfe, rechts „Bearbeiten…", dazwischen der Füller. Danach erst die
-    /// Felder, danach der Aufklapper.
+    /// <b>Die Knopfzeile steht als ERSTES in der Satzfläche</b>: beim Projektsatz links die
+    /// Kostenknöpfe, dann der Füller, rechts die Hilfe; danach die Felder, danach „Alle Daten".
+    /// „Bearbeiten…" steht seit Stufe 2 in den Leisten der Bereiche (Konzept 4.2).
     /// </summary>
     [Fact]
-    public void Die_Knopfzeile_steht_unmittelbar_unter_dem_Modulkopf()
+    public void Die_Knopfzeile_steht_als_erstes_in_der_Satzflaeche()
     {
         var cut = Aufbauen(kostenOeffnen: (_, _) => Task.CompletedTask,
                            energiekosten: _ => Task.CompletedTask,
-                           katalogfelder: _ => Felder(),
-                           editorGaben: _ => new Dictionary<string, object>());
+                           projektsatzWege: Wege());
 
-        KatalogsatzWaehlen(cut);
-
-        var kinder = cut.Find(".epos-gruppenkopf-koerper").Children.ToList();
-
-        // Die Knopfzeile ist das erste Kind - vor Hilfeknopf, Feldern und Aufklapper.
+        var kinder = Satz(cut).Children.ToList();
         Assert.Contains("epos-leiste", kinder[0].ClassList);
-        int raster = kinder.FindIndex(k => k.ClassList.Contains("epos-formularraster"));
-        int parameter = kinder.FindIndex(k => k.ClassList.Contains("epos-modulparameter"));
-        Assert.True(0 < raster && raster < parameter);
+        // WP1b: darunter die zweispaltige Satz-Ueberlagerung - rechts die Kenndaten, dann „Alle Daten".
+        Assert.Contains("epos-satz-zweispaltig", kinder[1].ClassList);
+        var rechts = kinder[1].QuerySelector(".epos-satz-zweispaltig-rechts")!.Children.ToList();
+        int raster = rechts.FindIndex(k => k.ClassList.Contains("epos-formularraster"));
+        int parameter = rechts.FindIndex(k => k.ClassList.Contains("epos-modulparameter"));
+        Assert.True(0 <= raster && raster < parameter);
 
-        // Links die Kostenknoepfe, dann der Fueller, rechts "Bearbeiten...".
         var teile = kinder[0].Children.ToList();
         Assert.Contains("epos-kostenleiste", teile[0].ClassList);
         Assert.Contains("epos-leiste-fueller", teile[1].ClassList);
-        Assert.Equal("Bearbeiten...", teile[2].TextContent.Trim());
+        Assert.Contains("epos-berechnungshilfe", teile[2].ClassList);
+        Assert.Empty(Satz(cut).QuerySelectorAll("button")
+                        .Where(k => k.TextContent.Trim() == "Bearbeiten..."));
+    }
+
+    // =================================================================================
+    // Katalogauswahl V1, Stufe 2a: Knöpfe an ihrem Ort, Detailzeile, Bearbeiten je Bereich
+    // =================================================================================
+
+    /// <summary>Lese- und Speicherwege mit eigenem Feldsatz je Satz; <paramref name="gespeichert"/> fängt den Aufruf.</summary>
+    private static Satzbearbeitungswege Wege(List<(int Id, IReadOnlyList<BrowserFeldwert> Felder)>? gespeichert = null,
+                                             KatalogSpeicherErgebnis? ergebnis = null)
+        => new()
+        {
+            Lesen = _ => Felder(),
+            Speichern = l => { gespeichert?.AddRange(l); return ergebnis ?? new KatalogSpeicherErgebnis(true, "ok", ""); }
+        };
+
+    private static IReadOnlyList<Katalogfilterzeile> MitSchloss(params int[] gesperrt)
+    {
+        var zeilen = Katalogzeilen();
+        foreach (var z in zeilen) z.Geschuetzt = gesperrt.Contains(z.Id);
+        return zeilen;
+    }
+
+    /// <summary>Kreuzt die Katalogzeilen an (Kästchenspalte der Katalogliste).</summary>
+    private static void KatalogAnkreuzen(IRenderedComponent<HeizkesselDialog> cut, params int[] zeilen)
+    {
+        foreach (int i in zeilen)
+            cut.FindAll(".epos-raster")[1].QuerySelectorAll("td .epos-kaestchenzelle input")[i].Change(true);
+    }
+
+    [Fact]
+    public void S2a_Die_Knoepfe_stehen_an_ihrem_Ort()
+    {
+        var cut = Aufbauen(projektsatzWege: Wege(), katalogsatzWege: Wege(),
+                           neuGaben: () => new Dictionary<string, object>(), summe: () => "120");
+
+        // D: Kontext im Dialogkopf, keine eigene Kontextzeile mehr.
+        Assert.Equal("Geben Sie Daten des Spitzenlastkessels ein", cut.Find(".epos-dialog-kopf > .epos-dialog-kontext").TextContent);
+        Assert.Empty(cut.FindAll(".epos-kontextzeile"));
+
+        // P: Summe, Entfernen - „Bearbeiten…" steht nur noch am Satz (AW1); der Rueckweg „In die
+        // Datenbank uebernehmen…" nur mit seinen Wegen (S2b).
+        var p = cut.Find(".epos-zweispalten-bereich--projekt > .epos-zweispalten-kopfleiste");
+        Assert.Contains("120", p.QuerySelector(".epos-zweispalten-summe")!.TextContent);
+        Assert.Null(p.QuerySelector(".epos-knopf--bearbeiten-projekt"));
+        Assert.NotNull(p.QuerySelector(".epos-zweispalten-knopf--entfernen"));
+        Assert.DoesNotContain(cut.FindAll("button"), k => k.TextContent.Contains("Datenbank übernehmen"));
+
+        // K-Kopf: Suche und Trefferzahl links, Uebernehmen rechts.
+        var k = cut.Find(".epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste");
+        Assert.NotNull(k.QuerySelector(".epos-katalog-suchzeile input[type=search]"));
+        Assert.NotNull(k.QuerySelector(".epos-katalog-treffer"));
+        Assert.NotNull(k.QuerySelector(".epos-zweispalten-knopf--uebernehmen"));
+
+        // AW1: keine Fussleiste unter dem Katalog - Vergleichen, Schloss, Loeschen, Bearbeiten, Neu
+        // stehen in dieser Folge in der Knopfleiste am gewaehlten Satz.
+        SatzZu(cut);
+        KatalogsatzWaehlen(cut);
+        Assert.Empty(cut.FindAll(".epos-zweispalten-fussleiste"));
+        var leiste = cut.Find(".epos-zweispalten-satzkopf > .epos-zweispalten-satzknoepfe").Children.ToList();
+        string[] folge = { "epos-knopf--vergleichen", "epos-katalogschloss", "epos-knopf--loeschen",
+                           "epos-knopf--bearbeiten-katalog", "epos-knopf--neu" };
+        var namen = leiste.Select(e => folge.FirstOrDefault(f => e.ClassList.Contains(f)))
+                          .OfType<string>().ToList();
+        Assert.Equal(folge.Where(namen.Contains), namen);
+        Assert.Contains("epos-knopf--vergleichen", namen);
+        Assert.Contains("epos-knopf--loeschen", namen);
+        Assert.Contains("epos-knopf--bearbeiten-katalog", namen);
+    }
+
+    [Fact]
+    public void S2a_Die_Detailzeile_nennt_Marke_Name_und_Kenndaten()
+    {
+        var cut = Aufbauen(katalogzeilen: () => MitSchloss(11));
+        var zeile = cut.Find(".epos-zweispalten-satzzeile");
+        Assert.Equal(Resource.AUSWAHL_MARKE_PROJEKTSATZ, zeile.QuerySelector(".epos-zweispalten-marke--satz")!.TextContent);
+        Assert.Equal("Kessel A", zeile.QuerySelector(".epos-zweispalten-satzname")!.TextContent);
+        Assert.Contains("Brennstoff Typ Erdgas E", zeile.QuerySelector(".epos-zweispalten-satzkenndaten")!.TextContent);
+
+        KatalogsatzWaehlen(cut);
+        zeile = cut.Find(".epos-zweispalten-satzzeile");
+        Assert.Equal(Resource.AUSWAHL_MARKE_KATALOGSATZ, zeile.QuerySelector(".epos-zweispalten-marke--satz")!.TextContent);
+        Assert.Contains(Resource.AUSWAHL_SATZ_NUR_LESEN, zeile.QuerySelector(".epos-zweispalten-satzkenndaten")!.TextContent);
     }
 
     /// <summary>
-    /// <b>„Bearbeiten…" bleibt gesperrt, solange kein Katalogsatz gewählt ist</b> — die
-    /// Sperre ist mit dem Knopf nach oben gewandert, nicht verschwunden.
+    /// UeS1: „Bearbeiten…" EINER Projektkopie öffnet die Satz-Überlagerung über dem ganzen Dialog —
+    /// Marke „Projektsatz", Name, „Alle Daten" aufgeklappt, das Fragment nur dort; keine Satzbearbeitung.
+    /// </summary>
+    [Fact]
+    public void S2a_Bearbeiten_im_Projektbereich_oeffnet_die_Projektkopie_mit_Marke()
+    {
+        var cut = Aufbauen(projektsatzWege: Wege());
+
+        cut.Find(".epos-knopf--bearbeiten-projekt").Click();
+
+        Assert.Null(cut.Instance.Bearbeitung);
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        var kopf = cut.Find(".epos-ueberlagerung--satz > .epos-ueberlagerung-kopf");
+        Assert.Equal(Resource.AUSWAHL_MARKE_PROJEKTSATZ, kopf.QuerySelector(".epos-zweispalten-marke--satz")!.TextContent);
+        Assert.Equal("Kessel A", kopf.QuerySelector(".epos-ueberlagerung-titel")!.TextContent);
+        Assert.Single(cut.FindAll(".epos-modulparameter"));
+        Assert.Single(cut.FindAll(".epos-satzueberlagerung-koerper .epos-modulparameter"));
+        Assert.Equal("Musterwerk", cut.Find(".epos-satzueberlagerung-koerper .epos-modulparameter input[type=text]:not([readonly])").GetAttribute("value"));
+        // OK der Ueberlagerung speichert - kein zweiter Speichern-Knopf in der Satzflaeche.
+        Assert.Empty(cut.FindAll(".epos-satzueberlagerung-koerper .epos-speichervermerk"));
+        Assert.Empty(cut.FindAll(".epos-satzbearbeitung"));
+    }
+
+    /// <summary>UeS1: OK schreibt die Projektkopie über den Speicherweg der Satzfläche und schließt.</summary>
+    [Fact]
+    public void UeS1_OK_der_Satzueberlagerung_schreibt_die_Projektkopie()
+    {
+        var gespeichert = new List<(int Id, IReadOnlyList<BrowserFeldwert> Felder)>();
+        var cut = Aufbauen(projektsatzWege: Wege(gespeichert));
+
+        cut.Find(".epos-knopf--bearbeiten-projekt").Click();
+        cut.Find(".epos-satzueberlagerung-koerper .epos-modulparameter input[type=text]:not([readonly])").Input("Neuwerk");
+        cut.Find(".epos-satzueberlagerung-ok").Click();
+
+        var satz = Assert.Single(gespeichert);
+        Assert.Equal(100, satz.Id);
+        Assert.Equal("Neuwerk", satz.Felder.First(f => f.Schluessel == KatalogBrowserProfil.FeldFirma).Wert);
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung--satz"));
+        // UeS2: Die Detailzeile zeigt die Zusammenfassung, das Fragment steht nirgends mehr.
+        Assert.Empty(cut.FindAll(".epos-modulparameter"));
+        Assert.Single(cut.FindAll(".epos-zweispalten-satz--zusammenfassung"));
+    }
+
+    /// <summary>UeS1: Wirft der Speicherweg (KT‑4-Fangweg), bleibt die Überlagerung mit dem Grund offen.</summary>
+    [Fact]
+    public void UeS1_Ein_werfender_Speicherweg_haelt_die_Satzueberlagerung_offen()
+    {
+        var wege = new Satzbearbeitungswege
+        {
+            Lesen = _ => Felder(),
+            Speichern = _ => throw new InvalidOperationException("Datenbank gesperrt")
+        };
+        var cut = Aufbauen(projektsatzWege: wege);
+
+        cut.Find(".epos-knopf--bearbeiten-projekt").Click();
+        cut.Find(".epos-satzueberlagerung-koerper .epos-modulparameter input[type=text]:not([readonly])").Input("Neuwerk");
+        cut.Find(".epos-satzueberlagerung-ok").Click();
+
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.False(string.IsNullOrWhiteSpace(cut.Find(".epos-satzueberlagerung-fuss [role=alert]").TextContent));
+        Assert.Equal("Neuwerk", cut.Find(".epos-satzueberlagerung-koerper .epos-modulparameter input[type=text]:not([readonly])").GetAttribute("value"));
+    }
+
+    /// <summary>UeS1: Abbrechen liest den Satz neu — die Feldänderung ist verworfen, nichts geschrieben.</summary>
+    [Fact]
+    public void UeS1_Abbrechen_der_Satzueberlagerung_verwirft_die_Feldaenderung()
+    {
+        var gespeichert = new List<(int Id, IReadOnlyList<BrowserFeldwert> Felder)>();
+        int gelesen = 0;
+        var wege = new Satzbearbeitungswege
+        {
+            Lesen = _ => { gelesen++; return Felder(); },
+            Speichern = l => { gespeichert.AddRange(l); return new KatalogSpeicherErgebnis(true, "ok", ""); }
+        };
+        var cut = Aufbauen(projektsatzWege: wege);
+
+        cut.Find(".epos-knopf--bearbeiten-projekt").Click();
+        int vorher = gelesen;
+        cut.Find(".epos-satzueberlagerung-koerper .epos-modulparameter input[type=text]:not([readonly])").Input("Neuwerk");
+        cut.Find(".epos-satzueberlagerung-abbrechen").Click();
+
+        Assert.Empty(gespeichert);
+        Assert.Equal(vorher + 1, gelesen);
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
+        // UeS2: wieder geoeffnet steht der verworfene Wert nicht mehr da.
+        Satz(cut);
+        Assert.Equal("Musterwerk", cut.Find(".epos-satzueberlagerung-koerper .epos-modulparameter input[type=text]:not([readonly])").GetAttribute("value"));
+    }
+
+    /// <summary>
+    /// UeS1: Abbrechen stellt auch die anlagenbezogenen Felder wieder her — Vorlauf, Rücklauf
+    /// (samt Herkunftszeile) und Träger, die schon bei der Eingabe in die Anlage gehen.
+    /// </summary>
+    [Fact]
+    public void UeS1_Abbrechen_stellt_Vorlauf_Ruecklauf_und_Traeger_wieder_her()
+    {
+        var wechsel = new List<int>();
+        var uebernommen = new List<(int? Vorlauf, int? Ruecklauf)>();
+        var zeile = Zeile(1, "Kessel A", 100);
+        zeile.TemperaturHerleitung = "Vorgabe 70/50 °C";
+        var cut = Aufbauen(zeilen: new List<ErzeugerZeile> { zeile }, projektsatzWege: Wege(),
+                           traegerWechseln: (_, n) => wechsel.Add(n),
+                           uebernehmen: z => uebernommen.Add((z.Vorlauf, z.Ruecklauf)));
+
+        cut.Find(".epos-knopf--bearbeiten-projekt").Click();
+        var zahlen = cut.FindAll(".epos-satzueberlagerung-koerper input[inputmode=numeric]");
+        zahlen[0].Input("75");
+        cut.FindAll(".epos-satzueberlagerung-koerper input[inputmode=numeric]")[1].Input("55");
+        cut.FindAll(".epos-satzueberlagerung-koerper select")[0].Change("6");
+        Assert.Equal((75, 55, 6), (zeile.Vorlauf, zeile.Ruecklauf, zeile.CarrierId));
+
+        cut.Find(".epos-satzueberlagerung-abbrechen").Click();
+
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Equal((70, 50, 5), (zeile.Vorlauf, zeile.Ruecklauf, zeile.CarrierId));
+        Assert.Equal("Vorgabe 70/50 °C", zeile.TemperaturHerleitung);
+        Assert.Equal(new[] { 6, 5 }, wechsel);
+        Assert.Equal((70, 50), uebernommen[^1]);
+    }
+
+    /// <summary>UeS1: OK behält die Eingaben an der Anlage — kein Zurückschreiben.</summary>
+    [Fact]
+    public void UeS1_OK_behaelt_den_Vorlauf()
+    {
+        var zeile = Zeile(1, "Kessel A", 100);
+        var cut = Aufbauen(zeilen: new List<ErzeugerZeile> { zeile }, projektsatzWege: Wege());
+
+        cut.Find(".epos-knopf--bearbeiten-projekt").Click();
+        cut.FindAll(".epos-satzueberlagerung-koerper input[inputmode=numeric]")[0].Input("75");
+        cut.Find(".epos-satzueberlagerung-ok").Click();
+
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Equal(75, zeile.Vorlauf);
+    }
+
+    /// <summary>UeS2: „Bearbeiten" in der Detailzeile öffnet dieselbe Überlagerung für den gewählten Satz.</summary>
+    [Fact]
+    public void UeS2_Bearbeiten_der_Detailzeile_oeffnet_den_gewaehlten_Katalogsatz()
+    {
+        var cut = Aufbauen(katalogfelder: _ => Felder(), katalogfelderSpeichern: (_, _) => new KatalogSpeicherErgebnis(true, "ok", ""));
+
+        KatalogsatzWaehlen(cut);
+        Assert.Empty(cut.FindAll(".epos-zweispalten-vergroessern"));
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten"));   // AW1: kein Stift
+        cut.Find(BEARBEITEN_AM_SATZ).Click();
+
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Equal(Resource.AUSWAHL_MARKE_KATALOGSATZ,
+                     cut.Find(".epos-ueberlagerung--satz .epos-ueberlagerung-kopf .epos-zweispalten-marke--satz").TextContent);
+        Assert.Single(cut.FindAll(".epos-satzueberlagerung-ok"));
+    }
+
+    [Fact]
+    public void S2a_Mehrfach_Bearbeiten_blaettert_und_setzt_fuer_alle_in_einem_Speichern()
+    {
+        var gespeichert = new List<(int Id, IReadOnlyList<BrowserFeldwert> Felder)>();
+        var cut = Aufbauen(katalogsatzWege: Wege(gespeichert), editorGaben: _ => new Dictionary<string, object>());
+
+        KatalogsatzWaehlen(cut);   // AW1: die Katalogknoepfe wirken, wenn ein Katalogsatz gewaehlt ist
+        KatalogAnkreuzen(cut, 0, 1);
+        Assert.Equal(2, cut.Instance.KatalogWahl.Anzahl);
+        cut.Find(".epos-knopf--bearbeiten-katalog").Click();
+
+        Assert.False(cut.Instance.EditorOffen);           // mehrere Saetze: nicht der Einzeleditor
+        var sb = cut.FindComponent<Satzbearbeitung>();
+        Assert.Equal(2, sb.Instance.Aktiv.Count);
+        Assert.Contains(string.Format(Resource.Culture, Resource.SATZBEARB_BLATT, 1, 2),
+                        cut.Find(".epos-satzbearbeitung-blaetter").TextContent);
+        Assert.Equal(string.Format(Resource.Culture, Resource.SATZBEARB_TITEL_KATALOG_N, 2),
+                     cut.Find(".epos-ueberlagerung-titel").TextContent);
+
+        // Hersteller im ersten Satz aendern und „fuer alle gewaehlten setzen".
+        cut.Find(".epos-satzbearbeitung input[type=text]:not([readonly])").Input("Neuwerk");
+        cut.FindAll(".epos-satzbearbeitung-fueralle input")[0].Change(true);
+
+        // Blaettern zeigt den zweiten Satz mit dem uebertragenen Wert.
+        cut.Find(".epos-satzbearbeitung-blaetter button:last-child").Click();
+        Assert.Equal(1, sb.Instance.Index);
+        Assert.Equal("Neuwerk", sb.Instance.Felder[1].First(f => f.Schluessel == KatalogBrowserProfil.FeldFirma).Wert);
+
+        cut.Find(".epos-satzbearbeitung-speichern").Click();
+
+        Assert.Equal(new[] { 11, 12 }, gespeichert.Select(g => g.Id).ToArray());
+        Assert.All(gespeichert, g => Assert.Equal("Neuwerk", g.Felder.First(f => f.Schluessel == KatalogBrowserProfil.FeldFirma).Wert));
+        Assert.Null(cut.Instance.Bearbeitung);
+    }
+
+    [Fact]
+    public void S2a_Gesperrte_Katalogsaetze_werden_uebersprungen_und_genannt()
+    {
+        var cut = Aufbauen(katalogsatzWege: Wege(), katalogzeilen: () => MitSchloss(12));
+
+        KatalogsatzWaehlen(cut);   // AW1: die Katalogknoepfe wirken, wenn ein Katalogsatz gewaehlt ist
+        KatalogAnkreuzen(cut, 0, 1);
+        cut.Find(".epos-knopf--bearbeiten-katalog").Click();
+
+        var sb = cut.FindComponent<Satzbearbeitung>();
+        Assert.Equal(11, Assert.Single(sb.Instance.Aktiv).Id);
+        Assert.Contains("„Kessel B“", cut.Find(".epos-satzbearbeitung-hinweis--uebersprungen").TextContent);
+        Assert.False(sb.Instance.NurLesend);
+    }
+
+    /// <summary>UeS1: Ein gesperrter Katalogsatz allein öffnet die Satz-Überlagerung nur lesend — „Schließen", „Erst Schloss aufheben".</summary>
+    [Fact]
+    public void S2a_Ein_gesperrter_Katalogsatz_allein_oeffnet_nur_lesend()
+    {
+        var cut = Aufbauen(katalogsatzWege: Wege(), katalogzeilen: () => MitSchloss(11),
+                           katalogfelder: _ => Felder(), katalogfelderSpeichern: (_, _) => new KatalogSpeicherErgebnis(true, "ok", ""),
+                           editorGaben: _ => new Dictionary<string, object>());
+
+        KatalogsatzWaehlen(cut);
+        cut.Find(".epos-knopf--bearbeiten-katalog").Click();
+
+        Assert.False(cut.Instance.EditorOffen);
+        Assert.Null(cut.Instance.Bearbeitung);
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Contains(Resource.ADM_SCHLOSS_ERST_AUFHEBEN, cut.Find(".epos-satzueberlagerung-hinweis").TextContent);
+        Assert.Empty(cut.FindAll(".epos-satzueberlagerung-ok"));
+        Assert.Empty(cut.FindAll(".epos-satzueberlagerung-koerper input[type=text]:not([readonly])"));
+        cut.Find(".epos-satzueberlagerung-schliessen").Click();
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
+    }
+
+    [Fact]
+    public void S2a_Ein_abgelehntes_Sammelspeichern_bleibt_offen_und_nennt_den_Grund()
+    {
+        var cut = Aufbauen(katalogsatzWege: Wege(ergebnis: new KatalogSpeicherErgebnis(false, "„Kessel B“ ist gesperrt.", "")));
+
+        KatalogsatzWaehlen(cut);   // AW1: die Katalogknoepfe wirken, wenn ein Katalogsatz gewaehlt ist
+        KatalogAnkreuzen(cut, 0, 1);
+        cut.Find(".epos-knopf--bearbeiten-katalog").Click();
+        cut.Find(".epos-satzbearbeitung input[type=text]:not([readonly])").Input("Neuwerk");
+        cut.Find(".epos-satzbearbeitung-speichern").Click();
+
+        Assert.NotNull(cut.Instance.Bearbeitung);
+        Assert.Contains("gesperrt", cut.Find(".epos-satzbearbeitung-meldung").TextContent);
+    }
+
+    [Fact]
+    public void S2a_Enter_im_Katalog_uebernimmt_und_die_Sammeluebernahme_fragt_je_Gruppe_einmal()
+    {
+        var aufgenommen = new List<int>();
+        var cut = Aufbauen(aufnehmen: (id, _) =>
+        {
+            aufgenommen.Add(id);
+            return new AufnahmeErgebnis(Zeile(20 + id, "Neu " + id, 300 + id));
+        });
+
+        // Enter (und Doppelklick) melden sich ueber das Skript beim Baustein.
+        KatalogsatzWaehlen(cut);
+        var baustein = cut.FindComponent<EPOS.UI.Bausteine.Zweispaltenauswahl>();
+        cut.InvokeAsync(() => baustein.Instance.ListenTaste("Katalog", "Enter"));
+        Assert.True(cut.Instance.Traegerwahl);
+        cut.Find(".epos-ueberlagerung").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.Empty(aufgenommen);
+
+        // Zwei angekreuzte Saetze derselben Traegergruppe: EINE Traegerwahl, zwei Aufnahmen.
+        KatalogAnkreuzen(cut, 0, 1);
+        cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
+        Assert.True(cut.Instance.Traegerwahl);
+        var traeger = cut.FindComponent<EnergietraegerVarianteDialog>();
+        cut.InvokeAsync(() => traeger.Instance.Geschlossen.InvokeAsync(new EnergietraegerVarianteErgebnis(3, "Erdgas E", "Var")));
+
+        Assert.False(cut.Instance.Traegerwahl);
+        Assert.Equal(new[] { 11, 12 }, aufgenommen.ToArray());
+        Assert.Equal(0, cut.Instance.KatalogWahl.Anzahl);
+    }
+
+    [Fact]
+    public void S2a_Entfernen_wirkt_auf_alle_gewaehlten_Projektzeilen()
+    {
+        var entfernt = new List<string>();
+        var zeilen = new List<ErzeugerZeile> { Zeile(1, "Kessel A", 100), Zeile(2, "Kessel B", 101), Zeile(3, "Kessel C", 102) };
+        var cut = Aufbauen(zeilen, entfernen: z => entfernt.Add(z.Bezeichner));
+
+        var kaestchen = cut.FindAll(".epos-raster")[0].QuerySelectorAll("td .epos-wahlkaestchen");
+        kaestchen[0].Click();
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll("td .epos-wahlkaestchen")[2].Click();
+        Assert.Equal(2, cut.Instance.ProjektWahl.Anzahl);
+
+        cut.Find(".epos-zweispalten-knopf--entfernen").Click();
+
+        Assert.Equal(new[] { "Kessel A", "Kessel C" }, entfernt.ToArray());
+        Assert.Equal("Kessel B", Assert.Single(zeilen).Bezeichner);
+    }
+
+    [Fact]
+    public void S2a_Loeschen_mehrerer_nennt_Zahl_und_Namen_und_ueberspringt_gesperrte()
+    {
+        var geloescht = new List<int>();
+        var cut = Aufbauen(katalogzeilen: () => MitSchloss(12), katalogLoeschen: id => { geloescht.Add(id); return true; });
+
+        KatalogsatzWaehlen(cut);   // AW1: die Katalogknoepfe wirken, wenn ein Katalogsatz gewaehlt ist
+        KatalogAnkreuzen(cut, 0, 1);
+        cut.Find(".epos-knopf--loeschen").Click();
+        var frage = cut.Find(".epos-rueckfrage").TextContent;
+        Assert.Contains("\"Kessel A\"", frage);
+        Assert.Contains(string.Format(Resource.Culture, Resource.SATZBEARB_UEBERSPRUNGEN, "„Kessel B“"), frage);
+    }
+
+    /// <summary>
+    /// <b>„Bearbeiten…" bleibt gesperrt, solange kein Satz gewählt ist</b> — die
+    /// Sperre ist mit dem Knopf an den gewählten Satz gewandert (AW1), nicht verschwunden.
     /// </summary>
     [Fact]
     public void Bearbeiten_bleibt_in_der_Knopfzeile_ohne_Katalogsatz_gesperrt()
     {
-        var cut = Aufbauen(editorGaben: _ => new Dictionary<string, object>());
+        var cut = Aufbauen(new List<ErzeugerZeile>(), editorGaben: _ => new Dictionary<string, object>());
 
         Assert.True(Knopf(cut, "Bearbeiten...").HasAttribute("disabled"));
 
@@ -1156,14 +1716,15 @@ public class HeizkesselDialogTests : EposBunitContext
     public void Brennstoff_Variante_steht_unmittelbar_unter_Brennstoff_Typ()
     {
         var cut = Aufbauen();
+        Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
 
-        var paar = cut.Find(".epos-formularraster > div.epos-feld--breit");
-        var felder = paar.QuerySelectorAll(".epos-feld");
-
-        Assert.Equal(2, felder.Length);
-        Assert.Equal("Brennstoff Typ:", felder[0].QuerySelector(".epos-feld-text")!.TextContent);
-        Assert.Equal("Brennstoff Variante:", felder[1].QuerySelector(".epos-feld-text")!.TextContent);
-        Assert.NotNull(felder[1].QuerySelector("select"));
+        // WP1b: In der zweispaltigen Satz-Ueberlagerung steht „Brennstoff Typ" rechts bei den Kenndaten (nur lesen)
+        // und die Variante links unter den Projektfeldern - kein Paar mehr im Raster der Kenndaten.
+        Assert.Empty(cut.FindAll(".epos-formularraster > div.epos-feld--breit"));
+        var typ = cut.FindAll(".epos-satz-zweispaltig-rechts .epos-feld-text").Select(e => e.TextContent).ToList();
+        Assert.Contains("Brennstoff Typ:", typ);
+        var variante = cut.Find(".epos-satz-zweispaltig-links select").Closest(".epos-feld")!;
+        Assert.Equal("Brennstoff Variante:", variante.QuerySelector(".epos-feld-text")!.TextContent);
 
         // Und sie steht NICHT mehr ein zweites Mal weiter unten.
         Assert.Single(cut.FindAll(".epos-formularraster select"));
@@ -1182,6 +1743,7 @@ public class HeizkesselDialogTests : EposBunitContext
             .Add(x => x.Katalogzeilen, Katalogzeilen)
             .Add(x => x.Filterstandvorgabe, _filterstand)
             .Add(x => x.Varianten, _ => new[] { (5, "Erdgas E Variante") }));
+            Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
 
         // Kein ProjektDetail: Der Detailblock ist leer, ein Paarblock entsteht nicht.
         Assert.Empty(cut.FindAll(".epos-formularraster > div.epos-feld--breit"));
@@ -1279,16 +1841,19 @@ public class HeizkesselDialogTests : EposBunitContext
             });
 
         KatalogsatzWaehlen(cut);
+        Satz(cut);   // UeS2: „Alle Daten" stehen in der Satz-Ueberlagerung
 
-        KiFeldzugang invest = KiMaskenbruecke.Feldzugang(KiMaskennamen.HEIZKESSEL_PROJEKT,
-                                                         "katalog_investitionskosten");
-        Assert.NotNull(invest);
-        Assert.Equal(12000.0, invest.Lesen());
-        Assert.True(invest.Setzbar);
+        // Welle KB-4: Das Kostenfeld des Aufklappers ist entfallen; gesetzt wird ein
+        // Gerätefeld, das der Aufklapper noch schreibt (Raumbedarf).
+        KiFeldzugang raum = KiMaskenbruecke.Feldzugang(KiMaskennamen.HEIZKESSEL_PROJEKT,
+                                                       "katalog_raumbedarf");
+        Assert.NotNull(raum);
+        Assert.Equal(12.0, raum.Lesen());
+        Assert.True(raum.Setzbar);
 
-        KiFeldumsetzung u = KiFeldwandler.Wandle(invest, "15000");
+        KiFeldumsetzung u = KiFeldwandler.Wandle(raum, "15000");
         Assert.True(u.Ok, u.Grund);
-        invest.Setzen(u.Wert);
+        raum.Setzen(u.Wert);
         cut.Render();
 
         Assert.Equal("15000", cut.Find(".epos-modulparameter input[inputmode=decimal]")
@@ -1299,7 +1864,7 @@ public class HeizkesselDialogTests : EposBunitContext
         Assert.True(ergebnis.Erfolg, ergebnis.Text);
         Assert.Equal("Kessel A", name);
         Assert.Equal("15000",
-            geschrieben!.First(f => f.Schluessel == KatalogBrowserProfil.FeldInvestitionskosten).Wert);
+            geschrieben!.First(f => f.Schluessel == KatalogBrowserProfil.FeldRaumbedarf).Wert);
     }
 
     /// <summary>
@@ -1339,6 +1904,7 @@ public class HeizkesselDialogTests : EposBunitContext
                            katalogfelderSpeichern: (n, _) => new KatalogSpeicherErgebnis(true, "", n));
 
         KatalogsatzWaehlen(cut);
+        Satz(cut);   // UeS2: „Alle Daten" stehen in der Satz-Ueberlagerung
         cut.Find(".epos-modulparameter-knopf").Click();
 
         KiFeldzugang firma = KiMaskenbruecke.Feldzugang(KiMaskennamen.HEIZKESSEL_PROJEKT, "katalog_firma");
@@ -1363,8 +1929,9 @@ public class HeizkesselDialogTests : EposBunitContext
         ErzeugerZeile zeile = Zeile(1, "Kessel A", 100);
         zeile.Senken = "Senken: Heizkreis (Heizung + Warmwasser); Prozesswärme";
         var cut = Aufbauen(zeilen: new List<ErzeugerZeile> { zeile });
+        Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
 
-        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-projektzeile")[0].Click();
 
         Assert.Contains(cut.FindAll(".epos-formularraster .epos-herleitung-text"),
                         e => e.TextContent == zeile.Senken);
@@ -1375,10 +1942,725 @@ public class HeizkesselDialogTests : EposBunitContext
     public void Ohne_Senkentext_steht_keine_Senkenzeile()
     {
         var cut = Aufbauen();
+        Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
 
-        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-projektzeile")[0].Click();
 
         Assert.DoesNotContain(cut.FindAll(".epos-herleitung-text"),
                               e => e.TextContent.StartsWith("Senken", StringComparison.Ordinal));
+    }
+
+    // =================================================================================
+    // Auslegung für Verteilung und Vorbelegung (Anwenderauftrag 30.09.2026)
+    // =================================================================================
+
+    /// <summary>Die Gruppe „Auslegung für Verteilung" im Detailraster.</summary>
+    private static AngleSharp.Dom.IElement Auslegungsgruppe(IRenderedComponent<HeizkesselDialog> cut)
+        => cut.FindAll(".epos-formularraster .epos-formulargruppe")
+              .Single(g => g.QuerySelector(".epos-formulargruppe-titel")?.TextContent == "Auslegung für Verteilung");
+
+    /// <summary>
+    /// <b>Die Anordnung</b>: Vorlauf und Rücklauf stehen als eigene Gruppe unter einer
+    /// Überschrift über alle Spalten — Überschrift, Vorlauf, Rücklauf unmittelbar
+    /// hintereinander, keines der beiden Felder über die volle Breite. Damit beginnen sie
+    /// eine neue Rasterzeile und stehen nebeneinander (zwei Feldpaare je Zeile). Darunter
+    /// die Herkunft der Vorbelegung, dann die Senken; der Brennwert-Schalter bleibt
+    /// außerhalb bei den Katalogdaten.
+    /// </summary>
+    [Fact]
+    public void Vorlauf_und_Ruecklauf_stehen_als_Gruppe_nebeneinander_mit_Herleitung_und_Senken()
+    {
+        ErzeugerZeile zeile = Zeile(1, "Kessel A", 100);
+        zeile.TemperaturHerleitung = "Vorgabe 70/50 °C — so rechnet die Simulation ohne Eintrag.";
+        zeile.Senken = "Senken: Heizkreis (Heizung + Warmwasser)";
+        var cut = Aufbauen(zeilen: new List<ErzeugerZeile> { zeile });
+        Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
+
+        var gruppe = Auslegungsgruppe(cut);
+        var kinder = gruppe.Children.ToList();
+
+        Assert.Equal(5, kinder.Count);
+        Assert.Contains("epos-formulargruppe-titel", kinder[0].ClassList);
+        Assert.Equal("Vorlauf:", kinder[1].QuerySelector(".epos-feld-text")!.TextContent);
+        Assert.Equal("Rücklauf:", kinder[2].QuerySelector(".epos-feld-text")!.TextContent);
+        Assert.DoesNotContain("epos-feld--breit", kinder[1].ClassList);
+        Assert.DoesNotContain("epos-feld--breit", kinder[2].ClassList);
+        Assert.Equal(zeile.TemperaturHerleitung, kinder[3].QuerySelector(".epos-herleitung-text")!.TextContent);
+        Assert.Equal(zeile.Senken, kinder[4].QuerySelector(".epos-herleitung-text")!.TextContent);
+
+        // Genau die zwei Temperaturfelder; der Brennwert-Schalter steht außerhalb der Gruppe.
+        Assert.Equal(2, gruppe.QuerySelectorAll("input[inputmode=numeric]").Length);
+        Assert.Empty(gruppe.QuerySelectorAll("input[type=checkbox]"));
+        Assert.Single(Satz(cut).QuerySelectorAll("input[type=checkbox]"));
+    }
+
+    /// <summary>Ohne Vorbelegung (das Paar ist das der Anlage) steht nur die Senkenzeile.</summary>
+    [Fact]
+    public void Ohne_Vorbelegung_steht_keine_Herkunftszeile()
+    {
+        var cut = Aufbauen();
+        Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
+
+        var gruppe = Auslegungsgruppe(cut);
+
+        Assert.Empty(gruppe.QuerySelectorAll(".epos-herleitung"));
+        Assert.Equal(new[] { "Vorlauf:", "Rücklauf:" },
+                     gruppe.QuerySelectorAll(".epos-feld-text").Select(e => e.TextContent));
+    }
+
+    /// <summary>
+    /// <b>Die Vorbelegung</b>, wie die Hülle sie baut (Kern:
+    /// <c>AnlagenTemperaturen.KesselPaar</c> und <c>Herleitung</c>): ohne Paar an Anlage und
+    /// Kessel die Vorgabe 70/50 °C, mit Kesselpaar dessen Werte — jeweils in den Feldern und
+    /// mit ihrer Herkunft darunter.
+    /// </summary>
+    [Theory]
+    [InlineData(null, null, "70", "50", "Vorgabe 70/50 °C — so rechnet die Simulation ohne Eintrag.")]
+    [InlineData(85, 65, "85", "65", "Aus dem Kesseldatensatz: 85/65 °C — so rechnet die Simulation ohne Eintrag.")]
+    public void Ein_leeres_Paar_zeigt_die_Vorbelegung_des_Kerns(
+        int? kesselVorlauf, int? kesselRuecklauf, string vorlauf, string ruecklauf, string herleitung)
+    {
+        AnlagenTemperaturen.PaarVorbelegung p = AnlagenTemperaturen.KesselPaar(0, 0, kesselVorlauf, kesselRuecklauf);
+        ErzeugerZeile zeile = Zeile(1, "Kessel A", 100);
+        zeile.Vorlauf = p.Vorlauf;
+        zeile.Ruecklauf = p.Ruecklauf;
+        zeile.TemperaturHerleitung = AnlagenTemperaturen.Herleitung(p);
+
+        var cut = Aufbauen(zeilen: new List<ErzeugerZeile> { zeile });
+        Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
+
+        var gruppe = Auslegungsgruppe(cut);
+        var felder = gruppe.QuerySelectorAll("input[inputmode=numeric]");
+        Assert.Equal(vorlauf, felder[0].GetAttribute("value"));
+        Assert.Equal(ruecklauf, felder[1].GetAttribute("value"));
+        Assert.Equal(herleitung, gruppe.QuerySelector(".epos-herleitung-text")!.TextContent);
+    }
+
+    /// <summary>
+    /// <b>Der Weg der Hülle</b> (<c>TemperaturVorbelegung.Kessel</c>, den
+    /// <c>HeizkesselHuelle</c> beim Aufbau und beim Aufnehmen ruft): Ein Modell ohne Paar und
+    /// ohne Kessel bekommt 70/50 °C INS MODELL — damit speichert OK es — und die Zeile dazu;
+    /// ein gepflegtes Paar bleibt, wie es ist, ohne Zeile.
+    /// </summary>
+    [Fact]
+    public void Die_Huelle_legt_die_Vorbelegung_ins_Modell()
+    {
+        var ohne = new WErzeugerModel { ID = 100001, ID_Type = WizardItemClass.KESSEL_TYP };
+        Assert.Equal("Vorgabe 70/50 °C — so rechnet die Simulation ohne Eintrag.",
+                     TemperaturVorbelegung.Kessel(ohne, wizard: false));
+        Assert.Equal((70, 50), (ohne.Vorlauf, ohne.Ruecklauf));
+
+        var gepflegt = new WErzeugerModel { ID = 7, ID_Type = WizardItemClass.KESSEL_TYP, Vorlauf = 80, Ruecklauf = 60 };
+        Assert.Equal("", TemperaturVorbelegung.Kessel(gepflegt, wizard: true));
+        Assert.Equal((80, 60), (gepflegt.Vorlauf, gepflegt.Ruecklauf));
+    }
+
+    /// <summary>
+    /// Eine Eingabe macht das Paar zu dem des Anwenders: Die Herkunftszeile verschwindet,
+    /// der Wert geht ins Modell, die Senkenzeile bleibt.
+    /// </summary>
+    [Fact]
+    public void Eine_Eingabe_nimmt_die_Herkunftszeile_weg()
+    {
+        ErzeugerZeile zeile = Zeile(1, "Kessel A", 100);
+        zeile.TemperaturHerleitung = "Vorgabe 70/50 °C — so rechnet die Simulation ohne Eintrag.";
+        zeile.Senken = "Senken: Heizkreis (Heizung + Warmwasser)";
+        var uebernommen = new List<ErzeugerZeile>();
+        var cut = Aufbauen(zeilen: new List<ErzeugerZeile> { zeile }, uebernehmen: z => uebernommen.Add(z));
+        Satz(cut);   // UeS2: das Fragment steht in der Satz-Ueberlagerung
+
+        Auslegungsgruppe(cut).QuerySelectorAll("input[inputmode=numeric]")[1].Input("45");
+
+        var gruppe = Auslegungsgruppe(cut);
+        Assert.Equal("", zeile.TemperaturHerleitung);
+        Assert.Equal(45, zeile.Ruecklauf);
+        Assert.Single(uebernommen);
+        Assert.Equal(new[] { zeile.Senken },
+                     gruppe.QuerySelectorAll(".epos-herleitung-text").Select(e => e.TextContent));
+    }
+
+    // =================================================================================
+    // Katalogauswahl V1, Stufe 2b: Rückweg „In die Datenbank übernehmen…" (5.2, KA‑E‑9)
+    // =================================================================================
+
+    /// <summary>Rückwegwege mit festen Zeilen; <paramref name="geschrieben"/> fängt die Wahl.</summary>
+    private static Rueckwegwege Rueckweg(IReadOnlyList<Rueckwegvorschlag> zeilen, List<Rueckwegwahl>? geschrieben = null,
+                                         Func<string, bool>? belegt = null, KatalogSpeicherErgebnis? ergebnis = null,
+                                         List<IReadOnlyList<int>>? gefragt = null)
+        => new()
+        {
+            Vorschau = ids => { gefragt?.Add(ids); return zeilen; },
+            NameBelegt = belegt ?? (_ => false),
+            Uebernehmen = w => { geschrieben?.AddRange(w); return ergebnis ?? new KatalogSpeicherErgebnis(true, "2 Sätze übernommen", ""); },
+        };
+
+    [Fact]
+    public void S2b_Der_Knopf_steht_nach_Bearbeiten_in_der_Projektleiste_und_wirkt_auf_die_Auswahl()
+    {
+        var gefragt = new List<IReadOnlyList<int>>();
+        var zeilen = new List<ErzeugerZeile> { Zeile(1, "Kessel A", 100), Zeile(2, "Kessel B", 101), Zeile(3, "Kessel A", 100) };
+        var cut = Aufbauen(zeilen, projektsatzWege: Wege(),
+                           rueckwegWege: Rueckweg(new[] { new Rueckwegvorschlag(100, "Kessel A", "", Rueckwegsperre.UrsprungUnbekannt, "Kessel A") },
+                                                  gefragt: gefragt));
+
+        // AW1: „Bearbeiten…" steht nicht mehr in der Projektleiste - der Rueckweg ist ihr erster Knopf.
+        var leiste = cut.Find(".epos-zweispalten-bereich--projekt > .epos-zweispalten-kopfleiste");
+        var knoepfe = leiste.QuerySelectorAll("button").ToList();
+        int bearbeiten = knoepfe.FindIndex(k => k.ClassList.Contains("epos-knopf--bearbeiten-projekt"));
+        int rueckweg = knoepfe.FindIndex(k => k.ClassList.Contains("epos-knopf--rueckweg"));
+        Assert.True(bearbeiten < 0 && rueckweg == 0);
+        Assert.Equal(Resource.KATRUECK_BTN, knoepfe[rueckweg].TextContent.Trim());
+
+        // Drei Zeilen, zwei Geraete: gefragt wird je Geraet einmal.
+        foreach (int i in new[] { 0, 1, 2 })
+            cut.FindAll(".epos-raster")[0].QuerySelectorAll("td .epos-wahlkaestchen")[i].Click();
+        cut.Find(".epos-knopf--rueckweg").Click();
+        Assert.Equal(new[] { 100, 101 }, Assert.Single(gefragt).ToArray());
+        Assert.NotNull(cut.Instance.Rueckweg);
+    }
+
+    [Fact]
+    public void S2b_Die_Rueckfrage_steht_auf_neu_und_graut_ueberschreiben_mit_Grund_aus()
+    {
+        var zeilen = new[]
+        {
+            new Rueckwegvorschlag(100, "Kessel A", "Kessel A", Rueckwegsperre.Keine, "Kessel A (Projekt)"),
+            new Rueckwegvorschlag(101, "Kessel B", "Kessel B", Rueckwegsperre.Gesperrt, "Kessel B (Projekt)"),
+            new Rueckwegvorschlag(102, "Kessel C", "", Rueckwegsperre.UrsprungFehlt, "Kessel C"),
+            new Rueckwegvorschlag(103, "Kessel D", "", Rueckwegsperre.UrsprungUnbekannt, "Kessel D"),
+        };
+        var cut = Aufbauen(rueckwegWege: Rueckweg(zeilen));
+        cut.Find(".epos-knopf--rueckweg").Click();
+
+        var kopf = cut.Find(".epos-ueberlagerung-kopf");
+        Assert.Equal(string.Format(Resource.Culture, Resource.KATRUECK_TITEL_N, 4), kopf.QuerySelector(".epos-ueberlagerung-titel")!.TextContent);
+        var reihen = cut.FindAll(".epos-rueckweg-zeile");
+        Assert.Equal(4, reihen.Count);
+        Assert.All(reihen, r => Assert.True(r.QuerySelector(".epos-rueckweg-neu")!.HasAttribute("checked")));
+        Assert.False(reihen[0].QuerySelector(".epos-rueckweg-ueber")!.HasAttribute("disabled"));
+        Assert.Contains(Resource.KATRUECK_GRUND_GESPERRT, reihen[1].TextContent);
+        Assert.Contains(Resource.KATRUECK_GRUND_FEHLT, reihen[2].TextContent);
+        Assert.Contains(Resource.KATRUECK_GRUND_UNBEKANNT, reihen[3].TextContent);
+        foreach (int i in new[] { 1, 2, 3 }) Assert.True(reihen[i].QuerySelector(".epos-rueckweg-ueber")!.HasAttribute("disabled"));
+        Assert.Equal("Kessel A (Projekt)", reihen[0].QuerySelector(".epos-rueckweg-namensfeld")!.GetAttribute("value"));
+        Assert.False(cut.Find(".epos-rueckweg-uebernehmen").HasAttribute("disabled"));
+        Assert.Contains(Resource.KATRUECK_HINWEIS_KOSTEN, cut.Find(".epos-rueckweg").TextContent);
+    }
+
+    [Fact]
+    public void S2b_Ein_belegter_oder_doppelter_Name_sperrt_Uebernehmen_mit_Hinweis_am_Feld()
+    {
+        var zeilen = new[]
+        {
+            new Rueckwegvorschlag(100, "Kessel A", "", Rueckwegsperre.UrsprungUnbekannt, "Kessel A (Projekt)"),
+            new Rueckwegvorschlag(101, "Kessel B", "", Rueckwegsperre.UrsprungUnbekannt, "Kessel B"),
+        };
+        var cut = Aufbauen(rueckwegWege: Rueckweg(zeilen, belegt: n => n == "Kessel A"));
+        cut.Find(".epos-knopf--rueckweg").Click();
+
+        cut.FindAll(".epos-rueckweg-namensfeld")[0].Input("Kessel A");
+        Assert.Contains(Resource.KATRUECK_HINWEIS_NAME_BELEGT, cut.FindAll(".epos-rueckweg-zeile")[0].TextContent);
+        Assert.True(cut.Find(".epos-rueckweg-uebernehmen").HasAttribute("disabled"));
+
+        cut.FindAll(".epos-rueckweg-namensfeld")[0].Input("Kessel B");
+        Assert.Contains(Resource.KATRUECK_HINWEIS_NAME_DOPPELT, cut.FindAll(".epos-rueckweg-zeile")[0].TextContent);
+        Assert.True(cut.Find(".epos-rueckweg-uebernehmen").HasAttribute("disabled"));
+
+        cut.FindAll(".epos-rueckweg-namensfeld")[0].Input("Kessel A neu");
+        Assert.Empty(cut.FindAll(".epos-rueckweg-namenshinweis"));
+        Assert.False(cut.Find(".epos-rueckweg-uebernehmen").HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public void S2b_Mehrfach_fuer_alle_ueberschreiben_faellt_je_Zeile_auf_neu_zurueck_und_nennt_sie()
+    {
+        var geschrieben = new List<Rueckwegwahl>();
+        var zeilen = new[]
+        {
+            new Rueckwegvorschlag(100, "Kessel A", "Kessel A Katalog", Rueckwegsperre.Keine, "Kessel A (Projekt)"),
+            new Rueckwegvorschlag(101, "Kessel B", "", Rueckwegsperre.UrsprungUnbekannt, "Kessel B"),
+        };
+        var cut = Aufbauen(rueckwegWege: Rueckweg(zeilen, geschrieben));
+        cut.Find(".epos-knopf--rueckweg").Click();
+
+        cut.Find(".epos-rueckweg-alle-ueber").Change(true);
+
+        var reihen = cut.FindAll(".epos-rueckweg-zeile");
+        Assert.True(reihen[0].QuerySelector(".epos-rueckweg-ueber")!.HasAttribute("checked"));
+        Assert.True(reihen[1].QuerySelector(".epos-rueckweg-neu")!.HasAttribute("checked"));
+        var feld = reihen[0].QuerySelector(".epos-rueckweg-namensfeld")!;
+        Assert.True(feld.HasAttribute("disabled"));
+        Assert.Equal("Kessel A Katalog", feld.GetAttribute("value"));
+        Assert.Contains("„Kessel B“", cut.Find(".epos-rueckweg-rueckfall").TextContent);
+
+        cut.Find(".epos-rueckweg-uebernehmen").Click();
+
+        Assert.Equal(new[] { new Rueckwegwahl(100, true, ""), new Rueckwegwahl(101, false, "Kessel B") }, geschrieben.ToArray());
+        Assert.Null(cut.Instance.Rueckweg);
+        Assert.Equal("2 Sätze übernommen", cut.Instance.Meldung);
+    }
+
+    [Fact]
+    public void S2b_Eine_Absage_des_Kerns_bleibt_in_der_Rueckfrage_stehen()
+    {
+        var zeilen = new[] { new Rueckwegvorschlag(100, "Kessel A", "", Rueckwegsperre.UrsprungUnbekannt, "Kessel A") };
+        var cut = Aufbauen(rueckwegWege: Rueckweg(zeilen, ergebnis: new KatalogSpeicherErgebnis(false, "Name belegt. Es wurde nichts übernommen.", "")));
+        cut.Find(".epos-knopf--rueckweg").Click();
+        cut.Find(".epos-rueckweg-uebernehmen").Click();
+
+        Assert.NotNull(cut.Instance.Rueckweg);
+        Assert.Equal("Name belegt. Es wurde nichts übernommen.", cut.Find(".epos-rueckweg-meldung").TextContent);
+        cut.Find(".epos-rueckweg-fuss .epos-knopf:not(.epos-knopf--primaer)").Click();
+        Assert.Null(cut.Instance.Rueckweg);
+    }
+
+    [Fact]
+    public void S2b_Ohne_Wege_kein_Knopf()
+    {
+        var cut = Aufbauen(projektsatzWege: Wege());
+        Assert.Empty(cut.FindAll(".epos-knopf--rueckweg"));
+    }
+
+    /// <summary>
+    /// DZ1‑N2: Nach „In das Projekt übernehmen“ folgt die Mehrfachwahl der neuen Zeile —
+    /// „Aus dem Projekt entfernen“ entfernt die eben übernommene Zeile, nicht die zuvor angeklickte.
+    /// </summary>
+    [Fact]
+    public void DZ1N2_Uebernehmen_dann_Entfernen_entfernt_die_eben_uebernommene_Zeile()
+    {
+        var entfernt = new List<int>();
+        var zeilen = new List<ErzeugerZeile> { Zeile(1, "Kessel A", 100), Zeile(2, "Kessel B", 101) };
+        var cut = Aufbauen(zeilen, entfernen: z => entfernt.Add(z.Schluessel),
+            aufnehmen: (id, _) => new AufnahmeErgebnis(Zeile(30 + id, "Neu " + id, 300 + id)));
+
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll("td .epos-wahlkaestchen")[0].Click();
+        Assert.Equal(new[] { "1" }, cut.Instance.ProjektWahl.Gewaehlte);
+
+        KatalogAnkreuzen(cut, 0);
+        cut.FindAll(".epos-zweispalten-knopf--uebernehmen")[0].Click();
+        var traeger = cut.FindComponent<EnergietraegerVarianteDialog>();
+        cut.InvokeAsync(() => traeger.Instance.Geschlossen.InvokeAsync(new EnergietraegerVarianteErgebnis(3, "Erdgas E", "Var")));
+
+        Assert.Equal(3, zeilen.Count);
+        int neu = zeilen[2].Schluessel;
+        Assert.Equal(neu, cut.Instance.Projektzeile!.Schluessel);
+        Assert.Equal(new[] { neu.ToString(System.Globalization.CultureInfo.InvariantCulture) }, cut.Instance.ProjektWahl.Gewaehlte);
+
+        cut.FindAll(".epos-zweispalten-knopf--entfernen")[0].Click();
+
+        Assert.Equal(new[] { neu }, entfernt.ToArray());
+        Assert.Equal(new[] { 1, 2 }, zeilen.Select(z => z.Schluessel).ToArray());
+    }
+
+    // =================================================================================
+    // UeS2: Zusammenfassung der Detailzeile und Stift je Zeile (Anwenderentscheid 10.10.2026)
+    // =================================================================================
+
+    private static Dictionary<string, string> Angaben(IRenderedComponent<HeizkesselDialog> cut)
+        => cut.FindAll(".epos-satzzusammenfassung-angabe")
+              .ToDictionary(a => a.QuerySelector("dt")!.TextContent, a => a.QuerySelector("dd")!.TextContent);
+
+    [Fact]
+    public void UeS2_Die_Zusammenfassung_des_Projektsatzes_nennt_die_Anlagendaten()
+    {
+        var zeile = Zeile(1, "Kessel A", 100);
+        zeile.Senken = "Senken: Heizkreis, Trinkwarmwasser";
+        var cut = Aufbauen(zeilen: new() { zeile }, kostensumme: _ => (12345.0, 678.0),
+                           kostenOeffnen: (_, _) => Task.CompletedTask);
+
+        cut.Find(".epos-zweispalten-satzzeile").Click();
+
+        var angaben = Angaben(cut);
+        Assert.Equal("120 kWth", angaben[Resource.AUSWAHL_ZF_LEISTUNG]);   // UeS2b: aus dem Zahlwert des Details
+        Assert.Equal("70/50 °C", angaben[Resource.AUSWAHL_ZF_VORLAUF_RUECKLAUF]);
+        Assert.Equal("Erdgas E", angaben[Resource.AUSWAHL_ZF_BRENNSTOFF]);
+        Assert.Equal("Erdgas E Variante", angaben[Resource.AUSWAHL_ZF_TRAEGER]);
+        Assert.Equal(Resource.ALLG_BTN_JA, angaben[Resource.AUSWAHL_ZF_BRENNWERT]);
+        Assert.Equal("12.345 €", angaben[Resource.AUSWAHL_ZF_INVEST]);
+        Assert.Equal("678 €/a", angaben[Resource.AUSWAHL_ZF_BETRIEB]);
+        Assert.Equal("Heizkreis, Trinkwarmwasser", angaben[Resource.AUSWAHL_ZF_SENKEN]);
+        // Die Kostenknoepfe und die Felder stehen nicht in der Zusammenfassung, sondern in der Ueberlagerung.
+        Assert.Empty(cut.FindAll(KOSTENKNOEPFE));
+        Assert.Empty(cut.FindAll(".epos-formularraster"));
+        Assert.NotEmpty(Satz(cut).QuerySelectorAll(KOSTENKNOEPFE));
+    }
+
+    [Fact]
+    public void UeS2_Ohne_Kostenweg_nennt_die_Zusammenfassung_keine_Kosten()
+    {
+        var cut = Aufbauen();
+        cut.Find(".epos-zweispalten-satzzeile").Click();
+
+        var angaben = Angaben(cut);
+        Assert.False(angaben.ContainsKey(Resource.AUSWAHL_ZF_INVEST));
+        Assert.False(angaben.ContainsKey(Resource.AUSWAHL_ZF_BETRIEB));
+        Assert.True(angaben.ContainsKey(Resource.AUSWAHL_ZF_LEISTUNG));
+    }
+
+    [Fact]
+    public void UeS2_Die_Zusammenfassung_des_Katalogsatzes_nennt_die_Katalogspalten()
+    {
+        var cut = Aufbauen();
+        KatalogsatzWaehlen(cut);
+        cut.Find(".epos-zweispalten-satzzeile").Click();
+
+        var texte = cut.FindAll(".epos-satzzusammenfassung-angabe dd").Select(e => e.TextContent).ToList();
+        Assert.Contains("Vaillant", texte);
+        Assert.Contains("Erdgas E", texte);
+        Assert.Contains(texte, t => t.StartsWith("15") && t.EndsWith(" kW"));
+        Assert.Contains(texte, t => t.StartsWith("0") && t.Contains("97"));
+        Assert.Contains(Resource.ALLG_BTN_NEIN, texte);
+        Assert.DoesNotContain("Kessel A", texte);   // der Name steht im Kopf, nicht doppelt
+    }
+
+    [Fact]
+    public void UeS2_Der_Stift_der_Projektzeile_oeffnet_die_Projektkopie_in_der_Ueberlagerung()
+    {
+        var zeilen = new List<ErzeugerZeile> { Zeile(1, "Kessel A", 100), Zeile(2, "Kessel B", 200) };
+        var cut = Aufbauen(zeilen: zeilen, projektsatzWege: Wege());
+
+        var stifte = cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-zeilenstift");
+        Assert.Equal(2, stifte.Length);
+        stifte[1].Click();
+
+        Assert.Equal(200, cut.Instance.Projektzeile!.GeraetId);
+        Assert.Equal(0, cut.Instance.ProjektWahl.Anzahl);   // keine Kaestchen beruehrt
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Equal(Resource.AUSWAHL_MARKE_PROJEKTSATZ,
+                     cut.Find(".epos-ueberlagerung--satz .epos-ueberlagerung-kopf .epos-zweispalten-marke--satz").TextContent);
+        Assert.NotEmpty(cut.FindAll(".epos-satzueberlagerung-koerper .epos-modulparameter input[type=text]:not([readonly])"));
+        Assert.Single(cut.FindAll(".epos-satzueberlagerung-ok"));
+    }
+
+    [Fact]
+    public void UeS2_Ohne_Weg_der_Projektkopie_traegt_die_Projektliste_keinen_Stift()
+    {
+        var cut = Aufbauen();
+        Assert.Empty(cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-zeilenstift"));
+        Assert.Equal(2, cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenstift").Length);
+    }
+
+    [Fact]
+    public void UeS2_Der_Stift_einer_gesperrten_Katalogzeile_oeffnet_nur_lesend()
+    {
+        var cut = Aufbauen(katalogzeilen: () => MitSchloss(11),
+                           katalogfelder: _ => Felder(), katalogfelderSpeichern: (_, _) => new KatalogSpeicherErgebnis(true, "ok", ""),
+                           editorGaben: _ => new Dictionary<string, object>());
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenstift")[0].Click();
+
+        Assert.Equal("Kessel A", cut.Instance.Katalogzeile!.Bezeichner);
+        Assert.False(cut.Instance.EditorOffen);
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Contains(Resource.ADM_SCHLOSS_ERST_AUFHEBEN, cut.Find(".epos-satzueberlagerung-hinweis").TextContent);
+        Assert.Empty(cut.FindAll(".epos-satzueberlagerung-ok"));
+        Assert.Empty(cut.FindAll(".epos-satzueberlagerung-koerper input[type=text]:not([readonly])"));
+    }
+
+    [Fact]
+    public void UeS2_Der_Stift_einer_ungesperrten_Katalogzeile_oeffnet_den_Katalogeditor()
+    {
+        var cut = Aufbauen(katalogfelder: _ => Felder(),
+                           editorGaben: _ => new Dictionary<string, object>());
+
+        cut.FindAll(".epos-raster")[1].QuerySelectorAll(".epos-zeilenstift")[1].Click();
+
+        Assert.Equal("Kessel B", cut.Instance.Katalogzeile!.Bezeichner);
+        Assert.True(cut.Instance.EditorOffen);
+        Assert.False(cut.Instance.SatzUeberlagerungOffen);
+    }
+    /// <summary>
+    /// UeS2b: „Grundlagen" und „Berechnung" stehen im Kopf der Detailzeile — ohne Überlagerung
+    /// erreichbar; offen trägt die Überlagerung sie in ihrer Knopfzeile. Je Ansicht genau einmal.
+    /// </summary>
+    [Fact]
+    public void UeS2b_Die_Infoknoepfe_stehen_im_Kopf_der_Detailzeile_und_nie_doppelt()
+    {
+        var cut = Aufbauen(projektsatzWege: Wege());
+        string[] schluessel = { "Form_Heizkessel.Grundlagen", "Form_Heizkessel.Berechnung" };
+
+        foreach (string s in schluessel)
+            Assert.Single(cut.FindComponents<InfoKnopf>(), k => k.Instance.Schluessel == s);
+        Assert.Equal(2, cut.FindAll(".epos-zweispalten-satzkopf .epos-zweispalten-satzkopfknoepfe .epos-hilfepille").Count);
+
+        Satz(cut);
+        foreach (string s in schluessel)
+            Assert.Single(cut.FindComponents<InfoKnopf>(), k => k.Instance.Schluessel == s);
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satzkopfknoepfe"));
+        Assert.Equal(2, cut.FindAll(".epos-satzueberlagerung-koerper .epos-berechnungshilfe .epos-hilfepille").Count);
+    }
+
+    // =====================================================================
+    //  KT-8a: Kosten-Rückrufe über die Fangstelle
+    // =====================================================================
+
+    /// <summary>KT-8a: Wirft der Weg in die Kosten- oder Energieträgerverwaltung, nennt der Banner den Grund, das Protokoll hat einen Vermerk, der Dialog bleibt offen.</summary>
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void KT8a_wirft_der_Kostenweg_nennt_der_Banner_den_Grund(int knopf)
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var cut = Aufbauen(kostenOeffnen: (_, _) => throw new InvalidOperationException("Kostenverwaltung gesperrt"), energiekosten: _ => throw new InvalidOperationException("Kostenverwaltung gesperrt"));
+        Satz(cut);
+
+        cut.FindAll(".epos-kostenleiste button.epos-knopf")[knopf].Click();
+
+        Assert.Contains(cut.FindAll(".epos-warnbanner-text"), b => b.TextContent.Contains("Kostenverwaltung gesperrt"));
+        Assert.True(vermerke.Enthaelt("Kostenverwaltung gesperrt"));
+        Assert.NotEmpty(cut.FindAll(".epos-kostenleiste button.epos-knopf"));
+    }
+
+    [Fact]
+    public void KT8a_ohne_Ausnahme_zeigt_der_Kostenweg_keinen_Banner()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var cut = Aufbauen(kostenOeffnen: (_, _) => Task.CompletedTask, energiekosten: _ => Task.CompletedTask);
+        Satz(cut);
+
+        cut.FindAll(".epos-kostenleiste button.epos-knopf")[0].Click();
+
+        Assert.Empty(cut.FindAll(".epos-warnbanner-text"));
+        Assert.True(vermerke.Leer);
+    }
+
+    /// <summary>KT-8a: Wirft die Kostensumme, fehlt die Angabe, der Banner nennt den Grund, das Protokoll hat einen Vermerk.</summary>
+    [Fact]
+    public void KT8a_wirft_die_Kostensumme_nennt_der_Banner_den_Grund()
+    {
+        using var vermerke = new Ausnahmevermerke();
+        var cut = Aufbauen(kostensumme: _ => throw new InvalidOperationException("Kostenverwaltung gesperrt"));
+
+        Assert.Contains(cut.FindAll(".epos-warnbanner-text"), b => b.TextContent.Contains("Kostenverwaltung gesperrt"));
+        Assert.True(vermerke.Enthaelt("Kostenverwaltung gesperrt"));
+    }
+
+    // =================================================================================
+    // AW1: eine Wahl je Zeile, Knopfleiste am gewaehlten Satz (Anwenderentscheide 11.10.2026)
+    // =================================================================================
+
+    private static AngleSharp.Dom.IElement AmSatz(IRenderedComponent<HeizkesselDialog> cut, string klasse)
+        => cut.Find(".epos-zweispalten-satzknoepfe ." + klasse);
+
+    private static List<ErzeugerZeile> DreiZeilen()
+        => new() { Zeile(1, "Kessel A", 100), Zeile(2, "Kessel B", 101), Zeile(3, "Kessel C", 102) };
+
+    /// <summary>AW1: Die Projektliste hat keinen Wahlknopf mehr — die Zeile ist die Wahl, das Kästchen die Mehrfachwahl.</summary>
+    [Fact]
+    public void AW1_Die_Projektliste_traegt_keinen_Wahlknopf()
+    {
+        var cut = Aufbauen(DreiZeilen());
+        var liste = cut.FindAll(".epos-raster")[0];
+
+        Assert.Empty(liste.QuerySelectorAll(".epos-zeilenwahl, .epos-anlagenwahl, input[type=radio]"));
+        Assert.Equal(3, liste.QuerySelectorAll("td .epos-wahlkaestchen").Length);
+        Assert.Equal(3, liste.QuerySelectorAll("td.epos-spalte-zeilenzelle > .epos-zeilenzelle").Length);
+        Assert.DoesNotContain(liste.QuerySelectorAll("th"), th => th.TextContent.Trim() == "Wahl");
+    }
+
+    /// <summary>
+    /// AW1: Ein Klick in die Zeile wählt sie — farbig hervorgehoben mit der Klasse der Katalogliste,
+    /// <c>aria-current</c> an der Zelle, die Detailzeile nennt sie —, die Kästchen bleiben unberührt.
+    /// </summary>
+    [Fact]
+    public void AW1_Ein_Klick_in_die_Zeile_waehlt_und_hebt_hervor()
+    {
+        var cut = Aufbauen(DreiZeilen());
+
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-projektzeile")[1].Click();
+
+        var zeilen = cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr").ToList();
+        Assert.Single(zeilen, tr => tr.ClassList.Contains("epos-zeile--gewaehlt"));
+        Assert.Contains("epos-zeile--gewaehlt", zeilen[1].ClassList);
+        Assert.Equal("true", zeilen[1].QuerySelector(".epos-zeilenzelle")!.GetAttribute("aria-current"));
+        Assert.Equal("Kessel B", cut.Find(".epos-zweispalten-satzname").TextContent);
+        Assert.Equal(Resource.AUSWAHL_MARKE_PROJEKTSATZ, cut.Find(".epos-zweispalten-satzzeile .epos-zweispalten-marke--satz").TextContent);
+        Assert.Equal(0, cut.Instance.ProjektWahl.Anzahl);
+        Assert.NotNull(cut.Find(".epos-zweispalten-bereich--projekt .epos-zweispalten-inhalt--zeilenwahl"));
+    }
+
+    /// <summary>
+    /// KA‑E‑17: Ankreuzen wählt nicht — ist Zeile 1 gewählt, setzt das Kästchen von Zeile 2 nur ihr Kreuz;
+    /// Hervorhebung, <c>aria-current</c> und Detailzeile bleiben bei Zeile 1.
+    /// </summary>
+    [Fact]
+    public void KA_E_17_Ankreuzen_waehlt_nicht()
+    {
+        var cut = Aufbauen(DreiZeilen());
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-projektzeile")[0].Click();
+
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll("td .epos-wahlkaestchen")[1].Click();
+
+        var zeilen = cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr").ToList();
+        Assert.Equal("true", zeilen[1].QuerySelector(".epos-wahlkaestchen")!.GetAttribute("aria-checked"));
+        Assert.Equal(1, cut.Instance.ProjektWahl.Anzahl);
+        Assert.Single(zeilen, tr => tr.ClassList.Contains("epos-zeile--gewaehlt"));
+        Assert.Contains("epos-zeile--gewaehlt", zeilen[0].ClassList);
+        Assert.Equal("true", zeilen[0].QuerySelector(".epos-zeilenzelle")!.GetAttribute("aria-current"));
+        Assert.Null(zeilen[1].QuerySelector(".epos-zeilenzelle")!.GetAttribute("aria-current"));
+        Assert.Equal("Kessel A", cut.Find(".epos-zweispalten-satzname").TextContent);
+    }
+
+    /// <summary>AW1: Die Projektliste ist ein Tabulatorhalt; ↑ ↓ Pos1 Ende bewegen die Wahl.</summary>
+    [Fact]
+    public void AW1_Die_Pfeiltasten_bewegen_die_Wahl_der_Projektliste()
+    {
+        var cut = Aufbauen(DreiZeilen());
+        var huelle = cut.Find(".epos-zweispalten-bereich--projekt .epos-raster-huelle");
+        Assert.Equal("0", huelle.GetAttribute("tabindex"));
+
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-projektzeile")[0].Click();
+        cut.Find(".epos-zweispalten-bereich--projekt .epos-raster-huelle").KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+        Assert.Equal("Kessel B", cut.Find(".epos-zweispalten-satzname").TextContent);
+        cut.Find(".epos-zweispalten-bereich--projekt .epos-raster-huelle").KeyDown(new KeyboardEventArgs { Key = "End" });
+        Assert.Equal("Kessel C", cut.Find(".epos-zweispalten-satzname").TextContent);
+        cut.Find(".epos-zweispalten-bereich--projekt .epos-raster-huelle").KeyDown(new KeyboardEventArgs { Key = "Home" });
+        Assert.Equal("Kessel A", cut.Find(".epos-zweispalten-satzname").TextContent);
+        Assert.Contains("epos-zeile--gewaehlt", cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr")[0].ClassList);
+    }
+
+    /// <summary>
+    /// AW1: Ist ein Projektsatz gewählt, sind Schloss… und Löschen weich gesperrt — fokussierbar,
+    /// <c>aria-disabled</c>, Grund „Katalogsatz wählen" als Kurztext, ein Klick meldet ihn und
+    /// schreibt nichts. Bearbeiten… öffnet die Projektkopie in der Überlagerung.
+    /// </summary>
+    [Fact]
+    public void AW1_Beim_Projektsatz_sind_Schloss_und_Loeschen_weich_gesperrt()
+    {
+        var geloescht = new List<int>();
+        var pruefung = new Schlosspruefung();
+        var cut = Aufbauen(DreiZeilen(), projektsatzWege: Wege(), schloss: pruefung.Weg(),
+                           katalogLoeschen: id => { geloescht.Add(id); return true; });
+        KatalogAnkreuzen(cut, 0);   // auch angekreuzte Katalogzeilen heben die Sperre nicht auf
+
+        foreach (string klasse in new[] { "epos-katalogschloss", "epos-knopf--loeschen" })
+        {
+            var knopf = AmSatz(cut, klasse);
+            Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+            Assert.False(knopf.HasAttribute("disabled"));
+            Assert.Equal(Resource.AUSWAHL_SPERRE_KATALOGSATZ, knopf.GetAttribute("title"));
+        }
+
+        AmSatz(cut, "epos-knopf--loeschen").Click();
+        Assert.Equal(Resource.AUSWAHL_SPERRE_KATALOGSATZ, cut.Find(".epos-warnbanner-text").TextContent);
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+        AmSatz(cut, "epos-katalogschloss").Click();
+        Assert.Empty(pruefung.Aufrufe);
+        Assert.Empty(geloescht);
+
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-katalog"));
+        AmSatz(cut, "epos-knopf--bearbeiten-projekt").Click();
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Equal(Resource.AUSWAHL_MARKE_PROJEKTSATZ,
+                     cut.Find(".epos-ueberlagerung--satz .epos-ueberlagerung-kopf .epos-zweispalten-marke--satz").TextContent);
+    }
+
+    /// <summary>AW1: Beim Katalogsatz wirken Schloss…, Löschen und Bearbeiten… wie bisher auf den Katalog.</summary>
+    [Fact]
+    public void AW1_Beim_Katalogsatz_wirken_Schloss_und_Loeschen_wie_bisher()
+    {
+        var pruefung = new Schlosspruefung();
+        var cut = Aufbauen(DreiZeilen(), schloss: pruefung.Weg(), katalogfelder: _ => Felder());
+        KatalogsatzWaehlen(cut);
+
+        foreach (string klasse in new[] { "epos-katalogschloss", "epos-knopf--loeschen" })
+        {
+            var knopf = AmSatz(cut, klasse);
+            Assert.False(knopf.HasAttribute("aria-disabled"));
+            Assert.False(knopf.HasAttribute("disabled"));
+        }
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-projekt"));
+
+        AmSatz(cut, "epos-knopf--loeschen").Click();
+        Assert.NotEmpty(cut.FindAll(".epos-rueckfrage"));
+    }
+
+    /// <summary>
+    /// AW1: Der Stift einer Projektzeile tut, was „Bearbeiten…" am Satz für diese Zeile tut — die
+    /// Zeile wird der gewählte Satz, die Überlagerung zeigt ihre Projektkopie. Der Stift der
+    /// Detailzeile ist entfallen.
+    /// </summary>
+    [Fact]
+    public void AW1_Der_Stift_je_Zeile_ist_Bearbeiten_fuer_diese_Zeile()
+    {
+        var cut = Aufbauen(DreiZeilen(), projektsatzWege: Wege());
+        Assert.Empty(cut.FindAll(".epos-zweispalten-satzkopf > .epos-zweispalten-bearbeiten"));
+
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-zeilenstift")[2].Click();
+
+        Assert.True(cut.Instance.SatzUeberlagerungOffen);
+        Assert.Equal("Kessel C", cut.Find(".epos-ueberlagerung--satz .epos-ueberlagerung-titel").TextContent.Trim());
+        Assert.Contains("epos-zeile--gewaehlt", cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr")[2].ClassList);
+    }
+
+    /// <summary>
+    /// AW1: Vergleichen… wirkt im Bereich des gewählten Satzes — beim Projektsatz die angekreuzten
+    /// Projektkopien (je Gerät einmal), unter zwei gesperrt.
+    /// </summary>
+    [Fact]
+    public void AW1_Vergleichen_beim_Projektsatz_vergleicht_die_angekreuzten_Projektkopien()
+    {
+        var cut = Aufbauen(DreiZeilen(), projektsatzWege: Wege());
+        Assert.True((AmSatz(cut, "epos-knopf--vergleichen").GetAttribute("aria-disabled") == "true"));
+
+        foreach (int i in new[] { 0, 2 })
+            cut.FindAll(".epos-raster")[0].QuerySelectorAll("td .epos-wahlkaestchen")[i].Click();
+        Assert.False((AmSatz(cut, "epos-knopf--vergleichen").GetAttribute("aria-disabled") == "true"));
+        AmSatz(cut, "epos-knopf--vergleichen").Click();
+
+        string P = WindowsFormsApplication1.MyResource.Resource.AUSWAHL_VERGLEICH_HERKUNFT_PROJEKT + " ";
+        var koepfe = cut.FindAll(".epos-vergleich thead th").Select(th => th.TextContent).ToList();
+        Assert.Equal(new[] { P + "Kessel A", P + "Kessel C" }, koepfe.Skip(1).ToArray());
+        Assert.NotEmpty(cut.FindAll(".epos-vergleich tbody tr"));
+    }
+
+    /// <summary>KA-E-24: Vergleichen… stellt eine Projektzeile (Werte der Projektkopie über ihre ID) und einen Katalogsatz nebeneinander.</summary>
+    [Fact]
+    public void KA_E_24_Vergleichen_stellt_Projektzeile_und_Katalogsatz_nebeneinander()
+    {
+        var cut = Aufbauen(DreiZeilen());
+        var ids = new List<int>();
+        cut.Render(p => p
+            .Add(x => x.Vergleichsparameter, n => VergleichWirtHilfe.Werte("K:" + n))
+            .Add(x => x.VergleichsparameterProjekt, id => { ids.Add(id); return VergleichWirtHilfe.Werte("P:" + id); }));
+        VergleichWirtHilfe.ProjektzeileGegenKatalogsatz(cut, ids, "Kessel A");
+    }
+    // =================================================================================
+    // WP1b (KA-E-25): der Gerätesteckbrief links in der zweispaltigen Satz-Überlagerung
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Links stehen die Projektfelder und darunter der Gerätesteckbrief</b>, rechts die Kenndaten; der Steckbrief
+    /// zeigt die Werte des Feldsatzes und folgt einer Eingabe rechts im selben Zeichenlauf.
+    /// </summary>
+    [Fact]
+    public void WP1b_Der_Geraetesteckbrief_steht_links_und_folgt_den_Feldern_rechts()
+    {
+        var cut = Aufbauen(projektsatzWege: Wege(), kostensumme: _ => (95000.0, 6200.0));
+        var satz = Satz(cut);
+        var links = satz.QuerySelector(".epos-satz-zweispaltig > .epos-satz-zweispaltig-links")!;
+        Assert.NotNull(satz.QuerySelector(".epos-satz-zweispaltig > .epos-satz-zweispaltig-rechts .epos-modulparameter"));
+        Assert.NotEmpty(links.QuerySelectorAll(".epos-gruppenkopf, .epos-anlagenblock"));   // die Projektfelder oben links
+        var steckbrief = links.QuerySelector(".epos-hk-steckbrief")!;
+        Assert.Equal("Musterwerk", steckbrief.QuerySelector("dd[data-zeile=hersteller]")!.TextContent.Trim());
+        Assert.NotNull(links.QuerySelector("select"));                                   // die Trägerwahl
+        Assert.Contains("95", steckbrief.QuerySelector("dd[data-zeile=invest]")!.TextContent);  // Summe der Anlage
+        Assert.NotNull(steckbrief.QuerySelector("dd[data-zeile=betrieb]"));
+
+        cut.FindAll(".epos-satz-zweispaltig-rechts .epos-modulparameter input")
+           .First(e => e.GetAttribute("value") == "Musterwerk").Input("Geändert");
+        Assert.Equal("Geändert", cut.Find(".epos-hk-steckbrief dd[data-zeile=hersteller]").TextContent.Trim());
+    }
+
+    /// <summary><b>Der Katalogsatz zeigt links nur den Steckbrief</b> — Projektfelder gibt es dort nicht.</summary>
+    [Fact]
+    public void WP1b_Der_Katalogsatz_zeigt_links_nur_den_Steckbrief()
+    {
+        var cut = Aufbauen(katalogfelder: _ => Felder());
+        KatalogsatzWaehlen(cut);
+        var links = Satz(cut).QuerySelector(".epos-satz-zweispaltig-links")!;
+        Assert.Single(links.Children);
+        Assert.NotNull(links.QuerySelector(".epos-hk-steckbrief dd[data-zeile=name]"));
     }
 }

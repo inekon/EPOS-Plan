@@ -199,8 +199,7 @@ namespace ZapfprofilValidierung
                 KaltwasserMittelC = o.KaltwasserMittelC,
                 KaltwasserAmplitudeK = o.KaltwasserAmplitudeK,
                 SpeicherverlustKwhJeJahr = o.SpeicherverlustKwhJeJahr,
-                Ferienbeginn = Fenster(o, true),
-                Ferienende = Fenster(o, false)
+                Ferien = Ferien(o)
             };
             var projekt = new ProjektStand
             {
@@ -230,13 +229,13 @@ namespace ZapfprofilValidierung
             };
         }
 
-        /// <summary>Die vier Ferienspalten der Zone aus den Fenstern der Beschreibung.</summary>
-        private static int?[] Fenster(Objektbeschreibung o, bool beginn)
+        /// <summary>Die Ferienzeiträume der Zone aus den Fenstern der Beschreibung — jedes Fenster ein Zeitraum.</summary>
+        private static IReadOnlyList<ZonenferienStand> Ferien(Objektbeschreibung o)
         {
-            var a = new int?[4];
-            IReadOnlyList<Ferienfenster> f = o.FerienBilden();
-            for (int i = 0; i < f.Count && i < 4; i++) a[i] = beginn ? f[i].Beginn : f[i].Ende;
-            return a;
+            var liste = new List<ZonenferienStand>();
+            foreach (Ferienfenster f in o.FerienBilden())
+                liste.Add(new ZonenferienStand { Beginn = f.Beginn, Ende = f.Ende });
+            return liste;
         }
 
         /// <summary>N der √N-Skalierung: die kaufmännisch gerundete Bezugsmenge (wie in der Hülle).</summary>

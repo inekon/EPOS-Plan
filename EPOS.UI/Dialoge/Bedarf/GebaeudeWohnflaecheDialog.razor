@@ -76,7 +76,7 @@
                 <div class="epos-gebw-zonensperre" aria-disabled="true" title="@SperreZone" @onclick="SperreMelden">
                     <Formularraster>
                         <KindInhalt>
-                    <Textfeld Bezeichnung="@LabelBedarfsart" Wert="@_einheit" NurLesen="true" Titel="@SperreZone" />
+                    <Textfeld Bezeichnung="@LabelBedarfsart" Wert="@Flaechenangabe.Anzeige(_einheit)" NurLesen="true" Titel="@SperreZone" />
                     <Textfeld Bezeichnung="@LabelVerbrauch" Wert="@Zahltext(_wert)" Einheit="@Einheitszeichen"
                               NurLesen="true" Titel="@SperreZone" />
                     <Textfeld Bezeichnung="@LabelJahresnutzungsgrad" Wert="@Zahltext(_nutzungsgrad)"
@@ -98,7 +98,7 @@
             <Auswahlfeld Bezeichnung="@LabelBedarfsart" Eintraege="@Bedarfsarteintraege"
                          Auswahl="@_bedarfsart" AuswahlChanged="BedarfsartWaehlen" />
 
-            <Textfeld Bezeichnung="@LabelArtDerAngabe" Wert="@_einheit" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelArtDerAngabe" Wert="@Flaechenangabe.Anzeige(_einheit)" NurLesen="true" />
 
             <Zahlenfeld Bezeichnung="@LabelVerbrauch" Einheit="@Einheitszeichen"
                         Feldname="@LabelVerbrauch" Wert="@_wert"
@@ -208,7 +208,7 @@
     [Parameter] public string LabelBaujahr { get; set; } = "Baualtersklasse:";
     [Parameter] public string LabelBedarfsart { get; set; } = "Bedarfsart:";
     [Parameter] public string LabelArtDerAngabe { get; set; } = "Art der Angabe:";
-    [Parameter] public string LabelVerbrauch { get; set; } = "Wärmebedarf/Wohnfläche:";
+    [Parameter] public string LabelVerbrauch { get; set; } = "Wärmebedarf/Nutzfläche:";
     [Parameter] public string LabelJahresnutzungsgrad { get; set; } = "Jahresnutzungsgrad:";
     [Parameter] public string LabelDezentralWarmwasser { get; set; }
         = "Dezentrale Warmwasserbereitung";
@@ -275,10 +275,12 @@
             // Ein BESTANDSWERT, den die Liste nicht führt, wird vorangestellt - die
             // ComboBox des Vorläufers war frei beschreibbar und zeigte ihn (A-16 aus
             // Welle 7). Ein geschlossenes select würde ihn still verwerfen.
+            // Der TEXT ist Anzeige (Flaechenangabe: „Nutzfläche [m²]"), gemeldet wird die Id -
+            // Vergleich und Rueckgabe bleiben auf dem gespeicherten Wert.
             if (!string.IsNullOrEmpty(_einheit) && !Bedarfsarten.Contains(_einheit))
-                l.Add((-1, _einheit));
+                l.Add((-1, Flaechenangabe.Anzeige(_einheit)));
 
-            for (int i = 0; i < Bedarfsarten.Count; i++) l.Add((i, Bedarfsarten[i]));
+            for (int i = 0; i < Bedarfsarten.Count; i++) l.Add((i, Flaechenangabe.Anzeige(Bedarfsarten[i])));
             return l;
         }
     }
@@ -357,7 +359,7 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     /// <summary>

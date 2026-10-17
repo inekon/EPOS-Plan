@@ -133,5 +133,28 @@ namespace EPOS.Kern.Tests
                         p.BHKW || p.Photovoltaik,
                         "Projekt " + PROJEKT + " fuehrt Anlagen — Punkt 4 der Regel hat nicht gegriffen.");
         }
+
+        /// <summary>
+        /// Der Anlagenbestand allein, wie ihn die Reiterleiste der Ergebnisseite liest:
+        /// Projekt 1042 waehlt in der Kaskade Solarthermie, Photovoltaik und Stromspeicher,
+        /// fuehrt aber nur Waermepumpen, einen Kessel und Puffer als Anlagen — diese drei
+        /// Reiter fallen weg.
+        /// </summary>
+        [Fact]
+        public void Anlagenbestand_kennt_nur_die_angelegten_Erzeuger()
+        {
+            if (!_db.Vorhanden) return;
+
+            ErgebnisPraesenz b = ErgebnisPraesenz.Anlagenbestand(1042);
+
+            Assert.NotNull(b);
+            Assert.True(b.Waermepumpe);
+            Assert.True(b.Heizkessel);
+            Assert.False(b.Solarthermie);
+            Assert.False(b.Photovoltaik);
+            Assert.False(b.Stromspeicher);
+            Assert.False(b.BHKW);
+            Assert.Null(ErgebnisPraesenz.Anlagenbestand(0));
+        }
     }
 }

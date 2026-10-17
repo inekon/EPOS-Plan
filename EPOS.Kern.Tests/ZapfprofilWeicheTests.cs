@@ -239,8 +239,9 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Kein stiller Rückfall, aber kein Abbruch (2.2, N8): Fehlt ein Parameter, den nur eine
-        /// Zone braucht, trägt diese Zone 0 und steht mit ihrem Namen und dem Schlüssel als
-        /// Warnung im Protokoll; die rechenbare Zone rechnet, der Lauf geht weiter.
+        /// Zone braucht, und lässt er sich nicht aus dem freien Paketteil nachtragen, trägt diese Zone 0
+        /// und steht mit ihrem Namen und dem Schlüssel als Warnung im Protokoll; die rechenbare Zone
+        /// rechnet, der Lauf geht weiter.
         /// </summary>
         [Fact]
         public void Ein_fehlender_Parameter_nennt_die_Zone_und_sie_traegt_null()
@@ -254,6 +255,10 @@ namespace EPOS.Kern.Tests
             Assert.True(DataRepository.ExecuteSQL(
                 "DELETE FROM Tab_TwwParameter_STAMM WHERE Schluessel = ? AND Katalogversion = ?",
                 new DbParam("@s", ZapfParameter.KALTWASSER_MITTEL), new DbParam("@k", VERSION)));
+            // Den Schlüssel trüge Verfuegbar() aus dem freien Paketteil nach (TwwPaketteilCtrl.ParameterNachtragen);
+            // hier weist die Datei jedes Einfügen in den Parameterkatalog ab — er bleibt fehlend.
+            DataRepository.ExecuteNonQuery("CREATE TRIGGER \"Probe_Abweisen\" BEFORE INSERT ON \"Tab_TwwParameter_STAMM\" " +
+                                           "BEGIN SELECT RAISE(ABORT, 'Probe weist ab'); END");
 
             SimulationProtokoll.NeuStarten();
             var waerme = new SimulationWaermebedarf();
@@ -265,7 +270,7 @@ namespace EPOS.Kern.Tests
             Assert.Empty(SimulationProtokoll.Aktuell.Fehler);
             string warnung = Assert.Single(SimulationProtokoll.Aktuell.Warnungen,
                                            w => w.StartsWith(SimulationWaermebedarf.ZAPFPROFIL_PRAEFIX));
-            Assert.Contains("Zone „Zone Probe“ trägt 0", warnung);
+            Assert.Contains("Bereich „Zone Probe“ trägt 0", warnung);
             Assert.Contains(ZapfParameter.KALTWASSER_MITTEL, warnung);
 
             ZapfprofilErgebnis e = waerme.Zapfprofil;
@@ -283,15 +288,17 @@ namespace EPOS.Kern.Tests
             BedarfsVorschau v = BedarfsVorschauCtrl.ProjektVorschau(BedarfsArt.Brauchwasser, PROJEKT, new List<string>());
             Assert.True(v.Zapfprofilweg);
             Assert.True(v.Erfolgreich);
-            Assert.Contains("Zone „Zone Probe“ trägt 0", v.Meldung);
+            Assert.Contains("Bereich „Zone Probe“ trägt 0", v.Meldung);
             Assert.Contains(ZapfParameter.KALTWASSER_MITTEL, v.Meldung);
             Assert.Equal(waerme.Waermebedarf_Brauchwasser, v.Waerme.Waermebedarf_Brauchwasser);
         }
 
         /// <summary>
-        /// Fehlt die Katalogversion, kann der Generator für das PROJEKT nicht rechnen: Der Lauf
-        /// bricht benannt ab — und die Bedarfsfelder eines wiederverwendeten Objekts stehen auf
-        /// 0 statt auf den Zahlen des vorigen Laufs (Startseite, Ergebnisvorabrechnung).
+        /// Fehlt die Katalogversion und lässt sich der freie Paketteil nicht nachladen (hier weist die
+        /// Datei jedes Einfügen in den Parameterkatalog ab, <see cref="TwwPaketteilCtrl.Nachladen"/>),
+        /// kann der Generator für das PROJEKT nicht rechnen: Der Lauf bricht benannt ab — und die
+        /// Bedarfsfelder eines wiederverwendeten Objekts stehen auf 0 statt auf den Zahlen des vorigen
+        /// Laufs (Startseite, Ergebnisvorabrechnung).
         /// </summary>
         [Fact]
         public void Ohne_Katalogversion_bricht_der_Lauf_benannt_ab()
@@ -306,6 +313,8 @@ namespace EPOS.Kern.Tests
 
             ZapfprofilCtrl.Speichern(PROJEKT, new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { Zone() }, null));
             Assert.True(DataRepository.ExecuteSQL("DELETE FROM Tab_TwwParameter_STAMM"));
+            DataRepository.ExecuteNonQuery("CREATE TRIGGER \"Probe_Abweisen\" BEFORE INSERT ON \"Tab_TwwParameter_STAMM\" " +
+                                           "BEGIN SELECT RAISE(ABORT, 'Probe weist ab'); END");
 
             // … dann der Abbruch.
             SimulationProtokoll.NeuStarten();
@@ -323,6 +332,31 @@ namespace EPOS.Kern.Tests
             Assert.True(v.Zapfprofilweg);
             Assert.False(v.Erfolgreich);
             Assert.Contains("Parameterkatalog des Zapfprofils", v.Meldung);
+        }
+
+        /// <summary>
+        /// Fehlt die Katalogversion, lädt der Lauf den freien Paketteil nach
+        /// (<see cref="TwwPaketteilCtrl.Nachladen"/>) und bricht nicht ab: Das Laufprotokoll nennt das
+        /// Nachladen als Hinweis, der Generator rechnet mit der Katalogversion des Pakets.
+        /// </summary>
+        [Fact]
+        public void Ohne_Katalogversion_laedt_der_Lauf_den_freien_Paketteil_nach()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            ZapfprofilCtrl.Speichern(PROJEKT, new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { Zone() }, null));
+            Assert.True(DataRepository.ExecuteSQL("DELETE FROM Tab_TwwParameter_STAMM"));
+
+            SimulationProtokoll.NeuStarten();
+            var waerme = new SimulationWaermebedarf();
+            waerme.Waermebedarf_berechnen(PROJEKT, Klimaregion(PROJEKT));
+
+            Assert.True(string.IsNullOrEmpty(waerme.Fehlertext), waerme.Fehlertext);
+            Assert.Empty(SimulationProtokoll.Aktuell.Fehler);
+            Assert.Contains(SimulationProtokoll.Aktuell.Hinweise,
+                            h => h.StartsWith("Der Zapfprofilgenerator hat seine frei verfügbaren Katalogdaten", StringComparison.Ordinal));
+            Assert.Equal(ZapfprofilCtrl.KATALOGVERSION_RUECKFALL, ZapfprofilCtrl.AktuelleKatalogversion());
         }
 
         /// <summary>
@@ -378,7 +412,7 @@ namespace EPOS.Kern.Tests
             Assert.Empty(SimulationProtokoll.Aktuell.Fehler);
             string warnung = Assert.Single(SimulationProtokoll.Aktuell.Warnungen,
                                            w => w.StartsWith(SimulationWaermebedarf.ZAPFPROFIL_PRAEFIX));
-            Assert.Contains("Zone „Zone Probe“ trägt 0", warnung);
+            Assert.Contains("Bereich „Zone Probe“ trägt 0", warnung);
             Assert.Contains("keine Zapfkategorien", warnung);
             Assert.Contains("„" + NUTZUNG + "“", warnung);
             ZapfprofilErgebnis e = waerme.Zapfprofil;
@@ -431,12 +465,13 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// Kein Projekt der Referenzbasis — die sechs der CI und die übrigen, deren Ordner
         /// <c>Projekt_*</c> unter <c>Referenzlaeufe/</c> liegen — trägt eine Zeile in
-        /// <c>Tab_TwwProjekt</c> oder eine Zone (3.4), außer dem Referenzprojekt des Generators
-        /// (1045, ZU7); dessen gesäte Zeilen hält <see cref="ZapfprofilReferenzprojektWacheTests"/>.
+        /// <c>Tab_TwwProjekt</c> oder eine Zone (3.4), außer den Referenzprojekten des Generators
+        /// (1045, ZU7; 1066 bis 1071, ZB12); ihre gesäten Zeilen halten <see cref="ZapfprofilReferenzprojektWacheTests"/>
+        /// und <see cref="ZapfprofilOptionenReferenzprojekteWacheTests"/>.
         /// Gelesen wird eine Arbeitskopie.
         /// </summary>
         [Fact]
-        public void Kein_Referenzprojekt_ausser_1045_hat_eine_Projektzeile()
+        public void Kein_Referenzprojekt_ausser_denen_des_Generators_hat_eine_Projektzeile()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -451,6 +486,12 @@ namespace EPOS.Kern.Tests
             Assert.Contains(ZapfprofilReferenzprojektWacheTests.PROJEKT, projekte);
             Assert.Equal(BrauchwasserWeg.Generator, ZapfprofilCtrl.Weg(ZapfprofilReferenzprojektWacheTests.PROJEKT));
             projekte.Remove(ZapfprofilReferenzprojektWacheTests.PROJEKT);
+            foreach (int p in ZapfprofilOptionenReferenzprojekteWacheTests.PROJEKTE)
+            {
+                Assert.Contains(p, projekte);
+                Assert.Equal(BrauchwasserWeg.Generator, ZapfprofilCtrl.Weg(p));
+                projekte.Remove(p);
+            }
 
             foreach (int p in projekte)
             {

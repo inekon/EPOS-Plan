@@ -13,11 +13,13 @@ namespace WindowsFormsApplication1
     /// reine Rechnung ohne Oberfläche und ohne Datenbank — sie gehören in den Kern und
     /// sind dort mit xunit prüfbar.</para>
     ///
-    /// <para><b>Der Jahrestag zählt ab 1.</b> Der 1. Januar ist Tag 1
-    /// (<c>differenz.Days + 1</c>). Gerechnet wird immer im LAUFENDEN Jahr — das ist
-    /// Bestand und hat eine Folge: In einem Schaltjahr liegt derselbe Kalendertag ab dem
-    /// 1. März einen Tag später als im Gemeinjahr. Der Katalogsatz speichert die Zahl,
-    /// nicht das Datum; wörtlich übernommen (Regel F3).</para>
+    /// <para><b>Der Jahrestag zählt ab 1 und gilt im GEMEINJAHR</b> (365 Tage, kein
+    /// 29. Februar): Der 1. Januar ist Tag 1, der 1. März Tag 60, der 31. Dezember Tag 365 — in
+    /// jedem Jahr, wie Kalender und Lauf die gespeicherte Zahl deuten (Konzept
+    /// Konditionierungsprofile 3.2; Befund B13, Entwurf KP2 Festlegung 12). Die Umrechnung ist
+    /// dieselbe wie die der Feiertagsregeln (<see cref="Feiertage.Gemeinjahrestag"/>,
+    /// <see cref="Feiertage.Datum"/>); eine Uhr liest sie nicht. Der 29. Februar ist eine
+    /// Fehleingabe und ergibt 0 wie jedes unmögliche Datum.</para>
     ///
     /// <para><b>0 und 366 heißen „keine Angabe".</b> Beim Anzeigen bleiben beide Felder
     /// leer, beim Speichern ergibt ein leeres Feld die 0 — und ein Winterferienbeginn 0
@@ -27,8 +29,8 @@ namespace WindowsFormsApplication1
     public static class Ferienzeit
     {
         /// <summary>
-        /// Tag und Monat → Jahrestag. Leere, nicht numerische oder unmögliche Angaben
-        /// ergeben 0 („kein Ferientag") — wörtlich <c>BerechneJahrestag</c>:83-104.
+        /// Tag und Monat → Jahrestag im Gemeinjahr (1 … 365). Leere, nicht numerische oder
+        /// unmögliche Angaben — auch der 29. Februar — ergeben 0 („kein Ferientag").
         /// </summary>
         /// <param name="monat">Monatsnummer 1…12 als Text.</param>
         /// <param name="tag">Tag im Monat 1…31 als Text.</param>
@@ -38,19 +40,10 @@ namespace WindowsFormsApplication1
 
             int m, t;
             if (!ZahlText.GanzzahlParsen(monat, out m) || !ZahlText.GanzzahlParsen(tag, out t)) return 0;
-            if (m < 1 || m > 12 || t < 1 || t > 31) return 0;
 
-            try
-            {
-                DateTime jahresanfang = new DateTime(DateTime.Now.Year, 1, 1);
-                DateTime datum = new DateTime(DateTime.Now.Year, m, t);
-                return (datum - jahresanfang).Days + 1;
-            }
-            catch
-            {
-                // Unmoegliches Datum (z.B. 30. Februar) -> kein Ferientag.
-                return 0;
-            }
+            // Unmoegliches Datum (z.B. 30. Februar, im Gemeinjahr auch der 29.) -> kein Ferientag.
+            int jahrestag = Feiertage.Gemeinjahrestag(m, t);
+            return jahrestag > 0 ? jahrestag : 0;
         }
 
         /// <summary>
@@ -64,16 +57,14 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Jahrestag → (Tag, Monat). 0 und 366 sind „keine Angabe" und liefern
-        /// <c>(null, null)</c>; so ließ <c>JahrestagUmrechner</c>:73-82 beide Felder leer.
+        /// Jahrestag des Gemeinjahres → (Tag, Monat). 0 und 366 sind „keine Angabe" und liefern
+        /// <c>(null, null)</c>; so ließ <c>JahrestagUmrechner</c>:73-82 beide Felder leer. Jeder
+        /// andere Tag außerhalb 1 … 365 hat kein Datum und liefert ebenso <c>(null, null)</c>.
         /// </summary>
         public static (int? Tag, int? Monat) TagUndMonat(int jahrestag)
         {
-            if (jahrestag == 0 || jahrestag == 366) return (null, null);
-
-            DateTime jahresanfang = new DateTime(DateTime.Now.Year, 1, 1);
-            DateTime datum = jahresanfang.AddDays(jahrestag - 1);
-            return (datum.Day, datum.Month);
+            if (!Feiertage.Datum(jahrestag, out int monat, out int tag)) return (null, null);
+            return (tag, monat);
         }
 
         /// <summary>

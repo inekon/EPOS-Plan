@@ -33,6 +33,8 @@ namespace WindowsFormsApplication1
             ZeitreihenSatz.BHKW_STROM, ZeitreihenSatz.BHKW_UEBERSCHUSS, ZeitreihenSatz.KESSEL_WAERME, ZeitreihenSatz.SOLAR_WAERME,
             ZeitreihenSatz.PV_GENUTZT, ZeitreihenSatz.PV_UEBERSCHUSS, ZeitreihenSatz.NETZEINSPEISUNG, ZeitreihenSatz.BATTERIE_EINSPEISUNG,
             ZeitreihenSatz.PV_ABREGELUNG, ZeitreihenSatz.NETZBEZUG, ZeitreihenSatz.WAERMEREST, ZeitreihenSatz.PV_SPEICHER_SOC,
+            // Katalog v12: Stromlast des BHKW und ungedeckte Kälte.
+            ZeitreihenSatz.BHKW_STROMBEDARF, ZeitreihenSatz.BHKW_RESTSTROM, ZeitreihenSatz.KAELTEREST,
         };
 
         /// <summary>Ist der Schlüssel ein Reihenname (<c>reihe.…</c>)?</summary>

@@ -39,6 +39,33 @@ namespace Auslieferungsvorlage
         /// </summary>
         internal string Katalogpaket { get; private set; }
 
+        /// <summary>
+        /// Der Ordner mit den Kesseldateien nach VDI 3805 Blatt 3 (<c>--kesselkatalog</c>, Konzept
+        /// Kesselkennlinie, Etappe E1, Entscheid F2) oder <c>null</c>. Mit ihm pflegt das Werkzeug
+        /// <c>Tab_Heizkessel_STAMM</c> der Arbeitskopie nach (η₃₀, η₁₀₀ aus Satz 710.01, kleinste
+        /// Leistung, Brennwert) — <c>KesselkatalogNachpflege</c> im Kern, derselbe Weg wie
+        /// <c>Werkzeuge/Testdatenbankschema --kesselkatalog</c>. Die Dateien liegen im Repositorium
+        /// unter <c>VDI-3805-Daten/SPK-Daten/</c> (Git LFS).
+        /// </summary>
+        internal string Kesselkatalog { get; private set; }
+
+        /// <summary>
+        /// Die Katalogfassung des Katalogpakets (<c>--katalogfassung</c>, Entscheidungsvorlage
+        /// Modellgrenzen KU1 Stufe 1): eine ganze Zahl ≥ 1, die mit jeder Auslieferung wächst.
+        /// Vorgabe ist das Datum des Laufs als <c>JJJJMMTT</c> — damit ist die Fassung einer späteren
+        /// Freigabe immer größer, ohne dass jemand zählen muss.
+        /// </summary>
+        internal int Katalogfassung { get; private set; } =
+            int.Parse(DateTime.Now.ToString("yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture),
+                      System.Globalization.CultureInfo.InvariantCulture);
+
+        /// <summary>
+        /// Die benannten Ausnahmen vom Abbruch bei leerem Paketteil (<c>--ohne-paket &lt;Katalog&gt;</c>, mehrfach,
+        /// Konzept Setup 6.5.4 E2): Registerkataloge, die Zeilen, aber keinen gesperrten Satz mit Schluessel
+        /// fuehren duerfen. Gespeichert in der Schreibweise des Registers; der Bericht nennt jede.
+        /// </summary>
+        internal List<string> OhnePaket { get; } = new List<string>();
+
         /// <summary>Der Grund, warum die Zeile nicht taugt; <c>null</c> = in Ordnung.</summary>
         internal string Fehler { get; private set; }
 
@@ -71,6 +98,15 @@ namespace Auslieferungsvorlage
             Console.WriteLine("  --katalogleerung-zulassen");
             Console.WriteLine("                    Nur mit --kataloge readonly wirksam: nicht abbrechen, wenn");
             Console.WriteLine("                    die ReadOnly-Regel eine Katalogtabelle vollstaendig leert.");
+            Console.WriteLine("  --katalogfassung <n>");
+            Console.WriteLine("                    Die Fassung des Katalogpakets (ganze Zahl ab 1), das neben der");
+            Console.WriteLine("                    Vorlage als Katalogpaket.json entsteht (KU1 Stufe 1). Vorgabe:");
+            Console.WriteLine("                    das Datum des Laufs als JJJJMMTT.");
+            Console.WriteLine("  --ohne-paket <Katalog>");
+            Console.WriteLine("                    Benannte Ausnahme vom Abbruch bei leerem Paketteil (Code 6): Der");
+            Console.WriteLine("                    Registerkatalog (Tabellenname, etwa Tab_PV_STAMM) darf Zeilen, aber");
+            Console.WriteLine("                    keinen gesperrten Satz mit Schluessel fuehren. Mehrfach angebbar;");
+            Console.WriteLine("                    jede Ausnahme steht im Pruefbericht.");
             Console.WriteLine("  --katalogpaket <ordner>");
             Console.WriteLine("                    Das Tww-Katalogpaket des Zapfprofilgenerators: je Tabelle eine");
             Console.WriteLine("                    Datei <Tab_Tww..._STAMM>.csv (UTF-8, Kopfzeile, Status AUSLIEFERUNG).");
@@ -80,6 +116,13 @@ namespace Auslieferungsvorlage
             Console.WriteLine("                    Der freie Paketteil " + TwwKataloge.PAKETTEIL_FREI + " (Stochastik,");
             Console.WriteLine("                    Ecodesign-Zapfprofil, Zapfkategorien) kommt IMMER dazu, nach dem");
             Console.WriteLine("                    Katalogpaket; eine gleiche Zeile des Katalogpakets geht vor (Bericht).");
+            Console.WriteLine("  --kesselkatalog <ordner>");
+            Console.WriteLine("                    Die Kesseldateien nach VDI 3805 Blatt 3 (*.vdi, auch in *.zip), im");
+            Console.WriteLine("                    Repositorium VDI-3805-Daten/SPK-Daten/. Pflegt Tab_Heizkessel_STAMM der");
+            Console.WriteLine("                    Arbeitskopie nach: eta30 und eta100 aus Satz 710.01, kleinste Leistung,");
+            Console.WriteLine("                    Brennwert aus der Bauart (Konzept Kesselkennlinie, Entscheide F2/F3).");
+            Console.WriteLine("                    Vor jeder Auslieferung angeben; ohne den Schalter bleibt der Katalog,");
+            Console.WriteLine("                    wie ihn die Quelle fuehrt.");
             Console.WriteLine();
             Console.WriteLine("Rueckgabe:");
             Console.WriteLine("  0  Vorlage erzeugt und abgenommen.");
@@ -88,6 +131,12 @@ namespace Auslieferungsvorlage
             Console.WriteLine("  4  Nur bei --kataloge readonly: Die ReadOnly-Regel wuerde eine Katalogtabelle");
             Console.WriteLine("     leeren.");
             Console.WriteLine("  5  Fachlicher Abbruch (Beispielimport oder Abnahme fehlgeschlagen).");
+            Console.WriteLine("  6  Leerer Paketteil: Ein Registerkatalog hat Zeilen, aber keinen gesperrten Satz");
+            Console.WriteLine("     (ReadOnly = 1) mit Schluessel, und --ohne-paket nennt ihn nicht.");
+            Console.WriteLine("  7  Das zurueckgelesene Katalogpaket passt nicht zur Vorlage (Fassung, Satzzahl,");
+            Console.WriteLine("     Schluessel oder Pruefsumme); Vorlage und Paket sind geloescht.");
+            Console.WriteLine("  8  Der Schemastand der Quelle ist aelter als der Zielstand der Schemakette;");
+            Console.WriteLine("     die Quelle einmal mit der aktuellen Anwendung oeffnen.");
             Console.WriteLine("  1  Unerwarteter Fehler; die Ausnahme steht auf stderr.");
             Console.WriteLine();
             Console.WriteLine("Jeder Abbruch ungleich 0 nennt seinen Grund auf stderr.");
@@ -118,6 +167,27 @@ namespace Auslieferungsvorlage
                         if (++i >= args.Length) return a.Mit("--katalogpaket braucht einen Ordner.");
                         string paketgrund = a.KatalogpaketPruefen(args[i]);
                         if (paketgrund != null) return a.Mit(paketgrund);
+                        break;
+                    case "--katalogfassung":
+                        if (++i >= args.Length) return a.Mit("--katalogfassung braucht eine ganze Zahl.");
+                        if (!int.TryParse(args[i], System.Globalization.NumberStyles.None,
+                                          System.Globalization.CultureInfo.InvariantCulture, out int fassung) || fassung < 1)
+                            return a.Mit("--katalogfassung braucht eine ganze Zahl ab 1: " + args[i]);
+                        a.Katalogfassung = fassung;
+                        break;
+                    case "--ohne-paket":
+                        if (++i >= args.Length) return a.Mit("--ohne-paket braucht den Tabellennamen eines Registerkatalogs.");
+                        WindowsFormsApplication1.Katalogtabelle kat = WindowsFormsApplication1.Katalogfassung.Tabelle(args[i].Trim());
+                        if (kat == null)
+                            return a.Mit("--ohne-paket: " + args[i] + " ist kein Katalog des Registers (erwartet: " +
+                                         string.Join(", ", WindowsFormsApplication1.Katalogfassung.Alle.Select(t => t.Tabelle)) + ").");
+                        if (!a.OhnePaket.Contains(kat.Tabelle, StringComparer.Ordinal)) a.OhnePaket.Add(kat.Tabelle);
+                        break;
+                    case "--kesselkatalog":
+                        if (++i >= args.Length) return a.Mit("--kesselkatalog braucht einen Ordner.");
+                        string kk = Path.GetFullPath(args[i]);
+                        if (!Directory.Exists(kk)) return a.Mit("Kesselkatalog nicht gefunden (Ordner erwartet): " + kk);
+                        a.Kesselkatalog = kk;
                         break;
                     case "--beispiele":
                         if (++i >= args.Length) return a.Mit("--beispiele braucht einen Ordner oder eine Dateiliste.");

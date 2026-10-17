@@ -38,12 +38,28 @@ namespace WindowsFormsApplication1
         // =================================================================================
 
         /// <summary>
+        /// <b>Die Gebäude des Projekts samt Abgleich</b> — der gemeinsame Weg der Startseitenkacheln „Gebäude“ und
+        /// „Gebäudekühlung“ und des Maskenschlüssels <see cref="Masken.Projektgebaeude"/> (GD-N): Zuordnungen lesen, Fenster
+        /// mit Sprungziel, nach OK der Abgleich in EINEM Vorgang. <c>Ok</c> = mit OK geschlossen; <c>Meldung</c> = Grund eines
+        /// gescheiterten Abgleichs (leer sonst).
+        /// </summary>
+        internal static (bool Ok, string Meldung) ProjektOeffnen(IWin32Window besitzer, int projektId, string projektName,
+                                                                 string sprungziel = null)
+        {
+            if (projektId <= 0) return (false, "");
+            List<Z_ProjGebModel> liste = Z_ProjGebCtrl.LiesProjekt(projektId);
+            if (!Oeffnen(besitzer, projektId, projektName, liste, sprungziel)) return (false, "");
+            (bool gelungen, string meldung) = new WizardCtrl().Speichere_Projekt_Gebaeudeliste(projektId, liste);
+            return (true, gelungen ? "" : meldung ?? "");
+        }
+
+        /// <summary>
         /// Zeigt die Gebäude eines Projekts als eigenes Fenster — der Weg von
         /// <c>Form_Start.pBox_Gebaude_Click</c> und den beiden Kontextmenüpunkten.
         /// </summary>
         /// <returns><c>true</c>, wenn mit OK geschlossen wurde.</returns>
         internal static bool Oeffnen(IWin32Window besitzer, int projektId, string projektName,
-                                     List<Z_ProjGebModel> modelle)
+                                     List<Z_ProjGebModel> modelle, string sprungziel = null)
         {
             bool ok = false;
             BlazorDialogForm<GebaeudeDialog> dlg = null;
@@ -57,6 +73,8 @@ namespace WindowsFormsApplication1
                     if (dlg != null) dlg.Schliessen(b);
                 })
             };
+            // Sprungziel der Kachel (Konzept Kaeltebedarf 3.5): der Editor oeffnet an der Gruppe „Kuehlung“.
+            if (!string.IsNullOrEmpty(sprungziel)) werte["Sprungziel"] = sprungziel;
 
             // Das Fenster traegt den Gebaeudeimport als Ueberlagerung und wuenscht mindestens
             // dessen Mass (Konzept Administrationsdialoge 7.1 d).

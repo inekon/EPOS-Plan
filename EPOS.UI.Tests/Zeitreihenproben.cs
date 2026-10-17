@@ -49,7 +49,8 @@ internal static class Zeitreihenproben
         if (beschreibung is not null)
             zeile.MitText(Katalogfilterprofil.SpBeschreibung, beschreibung);
 
-        zeile.MitZahl(Katalogfilterprofil.SpJahresarbeitMwh, jahresarbeitMwh, 1);
+        zeile.MitZahl(Katalogfilterprofil.SpJahresarbeitMwh, jahresarbeitMwh,
+                      Energieeinheit.JAHRESWERT_MWH_NACHKOMMASTELLEN); // wie ZeitreihenKatalogCtrl (BP-3)
         zeile.MitZahl(Katalogfilterprofil.SpSpitzeKw, spitzeKw, 1);
 
         return zeile;

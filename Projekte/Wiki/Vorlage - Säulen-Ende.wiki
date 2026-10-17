@@ -1,0 +1,13 @@
+<includeonly></div>{{#if:{{{1|}}}|<div style="font-size:0.75em;color:var(--epos-text-2);text-align:center;margin-top:2px">{{{1}}}</div>}}</div></includeonly><noinclude><!-- EPOS-Plan Vorlage | Wikititel: Vorlage:Säulen-Ende
+     Repo-Quelle dieser Seite: Projekte/Wiki/Vorlage - Säulen-Ende.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+== Vorlage:Säulen-Ende ==
+
+Schließt ein Säulendiagramm, das [[Vorlage:Säulen-Anfang]] geöffnet hat.
+
+{| class="wikitable"
+! Parameter !! Pflicht !! Bedeutung
+|-
+| <code>1</code> || nein || Beschriftung der waagerechten Achse, etwa „Stunden des Jahres, nach Heizlast geordnet"
+|}
+</noinclude>

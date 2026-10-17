@@ -65,7 +65,7 @@ public sealed class TarifstrukturTexte
 
     // ------------------------------------------------------- Rollenmodell
     public string GRollen { get; } = T("TARIF_G_ROLLEN",
-        "Rollenmodell (Etappe E5) — Differenzmethode „vermiedene Kosten“");
+        "Rollenmodell — Differenzmethode „vermiedene Kosten“");
     public string RolleBezug { get; } = T("TARIF_ROLLE_BEZUG", "Bezugstarif OHNE BHKW (Referenz)");
     public string RolleReststrom { get; } = T("TARIF_ROLLE_REST",
         "Reststromtarif MIT BHKW (kleinere Abnahme, meist teurer)");
@@ -87,8 +87,7 @@ public sealed class TarifstrukturTexte
     public string Stufe { get; } = T("TARIF_STUFE", "Stufe {0}");
     public string StufeRest { get; } = T("TARIF_STUFE_REST", "Stufe {0} (Rest)");
     public string GEinspeisung { get; } = T("TARIF_G_EINSPEISUNG",
-        "Einspeisung (kein Leistungspreis — Befund 11 der Altanwendung; " +
-        "geteiltes Feld für PV- und KWK-Einspeisung)");
+        "Einspeisung (kein Leistungspreis; geteiltes Feld für PV- und KWK-Einspeisung)");
     public string Einspeisepreis { get; } = T("TARIF_EINSPEISEPREIS", "Einspeisepreis [€/kWh]:");
     public string StaffelHinweis { get; } = T("TARIF_STAFFEL_HINWEIS",
         "Die Staffelgrenzen sind KUMULIERTE Obergrenzen: „500 / 2.000 / 8.000 kW“ heißt " +

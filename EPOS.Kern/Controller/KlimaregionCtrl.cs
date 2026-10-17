@@ -50,9 +50,9 @@ namespace WindowsFormsApplication1
             ExecuteRead(sql);
         }
 
-        public void ReadSingle(string sql)
+        public void ReadSingle(string sql, params DbParam[] parameters)
         {
-            DataTable dt = DataRepository.GetDataTable(sql);
+            DataTable dt = DataRepository.GetDataTable(sql, parameters);
             _internalList.Clear();
 
             if (dt.Rows.Count > 0)

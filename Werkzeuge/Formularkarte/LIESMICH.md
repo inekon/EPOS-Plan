@@ -1,4 +1,4 @@
-﻿# Formularkarte — der Formular-Generator
+# Formularkarte — der Formular-Generator
 
 Konsolenwerkzeug (`net10.0`, Roslyn) zum Umsetzungskonzept iOS, **Paket iU8‑12**, Grundlage A7 /
 iF7. Es liest eine WinForms-Designer-Datei des Bestands und schreibt daraus

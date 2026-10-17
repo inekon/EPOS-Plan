@@ -70,7 +70,9 @@ namespace WindowsFormsApplication1
             using (modell as IDisposable)
             {
                 abbruch.ThrowIfCancellationRequested();
-                new IfcAbbildBauer(modell, abbild, melder, abbruch, ANTEIL_PARSEN).Bauen();
+                new IfcAbbildBauer(modell, abbild, melder, abbruch, ANTEIL_PARSEN) { NordwinkelVorgabe = profil?.NordwinkelVorgabeGrad, KoerperflaechenAus = profil?.KoerperflaechenAus ?? false,
+                                     KoerperquellePruefung = profil?.KoerperquellePruefung ?? Koerperquelle.Datei }.Bauen();
+                IfcModellansicht.Melden(modell, abbild);   // Schema und MVD vorn, Hinweis zur Exporteinstellung
             }
 
             Verluste(abbild, protokoll);

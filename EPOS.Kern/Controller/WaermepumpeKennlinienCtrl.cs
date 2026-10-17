@@ -61,7 +61,14 @@ namespace WindowsFormsApplication1
         /// Kennlinien. Eine noch nicht gespeicherte Auswahl hat keine Gerätekopie —
         /// dort wäre der Knopf ein Versprechen ohne Ziel.
         /// </param>
-        internal sealed record Quelle(KennlinienSatz Satz, Herkunft Woher, int KatalogId, bool Nachholbar);
+        /// <param name="KuehlNachholbar">
+        /// Fehlt der Gerätekopie allein die KÜHLkennlinie, die der Katalogsatz führt? Dann
+        /// zeigt der Dialog die Projektkennlinien der Wärme und bietet an, nur die
+        /// Kühlkennlinie nachzuholen (<see cref="WPCtrl.KennlinienAusKatalog"/> schreibt
+        /// ohnehin nur in eine Tabelle ohne Zeile für dieses Gerät).
+        /// </param>
+        internal sealed record Quelle(KennlinienSatz Satz, Herkunft Woher, int KatalogId, bool Nachholbar,
+                                      bool KuehlNachholbar = false);
 
         /// <summary>Nichts gefunden.</summary>
         internal static readonly Quelle Leer = new Quelle(KennlinienSatz.Leer, Herkunft.Ohne, 0, false);
@@ -77,7 +84,7 @@ namespace WindowsFormsApplication1
             // (1) Die Projektkopie. Sie ist die Wahrheit des Laufs.
             KennlinienSatz projekt = KenndatenCtrl.ReihenProjekt(idWp);
             if (projekt.Vorlaeufe.Count > 0)
-                return new Quelle(projekt, Herkunft.Projekt, 0, false);
+                return new Quelle(projekt, Herkunft.Projekt, 0, false, WPCtrl.KuehlkennlinieNachholbar(idWp));
 
             // (2) Gibt es die Gerätekopie überhaupt? Dann führt der Bezeichner zum
             //     Katalogsatz — die Kopie trägt ihn unverändert (CopyFromStamm).

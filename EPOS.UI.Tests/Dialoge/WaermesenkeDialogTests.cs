@@ -78,7 +78,8 @@ public class WaermesenkeDialogTests : EposBunitContext
         bool pvModus = false,
         IReadOnlyList<int>? verbund = null,
         Func<string, IReadOnlyDictionary<string, object>>? verwaltung = null,
-        bool titelAnzeigen = true)
+        bool titelAnzeigen = true,
+        string direktreihenfolge = "")
     {
         return Render<WaermesenkeDialog>(p =>
         {
@@ -103,6 +104,7 @@ public class WaermesenkeDialogTests : EposBunitContext
             if (verwaltung is not null) p.Add(x => x.VerwaltungGaben, verwaltung);
             if (!titelAnzeigen) p.Add(x => x.TitelAnzeigen, false);
             if (geschlossen is not null) p.Add(x => x.Geschlossen, geschlossen);
+            if (direktreihenfolge.Length > 0) p.Add(x => x.HerleitungDirektreihenfolge, direktreihenfolge);
         });
     }
 
@@ -136,6 +138,25 @@ public class WaermesenkeDialogTests : EposBunitContext
         Ziel(cut, 2);
         Assert.Contains("Ladeverhalten", cut.Markup);
         Assert.Contains("Speicher", cut.Markup);
+    }
+
+    /// <summary>
+    /// Die Reihenfolge der direkten Deckung (Anwenderwunsch 08.10.2026) steht als Herleitungszeile unter dem
+    /// Ziel — nur beim Heizkreis, nur mit Text der Hülle.
+    /// </summary>
+    [Fact]
+    public void Die_Reihenfolge_der_direkten_Deckung_steht_nur_beim_Heizkreis()
+    {
+        const string zeile = "Reihenfolge der direkten Deckung = Kaskadenrang der Konfiguration: " +
+                             "1 Wärmepumpe, 2 BHKW, 3 Heizkessel — ändern über die Pfeile der Erzeugerkarten";
+        var cut = Zeige(MitPuffern(), direktreihenfolge: zeile);
+
+        Assert.Equal(zeile, cut.Find("[data-zeile=direktreihenfolge]").TextContent.Trim());
+
+        Ziel(cut, 2);   // Puffer Heizung: dort gilt die Ladepriorität, nicht die Kaskade
+        Assert.Empty(cut.FindAll("[data-zeile=direktreihenfolge]"));
+
+        Assert.Empty(Zeige(MitPuffern()).FindAll("[data-zeile=direktreihenfolge]"));
     }
 
     // ============================================================ Liste bearbeiten

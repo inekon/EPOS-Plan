@@ -273,6 +273,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(2, daten.Feldzahl);
 
             Assert.Contains("Prüfstand", daten.Text, StringComparison.Ordinal);
+            // Der Kopf nennt Anzeigename UND Schluessel - der Schluessel ist ein Name, den
+            // das Modell als `maske` zurueckgeben kann.
+            Assert.Contains("„Prüfstand“ (Schlüssel " + MASKE + ", 2 Felder):", daten.Text, StringComparison.Ordinal);
             Assert.Contains("Leistung [kW]: 12,5", daten.Text, StringComparison.Ordinal);
 
             // Ein leeres Feld wird BENANNT und nicht verschwiegen - sonst saehe der

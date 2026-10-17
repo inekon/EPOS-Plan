@@ -797,9 +797,12 @@ namespace EPOS.Kern.Tests
                 StrangPlausibilitaet.Befund b = Pruefe(reihe: 10, parallel: 1,
                                                        anzahlModuleAnlage: 10, modul: modul);
 
-                Assert.Equal(1, Zaehle(b.Straenge[0].Satz, "PV Module"));
-                Assert.Contains("alpha_SC, beta_OC, T_NOCT", b.Straenge[0].Satz, StringComparison.Ordinal);
-                Assert.Contains("CEC Modules.csv", b.Straenge[0].Satz, StringComparison.Ordinal);
+                Assert.Equal(1, Zaehle(b.Straenge[0].Satz, "CEC Modules.csv"));
+                // B2 (Verbesserungen 29.09.2026): Der Pflegeweg nennt den WIRKLICHEN Weg -
+                // αSC und βOC kommen nur über den Modulimport, der Katalogdialog führt
+                // keine Felder dafür.
+                Assert.Contains("PV Module (CEC, PAN)", b.Straenge[0].Satz, StringComparison.Ordinal);
+                Assert.DoesNotContain("Felder alpha_SC", b.Straenge[0].Satz, StringComparison.Ordinal);
             });
         }
 

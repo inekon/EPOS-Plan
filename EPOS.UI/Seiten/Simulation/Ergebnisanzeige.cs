@@ -26,6 +26,21 @@ public sealed class Anzeigeschalter
     /// <summary>Die Beschriftung des Schalters, wie sie auf dem Blatt steht.</summary>
     public string Name { get; }
 
+    /// <summary>
+    /// Eine OPTION einer Wahl als Schalter (Freigabe der Masken, Teil C): „an" wählt sie, „aus"
+    /// auf der gewählten Option lehnt benannt ab — eine Wahl hat immer genau eine Option; „aus"
+    /// auf einer anderen ändert nichts. Danach zeichnet <paramref name="auffrischen"/> neu.
+    /// </summary>
+    public static Anzeigeschalter Wahloption(string name, Func<bool> gewaehlt, Action waehlen, Action auffrischen)
+        => new(name, gewaehlt, an =>
+        {
+            if (an) { waehlen(); auffrischen(); return; }
+            if (gewaehlt())
+                throw new InvalidOperationException(string.Format(
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    WindowsFormsApplication1.MyResource.Resource.KI_DLG_SIM_ANZEIGE_WAHL, name));
+        });
+
     /// <summary>Steht der Schalter an?</summary>
     public bool An
     {

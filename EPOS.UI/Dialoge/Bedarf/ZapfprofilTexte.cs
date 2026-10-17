@@ -49,8 +49,6 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_STUFE_EINFACH</c></summary>
     public string StufeEinfach { get; set; } = "Einfach";
 
-    /// <summary><c>ZPG_STUFE_ERWEITERT</c></summary>
-    public string StufeErweitert { get; set; } = "Erweitert";
 
     /// <summary><c>ZPG_STUFE_EXPERTE</c></summary>
     public string StufeExperte { get; set; } = "Experte";
@@ -61,16 +59,73 @@ public sealed class ZapfprofilTexte
     // ------------------------------------------------------------ Zonenliste
 
     /// <summary><c>ZPG_GRP_ZONEN</c></summary>
-    public string GruppeZonen { get; set; } = "Nutzungszonen";
+    public string GruppeZonen { get; set; } = "Nutzungsbereiche";
 
     /// <summary><c>ZPG_GRP_ZONEN_SUMME</c></summary>
     public string GruppeZonenSumme { get; set; } = "{0} MWh/a Zapfung";
 
     /// <summary><c>ZPG_GRP_ZONE</c></summary>
-    public string GruppeZone { get; set; } = "{0} · Nutzung";
+    public string GruppeZone { get; set; } = "Bereich „{0}“";
+
+    /// <summary><c>ZPG_GRP_GEBAEUDE_ANLAGE</c></summary>
+    public string GruppeGebaeudeAnlage { get; set; } = "Gebäude und Anlage";
+
+    /// <summary><c>ZPG_KARTE_NUTZUNG</c></summary>
+    public string KarteNutzung { get; set; } = "Nutzung";
+
+    /// <summary><c>ZPG_KARTE_MESSWERT</c></summary>
+    public string KarteMesswert { get; set; } = "Messwert";
+
+    /// <summary><c>ZPG_SUMME_WOHNUNGEN</c></summary>
+    public string SummeWohnungen { get; set; } = "{0} WE aus der Wohnungstabelle";
+
+    /// <summary><c>ZPG_SUMME_PERSONEN_JE_WE</c></summary>
+    public string SummePersonenJeWe { get; set; } = "{0} Personen je WE";
+
+    /// <summary><c>ZPG_SUMME_ZIRK_JA</c></summary>
+    public string SummeZirkJa { get; set; } = "Zirkulation ja";
+
+    /// <summary><c>ZPG_SUMME_ZIRK_NEIN</c></summary>
+    public string SummeZirkNein { get; set; } = "Zirkulation nein";
+
+    /// <summary><c>ZPG_SUMME_KEINER</c></summary>
+    public string SummeKeiner { get; set; } = "keiner";
+
+    /// <summary><c>ZPG_SUMME_KEINE_ANGABE</c></summary>
+    public string SummeKeineAngabe { get; set; } = "keine Angabe";
+
+    /// <summary><c>ZPG_SUMME_EIGENE_WERTE</c></summary>
+    public string SummeEigeneWerte { get; set; } = "{0} eigene Werte";
+
+    /// <summary><c>ZPG_SUMME_EIGENER_WERT</c></summary>
+    public string SummeEigenerWert { get; set; } = "1 eigener Wert";
+
+    /// <summary><c>ZPG_SUMME_VORGABEN</c></summary>
+    public string SummeVorgaben { get; set; } = "Vorgaben";
+
+    /// <summary><c>ZPG_SUMME_ANGESETZT</c></summary>
+    public string SummeAngesetzt { get; set; } = "{0} {1} ({2})";
+
+    /// <summary><c>ZPG_SUMME_LADEFENSTER</c></summary>
+    public string SummeLadefenster { get; set; } = "Ladefenster {0} h ab {1} Uhr";
+
+    /// <summary><c>ZPG_SUMME_SEED</c></summary>
+    public string SummeSeed { get; set; } = "Seed {0}";
+
+    /// <summary><c>ZPG_SUMME_TYPTAGE</c></summary>
+    public string SummeTyptage { get; set; } = "Typtage";
+
+    /// <summary><c>ZPG_HINW_EINWERT</c></summary>
+    public string HinweisEinwert { get; set; } = "Leer = Vorschlag (grau im Feld); ein eingetragener Wert gilt als manueller Wert.";
+
+    /// <summary><c>ZPG_BTN_KATALOG</c></summary>
+    public string KnopfKatalog { get; set; } = "Katalog…";
+
+    /// <summary><c>ZPG_KATALOG_BLATT_HINWEIS</c></summary>
+    public string KatalogBlattHinweis { get; set; } = "Eine Zeile wählen setzt die Nutzungsart des Bereichs „{0}“.";
 
     /// <summary><c>ZPG_SP_ZONE</c></summary>
-    public string SpalteZone { get; set; } = "Zone";
+    public string SpalteZone { get; set; } = "Bereich";
 
     /// <summary><c>ZPG_SP_NUTZUNGSART</c></summary>
     public string SpalteNutzungsart { get; set; } = "Nutzungsart";
@@ -81,11 +136,14 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_SP_JAHRESBEDARF</c></summary>
     public string SpalteJahresbedarf { get; set; } = "MWh/a";
 
+    /// <summary><c>ZPG_SP_NIVEAU</c></summary>
+    public string SpalteNiveau { get; set; } = "Niveau";
+
     /// <summary><c>ZPG_SUMME_ZONEN</c></summary>
-    public string SummeZonen { get; set; } = "Summe {0} Zonen";
+    public string SummeZonen { get; set; } = "Summe {0} Bereiche";
 
     /// <summary><c>ZPG_BTN_ZONE_NEU</c></summary>
-    public string KnopfZoneNeu { get; set; } = "Zone hinzufügen…";
+    public string KnopfZoneNeu { get; set; } = "Bereich hinzufügen";
 
     /// <summary><c>ZPG_BTN_ZONE_DUPLIZIEREN</c></summary>
     public string KnopfZoneDuplizieren { get; set; } = "Duplizieren";
@@ -94,7 +152,7 @@ public sealed class ZapfprofilTexte
     public string KnopfZoneEntfernen { get; set; } = "Entfernen";
 
     /// <summary><c>ZPG_ZONE_NAME_VORGABE</c></summary>
-    public string ZoneNameVorgabe { get; set; } = "Zone {0}";
+    public string ZoneNameVorgabe { get; set; } = "Bereich {0}";
 
     /// <summary><c>ZPG_ZONE_KOPIE</c></summary>
     public string ZoneKopie { get; set; } = "{0} (Kopie)";
@@ -102,7 +160,7 @@ public sealed class ZapfprofilTexte
     // ------------------------------------------------------------ Felder der Stufe Einfach
 
     /// <summary><c>ZPG_LBL_ZONENNAME</c></summary>
-    public string LabelZonenname { get; set; } = "Zonenname";
+    public string LabelZonenname { get; set; } = "Bereichsname";
 
     /// <summary><c>ZPG_LBL_NUTZUNGSART</c></summary>
     public string LabelNutzungsart { get; set; } = "Nutzungsart";
@@ -131,8 +189,6 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_HINW_WEITERE_VORGABE</c></summary>
     public string HinweisWeitereVorgabe { get; set; } = "Weitere Angaben stehen auf den Vorgaben des Katalogs.";
 
-    /// <summary><c>ZPG_HINW_WEITERE_ERWEITERT</c></summary>
-    public string HinweisWeitereErweitert { get; set; } = "Weitere Angaben stehen in der Stufe Erweitert.";
 
     /// <summary><c>ZPG_HINW_NUTZUNGSART_KATALOG</c></summary>
     public string HinweisNutzungsartKatalog { get; set; } = "Katalog · {0}";
@@ -166,7 +222,7 @@ public sealed class ZapfprofilTexte
     public string LabelAnzeigenFuer { get; set; } = "Anzeigen für";
 
     /// <summary><c>ZPG_ANSICHT_SUMME</c></summary>
-    public string AnsichtSumme { get; set; } = "Summe aller Zonen";
+    public string AnsichtSumme { get; set; } = "Summe aller Bereiche";
 
     /// <summary><c>ZPG_REITER_TAGESGANG</c></summary>
     public string ReiterTagesgang { get; set; } = "Tagesgang";
@@ -266,6 +322,10 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_KZ_ABGELEHNT</c></summary>
     public string KennzahlAbgelehnt { get; set; } = "trägt 0";
 
+    // eine Zone, die die Pflichtprüfung des OK nicht besteht (ZB2).
+    /// <summary><c>ZPG_ZONE_UNVOLLSTAENDIG</c></summary>
+    public string ZoneUnvollstaendig { get; set; } = "unvollständig";
+
     // ------------------------------------------------------------ Stochastik (Stufe Experte, Z3)
 
     /// <summary><c>ZPG_GRP_STOCHASTIK</c></summary>
@@ -361,7 +421,7 @@ public sealed class ZapfprofilTexte
     public string AuslegungOhnePunkt { get; set; } = "Eingaben ohne Punkt";
 
     /// <summary><c>ZPG_PUNKT_UEBERHOLT</c></summary>
-    public string PunktUeberholt { get; set; } = "Die Zonen haben sich geändert — der Auslegungspunkt ist überholt und wird beim Speichern verworfen. „Auslegung…“ öffnen und neu übernehmen.";
+    public string PunktUeberholt { get; set; } = "Die Bereiche haben sich geändert — der Auslegungspunkt ist überholt und wird beim Speichern verworfen. „Auslegung…“ öffnen und neu übernehmen.";
 
     /// <summary><c>ZPG_STATUS_VORSCHAU</c></summary>
     public string StatusVorschau { get; set; } = "Vorschau aktuell · deterministisch · Stochastik noch nicht gerechnet";
@@ -369,13 +429,13 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_STATUS_OHNE_VORSCHAU</c></summary>
     public string StatusOhneVorschau { get; set; } = "Keine Vorschau — {0}";
 
-    // ------------------------------------------------------------ Stufen Erweitert und Experte (Z4)
+    // ------------------------------------------------------------ Stufe Experte (Z4)
 
     /// <summary><c>ZPG_HINW_WEITERE_EXPERTE</c></summary>
-    public string HinweisWeitereExperte { get; set; } = "Fachwerte, Tagesgänge und Zufallssaat stehen in der Stufe Experte.";
+    public string HinweisWeitereExperte { get; set; } = "Weitere Angaben — Belegung, Kalender, Messwert, Fachwerte und Jahresreihe — stehen in der Stufe Experte.";
 
     /// <summary><c>ZPG_GRUND_DAUERLINIE</c></summary>
-    public string GrundDauerlinie { get; set; } = "Die Dauerlinie zeigt die Stufe Erweitert.";
+    public string GrundDauerlinie { get; set; } = "Die Dauerlinie zeigt die Stufe Experte.";
 
     /// <summary><c>ZPG_VORGABE_EINTRAG</c></summary>
     public string VorgabeEintrag { get; set; } = "Vorgabe · {0}";
@@ -395,7 +455,10 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_FELD_ZEILE</c></summary>
     public string FeldZeile { get; set; } = "{0}, Zeile {1}";
 
-    // ------------------------------------------------------------ Zonenliste ab Erweitert
+    /// <summary><c>ZPG_FELD_BEREICH</c></summary>
+    public string FeldBereich { get; set; } = "{0}, Bereich {1}";
+
+    // ------------------------------------------------------------ Zonenliste ab Experte
 
     /// <summary><c>ZPG_SP_TOPOLOGIE</c></summary>
     public string SpalteTopologie { get; set; } = "Topologie";
@@ -438,13 +501,50 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_HINW_BEZUGSMENGE_WOHNUNGSTABELLE</c></summary>
     public string HinweisBezugsmengeWohnungstabelle { get; set; } = "Wirksam aus der Wohnungstabelle: {0} {1} — OK übernimmt sie als Bezugsgröße.";
 
-    // ------------------------------------------------------------ Belegung und Anlage (Erweitert)
+    // ------------------------------------------------------------ Belegung und Anlage (Experte)
 
     /// <summary><c>ZPG_GRP_BELEGUNG</c></summary>
-    public string GruppeBelegung { get; set; } = "Belegung und Anlage";
+    public string GruppeBelegung { get; set; } = "Belegung";
 
     /// <summary><c>ZPG_LBL_WOHNUNGSTABELLE</c></summary>
-    public string LabelWohnungstabelle { get; set; } = "Wohnungstabelle";
+    public string LabelWohnungstabelle { get; set; } = "Wohnungen (wahlweise)";
+
+    // was die Wohnungstabelle bewirkt (ZB6).
+    /// <summary><c>ZPG_HINW_WOHNUNGEN</c></summary>
+    public string HinweisWohnungen { get; set; } = "Statt einer Bezugsgröße die Wohnungen nach Typ angeben: Der Bereich rechnet dann mit ihrer Summe, und die Auslegung bildet daraus die Bedarfskennzahl nach DIN 4708.";
+
+    /// <summary><c>ZPG_SP_WOHNUNG_ANZAHL</c></summary>
+    public string SpalteWohnungAnzahl { get; set; } = "Anzahl [WE]";
+
+    /// <summary><c>ZPG_SP_WOHNUNG_RAUMZAHL</c></summary>
+    public string SpalteWohnungRaumzahl { get; set; } = "Raumzahl [Räume/WE]";
+
+    /// <summary><c>ZPG_SP_WOHNUNG_PERSONEN</c></summary>
+    public string SpalteWohnungPersonen { get; set; } = "Personen [P/WE]";
+
+    /// <summary><c>ZPG_TIP_WOHNUNG_ANZAHL</c></summary>
+    public string HilfeWohnungAnzahl { get; set; } = "Anzahl der Wohnungen dieses Typs (Wohneinheiten)";
+
+    /// <summary><c>ZPG_TIP_WOHNUNG_RAUMZAHL</c></summary>
+    public string HilfeWohnungRaumzahl { get; set; } = "Raumzahl — Wohn- und Schlafräume; Küche, Bad und Flur zählen nicht";
+
+    /// <summary><c>ZPG_TIP_WOHNUNG_PERSONEN</c></summary>
+    public string HilfeWohnungPersonen { get; set; } = "Personen je Wohnung — leer: Belegung nach Raumzahl aus dem Katalog";
+
+    /// <summary><c>ZPG_TIP_WOHNUNG_AUSSTATTUNG</c></summary>
+    public string HilfeWohnungAusstattung { get; set; } = "Ausstattungsklasse nach DIN 4708 — leer: Vorgabeklasse";
+
+    // {0} Wohneinheiten, {1} Personen.
+    /// <summary><c>ZPG_WOHNUNGEN_SUMME</c></summary>
+    public string WohnungenSumme { get; set; } = "ergibt {0} Wohneinheiten · {1} Personen";
+
+    // {0} Wohneinheiten (ohne Personenzahl des Kerns).
+    /// <summary><c>ZPG_WOHNUNGEN_SUMME_WE</c></summary>
+    public string WohnungenSummeWe { get; set; } = "ergibt {0} Wohneinheiten";
+
+    // statt der Spalte, solange der Katalog keine Klassen führt.
+    /// <summary><c>ZPG_HINW_AUSSTATTUNG_OHNE_KATALOG</c></summary>
+    public string HinweisAusstattungOhneKatalog { get; set; } = "Ausstattungsklassen sind im Katalog nicht gepflegt. Sie lassen sich mit der Paketvorlage „Katalogpaket_DIN4708“ über „Import…“ im Katalog der Brauchwasser-Nutzungsarten einspielen.";
 
     /// <summary><c>ZPG_LBL_ANZAHL</c></summary>
     public string LabelAnzahl { get; set; } = "Anzahl";
@@ -470,11 +570,8 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_AUSSTATTUNG_VORGABE</c></summary>
     public string AusstattungVorgabe { get; set; } = "Vorgabeklasse";
 
-    /// <summary><c>ZPG_HINW_WOHNUNGSTABELLE</c></summary>
-    public string HinweisWohnungstabelle { get; set; } = "Personen leer = Belegung nach Raumzahl aus dem Katalog, sonst Personen je Wohneinheit; Ausstattung leer = Vorgabeklasse. Mit Tabelle gilt ihre Menge als Bezugsgröße.";
-
     /// <summary><c>ZPG_HINW_WOHNUNGSTABELLE_LEER</c></summary>
-    public string HinweisWohnungstabelleLeer { get; set; } = "Keine Wohnungstabelle — es gilt die Bezugsgröße.";
+    public string HinweisWohnungstabelleLeer { get; set; } = "Keine Wohnungen angegeben — der Bereich rechnet mit der Bezugsgröße.";
 
     /// <summary><c>ZPG_LBL_PERSONEN_JE_WE</c></summary>
     public string LabelPersonenJeWe { get; set; } = "Personen je Wohneinheit";
@@ -501,7 +598,7 @@ public sealed class ZapfprofilTexte
     public string LabelZirkulationVorhanden { get; set; } = "Zirkulation vorhanden";
 
     /// <summary><c>ZPG_HINW_ZIRKULATION_VORHANDEN</c></summary>
-    public string HinweisZirkulationVorhanden { get; set; } = "Vorgabe · ja; „nein“ nimmt die Zone aus dem Zirkulationsanteil.";
+    public string HinweisZirkulationVorhanden { get; set; } = "Vorgabe · ja; „nein“ nimmt den Bereich aus dem Zirkulationsanteil.";
 
     /// <summary><c>ZPG_LBL_KALENDER</c></summary>
     public string LabelKalender { get; set; } = "Kalender";
@@ -510,37 +607,142 @@ public sealed class ZapfprofilTexte
     public string KalenderNutzungsart { get; set; } = "Kalender der Nutzungsart · {0}";
 
     /// <summary><c>ZPG_KALENDER_GEBAEUDE</c></summary>
-    public string KalenderGebaeude { get; set; } = "Ferien des Gebäudes {0}";
+    public string KalenderGebaeude { get; set; } = "Gebäude „{0}“";
 
     /// <summary><c>ZPG_HINW_KALENDER</c></summary>
-    public string HinweisKalender { get; set; } = "Vorgabe · Kalender der Nutzungsart; ein Gebäude belegt Ferien und Fläche nur vor — eigene Ferien der Zone gehen vor.";
+    public string HinweisKalender { get; set; } = "Die Quelle bestimmt Wochenende, Feiertage und Ferien des Bereichs: der Kalender der Nutzungsart oder ein Gebäude des Projekts. Ein Gebäude belegt Ferien und Fläche nur vor.";
+
+    /// <summary><c>ZPG_LBL_KAL_QUELLE</c></summary>
+    public string LabelKalenderQuelle { get; set; } = "Quelle";
+
+    /// <summary><c>ZPG_KAL_AUS_GEBAEUDE</c></summary>
+    public string KalenderAusGebaeude { get; set; } = "aus dem Gebäude „{0}“";
+
+    /// <summary><c>ZPG_KAL_WOCHENENDE</c></summary>
+    public string KalenderWochenende { get; set; } = "Wochenende";
+
+    /// <summary><c>ZPG_KAL_FEIERTAGE</c></summary>
+    public string KalenderFeiertage { get; set; } = "Feiertage";
+
+    /// <summary><c>ZPG_KAL_FERIEN</c></summary>
+    public string KalenderFerien { get; set; } = "Ferien";
+
+    /// <summary><c>ZPG_KAL_BUNDESEINHEITLICH</c></summary>
+    public string KalenderBundeseinheitlich { get; set; } = "nur bundeseinheitliche";
+
+    /// <summary><c>ZPG_KAL_KEINE_FERIEN</c></summary>
+    public string KalenderKeineFerien { get; set; } = "keine";
+
+    /// <summary><c>ZPG_KAL_FERIEN_ZONE_VOR</c></summary>
+    public string KalenderFerienZoneVor { get; set; } = "Der Bereich trägt eigene Ferien; die Ferien des Gebäudes gelten nicht.";
+
+    /// <summary><c>ZPG_KAL_SUM_GEBAEUDE</c></summary>
+    public string SummeGebaeude { get; set; } = "wie Gebäude „{0}“";
+
+    /// <summary><c>ZPG_KAL_SUM_NUTZUNGSART</c></summary>
+    public string SummeNutzungsart { get; set; } = "Kalender der Nutzungsart";
+
+    /// <summary><c>ZPG_KAL_SUM_FERIEN</c></summary>
+    public string SummeFerien { get; set; } = "{0} Ferienzeiträume";
+
+    /// <summary><c>ZPG_KAL_SUM_FERIEN_EINS</c></summary>
+    public string SummeFerienEins { get; set; } = "1 Ferienzeitraum";
+
+    /// <summary><c>ZPG_KAL_SUM_EIGENE</c></summary>
+    public string SummeEigene { get; set; } = "{0} eigene Ferienzeiträume";
+
+    /// <summary><c>ZPG_KAL_SUM_EIGENE_EINS</c></summary>
+    public string SummeEigeneEins { get; set; } = "1 eigener Ferienzeitraum";
+
+    /// <summary><c>ZPG_KAL_SUM_KEINE_EIGENEN</c></summary>
+    public string SummeKeineEigenen { get; set; } = "keine eigenen Ferien";
+
+    /// <summary><c>ZPG_KAL_SUM_KEINE</c></summary>
+    public string SummeKeineFerien { get; set; } = "keine Ferien";
+
+    /// <summary><c>ZPG_KAL_SUM_FEIERTAGE</c></summary>
+    public string SummeFeiertage { get; set; } = "Feiertage {0}";
+
+    /// <summary><c>ZPG_KAL_SUM_BUNDESEINHEITLICH</c></summary>
+    public string SummeBundeseinheitlich { get; set; } = "bundeseinheitliche Feiertage";
+
+    /// <summary><c>ZPG_LBL_KAL_EIGENE_FERIEN</c></summary>
+    public string LabelEigeneFerien { get; set; } = "Eigene Ferien des Bereichs";
 
     /// <summary><c>ZPG_LBL_FERIEN</c></summary>
-    public string LabelFerien { get; set; } = "Ferienzeitraum {0}";
+    public string LabelFerien { get; set; } = "Ferien {0}";
 
-    /// <summary><c>ZPG_LBL_BEGINN_TAG</c></summary>
-    public string LabelBeginnTag { get; set; } = "Beginn Tag";
+    /// <summary><c>ZPG_LBL_FERIEN_NAME</c></summary>
+    public string LabelFerienName { get; set; } = "Name";
 
-    /// <summary><c>ZPG_LBL_BEGINN_MONAT</c></summary>
-    public string LabelBeginnMonat { get; set; } = "Beginn Monat";
+    /// <summary><c>ZPG_LBL_FERIEN_VON</c></summary>
+    public string LabelFerienVon { get; set; } = "von";
 
-    /// <summary><c>ZPG_LBL_ENDE_TAG</c></summary>
-    public string LabelEndeTag { get; set; } = "Ende Tag";
+    /// <summary><c>ZPG_LBL_FERIEN_BIS</c></summary>
+    public string LabelFerienBis { get; set; } = "bis";
 
-    /// <summary><c>ZPG_LBL_ENDE_MONAT</c></summary>
-    public string LabelEndeMonat { get; set; } = "Ende Monat";
+    /// <summary><c>ZPG_KNOPF_FERIEN_NEU</c></summary>
+    public string KnopfFerienNeu { get; set; } = "+ Ferien";
+
+    /// <summary><c>ZPG_KNOPF_FERIEN_ENTFERNEN</c></summary>
+    public string KnopfFerienEntfernen { get; set; } = "Entfernen";
 
     /// <summary><c>ZPG_HINW_FERIEN</c></summary>
-    public string HinweisFerien { get; set; } = "Leer = keine Ferien. Ein Zeitraum über den Jahreswechsel beginnt im Dezember; ohne Beginn läuft er vom 1. Januar an. Gerechnet wird im Jahr ohne Schalttag.";
+    public string HinweisFerien { get; set; } = "Eigene Ferien des Bereichs gehen vor: Trägt der Bereich einen Zeitraum, gelten die Ferien des Gebäudes nicht. Ein Zeitraum zählt, sobald er ein Ende hat; über den Jahreswechsel beginnt er im Dezember, ohne Beginn läuft er vom 1. Januar an. Gerechnet wird im Jahr ohne Schalttag.";
 
-    /// <summary><c>ZPG_LBL_BUNDESLAND</c></summary>
-    public string LabelBundesland { get; set; } = "Bundesland";
+    /// <summary><c>ZPG_LBL_JAHRESRASTER</c></summary>
+    public string LabelJahresraster { get; set; } = "Jahresraster des Bereichs";
 
-    /// <summary><c>ZPG_BUNDESLAND_KLIMAREGION</c></summary>
-    public string BundeslandKlimaregion { get; set; } = "wie Klimaregion";
+    /// <summary><c>ZPG_TAGTYP_FERIEN</c></summary>
+    public string TagtypFerien { get; set; } = "Ferien";
 
-    /// <summary><c>ZPG_GRUND_BUNDESLAND</c></summary>
-    public string GrundBundesland { get; set; } = "Wirkt erst mit einer Kalendertabelle je Bundesland; bis dahin gelten Wochenende und Feiertage der Klimaregion.";
+    /// <summary><c>ZPG_HINW_JAHRESRASTER</c></summary>
+    public string HinweisJahresraster { get; set; } = "Je Tag der Tagtyp, mit dem der Bereich rechnet — aus Wochenende, Feiertagen und Ferien, wie die Vorschau sie liest.";
+
+    /// <summary><c>ZPG_KAL_SUM_TAGTYPEN</c></summary>
+    public string SummeTagtypen { get; set; } = "{0} Werktage · {1} Samstage · {2} Sonn- und Feiertage";
+
+    /// <summary><c>ZPG_KAL_SUM_FERIENTAGE</c></summary>
+    public string SummeFerientage { get; set; } = "{0} Ferientage";
+
+    /// <summary><c>ZPG_KAL_VERTEILUNG_SATZ</c></summary>
+    public string SatzVerteilung { get; set; } = "Der Kalender verteilt den Jahresbedarf um, er ändert die Summe nicht.";
+
+    /// <summary><c>ZPG_KAL_LBL_VERTEILUNG</c></summary>
+    public string LabelVerteilung { get; set; } = "Jahresbedarf je Tagtyp";
+
+    /// <summary><c>ZPG_KAL_VERTEILUNG_TEIL</c></summary>
+    public string VerteilungTeil { get; set; } = "{0} {1} kWh ({2} %)";
+
+    /// <summary><c>ZPG_KAL_VERT_WERKTAGE</c></summary>
+    public string VerteilungWerktage { get; set; } = "Werktage";
+
+    /// <summary><c>ZPG_KAL_VERT_SAMSTAGE</c></summary>
+    public string VerteilungSamstage { get; set; } = "Samstage";
+
+    /// <summary><c>ZPG_KAL_VERT_SONNTAGE</c></summary>
+    public string VerteilungSonntage { get; set; } = "Sonn- und Feiertage";
+
+    /// <summary><c>ZPG_KAL_VERT_FERIENTAGE</c></summary>
+    public string VerteilungFerientage { get; set; } = "Ferientage";
+
+    /// <summary><c>ZPG_HINW_JAHRESRASTER_OHNE</c></summary>
+    public string HinweisJahresrasterOhne { get; set; } = "Das Jahresraster erscheint mit der Vorschau.";
+
+    /// <summary><c>ZPG_PLATZHALTER_FERIEN_VON</c></summary>
+    public string PlatzhalterFerienVon { get; set; } = "von TT.MM.";
+
+    /// <summary><c>ZPG_PLATZHALTER_FERIEN_BIS</c></summary>
+    public string PlatzhalterFerienBis { get; set; } = "bis TT.MM.";
+
+    /// <summary><c>ZPG_HINW_DATUM_FORMAT</c></summary>
+    public string HinweisDatumFormat { get; set; } = "Format TT.MM., ohne Jahr (Gemeinjahr), etwa 01.07. bis 14.08.";
+
+    /// <summary><c>ZPG_HINW_DATUM_JAHR</c></summary>
+    public string HinweisDatumJahr { get; set; } = "Ohne Jahr: Das Jahr wurde verworfen, es gilt das Gemeinjahr.";
+
+    /// <summary><c>ZPG_MSG_GEMEINJAHR</c></summary>
+    public string MeldungGemeinjahr { get; set; } = "Ungültiges Datum: TT.MM. im Gemeinjahr; den 29.02. gibt es nicht.";
 
     /// <summary><c>ZPG_LBL_JAHRESMESSWERT</c></summary>
     public string LabelJahresmesswert { get; set; } = "Jahresmesswert";
@@ -576,36 +778,24 @@ public sealed class ZapfprofilTexte
     public string LabelMesswertZeitraum { get; set; } = "Zeitraum des Messwerts";
 
     /// <summary><c>ZPG_HINW_JAHRESMESSWERT</c></summary>
-    public string HinweisJahresmesswert { get; set; } = "Leer = kein Messwert. Ein Messwert skaliert die Zone mit einem ausgewiesenen Faktor; ein Volumen gilt an der Zapfstelle und wird über Zapf- und Kaltwassertemperatur umgerechnet.";
+    public string HinweisJahresmesswert { get; set; } = "Leer = kein Messwert. Ein Messwert skaliert den Bereich mit einem ausgewiesenen Faktor; ein Volumen gilt an der Zapfstelle und wird über Zapf- und Kaltwassertemperatur umgerechnet.";
 
-    // ------------------------------------------------------------ Tagesbedarf, Ladeleistung, Zirkulation (Erweitert)
-
-    /// <summary><c>ZPG_GRP_SCHAETZHILFEN</c></summary>
-    public string GruppeSchaetzhilfen { get; set; } = "Tagesbedarf, Ladeleistung, Zirkulation";
-
-    /// <summary><c>ZPG_HINW_SCHAETZHILFEN</c></summary>
-    public string HinweisSchaetzhilfen { get; set; } = "Muster auto/manuell: Vorschlag, manueller Wert und der angesetzte Wert, der weiterverwendet wird. Der angesetzte Wert folgt aus dem Umschalter.";
+    // ------------------------------------------------------------ Tagesbedarf, Ladeleistung, Zirkulation (Experte)
 
     /// <summary><c>ZPG_LBL_TAGESBEDARF</c></summary>
     public string LabelTagesbedarf { get; set; } = "Tagesbedarf";
-
-    /// <summary><c>ZPG_LBL_TAGESBEDARF_MANUELL</c></summary>
-    public string LabelTagesbedarfManuell { get; set; } = "Tagesbedarf manuell";
 
     /// <summary><c>ZPG_LBL_VORSCHLAG</c></summary>
     public string LabelVorschlag { get; set; } = "Vorschlag: {0} {1}";
 
     /// <summary><c>ZPG_BTN_VORSCHLAG</c></summary>
-    public string KnopfVorschlag { get; set; } = "Als manuellen Wert übernehmen";
+    public string KnopfVorschlag { get; set; } = "Vorschlag übernehmen";
 
     /// <summary><c>ZPG_HINW_VORSCHLAG_OHNE</c></summary>
     public string HinweisVorschlagOhne { get; set; } = "Das Verfahren liefert keinen Vorschlag — der Rechenweg nennt den Grund.";
 
     /// <summary><c>ZPG_HINW_OHNE_VORSCHLAG</c></summary>
     public string HinweisOhneVorschlag { get; set; } = "Einen Vorschlag gibt es erst mit einer gerechneten Vorschau.";
-
-    /// <summary><c>ZPG_HINW_MANUELL</c></summary>
-    public string HinweisManuell { get; set; } = "Wirkt nur bei „manuell“.";
 
     /// <summary><c>ZPG_LBL_ANGESETZT</c></summary>
     public string LabelAngesetzt { get; set; } = "Angesetzt: {0} {1} ({2})";
@@ -617,10 +807,10 @@ public sealed class ZapfprofilTexte
     public string LabelRechenweg { get; set; } = "Rechenweg: {0}";
 
     /// <summary><c>ZPG_LBL_LADELEISTUNG</c></summary>
-    public string LabelLadeleistung { get; set; } = "Ladeleistung (Gebäude)";
+    public string LabelLadeleistung { get; set; } = "Ladeleistung und Ladefenster";
 
     /// <summary><c>ZPG_LBL_LADELEISTUNG_MANUELL</c></summary>
-    public string LabelLadeleistungManuell { get; set; } = "Ladeleistung manuell";
+    public string LabelLadeleistungManuell { get; set; } = "Ladeleistung";
 
     /// <summary><c>ZPG_LBL_LADEFENSTER</c></summary>
     public string LabelLadefenster { get; set; } = "Ladezeitfenster";
@@ -641,10 +831,10 @@ public sealed class ZapfprofilTexte
     public string LadeAngesetztManuell { get; set; } = "Angesetzt: {0} kW (manuell)";
 
     /// <summary><c>ZPG_LBL_ZIRKULATION</c></summary>
-    public string LabelZirkulation { get; set; } = "Zirkulation (Gebäude)";
+    public string LabelZirkulation { get; set; } = "Zirkulation";
 
     /// <summary><c>ZPG_LBL_ZIRK_MANUELL</c></summary>
-    public string LabelZirkManuell { get; set; } = "Zirkulation manuell";
+    public string LabelZirkManuell { get; set; } = "Zirkulationsleistung";
 
     /// <summary><c>ZPG_LBL_ZIRK_METHODE</c></summary>
     public string LabelZirkMethode { get; set; } = "Methode der Zirkulation";
@@ -691,7 +881,7 @@ public sealed class ZapfprofilTexte
     // ------------------------------------------------------------ Fachwerte (Experte)
 
     /// <summary><c>ZPG_GRP_FACHWERTE</c></summary>
-    public string GruppeFachwerte { get; set; } = "Fachwerte · {0}";
+    public string GruppeFachwerte { get; set; } = "Fachwerte des Bereichs";
 
     /// <summary><c>ZPG_LBL_BEDARF_SPEZ</c></summary>
     public string LabelBedarfSpez { get; set; } = "Spezifischer Bedarf";
@@ -742,7 +932,7 @@ public sealed class ZapfprofilTexte
     public string LabelTyptageGebaeudeart { get; set; } = "Gebäudeart";
 
     /// <summary><c>ZPG_HINW_TYPTAGE</c></summary>
-    public string HinweisTyptage { get; set; } = "Eine Angabe des Projekts: Der Jahresgang jeder Zone entsteht dann aus den Typtagen des eingespielten Pakets und dem Wetter der Klimaregion. Die Auslegung bleibt unberührt.";
+    public string HinweisTyptage { get; set; } = "Eine Angabe des Projekts: Der Jahresgang jedes Bereichs entsteht dann aus den Typtagen des eingespielten Pakets und dem Wetter der Klimaregion. Die Auslegung bleibt unberührt.";
 
     /// <summary><c>ZPG_HINW_TYPTAGE_OHNE</c></summary>
     public string HinweisTyptageOhne { get; set; } = "Ohne eingespielte Typtage ist dieser Weg nicht verfügbar — „VDI-4655-Typtage…“ spielt ein Paket ein.";
@@ -783,14 +973,9 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_HINW_ZIRK_EXPERTE</c></summary>
     public string HinweisZirkExperte { get; set; } = "Leer = Kennwert nach der Lage ({0} bzw. {1} kWh/(m²·a), Verfahren nach DIN V 4701-10), Fläche aus Wohnfläche je Wohneinheit bzw. Gebäude, Laufzeit {2} h/d nach DVGW W 551.";
 
-    /// <summary><c>ZPG_LBL_ANZEIGETEMPERATUR</c></summary>
-    public string LabelAnzeigetemperatur { get; set; } = "Temperatur der Literanzeige";
-
-    /// <summary><c>ZPG_LBL_STUNDENSCHWELLE</c></summary>
-    public string LabelStundenschwelle { get; set; } = "Schwelle der Stundenzählung";
-
-    /// <summary><c>ZPG_HINW_ANZEIGE</c></summary>
-    public string HinweisAnzeige { get; set; } = "Nur für die Kennzahlen, nicht gespeichert; leer = Einstellung, sonst {0} °C bzw. {1} kW.";
+    // Literanzeige und Stundenschwelle stehen in der Einstellung (ZB10).
+    /// <summary><c>ZPG_HINW_ANZEIGE_EINSTELLUNG</c></summary>
+    public string HinweisAnzeigeEinstellung { get; set; } = "Die Temperatur der Literanzeige und die Schwelle der Stundenzählung stehen in den globalen Anwendungseinstellungen, Rubrik „Zapfprofil“.";
 
     // ------------------------------------------------------------ Vorschau: Dauerlinie und Warnliste (Z4)
 
@@ -804,13 +989,13 @@ public sealed class ZapfprofilTexte
     public string DauerlinieSchwelle { get; set; } = "{0} Stunden über {1} kW";
 
     /// <summary><c>ZPG_DAUERLINIE_OHNE</c></summary>
-    public string DauerlinieOhne { get; set; } = "Die Zone trägt 0 — keine Dauerlinie.";
+    public string DauerlinieOhne { get; set; } = "Der Bereich trägt 0 — keine Dauerlinie.";
 
     /// <summary><c>ZPG_GRP_WARNLISTE</c></summary>
     public string GruppeWarnliste { get; set; } = "Hinweise der Bilanz";
 
     /// <summary><c>ZPG_WARNLISTE_UNTER</c></summary>
-    public string WarnlisteUnter { get; set; } = "Nicht blockierend; die Hinweise einer Zone stehen auch an ihrem Eingabeblock.";
+    public string WarnlisteUnter { get; set; } = "Nicht blockierend; die Hinweise eines Bereichs stehen auch an ihrem Eingabeblock.";
 
     /// <summary><c>ZPG_WARNLISTE_LEER</c></summary>
     public string WarnlisteLeer { get; set; } = "Keine Hinweise.";
@@ -833,7 +1018,7 @@ public sealed class ZapfprofilTexte
     public string HerkunftSpalteWert { get; set; } = "Wert";
 
     /// <summary><c>ZPG_HERKUNFT_SP_ZONE</c></summary>
-    public string HerkunftSpalteZone { get; set; } = "Zone";
+    public string HerkunftSpalteZone { get; set; } = "Bereich";
 
     /// <summary><c>ZPG_HERKUNFT_SP_STAND</c></summary>
     public string HerkunftSpalteStand { get; set; } = "Stand";
@@ -922,7 +1107,7 @@ public sealed class ZapfprofilTexte
     public string TgeGrundVorlage { get; set; } = "Zuerst einen Tagesgangsatz wählen.";
 
     /// <summary><c>ZPG_TGE_STATUS_GESPEICHERT</c></summary>
-    public string TgeStatusGespeichert { get; set; } = "Tagesgang gespeichert — die Zone „{0}“ rechnet mit „{1}“.";
+    public string TgeStatusGespeichert { get; set; } = "Tagesgang gespeichert — der Bereich „{0}“ rechnet mit „{1}“.";
 
     /// <summary><c>ZPG_BTN_ZURUECKSETZEN</c></summary>
     public string KnopfZuruecksetzen { get; set; } = "Zurücksetzen";
@@ -934,7 +1119,7 @@ public sealed class ZapfprofilTexte
     public string LabelKatalogversion { get; set; } = "Katalogversion der Kopie";
 
     /// <summary><c>ZPG_HINW_KOPIE</c></summary>
-    public string HinweisKopie { get; set; } = "„OK“ legt die Nutzungsart unter dieser Katalogversion neu an (Status eigen) und stellt die Zone auf sie um; die gesperrte bleibt, wie sie ist.";
+    public string HinweisKopie { get; set; } = "„OK“ legt die Nutzungsart unter dieser Katalogversion neu an (Status eigen) und stellt den Bereich auf sie um; die gesperrte bleibt, wie sie ist.";
 
     /// <summary><c>ZPG_HINW_FREI</c></summary>
     public string HinweisFrei { get; set; } = "„OK“ schreibt an Ort und Stelle in den Katalog — in einer Transaktion; der Freigabevermerk der Nutzungsart entfällt.";
@@ -991,7 +1176,7 @@ public sealed class ZapfprofilTexte
     public string KatKnopfRunter { get; set; } = "Nach unten";
 
     /// <summary><c>ZPG_KATEG_GRUND_LETZTE</c></summary>
-    public string KatGrundLetzte { get; set; } = "Die letzte Kategorie bleibt — ohne Kategorie rechnet die Zone nicht stochastisch.";
+    public string KatGrundLetzte { get; set; } = "Die letzte Kategorie bleibt — ohne Kategorie rechnet der Bereich nicht stochastisch.";
 
     /// <summary><c>ZPG_KATEG_GRUND_RAND</c></summary>
     public string KatGrundRand { get; set; } = "Die Kategorie steht schon am Rand der Liste.";
@@ -1012,7 +1197,7 @@ public sealed class ZapfprofilTexte
     public string KatLeer { get; set; } = "Die Nutzungsart führt keine Zapfkategorien — „Vorgabesatz laden“ oder „Kategorie hinzufügen“.";
 
     /// <summary><c>ZPG_KATEG_STATUS_GESPEICHERT</c></summary>
-    public string KatStatusGespeichert { get; set; } = "Zapfkategorien gespeichert — die Zone „{0}“ rechnet mit „{1}“.";
+    public string KatStatusGespeichert { get; set; } = "Zapfkategorien gespeichert — der Bereich „{0}“ rechnet mit „{1}“.";
 
     // =====================================================================
     // Vergleich mit einer Messreihe und Kalibrierung (Stufe Z5, Gruppe 3)
@@ -1037,7 +1222,7 @@ public sealed class ZapfprofilTexte
     public string VergleichOhneWahl { get; set; } = "Wählen Sie die Messreihe, gegen die verglichen werden soll.";
 
     /// <summary><c>ZPG_VERGL_NUR_ERWEITERT</c></summary>
-    public string VergleichNurErweitert { get; set; } = "Der Vergleich mit einer Messreihe steht ab der Stufe Erweitert.";
+    public string VergleichNurExperte { get; set; } = "Der Vergleich mit einer Messreihe steht ab der Stufe Experte.";
 
     /// <summary><c>ZPG_VERGL_LEER</c></summary>
     public string VergleichLeer { get; set; } = "Noch kein Vergleich gerechnet.";
@@ -1113,7 +1298,7 @@ public sealed class ZapfprofilTexte
     public string VermerkOhneEnsemble { get; set; } = "ohne Ensemble nicht entscheidbar";
 
     /// <summary><c>ZPG_VERGL_ENSEMBLE_ZONEN</c></summary>
-    public string VermerkEnsembleZonen { get; set; } = "mehrere stochastische Zonen — Stichprobe nicht bildbar";
+    public string VermerkEnsembleZonen { get; set; } = "mehrere stochastische Bereiche — Stichprobe nicht bildbar";
 
     /// <summary><c>ZPG_VERGL_OHNE_WERT</c></summary>
     public string VermerkOhneWert { get; set; } = "nicht entschieden";
@@ -1143,7 +1328,7 @@ public sealed class ZapfprofilTexte
     public string HinweisKalibrieren { get; set; } = "Der Jahresmesswert kommt aus der Messreihe, die der Reiter „Kennzahlen“ nennt; ein Teiljahr wird über den Jahresgang der Rechnung hochgerechnet, und ein Hinweis nennt den Bias.";
 
     /// <summary><c>ZPG_FRAGE_KALIBRIEREN</c></summary>
-    public string FrageKalibrieren { get; set; } = "Der Jahresmesswert der Zone „{0}“ wird aus der Messreihe „{1}“ gesetzt; ein vorhandener Wert fällt weg. Übernehmen?";
+    public string FrageKalibrieren { get; set; } = "Der Jahresmesswert des Bereichs „{0}“ wird aus der Messreihe „{1}“ gesetzt; ein vorhandener Wert fällt weg. Übernehmen?";
 
     /// <summary><c>ZPG_STATUS_KALIBRIERT</c></summary>
     public string StatusKalibriert { get; set; } = "Jahresmesswert aus „{0}“ übernommen";
@@ -1182,14 +1367,123 @@ public sealed class ZapfprofilTexte
     public string VorschlagStunde { get; set; } = "Stunde";
 
     /// <summary><c>ZPG_VORSCHLAG_HINWEIS</c></summary>
-    public string VorschlagHinweis { get; set; } = "Die Übernahme legt eine eigene Nutzungsart an; die Vorlage bleibt unberührt, und die Zone rechnet danach mit der Kopie.";
+    public string VorschlagHinweis { get; set; } = "Die Übernahme legt eine eigene Nutzungsart an; die Vorlage bleibt unberührt, und der Bereich rechnet danach mit der Kopie.";
 
     /// <summary><c>ZPG_BTN_VORSCHLAG_UEBERNEHMEN</c></summary>
     public string KnopfVorschlagUebernehmen { get; set; } = "Übernehmen";
 
     /// <summary><c>ZPG_FRAGE_VORSCHLAG</c></summary>
-    public string FrageVorschlag { get; set; } = "Aus der Messreihe „{0}“ entsteht die Nutzungsart „{1}“; die Zone rechnet danach mit ihr, die Vorlage bleibt unberührt. Übernehmen?";
+    public string FrageVorschlag { get; set; } = "Aus der Messreihe „{0}“ entsteht die Nutzungsart „{1}“; der Bereich rechnet danach mit ihr, die Vorlage bleibt unberührt. Übernehmen?";
 
     /// <summary><c>ZPG_VORSCHLAG_OHNE</c></summary>
-    public string VorschlagOhne { get; set; } = "Für diese Zone gibt es keinen Vorschlag: {0}";
+    public string VorschlagOhne { get; set; } = "Für diesen Bereich gibt es keinen Vorschlag: {0}";
+
+    // ------------------------------------------------------------ Profil ablegen (ZC6)
+
+    /// <summary><c>ZPG_PS_KNOPF_KATALOG</c></summary>
+    public string KnopfProfilKatalog { get; set; } = "Als Katalogsatz speichern…";
+
+    /// <summary><c>ZPG_PS_KNOPF_PROJEKT</c></summary>
+    public string KnopfProfilProjekt { get; set; } = "Zum Projekt hinzufügen";
+
+    /// <summary><c>ZPG_PS_TITEL_KATALOG</c></summary>
+    public string ProfilKatalogTitel { get; set; } = "Als Katalogsatz speichern";
+
+    /// <summary><c>ZPG_PS_LBL_NAME</c></summary>
+    public string ProfilLabelName { get; set; } = "Name";
+
+    /// <summary><c>ZPG_PS_LBL_TYP</c></summary>
+    public string ProfilLabelTyp { get; set; } = "Typ (Wochenprofil)";
+
+    /// <summary><c>ZPG_PS_LBL_BESCHREIBUNG</c></summary>
+    public string ProfilLabelBeschreibung { get; set; } = "Beschreibung";
+
+    /// <summary><c>ZPG_PS_LBL_ZIRKULATION</c></summary>
+    public string ProfilLabelZirkulation { get; set; } = "mit Zirkulation";
+
+    /// <summary><c>ZPG_PS_LBL_JAHRESSUMME</c></summary>
+    public string ProfilLabelJahressumme { get; set; } = "Jahressumme";
+
+    /// <summary><c>ZPG_PS_LBL_SPITZE</c></summary>
+    public string ProfilLabelSpitze { get; set; } = "Spitzenstunde der mittleren Woche";
+
+    /// <summary><c>ZPG_PS_BTN_SPEICHERN</c></summary>
+    public string ProfilKnopfSpeichern { get; set; } = "Speichern";
+
+    /// <summary><c>ZPG_PS_BTN_WEITER</c></summary>
+    public string ProfilKnopfWeiter { get; set; } = "Weiter";
+
+    /// <summary><c>ZPG_PS_MSG_KEIN_ERGEBNIS</c></summary>
+    public string ProfilGrundKeinErgebnis { get; set; } = "Es ist kein Zapfprofil gerechnet — ohne Ergebnis kein Profilsatz.";
+
+    /// <summary><c>ZPG_PS_GRUND_FEHLEINGABE</c></summary>
+    public string ProfilGrundFehleingabe { get; set; } = "Erst die Fehleingaben beheben — mit ihnen gibt es kein Profil zum Ablegen.";
+
+    /// <summary><c>ZPG_PS_HINWEIS_WEG_GENERATOR</c></summary>
+    public string ProfilHinweisWegGenerator { get; set; } = "Das Projekt rechnet sein Brauchwasser gerade über den Zapfprofilgenerator; ein abgelegter Profilsatz rechnet erst mit, wenn der Rechenweg auf Bestandsprofile steht.";
+
+    /// <summary><c>ZPG_PS_HINWEIS_WEG_BESTAND</c></summary>
+    public string ProfilHinweisWegBestand { get; set; } = "Das Projekt rechnet sein Brauchwasser gerade über die Bestandsprofile; ein Profilsatz, der dem Projekt hinzugefügt wird, rechnet mit.";
+
+    // --- ZC5: die Methoden als Bereiche (Stufe Experte) ---
+
+    /// <summary><c>ZPG_GRP_METHODEN</c></summary>
+    public string GruppeMethoden { get; set; } = "Methoden";
+
+    /// <summary><c>ZPG_MTH_BEDARF</c></summary>
+    public string MethodeBedarf { get; set; } = "Bedarf";
+
+    /// <summary><c>ZPG_MTH_JAHRESREIHE</c></summary>
+    public string MethodeJahresreihe { get; set; } = "Jahresreihe";
+
+    /// <summary><c>ZPG_MTH_ZIRKULATION</c></summary>
+    public string MethodeZirkulation { get; set; } = "Zirkulation und Anlage";
+
+    /// <summary><c>ZPG_MTH_AUSLEGUNG</c></summary>
+    public string MethodeAuslegung { get; set; } = "Auslegung";
+
+    /// <summary><c>ZPG_WIRKUNG_SUMME</c></summary>
+    public string WirkungSumme { get; set; } = "Summe";
+
+    /// <summary><c>ZPG_WIRKUNG_VERTEILUNG</c></summary>
+    public string WirkungVerteilung { get; set; } = "Verteilung";
+
+    /// <summary><c>ZPG_WIRKUNG_JAHRESREIHE</c></summary>
+    public string WirkungJahresreihe { get; set; } = "Jahresreihe";
+
+    /// <summary><c>ZPG_WIRKUNG_SIMULATION</c></summary>
+    public string WirkungSimulation { get; set; } = "Simulation";
+
+    /// <summary><c>ZPG_WIRKUNG_AUSLEGUNG</c></summary>
+    public string WirkungAuslegung { get; set; } = "nur Auslegung";
+
+    /// <summary><c>ZPG_WIRKUNG_TITEL</c></summary>
+    public string WirkungTitel { get; set; } = "Wirkt auf: {0}";
+
+    /// <summary><c>ZPG_MTH_SATZ_BEDARF</c></summary>
+    public string SatzBedarf { get; set; } = "Belegung und Tagesbedarf bestimmen, wie viel Warmwasser der Bereich im Jahr zapft – sie ändern die Jahressumme.";
+
+    /// <summary><c>ZPG_MTH_SATZ_KALENDER</c></summary>
+    public string SatzKalender { get; set; } = "Der Kalender legt Werktage, Ruhetage und Ferien fest und verteilt den Jahresbedarf um – die Summe bleibt gleich.";
+
+    /// <summary><c>ZPG_MTH_SATZ_MESSWERT</c></summary>
+    public string SatzMesswert { get; set; } = "Ein Jahresmesswert kalibriert den Bedarf des Bereichs auf die gemessene Menge – er ändert die Summe, nicht die Verteilung.";
+
+    /// <summary><c>ZPG_MTH_SATZ_JAHRESREIHE</c></summary>
+    public string SatzJahresreihe { get; set; } = "Der Rechenweg bildet aus dem Tagesbedarf die Stundenreihe des Jahres; Tagesgang, Auslastung und Kaltwasser formen sie, die Summe bleibt.";
+
+    /// <summary><c>ZPG_MTH_SATZ_ZIRKULATION</c></summary>
+    public string SatzZirkulation { get; set; } = "Zirkulation und Leitungsinhalt gehen als Verlust in die Simulation ein; die Zapfmenge ändern sie nicht.";
+
+    /// <summary><c>ZPG_MTH_SATZ_AUSLEGUNG</c></summary>
+    public string SatzAuslegung { get; set; } = "Topologie, Ladeleistung, Ladefenster und Speichertemperatur wirken allein auf die Auslegung von Speicher und Station, nicht auf die Simulation.";
+
+    /// <summary><c>ZPG_OPT_NORM_JAHRESGANG</c></summary>
+    public string OptionNormJahresgang { get; set; } = "Norm-Jahresgang";
+
+    /// <summary><c>ZPG_OPT_TYPTAGE</c></summary>
+    public string OptionTyptage { get; set; } = "Typtage VDI 4655";
+
+    /// <summary><c>ZPG_HINW_NUR_ENSEMBLE</c></summary>
+    public string HinweisNurEnsemble { get; set; } = "Wirkt hier nur auf das Ensemble der Auslegung.";
 }

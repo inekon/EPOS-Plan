@@ -56,6 +56,39 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string ABNEHMER_KAELTEKREIS = "ABNEHMER_KAELTEKREIS";
 
+        /// <summary>
+        /// K6b (Konzept Kältebedarf 4.3, Frage 2 des Plans K6): der Abnehmer „Kältebedarf dezentral (Split)“ in der
+        /// Kältebahn — die dezentral gedeckten Kältebedarfszeilen. Er steht OHNE Kante da (die Split-Geräte hängen an keinem
+        /// Kältekreis), Träger und Zähler stehen als Hinweiszeilen; eine Stromlinie zum Kühlträger kennt das Schema nicht.
+        /// Nur, wenn das Projekt Kälte rechnet und mindestens eine Split-Zeile führt.
+        /// </summary>
+        public const string ABNEHMER_KAELTE_DEZENTRAL = "ABNEHMER_KAELTE_DEZENTRAL";
+
+        // --- Auftrag KS: die KÄLTEBAHN unter der Wärmebahn ------------------------------
+        //
+        // Eigene Schlüsselpräfixe, weil eine Wärmepumpe im Kühlbetrieb in BEIDEN Bahnen
+        // steht (oben als Wärmeerzeuger, unten als Kälteerzeuger) und ein Schlüssel genau
+        // einen Kasten benennt. Der Kältekreis behält seinen Schlüssel und steht unten.
+
+        /// <summary>Rückkühlung bzw. Quelle eines Kälteerzeugers (Spalte 0 der Kältebahn).</summary>
+        public const string PRAEFIX_KAELTE_QUELLE = "KQUELLE_";
+
+        /// <summary>Kälteerzeuger: Kältemaschine oder Wärmepumpe im Kühlbetrieb (Spalte 1).</summary>
+        public const string PRAEFIX_KAELTE_ERZEUGER = "KERZEUGER_";
+
+        /// <summary>Kältespeicher: Projektpuffer mit der Verwendung Kälte (Spalte 2).</summary>
+        public const string PRAEFIX_KAELTE_SPEICHER = "KSPEICHER_";
+
+        /// <summary>Bahn eines Knotens: oben die Wärme, darunter — nur mit Kälte — die Kälte.</summary>
+        public enum Bahn
+        {
+            /// <summary>Die Wärmebahn (Quelle → Erzeuger → Puffer → Heizkreis, Warmwasser, Prozess).</summary>
+            Waerme,
+
+            /// <summary>Die Kältebahn (Rückkühlung → Kälteerzeuger → Kältespeicher → Kältekreis).</summary>
+            Kaelte
+        }
+
         /// <summary>Spalte des Schemas — die vier Rubriken des Mockups.</summary>
         public enum Knotenart
         {
@@ -140,6 +173,9 @@ namespace WindowsFormsApplication1
 
             /// <summary>Kaskadenbezug — blau gestrichelter Rahmen (Mockup: „Spitzenkessel").</summary>
             public bool Kaskade;
+
+            /// <summary>Auftrag KS: die Bahn des Knotens — Wärme (Vorgabe) oder Kälte.</summary>
+            public Bahn Bahn = Bahn.Waerme;
         }
 
         /// <summary>Eine Verbindung zwischen zwei Knoten.</summary>
@@ -173,6 +209,24 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die abgeleiteten Kaskadenketten; leer, wenn das Projekt keine führt.</summary>
         public readonly List<List<Kettenglied>> Ketten = new List<List<Kettenglied>>();
+
+        /// <summary>
+        /// Auftrag KS: die Kälteerzeuger in der Reihenfolge der Kälte-Kaskade (Bezeichner) —
+        /// dieselbe Reihenfolge, in der der Lauf sie fragt: erst die Wärmepumpen im Kühlbetrieb,
+        /// dann die Kältemaschinen, je in der Folge ihrer Anlagenzeilen. Leer ohne Kälteerzeuger.
+        /// </summary>
+        public readonly List<string> KaelteKette = new List<string>();
+
+        /// <summary>true, wenn mindestens ein Knoten in der Kältebahn steht.</summary>
+        public bool HatKaelte
+        {
+            get
+            {
+                foreach (Knoten k in Knotenliste)
+                    if (k.Bahn == Bahn.Kaelte) return true;
+                return false;
+            }
+        }
 
         /// <summary>Projekt, aus dem das Modell stammt.</summary>
         public int ID_Projekt { get; private set; }
@@ -299,6 +353,15 @@ namespace WindowsFormsApplication1
             return null;
         }
 
+        /// <summary>Alle Knoten einer Spalte EINER Bahn, in Aufbaureihenfolge (Auftrag KS).</summary>
+        public List<Knoten> Spalte(Knotenart art, Bahn bahn)
+        {
+            List<Knoten> liste = new List<Knoten>();
+            foreach (Knoten k in Knotenliste)
+                if (k.Art == art && k.Bahn == bahn) liste.Add(k);
+            return liste;
+        }
+
         /// <summary>Alle Knoten einer Spalte, in Aufbaureihenfolge.</summary>
         public List<Knoten> Spalte(Knotenart art)
         {
@@ -404,6 +467,7 @@ namespace WindowsFormsApplication1
             m.ErzeugerKnotenAnlegen(bild, anlagen, pufferJeId, quellpuffer, rangJeTyp);
             m.KantenAnlegen(idProjekt, anlagen, quellpuffer, hatBrauchwasser, hatProzess);
             m.KettenAbleiten(anlagen, pufferJeId, quellpuffer, hatBrauchwasser);
+            m.KaelteBahnAnlegen(idProjekt, anlagen, kanalBedarfMwh);
 
             return m;
         }
@@ -593,19 +657,7 @@ namespace WindowsFormsApplication1
                 OhneVersorgerAnlegen(ABNEHMER_PROZESS, MyResource.Resource.KANAL_PROZESS_ANZEIGE,
                                      Kanal.PROZESS, hatProzess, kanalBedarfMwh);
 
-            // KU2 (Kühlkonzept 4.3 #33): der Kältekreis - bedient von den Wärmepumpen im
-            // Kühlbetrieb (KantenAnlegen), sonst mit Warnzeichen, wenn der Lauf Kältebedarf kennt.
-            if (_kaelteerzeuger.Count > 0)
-                Knotenliste.Add(new Knoten
-                {
-                    Schluessel = ABNEHMER_KAELTEKREIS,
-                    Art = Knotenart.Abnehmer,
-                    Titel = MyResource.Resource.SIM_ZIEL_KAELTEKREIS,
-                    Hinweis = MyResource.Resource.SIM_SCHEMA_TIP_ABNEHMER
-                });
-            else
-                OhneVersorgerAnlegen(ABNEHMER_KAELTEKREIS, MyResource.Resource.SIM_ZIEL_KAELTEKREIS,
-                                     Kanal.KUEHLUNG, false, kanalBedarfMwh);
+            // Der Kältekreis steht seit Auftrag KS in der Kältebahn (KaelteBahnAnlegen).
         }
 
         /// <summary>
@@ -634,6 +686,385 @@ namespace WindowsFormsApplication1
                 int id = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
                 if (gezeichnet.Contains(id)) _kaelteerzeuger.Add(id);
             }
+        }
+
+        // --- Auftrag KS: die Kältebahn -------------------------------------------------
+
+        /// <summary>
+        /// Legt die KÄLTEBAHN an (Auftrag KS) — vier Spalten unter der Wärmebahn, mit derselben
+        /// Kantensprache: Rückkühlung bzw. Quelle → Kälteerzeuger (Quellseite), Kälteerzeuger →
+        /// Kältespeicher (Ladung, Kreis = Platz in der Kälte-Kaskade), Kältespeicher → Kältekreis
+        /// (Versorgung), ohne Kältespeicher Kälteerzeuger → Kältekreis.
+        ///
+        /// <para><b>Wer Kälte erzeugt</b>, entscheidet dieselbe Auswahl wie im Lauf: die
+        /// Wärmepumpen mit Kühlbetrieb am Gerät, solange das Projekt Kälte rechnet
+        /// (<see cref="KaelteerzeugerLesen"/>), und jede Kältemaschinen-Anlage
+        /// (<see cref="KaeltemaschineAnlageCtrl.ListeStill"/>). Eine Kältemaschine steht auch
+        /// bei ausgeschaltetem Projektschalter da — sie ist ein Kälteerzeuger von Natur —, der
+        /// Kältekreis sagt dann, dass das Projekt keine Kälte rechnet. Kältespeicher sind die
+        /// Projektpuffer mit der Verwendung Kälte; sie haben keine Senkenzeile, denn alle
+        /// Kälteerzeuger laden den einen Kältekanal (<c>KaeltespeicherLesen</c> im Lauf).</para>
+        ///
+        /// <para>Ohne Kälteerzeuger, Kältespeicher und Kältebedarf entsteht kein Knoten, und das
+        /// Schema bleibt, wie es ohne Kälte war.</para>
+        /// </summary>
+        private void KaelteBahnAnlegen(int idProjekt, List<Hydraulikbild.AnlagenEintrag> anlagen,
+                                       double[] kanalBedarfMwh)
+        {
+            bool projektKaelte = KonfigurationCtrl.KuehlbetriebLesen(idProjekt);
+            List<string> erzeuger = new List<string>();
+
+            // Die Erzeuger der Kältebahn: je Anlage ein Bauschritt, geordnet nach der Kaeltefolge (KB-A) - Wärmepumpen
+            // im Kühlbetrieb in der Folge ihrer Module, Kältemaschinen in der Folge ihrer Anlagenzeilen; gepflegte Ränge
+            // (KB-D) vorn. Ohne Rang die Vorgabefolge, Knoten für Knoten wie zuvor.
+            var bauschritte = new List<(KaeltefolgeStufe Stufe, int Platz, int Id, Action Bauen)>();
+
+            // 1. Wärmepumpen im Kühlbetrieb.
+            List<int> module = SimulationControl.WaermepumpenanlagenLesen(idProjekt) ?? new List<int>();
+            foreach (Hydraulikbild.AnlagenEintrag wp in anlagen.Where(a => a != null && _kaelteerzeuger.Contains(a.ID)))
+            {
+                Hydraulikbild.AnlagenEintrag a = wp;
+                bauschritte.Add((KaeltefolgeStufe.Waermepumpe, module.IndexOf(a.ID) >= 0 ? module.IndexOf(a.ID) : int.MaxValue, a.ID, () =>
+                {
+                    Knoten k = new Knoten
+                    {
+                        Schluessel = PRAEFIX_KAELTE_ERZEUGER + a.ID,
+                        Art = Knotenart.Erzeuger,
+                        Bahn = Bahn.Kaelte,
+                        ID = a.ID,
+                        ID_Type = a.ID_Type,
+                        Titel = a.Bezeichner.Length > 0 ? a.Bezeichner : Ladeordnung.ErzeugerName(a.ID_Type)
+                    };
+                    k.Zeilen.Add(MyResource.Resource.KONF_KS_WP_KUEHLBETRIEB);
+                    double? vorlauf = WpKuehlVorlauf(a.ID);
+                    if (vorlauf.HasValue)
+                        k.Zeilen.Add(string.Format(MyResource.Resource.KONF_KS_KUEHLVORLAUF, vorlauf.Value));
+                    k.Hinweis = string.Join(Environment.NewLine, k.Zeilen.ToArray());
+                    Knotenliste.Add(k);
+                    erzeuger.Add(k.Schluessel);
+                    KaelteKette.Add(k.Titel);
+
+                    // Die Quelle der Wärmepumpe nimmt im Kühlbetrieb die Abwärme auf.
+                    string quelle = Quelltext(a);
+                    if (quelle.Length > 0)
+                        Knotenliste.Add(new Knoten
+                        {
+                            Schluessel = PRAEFIX_KAELTE_QUELLE + a.ID,
+                            Art = Knotenart.Quelle,
+                            Bahn = Bahn.Kaelte,
+                            ID = a.ID,
+                            ID_Type = a.ID_Type,
+                            Titel = quelle,
+                            Hinweis = string.Format(MyResource.Resource.KONF_KS_ABWAERME, quelle)
+                        });
+                }));
+            }
+
+            // 2. Kältemaschinen. KM4-E2 (Konzept Kältemittel als Stammdatum 5.2): Warnung und Warntext am Knoten aus den
+            // Befunden der Kältemittelprüfung - ohne Inbetriebnahmejahr eine Abfrage und kein Befund.
+            var kaeltemittelBefunde = new List<Warnbefund>();
+            Warnkriterien.KaeltemittelPruefen(idProjekt, kaeltemittelBefunde);
+            int kmPlatz = 0;
+            foreach (KaeltemaschineAnlageModel km in Kaeltefolge.KaeltemaschinenOrdnen(KaeltemaschineAnlageCtrl.ListeStill(idProjekt)))
+            {
+                if (km == null || km.AnlagenId <= 0) continue;
+                KaeltemaschineAnlageModel a = km;
+                bauschritte.Add((KaeltefolgeStufe.Kaeltemaschine, kmPlatz++, a.AnlagenId, () =>
+                {
+                    KaeltemaschineModel m = a.IdKaeltemaschine.HasValue
+                        ? KaeltemaschineCtrl.LadenStill(a.IdKaeltemaschine.Value) : null;
+
+                    Knoten k = new Knoten
+                    {
+                        Schluessel = PRAEFIX_KAELTE_ERZEUGER + a.AnlagenId,
+                        Art = Knotenart.Erzeuger,
+                        Bahn = Bahn.Kaelte,
+                        ID = a.AnlagenId,
+                        ID_Type = WizardItemClass.KM_TYP,
+                        Titel = !string.IsNullOrWhiteSpace(a.Bezeichner) ? a.Bezeichner
+                              : m != null && !string.IsNullOrWhiteSpace(m.Bezeichner) ? m.Bezeichner
+                              : MyResource.Resource.KONF_KS_KAELTEMASCHINE
+                    };
+                    k.Zeilen.Add(MyResource.Resource.KONF_KS_KAELTEMASCHINE);
+                    if (m != null && m.Nennkaelteleistung_kW.HasValue && m.Nennkaelteleistung_kW.Value > 0)
+                        k.Zeilen.Add(string.Format(MyResource.Resource.KONF_KS_ANZAHL_LEISTUNG,
+                                                   Math.Max(1, a.Anzahl), m.Nennkaelteleistung_kW.Value));
+                    double vorlauf = m != null ? Kaltwasservorlauf(m) : double.NaN;
+                    if (!double.IsNaN(vorlauf))
+                        k.Zeilen.Add(string.Format(MyResource.Resource.KONF_KS_KALTWASSERVORLAUF, vorlauf));
+                    k.Hinweis = string.Join(Environment.NewLine, k.Zeilen.ToArray());
+                    Warnbefund kaeltemittel = kaeltemittelBefunde.FirstOrDefault(
+                        b => b.Kriterium == Warnkriterien.KAELTEMITTEL_STICHTAG && b.ID_Anlage == a.AnlagenId);
+                    if (kaeltemittel != null)
+                    {
+                        k.Warnung = true;
+                        k.Warntext = kaeltemittel.Text;
+                    }
+                    Knotenliste.Add(k);
+                    erzeuger.Add(k.Schluessel);
+                    KaelteKette.Add(k.Titel);
+
+                    string rueckkuehlung = m != null ? KaeltemaschineStammCtrl.RueckkuehlartText(m.Rueckkuehlart) : "";
+                    if (string.IsNullOrEmpty(rueckkuehlung)) rueckkuehlung = MyResource.Resource.KM_RUECKKUEHLART_KEINE;
+                    Knotenliste.Add(new Knoten
+                    {
+                        Schluessel = PRAEFIX_KAELTE_QUELLE + a.AnlagenId,
+                        Art = Knotenart.Quelle,
+                        Bahn = Bahn.Kaelte,
+                        ID = a.AnlagenId,
+                        ID_Type = WizardItemClass.KM_TYP,
+                        Titel = rueckkuehlung,
+                        Hinweis = string.Format(MyResource.Resource.KONF_KS_RUECKKUEHLUNG, rueckkuehlung)
+                    });
+                }));
+            }
+
+            Dictionary<int, int> raenge = Kaeltefolge.RaengeLesen(idProjekt);
+            foreach (var schritt in Kaeltefolge.ErzeugerOrdnen(bauschritte, b => b.Stufe, b => b.Platz,
+                         b => raenge.TryGetValue(b.Id, out int r) ? r : (int?)null))
+                schritt.Bauen();
+
+            // 3. Kältespeicher - in der Reihenfolge des Laufs (Entladepriorität, 0 hinten).
+            List<WaermesenkeClass.PufferInfo> speicher = Kaeltefolge.KaeltespeicherOrdnen(
+                (WaermesenkeClass.ProjektPufferListe(idProjekt, WaermesenkeClass.VERWENDUNG_KAELTE)
+                 ?? new List<WaermesenkeClass.PufferInfo>()).Where(p => p != null),
+                p => p.Entladeprio);
+
+            foreach (WaermesenkeClass.PufferInfo p in speicher)
+            {
+                Knoten k = new Knoten
+                {
+                    Schluessel = PRAEFIX_KAELTE_SPEICHER + p.ID,
+                    Art = Knotenart.Speicher,
+                    Bahn = Bahn.Kaelte,
+                    ID = p.ID,
+                    Titel = p.Bezeichner.Length > 0 ? p.Bezeichner : MyResource.Resource.PSP_BEZEICHNER_ERSATZ
+                };
+                if (p.Gesamtvolumen > 0)
+                    k.Zeilen.Add(string.Format(MyResource.Resource.PSP_KARTE_VOLUMEN, p.Gesamtvolumen));
+                if (p.Vorlauf > 0 && p.Ruecklauf > 0)
+                    k.Zeilen.Add(string.Format(MyResource.Resource.SIM_KARTE_TEMPERATURPAAR, p.Vorlauf, p.Ruecklauf));
+                k.Badges.Add(MyResource.Resource.KONF_KS_KAELTE);
+                k.Hinweis = string.Join(Environment.NewLine, k.Zeilen.ToArray());
+                Knotenliste.Add(k);
+            }
+
+            // 4. Der Kältekreis - bedient, sonst mit Warnzeichen, wenn der Lauf Kältebedarf kennt.
+            if (erzeuger.Count > 0 || speicher.Count > 0)
+            {
+                Knoten k = new Knoten
+                {
+                    Schluessel = ABNEHMER_KAELTEKREIS,
+                    Art = Knotenart.Abnehmer,
+                    Bahn = Bahn.Kaelte,
+                    Titel = MyResource.Resource.SIM_ZIEL_KAELTEKREIS,
+                    Hinweis = MyResource.Resource.SIM_SCHEMA_TIP_ABNEHMER
+                };
+                KuehluebergabeZeilen(idProjekt, k.Zeilen);
+                if (!projektKaelte) k.Zeilen.Add(MyResource.Resource.KONF_KS_PROJEKT_AUS);
+                else KaelteHerkunftZeilen(idProjekt, k.Zeilen);
+                if (k.Zeilen.Count > 0)
+                    k.Hinweis = k.Hinweis + Environment.NewLine + string.Join(Environment.NewLine, k.Zeilen.ToArray());
+                Knotenliste.Add(k);
+            }
+            else
+            {
+                OhneVersorgerAnlegen(ABNEHMER_KAELTEKREIS, MyResource.Resource.SIM_ZIEL_KAELTEKREIS,
+                                     Kanal.KUEHLUNG, false, kanalBedarfMwh);
+                Knoten ohne = Finden(ABNEHMER_KAELTEKREIS);
+                if (ohne != null)
+                {
+                    ohne.Bahn = Bahn.Kaelte;
+                    if (projektKaelte) KaelteHerkunftZeilen(idProjekt, ohne.Zeilen);
+                    if (ohne.Zeilen.Count > 0)
+                        ohne.Hinweis = ohne.Hinweis + Environment.NewLine + string.Join(Environment.NewLine, ohne.Zeilen.ToArray());
+                }
+            }
+
+            // 4a. K6b: die dezentral (Split) gedeckten Zeilen - ein Abnehmer ohne Kante, nur mit Split-Zeile.
+            if (projektKaelte) KaelteDezentralAnlegen(idProjekt);
+
+            // 5. Kanten - dieselbe Sprache wie in der Wärmebahn.
+            for (int i = 0; i < erzeuger.Count; i++)
+            {
+                Knoten e = Finden(erzeuger[i]);
+                Verbinden(PRAEFIX_KAELTE_QUELLE + e.ID, e.Schluessel, Kantenart.Quelle, 0, "");
+
+                if (speicher.Count == 0)
+                {
+                    Verbinden(e.Schluessel, ABNEHMER_KAELTEKREIS, Kantenart.Versorgung, 0, "");
+                    continue;
+                }
+
+                string platz = string.Format(MyResource.Resource.KONF_KS_PLATZ, i + 1, erzeuger.Count);
+                foreach (WaermesenkeClass.PufferInfo p in speicher)
+                    Verbinden(e.Schluessel, PRAEFIX_KAELTE_SPEICHER + p.ID, Kantenart.Ladung, i + 1, platz);
+            }
+
+            foreach (WaermesenkeClass.PufferInfo p in speicher)
+                Verbinden(PRAEFIX_KAELTE_SPEICHER + p.ID, ABNEHMER_KAELTEKREIS, Kantenart.Versorgung, 0, "");
+
+            // Der Platz in der Kälte-Kaskade steht auch am Kasten (wie der Kaskadenrang der Wärme).
+            if (erzeuger.Count > 1)
+                for (int i = 0; i < erzeuger.Count; i++)
+                    Finden(erzeuger[i]).Rang = (i + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// K6b-N (Plan K6, Abschnitt 4): die Herkunft des zentral gedeckten Kältebedarfs am Kältekreis — „davon Lastgang“ mit
+        /// der Zahl der Lastgangzeilen im Kanal Kühlung und „davon Profil“ mit der Zahl der Kältebedarfsprofile, je nur, wenn
+        /// es solche Zuordnungen gibt. Nur Zahlen: Die Abnehmerspalte ist 132 px breit, eine Jahressumme schnitte der Knoten ab
+        /// (sie steht in der Gruppe der Konfiguration). Dezentral (Split) gedeckte Zeilen zählen nicht: Sie stehen am eigenen Knoten.
+        /// </summary>
+        private static void KaelteHerkunftZeilen(int idProjekt, List<string> zeilen)
+        {
+            List<Z_ProjektKaeltebedarfCtrl.Uebersichtszeile> zentral =
+                Z_ProjektKaeltebedarfCtrl.ZeilenDesProjekts(idProjekt).Where(z => !z.Split).ToList();
+            System.Globalization.CultureInfo kultur = System.Globalization.CultureInfo.CurrentCulture;
+
+            int lastgaenge = zentral.Count(z => !z.Profil);
+            if (lastgaenge > 0)
+                zeilen.Add(string.Format(kultur, MyResource.Resource.KONF_KS_DAVON_LASTGANG, lastgaenge));
+
+            int profile = zentral.Count(z => z.Profil);
+            if (profile > 0)
+                zeilen.Add(string.Format(kultur, MyResource.Resource.KONF_KS_DAVON_PROFIL, profile));
+        }
+
+        /// <summary>
+        /// K6b: der Knoten „Dezentral (Split)“ (<see cref="ABNEHMER_KAELTE_DEZENTRAL"/>; „Kältebedarf“ entfällt, er steht im
+        /// Abschnitt Kälte). Im Kasten je Split-Zeile genau eine kurze Zeile und eine Sammelzeile zum Strom
+        /// (<see cref="KaelteDezentralZeilen"/>); der Tooltip trägt den vollen Text — Bezeichner mit EER-Weg, Kühlträger mit
+        /// Abrechnungsart. Ohne Split-Zeile entsteht kein Knoten, und das Schema bleibt, wie es war.
+        /// </summary>
+        private void KaelteDezentralAnlegen(int idProjekt)
+        {
+            List<Z_ProjektKaeltebedarfCtrl.Uebersichtszeile> zeilen =
+                Z_ProjektKaeltebedarfCtrl.ZeilenDesProjekts(idProjekt).Where(z => z.Split).ToList();
+            if (zeilen.Count == 0) return;
+
+            int projekttraeger = Kaeltestromabrechnung.Projekttraeger(idProjekt);
+            Knoten k = new Knoten
+            {
+                Schluessel = ABNEHMER_KAELTE_DEZENTRAL,
+                Art = Knotenart.Abnehmer,
+                Bahn = Bahn.Kaelte,
+                Titel = MyResource.Resource.SIM_SCHEMA_ABNEHMER_KAELTE_DEZENTRAL,
+                Hinweis = MyResource.Resource.SIM_SCHEMA_TIP_ABNEHMER
+            };
+            System.Globalization.CultureInfo kultur = System.Globalization.CultureInfo.CurrentCulture;
+            k.Zeilen.AddRange(KaelteDezentralZeilen(
+                zeilen.Select(z => (z.Bezeichner, EerKurz(z, kultur), z.KuehlIdCarrier)), projekttraeger));
+
+            // Der Tooltip trägt den vollen Text (Frage 2: Träger und Zähler statt einer Stromlinie).
+            List<string> voll = new List<string>();
+            foreach (Z_ProjektKaeltebedarfCtrl.Uebersichtszeile z in zeilen)
+            {
+                voll.Add(string.Format(kultur, MyResource.Resource.KONF_KS_DEZENTRAL_ZEILE, z.Bezeichner,
+                                       Z_ProjektKaeltebedarfCtrl.EerText(z, kultur)));
+                voll.Add(string.Format(kultur, MyResource.Resource.KONF_KS_DEZENTRAL_TRAEGER,
+                                       ProjektDetails.TraegerText(z, projekttraeger)));
+            }
+            k.Hinweis = k.Hinweis + Environment.NewLine + string.Join(Environment.NewLine, voll.ToArray());
+            Knotenliste.Add(k);
+        }
+
+        /// <summary>
+        /// K6b-N (Entscheid zum Foto der Sichtprobe): die Zeilen im Kasten „Dezentral (Split)“ — je Split-Zeile genau EINE
+        /// „Kurzname: EER Wert“, der Kurzname mit derselben Regel gekürzt wie lange Knotentitel
+        /// (<see cref="SchemaLayout.TitelKuerzen"/>) auf die Abnehmerspalte (<see cref="SchemaLayout.SPALTEN_BREITE"/>), der
+        /// Rechenweg (fest/linear) nur im Tooltip; danach die Sammelzeile „Strom: Projektträger“, wenn alle Zeilen den Träger
+        /// des Projekts nehmen, sonst „Strom: n Träger“ mit der Zahl der verschiedenen Träger. Ohne Datenbank.
+        /// </summary>
+        /// <param name="zeilen">Je Split-Zeile Bezeichner, EER-Wert (kurz, <see cref="EerKurz"/>) und Kühlträger
+        /// (<c>null</c> = Stromträger des Projekts).</param>
+        /// <param name="projekttraeger">Der Stromträger des Projekts.</param>
+        public static List<string> KaelteDezentralZeilen(IEnumerable<(string Bezeichner, string Eer, int? Kuehltraeger)> zeilen,
+                                                         int projekttraeger)
+        {
+            System.Globalization.CultureInfo kultur = System.Globalization.CultureInfo.CurrentCulture;
+            List<(string Bezeichner, string Eer, int? Kuehltraeger)> liste =
+                (zeilen ?? Enumerable.Empty<(string, string, int?)>()).ToList();
+            List<string> aus = new List<string>();
+            if (liste.Count == 0) return aus;
+
+            int breite = SchemaLayout.SPALTEN_BREITE[(int)Knotenart.Abnehmer] - 2 * SchemaLayout.KNOTEN_RAND;
+            foreach (var z in liste)
+            {
+                string rest = string.Format(kultur, MyResource.Resource.KONF_KS_DEZENTRAL_ZEILE, "", z.Eer);
+                string name = SchemaLayout.TitelKuerzen(z.Bezeichner ?? "", breite - SchemaLayout.TextBreite(rest));
+                aus.Add(string.Format(kultur, MyResource.Resource.KONF_KS_DEZENTRAL_ZEILE, name, z.Eer));
+            }
+
+            List<int> traeger = liste
+                .Select(z => Kaeltestromabrechnung.Abweichend(z.Kuehltraeger, projekttraeger) ? z.Kuehltraeger.Value : projekttraeger)
+                .Distinct().ToList();
+            aus.Add(liste.All(z => !Kaeltestromabrechnung.Abweichend(z.Kuehltraeger, projekttraeger))
+                ? MyResource.Resource.KONF_KS_DEZENTRAL_STROM_PROJEKT
+                : string.Format(kultur, MyResource.Resource.KONF_KS_DEZENTRAL_STROM_TRAEGER, traeger.Count));
+            return aus;
+        }
+
+        /// <summary>K6b-N: der EER einer Split-Zeile ohne Rechenweg — fest „3,0“, linear „3,0–4,0“ (Format wie <c>EerText</c>).</summary>
+        internal static string EerKurz(Z_ProjektKaeltebedarfCtrl.Uebersichtszeile z, IFormatProvider kultur)
+        {
+            string E(double? w) => (w ?? 0.0).ToString("0.0#", kultur);
+            return z.EerWeg == KaeltebedarfSchema.EER_LINEAR ? E(z.Eer1) + "–" + E(z.Eer2) : E(z.Eer1);
+        }
+
+        /// <summary>Kühlvorlauf des Projektgeräts einer Wärmepumpen-Anlage [°C]; <c>null</c> = nicht gepflegt.</summary>
+        private static double? WpKuehlVorlauf(int idAnlage)
+        {
+            object v = StilleDb.Scalar(
+                "SELECT w.Kuehl_Vorlauf FROM Tab_Energieanlagen a JOIN Tab_WP w ON w.ID = a.ID_WP WHERE a.ID = ?",
+                StilleDb.Par("@id", DbParamTyp.Integer, idAnlage));
+            if (v == null || v is DBNull) return null;
+            double d = StilleDb.Kommazahl(v, double.NaN);
+            return double.IsNaN(d) || d <= 0 ? (double?)null : d;
+        }
+
+        /// <summary>
+        /// Der Kaltwasservorlauf einer Kältemaschine [°C] — derselbe Wert, mit dem der Lauf sie
+        /// baut (<see cref="Kaeltemaschine.AusModell"/>); NaN, wenn er nicht bestimmbar ist.
+        /// </summary>
+        private static double Kaltwasservorlauf(KaeltemaschineModel m)
+        {
+            try
+            {
+                double kw = Kaeltemaschine.AusModell(m, out bool _).Kaltwassertemperatur;
+                return double.IsNaN(kw) || double.IsInfinity(kw) ? double.NaN : kw;
+            }
+            catch (Exception) { return double.NaN; }
+        }
+
+        /// <summary>
+        /// Die Kühlübergabe der Gebäude des Projekts als Zeilen des Kältekreises: je Übergabeart
+        /// eine Zeile (Anzeigename wie im Gebäudedialog), dazu die Zahl der Zonen, wenn ein
+        /// Gebäude mit Kühlübergabe in mehr als einer Zone rechnet.
+        /// </summary>
+        private static void KuehluebergabeZeilen(int idProjekt, List<string> zeilen)
+        {
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT g.Kuehl_Uebergabe_Art, " +
+                "(SELECT COUNT(*) FROM Tab_Zone z WHERE z.ID_Gebaeude = g.ID) AS Zonen " +
+                "FROM Tab_Gebaeude g WHERE g.ID_Projekt = ? AND g.Kuehluebergabe_Aktiv = 1 ORDER BY g.ID",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+            if (dt == null) return;
+
+            int zonen = 0;
+            HashSet<string> arten = new HashSet<string>(StringComparer.Ordinal);
+            foreach (DataRow r in dt.Rows)
+            {
+                object art = StilleDb.Feld(r, "Kuehl_Uebergabe_Art");
+                string name = Waermeuebergabevorgaben.KuehlAnzeigename(art == null || art is DBNull ? null : art.ToString());
+                if (!string.IsNullOrEmpty(name) && arten.Add(name))
+                    zeilen.Add(string.Format(MyResource.Resource.KONF_KS_KUEHLUEBERGABE, name));
+
+                int n = StilleDb.Zahl(StilleDb.Feld(r, "Zonen"));
+                if (n > 1) zonen += n;
+            }
+
+            if (zonen > 0) zeilen.Add(string.Format(MyResource.Resource.KONF_KS_ZONEN, zonen));
         }
 
         /// <summary>
@@ -863,10 +1294,6 @@ namespace WindowsFormsApplication1
                         DirektkanteAnlegen(erzeuger, z, hatBrauchwasser, hatProzess);
                 }
             }
-
-            // KU2 (4.3 #33): die Wärmepumpen im Kühlbetrieb versorgen den Kältekreis.
-            foreach (int idAnlage in _kaelteerzeuger)
-                Verbinden(PRAEFIX_ERZEUGER + idAnlage, ABNEHMER_KAELTEKREIS, Kantenart.Versorgung, 0, "");
 
             // Versorgung: jeder Speicher bedient die Kanäle seines KLASSEN-SETS.
             foreach (Knoten k in Knotenliste)

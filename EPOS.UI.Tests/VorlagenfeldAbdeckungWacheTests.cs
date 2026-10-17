@@ -29,7 +29,10 @@ public class VorlagenfeldAbdeckungWacheTests
         ("Simulation/UebersichtReiter.razor", "D.WaermedeckungProzent", 1,
          "Deckung der Wärme bzw. des Stroms über alle Erzeuger: der Katalog führt die Deckung je Kanal und die Autarkie, nicht diese Zahl"),
         ("Simulation/UebersichtReiter.razor", "simerg-ring-kaelte", 1,
-         "kein Kältebild im Katalog: der Bericht zeigt die Kältedeckung als Kennzahlen"),
+         "kein Kältering im Katalog: der Bericht zeigt die Kältedeckung als Kennzahlen und als Bild der Kälteproduktion"),
+        // ---- Berichte › Übersicht ----
+        ("Berichte/UebersichtErgebnisGrafik.razor", "Modell=\"@d.Modell\"", 1,
+         "Versionsvergleich der Energie-Kennzahlen als Balken: der Berichtskatalog führt keinen Versionsvergleich der Ergebnisse; dieselben Werte zeigt die Tabelle des Abschnitts"),
         // ---- Simulation › Ergebnis (die Erzeuger- und Bedarfsbilder tragen seit Katalog v10 stand.bild.*) ----
         ("Simulation/ErgebnisReiter.razor", "simerg-waermemonate", 1,
          "Wärme-Autarkie der Solarthermie je Monat: Direktdeckung und Speicheranteil führt der Zeitreihensatz des Berichts nicht"),
@@ -48,6 +51,7 @@ public class VorlagenfeldAbdeckungWacheTests
         ("Berichte/WirtschaftlichkeitSeite.razor", "tabelle.wirtschaft.nicht_monetaer"),
         ("Berichte/UebersichtSeite.razor", "tabelle.komponenten.matrix"),
         ("Berichte/AnhangEChecklisteKnopf.razor", "tabelle.anhang_e.checkliste"),
+        ("Simulation/HeizkesselReiter.razor", "stand.tabelle.heizkessel"),
     };
 
     /// <summary>

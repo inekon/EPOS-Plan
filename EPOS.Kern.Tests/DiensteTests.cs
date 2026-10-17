@@ -164,9 +164,9 @@ namespace EPOS.Kern.Tests
             string[] schluessel =
             {
                 Masken.WpAdministration, Masken.StromspeicherAdmin, Masken.PeakShaving,
-                Masken.GebaeudeAdmin, Masken.GebaeudetypenAdmin, Masken.WaermebedarfExternAdmin,
-                Masken.ProzesswaermeAdmin, Masken.StromverbraucherAdmin, Masken.StromganglinieAdmin,
-                Masken.SolarganglinieAdmin, Masken.WpImport, Masken.HeizkesselAdmin,
+                Masken.GebaeudeAdmin, Masken.Projektgebaeude, Masken.GebaeudetypenAdmin, Masken.WaermebedarfExternAdmin,
+                Masken.ProzesswaermeAdmin, Masken.KaeltebedarfAdmin, Masken.StromverbraucherAdmin, Masken.StromganglinieAdmin,
+                Masken.SolarganglinieAdmin, Masken.PvGanglinieAdmin, Masken.WpImport, Masken.WpKaelteImport, Masken.KaeltemaschineImport, Masken.HeizkesselAdmin,
                 Masken.BhkwAdmin, Masken.SolarkollektorenAdmin, Masken.PvAdmin,
                 Masken.HeizkesselImport, Masken.PufferSpImport, Masken.PufferSpAdmin,
                 Masken.BrauchwasserAdmin, Masken.BrauchwasserNutzungsarten, Masken.SolarkollektorenImport,

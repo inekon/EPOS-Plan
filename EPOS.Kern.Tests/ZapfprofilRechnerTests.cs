@@ -179,7 +179,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Rechnung_ist_deterministisch()
         {
-            ZonenStand a = Zone("Zone A", 1, 12.0, 1) with { Ferienbeginn = new int?[] { 200, null, null, null }, Ferienende = new int?[] { 215, null, null, null } };
+            ZonenStand a = Zone("Zone A", 1, 12.0, 1) with { Ferien = Zonenferienprobe.Liste((200, 215)) };
             ZonenStand b = Zone("Zone B", 2, 7.0, 2);
             ZapfprofilErgebnis e1 = Rechnen(Projekt(), a, b);
             ZapfprofilErgebnis e2 = Rechnen(Projekt(), a, b);

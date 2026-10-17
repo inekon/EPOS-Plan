@@ -342,8 +342,8 @@ public class ModulImportDialogTests : EposBunitContext
 
         string kopf = cut.Find("thead").TextContent;
         foreach (string spalte in new[]
-                 { "Quelle", "Modulname", "Hersteller", "Technologie", "Pmp (W)",
-                   "Effizienz (%)", "Isc [A]", "Bifazial", "Voc [V]", "Jahr" })
+                 { "Quelle", "Modulname", "Hersteller", "Technologie", "Pmp [W]",
+                   "Effizienz [%]", "Isc [A]", "Bifazial", "Voc [V]", "Jahr" })
             Assert.Contains(spalte, kopf);
 
         Assert.Contains("📋 Übersicht", cut.Markup);

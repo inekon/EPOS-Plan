@@ -84,6 +84,60 @@ namespace ZapfprofilValidierung.Tests
             }
         }
 
+        /// <summary>
+        /// <b>Ein älterer Katalog</b> (Auftrag A2): Führt der Paketordner die Hotelzeile des ausgelieferten
+        /// Paketteils im früheren Stand — „Hotel (aus Messung)" mit Betten —, baut das Werkzeug sie als die
+        /// heutige, „Hotel (aus Messung, je Zimmer)" mit der Bezugsart Zimmer (dieselbe Regel wie das
+        /// Programm), und ein Hinweis nennt es; eine Objektbeschreibung findet sie unter dem heutigen Namen.
+        /// Eine Anwenderzeile gleichen Namens (Status EIGEN) bleibt, wie sie ist.
+        /// </summary>
+        [Fact]
+        public void Eine_Hotelzeile_im_frueheren_Stand_wird_als_die_heutige_gebaut()
+        {
+            using var v = new Vorrichtung();
+            if (!v.BeispielDa) return;
+
+            Katalog k = Katalogquelle.Lesen(Hotelkatalog(v, "fruehererstand", "AUSLIEFERUNG"), out string fehler);
+            Assert.Null(fehler);
+            Assert.Null(k.Suchen("Hotel (aus Messung)"));
+            Nutzungsart hotel = k.Suchen("Hotel (aus Messung, je Zimmer)");
+            Assert.NotNull(hotel);
+            Assert.Equal(ZapfBezugsart.Zimmer, hotel.Bezug);
+            Assert.Contains(k.Hinweise, h => h.Contains("frueheren Stand", StringComparison.Ordinal)
+                                             && h.Contains("(Bezugsart Zimmer)", StringComparison.Ordinal));
+
+            Katalog eigen = Katalogquelle.Lesen(Hotelkatalog(v, "anwenderzeile", "EIGEN"), out fehler);
+            Assert.Null(fehler);
+            Assert.Equal(ZapfBezugsart.Betten, eigen.Suchen("Hotel (aus Messung)").Bezug);
+            Assert.Null(eigen.Suchen("Hotel (aus Messung, je Zimmer)"));
+            Assert.DoesNotContain(eigen.Hinweise, h => h.Contains("frueheren Stand", StringComparison.Ordinal));
+        }
+
+        /// <summary>
+        /// Der Beispielkatalog, dessen Pflegeheim als Hotelzeile des Paketteils im früheren Stand dasteht
+        /// (Name, Bezugsart Betten, Provenienz FREI-1/EIGENKONSTRUKTION, Status <paramref name="status"/>).
+        /// </summary>
+        private static string Hotelkatalog(Vorrichtung v, string name, string status)
+        {
+            string ordner = v.Neu(name);
+            foreach (string d in Directory.EnumerateFiles(v.Katalog))
+                File.Copy(d, Path.Combine(ordner, Path.GetFileName(d)));
+            string datei = Path.Combine(ordner, Katalogquelle.DATEI_NUTZUNGSART);
+            string[] zeilen = File.ReadAllLines(datei);
+            string[] kopf = zeilen[0].Split(';');
+            int i = Array.FindIndex(zeilen, z => z.StartsWith("Beispiel Pflegeheim (erfunden);3;", StringComparison.Ordinal));
+            Assert.True(i > 0, "Das Pflegeheim fehlt im Beispielkatalog.");
+            string[] f = zeilen[i].Split(';');
+            void Setze(string spalte, string wert) => f[Array.IndexOf(kopf, spalte)] = wert;
+            Setze("Bezeichner", "Hotel (aus Messung)");
+            Setze("Bedarf_Version", "FREI-1");
+            Setze("Bedarf_Herkunftsart", "EIGENKONSTRUKTION");
+            Setze("Status", status);
+            zeilen[i] = string.Join(";", f);
+            File.WriteAllLines(datei, zeilen);
+            return ordner;
+        }
+
         [Fact]
         public void Eine_fehlende_Pflichtdatei_im_Paketordner_wird_benannt()
         {

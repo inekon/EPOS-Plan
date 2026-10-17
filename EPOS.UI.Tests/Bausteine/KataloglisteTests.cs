@@ -911,4 +911,115 @@ public class KataloglisteTests : EposBunitContext
         var werkzeug = mit.Find(".epos-katalog-suchzeile > .epos-katalog-werkzeug");
         Assert.NotNull(werkzeug.QuerySelector("#schalter"));
     }
+
+    // =====================================================================
+    //  KD-4 - der Langtext am kurzen Spaltenkopf
+    // =====================================================================
+
+    /// <summary>
+    /// KD-4: Ein kurzer Kopf mit Langtext („P_N" → „Nennkälteleistung") trägt ihn am Kopftext als
+    /// <c>title</c> und nennt ihn im Namen des Sortierknopfs; ein Kopf ohne Langtext trägt keines von
+    /// beidem, der Trichter bleibt unberührt. Der Profiltext ohne Übersetzung ist der Schlüssel selbst.
+    /// </summary>
+    [Fact]
+    public void Ein_kurzer_Kopf_nennt_seinen_Langtext_im_Tooltip_und_der_Hilfstechnik()
+    {
+        Katalogfilterprofil profil = Katalogfilterprofil.Finde(Anlagenart.Kaeltemaschine, s => s);
+        var zeilen = new List<Katalogfilterzeile>
+        {
+            new Katalogfilterzeile(1, "Kaelte 1")
+                .MitText(Katalogfilterprofil.SpBezeichner, "Kaelte 1")
+                .MitText(Katalogfilterprofil.SpHersteller, "Firma")
+                .MitZahl(Katalogfilterprofil.SpNennkaelteleistung, 100.0)
+                .MitZahl(Katalogfilterprofil.SpEer, 3.5, 2)
+                .MitText(Katalogfilterprofil.SpRueckkuehlart, "Luft")
+        };
+        var cut = Render<Katalogliste>(p => p
+            .Add(x => x.Profil, profil)
+            .Add(x => x.Zeilen, zeilen)
+            .Add(x => x.Filterstand, new Katalogfilterstand()));
+
+        var kopf = cut.FindAll(".epos-spaltenkopf-text")
+                      .Single(e => e.TextContent == "KFLT_SP_NENNKAELTELEISTUNG [kW]");
+        Assert.Equal("KFLT_LT_NENNKAELTELEISTUNG", kopf.GetAttribute("title"));
+        var knopf = kopf.Closest("button")!;
+        Assert.Contains("KFLT_LT_NENNKAELTELEISTUNG", knopf.GetAttribute("aria-label"));
+        Assert.Contains("KFLT_SP_NENNKAELTELEISTUNG [kW]", knopf.GetAttribute("aria-label"));
+
+        var rueck = cut.FindAll(".epos-spaltenkopf-text").Single(e => e.TextContent == "KFLT_SP_RUECKKUEHLART");
+        Assert.Equal("KFLT_LT_RUECKKUEHLART", rueck.GetAttribute("title"));
+
+        // Ohne Langtext: kein title am Text, der Knopfname wie bisher.
+        var hersteller = cut.FindAll(".epos-spaltenkopf-text").Single(e => e.TextContent == "KFLT_SP_HERSTELLER");
+        Assert.False(hersteller.HasAttribute("title"));
+        Assert.DoesNotContain("KFLT_LT_", hersteller.Closest("button")!.GetAttribute("aria-label"));
+
+        // Der Trichter nennt weiter den kurzen Kopf.
+        Assert.All(cut.FindAll("button.epos-trichter"),
+                   t => Assert.DoesNotContain("KFLT_LT_", t.GetAttribute("aria-label")));
+    }
+
+    [Fact]
+    public void Die_Waermepumpenkoepfe_VL_min_VL_max_Leistungszahl_und_Zuheizung_nennen_ihren_Langtext()
+    {
+        Katalogfilterprofil profil = Katalogfilterprofil.Finde(Anlagenart.Waermepumpe, s => s);
+        var zeilen = new List<Katalogfilterzeile>
+        {
+            new Katalogfilterzeile(1, "WP 1")
+                .MitZahl(Katalogfilterprofil.SpVlMin, 25.0)
+                .MitZahl(Katalogfilterprofil.SpVlMax, 60.0)
+                .MitZahl(Katalogfilterprofil.SpZuheizung, 6.0)
+                .MitZahl(Katalogfilterprofil.SpCop, 4.2, 2)
+        };
+        var cut = Render<Katalogliste>(p => p
+            .Add(x => x.Profil, profil)
+            .Add(x => x.Zeilen, zeilen)
+            .Add(x => x.Filterstand, new Katalogfilterstand()));
+
+        foreach (var (kurz, lang) in new[]
+        {
+            ("KFLT_SP_VLMIN", "KFLT_LT_VLMIN"), ("KFLT_SP_VLMAX", "KFLT_LT_VLMAX"),
+            ("KFLT_SP_COP", "KFLT_LT_COP"), ("KFLT_SP_ZUHEIZUNG", "KFLT_LT_ZUHEIZUNG")
+        })
+        {
+            var kopf = cut.FindAll(".epos-spaltenkopf-text").Single(e => e.TextContent.StartsWith(kurz));
+            Assert.Equal(lang, kopf.GetAttribute("title"));
+        }
+    }
+
+    [Fact]
+    public void Die_Waermepumpenkoepfe_Hersteller_Modell_Quelle_und_Kuehlleistung_nennen_ihren_Langtext()
+    {
+        Katalogfilterprofil profil = Katalogfilterprofil.Finde(Anlagenart.Waermepumpe, s => s);
+        var zeilen = new List<Katalogfilterzeile>
+        {
+            new Katalogfilterzeile(1, "WP 1").MitZahl(Katalogfilterprofil.SpKuehlleistung, 5.0)
+        };
+        var cut = Render<Katalogliste>(p => p
+            .Add(x => x.Profil, profil)
+            .Add(x => x.Zeilen, zeilen)
+            .Add(x => x.Filterstand, new Katalogfilterstand()));
+
+        foreach (var (kurz, lang) in new[]
+        {
+            ("KFLT_SP_HERSTELLER", "KFLT_LT_HERSTELLER"), ("KFLT_SP_MODELL", "KFLT_LT_MODELL"),
+            ("KFLT_SP_QUELLE", "KFLT_LT_QUELLE"), ("KFLT_SP_KUEHLLEISTUNG", "KFLT_LT_KUEHLLEISTUNG")
+        })
+        {
+            var kopf = cut.FindAll(".epos-spaltenkopf-text").Single(e => e.TextContent.StartsWith(kurz));
+            Assert.Equal(lang, kopf.GetAttribute("title"));
+        }
+    }
+
+    /// <summary>KD-4: Ein Profil ohne Langtexte (Heizkessel) zeichnet keinen title am Kopftext.</summary>
+    [Fact]
+    public void Ohne_Langtext_traegt_kein_Kopftext_einen_Tooltip()
+    {
+        var cut = Aufbauen();
+
+        Assert.NotEmpty(cut.FindAll(".epos-spaltenkopf-text"));
+        Assert.All(cut.FindAll(".epos-spaltenkopf-text"), e => Assert.False(e.HasAttribute("title")));
+        Assert.All(cut.FindAll("button.epos-spaltenkopf-titel"),
+                   b => Assert.Equal(b.GetAttribute("title"), b.GetAttribute("aria-label")));
+    }
 }

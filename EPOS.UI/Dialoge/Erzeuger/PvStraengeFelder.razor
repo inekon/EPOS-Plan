@@ -117,6 +117,7 @@
    (WindowsFormsApplication1.Strangvorbelegung) - eine Wahrheit fuer Windows und iOS. *@
 @using WindowsFormsApplication1
 @implements IDisposable
+@implements IStrangwahl
 
 <div class="epos-straenge">
 
@@ -389,7 +390,10 @@
        PvModellFelder; sie steht jetzt dort, wo alles zum Wechselrichter steht. *@
     <Ueberlagerung Offen="@_offen" Titel="@Titel" Geschlossen="() => _offen = false">
         <KindInhalt>
-            <p class="epos-kontextzeile">@AnlagenTexte.KopfErweitert</p>
+            @* B2 (Verbesserungen 29.09.2026): Im Modell "Einfach" wirken die vier Werte
+               nicht (SimulationPV rechnet dort mit dem festen Wirkungsgrad) - die Felder
+               sind gesperrt, und die Kopfzeile sagt warum. *@
+            <p class="epos-kontextzeile">@(Zeile.ModellErweitert ? AnlagenTexte.KopfErweitert : AnlagenTexte.KopfEinfach)</p>
             <Formularraster Einspaltig="true">
                 <KindInhalt>
                     <div title="@AnlagenTexte.TipNennleistung">
@@ -397,6 +401,7 @@
                                     Wert="@_anlagenwerte.Nennleistung"
                                     WertChanged="@(w => _anlagenwerte.Nennleistung = w)"
                                     Min="0" Max="100000" Nachkommastellen="2"
+                                    Aktiv="@Zeile.ModellErweitert"
                                     Feldname="WrNennleistung" />
                     </div>
                     <div title="@AnlagenTexte.TipEta">
@@ -404,16 +409,19 @@
                                     Wert="@_anlagenwerte.Eta10"
                                     WertChanged="@(w => _anlagenwerte.Eta10 = w)"
                                     Min="0" Max="1" Nachkommastellen="3"
+                                    Aktiv="@Zeile.ModellErweitert"
                                     Feldname="WrEta10" />
                         <Zahlenfeld Bezeichnung="@AnlagenTexte.LabelEta50"
                                     Wert="@_anlagenwerte.Eta50"
                                     WertChanged="@(w => _anlagenwerte.Eta50 = w)"
                                     Min="0" Max="1" Nachkommastellen="3"
+                                    Aktiv="@Zeile.ModellErweitert"
                                     Feldname="WrEta50" />
                         <Zahlenfeld Bezeichnung="@AnlagenTexte.LabelEta100"
                                     Wert="@_anlagenwerte.Eta100"
                                     WertChanged="@(w => _anlagenwerte.Eta100 = w)"
                                     Min="0" Max="1" Nachkommastellen="3"
+                                    Aktiv="@Zeile.ModellErweitert"
                                     Feldname="WrEta100" />
                     </div>
                 </KindInhalt>
@@ -1608,10 +1616,27 @@
             ? "(" + anlagenwert.Value.ToString(CultureInfo.CurrentCulture) + ")"
             : "";
 
-    /// <summary>Die Zeile des Weges „vereinfacht" — mit dem Wirkungsgrad, der wirklich gilt.</summary>
-    private string VereinfachtText
-        => string.Format(CultureInfo.CurrentCulture, Texte.HinweisVereinfacht,
-                         (Zeile.WrWirkungsgrad ?? 0.95).ToString("N3", CultureInfo.CurrentCulture));
+    /// <summary>
+    /// Die Zeile des Weges „vereinfacht" — je RECHENMODELL, was wirklich gilt
+    /// (Verbesserungen 29.09.2026, B2): Im Modell „Einfach" der feste Wirkungsgrad ohne
+    /// Clipping, im Modell „Erweitert" die Kennlinie der Anlagenwerte und — sobald eine
+    /// AC-Nennleistung eingetragen ist — die Abregelung auf sie
+    /// (<c>SimulationPV</c>, Zweig „Modell erweitert").
+    /// </summary>
+    public string VereinfachtText
+    {
+        get
+        {
+            if (!Zeile.ModellErweitert)
+                return string.Format(CultureInfo.CurrentCulture, Texte.HinweisVereinfacht,
+                                     (Zeile.WrWirkungsgrad ?? 0.95).ToString("N3", CultureInfo.CurrentCulture));
+
+            return Zeile.WrNennleistungKw is double ac && ac > 0.0
+                ? string.Format(CultureInfo.CurrentCulture, Texte.HinweisErweitertClipping,
+                                ac.ToString("N2", CultureInfo.CurrentCulture))
+                : Texte.HinweisErweitertOhneAc;
+        }
+    }
 
     // =================================================================================
     // Die Ueberlagerung mit den fuenf Anlagenwerten
@@ -1687,6 +1712,125 @@
         _kiAnlagenwerte?.Dispose();
         _kiAnlagenwerte = null;
     }
+
+    // =================================================================================
+    // Der Übernahmeweg für den Assistenten (Anwenderentscheid 16.10.2026): Modul und
+    // Wechselrichter eines Strangs über DIESELBE Klappliste, Projektkopie und Bewertung
+    // wie bei der Wahl durch den Anwender - nie als gesetzte Id.
+    // =================================================================================
+
+    /// <inheritdoc/>
+    IReadOnlyList<KiKern.KiWahleintrag> IStrangwahl.GeraeteEintraege()
+        => KiMaskenanmeldung.Eintraege(Geraete, g => g.Id, g => g.Text);
+
+    /// <inheritdoc/>
+    IReadOnlyList<KiKern.KiWahleintrag> IStrangwahl.ModulEintraege()
+        => KiMaskenanmeldung.Eintraege(_modulwahl, m => m.Id, m => m.Text);
+
+    /// <inheritdoc/>
+    int? IStrangwahl.GeraetAuswahl(StrangZeile strang) => GeraetAuswahl(strang);
+
+    /// <inheritdoc/>
+    int? IStrangwahl.ModulAuswahl(StrangZeile strang)
+    {
+        int? wahl = ModulAuswahl(strang);
+        return wahl is < 0 ? null : wahl;
+    }
+
+    /// <summary>
+    /// Das Gerät eines Strangs, gewählt vom Assistenten. Die EIGNUNG prüft dieselbe
+    /// Bewertung, die die Klappliste und „Wechselrichter vorschlagen" zeigen
+    /// (<c>WechselrichterVorschlag.Bewerten</c> über alle Hersteller): Ein ungeeignetes
+    /// Gerät lehnt der Weg mit dem Grund der Bewertung ab, bevor eine Projektkopie
+    /// entsteht. Ohne Bewertung (kein Modul, keine Modulzahl) wählt er nichts.
+    /// </summary>
+    void IStrangwahl.GeraetWaehlen(StrangZeile strang, int stammId)
+    {
+        if (stammId <= 0)
+        {
+            _ = InvokeAsync(() => BeiGeraet(strang, 0));
+            return;
+        }
+
+        string? name = null;
+        foreach (var g in Geraete)
+            if (g.Id == stammId) { name = g.Text; break; }
+        if (name is null)
+            throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                WindowsFormsApplication1.MyResource.Resource.KI_PVS_WR_UNBEKANNT, stammId));
+
+        WechselrichterVorschlagZeile? bewertung = null;
+        if (WechselrichterVorschlagen is not null)
+            foreach (WechselrichterVorschlagZeile z in WechselrichterVorschlagen(Zeile, "")
+                                                       ?? Array.Empty<WechselrichterVorschlagZeile>())
+                if (z.Id == stammId) { bewertung = z; break; }
+        if (bewertung is null)
+            throw new InvalidOperationException(WindowsFormsApplication1.MyResource.Resource.KI_PVS_WR_OHNE_BEWERTUNG);
+        if (bewertung.Eignung == Wechselrichtereignung.Ungeeignet)
+            throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                WindowsFormsApplication1.MyResource.Resource.KI_PVS_WR_UNGEEIGNET, name, bewertung.Grund));
+
+        _ = InvokeAsync(() => BeiGeraet(strang, stammId));
+    }
+
+    /// <summary>
+    /// Das Modul eines Strangs, gewählt vom Assistenten — nur aus den Modulen des
+    /// Projekts, wie die Klappliste. Die VERTRÄGLICHKEIT prüft die Ampel des Kerns
+    /// (<see cref="Pruefen"/>) an einer Probe der Strangtabelle: Meldet sie mit dem
+    /// neuen Modul einen roten Befund, den sie vorher nicht meldete, lehnt der Weg mit
+    /// diesem Befund ab und lässt den Strang, wie er war.
+    /// </summary>
+    void IStrangwahl.ModulWaehlen(StrangZeile strang, int stammId)
+    {
+        if (stammId <= 0)
+        {
+            _ = InvokeAsync(() => BeiModul(strang, 0));
+            return;
+        }
+
+        string? name = null;
+        foreach (var m in Module)
+            if (m.Id == stammId) { name = m.Text; break; }
+        if (name is null || ModulUebernehmen is null)
+            throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                WindowsFormsApplication1.MyResource.Resource.KI_PVS_MODUL_UNBEKANNT, stammId));
+
+        GeraetWahl wahl = ModulUebernehmen(stammId);
+        if (wahl.Id <= 0)
+            throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                WindowsFormsApplication1.MyResource.Resource.KI_PVS_MODUL_UNBEKANNT, stammId));
+
+        if (Pruefen is not null)
+        {
+            var vorher = new HashSet<string>(StringComparer.Ordinal);
+            foreach (Ampelzeile a in Pruefen(Zeile, Zeile.Straenge).Straenge)
+                if (a.Farbe == Ampelfarbe.Rot) vorher.Add(a.Satz);
+
+            var probe = new List<StrangZeile>(Zeile.Straenge.Count);
+            foreach (StrangZeile z in Zeile.Straenge)
+                probe.Add(ReferenceEquals(z, strang) ? Probe(z, wahl) : z);
+
+            var neu = new List<string>();
+            foreach (Ampelzeile a in Pruefen(Zeile, probe).Straenge)
+                if (a.Farbe == Ampelfarbe.Rot && !vorher.Contains(a.Satz)) neu.Add(a.Satz);
+            if (neu.Count > 0)
+                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
+                    WindowsFormsApplication1.MyResource.Resource.KI_PVS_MODUL_UNVERTRAEGLICH, name,
+                    string.Join(WindowsFormsApplication1.MyResource.Resource.PVS_TRENNER, neu)));
+        }
+
+        _ = InvokeAsync(() => BeiModul(strang, stammId));
+    }
+
+    /// <summary>Eine Kopie des Strangs mit dem Modul der Wahl — nur für die Probe der Ampel.</summary>
+    private static StrangZeile Probe(StrangZeile s, GeraetWahl modul) => new()
+    {
+        Rang = s.Rang, Bezeichner = s.Bezeichner,
+        WechselrichterId = s.WechselrichterId, WechselrichterName = s.WechselrichterName,
+        ModulId = modul.Id, ModulName = modul.Name,
+        Geraetenummer = s.Geraetenummer, Mppt = s.Mppt, ModuleReihe = s.ModuleReihe,
+        StraengeParallel = s.StraengeParallel, Neigung = s.Neigung, Azimut = s.Azimut
+    };
 
     /// <inheritdoc/>
     public void Dispose() => AnlagenwerteAbmelden();

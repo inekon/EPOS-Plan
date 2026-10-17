@@ -31,8 +31,15 @@ namespace WindowsFormsApplication1
         {
             "bedarf_waerme", "bedarf_strom", "bedarf_kaelte",
             "waermepumpe", "waermepumpe_strom", "waermepumpe_streuwolke",
-            "heizkessel", "solarthermie", "bhkw", "photovoltaik",
+            "heizkessel", "solarthermie", "bhkw", "bhkw_strom", "photovoltaik", "kaelte_produktion",
         };
+
+        /// <summary>
+        /// Die Ergebnisbilder der Katalogfassung 12: die Stromlast des BHKW (<c>bhkw_strom</c>, zweites Bild des Reiters
+        /// „BHKW“) und die Kälteproduktion (<c>kaelte_produktion</c>, Blatt „Kälte“ des Reiters „Ergebnis“). Die übrigen
+        /// <see cref="Ergebnisbilder"/> gehören zur Fassung 10.
+        /// </summary>
+        public static readonly IReadOnlyList<string> ErgebnisbilderFassung12 = new[] { "bhkw_strom", "kaelte_produktion" };
 
         /// <summary>
         /// Das Ergebnisbild ohne Excel-Diagramm: die Streuwolke trägt Punkte über der Außentemperatur, und die
@@ -130,6 +137,8 @@ namespace WindowsFormsApplication1
                 case "heizkessel": return Heizkessel(z);
                 case "solarthermie": return Solarthermie(z);
                 case "bhkw": return Bhkw(z);
+                case "bhkw_strom": return BhkwStrom(z);
+                case "kaelte_produktion": return KaelteProduktion(z);
                 case "photovoltaik": return Photovoltaik(z);
                 default: return null;
             }
@@ -266,6 +275,67 @@ namespace WindowsFormsApplication1
             return p;
         }
 
+        /// <summary>
+        /// Die Stromlast des BHKW (Katalog v12) — das Bild <c>simerg-bhkw-strom</c> des Reiters: die Stromproduktion als
+        /// Säule, Einspeisung, Reststrombedarf und Strombedarf am BHKW als Linien, im Jahresverlauf. Die Einspeisung ist
+        /// die BHKW-Einspeisung des Satzes (<see cref="ZeitreihenSatz.BHKW_UEBERSCHUSS"/>; ohne sie 0).
+        /// </summary>
+        private static Ergebnisbildplan BhkwStrom(ZeitreihenSatz z)
+        {
+            double[] produktion = z.Hole(ZeitreihenSatz.BHKW_STROM);
+            if (produktion == null || z.Hole(ZeitreihenSatz.BHKW_STROMBEDARF) == null) return null;
+            var p = Stapelbild(R.SIMDET_BHKW_TITEL_STROMLAST, R.CHART_ACHSE_LEISTUNG, ChartRenderer.Achse.Monate);
+            p.Stapel.Add(Saeule(R.SIMDET_BHKW_SERIE_STROMPRODUKTION, produktion, Farbrolle.STROM_BHKW));
+            p.Linien.Add(new ChartRenderer.Reihe(R.SIMDET_BHKW_SERIE_EINSPEISUNG,
+                                                 Kopie(z.Hole(ZeitreihenSatz.BHKW_UEBERSCHUSS) ?? new double[produktion.Length]),
+                                                 Farbrolle.UEBERSCHUSS));
+            p.Linien.Add(new ChartRenderer.Reihe(R.SIMDET_BHKW_SERIE_RESTSTROM,
+                                                 Kopie(z.Hole(ZeitreihenSatz.BHKW_RESTSTROM) ?? new double[produktion.Length]),
+                                                 Farbrolle.REST));
+            p.Linien.Add(new ChartRenderer.Reihe(R.SIMDET_BHKW_SERIE_STROMBEDARF, Kopie(z.Hole(ZeitreihenSatz.BHKW_STROMBEDARF)),
+                                                 Farbrolle.BEDARF));
+            return p;
+        }
+
+        /// <summary>
+        /// Die Kälteproduktion (Katalog v12) — das Bild <c>simerg-kaeltegang</c> des Kältereiters: je Kälteerzeuger die
+        /// gedeckte Kälte als Säule, die ungedeckte Kälte grau darauf, der Kältebedarf als Linie
+        /// (<see cref="KaelteProduktionBild.Reihenbilden"/>, dieselbe Reihenbildung wie die Seite). <c>null</c>, wenn der Lauf
+        /// keine Kälte rechnet.
+        /// </summary>
+        private static Ergebnisbildplan KaelteProduktion(ZeitreihenSatz z)
+        {
+            if (!z.RechnetKaelte) return null;
+            double[] rest = z.Hole(ZeitreihenSatz.KAELTEREST);
+            var reihen = new KaelteProduktionBild.Reihen
+            {
+                Bedarf = z.Hole(ZeitreihenSatz.BedarfSchluessel(Kanal.KUEHLUNG)) ?? new double[rest.Length],
+                Rest = rest,
+                // K6b: die Split-Deckung, wenn der Lauf sie führt; sonst leer wie die Vorgabe.
+                Dezentral = z.Hole(ZeitreihenSatz.KAELTE_DEZENTRAL) ?? new double[0],
+            };
+            foreach (string schluessel in z.Kaeltereihen)
+                reihen.Erzeuger.Add(new KaelteProduktionBild.Erzeugerreihe
+                {
+                    Name = z.Beschriftungen.TryGetValue(schluessel, out string name) ? name : "",
+                    Werte = z.Hole(schluessel) ?? new double[0],
+                });
+            var texte = new KaelteProduktionBild.Texte
+            {
+                Titel = R.CHART_TITEL_KAELTEPRODUKTION_JAHRESGANGLINIE,
+                Achse = R.CHART_ACHSE_LEISTUNG,
+                Bedarf = R.CHART_LEGENDE_KAELTEBEDARF,
+                Rest = R.CHART_LEGENDE_KAELTE_UNGEDECKT,
+                Erzeuger = R.SIM_ERZEUGERNAME_WAERMEPUMPE,
+                Dezentral = R.CHART_LEGENDE_KAELTE_DEZENTRAL,
+            };
+            var (stapel, linien) = KaelteProduktionBild.Reihenbilden(reihen, texte, false);
+            var p = Stapelbild(texte.Titel, texte.Achse, ChartRenderer.Achse.Monate);
+            p.Stapel.AddRange(stapel);
+            p.Linien.AddRange(linien);
+            return p;
+        }
+
         private static Ergebnisbildplan Photovoltaik(ZeitreihenSatz z)
         {
             double[] genutzt = z.Hole(ZeitreihenSatz.PV_GENUTZT);
@@ -283,6 +353,56 @@ namespace WindowsFormsApplication1
                 erzeugung[i] = genutzt[i] + (ueberschuss != null && i < ueberschuss.Length ? ueberschuss[i] : 0.0);
             p.Linien.Add(new ChartRenderer.Reihe(R.SIM_PHOTOVOLTAIK, erzeugung, Farbrolle.STROM_PV));
             return p;
+        }
+
+        // =====================================================================
+        //  Energieflussbild (SK-4, Konzept Energieflussbild 5)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Energieflussbilanz eines Stands in der Sprache <paramref name="englisch"/>: die beim Sammeln gebaute
+        /// (<see cref="VariantenDaten.Energieflussbilanz"/>), wenn sie in dieser Sprache vorliegt, sonst aus dem Ergebnisbaum
+        /// des Stands neu gebaut — beides ohne Datenbank. <c>null</c> ohne Stand.
+        /// </summary>
+        public static EnergieflussBilanz EnergieflussbilanzDes(VariantenDaten v, bool englisch)
+        {
+            if (v == null) return null;
+            EnergieflussBilanz b = v.Energieflussbilanz;
+            if (b != null && b.Englisch == englisch) return b;
+            return WindowsFormsApplication1.Energiefluss.Aus(v, englisch);
+        }
+
+        /// <summary>
+        /// <b>Das Energieflussbild eines Stands für den Bericht</b> (Baustein „Ergebnisse je Variante“ und Platzhalter
+        /// <c>stand.bild.energiefluss</c>): Bilanz → <see cref="EnergieflussAbbildung.Bild"/> →
+        /// <see cref="ChartRenderer.EnergieflussModell"/> in der Berichtsfassung — die Knoten tragen ihre Jahressumme
+        /// (MWh/a), die Bänder keine Zahl (SK-Q12), die Legende steht im Bild (SK-Q14). <c>null</c> ohne Ergebnis oder ohne
+        /// Fluss (<see cref="EnergieflussBilanz.Leer"/>; der Grund steht in <see cref="EnergieflussBilanz.Grund"/>).
+        /// </summary>
+        /// <param name="v">Der Stand.</param>
+        /// <param name="mass">Das Zielmaß; <c>null</c> = <see cref="ChartRenderer.ENERGIEFLUSS_BERICHT"/>. Fehlt eine Seite
+        /// (0), folgt sie dem Seitenverhältnis der Berichtsfassung.</param>
+        /// <param name="englisch">Die Sprache des Bildes; <c>null</c> = die des Berichts (<see cref="BerichtTexte.Englisch"/>).</param>
+        public static Zeichenmodell Energiefluss(VariantenDaten v, Bildmass? mass = null, bool? englisch = null)
+        {
+            EnergieflussBilanz b = EnergieflussbilanzDes(v, englisch ?? BerichtTexte.Englisch);
+            if (b == null || b.Leer) return null;
+            return ChartRenderer.EnergieflussModell(EnergieflussAbbildung.Bild(b), EnergieflussMass(mass), knotenwerte: true);
+        }
+
+        /// <summary>
+        /// Das Zielmaß des Energieflussbilds: ohne Maß die Berichtsfassung, eine fehlende Seite im Seitenverhältnis der
+        /// Berichtsfassung (<see cref="ChartRenderer.ENERGIEFLUSS_BERICHT"/>) ergänzt.
+        /// </summary>
+        public static Bildmass EnergieflussMass(Bildmass? mass)
+        {
+            Bildmass bericht = ChartRenderer.ENERGIEFLUSS_BERICHT;
+            if (mass == null) return bericht;
+            int b = mass.Value.Breite, h = mass.Value.Hoehe;
+            if (b <= 0 && h <= 0) return bericht;
+            if (h <= 0) h = (int)Math.Round(b * (double)bericht.Hoehe / bericht.Breite, MidpointRounding.AwayFromZero);
+            if (b <= 0) b = (int)Math.Round(h * (double)bericht.Breite / bericht.Hoehe, MidpointRounding.AwayFromZero);
+            return new Bildmass(b, h);
         }
 
         // =====================================================================

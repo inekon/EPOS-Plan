@@ -143,7 +143,7 @@ namespace EPOS.Kern.Tests
                 double quadratkante = 4.0 * Math.Sqrt(Spalte("Grundflaeche", name));
                 Assert.InRange(Spalte(WD, name) / quadratkante, 1.0, 3.0);
             }
-            Assert.Equal(275L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM"));   // 269 + sechs Katalogsätze M/A (E51)
+            Assert.Equal(276L, Zahl("SELECT COUNT(*) FROM Tab_Gebaeude_STAMM"));   // 269 + sechs Katalogsätze M/A (E51) + der Referenzkatalogbau von 1051 (KP3, RP1)
 
             // Zweiter Lauf: nichts mehr zu tun.
             Assert.Empty(GebaeudeAnschlusslaengenFolgereparatur.Ausfuehren().Berichtigt);
@@ -239,7 +239,7 @@ namespace EPOS.Kern.Tests
             using var verbindung = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = uri }.ToString());
             verbindung.Open();
 
-            Assert.Equal(275L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_Gebaeude_STAMM"));   // 269 + sechs Katalogsätze M/A (E51)
+            Assert.Equal(276L, Repo(verbindung, "SELECT COUNT(*) FROM Tab_Gebaeude_STAMM"));   // 269 + sechs Katalogsätze M/A (E51) + der Referenzkatalogbau von 1051 (KP3, RP1)
             foreach (Anschlusslaengenberichtigung b in GebaeudeAnschlusslaengenFolgereparatur.Berichtigungen)
             {
                 using SqliteCommand cmd = verbindung.CreateCommand();

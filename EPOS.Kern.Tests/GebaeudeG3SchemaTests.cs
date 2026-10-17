@@ -27,13 +27,13 @@ namespace EPOS.Kern.Tests
             Assert.True(BaustoffSchema.SCHRITT > 128, "S-A muss hinter den vergebenen Schritten liegen.");
         }
 
-        /// <summary>Die SQL-Wertlisten sind die Listen in <see cref="DbWerte"/> — neun, vier, fünf (W7 bis W9).</summary>
+        /// <summary>Die SQL-Wertlisten sind die Listen in <see cref="DbWerte"/> — neun, vier, sechs (W7 bis W9, SQPROJ ab Schritt 200).</summary>
         [Fact]
         public void Die_Wertlisten_der_CHECKs_sind_die_Persistenzwerte()
         {
             Assert.Equal(9, DbWerte.BAUTEILARTEN.Count);
             Assert.Equal(4, DbWerte.RANDBEDINGUNGEN.Count);
-            Assert.Equal(5, DbWerte.HERKUENFTE.Count);
+            Assert.Equal(6, DbWerte.HERKUENFTE.Count);
             Assert.DoesNotContain("KELLER", DbWerte.RANDBEDINGUNGEN);
             Assert.Contains(DbWerte.BAUTEILART_VORHANGFASSADE, DbWerte.BAUTEILARTEN);
             Assert.Contains(DbWerte.HERKUNFT_KATALOG, DbWerte.HERKUENFTE);
@@ -239,7 +239,9 @@ namespace EPOS.Kern.Tests
         private static long Zahl(string sql, params DbParam[] p)
             => Convert.ToInt64(DataRepository.ExecuteScalar(sql, p), CultureInfo.InvariantCulture);
 
-        private static List<string> Spalten(string tabelle) => DataRepository.SpaltenVonTabelle(tabelle);
+        // Die drei Katalogspalten (KU1) sind kein Fachwert und stehen nur am Katalog.
+        private static List<string> Spalten(string tabelle) =>
+            DataRepository.SpaltenVonTabelle(tabelle).Where(s => !Katalogfassung.IstKatalogspalte(s)).ToList();
 
         [Fact]
         public void Die_acht_Tabellen_stehen_STRICT_samt_Indizes()
@@ -276,19 +278,37 @@ namespace EPOS.Kern.Tests
                          Spalten(SchemaKatalog.TAB_BAUTEILAUFBAU).Where(s => s != "ID_Projekt"));
             Assert.Equal(Spalten(SchemaKatalog.TAB_BAUTEILSCHICHT_STAMM), Spalten(SchemaKatalog.TAB_BAUTEILSCHICHT));
 
-            Assert.Equal(new[] { "ID" }.Concat(new[] { "Bezeichner" }).Concat(BaustoffSchema.Fachspalten).Concat(new[] { "ReadOnly" }),
+            Assert.Equal(new[] { "ID" }.Concat(new[] { "Bezeichner" }).Concat(BaustoffSchema.Fachspalten).Concat(new[] { "ReadOnly" })
+                             .Concat(BauteilkatalogSchema.BAUSTOFF_SPALTEN.Select(s => s.Name)),
                          Spalten(SchemaKatalog.TAB_BAUSTOFF_STAMM));
-            Assert.Equal(new[] { "ID", "Bezeichner" }.Concat(BauteilaufbauSchema.Fachspalten).Concat(new[] { "ReadOnly" }),
+            Assert.Equal(new[] { "ID", "Bezeichner" }.Concat(BauteilaufbauSchema.Fachspalten).Concat(new[] { "ReadOnly" }).Concat(new[] { TypaufbauSchema.SPALTE })
+                             .Concat(BauteilkatalogSchema.AUFBAU_SPALTEN.Select(s => s.Name))
+                             .Concat(BauteilkatalogAbschnittSchema.AUFBAU_SPALTEN.Select(s => s.Name))
+                             // DA-8: dahinter Absorptions- und Emissionsgrad (BauteilStrahlungSchema).
+                             .Concat(BauteilStrahlungSchema.SPALTEN.Select(s => s.Name)),
                          Spalten(SchemaKatalog.TAB_BAUTEILAUFBAU_STAMM));
-            Assert.Equal(new[] { "ID" }.Concat(BauteilaufbauSchema.Schichtspalten), Spalten(SchemaKatalog.TAB_BAUTEILSCHICHT));
+            Assert.Equal(new[] { "ID" }.Concat(BauteilaufbauSchema.Schichtspalten)
+                             .Concat(BauteilkatalogSchema.SpaltenVon(SchemaKatalog.TAB_BAUTEILSCHICHT).Select(s => s.Name)),
+                         Spalten(SchemaKatalog.TAB_BAUTEILSCHICHT));
             // Hinter den Spalten von S-C hängt der eigene Zonenschritt der Kühlübergabe (E37,
-            // KuehluebergabeSchema.SCHRITT_ZONE) seine drei Spalten an.
+            // KuehluebergabeSchema.SCHRITT_ZONE) seine drei Spalten an, dahinter die Uebergabe je Zone
+            // (E63, ZonenUebergabeSchema.SCHRITT) ihre vier, dahinter der Profilname (Q41, RaumnutzungSchema.SCHRITT) und die
+            // Vorheizzeit der Zone (AH-V4, VorheizenSchema.SCHRITT)
             Assert.Equal(new[] { "ID" }.Concat(ZonenSchema.Zonenspalten)
-                                       .Concat(KuehluebergabeSchema.SpaltenZone.Select(s => s.Key)),
+                                       .Concat(KuehluebergabeSchema.SpaltenZone.Select(s => s.Key))
+                                       .Concat(ZonenUebergabeSchema.SPALTEN_ZONE)
+                                       .Concat(new[] { RaumnutzungSchema.SPALTE_ZONE_NUTZUNGSPROFIL })
+                                       .Concat(new[] { VorheizenSchema.SPALTE_ZONE_VORHEIZZEIT })
+                                       // dahinter die Lastfelder des Datenaustauschs (DA-2, ZonenLastfelderSchema.SCHRITT).
+                                       .Concat(ZonenLastfelderSchema.SPALTEN.Select(s => s.Spalte)),
                          Spalten(SchemaKatalog.TAB_ZONE));
-            // Hinter den Spalten von S-C hängt der Schritt S-G (Stufe G6b) Nachbarzone und Zuordnung an.
+            // Hinter den Spalten von S-C hängt der Schritt S-G (Stufe G6b) Nachbarzone und Zuordnung an,
+            // dahinter die Herkunft der Bauteilfläche (G5-0, FlaechenherkunftSchema.SCHRITT) und die des U-Werts
+            // (MA-6b, BauteilUHerkunftSchema.SCHRITT), dahinter die Strahlungswerte (DA-8, BauteilStrahlungSchema.SCHRITT).
             Assert.Equal(new[] { "ID" }.Concat(ZonenSchema.Bauteilspalten)
-                                       .Concat(ZonenkopplungSchema.SpaltenBauteil.Select(s => s.Key)),
+                                       .Concat(ZonenkopplungSchema.SpaltenBauteil.Select(s => s.Key))
+                                       .Concat(new[] { FlaechenherkunftSchema.SPALTE, BauteilUHerkunftSchema.SPALTE })
+                                       .Concat(BauteilStrahlungSchema.SPALTEN.Select(s => s.Name)),
                          Spalten(SchemaKatalog.TAB_BAUTEIL));
             Assert.Contains(BaustoffSchema.SPALTE_HERSTELLER, Spalten(SchemaKatalog.TAB_BAUSTOFF));
         }
@@ -305,9 +325,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { ("ID_Aufbau", "Tab_Bauteilaufbau", "NO ACTION"), ("ID_Nachbarzone", "Tab_Zone", "NO ACTION"),
                                  ("ID_Zone", "Tab_Zone", "CASCADE") },
                          Fks(SchemaKatalog.TAB_BAUTEIL));
-            Assert.Equal(new[] { ("ID_Aufbau", "Tab_Bauteilaufbau", "CASCADE"), ("ID_Baustoff", "Tab_Baustoff", "NO ACTION") },
+            // BK-2 (Schritt 221): der Abschnitt einer inhomogenen Schicht, mit Kaskade.
+            Assert.Equal(new[] { ("ID_Abschnitt", "Tab_Bauteilabschnitt", "CASCADE"), ("ID_Aufbau", "Tab_Bauteilaufbau", "CASCADE"), ("ID_Baustoff", "Tab_Baustoff", "NO ACTION") },
                          Fks(SchemaKatalog.TAB_BAUTEILSCHICHT));
-            Assert.Equal(new[] { ("ID_Aufbau", "Tab_Bauteilaufbau_STAMM", "CASCADE"), ("ID_Baustoff", "Tab_Baustoff_STAMM", "NO ACTION") },
+            Assert.Equal(new[] { ("ID_Abschnitt", "Tab_Bauteilabschnitt_STAMM", "CASCADE"), ("ID_Aufbau", "Tab_Bauteilaufbau_STAMM", "CASCADE"), ("ID_Baustoff", "Tab_Baustoff_STAMM", "NO ACTION") },
                          Fks(SchemaKatalog.TAB_BAUTEILSCHICHT_STAMM));
             // Die Projektkopien tragen den Projektfremdschluessel der Hausregel (Schritt 96).
             Assert.Equal(new[] { ("ID_Projekt", "Tab_Projekt", "CASCADE") }, Fks(SchemaKatalog.TAB_BAUSTOFF));
@@ -417,8 +438,12 @@ namespace EPOS.Kern.Tests
                 v.Rollback();
             }
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Baustoff"));
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Bauteilaufbau_STAMM"));
-            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Zone"));
+            // Der Aufbaukatalog trägt allein die Typaufbauten (Schritt 192, BA-2).
+            Assert.Equal((long)TypaufbauSaattabelle.Alle.Count, Zahl("SELECT COUNT(*) FROM Tab_Bauteilaufbau_STAMM"));
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Bauteilaufbau_STAMM WHERE Typaufbau IS NULL"));
+            // Zonen tragen allein die Zonenprojekte 1052, 1054, 1062 und 1073 (G6d, AK1z, KK5a, SA4; ZonenReferenzprojektWacheTests).
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Zone WHERE ID_Gebaeude NOT IN " +
+                                  "(SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt IN (1052, 1054, 1062, 1073))"));
         }
 
         /// <summary>

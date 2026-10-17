@@ -28,7 +28,11 @@ namespace WindowsFormsApplication1
 
     /// <summary>
     /// Worauf sich der Füllstand der Stundenbilanz bezieht (4.7, N10 (k); wählbar nach N11 (d),
-    /// <c>Tab_TwwProjekt.Fuellstand_Bezug</c>, Schritt 124). Die Zahlen sind die der Spalte.
+    /// <c>Tab_TwwProjekt.Fuellstand_Bezug</c>, Schritte 124 und <see cref="TwwFuellstandSchema.SCHRITT"/>).
+    /// Die Zahlen sind die der Spalte: 1 … 4 die Größen der Auslegung, 5 … 8 je ein Verfahren des
+    /// Verfahrensvergleichs — dieselbe Zahl, die seine Zeile zeigt
+    /// (<see cref="TwwSpeicherauslegung.VERFAHREN_VERSATZ"/> + <see cref="ZapfSpeicherverfahren"/>).
+    /// Die Vorgabe (<c>null</c> in der Spalte) löst nie auf ein Verfahren auf.
     /// </summary>
     internal enum ZapfFuellstandbezug
     {
@@ -42,7 +46,19 @@ namespace WindowsFormsApplication1
         NenninhaltBand = 3,
 
         /// <summary>V_max des Plausibilitätsbands.</summary>
-        BandMax = 4
+        BandMax = 4,
+
+        /// <summary>Das Volumen des profilbasierten Verfahrens (<see cref="ZapfSpeicherverfahren.Profilbasiert"/>).</summary>
+        VerfahrenProfilbasiert = 5,
+
+        /// <summary>Das Volumen nach DIN 4708 (<see cref="ZapfSpeicherverfahren.Din4708"/>).</summary>
+        VerfahrenDin4708 = 6,
+
+        /// <summary>Das Volumen des Faustwerts mit Gleichzeitigkeit (<see cref="ZapfSpeicherverfahren.Gleichzeitigkeit"/>).</summary>
+        VerfahrenGleichzeitigkeit = 7,
+
+        /// <summary>Das Volumen des klassischen Faustwerts — nachrichtlich, aber wählbar (<see cref="ZapfSpeicherverfahren.Klassisch"/>).</summary>
+        VerfahrenKlassisch = 8
     }
 
     /// <summary>
@@ -291,6 +307,70 @@ namespace WindowsFormsApplication1
         /// <summary>Restreserve = kleinster Füllstand / C_sp [-] beim Bezugsvolumen <see cref="FuellstandBezugL"/>.</summary>
         public double? ReserveAnteil { get; init; }
 
+        /// <summary>
+        /// Der empfohlene Punkt der Summenlinie [l], mit dem die Auslegung rechnete (Bezug
+        /// <see cref="ZapfFuellstandbezug.Punkt"/>); <c>null</c> = keiner. Nur Ergebnisangabe.
+        /// </summary>
+        public double? SummenlinienpunktL { get; init; }
+
+        /// <summary>
+        /// Der Nenninhalt zum empfohlenen Punkt [l] (Bezug <see cref="ZapfFuellstandbezug.NenninhaltPunkt"/>);
+        /// <c>null</c> ohne Punkt, ohne Nenninhaltsliste oder über ihrem Ende ohne Raster. Nur Ergebnisangabe.
+        /// </summary>
+        public double? NenninhaltPunktL { get; init; }
+
+        /// <summary>
+        /// Der Bezug, den die Vorgabe nach N10 (k) auflöst — unabhängig von der Wahl
+        /// <see cref="Speicherauslegungseingang.FuellstandBezugWahl"/>; <c>null</c> ohne jedes Volumen.
+        /// </summary>
+        public ZapfFuellstandbezug? FuellstandVorgabe { get; init; }
+
+        /// <summary>
+        /// Das Volumen [l] eines Bezugs des Füllstands — die Einträge der Wahl „Speichergröße der
+        /// Füllstandslinie" (N11 (d)); <c>null</c>, wenn der Bezug nicht bestimmbar ist, dann nennt
+        /// <see cref="Fuellstandsperre"/> den Grund. Ein Bezug auf ein Verfahren liefert genau die
+        /// Zahl, die seine Zeile des Verfahrensvergleichs zeigt — ein ungültiges Verfahren keine.
+        /// Liest nur Ergebnisfelder, rechnet nichts.
+        /// </summary>
+        public double? BezugsvolumenL(ZapfFuellstandbezug art) => art switch
+        {
+            ZapfFuellstandbezug.NenninhaltPunkt => NenninhaltPunktL,
+            ZapfFuellstandbezug.Punkt => SummenlinienpunktL,
+            ZapfFuellstandbezug.NenninhaltBand => NenninhaltL,
+            ZapfFuellstandbezug.BandMax => BandMaxL,
+            _ => TwwSpeicherauslegung.VerfahrensvolumenL(Verfahren, art)
+        };
+
+        /// <summary>
+        /// Warum ein Bezug des Füllstands kein Volumen hat — benannt, nie still (ohne Punkt der
+        /// Summenlinie, ohne Plausibilitätsband, ohne Nenninhalt; bei einem Verfahren der Grund,
+        /// aus dem es keines liefert); <c>null</c>, wenn er eines hat.
+        /// </summary>
+        public ZapfSatz Fuellstandsperre(ZapfFuellstandbezug art)
+        {
+            if (BezugsvolumenL(art).HasValue) return null;
+            switch (art)
+            {
+                case ZapfFuellstandbezug.NenninhaltPunkt when SummenlinienpunktL.HasValue:
+                    return ZapfSatz.Neu("FUELLSTAND_GESPERRT_PUNKT_OHNE_NENNINHALT");
+                case ZapfFuellstandbezug.NenninhaltPunkt:
+                case ZapfFuellstandbezug.Punkt:
+                    return ZapfSatz.Neu("FUELLSTAND_GESPERRT_OHNE_PUNKT");
+                case ZapfFuellstandbezug.NenninhaltBand when BandMaxL.HasValue:
+                    return ZapfSatz.Neu("FUELLSTAND_GESPERRT_BAND_OHNE_NENNINHALT");
+                case ZapfFuellstandbezug.VerfahrenProfilbasiert:
+                    return ZapfSatz.Neu("FUELLSTAND_GESPERRT_VERFAHREN_PROFIL");
+                case ZapfFuellstandbezug.VerfahrenDin4708:
+                    return ZapfSatz.Neu("FUELLSTAND_GESPERRT_VERFAHREN_DIN");
+                case ZapfFuellstandbezug.VerfahrenGleichzeitigkeit:
+                    return ZapfSatz.Neu("FUELLSTAND_GESPERRT_VERFAHREN_GLF");
+                case ZapfFuellstandbezug.VerfahrenKlassisch:
+                    return ZapfSatz.Neu("FUELLSTAND_GESPERRT_VERFAHREN_KLASSISCH");
+                default:
+                    return ZapfSatz.Neu("FUELLSTAND_GESPERRT_OHNE_BAND");
+            }
+        }
+
         /// <summary>Die Warnliste (nie blockierend).</summary>
         public IReadOnlyList<Auslegungshinweis> Hinweise { get; init; } = new Auslegungshinweis[0];
     }
@@ -518,6 +598,21 @@ namespace WindowsFormsApplication1
                 ? ZapfSatz.Neu("AUSTEXT_KLASSISCH_RECHENWEG", personen.Value, vKlass.Value)
                 : ZapfSatz.Neu("AUSTEXT_KLASSISCH_OHNE_PERSONEN");
 
+            // --- Der Verfahrensvergleich -------------------------------------------------------
+            // Er steht VOR Band und Füllstand, weil die Wahl „Speichergröße der Füllstandslinie"
+            // ihre Verfahrenseinträge aus genau diesen Zeilen nimmt (N11 (d), N36 (d)).
+            var verfahren = new[]
+            {
+                new Verfahrensvolumen(ZapfSpeicherverfahren.Profilbasiert, vProfil, vProfil.HasValue, vProfil.HasValue,
+                    ZapfSatz.Neu("AUSTEXT_KENNWERT_DMAX", dMax), profilWeg),
+                new Verfahrensvolumen(ZapfSpeicherverfahren.Din4708, vDin, dinGilt, dinImBand,
+                    dinGilt ? ZapfSatz.Neu("AUSTEXT_KENNWERT_WZ", e.Din.WzKwh.Value) : ZapfSatz.Neu("AUSTEXT_STRICH"), dinWeg),
+                new Verfahrensvolumen(ZapfSpeicherverfahren.Gleichzeitigkeit, vGlf, vGlf.HasValue, glfImBand,
+                    glf.HasValue ? ZapfSatz.Neu("AUSTEXT_KENNWERT_GLF", glf.Value) : ZapfSatz.Neu("AUSTEXT_STRICH"), glfWeg),
+                new Verfahrensvolumen(ZapfSpeicherverfahren.Klassisch, vKlass, vKlass.HasValue, false,
+                    ZapfSatz.Neu("AUSTEXT_NUR_NACHRICHTLICH"), klassWeg)
+            };
+
             // --- Band, Nenninhalt, Füllstand ---------------------------------------------------
             double? bandMin = null, bandMax = null;
             void Band(double? v, bool imBand)
@@ -552,7 +647,9 @@ namespace WindowsFormsApplication1
             double? nennPunkt = e.SummenlinienpunktL.HasValue
                 ? e.Nenninhalte?.Runden(e.SummenlinienpunktL.Value, ps, hinweise, out _) : null;
             (double? bezug, ZapfFuellstandbezug? bezugArt) = Fuellstandbezug(e.FuellstandBezugWahl, nennPunkt, e.SummenlinienpunktL,
-                                                                             nenn, bandMax, hinweise);
+                                                                             nenn, bandMax, verfahren, hinweise);
+            // Nur für die Anzeige der Wahl: der Bezug, den die Vorgabe auflöst (ohne Wahl kein Hinweis).
+            ZapfFuellstandbezug? vorgabeArt = Fuellstandbezug(null, nennPunkt, e.SummenlinienpunktL, nenn, bandMax, verfahren, null).Art;
             if (bezug.HasValue)
             {
                 var f = FuellstandAus(d, bezug.Value, fNutz, dT);
@@ -584,18 +681,6 @@ namespace WindowsFormsApplication1
                         ZapfSatz.Neu(e.Grossanlage == true ? "AUSHINWEIS_SPEICHERTEMPERATUR_UNTER_MINDEST_GROSS"
                                                            : "AUSHINWEIS_SPEICHERTEMPERATUR_UNTER_MINDEST", e.SpeicherC, mindest.Value), true));
             }
-
-            var verfahren = new[]
-            {
-                new Verfahrensvolumen(ZapfSpeicherverfahren.Profilbasiert, vProfil, vProfil.HasValue, vProfil.HasValue,
-                    ZapfSatz.Neu("AUSTEXT_KENNWERT_DMAX", dMax), profilWeg),
-                new Verfahrensvolumen(ZapfSpeicherverfahren.Din4708, vDin, dinGilt, dinImBand,
-                    dinGilt ? ZapfSatz.Neu("AUSTEXT_KENNWERT_WZ", e.Din.WzKwh.Value) : ZapfSatz.Neu("AUSTEXT_STRICH"), dinWeg),
-                new Verfahrensvolumen(ZapfSpeicherverfahren.Gleichzeitigkeit, vGlf, vGlf.HasValue, glfImBand,
-                    glf.HasValue ? ZapfSatz.Neu("AUSTEXT_KENNWERT_GLF", glf.Value) : ZapfSatz.Neu("AUSTEXT_STRICH"), glfWeg),
-                new Verfahrensvolumen(ZapfSpeicherverfahren.Klassisch, vKlass, vKlass.HasValue, false,
-                    ZapfSatz.Neu("AUSTEXT_NUR_NACHRICHTLICH"), klassWeg)
-            };
 
             return new Speicherauslegungsergebnis
             {
@@ -633,6 +718,9 @@ namespace WindowsFormsApplication1
                 KapazitaetKwh = kap,
                 MinFuellstandKwh = minSoc,
                 ReserveAnteil = reserve,
+                SummenlinienpunktL = e.SummenlinienpunktL,
+                NenninhaltPunktL = nennPunkt,
+                FuellstandVorgabe = vorgabeArt,
                 Hinweise = hinweise.AsReadOnly()
             };
         }
@@ -640,17 +728,49 @@ namespace WindowsFormsApplication1
         /// <summary>Kennung des Hinweises: Der gewählte Bezug des Füllstands ist nicht bestimmbar, es gilt die Vorgabe.</summary>
         internal const string HINWEIS_FUELLSTAND_BEZUG = "FUELLSTAND_BEZUG_VORGABE";
 
-        /// <summary>Der Bezug des Füllstands als Begriff (<c>BEGRIFF_FUELLSTAND_1</c> … <c>_4</c>) — sprachfrei für Sätze und Anzeige.</summary>
+        /// <summary>Der Bezug des Füllstands als Begriff (<c>BEGRIFF_FUELLSTAND_1</c> … <c>_8</c>) — sprachfrei für Sätze und Anzeige.</summary>
         internal static ZapfSatz Fuellstandbegriff(ZapfFuellstandbezug b)
             => ZapfSatz.Neu("BEGRIFF_FUELLSTAND_" + ((int)b).ToString(System.Globalization.CultureInfo.InvariantCulture));
 
         /// <summary>
+        /// Der Versatz zwischen <see cref="ZapfSpeicherverfahren"/> und den Bezügen auf ein Verfahren:
+        /// Bezug = Verfahren + <c>VERFAHREN_VERSATZ</c> (Profilbasiert 1 → 5 … Klassisch 4 → 8).
+        /// </summary>
+        internal const int VERFAHREN_VERSATZ = 4;
+
+        /// <summary>
+        /// Das Verfahren des Verfahrensvergleichs, auf das ein Bezug zeigt; <c>null</c> bei den vier
+        /// Größen der Auslegung (1 … 4) und bei einem unbekannten Wert.
+        /// </summary>
+        internal static ZapfSpeicherverfahren? VerfahrenZuBezug(ZapfFuellstandbezug art)
+        {
+            var v = (ZapfSpeicherverfahren)((int)art - VERFAHREN_VERSATZ);
+            return Enum.IsDefined(typeof(ZapfSpeicherverfahren), v) && (int)art > VERFAHREN_VERSATZ ? v : (ZapfSpeicherverfahren?)null;
+        }
+
+        /// <summary>
+        /// Das Volumen [l] eines Bezugs auf ein Verfahren — genau die Zahl der Zeile des
+        /// Verfahrensvergleichs; <c>null</c>, wenn der Bezug keines meint, die Zeile fehlt, das
+        /// Verfahren nicht gilt oder kein Volumen liefert.
+        /// </summary>
+        internal static double? VerfahrensvolumenL(IReadOnlyList<Verfahrensvolumen> verfahren, ZapfFuellstandbezug art)
+        {
+            ZapfSpeicherverfahren? gesucht = VerfahrenZuBezug(art);
+            if (!gesucht.HasValue || verfahren == null) return null;
+            foreach (Verfahrensvolumen z in verfahren)
+                if (z.Verfahren == gesucht.Value) return z.Gueltig ? z.VolumenL : null;
+            return null;
+        }
+
+        /// <summary>
         /// Der Bezug des Füllstands (N10 (k), N11 (d)): der gewählte, soweit bestimmbar — sonst die
         /// Vorgabe (Nenninhalt des Punkts, sonst Punkt; ohne Punkt Nenninhalt des Bands, sonst V_max)
-        /// mit Hinweis, nie still. Ohne jedes Volumen kein Bezug.
+        /// mit Hinweis, nie still. Ohne jedes Volumen kein Bezug. <b>Die Vorgabe löst nie auf ein
+        /// Verfahren auf</b> — die Verfahrensbezüge stehen allein zur Wahl.
         /// </summary>
         internal static (double? VolumenL, ZapfFuellstandbezug? Art) Fuellstandbezug(ZapfFuellstandbezug? wahl, double? nennPunktL,
                                                                                     double? punktL, double? nennBandL, double? bandMaxL,
+                                                                                    IReadOnlyList<Verfahrensvolumen> verfahren,
                                                                                     ICollection<Auslegungshinweis> hinweise)
         {
             double? Wert(ZapfFuellstandbezug a) => a switch
@@ -658,7 +778,8 @@ namespace WindowsFormsApplication1
                 ZapfFuellstandbezug.NenninhaltPunkt => nennPunktL,
                 ZapfFuellstandbezug.Punkt => punktL,
                 ZapfFuellstandbezug.NenninhaltBand => nennBandL,
-                _ => bandMaxL
+                ZapfFuellstandbezug.BandMax => bandMaxL,
+                _ => VerfahrensvolumenL(verfahren, a)
             };
             if (wahl.HasValue && Wert(wahl.Value).HasValue) return (Wert(wahl.Value), wahl.Value);
 

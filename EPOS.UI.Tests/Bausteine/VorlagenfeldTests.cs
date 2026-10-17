@@ -605,6 +605,31 @@ public sealed class VorlagenfeldzeileTests : VorlagenfeldBunitContext
         cut.Find(".epos-ueberlagerung").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.Empty(cut.FindComponents<PlatzhalterkatalogDialog>());
     }
+
+    /// <summary>
+    /// Hat die Hülle den Baukastenweg eingehängt (<see cref="Vorlagenfeldhalter.Baukasten"/>), trägt der Katalog der
+    /// leisen Zeile „Baukasten speichern…" — derselbe Weg wie im Katalog der Berichtsseite; die Meldung steht im Fuß.
+    /// </summary>
+    [Fact]
+    public void Katalog_der_Zeile_traegt_den_Baukasten_der_Huelle()
+    {
+        int gerufen = 0;
+        Vorlagenfeldhalter.Baukasten = () =>
+        {
+            gerufen++;
+            return Task.FromResult("Baukasten gespeichert");
+        };
+        Ansicht.Setzen(Vorlagenfeldstellung.Schluessel);
+        var cut = Render<Vorlagenfeldzeile>();
+
+        cut.Find(".epos-vorlagenfeld-katalog").Click();
+        var katalog = cut.FindComponent<PlatzhalterkatalogDialog>();
+        Assert.NotNull(katalog.Instance.BaukastenSpeichern);
+
+        cut.Find(".epos-vorlage-baukasten").Click();
+        cut.WaitForAssertion(() => Assert.Equal("Baukasten gespeichert", katalog.Instance.Baukastenmeldung));
+        Assert.Equal(1, gerufen);
+    }
 }
 
 // =========================================================================

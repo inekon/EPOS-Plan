@@ -79,7 +79,7 @@ oder Pflegeheim, ein Ruhetag würde dort Bedarf wegrechnen, den es gibt.
 | Quelle | Bezugsmenge | Herkunft | Beleg |
 |---|---|---|---|
 | Norwegen AB1–AB4 | Wohnungen (96, 56, 56, 86) mal Belegung nach Schlafzimmerzahl: 1,5 Personen (AB1, AB2: meist ein Schlafzimmer), 2,0 (AB3: zwei), 2,5 (AB4: zwei bis drei) | `Abgeleitet` | Wohnungen und Schlafzimmer: Data in Brief 2021, Tabelle 1 und Text; Belegung: Annahme |
-| Norwegen HO1–HO4 | Zimmer (434, 355, 139, 151) als Betten | `Abgeleitet` | Tabelle 1; ein Bett je Zimmer: Annahme (der Katalog rechnet in Betten) |
+| Norwegen HO1–HO4 | Zimmer (434, 355, 139, 151) | `Veroeffentlichung` | Tabelle 1; der Katalogtyp „Hotel (aus Messung, je Zimmer)" rechnet in der Bezugsart Zimmer |
 | Norwegen NH1–NH4 | Zimmer (148, 52, 50, 96) als Betten | `Veroeffentlichung` | Tabelle 1 (Pflegeheimzimmer sind Einzelzimmer) |
 | Spanien ES-EFH0–9 | 2,5 Personen je Haushalt | `Unbekannt` | die Quelle nennt keine Bewohnerzahl (Zenodo: „10 Spanish homes … two different buildings"); 2,5 ist nur ein Rechenwert |
 | New York US-922, US-1101 | etwa 50 Wohnungen mal 2,5 Personen | `Abgeleitet` | Building America Case Study *Control Retrofits for Multifamily Domestic Hot Water Recirculation Systems*, DOE/GO-102016-4704 (2016): „Each building included approximately 50 apartments"; Belegung: Annahme |

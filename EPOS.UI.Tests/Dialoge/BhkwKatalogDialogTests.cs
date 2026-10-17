@@ -4,6 +4,7 @@ using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dienste;
 using KiKern;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.MyResource;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -12,16 +13,17 @@ namespace EPOS.UI.Tests.Dialoge;
 
 /// <summary>
 /// Katalogeditor BHKW (iU9-W6.2). Soll sind ZWEI Gruppen — „Modul" und „Technische
-/// Daten" — und die Rueckfrage vor dem Ueberschreiben eines Katalogsatzes.
+/// Daten" — und die Ablehnung eines gesperrten Satzes beim Ueberschreiben.
 ///
 /// <para><b>Anwenderentscheid 15.09.2026:</b> „Der Dialog ueber Button Bearbeiten soll
 /// keine Kosten und Emissionen enthalten." Damit sind die Gruppen „Eingabedaten zur
 /// Berechnung der Kosten", „Emissionen nach BEHG-V" und „Emissionsfaktoren bezogen auf
 /// den Brennstoffverbrauch" ersatzlos entfallen — samt den drei Eingabewegen der
-/// Investition (W14a-E-8-B3) und den zwei Vorgabewertknoepfen. Gepflegt werden diese
-/// Spalten jetzt im Aufklapper „Alle Daten anzeigen" des Projektdialogs
-/// (<c>BhkwDialogTests</c>), gerechnet wird mit ihnen im Kern
-/// (<c>EPOS.Kern.Tests/BhkwKostenTests</c>).</para>
+/// Investition (W14a-E-8-B3) und den zwei Vorgabewertknoepfen. Die Emissionsspalten
+/// werden im Aufklapper „Alle Daten anzeigen" des Projektdialogs gepflegt
+/// (<c>BhkwDialogTests</c>); die KOSTENSPALTEN gibt es mit Welle KB-4 nicht mehr
+/// (Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine Doppelhaltung") — die
+/// Satzvorlage des Katalogsatzes traegt sie, und der Aufklapper zeigt nur ihre Summe.</para>
 ///
 /// <para><b>Was der Dialog nicht zeigt, verliert er nicht:</b> Die Huelle laedt den
 /// vollstaendigen Satz und schreibt ihn vollstaendig zurueck — dafuer steht der Fall
@@ -53,15 +55,8 @@ public class BhkwKatalogDialogTests : EposBunitContext
         Brennstoff = 1,
         Vorlauf = 80,
         Ruecklauf = 60,
-        KostenModul = 40000,
-        KostenMontage = 5000,
-        KostenLieferung = 1000,
-        KostenSchallschutzhaube = 3000,
-        KostenAbgasreinigung = 1000,
         Raumbedarf = 6,
-        WartungskostenJeKWhel = 0.03,
         Nutzungsdauer = 15,
-        InvestitionJeKWel = 1250,      // = 50 000 / 40 -> passt zur Summe
         CO2 = 200000,
         SO2 = 0,
         NOx = 285,
@@ -72,7 +67,7 @@ public class BhkwKatalogDialogTests : EposBunitContext
     private IRenderedComponent<BhkwKatalogDialog> Aufbauen(
         BhkwKatalogDaten? daten = null,
         KatalogModus modus = KatalogModus.Bearbeiten,
-        Func<BhkwKatalogDaten, bool, KatalogSpeicherErgebnis>? ueberschreiben = null,
+        Func<BhkwKatalogDaten, KatalogSpeicherErgebnis>? ueberschreiben = null,
         Func<BhkwKatalogDaten, string, KatalogSpeicherErgebnis>? anlegen = null,
         Action<string?>? geschlossen = null)
     {
@@ -80,7 +75,7 @@ public class BhkwKatalogDialogTests : EposBunitContext
             .Add(x => x.Daten, daten ?? Bestand())
             .Add(x => x.Modus, modus)
             .Add(x => x.Brennstoffe, Brennstoffe)
-            .Add(x => x.Ueberschreiben, ueberschreiben ?? ((d, _) => new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner)))
+            .Add(x => x.Ueberschreiben, ueberschreiben ?? (d => new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner)))
             .Add(x => x.Anlegen, anlegen ?? ((_, n) => new KatalogSpeicherErgebnis(true, "ok", n)))
             .Add(x => x.Geschlossen, n => geschlossen?.Invoke(n)));
     }
@@ -90,19 +85,20 @@ public class BhkwKatalogDialogTests : EposBunitContext
     // =================================================================================
 
     /// <summary>
-    /// <b>Nur noch ZWEI Gruppen</b> (Anwenderentscheid 15.09.2026). Der Fall haelt
-    /// zugleich die Abwesenheit der drei entfallenen fest — sonst kaemen sie bei der
-    /// naechsten Pflege unbemerkt zurueck.
+    /// <b>Drei Gruppen</b>: Modul und Technische Daten (Anwenderentscheid 15.09.2026), dazu
+    /// „Teillast und Takten" (Welle M4: BH1, BH2). Der Fall haelt zugleich die Abwesenheit
+    /// der drei entfallenen fest — sonst kaemen sie bei der naechsten Pflege unbemerkt zurueck.
     /// </summary>
     [Fact]
-    public void Der_Editor_traegt_nur_noch_Modul_und_Technische_Daten()
+    public void Der_Editor_traegt_Modul_Technische_Daten_und_Teillast()
     {
         var cut = Aufbauen();
 
         var titel = cut.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent).ToList();
-        Assert.Equal(2, titel.Count);
+        Assert.Equal(3, titel.Count);
         Assert.Equal("Modul", titel[0]);
         Assert.Equal("Technische Daten", titel[1]);
+        Assert.Equal("Teillast und Takten", titel[2]);
 
         Assert.DoesNotContain("Eingabedaten zur Berechnung der Kosten", titel);
         Assert.DoesNotContain("Emissionen nach BEHG-V", titel);
@@ -114,13 +110,14 @@ public class BhkwKatalogDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        // Zwoelf Felder: 5 Zahlen (Ptherm, Pel, elektrischer und thermischer
-        // Wirkungsgrad, Grenzleistung), 2 Ganzzahlen (Vorlauf, Ruecklauf),
+        // Siebzehn Felder: 9 Zahlen (Ptherm, Pel, elektrischer und thermischer
+        // Wirkungsgrad, Grenzleistung; Welle M4: die zwei Wirkungsgrade bei 50 % Last und
+        // der Anfahrverlust; UB-E3-b: die Abschaltgrenze des Ruecklaufs), 3 Ganzzahlen (Vorlauf, Ruecklauf, Mindestlaufzeit),
         // 4 Texte (Modulname, Hersteller, Motortyp und die BERECHNETE Anzeige des
         // Gesamtwirkungsgrads), 1 mehrzeilige Beschreibung und die Klappliste des
         // Energietraegers.
-        Assert.Equal(5, cut.FindAll("input[inputmode=decimal]").Count);
-        Assert.Equal(2, cut.FindAll("input[inputmode=numeric]").Count);
+        Assert.Equal(9, cut.FindAll("input[inputmode=decimal]").Count);
+        Assert.Equal(3, cut.FindAll("input[inputmode=numeric]").Count);
         Assert.Equal(4, cut.FindAll("input[type=text]:not([inputmode])").Count);
         Assert.Single(cut.FindAll("textarea"));
         Assert.Single(cut.FindAll("select"));
@@ -173,16 +170,16 @@ public class BhkwKatalogDialogTests : EposBunitContext
     /// <summary>
     /// <b>Was der Dialog nicht mehr zeigt, verliert er nicht.</b> Die Huelle laedt den
     /// vollstaendigen Satz in <c>BhkwKatalogDaten</c> und schreibt ihn vollstaendig
-    /// zurueck (<c>BhkwHuelle.AusModell</c> / <c>NachModell</c>); die fuenf
-    /// Kostenposten, Raumbedarf, Wartung, Nutzungsdauer und die fuenf
-    /// Emissionsfaktoren gehen unveraendert durch den Dialog hindurch.
+    /// zurueck (<c>BhkwHuelle.AusModell</c> / <c>NachModell</c>); Raumbedarf,
+    /// Nutzungsdauer und die fuenf Emissionsfaktoren gehen unveraendert durch den Dialog
+    /// hindurch. Kostenfelder fuehrt der Feldsatz seit Welle KB-4 nicht mehr.
     /// </summary>
     [Fact]
     public void Die_entfallenen_Felder_gehen_beim_Speichern_unveraendert_durch()
     {
         BhkwKatalogDaten? geschrieben = null;
         var daten = Bestand();
-        var cut = Aufbauen(daten, ueberschreiben: (d, _) =>
+        var cut = Aufbauen(daten, ueberschreiben: d =>
         {
             geschrieben = d;
             return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
@@ -195,22 +192,12 @@ public class BhkwKatalogDialogTests : EposBunitContext
         Assert.NotNull(geschrieben);
         Assert.Equal(90.0, geschrieben!.Ptherm!.Value, 10);
 
-        Assert.Equal(40000.0, geschrieben.KostenModul!.Value, 10);
-        Assert.Equal(5000.0, geschrieben.KostenMontage!.Value, 10);
-        Assert.Equal(1000.0, geschrieben.KostenLieferung!.Value, 10);
-        Assert.Equal(3000.0, geschrieben.KostenSchallschutzhaube!.Value, 10);
-        Assert.Equal(1000.0, geschrieben.KostenAbgasreinigung!.Value, 10);
         Assert.Equal(6.0, geschrieben.Raumbedarf!.Value, 10);
-        Assert.Equal(0.03, geschrieben.WartungskostenJeKWhel!.Value, 10);
         Assert.Equal(15, geschrieben.Nutzungsdauer);
 
         Assert.Equal(200000, geschrieben.CO2);
         Assert.Equal(285, geschrieben.NOx);
         Assert.Equal(370, geschrieben.CO);
-
-        // Investition_kwel bleibt stehen, wie sie geladen wurde - nachgerechnet wird
-        // sie auf dem Schreibweg im Kern (W14a-E-8-B3).
-        Assert.Equal(1250.0, geschrieben.InvestitionJeKWel!.Value, 10);
     }
 
     // =================================================================================
@@ -230,77 +217,45 @@ public class BhkwKatalogDialogTests : EposBunitContext
         Assert.False(neu.FindAll("input[type=text]:not([inputmode])")[0].HasAttribute("readonly"));
     }
 
+    /// <summary>
+    /// <b>Ein gesperrter Satz wird nie ueberschrieben</b> (Anwenderentscheid 08.10.2026):
+    /// keine Rueckfrage, sondern die benannte Ablehnung mit dem Weg „Schloss aufheben…“.
+    /// </summary>
     [Fact]
-    public void Ein_Katalogsatz_loest_vor_dem_Ueberschreiben_die_Rueckfrage_aus()
+    public void Ein_gesperrter_Satz_wird_ohne_Rueckfrage_benannt_abgelehnt()
     {
         bool geschrieben = false;
+        string? geschlossen = "offen";
         var daten = Bestand();
         daten.Katalogsatz = true;
-        var cut = Aufbauen(daten, ueberschreiben: (d, _) =>
+        var cut = Aufbauen(daten, ueberschreiben: d =>
         {
             geschrieben = true;
             return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
-        });
+        }, geschlossen: n => geschlossen = n);
 
         cut.FindAll(".epos-leiste button")[^4].Click();
 
-        Assert.True(cut.Instance.Schutzfrage);
         Assert.False(geschrieben);
-        Assert.Contains("schreibgeschützt", cut.Find(".epos-rueckfrage-text").TextContent);
-    }
-
-    [Fact]
-    public void Nein_auf_die_Rueckfrage_schreibt_nichts()
-    {
-        bool geschrieben = false;
-        var daten = Bestand();
-        daten.Katalogsatz = true;
-        var cut = Aufbauen(daten, ueberschreiben: (d, _) =>
-        {
-            geschrieben = true;
-            return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
-        });
-
-        cut.FindAll(".epos-leiste button")[^4].Click();
-        // Ja / Nein der Rueckfrage - der zweite Knopf im Rueckfragebereich.
-        cut.FindAll(".epos-rueckfrage button")[1].Click();
-
-        Assert.False(cut.Instance.Schutzfrage);
-        Assert.False(geschrieben);
-    }
-
-    [Fact]
-    public void Ja_auf_die_Rueckfrage_hebt_den_Schutz_fuer_diesen_Vorgang_auf()
-    {
-        bool? schutzUebergangen = null;
-        var daten = Bestand();
-        daten.Katalogsatz = true;
-        var cut = Aufbauen(daten, ueberschreiben: (d, schutz) =>
-        {
-            schutzUebergangen = schutz;
-            return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
-        });
-
-        cut.FindAll(".epos-leiste button")[^4].Click();
-        cut.FindAll(".epos-rueckfrage button")[0].Click();
-
-        Assert.True(schutzUebergangen);
+        Assert.Equal("offen", geschlossen);
+        Assert.Equal(Resource.ADM_SCHLOSS_ERST_AUFHEBEN, cut.Instance.Meldung);
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
     }
 
     [Fact]
     public void Ein_eigener_Satz_wird_ohne_Rueckfrage_ueberschrieben()
     {
-        bool? schutzUebergangen = null;
-        var cut = Aufbauen(ueberschreiben: (d, schutz) =>
+        bool geschrieben = false;
+        var cut = Aufbauen(ueberschreiben: d =>
         {
-            schutzUebergangen = schutz;
+            geschrieben = true;
             return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
         });
 
         cut.FindAll(".epos-leiste button")[^4].Click();
 
-        Assert.False(cut.Instance.Schutzfrage);
-        Assert.False(schutzUebergangen);
+        Assert.True(geschrieben);
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
     }
 
     // HIER STANDEN DIE FAELLE ZU DEN VORGABEWERTKNOEPFEN "CO2 BEHG" und "Eintragen"
@@ -317,7 +272,7 @@ public class BhkwKatalogDialogTests : EposBunitContext
     public void Eine_ungueltige_Zahl_meldet_den_Feldnamen_und_schreibt_nicht()
     {
         bool geschrieben = false;
-        var cut = Aufbauen(ueberschreiben: (d, _) =>
+        var cut = Aufbauen(ueberschreiben: d =>
         {
             geschrieben = true;
             return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
@@ -410,7 +365,7 @@ public class BhkwKatalogDialogTests : EposBunitContext
         daten.WirkungsgradEl = 0.30;
         daten.WirkungsgradTh = 0.60;
 
-        var cut = Aufbauen(daten, ueberschreiben: (d, _) =>
+        var cut = Aufbauen(daten, ueberschreiben: d =>
         {
             geschrieben = d;
             return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
@@ -439,7 +394,7 @@ public class BhkwKatalogDialogTests : EposBunitContext
         daten.WirkungsgradEl = 0.30;
         daten.WirkungsgradTh = 0.80;
 
-        var cut = Aufbauen(daten, ueberschreiben: (d, _) =>
+        var cut = Aufbauen(daten, ueberschreiben: d =>
         {
             geschrieben = true;
             return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
@@ -471,7 +426,7 @@ public class BhkwKatalogDialogTests : EposBunitContext
         daten.WirkungsgradEl = el;
         daten.WirkungsgradTh = th;
 
-        var cut = Aufbauen(daten, ueberschreiben: (d, _) =>
+        var cut = Aufbauen(daten, ueberschreiben: d =>
         {
             geschrieben = true;
             return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
@@ -531,7 +486,7 @@ public class BhkwKatalogDialogTests : EposBunitContext
     {
         bool geschlossen = false;
         var cut = Aufbauen(
-            ueberschreiben: (_, _) => new KatalogSpeicherErgebnis(false, "Name existiert bereits!", ""),
+            ueberschreiben: _ => new KatalogSpeicherErgebnis(false, "Name existiert bereits!", ""),
             geschlossen: _ => geschlossen = true);
 
         cut.FindAll(".epos-leiste button")[^4].Click();
@@ -679,7 +634,7 @@ public class BhkwKatalogDialogTests : EposBunitContext
     public void Der_Speicherweg_schreibt_und_lehnt_den_Auslieferungssatz_benannt_ab()
     {
         int gerufen = 0;
-        var cut = Aufbauen(ueberschreiben: (d, _) =>
+        var cut = Aufbauen(ueberschreiben: d =>
         {
             gerufen++;
             return new KatalogSpeicherErgebnis(true, "geschrieben", d.Bezeichner);
@@ -695,9 +650,8 @@ public class BhkwKatalogDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Am AUSLIEFERUNGSSATZ lehnt der Speicherweg benannt ab.</b> Die Rückfrage
-    /// „Schreibgeschützter Datensatz" ist eine ausdrückliche Bestätigung an genau
-    /// diesem Satz; der Assistent lässt sie nicht aus.
+    /// <b>Am GESPERRTEN Satz lehnt der Speicherweg benannt ab</b> — wie die Maske; das
+    /// Schloss hebt nur „Schloss aufheben…“ in der Verwaltung auf.
     /// </summary>
     [Fact]
     public void Der_Speicherweg_lehnt_den_Auslieferungssatz_benannt_ab()
@@ -706,7 +660,7 @@ public class BhkwKatalogDialogTests : EposBunitContext
         katalogsatz.Katalogsatz = true;
 
         int gerufen = 0;
-        Aufbauen(daten: katalogsatz, ueberschreiben: (d, _) =>
+        Aufbauen(daten: katalogsatz, ueberschreiben: d =>
         {
             gerufen++;
             return new KatalogSpeicherErgebnis(true, "geschrieben", d.Bezeichner);
@@ -716,6 +670,142 @@ public class BhkwKatalogDialogTests : EposBunitContext
                                               .Speichern().GetAwaiter().GetResult();
 
         Assert.NotEqual(KiStatus.Ausgefuehrt, abgelehnt.Status);
+        Assert.Equal(Resource.ADM_SCHLOSS_ERST_AUFHEBEN, abgelehnt.Text);
         Assert.Equal(0, gerufen);
+    }
+
+    // =================================================================================
+    // Teillast und Takten (Welle M4: BH1, BH2)
+    // =================================================================================
+
+    /// <summary>
+    /// Die vier Felder der Gruppe landen im Feldsatz, leer bleibt leer, und der Speicherweg
+    /// bekommt sie.
+    /// </summary>
+    [Fact]
+    public void Teillastfelder_landen_im_Feldsatz()
+    {
+        BhkwKatalogDaten? geschrieben = null;
+        var cut = Aufbauen(ueberschreiben: d =>
+        {
+            geschrieben = d;
+            return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
+        });
+
+        var dez = cut.FindAll("input[inputmode=decimal]");
+        // UB-E3-b: Platz 5 ist die Abschaltgrenze des Ruecklaufs, die Teillastfelder folgen.
+        dez[6].Input("0,27");
+        cut.FindAll("input[inputmode=decimal]")[8].Input("0,5");
+        cut.FindAll("input[inputmode=numeric]")[2].Input("15");
+        cut.FindAll(".epos-leiste button")[^4].Click();
+
+        Assert.NotNull(geschrieben);
+        Assert.Equal(0.27, geschrieben!.WirkungsgradEl50!.Value, 9);
+        Assert.Null(geschrieben.WirkungsgradTh50);
+        Assert.Equal(0.5, geschrieben.AnfahrverlustKwh!.Value, 9);
+        Assert.Equal(15, geschrieben.MindestlaufzeitMin);
+    }
+
+    /// <summary>
+    /// Ein Teillastwirkungsgrad als Prozentzahl liegt außerhalb des Bandes 0 … 1 und wird abgewiesen —
+    /// es wird nichts geschrieben.
+    /// </summary>
+    [Fact]
+    public void Ein_Teillastwirkungsgrad_ueber_eins_wird_nicht_geschrieben()
+    {
+        int gerufen = 0;
+        var cut = Aufbauen(ueberschreiben: d =>
+        {
+            gerufen++;
+            return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
+        });
+
+        cut.FindAll("input[inputmode=decimal]")[6].Input("64");
+        cut.FindAll(".epos-leiste button")[^4].Click();
+
+        Assert.Equal(0, gerufen);
+        Assert.False(string.IsNullOrEmpty(cut.Instance.Meldung));
+    }
+
+    /// <summary>
+    /// Die kleine Kurve folgt dem Arbeitsstand: zwei Linien (elektrisch, thermisch), neu gezeichnet nur bei
+    /// einem Feld, das sie bestimmt; ohne Teillastwert stehen beide Linien flach auf dem Volllastwert.
+    /// </summary>
+    [Fact]
+    public void Die_Kurve_folgt_dem_Arbeitsstand()
+    {
+        var daten = Bestand();
+        daten.WirkungsgradEl = 0.35;
+        daten.WirkungsgradTh = 0.5;
+        int bilder = 0;
+        var cut = Render<BhkwKatalogDialog>(p => p
+            .Add(x => x.Daten, daten)
+            .Add(x => x.Brennstoffe, Brennstoffe)
+            .Add(x => x.Kennlinienbild, d => { bilder++; return BhkwKennlinienbild.Modell(d); }));
+
+        var bild = cut.FindComponent<EPOS.UI.Bausteine.DiagrammSvg>();
+        Assert.Equal("bhkwk-kennlinie", bild.Instance.Kennung);
+        Assert.Equal(2, bild.Instance.Modell!.Reihen.Count);
+        Assert.Equal(1, bilder);
+        double el100 = 0.85 * 40 / 120;
+        Assert.All(bild.Instance.Modell!.Reihen[0].Werte, w => Assert.Equal(el100, w, 9));
+
+        cut.FindAll("input[inputmode=decimal]")[6].Input("0,25");   // Platz 5: Abschaltgrenze (UB-E3-b)
+        Assert.Equal(2, bilder);
+        var reihen = cut.FindComponent<EPOS.UI.Bausteine.DiagrammSvg>().Instance.Modell!.Reihen;
+        Assert.Equal(0.25, reihen[0].Werte[0], 9);
+        Assert.Equal(el100, reihen[0].Werte[^1], 9);
+
+        cut.FindAll("input[type=text]")[1].Input("Anderes Werk");
+        Assert.Equal(2, bilder);
+    }
+
+    // =================================================================================
+    // KT-7: Wirft der Schreibweg, bleibt der Dialog offen und nennt den Grund
+    // =================================================================================
+
+    private const string KT7_GRUND = "Schreibweg gesperrt";
+
+    /// <summary>Führt <paramref name="handlung"/> aus und schreibt die Vermerke des Ausnahmeprotokolls mit.</summary>
+    private static List<string> Kt7Mitschreiben(Action handlung)
+    {
+        var vermerke = new List<string>();
+        void Mitschreiben(string z) { lock (vermerke) vermerke.Add(z); }
+        WindowsFormsApplication1.Ausnahmeprotokoll.Vermerkt += Mitschreiben;
+        try { handlung(); }
+        finally { WindowsFormsApplication1.Ausnahmeprotokoll.Vermerkt -= Mitschreiben; }
+        return vermerke;
+    }
+
+    /// <summary>Der Banner nennt <paramref name="vorlage"/> samt Grund, das Protokoll hat einen Vermerk.</summary>
+    private static void Kt7GrundSteht(IReadOnlyList<string> vermerke, string banner, string vorlage, string vermerk)
+    {
+        Assert.Contains(vorlage.Split('{')[0], banner);
+        Assert.Contains(KT7_GRUND, banner);
+        lock (vermerke) Assert.Contains(vermerke, v => v.StartsWith(vermerk, StringComparison.Ordinal) && v.Contains(KT7_GRUND));
+    }
+
+    [Fact]
+    public void KT7_wirft_das_Ueberschreiben_bleibt_der_Dialog_offen_und_nennt_den_Grund()
+    {
+        bool geschlossen = false;
+        IRenderedComponent<BhkwKatalogDialog>? cut = null;
+        List<string> vermerke = Kt7Mitschreiben(() =>
+        {
+            cut = Aufbauen(ueberschreiben: _ => throw new InvalidOperationException(KT7_GRUND),
+                           geschlossen: _ => geschlossen = true);
+            cut!.FindAll(".epos-leiste button")[^4].Click();
+        });
+
+        Assert.False(geschlossen);
+        string banner = string.Join("\n", cut!.FindAll(".epos-warnbanner").Select(e => e.TextContent.Trim()));
+        Kt7GrundSteht(vermerke, banner, WindowsFormsApplication1.MyResource.Resource.WURZEL_SCHREIBEN_FEHLER, "Katalogsatz");
+    }
+
+    [Fact]
+    public void KT7_ohne_Ausnahme_schreibt_das_Ueberschreiben_keinen_Vermerk()
+    {
+        List<string> vermerke = Kt7Mitschreiben(() => Aufbauen().FindAll(".epos-leiste button")[^4].Click());
+        lock (vermerke) Assert.Empty(vermerke);
     }
 }

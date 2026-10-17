@@ -21,7 +21,7 @@ namespace EPOS.Kern.Tests
     /// <para><b>Und die Belegpflicht.</b> Eine Einstufung ohne Fundstelle ist eine
     /// Behauptung. <see cref="Jede_gerechnete_Spalte_nennt_eine_Fundstelle"/> faellt rot
     /// aus, sobald eine als <c>Simulation</c> oder <c>Wirtschaftlichkeit</c> gefuehrte
-    /// Spalte keine Datei und Zeile nennt.</para>
+    /// Spalte keine Datei samt Symbol nennt.</para>
     ///
     /// <para><b>Nur lesend, eine Arbeitskopie je Klasse</b> (Regel seit iU9-W11a).
     /// Fehlt die Datei, schweigen die Faelle.</para>
@@ -103,6 +103,88 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Ein Beleg im Variantenvergleich nennt das Merkmal, nicht die Zeile</b> (KP3-A1): Zeilenverweise
+        /// „AbweichungsErmittler.cs:NN“ veralteten mit jeder neuen Merkmalszeile. Die Fundstelle nennt das Merkmal
+        /// als „AbweichungsErmittler.Felder (Tabelle.Spalte)“, und genau dieses Merkmal steht in
+        /// <see cref="AbweichungsErmittler.Felder"/>.
+        /// </summary>
+        [Fact]
+        public void Belege_im_Variantenvergleich_nennen_ein_vorhandenes_Merkmal()
+        {
+            var merkmale = new HashSet<string>(AbweichungsErmittler.Felder.Select(f => f.Tabelle + "." + f.Spalte));
+            var muster = new System.Text.RegularExpressions.Regex(@"AbweichungsErmittler\.Felder \(([^)]+)\)");
+            int belege = 0;
+            foreach (Anlagenart art in ParameterVerwendung.AlleArten)
+                foreach (ParameterEintrag e in ParameterVerwendung.Katalog(art))
+                {
+                    string fundstelle = e.Fundstelle ?? "";
+                    Assert.DoesNotContain("AbweichungsErmittler.cs:", fundstelle);
+                    foreach (System.Text.RegularExpressions.Match m in muster.Matches(fundstelle))
+                    {
+                        belege++;
+                        Assert.True(merkmale.Contains(m.Groups[1].Value),
+                                    art + "." + e.Spalte + " nennt das Merkmal " + m.Groups[1].Value + ", das der Ermittler nicht führt");
+                    }
+                }
+            Assert.NotEqual(0, belege);
+        }
+
+        /// <summary>
+        /// <b>Eine Fundstelle nennt das Symbol, nicht die Zeile</b> (KP3-A1c): Zeilenverweise „Datei.cs:NN“
+        /// veralteten mit jeder Änderung der Datei. Die Fundstelle nennt „Datei.Methode“ (oder
+        /// „Klasse.Eigenschaft“); keine Fundstelle enthält „.cs:“ mit Zeilennummer, und jeder Verweis
+        /// „Name.Symbol“, dessen <c>Name.cs</c> unter <c>EPOS.Kern</c> oder <c>SpeicherEngine</c> liegt, nennt
+        /// ein Symbol, das als Bezeichner in dieser Datei vorkommt.
+        /// </summary>
+        [Fact]
+        public void Fundstellen_nennen_ein_vorhandenes_Symbol_statt_einer_Zeile()
+        {
+            string wurzel = RepoWurzel();
+            var quellen = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (string ordner in new[] { "EPOS.Kern", "SpeicherEngine" })
+                foreach (string datei in System.IO.Directory.EnumerateFiles(
+                             System.IO.Path.Combine(wurzel, ordner), "*.cs", System.IO.SearchOption.AllDirectories))
+                {
+                    string rel = datei.Substring(wurzel.Length).Replace('\\', '/');
+                    if (rel.Contains("/obj/") || rel.Contains("/bin/")) continue;
+                    string name = System.IO.Path.GetFileNameWithoutExtension(datei);
+                    if (!quellen.ContainsKey(name)) quellen[name] = System.IO.File.ReadAllText(datei);
+                }
+
+            var zeilenverweis = new System.Text.RegularExpressions.Regex(@"\.cs:\d+");
+            var verweis = new System.Text.RegularExpressions.Regex(@"\b([A-Z][A-Za-z0-9]*)\.([A-Za-z_][A-Za-z0-9_]*)");
+            int belege = 0;
+            foreach (Anlagenart art in ParameterVerwendung.AlleArten)
+                foreach (ParameterEintrag e in ParameterVerwendung.Katalog(art))
+                {
+                    string fundstelle = e.Fundstelle ?? "";
+                    Assert.False(zeilenverweis.IsMatch(fundstelle),
+                                 art + "." + e.Spalte + " nennt eine Zeilennummer: " + fundstelle);
+                    foreach (System.Text.RegularExpressions.Match m in verweis.Matches(fundstelle))
+                    {
+                        if (m.Groups[2].Value is "cs" or "razor") continue;   // Dateiname ohne Symbol
+                        if (!quellen.TryGetValue(m.Groups[1].Value, out string text)) continue;
+                        belege++;
+                        Assert.True(System.Text.RegularExpressions.Regex.IsMatch(
+                                        text, @"\b" + System.Text.RegularExpressions.Regex.Escape(m.Groups[2].Value) + @"\b"),
+                                    art + "." + e.Spalte + " nennt " + m.Value + ", das in " + m.Groups[1].Value + ".cs nicht vorkommt");
+                    }
+                }
+            Assert.True(belege >= 60, "Zu wenige Symbolverweise geprüft: " + belege);
+        }
+
+        private static string RepoWurzel()
+        {
+            System.IO.DirectoryInfo d = new System.IO.DirectoryInfo(AppContext.BaseDirectory);
+            while (d != null &&
+                   !System.IO.File.Exists(System.IO.Path.Combine(d.FullName, "EPOS.Kern", "EPOS.Kern.csproj")))
+                d = d.Parent;
+
+            Assert.True(d != null, "Die Repowurzel ist vom Ausgabeordner aus nicht zu finden.");
+            return d.FullName;
+        }
+
+        /// <summary>
         /// <c>Keine</c> steht allein: Wer nicht verwendet wird, traegt keine zweite Stufe —
         /// sonst waere die Kennzeichnung in der Uebersicht widerspruechlich.
         /// </summary>
@@ -164,7 +246,14 @@ namespace EPOS.Kern.Tests
         [Theory]
         [InlineData(Anlagenart.Heizkessel, "Ptherm")]
         [InlineData(Anlagenart.Heizkessel, "Betriebsbereitschaftverlust")]
+        [InlineData(Anlagenart.Heizkessel, "Bereitschaft_Einheit")]
         [InlineData(Anlagenart.Heizkessel, "Vorlauf")]
+        [InlineData(Anlagenart.Heizkessel, "Wirkungsgrad_Teillast30")]
+        [InlineData(Anlagenart.Heizkessel, "Brennwert")]
+        [InlineData(Anlagenart.Heizkessel, "Kennlinie_Brennwert")]
+        [InlineData(Anlagenart.Heizkessel, "Mindestleistung")]
+        [InlineData(Anlagenart.Heizkessel, "Anfahrverlust_kWh")]
+        [InlineData(Anlagenart.Heizkessel, "Mindestlaufzeit_min")]
         [InlineData(Anlagenart.Bhkw, "Grenzleistung")]
         [InlineData(Anlagenart.Bhkw, "Wirkungsgrad")]
         [InlineData(Anlagenart.Waermepumpe, "Heizung")]
@@ -186,15 +275,11 @@ namespace EPOS.Kern.Tests
         /// Wirtschaftlichkeit liest, steht als <c>Wirtschaftlichkeit</c> im Katalog.
         /// </summary>
         [Theory]
-        [InlineData(Anlagenart.Heizkessel, "Investitionskosten")]
-        [InlineData(Anlagenart.Heizkessel, "Wartungskosten")]
-        [InlineData(Anlagenart.Bhkw, "Kosten_Modul")]
-        [InlineData(Anlagenart.Bhkw, "Wartungskosten_kwhel")]
-        [InlineData(Anlagenart.Waermepumpe, "Modulkosten")]
-        [InlineData(Anlagenart.Solarkollektoren, "Investitionskosten")]
-        [InlineData(Anlagenart.Photovoltaik, "Modulkosten")]
-        [InlineData(Anlagenart.Stromspeicher, "Leistungskosten")]
-        [InlineData(Anlagenart.Pufferspeicher, "Investitionskosten")]
+        // Welle KB-4: Heizkessel, BHKW, Waermepumpe, Photovoltaik, Solarkollektor, Pufferspeicher und Kaeltemaschine fuehren
+        // keine Kostenspalte mehr - ihre Kosten stehen in der Satzvorlage des Katalogsatzes; der Stromspeicher seit KB-5
+        // ebenso. Was die Kostenseite liest, ist der Verweis auf die Satzvorlage.
+        [InlineData(Anlagenart.Stromspeicher, KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION)]
+        [InlineData(Anlagenart.Stromspeicher, KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE)]
         public void Die_Kostenseite_ist_als_Wirtschaftlichkeit_gekennzeichnet(Anlagenart art, string spalte)
         {
             Assert.True(Eintrag(art, spalte).Hat(Verwendung.Wirtschaftlichkeit),
@@ -279,20 +364,21 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Die Luecke, die Teil 3 des Anwenderwunsches gefunden hat</b>:
-        /// <c>Tab_WP_STAMM.Modulkosten</c> geht in die Kostenplanung
-        /// (<c>TechnikPlanwertCtrl.cs:345</c>), steht aber in der Verwaltung nicht zur
-        /// Pflege (Entscheid Ä19 der Welle 7). Der Anwender hat das am 06.09.2026
-        /// entschieden (W14a-O-1): Der Wert wird im Stammdialog wieder GEZEIGT, nur
-        /// lesend und mit Herleitungszeile; eingegeben wird er weiterhin nicht. Der
-        /// Fall haelt die Einstufung fest, damit sie nicht still verschwindet.
+        /// <b>Die Luecke aus Teil 3 des Anwenderwunsches ist geschlossen</b>: Die
+        /// Kostenspalte der Waermepumpe ist mit Schemaschritt 228 entfallen (Welle KB-4,
+        /// Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine Doppelhaltung"). Der
+        /// Katalog fuehrt sie nicht mehr; was die Kostenplanung liest, ist der VERWEIS auf
+        /// die Satzvorlage, und gepflegt wird der Satz in der Kostenverwaltung.
         /// </summary>
         [Fact]
-        public void Die_Modulkosten_der_Waermepumpe_sind_gerechnet()
+        public void Die_Waermepumpe_fuehrt_keine_Kostenspalte_mehr_sondern_den_Verweis()
         {
-            ParameterEintrag e = Eintrag(Anlagenart.Waermepumpe, "Modulkosten");
-            Assert.True(e.Gerechnet);
-            Assert.Contains("TechnikPlanwertCtrl", e.Fundstelle);
+            Assert.DoesNotContain(ParameterVerwendung.Katalog(Anlagenart.Waermepumpe),
+                                  e => string.Equals(e.Spalte, "Modulkosten", StringComparison.OrdinalIgnoreCase));
+
+            ParameterEintrag verweis = Eintrag(Anlagenart.Waermepumpe,
+                KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION);
+            Assert.True(verweis.Hat(Verwendung.Wirtschaftlichkeit));
         }
 
         /// <summary>
@@ -328,8 +414,10 @@ namespace EPOS.Kern.Tests
         /// <para><b>Zehn Spalten in der Simulation:</b> die sechs Stuetzstellen
         /// <c>Eta05…Eta100</c> (<c>PvStrangModell.Kennlinie</c>), <c>P_AC_Nenn</c>
         /// (Auslastung und Clipping), <c>P_Standby</c> (Einschaltschwelle) und
-        /// <c>P_Nacht</c> (Nachtverbrauch). <b>Eine in der Wirtschaftlichkeit:</b>
-        /// <c>Kosten</c> (<c>TechnikPlanwertCtrl</c>, Entscheidungsfrage Q8).</para>
+        /// <c>P_Nacht</c> (Nachtverbrauch). <b>Die Kostenseite</b> steht seit Welle KB-4
+        /// nicht mehr am Geraet: Die Spalte <c>Kosten</c> ist mit Schemaschritt 228
+        /// entfallen, der Satz steht in der Satzvorlage (Verweis
+        /// <c>ID_KostenVorlageInvestition</c>).</para>
         ///
         /// <para><b>Was NICHT rechnet, und warum das so bleibt:</b> Die MPPT-Spalten
         /// (Q7 — der Tracker ist reine Pruefgroesse) und die Spannungs-/Stromgrenzen
@@ -352,9 +440,11 @@ namespace EPOS.Kern.Tests
                         "P_AC_Nenn", "P_Nacht", "P_Standby" },
                 simulation);
 
-            ParameterEintrag kosten = Eintrag(Anlagenart.Wechselrichter, "Kosten");
-            Assert.True(kosten.Hat(Verwendung.Wirtschaftlichkeit));
-            Assert.Contains("TechnikPlanwertCtrl", kosten.Fundstelle);
+            // Welle KB-4: keine Kostenspalte am Geraet, dafuer der Verweis auf die Satzvorlage.
+            Assert.DoesNotContain(katalog, e => string.Equals(e.Spalte, "Kosten", StringComparison.OrdinalIgnoreCase));
+            Assert.True(Eintrag(Anlagenart.Wechselrichter,
+                KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION)
+                .Hat(Verwendung.Wirtschaftlichkeit));
 
             // Jede gerechnete Spalte nennt ihren Rechner in der Fundstelle - ohne sie
             // waere die Einstufung eine Behauptung.
@@ -369,8 +459,9 @@ namespace EPOS.Kern.Tests
 
             // Die sieben Sandia-Spalten sind mitgeschriebenes Katalogwissen und haben
             // auch nach S3 GAR KEINEN Leser (Konzept 3.3.3).
-            Assert.Equal(7, katalog.Count(e => e.Hat(Verwendung.Keine)));
-            Assert.All(katalog.Where(e => e.Hat(Verwendung.Keine)),
+            // Ohne die drei Katalogspalten (KU1), die kein Fachwert sind und ebenfalls keinen Leser haben.
+            Assert.Equal(7, katalog.Count(e => e.Hat(Verwendung.Keine) && !Katalogfassung.IstKatalogspalte(e.Spalte)));
+            Assert.All(katalog.Where(e => e.Hat(Verwendung.Keine) && !Katalogfassung.IstKatalogspalte(e.Spalte)),
                        e => Assert.StartsWith("Sandia_", e.Spalte, StringComparison.Ordinal));
         }
 
@@ -400,9 +491,9 @@ namespace EPOS.Kern.Tests
         /// und <c>WaermepumpeStammHuelle.Speichern</c>; Photovoltaik, Stromspeicher und
         /// Wechselrichter aus <c>ModulKatalogProfil.Felder</c> mit der Zuordnung in
         /// <c>PvAdminHuelle</c>/<c>StromspeicherAdminHuelle</c>/<c>WechselrichterAdminHuelle</c>.
-        /// <b>Abgeleitete Werte gehoeren nicht hinein:</b> <c>Investition_kwel</c> steht
-        /// im BHKW-Aufklapper ausdruecklich NICHT editierbar (der Kern rechnet ihn aus
-        /// den fuenf Posten nach) und fehlt deshalb in der BHKW-Liste.</para>
+        /// <b>Lesewerte gehoeren nicht hinein:</b> Die Geraetekosten stehen im Aufklapper
+        /// ausdruecklich NICHT editierbar - sie kommen aus der Satzvorlage des Katalogsatzes
+        /// (Welle KB-4) - und fehlen deshalb in den Listen der beiden Gewerke.</para>
         /// <para><b>Warum sie hier stehen und nicht aus dem Profil gelesen werden.</b>
         /// Ein Profilfeld mit <c>Editierbar</c> ist ein ANGEBOT; ob der Wert ankommt,
         /// entscheidet der Speicherweg der Huelle — und der liegt in einem
@@ -420,10 +511,16 @@ namespace EPOS.Kern.Tests
             {
                 case Anlagenart.Heizkessel:
                     return new[] { "Bezeichner", "Firma", "Beschreibung", "Ptherm", "Brennstoff",
-                                   "Wirkungsgrad_Gas", "Wirkungsgrad_Öl", "Investitionskosten",
-                                   "Raumbedarf", "Wartungskosten", "Wartungskosten_Einheit",
+                                   "Wirkungsgrad_Gas", "Wirkungsgrad_Öl",
+                                   "Raumbedarf",
                                    "Nutzungsdauer", "CO2", "SO2", "NOx", "CO", "Staub",
-                                   "Betriebsbereitschaftverlust", "Brennwert", "Vorlauf", "Ruecklauf" };
+                                   "Betriebsbereitschaftverlust", "Brennwert", "Vorlauf", "Ruecklauf",
+                                   // Anwenderentscheid 02.10.2026: die Einheit des Bereitschaftsverlusts.
+                                   "Bereitschaft_Einheit",
+                                   // Konzept Kesselkennlinie 3.4: die Gruppe „Kennlinie" des Editors
+                                   // (HeizkesselAdminHuelle.Schreiben, AnzeigefelderSchreiben).
+                                   "Wirkungsgrad_Teillast30", "Kennlinie_Brennwert", "Mindestleistung",
+                                   "Anfahrverlust_kWh", "Mindestlaufzeit_min" };
 
                 case Anlagenart.Bhkw:
                     return new[] { "Bezeichner", "Firma", "Beschreibung", "Motortyp", "Ptherm", "Pel",
@@ -432,38 +529,54 @@ namespace EPOS.Kern.Tests
                                    // Katalogeditor, der Gesamtwert daneben ist dort
                                    // Anzeige und bleibt im Aufklapper eingebbar.
                                    "Wirkungsgrad_el", "Wirkungsgrad_th",
-                                   "Grenzleistung", "Kosten_Modul",
-                                   "Kosten_Montage", "Kosten_Lieferung", "Kosten_Schallschutzhaube",
-                                   "Kosten_Abgasreinigung", "Raumbedarf", "Wartungskosten_kwhel",
+                                   "Grenzleistung", "Raumbedarf",
                                    "Nutzungsdauer", "NOX", "SO2", "CO", "CO2", "Staub",
-                                   "Vorlauf", "Ruecklauf" };
+                                   "Vorlauf", "Ruecklauf",
+                                   // Welle M4 (BH1, BH2): die Gruppe „Teillast und Takten" des
+                                   // Katalogeditors (BHKWStammCtrl.Update).
+                                   "Wirkungsgrad_el_Teillast50", "Wirkungsgrad_th_Teillast50",
+                                   "Anfahrverlust_kWh", "Mindestlaufzeit_min",
+                                   // UB-E3-b (U-3): die Abschaltgrenze des Ruecklaufs (GeraetegrenzWerte.BhkwSchreiben).
+                                   "Ruecklauf_Max" };
 
                 case Anlagenart.Waermepumpe:
-                    // ELF von achtzehn Fachspalten. maxPtherm laeuft verborgen mit,
-                    // Kuehlleistung und - seit dem Anwenderentscheid W14a-O-1 vom
-                    // 06.09.2026 - Modulkosten stehen NUR LESEND da (Entscheid AE19
-                    // bleibt: keine Eingabe, kein Schreibweg aus dem Dialog), die fuenf
-                    // Masse zeigt die Maske gar nicht. Diese Liste fuehrt, was die
-                    // Verwaltung ZURUECKSCHREIBT - ein Lesewert gehoert nicht hinein.
+                    // maxPtherm laeuft verborgen mit, Kuehlleistung und - seit dem
+                    // Anwenderentscheid W14a-O-1 vom 06.09.2026 - der Kostensatz der
+                    // Satzvorlage stehen NUR LESEND da (Entscheid AE19 bleibt: keine
+                    // Eingabe, kein Schreibweg aus dem Dialog), die fuenf Masse zeigt die
+                    // Maske gar nicht. Diese Liste fuehrt, was die Verwaltung
+                    // ZURUECKSCHREIBT - ein Lesewert gehoert nicht hinein.
                     return new[] { "Bezeichner", "Firma", "Beschreibung", "Typ", "Baujahr",
-                                   "Aufstellung", "Nennleistung", "Heizung", "Regelung", "Bauart" };
+                                   "Aufstellung", "Nennleistung", "Heizung", "Regelung", "Bauart",
+                                   // Welle M4 (WP1): Mindestleistung und C_d schreibt die
+                                   // Katalogpflege zurueck (WPStammCtrl.Speichern).
+                                   "Mindestleistung_kW", "Taktverlustfaktor_Cd",
+                                   // UB-E3-b: die Gruppe „Geraetegrenzen" des Stammblatts
+                                   // (WPStammCtrl.Speichern -> GeraetegrenzWerte.WpSchreiben).
+                                   "Kaeltemittel", "Spreizung_Auslegung_K", "Spreizung_Max_K", "Spreizung_Min_K",
+                                   "Mindestvolumenstrom_Prozent", "Ruecklauf_Max", "Ruecklauf_Bezug",
+                                   "Ruecklauf_Abwertung_ProzentJeK" };
 
                 case Anlagenart.Solarkollektoren:
                     return new[] { "Bezeichner", "Firma", "Beschreibung", "Kollektortyp",
                                    "Modulflaeche", "Aperturflaeche", "h0", "k1", "k2", "Kdir",
-                                   "Kdfu", "Investitionskosten" };
+                                   "Kdfu",
+                                   // Welle M2 (ST6): die Bezugsfläche, Auswahl im Katalogeditor und
+                                   // Feld im Aufklapper (SolarkollektorAdminHuelle.Schreiben).
+                                   "Bezugsflaeche" };
 
                 case Anlagenart.Photovoltaik:
                     // alpha_SC und beta_OC fehlen - sie kommen nur aus dem CEC-/PAN-Import.
                     return new[] { "Bezeichner", "Firma", "Beschreibung", "Leistung", "Wirkungsgrad",
                                    "U_Mpp", "U_Leerlauf", "I_Mpp", "I_Kurzschluss", "gamma_PMP",
-                                   "T_NOCT", "Laenge", "Breite", "Modulkosten", "Technologie" };
+                                   "T_NOCT", "Laenge", "Breite", "Technologie" };
 
                 case Anlagenart.Stromspeicher:
                     return new[] { "Bezeichner", "Typ", "Energie", "Leistung", "Ladezustand",
-                                   "Degradation", "Modulkosten", "Wirkungsgrad_RT",
-                                   "Zyklen_Zugesichert", "Verschleisskosten", "Leistungskosten",
-                                   "Investition_Fix", "Standby_Verbrauch" };
+                                   "Degradation", "Wirkungsgrad_RT",
+                                   "Zyklen_Zugesichert", "Standby_Verbrauch",
+                                   // Welle M5 (SP1): das Katalogfeld „Selbstentladung".
+                                   StromViertelstundenSchema.SPALTE_SELBSTENTLADUNG };
 
                 case Anlagenart.Wechselrichter:
                     // Aus ModulKatalogProfil.Felder (Auspraegung Wechselrichter, W6-E-2)
@@ -472,27 +585,41 @@ namespace EPOS.Kern.Tests
                     // mitgeschriebenes Katalogwissen des Imports und von Hand nicht
                     // pflegbar (Konzept 3.3.3).
                     return new[] { "Bezeichner", "Firma", "Beschreibung", "P_AC_Nenn",
-                                   "S_AC_Max", "P_DC_Max", "Kosten", "Herkunft",
+                                   "S_AC_Max", "P_DC_Max", "Herkunft",
                                    "U_Mpp_Min", "U_Mpp_Max", "U_Dc_Max", "U_Start",
                                    "I_Dc_Max", "Anzahl_Mppt", "Straenge_Je_Mppt",
                                    "Eta05", "Eta10", "Eta20", "Eta30", "Eta50", "Eta100",
                                    "Eta_Euro", "Eta_Max", "P_Standby", "P_Nacht" };
 
+                case Anlagenart.Kaeltemaschine:
+                    // KaeltemaschineKatalogDialog (KU3-1): die zwoelf Grundspalten der einen Liste und die acht Spalten der
+                    // Gruppe „Teillast und Takten" (KM3-E3-a), dazu die fuenf Katalogfelder in den Kenndaten (K-A).
+                    return KaeltemaschineSchema.Fachspalten;
+
+                case Anlagenart.Rueckkuehlwerk:
+                    // K-F1: der Schreibweg des Katalogs (RueckkuehlwerkStammCtrl.Speichern/KopfSchreiben) setzt jede Fachspalte;
+                    // der Katalogdialog folgt mit der Oberflaeche (K-F5) und haelt dieselbe Liste.
+                    return RueckkuehlwerkSchema.Fachspalten;
+
                 default:
                     return new[] { "Bezeichner", "Hersteller", "Speichertyp",
-                                   "Bereitschaftsverluste", "Gesamtvolumen", "Investitionskosten" };
+                                   "Bereitschaftsverluste", "Gesamtvolumen" };
             }
         }
 
         /// <summary>
-        /// Die zwei Spalten, die keine Maske je von Hand setzt: der Primaerschluessel und
-        /// die Auslieferungsmarke. Sie sind vom Vergleich ausgenommen, weil eine
+        /// Die Spalten, die keine Maske je von Hand setzt: der Primaerschluessel,
+        /// die Auslieferungsmarke und die zwei Kostenvorlagen-Verweise. Sie sind vom Vergleich ausgenommen, weil eine
         /// Eingabemoeglichkeit dort ein FEHLER waere.
         /// </summary>
         private static bool Verwaltungsspalte(string spalte)
         {
             return string.Equals(spalte, "ID", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(spalte, "ReadOnly", StringComparison.OrdinalIgnoreCase);
+                || string.Equals(spalte, "ReadOnly", StringComparison.OrdinalIgnoreCase)
+                // Schritte 208 und 209: die Verweise auf Betriebs- und Investitionsvorlage des Satzes - kein Eingabefeld,
+                // sie schreibt der Rueckweg „In die Datenbank übernehmen…", gepflegt wird die Vorlage in der Kostenverwaltung.
+                || string.Equals(spalte, KatalogkostenUrsprungSchema.SPALTE_ID_KOSTENVORLAGE, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(spalte, KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -500,27 +627,20 @@ namespace EPOS.Kern.Tests
         /// Anwender jeden GERECHNETEN Parameter irgendwo eingeben — im Katalogeditor
         /// oder, seit dem 15.09.2026, im Aufklapper „Alle Daten" des Projektdialogs?
         ///
-        /// <para><b>Der Befund vom 06.09.2026: genau EINE Luecke</b> —
-        /// <c>Tab_WP_STAMM.Modulkosten</c>. Der Wert geht in die Kostenplanung
-        /// (<c>TechnikPlanwertCtrl.cs:345</c>), die Waermepumpenverwaltung nimmt ihn
-        /// aber nicht entgegen (Entscheid AE19 der Welle 7: „Geraetekosten laufen ueber
-        /// die Kostenverwaltung"). <b>Befund W14a-O-2:</b> Auch der VDI-3805-Import
-        /// fuellt ihn nicht — <c>KatalogImportSatz.NachStamm</c> setzt die Spalte nie,
-        /// <c>WPStammCtrl.UpdateImport</c> laesst sie beim Ueberschreiben stehen; ein
-        /// Wert &gt; 0 stammt aus dem Bestand.</para>
+        /// <para><b>Seit Welle KB-4 KEINE Luecke mehr</b> (Anwenderentscheid 13.10.2026
+        /// „eine Kostenbasis, keine Doppelhaltung"): Die einzige war
+        /// <c>Tab_WP_STAMM.Modulkosten</c> — ein gerechneter Wert, den die
+        /// Waermepumpenverwaltung nach Entscheid AE19 nicht entgegennahm. Mit
+        /// Schemaschritt 228 ist die Spalte entfallen; gerechnet wird der Satz der
+        /// Satzvorlage, und der ist in der Kostenverwaltung pflegbar. Die Verweisspalten
+        /// selbst zaehlen als Verwaltungsspalten (<see cref="Verwaltungsspalte"/>).</para>
         ///
-        /// <para><b>Der Anwender hat am 06.09.2026 entschieden (W14a-O-1):</b> Der Wert
-        /// wird im Stammdialog wieder GEZEIGT — nur lesend, mit Herleitungszeile.
-        /// Diese Luecke bleibt damit bestehen, denn sie zaehlt die Spalten, die das
-        /// Formular ZURUECKSCHREIBT: Ein Lesewert ist keine Pflege, und genau das ist
-        /// der Kern von AE19. Der Fall steht also unveraendert.</para>
-        ///
-        /// <para>Kommt eine zweite Luecke dazu, faellt dieser Fall rot aus, und das ist
+        /// <para>Kommt eine neue Luecke dazu, faellt dieser Fall rot aus, und das ist
         /// der Zweck: Ein gerechneter Wert, den niemand eingeben kann, ist kein
         /// Schoenheitsfehler.</para>
         /// </summary>
         [Fact]
-        public void Genau_eine_gerechnete_Spalte_fehlt_im_Bearbeiten_Formular()
+        public void Keine_gerechnete_Spalte_fehlt_im_Bearbeiten_Formular()
         {
             var luecken = new List<string>();
 
@@ -535,7 +655,7 @@ namespace EPOS.Kern.Tests
                 }
             }
 
-            Assert.Equal(new[] { "Waermepumpe.Modulkosten" }, luecken);
+            Assert.Empty(luecken);
         }
 
         /// <summary>

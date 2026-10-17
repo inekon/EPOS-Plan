@@ -76,6 +76,22 @@
                                           Zahl(Ergebnis?.Rechendauer.TotalSeconds ?? 0, "N2"))</small>
                 </div>
             </div>
+
+            @* „BESTE VARIANTE UEBERNEHMEN" (Entscheidungsvorlage Modellgrenzen, SP2): Der
+               beste Rasterpunkt wird die Flotte der Auslegung und fuer den Projektlauf
+               aktiviert - ins Simulationsergebnis schreibt der Knopf nichts, das rechnet
+               erst der naechste Projektlauf. Ohne Rueckruf kein Knopf; ein veraltetes
+               Ergebnis sperrt ihn weich, mit Grund. *@
+            @if (BesteUebernehmen.HasDelegate && Ergebnis is { NullvarianteGewonnen: false, BesteKonfiguration: not null })
+            {
+                <div class="epos-flotte-bestes__handlung">
+                    <button type="button" class="epos-knopf epos-flotte-beste-uebernehmen"
+                            aria-disabled="@(BesteGesperrt ? "true" : null)"
+                            title="@(BesteGesperrt ? BesteGesperrtGrund : Resource.FLOTTE_BESTE_ERKL)"
+                            @onclick="BeiBesteUebernehmen">@Resource.FLOTTE_BESTE_BTN</button>
+                    <small class="epos-flotte-hinweis">@Resource.FLOTTE_BESTE_ERKL</small>
+                </div>
+            }
         }
     </section>
 
@@ -111,6 +127,24 @@
 
     /// <summary>Der Variantenvergleich als CSV; ohne Rückruf kein Knopf.</summary>
     [Parameter] public EventCallback Csv { get; set; }
+
+    /// <summary>
+    /// „Beste Variante übernehmen" (SP2) — der Wirt schreibt über den Kern; ohne Rückruf kein
+    /// Knopf.
+    /// </summary>
+    [Parameter] public EventCallback BesteUebernehmen { get; set; }
+
+    /// <summary>
+    /// Weiche Sperre des Knopfs (Ergebnis veraltet, Lauf läuft): Er bleibt sichtbar, nennt
+    /// den Grund im Kurztext und meldet einen Versuch nicht weiter.
+    /// </summary>
+    [Parameter] public bool BesteGesperrt { get; set; }
+
+    /// <summary>Der Grund der weichen Sperre; leer = keiner genannt.</summary>
+    [Parameter] public string BesteGesperrtGrund { get; set; } = "";
+
+    private Task BeiBesteUebernehmen()
+        => BesteGesperrt ? Task.CompletedTask : BesteUebernehmen.InvokeAsync();
 
     // =====================================================================
     //  Der Kasten „Bestes Ergebnis"

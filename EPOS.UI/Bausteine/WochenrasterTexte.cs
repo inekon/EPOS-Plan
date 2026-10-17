@@ -49,6 +49,21 @@ public sealed class WochenrasterTexte
     /// <summary><c>WRASTER_BILD_X</c> — Beschriftung der x-Achse des Vorschaubilds.</summary>
     public string BildAchseX { get; set; } = "Wochenstunde (1..168)";
 
+    /// <summary>
+    /// <c>KOND_LBL_AUS</c> — der Zellzustand „aus", nur mit <see cref="Wochenraster.MitAus"/>
+    /// (Stufe KP2, Welle U0b). Der Wirt der Konditionierung füllt ihn aus
+    /// <c>KonditionierungTexte.ZelleAus</c>.
+    /// </summary>
+    public string Aus { get; set; } = "aus";
+
+    /// <summary>
+    /// <c>KOND_TXT_HINWEIS_AUS</c> — die leise Zeile unter dem Werkzeug, nur mit
+    /// <see cref="Wochenraster.MitAus"/>; der Wirt füllt ihn aus <c>KonditionierungTexte.HinweisAus</c>.
+    /// </summary>
+    public string HinweisAus { get; set; }
+        = "„aus“: Die Größe ist in dieser Stunde abgeschaltet (Heizen und Kühlen ohne Betrieb, "
+        + "Nutzerlüftung 0 1/h, Anteile 0 %). Ein neuer Wert in der Zelle hebt „aus“ wieder auf.";
+
     /// <summary>Die sieben Tagesnamen — aus <see cref="Wochentage"/>, notfalls die Zahlen 1 bis 7.</summary>
     public IReadOnlyList<string> Tagesnamen
     {

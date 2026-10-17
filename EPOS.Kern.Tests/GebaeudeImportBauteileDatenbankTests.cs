@@ -53,7 +53,7 @@ namespace EPOS.Kern.Tests
             {
                 Zeilen("Z_ProjektGebaeude"), Zeilen("Tab_Gebaeude"), Zeilen(ZonenSchema.TAB_ZONE), Zeilen(ZonenSchema.TAB_BAUTEIL),
                 Zeilen(BauteilaufbauSchema.TAB_AUFBAU), Zeilen(BauteilaufbauSchema.TAB_SCHICHT),
-                Zeilen(ImportzuordnungSchema.TAB_QUELLE), Zeilen(ImportzuordnungSchema.TAB_ZUORDNUNG),
+                Zeilen(ImportzuordnungSchema.TAB_QUELLE), Zeilen(ImportzuordnungSchema.TAB_ZUORDNUNG), Zeilen(RaumgrundrissSchema.TAB),
             };
 
         /// <summary>Die Projektkopie einer Zuordnung (<c>Tab_Gebaeude.ID_ProjektGebaeude</c>).</summary>
@@ -149,6 +149,20 @@ namespace EPOS.Kern.Tests
             Assert.Equal(v.Aufbauten.Count, aufbauPaare.Count);
             Assert.All(aufbauPaare, p => Assert.Contains(p.ID_Aufbau.Value, aufbauIds));
             Assert.Equal(1 + 3 + bauteilPaare.Count + aufbauPaare.Count, paare.Count);
+
+            // HC-5: der Grundriss je Raum an derselben Quelle, die Zone aus der Paarung Raum → Zone; gbXML trägt den Umriss
+            // aus den PolyLoops (F6, Herleitung Boden bzw. Decke). Die Probe führt Boden- oder Deckenpolygone nur für einen
+            // ihrer drei Räume; die übrigen bleiben ohne Zeile (Rechteck, Stufe 4).
+            List<Raumgrundriss> grundrisse = ctrl.LesenRaumgrundrisse(kopie);
+            Assert.Single(grundrisse);
+            Assert.All(grundrisse, g =>
+            {
+                Assert.Equal(q.ID, g.IdImportquelle);
+                Assert.Equal(zone.ID, g.IdZone);
+                Assert.Equal(Geometrieherkunft.Raumgrenzen, g.Herkunft);
+                Assert.True(g.RingflaecheM2 > 0 && g.HoeheM > 0);
+            });
+            Assert.All(grundrisse, g => Assert.Contains(paare, p => p.Quelltyp == "Space" && p.Quellkennung == g.Quellkennung));
 
             // Das Zielfeld Innenflächenfaktor steht an der Projektkopie (über Editor und Katalogsatz).
             object faktor = DataRepository.ExecuteScalar("SELECT Innenflaechenfaktor FROM Tab_Gebaeude WHERE ID = ?", new DbParam("@g", kopie));

@@ -140,11 +140,12 @@ namespace Gebaeudevergleich.Tests
             flags.HeizkreisAktiv = true;
             flags.KuehlungWirksam = true;
             flags.SpalteTagesbilanz = true;
+            flags.ErdreichRgM2KW = 1.2;
             flags.DeltaSpitzeProzent = 80.0;
             flags.NachtanteilNeuProzent = 40.0;
             flags.FensteranteilProzent = 45.0;
             Regelbefund b = R(flags);
-            foreach (string c in new[] { Ursachenregeln.U_ZO, Ursachenregeln.U_AK, Ursachenregeln.U_KU, Ursachenregeln.U_TB,
+            foreach (string c in new[] { Ursachenregeln.U_ZO, Ursachenregeln.U_AK, Ursachenregeln.U_KU, Ursachenregeln.U_TB, Ursachenregeln.U_ERD,
                                          Ursachenregeln.U_SP, Ursachenregeln.U_NG, Ursachenregeln.U_SOL })
                 Assert.Contains(c, b.Codes);
             Assert.Equal(Ampel.Erklaert, b.Ampel);

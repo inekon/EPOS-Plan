@@ -127,6 +127,17 @@ namespace WindowsFormsApplication1
             SolarganglinieStammCtrl.DATA_PROJ,
             name => new SolarganglinieStammCtrl().GetStammId(name));
 
+        /// <summary>
+        /// Die PV-Ganglinie (<c>Tab_PvGanglinie*</c>, Schemaschritt 206) — gespeichert im Raster der Datei;
+        /// eine Viertelstundenreihe geht für Jahresarbeit und Spitze denselben Mittelungsweg wie jede andere.
+        /// </summary>
+        internal static readonly GanglinienQuelle PvGanglinie = new GanglinienQuelle(
+            Zeitreihenart.PvGanglinie,
+            PvGanglinieStammCtrl.HEAD_STAMM,
+            PvGanglinieStammCtrl.DATA_STAMM,
+            PvGanglinieStammCtrl.DATA_PROJ,
+            name => PvGanglinieStammCtrl.StammId(name));
+
         /// <summary>Die Auspraegung zu einer <see cref="Zeitreihenart"/> (Stufe S3.2).</summary>
         internal static GanglinienQuelle Zu(Zeitreihenart art)
         {
@@ -134,6 +145,7 @@ namespace WindowsFormsApplication1
             {
                 case Zeitreihenart.Stromganglinie: return Strom;
                 case Zeitreihenart.Solarganglinie: return Solarganglinie;
+                case Zeitreihenart.PvGanglinie:    return PvGanglinie;
                 default:                           return Waermebedarf;
             }
         }

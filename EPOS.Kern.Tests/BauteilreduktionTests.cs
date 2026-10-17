@@ -236,7 +236,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(GebaeudeModellFehler.SchichtUngueltig, Grund(() => Rechne(new Schicht(0.2, 1.0, 3.0, 1000.0))));       // ρ unter dem Band
             Assert.Equal(GebaeudeModellFehler.SchichtUngueltig, Grund(() => Rechne(new Schicht(0.2, 1.0, 2000.0, 1.0))));      // c in kJ statt J
             Assert.Equal(GebaeudeModellFehler.SchichtUngueltig, Grund(() => Rechne(new Schicht(1.5, 1.0, 2000.0, 1000.0))));   // Dicke
-            Assert.Equal(GebaeudeModellFehler.SchichtUngueltig, Grund(() => Rechne(new Schicht(0.0005, 1.0, 2000.0, 1000.0))));
+            Assert.Equal(GebaeudeModellFehler.SchichtUngueltig, Grund(() => Rechne(new Schicht(0.0004, 1.0, 2000.0, 1000.0))));
             Assert.Equal(GebaeudeModellFehler.SchichtUngueltig, Grund(() => Rechne(new Schicht(double.NaN, 1.0, 2000.0, 1000.0))));
             Assert.Equal(GebaeudeModellFehler.SchichtUngueltig,
                 Grund(() => Bauteilreduktion.UWertAusSchichten(Array.Empty<Schicht>(), 90.0, Bauteilrand.Aussenluft)));

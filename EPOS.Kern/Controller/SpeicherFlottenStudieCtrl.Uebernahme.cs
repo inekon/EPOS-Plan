@@ -34,9 +34,15 @@ public readonly record struct FlottenUebernahmeVorschau(int Angelegt, int Geaend
 /// <param name="Erfolg">Alles geschrieben und festgeschrieben?</param>
 /// <param name="Meldung">Der Grund eines Fehlschlags; bei Erfolg leer.</param>
 /// <param name="Anlagen">Die angelegten und geänderten Anlagen samt ihren Kennungen.</param>
+/// <param name="Hinweise">Hinweise der gelungenen Übernahme (übernommene Kostenpositionen
+/// samt Faktor); <c>null</c> = keine.</param>
 public sealed record FlottenUebernahmeErgebnis(bool Erfolg, string Meldung,
-                                               IReadOnlyList<FlottenUebernahmeAnlage> Anlagen)
+                                               IReadOnlyList<FlottenUebernahmeAnlage> Anlagen,
+                                               IReadOnlyList<string> Hinweise = null)
 {
+    /// <summary>Die Hinweise der Übernahme; nie <c>null</c>.</summary>
+    public IReadOnlyList<string> Hinweise { get; init; } = Hinweise ?? Array.Empty<string>();
+
     /// <summary>Zahl der neu angelegten Anlagen.</summary>
     public int Angelegt => Anlagen.Count(a => a.Neu);
 
@@ -83,24 +89,89 @@ public static partial class SpeicherFlottenStudieCtrl
     /// <c>Energie</c> ← Kapazität, <c>Leistung</c> ← die GRÖSSERE der zwei
     /// Richtungsleistungen (die Anlage trägt EINEN Wert), <c>Wirkungsgrad_RT</c> ←
     /// <c>eta_lade · eta_entlade</c> (die Leserichtung zieht die Wurzel),
-    /// <c>Ladezustand</c> ← Start-SoC in Prozent, <c>Modulkosten</c>/<c>Leistungskosten</c>/
-    /// <c>Investition_Fix</c> ← die drei Investitionssätze, <c>Standby_Verbrauch</c> ←
-    /// Hilfsverbrauch in W.</para>
+    /// <c>Ladezustand</c> ← Start-SoC in Prozent, <c>Standby_Verbrauch</c> ←
+    /// Hilfsverbrauch in W; die drei Investitionssätze gehen als Kostenpositionen an die Anlage.</para>
     /// <para><b>Was NICHT geschrieben wird</b>, ist die Gegenseite dessen, was
     /// <c>EinheitAusKatalog</c> nicht liest: <c>Typ</c>, <c>Firma</c>, <c>Degradation</c>,
-    /// <c>Zyklen_Zugesichert</c> und <c>Verschleisskosten</c> haben in
+    /// und <c>Zyklen_Zugesichert</c> haben in
     /// <see cref="FlottenEinheit"/> kein Gegenstück. Beim RÜCKSCHREIBEN in eine vorhandene
     /// Anlage bleiben sie deshalb stehen, statt von Nullen überschrieben zu werden.</para>
     /// </remarks>
+    // Welle KB-5: Die drei Investitionssätze gehen NICHT mehr in Spalten der Gerätezeile (die Spalten sind mit
+    // StromspeicherKostenSchema entfallen), sondern als Kostenpositionen an die Anlage (KostenpositionenSchreiben).
     private const string SQL_GERAET_NEU = @"INSERT INTO Tab_Stromspeicher
-        (ID, ID_Projekt, Bezeichner, Energie, Leistung, Ladezustand, Modulkosten,
-         Wirkungsgrad_RT, Leistungskosten, Investition_Fix, Standby_Verbrauch)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        (ID, ID_Projekt, Bezeichner, Energie, Leistung, Ladezustand,
+         Wirkungsgrad_RT, Standby_Verbrauch)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
     private const string SQL_GERAET_AENDERN = @"UPDATE Tab_Stromspeicher
-        SET Energie = ?, Leistung = ?, Ladezustand = ?, Modulkosten = ?,
-            Wirkungsgrad_RT = ?, Leistungskosten = ?, Investition_Fix = ?, Standby_Verbrauch = ?
+        SET Energie = ?, Leistung = ?, Ladezustand = ?,
+            Wirkungsgrad_RT = ?, Standby_Verbrauch = ?
         WHERE ID = ?";
+
+    /// <summary>
+    /// Die <c>StammID</c> der Kostenpositionen eines Stromspeichers: die Hauptposition „Stromspeicher" des
+    /// Kostenkatalogs, wo es sie gibt; sonst der Lexikoneintrag gleichen Namens, der bei Bedarf angelegt wird
+    /// (<see cref="KostenVorlagenUebernahmeCtrl.StammIdSicher"/>). Der Katalog führt nicht überall eine
+    /// Hauptposition des Stromspeichers (Testdatenbank: keine) — ohne Rückfall entstünde keine Position.
+    /// </summary>
+    internal static int KostenstammStromspeicher()
+    {
+        int stamm = KostenPositionCtrl.StammIdHaupt(DbWerte.ERZEUGER_STROMSPEICHER);
+        return stamm > 0 ? stamm : KostenVorlagenUebernahmeCtrl.StammIdSicher(DbWerte.ERZEUGER_STROMSPEICHER);
+    }
+
+    /// <summary>
+    /// <b>Welle KB-5 — die Kosten der Einheit als Kostenpositionen der Anlage</b> (<c>Tab_ProjektWerte</c>):
+    /// Investition je kWh Kapazität, je kW Leistung und als Betrag, Betrieb je entladener kWh (Durchsatzkosten).
+    /// Nur eine Einheit mit EIGENEN Kosten schreibt; eine vorhandene Position derselben Kategorie und Bemessung
+    /// an dieser Anlage bekommt den Satz, sonst entsteht sie. Ein Satz 0 schreibt nichts und löscht nichts.
+    /// Liest der Lauf danach die Anlage, steht der Satz auf Stufe 1 des Satzlesers
+    /// (<see cref="KatalogkostensatzCtrl.Stromspeicher"/>).
+    /// </summary>
+    internal static int KostenpositionenSchreiben(DbVorgang v, int projektId, int anlageId, FlottenEinheit e, int stammId)
+    {
+        if (v == null || e == null || !e.EigeneKosten || anlageId <= 0 || stammId <= 0) return 0;
+        int n = 0;
+        foreach ((int kategorie, string bemessung, double satz) in new[]
+        {
+            (DbWerte.KOSTEN_KATEGORIE_INVESTITION, DbWerte.BEMESSUNG_EUR_PRO_KWH_KAPAZITAET, e.InvestitionEuroProKWh),
+            (DbWerte.KOSTEN_KATEGORIE_INVESTITION, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG, e.InvestitionEuroProKw),
+            (DbWerte.KOSTEN_KATEGORIE_INVESTITION, DbWerte.BEMESSUNG_BETRAG, e.InvestitionEuro),
+            (DbWerte.KOSTEN_KATEGORIE_BETRIEB, DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, e.DurchsatzkostenEuroProKWhEntladung),
+        })
+        {
+            if (!(satz > 0.0) || !double.IsFinite(satz)) continue;
+            bool betrag = bemessung == DbWerte.BEMESSUNG_BETRAG;
+            object vorhanden = v.Skalar(
+                "SELECT ID FROM Tab_ProjektWerte WHERE ID_Anlage = ? AND KomponentenID = ? AND KategorieID = ? " +
+                "AND Bemessung = ? ORDER BY ID LIMIT 1",
+                new DbParam("@a", anlageId), new DbParam("@k", StromspeicherKostenSchema.KOMPONENTE),
+                new DbParam("@kat", kategorie), new DbParam("@b", bemessung));
+            if (vorhanden != null && vorhanden != DBNull.Value)
+            {
+                v.Ausfuehren("UPDATE Tab_ProjektWerte SET Einheitpreis = ?, EingegebenerWert = ? WHERE ID = ?",
+                             new DbParam("@s", satz), new DbParam("@w", betrag ? satz : 0.0),
+                             new DbParam("@id", Convert.ToInt32(vorhanden, CultureInfo.InvariantCulture)));
+            }
+            else
+            {
+                v.Ausfuehren(
+                    "INSERT INTO Tab_ProjektWerte (ProjektID, StammID, KomponentenID, KategorieID, EingegebenerWert, " +
+                    "Nutzungsdauer, Einheit, Gruppe, Kostenart, Bemessung, Einheitpreis, IstErloes, ID_Anlage) " +
+                    "VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, 0, ?)",
+                    new DbParam("@p", projektId), new DbParam("@st", stammId),
+                    new DbParam("@k", StromspeicherKostenSchema.KOMPONENTE), new DbParam("@kat", kategorie),
+                    new DbParam("@w", betrag ? satz : 0.0), new DbParam("@e", DbWerte.KOSTEN_EINHEIT_EURO),
+                    new DbParam("@g", DbWerte.KOSTEN_GRUPPE_ALLGEMEIN),
+                    new DbParam("@ka", kategorie == DbWerte.KOSTEN_KATEGORIE_INVESTITION
+                        ? DbWerte.KOSTENART_KAPITALGEBUNDEN : DbWerte.KOSTENART_BETRIEBSGEBUNDEN),
+                    new DbParam("@b", bemessung), new DbParam("@s", satz), new DbParam("@a", anlageId));
+            }
+            n++;
+        }
+        return n;
+    }
 
     /// <summary>
     /// Wie viele Anlagen die Übernahme anlegen und wie viele sie ändern würde — OHNE
@@ -156,7 +227,25 @@ public static partial class SpeicherFlottenStudieCtrl
         StromspeicherCtrl.StelleGeraetespaltenSicher();
 
         var angelegt = new List<FlottenUebernahmeAnlage>();
+        var hinweise = new List<string>();
         DbVorgang v = null;
+        // AK2-1: der Stand der Anlagenspalten, VOR dem Vorgang erfragt (AnlagenSql.Einfuegen).
+        bool mitFahrplan = AnlagenfahrplanSchema.AnlagenspaltenVorhanden();
+        // KU3-6a: ebenso der Stand der Spalten der freien Kuehlung (FreieKuehlungSoleSchema).
+        bool mitFreierKuehlung = FreieKuehlungSoleSchema.AnlagenspaltenVorhanden();
+        // Jedes weitere Stueck einer vertretenen Anlage ist eine VOLLSTAENDIGE KOPIE ihrer
+        // Zeile (Anwenderentscheid 07.10.2026): alle Spalten ausser ID, Projekt, Bezeichner
+        // und Geraeteverweis ID_SP - VOR dem Vorgang aus dem Schema erfragt (AnlagenFachspalten).
+        List<string> kopieSpalten = AnlagenFachspalten.KopieSpalten("ID_SP");
+        // KB-5: die Hauptposition des Stromspeichers im Kostenkatalog, VOR dem Vorgang erfragt.
+        int stammKosten = 0;
+        try
+        {
+            KostenPositionCtrl.StelleSpaltenSicher();
+            KostenPositionCtrl.GruppeSichern(DbWerte.KOSTEN_GRUPPE_ALLGEMEIN);
+            stammKosten = KostenstammStromspeicher();
+        }
+        catch { stammKosten = 0; }
         try
         {
             v = DataRepository.Vorgang();
@@ -168,6 +257,34 @@ public static partial class SpeicherFlottenStudieCtrl
                 if (e == null) continue;
                 int stueck = Stueckzahl(stueckzahlen, i);
                 int vorhandeneAnlage = Anlagenbezug(e);
+                // Nur eine Anlage DIESES Projekts mit Geraetezeile ist Quelle der weiteren Stuecke.
+                bool quelleGueltig = vorhandeneAnlage > 0 &&
+                                     Geraetezeile(v, projektId, vorhandeneAnlage) is { } g0 && g0 > 0;
+
+                // Kostenpositionen der vertretenen Anlage folgen der Kapazitaet
+                // (Anwenderentscheide 07.10.2026): Faktor = neue nutzbare Kapazitaet / alte
+                // der vertretenen Anlage - die alte VOR dem Rueckschreiben des ersten Stuecks
+                // gelesen, denn ihre Kosten gelten fuer ihre bisherige Groesse. Das ERSTE
+                // Stueck skaliert seine eigenen Positionen an Ort und Stelle; jedes weitere
+                // kopiert die dann schon skalierten Positionen unveraendert. Positionen mit
+                // Energiekostenbezug bleiben (BemessungKatalog.ENERGIEKOSTEN_BEZUG). Ein Hinweis
+                // nur bei Faktor <> 1 oder fehlender Kapazitaet (dann Faktor 1).
+                double kostenfaktor = 1.0;
+                bool ohneKapazitaet = false;
+                int kostenpositionen = 0;
+                var kostenStuecke = new List<string>();
+                if (quelleGueltig)
+                {
+                    kostenpositionen = Convert.ToInt32(v.Skalar(
+                        "SELECT COUNT(*) FROM Tab_ProjektWerte WHERE ID_Anlage = ?",
+                        new DbParam("@a", vorhandeneAnlage)), CultureInfo.InvariantCulture);
+                    double quelle = NutzbarerInhaltDerAnlage(v, vorhandeneAnlage);
+                    double ziel = NutzbarerInhalt(e);
+                    if (quelle > 0.0 && ziel > 0.0) kostenfaktor = ziel / quelle;
+                    else ohneKapazitaet = true;
+                    if (Math.Abs(kostenfaktor - 1.0) <= KOSTENFAKTOR_RAND) kostenfaktor = 1.0;
+                }
+                bool kostenMelden = kostenpositionen > 0 && (ohneKapazitaet || kostenfaktor != 1.0);
 
                 for (int n = 1; n <= stueck; n++)
                 {
@@ -177,6 +294,10 @@ public static partial class SpeicherFlottenStudieCtrl
                         Geraetezeile(v, projektId, vorhandeneAnlage) is { } geraet && geraet > 0)
                     {
                         v.Ausfuehren(SQL_GERAET_AENDERN, Geraetewerte(e, geraet));
+                        if (kostenpositionen > 0)
+                            AnlagenFachspalten.KostenpositionenSkalieren(v, vorhandeneAnlage, kostenfaktor);
+                        KostenpositionenSchreiben(v, projektId, vorhandeneAnlage, e, stammKosten);
+                        if (kostenMelden) kostenStuecke.Add(Bezeichner(v, projektId, geraet));
                         angelegt.Add(new FlottenUebernahmeAnlage(e.Id ?? "", vorhandeneAnlage, geraet,
                             Bezeichner(v, projektId, geraet), false, n));
                         continue;
@@ -193,10 +314,43 @@ public static partial class SpeicherFlottenStudieCtrl
                         ID_Type = WizardItemClass.SP_TYP,
                         ID_SP = neueGeraeteId
                     };
-                    int neueAnlageId = v.EinfuegenUndId(AnlagenSql.SQL_ANLAGE_INSERT,
-                                                        AnlagenSql.AnlagenParameter(projektId, zeile));
+                    (string sqlAnlage, DbParam[] werteAnlage) = AnlagenSql.Einfuegen(projektId, zeile, null, mitFahrplan, mitFreierKuehlung);
+                    int neueAnlageId = v.EinfuegenUndId(sqlAnlage, werteAnlage);
+
+                    // Jedes weitere Stueck einer vertretenen Anlage ist eine Kopie DIESER
+                    // Anlagenzeile - Modell- wie Fachspalten, nur Bezeichner (laufende
+                    // Nummer) und Geraet (die neue Gerätezeile) eigen; derselbe Kernweg wie
+                    // bei der Komponentenuebernahme. Eine freie Einheit (Katalog, ohne
+                    // Anlagenzeile) hat nichts zu kopieren und traegt die Vorgaben.
+                    // Dazu die zugehoerigen Zeilen der Quelle (Anwenderentscheid 07.10.2026):
+                    // Betriebsfuehrung, Senken, Verbund, Straenge, Sperrfenster - im selben
+                    // Vorgang; scheitert eine, rollt die ganze Uebernahme zurueck.
+                    if (quelleGueltig)
+                    {
+                        AnlagenFachspalten.Uebertragen(v, kopieSpalten, vorhandeneAnlage, neueAnlageId);
+                        // Die Positionen der Quelle tragen schon die neue Kapazitaet (erstes
+                        // Stueck, oben): unveraendert kopieren.
+                        AnlagenFachspalten.AnlagenkinderKopieren(v, vorhandeneAnlage, neueAnlageId, 1.0);
+                        if (kostenMelden) kostenStuecke.Add(name);
+                    }
+                    else
+                    {
+                        KostenpositionenSchreiben(v, projektId, neueAnlageId, e, stammKosten);
+                    }
                     angelegt.Add(new FlottenUebernahmeAnlage(e.Id ?? "", neueAnlageId, neueGeraeteId,
                                                              name, true, n));
+                }
+
+                if (kostenMelden && kostenStuecke.Count > 0)
+                {
+                    string quellName = Bezeichner(v, projektId, Geraetezeile(v, projektId, vorhandeneAnlage));
+                    string stuecke = string.Join(", ", kostenStuecke.Select(x => "„" + x + "“"));
+                    hinweise.Add(ohneKapazitaet
+                        ? string.Format(CultureInfo.CurrentCulture,
+                            MyResource.Resource.FLOTTE_UEBERNAHME_HINW_KOSTEN_OHNE_KAPAZITAET, quellName, stuecke)
+                        : string.Format(CultureInfo.CurrentCulture,
+                            MyResource.Resource.FLOTTE_UEBERNAHME_HINW_KOSTEN, quellName, stuecke,
+                            kostenfaktor.ToString("0.00", CultureInfo.CurrentCulture)));
                 }
             }
 
@@ -219,12 +373,16 @@ public static partial class SpeicherFlottenStudieCtrl
             try { ProjektEnergietraegerCtrl.StromTraegerSicherstellen(projektId); }
             catch { }
 
-        return new FlottenUebernahmeErgebnis(true, "", angelegt);
+        return new FlottenUebernahmeErgebnis(true, "", angelegt, hinweise);
     }
 
     // =====================================================================
     //  Innenleben
     // =====================================================================
+
+    /// <summary>Ein Kostenfaktor, der um höchstens so viel von 1 abweicht, gilt als 1 —
+    /// keine Änderung, kein Hinweis (gleiche Kapazität aus getrennten Rechenketten).</summary>
+    private const double KOSTENFAKTOR_RAND = 1e-9;
 
     private static int Stueckzahl(IReadOnlyList<int> stueckzahlen, int stelle)
     {
@@ -301,16 +459,13 @@ public static partial class SpeicherFlottenStudieCtrl
         return notnagel;
     }
 
-    /// <summary>Die acht Gerätewerte samt der Ziel-Id — für das UPDATE.</summary>
+    /// <summary>Die fünf Gerätewerte samt der Ziel-Id — für das UPDATE.</summary>
     private static DbParam[] Geraetewerte(FlottenEinheit e, int geraeteId) => new[]
     {
         new DbParam("@ene", Energie(e)),
         new DbParam("@lei", Leistung(e)),
         new DbParam("@lad", Ladezustand(e)),
-        new DbParam("@mod", e.InvestitionEuroProKWh),
         new DbParam("@eta", Wirkungsgrad(e)),
-        new DbParam("@cpow", e.InvestitionEuroProKw),
-        new DbParam("@ifix", e.InvestitionEuro),
         new DbParam("@stby", e.HilfsverbrauchKw * 1000.0),
         new DbParam("@id", geraeteId)
     };
@@ -324,14 +479,49 @@ public static partial class SpeicherFlottenStudieCtrl
         new DbParam("@ene", Energie(e)),
         new DbParam("@lei", Leistung(e)),
         new DbParam("@lad", Ladezustand(e)),
-        new DbParam("@mod", e.InvestitionEuroProKWh),
         new DbParam("@eta", Wirkungsgrad(e)),
-        new DbParam("@cpow", e.InvestitionEuroProKw),
-        new DbParam("@ifix", e.InvestitionEuro),
         new DbParam("@stby", e.HilfsverbrauchKw * 1000.0)
     };
 
     private static double Energie(FlottenEinheit e) => Endlich(e.KapazitaetKWh);
+
+    /// <summary>
+    /// Der NUTZBARE Energieinhalt einer Einheit, wie ihn die Studie führt:
+    /// Kapazität × (obere − untere SoC-Marke); ein ungültiges Band fällt auf das
+    /// Vorgabeband des Rechenkerns zurück (wie <c>StromspeicherSimCtrl</c>). 0 = keine Kapazität.
+    /// </summary>
+    internal static double NutzbarerInhalt(FlottenEinheit e)
+        => e == null ? 0.0 : Endlich(Energie(e) * Band(e.SocMin, e.SocMax));
+
+    /// <summary>
+    /// Der nutzbare Energieinhalt einer Speicheranlage des Projekts: <c>Energie</c> ihrer
+    /// Gerätezeile × SoC-Band ihrer Betriebsführung (<c>Tab_StromspeicherVariante</c>, erste
+    /// Zeile) — dieselbe Lesart, aus der die Studie ihre Einheit bildet. 0 = keine Kapazität.
+    /// </summary>
+    private static double NutzbarerInhaltDerAnlage(DbVorgang v, int anlageId)
+    {
+        object energie = v.Skalar(
+            "SELECT s.Energie FROM Tab_Stromspeicher s JOIN Tab_Energieanlagen a ON a.ID_SP = s.ID WHERE a.ID = ?",
+            new DbParam("@a", anlageId));
+        double kap = energie == null || energie == DBNull.Value
+            ? 0.0 : Convert.ToDouble(energie, CultureInfo.InvariantCulture);
+        double min = -1.0, max = -1.0;
+        System.Data.DataTable band = v.Lese(
+            "SELECT SoC_Min_Prozent, SoC_Max_Prozent FROM Tab_StromspeicherVariante " +
+            "WHERE ID_Energieanlage = ? ORDER BY ID LIMIT 1", new DbParam("@a", anlageId));
+        if (band.Rows.Count == 1 && band.Rows[0][0] != DBNull.Value && band.Rows[0][1] != DBNull.Value)
+        {
+            min = Convert.ToDouble(band.Rows[0][0], CultureInfo.InvariantCulture) / 100.0;
+            max = Convert.ToDouble(band.Rows[0][1], CultureInfo.InvariantCulture) / 100.0;
+        }
+        return Endlich(Endlich(kap) * Band(min, max));
+    }
+
+    /// <summary>Breite des SoC-Bands [-]; ein ungültiges Band gilt als Vorgabeband.</summary>
+    private static double Band(double min, double max)
+        => double.IsFinite(min) && double.IsFinite(max) && min >= 0.0 && max <= 1.0 && max > min
+            ? max - min
+            : StromspeicherSimCtrl.SOC_MAX_ANTEIL - StromspeicherSimCtrl.SOC_MIN_ANTEIL;
 
     /// <summary>Die Anlage trägt EINEN Leistungswert; genommen wird die größere Richtung.</summary>
     private static double Leistung(FlottenEinheit e)

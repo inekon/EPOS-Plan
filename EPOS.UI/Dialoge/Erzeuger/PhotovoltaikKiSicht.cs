@@ -33,9 +33,9 @@ namespace EPOS.UI.Dialoge.Erzeuger;
 /// <b>Seit Welle #458 (Stufe 2) dazu der Aufklapper „Alle Daten"</b> — der gewählte
 /// KATALOGsatz des Moduls als FELDTAFEL (<see cref="AlleDaten"/>, Feldkarte aus dem
 /// <c>ModulKatalogProfil</c>). Die Sicht steht deshalb auch, solange nur eine Katalogzeile
-/// gewählt ist; die Felder der Anlage und die zwei Auslegungstemperaturen sind dann leer
-/// und nehmen nichts an — wie auf der Maske, die den Strangabschnitt nur zu einer
-/// Projektzeile zeigt.
+/// gewählt ist; die Felder der Anlage und die zwei Auslegungstemperaturen sind dann leer,
+/// und ein Setzen lehnt benannt ab — die Maske zeigt den Strangabschnitt nur zu einer
+/// Projektzeile.
 /// </remarks>
 public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
 {
@@ -45,6 +45,25 @@ public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
 
     /// <summary>Die GEWÄHLTE Projektzeile; <c>null</c> = keine gewählt.</summary>
     public Func<ErzeugerZeile?>? Zeilenquelle { get; init; }
+
+    /// <summary>
+    /// Wählt die EINZIGE Projektzeile, wenn keine gewählt ist, und liefert sie;
+    /// <c>null</c> = keine oder mehrere Zeilen (dann wird nicht geraten).
+    /// </summary>
+    public Func<ErzeugerZeile?>? Einzelwahl { get; init; }
+
+    /// <summary>
+    /// Der Übernahmeweg der Hand nach dem Setzen eines Felds der Anlage — dasselbe
+    /// <c>Uebernehmen</c>, das die Eingabefelder rufen (Arbeitskopie, nicht Datenbank).
+    /// Der Energieträger und die zwei Auslegungstemperaturen gehen eigene Wege.
+    /// </summary>
+    public Action<ErzeugerZeile>? Uebernommen { get; init; }
+
+    /// <summary>
+    /// Die Zahl der Projektzeilen — sie sagt dem <see cref="Sperrgrund"/>, ob die
+    /// <see cref="Einzelwahl"/> greift (genau eine), ohne dass er schon wählt.
+    /// </summary>
+    public Func<int>? Zeilenzahl { get; init; }
 
     /// <summary>Die lebende Auslegungstemperatur des kalten Falls [°C].</summary>
     public Func<double?>? KaltLesen { get; init; }
@@ -68,6 +87,13 @@ public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
     /// <summary>Die Feldtafel des Aufklappers „Alle Daten" (Welle #458, Stufe 2).</summary>
     public AlleDatenTafel? AlleDaten { get; init; }
 
+    /// <summary>
+    /// Der Übernahmeweg des Strangbausteins für Modul und Wechselrichter eines Strangs
+    /// (Anwenderentscheid 16.10.2026); <c>null</c> = der Abschnitt steht nicht offen,
+    /// dann lehnt jede Wahl benannt ab.
+    /// </summary>
+    public Func<IStrangwahl?>? Strangwahl { get; init; }
+
     /// <inheritdoc/>
     public object? Lesen(string schluessel) => AlleDaten?.Lesen(schluessel);
 
@@ -75,6 +101,30 @@ public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
     public void Setzen(string schluessel, object? wert) => AlleDaten?.Setzen(schluessel, wert);
 
     private ErzeugerZeile? Zeile => Zeilenquelle?.Invoke();
+
+    /// <summary>
+    /// Der Sperrgrund je Feld (<c>KiMaskenhaken.Sperrgrund</c>, <see cref="ErzeugerSperre"/>):
+    /// der Energieträger immer, die Felder der Anlage und die zwei Auslegungstemperaturen
+    /// ohne gewählte Zeile, wenn nicht genau eine vorhanden ist. Die Strangfelder
+    /// (<c>strang*</c>) stehen in der Strangtabelle der Zeile und lehnen dort selbst ab.
+    /// </summary>
+    public string? Sperrgrund(string feld)
+        => ErzeugerSperre.Grund(feld, Zeile is not null, Zeilenzahl, mitTraeger: true,
+                                ohneZeile: f => f.StartsWith("strang", StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>
+    /// Schreibt in die gewählte Zeile — oder in die einzige, die <see cref="Einzelwahl"/>
+    /// wählt — und geht danach den Übernahmeweg; ohne Zeile eine BENANNTE Absage
+    /// (Meldung 10.10.2026: vorher verwarf der Setzer den Wert still).
+    /// </summary>
+    private void Schreibe(Action<ErzeugerZeile> schreiben, bool uebernehmen)
+    {
+        ErzeugerZeile z = Zeile ?? Einzelwahl?.Invoke()
+            ?? throw new InvalidOperationException(
+                   WindowsFormsApplication1.MyResource.Resource.KI_ERZ_KEINE_PROJEKTZEILE);
+        schreiben(z);
+        if (uebernehmen) Uebernommen?.Invoke(z);
+    }
 
     // =====================================================================
     //  Die Anlage
@@ -84,28 +134,33 @@ public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
     public int? Neigung
     {
         get => Zeile?.Neigung;
-        set { if (Zeile is ErzeugerZeile z) z.Neigung = value; }
+        set => Schreibe(z => z.Neigung = value, uebernehmen: true);
     }
 
     /// <summary>Azimut [°].</summary>
     public int? Azimut
     {
         get => Zeile?.Azimut;
-        set { if (Zeile is ErzeugerZeile z) z.Azimut = value; }
+        set => Schreibe(z => z.Azimut = value, uebernehmen: true);
     }
 
-    /// <summary>Die zugeordnete Energieträgervariante; 0 = keine.</summary>
+    /// <summary>
+    /// Die zugeordnete Energieträgervariante; 0 = keine. Nur lesbar für den Assistenten:
+    /// Der Handweg schreibt sofort in die Datenbank, deshalb lehnt der Setzer benannt ab
+    /// (zweite Sicherung hinter dem <see cref="Sperrgrund"/>).
+    /// </summary>
     public int CarrierId
     {
         get => Zeile?.CarrierId ?? 0;
-        set { if (Zeile is ErzeugerZeile z) z.CarrierId = value; }
+        set => throw new InvalidOperationException(
+                   WindowsFormsApplication1.MyResource.Resource.KI_ERZ_TRAEGER_VON_HAND);
     }
 
     /// <summary>Anzahl Module der Anlage.</summary>
     public double? AnzahlModule
     {
         get => Zeile?.AnzahlModule;
-        set { if (Zeile is ErzeugerZeile z) z.AnzahlModule = value; }
+        set => Schreibe(z => z.AnzahlModule = value, uebernehmen: true);
     }
 
     // =====================================================================
@@ -119,7 +174,7 @@ public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
     public bool ModellErweitert
     {
         get => Zeile?.ModellErweitert ?? false;
-        set { if (Zeile is ErzeugerZeile z) z.ModellErweitert = value; }
+        set => Schreibe(z => z.ModellErweitert = value, uebernehmen: true);
     }
 
     /// <summary>Die zwei Einträge des Auswahlfelds „Rechenmodell" (KI‑D‑Q6).</summary>
@@ -130,14 +185,21 @@ public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
     public double? WrWirkungsgrad
     {
         get => Zeile?.WrWirkungsgrad;
-        set { if (Zeile is ErzeugerZeile z) z.WrWirkungsgrad = value; }
+        set => Schreibe(z => z.WrWirkungsgrad = value, uebernehmen: true);
     }
 
     /// <summary>Pauschale Systemverluste [%]; <c>null</c> = 0.</summary>
     public double? Systemverluste
     {
         get => Zeile?.Systemverluste;
-        set { if (Zeile is ErzeugerZeile z) z.Systemverluste = value; }
+        set => Schreibe(z => z.Systemverluste = value, uebernehmen: true);
+    }
+
+    /// <summary>Bodenalbedo vor der Anlage (0…1); <c>null</c> = 0,2.</summary>
+    public double? Albedo
+    {
+        get => Zeile?.Albedo;
+        set => Schreibe(z => z.Albedo = value, uebernehmen: true);
     }
 
     // =====================================================================
@@ -148,17 +210,40 @@ public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
     public bool MitWechselrichter
     {
         get => Zeile?.MitWechselrichter ?? false;
-        set { if (Zeile is ErzeugerZeile z) z.MitWechselrichter = value; }
+        set => Schreibe(z => z.MitWechselrichter = value, uebernehmen: true);
     }
 
     /// <summary>
-    /// Die Stränge der Anlage — die LEBENDE Liste der Zeile, nicht eine Kopie: Der
-    /// Anwender legt Stränge an und löscht sie, während der Dialog steht, und der
-    /// Katalog löst seine Spalten bei jedem Zugriff neu auf.
+    /// Die Stränge der Anlage — je Strang der LEBENDEN Liste der Zeile eine
+    /// <see cref="StrangKiZeile"/>, die jeden Wert unverändert durchreicht: Der Anwender
+    /// legt Stränge an und löscht sie, während der Dialog steht, und der Katalog löst
+    /// seine Spalten bei jedem Zugriff neu auf. Die Hülle je Zeile ist nötig, weil Modul
+    /// und Wechselrichter nicht als Id gesetzt werden, sondern über den Übernahmeweg.
     /// </summary>
-    public List<StrangZeile> Straenge => Zeile?.Straenge ?? LEER;
+    public List<StrangKiZeile> Straenge
+    {
+        get
+        {
+            var liste = new List<StrangKiZeile>();
+            foreach (StrangZeile s in Zeile?.Straenge ?? LEER) liste.Add(new StrangKiZeile(s, this));
+            return liste;
+        }
+    }
 
     private static readonly List<StrangZeile> LEER = new();
+
+    /// <summary>Die Einträge der Wahlspalte „Wechselrichter" — die Geräte des Katalogs.</summary>
+    public IReadOnlyList<KiWahleintrag> WechselrichterWahl
+        => Strangwahl?.Invoke()?.GeraeteEintraege() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Die Einträge der Wahlspalte „Modul" — „Modul der Anlage" (0) und die Module des Projekts.</summary>
+    public IReadOnlyList<KiWahleintrag> ModulWahl
+        => Strangwahl?.Invoke()?.ModulEintraege() ?? Array.Empty<KiWahleintrag>();
+
+    internal IStrangwahl Wahlweg
+        => Strangwahl?.Invoke()
+           ?? throw new InvalidOperationException(
+                  WindowsFormsApplication1.MyResource.Resource.KI_PVS_STRANG_OHNE_ABSCHNITT);
 
     // =====================================================================
     //  Die zwei Auslegungstemperaturen — sie gehören dem PROJEKT
@@ -171,7 +256,7 @@ public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
     public double? AuslegungKalt
     {
         get => Zeile is null ? null : KaltLesen?.Invoke();
-        set { if (Zeile is not null) KaltSetzen?.Invoke(value); }
+        set => Schreibe(_ => KaltSetzen?.Invoke(value), uebernehmen: false);
     }
 
     /// <summary>
@@ -181,6 +266,91 @@ public sealed class PhotovoltaikKiSicht : EPOS.UI.Dienste.IKiFeldtafel
     public double? AuslegungHeiss
     {
         get => Zeile is null ? null : HeissLesen?.Invoke();
-        set { if (Zeile is not null) HeissSetzen?.Invoke(value); }
+        set => Schreibe(_ => HeissSetzen?.Invoke(value), uebernehmen: false);
+    }
+}
+
+/// <summary>
+/// Der Übernahmeweg des Strangbausteins für die zwei Katalogverweise eines Strangs —
+/// dieselbe Klappliste, dieselbe Projektkopie und dieselbe Bewertung wie bei der Wahl
+/// durch den Anwender. Eine ungeeignete Wahl wirft eine
+/// <see cref="InvalidOperationException"/> mit dem Grund.
+/// </summary>
+public interface IStrangwahl
+{
+    /// <summary>Die Geräte des Katalogs (Schlüssel = Stamm-Id).</summary>
+    IReadOnlyList<KiWahleintrag> GeraeteEintraege();
+
+    /// <summary>„Modul der Anlage" (0) und die Module des Projekts (Stamm-Id).</summary>
+    IReadOnlyList<KiWahleintrag> ModulEintraege();
+
+    /// <summary>Der gewählte Katalogeintrag des Geräts; 0 = keins, <c>null</c> = nicht im Katalog.</summary>
+    int? GeraetAuswahl(StrangZeile strang);
+
+    /// <summary>Der gewählte Eintrag des Moduls; 0 = das Modul der Anlage.</summary>
+    int? ModulAuswahl(StrangZeile strang);
+
+    /// <summary>Wählt das Gerät; 0 nimmt es heraus. Wirft bei ungeeigneter Wahl.</summary>
+    void GeraetWaehlen(StrangZeile strang, int stammId);
+
+    /// <summary>Wählt das Modul; 0 = das Modul der Anlage. Wirft bei unverträglicher Wahl.</summary>
+    void ModulWaehlen(StrangZeile strang, int stammId);
+}
+
+/// <summary>
+/// Ein Strang, wie der Assistent ihn sieht: die Werte der <see cref="StrangZeile"/>
+/// unverändert durchgereicht, dazu Wechselrichter und Modul als WAHL über den
+/// Übernahmeweg (<see cref="IStrangwahl"/>), nie als gesetzte Id.
+/// </summary>
+public sealed class StrangKiZeile
+{
+    private readonly StrangZeile _s;
+    private readonly PhotovoltaikKiSicht _sicht;
+
+    internal StrangKiZeile(StrangZeile strang, PhotovoltaikKiSicht sicht)
+    {
+        _s = strang;
+        _sicht = sicht;
+    }
+
+    /// <summary>Freitext („Dach Süd") — das Zeilenkennzeichen.</summary>
+    public string Bezeichner { get => _s.Bezeichner; set => _s.Bezeichner = value ?? ""; }
+
+    /// <summary>Welches physische Gerät dieses Typs; <c>null</c> = 1.</summary>
+    public int? Geraetenummer { get => _s.Geraetenummer; set => _s.Geraetenummer = value; }
+
+    /// <summary>MPPT-Eingang; <c>null</c> = 1.</summary>
+    public int? Mppt { get => _s.Mppt; set => _s.Mppt = value; }
+
+    /// <summary>Module in Reihe.</summary>
+    public int? ModuleReihe { get => _s.ModuleReihe; set => _s.ModuleReihe = value; }
+
+    /// <summary>Parallel geschaltete Stränge; <c>null</c> = 1.</summary>
+    public int? StraengeParallel { get => _s.StraengeParallel; set => _s.StraengeParallel = value; }
+
+    /// <summary>Neigung des Teilfelds [°]; <c>null</c> = der Anlagenwert.</summary>
+    public int? Neigung { get => _s.Neigung; set => _s.Neigung = value; }
+
+    /// <summary>Azimut des Teilfelds [°]; <c>null</c> = der Anlagenwert.</summary>
+    public int? Azimut { get => _s.Azimut; set => _s.Azimut = value; }
+
+    /// <summary>
+    /// Der Wechselrichter als Katalogeintrag (Stamm-Id); 0 = keiner. Gesetzt wird über
+    /// den Übernahmeweg — ein ungeeignetes Gerät lehnt er benannt ab.
+    /// </summary>
+    public int? Wechselrichter
+    {
+        get => _sicht.Strangwahl?.Invoke()?.GeraetAuswahl(_s) ?? (_s.WechselrichterId > 0 ? null : 0);
+        set => _sicht.Wahlweg.GeraetWaehlen(_s, value ?? 0);
+    }
+
+    /// <summary>
+    /// Das Modul als Eintrag (Stamm-Id); 0 = das Modul der Anlage. Gesetzt wird über den
+    /// Übernahmeweg — ein unverträgliches Modul lehnt er benannt ab.
+    /// </summary>
+    public int? Modul
+    {
+        get => _sicht.Strangwahl?.Invoke()?.ModulAuswahl(_s) ?? (_s.ModulId > 0 ? null : 0);
+        set => _sicht.Wahlweg.ModulWaehlen(_s, value ?? 0);
     }
 }

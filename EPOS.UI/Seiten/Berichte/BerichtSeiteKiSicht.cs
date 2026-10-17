@@ -105,6 +105,15 @@ public sealed class BerichtSeiteKiSicht
     /// <summary>Die drei Ausgabeformen der Maske.</summary>
     public Func<IReadOnlyList<KiWahleintrag>>? AusgabeEintraege { get; init; }
 
+    /// <summary>Liest das gewählte Szenario der Wirtschaftlichkeit (0 = Erwartet, 1 = Günstig, 2 = Ungünstig).</summary>
+    public Func<int?>? SzenarioLesen { get; init; }
+
+    /// <summary>Setzt das Szenario — derselbe Weg wie die Klappliste.</summary>
+    public Action<int?>? SzenarioSetzen { get; init; }
+
+    /// <summary>Die Szenarien der Maske.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? SzenarioEintraege { get; init; }
+
     /// <summary>Liest den Zielordner.</summary>
     public Func<string>? ZielordnerLesen { get; init; }
 
@@ -129,6 +138,17 @@ public sealed class BerichtSeiteKiSicht
     {
         get => AusgabeLesen?.Invoke();
         set => AusgabeSetzen?.Invoke(value);
+    }
+
+    /// <summary>Die Szenarien der Wirtschaftlichkeit.</summary>
+    public IReadOnlyList<KiWahleintrag> SzenarioWahl
+        => SzenarioEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Das Szenario des Wirtschaftlichkeitsberichts (Fachvorgabe E31, Nach #582).</summary>
+    public int? Szenario
+    {
+        get => SzenarioLesen?.Invoke();
+        set => SzenarioSetzen?.Invoke(value);
     }
 
     /// <summary>Der Ordner, in den der Bericht geschrieben wird.</summary>

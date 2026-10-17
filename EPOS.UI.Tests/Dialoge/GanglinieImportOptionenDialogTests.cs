@@ -338,4 +338,130 @@ public class GanglinieImportOptionenDialogTests : BunitContext
         Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIM_BTN_OK,
                      primaer[0].TextContent.Trim());
     }
+
+    // =====================================================================
+    // Erste Datenzeile und Zeilenzahl (IM-3)
+    // =====================================================================
+
+    /// <summary>Eine Stundenreihe „Nr;Wert“ mit <paramref name="kopf"/> Kopfzeilen und <paramref name="daten"/> Werten (Wert = Nummer + 0,5).</summary>
+    private static string Probedatei(int kopf, int daten)
+    {
+        var zeilen = new List<string>();
+        if (kopf >= 1) zeilen.Add("Zeitpunkt;Leistung");
+        for (int k = 2; k <= kopf; k++) zeilen.Add("Einheit;kW");
+        for (int i = 1; i <= daten; i++) zeilen.Add(i + ";" + i + ",5");
+        string pfad = Path.Combine(Path.GetTempPath(), "epos-im3-" + Guid.NewGuid().ToString("N") + ".csv");
+        File.WriteAllText(pfad, string.Join("\r\n", zeilen) + "\r\n");
+        return pfad;
+    }
+
+    /// <summary>Der Dialog über einer echten Datei — Erkennung und Neuzerlegung über den Kern.</summary>
+    private IRenderedComponent<GanglinieImportOptionenDialog> ZeigeDatei(
+        string pfad, Action<GanglinienImportOptionen?>? geschlossen = null)
+        => Render<GanglinieImportOptionenDialog>(p => p
+            .Add(x => x.Pfad, pfad)
+            .Add(x => x.Erkennung, GanglinienDatei.Erkenne(pfad))
+            .Add(x => x.Vorschau, (Func<string, GanglinienImportOptionen, Task<GanglinienVorschau?>>)(
+                (d, o) => Task.FromResult<GanglinienVorschau?>(GanglinienDatei.Vorschau(d, o))))
+            .Add(x => x.Geschlossen, (GanglinienImportOptionen? o) => geschlossen?.Invoke(o)));
+
+    /// <summary>Die zwei Zahlenfelder des Lesefensters: [0] erste Datenzeile, [1] Zeilenzahl.</summary>
+    private static IReadOnlyList<IElement> Fensterfelder(IRenderedComponent<GanglinieImportOptionenDialog> cut)
+        => cut.FindAll(".epos-importoptionen-raster input");
+
+    [Fact]
+    public void Erste_Datenzeile_und_Zeilenzahl_kommen_aus_der_Erkennung()
+    {
+        string pfad = Probedatei(2, 8760);
+        try
+        {
+            var cut = ZeigeDatei(pfad);
+            IReadOnlyList<IElement> felder = Fensterfelder(cut);
+            Assert.Equal(2, felder.Count);
+            Assert.Equal("3", felder[0].GetAttribute("value"));
+            Assert.Equal("8760", felder[1].GetAttribute("value"));
+            Assert.Equal(3, cut.Instance.ErsteDatenzeile);
+            Assert.Equal(8760, cut.Instance.Zeilenzahl);
+
+            // Die zwei Kopfzeilen stehen grau, die erste Datenzeile nicht.
+            var zeilen = cut.FindAll(".epos-raster tbody tr");
+            Assert.NotEmpty(zeilen[1].QuerySelectorAll(".epos-vorschau-kopf"));
+            Assert.Empty(zeilen[2].QuerySelectorAll(".epos-vorschau-kopf"));
+
+            // Unverändert gelesen wird bis zum Dateiende.
+            GanglinienImportOptionen o = cut.Instance.Optionen();
+            Assert.Equal(3, o.ErsteDatenzeile);
+            Assert.Equal(0, o.Zeilenzahl);
+        }
+        finally { File.Delete(pfad); }
+    }
+
+    [Fact]
+    public void Ein_geaenderter_Startwert_liest_ab_dieser_Zeile()
+    {
+        string pfad = Probedatei(1, 8770);
+        GanglinienImportOptionen? ergebnis = null;
+        try
+        {
+            var cut = ZeigeDatei(pfad, o => ergebnis = o);
+            Assert.Equal(2, cut.Instance.ErsteDatenzeile);
+            Assert.Equal(8770, cut.Instance.Zeilenzahl);
+
+            Fensterfelder(cut)[0].Input("7");
+            Fensterfelder(cut)[1].Input("8760");
+            Knopf(cut, 0).Click();
+
+            GanglinienProbe? probe = cut.Instance.Probe;
+            Assert.NotNull(probe);
+            Assert.True(probe!.Erfolgreich, probe.Grund);
+            Assert.Equal(8760, probe.Datenzeilen);
+            Assert.Equal(6.5, probe.WerteKw[0], 9);
+            Assert.Equal(7, cut.Instance.ErsteDatenzeile);
+            Assert.Equal(8760, cut.Instance.Zeilenzahl);
+
+            Knopf(cut, 2).Click();
+            Assert.NotNull(ergebnis);
+            Assert.Equal(7, ergebnis!.ErsteDatenzeile);
+            Assert.Equal(8760, ergebnis.Zeilenzahl);
+            Assert.True(ergebnis.Kopfzeile);
+        }
+        finally { File.Delete(pfad); }
+    }
+
+    [Fact]
+    public void Zu_wenig_Zeilen_ab_der_ersten_Datenzeile_werden_benannt()
+    {
+        string pfad = Probedatei(1, 8770);
+        try
+        {
+            var cut = ZeigeDatei(pfad);
+            Fensterfelder(cut)[0].Input("20");
+            Fensterfelder(cut)[1].Input("8760");
+            Knopf(cut, 0).Click();
+
+            GanglinienProbe? probe = cut.Instance.Probe;
+            Assert.NotNull(probe);
+            Assert.False(probe!.Erfolgreich);
+            string zeile = cut.Find(".epos-importoptionen-probe").TextContent;
+            Assert.Contains("8752", zeile);
+            Assert.Contains("8760", zeile);
+            Assert.Empty(cut.FindAll(".epos-importoptionen-bild"));
+        }
+        finally { File.Delete(pfad); }
+    }
+
+    [Fact]
+    public void Der_Kopfzeilenschalter_und_die_erste_Datenzeile_gehen_zusammen()
+    {
+        var cut = Zeige();
+        Assert.Equal(2, cut.Instance.ErsteDatenzeile);
+
+        cut.Find("input[type=checkbox]").Change(false);
+        Assert.Equal(1, cut.Instance.ErsteDatenzeile);
+        Assert.False(cut.Instance.Optionen().Kopfzeile);
+
+        Fensterfelder(cut)[0].Input("4");
+        Assert.True(cut.Instance.Optionen().Kopfzeile);
+        Assert.Equal(4, cut.Instance.Optionen().ErsteDatenzeile);
+    }
 }

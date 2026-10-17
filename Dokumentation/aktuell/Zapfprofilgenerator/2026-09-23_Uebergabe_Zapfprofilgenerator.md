@@ -96,7 +96,7 @@ Grundlagenpapieren (A9) erst nach K8.
   (Suchen, kleine Textpflege), `model: haiku` (Zählungen, Encoding-Prüfungen); Fable nur, wenn
   Opus die Aufgabe nachweislich nicht leisten kann.
 - Linkprobe ohne Build: Perl-Skript in der
-  [Übergabe Gebäudesimulation](../Gebaeudesimulation/2026-09-22_Uebergabe_Gebaeudesimulation.md),
+  [Übergabe Gebäudesimulation](../../ueberholt/2026-09-22_Uebergabe_Gebaeudesimulation.md),
   Abschnitt 3.
 
 ## 4 Lokale Bestände, die mitzunehmen sind

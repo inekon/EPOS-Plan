@@ -100,7 +100,7 @@ public class StartseiteSimulationwegTests : EposBunitContext
         List<string> gemeldet = new List<string>();
         var cut = Zeigen(gemeldet);
 
-        cut.FindAll("[role='tab']")[4].Click();
+        cut.FindAll("[role='tab']")[5].Click();
         cut.Find(".epos-startreiter-leiste .epos-knopf").Click();
 
         Assert.Equal(new[] { Masken.Simulation }, Navigation.Masken);
@@ -119,7 +119,7 @@ public class StartseiteSimulationwegTests : EposBunitContext
         List<string> gemeldet = new List<string>();
         var cut = Zeigen(gemeldet);
 
-        cut.FindAll("[role='tab']")[4].Click();
+        cut.FindAll("[role='tab']")[5].Click();
         cut.Find(".epos-simreiter-hauptknopf").Click();
 
         Assert.Equal(new[] { Masken.Simulation }, Navigation.Masken);
@@ -137,7 +137,7 @@ public class StartseiteSimulationwegTests : EposBunitContext
         List<string> gemeldet = new List<string>();
         var cut = Zeigen(gemeldet);
 
-        cut.FindAll("[role='tab']")[4].Click();
+        cut.FindAll("[role='tab']")[5].Click();
 
         Assert.Equal("Simulation starten",
                      WindowsFormsApplication1.MyResource.Resource.START_K_DETAILSIM_T);
@@ -158,7 +158,7 @@ public class StartseiteSimulationwegTests : EposBunitContext
         List<string> gemeldet = new List<string>();
         var cut = Zeigen(gemeldet);
 
-        cut.FindAll("[role='tab']")[4].Click();
+        cut.FindAll("[role='tab']")[5].Click();
         cut.Find(".epos-startreiter-leiste .epos-knopf").Click();
         cut.Find(".epos-simreiter-hauptknopf").Click();
 

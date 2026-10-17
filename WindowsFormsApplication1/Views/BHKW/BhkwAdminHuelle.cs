@@ -116,10 +116,11 @@ namespace WindowsFormsApplication1
         /// <para><b>Gelesen wird genau, was das Profil als <c>Editierbar</c> führt</b>
         /// (Anwenderentscheid 15.09.2026): Firma, Beschreibung, Brennstoff, Motortyp,
         /// die vier Leistungs- und Temperaturwerte, die zwei Wirkungsgradanteile,
-        /// Raumbedarf, die fünf
-        /// Kostenposten, Wartung, Nutzungsdauer und die fünf Emissionsfaktoren. Die
-        /// Investition je kWel bleibt draußen: Sie ist die ABLEITUNG der fünf Posten
-        /// (W14a-E-8-B3) und wird im Kern nachgerechnet.</para>
+        /// Raumbedarf, Nutzungsdauer und die fünf Emissionsfaktoren. Die Kostenfelder
+        /// bleiben draußen, weil es sie nicht mehr gibt: Die sieben Kostenspalten des BHKW
+        /// sind mit Welle KB-4 entfallen (Anwenderentscheid 13.10.2026 „eine Kostenbasis,
+        /// keine Doppelhaltung"); der Aufklapper zeigt die Gerätekosten nur noch als
+        /// LESEWERT der Satzvorlage, gepflegt werden sie in der Kostenverwaltung.</para>
         /// <para><b>Der GESAMTwirkungsgrad bleibt ebenso draußen</b>
         /// (Anwenderentscheid 20.09.2026): Er ist die Summe der zwei Anteile und im
         /// Aufklapper nur Anzeige.</para>
@@ -130,10 +131,31 @@ namespace WindowsFormsApplication1
         /// pflegbar.</para>
         /// </remarks>
         private static KatalogSpeicherErgebnis Schreiben(string name,
-                                                         IReadOnlyList<BrowserFeldwert> felder,
-                                                         bool schutzUebergehen)
+                                                         IReadOnlyList<BrowserFeldwert> felder)
         {
-            var werte = new BHKWStammCtrl.AnzeigefelderBhkw(
+            BHKWStammCtrl.SpeicherErgebnis e =
+                BHKWStammCtrl.AnzeigefelderSchreiben(name, Werte(felder));
+            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+        }
+
+        /// <summary>
+        /// Schreibt die Sätze einer Mehrfachbearbeitung (Katalogauswahl V1, KA‑E‑8) in EINER Transaktion — die
+        /// Projektkopien oder die Katalogsätze, alle oder keiner (<c>BHKWStammCtrl.AnzeigefelderSchreibenAlle</c>).
+        /// </summary>
+        internal static KatalogSpeicherErgebnis SammelSchreiben(
+            bool projektkopie, IReadOnlyList<(int Id, IReadOnlyList<BrowserFeldwert> Felder)> saetze)
+        {
+            var liste = new List<BHKWStammCtrl.Satzaenderung>();
+            foreach (var (id, felder) in saetze)
+                liste.Add(new BHKWStammCtrl.Satzaenderung(id, Werte(felder)));
+            BHKWStammCtrl.SpeicherErgebnis e = BHKWStammCtrl.AnzeigefelderSchreibenAlle(projektkopie, liste);
+            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+        }
+
+        /// <summary>Die Felder des Aufklappers als Anzeigefelder des Kerns.</summary>
+        internal static BHKWStammCtrl.AnzeigefelderBhkw Werte(IReadOnlyList<BrowserFeldwert> felder)
+        {
+            return new BHKWStammCtrl.AnzeigefelderBhkw(
                 KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldFirma),
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldPtherm),
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldPel),
@@ -144,15 +166,6 @@ namespace WindowsFormsApplication1
                 Brennstoff: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldBrennstoff),
                 Motortyp: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldMotortyp),
                 Raumbedarf: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldRaumbedarf),
-                KostenModul: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldKostenModul),
-                KostenMontage: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldKostenMontage),
-                KostenLieferung: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldKostenLieferung),
-                KostenSchallschutzhaube:
-                    KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldKostenSchallschutz),
-                KostenAbgasreinigung:
-                    KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldKostenAbgasreinigung),
-                WartungskostenJeKWhel:
-                    KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldWartungJeKwhel),
                 Nutzungsdauer: KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldNutzungsdauer),
                 NOx: KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldNox),
                 SO2: KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldSo2),
@@ -166,11 +179,15 @@ namespace WindowsFormsApplication1
                 WirkungsgradEl:
                     KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldWirkungsgradEl),
                 WirkungsgradTh:
-                    KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldWirkungsgradTh));
-
-            BHKWStammCtrl.SpeicherErgebnis e =
-                BHKWStammCtrl.AnzeigefelderSchreiben(name, werte, schutzUebergehen);
-            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+                    KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldWirkungsgradTh),
+                // Teillast und Takten (Welle M4: BH1, BH2): als Text, denn leer heißt hier
+                // „nicht gepflegt" und wird als NULL geschrieben, nicht „unverändert".
+                WirkungsgradEl50: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldTeillastEl50),
+                WirkungsgradTh50: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldTeillastTh50),
+                AnfahrverlustKwh: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldAnfahrverlust),
+                MindestlaufzeitMin: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldMindestlaufzeit),
+                // Abschaltgrenze des Ruecklaufs (UB-E3): als Text, leer heißt „keine Grenze".
+                RuecklaufMaxC: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldRuecklaufMax));
         }
 
         private static IReadOnlyDictionary<string, object> EditorGaben(string name, bool neu,

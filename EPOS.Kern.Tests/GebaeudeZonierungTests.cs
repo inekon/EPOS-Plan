@@ -83,7 +83,7 @@ namespace EPOS.Kern.Tests
             Assert.False(z.Abgelehnt);
             Assert.Equal("Z4", z.Vorgabe);
             Assert.Equal("Z4", z.Regel);
-            Assert.Equal(new[] { "Z4", "Z5" }, z.Regeln);
+            Assert.Equal(new[] { "Z4", "Z6", "Z5" }, z.Regeln);   // Z6: Temperaturen bzw. Beheizung bilden Gruppen
             Assert.False(z.Einzonig);
 
             // Drei Zonen: der unbeheizte Keller, Erd- und Obergeschoss — in Dateifolge der Räume.

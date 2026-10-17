@@ -104,7 +104,7 @@ namespace ZapfprofilValidierung
         /// <summary>Der Bezeichner der Nutzungsart im Katalog (natürlicher Schlüssel, 3.1).</summary>
         public string Nutzungsart { get; set; }
 
-        /// <summary>Die Bezugsmenge der Zone in der Bezugsart der Nutzungsart (Personen, WE, Betten …).</summary>
+        /// <summary>Die Bezugsmenge der Zone in der Bezugsart der Nutzungsart (Personen, WE, Betten, Zimmer …).</summary>
         public double Bezugsmenge { get; set; }
 
         /// <summary>

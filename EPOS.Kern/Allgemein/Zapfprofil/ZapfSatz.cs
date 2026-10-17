@@ -12,7 +12,9 @@ namespace WindowsFormsApplication1
     /// den der Zapfprofilgenerator liefert, ist eine <see cref="Kennung"/> mit sprachfreien
     /// <see cref="Werte"/> — kein fertiger Satz. Das Muster steht als Ressource
     /// <c>ZPG_SATZ_</c> + Kennung in BEIDEN Sprachen (<c>Resource.resx</c>, <c>Resource.en-US.resx</c>)
-    /// mit denselben Platzhaltern <c>{0}</c>, <c>{1:0.###}</c> …
+    /// mit denselben Platzhaltern <c>{0}</c>, <c>{1:0.###}</c> … Ein Satz, den eine Nachbarstufe in den
+    /// Weg reicht, trägt statt dessen ihren vollen Schlüssel (<see cref="AusRessource"/>, etwa
+    /// <c>KOND_MSG_*</c> der Konditionierung).
     ///
     /// <para><b>Zwei Lesarten.</b> <see cref="Klartext"/> ist der deutsche Wortlaut in
     /// invarianter Kultur (Punkt als Dezimalzeichen) — für Laufprotokoll, Ausnahmemeldung und Test,
@@ -35,18 +37,28 @@ namespace WindowsFormsApplication1
 
         private readonly object[] _werte;
 
-        private ZapfSatz(string kennung, object[] werte)
+        /// <summary>Der volle Ressourcenschlüssel eines Satzes aus einer Nachbarstufe (<see cref="AusRessource"/>); <c>null</c> = Familie <see cref="PRAEFIX"/>.</summary>
+        private readonly string _fremdschluessel;
+
+        private ZapfSatz(string kennung, object[] werte, string fremdschluessel = null)
         {
             if (string.IsNullOrWhiteSpace(kennung)) throw new ArgumentException("Ein Satz braucht eine Kennung.", nameof(kennung));
             Kennung = kennung;
             _werte = werte ?? new object[0];
+            _fremdschluessel = fremdschluessel;
         }
 
-        /// <summary>Die Kennung des Satzes (ohne Präfix), etwa <c>EINGABE_BEZUGSMENGE_NICHT_POSITIV</c>.</summary>
+        /// <summary>
+        /// Die Kennung des Satzes (ohne Präfix), etwa <c>EINGABE_BEZUGSMENGE_NICHT_POSITIV</c>; bei einem
+        /// Satz aus einer Nachbarstufe (<see cref="AusRessource"/>) sein voller Schlüssel.
+        /// </summary>
         internal string Kennung { get; }
 
-        /// <summary>Der Ressourcenschlüssel des Musters: <see cref="PRAEFIX"/> + <see cref="Kennung"/>.</summary>
-        internal string Schluessel => PRAEFIX + Kennung;
+        /// <summary>
+        /// Der Ressourcenschlüssel des Musters: <see cref="PRAEFIX"/> + <see cref="Kennung"/>, bei einem Satz
+        /// aus einer Nachbarstufe der volle Schlüssel (<see cref="AusRessource"/>).
+        /// </summary>
+        internal string Schluessel => _fremdschluessel ?? PRAEFIX + Kennung;
 
         /// <summary>Die Werte der Platzhalter {0}, {1}, … — sprachfrei, in dieser Reihenfolge.</summary>
         internal IReadOnlyList<object> Werte => Array.AsReadOnly(_werte);
@@ -58,6 +70,19 @@ namespace WindowsFormsApplication1
             // (Feldkovarianz) — es ist aber EIN Wert: eine Liste für einen Platzhalter.
             if (werte != null && werte.GetType() != typeof(object[])) werte = new object[] { werte };
             return new ZapfSatz(kennung, werte == null ? new object[0] : (object[])werte.Clone());
+        }
+
+        /// <summary>
+        /// <b>Ein Satz, dessen Muster eine Nachbarstufe führt</b> — unter dem vollen Ressourcenschlüssel
+        /// <paramref name="schluessel"/> statt in der Familie <see cref="PRAEFIX"/>, etwa ein Hinweis der
+        /// Konditionierung (<c>KOND_MSG_*</c>), den der Eingang in den Weg des Zapfprofils reicht
+        /// (Entwurf KP2, Festlegung 10). Werte, Klartext und Oberflächensprache wie bei
+        /// <see cref="Neu"/>; das Muster hält die Stufe, die den Schlüssel führt, in beiden Sprachen.
+        /// </summary>
+        internal static ZapfSatz AusRessource(string schluessel, params object[] werte)
+        {
+            if (werte != null && werte.GetType() != typeof(object[])) werte = new object[] { werte };
+            return new ZapfSatz(schluessel, werte == null ? new object[0] : (object[])werte.Clone(), schluessel);
         }
 
         /// <summary>
@@ -157,17 +182,19 @@ namespace WindowsFormsApplication1
         public override string ToString() => Klartext;
 
         /// <summary>
-        /// Zwei Sätze sind gleich, wenn Kennung und Werte gleich sind — damit ein Hinweis, der
-        /// zweimal entsteht, nur einmal in der Liste steht (<see cref="ZapfHinweis.Einmal"/>).
+        /// Zwei Sätze sind gleich, wenn Schlüssel und Werte gleich sind — damit ein Hinweis, der
+        /// zweimal entsteht, nur einmal in der Liste steht (<see cref="ZapfHinweis.Einmal"/>). Der
+        /// Schlüssel trennt einen Satz der Familie <see cref="PRAEFIX"/> von einem gleich benannten einer
+        /// Nachbarstufe (<see cref="AusRessource"/>).
         /// </summary>
         public override bool Equals(object obj)
-            => obj is ZapfSatz s && string.Equals(Kennung, s.Kennung, StringComparison.Ordinal)
+            => obj is ZapfSatz s && string.Equals(Schluessel, s.Schluessel, StringComparison.Ordinal)
                && _werte.Length == s._werte.Length && _werte.Zip(s._werte, WertGleich).All(g => g);
 
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            int h = StringComparer.Ordinal.GetHashCode(Kennung);
+            int h = StringComparer.Ordinal.GetHashCode(Schluessel);
             foreach (object w in _werte) h = h * 31 + (w is IEnumerable e && w is not string ? e.Cast<object>().Count() : w?.GetHashCode() ?? 0);
             return h;
         }

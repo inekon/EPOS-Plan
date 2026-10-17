@@ -82,6 +82,14 @@ namespace WindowsFormsApplication1
         public double StromsteuerEntlastungEur;
 
         /// <summary>
+        /// Bepreist die Gruppenregel im Vergleich den Netzbezug dieses Standes, obwohl er keinen
+        /// Erzeuger führt, der Strom verwendet (<see cref="VariantenDaten.StromImVergleichBepreisen"/>)?
+        /// Dann bepreist ihn ohne zugeordneten Stromträger der Rückfallträger — und gegen dessen
+        /// Stromsteueranteil prüft die Stromseite (Register EZ‑18).
+        /// </summary>
+        public bool StromImVergleichBepreist;
+
+        /// <summary>
         /// ETAPPE E2 (Befund R5): die gebuchte CO₂-Abgabe des Jahres 1 [€/a] aus der
         /// BEHG-Reihe. 0 = keine Reihe gebucht — dann gibt es nichts doppelt zu buchen.
         /// </summary>
@@ -1134,6 +1142,12 @@ namespace WindowsFormsApplication1
         /// die Anteile den Arbeitspreis; ein aktiver Stromsteueranteil &gt; 0 heißt
         /// damit: Die Stromsteuer steckt im angesetzten Bezugspreis. Es gibt keinen
         /// Projektschalter mehr, der das ganze Feld abschalten könnte.</para>
+        ///
+        /// <para><b>Geprüft wird der Träger, der den Netzbezug bepreist</b> (Register EZ‑18):
+        /// der zugeordnete, ohne Zuordnung der Rückfallträger der Kostenrechnung — auch an einem
+        /// Stand ohne eigene Stromverwendung, dessen Netzbezug die Gruppenregel bepreist
+        /// (<see cref="KohaerenzLauf.StromImVergleichBepreist"/>). Am Rückfallträger ist kein
+        /// Stromsteueranteil gepflegt; eine gebuchte Entlastung nennt dann diesen Grund.</para>
         /// </summary>
         private static void Stromseite(int idProjekt, KohaerenzLauf lauf,
                                        CultureInfo kultur, List<KohaerenzHinweis> liste)
@@ -1151,26 +1165,42 @@ namespace WindowsFormsApplication1
             if (!gebucht9b && !gebucht913 && !prodGewerbe) return;
 
             int carrier = StrompreisZerlegungCtrl.StromCarrierId(idProjekt);
+            int rueckfall = 0;
             if (carrier <= 0)
             {
-                // ANWENDERENTSCHEID 22.09.2026 — DIESELBE REGEL WIE AUF DER KOSTENSEITE.
-                // Führt das Projekt keinen Erzeuger, der Strom verwendet, dann FEHLT der
-                // Stromträger nicht, er wird nicht gebraucht: Ein Befund darüber wäre eine
-                // Aufgabe ohne Gegenstand. Gefragt wird die EINE Fassung
-                // (ProjektEnergietraegerCtrl), nicht eine zweite hier.
-                if (!ProjektEnergietraegerCtrl.BrauchtStromTraeger(idProjekt)) return;
+                // DER RÜCKFALLTRÄGER (Anwenderentscheid 30.09.2026, Register EZ‑18). Ohne
+                // zugeordneten Stromträger bepreist die Kostenrechnung den Netzbezug mit dem
+                // Auslieferungsträger — an einem Stand mit Stromverwendung immer, an einem ohne,
+                // sobald die Gruppenregel ihn im Vergleich bepreist. Gegen DIESEN Träger wird
+                // geprüft, mit derselben Wahl (KostenEmissionRechner.StromTraegerRueckfall); sein
+                // Stromsteueranteil lässt sich nur an einem zugeordneten Träger pflegen, fehlt
+                // also hier — und das wird benannt, nicht verschwiegen.
+                rueckfall = KostenEmissionRechner.StromTraegerRueckfall(idProjekt, lauf.StromImVergleichBepreist);
+                if (rueckfall <= 0)
+                {
+                    // ANWENDERENTSCHEID 22.09.2026 — DIESELBE REGEL WIE AUF DER KOSTENSEITE.
+                    // Führt das Projekt keinen Erzeuger, der Strom verwendet, dann FEHLT der
+                    // Stromträger nicht, er wird nicht gebraucht: Ein Befund darüber wäre eine
+                    // Aufgabe ohne Gegenstand. Gefragt wird die EINE Fassung
+                    // (ProjektEnergietraegerCtrl), nicht eine zweite hier.
+                    if (!ProjektEnergietraegerCtrl.BrauchtStromTraeger(idProjekt)) return;
 
-                Fall2Strom(lauf, T("KOH_GRUND_KEIN_STROMTRAEGER",
-                    "dem Projekt ist kein Strom-Energieträger zugeordnet"), kultur, liste);
-                return;
+                    Fall2Strom(lauf, T("KOH_GRUND_KEIN_STROMTRAEGER",
+                        "dem Projekt ist kein Strom-Energieträger zugeordnet"), kultur, liste);
+                    return;
+                }
+                carrier = rueckfall;
             }
 
             StrompreisZerlegungModel m = new StrompreisZerlegungCtrl().Read(idProjekt, carrier);
 
             string grund = null;
             if (!m.AusDatenbank)
-                grund = T("KOH_GRUND_KEIN_STROMTRAEGER",
-                    "dem Projekt ist kein Strom-Energieträger zugeordnet");
+                grund = rueckfall > 0
+                    ? string.Format(kultur, T("KOH_GRUND_RUECKFALL_STROMSTEUER",
+                        "Stromsteueranteil des Auslieferungsträgers „{0}“ nicht gepflegt"), TraegerName(rueckfall))
+                    : T("KOH_GRUND_KEIN_STROMTRAEGER",
+                        "dem Projekt ist kein Strom-Energieträger zugeordnet");
             else if (!m.Stromsteuer_Aktiv)
                 grund = T("KOH_GRUND_STROM_INAKTIV", "die Komponente Stromsteuer ist abgeschaltet");
             else if (m.Stromsteuer <= 0)

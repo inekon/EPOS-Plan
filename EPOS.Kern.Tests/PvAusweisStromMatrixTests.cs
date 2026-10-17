@@ -114,13 +114,15 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
             ErgebnisPhotovoltaikModel a = Rechne(1040).Ergebnis.Photovoltaik;
             Assert.Equal(6.713, a.Stromproduktion, 3);     // vor E26 4,441 (der Direktverbrauch)
-            Assert.Equal(2.273, a.Ueberschuss, 3);
-            Assert.Equal(4.441, a.Stromproduktion - a.Ueberschuss, 3);   // vor E26 2,168
+            // Welle M5 (SB1 a, Basis R33): Bilanz je Viertelstunde - vorher 2,273 / 4,441.
+            Assert.Equal(2.277, a.Ueberschuss, 3);
+            Assert.Equal(4.437, a.Stromproduktion - a.Ueberschuss, 3);   // vor E26 2,168
 
             ErgebnisPhotovoltaikModel b = Rechne(1026).Ergebnis.Photovoltaik;
             Assert.Equal(6.713, b.Stromproduktion, 3);     // vor E26 4,197
-            Assert.Equal(1.246, b.Ueberschuss, 3);
-            Assert.Equal(5.467, b.Stromproduktion - b.Ueberschuss, 3);   // vor E26 2,950
+            // Welle M5 (SB1 a, Basis R33): vorher 1,246 / 5,467. RP2a (Erdreich ISO 13370): vorher 1,249 / 5,465.
+            Assert.Equal(1.268, b.Ueberschuss, 3);
+            Assert.Equal(5.445, b.Stromproduktion - b.Ueberschuss, 3);   // vor E26 2,950
         }
 
         // =====================================================================
@@ -178,9 +180,10 @@ namespace EPOS.Kern.Tests
             if (!_db.Vorhanden) return;
             var erwartet = new Dictionary<int, (double bedarf, double menge)>
             {
-                [1040] = (27.427, 4.441),     // vor E26 8,000 / −14,986
-                [1026] = (31.351, 5.348),     // vor E26 8,000 / −18,004
-                [1042] = (41.345, 0.000)      // vor E26 8,000 / −33,345
+                // Welle M5 (SB1 a, Basis R33): vorher 4,441 und 5,348.
+                [1040] = (27.427, 4.437),     // vor E26 8,000 / −14,986
+                [1026] = (30.994, 5.324),     // vor E26 8,000 / −18,004; RP2a (Erdreich): vorher 31,351 / 5,345
+                [1042] = (41.206, 0.000)      // vor E26 8,000 / −33,345; RP2a (Erdreich): vorher 41,345
             };
             var rolle = new TarifRolle
             {
@@ -235,14 +238,22 @@ namespace EPOS.Kern.Tests
 
         public static IEnumerable<object[]> Kapitalwertanker()
         {
-            yield return new object[] { 1024, WirtschaftlichkeitSzenario.ERWARTET, -2772642.2674731365 };
-            yield return new object[] { 1024, WirtschaftlichkeitSzenario.BEST, -2801567.756181355 };
+            yield return new object[] { 1024, WirtschaftlichkeitSzenario.ERWARTET, -2760892.3849764639 };
+            yield return new object[] { 1024, WirtschaftlichkeitSzenario.BEST, -2789110.7408091105 };
             // E27 (Entscheid E27‑Q2 a): Anker neu gesetzt. Die zwölf BHKW-Überschussstunden
             // minderten den Netzbezug nicht mehr (4.357,78 → 4.358,17 MWh, +0,39 MWh ×
             // 0,25 €/kWh = +97,50 €/a Energiekosten); vor E27 −31.141.242,708693754.
-            yield return new object[] { 1030, WirtschaftlichkeitSzenario.ERWARTET, -31142971.061503537 };
-            yield return new object[] { 1030, WirtschaftlichkeitSzenario.BEST, -31311485.338977072 };
-            yield return new object[] { 1030, WirtschaftlichkeitSzenario.WORST, -31007010.798322424 };
+            // Kessel E2b (Schemaschritt 158): Der Gaskessel trägt das Brennwertkennzeichen seines
+            // Katalogsatzes und rechnet mit der Normvorgabe von η₃₀ (5.403,10 → 5.203,20 MWh Gas,
+            // −15.992 €/a Energiekosten, −2.638,68 €/a CO₂-Abgabe); vor E2b −31.142.971,061503537
+            // (Erwartet), −31.311.485,338977072 (Best), −31.007.010,798322424 (Worst).
+            // Kessel E4 (Takten): Der Kessel taktet unter seiner Mindestleistung (Normvorgabe) und
+            // zahlt je Start den Anfahrverlust (5.203,20 → 5.240,16 MWh Gas, +2.956,80 €/a
+            // Energiekosten, +487,88 €/a CO₂-Abgabe); vor E4 −30.812.710,6704642 (Erwartet),
+            // −30.978.281,063290827 (Best), −30.679.642,905571833 (Worst).
+            yield return new object[] { 1030, WirtschaftlichkeitSzenario.ERWARTET, -30873773.322054066 };
+            yield return new object[] { 1030, WirtschaftlichkeitSzenario.BEST, -31039888.016914457 };
+            yield return new object[] { 1030, WirtschaftlichkeitSzenario.WORST, -30740170.756077401 };
         }
 
         /// <summary>KWKG-Zuschlag Jahr 1 von 1030 vor E26 [€] — der KWK-Split trägt ihn.</summary>

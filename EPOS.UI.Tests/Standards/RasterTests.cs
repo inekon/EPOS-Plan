@@ -537,7 +537,7 @@ public class RasterTests : BunitContext
         Assert.Contains(
             ".epos-raster-huelle--hoch .epos-raster > tbody > tr,\n" +
             ".epos-raster-huelle--hoch .epos-raster > tbody > tr > td {\n" +
-            "    height: var(--epos-rasterzeile, 53px);\n}",
+            "    height: calc(var(--epos-rasterzeile, 53px) * var(--epos-zeilenskala, 1));\n}",
             blatt);
 
         // Der Rueckfall im Blatt und die Vorgabe im Programm sind DIESELBE Zahl.

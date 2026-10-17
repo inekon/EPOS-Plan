@@ -1,0 +1,7 @@
+<includeonly></div></includeonly><noinclude><!-- EPOS-Plan Vorlage | Wikititel: Vorlage:Fluss-Ende
+     Repo-Quelle dieser Seite: Projekte/Wiki/Vorlage - Fluss-Ende.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+== Vorlage:Fluss-Ende ==
+
+Schließt ein Flussbild, das [[Vorlage:Fluss-Anfang]] geöffnet hat.
+</noinclude>

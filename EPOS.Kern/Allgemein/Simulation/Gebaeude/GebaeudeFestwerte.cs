@@ -58,6 +58,14 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal const double VIER_K_GRENZE_K = 4.0;
 
+        /// <summary>
+        /// <b>Die Komfortschwelle</b> [K] (Anlagenkopplung 5.5, F8, Entscheid E79): Eine Stunde der Nutzungszeit
+        /// zählt als Unterschreitung des Heizsollwerts (bzw. als Überschreitung des Kühlsollwerts), wenn die
+        /// Raumluft um <b>mehr</b> als diesen Betrag danebenliegt. Ein Festwert, keine Eingabe; ohne Schwelle
+        /// zählte jede numerische Kleinigkeit als Komfortverlust.
+        /// </summary>
+        internal const double KOMFORT_SCHWELLE_K = 1.0;
+
         /// <summary>Umrechnung Wh → J.</summary>
         internal const double SEKUNDEN_JE_STUNDE = 3600.0;
 
@@ -77,6 +85,30 @@ namespace WindowsFormsApplication1
 
         /// <summary>Temperaturleitfähigkeit des Erdreichs α_Erd [m²/d] (E6).</summary>
         internal const double ERDREICH_TEMPERATURLEITFAEHIGKEIT_M2D = 0.06;
+
+        // ---- Erdreichwiderstand nach DIN EN ISO 13370 (Rechenweg RP2a, Vorschlag 4) ----------
+
+        /// <summary>
+        /// Wärmeleitfähigkeit des Erdreichs λ_Erd [W/(m·K)] — DIN EN ISO 13370, Tabelle 1, Kategorie 2
+        /// (Sand, Kies); die Vorgabe der Norm, wenn die Bodenart unbekannt ist.
+        /// </summary>
+        internal const double ERDREICH_LAMBDA_WMK = 2.0;
+
+        /// <summary>
+        /// Dicke der Außenwand w [m] in der wirksamen Gesamtdicke d_t = w + λ·(R_si + R_f + R_se) —
+        /// DIN EN ISO 13370, 9.1; EPOS-Vorgabe, solange die Wanddicke nicht gelesen wird.
+        /// </summary>
+        internal const double ERDREICH_WANDDICKE_M = 0.3;
+
+        /// <summary>
+        /// Äußerer Übergangswiderstand R_se [m²K/W] in d_t und d_w — DIN EN ISO 13370, 9.1 (Wert der
+        /// DIN EN ISO 6946). Nur für die Formeln der Norm; das Bauteil selbst rechnet an Erdreich ohne
+        /// äußeren Übergang (<see cref="R_SE_ERDREICH"/>).
+        /// </summary>
+        internal const double ERDREICH_R_SE_NORM = 0.04;
+
+        /// <summary>Faktor der gut gedämmten Bodenplatte (d_t ≥ B′): U = λ/(0,457·B′ + d_t) — DIN EN ISO 13370, Gl. (3).</summary>
+        internal const double ERDREICH_FAKTOR_GEDAEMMT = 0.457;
 
         /// <summary>Vorlauf des Jahreslaufs [d] (Konzept 4.6, Rechenschritte 7.2).</summary>
         internal const int VORLAUF_TAGE = 30;
@@ -283,6 +315,56 @@ namespace WindowsFormsApplication1
         /// <summary>Größte zulässige Auslegungs-Raumtemperatur der Kühlübergabe [°C] (E37).</summary>
         internal const double KUEHL_AUSLEGUNG_RAUM_MAX = 30.0;
 
+        /// <summary>
+        /// <b>Mindestabstand des Kühlkurvenvorlaufs unter dem Kühlsollwert der Stunde</b> [K] (Entwurf KK, 2.1 und
+        /// Festlegung 4): Kein Vorlauf der Kühlkurve liegt wärmer als θ_max − 2,5 K, sonst wäre die Übergabeleistung
+        /// null. Bestimmt per Probe (<c>KuehlkurveTests.Mindestabstand_Probe</c>): der kleinste Halbkelvinschritt, bei dem
+        /// die voll geöffnete Kühlübergabe jeder Art mit ihren Vorgaben (Kühldecke und Flächenkühlung 16/19 °C, n 1,1;
+        /// Gebläsekonvektor 7/12 °C, n 1,0) bei Raumluft am Kühlsollwert über den ganzen Bereich der
+        /// Auslegungs-Raumtemperatur 20 … 30 °C noch <see cref="KUEHLKURVE_PROBE_LEISTUNGSANTEIL_MIN"/> ihrer
+        /// Nennleistung liefert (schwächster Fall Gebläsekonvektor bei 30 °C: 2,0 K → 8,7 %, 2,5 K → 10,9 %).
+        /// </summary>
+        internal const double KUEHLKURVE_FUSSPUNKT_ABSTAND_K = 2.5;
+
+        /// <summary>Das Kriterium der Probe zum <see cref="KUEHLKURVE_FUSSPUNKT_ABSTAND_K"/>: Leistungsanteil der voll
+        /// geöffneten Übergabe [–] bei Raumluft am Kühlsollwert.</summary>
+        internal const double KUEHLKURVE_PROBE_LEISTUNGSANTEIL_MIN = 0.10;
+
+        /// <summary>
+        /// <b>Mindestspanne der Auslegungs-Außentemperatur über dem Kühlsollwert</b> [K] (Entwurf KK, Festlegung 3; E107 Weg 2,
+        /// die Vorgabe): θ_out,K,N = max(wärmstes Tagesmittel, Kühlsollwert + 8 K). Kein Normwert, gewählt per Messung über die
+        /// Klimaregionen der Testdatenbank (<c>Tab_Solar_STAMM</c>): In den mitteleuropäischen Regionen liegt das wärmste
+        /// Tagesmittel bei 24,4 … 27,8 °C — mit einem Kühlsollwert von 24 … 26 °C oft darunter oder knapp darüber, die Kurve
+        /// spränge am Sollwert —, die höchste Stundentemperatur bei 30,1 … 34,5 °C (Mitte rund 33 °C). Mit 8 K landet der
+        /// Auslegungspunkt bei Sollwerten 24 … 26 °C bei 32 … 34 °C, also bei den höchsten Stunden des Jahres, und der steigende
+        /// Ast hat über 8 K eine flache Steigung (Kühldecke 19 → 16 °C: 0,375 K/K). 6 K bliebe für 24 °C unter fast jeder
+        /// höchsten Stunde, 10 K läge über allen.
+        /// </summary>
+        internal const double KUEHLKURVE_AUSLEGUNG_SPANNE_K = 8.0;
+
+        /// <summary>
+        /// <b>Kleinster Abstand einer eingegebenen Auslegungs-Außentemperatur über dem Kühlsollwert</b> [K] (E107 Weg 3): Liegt
+        /// die Eingabe nicht um mehr als 1 K über dem Sollwert, stiege der Ast auf weniger als einem Kelvin fast senkrecht an;
+        /// dann gilt Weg 2 mit Laufhinweis. Kein Normwert.
+        /// </summary>
+        internal const double KUEHLKURVE_AUSLEGUNG_EINGABE_ABSTAND_K = 1.0;
+
+        /// <summary>Kleinster zulässiger Raumeinfluss der Kühlkurve [K/K] (Entwurf KK, Festlegung 7; wie die Heizseite).</summary>
+        internal const double KUEHLKURVE_RAUMEINFLUSS_MIN = 0.0;
+
+        /// <summary>Größter zulässiger Raumeinfluss der Kühlkurve [K/K] (Entwurf KK, Festlegung 7; wie die Heizseite).</summary>
+        internal const double KUEHLKURVE_RAUMEINFLUSS_MAX = 10.0;
+
+        /// <summary>
+        /// <b>Vorgabewert des Raumeinflusses der Kühlkurve beim Einschalten</b> [K/K] (E106, Q-KK-5 (b); Entwurf KK 2.2,
+        /// Festlegung 6) — ein Dialogwert, kein Rechenwert: Die Rechnung kennt keine Vorgabe, leer heißt aus. Bestimmt per Probe
+        /// an 1058 mit Kühlkurve (KK3, <c>KuehlkurveFeldlaufTests</c>): Die Kelvinstunden über dem Kühlsollwert fallen von 47,9 Kh
+        /// (k_K 0 und 1) über 46,4 (2) auf 45,1 (3) und 44,7 (5) — 3 K/K ist der kleinste runde Wert, der den Komfort des festen
+        /// Vorlaufs (45,9 Kh) erreicht; darüber sättigt der Gewinn, während die EER weiter fällt (5,089 bei 3, 5,048 bei 5) und
+        /// die Durchläufe kaum steigen (Mittel 3,479 bei 3, 3,484 bei 5).
+        /// </summary>
+        internal const double KUEHLKURVE_RAUMEINFLUSS_VORGABE = 3.0;
+
         // Prüfregeln der Eingaben (Dialogtabelle 9.1) — der Kern prüft dieselben Grenzen hart,
         // damit eine Eingabe, die am Dialog vorbei in die Datenbank kommt, benannt abbricht.
 
@@ -400,8 +482,10 @@ namespace WindowsFormsApplication1
         // Plausibilitätsband der Stoffwerte (Mehrzonenkonzept 3.5): außerhalb ist ein Stoffwert
         // „nicht geliefert" — der Kern bricht benannt ab, statt ihn zu übernehmen.
 
-        /// <summary>Kleinste Schichtdicke [m] (Mehrzonenkonzept 3.5).</summary>
-        internal const double SCHICHT_DICKE_MIN_M = 0.001;
+        /// <summary>Kleinste Schichtdicke [m] (Mehrzonenkonzept 3.5). Bleche ab 0,5 mm (etwa das
+        /// Deckblech eines Sandwichelements, rund 7 kg/m²) tragen Masse in die Speicherbilanz und werden
+        /// gehalten; Folien und Anstriche darunter tragen weder Widerstand noch Masse nennenswert.</summary>
+        internal const double SCHICHT_DICKE_MIN_M = 0.0005;
 
         /// <summary>Größte Schichtdicke [m] (Mehrzonenkonzept 3.5).</summary>
         internal const double SCHICHT_DICKE_MAX_M = 1.0;

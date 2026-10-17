@@ -166,11 +166,12 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Der Stufenhinweis der Waermepumpe ist mit W13-E-2 ins PROFIL gewandert
-        /// (vorher stand er als Sonderfall im Markup). Er ist unveraendert, und er
-        /// ist der EINZIGE der vier.
+        /// (vorher stand er als Sonderfall im Markup). Er ist unveraendert. Einen
+        /// Hinweis tragen ausser ihm nur der Stromspeicher und die Kaeltemaschine
+        /// (Lizenzsatz der Typkennfelder, KM1).
         /// </summary>
         [Fact]
-        public void NurDieWaermepumpeUndDerStromspeicherFuehrenEinenHinweis()
+        public void NurWaermepumpeStromspeicherUndKaeltemaschineFuehrenEinenHinweis()
         {
             Assert.Equal("* 0=modulierend",
                 KatalogImportProfil.Finde(KatalogImportArt.Waermepumpe, s =>
@@ -180,7 +181,8 @@ namespace EPOS.Kern.Tests
                 .Where(a => KatalogImportProfil.Finde(a).Hinweis.Length > 0)
                 .Select(a => a.ToString()).ToArray();
 
-            Assert.Equal(new[] { "Waermepumpe", "Stromspeicher" }, mitHinweis);
+            // E119: der Kaelteimport sagt, dass er nur kuehlfaehige Geraete anbietet.
+            Assert.Equal(new[] { "Waermepumpe", "Stromspeicher", "Kaeltemaschine", "WaermepumpeKuehlung" }, mitHinweis);
         }
 
         // ==================================================================
@@ -501,11 +503,7 @@ namespace EPOS.Kern.Tests
             // zu werden.
             Assert.Equal("", ctrl.m_szTyp ?? "");
 
-            // Entscheide Q3 und Q6: nichts erfunden.
-            Assert.Equal(0.0, ctrl.m_Modulkosten);
-            Assert.Equal(0.0, ctrl.m_Leistungskosten);
-            Assert.Equal(0.0, ctrl.m_InvestitionFix);
-            Assert.Equal(0.0, ctrl.m_Verschleisskosten);
+            // Entscheide Q3 und Q6: nichts erfunden (Kosten fuehrt das Modell seit KB-5 gar nicht).
             Assert.Equal(0.0, ctrl.m_Degradation);
             Assert.Equal(0.0, ctrl.m_Ladezustand);
             Assert.Equal(0, ctrl.m_ZyklenZugesichert);
@@ -585,11 +583,16 @@ namespace EPOS.Kern.Tests
             Assert.True(id > 0);
 
             // Der Anwender pflegt von Hand nach, was keine Quelle liefert.
-            DataRepository.ExecuteSQL(
-                "UPDATE [Tab_Stromspeicher_STAMM] SET Modulkosten = ?, Zyklen_Zugesichert = ?, " +
+            // Die Kosten stehen als Verweis auf die Investitions-Satzvorlage (StromspeicherKostenSchema):
+            // gepflegt in der Kostenverwaltung, am Satz nur der Verweis — hier die Vorlage des Katalogsatzes 1.
+            int vorlage = Convert.ToInt32(DataRepository.ExecuteScalar(
+                "SELECT ID_KostenVorlageInvestition FROM [Tab_Stromspeicher_STAMM] WHERE ID = 1"));
+            Assert.True(vorlage > 0);
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE [Tab_Stromspeicher_STAMM] SET ID_KostenVorlageInvestition = ?, Zyklen_Zugesichert = ?, " +
                 "Degradation = ? WHERE ID = ?",
-                new DbParam("@mod", 420.0), new DbParam("@zyk", 6000),
-                new DbParam("@deg", 1.5), new DbParam("@id", id));
+                new DbParam("@vor", vorlage), new DbParam("@zyk", 6000),
+                new DbParam("@deg", 1.5), new DbParam("@id", id)));
 
             // Eine NEUERE Liste bringt andere Kennwerte - hier der zweite
             // bslib-Satz, der ueber dieselbe Zeile geht.
@@ -608,7 +611,9 @@ namespace EPOS.Kern.Tests
 
             // Stehen geblieben - Bezeichner UND Handarbeit:
             Assert.Equal("W13 Speicher Update", ctrl.m_szBezeichner);
-            Assert.Equal(420.0, ctrl.m_Modulkosten, 9);
+            Assert.Equal(vorlage, Convert.ToInt32(DataRepository.ExecuteScalar(
+                "SELECT ID_KostenVorlageInvestition FROM [Tab_Stromspeicher_STAMM] WHERE ID = ?",
+                new DbParam("@id", id))));
             Assert.Equal(6000, ctrl.m_ZyklenZugesichert);
             Assert.Equal(1.5, ctrl.m_Degradation, 9);
         }

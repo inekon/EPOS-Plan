@@ -21,9 +21,12 @@
     /// Ergebnisansicht braucht kein zweites Fenster mehr, sie erscheint als
     /// <c>Ueberlagerung</c> derselben Seite.</para>
     ///
-    /// <para><b>Die Objekte werden AN ORT UND STELLE fortgeschrieben</b> — dieselbe
-    /// Mechanik wie im Bestand: Die Ergebnisansicht rechnet in sie hinein, und die
-    /// Zusammenfassung des Reiters liest denselben Stand.</para>
+    /// <para><b>Die Objekte werden AN ORT UND STELLE fortgeschrieben</b>: Die
+    /// Ergebnisansicht rechnet in ihnen den Bedarf ihres Leerzustands, die
+    /// Zusammenfassung des Reiters bei jedem Betreten ihren eigenen. Ein
+    /// SIMULATIONSLAUF rechnet NICHT in sie hinein, sondern in eigene Objekte: An
+    /// seiner Kälteseite hängt die Kältekaskade des Laufs, und die nächste
+    /// Bedarfsrechnung hier setzte sie zurück (Anwenderbefund 04.10.2026).</para>
     /// </summary>
     public sealed class BedarfsZustand
     {

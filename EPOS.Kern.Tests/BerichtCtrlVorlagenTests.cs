@@ -142,7 +142,7 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// Abweichung auf eine eigene Vorlage — eine Kopie der Beispielvorlage: Deckblatt gefüllt, die
+        /// Abweichung auf eine eigene Vorlage im vollen Aufbau: Deckblatt gefüllt, die
         /// acht <c>{{kapitel.*}}</c> kennt Katalog v1 nicht, sie stehen gelb im Bericht und in der
         /// Laufmeldung; die zwei Kommentare sind entfernt und genannt.
         /// </summary>
@@ -438,6 +438,27 @@ namespace EPOS.Kern.Tests
             Startbefund standard = _ctrl.PruefeVorStart(Konfig(), false, 1, erzwingtWirtschaftlichkeit: true);
             Assert.True(standard.Pruefbefund.HatWirtschaftlichkeit);
             Assert.False(standard.BrauchtRueckfrage);
+        }
+
+        /// <summary>
+        /// Zweiter Einstieg mit einer Vorlage ganz ohne Platzhalter: Der Lauf hängt den Bericht an ihr Ende — samt
+        /// Wirtschaftlichkeit —, die Vorprüfung fragt deshalb nicht nach der Standardvorlage.
+        /// </summary>
+        [Fact]
+        public void Zweiter_Einstieg_mit_einer_Vorlage_ohne_Platzhalter_fragt_nicht()
+        {
+            if (_standard == null) return;
+            Vorlageneintrag eigen = Hinzu("Briefkopf.docx", Probevorlagen.AusAbsaetzen("Ingenieurbüro Muster", "Bericht"));
+            BerichtsKonfiguration konfig = Konfig();
+            BerichtsvorlagenCtrl.SetzeAbweichung(konfig, eigen);
+
+            Startbefund zweiterEinstieg = _ctrl.PruefeVorStart(konfig, false, 1, erzwingtWirtschaftlichkeit: true);
+
+            Assert.True(zweiterEinstieg.Pruefbefund.IstLesbar);
+            Assert.Equal(0, zweiterEinstieg.Pruefbefund.AnzahlPlatzhalter);
+            Assert.False(zweiterEinstieg.Pruefbefund.HatWirtschaftlichkeit);
+            Assert.False(zweiterEinstieg.OhneWirtschaftlichkeit);
+            Assert.False(zweiterEinstieg.BrauchtRueckfrage);
         }
 
         /// <summary>

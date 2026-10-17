@@ -25,6 +25,45 @@ namespace WindowsFormsApplication1
     {
         // Innerhalb von "inputs" liegt "meteo_data"
         public MeteoData Meteo_Data { get; set; }
+
+        /// <summary>
+        /// Der Punkt, für den PVGIS gerechnet hat — Breite, Länge und Höhe über NN
+        /// (<c>inputs.location</c>, Auftrag KD-2). Die Vorschau zeigt ihn als
+        /// Bezugspunkt; der Rechenweg liest ihn nicht.
+        /// </summary>
+        [JsonPropertyName("location")]
+        public PvgisOrt Location { get; set; }
+    }
+
+    /// <summary>Der Ortsblock <c>inputs.location</c> einer PVGIS-Antwort.</summary>
+    public class PvgisOrt
+    {
+        [JsonPropertyName("latitude")]
+        public double? Latitude { get; set; }
+
+        [JsonPropertyName("longitude")]
+        public double? Longitude { get; set; }
+
+        /// <summary>Höhe des Punkts über NN [m]; <c>null</c>, wenn die Antwort keine nennt.</summary>
+        [JsonPropertyName("elevation")]
+        public double? Elevation { get; set; }
+    }
+
+    /// <summary>
+    /// Ein PVGIS-Abruf samt Kopf (Auftrag KD-2): die Stundenreihe wie bei
+    /// <c>GetTMY</c>, dazu der gerechnete Punkt und die Wetterdatenbank — die
+    /// Vorschau zeigt beides, ohne ein zweites Mal abzurufen.
+    /// </summary>
+    public sealed class PvgisAbruf
+    {
+        /// <summary>Die Stundenwerte, wie <c>GetTMY</c> sie liefert.</summary>
+        public List<TmyHourlyData> Stunden = new List<TmyHourlyData>();
+
+        /// <summary>Der gerechnete Punkt; <c>null</c>, wenn die Antwort keinen nennt.</summary>
+        public PvgisOrt Ort;
+
+        /// <summary>Die Herkunftsangabe „meteo_db - radiation_db".</summary>
+        public string MeteoDatenbank = "";
     }
 
     public class MeteoData
@@ -99,6 +138,20 @@ namespace WindowsFormsApplication1
         [JsonPropertyName("WS10m")]
         public double WindSpeed { get; set; } // Windgeschwindigkeit [m/s]
 
+        /// <summary>
+        /// Windrichtung [Grad] — PVGIS <c>WD10m</c> (Auftrag KD-4). Allein Rohwert für
+        /// die Rohtabelle des Klimaimports; kein Rechenweg liest ihn. <c>null</c> = nicht geliefert.
+        /// </summary>
+        [JsonPropertyName("WD10m")]
+        public double? Windrichtung { get; set; }
+
+        /// <summary>
+        /// Luftdruck am Boden [Pa] — PVGIS <c>SP</c> (Auftrag KD-4). Allein Rohwert (gespeichert in hPa);
+        /// kein Rechenweg liest ihn. <c>null</c> = nicht geliefert.
+        /// </summary>
+        [JsonPropertyName("SP")]
+        public double? Luftdruck_Pa { get; set; }
+
         public double Sol_sued;
         public double Sol_ost;
         public double Sol_nord;
@@ -108,6 +161,12 @@ namespace WindowsFormsApplication1
         public int TagTyp_W;
         public int TagTyp_NW;
         public double Sonnenwinkel;
+
+        /// <summary>
+        /// Eine flache Kopie (alle Felder sind Werte oder Texte) — die Vorschau behält
+        /// ihren gelesenen Satz unverändert, der Import rechnet auf der Kopie (Auftrag KD-2).
+        /// </summary>
+        public TmyHourlyData Kopie() => (TmyHourlyData)MemberwiseClone();
     }
 
     public class PVGIS_EPW_Downloader
@@ -120,6 +179,17 @@ namespace WindowsFormsApplication1
         private static readonly HttpClient client = new HttpClient();
 
         public static async Task<List<TmyHourlyData>> GetTMY(double lon, double lat, int Azimut)
+        {
+            PvgisAbruf abruf = await GetTmyAbruf(lon, lat, Azimut);
+            return abruf.Stunden;
+        }
+
+        /// <summary>
+        /// Der Abruf wie <see cref="GetTMY"/>, dazu der Kopf der Antwort (Punkt, Höhe,
+        /// Wetterdatenbank) — Auftrag KD-2. <see cref="GetTMY"/> ruft genau diesen Weg;
+        /// Adresse, Fehlermeldungen und <see cref="meteoDb"/> bleiben, wie sie waren.
+        /// </summary>
+        public static async Task<PvgisAbruf> GetTmyAbruf(double lon, double lat, int Azimut)
         {
             try
             {
@@ -164,10 +234,9 @@ namespace WindowsFormsApplication1
                     }
 
                     // Deserialisierung des JSON absichern
-                    string db;
-                    List<TmyHourlyData> stunden = AusJson(jsonString, out db);
-                    meteoDb = db;      // globale Variable wie bisher setzen
-                    return stunden;
+                    PvgisAbruf abruf = AusJsonAbruf(jsonString);
+                    meteoDb = abruf.MeteoDatenbank;      // globale Variable wie bisher setzen
+                    return abruf;
                 }
                 else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
                 {
@@ -212,15 +281,30 @@ namespace WindowsFormsApplication1
         /// <param name="meteoDatenbank">Die Herkunftsangabe „meteo_db - radiation_db".</param>
         public static List<TmyHourlyData> AusJson(string jsonText, out string meteoDatenbank)
         {
+            PvgisAbruf abruf = AusJsonAbruf(jsonText);
+            meteoDatenbank = abruf.MeteoDatenbank;
+            return abruf.Stunden;
+        }
+
+        /// <summary>
+        /// Liest eine PVGIS-TMY-Antwort samt Kopf (<c>inputs.location</c>,
+        /// <c>inputs.meteo_data</c>) — derselbe Leser wie <see cref="AusJson"/>, der ihn ruft
+        /// (Auftrag KD-2).
+        /// </summary>
+        public static PvgisAbruf AusJsonAbruf(string jsonText)
+        {
             try
             {
                 var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                 var result = JsonSerializer.Deserialize<PvgisResponse>(jsonText, options);
 
-                meteoDatenbank = result?.Inputs?.Meteo_Data?.Meteo_Db + " - " +
-                                 result?.Inputs?.Meteo_Data?.RadiationDb;
-
-                return result?.Outputs?.TmyHourly ?? new List<TmyHourlyData>();
+                return new PvgisAbruf
+                {
+                    Stunden = result?.Outputs?.TmyHourly ?? new List<TmyHourlyData>(),
+                    Ort = result?.Inputs?.Location,
+                    MeteoDatenbank = result?.Inputs?.Meteo_Data?.Meteo_Db + " - " +
+                                     result?.Inputs?.Meteo_Data?.RadiationDb
+                };
             }
             catch (JsonException)
             {
@@ -326,9 +410,11 @@ namespace WindowsFormsApplication1
         public static double lastCosTheta;
 
         /// <summary>
-        /// Bodenalbedo beider Transpositionsmodelle. Der Wert stand als Literal 0,2 in
-        /// <see cref="CalculateHourly"/>; die Konstante benennt ihn, ohne die
-        /// Bestandszeile anzufassen (PAKET B, Stufe E2.5).
+        /// Bodenalbedo beider Transpositionsmodelle ohne gepflegten Anlagenwert — die eine
+        /// Quelle der Vorgabe für alle Stellen, die den bodenreflektierten Anteil rechnen. Jede
+        /// dieser Stellen nimmt die Albedo als Parameter mit dieser Vorgabe; eine Anlage mit
+        /// gepflegter Albedo (<c>Tab_Energieanlagen.Albedo</c>) reicht ihren Wert über
+        /// <see cref="Bodenalbedo.Wert(WErzeugerModel)"/> herein.
         /// </summary>
         public const double ALBEDO_BODEN = 0.2;
 
@@ -337,7 +423,7 @@ namespace WindowsFormsApplication1
         /// <c>cosTheta / cos(theta_z)</c> bei Sonnenhoehen nahe 0 gegen unendlich
         /// (PAKET B, Stufe E2.5).
         /// </summary>
-        private static readonly double COS_85 = Math.Cos(85.0 * Deg2Rad);
+        private static readonly double COS_85 = Plattformrundung.Cos(85.0 * Deg2Rad);
 
         /// <summary>
         /// Sonnenstand und Einfallswinkel einer Stunde — die GEMEINSAME Geometrie von
@@ -382,28 +468,28 @@ namespace WindowsFormsApplication1
 
             // 1. Wahre Solarzeit (inkl. Längengrad & Zeitgleichung)
             double b = (360.0 / 365.0) * (dayOfYear - 81) * Deg2Rad;
-            double eot = 9.87 * Math.Sin(2 * b) - 7.53 * Math.Cos(b) - 1.5 * Math.Sin(b);
+            double eot = 9.87 * Plattformrundung.Sin(2 * b) - 7.53 * Plattformrundung.Cos(b) - 1.5 * Plattformrundung.Sin(b);
             double solarHour = hour + (eot + 4.0 * Lon) / 60.0;
             double omega = (solarHour - 12.0) * 15.0;
 
             // 2. Sonnenposition
-            double delta = 23.45 * Math.Sin(360.0 * (284 + dayOfYear) / 365.0 * Deg2Rad);
-            double sinAlpha = Math.Sin(Lat * Deg2Rad) * Math.Sin(delta * Deg2Rad) +
-                              Math.Cos(Lat * Deg2Rad) * Math.Cos(delta * Deg2Rad) * Math.Cos(omega * Deg2Rad);
-            double alpha = Math.Asin(sinAlpha);
+            double delta = 23.45 * Plattformrundung.Sin(360.0 * (284 + dayOfYear) / 365.0 * Deg2Rad);
+            double sinAlpha = Plattformrundung.Sin(Lat * Deg2Rad) * Plattformrundung.Sin(delta * Deg2Rad) +
+                              Plattformrundung.Cos(Lat * Deg2Rad) * Plattformrundung.Cos(delta * Deg2Rad) * Plattformrundung.Cos(omega * Deg2Rad);
+            double alpha = Plattformrundung.Asin(sinAlpha);
 
             s.Alpha = alpha;
             if (alpha <= 0) { s.Nacht = true; return s; } // Nacht
 
-            double cosGammaS = (Math.Sin(alpha) * Math.Sin(Lat * Deg2Rad) - Math.Sin(delta * Deg2Rad)) /
-                               (Math.Cos(alpha) * Math.Cos(Lat * Deg2Rad));
-            double gammaS = Math.Acos(Clamp(cosGammaS, -1.0, 1.0));
+            double cosGammaS = (Plattformrundung.Sin(alpha) * Plattformrundung.Sin(Lat * Deg2Rad) - Plattformrundung.Sin(delta * Deg2Rad)) /
+                               (Plattformrundung.Cos(alpha) * Plattformrundung.Cos(Lat * Deg2Rad));
+            double gammaS = Plattformrundung.Acos(Clamp(cosGammaS, -1.0, 1.0));
             if (omega < 0) gammaS = -gammaS;
             s.GammaS = gammaS;
 
             // 3. Einfallswinkel auf Modul
-            double cosTheta = Math.Sin(alpha) * Math.Cos(Tilt * Deg2Rad) +
-                              Math.Cos(alpha) * Math.Sin(Tilt * Deg2Rad) * Math.Cos(gammaS - (Azimuth * Deg2Rad));
+            double cosTheta = Plattformrundung.Sin(alpha) * Plattformrundung.Cos(Tilt * Deg2Rad) +
+                              Plattformrundung.Cos(alpha) * Plattformrundung.Sin(Tilt * Deg2Rad) * Plattformrundung.Cos(gammaS - (Azimuth * Deg2Rad));
             s.CosTheta = Math.Max(0, cosTheta);
             return s;
         }
@@ -430,10 +516,32 @@ namespace WindowsFormsApplication1
             return Sonnengeometrie(Lon, Lat, 0, 0, dayOfYear, hour).Alpha * Rad2Deg;
         }
 
+        /// <summary>
+        /// Der KOSINUS DES ZENITWINKELS <c>cos θ_z = sin α</c> zu einem Zeitpunkt, bei Sonne unter dem
+        /// Horizont 0 — rein lesend, ohne statische Seitenwirkung (wie <see cref="Sonnenhoehe"/>).
+        ///
+        /// <para><b>Wozu (Welle M5, SB1 a).</b> Die PV-Bilanz verteilt den Stundenertrag
+        /// energieerhaltend auf die vier Viertelstunden der Stunde, gewichtet mit
+        /// <c>cos θ_z</c> in der Mitte jeder Viertelstunde (<c>SimulationPV.Viertelgewichte</c>).
+        /// Der Sinus läuft über <see cref="Plattformrundung"/>, damit die Gewichte auf jeder Plattform
+        /// dieselben Bits tragen.</para>
+        /// </summary>
+        /// <param name="dayOfYear">Tag im Jahr, 1-BASIERT (wie bei <see cref="CalculateHourly"/>).</param>
+        /// <param name="hour">UTC-Stunde als Kommazahl (14,125 = 14:07:30 UTC).</param>
+        public static double KosinusZenitwinkel(double Lon, double Lat, int dayOfYear, double hour)
+        {
+            Sonnenstand s = Sonnengeometrie(Lon, Lat, 0, 0, dayOfYear, hour);
+            if (s.Nacht) return 0.0;
+            double c = Plattformrundung.Sin(s.Alpha);
+            return c > 0.0 ? c : 0.0;
+        }
+
         /// <param name="dni">Gb(n) - Direct Normal Irradiance aus PVGIS</param>
         /// <param name="dhi">Gd(h) - Diffuse Horizontal Irradiance aus PVGIS</param>
         /// <param name="ghi">G(h) - Global Horizontal Irradiance aus PVGIS</param>
-        public static double CalculateHourly(double Lon, double Lat, int Tilt, int Azimuth, double ghi, double dni, double dhi, double t2m, int dayOfYear, double hour)
+        /// <param name="albedo">Bodenalbedo 0…1; Vorgabe <see cref="ALBEDO_BODEN"/>.</param>
+        public static double CalculateHourly(double Lon, double Lat, int Tilt, int Azimuth, double ghi, double dni, double dhi, double t2m, int dayOfYear, double hour,
+                                             double albedo = ALBEDO_BODEN)
         {
             // 1.-3. Sonnenstand und Einfallswinkel - seit Paket B in Sonnengeometrie,
             // Rechenschritt fuer Rechenschritt unveraendert (siehe dort).
@@ -450,9 +558,9 @@ namespace WindowsFormsApplication1
 
             // 4. Einstrahlung auf geneigte Fläche (G_GTI)
             double direct = dni * cosTheta;
-            double skyView = (1.0 + Math.Cos(Tilt * Deg2Rad)) / 2.0;
-            double groundView = (1.0 - Math.Cos(Tilt * Deg2Rad)) / 2.0;
-            double gTotal = direct + (dhi * skyView) + (ghi * 0.2 * groundView); // 0.2 = Albedo Boden
+            double skyView = (1.0 + Plattformrundung.Cos(Tilt * Deg2Rad)) / 2.0;
+            double groundView = (1.0 - Plattformrundung.Cos(Tilt * Deg2Rad)) / 2.0;
+            double gTotal = direct + (dhi * skyView) + (ghi * albedo * groundView);
 
 
             // 5. Temperaturkorrektur (Zelltemp)
@@ -481,7 +589,7 @@ namespace WindowsFormsApplication1
         /// R_b  = cosTheta / max(cosTheta_z, cos 85°)           Geometriefaktor mit Horizontklemme
         /// G_t  = DNI·cosTheta
         ///      + DHI·[A_i·R_b + (1 − A_i)·(1 + cos beta)/2]
-        ///      + GHI·rho·(1 − cos beta)/2                      rho = 0,2 wie im Bestand
+        ///      + GHI·rho·(1 − cos beta)/2                      rho = Albedo, Vorgabe 0,2
         /// </code>
         ///
         /// <para><b>Pruefkriterium (Konzept N2.5): bei DNI = 0 ist das Ergebnis EXAKT
@@ -499,10 +607,12 @@ namespace WindowsFormsApplication1
         /// Modell, das sie mitschreibt, koennte diese Kette nur stoeren.</para>
         /// </summary>
         /// <param name="dayOfYear">Tag im Jahr, 1-BASIERT (wie bei <see cref="CalculateHourly"/>).</param>
+        /// <param name="albedo">Bodenalbedo 0…1; Vorgabe <see cref="ALBEDO_BODEN"/>.</param>
         public static double CalculateHourlyHayDavies(double Lon, double Lat, int Tilt, int Azimuth,
                                                       double ghi, double dni, double dhi,
-                                                      int dayOfYear, double hour)
-            => CalculateHourlyHayDavies(Lon, Lat, (double)Tilt, (double)Azimuth, ghi, dni, dhi, dayOfYear, hour);
+                                                      int dayOfYear, double hour,
+                                                      double albedo = ALBEDO_BODEN)
+            => CalculateHourlyHayDavies(Lon, Lat, (double)Tilt, (double)Azimuth, ghi, dni, dhi, dayOfYear, hour, albedo);
 
         /// <summary>
         /// <see cref="CalculateHourlyHayDavies(double, double, int, int, double, double, double, int, double)"/>
@@ -512,7 +622,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static double CalculateHourlyHayDavies(double Lon, double Lat, double Tilt, double Azimuth,
                                                       double ghi, double dni, double dhi,
-                                                      int dayOfYear, double hour)
+                                                      int dayOfYear, double hour,
+                                                      double albedo = ALBEDO_BODEN)
         {
             Sonnenstand s = Sonnengeometrie(Lon, Lat, Tilt, Azimuth, dayOfYear, hour);
             if (s.Nacht) return 0;
@@ -521,20 +632,20 @@ namespace WindowsFormsApplication1
 
             // Zenitwinkel: cos(theta_z) = sin(alpha). Die Klemme auf cos 85 Grad haelt
             // R_b bei Sonnenaufgang/-untergang endlich.
-            double cosZenit = Math.Sin(s.Alpha);
+            double cosZenit = Plattformrundung.Sin(s.Alpha);
             double rB = cosTheta / Math.Max(cosZenit, COS_85);
 
             // Anisotropieindex aus der extraterrestrischen Normalstrahlung.
-            double i0n = 1367.0 * (1.0 + 0.033 * Math.Cos(360.0 * dayOfYear / 365.0 * Deg2Rad));
+            double i0n = 1367.0 * (1.0 + 0.033 * Plattformrundung.Cos(360.0 * dayOfYear / 365.0 * Deg2Rad));
             double ai = i0n > 0.0 ? dni / i0n : 0.0;
             ai = Clamp(ai, 0.0, 1.0);
 
-            double skyView = (1.0 + Math.Cos(Tilt * Deg2Rad)) / 2.0;
-            double groundView = (1.0 - Math.Cos(Tilt * Deg2Rad)) / 2.0;
+            double skyView = (1.0 + Plattformrundung.Cos(Tilt * Deg2Rad)) / 2.0;
+            double groundView = (1.0 - Plattformrundung.Cos(Tilt * Deg2Rad)) / 2.0;
 
             double direct = dni * cosTheta;
             double diffus = dhi * (ai * rB + (1.0 - ai) * skyView);
-            double reflex = ghi * ALBEDO_BODEN * groundView;
+            double reflex = ghi * albedo * groundView;
 
             return direct + diffus + reflex;
         }
@@ -570,33 +681,34 @@ namespace WindowsFormsApplication1
             return value;
         }
 
-        public static double Calculate(double ghi, double dhi, double lat, double lon, int doy, double hour, double slope, double azTarget)
+        public static double Calculate(double ghi, double dhi, double lat, double lon, int doy, double hour, double slope, double azTarget,
+                                       double albedo = ALBEDO_BODEN)
         {
             if (ghi <= 0) return 0;
             double r = Math.PI / 180.0;
 
             // Sonnenstand
-            double decl = 23.45 * Math.Sin((360.0 / 365.0 * (doy - 81)) * r) * r;
+            double decl = 23.45 * Plattformrundung.Sin((360.0 / 365.0 * (doy - 81)) * r) * r;
             double hourAngle = (hour - 12.0) * 15.0 * r + (lon * r);
             double latR = lat * r;
 
-            double sinEl = Math.Sin(latR) * Math.Sin(decl) + Math.Cos(latR) * Math.Cos(decl) * Math.Cos(hourAngle);
-            double el = Math.Asin(sinEl);
+            double sinEl = Plattformrundung.Sin(latR) * Plattformrundung.Sin(decl) + Plattformrundung.Cos(latR) * Plattformrundung.Cos(decl) * Plattformrundung.Cos(hourAngle);
+            double el = Plattformrundung.Asin(sinEl);
             if (el <= 0.02) return 0;
 
             // Einfallswinkel auf Fläche
-            double cosAz = (Math.Sin(decl) * Math.Cos(latR) - Math.Cos(decl) * Math.Sin(latR) * Math.Cos(hourAngle)) / Math.Cos(el);
-            double sunAz = Math.Acos(Clamp(cosAz, -1, 1)) * (hourAngle > 0 ? 1 : -1);
+            double cosAz = (Plattformrundung.Sin(decl) * Plattformrundung.Cos(latR) - Plattformrundung.Cos(decl) * Plattformrundung.Sin(latR) * Plattformrundung.Cos(hourAngle)) / Plattformrundung.Cos(el);
+            double sunAz = Plattformrundung.Acos(Clamp(cosAz, -1, 1)) * (hourAngle > 0 ? 1 : -1);
 
             double sR = slope * r;
             double aTR = azTarget * r;
-            double cosTheta = Math.Sin(el) * Math.Cos(sR) + Math.Cos(el) * Math.Sin(sR) * Math.Cos(sunAz - aTR);
+            double cosTheta = Plattformrundung.Sin(el) * Plattformrundung.Cos(sR) + Plattformrundung.Cos(el) * Plattformrundung.Sin(sR) * Plattformrundung.Cos(sunAz - aTR);
 
             // Transposition
             double zen = (Math.PI / 2.0) - el;
-            double beam = Math.Max(0, ghi - dhi) * (Math.Max(0, cosTheta) / Math.Cos(zen));
-            double diff = dhi * (1.0 + Math.Cos(sR)) / 2.0;
-            double refl = ghi * 0.2 * (1.0 - Math.Cos(sR)) / 2.0;
+            double beam = Math.Max(0, ghi - dhi) * (Math.Max(0, cosTheta) / Plattformrundung.Cos(zen));
+            double diff = dhi * (1.0 + Plattformrundung.Cos(sR)) / 2.0;
+            double refl = ghi * albedo * (1.0 - Plattformrundung.Cos(sR)) / 2.0;
 
             return Math.Max(0, beam + diff + refl);
         }
@@ -608,21 +720,21 @@ namespace WindowsFormsApplication1
 
             // 1. Zeitgleichung (Equation of Time) in Minuten
             double b = 2.0 * Math.PI * (dayOfYear - 1) / 365.0;
-            double eot = 229.18 * (0.000075 + 0.001868 * Math.Cos(b) - 0.032077 * Math.Sin(b)
-                            - 0.014615 * Math.Cos(2 * b) - 0.040849 * Math.Sin(2 * b));
+            double eot = 229.18 * (0.000075 + 0.001868 * Plattformrundung.Cos(b) - 0.032077 * Plattformrundung.Sin(b)
+                            - 0.014615 * Plattformrundung.Cos(2 * b) - 0.040849 * Plattformrundung.Sin(2 * b));
 
             // 2. Sonnendeklination (Neigung der Erdachse)
-            double declination = 23.45 * Math.Sin(Deg2Rad * (360.0 / 365.0 * (dayOfYear - 81)));
+            double declination = 23.45 * Plattformrundung.Sin(Deg2Rad * (360.0 / 365.0 * (dayOfYear - 81)));
 
             // 3. Stundenwinkel bei Sonnenaufgang (h = -0.83° für Lichtbrechung)
-            double cosOmega = (Math.Sin(-0.83 * Deg2Rad) - Math.Sin(lat * Deg2Rad) * Math.Sin(declination * Deg2Rad))
-                                / (Math.Cos(lat * Deg2Rad) * Math.Cos(declination * Deg2Rad));
+            double cosOmega = (Plattformrundung.Sin(-0.83 * Deg2Rad) - Plattformrundung.Sin(lat * Deg2Rad) * Plattformrundung.Sin(declination * Deg2Rad))
+                                / (Plattformrundung.Cos(lat * Deg2Rad) * Plattformrundung.Cos(declination * Deg2Rad));
 
             // Prüfung auf Polartag/nacht
             double omega = 0;
             bool sunNeverSets = cosOmega < -1;
             bool sunNeverRises = cosOmega > 1;
-            if (!sunNeverSets && !sunNeverRises) omega = Math.Acos(cosOmega) * Rad2Deg;
+            if (!sunNeverSets && !sunNeverRises) omega = Plattformrundung.Acos(cosOmega) * Rad2Deg;
 
             // 4. Mittagszeit in UTC (Solar Noon)
             // 720 Minuten = 12:00 Uhr

@@ -86,6 +86,49 @@ public sealed class SpeicherAuslegungEditorTests : EposBunitContext
     }
 
     [Fact]
+    public void Investition_und_Betrieb_stehen_in_zwei_beschrifteten_Bereichen_mit_selbsterklaerender_Quelle()
+    {
+        var cut = Render<SpeicherAuslegungEditor>(p => p.Add(x => x.Wert, new SpeicherOptimierungEingaben()));
+
+        string[] titel = cut.FindAll(".epos-formulargruppe-titel").Select(x => x.TextContent.Trim()).ToArray();
+        Assert.Contains("Investitionskosten", titel);
+        Assert.Contains("Betriebskosten", titel);
+        Assert.DoesNotContain("Kosten", titel);
+
+        var invest = cut.Find(".epos-speicherauslegung-invest");
+        var betrieb = cut.Find(".epos-speicherauslegung-betrieb");
+        Assert.Contains("Herkunft der Investitionskosten:", invest.TextContent);
+        Assert.Contains("Investition Leistung", invest.TextContent);
+        Assert.DoesNotContain("Betrieb Leistung", invest.TextContent);
+        Assert.Contains("Herkunft der Betriebskosten:", betrieb.TextContent);
+        Assert.Contains("Betrieb Leistung", betrieb.TextContent);
+
+        foreach (var bereich in new[] { invest, betrieb })
+        {
+            string[] optionen = bereich.QuerySelectorAll("select option").Select(o => o.TextContent.Trim()).ToArray();
+            Assert.Equal(new[] { "Eingabe in diesem Dialog", "Aus dem Kostenmodul des Projekts" }, optionen);
+        }
+
+        // Ohne Saetze: der Hinweis und je Bereich der Nullkosten-Schalter, alles aus den Ressourcen.
+        Assert.Contains("Fehlende Kostensätze", cut.Find(".epos-speicherauslegung-kostenhinweis").TextContent);
+        Assert.Contains("Investitionskosten mit 0 € ansetzen", invest.TextContent);
+        Assert.Contains("Betriebskosten mit 0 € ansetzen", betrieb.TextContent);
+    }
+
+    [Fact]
+    public void Die_Kostenquellen_sind_auch_englisch_selbsterklaerend()
+    {
+        var vorher = System.Globalization.CultureInfo.CurrentUICulture;
+        try
+        {
+            System.Globalization.CultureInfo.CurrentUICulture = new System.Globalization.CultureInfo("en-US");
+            Assert.Equal(new[] { "Input in this dialog", "From the project's cost module" },
+                         SpeicherAuslegungEditor.KostenQuellen.Select(q => q.Text).ToArray());
+        }
+        finally { System.Globalization.CultureInfo.CurrentUICulture = vorher; }
+    }
+
+    [Fact]
     public void Eine_Ausnahme_des_Speicherwegs_bleibt_im_Dialog_sichtbar()
     {
         var cut = Render<SpeicherAuslegungEditor>(p => p

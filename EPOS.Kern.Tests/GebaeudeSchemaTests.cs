@@ -151,7 +151,7 @@ namespace EPOS.Kern.Tests
                     : "";
                 object n = DataRepository.ExecuteScalar(
                     "SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL AND [" +
-                    s.Name + "] <> 0" + ausnahme);
+                    s.Name + "] <> 0" + ausnahme + Konditionierungsbestand.Ausser(s.Tabelle));   // ohne 1051 (KP3, RP1)
                 Assert.Equal(0L, Convert.ToInt64(n, CultureInfo.InvariantCulture));
             }
         }

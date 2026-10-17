@@ -57,9 +57,29 @@
 ; fuer xBIM (CDDL-1.0) der Verweis nach CDDL Abschnitt 3.1. Die Datei ist VERSIONIERT
 ; (anders als die Vorlagendatenbank daneben) und Pflicht: Ohne sie ist der IFC-Import nicht
 ; auslieferbar - deshalb #error statt eines stillen Weglassens.
+; Katalogpaket der Programmfassung (Entscheidungsvorlage Modellgrenzen KU1 Stufe 1): alle
+; ausgelieferten Saetze der laufend gepflegten Kataloge mit Schluessel und Pruefsumme. Werkzeuge/
+; Auslieferungsvorlage schreibt es neben die Vorlagendatenbank; die Anwendung gleicht beim ersten
+; Start einer neuen Fassung die Kataloge des Anwenders damit ab (Katalogabgleich im Kern). Wie die
+; Vorlagendatenbank nicht im Repository (.gitignore: Setup/Vorlage/Katalogpaket.json).
+#define Katalogpaket   SetupDir + "Vorlage\Katalogpaket.json"
+#if !FileExists(Katalogpaket)
+  #error Das Katalogpaket Setup\Vorlage\Katalogpaket.json fehlt. Werkzeuge\Auslieferungsvorlage schreibt es zusammen mit der Vorlagendatenbank; siehe Konzept, Abschnitt 6.1.
+#endif
+
 #define Lizenzhinweise SetupDir + "Vorlage\Lizenzhinweise.txt"
 #if !FileExists(Lizenzhinweise)
   #error Die Lizenzhinweise Setup\Vorlage\Lizenzhinweise.txt fehlen; sie sind versioniert und Pflicht fuer die Auslieferung (E27, U10).
+#endif
+
+; Exportzusage des IFC-Exports (Stufe G7c; Datenaustauschkonzept, IDS): eine IDS-Datei
+; (buildingSMART Information Delivery Specification), die beschreibt, welche Angaben jede
+; IFC-Datei aus EPOS-Plan traegt. Sie reist mit der Auslieferung neben die Vorlagendatenbank
+; nach {app}\Vorlage; der Exportdialog oeffnet sie dort (Knopf "Exportzusage (IDS) oeffnen...").
+; VERSIONIERT und Pflicht - deshalb #error statt eines stillen Weglassens.
+#define ExportZusage   SetupDir + "Vorlage\EPOS_Export.ids"
+#if !FileExists(ExportZusage)
+  #error Die Exportzusage Setup\Vorlage\EPOS_Export.ids fehlt; sie ist versioniert und Pflicht fuer die Auslieferung (IFC-Export, Stufe G7c).
 #endif
 
 ; Herstellerdaten (VDI 3805 und die zwei CEC-Listen) — Anwenderentscheid W6-O-9
@@ -84,6 +104,43 @@
 #define KatalogVorlageA100  RepoDir + "Referenzlaeufe\Katalogpaket_Vorlage_A100"
 #if !DirExists(KatalogVorlageA100)
   #error Der Ordner Referenzlaeufe\Katalogpaket_Vorlage_A100 fehlt. Er ist versioniert und gehoert zur Auslieferung (Folgeposten ZU24).
+#endif
+
+; Paketvorlage der DIN-4708-Katalogwerte (ZB7): zwei CSV-Dateien des Importformats
+; (Belegung je Raumzahl und Ausstattungsklassen, Parameter des Verfahrens) mit
+; vollstaendigen Kopfzeilen, Beispielzeilen aus Platzhaltern (Spalte Wert leer)
+; und einer Anleitung. Sie traegt KEINE Normwerte - der Anwender kopiert sie,
+; traegt die Werte seines eigenen Normexemplars ein und spielt den Ordner ueber den
+; Katalog-Import ein; unveraendert lehnt der Import jede Zeile benannt ab. Muster
+; und Ort wie die A100-Vorlage.
+#define KatalogVorlageDin4708  RepoDir + "Referenzlaeufe\Katalogpaket_Vorlage_DIN4708"
+#if !DirExists(KatalogVorlageDin4708)
+  #error Der Ordner Referenzlaeufe\Katalogpaket_Vorlage_DIN4708 fehlt. Er ist versioniert und gehoert zur Auslieferung (ZB7).
+#endif
+
+; Paketvorlage der Typtage nach VDI 4655 (ZB11): die sechs CSV-Dateien des
+; Typtag-Paketlesers mit vollstaendigen Kopfzeilen, Beispielzeilen aus Platzhaltern
+; (Werte leer) und einer Anleitung mit den Fundstellen der Richtlinie. Sie traegt
+; KEINE Werte der Richtlinie (ZU22) - der lizenzierte Anwender fuellt eine Kopie aus
+; seinem eigenen Exemplar und spielt sie im Dialog "Typtage nach VDI 4655" ein;
+; unveraendert lehnt die Pruefung sie benannt ab. Muster wie die A100-Vorlage.
+#define TyptagVorlageVdi4655  RepoDir + "Referenzlaeufe\Typtagpaket_Vorlage_VDI4655"
+#if !DirExists(TyptagVorlageVdi4655)
+  #error Der Ordner Referenzlaeufe\Typtagpaket_Vorlage_VDI4655 fehlt. Er ist versioniert und gehoert zur Auslieferung (ZB11).
+#endif
+
+; Freier Paketteil des Zapfprofilgenerators (Anwenderentscheid 29.09.2026): die
+; CSV-Dateien der Katalogdaten, die frei ausgeliefert werden duerfen (Parameter der
+; Stochastik und der Speicherauslegung, Ecodesign-Zapfprofile, Zapfkategorien, die
+; abgeleiteten Nutzungsarten). Dieselben Zeilen stehen in der Vorlagendatenbank, und
+; der Kern traegt sie eingebettet und laedt sie einer aelteren Datenbank ohne
+; Katalogversion selbst nach; als Ordner liegen sie daneben unter {app}\Vorlage.
+; Nur *.csv - die LIESMICH.md des Ordners ist eine Entwicklerunterlage. Der Ordner
+; ist versioniert, keine Zeigerdatei und kein Erzeugnis von build-setup.ps1. Die
+; lokalen Normdaten (Referenzlaeufe\Normzahlen) gehoeren NIE hierher (ZU24).
+#define KatalogpaketFrei  RepoDir + "Referenzlaeufe\Katalogpaket_frei"
+#if !DirExists(KatalogpaketFrei)
+  #error Der Ordner Referenzlaeufe\Katalogpaket_frei fehlt. Er ist versioniert und gehoert zur Auslieferung (freier Paketteil des Zapfprofilgenerators).
 #endif
 
 ; Microsoft Edge WebView2 Runtime — der ONLINE-Bootstrapper (rund 2 MB), der
@@ -339,6 +396,18 @@ Source: "{#PublishDir}\*"; DestDir: "{app}"; \
 Source: "{#VorlageDb}"; DestDir: "{app}\Vorlage"; Flags: ignoreversion; \
     Components: programm
 
+; Das Katalogpaket neben die Vorlage (oben #define Katalogpaket). Ein Update ersetzt es mit dem
+; Programm; die Anwendung liest es beim Start und gleicht die Kataloge ab, wenn seine Fassung
+; neuer ist als die der Datenbank - eigene Saetze und Projekte bleiben unberuehrt.
+Source: "{#Katalogpaket}"; DestDir: "{app}\Vorlage"; Flags: ignoreversion; \
+    Components: programm
+
+; Die Exportzusage (IDS) des IFC-Exports neben die Vorlage (oben #define ExportZusage). Der
+; Exportdialog sucht sie neben der Vorlagendatenbank (Dienste.Pfade.Auslieferungsvorlage); ein
+; Update ersetzt sie mit dem Programm.
+Source: "{#ExportZusage}"; DestDir: "{app}\Vorlage"; Flags: ignoreversion; \
+    Components: programm
+
 ; Herstellerdaten (W6-O-9). NEBEN das Programm, nicht nach {commonappdata}:
 ;   * Die Importmasken LESEN daraus und schreiben nie hinein — damit gehört der
 ;     Ordner in die Zeile "nur das Setup schreibt" der Rechtetabelle (Konzept 2.1),
@@ -361,6 +430,27 @@ Source: "{#HerstellerdatenDir}\*"; DestDir: "{app}\VDI-3805-Daten"; \
 ; ueber den Katalog-Import ein. Ein Update ersetzt den Bestand (ignoreversion),
 ; die Deinstallation nimmt ihn mit {app}\Vorlage.
 Source: "{#KatalogVorlageA100}\*"; DestDir: "{app}\Vorlage\Katalogpaket_A100"; \
+    Flags: ignoreversion; \
+    Components: programm
+
+; Paketvorlage der DIN-4708-Katalogwerte (ZB7) neben die Vorlagendatenbank: zwei
+; CSV-Dateien und eine Anleitung, zusammen wenige Kilobyte. Ein Update ersetzt den
+; Bestand (ignoreversion), die Deinstallation nimmt ihn mit {app}\Vorlage.
+Source: "{#KatalogVorlageDin4708}\*"; DestDir: "{app}\Vorlage\Katalogpaket_DIN4708"; \
+    Flags: ignoreversion; \
+    Components: programm
+
+; Paketvorlage der Typtage nach VDI 4655 (ZB11) neben die Vorlagendatenbank: sechs
+; CSV-Dateien und eine Anleitung, zusammen wenige Kilobyte. Ein Update ersetzt den
+; Bestand (ignoreversion), die Deinstallation nimmt ihn mit {app}\Vorlage.
+Source: "{#TyptagVorlageVdi4655}\*"; DestDir: "{app}\Vorlage\Typtagpaket_VDI4655"; \
+    Flags: ignoreversion; \
+    Components: programm
+
+; Freier Paketteil des Zapfprofilgenerators neben die Vorlagendatenbank: sieben
+; CSV-Dateien, zusammen rund 30 Kilobyte, ohne die LIESMICH.md. Ein Update ersetzt
+; den Bestand (ignoreversion), die Deinstallation nimmt ihn mit {app}\Vorlage.
+Source: "{#KatalogpaketFrei}\*.csv"; DestDir: "{app}\Vorlage\Katalogpaket_frei"; \
     Flags: ignoreversion; \
     Components: programm
 

@@ -106,7 +106,7 @@ namespace WindowsFormsApplication1
             var d = new ZapfprofilMessvergleichDaten { Reihe = reihe ?? "", Formschwelle = Formschwelle() };
             if (string.IsNullOrWhiteSpace(reihe)) return Ohne(d, ZapfSatz.Neu("MESSVERGLEICH_OHNE_MESSREIHE"));
             if (eingabe == null || eingabe.Zonen.Count == 0)
-                return OhneText(d, "ZPG_MSG_KEINE_ZONE", Text_("ZPG_MSG_KEINE_ZONE", "Es ist keine Zone angelegt."));
+                return OhneText(d, "ZPG_MSG_KEINE_ZONE", Text_("ZPG_MSG_KEINE_ZONE", "Es ist kein Bereich angelegt."));
 
             ZapfVerfuegbarkeit verfuegbar = ZapfprofilCtrl.Verfuegbar();
             if (!verfuegbar.Ja) return OhneText(d, VerfuegbarkeitsKennung(verfuegbar), Verfuegbarkeitsgrund(verfuegbar));

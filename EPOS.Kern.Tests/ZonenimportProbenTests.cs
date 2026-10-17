@@ -96,7 +96,7 @@ namespace EPOS.Kern.Tests
         {
             GebaeudeZonierung z = GebaeudeZonierung.Bilden(BauteilvorschlagProbe.Lesen(PROBE).Abbild, 0);
             Assert.Equal("Z4", z.Regel);
-            Assert.Equal(new[] { "Z1", "Z2", "Z4", "Z5" }, z.Regeln);
+            Assert.Equal(new[] { "Z1", "Z2", "Z4", "Z6", "Z5" }, z.Regeln);
             Assert.Equal(new[] { "Kellergeschoss", "Erdgeschoss", "Obergeschoss" }, z.Zonen.Select(x => x.Name));
             Assert.Equal(new double?[] { 80.0, 80.0, 79.5 }, z.Zonen.Select(x => x.FlaecheM2));
             Assert.Equal(new double?[] { 28.0, 28.0 }, z.Flaechen.Where(f => f.Bauteil.Name == "Fassade Süd").Select(f => (double?)Math.Round(f.BruttoM2.Value, 6)));

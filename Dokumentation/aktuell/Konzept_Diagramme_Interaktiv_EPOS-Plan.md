@@ -234,6 +234,19 @@ drei Reihen ist **gebündelt** die Vorgabe — halb so groß wie das PNG, kein V
 und ein Zoom über etwa das Vierfache lädt den Ausschnitt als rohen Pfad nach (ein Rundlauf
 pro Zoomstufe, nicht pro Radrast).
 
+**Stapel:** Eine Stapelschicht und jede Linie, die einen Stapel begleitet (`Datenreihe.Huelle`),
+gehen weder roh noch gebündelt — deren Zickzack innerhalb einer Bildpunktspalte ließe die
+Schichten blass und löchrig erscheinen und die Summe über den Stapel greifen. Bei mehr Werten
+als Bildpunktspalten zeichnen sie je Stufe eine waagrechte Kante — im Jahresbild je Tag, solange
+ein Tag schmaler als vier Spalten ist, sonst je Spalte (`Pfadregel.Stufen`) — und zwar ALLE mit
+den Werten derselben Stunde: der Spitzenstunde der Bezugsgröße (`Datenreihe.Bezug`: die
+Summen- oder Bedarfslinie, sonst die Oberkante des Stapels; `Pfadregel.Spitzenstunden`). So
+teilen Nachbarschichten ihre Kante genau, der Stapel bleibt je Stufe additiv, und ein
+taktender Erzeuger steht nicht als Band auf Nennleistung da — der Höchstwert je Kante täte
+beides nicht. Das Bild nennt unter der Achse, was eine Stufe zeigt, die Zeigerzeile die
+gezeigte Stunde mit Datum und Uhrzeit; nachgeladen wird wie bei jeder anderen Reihe ab dem
+Vierfachen.
+
 ## 6 Empfehlung
 
 **Option B**, in Etappen, mit D1 als bewusstem Zwischenstand: ein Zeichenmodell im Kern,
@@ -264,7 +277,7 @@ Datenzoom bis dahin überall zu haben.
 
 | Etappe | Inhalt | Abnahme | Aufwand |
 |---|---|---|---|
-| **E0 Vorbereitung** — *umgesetzt (#399)* | KL-8 gemergt (DL-3 verworfen, DG-Q6). `ChartProben` hat die Schalter `--ablage <ordner>` und `--hashes <datei>`; die Liste [`Proben/ChartProben/Messlatte_2026-09-26.sha256`](../../Proben/ChartProben/LIESMICH.md) nennt **183 Bilder** (auch die der Gegen- und Versatzproben, die im Bestand nie geschrieben werden) und ist die **Messlatte**; ihre 91 Hashes aus E0, die Messlatte von E1, stehen unverändert darin. Sie gilt für die **Vorgabe-Palette**, die die Probe ausdrücklich setzt; die Gegenprobe der getauschten Palette (Abschnitt 9) steht deshalb nicht darin. Keine Bilder im Repository | ChartProben grün (72 Proben, 0 Verstöße), Hashliste liegt vor, zweiter Lauf byte-gleich | S |
+| **E0 Vorbereitung** — *umgesetzt (#399)* | KL-8 gemergt (DL-3 verworfen, DG-Q6). `ChartProben` hat die Schalter `--ablage <ordner>` und `--hashes <datei>`; die Liste [`Proben/ChartProben/Messlatte_2026-09-30.sha256`](../../Proben/ChartProben/LIESMICH.md) nennt **194 Bilder** (auch die der Gegen- und Versatzproben, die im Bestand nie geschrieben werden) und ist die **Messlatte**; ihre 91 Hashes aus E0, die Messlatte von E1, stehen unverändert darin. Sie gilt für die **Vorgabe-Palette**, die die Probe ausdrücklich setzt; die Gegenprobe der getauschten Palette (Abschnitt 9) steht deshalb nicht darin. Keine Bilder im Repository | ChartProben grün (72 Proben, 0 Verstöße), Hashliste liegt vor, zweiter Lauf byte-gleich | S |
 | **E1 Zeichenmodell hinter dem `ChartRenderer`, ohne Bildänderung** — *umgesetzt (#400–#402): E1a Modell, Maler, Farbrollen, Skala und die 15 Zeitreihenbilder; E1b Säulen, Stapel, Kuchen, Ring, Balken; E1c Kennlinien, Streuwolke, Schnitt- und Stückzahlkurve, Optimierungsraster. **Alle 26 Methoden füllen ein Modell**; im Renderer steht kein Zeichenaufruf einer Grafikbibliothek mehr (Wächter `ZeichenmodellWacheTests`), die Übergangswege sind entfernt. **E2 ist frei.*** | `Allgemein/Bericht/Zeichnung/`: `Zeichenmodell` (Primitive: Linie, Rechteck, Kreis, Ellipse, Pfad, Text, Gruppe mit Zuschnitt, Strichmuster; Zeichenfläche mit Datenfenster) und `SkiaMaler`. Die 62 Helfer werden auf das Modell umgestellt (`Text`, `Strich`, `Fuellung`, `Linienzug`, `Vieleck`, `Kreissegment`, `Legende`, `YRaster`, `XAchse`, `XAchseFenster`, …), die fünf Skalenrechnungen zu **vier benannten Varianten** einer `Skala` (`Rund`, `Nice`, `Stufe`, `Bedarf` — nicht vereinheitlicht, weil jede Vereinfachung ein Bild verschöbe); die 26 Methoden füllen ein Modell und geben weiterhin `byte[]` zurück (`Png(modell)`). **Farben stehen im Befehl als `Farbrolle` plus Abwandlung, nicht als Zahl** (DG-Q7): aufgelöst wird beim Malen gegen `Farbpalette.Aktuell`, die Vorgabepalette trägt die Hausfarben Wert für Wert, und eine Rückwärtssuche gibt einer von außen durchgereichten Hausfarbe ihre Rolle zurück. Drei Aufträge: Zeitreihen (10 Methoden mit `Achsenfenster`, Jahresgang, Kostenprofil, Stundenprofil, Kapitalwert, Projektion), Säulen/Stapel/Kuchen/Ring/Balken (8), Kennlinien/Streuwolke/Schnitt/Stückzahl/Optimierungsraster (5) plus Bericht-Sonderfälle | **alle 91 Hashes gleich** (Text-Diff gegen die Messlatte leer), ChartProben grün, `ChartRendererTests` grün, Referenzlauf unnötig (kein Rechenweg) | **L** (3 × M) |
 | **E2 SVG-Ausgabe und Baustein für EINE Art** — *umgesetzt (#404): Der Klimadialog zeigt seine zwei Jahresgänge als SVG; Zoom, Verschieben, Rechteck, Werte am Mauszeiger, Legendenschalter und Farbwahl laufen im Browser, ohne einen einzigen Rundlauf in den Kern, und kein PNG hat sich um ein Byte geändert. Der Rundlauf-Datenzoom (KL-8) ist an dieser Stelle ersatzlos entfallen.* | `SvgSchreiber` (Modell → Text; inneres `<svg>` in Datenkoordinaten, `text-anchor`, `vector-effect`), `ChartRenderer.JahresgangModell` (das Modell statt `byte[]`), Baustein `EPOS.UI/Bausteine/DiagrammSvg.razor` (Razor-Elemente aus dem Modell, Legende schaltbar, Zeigerzeile, Bereich → `Achsenfenster` **ohne** Kernaufruf), `epos-diagramm.js` mit viewBox-Modus (dieselben Handler, zusätzlich Nachladen ab dem Vierfachen). Erste Stelle: **Klimadialog** (`KlimadatenHuelle`, `Regionsansicht` führt zwei Modelle; die PNG-Fassung bleibt für den Bericht). `ChartProben` bekommt die SVG-Gegenprobe (byte-gleich, Knotenzahl) | bunit: Pfade, Texte, Legendenschalter, Zeigerzeile, Fall ohne Gaben; SvgProbe-Sollwerte; **Abnahme am Gerät** A-DG-1 (Windows 125 % DPI und iPad: Zoom, Kneifen, Zeigerzeile, Text scharf) | **M** |
 | **E3 Rollout je Diagrammart** — *umgesetzt (#406–#411, #413): alle 26 Diagrammarten haben ein Modell (Kern (a) #406, (b) #408, (c) #409, die vier Berichtsbilder (d) #407), alle 41 Bildstellen der Oberfläche stehen im Baustein `DiagrammSvg` (Oberfläche (a) #411, (b)+(c) #413); `ChartBild`, `Diagramm`, `Diagrammbereich` und der CSS-Transform-Modus sind entfernt. Entscheide DG‑E3‑1 bis DG‑E3‑13 im Protokoll `DG_E3_Rollout_Protokoll.md`.* | in dieser Reihenfolge: (a) Zeitreihen der Ergebnisreiter (`Jahresverlauf`, `GanglinieNormiert`, `ErzeugerStapel`, `Temperaturverlauf`, `Speicherbetrieb`, `Kostenprofil`, `Stundenprofil`) — ersetzt den Rundlauf-Datenzoom dort; (b) `KapitalwertVerlauf`, `Jahresprojektion`, `Kennlinien`, `Streuwolke`, `Schnittkurve`, `Stueckzahlkurve`; (c) `MonatsSaeulen`, `MonatsStapel`, `StrombilanzMonate`, `BalkenHorizontal`, `Optimierungsraster`; (d) `Kuchen`, `Ring` (ohne Interaktion, nur Schärfe und Text). Je Auftrag eine Gruppe; `ChartBild` bleibt, bis die letzte PNG-Stelle umgestellt ist, dann entfällt der Bildzoom per CSS-Transform | je Gruppe bunit, ChartProben (PNG unverändert), Gerät | 4 × S–M |
@@ -299,9 +312,30 @@ Aus DG-Q7 wird eine Bedienung: **Die Farbe einer Größe ist anwendungsweit eins
 
 **Rolle.** Ein Zeichenbefehl trägt keine Farbzahl, sondern einen `Farbton` — eine
 `Farbrolle` (`WAERME_WP`, `STROM_PV`, `SPEICHER_3`, `RASTER`, …) und wahlweise eine Abwandlung
-(andere Deckung, oder eine im Layout gerechnete Farbe mit ihrer Herkunftsrolle). Vierundfünfzig
+(andere Deckung, oder eine im Layout gerechnete Farbe mit ihrer Herkunftsrolle). Zweiundsechzig
 Rollen in sechs Gruppen: Allgemein, Erzeuger und Bedarf, Varianten, Speicher, Profile und
 Temperaturen, Rasterkarte.
+
+**Rollen des Energieflussbilds.** Das Energieflussbild (Übersicht, Abschnitt „Ergebnisse –
+Energie“, Stellung „Fluss“, und der Wortbericht) färbt nach der **Energieform des Bandes**, nicht
+nach Quelle oder Verwendung, und trägt dafür sieben eigene Rollen, dazu `REST` für „ungedeckt“
+und „nicht zugeordnet“ (gestrichelt):
+
+| Rolle | Energieform | Hausfarbe |
+|---|---|---|
+| `STROM` | Strom: Netz, Photovoltaik, BHKW-Strom, Strom in Wärmepumpe, Heizstab, Elektrokessel, Kälteerzeuger, Strombedarf, Einspeisung | #E9A825 |
+| `WAERME` | Wärme der Erzeuger in den Bus, aus dem Bus in Heizung, Warmwasser, Prozesswärme | #E2573D |
+| `KAELTE` | Kälte der Erzeuger (auch Split) in den Bus Kälte und in die Kühlung | #2A7FA6 |
+| `BRENNSTOFF` | Brennstoffträger in die Wandler | #8B6F47 |
+| `UMWELTWAERME` | Umweltwärme, Umwelt (Kälte), Kondensationswärme | #7FB8A4 |
+| `VERLUST` | Verlustabzweige an Wandlern und Speichern | #B8B8B8 |
+| `KNOTEN` | Kästen, Busse, Quellen und Senken (Senken mit Deckung 0,59); Kastenbeschriftung in `HINTERGRUND` | #4A5769 |
+
+`STROM` und `WAERME` stehen in der Gruppe „Erzeuger und Bedarf“, die übrigen am Ende ihrer
+Gruppen; die Legende unter dem Bild ist dieselbe Bedienfläche wie bei jedem SVG-Bild. Die
+feineren Rollen (`STROM_NETZ`, `WAERME_WP`, `HEIZWAERME` …) bleiben den übrigen Bildern.
+`ChartRendererRollenTests` hält unter einer Tauschpalette jede dieser Rollen an Band, Knoten und
+Legende, `FarbpaletteTests` zählt die Rollen.
 
 **Palette.** `Farbpalette.Vorgabe` trägt die Hausfarben Wert für Wert — sie ist zugleich die
 Messlatte der ChartProben, die ausdrücklich mit ihr rechnen. `Farbpalette.Aktuell` ist die

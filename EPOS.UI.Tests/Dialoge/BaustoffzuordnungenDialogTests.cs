@@ -162,9 +162,12 @@ public class BaustoffzuordnungenDialogTests : EposBunitContext
     // =====================================================================
 
     private IRenderedComponent<GebaeudeDialog> Gebaeudedialog(
-        Func<IReadOnlyDictionary<string, object>>? gaben, List<bool>? geschlossen = null)
+        Func<IReadOnlyDictionary<string, object>>? gaben, List<bool>? geschlossen = null,
+        bool mitImport = false, bool wizard = false)
         => Render<GebaeudeDialog>(p => p
             .Add(x => x.Zeilen, new List<GebaeudeProjektZeile>())
+            .Add(x => x.Wizard, wizard)
+            .Add(x => x.ImportGaben, mitImport ? () => null! : null)
             .Add(x => x.Katalogzeilen, () => Array.Empty<Katalogfilterzeile>())
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.BaustoffzuordnungenGaben, gaben)
@@ -177,45 +180,15 @@ public class BaustoffzuordnungenDialogTests : EposBunitContext
     public void Ohne_Delegat_traegt_der_Gebaeudedialog_keinen_Knopf()
         => Assert.Null(Knopf(Gebaeudedialog(null)));
 
+    /// <summary>
+    /// <b>GD-6a</b> (Anwenderwunsch 12.10.2026): Der Gebäudedialog trägt den Knopf nicht mehr — weder neben dem Import
+    /// noch in der Knopfleiste am Satz oder der Fußleiste; er steht an der Liste „Bauteilaufbauten" des Imports und im
+    /// Reiter „Zonen" des Gebäudeeditors (Tests dort).
+    /// </summary>
     [Fact]
-    public void Der_Knopf_oeffnet_die_Ansicht_und_nach_OK_steht_die_Zahl_im_Banner()
+    public void GD6a_Der_Gebaeudedialog_traegt_den_Knopf_nicht_mehr()
     {
-        var geschrieben = new List<IReadOnlyList<string>>();
-        int gelesen = 0;
-        var geschlossen = new List<bool>();
-        IRenderedComponent<GebaeudeDialog> cut = Gebaeudedialog(() =>
-        {
-            gelesen++;
-            return new Dictionary<string, object>
-            {
-                ["Zeilen"] = Drei,
-                ["Entfernen"] = new Func<IReadOnlyList<string>, string>(namen => { geschrieben.Add(namen); return null!; }),
-            };
-        }, geschlossen);
-
-        IElement knopf = Knopf(cut)!;
-        Assert.Equal("Die Zuordnungen von Materialnamen zu Baustoffen ansehen, die sich dieses Projekt beim Gebäudeimport gemerkt hat, und einzelne entfernen",
-                     knopf.GetAttribute("title"));
-        knopf.Click();
-        Assert.Equal(1, gelesen);
-        IRenderedComponent<BaustoffzuordnungenDialog> ansicht = cut.FindComponent<BaustoffzuordnungenDialog>();
-        Assert.Empty(ansicht.FindAll("h1.epos-dialog-titel"));   // den Titel trägt die Überlagerung
-        Assert.Contains("Baustoff-Zuordnungen des Projekts", cut.Markup);
-
-        // Esc in der Ansicht schließt nur die Ansicht, nicht den Gebäudedialog.
-        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
-        Assert.Empty(geschlossen);
-
-        cut.FindComponent<BaustoffzuordnungenDialog>().Find("tr[data-schluessel=\"estrich\"] button").Click();
-        cut.FindComponent<BaustoffzuordnungenDialog>().Find(".epos-leiste button.epos-knopf--primaer").Click();
-
-        Assert.Equal(new[] { "estrich" }, Assert.Single(geschrieben));
-        Assert.Empty(cut.FindComponents<BaustoffzuordnungenDialog>());
-        Assert.Contains("Baustoff-Zuordnungen entfernt: 1.", cut.Markup);
-        Assert.Empty(geschlossen);
-
-        // Ein zweiter Klick liest neu.
-        Knopf(cut)!.Click();
-        Assert.Equal(2, gelesen);
+        Assert.Null(Knopf(Gebaeudedialog(() => new Dictionary<string, object>(), mitImport: true)));
+        Assert.Null(Knopf(Gebaeudedialog(() => new Dictionary<string, object>(), wizard: true)));
     }
 }

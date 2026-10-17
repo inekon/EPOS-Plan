@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Gebäudemodell nach VDI 6007 mit zwei Zonen (Prinzipbild)
+
+Inhalt: Ein Gebäude mit einer beheizten Zone 1 und einer unbeheizten Zone 2 (etwa ein
+Treppenhaus). Zone 1 tauscht Wärme mit der Außenluft (Transmission, Lüftung), mit dem
+Erdreich und über die Trennfläche mit Zone 2; Sonne und innere Gewinne bringen Wärme
+herein, die Übergabe heizt oder kühlt. Zwei Speichermassen (Außen- und Innenbauteile)
+dämpfen den Verlauf. Rechts die Regel der Tagesbetriebsart: Eine Zone wird an einem Tag
+entweder geheizt oder gekühlt.
+
+Darstellung: Pfeile in Richtung des Wärmestroms bei Heizbetrieb. Farben nach
+Vorlage:Diagrammfarbe (waerme, solar, kaelte, netz, umwelt, speicher). Prinzipbild ohne
+Zahlenwerte, keinem Produkt zugeordnet.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+<defs>
+  <marker id="p-waerme" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 Z" fill="#c56a1a"/></marker>
+  <marker id="p-solar" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 Z" fill="#b38600"/></marker>
+  <marker id="p-netz" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 Z" fill="#7a828c"/></marker>
+  <marker id="p-kaelte" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,1 L10,5 L0,9 Z" fill="#1f9bb0"/></marker>
+</defs>
+  <rect x="1" y="1" width="898" height="518" rx="12" fill="#fcfcfb" stroke="#d0d7de" stroke-width="1"/>
+  <text x="28" y="38" font-size="18" fill="#1f2328" font-weight="600">Gebäudemodell: Zonen und ihre Wärmeströme</text>
+  <text x="28" y="61" font-size="14" fill="#57606a">Stundenbilanz je Zone nach VDI 6007, zwei Speichermassen, Zonen über Trennflächen gekoppelt</text>
+
+  <!-- Erdreich -->
+  <rect x="40" y="410" width="600" height="80" fill="#f1e9d1"/>
+  <line x1="40" y1="410" x2="640" y2="410" stroke="#8c5a3c" stroke-width="2"/>
+  <text x="56" y="476" font-size="13" fill="#8c5a3c">Erdreich</text>
+
+  <!-- Gebäude -->
+  <polygon points="140,170 330,100 600,170" fill="#ffffff" stroke="#57606a" stroke-width="2"/>
+  <rect x="140" y="170" width="300" height="240" fill="#f9f0e8" stroke="#57606a" stroke-width="3"/>
+  <rect x="440" y="170" width="160" height="240" fill="#e4e7eb" stroke="#57606a" stroke-width="3"/>
+  <line x1="440" y1="170" x2="440" y2="410" stroke="#7b4fa3" stroke-width="5"/>
+  <text x="160" y="196" font-size="15" fill="#1f2328" font-weight="600">Zone 1 · beheizt</text>
+  <text x="160" y="214" font-size="12" fill="#57606a">Sollwerte Tag / Nacht / Wochenende</text>
+  <text x="456" y="196" font-size="15" fill="#1f2328" font-weight="600">Zone 2</text>
+  <text x="456" y="214" font-size="12" fill="#57606a">unbeheizt, schwingt frei</text>
+
+  <!-- Fenster und Sonne -->
+  <rect x="140" y="240" width="8" height="60" fill="#c3c9d0"/>
+  <circle cx="70" cy="120" r="18" fill="#b38600"/>
+  <line x1="86" y1="136" x2="136" y2="250" stroke="#b38600" stroke-width="3" marker-end="url(#p-solar)"/>
+  <text x="40" y="160" font-size="12" fill="#b38600">Sonne über</text>
+  <text x="40" y="175" font-size="12" fill="#b38600">die Fenster</text>
+
+  <!-- Transmission nach außen -->
+  <line x1="150" y1="340" x2="60" y2="340" stroke="#c56a1a" stroke-width="3" marker-end="url(#p-waerme)"/>
+  <text x="44" y="330" font-size="12" fill="#c56a1a">Transmission</text>
+  <!-- Lüftung -->
+  <path d="M250,150 C250,120 210,110 190,95" fill="none" stroke="#7a828c" stroke-width="3" marker-end="url(#p-netz)"/>
+  <text x="180" y="86" font-size="12" fill="#7a828c">Lüftung</text>
+
+  <!-- Innere Gewinne -->
+  <rect x="170" y="250" width="110" height="34" rx="6" fill="#ffffff" stroke="#3e8e4e" stroke-width="1.5"/>
+  <text x="180" y="272" font-size="12" fill="#3e8e4e">innere Gewinne</text>
+
+  <!-- Übergabe Heizen/Kühlen -->
+  <rect x="300" y="330" width="120" height="50" rx="6" fill="#ffffff" stroke="#c56a1a" stroke-width="2"/>
+  <text x="310" y="351" font-size="12" fill="#c56a1a">Heizen</text>
+  <text x="358" y="351" font-size="12" fill="#57606a">oder</text>
+  <text x="310" y="370" font-size="12" fill="#1f9bb0">Kühlen (Übergabe)</text>
+  <line x1="360" y1="330" x2="360" y2="300" stroke="#c56a1a" stroke-width="3" marker-end="url(#p-waerme)"/>
+
+  <!-- Speichermassen -->
+  <rect x="300" y="236" width="56" height="40" rx="4" fill="#ffffff" stroke="#7b4fa3" stroke-width="1.5"/>
+  <text x="309" y="261" font-size="12" fill="#7b4fa3">C außen</text>
+  <rect x="364" y="236" width="56" height="40" rx="4" fill="#ffffff" stroke="#7b4fa3" stroke-width="1.5"/>
+  <text x="374" y="261" font-size="12" fill="#7b4fa3">C innen</text>
+  <text x="300" y="230" font-size="11" fill="#7b4fa3">Speichermassen</text>
+
+  <!-- Trennfläche -->
+  <line x1="420" y1="300" x2="500" y2="300" stroke="#c56a1a" stroke-width="3" marker-end="url(#p-waerme)"/>
+  <text x="452" y="290" font-size="12" fill="#7b4fa3">Trennfläche</text>
+  <text x="452" y="325" font-size="12" fill="#57606a">und Luftaustausch</text>
+
+  <!-- Erdreich-Wärmestrom -->
+  <line x1="220" y1="400" x2="220" y2="450" stroke="#c56a1a" stroke-width="3" marker-end="url(#p-waerme)"/>
+  <text x="232" y="446" font-size="12" fill="#8c5a3c">Bodenplatte mit Erdreichwiderstand</text>
+
+  <!-- Tagesbetriebsart -->
+  <rect x="660" y="100" width="216" height="300" rx="10" fill="#ffffff" stroke="#d0d7de"/>
+  <text x="676" y="126" font-size="14" fill="#1f2328" font-weight="600">Je Tag und Zone</text>
+  <text x="676" y="146" font-size="12" fill="#57606a">heizen oder kühlen, nie beides</text>
+  <rect x="676" y="164" width="184" height="44" rx="6" fill="#f9f0e8" stroke="#c56a1a"/>
+  <text x="688" y="184" font-size="12" fill="#c56a1a" font-weight="600">nur Heizen frei</text>
+  <text x="688" y="200" font-size="12" fill="#57606a">Heiztag, Kühlung aus</text>
+  <rect x="676" y="218" width="184" height="44" rx="6" fill="#e8f5f7" stroke="#1f9bb0"/>
+  <text x="688" y="238" font-size="12" fill="#1f9bb0" font-weight="600">nur Kühlen frei</text>
+  <text x="688" y="254" font-size="12" fill="#57606a">Kühltag, Heizung aus</text>
+  <rect x="676" y="272" width="184" height="58" rx="6" fill="#ffffff" stroke="#57606a"/>
+  <text x="688" y="292" font-size="12" fill="#1f2328" font-weight="600">beide frei</text>
+  <text x="688" y="308" font-size="12" fill="#57606a">Tagessummen des</text>
+  <text x="688" y="323" font-size="12" fill="#57606a">Probetags entscheiden</text>
+  <rect x="676" y="340" width="184" height="44" rx="6" fill="#e4e7eb" stroke="#c3c9d0"/>
+  <text x="688" y="360" font-size="12" fill="#57606a" font-weight="600">keine frei</text>
+  <text x="688" y="376" font-size="12" fill="#57606a">nicht konditioniert</text>
+  <text x="660" y="428" font-size="12" fill="#57606a">Freigabe: Heiz- und Kühlkalender,</text>
+  <text x="660" y="444" font-size="12" fill="#57606a">Heiz- und Kühlperiode</text>
+</svg>

@@ -13,7 +13,8 @@ namespace WindowsFormsApplication1
         public string Speichertyp;
         public double Betriebsbereitschaftverlust;
         public int Gesamtvolumen;
-        public double Investitionskosten;
+        // HIER STAND Investitionskosten - die Spalte ist mit Welle KB-4 entfallen
+        // (GeraetekostenEntfallSchema); die Geraetekosten traegt die Satzvorlage.
 
         // =====================================================================
         // Klassen-Set (Migrationsschritt 49, Paket K2)
@@ -112,6 +113,24 @@ namespace WindowsFormsApplication1
         /// <summary>Größte Entladeleistung [kW]; 0 = unbegrenzt.</summary>
         public double Entladeleistung_Max;
 
+        // Welle M7 (Schemaschritt PufferOptionenSchema): Bereitschaftsweg, Aufstellraum, Zonenanteile,
+        // Frischwassermodul. Alle leer = Rechnung wie zuvor.
+
+        /// <summary><c>tag</c> oder <c>temperatur</c>; <c>null</c> = Tageswert.</summary>
+        public string Bereitschaft_Weg;
+
+        /// <summary>Temperatur des Aufstellraums [°C]; <c>null</c> = 20 °C.</summary>
+        public double? Aufstellraum_Temperatur_C;
+
+        /// <summary>Zonenanteile von oben; <c>null</c> = gleich große Zonen.</summary>
+        public string Schicht_Anteile;
+
+        /// <summary>Frischwassermodul am Speicher.</summary>
+        public bool Frischwassermodul;
+
+        /// <summary>Grädigkeit des Frischwassermoduls [K]; <c>null</c> = 5 K.</summary>
+        public double? FWM_Graedigkeit_K;
+
         public PufferSpModel()
         {
             ID = 0;
@@ -120,7 +139,6 @@ namespace WindowsFormsApplication1
             Speichertyp = "";
             Betriebsbereitschaftverlust = 0;
             Gesamtvolumen = 0;
-            Investitionskosten = 0;
 
             // Vorbelegung = Rückfallregel für eine unbekannte Verwendung: {Heizung}.
             // Ein frisch erzeugtes Modell trägt damit nie das leere Set.

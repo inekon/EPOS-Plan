@@ -1,0 +1,137 @@
+﻿@* DER STUNDENPROFIL-EDITOR EINER GROESSE (Stufe NP4c; Konzept Nutzungsprofile 6.1, 4.1, NP-F9) - je
+   Tagesart (Werktag, nutzungsfreier Tag; Tab_Raumnutzungsstunden.Tagesart) vierundzwanzig Werte in der
+   Einheit und den Grenzen der Groesse (Anteile in Prozent, "aus" nur an Heizen und Kuehlen).
+
+   EINFUEGEN AUS DER ZWISCHENABLAGE: Der Anwender fuegt eine Zeile (etwa aus einer Tabellenkalkulation) in das
+   Textfeld der Tagesart ein - 24 Zahlen, durch Leerzeichen oder Tab getrennt, Komma oder Punkt - und
+   uebernimmt sie mit "Einfuegen". Ohne Text ist der Knopf weich gesperrt und nennt den Grund; eine falsche
+   Zahl der Werte oder ein Wert ausserhalb der Grenzen wird benannt, und nichts wird gesetzt. Der Weg ueber
+   das Textfeld braucht keine Berechtigung der Zwischenablage und geht auf beiden Plattformen.
+
+   SCHREIBT NUR DEN ENTWURF; in den Katalog geht er mit "Speichern" des Blatts. Im Lesemodus nur Text. *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using EPOS.UI.Standards
+
+<div class="epos-raumnutzung-stundeneditor" data-groesse="@((int)Groesse)">
+    @foreach (RaumnutzungTagesart t in RaumnutzungBild.Tagesarten)
+    {
+        RaumnutzungTagesart tagesart = t;
+        double[]? werte = RaumnutzungBild.Stunden(Profil, Groesse, tagesart);
+        <section @key="tagesart" class="epos-raumnutzung-stundentag" data-tagesart="@((int)tagesart)"
+                 aria-label="@Tagesname(tagesart)">
+            <h4 class="epos-raumnutzung-ueberschrift">@Tagesname(tagesart)</h4>
+            <div class="epos-raumnutzung-stundenraster">
+                @for (int h = 0; h < RaumnutzungBild.STUNDEN; h++)
+                {
+                    int stunde = h;
+                    string feld = string.Format(CultureInfo.CurrentCulture, Texte.LabelStunde, Tagesname(tagesart), stunde);
+                    double? wert = werte is null ? null : RaumnutzungBild.Anzeige(werte[stunde], G);
+                    <div @key="stunde" class="epos-raumnutzung-stunde" data-stunde="@stunde">
+                        <span class="epos-raumnutzung-stunde-kopf" aria-hidden="true">@stunde</span>
+                        @if (NurLesen)
+                        {
+                            <span class="epos-kond-text" data-feld="@feld" title="@feld">@Werttext(wert)</span>
+                        }
+                        else
+                        {
+                            <Zahlenfeld Bezeichnung="@feld" Feldname="@feld" Min="@G.Min" Max="@G.Max"
+                                        AusText="@(G.MitAus ? AusText : "")"
+                                        Wert="@wert" WertChanged="w => StundeSetzen(tagesart, stunde, w)" />
+                        }
+                    </div>
+                }
+            </div>
+            <p class="epos-leisezeile epos-raumnutzung-stunden-einheit">@G.Einheit</p>
+            @if (!NurLesen)
+            {
+                string? grund = Einfuegegrund(tagesart);
+                <div class="epos-raumnutzung-einfuegen">
+                    <Textfeld Bezeichnung="@string.Format(CultureInfo.CurrentCulture, Texte.LabelEinfuegen, Tagesname(tagesart))"
+                              Platzhalter="@Texte.PlatzhalterEinfuegen" Hoechstlaenge="600"
+                              Wert="@(_einfuegen.TryGetValue(tagesart, out string? text) ? text : "")"
+                              WertChanged="v => EinfuegetextSetzen(tagesart, v)" />
+                    <button type="button" class="epos-knopf epos-raumnutzung-einfuegen-knopf"
+                            aria-disabled="@(grund is null ? null : "true")" title="@(grund ?? Texte.PlatzhalterEinfuegen)"
+                            @onclick="() => Einfuegen(tagesart)">@Texte.KnopfEinfuegen</button>
+                </div>
+                @if (_meldung.TryGetValue(tagesart, out string? meldung))
+                {
+                    <p class="epos-raumnutzung-einfuegen-meldung" role="alert">@meldung</p>
+                }
+            }
+        </section>
+    }
+</div>
+
+@code {
+    /// <summary>Der Entwurf des Blatts — der Editor setzt seine Stunden an Ort und Stelle.</summary>
+    [Parameter, EditorRequired] public RaumnutzungProfilDaten Profil { get; set; } = new();
+
+    /// <summary>Die Größe, deren Stundenprofil der Editor zeigt.</summary>
+    [Parameter] public KonditionierungGroesse Groesse { get; set; }
+
+    /// <summary>Einheit und Grenzen der Größe in der Anzeige.</summary>
+    [Parameter] public RaumnutzungBildgrenzen? Grenzen { get; set; }
+
+    /// <summary>Die Texte des Editors.</summary>
+    [Parameter] public RaumnutzungBildTexte Texte { get; set; } = new();
+
+    /// <summary>Der Text des Zustands „aus" (dasselbe Wort wie in der Vorgabe-Matrix).</summary>
+    [Parameter] public string AusText { get; set; } = "aus";
+
+    /// <summary>Lesemodus (ausgeliefertes Profil): nur Text.</summary>
+    [Parameter] public bool NurLesen { get; set; }
+
+    /// <summary>Meldet jede Änderung des Entwurfs — der Wirt frischt Vorschau und Blatt auf.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    private readonly Dictionary<RaumnutzungTagesart, string> _einfuegen = new();
+    private readonly Dictionary<RaumnutzungTagesart, string> _meldung = new();
+
+    private RaumnutzungBildgrenzen G => Grenzen ?? RaumnutzungBildgrenzen.Offen(Groesse);
+
+    private string Tagesname(RaumnutzungTagesart t) => t == RaumnutzungTagesart.Frei ? Texte.TagesartFrei : Texte.TagesartWerktag;
+
+    private string Werttext(double? w)
+        => w is double z ? (double.IsNaN(z) ? AusText : z.ToString("0.####", CultureInfo.CurrentCulture)) : "—";
+
+    private string? Einfuegegrund(RaumnutzungTagesart t)
+        => _einfuegen.TryGetValue(t, out string? text) && !string.IsNullOrWhiteSpace(text) ? null : Texte.GrundEinfuegen;
+
+    private void EinfuegetextSetzen(RaumnutzungTagesart t, string? v)
+    {
+        _einfuegen[t] = v ?? "";
+        _meldung.Remove(t);
+    }
+
+    private async Task StundeSetzen(RaumnutzungTagesart t, int stunde, double? w)
+    {
+        if (w is not double anzeige) return;
+        double? profilwert = RaumnutzungBild.Profilwert(anzeige, G);
+        if (profilwert is not double p) return;
+        RaumnutzungBild.StundeSetzen(Profil, Groesse, t, stunde, p);
+        await Geaendert.InvokeAsync();
+    }
+
+    /// <summary>„Einfügen": die Zeile lesen; gelingt es, ersetzt sie die 24 Werte der Tagesart, sonst wird benannt.</summary>
+    private async Task Einfuegen(RaumnutzungTagesart t)
+    {
+        if (Einfuegegrund(t) is string grund)
+        {
+            _meldung[t] = grund;
+            return;
+        }
+        double[]? werte = RaumnutzungBild.ZeileLesen(_einfuegen[t], G, AusText, Texte, out string? meldung);
+        if (werte is null)
+        {
+            _meldung[t] = meldung ?? Texte.GrundEinfuegen;
+            return;
+        }
+        RaumnutzungBild.StundenSetzen(Profil, Groesse, t, werte);
+        _einfuegen.Remove(t);
+        _meldung.Remove(t);
+        await Geaendert.InvokeAsync();
+    }
+}

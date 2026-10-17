@@ -694,6 +694,7 @@ namespace WindowsFormsApplication1
                 PruefeOrt(f, feld);
                 if (!ImKontext(f, feld.Kontext, feld.Schluessel))
                     Kontextfehler(f, feld.Kontext, null);
+                PruefeKapitelImBlock(f, feld);
                 PruefePaarsicht(f, feld.Schluessel);
                 PruefePosition(f, feld);
                 PruefeAngaben(f, feld);
@@ -1261,9 +1262,9 @@ namespace WindowsFormsApplication1
                 foreach (Vorlagenabsatz a in lauf.Absaetze)
                     if (a.Element != null && !absaetze.ContainsKey(a.Element)) absaetze[a.Element] = a;
                 Berichtswerte werte = Berichtswerte.Aus(new BerichtsDaten(), null, Kontext.Englisch, null);
-                ISet<string> deckblattangaben = Vorlagenfeldkatalog.Deckblattangaben;
+                // Ein eigenes Deckblatt erkennt der Prüfer allein am Berichtstitel im Rumpf.
                 bool deckblatt = gezaehlt.Any(f => f.Ort?.Teil == Vorlagenteilart.Rumpf && f.Feld != null &&
-                                                   deckblattangaben.Contains(f.Feld.Schluessel));
+                                                   Vorlagenfeldkatalog.IstDeckblattmerkmal(f.Feld.Schluessel));
                 _deckblattAusPlatzhaltern = deckblatt;
 
                 // BV-E9: Eine Vorlage aus Einzelelementen führt ein Kapitel über seinen Kapitelkopf {{text.kapitel_<name>}} —

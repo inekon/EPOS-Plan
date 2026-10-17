@@ -50,6 +50,13 @@ namespace WindowsFormsApplication1
         /// <summary>Das zusammengefuehrte Pruefprotokoll (Lesen + Pruefen).</summary>
         public List<PruefMeldung> Protokoll = new List<PruefMeldung>();
 
+        /// <summary>
+        /// Die bestätigten Leseoptionen des Optionendialogs; <c>null</c>, solange keine bestätigt sind.
+        /// Ein Wirt, der aus der Lesung mehr ableitet als die Werte (Kopftext einer PV-Ganglinie),
+        /// liest damit dieselbe Datei auf dieselbe Weise.
+        /// </summary>
+        public GanglinienImportOptionen Optionen;
+
         /// <summary>Kurzform fuer „die Reihe steht".</summary>
         public bool Erfolgreich => Ausgang == ImportAusgang.Erfolg;
     }
@@ -350,14 +357,26 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <param name="pfad">Die vom Anwender gewaehlte Datei.</param>
         /// <param name="rueckrufe">Die zwei Entscheidungen (Konflikte gibt es hier nicht).</param>
-        public static async Task<GanglinienImportErgebnis> OhneAblage(
+        public static Task<GanglinienImportErgebnis> OhneAblage(
             string pfad, GanglinienImportRueckrufe rueckrufe)
+            => OhneAblage(pfad, rueckrufe, null);
+
+        /// <summary>
+        /// Die Kette OHNE Ablage mit eigener Formaterkennung — der Weg der Katalogimporte von
+        /// PV- und Solarganglinie: Ihre Erkennung (<c>StundenganglinieDatei.Erkenne</c>) belegt den
+        /// Optionendialog so vor, wie die Datei bisher ohne Dialog gelesen wurde.
+        /// </summary>
+        /// <param name="pfad">Die vom Anwender gewaehlte Datei.</param>
+        /// <param name="rueckrufe">Die zwei Entscheidungen (Konflikte gibt es hier nicht).</param>
+        /// <param name="erkennung">Die Formaterkennung; <c>null</c> = <see cref="GanglinienDatei.Erkenne"/>.</param>
+        public static async Task<GanglinienImportErgebnis> OhneAblage(
+            string pfad, GanglinienImportRueckrufe rueckrufe, Func<string, GanglinienVorschau> erkennung)
         {
             GanglinienImportErgebnis erg = new GanglinienImportErgebnis();
             if (string.IsNullOrEmpty(pfad) || !File.Exists(pfad)) return erg;
 
             GanglinienPruefErgebnis geprueft =
-                await Lauf(pfad, GanglinienRaster.Unbekannt, rueckrufe, erg);
+                await Lauf(pfad, GanglinienRaster.Unbekannt, rueckrufe, erg, erkennung);
             if (geprueft == null) return erg;
 
             erg.Bezeichner = Path.GetFileNameWithoutExtension(pfad);
@@ -378,10 +397,11 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static async Task<GanglinienPruefErgebnis> Lauf(
             string pfad, GanglinienRaster rasterVorgabe,
-            GanglinienImportRueckrufe rueckrufe, GanglinienImportErgebnis erg)
+            GanglinienImportRueckrufe rueckrufe, GanglinienImportErgebnis erg,
+            Func<string, GanglinienVorschau> erkennung = null)
         {
             // --- 1) Format erkennen -----------------------------------------
-            GanglinienVorschau vorschau = GanglinienDatei.Erkenne(pfad);
+            GanglinienVorschau vorschau = erkennung != null ? erkennung(pfad) : GanglinienDatei.Erkenne(pfad);
 
             if (vorschau == null || !vorschau.Lesbar)
             {
@@ -414,6 +434,7 @@ namespace WindowsFormsApplication1
             }
 
             // --- 3) lesen und 4) pruefen ------------------------------------
+            erg.Optionen = optionen;
             GanglinienRohdaten roh = GanglinienDatei.Lies(pfad, optionen);
             GanglinienPruefErgebnis ergebnis = null;
             if (roh.Erfolgreich)

@@ -40,7 +40,7 @@ namespace WindowsFormsApplication1
     public static partial class Vorlagenfeldkatalog
     {
         /// <summary>Die Katalogfassung; sie steigt mit jeder Etappe, die Einträge hinzufügt (Konzept 5.6).</summary>
-        public const int KATALOGFASSUNG = 10;
+        public const int KATALOGFASSUNG = 27;
 
         /// <summary>Die Fassung der Kapitel, Schalter, Kapitelköpfe und des Logos (Etappe BV-E2).</summary>
         private const int FASSUNG_KAPITEL = 2;
@@ -179,7 +179,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die letzte Katalogfassung, die Einträge mit Ausgabe Word brachte (Katalog v4; v5 brachte nur die Blattmarken der
         /// Excel-Vorlage, BV-E7, v6 die Blattmarke der Diagrammdaten, BV-E8, v7 die drei Tabellen mit reiner Excel-Quelle, v8 die Positionsmuster und v9 die Vergleichsliste und den Kennzahlblock der erzeugten Blätter, alle BV-E9; v10 die
-        /// Ergebnisbilder, den Speicherlauf und die solare Deckung des Simulationsergebnisses, wieder mit Word) — die Fassung, die die mitgelieferten Word-Vorlagen in <c>custom.xml</c> tragen. Eine
+        /// Ergebnisbilder, den Speicherlauf und die solare Deckung des Simulationsergebnisses, wieder mit Word; v11 den Betrieb je Heizkessel, Word und Excel; v12 die Stromlast des BHKW, die Kälteproduktion und die Pufferauslegung, Word und Excel; v13 die freie Kühlung der Wärmepumpe über die Wärmequelle, Word und Excel; v14 die Stunden der Wärmepumpe außerhalb der Kennlinienstützstellen, Word und Excel; …; v23 den Kältebedarf aus Profilen und die dezentrale (Split-)Deckung, Word und Excel; v24 die Wasserkosten des Rückkühlwerks, Word und Excel; v25 das Energieflussbild, nur Word; v26 Hilfsstrom, seine Emissionen und seine Stromsteuer, Word und Excel; v27 die Kennzahlen Einspeisung BHKW, Abregelung PV und Standby Speichersystem, Word und Excel) — die Fassung, die die mitgelieferten Word-Vorlagen in <c>custom.xml</c> tragen. Eine
         /// Word-Vorlage kann keinen Schlüssel einer reinen Excel-Fassung nutzen; sie braucht darum keine neue Fassung.
         /// </summary>
         public static int KatalogfassungWord
@@ -676,6 +676,8 @@ namespace WindowsFormsApplication1
             ["tabelle.kaelteerzeuger"] = Berichtskapitel.PROJEKT,
             ["tabelle.speichertemperaturen"] = Berichtskapitel.PROJEKT,
             ["tabelle.gebaeude.ergebnis"] = Berichtskapitel.PROJEKT,
+            ["tabelle.pufferauslegung"] = Berichtskapitel.PROJEKT,
+            ["tabelle.kaeltespeicher"] = Berichtskapitel.PROJEKT,
             ["stamm.bild.speichertemperaturen"] = Berichtskapitel.PROJEKT,
             // Komponenten & Varianten — die Variantenliste gehört zum Kapitel, das die Varianten nennt
             ["tabelle.varianten"] = Berichtskapitel.KOMPONENTEN,
@@ -687,6 +689,7 @@ namespace WindowsFormsApplication1
             ["stand.bild.waerme_dauerlinie"] = Berichtskapitel.ERGEBNISSE,
             ["stand.bild.strombilanz_monate"] = Berichtskapitel.ERGEBNISSE,
             ["stand.bild.speicherverlauf"] = Berichtskapitel.ERGEBNISSE,
+            ["stand.bild.energiefluss"] = Berichtskapitel.ERGEBNISSE,
             // Variantenvergleich — die Gesamttafel führt dieselben Gruppen in einer Tabelle
             ["tabelle.vergleich"] = Berichtskapitel.VERGLEICH,
             ["tabelle.vergleich.delta_prozent"] = Berichtskapitel.VERGLEICH,
@@ -789,9 +792,22 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Deckblattangaben: was das Kapitel Deckblatt schreibt, ohne Schalter — trägt eine Vorlage
-        /// eine davon im Rumpf, trägt sie ihr Deckblatt selbst (Stelle „Deckblatt“ der Anhang-E-Checkliste).
+        /// Die Deckblattangaben: was das Kapitel Deckblatt schreibt, ohne Schalter. Ob eine Vorlage ihr
+        /// Deckblatt selbst trägt, entscheidet allein das <see cref="Deckblattmerkmal"/>.
         /// </summary>
+        /// <summary>
+        /// Das Merkmal eines eigenen Deckblatts: der Berichtstitel <c>{{bericht.titel}}</c>. Trägt der Rumpf einer
+        /// Vorlage ihn als Platzhalter, trägt sie ihr Deckblatt selbst (Häkchen „Deckblatt“ ausgegraut, Stelle
+        /// „Deckblatt“ der Anhang-E-Checkliste); eine andere Deckblattangabe allein — etwa nur das Datum — genügt nicht.
+        /// </summary>
+        public const string Deckblattmerkmal = "bericht.titel";
+
+        /// <summary>Ist der Schlüssel (oder sein Alias) das <see cref="Deckblattmerkmal"/>?</summary>
+        public static bool IstDeckblattmerkmal(string schluessel)
+        {
+            return string.Equals(Finde(schluessel ?? "")?.Schluessel, Deckblattmerkmal, StringComparison.Ordinal);
+        }
+
         public static ISet<string> Deckblattangaben
         {
             get
@@ -849,6 +865,7 @@ namespace WindowsFormsApplication1
                 yield return new Vorlagenfeld("stamm.kennzahl." + s, Vorlagenfeldart.Zahl, Vorlagenfeldkontext.Stamm,
                     w => StammKennzahl(w, s))
                 {
+                    Seit = SeitDerKennzahl(k),
                     Format = k.Format,
                     Einheit = k.Einheit,
                     Ableitung = new Vorlagenfeldableitung(MUSTER_STAMM_KENNZAHL, nameof(R.VF_MUSTER_STAMM_KENNZAHL), s),
@@ -862,11 +879,13 @@ namespace WindowsFormsApplication1
                 yield return new Vorlagenfeld("kennzahl." + s + ".beschriftung", Vorlagenfeldart.Text, Vorlagenfeldkontext.Bericht,
                     w => w.FindeKennzahl(s)?.Label(w.Englisch))
                 {
+                    Seit = SeitDerKennzahl(k),
                     Ableitung = new Vorlagenfeldableitung(MUSTER_KENNZAHL_BESCHRIFTUNG, nameof(R.VF_MUSTER_KENNZAHL_BESCHRIFTUNG), s),
                 };
                 yield return new Vorlagenfeld("kennzahl." + s + ".einheit", Vorlagenfeldart.Text, Vorlagenfeldkontext.Bericht,
                     w => w.FindeKennzahl(s)?.Einheit)
                 {
+                    Seit = SeitDerKennzahl(k),
                     Leerwert = "",
                     Ableitung = new Vorlagenfeldableitung(MUSTER_KENNZAHL_EINHEIT, nameof(R.VF_MUSTER_KENNZAHL_EINHEIT), s),
                 };

@@ -50,6 +50,14 @@ public sealed class PvModellTexte
     /// <summary>PV_ANLAGE_TIP_SYSTEMVERLUSTE</summary>
     public string TipSystemverluste { get; } = T("PV_ANLAGE_TIP_SYSTEMVERLUSTE",
         "Pauschale Verluste (Verschmutzung, Leitungen, Abweichung). Leer = 0 %.");
+    /// <summary>ANLAGE_LABEL_ALBEDO</summary>
+    public string LabelAlbedo { get; } = T("ANLAGE_LABEL_ALBEDO", "Albedo [-]:");
+    /// <summary>ANLAGE_TIP_ALBEDO</summary>
+    public string TipAlbedo { get; } = T("ANLAGE_TIP_ALBEDO",
+        "Bodenalbedo vor der Anlage, 0 bis 1. Leer bedeutet 0,2.");
+    /// <summary>ANLAGE_HINWEIS_ALBEDO — die Auswahlhilfe unter dem Feld.</summary>
+    public string HinweisAlbedo { get; } = T("ANLAGE_HINWEIS_ALBEDO",
+        "Richtwerte Albedo: Gras 0,2 · Beton 0,3 · helles Dach 0,5–0,6 · Schnee 0,7–0,8. Leer = 0,2.");
 
     /// <summary>
     /// PVS_ZEILE_EINFACH — die Zeile unter dem Rechenmodell im Modell EINFACH

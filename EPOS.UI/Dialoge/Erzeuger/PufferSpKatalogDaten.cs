@@ -46,8 +46,9 @@ public sealed class PufferSpKatalogDaten
     /// <summary>Gesamtvolumen [l], ganzzahlig.</summary>
     public int? Gesamtvolumen { get; set; }
 
-    /// <summary>Investitionskosten [€].</summary>
-    public double? Investitionskosten { get; set; }
+    // HIER STAND Investitionskosten - die Spalte ist mit Welle KB-4 entfallen
+    // (Anwenderentscheid 13.10.2026 „eine Kostenbasis, keine Doppelhaltung"); die
+    // Geraetekosten pflegt die Kostenverwaltung (Satzvorlage).
 
     /// <summary>
     /// Auslieferungssatz (<c>ReadOnly</c> in <c>Tab_Pufferspeicher_STAMM</c>)? Dann lehnt

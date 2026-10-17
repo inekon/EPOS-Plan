@@ -84,17 +84,26 @@ namespace EPOS.Kern.Tests
             Assert.DoesNotContain("Tab_", v.Klartext);
         }
 
+        /// <summary>
+        /// Ohne Katalogversion lädt <see cref="ZapfprofilCtrl.Verfuegbar"/> zuerst den freien Paketteil
+        /// nach (<see cref="TwwPaketteilNachladenTests"/>). Hier weist die Datei jedes Einfügen in den
+        /// Parameterkatalog ab — so bleibt die Katalogversion aus, und die benannte Ablehnung ist zu sehen.
+        /// </summary>
         [Fact]
         public void Ohne_Katalogversion_ist_der_Generator_benannt_nicht_verfuegbar()
         {
             using var db = new TwwTestdatenbank();
+            DataRepository.ExecuteNonQuery("CREATE TRIGGER \"Probe_Abweisen\" BEFORE INSERT ON \"" + TwwSchema.TAB_TWW_PARAMETER_STAMM +
+                                           "\" BEGIN SELECT RAISE(ABORT, 'Probe weist ab'); END");
 
             ZapfVerfuegbarkeit ohne = ZapfprofilCtrl.Verfuegbar();
             Assert.False(ohne.Ja);
             Assert.Equal(ZapfVerfuegbarkeitsgrund.KeineKatalogversion, ohne.Grund);
             Assert.Contains("Parameterkatalog des Zapfprofils", ohne.Klartext);
-            Assert.DoesNotContain("Tab_", ohne.Klartext);
+            Assert.DoesNotContain("Tab_", ((ZapfSatz)ZapfSatz.Tabelle(TwwSchema.TAB_TWW_PARAMETER_STAMM)).Klartext);
+            Assert.Equal("PAKETTEIL_NACHLADEN_FEHLGESCHLAGEN", ohne.Nachladen?.Kennung);
 
+            DataRepository.ExecuteNonQuery("DROP TRIGGER \"Probe_Abweisen\"");
             TwwTestdatenbank.ParameterAnlegen("Probe.Eins", 1.0, "T1");
             ZapfVerfuegbarkeit mit = ZapfprofilCtrl.Verfuegbar();
             Assert.True(mit.Ja);
@@ -207,8 +216,11 @@ namespace EPOS.Kern.Tests
                 "INSERT INTO \"Tab_TwwWohnungstyp\" (\"ID_Zone\", \"Anzahl\", \"Raumzahl\", \"Reihenfolge\") VALUES (?, 4, 3.0, 2), (?, 2, NULL, 1), (?, 1, 2.0, 1)",
                 new DbParam("@a", erste), new DbParam("@b", erste), new DbParam("@c", fremd));
             DataRepository.ExecuteNonQuery(
-                "UPDATE \"Tab_TwwZone\" SET \"Niveau\" = 3, \"Topologie\" = 2, \"Zirkulation\" = 0, \"Ferienbeginn_1\" = 100, " +
-                "\"Ferienende_1\" = 110, \"Auslastung_03\" = 0.5, \"Jahresmesswert\" = 1000.0, \"Jahresmesswert_Einheit\" = 1 WHERE \"ID\" = ?",
+                "UPDATE \"Tab_TwwZone\" SET \"Niveau\" = 3, \"Topologie\" = 2, \"Zirkulation\" = 0, " +
+                "\"Auslastung_03\" = 0.5, \"Jahresmesswert\" = 1000.0, \"Jahresmesswert_Einheit\" = 1 WHERE \"ID\" = ?",
+                new DbParam("@id", zweite));
+            DataRepository.ExecuteNonQuery(
+                "INSERT INTO \"Tab_TwwZonenferien\" (\"ID_Zone\", \"Reihenfolge\", \"Name\", \"Beginn\", \"Ende\") VALUES (?, 1, 'Ostern', 100, 110)",
                 new DbParam("@id", zweite));
             DataRepository.ExecuteNonQuery(
                 "INSERT INTO \"Tab_TwwProjekt\" (\"ID_Projekt\", \"Weg\", \"Seed\", \"Zirk_Lage\", \"Speicher_C\") VALUES (1, 'GENERATOR', 7, 2, 50.0)");
@@ -227,7 +239,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(ZapfTopologie.Speicher, z1.Topologie);
             Assert.True(z1.Zirkulation);
             Assert.True(z1.TagesbedarfAuto);
-            Assert.All(z1.Ferienbeginn, f => Assert.Null(f));
+            Assert.Empty(z1.Ferien);
             Assert.All(z1.Auslastung, x => Assert.Null(x));
             Assert.Equal(new[] { 1, 2 }, z1.Wohnungen.Select(w => w.Reihenfolge).ToArray());
             Assert.Null(z1.Wohnungen[0].Raumzahl);
@@ -238,9 +250,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(ZapfNiveau.Hoch, z2.Niveau);
             Assert.Equal(ZapfTopologie.Frischwasserstation, z2.Topologie);
             Assert.False(z2.Zirkulation);
-            Assert.Equal(100, z2.Ferienbeginn[0]);
-            Assert.Equal(110, z2.Ferienende[0]);
-            Assert.Null(z2.Ferienbeginn[1]);
+            ZonenferienStand f2 = Assert.Single(z2.Ferien);
+            Assert.Equal(new ZonenferienStand { Name = "Ostern", Beginn = 100, Ende = 110 }, f2);
             Assert.Equal(0.5, z2.Auslastung[2]);
             Assert.Equal(1000.0, z2.Jahresmesswert);
             Assert.Equal(ZapfMesswerteinheit.KwhJeJahr, z2.JahresmesswertEinheit);

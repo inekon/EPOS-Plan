@@ -37,6 +37,30 @@ namespace WindowsFormsApplication1
         /// <summary>Wärmedurchlasswiderstand des Aufbaus R = Σ d/λ einschließlich ruhender Luftschichten [m²K/W].</summary>
         public double? R_M2KW { get; init; }
 
+        /// <summary>Inhomogener Aufbau (BK-5): oberer Grenzwert R'_T [m²K/W]; <c>null</c> = homogen oder nicht gerechnet.</summary>
+        public double? RT_Oben_M2KW { get; init; }
+
+        /// <summary>Inhomogener Aufbau (BK-5): unterer Grenzwert R''_T [m²K/W]; <c>null</c> = homogen oder nicht gerechnet.</summary>
+        public double? RT_Unten_M2KW { get; init; }
+
+        /// <summary>
+        /// Inhomogener Aufbau (BK-8b): die Fehlerschranke e = (R'_T − R''_T) / (2 R_T) [–] nach DIN EN ISO 6946, 6.7.2.5;
+        /// <c>null</c> = homogen oder nicht gerechnet.
+        /// </summary>
+        public double? Fehlerschranke { get; init; }
+
+        /// <summary>
+        /// Der Hinweis zur Fehlerschranke, wenn sie <see cref="InhomogeneSchichten.FEHLERSCHRANKE_GRENZE"/> übersteigt
+        /// (übersetzt); leer sonst. Ein Hinweis, keine Ablehnung — U bleibt 1 / R_T.
+        /// </summary>
+        public string Hinweis { get; init; } = "";
+
+        /// <summary>
+        /// Wärmedurchgangswiderstand R_T = R_si + R + R_se [m²K/W] — der Nenner von U, für den
+        /// Summenfuß; <c>null</c>, solange R nicht steht.
+        /// </summary>
+        public double? RT_M2KW => R_M2KW.HasValue ? RSi_M2KW + R_M2KW.Value + RSe_M2KW : null;
+
         /// <summary>Wärmedurchgangskoeffizient U = 1/(R_si + R + R_se) [W/(m²K)].</summary>
         public double? U_WM2K { get; init; }
 

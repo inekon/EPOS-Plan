@@ -64,7 +64,7 @@ namespace EPOS.Kern.Tests
             GebaeudeImportStand stand = Zuordnen(gaben);
 
             GebaeudeZonierungDaten zon = Assert.IsType<GebaeudeZonierungDaten>(stand.Zonierung);
-            Assert.Equal(new[] { "Z1", "Z2", "Z4", "Z5" }, zon.Regeln.Select(r => r.Schluessel));
+            Assert.Equal(new[] { "Z1", "Z2", "Z4", "Z6", "Z5" }, zon.Regeln.Select(r => r.Schluessel));
             Assert.Equal("Z4", zon.Regel);
             Assert.Equal("Z4 – eine Zone je Geschoss", zon.RegelText);
             Assert.False(zon.Einzonig);
@@ -101,7 +101,7 @@ namespace EPOS.Kern.Tests
             GebaeudeZonierungDaten zon = Zuordnen(gaben)!.Zonierung!;
 
             Assert.NotNull(zon.Flaechenprofil);
-            Assert.Equal(12, zon.Flaechenprofil!.Spalten.Count);
+            Assert.Equal(13, zon.Flaechenprofil!.Spalten.Count);
             Assert.Equal(h.Vorschlag.Zeilen.Count, zon.Flaechen.Count);
             Assert.Equal(zon.Flaechen.Count, zon.Flaechen.Select(f => f.Zeile.Schluessel).Distinct().Count());
 
@@ -261,7 +261,7 @@ namespace EPOS.Kern.Tests
             (_, IReadOnlyDictionary<string, object> gaben) = await Gelesen("ifc4_zonen.ifc");
             GebaeudeZonierungDaten zon = Zuordnen(gaben, "Z1")!.Zonierung!;
             Assert.Equal("Z1 – one zone per zone of the file", zon.RegelText);
-            Assert.Equal(new[] { "Zone", "Component", "Adjacent zone", "Finding" },
+            Assert.Equal(new[] { "Zone", "Component", "Adjacent zone", "Note" },
                          new[] { GebaeudeImportZonen.SP_ZONE, Katalogfilterprofil.SpBezeichner, GebaeudeImportZonen.SP_NACHBARZONE, GebaeudeImportZonen.SP_BEFUND }
                              .Select(s => zon.Flaechenprofil!.Spalte(s).Titel));
             Assert.Contains(zon.Flaechen, f => f.Zeile.Text(GebaeudeImportZonen.SP_BEFUND).Contains("no counterpart"));

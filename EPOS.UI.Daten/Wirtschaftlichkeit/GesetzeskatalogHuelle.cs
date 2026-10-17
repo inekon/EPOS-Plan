@@ -71,6 +71,8 @@ namespace WindowsFormsApplication1
                 ["Loeschen"] = new Func<int, Task<bool>>(
                     id => Task.FromResult(GesetzKatalog.Loeschen(id))),
                 ["Pruefen"] = new Func<GesetzeskatalogZeileDialog.Zeilenwerte, int, Task<string>>(Pruefen),
+                ["Vorschlagsdaten"] = new Func<Task<GesetzVorschlagsdaten>>(
+                    () => Task.FromResult(new GesetzKatalog().Vorschlagsdaten())),
                 ["Klassenvorrat"] = Klassenvorrat(),
                 ["Einheiten"] = GesetzKatalog.Einheiten(),
                 ["Statuswerte"] = GesetzKatalog.Statuswerte(),
@@ -91,7 +93,7 @@ namespace WindowsFormsApplication1
             return Task.FromResult(liste);
         }
 
-        /// <summary>Der Klassenvorrat des Zeilendialogs — die acht wählbaren Klassen.</summary>
+        /// <summary>Der Klassenvorrat des Zeilendialogs — die wählbaren Klassen.</summary>
         private static IReadOnlyList<(string, string)> Klassenvorrat()
         {
             return GesetzKatalog.KlassenVorrat()

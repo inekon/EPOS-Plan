@@ -148,15 +148,19 @@ namespace WindowsFormsApplication1
             Versuche(() => _ = w.Parameternachweis(kultur));
             Versuche(() => _ = w.Bilanzkonvention);
             Versuche(() => _ = w.Erzeuger);
+            // Fachvorgabe E31: Der Baustein prüft die Aktualität im Szenario des Berichts, das erst die Konfiguration
+            // des Schreibers nennt — gefragt wird deshalb für jedes der drei Szenarien (je Ergebnis eine Zeile).
             foreach (VariantenDaten v in daten.Varianten)
-            {
-                VariantenDaten stand = v;
-                Versuche(() =>
+                foreach (string szenario in WirtschaftlichkeitSzenario.Alle)
                 {
-                    WirtschaftlichkeitErgebnis e = w.Erwartet(stand.IdProjekt);
-                    if (e != null) _ = w.ErgebnisAktuell(e);
-                });
-            }
+                    VariantenDaten stand = v;
+                    string sz = szenario;
+                    Versuche(() =>
+                    {
+                        WirtschaftlichkeitErgebnis e = w.ImSzenario(stand.IdProjekt, sz);
+                        if (e != null) _ = w.ErgebnisAktuell(e);
+                    });
+                }
             Versuche(() => _ = w.Zeilen(w.IdReferenzTafel));
             Versuche(() => _ = w.KwkgAktiv);
             if (w.Bedarf.Verlauf)
@@ -177,8 +181,9 @@ namespace WindowsFormsApplication1
                         VariantenDaten stand = v;
                         Versuche(() =>
                         {
-                            WirtschaftlichkeitErgebnis erw = w.Erwartet(stand.IdProjekt);
-                            if (erw != null && w.ErgebnisAktuell(erw)) _ = w.Emissionsbilanz(stand.IdProjekt);
+                            // E31: der Baustein fragt das Ergebnis im Szenario des Berichts — irgendein aktuelles genügt.
+                            if (WirtschaftlichkeitSzenario.Alle.Any(sz => w.ErgebnisAktuell(w.ImSzenario(stand.IdProjekt, sz))))
+                                _ = w.Emissionsbilanz(stand.IdProjekt);
                         });
                     }
                 });
@@ -323,7 +328,64 @@ namespace WindowsFormsApplication1
         /// <summary>Das Ergebnis „Erwartet“ eines Stands in <see cref="Ergebnisse"/>; <c>null</c> = keins.</summary>
         public WirtschaftlichkeitErgebnis Erwartet(int idProjekt)
         {
-            return Ergebnisse.FirstOrDefault(x => x.IdProjekt == idProjekt && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
+            return ImSzenario(idProjekt, WirtschaftlichkeitSzenario.ERWARTET);
+        }
+
+        /// <summary>Das Ergebnis eines Stands in einem Szenario in <see cref="Ergebnisse"/>; <c>null</c> = keins.</summary>
+        public WirtschaftlichkeitErgebnis ImSzenario(int idProjekt, string szenario)
+        {
+            return Ergebnisse.FirstOrDefault(x => x.IdProjekt == idProjekt && x.Szenario == szenario);
+        }
+
+        /// <summary>
+        /// Das Szenario des Wirtschaftlichkeitsberichts (Fachvorgabe E31, Nach #582): der Schlüssel der
+        /// Konfiguration (<see cref="BerichtsKonfiguration.Szenario"/>, Vorgabe Erwartet). Fehlt für einen der Stände
+        /// des Berichts das Ergebnis dieses Szenarios, gilt für den ganzen Baustein Erwartet — keine Tafel mischt die
+        /// Zahlen zweier Szenarien —, und <paramref name="ohneErgebnis"/> nennt die Stände (sonst leer).
+        /// </summary>
+        public string Berichtsszenario(BerichtsKonfiguration konfig, out List<string> ohneErgebnis)
+        {
+            ohneErgebnis = new List<string>();
+            // VB‑E1 (VB‑Q3 a): In VALERI-Darstellung ist das Leitszenario fest Erwartet — gleich, welches Szenario die
+            // Konfiguration daneben trägt; die Rückfallregel einer Einzelwahl greift dann nicht.
+            if (IstValeri(konfig)) return WirtschaftlichkeitSzenario.ERWARTET;
+            string szenario = WirtschaftlichkeitSzenario.Normiere(konfig?.Szenario);
+            if (szenario == WirtschaftlichkeitSzenario.ERWARTET) return szenario;
+            foreach (VariantenDaten v in _daten.Varianten)
+                if (ImSzenario(v.IdProjekt, szenario) == null) ohneErgebnis.Add(v.IstStamm ? "Stamm" : v.Anzeige);
+            return ohneErgebnis.Count == 0 ? szenario : WirtschaftlichkeitSzenario.ERWARTET;
+        }
+
+        /// <summary>
+        /// Steht der Wirtschaftlichkeitsbericht in VALERI-Darstellung (<see cref="BerichtsKonfiguration.IstValeri"/>,
+        /// Etappe VB‑E1)? Ohne Konfiguration: nein.
+        /// </summary>
+        public static bool IstValeri(BerichtsKonfiguration konfig)
+        {
+            return konfig != null && konfig.IstValeri;
+        }
+
+        /// <summary>
+        /// Die Spaltenfolge der Tafel „Kennzahlen je Szenario“ (VB‑Q2 a): Ungünstig, Erwartet, Günstig — dieselbe Folge
+        /// wie die Szenarienübersicht.
+        /// </summary>
+        public static readonly IReadOnlyList<string> ValeriSpalten = new[]
+        {
+            WirtschaftlichkeitSzenario.WORST, WirtschaftlichkeitSzenario.ERWARTET, WirtschaftlichkeitSzenario.BEST,
+        };
+
+        /// <summary>
+        /// Die Szenarien der Tafel „Kennzahlen je Szenario“ eines Stands (VB‑Q4 a, Regel E31): alle drei
+        /// (<see cref="ValeriSpalten"/>), wenn der Stand Günstig UND Ungünstig trägt; sonst allein Erwartet — die ganze
+        /// Tafel des Stands steht dann im Erwartungsfall, und <paramref name="fehlend"/> nennt die fehlenden Szenarien
+        /// (sonst leer).
+        /// </summary>
+        public IReadOnlyList<string> ValeriSzenarien(int idProjekt, out List<string> fehlend)
+        {
+            fehlend = new List<string>();
+            foreach (string sz in new[] { WirtschaftlichkeitSzenario.WORST, WirtschaftlichkeitSzenario.BEST })
+                if (ImSzenario(idProjekt, sz) == null) fehlend.Add(sz);
+            return fehlend.Count == 0 ? ValeriSpalten : new[] { WirtschaftlichkeitSzenario.ERWARTET };
         }
 
         /// <summary>Die Nachweiszeile des Parametersatzes in einer Kultur (<see cref="WirtschaftlichkeitParameter.Nachweis"/>).</summary>

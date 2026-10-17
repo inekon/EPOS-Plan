@@ -77,11 +77,42 @@ namespace WindowsFormsApplication1
         /// <summary>Der Fenstertitel und zugleich die Dialogüberschrift.</summary>
         internal static string Titel() => MyResource.Resource.KLIMA_TITEL;
 
+        /// <summary>Das Wunschmaß der Klimadatenverwaltung selbst (Vorläufer: 757 × 641).</summary>
+        internal const int FENSTER_BREITE = 1180;
+
+        /// <summary>Siehe <see cref="FENSTER_BREITE"/>.</summary>
+        internal const int FENSTER_HOEHE = 780;
+
+        /// <summary>
+        /// Das Wunschmaß der Überlagerung „Klimadaten einlesen“ als eigenes Fenster (KD-1):
+        /// so breit wie eine Überlagerung (900 px), so hoch, dass sie VOR der Suche (gemessen
+        /// 900 px samt Höhenfeld und Suchzeile, KD-3) in 90 % der Fensterhöhe steht, ohne zu
+        /// rollen. Die Vorschaukarte (rund 750 px) rollt dann unter der haftenden Leiste — ein
+        /// Fenster, das auch sie ganz zeigte, gäbe kein Schirm her. Reicht der Schirm nicht,
+        /// rollt der Inhalt, und die Schlussleiste
+        /// haftet am Boden der Überlagerung (<c>epos-ui.css</c>, „Die Schlussleiste des
+        /// Einlesens haftet genauso“).
+        /// </summary>
+        internal const int EINLESEN_BREITE = 900;
+
+        /// <summary>Siehe <see cref="EINLESEN_BREITE"/>.</summary>
+        internal const int EINLESEN_HOEHE = 1000;
+
+        /// <summary>
+        /// Das Wunschmaß des Fensters: mindestens das der getragenen Überlagerung
+        /// (<see cref="EPOS.UI.Dienste.Fenstermass.MitUeberlagerung"/>), wie bei jedem Fenster,
+        /// das einen Import als Überlagerung trägt.
+        /// </summary>
+        internal static (int Breite, int Hoehe) Wunschmass()
+            => EPOS.UI.Dienste.Fenstermass.MitUeberlagerung(
+                FENSTER_BREITE, FENSTER_HOEHE, EINLESEN_BREITE, EINLESEN_HOEHE);
+
         /// <summary>Der PARAMETERSATZ der Komponente — ohne <c>Geschlossen</c>.</summary>
         internal static IReadOnlyDictionary<string, object> Gaben()
         {
             return new Dictionary<string, object>
             {
+                ["CsvSpeichern"] = Diagrammexportnaht.Fuer(Dienste.Projekt.Id),
                 ["Regionen"] = new Func<Task<IReadOnlyList<Katalogfilterzeile>>>(RegionenLesen),
                 ["Ansicht"] = new Func<string, Task<KlimadatenDialog.Regionsansicht>>(Ansicht),
                 ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
@@ -95,8 +126,54 @@ namespace WindowsFormsApplication1
                 // AD-Q15: das Schloss laesst sich nach Rueckfrage umschalten.
                 ["Schloss"] = Schlosswege.Aus(KlimaregionStammCtrl.SchlossSetzen),
                 ["Ortsvorschlaege"] = Ortsvorschlaege(),
-                ["DateiWaehlen"] = new Func<string, Task<string>>(DateiWaehlen)
+                ["DateiWaehlen"] = new Func<string, Task<string>>(DateiWaehlen),
+                // KD-5: der CSV-Export einer Region (Handlung „Exportieren…" der Auswahlleiste).
+                ["ExportLesen"] = new Func<string, Task<KlimaExportDaten>>(ExportLesen),
+                ["ExportSpeichern"] = new Func<string, string, Task<EPOS.UI.Dialoge.Export.KlimaExportErgebnis>>(
+                    (inhalt, vorschlag) => ExportSpeichern(inhalt, vorschlag, OperatingSystem.IsIOS()))
             };
+        }
+
+        // =====================================================================
+        // CSV-Export einer Region (Auftrag KD-5)
+        // =====================================================================
+
+        /// <summary>Liest die Region abseits des Oberflächenfadens (<see cref="KlimaExportCtrl.Lesen(string)"/>).</summary>
+        private static Task<KlimaExportDaten> ExportLesen(string region)
+            => Kulturweitergabe.Starten(() => KlimaExportCtrl.Lesen(region));
+
+        /// <summary>
+        /// Der Speicherweg des Exports über die vorhandene Naht <see cref="CsvExportClass.DateiWaehlenFuerExportAsync"/>
+        /// (Dateiwahl über <c>Dienste.Datei</c>, gemerkter Ordner): Schreiben als UTF-8 mit BOM — ganz oder gar nicht —,
+        /// auf iOS danach das Teilen. Eine abgebrochene Dateiwahl meldet <see cref="EPOS.UI.Dialoge.Export.KlimaExportErgebnis.Abgebrochen"/>.
+        /// </summary>
+        internal static async Task<EPOS.UI.Dialoge.Export.KlimaExportErgebnis> ExportSpeichern(string inhalt, string vorschlag, bool ios)
+        {
+            string pfad = await CsvExportClass.DateiWaehlenFuerExportAsync(vorschlag).ConfigureAwait(true);
+            if (string.IsNullOrWhiteSpace(pfad)) return EPOS.UI.Dialoge.Export.KlimaExportErgebnis.Abgebrochen;
+            try
+            {
+                await Kulturweitergabe.Starten(() =>
+                {
+                    File.WriteAllText(pfad, inhalt ?? "", new System.Text.UTF8Encoding(true));
+                    return true;
+                });
+            }
+            catch (Exception ex)
+            {
+                return new EPOS.UI.Dialoge.Export.KlimaExportErgebnis(false, false,
+                    string.Format(System.Globalization.CultureInfo.CurrentCulture, MyResource.Resource.KEXP_MSG_FEHLER, ex.Message));
+            }
+            string text = string.Format(System.Globalization.CultureInfo.CurrentCulture, MyResource.Resource.KEXP_MSG_GESPEICHERT, pfad);
+            if (ios)
+            {
+                bool geteilt;
+                try { geteilt = Dienste.Datei.MitSystemOeffnen(pfad); }
+                catch (Exception) { geteilt = false; }
+                if (!geteilt)
+                    text = string.Format(System.Globalization.CultureInfo.CurrentCulture, MyResource.Resource.KEXP_MSG_TEILEN_FEHLER, pfad);
+            }
+            return new EPOS.UI.Dialoge.Export.KlimaExportErgebnis(true, false, text);
         }
 
         // =====================================================================
@@ -210,8 +287,26 @@ namespace WindowsFormsApplication1
             {
                 Jahresmittel = werteTemperatur.Average(),
                 Tiefstwert = werteTemperatur.Min(),
-                Hoechstwert = werteTemperatur.Max()
+                Hoechstwert = werteTemperatur.Max(),
+                // KD-8 Teil A: die gespeicherten Rechenspalten für „Weitere Reihen“ —
+                // dieselben Zeilen (SolardatenCtrl.ReadAllStamm, ?-Parameter); Teil B: dahinter die
+                // Rohwert-Reihen aus Tab_Klimastunde_STAMM, sobald der Schritt 238 steht (Datenstand).
+                Reihenbestand = ReihenbestandLesen(region.m_ID_Klimaregion, solar.items)
             });
+        }
+
+        /// <summary>
+        /// Der Reihenbestand einer Katalogregion (KD-8): die Rechenspalten (Teil A) und, freigeschaltet aus dem
+        /// Datenstand (Schritt 238, <c>KlimaReihenkatalog.RohwerteFreigeschaltet</c>), die Rohwert-Reihen (Teil B,
+        /// Leser <c>KlimaExportCtrl.RohwerteLesen</c>); eine Region ohne Rohwerte führt sie als „führt nicht“, der
+        /// Chip bleibt weich gesperrt.
+        /// </summary>
+        private static IReadOnlyList<KlimaReihenwerte> ReihenbestandLesen(int idStamm, IReadOnlyList<SolardatenModel> zeilen)
+        {
+            var liste = new List<KlimaReihenwerte>(KlimaReihenkatalog.AusRechenspalten(zeilen));
+            if (KlimaReihenkatalog.RohwerteFreigeschaltet())
+                liste.AddRange(KlimaReihenkatalog.AusRohwerten(KlimaExportCtrl.RohwerteLesen(idStamm)));
+            return liste;
         }
 
         // =====================================================================
@@ -252,22 +347,36 @@ namespace WindowsFormsApplication1
             // Der Arbeitsfaden bekommt die Kultur des Aufrufers (Auftrag #232): Ein
             // Faden ohne eigene Kultur laese den veraenderlichen prozessweiten
             // Vorgabewert und koennte mitten im Import die Sprache wechseln.
-            return await Kulturweitergabe.StartenAsync(() => KlimaImportAblauf.Laufen(
+            // Eine Ausnahme, die der Ablauf nicht selbst benennt, wird ueber die Fangstelle der
+            // Importe zu einem Eingabefehler mit Grund (IM-1).
+            string datei = string.IsNullOrEmpty(auftrag?.TryPfad) ? auftrag?.TryPaketPfad ?? "" : auftrag.TryPfad;
+            return await Importfang.StartenAsync(datei, () => KlimaImportAblauf.Laufen(
                 auftrag,
                 (lon, lat, azimut) => PVGIS_EPW_Downloader.GetTMY(lon, lat, azimut),
                 ort => PVGIS_EPW_Downloader.GetCoordinatesAsync(ort),
                 melder,
                 marke,
-                Bereich));
+                Bereich,
+                _vorschau),
+                a => new KlimaImportErgebnis { Ausgang = KlimaImportAusgang.Eingabefehler, Meldung = a.Text });
         }
+
+        /// <summary>
+        /// Die zuletzt gelesene VORSCHAU (Auftrag KD-2, Entscheid KD-Q3). Der Import
+        /// übernimmt ihren Satz ohne zweiten Abruf, solange sie zum Auftrag passt
+        /// (<see cref="KlimaVorschauErgebnis.PasstZu"/>); ändert der Anwender Ort, Quelle,
+        /// Jahr oder Szenario, ist sie verfallen und der Import liest selbst.
+        /// </summary>
+        private static KlimaVorschauErgebnis _vorschau;
 
         // =====================================================================
         // Die REGIONSVORSCHAU (Auftrag KL-3)
         // =====================================================================
 
         /// <summary>
-        /// Sagt vor dem Einlesen, welche TRY-Region der Standort trifft — über
-        /// DIESELBEN Nahtstellen wie der Import (Ortsauflösung und Bereichsabruf).
+        /// Sucht und LIEST vor dem Einlesen den Datensatz des Standorts (Auftrag KD-2,
+        /// alle drei Quellen) — über DIESELBEN Nahtstellen wie der Import (Ortsauflösung,
+        /// Bereichsabruf, PVGIS-Abruf samt Kopf). Das Ergebnis bleibt für den Import liegen.
         ///
         /// <para><b>Auch sie läuft nebenher</b>: Sie holt das
         /// Zentralverzeichnis des Pakets über das Netz, und in einer WebView ist der
@@ -276,11 +385,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static async Task<KlimaVorschauErgebnis> RegionErmitteln(KlimaImportAuftrag auftrag)
         {
-            return await Kulturweitergabe.StartenAsync(() => KlimaImportAblauf.RegionErmittelnAsync(
+            _vorschau = null;
+            KlimaVorschauErgebnis erg = await Kulturweitergabe.StartenAsync(() => KlimaImportAblauf.RegionErmittelnAsync(
                 auftrag,
                 ort => PVGIS_EPW_Downloader.GetCoordinatesAsync(ort),
                 CancellationToken.None,
-                Bereich));
+                Bereich,
+                (lon, lat, azimut) => PVGIS_EPW_Downloader.GetTmyAbruf(lon, lat, azimut)));
+            _vorschau = erg;
+            return erg;
         }
 
         // =====================================================================

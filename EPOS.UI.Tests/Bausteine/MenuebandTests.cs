@@ -7,6 +7,7 @@ using System.Threading;
 using Bunit;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Seiten;
+using WindowsFormsApplication1;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Xunit;
@@ -184,22 +185,46 @@ public class MenuebandTests : EposBunitContext
         // GEBAEUDESIMULATION G3 (Softwarearchitektur 3.1): „Gebaeude" fuehrt
         // hinter „Gebaeudetypen" die zwei Kataloge „Baustoffe" und
         // „Bauteilaufbauten" - zwei neue Wege. Also 63 Punkte und 49 Handlungen.
-        Assert.Equal(63, Punkte.Count);
+        //
+        // BETRIEBSKALENDER (Entscheidungsvorlage Modellgrenzen PW2, BW2): „Profile &
+        // Lastgaenge" fuehrt die Verwaltung der Betriebskalender - ein neuer Weg.
+        // Also 64 Punkte und 50 Handlungen.
+        //
+        // KATALOGABGLEICH (Entscheidungsvorlage Modellgrenzen KU1 Stufe 1): „Daten &
+        // Import" fuehrt hinter der Dublettenpruefung „Katalog aktualisieren…" - ein
+        // neuer Weg. Also 65 Punkte und 51 Handlungen.
+        //
+        // BRENNSTOFFE DES PROJEKTS (Anwenderentscheid 03.10.2026): „Kosten" fuehrt hinter den
+        // Energietraegern die Projektkopie des Brennstoffkatalogs - ein neuer Weg. Also 66 Punkte
+        // und 52 Handlungen.
+        // KU3-1: der Punkt „Kältemaschinen" neben der Wärmepumpe (66 -> 67, 52 -> 53).
+        // PVG (Schemaschritt 206): der Punkt „PV-Ganglinie" unter „Profile & Lastgänge" (67 -> 68, 53 -> 54).
+        // E119: der Import für Kälteanlagen unter „Daten & Import" (68 -> 69, 54 -> 55).
+        // K-C: der Import der Kältemaschinen dahinter (69 -> 70, 55 -> 56).
+        // Administration und Support, Stufe 1: der Kopf „Entwicklung" mit sieben handelnden
+        // Punkten, nur im Entwicklermodus sichtbar (70 -> 78, 56 -> 63). Die Zahlen hier gelten
+        // fuer den VOLLSTAENDIGEN Baum Eintraege; den Zuschnitt je Stufe pruefen die Faelle
+        // zu Menuetabelle.Sichtbar weiter unten und EntwicklerbereicheWacheTests.
+        // Administration und Support, Stufe 2: „Fernwartung…" unter Hilfe (78 -> 79, 63 -> 64).
+        // KM4-E3-c: die Verwaltung „Kältemittel…" unter „Daten & Import" (79 -> 80, 64 -> 65).
+        // K-F5a: + „Rückkühlwerke…" unter „Daten & Import" (82 -> 83, 67 -> 68).
+        Assert.Equal(83, Punkte.Count);                 // K5b: + „Kältebedarf“; BK-3: + „Bauteilkatalog einlesen…“
 
         // Sechs Trenner standen im Designer, zwei haengten BaueVariantenMenue
         // und InitKiHilfe programmatisch ein. W16c-E-2 bringt keinen neuen.
         // MN-1 bringt FUENF: vier in der obersten Ebene des Kopfes
         // "Administration" (Ort | Anlagen | Kosten | Daten & Import |
         // Einstellungen) und einen in "Daten & Import" vor der
-        // Dublettenpruefung. Also 8 + 5 = 13.
-        Assert.Equal(13, Menuetabelle.Alle.Count(p => p.Trenner));
+        // Dublettenpruefung. Also 8 + 5 = 13. Der Kopf „Entwicklung" bringt zwei (15).
+        Assert.Equal(15, Menuetabelle.Alle.Count(p => p.Trenner));
 
         // VIER Koepfe der obersten Ebene: Projekt, Administration, Hilfe,
         // Sprache. Im Bestand waren es fuenf (menuToolbar.Items.AddRange =
         // Projekt, Administration, Hilfe, Deutsch, Englisch); die zwei
         // Sprachpunkte sind mit W16c-E-2 unter EINEN Kopf gewandert.
-        Assert.Equal(4, Menuetabelle.Eintraege.Count);
-        Assert.Equal(new[] { "Projekte", "Administration", "Help", "Sprache" },
+        // Der vollstaendige Baum fuehrt dazu den Kopf „Entwicklung" vor „Sprache" (fuenf).
+        Assert.Equal(5, Menuetabelle.Eintraege.Count);
+        Assert.Equal(new[] { "Projekte", "Administration", "Help", "MenuItem_Entwicklung", "Sprache" },
                      Menuetabelle.Eintraege.Select(p => p.Name).ToArray());
     }
 
@@ -279,6 +304,8 @@ public class MenuebandTests : EposBunitContext
             "MenuItem_Kessel",
             "MenuItem_BHKW",
             "MenuItem_WP",
+            // KU3-1: die Kaeltemaschinen neben der Waermepumpe.
+            "MenuItem_Kaeltemaschinen",
             "MenuItem_Solarkollektoren",
         }, Kinder(wbund));
 
@@ -289,7 +316,7 @@ public class MenuebandTests : EposBunitContext
     }
 
     [Fact]
-    public void Die_Unterrubrik_Profile_und_Lastgaenge_fuehrt_genau_drei_Punkte_in_dieser_Reihenfolge()
+    public void Die_Unterrubrik_Profile_und_Lastgaenge_fuehrt_genau_vier_Punkte_in_dieser_Reihenfolge()
     {
         // "Erstelle in 'Waermebedarf & Heizung' Unterrubrik 'Profile &
         // Lastgaenge'; verschiebe in diese Rubrik: 'Waermebedarf Lastgang',
@@ -310,7 +337,13 @@ public class MenuebandTests : EposBunitContext
         {
             "MenuItem_WaermebedarfExtern",
             "MenuItem_Prozesswaerme",
+            // K5b (Konzept Kaeltebedarf 3.3): die Kaeltebedarfsprofile neben der Prozesswaerme.
+            "MenuItem_Kaeltebedarf",
             "MenuItem_SolThermGanglinie",
+            // PVG (Schemaschritt 206): der Katalog der PV-Ganglinien neben dem der Solarthermie.
+            "MenuItem_PvGanglinie",
+            // PW2/BW2: die Betriebskalender der Bedarfsprofile.
+            "MenuItem_Betriebskalender",
         }, Kinder(rubrik));
     }
 
@@ -422,6 +455,10 @@ public class MenuebandTests : EposBunitContext
             // Photovoltaik, Stromspeicher.
             "MenuItem_Import_Heizkessel",
             "MeniItem_VDI3805",
+            // E119: der Import für Kälteanlagen gleich hinter dem Wärmepumpenimport.
+            "MeniItem_VDI3805_Kaelte",
+            // K-C: der Import der Kältemaschinen gleich dahinter.
+            "MenuItem_Import_Kaeltemaschinen",
             "MenuItem_ST_Import",
             "MenuItem_PufferSp_VDI3805",
             "MenuItem_PV_Import_Gruppe",
@@ -430,7 +467,13 @@ public class MenuebandTests : EposBunitContext
             "MenuItem_SP_Import",
             // MN-1: Trennstrich, danach die Dublettenpruefung.
             "MenuItem_TrennerImportDubletten",
+            // KM4-E3-c: die Verwaltung der Kältemittel vor der Pflege der eingelesenen Kataloge.
+            "MenuItem_Kaeltemittel",
+            // K-F5a: die Verwaltung der Rückkühlwerke gleich hinter den Kältemitteln.
+            "MenuItem_Rueckkuehlwerk",
             "MenuItem_KatalogDubletten",
+            // KU1 Stufe 1: der Abgleich mit dem Katalogpaket, hinter der Dublettenpruefung.
+            "MenuItem_Katalogabgleich",
         }, Kinder(daten));
 
         Menuepunkt knoten = daten.Untereintraege.Single(p => p.Name == "MenuItem_PV_Import_Gruppe");
@@ -560,7 +603,7 @@ public class MenuebandTests : EposBunitContext
         // der Punkt kam erst nach einem zweiten Klick.
         Menuepunkt? gemeldet = null;
         var cut = Render<Menueband>(p => p
-            .Add(x => x.Eintraege, Menuetabelle.Eintraege)
+            .Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender))
             .Add(x => x.Gewaehlt, (Menuepunkt m) => gemeldet = m));
 
         cut.Find("#menue-Administration").Click();
@@ -603,10 +646,12 @@ public class MenuebandTests : EposBunitContext
         // "Photovoltaik" - und mit der Katalogreihenfolge der Importe ist er
         // jetzt der LETZTE von ihnen; danach kommen nur noch Trennstrich und
         // Dublettenpruefung.
+        // E119 schiebt den Import fuer Kaelteanlagen hinter den Waermepumpenimport -
+        // alle folgenden Stellen ruecken um eins; K-C mit dem Import der Kaeltemaschinen noch einmal.
         string[] kinder = Kinder(daten);
-        Assert.Equal("MenuItem_PV_Import_Gruppe", kinder[4]);
-        Assert.Equal("MenuItem_SP_Import", kinder[5]);
-        Assert.Equal("MenuItem_TrennerImportDubletten", kinder[6]);
+        Assert.Equal("MenuItem_PV_Import_Gruppe", kinder[6]);
+        Assert.Equal("MenuItem_SP_Import", kinder[7]);
+        Assert.Equal("MenuItem_TrennerImportDubletten", kinder[8]);
 
         // Und es gibt ihn GENAU EINMAL - der Katalog "Stromspeicher" steht
         // schon unter "Strombedarf & Speicher", sein IMPORT nur hier.
@@ -654,7 +699,7 @@ public class MenuebandTests : EposBunitContext
         // in den DOM.
         Menuepunkt? gemeldet = null;
         var cut = Render<Menueband>(p => p
-            .Add(x => x.Eintraege, Menuetabelle.Eintraege)
+            .Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender))
             .Add(x => x.Gewaehlt, (Menuepunkt m) => gemeldet = m));
 
         cut.Find("#menue-Administration").Click();
@@ -688,7 +733,7 @@ public class MenuebandTests : EposBunitContext
         // eine Ebene hoeher.
         Menuepunkt? gemeldet = null;
         var cut = Render<Menueband>(p => p
-            .Add(x => x.Eintraege, Menuetabelle.Eintraege)
+            .Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender))
             .Add(x => x.Gewaehlt, (Menuepunkt m) => gemeldet = m));
 
         cut.Find("#menue-Administration").Click();
@@ -720,7 +765,7 @@ public class MenuebandTests : EposBunitContext
         // Die dritte Stufe muss auch mit der TASTATUR aufgehen: → oeffnet das
         // Untermenue des markierten Punktes, ← schliesst GENAU eine Ebene
         // (Nachweis N4 / Befund W16c-B13).
-        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Eintraege));
+        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender)));
         var band = cut.Find(".epos-menueband");
 
         band.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });   // Administration
@@ -849,6 +894,10 @@ public class MenuebandTests : EposBunitContext
             // Kataloge der Baustoffe und der Bauteilaufbauten.
             Seitenschluessel.BaustoffKatalog,
             Seitenschluessel.BauteilaufbauKatalog,
+            // BK-3: „Bauteilkatalog einlesen…" unter „Gebaeude" - ein neuer Weg.
+            Seitenschluessel.BauteilkatalogImport,
+            // PW2/BW2: die Betriebskalender der Bedarfsprofile - ein neuer Weg.
+            Seitenschluessel.Betriebskalender,
             Seitenschluessel.BhkwAdmin,
             Seitenschluessel.BrauchwasserAdmin,
             // Zapfprofilgenerator 5.4: das NEUE Ziel - der Katalog der
@@ -859,8 +908,16 @@ public class MenuebandTests : EposBunitContext
             Seitenschluessel.GebaeudeAdmin,
             Seitenschluessel.GebaeudetypenAdmin,
             Seitenschluessel.Gesetzeskatalog,
+            // KU3-1: das NEUE Ziel neben der Waermepumpe - die Kaeltemaschinen.
+            Seitenschluessel.KaeltemaschineKatalog,
+            // KM4-E3-c: das NEUE Ziel „Kältemittel…" unter „Daten & Import".
+            Seitenschluessel.Kaeltemittel,
+            // K-F5a: das NEUE Ziel „Rückkühlwerke…" unter „Daten & Import".
+            Seitenschluessel.Rueckkuehlwerk,
             Seitenschluessel.HeizkesselAdmin,
             Seitenschluessel.HeizkesselImport,
+            // KU1 Stufe 1: das NEUE Ziel „Katalog aktualisieren…".
+            Seitenschluessel.Katalogabgleich,
             Seitenschluessel.KatalogDubletten,
             Seitenschluessel.Klimadaten,
             Seitenschluessel.Kostenverwaltung,
@@ -869,12 +926,18 @@ public class MenuebandTests : EposBunitContext
             // "Kostenverwaltung". Kein aelteres Ziel ist entfallen.
             Seitenschluessel.NutzungsdauerVerwaltung,
             Seitenschluessel.PeakShaving,
+            // Anwenderentscheid 03.10.2026: das NEUE Ziel „Brennstoffe des Projekts…".
+            Seitenschluessel.ProjektBrennstoffe,
             Seitenschluessel.ProzesswaermeAdmin,
+            // K5b (Konzept Kaeltebedarf 3.3): das NEUE Ziel „Kältebedarf" neben der Prozesswaerme.
+            Seitenschluessel.KaeltebedarfAdmin,
             Seitenschluessel.PufferSpAdmin,
             Seitenschluessel.PufferSpImport,
             Seitenschluessel.PvAdmin,
             Seitenschluessel.PvImport,
             Seitenschluessel.SolarganglinieAdmin,
+            // PVG (Schemaschritt 206): der Katalog der PV-Ganglinien.
+            Seitenschluessel.PvGanglinieAdmin,
             Seitenschluessel.SolarkollektorenAdmin,
             Seitenschluessel.SolarkollektorenImport,
             Seitenschluessel.StromganglinieAdmin,
@@ -891,6 +954,10 @@ public class MenuebandTests : EposBunitContext
             Seitenschluessel.WechselrichterImport,
             Seitenschluessel.WpAdministration,
             Seitenschluessel.WpImport,
+            // E119: das NEUE Ziel „Import Kälteanlagen VDI 3805".
+            Seitenschluessel.WpKaelteImport,
+            // K-C: das NEUE Ziel „Import Kältemaschinen (CSV, Copper)…".
+            Seitenschluessel.KaeltemaschineImport,
         }.OrderBy(z => z, StringComparer.Ordinal).ToArray(),
                      ziele.OrderBy(z => z, StringComparer.Ordinal).ToArray());
     }
@@ -957,6 +1024,9 @@ public class MenuebandTests : EposBunitContext
         {
             "MenuItem_Kostenvorlagen",
             "MenuItem_Energietraeger",
+            // Anwenderentscheid 03.10.2026: die Projektkopie des Brennstoffkatalogs hinter den
+            // Energietraegern; die gesetzlichen Parameter bleiben das letzte Blatt.
+            "MenuItem_ProjektBrennstoffe",
             "MenuItem_Nutzungsdauer",
             "MenuItem_Gesetzesparameter",
         }, Kinder(kosten));
@@ -988,14 +1058,27 @@ public class MenuebandTests : EposBunitContext
         Menuepunkt daten = Rubrik("MenuItem_DatImport");
         IReadOnlyList<Menuepunkt> kinder = daten.Untereintraege;
 
-        Assert.Equal("MenuItem_KatalogDubletten", kinder[^1].Name);
-        Assert.True(kinder[^2].Trenner);
-        Assert.Equal(Seitenschluessel.KatalogDubletten, kinder[^1].Ziel);
-        Assert.Equal("ADM_DUBLETTEN_MENUE", kinder[^1].TextSchluessel);
-        Assert.Equal("", kinder[^1].Bild);
+        // KU1 Stufe 1: danach nur noch „Katalog aktualisieren…" - dieselbe Rubrik, die
+        // Pflege der eingelesenen Kataloge.
+        Assert.Equal("MenuItem_Katalogabgleich", kinder[^1].Name);
+        Assert.Equal(Seitenschluessel.Katalogabgleich, kinder[^1].Ziel);
+        Assert.Equal("KABG_MENUE", kinder[^1].TextSchluessel);
+        Assert.Equal("MenuItem_KatalogDubletten", kinder[^2].Name);
+        // K-F5a: davor die Verwaltung der Rückkühlwerke, KM4-E3-c: davor die der Kältemittel, dann der Trennstrich.
+        Assert.Equal("MenuItem_Rueckkuehlwerk", kinder[^3].Name);
+        Assert.Equal(Seitenschluessel.Rueckkuehlwerk, kinder[^3].Ziel);
+        Assert.Equal("RKW_MENUE", kinder[^3].TextSchluessel);
+        Assert.Equal("MenuItem_Kaeltemittel", kinder[^4].Name);
+        Assert.Equal(Seitenschluessel.Kaeltemittel, kinder[^4].Ziel);
+        Assert.Equal("KMT_MENUE", kinder[^4].TextSchluessel);
+        Assert.True(kinder[^5].Trenner);
+        Assert.Equal(Seitenschluessel.KatalogDubletten, kinder[^2].Ziel);
+        Assert.Equal("ADM_DUBLETTEN_MENUE", kinder[^2].TextSchluessel);
+        Assert.Equal("", kinder[^2].Bild);
 
-        // Sechs Importe davor, in der Reihenfolge der Kataloge.
-        Assert.Equal(6, kinder.Take(kinder.Count - 2).Count());
+        // Acht Importe davor, in der Reihenfolge der Kataloge (E119: der Import fuer
+        // Kaelteanlagen hinter dem Waermepumpenimport, K-C: der Kaeltemaschinenimport dahinter).
+        Assert.Equal(8, kinder.Take(kinder.Count - 5).Count());
 
         // Und nicht mehr in der obersten Ebene des Kopfes.
         Assert.DoesNotContain("MenuItem_KatalogDubletten", Kinder(Administration));
@@ -1092,7 +1175,7 @@ public class MenuebandTests : EposBunitContext
         // Derselbe Weg am gezeichneten Band: Administration ▸ Waermebedarf &
         // Heizung ▸ Profile & Lastgaenge. Erst dort stehen die drei
         // Zeitreihen im DOM.
-        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Eintraege));
+        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender)));
 
         cut.Find("#menue-Administration").Click();
         cut.Find("#menue-MenuItem_WBundHeizung").Click();
@@ -1213,18 +1296,81 @@ public class MenuebandTests : EposBunitContext
         //
         // Die Gebaeudesimulation G3 legt zwei echte Wege an - die Kataloge der
         // Baustoffe und der Bauteilaufbauten unter „Gebaeude" (47 -> 49).
-        Assert.Equal(14, Punkte.Count(p => p.Klappt));
-        Assert.Equal(49, Punkte.Count(p => !p.Klappt));
+        //
+        // Die Betriebskalender (PW2/BW2) legen unter „Profile & Lastgaenge" einen
+        // echten Weg an (49 -> 50).
+        //
+        // „Katalog aktualisieren…" (KU1 Stufe 1) ist ein echter Weg (50 -> 51).
+        Assert.Equal(15, Punkte.Count(p => p.Klappt));
+        //
+        // „Brennstoffe des Projekts…" (Anwenderentscheid 03.10.2026) ist ein echter Weg (51 -> 52).
+        //
+        // „PV-Ganglinie" (PVG, Schemaschritt 206) ist ein echter Weg (53 -> 54).
+        //
+        // Der Import für Kälteanlagen (E119) ist ein echter Weg (54 -> 55).
+        //
+        // Der Import der Kältemaschinen (K-C) ist ein echter Weg (55 -> 56).
+        //
+        // Der Kopf „Entwicklung" (Administration und Support, Stufe 1) klappt auf (14 -> 15)
+        // und fuehrt sieben handelnde Punkte (56 -> 63).
+        //
+        // „Fernwartung…" (Administration und Support, Stufe 2) ist ein echter Weg (63 -> 64).
+        //
+        // Die Verwaltung der Kältemittel (KM4-E3-c) ist ein echter Weg (64 -> 65).
+        Assert.Equal(68, Punkte.Count(p => !p.Klappt)); // K-F5a: + „Rückkühlwerke…“; K5b: + „Kältebedarf“; BK-3: + „Bauteilkatalog einlesen…“
+    }
+
+    // =====================================================================
+    //  Zuschnitt je Freigabestufe (Administration und Support, Stufe 1)
+    // =====================================================================
+
+    [Fact]
+    public void Der_Baum_des_Anwenders_ist_der_Bestand_ohne_den_Kopf_Entwicklung()
+    {
+        List<Menuepunkt> anwender = Flach(Menuetabelle.Sichtbar(Freigabestufe.Anwender)).ToList();
+
+        // 80 - 8 = 72 Punkte, 15 - 2 = 13 Trenner, 65 - 7 = 58 handelnde: der Stand vor Stufe 1
+        // samt „Fernwartung…" (Stufe 2, fuer den Anwender sichtbar) und „Kältemittel…" (KM4-E3-c).
+        Assert.Equal(75, anwender.Count(p => !p.Trenner)); // K-F5a: + „Rückkühlwerke…“; K5b: + „Kältebedarf“; BK-3: + „Bauteilkatalog einlesen…“
+        Assert.Equal(13, anwender.Count(p => p.Trenner));
+        Assert.Equal(61, anwender.Count(p => !p.Trenner && !p.Klappt)); // K-F5a: + „Rückkühlwerke…“; K5b: + „Kältebedarf“; BK-3: + „Bauteilkatalog einlesen…“
+        Assert.Equal(new[] { "Projekte", "Administration", "Help", "Sprache" },
+                     Menuetabelle.Sichtbar(Freigabestufe.Anwender).Select(p => p.Name).ToArray());
+        Assert.All(anwender, p => Assert.Equal(Freigabestufe.Anwender, p.Stufe));
     }
 
     [Fact]
-    public void Nur_der_PV_Import_traegt_ein_Argument()
+    public void Der_Baum_des_Entwicklers_ist_der_vollstaendige_Baum()
     {
+        List<Menuepunkt> entwickler = Flach(Menuetabelle.Sichtbar(Freigabestufe.Entwickler)).ToList();
+        List<Menuepunkt> alle = Menuetabelle.Alle.ToList();
+
+        Assert.Equal(alle.Select(p => p.Name), entwickler.Select(p => p.Name));
+        Assert.Equal(83, entwickler.Count(p => !p.Trenner)); // K-F5a: + „Rückkühlwerke…“; K5b: + „Kältebedarf“; BK-3: + „Bauteilkatalog einlesen…“
+        Assert.Equal(15, entwickler.Count(p => p.Trenner));
+    }
+
+    [Fact]
+    public void Sichtbar_bildet_den_Zuschnitt_je_Stufe_einmal()
+    {
+        Assert.Same(Menuetabelle.Sichtbar(Freigabestufe.Anwender), Menuetabelle.Sichtbar(Freigabestufe.Anwender));
+        Assert.Same(Menuetabelle.Sichtbar(Freigabestufe.Entwickler), Menuetabelle.Sichtbar(Freigabestufe.Entwickler));
+        // Eintraege bleibt der vollstaendige Baum.
+        Assert.Contains(Menuetabelle.Eintraege, p => p.Name == "MenuItem_Entwicklung");
+    }
+
+    [Fact]
+    public void Im_Baum_des_Anwenders_traegt_nur_der_PV_Import_ein_Argument()
+    {
+        // Administration und Support, Stufe 1: Der Entwicklerpunkt „Auslieferungsstand
+        // wiederherstellen…" traegt „wiederherstellen" zum Katalogabgleich - er steht nur im
+        // Baum des Entwicklers (EntwicklerbereicheWacheTests). Im Baum des Anwenders gilt:
         // Masken.PvImport ist der einzige Schluessel des Bestands mit einer
         // Zusatzangabe ("CEC" bzw. "PAN"). Der zweite Menuepunkt dafuer
         // (MenuItem_PV_Import_PAN) stand in KEINEM Designer - sein Handler war
         // tot (Befund W16-B24) und faellt mit W16c.3.
-        Menuepunkt[] mitArgument = Punkte.Where(p => p.Argument.Length > 0).ToArray();
+        Menuepunkt[] mitArgument = Flach(Menuetabelle.Sichtbar(Freigabestufe.Anwender))
+            .Where(p => !p.Trenner && p.Argument.Length > 0).ToArray();
 
         Assert.Single(mitArgument);
         Assert.Equal("MenuItem_PV_Import_CEC", mitArgument[0].Name);
@@ -1314,7 +1460,7 @@ public class MenuebandTests : EposBunitContext
     [Fact]
     public void Das_Band_zeigt_die_vier_Punkte_der_obersten_Ebene()
     {
-        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Eintraege));
+        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender)));
 
         var knoepfe = cut.FindAll(".epos-menueband > .epos-menueband-punkt > .epos-menueband-knopf, " +
                                   ".epos-menueband > .epos-menueband-knopf");
@@ -1340,7 +1486,7 @@ public class MenuebandTests : EposBunitContext
         // ANWENDERWUNSCH 05.09.2026 (W16c-E-4): "Sprache soll oben rechts sein"
         // - so wie im Bestand die zwei Sprachpunkte, die als letzte Eintraege
         // des MenuStrip rechtsbuendig am Rand sassen.
-        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Eintraege));
+        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender)));
 
         // Genau EIN Kopf traegt das Kennzeichen, und es ist der letzte.
         var rechts = cut.FindAll(".epos-menueband > .epos-menueband-punkt--rechts");
@@ -1381,7 +1527,7 @@ public class MenuebandTests : EposBunitContext
     [Fact]
     public void Ein_Klick_auf_einen_Kopf_klappt_sein_Untermenue_auf()
     {
-        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Eintraege));
+        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender)));
 
         Assert.Empty(cut.FindAll(".epos-menueband-klappe"));
 
@@ -1401,7 +1547,7 @@ public class MenuebandTests : EposBunitContext
     {
         Menuepunkt? gemeldet = null;
         var cut = Render<Menueband>(p => p
-            .Add(x => x.Eintraege, Menuetabelle.Eintraege)
+            .Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender))
             .Add(x => x.Gewaehlt, (Menuepunkt m) => gemeldet = m));
 
         cut.Find("#menue-Projekte").Click();
@@ -1418,7 +1564,7 @@ public class MenuebandTests : EposBunitContext
     [Fact]
     public void Ein_Untermenue_der_dritten_Ebene_klappt_seitlich_auf()
     {
-        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Eintraege));
+        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender)));
 
         cut.Find("#menue-Administration").Click();
         cut.Find("#menue-MenuItem_Energiesysteme").Click();
@@ -1435,7 +1581,7 @@ public class MenuebandTests : EposBunitContext
         // ▸ Photovoltaik ▸ PV Module. Das Band kann das seit W16c-E-6
         // (Muster "Profile & Lastgaenge") - der Zaehler ist der Nachweis, dass
         // es die Klappen SCHACHTELT und nicht ersetzt.
-        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Eintraege));
+        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender)));
 
         cut.Find("#menue-Administration").Click();
         cut.Find("#menue-MenuItem_Energiesysteme").Click();
@@ -1470,7 +1616,7 @@ public class MenuebandTests : EposBunitContext
         // HauptfensterHuelle.SpracheSetzen das Programm neu startet.
         Menuepunkt? gemeldet = null;
         var cut = Render<Menueband>(p => p
-            .Add(x => x.Eintraege, Menuetabelle.Eintraege)
+            .Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender))
             .Add(x => x.Gewaehlt, (Menuepunkt m) => gemeldet = m));
 
         // Zugeklappt gibt es die Sprachpunkte nicht.
@@ -1492,7 +1638,7 @@ public class MenuebandTests : EposBunitContext
     {
         Menuepunkt? gemeldet = null;
         var cut = Render<Menueband>(p => p
-            .Add(x => x.Eintraege, Menuetabelle.Eintraege)
+            .Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender))
             .Add(x => x.Gewaehlt, (Menuepunkt m) => gemeldet = m));
 
         cut.Find("#menue-Sprache").Click();
@@ -1509,7 +1655,7 @@ public class MenuebandTests : EposBunitContext
         // Die Tastatur bedient das Band unveraendert (A-1); nur sind es seit
         // W16c-E-2 VIER Koepfe statt fuenf, und der letzte klappt auf, statt zu
         // handeln. Nach links vom ersten ist der letzte - das ist "Sprache".
-        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Eintraege));
+        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender)));
         var band = cut.Find(".epos-menueband");
 
         band.KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "ArrowLeft" });
@@ -1532,7 +1678,7 @@ public class MenuebandTests : EposBunitContext
     [Fact]
     public void Escape_klappt_das_offene_Menue_zu()
     {
-        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Eintraege));
+        var cut = Render<Menueband>(p => p.Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender)));
 
         cut.Find("#menue-Administration").Click();
         Assert.Single(cut.FindAll(".epos-menueband-klappe"));
@@ -1908,5 +2054,156 @@ public class MenuebandTests : EposBunitContext
 
         Assert.Contains("position: relative", band, StringComparison.Ordinal);
         Assert.Contains("z-index: 41", band, StringComparison.Ordinal);
+    }
+
+    // =====================================================================
+    //  ENTSCHEID E119 (10.10.2026) — der Import fuer Kaelteanlagen
+    // =====================================================================
+
+    [Fact]
+    public void Der_Import_fuer_Kaelteanlagen_steht_hinter_dem_Waermepumpenimport()
+    {
+        // WORTLAUT des Anwenders: "Fuer Kaelteanlagen gibt es keine VDI-3805-Daten: Aendere den
+        // VDI-3805-Import im Administrationsmenue fuer Kaelteanlagen so, dass nur
+        // kaelteerzeugungsfaehige Waermepumpen aus VDI-3805-Dateien importiert werden koennen."
+        // Der Punkt HANDELT unmittelbar, fuehrt kein Untermenue und kein Argument - er hat sein
+        // eigenes Ziel, das die Huelle auf die Auspraegung WaermepumpeKuehlung abbildet.
+        Menuepunkt daten = Rubrik("MenuItem_DatImport");
+        string[] kinder = Kinder(daten);
+        int wp = Array.IndexOf(kinder, "MeniItem_VDI3805");
+        Assert.Equal("MeniItem_VDI3805_Kaelte", kinder[wp + 1]);
+
+        Menuepunkt punkt = daten.Untereintraege.Single(p => p.Name == "MeniItem_VDI3805_Kaelte");
+        Assert.False(punkt.Klappt);
+        Assert.Equal(Seitenschluessel.WpKaelteImport, punkt.Ziel);
+        Assert.Equal("MENU_VDI3805_KAELTE", punkt.TextSchluessel);
+        Assert.Equal("", punkt.Argument);
+        Assert.Equal("", punkt.Bild);
+        Assert.Single(Menuetabelle.Alle, p => p.Ziel == Seitenschluessel.WpKaelteImport);
+        Assert.NotEqual(Seitenschluessel.WpImport, Seitenschluessel.WpKaelteImport);
+    }
+
+    // =====================================================================
+    //  K-C (E118, 10.10.2026) — der Import der Kaeltemaschinen
+    // =====================================================================
+
+    [Fact]
+    public void Der_Import_der_Kaeltemaschinen_steht_hinter_dem_Import_fuer_Kaelteanlagen()
+    {
+        // Stufe K-C der Konzeptpruefung Kaelteanlagen: Der Menuepunkt oeffnet dieselbe Importart wie der
+        // Knopf "Import..." im Katalog der Kaeltemaschinen - mit eigenem Ziel, ohne Argument.
+        Menuepunkt daten = Rubrik("MenuItem_DatImport");
+        string[] kinder = Kinder(daten);
+        int kaelte = Array.IndexOf(kinder, "MeniItem_VDI3805_Kaelte");
+        Assert.Equal("MenuItem_Import_Kaeltemaschinen", kinder[kaelte + 1]);
+
+        Menuepunkt punkt = daten.Untereintraege.Single(p => p.Name == "MenuItem_Import_Kaeltemaschinen");
+        Assert.False(punkt.Klappt);
+        Assert.Equal(Seitenschluessel.KaeltemaschineImport, punkt.Ziel);
+        Assert.Equal("MENU_IMPORT_KAELTEMASCHINEN", punkt.TextSchluessel);
+        Assert.Equal("", punkt.Argument);
+        Assert.Equal("", punkt.Bild);
+        Assert.Single(Menuetabelle.Alle, p => p.Ziel == Seitenschluessel.KaeltemaschineImport);
+        Assert.NotEqual(Seitenschluessel.WpKaelteImport, Seitenschluessel.KaeltemaschineImport);
+        // Der Schluessel ist der Hilfeschluessel des Importdialogs dieser Art ("Form_Kaeltemaschine_einlesen").
+        Assert.Equal("Form_Kaeltemaschine_einlesen", Seitenschluessel.KaeltemaschineImport);
+    }
+    // =====================================================================
+    //  Fernwartung und Menuesperre (Administration und Support, Stufe 2)
+    // =====================================================================
+
+    private const string GRUND = "Gesperrt zur Probe.";
+
+    private static IReadOnlyList<Menuepunkt> MitFernwartungGesperrt() =>
+        Menuetabelle.Sichtbar(Freigabestufe.Anwender,
+                              ziel => ziel == Seitenschluessel.Fernwartung ? GRUND : "");
+
+    [Fact]
+    public void Hilfe_fuehrt_Fernwartung_nach_Dokumentation_und_vor_dem_Assistenten()
+    {
+        Menuepunkt hilfe = Menuetabelle.Eintraege.Single(p => p.Name == "Help");
+        string[] namen = hilfe.Untereintraege.Select(p => p.Name).ToArray();
+
+        Assert.Equal(new[]
+        {
+            "MenuItem_Version", "toolStripSeparator7", "MenuItem_Lizenz", "MenuItem_Dokumentation",
+            "MenuItem_Fernwartung", "MenuItem_TrennerKiHilfe", "MenuItem_KiAssistent",
+        }, namen);
+
+        Menuepunkt fw = hilfe.Untereintraege.Single(p => p.Name == "MenuItem_Fernwartung");
+        Assert.Equal("MENU_FERNWARTUNG", fw.TextSchluessel);
+        Assert.Equal(Seitenschluessel.Fernwartung, fw.Ziel);
+        Assert.Equal(Freigabestufe.Anwender, fw.Stufe);
+        Assert.False(fw.Gesperrt);
+        Assert.Contains(Seitenschluessel.Fernwartung, Seitenschluessel.Alle);
+    }
+
+    [Fact]
+    public void Sichtbar_mit_Sperrgrund_setzt_den_Grund_nur_am_Ziel_und_laesst_den_Bestand_frei()
+    {
+        IReadOnlyList<Menuepunkt> baum = MitFernwartungGesperrt();
+        List<Menuepunkt> flach = Flach(baum).ToList();
+
+        Menuepunkt fw = flach.Single(p => p.Name == "MenuItem_Fernwartung");
+        Assert.True(fw.Gesperrt);
+        Assert.Equal(GRUND, fw.Sperrgrund);
+        Assert.Single(flach, p => p.Gesperrt);
+
+        // Gleiche Gestalt wie der Zuschnitt ohne Gruende; nicht zwischengespeichert.
+        Assert.Equal(Flach(Menuetabelle.Sichtbar(Freigabestufe.Anwender)).Select(p => p.Name),
+                     flach.Select(p => p.Name));
+        Assert.NotSame(baum, MitFernwartungGesperrt());
+
+        // Der vollstaendige Baum und der zwischengespeicherte Zuschnitt bleiben frei.
+        Assert.DoesNotContain(Menuetabelle.Alle, p => p.Gesperrt);
+        Assert.DoesNotContain(Flach(Menuetabelle.Sichtbar(Freigabestufe.Anwender)), p => p.Gesperrt);
+    }
+
+    [Fact]
+    public void Ein_gesperrter_Punkt_wird_mit_Grund_gezeichnet_und_meldet_keinen_Klick()
+    {
+        Menuepunkt? gemeldet = null;
+        var cut = Render<Menueband>(p => p
+            .Add(x => x.Eintraege, MitFernwartungGesperrt())
+            .Add(x => x.Gewaehlt, (Menuepunkt m) => gemeldet = m));
+
+        cut.Find("#menue-Help").Click();
+        var zeile = cut.Find("#menue-MenuItem_Fernwartung");
+
+        Assert.Contains("epos-menue-gesperrt", zeile.ClassList);
+        Assert.Equal("true", zeile.GetAttribute("aria-disabled"));
+        Assert.Equal(GRUND, zeile.GetAttribute("title"));
+
+        zeile.Click();
+        Assert.Null(gemeldet);
+
+        // Ein freier Nachbar meldet weiter.
+        Assert.Null(cut.Find("#menue-MenuItem_Dokumentation").GetAttribute("aria-disabled"));
+        cut.Find("#menue-MenuItem_Dokumentation").Click();
+        Assert.Equal(Seitenschluessel.Dokumentation, gemeldet!.Ziel);
+    }
+
+    [Fact]
+    public void Ein_freier_Fernwartungspunkt_meldet_sein_Ziel()
+    {
+        Menuepunkt? gemeldet = null;
+        var cut = Render<Menueband>(p => p
+            .Add(x => x.Eintraege, Menuetabelle.Sichtbar(Freigabestufe.Anwender, _ => ""))
+            .Add(x => x.Gewaehlt, (Menuepunkt m) => gemeldet = m));
+
+        cut.Find("#menue-Help").Click();
+        var zeile = cut.Find("#menue-MenuItem_Fernwartung");
+        Assert.DoesNotContain("epos-menue-gesperrt", zeile.ClassList);
+        zeile.Click();
+
+        Assert.Equal(Seitenschluessel.Fernwartung, gemeldet!.Ziel);
+    }
+
+    [Fact]
+    public void Das_Stilblatt_daempft_den_gesperrten_Punkt()
+    {
+        string css = Stilblatt();
+        Assert.Contains(".epos-menueband-zeile.epos-menue-gesperrt", css);
+        Assert.Contains("cursor: default", css);
     }
 }

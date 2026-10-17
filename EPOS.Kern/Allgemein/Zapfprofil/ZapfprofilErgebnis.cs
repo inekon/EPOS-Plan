@@ -25,6 +25,13 @@ namespace WindowsFormsApplication1
         /// <summary>Die Ablehnung einer Zone aus einem fehlenden Parameter — samt Satz.</summary>
         internal static ZapfAblehnung Aus(string zone, ParametersatzException ex)
             => new ZapfAblehnung(zone, ZapfEingabefehler.ParameterFehlt, ex.Satz);
+
+        /// <summary>
+        /// Die benannte Ausnahme zu dieser Ablehnung — für die Wurfstellen, die als Netz für
+        /// Unerwartetes bleiben: Sie werfen aus DERSELBEN Regel, die die Vorprüfung ohne Wurf liest
+        /// (<see cref="Zonenvorpruefung"/>).
+        /// </summary>
+        internal ZapfprofilEingabeException Ausnahme() => new ZapfprofilEingabeException(Grund, Zone, Satz);
     }
 
     /// <summary>
@@ -69,7 +76,7 @@ namespace WindowsFormsApplication1
         public IReadOnlyList<ZapfTagtyp> Kalender { get; init; }
 
         /// <summary>
-        /// Die Schätzhilfe des Tagesbedarfs der Zone (Stufe Erweitert, 5.3): Vorschlag des Katalogs
+        /// Die Schätzhilfe des Tagesbedarfs der Zone (Stufe Experte, 5.3): Vorschlag des Katalogs
         /// (Mengengerüst vor der Kalibrierung), manueller Wert, angesetzter Wert, Rechenweg;
         /// <c>null</c> bei einer abgelehnten Zone.
         /// </summary>
@@ -189,7 +196,7 @@ namespace WindowsFormsApplication1
         public Zapfdauerlinie Dauerlinie { get; init; }
 
         /// <summary>
-        /// Die Schätzhilfe der Zirkulation (Stufe Erweitert, 5.3): Vorschlag der Methode, manueller
+        /// Die Schätzhilfe der Zirkulation (Stufe Experte, 5.3): Vorschlag der Methode, manueller
         /// Wert, angesetzte Leistung, Rechenweg; <c>null</c>, wenn die Zirkulation abgelehnt ist.
         /// </summary>
         public Schaetzhilfe SchaetzhilfeZirkulation { get; init; }

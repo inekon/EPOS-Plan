@@ -59,15 +59,16 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Gebaut_und_waehlbar_sind_nur_aus_und_AK1()
+        public void Gebaut_und_waehlbar_sind_aus_AK1_und_AK3()
         {
             Assert.Equal(new[] { DbWerte.ANLAGENKOPPLUNG_AUS, DbWerte.ANLAGENKOPPLUNG_AK1, DbWerte.ANLAGENKOPPLUNG_AK2, DbWerte.ANLAGENKOPPLUNG_AK3 },
                          Waermeuebergabevorgaben.Stufen);
             Assert.True(Waermeuebergabevorgaben.StufeGebaut(null));
             Assert.True(Waermeuebergabevorgaben.StufeGebaut(DbWerte.ANLAGENKOPPLUNG_AUS));
             Assert.True(Waermeuebergabevorgaben.StufeGebaut(DbWerte.ANLAGENKOPPLUNG_AK1));
+            // AK2 bleibt „AK1 mit Fahrplan" ohne eigenen Stufenwert (Entwurf AK3 Festlegung 1); AK3 ist wählbar (E102 Q-AK3-1).
             Assert.False(Waermeuebergabevorgaben.StufeGebaut(DbWerte.ANLAGENKOPPLUNG_AK2));
-            Assert.False(Waermeuebergabevorgaben.StufeGebaut(DbWerte.ANLAGENKOPPLUNG_AK3));
+            Assert.True(Waermeuebergabevorgaben.StufeGebaut(DbWerte.ANLAGENKOPPLUNG_AK3));
         }
 
         // =====================================================================
@@ -120,7 +121,9 @@ namespace EPOS.Kern.Tests
         {
             var nurProjekt = new HashSet<string>(StringComparer.Ordinal)
             {
-                "items", "ID_Projekt", "ID_Gebaeude", "Z_AuswahlWohnflaeche", "Einheit", "Jahresnutzungsgrad", "DezentralWarmwasser"
+                "items", "ID_Projekt", "ID_Gebaeude", "Z_AuswahlWohnflaeche", "Einheit", "Jahresnutzungsgrad", "DezentralWarmwasser",
+                // E59 (Festlegung 38): die manuelle Aufheizzeit gehört allein dem Projektgebäude, der Katalog führt sie nicht.
+                "Aufheizzeit_Manuell_H",
             };
             IReadOnlyList<string> uebertragen = UebergabeHerleitungsquelle.Uebertragen();
             foreach (FieldInfo f in typeof(ProjektGebaeudeModel).GetFields(BindingFlags.Public | BindingFlags.Instance))

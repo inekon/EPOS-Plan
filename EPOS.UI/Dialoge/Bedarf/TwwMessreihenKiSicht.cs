@@ -35,6 +35,7 @@ public sealed class TwwMessreihenKiSicht
     public Func<string>? ImportdatumLesen { get; init; }
     public Func<string>? GrundLesen { get; init; }
     public Func<string>? BerichtLesen { get; init; }
+    public Func<string>? VorschauLesen { get; init; }
 
     /// <summary>Die Zahl der eingespielten Messreihen des Projekts — Anzeige.</summary>
     public int Anzahl => AnzahlLesen?.Invoke() ?? 0;
@@ -71,4 +72,7 @@ public sealed class TwwMessreihenKiSicht
 
     /// <summary>Was die Prüfung der gewählten Datei ergeben hat — Anzeige; leer = keine Prüfung.</summary>
     public string Pruefbericht => BerichtLesen?.Invoke() ?? "";
+
+    /// <summary>Die Kennzahlenzeile aus „Format und Vorschau“ (gelesene Tage, gezeigter Tag); leer ohne Datei.</summary>
+    public string Vorschau => VorschauLesen?.Invoke() ?? "";
 }

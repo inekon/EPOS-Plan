@@ -51,9 +51,12 @@ public partial class ZapfprofilDialogStufenTests
             .Add(x => x.Geschlossen, e => geschlossen?.Invoke(e)));
     }
 
+    /// <summary>ZC5: Der Typtagweg ist der dritte Eintrag der Wahl „Rechenweg der Jahresreihe" in der Methode „Jahresreihe".</summary>
     private static IElement Typtagschalter(IRenderedComponent<ZapfprofilDialog> cut)
-        => cut.FindAll("label.epos-schalter").First(l => l.TextContent.Trim() == "Typtage nach VDI 4655 rechnen")
+        => cut.FindAll(".epos-zapfprofil-karte--jahresreihe label.epos-option").First(l => l.TextContent.Trim() == "Typtage VDI 4655")
               .QuerySelector("input")!;
+
+    private static void TyptageWaehlen(IRenderedComponent<ZapfprofilDialog> cut) => Typtagschalter(cut).Change("2");
 
     // =================================================================================
     // Die Gruppe steht erst in Experte, und ohne Typtage ist sie gesperrt
@@ -63,13 +66,10 @@ public partial class ZapfprofilDialogStufenTests
     public void Die_Wahl_des_Typtagwegs_steht_erst_in_der_Stufe_Experte()
     {
         var cut = AufbauenMitTyptagen(Typtagstand());
-        Assert.Empty(cut.FindAll("label.epos-schalter").Where(l => l.TextContent.Contains("Typtage")));
-
-        Stufe(cut, "Erweitert");
-        Assert.Empty(cut.FindAll("label.epos-schalter").Where(l => l.TextContent.Contains("Typtage")));
+        Assert.Empty(cut.FindAll("label.epos-option").Where(l => l.TextContent.Contains("Typtage")));
 
         Stufe(cut, "Experte");
-        Assert.Contains("Typtage nach VDI 4655", cut.Find(".epos-zapfprofil-typtagleiste").ParentElement!.TextContent);
+        Assert.Contains("Typtage VDI 4655", cut.Find(".epos-zapfprofil-typtagleiste").ParentElement!.TextContent);
         Assert.NotNull(Typtagschalter(cut));
     }
 
@@ -80,11 +80,14 @@ public partial class ZapfprofilDialogStufenTests
         Stufe(cut, "Experte");
 
         IElement schalter = Typtagschalter(cut);
-        Assert.True(schalter.HasAttribute("disabled"));
+        // Weich gesperrt: Der Eintrag nennt seinen Grund am Element (title), der Versuch wird gemeldet, nicht gewirkt.
+        Assert.Equal("true", schalter.GetAttribute("aria-disabled"));
+        Assert.Contains("nicht verfügbar", schalter.GetAttribute("title") ?? "");
         Assert.Contains("nicht verfügbar", cut.Find(".epos-zapfprofil-typtagleiste").ParentElement!.TextContent);
 
         // Der Versuch wirkt nicht - und die Wahlfelder erscheinen nicht.
-        schalter.Change(true);
+        TyptageWaehlen(cut);
+        Assert.False(cut.Instance.Eingabe.TyptageAktiv);
         Assert.Empty(cut.FindAll("label.epos-feld").Where(l => l.TextContent.StartsWith("Klimazone")));
     }
 
@@ -99,7 +102,7 @@ public partial class ZapfprofilDialogStufenTests
         var cut = AufbauenMitTyptagen(Typtagstand(zonen: 1), geschlossen: e => ergebnis = e);
         Stufe(cut, "Experte");
 
-        Typtagschalter(cut).Change(true);
+        TyptageWaehlen(cut);
 
         // Eine Zone und eine Gebäudeart gibt es nur einmal - sie werden vorbelegt.
         IElement zone = cut.FindAll("label.epos-feld").First(l => l.TextContent.StartsWith("Klimazone")).QuerySelector("select")!;
@@ -122,7 +125,7 @@ public partial class ZapfprofilDialogStufenTests
         var cut = AufbauenMitTyptagen(Typtagstand(), geschlossen: e => ergebnis = e);
         Stufe(cut, "Experte");
 
-        Typtagschalter(cut).Change(true);
+        TyptageWaehlen(cut);
         IElement zone = cut.FindAll("label.epos-feld").First(l => l.TextContent.StartsWith("Klimazone")).QuerySelector("select")!;
         Assert.Equal("", zone.GetAttribute("value"));
         Assert.Equal(3, zone.QuerySelectorAll("option").Length);         // Platzhalter, 3, 7
@@ -184,7 +187,7 @@ public partial class ZapfprofilDialogStufenTests
         };
         var cut = AufbauenMitTyptagen(stand, katalogstand: () => leer);
         Stufe(cut, "Experte");
-        Typtagschalter(cut).Change(true);
+        TyptageWaehlen(cut);
         Assert.True(cut.Instance.Eingabe.TyptageAktiv);
 
         Knopf(cut, "VDI-4655-Typtage…").Click();
@@ -194,7 +197,7 @@ public partial class ZapfprofilDialogStufenTests
         // ist der Weg nicht mehr verfügbar.
         cut.InvokeAsync(() => cut.FindComponent<TwwTyptagImportDialog>().Instance.Geschlossen.InvokeAsync(true));
         cut.WaitForAssertion(() => Assert.False(cut.Instance.Eingabe.TyptageAktiv));
-        Assert.True(Typtagschalter(cut).HasAttribute("disabled"));
+        Assert.Equal("true", Typtagschalter(cut).GetAttribute("aria-disabled"));
         Assert.Empty(cut.FindAll(".epos-tww-typtage"));
     }
 

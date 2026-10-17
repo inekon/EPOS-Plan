@@ -116,6 +116,18 @@ namespace ChartProben
             // Dienste.Einstellungen ist hier ohnehin die fluechtige Standardfassung.
             Farbpalette.Aktuell = Farbpalette.Vorgabe;
 
+            // Schalter --wiki <ordner>: schreibt nur die Wiki-Fassungen der Diagramme (sprechende Beschriftungen)
+            // und endet; keine Probe, keine Hashliste, die Standardausgabe bleibt unberuehrt.
+            string wiki = Argument(args, "--wiki");
+            if (wiki != null)
+            {
+                Directory.CreateDirectory(wiki);
+                BivalenzWikibild(wiki);
+                WikiZeitreihenbilder(wiki);
+                Console.WriteLine("Wiki-Fassungen geschrieben: " + wiki);
+                return 0;
+            }
+
             string ziel = Argument(args, "--ziel") ?? Path.Combine(Wurzel(), "artifacts", "chartproben");
             Directory.CreateDirectory(ziel);
 
@@ -445,6 +457,26 @@ namespace ChartProben
                             "Anteil am Hoechstwert", ChartRenderer.Achse.Monate, false,
                             null, b1Summe.Max()));
 
+            // Dieselben Bedarfsarten als Dauerlinie: die Stunden einmal nach der Summe geordnet,
+            // die Flaechen in derselben Stundenfolge gestapelt - die Oberkante ist die Summe.
+            Pruefe(ziel, "ganglinie_normiert_gestapelt_sortiert", 1240, 560,
+                   new[] { SKColors.Red, SKColors.DeepSkyBlue, B1_VIOLETT, SKColors.Gray },
+                   () => ChartRenderer.GanglinieNormiert("Waermelast Jahresdauerlinie",
+                            new List<ChartRenderer.Reihe>
+                            {
+                                new ChartRenderer.Reihe("Summe", b1Summe, SKColors.Red,
+                                                        ChartRenderer.Stapelart.Keine,
+                                                        ChartRenderer.Strichart.Durchgezogen, 3f),
+                                new ChartRenderer.Reihe("Heizung", heizung, SKColors.DeepSkyBlue,
+                                                        ChartRenderer.Stapelart.Flaeche),
+                                new ChartRenderer.Reihe("Brauchwasser", brauchwasser, B1_VIOLETT,
+                                                        ChartRenderer.Stapelart.Flaeche),
+                                new ChartRenderer.Reihe("Prozesswaerme", prozess, SKColors.Gray,
+                                                        ChartRenderer.Stapelart.Flaeche)
+                            },
+                            "Anteil am Hoechstwert", ChartRenderer.Achse.Jahresstunden, true,
+                            null, b1Summe.Max()));
+
             // --- B2/B3: Erzeugerstapel ------------------------------------------------
             var b2Stapel = new List<ChartRenderer.Reihe>
             {
@@ -565,7 +597,8 @@ namespace ChartProben
                             },
                             null, "Leistung [kW]", ChartRenderer.Achse.Monate, false));
 
-            // Sortiert - ohne Stapel, mit dickeren Dauerlinien (BorderWidth 4).
+            // Sortiert - der Stapel bleibt, alle Reihen in der Stundenfolge der Bezugsgroesse (ohne
+            // Bedarfsrolle: der Oberkante des Stapels).
             Pruefe(ziel, "erzeugerstapel_kessel_sortiert", 1240, 560,
                    new[] { SKColors.Blue, SKColors.Green, SKColors.Red },
                    () => ChartRenderer.ErzeugerStapel("Waermelast Jahresdauerlinie",
@@ -733,6 +766,39 @@ namespace ChartProben
                            Rollenfarbe(Farbrolle.REST) },
                    () => WaermeAutarkieBild.Png(WaermeAutarkieSatz()));
 
+            // B6c: die Kaelteproduktion des Ergebnisreiters (KaelteProduktionBild) - je
+            // Kaelteerzeuger eine Saeule, darauf die ungedeckte Kaelte im Grau des Rests,
+            // darueber der Kaeltebedarf als Linie; einmal mit Waermepumpe im Kuehlbetrieb,
+            // einmal ohne Kaelteerzeuger (der ganze Bedarf ungedeckt).
+            Pruefe(ziel, "kaelte_produktion", 1240, 560,
+                   new[] { Rollenfarbe(Farbrolle.WAERME_WP), Rollenfarbe(Farbrolle.REST),
+                           Rollenfarbe(Farbrolle.BEDARF) },
+                   () => KaelteProduktionBild.Png(KaelteProduktionSatz(true)));
+
+            Pruefe(ziel, "kaelte_produktion_ohne_erzeuger", 1240, 560,
+                   new[] { Rollenfarbe(Farbrolle.REST), Rollenfarbe(Farbrolle.BEDARF) },
+                   () => KaelteProduktionBild.Png(KaelteProduktionSatz(false)));
+
+            // K6b (Konzept Kaeltebedarf 4.3): der Kaeltegang mit Split-Flaeche - die dezentral gedeckte Kaelte als
+            // Saeule nach dem Erzeuger und vor dem Rest, in der Rolle KAELTE_DEZENTRAL. Die Gegenprobe zeigt, dass die
+            // Flaeche wirkt; die Bytegleichheit, dass ein Satz ohne Split (leer oder lauter Nullen) das Bestandsbild
+            // „kaelte_produktion" Zeichen fuer Zeichen zeichnet.
+            Pruefe(ziel, "kaelte_produktion_dezentral", 1240, 560,
+                   new[] { Rollenfarbe(Farbrolle.WAERME_WP), Rollenfarbe(Farbrolle.KAELTE_DEZENTRAL),
+                           Rollenfarbe(Farbrolle.REST), Rollenfarbe(Farbrolle.BEDARF) },
+                   () => KaelteProduktionBild.Png(KaelteProduktionSplitSatz()));
+            Unterschiedlich("kaelte_produktion_split",
+                () => KaelteProduktionBild.Png(KaelteProduktionSatz(true)),
+                () => KaelteProduktionBild.Png(KaelteProduktionSplitSatz()));
+            Bytegleich("kaelte_produktion_ohne_split",
+                () => KaelteProduktionBild.Png(KaelteProduktionSatz(true)),
+                () =>
+                {
+                    KaelteProduktionBild.Reihen r = KaelteProduktionSatz(true);
+                    r.Dezentral = new double[r.Bedarf.Length];
+                    return KaelteProduktionBild.Png(r);
+                });
+
             // --- B7: Temperaturverlauf ------------------------------------------------
             Pruefe(ziel, "temperaturverlauf_zwei_speicher", 1240, 560,
                    new[] { TEMP_ROT, TEMP_BLAU, TEMP_QUELLE },
@@ -849,7 +915,7 @@ namespace ChartProben
             double[][] geraeteWerte = Geraetefeld(rasterKapazitaeten, geraeteLeistungen, geraete);
             bool[][] rasterSperre = Rastersperre(rasterKapazitaeten.Length, geraeteLeistungen.Length);
 
-            Pruefe(ziel, "flottenraster_schraffur", 860, 560,
+            Pruefe(ziel, "flottenraster_schraffur", 860, Rasterhoehe("SP-O-4: Die Aussage gilt nur für die geprüften Geräte. " + "Zwischen zwei Geräten ist nichts gerechnet."),
                    new[] { ChartRenderer.C_RASTER_SCHLECHT, ChartRenderer.C_RASTER_MITTE,
                            ChartRenderer.C_RASTER_GUT, SKColors.Black },
                    () => ChartRenderer.Optimierungsraster(
@@ -914,7 +980,7 @@ namespace ChartProben
             for (int i = 0; i < 13; i++) kapLeistungAchse[i] = 20.0 + 40.0 * i;
             double[][] kapLeistungWerte = Leistungsfeld(kapLeistungAchse, kapLeistungAchse);
 
-            Pruefe(ziel, "flottenraster_leistung", 860, 560,
+            Pruefe(ziel, "flottenraster_leistung", 860, Rasterhoehe("SP-O-4: Die Aussage gilt nur für das geprüfte endliche Raster. " + "Zwischen zwei Stützstellen ist nichts gerechnet."),
                    new[] { ChartRenderer.C_RASTER_SCHLECHT, ChartRenderer.C_RASTER_MITTE,
                            ChartRenderer.C_RASTER_GUT, SKColors.Black },
                    () => ChartRenderer.Optimierungsraster(
@@ -957,7 +1023,7 @@ namespace ChartProben
             double[] stueckAchse2 = { 0.0, 1.0, 2.0 };
             double[][] stueckfeld = Stueckfeld(stueckAchse1, stueckAchse2);
 
-            Pruefe(ziel, "flotte_stueckzahlraster", 860, 560,
+            Pruefe(ziel, "flotte_stueckzahlraster", 860, Rasterhoehe("SP-O-4: Die Aussage gilt nur für das geprüfte endliche Raster. " + "Zwischen zwei Stützstellen ist nichts gerechnet."),
                    new[] { ChartRenderer.C_RASTER_SCHLECHT, ChartRenderer.C_RASTER_MITTE,
                            ChartRenderer.C_RASTER_GUT, SKColors.Black },
                    () => ChartRenderer.Optimierungsraster(
@@ -1176,6 +1242,28 @@ namespace ChartProben
                         LEISTUNGSFELD_BESTE_ZEILE, LEISTUNGSFELD_BESTE_SPALTE, null,
                         fussGrund, fussZusatz + "Grob-Optimum."));
 
+            // 28d: Auch OHNE Zusatz waechst die Karte nach der gemessenen Fusszeile. Bis
+            // dahin brach der Hinweis allein nach zwei Zeilen ab und blieb bei 560 Punkten
+            // Hoehe - eine lange Fusszeile war abgeschnitten. Die Gegenprobe: zwei Texte
+            // ueber drei Zeilen, die sich nur im letzten Wort unterscheiden, muessen zwei
+            // verschiedene Bilder ergeben (drei Zeilen: mehr, als der Hinweis bis dahin zeigte).
+            const string FUSS_DRITTE_ZEILE =
+                " Die Grenze der Aussage gilt für jede Einheit der Flotte und für jede Kopplung der Achsen; "
+              + "sie endet erst mit dem Wort ";
+            Unterschiedlich("flottenraster_fusszeile_letzte_zeile_steht_im_bild",
+                () => ChartRenderer.Optimierungsraster(
+                        "Kapitalwert über Kapazität und Entladeleistung",
+                        "Entladeleistung [kW]", "Kapazität [kWh]", "Kapitalwert [€]",
+                        kapLeistungAchse, kapLeistungAchse, kapLeistungWerte,
+                        LEISTUNGSFELD_BESTE_ZEILE, LEISTUNGSFELD_BESTE_SPALTE, null,
+                        fussGrund + FUSS_DRITTE_ZEILE + "Anfang."),
+                () => ChartRenderer.Optimierungsraster(
+                        "Kapitalwert über Kapazität und Entladeleistung",
+                        "Entladeleistung [kW]", "Kapazität [kWh]", "Kapitalwert [€]",
+                        kapLeistungAchse, kapLeistungAchse, kapLeistungWerte,
+                        LEISTUNGSFELD_BESTE_ZEILE, LEISTUNGSFELD_BESTE_SPALTE, null,
+                        fussGrund + FUSS_DRITTE_ZEILE + "Ende."));
+
             // Und dasselbe fuer die FEINRASTERPUNKTE (#224): Masse, Farben und
             // Determinismus stimmen auch dann, wenn der Parameter stillschweigend
             // ignoriert wuerde - alle Punkte staenden dann in C_STAMM. Die Gegenprobe
@@ -1301,6 +1389,26 @@ namespace ChartProben
             // ANLAGENKOPPLUNG AK1 WELLE 3 - das Bild „Vorlauf und Rücklauf" mit Lücken ohne
             // Heizbetrieb: Mass-, Gegen- und SVG-Proben in Program.Anlagenkopplung.cs.
             AnlagenkopplungProben(ziel);
+
+            // KP2 WELLE K4 - das Teppichbild eines Kalenders und die Woche mit Luecke fuer
+            // „aus": Mass-, Gegen- und SVG-Proben in Program.Kalenderteppich.cs.
+            KalenderteppichProben(ziel);
+
+            // KONZEPT KESSELKENNLINIE 5 - die kleine Kurve des Kesseleditors, Wirkungsgrad ueber der
+            // Last je Ruecklauf: Mass-, Gegen- und SVG-Proben in Program.Kesselkennlinie.cs.
+            KesselkennlinieProben(ziel);
+
+            // SK-2 - das Energieflussbild (Sankey) mit Strom, Waerme und Kaelte: Mass-, Gegen- und
+            // SVG-Proben in Program.Energiefluss.cs.
+            EnergieflussProben(ziel);
+
+            // DIE STROMLAST DES BHKW - das zweite Bild des BHKW-Reiters unter der Waermelast:
+            // Mass-, Gegen- und SVG-Proben in Program.BhkwStrom.cs.
+            BhkwStromProben(ziel);
+
+            // UB-E4-a - das Bivalenzdiagramm der Waermepumpe (Leistung ueber der Aussentemperatur mit
+            // Bereichsflaechen und Marken): Mass- und Gegenproben in Program.Bivalenzdiagramm.cs.
+            BivalenzdiagrammProben(ziel);
 
             // AUFTRAG DF-1 - die Gegenprobe zur einstellbaren Palette.
             //
@@ -2155,6 +2263,15 @@ namespace ChartProben
         // Pruefung eines Bildes
         // =================================================================================
 
+        /// <summary>
+        /// 28d: Die Höhe der Rasterkarte folgt der GEMESSENEN Fußzeile — sie hängt von der Schrift ab (auf Liberation
+        /// Sans braucht der SP-O-4-Hinweis zwei Zeilen und das Bild 584 Punkte). Die Maßprobe hält deshalb die Höhe,
+        /// die das Zeichenmodell für denselben Hinweis nennt; der Vergleich mit der Messlatte hält das Bild.
+        /// </summary>
+        private static int Rasterhoehe(string fusszeile)
+            => ChartRenderer.OptimierungsrasterModell("", "", "", "", Array.Empty<double>(), Array.Empty<double>(),
+                                                      null, -1, -1, null, fusszeile).Hoehe;
+
         private static void Pruefe(string ziel, string name, int breite, int hoehe,
                                    SKColor[] erwartet, Func<byte[]> erzeuge)
         {
@@ -2518,6 +2635,67 @@ namespace ChartProben
         /// fest verdrahtet, ohne Zufall. Ein Viertel der Solardeckung laeuft ueber den
         /// Speicher.
         /// </summary>
+        /// <summary>
+        /// Synthetische Kaeltereihen: ein Bedarf mit Sommerspitze; mit Erzeuger deckt die
+        /// Waermepumpe bis 30 kW, der Rest bleibt ungedeckt - ohne Erzeuger ist der ganze
+        /// Bedarf der Rest.
+        /// </summary>
+        private static KaelteProduktionBild.Reihen KaelteProduktionSatz(bool mitErzeuger)
+        {
+            double[] bedarf = Jahresreihe(10, 30, 12, 0, -Math.PI / 2);
+            var r = new KaelteProduktionBild.Reihen { Bedarf = bedarf };
+            if (!mitErzeuger)
+            {
+                r.Rest = (double[])bedarf.Clone();
+                return r;
+            }
+            var wp = new double[bedarf.Length];
+            var rest = new double[bedarf.Length];
+            for (int i = 0; i < bedarf.Length; i++)
+            {
+                wp[i] = Math.Min(bedarf[i], 30.0);
+                rest[i] = bedarf[i] - wp[i];
+            }
+            r.Erzeuger.Add(new KaelteProduktionBild.Erzeugerreihe { Name = "Waermepumpe 1", Werte = wp });
+            r.Rest = rest;
+            return r;
+        }
+
+        /// <summary>
+        /// K6b: derselbe Satz wie <see cref="KaelteProduktionSatz"/> mit Erzeuger, dazu eine dezentral (Split) gedeckte
+        /// Kaelte mit eigener Sommerspitze, die im Bedarf steht und neben der Kaskade laeuft.
+        /// </summary>
+        private static KaelteProduktionBild.Reihen KaelteProduktionSplitSatz()
+        {
+            KaelteProduktionBild.Reihen r = KaelteProduktionSatz(true);
+            double[] split = Jahresreihe(2, 6, 12, 0, -Math.PI / 2);
+            r.Dezentral = split;
+            for (int i = 0; i < r.Bedarf.Length; i++) r.Bedarf[i] += split[i];
+            return r;
+        }
+
+        /// <summary>
+        /// K6b: die Gegenprobe der Bytegleichheit — beide Bilder muessen Zeichen fuer Zeichen gleich sein; ohne Ablage und
+        /// ohne Messlatte (das erste Bild steht dort schon unter seinem Bestandsnamen).
+        /// </summary>
+        private static void Bytegleich(string name, Func<byte[]> bestand, Func<byte[]> neu)
+        {
+            _bilder++;
+            var maengel = new List<string>();
+            byte[] a, b;
+            try { a = bestand(); b = neu(); }
+            catch (Exception ex)
+            {
+                Melde(name + " (gleich)", "-", "-", "-", "-",
+                      new List<string> { "Ausnahme: " + ex.GetType().Name + " - " + ex.Message });
+                return;
+            }
+            if (a == null || b == null) maengel.Add("Renderer liefert null");
+            else if (!a.SequenceEqual(b)) maengel.Add("Bild weicht vom Bestand ab");
+            Melde(name + " (gleich)", "-", b == null ? "-" : b.Length.ToString("N0", CultureInfo.InvariantCulture),
+                  "-", "-", maengel);
+        }
+
         private static SolarWaermeMonate WaermeAutarkieSatz()
         {
             var bedarf = new double[8760];

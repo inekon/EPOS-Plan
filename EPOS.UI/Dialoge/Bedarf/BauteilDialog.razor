@@ -92,10 +92,31 @@
             <Zahlenfeld Bezeichnung="@Texte.LabelPsiL" Einheit="W/K" Min="0"
                         Feldname="@Texte.LabelPsiL" FehlerZustand="FehlerMelden"
                         Wert="@_stand.PsiL" WertChanged="w => _stand.PsiL = w" />
+            @* DA-8: Absorptions- und Emissionsgrad der Aussenflaeche; leer = der Wert des Aufbaus, sonst die Vorgabe. *@
+            <Zahlenfeld Bezeichnung="@Texte.LabelAbsorption" Min="0" Max="1" Nachkommastellen="2"
+                        Platzhalter="@Strahlungsplatzhalter(WindowsFormsApplication1.BauteilStrahlungSchema.VORGABE_ABSORPTION)"
+                        Feldname="@Texte.LabelAbsorption" FehlerZustand="FehlerMelden"
+                        Wert="@_stand.AbsorptionsgradSolar" WertChanged="w => _stand.AbsorptionsgradSolar = w" />
+            <Zahlenfeld Bezeichnung="@Texte.LabelEmission" Min="0" Max="1" Nachkommastellen="2"
+                        Platzhalter="@Strahlungsplatzhalter(WindowsFormsApplication1.BauteilStrahlungSchema.VORGABE_EMISSION)"
+                        Feldname="@Texte.LabelEmission" FehlerZustand="FehlerMelden"
+                        Wert="@_stand.Emissionsgrad" WertChanged="w => _stand.Emissionsgrad = w" />
             <Zahlenfeld Bezeichnung="@Texte.LabelUWert" Einheit="W/(m²K)" Min="0"
                         Platzhalter="@UPlatzhalter"
                         Feldname="@Texte.LabelUWert" FehlerZustand="FehlerMelden"
                         Wert="@_stand.UWert" WertChanged="w => _stand.UWert = w" />
+            @* U_HERKUNFT: nur lesend, nach den Regeln des Speicherns (BauteilUHerkunftVorschau) — eine Änderung im
+               offenen Dialog zeigt sofort „von Hand“. Kein Eingabefeld (NurLesen). *@
+            <Textfeld Bezeichnung="@Texte.LabelUHerkunft" NurLesen="true" Kurz="true"
+                      Wert="@Texte.UHerkunftText(UHerkunftVorschau())" />
+            @if (!Transparent)
+            {
+                @* KAPAZITAET: Lesewert C = Σ ρ·c_p·d des gewaehlten Aufbaus, fertig aus dem Kern
+                   (BauteilaufbauCtrl.Kennwerte); ohne Aufbau "aus der Bauweise". *@
+                <Textfeld Bezeichnung="@Texte.LabelKapazitaet" NurLesen="true" Kurz="true"
+                          Einheit="@(KapazitaetWert is null or "–" ? "" : "kJ/(m²K)")"
+                          Wert="@(KapazitaetWert ?? Texte.KapazitaetBauweise)" />
+            }
         </KindInhalt>
     </Formularraster>
     <Herleitungszeile Text="@Texte.HinweisAzimut" />
@@ -130,6 +151,12 @@
                     }
                 </KindInhalt>
             </Formularraster>
+            @if (MitUngeeigneten)
+            {
+                @* BK-2b: gekennzeichnete Aufbauten ("meist nicht geeignet") stehen erst nach diesem Schalter in der Wahl. *@
+                <Schalter Bezeichnung="@Texte.SchalterAuchUngeeignete" Wert="@_auchUngeeignete"
+                          WertChanged="w => _auchUngeeignete = w" />
+            }
             @if (Katalogaufbauten.Count > 0)
             {
                 <div class="epos-leiste">
@@ -144,6 +171,16 @@
                     }
                 </div>
                 <Herleitungszeile Text="@Texte.HinweisKatalog" />
+            }
+            @if (_fensterHinweis.Length > 0)
+            {
+                @* BK-6: was der Fensteraufbau an das Bauteil uebergeben hat (g-Wert, Rahmenanteil, U_w). *@
+                <Herleitungszeile Text="@_fensterHinweis" />
+            }
+            @if (_aufbauGrund.Length > 0)
+            {
+                @* BK-2b: warum der gewaehlte Aufbau kein U traegt (Grund aus der Huelle). *@
+                <Herleitungszeile Text="@_aufbauGrund" />
             }
             @if (_ansicht is not null)
             {
@@ -213,6 +250,9 @@
     private bool _ersterAufbau = true;
     private BauteilDaten _stand = new();
     private string _meldung = "";
+
+    /// <summary>BK-6: die leise Zeile nach der Übernahme der Fensterwerte; leer = keine.</summary>
+    private string _fensterHinweis = "";
     private int? _katalogwahl;
     private AufbauAnsichtDaten? _ansicht;
     private BauteilaufbauArbeitsstand? _ansichtStand;
@@ -239,7 +279,7 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     // =================================================================================
@@ -276,6 +316,10 @@
             VerschattungSetzen = w => _stand.Verschattung = w,
             PsiLLesen = () => _stand.PsiL,
             PsiLSetzen = w => _stand.PsiL = w,
+            AbsorptionLesen = () => _stand.AbsorptionsgradSolar,
+            AbsorptionSetzen = w => _stand.AbsorptionsgradSolar = w,
+            EmissionLesen = () => _stand.Emissionsgrad,
+            EmissionSetzen = w => _stand.Emissionsgrad = w,
             UWertLesen = () => _stand.UWert,
             UWertSetzen = w => _stand.UWert = w,
             AufbauLesen = () => Projektauswahl,
@@ -287,8 +331,22 @@
             NachbarzoneEintraege = () => KiMaskenanmeldung.Eintraege(Nachbareintraege, e => e.Id, e => e.Text),
             ZuordnungLesen = () => IstTrennflaeche ? Zuordnungsindex : null,
             ZuordnungSetzen = w => { if (IstTrennflaeche) ZuordnungWaehlen(w); },
-            ZuordnungEintraege = () => KiMaskenanmeldung.Eintraege(Zuordnungseintraege, e => e.Id, e => e.Text)
+            ZuordnungEintraege = () => KiMaskenanmeldung.Eintraege(Zuordnungseintraege, e => e.Id, e => e.Text),
+            // MA-6b: die Herkunft des U-Werts, wie das OK sie schriebe - Regel des Kerns, nur lesbar.
+            UHerkunftLesen = UHerkunftVorschau
         };
+    }
+
+    /// <summary>
+    /// MA-6b: Die Herkunft des U-Werts nach den Regeln des Schreibwegs (Kernregel <c>BauteilUHerkunftVorschau</c>) — ein neues
+    /// Bauteil bringt keine Herkunft mit, ein gespeichertes vergleicht Aufbau und U-Wert mit dem geöffneten Stand.
+    /// </summary>
+    private string? UHerkunftVorschau()
+    {
+        bool neu = (Bauteil?.Id ?? 0) <= 0;
+        return WindowsFormsApplication1.BauteilUHerkunftVorschau.Herkunft(
+            neu ? null : Bauteil?.UHerkunft, neu, Bauteil?.IdAufbau, Bauteil?.UWert,
+            _stand.IdAufbau, _stand.UWert, _stand.IdAufbauStamm.HasValue);
     }
 
     /// <summary>
@@ -437,6 +495,10 @@
         => string.Format(CultureInfo.CurrentCulture, Texte.PlatzhalterNeigung,
                          GebaeudeZonenCtrl.NeigungVorgabe(_stand.Bauteilart).ToString("0", CultureInfo.CurrentCulture));
 
+    /// <summary>DA-8: Platzhalter eines leeren Strahlungsfelds — der Wert des Aufbaus, sonst die Vorgabe.</summary>
+    private string Strahlungsplatzhalter(double vorgabe)
+        => string.Format(CultureInfo.CurrentCulture, Texte.PlatzhalterStrahlung, vorgabe.ToString("0.0#", CultureInfo.CurrentCulture));
+
     private string UPlatzhalter
         => _stand.UAufbau is double u ? u.ToString("0.###", CultureInfo.CurrentCulture) : Texte.PlatzhalterU;
 
@@ -449,7 +511,8 @@
             var l = new List<(int, string)> { (OHNE, Texte.OhneAufbau) };
             if (_stand.IdAufbauStamm.HasValue)
                 l.Add((KATALOG, string.Format(CultureInfo.CurrentCulture, Texte.AufbauAusKatalog, _stand.AufbauText)));
-            foreach (AufbauWahl a in Projektaufbauten) l.Add((a.Id, a.Text));
+            foreach (AufbauWahl a in Projektaufbauten)
+                if (Zeigen(a, _stand.IdAufbau)) l.Add((a.Id, a.Text));
             // Ein Aufbau, den die Liste nicht (mehr) führt, bleibt als Eintrag stehen.
             if (_stand.IdAufbau is int id && Projektaufbauten.All(a => a.Id != id))
                 l.Add((id, _stand.AufbauText.Length > 0 ? _stand.AufbauText : "#" + id.ToString(CultureInfo.InvariantCulture)));
@@ -460,7 +523,19 @@
     private int? Projektauswahl => _stand.IdAufbauStamm.HasValue ? KATALOG : _stand.IdAufbau ?? OHNE;
 
     private IReadOnlyList<(int Id, string Text)> Katalogeintraege
-        => Katalogaufbauten.Select(a => (a.Id, a.Text)).ToList();
+        => Katalogaufbauten.Where(a => Zeigen(a, _katalogwahl)).Select(a => (a.Id, a.Text)).ToList();
+
+    /// <summary>BK-2b: warum der gewählte Aufbau kein U trägt; leer = er trägt eins oder keiner ist gewählt.</summary>
+    private string _aufbauGrund = "";
+
+    /// <summary>BK-2b: „auch ungeeignete zeigen" — Vorgabe aus.</summary>
+    private bool _auchUngeeignete;
+
+    /// <summary>Führt eine der Wahlen einen gekennzeichneten Aufbau? Nur dann steht der Schalter.</summary>
+    private bool MitUngeeigneten => Katalogaufbauten.Any(a => a.Ungeeignet) || Projektaufbauten.Any(a => a.Ungeeignet);
+
+    /// <summary>Ein Aufbau steht in der Wahl, wenn er geeignet ist, der Schalter steht oder er die laufende Wahl ist.</summary>
+    private bool Zeigen(AufbauWahl a, int? gewaehlt) => !a.Ungeeignet || _auchUngeeignete || a.Id == gewaehlt;
 
     private void ProjektaufbauWaehlen(int? id)
     {
@@ -471,6 +546,7 @@
             _stand.IdAufbau = null;
             _stand.AufbauText = "";
             _stand.UAufbau = null;
+            _aufbauGrund = "";
         }
         else
         {
@@ -478,6 +554,8 @@
             _stand.IdAufbau = id;
             _stand.AufbauText = a?.Text ?? _stand.AufbauText;
             _stand.UAufbau = a?.UWert;
+            _aufbauGrund = a?.Grund ?? "";
+            FensterUebernehmen(a);
         }
         AnsichtNachziehen();
     }
@@ -495,7 +573,41 @@
         _stand.IdAufbauStamm = a.Id;
         _stand.AufbauText = a.Text;
         _stand.UAufbau = a.UWert;
+        _aufbauGrund = a.Grund;
+        FensterUebernehmen(a);
         AnsichtNachziehen();
+    }
+
+    /// <summary>
+    /// <b>BK-6: Fensterwerte übernehmen.</b> Ein Fenster oder eine Vorhangfassade, dem ein Fensteraufbau zugewiesen wird,
+    /// übernimmt dessen g-Wert und Rahmenanteil und als U-Wert U_w nach DIN EN ISO 10077-1 — gerechnet im Kern
+    /// (<c>Fensterkennwerte.Uw</c>) mit der Fläche des Bauteils als Näherung der Glasrandlänge. Was der Aufbau nicht trägt,
+    /// bleibt am Bauteil stehen. Danach bleiben alle drei Felder von Hand änderbar.
+    /// </summary>
+    private void FensterUebernehmen(AufbauWahl? a)
+    {
+        _fensterHinweis = "";
+        if (!Transparent || a?.Fenster is not WindowsFormsApplication1.Fensteraufbau f) return;
+        if (f.GWert.HasValue) _stand.GWert = f.GWert;
+        if (f.Rahmenanteil.HasValue) _stand.Rahmenanteil = f.Rahmenanteil;
+        double? uw = WindowsFormsApplication1.Fensterkennwerte.Uw(f, _stand.Flaeche);
+        if (uw.HasValue) _stand.UWert = Math.Round(uw.Value, 3);
+        _fensterHinweis = string.Format(CultureInfo.CurrentCulture, Texte.FensterUebernommen,
+                                        uw.HasValue ? uw.Value.ToString("0.###", CultureInfo.CurrentCulture) : "–");
+    }
+
+    /// <summary>
+    /// Die flächenbezogene Kapazität des gewählten Aufbaus als Text [kJ/(m²K)] — aus dem Summenfuß
+    /// des Kerns, nicht nachgerechnet; <c>null</c> ohne Aufbau, „–", wenn der Aufbau sie nicht trägt.
+    /// </summary>
+    private string? KapazitaetWert
+    {
+        get
+        {
+            if (!_stand.MitAufbau) return null;
+            double? c = _ansicht?.Kennwerte.Kapazitaet_KJM2K;
+            return c.HasValue ? c.Value.ToString("0.0", CultureInfo.CurrentCulture) : "–";
+        }
     }
 
     /// <summary>Die Schichten des gewählten Aufbaus — nur zum Ansehen.</summary>

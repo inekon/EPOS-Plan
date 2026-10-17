@@ -19,7 +19,9 @@
         public double m_Degradation;    // d, Kapazitaetsverlust [%/a]
         public double m_Ladezustand;    // Start-SoC [%] (AP0-Entscheid 16.08.2026)
         public string m_szTyp;
-        public double m_Modulkosten;    // c_cap, kapazitaetsbezogene Investition [EUR/kWh]
+        // Die Kosten (c_cap, c_pow, I_fix, c_ver) traegt das Modell nicht: Sie stehen in den
+        // Satzvorlagen des Satzes und in den Kostenpositionen der Anlage (Welle KB-5, eine
+        // Kostenbasis); gelesen werden sie ueber KatalogkostensatzCtrl.Stromspeicher.
 
         // --- AP3: Geraetetechnik (Fachkonzept Stromspeicher 5.1) ---
         // Neue Spalten in Tab_Stromspeicher UND Tab_Stromspeicher_STAMM, angelegt von
@@ -28,10 +30,13 @@
         // steht je Variante in Tab_StromspeicherVariante (StromspeicherVarianteModel).
         public double m_WirkungsgradRT;      // eta_RT, Round-Trip-Wirkungsgrad [-], Vorgabe 0,90
         public int m_ZyklenZugesichert;      // N_zyk, zugesicherte Volladezyklen [-]
-        public double m_Verschleisskosten;   // c_ver [EUR/(kWh*Zyklus)]
-        public double m_Leistungskosten;     // c_pow, leistungsbezogene Investition [EUR/kW]
-        public double m_InvestitionFix;      // I_fix, Festanteil der Investition [EUR]
         public double m_StandbyVerbrauch;    // Standby-/Eigenverbrauch [W]
+
+        /// <summary>
+        /// Selbstentladung [% des Inhalts je Monat], 0 … 20; 0 = keine (Welle M5, SP1;
+        /// Spalte <c>Selbstentladung_Prozent_Monat</c>, <see cref="StromViertelstundenSchema"/>).
+        /// </summary>
+        public double m_Selbstentladung;
 
         /// <summary>
         /// Vorgabewert des Round-Trip-Wirkungsgrads (Fachkonzept 5.2). Bewusst KEIN
@@ -63,14 +68,11 @@
             m_Degradation = 0.0;
             m_Ladezustand = 0;
             m_szTyp = string.Empty;
-            m_Modulkosten = 0;
 
             m_WirkungsgradRT = 0.0;
             m_ZyklenZugesichert = 0;
-            m_Verschleisskosten = 0.0;
-            m_Leistungskosten = 0.0;
-            m_InvestitionFix = 0.0;
             m_StandbyVerbrauch = 0.0;
+            m_Selbstentladung = 0.0;
         }
 
     }

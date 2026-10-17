@@ -79,6 +79,29 @@ namespace EPOS.Kern.Tests
             Berichtswerte werte = Wertesatz(idStamm, name, stand.GewaehlteVarianten);
             Pruefe(stand.Ansicht.Kacheln.Select(k => (k.Vorlagenfeld, k.VorlagenfeldStufe, k.Wert, k.Titel)), werte);
             ImOrt(stand.Ansicht.GliederungVorlagenfeld);
+
+            // Die Positionsform an Sensitivität, Mehrjahrestafel und Zahlungsstrom: je Stand der Gruppe die Position,
+            // die auch die einzelne Seite bildet (Stamm = 1, dann die Varianten), und die Sensitivität nennt genau
+            // ihre Stände mit Namen.
+            Assert.Equal(stand.Varianten.Count, stand.Vorlagenfeldpositionen.Count);
+            foreach (VarianteZeile v in stand.Varianten)
+            {
+                Vorlagenfeldposition p = stand.Vorlagenfeldpositionen[v.IdProjekt];
+                Assert.Equal(VorlagenfeldpositionHuelle.Von(v.IdProjekt), p);
+                if (v.IstStamm) Assert.Equal(new Vorlagenfeldposition(1, 0), p);
+                else Assert.True(p.Stand > 1 && p.Variante > 0, v.Bezeichner);
+                _ausgabe.WriteLine($"{v.IdProjekt} {v.Bezeichner}: Stand {p.Stand}, Variante {p.Variante}");
+            }
+            Assert.All(stand.Ansicht.SensitivitaetPositionen, p =>
+            {
+                Assert.False(string.IsNullOrEmpty(p.Name));
+                Assert.Contains(p with { Name = "" }, stand.Vorlagenfeldpositionen.Values);
+            });
+            foreach (string schluessel in new[] { "stand.tabelle.sensitivitaet", "stand.tabelle.mehrjahres", "stand.bild.zahlungsstrom" })
+            {
+                ImOrt(schluessel);
+                Assert.NotNull(Vorlagenfeldkatalog.Finde("stand." + stand.Varianten.Count + schluessel.Substring("stand".Length)));
+            }
         }
 
         // =====================================================================
@@ -175,11 +198,12 @@ namespace EPOS.Kern.Tests
             KaelteDaten k = d.Bedarf?.Kaelte;
             if (mitKaelte)
             {
-                // Deckungsgrad und JAZ Kälte rechnet der Katalog aus den gespeicherten Summen — „ähnlich“ mit Hinweis.
-                Assert.Equal(Vorlagenfeldstufe.Aehnlich, k.DeckungStufe);
-                Assert.Equal(Vorlagenfeldstufe.Aehnlich, k.JazStufe);
-                Assert.False(string.IsNullOrEmpty(k.KennzahlHinweis));
+                // 8d: Deckungsgrad und JAZ Kälte kommen in Übersicht und Katalog aus EINER Rechnung — „entspricht“,
+                // ohne Hinweis; die Gleichheit der Zahlen hält KaelteKennzahlGleichheitWache unten.
                 Assert.NotNull(k);
+                Assert.Equal(Vorlagenfeldstufe.Entspricht, k.DeckungStufe);
+                Assert.Equal(Vorlagenfeldstufe.Entspricht, k.JazStufe);
+                Assert.True(string.IsNullOrEmpty(k.KennzahlHinweis));
                 Assert.True(k.KaeltebedarfMwh > 0);
                 Assert.True(k.Erzeuger.Count > 0, "1017 deckt die Kälte mit einer Wärmepumpe");
                 marken.Add((k.BedarfFeld, Vorlagenfeldstufe.Entspricht, Anzeige(k.KaeltebedarfMwh, "N2", MWH), "Kältebedarf"));
@@ -202,11 +226,27 @@ namespace EPOS.Kern.Tests
                 Ergebnis = new ErgebnisCtrl().Load(idProjekt) ?? new ErgebnisModel(),
             };
             KennzahlenKatalog.Berechne(v);
+            if (mitKaelte) KaelteKennzahlGleichheitWache(k, v);
             var daten = new BerichtsDaten { IdStamm = idProjekt, Stammprojektname = v.Projektname };
             daten.Varianten.Add(v);
             Berichtswerte werte = Berichtswerte.Aus(daten, null, false, null);
             // Eine Variante löst ihre stand.*-Schlüssel im Block „je stand“ auf.
             Pruefe(marken, stamm ? werte : werte.MitStand(v));
+        }
+
+        /// <summary>
+        /// 8d: Deckungsgrad und Jahresarbeitszahl der Kälte zeigen Übersicht (Summen des Laufs) und Kennzahlenkatalog
+        /// (gespeichertes Ergebnis) mit demselben Wert — nicht nur in der gezeigten Stelle, sondern numerisch.
+        /// </summary>
+        private static void KaelteKennzahlGleichheitWache(KaelteDaten k, VariantenDaten v)
+        {
+            Assert.True(k.DeckungsgradProzent.HasValue, "Deckungsgrad Kälte der Übersicht fehlt");
+            Assert.True(k.EerJahreswert.HasValue, "EER-Jahreswert der Übersicht fehlt");
+            double? deckung = v.Kennzahlen[KennzahlenKatalog.SCHLUESSEL_KAELTE_DECKUNGSGRAD];
+            double? jaz = v.Kennzahlen[KennzahlenKatalog.SCHLUESSEL_KAELTE_JAZ];
+            Assert.True(deckung.HasValue && jaz.HasValue, "Katalogwerte der Kälte fehlen");
+            Assert.Equal(k.DeckungsgradProzent.Value, deckung.Value, 9);
+            Assert.Equal(k.EerJahreswert.Value, jaz.Value, 9);
         }
 
         // =====================================================================

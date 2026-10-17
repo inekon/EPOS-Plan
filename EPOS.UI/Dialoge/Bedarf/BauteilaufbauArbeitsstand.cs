@@ -54,6 +54,10 @@ public sealed class BauteilaufbauArbeitsstand
             if (!Gleich(Arbeit.Beschreibung, Gespeichert.Beschreibung)) n++;
             if (!Gleich(Arbeit.Bauteilart, Gespeichert.Bauteilart)) n++;
             if (!Gleich(Arbeit.Quelle, Gespeichert.Quelle)) n++;
+            if (!Gleich(Arbeit.GruppeCode, Gespeichert.GruppeCode)) n++;
+            if (!Gleich(Arbeit.KlasseCode, Gespeichert.KlasseCode)) n++;
+            n += Arbeit.FensterUnterschiede(Gespeichert);
+            n += Arbeit.StrahlungUnterschiede(Gespeichert);
             int gemeinsam = Math.Min(Arbeit.Schichten.Count, Gespeichert.Schichten.Count);
             for (int i = 0; i < gemeinsam; i++)
                 if (!Arbeit.Schichten[i].GleicheWerte(Gespeichert.Schichten[i])) n++;
@@ -100,6 +104,65 @@ public sealed class BauteilaufbauArbeitsstand
         Fassung++;
         return true;
     }
+
+    /// <summary>
+    /// <b>BK-5: „Abschnitt daneben"</b> — macht die Schicht an <paramref name="index"/> zum Abschnitt ihrer Ebene (eine
+    /// homogene Schicht wird Abschnitt 1) und legt hinter der Ebene eine Schicht mit der nächsten Abschnittsnummer an, gleich
+    /// dick. In einer Ebene stehen die Abschnitte aufsteigend nebeneinander (Kernregel <c>InhomogeneSchichten.Ebenen</c>).
+    /// </summary>
+    public BauteilschichtDaten? AbschnittAnlegen(int index)
+    {
+        if (index < 0 || index >= Arbeit.Schichten.Count) return null;
+        BauteilschichtDaten s = Arbeit.Schichten[index];
+        s.Abschnitt ??= 1;
+        int ende = index;
+        while (ende + 1 < Arbeit.Schichten.Count && Arbeit.Schichten[ende + 1].Abschnitt is int b && b > Arbeit.Schichten[ende].Abschnitt)
+            ende++;
+        int nr = Arbeit.Schichten[ende].Abschnitt!.Value + 1;
+        var neu = new BauteilschichtDaten { DickeMm = s.DickeMm, Abschnitt = nr, Flaechenanteil = AnteilVon(nr) };
+        Arbeit.Schichten.Insert(ende + 1, neu);
+        Fassung++;
+        return neu;
+    }
+
+    /// <summary>BK-5: Der Flächenanteil eines Abschnitts gilt für alle seine Schichten — gesetzt an jeder.</summary>
+    public void AnteilSetzen(int index, double? anteil)
+    {
+        if (index < 0 || index >= Arbeit.Schichten.Count || Arbeit.Schichten[index].Abschnitt is not int nr) return;
+        foreach (BauteilschichtDaten s in Arbeit.Schichten.Where(x => x.Abschnitt == nr)) s.Flaechenanteil = anteil;
+        Fassung++;
+    }
+
+    /// <summary>BK-5: Die Abschnittsnummer einer Schicht; <c>null</c> macht sie homogen. Der Anteil folgt dem Abschnitt.</summary>
+    public void AbschnittSetzen(int index, int? nummer)
+    {
+        if (index < 0 || index >= Arbeit.Schichten.Count) return;
+        BauteilschichtDaten s = Arbeit.Schichten[index];
+        s.Abschnitt = nummer is > 0 ? nummer : null;
+        s.Flaechenanteil = s.Abschnitt is int nr ? AnteilVon(nr) ?? s.Flaechenanteil : null;
+        Fassung++;
+    }
+
+    /// <summary>
+    /// <b>BK-5: Die Summe der Flächenanteile einer inhomogenen Schichtebene</b> — nur an der LETZTEN Schicht der Ebene, sonst
+    /// <c>null</c>. Die Ebene folgt der Kernregel (<c>InhomogeneSchichten.Ebenen</c>): Schichten mit Abschnitt, die mit
+    /// aufsteigender Nummer aufeinander folgen. Gezählt wird je Abschnitt EIN Anteil; ein fehlender zählt null.
+    /// <c>InOrdnung</c> heißt 1 ± <see cref="WindowsFormsApplication1.InhomogeneSchichten.ANTEIL_TOLERANZ"/>. Eine Eingabeprüfung, keine Rechnung.
+    /// </summary>
+    public (double Summe, bool InOrdnung)? Ebenensumme(int index)
+    {
+        var s = Arbeit.Schichten;
+        if (index < 0 || index >= s.Count || s[index].Abschnitt is not int nr) return null;
+        if (index + 1 < s.Count && s[index + 1].Abschnitt is int nach && nach > nr) return null;
+        int anfang = index;
+        while (anfang > 0 && s[anfang - 1].Abschnitt is int vor && vor < s[anfang].Abschnitt) anfang--;
+        double summe = 0.0;
+        for (int i = anfang; i <= index; i++) summe += s[i].Flaechenanteil ?? 0.0;
+        return (summe, Math.Abs(summe - 1.0) <= WindowsFormsApplication1.InhomogeneSchichten.ANTEIL_TOLERANZ + 1e-12);
+    }
+
+    private double? AnteilVon(int nummer)
+        => Arbeit.Schichten.FirstOrDefault(x => x.Abschnitt == nummer && x.Flaechenanteil.HasValue)?.Flaechenanteil;
 
     /// <summary>Nimmt die Schicht an <paramref name="index"/> heraus.</summary>
     public bool Entfernen(int index)

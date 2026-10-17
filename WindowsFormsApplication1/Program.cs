@@ -105,9 +105,20 @@ namespace WindowsFormsApplication1
         // entfallen; der Aktionsharnisch prueft seither keine Argumentlisten mehr.
 
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
             EinstellungenUebernehmen();
+
+            // DAS AUSNAHMEPROTOKOLL (Anwenderauftrag 30.09.2026): Jede ausgeloeste Ausnahme
+            // steht mit Aufrufstapel SOFORT in Logs\Ausnahmen.txt neben der Datenbank - auch
+            // die, die aus einem WebView2-Rueckruf herauslaeuft und den Prozess ohne Meldung
+            // beendet (0xc000041d, KERNELBASE.dll). Nach den Einstellungen, damit ein
+            // konfigurierter Datenbankordner gilt; der Ordner wird erst beim ersten Eintrag
+            // gebildet (Rueckfall: Temp-Ordner).
+            Ausnahmeprotokoll.Einschalten(
+                () => Path.Combine(Path.GetDirectoryName(DataRepository.GetDBPath()) ?? "", "Logs"),
+                "Start " + Application.ProductName + " " + Application.ProductVersion +
+                ", Prozess " + Environment.ProcessId.ToString(CultureInfo.InvariantCulture));
 
             SpeicherFlottenProjektCtrl.PlanerFactory = () => new SpeicherPlanung.OrToolsFlottenPlaner();
 
@@ -151,6 +162,12 @@ namespace WindowsFormsApplication1
             // danach nur noch beim Speichern der Einstellungen. Ohne Eintrag bleiben es
             // die Hausfarben. Erst NACH Dienste.Einstellungen, denn von dort liest sie.
             Zeichnung.Diagrammfarben.Uebernehmen();
+
+            // DER ENTWICKLERMODUS (Administration und Support, Stufe 1; Konzept Abschnitt 3.3):
+            // EINMAL beim Start ermittelt - Sperre des Administrators, Umgebungsvariable,
+            // Startargument, Einstellung. Erst NACH Dienste.Einstellungen, denn Sperre und
+            // Einstellung liest der Baustein von dort.
+            Entwicklermodus.Ermitteln(args);
 
             // DPI: PER MONITOR V2 (iU9-W16c.4, Anwenderentscheid E-6 / iF21).
             //
@@ -270,6 +287,16 @@ namespace WindowsFormsApplication1
             // "Katalog ansehen" nicht - genau der Stand auf iOS.
             Katalogwege.PufferKatalogGaben = () => PufferSpAdminHuelle.Gaben(true);
 
+            // Der Import einer Solarthermie-Ganglinie braucht Dateiwahl und Ablageordner
+            // dieser Schale; ohne den Haken lehnt "Import..." benannt ab (iOS).
+            Katalogwege.SolarganglinienDatei = SolarganglinieHuelle.Dateiwege;
+            Katalogwege.PvGanglinienDatei = PvGanglinieHuelle.Dateiwege;
+
+            // Stufe P2 der Pufferspeicher-Auslegung: Die Uebergabe aus dem Zapfprofil (das selbst in
+            // einem Fenster steht) oeffnet die Auslegung in einem eigenen Fenster. Ohne diesen Haken
+            // lehnt die Uebergabe benannt ab - genau der Stand auf iOS.
+            PufferAuslegungFenster.Einhaengen();
+
             // Berichtsvorlagen BV-E1 (Konzept 10.3): die Wege um eine Vorlagendatei, die nur
             // Windows kennt - "Im Ordner zeigen" (Explorer), "In Word oeffnen" und
             // "Schreibgeschuetzt oeffnen" (Word selbst) und die Wahl des Vorlagenordners. Ohne
@@ -330,6 +357,25 @@ namespace WindowsFormsApplication1
                     "Ausführliches Protokoll: " + SchemaMigration.ProtokollPfad(),
                     "Datenbank-Aktualisierung",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            else
+            {
+                // KATALOGABGLEICH (Entscheidungsvorlage Modellgrenzen KU1 Stufe 1): Bringt die
+                // Auslieferung ein Katalogpaket NEUERER Fassung mit, gleicht der Kern die Kataloge
+                // der Stufe 1 ab - nach einer Sicherung per VACUUM INTO, nie an einer Projektkopie
+                // und nie an einem eigenen Satz. Den Bericht zeigt das Hauptfenster als
+                // Ueberlagerung (Katalogabgleich.StartberichtAbholen). Ein Fehler hier haelt den
+                // Start nicht auf: Der Katalog bleibt, wie er ist, und der Abgleich laeuft beim
+                // naechsten Start erneut.
+                try
+                {
+                    Katalogabgleich.BeimStart(Katalogpaket.Pfad(Dienste.Pfade.Auslieferungsvorlage),
+                                              Katalogabgleich.SicherungAnlegen);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Katalogabgleich nicht ausgefuehrt: " + ex.Message);
+                }
             }
 
             menuectrl = new MenueCtrl();

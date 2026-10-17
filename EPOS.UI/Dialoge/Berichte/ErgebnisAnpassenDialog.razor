@@ -1,0 +1,192 @@
+﻿@* "Anzeige anpassen" - der kleine Dialog des Abschnitts "Ergebnisse — Energie" der Seite
+   "Uebersicht" im Reiter "Berichte & Kosten" (Anwenderentscheid 13.10.2026).
+
+   WAS ER FESTLEGT. Je Gruppe einen Grundzustand (offen, zugeklappt, ausgeblendet), darunter
+   aufklappbar die Kennzahlen der Gruppe mit je einem Haken - alle bekannten: die des Katalogs
+   und die Traegerzeilen der aktuellen Daten -, den Schalter "Zeilen ohne Wert ausblenden"
+   und "Standard wiederherstellen" (Vorgabe des Kerns, alle Kennzahlen an, Schalter an).
+
+   ARBEITSSTAND. Der Dialog arbeitet auf einer Kopie der hereingereichten Einstellung; erst
+   OK meldet die neue Einstellung, der Wirt schreibt sie ueber die Huelle (je Benutzer, fuer
+   alle Projekte) und uebernimmt sie sofort. Abbrechen, Kreuz und Esc melden null. Eine heute
+   nicht gezeigte, frueher abgewaehlte Kennzahl bleibt abgewaehlt.
+
+   TASTATUR. Ein reiner OK-Dialog: Enter bestaetigt, Esc bricht ab. *@
+
+@namespace EPOS.UI.Dialoge.Berichte
+@using EPOS.UI.Bausteine
+@using EPOS.UI.Seiten.Berichte
+
+<div class="epos-dialog epos-ergebnis-anpassen" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+        }
+        @if (!string.IsNullOrEmpty(HilfeSchluessel))
+        {
+            <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@Texte.Titel" />
+        }
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <Schliesskreuz Geschlossen="@(() => BeiErgebnis(false))" />
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(Texte.Hinweis))
+    {
+        <Herleitungszeile Text="@Texte.Hinweis" />
+    }
+
+    <div class="epos-ergebnis-anpassen-liste">
+        @foreach (ErgebnisAnpassGruppe g in Gruppen)
+        {
+            <div class="epos-ergebnis-anpassen-gruppe" data-gruppe="@g.Schluessel" @key="g.Schluessel">
+                <div class="epos-ergebnis-anpassen-kopf">
+                    <span class="epos-ergebnis-anpassen-titel">@g.Titel</span>
+                    <Optionsgruppe Bezeichnung="@g.Titel" TitelSichtbar="false" Waagerecht="true"
+                                   Gruppenname="@("epos-erg-anp-" + g.Schluessel)" Eintraege="@Zustandswahl"
+                                   Auswahl="@((int)Zustand(g))" AuswahlChanged="@(id => BeiZustand(g, id))" />
+                </div>
+                @if (g.Kennzahlen.Count > 0)
+                {
+                    <Klappgruppe Titel="@Texte.Kennzahlen" Zusatz="@Anzahl(g)" Ebene="4"
+                                 Klasse="epos-ergebnis-anpassen-kennzahlen"
+                                 Offen="@_aufgeklappt.Contains(g.Schluessel)"
+                                 OffenChanged="@(an => BeiAufklappen(g.Schluessel, an))">
+                        <ChildContent>
+                            <div class="epos-ergebnis-anpassen-kennzahlliste">
+                            @foreach (ErgebnisAnpassKennzahl k in g.Kennzahlen)
+                            {
+                                <div class="epos-ergebnis-anpassen-kennzahl" data-kennzahl="@k.Schluessel" @key="k.Schluessel">
+                                    <Schalter Bezeichnung="@k.Bezeichnung" Wert="@(!_aus.Contains(k.Schluessel))"
+                                              WertChanged="@(an => BeiKennzahl(k.Schluessel, an))" />
+                                </div>
+                            }
+                            </div>
+                        </ChildContent>
+                    </Klappgruppe>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="epos-ergebnis-anpassen-ohnewert">
+        <Schalter Bezeichnung="@Texte.OhneWert" Wert="@_ohneWertAus" WertChanged="@(an => _ohneWertAus = an)" />
+        <p class="epos-leisezeile">@Texte.OhneWertErklaerung</p>
+    </div>
+
+    <SpeichernLeiste OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen" Ergebnis="BeiErgebnis">
+        <Aktionen>
+            <button type="button" class="epos-knopf epos-ergebnis-anpassen-standard"
+                    @onclick="StandardWiederherstellen">@Texte.Standard</button>
+        </Aktionen>
+    </SpeichernLeiste>
+</div>
+
+@code {
+    /// <summary>Kopfzeile; leer = die Überlagerung trägt den Titel (<c>BK_ERG_ANP_TITEL</c>).</summary>
+    [Parameter] public string TitelText { get; set; } = "Anzeige anpassen";
+
+    /// <summary>Die Gruppen mit Vorgabe und allen bekannten Kennzahlen (Hülle).</summary>
+    [Parameter] public IReadOnlyList<ErgebnisAnpassGruppe> Gruppen { get; set; } = Array.Empty<ErgebnisAnpassGruppe>();
+
+    /// <summary>Die gespeicherte Einstellung; der Dialog ändert sie nicht, er arbeitet auf einer Kopie.</summary>
+    [Parameter] public ErgebnisAnzeigeEinstellung? Einstellung { get; set; }
+
+    /// <summary>Die Beschriftungen.</summary>
+    [Parameter] public ErgebnisAnpassenTexte Texte { get; set; } = new();
+
+    /// <summary>Schlüssel des Hilfeknopfes; leer = kein Knopf.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "";
+
+    /// <summary>Die Antwort: die neue Einstellung bei OK, <c>null</c> bei Abbruch.</summary>
+    [Parameter] public EventCallback<ErgebnisAnzeigeEinstellung?> Geschlossen { get; set; }
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private bool _uebernommen;
+
+    private readonly Dictionary<string, ErgebnisGruppenZustand> _zustand = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _aus = new(StringComparer.Ordinal);
+    private readonly HashSet<string> _aufgeklappt = new(StringComparer.Ordinal);
+    private bool _ohneWertAus = true;
+
+    private IReadOnlyList<(int Id, string Text)> Zustandswahl => new[]
+    {
+        ((int)ErgebnisGruppenZustand.Offen, Texte.Offen),
+        ((int)ErgebnisGruppenZustand.Zugeklappt, Texte.Zugeklappt),
+        ((int)ErgebnisGruppenZustand.Ausgeblendet, Texte.Ausgeblendet)
+    };
+
+    /// <summary>Der Zustand einer Gruppe im Arbeitsstand (Prüfhilfe).</summary>
+    public ErgebnisGruppenZustand Zustand(ErgebnisAnpassGruppe g)
+        => _zustand.TryGetValue(g.Schluessel, out ErgebnisGruppenZustand z) ? z : g.Vorgabe;
+
+    /// <summary>Der Schalter „ohne Wert“ im Arbeitsstand (Prüfhilfe).</summary>
+    public bool OhneWertAus => _ohneWertAus;
+
+    /// <summary>Die abgewählten Kennzahlen im Arbeitsstand (Prüfhilfe).</summary>
+    public IReadOnlyCollection<string> KennzahlenAus => _aus;
+
+    protected override void OnParametersSet()
+    {
+        if (_uebernommen) return;
+        _uebernommen = true;
+        Uebernehmen(Einstellung ?? ErgebnisAnzeigeEinstellung.Standard());
+    }
+
+    private void Uebernehmen(ErgebnisAnzeigeEinstellung e)
+    {
+        _zustand.Clear();
+        foreach (ErgebnisAnpassGruppe g in Gruppen)
+            _zustand[g.Schluessel] = UebersichtErgebnisAnzeige.Grundzustand(g.Schluessel, g.Vorgabe, e);
+        _aus.Clear();
+        _aus.UnionWith(e.KennzahlenAus);
+        _ohneWertAus = e.OhneWertAus;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync(preventScroll: true);
+    }
+
+    private string Anzahl(ErgebnisAnpassGruppe g)
+        => string.Format(Texte.KennzahlenAnzahl, g.Kennzahlen.Count(k => !_aus.Contains(k.Schluessel)), g.Kennzahlen.Count);
+
+    private void BeiZustand(ErgebnisAnpassGruppe g, int? id)
+    {
+        if (id is int i && Enum.IsDefined(typeof(ErgebnisGruppenZustand), i)) _zustand[g.Schluessel] = (ErgebnisGruppenZustand)i;
+    }
+
+    private void BeiAufklappen(string gruppe, bool an)
+    {
+        if (an) _aufgeklappt.Add(gruppe);
+        else _aufgeklappt.Remove(gruppe);
+    }
+
+    private void BeiKennzahl(string schluessel, bool an)
+    {
+        if (an) _aus.Remove(schluessel);
+        else _aus.Add(schluessel);
+    }
+
+    /// <summary>Setzt den Arbeitsstand auf die Vorgabe: Gruppen nach dem Kern, alle Kennzahlen an, Schalter an.</summary>
+    private void StandardWiederherstellen() => Uebernehmen(ErgebnisAnzeigeEinstellung.Standard());
+
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (!ok) { await Geschlossen.InvokeAsync(null); return; }
+        await Geschlossen.InvokeAsync(UebersichtErgebnisAnzeige.Ergebnis(Gruppen, _zustand, _aus, _ohneWertAus));
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key switch
+    {
+        "Enter" => BeiErgebnis(true),
+        "Escape" => BeiErgebnis(false),
+        _ => Task.CompletedTask
+    };
+}

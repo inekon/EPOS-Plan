@@ -257,6 +257,12 @@ namespace EPOS.Kern.Tests
             // Der Verweis WQ_ID_Quellprofil braucht einen Satz; die Testdatenbank führt keinen.
             DataRepository.ExecuteSQL("INSERT INTO Tab_Quellprofil (ID_Projekt, Bezeichner) VALUES (?, ?)",
                                       new DbParam("?", projekt), new DbParam("?", "FS1-Probe"));
+            // Ebenso ID_Kaeltemaschine (Schritt 183): Kein Referenzprojekt führt eine Projektkopie der Kältemaschine.
+            DataRepository.ExecuteSQL("INSERT INTO Tab_Kaeltemaschine (ID_Projekt, Bezeichner) VALUES (?, ?)",
+                                      new DbParam("?", projekt), new DbParam("?", "FS1-Probe"));
+            // Ebenso ID_Rueckkuehlwerk (K-F1): Kein Referenzprojekt führt eine Projektkopie eines Rückkühlwerks.
+            DataRepository.ExecuteSQL("INSERT INTO Tab_Rueckkuehlwerk (ID_Projekt, Bezeichner) VALUES (?, ?)",
+                                      new DbParam("?", projekt), new DbParam("?", "FS1-Probe"));
 
             string ddl = Convert.ToString(DataRepository.ExecuteScalar(
                 "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'Tab_Energieanlagen'"),
@@ -317,6 +323,10 @@ namespace EPOS.Kern.Tests
             if (ddl.Contains("CHECK (\"" + name + "\" IN (0,1))", StringComparison.Ordinal) ||
                 SchemaTypKatalog.BoolSpalten.Contains(name))
                 return vorgabe == "1" ? 0L : 1L;
+
+            // Die Anordnung des Sondenfeldes (Schritt 195) nimmt nur ihre Schreibweisen an.
+            if (string.Equals(name, ErdsondenfeldSchema.SPALTE_ANORDNUNG, StringComparison.OrdinalIgnoreCase))
+                return ErdsondenfeldSchema.ANORDNUNGEN[(zeile + 1) % ErdsondenfeldSchema.ANORDNUNGEN.Count];
 
             object wert;
             if (SchemaTypKatalog.DatumSpalten.Contains(name))

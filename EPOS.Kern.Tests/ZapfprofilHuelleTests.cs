@@ -57,8 +57,7 @@ namespace EPOS.Kern.Tests
             PersonenJeWe = 2.5,
             Topologie = ZapfTopologie.Frischwasserstation,
             Zirkulation = false,
-            Ferienbeginn = new int?[] { 200, null, null, null },
-            Ferienende = new int?[] { 220, null, null, null },
+            Ferien = Zonenferienprobe.Liste(new int?[] { 200, null, null, null }, new int?[] { 220, null, null, null }),
             Jahresmesswert = 30000.0,
             JahresmesswertEinheit = ZapfMesswerteinheit.KwhJeJahr,
             JahresmesswertBilanzgrenze = ZapfBilanzgrenze.Zapfstelle,
@@ -102,9 +101,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(8.0, kopie.Bezugsmenge);
             Assert.Equal(ZapfNiveau.Mittel, kopie.Niveau);
             Assert.Equal(2.5, kopie.PersonenJeWe);
-            Assert.Equal(200, kopie.Ferienbeginn[0]);
+            Assert.Equal(200, kopie.Ferien[0].Beginn);
             Assert.All(kopie.Wohnungen, w => Assert.Equal(0, w.Id));
-            Assert.NotSame(stand.Zonen[0].Ferienbeginn, kopie.Ferienbeginn);
+            Assert.NotSame(stand.Zonen[0].Ferien, kopie.Ferien);
 
             // Die bestehende Zone: Id und alles Übrige bleiben, die vier Felder und die
             // Reihenfolge sind neu, der Name ist getrimmt.
@@ -170,7 +169,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { "ZPG_MSG_ZONE_OHNE_NAME", "ZPG_MSG_ZONE_OHNE_NUTZUNGSART", "ZPG_MSG_ZONE_OHNE_BEZUGSMENGE" },
                          m.Select(x => x.Kennung).ToArray());
             Assert.All(m, x => Assert.Equal(ZapfprofilMeldungsart.Fehler, x.Art));
-            Assert.Equal("Zone „Büro“: Bitte eine Nutzungsart wählen.", m[1].Text);
+            Assert.Equal("Bereich „Büro“: Bitte eine Nutzungsart wählen.", m[1].Text);
+            // ZB2: Jede Meldung einer Zone trägt deren Position — der Dialog nennt sie dort als nächsten Schritt.
+            Assert.Equal(new int?[] { 0, 1, 1 }, m.Select(x => x.Position).ToArray());
 
             e.Zonen.RemoveRange(0, 2);
             Assert.Empty(ZapfprofilHuelle.Pruefen(e));
@@ -181,7 +182,8 @@ namespace EPOS.Kern.Tests
             ZapfprofilMeldung doppelt = Assert.Single(ZapfprofilHuelle.Pruefen(e));
             Assert.Equal("ZPG_MSG_ZONE_NAME_DOPPELT", doppelt.Kennung);
             Assert.Equal("Wohnen", doppelt.Zone);
-            Assert.StartsWith("Zone „Wohnen“: Der Name ist mehrfach vergeben", doppelt.Text);
+            Assert.StartsWith("Bereich „Wohnen“: Der Name ist mehrfach vergeben", doppelt.Text);
+            Assert.Null(doppelt.Position);   // der doppelte Name betrifft mehrere Zonen
         }
 
         // =================================================================================
@@ -224,7 +226,7 @@ namespace EPOS.Kern.Tests
                 schluessel.Add("ZPG_BEZUG_" + ZapfprofilHuelle.Gross(b.ToString()));
                 schluessel.Add("ZPG_EINHEIT_" + ZapfprofilHuelle.Gross(b.ToString()));
             }
-            Assert.Equal(14, schluessel.Count);
+            Assert.Equal(16, schluessel.Count);                 // acht Bezugsarten, 8 = Zimmer
 
             string[] fehlend = schluessel.Where(k => string.IsNullOrEmpty(Text(k, DE)) || string.IsNullOrEmpty(Text(k, EN))).ToArray();
             Assert.True(fehlend.Length == 0, "Ohne Text in beiden Sprachen: " + string.Join(", ", fehlend));
@@ -243,37 +245,38 @@ namespace EPOS.Kern.Tests
             Assert.Equal("ZPG_SATZ_EINGABE_BEZUGSMENGE_NICHT_POSITIV", a.Kennung);
             Assert.Equal(ZapfprofilMeldungsart.Ablehnung, a.Art);
             // Der Satz nennt seine Zone selbst: kein Vorsatz, kein „Nicht rechenbar" (das sagt der Banner).
-            Assert.Equal("Die Zone „Büro“ hat keine positive Bezugsmenge.", a.Text);
-            Assert.Equal("Die Zone „Büro“ hat keine positive Bezugsmenge.", a.Klartext);
+            Assert.Equal("Der Bereich „Büro“ hat keine positive Bezugsmenge.", a.Text);
+            Assert.Equal("Der Bereich „Büro“ hat keine positive Bezugsmenge.", a.Klartext);
 
             // Ein Satz ohne Zone bekommt den Vorsatz der Zone.
             ZapfprofilMeldung ohneZone = ZapfprofilHuelle.Meldung(new ZapfAblehnung("Büro", ZapfEingabefehler.RasterUngueltig,
                 ZapfSatz.Neu("EINGABE_KALTWASSER_MONAT_UNGUELTIG")));
-            Assert.Equal("Zone „Büro“ trägt 0: Der Monat des Kaltwassermaximums ist keine Monatszahl 1 … 12.", ohneZone.Text);
+            Assert.Equal("Bereich „Büro“ trägt 0: Der Monat des Kaltwassermaximums ist keine Monatszahl 1 … 12.", ohneZone.Text);
 
             ZapfprofilMeldung z = ZapfprofilHuelle.Meldung(new ZapfAblehnung("", ZapfEingabefehler.ZirkulationUngueltig,
                 ZapfSatz.Neu("EINGABE_ZIRKULATION_METHODE")));
             Assert.Equal("Die Zirkulation trägt 0: Unbekannte Methode der Zirkulation.", z.Text);
 
-            // Ein Begriff am Satzanfang beginnt groß — in beiden Sprachen; die Nutzungsart steht mit Namen, nie als Id.
+            // Ein Begriff am Satzanfang beginnt groß — in beiden Sprachen; die Zone steht mit Namen, die
+            // fehlende Nutzungsart mit ihrer Nummer (es gibt zu ihr keinen Namen mehr).
             Assert.Equal("Die Speichertemperatur ist negativ.",
                          ZapfSatz.Neu("AUSLEGUNG_NEGATIV", ZapfSatz.Neu("BEGRIFF_SPEICHERTEMPERATUR")).Klartext);
-            Assert.Equal("Die Nutzungsart der Zone „Büro“ steht nicht (mehr) im Katalog — bitte eine Nutzungsart wählen.",
+            Assert.Equal("Die Nutzungsart Nr. 17 des Bereichs „Büro“ steht nicht (mehr) im Katalog — bitte eine Nutzungsart wählen.",
                          ZapfprofilHuelle.Meldung(new ZapfAblehnung("Büro", ZapfEingabefehler.NutzungsartFehlt,
-                             ZapfSatz.Neu("EINGABE_NUTZUNGSART_FEHLT", "Büro"))).Text);
+                             ZapfSatz.Neu("EINGABE_NUTZUNGSART_FEHLT", "Büro", 17))).Text);
 
             var hinweis = new ZapfHinweis("Wohnen", Mengengeruest.HINWEIS_BANDBREITE,
                 ZapfSatz.Neu("HINWEIS_BEDARF_AUSSERHALB_BANDBREITE", "Wohnen", 1.5, 0.25, "–"));
             ZapfprofilMeldung h = ZapfprofilHuelle.Meldung(hinweis);
             Assert.Equal("ZPG_SATZ_HINWEIS_BEDARF_AUSSERHALB_BANDBREITE", h.Kennung);
             Assert.Equal(ZapfprofilMeldungsart.Hinweis, h.Art);
-            Assert.Equal("Der spezifische Bedarf der Zone „Wohnen“ (1,5 kWh je Einheit und Tag) liegt außerhalb der "
+            Assert.Equal("Der spezifische Bedarf des Bereichs „Wohnen“ (1,5 kWh je Einheit und Tag) liegt außerhalb der "
                          + "Bandbreite des Niveaus (0,25 … –).", h.Text);
             Assert.Contains("(1.5 kWh je Einheit und Tag)", h.Klartext);
 
             CultureInfo.CurrentCulture = EN;
             CultureInfo.CurrentUICulture = EN;
-            Assert.Equal("The specific demand of zone “Wohnen” (1.5 kWh per unit and day) lies outside the range of the level "
+            Assert.Equal("The specific demand of area “Wohnen” (1.5 kWh per unit and day) lies outside the range of the level "
                          + "(0.25 … –).", ZapfprofilHuelle.Meldung(hinweis).Text);
             CultureInfo.CurrentCulture = DE;
             CultureInfo.CurrentUICulture = DE;
@@ -285,7 +288,7 @@ namespace EPOS.Kern.Tests
             ZapfprofilMeldung s = ZapfprofilHuelle.Meldung(
                 new ZapfprofilSpeicherException(ZapfSpeicherfehler.ZoneFremd, "Nord", ZapfSatz.Neu("SPEICHER_ZONE_FREMD", "Nord")));
             Assert.Equal("ZPG_SATZ_SPEICHER_ZONE_FREMD", s.Kennung);
-            Assert.Equal("Das Zapfprofil wurde nicht gespeichert — die Zone „Nord“ gehört zu einem anderen Projekt.", s.Text);
+            Assert.Equal("Das Zapfprofil wurde nicht gespeichert — der Bereich „Nord“ gehört zu einem anderen Projekt.", s.Text);
             Assert.Equal(ZapfprofilMeldungsart.Fehler, s.Art);
         }
 
@@ -300,7 +303,7 @@ namespace EPOS.Kern.Tests
                 ZapfSatz.Neu(Zapfkategoriensatz.KENNUNG_KATEGORIEN_FEHLEN, "Probe", "T1", "Nord"));
             ZapfprofilMeldung m = ZapfprofilHuelle.Meldung(ablehnung);
             Assert.Equal("ZPG_SATZ_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN", m.Kennung);
-            Assert.Equal("Für die Nutzungsart „Probe“ (Katalogversion T1) der Zone „Nord“ "
+            Assert.Equal("Für die Nutzungsart „Probe“ (Katalogversion T1) des Bereichs „Nord“ "
                          + "stehen keine Zapfkategorien im Katalog.", m.Text);
             Assert.Equal(ablehnung.Klartext, m.Klartext);
             string en = Text(m.Kennung, EN);
@@ -389,7 +392,7 @@ namespace EPOS.Kern.Tests
             ZapfprofilVorschauDaten v = ZapfprofilHuelle.Vorschau(PROJEKT, eingabe, ZapfprofilCtrl.Lies(PROJEKT));
             Assert.Equal(ZapfprofilVorschauZustand.Gerechnet, v.Zustand);
             Assert.Equal(3, v.Ansichten.Count);
-            Assert.Equal("Summe aller Zonen", v.Summe.Titel);
+            Assert.Equal("Summe aller Bereiche", v.Summe.Titel);
             Assert.NotEqual("", v.Status);
 
             // Derselbe Aufruf wie der Lauf: BedarfsVorschauCtrl mit dem Arbeitsstand.
@@ -409,7 +412,7 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(s.TagesgangModell);
             Assert.NotNull(s.WochenprofilModell);
             Assert.NotNull(s.JahresgangModell);
-            Assert.Contains("Summe aller Zonen", s.UnterschriftTagesgang);
+            Assert.Contains("Summe aller Bereiche", s.UnterschriftTagesgang);
             Assert.NotNull(s.Kennzahlen.GroessterStundenwertKw);
             Assert.Equal("Bilanzwert, keine Auslegungsgröße", s.Kennzahlen.VermerkGroessterStundenwert);
 
@@ -424,7 +427,7 @@ namespace EPOS.Kern.Tests
             ZapfprofilMeldung m = Assert.Single(v.Meldungen, x => x.Art == ZapfprofilMeldungsart.Ablehnung);
             Assert.Equal("Zone leer", m.Zone);
             Assert.StartsWith(ZapfSatz.PRAEFIX + "EINGABE_", m.Kennung);
-            Assert.Equal("Die Zone „Zone leer“ hat keine positive Bezugsmenge.", m.Text);
+            Assert.Equal("Der Bereich „Zone leer“ hat keine positive Bezugsmenge.", m.Text);
         }
 
         /// <summary>

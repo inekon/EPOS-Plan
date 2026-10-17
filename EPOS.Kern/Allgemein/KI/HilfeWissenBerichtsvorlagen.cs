@@ -424,6 +424,18 @@ namespace WindowsFormsApplication1
                     "die Lage der ersten Stellen. WIKI: Programm Dokumentation/Bericht#vorlage.",
                     WIKI_BERICHT),
 
+                new WissensAbschnitt(KiMeldungskennung.VF_PRUEF_KAPITEL_IM_BLOCK,
+                    "Meldung VF_PRUEF_KAPITEL_IM_BLOCK: Ein Kapitel steht in einem Wiederholblock",
+                    KiChatKontext.B_BERICHT,
+                    "BEDEUTUNG: Ein Kapitelplatzhalter (etwa {{kapitel.ergebnisse}}) steht zwischen {{#je stand}} " +
+                    "(oder {{#je variante}}, {{#je gebaeude}}) und {{/je}}. Ein Kapitel setzt der Bericht nur einmal " +
+                    "ein — in der ersten Wiederholung; in den übrigen bleibt der Platzhalter gelb markiert stehen. " +
+                    "URSACHE: Das Kapitel " +
+                    "wurde in den Block gezogen, damit es je Stand erscheint. ABHILFE: Das Kapitel vor oder hinter den " +
+                    "Block setzen; was je Stand erscheinen soll, als Werte, Tabellen und Bilder in den Block schreiben. " +
+                    "WIKI: Programm Dokumentation/Bericht#vorlage.",
+                    WIKI_BERICHT),
+
                 new WissensAbschnitt(KiMeldungskennung.VF_PRUEF_SPAETER,
                     "Meldung VF_PRUEF_SPAETER: Der Platzhalter wirkt erst in einer späteren Programmfassung",
                     KiChatKontext.B_BERICHT,
@@ -527,6 +539,17 @@ namespace WindowsFormsApplication1
                     "BEDEUTUNG: Die Vorlage enthielt Kommentare; der Bericht enthält keinen davon. URSACHE: " +
                     "Kommentare sind Notizen für den Autor der Vorlage und gehören nicht in den Bericht. ABHILFE: " +
                     "Nichts zu tun — die Vorlage selbst bleibt unverändert. WIKI: Programm " +
+                    "Dokumentation/Bericht#vorlage.",
+                    WIKI_BERICHT),
+
+                new WissensAbschnitt(KiMeldungskennung.BV_LAUF_NACHGEHOLT,
+                    "Meldung BV_LAUF_NACHGEHOLT: Teile der Wirtschaftlichkeitsdaten nachgerechnet",
+                    KiChatKontext.B_BERICHT,
+                    "BEDEUTUNG: Beim Schreiben las der Bericht Teile der Wirtschaftlichkeitsdaten, die die Datensammlung " +
+                    "nicht geliefert hatte, und rechnete sie nach; die Meldung nennt sie. Der Bericht ist vollständig. " +
+                    "URSACHE: Ein Teil der Datensammlung scheiterte, oder statt der geprüften Vorlage sprang die " +
+                    "Standardvorlage ein, die mehr braucht als die gewählte. ABHILFE: Nichts zu tun; tritt die Meldung " +
+                    "bei jedem Lauf auf, die Vorlage prüfen und den Bericht erneut erstellen. WIKI: Programm " +
                     "Dokumentation/Bericht#vorlage.",
                     WIKI_BERICHT),
 

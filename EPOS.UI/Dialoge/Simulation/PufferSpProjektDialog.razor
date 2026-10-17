@@ -111,7 +111,20 @@
                 {
                     <button type="button" class="epos-knopf" @onclick="KatalogAnsehen">@BtnKatalog</button>
                 }
+                @* Stufe P2 (Konzept Pufferspeicher-Auslegung, Abschnitt 6): „Auslegen…" oeffnet die
+                   Auslegung fuer den gewaehlten Speicher (ohne Wahl: fuer einen neuen) als freie Ansicht.
+                   Der Knopf VERLAESST den Dialog wie Abbrechen - die Zeile darunter sagt es; nach der
+                   Uebernahme liest die Konfiguration den Speicher frisch. Kein Delegat, kein Knopf. *@
+                @if (AuslegenOeffnen is not null)
+                {
+                    <button type="button" class="epos-knopf epos-psp-auslegen" title="@HinweisAuslegen"
+                            @onclick="Auslegen">@BtnAuslegen</button>
+                }
             </div>
+            @if (AuslegenOeffnen is not null)
+            {
+                <p class="epos-leisezeile epos-psp-auslegen-hinweis">@HinweisAuslegen</p>
+            }
         </KindInhalt>
     </Gruppenkopf>
 
@@ -123,8 +136,11 @@
                Schwellen, Mindestfuellstand und Leistungsgrenzen. Der Fensterknopf oben
                rechts bleibt, was er ist. *@
             <div class="epos-berechnungshilfe">
+                @* Der Weg in die Rubrik Grundlagen (Konzept Technikdokumentation, Abschnitt 7). *@
+                <InfoKnopf Schluessel="Form_PufferSp_Projekt.Grundlagen"
+                           StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
                 <InfoKnopf Schluessel="Form_PufferSp_Projekt.Berechnung"
-                           StandardKurztext="Berechnungsweg Pufferspeicher" />
+                           StandardKurztext="Berechnungsweg Pufferspeicher" MitAssistent="false" />
             </div>
             @* Formularraster (iU8-E-2, Nachzug iU8-O-1): Elf Felder standen hier
                untereinander ueber die ganze Breite, die Beschriftung DARUEBER und
@@ -144,6 +160,11 @@
 
                     <Textfeld Bezeichnung="@LabelBezeichner" Wert="@_bezeichner"
                               WertChanged="w => Merken(() => _bezeichner = w)" />
+                    @if (_katalogherkunft.Length > 0)
+                    {
+                        @* Der Katalogsatz, aus dem die Pufferauslegung den Puffer uebernommen hat (ID_Stamm). *@
+                        <Herleitungszeile Text="@string.Format(System.Globalization.CultureInfo.CurrentCulture, HerkunftKatalog, _katalogherkunft)" />
+                    }
 
                     @* Die Mehrfachauswahl spannt ueber alle Spalten (Stilblatt,
                        Nachzug iU8-O-1) - drei Haekchen untereinander in einer
@@ -165,11 +186,17 @@
 
                     <Formulargruppe Titel="@GruppeTemperaturen">
                         <KindInhalt>
-                            <Ganzzahlfeld Bezeichnung="@LabelVorlauf" Einheit="°C" Feldname="@LabelVorlauf"
+                            @* KU3-5: Beim Kaeltespeicher sind es die Kaltwassertemperaturen -
+                               dieselben Felder, kalt (Vorlauf) unter warm (Ruecklauf). *@
+                            <Ganzzahlfeld Bezeichnung="@BeschriftungVorlauf" Einheit="°C" Feldname="@BeschriftungVorlauf"
                                           Wert="@_vorlauf" WertChanged="w => Setzen(() => _vorlauf = w)" />
-                            <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="°C" Feldname="@LabelRuecklauf"
+                            <Ganzzahlfeld Bezeichnung="@BeschriftungRuecklauf" Einheit="°C" Feldname="@BeschriftungRuecklauf"
                                           Wert="@_ruecklauf" WertChanged="w => Setzen(() => _ruecklauf = w)" />
                             <Herleitungszeile Text="@_qmax" />
+                            @if (IstKaeltespeicher)
+                            {
+                                <Herleitungszeile Text="@HinweisKaeltespeicher" />
+                            }
                         </KindInhalt>
                     </Formulargruppe>
 
@@ -197,6 +224,26 @@
         </KindInhalt>
     </Gruppenkopf>
 
+    @* --- Bereitschaft und Frischwassermodul (Welle M7, Konzept Simulationsablauf 21) ---- *@
+    <Gruppenkopf Titel="@GruppeOptionen">
+        <KindInhalt>
+            <Formularraster>
+                <KindInhalt>
+                    <Auswahlfeld Bezeichnung="@LabelBereitschaftWeg" Eintraege="@BereitschaftWege"
+                                 Auswahl="@_bereitschaftWeg" AuswahlChanged="w => Merken(() => _bereitschaftWeg = w ?? 0)" />
+                    <Zahlenfeld Bezeichnung="@LabelAufstellraum" Einheit="°C" Feldname="@LabelAufstellraum"
+                                Wert="@_aufstellraum" WertChanged="w => Merken(() => _aufstellraum = w)" />
+                    <Herleitungszeile Text="@HinweisAufstellraum" />
+                    <Schalter Bezeichnung="@LabelFrischwassermodul" Wert="@_fwm"
+                              WertChanged="w => Merken(() => _fwm = w)" />
+                    <Zahlenfeld Bezeichnung="@LabelFwmGraedigkeit" Einheit="K" Feldname="@LabelFwmGraedigkeit"
+                                Wert="@_fwmGraedigkeit" WertChanged="w => Merken(() => _fwmGraedigkeit = w)" />
+                    <Herleitungszeile Text="@HinweisFwm" />
+                </KindInhalt>
+            </Formularraster>
+        </KindInhalt>
+    </Gruppenkopf>
+
     @* --- Schichtung --------------------------------------------------------- *@
     <Gruppenkopf Titel="@GruppeSchichtung">
         <KindInhalt>
@@ -215,6 +262,9 @@
                                         Wert="@_ladeleistung" WertChanged="w => Merken(() => _ladeleistung = w)" />
                             <Zahlenfeld Bezeichnung="@LabelEntladeleistung" Einheit="kW" Feldname="@LabelEntladeleistung"
                                         Wert="@_entladeleistung" WertChanged="w => Merken(() => _entladeleistung = w)" />
+                            @* HK4 (Entscheidungsvorlage Modellgrenzen): ein Uebertrager zwischen Puffer
+                               und Kessel begrenzt die Leistung - die Entladegrenze traegt sie. *@
+                            <Herleitungszeile Text="@HinweisUebertrager" />
                         </KindInhalt>
                     </Formulargruppe>
 
@@ -231,6 +281,12 @@
                                             Wert="@_lambda" WertChanged="w => Merken(() => _lambda = w)" />
                                 <Zahlenfeld Bezeichnung="@LabelTNutzBW" Einheit="°C" Feldname="@LabelTNutzBW"
                                             Wert="@_tNutzBW" WertChanged="w => Merken(() => _tNutzBW = w)" />
+                                @* PS1 (a): Zonenanteile von oben; der Knopf setzt vier Zonen mit dem
+                                   Vorschlag fuer Kombispeicher (Kern: PufferOptionen). *@
+                                <Textfeld Bezeichnung="@LabelSchichtAnteile" Wert="@_anteile"
+                                          WertChanged="w => Merken(() => _anteile = w ?? string.Empty)" />
+                                <button type="button" class="epos-knopf" @onclick="VorschlagKombispeicher">@BtnVorschlagKombi</button>
+                                <Herleitungszeile Text="@HinweisAnteile" />
                             </KindInhalt>
                         </Formulargruppe>
 
@@ -367,6 +423,19 @@
     [Parameter] public Func<IReadOnlyDictionary<string, object>>? VerwaltungGaben { get; set; }
 
     /// <summary>
+    /// „Auslegen…" (Stufe P2): öffnet die Pufferspeicher-Auslegung für den gewählten Speicher
+    /// (<c>0</c> = einen neuen). Ohne Delegat fehlt der Knopf.
+    /// </summary>
+    [Parameter] public Action<int>? AuslegenOeffnen { get; set; }
+
+    /// <summary>„Auslegen…" (<c>PAUS_BTN_AUSLEGEN</c>).</summary>
+    [Parameter] public string BtnAuslegen { get; set; } = "Auslegen…";
+
+    /// <summary>Die Zeile unter dem Knopf: er verlässt den Dialog ohne zu speichern (<c>PAUS_AUSLEGEN_VERWIRFT</c>).</summary>
+    [Parameter] public string HinweisAuslegen { get; set; } =
+        "„Auslegen…“ verlässt diesen Dialog ohne zu speichern und öffnet die Pufferspeicher-Auslegung.";
+
+    /// <summary>
     /// Der Dialog ist zu Ende. Nach OK ist der Arbeitsstand geschrieben und geliefert
     /// wird der ZULETZT angelegte oder gewählte Speicher (<c>ID_Puffer</c>), <c>0</c>
     /// wenn keiner (mehr) dasteht. Nach Abbrechen (auch Esc) kommt <c>0</c>: Es wurde
@@ -407,9 +476,28 @@
     [Parameter] public string GruppeLeistungsgrenzen { get; set; } = "Leistungsgrenzen";
     [Parameter] public string GruppeSchichtmodell { get; set; } = "Schichtmodell";
 
+    // Welle M7 (Konzept Simulationsablauf 21) und Hinweis HK4.
+    [Parameter] public string GruppeOptionen { get; set; } = "Bereitschaft und Frischwassermodul";
+    [Parameter] public string LabelBereitschaftWeg { get; set; } = "Bereitschaftsverlust:";
+    [Parameter] public string BereitschaftTag { get; set; } = "Tageswert anteilig zum Füllstand";
+    [Parameter] public string BereitschaftTemperatur { get; set; } = "nach Temperatur je Zone";
+    [Parameter] public string LabelAufstellraum { get; set; } = "Aufstellraum:";
+    [Parameter] public string HinweisAufstellraum { get; set; } = "";
+    [Parameter] public string LabelSchichtAnteile { get; set; } = "Zonenanteile von oben:";
+    [Parameter] public string BtnVorschlagKombi { get; set; } = "Vorschlag Kombispeicher";
+    [Parameter] public string HinweisAnteile { get; set; } = "";
+    [Parameter] public string LabelFrischwassermodul { get; set; } = "Frischwassermodul";
+    [Parameter] public string LabelFwmGraedigkeit { get; set; } = "Grädigkeit Frischwassermodul:";
+    [Parameter] public string HinweisFwm { get; set; } = "";
+    [Parameter] public string HinweisUebertrager { get; set; } = "Übertrager: Leistung als Entladegrenze eintragen.";
+    [Parameter] public string FehlerAufstellraum { get; set; } = "Der Aufstellraum muss zwischen 0 und 35 °C liegen.";
+    [Parameter] public string FehlerFwmGraedigkeit { get; set; } = "Die Grädigkeit des Frischwassermoduls muss zwischen 0 und 20 K liegen.";
+    [Parameter] public string FehlerAnteile { get; set; } = "Zonenanteile: {0}";
+
     [Parameter] public string LabelAusKatalog { get; set; } = "Aus Katalog:";
     [Parameter] public string KatalogFreieEingabe { get; set; } = "(freie Eingabe)";
     [Parameter] public string LabelBezeichner { get; set; } = "Bezeichner:";
+    [Parameter] public string HerkunftKatalog { get; set; } = "aus Katalog: {0}";
     [Parameter] public string LabelVerwendung { get; set; } = "Nutzung:";
     [Parameter] public string LabelGesamtvolumen { get; set; } = "Gesamtvolumen:";
     [Parameter] public string LabelBereitschaftsverluste { get; set; } = "Bereitschaftsverluste:";
@@ -447,6 +535,28 @@
     [Parameter] public string NutzungHeizung { get; set; } = "Heizung";
     [Parameter] public string NutzungBrauchwasser { get; set; } = "Brauchwasser";
     [Parameter] public string NutzungProzess { get; set; } = "Prozesswärme";
+
+    /// <summary>KU3-5: die vierte Nutzung — der Kältespeicher (Kaltwasser), ausschließlich.</summary>
+    [Parameter] public string NutzungKaelte { get; set; } = "Kälte";
+
+    /// <summary>KU3-5: Beschriftung der Temperaturfelder beim Kältespeicher.</summary>
+    [Parameter] public string LabelKaltVorlauf { get; set; } = "Kaltwasser-Vorlauf:";
+    [Parameter] public string LabelKaltRuecklauf { get; set; } = "Kaltwasser-Rücklauf:";
+
+    /// <summary>KU3-5: die Zeile unter den Temperaturen beim Kältespeicher — wie er rechnet.</summary>
+    [Parameter] public string HinweisKaeltespeicher { get; set; } = "";
+
+    /// <summary>KU3-5: Kaltwasser-Vorlauf nicht unter dem Rücklauf.</summary>
+    [Parameter] public string FehlerKaeltepaar { get; set; } = "Beim Kältespeicher liegt der Vorlauf unter dem Rücklauf.";
+
+    /// <summary>KU3-5: Nutzung 3 = Kältespeicher.</summary>
+    private const int NUTZUNG_KAELTE = 3;
+
+    /// <summary>KU3-5: Ist der Speicher in der Maske ein Kältespeicher?</summary>
+    public bool IstKaeltespeicher => Hat(NUTZUNG_KAELTE);
+
+    private string BeschriftungVorlauf => IstKaeltespeicher ? LabelKaltVorlauf : LabelVorlauf;
+    private string BeschriftungRuecklauf => IstKaeltespeicher ? LabelKaltRuecklauf : LabelRuecklauf;
 
     /// <summary>Herleitung unter der Mehrfachauswahl; <c>{0}</c> ist der Altwert.</summary>
     [Parameter] public string HerleitungVerwendung { get; set; }
@@ -571,6 +681,8 @@
 
     private int? _katalogzeile = -1;
     private string _bezeichner = "";
+    /// <summary>Der Bezeichner des Katalogsatzes, aus dem der Puffer übernommen wurde; leer = keiner.</summary>
+    private string _katalogherkunft = "";
     private IReadOnlyList<int> _klassenSet = Array.Empty<int>();
     private int? _volumen;
     private double? _verluste;
@@ -591,6 +703,25 @@
     private double? _entnahmeProzess;
     private double? _ladeleistung;
     private double? _entladeleistung;
+
+    // Welle M7: 0 = Tageswert, 1 = nach Temperatur.
+    private int? _bereitschaftWeg = 0;
+    private double? _aufstellraum;
+    private string _anteile = "";
+    private bool _fwm;
+    private double? _fwmGraedigkeit;
+
+    /// <summary>Die zwei Wege des Bereitschaftsverlusts.</summary>
+    private IReadOnlyList<(int Id, string Text)> BereitschaftWege
+        => new[] { (0, BereitschaftTag), (1, BereitschaftTemperatur) };
+
+    /// <summary>PS1 (a): vier Zonen mit dem Vorschlag für Kombispeicher.</summary>
+    private void VorschlagKombispeicher()
+        => Setzen(() =>
+        {
+            _schichten = WindowsFormsApplication1.PufferOptionen.VORSCHLAG_KOMBISPEICHER.Length;
+            _anteile = WindowsFormsApplication1.PufferOptionen.VorschlagKombispeicherText();
+        });
 
     private string _qmax = "";
     private string _nachrangAutomatik = "";
@@ -691,7 +822,8 @@
     {
         (0, NutzungHeizung),
         (1, NutzungBrauchwasser),
-        (2, NutzungProzess)
+        (2, NutzungProzess),
+        (NUTZUNG_KAELTE, NutzungKaelte)
     };
 
     /// <summary>
@@ -722,7 +854,7 @@
         => Dienste is null
             ? ""
             : string.Format(HerleitungVerwendung,
-                            Dienste.KlassenSetAnzeige(Hat(0), Hat(1), Hat(2)));
+                            IstKaeltespeicher ? NutzungKaelte : Dienste.KlassenSetAnzeige(Hat(0), Hat(1), Hat(2)));
 
     // --- Aufbau -----------------------------------------------------------------
 
@@ -743,7 +875,7 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     // =================================================================================
@@ -814,13 +946,26 @@
         NutzungBrauchwasserSetzen = an => KiNutzung(1, an),
         NutzungProzessLesen = () => Hat(2),
         NutzungProzessSetzen = an => KiNutzung(2, an),
+        NutzungKaelteLesen = () => Hat(NUTZUNG_KAELTE),
+        NutzungKaelteSetzen = an => KiNutzung(NUTZUNG_KAELTE, an),
 
         EntnahmeHeizungLesen = () => _entnahmeHeizung,
         EntnahmeHeizungSetzen = w => KiGeaendert(() => _entnahmeHeizung = w),
         EntnahmeBrauchwasserLesen = () => _entnahmeBW,
         EntnahmeBrauchwasserSetzen = w => KiGeaendert(() => _entnahmeBW = w),
         EntnahmeProzessLesen = () => _entnahmeProzess,
-        EntnahmeProzessSetzen = w => KiGeaendert(() => _entnahmeProzess = w)
+        EntnahmeProzessSetzen = w => KiGeaendert(() => _entnahmeProzess = w),
+
+        BereitschaftTemperaturLesen = () => _bereitschaftWeg == 1,
+        BereitschaftTemperaturSetzen = an => KiGeaendert(() => _bereitschaftWeg = an ? 1 : 0),
+        AufstellraumLesen = () => _aufstellraum,
+        AufstellraumSetzen = w => KiGeaendert(() => _aufstellraum = w),
+        ZonenanteileLesen = () => _anteile,
+        ZonenanteileSetzen = w => KiGeaendert(() => _anteile = w ?? string.Empty),
+        FrischwassermodulLesen = () => _fwm,
+        FrischwassermodulSetzen = an => KiGeaendert(() => _fwm = an),
+        FwmGraedigkeitLesen = () => _fwmGraedigkeit,
+        FwmGraedigkeitSetzen = w => KiGeaendert(() => _fwmGraedigkeit = w)
     };
 
     private void KiGeaendert(Action setzen)
@@ -991,9 +1136,10 @@
 
         _katalogzeile = -1;                        // ein vorhandener Speicher wird nicht neu uebernommen
         _bezeichner = p.Bezeichner;
+        _katalogherkunft = p.Katalogherkunft ?? "";
         _volumen = p.Gesamtvolumen;
         _verluste = p.Bereitschaftsverluste;
-        _klassenSet = Set(p.Heizung, p.Brauchwasser, p.Prozess);
+        _klassenSet = Set(p.Heizung, p.Brauchwasser, p.Prozess, p.Kaelte);
 
         _vorlauf = p.Vorlauf > 0 ? p.Vorlauf : null;
         _ruecklauf = p.Ruecklauf > 0 ? p.Ruecklauf : null;
@@ -1019,9 +1165,10 @@
 
         _katalogzeile = e.Katalogzeile;
         _bezeichner = e.Bezeichner;
+        _katalogherkunft = z.Id > 0 ? Dienste?.PufferLesen(z.Id)?.Katalogherkunft ?? "" : "";
         _volumen = e.Volumen;
         _verluste = e.Verluste;
-        _klassenSet = Set(e.Heizung, e.Brauchwasser, e.Prozess);
+        _klassenSet = Set(e.Heizung, e.Brauchwasser, e.Prozess, e.Kaelte);
 
         _vorlauf = e.Vorlauf;
         _ruecklauf = e.Ruecklauf;
@@ -1048,6 +1195,7 @@
         VermerkZuruecknehmen();
         _katalogzeile = -1;
         _bezeichner = "";
+        _katalogherkunft = "";
         _volumen = null;
         _verluste = 0;
 
@@ -1086,8 +1234,10 @@
     /// <summary>Die Nutzung, mit der ein NEUER Speicher aufgeht (aus <see cref="Verwendung"/>).</summary>
     [Parameter] public IReadOnlyList<int> VorbelegteNutzung { get; set; } = new[] { 0 };
 
-    private static IReadOnlyList<int> Set(bool h, bool b, bool p)
+    private static IReadOnlyList<int> Set(bool h, bool b, bool p, bool k = false)
     {
+        // KU3-5: Der Kältespeicher ist ausschließlich - er steht allein im Set.
+        if (k) return new[] { NUTZUNG_KAELTE };
         var l = new List<int>();
         if (h) l.Add(0);
         if (b) l.Add(1);
@@ -1109,6 +1259,12 @@
         // Leistungsfeld liest sich wie "keine Leistung" und meint das Gegenteil.
         _ladeleistung = d.LadeleistungMax > 0 ? d.LadeleistungMax : null;
         _entladeleistung = d.EntladeleistungMax > 0 ? d.EntladeleistungMax : null;
+
+        _bereitschaftWeg = WindowsFormsApplication1.PufferOptionen.IstTemperaturweg(d.BereitschaftWeg) ? 1 : 0;
+        _aufstellraum = d.AufstellraumC;
+        _anteile = d.SchichtAnteile ?? "";
+        _fwm = d.Frischwassermodul;
+        _fwmGraedigkeit = d.FwmGraedigkeitK;
     }
 
     private void KatalogWaehlen(int? zeile)
@@ -1120,6 +1276,7 @@
         // cbKatalog_SelectedIndexChanged:1566-1591 - drei Felder aus der Katalogzeile.
         PspKatalogzeile k = _katalog[zeile.Value];
         _bezeichner = k.Bezeichner;
+        _katalogherkunft = "";
         _volumen = k.Gesamtvolumen;
         _verluste = k.Bereitschaftsverluste;
 
@@ -1131,6 +1288,13 @@
         // Das LEERE Set wird hier NICHT abgefangen: Wer von "nur Heizung" auf "nur
         // Brauchwasser" umstellt, muss zwischendurch durch das leere Set gehen. Die
         // Pflichtpruefung sitzt im Uebernehmen.
+        //
+        // KU3-5: Kälte schließt die drei Wärmenutzungen aus - wer Kälte anhakt, wählt sie ab;
+        // wer zu Kälte eine Wärmenutzung anhakt, wählt Kälte ab.
+        if (set.Contains(NUTZUNG_KAELTE) && set.Count > 1)
+            set = _klassenSet.Contains(NUTZUNG_KAELTE)
+                ? set.Where(n => n != NUTZUNG_KAELTE).ToList()
+                : new[] { NUTZUNG_KAELTE };
         _klassenSet = set;
         Beruehrt();
         AnzeigenAktualisieren();
@@ -1184,6 +1348,7 @@
         _automatik = _bearbeiteteId > 0 && Dienste is not null
             ? Dienste.Automatiktext(_bearbeiteteId) : "";
         _entladeposition = _bearbeiteteId > 0 && Dienste is not null
+            && !IstKaeltespeicher   // KU3-5: der Kältespeicher steht in keiner Wärmeordnung
             ? Dienste.Entladeposition(_bearbeiteteId, Hat(0), Hat(1), Hat(2)) : "";
     }
 
@@ -1196,10 +1361,12 @@
         int vl = _vorlauf ?? 0;
         int rl = _ruecklauf ?? 0;
 
-        if (Dienste is null || v <= 0 || vl <= rl) { _qmax = ""; return; }
+        // KU3-5: Beim Kältespeicher ist die Spreizung Rücklauf − Vorlauf.
+        int spreizung = IstKaeltespeicher ? rl - vl : vl - rl;
+        if (Dienste is null || v <= 0 || vl <= 0 || spreizung <= 0) { _qmax = ""; return; }
 
         _qmax = string.Format(AnzeigeQmax,
-            Dienste.Kapazitaet(v, vl - rl)
+            Dienste.Kapazitaet(v, spreizung)
                    .ToString("0.0", System.Globalization.CultureInfo.CurrentCulture));
     }
 
@@ -1465,6 +1632,9 @@
     /// <summary>Steht der Auslieferungskatalog? (Prüfhilfe für Tests.)</summary>
     public bool VerwaltungOffen => _verwaltungGaben is not null;
 
+    /// <summary>„Auslegen…" — verlässt den Dialog wie Abbrechen und öffnet die Auslegung (Stufe P2).</summary>
+    private void Auslegen() => AuslegenOeffnen?.Invoke(_bearbeiteteId > 0 ? _bearbeiteteId : 0);
+
     private Task KatalogAnsehen()
     {
         if (VerwaltungGaben is null) return Task.CompletedTask;
@@ -1495,8 +1665,8 @@
         string bezeichner = (_bezeichner ?? "").Trim();
         if (bezeichner.Length == 0) { fehler = FehlerBezeichnerFehlt; return null; }
 
-        bool h = Hat(0), b = Hat(1), p = Hat(2);
-        if (!h && !b && !p) { fehler = FehlerKlassenSetLeer; return null; }
+        bool h = Hat(0), b = Hat(1), p = Hat(2), k = IstKaeltespeicher;
+        if (!h && !b && !p && !k) { fehler = FehlerKlassenSetLeer; return null; }
 
         if (_volumen is null || _volumen.Value <= 0) { fehler = FehlerVolumen; return null; }
 
@@ -1510,7 +1680,11 @@
         {
             string vt = Zahltext(_vorlauf);
             string rt = Zahltext(_ruecklauf);
-            fehler = Dienste?.TemperaturenPruefen(vt, rt);
+            // KU3-5: Das Kaltwasserpaar liegt gespiegelt (kalt unter warm) - eigene Prüfung.
+            if (k)
+                fehler = _vorlauf is > 0 && _ruecklauf is > 0 && _vorlauf < _ruecklauf ? null : FehlerKaeltepaar;
+            else
+                fehler = Dienste?.TemperaturenPruefen(vt, rt);
             if (!string.IsNullOrEmpty(fehler)) return null;
             fehler = null;
             vorlauf = _vorlauf;
@@ -1547,7 +1721,7 @@
 
         return new PspEingaben(bezeichner, _volumen.Value, verluste, vorlauf, ruecklauf,
                                ein, aus, nachrang, reserve, _entladeprio ?? 0,
-                               h, b, p, schicht, _katalogzeile ?? -1);
+                               h, b, p, schicht, _katalogzeile ?? -1, k);
     }
 
     private static string Zahltext(int? wert)
@@ -1601,8 +1775,19 @@
         if (!ZahlOderLeer(_entladeleistung, string.Format(FehlerLeistung, NameEntladeleistungMax),
                           0, double.MaxValue, true, out double? entlade, out fehler)) return null;
 
+        // Welle M7: Aufstellraum 0 … 35 °C, Grädigkeit 0 … 20 K, Zonenanteile mit der Prüfung des Kerns.
+        if (!ZahlOderLeer(_aufstellraum, FehlerAufstellraum, 0, 35, true, out double? raum, out fehler)) return null;
+        if (!ZahlOderLeer(_fwmGraedigkeit, FehlerFwmGraedigkeit, 0, 20, true, out double? grad, out fehler)) return null;
+        string? anteile = string.IsNullOrWhiteSpace(_anteile) ? null : _anteile.Trim();
+        if (anteile != null)
+        {
+            string? f = WindowsFormsApplication1.PufferOptionen.AnteilePruefen(anteile, _schichten ?? 1, out _);
+            if (f != null) { fehler = string.Format(FehlerAnteile, f); return null; }
+        }
+        string? weg = _bereitschaftWeg == 1 ? WindowsFormsApplication1.DbWerte.PSP_BEREITSCHAFT_TEMPERATUR : null;
+
         return new PspSchichtdaten(_schichten ?? 1, hoehe, lambda, tNutz, eH, eB, eP,
-                                   lade ?? 0, entlade ?? 0);
+                                   lade ?? 0, entlade ?? 0, weg, raum, anteile, _fwm, grad);
     }
 
     private static bool ZahlOderLeer(double? feld, string fehlertext, double min, double max,

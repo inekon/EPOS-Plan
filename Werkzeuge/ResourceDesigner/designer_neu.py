@@ -99,7 +99,10 @@ for n,a,b in beispiele: print('---',n); print('ALT:',repr(a)); print('NEU:',repr
 # darum hier auf die Bytes bringen, die tatsaechlich geschrieben wuerden - das BOM steckt
 # schon als ﻿ im KOPF (Textmodus-Lesen mit 'utf-8' schneidet es nicht ab, anders als
 # 'utf-8-sig'), CRLF kommt erst hier per replace herein.
-neu_disk=neu.replace('\n','\r\n').encode('utf-8')
+# Zeilenenden folgen der Datei auf der Platte: liegt sie mit LF (so im Repositorium), bleibt
+# LF; nur eine CRLF-Datei wird mit CRLF geschrieben - sonst kippt jeder Lauf alle Zeilen.
+zeilenende='\r\n' if b'\r\n' in alt_disk else '\n'
+neu_disk=neu.replace('\n',zeilenende).encode('utf-8')
 # Der BYTE-Vergleich sagt VOR dem Schreiben, was ein Schreiblauf auf der Platte aendern
 # wuerde; "0" heisst, die Datei ist auf dem Stand (Inhalt UND Zeilenenden UND BOM) und der
 # Lauf laesst sie byte-gleich liegen. Ein reiner Zeichen-Vergleich saehe das nicht, weil

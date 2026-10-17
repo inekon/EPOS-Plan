@@ -76,6 +76,35 @@
 
         /// <summary>IFC-GUID oder gbXML-id der Quellentität; <c>null</c> = keine.</summary>
         public string Quellkennung;
+        /// <summary>
+        /// Der Weg, auf dem die Fläche entstand (<c>Tab_Bauteil.Flaechenherkunft</c>, Schemaschritt
+        /// <see cref="FlaechenherkunftSchema"/>; Werte <see cref="FlaechenherkunftSchema.WERTE"/>): Mengensatz,
+        /// Raumgrenze, Körper oder schematisch. <c>null</c> = Bestand, von Hand angelegt oder die Fläche von Hand
+        /// geändert. Setzt nur der Gebäudeimport; der Schreibweg der Pflege setzt den Wert auf <c>null</c>, sobald
+        /// die gespeicherte Fläche sich ändert.
+        /// </summary>
+        public string Flaechenherkunft;
+
+        /// <summary>
+        /// Woher der U-Wert stammt (<c>Tab_Bauteil.U_Herkunft</c>, Schemaschritt <see cref="BauteilUHerkunftSchema"/>; Werte
+        /// <see cref="DbWerte.HERKUENFTE"/>): von Hand (<c>MANUELL</c>), Aufbau aus dem Katalog (<c>KATALOG</c>), Datei
+        /// (<c>IFC</c>, <c>GBXML</c>, <c>SQPROJ</c>) oder Vorgabe (<c>VORGABE</c>). <c>null</c> = unbekannt (Bestand). Die Pflege
+        /// leitet den Wert beim Speichern aus dem gespeicherten Stand ab (<c>GebaeudeZonenCtrl.UHerkunftNachPflege</c>); ein
+        /// U-Wert <c>MANUELL</c> bleibt beim Wiederimport.
+        /// </summary>
+        public string U_Herkunft;
+
+        /// <summary>
+        /// Absorptionsgrad der Außenfläche für Solarstrahlung a_F [–] (<c>Tab_Bauteil.Absorptionsgrad_Solar</c>, Schemaschritt
+        /// <see cref="BauteilStrahlungSchema"/>); <c>null</c> = der Wert des Aufbaus, ohne ihn der Festwert.
+        /// </summary>
+        public double? Absorptionsgrad_Solar;
+
+        /// <summary>
+        /// Langwelliger Emissionsgrad der Außenfläche ε_F [–] (<c>Tab_Bauteil.Emissionsgrad</c>, Schemaschritt
+        /// <see cref="BauteilStrahlungSchema"/>); <c>null</c> = der Wert des Aufbaus, ohne ihn der Festwert.
+        /// </summary>
+        public double? Emissionsgrad;
 
         /// <summary>Eine entkoppelte Kopie.</summary>
         public BauteilModel Kopie() => (BauteilModel)MemberwiseClone();

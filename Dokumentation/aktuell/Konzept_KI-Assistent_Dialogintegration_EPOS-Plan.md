@@ -194,11 +194,39 @@ ab, der Anwender bestätigte also eine Feldsetzung und scheiterte erst beim Spei
 geladenen Katalog- bzw. Gerätesatz befüllt, ohne den Speicherweg selbst anzufassen —, und alle vier Masken
 melden `Schreibgeschuetzt` an.
 
+**Sperrgrund je Feld.** Neben dem Schutz des ganzen Satzes meldet eine Maske über den Haken
+`KiMaskenhaken.Sperrgrund` (Feldschlüssel → Grund im Klartext) einzelne Felder, die in ihrem gegenwärtigen Zustand
+nicht gesetzt werden dürfen. Die Vorbedingungen von `feld_setzen`, `formular_ausfuellen` und `reihe_setzen` fragen
+ihn im Schreibschutzschritt, also vor Vorschau und Bestätigung, und lehnen mit `KI_FELD_GESPERRT` („Feldname: Grund")
+ab; die Ausnahmen des Satzschutzes (Satzwahl, `np_*`) gelten für ihn nicht, denn die Maske entscheidet je Feld.
+Es gilt die Regel: **Felder, deren Handweg sofort in die Datenbank schreibt, setzt der Assistent nicht, sondern sagt
+es** — so der Energieträger an Heizkessel, BHKW, Stromspeicher und Photovoltaik (`KI_ERZ_TRAEGER_VON_HAND`); er
+bleibt lesbar, und sein Setzer lehnt als zweite Sicherung ebenfalls ab. Ebenso sperren die Erzeugermasken mit
+Projektliste die Felder der Anlage, solange keine Zeile gewählt ist und nicht genau eine vorhanden ist
+(`KI_ERZ_KEINE_PROJEKTZEILE`); bei genau einer Zeile wählt der Assistent sie wie das Öffnen des Dialogs.
+Die Stromspeicher-Auslegung sperrt jedes Feld, solange ihr Arbeitsstand keine Flotte trägt (`KI_STROM_KEINE_FLOTTE`),
+die Komponentenkonfiguration der Simulation die Felder der Wärmepumpe, solange die Karte keine Anlage führt (mit dem
+Text, den die Maske an ihrer Stelle zeigt). Den Energieträger der Wärmepumpe setzt der Assistent dort und im
+Anlagendialog: Die Trägerwahl schreibt nur in die Arbeitskopie, in die Datenbank trägt sie erst der OK-Weg.
+Nach einer Setzung gehen beide Masken den Meldeweg der Hand — die Stromspeicher-Auslegung zählt ihre Fassung hoch,
+setzt die Ungespeichert- und Veraltet-Marke und zieht bei einer Änderung der Betriebsführung Netzladung, Ratsche und
+Peak-Vorschlag nach wie der Betriebseditor; die Komponentenkonfiguration räumt ihre Warnung und zeichnet neu.
+`KI_FELD_NICHT_SETZBAR` bleibt die Absage an abgeleitete Größen.
+
 **Aktionen aus dem Dialog.** Zusätzlich zu den Feldern die Aktionen der Stufen 1 bis 3 des Aufgabensteuerungskonzepts,
 bezogen auf den offenen Dialog: navigieren (`dialog_oeffnen` über `Dienste.Navigation`), speichern (Stufe 2,
 Bestätigung **und** Sicherungspunkt, weil datenbankwirksam), rechnen (Stufe 3: Simulationslauf, „Peak-Ziel bestimmen",
 Flotte bewerten — nebenläufig mit `Fortschritt`, abbrechbar). Speichern durch den Assistenten ist nach KI‑D‑Q4
 erlaubt, aber nie ohne Bestätigung und Sicherungspunkt.
+
+**Die Maske beim Namen.** Der Parameter `maske` aller Dialogaktionen (`dialog_lesen`, `feld_setzen`,
+`formular_ausfuellen`, `reihe_setzen`, `dialog_speichern`, `dialog_aktion_ausfuehren`, `dialog_oeffnen`) nimmt den
+Schlüssel (`Form_WP_Anlage`) oder den Anzeigenamen („Wärmepumpe im Projekt“) nach der Namensregel von `KiWahl` —
+Schlüssel, gefalteter Schlüssel, gefalteter Anzeigename, eindeutiger Anfang, eindeutig enthaltener Teil, zuletzt ohne
+Bindestriche —; ohne Angabe gilt die zuletzt angemeldete Maske. Weiter geht stets der aufgelöste Schlüssel. Ein Name,
+der mehrere Masken trifft, wird mit den Kandidaten abgesagt, ein unbekannter mit der Liste der freigegebenen Masken,
+beide als „Anzeigename (Schlüssel)“; ist die genannte Maske nicht offen, nennt die Absage den Weg dorthin und die
+gerade geöffnete Maske. Der Feldblock im Prompt nennt Anzeigename und Schlüssel der offenen Maske.
 
 **Nebenläufig, mit Fortschritt und Abbruch — seit #214 wirklich.** Auftrag #201 hatte den Weg gebaut und die
 zwei Enden offengelassen: `KiLaufumgebung` trug Melder und Abbruchmarke bis in die drei Rechenaktionen, aber die
@@ -271,6 +299,13 @@ Einstellungen des Assistenten selbst, Projektübergreifendes, alles außerhalb d
   ausgenommenen Maske gerufen und `feld_setzen` trifft keine angemeldete Maske, nennt die Absage den Grund („Diese
   Maske ist bewusst nicht steuerbar: …", bei `Offen` „noch nicht steuerbar"); erkannt wird die Maske am Hilfeschlüssel
   des Aufrufs (`KiChatKontext.Aufruf`), den der Eintrag führt.
+  **Die zwölf Ausnahmen** stehen in fünf Gruppen: der Assistent selbst (Chat, Eingabezeile, Werkzeugliste); Lizenz
+  und Schlüssel (KI-Einstellungen mit dem Schlüssel des Dienstes, Lizenzverwaltung — Feldwerte gingen sonst an den
+  externen Dienst); Rückfragen (Namensdialog,
+  Wertabfrage, Projektwahl mit dem Sicherungshaken des Löschmodus); Aktionsdialoge mit einem Feld (Bezeichner des
+  Katalogimports, Übernahme eines Berichtskapitels, Katalogdialog der Wärmepumpe); Feld des Wirts (Betriebsmodus als
+  Feld der Simulationsmaske). Wo eine freigegebene Maske ein Feld führt, dessen Handweg sofort in die Datenbank
+  schreibt, sperrt sie es über den Sperrgrund (3.4, „Sperrgrund je Feld"), statt den Dialog auszunehmen.
 - **Stand der Abdeckung.** Angemeldet sind alle Masken mit Einstellwerten; die Ausnahmeliste führt keinen
   `Offen`-Eintrag, und kein Vermerk der Eingabebilanz wartet mehr auf einen Auftrag: Die drei Zapfprofil-Überlagerungen
   und die Rechenweg-Wahl der Bedarfsprofile stehen im Katalog (Stufe 3a), die Zahlenfolgen (Monatswerte eines
@@ -292,7 +327,9 @@ Einstellungen des Assistenten selbst, Projektübergreifendes, alles außerhalb d
   Sichtklasse beantwortet sie als `IKiFeldtafel`, und ein Profilwächter ersetzt Markup- und Reflection-Probe. **Die
   Anzeigeschalter eines Ergebnisblattes** (sortiert, Reihen ein/aus) sind eine Spalte seines Wirts: Jedes Blatt meldet
   beim Aufbau seine gezeichneten Schalter beim Register der Seite an, nie eine eigene Maske — eine im Blatt
-  angemeldete Maske verdrängte die Maske der Ansicht als aktive.
+  angemeldete Maske verdrängte die Maske der Ansicht als aktive Dasselbe gilt für die Anzeige von
+  Ansichten, die ein Wirt trägt: die Ergebnis- und die Größenansicht der Speicherflotte sind die Spalte `anzeige` der
+  Stromspeicher-Auslegung, das Zeitraster der Bedarfsgrafik (Jahr, Monat, Woche, Tag) ein Feld des Bedarfsergebnisses.
 - **Zahlenfolgen: Tabelle oder Zahlenreihe** (#458 Stufe 3b). Der Rahmen kennt zwei Formen, und die Wahl folgt der
   Maske. Eine **Tabelle mit benannten Zeilen** bleibt die Spaltenform (`Typ.Zeilen[].Eigenschaft` mit
   Zeilenkennzeichen): Jede Zeile wird ein eigenes Feld mit eigener Bestätigungszeile, gesetzt mit `feld_setzen` oder

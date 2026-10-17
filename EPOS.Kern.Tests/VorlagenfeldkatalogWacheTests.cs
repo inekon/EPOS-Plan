@@ -96,8 +96,8 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Jeder_Eintrag_hat_Quelle_Art_Kontext_und_Fassung()
         {
-            Assert.Equal(10, Vorlagenfeldkatalog.KATALOGFASSUNG);
-            Assert.Equal(10, Vorlagenfeldkatalog.KatalogfassungWord);
+            Assert.Equal(27, Vorlagenfeldkatalog.KATALOGFASSUNG);
+            Assert.Equal(27, Vorlagenfeldkatalog.KatalogfassungWord);
             Assert.Equal(Vorlagenfeldkatalog.KATALOGFASSUNG, Vorlagenfeldkatalog.Katalogfassung);
             foreach (Vorlagenfeld f in Vorlagenfeldkatalog.Alle)
             {
@@ -122,7 +122,8 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Katalog_v2_zaehlt_52_handgepflegte_und_je_Kennzahl_drei_erzeugte_Eintraege()
         {
-            int kennzahlen = KennzahlenKatalog.Alle().Count;
+            // Die Kennzahlen der Kältemaschine (Schritt 183) stehen erst ab Fassung 12.
+            int kennzahlen = KennzahlenKatalog.Alle().Count(k => Vorlagenfeldkatalog.SeitDerKennzahl(k) <= 2);
             List<Vorlagenfeld> v2 = Vorlagenfeldkatalog.Alle.Where(f => f.Seit <= 2).ToList();
             Assert.Equal(52, v2.Count(f => f.Handgepflegt));
             Assert.Equal(27, v2.Count(f => f.Handgepflegt && f.Seit == 1));
@@ -262,6 +263,8 @@ namespace EPOS.Kern.Tests
                                                  "tabelle.kaelteerzeuger", "hat.tabelle.kaelteerzeuger",
                                                  "tabelle.speichertemperaturen", "hat.tabelle.speichertemperaturen",
                                                  "tabelle.gebaeude.ergebnis", "hat.tabelle.gebaeude.ergebnis",
+                                                 "tabelle.pufferauslegung", "hat.tabelle.pufferauslegung",
+                                                 "tabelle.kaeltespeicher", "hat.tabelle.kaeltespeicher",
                                                  "stamm.bild.speichertemperaturen", "hat.bild.speichertemperaturen",
                                                  "text.kapitel_projekt", "baustein.projekt",
                                              }),
@@ -298,8 +301,10 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Jede_Tabelle_und_jedes_Bild_steht_im_Deckt_seines_Kapitels()
         {
+            // Dazu das Energieflussbild (Katalog v25, SK-4): der Baustein „Ergebnisse je Variante“ schreibt es.
+            bool MitKapitel(Vorlagenfeld f) => f.Seit == 4 || f.Schluessel == "stand.bild.energiefluss";
             List<Vorlagenfeld> v4 = Vorlagenfeldkatalog.Alle
-                .Where(f => f.Seit == 4 && (f.Art == Vorlagenfeldart.Tabelle || f.Art == Vorlagenfeldart.Bild))
+                .Where(f => MitKapitel(f) && (f.Art == Vorlagenfeldart.Tabelle || f.Art == Vorlagenfeldart.Bild))
                 .Where(f => f.Schluessel != Vorlagenfeldkatalog.MUSTER_TABELLE)
                 .ToList();
             Assert.True(v4.Count > 50, v4.Count + " Tabellen und Bilder der Fassung 4");
@@ -311,7 +316,7 @@ namespace EPOS.Kern.Tests
                 for (int i = 0; i < deckt.Count; i++)
                 {
                     Vorlagenfeld f = Vorlagenfeldkatalog.Finde(deckt[i]);
-                    if (f.Seit != 4 || (f.Art != Vorlagenfeldart.Tabelle && f.Art != Vorlagenfeldart.Bild)) continue;
+                    if (!MitKapitel(f) || (f.Art != Vorlagenfeldart.Tabelle && f.Art != Vorlagenfeldart.Bild)) continue;
                     Assert.True(gefunden.TryAdd(f.Schluessel, k.Name), f.Schluessel + " steht in zwei Kapiteln");
                     string schalter = f.Art == Vorlagenfeldart.Tabelle
                         ? Vorlagenfeldkatalog.SchalterDerTabelle(f.Schluessel)
@@ -335,7 +340,7 @@ namespace EPOS.Kern.Tests
                                  "tabelle.speichertemperaturen" }, Von(Berichtskapitel.PROJEKT));
             Assert.Equal(new[] { "stand.tabelle.abweichungen", "tabelle.komponenten.matrix", "tabelle.varianten" },
                          Von(Berichtskapitel.KOMPONENTEN));
-            Assert.Equal(new[] { "stand.bild.speicherverlauf", "stand.bild.strombilanz_monate", "stand.bild.waerme_dauerlinie",
+            Assert.Equal(new[] { "stand.bild.energiefluss", "stand.bild.speicherverlauf", "stand.bild.strombilanz_monate", "stand.bild.waerme_dauerlinie",
                                  "stand.bild.waerme_jahresverlauf", "stand.tabelle.kennzahlen" }, Von(Berichtskapitel.ERGEBNISSE));
             Assert.Equal(new[] { "stand.bild.deckung_strom", "stand.bild.deckung_waerme", "stand.tabelle.brennstoffmengen",
                                  "stand.tabelle.erzeuger", "tabelle.vergleich" }, Von(Berichtskapitel.VERGLEICH));

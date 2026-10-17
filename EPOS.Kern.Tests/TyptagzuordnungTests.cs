@@ -97,6 +97,56 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Die Feiertagsbedingung des Typtagwegs</b> (Zapfkalender mit Feiertagen, E112): Ein Feiertag an einem Werktag und
+        /// ein Feiertag am Samstag bekommen die Typtagart Sonntag, ein gewöhnlicher Samstag folgt der Maske — unter der
+        /// Vorgabe (Sa + So) und unter einer abweichenden Maske mit Samstag (Fr + Sa + So) bleibt er Werktag. Ohne
+        /// Feiertagsliste ist derselbe gekennzeichnete Samstag ein gewöhnlicher Samstag.
+        /// </summary>
+        [Theory]
+        [InlineData(null)]
+        [InlineData(112)]
+        public void Ein_Feiertag_an_Werktag_und_Samstag_ist_Sonntag_ein_gewoehnlicher_Samstag_folgt_der_Maske(int? maske)
+        {
+            Normformvektorsatz satz = Satz(Typtagpaketbauer.Erfunden());
+            // Jahr beginnt am Montag: Tag 6 und 13 sind Samstage, Tag 7 ein Sonntag, Tag 8 ein Montag, Tag 12 ein Freitag.
+            int[] feiertage = { 8, 13 };
+            bool[] we = Zapfkalender.Kennzeichen(0, We(0), maske, feiertage);
+            Typtagjahr jahr = Typtagzuordnung.Zuordnen(Anbindung(satz), 0, we, NAME, wochenendmaske: maske, feiertage: feiertage);
+
+            Assert.Equal(Typtagart.Sonntag, jahr.Tage[7].Tagart);      // Feiertag am Montag
+            Assert.Equal(Typtagart.Sonntag, jahr.Tage[12].Tagart);     // Feiertag am Samstag
+            Assert.Equal(Typtagart.Werktag, jahr.Tage[5].Tagart);      // gewöhnlicher Samstag der Maske
+            Assert.Equal(Typtagart.Sonntag, jahr.Tage[6].Tagart);      // Sonntag
+            Assert.Equal(maske.HasValue ? Typtagart.Sonntag : Typtagart.Werktag, jahr.Tage[11].Tagart);   // Freitag
+
+            // Gegenprobe: dieselben Kennzeichen ohne Feiertagsliste — der Samstag 13 ist ein gewöhnlicher Samstag.
+            Typtagjahr ohne = Typtagzuordnung.Zuordnen(Anbindung(satz), 0, we, NAME, wochenendmaske: maske);
+            Assert.Equal(Typtagart.Werktag, ohne.Tage[12].Tagart);
+            Assert.Equal(Typtagart.Sonntag, ohne.Tage[7].Tagart);
+        }
+
+        /// <summary>
+        /// Unter einer Maske ohne Samstag (nur Sonntag) ist ein gewöhnlicher Samstag Werktag, ein Feiertag am Samstag Sonntag;
+        /// ein gekennzeichneter Samstag ohne Feiertagsliste gilt dort als Feiertag und trägt den Sonntag.
+        /// </summary>
+        [Fact]
+        public void Unter_einer_Maske_ohne_Samstag_ist_ein_gekennzeichneter_Samstag_ein_Feiertag()
+        {
+            Normformvektorsatz satz = Satz(Typtagpaketbauer.Erfunden());
+            const int NUR_SONNTAG = 64;
+            int[] feiertage = { 13 };
+            bool[] we = Zapfkalender.Kennzeichen(0, We(0), NUR_SONNTAG, feiertage);
+            Typtagjahr jahr = Typtagzuordnung.Zuordnen(Anbindung(satz), 0, we, NAME, wochenendmaske: NUR_SONNTAG, feiertage: feiertage);
+
+            Assert.Equal(Typtagart.Werktag, jahr.Tage[5].Tagart);      // gewöhnlicher Samstag, nicht im Wochenende der Maske
+            Assert.Equal(Typtagart.Sonntag, jahr.Tage[12].Tagart);     // Feiertag am Samstag
+            Assert.Equal(Typtagart.Sonntag, jahr.Tage[6].Tagart);
+
+            Typtagjahr gekennzeichnet = Typtagzuordnung.Zuordnen(Anbindung(satz), 0, We(0), NAME, wochenendmaske: NUR_SONNTAG);
+            Assert.Equal(Typtagart.Sonntag, gekennzeichnet.Tage[5].Tagart);
+        }
+
+        /// <summary>
         /// Die benannte Abweichung aus N14 (d): Ein Feiertag, der auf einen Samstag fällt, bleibt
         /// Werktag — der Klimakalender unterscheidet ihn nicht von einem gewöhnlichen Samstag. Das
         /// Jahr sieht dann genauso aus wie ohne diesen Feiertag.

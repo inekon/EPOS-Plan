@@ -14,11 +14,11 @@ namespace WindowsFormsApplication1
     /// Die WINDOWS-HÜLLE der Wärmepumpen-ANLAGE (iU9-W7.4) — der Ersatz für
     /// <c>Wizard_WPItem</c>.
     ///
-    /// <para><b>Sie bearbeitet das Modell an Ort und Stelle.</b> Die acht Aufrufer des
-    /// Vorläufers reichten ein <c>WErzeugerModel</c> aus ihrer Liste herein und lasen
-    /// es nach dem OK wieder aus. Genau das leistet <see cref="Oeffnen"/>: Der Dialog
-    /// bekommt eine KOPIE der Felder, und bei OK überträgt die Hülle sie zurück — in
-    /// dasselbe Objekt, das der Aufrufer hält.</para>
+    /// <para><b>Sie liefert den Parametersatz der Anlagenfelder</b>
+    /// (<c>WaermepumpeAnlageFelder</c>), die die Satz-Überlagerung der Wärmepumpen
+    /// Verwaltung trägt (AW2) — Daten, Senkenzeile, Kühlgaben, Kennlinien-, Kosten- und
+    /// Trägerwege. Ein eigenes Fenster der Anlage gibt es nicht mehr; <see cref="AusModell"/>
+    /// und <see cref="NachModell"/> übertragen die Felder zwischen Modell und Datensatz.</para>
     ///
     /// <para><b>Die Kosten- und die Energieträgerverwaltung bleiben ZWEITE Fenster</b>
     /// (Abweichung A-1 aus Welle 6, unverändert): <see cref="KostenKomponenteHuelle"/>
@@ -29,53 +29,6 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class WaermepumpeAnlageHuelle
     {
-        /// <summary>Gewünschtes Innenmaß (Vorläufer: 1126 × 752).</summary>
-        private static readonly Size MASS = new Size(1160, 800);
-
-        /// <summary>
-        /// Zeigt die Detailansicht als eigenes Fenster und schreibt bei OK in
-        /// <paramref name="modell"/> zurück.
-        /// </summary>
-        /// <param name="besitzer">Fenster, über dem der Dialog erscheint.</param>
-        /// <param name="modell">Die Anlagenzeile — sie wird bei OK an Ort und Stelle geändert.</param>
-        /// <param name="projektId">
-        /// Das GEÖFFNETE Projekt. Es dient als Rückfall beim Nachziehen der
-        /// Anlagenzeile; der Vorläufer holte es sich aus <c>Program.startfrm</c>.
-        /// </param>
-        /// <returns><c>true</c>, wenn mit OK geschlossen wurde.</returns>
-        internal static bool Oeffnen(IWin32Window besitzer, WErzeugerModel modell, int projektId)
-        {
-            if (modell == null) return false;
-
-            bool ok = false;
-            BlazorDialogForm<WaermepumpeAnlageDialog> dlg = null;
-
-            WaermepumpeAnlageDaten daten = AusModell(modell);
-
-            var werte = new Dictionary<string, object>(Gaben(besitzer, daten, modell, projektId))
-            {
-                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
-                {
-                    ok = b;
-                    if (b)
-                    {
-                        NachModell(daten, modell);
-                        ErzeugerTraegerHuelle.Zuordnen(projektId, false, modell.ID_Carrier);
-                    }
-                    if (dlg != null) dlg.Schliessen(b);
-                })
-            };
-
-            dlg = new BlazorDialogForm<WaermepumpeAnlageDialog>(
-                Text_("WPA_TITEL", "Detailansicht"), MASS, werte);
-
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return ok;
-        }
-
         /// <summary>
         /// Der PARAMETERSATZ der Detailansicht — für die Anzeige in einer
         /// <c>Ueberlagerung</c> der Wärmepumpen-Verwaltung (W7.5). <c>Geschlossen</c>
@@ -86,7 +39,7 @@ namespace WindowsFormsApplication1
             WErzeugerModel modell, int projektId)
         {
             // ET-5: Vorgabe der Stromtraeger des Projekts, solange die Anlage keinen fuehrt.
-            if (daten.CarrierId <= 0) daten.CarrierId = ErzeugerTraegerHuelle.Standard(projektId);
+            if (daten.CarrierId <= 0) daten.CarrierId = ErzeugerTraegerHuelle.Vorauswahl(DbWerte.ERZEUGER_WAERMEPUMPE, 0, projektId);
 
             return new Dictionary<string, object>
             {
@@ -107,9 +60,12 @@ namespace WindowsFormsApplication1
                 // KU2 Welle 3 (Kuehlkonzept 8.2): die Kuehlgaben der Konfiguration -
                 // Stuetzstellen, Sperrgrund und Stromtraeger des Projekts, plattformfrei gebaut.
                 // Ohne Projekt keine Gruppe "Kuehlbetrieb".
-                ["Kuehlung"] = projektId > 0 ? WaermepumpeKuehlGabenBau.Bauen(projektId) : null,
+                // KU3-6 (F2): mit der Quelle der Anlagenzeile traegt der Satz den Sperrgrund der
+                // freien Kuehlung; eine neue Anlage ohne Zeile kennt ihre Quelle noch nicht.
+                ["Kuehlung"] = projektId > 0
+                    ? WaermepumpeKuehlGabenBau.Bauen(projektId, modell != null ? (modell.WQ_Typ ?? "") : null)
+                    : null,
 
-                ["Stammliste"] = new Func<IReadOnlyList<WaermepumpeStammZeile>>(Stammliste),
                 ["Vorlaeufe"] = new Func<int, IReadOnlyList<int>>(VorlaeufeZu),
 
                 // W10b-B-3 (08.09.2026): Der Schalter "Extrapolation der WP-Kennlinie
@@ -141,6 +97,12 @@ namespace WindowsFormsApplication1
                 ["Stammdaten"] = new Func<int, WaermepumpeStammDaten>(StammdatenZu),
 
                 ["TemperaturenPruefen"] = new Func<int?, int?, string>(TemperaturenPruefen),
+
+                // Anwenderauftrag 30.09.2026: Der Dialog zieht einen noch unberuehrten
+                // Rueckfallvorschlag nach, wenn ein anderer Vorlauf gewaehlt wird - ueber
+                // denselben Weg, den AusModell beim Aufbau nimmt.
+                ["RuecklaufVorbelegen"] = new Action<WaermepumpeAnlageDaten>(
+                    d => TemperaturVorbelegung.Waermepumpe(d)),
 
                 ["KostenBereit"] = new Func<bool>(
                     () => WErzeugerCtrl.AnlagenzeileNachziehen(modell, projektId)),
@@ -176,18 +138,6 @@ namespace WindowsFormsApplication1
                             stand != null ? stand.IdWp : 0))
                     : null,
 
-                // W14a-E-10 / S2.2: derselbe Weg wie in der Verwaltung. OHNE die
-                // Spalte "im Projekt verwendet" - diese Maske fuehrt keine
-                // Projektliste, aus der sie sich ergaebe (Q12).
-                ["Katalog"] = new Func<IReadOnlyList<Katalogfilterzeile>>(
-                    () => new WPStammCtrl().Katalogfilterzeilen()),
-                ["Katalogprofil"] = Katalogfilterprofil.Finde(
-                    Anlagenart.Waermepumpe, KatalogBrowserHuelle.Text),
-                // W14a-E-10 / S3.3: die Zeilen des Vergleichs kommen aus DERSELBEN
-                // Quelle wie die Parameteruebersicht (W14a-E-8) - keine zweite Liste.
-                ["Vergleichsparameter"] = new Func<string, IReadOnlyList<Parameterwert>>(
-                    n => ParameterUebersichtCtrl.Werte(Anlagenart.Waermepumpe, n, KatalogBrowserHuelle.Text)),
-
                 // --- Die STAMMFELDER im Kenndatenblock (Anwenderentscheid 16.09.2026) ---
                 //
                 // SIE GEHOEREN DER PROJEKTKOPIE, NICHT DEM KATALOG. Bis zum Vormittag
@@ -210,6 +160,13 @@ namespace WindowsFormsApplication1
                     WaermepumpeStammHuelle.KennlinienProjektZu),
                 ["KennlinienAbgleichen"] = new Func<int, IReadOnlyList<KennlinienZeile>, bool>(
                     WaermepumpeStammHuelle.KennlinienProjektAbgleichen),
+
+                // WP1a: der Arbeitspunkt am eingestellten Vorlauf fuer den Geraetesteckbrief - Heizleistung
+                // und COP der Projektkennlinie am Normpunkt der Quelle, ausgewertet wie im Lauf.
+                ["Arbeitspunkt"] = new Func<int, int, string, WaermepumpeArbeitspunkt>(
+                    (idWp, vorlauf, typ) => Kennlinienarbeitspunkt.Rechnen(idWp, vorlauf, typ) is KennlinienArbeitspunkt a
+                        ? new WaermepumpeArbeitspunkt(a.Normpunkt, a.Heizleistung, a.Cop)
+                        : null),
 
                 // --- "In Stamm uebernehmen..." (Anwenderentscheid 16.09.2026) ----------
                 // Der EINE Weg, auf dem dieser Dialog den Katalog anfasst - und er fragt
@@ -235,14 +192,6 @@ namespace WindowsFormsApplication1
                 ["MeldungUebernahmeReadOnly"] = Text_("WP_STAMM_UEBERNAHME_MSG_READONLY",
                     "Auslieferungssätze werden nicht überschrieben."),
 
-                ["TitelText"] = Text_("WPA_TITEL", "Detailansicht"),
-                ["LabelWpAuswahl"] = Text_("WPA_LBL_WP", "Wärmepumpen Auswahl:"),
-                ["SpalteWahl"] = Text_("KFAK_SP_WAHL", "Wahl"),
-
-                // W7-B-1: "Wahl | Hersteller | Typ" - Typ ist die
-                // MODELLBEZEICHNUNG, der Waermepumpentyp bleibt im Kenndatenblock.
-                ["SpalteHersteller"] = Text_("WPV_SP_HERSTELLER", "Hersteller"),
-                ["SpalteTyp"] = Text_("WPV_SP_TYP", "Typ"),
 
                 ["GruppeKenndaten"] = Text_("WPA_GRP_KENNDATEN", "Wärmepumpen Kenndaten"),
                 ["GruppeAuslegung"] = Text_("WPA_GRP_AUSLEGUNG", "Auslegung für Verteilung"),
@@ -258,12 +207,15 @@ namespace WindowsFormsApplication1
                 ["LabelVorlauf"] = Text_("WPA_LBL_VORLAUF", "Vorlauf"),
                 ["LabelRuecklauf"] = Text_("WPA_LBL_RUECKLAUF", "Rücklauf"),
                 ["LabelRuecklaufKurz"] = Text_("WPA_LBL_RUECKLAUF", "Rücklauf"),
-                ["LabelNutzungszeit"] = Text_("WPA_LBL_NUTZUNGSZEIT", "Nutzungsdauer"),
                 ["LabelKennlinien"] = Text_("WPS_LBL_KENNLINIEN", "Kenndaten Kennlinien:"),
                 ["HerleitungKatalog"] = Text_("WPA_HERLEITUNG_KATALOG",
                     "Gezeigt sind die Kennlinien des Katalogsatzes gleichen Namens — für dieses Gerät führt das Projekt keine eigenen. Gerechnet wird ausschließlich mit den Projektkennlinien."),
                 ["BtnKennlinienText"] = Text_("WPA_BTN_KENNLINIEN_KATALOG",
                     "Kennlinien aus dem Katalog übernehmen"),
+                ["HerleitungKuehlKatalog"] = Text_("WPA_HERLEITUNG_KUEHL_KATALOG",
+                    "Für dieses Gerät führt das Projekt keine Kühlkennlinie; der Katalogsatz hat eine. Gerechnet wird ausschließlich mit den Projektkennlinien — ohne Kühlkennlinie im Projekt bleibt der Kühlbetrieb gesperrt."),
+                ["BtnKuehlKennlinieText"] = Text_("WPA_BTN_KUEHLKENNLINIE_KATALOG",
+                    "Kühlkennlinie aus dem Katalog übernehmen"),
                 ["TextKennlinienUebernommen"] = Text_("WPA_MSG_KENNLINIEN_UEBERNOMMEN",
                     "{0} Stützstellen aus dem Katalog in das Projekt übernommen."),
                 ["TextKennlinienOhneKatalog"] = Text_("WPA_MSG_KENNLINIEN_OHNE_KATALOG",
@@ -273,7 +225,6 @@ namespace WindowsFormsApplication1
                 ["PlatzhalterBild"] = Text_("WPS_PLATZHALTER_BILD", "Keine Kennlinien vorhanden"),
                 ["RuecklaufFormat"] = Text_("WPA_RUECKLAUF_VORSCHLAG", "Übliche Werte: {0} °C"),
                 ["SchliessenText"] = Text_("WPV_BTN_SCHLIESSEN", "Schließen"),
-                ["BtnKatalogText"] = Text_("WPK_BTN_KATALOG", "📋  Modul-Katalog..."),
                 ["BtnKenndatenText"] = Text_("WPS_BTN_KENNDATEN", "Kennliniendaten Ansicht/Bearbeiten..."),
                 ["KostenInvestText"] = Text_("KDLG_KNOPF_INVEST", "Investitionskosten…"),
                 ["KostenBetriebText"] = Text_("KDLG_KNOPF_BETRIEB", "Betriebskosten…"),
@@ -293,20 +244,6 @@ namespace WindowsFormsApplication1
         // =================================================================================
         // Die Wege hinter den Delegaten
         // =================================================================================
-
-        private static IReadOnlyList<WaermepumpeStammZeile> Stammliste()
-        {
-            var ctrl = new WPStammCtrl();
-            ctrl.ReadAll();
-
-            var liste = new List<WaermepumpeStammZeile>();
-            foreach (WPModel m in ctrl.items)
-                // W7-B-1: Der Hersteller gehoert in die Liste, vor die
-                // Modellbezeichnung.
-                liste.Add(new WaermepumpeStammZeile(m.ID, m.WPName ?? "", m.m_bReadOnly,
-                                                    m.Firma ?? ""));
-            return liste;
-        }
 
         /// <summary>
         /// Die Vorlaufstufen eines Geräts (<c>FillVorlaufCombo</c>:125) — seit
@@ -362,7 +299,7 @@ namespace WindowsFormsApplication1
             return Task.CompletedTask;
         }
 
-        private static KennlinienBilder BilderZuAnlage(int idWp)
+        internal static KennlinienBilder BilderZuAnlage(int idWp)
         {
             WaermepumpeKennlinienCtrl.Quelle quelle = WaermepumpeKennlinienCtrl.FuerAnlage(idWp);
             if (quelle.Woher == WaermepumpeKennlinienCtrl.Herkunft.Ohne)
@@ -379,7 +316,8 @@ namespace WindowsFormsApplication1
                     quelle.Satz.Leistung, ChartRenderer.Kennlinienmarke.Kreuz),
                 quelle.Woher == WaermepumpeKennlinienCtrl.Herkunft.Katalog
                     ? Kennlinienherkunft.Katalog : Kennlinienherkunft.Projekt,
-                quelle.Nachholbar);
+                quelle.Nachholbar,
+                quelle.KuehlNachholbar);
         }
 
         /// <summary>
@@ -459,7 +397,7 @@ namespace WindowsFormsApplication1
                                                         int projektId)
             => WaermepumpeGeraeteCtrl.ProjektgeraeteNachziehen(modelle, projektId);
 
-        private static WaermepumpeStammDaten StammdatenZu(int idWp)
+        internal static WaermepumpeStammDaten StammdatenZu(int idWp)
         {
             WPModel m = WaermepumpeGeraeteCtrl.Geraetedaten(idWp);
             if (m == null) return null;
@@ -477,9 +415,14 @@ namespace WindowsFormsApplication1
                 Heizstab = (int)m.Heizung,
                 Regelung = m.Regelung ?? "",
                 Kuehlleistung = m.Kuehlleistung,
-                Modulkosten = m.Modulkosten,
+                // Welle KB-4: der Kostensatz steht in der Satzvorlage der Projektkopie.
+                Kostensatz = KatalogkostensatzCtrl.SatzText(WPStammCtrl.TABELLE_PROJEKT, m.ID),
+                KostensatzEinheit = KatalogkostensatzCtrl.Einheit(WPStammCtrl.TABELLE_PROJEKT),
                 MaxPtherm = m.maxPTherm,
                 Bauart = m.Bauart ?? "",
+                // Welle M4 (WP1): die Taktwerte des Geräts - im Anlagendialog nur lesend.
+                MindestleistungKw = m.MindestleistungKw,
+                TaktverlustfaktorCd = m.TaktverlustfaktorCd,
                 NurLesen = m.m_bReadOnly
             };
         }
@@ -518,72 +461,13 @@ namespace WindowsFormsApplication1
         // Abbildungen
         // =================================================================================
 
-        /// <summary>Aus der Anlagenzeile in den Feldsatz — <c>SetControls</c>:151.</summary>
+        /// <summary>
+        /// Aus der Anlagenzeile in den Feldsatz — <c>SetControls</c>:151. Die Abbildung selbst liegt
+        /// plattformfrei in <see cref="WaermepumpeAnlagenaht.AusModell"/> (KM‑K2): Der Kältemaschinen-Dialog
+        /// bearbeitet dieselbe Anlagenzeile, und zwei Wahrheiten über dieselben Felder gibt es nicht.
+        /// </summary>
         internal static WaermepumpeAnlageDaten AusModell(WErzeugerModel m)
-        {
-            // KU2 Welle 3: die drei Geraetefelder des Kuehlbetriebs, falls der Aufrufer die
-            // Zeile ohne GeraetedatenFuellen hereinreicht - sonst zeigte der Dialog "aus",
-            // und der Speicherweg liesse den gespeicherten Stand ohnehin stehen.
-            WaermepumpeGeraeteCtrl.KuehlfelderFuellen(m);
-
-            var d = new WaermepumpeAnlageDaten
-            {
-                Bezeichner = m.Bezeichner ?? "",
-                IdWp = m.ID_WP,
-                Vorlauf = m.Vorlauf,
-                Ruecklauf = m.Ruecklauf,
-                Heizstab = m.Heizstab,
-                HeizstabLeistung = (int)m.Heizung,
-                Sperrung = m.Sperrung,
-                SperrzeitVon = m.Sperrzeit_von,
-                SperrzeitBis = m.Sperrzeit_bis,
-                Nutzungszeit = m.Nutzungszeit,
-                BivalenterBetrieb = m.Bivalenter_Betrieb,
-                CarrierId = m.ID_Carrier,
-
-                // W7-B-2 (Windows-Abnahme 06.09.2026): TOLERANT lesen. Der
-                // Vorlaeufer Wizard_WPItem hatte eine frei beschreibbare ComboBox
-                // und schrieb ihren Text ungeprueft in die Spalte (Befund L0-1);
-                // ein <select> kann einen nicht zeichengleichen Wert gar nicht
-                // zeigen - die Klappliste stand leer und der OK-Knopf meldete
-                // "Bitte Betriebsart auswaehlen!". Geschrieben wird der
-                // berichtigte Wert erst beim OK; die Engine vergleicht
-                // unveraendert zeichengleich, der Referenzlauf bleibt unberuehrt.
-                Betriebsart = DbWerte.BetriebsartOderDefault(m.Betriebsart),
-                Abschaltpunkt = m.Abschaltpunkt,
-                Beschreibung = m.Beschreibung ?? "",
-                Baujahr = m.Baujahr,
-                Regelung = m.Regelung ?? "",
-                Typ = m.Typ ?? "",
-
-                // 16.09.2026: Die Aufstellungsart gehoert seit dem Anwenderentscheid zum
-                // Feldsatz - die Stammfelder des Dialogs bearbeiten die Projektkopie, und
-                // Tab_WP.Aufstellung ist eine ihrer Spalten.
-                Aufstellung = m.Aufstellung ?? "",
-                Firma = m.Firma ?? "",
-                Nennleistung = m.Nennleistung,
-
-                // 16.09.2026: Die Kuehlleistung der PROJEKTKOPIE steht seither im
-                // Feldsatz und ist im Stammfeldblock bearbeitbar - wie die
-                // Nennleistung daneben. Sie ist eine Kommazahl (Tab_WP.Kuehlleistung
-                // ist REAL); ein int schnitte 5,5 kW still auf 5 kW.
-                Kuehlleistung = m.Kuehlleistung,
-
-                // KU2 Welle 3 (Kuehlkonzept 8.2; E15, E33, E34): der Kuehlbetrieb - drei Felder
-                // der Projektkopie, zwei der Anlagenzeile.
-                Kuehlbetrieb = m.Kuehlbetrieb,
-                KuehlVorlauf = m.KuehlVorlauf,
-                KuehlHilfsstromanteil = m.KuehlHilfsstromanteil,
-                KuehlCarrierId = m.Kuehl_ID_Carrier,
-                KuehlEigenerZaehler = m.Kuehl_EigenerZaehler,
-
-                Modulkosten = m.Modulkosten,
-                Volumen = m.Volumen,
-                Solaranteil = m.Solaranteil,
-                RendeMix = m.rendeMix
-            };
-            return d;
-        }
+            => WaermepumpeAnlagenaht.AusModell(m);
 
         /// <summary>
         /// Zurück in die Anlagenzeile — <c>btn_Beenden_Click</c>:238-268, mit denselben
@@ -598,6 +482,12 @@ namespace WindowsFormsApplication1
             m.Sperrung = d.Sperrung;
             m.Sperrzeit_bis = d.SperrzeitBis ?? 0;
             m.Sperrzeit_von = d.SperrzeitVon ?? 0;
+            // V14: die Liste der Sperrfenster - sie ueberfuehrt das Altfenster (Sperrung = 0).
+            SperrfensterAbbildung.NachModell(d, m);
+            // Anlagenkopplung AK2 (9.3): Zeitprogramm und hoechster Vorlauf, NULL-erhaltend.
+            BetriebszeitenAbbildung.Schreiben(d, m);
+            // Uebergabegrenze UB-E2: Einbindung und Vorwaermbetrieb reisen als Modellspalten (AnlagenSql).
+            BivalenzAbbildung.AnlageSchreiben(d, m);
             m.Ruecklauf = d.Ruecklauf ?? 0;
             m.Vorlauf = d.Vorlauf ?? 0;
             m.Bivalenter_Betrieb = d.BivalenterBetrieb;
@@ -619,7 +509,6 @@ namespace WindowsFormsApplication1
             m.Volumen = d.Volumen;
             m.rendeMix = d.RendeMix;
             m.Solaranteil = d.Solaranteil;
-            m.Nutzungszeit = d.Nutzungszeit ?? 0;
 
             // Ä23: Die Stammfelder der gewaehlten Waermepumpe gehoeren zur Zeile -
             // sonst zeigte die Verwaltungsliste nach einem Wechsel 0 kW. Seit dem
@@ -627,7 +516,6 @@ namespace WindowsFormsApplication1
             // gehen von hier aus weiter in die Projektkopie (ProjektgeraetNachziehen).
             m.Regelung = d.Regelung;
             m.Nennleistung = d.Nennleistung;
-            m.Modulkosten = d.Modulkosten;
             m.Baujahr = d.Baujahr;
             m.Beschreibung = d.Beschreibung;
             m.Firma = d.Firma;
@@ -644,6 +532,11 @@ namespace WindowsFormsApplication1
             // Zeile sie traegt (KuehlfelderGeladen, gesetzt beim Fuellen in AusModell).
             m.Kuehl_ID_Carrier = d.KuehlCarrierId is int kt && kt > 0 ? kt : (int?)null;
             m.Kuehl_EigenerZaehler = d.KuehlEigenerZaehler == true ? true : (bool?)null;
+            // KU3-6 (F1): die drei Felder der freien Kuehlung reisen mit der Anlagenzeile;
+            // leere Werte bleiben NULL (Festwert bzw. Kaelteleistung der Kennlinie).
+            m.Kuehl_Frei = d.KuehlFrei;
+            m.Kuehl_Frei_Graedigkeit_K = d.KuehlFreiGraedigkeitK;
+            m.Kuehl_Frei_Leistung_kW = d.KuehlFreiLeistungKw;
             if (m.KuehlfelderGeladen)
             {
                 m.Kuehlbetrieb = d.Kuehlbetrieb;

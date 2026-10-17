@@ -1,0 +1,267 @@
+﻿@* DIE KONFIGURATION EINER KAELTEMASCHINEN-ANLAGE (Welle KB-B; Entwurf Kaeltebereich 3.3, Entscheid E117 F2) -
+   herausgeloest aus dem Erzeugerdialog „Kältemaschinen im Projekt“, damit der Dialog und der Bereich „Kälte“ der
+   Simulationskonfiguration DIESELBE Komponente zeigen: Name, Anzahl (mit Folgeschaltungshinweis),
+   Kaltwasservorlauf (Platzhalter kleinste Stuetzstelle, Untergrenze des Geraets), Hilfsstromanteil in Prozent,
+   Kuehltraeger und eigener Zaehler.
+
+   Die Komponente schreibt AN ORT UND STELLE in den Feldsatz des Wirts und meldet jede Eingabe ueber „Geaendert“.
+   Geprueft und geschrieben wird im OK-Weg des Wirts (KaeltemaschineAnlageCtrl.Pruefen und Speichern ueber die
+   Huelle); Abbrechen verwirft die Arbeitskopie. Keine Datenbank (Hausregel EPOS.UI). *@
+
+@namespace EPOS.UI.Dialoge.Erzeuger
+@using System.Globalization
+@using WindowsFormsApplication1
+
+<Formulargruppe Titel="@Texte.GruppeBetrieb">
+    <KindInhalt>
+        <div class="epos-kaeltemaschine-konfiguration">
+            @if (GeraetZeigen && GeraetZeile is string geraet)
+            {
+                <Herleitungszeile Text="@geraet" />
+            }
+            <Textfeld Bezeichnung="@Texte.LabelName" Wert="@Daten.Bezeichner" NurLesen="@(!Aktiv)" WertChanged="BeiName" />
+            <Ganzzahlfeld Bezeichnung="@Texte.LabelAnzahl" Feldname="@Texte.LabelAnzahl" Wert="@Daten.Anzahl"
+                          Aktiv="@Aktiv" WertChanged="BeiAnzahl" />
+            @if (Folgeschaltung is string folge)
+            {
+                <Herleitungszeile Text="@folge" />
+            }
+            <Zahlenfeld Bezeichnung="@Texte.LabelVorlauf" Feldname="@Texte.LabelVorlauf" Einheit="@Texte.EinheitGradC"
+                        Wert="@Daten.KuehlVorlauf" Platzhalter="@PlatzhalterVorlauf" Aktiv="@Aktiv" WertChanged="BeiVorlauf" />
+            @if (Daten.Geraet?.KaltwasserMin is double min)
+            {
+                <Herleitungszeile Text="@string.Format(CultureInfo.CurrentCulture, Texte.HinweisVorlaufMin, Zahl(min, 1))" />
+            }
+            <Zahlenfeld Bezeichnung="@Texte.LabelHilfsstrom" Feldname="@Texte.LabelHilfsstrom" Einheit="@Texte.EinheitProzent"
+                        Wert="@AnteilAlsProzent(Daten.KuehlHilfsstromanteil)" Platzhalter="0" Min="0"
+                        Aktiv="@Aktiv" WertChanged="BeiHilfsstrom" />
+            <Herleitungszeile Text="@Texte.HinweisHilfsstrom" />
+            @if (AnlagenJeKopie > 1)
+            {
+                <Herleitungszeile Text="@string.Format(CultureInfo.CurrentCulture, Resource.SIMKONF_KAELTE_GILT_FUER, AnlagenJeKopie)" />
+            }
+            <Auswahlfeld Bezeichnung="@Texte.LabelTraeger" Eintraege="@TraegerEintraege"
+                         Auswahl="@Daten.KuehlCarrierId" Platzhalter="@Texte.PlatzhalterTraeger"
+                         Aktiv="@Aktiv" AuswahlChanged="BeiTraeger" />
+            <Schalter Bezeichnung="@Texte.LabelZaehler" Wert="@Daten.KuehlEigenerZaehler" Aktiv="@Aktiv" WertChanged="BeiZaehler" />
+            @if (!TraegerAbweichend)
+            {
+                <Herleitungszeile Text="@Texte.HinweisZaehler" />
+            }
+            <Herleitungszeile Text="@Texte.HinweisReihenfolge" />
+            @* KM4-E3-b (Konzept Kaeltemittel als Stammdatum 5.2/7.2): die Lesezeile „Zulaessigkeit“ des
+               Kaeltemittels mit dem Inbetriebnahmejahr des Projekts - fertig von der Huelle im Feldsatz, keine
+               Eingabe. Ohne Text (neue Anlage) keine Zeile. *@
+            @if (!string.IsNullOrWhiteSpace(Daten.Zulaessigkeit))
+            {
+                <Herleitungszeile Text="@Daten.Zulaessigkeit" />
+            }
+            @* K-F5b: Eine luftgekuehlte Maschine bekommt keine Gruppe „Rueckkuehlung“, sondern diesen Hinweis. *@
+            @if (Rueckkuehlung is not null && Daten.Geraet is { Luftgekuehlt: true })
+            {
+                <Herleitungszeile Text="@Texte.HinweisRkwLuft" />
+            }
+        </div>
+    </KindInhalt>
+</Formulargruppe>
+
+@* K-F5b (Entwurf Split/VRF/Rueckkuehlwerk 5.2-5.8, 8): DIE GRUPPE „RUECKKUEHLUNG“ - nur bei einer Kaeltemaschine mit
+   wassergekuehlter Rueckkuehlart und nur mit den Gaben der Huelle (Waermepumpen-Zeilen zeigen diese Komponente nicht).
+   Die Wahl schreibt in den Arbeitsstand; die Projektkopie legt bzw. loest erst der OK-Weg des Wirts
+   (KaeltemaschineAnlageCtrl.RueckkuehlwerkWaehlen ueber die Huelle). Lesezeilen und Hinweise kommen fertig aus der
+   Huelle; keine Datenbank. *@
+@if (Rueckkuehlung is RueckkuehlungGaben rk && Daten.Geraet is { Luftgekuehlt: false })
+{
+    <Formulargruppe Titel="@Texte.GruppeRueckkuehlung">
+        <KindInhalt>
+            <div class="epos-kaeltemaschine-rueckkuehlung">
+                <Auswahlfeld Bezeichnung="@Texte.LabelRueckkuehlwerk" Eintraege="@RueckkuehlwerkEintraege(rk)"
+                             Auswahl="@Daten.RueckkuehlwerkWahl" Platzhalter="@Texte.RueckkuehlwerkKeins"
+                             Aktiv="@Aktiv" AuswahlChanged="BeiRueckkuehlwerk" />
+                @if (GewaehlteLesung(rk) is RueckkuehlwerkLesung l)
+                {
+                    <Formularraster>
+                        <KindInhalt>
+                            @foreach ((string bezeichnung, string wert) in l.Zeilen)
+                            {
+                                <Textfeld @key="bezeichnung" Bezeichnung="@bezeichnung" Wert="@wert" NurLesen="true" />
+                            }
+                        </KindInhalt>
+                    </Formularraster>
+                    @if (l.Verdunstungskuehlanlage && !rk.KlimaMitFeuchte)
+                    {
+                        <Herleitungszeile Text="@Texte.HinweisRkwFeuchte" />
+                    }
+                    @if (l.Verdunstungskuehlanlage)
+                    {
+                        <Herleitungszeile Text="@Texte.HinweisRkwBimschv" />
+                    }
+                    @if (l.VentilatorKw is double kw)
+                    {
+                        <Herleitungszeile Text="@string.Format(CultureInfo.CurrentCulture, Texte.HinweisRkwVentilator, Zahl(kw, 2))" />
+                    }
+                }
+                else
+                {
+                    <Herleitungszeile Text="@Texte.HinweisRkwKeins" />
+                }
+                @if (RueckkuehlwerkGeaendert)
+                {
+                    <Herleitungszeile Text="@Texte.HinweisRkwWahl" />
+                }
+                @if (RueckkuehlwerkeOeffnen.HasDelegate)
+                {
+                    <div class="epos-kaeltemaschine-rueckkuehlung-knoepfe">
+                        <button type="button" class="epos-knopf epos-kaeltemaschine-rueckkuehlwerke"
+                                title="@Texte.KnopfRueckkuehlwerke" @onclick="() => RueckkuehlwerkeOeffnen.InvokeAsync()">@Texte.KnopfRueckkuehlwerke</button>
+                    </div>
+                }
+            </div>
+        </KindInhalt>
+    </Formulargruppe>
+}
+
+@code {
+    /// <summary>Der bearbeitete Feldsatz — die Arbeitskopie des Wirts; die Komponente schreibt hinein.</summary>
+    [Parameter] public KaeltemaschineAnlageDaten Daten { get; set; } = new();
+
+    /// <summary>Die Anzeigetexte — das Bündel des Erzeugerdialogs.</summary>
+    [Parameter] public KaeltemaschineAnlageTexte Texte { get; set; } = new();
+
+    /// <summary>Die Stromträger des Projekts (Id, Anzeigetext) — die Auswahl des Kühlträgers.</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Stromtraeger { get; set; } = Array.Empty<(int, string)>();
+
+    /// <summary>Der Stromträger des Projekts (bepreist den Netzbezug); 0 = keiner.</summary>
+    [Parameter] public int ProjektStromtraeger { get; set; }
+
+    /// <summary>Wie viele Anlagen dieselbe Projektkopie führen; größer 1 = Hinweis „gilt für n Anlagen“.</summary>
+    [Parameter] public int AnlagenJeKopie { get; set; } = 1;
+
+    /// <summary>Die Gerätekenndaten als Lesezeile über den Feldern — dort, wo keine Gerätegruppe daneben steht.</summary>
+    [Parameter] public bool GeraetZeigen { get; set; }
+
+    /// <summary>Bedienbar? <c>false</c> sperrt jedes Feld (gesperrte Seite).</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>Jede Eingabe meldet sich; geschrieben wird erst im OK-Weg des Wirts.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    /// <summary>
+    /// KM3-E3-b: der Hinweis „Folgeschaltung von n Maschinen“ — nur bei Anzahl &gt; 1 und gesetzter Teillastrechnung;
+    /// sonst <c>null</c>.
+    /// </summary>
+    internal string? Folgeschaltung
+        => Daten.Anzahl is int n && n > 1 && Daten.Geraet?.TeillastGesetzt == true
+            ? string.Format(CultureInfo.CurrentCulture, Texte.HinweisFolgeschaltung, n) : null;
+
+    /// <summary>Die Gerätekenndaten in einer Zeile: Bezeichner, Nennkälteleistung, Rückkühlart; <c>null</c> ohne Gerät.</summary>
+    public string? GeraetZeile
+    {
+        get
+        {
+            KaeltemaschineGeraetwerte? g = Daten.Geraet;
+            if (g is null) return null;
+            var teile = new List<string>();
+            if (!string.IsNullOrWhiteSpace(g.Bezeichner)) teile.Add(g.Bezeichner);
+            if (g.Nennkaelteleistung is double kw) teile.Add(Zahl(kw, 1) + " " + Texte.EinheitKw);
+            if (g.NennEer is double eer) teile.Add(Texte.LabelNennEer + " " + Zahl(eer, 2));
+            if (!string.IsNullOrWhiteSpace(g.Rueckkuehlart)) teile.Add(g.Rueckkuehlart);
+            return teile.Count == 0 ? null
+                : string.Format(CultureInfo.CurrentCulture, Resource.KMK_GERAET_ZEILE, string.Join(" · ", teile));
+        }
+    }
+
+    private Task BeiName(string wert) { Daten.Bezeichner = wert ?? ""; return Melden(); }
+    private Task BeiAnzahl(int? wert) { Daten.Anzahl = wert; return Melden(); }
+    private Task BeiVorlauf(double? wert) { Daten.KuehlVorlauf = wert; return Melden(); }
+    private Task BeiHilfsstrom(double? prozent) { Daten.KuehlHilfsstromanteil = ProzentAlsAnteil(prozent); return Melden(); }
+    private Task BeiTraeger(int? id) { Daten.KuehlCarrierId = id; return Melden(); }
+    private Task BeiZaehler(bool wert) { Daten.KuehlEigenerZaehler = wert; return Melden(); }
+
+    private Task BeiRueckkuehlwerk(int? id) { Daten.RueckkuehlwerkWahl = id; return Melden(); }
+
+    private Task Melden() => Geaendert.InvokeAsync();
+
+    /// <summary>
+    /// K-F5b: die Gaben der Gruppe „Rückkühlung“ (Katalogsätze, Luftfeuchte des Klimas); <c>null</c> = keine Gruppe.
+    /// </summary>
+    [Parameter] public RueckkuehlungGaben? Rueckkuehlung { get; set; }
+
+    /// <summary>
+    /// K-F5b: „Rückkühlwerke…“ öffnet die Verwaltung (<c>Seitenschluessel.Rueckkuehlwerk</c>) — der Wirt entscheidet über
+    /// ungespeicherte Änderungen. Kein Delegat, kein Knopf.
+    /// </summary>
+    [Parameter] public EventCallback RueckkuehlwerkeOeffnen { get; set; }
+
+    /// <summary>Die Einträge der Klappliste: die Katalogsätze, dazu eine gespeicherte Projektkopie ohne Katalogsatz.</summary>
+    internal IReadOnlyList<(int Id, string Text)> RueckkuehlwerkEintraege(RueckkuehlungGaben rk)
+    {
+        var l = rk.Katalog.Select(e => (e.Id, e.Text)).ToList();
+        if (Daten.Rueckkuehlwerk is RueckkuehlwerkLesung kopie
+            && (Daten.RueckkuehlwerkWahl == KaeltemaschineAnlageDaten.RUECKKUEHLWERK_PROJEKTKOPIE || kopie.StammId is null
+                || !l.Any(e => e.Id == kopie.StammId)))
+            l.Insert(0, (KaeltemaschineAnlageDaten.RUECKKUEHLWERK_PROJEKTKOPIE,
+                         string.Format(CultureInfo.CurrentCulture, Texte.RueckkuehlwerkProjektkopie, kopie.Bezeichner)));
+        if (Daten.RueckkuehlwerkWahl is int id && !l.Any(e => e.Id == id))
+            l.Add((id, "#" + id.ToString(CultureInfo.InvariantCulture)));
+        return l;
+    }
+
+    /// <summary>
+    /// Die Lesezeilen der Wahl: die gespeicherte Projektkopie, solange die Wahl auf ihren Katalogsatz (oder auf sie selbst)
+    /// zeigt, sonst der gewählte Katalogsatz; <c>null</c> = keins gewählt.
+    /// </summary>
+    internal RueckkuehlwerkLesung? GewaehlteLesung(RueckkuehlungGaben rk)
+    {
+        if (Daten.RueckkuehlwerkWahl is not int id) return null;
+        RueckkuehlwerkLesung? kopie = Daten.Rueckkuehlwerk;
+        if (kopie is not null && (id == KaeltemaschineAnlageDaten.RUECKKUEHLWERK_PROJEKTKOPIE || kopie.StammId == id)) return kopie;
+        return rk.Katalog.FirstOrDefault(e => e.Id == id)?.Lesung;
+    }
+
+    /// <summary>Weicht die Wahl von der gespeicherten Projektkopie ab? Dann schreibt erst OK.</summary>
+    private bool RueckkuehlwerkGeaendert
+    {
+        get
+        {
+            RueckkuehlwerkLesung? kopie = Daten.Rueckkuehlwerk;
+            int? gelesen = kopie is null ? null : kopie.StammId ?? KaeltemaschineAnlageDaten.RUECKKUEHLWERK_PROJEKTKOPIE;
+            int? wahl = Daten.RueckkuehlwerkWahl;
+            if (kopie is not null && wahl == KaeltemaschineAnlageDaten.RUECKKUEHLWERK_PROJEKTKOPIE) return false;
+            return wahl != gelesen;
+        }
+    }
+
+    /// <summary>Der Hilfsstromanteil in Prozent — gespeichert wird der Anteil [—].</summary>
+    public static double? AnteilAlsProzent(double? anteil) => anteil is double x ? Math.Round(x * 100.0, 6) : null;
+
+    /// <summary>Die gezeigten Prozent als gespeicherter Anteil [—].</summary>
+    public static double? ProzentAlsAnteil(double? prozent) => prozent is double p ? p / 100.0 : null;
+
+    /// <summary>Weicht der Kühlträger vom Stromträger des Projekts ab? Nur dann wirkt der eigene Zähler.</summary>
+    private bool TraegerAbweichend
+        => Daten.KuehlCarrierId is int id && id > 0 && id != ProjektStromtraeger;
+
+    /// <summary>Die Stromträger des Projekts, dazu ein gespeicherter Kühlträger, der keiner (mehr) ist.</summary>
+    private IReadOnlyList<(int Id, string Text)> TraegerEintraege
+    {
+        get
+        {
+            var l = new List<(int, string)>(Stromtraeger);
+            if (Daten.KuehlCarrierId is int id && !l.Any(e => e.Item1 == id)) l.Add((id, "#" + id.ToString(CultureInfo.InvariantCulture)));
+            return l;
+        }
+    }
+
+    private string PlatzhalterVorlauf
+    {
+        get
+        {
+            IReadOnlyList<double> stuetz = Daten.Geraet?.Kaltwasserstuetzstellen ?? Array.Empty<double>();
+            return string.Format(CultureInfo.CurrentCulture, Texte.PlatzhalterVorlauf, stuetz.Count > 0 ? Zahl(stuetz.Min(), 1) : "—");
+        }
+    }
+
+    internal static string Zahl(double? wert, int stellen)
+        => wert is double w ? Math.Round(w, stellen).ToString("0." + new string('#', Math.Max(stellen, 1)), CultureInfo.CurrentCulture) : "";
+}

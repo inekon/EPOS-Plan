@@ -21,7 +21,7 @@ namespace EPOS.Kern.Tests
     /// — Rückfall des Codes und Quelle der Bereinigung; sie bleibt ohne Übernahmeschritt und ohne
     /// <c>[InstallDelete]</c> (Entscheid BV-E1-1) — und die Standardvorlage
     /// <c>Berichtsvorlage_Standard.docx</c>: Kapitel für Kapitel mit Kapitelkopf und
-    /// <c>{{kapitel.&lt;name&gt;}}</c>, erzeugt wie die Beispielvorlage, aber ohne Kommentare (Werkzeug,
+    /// <c>{{kapitel.&lt;name&gt;}}</c>, ohne Kommentare (Werkzeug,
     /// <c>beispiel --standard</c>; BV-E2), dazu der Kurzbericht je Sprache <c>Berichtsvorlage_Kurzbericht.docx</c> und
     /// <c>Berichtsvorlage_Kurzbericht_en.docx</c> (BV-E5, Werkzeug <c>kurzbericht</c>; nur als Kopie über „Neue Vorlage…“
     /// wählbar, <c>BerichtsvorlagenCtrl.Musterpfad</c> findet ihn im selben Ordner) und ebenso die ausführliche Vorlage je
@@ -30,8 +30,7 @@ namespace EPOS.Kern.Tests
     /// <c>Berichtsvorlage_Bausteine_en.dotx</c> (BV-E9, Werkzeug <c>bausteine</c>; eine Dokumentvorlage mit jedem Platzhalter als
     /// Schnellbaustein, im Musterordner) und die ausführliche Excel-Vorlage je Sprache
     /// <c>Berichtsvorlage_Excel_Ausfuehrlich.xlsx</c> und <c>…_en.xlsx</c> (BV-E9, Werkzeug <c>excel-ausfuehrlich</c>; in der
-    /// Zeile „Excel-Vorlage“ direkt wählbar). Die Beispielvorlage <c>Berichtsvorlage_Beispiel.docx</c> ist
-    /// Anschauung und steht in keinem Lieferweg. Jede Vorlage im Vorlagenordner steht in einer der beiden
+    /// Zeile „Excel-Vorlage“ direkt wählbar). Jede Vorlage im Vorlagenordner steht in einer der beiden
     /// Listen: Eine neue Vorlage wird bewusst ausgeliefert oder bewusst nicht.</para>
     ///
     /// <para><b>Warum die Projektdateien gelesen werden.</b> Der Kern-Filter baut keine der beiden
@@ -74,10 +73,7 @@ namespace EPOS.Kern.Tests
         };
 
         /// <summary>Die Vorlagen des Ordners, die bewusst nicht ausgeliefert werden.</summary>
-        internal static readonly string[] NichtAusgeliefert =
-        {
-            BerichtsvorlageDateiWacheTests.BEISPIEL,
-        };
+        internal static readonly string[] NichtAusgeliefert = Array.Empty<string>();
 
         /// <summary>Was im Vorlagenordner als Vorlage zählt (Konzept 10.3, Zeile „Liste“, dazu <c>.docm</c>).</summary>
         private static readonly string[] Vorlagenendungen = { ".docx", ".dotx", ".docm", ".xlsx", ".xltx" };
@@ -195,13 +191,13 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die Beispielvorlage steht in keinem Lieferweg, und jeder Eintrag aus dem Vorlagenordner
+        /// Keine nicht ausgelieferte Vorlage steht in einem Lieferweg, und jeder Eintrag aus dem Vorlagenordner
         /// nennt eine ausgelieferte Vorlage ausdrücklich — ein Muster wie <c>Vorlagen\*.docx</c>
-        /// nähme die Beispielvorlage still mit. <c>Remove</c> und Kommentare zählen nicht.
+        /// nähme jede Datei des Ordners still mit. <c>Remove</c> und Kommentare zählen nicht.
         /// </summary>
         [Theory]
         [MemberData(nameof(Lieferwege))]
-        public void Kein_Lieferweg_fuehrt_die_Beispielvorlage(string projektdatei)
+        public void Kein_Lieferweg_fuehrt_eine_nicht_ausgelieferte_Vorlage(string projektdatei)
         {
             XDocument projekt = Projekt(projektdatei);
             if (projekt == null) return;
@@ -214,7 +210,7 @@ namespace EPOS.Kern.Tests
                     foreach (string datei in NichtAusgeliefert)
                         Assert.False(wert.Contains(datei, StringComparison.OrdinalIgnoreCase),
                             projektdatei + ": <" + e.Name.LocalName + "> nennt " + datei
-                            + " — die Beispielvorlage wird nicht ausgeliefert (Anschauung bis BV-E2).");
+                            + " — diese Vorlage wird nicht ausgeliefert.");
 
                 foreach (string quelle in Quellen(e))
                 {
@@ -226,6 +222,87 @@ namespace EPOS.Kern.Tests
                         + string.Join(", ", Ausgeliefert) + ").");
                 }
             }
+        }
+
+        // =====================================================================
+        //  Exportzusage (IDS) des IFC-Exports (Stufe G7c)
+        // =====================================================================
+
+        /// <summary>Die Exportzusage im Repositorium — versioniert, neben der Vorlagendatenbank des Setups.</summary>
+        private const string ZUSAGE_REPO = "Setup/Vorlage/EPOS_Export.ids";
+
+        /// <summary>
+        /// Die Exportzusage liegt versioniert unter <c>Setup/Vorlage</c> und ist eine IDS-Datei: XML mit der
+        /// Wurzel <c>ids</c>. Der Exportdialog sucht sie neben der Vorlagendatenbank.
+        /// </summary>
+        [Fact]
+        public void Die_Exportzusage_liegt_im_Setup_und_ist_eine_IDS()
+        {
+            string wurzel = Berichtsdatenproben.Repowurzel();
+            if (wurzel == null) return;
+            string pfad = Path.Combine(wurzel, ZUSAGE_REPO.Replace('/', Path.DirectorySeparatorChar));
+            Assert.True(File.Exists(pfad), "Exportzusage fehlt: " + ZUSAGE_REPO + " (Setup und iOS-Paket führen sie).");
+            XDocument ids = XDocument.Load(pfad);
+            Assert.Equal("ids", ids.Root!.Name.LocalName);
+        }
+
+        /// <summary>
+        /// Windows: Das Setup führt die Exportzusage über eine Pflichtkonstante (<c>#error</c>, wenn sie fehlt)
+        /// nach <c>{app}\Vorlage</c> — neben die Vorlagendatenbank, dort sucht sie der Exportdialog.
+        /// </summary>
+        [Fact]
+        public void Das_Setup_legt_die_Exportzusage_neben_die_Vorlage()
+        {
+            string wurzel = Berichtsdatenproben.Repowurzel();
+            if (wurzel == null) return;
+            string iss = File.ReadAllText(Path.Combine(wurzel, "Setup", "EPOS-Plan.iss"));
+            Assert.Matches(new System.Text.RegularExpressions.Regex(
+                @"^#define\s+ExportZusage\s+SetupDir\s*\+\s*""Vorlage\\EPOS_Export\.ids""",
+                System.Text.RegularExpressions.RegexOptions.Multiline), iss);
+            Assert.Matches(new System.Text.RegularExpressions.Regex(@"^#if\s+!FileExists\(ExportZusage\)",
+                System.Text.RegularExpressions.RegexOptions.Multiline), iss);
+            Assert.Matches(new System.Text.RegularExpressions.Regex(
+                @"^Source:\s*""\{#ExportZusage\}"";\s*DestDir:\s*""\{app\}\\Vorlage""",
+                System.Text.RegularExpressions.RegexOptions.Multiline), iss);
+        }
+
+        /// <summary>
+        /// Windows-Entwicklungsbau: genau ein <c>None</c>-Eintrag der Exportzusage, der sie mit <c>Link</c> und
+        /// <c>TargetPath</c> <c>Vorlage\EPOS_Export.ids</c> neben die EXE kopiert — wie das Setup nach
+        /// <c>{app}\Vorlage</c>.
+        /// </summary>
+        [Fact]
+        public void Der_Windows_Bau_kopiert_die_Exportzusage_neben_die_EXE()
+        {
+            XDocument projekt = Projekt(WINDOWS_PROJEKT);
+            if (projekt == null) return;
+
+            List<XElement> eintraege = Eintraege(projekt, "None")
+                .Where(e => Quellen(e).Contains(@"..\Setup\Vorlage\EPOS_Export.ids", StringComparer.Ordinal))
+                .ToList();
+            Assert.True(eintraege.Count == 1,
+                WINDOWS_PROJEKT + ": " + eintraege.Count + " None-Einträge für die Exportzusage, erwartet genau einer.");
+            Assert.Equal(@"Vorlage\EPOS_Export.ids", Metadatum(eintraege[0], "Link"));
+            Assert.Equal(@"Vorlage\EPOS_Export.ids", Metadatum(eintraege[0], "TargetPath"));
+            Assert.Equal("PreserveNewest", Metadatum(eintraege[0], "CopyToOutputDirectory"));
+        }
+
+        /// <summary>
+        /// iOS: genau ein <c>MauiAsset</c> der Exportzusage mit <c>LogicalName</c> <c>Vorlage\EPOS_Export.ids</c> —
+        /// im Paket neben dem erwarteten Ort der Vorlagendatenbank.
+        /// </summary>
+        [Fact]
+        public void Der_iOS_Lieferweg_fuehrt_die_Exportzusage()
+        {
+            XDocument projekt = Projekt(IOS_PROJEKT);
+            if (projekt == null) return;
+
+            List<XElement> eintraege = Eintraege(projekt, "MauiAsset")
+                .Where(e => Quellen(e).Contains(@"..\Setup\Vorlage\EPOS_Export.ids", StringComparer.Ordinal))
+                .ToList();
+            Assert.True(eintraege.Count == 1,
+                IOS_PROJEKT + ": " + eintraege.Count + " MauiAsset-Einträge für die Exportzusage, erwartet genau einer.");
+            Assert.Equal(@"Vorlage\EPOS_Export.ids", Metadatum(eintraege[0], "LogicalName"));
         }
 
         // =====================================================================

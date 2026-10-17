@@ -190,6 +190,9 @@ namespace WindowsFormsApplication1.Zeichnung
         /// <summary>Der Klassenname eines Reihenpfads — der Griff der Oberfläche.</summary>
         public const string KLASSE_REIHE = "epos-reihe";
 
+        /// <summary>Die Klasse des Tagesbands einer Reihe (Oberflächenregel) — ein zweiter Pfad vor ihrem Kern.</summary>
+        public const string KLASSE_BAND = "epos-band";
+
         /// <summary>Der Klassenname des inneren <c>&lt;svg&gt;</c> in Datenkoordinaten.</summary>
         public const string KLASSE_FLAECHE = "epos-flaeche";
 
@@ -267,7 +270,12 @@ namespace WindowsFormsApplication1.Zeichnung
                 .Attribut("width", Px(modell.Breite))
                 .Attribut("height", Px(modell.Hoehe))
                 .Attribut("viewBox", "0 0 " + Px(modell.Breite) + " " + Px(modell.Hoehe))
-                .Attribut("font-family", SCHRIFTKETTE);
+                .Attribut("font-family", SCHRIFTKETTE)
+                // Der Oberflaechenmodus steht am Bild (Oberflaechenregel) - nur auf dem
+                // Bildschirm: Ein Modell des Berichtswegs traegt das Attribut nicht, und der
+                // Druck (Druckbaum) nie - sein SVG bleibt byte-gleich, wie es war.
+                .Attribut("data-darstellung",
+                          datenflaeche && modell.Darstellung == Darstellung.Interaktiv ? "interaktiv" : null);
 
             var defs = new SvgKnoten("defs");
             var inhalt = new List<SvgKnoten>();
@@ -564,6 +572,20 @@ namespace WindowsFormsApplication1.Zeichnung
                 Farbton strich = flaeche ? r.Randton : r.Ton;
                 string marke = "reihe:" + (r.Name ?? "");
 
+                // DAS TAGESBAND (Oberflaechenregel): VOR dem Kern der Reihe ihr Band vom
+                // Tagestief zur Tagesspitze - durchscheinend, ohne Strich, mit data-band
+                // statt data-reihe (der Legendenklick schaltet beide, die Pruefstaende
+                // zaehlen je Reihe EINEN Reihenpfad). Leer, sobald der Ausschnitt die
+                // Stunden zeigt; die Oberflaeche rechnet es im Fenster nach.
+                if (r.Tagesband)
+                    knoten.Fuege(new SvgKnoten("path", marke)
+                        .Attribut("class", KLASSE_BAND)
+                        .Attribut("data-band", r.Name ?? "")
+                        .Attribut("fill", Hex(lage.Palette, r.Ton))
+                        .Attribut("fill-opacity", Oberflaechenregel.DECKUNG_BAND.ToString("0.##", INV))
+                        .Attribut("stroke", "none")
+                        .Attribut("d", Bandpfad(r, fl)));
+
                 var pfad = new SvgKnoten("path", marke)
                     .Attribut("class", KLASSE_REIHE)
                     .Attribut("data-reihe", r.Name ?? "")
@@ -661,17 +683,33 @@ namespace WindowsFormsApplication1.Zeichnung
                 }
             }
             else if (schritt > 0)
-            {
-                ab = (int)Math.Ceiling((von - rf.XVon) / schritt - 1e-9);
-                biss = (int)Math.Floor((bis - rf.XVon) / schritt + 1e-9);
-                if (ab < 0) ab = 0;
-                if (biss > n - 1) biss = n - 1;
-            }
+                Indexgrenzen(rf, schritt, n, von, bis, out ab, out biss);
             if (biss < ab) return "";
 
             int laenge = biss - ab + 1;
             int spalten = (int)Math.Max(1.0, Math.Round(flaeche.Bild.Breite));
             var sb = new StringBuilder(laenge * 12 + 16);
+
+            // DAS TAGESBAND (Oberflaechenregel): Eine dichte Jahresreihe ohne Stapel zeigt
+            // in der Jahresansicht je Tag ihr Mittel als Kern - Linie oder Flaeche -, das
+            // Band davor zeichnet Bandpfad. Sobald ein Tag breiter als TAG_MIN_SPALTEN
+            // Bildpunkte ist, geht es unten weiter: jede Stunde, roh oder gebuendelt.
+            if (Pfadregel.AlsTagesband(reihe, laenge, spalten))
+            {
+                Tagesbandkern(sb, reihe, rf, schritt, ab, laenge, hoehe, spanne);
+                return sb.ToString();
+            }
+
+            // DIE STUFENREGEL DES STAPELS: Eine Stapelschicht oder eine Linie, die einen
+            // Stapel begleitet, geht mit mehr Werten als Bildpunktspalten als TREPPE ihrer
+            // Werte in den Spitzenstunden in den Pfad - ob roh oder gebuendelt verlangt ist.
+            // Roh stuenden acht Stunden in einer Spalte, und der Browser deckte den Zickzack
+            // nur anteilig (Kopf der Stufenregel in Pfadregel).
+            if (Pfadregel.Spaltenweise(reihe, laenge, spalten))
+            {
+                Stufentreppe(sb, reihe, rf, schritt, ab, biss, laenge, spalten, hoehe, spanne);
+                return sb.ToString();
+            }
 
             if (reihe.Art == Reihenart.Flaeche)
             {
@@ -703,6 +741,101 @@ namespace WindowsFormsApplication1.Zeichnung
                 Punkt(sb, i == 0, XStelle(reihe, rf, schritt, ab + gebuendelt[i].X),
                       Bildpunkt(gebuendelt[i].Y, rf, hoehe, spanne));
             return sb.ToString();
+        }
+
+        // =====================================================================
+        // Das Tagesband (Oberflaechenregel)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Das Tagesband der ganzen Reihe</b>: je Tag des Jahresrasters ein Punkt der
+        /// Tagesspitze (vorwärts, in der Tagesmitte) und der Tagestiefe (rückwärts), als
+        /// geschlossener Zug je Stück ohne Lücke; leer, wenn die Reihe nicht als Tagesband
+        /// steht (<see cref="Pfadregel.AlsTagesband"/>).
+        /// </summary>
+        public static string Bandpfad(Datenreihe reihe, Zeichenflaeche flaeche)
+        {
+            Datenfenster rf = Reihenfenster(reihe, flaeche);
+            return rf == null ? "" : Bandpfad(reihe, flaeche, rf.XVon, rf.XBis);
+        }
+
+        /// <summary>
+        /// <b>Das Tagesband eines Ausschnitts</b> <paramref name="von"/> … <paramref name="bis"/>
+        /// (Einheit der x-Achse) — dieselbe Rechnung wie der Kern in
+        /// <see cref="Reihenpfad(Datenreihe, Zeichenflaeche, double, double, bool)"/>. Die
+        /// Oberfläche rechnet es beim Zoom nach; leer, sobald der Ausschnitt die Stunden zeigt.
+        /// </summary>
+        public static string Bandpfad(Datenreihe reihe, Zeichenflaeche flaeche, double von, double bis)
+        {
+            Datenfenster rf = Reihenfenster(reihe, flaeche);
+            if (rf == null || reihe.XWerte != null || reihe.Art == Reihenart.Punkte) return "";
+            int n = reihe.Werte.Length;
+            double schritt = (rf.XBis - rf.XVon) / (n - 1);
+            if (schritt <= 0) return "";
+            Indexgrenzen(rf, schritt, n, von, bis, out int ab, out int biss);
+            if (biss < ab) return "";
+            int laenge = biss - ab + 1;
+            int spalten = (int)Math.Max(1.0, Math.Round(flaeche.Bild.Breite));
+            if (!Pfadregel.AlsTagesband(reihe, laenge, spalten)) return "";
+
+            double hoehe = flaeche.Bild.Hoehe;
+            double spanne = rf.YBis - rf.YVon;
+            if (spanne <= 0) spanne = 1;
+
+            IReadOnlyList<Pfadregel.Tagesstufe> tage = Pfadregel.Tagesband(reihe.Werte, ab, laenge);
+            var sb = new StringBuilder(tage.Count * 24 + 16);
+            foreach ((int start, int ende) in Stuecke(tage))
+            {
+                if (sb.Length > 0) sb.Append(' ');
+                for (int t = start; t <= ende; t++)
+                    Punkt(sb, t == start, XStelle(reihe, rf, schritt, tage[t].Mitte),
+                          Bildpunkt(tage[t].Max, rf, hoehe, spanne));
+                for (int t = ende; t >= start; t--)
+                    Punkt(sb, false, XStelle(reihe, rf, schritt, tage[t].Mitte),
+                          Bildpunkt(tage[t].Min, rf, hoehe, spanne));
+                sb.Append(" Z");
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// <b>Der Kern des Tagesbands</b>: das Tagesmittel je Tag in der Tagesmitte — bei einer
+        /// Linie als Streckenzug, bei einer Fläche als geschlossener Zug auf der Achsennull
+        /// (in das Fenster geklemmt wie der Flächenzug). Je Stück ohne Lücke ein Teilpfad.
+        /// </summary>
+        private static void Tagesbandkern(StringBuilder sb, Datenreihe reihe, Datenfenster rf, double schritt,
+                                          int ab, int laenge, double hoehe, double spanne)
+        {
+            IReadOnlyList<Pfadregel.Tagesstufe> tage = Pfadregel.Tagesband(reihe.Werte, ab, laenge);
+            bool flaeche = reihe.Art == Reihenart.Flaeche;
+            double null0 = rf.YVon > 0 ? rf.YVon : rf.YBis < 0 ? rf.YBis : 0.0;
+            foreach ((int start, int ende) in Stuecke(tage))
+            {
+                if (sb.Length > 0) sb.Append(' ');
+                for (int t = start; t <= ende; t++)
+                    Punkt(sb, t == start, XStelle(reihe, rf, schritt, tage[t].Mitte),
+                          Bildpunkt(tage[t].Mittel, rf, hoehe, spanne));
+                if (!flaeche) continue;
+                Punkt(sb, false, XStelle(reihe, rf, schritt, tage[ende].Mitte), Bildpunkt(null0, rf, hoehe, spanne));
+                Punkt(sb, false, XStelle(reihe, rf, schritt, tage[start].Mitte), Bildpunkt(null0, rf, hoehe, spanne));
+                sb.Append(" Z");
+            }
+        }
+
+        /// <summary>Die Läufe aufeinanderfolgender belegter Tage (erster und letzter Index in <paramref name="tage"/>).</summary>
+        private static IReadOnlyList<(int Von, int Bis)> Stuecke(IReadOnlyList<Pfadregel.Tagesstufe> tage)
+        {
+            var stuecke = new List<(int, int)>();
+            int t = 0;
+            while (t < tage.Count)
+            {
+                while (t < tage.Count && !tage[t].Belegt) t++;
+                if (t >= tage.Count) break;
+                int von = t;
+                while (t < tage.Count && tage[t].Belegt) t++;
+                stuecke.Add((von, t - 1));
+            }
+            return stuecke;
         }
 
         private static bool Endlich(double w) => !double.IsNaN(w) && !double.IsInfinity(w);
@@ -806,6 +939,12 @@ namespace WindowsFormsApplication1.Zeichnung
         /// Unterkante rückwärts, dann <c>Z</c>. Fehlt <c>Unten</c>, ist die Unterkante
         /// die ACHSENNULL, in das Fenster der Reihe geklemmt — eine Fläche, deren
         /// Achse gar nicht bis null reicht, liefe sonst aus dem Bild.
+        ///
+        /// <para><b>Eine Fläche mit Lücke</b> (Welle K4, Befund B12 — „aus" einer Kalenderwoche als
+        /// NaN): Je zusammenhängendem Stück, in dem Ober- und Unterkante endlich sind, ein eigener
+        /// geschlossener Teilpfad (<c>M … Z</c>); gebündelt wird mit den Bildpunktspalten im
+        /// Verhältnis der Stücklänge. Ein „NaN" im Pfad machte ihn ganz ungültig. Eine Fläche
+        /// ohne Lücke nimmt den Weg darunter, wörtlich wie bisher.</para>
         /// </summary>
         private static void Flaechenzug(StringBuilder sb, Datenreihe r, Datenfenster rf,
                                         int ab, int laenge, bool roh, int spalten,
@@ -819,6 +958,12 @@ namespace WindowsFormsApplication1.Zeichnung
             double[] unten = r.Unten == null
                 ? Gleichwert(laenge, null0)
                 : Teil(r.Unten, ab, laenge);
+
+            if (HatLuecke(oben, 0, laenge - 1) || HatLuecke(unten, 0, laenge - 1))
+            {
+                Flaechenzug(sb, r, rf, schritt, ab, oben, unten, roh, spalten, hoehe, spanne);
+                return;
+            }
 
             IReadOnlyList<Punkt> kanteOben = roh
                 ? Rohkante(oben)
@@ -835,6 +980,246 @@ namespace WindowsFormsApplication1.Zeichnung
                 Punkt(sb, false, XStelle(r, rf, schritt, ab + kanteUnten[i].X),
                       Bildpunkt(kanteUnten[i].Y, rf, hoehe, spanne));
             sb.Append(" Z");
+        }
+
+        /// <summary>
+        /// <b>Die Treppe einer Stapelschicht oder Hüllkurve</b> (Stufenregel in
+        /// <see cref="Pfadregel"/>): je Stufe — ein Tag im Jahresbild, sonst eine
+        /// Bildpunktspalte — der Wert in der SPITZENSTUNDE der Stufe als waagrechte Kante,
+        /// von der ersten bis zur letzten Stützstelle des Ausschnitts. Die Spitzenstunde
+        /// wählt die Bezugsgröße (<see cref="Datenreihe.Bezug"/>), die alle Reihen des Bildes
+        /// teilen. Eine Schicht schließt mit der Treppe ihrer Unterkante rückwärts und
+        /// <c>Z</c> — dieselbe Regel auf dieselben Zahlen wie die Oberkante der Schicht
+        /// darunter, also genau deren Kante. Eine Linie bleibt offen.
+        ///
+        /// <para><b>Eine Lücke bleibt Lücke</b> (Kopf der Stufenregel): Steht die Reihe in der
+        /// Spitzenstunde einer Stufe nicht endlich da — eine Schicht an Ober- oder Unterkante —,
+        /// lässt die Treppe die Stufe aus. Je Stück ohne Lücke ein eigener Teilpfad
+        /// (<see cref="Pfadregel.Stufenstuecke"/>), eine Schicht je Stück mit <c>Z</c> geschlossen,
+        /// Stücke durch ein Leerzeichen getrennt — wie der Flächenzug mit Lücke. Ohne Lücke ist es
+        /// ein einziges Stück, wörtlich die Treppe über alle Stufen.</para>
+        /// </summary>
+        private static void Stufentreppe(StringBuilder sb, Datenreihe r, Datenfenster rf, double schritt,
+                                         int ab, int biss, int laenge, int spalten,
+                                         double hoehe, double spanne)
+        {
+            double x0 = XStelle(r, rf, schritt, ab);
+            double breite = XStelle(r, rf, schritt, biss) - x0;
+            IReadOnlyList<Stufe> stufen = Pfadregel.Stufen(r.Werte.Length, ab, laenge, spalten);
+            int[] stunden = Pfadregel.Spitzenstunden(Teil(Bezugsreihe(r), ab, laenge), stufen);
+            double[] oben = Pfadregel.Stundenwerte(Teil(r.Werte, ab, laenge), stunden);
+
+            if (r.Art != Reihenart.Flaeche)
+            {
+                foreach ((int von, int bis) in Pfadregel.Stufenstuecke(oben))
+                {
+                    if (sb.Length > 0) sb.Append(' ');
+                    Treppenzug(sb, Pfadregel.Treppe(stufen, oben, von, bis), true, x0, breite, rf, hoehe, spanne);
+                }
+                return;
+            }
+
+            double null0 = rf.YVon > 0 ? rf.YVon : rf.YBis < 0 ? rf.YBis : 0.0;
+            double[] unterkante = r.Unten == null ? Gleichwert(laenge, null0) : Teil(r.Unten, ab, laenge);
+            double[] unten = Pfadregel.Stundenwerte(unterkante, stunden);
+            foreach ((int von, int bis) in Pfadregel.Stufenstuecke(oben, unten))
+            {
+                if (sb.Length > 0) sb.Append(' ');
+                Treppenzug(sb, Pfadregel.Treppe(stufen, oben, von, bis), true, x0, breite, rf, hoehe, spanne);
+                Treppenzug(sb, Pfadregel.Treppe(stufen, unten, von, bis), false, x0, breite, rf, hoehe, spanne);
+                sb.Append(" Z");
+            }
+        }
+
+        /// <summary>
+        /// Die Punkte einer Treppe in den Pfad — <paramref name="vorwaerts"/> von links nach
+        /// rechts, mit <c>M</c> am ersten Punkt; sonst rückwärts als Fortsetzung (die
+        /// Unterkante einer Schicht).
+        /// </summary>
+        private static void Treppenzug(StringBuilder sb, IReadOnlyList<(double Anteil, double Wert)> treppe,
+                                       bool vorwaerts, double x0, double breite, Datenfenster rf,
+                                       double hoehe, double spanne)
+        {
+            if (vorwaerts)
+                for (int i = 0; i < treppe.Count; i++)
+                    Punkt(sb, i == 0, x0 + breite * treppe[i].Anteil, Bildpunkt(treppe[i].Wert, rf, hoehe, spanne));
+            else
+                for (int i = treppe.Count - 1; i >= 0; i--)
+                    Punkt(sb, false, x0 + breite * treppe[i].Anteil, Bildpunkt(treppe[i].Wert, rf, hoehe, spanne));
+        }
+
+        /// <summary>
+        /// Die Bezugsgröße der Stufenregel für eine Reihe: <see cref="Datenreihe.Bezug"/>,
+        /// wenn er so lang ist wie die Werte — sonst die eigenen Werte.
+        /// </summary>
+        private static double[] Bezugsreihe(Datenreihe r)
+            => r.Bezug != null && r.Werte != null && r.Bezug.Length == r.Werte.Length ? r.Bezug : r.Werte;
+
+        /// <summary>
+        /// Die Indexgrenzen eines Ausschnitts <paramref name="von"/> … <paramref name="bis"/>
+        /// (Einheit der x-Achse) bei gleichmäßigen Stützstellen: jede Stützstelle, die darin
+        /// liegt, in die Reihe geklemmt.
+        /// </summary>
+        private static void Indexgrenzen(Datenfenster rf, double schritt, int n, double von, double bis,
+                                         out int ab, out int biss)
+        {
+            ab = (int)Math.Ceiling((von - rf.XVon) / schritt - 1e-9);
+            biss = (int)Math.Floor((bis - rf.XVon) / schritt + 1e-9);
+            if (ab < 0) ab = 0;
+            if (biss > n - 1) biss = n - 1;
+        }
+
+        // =====================================================================
+        // Die Stufen fuer die Oberflaeche (Zeigerzeile, Hinweis unter der Achse)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Wie steht die Reihe im Ausschnitt <paramref name="von"/> … <paramref name="bis"/>
+        /// im Pfad?</b> <see cref="Stufenart.Keine"/>, wenn sie nicht in Stufen gezeichnet wird
+        /// (roh, gebündelt, keine Stapelreihe) — sonst ob die Stufe der Tag oder die
+        /// Bildpunktspalte ist. Dieselbe Rechnung wie <see cref="Reihenpfad(Datenreihe, Zeichenflaeche, double, double, bool)"/>;
+        /// die Oberfläche nennt damit unter der Achse, was eine Stufe zeigt.
+        /// </summary>
+        public static Stufenart Stufenansicht(Datenreihe reihe, Zeichenflaeche flaeche, double von, double bis)
+        {
+            if (!Stufenlage(reihe, flaeche, von, bis, out _, out int ab, out _, out int laenge, out int spalten))
+                return Zeichnung.Stufenart.Keine;
+            return Pfadregel.TagesStufen(reihe.Werte.Length, laenge, spalten)
+                ? Zeichnung.Stufenart.Tag
+                : Zeichnung.Stufenart.Spalte;
+        }
+
+        /// <summary>Dasselbe für den Vollpfad der Reihe.</summary>
+        public static Stufenart Stufenansicht(Datenreihe reihe, Zeichenflaeche flaeche)
+        {
+            Datenfenster rf = Reihenfenster(reihe, flaeche);
+            return rf == null ? Zeichnung.Stufenart.Keine : Stufenansicht(reihe, flaeche, rf.XVon, rf.XBis);
+        }
+
+        /// <summary>
+        /// <b>Die Spitzenstunde, deren Werte die Treppe an der Stelle <paramref name="x"/>
+        /// zeigt</b> — der Index in <c>reihe.Werte</c>, oder <c>−1</c>, wenn die Reihe im
+        /// Ausschnitt <paramref name="von"/> … <paramref name="bis"/> nicht in Stufen steht.
+        /// Die Zeigerzeile nennt damit in der zusammengefassten Ansicht die Stunde, die eine
+        /// Stufe zeigt, und liest alle Reihen in DIESER Stunde. Dieselbe Rechnung wie der Pfad.
+        /// </summary>
+        public static int Stufenstunde(Datenreihe reihe, Zeichenflaeche flaeche, double von, double bis, double x)
+        {
+            if (!Stufenlage(reihe, flaeche, von, bis, out Datenfenster rf, out int ab, out int biss,
+                            out int laenge, out int spalten))
+                return -1;
+
+            double schritt = (rf.XBis - rf.XVon) / (reihe.Werte.Length - 1);
+            IReadOnlyList<Stufe> stufen = Pfadregel.Stufen(reihe.Werte.Length, ab, laenge, spalten);
+            if (stufen.Count == 0) return -1;
+            int[] stunden = Pfadregel.Spitzenstunden(Teil(Bezugsreihe(reihe), ab, laenge), stufen);
+
+            double x0 = XStelle(reihe, rf, schritt, ab);
+            double breite = XStelle(reihe, rf, schritt, biss) - x0;
+            double anteil = breite > 0 ? (x - x0) / breite : 0.0;
+            int s = 0;
+            while (s + 1 < stufen.Count && stufen[s + 1].Links <= anteil) s++;
+            return ab + stunden[s];
+        }
+
+        /// <summary>
+        /// <b>Alle Stufen des Ausschnitts auf einmal</b> (Auftrag GX): je Stufe ihre linke
+        /// Grenze auf der x-Achse und der Index der Spitzenstunde in <c>reihe.Werte</c> —
+        /// dieselbe Rechnung wie <see cref="Stufenstunde(Datenreihe, Zeichenflaeche, double, double, double)"/>,
+        /// nur nicht je Zeigerstelle. Die Oberfläche gibt die Tafel einmal je Zeichnen an ihr
+        /// Zeigermodul, das die Stufe unter dem Zeiger dann ohne Rundlauf findet.
+        /// <c>null</c>, wenn die Reihe im Ausschnitt nicht in Stufen steht.
+        /// </summary>
+        public static IReadOnlyList<(double Links, int Index)> Stufentafel(Datenreihe reihe, Zeichenflaeche flaeche,
+                                                                          double von, double bis)
+        {
+            if (!Stufenlage(reihe, flaeche, von, bis, out Datenfenster rf, out int ab, out int biss,
+                            out int laenge, out int spalten))
+                return null;
+            double schritt = (rf.XBis - rf.XVon) / (reihe.Werte.Length - 1);
+            IReadOnlyList<Stufe> stufen = Pfadregel.Stufen(reihe.Werte.Length, ab, laenge, spalten);
+            if (stufen.Count == 0) return null;
+            int[] stunden = Pfadregel.Spitzenstunden(Teil(Bezugsreihe(reihe), ab, laenge), stufen);
+            double x0 = XStelle(reihe, rf, schritt, ab);
+            double breite = XStelle(reihe, rf, schritt, biss) - x0;
+            var tafel = new List<(double Links, int Index)>(stufen.Count);
+            for (int s = 0; s < stufen.Count; s++)
+                tafel.Add((x0 + stufen[s].Links * breite, ab + stunden[s]));
+            return tafel;
+        }
+
+        /// <summary>Die Stufentafel des Vollpfads der Reihe.</summary>
+        public static IReadOnlyList<(double Links, int Index)> Stufentafel(Datenreihe reihe, Zeichenflaeche flaeche)
+        {
+            Datenfenster rf = Reihenfenster(reihe, flaeche);
+            return rf == null ? null : Stufentafel(reihe, flaeche, rf.XVon, rf.XBis);
+        }
+
+        /// <summary>Dasselbe für den Vollpfad der Reihe.</summary>
+        public static int Stufenstunde(Datenreihe reihe, Zeichenflaeche flaeche, double x)
+        {
+            Datenfenster rf = Reihenfenster(reihe, flaeche);
+            return rf == null ? -1 : Stufenstunde(reihe, flaeche, rf.XVon, rf.XBis, x);
+        }
+
+        /// <summary>
+        /// Die Lage einer Reihe im Ausschnitt, wenn sie dort IN STUFEN steht
+        /// (<see cref="Pfadregel.Spaltenweise"/>): ihr Fenster, die Indexgrenzen, die Länge
+        /// und die Bildpunktspalten. <c>false</c> sonst.
+        /// </summary>
+        private static bool Stufenlage(Datenreihe reihe, Zeichenflaeche flaeche, double von, double bis,
+                                       out Datenfenster rf, out int ab, out int biss,
+                                       out int laenge, out int spalten)
+        {
+            ab = 0; biss = -1; laenge = 0; spalten = 0;
+            rf = Reihenfenster(reihe, flaeche);
+            if (rf == null || reihe.Art == Reihenart.Punkte || reihe.XWerte != null) return false;
+
+            int n = reihe.Werte.Length;
+            double schritt = (rf.XBis - rf.XVon) / (n - 1);
+            if (schritt <= 0) return false;
+            Indexgrenzen(rf, schritt, n, von, bis, out ab, out biss);
+            if (biss < ab) return false;
+
+            laenge = biss - ab + 1;
+            spalten = (int)Math.Max(1.0, Math.Round(flaeche.Bild.Breite));
+            return Pfadregel.Spaltenweise(reihe, laenge, spalten);
+        }
+
+        /// <summary>
+        /// Die Fläche MIT Lücke (Welle K4): je Stück endlicher Kanten ein geschlossener Teilpfad —
+        /// Oberkante vorwärts, Unterkante rückwärts, <c>Z</c>; Stücke durch ein Leerzeichen getrennt.
+        /// </summary>
+        private static void Flaechenzug(StringBuilder sb, Datenreihe r, Datenfenster rf, double schritt,
+                                        int ab, double[] oben, double[] unten, bool roh, int spalten,
+                                        double hoehe, double spanne)
+        {
+            int laenge = oben.Length;
+            int i = 0;
+            while (i < laenge)
+            {
+                while (i < laenge && !(Endlich(oben[i]) && Endlich(unten[i]))) i++;
+                if (i >= laenge) break;
+                int start = i;
+                while (i < laenge && Endlich(oben[i]) && Endlich(unten[i])) i++;
+                int stueck = i - start;
+
+                double[] o = Teil(oben, start, stueck);
+                double[] u = Teil(unten, start, stueck);
+                int teilspalten = (int)Math.Max(1.0, Math.Round((double)spalten * stueck / Math.Max(1, laenge)));
+                IReadOnlyList<Punkt> kanteOben = roh ? Rohkante(o) : Pfadregel.GebuendelteKante(o, teilspalten, true);
+                IReadOnlyList<Punkt> kanteUnten = roh ? Rohkante(u) : Pfadregel.GebuendelteKante(u, teilspalten, false);
+                if (kanteOben.Count == 0 || kanteUnten.Count == 0) continue;
+
+                if (sb.Length > 0) sb.Append(' ');
+                for (int k = 0; k < kanteOben.Count; k++)
+                    Punkt(sb, k == 0, XStelle(r, rf, schritt, ab + start + kanteOben[k].X),
+                          Bildpunkt(kanteOben[k].Y, rf, hoehe, spanne));
+                for (int k = kanteUnten.Count - 1; k >= 0; k--)
+                    Punkt(sb, false, XStelle(r, rf, schritt, ab + start + kanteUnten[k].X),
+                          Bildpunkt(kanteUnten[k].Y, rf, hoehe, spanne));
+                sb.Append(" Z");
+            }
         }
 
         private static IReadOnlyList<Punkt> Rohkante(double[] werte)

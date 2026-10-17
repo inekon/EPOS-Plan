@@ -75,7 +75,8 @@ namespace WindowsFormsApplication1
         /// <summary>Der Summenfuß aus dem Kern, übersetzt in das DTO der Oberfläche.</summary>
         internal static AufbauKennwerteDaten Kennwerte(BauteilaufbauDaten d)
         {
-            BauteilaufbauKennwerte k = BauteilaufbauCtrl.Kennwerte(AlsModell(d));
+            BauteilaufbauModel modell = AlsModell(d);
+            BauteilaufbauKennwerte k = BauteilaufbauCtrl.Kennwerte(modell);
             return new AufbauKennwerteDaten
             {
                 NeigungGrad = k.NeigungGrad,
@@ -83,6 +84,11 @@ namespace WindowsFormsApplication1
                 RSe_M2KW = k.RSe_M2KW,
                 RJeSchicht_M2KW = k.RJeSchicht_M2KW,
                 R_M2KW = k.R_M2KW,
+                RT_M2KW = k.RT_M2KW,
+                RT_Oben_M2KW = k.RT_Oben_M2KW,
+                RT_Unten_M2KW = k.RT_Unten_M2KW,
+                Fehlerschranke = k.Fehlerschranke,
+                Hinweis = k.Hinweis ?? "",
                 U_WM2K = k.U_WM2K,
                 Kapazitaet_KJM2K = k.Kapazitaet_KJM2K,
                 KapazitaetWirksam_KJM2K = k.KapazitaetWirksam_KJM2K,
@@ -90,7 +96,9 @@ namespace WindowsFormsApplication1
                 R1Rel = k.R1Rel,
                 C1Rel = k.C1Rel,
                 Grund = k.Grund ?? "",
-                PeriodeGrund = k.PeriodeGrund ?? ""
+                PeriodeGrund = k.PeriodeGrund ?? "",
+                // BK-2b: das Kennzeichen des Arbeitsstands nach der Kernregel — derselbe Weg wie beim Speichern.
+                UngeeignetGrund = d == null ? "" : Bauteilkatalog.UngeeignetGrund(modell) ?? ""
             };
         }
 
@@ -105,6 +113,18 @@ namespace WindowsFormsApplication1
                 BauteilaufbauModel alt = ctrl.LesenKatalogsatz(m.ID);
                 m.Herkunft = alt?.Herkunft;
                 m.Quellkennung = alt?.Quellkennung;
+                // BK-2b: die Felder der Quelle reisen mit (Kopf und Schichten gleicher Id) — sonst schriebe das
+                // Speichern sie leer; die Quelle eines Importsatzes bleibt die gespeicherte.
+                if (alt != null)
+                {
+                    foreach (KeyValuePair<string, object> p in alt.Zusatz ?? new Dictionary<string, object>())
+                        if (!m.Zusatz.ContainsKey(p.Key)) m.Zusatz[p.Key] = p.Value;
+                    if (alt.Herkunft == BauteilkatalogSchema.HERKUNFT_IMPORT) m.Quelle = alt.Quelle;
+                    var schichtAlt = alt.Schichten.Where(s => s != null && s.ID > 0).ToDictionary(s => s.ID);
+                    for (int i = 0; i < m.Schichten.Count && i < (d.Schichten?.Count ?? 0); i++)
+                        if (d.Schichten[i] is BauteilschichtDaten sd && sd.Id > 0 && schichtAlt.TryGetValue(sd.Id, out BauteilschichtModel sa))
+                            m.Schichten[i].Zusatz = new Dictionary<string, object>(sa.Zusatz ?? new Dictionary<string, object>());
+                }
             }
             return Abbild(ctrl.KatalogSpeichern(m));
         }
@@ -123,6 +143,17 @@ namespace WindowsFormsApplication1
                 Herkunft = BaustoffCtrl.HerkunftText(m.Herkunft),
                 Quellkennung = m.Quellkennung ?? "",
                 Auslieferung = m.ReadOnly,
+                GruppeCode = m.GruppeCode ?? "",
+                KlasseCode = m.KlasseCode ?? "",
+                UQuelle = Bauteilkatalog.Zahl(m.Zusatz, BauteilkatalogSchema.SPALTE_U_QUELLE),
+                Import = m.Herkunft == BauteilkatalogSchema.HERKUNFT_IMPORT,
+                FensterUg = Fensterkennwerte.AusAufbau(m).Ug,
+                FensterUf = Fensterkennwerte.AusAufbau(m).Uf,
+                FensterG = Fensterkennwerte.AusAufbau(m).GWert,
+                FensterRahmenanteil = Fensterkennwerte.AusAufbau(m).Rahmenanteil,
+                FensterPsiGlasrand = Fensterkennwerte.AusAufbau(m).PsiGlasrand,
+                AbsorptionsgradSolar = Bauteilkatalog.Zahl(m.Zusatz, BauteilStrahlungSchema.SPALTE_ABSORPTION),
+                Emissionsgrad = Bauteilkatalog.Zahl(m.Zusatz, BauteilStrahlungSchema.SPALTE_EMISSION),
                 Schichten = m.Schichten.Where(s => s != null).Select(s => new BauteilschichtDaten
                 {
                     Id = s.ID,
@@ -131,7 +162,9 @@ namespace WindowsFormsApplication1
                     IstLuftschicht = s.IstLuftschicht,
                     Lambda = s.Lambda,
                     Rho = s.Rho,
-                    Cp = s.Cp
+                    Cp = s.Cp,
+                    Abschnitt = s.Abschnitt,
+                    Flaechenanteil = s.Abschnitt is int nr ? m.Abschnitte.FirstOrDefault(a => a.Nummer == nr)?.Flaechenanteil : null
                 }).ToList()
             };
         }
@@ -150,8 +183,23 @@ namespace WindowsFormsApplication1
                 Beschreibung = Leer(d.Beschreibung),
                 Bauteilart = Leer(d.Bauteilart),
                 Quelle = Leer(d.Quelle),
-                ReadOnly = d.Auslieferung
+                ReadOnly = d.Auslieferung,
+                GruppeCode = Leer(d.GruppeCode),
+                KlasseCode = Leer(d.KlasseCode)
             };
+            if (d.UQuelle.HasValue) m.Zusatz[BauteilkatalogSchema.SPALTE_U_QUELLE] = d.UQuelle.Value;
+            // DA-8: Absorptions- und Emissionsgrad an jedem Aufbau; leer heißt Vorgabe.
+            m.Zusatz[BauteilStrahlungSchema.SPALTE_ABSORPTION] = d.AbsorptionsgradSolar;
+            m.Zusatz[BauteilStrahlungSchema.SPALTE_EMISSION] = d.Emissionsgrad;
+            // BK-6: Die Fensterwerte schreibt nur ein Fenster oder eine Vorhangfassade - sonst bleiben die gespeicherten.
+            if (Fensterkennwerte.IstFensterart(m.Bauteilart))
+            {
+                m.Zusatz[Fensterkennwerte.SPALTE_UG] = d.FensterUg;
+                m.Zusatz[Fensterkennwerte.SPALTE_UF] = d.FensterUf;
+                m.Zusatz[Fensterkennwerte.SPALTE_GWERT] = d.FensterG;
+                m.Zusatz[Fensterkennwerte.SPALTE_RAHMENANTEIL] = d.FensterRahmenanteil;
+                m.Zusatz[BauteilkatalogAbschnittSchema.SPALTE_PSI_GLASRAND] = d.FensterPsiGlasrand;
+            }
             int rang = 0;
             foreach (BauteilschichtDaten s in d.Schichten ?? new List<BauteilschichtDaten>())
             {
@@ -164,9 +212,18 @@ namespace WindowsFormsApplication1
                     IstLuftschicht = s.IstLuftschicht,
                     Lambda = s.Lambda,
                     Rho = s.Rho,
-                    Cp = s.Cp
+                    Cp = s.Cp,
+                    Abschnitt = s.Abschnitt
                 });
+                // BK-5: je Abschnitt EIN Satz; der Anteil kommt von der ersten Schicht, die einen trägt.
+                if (s.Abschnitt is int nr)
+                {
+                    BauteilabschnittModel a = m.Abschnitte.FirstOrDefault(x => x.Nummer == nr);
+                    if (a == null) m.Abschnitte.Add(a = new BauteilabschnittModel { Nummer = nr });
+                    a.Flaechenanteil ??= s.Flaechenanteil;
+                }
             }
+            m.Abschnitte = m.Abschnitte.OrderBy(a => a.Nummer).ToList();
             return m;
         }
 

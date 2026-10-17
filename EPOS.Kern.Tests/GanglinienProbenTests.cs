@@ -563,5 +563,192 @@ namespace EPOS.Kern.Tests
             Assert.Equal("TAB", GanglinienDatei.TrennzeichenText('\t'));
             Assert.Equal(";", GanglinienDatei.TrennzeichenText(';'));
         }
+
+        // ==================================================================
+        // Dezimaltrenner nur aus den Datenzeilen (Nachzug zu D1)
+        // ==================================================================
+
+        private static string Zeitweilig(string name, IEnumerable<string> zeilen)
+        {
+            string pfad = Path.Combine(Path.GetTempPath(), "epos-n6-" + Guid.NewGuid().ToString("N") + "-" + name);
+            File.WriteAllText(pfad, string.Join("\r\n", zeilen) + "\r\n");
+            return pfad;
+        }
+
+        [Fact]
+        public void Ein_Komma_in_der_Kopfzeile_entscheidet_nicht_gegen_Werte_mit_drei_Nachkommastellen()
+        {
+            // Werte mit genau drei Nachkommastellen entscheiden für sich nichts (Tausendertrenner?);
+            // das Komma im Beschreibungstext der Kopfzeile darf sie nicht zu 51 470 machen.
+            var zeilen = new List<string> { "Nr\tSued 45 Grad, Leistung kW" };
+            for (int i = 1; i <= 24; i++)
+                zeilen.Add(i.ToString(CultureInfo.InvariantCulture) + "\t" + (50 + i).ToString(CultureInfo.InvariantCulture) + ".470");
+            string pfad = Zeitweilig("kopfkomma.txt", zeilen);
+            try
+            {
+                GanglinienVorschau v = GanglinienDatei.Erkenne(pfad);
+                Assert.True(v.Lesbar);
+                Assert.True(v.Vorschlag.Kopfzeile);
+                Assert.Equal('\t', v.Vorschlag.Trennzeichen);
+                Assert.Equal('.', v.Vorschlag.Dezimaltrenner);
+
+                v.Vorschlag.WertSpalte = 1;      // die laufende Nummer ist keine Wertspalte (das löst der Aufrufer)
+                GanglinienRohdaten r = GanglinienDatei.Lies(pfad, v.Vorschlag);
+                Assert.Equal(51.47, r.Werte[0], 6);
+            }
+            finally { File.Delete(pfad); }
+        }
+
+        [Fact]
+        public void Ein_Punkt_in_der_Kopfzeile_entscheidet_nicht_gegen_Dezimalkomma_der_Werte()
+        {
+            // Umgekehrt: zwei Kopffelder mit Punkt, Werte mit Dezimalkomma (die meisten mit drei Stellen,
+            // einer mit einer) - entschieden wird allein in den Datenzeilen, also Komma.
+            var zeilen = new List<string> { "Nr v1.5\tLeistung 2.0 kW" };
+            for (int i = 1; i <= 23; i++)
+                zeilen.Add(i.ToString(CultureInfo.InvariantCulture) + "\t" + (50 + i).ToString(CultureInfo.InvariantCulture) + ",470");
+            zeilen.Add("24\t7,5");
+            string pfad = Zeitweilig("kopfpunkt.txt", zeilen);
+            try
+            {
+                GanglinienVorschau v = GanglinienDatei.Erkenne(pfad);
+                Assert.True(v.Lesbar);
+                Assert.True(v.Vorschlag.Kopfzeile);
+                Assert.Equal(',', v.Vorschlag.Dezimaltrenner);
+
+                v.Vorschlag.WertSpalte = 1;      // die laufende Nummer ist keine Wertspalte (das löst der Aufrufer)
+                GanglinienRohdaten r = GanglinienDatei.Lies(pfad, v.Vorschlag);
+                Assert.Equal(51.47, r.Werte[0], 6);
+                Assert.Equal(7.5, r.Werte[23], 6);
+            }
+            finally { File.Delete(pfad); }
+        }
+
+        // ==================================================================
+        // Erste Datenzeile und Zeilenzahl (IM-3)
+        // ==================================================================
+
+        /// <summary>Eine Stundenreihe „Zeile;Wert“ mit <paramref name="kopf"/> Kopfzeilen und <paramref name="daten"/> Werten (Wert = Zeilennummer der Daten).</summary>
+        private static string Fensterprobe(string name, int kopf, int daten)
+        {
+            var zeilen = new List<string>();
+            if (kopf >= 1) zeilen.Add("Zeitpunkt;Leistung");
+            for (int k = 2; k <= kopf; k++) zeilen.Add("Einheit;kW");
+            for (int i = 1; i <= daten; i++)
+                zeilen.Add(i.ToString(CultureInfo.InvariantCulture) + ";" + i.ToString(CultureInfo.InvariantCulture) + ",5");
+            return Zeitweilig(name, zeilen);
+        }
+
+        [Fact]
+        public void Die_Erkennung_setzt_die_erste_Datenzeile_hinter_mehrere_Kopfzeilen()
+        {
+            string pfad = Fensterprobe("zweikopf.csv", 2, 8760);
+            try
+            {
+                GanglinienVorschau v = GanglinienDatei.Erkenne(pfad);
+                Assert.True(v.Lesbar);
+                Assert.True(v.Vorschlag.Kopfzeile);
+                Assert.Equal(3, v.Vorschlag.ErsteDatenzeile);
+                Assert.Equal(1, v.Vorschlag.WertSpalte);
+                Assert.Equal(',', v.Vorschlag.Dezimaltrenner);
+
+                GanglinienProbe probe = v.Probe;
+                Assert.True(probe.Erfolgreich, probe.Grund);
+                Assert.Equal(8760, probe.Datenzeilen);
+                Assert.Equal(8760, probe.ZeilenAbStart);
+                Assert.Equal(1.5, probe.WerteKw[0], 9);
+            }
+            finally { File.Delete(pfad); }
+        }
+
+        [Fact]
+        public void Ohne_Angabe_bleibt_die_Kopfzeilenregel_und_es_wird_bis_zum_Ende_gelesen()
+        {
+            string pfad = Fensterprobe("einkopf.csv", 1, 30);
+            try
+            {
+                var o = new GanglinienImportOptionen { Trennzeichen = ';', Dezimaltrenner = ',', Kopfzeile = true, WertSpalte = 1 };
+                Assert.Equal(2, o.ErsteDatenzeileWirksam);
+                GanglinienRohdaten r = GanglinienDatei.Lies(pfad, o);
+                Assert.True(r.Erfolgreich);
+                Assert.Equal(30, r.Werte.Length);
+                Assert.Equal(30, r.ZeilenAbStart);
+                Assert.DoesNotContain(r.Meldungen, m => m.Schluessel == GanglinienDatei.SchluesselZeilenUebrig);
+            }
+            finally { File.Delete(pfad); }
+        }
+
+        [Fact]
+        public void Ab_der_ersten_Datenzeile_werden_genau_so_viele_Zeilen_gelesen_wie_verlangt()
+        {
+            // 8 770 Datenzeilen unter einer Kopfzeile; ab Zeile 7 (Datenwert 6) 8 760 Zeilen - fünf bleiben übrig.
+            string pfad = Fensterprobe("fenster.csv", 1, 8770);
+            try
+            {
+                var o = new GanglinienImportOptionen
+                {
+                    Trennzeichen = ';', Dezimaltrenner = ',', Kopfzeile = true, WertSpalte = 1,
+                    ErsteDatenzeile = 7, Zeilenzahl = 8760
+                };
+                GanglinienRohdaten r = GanglinienDatei.Lies(pfad, o);
+                Assert.True(r.Erfolgreich);
+                Assert.Equal(8760, r.Werte.Length);
+                Assert.Equal(6.5, r.Werte[0], 9);
+                Assert.Equal(8765.5, r.Werte[8759], 9);
+                Assert.Equal(8765, r.ZeilenAbStart);
+                PruefMeldung uebrig = Assert.Single(r.Meldungen, m => m.Schluessel == GanglinienDatei.SchluesselZeilenUebrig);
+                Assert.Equal(PruefStufe.Info, uebrig.Stufe);
+                Assert.Equal(new[] { "5", "8760", "7" }, uebrig.Werte);
+
+                GanglinienProbe probe = GanglinienProbe.Lies(pfad, o);
+                Assert.True(probe.Erfolgreich, probe.Grund);
+                Assert.Equal(GanglinienRaster.Stunde, probe.Raster);
+            }
+            finally { File.Delete(pfad); }
+        }
+
+        [Fact]
+        public void Zu_wenig_Zeilen_ab_der_ersten_Datenzeile_werden_benannt_und_lehnen_ab()
+        {
+            string pfad = Fensterprobe("kurz.csv", 1, 8770);
+            try
+            {
+                var o = new GanglinienImportOptionen
+                {
+                    Trennzeichen = ';', Dezimaltrenner = ',', Kopfzeile = true, WertSpalte = 1,
+                    ErsteDatenzeile = 20, Zeilenzahl = 8760
+                };
+                GanglinienRohdaten r = GanglinienDatei.Lies(pfad, o);
+                Assert.False(r.Erfolgreich);
+                PruefMeldung fehlt = Assert.Single(r.Meldungen, m => m.Schluessel == GanglinienDatei.SchluesselZeilenFehlen);
+                Assert.Equal(PruefStufe.Fehler, fehlt.Stufe);
+                Assert.Equal(new[] { "20", "8752", "8760" }, fehlt.Werte);
+
+                GanglinienProbe probe = GanglinienProbe.Lies(pfad, o);
+                Assert.False(probe.Erfolgreich);
+                Assert.Equal(GanglinienProtokollText.Text(fehlt), probe.Grund);
+            }
+            finally { File.Delete(pfad); }
+        }
+
+        [Fact]
+        public void Weniger_Zeilen_als_das_Raster_lehnt_die_Pruefung_ab()
+        {
+            // Eine verlangte Zeilenzahl neben dem Raster: gelesen wird sie, das Raster lehnt die Prüfung ab.
+            string pfad = Fensterprobe("raster.csv", 1, 8760);
+            try
+            {
+                var o = new GanglinienImportOptionen
+                {
+                    Trennzeichen = ';', Dezimaltrenner = ',', Kopfzeile = true, WertSpalte = 1,
+                    ErsteDatenzeile = 2, Zeilenzahl = 8000
+                };
+                GanglinienProbe probe = GanglinienProbe.Lies(pfad, o);
+                Assert.Equal(8000, probe.Datenzeilen);
+                Assert.False(probe.Erfolgreich);
+                Assert.False(string.IsNullOrEmpty(probe.Grund));
+            }
+            finally { File.Delete(pfad); }
+        }
     }
 }

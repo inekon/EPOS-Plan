@@ -197,7 +197,7 @@ public class StartreiterSimulationTests : EposBunitContext
 
     /// <summary>Auf den fünften Reiter („Simulation") wechseln.</summary>
     private static void ReiterSimulation(IRenderedComponent<Startseite> cut)
-        => cut.FindAll(".epos-startseite > .epos-reiter > .epos-reiter-leiste [role='tab']")[4].Click();
+        => cut.FindAll(".epos-startseite > .epos-reiter > .epos-reiter-leiste [role='tab']")[5].Click();
 
     /// <summary>
     /// Der HAUPTKNOPF des Bedienblocks — „Simulation starten" (seit #233; bis dahin
@@ -471,7 +471,7 @@ public class StartreiterSimulationTests : EposBunitContext
             .Add(x => x.SimulationGaben, () => Gaben(dienste)));
 
         cut.WaitForElement(".epos-startseite");
-        cut.FindAll(".epos-startseite > .epos-reiter > .epos-reiter-leiste [role='tab']")[4].Click();
+        cut.FindAll(".epos-startseite > .epos-reiter > .epos-reiter-leiste [role='tab']")[5].Click();
         cut.WaitForElement(".epos-simreiter-rechts .epos-simerg");
 
         // Der Weg in die Auslegung - genau der, den der Knopf des
@@ -569,7 +569,7 @@ public class StartreiterSimulationTests : EposBunitContext
             .Add(x => x.Startansicht, Seitenschluessel.Startseite));
 
         cut.WaitForElement(".epos-startseite");
-        cut.FindAll(".epos-startseite > .epos-reiter > .epos-reiter-leiste [role='tab']")[4].Click();
+        cut.FindAll(".epos-startseite > .epos-reiter > .epos-reiter-leiste [role='tab']")[5].Click();
 
         // Die rechte Spalte steht - also sind die Dienste angekommen.
         cut.WaitForElement(".epos-simreiter-rechts");

@@ -281,7 +281,7 @@ public class HauptfensterTests : EposBunitContext
         // Die Startseite ist ABGELOEST, die Seite "Berichte & Kosten" steht -
         // und das Menueband darueber wie ueber jeder Ansicht.
         Assert.Empty(cut.FindAll(".epos-startseite"));
-        Assert.Single(cut.FindAll(".epos-navigation"));
+        Assert.Single(cut.FindAll(".epos-berichtekosten"));
         Assert.Single(cut.FindAll(".epos-menueband"));
     }
 
@@ -300,11 +300,11 @@ public class HauptfensterTests : EposBunitContext
             Menuetabelle.Alle.Single(p => p.Name == "MenuItem_VariantenBericht"));
         cut.Render();
 
-        cut.Find(".epos-navigation-zurueck").Click();
+        cut.Find(".epos-berichtekosten-zurueck").Click();
         cut.Render();
 
         Assert.Single(cut.FindAll(".epos-startseite"));
-        Assert.Empty(cut.FindAll(".epos-navigation"));
+        Assert.Empty(cut.FindAll(".epos-berichtekosten"));
     }
 
     // =====================================================================
@@ -573,5 +573,67 @@ public class HauptfensterTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-menueband-klappe"));
         Assert.Empty(cut.FindAll(".epos-menueband-schliessflaeche"));
         Assert.Single(cut.FindAll(".epos-menueband"));
+    }
+
+    // =====================================================================
+    //  Die Marke des Entwicklermodus (Administration und Support, Stufe 1)
+    // =====================================================================
+
+    [Fact]
+    public void Ohne_Marke_steht_kein_Span_und_kein_Kopf_Entwicklung()
+    {
+        var cut = Fenster();
+
+        Assert.Empty(cut.FindAll(".epos-hauptfenster-entwickler"));
+        // Die Vorgabe der Eintraege ist der Baum des Anwenders.
+        Assert.Empty(cut.FindAll("#menue-MenuItem_Entwicklung"));
+        Assert.Single(cut.FindAll("#menue-Sprache"));
+    }
+
+    [Fact]
+    public void Mit_Marke_steht_der_Span_samt_Tooltip_neben_der_Versionszeile()
+    {
+        var cut = Render<Hauptfenster>(p => p
+            .Add(x => x.Startansicht, Seitenschluessel.Projektliste)
+            .Add(x => x.VersionText, "Version 1.0.0.0")
+            .Add(x => x.EntwicklerMarke, "Entwickler")
+            .Add(x => x.EntwicklerMarkeTip, "Entwicklermodus über das Startargument --entwickler"));
+
+        var marke = cut.Find(".epos-hauptfenster-entwickler");
+        Assert.Equal("Entwickler", marke.TextContent.Trim());
+        Assert.Equal("Entwicklermodus über das Startargument --entwickler", marke.GetAttribute("title"));
+
+        // Sie steht im rechten Kopfband, gleich hinter der Versionszeile.
+        var version = cut.Find(".epos-hauptfenster-version");
+        Assert.Same(version.ParentElement, marke.ParentElement);
+    }
+
+    [Fact]
+    public void Die_Naht_versorgt_Menue_und_Marke_zur_Laufzeit_neu()
+    {
+        Action<IReadOnlyList<Menuepunkt>, string, string>? setzer = null;
+        var cut = Render<Hauptfenster>(p => p
+            .Add(x => x.Startansicht, Seitenschluessel.Projektliste)
+            .Add(x => x.VersionText, "Version 1.0.0.0")
+            .Add(x => x.FreigabeAnmelden, s => setzer = s));
+
+        Assert.NotNull(setzer);
+        Assert.Empty(cut.FindAll("#menue-MenuItem_Entwicklung"));
+
+        // Einschalten: der Baum des Entwicklers und die Marke.
+        setzer!(Menuetabelle.Sichtbar(WindowsFormsApplication1.Freigabestufe.Entwickler), "Entwickler", "Quelle");
+        cut.WaitForAssertion(() =>
+        {
+            Assert.Single(cut.FindAll("#menue-MenuItem_Entwicklung"));
+            Assert.Equal("Quelle", cut.Find(".epos-hauptfenster-entwickler").GetAttribute("title"));
+        });
+
+        // Ausschalten: zurueck zum Baum des Anwenders, keine Marke.
+        setzer(Menuetabelle.Sichtbar(WindowsFormsApplication1.Freigabestufe.Anwender), "", "");
+        cut.WaitForAssertion(() =>
+        {
+            Assert.Empty(cut.FindAll("#menue-MenuItem_Entwicklung"));
+            Assert.Empty(cut.FindAll(".epos-hauptfenster-entwickler"));
+        });
     }
 }

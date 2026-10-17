@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace WindowsFormsApplication1
 {
@@ -44,11 +45,32 @@ namespace WindowsFormsApplication1
         /// <summary>Der Merker <c>Wochenende</c>; die Rechnung liest ihn nicht, nur den Wert (Konzept 3.3).</summary>
         public double Wochenendmerker { get; set; }
 
+        /// <summary>
+        /// Die Wochenendtage des Gebäudes als Wochenmaske (Mo = Bit 0 … So = Bit 6; Spalte <c>Wochenendtage</c>, Schemaschritt
+        /// <see cref="KalenderbedienungSchema"/>); Vorgabe Sa + So. Die Wochenendzeile der Matrix gilt an diesen Tagen.
+        /// </summary>
+        public int Wochenendtage { get; set; } = KalenderbedienungSchema.WOCHENENDE_VORGABE;
+
+        /// <summary>
+        /// Das Feiertagsland des Gebäudes (ISO-Kürzel, Spalte <c>Feiertagsland</c>, Schemaschritt <see cref="KalenderbedienungSchema"/>);
+        /// <c>null</c> = nur die bundeseinheitlichen Feiertage. Der Lauf liest es nicht — es steuert die Regelperioden, die die
+        /// Kalenderbedienung im gemeinsamen Kalender anlegt.
+        /// </summary>
+        public string Feiertagsland { get; set; }
+
         /// <summary><c>Ferienbeginn_1…4</c> als Jahrestag; 0 oder 366 an einer Grenze heißt „aus".</summary>
         public double[] Ferienbeginn { get; } = new double[FERIENZEITRAEUME];
 
         /// <summary><c>Ferienende_1…4</c> als Jahrestag; Beginn nach Ende heißt über den Jahreswechsel.</summary>
         public double[] Ferienende { get; } = new double[FERIENZEITRAEUME];
+
+        /// <summary>
+        /// <b>Die Ferienliste ab dem fünften Zeitraum</b> (Konzept 7.8, Stufe 2): die Ferienperioden des gemeinsamen
+        /// Kalenders ab Rang 204 (<see cref="Kalendergemeinschaft.RANG_FERIENLISTE"/>), aufsteigend nach Rang. Der
+        /// Generator macht aus ihnen FERIEN-Perioden auf denselben Rängen, wie aus den vier Spalten auf 200 … 203.
+        /// Leer im Bestand.
+        /// </summary>
+        public IReadOnlyList<Ferienzeile> WeitereFerien { get; set; } = Array.Empty<Ferienzeile>();
 
         /// <summary><c>Sollwertprofil</c> — das 168-Werte-Zeitprogramm der Anlagenkopplung (AK1), sonst <c>null</c>.</summary>
         public string Sollwertprofil { get; set; }
@@ -102,6 +124,32 @@ namespace WindowsFormsApplication1
         public NachtzeitBefund Nachtzeitbefund() => WindowsFormsApplication1.Nachtzeit.Pruefen(NachtBeginn, NachtEnde);
 
         /// <summary>
+        /// <b>Eine entkoppelte Kopie</b> samt Ferienzeiträumen (Stufe KP2, Arbeitsstand der
+        /// Konditionierung): Der Arbeitsstand ändert nie einen Eingang, den er bekommen hat — jeder
+        /// Schritt arbeitet auf einer Kopie (<see cref="Konditionierungsstand"/>).
+        /// </summary>
+        public Matrixeingang Kopie()
+        {
+            // Die zwei Ferienfelder sind nur lesbar: Die Kopie bekommt eigene über den Konstruktor.
+            var k = new Matrixeingang
+            {
+                SollTag = SollTag, SollNacht = SollNacht, SollWochenende = SollWochenende, SollFerien = SollFerien,
+                NachtBeginn = NachtBeginn, NachtEnde = NachtEnde, Ferienmerker = Ferienmerker,
+                Wochenendmerker = Wochenendmerker, Wochenendtage = Wochenendtage, Feiertagsland = Feiertagsland, Sollwertprofil = Sollwertprofil,
+                KopplungWirksam = KopplungWirksam,
+                KuehlSollwert = KuehlSollwert, KuehlSollwertNacht = KuehlSollwertNacht, KuehlungWirksam = KuehlungWirksam,
+                LuftwechselInfiltration = LuftwechselInfiltration, LuftwechselNutzer = LuftwechselNutzer,
+                Luftwechselrate = Luftwechselrate, LuftwechselAusGesamtangabe = LuftwechselAusGesamtangabe,
+                InterneWaermegewinne = InterneWaermegewinne, Bewohner = Bewohner,
+                Maximaleraumtemperatur = Maximaleraumtemperatur,
+            };
+            Array.Copy(Ferienbeginn, k.Ferienbeginn, FERIENZEITRAEUME);
+            Array.Copy(Ferienende, k.Ferienende, FERIENZEITRAEUME);
+            k.WeitereFerien = WeitereFerien;
+            return k;
+        }
+
+        /// <summary>
         /// <b>Die Kaskade der Einzelangaben</b>: Was dieser Eingang (der der Zone) nicht führt, kommt
         /// vom Gebäude. Die <b>Ferienzeiträume und die Merker kommen immer vom Gebäude</b> — sie
         /// gelten für alle Spalten (Konzept 3.4), und <c>Tab_Zone</c> führt sie nicht.
@@ -119,6 +167,8 @@ namespace WindowsFormsApplication1
                 NachtEnde = NachtEnde ?? gebaeude.NachtEnde,
                 Ferienmerker = gebaeude.Ferienmerker,
                 Wochenendmerker = gebaeude.Wochenendmerker,
+                Wochenendtage = gebaeude.Wochenendtage,
+                Feiertagsland = gebaeude.Feiertagsland,
                 Sollwertprofil = Sollwertprofil ?? gebaeude.Sollwertprofil,
                 KopplungWirksam = gebaeude.KopplungWirksam,
                 KuehlSollwert = KuehlSollwert ?? gebaeude.KuehlSollwert,
@@ -134,6 +184,7 @@ namespace WindowsFormsApplication1
             };
             Array.Copy(gebaeude.Ferienbeginn, e.Ferienbeginn, FERIENZEITRAEUME);
             Array.Copy(gebaeude.Ferienende, e.Ferienende, FERIENZEITRAEUME);
+            e.WeitereFerien = gebaeude.WeitereFerien;
             return e;
         }
     }

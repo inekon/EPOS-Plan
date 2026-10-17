@@ -1,0 +1,422 @@
+﻿@page "/rollbereichprobe"
+@using Microsoft.AspNetCore.WebUtilities
+@using EPOS.UI.Dialoge.Bedarf
+@using EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Dialoge.Solarthermie
+@using EPOS.UI.Dialoge.Strom
+@using WindowsFormsApplication1.Zeichnung
+@using SpeicherEngine
+@inject NavigationManager Navigation
+
+@*  DIE ROLLBEREICHPROBE (Konzept Projektdialoge mit Katalogauswahl, Abschnitt 8,
+    Probenpflicht) - Pruefstand, nicht Auslieferung.
+
+    Sie stellt die Projektdialoge mit Katalogauswahl, die die Fensterprobe nicht schon
+    traegt, so in den Browser, wie BlazorDialogForm sie zeigt: als Wurzel in #app,
+    dahinter die Fenstermarke - ohne Datenbank. Heizkessel, BHKW, Waermepumpen und
+    Gebaeude nimmt rollbereichprobe.mjs von /fensterprobe. Gemessen wird, ob ein
+    Rollbereich in einem anderen liegt, ob Dokument oder Dialogkoerper rollen.
+
+    Gaben ueber die Adresse:
+      ?fall=pufferspeicher|stromspeicher|photovoltaik|solarkollektoren|
+            bedarfsprofile|kaelteprofile|waermebedarf|kaeltebedarf|stromganglinie|solarganglinie|pvganglinie|kaeltemaschine
+      ?modus=alle  nur bei kaeltebedarf: der Dialog im Modus „Alle" mit einer Kuehlzeile vorn (OP-2-Hinweis)
+      ?zeilen=40   Katalogzeilen
+      ?projekt=2   Projektzeilen
+      ?huelle=assistent  der Dialog als Kind von .epos-assistent-inhalt wie im Projektassistenten *@
+
+@* ?huelle=assistent: der Dialog wie im Projektassistenten als Kind von .epos-assistent-inhalt, nicht als Wurzel
+   in #app - ohne Fenstermarke (Gegenprobe der Diagrammschrift im Projektsatz). *@
+@{
+    void Inhalt()
+    {
+    switch (_fall)
+    {
+        case "pufferspeicher":
+            <PufferspeicherDialog Zeilen="@Erzeuger("Puffer")" Katalogprofil="@Profil(Anlagenart.Pufferspeicher)"
+                                  Katalogzeilen="@(() => Katalog(Anlagenart.Pufferspeicher))"
+                                  Filterstandvorgabe="@_filterstand"
+                                  KatalogDetail="@(n => Detail("Puffer " + n))" ProjektDetail="@(n => Detail("Puffer " + n))"
+                                  Katalogfelder="@(_ => _steckbrief ? Steckbrieffelder.Fuer(_fall) : Felder())" ProjektsatzWege="@SatzWege"
+                                  AuslegenOeffnen="@(_ => Task.CompletedTask)" Geschlossen="@(b => Beendet(b))"
+                                  Kostensumme="@(_ => (2500.0, 40.0))"
+                                  Projektangaben="@(_ => new Pufferangaben(70, 50, 10, 95, "Heizung"))" />
+            break;
+        case "stromspeicher":
+            <StromspeicherDialog Zeilen="@Erzeuger("Batterie")" Katalogprofil="@Profil(Anlagenart.Stromspeicher)"
+                                 Katalogzeilen="@(() => Katalog(Anlagenart.Stromspeicher))"
+                                 Filterstandvorgabe="@_filterstand" KatalogDetail="@(n => Detail(n))"
+                                 ProjektDetail="@(z => Detail(z.Bezeichner))"
+                                 Katalogfelder="@(_ => _steckbrief ? Steckbrieffelder.Fuer(_fall) : Felder())" ProjektsatzWege="@SatzWege"
+                                 Traegerkatalog="@Traeger" TraegerWechseln="@((_, _) => { })"
+                                 Kostensumme="@(_ => (8000.0, 120.0))"
+                                 Geschlossen="@(b => Beendet(b))" />
+            break;
+        case "photovoltaik":
+            <PhotovoltaikDialog Zeilen="@Erzeuger("Modul")" Katalogprofil="@Profil(Anlagenart.Photovoltaik)"
+                                Katalogzeilen="@(() => Katalog(Anlagenart.Photovoltaik))"
+                                Filterstandvorgabe="@_filterstand" Detail="@(n => Detail(n))"
+                                ProjektDetail="@(z => Detail(z.Bezeichner))" Modulname="@(z => z.Bezeichner)"
+                                Katalogfelder="@(_ => _steckbrief ? Steckbrieffelder.Fuer(_fall) : Felder())" ProjektsatzWege="@SatzWege"
+                                Gesamtleistung="@(() => "12,0")" Kostensumme="@(_ => (14000.0, 180.0))"
+                                Geschlossen="@(b => Beendet(b))" />
+            break;
+        case "solarkollektoren":
+            <SolarkollektorenDialog Zeilen="@Erzeuger("Kollektor")" Katalogprofil="@Profil(Anlagenart.Solarkollektoren)"
+                                    Katalogzeilen="@(() => Katalog(Anlagenart.Solarkollektoren))"
+                                    Filterstandvorgabe="@_filterstand" Detail="@(n => Detail(n))"
+                                    ProjektDetail="@(z => Detail(z.Bezeichner))"
+                                    ProjektModulflaeche="@(_ => 2.0)" ProjektsatzWege="@SatzWege"
+                                    Kostensumme="@(_ => (6500.0, 90.0))"
+                                    Katalogfelder="@(_ => _steckbrief ? Steckbrieffelder.Fuer(_fall) : Felder())" Geschlossen="@(b => Beendet(b))" />
+            break;
+        case "bedarfsprofile":
+            @* Stufe 4 der Katalogauswahl: die Prozesswärme (mit Temperaturpaar und Kalender) - die
+               vollste der Ausprägungen; Kopfleiste, Fussleiste, Stift, Zusammenfassung, Überlagerung. *@
+            <BedarfsProfileDialog Art="BedarfsArt.Prozesswaerme" TitelText="Prozesswärme"
+                                  Zeilen="@BedarfZeilen" Katalogprofil="@BedarfProfil"
+                                  Katalogzeilen="@(() => BedarfKatalog)" Filterstandvorgabe="@_filterstand"
+                                  Info="@(n => new BedarfsProfilInfo(n, "Prozesswärme einer Fertigungslinie im Zweischichtbetrieb", "Typ 1", 60, 40))"
+                                  Jahressumme="@(_ => 120.0)"
+                                  TemperaturPruefen="@((v, r) => null)"
+                                  Betriebskalender="@(new[] { (1, "Werkskalender"), (2, "Betriebsferien Sommer") })"
+                                  TypStammGaben="@((n, b, t, neu) => new Dictionary<string, object>())"
+                                  TypProfilGaben="@(() => new Dictionary<string, object>())"
+                                  Geschlossen="@(b => Beendet(b))" />
+            break;
+        case "kaelteprofile":
+            @* K5b: die Bedarfsprofile mit der Art Kaelte - Temperaturangabe, Kaelte-Art, Kalender und die Feldgruppe
+               „Deckung" (erste Zeile dezentral linear) in der Bearbeiten-Ueberlagerung; in der Detailzeile nur die
+               Zusammenfassung. *@
+            <BedarfsProfileDialog Art="BedarfsArt.Kaelte" TitelText="Kältebedarfsprofile"
+                                  Zeilen="@KaelteProfilZeilen" Katalogprofil="@KaelteProfil"
+                                  Katalogzeilen="@(() => KaelteKatalog)" Filterstandvorgabe="@_filterstand"
+                                  Info="@(n => new BedarfsProfilInfo(n, "Raumkühlung eines Bürogeschosses, Mo–Fr 7–19 Uhr", "Raumkühlung Büro", 16, 19))"
+                                  Jahressumme="@(_ => 40.0)"
+                                  TemperaturPruefen="@((v, r) => null)"
+                                  HinweisTemperatur="@WindowsFormsApplication1.MyResource.Resource.BPF_HINW_TEMPERATUR_KAELTE"
+                                  KaelteArten="@(new[] { (WindowsFormsApplication1.DbWerte.KAELTE_ART_RAUM, "Raumkühlung"), (WindowsFormsApplication1.DbWerte.KAELTE_ART_PROZESS, "Prozesskälte") })"
+                                  Stromtraeger="@(new[] { (1, "Strom Netz"), (2, "Strom Wärmepumpentarif") })"
+                                  Betriebskalender="@(new[] { (1, "Werkskalender"), (2, "Betriebsferien Sommer") })"
+                                  TypStammGaben="@((n, b, t, neu) => new Dictionary<string, object>())"
+                                  TypProfilGaben="@(() => new Dictionary<string, object>())"
+                                  Geschlossen="@(b => Beendet(b))" />
+            break;
+        case "waermebedarf":
+            <WaermebedarfExternDialog Zeilen="@WaermeZeilen" Katalogprofil="@Zeitreihe(Zeitreihenart.Waermebedarf)"
+                                      Katalogzeilen="@(() => Task.FromResult(Zeitreihenkatalog(Zeitreihenart.Waermebedarf)))"
+                                      Filterstandvorgabe="@_filterstand" Geschlossen="@(b => Beendet(b))"
+                                      Kennzahlen="@GangKennzahlen" Bildauftrag="@GangBild" BildauftragMass="@GangBildMass"
+                                      DateiWaehlen="@KeineDatei" Einlesen="@KeinImport" Kopieren="@KeineKopie"
+                                      KatalogLoeschen="@(_ => false)"
+                                      Schloss="@KeinSchloss" Kanaele="@Wirtkanaele" />
+            break;
+        case "kaeltebedarf":
+            @* K5a: „Kaeltebedarf extern" - Modus NurKuehlung, die erste Zeile dezentral linear (Feldgruppe „Deckung"
+               aufgeklappt, die hoechste Detailzeile); mit ?modus=alle der Waermedialog mit Kuehlzeile vorn (OP-2). *@
+            <WaermebedarfExternDialog Zeilen="@KaelteZeilen" Katalogprofil="@Zeitreihe(Zeitreihenart.Waermebedarf)"
+                                      Katalogzeilen="@(() => Task.FromResult(Zeitreihenkatalog(Zeitreihenart.Waermebedarf)))"
+                                      Filterstandvorgabe="@_filterstand" Geschlossen="@(b => Beendet(b))"
+                                      Kennzahlen="@GangKennzahlen" Bildauftrag="@GangBild" BildauftragMass="@GangBildMass"
+                                      DateiWaehlen="@KeineDatei" Einlesen="@KeinImport" Kopieren="@KeineKopie"
+                                      KatalogLoeschen="@(_ => false)"
+                                      Schloss="@KeinSchloss" Kanaele="@Wirtkanaele"
+                                      Modus="@(_modusAlle ? WaermebedarfExternModus.Alle : WaermebedarfExternModus.NurKuehlung)"
+                                      TitelText="@(_modusAlle ? "Wärmebedarf Extern" : "Kältebedarf extern")"
+                                      Stromtraeger="@(new[] { (5, "Strom") })" />
+            break;
+        case "stromganglinie":
+            <StromganglinieDialog Zeilen="@StromZeilen" Katalogprofil="@Zeitreihe(Zeitreihenart.Stromganglinie)"
+                                  Katalogzeilen="@(() => Task.FromResult(Zeitreihenkatalog(Zeitreihenart.Stromganglinie)))"
+                                  Filterstandvorgabe="@_filterstand" Geschlossen="@(b => Beendet(b))"
+                                  Kennzahlen="@GangKennzahlen" Bildauftrag="@GangBild" BildauftragMass="@GangBildMass"
+                                  DateiWaehlen="@KeineDatei" Einlesen="@KeinImport" Kopieren="@KeineKopie"
+                                  Loeschen="@(_ => Task.FromResult(false))" Verwaltung="@KeineVerwaltung"
+                                  Schloss="@KeinSchloss" />
+            break;
+        case "solarganglinie":
+            <SolarganglinieDialog Zeilen="@Erzeuger("Solar")" Katalogprofil="@Zeitreihe(Zeitreihenart.Solarganglinie)"
+                                  Katalogwege="@Gangwege(Zeitreihenart.Solarganglinie)"
+                                  Filterstandvorgabe="@_filterstand" Geschlossen="@(b => Beendet(b))"
+                                  Kennzahlen="@GangKennzahlen" Bildauftrag="@GangBild" BildauftragMass="@GangBildMass" />
+            break;
+        case "pvganglinie":
+            <PvGanglinieDialog Zeilen="@Erzeuger("PV")" Katalogprofil="@Zeitreihe(Zeitreihenart.PvGanglinie)"
+                               Katalogwege="@Gangwege(Zeitreihenart.PvGanglinie)"
+                               Filterstandvorgabe="@_filterstand" Geschlossen="@(b => Beendet(b))"
+                               Kennzahlen="@GangKennzahlen" Bildauftrag="@GangBild" BildauftragMass="@GangBildMass" />
+            break;
+        case "kaeltemaschine":
+            @* Stufe 5: der Erzeugerdialog als Wirt der Zweispaltenauswahl - Projektliste, Katalog, Zusammenfassung,
+               Satz-Ueberlagerung mit Anlagenfeldern und Kostenknoepfen; ohne Datenbank. *@
+            @* KM-K1: Katalog und Projekt mit beiden Arten (jede dritte Katalogzeile eine Waermepumpe), eine Projekt-
+               waermepumpe im Kuehlbetrieb mit Rang; das Uebernehmen einer Waermepumpe lehnt der Wirt benannt ab (Banner). *@
+            <KaeltemaschineAnlageDialog Katalogprofil="@KuehlerzeugerProfil"
+                                        Katalogzeilen="@KuehlerzeugerKatalog"
+                                        Anlagen="@Kaelteanlagen" Katalogwerte="@(_ => KaelteGeraet)"
+                                        Rueckkuehlung="@(() => RkGaben())"
+                                        Stromtraeger="@(new[] { (5, "Strom") })" ProjektStromtraeger="5"
+                                        Anlegen="@((_, _) => -1)" Speichern="@(_ => null)" Loeschen="@(_ => { })"
+                                        KatalogLoeschen="@(_ => "")" Kostensumme="@(_ => (1000.0, 50.0))"
+                                        KostenOeffnen="@((_, _) => Task.CompletedTask)"
+                                        KuehlWaermepumpen="@(() => KuehlWp)"
+                                        WaermepumpeUebernehmen="@(id => new KuehlWpUebernahme(false, 900 + id, "Wärmepumpe " + id, false, "Zu diesem Gerät liegen keine Kühlkenndaten vor — der Kühlbetrieb bleibt gesperrt.", null))"
+                                        WpKuehlbetriebSetzen="@((_, _) => null)"
+                                        KaelteRaenge="@(() => new Dictionary<int, int> { [1] = 2 })"
+                                        Geschlossen="@(b => Beendet(b))" />
+            break;
+        default:
+            <p>unbekannter Fall: @_fall</p>
+            break;
+    }
+    }
+}
+<div id="app">
+    @if (_huelle == "assistent")
+    {
+        <div class="epos-assistent"><div class="epos-assistent-inhalt">@{ Inhalt(); }</div></div>
+    }
+    else
+    {
+        Inhalt();
+        <Fenstermarke />
+    }
+</div>
+<p id="probe-ausgang" hidden data-ausgang="@_ausgang"></p>
+
+@code {
+    // Stufe 4 (Waermebedarf extern, Stromganglinie): die Katalogpflege steht wie in der Anwendung in der
+    // Fussleiste (Speichern unter, Schloss, Loeschen, Bearbeiten, Importieren) - die Wege tun hier nichts.
+    private static readonly Func<string, Task<string?>> KeineDatei = _ => Task.FromResult<string?>(null);
+    private static readonly Func<string, GanglinienRaster, GanglinienImportRueckrufe, Task<GanglinienImportErgebnis>> KeinImport
+        = (_, __, ___) => Task.FromResult(new GanglinienImportErgebnis());
+    private static readonly Func<string, string, Task<bool>> KeineKopie = (_, __) => Task.FromResult(false);
+    private static readonly IReadOnlyDictionary<string, object> KeineVerwaltung = new Dictionary<string, object>();
+    private static readonly Schlossweg KeinSchloss = new((_, __) => new SchlossErgebnis(false, ""));
+    private static readonly (string Wert, string Text)[] Wirtkanaele =
+    {
+        ("HEIZUNG", "Heizung"), ("BRAUCHWASSER", "Brauchwasser"), ("PROZESS", "Prozesswärme"), ("Kuehlung", "Kühlung")
+    };
+
+    private string _fall = "pufferspeicher";
+    private string _huelle = "";
+    private int _anzahl = 40;
+    private int _projekt = 2;
+    private string _ausgang = "";
+    private readonly Katalogfilterstand _filterstand = new();
+
+    protected override void OnInitialized()
+    {
+        var abfrage = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
+        if (abfrage.TryGetValue("fall", out var f)) _fall = f.ToString();
+        if (abfrage.TryGetValue("huelle", out var hu)) _huelle = hu.ToString();
+        _steckbrief = abfrage.TryGetValue("steckbrief", out var sb) && sb == "1";   // WP1b: voller Feldsatz
+        if (abfrage.TryGetValue("zeilen", out var z) && int.TryParse(z, out int n)) _anzahl = n;
+        if (abfrage.TryGetValue("projekt", out var p) && int.TryParse(p, out int m)) _projekt = m;
+        _modusAlle = abfrage.TryGetValue("modus", out var mo) && mo == "alle";
+    }
+
+    private void Beendet(bool ok) => _ausgang = ok ? "ok" : "abbrechen";
+
+    private static string Uebersetzt(string schluessel)
+        => Resource.ResourceManager.GetString(schluessel) ?? schluessel;
+
+    private readonly Dictionary<Anlagenart, Katalogfilterprofil> _profile = new();
+    private readonly Dictionary<Anlagenart, IReadOnlyList<Katalogfilterzeile>> _kataloge = new();
+
+    private Katalogfilterprofil Profil(Anlagenart art)
+        => _profile.TryGetValue(art, out var p) ? p : _profile[art] = Katalogfilterprofil.MitVerwendung(art, Uebersetzt);
+
+    private IReadOnlyList<Katalogfilterzeile> Katalog(Anlagenart art)
+        => _kataloge.TryGetValue(art, out var k) ? k : _kataloge[art] = Zeilenbau.Voll(Profil(art), _anzahl);
+
+    /// <summary>Stufe 5: das Geraet der Kaeltemaschinen - Kennwerte der Zusammenfassung und der Satz-Ueberlagerung.</summary>
+    private static readonly KaeltemaschineGeraetwerte KaelteGeraet = new()
+    {
+        Bezeichner = "Kältemaschine", Firma = "Musterwerk", Rueckkuehlart = "Wasser", Luftgekuehlt = false, Nennkaelteleistung = 100, NennEer = 3.2,
+        Mindestteillast = 30, KaltwasserMin = 6
+    };
+
+    /// <summary>KM-K1: das gemeinsame Profil (Art, Quelle) und ein Katalog beider Arten.</summary>
+    private Katalogfilterprofil? _kuehlerzeugerProfil;
+    private Katalogfilterprofil KuehlerzeugerProfil => _kuehlerzeugerProfil ??= KuehlerzeugerKatalogCtrl.Profil(s => Resource.ResourceManager.GetString(s) ?? s);
+    private IReadOnlyList<Katalogfilterzeile>? _kuehlerzeugerKatalog;
+    private IReadOnlyList<Katalogfilterzeile> KuehlerzeugerKatalog() => _kuehlerzeugerKatalog ??= Zeilenbau.Voll(KuehlerzeugerProfil, _anzahl)
+        .Select((z, i) => i % 3 == 2
+            ? new Katalogfilterzeile(i + 1, "Wärmepumpe " + (i + 1)) { Schluessel = KuehlerzeugerKatalogCtrl.WpSchluessel(i + 1) }
+                .MitText(KuehlerzeugerKatalogCtrl.SpArt, Resource.KMA_ART_WAERMEPUMPE)
+                .MitText(Katalogfilterprofil.SpBezeichner, "Wärmepumpe " + (i + 1))
+                .MitText(Katalogfilterprofil.SpHersteller, "Musterwerk")
+                .MitZahl(Katalogfilterprofil.SpNennkaelteleistung, 40, 1).MitZahl(Katalogfilterprofil.SpEer, 3.1, 2)
+                .MitText(Katalogfilterprofil.SpQuelle, "Luft-Wasser")
+            : z.MitText(KuehlerzeugerKatalogCtrl.SpArt, Resource.KMA_ART_KAELTEMASCHINE))
+        .ToList();
+    private static readonly KuehlWaermepumpeZeile[] KuehlWp =
+    {
+        new(501, 3, "Wärmepumpe Kühlung", "Musterwerk", "Luft-Wasser", 1, 1, 38.0, 3.4, 7, "Strom", false, "zulässig")
+    };
+
+    private IReadOnlyList<KaeltemaschineAnlageDaten> Kaelteanlagen() => Enumerable.Range(1, _projekt)
+        .Select(i => new KaeltemaschineAnlageDaten { AnlagenId = i, GeraetId = 100 + i, Bezeichner = "KM " + i, Anzahl = 1,
+                                                    KuehlCarrierId = 5, Geraet = KaelteGeraet,
+                                                    RueckkuehlwerkWahl = i == 1 ? 8 : null, Rueckkuehlwerk = i == 1 ? RkLesung("Kühlturm 1", 8, true, 2.5) : null })
+        .ToList();
+
+    private List<ErzeugerZeile>? _erzeuger;
+    private List<ErzeugerZeile> Erzeuger(string praefix) => _erzeuger ??= Enumerable.Range(1, _projekt)
+        .Select(i => new ErzeugerZeile { Schluessel = i, Bezeichner = praefix + " " + i, GeraetId = 100 + i, CarrierId = 5, Vorlauf = 70, Ruecklauf = 50,
+                                         AnzahlModule = 20, Neigung = 30, Azimut = 0 })   // UeS2b: Angaben der Zusammenfassung
+        .ToList();
+
+    private static ErzeugerDetail Detail(string name) => new(
+        name, "Beschreibung des Satzes " + name,
+        new[] { ("Leistung [kW]:", "120,00"), ("Wirkungsgrad [-]:", "0,95") }, ("Schalter", true), KENNWERTE);
+
+    /// <summary>UeS2b: die Zahlwerte der Zusammenfassung - jeder Wirt liest seine (Volumen, Kapazitaet, Modulleistung).</summary>
+    private static readonly ErzeugerKennwerte KENNWERTE = new()
+    {
+        PthermKw = 120, PelKw = 60, VolumenLiter = 1000, KapazitaetKwh = 20, LeistungKw = 10, ModulleistungW = 400
+    };
+
+    /// <summary>WP1b (?steckbrief=1): der volle Feldsatz aus dem Katalogprofil statt des knappen.</summary>
+    private bool _steckbrief;
+
+    private static List<BrowserFeldwert> Felder() => new()
+    {
+        new BrowserFeldwert { Schluessel = KatalogBrowserProfil.FeldFirma, Bezeichnung = "Hersteller:",
+                              Art = BrowserFeldArt.Text, Editierbar = true, Wert = "Musterwerk" },
+    };
+
+    /// <summary>UeS1: die Projektkopie lesen und speichern - ohne Datenbank, damit „Bearbeiten…" die Satz-Ueberlagerung oeffnet.</summary>
+    private Satzbearbeitungswege? _satzWege;
+    private Satzbearbeitungswege SatzWege => _satzWege ??= new Satzbearbeitungswege
+    {
+        Lesen = _ => _steckbrief ? Steckbrieffelder.Fuer(_fall) : Felder(),
+        Speichern = _ => new KatalogSpeicherErgebnis(true, "", "")
+    };
+
+    /// <summary>Der Energietraeger des Stromspeichers (Gruppe > Art), wie ihn die Huelle liefert.</summary>
+    private static readonly EnergietraegerWahl.Eintrag[] Traeger =
+    {
+        new(5, "Strom", "Elektrische Energie"), new(6, "Strom", "Elektrische Energie 2")
+    };
+
+    // ------------------------------------------------------- Bedarf
+    private Katalogfilterprofil? _bedarfProfil;
+    private Katalogfilterprofil BedarfProfil
+        => _bedarfProfil ??= Katalogfilterprofil.FuerBedarf(BedarfsArt.Prozesswaerme, Uebersetzt);
+    private IReadOnlyList<Katalogfilterzeile>? _bedarfKatalog;
+    private IReadOnlyList<Katalogfilterzeile> BedarfKatalog => _bedarfKatalog ??= Zeilenbau.Voll(BedarfProfil, _anzahl);
+    private List<BedarfsProfilZeile>? _bedarfZeilen;
+    private List<BedarfsProfilZeile> BedarfZeilen => _bedarfZeilen ??= Enumerable.Range(1, _projekt)
+        .Select(i => new BedarfsProfilZeile { IdZ = i, IdStamm = 100 + i, Name = "Prozess " + i, Summe = 100 * i, Vorlauf = 60, Ruecklauf = 40, KalenderId = 1 })
+        .ToList();
+
+    // ------------------------------------------------------- Kaeltebedarf (K5b)
+    private Katalogfilterprofil? _kaelteProfil;
+    private Katalogfilterprofil KaelteProfil
+        => _kaelteProfil ??= Katalogfilterprofil.FuerBedarf(BedarfsArt.Kaelte, Uebersetzt);
+    private IReadOnlyList<Katalogfilterzeile>? _kaelteKatalog;
+    private IReadOnlyList<Katalogfilterzeile> KaelteKatalog => _kaelteKatalog ??= Zeilenbau.Voll(KaelteProfil, _anzahl);
+    private List<BedarfsProfilZeile>? _kaelteZeilen;
+    private List<BedarfsProfilZeile> KaelteProfilZeilen => _kaelteZeilen ??= Enumerable.Range(1, _projekt)
+        .Select(i => new BedarfsProfilZeile
+        {
+            IdZ = i, IdStamm = 200 + i, Name = "Kälte " + i, Summe = 40 * i, Vorlauf = 16, Ruecklauf = 19, KalenderId = 1,
+            Deckung = i == 1
+                ? new DeckungsartDaten { Deckungsart = WindowsFormsApplication1.KaeltebedarfSchema.DECKUNG_SPLIT, EerWeg = WindowsFormsApplication1.KaeltebedarfSchema.EER_LINEAR,
+                                         Eer1 = 3.0, Taussen1 = 35, Eer2 = 4.0, Taussen2 = 25, KuehlIdCarrier = 1 }
+                : new DeckungsartDaten()
+        })
+        .ToList();
+
+    // ------------------------------------------------------- Zeitreihen
+    private readonly Dictionary<Zeitreihenart, Katalogfilterprofil> _zeitreihen = new();
+    private Katalogfilterprofil Zeitreihe(Zeitreihenart art)
+        => _zeitreihen.TryGetValue(art, out var p) ? p : _zeitreihen[art] = Katalogfilterprofil.FuerZeitreihe(art, Uebersetzt).MitVerwendungsspalte(s => s);
+    private IReadOnlyList<Katalogfilterzeile> Zeitreihenkatalog(Zeitreihenart art) => Zeilenbau.Voll(Zeitreihe(art), _anzahl);
+
+    private bool _modusAlle;
+    private List<WaermebedarfExternZeile>? _kaelte;
+    private List<WaermebedarfExternZeile> KaelteZeilen => _kaelte ??= Kaeltezeilen();
+    private List<WaermebedarfExternZeile> Kaeltezeilen()
+    {
+        var l = Enumerable.Range(1, _projekt)
+            .Select(i => new WaermebedarfExternZeile { IdZ = i, IdGanglinie = 100 + i, Bezeichner = "Kältelast " + i, Kanal = "KUEHLUNG" })
+            .ToList();
+        if (_modusAlle) { l[0].Bezeichner = "Kältelast 1"; return l; }
+        l[0].Deckung.DeckungSetzen("split");
+        l[0].Deckung.EerWegSetzen("linear");
+        return l;
+    }
+
+    private List<WaermebedarfExternZeile>? _waerme;
+    private List<WaermebedarfExternZeile> WaermeZeilen => _waerme ??= Enumerable.Range(1, _projekt)
+        .Select(i => new WaermebedarfExternZeile { IdZ = i, IdGanglinie = 100 + i, Bezeichner = "Ganglinie " + i })
+        .ToList();
+
+    // ------------------------------------------------------- Ganglinie der Detailzeile (DZ1)
+    // Synthetische Reihe, je Schalterstellung EINE Instanz (DiagrammSvg vergleicht die Referenz).
+    private static readonly Zeichenmodell GANG = Gang(false), DAUER = Gang(true);
+    private static Zeichenmodell Gang(bool sortiert) => GangModell(sortiert, 0, 0);
+    private static Zeichenmodell GangModell(bool sortiert, int breite, int hoehe)
+    {
+        var werte = new double[8760];
+        for (int i = 0; i < werte.Length; i++)
+            werte[i] = 20.0 - 12.0 * Math.Cos(2 * Math.PI * i / 8760.0) + 5.0 * Math.Sin(2 * Math.PI * i / 24.0);
+        if (sortiert) Array.Sort(werte, (a, b) => b.CompareTo(a));
+        return ChartRenderer.GanglinieNormiertModell("Jahresganglinie",
+            new[] { new ChartRenderer.Reihe("Leistung", werte, ChartRenderer.C_BEDARF) },
+            "kW", sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate, sortiert,
+            breite: breite, hoehe: hoehe);
+    }
+    private static Task<GanglinienKennzahlen?> GangKennzahlen(GanglinienWahl w)
+        => Task.FromResult<GanglinienKennzahlen?>(new GanglinienKennzahlen(175.2, 37.0, 4735));
+    private static Zeichenmodell? GangBild(GanglinienWahl w, bool sortiert) => sortiert ? DAUER : GANG;
+    // DZ1-N2: das Modell in Behaeltergroesse - je Mass und Schalterstellung einmal gebaut.
+    private static readonly Dictionary<(bool, int, int), Zeichenmodell> _gangMass = new();
+    private static Zeichenmodell? GangBildMass(GanglinienWahl w, bool sortiert, int breite, int hoehe)
+    {
+        if (breite <= 0 || hoehe <= 0) return GangBild(w, sortiert);
+        lock (_gangMass)
+            return _gangMass.TryGetValue((sortiert, breite, hoehe), out var m) ? m
+                : _gangMass[(sortiert, breite, hoehe)] = GangModell(sortiert, breite, hoehe);
+    }
+    private readonly Dictionary<Zeitreihenart, GanglinienKatalogwege> _gangwege = new();
+    private GanglinienKatalogwege Gangwege(Zeitreihenart art)
+        => _gangwege.TryGetValue(art, out var w) ? w : _gangwege[art] = new GanglinienKatalogwege
+        {
+            Katalogzeilen = () => Task.FromResult(Zeitreihenkatalog(art)),
+            // Stufe 4: Loeschen und Import, damit die Fussleiste der Katalogseite ihre Knoepfe traegt.
+            Loeschen = _ => Task.FromResult(false),
+            Einlesen = (_, _) => Task.FromResult(new GanglinienKatalogimport(false, false, "", "", ""))
+        };
+
+    private List<GanglinienProjektZeile>? _strom;
+    private List<GanglinienProjektZeile> StromZeilen => _strom ??= Enumerable.Range(1, _projekt)
+        .Select(i => new GanglinienProjektZeile(i, 100 + i, "Ganglinie " + i))
+        .ToList();
+    /// <summary>K-F5b: die Gaben der Gruppe „Rückkühlung“ — ein trockener und ein nasser Katalogsatz, Klima ohne Feuchte.</summary>
+    private static RueckkuehlungGaben RkGaben() => new()
+    {
+        KlimaMitFeuchte = false,
+        Katalog = new[]
+        {
+            new RueckkuehlwerkEintrag(7, "Rückkühler 1 · Trockenkühler", RkLesung("Rückkühler 1", 7, false, null)),
+            new RueckkuehlwerkEintrag(8, "Kühlturm 1 · Kühlturm, offen", RkLesung("Kühlturm 1", 8, true, 2.5)),
+        }
+    };
+
+    private static RueckkuehlwerkLesung RkLesung(string name, int stamm, bool nass, double? ventilator) => new()
+    {
+        Bezeichner = name, StammId = stamm, Verdunstungskuehlanlage = nass, VentilatorKw = ventilator,
+        Zeilen = new List<(string, string)>
+        {
+            ("Bauart", nass ? "Kühlturm, offen" : "Vorgabe: Trockenkühler"), ("Nennleistung (abzuführende Wärme)", "150 kW"),
+            ("Annäherung", "Vorgabe: 5 K · Vorgabe: fest"),
+            ("Ventilator", ventilator is double v ? v + " kW · Drehzahl" : "Vorgabe: Hilfsstrom der Rückkühlung an der Kältemaschine"),
+            ("Freikühlung", "Vorgabe: parallel"),
+        }
+    };
+
+}

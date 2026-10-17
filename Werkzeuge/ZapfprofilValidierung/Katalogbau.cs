@@ -55,7 +55,7 @@ namespace ZapfprofilValidierung
                                      + ", den der Katalog nicht fuehrt - sie wird uebergangen.");
                         continue;
                     }
-                    artenListe.Add(Art(z, id, satz, versionPaket));
+                    artenListe.Add(Art(z, id, satz, versionPaket, hinweise));
                 }
 
                 Parametersatz ps = Parameter(parameter, versionPaket, out fehler);
@@ -129,8 +129,27 @@ namespace ZapfprofilValidierung
         //  Nutzungsarten
         // =============================================================================
 
-        private static Nutzungsart Art(Dictionary<string, string> z, int id, Tagesgangsatz satz, string versionPaket)
+        /// <summary>
+        /// Eine Nutzungsart aus ihrer Zeile. Eine Zeile des ausgelieferten Paketteils in einem frueheren
+        /// Stand (ein aelterer Katalog oder Paketordner) wird als die heutige gebaut - dieselbe Regel wie
+        /// Schemaschritt und Katalogimport (<see cref="PaketteilNachfuehrung"/>); ein Hinweis nennt es. So
+        /// findet eine Objektbeschreibung die Nutzungsart unter ihrem heutigen Namen.
+        /// </summary>
+        private static Nutzungsart Art(Dictionary<string, string> z, int id, Tagesgangsatz satz, string versionPaket,
+                                       List<string> hinweise)
         {
+            string name = Text(z, "Bezeichner");
+            var bezug = (ZapfBezugsart)Pflichtganz(z, "Bezugsart");
+            PaketteilNachfuehrung.Eintrag stand = PaketteilNachfuehrung.Finden(
+                name, (long)bezug, Text(z, "Status"), Text(z, "Bedarf_Version"), Text(z, "Bedarf_Herkunftsart"));
+            if (stand != null)
+            {
+                hinweise?.Add("Die Nutzungsart \"" + name + "\" (Bezugsart " + bezug + ") ist eine Zeile des "
+                              + "ausgelieferten Paketteils in einem frueheren Stand - gelesen als \"" + stand.Bezeichner
+                              + "\" (Bezugsart " + stand.Bezugsart + ").");
+                name = stand.Bezeichner;
+                bezug = stand.Bezugsart;
+            }
             var monate = new double[NutzungsartRaster.MONATE];
             for (int m = 1; m <= NutzungsartRaster.MONATE; m++)
                 monate[m - 1] = Zahl(z, "Monat_" + m.ToString(CultureInfo.InvariantCulture))
@@ -151,8 +170,7 @@ namespace ZapfprofilValidierung
                 new[] { Zahl(z, "Bedarf_Niedrig_Min"), Zahl(z, "Bedarf_Mittel_Min"), Zahl(z, "Bedarf_Hoch_Min") },
                 new[] { Zahl(z, "Bedarf_Niedrig_Max"), Zahl(z, "Bedarf_Mittel_Max"), Zahl(z, "Bedarf_Hoch_Max") });
 
-            return new Nutzungsart(id, Text(z, "Bezeichner"),
-                (ZapfBezugsart)Pflichtganz(z, "Bezugsart"), bedarf,
+            return new Nutzungsart(id, name, bezug, bedarf,
                 new Temperaturbezug(Pflichtzahl(z, "Bezug_Zapftemperatur"), Pflichtzahl(z, "Bezug_Kaltwasser")),
                 (ZapfBilanzgrenze)Pflichtganz(z, "Bilanzgrenze"),
                 (ZapfKalenderart)Pflichtganz(z, "Kalenderart"),

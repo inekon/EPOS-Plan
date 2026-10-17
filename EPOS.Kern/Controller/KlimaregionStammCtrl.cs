@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
@@ -688,6 +689,20 @@ namespace WindowsFormsApplication1
                 SchemaKatalog.SPALTE_KR_SZENARIO + ", " + SchemaKatalog.SPALTE_KR_BEZUGSJAHR +
                 ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 psRegion);
+
+            // 3b. KD-4: die Herkunft (Standorthoehe, Bezugspunkt, Ausfuehrung) wandert mit, wenn beide Seiten die
+            //     Spalten fuehren. Die ROHWERTE bleiben im Katalog (KD-Q4) - es gibt keine Projektkopie davon.
+            if (neueRegionId > 0 && dtRegion.Columns.Contains(KlimaRohwerteSchema.SPALTE_AUSFUEHRUNG) &&
+                KlimaRohwerteSchema.ProjektspaltenVorhanden())
+            {
+                var psHerkunft = new List<DbParam>();
+                foreach (var s in KlimaRohwerteSchema.REGIONSSPALTEN)
+                    psHerkunft.Add(Val("@" + s.Spalte, ColOrNull(reg, s.Spalte)));
+                psHerkunft.Add(new DbParam("@id", neueRegionId));
+                v.Ausfuehren("UPDATE " + TAB_REGION_PROJEKT + " SET " +
+                             string.Join(", ", KlimaRohwerteSchema.REGIONSSPALTEN.Select(s => "\"" + s.Spalte + "\" = ?")) +
+                             " WHERE ID = ?", psHerkunft.ToArray());
+            }
 
             // 4. Klimadaten kopieren (FK ID_Klimaregion in STAMM -> neue Projekt-Region-ID).
             DataTable dtKlima = DataRepository.GetDataTable(

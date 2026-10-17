@@ -34,6 +34,18 @@ namespace WindowsFormsApplication1
         /// <summary>Die Fassung der Standwerte (Etappe BV-E4).</summary>
         private const int FASSUNG_STAND = 3;
 
+        /// <summary>
+        /// Die Fassung der Lüftungs- und Aufheizwerte je Gebäude (<c>gebaeude.ergebnis.*</c>, <c>hat.aufheizung</c>; Katalog v16,
+        /// Entwurf KP3 Welle O3a, E58 F4 (b), E60) — im Entwurf als „Fassung 12“ geplant, die inzwischen vergeben war.
+        /// </summary>
+        internal const int FASSUNG_AUFHEIZUNG = 16;
+
+        /// <summary>Die Fassung der Vorheizgrößen der Aufheizoptimierung Fassung 2 (AH-V6, Katalog v19).</summary>
+        internal const int FASSUNG_VORHEIZEN = 19;
+
+        /// <summary>Die Fassung der Schnellaufheizung (SA3b, Schritt 217, Katalog v21).</summary>
+        internal const int FASSUNG_SCHNELLAUFHEIZUNG = 21;
+
         /// <summary>Musterschlüssel der Kennzahlen des laufenden Stands.</summary>
         public const string MUSTER_STAND_KENNZAHL = "stand.kennzahl.<k>";
 
@@ -326,7 +338,7 @@ namespace WindowsFormsApplication1
                 yield return new Vorlagenfeld("stand.kennzahl." + s, Vorlagenfeldart.Zahl, Vorlagenfeldkontext.Stand,
                     w => MitStand(w, v => Kennzahlwert(w, v, s)))
                 {
-                    Seit = FASSUNG_STAND,
+                    Seit = Math.Max(FASSUNG_STAND, SeitDerKennzahl(k)),
                     Format = k.Format,
                     Einheit = k.Einheit,
                     Bedarf = bedarf,
@@ -340,7 +352,7 @@ namespace WindowsFormsApplication1
                 yield return new Vorlagenfeld("stand.delta." + s, Vorlagenfeldart.Zahl, Vorlagenfeldkontext.Stand,
                     w => MitStand(w, v => Abweichung(w, v, s, false)))
                 {
-                    Seit = FASSUNG_STAND,
+                    Seit = Math.Max(FASSUNG_STAND, SeitDerKennzahl(k)),
                     Format = k.Format,
                     Einheit = k.Einheit,
                     Bedarf = bedarf,
@@ -349,7 +361,7 @@ namespace WindowsFormsApplication1
                 yield return new Vorlagenfeld("stand.delta_prozent." + s, Vorlagenfeldart.Zahl, Vorlagenfeldkontext.Stand,
                     w => MitStand(w, v => Abweichung(w, v, s, true)))
                 {
-                    Seit = FASSUNG_STAND,
+                    Seit = Math.Max(FASSUNG_STAND, SeitDerKennzahl(k)),
                     Format = "N1",
                     Einheit = "%",
                     Bedarf = bedarf,
@@ -379,7 +391,7 @@ namespace WindowsFormsApplication1
                     yield return new Vorlagenfeld(a.Vorsilbe + s, Vorlagenfeldart.Zahl, Vorlagenfeldkontext.Gruppe,
                         w => UeberStaende(w, s, wert))
                     {
-                        Seit = FASSUNG_STAND,
+                        Seit = Math.Max(FASSUNG_STAND, SeitDerKennzahl(k)),
                         Format = k.Format,
                         Einheit = k.Einheit,
                         Bedarf = s == KennzahlenKatalog.SCHLUESSEL_KAELTE_STUNDEN ? Vorlagenbedarf.Zeitreihen : Vorlagenbedarf.Keiner,
@@ -570,12 +582,126 @@ namespace WindowsFormsApplication1
                 Zahl("gebaeude.ergebnis.kuehlstunden", w => MitGebaeudeergebnis(w, true, e => e.KuehlstundenH), "N0", "h/a"),
                 Zahl("gebaeude.ergebnis.raumtemperatur", w => MitGebaeudeergebnis(w, true, e => e.MittlereRaumtemperaturC), "N1", "°C"),
                 Zahl("gebaeude.ergebnis.ueberhitzungsstunden", w => MitGebaeudeergebnis(w, true, e => e.UeberhitzungsstundenH), "N0", "h/a"),
+            }.Concat(Aufheizwerte()).Concat(Vorheizwerte());
+        }
+
+        /// <summary>
+        /// <b>Katalog v16 (KP3 Welle O3a; E58 F4 (b), E60):</b> die Lüftungs- und Aufheizwerte des laufenden Gebäudes aus der
+        /// Ergebniszeile des Laufs — dieselben Zahlen wie die Gebäudetafel (<see cref="Aufheizbericht"/>), nur auf dem Weg nach
+        /// VDI 6007. Ohne Aufheizrechnung (Schalter aus) sind die Aufheizwerte leer; die Hinweise W1–W5 stehen ohne Anlass als
+        /// leerer Text.
+        /// </summary>
+        private static IEnumerable<Vorlagenfeld> Aufheizwerte()
+        {
+            const Vorlagenfeldkontext GB = Vorlagenfeldkontext.Gebaeude;
+            Vorlagenfeld Zahl(string rest, Func<ErgebnisGebaeudeModel, object> wert, string format, string einheit) =>
+                new Vorlagenfeld("gebaeude.ergebnis." + rest, Vorlagenfeldart.Zahl, GB, w => MitGebaeudeergebnis(w, true, wert))
+                { Seit = FASSUNG_AUFHEIZUNG, Format = format, Einheit = einheit };
+            Vorlagenfeld Text(string rest, Func<Berichtswerte, ErgebnisGebaeudeModel, object> wert) =>
+                new Vorlagenfeld("gebaeude.ergebnis." + rest, Vorlagenfeldart.Text, GB, w => MitGebaeudeergebnis(w, true, e => wert(w, e)))
+                { Seit = FASSUNG_AUFHEIZUNG };
+
+            return new[]
+            {
+                Zahl("nachtauskuehlstunden", e => e.NachtauskuehlstundenH, "N0", "h/a"),
+                Zahl("sommerlueftungsstunden", e => e.SommerlueftungsstundenH, "N0", "h/a"),
+                Text("aufheizzustand", (w, e) => Leer(Aufheizbericht.Zustandtext(e.AufheizZustand, w.Kultur))),
+                Text("aufheizart", (w, e) => Leer(Aufheizbericht.Arttext(e, w.Kultur))),
+                Zahl("aufheizzeit", e => e.AufheizzeitMaxH, "N0", "h"),
+                Zahl("aufheizzeit_manuell", e => e.AufheizArt == DbWerte.AUFHEIZ_ART_MANUELL ? e.AufheizzeitMaxH : null, "N0", "h"),
+                Zahl("aufheiz_aussentemperatur", e => e.AufheizAussenC, "N1", "°C"),
+                Zahl("aufheizleistung", e => e.AufheizLeistungKw, "N1", "kW"),
+                Text("aufheizquelle", (w, e) => Leer(Aufheizbericht.Quellentext(e.AufheizLeistungsquelle, w.Kultur))),
+                Zahl("aufheiztage", e => e.Aufheiztage, "N0", null),
+                Zahl("aufheizstunden", e => e.AufheizstundenH, "N0", "h/a"),
+                Zahl("aufheizzeit_laengste", e => e.AufheizzeitLaengsteH, "N0", "h"),
+                // E99 (Schritt 194): verwendeter Aufschlag und bemessene Aufheizzeit aus der Ergebniszeile.
+                Zahl("aufschlag_verwendet", e => e.AufheizAufschlagVerwendetH, "N0", "h"),
+                Zahl("aufheizzeit_bemessen", e => e.AufheizzeitBemessenH, "N0", "h"),
+                Zahl("aufheiztage_begrenzt", e => e.AufheiztageBegrenzt, "N0", null),
+                Zahl("aufheiztage_unerreichbar", e => e.AufheiztageUnerreichbar, "N0", null),
+                Zahl("kappungsstunden", e => e.HeizleistungMaxStundenH, "N1", "h/a"),
+                Zahl("auslegungsheizlast", e => e.AuslegungsheizlastKw, "N1", "kW"),
+                Zahl("aufheizzuschlag", e => e.AufheizzuschlagKw, "N1", "kW"),
+                Zahl("auslegungsgroesse", e => Aufheizbericht.Auslegungsgroesse(e), "N1", "kW"),
+                new Vorlagenfeld("gebaeude.ergebnis.aufheizhinweise", Vorlagenfeldart.Text, GB,
+                    w => MitGebaeudeergebnis(w, true, e => string.Join("\n", Aufheizbericht.Hinweise(e, w.Kultur))))
+                { Seit = FASSUNG_AUFHEIZUNG, Leerwert = "" },
             };
         }
 
         /// <summary>
-        /// Die Datenschalter <c>hat.*</c> (Konzept 4.5, 4.7): im Block <c>je stand</c> für den laufenden Stand, außerhalb
-        /// für die Gruppe — wahr, sobald irgendein Stand die Bedingung erfüllt. Kontext Gruppe: gültig überall.
+        /// <b>Katalog v19 (AH-V6; Entwurf Vorheizrampe 2.9):</b> die Vorheizgrößen der Fassung 2 des laufenden Gebäudes aus der
+        /// Ergebniszeile des Laufs — dieselben Zahlen wie die Gebäudetafel (<see cref="Aufheizbericht.Vorheizzeilen"/>), nur auf dem
+        /// Weg nach VDI 6007. Bei Sollwertrampe sind alle leer.
+        /// </summary>
+        private static IEnumerable<Vorlagenfeld> Vorheizwerte()
+        {
+            const Vorlagenfeldkontext GB = Vorlagenfeldkontext.Gebaeude;
+            Vorlagenfeld Zahl(string rest, Func<Vorheizkennzahlen, object> wert, string format, string einheit) =>
+                new Vorlagenfeld("gebaeude.ergebnis." + rest, Vorlagenfeldart.Zahl, GB,
+                                 w => MitGebaeudeergebnis(w, true, e => e.Vorheizen == null ? null : wert(e.Vorheizen)))
+                { Seit = FASSUNG_VORHEIZEN, Format = format, Einheit = einheit };
+
+            return new[]
+            {
+                new Vorlagenfeld("gebaeude.ergebnis.vorheizverfahren", Vorlagenfeldart.Text, GB,
+                    w => MitGebaeudeergebnis(w, true, e => Leer(Aufheizbericht.Verfahrenstext(e.Vorheizen?.Verfahren, w.Kultur))))
+                { Seit = FASSUNG_VORHEIZEN },
+                Zahl("vorheizzeit", v => v.VorheizzeitH, "N0", "h"),
+                Zahl("vorheizzeit_bedarf_max", v => v.VorheizzeitBedarfMaxH, "N0", "h"),
+                Zahl("vorheiz_bezug", v => v.BezugKw, "N1", "kW"),
+                Zahl("vorheiz_deckel", v => v.DeckelKw, "N1", "kW"),
+                Zahl("vorheizleistung", v => v.LeistungKw, "N1", "kW"),
+                Zahl("vorheiz_sprung_vorlauf", v => v.SprungVorlaufMaxKw, "N1", "kW"),
+                Zahl("vorheiz_sprung_lauf", v => v.SprungLaufMaxKw, "N1", "kW"),
+                Zahl("vorheiz_tage_verfehlt", v => v.TageVerfehlt, "N0", null),
+                Zahl("vorheiz_tage_ueber", v => v.TageUeberVorheizzeit, "N0", null),
+                Zahl("vorheiz_unterschreitung_max", v => v.UnterschreitungMaxK, "N1", "K"),
+                Zahl("vorheiz_unterschreitungsstunden", v => v.UnterschreitungH, "N0", "h/a"),
+                Zahl("vorheiz_deckelstunden", v => v.DeckelstundenH, "N0", "h/a"),
+                Zahl("vorheiz_floorstunden", v => v.FloorstundenH, "N0", "h/a"),
+                Zahl("vorheiz_naechte_ohne_absenkung", v => v.NaechteOhneAbsenkung, "N0", null),
+                Zahl("vorheiz_tage_unerreichbar", v => v.UnerreichbarTage, "N0", null),
+                Zahl("vorheiz_tage_sperrzeit", v => v.SperrzeitTage, "N0", null),
+                Zahl("vorheiz_mehrwaerme", v => v.MehrwaermeMwh, "N2", "MWh/a"),
+            }.Concat(Schnellaufwerte());
+        }
+
+        /// <summary>
+        /// <b>Katalog v21 (SA3b, Schritt 217):</b> die Schnellaufheizung des laufenden Gebäudes — dieselben Zahlen wie die Zeilen
+        /// der Gebäudetafel (<see cref="Aufheizbericht.Schnellaufzeilen"/>) und der Halbsatz des Kurzberichts. Ohne Wirkung der
+        /// Überhöhung sind alle leer.
+        /// </summary>
+        private static IEnumerable<Vorlagenfeld> Schnellaufwerte()
+        {
+            const Vorlagenfeldkontext GB = Vorlagenfeldkontext.Gebaeude;
+            Vorlagenfeld Zahl(string rest, Func<Vorheizkennzahlen, object> wert, string format, string einheit) =>
+                new Vorlagenfeld("gebaeude.ergebnis." + rest, Vorlagenfeldart.Zahl, GB,
+                                 w => MitGebaeudeergebnis(w, true, e => e.Vorheizen?.UeberhoehungK == null ? null : wert(e.Vorheizen)))
+                { Seit = FASSUNG_SCHNELLAUFHEIZUNG, Format = format, Einheit = einheit };
+
+            return new[]
+            {
+                Zahl("vorheiz_ueberhoehung", v => v.UeberhoehungK, "N1", "K"),
+                Zahl("vorheiz_ueberhoehung_stunden", v => v.UeberhoehungH, "N0", "h/a"),
+                Zahl("vorheiz_ueberhoehung_vorlauf_max", v => v.UeberhoehungVorlaufMaxC, "N1", "°C"),
+                Zahl("vorheiz_vorlaufgrenze_stunden", v => v.VorlaufgrenzeH, "N0", "h/a"),
+                Zahl("vorheiz_ueberhoehung_wirkungslos", v => v.UeberhoehungWirkungslosH, "N0", "h/a"),
+                Zahl("vorheiz_ueberhoehung_sperrzeit", v => v.UeberhoehungSperrzeitH, "N0", "h/a"),
+                new Vorlagenfeld("gebaeude.ergebnis.vorheiz_schnellaufheizung", Vorlagenfeldart.Text, GB,
+                    w => MitGebaeudeergebnis(w, true, e => Leer(Aufheizbericht.Schnellaufhalbsatz(e.Vorheizen, w.Kultur))))
+                { Seit = FASSUNG_SCHNELLAUFHEIZUNG, Leerwert = "" },
+            };
+        }
+
+        /// <summary>Ein leerer Text heißt „kein Wert“ (Leerwert des Felds statt eines leeren Laufs).</summary>
+        private static object Leer(string text) => string.IsNullOrEmpty(text) ? null : text;
+
+        /// <summary>
+        /// Die Datenschalter <c>hat.*</c> (Konzept 4.5, 4.7): im Block <c>je stand</c> bzw. <c>je variante</c> für den laufenden
+        /// Stand, im Gruppenblock <c>je variante|block n</c> für die Varianten der Gruppe samt Stammprojekt, außerhalb für den ganzen Bericht —
+        /// wahr, sobald irgendein Stand die Bedingung erfüllt. Kontext Gruppe: gültig überall.
         /// </summary>
         private static IEnumerable<Vorlagenfeld> Datenschalter()
         {
@@ -593,6 +719,25 @@ namespace WindowsFormsApplication1
                 Neu("hat.emissionsbilanz", Vorlagenfeldart.Schalter, G, w => Hat(w, v => HatEmissionsbilanz(w, v))),
                 Neu("hat.sensitivitaet", Vorlagenfeldart.Schalter, G, w => Hat(w, v => HatSensitivitaet(w, v))),
                 Neu("hat.emissionsmodus_gwp", Vorlagenfeldart.Schalter, G, w => Hat(w, v => EmissionsAusweis.IstAequivalent(v.EmissionsModus))),
+                // Katalog v16 (KP3 Welle O3a): ein Gebäude des Stands hat mit Aufheizoptimierung gerechnet.
+                new Vorlagenfeld("hat.aufheizung", Vorlagenfeldart.Schalter, G, w => Hat(w, Aufheizbericht.HatAufheizung))
+                    { Seit = FASSUNG_AUFHEIZUNG },
+                // Katalog v19 (AH-V6): ein Gebäude des Stands hat mit Vorheizen nach Fassung 2 gerechnet.
+                new Vorlagenfeld("hat.vorheizen", Vorlagenfeldart.Schalter, G, w => Hat(w, Aufheizbericht.HatVorheizen))
+                    { Seit = FASSUNG_VORHEIZEN },
+                // Katalog v21 (SA3b): ein Gebäude des Stands hat mit wirksamer Schnellaufheizung gerechnet.
+                new Vorlagenfeld("hat.schnellaufheizung", Vorlagenfeldart.Schalter, G, w => Hat(w, Aufheizbericht.HatSchnellaufheizung))
+                    { Seit = FASSUNG_SCHNELLAUFHEIZUNG },
+                // Katalog v23 (K6d-N): ein Stand hat mindestens eine Split-Zeile mit Ergebnis — die Hauptzahl
+                // kaelte.deckungsgrad_gesamt hat einen Wert; der Kurzbericht nennt dann sie und „davon Kältefolge“.
+                new Vorlagenfeld("hat.kaelte.dezentral", Vorlagenfeldart.Schalter, G,
+                        w => Hat(w, v => KennzahlenKatalog.DeckungsgradKaelteGesamt(v).HasValue))
+                    { Seit = FASSUNG_KAELTE_DEZENTRAL },
+                // Katalog v23 (K6d-N): neben der Split-Zeile deckt ein Kälteerzeuger über die Kältefolge — „davon
+                // Kältefolge“ (kaelte.deckungsgrad_kaeltefolge) hat einen Wert; ohne ihn nennt der Kurzbericht nur die Split-Geräte.
+                new Vorlagenfeld("hat.kaelte.kaeltefolge", Vorlagenfeldart.Schalter, G,
+                        w => Hat(w, v => KennzahlenKatalog.DeckungsgradKaelteKaeltefolge(v).HasValue))
+                    { Seit = FASSUNG_KAELTE_DEZENTRAL },
             };
         }
 
@@ -614,7 +759,7 @@ namespace WindowsFormsApplication1
                     yield return new Vorlagenfeld(STAND + (a ? "a." : "b.") + f.Schluessel.Substring(STAND.Length), f.Art,
                         Vorlagenfeldkontext.Gruppe, w => ImPaar(w, vorbild, standA))
                     {
-                        Seit = FASSUNG_STAND,
+                        Seit = Math.Max(FASSUNG_STAND, f.Seit),
                         Format = f.Format,
                         Einheit = f.Einheit,
                         Leerwert = f.Leerwert,
@@ -996,10 +1141,16 @@ namespace WindowsFormsApplication1
             return string.IsNullOrWhiteSpace(a) ? b : a;
         }
 
-        /// <summary>Ein Datenschalter: im Standblock für den laufenden Stand, sonst für irgendeinen Stand.</summary>
+        /// <summary>
+        /// Ein Datenschalter: im Standblock für den laufenden Stand, im Gruppenblock <c>{{#je variante|block n}}</c>
+        /// für irgendeine Variante der Gruppe oder das Stammprojekt (8a, Nachentscheid 17.10.2026: der Stamm zählt
+        /// in jeder Gruppe mit), sonst für irgendeinen Stand des Berichts.
+        /// </summary>
         private static object Hat(Berichtswerte w, Func<VariantenDaten, bool> bedingung)
         {
             if (w.LaufenderStand != null) return bedingung(w.LaufenderStand);
+            if (w.LaufendeGruppe != null)
+                return w.LaufendeGruppe.Any(bedingung) || (w.Stamm != null && bedingung(w.Stamm));
             return w.Staende.Any(bedingung);
         }
 

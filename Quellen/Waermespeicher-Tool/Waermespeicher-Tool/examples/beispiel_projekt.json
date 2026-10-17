@@ -1,0 +1,100 @@
+{
+  "buildings": [
+    {
+      "name": "MFH-Bestand Musterstraße 1-9",
+      "category": "MFH",
+      "n_we": 30,
+      "n_persons": 2.2,
+      "q_heiz_a": 88000.0,
+      "q_tww_a": 22000.0,
+      "copies": 5,
+      "sigma": 4.0,
+      "bdew_branch": "ghd",
+      "tww_share": 0.1
+    },
+    {
+      "name": "Bürogebäude Verwaltung",
+      "category": "GHD",
+      "n_we": 1,
+      "n_persons": 2.5,
+      "q_heiz_a": 61000.0,
+      "q_tww_a": null,
+      "copies": 1,
+      "sigma": 4.0,
+      "bdew_branch": "gko",
+      "tww_share": 0.08
+    }
+  ],
+  "weather": {
+    "try_region": 12,
+    "year": 2025
+  },
+  "dhw": {
+    "t_speicher": 60.0,
+    "t_kalt": 10.0,
+    "nutzbarer_anteil": 0.8,
+    "p_lade": 45.0,
+    "zirkulation_kw": 4.0,
+    "zuschlag": 0.15
+  },
+  "buffer": {
+    "p_wp": 100.0,
+    "p_wp_min": 30.0,
+    "p_bivalent": 60.0,
+    "dt_puffer": 10.0,
+    "t_min_lauf_min": 10.0,
+    "abtau_l_pro_kw": 20.0,
+    "sperrzeiten": [
+      [
+        11,
+        2.0
+      ],
+      [
+        17,
+        2.0
+      ]
+    ],
+    "ziel_deckung": 1.0
+  },
+  "name": "Beispiel MFH-Bestand (150 WE + Büro)",
+  "datum": "2026-07-28",
+  "projekt": {
+    "name": "Beispiel MFH-Bestand (150 WE + Büro)",
+    "gespeichert_am": "2026-07-28T12:00:00",
+    "tool_version": "1.0"
+  },
+  "ui": {
+    "quelle": "Synthetisch (VDI 4655 / BDEW)",
+    "aufloesung": "h",
+    "mess_einheit": "kW",
+    "mess_dezimal": ",",
+    "mess_sep": "automatisch",
+    "mess_split": true,
+    "mess_split_monate": [
+      6,
+      7,
+      8
+    ],
+    "mess_split_faktor": 1.0,
+    "dhw_auto_we": true,
+    "dhw_n_we": 150,
+    "dhw_personen": 2.2,
+    "sperrzeiten_ui": [
+      {
+        "aktiv": true,
+        "start": 11,
+        "dauer": 2.0
+      },
+      {
+        "aktiv": true,
+        "start": 17,
+        "dauer": 2.0
+      },
+      {
+        "aktiv": false,
+        "start": 6,
+        "dauer": 2.0
+      }
+    ]
+  }
+}

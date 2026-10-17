@@ -12,7 +12,7 @@ namespace WindowsFormsApplication1
     // WaermepumpeStammHuelle, WaermepumpeAnlageHuelle und WaermepumpenHuelle, dazu
     // seit iU9-W13 vom Katalogimport ueber WaermepumpeImportSatz. Alle DB-Zugriffe
     // laufen ueber DataRepository.
-    class WPStammCtrl : WPModel
+    partial class WPStammCtrl : WPModel
     {
         public const string TABLE     = "Tab_WP_STAMM";
         public const string CURVE     = "Tab_Kenndaten_STAMM";
@@ -322,7 +322,7 @@ namespace WindowsFormsApplication1
             {
                 string sql = @"UPDATE " + TABLE + @"
                                SET Firma = ?, Beschreibung = ?, Typ = ?, Baujahr = ?, Aufstellung = ?,
-                                   Nennleistung = ?, maxPtherm = ?, Heizung = ?, Regelung = ?, Modulkosten = ?
+                                   Nennleistung = ?, maxPtherm = ?, Heizung = ?, Regelung = ?
                                WHERE Bezeichner = ?";
                 DbParam[] ps = {
                     new DbParam("@fir", Firma ?? (object)DBNull.Value),
@@ -334,7 +334,6 @@ namespace WindowsFormsApplication1
                     new DbParam("@max", maxPTherm),
                     new DbParam("@hei", Heizung),
                     new DbParam("@reg", Regelung ?? (object)DBNull.Value),
-                    new DbParam("@mod", Modulkosten),
                     new DbParam("@nam", WPName ?? (object)DBNull.Value)
                 };
                 return DataRepository.ExecuteSQL(sql, ps);
@@ -390,6 +389,15 @@ namespace WindowsFormsApplication1
                 return new SpeicherErgebnis(false, Text("WPS_MSG_NAME_BELEGT",
                     "Name existiert bereits!"), "");
 
+            // Welle M4 (WP1): Mindestleistung und C_d im Band - benannt, bevor etwas geschrieben wird.
+            string teillast = ErzeugerTeillastWerte.WpVerstoss(daten.MindestleistungKw, daten.TaktverlustfaktorCd,
+                                                               daten.Nennleistung);
+            if (teillast != null) return new SpeicherErgebnis(false, teillast, "");
+
+            // UB-E3-b: die Geraetegrenzen im Bereich des Schemas - benannt, bevor die Datenbank sie abweist.
+            string grenzen = GeraetegrenzWerte.WpVerstoss(daten.Grenzspalten);
+            if (grenzen != null) return new SpeicherErgebnis(false, grenzen, "");
+
             // Der Controller IST das Modell (er erbt WPModel) - Update und Insert lesen
             // ihre Werte von sich selbst.
             ID = daten.ID;
@@ -403,12 +411,29 @@ namespace WindowsFormsApplication1
             maxPTherm = daten.maxPTherm;
             Heizung = daten.Heizung;
             Regelung = daten.Regelung;
-            Modulkosten = daten.Modulkosten;
             Bauart = daten.Bauart;
             Kuehlleistung = daten.Kuehlleistung;
 
             bool ok;
-            try { ok = neu ? Insert() : Update(); }
+            try
+            {
+                ok = neu ? Insert() : Update();
+
+                // Welle M4 (WP1): die Teillastfelder als eigener Schritt (nur mit den Spalten).
+                if (ok)
+                {
+                    int id = ID > 0 ? ID : DataRepository.GetIdByName(TABLE, "Bezeichner", name);
+                    ErzeugerTeillastWerte.WpSchreiben(TABLE, id, daten.MindestleistungKw, daten.TaktverlustfaktorCd);
+                    MindestleistungKw = daten.MindestleistungKw;
+                    TaktverlustfaktorCd = daten.TaktverlustfaktorCd;
+                    // UB-E3-b: die acht Geraetespalten, nur wenn der Speicherweg sie mitbringt.
+                    if (daten.Grenzspalten != null)
+                    {
+                        GeraetegrenzWerte.WpSchreiben(TABLE, id, daten.Grenzspalten);
+                        Grenzspalten = daten.Grenzspalten;
+                    }
+                }
+            }
             catch (Exception ex)
             {
                 Console.WriteLine("Fehler beim Speichern der Wärmepumpe: " + ex.Message);
@@ -439,18 +464,12 @@ namespace WindowsFormsApplication1
                     "Schreibgeschützt");
                 return false;
             }
-            try
-            {
-                int id = DataRepository.GetIdByName(TABLE, "Bezeichner", WPName);
-                if (id > 0)
-                {
-                    DataRepository.ExecuteSQL("DELETE FROM " + CURVE   + " WHERE ID_WP = ?", new DbParam("@id", id));
-                    DataRepository.ExecuteSQL("DELETE FROM " + CURVE_K + " WHERE ID_WP = ?", new DbParam("@id", id));
-                }
-                return DataRepository.ExecuteSQL("DELETE FROM " + TABLE + " WHERE Bezeichner = ?",
-                    new DbParam("@nam", WPName ?? (object)DBNull.Value));
-            }
-            catch (Exception ex) { Console.WriteLine("Fehler bei Delete (STAMM): " + ex.Message); return false; }
+            // KA-E-16: der Katalogsatz geht samt Kennlinien und Satzvorlagen, in EINEM Vorgang.
+            int id = DataRepository.GetIdByName(TABLE, "Bezeichner", WPName);
+            if (id <= 0) return false;
+            KatalogsatzLoeschung l = KatalogsatzLoeschen(id);
+            if (l.Ok && l.Meldung.Length > 0) Meldung.Hinweis(l.Meldung, MyResource.Resource.KATRUECK_TITEL_LOESCHEN);
+            return l.Ok;
         }
 
         /// <summary>
@@ -492,8 +511,8 @@ namespace WindowsFormsApplication1
 
                     string sql = @"INSERT INTO " + TABLE + @"
                             (Bezeichner, Firma, Beschreibung, Typ, Baujahr, Aufstellung, Nennleistung,
-                             maxPtherm, Heizung, Regelung, Modulkosten, Bauart, Kuehlleistung, ReadOnly)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                             maxPtherm, Heizung, Regelung, Bauart, Kuehlleistung, ReadOnly)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     DbParam[] ps = {
                         new DbParam("@nam", (object)bezeichner ?? DBNull.Value),
                         new DbParam("@fir", Firma ?? (object)DBNull.Value),
@@ -505,7 +524,6 @@ namespace WindowsFormsApplication1
                         new DbParam("@max", maxPTherm),
                         new DbParam("@hei", Heizung),
                         new DbParam("@reg", Regelung ?? (object)DBNull.Value),
-                        new DbParam("@mod", Modulkosten),
                         new DbParam("@bart", Bauart ?? (object)DBNull.Value),
                         new DbParam("@kuehl", Kuehlleistung),
                         new DbParam("@ro", false)
@@ -591,9 +609,9 @@ namespace WindowsFormsApplication1
                     {
                         string sql = @"INSERT INTO " + TABLE + @"
                             (Bezeichner, Firma, Beschreibung, Typ, Baujahr, Aufstellung, Nennleistung,
-                             maxPtherm, Heizung, Regelung, Modulkosten, Bauart, Kuehlleistung, ReadOnly,
+                             maxPtherm, Heizung, Regelung, Bauart, Kuehlleistung, ReadOnly,
                              Kuehlbetrieb, Kuehl_Vorlauf, Kuehl_Hilfsstromanteil)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                         DbParam[] ps = {
                             new DbParam("@nam", WPName ?? (object)DBNull.Value),
                             new DbParam("@fir", Firma ?? (object)DBNull.Value),
@@ -605,7 +623,6 @@ namespace WindowsFormsApplication1
                             new DbParam("@max", maxPTherm),
                             new DbParam("@hei", Heizung),
                             new DbParam("@reg", Regelung ?? (object)DBNull.Value),
-                            new DbParam("@mod", Modulkosten),
                             new DbParam("@bart", Bauart ?? (object)DBNull.Value),
                             new DbParam("@kuehl", Kuehlleistung),
                             new DbParam("@ro", false),
@@ -684,7 +701,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Import-Ueberschreiben (Dublettenkonzept 4.2): aktualisiert GENAU die Felder,
         /// die der VDI-Import liefert, adressiert per ID. Vom Anwender gepflegte Felder
-        /// (Bezeichner, Beschreibung, Modulkosten, ReadOnly) bleiben unangetastet.
+        /// (Bezeichner, Beschreibung, ReadOnly) bleiben unangetastet.
         /// </summary>
         /// <remarks>
         /// Bewusst OHNE ReadOnly-Sperre: Das Ueberschreiben eines ReadOnly-Satzes ist
@@ -806,7 +823,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private const string UEBERNAHME_SPALTEN =
             "Firma, Beschreibung, Typ, Baujahr, Aufstellung, Nennleistung, maxPtherm, " +
-            "Heizung, Regelung, Modulkosten, Laenge, Breite, Hoehe, Gewicht, Raum, " +
+            "Heizung, Regelung, Laenge, Breite, Hoehe, Gewicht, Raum, " +
             "Kuehlleistung, Bauart, Kuehlbetrieb, Kuehl_Vorlauf, Kuehl_Hilfsstromanteil";
 
         /// <summary>
@@ -1040,7 +1057,7 @@ namespace WindowsFormsApplication1
 
                             katalogId = v.EinfuegenUndId(
                                 "INSERT INTO " + TABLE + " (Bezeichner, " + UEBERNAHME_SPALTEN +
-                                ", ReadOnly) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                                ", ReadOnly) VALUES (" + string.Join(", ", System.Linq.Enumerable.Repeat("?", p.Count)) + ")",
                                 p.ToArray());
                             if (katalogId <= 0) throw new InvalidOperationException(
                                 "Der Katalogsatz konnte nicht angelegt werden.");
@@ -1053,7 +1070,7 @@ namespace WindowsFormsApplication1
                             v.Ausfuehren(
                                 "UPDATE " + TABLE + " SET Firma = ?, Beschreibung = ?, Typ = ?, " +
                                 "Baujahr = ?, Aufstellung = ?, Nennleistung = ?, maxPtherm = ?, " +
-                                "Heizung = ?, Regelung = ?, Modulkosten = ?, Laenge = ?, Breite = ?, " +
+                                "Heizung = ?, Regelung = ?, Laenge = ?, Breite = ?, " +
                                 "Hoehe = ?, Gewicht = ?, Raum = ?, Kuehlleistung = ?, Bauart = ?, " +
                                 "Kuehlbetrieb = ?, Kuehl_Vorlauf = ?, Kuehl_Hilfsstromanteil = ? " +
                                 "WHERE ID = ?",
@@ -1133,6 +1150,23 @@ namespace WindowsFormsApplication1
                     }
                 }
 
+                // Welle M4 (WP1): Mindestleistung und C_d der Projektkopie reisen in den Katalogsatz -
+                // nach dem Festschreiben, als eigener Schritt (nur mit den Spalten).
+                if (katalogId > 0)
+                {
+                    var teillast = new WPModel();
+                    DataTable tz = DataRepository.GetDataTable(
+                        "SELECT * FROM Tab_WP WHERE ID = ?", new DbParam("@id", idWp));
+                    if (tz != null && tz.Rows.Count > 0)
+                    {
+                        ErzeugerTeillastWerte.WpAusZeile(teillast, tz.Rows[0]);
+                        ErzeugerTeillastWerte.WpSchreiben(TABLE, katalogId, teillast.MindestleistungKw,
+                                                          teillast.TaktverlustfaktorCd);
+                        // UB-E3-b: die acht Geraetespalten reisen ebenso in den Katalogsatz.
+                        GeraetegrenzWerte.WpKopieren(tz.Rows[0], TABLE, katalogId);
+                    }
+                }
+
                 return new SpeicherErgebnis(true, string.Format(
                     neu
                         ? Text("WP_STAMM_UEBERNAHME_MSG_ANGELEGT", "Katalogsatz „{0}“ neu angelegt.")
@@ -1148,9 +1182,11 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Werte der zwanzig Fachspalten in der Reihenfolge von
+        /// Die Werte der neunzehn Fachspalten in der Reihenfolge von
         /// <see cref="UEBERNAHME_SPALTEN"/> — EINE Stelle fuer INSERT und UPDATE, damit
-        /// Spaltenliste und Werte nicht auseinanderlaufen koennen.
+        /// Spaltenliste und Werte nicht auseinanderlaufen koennen. Die Platzhalter des INSERT
+        /// zaehlt der Aufrufer aus der Parameterliste ab — eine entfallene Spalte (Welle KB-4:
+        /// <c>Modulkosten</c>) laesst damit keinen ueberzaehligen Platzhalter zurueck.
         /// </summary>
         private static DbParam[] Uebernahmewerte(DataRow satz)
         {
@@ -1165,7 +1201,6 @@ namespace WindowsFormsApplication1
                 new DbParam("@max", Feldwert(satz, "maxPtherm")),
                 new DbParam("@hei", Feldwert(satz, "Heizung")),
                 new DbParam("@reg", Feldwert(satz, "Regelung")),
-                new DbParam("@mod", Feldwert(satz, "Modulkosten")),
                 new DbParam("@lae", Feldwert(satz, "Laenge")),
                 new DbParam("@bre", Feldwert(satz, "Breite")),
                 new DbParam("@hoe", Feldwert(satz, "Hoehe")),
@@ -1221,7 +1256,6 @@ namespace WindowsFormsApplication1
             if (dt.Columns.Contains("maxPtherm") && row["maxPtherm"] != DBNull.Value) item.maxPTherm = Convert.ToInt32(row["maxPtherm"]);
             if (dt.Columns.Contains("Heizung") && row["Heizung"] != DBNull.Value) item.Heizung = Convert.ToInt32(row["Heizung"]);
             if (dt.Columns.Contains("Regelung") && row["Regelung"] != DBNull.Value) item.Regelung = row["Regelung"].ToString();
-            if (dt.Columns.Contains("Modulkosten") && row["Modulkosten"] != DBNull.Value) item.Modulkosten = Convert.ToInt32(row["Modulkosten"]);
             if (dt.Columns.Contains("Kuehlleistung") && row["Kuehlleistung"] != DBNull.Value) item.Kuehlleistung = Convert.ToDouble(row["Kuehlleistung"]);
             if (dt.Columns.Contains("Bauart") && row["Bauart"] != DBNull.Value) item.Bauart = row["Bauart"].ToString();
             if (dt.Columns.Contains("Max") && row["Max"] != DBNull.Value) item.MaxVorlauf = Convert.ToInt32(row["Max"]);

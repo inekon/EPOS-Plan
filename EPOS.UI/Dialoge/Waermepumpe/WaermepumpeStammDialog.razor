@@ -5,10 +5,10 @@
    Stammsaetze, rechts ihre Felder, darunter zwei Kennlinienbilder in zwei
    Reiterblaettern und der Umschalter Waerme/Kuehlung.
 
-   ZWEI UEBERLAGERUNGEN. "Kennliniendaten Ansicht/Bearbeiten..." zeigt den
-   KennlinienEditorDialog (W7.2), "Modul-Katalog..." den
-   WaermepumpenKatalogDialog (W7.1) - beide IM selben Fenster (Risiko R2),
-   nicht als zweites Fenster wie im Vorlaeufer.
+   EINE UEBERLAGERUNG. "Kennliniendaten Ansicht/Bearbeiten..." zeigt den
+   KennlinienEditorDialog (W7.2) - IM selben Fenster (Risiko R2), nicht als
+   zweites Fenster wie im Vorlaeufer. Der Katalog steht in der Liste dieses
+   Dialogs selbst (Katalogfilter S2.2), ein "Modul-Katalog..." gibt es nicht.
 
    DIE BILDER KOMMEN FERTIG. Der Vorlaeufer baute zwei WinForms-Charts aus
    einer DataTable auf (InitChart:243-331); hier baut
@@ -22,14 +22,14 @@
    zu speichern oder zu loeschen wird abgelehnt, seine Kennlinien sind nur
    ansehbar.
 
-   MODULKOSTEN STEHEN NUR LESEND DA (Anwenderentscheid W14a-O-1 vom
-   06.09.2026). Ä19 der Welle 7 nahm das Feld ganz aus der Maske
-   ("Geraetekosten laufen ueber die Kostenverwaltung"); seither lief der Wert
-   verborgen mit, und niemand sah, warum die Kostenuebernahme keinen Planwert
-   vorschlug. Der Wert ist deshalb WIEDER SICHTBAR - als
-   Lesewert im Raster mit Herleitungszeile darunter, ohne Eingabefeld und ohne
-   Schreibweg. Ä19 bleibt damit gewahrt: Hier tippt niemand Kosten ein, er
-   sieht nur, woher der Planwert kommt bzw. warum keiner kommt. Die
+   DER KOSTENSATZ STEHT NUR LESEND DA (Anwenderentscheid W14a-O-1 vom
+   06.09.2026). Ä19 der Welle 7 nahm das Kostenfeld ganz aus der Maske
+   ("Geraetekosten laufen ueber die Kostenverwaltung"); seither sah niemand,
+   warum die Kostenuebernahme keinen Planwert vorschlug. Der Wert ist deshalb
+   WIEDER SICHTBAR - als Lesewert im Raster mit Herleitungszeile darunter, ohne
+   Eingabefeld und ohne Schreibweg. Seit Welle KB-4 ist seine Quelle die
+   SATZVORLAGE der Kostenverwaltung (Schemaschritt 228 nahm die Geraetespalte
+   fort), also genau die Zahl, die dort gepflegt wird. Die
    Pflichtpruefung des Vorlaeufers auf das frueher pflegbare Feld bleibt
    entfallen (A-14) - es gibt nichts zu pruefen, was der Anwender eingegeben
    haette.
@@ -61,9 +61,8 @@
 
 <div class="epos-dialog epos-katalog-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
-    @* Ein Titel, eine Stelle: eingebettet in der Ueberlagerung "Parameter Bearbeiten..."
-       (WaermepumpeAnlageDialog) traegt DIE den Titel; der Wirt setzt dort
-       TitelAnzeigen="false" - dann bleiben Titel und Kreuz hier aus, die
+    @* Ein Titel, eine Stelle: eingebettet in eine Ueberlagerung, die selbst den Titel
+       traegt, setzt der Wirt TitelAnzeigen="false" - dann bleiben Titel und Kreuz hier aus, die
        Ueberlagerung traegt beides. TitelText bleibt dabei gesetzt: Er nennt die
        Maske auch in der Assistentenmeldung ohne Speicherweg (KiSpeichern) - Bauart
        b der Hausregel, wie PufferSpProjektDialog. *@
@@ -86,6 +85,16 @@
     @if (!string.IsNullOrEmpty(_meldung))
     {
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+    @* KT-3: Wirft das Lesen der Katalogliste, nennt dieser Banner den Grund (Katalogladung). *@
+    @if (!string.IsNullOrEmpty(_listeFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+    }
+    @* KT-4: Wirft das Lesen des gewählten Satzes, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
     }
 
     @* DAS SCHEMA IST SEIT W14a-E-10 DASSELBE WIE BEIM HEIZKESSEL UND BEI DEN
@@ -127,10 +136,10 @@
                           Zeigeanlass="@_auswahl.Uebernahmen">
                 <Werkzeug>
                     @* "NUR MIT KUEHLFUNKTION" (Konzept Administrationsdialoge 3.1, Zone 2;
-                       Stufe 4): derselbe Schalter wie in der Katalogauswahl des
-                       Anlagendialogs (WaermepumpenKatalogDialog). Er fuehrt keinen eigenen
-                       Zustand, er setzt den Trichter ">0" auf die Spalte Kuehlleistung -
-                       nie ein zweiter Filterweg; "Filter zuruecksetzen" nimmt ihn mit. *@
+                       Stufe 4): der Schnellfilter ueber der Katalogliste. Er fuehrt keinen
+                       eigenen Zustand, er setzt den Trichter ">0" auf die Spalte
+                       Kuehlleistung - nie ein zweiter Filterweg; "Filter zuruecksetzen"
+                       nimmt ihn mit. *@
                     <Schalter Bezeichnung="@SchalterNurKuehlung" Wert="@NurMitKuehlung"
                               WertChanged="NurMitKuehlungGesetzt" />
                 </Werkzeug>
@@ -205,6 +214,15 @@
                             </Reiter>
                         </KindInhalt>
                     </Stammblattgruppe>
+                    @* DIE GERAETEGRENZEN (UB-E3-b): Kaeltemittel und die sieben Zahlspalten der
+                       Uebergabegrenze. Ein Auslieferungssatz zeigt sie als Lesewerte. *@
+                    <Stammblattgruppe Titel="@_felderTexte.GruppeGeraetegrenzen" Lesemodus="@NurLesbar"
+                                      Werte="@(NurLesbar ? WaermepumpeGeraetegrenzenFelder.Grenzwerte(Daten, _felderTexte) : null)">
+                        <KindInhalt>
+                            <WaermepumpeGeraetegrenzenFelder Daten="@Daten" Texte="@_felderTexte"
+                                                             Aktiv="@(!NurLesbar)" Geaendert="BeiFeldAenderung" />
+                        </KindInhalt>
+                    </Stammblattgruppe>
                 </Gruppen>
                 <Kenndaten>
                     @* DAS FELDRASTER STEHT IM BAUSTEIN WaermepumpeStammFelder - derselbe
@@ -213,7 +231,7 @@
                        Stufe 3 haelt ein geaendertes Feld Zeilenwechsel, Neu,
                        Duplizieren... und Beenden an ("Speichern oder Verwerfen") - bis
                        dahin verwarf ein Zeilenwechsel die Eingabe still. *@
-                    <WaermepumpeStammFelder Daten="@Daten" Texte="@_felderTexte" MitModulkosten="false"
+                    <WaermepumpeStammFelder Daten="@Daten" Texte="@_felderTexte" MitKostensatz="false"
                                             Typen="@Typen" Leistungsstufen="@Leistungsstufen"
                                             Aufstellungen="@Aufstellungen" Baujahre="@Baujahre"
                                             Aktiv="@(!NurLesbar)" Geaendert="BeiFeldAenderung" />
@@ -231,8 +249,11 @@
                        Schluessel traegt den Zusatz "_Stamm" (A-1: den kuerzeren hat der
                        Anlagendialog). *@
                     <div class="epos-berechnungshilfe">
+                        @* Der Weg in die Rubrik Grundlagen (Konzept Technikdokumentation, Abschnitt 7). *@
+                        <InfoKnopf Schluessel="Form_WP_Stamm.Grundlagen"
+                                   StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
                         <InfoKnopf Schluessel="Form_WP_Stamm.Berechnung"
-                                   StandardKurztext="Berechnung: Wärmepumpe" />
+                                   StandardKurztext="Berechnung: Wärmepumpe" MitAssistent="false" />
                     </div>
                 </Nachsatz>
             </Stammblatt>
@@ -406,6 +427,15 @@
     /// <summary><c>true</c> = mit „Beenden" geschlossen.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
 
+    /// <summary>Der Satz, der beim Öffnen gewählt ist (Name); leer oder unbekannt = die erste Zeile.</summary>
+    [Parameter] public string? Vorwahl { get; set; }
+
+    /// <summary>
+    /// AW2: der Editor geht im Modus Neu auf — „Neu…" der Knopfleiste am Satz im Wärmepumpendialog legt immer einen
+    /// Katalogsatz an.
+    /// </summary>
+    [Parameter] public bool NeuBeimStart { get; set; }
+
     // --- Feste Listen ----------------------------------------------------------
 
     /// <summary>Die vier Wärmepumpentypen (<c>SetControls</c>:219-222).</summary>
@@ -437,9 +467,8 @@
 
     /// <summary>
     /// Zeichnet der Dialog seinen eigenen Kopf (Titel und Schliesskreuz)? <c>false</c>,
-    /// wenn eine <c>Ueberlagerung</c> den Titel trägt (Hausregel „Ein Titel, eine Stelle";
-    /// so bettet ihn <c>WaermepumpeAnlageDialog</c> ein). <see cref="TitelText"/> bleibt
-    /// dabei gesetzt — er nennt die Maske auch in der Assistentenmeldung ohne Speicherweg.
+    /// wenn eine <c>Ueberlagerung</c> den Titel trägt (Hausregel „Ein Titel, eine Stelle").
+    /// <see cref="TitelText"/> bleibt dabei gesetzt — er nennt die Maske auch in der Assistentenmeldung ohne Speicherweg.
     /// </summary>
     [Parameter] public bool TitelAnzeigen { get; set; } = true;
     [Parameter] public string KopfbandText { get; set; } = "Verwaltung Daten zu Wärmepumpen und deren Kennlinien";
@@ -459,12 +488,10 @@
     [Parameter] public string LabelKuehlleistung { get; set; } = "Kühlleistung";
 
     /// <summary>
-    /// Beschriftung des Lesewerts (W14a‑O‑1). Der Schlüssel ist <c>MODK_LBL_MODULKOSTEN</c>
-    /// — derselbe, den der Verwendungskatalog für diese Spalte führt
-    /// (<c>ParameterVerwendung.Waermepumpe</c>); Raster und Aufklapper nennen den
-    /// Parameter damit wortgleich.
+    /// Beschriftung des Lesewerts der Gruppe „Kosten" (W14a‑O‑1). Der Schlüssel ist
+    /// <c>MODK_LBL_KOSTENSATZ</c> — derselbe, den die Modulkataloge führen.
     /// </summary>
-    [Parameter] public string LabelModulkosten { get; set; } = "Modulkosten";
+    [Parameter] public string LabelKostensatz { get; set; } = "Kostensatz";
 
     [Parameter] public string LabelKennlinien { get; set; } = "Kenndaten Kennlinien:";
     [Parameter] public string OptionWaerme { get; set; } = "Wärme";
@@ -475,25 +502,19 @@
     [Parameter] public string EinheitKw { get; set; } = "kW";
 
     /// <summary>
-    /// Einheit der Modulkosten. Sie steht in beiden Sprachen gleich und braucht
-    /// deshalb — wie <see cref="EinheitKw"/> — keinen Ressourcenschlüssel.
-    /// </summary>
-    [Parameter] public string EinheitEuro { get; set; } = "€";
-
-    /// <summary>
-    /// Die Herleitungszeile unter den Modulkosten (<c>WPS_HERL_MODULKOSTEN</c>,
+    /// Die Herleitungszeile unter dem Kostensatz (<c>WPS_HERL_KOSTENSATZ</c>,
     /// W14a‑O‑1). Sie steht IMMER da: Ihre zweite Hälfte ist die Auskunft aus Ä19 —
     /// wer hier Kosten pflegen will, findet den Weg dorthin.
     /// </summary>
-    [Parameter] public string HerleitungModulkosten { get; set; } =
-        "aus dem Datenbestand; Gerätekosten werden in der Kostenverwaltung gepflegt";
+    [Parameter] public string HerleitungKostensatz { get; set; } =
+        "aus der Satzvorlage; Gerätekosten werden in der Kostenverwaltung gepflegt";
 
     /// <summary>
-    /// Die zweite, leise Zeile bei einem Wert von 0 (<c>WPS_HINWEIS_MODULKOSTEN_LEER</c>,
+    /// Die zweite, leise Zeile ohne gepflegten Satz (<c>WPS_HINWEIS_KOSTENSATZ_LEER</c>,
     /// W14a‑O‑1) — die Antwort auf „warum schlägt die Kostenübernahme nichts vor?".
     /// </summary>
-    [Parameter] public string HinweisModulkostenLeer { get; set; } =
-        "kein Planwert im Datenbestand";
+    [Parameter] public string HinweisKostensatzLeer { get; set; } =
+        "kein Kostensatz in der Kostenverwaltung";
     /// <summary>
     /// Der KURZE Knopftext der Fußleiste. Der volle Wortlaut des Vorläufers
     /// („Kennliniendaten Ansicht/Bearbeiten…") steht als Titel der Überlagerung
@@ -576,8 +597,8 @@
 
     /// <summary>
     /// Steht „nur mit Kühlfunktion"? <b>Der Schalter führt keinen eigenen Zustand</b> —
-    /// er LIEST den Filterstand (Muster <c>WaermepumpenKatalogDialog</c>): „Filter
-    /// zurücksetzen" und der Trichter der Spalte ändern denselben Stand.
+    /// er LIEST den Filterstand: „Filter zurücksetzen" und der Trichter der Spalte
+    /// ändern denselben Stand.
     /// </summary>
     public bool NurMitKuehlung
         => _filterstand.Ausdruck(Katalogfilterprofil.SpKuehlleistung) ==
@@ -848,7 +869,8 @@
         foreach (string name in namen)
         {
             Katalogfilterzeile? zeile = _liste.FirstOrDefault(z => z.Bezeichner == name);
-            WaermepumpeStammDaten? d = zeile is null ? null : Satz?.Invoke(zeile.Id);
+            WaermepumpeStammDaten? d = zeile is null ? null
+                : Katalogladung.SatzDazu(() => Satz?.Invoke(zeile.Id), zeile.Bezeichner, ref _satzFehler);
             saetze.Add(Vergleichsfelder(d, zeile?.Geschuetzt == true));
         }
         _vergleichszeilen = Vergleichsbau.AusFeldern(saetze);
@@ -872,8 +894,9 @@
                                d.Heizstab?.ToString(CultureInfo.CurrentCulture) ?? ""),
             new Vergleichsfeld("KUEHLLEISTUNG", LabelKuehlleistung + kw,
                                d.Kuehlleistung.ToString(CultureInfo.CurrentCulture)),
-            new Vergleichsfeld("MODULKOSTEN", LabelModulkosten + " [" + EinheitEuro + "]",
-                               d.Modulkosten.ToString(CultureInfo.CurrentCulture)),
+            new Vergleichsfeld("KOSTENSATZ", LabelKostensatz +
+                               (string.IsNullOrEmpty(d.KostensatzEinheit) ? "" : " [" + d.KostensatzEinheit + "]"),
+                               d.Kostensatz ?? ""),
             new Vergleichsfeld(HERKUNFT, Resource.ADM_VG_HERKUNFT,
                                geschuetzt ? Resource.ADM_SB_AUSLIEFERUNG : Resource.ADM_SB_EIGENER_SATZ)
         };
@@ -889,17 +912,17 @@
     private WaermepumpeStammFelderTexte _felderTexte = new();
 
     /// <summary>
-    /// <b>Die eigene Gruppe „Kosten"</b> (Konzept Administrationsdialoge, Stufe 4): Die
-    /// Modulkosten standen bis hierher zwischen den Kenndaten; jetzt stehen sie wie bei
-    /// den Gerätekatalogen in der festen Gruppe Kosten des Stammblatts — als LESEWERT mit
-    /// Herleitung, denn gepflegt werden sie in der Kostenverwaltung (W14a-O-1).
+    /// <b>Die eigene Gruppe „Kosten"</b> (Konzept Administrationsdialoge, Stufe 4): Der
+    /// Kostensatz steht wie bei den Gerätekatalogen in der festen Gruppe Kosten des
+    /// Stammblatts — als LESEWERT mit Herleitung, denn gepflegt wird er in der
+    /// Kostenverwaltung (W14a-O-1); seine Quelle ist die Satzvorlage (Welle KB-4).
     /// </summary>
     private RenderFragment KostenInhalt => @<div class="epos-wp-kosten">
         <Stammblattwerte Werte="@WaermepumpeStammFelder.Kostenwerte(Daten, _felderTexte)" />
-        <Herleitungszeile Text="@_felderTexte.HerleitungModulkosten" />
-        @if (Daten.Modulkosten <= 0)
+        <Herleitungszeile Text="@_felderTexte.HerleitungKostensatz" />
+        @if (string.IsNullOrEmpty(Daten.Kostensatz))
         {
-            <Herleitungszeile Text="@_felderTexte.HinweisModulkostenLeer" />
+            <Herleitungszeile Text="@_felderTexte.HinweisKostensatzLeer" />
         }
     </div>;
 
@@ -924,12 +947,17 @@
         _felderTexte.LabelNennleistung = LabelNennleistung;
         _felderTexte.LabelHeizstab = LabelHeizstab;
         _felderTexte.LabelKuehlleistung = LabelKuehlleistung;
-        _felderTexte.LabelModulkosten = LabelModulkosten;
-        _felderTexte.HerleitungModulkosten = HerleitungModulkosten;
-        _felderTexte.HinweisModulkostenLeer = HinweisModulkostenLeer;
+        _felderTexte.LabelKostensatz = LabelKostensatz;
+        _felderTexte.HerleitungKostensatz = HerleitungKostensatz;
+        _felderTexte.HinweisKostensatzLeer = HinweisKostensatzLeer;
         _felderTexte.EinheitKw = EinheitKw;
-        _felderTexte.EinheitEuro = EinheitEuro;
     }
+
+    /// <summary>KT-3: der Grund, wenn das Lesen der Katalogliste geworfen hat; leer = gelesen.</summary>
+    private string _listeFehler = "";
+
+    /// <summary>KT-4: der Grund, wenn das Lesen des gewählten Satzes geworfen hat; leer = gelesen.</summary>
+    private string _satzFehler = "";
 
     protected override void OnInitialized()
     {
@@ -945,8 +973,13 @@
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Anlagenart.Waermepumpe);
 
         ListeNeuLaden();
-        // Der Vorlaeufer waehlte in FillWPList:131 immer die ERSTE Zeile aus.
-        if (_liste.Count > 0) ZeileWaehlen(_liste[0]);
+        // Der Vorlaeufer waehlte in FillWPList:131 immer die ERSTE Zeile aus; aus dem Projektdialog kommt
+        // der Satz vorgewaehlt (Katalogauswahl V1, KA-E-13: "Bearbeiten…" auf einen ungesperrten Katalogsatz).
+        Katalogfilterzeile? vorwahl = string.IsNullOrEmpty(Vorwahl) ? null
+            : _liste.FirstOrDefault(z => z.Bezeichner == Vorwahl);
+        if (vorwahl is not null) ZeileWaehlen(vorwahl);
+        else if (_liste.Count > 0) ZeileWaehlen(_liste[0]);
+        if (NeuBeimStart) BeiNeu();
 
         // KI-F1b: Die vier Klapplisten der Stammfelder sind WAHLFELDER; ihre Einträge
         // sind genau die Listen, die der Baustein zeichnet.
@@ -956,7 +989,11 @@
                                                                         Leistungsstufen, s => s, s => s)),
                                           ("aufstellung", () => KiMaskenanmeldung.Eintraege(
                                                                         Aufstellungen, s => s, s => s)),
-                                          ("baujahr", Baujahreintraege));
+                                          ("baujahr", Baujahreintraege),
+                                          // UB-E3-b: die Kaeltemittel der Gruppe "Geraetegrenzen" - Schluessel ist der Code.
+                                          ("kaeltemittel", () => KiMaskenanmeldung.Eintraege(
+                                                                        Daten.Kaeltemittelliste, e => e.Code,
+                                                                        e => _felderTexte.KaeltemittelText(e.Code))));
     }
 
     /// <summary>Die Baujahre als Wahleinträge — Schlüssel und Text sind die Jahreszahl (KI-F1b).</summary>
@@ -1014,12 +1051,12 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     private void ListeNeuLaden()
     {
-        _liste = Liste?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
+        _liste = Katalogladung.Lesen(Liste, TitelText, out _listeFehler);
 
         // Kaestchen verschwundener Zeilen fallen (V6); ein laufender Vergleich liest neu.
         _auswahl.Abgleichen(_liste.Select(z => z.Schluessel));
@@ -1054,13 +1091,16 @@
         // Die Projektsperre der Fokuszeile - der Grund am weich gesperrten "Loeschen".
         _gesperrtDurch = zeile.Geschuetzt ? null : GesperrtDurch?.Invoke(zeile.Bezeichner);
 
-        WaermepumpeStammDaten? satz = Satz?.Invoke(zeile.Id);
+        // KT-4: Warf das Lesen, bleibt der zuvor gezeigte Satz stehen; der Banner nennt den Grund.
+        WaermepumpeStammDaten? satz = Katalogladung.Satz(() => Satz?.Invoke(zeile.Id), zeile.Bezeichner, out _satzFehler);
         if (satz is not null) Daten = satz;
 
         // W14a-E-8: Die Uebersicht folgt der Auswahl - sie liest ueber den
         // BEZEICHNER, weil der Verwendungskatalog fuer alle sieben Anlagenarten
         // denselben Schluessel benutzt.
-        _uebersicht = Uebersicht?.Invoke(zeile.Bezeichner) ?? Array.Empty<Parameterwert>();
+        // KT-5: Die Übersicht liest Vergleichsdaten aus der Datenbank; wirft sie, nennt der Banner den Grund.
+        _uebersicht = Katalogladung.SatzDazu(() => Uebersicht?.Invoke(zeile.Bezeichner), zeile.Bezeichner,
+                                             ref _satzFehler) ?? Array.Empty<Parameterwert>();
 
         // Der Umschalter erscheint nur mit Kuehl-Kenndaten, und die Anzeige faellt
         // dabei auf Waerme zurueck - listBox_WP_SelectedIndexChanged:338 rief dafuer
@@ -1100,7 +1140,9 @@
             return;
         }
 
-        KatalogSpeicherErgebnis ergebnis = Speichern(Daten, _neu);
+        // KT-4: Wirft der Schreibweg, bleiben die Eingaben stehen und die Meldung nennt den Grund.
+        KatalogSpeicherErgebnis ergebnis = Katalogladung.Schreiben(() => Speichern(Daten, _neu), _gewaehlt,
+                                                                   g => new KatalogSpeicherErgebnis(false, g, _gewaehlt));
         if (!ergebnis.Ok)
         {
             SpeichernAbgelehnt(ergebnis.Meldung);
@@ -1153,7 +1195,9 @@
         if (quelle is null) return;
 
         string alt = _duplizierQuelle;
-        KatalogSpeicherErgebnis ergebnis = Duplizieren(quelle.Id, name);
+        // KT-5: Wirft das Duplizieren, kommt die Ablehnung mit Grund zurück (Katalogladung.Schreiben).
+        KatalogSpeicherErgebnis ergebnis = Katalogladung.Schreiben(() => Duplizieren(quelle.Id, name), name,
+                                                                   g => new KatalogSpeicherErgebnis(false, g, name));
         if (!ergebnis.Ok)
         {
             _meldung = ergebnis.Meldung;
@@ -1224,7 +1268,8 @@
         _hatKuehlung = false;
         _kuehlung = false;
         _bilder = KennlinienBilder.Leer;
-        Daten = new WaermepumpeStammDaten();
+        // UB-E3-b: die Klappliste der Kaeltemittel kommt mit dem Satz der Huelle und bleibt fuer die Neuanlage stehen.
+        Daten = new WaermepumpeStammDaten { Kaeltemittelliste = Daten.Kaeltemittelliste };
     }
 
     /// <summary>
@@ -1278,7 +1323,12 @@
                 if (!gruende.Contains(grund)) gruende.Add(grund);
                 continue;
             }
-            if (!Loeschen(name)) continue;
+            if (!Katalogladung.Loeschen(() => Loeschen(name), name, out string loeschGrund))
+            {
+                // KT-4: Warf der Löschweg, nennt das Warnband den Grund.
+                if (loeschGrund.Length > 0 && !gruende.Contains(loeschGrund)) gruende.Add(loeschGrund);
+                continue;
+            }
             geloescht++;
             if (name == _gewaehlt) fokusWeg = true;
         }
@@ -1375,7 +1425,10 @@
     {
         if (_geaendert) { Warnen(MeldungUngespeichert); return; }
         _vorImport = new HashSet<string>(_liste.Select(z => z.Bezeichner), StringComparer.Ordinal);
-        _importGaben = ImportGaben?.Invoke();
+        // KT-7: Wirft die Hülle beim Bereitstellen des Imports, nennt das Warnband den Grund (Katalogladung.Satz).
+        if (ImportGaben is null) return;
+        _importGaben = Katalogladung.Satz(() => ImportGaben(), TitelText, out string fehler);
+        if (fehler.Length > 0) Warnen(fehler);
     }
 
     /// <summary>

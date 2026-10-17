@@ -92,6 +92,13 @@ namespace WindowsFormsApplication1
                     (a, abbruch) => Kulturweitergabe.Starten(() => Auslegung(idProjekt, zonen, a, basis, stufe, abbruch), abbruch)),
                 ["Konstruieren"] = new Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, double?, int?, ZapfprofilKonstruktorErgebnis>(
                     BedarfstagKonstruieren),
+                // Stufe P2 der Pufferspeicher-Auslegung: „An Speicherauslegung übergeben…". Das
+                // Zapfprofil steht selbst in einem Fenster; die Auslegung oeffnet deshalb in einem
+                // EIGENEN (Naht Pufferauslegungswege.Fenster). Ohne diesen Weg (iOS) fehlt der
+                // Delegat, und der Knopf bleibt weich gesperrt mit dem Grund.
+                ["Uebergeben"] = Pufferauslegungswege.Fenster == null ? null
+                    : new Func<ZapfprofilAuslegungEingabeDaten, Task<string>>(
+                        a => Uebergeben(idProjekt, zonen, a, basis, stufe)),
                 ["HilfeSchluessel"] = HILFE_DIALOG,
                 ["HilfeRechenweg"] = HILFE_AUSLEGUNG_RECHENWEG
             };
@@ -112,7 +119,7 @@ namespace WindowsFormsApplication1
         {
             eingabe ??= new ZapfprofilEingabeDaten();
             ZapfprofilAuslegungEingabeDaten anfang = eingabe.Auslegung?.Kopie() ?? AuslegungAusStand(basis);
-            // Ladeleistung, Ladefenster und Speichertemperatur führt auch der Dialog (Stufen Erweitert
+            // Ladeleistung, Ladefenster und Speichertemperatur führt auch der Dialog (Stufe Experte
             // und Experte, Z4): Die Überlagerung beginnt mit seinem Stand.
             eingabe.Gebaeude?.InAuslegung(anfang);
             anfang.Stochastisch = stochastisch;
@@ -120,7 +127,7 @@ namespace WindowsFormsApplication1
             {
                 Stufe = stufe,
                 Eingabe = anfang,
-                Kontext = Format(Text_("ZPG_AUS_KONTEXT", "Summe aller Zonen · {0} Zonen · Stufe {1}"),
+                Kontext = Format(Text_("ZPG_AUS_KONTEXT", "Summe aller Bereiche · {0} Bereiche · Stufe {1}"),
                                  eingabe.Zonen.Count.ToString(CultureInfo.CurrentCulture), Stufenname(stufe))
             };
 
@@ -131,7 +138,8 @@ namespace WindowsFormsApplication1
 
             start.Bedarfstage = ZapfprofilCtrl.Bedarfstage().Select(t => AlsBedarfstag(t, false)).ToList();
             StochastikRahmen(start);
-            // Die Wertemengen des Schemas (Schritt 124): Bezugsart eines konstruierten Tags, Bezug des Füllstands.
+            // Die Wertemengen des Schemas: Bezugsart eines konstruierten Tags (Schritt 124), Bezug des
+            // Füllstands (Schritt 124, um die vier Verfahren erweitert in TwwFuellstandSchema.SCHRITT).
             start.Bezugsarten = TwwSchema.Werte(TwwSchema.BEZUGSART_WERTE)
                 .Select(b => new ZapfprofilKatalogeintragDaten { Id = b, Name = Bezugsgroesse((ZapfBezugsart)b) }).ToList();
             start.Fuellstandbezuege = TwwSchema.Werte(TwwSchema.FUELLSTAND_BEZUG_WERTE)
@@ -223,9 +231,75 @@ namespace WindowsFormsApplication1
                                                            ZapfprofilAuslegungEingabeDaten auslegung, ZapfprofilStand basis,
                                                            ZapfprofilStufe stufe, CancellationToken abbruch)
         {
+            ZapfprofilAuslegungDaten ohne = Rechnung(idProjekt, eingabe, ref auslegung, basis, stufe, abbruch,
+                                                     out Auslegungsrechnung r, out ProjektStand rechenprojekt);
+            if (ohne != null) return ohne;
+
+            try
+            {
+                ZapfprofilAuslegungDaten d = AlsAuslegung(r, stufe, auslegung);
+                if (d.Stochastisch)
+                {
+                    // Derselbe Seed und dasselbe Perzentil wie im Eingang der Rechnung.
+                    ProjektStand p = rechenprojekt ?? ZapfprofilCtrl.ProjektVorgabe();
+                    d.Status = Format(Text_("ZPG_AUS_STATUS_GERECHNET_STOCHASTISCH",
+                                            "Auslegung gerechnet · stochastisch · Perzentil P{0} · Seed {1}"),
+                                      p?.Perzentil ?? 0, p?.Seed ?? 0);
+                }
+                return d;
+            }
+            catch (Exception ex)
+            {
+                return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, "ZPG_AUS_MSG_UNERWARTET",
+                    Format(Text_("ZPG_AUS_MSG_UNERWARTET", "Die Auslegung konnte nicht gerechnet werden: {0}"), ex.Message), ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// „An Speicherauslegung übergeben…" (Konzept Pufferspeicher-Auslegung, Stufe P2): rechnet
+        /// die Auslegung zum Arbeitsstand deterministisch, bildet sie über den Weg des Kerns
+        /// (<c>PufferAuslegungCtrl.ZapfprofilAus</c>) auf die Brauchwasserzone ab und öffnet die
+        /// Pufferspeicher-Auslegung mit Klasse {B} bzw. {H,B} in einem eigenen Fenster. Liefert
+        /// <c>null</c>, wenn sie offen war, sonst den Grund — benannt, nie still.
+        /// </summary>
+        internal static Task<string> Uebergeben(int idProjekt, ZapfprofilEingabeDaten eingabe,
+                                                ZapfprofilAuslegungEingabeDaten auslegung, ZapfprofilStand basis,
+                                                ZapfprofilStufe stufe)
+        {
+            ZapfprofilAuslegungEingabeDaten a = Deterministisch(auslegung);
+            ZapfprofilAuslegungDaten ohne = Rechnung(idProjekt, eingabe, ref a, basis, stufe, CancellationToken.None,
+                                                     out Auslegungsrechnung r, out _);
+            if (ohne != null) return Task.FromResult(ohne.Grund);
+            PufferZapfprofil zp;
+            string text;
+            try
+            {
+                zp = PufferAuslegungCtrl.ZapfprofilAus(r, out Textbaustein baustein);
+                text = baustein.Aufloesen();
+            }
+            catch (Exception ex)
+            {
+                return Task.FromResult(Format(MyResource.Resource.PAUS_FEHLER_START, ex.Message));
+            }
+            return PufferAuslegungHuelle.ImFensterOeffnen(PufferAuslegungHuelle.AusZapfprofil(idProjekt, zp, text));
+        }
+
+        /// <summary>
+        /// Die RECHNUNG der Auslegung zu den Zonen und Eingaben — der gemeinsame Teil von
+        /// <see cref="Auslegung(int, ZapfprofilEingabeDaten, ZapfprofilAuslegungEingabeDaten, ZapfprofilStand, ZapfprofilStufe, CancellationToken)"/>
+        /// und <see cref="Uebergeben"/>. <c>null</c> = gerechnet (<paramref name="r"/> trägt das
+        /// Ergebnis), sonst das DTO mit dem benannten Grund.
+        /// </summary>
+        private static ZapfprofilAuslegungDaten Rechnung(int idProjekt, ZapfprofilEingabeDaten eingabe,
+                                                        ref ZapfprofilAuslegungEingabeDaten auslegung, ZapfprofilStand basis,
+                                                        ZapfprofilStufe stufe, CancellationToken abbruch,
+                                                        out Auslegungsrechnung r, out ProjektStand rechenprojekt)
+        {
+            r = null;
+            rechenprojekt = null;
             if (eingabe == null || eingabe.Zonen.Count == 0)
                 return OhneAuslegung(ZapfprofilAuslegungZustand.NichtGerechnet, "ZPG_AUS_MSG_KEINE_ZONE",
-                    Text_("ZPG_AUS_MSG_KEINE_ZONE", "Es ist keine Zone angelegt — ohne Zone keine Auslegung."), "");
+                    Text_("ZPG_AUS_MSG_KEINE_ZONE", "Es ist kein Bereich angelegt — ohne Bereich keine Auslegung."), "");
 
             ZapfVerfuegbarkeit verfuegbar = ZapfprofilCtrl.Verfuegbar();
             if (!verfuegbar.Ja)
@@ -241,8 +315,6 @@ namespace WindowsFormsApplication1
             // In der Überlagerung gelten ihre Eingaben: Die geteilten gebäudeweiten Größen (Ladeleistung,
             // Ladefenster, Speichertemperatur) nehmen den Stand der Überlagerung an, die übrigen bleiben.
             mit.Gebaeude?.AusAuslegung(auslegung);
-            Auslegungsrechnung r;
-            ProjektStand rechenprojekt;
             try
             {
                 // Der übernommene Punkt (Arbeitsstand oder gespeichert) bleibt draußen: Er ist das
@@ -267,25 +339,7 @@ namespace WindowsFormsApplication1
                 return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, "ZPG_AUS_MSG_UNERWARTET",
                     Format(Text_("ZPG_AUS_MSG_UNERWARTET", "Die Auslegung konnte nicht gerechnet werden: {0}"), ex.Message), ex.Message);
             }
-
-            try
-            {
-                ZapfprofilAuslegungDaten d = AlsAuslegung(r, stufe, auslegung);
-                if (d.Stochastisch)
-                {
-                    // Derselbe Seed und dasselbe Perzentil wie im Eingang der Rechnung.
-                    ProjektStand p = rechenprojekt ?? ZapfprofilCtrl.ProjektVorgabe();
-                    d.Status = Format(Text_("ZPG_AUS_STATUS_GERECHNET_STOCHASTISCH",
-                                            "Auslegung gerechnet · stochastisch · Perzentil P{0} · Seed {1}"),
-                                      p?.Perzentil ?? 0, p?.Seed ?? 0);
-                }
-                return d;
-            }
-            catch (Exception ex)
-            {
-                return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, "ZPG_AUS_MSG_UNERWARTET",
-                    Format(Text_("ZPG_AUS_MSG_UNERWARTET", "Die Auslegung konnte nicht gerechnet werden: {0}"), ex.Message), ex.Message);
-            }
+            return null;
         }
 
         /// <summary>Die Eingaben ohne „Stochastisch rechnen" — der Weg im Zeichenlauf zieht nie ein Ensemble.</summary>
@@ -341,7 +395,7 @@ namespace WindowsFormsApplication1
 
             foreach (Auslegungsablehnung a in r.Ergebnis.Ablehnungen)
                 d.Meldungen.Add(new ZapfprofilMeldung("ZPG_AUS_ZONE_ABGELEHNT", a.Zone ?? "",
-                    MitZone(a.Zone, a.Satz, "ZPG_AUS_ZONE_ABGELEHNT", "Zone „{0}“ fehlt in der Auslegung: {1}"),
+                    MitZone(a.Zone, a.Satz, "ZPG_AUS_ZONE_ABGELEHNT", "Bereich „{0}“ fehlt in der Auslegung: {1}"),
                     ZapfprofilMeldungsart.Ablehnung, a.Klartext ?? ""));
             foreach (Auslegungshinweis h in r.Ergebnis.Hinweise)
             {
@@ -353,7 +407,7 @@ namespace WindowsFormsApplication1
             foreach (Auslegungsgruppe g in r.Ergebnis.Gruppen) d.Gruppen.Add(AlsGruppe(g, stufe));
 
             // Die Karte "Herkunft" (N19): Die Ueberlagerung fuehrt keine eigene Stufe, deshalb
-            // entscheidet die Huelle - ab Erweitert steht die Karte, in der Stufe Einfach nicht.
+            // entscheidet die Huelle - ab Experte steht die Karte, in der Stufe Einfach nicht.
             d.HerkunftSichtbar = stufe != ZapfprofilStufe.Einfach;
             if (d.HerkunftSichtbar) d.Herkunft.AddRange(Herkunftszeilen(r.Ergebnis.Herkunft));
             return d;
@@ -366,6 +420,7 @@ namespace WindowsFormsApplication1
             var d = new ZapfprofilAuslegungsgruppeDaten
             {
                 Topologie = Text_("ZPG_AUS_TOPOLOGIE_" + Gross(g.Topologie.ToString()), g.Topologie.ToString()),
+                Topologieart = (ZapfprofilTopologie)(int)g.Topologie,
                 Speicher = speicher,
                 Zonen = g.Zonen.ToList(),
                 Bedarfstag = g.Bedarfstag?.Bezeichner ?? "",
@@ -387,7 +442,9 @@ namespace WindowsFormsApplication1
                 d.Empfehlung = new ZapfprofilEmpfehlungDaten
                 {
                     Rechenbar = e.Rechenbar,
-                    Speicher = e.Verfahren == ZapfAuslegungsverfahren.Summenlinie,
+                    Speicher = e.Verfahren == ZapfAuslegungsverfahren.Summenlinie
+                               || e.Verfahren == ZapfAuslegungsverfahren.VorlageV4,
+                    VorlageV4 = e.Rechenbar && e.Verfahren == ZapfAuslegungsverfahren.VorlageV4,
                     VolumenL = e.VolumenL,
                     LeistungKw = e.LeistungKw,
                     NenninhaltL = e.NenninhaltL,
@@ -510,7 +567,7 @@ namespace WindowsFormsApplication1
         /// oder ohne Satz.
         /// </summary>
         private static string AblehnungsSatz(ZapfAblehnung a)
-            => a?.Satz == null ? null : MitZone(a.Zone, a.Satz, "ZPG_MSG_ZONE", "Zone „{0}“: {1}");
+            => a?.Satz == null ? null : MitZone(a.Zone, a.Satz, "ZPG_MSG_ZONE", "Bereich „{0}“: {1}");
 
         /// <summary>Der Verfahrensvergleich nach V4 als DTO samt Wochenbild; der größte Wert im Band ist markiert.</summary>
         private static ZapfprofilVergleichDaten Vergleich(Speicherauslegungsergebnis sa, Wochenreihe woche, Din4708Ergebnis din,
@@ -535,6 +592,8 @@ namespace WindowsFormsApplication1
                 FuellstandBezug = sa.FuellstandBezug.HasValue ? Satztext(TwwSpeicherauslegung.Fuellstandbegriff(sa.FuellstandBezug.Value)) : "",
                 FuellstandBezugArt = sa.FuellstandBezug.HasValue ? (ZapfprofilFuellstandbezug)(int)sa.FuellstandBezug.Value
                                                                  : ZapfprofilFuellstandbezug.Vorgabe,
+                FuellstandVorgabeArt = sa.FuellstandVorgabe.HasValue ? (ZapfprofilFuellstandbezug)(int)sa.FuellstandVorgabe.Value
+                                                                     : ZapfprofilFuellstandbezug.Vorgabe,
                 Ladeleistung = AlsSchaetzhilfe(sa.LadeSchaetzhilfe),
                 PersonenVorschlag = sa.PersonenWert.HasValue && !double.IsNaN(sa.PersonenWert.Value.Vorschlag)
                     ? sa.PersonenWert.Value.Vorschlag : (double?)null,
@@ -543,6 +602,16 @@ namespace WindowsFormsApplication1
                 MinFuellstandKwh = sa.MinFuellstandKwh,
                 ReserveAnteil = sa.ReserveAnteil
             };
+            // Die Wahl „Speichergröße der Füllstandslinie" (N11 (d), N36 (d)): je Bezug der Wertemenge
+            // sein Volumen aus dem Ergebnis des Kerns — bei einem Verfahren genau die Zahl seiner Zeile
+            // des Vergleichs; ohne Volumen gesperrt, mit dem Grund des Kerns.
+            foreach (int b in TwwSchema.Werte(TwwSchema.FUELLSTAND_BEZUG_WERTE))
+                v.FuellstandWahl.Add(new ZapfprofilFuellstandwahlDaten
+                {
+                    Art = (ZapfprofilFuellstandbezug)b,
+                    VolumenL = sa.BezugsvolumenL((ZapfFuellstandbezug)b),
+                    Sperrgrund = Satztext(sa.Fuellstandsperre((ZapfFuellstandbezug)b))
+                });
             foreach (Verfahrensvolumen z in sa.Verfahren)
                 v.Verfahren.Add(new ZapfprofilVerfahrenDaten
                 {
@@ -612,9 +681,8 @@ namespace WindowsFormsApplication1
         {
             switch (stufe)
             {
-                case ZapfprofilStufe.Erweitert: return Text_("ZPG_STUFE_ERWEITERT", "Erweitert");
-                case ZapfprofilStufe.Experte: return Text_("ZPG_STUFE_EXPERTE", "Experte");
-                default: return Text_("ZPG_STUFE_EINFACH", "Einfach");
+                case ZapfprofilStufe.Einfach: return Text_("ZPG_STUFE_EINFACH", "Einfach");
+                default: return Text_("ZPG_STUFE_EXPERTE", "Experte");
             }
         }
 
@@ -1100,6 +1168,7 @@ namespace WindowsFormsApplication1
             t.PunktMinutenspitze = Text_("ZPG_AUS_PUNKT_MINUTENSPITZE", t.PunktMinutenspitze);
             t.EmpfehlungKeine = Text_("ZPG_AUS_EMPFEHLUNG_KEINE", t.EmpfehlungKeine);
             t.Schnellauslegung = Text_("ZPG_AUS_SCHNELLAUSLEGUNG", t.Schnellauslegung);
+            t.SchnellauslegungV4 = Text_("ZPG_AUS_SCHNELLAUSLEGUNG_V4", t.SchnellauslegungV4);
             t.Entwurfsstand = Text_("ZPG_AUS_ENTWURFSSTAND", t.Entwurfsstand);
             t.Nachrichtlich = Text_("ZPG_AUS_NACHRICHTLICH", t.Nachrichtlich);
             t.PunktBleibt = Text_("ZPG_AUS_PUNKT_BLEIBT", t.PunktBleibt);
@@ -1190,6 +1259,9 @@ namespace WindowsFormsApplication1
             t.LabelPersonenManuell = Text_("ZPG_AUS_LBL_PERSONEN_MANUELL", t.LabelPersonenManuell);
             t.LabelFuellstandBezug = Text_("ZPG_AUS_LBL_FUELLSTAND_BEZUG", t.LabelFuellstandBezug);
             t.FuellstandVorgabe = Text_("ZPG_AUS_FUELLSTAND_VORGABE", t.FuellstandVorgabe);
+            t.FuellstandVorgabeWahl = Text_("ZPG_AUS_FUELLSTAND_VORGABE_WAHL", t.FuellstandVorgabeWahl);
+            t.FuellstandWahl = Text_("ZPG_AUS_FUELLSTAND_WAHL", t.FuellstandWahl);
+            t.FuellstandWahlGesperrt = Text_("ZPG_AUS_FUELLSTAND_WAHL_GESPERRT", t.FuellstandWahlGesperrt);
             t.KnopfVorschlag = Text_("ZPG_AUS_BTN_VORSCHLAG", t.KnopfVorschlag);
             t.LabelVorschlag = Text_("ZPG_AUS_LBL_VORSCHLAG", t.LabelVorschlag);
             t.HerleitungLade = Text_("ZPG_AUS_HERL_LADE", t.HerleitungLade);
@@ -1198,6 +1270,8 @@ namespace WindowsFormsApplication1
             t.HerleitungPersonen = Text_("ZPG_AUS_HERL_PERSONEN", t.HerleitungPersonen);
             t.HerleitungAngesetzt = Text_("ZPG_AUS_HERL_ANGESETZT", t.HerleitungAngesetzt);
             t.HerleitungFuellstand = Text_("ZPG_AUS_HERL_FUELLSTAND", t.HerleitungFuellstand);
+            t.HerleitungFuellstandGesperrt = Text_("ZPG_AUS_HERL_FUELLSTAND_GESPERRT", t.HerleitungFuellstandGesperrt);
+            t.HerleitungFuellstandGruppe = Text_("ZPG_AUS_HERL_FUELLSTAND_GRUPPE", t.HerleitungFuellstandGruppe);
             t.HerleitungGespeichert = Text_("ZPG_AUS_HERL_GESPEICHERT", t.HerleitungGespeichert);
             t.HerleitungWerkstoff = Text_("ZPG_AUS_HERL_WERKSTOFF", t.HerleitungWerkstoff);
             t.KnopfErzeugerVorschlag = Text_("ZPG_AUS_BTN_VORSCHLAG_WAEHLEN", t.KnopfErzeugerVorschlag);

@@ -32,6 +32,11 @@ namespace WindowsFormsApplication1
     /// <see cref="BerichtsvorlagenCtrl.SchreibeLogo"/>; leer entfernt die Einstellung). Gewählt wird über
     /// <c>Dienste.Datei</c> (auf iOS kopiert die Dateiwahl die Datei in die Sandbox); ob die Datei da
     /// ist, sagt der Dialog als Hinweis unter dem Feld, geschrieben wird der Pfad trotzdem.</para>
+    ///
+    /// <para><b>Die zwei Vorgaben der Installation</b> (Konzept 10.3): die vorgegebene Word- und
+    /// Excel-Vorlage als Auswahlfelder — Listen, Wahl und Rückwege baut
+    /// <see cref="EinstellungenBerichtVorgaben"/> aus demselben Controller, aus dem auch die Gruppe
+    /// „Vorlage" der Berichtsseite ihre Liste nimmt.</para>
     /// </summary>
     internal static class EinstellungenBerichtGaben
     {
@@ -70,6 +75,10 @@ namespace WindowsFormsApplication1
                 ["LogoVorhanden"] = new Func<string, bool>(LogoVorhanden)
             };
             if (!plattform.OrdnerWaehlbar) gaben["VorlagenordnerGesperrtGrund"] = R.EIN_BERICHT_ORDNER_FEST;
+
+            // Die zwei Vorgaben der Installation (Konzept 10.3): Word und Excel als Auswahlfelder,
+            // die Listen aus demselben Controller wie die Gruppe „Vorlage" der Berichtsseite.
+            new EinstellungenBerichtVorgaben(vorlagen).Belegen(gaben);
             return gaben;
         }
 

@@ -59,6 +59,12 @@ public sealed class GebaeudeStammblattDaten
     public IReadOnlyList<Stammblattwert> AlleDaten { get; set; } = Stammblattwert.Keine;
 
     /// <summary>
+    /// Die Gruppe „Zonen" (Welle ZK-b): je Zone des Katalogsatzes Name, Nutzfläche und Zahl der Bauteile,
+    /// fertig formatiert; leer = keine Zone. Bearbeitet werden sie im Katalogeditor („Zonen bearbeiten …").
+    /// </summary>
+    public IReadOnlyList<Stammblattwert> Zonen { get; set; } = Stammblattwert.Keine;
+
+    /// <summary>
     /// <b>Der Feldsatz des Katalogeditors</b> (<c>GebaeudeKatalogHuelle.AusModell</c>, #465)
     /// — der Ausgangspunkt des Arbeitsstands im Stammblatt; <c>null</c> = der Wirt reicht
     /// keinen herein, dann entsteht er aus den Kenndaten oben (<see cref="FeldsatzOderKenndaten"/>).

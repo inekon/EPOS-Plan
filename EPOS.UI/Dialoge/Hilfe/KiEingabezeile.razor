@@ -159,7 +159,7 @@
     public async Task Fokussieren()
     {
         if (Gesperrt) return;
-        try { await _feld.FocusAsync(); }
+        try { await _feld.FocusAsync(preventScroll: true); }
         catch (Exception) { /* das Feld ist gerade nicht da */ }
     }
 

@@ -313,7 +313,16 @@ jobs:
           $PSNativeCommandUseErrorActionPreference = $false
 
           $quelle = Join-Path $env:GITHUB_WORKSPACE 'Referenzlaeufe\Kenndaten_Test.sqlite'
-          $aufruf = @('-File', 'Setup/build-setup.ps1', '-Quelldatenbank', $quelle)
+          # -Probe: Der CI-Lauf wird nicht ausgeliefert. Die Fassung des Katalogpakets
+          # schlaegt das Skript aus Setup/Katalogfassungen.txt vor, haelt sie aber nicht
+          # gegen das Register und traegt nichts ein (Konzept 6.5.4, E4).
+          # -OhnePaket: Die Testdatenbank fuehrt in diesen Registerkatalogen Zeilen, aber keinen
+          # gesperrten Satz mit Schluessel; ohne benannte Ausnahme bricht das Werkzeug dort mit
+          # Code 6 ab (Konzept 6.5.4, E2). Dieselbe Liste nehmen die Werkzeugtests
+          # (Werkzeuglauf.LEERE_PAKETTEILE_DER_TESTDATENBANK); pwsh -File bindet keine Arrays,
+          # deshalb ein Text mit Kommas.
+          $ohnePaket = 'Tab_Heizkessel_STAMM,Tab_PV_STAMM,Tab_Brennstoff_Stamm,Tab_DBTagV_STAMM,Tab_Pufferspeicher_STAMM,Tab_Solarkollektoren_STAMM,Tab_Solarganglinie_STAMM,Tab_Stromspeicher_STAMM,Tab_Stromganglinie_STAMM'
+          $aufruf = @('-File', 'Setup/build-setup.ps1', '-Quelldatenbank', $quelle, '-Probe', '-OhnePaket', $ohnePaket)
           if ('${{ inputs.schnell }}' -eq 'true') { $aufruf += '-Schnell' }
           Write-Host ("Aufruf: pwsh " + ($aufruf -join ' '))
 
@@ -338,6 +347,39 @@ jobs:
           }
           else {
             Write-Host "Kein Pruefbericht vorhanden ($bericht) - der Lauf kam nicht bis zur Vorlage."
+          }
+
+      # Der Kopf des Katalogpakets (Konzept 6.5.4, E5): Format, Formatversion, Fassung und
+      # die Satzzahl je Tabelle als katalogpaket.txt neben den Pruefbericht - nur der Kopf,
+      # das Paket selbst steckt im Installer.
+      - name: Kopf des Katalogpakets
+        if: always()
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path artifacts/setup | Out-Null
+          $paket = 'Setup/Vorlage/Katalogpaket.json'
+          if (Test-Path $paket) {
+            $p = Get-Content $paket -Raw -Encoding utf8 | ConvertFrom-Json -Depth 64
+            $zeilen = @(
+              "Format:        $($p.Format)"
+              "Formatversion: $($p.Formatversion)"
+              "Fassung des Katalogpakets: $($p.Katalogfassung)"
+              ("Groesse:       {0} MB" -f [math]::Round((Get-Item $paket).Length / 1MB, 1))
+              ''
+              'Saetze je Tabelle:'
+            )
+            $summe = 0
+            foreach ($t in @($p.Tabellen)) {
+              $n = if ($null -eq $t.Saetze) { 0 } else { @($t.Saetze).Count }
+              $summe += $n
+              $zeilen += ('  {0,-40} {1,6}' -f $t.Tabelle, $n)
+            }
+            $zeilen += ('  {0,-40} {1,6}' -f 'zusammen', $summe)
+            $zeilen | Set-Content artifacts/setup/katalogpaket.txt -Encoding utf8NoBOM
+            $zeilen | ForEach-Object { Write-Host $_ }
+          }
+          else {
+            Write-Host "Kein Katalogpaket vorhanden ($paket) - der Lauf kam nicht bis zur Vorlage."
           }
 
       - name: Ergebnis auflisten

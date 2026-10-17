@@ -144,13 +144,11 @@ namespace EPOS.Kern.Tests
             var aendern = new WechselrichterStammCtrl();
             aendern.UebernimmVon(neu);
             aendern.m_P_AC_Nenn = 3.0;
-            aendern.m_Kosten = 1234.0;
             Assert.True(aendern.Update("CRUD-Probe"));
 
             var wieder = new WechselrichterStammCtrl();
             wieder.ReadSingle("CRUD-Probe");
             Assert.Equal(3.0, wieder.items[0].m_P_AC_Nenn);
-            Assert.Equal(1234.0, wieder.items[0].m_Kosten);
 
             Assert.True(new WechselrichterStammCtrl().Delete("CRUD-Probe"));
             Assert.False(new WechselrichterStammCtrl().Exists("CRUD-Probe"));
@@ -247,9 +245,8 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <c>UpdateImport</c> schreibt GENAU die Importfelder: <c>Kosten</c>,
-        /// <c>Bezeichner</c> und <c>Beschreibung</c> bleiben stehen
-        /// (Dublettenkonzept 4.2).
+        /// <c>UpdateImport</c> schreibt GENAU die Importfelder: <c>Bezeichner</c> und
+        /// <c>Beschreibung</c> bleiben stehen (Dublettenkonzept 4.2).
         /// </summary>
         [Fact]
         public void Das_Import_Ueberschreiben_laesst_die_Anwenderfelder_stehen()
@@ -258,7 +255,6 @@ namespace EPOS.Kern.Tests
 
             var ctrl = new WechselrichterStammCtrl();
             WechselrichterModel satz = Muster("Import-Probe");
-            satz.m_Kosten = 999.0;
             satz.m_szBeschreibung = "vom Anwender";
             Assert.True(ctrl.InsertFrom(satz));
             int id = ctrl.m_ID;
@@ -266,30 +262,34 @@ namespace EPOS.Kern.Tests
             var neu = new WechselrichterStammCtrl();
             neu.UebernimmVon(Muster("Import-Probe"));
             neu.m_P_AC_Nenn = 7.5;
-            neu.m_Kosten = null;
             neu.m_szBeschreibung = "aus dem Import";
             Assert.True(neu.UpdateImport(id));
 
             var gelesen = new WechselrichterStammCtrl();
             gelesen.ReadSingle("Import-Probe");
             Assert.Equal(7.5, gelesen.items[0].m_P_AC_Nenn);
-            Assert.Equal(999.0, gelesen.items[0].m_Kosten);
             Assert.Equal("vom Anwender", gelesen.items[0].m_szBeschreibung);
 
             Aufraeumen("Import-Probe");
         }
 
         /// <summary>
-        /// <c>Kosten</c> steht NICHT in den Importspalten — sie ist ein Anwenderfeld,
-        /// genau wie <c>Modulkosten</c> beim PV-Modul (Konzept 5.4).
+        /// <b>Der Import schreibt jede Fachspalte außer dem Verweis auf die Satzvorlage</b>:
+        /// Die Kostenspalte des Geräts ist mit Schemaschritt 228 entfallen (der Satz steht
+        /// in der Kostenverwaltung), und den Verweis pflegt die Kostenverwaltung — ein
+        /// Import-Überschreiben darf ihn nicht leeren.
         /// </summary>
         [Fact]
-        public void Die_Importspalten_lassen_die_Kosten_aus()
+        public void Die_Importspalten_sind_die_Fachspalten_und_fuehren_keine_Kosten()
         {
             string[] importspalten = WechselrichterStammCtrl.Importspalten();
 
+            Assert.Equal(WechselrichterSchema.Fachspalten
+                             .Where(s => s != KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION),
+                         importspalten);
+            Assert.DoesNotContain(KatalogkostenInvestitionSchema.SPALTE_ID_KOSTENVORLAGE_INVESTITION, importspalten);
             Assert.DoesNotContain(WechselrichterSchema.SPALTE_KOSTEN, importspalten);
-            Assert.Equal(WechselrichterSchema.Fachspalten.Length - 1, importspalten.Length);
+            Assert.DoesNotContain(WechselrichterSchema.SPALTE_KOSTEN, WechselrichterSchema.Fachspalten);
         }
 
         // =================================================================================
@@ -336,7 +336,6 @@ namespace EPOS.Kern.Tests
             Assert.Equal(original.m_Eta05, kopie.m_Eta05);
             Assert.Equal(original.m_Eta100, kopie.m_Eta100);
             Assert.Equal(original.m_Eta_Euro, kopie.m_Eta_Euro);
-            Assert.Equal(original.m_Kosten, kopie.m_Kosten);
             Assert.Equal(original.m_Sandia_Pdco, kopie.m_Sandia_Pdco);
             Assert.Equal(original.m_Herkunft, kopie.m_Herkunft);
 
@@ -398,24 +397,24 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// <b>Die Kosten machen keine Dublette</b>: Zwei Sätze, die sich nur im Preis
-        /// unterscheiden, sind derselbe Wechselrichter (<c>AusschlussSpalten</c>,
-        /// Konzept 5.4).
+        /// <b>Der Preis macht ohnehin keine Dublette mehr</b>: Seit Welle KB-4 führt der
+        /// Katalog keine Kostenspalte (Schemaschritt 228), und das Register schließt
+        /// deshalb keine mehr aus — zwei Sätze gleicher Technik sind derselbe
+        /// Wechselrichter.
         /// </summary>
         [Fact]
-        public void Ein_anderer_Preis_macht_keinen_anderen_Wechselrichter()
+        public void Gleiche_Technik_macht_denselben_Wechselrichter()
         {
             if (!_db.Vorhanden) return;
 
             KatalogDefinition katalog = KatalogRegistry.Finde("WECHSELRICHTER");
+            Assert.Empty(katalog.AusschlussSpalten);
 
             WechselrichterModel satz = Muster("Preis-Probe");
-            satz.m_Kosten = 1000.0;
             Assert.True(new WechselrichterStammCtrl().InsertFrom(satz));
 
-            WechselrichterModel teurer = Muster("Preis-Probe");
-            teurer.m_Kosten = 2000.0;
-            Assert.Equal(ImportBefund.Identisch, Befund(katalog, teurer, "Preis-Probe"));
+            WechselrichterModel zweiter = Muster("Preis-Probe");
+            Assert.Equal(ImportBefund.Identisch, Befund(katalog, zweiter, "Preis-Probe"));
 
             Aufraeumen("Preis-Probe");
         }
@@ -537,7 +536,6 @@ namespace EPOS.Kern.Tests
         [InlineData("MPP ueber U_dc")]
         [InlineData("MPPT null")]
         [InlineData("Eta ueber eins")]
-        [InlineData("Kosten negativ")]
         public void Ein_harter_Verstoss_sperrt_das_Schreiben(string fall)
         {
             WechselrichterModel m = Muster("Fehlerprobe");
@@ -551,7 +549,6 @@ namespace EPOS.Kern.Tests
                 case "MPP ueber U_dc": m.m_U_Mpp_Max = 900.0; break;
                 case "MPPT null": m.m_Anzahl_Mppt = 0; break;
                 case "Eta ueber eins": m.m_Eta50 = 1.5; break;
-                case "Kosten negativ": m.m_Kosten = -1.0; break;
             }
 
             WechselrichterPlausibilitaet.Befund b = WechselrichterPlausibilitaet.Pruefe(m);
@@ -775,7 +772,6 @@ namespace EPOS.Kern.Tests
             Assert.Null(m.m_Straenge_Je_Mppt);
             Assert.Null(m.m_S_AC_Max);
             Assert.Null(m.m_P_DC_Max);
-            Assert.Null(m.m_Kosten);
         }
 
         /// <summary>
@@ -913,7 +909,9 @@ namespace EPOS.Kern.Tests
         /// <summary>Die Spalten einer Tabelle in Schemareihenfolge.</summary>
         private static List<string> Spalten(string tabelle)
         {
-            return DataRepository.SpaltenVonTabelle(tabelle) ?? new List<string>();
+            // Die drei Katalogspalten (KU1) sind kein Fachwert und stehen nur am Katalog.
+            return (DataRepository.SpaltenVonTabelle(tabelle) ?? new List<string>())
+                   .Where(s => !Katalogfassung.IstKatalogspalte(s)).ToList();
         }
 
         /// <summary>

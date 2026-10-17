@@ -47,16 +47,21 @@ haelt; Werkzeuge/Auslieferungsvorlage spielt sie in jede Vorlage ein. In der Tes
 dieselben Werte nach deren Regel (Kapitel 6 (c)): Status 'EIGEN', ReadOnly 0, Katalogversion
 'TEST-1'. Die drei "Testnutzung A/B/C (fiktiv)" bleiben 'FIKTIV'/'EIGEN' und nur hier.
 
-DIE NUTZUNGSART "Hotel (aus Messung, je Zimmer)" (ZU36, Folgeposten #546, Name #579). Dieselben drei
+DIE NUTZUNGSART "Hotel (aus Messung, je Zimmer)" (ZU36, Folgeposten #546, Name #579, Bezugsart A2). Dieselben drei
 Traegerdateien fuehren einen sechsten Tagesgangsatz ("Hotel (aus Messung)") und eine sechste
 Nutzungsart, die NICHT aus VDI 6002 stammen (die Richtlinie fuehrt kein Hotel), sondern aus dem
 Mittel dreier gemessener Hotels: gerundete Kennwerte der Datei tww_hotel_aus_messung.json, gebildet
 von hotel_aus_messung_bauen.py. Herkunftsart 'EIGENKONSTRUKTION' (Modellannahme von INEKON), Quelle
-"Mittel aus drei Hotels, Soerensen et al. 2021, doi:...", Bezugsart Betten mit der Zimmerzahl als
-Bezugsmenge (ein Zimmer = ein Bett; der Zusatz "je Zimmer" im Namen sagt es), Kalenderart Betrieb,
-flacher Jahresgang. Eine Nutzungsart der Testdatenbank unter einem frueheren Bezeichner
-(UMBENANNTE_NUTZUNGSARTEN) wird vor dem Nachfuehren umbenannt - dieselbe Zeile, dieselbe ID, samt
-ihren Zapfkategorien; eine zweite Zeile entsteht nicht.
+"Mittel aus drei Hotels, Soerensen et al. 2021, doi:...", Bezugsart Zimmer (8, aus der JSON-Datei) mit
+der Zimmerzahl als Bezugsmenge, Kalenderart Betrieb, flacher Jahresgang. Eine Nutzungsart der
+Testdatenbank in einem frueheren Stand (UMBENANNTE_NUTZUNGSARTEN: frueherer Bezeichner und fruehere
+Bezugsart) wird vor dem Nachfuehren am Platz nachgefuehrt - dieselbe Zeile, dieselbe ID, samt ihren
+Zapfkategorien; eine zweite Zeile entsteht nicht. Die Liste spiegelt die Regel des Kerns
+(EPOS.Kern/Allgemein/Update/PaketteilNachfuehrung.cs, NUTZUNGSARTEN), die Schemaschritt,
+Katalogimport, Projektimport und Auslieferungsvorlage an den Zeilen des ausgelieferten Paketteils
+anwenden; hier gilt sie nach der Regel der Testdatenbank (Status EIGEN, Katalogversion TEST-1). Die
+Bezugsart Zimmer braucht den Schemaschritt der Bezugsart Zimmer (Pruefklausel 1..8, Werkzeuge/
+Testdatenbankschema) - sonst bricht das Skript ohne Schreiben ab.
 
 DIE ZWEI HINWEISSCHWELLEN (Folgeposten #546). Zapfprofil.Messwert.Rueckfrageschwelle und
 Zapfprofil.Formvektor.Warnschwelle sind INEKON-Setzungen des freien Paketteils: das Skript erzeugt
@@ -66,7 +71,19 @@ die drei Setzungen des Bandkriteriums der Validierung (Anwenderentscheid ZU35, S
 Zapfprofil.Validierung.Band.Unten 0,95, .Band.Oben 0,999 und .Band.MindestEinheiten 10, dazu die
 eigenen Quantile der Spitzenstreuung Zapfprofil.Validierung.Streuung.Unten 0,85 und .Streuung.Oben 0,95
 (Folge V10) und die zwei Setzungen der Speicherauslegung ohne Wert in V4 (Speicherauslegung.Ladefenster.
-Beginn 22 h, .GLF_Gueltigkeitsgrenze 30; beide Anwenderentscheid 26.09.2026, Statuszeile #561).
+Beginn 22 h, .GLF_Gueltigkeitsgrenze 30; beide Anwenderentscheid 26.09.2026, Statuszeile #561) und der
+Jahresgang des Kaltwassers der Bilanz (Kaltwasser.Bilanz.Amplitude 3 K, .MonatMaximum 8; Anwenderentscheid
+14.10.2026).
+
+KALTWASSER UND ZIRKULATION DER STUFE EINFACH (Anwenderentscheid 14.10.2026). Damit die mitgelieferten
+Nutzungsarten allein mit dem freien Paketteil rechnen, fuehrt er Kaltwasser.Bilanz.Mittel (10 °C) und
+Zirkulation.Laufzeit (24 h), .Anteil (0,2) und .VerlustJeMeter (10 W/m) aus der Vorlage V4
+(speicherauslegung_v4.json) und die zwei Setzungen des Kaltwasser-Jahresgangs (oben). Dieselben
+Schluessel fuehrt der fiktive Testkatalog mit eigenen Werten (PARAMETER unten): In der Testdatenbank
+bleiben die fiktiven Zeilen, die des Paketteils treten zurueck (FIKTIV_VOR_PAKETTEIL). Ebenso das
+Kaltwasser der Auslegung A100.Kaltwasser.Auslegung (10 °C aus V4, Berechnung Zeile 389, Spalte B,
+dieselbe Zelle wie der Bezug Kaltwasser der Spreizung; Anwenderauftrag 16.10.2026), damit auch die
+Speicherauslegung der Stufe Einfach ohne externes Katalogpaket rechnet.
 
 DER FREIE PAKETTEIL (Stufe Z3). Die Zapfkategorien (Jordan/Vajen, IEA SHC Task 26;
 Modellannahme), die fuenf Parameter Zapfprofil.Stochastik.*, die drei Setzungen der Stufe Z4
@@ -128,6 +145,7 @@ freien Paketteils neu und laeuft dann normal weiter)
 import csv
 import io
 import json
+import math
 import os
 import sqlite3
 import sys
@@ -137,9 +155,11 @@ VERSION = "TEST-1"
 HERKUNFT = "FIKTIV"
 STATUS = "EIGEN"
 
-# Das einzige Referenzprojekt auf dem Zapfprofilgenerator (ZU7, referenzprojekt_zapfprofil.py):
+# Das erste Referenzprojekt auf dem Zapfprofilgenerator (ZU7, referenzprojekt_zapfprofil.py):
 # seine Projektzeile und seine eine Zone sind gesaet und erwartet, keine fremde Zeile.
 REFERENZPROJEKT_GENERATOR = 1045
+# Die Referenzprojekte der Zapfprofil-Optionen (ZB12, referenzprojekte_zapfprofil_optionen.cs): Kopien von 1045.
+REFERENZPROJEKTE_OPTIONEN = (1066, 1067, 1068, 1069, 1070, 1071)
 
 # Die Provenienz-Version (Spalte Version) der Zeilen des freien Paketteils - der Stand des
 # Paketteils, nicht die Katalogversion (Regel 2 der LIESMICH.md des Paketteils).
@@ -198,7 +218,7 @@ CW = 1.163                           # Wh/(l*K), wie Mengengeruest.WAERMEKAPAZIT
 # Aufgenommen ist JEDE Nutzungsart der Originale, deren Bezug eine Bezugsart des Schemas trifft
 # (Person -> 1, Bett -> 3); Tagtyp 4 (Ruhetag) nimmt den Sonntag - die Quelle behandelt Feiertage
 # wie Sonntage. NICHT aufgenommen, benannt (Stufe Z5):
-#   - Campingplatz: Bezug "belegter Stellplatz" - keine der sieben Bezugsarten des Schemas;
+#   - Campingplatz: Bezug "belegter Stellplatz" - keine der acht Bezugsarten des Schemas;
 #   - Standardhallenbad und Gut ausgestattetes Hallenbad: Bezug "Besucher der sommerlichen
 #     Schwachlastperiode" - keine Bezugsart des Schemas, und die Richtlinie fuehrt fuer sie weder
 #     Tages- noch Wochenprofil.
@@ -223,25 +243,35 @@ WOCHENTAGE = ("mo", "di", "mi", "do", "fr", "sa", "so")
 # DREIER GEMESSENER HOTELS (Soerensen et al. 2021, CC BY 4.0). Das Skript liest allein die gerundeten
 # Kennwerte der JSON-Datei, die hotel_aus_messung_bauen.py aus den Rohdaten bildet (Regel dort im
 # Kopf); die Rohdaten braucht dieses Skript nicht. Herkunftsart EIGENKONSTRUKTION: eine Modellannahme
-# von INEKON (drei Hotels als Mittel, ein Zimmer = ein Bett, flacher Jahresgang), weder ein Verfahren
-# ueber eine Richtlinie noch eine frei uebernommene Zahl. Bezugsart Betten (3), Kalenderart Betrieb (4)
-# wie das Krankenhaus - damit Gruppe Nichtwohnen. Tagtyp 4 (Ruhetag) nimmt den Sonntag. Der Bedarf der
+# von INEKON (drei Hotels als Mittel, Bedarf je Zimmer, flacher Jahresgang), weder ein Verfahren
+# ueber eine Richtlinie noch eine frei uebernommene Zahl. Bezugsart Zimmer (8, Schluessel "bezugsart" der
+# JSON-Datei), Kalenderart Betrieb (4) wie das Krankenhaus - damit Gruppe Nichtwohnen. Tagtyp 4 (Ruhetag) nimmt den Sonntag. Der Bedarf der
 # Datei ist gemessene Energie je Zimmer und Tag; er gilt bei den Bezugstemperaturen 60/12 Grad C der
 # abgeleiteten Zeilen (Modellannahme, die Quelle misst Energie, keine Temperaturen).
 HOTEL_DATEI = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tww_hotel_aus_messung.json")
 HERKUNFT_HOTEL = "EIGENKONSTRUKTION"
-HOTEL_BEZUGSART = 3
+BEZUGSARTEN = range(1, 9)                     # ZapfBezugsart 1..8 (TwwSchema.BEZUGSART_WERTE), 8 = Zimmer
 HOTEL_KALENDER = 4
 HOTEL_TAGTYPEN = ("werktag", "samstag", "sonntag", "sonntag")
-# Fruehere Bezeichner einer Nutzungsart der Testdatenbank -> heutiger Bezeichner (#579: der Hoteltyp
-# traegt "je Zimmer" im Namen, weil die Bezugsmenge die Zimmerzahl ist, nicht die Bettenzahl).
-UMBENANNTE_NUTZUNGSARTEN = {"Hotel (aus Messung)": "Hotel (aus Messung, je Zimmer)"}
+# Fruehere Staende einer Nutzungsart des Paketteils -> heutiger Stand: (frueherer Bezeichner, fruehere
+# Bezugsart, heutiger Bezeichner, heutige Bezugsart). Dieselben Eintraege wie der Kern
+# (PaketteilNachfuehrung.NUTZUNGSARTEN): #579 schaerfte den Namen des Hoteltyps, A2 gab ihm die eigene
+# Bezugsart Zimmer (8) statt Betten (3).
+UMBENANNTE_NUTZUNGSARTEN = [
+    ("Hotel (aus Messung)", 3, "Hotel (aus Messung, je Zimmer)", 8),
+    ("Hotel (aus Messung, je Zimmer)", 3, "Hotel (aus Messung, je Zimmer)", 8),
+]
+# Die Pruefklausel der Bezugsart nach dem Schemaschritt der Bezugsart Zimmer (TwwBezugsartSchema.CHECK_NEU).
+CHECK_BEZUGSART = 'CHECK ("Bezugsart" IN (1,2,3,4,5,6,7,8))'
 MONATE = ("jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "dez")
 
 
 def normiert(werte, ziel):
     """Die Werte exakt auf die Summe `ziel` gebracht (Tagesgang und Woche 1, Monate 12)."""
-    s = sum(werte)
+    # math.fsum, nicht sum(): die korrekt gerundete Summe ist auf jeder Python-Fassung dieselbe.
+    # sum() kompensiert erst ab 3.12 (Neumaier) und rechnet unter 3.11 in der letzten Stelle
+    # anders - dann wichen die erzeugten Traegerdateien vom Paketteil im Arbeitsbaum ab.
+    s = math.fsum(werte)
     return [w * ziel / s for w in werte]
 
 
@@ -286,10 +316,12 @@ def hotel_satz_und_art():
     satzname = kopf.get("tagesgangsatz", name)       # der Satz traegt den Zusatz "je Zimmer" nicht
     b = d["bedarf"]
     assert 0 < b["niedrig"] <= b["mittel"] <= b["hoch"], "tww_hotel_aus_messung.json: Bedarfsstufen"
+    bezugsart = kopf["bezugsart"]
+    assert bezugsart in BEZUGSARTEN, "tww_hotel_aus_messung.json: Bezugsart"
     satz = (satzname, {t + 1: normiert(d["tagesprofile"][HOTEL_TAGTYPEN[t]], 1.0) for t in range(4)},
             kopf["quelle"], kopf["ausgabe"], HERKUNFT_HOTEL, VERSION_PAKETTEIL)
     art = dict(
-        name=name, bezug=HOTEL_BEZUGSART, bedarf=(b["niedrig"], b["mittel"], b["hoch"]),
+        name=name, bezug=bezugsart, bedarf=(b["niedrig"], b["mittel"], b["hoch"]),
         grenze=1, kalender=HOTEL_KALENDER, ferien=None,
         monate=[1.0] * 12,                                    # flacher Jahresgang (Modellannahme)
         woche=normiert([d["wochenanteile"][t] for t in WOCHENTAGE], 1.0),
@@ -298,10 +330,49 @@ def hotel_satz_und_art():
     return satz, art
 
 
+# --- Die Nutzungsarten Buero, Schule und Gewerbe (V31, Recherche Pufferoptimierung 4.2) -----------
+# VDI 6002 und der freie Paketteil fuehren kein Nichtwohngebaeude ausser Hotel und Pflege. Die drei
+# Nutzungsarten sind RUNDE SETZUNGEN von INEKON nach der Profilfamilie der DIN EN 12831-3 (Buero:
+# Vormittag/Mittag, Wochenende leer; Schule: Pausenspitzen, Ferienfaktor; Gewerbe: Schichtwechsel),
+# Herkunftsart EIGENKONSTRUKTION, keine Messung und kein Produktwert. Werte allein aus der JSON-Datei.
+NICHTWOHNEN_DATEI = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tww_nichtwohnen_setzung.json")
+HERKUNFT_NICHTWOHNEN = "EIGENKONSTRUKTION"
+NICHTWOHNEN_TAGTYPEN = ("werktag", "samstag", "sonntag", "ruhetag")
+
+
+def nichtwohnen_saetze_und_arten():
+    """Tagesgangsaetze und Nutzungsarten der Setzungen Buero, Schule, Gewerbe aus der JSON-Datei."""
+    with open(NICHTWOHNEN_DATEI, encoding="utf-8") as f:
+        d = json.load(f)
+    kopf = d["kopf"]
+    assert kopf["herkunftsart"] == HERKUNFT_NICHTWOHNEN, "tww_nichtwohnen_setzung.json: Herkunftsart"
+    assert ";" not in kopf["quelle"] + kopf["ausgabe"], "tww_nichtwohnen_setzung.json: Semikolon im Text"
+    saetze, arten = [], []
+    for a in d["nutzungsarten"]:
+        b = a["bedarf"]
+        assert 0 < b["niedrig"] <= b["mittel"] <= b["hoch"], "tww_nichtwohnen_setzung.json: Bedarfsstufen"
+        assert a["bezugsart"] in BEZUGSARTEN, "tww_nichtwohnen_setzung.json: Bezugsart"
+        assert a["kalenderart"] in (2, 3, 4), "tww_nichtwohnen_setzung.json: Kalenderart"
+        saetze.append((a["tagesgangsatz"],
+                       {t + 1: normiert(a["tagesprofile"][NICHTWOHNEN_TAGTYPEN[t]], 1.0) for t in range(4)},
+                       kopf["quelle"], kopf["ausgabe"], HERKUNFT_NICHTWOHNEN, VERSION_PAKETTEIL))
+        arten.append(dict(
+            name=a["nutzungsart"], bezug=a["bezugsart"], bedarf=(b["niedrig"], b["mittel"], b["hoch"]),
+            grenze=1, kalender=a["kalenderart"], ferien=a["ferienfaktor"],
+            monate=[1.0] * 12,                                # flacher Jahresgang (Setzung)
+            woche=normiert([a["wochenanteile"][t] for t in WOCHENTAGE], 1.0),
+            satz=a["tagesgangsatz"], bezug_zapf=BEZUG_ZAPF_VDI, bezug_kalt=BEZUG_KALT_VDI,
+            quelle=kopf["quelle"], ausgabe=kopf["ausgabe"], herkunft=HERKUNFT_NICHTWOHNEN, version=VERSION_PAKETTEIL))
+    return saetze, arten
+
+
 ABGELEITETE_SAETZE, ABGELEITETE_NUTZUNGSARTEN = abgeleitete_saetze_und_arten()
 _HOTEL_SATZ, _HOTEL_ART = hotel_satz_und_art()
 ABGELEITETE_SAETZE.append(_HOTEL_SATZ)
 ABGELEITETE_NUTZUNGSARTEN.append(_HOTEL_ART)
+_NW_SAETZE, _NW_ARTEN = nichtwohnen_saetze_und_arten()
+ABGELEITETE_SAETZE.extend(_NW_SAETZE)
+ABGELEITETE_NUTZUNGSARTEN.extend(_NW_ARTEN)
 
 # Alle Tagesgangsaetze: (Bezeichner, {Tagtyp: 24 Anteile}, Quelle, Ausgabe, Herkunftsart, Version).
 SAETZE = [(SATZ, TAGESGAENGE, QUELLE, None, HERKUNFT, VERSION)] + ABGELEITETE_SAETZE
@@ -342,6 +413,17 @@ PARAMETER += [
     # INEKON-Setzung aus zapfprofil_setzungen_inekon.json (freier Paketteil, Folgeposten #546).
 ]
 
+# Die Schluessel, die der freie Paketteil UND der fiktive Testkatalog fuehren (Anwenderentscheid
+# 14.10.2026: Kaltwasser und Zirkulation der Stufe Einfach - die Werte der Vorlage V4 und zwei
+# INEKON-Setzungen). In der Testdatenbank bleiben die fiktiven Zeilen; die gleichen Zeilen des
+# Paketteils treten zurueck (dieselbe Regel wie fuer eine gleiche Zeile beim Nachladen des Kerns).
+FIKTIV_VOR_PAKETTEIL = frozenset([
+    "Kaltwasser.Bilanz.Mittel", "Kaltwasser.Bilanz.Amplitude", "Kaltwasser.Bilanz.MonatMaximum",
+    "Zirkulation.Laufzeit", "Zirkulation.Anteil", "Zirkulation.VerlustJeMeter",
+    # Anwenderauftrag 16.10.2026: das Kaltwasser der Auslegung aus V4 (Berechnung B389, 10 °C).
+    "A100.Kaltwasser.Auslegung",
+])
+
 # Die Schluessel der Auslegung (ZapfAuslegungParameter, Stufe Z2) - Werte rund und ERFUNDEN,
 # bewusst neben jeder Normvorgabe und jedem Wert der Vorlage gewaehlt (Kapitel 6 (a)).
 PARAMETER += [
@@ -366,7 +448,7 @@ PARAMETER += [
     ("DIN4708.a1", 0.3, "1/h"),
     ("DIN4708.a2", 3.0, "1/h"),
     ("DIN4708.z", 0.2, "h"),
-    ("DIN4708.p_b", 4.0, "Personen"),
+    ("DIN4708.p_b", 4.0, "P"),
     ("DIN4708.w_b", 6000.0, "Wh"),
     ("DIN4708.W_b", 5000.0, "Wh"),
     ("DIN4708.Kappung", 1.5, "-"),
@@ -485,7 +567,8 @@ def v4_zeilen():
     schluessel = [z[0] for z in zeilen]
     assert len(set(schluessel)) == len(schluessel), "speicherauslegung_v4.json: Schluessel doppelt"
     assert not set(schluessel) & set(kopf["offen"]), "speicherauslegung_v4.json: Schluessel zugleich offen"
-    assert not set(schluessel) & {p[0] for p in PARAMETER}, "Schluessel der Vorlage V4 auch im fiktiven Testkatalog"
+    assert not (set(schluessel) & {p[0] for p in PARAMETER}) - FIKTIV_VOR_PAKETTEIL, \
+        "Schluessel der Vorlage V4 auch im fiktiven Testkatalog"
     return zeilen
 
 
@@ -499,9 +582,19 @@ def inekon_zeilen():
                        VERSION_PAKETTEIL, kopf["herkunftsart"], STATUS_PAKET, 1])
     schluessel = [z[0] for z in zeilen]
     assert len(set(schluessel)) == len(schluessel), "zapfprofil_setzungen_inekon.json: Schluessel doppelt"
-    assert not set(schluessel) & {p[0] for p in PARAMETER}, "INEKON-Setzung auch im fiktiven Testkatalog"
+    assert not (set(schluessel) & {p[0] for p in PARAMETER}) - FIKTIV_VOR_PAKETTEIL, \
+        "INEKON-Setzung auch im fiktiven Testkatalog"
     assert not set(schluessel) & {z[0] for z in v4_zeilen()}, "INEKON-Setzung zugleich Zeile der Vorlage V4"
     return zeilen
+
+
+def pruefe_vorrang():
+    """Die Ausnahmeliste FIKTIV_VOR_PAKETTEIL nennt genau die Schluessel, die Paketteil und fiktiver
+    Testkatalog zugleich fuehren - keinen mehr (verwaiste Ausnahme) und keinen weniger."""
+    paket = {z[0] for z in v4_zeilen() + inekon_zeilen()}
+    fiktiv = {p[0] for p in PARAMETER}
+    assert paket & fiktiv == FIKTIV_VOR_PAKETTEIL, \
+        "FIKTIV_VOR_PAKETTEIL weicht ab: " + ", ".join(sorted((paket & fiktiv) ^ FIKTIV_VOR_PAKETTEIL))
 
 
 def parameter_traeger():
@@ -511,6 +604,7 @@ def parameter_traeger():
     with open(pfad, encoding="utf-8-sig", newline="") as f:
         zeilen = [z for z in csv.reader(io.StringIO(f.read()), delimiter=";") if z and any(s.strip() for s in z)]
     assert zeilen[0] == PARAMETERKOPF, T_PARAMETER + ".csv: Kopfzeile " + ";".join(zeilen[0])
+    pruefe_vorrang()
     v4 = v4_zeilen() + inekon_zeilen()
     erzeugt = {z[0] for z in v4}
     uebrige = [z for z in zeilen[1:] if z[0] not in erzeugt]
@@ -656,13 +750,15 @@ ERWARTET = {
     "Tab_TwwNutzungsart_STAMM": len(ALLE_NUTZUNGSARTEN),
     "Tab_TwwBedarfstag_STAMM": len(BEDARFSTAGE) + len(PAKET[T_BEDARFSTAG]),
     "Tab_TwwBedarfstagEreignis_STAMM": sum(len(t[3]) for t in BEDARFSTAGE) + len(PAKET[T_EREIGNIS]),
-    "Tab_TwwParameter_STAMM": len(PARAMETER) + len(PAKET[T_PARAMETER]),
+    "Tab_TwwParameter_STAMM": len(PARAMETER) + sum(1 for z in PAKET[T_PARAMETER]
+                                                   if z["Schluessel"] not in FIKTIV_VOR_PAKETTEIL),
     "Tab_TwwDin4708Wert_STAMM": len(DIN4708_WERTE),
-    # Seit ZU7 traegt genau das eine Referenzprojekt 1045 eine Zeile in Tab_TwwZone/-Projekt
-    # (referenzprojekt_zapfprofil.py); keine Wohnungstypen.
-    "Tab_TwwZone": 1,
-    "Tab_TwwWohnungstyp": 0,
-    "Tab_TwwProjekt": 1,
+    # Die Referenzprojekte auf dem Generator: 1045 mit einer Zone ohne Wohnungstypen
+    # (referenzprojekt_zapfprofil.py) und 1066 bis 1071 mit 14 Zonen und 8 Wohnungstypen
+    # (referenzprojekte_zapfprofil_optionen.cs).
+    "Tab_TwwZone": 15,
+    "Tab_TwwWohnungstyp": 8,
+    "Tab_TwwProjekt": 7,
     # Je Nutzungsart der Vorgabesatz IHRER Gruppe (Stufe Z5).
     TABELLE_KATEGORIEN: sum(len(vorgabesatz(PAKET[TABELLE_KATEGORIEN], gruppe(n["kalender"])))
                             for n in ALLE_NUTZUNGSARTEN),
@@ -762,7 +858,8 @@ def main():
         PAKET.clear()
         PAKET.update(paketteil_lesen())
         pruefe_paketteil(PAKET)
-        ERWARTET["Tab_TwwParameter_STAMM"] = len(PARAMETER) + len(PAKET[T_PARAMETER])
+        ERWARTET["Tab_TwwParameter_STAMM"] = len(PARAMETER) + sum(1 for z in PAKET[T_PARAMETER]
+                                                              if z["Schluessel"] not in FIKTIV_VOR_PAKETTEIL)
 
     con = sqlite3.connect(sys.argv[1])
     try:
@@ -779,6 +876,12 @@ def main():
             print(f"Schemastand {stand}: {T_BEDARFSTAG}.Bezugsart fehlt - erst Werkzeuge/Testdatenbankschema "
                   "(Schemaschritt T3, Schritt 124). Abbruch ohne Schreiben.")
             return 2
+        for t in ("Tab_TwwNutzungsart_STAMM", T_BEDARFSTAG):
+            sql = con.execute("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?", (t,)).fetchone()[0]
+            if CHECK_BEZUGSART not in sql:
+                print(f"Schemastand {stand}: {t} laesst die Bezugsart Zimmer (8) nicht zu - erst "
+                      "Werkzeuge/Testdatenbankschema (Schemaschritt der Bezugsart Zimmer). Abbruch ohne Schreiben.")
+                return 2
 
         # Fremde Zeilen? Alles, was nicht Katalogversion TEST-1 / Status EIGEN / ReadOnly 0 ist.
         fremd = 0
@@ -790,11 +893,15 @@ def main():
         fremd += zahl(con, f'SELECT COUNT(*) FROM "{TABELLE_KATEGORIEN}" WHERE "Status" <> ? OR "ReadOnly" <> 0 '
                            'OR "ID_Nutzungsart" NOT IN (SELECT "ID" FROM "Tab_TwwNutzungsart_STAMM" '
                            'WHERE "Katalogversion" = ?)', STATUS, VERSION)
-        # Tab_TwwZone/-Projekt tragen seit ZU7 genau die eine gesaete Zeile des Referenzprojekts
-        # 1045 (referenzprojekt_zapfprofil.py); jede andere Zeile bleibt fremd.
+        # Tab_TwwZone/-Projekt tragen die gesaeten Zeilen der Referenzprojekte auf dem Generator: 1045
+        # (referenzprojekt_zapfprofil.py) und 1066 bis 1071 (referenzprojekte_zapfprofil_optionen.cs), ebenso
+        # Tab_TwwWohnungstyp die Wohnungstypen ihrer Zonen; jede andere Zeile bleibt fremd.
+        generator = (REFERENZPROJEKT_GENERATOR,) + REFERENZPROJEKTE_OPTIONEN
+        marken = ", ".join("?" for _ in generator)
         for t in ("Tab_TwwZone", "Tab_TwwProjekt"):
-            fremd += zahl(con, f'SELECT COUNT(*) FROM "{t}" WHERE "ID_Projekt" <> ?', REFERENZPROJEKT_GENERATOR)
-        fremd += zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwWohnungstyp"')
+            fremd += zahl(con, f'SELECT COUNT(*) FROM "{t}" WHERE "ID_Projekt" NOT IN ({marken})', *generator)
+        fremd += zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwWohnungstyp" WHERE "ID_Zone" NOT IN '
+                           f'(SELECT "ID" FROM "Tab_TwwZone" WHERE "ID_Projekt" IN ({marken}))', *generator)
         if fremd:
             print(f"{fremd} Zeile(n) gehoeren nicht zum fiktiven Testkatalog - Abbruch ohne Schreiben.")
             return 2
@@ -821,13 +928,17 @@ def main():
                     zaehlen(upsert(con, "Tab_TwwTagesgang_STAMM", {"ID_Tagesgangsatz": id_satz, "Tagtyp": tagtyp}, w))
 
             # --- Nutzungsarten (fiktiv und abgeleitet) ------------------------------------------
-            # Erst umbenennen, was unter einem frueheren Bezeichner steht: dieselbe Zeile (ID,
-            # Zapfkategorien, Zonenbezug) bekommt den heutigen Namen, statt dass eine zweite entsteht.
-            for alt, neu in UMBENANNTE_NUTZUNGSARTEN.items():
+            # Erst nachfuehren, was in einem frueheren Stand steht: dieselbe Zeile (ID, Zapfkategorien,
+            # Zonenbezug) bekommt den heutigen Namen und die heutige Bezugsart, statt dass eine zweite
+            # entsteht - nur, wenn die Katalogversion den heutigen Namen nicht schon an einer anderen
+            # Zeile fuehrt (dieselbe Grenze wie PaketteilNachfuehrung.Nachfuehren im Kern).
+            for alt, bezug_alt, neu, bezug_neu in UMBENANNTE_NUTZUNGSARTEN:
                 zaehler[1] += con.execute(
-                    'UPDATE "Tab_TwwNutzungsart_STAMM" SET "Bezeichner" = ? WHERE "Bezeichner" = ? '
-                    'AND "Katalogversion" = ? AND NOT EXISTS (SELECT 1 FROM "Tab_TwwNutzungsart_STAMM" '
-                    'WHERE "Bezeichner" = ? AND "Katalogversion" = ?)', (neu, alt, VERSION, neu, VERSION)).rowcount
+                    'UPDATE "Tab_TwwNutzungsart_STAMM" SET "Bezeichner" = ?, "Bezugsart" = ? WHERE "Bezeichner" = ? '
+                    'AND "Bezugsart" = ? AND "Katalogversion" = ? AND NOT EXISTS (SELECT 1 FROM "Tab_TwwNutzungsart_STAMM" '
+                    'AS "Andere" WHERE "Andere"."Bezeichner" = ? AND "Andere"."Katalogversion" = ? '
+                    'AND "Andere"."Bezeichner" <> ?)',
+                    (neu, bezug_neu, alt, bezug_alt, VERSION, neu, VERSION, alt)).rowcount
             id_arten = []
             for n in ALLE_NUTZUNGSARTEN:
                 w = {"Bezugsart": n["bezug"], "Bedarf_Niedrig": n["bedarf"][0], "Bedarf_Mittel": n["bedarf"][1],
@@ -851,6 +962,8 @@ def main():
                                 "Herkunftsart": HERKUNFT, "Status": STATUS, "Beleg": None, "ReadOnly": 0}))
             frei_parameter = []
             for z in PAKET[T_PARAMETER]:
+                if z["Schluessel"] in FIKTIV_VOR_PAKETTEIL:
+                    continue                    # die fiktive Zeile bleibt, die des Paketteils tritt zurueck
                 w = paketwerte(con, T_PARAMETER, z, ohne=("ID", "Schluessel"))
                 w.update(testdb)
                 zaehlen(upsert(con, T_PARAMETER, {"Schluessel": z["Schluessel"], "Katalogversion": VERSION}, w))

@@ -1,0 +1,156 @@
+﻿@* DAS STUNDENFENSTER (Stufe KP2, Welle U1; Teilkonzept Konditionierungsprofile 3.3, 7.2) - ein
+   Zeitfenster aus zwei vollen Stunden in EINEM Feld, "22-6": das Nachtfenster einer Spalte der
+   Vorgabe-Matrix. Zwei Ganzzahlfelder in einer Tabellenzelle brauchen doppelt so viel Breite und
+   trennen, was der Anwender als eine Angabe liest ("von 22 bis 6 Uhr").
+
+   EINGABE "VON-BIS": zwei ganze Stunden 0 ... 23, getrennt durch Bindestrich, Halbgeviertstrich,
+   Schraegstrich oder Leerraum; ein nachgestelltes "h" oder "Uhr" darf stehen. Von groesser als
+   Bis heisst ueber Mitternacht (22-6). Gleiche Stunden sind kein Fenster und eine Fehleingabe -
+   dieselbe Regel wie die Nachtzeit des Gebaeudes (Nachtzeit.Pruefen). Eine Fehleingabe FAERBT das
+   Feld und meldet ihren Fehlerzustand (Feldname), nach aussen geht dabei nichts. Ein leeres Feld
+   ist neutral und meldet (null, null) - was leer heisst, sagt der Wirt im Platzhalter ("22-6",
+   die Vorgabe bzw. das Fenster der Heizspalte).
+
+   ANZEIGE: "22–6" mit Halbgeviertstrich; ein Text, der den Wert schon meint, bleibt stehen, und
+   eine laufende Fehleingabe ebenso (Muster Zahlenfeld, Gemeinjahrdatum). *@
+
+@namespace EPOS.UI.Bausteine
+@using System.Globalization
+@using System.Text.RegularExpressions
+
+<label class="epos-feld epos-feld--kurz epos-stundenfenster" title="@(string.IsNullOrEmpty(Titel) ? null : Titel)">
+    @if (!string.IsNullOrEmpty(Bezeichnung))
+    {
+        <span class="epos-feld-text">@Bezeichnung</span>
+    }
+    <span class="epos-feld-zeile">
+        <input class="epos-eingabe @(Fehlerhaft ? "epos-fehleingabe" : "")"
+               type="text" inputmode="numeric" autocomplete="off" value="@_text"
+               aria-invalid="@(Fehlerhaft ? "true" : null)"
+               placeholder="@(string.IsNullOrEmpty(Platzhalter) ? null : Platzhalter)"
+               disabled="@(!Aktiv)" @oninput="BeiEingabe" />
+        @if (!string.IsNullOrEmpty(Einheit))
+        {
+            <span class="epos-einheit">@Einheit</span>
+        }
+    </span>
+</label>
+
+@code {
+    /// <summary>Beschriftung über bzw. neben dem Feld.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Ein Vermerk zum Feld als Tooltip der Beschriftung; leer = keiner.</summary>
+    [Parameter] public string Titel { get; set; } = "";
+
+    /// <summary>Die erste Stunde 0 … 23 des Fensters; <c>null</c> bei leerem Feld.</summary>
+    [Parameter] public int? Von { get; set; }
+
+    /// <summary>Die Stunde 0 … 23, vor der das Fenster endet; <c>null</c> bei leerem Feld.</summary>
+    [Parameter] public int? Bis { get; set; }
+
+    /// <summary>
+    /// Meldet jedes gültige neue Fenster — auch (<c>null</c>, <c>null</c>) beim Leeren. Beide Stunden
+    /// kommen zusammen: ein Fenster ist eine Angabe.
+    /// </summary>
+    [Parameter] public EventCallback<(int? Von, int? Bis)> FensterChanged { get; set; }
+
+    /// <summary>Leiser Text im LEEREN Feld (die geltende Vorgabe, etwa „22–6"); leer = keiner.</summary>
+    [Parameter] public string Platzhalter { get; set; } = "";
+
+    /// <summary>Einheit hinter dem Feld (etwa „h"); leer = keine.</summary>
+    [Parameter] public string Einheit { get; set; } = "";
+
+    /// <summary>Bedienbar? <c>false</c> sperrt das Feld.</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>Name des Feldes für die Sammelmeldung des Dialogs; leer = das Feld meldet sich nicht.</summary>
+    [Parameter] public string Feldname { get; set; } = "";
+
+    /// <summary>Meldet jede ÄNDERUNG des Fehlerzustands; ohne <see cref="Feldname"/> nichts.</summary>
+    [Parameter] public EventCallback<(string Feld, bool Fehlerhaft)> FehlerZustand { get; set; }
+
+    /// <summary>Zwei ganze Stunden, getrennt durch Strich, Schrägstrich oder Leerraum; „h" oder „Uhr" darf folgen.</summary>
+    private static readonly Regex MUSTER = new(
+        @"^\s*(?<von>[0-9]{1,2})\s*(?:h|uhr)?\s*(?:[-–—/]|\s)\s*(?<bis>[0-9]{1,2})\s*(?:h|uhr)?\s*$",
+        RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+    private string _text = "";
+
+    /// <summary>Der Anwender hat das Feld GELEERT — es bleibt leer, bis er wieder tippt (siehe Zahlenfeld).</summary>
+    private bool _geleert;
+
+    /// <summary>Ist der Text gerade kein Fenster? (Prüfhilfe für Tests.)</summary>
+    public bool Fehlerhaft { get; private set; }
+
+    /// <summary>Der Anzeigetext eines Fensters: „22–6"; leer, wenn eine Stunde fehlt.</summary>
+    public static string Anzeigetext(int? von, int? bis)
+        => von is int v && bis is int b
+            ? v.ToString(CultureInfo.InvariantCulture) + "–" + b.ToString(CultureInfo.InvariantCulture)
+            : "";
+
+    /// <summary>
+    /// Liest „von–bis" als zwei Stunden 0 … 23; <c>false</c> bei einem Text, der kein Fenster ist —
+    /// auch bei gleichen Stunden (kein Fenster, Regel von <c>Nachtzeit.Pruefen</c>).
+    /// </summary>
+    public static bool Lesen(string? text, out int von, out int bis)
+    {
+        von = 0;
+        bis = 0;
+        Match m = MUSTER.Match(text ?? "");
+        if (!m.Success) return false;
+        int v = int.Parse(m.Groups["von"].Value, CultureInfo.InvariantCulture);
+        int b = int.Parse(m.Groups["bis"].Value, CultureInfo.InvariantCulture);
+        if (v < 0 || v > 23 || b < 0 || b > 23 || v == b) return false;
+        von = v;
+        bis = b;
+        return true;
+    }
+
+    private async Task FehlerSetzen(bool fehlerhaft)
+    {
+        if (Fehlerhaft == fehlerhaft) return;
+        Fehlerhaft = fehlerhaft;
+        if (Feldname.Length > 0) await FehlerZustand.InvokeAsync((Feldname, fehlerhaft));
+    }
+
+    protected override void OnParametersSet()
+    {
+        // Wie das Zahlenfeld: eine laufende Fehleingabe und ein geleertes Feld bleiben stehen,
+        // und ein Text, der das Fenster schon meint, springt nicht auf die Anzeigeform zurück.
+        if (Fehlerhaft) return;
+        if (_geleert) return;
+        if ((!Von.HasValue || !Bis.HasValue) && _text.Trim().Length == 0) return;
+        if (Von.HasValue && Bis.HasValue && Lesen(_text, out int v, out int b) && v == Von.Value && b == Bis.Value) return;
+
+        _text = Anzeigetext(Von, Bis);
+    }
+
+    private async Task BeiEingabe(ChangeEventArgs e)
+    {
+        _text = e.Value?.ToString() ?? "";
+
+        if (_text.Trim().Length == 0)
+        {
+            await FehlerSetzen(false);
+            _geleert = true;
+            Von = null;
+            Bis = null;
+            await FensterChanged.InvokeAsync((null, null));
+            return;
+        }
+
+        _geleert = false;
+
+        if (Lesen(_text, out int von, out int bis))
+        {
+            await FehlerSetzen(false);
+            Von = von;
+            Bis = bis;
+            await FensterChanged.InvokeAsync((von, bis));
+            return;
+        }
+
+        await FehlerSetzen(true);
+    }
+}

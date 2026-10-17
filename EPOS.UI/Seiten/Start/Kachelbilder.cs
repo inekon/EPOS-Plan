@@ -82,7 +82,17 @@ public static class Kachelbilder
             [Kachelschluessel.Prozesswaerme] = ("Unbenannt3.jpg", KLASSE_AUSSCHNITT),
             [Kachelschluessel.Brauchwasser] = ("Unbenannt3.jpg", KLASSE_AUSSCHNITT),
 
-            // ---- Reiter 3 „Strombedarf" -------------------------------------
+            // ---- Reiter „Kaeltebedarf" (Stufe K4) ---------------------------
+            // Zwei EIGENE Bilder, abgeleitet aus den Vorbildern der Strombedarf-
+            // Kacheln: dieselben Masse (555 x 258 bzw. 558 x 261, JPG) und derselbe Ausschnitt,
+            // nur in Kaeltefaerbung (Blautoenung) - der Lastgang aus
+            // PStromMessdaten.jpg, das Typprofil aus PStdLastProfil.jpg. Die
+            // Gebaeudekuehlung traegt das Eiskristall-Symbol der Kuehlungskachel.
+            [Kachelschluessel.KaeltebedarfExtern] = (KAELTE_EXTERN_DATEI, KLASSE_AUSSCHNITT),
+            [Kachelschluessel.Kaeltebedarfsprofile] = (KAELTE_PROFIL_DATEI, KLASSE_AUSSCHNITT),
+            [Kachelschluessel.Gebaeudekuehlung] = (KUEHLUNG_DATEI, KLASSE_SYMBOL),
+
+            // ---- Reiter „Strombedarf" ---------------------------------------
             [Kachelschluessel.StromStandardprofil] = ("PStdLastProfil.jpg", KLASSE_AUSSCHNITT),
             [Kachelschluessel.StromEigenesProfil] = ("PStromProfilEigenes.jpg", KLASSE_AUSSCHNITT),
             [Kachelschluessel.StromMessdaten] = ("PStromMessdaten.jpg", KLASSE_AUSSCHNITT),
@@ -96,7 +106,12 @@ public static class Kachelbilder
             [Kachelschluessel.Waermepumpe] = ("PWP.jpg", KLASSE_AUSSCHNITT),
             [Kachelschluessel.Heizkessel] = ("PHeizkessel.jpg", KLASSE_AUSSCHNITT),
             [Kachelschluessel.Solarthermie] = ("PProjektSolarthermie.jpg", KLASSE_AUSSCHNITT),
-            [Kachelschluessel.Bhkw] = ("PBHKW.jpg", KLASSE_AUSSCHNITT),
+            // ABWEICHUNG 3: Das BHKW trug im Bestand nur einen Blitz (PBHKW.jpg). Es
+            // traegt jetzt ein eigenes Vektorsymbol fuer Kraft-Waerme-Kopplung -
+            // Maschinenblock mit Generator, Flamme und Blitz - im Rahmen und
+            // Verlauf der uebrigen Sinnbilder (Anwenderwunsch 08.10.2026). Es ist
+            // bereits 84 x 84 gross und nimmt deshalb das Symbol, keinen Ausschnitt.
+            [Kachelschluessel.Bhkw] = (BHKW_DATEI, KLASSE_SYMBOL),
             [Kachelschluessel.Photovoltaik] = ("PProjektPV.jpg", KLASSE_AUSSCHNITT),
             [Kachelschluessel.Stromspeicher] = ("PSSpeicher.jpg", KLASSE_AUSSCHNITT_FLACH),
             [Kachelschluessel.Pufferspeicher] = ("PPufferSpeicher.jpg", KLASSE_AUSSCHNITT_FLACH),
@@ -109,6 +124,27 @@ public static class Kachelbilder
             [Kachelschluessel.SimulationKonfiguration] = ("PSchnellSim.jpg", KLASSE_AUSSCHNITT),
             [Kachelschluessel.SimulationErgebnis] = ("PDetailSim.jpg", KLASSE_AUSSCHNITT)
         };
+
+    /// <summary>
+    /// Das Sinnbild der Kachel „Kühlung und Kälteanlagen" im Reiter Energieerzeuger. Die Kachel
+    /// hat keinen <see cref="Kachelschluessel"/> (sie ist keine der 21 Kacheln des Vorläufers),, ihr Bild steht deshalb neben der Tabelle. Es ist
+    /// ein EIGENES Bild im Stil der übrigen (violettes abgerundetes Quadrat, Eiskristall mit
+    /// Umrisslinie), als Vektor gezeichnet und in ein fertig zugeschnittenes Symbol von
+    /// 84 × 84 Pixeln gerechnet — es trägt deshalb <see cref="KLASSE_SYMBOL"/>, keinen Ausschnitt.
+    /// </summary>
+    public const string KUEHLUNG_DATEI = "PKuehlung_Symbol.png";
+
+    /// <summary>Das Bild der Kachel „Kältebedarf extern" — <c>PStromMessdaten.jpg</c> in Kältefärbung.</summary>
+    public const string KAELTE_EXTERN_DATEI = "PKaelteMessdaten.jpg";
+
+    /// <summary>Das Bild der Kachel „Kältebedarfsprofile" — <c>PStdLastProfil.jpg</c> in Kältefärbung.</summary>
+    public const string KAELTE_PROFIL_DATEI = "PKaelteProfil.jpg";
+
+    /// <summary>Die Web-Adresse des Kühlungssinnbilds.</summary>
+    public const string KuehlungQuelle = ORDNER + KUEHLUNG_DATEI;
+
+    /// <summary>Das Vektorsinnbild der BHKW-Kachel (84 × 84, Maschinenblock mit Flamme und Blitz).</summary>
+    public const string BHKW_DATEI = "PBHKW_Symbol.svg";
 
     /// <summary>Alle Zuordnungen — der Prüfstand liest sie und legt die Dateien nach.</summary>
     public static IReadOnlyDictionary<string, (string Datei, string Klasse)> Alle => _tabelle;

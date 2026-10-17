@@ -40,7 +40,7 @@ public class BauteilaufbauDialogTests : EposBunitContext
     {
         NeigungGrad = 90, RSi_M2KW = 0.13, RSe_M2KW = 0.04,
         RJeSchicht_M2KW = d.Schichten.Select((s, i) => (double?)(0.1 * (i + 1))).ToList(),
-        R_M2KW = 4.0, U_WM2K = 0.25, Kapazitaet_KJM2K = 320, KapazitaetWirksam_KJM2K = 60,
+        R_M2KW = 4.0, RT_M2KW = 4.17, U_WM2K = 0.25, Kapazitaet_KJM2K = 320, KapazitaetWirksam_KJM2K = 60,
         Bezugsperiode_D = 7, R1Rel = 1.0, C1Rel = 0.9
     };
 
@@ -153,7 +153,7 @@ public class BauteilaufbauDialogTests : EposBunitContext
         Assert.Equal("Bauteilaufbauten", cut.Find(".epos-dialog-titel").TextContent);
         Assert.Single(cut.FindAll(".epos-dialog-kopf .epos-dialog-zu"));
         Assert.Equal(2, cut.FindAll(".epos-katalogliste tbody tr").Count);
-        Assert.Equal(new[] { "Kenndaten", "Schichten", "Herkunft" },
+        Assert.Equal(new[] { "Kenndaten", "Schichten", "Strahlung der Außenfläche", "Herkunft" },
                      cut.FindAll(".epos-stammblattgruppe-titel").Select(e => e.TextContent).ToArray());
         Assert.Equal(new[] { "Speichern", "Verwerfen", "Neu…", "Beenden" },
                      Fussleiste(cut).QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToArray());
@@ -169,13 +169,13 @@ public class BauteilaufbauDialogTests : EposBunitContext
         Zeilenklick.Zeile(cut, 1);                                   // Außenwand gedämmt, drei Schichten
 
         IElement blatt = Stammblatt(cut);
-        Assert.Equal(new[] { "Name", "Bauteilart", "Beschreibung", "Quelle" },
+        Assert.Equal(new[] { "Name", "Bauteilart", "Gruppe", "Klasse", "Beschreibung", "Quelle", "Gebäudesimulation" },
                      blatt.QuerySelectorAll(".epos-stammblattgruppe")[0].QuerySelectorAll(".epos-feld-text")
                           .Select(e => e.TextContent.Trim()).ToArray());
         Assert.Equal(new[] { "für jede Bauteilart", "Außenwand", "Dach", "Bodenplatte" },
                      Feld(blatt, "Bauteilart").QuerySelectorAll("option").Select(o => o.TextContent.Trim()).ToArray());
 
-        Assert.Equal(new[] { "Dicke [mm]", "λ [W/(mK)]", "ρ [kg/m³]", "c_p [J/(kgK)]" },
+        Assert.Equal(new[] { "Dicke [mm]", "λ [W/(m·K)]", "ρ [kg/m³]", "c_p [J/(kg·K)]" },
                      blatt.QuerySelectorAll(".epos-zr-kopfzelle").Select(e => e.TextContent.Trim()).ToArray());
         Assert.Equal(3, Schichtzeilen(blatt).Count);
         Assert.Equal(new[] { "1", "2", "3" },
@@ -199,12 +199,33 @@ public class BauteilaufbauDialogTests : EposBunitContext
         Assert.Contains("U = 0,250 W/(m²K)", summen);
         Assert.Contains("C = Σ ρ·c_p·d = 320,0 kJ/(m²K)", summen);
         Assert.Contains("T_BT = 7 d", summen);
+        // BK-1: R_si und R_se der Bauteilart und R_T stehen im Summenfuß selbst, nicht nur in der Herleitung.
+        Assert.Contains("R_si = 0,13 m²K/W", summen);
+        Assert.Contains("R_se = 0,04 m²K/W", summen);
+        Assert.Contains("R_T = R_si + R + R_se = 4,170 m²K/W", summen);
+        // Die Richtung der Schichtfolge steht über dem Raster.
+        Assert.Contains("innen → außen", blatt.QuerySelector(".epos-bauteilschicht-richtung")!.TextContent);
         Assert.Contains("R_si = 0,13 und R_se = 0,04", blatt.QuerySelector(".epos-herleitung, .epos-herleitungszeile")?.TextContent
                                                         ?? blatt.TextContent);
         Assert.Equal(new[] { "R = 0,100 m²K/W", "R = 0,200 m²K/W", "R = 0,300 m²K/W" },
                      blatt.QuerySelectorAll(".epos-bauteilschicht-r").Select(e => e.TextContent.Trim()).ToArray());
         Assert.Equal("0,250 W/(m²K)", cut.FindAll(".epos-stammblatt-kennzahl dd").First().TextContent);
         Assert.Equal(3, k.Gerechnet.Last().Schichten.Count);
+    }
+
+    /// <summary>BK-1: Summenfuß und Richtungsangabe auch auf Englisch (beide Ressourcen gepflegt).</summary>
+    [Fact]
+    public void Summenfuss_und_Richtung_stehen_auf_Englisch()
+    {
+        using var kultur = new Kulturvorrichtung("en-US");
+        var cut = Aufbauen(new Katalog());
+        Zeilenklick.Zeile(cut, 1);
+
+        IElement blatt = Stammblatt(cut);
+        string summen = string.Join(" | ", blatt.QuerySelectorAll(".epos-zr-summenzelle").Select(e => e.TextContent.Trim()));
+        Assert.Contains("R_si = 0.13 m²K/W", summen);
+        Assert.Contains("R_T = R_si + R + R_se = 4.170 m²K/W", summen);
+        Assert.Contains("inside → outside", blatt.QuerySelector(".epos-bauteilschicht-richtung")!.TextContent);
     }
 
     [Fact]
@@ -424,6 +445,297 @@ public class BauteilaufbauDialogTests : EposBunitContext
 
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.True(k.Geschlossen);
+    }
+
+    // =================================================================================
+    // BK-2b: Gruppe und Klasse, Eignung, Filter „nur geeignete"
+    // =================================================================================
+
+    private static IReadOnlyList<Katalogfilterzeile> MitMarke(Katalog k, int ungeeignet)
+        => k.Zeilen().Select(z => z.MitText(Katalogfilterprofil.SpEignung, z.Id == ungeeignet ? "meist ungeeignet" : "")).ToList();
+
+    [Fact]
+    public void Nur_geeignete_ist_Vorgabe_und_der_Schalter_zeigt_alle()
+    {
+        var k = new Katalog();
+        var cut = Render<BauteilaufbauDialog>(b => b
+            .Add(x => x.Katalogzeilen, () => MitMarke(k, 4))
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerBauteilaufbau(
+                s => WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(s) ?? s))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Lies, id => k.Saetze.FirstOrDefault(s => s.Id == id)?.Kopie()));
+
+        Assert.True(cut.Instance.NurGeeignete);
+        Assert.Single(cut.FindAll(".epos-katalogliste tbody tr"));
+        Assert.Contains("Außenwand Bestand", cut.Find(".epos-katalogliste tbody").TextContent);
+        Assert.Contains("nur geeignete", cut.Find(".epos-katalogliste").TextContent);
+
+        cut.Find(".epos-katalogliste .epos-schalter-kasten").Change(false);
+        Assert.False(cut.Instance.NurGeeignete);
+        Assert.Equal(2, cut.FindAll(".epos-katalogliste tbody tr").Count);
+        Assert.Contains("meist ungeeignet", cut.Find(".epos-katalogliste tbody").TextContent);
+    }
+
+    [Fact]
+    public void Die_Klasse_folgt_der_Gruppe_und_der_Wechsel_nimmt_sie_weg()
+    {
+        var k = new Katalog();
+        var cut = Aufbauen(k);
+        Zeilenklick.Zeile(cut, 1);                                   // Außenwand gedämmt (eigener Satz)
+
+        IElement blatt = Stammblatt(cut);
+        Feld(blatt, "Gruppe").Change("3");                           // Dächer
+        string[] klassen = Stammblatt(cut).QuerySelectorAll("label.epos-feld")
+            .First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == "Klasse")
+            .QuerySelectorAll("option").Select(o => o.TextContent.Trim()).ToArray();
+        Assert.Equal(new[] { "(keine Klasse)", "Flachdach", "Steildach" }, klassen);
+        Feld(Stammblatt(cut), "Klasse").Change("2");
+        Assert.Equal(("DAECHER", "STEILDACH"), (cut.Instance.Arbeitsstand.Arbeit.GruppeCode, cut.Instance.Arbeitsstand.Arbeit.KlasseCode));
+
+        Feld(Stammblatt(cut), "Gruppe").Change("1");                 // Wände
+        Assert.Equal(("WAENDE", ""), (cut.Instance.Arbeitsstand.Arbeit.GruppeCode, cut.Instance.Arbeitsstand.Arbeit.KlasseCode));
+        Feld(Stammblatt(cut), "Klasse").Change("1");                 // Außenwand
+
+        Knopf(cut, "Speichern").Click();
+        Assert.Equal(("WAENDE", "AUSSENWAND"), (k.Gespeichert.Last().GruppeCode, k.Gespeichert.Last().KlasseCode));
+    }
+
+    [Fact]
+    public void Die_Eignung_ist_Lesewert_mit_dem_Grund_der_Huelle()
+    {
+        var k = new Katalog();
+        var cut = Render<BauteilaufbauDialog>(b => b
+            .Add(x => x.Katalogzeilen, k.Zeilen)
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerBauteilaufbau(
+                s => WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(s) ?? s))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Lies, id => k.Saetze.FirstOrDefault(s => s.Id == id)?.Kopie())
+            .Add(x => x.Baustoffe, () => STOFFE)
+            .Add(x => x.Bauteilarten, ARTEN)
+            .Add(x => x.Kennwerte, d => Fuss(d) with
+            {
+                UngeeignetGrund = d.Schichten.Any(s => s.Lambda is null) ? "Schicht 2 ohne Wärmeleitfähigkeit" : ""
+            })
+            .Add(x => x.Speichern, k.Speichern));
+        Zeilenklick.Zeile(cut, 1);
+
+        IElement eignung = Feld(Stammblatt(cut), "Gebäudesimulation");
+        Assert.True(eignung.HasAttribute("readonly"));
+        Assert.Equal("geeignet", eignung.GetAttribute("value"));
+
+        cut.Instance.Arbeitsstand.Arbeit.Schichten[1].Lambda = null;        // wie eine Eingabe im Raster
+        Feld(Stammblatt(cut), "Beschreibung").Input("x");            // zieht den Summenfuß nach
+        Assert.Equal("für die Gebäudesimulation meist nicht geeignet – Schicht 2 ohne Wärmeleitfähigkeit",
+                     Feld(Stammblatt(cut), "Gebäudesimulation").GetAttribute("value"));
+    }
+
+    [Fact]
+    public void Gruppe_Klasse_und_Schalter_stehen_auf_Englisch()
+    {
+        using var kultur = new Kulturvorrichtung("en-US");
+        var k = new Katalog();
+        var cut = Aufbauen(k);
+        Zeilenklick.Zeile(cut, 1);
+
+        Assert.Contains("suitable only", cut.Find(".epos-katalogliste").TextContent);
+        IElement blatt = Stammblatt(cut);
+        string[] gruppen = blatt.QuerySelectorAll("label.epos-feld")
+            .First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == "Group")
+            .QuerySelectorAll("option").Select(o => o.TextContent.Trim()).ToArray();
+        Assert.Equal(new[] { "(no group)", "Walls", "Floors and ceilings", "Roofs", "Openings", "Other" }, gruppen);
+        Assert.Equal("suitable", Feld(blatt, "Building simulation").GetAttribute("value"));
+    }
+
+    // =================================================================================
+    // BK-5: inhomogene Schicht - Abschnittszeilen und Grenzwerte im Summenfuss
+    // =================================================================================
+
+    private static IElement Anteilfeld(IElement zeile)
+        => zeile.QuerySelectorAll("label.epos-feld").First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == "Flächenanteil")
+                .QuerySelector("input")!;
+
+    [Fact]
+    public void Abschnitt_daneben_legt_den_zweiten_Abschnitt_an_und_prueft_die_Ebenensumme()
+    {
+        var k = new Katalog();
+        var cut = Aufbauen(k);
+        Zeilenklick.Zeile(cut, 1);                                   // Außenwand gedämmt, drei Schichten
+
+        // Die Dämmung (Schicht 3) wird Abschnitt 1, daneben entsteht Abschnitt 2 mit derselben Dicke.
+        cut.FindAll(".epos-bauteilschicht-abschnitt button")[2].Click();
+        var schichten = cut.Instance.Arbeitsstand.Schichten;
+        Assert.Equal(4, schichten.Count);
+        Assert.Equal(new int?[] { null, null, 1, 2 }, schichten.Select(s => s.Abschnitt).ToArray());
+        Assert.Equal(140, schichten[3].DickeMm);
+        Assert.True(cut.Instance.Arbeitsstand.Geaendert);
+
+        // Ohne Anteile: die Summe 0 steht an der letzten Schicht der Ebene als Warnung.
+        IElement summe = cut.Find(".epos-bauteilschicht-ebenensumme");
+        Assert.Contains("epos-bauteilschicht-ebenensumme--warn", summe.ClassName);
+        Assert.Contains("0,99 bis 1,01", summe.TextContent);
+
+        var zeilen = cut.FindAll(".epos-bauteilschicht-abschnitt");
+        Anteilfeld(zeilen[2]).Input("0,85");
+        Anteilfeld(cut.FindAll(".epos-bauteilschicht-abschnitt")[3]).Input("0,15");
+        Assert.Equal(new double?[] { null, null, 0.85, 0.15 }, cut.Instance.Arbeitsstand.Schichten.Select(s => s.Flaechenanteil).ToArray());
+        summe = cut.Find(".epos-bauteilschicht-ebenensumme");
+        Assert.DoesNotContain("--warn", summe.ClassName);
+        Assert.Equal("Σ Flächenanteile der Ebene = 1", summe.TextContent.Trim());
+        // Die Hülle bekommt die Abschnitte mit (sie rechnet die Grenzwerte im Kern).
+        Assert.Equal(new int?[] { null, null, 1, 2 }, k.Gerechnet.Last().Schichten.Select(s => s.Abschnitt).ToArray());
+    }
+
+    [Fact]
+    public void Der_Summenfuss_eines_inhomogenen_Aufbaus_zeigt_beide_Grenzwerte_und_das_Mittel()
+    {
+        var k = new Katalog();
+        Katalog kat = k;
+        var cut = Render<BauteilaufbauDialog>(b => b
+            .Add(x => x.Katalogzeilen, kat.Zeilen)
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerBauteilaufbau(
+                s => WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(s) ?? s))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Lies, id => kat.Saetze.FirstOrDefault(s => s.Id == id)?.Kopie())
+            .Add(x => x.Baustoffe, () => STOFFE)
+            .Add(x => x.Bauteilarten, ARTEN)
+            .Add(x => x.Kennwerte, d => Fuss(d) with { RT_Oben_M2KW = 4.3, RT_Unten_M2KW = 4.04 })
+            .Add(x => x.Pruefen, d => "")
+            .Add(x => x.Speichern, kat.Speichern));
+        Zeilenklick.Zeile(cut, 1);
+
+        string summen = string.Join(" | ", Stammblatt(cut).QuerySelectorAll(".epos-zr-summenzelle").Select(e => e.TextContent.Trim()));
+        Assert.Contains("R'_T oberer Grenzwert = 4,300 m²K/W", summen);
+        Assert.Contains("R''_T unterer Grenzwert = 4,040 m²K/W", summen);
+        Assert.Contains("R_T = (R'_T + R''_T) / 2 = 4,170 m²K/W", summen);
+        Assert.DoesNotContain("R_T = R_si + R + R_se", summen);
+    }
+
+    // =================================================================================
+    // BK-6: Fensterteil im Aufbaueditor
+    // =================================================================================
+
+    [Fact]
+    public void Der_Fensterteil_steht_nur_bei_Fenster_und_Vorhangfassade()
+    {
+        var k = new Katalog();
+        k.Saetze.Add(new BauteilaufbauDaten
+        {
+            Id = 9, Bezeichner = "Fenster Probe", Bauteilart = "FENSTER", Herkunft = "Manuell",
+            FensterUg = 1.0, FensterUf = 1.4, FensterG = 0.5, FensterRahmenanteil = 0.3, FensterPsiGlasrand = 0.04
+        });
+        var cut = Render<BauteilaufbauDialog>(b => b
+            .Add(x => x.Katalogzeilen, () => k.Saetze.Select(s => new Katalogfilterzeile(s.Id, s.Bezeichner)
+                { Schluessel = s.Id.ToString(System.Globalization.CultureInfo.InvariantCulture) }
+                .MitText(Katalogfilterprofil.SpBezeichner, s.Bezeichner)).ToList())
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerBauteilaufbau(
+                s => WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(s) ?? s))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Lies, id => k.Saetze.FirstOrDefault(s => s.Id == id)?.Kopie())
+            .Add(x => x.Baustoffe, () => STOFFE)
+            .Add(x => x.Bauteilarten, ARTEN.Append(("FENSTER", "Fenster")).ToList())
+            .Add(x => x.Kennwerte, d => Fuss(d))
+            .Add(x => x.Pruefen, d => "")
+            .Add(x => x.Speichern, k.Speichern));
+
+        Zeilenklick.Zeile(cut, 1);                                   // Außenwand: kein Fensterteil
+        Assert.DoesNotContain("Fenster", cut.FindAll(".epos-stammblattgruppe-titel").Select(e => e.TextContent));
+
+        Zeilenklick.Zeile(cut, 2);                                   // Fenster Probe
+        Assert.Equal(new[] { "Kenndaten", "Fenster", "Schichten", "Strahlung der Außenfläche", "Herkunft" },
+                     cut.FindAll(".epos-stammblattgruppe-titel").Select(e => e.TextContent).ToArray());
+        IElement blatt = Stammblatt(cut);
+        Assert.Equal("1,40", Feld(blatt, "U_f Rahmen").GetAttribute("value"));
+        Feld(blatt, "ψ_g Glasrand").Input("0,06");
+        Assert.Equal(0.06, cut.Instance.Arbeitsstand.Arbeit.FensterPsiGlasrand);
+        Assert.True(cut.Instance.Arbeitsstand.Geaendert);
+        Assert.Contains("U_w", blatt.TextContent);
+    }
+
+    // =================================================================================
+    // Nachzug KIS: Abschnitte, Fensterteil und Summenfuß beim Assistenten
+    // =================================================================================
+
+    private static KiFeldzugang Ki(string feld)
+    {
+        KiFeldzugang? zugang = KiMaskenbruecke.Feldzugang(KiMaskennamen.BAUTEILAUFBAU, feld);
+        Assert.NotNull(zugang);
+        return zugang!;
+    }
+
+    private static void KiSetzen(string feld, string text)
+    {
+        KiFeldzugang zugang = Ki(feld);
+        KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(zugang, text);
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        zugang.Setzen(umsetzung.Wert);
+    }
+
+    [Fact]
+    public void Der_Assistent_setzt_Abschnitt_und_Flaechenanteil_und_liest_Ebenensumme_und_Summenfuss()
+    {
+        var k = new Katalog();
+        var cut = Aufbauen(k);
+        Zeilenklick.Zeile(cut, 1);                                   // Außenwand gedämmt, drei Schichten
+
+        KiSetzen("schicht_abschnitt_3", "1");
+        KiSetzen("schicht_flaechenanteil_3", "0,85");
+        KiSetzen("schicht_flaechenanteil_1", "0,5");                 // homogene Schicht: ohne Wirkung
+        cut.Render();
+
+        var schichten = cut.Instance.Arbeitsstand.Schichten;
+        Assert.Equal(new int?[] { null, null, 1 }, schichten.Select(s => s.Abschnitt).ToArray());
+        Assert.Equal(new double?[] { null, null, 0.85 }, schichten.Select(s => s.Flaechenanteil).ToArray());
+        Assert.True(cut.Instance.Arbeitsstand.Geaendert);
+        Assert.Equal(1, k.Gerechnet.Last().Schichten[2].Abschnitt);  // der Summenfuß kommt neu
+
+        KiFeldzugang summe = Ki("schicht_ebenensumme_3");
+        Assert.False(summe.Setzbar);
+        Assert.Equal(0.85, (double)summe.Lesen()!, 6);
+        Assert.Null(Ki("schicht_ebenensumme_1").Lesen());
+
+        Assert.False(Ki("summe_u").Setzbar);
+        Assert.Equal(0.25, Ki("summe_u").Lesen());
+        Assert.Null(Ki("summe_rt_oben").Lesen());
+        Assert.False(Ki("summe_rt_unten").Setzbar);
+
+        KiSetzen("fenster_ug", "1,1");                               // keine Fensterart: ohne Wirkung
+        Assert.Null(cut.Instance.Arbeitsstand.Arbeit.FensterUg);
+    }
+
+    [Fact]
+    public void Der_Assistent_setzt_den_Fensterteil_eines_Fensteraufbaus()
+    {
+        var k = new Katalog();
+        k.Saetze.Add(new BauteilaufbauDaten
+        {
+            Id = 9, Bezeichner = "Fenster Probe", Bauteilart = "FENSTER", Herkunft = "Manuell",
+            FensterUg = 1.0, FensterUf = 1.4, FensterG = 0.5, FensterRahmenanteil = 0.3, FensterPsiGlasrand = 0.04
+        });
+        var cut = Render<BauteilaufbauDialog>(b => b
+            .Add(x => x.Katalogzeilen, () => k.Saetze.Select(s => new Katalogfilterzeile(s.Id, s.Bezeichner)
+                { Schluessel = s.Id.ToString(System.Globalization.CultureInfo.InvariantCulture) }
+                .MitText(Katalogfilterprofil.SpBezeichner, s.Bezeichner)).ToList())
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerBauteilaufbau(
+                s => WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(s) ?? s))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Lies, id => k.Saetze.FirstOrDefault(s => s.Id == id)?.Kopie())
+            .Add(x => x.Baustoffe, () => STOFFE)
+            .Add(x => x.Bauteilarten, ARTEN.Append(("FENSTER", "Fenster")).ToList())
+            .Add(x => x.Kennwerte, d => Fuss(d))
+            .Add(x => x.Pruefen, d => "")
+            .Add(x => x.Speichern, k.Speichern));
+        Zeilenklick.Zeile(cut, 2);                                   // Fenster Probe
+
+        Assert.Equal(1.4, Ki("fenster_uf").Lesen());
+        KiSetzen("fenster_psi_glasrand", "0,06");
+        KiSetzen("fenster_g", "0,6");
+        cut.Render();
+
+        Assert.Equal(0.06, cut.Instance.Arbeitsstand.Arbeit.FensterPsiGlasrand);
+        Assert.Equal(0.6, cut.Instance.Arbeitsstand.Arbeit.FensterG);
+        Assert.True(cut.Instance.Arbeitsstand.Geaendert);
+        Assert.Equal("0,60", Feld(Stammblatt(cut), "g-Wert").GetAttribute("value"));
+        Assert.False(KiFeldwandler.Wandle(Ki("fenster_rahmenanteil"), "1,5").Ok);   // die Grenze der Maske
     }
 }
 

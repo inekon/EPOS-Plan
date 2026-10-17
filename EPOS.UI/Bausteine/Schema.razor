@@ -69,6 +69,27 @@
                       text-anchor="middle" dominant-baseline="middle">@Bild.Spaltenkoepfe[i]</text></g>
             }
 
+            @* --- Kopf der Kaeltebahn (Auftrag KS) ------------------------------
+
+               Nur, wenn das Projekt Kaelte rechnet: eine gestrichelte Trennlinie, der
+               Bahntitel und die vier Spaltenkoepfe der Kaelteseite. Ohne Kaelte entsteht
+               hier kein Element. *@
+            @if (Bild.HatKaelte)
+            {
+                <line class="epos-schema-bahntrenner" x1="@Bild.Rand" y1="@Bild.KaelteOben"
+                      x2="@(Bild.Breite - Bild.Rand)" y2="@Bild.KaelteOben" />
+                <g><text class="epos-schema-bahnkopf" x="@Bild.Rand" y="@(Bild.KaelteOben + BAHN_TITEL / 2)"
+                      dominant-baseline="central">@Bild.KaelteTitel</text></g>
+
+                @for (int i = 0; i < Bild.KaelteSpaltenkoepfe.Count && i < Bild.SpaltenX.Count; i++)
+                {
+                    <g><text class="epos-schema-spaltenkopf epos-schema-spaltenkopf--kaelte"
+                          x="@(Bild.SpaltenX[i] + Bild.SpaltenBreite[i] / 2)"
+                          y="@(Bild.KaelteOben + BAHN_TITEL + Bild.KopfHoehe / 2)"
+                          text-anchor="middle" dominant-baseline="middle">@Bild.KaelteSpaltenkoepfe[i]</text></g>
+                }
+            }
+
             @* --- Kanten (unter den Kaesten) -----------------------------------
 
                Jede Leitung ist eine LINIE gleichmaessiger Breite mit EINER Spitze am
@@ -100,8 +121,8 @@
                    aria-label="@knoten.Titel"
                    aria-pressed="@(gewaehlt ? "true" : "false")"
                    @ref="_kaesten[knoten.Schluessel]"
+                   @attributes="Doppelklick(knoten.Schluessel)"
                    @onclick="() => Waehlen(knoten.Schluessel)"
-                   @ondblclick="() => Bearbeiten(knoten.Schluessel)"
                    @onkeydown="e => BeiTaste(e, knoten.Schluessel)">
 
                     <title>@Kurzhinweis(knoten)</title>
@@ -199,8 +220,8 @@
 
                     <g class="@Bandklasse(glied)" tabindex="0" role="button"
                        aria-label="@glied.Text"
+                       @attributes="Doppelklick(glied.Schluessel)"
                        @onclick="() => Waehlen(glied.Schluessel)"
-                       @ondblclick="() => Bearbeiten(glied.Schluessel)"
                        @onkeydown="e => BeiTaste(e, glied.Schluessel)">
                         <rect class="epos-schema-pille" x="@glied.X" y="@glied.Y"
                               width="@glied.Breite" height="@glied.Hoehe"
@@ -214,6 +235,14 @@
                 }
             }
 
+            @* --- Satz der Kaelte-Kaskade (Auftrag KS) ----------------------------- *@
+            @if (Bild.HatKaelte && Bild.KaelteKetteOben >= 0)
+            {
+                <g><text class="epos-schema-zeile epos-schema-kaeltekette" x="@Bild.Rand"
+                      y="@(Bild.KaelteKetteOben + BAHN_TITEL / 2)"
+                      dominant-baseline="central">@Bild.KaelteKetteText</text></g>
+            }
+
             @* --- Legende --------------------------------------------------------- *@
             @{
                 int lx = Bild.Rand;
@@ -222,10 +251,26 @@
             @foreach (SchemaLegendeeintrag e in Bild.Legende)
             {
                 int breite = Textbreite(e.Text);
-                if (lx + breite + 40 > Bild.Breite - Bild.Rand && lx > Bild.Rand)
+                int muster = e.Marke ? Textbreite(e.MarkeText) + 12 : 26;
+                if (lx + breite + muster + 14 > Bild.Breite - Bild.Rand && lx > Bild.Rand)
                 {
                     lx = Bild.Rand;
                     ly += LEGENDE_ZEILE;
+                }
+
+                @* Auftrag KS: Ein Markeneintrag zeigt statt der Linie die Marke selbst. *@
+                if (e.Marke)
+                {
+                    <rect class="epos-schema-badge epos-schema-legendemarke" x="@lx"
+                          y="@(ly + (LEGENDE_ZEILE - BADGE_HOEHE) / 2)" width="@muster"
+                          height="@BADGE_HOEHE" rx="@(BADGE_HOEHE / 2)" ry="@(BADGE_HOEHE / 2)" />
+                    <g><text class="epos-schema-badgetext" x="@(lx + muster / 2)"
+                          y="@(ly + LEGENDE_ZEILE / 2)" text-anchor="middle"
+                          dominant-baseline="central">@e.MarkeText</text></g>
+                    <g><text class="epos-schema-legendetext" x="@(lx + muster + 6)"
+                          y="@(ly + LEGENDE_ZEILE / 2)" dominant-baseline="central">@e.Text</text></g>
+                    lx += muster + breite + 32;
+                    continue;
                 }
 
                 <line class="@Legendenklasse(e)" x1="@lx" y1="@(ly + LEGENDE_ZEILE / 2)"
@@ -252,6 +297,9 @@
     private const int BADGE_HOEHE = 17;
     private const int LEGENDE_ZEILE = 20;
 
+    /// <summary>Titelzeile der Kaeltebahn [px] — der Anteil 20 von <c>SchemaLayout.BAHN_KOPF</c>.</summary>
+    private const int BAHN_TITEL = 20;
+
     /// <summary>Geschaetzte Zeichenbreite [px] — wie <c>SchemaLayout.ZEICHEN_BREITE</c>.</summary>
     private const double ZEICHEN_BREITE = 6.0;
 
@@ -275,6 +323,15 @@
 
     /// <summary>Doppelklick auf ein Element — der Editorwunsch.</summary>
     [Parameter] public EventCallback<string> BearbeitenGewuenscht { get; set; }
+
+    /// <summary>
+    /// Auftrag KS-2: WELCHES Element einen Editor hat und was sein Tooltipp dazu sagt. Je
+    /// Schluessel <c>null</c> = kein Editor — das Element traegt dann keinen Doppelklick, und
+    /// die Eingabetaste waehlt nur; <c>""</c> = Editor ohne Zusatzzeile; sonst die Zeile
+    /// („Doppelklick öffnet …"), die unter Titel und Hinweis in den Tooltipp kommt. Ohne
+    /// Delegat (<c>null</c>) hat jedes Element den Doppelklick, wie vor KS-2.
+    /// </summary>
+    [Parameter] public Func<string, string?>? Editorhinweis { get; set; }
 
     /// <summary>
     /// Holt den gewaehlten Kasten in den Sichtbereich (ueber den Fokus).
@@ -332,6 +389,7 @@
         // SchemaAnsicht.SichtbarMachen, ohne JS-Schicht.
         if (_kaesten.TryGetValue(Gewaehlt, out ElementReference r))
         {
+            // Rollen gewollt: gezielter Sprung, der gewählte Kasten des Schemas soll ins Bild.
             try { await r.FocusAsync(); } catch { /* das Element ist gerade weg */ }
         }
     }
@@ -346,6 +404,25 @@
     private Task Bearbeiten(string schluessel)
         => BearbeitenGewuenscht.InvokeAsync(schluessel);
 
+    /// <summary>Hat das Element einen Editor? Ohne <see cref="Editorhinweis"/> jedes.</summary>
+    private bool HatEditor(string schluessel)
+        => Editorhinweis is null || Editorhinweis(schluessel) is not null;
+
+    private static readonly IReadOnlyDictionary<string, object> OhneDoppelklick
+        = new Dictionary<string, object>();
+
+    /// <summary>
+    /// Der Doppelklick als Attributsatz — nur fuer ein Element MIT Editor. Ein Element ohne
+    /// Editor bekommt keinen <c>ondblclick</c>, statt einen Handler zu tragen, der nichts tut.
+    /// </summary>
+    private IReadOnlyDictionary<string, object> Doppelklick(string schluessel)
+        => HatEditor(schluessel)
+            ? new Dictionary<string, object>
+            {
+                ["ondblclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => Bearbeiten(schluessel))
+            }
+            : OhneDoppelklick;
+
     /// <summary>
     /// Eingabe und Leertaste waehlen; Eingabe auf einem BEREITS gewaehlten Element
     /// oeffnet den Editor — der Tastaturweg zum Doppelklick.
@@ -355,7 +432,8 @@
         if (e.Key == " " || e.Key == "Spacebar") return Waehlen(schluessel);
         if (e.Key != "Enter") return Task.CompletedTask;
 
-        return schluessel == Gewaehlt ? Bearbeiten(schluessel) : Waehlen(schluessel);
+        if (schluessel != Gewaehlt) return Waehlen(schluessel);
+        return HatEditor(schluessel) ? Bearbeiten(schluessel) : Task.CompletedTask;
     }
 
     // =====================================================================
@@ -423,6 +501,7 @@
         if (n.Art == SchemaKnotenart.Quelle && n.IstWaermepumpe) s += " epos-schema-knoten--quelle-wp";
         if (n.Art == SchemaKnotenart.Erzeuger && n.Kaskade) s += " epos-schema-knoten--kaskade";
         if (n.Art == SchemaKnotenart.Quelle && n.Kaskade) s += " epos-schema-knoten--gestrichelt";
+        if (n.Kaelte) s += " epos-schema-knoten--kaelte";
         if (n.Warnung) s += " epos-schema-knoten--warnung";
         if (n.Schluessel == Gewaehlt) s += " epos-schema-knoten--gewaehlt";
 
@@ -448,11 +527,15 @@
     /// Der Kurzhinweis eines Kastens — Titel, Hinweis und (bei Warnung) der Warntext,
     /// woertlich wie <c>SchemaAnsicht.OnMouseMove</c>:381-389.
     /// </summary>
-    private static string Kurzhinweis(SchemaKnoten n)
+    private string Kurzhinweis(SchemaKnoten n)
     {
         string text = n.Titel;
         if (!string.IsNullOrEmpty(n.Hinweis)) text += "\n" + n.Hinweis;
         if (n.Warnung && !string.IsNullOrEmpty(n.Warntext)) text += "\n" + n.Warntext;
+
+        // KS-2: der Weg des Doppelklicks als letzte Zeile, wo der Wirt ihn nennt.
+        string? editor = Editorhinweis?.Invoke(n.Schluessel);
+        if (!string.IsNullOrEmpty(editor)) text += "\n" + editor;
         return text;
     }
 }

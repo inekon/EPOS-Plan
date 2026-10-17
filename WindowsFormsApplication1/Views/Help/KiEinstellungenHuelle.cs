@@ -105,6 +105,8 @@ namespace WindowsFormsApplication1
                 ["Modellzeile"] = string.Format(MyResource.Resource.KI_EINST_HINWEIS_MODELL,
                                                 KiChatService.MODELL),
                 ["WegB"] = KiChatService.WegBErzwingen,
+                // Entwicklerbereich KI_WERKZEUGE: Modell neu erkennen, Weg B erzwingen.
+                ["Entwickler"] = Entwicklermodus.Aktiv,
                 ["Dialogdaten"] = KiEinwilligung.DialogdatenErteilt,
                 ["ModellNeuErkennen"] = (Func<string, Task<string>>)ModellNeuErkennen,
 

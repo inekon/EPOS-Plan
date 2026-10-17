@@ -84,6 +84,8 @@ public sealed class VorlagenfeldanzeigeHuelleTests : IDisposable
         VorlagenfeldanzeigeHuelle.Einhaengen();
         Assert.NotNull(Vorlagenfeldhalter.Finde("projekt.kunde"));
         Assert.Equal(VorlagenfeldanzeigeHuelle.Bilden().Count, Vorlagenfeldhalter.Alle.Count);
+        // Mit dem Katalog kommt „Baukasten speichern…" für den Katalog der leisen Zeile.
+        Assert.NotNull(Vorlagenfeldhalter.Baukasten);
     }
 }
 

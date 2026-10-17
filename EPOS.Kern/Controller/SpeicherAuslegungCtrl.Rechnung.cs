@@ -79,6 +79,16 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Verlangt die Auslegung eine EPOS-Zeitreihe (Last, PV oder Preis aus dem Lauf)?
+        /// Nur dann setzt die Quellenbeschaffung einen gerechneten Lauf voraus.
+        /// </summary>
+        internal static bool BrauchtEposReihe(SpeicherAuslegungKonfiguration auslegung)
+            => auslegung != null &&
+               (auslegung.Lastquelle == SpeicherAuslegungQuelle.Epos ||
+                auslegung.PvQuelle == SpeicherAuslegungQuelle.Epos ||
+                auslegung.Preisquelle == SpeicherAuslegungQuelle.Epos);
+
+        /// <summary>
         /// <b>DIE EINE NAHT ZWISCHEN BESCHAFFUNG UND RECHNUNG</b> (Auftrag #254).
         /// Alles, was Datenbank und Zeitreihen braucht, steht hier — und nur hier;
         /// <see cref="VorbereitenAusQuellen"/> kommt danach ohne beides aus.
@@ -111,10 +121,11 @@ namespace WindowsFormsApplication1
                 throw new ArgumentException("Die Quellen- und Kostenkonfiguration fehlt.", nameof(snapshot));
             PruefeQuellen(snapshot.Auslegung);
 
-            bool brauchtEpos = snapshot.Auslegung.Lastquelle == SpeicherAuslegungQuelle.Epos ||
-                snapshot.Auslegung.PvQuelle == SpeicherAuslegungQuelle.Epos ||
-                snapshot.Auslegung.Preisquelle == SpeicherAuslegungQuelle.Epos;
-            if (brauchtEpos && sim == null)
+            bool brauchtEpos = BrauchtEposReihe(snapshot.Auslegung);
+            // Ein Lauf ohne gerechneten Strombedarf (Ergebnishülle vor dem ersten Lauf) gilt
+            // wie null — dieselbe Regel wie in der Vorbelegung, die Wache in
+            // StromspeicherSimCtrl.BaueLastreihe wird nicht angelaufen.
+            if (brauchtEpos && !SpeicherFlottenStudieCtrl.LastgangGerechnet(sim))
                 throw new ArgumentNullException(nameof(sim),
                     "Eine EPOS-Zeitreihe setzt einen abgeschlossenen Simulationslauf voraus.");
 

@@ -113,7 +113,7 @@ namespace EPOS.Kern.Tests
             string text = RendererQuelle();
 
             int bildmethoden = Regex.Matches(text, @"public static byte\[\] ").Count;
-            Assert.Equal(34, bildmethoden);
+            Assert.Equal(35, bildmethoden);   // 35 mit dem Bild der Komfortwoche (AK2-3)
 
             // Kein Bild entsteht mehr auf einer eigenen Flaeche; jedes geht durch
             // SkiaMaler.Png - auch die vier gemeinsamen Rumpfmethoden.

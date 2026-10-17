@@ -15,7 +15,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// und Vorlagenordner im Arbeitsstand, die Übergabe erst im OK-Weg nach dem gelungenen Speichern,
 /// nichts auf Abbrechen, Kreuz und Esc, „Standardwerte", die weiche Sperre des Ordners (iOS) mit
 /// Grund und die Sicht des Assistenten. Ohne Rückweg der Hülle steht die Rubrik nicht da — die
-/// übrigen sechs Rubriken hält <see cref="EinstellungenDialogTests"/>.
+/// übrigen sieben Rubriken hält <see cref="EinstellungenDialogTests"/>.
 ///
 /// <para>Kultur de-DE; alle Werte erfunden.</para>
 /// </summary>
@@ -88,7 +88,7 @@ public class EinstellungenBerichtTests : EposBunitContext
 
         var reiter = cut.FindAll(".epos-reiter-knopf").Select(e => e.TextContent.Trim()).ToList();
         Assert.Equal(new[] { "VDI Datensätze", "Datenbank", "Web-Schnittstellen (API)", "Klimadaten",
-                             "Diagramme", "Bericht", "Anwendung" }, reiter);
+                             "Zapfprofil", "Diagramme", "Bericht", "Anwendung" }, reiter);
         Assert.True(cut.Instance.BerichtSichtbar);
 
         Bericht(cut);

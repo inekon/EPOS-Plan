@@ -1,0 +1,91 @@
+﻿@* DAS JAHRESRASTER ZUM ANSEHEN: 12 Monate x 31 Tage im eigenen Rollkasten, je Tag eine Flaeche in der Farbe seiner
+   Tagesart, darueber die Legende mit der Zahl der Tage je Art. Dieselbe Stilregel wie das Jahresraster der
+   Kalenderbedienung im Gebaeudedialog (Raster .epos-kalb-jahr, Farben .epos-kalb-art-0 ... 6), aber ohne Bedienung:
+   Die Tage sind keine Knoepfe, ein Klick waehlt nichts.
+
+   DER BAUSTEIN RECHNET NICHTS. Welche Tagesart ein Tag hat, sagt der Wirt (Tage: 365 Werte des Gemeinjahrs, je ein
+   Index 0 ... 6 der Farbe); der Wirt holt sie aus dem Rechenweg, nicht aus einer zweiten Regel. Ohne Tage zeichnet
+   der Baustein nichts. *@
+
+@namespace EPOS.UI.Bausteine
+@using System.Globalization
+
+@if (Tage is { Count: > 0 } tage)
+{
+    <div class="epos-jahresraster">
+        <ul class="epos-kalb-legende">
+            @foreach ((int Art, string Name) eintrag in Legende)
+            {
+                <li data-art="@eintrag.Art">
+                    <span class="epos-kalb-muster epos-kalb-art-@eintrag.Art" aria-hidden="true"></span>
+                    @(eintrag.Name + " · " + Anzahl(tage, eintrag.Art).ToString(CultureInfo.CurrentCulture))
+                </li>
+            }
+        </ul>
+        <div class="epos-kalb-rolle">
+            <div class="epos-kalb-jahr" role="group" aria-label="@Bezeichnung">
+                @for (int m = 1; m <= 12; m++)
+                {
+                    int monat = m;
+                    <span class="epos-kalb-monat">@Monatsname(monat)</span>
+                    @for (int t = 1; t <= 31; t++)
+                    {
+                        if (t > TAGE_JE_MONAT[monat - 1])
+                        {
+                            <span class="epos-kalb-tagleer" aria-hidden="true"></span>
+                            continue;
+                        }
+                        int jahrestag = Jahrestag(monat, t);
+                        int art = jahrestag <= tage.Count ? tage[jahrestag - 1] : 0;
+                        <span class="epos-jahresraster-tag epos-kalb-art-@art" data-tag="@jahrestag"
+                              title="@Tagtitel(monat, t, art)">@t</span>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    /// <summary>Die Tage je Monat des Gemeinjahrs (ohne Schalttag).</summary>
+    private static readonly int[] TAGE_JE_MONAT = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+    /// <summary>Der Name des Rasters (Sprachausgabe).</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>Je Tag des Gemeinjahrs (1 … 365) der Index seiner Tagesart 0 … 6 (die Farbe <c>epos-kalb-art-n</c>); leer = kein Raster.</summary>
+    [Parameter] public IReadOnlyList<int>? Tage { get; set; }
+
+    /// <summary>Die Legende: je Tagesart der Index und ihr Name, in der Reihenfolge der Anzeige.</summary>
+    [Parameter] public IReadOnlyList<(int Art, string Name)> Legende { get; set; } = Array.Empty<(int, string)>();
+
+    /// <summary>Die zwölf Monatsnamen; fehlt einer, steht seine Nummer.</summary>
+    [Parameter] public IReadOnlyList<string> Monatsnamen { get; set; } = Array.Empty<string>();
+
+    private string Monatsname(int monat)
+        => monat - 1 < Monatsnamen.Count && Monatsnamen[monat - 1] is { Length: > 0 } name
+            ? name : monat.ToString(CultureInfo.CurrentCulture);
+
+    private static int Jahrestag(int monat, int tag)
+    {
+        int d = tag;
+        for (int m = 1; m < monat; m++) d += TAGE_JE_MONAT[m - 1];
+        return d;
+    }
+
+    private static int Anzahl(IReadOnlyList<int> tage, int art)
+    {
+        int n = 0;
+        for (int i = 0; i < tage.Count; i++) if (tage[i] == art) n++;
+        return n;
+    }
+
+    /// <summary>„15.01. · Werktag" — Tag und Monat ohne Jahr, dazu der Name der Tagesart aus der Legende.</summary>
+    private string Tagtitel(int monat, int tag, int art)
+    {
+        string datum = tag.ToString("00", CultureInfo.InvariantCulture) + "." + monat.ToString("00", CultureInfo.InvariantCulture) + ".";
+        foreach ((int Art, string Name) eintrag in Legende)
+            if (eintrag.Art == art) return datum + " · " + eintrag.Name;
+        return datum;
+    }
+}

@@ -23,8 +23,18 @@ namespace WindowsFormsApplication1
         /// <summary>Anzeigename („Erdgas E"); bei mehreren Ständen mit dem Stand dahinter.</summary>
         public string Name = "";
 
-        /// <summary>Ist es ein STROMträger? Dann zählt der Leistungspreis immer mit.</summary>
+        /// <summary>Ist es der STROMträger eines Standes mit stromverwendendem Erzeuger —
+        /// zugeordnet oder, ohne Zuordnung, der Rückfallträger, mit dem der Netzbezug bepreist
+        /// wird? Dann zählt der Leistungspreis immer mit.</summary>
         public bool IstStrom;
+
+        /// <summary>
+        /// Der Stromträger eines Standes OHNE stromverwendenden Erzeuger, dessen Netzbezug die
+        /// Gruppenregel bepreist — zugeordnet oder Auslieferungsträger (Anwenderentscheid
+        /// 29.09.2026, Register EZ‑17): Er rechnet Arbeits- und Grundpreis, den Leistungspreis
+        /// nicht; der zählt deshalb nie, auch nicht gepflegt oder je Szenario.
+        /// </summary>
+        public bool LeistungspreisAusgesetzt;
 
         /// <summary>Wirksamer Erwartet-Arbeitspreis (Rückfallkette); <c>null</c> = keiner.</summary>
         public double? Arbeitspreis;
@@ -70,8 +80,12 @@ namespace WindowsFormsApplication1
     ///   <item><description>DV-Entgelt und PPA-Preis je Vergütungszeile, die für einen
     ///     Stand MIT PV-Anlage gilt;</description></item>
     ///   <item><description>je Träger MIT VERBRAUCH und Stand der Arbeits- und der
-    ///     Grundpreis, der Leistungspreis nur beim Stromträger oder dort, wo ein
-    ///     Leistungspreis (Erwartet oder je Szenario) gepflegt ist.</description></item>
+    ///     Grundpreis, der Leistungspreis beim Stromträger eines Standes mit
+    ///     stromverwendendem Erzeuger immer — ohne zugeordneten Stromträger beim
+    ///     Rückfallträger, der den Netzbezug bepreist (Register EZ‑18) —, sonst dort, wo ein
+    ///     Leistungspreis (Erwartet oder je Szenario) gepflegt ist — nie beim Stromträger eines
+    ///     Standes ohne stromverwendenden Erzeuger, der den Leistungspreis nicht ansetzt
+    ///     (Register EZ‑17).</description></item>
     /// </list>
     /// <para><c>n</c> — die SZENARIERTEN: Ein Parameter zählt, wenn sein Best- oder sein
     /// Worst-Wert gepflegt ist und sich um mehr als 1e−9 vom Erwartet-Wert unterscheidet
@@ -195,9 +209,11 @@ namespace WindowsFormsApplication1
                     // Der Leistungspreis zählt beim Stromträger immer, sonst nur, wo ein
                     // Leistungspreis gepflegt ist — Erwartet oder je Szenario. So bleibt
                     // n ≤ m: Ein gepflegter Szenario-Leistungspreis bringt seinen
-                    // Parameter mit.
+                    // Parameter mit. EZ‑17: Der Stromträger eines Standes ohne
+                    // stromverwendenden Erzeuger setzt ihn nicht an — dann zählt er nie.
                     bool leistungSzenario = (sz.LeistungspreisBest ?? 0) != 0 || (sz.LeistungspreisWorst ?? 0) != 0;
-                    if (tr.IstStrom || (tr.Leistungspreis ?? 0) != 0 || leistungSzenario)
+                    if (!tr.LeistungspreisAusgesetzt &&
+                        (tr.IstStrom || (tr.Leistungspreis ?? 0) != 0 || leistungSzenario))
                         a.Zaehlen(MyResource.Resource.WIRT_SZ_TP_LEISTUNG + " " + tr.Name,
                                   Paar(tr.Leistungspreis, sz.LeistungspreisBest, sz.LeistungspreisWorst));
                 }
@@ -206,7 +222,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Zählung einer Vergleichsgruppe aus der DATENBANK: je Stand die Träger mit
+        /// Die Zählung der Stände eines LAUFS aus der DATENBANK: je Stand die Träger mit
         /// Verbrauch (die Verwendungsliste der Kostenseite, dazu der Stromträger, wenn der
         /// Stand Strom bezieht) mit ihren wirksamen Erwartet-Preisen und den Preisen je
         /// Szenario, und die Vergütungszeilen der Stände mit PV-Anlage — eine übernommene
@@ -214,7 +230,9 @@ namespace WindowsFormsApplication1
         /// betroffenen Teil, nie den Ausweis.
         /// </summary>
         /// <param name="p">Der Parametersatz der Gruppe; <c>null</c> = kein Ausweis.</param>
-        /// <param name="staende">Die Stände der Gruppe (Id, Anzeigename) in Listenreihenfolge.</param>
+        /// <param name="staende">Die Stände des Laufs (Id, Anzeigename) in Listenreihenfolge —
+        /// Stamm, angehakte Varianten und Referenz, dieselbe Menge, über die der Lauf seine
+        /// Gruppenregel bestimmt (Konzept § 2.11.5, § 3.5).</param>
         public static SzenarioAbdeckung Lesen(WirtschaftlichkeitParameter p,
                                              IEnumerable<KeyValuePair<int, string>> staende)
         {
@@ -227,10 +245,10 @@ namespace WindowsFormsApplication1
                     if (s.Key > 0 && gesehen.Add(s.Key)) liste.Add(s);
             bool mehrere = liste.Count > 1;
 
-            // GRUPPENREGEL „Strombedarf ohne Verwendung": Verwendet ein Stand der Gruppe
+            // GRUPPENREGEL „Strombedarf ohne Verwendung": Verwendet ein Stand des Laufs
             // Strom, bepreist im Vergleich JEDER Stand seinen Netzbezug — dann zählt auch der
-            // Stromträger eines Standes ohne eigene Stromverwendung mit (dieselbe Regel wie
-            // WirtschaftlichkeitCtrl.StromGruppenregel).
+            // Stromträger eines Standes ohne eigene Stromverwendung mit (dieselbe Regel und
+            // dieselbe Menge wie WirtschaftlichkeitCtrl.StromGruppenregel).
             bool gruppeStrom = false;
             if (mehrere)
             {
@@ -251,7 +269,9 @@ namespace WindowsFormsApplication1
                 int id = s.Key;
                 string stand = string.IsNullOrWhiteSpace(s.Value) ? id.ToString(CultureInfo.InvariantCulture) : s.Value;
 
-                foreach (KeyValuePair<int, string> c in TraegerMitVerbrauch(id, gruppeStrom))
+                List<KeyValuePair<int, string>> mitVerbrauch =
+                    TraegerMitVerbrauch(id, gruppeStrom, out int stromOhneVerwender, out int stromRueckfall);
+                foreach (KeyValuePair<int, string> c in mitVerbrauch)
                 {
                     double? arbeit = null, grund = null, leistung = null;
                     try { KostenEmissionRechner.PreisSatz(id, c.Key, null, out arbeit, out grund, out leistung); }
@@ -263,7 +283,14 @@ namespace WindowsFormsApplication1
                     traeger.Add(new SzenarioAbdeckungTraeger
                     {
                         Name = c.Value + (mehrere ? " (" + stand + ")" : ""),
-                        IstStrom = IstStromtraeger(id, c.Key),
+                        // EZ‑17: Der Stromträger eines Standes ohne stromverwendenden Erzeuger —
+                        // zugeordnet oder von der Gruppenregel beigesteuert — zählt Arbeits- und
+                        // Grundpreis; den Leistungspreis setzt der Vergleich dort nicht an.
+                        // EZ‑18: Der Rückfallträger eines Standes MIT stromverwendendem Erzeuger ohne
+                        // Zuordnung bepreist dessen Netzbezug und ist sein Stromträger.
+                        IstStrom = c.Key != stromOhneVerwender &&
+                                   (c.Key == stromRueckfall || IstStromtraeger(id, c.Key)),
+                        LeistungspreisAusgesetzt = c.Key == stromOhneVerwender,
                         Arbeitspreis = arbeit,
                         Grundpreis = grund,
                         Leistungspreis = leistung,
@@ -296,14 +323,28 @@ namespace WindowsFormsApplication1
         /// Die Träger MIT VERBRAUCH eines Standes (Id, Name): was seine Anlagen beziehen
         /// (<see cref="ProjektEnergietraegerCtrl.Verwendete"/>), dazu der Stromträger, wenn
         /// der Stand Strom bezieht (<see cref="ProjektEnergietraegerCtrl.BrauchtStromTraeger"/>
-        /// — auch ein BHKW-Projekt mit Reststrom). Jeder Träger einmal, nach Id.
+        /// — auch ein BHKW-Projekt mit Reststrom), ohne Zuordnung der Rückfallträger, mit dem die
+        /// Kostenrechnung den Netzbezug bepreist. Jeder Träger einmal, nach Id.
         ///
-        /// <para><paramref name="gruppeStrom"/>: Die Gruppe verwendet Strom (Gruppenregel) —
-        /// dann gehört der Stromträger auch zu einem Stand ohne eigene Stromverwendung,
-        /// ohne Zuordnung der Auslieferungsträger, mit dem ihn der Vergleich bepreist.</para>
+        /// <para><paramref name="gruppeStrom"/>: Ein Stand des Laufs verwendet Strom
+        /// (Gruppenregel) — dann gehört der Stromträger auch zu einem Stand ohne eigene
+        /// Stromverwendung, ohne Zuordnung der Auslieferungsträger, mit dem ihn der Vergleich
+        /// bepreist.</para>
         /// </summary>
-        private static List<KeyValuePair<int, string>> TraegerMitVerbrauch(int idProjekt, bool gruppeStrom)
+        /// <param name="stromOhneVerwender">Der Stromträger eines Standes ohne eigene
+        /// Stromverwendung, dessen Netzbezug die Gruppenregel bepreist — zugeordnet oder
+        /// Auslieferungsträger; er setzt keinen Leistungspreis an (EZ‑17). 0 = keiner.</param>
+        /// <param name="stromRueckfall">Der Rückfallträger eines Standes MIT eigener
+        /// Stromverwendung, dem kein Stromträger zugeordnet ist — der Auslieferungsträger, mit dem
+        /// die Kostenrechnung seinen Netzbezug bepreist (<see cref="Emissionsquelle.KatalogStromTraeger(int)"/>,
+        /// dieselbe Wahl wie im <see cref="KostenEmissionRechner"/>). Er zählt als Stromträger:
+        /// Arbeits- und Grundpreis, der Leistungspreis immer (Register EZ‑18). 0 = keiner.</param>
+        private static List<KeyValuePair<int, string>> TraegerMitVerbrauch(int idProjekt, bool gruppeStrom,
+                                                                           out int stromOhneVerwender,
+                                                                           out int stromRueckfall)
         {
+            stromOhneVerwender = 0;
+            stromRueckfall = 0;
             var liste = new List<KeyValuePair<int, string>>();
             var ids = new HashSet<int>();
             try
@@ -320,8 +361,14 @@ namespace WindowsFormsApplication1
                 if (eigen || gruppeStrom)
                 {
                     int strom = Emissionsquelle.StromTraeger(idProjekt);
+                    if (strom <= 0 && eigen)
+                    {
+                        strom = Emissionsquelle.KatalogStromTraeger(idProjekt);
+                        if (strom > 0) stromRueckfall = strom;
+                    }
                     if (strom <= 0 && !eigen)
                         strom = ProjektEnergietraegerCtrl.StromTraegerImVergleich(idProjekt);
+                    if (!eigen && strom > 0) stromOhneVerwender = strom;
                     if (strom > 0 && ids.Add(strom))
                         liste.Add(new KeyValuePair<int, string>(strom, Emissionsquelle.TraegerName(strom)));
                 }

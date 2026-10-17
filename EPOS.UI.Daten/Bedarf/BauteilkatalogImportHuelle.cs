@@ -1,0 +1,122 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
+using EPOS.UI.Dialoge.Bedarf;
+using R = WindowsFormsApplication1.MyResource.Resource;
+
+namespace WindowsFormsApplication1
+{
+    /// <summary>
+    /// Die HÜLLE von „Bauteilkatalog einlesen…“ (BK-3, E133) — plattformfrei: Sie baut den Parametersatz des
+    /// <see cref="BauteilkatalogImportDialog"/> aus <see cref="BauteilkatalogImport"/> (Kern) und übersetzt Vorschau und
+    /// Ergebnis in die Records der Oberfläche. Die Dateiwahl geht über <c>Dienste.Datei</c>; gewählt wird
+    /// <c>Baustoffe.csv</c>, die übrigen Dateien liegen daneben (oder im Unterordner <c>Export</c>, BK-7). Beide Schalen nehmen dieselbe Hülle (Windows als Delegat
+    /// der Hauptfensterhülle, iOS über die Projektquelle).
+    /// </summary>
+    internal static class BauteilkatalogImportHuelle
+    {
+        /// <summary>Der Parametersatz der Komponente — ohne <c>Geschlossen</c>, das setzt der Wirt.</summary>
+        internal static IReadOnlyDictionary<string, object> Gaben() => new Dictionary<string, object>
+        {
+            ["Waehlen"] = new Func<string, Task<string?>>(Waehlen),
+            ["Vorschau"] = new Func<string, BauteilkatalogVorschauDaten>(p => AlsDaten(BauteilkatalogImport.Vorschau(p))),
+            ["Uebernehmen"] = new Func<string, BauteilkatalogImportErgebnis>(p => Ergebnis(BauteilkatalogImport.Uebernehmen(p)))
+        };
+
+        private static async Task<string?> Waehlen(string filter)
+        {
+            try { return await Dienste.Datei.DateiOeffnenAsync(R.BKI_TITEL, filter, "") ?? ""; }
+            catch (Exception ex) { Ausnahmeprotokoll.Vermerken("Bauteilkatalog einlesen, Dateiwahl: " + ex.Message); return ""; }
+        }
+
+        /// <summary>Die Vorschau des Kerns als Record der Oberfläche.</summary>
+        internal static BauteilkatalogVorschauDaten AlsDaten(BauteilkatalogVorschau v)
+        {
+            var zeilen = new List<BauteilkatalogVorschauZeile>
+            {
+                Zeile(R.BKI_ART_BAUSTOFFE, v.Baustoffe), Zeile(R.BKI_ART_AUFBAUTEN, v.Aufbauten),
+                Zeile(R.BKI_ART_SCHICHTEN, v.Schichten), Zeile(R.BKI_ART_ABSCHNITTE, v.Abschnitte)
+            };
+            var gruende = new List<string>();
+            foreach ((string art, BauteilkatalogZaehlung z) in new[] { (R.BKI_ART_BAUSTOFFE, v.Baustoffe), (R.BKI_ART_AUFBAUTEN, v.Aufbauten),
+                                                                       (R.BKI_ART_SCHICHTEN, v.Schichten), (R.BKI_ART_ABSCHNITTE, v.Abschnitte) })
+                gruende.AddRange(z.Gruende.Select(g => art + ": " + g.Key + " (" + Zahl(g.Value) + ")"));
+            BauteilkatalogRichtungsprobe r = v.Richtung;
+            string richtung = string.Format(CultureInfo.CurrentCulture, R.BKI_RICHTUNG, Zahl(r.DaemmungHinten), Zahl(r.Paare),
+                                            r.MedianVerhaeltnis.HasValue ? r.MedianVerhaeltnis.Value.ToString("0.000", CultureInfo.CurrentCulture) : "–",
+                                            r.AnteilAusserhalb.HasValue ? Zahl((int)Math.Round(r.AnteilAusserhalb.Value * r.UGeprueft)) : "0",
+                                            Zahl(r.UGeprueft));
+            return new BauteilkatalogVorschauDaten(v.Abgelehnt, v.Quelle ?? "", zeilen, v.Gekennzeichnet, v.SchichtenMitBaustoff, gruende,
+                                                   v.CodesOhneDeutung.Select(c => c.Key + " (" + Zahl(c.Value) + ")").ToList(),
+                                                   richtung, v.Protokoll.ToList(), v.LambdaSkaliert,
+                                                   v.HaustechnikBaustoffe + v.HaustechnikAufbauten > 0
+                                                       ? string.Format(CultureInfo.CurrentCulture, R.BKI_HAUSTECHNIK, Zahl(v.HaustechnikBaustoffe),
+                                                                       Zahl(v.HaustechnikAufbauten), Zahl(v.Luftdurchlaesse))
+                                                       : null,
+                                                   Gliederung(v),
+                                                   string.IsNullOrEmpty(v.Ordner)
+                                                       ? null
+                                                       : string.Format(CultureInfo.CurrentCulture, v.UnterordnerExport ? R.BKI_ORDNER_EXPORT : R.BKI_ORDNER, v.Ordner),
+                                                   v.Teilkataloge > 0
+                                                       ? string.Format(CultureInfo.CurrentCulture, R.BKI_TEILKATALOGE, Zahl(v.Teilkataloge),
+                                                                       Zahl(v.TeilkatalogeInQuelle),
+                                                                       v.TeilkatalogeAusZuordnung ? BauteilkatalogQuelle.DATEI_KATALOG_ZUORDNUNG
+                                                                                                  : BauteilkatalogQuelle.DATEI_KATALOG_INHALT,
+                                                                       Zahl(v.BaustoffeMitTeilkatalog), Zahl(v.AufbautenMitTeilkatalog),
+                                                                       Zahl(v.BaustoffeMitMehrerenTeilkatalogen), Zahl(v.AufbautenMitMehrerenTeilkatalogen),
+                                                                       Zahl(v.BaustoffeOhneTeilkatalog), Zahl(v.AufbautenOhneTeilkatalog))
+                                                       : null,
+                                                   v.SchichtzahlAngeglichen + v.AnteilErgaenzt > 0
+                                                       ? string.Format(CultureInfo.CurrentCulture, R.BKI_INHOMOGEN, Zahl(v.SchichtzahlAngeglichen),
+                                                                       Zahl(v.Teilschichten), Zahl(v.AnteilErgaenzt))
+                                                       : null,
+                                                   // BK-8b: was der Wiederimport an Aufbauten des Katalogs ändert (ohne Namen).
+                                                   v.WiederimportGeteilt > 0
+                                                       ? string.Format(CultureInfo.CurrentCulture, R.BKI_WIEDERIMPORT, Zahl(v.WiederimportGeteilt),
+                                                                       Zahl(v.WiederimportVerglichen), Zahl(v.WiederimportUGeaendert),
+                                                                       // BK-8c: ohne Vergleich keine Zahl, sondern ein Strich.
+                                                                       v.WiederimportUMaxProzent?.ToString("0.0", CultureInfo.CurrentCulture) ?? "–",
+                                                                       Zahl(v.WiederimportOhneVergleichswert))
+                                                       : null,
+                                                   // BK-11: wie viele wiedererkannte Aufbauten die Übernahme ändert.
+                                                   v.Aufbauten.Wiedererkannt > 0
+                                                       ? string.Format(CultureInfo.CurrentCulture, R.BKI_AKTUALISIERT, Zahl(v.AufbautenAktualisiert),
+                                                                       Zahl(v.Aufbauten.Wiedererkannt))
+                                                       : null);
+        }
+
+        /// <summary>Das Ergebnis des Übernehmens als Meldung mit Zahlen.</summary>
+        internal static BauteilkatalogImportErgebnis Ergebnis(BauteilkatalogVorschau v)
+        {
+            if (v.Abgelehnt != null) return new BauteilkatalogImportErgebnis(false, string.Format(CultureInfo.CurrentCulture, R.BKI_ABGELEHNT, v.Abgelehnt));
+            if (!v.Geschrieben) return new BauteilkatalogImportErgebnis(false, string.Format(CultureInfo.CurrentCulture, R.BKI_FEHLER, v.Fehler ?? ""));
+            return new BauteilkatalogImportErgebnis(true, string.Format(CultureInfo.CurrentCulture, R.BKI_FERTIG,
+                Zahl(v.Baustoffe.Neu), Zahl(v.Baustoffe.MitKatalog + v.Baustoffe.InQuelle), Zahl(v.Baustoffe.Wiedererkannt),
+                Zahl(v.Aufbauten.Neu), Zahl(v.Aufbauten.Wiedererkannt), Zahl(v.Schichten.Neu + v.Schichten.Wiedererkannt),
+                Zahl(v.Gekennzeichnet), TimeSpan.FromMilliseconds(v.DauerMs).TotalSeconds.ToString("0.0", CultureInfo.CurrentCulture)));
+        }
+
+        /// <summary>Die geplanten Sätze je Gruppe und Klasse als Anzeigezeilen (Codes übersetzt).</summary>
+        private static List<string> Gliederung(BauteilkatalogVorschau v)
+        {
+            var zeilen = new List<string>();
+            foreach ((string art, bool baustoff, SortedDictionary<string, int> d) in new[]
+                     { (R.BKI_ART_BAUSTOFFE, true, v.BaustoffGliederung), (R.BKI_ART_AUFBAUTEN, false, v.AufbauGliederung) })
+                foreach (KeyValuePair<string, int> e in d)
+                {
+                    string[] teile = e.Key.Split('/');
+                    string gruppe = Bauteilkatalog.GruppeText(baustoff, teile[0]);
+                    string klasse = teile.Length > 1 && teile[1] != "-" ? " / " + Bauteilkatalog.KlasseText(baustoff, teile[1]) : "";
+                    zeilen.Add(art + ": " + gruppe + klasse + " (" + Zahl(e.Value) + ")");
+                }
+            return zeilen;
+        }
+
+        private static BauteilkatalogVorschauZeile Zeile(string art, BauteilkatalogZaehlung z) =>
+            new BauteilkatalogVorschauZeile(art, z.Neu, z.MitKatalog, z.InQuelle, z.Wiedererkannt, z.Abgelehnt);
+
+        private static string Zahl(int n) => n.ToString("N0", CultureInfo.CurrentCulture);
+    }
+}

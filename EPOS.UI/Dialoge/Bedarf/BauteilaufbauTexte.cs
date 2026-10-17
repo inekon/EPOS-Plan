@@ -47,8 +47,74 @@ public sealed class BauteilaufbauTexte
     /// <summary><c>BTA_LBL_BESCHREIBUNG</c></summary>
     public string LabelBeschreibung { get; set; } = Resource.BTA_LBL_BESCHREIBUNG;
 
+    /// <summary><c>BTA_GRUPPE_FENSTER</c> — die Gruppe der Fensterwerte (BK-6).</summary>
+    public string GruppeFenster { get; set; } = Resource.BTA_GRUPPE_FENSTER;
+
+    /// <summary><c>BTA_LBL_UG</c> (BK-6)</summary>
+    public string LabelUg { get; set; } = Resource.BTA_LBL_UG;
+
+    /// <summary><c>BTA_LBL_UF</c> (BK-6)</summary>
+    public string LabelUf { get; set; } = Resource.BTA_LBL_UF;
+
+    /// <summary><c>BTA_LBL_GWERT</c> (BK-6)</summary>
+    public string LabelGWert { get; set; } = Resource.BTA_LBL_GWERT;
+
+    /// <summary><c>BTA_LBL_RAHMENANTEIL</c> (BK-6)</summary>
+    public string LabelRahmenanteil { get; set; } = Resource.BTA_LBL_RAHMENANTEIL;
+
+    /// <summary><c>BTA_LBL_PSI_GLASRAND</c> (BK-6)</summary>
+    public string LabelPsiGlasrand { get; set; } = Resource.BTA_LBL_PSI_GLASRAND;
+
+    /// <summary><c>BTA_FENSTER_HINWEIS</c> — die Übernahme an das Bauteil und die Formel für U_w (BK-6).</summary>
+    public string FensterHinweis { get; set; } = Resource.BTA_FENSTER_HINWEIS;
+
+    /// <summary><c>BTA_GRUPPE_STRAHLUNG</c> (DA-8)</summary>
+    public string GruppeStrahlung { get; set; } = Resource.BTA_GRUPPE_STRAHLUNG;
+
+    /// <summary><c>BTA_LBL_ABSORPTION</c> (DA-8)</summary>
+    public string LabelAbsorption { get; set; } = Resource.BTA_LBL_ABSORPTION;
+
+    /// <summary><c>BTA_LBL_EMISSION</c> (DA-8)</summary>
+    public string LabelEmission { get; set; } = Resource.BTA_LBL_EMISSION;
+
+    /// <summary><c>BTA_PLATZHALTER_STRAHLUNG</c> (DA-8) — {0} ist die Vorgabe.</summary>
+    public string PlatzhalterStrahlung { get; set; } = Resource.BTA_PLATZHALTER_STRAHLUNG;
+
+    /// <summary><c>BTA_STRAHLUNG_HINWEIS</c> (DA-8)</summary>
+    public string StrahlungHinweis { get; set; } = Resource.BTA_STRAHLUNG_HINWEIS;
+
     /// <summary><c>BTA_LBL_QUELLE</c></summary>
     public string LabelQuelle { get; set; } = Resource.BTA_LBL_QUELLE;
+
+    /// <summary><c>BKAT_LBL_GRUPPE</c> — die Gruppe des Aufbaus (BK-2b).</summary>
+    public string LabelGruppe { get; set; } = Resource.BKAT_LBL_GRUPPE;
+
+    /// <summary><c>BKAT_GRUPPE_KEINE</c> — die leere Zeile der Gruppenwahl (Gruppe aus der Bauteilart).</summary>
+    public string GruppeKeine { get; set; } = Resource.BKAT_GRUPPE_KEINE;
+
+    /// <summary><c>BKAT_LBL_KLASSE</c></summary>
+    public string LabelKlasse { get; set; } = Resource.BKAT_LBL_KLASSE;
+
+    /// <summary><c>BKAT_KLASSE_KEINE</c></summary>
+    public string KlasseKeine { get; set; } = Resource.BKAT_KLASSE_KEINE;
+
+    /// <summary><c>BKAT_LBL_EIGNUNG</c> — Beschriftung des Lesewerts der Eignung.</summary>
+    public string LabelEignung { get; set; } = Resource.BKAT_LBL_EIGNUNG;
+
+    /// <summary><c>BKAT_GEEIGNET</c></summary>
+    public string Geeignet { get; set; } = Resource.BKAT_GEEIGNET;
+
+    /// <summary><c>BKAT_UNGEEIGNET</c> — „für die Gebäudesimulation meist nicht geeignet".</summary>
+    public string Ungeeignet { get; set; } = Resource.BKAT_UNGEEIGNET;
+
+    /// <summary><c>BKAT_SCHALTER_NUR_GEEIGNETE</c> — der Schalter über der Liste.</summary>
+    public string SchalterNurGeeignete { get; set; } = Resource.BKAT_SCHALTER_NUR_GEEIGNETE;
+
+    /// <summary><c>BKAT_HERKUNFT_IMPORT</c> — die Marke „Import" im Stammblattkopf.</summary>
+    public string MarkeImport { get; set; } = Resource.BKAT_HERKUNFT_IMPORT;
+
+    /// <summary><c>BKAT_IMPORT_QUELLE</c> — die Herleitung unter der festen Quelle eines Importsatzes.</summary>
+    public string ImportQuelle { get; set; } = Resource.BKAT_IMPORT_QUELLE;
 
     /// <summary><c>BTA_LBL_HERKUNFT</c></summary>
     public string LabelHerkunft { get; set; } = Resource.BTA_LBL_HERKUNFT;

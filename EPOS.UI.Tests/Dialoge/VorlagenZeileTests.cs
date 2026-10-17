@@ -224,6 +224,27 @@ public class VorlagenZeileTests : BunitContext
         Assert.True(cut.FindAll("input[type=text]")[0].HasAttribute("readonly"));
     }
 
+    /// <summary>
+    /// AUFTRAG P671: Ein gesperrter Satz (aus dem Hilfsenergieanteil der Anlage) sperrt nur das
+    /// Satzfeld; Bezeichnung, Bemessung und Knöpfe bleiben, wie die Zeile sie erlaubt.
+    /// </summary>
+    [Fact]
+    public void Ein_gesperrter_Satz_sperrt_nur_das_Satzfeld()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.MitWorstBest, true)
+            .Add(x => x.SatzGesperrt, true));
+
+        var texte = cut.FindAll("input[type=text]");
+        Assert.True(texte[1].HasAttribute("disabled"));
+        Assert.Equal("1200", texte[1].GetAttribute("value"));
+        Assert.False(texte[0].HasAttribute("readonly"));
+        Assert.False(cut.Find("select").HasAttribute("disabled"));
+        Assert.All(cut.FindAll("button"), b => Assert.False(b.HasAttribute("disabled")));
+
+        Assert.False(Zeige().FindAll("input[type=text]")[1].HasAttribute("disabled"));
+    }
+
     [Fact]
     public void Die_Abschlusszeile_zeigt_den_Platzhalter_und_nur_den_Anlegeknopf()
     {

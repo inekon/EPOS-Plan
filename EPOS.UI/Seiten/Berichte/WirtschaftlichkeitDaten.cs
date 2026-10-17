@@ -148,6 +148,30 @@ public sealed class MatrixZeile
     public string Unterwert(int spalte)
         => Unterwerte is not null && spalte >= 0 && spalte < Unterwerte.Count
            ? Unterwerte[spalte] ?? "" : "";
+
+    /// <summary>
+    /// Je Zelle der Kurztext zur zweiten Zeile (Tooltip an „nominal …": „Summe der Zahlungen
+    /// über T Jahre, nicht abgezinst"). Leer oder kürzer als <see cref="Zellen"/> = keiner.
+    /// </summary>
+    public IReadOnlyList<string> Unterwerttitel { get; set; } = Array.Empty<string>();
+
+    /// <summary>Der Kurztext zur zweiten Zeile der Zelle <paramref name="spalte"/>; <c>""</c> = keiner.</summary>
+    public string TitelZuUnterwert(int spalte)
+        => Unterwerttitel is not null && spalte >= 0 && spalte < Unterwerttitel.Count
+           ? Unterwerttitel[spalte] ?? "" : "";
+
+    /// <summary>
+    /// Der Kurztext der Zeile — was die Größe umfasst (Tooltip am Titel, etwa an den
+    /// Wärmegestehungskosten); leer = keiner. Die Hülle übernimmt ihn aus der Zeilendefinition
+    /// des Kerns.
+    /// </summary>
+    public string Kurztext { get; set; } = "";
+
+    /// <summary>
+    /// Eine leise Herleitungszeile (Menge × Preis unter den Energiekosten) — die Seite setzt
+    /// sie zurück. Nur Darstellung.
+    /// </summary>
+    public bool Leise { get; set; }
 }
 
 /// <summary>
@@ -304,6 +328,14 @@ public sealed class ErgebnisAnsicht
     public ErgebnisMatrix Sensitivitaet { get; set; } = new();
 
     /// <summary>
+    /// Die Positionen der Stände, deren Zeilen die <see cref="Sensitivitaet"/> zeigt, in ihrer Folge und mit ihrem
+    /// Namen (Konzept Berichtsvorlagen 4.5, 9.4) — die Marke der Tafel nennt je Stand die Positionsform
+    /// <c>stand.&lt;n&gt;.tabelle.sensitivitaet</c>; leer = keine.
+    /// </summary>
+    public IReadOnlyList<EPOS.UI.Dienste.Vorlagenfeldposition> SensitivitaetPositionen { get; set; }
+        = Array.Empty<EPOS.UI.Dienste.Vorlagenfeldposition>();
+
+    /// <summary>
     /// ETAPPE E5 (Konzept § 6.3 Nr. 31): „‹Stände›: Nachweis liegt mit der nächsten
     /// Rechnung vor" — leer, wenn jede gezeigte Ergebniszeile ihren Nachweis trägt.
     /// </summary>
@@ -418,6 +450,30 @@ public sealed class ErgebnisAnsicht
     public ErgebnisMatrix Laufwirkung { get; set; } = new();
 
     /// <summary>
+    /// ETAPPE E9b (U10, Konzept § 2.11.5 und § 2.11.7; E9b‑Q3): der AUSWEIS unter der
+    /// Annahmentafel und in Block 4 — „n von m Parametern szenariert" samt der gepflegten
+    /// Größen (<c>SzenarioAbdeckung.Satz</c>). Gezählt werden die Stände des Laufs: Stamm,
+    /// angehakte Varianten und Referenz.
+    ///
+    /// <para>Er steht an der <b>Ansicht</b> und nicht am Stand, obwohl er vom gewählten
+    /// Szenario unabhängig ist: Er hängt an der VERGLEICHSWAHL, und ein Haken tauscht genau
+    /// dieses Objekt aus. Der Szenariowechsel übernimmt ihn nicht.</para>
+    ///
+    /// <para>Leer = kein Ausweis (kein Parametersatz lesbar).</para>
+    /// </summary>
+    public string Szenarioabdeckung { get; set; } = "";
+
+    /// <summary>
+    /// Anwenderentscheid 30.09.2026 (Register EZ‑18): Die Stände mit Stromverwendung des
+    /// gewählten Laufs — Stamm, angehakte Varianten, Referenz — weichen von denen des Laufs ab,
+    /// dem die gespeicherten Ergebnisse gehören; damit gilt eine andere Gruppenregel, und die
+    /// gezeigten Ergebnisse sind bis zum nächsten „Berechnen" veraltet. Die Seite zeigt dann ein
+    /// eigenes Band im Warnband. Wie der Ausweis hängt die Fahne an der Vergleichswahl und steht
+    /// deshalb an der Ansicht; ein Haken ohne Wirkung auf die Gruppenregel setzt sie nicht.
+    /// </summary>
+    public bool GruppenregelVeraltet { get; set; }
+
+    /// <summary>
     /// ETAPPE E8a (U48): die Fußzeile von „Was ist angenommen?" — wie viele Szenarien
     /// gerechnet sind und woher ihre Annahmen kommen („Drei Szenarien gerechnet · Annahmen aus
     /// Vorgaben, nichts gepflegt"). Leer = keine Zeile.
@@ -530,14 +586,6 @@ public sealed class WirtschaftlichkeitStand
     public IReadOnlyList<string> Nutzungsdauerhinweise { get; set; } = Array.Empty<string>();
 
     /// <summary>
-    /// ETAPPE E9b (U10, Konzept § 2.11.5 und § 2.11.7; E9b‑Q3): der AUSWEIS unter der
-    /// Annahmentafel — „n von m Parametern szenariert" samt der gepflegten Größen, an der
-    /// Stelle des früheren Hinweistexts (<c>SzenarioAbdeckung.Satz</c>). Leer = kein
-    /// Ausweis (kein Parametersatz lesbar).
-    /// </summary>
-    public string Szenarioabdeckung { get; set; } = "";
-
-    /// <summary>
     /// ETAPPE E5 (V‑A): die Deklarationszeilen der Bewertung nach DIN EN 17463 — nominal ·
     /// Steuern · Restwert · Risiko, in dieser Reihenfolge.
     /// </summary>
@@ -582,6 +630,14 @@ public sealed class WirtschaftlichkeitStand
     /// <summary>Die Statuszeile beim Aufbau (gespeicherter Stand, veraltet, keiner).</summary>
     public string Statuszeile { get; set; } = "";
 
+    /// <summary>
+    /// Warum die gespeicherten Ergebnisse nicht mehr gelten — der gewichtigste Grund über alle
+    /// gespeicherten Zeilen der Gruppe (<c>WirtschaftlichkeitCtrl.Veraltung</c>,
+    /// <c>KostenAenderungsstempel.Vorrang</c>); <see cref="WindowsFormsApplication1.Ergebnisveraltung.Keine"/>,
+    /// wenn sie gelten oder keine gespeichert sind. Statuszeile und Band nennen ihn.
+    /// </summary>
+    public WindowsFormsApplication1.Ergebnisveraltung NachrechnenGrund { get; set; }
+
     // =====================================================================
     // KONZEPT § 2.9 und § 2.15 — Referenz und Vergleichssicht
     // =====================================================================
@@ -625,4 +681,12 @@ public sealed class WirtschaftlichkeitStand
     /// </summary>
     public IReadOnlyList<(int Id, string Text)> Staende { get; set; }
         = Array.Empty<(int, string)>();
+
+    /// <summary>
+    /// Die Position jedes Stands der Gruppe in der Folge des Berichts (Stamm = 1, dann die Varianten in der
+    /// Reihenfolge der Gruppe) für die Positionsform der Platzhaltermarken — Mehrjahrestafel und Zahlungsstrombild
+    /// nennen die Position des gewählten Stands. Leer = keine.
+    /// </summary>
+    public IReadOnlyDictionary<int, EPOS.UI.Dienste.Vorlagenfeldposition> Vorlagenfeldpositionen { get; set; }
+        = new Dictionary<int, EPOS.UI.Dienste.Vorlagenfeldposition>();
 }

@@ -279,6 +279,8 @@ namespace EPOS.Kern.Tests
             {
                 "Geb[2].ID_Gebaeude", "Geb[2].JahresheizwaermeMwh", "Geb[2].SpitzeKw", "Geb[2].SpitzeTagesmittelKw",
                 "Geb[2].Spitze95Kw", "Geb[2].KuehlenergieMwh", "Geb[2].StundenMitKuehlbedarf",
+                // Rechenweg RP2a: die Grundfläche des Probegebäudes liegt am Erdreich (DIN EN ISO 13370).
+                "Geb[2].Erdreich_B", "Geb[2].Erdreich_Ug",
                 "Geb[2].MittlereRaumtemperaturHeizzeit", "Geb[2].Ueberhitzungsstunden"
             }, s.Skalare.Select(p => p.Key).ToArray());
             Assert.Equal(4711.0, s.Skalare[0].Value);
@@ -293,9 +295,10 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[]
             {
                 "Geb[2].ID_Gebaeude", "Geb[2].JahresheizwaermeMwh", "Geb[2].SpitzeKw", "Geb[2].SpitzeTagesmittelKw",
-                "Geb[2].Spitze95Kw", "Geb[2].MittlereRaumtemperaturHeizzeit", "Geb[2].Ueberhitzungsstunden"
+                "Geb[2].Spitze95Kw", "Geb[2].Erdreich_B", "Geb[2].Erdreich_Ug",
+                "Geb[2].MittlereRaumtemperaturHeizzeit", "Geb[2].Ueberhitzungsstunden"
             }, f.Skalare.Select(p => p.Key).ToArray());
-            Assert.Equal(frei.Ueberhitzungsstunden, f.Skalare[6].Value);
+            Assert.Equal(frei.Ueberhitzungsstunden, f.Skalare[8].Value);
 
             // Ohne VDI-Gebäude: kein Satz (der Bestandsordner bleibt byte-gleich).
             Assert.Empty(GebaeudeErgebnisexport.Saetze(new SimulationWaermebedarf()));

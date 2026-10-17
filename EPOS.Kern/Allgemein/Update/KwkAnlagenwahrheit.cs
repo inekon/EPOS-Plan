@@ -134,6 +134,17 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Ist das Paar auf der geöffneten Datenbank noch anwendbar? Ein späterer Schritt baut die
+        /// Projektspalten ab (<see cref="KwkgProjektaltspalten"/>); auf einer Datenbank danach gibt
+        /// es nichts mehr zu übertragen, und <see cref="Zaehlung"/> liefe auf „no such column".
+        /// Geprüft über das Schema (<c>PRAGMA table_info</c>), nicht über einen Fehlversuch.
+        /// </summary>
+        public static bool Anwendbar(Paar paar) =>
+            paar != null &&
+            DataRepository.SpalteVorhanden(QUELLE, paar.Projekt) &&
+            DataRepository.SpalteVorhanden(TABELLE, paar.Anlage);
+
+        /// <summary>
         /// Die Übertragung EINES Paares. <c>UPDATE</c> auf die BHKW-Anlagenzeilen, deren
         /// Zielzelle leer ist und deren Projektzeile einen Wert führt.
         /// </summary>

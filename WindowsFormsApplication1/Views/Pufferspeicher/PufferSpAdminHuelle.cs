@@ -82,7 +82,7 @@ namespace WindowsFormsApplication1
                 // PufferSpStammCtrl.Exists im Kern liegt und die Schwestermaske sie nutzt.
                 Existiert = name => new PufferSpStammCtrl().Exists(name),
                 Loeschen = Loeschen,
-                Speichern = (name, felder, _) => Schreiben(name, felder),
+                Speichern = Schreiben,
                 // AD-Q11 (23.09.2026): ein Auslieferungssatz wird nie ueberschrieben;
                 // "Duplizieren..." legt den eigenen Satz an.
                 Duplizieren = (id, name) => KatalogBrowserHuelle.Kopie(PufferSpStammCtrl.Duplizieren(id, name)),
@@ -128,17 +128,32 @@ namespace WindowsFormsApplication1
         private static KatalogSpeicherErgebnis Schreiben(string name,
                                                          IReadOnlyList<BrowserFeldwert> felder)
         {
-            var werte = new PufferSpStammCtrl.AnzeigefelderPufferspeicher(
+            PufferSpStammCtrl.SpeicherErgebnis e =
+                PufferSpStammCtrl.AnzeigefelderSchreiben(name, Werte(felder));
+            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+        }
+
+        /// <summary>
+        /// Schreibt die Sätze einer Mehrfachbearbeitung (Katalogauswahl V1, KA‑E‑8) in EINER Transaktion — die
+        /// Projektkopien oder die Katalogsätze, alle oder keiner (<c>PufferSpStammCtrl.AnzeigefelderSchreibenAlle</c>).
+        /// </summary>
+        internal static KatalogSpeicherErgebnis SammelSchreiben(
+            bool projektkopie, IReadOnlyList<(int Id, IReadOnlyList<BrowserFeldwert> Felder)> saetze)
+        {
+            var liste = new List<PufferSpStammCtrl.Satzaenderung>();
+            foreach (var (id, felder) in saetze)
+                liste.Add(new PufferSpStammCtrl.Satzaenderung(id, Werte(felder)));
+            PufferSpStammCtrl.SpeicherErgebnis e = PufferSpStammCtrl.AnzeigefelderSchreibenAlle(projektkopie, liste);
+            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+        }
+
+        /// <summary>Die Felder des Aufklappers als Anzeigefelder des Kerns.</summary>
+        internal static PufferSpStammCtrl.AnzeigefelderPufferspeicher Werte(IReadOnlyList<BrowserFeldwert> felder)
+            => new PufferSpStammCtrl.AnzeigefelderPufferspeicher(
                 KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldFirma),
                 KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldSpeichertyp),
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldVerluste),
-                KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldVolumen),
-                KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldInvestitionskosten));
-
-            PufferSpStammCtrl.SpeicherErgebnis e =
-                PufferSpStammCtrl.AnzeigefelderSchreiben(name, werte);
-            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
-        }
+                KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldVolumen));
 
         // =====================================================================
         // Der Katalogeditor (W14a.2)
@@ -163,11 +178,11 @@ namespace WindowsFormsApplication1
             if (neu)
             {
                 // Vorbelegungen von MODE_NEU (Form_PufferSp_Bearbeiten Z. 78-82):
-                // kein Speichertyp, kein Hersteller, drei Nullen.
+                // kein Speichertyp, kein Hersteller, zwei Nullen (die Investition ist mit
+                // Welle KB-4 entfallen).
                 daten.SpeichertypIndex = null;
                 daten.Firma = "";
                 daten.Bereitschaftsverluste = 0;
-                daten.Investitionskosten = 0;
                 daten.Gesamtvolumen = 0;
             }
             else
@@ -201,9 +216,8 @@ namespace WindowsFormsApplication1
                 // ueber Button Bearbeiten soll keine Kosten und Emissionen enthalten").
                 // Die drei Schluessel GruppeKosten, LabelInvest und FeldInvest sind mit
                 // ihren Feldern gefallen; GEPFLEGT wird der Preis im Aufklapper "Alle
-                // Daten anzeigen" des Projektdialogs. Der Wert selbst bleibt im
-                // Feldsatz (AusKatalog liest ihn, NachModell schreibt ihn unveraendert
-                // zurueck) - sonst nullte jedes "Ueberschreiben" die Spalte.
+                // Daten anzeigen" des Projektdialogs. Mit Welle KB-4 ist die Spalte
+                // selbst entfallen; die Geraetekosten pflegt die Kostenverwaltung.
                 ["BtnUeberschreibenText"] = MyResource.Resource.HZKK_BTN_UEBERSCHREIBEN,
                 ["BtnSpeichernUnterText"] = MyResource.Resource.HZKK_BTN_SPEICHERN_UNTER,
                 ["BtnSpeichernText"] = MyResource.Resource.ADM_BTN_SPEICHERN,
@@ -242,7 +256,6 @@ namespace WindowsFormsApplication1
             daten.Firma = Feld(satz, KatalogBrowserProfil.FeldFirma);
             daten.Bereitschaftsverluste = Kommazahl(satz, KatalogBrowserProfil.FeldVerluste);
             daten.Gesamtvolumen = Ganzzahl(satz, KatalogBrowserProfil.FeldVolumen);
-            daten.Investitionskosten = Kommazahl(satz, KatalogBrowserProfil.FeldInvestitionskosten);
 
             var anzeige = new List<string>();
             foreach (var t in typen) anzeige.Add(t.Item2);
@@ -282,8 +295,7 @@ namespace WindowsFormsApplication1
                 Firma = (d.Firma ?? "").Trim(),
                 Speichertyp = typ,
                 Gesamtvolumen = d.Gesamtvolumen ?? 0,
-                Betriebsbereitschaftverlust = d.Bereitschaftsverluste ?? 0,
-                Investitionskosten = d.Investitionskosten ?? 0
+                Betriebsbereitschaftverlust = d.Bereitschaftsverluste ?? 0
             };
         }
 

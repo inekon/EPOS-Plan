@@ -1,0 +1,1969 @@
+﻿@* Der ERZEUGERDIALOG der Kaeltemaschine (KU3-4c; Kuehlkonzept 5.3, 5.5, 7.3) - die Kaeltemaschinen
+   eines Projekts als Anlagen (Tab_Energieanlagen, Typ 13).
+
+   KATALOGAUSWAHL V1, STUFE 5 (Konzept Projektdialoge mit Katalogauswahl 4.1-4.10, 5.10): derselbe Aufbau
+   wie die uebrigen Erzeuger (Vorbild BHKW). Oben IM PROJEKT die Anlagenzeilen (Bezeichner, Nennkaelte-
+   leistung, EER/SEER, Rueckkuehlart, Anzahl, Kuehltraeger, eigener Zaehler; Kopfleiste mit der Summe kW
+   Kaelte, Bearbeiten… und „Aus dem Projekt entfernen"), darunter der KATALOG (Tab_Kaeltemaschine_STAMM)
+   in der Katalogliste mit Spaltenwahl, Verwendungsmarke, Suchfeld und Trefferzahl; Fuss „Vergleichen…",
+   Schloss, „Loeschen", „Bearbeiten…" (der Katalogeditor KaeltemaschineKatalogDialog fuer den Satz), Neu…;
+   „Typkennfelder laden…" und „Katalogverwaltung…" stehen in der Kopfzeile des Katalogs (KA-E-27, KM-L1). Die DETAILZEILE ist die Zusammenfassung des gewaehlten
+   Satzes; „Bearbeiten" oeffnet die Satz-Ueberlagerung mit den Anlagenfeldern (dieselbe Komponente wie im
+   Bereich „Kaelte" der Simulationskonfiguration), den Kostenknoepfen und den Kenndaten als Bild.
+
+   SCHREIBWEG. „In das Projekt übernehmen" legt Projektkopie und Anlagenzeile SOFORT an (Kernweg
+   KaeltemaschineAnlageCtrl.Anlegen) - die Zeile ist damit sofort bearbeitbar, auch ihre Kosten. Der Dialog
+   merkt sich die in der Sitzung angelegten Anlagen (Projektkopievormerkung wie bei BHKW und Waermepumpe):
+   Abbrechen, Esc und das Kreuz loeschen sie wieder. Das OK der Satz-Ueberlagerung prueft die Anlage mit den
+   Regeln des Kerns und schreibt sie ueber den Fangweg (Katalogladung.Schreiben); ihr Abbrechen stellt die
+   Anlagenfelder wieder her (Anlagenmerker-Muster), das Abbrechen des Dialogs den Stand beim Oeffnen.
+   „Aus dem Projekt entfernen" merkt eine gespeicherte Anlage vor, geloescht wird beim OK.
+
+   WAERMEPUMPEN MIT KUEHLFUNKTION (KA-E-26, KM-K1; Konzept 5.10a): Katalog und „Im Projekt" fuehren Kaeltemaschinen
+   und Waermepumpen mit Kuehlkennlinie in je einer Liste mit Spalte „Art"; „Im Projekt" dazu den Rang in der
+   Kaeltefolge. „In das Projekt übernehmen" einer Waermepumpe legt Projektkopie und Anlage sofort an (Kernweg
+   KuehlerzeugerKatalogCtrl.WaermepumpeUebernehmen ueber die Huelle), schaltet den Kuehlbetrieb ein und haengt den
+   Rang an; eine Ablehnung des Kerns steht im Banner. „Aus dem Projekt entfernen" schaltet bei einer Waermepumpe nur
+   den Kuehlbetrieb aus (beim OK, Rang weg, Folge geschlossen); Abbrechen nimmt Uebernahmen, Schalter und Raenge
+   zurueck. Vergleichen… nur innerhalb einer Art, Rueckkuehlwerk und Bearbeiten… nur bei der Kaeltemaschine.
+
+   KEINE DATENBANK (Hausregel EPOS.UI): Die Datenseite liegt in der Huelle (EPOS.UI.Daten,
+   KaeltemaschineAnlageHuelle; Windows-Wege KaeltemaschineAnlageFensterHuelle). *@
+
+@namespace EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Dialoge.Allgemein
+@using EPOS.UI.Dialoge.Kosten
+@using System.Globalization
+@using WindowsFormsApplication1
+@using EPOS.UI.Seiten.Start
+@using EPOS.UI.Dialoge.Waermepumpe
+@implements IDisposable
+
+<div class="epos-dialog epos-kaeltemaschine-anlage" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")">
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <h1 class="epos-dialog-titel">@TitelText</h1>
+            <span class="epos-dialog-kontext" title="@Texte.Kopfband">@Texte.Kopfband</span>
+        }
+        <InfoKnopf Schluessel="@HilfeSchluessel" Dialogname="@Texte.Titel" />
+        @if (!string.IsNullOrEmpty(TitelText))
+        {
+            <Schliesskreuz Geschlossen="Verwerfen" />
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
+    }
+    @* KT-3: Wirft das Lesen der Katalogliste, nennt dieser Banner den Grund (Katalogladung). *@
+    @if (!string.IsNullOrEmpty(_listeFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_listeFehler" />
+    }
+    @* KT-4: Wirft das Lesen des gewaehlten Satzes, nennt dieser Banner den Grund (Katalogladung.Satz). *@
+    @if (!string.IsNullOrEmpty(_satzFehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_satzFehler" />
+    }
+
+    @* KATALOGAUSWAHL V1 (Konzept Projektdialoge mit Katalogauswahl 4.2, 4.4a): jede Funktion an genau einem
+       Ort. P = Kopfleiste „Im Projekt" (Summe, Aus dem Projekt entfernen), K = Kopfleiste des Katalogs (Suche,
+       In das Projekt übernehmen), S = Zeile „gewählter Satz" (Marke, Kenndaten, Infoknöpfe und -
+       KnopfleisteAmSatz, AW1 - Vergleichen…, Schloss setzen…, Löschen, Bearbeiten…, Neu…, dazu Typkennfelder und
+       Verwaltung; Schloss und Löschen nur beim Katalogsatz), D = Kopf und Fussleiste des Dialogs. Der Stift je
+       Listenzeile ist Bearbeiten… dieser Zeile. Der Klick auf die Zeile wählt (auch ↑ ↓ Pos1 Ende), die gewählte
+       Projektzeile ist farbig hervorgehoben; die Kästchen markieren nur für die Sammelaktionen, die auf die
+       angekreuzten Zeilen wirken, sonst auf die gewählte. *@
+    <Zweispaltenauswahl Dialogname="Kaeltemaschine" LinksTitel="@Texte.ListeProjekt" RechtsTitel="@Texte.ListeKatalog"
+                        KatalogZeile="@((int)Katalogliste.ZEILENHOEHE_ZEILENWAHL)"
+                        UebernehmenText="@Texte.KnopfInsProjekt"
+                        UebernehmenGesperrt="@(KatalogZiele().Count == 0 || (Anlegen is null && WaermepumpeUebernehmen is null))" Uebernehmen="BeiInsProjekt"
+                        EntfernenText="@Texte.KnopfEntfernen"
+                        EntfernenGesperrt="@(ProjektZiele().Count == 0 && WpZiele().Count == 0)" Entfernen="BeiEntfernen"
+                        ProjektWahl="@_projektWahl" ProjektSichtbar="@ProjektSchluessel()"
+                        KatalogWahl="@_katalogWahl" KatalogSichtbar="@KatalogSichtbar()"
+                        WahlGeaendert="BeiWahlGeaendert"
+                        KatalogFussName="@_katalogZeile?.Bezeichner"
+                        SatzArt="@SatzArt" SatzName="@SatzName" SatzKenndaten="@SatzKenndaten"
+                        SatzNurLesen="@(KatalogsatzGesperrt || SatzIstWaermepumpe)" SatzNurAnsicht="@(_katalogZeile is not null && !KatalogsatzGesperrt)"
+                        SatzFehler="@_satzUeberlagerungFehler" SatzVergroessert="BeiSatzVergroessert"
+                        SatzUebernommen="BeiSatzUebernommen" SatzVerworfen="BeiSatzVerworfen"
+                        SatzZusammenfassung="@Zusammenfassung()"
+                        KnopfleisteAmSatz="true"
+                        VergleichProjekt="@VergleichProjektGabe" VergleichKatalog="@VergleichKatalogGabe"
+                        KatalogGewaehlt="@_katalogZeile?.Schluessel" VergleichAbgelehnt="BeiSchlossAbgelehnt"
+                        ProjektGewaehlt="@(Aktuell is null && AktuellWp is null ? null : _gewaehlt)"
+                        ProjektGewaehltChanged="BeiProjektTastenwahl"
+                        @ref="_zweispalten">
+
+        <ProjektKopf>
+            <span class="epos-zweispalten-summe">@Texte.Summe <b>@Summentext</b></span>
+        </ProjektKopf>
+
+        <KatalogKopf>
+            @* KATALOGFUNKTIONEN OHNE SATZBEZUG (KA-E-27, KM-L1): in der Kopfzeile des Katalogs neben „Spalten…" -
+               die Knopfleiste am Satz traegt nur Satzaktionen. *@
+            @* KM-T1: Fehlt kein Typkennfeld mehr (Gabe TypkennfelderFehlend = 0), ist der Knopf gesperrt und die Kopfzeile
+               sagt es; die Rueckmeldung des Ladens steht als Statuszeile NEBEN dem Knopf - dort, wo geklickt wurde (der
+               Banner oben rollt in der Ansicht der Wurzel aus dem Bild). Ab 1280 x 800 stehen Knopf und Statuszeile in
+               einer ZWEITEN Zeile der Kopfleiste (der Zeilenbruch davor), immer, auch ohne Meldung - die Liste springt
+               nicht. In der Kompaktstufe bleibt die Leiste einzeilig (4.8): beide Knoepfe tragen dort nur ihr Sinnbild wie
+               „Spalten…" (4.10); title und aria-label nennen den vollen Text. *@
+            @if (TypkennfelderLaden is not null)
+            {
+                <span class="epos-kaeltemaschine-zeilenbruch" aria-hidden="true"></span>
+                <button type="button" class="epos-knopf epos-zweispalten-knopf epos-kaeltemaschine-typkennfelder"
+                        title="@(AlleTypkennfelderGeladen ? Texte.TypkennfelderAlleGeladen : Texte.KnopfTypkennfelder)"
+                        aria-label="@Texte.KnopfTypkennfelder" disabled="@AlleTypkennfelderGeladen"
+                        @onclick="TypkennfelderEinspielen"><svg class="epos-kaeltemaschine-sinnbild" viewBox="0 0 16 16" width="14" height="14"
+                        aria-hidden="true" focusable="false"><path d="M8 1.5 v8.5 M4.5 6.5 L8 10 L11.5 6.5 M2 11 v3 h12 v-3" fill="none"
+                        stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" /></svg><span
+                        class="epos-zweispalten-knopftext">@Texte.KnopfTypkennfelder</span></button>
+                @if (TypkennfelderStatus is string typStatus)
+                {
+                    <span class="epos-kaeltemaschine-typstatus@(_typStatusFehler ? " epos-kaeltemaschine-typstatus--fehler" : "")"
+                          role="status" title="@(_typStatus.Length > 0 ? _typStatusLang : typStatus)">@typStatus</span>
+                }
+            }
+            <button type="button" class="epos-knopf epos-zweispalten-knopf epos-kaeltemaschine-verwaltung"
+                    title="@Texte.KnopfVerwaltung" aria-label="@Texte.KnopfVerwaltung" @onclick="VerwaltungOeffnen"><svg
+                    class="epos-kaeltemaschine-sinnbild" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"
+                    focusable="false"><path d="M2 3.5 h12 M2 8 h12 M2 12.5 h7 M12.5 10.5 v4 M10.5 12.5 h4" fill="none"
+                    stroke="currentColor" stroke-width="1.4" stroke-linecap="round" /></svg><span
+                    class="epos-zweispalten-knopftext">@Texte.KnopfVerwaltung</span></button>
+        </KatalogKopf>
+
+        @* AW3b: „Bearbeiten…" steht nur noch EINMAL, in der Knopfleiste am gewaehlten Satz. *@
+
+        <Links>
+            @* DIE ZEILE IST DIE WAHL (AW3b wie Heizkessel): kein Wahlknopf - ein Klick in die Namenszelle
+               waehlt die Zeile (Hervorhebung wie in der Katalogliste), ↑ ↓ Pos1 Ende bewegen die Wahl, die
+               Liste ist ein Tabulatorhalt; das Kaestchen bleibt die Mehrfachwahl. *@
+            <Raster TZeile="Listenzeile" Zeilen="@Projektzeilen().AsQueryable()"
+                    Zeilenklasse="@ProjektZeilenklasse" Tastenfuehrung="BeiProjektTaste"
+                    Tastenbeschriftung="@Texte.ListeProjekt">
+                <KindInhalt>
+                    <TemplateColumn TGridItem="Listenzeile" Class="epos-spalte-kaestchen">
+                        <HeaderTemplate>
+                            <Wahlkaestchen Bereich="Auswahlbereich.Projekt" />
+                        </HeaderTemplate>
+                        <ChildContent>
+                            <Wahlkaestchen Bereich="Auswahlbereich.Projekt" Schluessel="@context.Schluessel"
+                                           Kurztext="@context.Name" />
+                        </ChildContent>
+                    </TemplateColumn>
+                    <TemplateColumn TGridItem="Listenzeile" Title="@Texte.SpalteName" Class="epos-spalte-zeilenzelle">
+                        <span class="epos-zeilenzelle epos-projektzeile" title="@context.Name"
+                              aria-current="@(context.Schluessel == _gewaehlt ? "true" : null)"
+                              @onclick="() => ProjektZeileKlick(context.Schluessel)">@context.Name</span>
+                    </TemplateColumn>
+                    @* KM-K1: die Art und der Rang in der Kaeltefolge je Zeile (KA-E-26, Anwenderentscheid 12.10.2026). *@
+                    <PropertyColumn TGridItem="Listenzeile" TProp="string" Property="@(z => z.Art)" Title="@Resource.KMA_SP_ART"
+                                    Class="epos-kaeltemaschine-spalte-art" />
+                    <PropertyColumn TGridItem="Listenzeile" TProp="string" Property="@(z => z.Leistung)" Title="@Texte.SpalteLeistung" />
+                    <PropertyColumn TGridItem="Listenzeile" TProp="string" Property="@(z => z.Eer)" Title="@Texte.SpalteEer" />
+                    <PropertyColumn TGridItem="Listenzeile" TProp="string" Property="@(z => z.Rueckkuehlart)" Title="@Texte.SpalteRueckkuehlart" />
+                    <PropertyColumn TGridItem="Listenzeile" TProp="string" Property="@(z => z.Anzahl)" Title="@Texte.SpalteAnzahl" />
+                    <PropertyColumn TGridItem="Listenzeile" TProp="string" Property="@(z => z.Traeger)" Title="@Texte.SpalteTraeger" />
+                    <PropertyColumn TGridItem="Listenzeile" TProp="string" Property="@(z => z.Zaehler)" Title="@Texte.SpalteZaehler" />
+                    <PropertyColumn TGridItem="Listenzeile" TProp="string" Property="@(z => z.Rang)" Title="@Resource.KMA_SP_RANG"
+                                    Class="epos-kaeltemaschine-spalte-rang" />
+                    @* UeS2: der Stift je Projektzeile - die Anlage in der Satz-Ueberlagerung. *@
+                    <TemplateColumn TGridItem="Listenzeile" Class="epos-spalte-stift">
+                        <HeaderTemplate>
+                            <Zeilenstift Kopf="true" />
+                        </HeaderTemplate>
+                        <ChildContent>
+                            <Zeilenstift Hinweis="@(context.Wp is null ? Resource.AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS : Resource.KMA_WP_BEARBEITEN_GESPERRT)"
+                                         Geklickt="@(() => BeiProjektStift(context.Schluessel))" />
+                        </ChildContent>
+                    </TemplateColumn>
+                </KindInhalt>
+            </Raster>
+        </Links>
+
+        <Rechts>
+            <Katalogliste @ref="_katalogliste" Profil="@Profil" Zeilen="@_katalog"
+                          Filterstand="@_filterstand"
+                          Gewaehlt="@_katalogGewaehlt" GewaehltChanged="KatalogZeileWaehlen"
+                          Vergleichsparameter="@Vergleichsparameter"
+                          ZeileIstWahl="true" Kaestchen="true" Gewaehlte="@_katalogKaestchen"
+                          GewaehlteChanged="BeiKatalogKaestchen"
+                          Bearbeiten="BeiKatalogStift" BearbeitenHinweis="@Resource.AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS" />
+        </Rechts>
+
+        <KatalogFuss>
+            @* DIE KNOPFLEISTE AM GEWAEHLTEN SATZ (AW3b, Schema AW1/AW2): Vergleichen… und Bearbeiten… wirken im
+               Bereich des gewaehlten Satzes, Schloss… und Loeschen nur auf Katalogsaetze - beim Projektsatz weich
+               gesperrt mit dem Grund „Katalogsatz waehlen"; rechts Neu… (Katalogeditor im Modus Neu). *@
+            @if (VergleichGemischt)
+            {
+                @* KM-K1: Vergleichen… nur innerhalb einer Art (Anwenderentscheid 12.10.2026) - weich gesperrt mit Grund;
+                   der Baustein fuehrt seinen Knopf wieder, sobald die Auswahl einer Art angehoert. *@
+                <button type="button" class="epos-knopf epos-knopf--vergleichen" aria-disabled="true"
+                        title="@Resource.KMA_VERGLEICH_EINE_ART"
+                        @onclick="() => BeiSchlossAbgelehnt(Resource.KMA_VERGLEICH_EINE_ART)">@Resource.AUSWAHL_BTN_VERGLEICHEN</button>
+            }
+            <Katalogschloss @ref="_katalogschloss" Weg="@(KatalogsatzIstWaermepumpe ? SchlossWaermepumpe : Schloss)" Zeile="@_katalogZeile"
+                            Sperrgrund="@KatalogSperrgrund"
+                            JaText="@Texte.Ja" NeinText="@Texte.Nein"
+                            Geschaltet="BeiSchlossGeschaltet" Abgelehnt="BeiSchlossAbgelehnt" />
+            @if (KatalogLoeschen is not null || WpKatalogLoeschen is not null)
+            {
+                @if (KatalogSperrgrund is string grund)
+                {
+                    <button type="button" class="epos-knopf epos-knopf--loeschen" aria-disabled="true" title="@grund"
+                            @onclick="() => BeiSchlossAbgelehnt(grund)">@Texte.KnopfLoeschen</button>
+                }
+                else
+                {
+                    <button type="button" class="epos-knopf epos-knopf--loeschen" disabled="@(KatalogZiele().Count == 0)"
+                            @onclick="BeiLoeschenGefragt">@Texte.KnopfLoeschen</button>
+                }
+            }
+            @if (SatzIstWaermepumpe)
+            {
+                @* KM-K2: Mit der Naht WaermepumpeAnlageGaben oeffnet „Bearbeiten…" die Waermepumpen-Ueberlagerung
+                   (Anlagenfelder samt Geraetesteckbrief und Klappgruppe „Kuehlbetrieb"), sonst bleibt die benannte
+                   Sperre - der Katalogsatz bearbeitet weiterhin der Waermepumpendialog. *@
+                @if (WpBearbeitbar)
+                {
+                    <button type="button" class="epos-knopf epos-knopf--bearbeiten-wp"
+                            title="@Resource.AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS"
+                            @onclick="BeiWpBearbeiten">@Resource.AUSWAHL_BTN_BEARBEITEN</button>
+                }
+                else
+                {
+                    <button type="button" class="epos-knopf epos-knopf--bearbeiten-wp" aria-disabled="true"
+                            title="@Resource.KMA_WP_BEARBEITEN_GESPERRT"
+                            @onclick="() => BeiSchlossAbgelehnt(Resource.KMA_WP_BEARBEITEN_GESPERRT)">@Resource.AUSWAHL_BTN_BEARBEITEN</button>
+                }
+                @* KD1: „Energiekosten…" der gewaehlten WAERMEPUMPE - benannt gesperrt, und zwar HIER:
+                   Die Leiste der drei Kostenknoepfe steht in der Satz-Ueberlagerung, und die oeffnet eine
+                   Waermepumpe nicht (ihr „Bearbeiten…" fuehrt in die Anlagenfelder). Gefuehrt wird der Weg
+                   im Waermepumpendialog - dort steht ihr Traeger (ID_Carrier) samt Geraet, eine Projektkopie
+                   kann mehrere Anlagenzeilen tragen (der Traeger waere nicht eindeutig), und eine dritte
+                   Ueberlagerungsebene (Dialog -> Anlagenfelder -> Traegerverwaltung samt ihren eigenen
+                   Ueberlagerungen) laesst das Hausblatt nicht zu. Ein Katalogsatz gehoert keinem Projekt,
+                   deshalb nur bei einer PROJEKTwaermepumpe. *@
+                @if (AktuellWp is not null && EnergietraegerGaben is not null)
+                {
+                    <button type="button" class="epos-knopf epos-knopf--energiekosten-wp" aria-disabled="true"
+                            title="@Resource.KMA_ENERGIEKOSTEN_WP"
+                            @onclick="() => BeiSchlossAbgelehnt(Resource.KMA_ENERGIEKOSTEN_WP)">@Texte.KostenEnergie</button>
+                }
+            }
+            else if (SatzArt == Satzmarke.Projektsatz)
+            {
+                <button type="button" class="epos-knopf epos-knopf--bearbeiten-projekt"
+                        title="@Resource.AUSWAHL_BTN_BEARBEITEN_PROJEKT_HINWEIS"
+                        disabled="@(ProjektZiele().Count == 0)" @onclick="BeiProjektBearbeiten">@Resource.AUSWAHL_BTN_BEARBEITEN</button>
+            }
+            else
+            {
+                <button type="button" class="epos-knopf epos-knopf--bearbeiten-katalog"
+                        title="@(KatalogZiele().Count > 0 && KatalogZiele().All(z => z.Geschuetzt) ? Resource.ADM_SCHLOSS_ERST_AUFHEBEN : Resource.AUSWAHL_BTN_BEARBEITEN_KATALOG_HINWEIS)"
+                        disabled="@(KatalogZiele().Count == 0)" @onclick="BeiKatalogBearbeiten">@Resource.AUSWAHL_BTN_BEARBEITEN</button>
+            }
+        </KatalogFuss>
+
+        <KatalogFussRechts>
+            @if (KatalogGaben is not null)
+            {
+                <button type="button" class="epos-knopf epos-knopf--neu" title="@Resource.KMA_HINWEIS_NEU_ART"
+                        @onclick="BeiNeu">@Resource.AUSWAHL_BTN_NEU</button>
+            }
+        </KatalogFussRechts>
+
+        <SatzKopfKnoepfe>
+            @* DIE INFOKNOEPFE IM KOPF DER DETAILZEILE (UeS2b); in der Ueberlagerung stehen sie in der
+               Knopfzeile des Fragments (der Baustein zeigt je Ansicht eine Stelle). *@
+            <span class="epos-berechnungshilfe">
+                <InfoKnopf Schluessel="Form_Kaeltemaschine.Grundlagen"
+                           StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
+                <InfoKnopf Schluessel="Form_Kaeltemaschine.Berechnung"
+                           StandardKurztext="Berechnung: Kühlung" MitAssistent="false" />
+            </span>
+        </SatzKopfKnoepfe>
+
+        <Satz>
+            <div class="epos-leiste">
+                @* KD1 (Anwenderentscheid 13.10.2026): Die Leiste traegt jetzt auch „Energiekosten…" -
+                   derselbe Knopf wie bei Waermepumpe und BHKW. Er fuehrt in die Traegerkarte des KUEHLTRAEGERS
+                   dieser Anlage (Kuehl_ID_Carrier, ohne eigenen Traeger der Stromtraeger des Projekts).
+                   Investition und Betrieb haengen weiter an der Naht der Schale (Kostenfenster), der
+                   Traegerweg ist PLATTFORMFREI (Gabe EnergietraegerGaben, von der Huelle gefuellt) - deshalb
+                   zeichnet die Leiste schon, wenn EINER der beiden Wege steht. *@
+                @if (Aktuell is Zeile k && (KostenOeffnen is not null || EnergietraegerGaben is not null))
+                {
+                    <KostenKnoepfeLeiste KostenOeffnen="@(KostenOeffnen is null ? null : (Func<bool, Task>)(b => BeiKosten(k, b)))"
+                                         EnergiekostenOeffnen="@EnergiekostenWeg(k)"
+                                         EnergieSperrgrund="@EnergiekostenSperrgrund(k)"
+                                         EnergieAbgelehnt="EnergiekostenAbgelehnt"
+                                         InvestText="@Texte.KostenInvest" BetriebText="@Texte.KostenBetrieb"
+                                         EnergieText="@Texte.KostenEnergie" />
+                }
+                <span class="epos-leiste-fueller"></span>
+                <span class="epos-berechnungshilfe">
+                    <InfoKnopf Schluessel="Form_Kaeltemaschine.Grundlagen"
+                               StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
+                    <InfoKnopf Schluessel="Form_Kaeltemaschine.Berechnung"
+                               StandardKurztext="Berechnung: Kühlung" MitAssistent="false" />
+                </span>
+            </div>
+
+            @if (SatzGeraet is not KaeltemaschineGeraetwerte g)
+            {
+                <p class="epos-zweispalten-satzleer">@Resource.AUSWAHL_SATZ_LEER</p>
+            }
+            else
+            {
+                @* Die Marke des Fragments (Rollbereichprobe): genau einmal, nur in der Satz-Ueberlagerung. *@
+                <div class="epos-kaeltemaschine-satz epos-kaeltemaschine-satz--steckbrief">
+                @* DER GERAETESTECKBRIEF (KA-E-25, KM-K1): links die wichtigsten Daten des gewaehlten Satzes, lesend aus
+                   denselben Geraetewerten wie die Felder rechts. *@
+                <aside class="epos-kaeltemaschine-steckbriefspalte">
+                    <Gruppenkopf Titel="@Resource.KMA_GRUPPE_STECKBRIEF">
+                        <KindInhalt>
+                            <Geraetesteckbrief Titel="@Resource.KMA_GRUPPE_STECKBRIEF" TitelAnzeigen="false"
+                                               Klasse="epos-kaeltemaschine-steckbrief"
+                                               Zeilen="@KaeltemaschineSteckbrief.Zeilen(g, Aktuell?.Arbeit, _kosten, Texte)" />
+                        </KindInhalt>
+                    </Gruppenkopf>
+                </aside>
+                <div class="epos-kaeltemaschine-satzfelder">
+                @if (Aktuell is Zeile a)
+                {
+                    @* Die Betriebseingaben: dieselbe Komponente wie im Bereich „Kälte" der Simulations-
+                       konfiguration; sie schreibt in den Arbeitsstand der gewaehlten Anlage. *@
+                    <KaeltemaschineKonfiguration @key="a.Schluessel" Daten="@a.Arbeit" Texte="@Texte" Stromtraeger="@Stromtraeger"
+                                                 ProjektStromtraeger="@ProjektStromtraeger" Geaendert="Nachziehen"
+                                                 Rueckkuehlung="@_rueckkuehlung" RueckkuehlwerkeOeffnen="@RueckkuehlwerkeWeg" />
+                }
+                else if (KatalogsatzGesperrt)
+                {
+                    <p class="epos-satzbearbeitung-hinweis" role="note">@Resource.SATZBEARB_NUR_LESEN @Resource.ADM_SCHLOSS_ERST_AUFHEBEN</p>
+                }
+                <Formulargruppe Titel="@Texte.GruppeGeraet">
+                    <KindInhalt>
+                        <Formularraster>
+                            <KindInhalt>
+                                <Textfeld Bezeichnung="@Texte.LabelBezeichner" Wert="@g.Bezeichner" NurLesen="true" />
+                                <Textfeld Bezeichnung="@Texte.LabelFirma" Wert="@g.Firma" NurLesen="true" />
+                                <Textfeld Bezeichnung="@Texte.LabelTyp" Wert="@g.Typ" NurLesen="true" />
+                                <Textfeld Bezeichnung="@Texte.LabelNennkaelteleistung" Einheit="@Texte.EinheitKw"
+                                          Wert="@Zahl(g.Nennkaelteleistung, 1)" NurLesen="true" Kurz="true" />
+                                <Textfeld Bezeichnung="@Texte.LabelNennEer" Wert="@Zahl(g.NennEer, 2)" NurLesen="true" Kurz="true" />
+                                <Textfeld Bezeichnung="@Texte.LabelRueckkuehlart" Wert="@g.Rueckkuehlart" NurLesen="true" />
+                                <Textfeld Bezeichnung="@Texte.LabelMindestteillast" Einheit="@Texte.EinheitProzent"
+                                          Wert="@Zahl(g.Mindestteillast, 0)" NurLesen="true" Kurz="true" />
+                                <Textfeld Bezeichnung="@Texte.LabelKaltwasserMin" Einheit="@Texte.EinheitGradC"
+                                          Wert="@Zahl(g.KaltwasserMin, 1)" NurLesen="true" Kurz="true" />
+                                @* KM3-E3-b: die Lesewerte der Teillastrechnung - gepflegt im Katalogeditor. *@
+                                <Textfeld Bezeichnung="@Texte.LabelTeillastWeg" Wert="@g.TeillastWeg" NurLesen="true" />
+                                <Textfeld Bezeichnung="@Texte.LabelVerdichterregelung" Wert="@g.Verdichterregelung" NurLesen="true" />
+                                <Textfeld Bezeichnung="@Texte.LabelTaktverlust" Wert="@g.Taktverlustfaktor" NurLesen="true" Kurz="true" />
+                                <Textfeld Bezeichnung="@Texte.LabelKennfeldrand" Wert="@g.Kennfeldrand" NurLesen="true" />
+                            </KindInhalt>
+                        </Formularraster>
+                        <Herleitungszeile Text="@Texte.HinweisKatalog" />
+                    </KindInhalt>
+                </Formulargruppe>
+                @if (Kennlinienbilder is not null || Teillastbild is not null)
+                {
+                    <Formulargruppe Titel="@Texte.GruppeKenndaten">
+                        <KindInhalt>
+                            @Kenndatenbilder()
+                        </KindInhalt>
+                    </Formulargruppe>
+                }
+                </div>
+                </div>
+            }
+        </Satz>
+    </Zweispaltenauswahl>
+
+    <SpeichernLeiste OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen" Ergebnis="BeiErgebnis" />
+
+    @* --- Der Katalogeditor: „Bearbeiten…" eines Katalogsatzes und „Katalogverwaltung…" --- *@
+    <Ueberlagerung Offen="@(_editorGaben is not null)" Titel="@Texte.TitelEditor"
+                   Kopfzusatz="@MarkeKatalogsatz" Geschlossen="() => EditorFertig(false)">
+        <KindInhalt>
+            @if (_editorGaben is not null)
+            {
+                <KaeltemaschineKatalogDialog @attributes="_editorGaben" TitelText="" Vorwahl="@_editorVorwahl"
+                                             NeuBeimStart="@_editorNeu" Geschlossen="EditorFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- KM-K2: die Waermepumpen-Ueberlagerung („Bearbeiten…" einer Projektwaermepumpe) --- *@
+    <Ueberlagerung Offen="@(_wpGaben is not null)" Titel="@Resource.KMA_WP_TITEL_BEARBEITEN"
+                   Kopfzusatz="@MarkeProjektsatz" Geschlossen="BeiWpVerworfen">
+        <KindInhalt>
+            @if (_wpGaben is not null)
+            {
+                @if (!string.IsNullOrEmpty(_wpFehler))
+                {
+                    <Warnbanner Stufe="WarnStufe.Warnung" Text="@_wpFehler" />
+                }
+                <WaermepumpeAnlageFelder @ref="_wpFelder" @key="_wpGaben.IdAnlage" @attributes="_wpGaben.Gaben"
+                                         KostenleisteAnzeigen="false" />
+                <SpeichernLeiste OkText="@Texte.Ok" AbbrechenText="@Texte.Abbrechen" Ergebnis="BeiWpUebernommen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- KD1: die TRAEGERKARTE („Energiekosten…" der gewaehlten Kaeltemaschine) ---
+       Dieselbe Komponente und derselbe Gabenweg wie auf der Kostenseite (KD6a): Die
+       Energietraegerverwaltung liegt mit ihrer Huelle in EPOS.UI.Daten, also erscheint sie
+       als Ueberlagerung DESSELBEN Fensters - kein zweites Fenster, keine Windows-Naht. Die
+       Verwaltung schreibt selbst (OK wirkt dort, nicht hier); zu ist zu, und danach zieht
+       der Satz seine Kostensummen nach. *@
+    <Ueberlagerung Offen="@(_traegerGaben is not null)" Titel="@Texte.TitelEnergietraeger"
+                   Geschlossen="TraegerkarteZu">
+        <KindInhalt>
+            @if (_traegerGaben is not null)
+            {
+                <EnergietraegerDialog @attributes="_traegerGaben" TitelAnzeigen="false"
+                                      Geschlossen="@((bool _) => TraegerkarteZu())" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Rueckfrage Offen="@_loeschfrage" TitelText="@Texte.KnopfLoeschen" Frage="@_loeschfrageText"
+                JaText="@Texte.Ja" NeinText="@Texte.Nein" Beantwortet="BeiLoeschfrage" />
+</div>
+
+@code {
+    // =====================================================================
+    // Gaben — die Datenseite liegt in der Hülle (KaeltemaschineAnlageHuelle)
+    // =====================================================================
+
+    /// <summary>Die gespeicherten Anlagen des Projekts samt Kennwerten ihrer Projektkopie.</summary>
+    [Parameter] public Func<IReadOnlyList<KaeltemaschineAnlageDaten>>? Anlagen { get; set; }
+
+    /// <summary>Die Stammgeräte des Katalogs (<c>KaeltemaschineStammCtrl.Katalogfilterzeilen</c>).</summary>
+    [Parameter] public Func<IReadOnlyList<Katalogfilterzeile>>? Katalogzeilen { get; set; }
+
+    /// <summary>Die Spalten der Katalogliste — <c>Katalogfilterprofil.Finde(Anlagenart.Kaeltemaschine)</c>.</summary>
+    [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
+
+    /// <summary>Die Kennwerte eines Stammgeräts über seine Id; <c>null</c> = es gibt es nicht (mehr).</summary>
+    [Parameter] public Func<int, KaeltemaschineGeraetwerte?>? Katalogwerte { get; set; }
+
+    /// <summary>Die Stromträger des Projekts (Id, Anzeigetext) — die Auswahl des Kühlträgers.</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Stromtraeger { get; set; } = Array.Empty<(int, string)>();
+
+    /// <summary>Der Stromträger des Projekts (bepreist den Netzbezug); 0 = keiner.</summary>
+    [Parameter] public int ProjektStromtraeger { get; set; }
+
+    /// <summary>Die Prüfung des Kerns (<c>KaeltemaschineAnlageCtrl.Pruefen</c>) — <c>null</c> oder leer = gültig.</summary>
+    [Parameter] public Func<KaeltemaschineAnlageDaten, string?>? Pruefen { get; set; }
+
+    /// <summary>
+    /// Die Vorauswahl des Kühlträgers einer NEUEN Anlage, falls die Hülle sie nicht schon mit den gelesenen Anlagen
+    /// liefert (Kern: <c>EnergietraegerZulaessigkeit.Vorauswahl</c>); 0 oder <c>null</c> = keine.
+    /// </summary>
+    [Parameter] public int? KuehltraegerVorauswahl { get; set; }
+
+    /// <summary>Legt eine Anlage sofort an (Projektkopie und Anlagenzeile); liefert die Anlagen-Id, ≤ 0 = Katalogsatz fehlt.</summary>
+    [Parameter] public Func<int, string, int>? Anlegen { get; set; }
+
+    /// <summary>Schreibt Anlagenzeile und Kühleingaben in einem Vorgang; liefert den Prüftext oder <c>null</c>.</summary>
+    [Parameter] public Func<KaeltemaschineAnlageDaten, string?>? Speichern { get; set; }
+
+    /// <summary>Löscht eine Anlage samt verwaister Projektkopie und ihrer Kostenpositionen.</summary>
+    [Parameter] public Action<int>? Loeschen { get; set; }
+
+    /// <summary>Lädt die eingebauten Typkennfelder in den Katalog; ohne ihn kein Knopf „Typkennfelder laden…".</summary>
+    [Parameter] public Func<KaeltemaschineTypkennfelderErgebnis>? TypkennfelderLaden { get; set; }
+
+    /// <summary>
+    /// KM-T1: wie viele eingebaute Typkennfelder noch nicht im Katalog stehen (Kern: <c>KaeltemaschinenTypkennfelder.Fehlend</c>).
+    /// 0 sperrt „Typkennfelder laden…" mit dem Hinweis „Alle Typkennfelder sind geladen."; ohne Gabe, bei einer negativen
+    /// Zahl oder einem Fehler bleibt der Knopf frei.
+    /// </summary>
+    [Parameter] public Func<int>? TypkennfelderFehlend { get; set; }
+
+    /// <summary>KM-K1: die Projektwärmepumpen im Kühlbetrieb (eine Zeile je Projektkopie); <c>null</c> = keine.</summary>
+    [Parameter] public Func<IReadOnlyList<KuehlWaermepumpeZeile>>? KuehlWaermepumpen { get; set; }
+
+    /// <summary>
+    /// KM-K2: der Bearbeitungsweg einer Wärmepumpen-Anlagenzeile über ihre Projektkopie (<c>Tab_WP.ID</c>) — die Naht,
+    /// mit der „Bearbeiten…" einer Wärmepumpe die Wärmepumpen-Überlagerung öffnet (<c>WaermepumpeAnlageFelder</c> samt
+    /// Gerätesteckbrief und Klappgruppe „Kühlbetrieb"). <c>null</c> oder ein <c>null</c>-Ergebnis = der Dialog bleibt bei
+    /// seiner benannten Sperre „Wärmepumpen bearbeitet der Wärmepumpendialog".
+    /// </summary>
+    [Parameter] public Func<int, WaermepumpeAnlagegaben?>? WaermepumpeAnlageGaben { get; set; }
+
+    /// <summary>
+    /// KM-K2: die Namen ALLER Wärmepumpen-Projektkopien des Projekts — die Verwendungsmarke „im Projekt verwendet"
+    /// steht je Projektkopie, nicht erst nach eingeschaltetem Kühlbetrieb. <c>null</c> = nur die Wärmepumpen der
+    /// Projektliste zählen.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<string>>? WaermepumpeKopien { get; set; }
+
+    /// <summary>KM-K1: eine Katalog-Wärmepumpe (Stamm-ID) übernehmen und ihren Kühlbetrieb einschalten — sofort.</summary>
+    [Parameter] public Func<int, KuehlWpUebernahme>? WaermepumpeUebernehmen { get; set; }
+
+    /// <summary>KM-K1: den Kühlbetrieb einer Projektwärmepumpe schalten (samt Rang); <c>null</c> = geschrieben, sonst der Grund.</summary>
+    [Parameter] public Func<int, bool, string?>? WpKuehlbetriebSetzen { get; set; }
+
+    /// <summary>KM-K1: nimmt eine Übernahme zurück (Abbrechen): neue Anlage und neue Kopie gehen.</summary>
+    [Parameter] public Action<object>? WpUebernahmeZuruecknehmen { get; set; }
+
+    /// <summary>KM-K1: die Ränge der Kältefolge (Anlagen-ID → Rang).</summary>
+    [Parameter] public Func<IReadOnlyDictionary<int, int>>? KaelteRaenge { get; set; }
+
+    /// <summary>KM-K1: schreibt den Stand der Ränge beim Öffnen zurück (Abbrechen).</summary>
+    [Parameter] public Func<IReadOnlyDictionary<int, int>, string?>? KaelteRaengeWiederherstellen { get; set; }
+
+    /// <summary>KM-K1: das Schloss der Katalog-Wärmepumpen (Katalogweg des Wärmepumpendialogs).</summary>
+    [Parameter] public Schlossweg? SchlossWaermepumpe { get; set; }
+
+    /// <summary>KM-K1: löscht einen Katalogsatz der Wärmepumpe; "" = gelöscht, sonst der Grund.</summary>
+    [Parameter] public Func<int, string>? WpKatalogLoeschen { get; set; }
+
+    /// <summary>KM-K1: die Kennwerte einer Katalog-Wärmepumpe für „Vergleichen…“ (über den Namen).</summary>
+    [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? VergleichsparameterWp { get; set; }
+
+    /// <summary>KM-K1: die Kennwerte einer Projektwärmepumpe (Projektkopie) für „Vergleichen…“.</summary>
+    [Parameter] public Func<int, IReadOnlyList<Parameterwert>>? VergleichsparameterWpProjekt { get; set; }
+
+    /// <summary>Die Parameterübersicht je Katalogsatz für „Vergleichen…" (<c>KaeltemaschineParameteruebersicht.Werte</c>).</summary>
+    [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Vergleichsparameter { get; set; }
+
+    /// <summary>
+    /// Die Kennwerte einer PROJEKTKOPIE (<c>ID_Kaeltemaschine</c>) samt Kennlinie in derselben Parameterliste wie
+    /// <see cref="Vergleichsparameter"/> (<c>KaeltemaschineParameteruebersicht.ProjektWerte</c>) — „Vergleichen…" über
+    /// Projektzeilen und Katalogsätze (KA-E-24).
+    /// </summary>
+    [Parameter] public Func<int, IReadOnlyList<Parameterwert>>? VergleichsparameterProjekt { get; set; }
+
+    /// <summary>Schloss setzen und aufheben an der Katalogliste — derselbe Weg wie in der Verwaltung.</summary>
+    [Parameter] public Schlossweg? Schloss { get; set; }
+
+    /// <summary>Löscht einen Katalogsatz über seine Id; leer = gelöscht, sonst der Grund. <c>null</c> = kein Knopf.</summary>
+    [Parameter] public Func<int, string>? KatalogLoeschen { get; set; }
+
+    /// <summary>
+    /// Die Gaben des Katalogeditors (<c>KaeltemaschineKatalogDialog</c>) für „Bearbeiten…" und „Katalogverwaltung…";
+    /// <c>null</c> = die Verwaltung öffnet über die Naht <c>Dienste.Navigation</c>.
+    /// </summary>
+    [Parameter] public Func<IReadOnlyDictionary<string, object>>? KatalogGaben { get; set; }
+
+    /// <summary>Investition und Betrieb einer Anlage über ihre Id (Kostenkomponente 11) für die Zusammenfassung.</summary>
+    [Parameter] public Func<int, (double Invest, double Betrieb)>? Kostensumme { get; set; }
+
+    /// <summary>
+    /// Öffnet die Kosten einer Anlage (Id, <c>true</c> = Betrieb) — die Naht der Plattform (Windows: Kostenfenster);
+    /// <c>null</c> = keine Kostenknöpfe.
+    /// </summary>
+    [Parameter] public Func<int, bool, Task>? KostenOeffnen { get; set; }
+
+    /// <summary>
+    /// <b>KD1: die Gaben der Energietraegerverwaltung</b>, aufgeschlagen auf die TRAEGERKARTE eines Traegers
+    /// (Traeger-Id, Projektkopie des Geraets; 0 = unbekannt) — der Weg hinter „Energiekosten…". Die Huelle
+    /// fuellt die Gabe selbst (<c>EnergietraegerHuelle</c>, plattformfrei wie die Naht
+    /// <see cref="WaermepumpeAnlageGaben"/>), Windows und iOS reichen sie nur durch; <c>null</c> = kein
+    /// Knopf, <c>null</c> als Antwort = die benannte Sperre.
+    /// </summary>
+    [Parameter] public Func<int, int, IReadOnlyDictionary<string, object>?>? EnergietraegerGaben { get; set; }
+
+    /// <summary>
+    /// K-F5b: die Gaben der Gruppe „Rückkühlung“ an der Kältemaschine (Katalogsätze der Rückkühlwerke samt Lesezeilen,
+    /// Luftfeuchte des Projektklimas) — gelesen beim Öffnen und nach „Rückkühlwerke…“; <c>null</c> = keine Gruppe.
+    /// </summary>
+    [Parameter] public Func<RueckkuehlungGaben?>? Rueckkuehlung { get; set; }
+
+    /// <summary>Die Kennlinienbilder eines Satzes (Id, <c>true</c> = Katalogsatz); ohne sie kein Bild.</summary>
+    [Parameter] public Func<int, bool, KaeltemaschineKennlinienbilder?>? Kennlinienbilder { get; set; }
+
+    /// <summary>Die Teillastkurve eines Satzes (Id, <c>true</c> = Katalogsatz); ohne sie kein Bild.</summary>
+    [Parameter] public Func<int, bool, WindowsFormsApplication1.Zeichnung.Zeichenmodell?>? Teillastbild { get; set; }
+
+    /// <summary>Der Dialog wurde geschlossen: <c>true</c> = mit OK geschrieben, <c>false</c> = verworfen.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>Die Anzeigetexte (ein Bündel).</summary>
+    [Parameter] public KaeltemaschineAnlageTexte Texte { get; set; } = new();
+
+    /// <summary>Der Titel im Dialogkopf; leer = eingebettet, die Überlagerung des Wirts trägt Titel und Kreuz.</summary>
+    [Parameter] public string TitelText { get; set; } = Resource.KMA_TITEL;
+
+    /// <summary>Schlüssel des Hilfeknopfes.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "KaeltemaschineAnlage.btn_Help";
+
+    // =====================================================================
+    // Zustand
+    // =====================================================================
+
+    /// <summary>Eine Anlage: der Stand beim Öffnen, der gespeicherte Stand und die Eingaben.</summary>
+    private sealed class Zeile
+    {
+        public string Schluessel = "";
+        /// <summary>Der Stand beim Öffnen des Dialogs — Abbrechen schreibt ihn zurück; <c>null</c> = in der Sitzung angelegt.</summary>
+        public KaeltemaschineAnlageDaten? Original;
+        /// <summary>Der zuletzt gespeicherte Stand.</summary>
+        public KaeltemaschineAnlageDaten? Gelesen;
+        public KaeltemaschineAnlageDaten Arbeit = new();
+        public bool Entfernt;
+        public bool Neu => Original is null;
+        public bool Gespeichert;
+    }
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private readonly List<Zeile> _zeilen = new();
+    private int _naechsterSchluessel = 1;
+    private string _gewaehlt = "";
+    private string _meldung = "";
+    private WarnStufe _meldungStufe = WarnStufe.Warnung;
+    /// <summary>KM-T1: fehlende Typkennfelder laut Gabe; <c>null</c> = unbekannt (keine Gabe oder Fehler).</summary>
+    private int? _typFehlend;
+    /// <summary>KM-T1: die Rückmeldung des letzten Ladens in der Kopfzeile des Katalogs.</summary>
+    private string _typStatus = "";
+    private bool _typStatusFehler;
+    /// <summary>KM-T1: der volle Text der Rückmeldung — title der Statuszeile, wenn sie kürzen muss.</summary>
+    private string _typStatusLang = "";
+    private string _listeFehler = "";
+    private string _satzFehler = "";
+
+    private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
+    private Katalogfilterstand _filterstand = new();
+    private string _katalogGewaehlt = "";
+    private Katalogfilterzeile? _katalogZeile;
+    private KaeltemaschineGeraetwerte? _katalogWerte;
+    private Katalogfilterprofil? _profil;
+
+    private readonly Bereichswahl _projektWahl = new();
+    private readonly Bereichswahl _katalogWahl = new();
+    private IReadOnlyList<string> _katalogKaestchen = new List<string>();
+    private Katalogliste? _katalogliste;
+    private Katalogschloss? _katalogschloss;
+    private Zweispaltenauswahl? _zweispalten;
+
+    private bool _satzGross;
+    private string? _satzUeberlagerungFehler;
+    private KaeltemaschineAnlageDaten? _anlagenmerker;
+    private (double Invest, double Betrieb)? _kosten;
+
+    /// <summary>KM-K2: die offene Wärmepumpen-Überlagerung (Gaben, Anlagenzeile und Schreibweg); <c>null</c> = zu.</summary>
+    private WaermepumpeAnlagegaben? _wpGaben;
+    private WaermepumpeAnlageFelder? _wpFelder;
+    private string? _wpFehler;
+
+    /// <summary>KD1: die offene Traegerkarte (Gaben der Energietraegerverwaltung); <c>null</c> = zu.</summary>
+    private IReadOnlyDictionary<string, object>? _traegerGaben;
+    private int _traegerkarteTraeger;
+
+    private IReadOnlyDictionary<string, object>? _editorGaben;
+    private int _editorVorwahl;
+    private bool _editorNeu;
+
+    private bool _loeschfrage;
+    private string _loeschfrageText = "";
+    private List<Katalogfilterzeile> _loeschziele = new();
+
+    private string _kennlinienreiter = "EER";
+    private readonly Dictionary<(int Id, bool Katalog), (KaeltemaschineKennlinienbilder? Bilder, WindowsFormsApplication1.Zeichnung.Zeichenmodell? Teillast)> _bilder = new();
+
+    /// <summary>Die gelesenen Wärmepumpen mit Kühlfunktion.</summary>
+    /// <summary>KM-K1: eine Projektwärmepumpe im Kühlbetrieb in der Projektliste.</summary>
+    private sealed class WpEintrag
+    {
+        public string Schluessel = "";
+        public KuehlWaermepumpeZeile Daten = null!;
+        /// <summary>„Aus dem Projekt entfernen“ — der Kühlbetrieb geht beim OK aus.</summary>
+        public bool Entfernt;
+    }
+
+    /// <summary>Eine Zeile der gemeinsamen Projektliste (Kältemaschine oder Wärmepumpe).</summary>
+    private sealed record Listenzeile(string Schluessel, string Art, string Name, string Leistung, string Eer, string Rueckkuehlart,
+                                      string Anzahl, string Traeger, string Zaehler, string Rang, Zeile? Km, WpEintrag? Wp);
+
+    private readonly List<WpEintrag> _wp = new();
+    /// <summary>Die Wärmepumpen, deren Kühlbetrieb die Sitzung eingeschaltet hat (Abbrechen schaltet sie wieder aus).</summary>
+    private readonly HashSet<int> _wpEingeschaltet = new();
+    /// <summary>Die Übernahmen der Sitzung (Abbrechen nimmt sie zurück, jüngste zuerst).</summary>
+    private readonly List<object> _wpUebernahmen = new();
+    private IReadOnlyDictionary<int, int> _raengeBeimOeffnen = new Dictionary<int, int>();
+    private IReadOnlyDictionary<int, int> _raenge = new Dictionary<int, int>();
+    private string? _letzteProjektwahl, _letzteKatalogwahl;
+
+
+    private List<Zeile> Sichtbare => _zeilen.Where(z => !z.Entfernt).ToList();
+    private Zeile? Aktuell => _zeilen.FirstOrDefault(z => !z.Entfernt && z.Schluessel == _gewaehlt);
+    private List<WpEintrag> SichtbareWp => _wp.Where(w => !w.Entfernt).ToList();
+    private WpEintrag? AktuellWp => _wp.FirstOrDefault(w => !w.Entfernt && w.Schluessel == _gewaehlt);
+    private static string WpSchluessel(int idWp) => "W" + idWp.ToString(CultureInfo.InvariantCulture);
+
+    /// <summary>Ist der Katalogsatz eine Wärmepumpe? (Schlüssel „WP“ + ID, KuehlerzeugerKatalogCtrl.)</summary>
+    private static bool KatalogIstWp(string? schluessel) => KuehlerzeugerKatalogCtrl.IstWaermepumpe(schluessel, out _);
+    private bool KatalogsatzIstWaermepumpe => KatalogIstWp(_katalogZeile?.Schluessel);
+    private bool SatzIstWaermepumpe => AktuellWp is not null || (Aktuell is null && KatalogsatzIstWaermepumpe);
+
+    private Katalogfilterprofil Profil
+        => _profil ??= Katalogprofil
+                       ?? Katalogfilterprofil.MitVerwendung(Anlagenart.Kaeltemaschine, s => Resource.ResourceManager.GetString(s) ?? s);
+
+    // ---- Prüfhilfen für die Tests ---------------------------------------
+    /// <summary>Die Namen der sichtbaren Anlagen in Listenreihenfolge (Prüfhilfe).</summary>
+    public IReadOnlyList<string> Namensliste => Sichtbare.Select(z => z.Arbeit.Bezeichner).ToList();
+    /// <summary>Der Schlüssel der gewählten Anlage (Prüfhilfe).</summary>
+    public string Gewaehlt => _gewaehlt;
+    /// <summary>Der Arbeitsstand der gewählten Anlage (Prüfhilfe).</summary>
+    public KaeltemaschineAnlageDaten? Arbeitsstand => Aktuell?.Arbeit;
+    /// <summary>Die stehende Meldung (Prüfhilfe).</summary>
+    public string Meldung => _meldung;
+    /// <summary>Der gewählte Katalogsatz (Prüfhilfe).</summary>
+    public Katalogfilterzeile? Katalogzeile => _katalogZeile;
+    /// <summary>Steht die Satz-Überlagerung offen? (Prüfhilfe)</summary>
+    public bool SatzUeberlagerungOffen => _satzGross;
+    /// <summary>Steht der Katalogeditor offen? (Prüfhilfe)</summary>
+    public bool EditorOffen => _editorGaben is not null;
+    /// <summary>Die Id, mit der der Katalogeditor geöffnet wurde (Prüfhilfe).</summary>
+    public int EditorVorwahl => _editorVorwahl;
+    /// <summary>Steht die Löschrückfrage? (Prüfhilfe)</summary>
+    public bool Loeschfrage => _loeschfrage;
+    /// <summary>Die Mehrfachwahl der Projektliste (Prüfhilfe).</summary>
+    public Bereichswahl ProjektWahl => _projektWahl;
+    /// <summary>Die Mehrfachwahl des Katalogs (Prüfhilfe).</summary>
+    public Bereichswahl KatalogWahl => _katalogWahl;
+    /// <summary>Die Anlagen-Ids, die in dieser Sitzung angelegt wurden (Prüfhilfe).</summary>
+    public IReadOnlyList<int> Angelegte => _zeilen.Where(z => z.Neu && z.Arbeit.AnlagenId > 0).Select(z => z.Arbeit.AnlagenId).ToList();
+    /// <summary>Die Wärmepumpen der Projektliste (Prüfhilfe): IDs der Kopien.</summary>
+    public IReadOnlyList<int> WaermepumpenImProjekt => _wp.Where(w => !w.Entfernt).Select(w => w.Daten.IdWp).ToList();
+    /// <summary>Die zum Ausschalten vorgemerkten Wärmepumpen (Prüfhilfe).</summary>
+    public IReadOnlyList<int> WaermepumpenEntfernt => _wp.Where(w => w.Entfernt).Select(w => w.Daten.IdWp).ToList();
+    /// <summary>Die Summe der Nennkälteleistung über beide Arten (Kältemaschine × Anzahl, Wärmepumpe × Anlagen).</summary>
+    public string Summentext => Zahl(Sichtbare.Sum(z => (z.Arbeit.Geraet?.Nennkaelteleistung ?? 0) * Math.Max(1, z.Arbeit.Anzahl ?? 1))
+                                     + SichtbareWp.Sum(w => (w.Daten.KuehlleistungKw ?? 0) * Math.Max(1, w.Daten.Anlagen)), 1);
+
+    // =====================================================================
+    // Aufbau
+    // =====================================================================
+
+    /// <summary>
+    /// Liest Anlagen, Katalog und Wärmepumpen. Wirft eine Gabe, bricht der Aufbau nicht ab (KT-2/KT-3): Die Liste
+    /// bleibt leer, der Banner nennt die Meldung.
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        var fehler = new List<string>();
+        try
+        {
+            foreach (KaeltemaschineAnlageDaten d in Anlagen?.Invoke() ?? Array.Empty<KaeltemaschineAnlageDaten>())
+                _zeilen.Add(new Zeile { Schluessel = NeuerSchluessel(), Original = d.Kopie(), Gelesen = d, Arbeit = d.Kopie() });
+        }
+        catch (Exception ex)
+        {
+            _zeilen.Clear();
+            fehler.Add(string.Format(CultureInfo.CurrentCulture, Texte.LadenFehler, ex.Message));
+        }
+        try
+        {
+            WpNeuLesen();
+            _raengeBeimOeffnen = KaelteRaenge?.Invoke() ?? new Dictionary<int, int>();
+            _raenge = _raengeBeimOeffnen;
+        }
+        catch (Exception ex)
+        {
+            _wp.Clear();
+            fehler.Add(string.Format(CultureInfo.CurrentCulture, Texte.WaermepumpenLadenFehler, ex.Message));
+        }
+        RueckkuehlungLesen(fehler);
+        _meldung = string.Join(" ", fehler);
+        _filterstand = Profil.Schluessel.StartsWith("ANLAGE_", StringComparison.Ordinal)
+            ? Katalogfilterregister.Stand(Profil.Art) : Katalogfilterregister.Stand(Profil.Schluessel);
+        KatalogNeuLaden();
+        TypkennfelderFehlendLesen();
+        if (_zeilen.FirstOrDefault() is Zeile erste) ProjektZeileWaehlen(erste);
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.KAELTEMASCHINE_ANLAGE, () => KiSicht(), KiHaken());
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync(preventScroll: true);
+    }
+
+    private string NeuerSchluessel() => (_naechsterSchluessel++).ToString(CultureInfo.InvariantCulture);
+
+    // =====================================================================
+    // Listen und Wahl
+    // =====================================================================
+
+    private void KatalogNeuLaden()
+    {
+        _katalog = Katalogladung.Lesen(Katalogzeilen, Texte.Titel, out _listeFehler);
+        VerwendungStempeln();
+        _katalogZeile = _katalog.FirstOrDefault(z => z.Schluessel == _katalogGewaehlt);
+        if (_katalogZeile is null) _katalogGewaehlt = "";
+        _katalogWahl.Bereinigen(_katalog.Select(z => z.Schluessel));
+        _bilder.Clear();
+    }
+
+    /// <summary>
+    /// Die Verwendungsmarke „im Projekt": über den Gerätenamen der Projektkopie. KM-K2: Bei der Wärmepumpe zählt JEDE
+    /// Projektkopie des Projekts (Gabe <see cref="WaermepumpeKopien"/>) — wie in der Projektliste des
+    /// Wärmepumpendialogs; ohne die Gabe bleiben es die Wärmepumpen dieser Projektliste.
+    /// </summary>
+    private void VerwendungStempeln()
+        => Katalogverwendung.Stempeln(_katalog, Sichtbare.Select(z => z.Arbeit.Geraet?.Bezeichner ?? z.Arbeit.Bezeichner)
+                                                .Concat(SichtbareWp.Select(w => w.Daten.Bezeichner))
+                                                .Concat(Kopienamen()));
+
+    /// <summary>Die Namen der Wärmepumpen-Projektkopien; leer ohne die Gabe oder wenn sie wirft.</summary>
+    private IReadOnlyList<string> Kopienamen()
+    {
+        if (WaermepumpeKopien is null) return Array.Empty<string>();
+        try { return WaermepumpeKopien() ?? Array.Empty<string>(); }
+        catch { return Array.Empty<string>(); }
+    }
+
+    /// <summary>
+    /// KM-K1: liest die Projektwärmepumpen im Kühlbetrieb neu; vorgemerkte Ausschaltungen bleiben stehen, eine wieder
+    /// übernommene Wärmepumpe verliert ihre Vormerkung.
+    /// </summary>
+    private void WpNeuLesen(int? wiederAn = null)
+    {
+        var entfernt = new HashSet<int>(_wp.Where(w => w.Entfernt).Select(w => w.Daten.IdWp));
+        if (wiederAn is int id) entfernt.Remove(id);
+        _wp.Clear();
+        foreach (KuehlWaermepumpeZeile d in KuehlWaermepumpen?.Invoke() ?? Array.Empty<KuehlWaermepumpeZeile>())
+            _wp.Add(new WpEintrag { Schluessel = WpSchluessel(d.IdWp), Daten = d, Entfernt = entfernt.Contains(d.IdWp) });
+    }
+
+    private static string RangText(int? rang) => rang is int r ? r.ToString(CultureInfo.CurrentCulture) : "";
+
+    private string RangKm(Zeile z) => z.Arbeit.AnlagenId > 0 && _raenge.TryGetValue(z.Arbeit.AnlagenId, out int r)
+        ? r.ToString(CultureInfo.CurrentCulture) : "";
+
+    /// <summary>Die gemeinsame Projektliste: erst die Kältemaschinen, dann die Wärmepumpen (KA-E-26).</summary>
+    private List<Listenzeile> Projektzeilen()
+    {
+        var liste = Sichtbare.Select(z => new Listenzeile(z.Schluessel, Resource.KMA_ART_KAELTEMASCHINE, z.Arbeit.Bezeichner,
+            Zahl(z.Arbeit.Geraet?.Nennkaelteleistung, 1), EerText(z.Arbeit.Geraet), z.Arbeit.Geraet?.Rueckkuehlart ?? "",
+            AnzahlText(z.Arbeit), TraegerText(z.Arbeit), z.Arbeit.KuehlEigenerZaehler ? Texte.Ja : Texte.Nein, RangKm(z), z, null)).ToList();
+        liste.AddRange(SichtbareWp.Select(w => new Listenzeile(w.Schluessel, Resource.KMA_ART_WAERMEPUMPE, w.Daten.Bezeichner,
+            Zahl(w.Daten.KuehlleistungKw, 1), Zahl(w.Daten.Eer, 2), "", w.Daten.Anlagen.ToString(CultureInfo.CurrentCulture),
+            w.Daten.Kuehltraeger, w.Daten.EigenerZaehler ? Texte.Ja : Texte.Nein, RangText(w.Daten.Rang), null, w)));
+        return liste;
+    }
+
+    private IReadOnlyList<string> ProjektSchluessel() => Projektzeilen().Select(z => z.Schluessel).ToList();
+
+
+    private IReadOnlyList<string> KatalogSichtbar()
+        => (_katalogliste?.Angezeigt ?? _katalog).Select(z => z.Schluessel).ToList();
+
+    /// <summary>Die Ziele einer Projektaktion: die angekreuzten Zeilen, sonst die gewählte.</summary>
+    private List<Zeile> ProjektZiele()
+    {
+        if (_projektWahl.Anzahl > 0)
+            return _projektWahl.Gewaehlte.Select(s => Sichtbare.FirstOrDefault(z => z.Schluessel == s)).OfType<Zeile>().ToList();
+        return Aktuell is Zeile a ? new() { a } : new();
+    }
+
+    /// <summary>Die Ziele einer Katalogaktion: die angekreuzten Sätze, sonst der gewählte.</summary>
+    private List<WpEintrag> WpZiele()
+    {
+        if (_projektWahl.Anzahl > 0)
+            return _projektWahl.Gewaehlte.Select(s => SichtbareWp.FirstOrDefault(w => w.Schluessel == s)).OfType<WpEintrag>().ToList();
+        return AktuellWp is WpEintrag w ? new() { w } : new();
+    }
+
+    private List<Katalogfilterzeile> KatalogZiele()
+    {
+        if (_katalogWahl.Anzahl > 0)
+            return _katalogWahl.Gewaehlte.Select(s => _katalog.FirstOrDefault(z => z.Schluessel == s)).OfType<Katalogfilterzeile>().ToList();
+        return _katalogZeile is null ? new() : new() { _katalogZeile };
+    }
+
+    /// <summary>
+    /// Klick in eine Projektzeile (AW3b, wie Heizkessel): Die Zeile wird der gewählte Satz, die Detailzeile folgt;
+    /// die Kästchen der Mehrfachwahl bleiben unberührt — wie in der Katalogliste.
+    /// </summary>
+    private void ProjektZeileKlick(Zeile zeile)
+    {
+        if (zeile.Schluessel != _gewaehlt) ProjektZeileWaehlen(zeile);
+    }
+
+    /// <summary>Die Hervorhebung der gewählten Projektzeile — dieselbe Klasse wie in der Katalogliste.</summary>
+    private void ProjektZeileKlick(string schluessel)
+    {
+        if (schluessel != _gewaehlt) Waehlen(schluessel);
+    }
+
+    private string? ProjektZeilenklasse(Listenzeile zeile) => zeile.Schluessel == _gewaehlt ? "epos-zeile--gewaehlt" : null;
+
+    /// <summary>↑ ↓ Pos1 Ende in der Projektliste: die Regel rechnet der Baustein.</summary>
+    private Task BeiProjektTaste(KeyboardEventArgs e)
+        => _zweispalten is null ? Task.CompletedTask : _zweispalten.ProjektTasteAsync(e.Key);
+
+    /// <summary>Die Tastenführung hat eine andere Projektzeile gewählt.</summary>
+    private void BeiProjektTastenwahl(string schluessel)
+    {
+        ProjektZeileKlick(schluessel);
+    }
+
+    /// <summary>
+    /// Der Grund der weichen Sperre von Schloss… und Löschen (AW3b): Sie wirken nur auf Katalogsätze; steht ein
+    /// Projektsatz, nennen sie „Katalogsatz wählen".
+    /// </summary>
+    private string? KatalogSperrgrund => SatzArt == Satzmarke.Projektsatz ? Resource.AUSWAHL_SPERRE_KATALOGSATZ : null;
+
+    /// <summary>
+    /// Ein Kästchen hat geschaltet: Der Wirt zeichnet neu, die Sperren seiner Bereichsknöpfe folgen der Wahl. Die
+    /// gewählte Zeile bleibt — Ankreuzen wählt nicht (KA‑E‑17), die Zeile wählt allein der Klick in die Zeile.
+    /// </summary>
+    private void BeiWahlGeaendert(Auswahlbereich bereich) { }
+
+    private void BeiKatalogKaestchen(IReadOnlyList<string> gewaehlt)
+    {
+        _katalogKaestchen = gewaehlt;
+        _katalogWahl.Setzen(gewaehlt);
+    }
+
+    private void KatalogKaestchenLeeren()
+    {
+        _katalogWahl.Leeren();
+        _katalogKaestchen = new List<string>();
+    }
+
+    /// <summary>Wählt eine Anlage (auch der Weg des Assistenten); der Katalogsatz tritt zurück.</summary>
+    private void Waehlen(string schluessel)
+    {
+        if (Sichtbare.FirstOrDefault(z => z.Schluessel == schluessel) is Zeile z) ProjektZeileWaehlen(z);
+        else if (SichtbareWp.FirstOrDefault(w => w.Schluessel == schluessel) is WpEintrag w) WpZeileWaehlen(w);
+    }
+
+    /// <summary>KM-K1: wählt eine Wärmepumpe der Projektliste.</summary>
+    private void WpZeileWaehlen(WpEintrag w)
+    {
+        _gewaehlt = w.Schluessel;
+        _letzteProjektwahl = w.Schluessel;
+        _katalogZeile = null;
+        _katalogGewaehlt = "";
+        _katalogWerte = null;
+        _satzFehler = "";
+        _kosten = null;
+    }
+
+    private void ProjektZeileWaehlen(Zeile zeile)
+    {
+        _gewaehlt = zeile.Schluessel;
+        _letzteProjektwahl = zeile.Schluessel;
+        _katalogZeile = null;
+        _katalogGewaehlt = "";
+        _katalogWerte = null;
+        _satzFehler = "";
+        KostenNachziehen();
+    }
+
+    private void KatalogZeileWaehlen(string schluessel)
+    {
+        _katalogGewaehlt = schluessel ?? "";
+        _katalogZeile = _katalog.FirstOrDefault(z => z.Schluessel == _katalogGewaehlt);
+        if (_katalogZeile is not null) _letzteKatalogwahl = _katalogZeile.Schluessel;
+        _gewaehlt = "";
+        _kosten = null;
+        _satzFehler = "";
+        _katalogWerte = _katalogZeile is Katalogfilterzeile k && !KatalogIstWp(k.Schluessel)
+            ? Katalogladung.Satz(() => Katalogwerte?.Invoke(k.Id), k.Bezeichner, out _satzFehler)
+            : null;
+        if (_katalogZeile is null) _satzFehler = "";
+    }
+
+    private bool KatalogsatzGesperrt => _katalogZeile?.Geschuetzt == true;
+
+    private KaeltemaschineGeraetwerte? SatzGeraet => SatzIstWaermepumpe ? null : Aktuell is Zeile a ? a.Arbeit.Geraet ?? new KaeltemaschineGeraetwerte { Bezeichner = a.Arbeit.Bezeichner }
+                                                   : _katalogZeile is not null ? _katalogWerte ?? new KaeltemaschineGeraetwerte { Bezeichner = _katalogZeile.Bezeichner }
+                                                   : null;
+
+    private Satzmarke SatzArt => Aktuell is not null || AktuellWp is not null ? Satzmarke.Projektsatz
+                               : _katalogZeile is not null ? Satzmarke.Katalogsatz : Satzmarke.Keiner;
+
+    private string? SatzName => Aktuell?.Arbeit.Bezeichner ?? AktuellWp?.Daten.Bezeichner ?? _katalogZeile?.Bezeichner;
+
+    /// <summary>Die Kenndaten der zugeklappten Detailzeile: die ersten drei Angaben, beim gesperrten Satz der Hinweis.</summary>
+    private string? SatzKenndaten
+    {
+        get
+        {
+            if (SatzArt == Satzmarke.Keiner) return null;
+            var teile = Zusammenfassung().Take(3).Select(a => a.Beschriftung + " " + a.Wert).ToList();
+            if (KatalogsatzGesperrt) teile.Add(Resource.AUSWAHL_SATZ_NUR_LESEN);
+            return string.Join(" · ", teile);
+        }
+    }
+
+    private RenderFragment MarkeKatalogsatz => @<span class="epos-zweispalten-marke epos-zweispalten-marke--satz">@Resource.AUSWAHL_MARKE_KATALOGSATZ</span>;
+
+    private RenderFragment MarkeProjektsatz => @<span class="epos-zweispalten-marke epos-zweispalten-marke--satz">@Resource.AUSWAHL_MARKE_PROJEKTSATZ</span>;
+
+    /// <summary>
+    /// <b>Die Zusammenfassung des gewählten Satzes</b> (UeS2): beim Projektsatz Nennkälteleistung, EER, Rückkühlart,
+    /// Anzahl, Kühlträger, Zähler und die Kosten; beim Katalogsatz Hersteller, Nennkälteleistung, EER, Rückkühlart
+    /// und Geräteart aus den Spalten der Katalogliste.
+    /// </summary>
+    public IReadOnlyList<Satzangabe> Zusammenfassung()
+    {
+        var liste = new List<Satzangabe>();
+        if (SatzArt != Satzmarke.Keiner)
+            liste.Add(new(Resource.KMA_SP_ART, SatzIstWaermepumpe ? Resource.KMA_ART_WAERMEPUMPE : Resource.KMA_ART_KAELTEMASCHINE));
+        if (AktuellWp is WpEintrag w)
+        {
+            // KM-K1: die Kurzangaben der Wärmepumpe (Konzept 5.10a) und ihre Zeile „Zulässigkeit“.
+            KuehlWaermepumpeZeile wd = w.Daten;
+            if (wd.KuehlleistungKw is double wkw) liste.Add(new(Resource.KMA_LBL_KUEHLLEISTUNG, Satzangaben.Zahl(wkw, Texte.EinheitKw)));
+            if (wd.Eer is double weer) liste.Add(new(Texte.SpalteEer, Zahl(weer, 2)));
+            if (wd.KuehlVorlauf is int vl) liste.Add(new(Resource.KMA_LBL_KUEHLVORLAUF, vl.ToString(CultureInfo.CurrentCulture) + " " + Texte.EinheitGradC));
+            if (!string.IsNullOrWhiteSpace(wd.Quelle)) liste.Add(new(Resource.KMA_LBL_QUELLE, wd.Quelle));
+            if (!string.IsNullOrWhiteSpace(wd.Kuehltraeger)) liste.Add(new(Texte.LabelTraeger, wd.Kuehltraeger));
+            liste.Add(new(Texte.LabelZaehler, wd.EigenerZaehler ? Texte.Ja : Texte.Nein));
+            liste.Add(new(Resource.KMA_LBL_RANG, wd.Rang is int wr ? wr.ToString(CultureInfo.CurrentCulture) : Resource.KMA_RANG_KEINER));
+            if (!string.IsNullOrWhiteSpace(wd.Zulaessigkeit)) liste.Add(new(Resource.KMA_LBL_ZULAESSIGKEIT, wd.Zulaessigkeit));
+            return liste;
+        }
+        if (Aktuell is Zeile a)
+        {
+            KaeltemaschineAnlageDaten d = a.Arbeit;
+            KaeltemaschineGeraetwerte? g = d.Geraet;
+            if (g?.Nennkaelteleistung is double kw)
+            {
+                liste.Add(new(Texte.LabelNennkaelteleistung, Satzangaben.Zahl(kw, Texte.EinheitKw)));
+                if ((d.Anzahl ?? 1) > 1)
+                    liste.Add(new(Resource.AUSWAHL_ZF_LEISTUNG_GESAMT, Satzangaben.Zahl(kw * (d.Anzahl ?? 1), Texte.EinheitKw)));
+            }
+            if (EerText(g) is { Length: > 0 } eer) liste.Add(new(Texte.SpalteEer, eer));
+            if (!string.IsNullOrWhiteSpace(g?.Rueckkuehlart)) liste.Add(new(Texte.LabelRueckkuehlart, g!.Rueckkuehlart));
+            liste.Add(new(Resource.AUSWAHL_ZF_ANZAHL, AnzahlText(d)));
+            if (TraegerText(d) is { Length: > 0 } traeger) liste.Add(new(Texte.LabelTraeger, traeger));
+            liste.Add(new(Texte.LabelZaehler, d.KuehlEigenerZaehler ? Texte.Ja : Texte.Nein));
+            if (RangKm(a) is { Length: > 0 } rang) liste.Add(new(Resource.KMA_LBL_RANG, rang));
+            if (!string.IsNullOrWhiteSpace(d.Zulaessigkeit)) liste.Add(new(Resource.KMA_LBL_ZULAESSIGKEIT, d.Zulaessigkeit));
+            Satzangaben.Kosten(liste, _kosten);
+        }
+        else if (_katalogZeile is Katalogfilterzeile z)
+        {
+            if (KatalogIstWp(z.Schluessel))
+                Satzangaben.Katalog(liste, z, Profil, Katalogfilterprofil.SpHersteller, Katalogfilterprofil.SpNennkaelteleistung,
+                                    Katalogfilterprofil.SpEer, Katalogfilterprofil.SpQuelle);
+            else
+                Satzangaben.Katalog(liste, z, Profil, Katalogfilterprofil.SpHersteller, Katalogfilterprofil.SpNennkaelteleistung,
+                                    Katalogfilterprofil.SpEer, Katalogfilterprofil.SpRueckkuehlart, Katalogfilterprofil.SpGeraeteart);
+            // Ein Katalogsatz trägt kein Inbetriebnahmejahr: die Zulässigkeit ist „nicht geprüft“ (offener Punkt 3).
+            liste.Add(new(Resource.KMA_LBL_ZULAESSIGKEIT, Resource.KMA_ZULAESSIGKEIT_NICHT_GEPRUEFT));
+        }
+        return liste;
+    }
+
+    private void KostenNachziehen()
+    {
+        _kosten = null;
+        if (Kostensumme is null || Aktuell is not Zeile a || a.Arbeit.AnlagenId <= 0) return;
+        // KT-8c: über die Fangstelle — wirft die Summe, fehlt die Angabe, und der Banner nennt den Grund.
+        Func<int, (double Invest, double Betrieb)> summe = Kostensumme;
+        int anlagenId = a.Arbeit.AnlagenId;
+        _kosten = Katalogladung.Wert<(double Invest, double Betrieb)?>(() => summe(anlagenId), a.Arbeit.Bezeichner, null,
+                                                                      out string kostenGrund);
+        if (kostenGrund.Length > 0) Melden(kostenGrund, true);
+    }
+
+    /// <summary>
+    /// KT-8c: Der Weg in die Kostenverwaltung läuft über die Fangstelle
+    /// (<c>Katalogladung.SchreibenAsync</c>): Wirft er, nennt der Banner den Grund, das Protokoll
+    /// hat einen Vermerk, und der Dialog bleibt offen.
+    /// </summary>
+    private async Task BeiKosten(Zeile zeile, bool betrieb)
+    {
+        if (KostenOeffnen is null || zeile.Arbeit.AnlagenId <= 0) return;
+        Func<int, bool, Task> oeffnen = KostenOeffnen;
+        string grund = await Katalogladung.SchreibenAsync(async () => { await oeffnen(zeile.Arbeit.AnlagenId, betrieb); return ""; },
+                                                          zeile.Arbeit.Bezeichner, g => g);
+        if (grund.Length > 0) { Melden(grund, true); StateHasChanged(); }
+    }
+
+    // =====================================================================
+    // KD1: „Energiekosten…" — die Trägerkarte des Kühlträgers
+    // =====================================================================
+
+    /// <summary>
+    /// Der Träger, dessen Karte „Energiekosten…" aufschlägt: der Kühlträger der Anlage
+    /// (<c>Kuehl_ID_Carrier</c>), ohne eigenen der Stromträger des Projekts; 0 = keiner. Gelesen wird der
+    /// ARBEITSSTAND — die Trägerwahl im Satz gilt, lange bevor ein OK sie schreibt (wie im Wärmepumpendialog).
+    /// </summary>
+    private int Energietraeger(Zeile zeile)
+        => zeile.Arbeit.KuehlCarrierId is int id && id > 0 ? id : ProjektStromtraeger;
+
+    /// <summary>Der Weg hinter „Energiekosten…"; <c>null</c> = kein Knopf oder weiche Sperre.</summary>
+    private Func<Task>? EnergiekostenWeg(Zeile zeile)
+        => EnergietraegerGaben is null || Energietraeger(zeile) <= 0
+               ? null
+               : () => { BeiEnergiekosten(zeile); return Task.CompletedTask; };
+
+    /// <summary>Der Grund, aus dem „Energiekosten…" nicht führt; leer = er führt.</summary>
+    private string EnergiekostenSperrgrund(Zeile zeile)
+        => EnergietraegerGaben is not null && Energietraeger(zeile) <= 0
+               ? Resource.KMA_ENERGIEKOSTEN_OHNE_TRAEGER : "";
+
+    /// <summary>Steht die Trägerkarte offen? (Prüfhilfe)</summary>
+    public bool TraegerkarteOffen => _traegerGaben is not null;
+
+    /// <summary>Der Träger, mit dem die Trägerkarte geöffnet wurde (Prüfhilfe); 0 = zu.</summary>
+    public int TraegerkarteTraeger => _traegerkarteTraeger;
+
+    /// <summary>
+    /// Meldet eine Ablehnung dort, wo der Anwender steht: Steht die Satz-Überlagerung offen, trägt SIE den
+    /// Hinweis — der Banner des Dialogs läge dahinter.
+    /// </summary>
+    private void EnergiekostenAbgelehnt(string grund)
+    {
+        if (_satzGross) _satzUeberlagerungFehler = grund;
+        else BeiSchlossAbgelehnt(grund);
+        // Der Knopf gehoert der Leiste: Blazor zeichnet nach ihrem Ereignis nur SIE neu,
+        // der Hinweis steht aber hier. Deshalb der ausdrueckliche Zeichenlauf.
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Öffnet die Trägerkarte des Kühlträgers dieser Anlage. Liefert die Gabe keinen Satz oder wirft sie,
+    /// bleibt es bei der benannten Sperre im Banner — ein Knopf, der still verpufft, gibt es nicht.
+    /// </summary>
+    private void BeiEnergiekosten(Zeile zeile)
+    {
+        if (EnergietraegerGaben is null) return;
+        int traeger = Energietraeger(zeile);
+        if (traeger <= 0) { EnergiekostenAbgelehnt(Resource.KMA_ENERGIEKOSTEN_OHNE_TRAEGER); return; }
+        IReadOnlyDictionary<string, object>? gaben;
+        try { gaben = EnergietraegerGaben(traeger, zeile.Arbeit.GeraetId ?? 0); }
+        catch (Exception ex) { Melden(ex.Message, true); return; }
+        if (gaben is null) { EnergiekostenAbgelehnt(Resource.KMA_ENERGIEKOSTEN_OHNE_TRAEGER); return; }
+        _meldung = "";
+        _traegerkarteTraeger = traeger;
+        _traegerGaben = gaben;
+        StateHasChanged();   // s. EnergiekostenAbgelehnt: das Ereignis gehoert der Leiste
+    }
+
+    /// <summary>
+    /// Die Trägerkarte ist zu — OK wie ✕ und Esc: Die Verwaltung schreibt selbst, ihr Ergebnis ist keine
+    /// Zusage an diesen Dialog. Danach frischt der Satz seine Kurzangaben auf, denn die Kostensummen der
+    /// Anlage können sich geändert haben.
+    /// </summary>
+    private void TraegerkarteZu()
+    {
+        _traegerGaben = null;
+        _traegerkarteTraeger = 0;
+        KostenNachziehen();
+        StateHasChanged();   // das Ereignis gehoert der Ueberlagerung bzw. der Verwaltung darin
+    }
+
+    // =====================================================================
+    // Anzeigehilfen
+    // =====================================================================
+
+    /// <summary>Der Hilfsstromanteil in Prozent — gespeichert wird der Anteil [—].</summary>
+    public static double? AnteilAlsProzent(double? anteil) => KaeltemaschineKonfiguration.AnteilAlsProzent(anteil);
+
+    /// <summary>Die gezeigten Prozent als gespeicherter Anteil [—].</summary>
+    public static double? ProzentAlsAnteil(double? prozent) => KaeltemaschineKonfiguration.ProzentAlsAnteil(prozent);
+
+    private static string Zahl(double? wert, int stellen) => KaeltemaschineKonfiguration.Zahl(wert, stellen);
+
+    /// <summary>EER und — falls gepflegt — die Saisonkennzahl mit ihrer Art („3,20 / SEER 5,10").</summary>
+    private static string EerText(KaeltemaschineGeraetwerte? g)
+    {
+        if (g is null) return "";
+        string eer = Zahl(g.NennEer, 2);
+        if (g.Saisonkennzahl is not double s) return eer;
+        string saison = (g.SaisonkennzahlArt.Length > 0 ? g.SaisonkennzahlArt + " " : "") + Zahl(s, 2);
+        return eer.Length > 0 ? eer + " / " + saison : saison;
+    }
+
+    private static string AnzahlText(KaeltemaschineAnlageDaten d) => d.Anzahl?.ToString(CultureInfo.CurrentCulture) ?? "";
+
+    private string TraegerText(KaeltemaschineAnlageDaten d)
+        => d.KuehlCarrierId is int id ? Stromtraeger.Where(t => t.Id == id).Select(t => t.Text).FirstOrDefault() ?? "" : "";
+
+    /// <summary>Eine Eingabe der Konfiguration: Liste und Zusammenfassung ziehen nach.</summary>
+    private void Nachziehen() { }
+
+    /// <summary>Die Kenndaten als Bild: Reiter EER und Kälteleistung, dazu die Teillastkurve.</summary>
+    private RenderFragment Kenndatenbilder() => __builder =>
+    {
+        (int id, bool katalog) = Aktuell is Zeile a ? (a.Arbeit.GeraetId ?? 0, false) : (_katalogZeile?.Id ?? 0, true);
+        var (bilder, teillast) = BilderZu(id, katalog);
+        <div class="epos-kaeltemaschine-kennlinienbild">
+            @if (bilder is not null)
+            {
+                <Reiter Bezeichnung="@Texte.KennlinienbildBezeichnung" Kennung="kma-kennlinie" @bind-Aktiv="_kennlinienreiter">
+                    <KindInhalt>
+                        <Reiterblatt Schluessel="EER" Titel="@Texte.ReiterEer">
+                            <KindInhalt>
+                                <DiagrammSvg Modell="@bilder.Eer" Kennung="kma-kennlinie-eer"
+                                             Bezeichnung="@Texte.ReiterEer" PlatzhalterText="@Texte.PlatzhalterKennlinienbild" />
+                            </KindInhalt>
+                        </Reiterblatt>
+                        <Reiterblatt Schluessel="LEISTUNG" Titel="@Texte.ReiterLeistung">
+                            <KindInhalt>
+                                <DiagrammSvg Modell="@bilder.Leistung" Kennung="kma-kennlinie-leistung"
+                                             Bezeichnung="@Texte.ReiterLeistung" PlatzhalterText="@Texte.PlatzhalterKennlinienbild" />
+                            </KindInhalt>
+                        </Reiterblatt>
+                    </KindInhalt>
+                </Reiter>
+            }
+            @if (teillast is not null)
+            {
+                <DiagrammSvg Modell="@teillast" Kennung="kma-teillast" Bezeichnung="@Texte.BildTeillast" />
+            }
+        </div>
+    };
+
+    /// <summary>Die Bilder eines Satzes aus dem Zwischenspeicher — sonst verlöre <c>DiagrammSvg</c> mit der Referenz Zoom und Legendenwahl.</summary>
+    private (KaeltemaschineKennlinienbilder? Bilder, WindowsFormsApplication1.Zeichnung.Zeichenmodell? Teillast) BilderZu(int id, bool katalog)
+    {
+        if (id <= 0) return (null, null);
+        if (_bilder.TryGetValue((id, katalog), out var alt)) return alt;
+        KaeltemaschineKennlinienbilder? bilder = null;
+        WindowsFormsApplication1.Zeichnung.Zeichenmodell? teillast = null;
+        string fehler = "";
+        if (Kennlinienbilder is not null)
+            bilder = Katalogladung.SatzDazu(() => Kennlinienbilder(id, katalog), SatzName, ref fehler);
+        if (Teillastbild is not null)
+            teillast = Katalogladung.SatzDazu(() => Teillastbild(id, katalog), SatzName, ref fehler);
+        if (fehler.Length > 0) _satzUeberlagerungFehler = fehler;
+        _bilder[(id, katalog)] = (bilder, teillast);
+        return (bilder, teillast);
+    }
+
+    // =====================================================================
+    // In das Projekt übernehmen — sofort angelegt, Abbrechen räumt ab
+    // =====================================================================
+
+    /// <summary>
+    /// Legt für jeden gewählten Katalogsatz Projektkopie und Anlagenzeile sofort an (Fangweg
+    /// <c>Katalogladung.Schreiben</c>) und nimmt die gelesene Anlage in die Liste; die in der Sitzung angelegten
+    /// räumt Abbrechen wieder ab.
+    /// </summary>
+    private void BeiInsProjekt()
+    {
+        List<Katalogfilterzeile> ziele = KatalogZiele();
+        if (ziele.Count == 0) return;
+        _meldung = "";
+        Zeile? letzte = null;
+        foreach (Katalogfilterzeile z in ziele)
+        {
+            if (KatalogIstWp(z.Schluessel)) { WpUebernehmen(z); continue; }
+            if (Anlegen is null) continue;
+            string grund = "";
+            int id = Katalogladung.Schreiben(() => Anlegen(z.Id, z.Bezeichner), z.Bezeichner, g => { grund = g; return -1; });
+            if (id <= 0)
+            {
+                Melden(grund.Length > 0 ? grund : string.Format(CultureInfo.CurrentCulture, Texte.AnlegenFehlt, z.Bezeichner), true);
+                continue;
+            }
+            KaeltemaschineAnlageDaten gelesen = AnlageLesen(id) ?? Notstand(id, z);
+            var zeile = new Zeile { Schluessel = NeuerSchluessel(), Gelesen = gelesen, Arbeit = gelesen.Kopie() };
+            _zeilen.Add(zeile);
+            letzte = zeile;
+        }
+        KatalogKaestchenLeeren();
+        VerwendungStempeln();
+        if (letzte is not null)
+        {
+            _projektWahl.Leeren();
+            ProjektZeileWaehlen(letzte);
+        }
+    }
+
+    /// <summary>Die soeben angelegte Anlage, so wie die Hülle sie liest; <c>null</c> = nicht lesbar.</summary>
+    /// <summary>
+    /// KM-K1: übernimmt eine Katalog-Wärmepumpe — Kopie, Anlage, Kühlbetrieb und Rang sofort über die Hülle; eine Ablehnung
+    /// des Kerns steht im Banner (Kopie und Anlage bleiben vorgemerkt, Abbrechen nimmt sie zurück).
+    /// </summary>
+    private void WpUebernehmen(Katalogfilterzeile z)
+    {
+        if (WaermepumpeUebernehmen is null || !KuehlerzeugerKatalogCtrl.IstWaermepumpe(z.Schluessel, out int stamm)) return;
+        KuehlWpUebernahme? u = Katalogladung.Schreiben(() => WaermepumpeUebernehmen(stamm), z.Bezeichner, g => (KuehlWpUebernahme?)
+            new KuehlWpUebernahme(false, 0, z.Bezeichner, false, g, null));
+        if (u is null) return;
+        if (u.Merker is not null) _wpUebernahmen.Add(u.Merker);
+        if (u.IdWp <= 0) { Melden(string.IsNullOrEmpty(u.Meldung) ? Resource.KMA_MSG_WP_FEHLER : u.Meldung!, true); return; }
+        bool warAn = _wp.Any(w => w.Daten.IdWp == u.IdWp && !w.Entfernt);
+        if (u.Ok && !_wp.Any(w => w.Daten.IdWp == u.IdWp)) _wpEingeschaltet.Add(u.IdWp);
+        try
+        {
+            WpNeuLesen(u.Ok ? u.IdWp : null);
+            _raenge = KaelteRaenge?.Invoke() ?? _raenge;
+        }
+        catch (Exception ex) { Melden(ex.Message, true); return; }
+        if (!u.Ok)
+        {
+            Melden(string.Format(CultureInfo.CurrentCulture, Resource.KMA_MSG_WP_ABGELEHNT, u.Bezeichner, u.Meldung ?? ""), true);
+            return;
+        }
+        WpEintrag? neu = _wp.FirstOrDefault(w => w.Daten.IdWp == u.IdWp);
+        string rang = RangText(neu?.Daten.Rang);
+        string text = string.Format(CultureInfo.CurrentCulture,
+                                    u.SchonImProjekt || warAn ? Resource.KMA_MSG_WP_SCHON_IM_PROJEKT : Resource.KMA_MSG_WP_UEBERNOMMEN,
+                                    u.Bezeichner, rang.Length > 0 ? rang : Resource.KMA_RANG_KEINER);
+        // KM-K2: Die Wärmekaskade bleibt wie im Wärmepumpendialog unberührt - ohne Platz für Wärmepumpen kühlt die
+        // Anlage nicht. Der Kern nennt das (WaermekaskadeHinweis), der Dialog übergeht es nicht still.
+        bool hinweis = !string.IsNullOrEmpty(u.Hinweis);
+        Melden(hinweis ? text + " " + u.Hinweis : text, hinweis);
+        if (neu is not null) { _projektWahl.Leeren(); WpZeileWaehlen(neu); }
+    }
+
+    // =====================================================================
+    // KM-K2: „Bearbeiten…" einer Projektwärmepumpe — die Wärmepumpen-Überlagerung
+    // =====================================================================
+
+    /// <summary>Trägt der Wirt den Bearbeitungsweg der gewählten Wärmepumpen-Anlagenzeile?</summary>
+    private bool WpBearbeitbar => WaermepumpeAnlageGaben is not null && AktuellWp is not null;
+
+    /// <summary>Steht die Wärmepumpen-Überlagerung offen? (Prüfhilfe)</summary>
+    public bool WpUeberlagerungOffen => _wpGaben is not null;
+
+    /// <summary>Die Anlagenzeile, mit der die Wärmepumpen-Überlagerung geöffnet wurde (Prüfhilfe).</summary>
+    public int WpUeberlagerungAnlage => _wpGaben?.IdAnlage ?? 0;
+
+    /// <summary>
+    /// Öffnet die Wärmepumpen-Überlagerung für die gewählte Projektwärmepumpe. Liefert die Naht keinen Satz (die Kopie
+    /// führt im Projekt keine Anlagenzeile) oder wirft sie, bleibt es bei der benannten Sperre im Banner.
+    /// </summary>
+    private void BeiWpBearbeiten()
+    {
+        if (AktuellWp is not WpEintrag w || WaermepumpeAnlageGaben is null) return;
+        WaermepumpeAnlagegaben? gaben;
+        try { gaben = WaermepumpeAnlageGaben(w.Daten.IdWp); }
+        catch (Exception ex) { Melden(ex.Message, true); return; }
+        if (gaben is null) { BeiSchlossAbgelehnt(Resource.KMA_WP_BEARBEITEN_GESPERRT); return; }
+        _meldung = "";
+        _wpFehler = null;
+        _wpGaben = gaben;
+    }
+
+    /// <summary>
+    /// OK der Wärmepumpen-Überlagerung: erst die Prüfung der Anlagenfelder, dann der Schreibweg der Naht. Eine
+    /// Ablehnung bleibt in der Überlagerung stehen; geschrieben wird die Projektliste neu gelesen.
+    /// </summary>
+    private void BeiWpUebernommen(bool ok)
+    {
+        if (_wpGaben is not WaermepumpeAnlagegaben gaben) return;
+        if (!ok) { BeiWpVerworfen(); return; }
+        if (_wpFelder?.Pruefen() is string mangel) { _wpFehler = mangel; return; }
+        string? grund;
+        try { grund = gaben.Schreiben(); }
+        catch (Exception ex) { _wpFehler = ex.Message; return; }
+        if (!string.IsNullOrEmpty(grund)) { _wpFehler = grund; return; }
+        WpUeberlagerungZu();
+        try
+        {
+            WpNeuLesen();
+            _raenge = KaelteRaenge?.Invoke() ?? _raenge;
+        }
+        catch (Exception ex) { Melden(ex.Message, true); return; }
+        VerwendungStempeln();
+    }
+
+    /// <summary>Abbrechen, ✕ und Esc: der geschriebene Stand bleibt, der Feldsatz wird verworfen (er ist eine Lesung).</summary>
+    private void BeiWpVerworfen() => WpUeberlagerungZu();
+
+    private void WpUeberlagerungZu()
+    {
+        _wpGaben = null;
+        _wpFelder = null;
+        _wpFehler = null;
+    }
+
+    private KaeltemaschineAnlageDaten? AnlageLesen(int anlagenId)
+    {
+        try { return Anlagen?.Invoke()?.FirstOrDefault(a => a.AnlagenId == anlagenId); }
+        catch { return null; }
+    }
+
+    /// <summary>Ohne Lesestand: die Anlage aus dem Katalogsatz (Name, Anzahl 1, Vorauswahl des Kühlträgers).</summary>
+    private KaeltemaschineAnlageDaten Notstand(int anlagenId, Katalogfilterzeile z)
+    {
+        KaeltemaschineGeraetwerte? werte = null;
+        try { werte = Katalogwerte?.Invoke(z.Id); } catch { werte = null; }
+        return new KaeltemaschineAnlageDaten
+        {
+            AnlagenId = anlagenId, StammId = z.Id, Bezeichner = z.Bezeichner, Anzahl = 1, Geraet = werte,
+            KuehlCarrierId = KuehltraegerVorauswahl is int vor && vor > 0 ? vor : null
+        };
+    }
+
+    /// <summary>
+    /// „Aus dem Projekt entfernen": Eine in der Sitzung angelegte Anlage geht sofort, eine gespeicherte wird
+    /// vorgemerkt und beim OK gelöscht.
+    /// </summary>
+    private void BeiEntfernen()
+    {
+        List<Zeile> ziele = ProjektZiele();
+        List<WpEintrag> wpZiele = WpZiele();
+        if (ziele.Count == 0 && wpZiele.Count == 0) return;
+        foreach (WpEintrag w in wpZiele)
+        {
+            // KM-K1: bei einer Wärmepumpe nur der Kühlbetrieb - beim OK aus, Gerät und Anlage bleiben (Hinweis).
+            w.Entfernt = true;
+            Melden(string.Format(CultureInfo.CurrentCulture, Resource.KMA_MSG_WP_ENTFERNT, w.Daten.Bezeichner), false);
+        }
+        foreach (Zeile z in ziele)
+        {
+            if (z.Neu)
+            {
+                AnlageLoeschen(z);
+                _zeilen.Remove(z);
+            }
+            else z.Entfernt = true;
+        }
+        _projektWahl.Leeren();
+        VerwendungStempeln();
+        if (Sichtbare.FirstOrDefault() is Zeile naechste) ProjektZeileWaehlen(naechste);
+        else if (SichtbareWp.FirstOrDefault() is WpEintrag nw) WpZeileWaehlen(nw);
+        else { _gewaehlt = ""; _kosten = null; }
+    }
+
+    /// <summary>Löscht eine Anlage über die Gabe; ein Wurf meldet im Banner.</summary>
+    private bool AnlageLoeschen(Zeile z)
+    {
+        if (Loeschen is null || z.Arbeit.AnlagenId <= 0) return true;
+        string grund = Katalogladung.Schreiben(() => { Loeschen(z.Arbeit.AnlagenId); return ""; }, z.Arbeit.Bezeichner, g => g);
+        if (grund.Length == 0) return true;
+        Melden(grund, true);
+        return false;
+    }
+
+    // =====================================================================
+    // Die Satz-Überlagerung: „Bearbeiten" eines Satzes
+    // =====================================================================
+
+    private void BeiSatzVergroessert()
+    {
+        _satzGross = true;
+        _satzUeberlagerungFehler = null;
+        _anlagenmerker = Aktuell?.Arbeit.Kopie();
+    }
+
+    /// <summary>
+    /// OK der Überlagerung: prüft die Anlage mit den Regeln des Kerns und schreibt sie über den Fangweg
+    /// (<c>Katalogladung.Schreiben</c>); abgelehnt bleibt die Überlagerung offen und nennt den Grund.
+    /// </summary>
+    private void BeiSatzUebernommen()
+    {
+        if (Aktuell is Zeile a && !AnlageSchreiben(a, out string? grund))
+        {
+            _satzUeberlagerungFehler = grund;
+            _zweispalten?.SatzOffenHalten();
+            return;
+        }
+        _satzGross = false;
+        _satzUeberlagerungFehler = null;
+        _anlagenmerker = null;
+        KostenNachziehen();   // die Kostenknoepfe der Ueberlagerung koennen die Summen geaendert haben
+    }
+
+    /// <summary>Abbrechen, ✕ und Esc der Überlagerung: die Anlagenfelder wie beim Öffnen.</summary>
+    private void BeiSatzVerworfen()
+    {
+        _satzGross = false;
+        _satzUeberlagerungFehler = null;
+        if (_anlagenmerker is KaeltemaschineAnlageDaten merker && Aktuell is Zeile a) a.Arbeit = merker;
+        _anlagenmerker = null;
+        KostenNachziehen();
+    }
+
+    /// <summary>Prüft und schreibt eine geänderte Anlage; <c>false</c> = abgelehnt, <paramref name="grund"/> nennt es.</summary>
+    private bool AnlageSchreiben(Zeile z, out string? grund)
+    {
+        grund = Pruefbefund(z.Arbeit);
+        if (grund is not null) return false;
+        if (z.Arbeit.GleicheEingaben(z.Gelesen) || Speichern is null) return true;
+        KaeltemaschineAnlageDaten arbeit = z.Arbeit;
+        string? fehler = Katalogladung.Schreiben(() => Speichern(arbeit), arbeit.Bezeichner, g => g);
+        if (!string.IsNullOrEmpty(fehler)) { grund = fehler; return false; }
+        z.Gelesen = arbeit.Kopie();
+        z.Gespeichert = true;
+        return true;
+    }
+
+    private async Task BeiProjektBearbeiten()
+    {
+        List<Zeile> ziele = ProjektZiele();
+        if (ziele.Count == 0 || _zweispalten is null) return;
+        if (ziele[0].Schluessel != _gewaehlt) ProjektZeileWaehlen(ziele[0]);
+        await _zweispalten.SatzUeberlagerungOeffnen();
+    }
+
+    private async Task BeiProjektStift(string schluessel)
+    {
+        if (_zweispalten is null) return;
+        if (schluessel != _gewaehlt) Waehlen(schluessel);
+        if (AktuellWp is not null)
+        {
+            // KM-K2: mit der Naht die Waermepumpen-Ueberlagerung, ohne sie die benannte Sperre.
+            if (WpBearbeitbar) { BeiWpBearbeiten(); return; }
+            BeiSchlossAbgelehnt(Resource.KMA_WP_BEARBEITEN_GESPERRT);
+            return;
+        }
+        await _zweispalten.SatzUeberlagerungOeffnen();
+    }
+
+    // =====================================================================
+    // Katalog: Bearbeiten…, Stift, Vergleichen…, Schloss, Löschen
+    // =====================================================================
+
+    /// <summary>
+    /// „Bearbeiten…" des Katalogs: ein freier Satz öffnet den Katalogeditor mit diesem Satz; ein gesperrter
+    /// Satz öffnet nur lesend in der Satz-Überlagerung („Erst Schloss aufheben"). Bei mehreren Sätzen gilt der
+    /// erste freie.
+    /// </summary>
+    private async Task BeiKatalogBearbeiten()
+    {
+        List<Katalogfilterzeile> ziele = KatalogZiele().Where(z => !KatalogIstWp(z.Schluessel)).ToList();
+        if (ziele.Count == 0) return;
+        Katalogfilterzeile? frei = ziele.FirstOrDefault(z => !z.Geschuetzt);
+        if (frei is not null) { await KatalogsatzOeffnen(frei); return; }
+        await KatalogsatzOeffnen(ziele[0]);
+    }
+
+    private Task BeiKatalogStift(Katalogfilterzeile zeile)
+    {
+        if (!KatalogIstWp(zeile.Schluessel)) return KatalogsatzOeffnen(zeile);
+        KatalogZeileWaehlen(zeile.Schluessel);
+        BeiSchlossAbgelehnt(Resource.KMA_WP_BEARBEITEN_GESPERRT);
+        return Task.CompletedTask;
+    }
+
+    private async Task KatalogsatzOeffnen(Katalogfilterzeile zeile)
+    {
+        if (_katalogZeile?.Schluessel != zeile.Schluessel) KatalogZeileWaehlen(zeile.Schluessel);
+        if (!zeile.Geschuetzt && EditorOeffnen(zeile.Id)) return;
+        if (_zweispalten is not null) await _zweispalten.SatzUeberlagerungOeffnen();
+    }
+
+    /// <summary>Öffnet den Katalogeditor als Überlagerung; <c>false</c> = es gibt die Gaben nicht (oder sie werfen).</summary>
+    private bool EditorOeffnen(int vorwahl)
+    {
+        if (KatalogGaben is null) return false;
+        IReadOnlyDictionary<string, object>? gaben = Katalogladung.Satz(() => KatalogGaben(), Texte.TitelEditor, out string fehler);
+        if (gaben is null) { if (fehler.Length > 0) Melden(fehler, true); return false; }
+        _editorVorwahl = vorwahl;
+        _editorGaben = gaben;
+        return true;
+    }
+
+    /// <summary>Der Katalogeditor schließt: Katalog neu lesen, die Wahl bleibt.</summary>
+    private void EditorFertig(bool _)
+    {
+        _editorGaben = null;
+        _editorNeu = false;
+        KatalogNeuLaden();
+        if (_katalogZeile is not null) KatalogZeileWaehlen(_katalogZeile.Schluessel);
+    }
+
+    /// <summary>
+    /// „Vergleichen…" über beide Listen (KA-E-24, die Zweispaltenauswahl führt den Knopf): die Kennwerte einer
+    /// Anlage aus ihrer Projektkopie samt Kennlinie in derselben Parameterliste wie die des Katalogsatzes
+    /// (<see cref="VergleichsparameterProjekt"/>); ohne diese Gabe oder ohne gespeicherte Projektkopie die Felder der
+    /// Gerätegruppe.
+    /// </summary>
+    /// <summary>
+    /// KM-K1: die Arten dessen, was „Vergleichen…“ vergleichen würde — dieselbe Regel wie im Baustein (die Kreuze beider
+    /// Listen, ohne Kreuze die letzte Wahl beider Listen).
+    /// </summary>
+    private bool VergleichGemischt
+    {
+        get
+        {
+            var projekt = _projektWahl.Anzahl > 0 ? _projektWahl.Gewaehlte.ToList() : new List<string>();
+            var katalog = _katalogWahl.Anzahl > 0 ? _katalogWahl.Gewaehlte.ToList() : new List<string>();
+            if (projekt.Count + katalog.Count == 0)
+            {
+                if (_letzteProjektwahl is string p && ProjektSchluessel().Contains(p)) projekt.Add(p);
+                if (_letzteKatalogwahl is string k && _katalog.Any(z => z.Schluessel == k)) katalog.Add(k);
+                if (projekt.Count == 0 || katalog.Count == 0) return false;
+            }
+            var arten = projekt.Select(s => s.StartsWith("W", StringComparison.Ordinal))
+                               .Concat(katalog.Select(KatalogIstWp)).Distinct().Count();
+            return arten > 1;
+        }
+    }
+
+    private Func<string, Vergleichssatz?>? VergleichProjektGabe => VergleichGemischt ? null : VergleichProjektsatz;
+    private Func<string, Vergleichssatz?>? VergleichKatalogGabe => VergleichGemischt ? null : VergleichKatalogsatz;
+
+    private Vergleichssatz? VergleichProjektsatz(string schluessel)
+    {
+        if (SichtbareWp.FirstOrDefault(w => w.Schluessel == schluessel) is WpEintrag w)
+        {
+            if (VergleichsparameterWpProjekt is null) return null;
+            string g = "";
+            IReadOnlyList<Parameterwert>? pw = Katalogladung.SatzDazu(() => VergleichsparameterWpProjekt(w.Daten.IdWp), w.Daten.Bezeichner, ref g);
+            if (g.Length > 0) BeiSchlossAbgelehnt(g);
+            return Vergleichssatz.AusParametern(Satzmarke.Projektsatz, w.Daten.Bezeichner, pw);
+        }
+        Zeile? z = Sichtbare.FirstOrDefault(r => r.Schluessel == schluessel);
+        if (z is null) return null;
+        if (VergleichsparameterProjekt is not null && z.Arbeit.GeraetId is int id && id > 0)
+        {
+            string grund = "";
+            IReadOnlyList<Parameterwert>? werte = Katalogladung.SatzDazu(() => VergleichsparameterProjekt(id),
+                                                                         z.Arbeit.Bezeichner, ref grund);
+            if (grund.Length > 0) BeiSchlossAbgelehnt(grund);
+            return Vergleichssatz.AusParametern(Satzmarke.Projektsatz, z.Arbeit.Bezeichner, werte);
+        }
+        if (z.Arbeit.Geraet is null) return null;
+        return new Vergleichssatz(Satzmarke.Projektsatz, z.Arbeit.Bezeichner, GeraetWerte(z.Arbeit.Geraet));
+    }
+
+    /// <summary>Die Kennwerte eines Katalogsatzes für „Vergleichen…" — die Parameterübersicht, ohne sie die Profilspalten.</summary>
+    private Vergleichssatz? VergleichKatalogsatz(string schluessel)
+    {
+        Katalogfilterzeile? k = _katalog.FirstOrDefault(r => r.Schluessel == schluessel);
+        if (k is null) return null;
+        if (KatalogIstWp(k.Schluessel))
+            return VergleichsparameterWp is not null
+                ? Vergleichssatz.AusParametern(Satzmarke.Katalogsatz, k.Bezeichner, VergleichsparameterWp(k.Bezeichner))
+                : Vergleichssatz.AusSpalten(Satzmarke.Katalogsatz, Profil, k);
+        return Vergleichsparameter is not null
+            ? Vergleichssatz.AusParametern(Satzmarke.Katalogsatz, k.Bezeichner, Vergleichsparameter(k.Bezeichner))
+            : Vergleichssatz.AusSpalten(Satzmarke.Katalogsatz, Katalogprofil, k);
+    }
+
+    /// <summary>Die Kennwerte einer Projektkopie für den Vergleich — dieselben Felder wie die Gerätegruppe des Satzes.</summary>
+    private IReadOnlyList<(string Beschriftung, string Wert)> GeraetWerte(KaeltemaschineGeraetwerte g)
+    {
+        static string Mit(string name, string einheit) => einheit.Length > 0 ? name + " [" + einheit + "]" : name;
+        return new List<(string, string)>
+        {
+            (Texte.LabelFirma, g.Firma ?? ""),
+            (Texte.LabelTyp, g.Typ ?? ""),
+            (Mit(Texte.LabelNennkaelteleistung, Texte.EinheitKw), Zahl(g.Nennkaelteleistung, 1)),
+            (Texte.LabelNennEer, Zahl(g.NennEer, 2)),
+            (Texte.LabelRueckkuehlart, g.Rueckkuehlart ?? ""),
+            (Mit(Texte.LabelMindestteillast, Texte.EinheitProzent), Zahl(g.Mindestteillast, 0)),
+            (Mit(Texte.LabelKaltwasserMin, Texte.EinheitGradC), Zahl(g.KaltwasserMin, 1)),
+            (Texte.LabelTeillastWeg, g.TeillastWeg ?? ""),
+            (Texte.LabelVerdichterregelung, g.Verdichterregelung ?? ""),
+            (Texte.LabelTaktverlust, g.Taktverlustfaktor ?? ""),
+            (Texte.LabelKennfeldrand, g.Kennfeldrand ?? ""),
+        };
+    }
+
+    /// <summary>„Neu…" der Knopfleiste am Satz (AW3b): legt immer einen Katalogsatz an — der Katalogeditor im Modus Neu.</summary>
+    private void BeiNeu()
+    {
+        if (EditorOeffnen(0)) _editorNeu = true;
+    }
+
+    private void BeiLoeschenGefragt()
+    {
+        List<Katalogfilterzeile> ziele = KatalogZiele().Where(z => !z.Geschuetzt).ToList();
+        if (ziele.Count == 0) { BeiSchlossAbgelehnt(Resource.ADM_SCHLOSS_ERST_AUFHEBEN); return; }
+        _loeschziele = ziele;
+        _loeschfrageText = ziele.Count == 1
+            ? string.Format(CultureInfo.CurrentCulture, Texte.FrageKatalogLoeschen, ziele[0].Bezeichner)
+            : string.Format(Resource.Culture, Resource.AUSWAHL_FRAGE_LOESCHEN_N, ziele.Count,
+                            string.Join(", ", ziele.Select(z => "„" + z.Bezeichner + "“")));
+        _loeschfrage = true;
+    }
+
+    /// <summary>Löscht die Sätze über den Fangweg (<c>Katalogladung.Loeschen</c>); ein abgelehnter meldet den Grund.</summary>
+    private void BeiLoeschfrage(bool? ja)
+    {
+        _loeschfrage = false;
+        List<Katalogfilterzeile> ziele = _loeschziele;
+        _loeschziele = new();
+        if (ja != true) return;
+        int geloescht = 0;
+        foreach (Katalogfilterzeile z in ziele)
+        {
+            Func<int, string>? weg = KatalogIstWp(z.Schluessel) ? WpKatalogLoeschen : KatalogLoeschen;
+            if (weg is null) continue;
+            string grund = Katalogladung.Loeschen(() => weg(z.Id) ?? "", z.Bezeichner, g => g);
+            if (grund.Length > 0) { Melden(grund, true); continue; }
+            geloescht++;
+            if (z.Schluessel == _katalogGewaehlt) { _katalogGewaehlt = ""; _katalogZeile = null; _katalogWerte = null; }
+        }
+        if (geloescht == 0) return;
+        KatalogKaestchenLeeren();
+        KatalogNeuLaden();
+    }
+
+    private void BeiSchlossGeschaltet(string status)
+    {
+        KatalogNeuLaden();
+        if (_katalogZeile is not null) KatalogZeileWaehlen(_katalogZeile.Schluessel);
+        Melden(status ?? "", false);
+    }
+
+    private void BeiSchlossAbgelehnt(string grund) => Melden(grund ?? "", true);
+
+    private void Melden(string text, bool fehler)
+    {
+        _meldung = text;
+        _meldungStufe = fehler ? WarnStufe.Warnung : WarnStufe.Hinweis;
+    }
+
+    /// <summary>KM-T1: Ist nichts mehr zu laden? Nur bei einer Gabe, die ausdrücklich 0 meldet.</summary>
+    public bool AlleTypkennfelderGeladen => _typFehlend == 0;
+
+    /// <summary>
+    /// KM-T1: der Text der Statuszeile neben dem Knopf — die Rückmeldung des letzten Ladens, sonst bei gesperrtem Knopf der
+    /// Hinweis „Alle Typkennfelder sind geladen."; <c>null</c> = keine Zeile.
+    /// </summary>
+    public string? TypkennfelderStatus => _typStatus.Length > 0 ? _typStatus
+        : AlleTypkennfelderGeladen ? Texte.TypkennfelderAlleGeladen : null;
+
+    /// <summary>KM-T1: fragt die Gabe nach den fehlenden Typkennfeldern; ein Fehler lässt den Knopf frei.</summary>
+    private void TypkennfelderFehlendLesen()
+    {
+        if (TypkennfelderFehlend is null) { _typFehlend = null; return; }
+        try
+        {
+            int n = TypkennfelderFehlend();
+            _typFehlend = n >= 0 ? n : null;
+        }
+        catch (Exception)
+        {
+            _typFehlend = null;
+        }
+    }
+
+    /// <summary>
+    /// „Typkennfelder laden…": lädt über die Gabe, liest den Katalog neu und meldet in der Statuszeile neben dem Knopf;
+    /// ein Fehler steht dort und zusätzlich im Banner. Danach fragt er die fehlenden Typkennfelder neu ab.
+    /// </summary>
+    private void TypkennfelderEinspielen()
+    {
+        if (TypkennfelderLaden is null || AlleTypkennfelderGeladen) return;
+        KaeltemaschineTypkennfelderErgebnis e = Katalogladung.Schreiben(TypkennfelderLaden, Texte.Titel,
+            g => new KaeltemaschineTypkennfelderErgebnis(false, 0, 0, g));
+        if (!e.Ok)
+        {
+            _typStatus = e.Meldung.Length > 0 ? e.Meldung : Texte.TypkennfelderFehler;
+            _typStatusLang = _typStatus;
+            _typStatusFehler = true;
+            Melden(_typStatus, true);
+            return;
+        }
+        // Ein Fehler eines früheren Ladens im Banner ist mit dem Erfolg erledigt.
+        if (_typStatusFehler && _meldung == _typStatus) Melden("", false);
+        _typStatus = string.Format(CultureInfo.CurrentCulture, Texte.TypkennfelderStatus, e.Neu, e.Uebersprungen);
+        _typStatusLang = string.Format(CultureInfo.CurrentCulture, Texte.TypkennfelderGeladen, e.Neu, e.Uebersprungen);
+        _typStatusFehler = false;
+        KatalogNeuLaden();
+        TypkennfelderFehlendLesen();
+    }
+
+    /// <summary>
+    /// „Katalogverwaltung…": der Katalogeditor als Überlagerung, wenn die Hülle die Gaben reicht; sonst die Naht
+    /// <c>Dienste.Navigation</c> (iOS: freie Ansicht der Wurzel) — dann halten ungespeicherte Änderungen an,
+    /// denn die Verwaltung löst diese Ansicht ab.
+    /// </summary>
+    private void VerwaltungOeffnen()
+    {
+        if (EditorOeffnen(_katalogZeile?.Id ?? 0)) return;
+        if (ArbeitsstandGeaendert) { Melden(Texte.VerwaltungUngespeichert, true); return; }
+        bool offen = WindowsFormsApplication1.Dienste.Navigation
+            .OeffneMaske(EPOS.UI.Seiten.Seitenschluessel.KaeltemaschineKatalog, "");
+        if (!offen) Melden(Texte.VerwaltungNicht, true);
+    }
+
+    // =====================================================================
+    // K-F5b: die Gruppe „Rückkühlung“ — Gaben lesen, „Rückkühlwerke…“ öffnen
+    // =====================================================================
+
+    /// <summary>Die Gaben der Gruppe „Rückkühlung“ (Katalogsätze, Luftfeuchte); <c>null</c> = keine Gruppe.</summary>
+    private RueckkuehlungGaben? _rueckkuehlung;
+
+    private void RueckkuehlungLesen(List<string>? fehler)
+    {
+        if (Rueckkuehlung is null) { _rueckkuehlung = null; return; }
+        try { _rueckkuehlung = Rueckkuehlung(); }
+        catch (Exception ex)
+        {
+            _rueckkuehlung = null;
+            fehler?.Add(string.Format(CultureInfo.CurrentCulture, Texte.LadenFehler, ex.Message));
+        }
+    }
+
+    /// <summary>Der Weg hinter „Rückkühlwerke…“ — nur mit den Gaben der Rückkühlung (kein Delegat, kein Knopf).</summary>
+    private EventCallback RueckkuehlwerkeWeg
+        => Rueckkuehlung is null ? default : EventCallback.Factory.Create(this, RueckkuehlwerkeOeffnen);
+
+    /// <summary>
+    /// „Rückkühlwerke…“ in der Gruppe „Rückkühlung“: öffnet die Verwaltung über die Naht <c>Dienste.Navigation</c>
+    /// (<c>Seitenschluessel.Rueckkuehlwerk</c>; Windows: eigenes Fenster, iOS: freie Ansicht der Wurzel). Ungespeicherte
+    /// Änderungen halten an wie bei der Katalogverwaltung; danach liest der Dialog die Katalogsätze neu.
+    /// </summary>
+    internal void RueckkuehlwerkeOeffnen()
+    {
+        if (ArbeitsstandGeaendert) { Melden(Texte.RueckkuehlwerkeUngespeichert, true); return; }
+        bool offen = WindowsFormsApplication1.Dienste.Navigation
+            .OeffneMaske(EPOS.UI.Seiten.Seitenschluessel.Rueckkuehlwerk, "");
+        if (!offen) { Melden(Texte.RueckkuehlwerkeNicht, true); return; }
+        RueckkuehlungLesen(null);
+    }
+
+    /// <summary>Steht im Arbeitsstand etwas, das erst der OK-Weg schreibt (oder Abbrechen zurücknimmt)?</summary>
+    private bool ArbeitsstandGeaendert
+        => _wp.Any(w => w.Entfernt) || _wpUebernahmen.Count > 0 || _wpEingeschaltet.Count > 0 || _zeilen.Any(z => z.Entfernt || z.Neu || z.Gespeichert || !z.Arbeit.GleicheEingaben(z.Gelesen));
+
+    // =====================================================================
+    // Wärmepumpen im Kühlbetrieb — Ausschalten beim OK, Zurücknehmen beim Abbrechen (KM-K1)
+    // =====================================================================
+
+    private bool WaermepumpenSchreiben()
+    {
+        if (WpKuehlbetriebSetzen is null) return true;
+        foreach (WpEintrag w in _wp.Where(w => w.Entfernt).ToList())
+        {
+            string? grund;
+            try { grund = WpKuehlbetriebSetzen(w.Daten.IdWp, false); }
+            catch (Exception) { grund = Texte.WaermepumpenFehler; }
+            if (!string.IsNullOrEmpty(grund)) { Melden(grund, true); return false; }
+            _wp.Remove(w);
+        }
+        _wpUebernahmen.Clear();
+        _wpEingeschaltet.Clear();
+        return true;
+    }
+
+    /// <summary>Abbrechen: Übernahmen zurück (jüngste zuerst), eingeschaltete Wärmepumpen aus, Ränge wie beim Öffnen.</summary>
+    private void WaermepumpenVerwerfen()
+    {
+        bool angefasst = _wpUebernahmen.Count > 0 || _wpEingeschaltet.Count > 0;
+        for (int i = _wpUebernahmen.Count - 1; i >= 0; i--)
+        {
+            object m = _wpUebernahmen[i];
+            Katalogladung.Schreiben(() => { WpUebernahmeZuruecknehmen?.Invoke(m); return ""; }, Texte.Titel, g => g);
+        }
+        foreach (int id in _wpEingeschaltet)
+            Katalogladung.Schreiben(() => WpKuehlbetriebSetzen?.Invoke(id, false) ?? "", Texte.Titel, g => g);
+        if (angefasst && KaelteRaengeWiederherstellen is not null)
+            Katalogladung.Schreiben(() => KaelteRaengeWiederherstellen(_raengeBeimOeffnen) ?? "", Texte.Titel, g => g);
+        _wpUebernahmen.Clear();
+        _wpEingeschaltet.Clear();
+    }
+
+    // =====================================================================
+    // OK / Abbrechen
+    // =====================================================================
+
+    /// <summary>Der Prüfbefund einer Anlage; <c>null</c> = in Ordnung.</summary>
+    private string? Pruefbefund(KaeltemaschineAnlageDaten d)
+    {
+        string? grund = Pruefen?.Invoke(d);
+        return string.IsNullOrEmpty(grund) ? null : grund;
+    }
+
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (!ok) { await Verwerfen(); return; }
+        if (Schreiben()) await Geschlossen.InvokeAsync(true);
+    }
+
+    /// <summary>
+    /// Der OK-Weg: prüft jede Anlage, schreibt noch offene Eingaben (etwa des Assistenten), löscht die
+    /// vorgemerkten Anlagen und schreibt die Schalter der Wärmepumpen. <c>false</c> = abgelehnt, Meldung steht;
+    /// ein zweites OK wiederholt nichts, was schon geschrieben ist.
+    /// </summary>
+    private bool Schreiben()
+    {
+        _meldung = "";
+        foreach (Zeile z in Sichtbare)
+        {
+            if (!AnlageSchreiben(z, out string? grund))
+            {
+                ProjektZeileWaehlen(z);
+                Melden(grund ?? "", true);
+                return false;
+            }
+        }
+        foreach (Zeile z in _zeilen.Where(z => z.Entfernt).ToList())
+        {
+            if (!AnlageLoeschen(z)) return false;
+            _zeilen.Remove(z);
+        }
+        foreach (Zeile z in _zeilen) z.Original = z.Gelesen?.Kopie() ?? z.Arbeit.Kopie();   // nichts mehr abzuräumen
+        return WaermepumpenSchreiben();
+    }
+
+    /// <summary>
+    /// Abbrechen, ✕ und Esc: die in der Sitzung angelegten Anlagen gehen wieder (Projektkopievormerkung), eine
+    /// in der Sitzung geschriebene Anlage bekommt ihren Stand beim Öffnen zurück; vorgemerkte Entfernungen und
+    /// die Schalter der Wärmepumpen verfallen.
+    /// </summary>
+    private Task Verwerfen()
+    {
+        foreach (Zeile z in _zeilen.ToList())
+        {
+            if (z.Neu) { AnlageLoeschen(z); _zeilen.Remove(z); continue; }
+            if (z.Gespeichert && z.Original is KaeltemaschineAnlageDaten alt && Speichern is not null)
+                Katalogladung.Schreiben(() => Speichern(alt), alt.Bezeichner, g => g);
+        }
+        WaermepumpenVerwerfen();
+        return Geschlossen.InvokeAsync(false);
+    }
+
+    private async Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape") return;
+        if (_katalogschloss?.FrageOffen == true || _editorGaben is not null || _satzGross) return;
+        if (_loeschfrage) { _loeschfrage = false; return; }
+        await Verwerfen();
+    }
+
+    // =====================================================================
+    // Der Hilfe-Assistent
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private KaeltemaschineAnlageKiSicht? _kiSicht;
+
+    /// <summary>Die Sicht des Assistenten: die Anlagenwahl nimmt den Weg eines Klicks, die Felder den Arbeitsstand.</summary>
+    private KaeltemaschineAnlageKiSicht KiSicht()
+    {
+        return _kiSicht ??= new KaeltemaschineAnlageKiSicht
+        {
+            AnlageLesen = () => _gewaehlt,
+            AnlageSetzen = Waehlen,
+            AnlageEintraege = () => KiMaskenanmeldung.Eintraege(Sichtbare, z => z.Schluessel, z => z.Arbeit.Bezeichner),
+            Stromtraeger = () => Stromtraeger,
+            ArbeitLesen = () => Aktuell?.Arbeit,
+            Rueckkuehlwerke = () => _rueckkuehlung,
+            Geaendert = () => _ = InvokeAsync(StateHasChanged)
+        };
+    }
+
+    /// <summary>„OK" ist der Weg des Knopfes, die Prüfung dieselbe.</summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = () => Aktuell is Zeile a ? Pruefbefund(a.Arbeit) ?? "" : "",
+        Speichern = () => Task.FromResult(KiSpeichern())
+    };
+
+    private KiKern.KiErgebnis KiSpeichern()
+    {
+        if (Speichern is null)
+            return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG.Replace("{0}", Texte.Titel));
+        bool ok = Schreiben();
+        _ = InvokeAsync(StateHasChanged);
+        return ok ? KiKern.KiErgebnis.Ok(Texte.Titel, anzahl: Sichtbare.Count) : KiKern.KiErgebnis.Abgelehnt(_meldung);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
+}

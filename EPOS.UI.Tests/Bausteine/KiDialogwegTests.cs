@@ -519,9 +519,16 @@ public class InfoknopfSchluesselWacheTests
     }
 
     /// <summary>
-    /// UND SONST NIRGENDS: Jedes weitere <c>MitAssistent="false"</c> ist eine
-    /// Ausnahme, die niemand beschlossen hat.
+    /// UND SONST NIRGENDS: Jedes weitere <c>MitAssistent="false"</c>, das einem Dialog den
+    /// Assistenten GANZ nimmt, ist eine Ausnahme, die niemand beschlossen hat.
     /// </summary>
+    /// <remarks>
+    /// Keine Ausnahme ist das „false" an einer WEITEREN Pille eines Dialogs, dessen
+    /// Kopfpille den Assistenten führt — die Hausregel „ein KI-Knopf je Dialog"
+    /// (<see cref="KiKnopfEinmalWacheTests"/>) —, und an einer eingebetteten Seite, deren
+    /// Wirt die Pille trägt (<see cref="KiKnopfEinmalWacheTests.OHNE_ASSISTENT"/>). Der
+    /// Assistent bleibt dort erreichbar, nur nicht zweimal.
+    /// </remarks>
     [Fact]
     public void Es_gibt_keine_fuenfte_Ausnahme()
     {
@@ -533,11 +540,12 @@ public class InfoknopfSchluesselWacheTests
             // Der Baustein SELBST: Sein Klassenkopf nennt die Regel und den Ausweg.
             "InfoKnopf.razor"
         };
+        foreach (string eingebettet in KiKnopfEinmalWacheTests.OHNE_ASSISTENT.Keys)
+            erlaubt.Add(System.IO.Path.GetFileName(eingebettet));
 
         var weitere = System.IO.Directory
             .GetFiles(Quellordner(), "*.razor", System.IO.SearchOption.AllDirectories)
-            .Where(d => System.IO.File.ReadAllText(d)
-                            .Contains("MitAssistent=\"false\"", StringComparison.Ordinal))
+            .Where(d => NimmtDenAssistentenGanz(System.IO.File.ReadAllText(d)))
             .Select(System.IO.Path.GetFileName)
             .Where(n => !erlaubt.Contains(n!))
             .ToList();
@@ -545,6 +553,22 @@ public class InfoknopfSchluesselWacheTests
         Assert.True(weitere.Count == 0,
                     "Diese Masken schalten den Assistenten ab, ohne dass es beschlossen waere:"
                     + Environment.NewLine + string.Join(Environment.NewLine, weitere));
+    }
+
+    /// <summary>
+    /// Nimmt ein Razor-Text einem Dialog den Assistenten ganz? Ja, wenn eine Pille
+    /// <c>MitAssistent="false"</c> setzt und in IHREM Überlagerungskontext keine Pille den
+    /// Assistenten führt.
+    /// </summary>
+    private static bool NimmtDenAssistentenGanz(string text)
+    {
+        if (!text.Contains("MitAssistent=\"false\"", StringComparison.Ordinal)) return false;
+
+        List<KiKnopfEinmalWacheTests.Pille> pillen = KiKnopfEinmalWacheTests.Pillen(text);
+        return pillen.Where(p => !p.MitAssistent)
+                     .Select(p => p.Kontext)
+                     .Distinct()
+                     .Any(k => !pillen.Any(p => p.Kontext == k && p.MitAssistent));
     }
 
     /// <summary>Der Quellordner von <c>EPOS.UI</c> — vom Testausgabeordner aufwärts gesucht.</summary>

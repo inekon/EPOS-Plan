@@ -127,7 +127,7 @@ namespace EPOS.Kern.Tests
                 SolarOrtszeit = klima,
                 Laengengrad = LAENGE,
                 Breitengrad = BREITE,
-                Referenzjahr = 2025,
+                Raster = Gemeinjahrkalender.Kalenderjahr(2025),
                 WochenendeOrtszeit = Wochenende(),
             };
             return gemeinsam;
@@ -164,7 +164,10 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Der_Klassenweg_folgt_dem_Zahlenweg_der_Rechenschritte()
         {
-            GebaeudeModellEingang e = GebaeudeModellEingang.Daten(Vdi6007Probe.Gebaeude());
+            // Der Zahlenweg der Rechenschritte rechnet die Grundfläche ohne Erdreichwiderstand — am Keller (RP2a).
+            ProjektGebaeudeModel g = Vdi6007Probe.Gebaeude();
+            g.Grundflaeche_Randbedingung = DbWerte.GRUND_KELLER;
+            GebaeudeModellEingang e = GebaeudeModellEingang.Daten(g);
             ErsatzparameterRC p = ErsatzparameterRC.AusKlassenweg(e);
 
             Nahe(1.0854e7, p.C_AW_Jk, 1e-4);
@@ -319,8 +322,9 @@ namespace EPOS.Kern.Tests
             SolardatenModel[] k = Vdi6007Probe.Klima(Vdi6007Probe.Jahresgang);
             GebaeudeModellEingang e = Vdi6007Probe.Eingang(g, k);
 
-            double uaG = 0.8 * 88.0;
-            double uaAlle = 686.953 - 0.0 + 126.168;
+            // RP2a: die Grundfläche am Erdreich trägt den wirksamen U-Wert mit Erdreichwiderstand (DIN EN ISO 13370).
+            double uaG = e.Erdreich.UWirksam_WM2K * 88.0;
+            double uaAlle = 686.953 - 0.8 * 88.0 + uaG + 126.168;
             for (int h = 0; h < 8760; h += 97)
             {
                 double erwartet = ((uaAlle - uaG) * e.ThetaOut[h] + uaG * e.ThetaGrund[h]) / uaAlle;

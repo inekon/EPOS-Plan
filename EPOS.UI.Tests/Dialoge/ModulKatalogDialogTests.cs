@@ -111,7 +111,9 @@ public class ModulKatalogDialogTests : EposBunitContext
     // =================================================================================
 
     [Theory]
-    [InlineData(ModulKatalogArt.Stromspeicher, "Administration Stromspeicher", 14)]
+    // Welle KB-5: der Stromspeicher führt zwölf Felder - die vier Kostenspalten sind
+    // entfallen, der Kostensatz der Satzvorlage steht gesperrt (als Textfeld) da.
+    [InlineData(ModulKatalogArt.Stromspeicher, "Administration Stromspeicher", 12)]
     [InlineData(ModulKatalogArt.Photovoltaik, "Administration Photovoltaik Module", 14)]
     public void Jede_Auspraegung_zeigt_ihren_Titel_und_ihre_Felder(
         ModulKatalogArt art, string titel, int felder)
@@ -157,6 +159,28 @@ public class ModulKatalogDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// Welle M5 (SP1): Standby und Selbstentladung stehen in der Gerätetechnik mit ihren Einheiten und
+    /// Hinweisen; beide dürfen leer bleiben.
+    /// </summary>
+    [Fact]
+    public void Der_Stromspeicher_fuehrt_Standby_und_Selbstentladung()
+    {
+        var profil = Profil(ModulKatalogArt.Stromspeicher);
+        var standby = profil.Felder.Single(f => f.Schluessel == ModulKatalogProfil.FeldStandby);
+        var selbst = profil.Felder.Single(f => f.Schluessel == ModulKatalogProfil.FeldSelbstentladung);
+        Assert.Equal("W", standby.Einheit);
+        Assert.Equal("%/Monat", selbst.Einheit);
+        Assert.Equal(1, selbst.Gruppe);
+        Assert.True(selbst.LeerErlaubt);
+        Assert.False(string.IsNullOrEmpty(selbst.Hinweis));
+        Assert.False(string.IsNullOrEmpty(standby.Hinweis));
+
+        var cut = Aufbauen(ModulKatalogArt.Stromspeicher);
+        var texte = cut.FindAll(".epos-feld-text").Select(e => e.TextContent).ToList();
+        Assert.Contains(selbst.Bezeichnung, texte);
+    }
+
+    /// <summary>
     /// Die drei BERICHTIGTEN Einheiten des Stromspeichers (Abnahmebefund 1, AP0-Entscheid
     /// 16.08.2026): kWh an der Kapazität, €/kWh an den Modulkosten. Der Vorläufer
     /// schrieb sie zur Laufzeit über die Designer-Werte (Befund W14-B40).
@@ -168,16 +192,22 @@ public class ModulKatalogDialogTests : EposBunitContext
         var einheiten = cut.FindAll(".epos-einheit").Select(e => e.TextContent).ToList();
 
         Assert.Contains("kWh", einheiten);
-        Assert.Contains("€/kWh", einheiten);
 
-        // Der Designer trug an der Kapazitaet "kW" und an den Modulkosten ein nacktes
+        // Der Designer trug an der Kapazitaet "kW" und an den Kosten ein nacktes
         // "€"; beides berichtigte der Vorlaeufer erst zur Laufzeit. Jetzt steht es
-        // gleich richtig im Profil - das "€" der AP3-Investition bleibt davon
-        // unberuehrt.
+        // gleich richtig im Profil - seit KB-5 als gesperrter Kostensatz der
+        // Satzvorlage je kWh Nennkapazitaet.
         var profil = Profil(ModulKatalogArt.Stromspeicher);
         Assert.Equal("kWh", profil.Felder.First(f => f.Schluessel == ModulKatalogProfil.FeldEnergie).Einheit);
-        Assert.Equal("€/kWh", profil.Felder.First(f => f.Schluessel == ModulKatalogProfil.FeldModulkosten).Einheit);
-        Assert.Equal("€", profil.Felder.First(f => f.Schluessel == ModulKatalogProfil.FeldInvestitionFix).Einheit);
+        ModulKatalogFeld satz = profil.Felder.First(f => f.Schluessel == ModulKatalogProfil.FeldKostensatz);
+        Assert.Equal("€/kWh", satz.Einheit);
+        Assert.True(satz.Gesperrt);
+
+        // Gezeichnet steht der Kostensatz als gesperrtes Textfeld (wie bei Photovoltaik
+        // und Wechselrichter) - lesbar, nicht beschreibbar.
+        var satzfeld = cut.FindAll(".epos-feld")
+                          .Single(e => e.QuerySelector(".epos-feld-text")?.TextContent == satz.Bezeichnung);
+        Assert.True(satzfeld.QuerySelector("input")!.HasAttribute("readonly"));
     }
 
     [Fact]
@@ -232,12 +262,13 @@ public class ModulKatalogDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// Die dreizehn Vorbelegungen des Stromspeichers — darunter die Zelltechnologie aus
-    /// <c>DbWerte.SP_TYP_LITHIUM_IONEN</c> und die ZWEI fachlichen Vorgaben
-    /// <c>eta_RT = 0,90</c> und <c>c_ver = 0,025</c> (Fachkonzept 5.2/5.4).
+    /// Die Vorbelegungen des Stromspeichers — darunter die Zelltechnologie aus
+    /// <c>DbWerte.SP_TYP_LITHIUM_IONEN</c> und die fachliche Vorgabe <c>eta_RT = 0,90</c>
+    /// (Fachkonzept 5.2). Die Verschleißkosten <c>c_ver</c> führt der Katalog seit KB-5
+    /// nicht mehr; sie kommen aus der Satzvorlage.
     /// </summary>
     [Fact]
-    public void Neu_belegt_den_Stromspeicher_mit_den_zwei_fachlichen_Vorgaben()
+    public void Neu_belegt_den_Stromspeicher_mit_der_fachlichen_Vorgabe()
     {
         var cut = Aufbauen(ModulKatalogArt.Stromspeicher);
 
@@ -251,7 +282,7 @@ public class ModulKatalogDialogTests : EposBunitContext
         Assert.Contains("Neuer Speicher", texte);
         Assert.Contains("Lithium-Ionen", texte);
         Assert.Contains("0,9", texte);      // eta_RT
-        Assert.Contains("0,025", texte);    // c_ver
+        Assert.DoesNotContain("0,025", texte);    // c_ver ist entfallen
     }
 
     /// <summary>
@@ -412,9 +443,9 @@ public class ModulKatalogDialogTests : EposBunitContext
 
         Assert.NotNull(gesehen);
         Assert.Equal("Modul A", schluessel);
-        // VIERZEHN seit W14a-E-10-Q7 (Migrationsschritt 68): der Stromspeicher
-        // fuehrt jetzt auch das Feld "Firma".
-        Assert.Equal(14, gesehen!.Count);
+        // Der ganze Feldsatz des Profils - beim Stromspeicher seit KB-5 zwoelf Felder.
+        Assert.Equal(Profil(ModulKatalogArt.Stromspeicher).Felder.Count, gesehen!.Count);
+        Assert.Equal(12, gesehen.Count);
     }
 
     [Fact]

@@ -2,18 +2,24 @@
 
    Vorbild: Views/BerichteKosten/UcBkUebersicht.cs (1 552 Z., K4).
 
-   AUFBAU. Oben die Verwaltung der Vergleichsgruppe: Stammprojekt-Auswahl und
-   Filter "nur Stammprojekte", darunter in EINER Zeile die Variantenwahl,
-   das Bezeichnerfeld des UMBENENNENS und die Knoepfe (Variante anlegen,
-   loeschen, Simulation starten, umbenennen), darunter die leise Statuszeile
-   des Simulationsstands.
+   AUFBAU. Oben der Kopf in drei Teilen: die Projektwahl (Stammprojekt, Filter
+   "nur Stammprojekte", Detail-Unterschiede fuer Variante), die Variantenverwaltung
+   als eigene Gruppe mit drei Knoepfen und der Hauptknopf "Simulation starten"
+   neben der leisen Zeile des Simulationsstands.
 
-   VARIANTE ANLEGEN OEFFNET DEN DIALOG (Auftrag #240). Bis dahin legte diese
-   Seite mit dem Bezeichner aus ihrem eigenen Feld an - ohne Quellprojekt,
-   waehrend Kopfband und Menuepunkt seit #237 den ProjektVarianteDialog
-   zeigen. EIN Dialog, drei Einstiege: Der Knopf ruft den Oeffner der Huelle,
-   danach laedt die Seite ihre Liste neu. Das inline Bezeichnerfeld gehoert
-   seither dem UMBENENNEN.
+   DIE VERWALTUNG FUEHRT DREI KLEINE DIALOGE (Anwenderauftrag 13.10.2026): "Variante
+   anlegen..." (Quelle = Stamm oder eine Variante der Gruppe, Bezeichner, Zielname aus
+   dem Kern), "Umbenennen..." (die umzubenennende Variante zur Wahl, neuer Bezeichner)
+   und "Loeschen..." (die zu loeschende Variante zur Wahl, danach die unveraenderte
+   Rueckfrage samt der zweiten bei mehrdeutigem Namen). Jeder Dialog steht als
+   Ueberlagerung im selben Fenster und nennt die Variante AUSDRUECKLICH. Bis dahin
+   wirkten Umbenennen und Loeschen stumm auf die Wahl des Felds "Detail-Unterschiede
+   fuer Variante", und daneben stand ein freies Bezeichnerfeld ohne erkennbaren Bezug
+   (Anwenderbefund 13.10.2026: "Das Feld hat keine Funktion", "Umbenennen erstellt
+   eine Kopie" - im Kern wurde umbenannt, aber der Anwender sah weder welche Variante
+   noch warum). Geschrieben wird im OK-Weg der Seite ueber die Huelle; scheitert ein
+   Schritt, bleibt der Dialog mit der Meldung offen. Kopfband und Menuepunkt behalten
+   ihren ProjektVarianteDialog (Kaestchen mit der ganzen Projektliste).
    Und dann der Komponentenbereich - auf der Stammzeile die GEGENUEBERSTELLUNG
    aller Versionen, auf einer Variante deren UNTERSCHIEDE zum Stamm samt
    Aktionsspalte.
@@ -64,98 +70,134 @@
 
     @if (!string.IsNullOrEmpty(_meldung))
     {
-        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_meldung" />
+        @* Kopf (Statuszeile je Lauf) und Hinweise getrennt: zugeklappt EINE Zeile mit
+           der Zahl, aufgeklappt die Liste im Rollbereich (Anwenderbefund 10.10.2026). *@
+        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_meldung" Hinweise="@_hinweise" />
     }
 
-    @* ------------------------------------------------ Stamm und Filter *@
-    <div class="epos-seite-zeile epos-stammzeile">
-        <Auswahlfeld Bezeichnung="@LabelStamm" Eintraege="@_stand.Staemme"
-                     Auswahl="@_stand.StammId" AuswahlChanged="BeiStamm" />
-        <Schalter Bezeichnung="@LabelNurStaemme" Wert="@_stand.NurStaemme"
-                  WertChanged="BeiFilter" />
+    @* DER KOPF IN DREI TEILEN (Anwenderauftrag 12.10.2026): die PROJEKTWAHL
+       (Stammprojekt, "nur Stammprojekte", Variante), die VARIANTENVERWALTUNG als
+       eigene, umrandete Gruppe (Bezeichner, Anlegen, Umbenennen, Loeschen - Loeschen
+       zuletzt) und darunter der Hauptknopf "Simulation starten" neben dem
+       Simulationsstand. Jeder Teil bricht fuer sich um; kein Feld haelt die Zeile
+       breiter als das Fenster (Stilregeln .epos-uebersicht-*). *@
+    <div class="epos-uebersicht-kopf">
+        <div class="epos-uebersicht-projektwahl" role="group" aria-label="@LabelProjektwahl">
+            <div class="epos-seite-zeile epos-stammzeile">
+                <Auswahlfeld Bezeichnung="@LabelStamm" Eintraege="@_stand.Staemme"
+                             Auswahl="@_stand.StammId" AuswahlChanged="BeiStamm" />
+                <Schalter Bezeichnung="@LabelNurStaemme" Wert="@_stand.NurStaemme"
+                          WertChanged="BeiFilter" />
+            </div>
+            @* DETAIL-UNTERSCHIEDE (Anwenderauftrag 13.10.2026): erster Eintrag ist die
+               Vorgabe "— keine (Komponentenvergleich) —" - sie steht fuer die markierte
+               Stammzeile -, danach nur die Varianten. Ohne Variante ist die Wahl gesperrt,
+               der Grund steht als Kurztext an der Zeile. *@
+            <div class="epos-seite-zeile epos-variantenzeile"
+                 title="@(HatVarianten ? null : KeineVarianteGrund)">
+                <Auswahlfeld Bezeichnung="@LabelVariante" Kurzname="@WahlKurztext"
+                             Eintraege="@Versionen" Auswahl="@(Markierung ?? VorgabeId)"
+                             Aktiv="@HatVarianten" AuswahlChanged="BeiVersion" />
+            </div>
+        </div>
+
+        @* DIE VERWALTUNG: drei Knoepfe, drei kleine Dialoge (Anwenderauftrag 13.10.2026).
+           Die Sperren sind WEICH (aria-disabled und der Grund als title, Hausregel: ein
+           gesperrtes Bedienelement, das seinen Grund erklaeren soll, darf nicht disabled
+           sein; ein Klick meldet den Grund in der Statuszeile): Anlegen ohne Stamm und
+           waehrend eines Laufs, Umbenennen und Loeschen ohne Variante der Gruppe und
+           waehrend eines Laufs. Ohne Delegat kein Knopf (Hausregel A-18). Loeschen steht
+           zuletzt. *@
+        <fieldset class="epos-uebersicht-verwaltung">
+            <legend>@LabelVerwaltung</legend>
+            <div class="epos-uebersicht-knoepfe">
+                @if (VarianteAnlegen is not null)
+                {
+                    <button type="button" class="epos-knopf" title="@AnlegenSperrgrund"
+                            aria-disabled="@(AnlegenSperrgrund is null ? null : "true")"
+                            @onclick="AnlegenOeffnen">@AnlegenText</button>
+                }
+                @if (VarianteUmbenennen is not null)
+                {
+                    <button type="button" class="epos-knopf" title="@VariantenSperrgrund"
+                            aria-disabled="@(VariantenSperrgrund is null ? null : "true")"
+                            @onclick="UmbenennenOeffnen">@UmbenennenText</button>
+                }
+                @if (VarianteLoeschen is not null)
+                {
+                    <button type="button" class="epos-knopf" title="@VariantenSperrgrund"
+                            aria-disabled="@(VariantenSperrgrund is null ? null : "true")"
+                            @onclick="LoeschenOeffnen">@LoeschenText</button>
+                }
+            </div>
+        </fieldset>
+
+        @* DER LAUF: der Hauptknopf neben dem Simulationsstand der gewaehlten Version.
+           Der Stand ist aria-live, weil er beim Wechsel der Version wechselt, ohne
+           dass der Anwender hinsieht. *@
+        <div class="epos-uebersicht-lauf">
+            <button type="button" class="epos-knopf epos-knopf--primaer"
+                    disabled="@(!_stand.SimulierenMoeglich || _laeuft)"
+                    @onclick="Simulieren">@SimulierenText</button>
+            <p class="epos-simstand" aria-live="polite">
+                @if (_stand.MarkierteId > 0)
+                {
+                    <span>@Simulationszeile</span>
+                    @if (Markierte is not null && Markierte.Auffaellig)
+                    {
+                        <span class="epos-veraltet" title="@Simulationsgrund">@WarnZeichen</span>
+                    }
+                    @* AUFTRAG US-2: Womit rechnet DIESE Version ihren Stromspeicher? Leer =
+                       nicht lesbar; dann bleibt der Satz weg, statt etwas zu behaupten. *@
+                    @if (!string.IsNullOrEmpty(Speicherzeile))
+                    {
+                        <span class="epos-simstand-speicher">@Speicherzeile</span>
+                    }
+                }
+            </p>
+        </div>
     </div>
-
-    @* ------------------------- Die Version, der Bezeichner, die Knoepfe *@
-    <div class="epos-seite-zeile epos-variantenzeile">
-        <Auswahlfeld Bezeichnung="@LabelVariante" Kurzname="@WahlKurztext"
-                     Eintraege="@Versionen" Auswahl="@Markierung"
-                     AuswahlChanged="BeiVersion" />
-        @* DAS BEZEICHNERFELD GEHOERT SEIT #240 ZUM UMBENENNEN - und nur dazu.
-           Bis dahin fuellte es BEIDE Wege: Anlegen und Umbenennen. Der Anlegeweg
-           oeffnet jetzt denselben Dialog wie Kopfband und Menuepunkt (ProjektVarianteDialog,
-           mit dem Kaestchen "Inhalt aus einem bestehenden Projekt uebernehmen"), und der
-           fragt den Bezeichner selbst - ein zweites Feld daneben waere eine zweite
-           Fassung derselben Eingabe. Ohne Umbenennweg steht das Feld deshalb nicht. *@
-        @if (VarianteUmbenennen is not null)
-        {
-            <Textfeld Bezeichnung="@LabelBezeichner" Wert="@_bezeichner"
-                      WertChanged="@(w => _bezeichner = w)" />
-        }
-        @* EIN DIALOG, DREI EINSTIEGE (Auftrag #240): Der Knopf OEFFNET nur - was er
-           oeffnet, weiss die Huelle; danach laedt die Seite ihre Liste neu. Ohne
-           Oeffner gibt es den Knopf nicht (Hausregel A-18). *@
-        @if (VarianteAnlegenOeffnen is not null)
-        {
-            <button type="button" class="epos-knopf" disabled="@(!_stand.AnlegenMoeglich || _laeuft)"
-                    @onclick="Anlegen">@AnlegenText</button>
-        }
-        <button type="button" class="epos-knopf" disabled="@(!_stand.Loeschbar)"
-                @onclick="LoeschenFragen">@LoeschenText</button>
-        <button type="button" class="epos-knopf epos-knopf--primaer"
-                disabled="@(!_stand.SimulierenMoeglich || _laeuft)"
-                @onclick="Simulieren">@SimulierenText</button>
-        @* UMBENENNEN (08.09.2026): der Bezeichner im Feld wird der neue Name der
-           gewaehlten Variante. Hinter den Bestandsknoepfen, damit deren Reihenfolge
-           (Anlegen, Loeschen, Simulieren) fuer Anwender und Proben dieselbe bleibt. *@
-        @if (VarianteUmbenennen is not null)
-        {
-            <button type="button" class="epos-knopf" disabled="@(!_stand.Loeschbar || _laeuft)"
-                    @onclick="Umbenennen">@UmbenennenText</button>
-        }
-    </div>
-
-    @* Der Simulationsstand der gewaehlten Version - das, was die
-       Simulationsspalte der Tabelle sagte. aria-live, weil er sich beim
-       Wechsel der Version aendert, ohne dass der Anwender hinsieht. *@
-    <p class="epos-simstand" aria-live="polite">
-        @if (_stand.MarkierteId > 0)
-        {
-            <span>@Simulationszeile</span>
-            @if (Markierte is not null && Markierte.Auffaellig)
-            {
-                <span class="epos-veraltet" title="@Simulationsgrund">@WarnZeichen</span>
-            }
-            @* AUFTRAG US-2: Womit rechnet DIESE Version ihren Stromspeicher? Die
-               Wirtschaftlichkeit sagt es seit #320 in einer Spalte der
-               Vergleichsgruppentabelle; diese Seite hat keine Tabelle mehr (W5-E-1,
-               Auswahlfeld statt Tabelle), und was die Tabelle sonst noch sagte, steht
-               seither genau hier - deshalb auch das. Leer = nicht lesbar; dann bleibt
-               der Satz weg, statt etwas zu behaupten. *@
-            @if (!string.IsNullOrEmpty(Speicherzeile))
-            {
-                <span class="epos-simstand-speicher">@Speicherzeile</span>
-            }
-        }
-    </p>
-
     @* DIE VERGLEICHSWAHL (Anwenderwunsch 08.09.2026, W5-B-5): welche Versionen in
        der Gegenueberstellung - und auf den Seiten Kosten und Wirtschaftlichkeit -
        nebeneinander stehen. EINE Auswahl fuer alle drei Seiten; sie lebt in der
        Huelle. Ohne Delegat und ohne Varianten steht sie nicht. *@
-    @if (VergleichGewaehlt is not null && _stand.Zeilen.Count > 1)
+    @* Der Schalter "nur Unterschiede" wirkt auf beide Abschnitte darunter (Komponenten und
+       Ergebnisse); er steht deshalb in der Zeile der Vergleichswahl, nicht in einem Abschnitt. *@
+    @{ bool vergleichswahl = VergleichGewaehlt is not null && _stand.Zeilen.Count > 1; }
+    @if (vergleichswahl || _stand.Gewerke.Count > 0)
     {
-        <Vergleichswahl Bezeichnung="@LabelVergleich" Eintraege="@Vergleichseintraege"
-                        Gewaehlt="@_stand.GewaehlteVarianten" FestTipp="@StammFestTipp"
-                        GewaehltChanged="BeiVergleich" />
+        <div class="epos-uebersicht-vergleichszeile">
+            @if (vergleichswahl)
+            {
+                <Vergleichswahl Bezeichnung="@LabelVergleich" Eintraege="@Vergleichseintraege"
+                                Gewaehlt="@_stand.GewaehlteVarianten" FestTipp="@StammFestTipp"
+                                GewaehltChanged="BeiVergleich" />
+            }
+            @if (_stand.Gewerke.Count > 0)
+            {
+                <span class="epos-uebersicht-unterschiede">
+                    <Schalter Bezeichnung="@LabelNurUnterschiede" Wert="@NurUnterschiede"
+                              WertChanged="BeiNurUnterschiede" />
+                </span>
+            }
+        </div>
     }
 
     @* --------------------------------------------- Komponentenbereich *@
-    @if (_stand.Vergleich.Count > 0)
+    @* Zwei Bereiche: "Uebersicht Komponenten / Vergleich", darunter "Uebersicht Energie"
+       (UebersichtErgebnisse, beim ersten Oeffnen mit dem Energieflussbild). *@
+    <h2 class="epos-uebersicht-abschnitt">@LabelAbschnittKomponenten</h2>
+    @* Auf einer Variante steht ueber dem Titel der Unterschiede leise der Rueckweg. *@
+    @if (VarianteGewaehlt)
+    {
+        <p class="epos-leisezeile epos-uebersicht-rueckweg">@ZurueckHinweis</p>
+    }
+    @if (_stand.Vergleich.Count > 0 || _stand.Gewerke.Count > 0)
     {
         @* BV-E6 (Konzept Berichtsvorlagen 9.4): EINE Marke am Kopf der Gegenueberstellung,
            keine Zeilenmarken - die Zeilen tragen Aktionsknoepfe. *@
-        <div class="epos-vorlagenfeld-zeile">
-            <p class="epos-untergruppe">@_stand.KomponentenTitel</p>
+        <div class="epos-vorlagenfeld-zeile epos-uebersicht-titelzeile">
+            <p class="@(VarianteGewaehlt ? "epos-untergruppe" : "epos-untergruppe epos-uebersicht-tabellentitel")">@_stand.KomponentenTitel</p>
             <Vorlagenfeldknopf Vorlagenfeld="tabelle.komponenten.matrix" Stufe="Vorlagenfeldstufe.Aehnlich"
                                StufenHinweis="@Resource.VF_ORT_KOMPONENTEN"
                                Zusatz="@("tabelle.komponenten.kenndaten.<gewerk>")" />
@@ -166,14 +208,93 @@
         <p class="epos-untergruppe">@_stand.KomponentenTitel</p>
     }
 
-    @if (_stand.Vergleich.Count > 0)
+    @if (_stand.Gewerke.Count > 0)
     {
-        @* Die Unterschiedstabelle bekommt die Hoehe, die die Variantentabelle
-           frei gemacht hat: dieselbe Hausregel W9-B-2 (fester Rahmen, innerer
-           Rollbalken, stehender Spaltenkopf), nur mit einer groesseren
-           Hoechsthoehe - sie ist das, worum es auf dieser Seite geht. *@
+        @* DIE GEGENUEBERSTELLUNG JE GEWERK (Anwenderauftrag 12.10.2026): eine Zeile je
+           Gewerk, je Version eine Zelle mit "n x Komponente" und darunter leise die
+           Kennwerte; was vom Stamm abweicht, ist hinterlegt und sagt es der
+           Sprachausgabe. Die Zellen kommen fertig aus dem Kern
+           (KomponentenVergleich.JeGewerk) - die Seite vergleicht nicht selbst.
+           Viele Varianten rollen quer IN der Huelle, die Gewerkspalte haftet. *@
+        <div class="epos-komponenten-werkzeug">
+            <span class="epos-komponenten-legende">
+                <span class="epos-komponenten-legende-marke" aria-hidden="true"></span>@LegendeAbweichung
+            </span>
+        </div>
+        @if (SichtbareGewerke.Count == 0)
+        {
+            <p class="epos-komponenten-leer">@KeineUnterschiedeText</p>
+        }
+        else
+        {
+            <div class="epos-raster-huelle epos-raster-huelle--vergleich epos-komponenten-huelle">
+                <table class="epos-raster epos-uebersicht-tabelle epos-komponentenvergleich">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="epos-komponenten-gewerk">@SpalteGewerk</th>
+                            @foreach (VersionsSpalte v in _stand.Versionsspalten)
+                            {
+                                <th scope="col" class="epos-komponenten-versionkopf">
+                                    <span class="epos-komponenten-version">@v.Name</span>
+                                    @if (!string.IsNullOrEmpty(v.Stand))
+                                    {
+                                        <span class="epos-komponenten-stand">@v.Stand</span>
+                                    }
+                                </th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (GewerkVergleichZeile g in SichtbareGewerke)
+                        {
+                            <tr @key="g.Gewerk" class="@(g.WeichtAb ? "epos-komponenten--abweichend" : null)">
+                                <th scope="row" class="epos-komponenten-gewerk">
+                                    @g.Gewerk
+                                    @if (g.WeichtAb)
+                                    {
+                                        <span class="epos-komponenten-gewerkmarke" title="@WeichtAbText"
+                                              aria-hidden="true">●</span>
+                                        <span class="epos-komponenten-sprachausgabe">@WeichtAbText</span>
+                                    }
+                                </th>
+                                @foreach (GewerkVergleichZelle z in g.Zellen)
+                                {
+                                    <td class="@ZellKlasse(z)">
+                                        @if (z.Eintraege.Count == 0)
+                                        {
+                                            <span class="epos-komponenten-fehlt" role="img"
+                                                  title="@NichtVorhandenText" aria-label="@NichtVorhandenText">—</span>
+                                        }
+                                        @foreach (GewerkVergleichEintrag e in z.Eintraege)
+                                        {
+                                            <span class="epos-komponenten-eintrag" title="@e.Kurztext">
+                                                <span class="epos-komponenten-name">@e.Anzahl × @e.Bezeichner</span>
+                                                @if (!string.IsNullOrEmpty(e.Kennwerte))
+                                                {
+                                                    <span class="epos-komponenten-kennwerte">@e.Kennwerte</span>
+                                                }
+                                            </span>
+                                        }
+                                        @if (z.WeichtAb)
+                                        {
+                                            <span class="epos-komponenten-sprachausgabe">@WeichtAbText</span>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+    else if (_stand.Vergleich.Count > 0)
+    {
+        @* Die UNTERSCHIEDE einer Variante samt Aktionsspalte. Die Hausregel W9-B-2
+           (fester Rahmen, innerer Rollbalken, stehender Spaltenkopf) mit einer
+           groesseren Hoechsthoehe - sie ist das, worum es auf dieser Seite geht. *@
         <div class="epos-raster-huelle epos-raster-huelle--vergleich">
-            <table class="epos-raster epos-vergleichstabelle">
+            <table class="epos-raster epos-uebersicht-tabelle">
                 <thead>
                     <tr>
                         @foreach (string kopf in _stand.Spalten)
@@ -220,11 +341,15 @@
             </table>
         </div>
     }
-
     @if (!string.IsNullOrEmpty(_status))
     {
         <p class="epos-status">@_status</p>
     }
+
+    @* ---------------------------------------------- Uebersicht Energie *@
+    @* "nur Unterschiede" wirkt auch hier, solange die Gegenueberstellung ihn zeigt. *@
+    <UebersichtErgebnisse @ref="_ergebnisse" @attributes="ErgebnisGabenSatz" Stand="@_stand"
+                          NurUnterschiede="@(NurUnterschiede && _stand.Gewerke.Count > 0)" />
 
     @* ---------------------------------------------------- Unterdialoge *@
     <Ueberlagerung Offen="@(_gaben is not null)"
@@ -242,8 +367,52 @@
         </KindInhalt>
     </Ueberlagerung>
 
+    @* Die drei kleinen Dialoge der Variantenverwaltung (Anwenderauftrag 13.10.2026):
+       Ueberlagerungen im selben Fenster; die Ueberlagerung traegt Titel und Kreuz, der
+       Dialog darin keinen eigenen Kopf (TitelText=""). Gezeichnet wird der Dialog nur,
+       solange er offen ist - so beginnt jeder Aufruf mit frischen Vorgaben. *@
+    <Ueberlagerung Offen="@_anlegenOffen" Titel="@AnlegenTitel" Geschlossen="() => AnlegenFertig(null)">
+        <KindInhalt>
+            @if (_anlegenOffen)
+            {
+                <VarianteAnlegenDialog TitelText="" Quellen="@Quellen" VorgabeQuelle="@VorgabeId"
+                                       Zielname="ZielnameNeu" HinweisText="@AnlegenHinweis"
+                                       LabelQuelle="@LabelQuelle" LabelBezeichner="@LabelBezeichner"
+                                       ZielnameFormat="@ZielnameFormat" OkText="@AnlegenOkText"
+                                       AbbrechenText="@AbbrechenText" Meldung="@_dialogMeldung"
+                                       HilfeSchluessel="@HilfeSchluessel" Geschlossen="AnlegenFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Ueberlagerung Offen="@_umbenennenOffen" Titel="@UmbenennenTitel" Geschlossen="() => UmbenennenFertig(null)">
+        <KindInhalt>
+            @if (_umbenennenOffen)
+            {
+                <VarianteUmbenennenDialog TitelText="" Varianten="@Variantenliste" VorgabeVariante="@VorgabeVariante"
+                                          Zielname="ZielnameUmbenannt" HinweisFormat="@UmbenennenHinweisFormat"
+                                          LabelVariante="@LabelVarianteWahl" LabelBezeichner="@LabelBezeichner"
+                                          ZielnameFormat="@ZielnameFormat" OkText="@UmbenennenOkText"
+                                          AbbrechenText="@AbbrechenText" Meldung="@_dialogMeldung"
+                                          HilfeSchluessel="@HilfeSchluessel" Geschlossen="UmbenennenFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Ueberlagerung Offen="@_loeschenOffen" Titel="@LoeschenTitel" Geschlossen="() => LoeschenFertig(null)">
+        <KindInhalt>
+            @if (_loeschenOffen)
+            {
+                <VarianteLoeschenDialog TitelText="" Varianten="@Variantenliste" VorgabeVariante="@VorgabeVariante"
+                                        HinweisText="@LoeschenHinweis" LabelVariante="@LabelVarianteWahl"
+                                        OkText="@LoeschenOkText" AbbrechenText="@AbbrechenText"
+                                        HilfeSchluessel="@HilfeSchluessel" Geschlossen="LoeschenFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
     <Rueckfrage Offen="@_loeschfrageOffen" Frage="@_loeschfrage"
-                TitelText="@LoeschenText" Beantwortet="LoeschenBeantwortet"
+                TitelText="@LoeschenTitel" Beantwortet="LoeschenBeantwortet"
                 JaText="@JaText" NeinText="@NeinText" />
 
     @* Entscheid O-4: erst NACH der unveraenderten Loeschfrage und nur, wenn der
@@ -277,41 +446,46 @@
     [Parameter] public Action<IReadOnlyList<int>>? VergleichGewaehlt { get; set; }
 
     /// <summary>
-    /// ÖFFNET den Variantendialog und meldet, ob dabei eine Variante entstanden ist
-    /// (Auftrag <b>#240</b>).
+    /// LEGT eine Variante aus einer Quelle der Gruppe an (Anwenderauftrag 13.10.2026):
+    /// Quelle (Stamm oder Variante, Projekt-Id) und Bezeichner hinein, das Ergebnis heraus —
+    /// gelungen mit der Meldung für die Statuszeile, sonst mit dem Grund, mit dem der
+    /// Dialog offen bleibt. Die Gruppe bleibt beim Stamm (<c>VariantenCtrl.AnlegenAusQuelle</c>).
+    /// Ohne Delegat gibt es den Knopf nicht (Hausregel A‑18).
     ///
-    /// <para><b>Warum ein Öffner und kein Anlegeweg.</b> Bis #240 stand hier
-    /// <c>Func&lt;string, string&gt;</c>: Bezeichner hinein, Meldung heraus — und die
-    /// Übersicht legte damit OHNE Quellprojekt an, während Kopfband und Menüpunkt seit
-    /// #237 den <c>ProjektVarianteDialog</c> zeigen (Kästchen „Inhalt aus einem
-    /// bestehenden Projekt übernehmen", Projektliste, Live-Zielname). Ein Haus, in dem
-    /// derselbe Vorgang an einer Stelle mehr kann als an der anderen, hat zwei
-    /// Vorgänge. Seither gibt es EINEN Dialog und drei Einstiege; die Seite entscheidet
-    /// nur noch, WANN er aufgeht, und lädt danach ihre Liste neu.</para>
-    ///
-    /// <para><c>true</c> = angelegt (Liste neu laden), <c>false</c> = abgebrochen oder
-    /// fehlgeschlagen. Die Meldung gehört dem Dialog beziehungsweise seiner Hülle —
-    /// sie sagt dort dasselbe wie im Menüweg.</para>
+    /// <para><b>Warum ein eigener kleiner Dialog und nicht der <c>ProjektVarianteDialog</c>.</b>
+    /// Der Dialog von Kopfband und Menüpunkt bietet mit seinem Kästchen JEDES Projekt der
+    /// Datenbank als Inhalt an und steht unter Windows als zweites Fenster; hier ist die
+    /// Quelle eine Version DIESER Gruppe, und der Dialog gehört als Überlagerung in dieses
+    /// Fenster — auf jeder Plattform, ohne Öffner der Schale.</para>
     /// </summary>
-    [Parameter] public Func<Task<bool>>? VarianteAnlegenOeffnen { get; set; }
+    [Parameter] public Func<int, string, VariantenAktionErgebnis>? VarianteAnlegen { get; set; }
 
     /// <summary>
-    /// Die gewählte Variante umbenennen (08.09.2026): Bezeichner aus dem Feld hinein, die
-    /// Meldung heraus. Nur eine Variante ist umbenennbar — dieselbe Bedingung wie Löschen.
+    /// Der Zielname „&lt;Stamm&gt; - &lt;Bezeichner&gt;" aus der Kernregel
+    /// (<c>VariantenCtrl.Zielname</c>): die Id der Variante, die den Namen behalten darf
+    /// (0 beim Anlegen), und der Bezeichner hinein, der Name heraus. Ohne Delegat bleibt
+    /// die Vorschauzeile der Dialoge leer.
     /// </summary>
-    [Parameter] public Func<string, string>? VarianteUmbenennen { get; set; }
-    [Parameter] public string UmbenennenText { get; set; } = "Umbenennen";
-
-    /// <summary>Die Frage vor dem Löschen; leer = nicht möglich.</summary>
-    [Parameter] public Func<string>? LoeschFrage { get; set; }
+    [Parameter] public Func<int, string, string>? Zielname { get; set; }
 
     /// <summary>
-    /// Löscht die markierte Variante und liefert die Meldung. Der Parameter ist die
-    /// Antwort auf die Mehrdeutigkeits-Rückfrage (iU9-W15a, Entscheid O-4 vom
-    /// 04.09.2026): <c>true</c> = der Anwender hat dem Löschen ALLER Projekte dieses
-    /// Namens ausdrücklich zugestimmt. Regulär <c>false</c>.
+    /// Benennt die GEWÄHLTE Variante um (Anwenderauftrag 13.10.2026): Projekt-Id und neuer
+    /// Bezeichner hinein, das Ergebnis heraus wie bei <see cref="VarianteAnlegen"/>.
+    /// Umbenannt wird über die Id, nicht kopiert.
     /// </summary>
-    [Parameter] public Func<bool, string>? VarianteLoeschen { get; set; }
+    [Parameter] public Func<int, string, VariantenAktionErgebnis>? VarianteUmbenennen { get; set; }
+    [Parameter] public string UmbenennenText { get; set; } = "Umbenennen…";
+
+    /// <summary>Die Frage vor dem Löschen der Variante mit dieser Projekt-Id; leer = nicht möglich.</summary>
+    [Parameter] public Func<int, string>? LoeschFrage { get; set; }
+
+    /// <summary>
+    /// Löscht die GEWÄHLTE Variante (Projekt-Id) und liefert die Meldung. Der zweite
+    /// Parameter ist die Antwort auf die Mehrdeutigkeits-Rückfrage (iU9-W15a, Entscheid
+    /// O-4 vom 04.09.2026): <c>true</c> = der Anwender hat dem Löschen ALLER Projekte
+    /// dieses Namens ausdrücklich zugestimmt. Regulär <c>false</c>.
+    /// </summary>
+    [Parameter] public Func<int, bool, string>? VarianteLoeschen { get; set; }
 
     /// <summary>
     /// Wie viele Projekte tragen diesen Projektnamen? Der Löschweg fragt damit nach,
@@ -349,7 +523,21 @@
     [Parameter] public string LabelNurStaemme { get; set; } = "nur Stammprojekte";
 
     /// <summary>Beschriftung der Versionswahl (Anwenderwunsch 05.09.2026, W5‑E‑1).</summary>
-    [Parameter] public string LabelVariante { get; set; } = "Variante:";
+    [Parameter] public string LabelVariante { get; set; } = "Detail-Unterschiede für Variante:";
+
+    /// <summary>
+    /// Der erste Eintrag der Variantenwahl (Ressource <c>BK_LBL_DETAILVARIANTE_KEINE</c>):
+    /// die Vorgabe, die für die markierte Stammzeile steht — der Komponentenvergleich.
+    /// </summary>
+    [Parameter] public string VorgabeText { get; set; } = "— keine (Komponentenvergleich) —";
+
+    /// <summary>Sperrgrund der Variantenwahl, wenn die Gruppe keine Variante hat (<c>BK_TIP_DETAILVARIANTE_LEER</c>).</summary>
+    [Parameter] public string KeineVarianteGrund { get; set; } =
+        "Die Gruppe hat noch keine Variante; gezeigt wird der Komponentenvergleich.";
+
+    /// <summary>Die leise Zeile über den Unterschieden (<c>BK_LBL_DETAILVARIANTE_ZURUECK</c>).</summary>
+    [Parameter] public string ZurueckHinweis { get; set; } =
+        "„— keine —“ führt zum Komponentenvergleich zurück.";
 
     /// <summary>Beschriftung der Vergleichswahl (W5‑B‑5).</summary>
     [Parameter] public string LabelVergleich { get; set; } = "Im Vergleich:";
@@ -357,7 +545,69 @@
     /// <summary>Werkzeugtipp am festen Stamm-Schalter der Vergleichswahl.</summary>
     [Parameter] public string StammFestTipp { get; set; } = "Das Stammprojekt ist die Referenz und immer enthalten.";
 
+    /// <summary>Beschriftung des Bezeichnerfeldes der Dialoge (<c>BK_LBL_BEZEICHNER</c>).</summary>
     [Parameter] public string LabelBezeichner { get; set; } = "Bezeichner:";
+
+    // ---- Die Texte der drei Dialoge der Variantenverwaltung (Anwenderauftrag 13.10.2026) ----
+
+    /// <summary>Titel der Überlagerung „Variante anlegen" (<c>BK_BTN_ANLEGEN</c>).</summary>
+    [Parameter] public string AnlegenTitel { get; set; } = "Variante anlegen";
+
+    /// <summary>Der OK-Knopf des Anlegedialogs (<c>BK_BTN_ANLEGEN</c>).</summary>
+    [Parameter] public string AnlegenOkText { get; set; } = "Variante anlegen";
+
+    /// <summary>Der Satz über den Feldern des Anlegedialogs (<c>BK_DLG_ANLEGEN_HINWEIS</c>); <c>{0}</c> = Stamm.</summary>
+    [Parameter] public string AnlegenHinweisFormat { get; set; }
+        = "Die neue Variante gehört zur Gruppe des Stammprojekts „{0}“ und erhält die Daten der gewählten Quelle.";
+
+    /// <summary>Beschriftung der Quellenwahl (<c>BK_UEB_LBL_QUELLE</c>).</summary>
+    [Parameter] public string LabelQuelle { get; set; } = "Quelle:";
+
+    /// <summary>Der Eintrag des Stamms in der Quellenwahl (<c>BK_UEB_QUELLE_STAMM</c>); <c>{0}</c> = Projektname.</summary>
+    [Parameter] public string QuelleStammFormat { get; set; } = "Stammprojekt: {0}";
+
+    /// <summary>Der Eintrag einer Variante in der Quellenwahl (<c>BK_UEB_QUELLE_VARIANTE</c>); <c>{0}</c> = Bezeichner.</summary>
+    [Parameter] public string QuelleVarianteFormat { get; set; } = "Variante: {0}";
+
+    /// <summary>Titel der Überlagerung „Variante umbenennen" (<c>VAR_DLG_UMBENENNEN_TITEL</c>).</summary>
+    [Parameter] public string UmbenennenTitel { get; set; } = "Variante umbenennen";
+
+    /// <summary>Der OK-Knopf des Umbenenndialogs (<c>VAR_BTN_UMBENENNEN</c>).</summary>
+    [Parameter] public string UmbenennenOkText { get; set; } = "Umbenennen";
+
+    /// <summary>Der Satz über den Feldern des Umbenenndialogs (<c>VAR_DLG_UMBENENNEN_HINWEIS</c>); <c>{0}</c> = bisheriger Bezeichner.</summary>
+    [Parameter] public string UmbenennenHinweisFormat { get; set; }
+        = "Neuer Bezeichner für die Variante „{0}“. Der Projektname wird zu „Stammprojekt - Bezeichner“.";
+
+    /// <summary>Beschriftung der Variantenwahl in Umbenennen und Löschen (<c>BK_LBL_VARIANTE_WAHL</c>).</summary>
+    [Parameter] public string LabelVarianteWahl { get; set; } = "Variante:";
+
+    /// <summary>Die Vorschauzeile des Zielnamens (<c>VAR_DLG_ZIELNAME</c>); <c>{0}</c> = Zielname.</summary>
+    [Parameter] public string ZielnameFormat { get; set; } = "Neuer Projektname: {0}";
+
+    /// <summary>Titel der Überlagerung und der Rückfrage „Variante löschen" (<c>BK_BTN_LOESCHEN</c>).</summary>
+    [Parameter] public string LoeschenTitel { get; set; } = "Variante löschen";
+
+    /// <summary>Der OK-Knopf des Löschdialogs (<c>BK_BTN_LOESCHEN</c>).</summary>
+    [Parameter] public string LoeschenOkText { get; set; } = "Variante löschen";
+
+    /// <summary>Der Satz über dem Feld des Löschdialogs (<c>BK_DLG_LOESCHEN_HINWEIS</c>).</summary>
+    [Parameter] public string LoeschenHinweis { get; set; }
+        = "Die gewählte Variante wird nach einer Rückfrage mit allen Projektdaten unwiderruflich gelöscht.";
+
+    /// <summary>„Abbrechen" der drei Dialoge (<c>SIM_BTN_ABBRECHEN</c>).</summary>
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    /// <summary>Sperrgrund von „Variante anlegen…" ohne Stammprojekt (<c>BK_TIP_ANLEGEN_KEIN_STAMM</c>).</summary>
+    [Parameter] public string SperrgrundKeinStamm { get; set; }
+        = "Zum Anlegen einer Variante zuerst ein Stammprojekt wählen.";
+
+    /// <summary>Sperrgrund der drei Knöpfe während eines Laufs (<c>BK_TIP_VERWALTUNG_LAEUFT</c>).</summary>
+    [Parameter] public string SperrgrundLaeuft { get; set; }
+        = "Während eines Laufs sind die Aktionen der Variantenverwaltung gesperrt.";
+
+    /// <summary>Sperrgrund von „Umbenennen…" und „Löschen…" ohne Variante (<c>BK_TIP_KEINE_VARIANTE</c>).</summary>
+    [Parameter] public string SperrgrundKeineVariante { get; set; } = "Die Gruppe hat noch keine Variante.";
 
     /// <summary>
     /// Das Wort vor dem Simulationszeitpunkt in der Statuszeile — bis W5‑E‑1 der
@@ -374,13 +624,17 @@
     [Parameter] public string SpalteSpeicher { get; set; } = "Stromspeicher";
 
     [Parameter] public string SpalteAktion { get; set; } = "Aktion";
-    [Parameter] public string AnlegenText { get; set; } = "Variante anlegen";
-    [Parameter] public string LoeschenText { get; set; } = "Variante löschen";
+
+    /// <summary>Der Knopf „Variante anlegen…" (<c>BK_BTN_ANLEGEN_DLG</c>) — er öffnet den Dialog.</summary>
+    [Parameter] public string AnlegenText { get; set; } = "Variante anlegen…";
+
+    /// <summary>Der Knopf „Löschen…" (<c>BK_BTN_LOESCHEN_DLG</c>) — er öffnet den Dialog.</summary>
+    [Parameter] public string LoeschenText { get; set; } = "Löschen…";
     [Parameter] public string SimulierenText { get; set; } = "Simulation starten";
     [Parameter] public string UebernehmenText { get; set; } = "Übernehmen";
 
     /// <summary>Name der Versionswahl für die Sprachausgabe (<c>aria-label</c>).</summary>
-    [Parameter] public string WahlKurztext { get; set; } = "Version wählen";
+    [Parameter] public string WahlKurztext { get; set; } = "Variante für die Detail-Unterschiede wählen";
 
     /// <summary>Statuszeile, wenn die gewählte Version nie gerechnet wurde.</summary>
     [Parameter] public string SimNieText { get; set; } = "noch nicht simuliert";
@@ -412,6 +666,52 @@
     /// <summary>Meldung „abgebrochen".</summary>
     [Parameter] public string StatusAbgebrochen { get; set; } = "Vorgang abgebrochen.";
 
+    // ---- Texte und Merkwert der Gegenüberstellung je Gewerk ---------------
+
+    /// <summary>Name der Gruppe „Projektwahl" für die Sprachausgabe (<c>BK_LBL_PROJEKTWAHL</c>).</summary>
+    [Parameter] public string LabelProjektwahl { get; set; } = "Projektwahl";
+
+    /// <summary>Titel der Gruppe „Variante verwalten" (<c>BK_LBL_VARIANTE_VERWALTEN</c>).</summary>
+    [Parameter] public string LabelVerwaltung { get; set; } = "Variante verwalten";
+
+    /// <summary>Kopf der Gewerkspalte (<c>BK_SP_GEWERK</c>).</summary>
+    [Parameter] public string SpalteGewerk { get; set; } = "Gewerk";
+
+    /// <summary>Der Schalter, der Gewerke ohne Abweichung ausblendet (<c>BK_LBL_NUR_UNTERSCHIEDE</c>).</summary>
+    [Parameter] public string LabelNurUnterschiede { get; set; } = "nur Unterschiede";
+
+    /// <summary>Die Legende der Markierung (<c>BK_LBL_LEGENDE_ABWEICHUNG</c>).</summary>
+    [Parameter] public string LegendeAbweichung { get; set; } = "markiert: weicht vom Stammprojekt ab";
+
+    /// <summary>Was die Sprachausgabe an einer markierten Zelle liest (<c>BK_LBL_WEICHT_AB</c>).</summary>
+    [Parameter] public string WeichtAbText { get; set; } = "weicht vom Stammprojekt ab";
+
+    /// <summary>Kurztext am leisen Strich einer fehlenden Komponente (<c>BV_A1D_BESTAND_FEHLT</c>).</summary>
+    [Parameter] public string NichtVorhandenText { get; set; } = "nicht vorhanden";
+
+    /// <summary>Statt der Tabelle, wenn „nur Unterschiede" nichts übrig lässt (<c>BK_LBL_KEINE_UNTERSCHIEDE</c>).</summary>
+    [Parameter] public string KeineUnterschiedeText { get; set; }
+        = "Alle Versionen im Vergleich führen dieselben Komponenten.";
+
+    /// <summary>
+    /// Liest den Merkwert „nur Unterschiede" (ein Stand je Sitzung, er lebt in der Hülle);
+    /// <c>null</c> = die Seite führt ihn selbst, solange sie steht.
+    /// </summary>
+    [Parameter] public Func<bool>? NurUnterschiedeLesen { get; set; }
+
+    /// <summary>Meldet einen Wechsel des Schalters „nur Unterschiede" an die Hülle.</summary>
+    [Parameter] public Action<bool>? NurUnterschiedeGewechselt { get; set; }
+
+    /// <summary>Die Überschrift des ersten Abschnitts (<c>BK_ERG_ABSCHNITT_KOMPONENTEN</c>).</summary>
+    [Parameter] public string LabelAbschnittKomponenten { get; set; } = "Übersicht Komponenten / Vergleich";
+
+    /// <summary>Der Parametersatz des Abschnitts „Ergebnisse — Energie“ (Hülle <c>UebersichtErgebnisGaben</c>); ohne ihn entfällt er.</summary>
+    [Parameter] public IReadOnlyDictionary<string, object>? ErgebnisGaben { get; set; }
+
+    private static readonly IReadOnlyDictionary<string, object> s_keineGaben = new Dictionary<string, object>();
+    private IReadOnlyDictionary<string, object> ErgebnisGabenSatz => ErgebnisGaben ?? s_keineGaben;
+    private UebersichtErgebnisse? _ergebnisse;
+
     // =====================================================================
     // Zustand
     // =====================================================================
@@ -420,9 +720,18 @@
     private bool _ersterAufbau = true;
 
     private UebersichtStand _stand = new();
-    private string _bezeichner = "";
     private string _status = "";
+
+    // Die drei Dialoge der Variantenverwaltung: offen/zu, die Meldung eines
+    // gescheiterten Schritts (der Dialog bleibt damit offen) und die im Loeschdialog
+    // gewaehlte Variante, auf die die Rueckfragen danach wirken.
+    private bool _anlegenOffen;
+    private bool _umbenennenOffen;
+    private bool _loeschenOffen;
+    private string _dialogMeldung = "";
+    private int _loeschId;
     private string _meldung = "";
+    private IReadOnlyList<string> _hinweise = Array.Empty<string>();
     private bool _laeuft;
 
     private IReadOnlyDictionary<string, object>? _gaben;
@@ -449,10 +758,50 @@
     /// <summary>Trägt der Komponentenbereich die Aktionsspalte? (Prüfhilfe)</summary>
     public bool MitAktionsspalte => _mitAktionsspalte;
 
-    /// <summary>Läuft gerade ein Vorgang (Simulation oder offener Variantendialog)? (Prüfhilfe)</summary>
+    /// <summary>Läuft gerade eine Simulation? (Prüfhilfe)</summary>
     public bool Laeuft => _laeuft;
 
+    /// <summary>Steht der Dialog „Variante anlegen"? (Prüfhilfe)</summary>
+    public bool AnlegenOffen => _anlegenOffen;
+
+    /// <summary>Steht der Dialog „Variante umbenennen"? (Prüfhilfe)</summary>
+    public bool UmbenennenOffen => _umbenennenOffen;
+
+    /// <summary>Steht der Dialog „Variante löschen"? (Prüfhilfe)</summary>
+    public bool LoeschenOffen => _loeschenOffen;
+
+    /// <summary>Die Meldung, mit der ein Dialog offen bleibt (Prüfhilfe).</summary>
+    public string DialogMeldung => _dialogMeldung;
+
     private bool _mitAktionsspalte;
+
+    /// <summary>Der Schalter „nur Unterschiede", solange die Hülle ihn nicht führt.</summary>
+    private bool _nurUnterschiede;
+
+    /// <summary>Steht der Schalter „nur Unterschiede"? (auch Prüfhilfe)</summary>
+    public bool NurUnterschiede => NurUnterschiedeLesen?.Invoke() ?? _nurUnterschiede;
+
+    /// <summary>Die Gewerke, die die Tabelle zeigt — mit „nur Unterschiede" allein die abweichenden.</summary>
+    private IReadOnlyList<GewerkVergleichZeile> SichtbareGewerke
+    {
+        get
+        {
+            if (!NurUnterschiede) return _stand.Gewerke;
+            var liste = new List<GewerkVergleichZeile>();
+            foreach (GewerkVergleichZeile g in _stand.Gewerke)
+                if (g.WeichtAb) liste.Add(g);
+            return liste;
+        }
+    }
+
+    private void BeiNurUnterschiede(bool an)
+    {
+        _nurUnterschiede = an;
+        NurUnterschiedeGewechselt?.Invoke(an);
+    }
+
+    private static string ZellKlasse(GewerkVergleichZelle z)
+        => z.WeichtAb ? "epos-komponenten-zelle epos-komponenten-zelle--abweichend" : "epos-komponenten-zelle";
 
     protected override void OnInitialized()
     {
@@ -497,12 +846,39 @@
             VarianteEintraege = () => KiMaskenanmeldung.Eintraege(
                 Versionen, z => z.Id, z => z.Text),
 
-            BezeichnerLesen = () => _bezeichner,
-            BezeichnerSetzen = w => _bezeichner = w ?? "",
-
             SimulationLesen = () => Simulationszeile,
-            StatusLesen = () => _status
+            StatusLesen = () => _status,
+
+            NurUnterschiedeLesen = () => NurUnterschiede,
+            NurUnterschiedeSetzen = an => _ = InvokeAsync(() => { BeiNurUnterschiede(an); StateHasChanged(); }),
+            KomponentenLesen = () => KomponentenText(),
+            ErgebnisseLesen = () => _ergebnisse?.Text() ?? ""
         };
+    }
+
+    /// <summary>
+    /// Die sichtbare Gegenüberstellung als Text für den Assistenten — Zeile für Zeile,
+    /// was die Tabelle zeigt; leer, wenn die Seite die Unterschiede einer Variante zeigt.
+    /// </summary>
+    private string KomponentenText()
+    {
+        var zeilen = new List<string>();
+        foreach (GewerkVergleichZeile g in SichtbareGewerke)
+        {
+            var teile = new List<string>();
+            for (int i = 0; i < g.Zellen.Count; i++)
+            {
+                GewerkVergleichZelle z = g.Zellen[i];
+                string name = i < _stand.Versionsspalten.Count ? _stand.Versionsspalten[i].Name : "";
+                string inhalt = z.Eintraege.Count == 0
+                    ? NichtVorhandenText
+                    : string.Join(", ", z.Eintraege.Select(e => e.Anzahl + " × " + e.Bezeichner
+                        + (string.IsNullOrEmpty(e.Kennwerte) ? "" : " (" + e.Kennwerte + ")")));
+                teile.Add(name + " = " + inhalt + (z.WeichtAb ? " — " + WeichtAbText : ""));
+            }
+            zeilen.Add(g.Gewerk + ": " + string.Join("; ", teile));
+        }
+        return string.Join("\n", zeilen);
     }
 
     /// <summary>
@@ -526,14 +902,15 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        // Ohne preventScroll rollt der Browser die hohe Seite ins Bild und schiebt die
+        // Reiterleiste von „Berichte & Kosten" aus dem Blick.
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     /// <summary>Liest Auswahl, Liste und Komponentenbereich neu ein.</summary>
     public void Auffrischen()
     {
         _stand = Laden?.Invoke() ?? new UebersichtStand();
-        _bezeichner = _stand.Bezeichnervorschlag ?? "";
         _status = _stand.Statuszeile ?? "";
 
         // Die Aktionsspalte gehoert zur UNTERSCHIEDSansicht - erkennbar
@@ -574,16 +951,55 @@
     /// auferlegt. Dubletten kann es nicht geben: <c>Tab_Projekt.ID</c> ist der
     /// Schlüssel.</para>
     /// </summary>
+    ///
+    /// <para><b>Anwenderauftrag 13.10.2026 — Detail-Unterschiede:</b> Der erste Eintrag
+    /// ist die Vorgabe „— keine (Komponentenvergleich) —“. Sie trägt die Id der
+    /// Stammzeile; wer sie wählt, markiert also wie bisher den Stamm, und alle Wege,
+    /// die an der Markierung hängen (Rückruf <c>ZeileMarkiert</c>, Simulationsstand und
+    /// „Simulation starten“, Sperren von Umbenennen und Löschen, KI-Sicht), bleiben
+    /// unverändert. Danach folgen nur die Varianten; den Stamm gibt es nicht als
+    /// eigenen Eintrag mit seinem Namen.</para>
+    /// </summary>
     private IReadOnlyList<(int Id, string Text)> Versionen
     {
         get
         {
-            var liste = new List<(int, string)>(_stand.Zeilen.Count);
+            var liste = new List<(int, string)>(_stand.Zeilen.Count + 1);
+            int? vorgabe = VorgabeId;
+            if (vorgabe is not null) liste.Add((vorgabe.Value, VorgabeText));
             foreach (VarianteZeile z in _stand.Zeilen)
-                liste.Add((z.IdProjekt, Eintragstext(z)));
+                if (!z.IstStamm) liste.Add((z.IdProjekt, Eintragstext(z)));
             return liste;
         }
     }
+
+    /// <summary>
+    /// Die Id der Vorgabe „— keine —“: die der Stammzeile, sonst (Gruppe noch nicht
+    /// geladen) das gewählte Stammprojekt; <c>null</c> = es gibt keine Gruppe.
+    /// </summary>
+    private int? VorgabeId
+    {
+        get
+        {
+            foreach (VarianteZeile z in _stand.Zeilen)
+                if (z.IstStamm) return z.IdProjekt;
+            return _stand.StammId is > 0 ? _stand.StammId : null;
+        }
+    }
+
+    /// <summary>Hat die Gruppe mindestens eine Variante? Sonst ist die Wahl gesperrt.</summary>
+    private bool HatVarianten
+    {
+        get
+        {
+            foreach (VarianteZeile z in _stand.Zeilen)
+                if (!z.IstStamm) return true;
+            return false;
+        }
+    }
+
+    /// <summary>Ist eine Variante gewählt (Detail-Unterschiede statt Komponentenvergleich)?</summary>
+    private bool VarianteGewaehlt => Markierte is { IstStamm: false };
 
     /// <summary>
     /// Der Projektname (Rückfall: der Bezeichner, wenn er fehlt) — siehe
@@ -707,44 +1123,165 @@
     }
 
     // =====================================================================
-    // Variante anlegen und löschen
+    // Variante anlegen, umbenennen und löschen (Anwenderauftrag 13.10.2026)
     // =====================================================================
 
+    /// <summary>Warum „Variante anlegen…" gesperrt ist; <c>null</c> = frei.</summary>
+    private string? AnlegenSperrgrund
+        => !_stand.AnlegenMoeglich ? SperrgrundKeinStamm : _laeuft ? SperrgrundLaeuft : null;
+
+    /// <summary>Warum „Umbenennen…" und „Löschen…" gesperrt sind; <c>null</c> = frei.</summary>
+    private string? VariantenSperrgrund
+        => !HatVarianten ? SperrgrundKeineVariante : _laeuft ? SperrgrundLaeuft : null;
+
+    /// <summary>Der Bezeichner einer Variante — der Rückfall ist ihr Projektname.</summary>
+    private static string Variantenbezeichner(VarianteZeile z)
+        => string.IsNullOrEmpty(z.Bezeichner) ? (z.Projektname ?? "") : z.Bezeichner;
+
+    /// <summary>Die Zeile zu einer Projekt-Id; <c>null</c> = nicht in der Gruppe.</summary>
+    private VarianteZeile? Zeile(int id)
+    {
+        foreach (VarianteZeile z in _stand.Zeilen)
+            if (z.IdProjekt == id) return z;
+        return null;
+    }
+
+    /// <summary>Der Name des Stammprojekts (aus der Stammzeile, sonst aus der Stammwahl).</summary>
+    private string Stammname
+    {
+        get
+        {
+            foreach (VarianteZeile z in _stand.Zeilen)
+                if (z.IstStamm) return z.Projektname ?? "";
+            foreach ((int Id, string Text) s in _stand.Staemme)
+                if (s.Id == _stand.StammId) return s.Text ?? "";
+            return "";
+        }
+    }
+
+    /// <summary>Die Quellen des Anlegedialogs: das Stammprojekt zuerst (die Vorgabe), dann die Varianten der Gruppe.</summary>
+    private IReadOnlyList<(int Id, string Text)> Quellen
+    {
+        get
+        {
+            var liste = new List<(int, string)>(_stand.Zeilen.Count + 1);
+            bool mitStamm = false;
+            foreach (VarianteZeile z in _stand.Zeilen)
+                if (z.IstStamm) { liste.Add((z.IdProjekt, string.Format(QuelleStammFormat, z.Projektname))); mitStamm = true; }
+            if (!mitStamm && _stand.StammId is > 0)
+                liste.Add((_stand.StammId.Value, string.Format(QuelleStammFormat, Stammname)));
+            foreach (VarianteZeile z in _stand.Zeilen)
+                if (!z.IstStamm) liste.Add((z.IdProjekt, string.Format(QuelleVarianteFormat, Variantenbezeichner(z))));
+            return liste;
+        }
+    }
+
+    /// <summary>Die Varianten der Gruppe für Umbenennen und Löschen — nur sie, mit ihrem Bezeichner.</summary>
+    private IReadOnlyList<(int Id, string Text)> Variantenliste
+    {
+        get
+        {
+            var liste = new List<(int, string)>(_stand.Zeilen.Count);
+            foreach (VarianteZeile z in _stand.Zeilen)
+                if (!z.IstStamm) liste.Add((z.IdProjekt, Variantenbezeichner(z)));
+            return liste;
+        }
+    }
+
     /// <summary>
-    /// Öffnet den Variantendialog (Auftrag #240) und lädt die Liste neu, sobald er eine
-    /// Variante angelegt hat. Gezeichnet wird dabei zweimal: einmal gesperrt, solange
-    /// der Dialog offen steht, und einmal mit dem neuen Stand.
+    /// Die Vorgabe der Variantenwahl in Umbenennen und Löschen: die unter
+    /// „Detail-Unterschiede für Variante" gewählte Variante, sonst die erste der Gruppe.
     /// </summary>
-    private async Task Anlegen()
+    private int? VorgabeVariante
     {
-        if (VarianteAnlegenOeffnen is null || _laeuft) return;
-
-        _laeuft = true;
-        StateHasChanged();
-        try
+        get
         {
-            if (await VarianteAnlegenOeffnen()) Auffrischen();
-        }
-        finally
-        {
-            _laeuft = false;
-            StateHasChanged();
+            if (Markierte is { IstStamm: false } m) return m.IdProjekt;
+            IReadOnlyList<(int Id, string Text)> l = Variantenliste;
+            return l.Count > 0 ? l[0].Id : null;
         }
     }
 
-    private void Umbenennen()
+    private string AnlegenHinweis => string.Format(AnlegenHinweisFormat ?? "", Stammname);
+
+    private string ZielnameNeu(string bezeichner) => Zielname?.Invoke(0, bezeichner) ?? "";
+
+    private string ZielnameUmbenannt(int id, string bezeichner) => Zielname?.Invoke(id, bezeichner) ?? "";
+
+    /// <summary>Ein Klick auf einen weich gesperrten Knopf meldet den Grund, statt zu öffnen.</summary>
+    private bool Gesperrt(string? grund)
     {
-        if (VarianteUmbenennen is null) return;
-        string meldung = VarianteUmbenennen(_bezeichner ?? "");
+        if (grund is null) return false;
+        _status = grund;
+        return true;
+    }
+
+    private void AnlegenOeffnen()
+    {
+        if (VarianteAnlegen is null || Gesperrt(AnlegenSperrgrund)) return;
+        _dialogMeldung = "";
+        _anlegenOffen = true;
+    }
+
+    /// <summary>
+    /// Die Antwort des Anlegedialogs: <c>null</c> schließt; sonst legt die Hülle an —
+    /// scheitert das, bleibt der Dialog mit der Meldung offen; gelingt es, lädt die
+    /// Seite ihren Stand neu (Liste, Versionswahl, Vergleichswahl, Komponentenbereich)
+    /// und meldet in der Statuszeile. Die Vorauswahl bleibt, wie sie war.
+    /// </summary>
+    private void AnlegenFertig(VarianteAnlegenWahl? wahl)
+    {
+        if (wahl is null || VarianteAnlegen is null) { _anlegenOffen = false; _dialogMeldung = ""; return; }
+
+        VariantenAktionErgebnis e = VarianteAnlegen(wahl.Value.QuelleId, wahl.Value.Bezeichner);
+        if (!e.Gelungen) { _dialogMeldung = e.Meldung; return; }
+
+        _anlegenOffen = false;
+        _dialogMeldung = "";
         Auffrischen();
-        if (!string.IsNullOrEmpty(meldung)) _status = meldung;
+        if (!string.IsNullOrEmpty(e.Meldung)) _status = e.Meldung;
     }
 
-    private void LoeschenFragen()
+    private void UmbenennenOeffnen()
     {
-        if (LoeschFrage is null) return;
-        string frage = LoeschFrage();
+        if (VarianteUmbenennen is null || Gesperrt(VariantenSperrgrund)) return;
+        _dialogMeldung = "";
+        _umbenennenOffen = true;
+    }
+
+    /// <summary>Die Antwort des Umbenenndialogs — derselbe Weg wie beim Anlegen.</summary>
+    private void UmbenennenFertig(VarianteUmbenennenWahl? wahl)
+    {
+        if (wahl is null || VarianteUmbenennen is null) { _umbenennenOffen = false; _dialogMeldung = ""; return; }
+
+        VariantenAktionErgebnis e = VarianteUmbenennen(wahl.Value.VarianteId, wahl.Value.Bezeichner);
+        if (!e.Gelungen) { _dialogMeldung = e.Meldung; return; }
+
+        _umbenennenOffen = false;
+        _dialogMeldung = "";
+        Auffrischen();
+        if (!string.IsNullOrEmpty(e.Meldung)) _status = e.Meldung;
+    }
+
+    private void LoeschenOeffnen()
+    {
+        if (VarianteLoeschen is null || Gesperrt(VariantenSperrgrund)) return;
+        _loeschenOffen = true;
+    }
+
+    /// <summary>
+    /// Die Antwort des Löschdialogs: die gewählte Variante. Gelöscht wird noch nicht —
+    /// erst stellt die Seite die unveränderte Rückfrage (und danach die zweite bei
+    /// mehrdeutigem Namen).
+    /// </summary>
+    private void LoeschenFertig(int? id)
+    {
+        _loeschenOffen = false;
+        if (id is null || id.Value <= 0 || LoeschFrage is null) return;
+
+        string frage = LoeschFrage(id.Value);
         if (string.IsNullOrEmpty(frage)) return;
+        _loeschId = id.Value;
         _loeschfrage = frage;
         _loeschfrageOffen = true;
     }
@@ -767,7 +1304,7 @@
 
         if (NamensAnzahl is not null && !string.IsNullOrEmpty(MehrdeutigFormat))
         {
-            _anzahlGleicher = NamensAnzahl(MarkierterProjektname);
+            _anzahlGleicher = NamensAnzahl(LoeschProjektname);
             if (_anzahlGleicher > 1)
             {
                 _mehrdeutigOffen = true;
@@ -787,18 +1324,19 @@
 
     private void Loeschen(bool alleGleichenNamens)
     {
-        if (VarianteLoeschen is null) return;
+        if (VarianteLoeschen is null || _loeschId <= 0) return;
 
-        string meldung = VarianteLoeschen(alleGleichenNamens);
+        string meldung = VarianteLoeschen(_loeschId, alleGleichenNamens);
+        _loeschId = 0;
         Auffrischen();
         if (!string.IsNullOrEmpty(meldung)) _status = meldung;
     }
 
-    /// <summary>Der Projektname der gewählten Version (leer, wenn keine gewählt ist).</summary>
-    private string MarkierterProjektname => Markierte?.Projektname ?? "";
+    /// <summary>Der Projektname der zu löschenden Variante (leer, wenn keine gewählt ist).</summary>
+    private string LoeschProjektname => Zeile(_loeschId)?.Projektname ?? "";
 
     private string MehrdeutigFrage
-        => string.Format(MehrdeutigFormat ?? "", MarkierterProjektname, _anzahlGleicher);
+        => string.Format(MehrdeutigFormat ?? "", LoeschProjektname, _anzahlGleicher);
 
     // =====================================================================
     // Simulation
@@ -810,6 +1348,7 @@
 
         _laeuft = true;
         _meldung = "";
+        _hinweise = Array.Empty<string>();
         StateHasChanged();
         try
         {
@@ -821,7 +1360,18 @@
 
             // Der Vorlaeufer zeigte das Protokoll als MessageBox; hier steht
             // es als Meldung im Fenster.
-            _meldung = erg.Meldung ?? "";
+            // Traegt der Lauf seinen Kopf gesondert, steht er im Banner und die
+            // Hinweise im Klapper; sonst die Meldung wie bisher.
+            if (!string.IsNullOrEmpty(erg.Meldungskopf))
+            {
+                _meldung = erg.Meldungskopf;
+                _hinweise = erg.Laufhinweise ?? Array.Empty<string>();
+            }
+            else
+            {
+                _meldung = erg.Meldung ?? "";
+                _hinweise = Array.Empty<string>();
+            }
             if (!string.IsNullOrEmpty(erg.Statuszeile)) _status = erg.Statuszeile;
         }
         finally

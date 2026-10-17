@@ -1,0 +1,52 @@
+﻿@page "/startseitenprobe"
+@using Microsoft.AspNetCore.WebUtilities
+@using EPOS.UI.Bausteine
+@using EPOS.UI.Seiten.Start
+@inject NavigationManager Navigation
+
+@*  DIE STARTSEITENPROBE (Stufe K4, Konzept Kaeltebedarf 3.1) - Pruefstand, nicht Auslieferung.
+
+    Sie stellt die ECHTE Startseite mit offenem Projekt und den 24 Kacheln der Huelle dar - OHNE
+    Datenbank: Titel und Beschreibungen sind die Ressourcen der Anwendung, der Bestand ist eine
+    feste Bitmaske, der Stand der Gebaeudekuehlung eine feste Gabe.
+
+    Gaben ueber die Adresse:
+      ?reiter=KAELTEBEDARF   der Reiter, mit dem die Seite aufmacht (Reiterschluessel)
+      ?kuehlbetrieb=0        das Projekt rechnet keine Kaelte (Hinweiszeile)
+      ?bits=8192             die Bitmaske des Komponentenbestands *@
+
+<Startseite Kacheln="@(() => _kacheln)"
+            ProjektId="@(() => 1030)"
+            Reiterwunsch="@_reiter"
+            Gebaeudekuehlung="@(() => _stand)"
+            Bericht="@(() => new Zusammenfassung("Probe", "0 MWh/a", "0 MWh/a", ""))" />
+
+@code {
+    private string _reiter = Reiterschluessel.Kaeltebedarf;
+    private GebaeudekuehlungDaten _stand = new(true, 1, 2);
+    private IReadOnlyList<StartKachel> _kacheln = Array.Empty<StartKachel>();
+
+    protected override void OnInitialized()
+    {
+        var q = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
+        if (q.TryGetValue("reiter", out var r)) _reiter = r.ToString();
+        bool kuehlbetrieb = !(q.TryGetValue("kuehlbetrieb", out var k) && k.ToString() == "0");
+        int bits = q.TryGetValue("bits", out var b) && int.TryParse(b.ToString(), out int w) ? w : 8192;
+        _stand = new GebaeudekuehlungDaten(kuehlbetrieb, 1, 2);
+
+        Kachelstand Stand(int bit) => (bits & bit) == bit ? Kachelstand.An : Kachelstand.Aus;
+        StartKachel K(string s, string reiter, string t, string d, Kachelstand? z = null)
+            => new() { Schluessel = s, Reiter = reiter, Titel = t, Beschreibung = d, Zustand = z };
+        var R = WindowsFormsApplication1.MyResource.Resource.ResourceManager;
+        string T(string n) => R.GetString(n) ?? n;
+
+        _kacheln = new[]
+        {
+            K(Kachelschluessel.Gebaeude, Reiterschluessel.Waermebedarf, T("START_K_GEBAEUDE_T"), T("START_K_GEBAEUDE_B"), Stand(8)),
+            K(Kachelschluessel.KaeltebedarfExtern, Reiterschluessel.Kaeltebedarf, T("START_K_KBEXTERN_T"), T("START_K_KBEXTERN_B"), Stand(8192)),
+            K(Kachelschluessel.Kaeltebedarfsprofile, Reiterschluessel.Kaeltebedarf, T("START_K_KBPROFIL_T"), T("START_K_KBPROFIL_B"), Stand(16384)),
+            K(Kachelschluessel.Gebaeudekuehlung, Reiterschluessel.Kaeltebedarf, T("START_K_GEBKUEHL_T"), T("START_K_GEBKUEHL_B"), _stand.Zustand),
+            K(Kachelschluessel.StromStandardprofil, Reiterschluessel.Strombedarf, T("START_K_STDLAST_T"), T("START_K_STDLAST_B"), Stand(64))
+        };
+    }
+}

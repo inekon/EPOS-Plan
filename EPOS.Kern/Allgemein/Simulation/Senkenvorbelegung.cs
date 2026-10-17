@@ -95,6 +95,11 @@ namespace WindowsFormsApplication1
             kanaele[Kanal.PROZESS] = Anzahl("SELECT COUNT(*) FROM Z_Projekt_Prozesswaerme WHERE ID_Projekt = ?",
                                             idProjekt) > 0;
 
+            // K3 (Konzept Kaeltebedarf 5): Kaeltebedarfsprofile zaehlen im Kuehlkanal - als Auskunft, nicht als Senke:
+            // Ableiten legt fuer den Kuehlkanal nie eine Zeile an (Kaelte bleibt ohne Senke, die Kaeltefolge deckt sie).
+            if (StilleDb.SpaltenNamen(KaeltebedarfSchema.TAB_ZUORDNUNG) != null &&
+                Anzahl("SELECT COUNT(*) FROM " + KaeltebedarfSchema.TAB_ZUORDNUNG + " WHERE ID_Projekt = ?", idProjekt) > 0)
+                kanaele[Kanal.KUEHLUNG] = true;
             // Externe Waermeganglinien: je Zeile in den Kanal ihrer Zuordnung. Ohne die
             // Spalte Kanal (vor Paket K1) laufen alle im Heizkanal - wie im Lauf.
             HashSet<string> spalten = StilleDb.SpaltenNamen("Z_ProjektWaermebedarf");
@@ -138,6 +143,8 @@ namespace WindowsFormsApplication1
                     Bedarfsart = DbWerte.WS_TYP_BEIDES
                 });
 
+            // Der Kuehlkanal (Lastgaenge und Kaeltebedarfsprofile, K3) bekommt bewusst keine Zeile: Kaelte deckt die
+            // Kaeltefolge ohne Senkenliste, eine dezentrale (Split-)Zeile deckt sich neben ihr (Konzept Kaeltebedarf 1.2, 5).
             if (kanaele[Kanal.PROZESS])
                 zeilen.Add(new Z_AnlageSenkeModel
                 {

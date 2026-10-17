@@ -1,0 +1,71 @@
+﻿@* Die Zeile "Original geaendert - uebernehmen?" (Konzept Berichtsvorlagen 10.2, 10.3)
+   UNTER der Pruefzeile einer eigenen Vorlage - fuer die Word- wie fuer die Excel-Zeile
+   derselbe Baustein, EINE Einbindungszeile je Stelle.
+
+   Sie steht nur, wenn die Huelle einen Originalstand liefert: Es gibt ein Original
+   ausserhalb des Vorlagenordners (unter Windows), es hat sich seit dem Hinzufuegen
+   geaendert, und "Behalten" hat genau diesen Stand noch nicht zurueckgewiesen. Auf iOS
+   entsteht sie nicht - die Vorlage wird dort beim Hinzufuegen in die Sandbox kopiert.
+
+   DIE ZWEI HANDLUNGEN SIND DATEN (Hausregel "kein Delegat, kein Knopf"): Die Huelle
+   vergibt Kennung, Beschriftung, Kurztext und - solange die Vorlage in Word geoeffnet
+   ist - die weiche Sperre samt Grund. Gemeldet werden sie ueber denselben Weg wie das
+   Menue "..." der Gruppe (HandlungKlick der Seite), damit Sperrmeldung, Rueckfrage und
+   das Nachladen des Standes genau einmal beschrieben sind.
+
+   Die Zeilenform ist die der Pruefzeile (epos-vorlage-pruefzeile mit --befund), damit
+   beide untereinander gleich aussehen; epos-vorlage-originalzeile ist der eigene Haken
+   fuer Abstand, Umbruch des Pfades und Proben.
+
+   DER PFAD STEHT IN DER ZEILE: Sie fragt nach einer Datei, die der Anwender nicht sieht,
+   also nennt sie sie. Gekuerzt wird in der HUELLE (Mitte durch "..." ersetzt), den vollen
+   Pfad traegt der title der Zeile. *@
+
+@namespace EPOS.UI.Seiten.Berichte
+
+@if (Zeile is not null)
+{
+    @* Der title traegt denselben Satz mit dem VOLLEN Pfad: In der Zeile steht ein langer Pfad
+       in der Mitte gekuerzt (die Huelle kuerzt). Am Knopf gewinnt dessen eigener title. *@
+    <div class="epos-vorlage-pruefzeile epos-vorlage-pruefzeile--befund epos-vorlage-originalzeile"
+         role="status" title="@(string.IsNullOrWhiteSpace(Zeile.Titel) ? null : Zeile.Titel)">
+        @if (!string.IsNullOrEmpty(Zeile.Symbol))
+        {
+            <span class="epos-vorlage-pruefsymbol" aria-hidden="true">@Zeile.Symbol</span>
+        }
+        <Herleitungszeile Text="@Zeile.Text" />
+        <button type="button" class="epos-knopf epos-vorlage-uebernehmen"
+                aria-disabled="@Gesperrtattribut(Zeile.Uebernehmen)" title="@Titel(Zeile.Uebernehmen)"
+                @onclick="() => Klick(Zeile.Uebernehmen)">@Zeile.Uebernehmen.Text</button>
+        <button type="button" class="epos-knopf epos-vorlage-behalten"
+                aria-disabled="@Gesperrtattribut(Zeile.Behalten)" title="@Titel(Zeile.Behalten)"
+                @onclick="() => Klick(Zeile.Behalten)">@Zeile.Behalten.Text</button>
+    </div>
+}
+
+@code {
+    /// <summary>Der Stand der Zeile aus der Hülle; <c>null</c> = keine Zeile.</summary>
+    [Parameter] public Originalstand? Zeile { get; set; }
+
+    /// <summary>
+    /// Die geklickte Handlung — die Seite führt sie über denselben Weg aus wie einen Eintrag des
+    /// Menüs „…“ (weiche Sperre, Rückfrage, Nachladen des Standes).
+    /// </summary>
+    [Parameter] public EventCallback<Handlung> Gewaehlt { get; set; }
+
+    /// <summary>
+    /// Die Gruppe ist gesperrt (Lauf, laufende Handlung): Beide Knöpfe tragen dann
+    /// <c>aria-disabled</c>; was ein Klick meldet, entscheidet die Seite.
+    /// </summary>
+    [Parameter] public bool Gesperrt { get; set; }
+
+    private string? Gesperrtattribut(Handlung h) => Gesperrt || !h.Aktiv ? "true" : null;
+
+    private string? Titel(Handlung h)
+    {
+        string text = h.Aktiv ? h.Kurztext : h.Grund;
+        return string.IsNullOrWhiteSpace(text) ? null : text;
+    }
+
+    private Task Klick(Handlung h) => Gewaehlt.InvokeAsync(h);
+}

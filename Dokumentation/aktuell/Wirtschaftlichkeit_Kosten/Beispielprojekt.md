@@ -150,8 +150,35 @@ Zinsfuß mit Restwert.
 | Annuität der Differenz | — | 111.592 €/a | 12.266 €/a | 123.858 €/a |
 | Dynamische Amortisation | — | 1,68 a | 8,64 a | 2,64 a |
 | Interner Zinsfuß | — | 61,2 % | 11,5 % | 39,2 % |
-| Wärmegestehungskosten | 27,19 ct/kWh | 21,47 ct/kWh | 26,56 ct/kWh | 20,85 ct/kWh |
+| Wärmegestehungskosten (nur Wärmeerzeugung, Herleitung unten) | 7,56 ct/kWh | 1,85 ct/kWh | 7,56 ct/kWh | 1,85 ct/kWh |
 | Erlöse, Barwert (nominal) | 464.618 (624.592) | 1.025.946 (1.339.380) | 552.977 (740.510) | 1.114.304 (1.455.297) |
+
+**Wärmegestehungskosten** (Konzept § 3.1, → Register EZ‑20, EZ‑21): (−KW_Wärme × a) ÷ (Nutzwärme × 1000) mit dem
+Kapitalwert allein der Wärmeerzeugung; Nutzwärme 1.953,9 MWh/a = 1.953.900 kWh. Bei p = 0 sind die laufenden Beträge
+ihre eigene Annuität; nur Investition, Ersatz, Restwert und die zeitlich begrenzten Erlöse gehen über den Barwert.
+
+| Zähler [€/a] | Stammprojekt = Variante 2 | Variante 1 = Variante 3 |
+|---|---|---|
+| Anlagen: (I₀ + Ersatz − Restwert, Barwert) × a | 0 (Weiterbetrieb) | (234.772,40 + 132.149 − 75.995) × 0,067216 = 19.554,8 |
+| Betriebskosten | 2.400,0 (Kessel) | 57.164,21 + 2.400,00 = 59.564,2 (BHKW, Kessel) |
+| Brennstoff samt Grundpreis | 2.056,7 MWh × 72,00 €/MWh + 180 = 148.262,4 | 4.342,1 MWh × 72,00 €/MWh + 180 = 312.811,2 |
+| Stromgutschrift BHKW-Eigenstrom (Arbeitspreis) | — | − 1.094,2 MWh × 288,00 €/MWh = − 315.129,6 |
+| entgangene § 9b-Entlastung (produzierendes Gewerbe) | — | + 1.094,2 MWh × 20,00 €/MWh = + 21.884,0 |
+| Erlöse der Wärmeerzeuger | − 2.885,7 (§ 54, Kessel) | − 929.837,5 × 0,067216 = − 62.499,7 |
+| **Zähler** | **147.776,7** | **36.184,9** |
+| **÷ 1.953.900 kWh** | **0,0756 €/kWh = 7,56 ct/kWh** | **0,0185 €/kWh = 1,85 ct/kWh** |
+
+Herleitung der Zeilen: Die Photovoltaik zählt nicht — Variante 2 rechnet wie der Stamm, Variante 3 wie Variante 1 (bis
+auf Rundung 36.185,0 €/a). Wärmestrom gibt es nicht (keine Wärmepumpe, kein Heizstab, kein Elektrokessel). Der
+Eigenstrom ist der Anteil des Blockheizkraftwerks an den vermiedenen Bezügen aus der Strommatrix, 1.094,2 MWh/a
+(`Rechenweg/07`; Netzbezug Variante 1 1.429,7 − 1.094,2 = 335,5 MWh) — nicht die 1.155,0 MWh, mit denen § 9 Abs. 1
+Nr. 3 StromStG rechnet. Die Erlöse der Wärmeerzeuger sind der Barwert des Blocks A ohne die § 9b-Entlastung des
+Netzbezugs, die am ganzen Anschluss hängt: Variante 1 1.025.946 − 6.460 × 14,8775 = 929.837,5 € (§ 9b 335,5 × 20 − 250 =
+6.460 €/a); Variante 3 1.114.304 − 113.800 (PV) − 4.750 × 14,8775 = 929.836,0 € — KWK-Einspeisung, KWKG-Zuschlag über die
+Laufzeit des Kontingents, Energiesteuer § 53a. Die Stromsteuer-Befreiung steht im Ausweis (Modus AUSWEIS) und zählt
+ohnehin nicht. CO₂ steckt im Arbeitspreis; eine eigene BEHG-Reihe führt das Beispiel nicht (wie sein Kapitalwert).
+Formel bis 30.09.2026, heute § 3.1: Bis dahin stand der Kapitalwert des ganzen Projekts im Zähler — Haushaltsstrom und
+Photovoltaik eingeschlossen; das ergab 27,19 / 21,47 / 26,56 / 20,85 ct/kWh.
 
 Szenarien (Vorgaben `Tab_ProjektWirtschaftlichkeit`, nichts gepflegt): Ungünstig i 4,0 %, p_E/p_B/p_I
 +1 %/a, Investition +10 %, Erträge −10 %, Nutzungsdauer −2 a · Günstig spiegelbildlich (i 2,0 %,

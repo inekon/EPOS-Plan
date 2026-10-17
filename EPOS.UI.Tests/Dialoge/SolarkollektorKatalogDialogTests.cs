@@ -38,8 +38,7 @@ public class SolarkollektorKatalogDialogTests : EposBunitContext
         K1 = 3.95,
         K2 = 0.0122,
         Kdir = 0.93,
-        Kdiff = 0.9,
-        Kosten = 850
+        Kdiff = 0.9
     };
 
     private IRenderedComponent<SolarkollektorKatalogDialog> Aufbauen(
@@ -80,6 +79,29 @@ public class SolarkollektorKatalogDialogTests : EposBunitContext
         Assert.Equal(new[] { "Überschreiben", "Speichern unter", "Abbrechen", "Speichern" }, knopftexte);
     }
 
+    /// <summary>
+    /// Die Bezugsfläche der Kennwerte (Welle M2, ST6): eine Auswahl Apertur/Brutto, vorbelegt mit
+    /// dem Wert des Satzes; die Wahl schreibt den Persistenzwert in den Arbeitsstand.
+    /// </summary>
+    [Fact]
+    public void Die_Bezugsflaeche_ist_eine_Auswahl_im_Arbeitsstand()
+    {
+        var daten = Voll();
+        var cut = Aufbauen(daten);
+
+        var wahl = cut.FindAll(".epos-gruppenkopf-koerper")[1].QuerySelector("select")!;
+        Assert.Equal("0", wahl.GetAttribute("value"));
+        Assert.Equal("apertur", daten.Bezugsflaeche);
+
+        wahl.Change("1");
+        Assert.Equal("brutto", daten.Bezugsflaeche);
+
+        var brutto = Voll();
+        brutto.Bezugsflaeche = "brutto";
+        var zweiter = Aufbauen(brutto);
+        Assert.Equal("1", zweiter.FindAll(".epos-gruppenkopf-koerper")[1].QuerySelector("select")!.GetAttribute("value"));
+    }
+
     [Fact]
     public void Die_Beschriftungen_kommen_aus_dem_Designer_nicht_aus_der_Karte()
     {
@@ -110,13 +132,13 @@ public class SolarkollektorKatalogDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Der Preis überlebt das „Überschreiben".</b> Der Dialog zeigt ihn nicht mehr —
-    /// geschrieben wird der GELADENE Wert, nicht eine Null. Ohne diesen Durchgriff
-    /// nullte jedes Speichern in dieser Maske die Katalogspalte, die nur noch der
-    /// Aufklapper führt.
+    /// <b>Der Speicherweg trägt keinen Preis</b> (Welle KB-4, Anwenderentscheid 13.10.2026 „eine
+    /// Kostenbasis, keine Doppelhaltung"): Die Spalte ist entfallen, der Feldsatz führt kein
+    /// Kostenfeld mehr — die Gerätekosten pflegt die Kostenverwaltung. Das „Überschreiben"
+    /// reicht die geladenen Gerätewerte unverändert durch.
     /// </summary>
     [Fact]
-    public void Der_ungezeigte_Preis_geht_unveraendert_in_den_Speicherweg()
+    public void Der_Speicherweg_traegt_keinen_Preis()
     {
         SolarkollektorKatalogDaten? gesehen = null;
         var cut = Aufbauen(ueberschreiben: d =>
@@ -128,7 +150,9 @@ public class SolarkollektorKatalogDialogTests : EposBunitContext
         Knopf(cut, "Überschreiben").Click();
 
         Assert.NotNull(gesehen);
-        Assert.Equal(850.0, gesehen!.Kosten);
+        Assert.Equal(0.9, gesehen!.Kdiff);
+        Assert.DoesNotContain(typeof(SolarkollektorKatalogDaten).GetProperties(),
+                              p => p.Name.Contains("Kosten") || p.Name.Contains("Invest"));
     }
 
     [Fact]
@@ -255,11 +279,10 @@ public class SolarkollektorKatalogDialogTests : EposBunitContext
     }
 
     [Fact]
-    public void Die_Investitionskosten_duerfen_leer_bleiben()
+    public void Ohne_Kostenfeld_speichert_die_Karte()
     {
-        // Sie stehen nicht mehr auf der Karte, also kann niemand sie hier nachtragen.
+        // Welle KB-4: Die Karte fuehrt kein Kostenfeld; gespeichert wird trotzdem.
         var daten = Voll();
-        daten.Kosten = null;
 
         bool geschrieben = false;
         var cut = Aufbauen(daten, ueberschreiben: _ =>

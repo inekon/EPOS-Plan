@@ -260,8 +260,8 @@ namespace WindowsFormsApplication1
         /// <para>
         /// <b>Die Transaktionsklammer deckt NICHT den ganzen Ablauf</b>
         /// (<c>KomponentenUebernahmeCtrl.Uebernehmen</c>): Sie fasst Loeschen und Anlegen.
-        /// Die Schritte 8 (<c>SenkenNachziehen</c>) und 9 (<c>VariantenNachziehen</c>)
-        /// laufen ABSICHTLICH danach - sie lesen ihre neuen Anlagen-IDs ueber eine zweite
+        /// Schritt 8 (<c>VariantenAbschliessen</c>, aktive Speichervariante)
+        /// laeuft ABSICHTLICH danach - er liest die neuen Varianten ueber eine zweite
         /// Verbindung, auf der eine noch nicht festgeschriebene Zeile unsichtbar waere.
         /// Ein Teilzustand aus halb uebernommenen Komponenten ist damit MOEGLICH und wird
         /// seit NL-Q2 gemeldet (<c>BK_KOMP_HINW_SENKEN</c>, <c>BK_KOMP_HINW_VARIANTE</c>) -

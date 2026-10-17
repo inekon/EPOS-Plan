@@ -84,8 +84,67 @@ namespace ChartProben
                                               auslegungVorlauf, auslegungRuecklauf,
                                               new ChartRenderer.VorlaufRuecklaufnamen());
 
+        /// <summary>Der Heizsollwert der Probenwoche: 21 °C von 7 bis 21 Uhr, sonst 17 °C.</summary>
+        private static double[] Komfortsollwert()
+        {
+            var w = new double[168];
+            for (int h = 0; h < 168; h++) w[h] = (h % 24) >= 7 && (h % 24) < 22 ? 21.0 : 17.0;
+            return w;
+        }
+
+        /// <summary>Die Raumluft dazu: an den ersten drei Tagen morgens 3 K unter dem Sollwert, sonst 0,3 K darunter.</summary>
+        private static double[] Komfortraumluft()
+        {
+            double[] soll = Komfortsollwert();
+            var w = new double[168];
+            for (int h = 0; h < 168; h++)
+                w[h] = soll[h] - (h < 72 && (h % 24) >= 7 && (h % 24) < 11 ? 3.0 - 0.5 * ((h % 24) - 7) : 0.3);
+            return w;
+        }
+
+        /// <summary>Die gezählten Stunden: Unterschreitung über 1,0 K in der Nutzungszeit.</summary>
+        private static bool[] Komfortmaske()
+        {
+            double[] soll = Komfortsollwert(), luft = Komfortraumluft();
+            var m = new bool[168];
+            for (int h = 0; h < 168; h++) m[h] = soll[h] >= 21.0 && soll[h] - luft[h] > 1.0;
+            return m;
+        }
+
+        private static byte[] Komfortwochenbild(bool mitMaske)
+            => ChartRenderer.Komfortwoche("Raumtemperatur und Sollwert", Komfortraumluft(), Komfortsollwert(),
+                                          mitMaske ? Komfortmaske() : null, new ChartRenderer.Komfortwochennamen());
+
         private static void AnlagenkopplungProben(string ziel)
         {
+            // AK2 (E80): das Bild „Raumtemperatur und Sollwert" - Raumluft, Sollwert, markierte Unterschreitung.
+            Pruefe(ziel, "komfortwoche_gebaeude", 1240, 560,
+                   new[] { Rollenfarbe(Farbrolle.SERIE_1), Rollenfarbe(Farbrolle.SERIE_2), Rollenfarbe(Farbrolle.SERIE_3) },
+                   () => Komfortwochenbild(true));
+
+            // Gegenprobe: Die Markierung muss im Bild stehen.
+            Unterschiedlich("komfortwoche_markierung_wirkt",
+                () => Komfortwochenbild(true),
+                () => Komfortwochenbild(false));
+
+            // SVG: Die Markierung zerfällt in einen Teilpfad je Morgen (drei), kein Pfad trägt "NaN".
+            SvgProbe("svg_komfortwoche_markierung", e =>
+            {
+                Zeichenmodell m = ChartRenderer.KomfortwocheModell("Raumtemperatur und Sollwert", Komfortraumluft(),
+                    Komfortsollwert(), Komfortmaske(), new ChartRenderer.Komfortwochennamen());
+                e.Masse = m.Breite + "x" + m.Hoehe;
+                List<SvgKnoten> pfade = SvgSchreiber.Baum(m).Alle()
+                    .Where(k => k.Name == "path" && Attributwert(k, "class") == SvgSchreiber.KLASSE_REIHE)
+                    .ToList();
+                e.Knoten = pfade.Count.ToString(CultureInfo.InvariantCulture);
+                if (pfade.Count != 3) { e.Maengel.Add("Reihenpfade: " + pfade.Count + " statt 3"); return; }
+                string d = Attributwert(pfade[2], "d") ?? "";
+                if (d.Contains("NaN", StringComparison.Ordinal)) e.Maengel.Add("NaN im Pfad der Markierung");
+                int teile = d.Split('M').Length - 1;
+                if (teile != 3) e.Maengel.Add("Teilpfade der Markierung: " + teile + " statt 3");
+                e.Groesse = d.Length.ToString(CultureInfo.InvariantCulture);
+            });
+
             // Maßprobe: 1240 x 560, die Farben von Vorlauf und Rücklauf, Determinismus.
             Pruefe(ziel, "vorlauf_ruecklauf_gebaeude", 1240, 560,
                    new[] { Rollenfarbe(Farbrolle.SERIE_1), Rollenfarbe(Farbrolle.SERIE_2) },

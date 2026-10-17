@@ -51,7 +51,8 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
 
-            DataTable t = DataRepository.GetDataTable("SELECT * FROM Tab_Gebaeude_STAMM");
+            // Ohne den Referenzkatalogbau von 1051 (KP3, RP1): eine Kopie von Verw_I_40, kein eigener Messpunkt.
+            DataTable t = DataRepository.GetDataTable("SELECT * FROM Tab_Gebaeude_STAMM WHERE 1 = 1" + Konditionierungsbestand.Ausser("Tab_Gebaeude_STAMM"));
             Assert.NotNull(t);
             Assert.True(t.Rows.Count > 0, "Tab_Gebaeude_STAMM ist leer.");
             Assert.True(t.Columns.Contains("Energiestandard"), "Die Testdatenbank trägt die Spalte Energiestandard nicht.");

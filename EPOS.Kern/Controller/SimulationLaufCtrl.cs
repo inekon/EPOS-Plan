@@ -312,9 +312,13 @@ namespace WindowsFormsApplication1
 
             if (dt == null) return befunde;   // stiller Fehler - lieber nichts melden
 
+            bool solarAnlage = false;
+            bool pvAnlage = false;
             foreach (DataRow r in dt.Rows)
             {
                 int idType = StilleDb.Zahl(StilleDb.Feld(r, "ID_Type"), -1);
+                if (idType == WizardItemClass.SOLAR_TYP) solarAnlage = true;
+                if (idType == WizardItemClass.PV_TYP) pvAnlage = true;
 
                 string dbWert = ErzeugerDbWert(idType);
                 if (dbWert == null) continue;                 // Puffer, Referenzanlagen …
@@ -336,6 +340,41 @@ namespace WindowsFormsApplication1
                               : MyResource.Resource.SIM_W_ERZEUGER_OHNE_KASKADENPLATZ,
                         ErzeugerAnzeige(idType), bezeichner)
                 });
+            }
+
+            // Folgeauftrag 4 (ST8 Weg a): Eine vollständige Solarthermieganglinie rechnet
+            // auch ohne Anlagenzeile - aber nur mit einem Kaskadenplatz der Solarthermie.
+            // Führt das Projekt eine Solaranlage, ist die Lücke oben schon gemeldet.
+            if (!solarAnlage && !belegt.Contains(DbWerte.ERZEUGER_SOLARTHERMIE))
+            {
+                SolarganglinieWeiche.Stand g = SolarganglinieWeiche.Lesen(idProjekt);
+                if (g.Vollstaendig)
+                    befunde.Add(new Warnbefund
+                    {
+                        Kriterium = KRIT_ERZEUGER_OHNE_KASKADENPLATZ,
+                        Hart = false,
+                        ID_Anlage = 0,
+                        Steuerwert = DbWerte.ERZEUGER_SOLARTHERMIE,
+                        Text = string.Format(MyResource.Resource.SIM_W_SOLARGANGLINIE_OHNE_KASKADENPLATZ,
+                                             g.Bezeichner)
+                    });
+            }
+
+            // PVG (Schemaschritt 206): Eine vollständige PV-Ganglinie rechnet auch ohne Anlagenzeile - aber nur,
+            // wenn die Photovoltaik auf dem Platz des Stromerzeugers steht. Führt das Projekt eine PV-Anlage, ist
+            // die Lücke oben schon gemeldet.
+            if (!pvAnlage && !belegt.Contains(DbWerte.ERZEUGER_PHOTOVOLTAIK))
+            {
+                PvGanglinieWeiche.Stand g = PvGanglinieWeiche.Lesen(idProjekt);
+                if (g.Vollstaendig)
+                    befunde.Add(new Warnbefund
+                    {
+                        Kriterium = KRIT_ERZEUGER_OHNE_STROMPLATZ,
+                        Hart = false,
+                        ID_Anlage = 0,
+                        Steuerwert = DbWerte.ERZEUGER_PHOTOVOLTAIK,
+                        Text = string.Format(MyResource.Resource.SIM_W_PVGANGLINIE_OHNE_STROMPLATZ, g.Bezeichner)
+                    });
             }
 
             return befunde;

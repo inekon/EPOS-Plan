@@ -1,0 +1,1016 @@
+﻿@* PV-Ganglinien eines Projekts - und der Katalog dieser Ganglinien (PVG, Schemaschritt 206).
+
+   DAS MUSTER IST DER DIALOG "SOLARTHERMIE GANGLINIE": links die Ganglinien des Projekts, rechts
+   der Katalog (Baustein GanglinieKatalogseite mit Raster, Beschreibung, Jahresarbeit und Spitze,
+   Vergleichen, Schloss, Loeschen, Import...), dazwischen die Uebernahmeleiste. Die Knoepfe der
+   Seite stehen in den Slots der Zweispaltenauswahl (Katalogauswahl V1, Stufe 4): links in der
+   Katalog-Fussleiste Vergleichen... (KA-E-19: ab zwei angekreuzten Saetzen im Bereich des gewaehlten
+   Satzes - beim Projektsatz die Projektzeilen mit Raster, Nennleistung, Jahresarbeit, Spitze und
+   Vollbenutzungsstunden), Nennleistung..., Schloss, Loeschen (auf der Auswahl), rechts
+   Import..., der Formathinweis als Infoknopf im Katalogkopf; beide Listen mit Kaestchen und Stift
+   (Ansicht in der Satz-Ueberlagerung). Eine PV-Ganglinie
+   ist die AC-Leistung der Anlage in kW im Raster der Datei (Stunde oder Viertelstunde); ist eine
+   vollstaendige zugeordnet, ersetzt sie die Modulrechnung (Kern: PvGanglinieWeiche).
+
+   KATALOGBETRIEB (Katalogbetrieb="true"): der Menuepunkt "Profile & Lastgaenge -> PV-Ganglinie"
+   oeffnet DENSELBEN Dialog ohne Projekt - nur die Katalogseite, Schluss ueber "Beenden".
+
+   GESCHRIEBEN wird im OK-Weg des Dialogs (Gabe Speichern = PvGanglinieKatalogGaben.Speichern, ueber
+   die Fangstelle Katalogladung: scheitert es, bleibt der Dialog offen); bis dahin arbeiten
+   Aufnehmen und Entfernen an der geteilten Liste. Esc schliesst, aber erst, wenn Rueckfrage und
+   Import zu sind. Enter ist nicht belegt.
+
+   PROJEKTKOPIE UND KATALOG (E113): Weicht die Projektkopie einer Projektzeile vom Katalogsatz
+   gleichen Namens ab, traegt die Zeile das Zeichen und der Detailblock den Satz "weicht vom Katalog
+   ab: ..." samt Knopf "Aus dem Katalog erneuern...". Die Rueckfrage ist eine eigene Ueberlagerung
+   mit OK/Abbrechen; ihr OK schreibt sofort (Kopf und Reihe der Kopie, Zuordnung und ID bleiben). *@
+
+@namespace EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Dialoge.Allgemein
+@using WindowsFormsApplication1
+@using WindowsFormsApplication1.Zeichnung
+@implements IDisposable
+
+<CascadingValue Value="@CsvNaht">
+<div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf">
+        <h1 class="epos-dialog-titel">@TitelText</h1>
+        <InfoKnopf Schluessel="@HilfeSchluessel" />
+        <Schliesskreuz Geschlossen="BeiKreuz" />
+    </div>
+
+    @* KT-6: Wirft das Aufnehmen oder das Speichern beim OK, nennt dieser Banner den Grund
+       (Katalogladung.Schreiben); der Dialog bleibt mit seinen Eingaben offen. *@
+    @if (_schreibFehler.Length > 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@_schreibFehler" />
+    }
+
+    @{
+        // Die Daten des gewaehlten Satzes (DZ1) - im Projektbetrieb die Detailzeile der
+        // Zweispaltenauswahl, im Katalogbetrieb unter der Katalogseite. Die Huelle
+        // .epos-berechnungshilfe steht genau einmal um das Knopfpaar: mit Grafik in der
+        // Kennzahlenzeile, ohne Grafik als eigene Zeile.
+        RenderFragment knoepfe = @<span class="epos-berechnungshilfe">
+            <InfoKnopf Schluessel="Form_PvGanglinie.Grundlagen"
+                       StandardKurztext="@Resource.HILFE_GRUNDLAGEN_KNOPF" MitAssistent="false" />
+            <InfoKnopf Schluessel="Form_PvGanglinie.Berechnung"
+                       StandardKurztext="Berechnungsweg Photovoltaik" MitAssistent="false" />
+        </span>;
+
+        // Der Formathinweis des Imports als Infoknopf im Katalogkopf (keine eigene Zeile, Stufe 4).
+        RenderFragment formathinweis = @<text>
+            @if (Katalogwege.Einlesen is not null || Katalogwege.ImportAbgelehnt.Length > 0)
+            {
+                <span class="epos-ganglinie-formathinweis">
+                    <InfoKnopf Schluessel="@HilfeSchluesselImport" StandardKurztext="@Katalogtexte.ImportHinweis"
+                               MitAssistent="false" />
+                </span>
+            }
+        </text>;
+
+        RenderFragment satzinhalt = @<div class="epos-zweispalten-satzblock">
+        @* Die Weiche in einem Satz: eine zugeordnete Ganglinie ersetzt die Modulrechnung. *@
+        @if (!string.IsNullOrEmpty(HinweisText))
+        {
+            <p class="epos-leisezeile">@HinweisText</p>
+        }
+        @* Projektkopie und Katalog (E113): nur zu einer markierten PROJEKTZEILE, deren Kopie abweicht. Eine neu
+           aufgenommene Zeile hat vor dem OK noch keine Kopie: sie sagt "noch nicht gespeichert", ohne Zeichen und Knopf. *@
+        @if (_projektZeile is not null && IstUngespeichert(_projektZeile))
+        {
+            <p class="epos-leisezeile epos-pvg-ungespeichert" role="status">@UngespeichertText</p>
+        }
+        else if (_projektZeile is not null && ProjektAbweichung.Length > 0)
+        {
+            <p class="epos-leisezeile epos-pvg-abweichungszeile" role="status">⚠ @ProjektAbweichung</p>
+            @if (AusKatalogErneuern is not null)
+            {
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf epos-pvg-erneuernknopf"
+                            @onclick="ErneuernOeffnen">@ErneuernKnopf</button>
+                </div>
+            }
+        }
+        @if (_erneuernStatus.Length > 0)
+        {
+            <p class="epos-leisezeile epos-pvg-erneuernstatus" role="status">@_erneuernStatus</p>
+        }
+
+        @* DIE GANGLINIE DES GEWAEHLTEN SATZES (DZ1, Konzept 4.9): derselbe Baustein und
+           dieselben Kennzahlen wie im Waermebedarf extern; ohne Kennzahlen-Delegat keine Grafik.
+           Mit Grafik steht der Kopf verdichtet (DZ1-N1): Name, Beschreibung und die Kennwerte in EINER
+           Zeile, die Infoknoepfe rechts in der Kennzahlenzeile - die Kurve bekommt den Rest. *@
+        @if (_grafik.Kennzahlen is not null)
+        {
+            <GanglinienGrafik Schluessel="@_grafik.Schluessel" Bezeichner="@_grafik.Bezeichner"
+                              Kennzahlen="@_grafik.Kennzahlen" Bildauftrag="@_grafik.Bild(Bildauftrag)" BildauftragMass="@_grafik.BildMitMass(BildauftragMass)"
+                              Einheit="@Einheit" EinheitGewaehlt="@EinheitGewaehlt"
+                              LabelJahresarbeit="@LabelGrafikJahresarbeit" LabelSpitze="@LabelSpitze"
+                              LabelVollbenutzung="@LabelVollbenutzung"
+                              LabelSortiert="@LabelSortiert" LabelEinheit="@LabelEinheit"
+                              EinheitStunden="@EinheitStunden"
+                              Bildtext="@Bildtext" PlatzhalterBild="@PlatzhalterBild"
+                              FarbeSetzen="@FarbeSetzen" FarbeZuruecksetzen="@FarbeZuruecksetzen"
+                              Knoepfe="@knoepfe">
+                <Kopfzeile>
+                    <Textfeld Bezeichnung="@LabelName" Wert="@_name" NurLesen="true" />
+                    <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
+                              Titel="@_beschreibung" />
+                    <Textfeld Bezeichnung="@LabelRaster" Wert="@_raster" NurLesen="true" Kurz="true" />
+                    <Textfeld Bezeichnung="@LabelJahresarbeit" Wert="@_jahresarbeit" NurLesen="true" Kurz="true" />
+                    <Textfeld Bezeichnung="@LabelNennleistung" Wert="@_nennleistung" NurLesen="true" Kurz="true" />
+                </Kopfzeile>
+            </GanglinienGrafik>
+        }
+        else
+        {
+            @knoepfe
+
+            <Textfeld Bezeichnung="@LabelName" Wert="@_name" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelBeschreibung" Wert="@_beschreibung" NurLesen="true"
+                      Mehrzeilig="true" Zeilen="3" />
+            @* Die Kennwerte der markierten Ganglinie: Raster, Jahresarbeit und die gepflegte Nennleistung
+               (Tab_PvGanglinie_STAMM.Nennleistung_kWp) - ohne sie rechnet der Lauf mit der Spitze der Reihe. *@
+            <Textfeld Bezeichnung="@LabelRaster" Wert="@_raster" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelJahresarbeit" Wert="@_jahresarbeit" NurLesen="true" />
+            <Textfeld Bezeichnung="@LabelNennleistung" Wert="@_nennleistung" NurLesen="true" />
+        }
+        </div>;
+    }
+
+    @* KT-4/KT-6: Wirft das Lesen eines Satzes (Kennzahlen der Ganglinie, Abweichung vom Katalog), nennt dieser
+       Banner den Grund (Katalogladung.Satz/SatzAsync). *@
+    @if (_satzFehler.Length > 0)
+    {
+        <Warnbanner Stufe="@WarnStufe.Warnung" Text="@_satzFehler" />
+    }
+
+    @if (Katalogbetrieb)
+    {
+        <GanglinieKatalogseite @ref="_seite" Wege="@Katalogwege" Profil="@Katalogprofil"
+                               Filterstand="@_filterstand" Filtertexte="@Filtertexte"
+                               Texte="@Katalogtexte" Gewaehlt="@_katalogGewaehlt"
+                               ZeileGewaehlt="BeiKatalogzeile" Listenname="@TitelText"
+                               Formathinweis="@formathinweis" />
+        @satzinhalt
+    }
+    else
+    {
+        @* KATALOGAUSWAHL V1 (Konzept 4.2, 4.4a, 4.5, UeS2): P = Kopfleiste „Im Projekt" (Aus dem Projekt
+           entfernen), K = Kopfleiste des Katalogs mit dem Formathinweis, S = Zeile „gewählter Satz" mit den
+           Knöpfen der Katalogseite und Bearbeiten… (KnopfleisteAmSatz, siehe KatalogFuss), D = Kopf und
+           Fussleiste des Dialogs. Der Stift je Listenzeile ist Bearbeiten… dieser Zeile. Die Kästchen
+           markieren nur für die Sammelaktionen; der Klick auf die Zeile wählt, die gewählte Projektzeile
+           ist farbig hervorgehoben. *@
+        <Zweispaltenauswahl Dialogname="PvGanglinie" LinksTitel="@LabelProjektliste" RechtsTitel="@LabelKatalogliste"
+                            KatalogZeile="@((int)Katalogliste.ZEILENHOEHE_ZEILENWAHL)"
+                            UebernehmenText="@LabelHinzu"
+                            UebernehmenGesperrt="@(KatalogZiele().Count == 0)" Uebernehmen="BeiHinzu"
+                            EntfernenText="@LabelEntfernen"
+                            EntfernenGesperrt="@(ProjektZiele().Count == 0)" Entfernen="BeiEntfernen"
+                            ProjektWahl="@_projektWahl" ProjektSichtbar="@ProjektSchluessel()"
+                            KatalogWahl="@_seite?.Wahl" KatalogSichtbar="@_seite?.Sichtbar"
+                            WahlGeaendert="BeiWahlGeaendert"
+                            KatalogFussName="@_katalogZeile?.Bezeichner"
+                            SatzArt="@SatzArt" SatzName="@SatzName" SatzNurAnsicht="true"
+                            KnopfleisteAmSatz="true"
+                            ProjektGewaehlt="@(_projektZeile is null ? null : Projektschluessel(_projektZeile))"
+                            ProjektGewaehltChanged="BeiProjektTastenwahl"
+                            @ref="_zweispalten">
+
+            <KatalogKopf>@formathinweis</KatalogKopf>
+
+            <Links>
+                @* DIE ZEILE IST DIE WAHL (AW3b, Schema AW1): kein Wahlknopf - ein Klick in die Namenszelle waehlt
+                   die Zeile, ↑ ↓ Pos1 Ende bewegen die Wahl, die Liste ist ein Tabulatorhalt. *@
+                <Raster TZeile="ErzeugerZeile" Zeilen="@Zeilen.AsQueryable()"
+                        Zeilenklasse="@ProjektZeilenklasse" Tastenfuehrung="BeiProjektTaste"
+                        Tastenbeschriftung="@LabelProjektliste">
+                    <KindInhalt>
+                        <TemplateColumn TGridItem="ErzeugerZeile" Class="epos-spalte-kaestchen">
+                            <HeaderTemplate>
+                                <Wahlkaestchen Bereich="Auswahlbereich.Projekt" />
+                            </HeaderTemplate>
+                            <ChildContent>
+                                <Wahlkaestchen Bereich="Auswahlbereich.Projekt" Schluessel="@Projektschluessel(context)"
+                                               Kurztext="@context.Bezeichner" />
+                            </ChildContent>
+                        </TemplateColumn>
+                        <TemplateColumn TGridItem="ErzeugerZeile" Title="@SpalteName" Class="epos-spalte-zeilenzelle">
+                            <span class="epos-zeilenzelle epos-projektzeile" title="@context.Bezeichner"
+                                  aria-current="@(context == _projektZeile ? "true" : null)"
+                                  @onclick="() => ProjektZeileKlick(context)">
+                                @context.Bezeichner
+                                @* E113: Weicht die Projektkopie vom Katalogsatz gleichen Namens ab, traegt die Zeile das Zeichen. *@
+                                @{ string abw = IstUngespeichert(context) ? "" : AbweichungZu(context.Bezeichner); }
+                                @if (abw.Length > 0)
+                                {
+                                    <span class="epos-pvg-abweichung" role="img" title="@abw"
+                                          aria-label="@abw">⚠</span>
+                                }
+                            </span>
+                        </TemplateColumn>
+                        @* UeS2: der Stift je Projektzeile - die Ganglinie der Zeile in der Satz-Ueberlagerung
+                           (reine Ansicht: die Projektkopie hat keinen eigenen Speicherweg). *@
+                        <TemplateColumn TGridItem="ErzeugerZeile" Class="epos-spalte-stift">
+                            <HeaderTemplate>
+                                <Zeilenstift Kopf="true" />
+                            </HeaderTemplate>
+                            <ChildContent>
+                                <Zeilenstift Hinweis="@Resource.AUSWAHL_SATZ_ANSEHEN_HINWEIS"
+                                             Geklickt="@(() => BeiProjektStift(context))" />
+                            </ChildContent>
+                        </TemplateColumn>
+                    </KindInhalt>
+                </Raster>
+            </Links>
+
+            <Rechts>
+                @* DIE EINE KATALOGLISTE samt Katalogpflege: Suchzeile, Filter im
+                   Spaltenkopf, Beschreibung, Jahresarbeit und Spitze; das PROFIL
+                   traegt die Spalte "im Projekt verwendet". *@
+                <GanglinieKatalogseite @ref="_seite" Wege="@Katalogwege" Profil="@Katalogprofil"
+                                       Filterstand="@_filterstand" Filtertexte="@Filtertexte"
+                                       Texte="@Katalogtexte" Gewaehlt="@_katalogGewaehlt"
+                                       ZeileGewaehlt="BeiKatalogzeile"
+                                       ImProjekt="@ProjektBezeichner" Listenname="@TitelText"
+                                       FussImWirt="true" Sperrgrund="@(() => KatalogSperrgrund)" ZustandGeaendert="Nachgezogen"
+                                       Projektvergleichszahl="@ProjektVergleichszahl" Projektvergleichswerte="@ProjektVergleichswerte"
+                                       Stift="BeiKatalogStift" Formathinweis="@formathinweis"
+                                       Geaendert="BeiKatalogGeaendert" />
+            </Rechts>
+
+            @* DIE KNOPFLEISTE AM GEWAEHLTEN SATZ (AW3b): die Knoepfe der Katalogseite (Vergleichen… vorn - KA-E-19,
+               beim Projektsatz auf den angekreuzten Projektzeilen -, Nennleistung…, Schloss…, Loeschen; beim
+               Projektsatz weich gesperrt) und Bearbeiten… - dasselbe wie der
+               Stift der Zeile: die Ganglinie als Ansicht (kein Katalogeditor, kein Neu…). *@
+            <KatalogFuss>
+                @_seite?.Fuss
+                <button type="button" class="epos-knopf @(SatzArt == Satzmarke.Projektsatz ? "epos-knopf--bearbeiten-projekt" : "epos-knopf--bearbeiten-katalog")"
+                        title="@Resource.AUSWAHL_SATZ_ANSEHEN_HINWEIS"
+                        disabled="@(SatzArt == Satzmarke.Keiner)" @onclick="BeiSatzBearbeiten">@Resource.AUSWAHL_BTN_BEARBEITEN</button>
+            </KatalogFuss>
+            <KatalogFussRechts>@_seite?.FussRechts</KatalogFussRechts>
+
+            <Satz>@satzinhalt</Satz>
+
+        </Zweispaltenauswahl>
+    }
+
+    @* DIE RUECKFRAGE als kurze Ueberlagerung: OK erneuert sofort die Projektkopie, Abbrechen, Kreuz und
+       Esc verwerfen; scheitert es, bleibt sie mit dem Grund offen. *@
+    <Ueberlagerung Offen="@_erneuernOffen" Titel="@ErneuernTitel" Geschlossen="ErneuernSchliessen">
+        <KindInhalt>
+            @if (_erneuernOffen)
+            {
+                <div class="epos-pvg-erneuern">
+                    @if (_erneuernFehler.Length > 0)
+                    {
+                        <Warnbanner Stufe="@WarnStufe.Warnung" Text="@_erneuernFehler" />
+                    }
+                    <p>@string.Format(System.Globalization.CultureInfo.CurrentCulture, ErneuernFrage, _erneuernZiel)</p>
+                    <p class="epos-leisezeile">⚠ @_erneuernAbweichung</p>
+                    <p class="epos-leisezeile">@ErneuernSimulation</p>
+                    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText"
+                                     Ergebnis="BeiErneuernErgebnis" />
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @if (Katalogbetrieb)
+    {
+        <div class="epos-leiste">
+            <span class="epos-leiste-fueller"></span>
+            <button type="button" class="epos-knopf epos-knopf--primaer"
+                    @onclick="() => Geschlossen.InvokeAsync(true)">@BeendenText</button>
+        </div>
+    }
+    else
+    {
+        <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+    }
+</div>
+</CascadingValue>
+
+@code {
+    /// <summary>
+    /// Die Ganglinien des Projekts. <c>Schluessel</c> ist die Zuordnungs-Id
+    /// (<c>Z_ProjektPvGanglinie.ID</c>), <c>GeraetId</c> die Ganglinien-Id
+    /// (<c>Tab_PvGanglinie_STAMM.ID</c> bzw. <c>Tab_PvGanglinie.ID</c>). Die Liste gehört der Hülle und wird an Ort und
+    /// Stelle bearbeitet.
+    /// </summary>
+    [Parameter] public List<ErzeugerZeile> Zeilen { get; set; } = new();
+
+    /// <summary>
+    /// <b>Ohne Projekt</b> — der Weg des Administrationsmenüs: nur die Katalogseite, kein
+    /// Übernehmen, Schluss über „Beenden".
+    /// </summary>
+    [Parameter] public bool Katalogbetrieb { get; set; }
+
+    /// <summary>
+    /// Die Wege der Katalogseite: Katalog samt Kennzahlen, Verwendung, Löschen, Schloss,
+    /// Import (Hülle <c>PvGanglinieKatalogGaben</c>).
+    /// </summary>
+    [Parameter] public GanglinienKatalogwege Katalogwege { get; set; } = new();
+
+    /// <summary>
+    /// „CSV…“ am Bild: der Weg der Hülle (Modell, Bildtitel, Raster); jedes Zeitreihenbild des Dialogs —
+    /// die Grafik der Satzansicht und das Bild im Optionendialog des Imports — trägt damit den Knopf.
+    /// </summary>
+    [Parameter] public System.Func<WindowsFormsApplication1.Zeichnung.Zeichenmodell, string, WindowsFormsApplication1.Zeitraster, System.Threading.Tasks.Task>? CsvSpeichern { get; set; }
+
+    private Ganglinienexport? _csvNaht;
+
+    /// <summary>Die Export-Kaskade; ohne <see cref="CsvSpeichern"/> keine.</summary>
+    private Ganglinienexport? CsvNaht => CsvSpeichern is null ? null
+        : _csvNaht ??= new Ganglinienexport(CsvSpeichern);
+
+    /// <summary>Die Beschriftungen der Katalogseite.</summary>
+    [Parameter] public GanglinienKatalogtexte Katalogtexte { get; set; } = new();
+
+    /// <summary>
+    /// Die Spalten des Katalogs —
+    /// <c>Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.PvGanglinie, …)</c>, im
+    /// Projektbetrieb mit der Spalte „im Projekt verwendet".
+    /// </summary>
+    [Parameter] public Katalogfilterprofil? Katalogprofil { get; set; }
+
+    /// <summary>Die Beschriftungen der Katalogliste — sie füllen sich selbst aus <c>MyResource</c>.</summary>
+    [Parameter] public Katalogfiltertexte Filtertexte { get; set; } = new();
+
+    /// <summary>Ein eigener Filterstand statt des Registers (Muster der Katalogdialoge).</summary>
+    [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
+
+    /// <summary>Nimmt die Ganglinie in das Projekt auf („◀").</summary>
+    [Parameter] public Func<int, ErzeugerZeile?>? Aufnehmen { get; set; }
+
+    /// <summary>Entfernt die Zeile aus der geteilten Liste („▶").</summary>
+    [Parameter] public Action<ErzeugerZeile>? Entfernen { get; set; }
+
+    /// <summary><c>true</c> = OK bzw. Beenden, <c>false</c> = Abbrechen.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>
+    /// <b>Der OK-Weg</b>: schreibt die Zuordnungen des Projekts (Hülle <c>PvGanglinieKatalogGaben.Speichern</c>).
+    /// Scheitert er oder wirft er, bleibt der Dialog mit dem Grund offen; ohne Weg schließt OK nur.
+    /// </summary>
+    [Parameter] public Func<bool>? Speichern { get; set; }
+
+    /// <summary>Der Grund, wenn <see cref="Speichern"/> ohne Ausnahme ablehnt — <c>PVG_MSG_SCHREIBFEHLER</c>.</summary>
+    [Parameter] public string SchreibfehlerText { get; set; } = Resource.PVG_MSG_SCHREIBFEHLER;
+
+    // --- Texte -----------------------------------------------------------------
+
+    [Parameter] public string TitelText { get; set; } = "Photovoltaik Ganglinie";
+    [Parameter] public string LabelProjektliste { get; set; } = "Ausgewählt im Projekt";
+    [Parameter] public string LabelKatalogliste { get; set; } = "PV-Ganglinie aus DB";
+    [Parameter] public string SpalteWahl { get; set; } = "Wahl";
+    [Parameter] public string SpalteName { get; set; } = "Name";
+    [Parameter] public string LabelHinzu { get; set; } = "In das Projekt übernehmen";
+    [Parameter] public string LabelEntfernen { get; set; } = "Aus dem Projekt entfernen";
+    [Parameter] public string LabelName { get; set; } = "Name:";
+    [Parameter] public string LabelBeschreibung { get; set; } = "Beschreibung:";
+    [Parameter] public string LabelRaster { get; set; } = Resource.PVG_LBL_RASTER;
+    [Parameter] public string LabelJahresarbeit { get; set; } = Resource.PVG_LBL_JAHRESARBEIT;
+    [Parameter] public string LabelNennleistung { get; set; } = Resource.PVG_LBL_NENNLEISTUNG;
+    [Parameter] public string OkText { get; set; } = "OK";
+    [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
+
+    /// <summary>Der Schlussknopf im Katalogbetrieb — <c>ADM_BTN_BEENDEN</c>.</summary>
+    [Parameter] public string BeendenText { get; set; } = Resource.ADM_BTN_BEENDEN;
+
+    /// <summary>Schlüssel des Hilfeknopfes — die Zeile in help_mapping.txt.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_PvGanglinie.btn_Help";
+
+    /// <summary>Schlüssel des Infoknopfs am Formathinweis des Imports (Katalogkopf).</summary>
+    [Parameter] public string HilfeSchluesselImport { get; set; } = "Form_PvGanglinie.btn_Help_Import";
+
+    /// <summary>Der Satz zur Weiche unter den Listen — <c>PVG_HINWEIS_WEICHE</c>; leer = keiner.</summary>
+    [Parameter] public string HinweisText { get; set; } = "";
+
+    /// <summary>
+    /// <b>Worin die Projektkopie eines Namens vom Katalogsatz abweicht</b> (E113) — der fertige Satz
+    /// „weicht vom Katalog ab: …", leer bei Gleichheit oder ohne Projektkopie. Ohne Weg kein Zeichen.
+    /// </summary>
+    [Parameter] public Func<string, string>? KatalogAbweichung { get; set; }
+
+    /// <summary>
+    /// <b>Ist die Projektzeile noch nicht gespeichert?</b> Die Hülle entscheidet am Zeilenzustand (Zuordnung neu
+    /// aufgenommen, noch ohne OK — also noch ohne Projektkopie). Ohne Weg gilt jede in dieser Sitzung über „◀"
+    /// aufgenommene Zeile als ungespeichert.
+    /// </summary>
+    [Parameter] public Func<ErzeugerZeile, bool>? Ungespeichert { get; set; }
+
+    /// <summary>Der Satz zu einer ungespeicherten Projektzeile — <c>PVG_ABW_UNGESPEICHERT</c>.</summary>
+    [Parameter] public string UngespeichertText { get; set; } = Resource.PVG_ABW_UNGESPEICHERT;
+
+    /// <summary>
+    /// <b>Erneuert die Projektkopie eines Namens aus dem Katalog</b> (E113): Kopf und Reihe, Zuordnung und ID
+    /// bleiben. Ohne Weg kein Knopf.
+    /// </summary>
+    [Parameter] public Func<string, Task<PvGanglinieErneuerung>>? AusKatalogErneuern { get; set; }
+
+    /// <summary>Der Knopf — <c>PVG_BTN_ERNEUERN</c>.</summary>
+    [Parameter] public string ErneuernKnopf { get; set; } = Resource.PVG_BTN_ERNEUERN;
+
+    /// <summary>Der Titel der Rückfrage — <c>PVG_TITEL_ERNEUERN</c>.</summary>
+    [Parameter] public string ErneuernTitel { get; set; } = Resource.PVG_TITEL_ERNEUERN;
+
+    /// <summary>Die Rückfrage, <c>{0}</c> = Name — <c>PVG_ERNEUERN_FRAGE</c>.</summary>
+    [Parameter] public string ErneuernFrage { get; set; } = Resource.PVG_ERNEUERN_FRAGE;
+
+    /// <summary>Der Hinweis zur Simulation — <c>PVG_ERNEUERN_SIMULATION</c>.</summary>
+    [Parameter] public string ErneuernSimulation { get; set; } = Resource.PVG_ERNEUERN_SIMULATION;
+
+    // --- Die Ganglinie in der Detailzeile (DZ1) --------------------------------
+
+    /// <summary>
+    /// Die drei Kennzahlen der gewählten Ganglinie — <c>GanglinienAuswertungCtrl</c> mit
+    /// <c>GanglinienQuelle.PvGanglinie</c>; <c>null</c> = keine Grafik.
+    /// </summary>
+    [Parameter] public Func<GanglinienWahl, Task<GanglinienKennzahlen?>>? Kennzahlen { get; set; }
+
+    /// <summary>Das Zeichenmodell der gewählten Ganglinie (Wahl, sortiert); gerechnet im Kern.</summary>
+    [Parameter] public Func<GanglinienWahl, bool, Zeichenmodell?>? Bildauftrag { get; set; }
+
+    /// <summary>
+    /// Das Zeichenmodell in Behältergröße (DZ1‑N2): Wahl, Schalterstellung, Breite und Höhe der
+    /// Zeichenfläche in px. Es geht dem <see cref="Bildauftrag"/> vor — die Kurve nimmt die volle
+    /// Breite der Satzfläche.
+    /// </summary>
+    [Parameter] public Func<GanglinienWahl, bool, int, int, Zeichenmodell?>? BildauftragMass { get; set; }
+
+    [Parameter] public Func<Farbrolle, Farbe, Task>? FarbeSetzen { get; set; }
+    [Parameter] public Func<Farbrolle, Task>? FarbeZuruecksetzen { get; set; }
+    [Parameter] public Energieeinheit Einheit { get; set; } = Energieeinheit.MWh;
+    [Parameter] public Action<Energieeinheit>? EinheitGewaehlt { get; set; }
+
+    [Parameter] public string LabelGrafikJahresarbeit { get; set; } = Resource.STROMGL_LBL_JAHRESARBEIT;
+    [Parameter] public string LabelSpitze { get; set; } = Resource.STROMGL_LBL_SPITZE;
+    [Parameter] public string LabelVollbenutzung { get; set; } = Resource.GEBB_LBL_VOLLBENUTZUNG;
+    [Parameter] public string LabelSortiert { get; set; } = Resource.SIM_CHK_SORTIERT;
+    [Parameter] public string LabelEinheit { get; set; } = Resource.ALLG_LBL_EINHEIT;
+    [Parameter] public string EinheitStunden { get; set; } = Resource.GEBB_EINHEIT_STUNDEN;
+    [Parameter] public string Bildtext { get; set; } = Resource.CHART_TITEL_PVERTRAG_JAHRESGANGLINIE;
+    [Parameter] public string PlatzhalterBild { get; set; } = Resource.GANGLINIE_KEIN_DIAGRAMM;
+
+    /// <summary>Die Ganglinie der Detailzeile (DZ1).</summary>
+    private readonly GanglinienGrafikstand _grafik = new();
+
+    /// <summary>Die Kennzahlen der Grafik; <c>null</c> = keine Grafik. Prüfhilfe.</summary>
+    public GanglinienKennzahlen? Grafikkennzahlen => _grafik.Kennzahlen;
+
+    /// <summary>Die Wahl, zu der die Grafik gehört. Prüfhilfe für die Tests.</summary>
+    public GanglinienWahl? Grafikwahl => _grafik.Wahl;
+
+    /// <summary>Was die Detailzeile zeigt: die Projektzeile, den Katalogsatz oder keinen.</summary>
+    private Satzmarke SatzArt => _projektZeile is not null ? Satzmarke.Projektsatz
+                               : _katalogZeile is not null ? Satzmarke.Katalogsatz : Satzmarke.Keiner;
+
+    /// <summary>Name des gewählten Satzes in der zugeklappten Detailzeile.</summary>
+    private string? SatzName => SatzArt == Satzmarke.Keiner ? null : _name;
+
+    private void GrafikAnstossen(GanglinienWahl wahl) => _ = GrafikLaden(wahl);
+
+    private async Task GrafikLaden(GanglinienWahl wahl)
+    {
+        // KT-6: Die Kennzahlen des Satzes über die Fangstelle — wirft der Weg, bleibt die Grafik leer und der
+        // Grund steht im Banner.
+        Func<GanglinienWahl, Task<GanglinienKennzahlen?>>? kennzahlen = Kennzahlen;
+        string grund = "";
+        await _grafik.LadenAsync(wahl, kennzahlen is null ? null : async w =>
+        {
+            (GanglinienKennzahlen? k, string f) = await Katalogladung.SatzAsync(() => kennzahlen(w), w.Bezeichner);
+            grund = f;
+            return k;
+        });
+        if (ReferenceEquals(_grafik.Wahl, wahl)) _satzFehler = grund;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>Der Grund, wenn ein Satz nicht gelesen werden konnte (Prüfhilfe); leer = gelesen.</summary>
+    public string SatzFehler => _satzFehler;
+
+    /// <summary>Der Grund, wenn Aufnehmen oder Speichern scheiterte (Prüfhilfe); leer = keiner.</summary>
+    public string SchreibFehler => _schreibFehler;
+
+    /// <summary>Die Rückmeldung der Rückfrage „Aus dem Katalog erneuern" (Prüfhilfe); leer = keine.</summary>
+    public string ErneuernFehler => _erneuernFehler;
+
+    private string _schreibFehler = "";
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private GanglinieKatalogseite? _seite;
+    private Zweispaltenauswahl? _zweispalten;
+    private readonly Bereichswahl _projektWahl = new();
+    private string _satzFehler = "";
+
+    /// <summary>Die Mehrfachwahl der Projektliste (Prüfhilfe).</summary>
+    public Bereichswahl ProjektWahl => _projektWahl;
+
+    private static string Projektschluessel(ErzeugerZeile z) => z.Schluessel.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    private IReadOnlyList<string> ProjektSchluessel() => Zeilen.Select(Projektschluessel).ToList();
+
+    /// <summary>Die Ziele einer Projektaktion: die angekreuzten Zeilen, sonst die zuletzt gewählte.</summary>
+    private List<ErzeugerZeile> ProjektZiele()
+    {
+        if (_projektWahl.Anzahl > 0)
+            return _projektWahl.Gewaehlte
+                .Select(s => Zeilen.FirstOrDefault(z => Projektschluessel(z) == s))
+                .OfType<ErzeugerZeile>().ToList();
+        return _projektZeile is null ? new() : new() { _projektZeile };
+    }
+
+    /// <summary>Die Ziele einer Katalogaktion: die angekreuzten Sätze, sonst der gewählte.</summary>
+    private IReadOnlyList<Katalogfilterzeile> KatalogZiele()
+        => _seite?.Ziele() ?? (_katalogZeile is null ? Array.Empty<Katalogfilterzeile>() : new[] { _katalogZeile });
+
+    /// <summary>
+    /// Klick in eine Projektzeile (AW3b, wie Heizkessel): Die Zeile wird der gewählte Satz, die Detailzeile folgt;
+    /// die Kästchen der Mehrfachwahl bleiben unberührt — wie in der Katalogliste.
+    /// </summary>
+    private void ProjektZeileKlick(ErzeugerZeile zeile)
+    {
+        if (_projektZeile != zeile) ProjektZeileWaehlen(zeile);
+    }
+
+    /// <summary>Die Hervorhebung der gewählten Projektzeile — dieselbe Klasse wie in der Katalogliste.</summary>
+    private string? ProjektZeilenklasse(ErzeugerZeile zeile) => zeile == _projektZeile ? "epos-zeile--gewaehlt" : null;
+
+    /// <summary>↑ ↓ Pos1 Ende in der Projektliste: die Regel rechnet der Baustein.</summary>
+    private Task BeiProjektTaste(KeyboardEventArgs e)
+        => _zweispalten is null ? Task.CompletedTask : _zweispalten.ProjektTasteAsync(e.Key);
+
+    /// <summary>Die Tastenführung hat eine andere Projektzeile gewählt.</summary>
+    private void BeiProjektTastenwahl(string schluessel)
+    {
+        ErzeugerZeile? zeile = Zeilen.FirstOrDefault(z => Projektschluessel(z) == schluessel);
+        if (zeile is not null) ProjektZeileKlick(zeile);
+    }
+
+    /// <summary>
+    /// Der Grund der weichen Sperre von Schloss… und Löschen der Katalogseite (AW3b): Sie wirken nur auf
+    /// Katalogsätze; steht ein Projektsatz, nennen sie „Katalogsatz wählen".
+    /// </summary>
+    private string? KatalogSperrgrund => SatzArt == Satzmarke.Projektsatz ? Resource.AUSWAHL_SPERRE_KATALOGSATZ : null;
+
+    /// <summary>
+    /// „Bearbeiten…" am gewählten Satz (AW3b): dasselbe wie der Stift der Zeile — die Ganglinie als Ansicht in der
+    /// Satz-Überlagerung (einen Katalogeditor und einen Speicherweg der Projektkopie gibt es hier nicht).
+    /// </summary>
+    private Task BeiSatzBearbeiten()
+        => _projektZeile is not null ? BeiProjektStift(_projektZeile)
+         : _katalogZeile is not null ? BeiKatalogStift(_katalogZeile)
+         : Task.CompletedTask;
+
+    /// <summary>
+    /// Ein Kästchen hat geschaltet: Der Wirt zeichnet neu, die Sperren seiner Bereichsknöpfe folgen der Wahl. Die
+    /// gewählte Zeile bleibt — Ankreuzen wählt nicht (KA‑E‑17), die Zeile wählt allein der Klick in die Zeile.
+    /// </summary>
+    private void BeiWahlGeaendert(Auswahlbereich bereich) { }
+
+    /// <summary>Die Katalogseite hat ihre Fragmente geändert: der Wirt zeichnet die Slots nach.</summary>
+    private void Nachgezogen() { }
+
+    /// <summary>UeS2: der Stift einer Projektzeile — ihre Ganglinie in der Satz-Überlagerung.</summary>
+    private async Task BeiProjektStift(ErzeugerZeile zeile)
+    {
+        if (_projektZeile != zeile) ProjektZeileKlick(zeile);
+        if (_zweispalten is not null) await _zweispalten.SatzUeberlagerungOeffnen();
+    }
+
+    /// <summary>
+    /// UeS2: der Stift einer Katalogzeile (die Seite hat sie schon gewählt) — gesperrt oder nicht, die
+    /// Ganglinie öffnet als Ansicht in der Satz-Überlagerung; einen Katalogeditor gibt es nicht.
+    /// </summary>
+    private async Task BeiKatalogStift(Katalogfilterzeile zeile)
+    {
+        if (_katalogZeile?.Bezeichner != zeile.Bezeichner) Katalogzeile_(zeile);
+        if (_zweispalten is not null) await _zweispalten.SatzUeberlagerungOeffnen();
+    }
+
+    private ErzeugerZeile? _projektZeile;
+    private Katalogfilterzeile? _katalogZeile;
+    private Katalogfilterstand _filterstand = new();
+
+    /// <summary>Der Bezeichner der gewählten Katalogzeile — die Markierung hängt am NAMEN.</summary>
+    private string _katalogGewaehlt = "";
+    private string _name = "";
+    private string _beschreibung = "";
+    private string _raster = "";
+    private string _jahresarbeit = "";
+
+    /// <summary>Die Jahresarbeit für den Assistenten — genau (eine Nachkommastelle), die Anzeige rundet (BP-3).</summary>
+    private string _jahresarbeitGenau = "";
+    private string _nennleistung = "";
+
+    /// <summary>Die gewählte Projektzeile — Prüfhilfe für die Tests.</summary>
+    public ErzeugerZeile? Projektzeile => _projektZeile;
+
+    /// <summary>Die gewählte Katalogzeile — Prüfhilfe für die Tests.</summary>
+    public Katalogfilterzeile? Katalogzeile => _katalogZeile;
+
+    /// <summary>Die Zeilen des Katalogs — Prüfhilfe für die Tests.</summary>
+    public IReadOnlyList<Katalogfilterzeile> Katalog => _seite?.Katalog ?? Array.Empty<Katalogfilterzeile>();
+
+    /// <summary>Der Filterstand der Katalogliste — Prüfhilfe für die Tests.</summary>
+    public Katalogfilterstand Filterstand => _filterstand;
+
+    /// <summary>Die Katalogseite — Prüfhilfe für die Tests.</summary>
+    public GanglinieKatalogseite? Katalogseite => _seite;
+
+    private IEnumerable<string> ProjektBezeichner() => Zeilen.Select(z => z.Bezeichner);
+
+    // =================================================================================
+    // Projektkopie und Katalog (E113)
+    // =================================================================================
+
+    /// <summary>
+    /// Die Abweichung je Name, einmal gefragt (die Hülle fragt die Datenbank) und erst nach einer Katalogänderung
+    /// oder einer Erneuerung neu.
+    /// </summary>
+    private readonly Dictionary<string, string> _abweichung = new(StringComparer.Ordinal);
+
+    private bool _erneuernOffen;
+    private string _erneuernZiel = "";
+    private string _erneuernAbweichung = "";
+    private string _erneuernFehler = "";
+    private string _erneuernStatus = "";
+
+    /// <summary>Steht die Rückfrage „Aus dem Katalog erneuern"? (Prüfhilfe.)</summary>
+    public bool ErneuernOffen => _erneuernOffen;
+
+    /// <summary>Die Abweichung der markierten Projektzeile; leer ohne und bei einer ungespeicherten Zeile. (Prüfhilfe.)</summary>
+    public string ProjektAbweichung => _projektZeile is null || IstUngespeichert(_projektZeile)
+        ? "" : AbweichungZu(_projektZeile.Bezeichner);
+
+    /// <summary>
+    /// Der Stand der markierten Projektzeile gegen den Katalog für die KI-Sicht: „noch nicht gespeichert" bei einer
+    /// ungespeicherten Zeile, sonst die Abweichung (leer bei Gleichheit).
+    /// </summary>
+    public string ProjektKatalogzustand => _projektZeile is not null && IstUngespeichert(_projektZeile)
+        ? UngespeichertText : ProjektAbweichung;
+
+    /// <summary>Die in dieser Sitzung aufgenommenen Zeilen — Rückfall, wenn die Hülle keinen Weg <see cref="Ungespeichert"/> gibt.</summary>
+    private readonly HashSet<ErzeugerZeile> _neuAufgenommen = new(ReferenceEqualityComparer.Instance);
+
+    private bool IstUngespeichert(ErzeugerZeile zeile)
+        => Ungespeichert is not null ? Ungespeichert(zeile) : _neuAufgenommen.Contains(zeile);
+
+    private string AbweichungZu(string bezeichner)
+    {
+        if (KatalogAbweichung is null || string.IsNullOrEmpty(bezeichner)) return "";
+        if (!_abweichung.TryGetValue(bezeichner, out string? text))
+        {
+            // KT-6: Wirft die Frage (sie liest Projektkopie und Katalogsatz), gilt der Name als ohne Abweichung,
+            // der Grund steht im Banner — einmal, nicht je Zeichenlauf.
+            Func<string, string> abweichung = KatalogAbweichung;
+            text = Katalogladung.Satz(() => abweichung(bezeichner), bezeichner, out string grund) ?? "";
+            _abweichung[bezeichner] = text;
+            if (grund.Length > 0)
+            {
+                _satzFehler = grund;
+                _ = InvokeAsync(StateHasChanged);
+            }
+        }
+        return text;
+    }
+
+    /// <summary>Der Katalog hat sich geändert (Nennleistung, Import, Löschen): die Abweichungen neu fragen.</summary>
+    private void BeiKatalogGeaendert() => _abweichung.Clear();
+
+    private void ErneuernOeffnen()
+    {
+        if (_projektZeile is null || AusKatalogErneuern is null) return;
+        _erneuernZiel = _projektZeile.Bezeichner;
+        _erneuernAbweichung = ProjektAbweichung;
+        _erneuernFehler = "";
+        _erneuernStatus = "";
+        _erneuernOffen = true;
+    }
+
+    private void ErneuernSchliessen()
+    {
+        _erneuernOffen = false;
+        _erneuernFehler = "";
+    }
+
+    /// <summary>
+    /// OK erneuert — scheitert es, bleibt die Rückfrage mit dem Grund offen; sonst fragt der Dialog die Abweichung
+    /// neu und nennt das Ergebnis samt Hinweis auf die nächste Simulation.
+    /// </summary>
+    private async Task BeiErneuernErgebnis(bool ok)
+    {
+        if (!ok || AusKatalogErneuern is null) { ErneuernSchliessen(); return; }
+        // KT-6: Wirft das Erneuern, bleibt die Rückfrage mit dem Grund offen; die Projektkopie bleibt, wie sie war.
+        Func<string, Task<PvGanglinieErneuerung>> erneuern = AusKatalogErneuern;
+        string ziel = _erneuernZiel;
+        PvGanglinieErneuerung erg = await Katalogladung.SchreibenAsync(
+            () => erneuern(ziel), ziel, g => new PvGanglinieErneuerung(false, g));
+        if (!erg.Erfolgreich)
+        {
+            _erneuernFehler = erg.Meldung;
+            return;
+        }
+        _abweichung.Remove(_erneuernZiel);
+        ErneuernSchliessen();
+        _erneuernStatus = erg.Meldung;
+    }
+
+    protected override void OnParametersSet()
+    {
+        // Der Kopf der WAHLSPALTE kommt weiter ueber den eigenen Text des Wirtes.
+        Filtertexte.SpalteWahl = SpalteWahl;
+    }
+
+    protected override void OnInitialized()
+    {
+        // Der Filterstand je Katalog, fuer die Sitzung (Frage Q2).
+        _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(
+            Katalogprofil?.Schluessel ?? ("ZEITREIHE_" + Zeitreihenart.PvGanglinie));
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.PV_GANGLINIE, () => KiSicht(), KiHaken());
+    }
+
+    // =================================================================================
+    // Der Hilfe-Assistent liest die markierte Ganglinie (Muster Solarganglinie)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private PvGanglinieKiSicht? _kiSicht;
+
+    /// <summary>Die Sicht des Assistenten: die Katalogwahl und der Detailblock, der ihr folgt.</summary>
+    private PvGanglinieKiSicht KiSicht()
+    {
+        return _kiSicht ??= new PvGanglinieKiSicht
+        {
+            KatalogLesen = () => _katalogGewaehlt,
+            KatalogSetzen = KatalogZeileWaehlen,
+            KatalogEintraege = () => KiMaskenanmeldung.Eintraege(
+                Katalog, z => z.Bezeichner, z => z.Bezeichner),
+
+            ProjektganglinieLesen = () => _projektZeile?.Bezeichner ?? "",
+            QuelleLesen = () => _beschreibung,
+            AufloesungLesen = () => _raster,
+            JahressummeLesen = () => _jahresarbeitGenau,
+            NennleistungLesen = () => _nennleistung,
+            ImProjektLesen = () => _name.Length > 0
+                && Zeilen.Any(z => string.Equals(z.Bezeichner, _name, StringComparison.Ordinal)),
+            KatalogAbweichungLesen = () => ProjektKatalogzustand,
+            ImportzustandLesen = Importzustand,
+            KatalogbetriebLesen = () => Katalogbetrieb
+        };
+    }
+
+    /// <summary>
+    /// Der Stand des Imports in einem Satz: offen (samt Meldung), das Ergebnis des letzten Imports samt
+    /// Protokoll, sonst „kein Import".
+    /// </summary>
+    private string Importzustand()
+    {
+        if (_seite is null) return "";
+        if (_seite.ImportOffen)
+            return _seite.Importmeldung.Length > 0
+                ? Resource.KI_DLG_PVG_IMPORT_OFFEN + ": " + _seite.Importmeldung
+                : Resource.KI_DLG_PVG_IMPORT_OFFEN;
+        if (_seite.Status.Length > 0)
+            return _seite.Protokoll.Length > 0 ? _seite.Status + " " + _seite.Protokoll : _seite.Status;
+        return Resource.KI_DLG_PVG_IMPORT_KEIN;
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf: nur auffrischen. Kein Speicherweg — die
+    /// Zuordnungsliste gehört dem Wirt und geht erst mit dem OK an ihn; Import, Löschen und Schloss bleiben
+    /// Handlungen des Anwenders.
+    /// </summary>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync(preventScroll: true);
+    }
+
+    /// <summary>
+    /// Die Wahl zeigt Name UND Beschreibung — auch für eine Projektzeile (aus dem Katalog).
+    /// </summary>
+    private void ProjektZeileWaehlen(ErzeugerZeile zeile)
+    {
+        _projektZeile = zeile;
+        _erneuernStatus = "";
+        _katalogZeile = null;
+        _katalogGewaehlt = "";
+        _name = zeile.Bezeichner;
+        _beschreibung = BeschreibungZu(zeile.Bezeichner);
+        Kennwerte(KatalogzeileZu(zeile.Bezeichner));
+        GrafikAnstossen(WahlZu(zeile));
+    }
+
+    /// <summary>
+    /// Die Ganglinie einer Projektzeile. Eine noch nicht gespeicherte Zeile traegt die Katalog-Id: dann ueber den
+    /// Namen den Katalogsatz.
+    /// </summary>
+    private GanglinienWahl WahlZu(ErzeugerZeile zeile)
+        => new(false, IstUngespeichert(zeile) ? 0 : zeile.GeraetId, zeile.Bezeichner);
+
+    // --- Vergleichen… (KA-E-19) -------------------------------------------------------
+
+    /// <summary>Beim Projektsatz die Zahl der angekreuzten Projektzeilen, sonst <c>null</c> (Katalogseite).</summary>
+    private int? ProjektVergleichszahl() => SatzArt == Satzmarke.Projektsatz ? ProjektZiele().Count : null;
+
+    /// <summary>
+    /// Die angekreuzten Projektzeilen im Vergleich: je Zeile Raster und Nennleistung (aus dem Katalogsatz gleichen
+    /// Namens, wie die Kennwertzeile der Detailzeile) und Jahresarbeit, Spitze, Vollbenutzungsstunden (die Kennzahlen
+    /// der Grafik). Wirft das Lesen, nennt der Banner den Grund.
+    /// </summary>
+    private async Task<IReadOnlyList<(string Name, IReadOnlyList<(string Beschriftung, string Wert)> Werte)>> ProjektVergleichswerte()
+    {
+        var (saetze, grund) = await Ganglinienvergleich.SaetzeAsync(ProjektZiele(), z => z.Bezeichner, WahlZu, Kennzahlen,
+            (z, k) =>
+            {
+                Katalogfilterzeile? kat = KatalogzeileZu(z.Bezeichner);
+                var werte = new List<(string Beschriftung, string Wert)>
+                {
+                    (Ganglinienvergleich.Beschriftung(LabelRaster), kat is null ? "" : Rastertext(kat)),
+                    (Ganglinienvergleich.Beschriftung(LabelNennleistung), kat is null ? "" : Nennleistungstext(kat))
+                };
+                Ganglinienvergleich.Kennzahlen(werte, k, Einheit, LabelGrafikJahresarbeit, LabelSpitze, LabelVollbenutzung,
+                                               "kW", EinheitStunden);
+                return werte;
+            });
+        _satzFehler = grund;
+        return saetze;
+    }
+
+    /// <summary>Die Wahl über den Bezeichner — der Weg des Assistenten.</summary>
+    private void KatalogZeileWaehlen(string bezeichner)
+    {
+        Katalogfilterzeile? zeile = Katalog.FirstOrDefault(z => z.Bezeichner == bezeichner);
+        if (zeile is null) return;
+        Katalogzeile_(zeile);
+    }
+
+    /// <summary>Die Katalogseite meldet eine Wahl (<c>null</c>: die Wahl ist weg, etwa gelöscht).</summary>
+    private void BeiKatalogzeile(Katalogfilterzeile? zeile)
+    {
+        if (zeile is null)
+        {
+            if (_katalogZeile is null) return;
+            _katalogZeile = null;
+            _katalogGewaehlt = "";
+            _name = "";
+            _beschreibung = "";
+            Kennwerte(null);
+            _grafik.Verwerfen();
+            return;
+        }
+        Katalogzeile_(zeile);
+    }
+
+    private void Katalogzeile_(Katalogfilterzeile zeile)
+    {
+        _katalogZeile = zeile;
+        _katalogGewaehlt = zeile.Bezeichner;
+        _projektZeile = null;
+        _name = zeile.Bezeichner;
+        _beschreibung = zeile.Text(Katalogfilterprofil.SpBeschreibung);
+        Kennwerte(zeile);
+        GrafikAnstossen(new GanglinienWahl(true, zeile.Id, zeile.Bezeichner));
+    }
+
+    private string BeschreibungZu(string bezeichner)
+        => KatalogzeileZu(bezeichner)?.Text(Katalogfilterprofil.SpBeschreibung) ?? "";
+
+    private Katalogfilterzeile? KatalogzeileZu(string bezeichner)
+    {
+        foreach (Katalogfilterzeile k in Katalog)
+            if (string.Equals(k.Bezeichner, bezeichner, StringComparison.Ordinal))
+                return k;
+        return null;
+    }
+
+    /// <summary>
+    /// Raster, Jahresarbeit und Nennleistung der markierten Ganglinie aus ihrer Katalogzeile; ohne Zeile leer.
+    /// Eine nicht gepflegte Nennleistung sagt, was der Lauf statt ihrer nimmt (die Spitze der Reihe).
+    /// </summary>
+    private void Kennwerte(Katalogfilterzeile? k)
+    {
+        var kultur = System.Globalization.CultureInfo.CurrentCulture;
+        if (k is null) { _raster = ""; _jahresarbeit = ""; _jahresarbeitGenau = ""; _nennleistung = ""; return; }
+        _raster = Rastertext(k);
+        double? mwh = k.Zahl(Katalogfilterprofil.SpJahresarbeitMwh);
+        _jahresarbeit = mwh is null ? "" : Energieeinheit.MWh.FormatiereJahreswert(mwh.Value) + " " + Energieeinheit.MWh.Text;
+        _jahresarbeitGenau = mwh is null ? "" : mwh.Value.ToString("N1", kultur) + " " + Energieeinheit.MWh.Text;
+        _nennleistung = Nennleistungstext(k);
+    }
+
+    /// <summary>Das Raster der Ganglinie aus ihrer Katalogzeile (Stunde oder Viertelstunde); ohne Angabe leer.</summary>
+    private static string Rastertext(Katalogfilterzeile k)
+    {
+        double? raster = k.Zahl(Katalogfilterprofil.SpZeitintervall);
+        return raster is null ? "" : raster.Value == 15 ? Resource.PVG_RASTER_VIERTEL : Resource.PVG_RASTER_STUNDE;
+    }
+
+    /// <summary>Die Nennleistung aus der Katalogzeile; nicht gepflegt sagt, was der Lauf statt ihrer nimmt.</summary>
+    private static string Nennleistungstext(Katalogfilterzeile k)
+    {
+        double? nenn = k.Zahl(Katalogfilterprofil.SpNennleistungKwp);
+        return nenn is null ? Resource.PVG_NENN_NICHT_GEPFLEGT
+                            : nenn.Value.ToString("N2", System.Globalization.CultureInfo.CurrentCulture) + " kWp";
+    }
+
+    /// <summary>„In das Projekt übernehmen" — die Auswahl des Katalogs (Kästchen, sonst die Wahl).</summary>
+    private void BeiHinzu()
+    {
+        if (Aufnehmen is null) return;
+        ErzeugerZeile? letzte = null;
+        var neue = new List<string>();
+        // KT-6: Jedes Aufnehmen über die Fangstelle — wirft es, bleibt die Liste, wie sie war, die übrigen
+        // Sätze kommen dazu, und der Grund steht im Banner.
+        Func<int, ErzeugerZeile?> aufnehmen = Aufnehmen;
+        string grund = "";
+        foreach (Katalogfilterzeile k in KatalogZiele())
+        {
+            int id = k.Id;
+            ErzeugerZeile? neu = Katalogladung.Schreiben(() => aufnehmen(id), k.Bezeichner,
+                                                         g => { grund = g; return (ErzeugerZeile?)null; });
+            if (neu is null) continue;
+            Zeilen.Add(neu);
+            _neuAufgenommen.Add(neu);
+            neue.Add(Projektschluessel(neu));
+            letzte = neu;
+        }
+        _schreibFehler = grund;
+        if (letzte is null) return;
+        // Die Wahl folgt der Uebernahme (DZ1-N2): genau die neuen Zeilen.
+        if (neue.Count > 1) _projektWahl.Setzen(neue); else _projektWahl.Leeren();
+        ProjektZeileWaehlen(letzte);
+    }
+
+    /// <summary>
+    /// „Aus dem Projekt entfernen": die angekreuzten Zeilen, sonst die gewählte — bei zwei Zuordnungen
+    /// derselben Ganglinie genau die markierte.
+    /// </summary>
+    private void BeiEntfernen()
+    {
+        List<ErzeugerZeile> ziele = ProjektZiele();
+        if (ziele.Count == 0) return;
+        foreach (ErzeugerZeile zeile in ziele)
+        {
+            Zeilen.Remove(zeile);
+            _neuAufgenommen.Remove(zeile);
+            Entfernen?.Invoke(zeile);
+        }
+        _projektWahl.Leeren();
+        if (_projektZeile is not null && ziele.Contains(_projektZeile))
+        {
+            _projektZeile = null;
+            _name = "";
+            _beschreibung = "";
+            Kennwerte(null);
+            _grafik.Verwerfen();
+        }
+    }
+
+    /// <summary>
+    /// OK schreibt über <see cref="Speichern"/> und schließt erst danach; scheitert oder wirft der Weg, bleibt der
+    /// Dialog mit seinen Eingaben und dem Grund offen (KT-6). Abbrechen schließt ohne zu schreiben.
+    /// </summary>
+    private Task BeiErgebnis(bool ok)
+    {
+        if (ok && Speichern is not null)
+        {
+            Func<bool> speichern = Speichern;
+            string grund = "";
+            bool geschrieben = Katalogladung.Schreiben(speichern, TitelText, g => { grund = g; return false; });
+            if (!geschrieben)
+            {
+                _schreibFehler = grund.Length > 0 ? grund : SchreibfehlerText;
+                return Task.CompletedTask;
+            }
+            _schreibFehler = "";
+        }
+        return Geschlossen.InvokeAsync(ok);
+    }
+
+    /// <summary>✕ wirkt wie Esc: Abbrechen im Projektbetrieb, Beenden im Katalogbetrieb.</summary>
+    private Task BeiKreuz() => Geschlossen.InvokeAsync(Katalogbetrieb);
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape" || _seite?.HaeltEsc == true || _erneuernOffen
+            || _zweispalten?.SatzUeberlagerungOffen == true) return Task.CompletedTask;
+        return BeiKreuz();
+    }
+}

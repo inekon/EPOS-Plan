@@ -174,7 +174,9 @@ namespace EPOS.Kern.Tests
             GebaeudeBauteilzeile quelle = h.Vorschlag.Zeilen.First(z => z.Bauteil.Bauteilart == DbWerte.BAUTEILART_AUSSENWAND && z.Bauteil.ID_Aufbau.HasValue);
             GebaeudeBauteilzeileDaten wand = b.Zeilen.Single(z => z.Kennung == quelle.Kennung);
             Assert.Equal("Außenwand", wand.Art);
-            Assert.Equal("aus Schichten", wand.UWert);
+            // Der U-Wert der Datei bleibt neben dem Aufbau stehen (E95-1) und steht in der Zeile.
+            Assert.Equal(quelle.UDatei, quelle.Bauteil.U_Wert);
+            Assert.NotEqual("aus Schichten", wand.UWert);
             Assert.EndsWith(" m²", wand.Flaeche);
             Assert.EndsWith("°", wand.Azimut);
             Assert.Equal("90°", wand.Neigung);

@@ -21,8 +21,10 @@
    zwei Knoepfe "Kopieren" und "Platzhalter ausblenden". Sie ist keine Ueberlagerung und
    traegt deshalb kein Schliesskreuz. An einem Standwert nennt sie zusaetzlich die
    POSITIONSFORM (stand.<n>.<rest>, bei einer Variante auch variante.<n>.<rest>) mit eigenem
-   Kopierknopf - die Position kaskadiert die Seite (Vorlagenfeldposition); ein Platzhalter
-   ohne Word-Ausgabe traegt die Zeile "nur Excel".
+   Kopierknopf - die Position kaskadiert die Seite (Vorlagenfeldposition); zeigt das Element
+   mehrere Staende in einer Tafel, reicht der Wirt die Positionen als Liste (Positionen), und
+   vor den Formen jedes Stands steht sein Name. Ein Platzhalter ohne Word-Ausgabe traegt die
+   Zeile "nur Excel".
 
    KOPIEREN (Vorlagenfeldkopie.Fuer) geht ueber IZwischenablage aus dem Dienstverzeichnis.
    Ohne Adapter - oder wenn er scheitert - steht der Text in einem nur lesbaren Feld der
@@ -125,16 +127,24 @@ else
             @if (Positionsformen.Count > 0)
             {
                 @* DIE POSITIONSFORM (Katalog v8): derselbe Wert nach der Position des gezeigten
-                   Stands - ueberall im Bericht gueltig, ohne Blockrahmen. *@
+                   Stands - ueberall im Bericht gueltig, ohne Blockrahmen. Nennt die Marke mehrere
+                   Staende (Positionen), steht vor den Formen jedes Stands sein Name. *@
                 <span class="epos-vorlagenfeld-auf-daten">@Texte.Position</span>
-                @foreach (string form in Positionsformen)
+                @foreach ((string name, IReadOnlyList<string> formen) in Positionsgruppen)
                 {
-                    <span class="epos-vorlagenfeld-auf-position" data-vorlagenfeldposition="@form">
-                        <span class="epos-vorlagenfeld-auf-schluessel">@("{{" + form + "}}")</span>
-                        <button type="button" class="epos-knopf epos-vorlagenfeld-position-kopieren"
-                                aria-label="@Format(Texte.AriaPosition, form)"
-                                @onclick="() => PositionKopieren(form)">@Texte.Kopieren</button>
-                    </span>
+                    @if (name.Length > 0)
+                    {
+                        <span class="epos-vorlagenfeld-auf-daten epos-vorlagenfeld-auf-positionsname"><b>@name</b></span>
+                    }
+                    @foreach (string form in formen)
+                    {
+                        <span class="epos-vorlagenfeld-auf-position" data-vorlagenfeldposition="@form">
+                            <span class="epos-vorlagenfeld-auf-schluessel">@("{{" + form + "}}")</span>
+                            <button type="button" class="epos-knopf epos-vorlagenfeld-position-kopieren"
+                                    aria-label="@Format(Texte.AriaPosition, form)"
+                                    @onclick="() => PositionKopieren(form)">@Texte.Kopieren</button>
+                        </span>
+                    }
                 }
                 <span class="epos-vorlagenfeld-auf-hinweis">@Texte.PositionHinweis</span>
             }
@@ -183,6 +193,13 @@ else
     /// </summary>
     [CascadingParameter] public Vorlagenfeldposition? Position { get; set; }
 
+    /// <summary>
+    /// Die Positionen MEHRERER Stände, wenn das Element die Werte mehrerer Stände zeigt (eine Tafel über Stände, etwa
+    /// die Sensitivität); je Position mit dem <see cref="Vorlagenfeldposition.Name"/> ihres Stands. Gesetzt geht sie der
+    /// kaskadierten <see cref="Position"/> vor; <c>null</c> = die kaskadierte gilt.
+    /// </summary>
+    [Parameter] public IReadOnlyList<Vorlagenfeldposition>? Positionen { get; set; }
+
     // =====================================================================
     // Zustand
     // =====================================================================
@@ -202,8 +219,31 @@ else
     private CancellationTokenSource? _kopiertUhr;
     private CancellationTokenSource? _leuchtUhr;
 
-    /// <summary>Die Positionsformen des Schlüssels am gezeigten Stand; leer = keine (Prüfhilfe für Tests).</summary>
-    public IReadOnlyList<string> Positionsformen => Position?.Formen(_feld) ?? Array.Empty<string>();
+    /// <summary>
+    /// Die Positionsformen des Schlüssels am gezeigten Stand bzw. an den genannten Ständen in ihrer Folge; leer = keine
+    /// (Prüfhilfe für Tests).
+    /// </summary>
+    public IReadOnlyList<string> Positionsformen => Positionsgruppen.SelectMany(g => g.Formen).ToList();
+
+    /// <summary>
+    /// Die Positionsformen je Stand: der Name (leer beim gezeigten Stand) und seine Formen; Stände ohne Form fallen weg.
+    /// </summary>
+    private IReadOnlyList<(string Name, IReadOnlyList<string> Formen)> Positionsgruppen
+    {
+        get
+        {
+            IEnumerable<Vorlagenfeldposition> quelle = Positionen
+                ?? (Position is null ? Array.Empty<Vorlagenfeldposition>() : new[] { Position });
+            var gruppen = new List<(string, IReadOnlyList<string>)>();
+            foreach (Vorlagenfeldposition p in quelle)
+            {
+                if (p is null) continue;
+                IReadOnlyList<string> formen = p.Formen(_feld);
+                if (formen.Count > 0) gruppen.Add((p.Name ?? "", formen));
+            }
+            return gruppen;
+        }
+    }
 
     /// <summary>Ist die Aufklappung angeheftet? (Prüfhilfe für Tests.)</summary>
     public bool Angeheftet => _angeheftet;

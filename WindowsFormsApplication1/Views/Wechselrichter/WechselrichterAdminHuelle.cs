@@ -98,7 +98,9 @@ namespace WindowsFormsApplication1
                 [ModulKatalogProfil.FeldPAcNenn] = Zahl(m.m_P_AC_Nenn),
                 [ModulKatalogProfil.FeldSAcMax] = Zahl(m.m_S_AC_Max),
                 [ModulKatalogProfil.FeldPDcMax] = Zahl(m.m_P_DC_Max),
-                [ModulKatalogProfil.FeldKosten] = Zahl(m.m_Kosten),
+                // Welle KB-4: der Kostensatz kommt aus der Satzvorlage des Satzes.
+                [ModulKatalogProfil.FeldKostensatz] =
+                    KatalogkostensatzCtrl.SatzTextDerVorlage(m.IdKostenVorlageInvestition),
                 [ModulKatalogProfil.FeldHerkunft] = m.m_Herkunft ?? "",
 
                 [ModulKatalogProfil.FeldUMppMin] = Zahl(m.m_U_Mpp_Min),
@@ -145,7 +147,6 @@ namespace WindowsFormsApplication1
                 m_P_AC_Nenn = ZahlOderNull(felder, ModulKatalogProfil.FeldPAcNenn),
                 m_S_AC_Max = ZahlOderNull(felder, ModulKatalogProfil.FeldSAcMax),
                 m_P_DC_Max = ZahlOderNull(felder, ModulKatalogProfil.FeldPDcMax),
-                m_Kosten = ZahlOderNull(felder, ModulKatalogProfil.FeldKosten),
 
                 m_U_Mpp_Min = ZahlOderNull(felder, ModulKatalogProfil.FeldUMppMin),
                 m_U_Mpp_Max = ZahlOderNull(felder, ModulKatalogProfil.FeldUMppMax),

@@ -204,6 +204,104 @@ namespace WindowsFormsApplication1
         public bool Ok => Ausgang == GesetzPruefung.Ok;
     }
 
+    /// <summary>
+    /// Die jüngste Zeile eines Schlüssels, wie der Zeilendialog sie für die
+    /// Vorbelegung braucht (Anwenderentscheid 14.10.2026).
+    /// </summary>
+    public sealed class GesetzSchluesselStand
+    {
+        public GesetzSchluesselStand(string schluessel, string klasse, int jahrVon,
+                                     string einheit, string quelle)
+        {
+            Schluessel = schluessel ?? "";
+            Klasse = klasse ?? "";
+            JahrVon = jahrVon;
+            Einheit = einheit ?? "";
+            Quelle = quelle ?? "";
+        }
+
+        public string Schluessel { get; }
+        public string Klasse { get; }
+        public int JahrVon { get; }
+        public string Einheit { get; }
+        public string Quelle { get; }
+    }
+
+    /// <summary>
+    /// Die Vorschlagsdaten des Zeilendialogs: je Schlüssel die jüngste Zeile, je Klasse
+    /// die häufigste Einheit. Ohne Datenbank — gelesen von
+    /// <see cref="GesetzKatalog.Vorschlagsdaten"/>, hereingereicht von der Hülle.
+    /// </summary>
+    public sealed class GesetzVorschlagsdaten
+    {
+        private readonly Dictionary<string, GesetzSchluesselStand> _nachSchluessel;
+
+        public GesetzVorschlagsdaten(IReadOnlyList<GesetzSchluesselStand> schluessel,
+                                     IReadOnlyDictionary<string, string> bereichseinheit)
+        {
+            Schluessel = schluessel ?? Array.Empty<GesetzSchluesselStand>();
+            Bereichseinheit = bereichseinheit ?? new Dictionary<string, string>();
+            _nachSchluessel = new Dictionary<string, GesetzSchluesselStand>(StringComparer.Ordinal);
+            foreach (GesetzSchluesselStand s in Schluessel)
+                if (s != null && s.Schluessel.Length > 0) _nachSchluessel[s.Schluessel] = s;
+        }
+
+        /// <summary>Ohne Daten: kein Schlüssel, keine Bereichseinheit.</summary>
+        public static readonly GesetzVorschlagsdaten Leer =
+            new GesetzVorschlagsdaten(Array.Empty<GesetzSchluesselStand>(), new Dictionary<string, string>());
+
+        /// <summary>Die bestehenden Schlüssel, alphabetisch.</summary>
+        public IReadOnlyList<GesetzSchluesselStand> Schluessel { get; }
+
+        /// <summary>Je Klasse die häufigste Einheit ihres Bestands.</summary>
+        public IReadOnlyDictionary<string, string> Bereichseinheit { get; }
+
+        /// <summary>Die jüngste Zeile eines Schlüssels (getrimmt, exakt); <c>null</c> = neu.</summary>
+        public GesetzSchluesselStand Stand(string schluessel)
+        {
+            string s = (schluessel ?? "").Trim();
+            return s.Length > 0 && _nachSchluessel.TryGetValue(s, out GesetzSchluesselStand st) ? st : null;
+        }
+    }
+
+    /// <summary>Woher die vorgeschlagene Einheit stammt.</summary>
+    public enum GesetzEinheitHerkunft
+    {
+        /// <summary>Keine Vorbelegung — kein Schlüsseltreffer und keine Bereichseinheit.</summary>
+        Keine,
+
+        /// <summary>Von der jüngsten Zeile desselben Schlüssels.</summary>
+        Schluessel,
+
+        /// <summary>Die häufigste Einheit der Klasse.</summary>
+        Bereich,
+
+        /// <summary>Keine Vorbelegung, weil die Einheit in der Klasse je Brennstoff wechselt.</summary>
+        EinheitWechselt
+    }
+
+    /// <summary>Der Vorschlag samt Herkunft; eine leere <see cref="Einheit"/> heißt: keine Vorbelegung.</summary>
+    public sealed class GesetzEinheitVorschlag
+    {
+        public GesetzEinheitVorschlag(string einheit, GesetzEinheitHerkunft herkunft,
+                                      GesetzSchluesselStand stand)
+        {
+            Einheit = einheit ?? "";
+            Herkunft = herkunft;
+            Stand = stand;
+        }
+
+        /// <summary>Kein Vorschlag.</summary>
+        public static readonly GesetzEinheitVorschlag Keiner =
+            new GesetzEinheitVorschlag("", GesetzEinheitHerkunft.Keine, null);
+
+        public string Einheit { get; }
+        public GesetzEinheitHerkunft Herkunft { get; }
+
+        /// <summary>Die Zeile, von der übernommen wurde — nur bei <see cref="GesetzEinheitHerkunft.Schluessel"/>.</summary>
+        public GesetzSchluesselStand Stand { get; }
+    }
+
     public class GesetzKatalog
     {
         public const string TAB_GESETZESPARAMETER = "Tab_Gesetzesparameter";
@@ -316,13 +414,16 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die acht Klassen, die der Zeilendialog zur Auswahl stellt — <b>in dieser
+        /// Die elf Klassen, die der Zeilendialog zur Auswahl stellt — <b>in dieser
         /// Reihenfolge</b> und mit ihren eingefrorenen DB-Schreibweisen.
         ///
         /// <para><b>Nicht zu verwechseln mit <see cref="Klassen"/>:</b> Das ist, was in
-        /// der Datenbank VORKOMMT (heute neun, mit <c>EEG</c>); dies hier ist, was der
-        /// Anwender beim Anlegen WAEHLEN kann. Beide Listen sind gewollt verschieden —
-        /// <c>EEG</c>-Zeilen pflegt der Vergütungsdialog, nicht die Hand.</para>
+        /// der Datenbank VORKOMMT; dies hier ist, was der Anwender beim Anlegen WÄHLEN
+        /// kann. <c>EEG</c> und <c>UMLAGEN</c> stehen im Vorrat: Ihre Zeilen schreibt
+        /// keine andere Maske (der PV-Vergütungsdialog liest sie nur), ohne sie ließe
+        /// sich ein neuer EEG- oder Umlagesatz nicht anlegen. Draußen bleibt allein die
+        /// technische Klasse <c>SYSTEM</c> — ihre Markerzeile der Nachsaat ist kein
+        /// gesetzlicher Parameter (<see cref="DbWerte.GESETZ_KLASSE_SYSTEM"/>).</para>
         /// </summary>
         public static IReadOnlyList<string> KlassenVorrat()
         {
@@ -335,7 +436,10 @@ namespace WindowsFormsApplication1
                 DbWerte.GESETZ_KLASSE_EF_NACHWEIS,
                 DbWerte.GESETZ_KLASSE_EF_BILANZ,
                 DbWerte.GESETZ_KLASSE_PEF_NACHWEIS,
-                DbWerte.GESETZ_KLASSE_UMSATZSTEUER
+                DbWerte.GESETZ_KLASSE_UMSATZSTEUER,
+                DbWerte.GESETZ_KLASSE_FGAS,
+                DbWerte.GESETZ_KLASSE_EEG,
+                DbWerte.GESETZ_KLASSE_UMLAGEN
             };
         }
 
@@ -363,6 +467,137 @@ namespace WindowsFormsApplication1
                 DbWerte.GESETZ_EINHEIT_JAHR,
                 DbWerte.GESETZ_EINHEIT_OHNE
             };
+        }
+
+        // =====================================================================
+        // Vorbelegung der Einheit im Zeilendialog (Anwenderentscheid 14.10.2026)
+        //
+        // Sie gilt nur für eine NEUE Zeile und nur, solange der Anwender die Einheit
+        // nicht selbst gewählt hat — das hält der Dialog. Hier steht die Regel, ohne
+        // Datenbank: Die Daten liest Vorschlagsdaten() einmal aus dem geladenen
+        // Katalog, die Hülle reicht sie dem Dialog herein.
+        // =====================================================================
+
+        /// <summary>
+        /// Die Klassen OHNE Vorbelegung aus dem Bereich — eine <b>benannte Ausnahme</b>,
+        /// keine Schwelle.
+        ///
+        /// <para><b>Warum keine Schwelle.</b> Im Bereich <c>ENERGIESTEUER</c> wechselt die
+        /// Einheit je Brennstoff (EUR/1000 l, EUR/1000 kg, EUR/MWh, EUR/GJ); die häufigste
+        /// deckt nur ein Drittel der Zeilen (5 von 15 in der Testdatenbank). Eine Schwelle
+        /// müsste zwischen diesem Drittel und den Bereichen liegen, deren Vorbelegung
+        /// gewollt ist (Stromsteuer 3 von 8, KWKG 20 von 53, EEG 14 von 35) — ein Band von
+        /// wenigen Prozentpunkten, das jede neue Zeile verschieben kann. Der Grund ist
+        /// fachlich (Bezugsgröße je Brennstoff), nicht statistisch; deshalb steht er als
+        /// Name da.</para>
+        /// </summary>
+        public static readonly IReadOnlySet<string> OHNE_BEREICHSVORBELEGUNG =
+            new HashSet<string>(StringComparer.Ordinal) { DbWerte.GESETZ_KLASSE_ENERGIESTEUER };
+
+        /// <summary>
+        /// Die Vorschlagsdaten des Zeilendialogs aus dem geladenen Katalog: je Schlüssel
+        /// seine jüngste Zeile (Einheit, Klasse, Quelle) und je Klasse die häufigste
+        /// Einheit ihres Bestands — <b>zur Laufzeit gezählt</b>, nicht fest verdrahtet.
+        /// Die technische Klasse <c>SYSTEM</c> bleibt außen vor.
+        /// </summary>
+        public GesetzVorschlagsdaten Vorschlagsdaten()
+        {
+            Sicherstellen();
+            var staende = new List<GesetzSchluesselStand>();
+            var alle = new List<GesetzParameter>();
+            foreach (KeyValuePair<string, List<GesetzParameter>> e in _reihen)
+            {
+                GesetzParameter juengste = null;
+                foreach (GesetzParameter p in e.Value)
+                {
+                    if (string.Equals(p.Klasse, DbWerte.GESETZ_KLASSE_SYSTEM, StringComparison.Ordinal))
+                        continue;
+                    alle.Add(p);
+                    if (juengste == null || p.JahrVon >= juengste.JahrVon) juengste = p;
+                }
+                if (juengste != null)
+                    staende.Add(new GesetzSchluesselStand(juengste.Schluessel, juengste.Klasse,
+                                                          juengste.JahrVon, juengste.Einheit,
+                                                          juengste.Quelle));
+            }
+            staende.Sort((a, b) => string.CompareOrdinal(a.Schluessel, b.Schluessel));
+            return new GesetzVorschlagsdaten(staende, HaeufigsteEinheiten(alle));
+        }
+
+        /// <summary>
+        /// Je Klasse die häufigste Einheit ihrer Zeilen. Gleichstand entscheidet die
+        /// Reihenfolge von <see cref="Einheiten"/>, danach die Schreibweise — das Ergebnis
+        /// hängt nicht an der Lesereihenfolge. Leere Einheiten zählen nicht; die Klassen
+        /// aus <see cref="OHNE_BEREICHSVORBELEGUNG"/> bekommen keinen Eintrag.
+        /// </summary>
+        public static IReadOnlyDictionary<string, string> HaeufigsteEinheiten(IEnumerable<GesetzParameter> zeilen)
+        {
+            var zaehler = new Dictionary<string, Dictionary<string, int>>(StringComparer.Ordinal);
+            foreach (GesetzParameter p in zeilen ?? Array.Empty<GesetzParameter>())
+            {
+                if (p == null || string.IsNullOrEmpty(p.Klasse) || string.IsNullOrEmpty(p.Einheit)) continue;
+                if (!zaehler.TryGetValue(p.Klasse, out Dictionary<string, int> je))
+                    zaehler[p.Klasse] = je = new Dictionary<string, int>(StringComparer.Ordinal);
+                je.TryGetValue(p.Einheit, out int n);
+                je[p.Einheit] = n + 1;
+            }
+
+            IReadOnlyList<string> reihenfolge = Einheiten();
+            int Rang(string einheit)
+            {
+                for (int i = 0; i < reihenfolge.Count; i++)
+                    if (string.Equals(reihenfolge[i], einheit, StringComparison.Ordinal)) return i;
+                return int.MaxValue;
+            }
+
+            var ergebnis = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach (KeyValuePair<string, Dictionary<string, int>> k in zaehler)
+            {
+                if (OHNE_BEREICHSVORBELEGUNG.Contains(k.Key)) continue;
+                string beste = null;
+                int besteZahl = 0;
+                foreach (KeyValuePair<string, int> e in k.Value)
+                {
+                    bool besser = beste == null || e.Value > besteZahl ||
+                                  (e.Value == besteZahl &&
+                                   (Rang(e.Key) < Rang(beste) ||
+                                    (Rang(e.Key) == Rang(beste) &&
+                                     string.CompareOrdinal(e.Key, beste) < 0)));
+                    if (besser) { beste = e.Key; besteZahl = e.Value; }
+                }
+                if (beste != null) ergebnis[k.Key] = beste;
+            }
+            return ergebnis;
+        }
+
+        /// <summary>
+        /// <b>Die Regel der Vorbelegung</b> — welche Einheit eine neue Zeile vorgeschlagen
+        /// bekommt und woher sie stammt:
+        /// <list type="number">
+        ///   <item>Ein <b>bestehender Schlüssel</b> (getrimmt, exakt) gibt die Einheit seiner
+        ///   jüngsten Zeile; der Stand trägt dazu Klasse, Jahr und Quelle.</item>
+        ///   <item>Ein <b>neuer Schlüssel</b> bekommt die häufigste Einheit seiner Klasse —
+        ///   außer in den Klassen aus <see cref="OHNE_BEREICHSVORBELEGUNG"/>.</item>
+        ///   <item>Sonst <b>keine</b> Vorbelegung: Die Einheit ist leer und Pflicht.</item>
+        /// </list>
+        /// Ob der Anwender schon selbst gewählt hat, entscheidet der Dialog, nicht die Regel.
+        /// </summary>
+        public static GesetzEinheitVorschlag EinheitVorschlagen(string schluessel, string klasse,
+                                                                GesetzVorschlagsdaten daten)
+        {
+            daten ??= GesetzVorschlagsdaten.Leer;
+            GesetzSchluesselStand stand = daten.Stand(schluessel);
+            if (stand != null && stand.Einheit.Length > 0)
+                return new GesetzEinheitVorschlag(stand.Einheit, GesetzEinheitHerkunft.Schluessel, stand);
+
+            string k = (klasse ?? "").Trim();
+            if (k.Length == 0)
+                return GesetzEinheitVorschlag.Keiner;
+            if (OHNE_BEREICHSVORBELEGUNG.Contains(k))
+                return new GesetzEinheitVorschlag("", GesetzEinheitHerkunft.EinheitWechselt, null);
+            if (daten.Bereichseinheit.TryGetValue(k, out string einheit) && !string.IsNullOrEmpty(einheit))
+                return new GesetzEinheitVorschlag(einheit, GesetzEinheitHerkunft.Bereich, null);
+            return GesetzEinheitVorschlag.Keiner;
         }
 
         /// <summary>Die vier Statuswerte einer Zeile (gesichert / vorläufig / Prognose /
@@ -397,6 +632,9 @@ namespace WindowsFormsApplication1
                 case DbWerte.GESETZ_KLASSE_EF_BILANZ: return MyResource.Resource.GESETZ_KLASSE_ANZ_EF_BILANZ;
                 case DbWerte.GESETZ_KLASSE_PEF_NACHWEIS: return MyResource.Resource.GESETZ_KLASSE_ANZ_PEF_NACHWEIS;
                 case DbWerte.GESETZ_KLASSE_UMSATZSTEUER: return MyResource.Resource.GESETZ_KLASSE_ANZ_UMSATZSTEUER;
+                case DbWerte.GESETZ_KLASSE_FGAS: return MyResource.Resource.GESETZ_KLASSE_ANZ_FGAS;
+                case DbWerte.GESETZ_KLASSE_EEG: return MyResource.Resource.GESETZ_KLASSE_ANZ_EEG;
+                case DbWerte.GESETZ_KLASSE_UMLAGEN: return MyResource.Resource.GESETZ_KLASSE_ANZ_UMLAGEN;
                 default: return klasse ?? "";
             }
         }
@@ -1852,8 +2090,67 @@ namespace WindowsFormsApplication1
             l.Add(N(DbWerte.GESETZ_EEG_JAHRESMARKTWERT_SOLAR, EEG, 2024, 4.624, CT, G, Q_JW + ", 2024", 6));
             l.Add(N(DbWerte.GESETZ_EEG_JAHRESMARKTWERT_SOLAR, EEG, 2025, 4.508, CT, G, Q_JW + ", 2025", 6));
 
+            FgasRegeln(l);
+
             _vorbelegung = l;
             return _vorbelegung;
+        }
+
+        /// <summary>Saat-Generation der F-Gas-Regeln (KM4-E2).</summary>
+        public const int GENERATION_FGAS = 10;
+
+        /// <summary>
+        /// <b>Generation 10 — die Regeln nach Anhang IV der Verordnung (EU) 2024/573</b> (Konzept
+        /// Kältemittel als Stammdatum 3.3 und 4.5, Entscheid E123, KM4-Q4 b). Jede Zeile ist am
+        /// amtlichen deutschen Wortlaut geprüft (ABl.-Fassung, PDF-Seite „x/86“) und trägt ihre
+        /// Fundstelle in <c>Quelle</c> — keine Textabschrift. <c>JahrVon</c> = Stichtag (1. Januar),
+        /// <c>Wert</c> = GWP-Grenze („GWP von … oder mehr“), 0 bei „jedes F-Gas“.
+        ///
+        /// <para><b>Was nicht gesät wird:</b> Nr. 9 a (Mono-Split mit Füllmenge unter 3 kg — das
+        /// Regelschema kennt das Füllmengenkriterium nicht), Nr. 8 a (steckerfertige, von Raum zu Raum
+        /// bringbare Raumklimageräte — keine Geräteklasse in EPOS-Plan), Nr. 4 bis 6 (Kälteanlagen ohne
+        /// Kühler — keine Geräteklasse) und Art. 13 (Bestand, KM4-Q12 b).</para>
+        ///
+        /// <para><b>Nr. 7 d:</b> Der deutsche Wortlaut nennt „GWP von 750“ ohne „oder mehr“; gesät ist
+        /// die Lesart „≥ 750“ wie in Nr. 9 e, festgelegt durch Anwenderentscheid — die Zeile ist
+        /// <c>GESICHERT</c>, <c>Quelle</c> trägt den Vermerk.</para>
+        /// </summary>
+        private static void FgasRegeln(List<GesetzParameter> l)
+        {
+            const string FG = DbWerte.GESETZ_KLASSE_FGAS;
+            const string OHNE = DbWerte.GESETZ_EINHEIT_OHNE;
+            const string G = DbWerte.GESETZ_STATUS_GESICHERT;
+            const int GEN = GENERATION_FGAS;
+            const string Q = "VO (EU) 2024/573 Anh. IV ";
+
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_KUEHLER_ALLE_HFKW, FG, 2020, 2500.0, OHNE, G,
+                    Q + "Nr. 7 Buchst. a, S. 71/86 (nur HFKW nach Art. 3 Nr. 4)", GEN));
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_KUEHLER_BIS12_GWP, FG, 2027, 150.0, OHNE, G,
+                    Q + "Nr. 7 Buchst. b, S. 72/86", GEN));
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_KUEHLER_BIS12_FGAS, FG, 2032, 0.0, OHNE, G,
+                    Q + "Nr. 7 Buchst. c, S. 72/86", GEN));
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_KUEHLER_UEBER12_GWP, FG, 2027, 750.0, OHNE, G,
+                    Q + "Nr. 7 Buchst. d, S. 72/86; dt. Wortlaut ohne ‚oder mehr‘, Lesart ≥ 750 (Anwenderentscheid)", GEN));
+
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_MONOBLOCK_BIS12_GWP, FG, 2027, 150.0, OHNE, G,
+                    Q + "Nr. 8 Buchst. b, S. 72/86 (Höchstnennleistung)", GEN));
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_MONOBLOCK_BIS12_FGAS, FG, 2032, 0.0, OHNE, G,
+                    Q + "Nr. 8 Buchst. c, S. 73/86 (Höchstnennleistung)", GEN));
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_MONOBLOCK_UEBER12BIS50_GWP, FG, 2027, 150.0, OHNE, G,
+                    Q + "Nr. 8 Buchst. d, S. 73/86 (Höchstnennleistung)", GEN));
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_MONOBLOCK_ALLE_GWP, FG, 2030, 150.0, OHNE, G,
+                    Q + "Nr. 8 Buchst. e, S. 73/86", GEN));
+
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_SPLIT_LUFTWASSER_BIS12_GWP, FG, 2027, 150.0, OHNE, G,
+                    Q + "Nr. 9 Buchst. b, S. 74/86", GEN));
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_SPLIT_LUFTLUFT_BIS12_GWP, FG, 2029, 150.0, OHNE, G,
+                    Q + "Nr. 9 Buchst. c, S. 74/86", GEN));
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_SPLIT_BIS12_FGAS, FG, 2035, 0.0, OHNE, G,
+                    Q + "Nr. 9 Buchst. d, S. 74/86", GEN));
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_SPLIT_UEBER12_GWP, FG, 2029, 750.0, OHNE, G,
+                    Q + "Nr. 9 Buchst. e, S. 74/86", GEN));
+            l.Add(N(DbWerte.GESETZ_FGAS_IV_SPLIT_UEBER12_GWP, FG, 2033, 150.0, OHNE, G,
+                    Q + "Nr. 9 Buchst. f, S. 75/86", GEN));
         }
 
         /// <summary>Kurzschreibweise für eine Vorbelegungszeile mit Wert; ohne Angabe

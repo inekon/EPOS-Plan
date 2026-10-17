@@ -7,11 +7,12 @@
     "daten": "Mendeley Data V2, doi:10.17632/m3xy22pf4j.2 (CC BY 4.0), Kanal Q_chw, Hotels HO1, HO2, HO4",
     "herkunftsart": "EIGENKONSTRUKTION",
     "regel": "Referenzlaeufe/Skripte/hotel_aus_messung_bauen.py (Kopf)",
-    "bezug": "Zimmer, als Betten (Bezugsart 3); Bezugstemperaturen 60/12 Grad C",
+    "bezugsart": 8,
+    "bezug": "Zimmer (Bezugsart 8); Bezugstemperaturen 60/12 Grad C",
     "einheit_bedarf": "kWh je Zimmer und Tag, gerundet auf 0,1",
     "modellannahmen": [
       "drei Hotels einer Region als Mittel fuer die Nutzungsart Hotel",
-      "ein Zimmer gilt als ein Bett: Bezugsmenge ist die Zimmerzahl, nicht die Bettenzahl",
+      "Bezugsmenge ist die Zimmerzahl des ganzen Hauses (Bezugsart Zimmer), nicht die Bettenzahl",
       "flacher Jahresgang (Monatsfaktoren 1), die Reihen umfassen nur Wochen eines Jahres",
       "niedrig und hoch sind der kleinste und der groesste Tagesbedarf je Zimmer der drei Hotels"
     ]

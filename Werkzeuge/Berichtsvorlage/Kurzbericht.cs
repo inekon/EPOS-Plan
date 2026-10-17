@@ -86,7 +86,10 @@ namespace Berichtsvorlage
             internal string Sprache, Untertitel, Kunde, Bearbeitung, Ersteller, Datum, Verglichen, ErstelltMit;
             internal string Ausgangslage, Klimaregion, Ergebnisse, Variante, Waermebedarf, Jaz, Co2, Kapitalwertdiff;
             internal string Empfehlung, BesteVor, BesteMitte, BesteNach, Wirtschaft, Kuehlung, KuehlungVor, KuehlungMitte, KuehlungNach;
+            internal string KuehlungSplitMitte, KuehlungSplitFolge, KuehlungSplitNach, KuehlungSplitAllein;
             internal string Deckung, Anhang, Stamm, Gruppe, Summe, Warnung;
+            internal string Aufheizung, AufheizVor, AufheizBei, AufheizLeistung, AufheizAuslegung, AufheizAus, AufheizUnd, AufheizNach;
+            internal string VorheizZeit, VorheizLeistung, VorheizVerfehlt, VorheizMehr;
             internal string Titel, Beschreibung;
             internal string[][] Kommentare;
         }
@@ -240,14 +243,63 @@ namespace Berichtsvorlage
             r.Add(Beispielvorlage.Absatz("Normal", P("tabelle.wirtschaft.szenarien")));
             r.Add(Beispielvorlage.Absatz("Normal", P("wirtschaft.warnungen")));
 
-            // 7 — Bedingter Abschnitt: nur mit Kälte
+            // 7 — Bedingter Abschnitt: nur mit Kälte. Der Satz hängt an der dezentralen Deckung (K6d-N, Katalog v23): ohne
+            //     Split-Zeile der Deckungsgrad der Anlage, mit ihr die Hauptzahl samt „davon Kältefolge“ — ohne Kälteerzeuger
+            //     (hat.kaelte.kaeltefolge falsch) nur der Anteil der Split-Geräte. Blöcke schachteln höchstens zwei Ebenen tief:
+            //     Der Split-Block steht darum hinter dem Kälteblock (hat.kaelte.dezentral setzt hat.kaelte voraus).
             Paragraph wennKaelte = Beispielvorlage.Absatz("Normal", new CommentRangeStart { Id = "5" }, P("#wenn hat.kaelte"));
             wennKaelte.Append(Ende("5"));
             r.Add(wennKaelte);
             r.Add(Beispielvorlage.Absatz("Heading2", Beispielvorlage.Lauf(t.Kuehlung)));
+            r.Add(Beispielvorlage.Absatz("Normal", P("#wenn nicht hat.kaelte.dezentral")));
             r.Add(Beispielvorlage.Absatz("Normal", Beispielvorlage.Lauf(t.KuehlungVor + " "), P("stamm.kennzahl.kaelte.jahresbedarf"),
                                          Beispielvorlage.Lauf(t.KuehlungMitte + " "), P("stamm.kennzahl.kaelte.deckungsgrad"),
                                          Beispielvorlage.Lauf(t.KuehlungNach)));
+            r.Add(Beispielvorlage.Absatz("Normal", P("/wenn")));
+            r.Add(Beispielvorlage.Absatz("Normal", P("/wenn")));
+            r.Add(Beispielvorlage.Absatz("Normal", P("#wenn hat.kaelte.dezentral")));
+            r.Add(Beispielvorlage.Absatz("Normal", P("#wenn hat.kaelte.kaeltefolge")));
+            r.Add(Beispielvorlage.Absatz("Normal", Beispielvorlage.Lauf(t.KuehlungVor + " "), P("stamm.kennzahl.kaelte.jahresbedarf"),
+                                         Beispielvorlage.Lauf(t.KuehlungSplitMitte + " "), P("stamm.kennzahl.kaelte.deckungsgrad_gesamt"),
+                                         Beispielvorlage.Lauf(t.KuehlungSplitFolge + " "), P("stamm.kennzahl.kaelte.deckungsgrad_kaeltefolge"),
+                                         Beispielvorlage.Lauf(t.KuehlungSplitNach)));
+            r.Add(Beispielvorlage.Absatz("Normal", P("/wenn")));
+            r.Add(Beispielvorlage.Absatz("Normal", P("#wenn nicht hat.kaelte.kaeltefolge")));
+            r.Add(Beispielvorlage.Absatz("Normal", Beispielvorlage.Lauf(t.KuehlungVor + " "), P("stamm.kennzahl.kaelte.jahresbedarf"),
+                                         Beispielvorlage.Lauf(t.KuehlungSplitAllein + " "), P("stamm.kennzahl.kaelte.deckungsgrad_gesamt"),
+                                         Beispielvorlage.Lauf(t.KuehlungNach)));
+            r.Add(Beispielvorlage.Absatz("Normal", P("/wenn")));
+            r.Add(Beispielvorlage.Absatz("Normal", P("/wenn")));
+
+            // 7a — Aufheizabsatz je Gebäude (KP3 Welle O3a, E58 F4 (b)): nur mit Aufheizoptimierung, Einzelfelder im Satz
+            Paragraph wennAufheizung = Beispielvorlage.Absatz("Normal", new CommentRangeStart { Id = "9" }, P("#wenn hat.aufheizung"));
+            wennAufheizung.Append(Ende("9"));
+            r.Add(wennAufheizung);
+            r.Add(Beispielvorlage.Absatz("Heading2", Beispielvorlage.Lauf(t.Aufheizung)));
+            r.Add(Beispielvorlage.Absatz("Normal", P("#je gebaeude")));
+            r.Add(Beispielvorlage.Absatz("Normal", P("gebaeude.name"), Beispielvorlage.Lauf(t.AufheizVor + " "), P("gebaeude.ergebnis.aufheizzeit"),
+                                         Beispielvorlage.Lauf(" " + t.AufheizBei + " "), P("gebaeude.ergebnis.aufheiz_aussentemperatur"),
+                                         Beispielvorlage.Lauf(t.AufheizLeistung + " "), P("gebaeude.ergebnis.aufheizleistung"),
+                                         Beispielvorlage.Lauf(t.AufheizAuslegung + " "), P("gebaeude.ergebnis.auslegungsgroesse"),
+                                         Beispielvorlage.Lauf(" " + t.AufheizAus + " "), P("gebaeude.ergebnis.auslegungsheizlast"),
+                                         Beispielvorlage.Lauf(" " + t.AufheizUnd + " "), P("gebaeude.ergebnis.aufheizzuschlag"),
+                                         Beispielvorlage.Lauf(t.AufheizNach)));
+            r.Add(Beispielvorlage.Absatz("Normal", P("gebaeude.ergebnis.aufheizhinweise")));
+            r.Add(Beispielvorlage.Absatz("Normal", P("/je")));
+            r.Add(Beispielvorlage.Absatz("Normal", P("/wenn")));
+
+            // 7b — Vorheizen der Fassung 2 (AH-V6, Katalog v19): nur mit Verfahren „Vorgabe“ oder „Berechnet“, ein Satz je Gebäude
+            r.Add(Beispielvorlage.Absatz("Normal", P("#wenn hat.vorheizen")));
+            r.Add(Beispielvorlage.Absatz("Normal", P("#je gebaeude")));
+            r.Add(Beispielvorlage.Absatz("Normal", P("gebaeude.name"), Beispielvorlage.Lauf(" – "), P("gebaeude.ergebnis.vorheizverfahren"),
+                                         Beispielvorlage.Lauf(t.VorheizZeit + " "), P("gebaeude.ergebnis.vorheizzeit"),
+                                         Beispielvorlage.Lauf(t.VorheizLeistung + " "), P("gebaeude.ergebnis.vorheizleistung"),
+                                         Beispielvorlage.Lauf(t.VorheizVerfehlt + " "), P("gebaeude.ergebnis.vorheiz_tage_verfehlt"),
+                                         Beispielvorlage.Lauf(t.VorheizMehr + " "), P("gebaeude.ergebnis.vorheiz_mehrwaerme"),
+                                         // SA3b (Katalog v21): der Halbsatz der Schnellaufheizung, leer ohne Wirkung
+                                         P("gebaeude.ergebnis.vorheiz_schnellaufheizung"),
+                                         Beispielvorlage.Lauf(".")));
+            r.Add(Beispielvorlage.Absatz("Normal", P("/je")));
             r.Add(Beispielvorlage.Absatz("Normal", P("/wenn")));
 
             // 8 — Zwei Bilder nebeneinander je Stand (Bildgröße Stufe 2)
@@ -544,7 +596,7 @@ namespace Berichtsvorlage
 
         // ------------------------------------------------------------- Kommentare, Eigenschaften
 
-        /// <summary>Die Erläuterungen als Word-Kommentare (ohne Datum — die Datei bleibt bei jedem Lauf gleich), Kennungen 0 bis 8.</summary>
+        /// <summary>Die Erläuterungen als Word-Kommentare (ohne Datum — die Datei bleibt bei jedem Lauf gleich), Kennungen 0 bis 9.</summary>
         private static void Kommentare(MainDocumentPart main, Texte t)
         {
             WordprocessingCommentsPart teil = main.WordprocessingCommentsPart ?? main.AddNewPart<WordprocessingCommentsPart>();
@@ -571,7 +623,7 @@ namespace Berichtsvorlage
         /// <summary>
         /// Stilregeln, Validator und die Regeln der Wache: jede Marke in eigenem Run mit <c>w:noProof</c>, kein
         /// „INEKON“, die Kopfzeile mit dem Bildplatzhalter des Logos, drei Bildrahmen mit Schlüssel im Alternativtext
-        /// auf dem Platzhalterbild, neun Kommentare mit je einem Verweis, Blockmarken paarig, die Mustertabelle da und
+        /// auf dem Platzhalterbild, zehn Kommentare mit je einem Verweis, Blockmarken paarig, die Mustertabelle da und
         /// die drei Eigenschaften in <c>custom.xml</c>.
         /// </summary>
         private static bool Abschlusspruefung(string pfad, Texte t, int katalogfassung, TextWriter aus)
@@ -671,8 +723,15 @@ namespace Berichtsvorlage
             Empfehlung = "Empfehlung", BesteVor = "Beste Variante:", BesteMitte = "mit einer Kapitalwertdifferenz von", BesteNach = ".",
             Wirtschaft = "Wirtschaftlichkeit",
             Kuehlung = "Kühlung", KuehlungVor = "Der Kältebedarf beträgt", KuehlungMitte = "; davon deckt die Anlage", KuehlungNach = ".",
+            KuehlungSplitMitte = "; davon decken die Anlage und die dezentralen Split-Geräte", KuehlungSplitFolge = ", davon die Kältefolge",
+            KuehlungSplitNach = " des zentral zu deckenden Kältebedarfs.", KuehlungSplitAllein = "; davon decken die dezentralen Split-Geräte",
             Deckung = "Deckung je Variante", Anhang = "Anhang",
             Stamm = "Stamm", Gruppe = "Gruppe", Summe = "Summe", Warnung = "Warnung",
+            Aufheizung = "Aufheizung", AufheizVor = ": Die Aufheizzeit beträgt", AufheizBei = "bei",
+            AufheizLeistung = ", die Aufheizleistung", AufheizAuslegung = "; die Auslegungsgröße",
+            AufheizAus = "setzt sich aus der Auslegungsheizlast", AufheizUnd = "und dem Aufheizzuschlag", AufheizNach = " zusammen.",
+            VorheizZeit = ": Vorheizzeit", VorheizLeistung = ", Vorheizleistung", VorheizVerfehlt = ", Tage ohne Ankunft",
+            VorheizMehr = ", Mehrwärme des Vorheizens",
             Kommentare = new[]
             {
                 new[]
@@ -718,6 +777,11 @@ namespace Berichtsvorlage
                 {
                     "Ein bedingter Abschnitt: Alles zwischen {{#wenn hat.kaelte}} und {{/wenn}} erscheint nur, wenn das Projekt "
                     + "Kälte rechnet. Die Absätze mit den Blockmarken entfallen im Bericht.",
+                    "Darin steht der Satz ohne dezentrale Deckung ({{#wenn nicht hat.kaelte.dezentral}}). Deckt eine "
+                    + "Kältebedarfszeile dezentral über Split-Geräte, nennt der Block {{#wenn hat.kaelte.dezentral}} dahinter den "
+                    + "Deckungsgrad samt Split-Geräten und mit {{#wenn hat.kaelte.kaeltefolge}} den Anteil der Kältefolge, ohne "
+                    + "Kälteerzeuger ({{#wenn nicht hat.kaelte.kaeltefolge}}) allein den Anteil der Split-Geräte. Blöcke lassen "
+                    + "sich höchstens zwei Ebenen tief schachteln.",
                 },
                 new[]
                 {
@@ -737,6 +801,17 @@ namespace Berichtsvorlage
                     + "die Zeilen dieser Rolle in allen Strukturtabellen – Stamm, Gruppe, Summe, Warnung. EPOS-Plan liest sie und "
                     + "entfernt sie aus dem Bericht.",
                 },
+                new[]
+                {
+                    "Ein Absatz je Gebäude, nur mit Aufheizoptimierung: {{#wenn hat.aufheizung}} lässt den Abschnitt entfallen, "
+                    + "wenn kein Gebäude mit ihr gerechnet hat; {{#je gebaeude}} … {{/je}} wiederholt den Absatz für jedes Gebäude, "
+                    + "etwa „Gebäude 1: Die Aufheizzeit beträgt 4 h bei −10,0 °C …“.",
+                    "Die Werte gebaeude.ergebnis.… kommen aus dem Ergebnis des Laufs. Die Auslegungsgröße ist die "
+                    + "Auslegungsheizlast plus der Aufheizzuschlag; {{gebaeude.ergebnis.aufheizhinweise}} nennt die Hinweise W1 bis "
+                    + "W5 und bleibt ohne Anlass leer. Mit vorgegebener oder berechneter Vorheizzeit folgt ({{#wenn hat.vorheizen}}) "
+                    + "ein Satz mit Verfahren, Vorheizzeit, Vorheizleistung, Tagen ohne Ankunft und Mehrwärme; mit wirksamer "
+                    + "Schnellaufheizung endet er mit „, mit Schnellaufheizung (+2,0 K)“ ({{gebaeude.ergebnis.vorheiz_schnellaufheizung}}).",
+                },
             },
         };
 
@@ -754,8 +829,15 @@ namespace Berichtsvorlage
             Empfehlung = "Recommendation", BesteVor = "Best variant:", BesteMitte = "with a net present value difference of", BesteNach = ".",
             Wirtschaft = "Economic viability",
             Kuehlung = "Cooling", KuehlungVor = "The cooling demand is", KuehlungMitte = "; the system covers", KuehlungNach = " of it.",
+            KuehlungSplitMitte = "; the system and the decentralised split units cover", KuehlungSplitFolge = " of it, of which the cooling sequence covers",
+            KuehlungSplitNach = " of the centrally supplied cooling demand.", KuehlungSplitAllein = "; the decentralised split units cover",
             Deckung = "Coverage per variant", Anhang = "Appendix",
             Stamm = "Base", Gruppe = "Group", Summe = "Total", Warnung = "Warning",
+            Aufheizung = "Preheating", AufheizVor = ": The preheat time is", AufheizBei = "at",
+            AufheizLeistung = ", the preheat power", AufheizAuslegung = "; the design capacity",
+            AufheizAus = "consists of the design heat load", AufheizUnd = "and the heating-up capacity", AufheizNach = ".",
+            VorheizZeit = ": preheat time", VorheizLeistung = ", preheat power", VorheizVerfehlt = ", days without arrival",
+            VorheizMehr = ", additional heat from preheating",
             Kommentare = new[]
             {
                 new[]
@@ -800,6 +882,11 @@ namespace Berichtsvorlage
                 {
                     "A conditional section: everything between {{#wenn hat.kaelte}} and {{/wenn}} appears only if the project "
                     + "calculates cooling. The paragraphs holding the block markers are removed from the report.",
+                    "Inside stands the sentence without local cooling ({{#wenn nicht hat.kaelte.dezentral}}). If a cooling demand "
+                    + "row is covered locally by split units, the block {{#wenn hat.kaelte.dezentral}} after it states the coverage "
+                    + "including the split units and, with {{#wenn hat.kaelte.kaeltefolge}}, the share of the cooling sequence; "
+                    + "without a cooling generator ({{#wenn nicht hat.kaelte.kaeltefolge}}) only the share of the split units. "
+                    + "Blocks can be nested at most two levels deep.",
                 },
                 new[]
                 {
@@ -818,6 +905,17 @@ namespace Berichtsvorlage
                     "The pattern table with the alternative text {{muster.tabelle}}: shading and font of each cell apply to the "
                     + "rows of that role in all structured tables – base, group, total, warning. EPOS-Plan reads it and removes it "
                     + "from the report.",
+                },
+                new[]
+                {
+                    "One paragraph per building, only with preheat optimisation: {{#wenn hat.aufheizung}} omits the section if no "
+                    + "building was calculated with it; {{#je gebaeude}} … {{/je}} repeats the paragraph for every building, for "
+                    + "example “Building 1: The preheat time is 4 h at −10.0 °C …”.",
+                    "The values gebaeude.ergebnis.… come from the result of the run. The design capacity is the design heat "
+                    + "load plus the heating-up capacity; {{gebaeude.ergebnis.aufheizhinweise}} lists the notes W1 to W5 and stays "
+                    + "empty without cause. With a specified or calculated preheat time ({{#wenn hat.vorheizen}}) a sentence "
+                    + "follows with method, preheat time, preheat power, days without arrival and additional heat; with effective "
+                    + "rapid heat-up it ends with “, with rapid heat-up (+2.0 K)” ({{gebaeude.ergebnis.vorheiz_schnellaufheizung}}).",
                 },
             },
         };

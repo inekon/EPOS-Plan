@@ -57,6 +57,10 @@ internal static class Dateifilter
         [".ifcxml"] = "public.xml",
         [".ifczip"] = "public.zip-archive",
         [".gbxml"] = "public.xml",
+        // Projektdatei des CAD-Programms (Datenaustauschkonzept 16.4): eine SQLite-
+        // Datei unter eigener Endung ohne registrierte Typkennung - ausdruecklich
+        // public.data, damit der Waehler sie nicht ausgraut.
+        [".sqproj"] = ALLES,
     };
 
     /// <summary>
@@ -69,6 +73,9 @@ internal static class Dateifilter
 
         foreach (string endung in Endungen(filter))
         {
+            // Entwicklerbereich PROJEKTDATEI_IOS (Entwicklerbereiche.PROJEKTDATEI_IOS): die Projektdatei
+            // des CAD-Programms bietet der Waehler nur im Entwicklermodus an.
+            if (endung == ".sqproj" && !WindowsFormsApplication1.Entwicklermodus.Aktiv) continue;
             string kennung = Kennungen.TryGetValue(endung, out string? k) ? k : ALLES;
             if (!treffer.Contains(kennung)) treffer.Add(kennung);
         }

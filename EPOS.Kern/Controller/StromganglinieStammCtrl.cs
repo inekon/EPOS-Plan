@@ -354,11 +354,16 @@ namespace WindowsFormsApplication1
             int existing = GetProjektGanglinieId(szBezeichner, idProjekt);
             if (existing > 0) return existing;
 
+            // Der Ursprung der Kopie (Schemaschritt KatalogkostenUrsprungSchema): Die Projektkopie nennt ihren
+            // Katalogsatz über die ID, nicht nur über den gleichen Namen. Vor dem Vorgang gefragt, weil die
+            // Spaltenprüfung die eigene Verbindung liest.
+            bool ursprung = KatalogkostenUrsprungSchema.UrsprungLesbar(HEAD_PROJ);
+
             using (DbVorgang v = DataRepository.Vorgang())
             {
                 try
                 {
-                    int neu = CopyGanglinieToProjekt(szBezeichner, idProjekt, v);
+                    int neu = CopyGanglinieToProjekt(szBezeichner, idProjekt, v, ursprung);
                     if (neu > 0) v.Commit(); else v.Rollback();
                     return neu;
                 }
@@ -374,7 +379,7 @@ namespace WindowsFormsApplication1
         // Kopiert eine Stamm-Ganglinie (per Bezeichner) samt Daten in die Projekt-Tabellen.
         // Kopf-ID im Projekt explizit (MAX+1); Daten-ID ist AutoWert; ID_Ganglinie = neue Kopf-ID.
         // Die Daten werden in Stamm-Reihenfolge (nach ID) kopiert, damit die Zeitreihe erhalten bleibt.
-        private static int CopyGanglinieToProjekt(string szBezeichner, int idProjekt, DbVorgang v)
+        private static int CopyGanglinieToProjekt(string szBezeichner, int idProjekt, DbVorgang v, bool ursprung)
         {
             int stammId;
             int zeitinterval;
@@ -402,6 +407,10 @@ namespace WindowsFormsApplication1
                 p.Add(new DbParam("@bez", DbParamTyp.VarWChar) { Wert = szBezeichner ?? (object)DBNull.Value });
                 p.Add(new DbParam("@int", DbParamTyp.Integer) { Wert = zeitinterval });
                 v.Ausfuehren("INSERT INTO " + HEAD_PROJ + " (ID, ID_Projekt, Bezeichner, Zeitinterval) VALUES (?, ?, ?, ?)", p.ToArray());
+                if (ursprung)
+                    v.Ausfuehren("UPDATE " + HEAD_PROJ + " SET ID_Stamm = ? WHERE ID = ?",
+                        new DbParam("@st", DbParamTyp.Integer) { Wert = stammId },
+                        new DbParam("@id", DbParamTyp.Integer) { Wert = neueId });
             }
 
             // Daten der Stamm-Ganglinie einlesen (in Reihenfolge) ...

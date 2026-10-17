@@ -164,11 +164,17 @@ namespace WindowsFormsApplication1
             bool fensterAus = double.IsPositiveInfinity(r_1_AF_KW) && double.IsPositiveInfinity(r_Rest_AF_KW);
             if (!fensterAus)
             {
-                if (!IstPositivEndlich(r_1_AF_KW) || !IstPositivEndlich(r_Rest_AF_KW))
+                // R_Rest,AF darf null oder negativ sein (Rechenbefund RB-Z4): A7a bildet ihn als Rest
+                // 1/(U·A)_w − R_1,AF − Flächenanteil an R_α,i, und in Gl. (27) geht nur die Zweigsumme
+                // ein — sie ist dann wieder 1/(U·A)_w, das Fenster behält sein volles U·A. Negativ wird
+                // der Rest bei hohem U_w und kleiner Strahlungsfläche (A_rad = A_IW < A_AW,ges), weil
+                // der Flächenanteil am inneren Übergang dann größer ist als der innere Widerstand des
+                // Fensters; das ist eine Aufteilung, kein Widerspruch. Geprüft wird die Zweigsumme unten.
+                if (!IstPositivEndlich(r_1_AF_KW) || double.IsNaN(r_Rest_AF_KW) || double.IsInfinity(r_Rest_AF_KW))
                     throw new GebaeudeModellException(GebaeudeModellFehler.FensterzweigUngueltig,
                         "Der Fensterzweig ist ungültig: R_1,AF = " + Text(r_1_AF_KW) +
-                        " K/W, R_Rest,AF = " + Text(r_Rest_AF_KW) + " K/W. Beide müssen " +
-                        "endlich und größer null sein, oder beide unendlich (keine Fenster).");
+                        " K/W, R_Rest,AF = " + Text(r_Rest_AF_KW) + " K/W. R_1,AF muss endlich und " +
+                        "größer null sein, R_Rest,AF endlich, oder beide unendlich (keine Fenster).");
             }
 
             Flaeche(a_AW_opak_M2, nameof(A_AW_opak_M2));
@@ -231,6 +237,11 @@ namespace WindowsFormsApplication1
                 if (!(rGesWand > 0.0))
                     throw new GebaeudeModellException(GebaeudeModellFehler.RRestAwNichtPositiv,
                         "Der Gesamtwiderstand des Wandzweigs ist nicht positiv (" + Text(rGesWand) +
+                        " K/W); Gl. (27) ist so nicht auswertbar.");
+                if (!(rGesFenster > 0.0))
+                    throw new GebaeudeModellException(GebaeudeModellFehler.FensterzweigUngueltig,
+                        "Der Gesamtwiderstand des Fensterzweigs ist nicht positiv (" + Text(rGesFenster) +
+                        " K/W, R_1,AF = " + Text(r_1_AF_KW) + " K/W, R_Rest,AF = " + Text(r_Rest_AF_KW) +
                         " K/W); Gl. (27) ist so nicht auswertbar.");
                 // Fenster nach den Wänden parallel; die Wandkapazität bleibt.
                 r1 = 1.0 / (1.0 / r_1_AW_KW + 1.0 / r_1_AF_KW);
@@ -362,6 +373,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal IReadOnlyList<double> UWirksamJeBauteil_WM2K { get; private init; } = Array.Empty<double>();
 
+        /// <summary>
+        /// Die Erdreichkennwerte nach DIN EN ISO 13370 (Rechenweg RP2a) im Bauteilweg; <c>null</c> ohne Bauteil am
+        /// Erdreich und im Klassenweg (dort trägt sie der Eingang, <see cref="GebaeudeModellEingang.Erdreich"/>).
+        /// </summary>
+        internal Erdreichkennwerte Erdreich { get; private init; }
+
         /// <summary>Der Weg der Außenbauteilgruppe (Klassenweg oder Bauteilweg, Mehrzonenkonzept 3.6).</summary>
         internal Gruppenweg WegAussen { get; private init; }
 
@@ -442,8 +459,20 @@ namespace WindowsFormsApplication1
             double aIw = e.Innenflaechenfaktor * af;
             double aRad = Math.Min(aGes, aIw);
 
+            // Erdreich nach DIN EN ISO 13370 (Rechenweg RP2a): Liegt die Grundfläche am Erdreich, tritt der
+            // Erdreichwiderstand in Reihe zu ihrem U-Wert; B′ aus Grundfläche und Umfang (Feld, sonst Quadrat).
+            double uGrund = e.U_Grund;
+            Erdreichkennwerte erdreich = null;
+            if (string.Equals(e.GrundRandbedingung, DbWerte.GRUND_ERDREICH, StringComparison.Ordinal) && aGrund > 0.0 && uGrund > 0.0)
+            {
+                var u = new double[1];
+                erdreich = Erdreichwiderstand.Bauteilsatz(new[] { (aGrund, 180.0, uGrund) }, aGrund, e.ErdreichUmfangFeld_M, u,
+                                                          e.ErdreichUVorgabe_WM2K);
+                uGrund = u[0];
+            }
+
             // A3 — Transmissionsleitwerte (ungewichtet, E2)
-            double uaOpak = e.U_Aussenwand * aWand + e.U_Dach * aDach + e.U_Grund * aGrund + e.U_Sonstige * aSonst;
+            double uaOpak = e.U_Aussenwand * aWand + e.U_Dach * aDach + uGrund * aGrund + e.U_Sonstige * aSonst;
             double uaFenster = aFenster > 0.0 ? e.U_Fenster * aFenster : 0.0;
 
             // A4 — Außenwandpfad (mit R_si-Abzug)
@@ -480,7 +509,8 @@ namespace WindowsFormsApplication1
             try
             {
                 return new ErsatzparameterRC(cAw, cIw, r1Aw, rRestAw, r1Iw, rConvAw, rConvIw, rRad, rExt,
-                                             aOpak, aIw, uaOpak, r1Af, rRestAf, aFenster, uaFenster, rAlphaAussen);
+                                             aOpak, aIw, uaOpak, r1Af, rRestAf, aFenster, uaFenster, rAlphaAussen)
+                       { Erdreich = erdreich };
             }
             catch (GebaeudeModellException ex)
             {
@@ -515,7 +545,9 @@ namespace WindowsFormsApplication1
             double hVe = e.Lueftungsleitwert_WK;
             if (e.Mehrzonenweg) hVe += e.LuftaustauschLeitwert_WK;
             return AusBauteilweg(new BauteilwegGebaeude(wer, e.Nutzflaeche_M2, e.Bauweise_WhK, e.MasseanteilAussen,
-                                                        e.Innenflaechenfaktor, hVe), bauteile, e.Mehrzonenweg);
+                                                        e.Innenflaechenfaktor, hVe, e.A_Grund_M2, e.ErdreichUmfangFeld_M,
+                                                        e.ErdreichUVorgabe_WM2K),
+                                 bauteile, e.Mehrzonenweg);
         }
 
         /// <summary>
@@ -659,8 +691,11 @@ namespace WindowsFormsApplication1
             double uaOpak = 0.0;
             var zweigeAw = new List<(double R1_KW, double C1_Jk)>();
             var masseloseAw = new List<(BauteilEingang B, string Wer, double R_KW, double UGerechnet)>();
+            // Erdreich nach DIN EN ISO 13370 (RP2a): die Bauteile am Erdreich und der Platz ihrer Herleitung.
+            var erdreich = new List<(int Bauteil, int Herleitung, double Flaeche, double Neigung)>();
             foreach ((BauteilEingang b, string werB, int ib) in aussen)
             {
+                if (b.Rand == Bauteilrand.Erdreich) erdreich.Add((ib, herleitung.Count, b.Flaeche_M2, b.NeigungWirksamGrad));
                 double uGerechnet = double.NaN;
                 Schichtkennwerte kennwerte = default;
                 if (b.HatSchichten)
@@ -692,6 +727,26 @@ namespace WindowsFormsApplication1
                     masseloseAw.Add((b, werB, r, uGerechnet));
                     herleitung.Add(new BauteilHerleitung(b.Bezeichnung, Bauteilgruppe.Aussen, true, double.NaN, double.NaN, double.NaN,
                                                          r / 6.0, double.NaN, uGerechnet, uWirksam));
+                }
+            }
+
+            // Der Erdreichwiderstand tritt in Reihe zu jedem Bauteil am Erdreich (RP2a, DIN EN ISO 13370): Er senkt
+            // dessen wirksamen U-Wert in Gl. (27) und in den Gewichten der äquivalenten Außentemperatur; R₁ und C₁
+            // bleiben die des Bauteils, R_Rest nimmt den Widerstand auf. Die Randtemperatur bleibt die nach Kusuda.
+            Erdreichkennwerte erdreichKennwerte = null;
+            if (erdreich.Count > 0)
+            {
+                var satz = new List<(double, double, double)>(erdreich.Count);
+                foreach (var t in erdreich) satz.Add((t.Flaeche, t.Neigung, uJeBauteil[t.Bauteil]));
+                var uNeu = new double[erdreich.Count];
+                erdreichKennwerte = Erdreichwiderstand.Bauteilsatz(satz, g.ErdreichFlaeche_M2, g.ErdreichUmfang_M, uNeu,
+                                                                   g.ErdreichUVorgabe_WM2K);
+                for (int k = 0; k < erdreich.Count; k++)
+                {
+                    (int ib, int ih, double flaeche, _) = erdreich[k];
+                    uaOpak += (uNeu[k] - uJeBauteil[ib]) * flaeche;
+                    uJeBauteil[ib] = uNeu[k];
+                    herleitung[ih] = herleitung[ih] with { UWirksam_WM2K = uNeu[k] };
                 }
             }
 
@@ -813,7 +868,7 @@ namespace WindowsFormsApplication1
                 throw new GebaeudeModellException(ex.Grund, wer + ": " + ex.Message);
             }
             return p with { Bauteilherleitung = herleitung.AsReadOnly(), WegAussen = wegAussen, WegInnen = wegInnen,
-                            UWirksamJeBauteil_WM2K = Array.AsReadOnly(uJeBauteil) };
+                            UWirksamJeBauteil_WM2K = Array.AsReadOnly(uJeBauteil), Erdreich = erdreichKennwerte };
         }
 
         /// <summary>Der konvektive Übergang raumseitig α_kon,i [W/(m²K)]: eingetragen, sonst <see cref="GebaeudeFestwerte.ALPHA_KON_INNEN"/>.</summary>

@@ -379,5 +379,67 @@ namespace KiKern.Tests
             Assert.Equal(Schutzstufe.Lesen, p.Aufruf.Aktion.Stufe);
             Assert.Equal("ProjektCtrl.ReadSingle(int)", p.Aufruf.Aktion.Andockpunkt);
         }
+
+        // ---------------------------------------------------------------- Ausweichnamen
+
+        /// <summary>Eine Formularaktion im Kleinen: <c>maske</c> (frei) und <c>werte</c> (Pflicht).</summary>
+        private static readonly KiAktion Formular = new KiAktion(
+            name: "formular_probe",
+            zweck: "Probe der Ausweichnamen.",
+            stufe: Schutzstufe.Lesen,
+            andockpunkt: "Probe",
+            parameter: new[]
+            {
+                new KiParameter("maske", KiParameterTyp.Text, "Maske", pflicht: false),
+                new KiParameter("werte", KiParameterTyp.Text, "Werte")
+            },
+            ausfuehren: a => KiErgebnis.Ok(""));
+
+        /// <summary>Anwendermeldung 10.10.2026: <c>mask</c> statt <c>maske</c>, <c>values</c> statt <c>werte</c>.</summary>
+        [Fact]
+        public void Ausweichname_greift_fuer_mask_und_values()
+        {
+            KiPruefErgebnis p = KiPruefung.PruefeJson(new KiRegister().Aufnehmen(Formular), "formular_probe",
+                "{\"mask\":\"Wärmepumpe im Projekt\",\"values\":\"vorlauf=55\"}");
+
+            Assert.True(p.Gueltig, p.FehlerText());
+            Assert.Equal("Wärmepumpe im Projekt", p.Aufruf!.Text("maske"));
+            Assert.Equal("vorlauf=55", p.Aufruf.Text("werte"));
+        }
+
+        /// <summary>Ein Name, der nicht in der Tafel steht, bleibt benannt abgelehnt.</summary>
+        [Fact]
+        public void Unbekannter_Name_bleibt_benannt_abgelehnt()
+        {
+            KiPruefErgebnis p = KiPruefung.Pruefe(Formular, Beispielregister.Werte("maskname", "X", "werte", "a=1"));
+
+            Assert.False(p.Gueltig);
+            Assert.Contains("maskname", p.FehlerText());
+            Assert.Contains("maske", p.FehlerText());
+        }
+
+        /// <summary>Ausweichname UND Zielname: der Zielname gewinnt, der Ausweichname faellt still weg.</summary>
+        [Fact]
+        public void Zielname_gewinnt_gegen_den_Ausweichnamen()
+        {
+            KiPruefErgebnis p = KiPruefung.Pruefe(Formular,
+                Beispielregister.Werte("maske", "Richtig", "mask", "Falsch", "werte", "a=1"));
+
+            Assert.True(p.Gueltig, p.FehlerText());
+            Assert.Equal("Richtig", p.Aufruf!.Text("maske"));
+        }
+
+        /// <summary>
+        /// Der Ausweichname greift nur, wenn die Aktion den Zielnamen deklariert: Bei einer
+        /// Aktion ohne <c>maske</c> bleibt <c>mask</c> ein unbekannter Parameter.
+        /// </summary>
+        [Fact]
+        public void Ausweichname_ohne_Zielparameter_bleibt_unbekannt()
+        {
+            KiPruefErgebnis p = KiPruefung.Pruefe(MitId, Beispielregister.Werte("projekt_id", 7L, "mask", "X"));
+
+            Assert.False(p.Gueltig);
+            Assert.Contains("mask", p.FehlerText());
+        }
     }
 }

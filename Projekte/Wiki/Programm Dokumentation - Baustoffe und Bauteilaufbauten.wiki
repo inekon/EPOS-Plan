@@ -10,14 +10,16 @@ Beide Kataloge öffnen Sie über das Menü '''Administration''' › ''Gebäude''
 
 Der Baustoffkatalog führt je Stoff einen Namen, eine Gruppe (etwa Mauerwerk, Beton, Dämmstoffe), den Hersteller und drei Stoffwerte:
 
+[[Datei:Bildschirmfoto_Baustoffe.png|mini|zentriert|800px|Katalog Baustoffe – Bildschirmfoto mit Beispieldaten.]]
+
 {| class="wikitable"
 ! Wert !! Einheit !! zulässig
 |-
-| Wärmeleitfähigkeit λ || W/(mK) || 0,005 … 500
+| Wärmeleitfähigkeit <math>\lambda</math> || W/(mK) || 0,005 … 500
 |-
-| Rohdichte ρ || kg/m³ || 5 … 8 000
+| Rohdichte <math>\rho</math> || kg/m³ || 5 … 8 000
 |-
-| spezifische Wärmekapazität c_p || J/(kgK) || 100 … 5 000
+| spezifische Wärmekapazität <math>c_{p}</math> || J/(kgK) || 100 … 5 000
 |}
 
 Die Wärmekapazität steht in '''J'''/(kgK), nicht in kJ/(kgK) wie in manchen Tabellenwerken – 1 kJ/(kgK) sind 1 000 J/(kgK). Ein leeres Feld heißt „nicht angegeben"; eine 0 wäre ein anderer Stoff und wird nicht angenommen. Dazu kommt die ''Quelle'', das Regelwerk oder Datenblatt, aus dem die Werte stammen.
@@ -29,7 +31,7 @@ Die mitgelieferten Stoffe tragen das Schloss: Sie sind nur lesbar. Einen eigenen
 == Bauteilaufbauten ==
 {{Anker|bauteilaufbauten}}
 
-Ein Bauteilaufbau hat einen Namen, eine Bauteilart, eine Beschreibung, eine Quelle und seine '''Schichten'''. Die Liste zeigt je Aufbau die Bauteilart, den U-Wert, den Wärmedurchlasswiderstand R, die flächenbezogene Wärmekapazität, die Zahl der Schichten, die Gesamtdicke und die Herkunft.
+Ein Bauteilaufbau hat einen Namen, eine Bauteilart, eine Beschreibung, eine Quelle und seine '''Schichten'''. Die Liste zeigt je Aufbau die Bauteilart, den U-Wert, den Wärmedurchlasswiderstand <math>R</math>, die flächenbezogene Wärmekapazität, die Zahl der Schichten, die Gesamtdicke und die Herkunft.
 
 Die '''Bauteilart''' (Außenwand, Dach, Bodenplatte, Fenster, Tür, Innenwand, Decke, Vorhangfassade, Sonstiges oder ''für jede Bauteilart'') legt die Neigung fest, mit der der Katalog den U-Wert rechnet: Wand 90°, Dach und Decke 0°, Bodenplatte 180°. Fenster und Vorhangfassade rechnen im Gebäudemodell aus ihrem U-Wert; ein Schichtaufbau ist für sie nicht vorgesehen und wird beim Speichern abgelehnt.
 
@@ -38,11 +40,12 @@ Die '''Bauteilart''' (Außenwand, Dach, Bodenplatte, Fenster, Tür, Innenwand, D
 
 Die Gruppe ''Schichten'' im Stammblatt ist eine Liste, in der jede Zeile eine Schicht ist – von innen (Schicht 1) nach außen. Je Schicht:
 
-* '''Baustoff''' – die Wahl aus dem Baustoffkatalog. Sie übernimmt λ, ρ und c_p des Stoffes als Kopie; danach können Sie jeden Wert überschreiben. ''(freie Eingabe)'' lässt die Werte stehen und löst die Zuordnung.
-* '''Dicke''' in mm, zulässig 1 bis 1 000 mm.
-* '''λ, ρ, c_p''' – die Werte der Schicht. Eine Schicht aus Stoff braucht alle drei; der Bauteilweg rechnet mit ihnen die Speichermasse.
-* '''Luftschicht''' – ohne λ ist die Schicht eine ruhende Luftschicht: Ihr Widerstand folgt DIN EN ISO 6946, Tabelle 8 (bis 300 mm), und sie trägt keine Speichermasse. Mit λ rechnet sie wie eine Stoffschicht mit dieser äquivalenten Leitfähigkeit.
-* '''R''' – der Wärmedurchlasswiderstand der Schicht in m²K/W, gerechnet.
+* '''Baustoff''' – die Wahl aus dem Baustoffkatalog. Sie übernimmt <math>\lambda</math>, <math>\rho</math> und <math>c_{p}</math> des Stoffes als Kopie; danach können Sie jeden Wert überschreiben. ''(freie Eingabe)'' lässt die Werte stehen und löst die Zuordnung.
+* '''Dicke''' in mm, zulässig 0,5 bis 1 000 mm.
+* '''<math>\lambda</math>, <math>\rho</math>, <math>c_{p}</math>''' – die Werte der Schicht. Eine Schicht aus Stoff braucht alle drei; der Bauteilweg rechnet mit ihnen die Speichermasse.
+* '''Luftschicht''' – ohne <math>\lambda</math> ist die Schicht eine ruhende Luftschicht: Ihr Widerstand folgt DIN EN ISO 6946, Tabelle 8 (bis 300 mm), und sie trägt keine Speichermasse. Mit <math>\lambda</math> rechnet sie wie eine Stoffschicht mit dieser äquivalenten Leitfähigkeit.
+* '''<math>R</math>''' – der Wärmedurchlasswiderstand der Schicht in m²K/W, gerechnet.
+* '''Abschnitt''' und '''Flächenanteil''' – eine inhomogene Schicht (etwa Holzständer mit Dämmung dazwischen) besteht aus mehreren Abschnitten nebeneinander; ''Abschnitt daneben anlegen (inhomogene Schicht)'' legt den nächsten an. Jeder Abschnitt führt Baustoff, Dicke und Flächenanteil. Die Anteile einer Ebene ergeben zusammen 100 % (zulässig 99 bis 101 %), jeder Anteil ist größer null, und jede inhomogene Ebene führt dieselben Abschnitte. Ein Aufbau ohne Abschnitte rechnet wie jeder andere.
 
 Die Knöpfe ▲ und ▼ schieben eine Schicht nach innen oder außen, ✕ nimmt sie heraus, ''+ Neue Schicht …'' hängt außen eine an. Die Nummerierung folgt immer der Reihenfolge der Liste.
 
@@ -51,20 +54,85 @@ Die Knöpfe ▲ und ▼ schieben eine Schicht nach innen oder außen, ✕ nimmt 
 
 Unter den Schichten stehen die Kennwerte des Aufbaus:
 
-* '''R = Σ d/λ''' – der Wärmedurchlasswiderstand aller Schichten einschließlich der ruhenden Luftschichten.
-* '''U = 1/(R_si + R + R_se)''' – mit den Wärmeübergangswiderständen nach DIN EN ISO 6946, Tabelle 7, für die Neigung der Bauteilart an Außenluft. Die Zeile darunter nennt die angesetzten Werte R_si und R_se.
-* '''C = Σ ρ·c_p·d''' – die flächenbezogene Wärmekapazität in kJ/(m²K).
-* '''T_BT''' – die Bezugsperiode nach VDI 6007 Blatt 1, Gl. (10a)–(10d): 7 Tage, oder 2 Tage bei raumseitig abgedeckter Speichermasse (etwa hinter einer Vorsatzschale mit Luftschicht). Daneben steht die wirksame Kapazität C₁ je m² bei dieser Periode.
+* '''<math>R = \sum d / \lambda</math>''' – der Wärmedurchlasswiderstand aller Schichten einschließlich der ruhenden Luftschichten.
+* '''<math>U = 1/(R_{\mathrm{si}} + R + R_{\mathrm{se}})</math>''' – mit den Wärmeübergangswiderständen nach DIN EN ISO 6946, Tabelle 7, für die Neigung der Bauteilart an Außenluft. Die Zeile darunter nennt die angesetzten Werte <math>R_{\mathrm{si}}</math> und <math>R_{\mathrm{se}}</math>.
+* '''<math>C = \sum \rho \cdot c_{p} \cdot d</math>''' – die flächenbezogene Wärmekapazität in kJ/(m²K).
+* '''<math>T_{\mathrm{BT}}</math>''' – die Bezugsperiode nach VDI 6007 Blatt 1, Gl. (10a)–(10d): 7 Tage, oder 2 Tage bei raumseitig abgedeckter Speichermasse (etwa hinter einer Vorsatzschale mit Luftschicht). Daneben steht die wirksame Kapazität <math>C_{1}</math> je m² bei dieser Periode.
 
 Fehlt einer Schicht eine Angabe, bleiben die Summen leer, und die Zeile nennt, was fehlt.
+
+Enthält der Aufbau Abschnitte, zeigt der Summenfuß statt eines einzelnen Widerstands den oberen Grenzwert <math>R'_{\mathrm{T}}</math> (Wärme fließt in parallelen Streifen), den unteren Grenzwert <math>R''_{\mathrm{T}}</math> (Schichten als durchgehende Ebenen) und ihr Mittel <math>R_{\mathrm{T}} = (R'_{\mathrm{T}} + R''_{\mathrm{T}})/2</math> nach DIN EN ISO 6946:2018-03, Abschnitt 6.7; mit dem Mittel rechnet der U-Wert. Darunter steht die Fehlerschranke <math>e = (R'_{\mathrm{T}} - R''_{\mathrm{T}})/(2 R_{\mathrm{T}})</math>, die größte mögliche Abweichung des Mittels vom wahren Wert. Liegt sie über 20 % (der obere Grenzwert ist mehr als 1,5-mal so groß wie der untere — die Anwendungsgrenze des vereinfachten Verfahrens nach Abschnitt 6.7.2.2, die Fehlerabschätzung steht in Abschnitt 6.7.2.5), weist ein Hinweis darauf hin, dass das vereinfachte Verfahren für diesen Aufbau ungenau ist; gerechnet wird weiter mit dem Mittel.
 
 === Speichern und Neu ===
 {{Anker|speichern}}
 
-Geschrieben wird der Aufbau erst mit ''Speichern'' – Kopf und Schichten zusammen. Vorher prüft EPOS-Plan: ein Name, mindestens eine Schicht, jede Dicke im zulässigen Bereich, λ, ρ und c_p im zulässigen Bereich und vorhanden, wo die Schicht sie braucht. Eine verletzte Regel steht als Meldung über der Liste; der Aufbau bleibt ungespeichert, bis Sie sie beheben oder ''Verwerfen'' wählen.
+Geschrieben wird der Aufbau erst mit ''Speichern'' – Kopf und Schichten zusammen. Vorher prüft EPOS-Plan: ein Name, mindestens eine Schicht, jede Dicke im zulässigen Bereich, <math>\lambda</math>, <math>\rho</math> und <math>c_{p}</math> im zulässigen Bereich und vorhanden, wo die Schicht sie braucht. Eine verletzte Regel steht als Meldung über der Liste; der Aufbau bleibt ungespeichert, bis Sie sie beheben oder ''Verwerfen'' wählen.
 
 ''Neu…'' öffnet dieselben Felder samt Schichtenliste als eigenes Blatt über der Verwaltung; ''OK'' prüft mit denselben Regeln und legt den Aufbau an. ''Duplizieren…'' kopiert einen Aufbau samt seinen Schichten unter neuem Namen.
 
 Ein Aufbau des Katalogs ist eine Vorlage: Übernimmt ein Projekt ihn, arbeitet es mit einer Kopie samt seinen Stoffen. Eine spätere Änderung im Katalog verschiebt kein gerechnetes Projekt.
+
+=== Fensteraufbau ===
+{{Anker|fensteraufbau}}
+
+Bei der Bauteilart ''Fenster'' (und ''Vorhangfassade'') zeigt das Stammblatt die Gruppe ''Fenster'':
+
+* '''U_g Verglasung''' und '''U_f Rahmen''' in W/(m²K).
+* '''g-Wert''' der Verglasung und '''Rahmenanteil''' <math>f</math>.
+* '''ψ_g Glasrand''' – der längenbezogene Wärmedurchgangskoeffizient des Glasrands.
+
+Daraus entsteht <math>U_{\mathrm{w}} = (1 - f) \cdot U_{\mathrm{g}} + f \cdot U_{\mathrm{f}} + l_{\mathrm{g}} \cdot \psi_{\mathrm{g}} / A</math> nach DIN EN ISO 10077-1, mit der Fensterfläche <math>A</math> des Bauteils und der genäherten Glasrandlänge <math>l_{\mathrm{g}} \approx 4 \cdot \sqrt{(1 - f) \cdot A}</math> (eine quadratische Scheibe). Ohne <math>\psi_{\mathrm{g}}</math> entfällt der Randterm; ohne <math>U_{\mathrm{g}}</math> bleibt <math>U_{\mathrm{w}}</math> leer, ebenso bei einem Rahmenanteil größer null ohne <math>U_{\mathrm{f}}</math>; ohne Rahmenanteil gilt <math>f = 0</math>.
+
+Wählen Sie im Bauteildialog (Bauteilart ''Fenster'' oder ''Vorhangfassade'') einen Fensteraufbau, übernimmt das Bauteil dessen g-Wert und Rahmenanteil und als U-Wert das gerechnete <math>U_{\mathrm{w}}</math>; eine Zeile unter dem Aufbau nennt die Übernahme. Was der Aufbau nicht trägt, bleibt am Bauteil stehen, und alle drei Felder lassen sich danach von Hand ändern. Auch ein eingelesener Aufbau trägt diese Fensterwerte, wenn die Quelle sie in ''Fenster.csv'' führt.
+
+=== Strahlung der Außenfläche ===
+
+Jeder Aufbau führt den '''Absorptionsgrad solar''' und den '''Emissionsgrad''' (langwellig) seiner Außenfläche, je 0 bis 1. Beide gehen in die äquivalente Außentemperatur der Bauteile ein, die den Aufbau tragen; leer gilt die Vorgabe 0,6 bzw. 0,9. Ein Bauteil kann im Bauteildialog einen eigenen Wert tragen. Der Gebäudeexport schreibt die Werte in gbXML als <code>Absorptance</code> der Konstruktion und in IFC im Satz <code>EPOS_Bauteil</code>; der Gebäudeimport übernimmt sie von dort.
+
+== Gruppe, Klasse und Herkunft ==
+{{Anker|gruppe-klasse}}
+
+Beide Kataloge gliedern ihre Sätze nach '''Gruppe''' und '''Klasse''' und nennen die '''Herkunft'''; Gruppe, Klasse und Herkunft sind Spalten der Liste mit Filter.
+
+* '''Baustoffe''' – die Klasse ist eine zweite Auswahl unter der Gruppe; ihre Einträge folgen der Gruppe, ein Gruppenwechsel nimmt eine fremde Klasse weg. Gruppen sind Mauerwerk, Beton, Estriche, Putze und Mörtel, Dämmstoffe, Holz und Holzwerkstoffe, Platten, Bodenbeläge, Abdichtungen, Metalle und Glas, Erdreich und Sonstige; die Klassen darunter nennen den Stoff genauer, etwa Ziegel, Porenbeton oder Mineralwolle.
+* {{Anker|haustechnik}}'''Klasse Haustechnik''' – Werkstoffe der Haustechnik und Luftdurchlässe stehen in der Gruppe ''Sonstige'' in der Klasse ''Haustechnik'', bei Baustoffen wie bei Aufbauten. Sie gehören nicht in die Hülle; der Klassenfilter blendet sie mit der Verneinung <code>!Haustechnik</code> aus.
+* '''Bauteilaufbauten''' – Gruppe und Klasse gliedern nach Bauteilart. Ohne Gruppe setzt EPOS-Plan beim Speichern die Gliederung der Bauteilart. Gruppen sind Wände, Decken, Dächer, Öffnungen und Sonstige; die Klassen unterscheiden Außenwand, Außenwand am Erdreich, Innenwand, Geschossdecke, oberste Geschossdecke, Decke nach unten, Bodenplatte, Flachdach, Steildach, Fenster, Dachfenster, Vorhangfassade, Tür und Sonstiges.
+* '''Herkunft''' – ''Vorgabe'' (ausgeliefert, mit Schloss), ''eigen'' oder ''Eingelesen'' (aus dem [[#bauteilkatalog-einlesen|Bauteilkatalog einlesen]]). Ein eingelesener Satz trägt im Kopf des Stammblatts die Marke, die Quelle steht als Lesewert.
+* {{Anker|eignung}}'''Gebäudesimulation''' – ein Lesewert am Aufbau: „geeignet“ oder „für die Gebäudesimulation meist nicht geeignet“ mit dem Grund (ein Aufbau ohne Schicht, eine Schicht ohne Wärmeleitfähigkeit, eine Öffnung ohne Schicht und ohne U-Wert, Stoffwerte außerhalb der zulässigen Bänder). Er lässt sich nicht von Hand setzen; ein Luftdurchlass ist immer gekennzeichnet. Der Schalter '''nur geeignete''' blendet die gekennzeichneten Aufbauten vor der Liste aus; er steht bei jedem Öffnen an. Im Bauteildialog erscheinen gekennzeichnete Aufbauten erst nach ''auch ungeeignete zeigen'', die laufende Wahl bleibt immer sichtbar.
+
+== Aufbauvorschläge und Zuordnungsstufen ==
+{{Anker|aufbauvorschlaege}}
+
+Jedes Bauteil eines Gebäudes steht in einer von drei '''Zuordnungsstufen''', die die Gebäudeansicht im Farbmodus ''Aufbau'' färbt und die Bauteilliste in der Spalte ''Aufbau'' nennt:
+
+{| class="wikitable"
+! Stufe !! Farbe !! Bedeutung
+|-
+| '''A''' || grün || vollständiger Aufbau mit Schichten
+|-
+| '''B''' || gelb || nur der U-Wert; der Aufbau ist ein Ersatzaufbau
+|-
+| '''C''' || orange || nur Geometrie, der U-Wert kommt aus der Vorgabe
+|}
+
+Für Bauteile der Stufen B und C schlägt die [[Programm Dokumentation/Gebäude#modell-pruefen|Modellprüfung]] einen Aufbau vor, der Reihe nach aus dem Projekt, dem Katalog und den Typaufbauten. Im Katalog entscheiden der Name des Bauteils (er trifft eine Typgruppe), die Aufbauklasse und die Nähe zum Ziel-U-Wert, bei der Stufe C ist das Ziel-U der Wert der Baualtersklasse des Gebäudes. Einzelheiten stehen unter [[Programm Dokumentation/Gebäude#aufbauvorschlaege|Gebäude: Vorschläge]].
+
+== Bauteilkatalog einlesen ==
+{{Anker|bauteilkatalog-einlesen}}
+
+Menü '''Administration''' › ''Gebäude'' › ''Bauteilkatalog einlesen…'' liest einen Bauteilkatalog aus den CSV-Dateien eines Exports in beide Kataloge ein. Der Dialog arbeitet in zwei Schritten:
+
+# '''Datei wählen.''' Wählen Sie ''Baustoffe.csv'' des Exports; ''Aufbauten.csv'', ''Schichten.csv'', ''Schichten_Abschnitte.csv'', ''Fenster.csv'' und ''Basis_Auszug.csv'' müssen daneben liegen, ''Katalog.csv'', ''Katalog_Zuordnung.csv'' und ''Katalog_Inhalt.csv'' können daneben liegen; Fehlt ''Baustoffe.csv'' im gewählten Ordner, liegt aber im Unterordner ''Export'', liest EPOS-Plan diesen Unterordner; es genügt also, den Ordner über ''Export'' zu wählen. ''Katalog_Zuordnung.csv'' sucht der Import im gelesenen Ordner und danach im Unterordner ''Export''. Die Vorschau nennt den Ordner, der gelesen wird.
+# '''Vorschau prüfen.''' Die Vorschau zählt je Satzart (Baustoffe, Aufbauten, Schichten, Abschnitte), was neu ist, mit dem Katalog oder in der Quelle zusammengeführt, wiedererkannt oder abgelehnt wird; bei den wiedererkannten Aufbauten nennt sie, wie viele die Übernahme durch andere Schichten, Abschnitte oder eine andere Quelle samt Teilkatalog ändert (aktualisiert). Dazu stehen: die Zahl der Aufbauten, die für die Gebäudesimulation meist nicht geeignet sind und gekennzeichnet werden, die Schichten, die über den Namen einen Baustoff derselben Gruppe treffen, die Zahl der Haustechnik-Sätze und Luftdurchlässe, die Sätze je Gruppe und Klasse, die Teilkataloge (wie viele die Quelle führt, über welche Datei sie zugeordnet sind, wie viele Baustoffe und Aufbauten einen, zwei oder mehr oder keinen Teilkatalog tragen), die Codes ohne Deutung (sie fallen auf ''Sonstige''), die Ablehnungsgründe und eine Plausibilitätszeile zur Richtung innen–außen und zum U-Wert aus den Schichten gegen den U-Wert der Quelle. ''Übernehmen'' steht erst nach einer Vorschau ohne Ablehnung bereit und schreibt alles in einem Vorgang; bei einem Fehler bleibt der Katalog unverändert. Die Meldung nennt die Zahlen der übernommenen Sätze und die Dauer.
+
+Beim Einlesen gilt:
+
+* Die Sätze tragen die Herkunft ''Eingelesen'', sind nicht schreibgeschützt, und die Quelle nennt den Datenstand des Katalogs und den Teilkatalog des Satzes. Die Namen der Teilkataloge stehen in ''Katalog.csv''; welcher Satz in welchem Teilkatalog steht, liest der Import aus ''Katalog_Zuordnung.csv''. Fehlt diese Datei, sucht er die Zuordnung in ''Katalog_Inhalt.csv''. Steht ein Satz in zwei Teilkatalogen oder ist er zusammengeführt, nennt die Quelle alle seine Teilkataloge. Ein Satz ohne Zuordnung bleibt ohne Teilkatalog. Fehlen die Dateien oder taugen sie nicht, läuft der Import ohne Teilkatalog weiter und das Protokoll nennt den Grund. Der Hersteller bleibt leer – die Stoffe sind herstellerneutral.
+* '''Stoffgruppe''' aus dem Code der Quelle, ersatzweise aus den Basiszeilen; die Bauteilart eines Aufbaus aus den Basiszeilen, ohne sie ''Sonstiges''.
+* '''Wärmekapazität''' bis 10 gilt als kJ/(kgK) und wird mit 1 000 multipliziert, darüber als J/(kgK); 0 heißt kein Wert. '''Wärmeleitfähigkeit''' bis 0 heißt kein Wert; über 10 ist sie nur für Metalle (Rohdichte ab 2 500 kg/m³) zulässig. Bei anderen Stoffen mit über 60, deren Tausendstel zwischen 0,02 und 0,5 liegt, nimmt EPOS-Plan einen Skalenfehler an, teilt durch 1 000 und nennt jede Korrektur im Protokoll; jedes übrige Übermaß lehnt den Baustoff ab bzw. verwirft den Wert an der Schicht.
+* '''Zusammenführen.''' Sätze mit gleichem aufbereiteten Namen und gleicher Gruppe gelten als einer, wenn Wärmeleitfähigkeit (±2 %), Rohdichte (±5 %) und Wärmekapazität (±10 %) übereinstimmen; leere Felder füllt der spätere Satz.
+* '''Schichten''' werden je Aufbau und Abschnitt in der Reihenfolge der Quelle von 1 bis n neu nummeriert. Eine Schicht ohne Dicke bekommt 0 m und behält den Widerstand der Quelle.
+* '''Inhomogene Aufbauten.''' Ein Aufbau mit Abschnitten wird übernommen, wenn jede Schicht in einem Abschnitt liegt und die Flächenanteile zusammen 100 % ergeben (zulässig 99 bis 101 %). Fehlt der Anteil bei genau einem Abschnitt und lassen die übrigen mehr als 1 % offen, bekommt dieser Abschnitt den Rest auf 100 %; die Vorschau zählt diese Fälle. Ein Abschnitt mit Flächenanteil 0 trägt nichts bei: Haben alle Abschnitte einen Anteil und ergeben die übrigen zusammen 100 % (zulässig 99 bis 101 %), werden die Abschnitte mit Anteil 0 samt ihren Schichten weggelassen, das Protokoll nennt jeden dieser Aufbauten; bleibt nur ein Abschnitt, wird der Aufbau homogen übernommen. Liegen die Schichtgrenzen aller Abschnitte übereinander (zulässig 1 mm oder 1 % der größten Dicke, das größere Maß), bildet die k-te Schicht jedes Abschnitts die Ebene k. Sonst – bei verschiedener Schichtzahl wie bei gleicher Schichtzahl mit versetzten Grenzen – müssen alle Abschnitte gleich dick sein (dieselbe Toleranz); dann werden die Schichtgrenzen aller Abschnitte zusammengelegt und jede Schicht an den Grenzen der übrigen Abschnitte geteilt, sodass jede Ebene in jedem Abschnitt eine Schicht führt – Dicke und Widerstand jedes Abschnitts bleiben dabei gleich. Grenzen, die näher als die Toleranz beieinanderliegen, gelten als eine Grenze. Die Vorschau zählt diese Aufbauten und die zusätzlichen Teilschichten. Stehen solche Aufbauten schon aus einem Import im Katalog und bekämen sie andere Schichten, nennt die Vorschau, wie viele davon ihren U-Wert um mehr als 1 % ändern, und die größte Änderung. Gerechnet wird nach DIN EN ISO 6946 mit dem Mittel aus oberem und unterem Grenzwert (siehe ''Summen''). Abgelehnt wird ein Aufbau mit einer durchgehenden Schicht neben Abschnitten, mit fehlenden Flächenanteilen, die sich nicht ergänzen lassen, mit einer Anteilsumme außerhalb 99 bis 101 %, mit verschieden dicken Abschnitten, deren Schichten geteilt werden müssten, mit einer Schicht ohne Dicke bei verschiedener Schichtzahl und mit einer ruhenden Luftschicht, die geteilt werden müsste (ihr Widerstand hängt nicht anteilig von der Dicke ab).
+* '''Wiederimport.''' Sätze mit derselben Kennung der Quelle werden aktualisiert (ein Aufbau samt Schichten ersetzt), ohne Dubletten; andere Sätze des Katalogs bekommen nur leere Felder ergänzt, ein ausgelieferter Satz wird nie überschrieben. Bekämen Aufbauten des Katalogs durch die Teilung an gemeinsamen Schichtgrenzen andere Schichten, nennt die Vorschau ihre Zahl, wie viele davon verglichen wurden, wie viele ihren U-Wert um mehr als 1 % ändern, die größte Änderung und wie viele ohne Vergleichswert bleiben. Verglichen wird mit dem U-Wert, den EPOS-Plan für den Aufbau im Katalog rechnet; lässt sich keiner rechnen, mit dem gespeicherten U-Wert der Quelle.
 
 [[Kategorie:Programm Dokumentation]]

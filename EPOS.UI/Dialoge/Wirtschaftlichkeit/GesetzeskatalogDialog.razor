@@ -141,6 +141,7 @@
                                         Quelle="@_zeileQuelle"
                                         Klassen="@Klassenvorrat" Einheiten="@Einheiten"
                                         Statuswerte="@Statuswerte"
+                                        Vorschlagsdaten="@_vorschlagsdaten"
                                         Pruefen="@ZeilePruefen"
                                         Geschlossen="ZeileGeschlossen" />
         </KindInhalt>
@@ -197,6 +198,13 @@
     /// Der zweite Wert ist die Id, die bei der Dublettenprüfung nicht mitzählt.
     /// </summary>
     [Parameter] public Func<GesetzeskatalogZeileDialog.Zeilenwerte, int, Task<string>>? Pruefen { get; set; }
+
+    /// <summary>
+    /// Die Vorschlagsdaten der Einheit für eine neue Zeile
+    /// (<c>GesetzKatalog.Vorschlagsdaten</c>); gelesen bei jedem „Neu…", damit eine gerade
+    /// angelegte Zeile mitzählt. Ohne Gabe schlägt der Zeilendialog nichts vor.
+    /// </summary>
+    [Parameter] public Func<Task<GesetzVorschlagsdaten>>? Vorschlagsdaten { get; set; }
 
     /// <summary>Der Klassenvorrat des Zeilendialogs (<c>GesetzKatalog.KlassenVorrat</c>).</summary>
     [Parameter] public IReadOnlyList<(string Wert, string Anzeige)> Klassenvorrat { get; set; }
@@ -301,6 +309,7 @@
     private bool _frageNeueZeileOffen;
     private string _frageNeueZeile = "";
     private GesetzeskatalogZeileDialog.Zeilenwerte? _bearbeitet;
+    private GesetzVorschlagsdaten _vorschlagsdaten = GesetzVorschlagsdaten.Leer;
     private Katalogfilterzeile? _alt;
 
     private bool _loeschfrageOffen;
@@ -426,7 +435,7 @@
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
         await KlassenLaden();
-        await _wurzel.FocusAsync();
+        await _wurzel.FocusAsync(preventScroll: true);
         StateHasChanged();
     }
 
@@ -484,17 +493,23 @@
     // Neu (btnNeu_Click)
     // =====================================================================
 
-    private void BeiNeu()
+    private async Task BeiNeu()
     {
         _meldung = "";
         _alt = null;
         _zeileNeu = true;
         _zeileId = 0;
         _zeileSchluessel = "";
-        _zeileKlasse = GewaehlteKlasse.Length > 0 ? GewaehlteKlasse : DbWerte.GESETZ_KLASSE_KWKG;
+        // Der gewählte Bereich ist Vorbelegung (keine Wahl des Anwenders); einen
+        // Rückfall auf KWKG gibt es nicht mehr — ohne Bereich sperrt der Zeilendialog OK.
+        _zeileKlasse = GewaehlteKlasse;
         _zeileJahr = AktuellesJahr;
         _zeileWert = null;
-        _zeileEinheit = DbWerte.GESETZ_EINHEIT_OHNE;
+        // Keine Einheit: Der Zeilendialog belegt sie nach der Kernregel vor.
+        _zeileEinheit = "";
+        _vorschlagsdaten = Vorschlagsdaten is null
+            ? GesetzVorschlagsdaten.Leer
+            : await Vorschlagsdaten() ?? GesetzVorschlagsdaten.Leer;
         _zeileStatus = DbWerte.GESETZ_STATUS_GESICHERT;
         _zeileQuelle = "";
         _zeileOffen = true;

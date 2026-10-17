@@ -3,9 +3,10 @@
    Vorbild: Views/Bericht/UcBericht.cs (508 Z.) und .Designer.cs (15
    Kartenzeilen) - Konzept_Berichtserstellung_EPOS-Plan.md, Kap. 3.1.
 
-   AUFBAU WIE IM VORLAEUFER. Links die Variantenliste mit "Alle"/"Keine",
-   rechts die Bausteinliste; darunter Ausgabeformat, Zielordner und
-   "Erstellen". Der Satz "Jeder Bericht rechnet neu" ist ein HINWEIS und
+   AUFBAU IN VIER KARTEN (Anordnung B). Links "Varianten" (Liste mit
+   "Alle"/"Keine") und "Inhalt" (Bausteine, Szenario), rechts in fester Breite
+   "Vorlage" und "Ausgabe" (Format, Zeile "Excel-Vorlage", Zielordner,
+   "Erstellen", darunter das Ergebnis des Laufs). Der Satz "Jeder Bericht rechnet neu" ist ein HINWEIS und
    keine Option: Simulation und Wirtschaftlichkeit laufen vor JEDER Ausgabe
    neu (Nutzeranforderung 15.08.2026) - der frueher vorhandene Schalter "Vor
    Ausgabe neu rechnen" ist bewusst weg.
@@ -29,8 +30,8 @@
    hier das HTML-Element <progress> - es deckt die ProgressBar der Feldkarte
    ab und braucht keine Bibliothek.
 
-   BV-E1 (Konzept Berichtsvorlagen 10.2): DIE GRUPPE "VORLAGE" steht oben rechts
-   UEBER den Berichtsbausteinen - Auswahlfeld "Word-Vorlage" (Schloss neben dem
+   BV-E1 (Konzept Berichtsvorlagen 10.2): DIE GRUPPE "VORLAGE" steht in der Karte
+   "Vorlage" oben rechts - Auswahlfeld "Word-Vorlage" (Schloss neben dem
    Feld bei einer mitgelieferten Vorlage, gesperrter Eintrag mit Grund fuer eine
    fehlende), die Knoepfe "Neue Vorlage…", "Hinzufuegen…", "Pruefen",
    "Platzhalter…" und das Menue "…" (Eintraege als Daten aus der Huelle), darunter
@@ -66,7 +67,7 @@
    Liste, denn die Mappe folgt den Haekchen bis BV-E7 wie heute (BV-Q2).
 
    BV-E7 (Konzept 10.2, Zeile "Excel-Vorlage"): Entsteht eine Excel-Mappe (Ausgabe
-   Excel oder Beide), traegt die Gruppe unter der Word-Wahl eine zweite Zeile mit dem
+   Excel oder Beide), traegt die Karte "Ausgabe" unter der Optionsgruppe eine Zeile mit dem
    Auswahlfeld "Excel-Vorlage" (Vorgabe "Ohne Vorlage (EPOS-Plan)", dazu die eigenen
    .xlsx/.xltx des Vorlagenordners) und ihrer Pruefzeile samt "anzeigen". Die Wahl ist die
    Abweichung des Stammprojekts wie bei Word; "Hinzufuegen…" nimmt auch Excel-Vorlagen.
@@ -74,8 +75,15 @@
    DIE VORBELEGUNG AUS "WIRTSCHAFTLICHKEIT": "Zum Bericht ›" der Wirtschaftlichkeitsseite
    wechselt hierher und reicht eine BerichtVorbelegung mit (Baustein Wirtschaftlichkeit,
    angehakte Versionen, Szenario). Die Seite legt sie beim Aufbau EINMAL ueber den
-   gespeicherten Stand und sagt es in einer leisen Zeile; gemerkt wird sie erst mit
-   "Erstellen", wie jede andere Auswahl. Ein spaeteres Auffrischen zeigt den gemerkten Stand. *@
+   gespeicherten Stand - das Szenario in die Klappliste des Szenarios - und sagt es in einer leisen
+   Zeile; gemerkt wird sie erst mit "Erstellen", wie jede andere Auswahl. Ein spaeteres
+   Auffrischen zeigt den gemerkten Stand.
+
+   DAS SZENARIO DER WIRTSCHAFTLICHKEIT (Fachvorgabe E31, Nach #582): Die Klappliste am
+   Baustein Wirtschaftlichkeit - nur sichtbar, solange er angehakt ist - waehlt das
+   Szenario des Wirtschaftlichkeitsberichts (Vorgabe Erwartet). Die Wahl geht mit dem
+   Auftrag in die Huelle und wird dort mit der uebrigen Auswahl gemerkt. Ohne Eintraege
+   der Huelle steht keine Klappliste. *@
 
 @namespace EPOS.UI.Seiten.Berichte
 @using System.Globalization
@@ -95,11 +103,6 @@
         <Warnbanner Stufe="WarnStufe.Fehler" Text="@_fehler" />
     }
 
-    @if (!string.IsNullOrEmpty(_meldung))
-    {
-        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_meldung" />
-    }
-
     @if (_vorbelegt.Length > 0)
     {
         <div class="epos-bericht-vorbelegt">
@@ -107,246 +110,243 @@
         </div>
     }
 
-    @* DAS ERGEBNIS EINES LAUFS, GESTAFFELT (Hausregel „Zustand, Meldung, Leerzustand"):
-       eine kurze Erfolgszeile mit Dateiname, Vorlage und „Öffnen" (Verfall), darunter die
-       WARNUNGEN sichtbar — sie nennen, was fehlt —, und die HINWEISE als Klappzeile im
-       Muster des Hinweisbands der Simulationsseite. Eingeklappt ist die Vorgabe; der Zustand
-       gilt für die Sitzung der Seite. *@
-    @if (_ergebnis is not null)
-    {
-        @if (!_erfolgVerfallen)
-        {
-            <div class="epos-bericht-erfolg">
-                <Warnbanner Stufe="WarnStufe.Erfolg" Text="@Erfolgszeile"
-                            Verfaellt="@Erfolgsdauer" Verfallen="ErfolgVerfallen"
-                            Aktion="@(DateiOeffnen is null ? default : EventCallback.Factory.Create(this, ErgebnisOeffnen))"
-                            AktionText="@Vt.KnopfOeffnen" AktionKurztext="@_ergebnis.Dateien[0]" />
-            </div>
-        }
-        @foreach (Laufhinweisgruppe gruppe in _ergebnis.Warnungen)
-        {
-            @foreach (Laufhinweispunkt punkt in gruppe.Punkte)
-            {
-                <div class="epos-bericht-warnung">
-                    <Warnbanner Stufe="WarnStufe.Warnung" Text="@Warnzeile(gruppe, punkt)" />
+    @* ANORDNUNG B (Anwenderentscheid BL-Q1 bis BL-Q5): links, WAS in den Bericht kommt
+       (Karten „Varianten“ und „Inhalt“), rechts in EINER Breite (Bedienblock, Vorbild
+       epos-simreiter), WIE es aussieht und WOHIN es geht (Karten „Vorlage“ und „Ausgabe“).
+       Der Weg endet beim Knopf „Erstellen“; das Ergebnis des Laufs steht in der Karte
+       „Ausgabe“ darunter, nur der Seitenfehler bleibt oben. Unter 900 px einspaltig in
+       dieser Folge - die Markup-Folge ist die Lesefolge, keine order-Regel. *@
+    <div class="epos-bericht-raster">
+        <div class="epos-bericht-spalte epos-bericht-links">
+
+            @* --------------------------------------------------- Varianten *@
+            <section class="epos-bericht-karte epos-bericht-karte--varianten" aria-label="@Resource.BK_BER_KARTE_VARIANTEN">
+                <h2 class="epos-bericht-kartentitel">@Resource.BK_BER_KARTE_VARIANTEN</h2>
+                <p class="epos-untergruppe">@LabelVarianten</p>
+
+                <Raster TZeile="VarianteZeile" Zeilen="@_stand.Varianten.AsQueryable()"
+                        Bearbeitbar="true">
+                    <KindInhalt>
+                        <TemplateColumn TGridItem="VarianteZeile" Title="">
+                            <Schalter Bezeichnung="" Wert="@Gewaehlt(context.IdProjekt)"
+                                      Aktiv="@(!context.IstStamm && !_laeuft)"
+                                      WertChanged="@(w => VarianteUmschalten(context, w))" />
+                        </TemplateColumn>
+                        <PropertyColumn TGridItem="VarianteZeile" TProp="string"
+                                        Property="@(z => z.Art)" Title="@SpalteArt" />
+                        <PropertyColumn TGridItem="VarianteZeile" TProp="string"
+                                        Property="@(z => z.Bezeichner)" Title="@SpalteBezeichner" />
+                        <PropertyColumn TGridItem="VarianteZeile" TProp="string"
+                                        Property="@(z => z.Projektname)" Title="@SpalteProjektname" />
+                        @* AUFTRAG US-2: Womit rechnet DIESE Version ihren Stromspeicher? Die
+                           Spalte steht neben dem Projektnamen wie auf der Wirtschaftlichkeit
+                           (#320) - sie gehoert zur Version, nicht zum Ergebnis, und Stamm und
+                           Varianten duerfen verschiedene Flotten fuehren. Auf dieser Seite
+                           entscheidet der Anwender, WELCHE Versionen in den Bericht kommen;
+                           ohne die Spalte sieht eine Version ohne Speicher aus wie eine mit. *@
+                        <PropertyColumn TGridItem="VarianteZeile" TProp="string"
+                                        Property="@(z => z.Speicher)" Title="@SpalteSpeicher" />
+                        <TemplateColumn TGridItem="VarianteZeile" Title="@SpalteSimulation">
+                            <span class="@(context.Auffaellig ? "epos-veraltet" : "")">@context.SimStand</span>
+                        </TemplateColumn>
+                    </KindInhalt>
+                </Raster>
+
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf" disabled="@_laeuft"
+                            @onclick="AlleWaehlen">@AlleText</button>
+                    <button type="button" class="epos-knopf" disabled="@_laeuft"
+                            @onclick="KeineWaehlen">@KeineText</button>
                 </div>
-            }
-        }
-        @if (HinweisAnzahl > 0)
-        {
-            <button type="button" class="epos-simerg-laufband epos-bericht-hinweisband"
-                    aria-expanded="@(_hinweiseOffen ? "true" : "false")"
-                    @onclick="() => _hinweiseOffen = !_hinweiseOffen">
-                <span class="epos-simerg-laufband-zahl">@HinweisAnzahl</span>
-                <span class="epos-simerg-laufband-text">
-                    @(HinweisAnzahl == 1 ? Vt.HinweiseEiner
-                                         : string.Format(CultureInfo.CurrentCulture, Vt.HinweiseMehrere, HinweisAnzahl))
-                </span>
-                <span class="epos-simerg-laufband-pfeil">@(_hinweiseOffen ? Vt.HinweiseAusblenden + " ▴" : Vt.HinweiseAnzeigen + " ▾")</span>
-            </button>
-            @if (_hinweiseOffen)
-            {
-                <div class="epos-bericht-hinweise">
-                    @foreach (Laufhinweisgruppe gruppe in _ergebnis.Hinweise)
-                    {
-                        <p class="epos-untergruppe">@gruppe.Titel</p>
-                        <ul>
-                            @foreach (Laufhinweispunkt punkt in gruppe.Punkte)
-                            {
-                                <li>
-                                    @punkt.Text
-                                    @if (punkt.Platzhalter && PlatzhalterkatalogGaben is not null)
-                                    {
-                                        <button type="button" class="epos-simerg-verweis epos-bericht-katalog"
-                                                title="@Vt.KurztextPlatzhalter" @onclick="KatalogOeffnen">@Vt.KnopfPlatzhalter</button>
-                                    }
-                                    @if (punkt.Unterpunkte.Count > 0)
-                                    {
-                                        <ul>
-                                            @foreach (string unter in punkt.Unterpunkte)
-                                            {
-                                                <li>@unter</li>
-                                            }
-                                        </ul>
-                                    }
-                                </li>
-                            }
-                        </ul>
-                    }
-                </div>
-            }
-        }
-    }
+            </section>
 
-    <div class="epos-seite-spalten">
+            @* --------------------------------------------------- Inhalt *@
+            <section class="epos-bericht-karte epos-bericht-karte--inhalt" aria-label="@Resource.BK_BER_KARTE_INHALT">
+                <h2 class="epos-bericht-kartentitel">@Resource.BK_BER_KARTE_INHALT</h2>
+                @* BV-E2: die Haekchen folgen der gewaehlten Vorlage (Kopfkommentar). *@
+                @if (InhaltAusVorlage)
+                {
+                    <div class="epos-bericht-inhaltszeile">
+                        <p class="epos-untergruppe">@LabelBausteine</p>
+                        <Herleitungszeile Text="@Vt.InhaltAusVorlage" />
+                    </div>
+                }
+                else
+                {
+                    <Mehrfachauswahl Bezeichnung="@LabelBausteine" Eintraege="@Bausteineintraege"
+                                     Gewaehlt="@GewaehlteBausteine" Aktiv="@(!_laeuft)"
+                                     MitSammelknoepfen="false"
+                                     Sperrgrund="@BausteinSperrgrund"
+                                     GesperrtVersucht="BausteinGesperrtVersucht"
+                                     GewaehltChanged="BausteineGesetzt" />
+                }
+                @* Fachvorgabe E31: die Klappliste am Baustein Wirtschaftlichkeit (Kopfkommentar). *@
+                @if (SzenarioSichtbar)
+                {
+                    <Auswahlfeld Bezeichnung="@LabelSzenario" Eintraege="@_stand.Szenarien"
+                                 Auswahl="@_stand.SzenarioId" Aktiv="@(!_laeuft)"
+                                 AuswahlChanged="BeiSzenario" />
+                }
+                @if (_bausteinmeldung.Length > 0)
+                {
+                    @* Das Banner NACH dem Versuch, mit Verfall - unter der Liste, damit sie beim
+                       Erscheinen nicht springt; der Grund stand schon am Eintrag. *@
+                    <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_bausteinmeldung"
+                                Verfaellt="@Sperrmeldungsdauer" Verfallen="BausteinmeldungVerfallen" />
+                }
+            </section>
+        </div>
 
-        @* --------------------------------------------------- Varianten *@
-        <section class="epos-seite-spalte">
-            <p class="epos-untergruppe">@LabelVarianten</p>
+        <div class="epos-bericht-spalte epos-bericht-rechts">
 
-            <Raster TZeile="VarianteZeile" Zeilen="@_stand.Varianten.AsQueryable()"
-                    Bearbeitbar="true">
-                <KindInhalt>
-                    <TemplateColumn TGridItem="VarianteZeile" Title="">
-                        <Schalter Bezeichnung="" Wert="@Gewaehlt(context.IdProjekt)"
-                                  Aktiv="@(!context.IstStamm && !_laeuft)"
-                                  WertChanged="@(w => VarianteUmschalten(context, w))" />
-                    </TemplateColumn>
-                    <PropertyColumn TGridItem="VarianteZeile" TProp="string"
-                                    Property="@(z => z.Art)" Title="@SpalteArt" />
-                    <PropertyColumn TGridItem="VarianteZeile" TProp="string"
-                                    Property="@(z => z.Bezeichner)" Title="@SpalteBezeichner" />
-                    <PropertyColumn TGridItem="VarianteZeile" TProp="string"
-                                    Property="@(z => z.Projektname)" Title="@SpalteProjektname" />
-                    @* AUFTRAG US-2: Womit rechnet DIESE Version ihren Stromspeicher? Die
-                       Spalte steht neben dem Projektnamen wie auf der Wirtschaftlichkeit
-                       (#320) - sie gehoert zur Version, nicht zum Ergebnis, und Stamm und
-                       Varianten duerfen verschiedene Flotten fuehren. Auf dieser Seite
-                       entscheidet der Anwender, WELCHE Versionen in den Bericht kommen;
-                       ohne die Spalte sieht eine Version ohne Speicher aus wie eine mit. *@
-                    <PropertyColumn TGridItem="VarianteZeile" TProp="string"
-                                    Property="@(z => z.Speicher)" Title="@SpalteSpeicher" />
-                    <TemplateColumn TGridItem="VarianteZeile" Title="@SpalteSimulation">
-                        <span class="@(context.Auffaellig ? "epos-veraltet" : "")">@context.SimStand</span>
-                    </TemplateColumn>
-                </KindInhalt>
-            </Raster>
-
-            <div class="epos-leiste">
-                <button type="button" class="epos-knopf" disabled="@_laeuft"
-                        @onclick="AlleWaehlen">@AlleText</button>
-                <button type="button" class="epos-knopf" disabled="@_laeuft"
-                        @onclick="KeineWaehlen">@KeineText</button>
-            </div>
-        </section>
-
-        @* --------------------------------------------------- Bausteine *@
-        <section class="epos-seite-spalte">
-            @* --- BV-E1: die Gruppe "Vorlage" UEBER den Haekchen (Konzept 10.2) --- *@
+            @* --------------------------------------------------- Vorlage *@
+            @* --- BV-E1: die Gruppe "Vorlage" (Konzept 10.2) --- *@
             @if (VorlagengruppeSichtbar)
             {
-                <div class="epos-vorlage" role="group" aria-label="@Vt.Gruppe">
-                    <p class="epos-untergruppe">@Vt.Gruppe</p>
+                <section class="epos-bericht-karte epos-bericht-karte--vorlage" aria-label="@Resource.BK_BER_KARTE_VORLAGE">
+                    <h2 class="epos-bericht-kartentitel">@Resource.BK_BER_KARTE_VORLAGE</h2>
+                    <div class="epos-vorlage" role="group" aria-label="@Vt.Gruppe">
 
-                    @if (_gruppenfehler.Length > 0)
-                    {
-                        <Warnbanner Stufe="WarnStufe.Fehler" Text="@_gruppenfehler" />
-                    }
-                    @if (_sperrmeldung.Length > 0)
-                    {
-                        @* Das Banner NACH dem Versuch, mit Verfall (Hausregel „Zustand, Meldung,
-                           Leerzustand"): Der Grund stand schon am Knopf. *@
-                        <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_sperrmeldung"
-                                    Verfaellt="@Sperrmeldungsdauer" Verfallen="SperrmeldungVerfallen" />
-                    }
-
-                    <div class="epos-vorlage-wahl">
-                        <Auswahlfeld Bezeichnung="@Vt.LabelWord" Eintraege="@Vorlageneintraege"
-                                     Auswahl="@_vorlageId" Aktiv="@(!GruppeGesperrt)"
-                                     GesperrteEintraege="@GesperrteVorlagen"
-                                     GesperrtHinweise="@Vorlagensperrgruende"
-                                     GesperrtHinweis="@Vt.NichtWaehlbar"
-                                     AuswahlChanged="BeiVorlage" />
-                        @if (GewaehlteVorlage is { Mitgeliefert: true })
+                        @if (_gruppenfehler.Length > 0)
                         {
-                            <span class="epos-vorlage-schlossplatz">
-                                <Kennzeichen Kurztext="@Vt.Mitgeliefert" />
-                            </span>
+                            <Warnbanner Stufe="WarnStufe.Fehler" Text="@_gruppenfehler" />
                         }
-                    </div>
+                        @if (_sperrmeldung.Length > 0)
+                        {
+                            @* Das Banner NACH dem Versuch, mit Verfall (Hausregel „Zustand, Meldung,
+                               Leerzustand"): Der Grund stand schon am Knopf. *@
+                            <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_sperrmeldung"
+                                        Verfaellt="@Sperrmeldungsdauer" Verfallen="SperrmeldungVerfallen" />
+                        }
 
-                    @if (GewaehlteVorlage is { Gesperrt: true } fehlend)
-                    {
-                        <Herleitungszeile Text="@Sperrhinweis(fehlend)" />
-                    }
-
-                    @if (KnoepfeSichtbar)
-                    {
-                        <div class="epos-leiste epos-vorlage-leiste">
-                            @if (NeueVorlage.HasDelegate)
+                        <div class="epos-vorlage-wahl">
+                            <Auswahlfeld Bezeichnung="@Vt.LabelWord" Eintraege="@Vorlageneintraege"
+                                         Auswahl="@_vorlageId" Aktiv="@(!GruppeGesperrt)"
+                                         GesperrteEintraege="@GesperrteVorlagen"
+                                         GesperrtHinweise="@Vorlagensperrgruende"
+                                         GesperrtHinweis="@Vt.NichtWaehlbar"
+                                         AuswahlChanged="BeiVorlage" />
+                            @if (GewaehlteVorlage is { Mitgeliefert: true })
                             {
-                                <button type="button" class="epos-knopf epos-vorlage-neu"
-                                        aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.KurztextNeu)"
-                                        @onclick="NeuFragen">@Vt.KnopfNeu</button>
-                            }
-                            @if (Hinzufuegen.HasDelegate)
-                            {
-                                <button type="button" class="epos-knopf epos-vorlage-hinzufuegen"
-                                        aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.KurztextHinzufuegen)"
-                                        @onclick="HinzufuegenKlick">@Vt.KnopfHinzufuegen</button>
-                            }
-                            @if (Pruefen.HasDelegate)
-                            {
-                                <button type="button" class="epos-knopf epos-vorlage-pruefen"
-                                        aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.KurztextPruefen)"
-                                        @onclick="PruefenKlick">@Vt.KnopfPruefen</button>
-                            }
-                            @if (PlatzhalterkatalogGaben is not null)
-                            {
-                                <button type="button" class="epos-knopf epos-vorlage-platzhalter"
-                                        aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.KurztextPlatzhalter)"
-                                        @onclick="KatalogOeffnen">@Vt.KnopfPlatzhalter</button>
-                            }
-                            @if (MenueMoeglich)
-                            {
-                                @* Das Menue „…": Die Eintraege sind DATEN der Huelle; ein inaktiver
-                                   Eintrag bleibt stehen, traegt seinen Grund und meldet ihn beim Klick.
-                                   Geschlossen wird ueber die Schliessflaeche, nie ueber focusout. *@
-                                <span class="@(_menueOffen ? "epos-vorlage-menue epos-vorlage-menue--offen" : "epos-vorlage-menue")"
-                                      @onkeydown="BeiMenuetaste" @onkeydown:stopPropagation="@_menueOffen">
-                                    <button type="button" class="epos-knopf epos-vorlage-menueknopf"
-                                            aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.MenueKurztext)"
-                                            aria-label="@Vt.MenueKurztext" aria-expanded="@(_menueOffen ? "true" : "false")"
-                                            aria-controls="@MenueId"
-                                            @onclick="MenueUmschalten">@Vt.KnopfMenue</button>
-                                    @if (_menueOffen)
-                                    {
-                                        <ul class="epos-vorlage-menue-liste" id="@MenueId" aria-label="@Vt.MenueKurztext">
-                                            @foreach (Handlung h in _handlungen)
-                                            {
-                                                <li>
-                                                    <button type="button" class="epos-vorlage-menue-eintrag"
-                                                            aria-disabled="@(h.Aktiv ? null : "true")"
-                                                            title="@Eintragstitel(h)"
-                                                            @onclick="() => HandlungKlick(h)">@h.Text</button>
-                                                </li>
-                                            }
-                                        </ul>
-                                    }
+                                <span class="epos-vorlage-schlossplatz">
+                                    <Kennzeichen Kurztext="@Vt.Mitgeliefert" />
                                 </span>
                             }
                         </div>
-                    }
-                    @if (_menueOffen)
-                    {
-                        @* DER DECKEL: faengt den Klick neben das Menue, auf Maus wie auf dem Finger
-                           (Muster Suchauswahl, drei z-Ebenen im Stilblatt). *@
-                        <div class="epos-vorlage-menue-schliessflaeche" aria-hidden="true"
-                             @onclick="MenueSchliessen"></div>
-                    }
 
-                    @if (_pruefzeile is not null)
-                    {
-                        @* Die Pruefzeile (Konzept 9.7): eine Herleitungszeile mit Zeichen davor
-                           und „anzeigen" dahinter - kein Kennzeichen, das ist das Schloss. *@
-                        <div class="@(_pruefzeile.HatBefunde ? "epos-vorlage-pruefzeile epos-vorlage-pruefzeile--befund" : "epos-vorlage-pruefzeile")"
-                             role="status">
-                            @if (!string.IsNullOrEmpty(_pruefzeile.Symbol))
-                            {
-                                <span class="epos-vorlage-pruefsymbol" aria-hidden="true">@_pruefzeile.Symbol</span>
-                            }
-                            <Herleitungszeile Text="@_pruefzeile.Text" />
-                            @if (_pruefzeile.HatBefunde && PrueflisteGaben is not null)
-                            {
-                                <button type="button" class="epos-knopf epos-vorlage-anzeigen"
-                                        aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.PrueflisteTitel)"
-                                        @onclick="PrueflisteOeffnen">@Anzeigentext</button>
-                            }
-                        </div>
-                    }
+                        @if (GewaehlteVorlage is { Gesperrt: true } fehlend)
+                        {
+                            <Herleitungszeile Text="@Sperrhinweis(fehlend)" />
+                        }
 
-                    @if (ExcelzeileSichtbar)
-                    {
+                        @if (KnoepfeSichtbar)
+                        {
+                            <div class="epos-leiste epos-vorlage-leiste">
+                                @if (NeueVorlage.HasDelegate)
+                                {
+                                    <button type="button" class="epos-knopf epos-vorlage-neu"
+                                            aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.KurztextNeu)"
+                                            @onclick="NeuFragen">@Vt.KnopfNeu</button>
+                                }
+                                @if (Hinzufuegen.HasDelegate)
+                                {
+                                    <button type="button" class="epos-knopf epos-vorlage-hinzufuegen"
+                                            aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.KurztextHinzufuegen)"
+                                            @onclick="HinzufuegenKlick">@Vt.KnopfHinzufuegen</button>
+                                }
+                                @if (Pruefen.HasDelegate)
+                                {
+                                    <button type="button" class="epos-knopf epos-vorlage-pruefen"
+                                            aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.KurztextPruefen)"
+                                            @onclick="PruefenKlick">@Vt.KnopfPruefen</button>
+                                }
+                                @if (PlatzhalterkatalogGaben is not null)
+                                {
+                                    <button type="button" class="epos-knopf epos-vorlage-platzhalter"
+                                            aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.KurztextPlatzhalter)"
+                                            @onclick="KatalogOeffnen">@Vt.KnopfPlatzhalter</button>
+                                }
+                                @if (MenueMoeglich)
+                                {
+                                    @* Das Menue „…": Die Eintraege sind DATEN der Huelle; ein inaktiver
+                                       Eintrag bleibt stehen, traegt seinen Grund und meldet ihn beim Klick.
+                                       Geschlossen wird ueber die Schliessflaeche, nie ueber focusout. *@
+                                    <span class="@(_menueOffen ? "epos-vorlage-menue epos-vorlage-menue--offen" : "epos-vorlage-menue")"
+                                          @onkeydown="BeiMenuetaste" @onkeydown:stopPropagation="@_menueOffen">
+                                        <button type="button" class="epos-knopf epos-vorlage-menueknopf"
+                                                aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.MenueKurztext)"
+                                                aria-label="@Vt.MenueKurztext" aria-expanded="@(_menueOffen ? "true" : "false")"
+                                                aria-controls="@MenueId"
+                                                @onclick="MenueUmschalten">@Vt.KnopfMenue</button>
+                                        @if (_menueOffen)
+                                        {
+                                            <ul class="epos-vorlage-menue-liste" id="@MenueId" aria-label="@Vt.MenueKurztext">
+                                                @foreach (Handlung h in _handlungen)
+                                                {
+                                                    <li>
+                                                        <button type="button" class="epos-vorlage-menue-eintrag"
+                                                                aria-disabled="@(h.Aktiv ? null : "true")"
+                                                                title="@Eintragstitel(h)"
+                                                                @onclick="() => HandlungKlick(h)">@h.Text</button>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        }
+                                    </span>
+                                }
+                            </div>
+                        }
+                        @if (_menueOffen)
+                        {
+                            @* DER DECKEL: faengt den Klick neben das Menue, auf Maus wie auf dem Finger
+                               (Muster Suchauswahl, drei z-Ebenen im Stilblatt). *@
+                            <div class="epos-vorlage-menue-schliessflaeche" aria-hidden="true"
+                                 @onclick="MenueSchliessen"></div>
+                        }
+
+                        @if (_pruefzeile is not null)
+                        {
+                            @* Die Pruefzeile (Konzept 9.7): eine Herleitungszeile mit Zeichen davor
+                               und „anzeigen" dahinter - kein Kennzeichen, das ist das Schloss. *@
+                            <div class="@(_pruefzeile.HatBefunde ? "epos-vorlage-pruefzeile epos-vorlage-pruefzeile--befund" : "epos-vorlage-pruefzeile")"
+                                 role="status">
+                                @if (!string.IsNullOrEmpty(_pruefzeile.Symbol))
+                                {
+                                    <span class="epos-vorlage-pruefsymbol" aria-hidden="true">@_pruefzeile.Symbol</span>
+                                }
+                                <Herleitungszeile Text="@_pruefzeile.Text" />
+                                @if (_pruefzeile.HatBefunde && PrueflisteGaben is not null)
+                                {
+                                    <button type="button" class="epos-knopf epos-vorlage-anzeigen"
+                                            aria-disabled="@Sperrattribut" title="@Knopftitel(Vt.PrueflisteTitel)"
+                                            @onclick="PrueflisteOeffnen">@Anzeigentext</button>
+                                }
+                            </div>
+                        }
+
+                        @* "Original geaendert - uebernehmen?" (Konzept 10.2/10.3): eine eigene
+                           Zeile unter der Pruefzeile, nur wo es ein Original ausserhalb des
+                           Vorlagenordners gibt. *@
+                        <Vorlagenoriginalzeile Zeile="@_originalzeile" Gesperrt="@GruppeGesperrt"
+                                               Gewaehlt="HandlungKlick" />
+                    </div>
+                </section>
+            }
+
+            @* --------------------------------------------------- Ausgabe *@
+            <section class="epos-bericht-karte epos-bericht-karte--ausgabe" aria-label="@Resource.BK_BER_KARTE_AUSGABE">
+                <h2 class="epos-bericht-kartentitel">@Resource.BK_BER_KARTE_AUSGABE</h2>
+                @* Der Kartentitel "Ausgabe" sagt es schon; der Gruppenname bleibt als aria-label. *@
+                <Optionsgruppe Bezeichnung="@LabelAusgabe" TitelSichtbar="false" Eintraege="@Ausgabeformen"
+                               Auswahl="@_stand.AusgabeId" Aktiv="@(!_laeuft)"
+                               AuswahlChanged="BeiAusgabe" />
+
+                @if (ExcelzeileSichtbar)
+                {
+                    @* BL-Q3 a: die Zeile "Excel-Vorlage" steht unter der Optionsgruppe, die sie
+                       steuert - Ursache und Wirkung in einer Karte. Sie bleibt eine Gruppe der
+                       Vorlage (epos-vorlage), nur an ihrem Ort. *@
+                    <div class="epos-vorlage epos-vorlage--excel" role="group" aria-label="@Vt.LabelExcel">
                         @* BV-E7: die Zeile "Excel-Vorlage" - nur, wenn eine Mappe entsteht. *@
                         <div class="epos-vorlage-wahl epos-vorlage-excel">
                             <Auswahlfeld Bezeichnung="@Vt.LabelExcel" Eintraege="@ExcelVorlageneintraege"
@@ -421,77 +421,115 @@
                                 }
                             </div>
                         }
+                        <Vorlagenoriginalzeile Zeile="@_excelOriginalzeile" Gesperrt="@GruppeGesperrt"
+                                               Gewaehlt="HandlungKlick" />
+                    </div>
+                }
+
+                @* Formularraster (iU8-E-2 / W14a-E-7, Paket P2): Beschriftung neben dem Feld.
+                   EINSPALTIG - das Pfadfeld des Zielordners braucht die ganze Breite. Die
+                   Kopfzeilen der Seite (epos-seite-zeile) bleiben Zeilen; sie tragen die
+                   Werkzeuge der Seite, keinen Formularblock. *@
+                <Formularraster Einspaltig="true">
+                    <KindInhalt>
+                        <Dateiwahl Bezeichnung="@LabelZiel" Pfad="@_stand.Zielordner" NurLesen="false"
+                                   Aktiv="@(!_laeuft)" KnopfText="@DurchsuchenText"
+                                   Waehlen="@OrdnerWaehler" PfadChanged="BeiZielordner" />
+                    </KindInhalt>
+                </Formularraster>
+
+                @if (_laeuft)
+                {
+                    <div class="epos-fortschritt">
+                        <progress class="epos-fortschritt-balken" max="@_gesamt" value="@_aktuell"
+                                  aria-label="@LabelFortschritt"></progress>
+                        <span class="epos-status">@_status</span>
+                    </div>
+                }
+                else if (!string.IsNullOrEmpty(_status))
+                {
+                    <p class="epos-status">@_status</p>
+                }
+
+                @* Der Hauptknopf mit seiner leisen Erklaerzeile (Hausregel Bedienblock). *@
+                <div class="epos-leiste epos-bericht-ausloesen">
+                    <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@_laeuft"
+                            @onclick="ErstellenFragen">@ErstellenText</button>
+                    @if (_laeuft)
+                    {
+                        <button type="button" class="epos-knopf" @onclick="LaufAbbrechen">@AbbrechenText</button>
                     }
+                    <Herleitungszeile Text="@LabelRechnen" />
                 </div>
-            }
 
-            @* BV-E2: die Haekchen folgen der gewaehlten Vorlage (Kopfkommentar). *@
-            @if (InhaltAusVorlage)
-            {
-                <div class="epos-bericht-inhaltszeile">
-                    <p class="epos-untergruppe">@LabelBausteine</p>
-                    <Herleitungszeile Text="@Vt.InhaltAusVorlage" />
-                </div>
-            }
-            else
-            {
-                <Mehrfachauswahl Bezeichnung="@LabelBausteine" Eintraege="@Bausteineintraege"
-                                 Gewaehlt="@GewaehlteBausteine" Aktiv="@(!_laeuft)"
-                                 MitSammelknoepfen="false"
-                                 Sperrgrund="@BausteinSperrgrund"
-                                 GesperrtVersucht="BausteinGesperrtVersucht"
-                                 GewaehltChanged="BausteineGesetzt" />
-            }
-            @if (_bausteinmeldung.Length > 0)
-            {
-                @* Das Banner NACH dem Versuch, mit Verfall - unter der Liste, damit sie beim
-                   Erscheinen nicht springt; der Grund stand schon am Eintrag. *@
-                <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_bausteinmeldung"
-                            Verfaellt="@Sperrmeldungsdauer" Verfallen="BausteinmeldungVerfallen" />
-            }
-            <Herleitungszeile Text="@LabelRechnen" />
-        </section>
-    </div>
+                @if (!string.IsNullOrEmpty(_meldung))
+                {
+                    <Warnbanner Stufe="WarnStufe.Hinweis" Text="@_meldung" />
+                }
 
-    @* ------------------------------------------------------- Ausgabe *@
-    <div class="epos-seite-zeile">
-        <Optionsgruppe Bezeichnung="@LabelAusgabe" Eintraege="@Ausgabeformen"
-                       Auswahl="@_stand.AusgabeId" Aktiv="@(!_laeuft)"
-                       AuswahlChanged="BeiAusgabe" />
-    </div>
-
-    @* Formularraster (iU8-E-2 / W14a-E-7, Paket P2): Beschriftung neben dem Feld.
-       EINSPALTIG - das Pfadfeld des Zielordners braucht die ganze Breite. Die
-       Kopfzeilen der Seite (epos-seite-zeile) bleiben Zeilen; sie tragen die
-       Werkzeuge der Seite, keinen Formularblock. *@
-    <Formularraster Einspaltig="true">
-        <KindInhalt>
-            <Dateiwahl Bezeichnung="@LabelZiel" Pfad="@_stand.Zielordner" NurLesen="false"
-                       Aktiv="@(!_laeuft)" KnopfText="@DurchsuchenText"
-                       Waehlen="@OrdnerWaehler" PfadChanged="BeiZielordner" />
-        </KindInhalt>
-    </Formularraster>
-
-    @if (_laeuft)
-    {
-        <div class="epos-fortschritt">
-            <progress class="epos-fortschritt-balken" max="@_gesamt" value="@_aktuell"
-                      aria-label="@LabelFortschritt"></progress>
-            <span class="epos-status">@_status</span>
+                @* DAS ERGEBNIS EINES LAUFS, GESTAFFELT (Hausregel „Zustand, Meldung, Leerzustand"):
+                   eine kurze Erfolgszeile mit Dateiname, Vorlage und „Öffnen" (Verfall), darunter die
+                   WARNUNGEN sichtbar — sie nennen, was fehlt —, und die HINWEISE als Klappzeile im
+                   Muster des Hinweisbands der Simulationsseite. Eingeklappt ist die Vorgabe; der Zustand
+                   gilt für die Sitzung der Seite. *@
+                @if (_ergebnis is not null)
+                {
+                    @if (!_erfolgVerfallen)
+                    {
+                        <div class="epos-bericht-erfolg">
+                            <Warnbanner Stufe="WarnStufe.Erfolg" Text="@Erfolgszeile"
+                                        Verfaellt="@Erfolgsdauer" Verfallen="ErfolgVerfallen"
+                                        Aktion="@(DateiOeffnen is null ? default : EventCallback.Factory.Create(this, ErgebnisOeffnen))"
+                                        AktionText="@Vt.KnopfOeffnen" AktionKurztext="@_ergebnis.Dateien[0]" />
+                        </div>
+                    }
+                    @foreach (Laufhinweisgruppe gruppe in _ergebnis.Warnungen)
+                    {
+                        @foreach (Laufhinweispunkt punkt in gruppe.Punkte)
+                        {
+                            <div class="epos-bericht-warnung">
+                                <Warnbanner Stufe="WarnStufe.Warnung" Text="@Warnzeile(gruppe, punkt)" />
+                            </div>
+                        }
+                    }
+                    @* Die Klappzeile ist der Baustein Hinweisklappe (derselbe wie auf Simulations-
+                       und Wirtschaftlichkeitsseite); die Stellung lebt mit der Seite. *@
+                    <Hinweisklappe Anzahl="@HinweisAnzahl" Stufe="WarnStufe.Hinweis"
+                                   Klasse="epos-bericht-hinweisband"
+                                   TextEiner="@Vt.HinweiseEiner" TextMehrere="@Vt.HinweiseMehrere"
+                                   AnzeigenText="@Vt.HinweiseAnzeigen" AusblendenText="@Vt.HinweiseAusblenden">
+                        <div class="epos-bericht-hinweise">
+                            @foreach (Laufhinweisgruppe gruppe in _ergebnis.Hinweise)
+                            {
+                                <p class="epos-untergruppe">@gruppe.Titel</p>
+                                <ul>
+                                    @foreach (Laufhinweispunkt punkt in gruppe.Punkte)
+                                    {
+                                        <li>
+                                            @punkt.Text
+                                            @if (punkt.Platzhalter && PlatzhalterkatalogGaben is not null)
+                                            {
+                                                <button type="button" class="epos-simerg-verweis epos-bericht-katalog"
+                                                        title="@Vt.KurztextPlatzhalter" @onclick="KatalogOeffnen">@Vt.KnopfPlatzhalter</button>
+                                            }
+                                            @if (punkt.Unterpunkte.Count > 0)
+                                            {
+                                                <ul>
+                                                    @foreach (string unter in punkt.Unterpunkte)
+                                                    {
+                                                        <li>@unter</li>
+                                                    }
+                                                </ul>
+                                            }
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                        </div>
+                    </Hinweisklappe>
+                }
+            </section>
         </div>
-    }
-    else if (!string.IsNullOrEmpty(_status))
-    {
-        <p class="epos-status">@_status</p>
-    }
-
-    <div class="epos-leiste">
-        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@_laeuft"
-                @onclick="ErstellenFragen">@ErstellenText</button>
-        @if (_laeuft)
-        {
-            <button type="button" class="epos-knopf" @onclick="LaufAbbrechen">@AbbrechenText</button>
-        }
     </div>
 
     @* --------------------------------------------------- Rueckfragen *@
@@ -601,6 +639,8 @@
     [Parameter] public string LabelRechnen { get; set; }
         = "Jeder Bericht rechnet neu: alle gewählten Varianten werden simuliert und wirtschaftlich bewertet.";
     [Parameter] public string LabelAusgabe { get; set; } = "Ausgabe:";
+    /// <summary>Die Beschriftung der Klappliste des Szenarios (<c>BK_BER_LBL_SZENARIO</c>).</summary>
+    [Parameter] public string LabelSzenario { get; set; } = "Szenario der Wirtschaftlichkeit:";
     [Parameter] public string LabelZiel { get; set; } = "Zielordner:";
     [Parameter] public string LabelFortschritt { get; set; } = "Fortschritt";
 
@@ -738,6 +778,13 @@
     [Parameter] public Pruefstand? Pruefzeile { get; set; }
 
     /// <summary>
+    /// Die Zeile „Original geändert – übernehmen?" unter der Prüfzeile der Word-Vorlage
+    /// (Konzept 10.2/10.3); <c>null</c> = keine. Ihre zwei Handlungen meldet die Seite über
+    /// <see cref="HandlungGewaehlt"/> — denselben Weg wie das Menü „…".
+    /// </summary>
+    [Parameter] public Originalstand? Originalzeile { get; set; }
+
+    /// <summary>
     /// Der Parametersatz der Überlagerung „Prüfliste" (<c>PrueflisteDialog</c>) — „anzeigen"
     /// in der Prüfzeile öffnet sie; <c>null</c> als Antwort = geht gerade nicht. Ohne Delegat
     /// kein „anzeigen". <c>Geschlossen</c> und <c>TitelAnzeigen</c> setzt die Seite selbst.
@@ -777,6 +824,14 @@
     [Parameter] public Kapitelstand? Kapitelstand { get; set; }
 
     /// <summary>
+    /// BV-Q2 (c): was die gewählte Excel-Vorlage an Bausteinen führt (Blattmarken, Blattanhang) — der
+    /// ANFANGSSTAND wie die übrigen Werte der Gruppe; frisch kommt er mit
+    /// <see cref="Vorlagenstand.ExcelBlattstand"/>. <c>null</c> = die Mappe sagt nichts (keine
+    /// Excel-Vorlage, nicht lesbar oder ohne Platzhalter), der Excel-Weg bleibt wie bisher.
+    /// </summary>
+    [Parameter] public Kapitelstand? ExcelBlattstand { get; set; }
+
+    /// <summary>
     /// BV-E7 (Konzept 10.2, Zeile „Excel-Vorlage“): die wählbaren Excel-Vorlagen — „Ohne Vorlage (EPOS-Plan)“ und die eigenen
     /// des Vorlagenordners, je mit stabiler Id. Leer oder ohne <see cref="ExcelVorlageIdChanged"/> = keine Zeile.
     /// </summary>
@@ -791,6 +846,9 @@
 
     /// <summary>BV-E7: die Prüfzeile der Excel-Vorlage; <c>null</c> = keine.</summary>
     [Parameter] public Pruefstand? ExcelPruefzeile { get; set; }
+
+    /// <summary>Die Zeile „Original geändert – übernehmen?" unter der Prüfzeile der Excel-Vorlage; <c>null</c> = keine.</summary>
+    [Parameter] public Originalstand? ExcelOriginalzeile { get; set; }
 
     /// <summary>BV-E7: der Parametersatz der Prüfliste der Excel-Vorlage; ohne Delegat kein „anzeigen“.</summary>
     [Parameter] public Func<IReadOnlyDictionary<string, object>?>? ExcelPrueflisteGaben { get; set; }
@@ -843,6 +901,7 @@
     private int? _vorlageId;
     private IReadOnlyList<Handlung> _handlungen = Array.Empty<Handlung>();
     private Pruefstand? _pruefzeile;
+    private Originalstand? _originalzeile;
     private Startrueckfrage? _startrueckfrage;
 
     /// <summary>BV-E9: die Sprache des Berichts aus der Vorlage als Information der Startrückfrage; leer = keine.</summary>
@@ -850,6 +909,9 @@
 
     /// <summary>BV-E2: was die gewählte Vorlage an Kapiteln führt; <c>null</c> = jeder Eintrag frei.</summary>
     private Kapitelstand? _kapitel;
+
+    /// <summary>BV-Q2 (c): was die gewählte Excel-Vorlage an Bausteinen führt; <c>null</c> = jeder Eintrag frei.</summary>
+    private Kapitelstand? _blattstand;
 
     // ---- BV-E7: die Zeile „Excel-Vorlage" ------------------------------------
     private IReadOnlyList<Vorlagenzeile> _excelVorlagen = Array.Empty<Vorlagenzeile>();
@@ -861,9 +923,11 @@
     private bool _neuExcel;
     private int? _excelVorlageId;
     private Pruefstand? _excelPruefzeile;
+    private Originalstand? _excelOriginalzeile;
     private IReadOnlyList<Vorlagenzeile>? _gesehenExcelVorlagen;
     private int? _gesehenExcelVorlageId;
     private Pruefstand? _gesehenExcelPruefzeile;
+    private Originalstand? _gesehenExcelOriginalzeile;
 
     /// <summary>BV-E2: die Meldung nach dem Klick auf ein weich gesperrtes Häkchen (Banner mit Verfall).</summary>
     private string _bausteinmeldung = "";
@@ -873,8 +937,10 @@
     private int? _gesehenVorlageId;
     private IReadOnlyList<Handlung>? _gesehenHandlungen;
     private Pruefstand? _gesehenPruefzeile;
+    private Originalstand? _gesehenOriginalzeile;
     private Startrueckfrage? _gesehenStartrueckfrage;
     private Kapitelstand? _gesehenKapitelstand;
+    private Kapitelstand? _gesehenExcelBlattstand;
     private bool _gesehen;
 
     /// <summary>Läuft gerade eine Handlung der Gruppe (Dateiwahl, Kopie, Prüfung)?</summary>
@@ -956,11 +1022,14 @@
                    || VorlageId != _gesehenVorlageId
                    || !ReferenceEquals(Vorlagenhandlungen, _gesehenHandlungen)
                    || !Equals(Pruefzeile, _gesehenPruefzeile)
+                   || !Equals(Originalzeile, _gesehenOriginalzeile)
                    || !Equals(Startrueckfrage, _gesehenStartrueckfrage)
                    || !Equals(Kapitelstand, _gesehenKapitelstand)
+                   || !Equals(ExcelBlattstand, _gesehenExcelBlattstand)
                    || !ReferenceEquals(ExcelVorlagen, _gesehenExcelVorlagen)
                    || ExcelVorlageId != _gesehenExcelVorlageId
                    || !Equals(ExcelPruefzeile, _gesehenExcelPruefzeile)
+                   || !Equals(ExcelOriginalzeile, _gesehenExcelOriginalzeile)
                    || !ReferenceEquals(ExcelVorlagenhandlungen, _gesehenExcelHandlungen);
         if (!neu) return;
 
@@ -969,22 +1038,28 @@
         _gesehenVorlageId = VorlageId;
         _gesehenHandlungen = Vorlagenhandlungen;
         _gesehenPruefzeile = Pruefzeile;
+        _gesehenOriginalzeile = Originalzeile;
         _gesehenStartrueckfrage = Startrueckfrage;
         _gesehenKapitelstand = Kapitelstand;
+        _gesehenExcelBlattstand = ExcelBlattstand;
         _gesehenExcelVorlagen = ExcelVorlagen;
         _gesehenExcelVorlageId = ExcelVorlageId;
         _gesehenExcelPruefzeile = ExcelPruefzeile;
+        _gesehenExcelOriginalzeile = ExcelOriginalzeile;
         _gesehenExcelHandlungen = ExcelVorlagenhandlungen;
 
         _vorlagen = Vorlagen ?? Array.Empty<Vorlagenzeile>();
         _vorlageId = VorlageId;
         _handlungen = Vorlagenhandlungen ?? Array.Empty<Handlung>();
         _pruefzeile = Pruefzeile;
+        _originalzeile = Originalzeile;
         _startrueckfrage = Startrueckfrage;
         _kapitel = Kapitelstand;
+        _blattstand = ExcelBlattstand;
         _excelVorlagen = ExcelVorlagen ?? Array.Empty<Vorlagenzeile>();
         _excelVorlageId = ExcelVorlageId;
         _excelPruefzeile = ExcelPruefzeile;
+        _excelOriginalzeile = ExcelOriginalzeile;
         _excelHandlungen = ExcelVorlagenhandlungen ?? Array.Empty<Handlung>();
     }
 
@@ -1011,6 +1086,11 @@
 
             ZielordnerLesen = () => _stand.Zielordner,
             ZielordnerSetzen = BeiZielordner,
+
+            SzenarioLesen = () => _stand.SzenarioId,
+            SzenarioSetzen = BeiSzenario,
+            SzenarioEintraege = () => KiMaskenanmeldung.Eintraege(
+                _stand.Szenarien, z => z.Id, z => z.Text),
 
             VariantenLesen = KiVariantenzeile,
             BausteineLesen = KiBausteinzeile,
@@ -1110,7 +1190,9 @@
     {
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        // Ohne preventScroll rollt der Browser die hohe Seite ins Bild und schiebt die
+        // Reiterleiste von „Berichte & Kosten" aus dem Blick.
+        await _wurzel.FocusAsync(preventScroll: true);
     }
 
     /// <summary>
@@ -1152,13 +1234,29 @@
             && _stand.Bausteine.Any(b => b.Schluessel == BausteinWirtschaft))
             _bausteine.Add(BausteinWirtschaft);
 
+        // Fachvorgabe E31: Das Szenario der Einzelheiten belegt die Klappliste vor (dieselben Nummern).
+        if (_stand.Szenarien.Any(z => z.Id == v.SzenarioId)) _stand.SzenarioId = v.SzenarioId;
+
         int anzahl = _gewaehlt.Count(id => gruppe.Contains(id));
-        _vorbelegt = string.Format(CultureInfo.CurrentCulture, Resource.BK_BER_VORBELEGT, anzahl,
-                                   string.IsNullOrEmpty(v.SzenarioText) ? Resource.WIRT_SZEN_ERWARTET : v.SzenarioText);
+        // Die VALERI-Darstellung bekommt einen eigenen Satz: Kennzahlen je Szenario, übrige Tafeln im Szenario Erwartet.
+        _vorbelegt = v.SzenarioId == BerichtStand.SZENARIO_VALERI
+            ? string.Format(CultureInfo.CurrentCulture, Resource.BK_BER_VORBELEGT_VALERI, anzahl)
+            : string.Format(CultureInfo.CurrentCulture, Resource.BK_BER_VORBELEGT, anzahl,
+                            string.IsNullOrEmpty(v.SzenarioText) ? Resource.WIRT_SZEN_ERWARTET : v.SzenarioText);
     }
 
     /// <summary>Die leise Zeile der übernommenen Vorbelegung (Prüfhilfe); leer = keine.</summary>
     public string Vorbelegungszeile => _vorbelegt;
+
+    /// <summary>Das gewählte Szenario der Wirtschaftlichkeit (Prüfhilfe; 0 = Erwartet).</summary>
+    public int Szenariowahl => _stand.SzenarioId;
+
+    /// <summary>
+    /// Steht die Klappliste des Szenarios? Nur mit Einträgen der Hülle und angehaktem Baustein Wirtschaftlichkeit
+    /// (Fachvorgabe E31).
+    /// </summary>
+    private bool SzenarioSichtbar => _stand.Szenarien.Count > 0 && BausteinWirtschaft.Length > 0
+                                     && _bausteine.Contains(BausteinWirtschaft);
 
     /// <summary>Die aktiven Bausteine (Prüfhilfe).</summary>
     public IReadOnlyList<string> AktiveBausteine => _bausteine;
@@ -1222,6 +1320,8 @@
 
     private void BeiAusgabe(int? id) => _stand.AusgabeId = id ?? 0;
 
+    private void BeiSzenario(int? id) => _stand.SzenarioId = id ?? 0;
+
     private void BeiZielordner(string pfad) => _stand.Zielordner = pfad ?? "";
 
     // =====================================================================
@@ -1245,6 +1345,7 @@
             Bausteine = new List<string>(_bausteine),
             AusgabeId = _stand.AusgabeId,
             Zielordner = _stand.Zielordner,
+            SzenarioId = _stand.SzenarioId,
             AnzahlMitStamm = mitStamm,
             VorlageId = _vorlageId,
             Vorlagenweg = vorlagenweg ?? ""
@@ -1428,9 +1529,6 @@
     /// <summary>Die Erfolgszeile ist verfallen — Warnungen und Klappzeile bleiben.</summary>
     private bool _erfolgVerfallen;
 
-    /// <summary>Die Hinweise sind aufgeklappt — Vorgabe: nein; gilt für die Sitzung der Seite.</summary>
-    private bool _hinweiseOffen;
-
     /// <summary>Die Zahl der Hinweispunkte (ohne Unterpunkte).</summary>
     private int HinweisAnzahl => _ergebnis?.Hinweise.Sum(g => g.Punkte.Count) ?? 0;
 
@@ -1601,12 +1699,15 @@
         _vorlageId = neu.VorlageId;
         _handlungen = neu.Handlungen ?? Array.Empty<Handlung>();
         _pruefzeile = neu.Pruefzeile;
+        _originalzeile = neu.Originalzeile;
         _startrueckfrage = neu.Startrueckfrage;
         _sprachhinweis = neu.Sprachhinweis ?? "";
         _kapitel = neu.Kapitelstand;
+        _blattstand = neu.ExcelBlattstand;
         _excelVorlagen = neu.ExcelVorlagen ?? Array.Empty<Vorlagenzeile>();
         _excelVorlageId = neu.ExcelVorlageId;
         _excelPruefzeile = neu.ExcelPruefzeile;
+        _excelOriginalzeile = neu.ExcelOriginalzeile;
         _excelHandlungen = neu.ExcelHandlungen ?? Array.Empty<Handlung>();
         _bausteinmeldung = "";
         _gruppenfehler = neu.Fehler ?? "";
@@ -1869,11 +1970,17 @@
     private const int AUSGABE_WORD = 0, AUSGABE_EXCEL = 1, AUSGABE_BEIDE = 2;
 
     /// <summary>
-    /// Steht statt der Liste die leise Zeile? Nur wenn die Vorlage kein Kapitel führt (nur
-    /// Einzelplatzhalter) UND allein Word entsteht — mit Excel bleibt die Liste, denn die Mappe folgt
-    /// den Häkchen wie heute (BV-Q2).
+    /// Steht statt der Liste die leise Zeile? Sie steht, wenn jede Vorlage, die dieser Bericht füllt,
+    /// ihren Inhalt allein bestimmt: bei Word die Word-Vorlage ohne Kapitel, bei Excel die Excel-Vorlage
+    /// ohne Blattmarke und ohne Blattanhang (BV-Q2 (c)), bei beiden Ausgaben beide. Ohne Excel-Vorlage
+    /// folgt die Mappe den Häkchen wie bisher — dann bleibt die Liste.
     /// </summary>
-    private bool InhaltAusVorlage => _kapitel is { InhaltAusVorlage: true } && _stand.AusgabeId == AUSGABE_WORD;
+    private bool InhaltAusVorlage => _stand.AusgabeId switch
+    {
+        AUSGABE_WORD => _kapitel is { InhaltAusVorlage: true },
+        AUSGABE_EXCEL => _blattstand is { InhaltAusVorlage: true },
+        _ => _kapitel is { InhaltAusVorlage: true } && _blattstand is { InhaltAusVorlage: true },
+    };
 
     /// <summary>
     /// Trägt die Vorlage diesen Baustein selbst — das Deckblatt aus Platzhaltern
@@ -1884,16 +1991,44 @@
            && string.Equals(b.Schluessel, deckblatt, StringComparison.Ordinal);
 
     /// <summary>
-    /// Steht der Eintrag ausgegraut da? Nur mit einem Kapitelstand der Hülle, nur wenn Word entsteht
-    /// und die Vorlage das Kapitel nicht führt oder den Baustein selbst trägt — und wird Excel mit
-    /// ausgegeben, nur wenn auch die Mappe ihn nicht führt (Konzept 10.2: weder Word- noch Excel-Vorlage).
+    /// Führt die Word-Vorlage diesen Baustein — oder sagt sie nichts darüber (kein Kapitelstand der
+    /// Hülle)? Ein Baustein, den die Vorlage selbst trägt (Deckblatt aus Platzhaltern), zählt hier als
+    /// nicht geführt: Sein Häkchen wirkt nicht, und der Eintrag bekommt den eigenen Grund.
+    /// </summary>
+    private bool FuehrtWord(BausteinZeile b)
+    {
+        if (_kapitel is null) return true;
+        IReadOnlyList<string> fehlen = _kapitel.NichtEnthalten ?? Array.Empty<string>();
+        return !fehlen.Contains(b.Schluessel, StringComparer.Ordinal) && !AusVorlage(b);
+    }
+
+    /// <summary>
+    /// BV-Q2 (c): Führt die Excel-Mappe diesen Baustein? Mit einer Excel-Vorlage entscheidet ihr
+    /// Blattstand (Blattmarken und Blattanhang); ohne Vorlage entstehen alle Blätter, also führt die
+    /// Mappe jeden Baustein, den sie überhaupt kennt (<see cref="BausteinZeile.InExcel"/>).
+    /// </summary>
+    private bool FuehrtExcel(BausteinZeile b)
+    {
+        if (_blattstand is null) return b.InExcel;
+        IReadOnlyList<string> fehlen = _blattstand.NichtEnthalten ?? Array.Empty<string>();
+        return !fehlen.Contains(b.Schluessel, StringComparer.Ordinal);
+    }
+
+    /// <summary>
+    /// Steht der Eintrag ausgegraut da (Konzept 10.2, Entscheide BV-Q1 c und BV-Q2 c)? Bei Ausgabe
+    /// „Word“ entscheidet die Word-Vorlage, bei „Excel“ allein die Excel-Vorlage, bei „Beide“ ist
+    /// ausgegraut, was WEDER die Word- NOCH die Excel-Vorlage führt. Ohne Excel-Vorlage bleibt der
+    /// Excel-Weg wie bisher: Jeder Eintrag ist frei, denn die Mappe entsteht mit allen Blättern.
     /// </summary>
     private bool Ausgegraut(BausteinZeile? b)
     {
-        if (_kapitel is null || b is null || _stand.AusgabeId == AUSGABE_EXCEL) return false;
-        IReadOnlyList<string> fehlen = _kapitel.NichtEnthalten ?? Array.Empty<string>();
-        if (!fehlen.Contains(b.Schluessel, StringComparer.Ordinal) && !AusVorlage(b)) return false;
-        return !(_stand.AusgabeId == AUSGABE_BEIDE && b.InExcel);
+        if (b is null) return false;
+        return _stand.AusgabeId switch
+        {
+            AUSGABE_WORD => _kapitel is not null && !FuehrtWord(b),
+            AUSGABE_EXCEL => _blattstand is not null && !FuehrtExcel(b),
+            _ => (_kapitel is not null || _blattstand is not null) && !FuehrtWord(b) && !FuehrtExcel(b),
+        };
     }
 
     /// <summary>Der Grund eines ausgegrauten Eintrags: „Deckblatt kommt aus der Vorlage" oder „in dieser Vorlage nicht enthalten".</summary>

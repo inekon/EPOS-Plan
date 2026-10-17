@@ -52,6 +52,7 @@ namespace WindowsFormsApplication1
     internal enum ZapfStufe
     {
         Einfach = 0,
+        /// <summary>Nicht mehr angeboten (ZC3): bleibt für alte Stände lesbar und gilt wie Experte.</summary>
         Erweitert = 1,
         Experte = 2
     }
@@ -83,6 +84,24 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
+    /// Ein eigener Ferienzeitraum einer Zone (<c>Tab_TwwZonenferien</c>): Jahrestage des Gemeinjahrs, einschließlich.
+    /// <c>null</c>, 0 und 366 heißen „keine Angabe“ (die Werte des Gebäudes und eines Dialogs kommen so herein): ohne
+    /// Beginn läuft der Zeitraum vom 1. Januar an, ohne Ende gilt er nicht; ein Beginn nach dem Ende läuft über den
+    /// Jahreswechsel (<see cref="Zapfkalender.AusJahrestagen"/>). Gespeichert wird nur ein Zeitraum mit Ende 1 … 365.
+    /// </summary>
+    internal sealed record ZonenferienStand
+    {
+        /// <summary>Wahlfreier Name des Zeitraums; <c>null</c> = keiner.</summary>
+        public string Name { get; init; }
+
+        /// <summary>Jahrestag des Beginns; <c>null</c>, 0 und 366 = vom 1. Januar an.</summary>
+        public int? Beginn { get; init; }
+
+        /// <summary>Jahrestag des Endes; <c>null</c>, 0 und 366 = keine Angabe.</summary>
+        public int? Ende { get; init; }
+    }
+
+    /// <summary>
     /// Eine Zone eines Projekts (<c>Tab_TwwZone</c>, Konzept 3.1). Jede nullbare Größe heißt
     /// <c>null</c> = Vorgabe; die Einheit steht im Namen.
     /// </summary>
@@ -95,6 +114,20 @@ namespace WindowsFormsApplication1
         public int? IdTagesgangsatz { get; init; }
 
         public int? IdGebaeude { get; init; }
+
+        /// <summary>
+        /// Die Wochenmaske des Wochenendes (Mo = Bit 0 … So = Bit 6) des gebundenen Gebäudes
+        /// (<c>Tab_Gebaeude.Wochenendtage</c>); <c>null</c> = Samstag und Sonntag aus den Kennzeichen der Klimaregion.
+        /// Nur vorbelegt im Eingang, nie gespeichert.
+        /// </summary>
+        public int? Wochenendtage { get; init; }
+
+        /// <summary>
+        /// Die Feiertage des gebundenen Gebäudes als Jahrestage 1 … 365 des Bezugsjahrs — die bundeseinheitlichen Regeln
+        /// und die seines Feiertagslands (<see cref="Landesfeiertage.Jahrestage"/>). Nur vorbelegt im Eingang und nur mit
+        /// einer Wochenmaske außer der Vorgabe (<see cref="Zapfkalender.Kennzeichen"/>), nie gespeichert; <c>null</c> = keine.
+        /// </summary>
+        public IReadOnlyList<int> Feiertage { get; init; }
         public int Reihenfolge { get; init; }
         public string Name { get; init; } = "";
 
@@ -109,11 +142,11 @@ namespace WindowsFormsApplication1
         /// <summary><c>false</c> nimmt die Zone aus dem Zirkulationsanteil (4.3).</summary>
         public bool Zirkulation { get; init; } = true;
 
-        /// <summary>Vier Ferienfenster, Jahrestag des Beginns; <c>null</c>, 0 und 366 = keine Angabe.</summary>
-        public int?[] Ferienbeginn { get; init; } = new int?[4];
-
-        /// <summary>Vier Ferienfenster, Jahrestag des Endes.</summary>
-        public int?[] Ferienende { get; init; } = new int?[4];
+        /// <summary>
+        /// Die eigenen Ferienzeiträume der Zone in ihrer Reihenfolge (<c>Tab_TwwZonenferien</c>), beliebig viele; leer =
+        /// keine. Mit gebundenem Gebäude belegt der Eingang sie aus dessen Ferien vor, wenn die Zone keine trägt.
+        /// </summary>
+        public IReadOnlyList<ZonenferienStand> Ferien { get; init; } = new ZonenferienStand[0];
 
         public double? Jahresmesswert { get; init; }
         public ZapfMesswerteinheit? JahresmesswertEinheit { get; init; }
@@ -339,5 +372,11 @@ namespace WindowsFormsApplication1
     {
         /// <summary>Der deutsche Wortlaut (Protokoll, Test).</summary>
         public string Klartext => Satz?.Klartext ?? "";
+
+        /// <summary>
+        /// Das Ergebnis des Nachladens des freien Paketteils in DIESER Anfrage (der Hinweis
+        /// „nachgeladen" oder der benannte Fehler); <c>null</c>, wenn nichts nachzuladen war.
+        /// </summary>
+        public ZapfSatz Nachladen { get; init; }
     }
 }

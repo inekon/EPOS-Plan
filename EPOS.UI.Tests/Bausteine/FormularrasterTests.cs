@@ -221,6 +221,20 @@ public class FormularrasterTests : EposBunitContext
     }
 
     /// <summary>
+    /// Eine KLAPPLISTE schrumpft mit ihrer Feldspalte (Stufe KP2): Als Flexkind der Feldzeile
+    /// wäre ihr Mindestmaß sonst ihr längster Eintrag — in der Konditionierungsprobe rollte das
+    /// Reiterblatt des Gebäudeeditors bei 390 px deshalb 43 px quer. bunit misst das nicht; die
+    /// Regel wird als Regel gehalten, gemessen hat sie der Browser.
+    /// </summary>
+    [Fact]
+    public void Eine_Klappliste_schrumpft_mit_ihrer_Feldspalte()
+    {
+        Assert.Contains("min-width: 0",
+                        Stilblock(".epos-formularraster .epos-feld-zeile > select.epos-eingabe {"),
+                        StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// ZWEI FELDPAARE JE ZEILE über <c>auto-fill</c>/<c>minmax</c> — kein
     /// gerechneter Prozentwert, dieselbe Bauart wie beim Kachelraster. Die
     /// Spaltenzahl hängt damit an der Breite des RASTERS und nicht an der des
@@ -333,7 +347,10 @@ public class FormularrasterTests : EposBunitContext
     {
         string css = Stilblatt();
 
-        int a = css.IndexOf(selektor, StringComparison.Ordinal);
+        // Nur am Zeilenanfang: Ein Nachfahrenselektor wie „.epos-bericht-karte .epos-formularraster
+        // .epos-feld {“ enthält den gesuchten Selektor als Teilzeichenkette.
+        int a = css.StartsWith(selektor, StringComparison.Ordinal) ? 0 : css.IndexOf("\n" + selektor, StringComparison.Ordinal);
+        if (a > 0 || (a == 0 && css[0] == '\n')) a++;
         Assert.True(a >= 0, $"Regel {selektor} steht nicht im Stilblatt");
         int e = css.IndexOf('}', a);
         Assert.True(e > a);

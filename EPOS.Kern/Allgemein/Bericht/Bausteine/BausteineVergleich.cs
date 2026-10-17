@@ -41,6 +41,10 @@ namespace WindowsFormsApplication1
                 if (!kennzahlen.IstLeer) k.Fuege(WordTabellenschreiber.Direkt(k, kennzahlen));
                 else k.Text("Keine Kennzahlen verfügbar.");
 
+                // SK-4: das Energieflussbild — dasselbe Modell wie {{stand.bild.energiefluss}}; braucht keine Zeitreihen
+                // und steht darum vor den Ganglinien. Ohne Fluss der benannte Grund der Bilanz.
+                ZeichneEnergiefluss(k, v);
+
                 // Die vier Ganglinientypen aus der In-Memory-Simulation (Konzept Kap. 6.2).
                 if (v.Zeitreihen != null)
                     ZeichneGanglinien(k, v.Zeitreihen);
@@ -87,6 +91,34 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>Die Anzeigebreite der Bilder dieses Bausteins [Pixel bei 96 dpi].</summary>
+        private const int ANZEIGE_BREITE = 620;
+
+        /// <summary>
+        /// SK-4 (Konzept Energieflussbild 5): das Energieflussbild des Stands in der Berichtsfassung
+        /// (<see cref="Berichtsbilder.Energiefluss"/>, Maß <see cref="ChartRenderer.ENERGIEFLUSS_BERICHT"/>), angezeigt in der
+        /// Breite der übrigen Bilder und im Seitenverhältnis des Modells. Ohne Fluss ein benannter Satz statt des Bildes.
+        /// </summary>
+        private static void ZeichneEnergiefluss(WordKontext k, VariantenDaten v)
+        {
+            bool englisch = BerichtTexte.Englisch;
+            Zeichnung.Zeichenmodell m = Sicher(() => Berichtsbilder.Energiefluss(v, null, englisch));
+            if (m != null && m.Breite > 0)
+            {
+                int hoehe = (int)Math.Round(ANZEIGE_BREITE * (double)m.Hoehe / m.Breite, MidpointRounding.AwayFromZero);
+                k.Bild(m, ANZEIGE_BREITE, hoehe);
+                k.MitStilRoh("Beschriftung", Energiefluss.T(nameof(MyResource.Resource.EF_BER_BESCHRIFTUNG), englisch));
+                return;
+            }
+            EnergieflussBilanz b = null;
+            try { b = Berichtsbilder.EnergieflussbilanzDes(v, englisch); } catch { b = null; }
+            string grund = b != null && !string.IsNullOrEmpty(b.Grund)
+                ? b.Grund
+                : string.Format(Energiefluss.Kultur(englisch), Energiefluss.T(nameof(MyResource.Resource.EF_NICHT_SIMULIERT), englisch),
+                                Energiefluss.Versionsname(v));
+            k.HinweisRoh(string.Format(k.Kultur, Energiefluss.T(nameof(MyResource.Resource.EF_BER_OHNE_BILD), englisch), grund));
+        }
+
         private static Zeichnung.Zeichenmodell Sicher(Func<Zeichnung.Zeichenmodell> f)
         {
             try { return f(); } catch { return null; }   // ein Diagrammfehler kippt nicht den Bericht
@@ -127,6 +159,10 @@ namespace WindowsFormsApplication1
             // KU2 Welle 3: die Gruppe „Kälte“ zwischen Effizienz und Emissionen (KennzahlenKatalog.GRUPPEN).
             // BV-E5: dieselben Tafeln wie {{tabelle.vergleich.<gruppe>}} (Berichtstabellen.Vergleichsgruppe),
             // Blockteilung zu drei Varianten mit wiederholter Stammspalte, Δ-Spalte nur bei genau einer Variante.
+            // Anwenderentscheid 29.09.2026: Die Tafeln der Kosten und der Emissionen zeigen die
+            // Einzelzahl; wo die Gruppenregel gewirkt hat, steht ihre Fußzeile unter GENAU DER
+            // Tafel, zu der sie gehört (Kosten in €/a, Emissionen in t/a) — sie trägt die Zahl
+            // dieser Tafel, nicht die der anderen.
             foreach (string gruppe in KennzahlenKatalog.GRUPPEN)
             {
                 Berichtstabelle tafel = Berichtstabellen.Vergleichsgruppe(daten, gruppe, BerichtTexte.Englisch, k.Kultur);
@@ -138,6 +174,7 @@ namespace WindowsFormsApplication1
                     k.Fuege(WordTabellenschreiber.Direkt(k, tafel, block));
                     k.Abstand();
                 }
+                foreach (string fussnote in tafel.Hinweise) k.HinweisRoh(fussnote);
             }
 
             // ---------------- kompakte Delta-Tabelle ----------------
@@ -215,6 +252,23 @@ namespace WindowsFormsApplication1
                     k.Ueberschrift3((v.IstStamm ? "Stamm — " : "Variante — ") + v.Anzeige);
                     // BV-E5: dieselbe Tafel wie {{stand.tabelle.brennstoffmengen}} (hier mit Leerzeile).
                     k.Fuege(WordTabellenschreiber.Direkt(k, Berichtstabellen.Brennstoffmengen(v, true, BerichtTexte.Englisch, k.Kultur)));
+                }
+            }
+
+            // ---------------- Gebäude je Projekt (KP3 Welle O3b, E58 F3 (c)) ----------------
+            // Dieselbe Tafel wie {{stand.tabelle.gebaeude}} (Berichtstabellen.Gebaeudeergebnisse) je Stand, ohne Δ — das Δ
+            // trägt die Kennzahlgruppe „Gebäude“ darüber. Wie die ausführliche Vorlage nur, wenn ein Stand Lüftungs- oder
+            // Aufheizwerte trägt (die Gruppe also eine Tafel hat); je Stand wie die Erzeugerliste, auch ohne Variante.
+            if (Berichtstabellen.Gruppenzeilen(daten, KennzahlenKatalog.GR_GEBAEUDE).Count > 0)
+            {
+                k.Ueberschrift2Roh(Berichtstabellen.Grund(nameof(MyResource.Resource.BV_VGL_AUFH_GEBAEUDE), k.Kultur));
+                k.HinweisRoh(Berichtstabellen.Grund(nameof(MyResource.Resource.BV_VGL_AUFH_GEBAEUDE_HINWEIS), k.Kultur));
+                foreach (VariantenDaten v in daten.Varianten)
+                {
+                    k.Ueberschrift3((v.IstStamm ? "Stamm — " : "Variante — ") + v.Anzeige);
+                    Berichtstabelle tafel = Berichtstabellen.Gebaeudeergebnisse(v, BerichtTexte.Englisch, k.Kultur);
+                    if (tafel.IstLeer) k.HinweisRoh(tafel.Leergrund);
+                    else k.Fuege(WordTabellenschreiber.Direkt(k, tafel));
                 }
             }
         }

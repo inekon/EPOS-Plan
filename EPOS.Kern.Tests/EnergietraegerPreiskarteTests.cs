@@ -329,5 +329,64 @@ namespace EPOS.Kern.Tests
                 EnergietraegerPreiskarte.AnzeigeArbeitspreis(
                     EnergietraegerPreiskarte.BasisArbeitspreis(0.0638, 1.0), 1.0)));
         }
+    
+
+        // =================================================================
+        // Vorgabe €/kWh
+        // =================================================================
+
+        /// <summary>
+        /// Ohne gemerkte Preisbasis steht der Arbeitspreis in €/kWh — umgerechnet mit
+        /// dem Heizwert: Erdgas 0,10 €/m³ bei 10 kWh/m³ ergibt 0,01 €/kWh.
+        /// </summary>
+        [Fact]
+        public void Ohne_gemerkte_Preisbasis_gilt_kWh_und_der_Heizwert_rechnet_um()
+        {
+            string basis = EnergietraegerPreiskarte.VorgabePreisbasis(null, "m³", true, 10.0);
+            Assert.Equal("kWh", basis);
+            Assert.Equal(0.01, EnergietraegerPreiskarte.AnzeigeArbeitspreis(0.10, 10.0), 12);
+            Assert.Equal("kWh", EnergietraegerPreiskarte.VorgabePreisbasis("  ", "Nm³", true, 10.5));
+            Assert.Equal("kWh", EnergietraegerPreiskarte.VorgabePreisbasis("", "L", true, 9.8));
+            Assert.Equal("kWh", EnergietraegerPreiskarte.VorgabePreisbasis("", "kg", true, 4.9));
+        }
+
+        /// <summary>Ein bestehender Eintrag behält seine Einheit — nie umgestellt.</summary>
+        [Fact]
+        public void Eine_gemerkte_Preisbasis_bleibt()
+        {
+            Assert.Equal("Nm³", EnergietraegerPreiskarte.VorgabePreisbasis("Nm³", "Nm³", true, 10.5));
+            Assert.Equal("kWh", EnergietraegerPreiskarte.VorgabePreisbasis(" kWh ", "Nm³", true, 10.5));
+            Assert.Equal("L", EnergietraegerPreiskarte.VorgabePreisbasis("L", "L", true, 0.0));
+        }
+
+        /// <summary>
+        /// Ohne brauchbaren Heizwert bleibt die Katalogeinheit: fehlt er, ist er 0, führt
+        /// das Preismodell keinen (Strom, Fernwärme) oder steht er erkennbar nicht in
+        /// kWh je Abrechnungseinheit (4 900 „kWh/kg" ist ein Wert je Tonne).
+        /// </summary>
+        [Fact]
+        public void Ohne_brauchbaren_Heizwert_bleibt_die_Katalogeinheit()
+        {
+            Assert.Equal("Nm³", EnergietraegerPreiskarte.VorgabePreisbasis(null, "Nm³", true, 0.0));
+            Assert.Equal("Nm³", EnergietraegerPreiskarte.VorgabePreisbasis(null, "Nm³", true, double.NaN));
+            Assert.Equal("kWh", EnergietraegerPreiskarte.VorgabePreisbasis(null, "kWh", false, 1.0));
+            Assert.Equal("kg", EnergietraegerPreiskarte.VorgabePreisbasis(null, "kg", false, 4.9));
+            Assert.Equal("kg", EnergietraegerPreiskarte.VorgabePreisbasis(null, "kg", true, 4900.0));
+            Assert.Equal("t", EnergietraegerPreiskarte.VorgabePreisbasis(null, "t", true, -1.0));
+            Assert.Equal("kWh", EnergietraegerPreiskarte.VorgabePreisbasis(null, "t", true, 4900.0));
+        }
+
+        /// <summary>Die Einheitenprüfung des Heizwerts je Abrechnungseinheit.</summary>
+        [Fact]
+        public void Der_Heizwert_wird_gegen_seine_Einheit_geprueft()
+        {
+            Assert.True(EnergietraegerPreiskarte.HeizwertPasstZurEinheit("Nm³", 10.5));
+            Assert.True(EnergietraegerPreiskarte.HeizwertPasstZurEinheit("m³", 10.0));
+            Assert.True(EnergietraegerPreiskarte.HeizwertPasstZurEinheit("l", 9.8));
+            Assert.True(EnergietraegerPreiskarte.HeizwertPasstZurEinheit("kg", 33.3));
+            Assert.False(EnergietraegerPreiskarte.HeizwertPasstZurEinheit("kg", 4900.0));
+            Assert.False(EnergietraegerPreiskarte.HeizwertPasstZurEinheit("L", 0.0));
+            Assert.True(EnergietraegerPreiskarte.HeizwertPasstZurEinheit("t", 4900.0));
+        }
     }
 }

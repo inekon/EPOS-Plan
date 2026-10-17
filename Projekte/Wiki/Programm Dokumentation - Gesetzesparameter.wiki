@@ -1,0 +1,27 @@
+Der Dialog '''Gesetzliche Parameter''' hält die Rechtsgrundlagen der Wirtschaftlichkeits- und der Emissionsrechnung jahresscharf vor: je Schlüssel und Gültigkeitsjahr eine eigene Zeile. Er steht unter {{Menü|Administration|Kosten|Gesetzliche Parameter…}}. Eine Gesetzesänderung ist eine neue Jahreszeile, kein Ändern der alten – nur so liefert eine heute gerechnete Variante in einigen Jahren noch dieselben Zahlen.
+
+[[Datei:Bildschirmfoto_Gesetzesparameter.png|mini|zentriert|800px|Gesetzliche Parameter, Bereich CO₂-Preis – Bildschirmfoto mit Beispieldaten.]]
+
+== Eingaben ==
+
+* '''Bereich''' – schränkt die Liste ein: KWK-Gesetz, EEG, Stromsteuer, Energiesteuer, CO₂-Preis, Umlagen auf den Strompreis, Umsatzsteuer und F-Gase sowie die Emissions- und Primärenergiefaktoren, getrennt nach gesetzlichem Nachweis und realer Bilanz.
+* '''Liste''' – je Zeile Schlüssel, ''Gültig ab'', Wert, Einheit, Status und Quelle, mit Suche über alle Spalten, einem Trichter je Spalte und dem Sortierpfeil im Spaltenkopf; ein Doppelklick öffnet die Zeile zum Ändern.
+* '''Neu…''' – legt eine Zeile an: Schlüssel, Bereich, Gültigkeitsjahr, Wert, Einheit, Status und Quelle. Ein leeres Wertfeld bedeutet, dass der Satz entfallen ist – das ist etwas anderes als der Wert 0.
+* '''Einheit einer neuen Zeile''' – das Programm belegt sie vor und nennt unter dem Feld die Herkunft:
+** Ein Schlüssel, den es schon gibt, bringt die Einheit seiner jüngsten Zeile mit, dazu Bereich und Quelle („übernommen von … ab …“). Beim Tippen schlägt das Programm passende vorhandene Schlüssel zur Übernahme vor.
+** Ein neuer Schlüssel bekommt die Einheit, die im gewählten Bereich am häufigsten vorkommt („üblich im Bereich …“).
+** Im Bereich Energiesteuer wechselt die Einheit je Brennstoff; dort bleibt das Feld leer, ebenso ohne Bereich. Die Einheit ist dann Pflicht: '''OK''' bleibt gesperrt und nennt am Knopf, was fehlt – erst den Bereich, dann die Einheit.
+** Eine selbst gewählte Einheit bleibt stehen, auch wenn sich Bereich oder Schlüssel danach ändern; weicht der Vorschlag ab, holt '''Vorschlag übernehmen''' ihn zurück. Beim Ändern einer Zeile bleibt die gespeicherte Einheit.
+* '''Status''' – ''GESICHERT'', ''VORLAEUFIG'' oder ''PROGNOSE''; damit bleibt erkennbar, ob ein Wert im Gesetz steht oder eine Annahme ist.
+* '''Ändern…''' – liegt das Gültigkeitsjahr der Zeile in der Vergangenheit, fragt das Programm nach: Eine Gesetzesänderung gehört in eine neue Jahreszeile, das Ändern der alten ist nur für Tippfehler gedacht.
+* '''Löschen''' – entfernt die Zeile endgültig; danach fehlt der Wert in jeder Rechnung, die dieses Jahr betrifft.
+
+== Siehe auch ==
+
+* [[Grundlagen/Wirtschaftlichkeitsrechnung]] – wofür Zuschlagssätze, Steuern und CO₂-Preis gebraucht werden
+* [[Wirtschaftlichkeit]] – die Bewertung, die diese Sätze verwendet
+* [[Programm Dokumentation/Kosten#gesetzliche-parameter|Kosten: Gesetzliche Parameter]] – der Katalog im Zusammenhang der Kostenverwaltung
+* [[Programm Dokumentation/Wirtschaftlichkeit#kwk-frist|Wirtschaftlichkeit: Frist zur Inbetriebnahme]] – wie die Wirtschaftlichkeit die Sätze nachschlägt
+* [[Grundlagen/Vergleich Energiebilanz]] – Emissions- und Primärenergiefaktoren in der Bilanz
+
+[[Kategorie:Programm Dokumentation]]

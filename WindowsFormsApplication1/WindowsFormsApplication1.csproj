@@ -274,9 +274,7 @@
        in der Zeile "Excel-Vorlage" direkt waehlbar.
        Alle ausgelieferten Vorlagen erzeugt der Sammelbefehl des Werkzeugs
        (alle <vorlagenordner>); die Aktualitaetswache
-       EPOS.Kern.Tests/AuslieferungsvorlagenAktualitaetWacheTests haelt sie beim Katalog.
-       Berichtsvorlage_Beispiel.docx ist die Beispielvorlage zur Anschauung
-       und wird nicht ausgeliefert. -->
+       EPOS.Kern.Tests/AuslieferungsvorlagenAktualitaetWacheTests haelt sie beim Katalog. -->
   <ItemGroup>
     <None Update="Allgemein\Bericht\Vorlagen\Berichtsvorlage.docx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -327,6 +325,18 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>Vorlagen\Berichtsvorlage_Excel_Ausfuehrlich_en.xlsx</Link>
       <TargetPath>Vorlagen\Berichtsvorlage_Excel_Ausfuehrlich_en.xlsx</TargetPath>
+    </None>
+  </ItemGroup>
+
+  <!-- Die Exportzusage (IDS) des IFC-Exports: im Entwicklungsbau nach Vorlage\
+       neben die EXE, wie das Setup sie nach {app}\Vorlage legt (dort sucht sie
+       der Exportdialog neben der Vorlagendatenbank). Gehalten von
+       EPOS.Kern.Tests/AuslieferungsvorlagenWacheTests. -->
+  <ItemGroup>
+    <None Include="..\Setup\Vorlage\EPOS_Export.ids">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>Vorlage\EPOS_Export.ids</Link>
+      <TargetPath>Vorlage\EPOS_Export.ids</TargetPath>
     </None>
   </ItemGroup>
 

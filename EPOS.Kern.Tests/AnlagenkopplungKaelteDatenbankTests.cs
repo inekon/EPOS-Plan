@@ -89,6 +89,35 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Convert.ToDouble(stuetz), WPCtrl.KuehlVorlaufDesKaeltekanals(PROJEKT));
         }
 
+        /// <summary>
+        /// AK3-K, Festlegung 12: Ein Projekt nur mit Kältemaschine (1055, die Wärmepumpe heizt nur) bekommt den
+        /// Vorlauf seiner Kältemaschine — <c>Kuehl_Vorlauf</c>, ohne ihn die kleinste Kaltwasser-Stützstelle, mindestens
+        /// <c>Kaltwasser_Vorlauf_Min</c>.
+        /// </summary>
+        [Fact]
+        public void Der_Kaltwasser_Vorlauf_eines_Projekts_nur_mit_Kaeltemaschine()
+        {
+            if (!_db.Vorhanden) return;
+            const int NUR_KAELTEMASCHINE = 1055;
+            object stuetz = DataRepository.ExecuteScalar(
+                "SELECT MIN(c.Kaltwassertemperatur) FROM Tab_Kenndaten_Kaeltemaschine c JOIN Tab_Energieanlagen a " +
+                "ON a.ID_Kaeltemaschine = c.ID_Kaeltemaschine WHERE a.ID_Projekt = ? AND a.ID_Type = ?",
+                new DbParam("@p", NUR_KAELTEMASCHINE), new DbParam("@t", WizardItemClass.KM_TYP));
+            Assert.Equal(Convert.ToDouble(stuetz), WPCtrl.KuehlVorlaufDesKaeltekanals(NUR_KAELTEMASCHINE));
+
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE Tab_Kaeltemaschine SET Kuehl_Vorlauf = 9, Kaltwasser_Vorlauf_Min = 5 WHERE ID IN " +
+                "(SELECT a.ID_Kaeltemaschine FROM Tab_Energieanlagen a WHERE a.ID_Projekt = ?)",
+                new DbParam("@p", NUR_KAELTEMASCHINE)));
+            Assert.Equal(9.0, WPCtrl.KuehlVorlaufDesKaeltekanals(NUR_KAELTEMASCHINE));
+
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE Tab_Kaeltemaschine SET Kuehl_Vorlauf = 3 WHERE ID IN " +
+                "(SELECT a.ID_Kaeltemaschine FROM Tab_Energieanlagen a WHERE a.ID_Projekt = ?)",
+                new DbParam("@p", NUR_KAELTEMASCHINE)));
+            Assert.Equal(5.0, WPCtrl.KuehlVorlaufDesKaeltekanals(NUR_KAELTEMASCHINE));
+        }
+
         // =====================================================================
         //  Grenzfall A mit Datenbank (F-A17, 9.5)
         // =====================================================================

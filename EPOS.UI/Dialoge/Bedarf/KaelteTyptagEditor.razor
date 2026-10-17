@@ -1,0 +1,170 @@
+﻿@* KBP-4b (Konzept Kaeltebedarfsprofile 3.4, Entscheid OE-1): die Typtage einer Kaeltezeile - bis zu sechs Typtage
+   (Bezeichner, Tagesmenge relativ, 24 Stundenwerte in Prozent der Tagesspitze) und die Zuordnungsmatrix 12 Monate x
+   3 Tagesarten (Werktag, Samstag, Sonn-/Feiertag). Ein Typtag wird ueber die Auswahl gezeigt, seine Stunden im
+   Stundenraster des Wochenprofils; die Matrix steht je Tagesart im Monatsraster der Monatswerte, je Zelle ein
+   Auswahlfeld. Der Editor schreibt in den Arbeitsstand des Wirts (Werte, in place); uebernommen wird mit OK. Leere
+   Zellen und Typtage ohne Stunden nennt er mit den Aussagen der Typtagschicht (SIMENG_TYPTAG_*). *@
+@using WindowsFormsApplication1
+
+<div class="epos-kbp-typtage" data-kbp="typtag">
+    @if (Vorbelegt)
+    {
+        <Herleitungszeile Text="@Resource.KBP_HINW_TYPTAG_VORBELEGT" />
+    }
+    <Formularraster>
+        <KindInhalt>
+            <Auswahlfeld Bezeichnung="@Resource.KBP_LBL_TYPTAG" Eintraege="@TyptagWahl" Auswahl="@(Aktuell?.Nr)"
+                         AuswahlChanged="TyptagGewaehlt" />
+            @if (Aktuell is not null)
+            {
+                <Textfeld Bezeichnung="@Resource.KBP_LBL_TYPTAG_NAME" Wert="@Aktuell.Bezeichner" Hoechstlaenge="60"
+                          WertChanged="NameSetzen" />
+                <Zahlenfeld Bezeichnung="@Resource.KBP_LBL_TAGESMENGE" Feldname="kbp_typtag_menge" Nachkommastellen="3" Min="0"
+                            Wert="@Aktuell.Tagesmenge" WertChanged="MengeSetzen" />
+            }
+        </KindInhalt>
+    </Formularraster>
+    @if (Aktuell is not null)
+    {
+        <div class="epos-stundenraster epos-kbp-stundenraster">
+            @for (int i = 0; i < KaeltetyptagSchema.STUNDEN; i++)
+            {
+                int stunde = i;
+                <Zahlenfeld Bezeichnung="@((stunde + 1).ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                            Titel="@string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.KBP_STUNDE, stunde)"
+                            Feldname="@("kbp_typtag_stunde_" + (stunde + 1))" Nachkommastellen="3" Min="0" Einheit="%"
+                            Wert="@Aktuell.Stunden[stunde]" WertChanged="w => StundeSetzen(stunde, w)" />
+            }
+        </div>
+    }
+    <div class="epos-leiste">
+        <button type="button" class="epos-knopf epos-kbp-typtag-neu" disabled="@(Kaeltetyptageingabe.FreieNummer(Werte) == 0)"
+                @onclick="TyptagAnlegen">@Resource.KBP_BTN_TYPTAG_NEU</button>
+        <button type="button" class="epos-knopf epos-kbp-typtag-entfernen" disabled="@(Aktuell is null || Werte.Typtage.Count <= 1)"
+                @onclick="TyptagEntfernen">@Resource.KBP_BTN_TYPTAG_ENTFERNEN</button>
+    </div>
+    <Herleitungszeile Text="@Resource.KBP_HINW_TYPTAG_STUNDEN" />
+
+    <h4 class="epos-kbp-matrixkopf">@Resource.KBP_GRUPPE_TYPTAG_MATRIX</h4>
+    @for (int a = 0; a < 3; a++)
+    {
+        int art = a;
+        <div class="epos-kbp-matrix" data-tagesart="@KaeltetyptagSchema.TAGESARTEN[art]">
+            <p class="epos-kbp-matrix-tagesart">@Tagesart(art)</p>
+            <div class="epos-stundenraster epos-kbp-monatsraster epos-kbp-matrixraster">
+                @for (int m = 0; m < KaeltetyptagSchema.MONATE; m++)
+                {
+                    int monat = m;
+                    <Auswahlfeld Bezeichnung="@Monatskurz(monat)" Titel="@(Monatsname(monat) + " – " + Tagesart(art))"
+                                 Eintraege="@ZellenWahl" Auswahl="@Werte.Matrix[monat, art]"
+                                 AuswahlChanged="nr => ZelleSetzen(monat, art, nr)" />
+                }
+            </div>
+        </div>
+    }
+    <Herleitungszeile Text="@Resource.KBP_HINW_TYPTAG_MATRIX" />
+    @foreach (string h in Kaeltetyptageingabe.Hinweise(Werte, Name))
+    {
+        <p class="epos-kbp-summenfehler epos-kbp-typtag-hinweis" role="status">@h</p>
+    }
+</div>
+
+@code {
+    /// <summary>Die Typtage samt Matrix — der Arbeitsstand des Wirts, hier in place beschrieben.</summary>
+    [Parameter] public KaeltetyptagEingabe Werte { get; set; } = new();
+
+    /// <summary>Der Name der Zeile für die Hinweise („Profil „…““).</summary>
+    [Parameter] public string Name { get; set; } = "";
+
+    /// <summary>Die Eingabe ist gerade aus dem Wochenprofil vorbelegt worden — die Herleitungszeile sagt es.</summary>
+    [Parameter] public bool Vorbelegt { get; set; }
+
+    /// <summary>Ein Wert hat sich geändert.</summary>
+    [Parameter] public EventCallback Geaendert { get; set; }
+
+    private int _nr;
+
+    /// <summary>Der gezeigte Typtag; ohne gültige Wahl der erste.</summary>
+    private Kaeltetyptag? Aktuell => Werte.Typtag(_nr) ?? (Werte.Typtage.Count > 0 ? Werte.Typtage[0] : null);
+
+    private IReadOnlyList<(int Id, string Text)> TyptagWahl
+        => Werte.Typtage.Select(t => (t.Nr, Beschriftung(t))).ToList();
+
+    private IReadOnlyList<(int Id, string Text)> ZellenWahl
+        => new[] { (0, Resource.KBP_TYPTAG_ZELLE_LEER) }.Concat(TyptagWahl).ToList();
+
+    private static string Beschriftung(Kaeltetyptag t)
+        => t.Nr.ToString(System.Globalization.CultureInfo.InvariantCulture) + " " + t.Bezeichner;
+
+    private static string Tagesart(int a)
+    {
+        string[] namen = (Resource.KBP_TYPTAG_TAGESARTEN ?? "").Split(';');
+        return a < namen.Length ? namen[a] : KaeltetyptagSchema.TAGESARTEN[a];
+    }
+
+    private static string Monatsname(int m)
+    {
+        string[] namen = (Resource.KBP_MONATE ?? "").Split(';');
+        return m < namen.Length ? namen[m] : (m + 1).ToString(System.Globalization.CultureInfo.CurrentCulture);
+    }
+
+    /// <summary>Der kurze Monatsname der Matrixzelle (der volle steht im Titel).</summary>
+    private static string Monatskurz(int m)
+    {
+        string[] namen = (Resource.KBP_MONATE_KURZ ?? "").Split(';');
+        return m < namen.Length ? namen[m] : Monatsname(m);
+    }
+
+    private void TyptagGewaehlt(int? nr)
+    {
+        if (nr is int n && Werte.Typtag(n) is not null) _nr = n;
+    }
+
+    private async Task NameSetzen(string text)
+    {
+        if (Aktuell is not { } t) return;
+        t.Bezeichner = text ?? "";
+        await Geaendert.InvokeAsync();
+    }
+
+    private async Task MengeSetzen(double? w)
+    {
+        if (Aktuell is not { } t) return;
+        t.Tagesmenge = w ?? 0.0;
+        await Geaendert.InvokeAsync();
+    }
+
+    private async Task StundeSetzen(int s, double? w)
+    {
+        if (Aktuell is not { } t) return;
+        t.Stunden[s] = w ?? 0.0;
+        await Geaendert.InvokeAsync();
+    }
+
+    private async Task ZelleSetzen(int monat, int art, int? nr)
+    {
+        int n = nr ?? 0;
+        if (n != 0 && Werte.Typtag(n) is null) return;
+        Werte.Matrix[monat, art] = n;
+        await Geaendert.InvokeAsync();
+    }
+
+    private async Task TyptagAnlegen()
+    {
+        int frei = Kaeltetyptageingabe.FreieNummer(Werte);
+        if (frei == 0) return;
+        Kaeltetyptag? t = Kaeltetyptageingabe.Anlegen(Werte, string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                                                             Resource.KBP_TYPTAG_NEU_NAME, frei));
+        if (t is null) return;
+        _nr = t.Nr;
+        await Geaendert.InvokeAsync();
+    }
+
+    private async Task TyptagEntfernen()
+    {
+        if (Aktuell is not { } t || Werte.Typtage.Count <= 1) return;
+        Kaeltetyptageingabe.Entfernen(Werte, t.Nr);
+        _nr = Werte.Typtage.Count > 0 ? Werte.Typtage[0].Nr : 0;
+        await Geaendert.InvokeAsync();
+    }
+}

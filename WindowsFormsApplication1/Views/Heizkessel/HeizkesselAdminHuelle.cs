@@ -19,9 +19,11 @@ namespace WindowsFormsApplication1
     /// <para><b>Der Speicherweg vom 18.08.2026 bleibt — und trägt jetzt das volle
     /// Profil.</b> Editierbar sind die zwanzig Spalten, die
     /// <see cref="KatalogBrowserProfil"/> als <c>Editierbar</c> führt (Beschreibung,
-    /// Leistung, Investitionskosten, Brennwert, Vor- und Rücklauf sowie Hersteller,
+    /// Leistung, Brennwert, Vor- und Rücklauf sowie Hersteller,
     /// Energieträger, Wirkungsgrade, Betriebsbereitschaftsverlust, Raumbedarf,
-    /// Wartungskosten, Nutzungsdauer und die fünf Emissionsfaktoren); geschrieben wird über
+    /// Nutzungsdauer und die fünf Emissionsfaktoren — die Kostenspalten sind mit Welle
+    /// KB-4 entfallen, die Gerätekosten stehen nur noch als Lesewert der Satzvorlage da);
+    /// geschrieben wird über
     /// <see cref="HeizkesselStammCtrl.AnzeigefelderSchreiben"/> — samt Dublettenklammer
     /// und Lesen-Ändern-Schreiben.</para>
     /// </summary>
@@ -72,7 +74,7 @@ namespace WindowsFormsApplication1
                 Detail = name => KatalogBrowserHuelle.Felder(profil, ctrl.KatalogsatzAnzeige(name)),
                 Existiert = name => new HeizkesselStammCtrl().Exists(name),
                 Loeschen = Loeschen,
-                Speichern = (name, felder, _) => Schreiben(name, felder),
+                Speichern = Schreiben,
                 // AD-Q11 (23.09.2026): ein Auslieferungssatz wird nie ueberschrieben;
                 // "Duplizieren..." legt den eigenen Satz an.
                 Duplizieren = (id, name) => KatalogBrowserHuelle.Kopie(HeizkesselStammCtrl.Duplizieren(id, name)),
@@ -115,12 +117,12 @@ namespace WindowsFormsApplication1
         /// <para><b>Gelesen wird genau, was das Profil als <c>Editierbar</c> führt</b>
         /// (Anwenderentscheid 15.09.2026): zu den sechs Feldern von 2026-08-18 kommen
         /// Hersteller, Energieträger, die beiden Wirkungsgrade, der
-        /// Betriebsbereitschaftsverlust, Raumbedarf, Wartungskosten samt Bezugsgröße,
-        /// Nutzungsdauer und die fünf Emissionsfaktoren — zwanzig Spalten. Blieben sie
+        /// Betriebsbereitschaftsverlust, Raumbedarf,
+        /// Nutzungsdauer und die fünf Emissionsfaktoren. Blieben sie
         /// hier stehen, verfielen die Änderungen des Aufklappers STILL: Die Komponente
         /// gibt alle Felder zurück, die Hülle las nur sechs davon.</para>
         /// <para><b>Ein leeres Textfeld heißt „unverändert lassen".</b> Energieträger und
-        /// Bezugsgröße der Wartungskosten sind Nachschlagewerte; kommen sie leer herein,
+        /// Einheit des Bereitschaftsverlusts sind Nachschlagewerte; kommen sie leer herein,
         /// rührt <c>KatalogFeldPruefung.AusListe</c> die Spalte nicht an — so bleibt ein
         /// Altbestandssatz mit einem Wert außerhalb der Liste in seinen übrigen Feldern
         /// pflegbar.</para>
@@ -128,10 +130,32 @@ namespace WindowsFormsApplication1
         private static KatalogSpeicherErgebnis Schreiben(string name,
                                                          IReadOnlyList<BrowserFeldwert> felder)
         {
-            var werte = new HeizkesselStammCtrl.AnzeigefelderHeizkessel(
+            HeizkesselStammCtrl.SpeicherErgebnis e =
+                HeizkesselStammCtrl.AnzeigefelderSchreiben(name, Werte(felder));
+            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+        }
+
+        /// <summary>
+        /// Schreibt die Sätze einer Mehrfachbearbeitung (Katalogauswahl V1, KA‑E‑8) in EINER
+        /// Transaktion — die Projektkopien oder die Katalogsätze, alle oder keiner.
+        /// </summary>
+        internal static KatalogSpeicherErgebnis SammelSchreiben(
+            bool projektkopie, IReadOnlyList<(int Id, IReadOnlyList<BrowserFeldwert> Felder)> saetze)
+        {
+            var liste = new List<HeizkesselStammCtrl.Satzaenderung>();
+            foreach (var (id, felder) in saetze)
+                liste.Add(new HeizkesselStammCtrl.Satzaenderung(id, Werte(felder)));
+            HeizkesselStammCtrl.SpeicherErgebnis e =
+                HeizkesselStammCtrl.AnzeigefelderSchreibenAlle(projektkopie, liste);
+            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+        }
+
+        /// <summary>Die Felder des Aufklappers als Anzeigefelder des Kerns.</summary>
+        internal static HeizkesselStammCtrl.AnzeigefelderHeizkessel Werte(IReadOnlyList<BrowserFeldwert> felder)
+        {
+            return new HeizkesselStammCtrl.AnzeigefelderHeizkessel(
                 KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldBeschreibung),
                 KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldPtherm),
-                KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldInvestitionskosten),
                 KatalogBrowserHuelle.Schalter(felder, KatalogBrowserProfil.FeldBrennwert),
                 KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldVorlauf),
                 KatalogBrowserHuelle.Ganzzahl(felder, KatalogBrowserProfil.FeldRuecklauf),
@@ -144,21 +168,24 @@ namespace WindowsFormsApplication1
                 Betriebsbereitschaftverlust:
                     KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldBBVerlust),
                 Raumbedarf: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldRaumbedarf),
-                Wartungskosten:
-                    KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldWartungskosten),
-                WartungskostenEinheit:
-                    KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldWartungEinheit),
                 Nutzungsdauer:
                     KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldNutzungsdauer),
                 CO2: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldCo2),
                 SO2: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldSo2),
                 NOx: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldNox),
                 CO: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldCo),
-                Staub: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldStaub));
-
-            HeizkesselStammCtrl.SpeicherErgebnis e =
-                HeizkesselStammCtrl.AnzeigefelderSchreiben(name, werte);
-            return new KatalogSpeicherErgebnis(e.Ok, e.Meldung, e.Name);
+                Staub: KatalogBrowserHuelle.Zahl(felder, KatalogBrowserProfil.FeldStaub),
+                // Die Kennlinie (Konzept Kesselkennlinie 3.1) als TEXT: Ein leeres Feld heisst
+                // hier „Vorgabe" (NULL), nicht 0 - der Kern liest und prueft ihn.
+                Teillast30: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldTeillast30),
+                KennlinieBrennwert:
+                    KatalogBrowserHuelle.Schalter(felder, KatalogBrowserProfil.FeldKennlinieBrennwert),
+                Mindestleistung: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldMindestleistung),
+                Anfahrverlust: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldAnfahrverlust),
+                Mindestlaufzeit: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldMindestlaufzeit),
+                // Die Einheit des Bereitschaftsverlusts („kW" oder „%", Anwenderentscheid
+                // 02.10.2026) als TEXT - der Kern haelt ihn gegen seine Liste.
+                BereitschaftEinheit: KatalogBrowserHuelle.Wert(felder, KatalogBrowserProfil.FeldBBEinheit));
         }
 
         /// <summary>

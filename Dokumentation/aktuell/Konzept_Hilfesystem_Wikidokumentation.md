@@ -793,7 +793,7 @@ rundet und benennt um.
   `Firma` und `Hersteller` der `Tab_*`-Kataloge ohne die Platzhalter „Muster", „test",
   „meins", „EPOS-Plan Referenz") und gegen eine feste Liste bekannter Hersteller und
   Typcode-Muster.
-- Seiten ohne Repo-Quelle (Grundlagen, FAQ, Über EPOS-Plan, Programmfunktionen …) prüft
+- Seiten ohne Repo-Quelle (Grundlagenseiten ohne Quelle unter `Projekte/Wiki/`, FAQ, Über EPOS-Plan, Programmfunktionen …) prüft
   die Orchestrierung vor jedem Upload mit derselben Liste.
 
 Dieselbe Regel gilt für Beispieldaten, die aus den Mockups unter `Dokumentation/aktuell/Mockups/`
@@ -829,6 +829,140 @@ Schlüssel, Klassen, Testzahlen oder Ursachen. Kleinigkeiten — Beschriftungen,
 Knopfpositionen, interne Umbauten, Behebungen ohne sichtbare Bedienänderung — bekommen keinen
 Eintrag; sie stehen nur in Statusdatei und Protokoll. Mehrere Aufträge derselben Version zum selben
 Thema ergeben einen Eintrag. Richtwert: wenige Einträge je Version.
+
+### 13.5 Quelltext: eine Zeile je Absatz, Formeln als LaTeX
+
+**Regel 1: eine Quellzeile.**
+- Jeder Absatz, jeder Listenpunkt und jede Tabellenzelle steht in der Wiki-Quelle auf einer Zeile.
+- MediaWiki liest eine eingerückte Folgezeile als `<pre>`-Kasten (Schreibmaschinensatz auf grauem
+  Grund) und die nicht eingerückte Folgezeile eines Listenpunkts als neuen Absatz; beides zerreißt
+  die Liste.
+- Ein gewollter Kasten, etwa eine Bildschirmzeile der App, steht allein nach einer Leerzeile.
+
+**Regel 2: Formeln als LaTeX.**
+- Jede Formel, jede Gleichung und jedes Formelzeichen mit Index steht als LaTeX in `<math>…</math>`;
+  die Math-Erweiterung des Wikis setzt es als MathML.
+- Beschreibende Indizes stehen aufrecht (`P_{\mathrm{el}}`), Zahlindizes schlicht (`h_{0}`), das
+  Dezimalkomma als `{,}`.
+- Eine Gleichung mit Zahlenwert steht ganz in der Formel; die Einheit folgt als Text mit `&nbsp;`.
+- Keine HTML-Tiefstellung, keine Unicode-Indizes und keine Unterstrich-Schreibweise im Fließtext.
+- Text bleiben Einheiten, chemische Formeln, Überschriften, Linktexte und Parameter der
+  Diagrammvorlagen. Bezeichner aus Code und Datenbank stehen in `<code>`.
+- Ein `=` auf oberster Ebene eines Vorlagenaufrufs macht den Text zum benannten Parameter; eine
+  Gleichung in einer Vorlage steht deshalb immer in `<math>`.
+- Die Rechenwegseiten benutzen nur die TeX-Befehle, die der Klartext-Umsetzer des Assistenten kennt
+  (`BerechnungsHilfe.LatexKlartext`; Wache `ErlaubteBefehle` in `BerechnungsHilfeTests`).
+
+**Prüfung:** die Seite über `action=parse` rendern. Es darf keinen ungewollten `<pre>`-Kasten und
+keinen TeX-Fehler geben; die Vorschau `Werkzeuge/WikiUpload/vorschau.py` zeigt es im Bild.
+
+## 14. Technikdokumentation: Grundlagen, Anwendung, Sprungziele
+
+Jede Technik ist zweimal beschrieben. Die Rubrik **Grundlagen** erklärt sie kurz und fachlich, die
+Rubrik „Programm Dokumentation“ ausführlich mit Bezug auf EPOS-Plan. Seitenmuster,
+Beispielanlagen, Diagrammregeln und die Arbeitsanweisung stehen in
+[`Konzept_Technikdokumentation_Wiki_EPOS-Plan.md`](Konzept_Technikdokumentation_Wiki_EPOS-Plan.md).
+Die Inhaltsregeln aus Abschnitt 13 gelten für beide Rubriken.
+
+### 14.1 Zwei Seiten je Technik
+
+- **`Grundlagen/<Technik>`**
+  - Inhalt: Funktionsprinzip, Kennzahlen, typische Größen, Einsatz und Grenzen, dazu ein
+    kurzer Abschnitt „In EPOS-Plan“ mit Verweisen auf die Anwendungsseite; höchstens rund
+    4 000 Zeichen Fließtext.
+  - Repo-Quelle `Projekte/Wiki/Grundlagen - <Titel>.wiki`, Kategorie „Grundlagen“,
+    Navigation über `{{Navigation Grundlagen}}`.
+  - Die Rubrikseite `Grundlagen` hat die Repo-Quelle `Projekte/Wiki/Grundlagen.wiki`.
+- **`Programm Dokumentation/<Technik>`**
+  - Die Bedienungsseite bekommt vier Abschnitte: Einbindung, Beispiel, Zusammenspiel,
+    Fallstricke, mit den Ankern `einbindung`, `beispiel`, `zusammenspiel`, `fallstricke`.
+  - Das Beispiel ist eine Tafel *Dialog · Feld · Wert · Warum* mit den Beschriftungen des
+    Dialogs.
+  - Jede Aussage über das Programm ist am Code belegt.
+- **Die Techniken**
+  - Wärmepumpe, Wärmequelle Erdreich, Heizkessel (Grundlagen: Kessel und Spitzenlast), BHKW,
+    Solarthermie (Grundlagen: Solarkollektoren), Pufferspeicher, Photovoltaik, Wechselrichter,
+    Stromspeicher, Kühlung.
+  - Heizstab und Lastspitzenkappung sind Abschnitte der Seiten Wärmepumpe, Heizkessel und
+    Stromspeicher.
+- **Weiterleitungen**
+  - Die älteren Seiten der Rubrik Programmfunktionen leiten auf die jeweilige
+    Programm-Dokumentation-Seite weiter (`Werkzeuge/WikiUpload/weiterleitungen.tsv`).
+  - Synonyme zeigen direkt auf das Ziel, weil MediaWiki keiner doppelten Weiterleitung folgt.
+  - Die Anker der älteren Seiten leben auf der Zielseite weiter, soweit der Inhalt dort steht.
+
+### 14.2 Zwei Wege aus der App
+
+- **Direkt**
+  - Jeder Technikdialog trägt neben dem Knopf `<Formname>.Berechnung` einen Knopf
+    `<Formname>.Grundlagen`.
+  - Sein Ziel in `help_mapping.txt` hat die Pfadschreibweise `/wiki/Grundlagen/<Titel>`
+    (Leerzeichen als Unterstrich, Umlaute im Klartext).
+  - Windows löst Pfadziele über den eingebetteten Startbestand `help_cache.json` auch ohne
+    Netz auf.
+  - iOS zeigt einen lesbaren Kurztext („Grundlagen: Wärmepumpe“), den der Kern bildet.
+  - Die Wächter der Hilfe prüfen Zeile ↔ Knopf sowie die Anker der Pfadziele gegen die
+    Repo-Quellen.
+  - Kühlung hat Knöpfe am Kühlabschnitt des Gebäudes und am Kühlbetrieb der Wärmepumpe.
+- **Indirekt**
+  - Der Reiter „Energieerzeuger“ der Startseite öffnet über seine Beschreibung
+    `Programm Dokumentation/Energieerzeuger`.
+  - Deren Tafel „Die Techniken im Überblick“ (Anker `techniken`) führt je Technik zu
+    Grundlagen, Anwendung und Rechenweg.
+- **Assistent**
+  - Der Hilfe-Assistent findet beide Rubriken online über `WikiWissen` (Teil B).
+  - In den Programmkern eingebettet sind nur die Rechenwegseiten der Unterrubrik Berechnung.
+
+### 14.3 Diagramme und Grafiken
+
+- **Diagrammvorlagen**
+  - Diagramme entstehen mit den Vorlagen `Projekte/Wiki/Vorlage - *.wiki`: Säulen, Legende,
+    Flussbild.
+  - Die Farben kommen aus `Vorlage:Diagrammfarbe` und den `--epos-*`-Tokens von
+    `MediaWiki:Common.css`, dadurch sind sie hell und dunkel lesbar.
+  - Säulenhöhen stehen in Prozent des größten Werts.
+  - Über jedem Diagramm mit gerechneten Werten steht ein HTML-Kommentar mit Formel und Annahmen.
+  - Die Bildunterschrift lautet „Prinzipbild“ oder „Beispielwerte, gerundet“. Kein Diagramm
+    täuscht ein EPOS-Plan-Ergebnis vor.
+- **Vorschau:** `Werkzeuge/WikiUpload/vorschau.py` zeigt eine Quelle mit aufgelösten Vorlagen
+  hell und dunkel, ohne etwas zu speichern (`action=parse`).
+- **SVG-Grafiken**
+  - Das Wiki lässt Uploads mit der Endung `svg` zu (`$wgEnableUploads`, `$wgFileExtensions`,
+    `$wgSVGNativeRendering`).
+  - Eine Grafik liegt unter `Projekte/Wiki/Dateien/`, steht in
+    `Werkzeuge/WikiUpload/dateien.tsv` und trägt einen hellen Kartenhintergrund, damit sie in
+    beiden Farbschemata lesbar bleibt.
+  - Sie enthält kein `<script>`, keine Ereignisattribute, kein `<foreignObject>`, keine
+    externen Verweise und kein `<title>`. `wiki_upload.py` prüft das vor jedem Upload.
+  - Eine SVG-Grafik kommt nur dort, wo ein Schema mehr zeigt als die Diagrammvorlagen.
+- **PNG-Bilder**
+  - Das Wiki lässt Uploads mit der Endung `png` zu. Zugelassen sind zwei Herkünfte:
+    Diagrammbeispiele aus dem Prüfstand `Proben/ChartProben` (synthetische Reihen, kein Projekt)
+    und Bildschirmfotos der Oberfläche aus dem Wirt der Rasterprobe unter `Proben/Rasterprobe/`.
+  - Dateiname `Diagramm_<Thema>.png` bzw. `Bildschirmfoto_<Maske>.png`, nur ASCII.
+  - Breite höchstens 1400 px, Größe höchstens 300 KB; angezeigt mit `mini|zentriert|800px`.
+  - Die Bildunterschrift nennt die Herkunft: „Beispieldiagramm aus synthetischen Reihen, kein
+    Simulationsergebnis“ bzw. „Bildschirmfoto mit Beispieldaten“.
+  - Im Bild stehen keine Hersteller- und Produktdaten; Beispieldaten tragen neutrale Namen und
+    runde Werte.
+  - Das Bild liegt unter `Projekte/Wiki/Dateien/` und steht in `Werkzeuge/WikiUpload/dateien.tsv`.
+- **Wache:** `EPOS.Kern.Tests/WikiBilderWacheTests` hält `Projekte/Wiki/Dateien/`: nur `svg`
+  und `png` mit ASCII-Namen, je Datei genau eine Zeile in `dateien.tsv` und jede Zeile mit
+  vorhandener Datei, jede Datei in mindestens einer Quelle eingebunden, die Grenzen der PNG
+  und die Verbote der SVG.
+
+### 14.4 Upload
+
+- **Reihenfolge:** Dateien → Vorlagen → Grundlagen → Anwendungsseiten → Rubrik und Navigation →
+  Weiterleitungen, also `wiki_upload.py --dateien --seiten --weiterleitungen`. `seiten.tsv`
+  führt die Vorlagen vorn.
+- **Bot-Upload**
+  - Gebündelt nach der Prüfung: Wächter, Gegenlese-Muster, Vorschau.
+  - Zugangsdaten nur als Umgebungsvariablen `WIKI_BOT_USER`/`WIKI_BOT_PASS`, nie im
+    Repository, in Commits oder in Protokollen.
+  - Für Dateien braucht das Bot-Passwort zusätzlich die Rechte „Hochladen neuer Dateien“ und
+    „Hochladen, Ersetzen und Verschieben von Dateien“.
+- Regel 13.3 gilt: Die Technikdokumentation geht mit dem nächsten gebündelten Upload ins Wiki.
 
 ## Dokumentationspflege Speicherauslegung – 11.09.2026
 
@@ -903,6 +1037,7 @@ Aufträgen #203 und #207):
 | `Programm Dokumentation/Gebäude` | `Projekte/Wiki/Programm Dokumentation - Gebäude.wiki` (hochgeladen 26.09.2026, #556, Revision 606) |
 | `Programm Dokumentation/Mehrzonenmodell` | `Projekte/Wiki/Programm Dokumentation - Mehrzonenmodell.wiki` (noch nicht hochgeladen, Neuanlage beim Upload) — Anker `zonen-anlegen`, `trennflaechen`, `luftaustausch`, `rechnung`, `ergebnisse`, `grenzen`; die Seiten „Gebäude" und „Gebäudemodell VDI 6007" verweisen hierher |
 | `Programm Dokumentation/Baustoffe und Bauteilaufbauten` | `Projekte/Wiki/Programm Dokumentation - Baustoffe und Bauteilaufbauten.wiki` (hochgeladen 26.09.2026, #556, Revision 607) — Hilfeschlüssel `BaustoffKatalog.btn_Help` → `#baustoffe`, `Bauteilaufbau.btn_Help` → `#bauteilaufbauten` |
+| `Programm Dokumentation/Nutzungsprofile` | `Projekte/Wiki/Programm Dokumentation - Nutzungsprofile.wiki` (Upload gebündelt ausstehend) — Hilfeschlüssel `Nutzungsprofile.btn_Help` → Seite ohne Anker; die Pille trägt das Blatt selbst (beide Wirte: Gebäudeeditor, Gebäudeimport) |
 | `Programm Dokumentation/Berichtsvorlagen` | `Projekte/Wiki/Programm Dokumentation - Berichtsvorlagen.wiki` (hochgeladen 26.09.2026, #556, Revision 610) — Anker `vorlage`, `neue-vorlage`, `erstellen`, `schreibweise`, `kapitel`, `haekchen`, `pruefliste`, `platzhalterkatalog`, `standardvorlage`, `einstellungen`, `logo`; Hilfeschlüssel `UcBericht.btn_Help_Pruefliste` → `#pruefliste`, `UcBericht.btn_Help_Platzhalterkatalog` → `#platzhalterkatalog`, `Form_AdminSettings.btn_Help_Bericht` → `#einstellungen`; die Seite `Wirtschaftlichkeit` verweist im Abschnitt „Bericht“ (Anker `bericht-vorlage`) hierher |
 
 Hochgeladen am 11.09.2026 um 15:40 UTC durch die Orchestrierung mit dem Bot-Konto (Kennwort nur
@@ -1027,3 +1162,113 @@ Die alten Revisionen stammen aus der Bereinigung vom 13.09.2026 (Abschnitt oben)
 Gebäude, die vor diesem Upload keine Repo-Quelle hatten, ist keine Revision vermerkt. Nicht hochgeladen sind die
 Logbuch-Sätze der Berichtsvorlagen (Version offen) und die Repo-Quellen Mehrzonenmodell und Projekttransfer; die Tafel
 der Repo-Quellen oben führt die neuen Seiten noch mit „noch nicht hochgeladen“. Offene Punkte: Statusdatei, Nach #556.
+
+## Sammel-Upload 10.10.2026 (Versionen 1.2.0.7 bis 1.2.0.10, Auftrag #889)
+
+Dritter gebündelter Upload nach Regel 13.3: 99 Seiten der Rubrik „Programm Dokumentation“ (96 ersetzt, 3 neu: Betriebskalender, Nutzungsprofile, Pufferspeicher auslegen) und das Update-Logbuch mit den Versionen 1.2.0.10, 1.2.0.9, 1.2.0.8 und 1.2.0.7 (70 Sätze). Hochgeladen am 10.10.2026 durch die Orchestrierung (Benutzer Epos), je Seite als vollständiger Ersatz aus der Repo-Quelle unter `Projekte/Wiki/`; die Zugangsdaten standen nur als Umgebungsvariablen des Laufs. Vorher wurden alle Seiten geprüft (Aktualität, Abgleich mit den Logbuch-Änderungen, Parse-Prüfung) und 47 Live-Seiten ohne Repo-Quelle als Quelle übernommen. Rücklese aller Seiten byte-gleich, 0 Parse-Warnungen; Dateien und 19 Weiterleitungen unverändert. Die Seite Programm Dokumentation/Gebäudeimport folgte am selben Tag als Revision 828 (Anwenderentscheid 10.10.2026: „Befund“ ist für den Wiki-Upload nicht relevant; der Begriff bleibt als wörtlich zitierte Beschriftung der Oberfläche). Seitenliste und Logbuch-Sätze: [`Wiki_Update_2026-09-26.md`](Wiki_Update_2026-09-26.md); Ablauf: [`Wiki-Upload_2026-10-10_Protokoll.md`](../ueberholt/Protokolle/Auftraege_Wirtschaftlichkeit_2026-09/Wiki-Upload_2026-10-10_Protokoll.md).
+
+Die Versionsnummern folgen dem Anwenderentscheid 10.10.2026 („letzte Stelle um eins erhöhen“): 1.2.0.10 (29 Sätze), 1.2.0.9 (1), 1.2.0.8 (4), 1.2.0.7 (36). Die alten Revisionen sind die letzten Stände vor diesem Upload.
+
+| Seite | alte Revision | neue Revision | Art |
+|---|---|---|---|
+| Programm Dokumentation/Klimadaten | 676 | 728 | ersetzt |
+| Programm Dokumentation/Simulationsergebnisse | 711 | 729 | ersetzt |
+| Programm Dokumentation/Stromspeicher | 677 | 730 | ersetzt |
+| Programm Dokumentation/Hilfe-Assistent | 712 | 731 | ersetzt |
+| Programm Dokumentation/Wirtschaftlichkeit | 713 | 732 | ersetzt |
+| Programm Dokumentation/Kosten | 714 | 733 | ersetzt |
+| Programm Dokumentation/Pufferspeicher | 679 | 734 | ersetzt |
+| Programm Dokumentation/Gebäudemodell VDI 6007 | 680 | 735 | ersetzt |
+| Programm Dokumentation/Kühlung | 681 | 736 | ersetzt |
+| Programm Dokumentation/Gerätekataloge | 724 | 737 | ersetzt |
+| Programm Dokumentation/Simulation | 716 | 738 | ersetzt |
+| Programm Dokumentation/Photovoltaik | 684 | 739 | ersetzt |
+| Programm Dokumentation/Varianten | 717 | 740 | ersetzt |
+| Programm Dokumentation/Gebäude | 725 | 741 | ersetzt |
+| Programm Dokumentation/Baustoffe und Bauteilaufbauten | 685 | 742 | ersetzt |
+| Programm Dokumentation/Brauchwasser-Zapfprofil | 727 | 743 | ersetzt |
+| Programm Dokumentation/Berichtsvorlagen | 720 | 744 | ersetzt |
+| Programm Dokumentation/Mehrzonenmodell | 721 | 745 | ersetzt |
+| Programm Dokumentation/Projekttransfer | 722 | 746 | ersetzt |
+| Grundlagen/Wärmepumpe | 637 | 747 | ersetzt |
+| Grundlagen/Wärmequelle Erdreich | 638 | 748 | ersetzt |
+| Grundlagen/Kessel und Spitzenlast | 639 | 749 | ersetzt |
+| Grundlagen/BHKW | 687 | 750 | ersetzt |
+| Grundlagen/Solarkollektoren | 688 | 751 | ersetzt |
+| Grundlagen/Pufferspeicher | 642 | 752 | ersetzt |
+| Grundlagen/Photovoltaik | 643 | 753 | ersetzt |
+| Grundlagen/Kühlung | 646 | 754 | ersetzt |
+| Programm Dokumentation/Wärmepumpe | 689 | 755 | ersetzt |
+| Programm Dokumentation/Wärmequelle Erdreich | 690 | 756 | ersetzt |
+| Programm Dokumentation/Heizkessel | 691 | 757 | ersetzt |
+| Programm Dokumentation/BHKW | 692 | 758 | ersetzt |
+| Programm Dokumentation/Solarthermie | 693 | 759 | ersetzt |
+| Programm Dokumentation/Energieerzeuger | 695 | 760 | ersetzt |
+| Programm Dokumentation | 654 | 761 | ersetzt |
+| Programm Dokumentation/Berechnung | 696 | 762 | ersetzt |
+| Programm Dokumentation/Berechnung/BHKW | 697 | 763 | ersetzt |
+| Programm Dokumentation/Berechnung/Brauchwasser | 698 | 764 | ersetzt |
+| Programm Dokumentation/Berechnung/Heizkessel | 699 | 765 | ersetzt |
+| Programm Dokumentation/Berechnung/Photovoltaik | 700 | 766 | ersetzt |
+| Programm Dokumentation/Berechnung/Prozesswärme | 701 | 767 | ersetzt |
+| Programm Dokumentation/Berechnung/Pufferspeicher | 702 | 768 | ersetzt |
+| Programm Dokumentation/Berechnung/Simulationsablauf | 703 | 769 | ersetzt |
+| Programm Dokumentation/Berechnung/Solarthermie | 704 | 770 | ersetzt |
+| Programm Dokumentation/Berechnung/Strombedarf | 705 | 771 | ersetzt |
+| Programm Dokumentation/Berechnung/Stromspeicher | 706 | 772 | ersetzt |
+| Programm Dokumentation/Berechnung/Wärmebedarf | 707 | 773 | ersetzt |
+| Programm Dokumentation/Berechnung/Wärmepumpe | 708 | 774 | ersetzt |
+| Programm Dokumentation/Berechnung/Wärmequelle Erdreich | 709 | 775 | ersetzt |
+| Programm Dokumentation/Betriebskalender | – | 776 | neu |
+| Programm Dokumentation/Nutzungsprofile | – | 777 | neu |
+| Programm Dokumentation/Pufferspeicher auslegen | – | 778 | neu |
+| Beispiele | 141 | 779 | ersetzt |
+| Datenexport | 89 | 780 | ersetzt |
+| Einstellungen, Hilfe und Sprache | 159 | 781 | ersetzt |
+| Ergebnisdarstellung | 88 | 782 | ersetzt |
+| Ergebnisse auswerten und Kosten hinterlegen | 129 | 783 | ersetzt |
+| Erste Schritte | 390 | 784 | ersetzt |
+| Erzeuger und Speicher auswählen | 97 | 785 | ersetzt |
+| FAQ | 527 | 786 | ersetzt |
+| Gebäude und Gebäudetypen | 79 | 787 | ersetzt |
+| Grundlagen/Erlösrechnung | 147 | 788 | ersetzt |
+| Grundlagen/Hydraulikschemata | 139 | 789 | ersetzt |
+| Grundlagen/Klimadaten | 222 | 790 | ersetzt |
+| Grundlagen/Kostenrechnung | 75 | 791 | ersetzt |
+| Grundlagen/Strombedarf und Lastprofile | 122 | 792 | ersetzt |
+| Grundlagen/Vergleich Energiebilanz | 74 | 793 | ersetzt |
+| Grundlagen/Wirtschaftlichkeitsrechnung | 515 | 794 | ersetzt |
+| Grundlagen/Wärmebedarfsrechnung | 64 | 795 | ersetzt |
+| Hilfe-Assistent | 168 | 796 | ersetzt |
+| Industrie und Gewerbe | 142 | 797 | ersetzt |
+| Installation und Update | 530 | 798 | ersetzt |
+| Klimadaten festlegen | 94 | 799 | ersetzt |
+| Kosten und Energiepreise | 90 | 800 | ersetzt |
+| Programm Dokumentation/Bericht | 320 | 801 | ersetzt |
+| Programm Dokumentation/Berichte und Kosten | 497 | 802 | ersetzt |
+| Programm Dokumentation/Brauchwasser | 427 | 803 | ersetzt |
+| Programm Dokumentation/Einstellungen | 326 | 804 | ersetzt |
+| Programm Dokumentation/Gesetzesparameter | 334 | 805 | ersetzt |
+| Programm Dokumentation/Katalogpflege | 340 | 806 | ersetzt |
+| Programm Dokumentation/Kurzanleitung | 406 | 807 | ersetzt |
+| Programm Dokumentation/Lizenz | 348 | 808 | ersetzt |
+| Programm Dokumentation/Programmablauf | 352 | 809 | ersetzt |
+| Programm Dokumentation/Projektverwaltung | 410 | 810 | ersetzt |
+| Programm Dokumentation/Prozesswärme | 428 | 811 | ersetzt |
+| Programm Dokumentation/Strombedarf | 430 | 812 | ersetzt |
+| Programm Dokumentation/Stromverbraucher | 429 | 813 | ersetzt |
+| Programm Dokumentation/Wärmebedarf | 425 | 814 | ersetzt |
+| Programmfunktionen | 157 | 815 | ersetzt |
+| Projekt anlegen | 408 | 816 | ersetzt |
+| Projektverwaltung | 404 | 817 | ersetzt |
+| Simulation konfigurieren und starten | 98 | 818 | ersetzt |
+| Simulation | 87 | 819 | ersetzt |
+| Stammdaten und Datenimport | 91 | 820 | ersetzt |
+| Strombedarf erfassen | 96 | 821 | ersetzt |
+| Varianten und Bericht | 151 | 822 | ersetzt |
+| Wirtschaftlichkeit | 514 | 823 | ersetzt |
+| Wärmebedarf erfassen | 149 | 824 | ersetzt |
+| Über EPOS-Plan | 138 | 825 | ersetzt |
+| Programmablauf | 111 | 826 | ersetzt |
+| Update-Logbuch | 723 | 827 | ersetzt |
+| Programm Dokumentation/Gebäudeimport | 726 | 828 | ersetzt |

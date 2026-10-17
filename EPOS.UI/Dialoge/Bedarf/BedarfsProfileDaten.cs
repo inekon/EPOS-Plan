@@ -23,6 +23,80 @@ public sealed class BedarfsProfilZeile
 
     /// <summary>Der Jahresverbrauch dieser Zuordnung.</summary>
     public double Summe { get; set; }
+
+    /// <summary>
+    /// Die geforderte Vorlauftemperatur der Projektkopie [°C] — nur Prozesswärme (PW1 Stufe 1);
+    /// <c>null</c> = ohne Temperaturniveau.
+    /// </summary>
+    public double? Vorlauf { get; set; }
+
+    /// <summary>Die Rücklauftemperatur der Projektkopie [°C]; <c>null</c> = ohne.</summary>
+    public double? Ruecklauf { get; set; }
+
+    /// <summary>
+    /// <c>true</c>, sobald der Anwender das Paar im Dialog übernommen hat — erst dann schreibt das
+    /// Speichern (OK) es in die Projektkopie.
+    /// </summary>
+    public bool TemperaturGeaendert { get; set; }
+
+    /// <summary>
+    /// Der Betriebskalender dieser Zuordnung (PW2/BW2); <c>null</c> = keiner — das Wochenprofil
+    /// gilt für alle Wochen. Gewählt im Dialog, geschrieben mit OK wie der Jahresverbrauch.
+    /// </summary>
+    public int? KalenderId { get; set; }
+
+    /// <summary>
+    /// Die Art einer Kältebedarfszeile als Steuerwert (KWN-0): <c>DbWerte.KAELTE_ART_RAUM</c> (Vorgabe) oder
+    /// <c>DbWerte.KAELTE_ART_PROZESS</c>; nur Kältebedarfsprofile, gewählt im Dialog, geschrieben mit OK.
+    /// </summary>
+    public string KaelteArt { get; set; } = WindowsFormsApplication1.DbWerte.KAELTE_ART_RAUM;
+
+    /// <summary>
+    /// Die Feldgruppe „Deckung“ einer Kältebedarfszeile (Konzept Kältebedarf 3.4, K5b); <c>null</c> außerhalb der
+    /// Kältebedarfsprofile. Bearbeitet in der Überlagerung „Deckung…“, geschrieben mit OK.
+    /// </summary>
+    public DeckungsartDaten? Deckung { get; set; }
+
+    /// <summary>
+    /// KBP-3a: die Eingabeart einer Kältebedarfszeile als Steuerwert ('jahr', 'monat', 'woche', 'typtag' — KBP-4b),
+    /// <c>null</c> außerhalb der Kältebedarfsprofile. Gewählt in der Bearbeiten-Überlagerung, geschrieben mit OK.
+    /// </summary>
+    public string? Eingabeart { get; set; }
+
+    /// <summary>KBP-3a: die Monatsanteile [%] der Projektkopie (12 Werte); <c>null</c> = unbekannt.</summary>
+    public double[]? Monatsanteile { get; set; }
+
+    /// <summary>KBP-3a: das Wochenprofil der Projektkopie (168 Werte, Montag 0 Uhr zuerst); <c>null</c> = unbekannt.</summary>
+    public double[]? Wochenprofil { get; set; }
+
+    /// <summary>
+    /// KBP-3a: <c>true</c>, sobald der Anwender Monatswerte oder Wochenprofil in der Überlagerung übernommen hat — erst
+    /// dann schreibt das OK sie in die Projektkopie (bei geteilter Kopie in eine eigene).
+    /// </summary>
+    public bool ProfilGeaendert { get; set; }
+
+    /// <summary>
+    /// KBP-4b: die Typtage samt Zuordnungsmatrix der Projektkopie (nur Kälte); <c>null</c> = keine bekannt (leer).
+    /// </summary>
+    public WindowsFormsApplication1.KaeltetyptagEingabe? Typtage { get; set; }
+
+    /// <summary>
+    /// KBP-4b: <c>true</c>, sobald der Anwender Typtage in der Überlagerung übernommen hat — erst dann schreibt das OK sie
+    /// in die Projektkopie (bei geteilter Kopie in eine eigene).
+    /// </summary>
+    public bool TyptageGeaendert { get; set; }
+
+    /// <summary>
+    /// KBP-5b: die Nutzungstage nach Norm der Vorlage, die die Kältezeile trägt (Vorlage 8: 230); <c>null</c> = keine.
+    /// Nur Anzeige — die Herleitungszeile am Kalender nennt sie samt Normkalender.
+    /// </summary>
+    public int? Normtage { get; set; }
+
+    /// <summary>
+    /// KBP-5c: der tatsächliche Name des Normkalenders der Zeile („Norm 230 Tage (BY)“), wie ihn die Hülle vorgewählt
+    /// hat oder vorwählen würde; <c>null</c> = keiner bekannt (die Herleitungszeile bildet dann den bundesweiten Namen).
+    /// </summary>
+    public string? Normkalender { get; set; }
 }
 
 /// <summary>
@@ -31,7 +105,10 @@ public sealed class BedarfsProfilZeile
 /// <param name="Name">Der Bezeichner.</param>
 /// <param name="Beschreibung">Die Beschreibung aus dem Kopfsatz.</param>
 /// <param name="Typ">Der Profiltyp aus dem Kopfsatz.</param>
-public sealed record BedarfsProfilInfo(string Name, string Beschreibung, string Typ);
+/// <param name="Vorlauf">Das Temperaturpaar des Kopfsatzes — nur Prozesswärme (PW1 Stufe 1).</param>
+/// <param name="Ruecklauf">Der Rücklauf dazu; beide <c>null</c> = ohne Temperaturniveau.</param>
+public sealed record BedarfsProfilInfo(string Name, string Beschreibung, string Typ,
+                                       double? Vorlauf = null, double? Ruecklauf = null);
 
 /// <summary>
 /// Die Beschriftungen des Zapfprofil-Einstiegs im Bedarfsprofil-Dialog der Ausprägung
@@ -58,7 +135,7 @@ public sealed class ZapfprofilEinstiegTexte
 
     /// <summary><c>BPF_HINW_RECHENWEG_BW</c> — die eine Stelle, die „Trinkwarmwasser" ausschreibt.</summary>
     public string HinweisRechenweg { get; set; }
-        = "Der Rechenweg bestimmt, woraus der Wärmebedarf für Brauchwasser (Trinkwarmwasser) entsteht: aus den Bestandsprofilen dieser Liste oder aus dem Zapfprofil der Nutzungszonen.";
+        = "Der Rechenweg bestimmt, woraus der Wärmebedarf für Brauchwasser (Trinkwarmwasser) entsteht: aus den Bestandsprofilen dieser Liste oder aus dem Zapfprofil der Nutzungsbereiche.";
 
     /// <summary><c>BPF_HINW_ZAPFPROFILWEG</c></summary>
     public string HinweisZapfprofilweg { get; set; }

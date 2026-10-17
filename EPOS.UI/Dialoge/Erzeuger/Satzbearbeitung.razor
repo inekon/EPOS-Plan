@@ -1,0 +1,186 @@
+﻿@* DIE SATZBEARBEITUNG „Bearbeiten…" (Konzept Projektdialoge mit Katalogauswahl 4.6,
+   Entscheid KA-E-8). Inhalt einer Ueberlagerung im selben Fenster: im Projektbereich
+   fuer die Projektkopien, im Katalogbereich fuer die Katalogsaetze - die Marke im Kopf
+   der Ueberlagerung (Wirt) sagt, was gespeichert wird.
+
+   MEHRERE SAETZE: Die Blaetterleiste „‹ 1 von n ›" wechselt den Satz; je Feld setzt
+   „fuer alle gewaehlten setzen" den Wert in allen Saetzen der Auswahl (und haelt ihn dort,
+   solange das Haekchen steht). Gesperrte Katalogsaetze werden uebersprungen und in einer
+   Hinweiszeile genannt; sind alle gesperrt, oeffnet die Bearbeitung nur lesend mit
+   „Erst Schloss aufheben". Speichern schreibt alle geaenderten Saetze in EINER Transaktion
+   (Kernweg hinter Satzbearbeitungswege.Speichern) - alle oder keiner. *@
+
+@namespace EPOS.UI.Dialoge.Erzeuger
+@using EPOS.UI.Bausteine
+@using WindowsFormsApplication1
+
+<div class="epos-satzbearbeitung" data-art="@Art">
+    @if (_aktiv.Count > 1)
+    {
+        <div class="epos-satzbearbeitung-blaetter" role="group" aria-label="@Resource.SATZBEARB_BLATT">
+            <button type="button" class="epos-knopf" title="@Resource.SATZBEARB_ZURUECK" aria-label="@Resource.SATZBEARB_ZURUECK"
+                    disabled="@(_index == 0)" @onclick="() => Blaettern(-1)">‹</button>
+            <span class="epos-satzbearbeitung-blatt" role="status">
+                <b>@string.Format(Resource.Culture, Resource.SATZBEARB_BLATT, _index + 1, _aktiv.Count)</b> · @_aktiv[_index].Name
+            </span>
+            <button type="button" class="epos-knopf" title="@Resource.SATZBEARB_VOR" aria-label="@Resource.SATZBEARB_VOR"
+                    disabled="@(_index >= _aktiv.Count - 1)" @onclick="() => Blaettern(1)">›</button>
+        </div>
+    }
+    @if (_nurLesen)
+    {
+        <p class="epos-satzbearbeitung-hinweis epos-satzbearbeitung-hinweis--gesperrt" role="note">
+            <Kennzeichen Kurztext="@Resource.ADM_SCHLOSS_ERST_AUFHEBEN" />
+            @Resource.SATZBEARB_NUR_LESEN @Resource.ADM_SCHLOSS_ERST_AUFHEBEN
+        </p>
+    }
+    else if (_uebersprungen.Count > 0)
+    {
+        <p class="epos-satzbearbeitung-hinweis epos-satzbearbeitung-hinweis--uebersprungen" role="note">
+            @string.Format(Resource.Culture, Resource.SATZBEARB_UEBERSPRUNGEN,
+                           string.Join(", ", _uebersprungen.Select(s => "„" + s.Name + "“")))
+        </p>
+    }
+
+    @if (_felder.Count > 0)
+    {
+        <Katalogfelder @key="_index" Felder="@_felder[_index]" NurLesen="@NurLesend"
+                       Geaendert="BeiGeaendert" FehlerZustand="BeiFehler"
+                       Feldzusatz="@(_aktiv.Count > 1 && !NurLesend ? Fueralle : null)" />
+    }
+
+    @if (!string.IsNullOrEmpty(_meldung))
+    {
+        <p class="epos-satzbearbeitung-meldung epos-feldfehler" role="alert">@_meldung</p>
+    }
+
+    <div class="epos-leiste epos-satzbearbeitung-fuss">
+        @if (!NurLesend)
+        {
+            <span class="epos-satzbearbeitung-stand" role="status">
+                @(Geaenderte().Count == 0 ? Resource.SATZBEARB_KEINE_AENDERUNG
+                  : string.Format(Resource.Culture, Resource.SATZBEARB_GEAENDERT, Geaenderte().Count, _aktiv.Count))
+            </span>
+        }
+        <span class="epos-leiste-fueller"></span>
+        @if (NurLesend)
+        {
+            <button type="button" class="epos-knopf epos-knopf--primaer" @onclick="() => Geschlossen.InvokeAsync(false)">@Resource.SATZBEARB_SCHLIESSEN</button>
+        }
+        else
+        {
+            <button type="button" class="epos-knopf" @onclick="() => Geschlossen.InvokeAsync(false)">@Resource.ALLG_BTN_ABBRECHEN</button>
+            <button type="button" class="epos-knopf epos-knopf--primaer epos-satzbearbeitung-speichern"
+                    disabled="@(Geaenderte().Count == 0 || _fehler)" @onclick="Speichern">@Resource.ADM_BTN_SPEICHERN</button>
+        }
+    </div>
+</div>
+
+@code {
+    /// <summary>Projektsatz oder Katalogsatz — davon hängen Sperre und Titel ab.</summary>
+    [Parameter, EditorRequired] public Satzmarke Art { get; set; }
+
+    /// <summary>Die gewählten Sätze in der Reihenfolge der Wahl.</summary>
+    [Parameter, EditorRequired] public IReadOnlyList<Bearbeitungssatz> Saetze { get; set; } = Array.Empty<Bearbeitungssatz>();
+
+    /// <summary>Lesen und Speichern; ohne Speicherweg reine Anzeige.</summary>
+    [Parameter, EditorRequired] public Satzbearbeitungswege? Wege { get; set; }
+
+    /// <summary><c>true</c> = gespeichert, <c>false</c> = abgebrochen bzw. geschlossen.</summary>
+    [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    private IReadOnlyList<Bearbeitungssatz> _aktiv = Array.Empty<Bearbeitungssatz>();
+    private IReadOnlyList<Bearbeitungssatz> _uebersprungen = Array.Empty<Bearbeitungssatz>();
+    private bool _nurLesen;
+    private readonly List<IReadOnlyList<BrowserFeldwert>> _felder = new();
+    private readonly List<Dictionary<string, string>> _ursprung = new();
+    private readonly HashSet<string> _fuerAlle = new(StringComparer.Ordinal);
+    private int _index;
+    private bool _fehler;
+    private string _meldung = "";
+
+    /// <summary>Nur lesen: alle gesperrt oder kein Speicherweg.</summary>
+    public bool NurLesend => _nurLesen || Wege?.Speichern is null;
+
+    /// <summary>Der gezeigte Satz (Prüfhilfe).</summary>
+    public int Index => _index;
+
+    /// <summary>Die Sätze, die bearbeitet werden (ohne übersprungene).</summary>
+    public IReadOnlyList<Bearbeitungssatz> Aktiv => _aktiv;
+
+    /// <summary>Die Felder je Satz (Prüfhilfe).</summary>
+    public IReadOnlyList<IReadOnlyList<BrowserFeldwert>> Felder => _felder;
+
+    /// <inheritdoc/>
+    protected override void OnInitialized()
+    {
+        (_aktiv, _uebersprungen, _nurLesen) = Satzbearbeitungsregel.Teilen(Art, Saetze);
+        foreach (Bearbeitungssatz s in _aktiv)
+        {
+            IReadOnlyList<BrowserFeldwert> felder = Wege?.Lesen(s.Id) ?? Array.Empty<BrowserFeldwert>();
+            _felder.Add(felder);
+            _ursprung.Add(felder.ToDictionary(f => f.Schluessel, f => f.Wert, StringComparer.Ordinal));
+        }
+    }
+
+    private void Blaettern(int schritt)
+        => _index = Math.Clamp(_index + schritt, 0, Math.Max(0, _aktiv.Count - 1));
+
+    private RenderFragment<BrowserFeldwert> Fueralle => feld =>
+        @<label class="epos-satzbearbeitung-fueralle">
+            <input type="checkbox" checked="@_fuerAlle.Contains(feld.Schluessel)"
+                   aria-label="@(feld.Feldname + ": " + Resource.SATZBEARB_FUER_ALLE)"
+                   @onchange="@(e => FuerAlleSetzen(feld.Schluessel, e.Value is true))" />
+            <span>@Resource.SATZBEARB_FUER_ALLE</span>
+        </label>;
+
+    /// <summary>„Für alle gewählten setzen" an- oder abschalten; an überträgt den Wert sofort.</summary>
+    public void FuerAlleSetzen(string schluessel, bool an)
+    {
+        if (an) { _fuerAlle.Add(schluessel); Uebertragen(schluessel); }
+        else _fuerAlle.Remove(schluessel);
+        _meldung = "";
+    }
+
+    private void Uebertragen(string schluessel)
+    {
+        string? wert = _felder[_index].FirstOrDefault(f => f.Schluessel == schluessel)?.Wert;
+        if (wert is null) return;
+        foreach (IReadOnlyList<BrowserFeldwert> satz in _felder)
+            foreach (BrowserFeldwert f in satz)
+                if (f.Schluessel == schluessel && f.Editierbar) f.Wert = wert;
+    }
+
+    private void BeiGeaendert()
+    {
+        foreach (string k in _fuerAlle) Uebertragen(k);
+        _meldung = "";
+    }
+
+    private void BeiFehler((string Feldname, bool Fehler) meldung) => _fehler = meldung.Fehler;
+
+    /// <summary>Die Indizes der Sätze, deren Felder vom gelesenen Stand abweichen.</summary>
+    public IReadOnlyList<int> Geaenderte()
+    {
+        var liste = new List<int>();
+        for (int i = 0; i < _felder.Count; i++)
+            if (_felder[i].Any(f => !_ursprung[i].TryGetValue(f.Schluessel, out var alt) || alt != f.Wert))
+                liste.Add(i);
+        return liste;
+    }
+
+    private async Task Speichern()
+    {
+        if (NurLesend || Wege?.Speichern is null) return;
+        var geaendert = Geaenderte();
+        if (geaendert.Count == 0) return;
+        var saetze = geaendert.Select(i => (_aktiv[i].Id, _felder[i])).ToList();
+        KatalogSpeicherErgebnis ergebnis = Wege.Speichern(saetze);
+        if (!ergebnis.Ok)
+        {
+            _meldung = ergebnis.Meldung;
+            return;
+        }
+        await Geschlossen.InvokeAsync(true);
+    }
+}

@@ -55,6 +55,12 @@ namespace WindowsFormsApplication1
         private readonly BlazorWebView _web;
 
         /// <summary>
+        /// Der Schliessweg dieses Fensters: Steht im Dialog ein Blatt, fuehren Kreuz und Alt+F4 erst
+        /// dieses zurueck (<see cref="EPOS.UI.Bausteine.Fensterschliessweg"/>, plattformfrei).
+        /// </summary>
+        private readonly EPOS.UI.Bausteine.Fensterschliessweg _schliessweg = new();
+
+        /// <summary>
         /// Baut die Huelle. Die WebView2 wird hier nur zusammengestellt; sie startet
         /// erst mit der Handle-Erzeugung, also beim <c>ShowDialog</c>.
         /// </summary>
@@ -138,6 +144,13 @@ namespace WindowsFormsApplication1
             try { _web.WebView.DefaultBackgroundColor = Themaflaeche; }
             catch { /* aeltere WebView2-Laufzeit: Schoenheitsfehler, kein Fehlschlag */ }
 
+            // FENSTER-WEG DES BEFEHLSTASTENHAKENS: Liegt der Fokus im Browserfenster der
+            // WebView2 (eigener Prozess), erreicht keine Taste ProcessCmdKey dieser Form.
+            // Was der Browser zurueckgibt, meldet die WebView2 ueber AcceleratorKeyPressed;
+            // das WinForms-Steuerelement macht daraus sein KeyDown und uebernimmt Handled.
+            // Das Steuerelement existiert hier schon (CreationProperties oben).
+            _web.WebView.KeyDown += WebViewTasteGedrueckt;
+
             // FEHLERSCHRANKE (Befund W13-B-1, 05.09.2026): Gemountet wird nicht
             // die Komponente selbst, sondern EPOS.UI.Bausteine.Wurzel<T> - eine
             // ErrorBoundary mit T darin. Eine ErrorBoundary faengt die Ausnahmen
@@ -151,7 +164,22 @@ namespace WindowsFormsApplication1
             // Der Parametersatz geht UNVERAENDERT durch (Wurzel.Gaben faengt ihn
             // mit CaptureUnmatchedValues), und die Parametersatzwache oben prueft
             // weiterhin gegen T - nicht gegen die Verpackung.
-            _web.RootComponents.Add<EPOS.UI.Bausteine.Wurzel<TKomponente>>("#app", parameter);
+            // BLAETTER ZUERST (Anwenderwunsch "Gleiches Verhalten mit anderen Dialogen"): Der
+            // Schliessweg geht als eigener Parameter der Fensterwurzel mit - NACH der Wache, denn er
+            // gehoert nicht zum Parametersatz der Komponente. OnFormClosing fragt ihn.
+            parameter = new Dictionary<string, object>(parameter)
+            {
+                [nameof(EPOS.UI.Bausteine.Fensterwurzel<TKomponente>.Schliessweg)] = _schliessweg
+            };
+            _web.RootComponents.Add<EPOS.UI.Bausteine.Fensterwurzel<TKomponente>>("#app", parameter);
+
+            // DIE FENSTERMARKE (Anwenderentscheid 30.09.2026, "Kopf+Fuss fest"): Die
+            // Fensterwurzel zeichnet hinter dem Dialog die Marke, die dem Stilblatt sagt,
+            // dass der Dialog in #app die Wurzel eines EIGENEN Fensters ist - dann haften
+            // Kopfzeile und Schlussleiste. KEINE ZWEITE WURZELKOMPONENTE: "body::after"
+            // belegt der BlazorWebView selbst (Nachladen der Stilblaetter mit den
+            // Entwicklerwerkzeugen); eine zweite Anmeldung warf in der Fensterprozedur und
+            // beendete den Prozess wortlos (0xc000041d). Wache: FensterrahmenTests.
             Controls.Add(_web);
 
             // WACHE (Befund W16b-B-1): Bleibt die Flaeche beige, sagt sie warum.
@@ -268,6 +296,42 @@ namespace WindowsFormsApplication1
             set => MinimumSize = value;
         }
 
+        /// <summary>
+        /// Ein BEFEHLSTASTENHAKEN des Aufrufers: <c>true</c> = behandelt, die Taste
+        /// endet hier. <c>null</c> (Vorgabe) = unverändert. Zwei Wege, kein Doppelweg:
+        /// Liegt der Fokus im Browserfenster der WebView2, erreicht die Taste die Form
+        /// nie; dann kommt sie über das Tastenereignis der WebView2
+        /// (AcceleratorKeyPressed → <c>KeyDown</c> des Steuerelements,
+        /// <see cref="WebViewTasteGedrueckt"/>). Liegt er auf der WinForms-Seite, kommt
+        /// sie über <see cref="ProcessCmdKey"/>. Der Haken darf nichts Blockierendes tun
+        /// – der Browserprozess wartet auf die Antwort. Der Weg der Geste des
+        /// Entwicklermodus im Dialog „Über EPOS-Plan" (<c>UeberFenster</c>).
+        /// </summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public Func<Keys, bool> Befehlstaste { get; set; }
+
+        /// <inheritdoc />
+        protected override bool ProcessCmdKey(ref Message nachricht, Keys taste)
+        {
+            if (Befehlstaste != null && !DesignMode && Befehlstaste(taste)) return true;
+            return base.ProcessCmdKey(ref nachricht, taste);
+        }
+
+        /// <summary>
+        /// Fenster-Weg des <see cref="Befehlstaste"/>-Hakens bei Fokus im Browser: das
+        /// <c>KeyDown</c> des WebView2-Steuerelements (aus AcceleratorKeyPressed).
+        /// <c>Handled = true</c> geht an die WebView2 zurück, der Browser sieht die
+        /// Taste dann nicht mehr.
+        /// </summary>
+        private void WebViewTasteGedrueckt(object sender, KeyEventArgs e)
+        {
+            if (Befehlstaste != null && !DesignMode && Befehlstaste(e.KeyData))
+            {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+            }
+        }
+
         /// <inheritdoc />
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
@@ -279,6 +343,27 @@ namespace WindowsFormsApplication1
                 return;
             }
             base.OnFormClosing(e);
+        }
+
+        private const int WM_SYSCOMMAND = 0x0112;
+        private const int SC_CLOSE = 0xF060;
+
+        /// <inheritdoc />
+        /// <remarks>
+        /// <b>Blaetter zuerst</b> (Anwenderwunsch "Gleiches Verhalten mit anderen Dialogen"): Fensterkreuz
+        /// und Alt+F4 kommen als <c>WM_SYSCOMMAND</c>/<c>SC_CLOSE</c>. Steht im Dialog ein Blatt, fuehrt
+        /// der Schliessweg es zurueck und die Nachricht endet hier; vom Wurzelblatt aus schliesst das
+        /// Fenster wie bisher. Bewusst hier und nicht in <see cref="OnFormClosing"/>: Dort traegt auch ein
+        /// <c>Close()</c> aus dem Programm (OK, Abbrechen, ein Besitzer) <c>UserClosing</c>, und das darf
+        /// kein Blatt aufhalten. Die Entscheidung steht plattformfrei in
+        /// <see cref="EPOS.UI.Bausteine.Fensterschliessweg"/>; die Huelle ruft nur.
+        /// </remarks>
+        protected override void WndProc(ref Message m)
+        {
+            if (m.Msg == WM_SYSCOMMAND && (m.WParam.ToInt64() & 0xFFF0) == SC_CLOSE
+                && !_schliessenGesperrt && _schliessweg.SchliessenAbfangen())
+                return;
+            base.WndProc(ref m);
         }
 
         /// <summary>

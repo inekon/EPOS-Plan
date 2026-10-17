@@ -42,8 +42,7 @@ public class PufferSpKatalogDialogTests : EposBunitContext
         Firma = "Bosch",
         SpeichertypIndex = 1,
         Bereitschaftsverluste = 3.34,
-        Gesamtvolumen = 3000,
-        Investitionskosten = 1250.5
+        Gesamtvolumen = 3000
     };
 
     private IRenderedComponent<PufferSpKatalogDialog> Aufbauen(
@@ -433,13 +432,13 @@ public class PufferSpKatalogDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Der Preis überlebt das „Überschreiben"</b> (Anwenderentscheid 15.09.2026): Der
-    /// Dialog zeigt die Investitionskosten nicht mehr — geschrieben wird der GELADENE
-    /// Wert, nicht eine Null. Ohne diesen Durchgriff nullte jedes Speichern in dieser
-    /// Maske die Katalogspalte, die nur noch der Aufklapper führt.
+    /// <b>Der Speicherweg trägt keinen Preis</b> (Welle KB-4, Anwenderentscheid 13.10.2026 „eine
+    /// Kostenbasis, keine Doppelhaltung"): Die Spalte ist entfallen, der Feldsatz führt kein
+    /// Kostenfeld mehr — die Gerätekosten pflegt die Kostenverwaltung. Das „Überschreiben"
+    /// reicht die geladenen Gerätewerte unverändert durch.
     /// </summary>
     [Fact]
-    public void Der_ungezeigte_Preis_geht_unveraendert_in_den_Speicherweg()
+    public void Der_Speicherweg_traegt_keinen_Preis()
     {
         PufferSpKatalogDaten? gesehen = null;
         var cut = Aufbauen(ueberschreiben: d =>
@@ -452,7 +451,10 @@ public class PufferSpKatalogDialogTests : EposBunitContext
         cut.FindAll(".epos-leiste .epos-knopf")[0].Click();
 
         Assert.NotNull(gesehen);
-        Assert.Equal(1250.5, gesehen!.Investitionskosten);
+        Assert.Equal("Bosch", gesehen!.Firma);
+        Assert.Equal(3000, gesehen.Gesamtvolumen);
+        Assert.DoesNotContain(typeof(PufferSpKatalogDaten).GetProperties(),
+                              p => p.Name.Contains("Kosten") || p.Name.Contains("Invest"));
     }
 
     // =================================================================================
@@ -505,5 +507,54 @@ public class PufferSpKatalogDialogTests : EposBunitContext
 
         Assert.NotNull(gesehen);
         Assert.Equal(2, gesehen!.SpeichertypIndex);
+    }
+
+    // =================================================================================
+    // KT-7: Wirft der Schreibweg, bleibt der Dialog offen und nennt den Grund
+    // =================================================================================
+
+    private const string KT7_GRUND = "Schreibweg gesperrt";
+
+    /// <summary>Führt <paramref name="handlung"/> aus und schreibt die Vermerke des Ausnahmeprotokolls mit.</summary>
+    private static List<string> Kt7Mitschreiben(Action handlung)
+    {
+        var vermerke = new List<string>();
+        void Mitschreiben(string z) { lock (vermerke) vermerke.Add(z); }
+        WindowsFormsApplication1.Ausnahmeprotokoll.Vermerkt += Mitschreiben;
+        try { handlung(); }
+        finally { WindowsFormsApplication1.Ausnahmeprotokoll.Vermerkt -= Mitschreiben; }
+        return vermerke;
+    }
+
+    /// <summary>Der Banner nennt <paramref name="vorlage"/> samt Grund, das Protokoll hat einen Vermerk.</summary>
+    private static void Kt7GrundSteht(IReadOnlyList<string> vermerke, string banner, string vorlage, string vermerk)
+    {
+        Assert.Contains(vorlage.Split('{')[0], banner);
+        Assert.Contains(KT7_GRUND, banner);
+        lock (vermerke) Assert.Contains(vermerke, v => v.StartsWith(vermerk, StringComparison.Ordinal) && v.Contains(KT7_GRUND));
+    }
+
+    [Fact]
+    public void KT7_wirft_das_Ueberschreiben_bleibt_der_Dialog_offen_und_nennt_den_Grund()
+    {
+        bool geschlossen = false;
+        IRenderedComponent<PufferSpKatalogDialog>? cut = null;
+        List<string> vermerke = Kt7Mitschreiben(() =>
+        {
+            cut = Aufbauen(ueberschreiben: _ => throw new InvalidOperationException(KT7_GRUND),
+                           geschlossen: _ => geschlossen = true);
+            cut!.FindAll(".epos-leiste .epos-knopf")[0].Click();
+        });
+
+        Assert.False(geschlossen);
+        string banner = string.Join("\n", cut!.FindAll(".epos-warnbanner").Select(e => e.TextContent.Trim()));
+        Kt7GrundSteht(vermerke, banner, WindowsFormsApplication1.MyResource.Resource.WURZEL_SCHREIBEN_FEHLER, "Katalogsatz");
+    }
+
+    [Fact]
+    public void KT7_ohne_Ausnahme_schreibt_das_Ueberschreiben_keinen_Vermerk()
+    {
+        List<string> vermerke = Kt7Mitschreiben(() => Aufbauen().FindAll(".epos-leiste .epos-knopf")[0].Click());
+        lock (vermerke) Assert.Empty(vermerke);
     }
 }

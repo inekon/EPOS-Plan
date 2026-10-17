@@ -17,6 +17,57 @@ namespace WindowsFormsApplication1
     /// </summary>
     public static class WaermesenkeClass
     {
+        // =================================================================
+        //  Probelauf der Pufferauslegung (Welle P4b): Volumen im Speicher ersetzen
+        // =================================================================
+
+        /// <summary>Die im Probelauf ersetzten Volumina [l] je Puffer-ID; <c>null</c> = keine Übersteuerung.</summary>
+        private static readonly System.Threading.AsyncLocal<IReadOnlyDictionary<int, int>> _probelaufVolumen =
+            new System.Threading.AsyncLocal<IReadOnlyDictionary<int, int>>();
+
+        /// <summary>
+        /// Öffnet einen Bereich, in dem jede Lesung eines Projektpuffers (<see cref="PufferLesen"/>, die
+        /// Desinfektionsmenge) für <paramref name="idPuffer"/> das Volumen <paramref name="volumenL"/> statt
+        /// des gespeicherten liefert — die Naht des Probelaufs der Pufferauslegung. Nichts wird geschrieben;
+        /// außerhalb des Bereichs (und in jedem anderen Ausführungsfluss) liest die Simulation unverändert.
+        /// </summary>
+        public static IDisposable ProbelaufVolumen(int idPuffer, int volumenL)
+        {
+            IReadOnlyDictionary<int, int> vorher = _probelaufVolumen.Value;
+            var neu = new Dictionary<int, int>();
+            if (vorher != null) foreach (KeyValuePair<int, int> e in vorher) neu[e.Key] = e.Value;
+            neu[idPuffer] = volumenL;
+            _probelaufVolumen.Value = neu;
+            return new ProbelaufBereich(vorher);
+        }
+
+        /// <summary>Das wirksame Volumen [l]: die Übersteuerung des Probelaufs, sonst <paramref name="gespeichert"/>.</summary>
+        public static int ProbelaufVolumenOder(int idPuffer, int gespeichert)
+        {
+            IReadOnlyDictionary<int, int> m = _probelaufVolumen.Value;
+            return m != null && m.TryGetValue(idPuffer, out int v) ? v : gespeichert;
+        }
+
+        /// <summary>Wie <see cref="ProbelaufVolumenOder(int,int)"/> für ein Volumen als Kommazahl.</summary>
+        public static double ProbelaufVolumenOder(int idPuffer, double gespeichert)
+        {
+            IReadOnlyDictionary<int, int> m = _probelaufVolumen.Value;
+            return m != null && m.TryGetValue(idPuffer, out int v) ? v : gespeichert;
+        }
+
+        private sealed class ProbelaufBereich : IDisposable
+        {
+            private readonly IReadOnlyDictionary<int, int> _vorher;
+            private bool _offen = true;
+            public ProbelaufBereich(IReadOnlyDictionary<int, int> vorher) { _vorher = vorher; }
+            public void Dispose()
+            {
+                if (!_offen) return;
+                _offen = false;
+                _probelaufVolumen.Value = _vorher;
+            }
+        }
+
         // --- Hauptsenke: Werte der Spalte WS_Ziel (Konzept 5.3) -----------------------
 
         // Persistenzwerte; seit Paket 9 / L0 zentral in DbWerte geführt, hier nur Aliasse.
@@ -69,6 +120,9 @@ namespace WindowsFormsApplication1
         /// <summary>Kombispeicher — bedient BEIDE Kanäle aus einem Vorrat (D5a).</summary>
         public const string VERWENDUNG_KOMBI = DbWerte.PSP_VERWENDUNG_KOMBI;
 
+        /// <summary>Verwendung „Kaelte": Kaltwasserspeicher der Kältekaskade (KU3-5).</summary>
+        public const string VERWENDUNG_KAELTE = DbWerte.PSP_VERWENDUNG_KAELTE;
+
         // Eine eigene Liste der Erzeugertypen stand hier ursprünglich als
         // ERZEUGER_TYPEN. Sie wurde von niemandem gelesen: Wer die Typen braucht,
         // nimmt ProjektPuffer.WAERMEERZEUGER_TYPEN (die SQL-taugliche Fassung, die
@@ -84,13 +138,25 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static bool IstPufferZiel(string ziel)
         {
-            // KU2 (4.3 #15): Das Kälteziel ist ausdrücklich KEIN Puffer-Ziel - einen
-            // Kältespeicher gibt es erst mit KU3 (K7).
+            // KU2 (4.3 #15): Das Kälteziel ist ausdrücklich KEIN Puffer-Ziel. Der Kältespeicher
+            // (KU3-5) braucht keine Senkenzeile: Jeder Projektpuffer mit Verwendung „Kaelte" gehört
+            // der Kältekaskade (SimulationControl.KaeltespeicherVorbereiten).
             if (IstKaelteZiel(ziel)) return false;
             return string.Equals(ziel, ZIEL_PUFFER_HEIZUNG, StringComparison.Ordinal) ||
                    string.Equals(ziel, ZIEL_PUFFER_BRAUCHWASSER, StringComparison.Ordinal) ||
                    string.Equals(ziel, ZIEL_PUFFER_KOMBI, StringComparison.Ordinal) ||
                    string.Equals(ziel, ZIEL_PUFFER_PROZESS, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// true, wenn die Verwendung einen KÄLTESPEICHER meint (KU3-5, E68). Auch die Schreibweise
+        /// mit Umlaut („Kälte") wird erkannt — sie ist allein über direkte Datenbankeingriffe
+        /// erreichbar und wird über <see cref="NormalisierteVerwendung"/> auf den Persistenzwert gehoben.
+        /// </summary>
+        public static bool IstKaelteVerwendung(string verwendung)
+        {
+            return string.Equals(verwendung, VERWENDUNG_KAELTE, StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(verwendung, "Kälte", StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>true, wenn die Verwendung einen KOMBISPEICHER meint (D5a).</summary>
@@ -108,8 +174,8 @@ namespace WindowsFormsApplication1
                 return VERWENDUNG_BRAUCHWASSER;
             if (string.Equals(ziel, ZIEL_PUFFER_KOMBI, StringComparison.Ordinal))
                 return VERWENDUNG_KOMBI;
-            // KU2 (4.3 #15): Das Kälteziel verlangt keinen Puffer - es gibt keine
-            // Pufferverwendung „Kälte", solange kein Kältespeicher rechnet (K7, 7.6).
+            // KU2 (4.3 #15): Das Kälteziel verlangt keinen Puffer - der Kältespeicher (KU3-5)
+            // hängt ohne Senkenzeile an der Kältekaskade.
             if (IstKaelteZiel(ziel)) return null;
             return null;
         }
@@ -713,7 +779,7 @@ namespace WindowsFormsApplication1
             p.Bezeichner = StilleDb.Text(StilleDb.Feld(r, "Bezeichner"));
             p.Verwendung = StilleDb.Text(StilleDb.Feld(r, "Verwendung"));
             p.VerwendungFehlt = p.Verwendung.Length == 0;
-            p.Gesamtvolumen = StilleDb.Zahl(StilleDb.Feld(r, "Gesamtvolumen"));
+            p.Gesamtvolumen = ProbelaufVolumenOder(p.ID, StilleDb.Zahl(StilleDb.Feld(r, "Gesamtvolumen")));
             p.Bereitschaftsverluste = StilleDb.Kommazahl(StilleDb.Feld(r, "Bereitschaftsverluste"));
             p.Vorlauf = StilleDb.Zahl(StilleDb.Feld(r, "Vorlauf"));
             p.Ruecklauf = StilleDb.Zahl(StilleDb.Feld(r, "Ruecklauf"));
@@ -1071,6 +1137,8 @@ namespace WindowsFormsApplication1
                 return VERWENDUNG_BRAUCHWASSER;
             if (string.Equals(verwendung, VERWENDUNG_KOMBI, StringComparison.OrdinalIgnoreCase))
                 return VERWENDUNG_KOMBI;
+            if (IstKaelteVerwendung(verwendung))
+                return VERWENDUNG_KAELTE;
 
             return verwendung;
         }
@@ -1096,6 +1164,7 @@ namespace WindowsFormsApplication1
             if (string.Equals(dbWert, VERWENDUNG_BRAUCHWASSER, StringComparison.OrdinalIgnoreCase))
                 return MyResource.Resource.PSP_VERWENDUNG_BRAUCHWASSER_ANZEIGE;
             if (IstKombiVerwendung(dbWert)) return MyResource.Resource.PSP_VERWENDUNG_KOMBI_ANZEIGE;
+            if (IstKaelteVerwendung(dbWert)) return MyResource.Resource.PSP_VERWENDUNG_KAELTE_ANZEIGE;
             return dbWert;
         }
 
@@ -1414,7 +1483,7 @@ namespace WindowsFormsApplication1
             if (dt == null || dt.Rows.Count == 0) return 0;
 
             DataRow r = dt.Rows[0];
-            if (!string.Equals(StilleDb.Text(StilleDb.Feld(r, "WQ_Typ")),
+            if (!string.Equals(ErdreichLaufvorgabe.Quelltyp(idAnlage, StilleDb.Text(StilleDb.Feld(r, "WQ_Typ"))),
                                WaermequelleClass.TYP_PUFFER, StringComparison.Ordinal))
                 return 0;
 
@@ -1715,5 +1784,86 @@ namespace WindowsFormsApplication1
         // Betriebstemperaturen sind einmalig an Tab_Pufferspeicher übernommen, dort führt
         // sie Form_PufferSp_Projekt weiter, und die Senken stehen in Z_AnlageSenke.
         // Die Brücke hätte damit nur noch eine Ablage gepflegt, die niemand liest.
+
+        // =============================================================================
+        // Reihenfolge der direkten Deckung (Anwenderwunsch 08.10.2026)
+        // =============================================================================
+
+        /// <summary>Ein Erzeuger in der Reihenfolge der direkten Deckung: Rang der Kaskade und Kaskadeneintrag.</summary>
+        public sealed class DeckungsRang
+        {
+            /// <summary>Rang in der Kaskade der Konfiguration (1 = vorn) — derselbe wie auf der Erzeugerkarte.</summary>
+            public int Rang;
+
+            /// <summary>Der Kaskadeneintrag (<c>DbWerte.ERZEUGER_*</c>).</summary>
+            public string DbWert = "";
+
+            /// <summary><c>Tab_Energieanlagen.ID_Type</c> des Eintrags.</summary>
+            public int IdType;
+        }
+
+        /// <summary>
+        /// <b>Die Reihenfolge der direkten Deckung</b> des Heizkreises: Mehrere Erzeuger mit der Direktsenke
+        /// Heizkreis decken den Momentanbedarf in der Reihenfolge ihrer KASKADENPOSITION
+        /// (<c>Tab_Einstellungen.Tool_1 … Tool_4</c>, Konzept Simulationsablauf Abschnitt 13) — es gibt dafür
+        /// kein zweites Prioritätssystem; die Ladepriorität <c>WS_Ladeprio</c> gilt nur am Puffer.
+        /// Diese Fassung ist die Regel ohne Datenbank: die belegten Plätze der Kaskade in ihrer Reihenfolge
+        /// (Rang = Stelle in <c>Kaskade.Belegt</c>, wie auf den Erzeugerkarten), davon nur die Typen, die
+        /// <paramref name="mitHeizkreis"/> bejaht.
+        /// </summary>
+        public static List<DeckungsRang> ReihenfolgeDirekteDeckung(IList<string> kaskadeBelegt, Func<int, bool> mitHeizkreis)
+        {
+            var liste = new List<DeckungsRang>();
+            if (kaskadeBelegt == null || mitHeizkreis == null) return liste;
+            for (int i = 0; i < kaskadeBelegt.Count; i++)
+            {
+                string wert = kaskadeBelegt[i] ?? "";
+                int idType = Kaskade.TypZuAnlagentyp(wert);
+                if (idType <= 0 || !mitHeizkreis(idType)) continue;
+                liste.Add(new DeckungsRang { Rang = i + 1, DbWert = wert, IdType = idType });
+            }
+            return liste;
+        }
+
+        /// <summary>
+        /// Die Reihenfolge der direkten Deckung eines Projekts: ein Kaskadeneintrag zählt, wenn eine seiner
+        /// Anlagen eine Senke Heizkreis führt (<c>Z_AnlageSenke</c>, gelesen ohne Protokollzeile). Die Anlage
+        /// <paramref name="idAnlageMitHeizkreis"/> zählt immer — der Senkendialog fragt, während er für sie
+        /// gerade die Senke Heizkreis zeigt, auch wenn das noch nicht gespeichert ist.
+        /// </summary>
+        /// <param name="idProjekt">Projekt; 0 = nur die Regel.</param>
+        /// <param name="kaskadeBelegt">Die belegten Plätze der Kaskade (<c>Kaskade.Belegt</c>) — aus der
+        /// Konfiguration, die der Wirt gerade führt.</param>
+        /// <param name="idAnlageMitHeizkreis">Die Anlage des Dialogs; 0 = keine.</param>
+        public static List<DeckungsRang> ReihenfolgeDirekteDeckung(int idProjekt, IList<string> kaskadeBelegt,
+                                                                    int idAnlageMitHeizkreis)
+        {
+            var typen = new HashSet<int>();
+            if (idProjekt > 0 && kaskadeBelegt != null)
+            {
+                var mitHeizkreis = new HashSet<int>();
+                if (idAnlageMitHeizkreis > 0) mitHeizkreis.Add(idAnlageMitHeizkreis);
+                try
+                {
+                    foreach (Senkenliste l in SenkenlistenLadenStill(idProjekt))
+                        foreach (Senkenzeile z in l.Zeilen)
+                            if (z.Ziel == Senke.Heizkreis) { mitHeizkreis.Add(l.AnlagenID); break; }
+                }
+                catch { }
+
+                foreach (string wert in kaskadeBelegt)
+                {
+                    int idType = Kaskade.TypZuAnlagentyp(wert ?? "");
+                    if (idType <= 0) continue;
+                    try
+                    {
+                        foreach (AnlagenInfo a in WErzeugerCtrl.AnlagenMitWp(idProjekt, idType))
+                            if (mitHeizkreis.Contains(a.ID)) { typen.Add(idType); break; }
+                    }
+                    catch { }
+                }
+            }
+            return ReihenfolgeDirekteDeckung(kaskadeBelegt, typen.Contains);
+        }
     }
 }

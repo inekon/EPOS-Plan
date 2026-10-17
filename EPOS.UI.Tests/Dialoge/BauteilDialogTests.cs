@@ -177,6 +177,37 @@ public class BauteilDialogTests : EposBunitContext
     // =================================================================================
 
     /// <summary>Eine Wand an Außenluft ohne Azimut wird benannt abgelehnt - nicht auf Nord vorbelegt.</summary>
+    /// <summary>
+    /// BK-1: Die Kapazität C des gewählten Aufbaus steht als Lesewert neben dem U-Wert — aus dem
+    /// Summenfuß der Hülle; ohne Aufbau „aus der Bauweise"; auf Englisch übersetzt.
+    /// </summary>
+    [Fact]
+    public void Die_Kapazitaet_des_Aufbaus_steht_als_Lesewert()
+    {
+        static AufbauAnsichtDaten? Ansicht(AufbauWahl w) => new(
+            new BauteilaufbauDaten { Id = w.Id, Bezeichner = w.Text, Bauteilart = w.Bauteilart,
+                                     Schichten = { new BauteilschichtDaten { DickeMm = 240, Lambda = 0.45, Rho = 1000, Cp = 1000 } } },
+            new AufbauKennwerteDaten { RSi_M2KW = 0.13, RSe_M2KW = 0.04, R_M2KW = 0.533, U_WM2K = 1.42, Kapazitaet_KJM2K = 240 },
+            Array.Empty<BaustoffWahl>());
+        var cut = Render<BauteilDialog>(p => p
+            .Add(x => x.Bauteil, Wand())
+            .Add(x => x.Projektaufbauten, PROJEKT)
+            .Add(x => x.Aufbau, Ansicht));
+
+        IElement c = Feld(cut, "Wärmekapazität C")!;
+        Assert.Equal("aus der Bauweise", c.GetAttribute("value"));
+        Assert.True(c.HasAttribute("readonly"));
+
+        Feld(cut, "Aufbau im Projekt")!.Change("12");
+        Assert.Equal("240,0", Feld(cut, "Wärmekapazität C")!.GetAttribute("value"));
+        Assert.Contains("kJ/(m²K)", Feld(cut, "Wärmekapazität C")!.ParentElement!.ParentElement!.TextContent);
+
+        using var kultur = new Kulturvorrichtung("en-US");
+        var en = Render<BauteilDialog>(p => p.Add(x => x.Bauteil, Wand()).Add(x => x.Projektaufbauten, PROJEKT)
+                                              .Add(x => x.Texte, new BauteilDialogTexte()));
+        Assert.Equal("from the construction type", Feld(en, "Heat capacity C")!.GetAttribute("value"));
+    }
+
     [Fact]
     public void Eine_Wand_an_Aussenluft_ohne_Azimut_wird_benannt_abgelehnt()
     {
@@ -400,5 +431,197 @@ public class BauteilDialogTests : EposBunitContext
         KiFeldzugang flaeche = KiMaskenbruecke.Feldzugang(KiMaskennamen.BAUTEIL, "flaeche");
         Assert.NotNull(flaeche);
         Assert.Equal(60.0, flaeche.Lesen());
+    }
+
+    // =================================================================================
+    // BK-2b: gekennzeichnete Aufbauten in der Wahl
+    // =================================================================================
+
+    [Fact]
+    public void Gekennzeichnete_Aufbauten_stehen_erst_nach_dem_Schalter_in_der_Wahl()
+    {
+        var projekt = new[]
+        {
+            new AufbauWahl(11, false, "Außenwand Bestand", DbWerte.BAUTEILART_AUSSENWAND, 1.2),
+            new AufbauWahl(13, false, "Außenwand ohne Lambda", DbWerte.BAUTEILART_AUSSENWAND, null, Ungeeignet: true)
+        };
+        var cut = Render<BauteilDialog>(p => p
+            .Add(x => x.Bauteil, Wand())
+            .Add(x => x.Projektaufbauten, projekt)
+            .Add(x => x.Katalogaufbauten, KATALOG)
+            .Add(x => x.Geschlossen, _ => { }));
+
+        IElement Wahl() => cut.FindAll("select").First(s => s.TextContent.Contains("Außenwand Bestand"));
+        Assert.DoesNotContain("Außenwand ohne Lambda", Wahl().TextContent);
+        IElement schalter = cut.FindAll("label").First(l => l.TextContent.Contains("auch ungeeignete zeigen"));
+        schalter.QuerySelector(".epos-schalter-kasten")!.Change(true);
+        Assert.Contains("Außenwand ohne Lambda", Wahl().TextContent);
+    }
+
+    [Fact]
+    public void Ohne_gekennzeichnete_Aufbauten_steht_kein_Schalter()
+    {
+        var cut = Aufbauen(katalog: KATALOG);
+        Assert.DoesNotContain("auch ungeeignete zeigen", cut.Markup);
+    }
+
+    [Fact]
+    public void Der_Schalter_steht_auf_Englisch()
+    {
+        using var kultur = new Kulturvorrichtung("en-US");
+        var cut = Render<BauteilDialog>(p => p
+            .Add(x => x.Bauteil, Wand())
+            .Add(x => x.Projektaufbauten, new[] { new AufbauWahl(13, false, "Wall", DbWerte.BAUTEILART_AUSSENWAND, null, Ungeeignet: true) })
+            .Add(x => x.Geschlossen, _ => { }));
+        Assert.Contains("also show unsuitable", cut.Markup);
+    }
+
+    // =================================================================================
+    // BK-6: Fensterwerte aus dem Fensteraufbau
+    // =================================================================================
+
+    [Fact]
+    public void Ein_Fensteraufbau_uebergibt_g_Rahmenanteil_und_Uw_an_das_Fenster()
+    {
+        var fenster = new Fensteraufbau(Ug: 1.0, Uf: 1.4, GWert: 0.5, Rahmenanteil: 0.3, PsiGlasrand: 0.04);
+        var projekt = new[]
+        {
+            new AufbauWahl(21, false, "Fenster Probe", DbWerte.BAUTEILART_FENSTER, 1.12, Fenster: fenster),
+            new AufbauWahl(22, false, "Außenwand", DbWerte.BAUTEILART_AUSSENWAND, 0.3)
+        };
+        var cut = Render<BauteilDialog>(p => p
+            .Add(x => x.Bauteil, new BauteilDaten { Id = 5, Bezeichner = "Fenster Süd", Bauteilart = DbWerte.BAUTEILART_FENSTER, Flaeche = 2.0 })
+            .Add(x => x.Projektaufbauten, projekt)
+            .Add(x => x.Katalogaufbauten, Array.Empty<AufbauWahl>())
+            .Add(x => x.Nachbarzonen, Array.Empty<NachbarzoneWahl>()));
+
+        Feld(cut, "Aufbau im Projekt")!.Change("21");
+
+        // U_w = 0,7·1,0 + 0,3·1,4 + 4·√1,4·0,04 / 2 = 1,215 (Kern, Fensterkennwerte.Uw).
+        Assert.Equal(0.5, cut.Instance.Arbeitsstand.GWert);
+        Assert.Equal(0.3, cut.Instance.Arbeitsstand.Rahmenanteil);
+        Assert.Equal(1.215, cut.Instance.Arbeitsstand.UWert);
+        Assert.Contains("Aus dem Fensteraufbau übernommen", cut.Markup);
+        Assert.Contains("1,215", cut.Markup);
+    }
+
+    [Fact]
+    public void Eine_Wand_uebernimmt_keine_Fensterwerte()
+    {
+        var fenster = new Fensteraufbau(1.0, 1.4, 0.5, 0.3, 0.04);
+        var cut = Render<BauteilDialog>(p => p
+            .Add(x => x.Bauteil, Wand())
+            .Add(x => x.Projektaufbauten, new[] { new AufbauWahl(21, false, "Fenster Probe", DbWerte.BAUTEILART_FENSTER, 1.12, Fenster: fenster) })
+            .Add(x => x.Katalogaufbauten, Array.Empty<AufbauWahl>())
+            .Add(x => x.Nachbarzonen, Array.Empty<NachbarzoneWahl>()));
+
+        Feld(cut, "Aufbau im Projekt")!.Change("21");
+
+        Assert.Null(cut.Instance.Arbeitsstand.GWert);
+        Assert.Equal(0.3, cut.Instance.Arbeitsstand.UWert);
+        Assert.DoesNotContain("Aus dem Fensteraufbau übernommen", cut.Markup);
+    }
+
+    // =================================================================================
+    // Nachzug KIS: Fensterwerte und Herkunft des U-Werts beim Assistenten
+    // =================================================================================
+
+    private static void KiSetzen(string feld, string text)
+    {
+        KiFeldzugang zugang = KiMaskenbruecke.Feldzugang(KiMaskennamen.BAUTEIL, feld);
+        Assert.NotNull(zugang);
+        KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(zugang, text);
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        zugang.Setzen(umsetzung.Wert);
+    }
+
+    [Fact]
+    public void Der_Assistent_waehlt_einen_Fensteraufbau_und_das_Fenster_uebernimmt_die_Fensterwerte()
+    {
+        var fenster = new Fensteraufbau(1.0, 1.4, 0.5, 0.3, 0.04);
+        BauteilDaten b = Wand();
+        b.Bauteilart = DbWerte.BAUTEILART_FENSTER;
+        b.Flaeche = 2.0;
+        var cut = Render<BauteilDialog>(p => p
+            .Add(x => x.Bauteil, b)
+            .Add(x => x.Projektaufbauten, new[] { new AufbauWahl(21, false, "Fenster Probe", DbWerte.BAUTEILART_FENSTER, 1.12, Fenster: fenster) })
+            .Add(x => x.Katalogaufbauten, Array.Empty<AufbauWahl>())
+            .Add(x => x.Nachbarzonen, Array.Empty<NachbarzoneWahl>()));
+
+        KiSetzen("aufbau", "Fenster Probe");
+        cut.Render();
+
+        Assert.Equal(21, cut.Instance.Arbeitsstand.IdAufbau);
+        Assert.Equal(0.5, cut.Instance.Arbeitsstand.GWert);
+        Assert.Equal(0.3, cut.Instance.Arbeitsstand.Rahmenanteil);
+        Assert.Equal(Math.Round(Fensterkennwerte.Uw(fenster, 2.0)!.Value, 3), cut.Instance.Arbeitsstand.UWert);
+        Assert.Contains("Aus dem Fensteraufbau übernommen", cut.Markup);
+    }
+
+    [Fact]
+    public void Die_Herkunft_des_U_Werts_liest_der_Assistent_nach_der_Regel_des_Schreibwegs()
+    {
+        BauteilDaten b = Wand();
+        b.UHerkunft = DbWerte.HERKUNFT_IFC;
+        var cut = Aufbauen(b);
+
+        KiFeldzugang herkunft = KiMaskenbruecke.Feldzugang(KiMaskennamen.BAUTEIL, "u_herkunft");
+        Assert.NotNull(herkunft);
+        Assert.False(herkunft.Setzbar);
+        Assert.Equal(DbWerte.HERKUNFT_IFC, herkunft.Lesen());          // unverändert: die gespeicherte Herkunft
+
+        KiSetzen("uwert", "0,28");
+        Assert.Equal(DbWerte.HERKUNFT_MANUELL, herkunft.Lesen());       // von Hand geändert
+
+        KiSetzen("aufbau", "Außenwand gedämmt");
+        Assert.Equal(DbWerte.HERKUNFT_KATALOG, herkunft.Lesen());       // anderer Aufbau
+        cut.Render();
+    }
+
+    [Fact]
+    public void Ein_neues_Bauteil_bringt_keine_Herkunft_mit()
+    {
+        BauteilDaten b = Wand();
+        b.Id = -5;
+        b.UHerkunft = DbWerte.HERKUNFT_IFC;
+        b.UWert = null;
+        Aufbauen(b, neu: true);
+
+        KiFeldzugang herkunft = KiMaskenbruecke.Feldzugang(KiMaskennamen.BAUTEIL, "u_herkunft");
+        Assert.Equal("", herkunft.Lesen());
+        KiSetzen("uwert", "0,3");
+        Assert.Equal(DbWerte.HERKUNFT_MANUELL, herkunft.Lesen());
+    }
+
+    /// <summary>Der Wert der nur lesenden Zeile „Herkunft des U-Werts“ im Formular.</summary>
+    private static string HerkunftZeile(IRenderedComponent<BauteilDialog> cut)
+    {
+        IElement feld = cut.FindAll("label.epos-feld")
+            .Single(l => l.TextContent.Contains(WindowsFormsApplication1.MyResource.Resource.BTDLG_LBL_UHERKUNFT));
+        IElement eingabe = feld.QuerySelector("input")!;
+        Assert.True(eingabe.HasAttribute("readonly"));
+        return eingabe.GetAttribute("value") ?? "";
+    }
+
+    [Fact]
+    public void Die_Herkunft_des_U_Werts_steht_lesbar_unter_dem_U_Wert()
+    {
+        BauteilDaten b = Wand();
+        b.UHerkunft = DbWerte.HERKUNFT_IFC;
+        var cut = Aufbauen(b);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.BTDLG_UHK_IFC, HerkunftZeile(cut));   // Datei
+
+        KiSetzen("uwert", "0,28");
+        cut.Render();
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.BTDLG_UHK_MANUELL, HerkunftZeile(cut)); // von Hand
+    }
+
+    [Fact]
+    public void Ohne_Herkunft_zeigt_die_Zeile_einen_Strich()
+    {
+        BauteilDaten b = Wand();
+        b.UHerkunft = null;
+        var cut = Aufbauen(b);
+        Assert.Equal("–", HerkunftZeile(cut));
     }
 }

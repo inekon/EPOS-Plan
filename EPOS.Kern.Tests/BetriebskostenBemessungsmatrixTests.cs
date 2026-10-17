@@ -138,9 +138,18 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die Gegenprobe: Ein FRISCHER Lauf füllt beide Spalten — und liefert
+        /// Die Gegenprobe: Ein FRISCHER Lauf füllt beide Spalten — leert man sie
+        /// wieder, liefert die Ableitung aus Wärme und Nutzungsgrad DESSELBEN Laufs
         /// dieselben Zahlen. Ohne diesen Fall bliebe offen, ob die Ableitung nur eine
         /// Notlösung ist oder wirklich die Größe des Laufs trifft.
+        ///
+        /// <para>Verglichen wird innerhalb eines Laufs: Der gespeicherte Altlauf von 1030
+        /// rechnete den Kessel noch ohne Brennwertkennzeichen (Nutzungsgrad 100 %), der
+        /// frische Lauf mit der Normvorgabe von η₃₀ (Schemaschritt 158) — zwei Läufe,
+        /// zwei Brennstoffmengen. Die Kosten treffen sich bis auf die Rundung des
+        /// gespeicherten Nutzungsgrads auf zwei Nachkommastellen (höchstens 0,005
+        /// Prozentpunkte, relativ unter 1e-4); bei genau 100 % ist die Rückrechnung
+        /// exakt.</para>
         /// </summary>
         [Fact]
         public void Der_frische_Lauf_liefert_dieselben_Zahlen_wie_die_Ableitung()
@@ -148,18 +157,20 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            SpaltenLeeren(PROJEKT_KASKADE);
-            double waermeAbgeleitet = Basis(Z_KASKADE_KESSEL, DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH);
-            double kostenAbgeleitet = Basis(Z_KASKADE_KESSEL, DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN);
-
             Rechne(PROJEKT_KASKADE);
             Assert.True(ModulZahl(PROJEKT_KASKADE, "Verbrauch") > 0,
                         "Der frische Lauf hat die Spalte nicht gefüllt.");
+            double waermeLauf = Basis(Z_KASKADE_KESSEL, DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH);
+            double kostenLauf = Basis(Z_KASKADE_KESSEL, DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN);
 
-            Assert.Equal(waermeAbgeleitet,
+            SpaltenLeeren(PROJEKT_KASKADE);
+            Assert.Equal(0.0, ModulZahl(PROJEKT_KASKADE, "Verbrauch"));
+
+            Assert.Equal(waermeLauf,
                          Basis(Z_KASKADE_KESSEL, DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH), 3);
-            Assert.Equal(kostenAbgeleitet,
-                         Basis(Z_KASKADE_KESSEL, DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN), 3);
+            double kostenAbgeleitet = Basis(Z_KASKADE_KESSEL, DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN);
+            Assert.True(Math.Abs(kostenAbgeleitet - kostenLauf) <= 1e-4 * kostenLauf,
+                        "Abgeleitet " + kostenAbgeleitet + " statt " + kostenLauf);
         }
 
         // =====================================================================

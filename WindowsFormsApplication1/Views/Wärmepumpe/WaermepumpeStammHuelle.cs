@@ -84,7 +84,8 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static IReadOnlyDictionary<string, object> Gaben()
         {
-            var daten = new WaermepumpeStammDaten();
+            // UB-E3-b: die Klappliste der Kaeltemittel samt Vorgaben der Klasse (Schnellwahl im Stammblatt).
+            var daten = new WaermepumpeStammDaten { Kaeltemittelliste = BivalenzAbbildung.Kaeltemittelliste() };
 
             return new Dictionary<string, object>
             {
@@ -146,17 +147,16 @@ namespace WindowsFormsApplication1
                 ["LabelHeizstab"] = Text_("WPS_LBL_HEIZSTAB", "Heizstab"),
                 ["LabelKuehlleistung"] = Text_("WPS_LBL_KUEHLLEISTUNG", "Kühlleistung"),
 
-                // W14a-O-1 (Anwenderentscheid 06.09.2026): die Modulkosten stehen
-                // wieder im Raster - nur lesend, mit Herleitungszeile. Die
-                // BESCHRIFTUNG kommt aus MODK_LBL_MODULKOSTEN, also aus demselben
-                // Schluessel, den der Verwendungskatalog fuer diese Spalte fuehrt
-                // (ParameterVerwendung.Waermepumpe): Raster und Aufklapper nennen den
-                // Parameter damit wortgleich. Neu sind nur die beiden leisen Zeilen.
-                ["LabelModulkosten"] = Text_("MODK_LBL_MODULKOSTEN", "Modulkosten"),
-                ["HerleitungModulkosten"] = Text_("WPS_HERL_MODULKOSTEN",
-                    "aus dem Datenbestand; Gerätekosten werden in der Kostenverwaltung gepflegt"),
-                ["HinweisModulkostenLeer"] = Text_("WPS_HINWEIS_MODULKOSTEN_LEER",
-                    "kein Planwert im Datenbestand"),
+                // W14a-O-1 (Anwenderentscheid 06.09.2026): der Kostensatz steht im
+                // Raster - nur lesend, mit Herleitungszeile. Seine Quelle ist seit
+                // Welle KB-4 die SATZVORLAGE der Kostenverwaltung; die BESCHRIFTUNG
+                // kommt aus MODK_LBL_KOSTENSATZ, also aus demselben Schluessel, den
+                // die Modulkataloge fuehren.
+                ["LabelKostensatz"] = Text_("MODK_LBL_KOSTENSATZ", "Kostensatz"),
+                ["HerleitungKostensatz"] = Text_("WPS_HERL_KOSTENSATZ",
+                    "aus der Satzvorlage; Gerätekosten werden in der Kostenverwaltung gepflegt"),
+                ["HinweisKostensatzLeer"] = Text_("WPS_HINWEIS_KOSTENSATZ_LEER",
+                    "kein Kostensatz in der Kostenverwaltung"),
 
                 ["LabelKennlinien"] = Text_("WPS_LBL_KENNLINIEN", "Kenndaten Kennlinien:"),
                 ["OptionWaerme"] = Text_("WPS_OPT_WAERME", "Wärme"),
@@ -208,6 +208,8 @@ namespace WindowsFormsApplication1
             if (ctrl.rows == 0) return null;
 
             WPModel m = ctrl.items[0];
+            // UB-E3-b: die acht Geraetespalten des Katalogsatzes; ohne Spalten leer.
+            Geraetespalten g = GeraetegrenzWerte.WpLesen(WPStammCtrl.TABLE, m.ID) ?? Geraetespalten.Leer;
             return new WaermepumpeStammDaten
             {
                 Id = m.ID,
@@ -223,9 +225,23 @@ namespace WindowsFormsApplication1
                 Heizstab = (int)m.Heizung,
                 Regelung = m.Regelung ?? "",
                 Kuehlleistung = m.Kuehlleistung,
-                Modulkosten = m.Modulkosten,
+                // Welle KB-4: der Kostensatz steht in der Satzvorlage des Katalogsatzes.
+                Kostensatz = KatalogkostensatzCtrl.SatzText(WPStammCtrl.TABLE, m.ID),
+                KostensatzEinheit = KatalogkostensatzCtrl.Einheit(WPStammCtrl.TABLE),
                 MaxPtherm = m.maxPTherm,
                 Bauart = m.Bauart ?? "",
+                // Welle M4 (WP1): leer bleibt leer - keine Taktrechnung bzw. C_d = 0,9.
+                MindestleistungKw = m.MindestleistungKw,
+                TaktverlustfaktorCd = m.TaktverlustfaktorCd,
+                Kaeltemittel = g.Kaeltemittel ?? "",
+                SpreizungAuslegungK = g.SpreizungAuslegungK,
+                SpreizungMaxK = g.SpreizungMaxK,
+                SpreizungMinK = g.SpreizungMinK,
+                MindestvolumenstromProzent = g.MindestvolumenstromProzent,
+                RuecklaufMaxC = g.RuecklaufMaxC,
+                RuecklaufBezugC = g.RuecklaufBezugC,
+                RuecklaufAbwertungProzentJeK = g.RuecklaufAbwertungProzentJeK,
+                Kaeltemittelliste = BivalenzAbbildung.Kaeltemittelliste(),
                 NurLesen = m.m_bReadOnly
             };
         }
@@ -289,10 +305,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Speicherweg (<c>btn_Speichern_Click</c>:372) — ohne die Pflichtprüfung
-        /// der Modulkosten (Abweichung A-14). Seit W14a‑O‑1 steht die Zeile wieder in
-        /// der Maske, aber NUR LESEND: <c>daten.Modulkosten</c> ist derselbe Wert, den
-        /// <see cref="SatzZu"/> gelesen hat, und wird hier lediglich durchgereicht —
-        /// zu prüfen gibt es nichts, was der Anwender eingegeben hätte.
+        /// der Gerätekosten (Abweichung A-14). Seit W14a‑O‑1 steht die Kostenzeile in
+        /// der Maske, aber NUR LESEND, und seit Welle KB-4 kommt sie aus der
+        /// Satzvorlage: Der Speicherweg fasst sie nicht an, zu prüfen gibt es nichts,
+        /// was der Anwender eingegeben hätte.
         /// Die übrigen Zahlenfelder übernahm der Vorläufer STILL:
         /// Ein unlesbarer Text ließ den gelesenen Datensatzwert stehen. Hier meldet
         /// <c>Ganzzahlfeld</c> einen leeren Wert als <c>null</c>, und daraus wird 0 —
@@ -315,9 +331,15 @@ namespace WindowsFormsApplication1
                 maxPTherm = daten.MaxPtherm,
                 Heizung = daten.Heizstab ?? 0,
                 Regelung = daten.Regelung,
-                Modulkosten = daten.Modulkosten,
                 Bauart = daten.Bauart,
-                Kuehlleistung = daten.Kuehlleistung
+                Kuehlleistung = daten.Kuehlleistung,
+                // Welle M4 (WP1): NULL-treu, der Kern prüft das Band und schreibt.
+                MindestleistungKw = daten.MindestleistungKw,
+                TaktverlustfaktorCd = daten.TaktverlustfaktorCd,
+                // UB-E3-b: die acht Geraetespalten - NULL-treu, der Kern prueft die Bereiche und schreibt.
+                Grenzspalten = new Geraetespalten(daten.SpreizungAuslegungK, daten.SpreizungMaxK, daten.SpreizungMinK,
+                    daten.MindestvolumenstromProzent, daten.RuecklaufMaxC, daten.RuecklaufBezugC,
+                    daten.RuecklaufAbwertungProzentJeK, string.IsNullOrWhiteSpace(daten.Kaeltemittel) ? null : daten.Kaeltemittel.Trim())
             };
 
             WPStammCtrl.SpeicherErgebnis ergebnis = ctrl.Speichern(modell, neu);

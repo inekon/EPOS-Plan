@@ -2,6 +2,7 @@
 using Bunit;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Simulation;
+using EPOS.UI.Dialoge.Strom;
 using EPOS.UI.Dienste;
 using EPOS.UI.Standards;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,8 +40,9 @@ public class QuellprofilDialogTests : EposBunitContext
         internal Dictionary<int, QuellprofilInhalt> Profile { get; } = new();
         internal int SpeicherErgebnis { get; set; } = 99;
         internal QuellprofilInhalt? Gespeichert;
-        internal double[]? CsvErgebnis;
-        internal int CsvSoll;
+        /// <summary>Der Pfad, den die Dateiwahl liefert ("" = abgebrochen).</summary>
+        internal string CsvPfad = "";
+        internal int CsvWahlen;
     }
 
     private static int Anzahl(string ba) => ba switch
@@ -87,11 +89,14 @@ public class QuellprofilDialogTests : EposBunitContext
             p.Add(x => x.ProfilLesen, id => stand.Profile.TryGetValue(id, out var k) ? k : null);
             p.Add(x => x.Speichern, k => { stand.Gespeichert = k; return stand.SpeicherErgebnis; });
             if (mitCsv)
-                p.Add(x => x.CsvLesen, soll =>
+            {
+                p.Add(x => x.CsvWaehlen, () =>
                 {
-                    stand.CsvSoll = soll;
-                    return Task.FromResult(stand.CsvErgebnis);
+                    stand.CsvWahlen++;
+                    return Task.FromResult(stand.CsvPfad);
                 });
+                p.Add(x => x.CsvWege, GanglinienFormatwege.Kern());
+            }
             if (!titelAnzeigen) p.Add(x => x.TitelAnzeigen, false);
             if (geschlossen is not null) p.Add(x => x.Geschlossen, geschlossen);
         });
@@ -171,6 +176,37 @@ public class QuellprofilDialogTests : EposBunitContext
         Assert.Single(cut.FindComponents<DiagrammSvg>());
         Assert.Equal("quellprofil", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
         Assert.Equal("°C", cut.FindComponent<DiagrammSvg>().Instance.Einheit);
+    }
+
+    /// <summary>
+    /// CSV am Bild (CSV-2): Mit der Naht der Hülle trägt der Jahresverlauf „CSV…“; der Export
+    /// bekommt das gezeigte Modell, den Bildtitel und das Raster aus der Länge. Der Einleseknopf
+    /// „CSV einlesen…“ bleibt. Ohne Naht kein Knopf.
+    /// </summary>
+    [Fact]
+    public void Der_Jahresverlauf_traegt_CSV_ueber_die_Naht()
+    {
+        var ohne = Zeige(Neu(), new Pruefstand(), mitBild: true);
+        ohne.FindAll("button[role=tab]").First(b => b.TextContent.Contains("Grafik")).Click();
+        Assert.Empty(ohne.FindAll("button.epos-diagramm-csv"));
+
+        var exporte = new List<(Zeichenmodell M, string T, Zeitraster R)>();
+        var cut = Render<QuellprofilDialog>(p =>
+        {
+            p.Add(x => x.Jahresbild, (_, _) => Task.FromResult<Zeichenmodell?>(MODELL));
+            p.Add(x => x.Daten, Neu());
+            p.Add(x => x.Profile, Array.Empty<QuellprofilZeile>());
+            p.Add(x => x.Betriebsarten, new[] { MONAT, TAG, STUNDE });
+            p.Add(x => x.Werteanzahl, Anzahl);
+            p.Add(x => x.CsvSpeichern, (m, t, r) => { exporte.Add((m, t, r)); return Task.CompletedTask; });
+        });
+        cut.FindAll("button[role=tab]").First(b => b.TextContent.Contains("Grafik")).Click();
+        cut.Find("div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
+
+        var (m, _, r) = Assert.Single(exporte);
+        Assert.Same(MODELL, m);
+        Assert.Equal(168, ZeitreihenCsv.AusModell(m)[0].Werte.Length);
+        Assert.Equal(Zeitraster.Wochenstunde, r);
     }
 
     /// <summary>Ohne Delegat kein Bild — der Platzhalter steht.</summary>
@@ -365,11 +401,39 @@ public class QuellprofilDialogTests : EposBunitContext
         Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Contains("CSV"));
     }
 
+    /// <summary>Eine Datei mit <paramref name="anzahl"/> Temperaturen (Kopfzeile, Semikolon, Komma).</summary>
+    private string CsvDatei(int anzahl)
+    {
+        string pfad = Path.Combine(Path.GetTempPath(), "epos-quellprofil-" + Guid.NewGuid().ToString("N") + ".csv");
+        var zeilen = new List<string> { "Tag;Temperatur" };
+        for (int i = 0; i < anzahl; i++) zeilen.Add((i + 1) + ";" + (8 + i % 5) + ",5");
+        File.WriteAllLines(pfad, zeilen);
+        _dateien.Add(pfad);
+        return pfad;
+    }
+
+    private readonly List<string> _dateien = new();
+
+    /// <summary>Raeumt die Probedateien weg.</summary>
+    protected override void Dispose(bool disposing)
+    {
+        foreach (string d in _dateien)
+            try { File.Delete(d); } catch { }
+        base.Dispose(disposing);
+    }
+
+    /// <summary>„CSV…“ bis zum Optionendialog: Knopf, Rueckfrage OK, Dateiwahl.</summary>
+    private static void CsvStarten(IRenderedComponent<QuellprofilDialog> cut)
+    {
+        cut.FindAll("button").First(b => b.TextContent.Contains("CSV")).Click();
+        cut.FindAll(".epos-rueckfrage button")[0].Click();     // OK
+    }
+
     /// <summary>Der CSV-Weg geht ueber eine RUECKFRAGE mit der Sollzahl — woertlich.</summary>
     [Fact]
     public void Der_CSV_Knopf_fragt_erst_zurueck()
     {
-        var stand = new Pruefstand { CsvErgebnis = new double[365] };
+        var stand = new Pruefstand { CsvPfad = "" };
         var cut = Zeige(Neu(), stand);
         cut.FindAll("select")[1].Change("1");
 
@@ -377,23 +441,85 @@ public class QuellprofilDialogTests : EposBunitContext
         Assert.True(cut.Instance.CsvFrageSteht);
         Assert.Contains("365", cut.Markup);
 
-        cut.FindAll(".epos-rueckfrage button")[0].Click();     // OK
-        Assert.Equal(365, stand.CsvSoll);
-        Assert.Equal(365, cut.Instance.Werte!.Length);
+        // Abgebrochene Dateiwahl: kein Optionendialog, keine Meldung.
+        cut.FindAll(".epos-rueckfrage button")[0].Click();
+        Assert.Equal(1, stand.CsvWahlen);
+        Assert.Empty(cut.FindComponents<GanglinieImportOptionenDialog>());
+        Assert.Equal("", cut.Instance.Meldung);
     }
 
-    /// <summary>Kommt nichts zurueck, meldet der Dialog woertlich.</summary>
+    /// <summary>
+    /// IM-4: Die gewaehlte Datei laeuft ueber den Optionendialog „Format und Vorschau“ mit der
+    /// Formatbeschreibung des Quellprofils — Temperaturachse in °C, ohne Einheit/Raster, ohne
+    /// Summe und Nennleistung; OK uebernimmt die 365 Werte.
+    /// </summary>
+    [Fact]
+    public void Die_CSV_laeuft_ueber_den_Optionendialog_mit_dem_Quellprofilformat()
+    {
+        var stand = new Pruefstand { CsvPfad = CsvDatei(365) };
+        var cut = Zeige(Neu(), stand);
+        cut.FindAll("select")[1].Change("1");
+        CsvStarten(cut);
+
+        cut.WaitForState(() => cut.FindComponents<GanglinieImportOptionenDialog>().Count == 1);
+        var optionen = cut.FindComponent<GanglinieImportOptionenDialog>();
+        Assert.Equal(GanglinienImportFormat.KENNUNG_QUELLPROFIL, optionen.Instance.Format!.Kennung);
+        Assert.Equal(365, optionen.Instance.Format!.Werteanzahl);
+        Assert.True(optionen.Instance.Probe!.Erfolgreich);
+        Assert.Equal("", optionen.Instance.Probe.Kennzahlen);
+        Assert.Empty(optionen.FindAll(".epos-importoptionen-kennzahlen"));
+        Assert.Contains("°C", optionen.Instance.Probe.Zeile);
+        Assert.Contains("Quellprofil", optionen.Find(".epos-dialog-titel").TextContent);
+
+        optionen.FindAll("button").First(b => b.TextContent.Trim() == "OK").Click();
+
+        cut.WaitForAssertion(() => Assert.Equal(365, cut.Instance.Werte!.Length));
+        Assert.Equal(8.5, cut.Instance.Werte![0], 9);
+        Assert.Equal(12.5, cut.Instance.Werte![4], 9);
+        Assert.Empty(cut.FindComponents<GanglinieImportOptionenDialog>());
+        Assert.Equal("", cut.Instance.Meldung);
+    }
+
+    /// <summary>
+    /// IM-4: Eine Datei mit falscher Werteanzahl lehnt schon das OK des Optionendialogs BENANNT ab
+    /// — Banner mit beiden Zahlen, der Dialog bleibt offen, die Werte bleiben, wie sie waren.
+    /// </summary>
+    [Fact]
+    public void Eine_falsche_Werteanzahl_lehnt_der_Optionendialog_benannt_ab()
+    {
+        var stand = new Pruefstand { CsvPfad = CsvDatei(100) };
+        var cut = Zeige(Neu(), stand);
+        cut.FindAll("select")[1].Change("1");
+        CsvStarten(cut);
+
+        cut.WaitForState(() => cut.FindComponents<GanglinieImportOptionenDialog>().Count == 1);
+        var optionen = cut.FindComponent<GanglinieImportOptionenDialog>();
+        Assert.False(optionen.Instance.Probe!.Erfolgreich);
+        Assert.Contains("365", optionen.Instance.Probe.Zeile);
+
+        optionen.FindAll("button").First(b => b.TextContent.Trim() == "OK").Click();
+        Assert.Contains("nicht übernommen", optionen.Instance.Meldung);
+        Assert.Contains("100", optionen.Instance.Meldung);
+        Assert.Contains("365", optionen.Instance.Meldung);
+        Assert.Single(cut.FindComponents<GanglinieImportOptionenDialog>());
+
+        // Abbrechen: zurueck ohne Meldung, nichts gelesen.
+        optionen.FindAll("button").First(b => b.TextContent.Trim() == "Abbrechen").Click();
+        cut.WaitForAssertion(() => Assert.Empty(cut.FindComponents<GanglinieImportOptionenDialog>()));
+        Assert.Equal("", cut.Instance.Meldung);
+    }
+
+    /// <summary>Eine unlesbare Datei meldet woertlich, mit dem Grund — ohne Optionendialog.</summary>
     [Fact]
     public void Eine_unlesbare_CSV_meldet()
     {
-        var stand = new Pruefstand { CsvErgebnis = null };
+        var stand = new Pruefstand { CsvPfad = Path.Combine(Path.GetTempPath(), "epos-fehlt-" + Guid.NewGuid().ToString("N") + ".csv") };
         var cut = Zeige(Neu(), stand);
         cut.FindAll("select")[1].Change("1");
+        CsvStarten(cut);
 
-        cut.FindAll("button").First(b => b.TextContent.Contains("CSV")).Click();
-        cut.FindAll(".epos-rueckfrage button")[0].Click();
-
-        Assert.Contains("keine 365 Werte", cut.Instance.Meldung);
+        cut.WaitForAssertion(() => Assert.Contains("keine 365 Werte", cut.Instance.Meldung));
+        Assert.Empty(cut.FindComponents<GanglinieImportOptionenDialog>());
     }
 
     // ================================================================== Info-Zeile
@@ -732,4 +858,58 @@ public class QuellprofilDialogTests : EposBunitContext
         Assert.Equal(Hilfe.KiReihenhilfe.Folge(12, 1.5), stand.Gespeichert!.Werte);
         Assert.Null(KiMaskenbruecke.Haken(KiMaskennamen.QUELLPROFIL).Speichern);
     }
+
+    // ================================================================== Welle RZ (Teil b)
+
+    /// <summary>Ohne Reihendelegat kein Schalter „Außentemperatur" im Grafikblatt.</summary>
+    [Fact]
+    public void Ohne_Reihendelegat_kein_Schalter_Aussentemperatur()
+    {
+        var cut = Zeige(Neu(), new Pruefstand(), mitBild: true);
+        cut.FindAll("button[role=tab]").First(b => b.TextContent.Contains("Grafik")).Click();
+
+        Assert.DoesNotContain(cut.FindAll("label.epos-schalter"), l => l.TextContent.Contains("Außentemperatur"));
+        Assert.Same(MODELL, cut.Instance.Modell);
+    }
+
+    /// <summary>
+    /// Die Außentemperatur ist ab Werk AUS — das Bild kommt über den Bestandsdelegaten; an ruft
+    /// den Reihendelegaten mit dem Schlüssel der Außentemperatur, aus führt zurück.
+    /// </summary>
+    [Fact]
+    public void Aussentemperatur_ab_Werk_aus_und_zuschaltbar()
+    {
+        var mit = ChartRenderer.TemperaturverlaufModell("Quellprofil",
+            new[] { new ChartRenderer.Reihe("Außentemperatur", new double[] { 1, 2, 3 }, Farbrolle.AUSSENTEMPERATUR) }, true);
+        var auftraege = new List<string[]>();
+        var cut = Render<QuellprofilDialog>(p =>
+        {
+            p.Add(x => x.Jahresbild, (_, _) => Task.FromResult<Zeichenmodell?>(MODELL));
+            p.Add(x => x.JahresbildReihen, (_, _, r) => { auftraege.Add(r.ToArray()); return Task.FromResult<Zeichenmodell?>(mit); });
+            p.Add(x => x.LabelAussentemperatur, "Außentemperatur");
+            p.Add(x => x.Daten, Neu());
+            p.Add(x => x.Profile, Array.Empty<QuellprofilZeile>());
+            p.Add(x => x.Betriebsarten, new[] { MONAT, TAG, STUNDE });
+            p.Add(x => x.Werteanzahl, Anzahl);
+        });
+        cut.FindAll("button[role=tab]").First(b => b.TextContent.Contains("Grafik")).Click();
+
+        Assert.False(cut.Instance.MitAussentemperatur);
+        Assert.Same(MODELL, cut.Instance.Modell);
+        Assert.Empty(auftraege);
+
+        Kasten(cut).Change(true);
+        Assert.True(cut.Instance.MitAussentemperatur);
+        Assert.Equal(new[] { "AUSSENTEMPERATUR" }, Assert.Single(auftraege));
+        Assert.Same(mit, cut.Instance.Modell);
+
+        Kasten(cut).Change(false);
+        Assert.Same(MODELL, cut.Instance.Modell);
+        Assert.Single(auftraege);
+    }
+
+    private static AngleSharp.Dom.IElement Kasten(IRenderedComponent<QuellprofilDialog> cut)
+        => cut.FindAll("label.epos-schalter")
+              .First(l => l.TextContent.Contains("Außentemperatur"))
+              .QuerySelector("input[type=checkbox]")!;
 }

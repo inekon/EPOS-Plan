@@ -440,6 +440,12 @@ namespace WindowsFormsApplication1
             return wert;
         }
 
+        /// <summary>
+        /// Der Zeitanker, nur gelesen — fuer Fragen ohne Nebenwirkung
+        /// (<see cref="LizenzCtrl.FernwartungErlaubt()"/>); <see cref="Pruefe"/> schreibt ihn fort.
+        /// </summary>
+        internal static DateTime AnkerOhneSchreiben() => AnkerLesen();
+
         private static void AnkerSchreiben(DateTime heuteUtc)
         {
             if (heuteUtc <= AnkerLesen()) return; // monoton: nie zurückschreiben

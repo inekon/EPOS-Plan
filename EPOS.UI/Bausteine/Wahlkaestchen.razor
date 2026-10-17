@@ -1,0 +1,75 @@
+﻿@* DAS WAHLKAESTCHEN DER KATALOGAUSWAHL (Konzept Projektdialoge mit Katalogauswahl,
+   4.5). In einer Liste innerhalb der Zweispaltenauswahl: mit Schluessel das Kaestchen
+   einer Zeile (Klick schaltet, Umschalt+Klick waehlt den Bereich vom Anker), ohne
+   Schluessel das KOPFHAEKCHEN der Spalte - es waehlt alle Zeilen der GEFILTERTEN Liste
+   oder hebt deren Wahl auf; verborgene Zeilen behalten ihre Wahl. Die Regel steht in
+   Bereichswahl, den Stand haelt der Wirt; das Kaestchen fragt beides ueber den
+   Baustein ab. Leertaste schaltet (Knopf), aria-checked sagt den Stand, beim
+   Kopfhaekchen auch „mixed". *@
+
+@namespace EPOS.UI.Bausteine
+@implements IDisposable
+
+@if (Baustein?.WahlVon(Bereich) is Bereichswahl wahl)
+{
+    var stand = Schluessel is null
+        ? wahl.Kopfstand(Baustein.SichtbarVon(Bereich))
+        : (wahl.IstGewaehlt(Schluessel) ? Kopfwahl.Alle : Kopfwahl.Keine);
+    <button type="button" role="checkbox"
+            class="epos-wahlkaestchen @(Schluessel is null ? "epos-wahlkaestchen--kopf" : "")"
+            aria-checked="@(stand switch { Kopfwahl.Alle => "true", Kopfwahl.Teil => "mixed", _ => "false" })"
+            aria-label="@Kurztext" title="@Kurztext"
+            @onclick="BeiKlick" @onclick:stopPropagation="true">
+        <span aria-hidden="true">@(stand switch { Kopfwahl.Alle => "☑", Kopfwahl.Teil => "▣", _ => "☐" })</span>
+    </button>
+}
+
+@code {
+    /// <summary>Der Baustein, in dem das Kästchen steht.</summary>
+    [CascadingParameter] public Zweispaltenauswahl? Baustein { get; set; }
+
+    /// <summary>Der Bereich, dessen Wahl das Kästchen schaltet.</summary>
+    [Parameter] public Auswahlbereich Bereich { get; set; }
+
+    /// <summary>Schlüssel der Zeile; <c>null</c> = Kopfhäkchen über der gefilterten Liste.</summary>
+    [Parameter] public string? Schluessel { get; set; }
+
+    /// <summary>Kurztext und Name für die Sprachausgabe.</summary>
+    [Parameter] public string Kurztext { get; set; } = "";
+
+    /// <inheritdoc/>
+    protected override void OnInitialized()
+    {
+        if (Baustein is not null) Baustein.Wahlgewechselt += Neuzeichnen;
+    }
+
+    private void Neuzeichnen() => _ = InvokeAsync(StateHasChanged);
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        if (Baustein is not null) Baustein.Wahlgewechselt -= Neuzeichnen;
+    }
+
+    /// <inheritdoc/>
+    protected override void OnParametersSet()
+    {
+        if (string.IsNullOrEmpty(Kurztext))
+            Kurztext = Schluessel is null ? Resource.AUSWAHL_WAHL_ALLE : Resource.AUSWAHL_WAHL_ZEILE;
+    }
+
+    private async Task BeiKlick(MouseEventArgs e)
+    {
+        if (Baustein is null) return;
+        if (Schluessel is null)
+        {
+            var wahl = Baustein.WahlVon(Bereich);
+            bool alle = wahl is not null && wahl.Kopfstand(Baustein.SichtbarVon(Bereich)) == Kopfwahl.Alle;
+            await Baustein.AlleWaehlenAsync(Bereich, !alle);
+        }
+        else
+        {
+            await Baustein.KaestchenAsync(Bereich, Schluessel, e.ShiftKey);
+        }
+    }
+}

@@ -426,6 +426,17 @@ public sealed class IosProjektQuelle : IProjektQuelle
     // Ladeweg antwortet die Quelle null, und die Wurzel nennt den Grund im
     // Banner, statt vor einer leeren Flaeche zu stehen.
 
+    /// <summary>
+    /// Die Pufferspeicher-Auslegung (Stufe P2) - dieselbe plattformfreie Huelle wie unter Windows;
+    /// sie holt den Arbeitsgang ab, den Konfiguration oder Pufferverwaltung angemeldet haben. Ein
+    /// eigenes Fenster gibt es hier nicht: Die Uebergabe aus dem Zapfprofil lehnt benannt ab.
+    /// </summary>
+    public IReadOnlyDictionary<string, object>? PufferAuslegungGaben(int idProjekt)
+    {
+        try { return PufferAuslegungHuelle.AnsichtGaben(idProjekt); }
+        catch (Exception) { return null; }
+    }
+
     /// <inheritdoc />
     public IReadOnlyDictionary<string, object>? KlimadatenGaben()
     {
@@ -551,6 +562,20 @@ public sealed class IosProjektQuelle : IProjektQuelle
     }
 
     /// <inheritdoc />
+    public IReadOnlyDictionary<string, object>? KaeltemittelGaben()
+    {
+        try { return new KaeltemittelHuelle().Gaben(); }
+        catch (Exception ex) { Console.WriteLine("Kältemittel: " + ex.Message); return null; }
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyDictionary<string, object>? RueckkuehlwerkGaben()
+    {
+        try { return new RueckkuehlwerkHuelle().Gaben(); }
+        catch (Exception ex) { Console.WriteLine("Rückkühlwerke: " + ex.Message); return null; }
+    }
+
+    /// <inheritdoc />
     public IReadOnlyDictionary<string, object>? GesetzeskatalogGaben()
     {
         try { return GesetzeskatalogHuelle.Gaben(""); }
@@ -566,11 +591,46 @@ public sealed class IosProjektQuelle : IProjektQuelle
     }
 
     /// <inheritdoc />
+    /// <remarks>Dieselbe plattformfreie Hülle wie unter Windows (KU3-1).</remarks>
+    public IReadOnlyDictionary<string, object>? KaeltemaschineKatalogGaben()
+    {
+        try { return KaeltemaschineKatalogHuelle.Gaben(); }
+        catch (Exception ex) { Console.WriteLine("Kältemaschinen: " + ex.Message); return null; }
+    }
+
+    /// <inheritdoc />
+    /// <remarks>Dieselbe plattformfreie Hülle wie unter Windows (KU3-4c).</remarks>
+    public IReadOnlyDictionary<string, object>? KaeltemaschineAnlageGaben(int idProjekt)
+    {
+        try { return KaeltemaschineAnlageHuelle.Gaben(idProjekt); }
+        catch (Exception ex) { Console.WriteLine("Kältemaschinen im Projekt: " + ex.Message); return null; }
+    }
+
+    /// <inheritdoc />
     /// <remarks>Dieselbe plattformfreie Hülle wie unter Windows (Gebäudesimulation G3).</remarks>
     public IReadOnlyDictionary<string, object>? BauteilaufbauKatalogGaben()
     {
         try { return BauteilaufbauHuelle.Gaben(); }
         catch (Exception ex) { Console.WriteLine("Bauteilaufbauten: " + ex.Message); return null; }
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Die Betriebskalender der Bedarfsprofile (Feiertage, Betriebsferien) als freie Ansicht
+    /// der Wurzel - dieselbe plattformfreie Hülle wie unter Windows.
+    /// </remarks>
+    public IReadOnlyDictionary<string, object>? BetriebskalenderGaben()
+    {
+        try { return BetriebskalenderHuelle.Gaben(); }
+        catch (Exception ex) { Console.WriteLine("Betriebskalender: " + ex.Message); return null; }
+    }
+
+    /// <inheritdoc />
+    /// <remarks>Bauteilkatalog einlesen (BK-3) - dieselbe plattformfreie Hülle wie unter Windows.</remarks>
+    public IReadOnlyDictionary<string, object>? BauteilkatalogImportGaben()
+    {
+        try { return BauteilkatalogImportHuelle.Gaben(); }
+        catch (Exception ex) { Console.WriteLine("Bauteilkatalog einlesen: " + ex.Message); return null; }
     }
 
     /// <inheritdoc />

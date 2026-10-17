@@ -56,6 +56,13 @@ public sealed class KostenZeile
     /// in der Zeile (Abweichung A-3 der Welle 5).
     /// </summary>
     public bool Loeschbar { get; set; }
+
+    /// <summary>
+    /// KB-3: Lässt sich diese Anlagenzeile mit dem zentralen Kostenkatalog abgleichen? Wahr, wo
+    /// der Katalogsatz des Geräts eine Satzvorlage führt — dann steht in der Wertzelle statt „—"
+    /// der Hinweis, dass Katalogkosten vorliegen, und die Aktionenspalte trägt den Abgleich.
+    /// </summary>
+    public bool Abgleichbar { get; set; }
 }
 
 /// <summary>Eine Zeile der Energieträgertabelle (zehn Spalten).</summary>
@@ -125,4 +132,21 @@ public sealed class KostenStand
 
     /// <summary>Die Fußzeile mit allen Befunden (Vorbild <c>BK_KOSTEN_STATUS</c> &amp;c.).</summary>
     public string Statuszeile { get; set; } = "";
+
+    /// <summary>
+    /// Stammen angezeigte Energiekosten aus einem gespeicherten Ergebnis, das nicht mehr gilt —
+    /// ein jüngerer Simulationslauf seines Projekts, geänderte Kosten oder Preise der Gruppe oder
+    /// ein geänderter Kostenkatalog? Dann steht über den Kacheln das Band „… bitte neu berechnen"
+    /// der Wirtschaftlichkeitsseite. Die Frage beantwortet die Hülle mit derselben Kernmethode
+    /// wie die Wirtschaftlichkeit (<c>ErgebnisAktuell</c> bzw. <c>Veraltung</c>) — für das
+    /// Projekt der Kacheln und jede Version im Vergleich.
+    /// </summary>
+    public bool Nachrechnen { get; set; }
+
+    /// <summary>
+    /// Der Grund des Bandes — der gewichtigste über die angezeigten Stände
+    /// (<c>KostenAenderungsstempel.Vorrang</c>); <see cref="WindowsFormsApplication1.Ergebnisveraltung.Keine"/>
+    /// ohne Band. Die Seite nennt ihn im Satz des Bandes.
+    /// </summary>
+    public WindowsFormsApplication1.Ergebnisveraltung NachrechnenGrund { get; set; }
 }

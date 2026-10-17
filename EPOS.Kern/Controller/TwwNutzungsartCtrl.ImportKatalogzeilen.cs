@@ -14,8 +14,9 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Die Regel ist ERSETZEN, nicht Versionsbildung</b> (Anwenderentscheide 25.09.2026,
     /// ZU30 und ZU31). Ein Bedarfstag ist über <c>Bezeichner</c> und <c>Katalogversion</c>
-    /// bestimmt, ein Parameter über <c>Schluessel</c> und <c>Katalogversion</c>. Führt der Katalog
-    /// die Zeile schon:
+    /// bestimmt, ein Parameter über <c>Schluessel</c> und <c>Katalogversion</c> — führt das Paket
+    /// keine Katalogversion, ist es die des Zielkatalogs (<c>Paket.Zielversion</c>). Führt der
+    /// Katalog die Zeile schon:
     /// <list type="bullet">
     /// <item>gleicher Inhalt — übersprungen (<c>KATALOGIMPORT_GLEICH_VORHANDEN</c>);</item>
     /// <item>abweichender Inhalt — die vorhandene Zeile trägt danach die Werte des Pakets, <b>am
@@ -112,7 +113,8 @@ namespace WindowsFormsApplication1
                 return liste;
             }
 
-            Pflicht(tb, "ID", "Bezeichner", "Katalogversion", "Quelle_Art", "Quelle", "Version", "Herkunftsart");
+            Pflicht(tb, "ID", "Bezeichner", "Quelle_Art", "Quelle", "Version", "Herkunftsart");
+            if (paket.Zielversion == null) Pflicht(tb, SPALTE_KATALOGVERSION);
             bool bezugsartImPaket = tb.Hat(TwwSchema.SPALTE_BEZUGSART);
             if (bezugsartImPaket && !paket.MitBezugsart)
                 bericht.Hinweise.Add(ZapfSatz.Neu("KATALOGIMPORT_BEZUGSART_OHNE_SPALTE"));
@@ -131,7 +133,7 @@ namespace WindowsFormsApplication1
                     Id = id,
                     Zeile = z.Zeile,
                     Bezeichner = tb.Text(z, "Bezeichner"),
-                    Katalogversion = tb.Text(z, "Katalogversion")
+                    Katalogversion = paket.Version(tb, z)
                 };
                 if (p.Bezeichner.Length == 0) p.Fehler = ZapfSatz.Neu("KATALOGIMPORT_PFLICHT_FEHLT", "Bezeichner");
                 else if (p.Katalogversion.Length == 0) p.Fehler = ZapfSatz.Neu("KATALOGIMPORT_PFLICHT_FEHLT", "Katalogversion");
@@ -260,13 +262,14 @@ namespace WindowsFormsApplication1
         // =================================================================================
 
         /// <summary>Die Parameterzeilen des Pakets; je Zeile die Prüfung nach ZU31.</summary>
-        private static List<PaketParameterzeile> Parameterzeilen(Dictionary<string, PaketTabelle> tabellen,
+        private static List<PaketParameterzeile> Parameterzeilen(Dictionary<string, PaketTabelle> tabellen, Paket paket,
                                                                  TwwKatalogimportBericht bericht)
         {
             var liste = new List<PaketParameterzeile>();
             if (!tabellen.TryGetValue(TwwSchema.TAB_TWW_PARAMETER_STAMM, out PaketTabelle tp)) return liste;
 
-            Pflicht(tp, "Schluessel", "Wert", "Katalogversion", "Quelle", "Version", "Herkunftsart");
+            Pflicht(tp, "Schluessel", "Wert", "Quelle", "Version", "Herkunftsart");
+            if (paket.Zielversion == null) Pflicht(tp, SPALTE_KATALOGVERSION);
             var schluessel = new HashSet<string>(StringComparer.Ordinal);
             foreach (var z in tp.Zeilen)
             {
@@ -274,7 +277,7 @@ namespace WindowsFormsApplication1
                 {
                     Zeile = z.Zeile,
                     Schluessel = tp.Text(z, "Schluessel"),
-                    Katalogversion = tp.Text(z, "Katalogversion"),
+                    Katalogversion = paket.Version(tp, z),
                     Einheit = tp.Hat("Einheit") ? tp.Text(z, "Einheit") : ""
                 };
                 if (p.Schluessel.Length == 0) p.Fehler = ZapfSatz.Neu("KATALOGIMPORT_PFLICHT_FEHLT", "Schluessel");

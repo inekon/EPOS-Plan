@@ -80,9 +80,26 @@
             <section class="epos-simerg-block">
                 <Gruppenkopf Titel="@Resource.SIMERG_GRP_ERZEUGUNG" />
                 <dl class="epos-simerg-werte">
+                    @* PVG: rechnet die Photovoltaik ueber eine PV-Ganglinie, steht ihre Quelle vorn - Name,
+                       Raster und Nennleistung statt der Modul- und Wechselrichterangaben. *@
+                    @if (Daten.Ganglinie is not null)
+                    {
+                        @Wertzeile(Resource.PVG_AUSWEIS_MERKMAL_QUELLE, Daten.Ganglinie.Text(UiKultur), "")
+                    }
                     @Wertzeile(Resource.SIMERG_LBL_PV_GESAMT, Zahl(Daten.StromproduktionMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_PV_GENUTZT, Zahl(Daten.GenutztMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_PV_UEBERSCHUSS, Zahl(Daten.UeberschussMwh), MWH)
+                    @* PV3 (Welle M5): die Abregelung an der Einspeisegrenze - nur mit Grenze und nur,
+                       wenn abgeregelt wurde; die Zeile darunter nennt die Grenze. *@
+                    @if (Daten.AbregelungMwh > 0)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_PV_ABREGELUNG, Zahl(Daten.AbregelungMwh), MWH)
+                        @Wertzeile(Resource.SIMERG_LBL_PV_ABREGELUNG_ANTEIL, Zahl(Daten.AbregelungProzent), "%")
+                    }
+                    @if (Daten.EinspeisegrenzeKw is double grenzeKw)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_PV_EINSPEISEGRENZE, Zahl(grenzeKw), "kW")
+                    }
                 </dl>
             </section>
 
@@ -106,7 +123,14 @@
             <section class="epos-simerg-block epos-simerg-kennzahlenzeile">
                 <Gruppenkopf Titel="@Resource.SIMERG_GRP_EINSTRAHLUNG" />
                 <dl class="epos-simerg-werte">
-                    @Wertzeile(Resource.SIMERG_LBL_MAX_SOLARE_LEISTUNG, Zahl(Daten.MaxEinstrahlungWm2), "W/m²")
+                    @if (Daten.Ganglinie is not null)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_MAX_SOLARE_LEISTUNG, Entfaellt, "")
+                    }
+                    else
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_MAX_SOLARE_LEISTUNG, Zahl(Daten.MaxEinstrahlungWm2), "W/m²")
+                    }
                 </dl>
             </section>
 
@@ -117,6 +141,11 @@
                 <div class="epos-simerg-schalter">
                     <Schalter Bezeichnung="@Resource.SIM_CHK_SORTIERT" Wert="@_sortiert"
                               WertChanged="@(w => _sortiert = w)" />
+                    @* PV AUFTEILEN (Anwenderentscheid 13.10.2026): die Erzeugung als Stapel
+                       aus Eigenverbrauch und Einspeisung (und Abregelung); die Schichten
+                       rechnet der Kern, die Hülle baut das Bild. *@
+                    <Schalter Bezeichnung="@Resource.SIM_CHK_PV_AUFTEILEN" Wert="@_aufgeteilt"
+                              WertChanged="@(w => _aufgeteilt = w)" />
                 </div>
 
                 @* W11b‑B‑19: EINE Zeile mit ALLEN vier Reihen, jede in der
@@ -155,18 +184,18 @@
            und der Reiter sieht aus wie bisher. *@
         @if (Daten.Wechselrichter.Count > 0)
         {
-            <table class="epos-raster">
+            <table class="epos-raster epos-simerg-tabelle">
                 <thead>
                     <tr>
                         <th scope="col">@Resource.SIMERG_TITEL_PV_WR</th>
                         <th scope="col">@Resource.SIMERG_SPALTE_WR_GERAET</th>
-                        <th scope="col">@Resource.SIMERG_SPALTE_WR_DCAC</th>
-                        <th scope="col">@Resource.SIMERG_SPALTE_WR_ERTRAG</th>
-                        <th scope="col">@Resource.SIMERG_SPALTE_WR_CLIPPING</th>
-                        <th scope="col">@Resource.SIMERG_SPALTE_WR_CLIPPING_PROZENT</th>
-                        <th scope="col">@Resource.SIMERG_SPALTE_WR_VOLLLAST</th>
-                        <th scope="col">@Resource.SIMERG_SPALTE_WR_NUTZUNGSGRAD</th>
-                        <th scope="col">@Resource.SIMERG_SPALTE_WR_NACHT</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIMERG_SPALTE_WR_DCAC</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIMERG_SPALTE_WR_ERTRAG</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIMERG_SPALTE_WR_CLIPPING</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIMERG_SPALTE_WR_CLIPPING_PROZENT</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIMERG_SPALTE_WR_VOLLLAST</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIMERG_SPALTE_WR_NUTZUNGSGRAD</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIMERG_SPALTE_WR_NACHT</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -190,14 +219,14 @@
 
         @if (Daten.Module.Count > 0)
         {
-            <table class="epos-raster">
+            <table class="epos-raster epos-simerg-tabelle">
                 <thead>
                     <tr>
-                        <th scope="col">@Resource.SIM_PHOTOVOLTAIK</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_PHOTOVOLTAIK</th>
                         <th scope="col">@Resource.SIM_SPALTE_NAME</th>
-                        <th scope="col">@Resource.SIM_SPALTE_FLAECHE</th>
-                        <th scope="col">@Resource.SIM_SPALTE_ANZAHL</th>
-                        <th scope="col">@Resource.SIM_SPALTE_STROMPRODUKTION</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_FLAECHE</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_ANZAHL</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_STROMPRODUKTION</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -207,7 +236,13 @@
                         <tr>
                             <td class="epos-simerg-zahl">@(i + 1)</td>
                             <td>@m.Name</td>
-                            @if (m.FlaecheGeschaetzt)
+                            @if (Daten.Ganglinie is not null)
+                            {
+                                @* Flaeche und Modulanzahl gelten bei einer Ganglinie nicht. *@
+                                <td class="epos-simerg-zahl">@Entfaellt</td>
+                                <td class="epos-simerg-zahl">@Entfaellt</td>
+                            }
+                            else if (m.FlaecheGeschaetzt)
                             {
                                 <td class="epos-simerg-zahl" title="@Resource.SIMERG_TIP_FLAECHE_GESCHAETZT">≈ @Zahl(m.FlaecheM2)</td>
                             }
@@ -215,7 +250,10 @@
                             {
                                 <td class="epos-simerg-zahl">@Zahl(m.FlaecheM2)</td>
                             }
-                            <td class="epos-simerg-zahl">@m.Anzahl</td>
+                            @if (Daten.Ganglinie is null)
+                            {
+                                <td class="epos-simerg-zahl">@m.Anzahl</td>
+                            }
                             <td class="epos-simerg-zahl">@Zahl(m.StromproduktionMwh)</td>
                         </tr>
                     }
@@ -232,6 +270,13 @@
     private static System.Globalization.CultureInfo Kultur
         => System.Globalization.CultureInfo.CurrentCulture;
 
+    /// <summary>Die Sprache der Texte (der Ausweis der PV-Ganglinie liest seine Ressourcen darüber).</summary>
+    private static System.Globalization.CultureInfo UiKultur
+        => System.Globalization.CultureInfo.CurrentUICulture;
+
+    /// <summary>„entfällt (Ganglinie)" — ein Feld des Modulmodells, das bei einer PV-Ganglinie nicht gilt.</summary>
+    private static string Entfaellt => WindowsFormsApplication1.PvGanglinieAusweis.Entfaellt(UiKultur);
+
     /// <summary>Die Zahlen aus dem Kern.</summary>
     [Parameter]
     public WindowsFormsApplication1.SimulationErgebnisCtrl.PhotovoltaikErgebnis? Daten { get; set; }
@@ -243,11 +288,17 @@
     /// <summary>Steht die Dauerlinie vorn? (Pruefhilfe)</summary>
     public bool Sortiert => _sortiert;
 
+    /// <summary>Steht die PV-Erzeugung als Stapel aus Eigenverbrauch und Einspeisung? (Pruefhilfe)</summary>
+    public bool Aufgeteilt => _aufgeteilt;
+
     /// <summary>Die eingeschalteten Reihen (Pruefhilfe).</summary>
     public IReadOnlyList<string> GewaehlteReihen => Reihen();
 
     /// <summary>Die Darstellungsart: aus = Ganglinie ueber das Jahr, an = Dauerlinie.</summary>
     private bool _sortiert;
+
+    /// <summary>Schalter „PV aufteilen“: aus = die Erzeugung als eine Linie (Vorgabe).</summary>
+    private bool _aufgeteilt;
 
     // W11b‑B‑19: je Reihe ein Zustand. Die Vorbelegung ist die des Vorbilds: die
     // zwei GRUNDREIHEN an, die zwei ZUSATZREIHEN aus (woertlich :4676-4679).
@@ -274,7 +325,8 @@
     }
 
     private Zeichenmodell? ModellPv =>
-        Modell?.Invoke(new Bildauftrag(Bilder.Photovoltaik, _sortiert, -1, Reihen()));
+        Modell?.Invoke(new Bildauftrag(Bilder.Photovoltaik, _sortiert, -1, Reihen(),
+                                      PvAufgeteilt: _aufgeteilt));
 
     /// <summary>
     /// Eine Zahl der Kennzahlenliste. „N2" statt „F2" seit dem Anwenderwunsch
@@ -306,13 +358,14 @@
     //  Der Hilfe-Assistent (Welle #458, Stufe 2): die Schalter der Anzeige
     // =====================================================================
 
-    /// <summary>Die fünf Schalter über dem Bild — nur, solange das Blatt ein Ergebnis zeigt.</summary>
+    /// <summary>Die sechs Schalter über dem Bild — nur, solange das Blatt ein Ergebnis zeigt.</summary>
     protected override IReadOnlyList<Anzeigeschalter> Blattschalter()
         => Daten is null
             ? Array.Empty<Anzeigeschalter>()
             : new[]
             {
                 Umschalter(Resource.SIM_CHK_SORTIERT, () => _sortiert, w => _sortiert = w),
+                Umschalter(Resource.SIM_CHK_PV_AUFTEILEN, () => _aufgeteilt, w => _aufgeteilt = w),
                 Umschalter(Resource.CHART_ACHSE_STROMBEDARF, () => _strombedarf, w => _strombedarf = w),
                 Umschalter(Resource.SIM_PHOTOVOLTAIK, () => _photovoltaik, w => _photovoltaik = w),
                 Umschalter(Resource.CHART_LEGENDE_UEBERSCHUSS, () => _ueberschuss, w => _ueberschuss = w),

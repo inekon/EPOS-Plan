@@ -55,7 +55,8 @@ public class WaermepumpeReiterTests : EposBunitContext
             WaermeproduktionMwh = 300.0,
             Vollbenutzungsstunden = 1856.0,
             MinSpkLeistungKw = 20.22,
-            PufferVolumenKwh = 1160.0
+            PufferVolumenKwh = 1160.0,
+            MitKaskade = true
         };
         e.Module.Add(new SimulationErgebnisCtrl.WpModulZeile("WP 1", 30.0, 300.0, 75.0, 2.5, 1856.0));
         if (puffer)
@@ -73,12 +74,14 @@ public class WaermepumpeReiterTests : EposBunitContext
 
     private IRenderedComponent<WaermepumpeReiter> Zeichnen(
         SimulationErgebnisCtrl.WaermepumpeErgebnis? erg,
-        bool temperaturen = false, Action? modul = null, Action? csv = null)
+        bool temperaturen = false, Action? modul = null, Action? csv = null,
+        IReadOnlyList<(string Schluessel, string Name)>? speicherwahl = null)
         => Render<WaermepumpeReiter>(p =>
         {
             p.Add(x => x.Daten, erg);
             p.Add(x => x.Modell, Modell);
             p.Add(x => x.Speichertemperaturen, temperaturen);
+            if (speicherwahl is not null) p.Add(x => x.Speicherwahl, speicherwahl);
             if (modul is not null) p.Add(x => x.ModulOeffnen, EventCallback.Factory.Create(this, modul));
             if (csv is not null) p.Add(x => x.Csv, EventCallback.Factory.Create(this, csv));
         });
@@ -158,12 +161,15 @@ public class WaermepumpeReiterTests : EposBunitContext
             true);
     }
 
-    // Die DREI Schalterzeilen in der Reihenfolge des Markups: die Streuwolke
-    // steht ueber den Unterblaettern, im Blatt „Wärmeproduktion" folgen erst
-    // „sortiert" (die Darstellungsart) und dann die vier Reihen (W11b‑B‑17).
-    private const int STREUWOLKE = 0;
+    // Die VIER Schalterzeilen in der Reihenfolge des Markups: über der
+    // Modultabelle „Heizstab in die JAZ einrechnen", im Blatt „Wärmeproduktion"
+    // erst „sortiert" (die Darstellungsart) und dann die vier Reihen
+    // (W11b‑B‑17); die Streuwolke steht mit der Auslegung am Ende des Reiters,
+    // unter den Unterblaettern.
+    private const int JAZ = 0;
     private const int SORTIERT = 1;
     private const int GANGLINIE = 2;
+    private const int STREUWOLKE = 3;
 
     /// <summary>Die Beschriftungen einer Schalterzeile, in ihrer Reihenfolge.</summary>
     private static string[] Zeile(IRenderedComponent<WaermepumpeReiter> seite, int nr)
@@ -181,7 +187,7 @@ public class WaermepumpeReiterTests : EposBunitContext
         => seite.FindAll("div.epos-simerg-schalter")[nr]
                 .QuerySelectorAll("input[type=checkbox]")[k];
 
-    // =====================================================================
+    // ==============================================================
 
     [Fact]
     public void Die_Felder_kommen_aus_dem_DTO()
@@ -205,7 +211,7 @@ public class WaermepumpeReiterTests : EposBunitContext
     /// BHKW-Reiter). Die Zeilenfolge je Gruppe bleibt die von W11b‑B‑15.
     /// </summary>
     [Fact]
-    public void Die_zehn_Felder_stehen_in_drei_Gruppen_mit_Balken()
+    public void Die_zwoelf_Felder_stehen_in_drei_Gruppen_mit_Balken()
     {
         var seite = Zeichnen(Erg(puffer: false));
 
@@ -219,15 +225,111 @@ public class WaermepumpeReiterTests : EposBunitContext
         Assert.Equal(3, listen.Count);
 
         Assert.Equal(
-            new[] { "Wärmebedarfsdeckung:", "Wärmebedarf:", "Wärmeproduktion WP:", "Restwärmebedarf:" },
+            new[] { "Wärmebedarfsdeckung:", "Wärmebedarf:", "Erzeugte Nutzwärme Wärmepumpe:", "davon Heizung:",
+                    "davon Warmwasser:", "davon aus Puffer:", "Restwärmebedarf:", "Wärmeproduktion Wärmepumpe:",
+                    "abzüglich Quellwärme aus Kaskade:", "zuzüglich Wärmeproduktion Heizstab:",
+                    "abzüglich Speicherverluste:", "Erzeugte Nutzwärme Wärmepumpe:" },
             listen[0].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+
+        // Die Wärme des Heizstabs steht neben der der Wärmepumpe: so viel, wie er Strom aufnimmt.
+        Assert.Equal("2,50", listen[0].QuerySelectorAll("dd")
+                                      .Select(z => z.TextContent.Trim()).ToArray()[9 * 2 + 0]);
         Assert.Equal(
-            new[] { "Stromverbrauch WP:", "Stromverbrauch Heizstab:" },
+            new[] { "Stromverbrauch WP:", "Stromverbrauch Heizstab:",
+                    "Jahresarbeitszahl WP:", "Jahresarbeitszahl mit Heizstab:" },
             listen[1].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
         Assert.Equal(
             new[] { "Bivalenzpunkt:", "durchschnittliche Vollbenutzungsstunden:",
                     "Minimale Spitzenkesselleistung:", "Kapazität des Pufferspeichers:" },
             listen[2].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+    }
+
+    /// <summary>
+    /// Der gedeckte Wärmebedarf steht mit seiner Aufteilung nach Bedarfsart in der
+    /// Wärmegruppe; Prozesswärme erscheint nur, wenn die Wärmepumpe welche gedeckt hat.
+    /// </summary>
+    [Fact]
+    public void Gedeckter_Waermebedarf_teilt_sich_nach_Bedarfsart()
+    {
+        var erg = Erg();
+        erg.GedecktMwh = 17.0;
+        erg.GedecktKanalMwh = new[] { 10.0, 5.0, 2.0, 0.0 };
+
+        var dl = Zeichnen(erg).FindAll("dl.epos-simerg-werte")[0];
+        string[] zeilen = dl.QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray();
+        string[] werte = dl.QuerySelectorAll("dd").Select(z => z.TextContent.Trim()).ToArray();
+
+        int i = Array.IndexOf(zeilen, "Erzeugte Nutzwärme Wärmepumpe:");
+        Assert.Equal(new[] { "Erzeugte Nutzwärme Wärmepumpe:", "davon Heizung:", "davon Warmwasser:",
+                             "davon Prozesswärme:", "davon aus Puffer:" },
+                     zeilen.Skip(i).Take(5).ToArray());
+        Assert.Equal(new[] { "17,00", "10,00", "5,00", "2,00" },
+                     Enumerable.Range(i, 4).Select(z => werte[2 * z]).ToArray());
+    }
+
+    /// <summary>
+    /// Die Herleitung geht auf: Produktion − Quellwärme aus Kaskade + Heizstab
+    /// − Speicherverluste = Nutzwärme (Zahlen der Booster-Kette ohne Heizstab).
+    /// </summary>
+    [Fact]
+    public void Herleitung_der_Nutzwaerme_geht_auf()
+    {
+        var erg = Erg();
+        erg.WaermeproduktionMwh = 99.89;
+        erg.QuellwaermeKaskadeMwh = 20.48;
+        erg.HeizstabStromverbrauchMwh = 0.0;
+        erg.GedecktMwh = 77.51;
+
+        var dl = Zeichnen(erg).FindAll("dl.epos-simerg-werte")[0];
+        string[] zeilen = dl.QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray();
+        string[] werte = dl.QuerySelectorAll("dd").Select(z => z.TextContent.Trim()).ToArray();
+        string Wert(string zeile) => werte[2 * Array.IndexOf(zeilen, zeile)];
+
+        Assert.Equal("99,89", Wert("Wärmeproduktion Wärmepumpe:"));
+        Assert.Equal("20,48", Wert("abzüglich Quellwärme aus Kaskade:"));
+        Assert.Equal("0,00", Wert("zuzüglich Wärmeproduktion Heizstab:"));
+        Assert.Equal("1,90", Wert("abzüglich Speicherverluste:"));
+        Assert.Equal("77,51", Wert("Erzeugte Nutzwärme Wärmepumpe:"));
+
+        // Die Rechnung steht als eigener Block unter einem Zwischenkopf: die Zeilen
+        // eingerückt, die Nutzwärme als Ergebnis unter dem Summenstrich.
+        Assert.Equal("Herleitung der Nutzwärme",
+                     dl.QuerySelector("div.epos-simerg-zwischenkopf")!.TextContent.Trim());
+        Assert.Equal(4, dl.QuerySelectorAll("dt.epos-simerg-eingerueckt").Length);
+        var summe = dl.QuerySelectorAll("dt.epos-simerg-zwischensumme");
+        Assert.Single(summe);
+        Assert.Equal("Erzeugte Nutzwärme Wärmepumpe:", summe[0].TextContent.Trim());
+        Assert.Same(summe[0], dl.QuerySelectorAll("dt").Last());
+    }
+
+    /// <summary>
+    /// Der Pufferanteil der Nutzwärme steht unter der Aufteilung nach Bedarfsart; derselbe
+    /// Wert wie im Kesselreiter unter „davon aus Puffer (andere Erzeuger)“.
+    /// </summary>
+    [Fact]
+    public void Pufferanteil_der_Nutzwaerme_steht_in_der_Waermegruppe()
+    {
+        var erg = Erg();
+        erg.GedecktMwh = 91.32;
+        erg.AusPufferMwh = 65.67;
+
+        var dl = Zeichnen(erg).FindAll("dl.epos-simerg-werte")[0];
+        string[] zeilen = dl.QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray();
+        string[] werte = dl.QuerySelectorAll("dd").Select(z => z.TextContent.Trim()).ToArray();
+        Assert.Equal("65,67", werte[2 * Array.IndexOf(zeilen, "davon aus Puffer:")]);
+    }
+
+    /// <summary>Ohne Kaskade fehlt die Zeile der Quellwärme in der Herleitung.</summary>
+    [Fact]
+    public void Ohne_Kaskade_keine_Quellwaerme()
+    {
+        var erg = Erg();
+        erg.MitKaskade = false;
+
+        string[] zeilen = Zeichnen(erg).FindAll("dl.epos-simerg-werte")[0]
+                                       .QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray();
+        Assert.DoesNotContain("abzüglich Quellwärme aus Kaskade:", zeilen);
+        Assert.Contains("abzüglich Speicherverluste:", zeilen);
     }
 
     /// <summary>Die Restwärme schliesst die Wärmegruppe betont ab (W11b‑B‑15).</summary>
@@ -279,15 +381,15 @@ public class WaermepumpeReiterTests : EposBunitContext
         Assert.Contains("Kapazität des Pufferspeichers", ohne.Markup);
     }
 
-    /// <summary>Die Modultabelle: sechs Spalten, je Modul eine Zeile.</summary>
+    /// <summary>Die Modultabelle: sieben Spalten (mit der JAZ), je Modul eine Zeile.</summary>
     [Fact]
-    public void Die_Modultabelle_hat_sechs_Spalten()
+    public void Die_Modultabelle_hat_sieben_Spalten()
     {
         var seite = Zeichnen(Erg());
         var raster = seite.FindAll("table.epos-raster");
 
         Assert.Equal(2, raster.Count);                               // Module und Puffer
-        Assert.Equal(6, raster[0].QuerySelectorAll("thead th").Length);
+        Assert.Equal(7, raster[0].QuerySelectorAll("thead th").Length);
         Assert.Equal(8, raster[1].QuerySelectorAll("thead th").Length);
     }
 
@@ -347,10 +449,10 @@ public class WaermepumpeReiterTests : EposBunitContext
                      gang.Reihen!.ToArray());
     }
 
-    // =====================================================================
+    // ==============================================================
     //  W11b‑B‑17 — „Die Graphen der Diagramme sollten auswählbar sein (select)
     //  für beide Grafiken." (Anwenderwunsch 08.09.2026)
-    // =====================================================================
+    // ==============================================================
 
     /// <summary>
     /// Je Reihe ein Schalter, die Beschriftung DIESELBE wie in der Legende des
@@ -439,18 +541,18 @@ public class WaermepumpeReiterTests : EposBunitContext
         Assert.Contains("Keine Simulationsdaten", seite.Markup);
     }
 
-    // =====================================================================
+    // ==============================================================
     //  VIER BILDER, EIN WEG (Etappe DG-E3, Gruppen (a) und (b))
     //
     //  Alle vier stehen im Baustein DiagrammSvg: Der Ausschnitt ist die
     //  viewBox ihrer Zeichenflaeche. Bei der Streuwolke zaehlt x die
     //  AUSSENTEMPERATUR - was x bedeutet, sagt ihr Modell (DG-E3-11), und die
     //  Spanne laesst sich dort ebenso aufziehen wie eine Stundenspanne.
-    // =====================================================================
+    // ==============================================================
 
     /// <summary>
     /// Das SVG-Diagramm des sichtbaren UNTERBLATTS — es steht neben der Streuwolke,
-    /// die ueber den Blaettern liegt, also wird die ausdruecklich uebergangen.
+    /// die unter den Blaettern liegt, also wird die ausdruecklich uebergangen.
     /// </summary>
     private static DiagrammSvg Bild(IRenderedComponent<WaermepumpeReiter> seite)
         => seite.FindComponents<DiagrammSvg>()
@@ -470,7 +572,7 @@ public class WaermepumpeReiterTests : EposBunitContext
         Assert.Empty(seite.FindAll("img"));
         Assert.Contains(_auftraege, a => a.Bild == Bilder.WpLeistungTemperatur);
 
-        Assert.Equal(new[] { "simerg-wp-streuwolke", "simerg-wp-produktion" },
+        Assert.Equal(new[] { "simerg-wp-produktion", "simerg-wp-streuwolke" },
                      seite.FindComponents<DiagrammSvg>()
                           .Select(b => b.Instance.Kennung).ToArray());
         Assert.Equal("kW", Bild(seite).Einheit);
@@ -527,5 +629,323 @@ public class WaermepumpeReiterTests : EposBunitContext
                    b => Assert.Equal(new[] { "Bereich", "1:1" },
                                      b.FindAll("button.epos-diagramm-knopf")
                                       .Select(k => k.TextContent.Trim()).ToArray()));
+    }
+
+    /// <summary>
+    /// <b>Die Auslegung steht am Ende des Reiters</b> (Anwenderwunsch 05.10.2026):
+    /// erst die Kennzahlen Wärme und Strom, dann Modul- und Speichertabelle, dann
+    /// die Unterblätter mit der Jahresganglinie und zuletzt der Block „Auslegung“
+    /// mit dem Bild „Leistung über Außentemperatur“.
+    /// </summary>
+    [Fact]
+    public void Die_Auslegung_steht_nach_der_Ganglinie_am_Ende()
+    {
+        var seite = Zeichnen(Erg(), temperaturen: true);
+
+        var folge = seite.FindAll(
+                "h2.epos-gruppenkopf-titel, table.epos-raster, button[role='tab'], div.epos-simerg-schalter")
+            .Select(e => e.TagName.ToLowerInvariant() switch
+            {
+                "h2" => e.TextContent.Trim(),
+                "table" => "Tabelle",
+                "button" => "Blatt",
+                _ => "Schalter",
+            })
+            .ToArray();
+
+        Assert.Equal(new[]
+        {
+            "Wärme", "Strom", "Schalter", "Tabelle", "Tabelle",
+            "Blatt", "Blatt", "Blatt", "Schalter", "Schalter",
+            "Auslegung", "Schalter",
+        }, folge);
+
+        // Die Streuwolke ist das letzte Bild, die Ganglinie steht davor.
+        Assert.Equal("simerg-wp-streuwolke",
+                     seite.FindComponents<DiagrammSvg>().Last().Instance.Kennung);
+    }
+
+    // ==============================================================
+    //  DIE JAHRESARBEITSZAHL (Übergabe „Dialoge und Korrekturen" 05.10.2026,
+    //  Anwenderentscheide 06.10.2026): gerechnet im Kern (Jahresarbeitszahl),
+    //  hier nur angezeigt — zwei Nachkommastellen, ohne Strom ein Strich.
+    // ==============================================================
+
+    /// <summary>Die Werte des Blocks „Strom" ohne die Einheitenspalte, in ihrer Reihenfolge.</summary>
+    private static string[] Stromwerte(IRenderedComponent<WaermepumpeReiter> seite)
+        => seite.FindAll("dl.epos-simerg-werte")[1]
+                .QuerySelectorAll("dd:not(.epos-simerg-einheit)")
+                .Select(d => d.TextContent.Trim()).ToArray();
+
+    /// <summary>Die Zelle der Spalte JAZ in der ersten Modulzeile.</summary>
+    private static string ModulJaz(IRenderedComponent<WaermepumpeReiter> seite)
+        => seite.FindAll("table.epos-raster")[0].QuerySelectorAll("tbody tr")[0]
+                .QuerySelectorAll("td")[5].TextContent.Trim();
+
+    /// <summary>Der Kopf der Spalte JAZ.</summary>
+    private static AngleSharp.Dom.IElement JazKopf(IRenderedComponent<WaermepumpeReiter> seite)
+        => seite.FindAll("table.epos-raster")[0].QuerySelectorAll("thead th")[5];
+
+    /// <summary>
+    /// Der Block „Strom" zeigt nach den zwei Stromverbräuchen die JAZ der Wärmepumpe
+    /// (300 ÷ 75 = 4,00) und die des Systems mit Heizstab ((300 + 2,5) ÷ (75 + 2,5) = 3,90),
+    /// beide mit der Formel als Kurztext an Beschriftung und Wert.
+    /// </summary>
+    [Fact]
+    public void Der_Block_Strom_zeigt_beide_Jahresarbeitszahlen()
+    {
+        var seite = Zeichnen(Erg());
+
+        Assert.Equal(new[] { "75,00", "2,50", "4,00", "3,90" }, Stromwerte(seite));
+
+        var zeilen = seite.FindAll("dl.epos-simerg-werte")[1].QuerySelectorAll("dt");
+        Assert.Null(zeilen[0].GetAttribute("title"));
+        Assert.Contains("÷", zeilen[2].GetAttribute("title"));
+        Assert.Contains("VDI 4650", zeilen[3].GetAttribute("title"));
+    }
+
+    /// <summary>
+    /// Ohne Strom keine Jahresarbeitszahl: ein Strich in beiden Zeilen und in der Spalte
+    /// je Modul — nie eine Division durch null. Mit Heizstab, aber ohne Strom der
+    /// Wärmepumpe gibt es nur die JAZ des Systems.
+    /// </summary>
+    [Fact]
+    public void Ohne_Strom_steht_bei_der_Jahresarbeitszahl_ein_Strich()
+    {
+        var ohne = Erg();
+        ohne.StromverbrauchMwh = 0;
+        ohne.HeizstabStromverbrauchMwh = 0;
+        ohne.Module.Clear();
+        ohne.Module.Add(new SimulationErgebnisCtrl.WpModulZeile("WP 1", 30.0, 0.0, 0.0, 0.0, 0.0));
+
+        var seite = Zeichnen(ohne);
+        Assert.Equal(new[] { "0,00", "0,00", "—", "—" }, Stromwerte(seite));
+        Assert.Equal("—", ModulJaz(seite));
+        Kasten(seite, JAZ, 0).Change(true);
+        Assert.Equal("—", ModulJaz(seite));
+
+        var nurStab = Erg();
+        nurStab.StromverbrauchMwh = 0;
+        nurStab.WaermeproduktionMwh = 0;
+        Assert.Equal(new[] { "0,00", "2,50", "—", "1,00" }, Stromwerte(Zeichnen(nurStab)));
+    }
+
+    /// <summary>
+    /// Die Spalte JAZ rechnet ohne Heizstab (Vorgabe); der Schalter über der Modultabelle
+    /// nimmt ihn dazu. Kopf und Kurztext nennen die Bilanzgrenze, die gerade gilt, und
+    /// der Rückweg stellt die Vorgabe wieder her.
+    /// </summary>
+    [Fact]
+    public void Die_Spalte_JAZ_folgt_dem_Heizstabschalter()
+    {
+        var seite = Zeichnen(Erg());
+
+        Assert.Equal(new[] { "Heizstab in die JAZ einrechnen" }, Zeile(seite, JAZ));
+        Assert.False(Kasten(seite, JAZ, 0).HasAttribute("checked"));
+        Assert.Equal("JAZ", JazKopf(seite).TextContent.Trim());
+        Assert.Contains("ohne Heizstab", JazKopf(seite).GetAttribute("title"));
+        Assert.Equal("4,00", ModulJaz(seite));
+
+        Kasten(seite, JAZ, 0).Change(true);
+
+        Assert.Equal("JAZ mit Heizstab", JazKopf(seite).TextContent.Trim());
+        Assert.Contains("mit seinem Heizstab", JazKopf(seite).GetAttribute("title"));
+        Assert.Equal("3,90", ModulJaz(seite));
+        // Der Block „Strom" bleibt, wie er ist: Der Schalter gilt nur der Spalte.
+        Assert.Equal(new[] { "75,00", "2,50", "4,00", "3,90" }, Stromwerte(seite));
+
+        Kasten(seite, JAZ, 0).Change(false);
+
+        Assert.Equal("JAZ", JazKopf(seite).TextContent.Trim());
+        Assert.Equal("4,00", ModulJaz(seite));
+    }
+
+    /// <summary>
+    /// Der Hilfe-Assistent kennt den Schalter der Spalte JAZ als Anzeigeschalter und setzt
+    /// ihn über denselben Weg wie der Anwender — nur, wo die Modultabelle steht.
+    /// </summary>
+    [Fact]
+    public void Der_Heizstabschalter_steht_bei_den_Anzeigeschaltern()
+    {
+        const string NAME = "Heizstab in die JAZ einrechnen";
+
+        var anzeige = new Ergebnisanzeige();
+        var seite = Render<WaermepumpeReiter>(p => p
+            .AddCascadingValue(anzeige)
+            .Add(x => x.Daten, Erg())
+            .Add(x => x.Modell, Modell));
+
+        Anzeigeschalter schalter = Assert.Single(anzeige.Schalter, s => s.Name == NAME);
+        Assert.False(schalter.An);
+        schalter.An = true;
+        seite.WaitForAssertion(() => Assert.Equal("3,90", ModulJaz(seite)));
+
+        var ohneModule = Erg();
+        ohneModule.Module.Clear();
+        var leer = new Ergebnisanzeige();
+        var ohne = Render<WaermepumpeReiter>(p => p
+            .AddCascadingValue(leer)
+            .Add(x => x.Daten, ohneModule)
+            .Add(x => x.Modell, Modell));
+
+        Assert.DoesNotContain(leer.Schalter, s => s.Name == NAME);
+        Assert.DoesNotContain(NAME, ohne.Markup);
+    }
+
+    /// <summary>
+    /// CSV am Diagramm: Das Produktionsbild führt den benannten Export der Wärmepumpe in seiner
+    /// Zoomleiste (Vorrang vor der Naht); die Streuwolke (x = Temperatur) bekommt keinen Knopf, und
+    /// am Seitenende steht keiner mehr.
+    /// </summary>
+    [Fact]
+    public void Der_Waermepumpenexport_steht_am_Produktionsbild()
+    {
+        int gerufen = 0, naht = 0;
+        var seite = Render<WaermepumpeReiter>(p => p
+            .Add(x => x.Daten, Erg())
+            .Add(x => x.Modell, Modell)
+            .Add(x => x.Csv, EventCallback.Factory.Create(this, () => gerufen++))
+            .AddCascadingValue(new Ganglinienexport((m, t) => { naht++; return Task.CompletedTask; })));
+
+        var knoepfe = seite.FindAll("button.epos-diagramm-csv");
+        Assert.Single(knoepfe);
+        knoepfe[0].Click();
+
+        Assert.Equal(1, gerufen);
+        Assert.Equal(0, naht);
+        Assert.Empty(seite.FindAll("button.epos-simerg-knopf[title]"));
+    }
+
+    /// <summary>
+    /// CSV am Diagramm (CSV-2): Die Speichertemperaturen haben keinen benannten Export; ihr
+    /// „CSV…“ kommt aus der Naht der Seite und schreibt die Reihen des Bildes.
+    /// </summary>
+    [Fact]
+    public void Die_Speichertemperaturen_tragen_CSV_ueber_die_Naht()
+    {
+        var exporte = new List<Zeichenmodell>();
+        var seite = Render<WaermepumpeReiter>(p => p
+            .Add(x => x.Daten, Erg())
+            .Add(x => x.Modell, Modell)
+            .Add(x => x.Speichertemperaturen, true)
+            .Add(x => x.Csv, EventCallback.Factory.Create(this, () => { }))
+            .AddCascadingValue(new Ganglinienexport((m, t) => { exporte.Add(m); return Task.CompletedTask; })));
+
+        seite.FindAll("button[role='tab']")[2].Click();
+        seite.Find("div.epos-diagramm-leiste button.epos-diagramm-csv").Click();
+
+        Zeichenmodell modell = Assert.Single(exporte);
+        var spalten = ZeitreihenCsv.AusModell(modell);
+        Assert.Equal(2, spalten.Count);
+        Assert.Equal(168, spalten[0].Werte.Length);
+        Assert.Equal(Zeitraster.Wochenstunde, ZeitreihenCsv.RasterAus(spalten));
+    }
+
+    // ---------------------------------------------------------------------
+    //  Auftrag TA: Kopf und Wert stehen übereinander
+    // ---------------------------------------------------------------------
+
+    /// <summary>Modul- und Speichertabelle: Zahlenköpfe rechts wie ihre Werte,
+    /// Modul, Speicher und Rolle links (Auftrag TA).</summary>
+    [Fact]
+    public void TA_Modul_und_Speichertabelle_richten_Kopf_und_Wert_gleich_aus()
+    {
+        var raster = Zeichnen(Erg()).FindAll("table.epos-raster");
+
+        Assert.Equal(new[] { 6, 6 }, Tabellenausrichtung.PruefeAlle(raster));
+        Tabellenausrichtung.TextkopfLinks(raster[0], 0);
+        Tabellenausrichtung.TextkopfLinks(raster[1], 0);
+        Tabellenausrichtung.TextkopfLinks(raster[1], 1);
+    }
+    /// <summary>
+    /// <b>Welle RZ: Strom von Wärmepumpe und Heizstab getrennt</b> — ein Schalter im Unterblatt „Strom“, ab Werk
+    /// AUS: Dann geht der Auftrag ohne Reihenliste hinaus wie bisher (die eine Linie). An, nennt er die drei
+    /// Reihen Wärmepumpe, Heizstab und Summe.
+    /// </summary>
+    [Fact]
+    public void Das_Strombild_trennt_Waermepumpe_und_Heizstab_nur_auf_Wahl()
+    {
+        var seite = Zeichnen(Erg());
+        seite.FindAll("button[role='tab']")[1].Click();
+
+        AngleSharp.Dom.IElement Getrennt() => seite.FindAll("div.epos-simerg-schalter")
+            .Single(d => d.TextContent.Contains("Wärmepumpe und Heizstab getrennt"))
+            .QuerySelector("input[type=checkbox]")!;
+        AngleSharp.Dom.IElement kasten = Getrennt();
+        Assert.False(kasten.HasAttribute("checked"));
+        Assert.Null(seite.Instance.GewaehlteReihenStrom);
+        Bildauftrag vorgabe = _auftraege.Last(a => a.Bild == Bilder.WpStromverbrauch);
+        Assert.Null(vorgabe.Reihen);
+        Assert.Equal(new Bildauftrag(Bilder.WpStromverbrauch).Schluessel, vorgabe.Schluessel);
+
+        kasten.Change(true);
+        Assert.Equal(new[] { "WP_STROM", "HEIZSTAB_STROM", "WP_STROM_SUMME" },
+                     seite.Instance.GewaehlteReihenStrom!.ToArray());
+        Bildauftrag getrennt = _auftraege.Last(a => a.Bild == Bilder.WpStromverbrauch);
+        Assert.Equal(new[] { "WP_STROM", "HEIZSTAB_STROM", "WP_STROM_SUMME" }, getrennt.Reihen!.ToArray());
+
+        Getrennt().Change(false);
+        Assert.Null(_auftraege.Last(a => a.Bild == Bilder.WpStromverbrauch).Reihen);
+    }
+
+
+    // ==============================================================
+    //  Welle RZ (Teil b) — die Auswahl je Speicher im Temperaturbild
+    // ==============================================================
+
+    private static readonly (string Schluessel, string Name)[] ZWEI_SPEICHER =
+        { ("PUFFER_1", "Puffer A"), ("PUFFER_2", "Puffer B") };
+
+    private static IRenderedComponent<WaermepumpeReiter> Temperaturblatt(IRenderedComponent<WaermepumpeReiter> seite)
+    {
+        seite.FindAll("button[role='tab']")[2].Click();
+        return seite;
+    }
+
+    private static AngleSharp.Dom.IElement Speicherkasten(IRenderedComponent<WaermepumpeReiter> seite, string name)
+        => seite.FindAll("label.epos-schalter")
+                .First(l => l.TextContent.Trim() == name)
+                .QuerySelector("input[type=checkbox]")!;
+
+    /// <summary>Ab zwei Speichern je Speicher ein Schalter, alle an; der Auftrag trägt dann KEINE Liste.</summary>
+    [Fact]
+    public void Speichertemperaturen_tragen_je_Speicher_einen_Schalter_ab_Werk_alle_an()
+    {
+        var seite = Temperaturblatt(Zeichnen(Erg(), temperaturen: true, speicherwahl: ZWEI_SPEICHER));
+
+        Assert.All(new[] { "Puffer A", "Puffer B" },
+                   n => Assert.True(Speicherkasten(seite, n).HasAttribute("checked")));
+        Assert.Null(seite.Instance.GewaehlteReihenTemperaturen);
+        Bildauftrag t = _auftraege.Last(a => a.Bild == Bilder.Speichertemperaturen);
+        Assert.Null(t.Reihen);
+        Assert.Equal(new Bildauftrag(Bilder.Speichertemperaturen).Schluessel, t.Schluessel);
+    }
+
+    /// <summary>Die Abwahl eines Speichers nimmt ihn aus dem Auftrag; die Wiederwahl stellt ab Werk her.</summary>
+    [Fact]
+    public void Die_Abwahl_eines_Speichers_nimmt_ihn_aus_dem_Temperaturbild()
+    {
+        var seite = Temperaturblatt(Zeichnen(Erg(), temperaturen: true, speicherwahl: ZWEI_SPEICHER));
+        _auftraege.Clear();
+
+        Speicherkasten(seite, "Puffer A").Change(false);
+        Bildauftrag t = _auftraege.Last(a => a.Bild == Bilder.Speichertemperaturen);
+        Assert.Equal(new[] { "PUFFER_2" }, t.Reihen!.ToArray());
+
+        Speicherkasten(seite, "Puffer B").Change(false);
+        Assert.Empty(_auftraege.Last(a => a.Bild == Bilder.Speichertemperaturen).Reihen!);
+
+        Speicherkasten(seite, "Puffer A").Change(true);
+        Speicherkasten(seite, "Puffer B").Change(true);
+        Assert.Null(_auftraege.Last(a => a.Bild == Bilder.Speichertemperaturen).Reihen);
+    }
+
+    /// <summary>Mit einem Speicher gibt es nichts zu wählen — kein Schalter.</summary>
+    [Fact]
+    public void Mit_einem_Speicher_steht_kein_Speicherschalter()
+    {
+        var seite = Temperaturblatt(Zeichnen(Erg(), temperaturen: true,
+                                             speicherwahl: new[] { ("PUFFER_1", "Puffer A") }));
+        Assert.DoesNotContain(seite.FindAll("label.epos-schalter"), l => l.TextContent.Trim() == "Puffer A");
     }
 }

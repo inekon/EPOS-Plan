@@ -78,6 +78,26 @@ namespace WindowsFormsApplication1.Zeichnung
         public static readonly Farbrolle ERZEUGUNG_GESAMT = new Farbrolle("ERZEUGUNG_GESAMT");
         public static readonly Farbrolle VERBRAUCH_GESAMT = new Farbrolle("VERBRAUCH_GESAMT");
 
+        // K6b (Konzept Kältebedarf 4.3): die dezentral (Split) gedeckte Kälte — eine Fläche des Kältegangs, ein Segment
+        // des Kälterings, eine Reihe des Kältelastbilds und der Posten „Kühlung dezentral“ des Stromgangs.
+
+        public static readonly Farbrolle KAELTE_DEZENTRAL = new Farbrolle("KAELTE_DEZENTRAL");
+
+        // SK-2 (Konzept Energieflussbild 3.4): die Bänder und Knoten des Energieflussbilds, die keine Rolle des
+        // Bestands tragen — Brennstoff in den Wandler, Umweltanteil, Kälte der Erzeuger, Verluste und die Knoten.
+
+        public static readonly Farbrolle BRENNSTOFF = new Farbrolle("BRENNSTOFF");
+        public static readonly Farbrolle UMWELTWAERME = new Farbrolle("UMWELTWAERME");
+        public static readonly Farbrolle KAELTE = new Farbrolle("KAELTE");
+        public static readonly Farbrolle VERLUST = new Farbrolle("VERLUST");
+        public static readonly Farbrolle KNOTEN = new Farbrolle("KNOTEN");
+
+        // SK-2c (Konzept Energieflussbild 3.4, SK-Q14): die Farbe eines Bandes ist seine Energieform — Strom und Wärme
+        // bekommen je eine eigene Rolle; Kälte, Brennstoff, Umwelt, Verlust und Rest tragen die vorhandenen.
+
+        public static readonly Farbrolle STROM = new Farbrolle("STROM");
+        public static readonly Farbrolle WAERME = new Farbrolle("WAERME");
+
         // -------------------------------------------------------- Variantenreihen
 
         public static readonly Farbrolle SERIE_1 = new Farbrolle("SERIE_1");
@@ -258,6 +278,17 @@ namespace WindowsFormsApplication1.Zeichnung
                 { Farbrolle.UEBERSCHUSS,     new Farbe(0xFF, 0xD5, 0x4F) },  // Bernstein
                 { Farbrolle.ERZEUGUNG_GESAMT, new Farbe(0x00, 0x80, 0x00) }, // Green
                 { Farbrolle.VERBRAUCH_GESAMT, new Farbe(0x2E, 0x8B, 0x57) }, // SeaGreen
+                // K6b: ein eigenes Aquablau, das keine andere Rolle trägt (Rückwärtssuche).
+                { Farbrolle.KAELTE_DEZENTRAL, new Farbe(0x4B, 0xAC, 0xC6) },
+                // SK-2: die fünf Rollen des Energieflussbilds, jede mit eigenem Wert (Rückwärtssuche).
+                { Farbrolle.BRENNSTOFF,      new Farbe(0x8B, 0x6F, 0x47) },
+                { Farbrolle.UMWELTWAERME,    new Farbe(0x7F, 0xB8, 0xA4) },
+                { Farbrolle.KAELTE,          new Farbe(0x2A, 0x7F, 0xA6) },
+                { Farbrolle.VERLUST,         new Farbe(0xB8, 0xB8, 0xB8) },
+                { Farbrolle.KNOTEN,          new Farbe(0x4A, 0x57, 0x69) },
+                // SK-2c: Strom und Wärme als Energieform der Bänder, jede mit eigenem Wert (Rückwärtssuche).
+                { Farbrolle.STROM,           new Farbe(0xE9, 0xA8, 0x25) },
+                { Farbrolle.WAERME,          new Farbe(0xE2, 0x57, 0x3D) },
 
                 { Farbrolle.SERIE_1,         new Farbe(0xED, 0x7D, 0x31) },  // Orange
                 { Farbrolle.SERIE_2,         new Farbe(0x70, 0xAD, 0x47) },  // Grün

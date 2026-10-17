@@ -43,7 +43,15 @@ namespace Auslieferungsvorlage
             "Tab_Kenndaten_Kuehlung_STAMM",
             "Tab_Klimadaten_STAMM",
             "Tab_Solar_STAMM",
-            SchemaKatalog.TAB_BAUTEILSCHICHT_STAMM
+            // KD-4: die Rohwerte einer Klimaregion haengen an Tab_Klimaregion_STAMM (Kaskade).
+            KlimaRohwerteSchema.TAB_ROH,
+            SchemaKatalog.TAB_BAUTEILSCHICHT_STAMM,
+            // BK-2 (Schritt 221): die Abschnitte eines Katalogaufbaus haengen an Tab_Bauteilaufbau_STAMM (Kaskade).
+            BauteilkatalogSchema.TAB_ABSCHNITT_STAMM,
+            // Schritt ZK: die Zonen eines Katalogsatzes haengen an Tab_Gebaeude_STAMM (Kaskade), gesperrt ist der Kopf.
+            SchemaKatalog.TAB_ZONE_STAMM,
+            SchemaKatalog.TAB_BAUTEIL_STAMM,
+            SchemaKatalog.TAB_ZONENLUFTSTROM_STAMM
         };
 
         /// <summary>Steht die Tabelle in <see cref="KindkatalogeOhneReadOnly"/> (ordinal)?</summary>
@@ -221,6 +229,95 @@ namespace Auslieferungsvorlage
                 _bericht.Zeile("siehe HeizkesselStammCtrl, GebaeudeStammCtrl), oder die Tabelle gehoert wirklich");
                 _bericht.Zeile("nicht zur Auslieferung. Zu entscheiden ist das am Bestand, nicht vom Werkzeug.");
             }
+
+            // NP-F21, Q46: Der Katalog der Nutzungsprofile traegt eine verlaessliche Auslieferungsmarke (ReadOnly = 1 nur an
+            // der Saat) - seine eigenen Zeilen fallen deshalb in JEDEM Modus, auch eine Kategorie aus einer Projektdatei (NP4b).
+            RaumnutzungBereinigen();
+        }
+
+        // =================================================================================
+        //  SCHRITT 3d - Der Katalog der Nutzungsprofile (Konzept Nutzungsprofile NP-F21)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Der Katalog der Nutzungsprofile</b> traegt keine <c>_STAMM</c>-Namen (NP-F2) und faellt deshalb nicht unter
+        /// die Regel von Schritt 3; er folgt ihr in JEDEM Modus NAMENTLICH (NP-F21, Q46 — anders als die <c>_STAMM</c>-Kataloge
+        /// traegt er eine verlaessliche Auslieferungsmarke, und Werte aus Projektdateien gehoeren nie in die Auslieferung): eigene Zuordnungen,
+        /// eigene Profile und eigene Kategorien fallen (Zeilenbild und Stundenprofile ueber die Kaskade), die
+        /// ausgelieferten Zuordnungen zeigen danach wieder auf ihr Saatprofil (<see cref="RaumnutzungSaat.Zuordnungen"/>) —
+        /// auch wenn der Anwender eine auf sein eigenes Profil oder auf „keine" gestellt hatte (NP-F19). Fehlt danach eine
+        /// ausgelieferte Zeile, weil eine eigene Zeile ihren Schlüssel trug (DIN 19 und 20 vor E96), wird sie nachgesät.
+        /// Steht der Schemaschritt nicht, gibt es nichts zu tun.
+        /// </summary>
+        internal void RaumnutzungBereinigen()
+        {
+            if (!DataRepository.TabelleVorhanden(RaumnutzungSchema.TAB_ZUORDNUNG)) return;
+            _bericht.Leer();
+            _bericht.Zeile("Schritt 3d — Katalog der Nutzungsprofile (eigene Zeilen fallen, NP-F21)");
+            long zuordnungen = DataRepository.ExecuteNonQuery(
+                "DELETE FROM \"" + RaumnutzungSchema.TAB_ZUORDNUNG + "\" WHERE \"ReadOnly\" = 0");
+            long profile = DataRepository.ExecuteNonQuery(
+                "DELETE FROM \"" + RaumnutzungSchema.TAB_PROFIL + "\" WHERE \"ReadOnly\" = 0");
+            long kategorien = DataRepository.ExecuteNonQuery(
+                "DELETE FROM \"" + RaumnutzungSchema.TAB_KATALOG + "\" WHERE \"ReadOnly\" = 0");
+            long zurueck = 0;
+            foreach (RaumnutzungSaatzuordnung z in RaumnutzungSaat.Zuordnungen)
+                zurueck += DataRepository.ExecuteNonQuery(
+                    "UPDATE \"" + RaumnutzungSchema.TAB_ZUORDNUNG + "\" SET \"ID_Profil\" = (SELECT p.\"ID\" FROM \"" +
+                    RaumnutzungSchema.TAB_PROFIL + "\" p JOIN \"" + RaumnutzungSchema.TAB_KATALOG + "\" k ON k.\"ID\" = " +
+                    "p.\"ID_Katalog\" WHERE k.\"Bezeichner\" = ? COLLATE NOCASE AND p.\"Bezeichner\" = ? COLLATE NOCASE) " +
+                    "WHERE \"ReadOnly\" = 1 AND \"Art\" = ? AND \"Schluessel\" = ? COLLATE NOCASE AND \"ID_Profil\" IS NOT " +
+                    "(SELECT p.\"ID\" FROM \"" + RaumnutzungSchema.TAB_PROFIL + "\" p JOIN \"" + RaumnutzungSchema.TAB_KATALOG +
+                    "\" k ON k.\"ID\" = p.\"ID_Katalog\" WHERE k.\"Bezeichner\" = ? COLLATE NOCASE AND p.\"Bezeichner\" = ? COLLATE NOCASE)",
+                    new DbParam("@k", z.Kategorie), new DbParam("@p", z.Profil), new DbParam("@a", z.Art),
+                    new DbParam("@s", z.Schluessel), new DbParam("@k2", z.Kategorie), new DbParam("@p2", z.Profil));
+            long nachgesaet = 0;
+            foreach (RaumnutzungSaatzuordnung z in RaumnutzungSaat.Zuordnungen)
+                nachgesaet += DataRepository.ExecuteNonQuery(RaumnutzungSchema.SQL_SAAT_ZUORDNUNG,
+                    new DbParam("@a", z.Art), new DbParam("@s", z.Schluessel), new DbParam("@k", z.Kategorie), new DbParam("@p", z.Profil),
+                    new DbParam("@a2", z.Art), new DbParam("@s2", z.Schluessel));
+            _bericht.Zeile("    entfernt: " + zuordnungen + " eigene Zuordnung(en), " + profile + " eigene(s) Profil(e), " +
+                           kategorien + " eigene Kategorie(n); " + zurueck + " ausgelieferte Zuordnung(en) auf ihr Saatprofil zurueckgestellt, " +
+                           nachgesaet + " nachgesaet");
+            // NP7 (E131): Normwerte, die der Anwender in die ausgelieferten DIN-Profile eingelesen hat, gehoeren nie in die
+            // Auslieferung. DA-6 (E135): Die DIN-Profile tragen die gesaeten Werte der Fassung 2025-10 - die Ruecknahme stellt
+            // sie wieder her, und der Saatschritt saet jedes noch leere DIN-Profil (wiederholbar, nur wo kein Wert steht).
+            if (RaumnutzungNormwerteSchema.Lesbar())
+            {
+                RaumnutzungNormwerte.Bilanz normwerte = RaumnutzungNormwerte.Entfernen();
+                _bericht.Zeile("    eingelesene Normwerte entfernt, gesaete Werte wiederhergestellt: " + normwerte.Geschrieben +
+                               " Profil(e) der DIN" + (normwerte.Ok ? "" : " - FEHLER: " + normwerte.Meldung));
+                int gesaet = RaumnutzungDinWerteSchema.Ausfuehren(null);
+                _bericht.Zeile("    DIN-Profile mit den Werten der Fassung " + RaumnutzungDinSaat.FASSUNG + " nachgesaet: " + gesaet);
+            }
+            HerkunftZaehlen();
+        }
+
+        /// <summary>
+        /// <b>BK-2 (E132 F8):</b> Eingelesene Katalogsätze (<c>Herkunft = 'IMPORT'</c>) dürfen in die Auslieferung — es gibt
+        /// KEINE Löschregel für sie. Der Prüfbericht zählt die Sätze des Baustoff- und des Aufbaukatalogs je Herkunft.
+        /// </summary>
+        private void HerkunftZaehlen()
+        {
+            foreach (string t in new[] { BauteilkatalogSchema.TAB_BAUSTOFF_STAMM, BauteilkatalogSchema.TAB_AUFBAU_STAMM })
+            {
+                if (!DataRepository.TabelleVorhanden(t) || !DataRepository.SpalteVorhanden(t, "Herkunft")) continue;
+                foreach (KeyValuePair<string, long> z in HerkunftJeTabelle(t))
+                    _bericht.Zeile("    " + t + " Herkunft " + z.Key + ": " + z.Value.ToString(CultureInfo.InvariantCulture) + " Satz/Saetze");
+            }
+        }
+
+        /// <summary>Die Zahl der Sätze je Herkunft (leer als „(leer)“), nach Herkunft geordnet.</summary>
+        internal static List<KeyValuePair<string, long>> HerkunftJeTabelle(string tabelle)
+        {
+            var liste = new List<KeyValuePair<string, long>>();
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT IFNULL(\"Herkunft\", '(leer)') AS h, COUNT(*) AS n FROM \"" + tabelle + "\" GROUP BY h ORDER BY h");
+            if (dt == null) return liste;
+            foreach (DataRow r in dt.Rows)
+                liste.Add(new KeyValuePair<string, long>(Convert.ToString(r["h"], CultureInfo.InvariantCulture),
+                                                         Convert.ToInt64(r["n"], CultureInfo.InvariantCulture)));
+            return liste;
         }
 
         // =================================================================================

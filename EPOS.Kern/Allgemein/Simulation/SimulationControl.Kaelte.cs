@@ -41,6 +41,31 @@ namespace WindowsFormsApplication1
         /// <summary>Die Kälteerzeuger dieses Laufs in Kaskadenreihenfolge; <c>null</c> = keiner vorbereitet.</summary>
         private List<Kaelteerzeuger> _kaelteerzeuger;
 
+        /// <summary>Die Kältespeicher dieses Laufs (KU3-5), die die Kältekaskade gerechnet hat; leer = keiner.</summary>
+        private List<SimulationPufferspeicher> _kaeltespeicher = new List<SimulationPufferspeicher>();
+
+        /// <summary>
+        /// <b>Die gerechneten Kältespeicher des Laufs</b> (KU3-5, E68) — getrennt von <see cref="AlleSpeicher"/>:
+        /// Sie stehen in keiner Wärmeordnung und dürfen in der Deckungsprobe nicht als Wärme im Kühlkanal zählen.
+        /// Ergebniszeile, Anzeige und Bericht nehmen sie neben den Wärmespeichern.
+        /// </summary>
+        public List<SimulationPufferspeicher> Kaeltespeicher()
+        {
+            return _kaeltespeicher ?? new List<SimulationPufferspeicher>();
+        }
+
+        /// <summary>
+        /// <b>Alle Speicher mit Füllstandsganglinie</b> (KU3-4d): <see cref="AlleSpeicher"/>, dahinter
+        /// <see cref="Kaeltespeicher"/> — die Liste, aus der Navigator, Präsenz und Füllstandsexport ihre Reihen
+        /// bilden. Die Schlüssel (<c>PUFFER_&lt;ID&gt;</c>) bleiben eindeutig, die Wärmeseite ändert sich nicht.
+        /// </summary>
+        public List<SimulationPufferspeicher> SpeicherSamtKaelte()
+        {
+            var liste = new List<SimulationPufferspeicher>(AlleSpeicher() ?? new List<SimulationPufferspeicher>());
+            liste.AddRange(Kaeltespeicher());
+            return liste;
+        }
+
         /// <summary>Die Tagesbetriebsart dieses Laufs; <c>null</c> ohne Kälteerzeuger.</summary>
         private bool[] _kuehltage;
 
@@ -56,13 +81,30 @@ namespace WindowsFormsApplication1
         /// </summary>
         public double[] Kaeltestrom_Stufenrechnung_stuendlich;
 
+        /// <summary>
+        /// Der GANZE Strom der dezentralen (Split-)Deckung [kWh je Stunde] (K3, Konzept Kältebedarf 4.2), für Strombilanz und
+        /// Ergebnis gesondert — auch der Strom der Zeilen mit eigenem Zähler. <c>null</c> ohne dezentral gedeckte Zeile.
+        /// </summary>
+        public double[] Kaeltestrom_Dezentral_stuendlich;
+
+        /// <summary>
+        /// Der Teil von <see cref="Kaeltestrom_Dezentral_stuendlich"/>, der durch die Stufenrechnung läuft [kWh je Stunde] und
+        /// damit in <see cref="Kaeltestrom_Stufenrechnung_stuendlich"/> steht — ohne die Zeilen mit eigenem Zähler (E34). Die
+        /// Strombilanz zieht ihn vom Kältestrom der Stufe ab, um den Split-Strom nicht doppelt zu zählen. <c>null</c> ohne
+        /// dezentral gedeckte Zeile.
+        /// </summary>
+        public double[] Kaeltestrom_Dezentral_Stufenrechnung_stuendlich;
+
         /// <summary>Den Kältezustand des Vorlaufs verwerfen — am Beginn von <see cref="Kaskade_Zweikanalig"/>.</summary>
         private void KaelteseiteZuruecksetzen()
         {
             _kaelteerzeuger = null;
+            _kaeltespeicher = new List<SimulationPufferspeicher>();
             _kuehltage = null;
             _waermekanalAbweichungen = 0;
             Kaeltestrom_Stufenrechnung_stuendlich = null;
+            Kaeltestrom_Dezentral_stuendlich = null;
+            Kaeltestrom_Dezentral_Stufenrechnung_stuendlich = null;
         }
 
         private static string Anzeigename(WErzeugerModel m)
@@ -91,7 +133,7 @@ namespace WindowsFormsApplication1
         {
             _kaelteerzeuger = new List<Kaelteerzeuger>();
             _kuehltage = null;
-            simulation_wp.KuehlbetriebSetzen(null, null);
+            if (_wpInSchleife) simulation_wp.KuehlbetriebSetzen(null, null);
 
             SimulationKaeltebedarf kaelte = simulation_Waermebedarf != null ? simulation_Waermebedarf.Kaelteseite : null;
             bool erhoben = kaelte != null && kaelte.Gerechnet;
@@ -99,7 +141,7 @@ namespace WindowsFormsApplication1
             // Der Stromträger des Projekts - einmal je Lauf und erst, wenn ein Kälteerzeuger ihn braucht (E34).
             int projekttraeger = -1;
 
-            for (int i = 0; i < simulation_wp.wp_model.Count && i < SimulationWaermepumpe.MAX_WP; i++)
+            for (int i = 0; _wpInSchleife && i < simulation_wp.wp_model.Count && i < SimulationWaermepumpe.MAX_WP; i++)
             {
                 WErzeugerModel m = simulation_wp.wp_model[i];
                 if (m == null) continue;
@@ -150,7 +192,9 @@ namespace WindowsFormsApplication1
                 }
 
                 // 5.0.1: Der Kühlbetrieb hängt an der Kennlinie IM PROJEKT.
-                Kuehlkennlinie k = KenndatenKuehlungCtrl.KennlinieProjekt(m.ID_WP, kuehlVorlauf);
+                // KK2: die Zeilen einmal gelesen — die Kennlinie am festen Vorlauf (wie KennlinieProjekt) und die Schar über alle Vorläufe.
+                List<KuehlkennlinienZeile> kuehlZeilen = KenndatenKuehlungCtrl.ZeilenProjekt(m.ID_WP);
+                Kuehlkennlinie k = Kuehlkennlinie.Bilden(kuehlZeilen, kuehlVorlauf, true);
                 if (k.Leer)
                 {
                     string text = string.Format(CultureInfo.CurrentCulture,
@@ -173,13 +217,19 @@ namespace WindowsFormsApplication1
                 }
                 if (!k.Rechenbar) continue;
 
-                // K21: keine Stützstelle - die nächste, einmal je Gerät und Vorlauf benannt.
+                // K21: außerhalb der Stützstellen - die nächste, einmal je Gerät und Vorlauf benannt.
                 if (k.VorlaufAusgewichen)
                     Protokoll.HinweisEinmal("kuehl-wp-vorlauf-" + m.ID_WP + "-" + k.VorlaufGewuenscht.Value.ToString(CultureInfo.InvariantCulture),
                         string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_WP_VORLAUF_AUSGEWICHEN,
                                       name, k.VorlaufGewuenscht.Value,
                                       string.Join(", ", k.Stuetzstellen.Select(v => v.ToString(CultureInfo.CurrentCulture))),
                                       k.Vorlauf));
+
+                // AK3-I (I-3): zwischen zwei Stützstellen interpoliert - einmal je Gerät und Vorlauf benannt.
+                if (k.Interpoliert)
+                    Protokoll.HinweisEinmal("kuehl-wp-vorlauf-interpoliert-" + m.ID_WP + "-" + k.VorlaufGewuenscht.Value.ToString(CultureInfo.InvariantCulture),
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_WP_VORLAUF_INTERPOLIERT,
+                                      name, k.VorlaufGewuenscht.Value, k.Vorlauf, k.Oben.Vorlauf));
 
                 // Dubletten deterministisch zusammengefasst - und benannt.
                 if (k.Dubletten > 0)
@@ -218,6 +268,17 @@ namespace WindowsFormsApplication1
                                       eigenerZaehler ? MyResource.Resource.SIMENG_KAELTE_ABRECHNUNG_ZAEHLER
                                                      : MyResource.Resource.SIMENG_KAELTE_ABRECHNUNG_ANTEILIG));
 
+                // KU3-6 (F2): freie Kühlung über die Wärmequelle nur mit einer Quelle, die sie trägt -
+                // sonst benannt abgelehnt, der Schalter bleibt ohne Wirkung.
+                bool freieKuehlung = false;
+                if (m.Kuehl_Frei)
+                {
+                    freieKuehlung = FreieKuehlungSoleMoeglich(wpTyp, wqTyp);
+                    if (!freieKuehlung)
+                        Protokoll.WarnungEinmal("kuehl-wp-frei-ohne-quelle-" + m.ID,
+                            string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_WP_FREI_OHNE_QUELLE, name));
+                }
+
                 _kaelteerzeuger.Add(new Kaelteerzeuger
                 {
                     AnlagenID = m.ID,
@@ -225,12 +286,29 @@ namespace WindowsFormsApplication1
                     Bezeichner = name,
                     Modulindex = i,
                     Kennlinie = k,
+                    Schar = new KuehlkennlinienSchar(kuehlZeilen),
                     Hilfsstromanteil = hilfsstromanteil,
                     Quelltemperatur = i < simulation_wp.Quelltemperaturen.Count ? simulation_wp.Quelltemperaturen[i] : null,
+                    FreieKuehlungSole = freieKuehlung,
+                    FreieKuehlungGraedigkeitK = m.Kuehl_Frei_Graedigkeit_K ?? KaelteFestwerte.FREIE_KUEHLUNG_SOLE_GRAEDIGKEIT_K,
+                    FreieKuehlungLeistungKw = m.Kuehl_Frei_Leistung_kW,
+                    KuehlVorlaufC = kuehlVorlauf ?? k.Vorlauf,
                     Kuehltraeger = kuehltraeger,
-                    EigenerZaehler = eigenerZaehler
+                    EigenerZaehler = eigenerZaehler,
+                    // Welle M4, WP1: der Taktverlust gilt auch im Kühlbetrieb - die Mindestleistung als
+                    // Anteil der Heiz-Nennleistung (Tab_WP.Nennleistung); ohne beide keine Taktrechnung.
+                    Mindestanteil = Kaeltekaskade.Mindestanteil(simulation_wp.TaktMindestleistung(i), m.Grenzleistung),
+                    Cd = simulation_wp.TaktCd(i)
                 });
             }
+
+            // KU3-4: die Kältemaschinen nach den Wärmepumpen - der Typ Kältemaschine folgt den Wärmepumpen.
+            bool mitWaermepumpe = _kaelteerzeuger.Count > 0;
+            KaeltemaschinenVorbereiten(erhoben, ref projekttraeger);
+
+            // KB-A: die Folge der Kälteerzeuger aus der einen Quelle (Kaeltefolge) - dieselbe Regel liest der
+            // Bereich „Kälte“ der Simulationskonfiguration. KB-D: gepflegte Ränge vorn, ohne Rang die Vorgabefolge.
+            _kaelteerzeuger = Kaeltefolge.ErzeugerOrdnen(_kaelteerzeuger, Kaeltefolge.RaengeLesen(m_ID_Projekt));
 
             if (_kaelteerzeuger.Count == 0) return;
 
@@ -239,9 +317,356 @@ namespace WindowsFormsApplication1
             Kanalsatz bedarf = simulation_Waermebedarf.KanaeleDrei();
             _kuehltage = Kaeltekaskade.TagesbetriebsartBestimmen(bedarf.Heizung, bedarf.Kuehlung);
 
+            if (!mitWaermepumpe) return;
             bool[] module = new bool[simulation_wp.wp_model.Count];
-            foreach (Kaelteerzeuger e in _kaelteerzeuger) module[e.Modulindex] = true;
+            foreach (Kaelteerzeuger e in _kaelteerzeuger)
+                if (e.Modulindex >= 0) module[e.Modulindex] = true;
             simulation_wp.KuehlbetriebSetzen(module, _kuehltage);
+        }
+
+        /// <summary>
+        /// <b>Vorgabe des zweiten Feldlaufs</b> (Konzept Simulationsablauf 23.4, 23.5) aus dem eben
+        /// beendeten Lauf — null, wenn kein Sondenfeld gerechnet hat, der Lauf gescheitert ist oder er
+        /// selbst schon der zweite war. Je Sondenfeld: die gemeldete Entzugsreihe und die Kühlwärme,
+        /// die Wärmepumpen dieses Feldes im Kühlbetrieb abgegeben haben, Q_ab = Kälte + Verdichterarbeit
+        /// (Kältestrom ohne Hilfsstromzuschlag und ohne Mehrstrom aus Taktverlust — der geht wie im
+        /// Heizbetrieb nicht als Wärme über die Sonde; bei freier Kühlung die Kälte samt Pumpenarbeit).
+        /// Kältemaschinen speisen nicht ins Erdreich — ihre Rückkühlung arbeitet gegen die Luft oder
+        /// ein Kühlwerk (<see cref="Kaelteerzeuger.Maschine"/> gesetzt, kein Wärmepumpenmodul).
+        /// </summary>
+        /// <summary>
+        /// Regeneration des Sondenfeldes durch Kühlwärme (Konzept 23.5); nur Tests schalten sie ab, um
+        /// ihre Wirkung zu messen.
+        /// </summary>
+        internal bool RegenerationRechnen = true;
+
+        /// <summary>
+        /// Zweiter Feldlauf der Erdsonde (Konzept 23.4); nur Tests schalten ihn ab, um Jahr 1 der
+        /// Startschätzung und die Rechenzeit daneben zu legen.
+        /// </summary>
+        internal bool ZweitenFeldlaufRechnen = true;
+
+        private Dictionary<int, SimulationWaermepumpe.Feldvorgabe> FeldvorgabeAusLauf()
+        {
+            if (!ZweitenFeldlaufRechnen || m_bError || !string.IsNullOrEmpty(Sperrgrund) || !_wpInSchleife) return null;
+            if (simulation_wp.ZweiterFeldlauf || simulation_wp.Sondenfelder.Count == 0) return null;
+
+            var vorgabe = new Dictionary<int, SimulationWaermepumpe.Feldvorgabe>();
+            foreach (KeyValuePair<int, Erdsondenfeld> paar in simulation_wp.Sondenfelder)
+            {
+                double[] rueck = new double[Kanalsatz.STUNDEN_JAHR];
+                if (_kaelteerzeuger != null && RegenerationRechnen)
+                    foreach (Kaelteerzeuger e in _kaelteerzeuger)
+                    {
+                        if (e.Maschine != null || e.Modulindex < 0) continue;
+                        if (!ReferenceEquals(simulation_wp.Sondenfeld(e.Modulindex), paar.Value)) continue;
+                        double zuschlag = 1.0 + e.Hilfsstromanteil;
+                        for (int h = 0; h < rueck.Length; h++)
+                        {
+                            double kaelte = e.Kaelte_stuendlich[h];
+                            if (!(kaelte > 0)) continue;
+                            rueck[h] += kaelte + e.Strom_stuendlich[h] / zuschlag - e.Taktstrom_stuendlich[h];
+                        }
+                    }
+
+                double[] entzug = paar.Value.LastKw();
+                double[] netto = new double[entzug.Length];
+                for (int h = 0; h < netto.Length; h++) netto[h] = entzug[h] - rueck[h];
+                vorgabe[paar.Key] = new SimulationWaermepumpe.Feldvorgabe { VorjahrLastKw = netto, RueckspeisungKw = rueck };
+            }
+            return vorgabe;
+        }
+
+        /// <summary>
+        /// <b>Trägt die Wärmequelle die freie Kühlung?</b> (KU3-6, F2): Bauart Sole-Wasser oder Wasser-Wasser
+        /// und eine gepflegte Quelle — <c>WQ_Typ</c> Erdreich, Konstant, Profil oder CSV. Luft-Wasser, die
+        /// leere Quelle (Außenluft-Rückfall), Außenluft und der Pufferspeicher scheiden aus.
+        /// </summary>
+        internal static bool FreieKuehlungSoleMoeglich(string wpTyp, string wqTyp)
+        {
+            if (wpTyp != DbWerte.WP_BAUART_SOLE_WASSER && wpTyp != DbWerte.WP_BAUART_WASSER_WASSER) return false;
+            return wqTyp == WaermequelleClass.TYP_ERDREICH || wqTyp == WaermequelleClass.TYP_KONSTANT ||
+                   wqTyp == WaermequelleClass.TYP_PROFIL || wqTyp == WaermequelleClass.TYP_CSV;
+        }
+
+        /// <summary>
+        /// <b>„Nicht prüfbar“ der Kältemittelprüfung</b> (KM4-E2; Konzept Kältemittel als Stammdatum 3.3, 5.2): Je
+        /// Kälteerzeuger der Ergebnisklasse 4 ein Hinweis mit der fehlenden Größe — nur bei gesetztem
+        /// Inbetriebnahmejahr; ohne Jahr prüft und meldet der Lauf nichts (eine Abfrage). Die Warnung der Klasse 2
+        /// meldet der Warnkriterienkatalog (<see cref="Warnkriterien.KAELTEMITTEL_STICHTAG"/>).
+        /// </summary>
+        private void KaeltemittelHinweiseMelden()
+        {
+            foreach (KaeltemittelErzeugerpruefung p in KaeltemittelProjektpruefung.Pruefen(m_ID_Projekt))
+            {
+                string text = Warnkriterien.KaeltemittelNichtPruefbarText(p);
+                if (text.Length > 0)
+                    Protokoll.HinweisEinmal("kuehl-km-kaeltemittel-" + p.ID_Anlage.ToString(CultureInfo.InvariantCulture), text);
+            }
+        }
+
+        /// <summary>
+        /// <b>Die Kältemaschinen des Projekts</b> (KU3-4; Kühlkonzept 5.3, 5.5, 6.1): jede Anlagenzeile mit Typ
+        /// <see cref="KaeltemaschineAnlageSchema.TYP_KAELTEMASCHINE"/> und Verweis auf ihre Projektkopie ist eine
+        /// Maschine — mit Anzahl, Kaltwasservorlauf (<c>Kuehl_Vorlauf</c>), Hilfsstromanteil, Kühlträger und
+        /// Abrechnungsart. Die Plätze <c>Tool_1</c> bis <c>Tool_4</c> ordnen die Erzeugertypen der Wärmeseite;
+        /// gefiltert auf die kühlfähigen Erzeuger folgt die Kältemaschine als Typ den Wärmepumpen im Kühlbetrieb,
+        /// innerhalb des Typs in der Reihenfolge ihrer Anlagenzeilen; in Stunden freier Kühlung deckt sie vor allen
+        /// anderen (<see cref="Kaeltekaskade.Rechnen"/>). Eine Projektkopie ohne Anlagenzeile rechnet nicht und
+        /// wird benannt.
+        /// </summary>
+        private void KaeltemaschinenVorbereiten(bool erhoben, ref int projekttraeger)
+        {
+            IReadOnlyList<KaeltemaschineAnlageModel> anlagen = Kaeltefolge.KaeltemaschinenOrdnen(KaeltemaschineAnlageCtrl.ListeStill(m_ID_Projekt));
+            var gefuehrt = new HashSet<int>(anlagen.Where(a => a.IdKaeltemaschine.HasValue).Select(a => a.IdKaeltemaschine.Value));
+            foreach (int id in KaeltemaschineCtrl.IdsImProjektStill(m_ID_Projekt))
+                if (!gefuehrt.Contains(id))
+                {
+                    KaeltemaschineModel ohne = KaeltemaschineCtrl.LadenStill(id);
+                    Protokoll.HinweisEinmal("kuehl-km-ohne-anlage-" + id,
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_OHNE_ANLAGE,
+                                      ohne != null && !string.IsNullOrEmpty(ohne.Bezeichner) ? ohne.Bezeichner : id.ToString(CultureInfo.CurrentCulture)));
+                }
+            if (anlagen.Count == 0) return;
+
+            double[] feuchte = simulation_Waermebedarf != null ? simulation_Waermebedarf.Luftfeuchte_stuendlich() : null;
+            int angelegt = 0;
+            foreach (KaeltemaschineAnlageModel a in anlagen)
+            {
+                if (!a.IdKaeltemaschine.HasValue)
+                {
+                    Protokoll.WarnungEinmal("kuehl-km-anlage-ohne-geraet-" + a.AnlagenId,
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_ANLAGE_OHNE_GERAET, a.Bezeichner));
+                    continue;
+                }
+                int id = a.IdKaeltemaschine.Value;
+                KaeltemaschineModel m = KaeltemaschineCtrl.LadenStill(id);
+                if (m == null) continue;
+                Kaeltemaschine k = Kaeltemaschine.AusModell(m, out bool angehoben);
+                if (!string.IsNullOrWhiteSpace(a.Bezeichner)) k.Bezeichner = a.Bezeichner;
+                // SOK-0 (SOK-Q10, E168): Geräteart Absorption rechnet bis zum Bau von SOK elektrisch - nur gemeldet.
+                if (Warnkriterien.SorptionAlsElektrisch(m.Geraeteart))
+                    Protokoll.HinweisEinmal("kuehl-km-sorption-" + id, Warnkriterien.SorptionAlsElektrischText(k.Bezeichner));
+                k.Anzahl = Math.Max(1, a.Anzahl);
+                // KM3: eine gewählte, aber verworfene Teillastkurve rechnet linear mit Taktverlust - einmal je Maschine gemeldet.
+                if (k.Teillast != null && k.Teillast.Herkunft == KaeltemaschinenKurvenherkunft.Verworfen)
+                    Protokoll.HinweisEinmal("kuehl-km-kurve-verworfen-" + id,
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_KURVE_VERWORFEN, k.Bezeichner));
+                if (!erhoben)
+                {
+                    Protokoll.HinweisEinmal("kuehl-km-projekt-aus-" + id,
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_PROJEKT_AUS, k.Bezeichner));
+                    continue;
+                }
+                if (k.Kennlinie.Leer)
+                {
+                    Protokoll.WarnungEinmal("kuehl-km-ohne-kennlinie-" + id,
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_OHNE_KENNLINIE, k.Bezeichner));
+                    continue;
+                }
+                if (angehoben)
+                    Protokoll.HinweisEinmal("kuehl-km-kaltwasser-" + id,
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_KALTWASSER_ANGEHOBEN,
+                                      k.Bezeichner, k.Kaltwassertemperatur.ToString("F1", CultureInfo.CurrentCulture)));
+
+                // K-F1: das gewählte Rückkühlwerk der Anlagenzeile - seine Bauart gilt statt der Rückkühlart, Rückkühltemperatur
+                // und freie Kühlung nehmen denselben Weg; ohne Rückkühlwerk unverändert die Rückkühlart mit den Festwerten.
+                RueckkuehlwerkAnsetzen(a, k);
+                k.Rueckkuehltemperatur_stuendlich = k.RueckkuehltemperaturenBilden(Stundentemperatur, feuchte, out int ohneFeuchte);
+                if (ohneFeuchte > 0)
+                    Protokoll.HinweisEinmal("kuehl-km-feuchte-" + id,
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_NASSKUEHLER_OHNE_FEUCHTE,
+                                      k.Bezeichner, ohneFeuchte));
+                // K-F2: adiabat/hybrid ohne Feuchte über der Schaltgrenze - trocken, benannt, nie still.
+                if (k.Rueckkuehlwerk != null && k.Rueckkuehlwerk.StundenOhneFeuchteTrocken > 0)
+                    Protokoll.HinweisEinmal("kuehl-rkw-feuchte-" + a.AnlagenId,
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_OHNE_FEUCHTE,
+                                      k.Bezeichner, k.Rueckkuehlwerk.Bezeichner, k.Rueckkuehlwerk.StundenOhneFeuchteTrocken));
+
+                // K23 wie bei der Wärmepumpe: NULL = kein Zuschlag; ein Wert außerhalb 0 <= x < 1 wird benannt verworfen.
+                double hilfsstromanteil = 0.0;
+                if (m.Kuehl_Hilfsstromanteil.HasValue)
+                {
+                    double h = m.Kuehl_Hilfsstromanteil.Value;
+                    if (h >= 0 && h < 1) hilfsstromanteil = h;
+                    else
+                        Protokoll.WarnungEinmal("kuehl-km-hilfsstrom-" + id,
+                            string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_HILFSSTROM_UNGUELTIG,
+                                          k.Bezeichner, h));
+                }
+
+                // E34 (6.1): nur ein ABWEICHENDER Kühlträger wirkt - dann gilt die Abrechnungsart der Anlage.
+                if (projekttraeger < 0) projekttraeger = Kaeltestromabrechnung.Projekttraeger(m_ID_Projekt);
+                int kuehltraeger = Kaeltestromabrechnung.Abweichend(a.KuehlIdCarrier, projekttraeger)
+                    ? a.KuehlIdCarrier.Value : 0;
+                bool eigenerZaehler = kuehltraeger > 0 && a.KuehlEigenerZaehler == true;
+                if (kuehltraeger > 0)
+                    Protokoll.HinweisEinmal("kuehl-km-kuehltraeger-" + a.AnlagenId,
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_KUEHLTRAEGER,
+                                      k.Bezeichner, Emissionsquelle.TraegerName(kuehltraeger),
+                                      eigenerZaehler ? MyResource.Resource.SIMENG_KAELTE_ABRECHNUNG_ZAEHLER
+                                                     : MyResource.Resource.SIMENG_KAELTE_ABRECHNUNG_ANTEILIG));
+
+                _kaelteerzeuger.Add(new Kaelteerzeuger
+                {
+                    AnlagenID = a.AnlagenId,
+                    IdWp = 0,
+                    Bezeichner = k.Bezeichner,
+                    Modulindex = -1,
+                    Maschine = k,
+                    Hilfsstromanteil = hilfsstromanteil,
+                    Zeitanteil = null,
+                    Quelltemperatur = k.Rueckkuehltemperatur_stuendlich,
+                    Kuehltraeger = kuehltraeger,
+                    EigenerZaehler = eigenerZaehler,
+                });
+                angelegt++;
+            }
+            if (angelegt > 0)
+                Protokoll.HinweisEinmal("kuehl-km-reihenfolge", MyResource.Resource.SIMENG_KAELTE_KM_REIHENFOLGE);
+        }
+
+        /// <summary>
+        /// <b>Das Rückkühlwerk einer Kältemaschinen-Anlage</b> (K-F1; Entwurf Split/VRF/Rückkühlwerk 5.1–5.3): liest die
+        /// Projektkopie aus <c>ID_Rueckkuehlwerk</c> über <see cref="RueckkuehlwerkCtrl.LadenStill"/> und setzt sie an die
+        /// Maschine. Eine luftgekühlte Maschine kennt kein Rückkühlwerk — es wird dann mit Hinweis übergangen. Was am
+        /// Rückkühlwerk noch nicht gerechnet wird, wird einmal je Anlage benannt (seit K-F3 rechnet jedes Merkmal, auch die
+        /// Teil-Freikühlung in Reihe — sie nennt ihre Kaltwasserspreizung samt Herkunft); dazu nennt der Lauf den
+        /// ersetzten Hilfsstrom, die leere Nennleistung und die Verdunstungskühlanlage (42. BImSchV) je einmal.
+        /// </summary>
+        private void RueckkuehlwerkAnsetzen(KaeltemaschineAnlageModel a, Kaeltemaschine k)
+        {
+            if (!a.IdRueckkuehlwerk.HasValue) return;
+            Rueckkuehlwerk r = Rueckkuehlwerk.AusModell(RueckkuehlwerkCtrl.LadenStill(a.IdRueckkuehlwerk.Value));
+            if (r == null) return;
+            if (KaeltemaschineSchema.IstLuftgekuehlt(k.Rueckkuehlart))
+            {
+                Protokoll.HinweisEinmal("kuehl-rkw-luft-" + a.AnlagenId,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_LUFT_IGNORIERT,
+                                  k.Bezeichner, r.Bezeichner));
+                return;
+            }
+            // Welle KB-7b: Der Lauf liest keinen Wasserpreis - die Wasserkosten (Menge x Preis des Wassertraegers, Preismodell
+            // WATER) bucht allein die Wirtschaftlichkeit in die Betriebskosten (Wasserkosten).
+            k.RueckkuehlwerkSetzen(r);
+            // K-F3 (Entwurf 5.5): Teil-Freikühlung in Reihe - die Auslegungsspreizung der Kühlübergabe, sonst die Vorgabe, benannt.
+            if (r.Reihe)
+            {
+                double? spreizung = AuslegungsspreizungKuehlung(m_ID_Projekt);
+                k.ReiheSpreizungK = spreizung ?? KaelteFestwerte.REIHE_SPREIZUNG_K;
+                Protokoll.HinweisEinmal("kuehl-rkw-reihe-" + a.AnlagenId,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_REIHE,
+                                  k.Bezeichner, r.Bezeichner, k.ReiheSpreizungK.ToString("N1", CultureInfo.CurrentCulture),
+                                  spreizung.HasValue ? MyResource.Resource.SIMENG_KAELTE_RKW_REIHE_QUELLE_UEBERGABE
+                                                     : MyResource.Resource.SIMENG_KAELTE_RKW_REIHE_QUELLE_VORGABE));
+            }
+            if (r.NichtGerechnet.Count > 0)
+                Protokoll.HinweisEinmal("kuehl-rkw-nicht-gerechnet-" + a.AnlagenId,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_NICHT_GERECHNET,
+                                  k.Bezeichner, r.Bezeichner, RueckkuehlwerkMerkmale(r.NichtGerechnet)));
+            // K-F2 (Entwurf 5.3): der Ventilator ersetzt den Hilfsstrom der Rückkühlung - keine Doppelzählung, benannt.
+            if (r.MitVentilator && k.HilfsstromRueckkuehlungKw > 0)
+                Protokoll.HinweisEinmal("kuehl-rkw-hilfsstrom-" + a.AnlagenId,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_HILFSSTROM_ERSETZT,
+                                  k.Bezeichner, r.Bezeichner, r.VentilatorNennKw.Value.ToString("N2", CultureInfo.CurrentCulture),
+                                  k.HilfsstromRueckkuehlungKw.ToString("N2", CultureInfo.CurrentCulture)));
+            if ((r.Lastabhaengig || r.MitVentilator) && !r.NennleistungKw.HasValue)
+                Protokoll.HinweisEinmal("kuehl-rkw-nenn-" + a.AnlagenId,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_NENNLEISTUNG_LEER,
+                                  k.Bezeichner, r.Bezeichner));
+            // K-F2: Verdunstungskühlanlagen (42. BImSchV) - nur Hinweis, keine Prüfung.
+            if (r.Verdunstungskuehlanlage)
+                Protokoll.HinweisEinmal("kuehl-rkw-bimschv-" + a.AnlagenId,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_BIMSCHV,
+                                  k.Bezeichner, r.Bezeichner));
+        }
+
+        /// <summary>
+        /// K-F2 (Entwurf 5.3, 5.8, Frage KD-Q8): die Meldungen des Rückkühlwerks nach der Kaskade — Wassermenge und
+        /// Nassstunden (die Kosten stehen in der Wirtschaftlichkeit, Welle KB-7b) und die Stunden über der Nennleistung.
+        /// </summary>
+        private void RueckkuehlwerkMelden(Kaelteerzeuger e)
+        {
+            Rueckkuehlwerk r = e.Maschine.Rueckkuehlwerk;
+            if (r == null) return;
+            if (r.Verdunstungskuehlanlage && e.RkWasserM3 > 0)
+            {
+                string menge = e.RkWasserM3.ToString("N1", CultureInfo.CurrentCulture);
+                Protokoll.HinweisEinmal("kuehl-rkw-wasser-" + e.AnlagenID,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_WASSER,
+                                  e.Bezeichner, r.Bezeichner, menge, e.RkStundenNass));
+            }
+            if (e.RkStundenUeberlast > 0)
+                Protokoll.HinweisEinmal("kuehl-rkw-ueberlast-" + e.AnlagenID,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_UEBERLAST,
+                                  e.Bezeichner, r.Bezeichner, e.RkStundenUeberlast));
+        }
+
+        /// <summary>
+        /// K-F3 (Entwurf 5.5): die Auslegungsspreizung der Kühlübergabe des Projekts [K] — je Gebäude mit
+        /// <c>Kuehluebergabe_Aktiv</c> und bekannter Kühlübergabeart <c>Kuehl_Auslegung_Ruecklauf − Kuehl_Auslegung_Vorlauf</c>
+        /// (leer die Vorgabe der Art, wie im Gebäudemodell), über alle Gebäude die kleinste positive — sie unterschätzt den
+        /// Kaltwasserstrom und damit die Teil-Freikühlung nie zu Gunsten der Anlage. <c>null</c> ohne solches Gebäude.
+        /// </summary>
+        internal static double? AuslegungsspreizungKuehlung(int idProjekt)
+        {
+            DataTable dt = StilleDb.Tabelle(
+                "SELECT Kuehl_Uebergabe_Art, Kuehl_Auslegung_Vorlauf, Kuehl_Auslegung_Ruecklauf " +
+                "FROM Tab_Gebaeude WHERE ID_Projekt = ? AND Kuehluebergabe_Aktiv = 1 ORDER BY ID",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+            if (dt == null) return null;
+            double? kleinste = null;
+            foreach (DataRow row in dt.Rows)
+            {
+                object a = StilleDb.Feld(row, "Kuehl_Uebergabe_Art");
+                string art = a == null || a is DBNull ? null : a.ToString();
+                if (!Kuehluebergabe.ArtBekannt(art)) continue;
+                double v = StilleDb.Kommazahl(StilleDb.Feld(row, "Kuehl_Auslegung_Vorlauf"), Kuehluebergabe.VorgabeVorlaufC(art));
+                double r = StilleDb.Kommazahl(StilleDb.Feld(row, "Kuehl_Auslegung_Ruecklauf"), Kuehluebergabe.VorgabeRuecklaufC(art));
+                double d = r - v;
+                if (!(d > 0) || double.IsInfinity(d)) continue;
+                if (!kleinste.HasValue || d < kleinste.Value) kleinste = d;
+            }
+            return kleinste;
+        }
+
+        /// <summary>
+        /// K-F3 (Entwurf 5.5): der gerechnete Kühlrücklauf einer Stunde auf Stufe AK3 [°C] — kühlleistungsgewichtet über die
+        /// Zonen der Lösung mit Kühlübergabe (<see cref="Stundenergebnis.KuehlRuecklaufC"/>); NaN ohne kühlende Zone.
+        /// </summary>
+        internal static double KuehlRuecklaufDerLoesung(IReadOnlyList<Stundenergebnis>[] loesung)
+        {
+            if (loesung == null) return double.NaN;
+            double summe = 0.0, gewicht = 0.0;
+            foreach (IReadOnlyList<Stundenergebnis> g in loesung)
+            {
+                if (g == null) continue;
+                foreach (Stundenergebnis z in g)
+                {
+                    if (!(z.KuehlleistungW > 0) || double.IsNaN(z.KuehlRuecklaufC) || double.IsInfinity(z.KuehlRuecklaufC))
+                        continue;
+                    summe += z.KuehlleistungW * z.KuehlRuecklaufC;
+                    gewicht += z.KuehlleistungW;
+                }
+            }
+            return gewicht > 0 ? summe / gewicht : double.NaN;
+        }
+
+        /// <summary>Die nicht gerechneten Merkmale eines Rückkühlwerks als Aufzählung in der Sprache des Laufs.</summary>
+        internal static string RueckkuehlwerkMerkmale(IReadOnlyList<string> merkmale)
+        {
+            var namen = new List<string>();
+            foreach (string m in merkmale)
+                switch (m)
+                {
+                    case Rueckkuehlwerk.MERKMAL_LASTABHAENGIG: namen.Add(MyResource.Resource.SIMENG_KAELTE_RKW_MERKMAL_LASTABHAENGIG); break;
+                    case Rueckkuehlwerk.MERKMAL_VENTILATOR: namen.Add(MyResource.Resource.SIMENG_KAELTE_RKW_MERKMAL_VENTILATOR); break;
+                    case Rueckkuehlwerk.MERKMAL_BEFEUCHTUNG: namen.Add(MyResource.Resource.SIMENG_KAELTE_RKW_MERKMAL_BEFEUCHTUNG); break;
+                    case Rueckkuehlwerk.MERKMAL_WASSERBILANZ: namen.Add(MyResource.Resource.SIMENG_KAELTE_RKW_MERKMAL_WASSERBILANZ); break;
+                    case Rueckkuehlwerk.MERKMAL_REIHE: namen.Add(MyResource.Resource.SIMENG_KAELTE_RKW_MERKMAL_REIHE); break;
+                    default: namen.Add(m); break;
+                }
+            return string.Join("; ", namen);
         }
 
         // =====================================================================
@@ -258,17 +683,32 @@ namespace WindowsFormsApplication1
         /// <param name="kanaele">Der Kanalsatz der Kaskade — nur für die Deckungsprobe gelesen.</param>
         private void KaeltekaskadeRechnen(Kanalsatz kanaele)
         {
-            if (m_bError || _kaelteerzeuger == null || _kaelteerzeuger.Count == 0) return;
+            _kaeltespeicher = new List<SimulationPufferspeicher>();
+            if (m_bError) return;
             SimulationKaeltebedarf kaelte = simulation_Waermebedarf != null ? simulation_Waermebedarf.Kaelteseite : null;
-            if (kaelte == null || !kaelte.Gerechnet) return;
-
-            foreach (Kaelteerzeuger e in _kaelteerzeuger)
+            bool gerechnet = kaelte != null && kaelte.Gerechnet;
+            bool mitErzeuger = _kaelteerzeuger != null && _kaelteerzeuger.Count > 0;
+            if (!gerechnet || !mitErzeuger)
             {
+                KaeltespeicherOhneRechnungMelden(gerechnet);
+                return;
+            }
+
+            // AK3-K (Festlegung 16): Im AK3-Weg hat der Kreis die Kältestunden schon gerechnet.
+            Kaeltekaskade stuendlich = _kaeltestunde;
+            _kaeltestunde = null;
+            foreach (Kaelteerzeuger e in stuendlich != null ? new List<Kaelteerzeuger>() : _kaelteerzeuger)
+            {
+                if (e.Maschine != null) continue;   // KU3-2: die Kältemaschine kennt keinen Heizzeitanteil
                 WErzeugerModel m = simulation_wp.wp_model[e.Modulindex];
                 double[] heiz = simulation_wp.Heizzeitanteil_stuendlich != null &&
                                 e.Modulindex < simulation_wp.Heizzeitanteil_stuendlich.Length
                     ? simulation_wp.Heizzeitanteil_stuendlich[e.Modulindex] : null;
-                e.Zeitanteil = Kaeltekaskade.ZeitanteilBilden(_kuehltage, heiz, m.Sperrung, m.Sperrzeit_von, m.Sperrzeit_bis);
+                // V14: das Sperrprofil des Moduls (ohne Tab_Sperrfenster genau das Altfenster).
+                Sperrprofil sperre = simulation_wp.SperrprofilDesModuls(e.Modulindex);
+                e.Zeitanteil = sperre != null
+                    ? Kaeltekaskade.ZeitanteilBilden(_kuehltage, heiz, sperre.Verdichter)
+                    : Kaeltekaskade.ZeitanteilBilden(_kuehltage, heiz, m.Sperrung, m.Sperrzeit_von, m.Sperrzeit_bis);
             }
 
             // Deckungsprobe, dritte Aussage: die Wärmekanäle vor der Kältekaskade festhalten.
@@ -279,8 +719,20 @@ namespace WindowsFormsApplication1
                 foreach (int k in Kanal.KANAELE_WAERME) vorher[k] = (double[])kanaele.Bedarf[k].Clone();
             }
 
-            var kaskade = new Kaeltekaskade { Erzeuger = _kaelteerzeuger, Kuehltage = _kuehltage };
-            kaskade.Rechnen(kaelte.Kaeltebedarf, simulation_wp.Extrapolation_Erlaubt);
+            Kaeltekaskade kaskade;
+            if (stuendlich != null)
+            {
+                kaskade = stuendlich;
+                kaskade.Abschliessen();
+            }
+            else
+            {
+                kaskade = new Kaeltekaskade { Erzeuger = _kaelteerzeuger, Kuehltage = _kuehltage,
+                                              Speicher = KaeltespeicherLesen() };
+                // K3 (Konzept Kältebedarf 4.2): die Kaskade bekommt den Kühlkanal ohne die dezentral gedeckte Kälte -
+                // die Abzugsstelle SimulationKaeltebedarf.BedarfDerKaskade (Andockpunkt für K-D).
+                kaskade.Rechnen(kaelte.BedarfDerKaskade(), simulation_wp != null && simulation_wp.Extrapolation_Erlaubt);
+            }
             kaelte.DeckungUebernehmen(kaskade);
 
             _waermekanalAbweichungen = 0;
@@ -300,6 +752,253 @@ namespace WindowsFormsApplication1
             Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
 
             KennlinienlageMelden(kaskade);
+
+            // KU3-5: Die Kältespeicher stehen erst nach der Kaskade als Ergebnis bereit.
+            _kaeltespeicher = kaskade.Speicher;
+            foreach (SimulationPufferspeicher sp in _kaeltespeicher)
+                Protokoll.Hinweis(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTESPEICHER_BETRIEB,
+                    sp.BezeichnerAnzeige(), sp.Q_max.ToString("N1", CultureInfo.CurrentCulture),
+                    (sp.Entladung_gesamt / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
+                    (sp.Ladung_gesamt / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
+                    (sp.Verluste_gesamt / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
+                    sp.Vollzyklen.ToString("N1", CultureInfo.CurrentCulture)));
+        }
+
+        /// <summary>Die Kältekaskade, die der Kreis je Stunde rechnet (AK3-K); <c>null</c> = Jahreslauf nach der Wärme.</summary>
+        private Kaeltekaskade _kaeltestunde;
+
+        /// <summary>Die Sperrmasken der Wärmepumpen im Kühlbetrieb (AK3-K) — dieselben wie in der Kältestunde.</summary>
+        private Dictionary<Kaelteerzeuger, bool[]> _ak3Kaeltemasken;
+
+        /// <summary>
+        /// <b>Kälte-Restbedarf im Kreis</b> (AK3-K, Festlegung 14): Stunden, in denen die Kältestunde einen Rest lässt —
+        /// die Abweichung der Vorrangschätzung der Kälteschranke zur echten Kältestunde; gezählt, nicht nachiteriert.
+        /// </summary>
+        internal int Ak3KaelteRestStunden { get; private set; }
+
+        /// <summary>Der Kälte-Restbedarf dieser Stunden [kWh] (AK3-K, Festlegung 14).</summary>
+        internal double Ak3KaelteRestKwh { get; private set; }
+
+        /// <summary>
+        /// Prüfauftrag K3 (Entwurf 4.5): true, solange die Kälteschranke nach der Wärmestunde mit dem wirklichen
+        /// Heizzeitanteil nachgerechnet wird — nur zum Vergleich mit der Vorrangschätzung, ohne Wirkung auf den Lauf.
+        /// </summary>
+        private bool _ak3HeizzeitanteilEcht;
+
+        /// <summary>Der wirkliche Heizzeitanteil des Moduls <paramref name="modul"/> in der eben gerechneten Wärmestunde.</summary>
+        private double EchterHeizzeitanteil(int modul, int stunde)
+        {
+            double[] heiz = simulation_wp?.Heizzeitanteil_stuendlich != null && modul < simulation_wp.Heizzeitanteil_stuendlich.Length
+                ? simulation_wp.Heizzeitanteil_stuendlich[modul] : null;
+            return heiz != null && stunde < heiz.Length ? heiz[stunde] : 0.0;
+        }
+
+        /// <summary>
+        /// <b>Die Kälteschranke des Kreises</b> (AK3-K 4.2, 4.3, Festlegung 11): die Kälteerzeuger der Kältestunde als
+        /// Kapazitäten — Wärmepumpen im Kühlbetrieb mit Erzeugertagesart, Sperrmaske und der Vorrangschätzung aus ihrer
+        /// Heizkapazität im Kreis, Kältemaschinen aus ihrer Kennlinie —, die Kältespeicher der Kältestunde über den
+        /// Kältespeicherleser und der Kühlvorlauf der Anlage. <c>null</c> ohne Kältestunde im Kreis.
+        /// </summary>
+        private Kaelteschranke Ak3KaelteschrankeBauen(IReadOnlyList<IErzeugerkapazitaet> waerme)
+        {
+            if (_kaeltestunde == null || _kaelteerzeuger == null) return null;
+            bool extrapolation = simulation_wp != null && simulation_wp.Extrapolation_Erlaubt;
+            var erzeuger = new List<IKaelteerzeugerkapazitaet>();
+            Kaelteschranke schranke = null;
+            foreach (Kaelteerzeuger e in _kaelteerzeuger)
+            {
+                if (e.Maschine != null)
+                {
+                    erzeuger.Add(new KaeltemaschineKapazitaet(e));
+                    continue;
+                }
+                bool[] maske = _ak3Kaeltemasken != null && _ak3Kaeltemasken.TryGetValue(e, out bool[] m) ? m : null;
+                var wp = new WaermepumpeKaeltekapazitaet(e, _kuehltage, maske, extrapolation);
+                // Die Heizkapazität derselben Maschine im Kreis (Modul der Anlagenzeile); ohne sie keine Schätzung.
+                WaermepumpeKapazitaet heiz = null;
+                // Die Erzeuger vor der Wärmepumpe in der Kaskade: Sie tragen den Vorrang der Stunde zuerst (K5a).
+                var vorgelagert = new List<IErzeugerkapazitaet>();
+                if (simulation_wp != null && e.Modulindex >= 0 && e.Modulindex < simulation_wp.wp_list.Count)
+                {
+                    int id = simulation_wp.wp_list[e.Modulindex];
+                    int stelle = 0;
+                    foreach (IErzeugerkapazitaet k in waerme)
+                    {
+                        if (k is WaermepumpeKapazitaet w && _ak3WaermeAnlagen != null && stelle < _ak3WaermeAnlagen.Count
+                            && _ak3WaermeAnlagen[stelle] == id) { heiz = w; break; }
+                        vorgelagert.Add(k);
+                        stelle++;
+                    }
+                }
+                if (heiz != null)
+                {
+                    WaermepumpeKapazitaet h = heiz;
+                    int modul = e.Modulindex;
+                    wp.Heizzeitanteil = stunde =>
+                    {
+                        if (_ak3HeizzeitanteilEcht) return EchterHeizzeitanteil(modul, stunde);
+                        // Gibt der Fahrplan die Heizseite nicht frei (Sperrzeit, Zeitprogramm, Umschaltung am Kühltag),
+                        // heizt die Wärmepumpe in der Stunde nicht - sie trägt keinen Vorrang (K5a).
+                        Erzeugerangebot eigen = h.Abfragen(stunde, double.NaN);
+                        if (!(eigen.VerfuegbarKw > 0.0)) return 0.0;
+                        double vor = 0.0;
+                        foreach (IErzeugerkapazitaet k in vorgelagert) vor += k.Abfragen(stunde, double.NaN).VerfuegbarKw;
+                        return Kaelteschranke.Heizzeitanteil(schranke.VorrangDerStunde, eigen.KapazitaetKw, vor);
+                    };
+                }
+                erzeuger.Add(wp);
+            }
+            schranke = new Kaelteschranke(erzeuger, new Kaeltespeicherleser(_kaeltestunde.Speicher),
+                                          simulation_Waermebedarf.KuehlVorlaufAnlageC);
+            // KWN-0: Die Naht Prozesskälte wird belegt, sobald eine Zeile mit Kaelte_Art = PROZESS gebucht hat - der zentral
+            // gedeckte Unterposten hat Vorrang vor der Raumkühlung. Ohne Prozesszeile bleibt sie leer (null), wie zuvor.
+            SimulationKaeltebedarf kaelteseite = simulation_Waermebedarf.Kaelteseite;
+            if (kaelteseite != null && kaelteseite.MitProzess)
+                schranke.Prozesskaelte = kaelteseite.ProzesskaelteDerKaskade;
+            return schranke;
+        }
+
+        /// <summary>
+        /// <b>Die Kältestunde im Kreis</b> (AK3-K, Entwurf 4.1 Schritt 5, Festlegung 16), nur im AK3-Weg: Kälteerzeuger (ohne Wärmepumpe in der Schleife hier statt nach der Wärme),
+        /// Kältespeicher und die Kältekaskade werden vor der Stundenschleife angelegt; die zurückgegebene Aktion rechnet je
+        /// Stunde nach der Wärmestunde den Kühlzeitanteil der Wärmepumpen aus ihrem eben gerechneten Heizzeitanteil und
+        /// die Kältestunde mit dem Kältebedarf des Kreises (Pass 1 plus Abweichung der Stunde). Danach schließt
+        /// <see cref="KaeltekaskadeRechnen"/> das Jahr ab, statt es zu rechnen. <c>null</c> = der Jahreslauf.
+        /// </summary>
+        private Action<int> Ak3KaeltestundeEinrichten()
+        {
+            _kaeltestunde = null;
+            Ak3Weg weg = Stundenbedarf is Ak3Stundenbedarf ? simulation_Waermebedarf?.Ak3 : null;
+            if (weg == null || m_bError) return null;
+            SimulationKaeltebedarf kaelte = simulation_Waermebedarf.Kaelteseite;
+            if (kaelte == null || !kaelte.Gerechnet) return null;
+            if (!_wpInSchleife) KaelteerzeugerVorbereiten();
+            if (_kaelteerzeuger == null || _kaelteerzeuger.Count == 0) return null;
+
+            var masken = new Dictionary<Kaelteerzeuger, bool[]>();
+            _ak3Kaeltemasken = masken;
+            Ak3KaelteRestStunden = 0;
+            Ak3KaelteRestKwh = 0.0;
+            foreach (Kaelteerzeuger e in _kaelteerzeuger)
+            {
+                if (e.Maschine != null) continue;
+                WErzeugerModel m = simulation_wp.wp_model[e.Modulindex];
+                Sperrprofil sperre = simulation_wp.SperrprofilDesModuls(e.Modulindex);
+                masken[e] = sperre != null
+                    ? sperre.Verdichter
+                    : Sperrprofil.Bilden(m.Sperrung, m.Sperrzeit_von, m.Sperrzeit_bis, null, 0).Verdichter;
+                e.Zeitanteil = new double[Kanalsatz.STUNDEN_JAHR];
+            }
+            var kaskade = new Kaeltekaskade { Erzeuger = _kaelteerzeuger, Kuehltage = _kuehltage,
+                                              Speicher = KaeltespeicherLesen(), ImKreis = true };
+            kaskade.Beginnen(simulation_wp != null && simulation_wp.Extrapolation_Erlaubt);
+            _kaeltestunde = kaskade;
+            bool mitReihe = _kaelteerzeuger.Any(e => e.Maschine?.Rueckkuehlwerk != null && e.Maschine.Rueckkuehlwerk.Reihe);
+            return h =>
+            {
+                foreach (KeyValuePair<Kaelteerzeuger, bool[]> z in masken)
+                {
+                    double[] heiz = simulation_wp.Heizzeitanteil_stuendlich != null &&
+                                    z.Key.Modulindex < simulation_wp.Heizzeitanteil_stuendlich.Length
+                        ? simulation_wp.Heizzeitanteil_stuendlich[z.Key.Modulindex] : null;
+                    z.Key.Zeitanteil[h] = Kaeltekaskade.ZeitanteilDerStunde(_kuehltage, heiz, z.Value, h);
+                }
+                // Prüfauftrag K3 (4.5): die Kälteschranke mit dem wirklichen Heizzeitanteil gegen die Vorrangschätzung —
+                // am Zustand des Stundenbeginns (Kältespeicher erst in der Kältestunde geschrieben), ohne Wirkung.
+                Anlagenkopplung kreis = weg.Kreis;
+                Kopplungsstunde ks = kreis?.LetzteStunde;
+                // KK3 (Entwurf KK 2.5): der Erzeugervorlauf der konvergierten Stunde; NaN = der feste Vorlauf (bitgleich).
+                double vK = ks != null && ks.Jahresstunde == h ? ks.KuehlVorlaufC : double.NaN;
+                if (ks != null && ks.Jahresstunde == h && ks.KaelteschrankeGreift && kreis.Kaelteschranke != null)
+                {
+                    _ak3HeizzeitanteilEcht = true;
+                    try
+                    {
+                        Kaelteschranke ksr = kreis.Kaelteschranke;
+                        kreis.VorrangschaetzungPruefen(ks, ksr.Angebot(h, ksr.VorrangDerStunde, vK).LeistungKw);
+                    }
+                    finally { _ak3HeizzeitanteilEcht = false; }
+                }
+                double d = weg.KaelteDeltaKwh[h];
+                // K3: dieselbe Abzugsstelle je Stunde (SimulationKaeltebedarf.BedarfDerKaskade, Andockpunkt für K-D).
+                // K-F3 (Entwurf 5.5): der gerechnete Kühlrücklauf der Stunde - nur eine Kältemaschine in Reihe liest ihn.
+                double rK = mitReihe && ks != null && ks.Jahresstunde == h ? KuehlRuecklaufDerLoesung(ks.Loesung) : double.NaN;
+                kaskade.StundeRechnen(h, kaelte.BedarfDerKaskade(h, d != 0.0 ? kaelte.Kaeltebedarf[h] + d : kaelte.Kaeltebedarf[h]), vK, rK);
+                // Festlegung 14: der Rest der echten Kältestunde ist die Abweichung zur Schätzung der Kälteschranke.
+                double rest = kaskade.Rest_stuendlich[h];
+                kreis?.KaelteRestZaehlen(rest);
+                if (rest > 0.0)
+                {
+                    Ak3KaelteRestStunden++;
+                    Ak3KaelteRestKwh += rest;
+                }
+            };
+        }
+
+        /// <summary>
+        /// <b>Die Kältespeicher des Projekts</b> (KU3-5, E68; Kühlkonzept 4.6, 5.5): jeder Projektpuffer mit
+        /// der Verwendung <see cref="SimulationPufferspeicher.VERWENDUNG_KAELTE"/> — ohne Senkenzeile, denn
+        /// die Kälteseite hat nur einen Kanal und alle Kälteerzeuger laden ihn. Temperaturpaar aus der
+        /// Projektkopie (Vorgabe 6/12 °C, wenn es leer oder vertauscht ist), Schwellen und Leistungsgrenzen
+        /// wie beim Wärmepuffer; Reihenfolge nach Entladepriorität (0 = automatisch, hinten), sonst nach
+        /// Bezeichner.
+        /// </summary>
+        private List<SimulationPufferspeicher> KaeltespeicherLesen()
+        {
+            var liste = new List<SimulationPufferspeicher>();
+            foreach (WaermesenkeClass.PufferInfo p in WaermesenkeClass.ProjektPufferListe(m_ID_Projekt, WaermesenkeClass.VERWENDUNG_KAELTE))
+            {
+                var sp = new SimulationPufferspeicher
+                {
+                    Bezeichner = p.Bezeichner,
+                    Erzeuger = DbWerte.PSP_VERWENDUNG_KAELTE,
+                    ID_Pufferspeicher = p.ID,
+                    ID_Projekt = p.ID_Projekt,
+                };
+                sp.InitKaelte(p.Gesamtvolumen, p.Vorlauf, p.Ruecklauf, p.Bereitschaftsverluste);
+                sp.SchwelleEin = p.SchwelleEin / 100.0;
+                sp.SchwelleAus = p.SchwelleAus / 100.0;
+                sp.SchwelleAusNachrang = p.SchwelleAusNachrang / 100.0;
+                sp.Entladeprio = p.Entladeprio;
+                LeistungsgrenzenUebernehmen(sp);
+                sp.ImRechenpfad = true;
+                if (sp.KaeltepaarVorgabe)
+                    Protokoll.HinweisEinmal("kaeltespeicher-paar-" + p.ID,
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTESPEICHER_PAAR_VORGABE,
+                                      sp.BezeichnerAnzeige(), sp.KaltVorlauf, sp.KaltRuecklauf));
+                liste.Add(sp);
+            }
+            // Stabil sortieren: gepflegte Entladepriorität vorn, 0 (automatisch) hinten (KB-A: die Regel der Kaeltefolge).
+            return Kaeltefolge.KaeltespeicherOrdnen(liste, sp => sp.Entladeprio);
+        }
+
+        /// <summary>Lade- und Entladeleistungsgrenze [kW] eines Kältespeichers aus seiner Projektzeile (0 = unbegrenzt).</summary>
+        private void LeistungsgrenzenUebernehmen(SimulationPufferspeicher sp)
+        {
+            DataRow r = Schichtzeile(sp.ID_Pufferspeicher);
+            if (r == null) return;
+            sp.LadeleistungMax = StilleDb.Kommazahl(StilleDb.Feld(r, SchemaKatalog.SPALTE_PSP_LADELEISTUNG_MAX), 0);
+            if (sp.LadeleistungMax < 0) sp.LadeleistungMax = 0;
+            sp.EntladeleistungMax = StilleDb.Kommazahl(StilleDb.Feld(r, SchemaKatalog.SPALTE_PSP_ENTLADELEISTUNG_MAX), 0);
+            if (sp.EntladeleistungMax < 0) sp.EntladeleistungMax = 0;
+        }
+
+        /// <summary>
+        /// Benannt statt still (KU3-5): Ein Kältespeicher im Projekt rechnet nicht, wenn das Projekt keine
+        /// Kälte rechnet oder kein Kälteerzeuger angelegt ist. Die Projektpufferliste wird nur gelesen,
+        /// wenn überhaupt ein Projekt läuft.
+        /// </summary>
+        private void KaeltespeicherOhneRechnungMelden(bool kaelteGerechnet)
+        {
+            if (m_ID_Projekt <= 0) return;
+            foreach (WaermesenkeClass.PufferInfo p in WaermesenkeClass.ProjektPufferListe(m_ID_Projekt, WaermesenkeClass.VERWENDUNG_KAELTE))
+            {
+                string name = string.IsNullOrEmpty(p.Bezeichner) ? p.ID.ToString(CultureInfo.CurrentCulture) : p.Bezeichner;
+                Protokoll.WarnungEinmal("kaeltespeicher-ohne-rechnung-" + p.ID,
+                    string.Format(CultureInfo.CurrentCulture,
+                        kaelteGerechnet ? MyResource.Resource.SIMENG_KAELTESPEICHER_OHNE_ERZEUGER
+                                        : MyResource.Resource.SIMENG_KAELTESPEICHER_OHNE_KUEHLUNG, name));
+            }
         }
 
         /// <summary>
@@ -327,6 +1026,41 @@ namespace WindowsFormsApplication1
             return reihe;
         }
 
+        /// <summary>
+        /// <b>Der Strom der dezentralen (Split-)Deckung</b> (K3, Konzept Kältebedarf 4.2; Schritt 223) — neben der Kaskade, aber
+        /// an derselben Stelle in die Stufenrechnung wie der Kältestrom der Kaskade: Jahressumme in <see cref="ReststromMwh"/>,
+        /// Viertelstundenverlauf in den Rest, die Reihe in <see cref="Kaeltestrom_Stufenrechnung_stuendlich"/> (Lastreihe des
+        /// Stromspeichers, Strombilanz). Gerufen nach der Kältekaskade und vor dem Abschluss der Kälteseite, auch ohne
+        /// Kälteerzeuger. Ohne dezentral gedeckte Zeile ein sofortiger Rücksprung — der Lauf bleibt Zeichen für Zeichen.
+        /// <para>Je Zeile entscheidet ihr Kühlträger, wie bei Wärmepumpe und Kältemaschine (E34): Leer oder der Stromträger
+        /// des Projekts läuft wie bisher anteilig; ein abweichender Träger mit eigenem Zähler läuft NEBEN der Stufenrechnung
+        /// (weder in den Rest noch in die Lastreihe), ein abweichender Träger ohne eigenen Zähler bleibt in ihr und bepreist
+        /// am Laufende seinen Anteil am Netzbezug (<see cref="KaeltestromNetzbezugAufteilen"/>).</para>
+        /// </summary>
+        private void DezentralenKaeltestromBuchen()
+        {
+            if (m_bError) return;
+            SimulationKaeltebedarf kaelte = simulation_Waermebedarf != null ? simulation_Waermebedarf.Kaelteseite : null;
+            if (kaelte == null || !kaelte.Gerechnet || !kaelte.MitDezentral) return;
+
+            kaelte.KuehltraegerFestlegen(Kaeltestromabrechnung.Projekttraeger(m_ID_Projekt));
+            Kaeltestrom_Dezentral_stuendlich = (double[])kaelte.Strom_Dezentral.Clone();
+
+            double summeKwh;
+            double[] reihe = kaelte.StromDerStufenrechnung(out summeKwh);
+            Kaeltestrom_Dezentral_Stufenrechnung_stuendlich = reihe;
+            if (!kaelte.DezentraleZeilen.Exists(z => !z.NebenDerStufenrechnung)) return;   // alles über eigene Zähler
+
+            if (Kaeltestrom_Stufenrechnung_stuendlich == null)
+                Kaeltestrom_Stufenrechnung_stuendlich = (double[])reihe.Clone();
+            else
+                for (int h = 0; h < Kanalsatz.STUNDEN_JAHR; h++) Kaeltestrom_Stufenrechnung_stuendlich[h] += reihe[h];
+
+            ReststromMwh += summeKwh / 1000.0;
+            Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich,
+                                                            Stundenwerte_zu_viertelstunden(reihe));
+        }
+
         // =====================================================================
         //  2a. Am Laufende: der Netzbezug des Kältestroms (E34, Kühlkonzept 6.1)
         // =====================================================================
@@ -342,17 +1076,21 @@ namespace WindowsFormsApplication1
         /// gemeinsam, ohne Vorrang (E34, Wahl 1).
         ///
         /// <para><b>Nur eine Aufteilung, kein zweiter Rechenweg:</b> Rest, Netzbezug und
-        /// <see cref="ReststromMwh"/> bleiben, wie sie sind. Ohne Kältekaskade ein sofortiger
-        /// Rücksprung. Bepreist und bewertet wird die Menge einmal, im <c>KostenEmissionRechner</c>
-        /// — mit dem Kühlträger, wo er abweicht, sonst mit dem Stromträger des Projekts.</para>
+        /// <see cref="ReststromMwh"/> bleiben, wie sie sind. Die Split-Zeilen (Schritt 223) teilt dieselbe Regel auf, auch
+        /// ohne Kälteerzeuger; ohne Kältekaskade und ohne Split-Zeile ein sofortiger Rücksprung. Bepreist und bewertet wird
+        /// die Menge einmal, im <c>KostenEmissionRechner</c> — mit dem Kühlträger, wo er abweicht, sonst mit dem Stromträger
+        /// des Projekts.</para>
         /// </summary>
         private void KaeltestromNetzbezugAufteilen()
         {
-            if (m_bError || _kaelteerzeuger == null || _kaelteerzeuger.Count == 0) return;
+            if (m_bError) return;
             SimulationKaeltebedarf kaelte = simulation_Waermebedarf != null ? simulation_Waermebedarf.Kaelteseite : null;
+            double[] last = null;
+            // Schritt 223: die Split-Zeilen nach derselben Regel - auch ohne Kälteerzeuger; ohne Split-Zeile ein Rücksprung.
+            if (kaelte != null && kaelte.Gerechnet && kaelte.MitDezentral) DezentralenNetzbezugAufteilen(kaelte, ref last);
+            if (_kaelteerzeuger == null || _kaelteerzeuger.Count == 0) return;
             if (kaelte == null || kaelte.Kaskade == null) return;
 
-            double[] last = null;
             foreach (Kaelteerzeuger e in kaelte.Kaskade.Erzeuger)
             {
                 if (e.NebenDerStufenrechnung) { e.NetzbezugKwh = e.StromGesamtKwh; }
@@ -365,12 +1103,54 @@ namespace WindowsFormsApplication1
                 }
 
                 if (e.Kuehltraeger > 0)
-                    Protokoll.Hinweis(string.Format(CultureInfo.CurrentCulture,
-                        MyResource.Resource.SIMENG_KAELTE_KUEHLTRAEGER_MENGE, e.Bezeichner,
-                        (e.NetzbezugKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
-                        (e.StromGesamtKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
-                        Emissionsquelle.TraegerName(e.Kuehltraeger)));
+                    Protokoll.Hinweis(KuehltraegerMengeHinweis(e, Emissionsquelle.TraegerName(e.Kuehltraeger)));
             }
+        }
+
+        /// <summary>
+        /// Der Netzbezug je Split-Zeile (Schritt 223; E34): mit eigenem Zähler der ganze Strom, sonst anteilig über die
+        /// Stufenrechnung (<see cref="Kaeltekaskade.NetzbezugAnteilKwh"/>, dieselbe Lastreihe wie bei den Kälteerzeugern). Eine
+        /// Zeile mit abweichendem Kühlträger nennt ihre Menge.
+        /// </summary>
+        private void DezentralenNetzbezugAufteilen(SimulationKaeltebedarf kaelte, ref double[] last)
+        {
+            foreach (SimulationKaeltebedarf.DezentraleZeile z in kaelte.DezentraleZeilen)
+            {
+                if (z.NebenDerStufenrechnung) z.NetzbezugKwh = z.StromKwh;
+                else if (!(z.StromKwh > 0)) z.NetzbezugKwh = 0.0;
+                else
+                {
+                    if (last == null) last = new StromspeicherSimCtrl().BaueLastreihe(this);
+                    z.NetzbezugKwh = Kaeltekaskade.NetzbezugAnteilKwh(Rest_Strombedarf_viertelstuendlich, last, z.Strom_stuendlich);
+                }
+
+                if (z.Kuehltraeger > 0)
+                    Protokoll.Hinweis(KuehltraegerMengeHinweis(z, Emissionsquelle.TraegerName(z.Kuehltraeger)));
+            }
+        }
+
+        /// <summary>Der Hinweis zum Netzbezug des Stroms einer Split-Zeile mit abweichendem Kühlträger.</summary>
+        internal static string KuehltraegerMengeHinweis(SimulationKaeltebedarf.DezentraleZeile z, string traeger)
+        {
+            return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_DEZENTRAL_KUEHLTRAEGER, z.Bezeichner,
+                (z.NetzbezugKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
+                (z.StromKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
+                traeger);
+        }
+
+        /// <summary>
+        /// Der Hinweis zum Netzbezug des Kältestroms mit abweichendem Kühlträger — für die
+        /// Wärmepumpe und die Kältemaschine (<see cref="Kaelteerzeuger.Maschine"/>) je mit eigenem Text.
+        /// </summary>
+        internal static string KuehltraegerMengeHinweis(Kaelteerzeuger e, string traeger)
+        {
+            string vorlage = e.Maschine != null
+                ? MyResource.Resource.SIMENG_KAELTE_KM_KUEHLTRAEGER_MENGE
+                : MyResource.Resource.SIMENG_KAELTE_KUEHLTRAEGER_MENGE;
+            return string.Format(CultureInfo.CurrentCulture, vorlage, e.Bezeichner,
+                (e.NetzbezugKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
+                (e.StromGesamtKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
+                traeger);
         }
 
         /// <summary>
@@ -383,6 +1163,7 @@ namespace WindowsFormsApplication1
         {
             foreach (Kaelteerzeuger e in kaskade.Erzeuger)
             {
+                if (e.Maschine != null) { KaeltemaschineMelden(e); continue; }
                 Kuehlkennlinie k = e.Kennlinie;
                 if (k == null) continue;
                 string schluessel = "kuehl-wp-kennlinie-" + e.IdWp + "-" + k.Vorlauf.ToString(CultureInfo.InvariantCulture);
@@ -400,6 +1181,41 @@ namespace WindowsFormsApplication1
                                       e.Verlaengert ? MyResource.Resource.SIMENG_KAELTE_KENNLINIE_VERLAENGERT
                                                     : MyResource.Resource.SIMENG_KAELTE_KENNLINIE_GEKAPPT));
             }
+        }
+
+        /// <summary>
+        /// Die Meldungen einer Kältemaschine (KU3-2): Betrieb mit freier Kühlung und Takt, die Stunden
+        /// am Rand der Kennlinie und die Unterdeckung an der Leistungsgrenze — je einmal.
+        /// </summary>
+        private void KaeltemaschineMelden(Kaelteerzeuger e)
+        {
+            Kaeltemaschine k = e.Maschine;
+            string kw = k.Kaltwassertemperatur.ToString("F1", CultureInfo.CurrentCulture);
+            Protokoll.HinweisEinmal("kuehl-km-betrieb-" + e.AnlagenID,
+                string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_BETRIEB,
+                    e.Bezeichner, kw,
+                    (e.KaelteGesamtKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
+                    (e.KaelteFreiKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
+                    e.StundenFreieKuehlung,
+                    (e.StromGesamtKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
+                    e.Taktstunden));
+            if (e.StundenRandwert > 0)
+                Protokoll.HinweisEinmal("kuehl-km-randwert-" + e.AnlagenID,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_RANDWERT,
+                        e.Bezeichner, e.StundenRandwert,
+                        k.Kennlinie.RueckkuehlMin.ToString("F1", CultureInfo.CurrentCulture),
+                        k.Kennlinie.RueckkuehlMax.ToString("F1", CultureInfo.CurrentCulture), kw));
+            // KM3: die Stunden mit Gütegrad-Extrapolation - nur mit Kennfeld_Randweg GUETEGRAD.
+            if (k.GuetegradWirksam && e.StundenExtrapoliert > 0)
+                Protokoll.HinweisEinmal("kuehl-km-extrapoliert-" + e.AnlagenID,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_EXTRAPOLIERT,
+                        e.Bezeichner, e.StundenExtrapoliert));
+            if (e.StundenLeistungsgrenze > 0)
+                Protokoll.WarnungEinmal("kuehl-km-unterdeckung-" + e.AnlagenID,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_KM_UNTERDECKUNG,
+                        e.Bezeichner, e.StundenLeistungsgrenze,
+                        (e.OffenAnLeistungsgrenzeKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture)));
+            RueckkuehlwerkMelden(e);
         }
 
         // =====================================================================
@@ -430,14 +1246,8 @@ namespace WindowsFormsApplication1
             }
             else
             {
-                Protokoll.Hinweis(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_DECKUNG,
-                    (k.DeckungGesamtKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
-                    kaelte.Kaeltebedarf_Gesamt.ToString("N2", CultureInfo.CurrentCulture),
-                    SimulationRunner.DeckungProzent(k.DeckungGesamtKwh / 1000.0, kaelte.Kaeltebedarf_Gesamt)
-                                    .ToString("N1", CultureInfo.CurrentCulture),
-                    (k.StromGesamtKwh / 1000.0).ToString("N2", CultureInfo.CurrentCulture),
-                    k.EerJahreswert.ToString("N2", CultureInfo.CurrentCulture),
-                    k.AnzahlKuehltage));
+                Protokoll.Hinweis(KaeltedeckungMeldung(k.DeckungGesamtKwh / 1000.0, kaelte.Kaeltebedarf_Dezentral_Gesamt,
+                    kaelte.Kaeltebedarf_Gesamt, k.StromGesamtKwh / 1000.0, k.EerJahreswert, k.AnzahlKuehltage));
 
                 if (k.RestGesamtKwh > 0)
                     Protokoll.Warnung(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_UNTERDECKUNG,
@@ -449,6 +1259,56 @@ namespace WindowsFormsApplication1
             }
 
             DeckungsprobeKaelteAusfuehren(kaelte, kanaele);
+        }
+
+        /// <summary>
+        /// <b>Die Laufmeldung der Kälteerzeugung</b> (F-K12; K6c-N). Ohne dezentrale (Split-)Deckung steht sie wörtlich
+        /// wie immer: die Deckung der Kältefolge am Gesamtbedarf — die gespeicherte Größe <c>Kaelte.DeckungsgradProzent</c>.
+        /// Mit Split-Zeile nennt sie wie die Übersicht die Hauptzahl nach <see cref="KaelteDeckungsgrad.Hauptzahl"/>
+        /// (Kältefolge + dezentral am Gesamtbedarf), dazu „davon Kältefolge“ nach
+        /// <see cref="KaelteDeckungsgrad.DavonKaeltefolge"/> und die dezentral gedeckte Menge; bleibt kein zentral zu
+        /// deckender Bedarf, entfällt „davon Kältefolge“.
+        /// </summary>
+        /// <param name="kaeltefolgeMwh">Die Deckung der Kältefolge [MWh/a].</param>
+        /// <param name="dezentralMwh">Die dezentral (Split) gedeckte Kälte [MWh/a]; 0 ohne Split-Zeile.</param>
+        /// <param name="gesamtMwh">Der Kältebedarf gesamt samt dezentraler Zeilen [MWh/a].</param>
+        /// <param name="stromMwh">Der Kältestrom der Kältefolge [MWh/a].</param>
+        /// <param name="eerJahreswert">Der EER-Jahreswert der Kältefolge.</param>
+        /// <param name="kuehltage">Die Zahl der Kühltage.</param>
+        public static string KaeltedeckungMeldung(double kaeltefolgeMwh, double dezentralMwh, double gesamtMwh,
+                                                   double stromMwh, double eerJahreswert, int kuehltage)
+        {
+            CultureInfo kultur = CultureInfo.CurrentCulture;
+            double? hauptzahl = KaelteDeckungsgrad.Hauptzahl(kaeltefolgeMwh, dezentralMwh, gesamtMwh);
+            if (hauptzahl == null)
+                return string.Format(kultur, MyResource.Resource.SIMENG_KAELTE_DECKUNG,
+                    kaeltefolgeMwh.ToString("N2", kultur),
+                    gesamtMwh.ToString("N2", kultur),
+                    SimulationRunner.DeckungProzent(kaeltefolgeMwh, gesamtMwh).ToString("N1", kultur),
+                    stromMwh.ToString("N2", kultur),
+                    eerJahreswert.ToString("N2", kultur),
+                    kuehltage);
+
+            double? davon = KaelteDeckungsgrad.DavonKaeltefolge(kaeltefolgeMwh, dezentralMwh, gesamtMwh);
+            string gedeckt = (kaeltefolgeMwh + dezentralMwh).ToString("N2", kultur);
+            if (davon == null)
+                return string.Format(kultur, MyResource.Resource.SIMENG_KAELTE_DECKUNG_SPLIT_NUR_DEZENTRAL,
+                    gedeckt,
+                    gesamtMwh.ToString("N2", kultur),
+                    hauptzahl.Value.ToString("N1", kultur),
+                    dezentralMwh.ToString("N2", kultur),
+                    stromMwh.ToString("N2", kultur),
+                    eerJahreswert.ToString("N2", kultur),
+                    kuehltage);
+            return string.Format(kultur, MyResource.Resource.SIMENG_KAELTE_DECKUNG_SPLIT,
+                gedeckt,
+                gesamtMwh.ToString("N2", kultur),
+                hauptzahl.Value.ToString("N1", kultur),
+                davon.Value.ToString("N1", kultur),
+                dezentralMwh.ToString("N2", kultur),
+                stromMwh.ToString("N2", kultur),
+                eerJahreswert.ToString("N2", kultur),
+                kuehltage);
         }
 
         /// <summary>

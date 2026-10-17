@@ -38,8 +38,8 @@
 
     IM GEBAEUDEDIALOG oeffnet danach der Katalogeditor im Modus Neu, vorbelegt - mit dem
     Parametersatz der Anwendung (GebaeudeKatalogHuelle.Gaben), dessen Wege zur Datenbank den
-    Proben der Seite weichen: Gebaeudetypen, Gebaeudearten, Katalognamen und die Namenspruefung
-    kommen aus dem synthetischen Katalog der Seite, "Lies" findet nichts, die hergeleiteten
+    Proben der Seite weichen: Gebaeudetypen, Gebaeudearten und die Namenspruefung
+    kommen aus dem synthetischen Katalog der Seite, die hergeleiteten
     Vorgaben der Waermeuebergabe fehlen (sie lesen die Klimareihe eines Projekts), und
     "Speichern" schreibt nichts, sondern meldet Erfolg. Danach steht das neue Gebaeude in der
     Projektliste (Arbeitsstand des Dialogs, wie in der Anwendung bis zu dessen OK). *@
@@ -398,8 +398,6 @@
             {
                 ["Gebaeudetypen"] = new Func<IReadOnlyList<string>>(() => Typen),
                 ["Gebaeudearten"] = new Func<IReadOnlyList<string>>(() => Arten),
-                ["Katalognamen"] = new Func<IReadOnlyList<string>>(() => Katalog.Select(z => z.Bezeichner).ToList()),
-                ["Lies"] = new Func<string, GebaeudeKatalogDaten?>(_ => null),
                 ["Speichern"] = new Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>((daten, neu, bezeichner) =>
                 {
                     if (neu && daten is not null)

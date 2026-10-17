@@ -70,6 +70,22 @@ public sealed class SeitenZustand
     /// </summary>
     public void Auffrischen() => Melden();
 
+    /// <summary>
+    /// Wird ausgeloest, wenn sich nur ein KURZSTAND geaendert hat - die Statuszeile eines
+    /// Reiters, etwa nach dem Laden einer Seite oder einem erstellten Bericht (Konzept
+    /// Navigation Berichte &amp; Kosten, A2/A3). Die Seite zeichnet daraufhin neu, holt
+    /// aber KEINE Gaben: Ein <see cref="Geaendert"/> baute die offene Seite neu auf und
+    /// nahme ihr den gerade gezeigten Stand.
+    /// </summary>
+    public event Action? KurzstandGeaendert;
+
+    /// <summary>Meldet einen geaenderten Kurzstand (siehe <see cref="KurzstandGeaendert"/>).</summary>
+    public void KurzstandMelden()
+    {
+        Action? h = KurzstandGeaendert;
+        if (h != null) h();
+    }
+
     private void Melden()
     {
         Action? h = Geaendert;

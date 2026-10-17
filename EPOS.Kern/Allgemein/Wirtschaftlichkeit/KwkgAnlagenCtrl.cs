@@ -155,6 +155,8 @@ namespace WindowsFormsApplication1
         /// <summary>Die BHKW-Anlagen EINES Projekts anhängen.</summary>
         private void Lade(int idProjekt, string projektname, List<KwkgAnlagenAngabe> liste)
         {
+            // Die Nachschlagelisten gelten je Projekt (Projektkopie der Brennstoffe).
+            if (_listenProjekt != idProjekt) { _listenProjekt = idProjekt; _brennstoffName = null; }
             try
             {
                 // ETAPPE B5: zuerst MIT den drei B3a-Spalten, sonst ohne. Dieselbe
@@ -381,6 +383,7 @@ namespace WindowsFormsApplication1
         private Dictionary<int, string> _brennstoffName;
         private Dictionary<int, int> _brennstoffKategorie;
         private Dictionary<int, int> _carrierBrennstoff;
+        private int _listenProjekt;
 
         /// <summary>
         /// Der maßgebliche <c>Tab_Brennstoff_Stamm.ID</c> einer Anlage (0 = nicht
@@ -418,7 +421,7 @@ namespace WindowsFormsApplication1
             return idBrennstoff > 0 && _brennstoffKategorie.TryGetValue(idBrennstoff, out k) ? k : 0;
         }
 
-        /// <summary>Die drei Nachschlagelisten einmal je Prozesslauf. Scheitert eine
+        /// <summary>Die drei Nachschlagelisten einmal je Projekt. Scheitert eine
         /// Abfrage, bleibt die Liste leer — dann steht die Spalte leer, und sonst
         /// ändert sich nichts.</summary>
         private void Nachschlagelisten()
@@ -431,8 +434,10 @@ namespace WindowsFormsApplication1
             {
                 using (DataRepository.EngineModus())
                 {
+                    // Im Projekt die Projektkopie des Brennstoffs (ProjektBrennstoffe.Sicht).
+                    string quelle = ProjektBrennstoffe.Sicht(_listenProjekt, out DbParam[] sicht);
                     DataTable bs = DataRepository.GetDataTable(
-                        "SELECT ID, Bezeichner, ID_Kategorie FROM Tab_Brennstoff_Stamm");
+                        "SELECT b.ID, b.Bezeichner, b.ID_Kategorie FROM " + quelle + " AS b", sicht);
                     if (bs != null)
                         foreach (DataRow r in bs.Rows)
                         {

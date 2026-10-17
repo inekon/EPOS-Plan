@@ -128,17 +128,27 @@ namespace Testdatenbankschema
         {
             if (args.Length < 1 || args[0] == "--hilfe" || args[0] == "-h")
             {
-                Console.WriteLine("Aufruf: Testdatenbankschema <pfad-zur.sqlite> [--trocken]");
+                Console.WriteLine("Aufruf: Testdatenbankschema <pfad-zur.sqlite> [--trocken] [--kesselkatalog <ordner>]");
                 Console.WriteLine();
                 Console.WriteLine("  Zieht die Datei auf Schemastand " + SchemaStand.Zielversion +
                                   " nach (Schritte 62 bis " + SchemaStand.Zielversion + "), saet den Gesetzeskatalog nach");
                 Console.WriteLine("  und fuehrt danach VACUUM aus.");
                 Console.WriteLine("  --trocken  nur berichten, nichts aendern.");
+                Console.WriteLine("  --kesselkatalog <ordner>  danach Tab_Heizkessel_STAMM aus den VDI-3805-Dateien des");
+                Console.WriteLine("            Ordners nachpflegen (eta30, eta100 aus Satz 710.01, kleinste Leistung,");
+                Console.WriteLine("            Brennwert; Konzept Kesselkennlinie, Entscheide F2/F3). Nie Tab_Heizkessel.");
                 return 2;
             }
 
             string pfad = Path.GetFullPath(args[0]);
             bool trocken = Array.IndexOf(args, "--trocken") >= 0;
+            int kkIndex = Array.IndexOf(args, "--kesselkatalog");
+            string kesselkatalog = kkIndex >= 0 && kkIndex + 1 < args.Length ? Path.GetFullPath(args[kkIndex + 1]) : null;
+            if (kkIndex >= 0 && (kesselkatalog == null || !Directory.Exists(kesselkatalog)))
+            {
+                Console.Error.WriteLine("--kesselkatalog braucht einen vorhandenen Ordner: " + (kesselkatalog ?? "(keiner)"));
+                return 2;
+            }
 
             if (!File.Exists(pfad))
             {
@@ -314,29 +324,9 @@ namespace Testdatenbankschema
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 88, trocken);
 
-            // ---- Schritt 88, zweiter Teil: die KONSERVENSPALTE des Ergebnisses.
-            //      Tab_ErgebnisWirtschaftlichkeit steht im Grundschema; ihre Ergebnisspalten
-            //      ohne Schemaschritt zieht WirtschaftlichkeitCtrl.SpalteSicher nach, also
-            //      erst beim ersten Lauf der Anwendung. Fuer die REPO-Testdatenbank reicht das
-            //      nicht: Sie ist die Messlatte des SqlDialektpruefers, und der loest
-            //      das INSERT des Ergebnisses gegen genau diese Datei auf. Ohne die
-            //      Spalte meldete er eine Fundstelle, die in der Anwendung keine ist.
-            //      Die Quelle ist dieselbe Konstante, die auch der Ctrl nimmt.
-            angelegt += SpalteSicherstellen(WirtschaftlichkeitCtrl.TAB_ERGEBNIS,
-                                            WirtschaftlichkeitCtrl.SPALTE_STROMST_MODUS,
-                                            "TEXT", 88, trocken);
-
-            // ---- Etappe B7P: die KONSERVENSPALTE des Nachweisumschlags. KEIN eigener
-            //      Schritt - die Spalte gehoert zu den Ergebnisspalten, die allein
-            //      WirtschaftlichkeitCtrl.SpalteSicher nachzieht; die Zielversion bleibt 89.
-            //      Wortgleiche Begruendung wie oben: Der
-            //      SqlDialektpruefer loest das INSERT des Ergebnisses gegen diese Datei
-            //      auf und meldete ohne die Spalte eine Fundstelle, die in der
-            //      Anwendung keine ist. Die Quelle ist dieselbe Konstante, die auch der
-            //      Ctrl nimmt.
-            angelegt += SpalteSicherstellen(WirtschaftlichkeitCtrl.TAB_ERGEBNIS,
-                                            WirtschaftlichkeitCtrl.SPALTE_NACHWEIS_JSON,
-                                            "TEXT", 89, trocken);
+            // ---- Die vier Ergebnisspalten der Wirtschaftlichkeit ohne Grundschema (StromsteuerBefreiungModus,
+            //      ErsatzBarwert, Nachweis_Json, Lauf_Staende) legt der Schritt
+            //      ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT (KB-8) an - unten, hinter KD-4.
 
             // ---- Schritt 89: die Anlagenwahrheit des KWK-Zuschlags (Etappe BK1,
             //      Entscheid BK-E-1 a). EINE Spalte an Tab_Energieanlagen UND neun
@@ -355,6 +345,14 @@ namespace Testdatenbankschema
 
             foreach (KwkAnlagenwahrheit.Paar paar in KwkAnlagenwahrheit.Paare)
             {
+                // Nach dem Abbau der KWKG-Projektspalten (spaeterer Schritt) ist der Nachtrag
+                // gegenstandslos - melden statt eine Abfrage auf eine entfallene Spalte zu fahren.
+                if (!KwkAnlagenwahrheit.Anwendbar(paar))
+                {
+                    Console.WriteLine("Schritt 89 - " + paar.Anlage + " aus " + paar.Projekt +
+                                      ": nicht mehr anwendbar (Spalte entfallen).");
+                    continue;
+                }
                 object offen = DataRepository.ExecuteScalar(KwkAnlagenwahrheit.Zaehlung(paar));
                 long z = offen == null || offen == DBNull.Value ? 0 : Convert.ToInt64(offen);
                 Console.WriteLine("Schritt 89 - " + paar.Anlage + " aus " + paar.Projekt +
@@ -2105,8 +2103,1860 @@ namespace Testdatenbankschema
                                   " (erwartet True); " + kond + " Tabelle(n) in diesem Lauf.");
             }
 
+            // ---- Schritt KonditionierungVorlagenSchema.SCHRITT (KP-S1v, Stufe KP1b; Konzept
+            //      Konditionierungsprofile 5.1, 5.6 und 5.7, Entwurf KP1b Abschnitt 3):
+            //      Tab_Konditionierungsvorlage_STAMM samt Namensregel, der Fremdschluessel ID_Vorlage an
+            //      Kalender- und Vorgabetabelle per Tabellenneubau (umbenannt unter
+            //      legacy_alter_table = ON), acht Teilindizes der Eindeutigkeit und Nachtauskuehlstunden_H
+            //      an beiden Ergebnistabellen. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_KonditionierungVorlagen bedient, in EINEM Vorgang mit
+            //      abgeschalteten Fremdschluesseln; wiederholbar.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Die Vorlagentabelle entsteht LEER, der Neubau erhaelt jede
+            //      Zeile samt ID, und die Ergebnisspalten liest der Referenzlauf nicht. Ein benannter
+            //      Abbruch (Dubletten) laesst die Datei unberuehrt und beendet das Werkzeug mit 1.
+            string nrVorl = KonditionierungVorlagenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrVorl + " - Konditionierungsvorlagen: " +
+                              (KonditionierungVorlagenSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtVorl = new List<string>();
+                int vorl;
+                try
+                {
+                    vorl = KonditionierungVorlagenSchema.Ausfuehren(berichtVorl);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    foreach (string zeile in berichtVorl)
+                        Console.WriteLine("Schritt " + nrVorl + " - " + zeile + ".");
+                    Console.WriteLine("Schritt " + nrVorl + " - ABBRUCH: " + ex.Message);
+                    return 1;
+                }
+                foreach (string zeile in berichtVorl)
+                    Console.WriteLine("Schritt " + nrVorl + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrVorl + " - vollstaendig: " + KonditionierungVorlagenSchema.Vollstaendig() +
+                                  " (erwartet True); " + vorl + " Aenderung(en) am Schema in diesem Lauf.");
+            }
+
+            // ---- Schritt TwwBezugsartSchema.SCHRITT (Auftrag A2, Zapfprofilgenerator N34, Weg 3 der
+            //      Hotel-Durchsicht): die Bezugsart Zimmer. Tab_TwwNutzungsart_STAMM und
+            //      Tab_TwwBedarfstag_STAMM neu gebaut mit der Pruefklausel 1..8 (Rezept der Schritte 96
+            //      und 100), dazu die Nachfuehrung der gespeicherten Paketzeilen in einem frueheren Stand
+            //      - aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_TwwBezugsartZimmer bedient
+            //      (TwwBezugsartSchema), in EINEM Vorgang.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Zeilen, IDs und Zaehlerstaende bleiben; die Hotelzeile der
+            //      Testdatenbank (Status EIGEN) fuehrt die Katalogsaat nach (tww_testkatalog_fiktiv.py),
+            //      kein Referenzprojekt benutzt sie.
+            string nrBezug = TwwBezugsartSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBezug + " - Bezugsart Zimmer: offen " + TwwBezugsartSchema.Offen() +
+                              " Tabelle(n), " + PaketteilNachfuehrung.Offen() + " Paketzeile(n).");
+            if (!trocken)
+            {
+                var berichtBezug = new List<string>();
+                int bezug = TwwBezugsartSchema.Ausfuehren(berichtBezug);
+                foreach (string zeile in berichtBezug)
+                    Console.WriteLine("Schritt " + nrBezug + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBezug + " - vollstaendig: " + TwwBezugsartSchema.Vollstaendig() +
+                                  " (erwartet True); " + bezug + " Tabelle(n) in diesem Lauf neu gebaut.");
+            }
+
+            // ---- Schritt KesselHeizgrenzeSchema.SCHRITT (Anwenderentscheid 27.09.2026 zu #568): die
+            //      nullbare Spalte Tab_Einstellungen.Kessel_Heizgrenze REAL. REIN DDL aus DERSELBEN
+            //      Quelle, aus der sich SchemaMigration.Schritt_KesselHeizgrenze bedient
+            //      (KesselHeizgrenzeSchema). Die Spalte entsteht in jeder Zeile als NULL - jedes Projekt
+            //      rechnet mit der Vorgabe 15 Grad Celsius.
+            string nrHeizgrenze = KesselHeizgrenzeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrHeizgrenze + " - Heizgrenze der Kesselbereitschaft: " +
+                              (KesselHeizgrenzeSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtHeizgrenze = new List<string>();
+                angelegt += KesselHeizgrenzeSchema.Ausfuehren(berichtHeizgrenze);
+                foreach (string zeile in berichtHeizgrenze)
+                    Console.WriteLine("Schritt " + nrHeizgrenze + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrHeizgrenze + " - vollstaendig: " + KesselHeizgrenzeSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt TwwFuellstandSchema.SCHRITT (Auftrag F1, Zapfprofilgenerator N36 (d)): die
+            //      Verfahrensvolumina als Bezug der Fuellstandslinie. Tab_TwwProjekt neu gebaut mit der
+            //      Pruefklausel 1..8 am Fuellstandsbezug (Rezept der Schritte 96, 100 und 153) - aus
+            //      DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_TwwFuellstandVerfahren bedient
+            //      (TwwFuellstandSchema), in EINEM Vorgang.
+            //
+            //      REFERENZLAUF UNVERAENDERT: KEIN DML - Zeilen, IDs und Zaehlerstaende bleiben, die
+            //      Speicherauslegung ist nachrichtlich.
+            string nrFuellstand = TwwFuellstandSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrFuellstand + " - Verfahrensvolumina der Fuellstandslinie: offen " +
+                              TwwFuellstandSchema.Offen() + " Tabelle(n).");
+            if (!trocken)
+            {
+                var berichtFuellstand = new List<string>();
+                int fuellstand = TwwFuellstandSchema.Ausfuehren(berichtFuellstand);
+                foreach (string zeile in berichtFuellstand)
+                    Console.WriteLine("Schritt " + nrFuellstand + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrFuellstand + " - vollstaendig: " + TwwFuellstandSchema.Vollstaendig() +
+                                  " (erwartet True); " + fuellstand + " Tabelle(n) in diesem Lauf neu gebaut.");
+            }
+
+            // ---- Schritt KesselKennlinieSchema.SCHRITT (Konzept Kesselkennlinie, Etappe E1, #569): fuenf
+            //      Kennlinienspalten an Tab_Heizkessel_STAMM und Tab_Heizkessel. REIN DDL aus DERSELBEN
+            //      Quelle, aus der sich SchemaMigration.Schritt_KesselKennlinie bedient
+            //      (KesselKennlinieSchema). Die Spalten entstehen leer bzw. mit 0 - kein Rechenweg liest sie.
+            string nrKennlinie = KesselKennlinieSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKennlinie + " - Kennlinienspalten des Heizkessels: " +
+                              (KesselKennlinieSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKennlinie = new List<string>();
+                angelegt += KesselKennlinieSchema.Ausfuehren(berichtKennlinie);
+                foreach (string zeile in berichtKennlinie)
+                    Console.WriteLine("Schritt " + nrKennlinie + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKennlinie + " - vollstaendig: " + KesselKennlinieSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt KonditionierungsvorlagenSaatSchema.SCHRITT (KP-S1b, Entscheid E56 F1 (b)): die
+            //      14 ausgelieferten Konditionierungsvorlagen (ReadOnly = 1) samt 46 Vorgabezeilen und bei
+            //      Buero und Schule den neun Feiertagsregeln "wie Sonntag". Reines DML aus DERSELBEN
+            //      Quelle, aus der sich SchemaMigration.Schritt_KonditionierungsvorlagenSaat bedient
+            //      (KonditionierungsvorlagenSaatSchema), je Vorlage EIN Vorgang; gesaet wird nur, was
+            //      unter Groesse und Name fehlt. NACH den Tabellen der Schritte 151 und 152.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein Referenzprojekt traegt eine Vorlage, die Leser des
+            //      Laufs filtern ueber ID_Gebaeude.
+            string nrVorlagensaat = KonditionierungsvorlagenSaatSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrVorlagensaat + " - ausgelieferte Konditionierungsvorlagen: " +
+                              (KonditionierungsvorlagenSaatSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtVorlagensaat = new List<string>();
+                KonditionierungsvorlagenSaatSchema.Ausfuehren(berichtVorlagensaat);
+                foreach (string zeile in berichtVorlagensaat)
+                    Console.WriteLine("Schritt " + nrVorlagensaat + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrVorlagensaat + " - vollstaendig: " +
+                                  KonditionierungsvorlagenSaatSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt KesselBrennwertNachzug.SCHRITT (Konzept Kesselkennlinie, Etappe E2b;
+            //      Anwenderentscheid B-1 vom 30.09.2026): Brennwert = 1 in jeder Projektkopie
+            //      Tab_Heizkessel, deren Katalogsatz (ueber den Bezeichner, bei widerspruechlichen
+            //      Saetzen nach der Leistung) ein Brennwertkessel ist; ohne eindeutigen Katalogsatz nach
+            //      der Bauart in der Beschreibung. Reines DML aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_KesselBrennwertNachzug bedient; nur gesetzt, nie geloescht.
+            //
+            //      REFERENZLAUF NICHT BYTE-GLEICH: Jeder so gekennzeichnete Brennstoffkessel ohne eigenes
+            //      eta30 rechnet mit der Normvorgabe des Brennwertkessels - die Einfrierregel "gesaete
+            //      Kesseldaten" verlangt eine neue Basis (Referenzlaeufe/LIESMICH.md).
+            string nrBrennwert = KesselBrennwertNachzug.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBrennwert + " - Brennwertkennzeichen der Projektkessel: " +
+                              (KesselBrennwertNachzug.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtBrennwert = new List<string>();
+                KesselBrennwertNachzug.Ausfuehren(berichtBrennwert);
+                foreach (string zeile in berichtBrennwert)
+                    Console.WriteLine("Schritt " + nrBrennwert + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBrennwert + " - vollstaendig: " +
+                                  KesselBrennwertNachzug.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt KostenStempelSchema.SCHRITT (Folge von #637): die Aenderungsstempel fuer
+            //      Kosten, Preise und Kostenkatalog - die nullbaren Spalten Tab_Projekt.Kosten_Geaendert
+            //      und Tab_Applikation.Kostenkatalog_Geaendert (TEXT) und ihre Trigger. REIN DDL aus
+            //      DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_KostenStempel bedient
+            //      (KostenStempelSchema). ZULETZT: Kein Schritt davor darf in dieser Datei einen Stempel
+            //      setzen - die Spalten entstehen leer, kein gespeichertes Ergebnis wird veraltet.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Rechenweg liest die Stempel.
+            string nrStempel = KostenStempelSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrStempel + " - Aenderungsstempel fuer Kosten und Kostenkatalog: " +
+                              (KostenStempelSchema.Vollstaendig()
+                                   ? "steht bereits"
+                                   : "offen (" + KostenStempelSchema.FehlendeTrigger().Count + " von " +
+                                     KostenStempelSchema.Trigger.Count + " Trigger fehlen)") + ".");
+            if (!trocken)
+            {
+                var berichtStempel = new List<string>();
+                int stempel = KostenStempelSchema.Ausfuehren(berichtStempel);
+                foreach (string zeile in berichtStempel)
+                    if (!zeile.StartsWith("Trigger ", StringComparison.Ordinal))
+                    {
+                        Console.WriteLine("Schritt " + nrStempel + " - " + zeile + ".");
+                        if (zeile.EndsWith(" anlegen", StringComparison.Ordinal)) angelegt++;
+                    }
+                Console.WriteLine("Schritt " + nrStempel + " - " + stempel + " Anweisung(en) in diesem Lauf; " +
+                                  "vollstaendig: " + KostenStempelSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt AufheizvorgabeSchema.SCHRITT (KP-S2, Entwurf KP3 Abschnitt 4): die fuenf
+            //      Spalten der Aufheizoptimierung an Tab_Einstellungen - der Schalter (0/1, Vorgabe 0)
+            //      und Bemessung, Abzug, Reserve, Art (nullbar, NULL = Vorgabe). REIN DDL aus DERSELBEN
+            //      Quelle, aus der sich SchemaMigration.Schritt_AufheizVorgabe bedient
+            //      (AufheizvorgabeSchema), in EINEM Vorgang. Nach den Stempeln ohne Wirkung auf sie:
+            //      Tab_Einstellungen traegt keinen Stempeltrigger, und ADD COLUMN feuert keinen.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Jedes Projekt steht auf „aus".
+            string nrAufheizVorgabe = AufheizvorgabeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrAufheizVorgabe + " - Aufheizoptimierung als Projekteinstellung: " +
+                              (AufheizvorgabeSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtAufheizVorgabe = new List<string>();
+                angelegt += AufheizvorgabeSchema.Ausfuehren(berichtAufheizVorgabe);
+                foreach (string zeile in berichtAufheizVorgabe)
+                    Console.WriteLine("Schritt " + nrAufheizVorgabe + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrAufheizVorgabe + " - vollstaendig: " +
+                                  AufheizvorgabeSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt AufheizErgebnisSchema.SCHRITT (KP-S3, Entwurf KP3 Abschnitt 4): je vierzehn
+            //      nullbare Ergebnisspalten der Aufheizoptimierung an Tab_ErgebnisGebaeude und
+            //      Tab_ErgebnisZone. REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_AufheizErgebnis bedient (AufheizErgebnisSchema), in EINEM
+            //      Vorgang.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Der Referenzlauf liest die Ergebnistabellen nicht.
+            string nrAufheizErgebnis = AufheizErgebnisSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrAufheizErgebnis + " - Ergebnisspalten der Aufheizoptimierung: " +
+                              (AufheizErgebnisSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtAufheizErgebnis = new List<string>();
+                angelegt += AufheizErgebnisSchema.Ausfuehren(berichtAufheizErgebnis);
+                foreach (string zeile in berichtAufheizErgebnis)
+                    Console.WriteLine("Schritt " + nrAufheizErgebnis + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrAufheizErgebnis + " - vollstaendig: " +
+                                  AufheizErgebnisSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt KesselBereitschaftEinheitSchema.SCHRITT (Anwenderentscheid 02.10.2026): die
+            //      Einheit des Bereitschaftsverlusts - Bereitschaft_Einheit (TEXT, Vorgabe kW, Pruefklausel
+            //      kW oder %) an Tab_Heizkessel_STAMM und Tab_Heizkessel. REIN DDL aus DERSELBEN Quelle,
+            //      aus der sich SchemaMigration.Schritt_KesselBereitschaftEinheit bedient. Ein ALTER TABLE
+            //      loest keinen Stempeltrigger aus.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Jede Zeile bekommt kW, die Einheit, in der sie rechnet.
+            string nrBereitschaft = KesselBereitschaftEinheitSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBereitschaft + " - Einheit des Bereitschaftsverlusts: " +
+                              (KesselBereitschaftEinheitSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtBereitschaft = new List<string>();
+                angelegt += KesselBereitschaftEinheitSchema.Ausfuehren(berichtBereitschaft);
+                foreach (string zeile in berichtBereitschaft)
+                    Console.WriteLine("Schritt " + nrBereitschaft + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBereitschaft + " - vollstaendig: " +
+                                  KesselBereitschaftEinheitSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt AlbedoSchema.SCHRITT (Entscheidungsvorlage Modellgrenzen, PV4): die
+            //      Bodenalbedo je Anlage - Albedo (REAL, nullbar, Pruefklausel 0 bis 1) an
+            //      Tab_Energieanlagen. REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Albedo bedient. Ein ALTER TABLE loest keinen
+            //      Stempeltrigger aus.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Jede Zeile bleibt leer und rechnet mit 0,2.
+            string nrAlbedo = AlbedoSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrAlbedo + " - Bodenalbedo je Anlage: " +
+                              (AlbedoSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtAlbedo = new List<string>();
+                angelegt += AlbedoSchema.Ausfuehren(berichtAlbedo);
+                foreach (string zeile in berichtAlbedo)
+                    Console.WriteLine("Schritt " + nrAlbedo + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrAlbedo + " - vollstaendig: " +
+                                  AlbedoSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt ProzesswaermeTemperaturSchema.SCHRITT (Welle M3a, PW1 Stufe 1): das
+            //      Temperaturpaar je Prozess - Vorlauf und Ruecklauf (REAL, nullbar, 0 bis 250 degC,
+            //      paarweise) an Tab_Prozesswaerme_STAMM und Tab_Prozesswaerme. Aus DERSELBEN Quelle,
+            //      aus der sich SchemaMigration.Schritt_ProzesswaermeTemperatur bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Jede Zeile bleibt ohne Temperaturpaar.
+            string nrProzess = ProzesswaermeTemperaturSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrProzess + " - Temperaturpaar je Prozess: " +
+                              (ProzesswaermeTemperaturSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtProzess = new List<string>();
+                angelegt += ProzesswaermeTemperaturSchema.Ausfuehren(berichtProzess);
+                foreach (string zeile in berichtProzess)
+                    Console.WriteLine("Schritt " + nrProzess + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrProzess + " - vollstaendig: " +
+                                  ProzesswaermeTemperaturSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt SolarthermieFelderSchema.SCHRITT (Welle M2 Solarthermie): die Felder des
+            //      Kollektorfelds an Tab_Energieanlagen (Pumpenleistung_W, Solarkreisverluste_Prozent,
+            //      Uebertrager_Graedigkeit_K, Kollektor_Spreizung_K, Arbeitstemperatur_Weg; nullbar) und
+            //      die Bezugsflaeche an Tab_Solarkollektoren_STAMM und Tab_Solarkollektoren (Vorgabe
+            //      apertur). REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_SolarthermieFelder bedient. Ein ALTER TABLE loest keinen
+            //      Stempeltrigger aus.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Leere Felder rechnen ihre Vorgaben, jeder Kollektorsatz
+            //      bekommt die Aperturflaeche, mit der er rechnet.
+            string nrSolarFelder = SolarthermieFelderSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrSolarFelder + " - Felder des Kollektorfelds: " +
+                              (SolarthermieFelderSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtSolarFelder = new List<string>();
+                angelegt += SolarthermieFelderSchema.Ausfuehren(berichtSolarFelder);
+                foreach (string zeile in berichtSolarFelder)
+                    Console.WriteLine("Schritt " + nrSolarFelder + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrSolarFelder + " - vollstaendig: " +
+                                  SolarthermieFelderSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt BedarfNetzKalenderSchema.SCHRITT (Welle M3b, BW4, PW2, BW2): Netzverluste
+            //      je Kanal und Zirkulation an Tab_Einstellungen, Tab_Betriebskalender und die
+            //      Kalenderspalte der drei Zuordnungstabellen. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_BedarfNetzKalender bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Alles bleibt leer.
+            string nrBedarf = BedarfNetzKalenderSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBedarf + " - Netzverluste je Kanal, Zirkulation, Betriebskalender: " +
+                              (BedarfNetzKalenderSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtBedarf = new List<string>();
+                angelegt += BedarfNetzKalenderSchema.Ausfuehren(berichtBedarf);
+                foreach (string zeile in berichtBedarf)
+                    Console.WriteLine("Schritt " + nrBedarf + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBedarf + " - vollstaendig: " +
+                                  BedarfNetzKalenderSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt ErzeugerTeillastSchema.SCHRITT (Welle M4): die Teillastfelder der
+            //      Waermepumpe an Tab_WP_STAMM und Tab_WP (Mindestleistung_kW, Taktverlustfaktor_Cd) und
+            //      des BHKW an Tab_BHKW_STAMM und Tab_BHKW (Wirkungsgrad_el_Teillast50,
+            //      Wirkungsgrad_th_Teillast50, Anfahrverlust_kWh, Mindestlaufzeit_min), alle nullbar mit
+            //      Pruefklausel. REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_ErzeugerTeillast bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Leere Felder rechnen wie zuvor.
+            string nrTeillast = ErzeugerTeillastSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrTeillast + " - Teillastfelder von Waermepumpe und BHKW: " +
+                              (ErzeugerTeillastSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtTeillast = new List<string>();
+                angelegt += ErzeugerTeillastSchema.Ausfuehren(berichtTeillast);
+                foreach (string zeile in berichtTeillast)
+                    Console.WriteLine("Schritt " + nrTeillast + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrTeillast + " - vollstaendig: " +
+                                  ErzeugerTeillastSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt StromViertelstundenSchema.SCHRITT (Welle M5 Strom in Viertelstunden): die
+            //      Einspeisegrenze an Tab_Einstellungen (Einspeisegrenze_Wert, Einspeisegrenze_Einheit;
+            //      nullbar) und die Selbstentladung an Tab_Stromspeicher_STAMM und Tab_Stromspeicher
+            //      (Selbstentladung_Prozent_Monat; nullbar). REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_StromViertelstunden bedient. Ein ALTER TABLE loest keinen
+            //      Stempeltrigger aus.
+            //
+            //      KEINE DATENAENDERUNG: Leere Felder heissen keine Einspeisegrenze und keine
+            //      Selbstentladung.
+            string nrStromViertel = StromViertelstundenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrStromViertel + " - Einspeisegrenze und Selbstentladung: " +
+                              (StromViertelstundenSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtStromViertel = new List<string>();
+                angelegt += StromViertelstundenSchema.Ausfuehren(berichtStromViertel);
+                foreach (string zeile in berichtStromViertel)
+                    Console.WriteLine("Schritt " + nrStromViertel + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrStromViertel + " - vollstaendig: " +
+                                  StromViertelstundenSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt PufferAuslegungSchema.SCHRITT (Pufferspeicher-Auslegung P1, W1): die
+            //      Auslegungstabelle je Projektpuffer und die Vorgabetabelle samt Saat (INSERT OR
+            //      IGNORE). Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_PufferAuslegung
+            //      bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Auslegung rechnet und schreibt nur auf Zuruf.
+            string nrPuffer = PufferAuslegungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrPuffer + " - Pufferspeicher-Auslegung: " +
+                              (PufferAuslegungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtPuffer = new List<string>();
+                angelegt += PufferAuslegungSchema.Ausfuehren(berichtPuffer);
+                foreach (string zeile in berichtPuffer)
+                    Console.WriteLine("Schritt " + nrPuffer + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrPuffer + " - vollstaendig: " +
+                                  PufferAuslegungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt HilfsenergieEmpfehlungNachzug.SCHRITT (Auftrag P671, Register E30-Q12,
+            //      EZ-24): die Empfehlungsspannen der Pflichtzeilen "Hilfsenergiekosten" (BHKW) und
+            //      "Hilfsenergiekosten (Strom)" (Heizkessel) in den Auslieferungsvorlagen auf Weg B.
+            //      Reines DML aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_HilfsenergieEmpfehlung bedient; Projektzeilen unberuehrt.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Empfehlung ist ein Hinweis, kein Rechenwert.
+            string nrHilfsEmpf = HilfsenergieEmpfehlungNachzug.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrHilfsEmpf + " - Katalogempfehlung der Hilfsenergie auf Weg B: " +
+                              (HilfsenergieEmpfehlungNachzug.Vollstaendig() ? "steht bereits" : "offen") +
+                              " (" + HilfsenergieEmpfehlungNachzug.Offen() + " offen).");
+            if (!trocken)
+            {
+                var berichtHilfsEmpf = new List<string>();
+                HilfsenergieEmpfehlungNachzug.Ausfuehren(berichtHilfsEmpf);
+                foreach (string zeile in berichtHilfsEmpf)
+                    Console.WriteLine("Schritt " + nrHilfsEmpf + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrHilfsEmpf + " - vollstaendig: " +
+                                  HilfsenergieEmpfehlungNachzug.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt PufferOptionenSchema.SCHRITT (Welle M7 Speicher): die Optionen des
+            //      Pufferspeichers an Tab_Pufferspeicher (Bereitschaft_Weg, Aufstellraum_Temperatur_C,
+            //      Schicht_Anteile, Frischwassermodul, FWM_Graedigkeit_K) und die thermische
+            //      Desinfektion an Tab_Einstellungen (Desinfektion_*), alle nullbar. REIN DDL aus
+            //      DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_PufferOptionen bedient.
+            //
+            //      KEINE DATENAENDERUNG: Leere Felder rechnen wie zuvor.
+            string nrPufferOptionen = PufferOptionenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrPufferOptionen + " - Pufferoptionen und Desinfektion: " +
+                              (PufferOptionenSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtPufferOptionen = new List<string>();
+                angelegt += PufferOptionenSchema.Ausfuehren(berichtPufferOptionen);
+                foreach (string zeile in berichtPufferOptionen)
+                    Console.WriteLine("Schritt " + nrPufferOptionen + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrPufferOptionen + " - vollstaendig: " +
+                                  PufferOptionenSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt KatalogfassungSchema.SCHRITT (Welle M6, KU1 Stufe 1 und EQ1): an den acht
+            //      Katalogtabellen der Stufe 1 Katalog_Schluessel, Katalog_Pruefsumme, Katalog_Ausgelaufen
+            //      samt eindeutigem Teilindex, Tab_Applikation.Katalogfassung, die Tabellen
+            //      Tab_Katalogabgleich und Tab_ErgebnisErdreich (STRICT) und die Saat von Schluessel und
+            //      Pruefsumme der ausgelieferten Saetze (ReadOnly = 1). Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Katalogfassung bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Fachwert und keine Projektkopie aendert sich.
+            string nrKatalog = KatalogfassungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKatalog + " - Katalogfassung und Erdreichpruefung: " +
+                              (KatalogfassungSchema.SchemaVollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKatalog = new List<string>();
+                angelegt += KatalogfassungSchema.Ausfuehren(berichtKatalog);
+                foreach (string zeile in berichtKatalog)
+                    Console.WriteLine("Schritt " + nrKatalog + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKatalog + " - vollstaendig: " +
+                                  KatalogfassungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt KatalogfassungStufe2Schema.SCHRITT (KU1 Stufe 2): dieselben Katalogspalten an
+            //      den sechzehn Katalogtabellen der Stufe 2 samt Teilindex und die Saat von Schluessel und
+            //      Pruefsumme ihrer ausgelieferten Saetze. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_KatalogfassungStufe2 bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Fachwert und keine Projektkopie aendert sich.
+            string nrKatalog2 = KatalogfassungStufe2Schema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKatalog2 + " - Katalogfassung der uebrigen Kataloge: " +
+                              (KatalogfassungStufe2Schema.SchemaVollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKatalog2 = new List<string>();
+                angelegt += KatalogfassungStufe2Schema.Ausfuehren(berichtKatalog2);
+                foreach (string zeile in berichtKatalog2)
+                    Console.WriteLine("Schritt " + nrKatalog2 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKatalog2 + " - vollstaendig: " +
+                                  KatalogfassungStufe2Schema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt AufheizManuellSchema.SCHRITT (KP-S4, Entscheid E59 samt Folgeentscheiden, E60;
+            //      Entwurf KP3 Abschnitt 4): an Tab_Einstellungen Aufheiz_Aufschlag_H und
+            //      Aufheiz_Aufschlag_Prozent, an Tab_Gebaeude Aufheizzeit_Manuell_H samt achtem Neubau der
+            //      Sicht Abfrage_Projektgebaeude (103 Spalten), an Tab_ErgebnisGebaeude Aufheiz_Art,
+            //      Auslegungsheizlast_Kw und Aufheizzuschlag_Kw, an Tab_ErgebnisZone Aufheiz_Art und der
+            //      Zustand GEKOPPELT per kleinem Neubau. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_AufheizManuell bedient; ZULETZT, damit kein aelterer
+            //      Sichtdurchgang (Energiestandard) die Spalte wieder aus der Sicht schneidet.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Alle Felder entstehen leer, KEIN DML an Bestandsdaten.
+            string nrAufheizManuell = AufheizManuellSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrAufheizManuell + " - Aufschlag und manuelle Aufheizzeit: " +
+                              (AufheizManuellSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtAufheizManuell = new List<string>();
+                angelegt += AufheizManuellSchema.Ausfuehren(berichtAufheizManuell);
+                foreach (string zeile in berichtAufheizManuell)
+                    Console.WriteLine("Schritt " + nrAufheizManuell + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrAufheizManuell + " - vollstaendig: " +
+                                  AufheizManuellSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt ProjektkopienKatalogeSchema.SCHRITT (Anwenderentscheid 03.10.2026): die
+            //      Projektkopien Tab_Brennstoff und Tab_PufferAuslegungParameter samt wertgleicher Saat.
+            //      Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_ProjektkopienKataloge bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Kopien tragen die Werte des Stamms.
+            string nrKopien = ProjektkopienKatalogeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKopien + " - Projektkopien der Brennstoffe und Pufferauslegungs-Vorgaben: " +
+                              (ProjektkopienKatalogeSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKopien = new List<string>();
+                tabellen += ProjektkopienKatalogeSchema.Ausfuehren(berichtKopien);
+                foreach (string zeile in berichtKopien)
+                    Console.WriteLine("Schritt " + nrKopien + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKopien + " - vollstaendig: " +
+                                  ProjektkopienKatalogeSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt KonditionierungNutzungSchema.SCHRITT: die Nutzung der Vorlage am Kalender des
+            //      Projekts (Tab_Konditionierungskalender.Nutzung) samt Saat aus der Herkunft in Bemerkung.
+            //      Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_KonditionierungNutzung bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Der Lauf liest die Nutzung nicht.
+            string nrKondNutzung = KonditionierungNutzungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKondNutzung + " - Konditionierungsnutzung an der Kalenderkopie: " +
+                              (KonditionierungNutzungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKondNutzung = new List<string>();
+                angelegt += KonditionierungNutzungSchema.Ausfuehren(berichtKondNutzung);
+                foreach (string zeile in berichtKondNutzung)
+                    Console.WriteLine("Schritt " + nrKondNutzung + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKondNutzung + " - vollstaendig: " +
+                                  KonditionierungNutzungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt WaermepumpeSperrprofilSchema.SCHRITT (Welle V14): die Tabelle Tab_Sperrfenster,
+            //      leer. Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_WaermepumpeSperrprofil bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Ohne Zeilen rechnet allein das Altfenster.
+            string nrSperr = WaermepumpeSperrprofilSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrSperr + " - Sperrfenster der Waermepumpe: " +
+                              (WaermepumpeSperrprofilSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtSperr = new List<string>();
+                tabellen += WaermepumpeSperrprofilSchema.Ausfuehren(berichtSperr) > 0 ? 1 : 0;
+                foreach (string zeile in berichtSperr)
+                    Console.WriteLine("Schritt " + nrSperr + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrSperr + " - vollstaendig: " +
+                                  WaermepumpeSperrprofilSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt ProzessNutzungSchema.SCHRITT (V31/V32): Zuordnung der Nutzungsprofile ueber IDs und
+            //      die Zapf-Nutzungsarten Buero/Schule/Gewerbe. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_ProzessNutzung bedient. Danach tww_testkatalog_fiktiv.py nachlaufen
+            //      lassen: es fuehrt die nachgetragenen Nutzungsarten nach der Regel der Testdatenbank (EIGEN).
+            //
+            //      REFERENZLAUF UNVERAENDERT: kein Referenzprojekt benutzt die neuen Zeilen.
+            string nrNutzung = ProzessNutzungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrNutzung + " - Nutzungsprofil-Zuordnung und Zapf-Nutzungsarten: " +
+                              (ProzessNutzungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtNutzung = new List<string>();
+                tabellen += ProzessNutzungSchema.Ausfuehren(berichtNutzung);
+                foreach (string zeile in berichtNutzung)
+                    Console.WriteLine("Schritt " + nrNutzung + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrNutzung + " - vollstaendig: " +
+                                  ProzessNutzungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt PufferAuslegungErgaenzungSchema.SCHRITT (Wellen P4c/P4d): die Sitzungseingaben der
+            //      Pufferauslegung, ID_Stamm am Projektpuffer und die Saat des Aufheizkriteriums K12.
+            //      Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_PufferAuslegungErgaenzung bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Spalten entstehen leer, die Simulation liest keine Vorgabe.
+            string nrPufferErg = PufferAuslegungErgaenzungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrPufferErg + " - Ergaenzungen der Pufferauslegung: " +
+                              (PufferAuslegungErgaenzungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtPufferErg = new List<string>();
+                angelegt += PufferAuslegungErgaenzungSchema.Ausfuehren(berichtPufferErg);
+                foreach (string zeile in berichtPufferErg)
+                    Console.WriteLine("Schritt " + nrPufferErg + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrPufferErg + " - vollstaendig: " +
+                                  PufferAuslegungErgaenzungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt ErdreichVorgabeSchema.SCHRITT (EV1, E65): der wirksame U-Wert der Bodenplatte als
+            //      Vorgabe an Tab_Gebaeude und Tab_Gebaeude_STAMM samt neuntem Sichtneubau - ZULETZT, weil
+            //      aeltere Durchgaenge die Sicht in ihrer Form bauen. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_ErdreichVorgabe bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Spalten entstehen leer; leer rechnet nach DIN EN ISO 13370.
+            string nrErdreich = ErdreichVorgabeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrErdreich + " - Erdreichvorgabe am Gebaeude: " +
+                              (ErdreichVorgabeSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtErdreich = new List<string>();
+                angelegt += ErdreichVorgabeSchema.Ausfuehren(berichtErdreich);
+                foreach (string zeile in berichtErdreich)
+                    Console.WriteLine("Schritt " + nrErdreich + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrErdreich + " - vollstaendig: " +
+                                  ErdreichVorgabeSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt ZonenUebergabeSchema.SCHRITT (AK1z, E63): Auslegungspunkt und Regler der Waermeuebergabe
+            //      je Zone an Tab_Zone, Kreiswerte an Tab_ErgebnisZone. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_ZonenUebergabe bedient. Ohne Sicht.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Spalten entstehen leer; leer rechnet die Zone wie ihr Gebaeude.
+            string nrZonenUebergabe = ZonenUebergabeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrZonenUebergabe + " - Waermeuebergabe je Zone: " +
+                              (ZonenUebergabeSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtZone = new List<string>();
+                angelegt += ZonenUebergabeSchema.Ausfuehren(berichtZone);
+                foreach (string zeile in berichtZone)
+                    Console.WriteLine("Schritt " + nrZonenUebergabe + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrZonenUebergabe + " - vollstaendig: " +
+                                  ZonenUebergabeSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt KaeltemaschineSchema.SCHRITT (KU3-1, E67/E68): Katalog, Projektkopie und Kennlinien der
+            //      Kaeltemaschine samt drei Beispielgeraeten. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Kaeltemaschine bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Projekt fuehrt eine Kaeltemaschine.
+            string nrKaeltemaschine = KaeltemaschineSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKaeltemaschine + " - Kaeltemaschine: " +
+                              (KaeltemaschineSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKm = new List<string>();
+                tabellen += KaeltemaschineSchema.Ausfuehren(berichtKm);
+                foreach (string zeile in berichtKm)
+                    Console.WriteLine("Schritt " + nrKaeltemaschine + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKaeltemaschine + " - vollstaendig: " +
+                                  KaeltemaschineSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt KaeltemaschineAnlageSchema.SCHRITT (KU3-4, E67/E68): die Kaeltemaschine als Anlage
+            //      samt Kostenkomponente und Ergebnistabelle. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_KaeltemaschineAnlage bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt fuehrt eine Anlagenzeile der Kaeltemaschine.
+            string nrKmAnlage = KaeltemaschineAnlageSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKmAnlage + " - Kaeltemaschine als Anlage: " +
+                              (KaeltemaschineAnlageSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKmAnlage = new List<string>();
+                tabellen += KaeltemaschineAnlageSchema.Ausfuehren(berichtKmAnlage);
+                foreach (string zeile in berichtKmAnlage)
+                    Console.WriteLine("Schritt " + nrKmAnlage + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKmAnlage + " - vollstaendig: " +
+                                  KaeltemaschineAnlageSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt KaeltestromabrechnungSchema.SCHRITT (KU3-4d): die Kaeltestromabrechnung der
+            //      Kaeltemaschine - Abrechnungsspalten je Maschine, erneuerter Stempeltrigger der Anlagenzeile.
+            //      Aus DERSELBEN Quelle wie SchemaMigration.Schritt_Kaeltestromabrechnung. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt fuehrt eine Kaeltemaschine.
+            string nrKsAbr = KaeltestromabrechnungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKsAbr + " - Kaeltestromabrechnung der Kaeltemaschine: " +
+                              (KaeltestromabrechnungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKsAbr = new List<string>();
+                angelegt += KaeltestromabrechnungSchema.Ausfuehren(berichtKsAbr);
+                foreach (string zeile in berichtKsAbr)
+                    Console.WriteLine("Schritt " + nrKsAbr + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKsAbr + " - vollstaendig: " +
+                                  KaeltestromabrechnungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt ZonenKaeltespitzeSchema.SCHRITT (MZ-Rest): Kaeltespitze und Kuehlstunden je Zone an
+            //      Tab_ErgebnisZone. Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_ZonenKaeltespitze
+            //      bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Spalten entstehen leer; ohne Kuehlung bleiben sie leer.
+            string nrKaeltespitze = ZonenKaeltespitzeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKaeltespitze + " - Kaeltespitze je Zone: " +
+                              (ZonenKaeltespitzeSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKaeltespitze = new List<string>();
+                angelegt += ZonenKaeltespitzeSchema.Ausfuehren(berichtKaeltespitze);
+                foreach (string zeile in berichtKaeltespitze)
+                    Console.WriteLine("Schritt " + nrKaeltespitze + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKaeltespitze + " - vollstaendig: " +
+                                  ZonenKaeltespitzeSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt AnlagenfahrplanSchema.SCHRITT (AK2-1): Zeitprogramm und Vorlauf_Max an Tab_Energieanlagen,
+            //      sechs Komfort- und Fahrplanspalten an Tab_ErgebnisEnergiebedarf. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Anlagenfahrplan bedient. Wiederholbar, ohne Saat.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Spalten entstehen leer.
+            string nrFahrplan = AnlagenfahrplanSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrFahrplan + " - Anlagenfahrplan: " +
+                              (AnlagenfahrplanSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtFahrplan = new List<string>();
+                angelegt += AnlagenfahrplanSchema.Ausfuehren(berichtFahrplan);
+                foreach (string zeile in berichtFahrplan)
+                    Console.WriteLine("Schritt " + nrFahrplan + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrFahrplan + " - vollstaendig: " +
+                                  AnlagenfahrplanSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt FreieKuehlungSoleSchema.SCHRITT (KU3-6a): Kuehl_Frei, Kuehl_Frei_Graedigkeit_K und
+            //      Kuehl_Frei_Leistung_kW an Tab_Energieanlagen, FreieKuehlung_MWh und FreieKuehlung_Stunden an den
+            //      beiden Ergebnistabellen der Waermepumpe. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_FreieKuehlungSole bedient. Wiederholbar, ohne Saat.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Der Schalter entsteht aus, die Spalten leer.
+            string nrFreiKuehl = FreieKuehlungSoleSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrFreiKuehl + " - freie Kuehlung ueber die Waermequelle: " +
+                              (FreieKuehlungSoleSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtFreiKuehl = new List<string>();
+                angelegt += FreieKuehlungSoleSchema.Ausfuehren(berichtFreiKuehl);
+                foreach (string zeile in berichtFreiKuehl)
+                    Console.WriteLine("Schritt " + nrFreiKuehl + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrFreiKuehl + " - vollstaendig: " +
+                                  FreieKuehlungSoleSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt VorlaufwahlSchema.SCHRITT (VW1a): Vorlaufwahl_Stunden, Vorlauf_Darueber_Stunden und
+            //      Vorlauf_Darunter_Stunden an Tab_ErgebnisWaermepumpeModul. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Vorlaufwahl bedient. Wiederholbar, ohne Saat.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Spalten entstehen leer.
+            string nrVorlaufwahl = VorlaufwahlSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrVorlaufwahl + " - Ausweis der Vorlaufwahl der Waermepumpe: " +
+                              (VorlaufwahlSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtVorlaufwahl = new List<string>();
+                angelegt += VorlaufwahlSchema.Ausfuehren(berichtVorlaufwahl);
+                foreach (string zeile in berichtVorlaufwahl)
+                    Console.WriteLine("Schritt " + nrVorlaufwahl + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrVorlaufwahl + " - vollstaendig: " +
+                                  VorlaufwahlSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt RaumnutzungSchema.SCHRITT (NP1a): Katalog der Nutzungsprofile (fuenf Tabellen samt Saat),
+            //      freie Nutzung an Tab_Konditionierungskalender und Tab_Konditionierungsvorlage_STAMM (Tabellenneubau),
+            //      Tab_Zone.Nutzungsprofil. Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_Raumnutzung
+            //      bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Rechenweg liest Katalog oder Zonenspalte; die Kalender behalten
+            //      Zeilen, IDs und Nutzungen.
+            string nrRaumnutzung = RaumnutzungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrRaumnutzung + " - Katalog der Nutzungsprofile: " +
+                              (RaumnutzungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtRaumnutzung = new List<string>();
+                angelegt += RaumnutzungSchema.Ausfuehren(berichtRaumnutzung);
+                foreach (string zeile in berichtRaumnutzung)
+                    Console.WriteLine("Schritt " + nrRaumnutzung + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrRaumnutzung + " - vollstaendig: " +
+                                  RaumnutzungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt RaumnutzungDinTsSchema.SCHRITT (NP5b, E96): die Kategorie DIN auf die DIN/TS 18599-10:2025-10 -
+            //      Name, Quellenhinweis, Nummern und Namen der 43 Nutzungen ohne Werte, Ids bleiben; die ausgelieferte Zuordnung
+            //      DIN ab 22 auf die Zaehlung 2025 (28, 29, 31, 35, 41 -> 30, 31, 33, 37, 43; HottCAD zaehlt nach 2025), dazu
+            //      DIN 19 -> Verkehr, 20 -> Lager, wo keine Zeile steht. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_RaumnutzungDinTs bedient. Wiederholbar, kein DDL.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Rechenweg liest den Katalog.
+            string nrDinTs = RaumnutzungDinTsSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrDinTs + " - Kategorie DIN nach DIN/TS 18599-10: " +
+                              (RaumnutzungDinTsSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtDinTs = new List<string>();
+                RaumnutzungDinTsSchema.Ausfuehren(berichtDinTs);
+                foreach (string zeile in berichtDinTs)
+                    Console.WriteLine("Schritt " + nrDinTs + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrDinTs + " - vollstaendig: " +
+                                  RaumnutzungDinTsSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt RaumgrundrissSchema.SCHRITT (HC-5): Tab_Raumgrundriss, der Grundriss je importiertem Raum
+            //      als Kindliste der Importquelle. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Raumgrundriss bedient. Wiederholbar, ohne Saat - die Tabelle bleibt leer.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Rechenweg liest die Tabelle; kein Referenzprojekt ist importiert.
+            string nrRaumgrundriss = RaumgrundrissSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrRaumgrundriss + " - Grundriss je importiertem Raum: " +
+                              (RaumgrundrissSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtRaumgrundriss = new List<string>();
+                tabellen += RaumgrundrissSchema.Ausfuehren(berichtRaumgrundriss);
+                foreach (string zeile in berichtRaumgrundriss)
+                    Console.WriteLine("Schritt " + nrRaumgrundriss + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrRaumgrundriss + " - vollstaendig: " +
+                                  RaumgrundrissSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt TypaufbauSchema.SCHRITT (BA-2): Spalte Typaufbau an Tab_Bauteilaufbau und
+            //      Tab_Bauteilaufbau_STAMM, Saat der neun Typaufbauten samt Schichten, Katalogschluessel.
+            //      Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_Typaufbau bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Rechenweg liest die Spalte; kein Referenzprojekt traegt einen Aufbau.
+            string nrTypaufbau = TypaufbauSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrTypaufbau + " - Typaufbauten: " +
+                              (TypaufbauSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtTypaufbau = new List<string>();
+                angelegt += TypaufbauSchema.Ausfuehren(berichtTypaufbau) > 0 ? 2 : 0;
+                foreach (string zeile in berichtTypaufbau)
+                    Console.WriteLine("Schritt " + nrTypaufbau + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrTypaufbau + " - vollstaendig: " +
+                                  TypaufbauSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt StandardlastprofilSchema.SCHRITT (SLP25): die BDEW-Standardlastprofile Strom 2025 H25, G25
+            //      und L25 als gesperrte Saetze der "Datenbank Strombedarf" - je ein Kopf in Tab_Stromverbraucher_STAMM
+            //      (Monatswerte, normiert auf 1.000 MWh/a) und ein Typprofil in Tab_Stromverbrauchertyp_STAMM (168
+            //      Wochenstunden), Katalogschluessel und Pruefsumme. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Standardlastprofil bedient. Wiederholbar, kein DDL.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt fuehrt einen der Saetze.
+            string nrStandardlastprofil = StandardlastprofilSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrStandardlastprofil + " - BDEW-Standardlastprofile Strom 2025: " +
+                              (StandardlastprofilSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtStandardlastprofil = new List<string>();
+                StandardlastprofilSchema.Ausfuehren(berichtStandardlastprofil);
+                foreach (string zeile in berichtStandardlastprofil)
+                    Console.WriteLine("Schritt " + nrStandardlastprofil + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrStandardlastprofil + " - vollstaendig: " +
+                                  StandardlastprofilSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt AufheizAufschlagErgebnisSchema.SCHRITT (KP3 Welle A, E99): verwendeter Aufschlag und
+            //      bemessene Aufheizzeit an Tab_ErgebnisGebaeude (Aufheiz_Aufschlag_Verwendet_H,
+            //      Aufheizzeit_Bemessen_H), reines ADD COLUMN, leer. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_AufheizAufschlagErgebnis bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Der Referenzlauf liest Tab_ErgebnisGebaeude nicht.
+            string nrAufschlagErgebnis = AufheizAufschlagErgebnisSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrAufschlagErgebnis + " - verwendeter Aufschlag und bemessene Aufheizzeit: " +
+                              (AufheizAufschlagErgebnisSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtAufschlagErgebnis = new List<string>();
+                angelegt += AufheizAufschlagErgebnisSchema.Ausfuehren(berichtAufschlagErgebnis);
+                foreach (string zeile in berichtAufschlagErgebnis)
+                    Console.WriteLine("Schritt " + nrAufschlagErgebnis + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrAufschlagErgebnis + " - vollstaendig: " +
+                                  AufheizAufschlagErgebnisSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt ErdsondenfeldSchema.SCHRITT: Geometrie und Bohrlochkennwerte des Sondenfeldes an
+            //      Tab_Energieanlagen (WQ_Sondenabstand, WQ_Bohrlochdurchmesser, WQ_Bohrlochwiderstand,
+            //      WQ_Kopfueberdeckung, WQ_Betrachtungsjahr, WQ_Sondenanordnung), reines ADD COLUMN, leer. Aus
+            //      DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_Erdsondenfeld bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Leere Spalten heissen Normvorgabe (Sondenfeldgeometrie.Norm).
+            string nrSondenfeld = ErdsondenfeldSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrSondenfeld + " - Erdsondenfeld je Anlage: " +
+                              (ErdsondenfeldSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtSondenfeld = new List<string>();
+                angelegt += ErdsondenfeldSchema.Ausfuehren(berichtSondenfeld);
+                foreach (string zeile in berichtSondenfeld)
+                    Console.WriteLine("Schritt " + nrSondenfeld + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrSondenfeld + " - vollstaendig: " +
+                                  ErdsondenfeldSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt StandardlastprofilPvSchema.SCHRITT (SLP25b): die BDEW-Netzbezugsprofile P25 (Haushalt mit
+            //      PV-Anlage) und S25 (Haushalt mit PV-Anlage und Batteriespeicher) als gesperrte Saetze der "Datenbank
+            //      Strombedarf" - je ein Kopf in Tab_Stromverbraucher_STAMM (Monatswerte, Netzbezug 1.000 MWh/a) und ein
+            //      Typprofil in Tab_Stromverbrauchertyp_STAMM (168 Wochenstunden), Katalogschluessel und Pruefsumme.
+            //      Keine Verbrauchsprofile. Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_StandardlastprofilPv
+            //      bedient. Wiederholbar, kein DDL.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt fuehrt einen der Saetze.
+            string nrNetzbezug = StandardlastprofilPvSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrNetzbezug + " - BDEW-Netzbezugsprofile P25/S25: " +
+                              (StandardlastprofilPvSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtNetzbezug = new List<string>();
+                StandardlastprofilPvSchema.Ausfuehren(berichtNetzbezug);
+                foreach (string zeile in berichtNetzbezug)
+                    Console.WriteLine("Schritt " + nrNetzbezug + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrNetzbezug + " - vollstaendig: " +
+                                  StandardlastprofilPvSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt FlaechenherkunftSchema.SCHRITT (G5-0): Tab_Bauteil.Flaechenherkunft, der Weg der importierten
+            //      Bauteilflaeche (MENGENSATZ, RAUMGRENZE, KOERPER, SCHEMATISCH). Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Flaechenherkunft bedient. Reines ADD COLUMN, wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Spalte entsteht leer, der Rechenweg liest sie nicht.
+            string nrFlaechenherkunft = FlaechenherkunftSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrFlaechenherkunft + " - Herkunft der Bauteilflaeche: " +
+                              (FlaechenherkunftSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtFlaechenherkunft = new List<string>();
+                angelegt += FlaechenherkunftSchema.Ausfuehren(berichtFlaechenherkunft);
+                foreach (string zeile in berichtFlaechenherkunft)
+                    Console.WriteLine("Schritt " + nrFlaechenherkunft + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrFlaechenherkunft + " - vollstaendig: " +
+                                  FlaechenherkunftSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt Ak3Schema.SCHRITT (AK3, Festlegungen 22 und 23): Heizkurve_Raumeinfluss an Tab_Gebaeude und
+            //      Tab_Gebaeude_STAMM samt zehntem Sichtneubau (Abfrage_Projektgebaeude, 105 Spalten) und sechs
+            //      Kennzahlen des geschlossenen Kreises an Tab_ErgebnisEnergiebedarf. Aus DERSELBEN Quelle, aus der
+            //      sich SchemaMigration.Schritt_Ak3 bedient; ZULETZT, weil er die Sicht in seiner Form baut.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Alle Spalten entstehen leer; kein Referenzprojekt rechnet AK3.
+            string nrAk3 = Ak3Schema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrAk3 + " - Stufe AK3 (Raumeinfluss, Kennzahlen des Kreises): " +
+                              (Ak3Schema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtAk3 = new List<string>();
+                angelegt += Ak3Schema.Ausfuehren(berichtAk3);
+                foreach (string zeile in berichtAk3)
+                    Console.WriteLine("Schritt " + nrAk3 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrAk3 + " - vollstaendig: " + Ak3Schema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt NordrichtungSchema.SCHRITT (G5-N): Tab_Importquelle.Nordwinkel_Herkunft, die Herkunft des
+            //      Nordwinkels (ANNAHME, DATEI, EINGABE), Bestand nachgefuellt (Nordwinkel vorhanden -> DATEI, NULL ->
+            //      ANNAHME). Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_Nordrichtung bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Der Rechenweg liest die Spalte nicht; kein Referenzprojekt hat eine Importquelle.
+            string nrNordrichtung = NordrichtungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrNordrichtung + " - Herkunft des Nordwinkels (Tab_Importquelle): " +
+                              (NordrichtungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtNordrichtung = new List<string>();
+                angelegt += NordrichtungSchema.Ausfuehren(berichtNordrichtung);
+                foreach (string zeile in berichtNordrichtung)
+                    Console.WriteLine("Schritt " + nrNordrichtung + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrNordrichtung + " - vollstaendig: " + NordrichtungSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt ProjektdateiImportSchema.SCHRITT: Format und Herkunft SQPROJ fuer den Gebaeudeimport aus der
+            //      Projektdatei (.sqproj) - Neubau von Tab_Importquelle und der sechs Herkunftstabellen (Baustoff, Aufbau,
+            //      je mit Katalog, Zone, Bauteil) mit erweiterter Pruefklausel. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_ProjektdateiImport bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Keine Zeile aendert sich; der Rechenweg liest weder Format noch Herkunft.
+            string nrProjektdatei = ProjektdateiImportSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrProjektdatei + " - Format und Herkunft SQPROJ (Import aus der Projektdatei): " +
+                              (ProjektdateiImportSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtProjektdatei = new List<string>();
+                ProjektdateiImportSchema.Ausfuehren(berichtProjektdatei);
+                foreach (string zeile in berichtProjektdatei)
+                    Console.WriteLine("Schritt " + nrProjektdatei + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrProjektdatei + " - vollstaendig: " + ProjektdateiImportSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt Ak3KSchema.SCHRITT (AK3-K, Festlegung 20): sieben Kennzahlen der Zonensperre und der
+            //      Kaelteseite im Kreis an Tab_ErgebnisEnergiebedarf. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_Ak3K bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Alle Spalten entstehen leer; die Schalter stehen bis K5 aus.
+            string nrAk3K = Ak3KSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrAk3K + " - AK3-K (Kennzahlen der Zonensperre und der Kaelteseite im Kreis): " +
+                              (Ak3KSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtAk3K = new List<string>();
+                angelegt += Ak3KSchema.Ausfuehren(berichtAk3K);
+                foreach (string zeile in berichtAk3K)
+                    Console.WriteLine("Schritt " + nrAk3K + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrAk3K + " - vollstaendig: " + Ak3KSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt KuehlkurveSchema.SCHRITT (KK, Festlegungen 1, 3, 7, 12): fuenf Eingabespalten der Kuehlkurve
+            //      an Tab_Gebaeude und Tab_Gebaeude_STAMM samt elftem Sichtneubau, drei Kennzahlen an
+            //      Tab_ErgebnisEnergiebedarf. Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_Kuehlkurve bedient.
+            //      ZULETZT, weil er die Sicht in seiner Form baut.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Alle Spalten entstehen leer; die Kuehlkurve steht aus.
+            string nrKk = KuehlkurveSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKk + " - Kuehlkurve (Eingaben am Gebaeude, Kennzahlen im Ergebnis): " +
+                              (KuehlkurveSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKk = new List<string>();
+                angelegt += KuehlkurveSchema.Ausfuehren(berichtKk);
+                foreach (string zeile in berichtKk)
+                    Console.WriteLine("Schritt " + nrKk + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKk + " - vollstaendig: " + KuehlkurveSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt KaeltemaschinenTypkennfelderSchema.SCHRITT (KM2): die eingebauten Typkennfelder der
+            //      Kaeltemaschinen als gesperrte Saetze in Tab_Kaeltemaschine_STAMM samt Kennlinie, Katalogschluessel und
+            //      Pruefsumme. Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_KaeltemaschinenTypkennfelder
+            //      bedient. Wiederholbar, kein DDL.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt fuehrt ein Typkennfeld.
+            string nrKm = KaeltemaschinenTypkennfelderSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKm + " - Typkennfelder der Kaeltemaschinen: " +
+                              (KaeltemaschinenTypkennfelderSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKm = new List<string>();
+                KaeltemaschinenTypkennfelderSchema.Ausfuehren(berichtKm);
+                foreach (string zeile in berichtKm)
+                    Console.WriteLine("Schritt " + nrKm + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKm + " - vollstaendig: " +
+                                  KaeltemaschinenTypkennfelderSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt ZonenKatalogSchema.SCHRITT (ZK): die Katalogzwillinge Tab_Zone_STAMM, Tab_Bauteil_STAMM,
+            //      Tab_Zonenluftstrom_STAMM und die Eigentuemerspalte ID_Zone_Stamm an Kalender und Vorgabe der
+            //      Konditionierung, die Teilindizes des Katalogbaus ohne Katalogzonen. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_ZonenKatalog bedient. Wiederholbar, reines DDL.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Keine Zeile entsteht, der Rechenweg liest die Zwillinge nicht.
+            string nrZk = ZonenKatalogSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrZk + " - Zonen im Gebaeudekatalog: " +
+                              (ZonenKatalogSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtZk = new List<string>();
+                angelegt += ZonenKatalogSchema.Ausfuehren(berichtZk);
+                foreach (string zeile in berichtZk)
+                    Console.WriteLine("Schritt " + nrZk + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrZk + " - vollstaendig: " + ZonenKatalogSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt UebergabegrenzeSchema.SCHRITT (UB, Umsetzungskonzept Uebergabegrenze und Bivalenz, Abschnitt 4):
+            //      acht Geraetespalten an Tab_WP und Tab_WP_STAMM, Ruecklauf_Max an Tab_BHKW und Tab_BHKW_STAMM, Einbindung
+            //      und Vorwaermbetrieb an Tab_Energieanlagen, Bereiche und Zaehler an Tab_ErgebnisWaermepumpeModul und
+            //      Tab_ErgebnisWaermepumpe. Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_Uebergabegrenze bedient.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Alle Spalten entstehen leer; jede Anlage rechnet auf dem Bestandsweg (U-1).
+            string nrUb = UebergabegrenzeSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrUb + " - Uebergabegrenze (Geraete, Anlage, Ergebnis): " +
+                              (UebergabegrenzeSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtUb = new List<string>();
+                angelegt += UebergabegrenzeSchema.Ausfuehren(berichtUb);
+                foreach (string zeile in berichtUb)
+                    Console.WriteLine("Schritt " + nrUb + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrUb + " - vollstaendig: " + UebergabegrenzeSchema.Vollstaendig() + " (erwartet True).");
+            }
+            // ---- Schritt PvGanglinieSchema.SCHRITT (PVG): Katalog, Projektkopie und Zuordnung der PV-Ganglinie
+            //      (Tab_PvGanglinie_STAMM, Tab_PvGanglinieDaten_STAMM, Tab_PvGanglinie, Tab_PvGanglinieDaten,
+            //      Z_ProjektPvGanglinie). Aus DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_PvGanglinie bedient.
+            //      Wiederholbar, reines DDL.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Keine Zeile entsteht, kein Referenzprojekt fuehrt eine PV-Ganglinie.
+            string nrPvg = PvGanglinieSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrPvg + " - PV-Ganglinie: " +
+                              (PvGanglinieSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtPvg = new List<string>();
+                tabellen += PvGanglinieSchema.Ausfuehren(berichtPvg);
+                foreach (string zeile in berichtPvg)
+                    Console.WriteLine("Schritt " + nrPvg + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrPvg + " - vollstaendig: " + PvGanglinieSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt KalenderbedienungSchema.SCHRITT (K2): gemeinsamer Kalender „alle Groessen", benannte Wochen,
+            //      Wochenende und Feiertagsland am Gebaeude, Laenderfeiertage, Ferienliste. Aus DERSELBEN Quelle, aus der
+            //      sich SchemaMigration.Schritt_Kalenderbedienung bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die gekoppelten Kopien kehren beim Lesen in ihre Kalender zurueck, die
+            //      Ferienspalten bleiben Quelle der Leser.
+            string nrK2 = KalenderbedienungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrK2 + " - Kalenderbedienung Stufe 2: " +
+                              (KalenderbedienungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtK2 = new List<string>();
+                tabellen += KalenderbedienungSchema.Ausfuehren(berichtK2);
+                foreach (string zeile in berichtK2)
+                    Console.WriteLine("Schritt " + nrK2 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrK2 + " - vollstaendig: " + KalenderbedienungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt KatalogkostenUrsprungSchema.SCHRITT (KA1): ID_KostenVorlage an den acht Katalogen mit Kosten,
+            //      ID_Stamm an den elf Projektkopien ohne Ursprung. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_KatalogkostenUrsprung bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Alle Spalten entstehen leer, kein Leser der Simulation fragt sie.
+            string nrKa = KatalogkostenUrsprungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKa + " - Katalogkosten und Ursprung: " +
+                              (KatalogkostenUrsprungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKa = new List<string>();
+                angelegt += KatalogkostenUrsprungSchema.Ausfuehren(berichtKa);
+                foreach (string zeile in berichtKa)
+                    Console.WriteLine("Schritt " + nrKa + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKa + " - vollstaendig: " + KatalogkostenUrsprungSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt KatalogkostenInvestitionSchema.SCHRITT (KA1, KA-E-14): ID_KostenVorlageInvestition an den acht
+            //      Katalogen mit Kosten. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_KatalogkostenInvestition.
+            //      Wiederholbar. REFERENZLAUF UNVERAENDERT: Die Spalte entsteht leer.
+            string nrKi = KatalogkostenInvestitionSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKi + " - Katalogkosten Investition: " +
+                              (KatalogkostenInvestitionSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKi = new List<string>();
+                angelegt += KatalogkostenInvestitionSchema.Ausfuehren(berichtKi);
+                foreach (string zeile in berichtKi)
+                    Console.WriteLine("Schritt " + nrKi + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKi + " - vollstaendig: " + KatalogkostenInvestitionSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt KaeltemaschineTeillastSchema.SCHRITT (KM3): acht Eingabespalten von Teillast und Takten an
+            //      Tab_Kaeltemaschine_STAMM und Tab_Kaeltemaschine, fuenf Kennzahlspalten an Tab_ErgebnisKaeltemaschine,
+            //      dazu die Ergaenzung der Typkennfelder. Aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_KaeltemaschineTeillast bedient. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Spalten entstehen leer; allein die ausgelieferten Typkennfelder des
+            //      Katalogs bekommen Weg, Kurve, x_u und Verdichterregelung. Projektkopien bleiben leer, jede Kaeltemaschine
+            //      der Referenzprojekte rechnet auf dem heutigen Weg.
+            string nrKm3 = KaeltemaschineTeillastSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKm3 + " - Teillast und Takten der Kaeltemaschine: " +
+                              (KaeltemaschineTeillastSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKm3 = new List<string>();
+                angelegt += KaeltemaschineTeillastSchema.Ausfuehren(berichtKm3).Angelegt;
+                foreach (string zeile in berichtKm3)
+                    Console.WriteLine("Schritt " + nrKm3 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKm3 + " - vollstaendig: " + KaeltemaschineTeillastSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt KaelteKatalogfelderSchema.SCHRITT (K-A): Geraeteart, GWP, Fuellmenge und saisonale Kennzahl an
+            //      Tab_Kaeltemaschine_STAMM und Tab_Kaeltemaschine, die Geraeteart nach der Rueckkuehlart rueckgefuellt
+            //      (Katalog samt Pruefsumme, Projektkopien). Aus DERSELBEN Quelle wie SchemaMigration.Schritt_KaelteKatalogfelder.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Rechenweg liest die Spalten.
+            string nrKkf = KaelteKatalogfelderSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKkf + " - Katalogfelder der Kaelteerzeuger: " +
+                              (KaelteKatalogfelderSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKkf = new List<string>();
+                angelegt += KaelteKatalogfelderSchema.Ausfuehren(berichtKkf).Angelegt;
+                foreach (string zeile in berichtKkf)
+                    Console.WriteLine("Schritt " + nrKkf + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKkf + " - vollstaendig: " + KaelteKatalogfelderSchema.Vollstaendig() +
+                                  ", ohne Geraeteart: " + KaelteKatalogfelderSchema.ZeilenOhneGeraeteart() + " (erwartet True, 0).");
+            }
+
+            // ---- Schritt KaelteRangSchema.SCHRITT (KB-D): Kaelte_Rang an Tab_Energieanlagen, leer = Vorgabefolge.
+            //      Aus DERSELBEN Quelle wie SchemaMigration.Schritt_KaelteRang.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Jede Zeile steht auf NULL, und NULL ist die Vorgabefolge.
+            string nrRang = KaelteRangSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrRang + " - pflegbare Kaeltefolge: " +
+                              (KaelteRangSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtRang = new List<string>();
+                angelegt += KaelteRangSchema.Ausfuehren(berichtRang);
+                foreach (string zeile in berichtRang)
+                    Console.WriteLine("Schritt " + nrRang + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrRang + " - vollstaendig: " + KaelteRangSchema.Vollstaendig() +
+                                  ", Zeilen mit Rang: " + KaelteRangSchema.ZeilenMitRang() + " (erwartet True, 0).");
+            }
+
+            // ---- Schritt KaeltebedarfSchema.SCHRITT (K1): Kaeltebedarfsprofile, Typkatalog, Zuordnung mit Deckungsart,
+            //      Deckungsspalten an Z_ProjektWaermebedarf, Ergebnisspalten, Saat. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_Kaeltebedarf.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt ordnet einen Kaeltebedarf zu, jeder Lastgang steht auf 'zentral'.
+            string nrKb = KaeltebedarfSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKb + " - Kaeltebedarf: " +
+                              (KaeltebedarfSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKb = new List<string>();
+                angelegt += KaeltebedarfSchema.Ausfuehren(berichtKb);
+                foreach (string zeile in berichtKb)
+                    Console.WriteLine("Schritt " + nrKb + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKb + " - vollstaendig: " + KaeltebedarfSchema.Vollstaendig() + " (erwartet True).");
+            }
+
+            // ---- Schritt RueckkuehlwerkSchema.SCHRITT (K-F1): Rueckkuehlwerk als eigenes Glied - Katalog und Projektkopie
+            //      (leer, keine Saat), ID_Rueckkuehlwerk an Tab_Energieanlagen (der Wasserpreis steht in der
+            //      Traegerkarte, WasserpreisTraegerkarteSchema), sechs Kennzahlen an
+            //      Tab_ErgebnisKaeltemaschine. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_Rueckkuehlwerk.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Rechenweg liest die Tabellen oder Spalten, jede Zeile steht auf NULL.
+            string nrRkw = RueckkuehlwerkSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrRkw + " - Rueckkuehlwerk: " +
+                              (RueckkuehlwerkSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtRkw = new List<string>();
+                angelegt += RueckkuehlwerkSchema.Ausfuehren(berichtRkw);
+                foreach (string zeile in berichtRkw)
+                    Console.WriteLine("Schritt " + nrRkw + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrRkw + " - vollstaendig: " + RueckkuehlwerkSchema.Vollstaendig() +
+                                  ", Anlagenzeilen mit Wert: " + RueckkuehlwerkSchema.ZeilenMitWert() + " (erwartet True, 0).");
+            }
+
+            // ---- Schritt VorheizenSchema.SCHRITT (AH-V4): Vorheizen der Aufheizoptimierung, Fassung 2 - sieben Spalten an
+            //      Tab_Einstellungen, Vorheizzeit_H an Tab_Zone, achtzehn Ergebnisspalten an Tab_ErgebnisGebaeude und
+            //      Tab_ErgebnisZone. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_Vorheizen.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Jede Spalte steht auf NULL, und NULL ist die Sollwertrampe des Bestands.
+            string nrVh = VorheizenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrVh + " - Vorheizen: " + (VorheizenSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtVh = new List<string>();
+                angelegt += VorheizenSchema.Ausfuehren(berichtVh);
+                foreach (string zeile in berichtVh)
+                    Console.WriteLine("Schritt " + nrVh + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrVh + " - vollstaendig: " + VorheizenSchema.Vollstaendig() +
+                                  ", Einstellungen mit Verfahren: " + VorheizenSchema.ZeilenMitVerfahren() + " (erwartet True, 0).");
+            }
+
+            // ---- Schritt KaeltemittelSchema.SCHRITT (KM4-E1): Kaeltemittel als Stammdatum - Tab_Kaeltemittel_STAMM samt
+            //      Saat (achtzehn Codes GESICHERT) und Katalogschluesseln, ID_Kaeltemittel an Katalog und Projektkopie der
+            //      Kaeltemaschine mit Zuordnung des Textbestands, Tab_Projekt.Inbetriebnahmejahr. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_Kaeltemittel.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Rechenweg liest Tabelle, Verweis oder Jahr.
+            string nrKmt = KaeltemittelSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKmt + " - Kaeltemittel: " + (KaeltemittelSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKmt = new List<string>();
+                KaeltemittelSchema.Laufergebnis ergKmt = KaeltemittelSchema.Ausfuehren(berichtKmt);
+                angelegt += ergKmt.Angelegt;
+                foreach (string zeile in berichtKmt)
+                    Console.WriteLine("Schritt " + nrKmt + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKmt + " - vollstaendig: " + KaeltemittelSchema.Vollstaendig() +
+                                  ", Katalogsaetze mit ID: " + KaeltemittelSchema.ZeilenMitId(KaeltemaschineSchema.TAB_STAMM) +
+                                  ", Projektkopien mit ID: " + KaeltemittelSchema.ZeilenMitId(KaeltemaschineSchema.TAB_PROJEKT) +
+                                  " (erwartet True, 3, 3).");
+            }
+
+            // ---- Schritt SchnellaufheizungSchema.SCHRITT (SA2): Schnellaufheizung des Vorheizens - Schalter und
+            //      Raumsollwert-Ueberhoehung an Tab_Einstellungen, sechs Ergebnisspalten an Tab_ErgebnisGebaeude und
+            //      Tab_ErgebnisZone. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_Schnellaufheizung.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Jede Spalte steht auf NULL, und NULL heisst aus.
+            string nrSa = SchnellaufheizungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrSa + " - Schnellaufheizung: " + (SchnellaufheizungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtSa = new List<string>();
+                angelegt += SchnellaufheizungSchema.Ausfuehren(berichtSa);
+                foreach (string zeile in berichtSa)
+                    Console.WriteLine("Schritt " + nrSa + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrSa + " - vollstaendig: " + SchnellaufheizungSchema.Vollstaendig() +
+                                  ", Einstellungen mit Schalter: " + SchnellaufheizungSchema.ZeilenMitSchalter() + " (erwartet True, 0).");
+            }
+
+            // ---- Schritt KaelteArtSchema.SCHRITT (KWN-0): Art der Kaeltebedarfszeilen - Kaelte_Art (RAUM/PROZESS, Vorgabe
+            //      RAUM) an Z_Projekt_Kaeltebedarf und Z_ProjektWaermebedarf. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_KaelteArt.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Jede Bestandszeile steht auf RAUM; ohne Prozesszeile aendert sich keine Zahl.
+            string nrKwn = KaelteArtSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKwn + " - Art der Kaeltebedarfszeilen: " + (KaelteArtSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKwn = new List<string>();
+                angelegt += KaelteArtSchema.Ausfuehren(berichtKwn);
+                foreach (string zeile in berichtKwn)
+                    Console.WriteLine("Schritt " + nrKwn + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKwn + " - vollstaendig: " + KaelteArtSchema.Vollstaendig() +
+                                  ", Zeilen mit Prozesskaelte: " + KaelteArtSchema.ZeilenMitProzess() + " (erwartet True, 0).");
+            }
+
+            // ---- Schritt RaumnutzungNormkategorienSchema.SCHRITT (NP6, E129): die leeren, ausgelieferten Kategorien
+            //      SIA 2024 und VDI 2078 des Katalogs der Nutzungsprofile entfallen; eine wider Erwarten befuellte wird eine
+            //      eigene; die Kategorie DIN bekommt die zwei Wohnprofile nach Tabelle 5 ohne Werte. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_RaumnutzungNormkategorien. Wiederholbar, kein DDL.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Kein Rechenweg liest eine Kategorie.
+            string nrNp6 = RaumnutzungNormkategorienSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrNp6 + " - Kategorien SIA 2024 und VDI 2078, Wohnprofile der DIN: " +
+                              (RaumnutzungNormkategorienSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtNp6 = new List<string>();
+                RaumnutzungNormkategorienSchema.Ausfuehren(berichtNp6);
+                foreach (string zeile in berichtNp6)
+                    Console.WriteLine("Schritt " + nrNp6 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrNp6 + " - vollstaendig: " + RaumnutzungNormkategorienSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt RaumnutzungNormwerteSchema.SCHRITT (NP7, E131): Aussenluft je Person und Herkunft der Werte
+            //      (Werte_Herkunft, Werte_Quelle, Werte_Datum) an Tab_Raumnutzungsprofil, leer. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_RaumnutzungNormwerte. Wiederholbar, reines DDL.
+            //
+            //      REFERENZLAUF UNVERAENDERT: alle vier Spalten stehen leer.
+            string nrNp7 = RaumnutzungNormwerteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrNp7 + " - Aussenluft je Person und Herkunft der Werte: " +
+                              (RaumnutzungNormwerteSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtNp7 = new List<string>();
+                angelegt += RaumnutzungNormwerteSchema.Ausfuehren(berichtNp7);
+                foreach (string zeile in berichtNp7)
+                    Console.WriteLine("Schritt " + nrNp7 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrNp7 + " - vollstaendig: " + RaumnutzungNormwerteSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt BauteilkatalogSchema.SCHRITT (BK-2, E132): Herkunft EIGEN/IMPORT (Neubau der vier Kopftabellen),
+            //      Gruppe und Klasse, Kennzeichen, Felder der Quelle und Abschnittstabellen am Baustoff- und Bauteilkatalog.
+            //      Aus DERSELBEN Quelle wie SchemaMigration.Schritt_Bauteilkatalog. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: der Bauteilweg liest keine neue Spalte.
+            string nrBk2 = BauteilkatalogSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBk2 + " - Bauteilkatalog (Herkunft, Gliederung, Kennzeichen, Felder): " +
+                              (BauteilkatalogSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtBk2 = new List<string>();
+                angelegt += BauteilkatalogSchema.Ausfuehren(berichtBk2);
+                foreach (string zeile in berichtBk2)
+                    Console.WriteLine("Schritt " + nrBk2 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBk2 + " - vollstaendig: " + BauteilkatalogSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt BauteilkatalogHaustechnikSchema.SCHRITT (BK-3c, E134): Klasse Haustechnik in der Pruefklausel von
+            //      Klasse_Code (Neubau der vier Kopftabellen). Aus DERSELBEN Quelle wie SchemaMigration.Schritt_BauteilkatalogHaustechnik.
+            //      Wiederholbar. REFERENZLAUF UNVERAENDERT: der Bauteilweg liest keine Gliederung.
+            string nrBk3c = BauteilkatalogHaustechnikSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBk3c + " - Klasse Haustechnik am Bauteilkatalog: " +
+                              (BauteilkatalogHaustechnikSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtBk3c = new List<string>();
+                angelegt += BauteilkatalogHaustechnikSchema.Ausfuehren(berichtBk3c);
+                foreach (string zeile in berichtBk3c)
+                    Console.WriteLine("Schritt " + nrBk3c + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBk3c + " - vollstaendig: " + BauteilkatalogHaustechnikSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt KaeltebedarfSplitAbrechnungSchema.SCHRITT (K6): Tab_ErgebnisKaelteDezentral, die Ergebnistabelle je
+            //      dezentral (Split) gedeckter Kaeltebedarfszeile. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_KaeltebedarfSplitAbrechnung. Wiederholbar.
+            //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt fuehrt eine Split-Zeile, die Tabelle bleibt leer.
+            string nrK6 = KaeltebedarfSplitAbrechnungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrK6 + " - Ergebnis je Split-Zeile (Abrechnung des Split-Stroms): " +
+                              (KaeltebedarfSplitAbrechnungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtK6 = new List<string>();
+                tabellen += KaeltebedarfSplitAbrechnungSchema.Ausfuehren(berichtK6);
+                foreach (string zeile in berichtK6)
+                    Console.WriteLine("Schritt " + nrK6 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrK6 + " - vollstaendig: " + KaeltebedarfSplitAbrechnungSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt TwwZonenferienSchema.SCHRITT (ZB5, ZB-Q3 B): Zonenferien als Liste - Tab_TwwZonenferien anlegen,
+            //      die vier Spaltenpaare von Tab_TwwZone uebertragen und abbauen (Neubau mit Erhalt der IDs). Aus DERSELBEN
+            //      Quelle wie SchemaMigration.Schritt_TwwZonenferien. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: der Zapfkalender rechnet ueber die Liste dieselben Fenster.
+            string nrZf = TwwZonenferienSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrZf + " - Zonenferien als Liste: " +
+                              (TwwZonenferienSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtZf = new List<string>();
+                tabellen += TwwZonenferienSchema.Ausfuehren(berichtZf);
+                foreach (string zeile in berichtZf)
+                    Console.WriteLine("Schritt " + nrZf + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrZf + " - vollstaendig: " + TwwZonenferienSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt ZonenLastfelderSchema.SCHRITT (DA-2, E138 F5): Aussenluft je Person, Licht und Waerme je Person an
+            //      Tab_Zone und Tab_Zone_STAMM. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_ZonenLastfelder.
+            //      Wiederholbar. REFERENZLAUF UNVERAENDERT: der Rechenweg liest die Spalten nicht, alle stehen leer.
+            string nrDa2 = ZonenLastfelderSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrDa2 + " - Lastfelder der Zone: " +
+                              (ZonenLastfelderSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtDa2 = new List<string>();
+                angelegt += ZonenLastfelderSchema.Ausfuehren(berichtDa2);
+                foreach (string zeile in berichtDa2)
+                    Console.WriteLine("Schritt " + nrDa2 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrDa2 + " - vollstaendig: " + ZonenLastfelderSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt KatalogkostenSaatSchema.SCHRITT (KB-3): die zwei Verweise an den acht Projektkopien mit
+            //      Kosten, dazu je Satz mit mindestens einem Kostenwert > 0 und ohne Verweis genau eine Satzvorlage
+            //      je Art samt Positionen. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_KatalogkostenSaat.
+            //      Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: gerechnet wird aus Tab_ProjektWerte; eine Satzvorlage wirkt erst beim
+            //      Uebernehmen oder Abgleichen.
+            string nrKb3 = KatalogkostenSaatSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKb3 + " - Saat der Katalogkosten-Satzvorlagen: " +
+                              (KatalogkostenSaatSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKb3 = new List<string>();
+                angelegt += KatalogkostenSaatSchema.Ausfuehren(berichtKb3);
+                foreach (string zeile in berichtKb3)
+                    Console.WriteLine("Schritt " + nrKb3 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKb3 + " - vollstaendig: " + KatalogkostenSaatSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+            // ---- Schritt BrennstoffpreiseTraegerkarteSchema.SCHRITT (KB-2): die drei Standardpreise des Brennstoffs
+            //      gehen in energy_carrier.price_work/price_base/price_power und fallen danach an
+            //      Tab_Brennstoff_Stamm und Tab_Brennstoff weg. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_BrennstoffpreiseTraegerkarte. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: kein Rechenweg liest die drei Spalten (Saat der Energietraeger-Variante);
+            //      in der Testdatenbank stehen sie durchweg auf 0, der Uebertrag ist leer.
+            //      NEUE KATALOGFASSUNG: Die Pruefsumme jedes Brennstoffs aendert sich; der Schritt bildet sie fuer jeden
+            //      Satz neu, dessen Summe vorher stimmte.
+            string nrKb2 = BrennstoffpreiseTraegerkarteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKb2 + " - Brennstoffpreise in die Traegerkarte: " +
+                              (BrennstoffpreiseTraegerkarteSchema.Vollstaendig() ? "steht bereits" : "offen") +
+                              " (" + BrennstoffpreiseTraegerkarteSchema.Uebertragbar() + " Preis(e) zu uebertragen).");
+            if (!trocken)
+            {
+                var berichtKb2 = new List<string>();
+                angelegt += BrennstoffpreiseTraegerkarteSchema.Ausfuehren(berichtKb2);
+                foreach (string zeile in berichtKb2)
+                    Console.WriteLine("Schritt " + nrKb2 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKb2 + " - vollstaendig: " + BrennstoffpreiseTraegerkarteSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt GeraetekostenEntfallSchema.SCHRITT (KB-4): der Investitionsverweis und die Satzvorlage am
+            //      Wechselrichter, ein Sicherheitslauf der Saat aller acht Gewerke dieser Welle, dann der Entfall ihrer
+            //      32 Kostenspalten an Katalog und Projektkopie. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_GeraetekostenEntfall. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: kein Rechenweg dieser Gewerke liest eine der Spalten (gerechnet wird aus
+            //      Tab_ProjektWerte); Planwert, Dialoge und Berichte lesen die Satzvorlage.
+            //      NEUE KATALOGFASSUNG: Die Pruefsumme jedes Satzes der acht Kataloge aendert sich; der Schritt bildet
+            //      sie fuer jeden Satz neu, dessen Summe vorher stimmte.
+            string nrKb4 = GeraetekostenEntfallSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKb4 + " - Entfall der Geraetekostenspalten: " +
+                              (GeraetekostenEntfallSchema.Vollstaendig() ? "steht bereits" : "offen") +
+                              " (" + GeraetekostenEntfallSchema.Offen() + " Kostenspalte(n) noch da, " +
+                              GeraetekostenEntfallSchema.OhneVerweis().Count + " Zeile(n) ohne Satzvorlage).");
+            if (!trocken)
+            {
+                var berichtKb4 = new List<string>();
+                angelegt += GeraetekostenEntfallSchema.Ausfuehren(berichtKb4);
+                foreach (string zeile in berichtKb4)
+                    Console.WriteLine("Schritt " + nrKb4 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKb4 + " - vollstaendig: " + GeraetekostenEntfallSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt StromspeicherKostenSchema.SCHRITT (KB-5): Sicherheitslauf der Saat am Stromspeicher, dann
+            //      der Entfall seiner vier Kostenspalten an Katalog und Projektkopie. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_StromspeicherKosten. Wiederholbar; der Rechenweg liest dieselben Saetze
+            //      aus Position und Satzvorlage.
+            string nrKb5 = StromspeicherKostenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKb5 + " - Entfall der Stromspeicher-Kostenspalten: " +
+                              (StromspeicherKostenSchema.Vollstaendig() ? "steht bereits" : "offen") +
+                              " (" + StromspeicherKostenSchema.Offen() + " Kostenspalte(n) noch da, " +
+                              StromspeicherKostenSchema.OhneVerweis().Count + " Zeile(n) ohne Satzvorlage).");
+            if (!trocken)
+            {
+                var berichtKb5 = new List<string>();
+                angelegt += StromspeicherKostenSchema.Ausfuehren(berichtKb5);
+                foreach (string zeile in berichtKb5)
+                    Console.WriteLine("Schritt " + nrKb5 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKb5 + " - vollstaendig: " + StromspeicherKostenSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt KaeltebedarfsprofilVorlagenSchema.SCHRITT (KBP-2): Z_Projekt_Kaeltebedarf.Eingabeart (Vorgabe 'jahr'),
+            //      Art-Vorschlag Kaelte_Art an Tab_Kaeltebedarf_STAMM/Tab_Kaeltebedarf, Saat der Vorlagen 7-16 samt
+            //      Katalogschluessel. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_Kaeltevorlagen. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: kein Referenzprojekt ordnet einen Kaeltebedarf der neuen Vorlagen zu, jede
+            //      Zuordnung rechnet weiter mit der Jahressumme; die Zeilen 1-6 bleiben samt Pruefsumme bytegleich.
+            string nrKbp2 = KaeltebedarfsprofilVorlagenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKbp2 + " - Kaeltebedarfsvorlagen und Eingabeart: " +
+                              (KaeltebedarfsprofilVorlagenSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKbp2 = new List<string>();
+                angelegt += KaeltebedarfsprofilVorlagenSchema.Ausfuehren(berichtKbp2);
+                foreach (string zeile in berichtKbp2)
+                    Console.WriteLine("Schritt " + nrKbp2 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKbp2 + " - vollstaendig: " + KaeltebedarfsprofilVorlagenSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt RaumnutzungDinWerteSchema.SCHRITT (DA-6, E135): die 45 DIN-Nutzungsprofile mit den Werten der
+            //      Saat RaumnutzungDinSaat (Fassung 2025-10), nur wo kein Wert steht. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_RaumnutzungDinWerte. Wiederholbar.
+            //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt nutzt ein Nutzungsprofil.
+            string nrDa6 = RaumnutzungDinWerteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrDa6 + " - Werte der DIN-Nutzungsprofile: " +
+                              (RaumnutzungDinWerteSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtDa6 = new List<string>();
+                RaumnutzungDinWerteSchema.Ausfuehren(berichtDa6);
+                foreach (string zeile in berichtDa6)
+                    Console.WriteLine("Schritt " + nrDa6 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrDa6 + " - vollstaendig: " + RaumnutzungDinWerteSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt BauteilkatalogAbschnittSchema.SCHRITT (BK-5/BK-6): Psi_Glasrand an Tab_Bauteilaufbau(_STAMM). Aus
+            //      DERSELBEN Quelle wie SchemaMigration.Schritt_BauteilkatalogAbschnitt. Wiederholbar.
+            //      REFERENZLAUF UNVERAENDERT: Kein Referenzprojekt fuehrt einen Aufbau, die Spalte bleibt leer.
+            string nrBk5 = BauteilkatalogAbschnittSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBk5 + " - Inhomogene Schicht und Fenster im Aufbaukatalog: " +
+                              (BauteilkatalogAbschnittSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtBk5 = new List<string>();
+                angelegt += BauteilkatalogAbschnittSchema.Ausfuehren(berichtBk5);
+                foreach (string zeile in berichtBk5)
+                    Console.WriteLine("Schritt " + nrBk5 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBk5 + " - vollstaendig: " + BauteilkatalogAbschnittSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt BauteilUHerkunftSchema.SCHRITT (MA-6b, E149): U_Herkunft an Tab_Bauteil(_STAMM). Aus DERSELBEN
+            //      Quelle wie SchemaMigration.Schritt_BauteilUHerkunft. Wiederholbar.
+            //      REFERENZLAUF UNVERAENDERT: Die Spalte bleibt leer, der Rechenweg liest sie nicht.
+            string nrMa6b = BauteilUHerkunftSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrMa6b + " - Herkunft des U-Werts je Bauteil: " +
+                              (BauteilUHerkunftSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtMa6b = new List<string>();
+                angelegt += BauteilUHerkunftSchema.Ausfuehren(berichtMa6b);
+                foreach (string zeile in berichtMa6b)
+                    Console.WriteLine("Schritt " + nrMa6b + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrMa6b + " - vollstaendig: " + BauteilUHerkunftSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Saat zu Schritt BauteilUHerkunftSchema.SCHRITT (Fehlerbehebung FX): die Herkunft des U-Werts an den
+            //      gesaeten Bauteilen der Zonen-Referenzprojekte 1052, 1054 (Kopie von 1052) und 1062 - genau der Wert,
+            //      den ihre Bauplaene ueber die Programmwege schreiben (Referenzlaeufe/Skripte/referenzprojekt_1052_bauplan.cs,
+            //      referenzprojekt_1062_kkz.cs): Die Kopien der Uebernahme ("Gebaeude als eine Zone uebernehmen",
+            //      GebaeudeZonenabbildung.AlsBauteilModel) tragen VORGABE, die von Hand angelegten Zeilen MANUELL
+            //      (GebaeudeZonenCtrl.UHerkunftNeu). Nur diese Projekte und nur U_Herkunft; KEINE Datenmigration fuer
+            //      Anwenderdatenbanken (der Bestand bleibt NULL). Wiederholbar.
+            //      REFERENZLAUF BYTE-GLEICH: Der Rechenweg liest U_Herkunft nicht.
+            if (!trocken && BauteilUHerkunftSchema.Vollstaendig())
+            {
+                const string ZEILEN = "ID_Aufbau IS NULL AND U_Wert IS NOT NULL AND ID_Zone IN (SELECT z.ID FROM Tab_Zone z " +
+                                      "JOIN Tab_Gebaeude g ON g.ID = z.ID_Gebaeude WHERE g.ID_Projekt IN (1052, 1054, 1062))";
+                const string VON_HAND = "Bezeichner IN (?, ?, ?, ?, ?)";
+                DbParam[] Parameter(string herkunft) => new[]
+                {
+                    new DbParam("@h", herkunft),
+                    new DbParam("@b1", "Kellerdecke"), new DbParam("@b2", "Trennwand Gastronomie"),
+                    new DbParam("@b3", "Kellerboden"), new DbParam("@b4", "Kellerwände"),
+                    new DbParam("@b5", "Trennwand Nord/Ost"),
+                };
+                int manuell = DataRepository.ExecuteNonQuery(
+                    "UPDATE Tab_Bauteil SET U_Herkunft = ? WHERE " + ZEILEN + " AND " + VON_HAND,
+                    Parameter(DbWerte.HERKUNFT_MANUELL));
+                int vorgabe = DataRepository.ExecuteNonQuery(
+                    "UPDATE Tab_Bauteil SET U_Herkunft = ? WHERE " + ZEILEN + " AND NOT " + VON_HAND,
+                    Parameter(DbWerte.HERKUNFT_VORGABE));
+                Console.WriteLine("Schritt " + nrMa6b + " - Saat der Zonen-Referenzprojekte: " + vorgabe + " Bauteil(e) VORGABE, " +
+                                  manuell + " Bauteil(e) MANUELL (erwartet 72 und 11).");
+            }
+
+            // ---- Schritt BedarfsprofilEingabeartSchema.SCHRITT (KBP-5a): Z_Projekt_Prozesswaerme.Eingabeart und
+            //      Z_Projekt_Brauchwasser.Eingabeart (Vorgabe 'jahr'), Nutzungstage_Norm an Tab_Kaeltebedarf_STAMM/
+            //      Tab_Kaeltebedarf, Saat allein an Vorlage 8 (230 Tage). Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_BedarfsEingabeart. Wiederholbar.
+            //      Haengt ueber BauteilUHerkunftSchema.SCHRITT + 1 an 233 und steht hinter dessen Block.
+            //
+            //      REFERENZLAUF UNVERAENDERT: jede Zuordnung rechnet weiter mit der Jahressumme; die Nutzungstage liest
+            //      kein Rechenweg, die Kaeltezeilen 1-6 bleiben samt Pruefsumme bytegleich.
+            string nrKbp5 = BedarfsprofilEingabeartSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKbp5 + " - Eingabeart Prozesswaerme/Brauchwasser und Nutzungstage: " +
+                              (BedarfsprofilEingabeartSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKbp5 = new List<string>();
+                angelegt += BedarfsprofilEingabeartSchema.Ausfuehren(berichtKbp5);
+                foreach (string zeile in berichtKbp5)
+                    Console.WriteLine("Schritt " + nrKbp5 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKbp5 + " - vollstaendig: " + BedarfsprofilEingabeartSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt WasserpreisTraegerkarteSchema.SCHRITT (KB-7a): Traeger Wasser (WATER, m3), Uebernahme der
+            //      Anlagenpreise in energy_project_settings, Entfall von Tab_Energieanlagen.Wasserpreis_EUR_m3. Aus
+            //      DERSELBEN Quelle wie SchemaMigration.Schritt_WasserpreisTraegerkarte. Wiederholbar, ergebnisneutral.
+            string nrKb7 = WasserpreisTraegerkarteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKb7 + " - Wasserpreis in der Traegerkarte: " +
+                              (WasserpreisTraegerkarteSchema.Vollstaendig() ? "steht bereits" : "offen") +
+                              " (" + WasserpreisTraegerkarteSchema.Offen() + " Teil(e) offen).");
+            if (!trocken)
+            {
+                var berichtKb7 = new List<string>();
+                angelegt += WasserpreisTraegerkarteSchema.Ausfuehren(berichtKb7);
+                foreach (string zeile in berichtKb7)
+                    Console.WriteLine("Schritt " + nrKb7 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKb7 + " - vollstaendig: " + WasserpreisTraegerkarteSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt KaeltetyptagSchema.SCHRITT (KBP-4a): Tab_Kaeltetyptag und Tab_Kaeltetyptag_Matrix (leer, STRICT,
+            //      Fremdschluessel auf Tab_Projekt und die Projektkopie Tab_Kaeltebedarf). Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_Kaeltetyptag. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: keine Zuordnung traegt Eingabeart 'typtag'.
+            string nrKbp4 = KaeltetyptagSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKbp4 + " - Typtage der Kaeltebedarfszuordnung: " +
+                              (KaeltetyptagSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKbp4 = new List<string>();
+                tabellen += KaeltetyptagSchema.Ausfuehren(berichtKbp4);
+                foreach (string zeile in berichtKbp4)
+                    Console.WriteLine("Schritt " + nrKbp4 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKbp4 + " - vollstaendig: " + KaeltetyptagSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt BauteilStrahlungSchema.SCHRITT (DA-8): Absorptionsgrad_Solar und Emissionsgrad an Aufbau und Bauteil.
+            //      Aus DERSELBEN Quelle wie SchemaMigration.Schritt_BauteilStrahlung. Wiederholbar.
+            //      REFERENZLAUF UNVERAENDERT: Die Spalten bleiben leer, leer heisst Festwert.
+            string nrDa8 = BauteilStrahlungSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrDa8 + " - Absorptions- und Emissionsgrad je Bauteil: " +
+                              (BauteilStrahlungSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtDa8 = new List<string>();
+                angelegt += BauteilStrahlungSchema.Ausfuehren(berichtDa8);
+                foreach (string zeile in berichtDa8)
+                    Console.WriteLine("Schritt " + nrDa8 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrDa8 + " - vollstaendig: " + BauteilStrahlungSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt KlimaRohwerteSchema.SCHRITT (KD-4): Tab_Klimastunde_STAMM (leer, STRICT, Kaskade an der
+            //      Region) und die Herkunftsspalten an Tab_Klimaregion(_STAMM). Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_KlimaRohwerte. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Testregionen bleiben ohne Rohwerte (Rohdaten = 0), kein Rechenweg liest
+            //      die Rohtabelle.
+            string nrKd4 = KlimaRohwerteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKd4 + " - Rohwerte des Klimaimports: " +
+                              (KlimaRohwerteSchema.SchemaVollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKd4 = new List<string>();
+                angelegt += KlimaRohwerteSchema.Ausfuehren(berichtKd4);
+                foreach (string zeile in berichtKd4)
+                    Console.WriteLine("Schritt " + nrKd4 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKd4 + " - vollstaendig: " + KlimaRohwerteSchema.SchemaVollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt ErgebnisreihenSchema.SCHRITT (EB-1): Stromeinspeisung an Tab_ErgebnisBHKW, Abregelung an
+            //      Tab_ErgebnisPhotovoltaik, Eigenverbrauch_System an Tab_ErgebnisStromspeicher. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_Ergebnisreihen. Wiederholbar.
+            //      REFERENZLAUF: Der Rechenweg bleibt gleich; aggregate.csv bekommt die neuen Schluessel (Basis R59).
+            string nrEb1 = ErgebnisreihenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrEb1 + " - Ergebnisreihen (BHKW-Einspeisung, Standby, PV-Abregelung): " +
+                              (ErgebnisreihenSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtEb1 = new List<string>();
+                angelegt += ErgebnisreihenSchema.Ausfuehren(berichtEb1);
+                foreach (string zeile in berichtEb1)
+                    Console.WriteLine("Schritt " + nrEb1 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrEb1 + " - vollstaendig: " + ErgebnisreihenSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT (KB-8): die vier Ergebnisspalten der
+            //      Wirtschaftlichkeit an Tab_ErgebnisWirtschaftlichkeit, jede nur, wenn sie fehlt, mit der Typuebersetzung
+            //      des frueheren Laufzeitwegs. Aus DERSELBEN Quelle wie SchemaMigration.Schritt_ErgebnisWirtschaftlichkeitSpalten.
+            //      Wiederholbar, kein DML - der Referenzlauf bleibt gleich. Der SqlDialektpruefer loest das INSERT des
+            //      Ergebnisses gegen diese Datei auf und braucht die Spalten.
+            string nrKb8 = ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrKb8 + " - Ergebnisspalten der Wirtschaftlichkeit: " +
+                              (ErgebnisWirtschaftlichkeitSpaltenSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtKb8 = new List<string>();
+                angelegt += ErgebnisWirtschaftlichkeitSpaltenSchema.Ausfuehren(berichtKb8);
+                foreach (string zeile in berichtKb8)
+                    Console.WriteLine("Schritt " + nrKb8 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrKb8 + " - vollstaendig: " + ErgebnisWirtschaftlichkeitSpaltenSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt BetriebskalenderFerienlisteSchema.SCHRITT (Anwenderentscheid 17.10.2026): Tab_Betriebskalenderferien
+            //      (leer, STRICT, Kaskade am Kalender) samt Index. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_BetriebskalenderFerienliste. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Liste entsteht leer, kein Referenzprojekt traegt einen Betriebskalender.
+            string nrBkf = BetriebskalenderFerienlisteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBkf + " - Ferienliste des Betriebskalenders: " +
+                              (BetriebskalenderFerienlisteSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtBkf = new List<string>();
+                int objekteBkf = BetriebskalenderFerienlisteSchema.Ausfuehren(berichtBkf);
+                if (objekteBkf > 1) tabellen++;
+                foreach (string zeile in berichtBkf)
+                    Console.WriteLine("Schritt " + nrBkf + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBkf + " - vollstaendig: " + BetriebskalenderFerienlisteSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
+
+            // ---- Die Nachpflege des Kesselkatalogs (Konzept Kesselkennlinie, Etappe E1; Entscheide F2
+            //      und F3) - KEIN Schemaschritt und deshalb ohne Nummer, nur auf Zuruf: Sie braucht die
+            //      Herstellerdateien. Geschrieben wird allein Tab_Heizkessel_STAMM, nie eine Projektkopie
+            //      (Tab_Heizkessel) - der Referenzlauf bleibt byte-gleich. Wiederholbar.
+            if (kesselkatalog != null)
+            {
+                Console.WriteLine();
+                var kk = new KesselkatalogNachpflege.Ergebnis();
+                List<KesselkatalogNachpflege.Dateisatz> saetze =
+                    KesselkatalogNachpflege.Lesen(kesselkatalog, kk, HeizkesselImportSatz.MaxBrennstoff());
+                KesselkatalogNachpflege.Nachpflegen(saetze, kk, trocken);
+                foreach (string zeile in KesselkatalogNachpflege.Bericht(kk, trocken))
+                    Console.WriteLine(zeile);
+            }
 
             if (trocken)
             {

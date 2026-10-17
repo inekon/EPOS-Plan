@@ -17,8 +17,7 @@ namespace EPOS.Kern.Tests
     /// <b>Die Wache über die fünf Word-Vorlagen im Repository</b> (Konzept Berichtsvorlagen,
     /// Etappen BV-E0 und BV-E1, 6.2, 6.3, Anhang B.3): die Stilvorlage des Generators
     /// <c>Berichtsvorlage.docx</c>, die Standardvorlage <c>Berichtsvorlage_Standard.docx</c> im
-    /// vollen Aufbau (BV-E2: Deckblatt aus Platzhaltern, Kapitel einzeln) und die Beispielvorlage
-    /// <c>Berichtsvorlage_Beispiel.docx</c> im vollen Aufbau und der Kurzbericht je Sprache (BV-E5, Anhang B.1), alle erzeugt mit
+    /// vollen Aufbau (BV-E2: Deckblatt aus Platzhaltern, Kapitel einzeln) und der Kurzbericht je Sprache (BV-E5, Anhang B.1), alle erzeugt mit
     /// <c>Werkzeuge/Berichtsvorlage</c>. Welche davon ausgeliefert werden, hält
     /// <see cref="AuslieferungsvorlagenWacheTests"/>.
     ///
@@ -41,11 +40,8 @@ namespace EPOS.Kern.Tests
         /// <summary>Die Stilvorlage des heutigen Generators — Rückfall des Codes und Quelle der Bereinigung.</summary>
         internal const string STILVORLAGE = "Berichtsvorlage.docx";
 
-        /// <summary>Die Standardvorlage im vollen Aufbau der Beispielvorlage (BV-E2).</summary>
+        /// <summary>Die Standardvorlage im vollen Aufbau (BV-E2).</summary>
         internal const string STANDARD = "Berichtsvorlage_Standard.docx";
-
-        /// <summary>Die Beispielvorlage im vollen Aufbau (Anhang B.3) — Anschauung bis BV-E2.</summary>
-        internal const string BEISPIEL = "Berichtsvorlage_Beispiel.docx";
 
         /// <summary>Der Kurzbericht auf Deutsch (Konzept 6.3 Nr. 2, Anhang B.1; BV-E5) — Lehrvorlage, nur als Kopie wählbar.</summary>
         internal const string KURZBERICHT = BerichtsvorlagenCtrl.DATEI_KURZBERICHT;
@@ -85,29 +81,6 @@ namespace EPOS.Kern.Tests
 
         private static readonly Regex Kapitelmuster = new Regex(@"^\{\{kapitel\.([a-z_]+)(\|[a-z ]+)?\}\}$", RegexOptions.CultureInvariant);
 
-        /// <summary>Die Platzhalter des Rumpfs der Beispielvorlage in Dokumentfolge (Anhang B.3).</summary>
-        private static readonly string[] RumpfErwartet =
-        {
-            // Deckblatt
-            "{{bericht.titel}}", "{{bericht.untertitel}}",
-            "{{text.kunde}}", "{{projekt.kunde}}",
-            "{{text.bearbeiter}}", "{{projekt.bearbeiter}}",
-            "{{text.ersteller}}", "{{ersteller.firma}}",
-            "{{text.varianten}}", "{{bericht.varianten.liste}}",
-            "{{text.datum}}", "{{bericht.datum}}",
-            "{{bericht.gebaeudemodell.ausweis|leer statt strich}}",
-            "{{text.erstellt_mit}}", "{{ersteller.programm}}", "{{ersteller.version}}",
-            // Inhaltsverzeichnis, dann je Kapitel der Kapitelkopf (Titel in der Sprache des Berichts) und der Kapitelplatzhalter
-            "{{kapitel.inhalt}}",
-            "{{text.kapitel_projekt}}", "{{kapitel.projekt|ohne titel}}",
-            "{{text.kapitel_komponenten}}", "{{kapitel.komponenten|ohne titel}}",
-            "{{text.kapitel_ergebnisse}}", "{{kapitel.ergebnisse|ohne titel}}",
-            "{{text.kapitel_vergleich}}", "{{kapitel.vergleich|ohne titel}}",
-            "{{text.kapitel_wirtschaftlichkeit}}", "{{kapitel.wirtschaftlichkeit|ohne titel}}",
-            "{{text.kapitel_anhang}}", "{{kapitel.anhang|ohne titel}}",
-            "{{text.kapitel_anhang_e}}", "{{kapitel.anhang_e|ohne titel}}",
-        };
-
         /// <summary>
         /// Der Rumpf der Standardvorlage im vollen Aufbau (BV-E2, Anhang B.3): Deckblatt aus Platzhaltern,
         /// Inhaltsverzeichnis und je Kapitel der Kapitelplatzhalter — ohne die Kapitelköpfe, die als Text oder
@@ -140,7 +113,6 @@ namespace EPOS.Kern.Tests
         {
             yield return new object[] { STILVORLAGE };
             yield return new object[] { STANDARD };
-            yield return new object[] { BEISPIEL };
             yield return new object[] { KURZBERICHT };
             yield return new object[] { KURZBERICHT_EN };
             yield return new object[] { AUSFUEHRLICH };
@@ -153,7 +125,6 @@ namespace EPOS.Kern.Tests
         public static IEnumerable<object[]> VorlagenMitPlatzhaltern()
         {
             yield return new object[] { STANDARD };
-            yield return new object[] { BEISPIEL };
             yield return new object[] { KURZBERICHT };
             yield return new object[] { KURZBERICHT_EN };
             yield return new object[] { AUSFUEHRLICH };
@@ -240,24 +211,12 @@ namespace EPOS.Kern.Tests
         //  Vorlagen mit Platzhaltern: Platzhalter, Runs, Kapitel, Fußzeile, Firmenname
         // =====================================================================
 
-        [Fact]
-        public void Die_Beispielvorlage_fuehrt_genau_die_erwarteten_Platzhalter()
-        {
-            using WordprocessingDocument doc = Oeffnen(BEISPIEL);
-            if (doc == null) return;
-            MainDocumentPart main = doc.MainDocumentPart;
-
-            Assert.Equal(RumpfErwartet, Platzhalter(main.Document.Body).ToArray());
-            Assert.Equal(KopfzeileErwartet, main.HeaderParts.SelectMany(h => Platzhalter(h.Header)).ToArray());
-            Assert.Equal(FusszeileErwartet, main.FooterParts.SelectMany(f => Platzhalter(f.Footer)).ToArray());
-        }
-
         /// <summary>
         /// Die Standardvorlage im vollen Aufbau (BV-E2, Anhang B.3): Der Rumpf trägt das Deckblatt aus
         /// Platzhaltern, <c>{{kapitel.inhalt}}</c> und je Kapitel den Kapitelplatzhalter mit <c>|ohne titel</c>
         /// unmittelbar unter einem Kapitelkopf, dessen Text die heutige Überschrift ist oder ihr
         /// <c>{{text.kapitel_*}}</c>; keinen Sammelanker. Das Deckblatt ist Abschnitt 1, der letzte Abschnitt
-        /// trägt Kopf- und Fußzeile mit denselben Platzhaltern wie die Beispielvorlage.
+        /// trägt Kopf- und Fußzeile mit Platzhaltern.
         /// </summary>
         [Fact]
         public void Die_Standardvorlage_fuehrt_genau_die_erwarteten_Platzhalter()
@@ -334,13 +293,12 @@ namespace EPOS.Kern.Tests
         /// <c>{{text.kapitel_&lt;name&gt;}}</c> desselben Kapitels trägt — den Titel setzt der Bericht
         /// in seiner Sprache ein, die Vorlage bleibt sprachneutral (Konzept 4.9). Jeder Kapitelkopf
         /// steht über einem Kapitelplatzhalter, die Kapitel stehen in der Folge des heutigen
-        /// Berichts (<see cref="WordBerichtGenerator.AktiveBausteine"/>), und am ersten Kapitelkopf
-        /// erläutert ein Kommentar den Platzhalter.
+        /// Berichts (<see cref="WordBerichtGenerator.AktiveBausteine"/>).
         /// </summary>
         [Fact]
         public void Jede_Kapitelueberschrift_traegt_den_Kapitelkopf_in_heutiger_Folge()
         {
-            using WordprocessingDocument doc = Oeffnen(BEISPIEL);
+            using WordprocessingDocument doc = Oeffnen(STANDARD);
             if (doc == null) return;
 
             List<Paragraph> absaetze = doc.MainDocumentPart.Document.Body.Elements<Paragraph>().ToList();
@@ -357,7 +315,6 @@ namespace EPOS.Kern.Tests
                 {
                     Assert.True(i > 0 && Stilkennung(absaetze[i - 1]) == KAPITELKOPF_ID,
                         "„" + text + "“ steht nicht unter einer Überschrift im Format „" + KAPITELKOPF_NAME + "“.");
-                    Assert.Equal("{{text.kapitel_" + m.Groups[1].Value + "}}", Absatztext(absaetze[i - 1]));
                     koepfe.Add(m.Groups[1].Value);
                 }
                 if (istKopf)
@@ -374,9 +331,6 @@ namespace EPOS.Kern.Tests
                 .Select(Kapitelname)
                 .ToList();
             Assert.Equal(heute, kapitel);
-
-            Paragraph ersterKopf = absaetze.First(p => Stilkennung(p) == KAPITELKOPF_ID);
-            Assert.NotEmpty(ersterKopf.Descendants<CommentReference>());
         }
 
         /// <summary>
@@ -387,9 +341,9 @@ namespace EPOS.Kern.Tests
         /// Kopfzeile bleibt.
         /// </summary>
         [Fact]
-        public void Die_Beispielvorlage_traegt_in_der_Kopfzeile_den_Bildplatzhalter_des_Logos()
+        public void Die_Standardvorlage_traegt_in_der_Kopfzeile_den_Bildplatzhalter_des_Logos()
         {
-            using WordprocessingDocument doc = Oeffnen(BEISPIEL);
+            using WordprocessingDocument doc = Oeffnen(STANDARD);
             using WordprocessingDocument stil = Oeffnen(STILVORLAGE);
             if (doc == null || stil == null) return;
 
@@ -413,7 +367,7 @@ namespace EPOS.Kern.Tests
             byte[] firmenlogo = Teilbytes(Assert.Single(stilkopf.ImageParts));
             foreach (ImagePart teil in doc.GetAllParts().OfType<ImagePart>())
                 Assert.False(Teilbytes(teil).AsSpan().SequenceEqual(firmenlogo),
-                    BEISPIEL + ": Der Bildteil " + teil.Uri + " trägt noch das Firmenlogo.");
+                    STANDARD + ": Der Bildteil " + teil.Uri + " trägt noch das Firmenlogo.");
 
             static byte[] Teilbytes(OpenXmlPart teil)
             {
@@ -422,25 +376,6 @@ namespace EPOS.Kern.Tests
                 quelle.CopyTo(puffer);
                 return puffer.ToArray();
             }
-        }
-
-        /// <summary>
-        /// <c>docProps/custom.xml</c> nennt die Katalogfassung, für die die Beispielvorlage gebaut ist — die Word-Fassung
-        /// des Katalogs, wie der Sammellauf sie schreibt (Konzept 5.6) —, und die Art der Vorlage.
-        /// </summary>
-        [Fact]
-        public void Die_Beispielvorlage_nennt_Katalogfassung_und_Art_in_custom_xml()
-        {
-            using WordprocessingDocument doc = Oeffnen(BEISPIEL);
-            if (doc == null) return;
-
-            OpenXmlElement eigenschaften = doc.CustomFilePropertiesPart?.RootElement;
-            Assert.NotNull(eigenschaften);
-            Dictionary<string, string> werte = eigenschaften.ChildElements
-                .ToDictionary(e => e.GetAttribute("name", "").Value, e => e.InnerText, StringComparer.Ordinal);
-            Assert.Equal(Vorlagenfeldkatalog.KatalogfassungWord.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                         werte[Vorlagenpruefer.EIGENSCHAFT_KATALOGFASSUNG]);
-            Assert.Equal("beispiel", werte["EPOS.Vorlage"]);
         }
 
         /// <summary>
@@ -480,7 +415,22 @@ namespace EPOS.Kern.Tests
             "{{bericht.warnungen}}",
             "{{wirtschaft.beste.anzeige}}", "{{wirtschaft.beste.kapitalwert_diff}}", "{{wirtschaft.vorschlag}}",
             "{{#wenn hat.bild.wirtschaft.spanne}}", "{{/wenn}}", "{{tabelle.wirtschaft.szenarien}}", "{{wirtschaft.warnungen}}",
-            "{{#wenn hat.kaelte}}", "{{stamm.kennzahl.kaelte.jahresbedarf}}", "{{stamm.kennzahl.kaelte.deckungsgrad}}", "{{/wenn}}",
+            // K6d-N (Katalog v23): der Kühlsatz ohne Split-Zeile wie zuvor, mit ihr die Hauptzahl samt „davon Kältefolge“.
+            "{{#wenn hat.kaelte}}", "{{#wenn nicht hat.kaelte.dezentral}}", "{{stamm.kennzahl.kaelte.jahresbedarf}}",
+            "{{stamm.kennzahl.kaelte.deckungsgrad}}", "{{/wenn}}", "{{/wenn}}", "{{#wenn hat.kaelte.dezentral}}",
+            "{{#wenn hat.kaelte.kaeltefolge}}", "{{stamm.kennzahl.kaelte.jahresbedarf}}", "{{stamm.kennzahl.kaelte.deckungsgrad_gesamt}}",
+            "{{stamm.kennzahl.kaelte.deckungsgrad_kaeltefolge}}", "{{/wenn}}",
+            "{{#wenn nicht hat.kaelte.kaeltefolge}}", "{{stamm.kennzahl.kaelte.jahresbedarf}}",
+            "{{stamm.kennzahl.kaelte.deckungsgrad_gesamt}}", "{{/wenn}}", "{{/wenn}}",
+            // KP3 Welle O3a (E58 F4 (b)): der Aufheizabsatz je Gebäude aus Einzelfeldern, nur mit Aufheizoptimierung.
+            "{{#wenn hat.aufheizung}}", "{{#je gebaeude}}", "{{gebaeude.name}}", "{{gebaeude.ergebnis.aufheizzeit}}",
+            "{{gebaeude.ergebnis.aufheiz_aussentemperatur}}", "{{gebaeude.ergebnis.aufheizleistung}}",
+            "{{gebaeude.ergebnis.auslegungsgroesse}}", "{{gebaeude.ergebnis.auslegungsheizlast}}",
+            "{{gebaeude.ergebnis.aufheizzuschlag}}", "{{gebaeude.ergebnis.aufheizhinweise}}", "{{/je}}", "{{/wenn}}",
+            // AH-V6 (Katalog v19): der Vorheizsatz je Gebäude, nur mit vorgegebener oder berechneter Vorheizzeit.
+            "{{#wenn hat.vorheizen}}", "{{#je gebaeude}}", "{{gebaeude.name}}", "{{gebaeude.ergebnis.vorheizverfahren}}",
+            "{{gebaeude.ergebnis.vorheizzeit}}", "{{gebaeude.ergebnis.vorheizleistung}}", "{{gebaeude.ergebnis.vorheiz_tage_verfehlt}}",
+            "{{gebaeude.ergebnis.vorheiz_mehrwaerme}}", "{{gebaeude.ergebnis.vorheiz_schnellaufheizung}}", "{{/je}}", "{{/wenn}}",
             "{{#je stand}}", "{{stand.anzeige}}", "{{/je}}",
             "{{kapitel.anhang|ohne titel|ebene 2}}",
         };
@@ -490,7 +440,7 @@ namespace EPOS.Kern.Tests
         /// drei Bildrahmen — das Spannenbild in voller Breite, die Deckungsbilder nebeneinander in einer Tabelle ohne
         /// Rahmen — und dem Anhang als einzigem Kapitel; am Ende die Mustertabelle. Jede Marke steht allein in einem Run
         /// mit <c>w:noProof</c>; Kopfzeile <c>{{projekt.name}} · {{bericht.titel}}</c> mit dem Bildplatzhalter des Logos,
-        /// Fußzeile wie die Standardvorlage; neun Kommentare in der Sprache der Datei, jeder mit genau einem Verweis;
+        /// Fußzeile wie die Standardvorlage; zehn Kommentare in der Sprache der Datei, jeder mit genau einem Verweis;
         /// <c>custom.xml</c> mit Fassung, Art <c>kurzbericht</c> und Sprache.
         /// </summary>
         [Theory]
@@ -541,7 +491,7 @@ namespace EPOS.Kern.Tests
 
             // Kommentare je Stelle, in der Sprache der Datei.
             List<string> kommentare = main.WordprocessingCommentsPart.Comments.Elements<Comment>().Select(c => c.Id.Value).ToList();
-            Assert.Equal(9, kommentare.Count);
+            Assert.Equal(10, kommentare.Count);
             Assert.Equal(kommentare.OrderBy(k => k, StringComparer.Ordinal),
                          rumpf.Descendants<CommentReference>().Select(r => r.Id.Value).OrderBy(k => k, StringComparer.Ordinal));
             Assert.Contains(sprache == "en" ? "Summary report" : "Kurzbericht", main.WordprocessingCommentsPart.Comments.InnerText,
@@ -608,6 +558,9 @@ namespace EPOS.Kern.Tests
                                            "{{kennzahl.", "{{stand.wirtschaft.", "{{wirtschaft.beste.", "{{vergleich.",
                                            "{{gebaeude.", "{{wirtschaft.warnungen}}", "{{bericht.warnungen}}" })
                 Assert.True(marken.Any(m => m.StartsWith(art, StringComparison.Ordinal)), datei + ": keine Marke „" + art + "…“");
+            // Katalog v16 (KP3 Welle O3b, E58 F3 (c)): die Kennzahlgruppe „Gebäude“ und die Gebäudetafel je Stand im Vergleich.
+            Assert.Contains("{{tabelle.vergleich.gebaeude}}", marken);
+            Assert.Contains("{{stand.tabelle.gebaeude}}", marken);
             Assert.Equal(marken.Count(m => m.StartsWith("{{#je", StringComparison.Ordinal)), marken.Count(m => m == "{{/je}}"));
             Assert.Equal(marken.Count(m => m.StartsWith("{{#wenn", StringComparison.Ordinal)), marken.Count(m => m == "{{/wenn}}"));
             Assert.Equal(new[] { "{{ersteller.programm}}" }, main.HeaderParts.SelectMany(h => Marken(h.Header)).ToArray());
@@ -624,7 +577,7 @@ namespace EPOS.Kern.Tests
             // Bildrahmen: Schlüssel eines Bildes im Alternativtext, volle oder halbe Breite, die halben paarweise ohne Rahmen.
             List<DocumentFormat.OpenXml.Drawing.Wordprocessing.Inline> rahmen =
                 rumpf.Descendants<DocumentFormat.OpenXml.Drawing.Wordprocessing.Inline>().ToList();
-            Assert.Equal(26, rahmen.Count);
+            Assert.Equal(28, rahmen.Count);                     // Katalog v12: Stromlast des BHKW und Kälteproduktion
             long voll = rahmen.Max(i => i.Extent.Cx.Value);
             foreach (var bild in rahmen)
             {

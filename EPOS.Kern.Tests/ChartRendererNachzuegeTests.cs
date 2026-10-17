@@ -184,9 +184,9 @@ namespace EPOS.Kern.Tests
 
             Assert.Contains(werte, w => w.StartsWith("Außentemperatur -15 °C", StringComparison.Ordinal)
                                      || w.StartsWith("Außentemperatur −15 °C", StringComparison.Ordinal));
-            Assert.Contains("35°C", string.Join("|", werte));
+            Assert.Contains("35 °C", string.Join("|", werte));
             // Der Zug selbst nennt seinen Namen, nicht eine Zahl.
-            Assert.Contains("35°C", werte);
+            Assert.Contains("35 °C", werte);
         }
 
         /// <summary>

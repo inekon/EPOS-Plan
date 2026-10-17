@@ -116,7 +116,7 @@ public sealed class TwwTyptagImportTexte
     public string HinweisLizenz { get; set; } = "Das Programm bringt keine Werte der Richtlinie mit. Die Typtage spielt der lizenzierte Anwender aus seinem eigenen Paket ein; sie bleiben in dieser Datenbank und gehen weder in die Auslieferung noch in einen Projekttransfer.";
 
     /// <summary><c>ZPGT_HINWEIS_FORMAT</c></summary>
-    public string HinweisFormat { get; set; } = "Ein Paket ist ein ZIP-Archiv oder ein Ordner mit sechs CSV-Dateien: Typtage, Klimazonen, Kalendertage je Zone, Faktoren der Tagesenergie, Kennwerte des Verfahrens und wahlfrei Tagesgänge — Kopfzeile mit Spaltennamen, Trenner Semikolon oder Komma, Zahlen mit Punkt.";
+    public string HinweisFormat { get; set; } = "Ein Paket ist ein ZIP-Archiv oder ein Ordner mit sechs CSV-Dateien: Typtage, Klimazonen, Kalendertage je Zone, Faktoren der Tagesenergie, Kennwerte des Verfahrens und wahlfrei Tagesgänge — Kopfzeile mit Spaltennamen, Trenner Semikolon oder Komma, Zahlen mit Punkt. Eine Vorlage mit vollständigen Kopfzeilen und Platzhaltern liegt im Programmordner unter Vorlage\\Typtagpaket_VDI4655; sie nennt je Datei die Fundstelle in der Richtlinie, unverändert lehnt die Prüfung sie ab.";
 
     /// <summary><c>ZPGT_GRP_STAND</c></summary>
     public string GruppeStand { get; set; } = "Eingespielter Stand";
@@ -161,7 +161,7 @@ public sealed class TwwTyptagImportTexte
     public string WertOhne { get; set; } = "ohne Angabe";
 
     /// <summary><c>ZPGT_WERT_OHNE_GAENGE</c></summary>
-    public string WertOhneGaenge { get; set; } = "keine — die Tagesform kommt aus dem Tagesgangsatz der Zone";
+    public string WertOhneGaenge { get; set; } = "keine — die Tagesform kommt aus dem Tagesgangsatz des Bereichs";
 
     /// <summary><c>ZPGT_BTN_PAKET</c></summary>
     public string KnopfPaket { get; set; } = "Paket wählen…";

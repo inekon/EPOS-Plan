@@ -1,0 +1,46 @@
+﻿# EPOS-Plan – offene Vorlage „Nennwerte“ für Kältemaschinen (Importart „Kältemaschine“, Form NENNWERTE)
+#
+# Für Geräte, von denen nur der Nennpunkt bekannt ist. EPOS wählt ein eingebautes Typkennfeld und skaliert es
+# so, dass es am Nennpunkt die angegebene Kälteleistung und den angegebenen EER trägt (Leistung und EER je mit
+# einem Faktor). Abseits des Nennpunkts gilt die Temperaturabhängigkeit des Typkennfelds; das Leseprotokoll
+# nennt das gewählte Typkennfeld und die Faktoren.
+#
+# Zeilen mit # sind Kommentare. Trennzeichen: Semikolon, Tabulator oder Komma (wird erkannt).
+# Dezimalzeichen: bei Semikolon und Tabulator Komma oder Punkt, bei Komma als Trennzeichen der Punkt.
+#
+# KOPFZEILEN (Schlüssel;Wert) – jede Zeile „Bezeichner“ beginnt ein neues Gerät:
+#   Bezeichner          Name des Katalogsatzes (Pflicht)
+#   Form                NENNWERTE (darf fehlen: ohne Kennfeldzeilen und ohne Teillastpunkte gilt diese Form)
+#   Rückkühlart         LUFT, TROCKENKUEHLER, NASSKUEHLER oder WASSER; leer = aus der Geräteart, sonst LUFT
+#   Geräteart           KWS_LUFT, KWS_WASSER oder KWS_FREIKUEHLUNG
+#   Nennkälteleistung   kW am Nennpunkt (Pflicht): Kaltwasser 7 °C; Luft 35 °C bzw. Kühlwasser 30 °C
+#   Nenn-EER            EER am Nennpunkt (Pflicht)
+#   Verdichter          SCROLL, SCHRAUBE, TURBO oder HUBKOLBEN (optional; wählt das Typkennfeld mit)
+#   Verdichterregelung  EIN_AUS, STUFEN oder DREHZAHL (optional; DREHZAHL wählt ein drehzahlgeregeltes Typkennfeld)
+#   Mindestteillast     % der Nennleistung; leer = die des Typkennfelds
+#   Firma, Typ, Beschreibung, Kältemittel, GWP, Füllmenge, SEER oder ETA_S_C   wie in der Kennfeldvorlage
+#
+# Wahl des Typkennfelds: gleiche Rückkühlart, dann gleicher Verdichter, dann gleiche Drehzahlart, dann die
+# nächstliegende Leistungsklasse. Teillast und Takten kommen aus dem Typkennfeld, wenn die Vorlage dazu nichts
+# angibt (Teillastzeilen und Teillastfelder wie in der Kennfeldvorlage gehen vor).
+#
+# Die Beispiele unten sind neutrale Rechenbeispiele mit runden Werten, keine Geräte eines Herstellers.
+#
+Bezeichner;Beispiel Kältemaschine Nennwerte 80 kW Luft
+Form;NENNWERTE
+Rückkühlart;LUFT
+Geräteart;KWS_LUFT
+Verdichter;SCROLL
+Nennkälteleistung;80
+Nenn-EER;3,0
+Kältemittel;R290
+GWP;3
+Füllmenge;8
+SEER;4,5
+
+Bezeichner;Beispiel Kältemaschine Nennwerte 400 kW Nasskühler
+Rückkühlart;NASSKUEHLER
+Geräteart;KWS_WASSER
+Verdichter;SCHRAUBE
+Nennkälteleistung;400
+Nenn-EER;5,5

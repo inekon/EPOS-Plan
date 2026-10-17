@@ -205,7 +205,7 @@ namespace EPOS.Kern.Tests
             (bool ok, string meldung) = new WizardCtrl().Speichere_Projekt_Gebaeudeliste(PROJEKT, modelle);
             Assert.True(ok, meldung);
             Assert.Equal(new Dictionary<string, int> { ["gipsputz"] = 1 }, Gemerkt());
-            Assert.Equal(6, neu.Importherkunft.Vorschlag.Aufbauten.Count);
+            Assert.Equal(6, neu.Importherkunft.Vorschlag.Dateiaufbauten().Count);
         }
 
         /// <summary>

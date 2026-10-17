@@ -101,10 +101,22 @@ namespace WindowsFormsApplication1
             // Beziehungen zielen ohnehin auf *_STAMM (nie im Plan) - der Eintrag haelt die
             // Regel auch dann, wenn die Schemaauskunft leer bleibt.
             "ID_Nutzungsart", "ID_Tagesgangsatz", "ID_Bedarfstag", "ID_Ausstattung",
+            // Betriebskalender der Bedarfsprofile (Schritt BedarfNetzKalenderSchema, PW2/BW2): Die
+            // Kalender sind projektuebergreifend wie ein Katalog; die Kopie zeigt auf DENSELBEN.
+            BedarfNetzKalenderSchema.SPALTE_ID_KALENDER,
             // Katalogverweis des Projektgebaeudes (Schemaschritt 121): Kopie und Variante
             // zeigen auf DENSELBEN Katalogsatz. Die deklarierte Beziehung zielt auf
             // Tab_Gebaeude_STAMM (nie im Plan) - der Eintrag haelt die Regel auch ohne sie.
-            GebaeudeKatalogverweis.SPALTE
+            GebaeudeKatalogverweis.SPALTE,
+            // Stammverweis einer Variante (Tab_Variante.ID_ProjektRef): Die Kopie einer Variante
+            // bleibt Variante DESSELBEN Stamms - kopiert wird das Projekt, nicht der Stamm. Die
+            // deklarierte Beziehung zielt auf Tab_Projekt; ohne diesen Eintrag bekaeme der Verweis
+            // den Projektversatz und zeigte auf ein anderes Projekt (Stamm-ID + Versatz) oder
+            // scheiterte am Fremdschluessel, wenn es diese ID nicht gibt. ID_Projekt der
+            // Variantenzeile wird weiter versetzt (eigene Projekt-ID der Kopie). Ist die Quelle
+            // selbst ein Stamm, fuehrt sie keine eigene Variantenzeile; ihre Varianten kommen
+            // nicht mit (Filter ueber ID_Projekt).
+            "ID_ProjektRef"
         };
 
         // Interne Fremdschluessel mit eindeutigem Zielnamen (Spalte -> Zieltabelle).
@@ -125,6 +137,11 @@ namespace WindowsFormsApplication1
             {"ID_Gebaeude","Tab_Gebaeude"}, {"ID_TagV","Tab_DBTagV"},
             {"ID_Stromverbraucher","Tab_Stromverbraucher"}, {"ID_Prozesswaerme","Tab_Prozesswaerme"},
             {"ID_Brauchwasser","Tab_Brauchwasser"},
+            // K1: Zuordnung und Typkopie des Kaeltebedarfs zeigen auf die Kopfkopie DESSELBEN Projekts.
+            {"ID_Kaeltebedarf","Tab_Kaeltebedarf"},
+            // KBP-4a: die Matrixzelle zeigt auf den Typtag DERSELBEN Projektkopie (Tab_Kaeltetyptag_Matrix haengt ueber
+            // ihren Fremdschluessel auf Tab_Kaeltebedarf am Plan).
+            {KaeltetyptagSchema.SPALTE_ID_TYPTAG, KaeltetyptagSchema.TAB_TYPTAG},
             // Ä20: Anlagenbezug der Kostenpositionen (Tab_ProjektWerte.ID_Anlage,
             // Migrationsschritt 45). Ohne Versatz zeigten die Positionen einer
             // Variante auf die Anlagen des QUELLprojekts und stünden dort als
@@ -143,6 +160,10 @@ namespace WindowsFormsApplication1
             // nicht ueberfluessig, sondern eine ArgumentException beim Laden der
             // Klasse. ID_Anlage steht ohnehin schon oben (Ä20).
             {"ID_Senke","Z_AnlageSenke"},
+            // Sperrprofil der Waermepumpe (Schemaschritt WaermepumpeSperrprofilSchema): die Fenster
+            // haengen an der Anlagenzeile. Ohne Versatz zeigten die Fenster der Kopie auf die Anlage
+            // des QUELLprojekts.
+            {"ID_Energieanlage","Tab_Energieanlagen"},
             // Q1 (Migrationsschritt 54): Quellprofile. Zwei Spalten, beide eindeutig
             // benannt - der Profilschluessel an der Anlage (WQ_ID_Quellprofil, echte
             // Access-Beziehung FK_Anlage_Quellprofil, die _echteFks ohnehin erkennt) und
@@ -160,6 +181,11 @@ namespace WindowsFormsApplication1
             // ohnehin; der Eintrag hier ist Guertel und Hosentraeger fuer Datenbanken, in
             // denen Schritt 66 (noch) nicht gelaufen ist.
             {"ID_Wechselrichter","Tab_Wechselrichter"},
+            // KU3-1: die Kennlinie der Kaeltemaschine haengt an der Projektkopie.
+            {KaeltemaschineSchema.SPALTE_ID_KAELTEMASCHINE, KaeltemaschineSchema.TAB_PROJEKT},
+            // K-F1: die Anlagenzeile der Kaeltemaschine zeigt auf die Projektkopie ihres Rueckkuehlwerks. Die deklarierte
+            // Beziehung erkennt _echteFks ohnehin; der Eintrag traegt den Versatz auch ohne Schemaauskunft.
+            {RueckkuehlwerkSchema.SPALTE_ID_RUECKKUEHLWERK, RueckkuehlwerkSchema.TAB_PROJEKT},
             // Zapfprofilgenerator (Schemaschritt 103): der Wohnungstyp haengt an der Zone.
             // Die deklarierte Beziehung Tab_TwwWohnungstyp.ID_Zone -> Tab_TwwZone erkennt
             // _echteFks ohnehin; der Eintrag traegt den Versatz auch ohne sie.
@@ -208,11 +234,16 @@ namespace WindowsFormsApplication1
             {"Tab_WaermebedarfDaten",   new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Ganglinie","Tab_Waermebedarf"}}},
             {"Tab_StromganglinieDaten", new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Ganglinie","Tab_Stromganglinie"}}},
             {"Tab_SolarganglinieDaten", new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Ganglinie","Tab_Solarganglinie"}}},
+            // PVG (Schemaschritt 206): die PV-Ganglinie - Zuordnung und Werte zeigen auf die Projektkopie.
+            {"Z_ProjektPvGanglinie",    new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Ganglinie","Tab_PvGanglinie"}}},
+            {"Tab_PvGanglinieDaten",    new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Ganglinie","Tab_PvGanglinie"}}},
             // Gebaeudesimulation G3 (S-C): "ID_Zone" meint in FK_MAP die Tww-Zone; am Bauteil
             // ist es die Gebaeudezone. Die deklarierte Beziehung hat ohnehin Vorrang.
             {SchemaKatalog.TAB_BAUTEIL, new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Zone", SchemaKatalog.TAB_ZONE}}},
             // Gebaeudesimulation G4c (S-F): dasselbe fuer das Zonenziel der Importpaarung.
             {SchemaKatalog.TAB_IMPORTZUORDNUNG, new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Zone", SchemaKatalog.TAB_ZONE}}},
+            // HC-5 (RaumgrundrissSchema): dasselbe fuer die Zone des Raumgrundrisses.
+            {SchemaKatalog.TAB_RAUMGRUNDRISS, new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase){{"ID_Zone", SchemaKatalog.TAB_ZONE}}},
             // Namensabgleich der Baustoffe (BaustoffabgleichSchema): "ID_Baustoff" meint in FK_MAP die
             // PROJEKTKOPIE Tab_Baustoff; die gemerkte Zuordnung zeigt dagegen auf den KATALOG, der nie im
             // Plan steht - die Kopie zeigt auf denselben Katalogbaustoff. Die deklarierte Beziehung hat
@@ -227,12 +258,17 @@ namespace WindowsFormsApplication1
         {
             {"Tab_Kenndaten",          "ID_WP IN (SELECT ID FROM Tab_WP WHERE ID_Projekt = {0})"},
             {"Tab_Kenndaten_Kuehlung", "ID_WP IN (SELECT ID FROM Tab_WP WHERE ID_Projekt = {0})"},
+            {KaeltemaschineSchema.TAB_KENNDATEN, "ID_Kaeltemaschine IN (SELECT ID FROM Tab_Kaeltemaschine WHERE ID_Projekt = {0})"},
             {"Tab_DBTagV",             "ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0})"},
             {"Tab_DBTagVDaten",        "ID_TagV IN (SELECT ID FROM Tab_DBTagV WHERE ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0}))"},
             {"Tab_WaermebedarfDaten",  "ID_Ganglinie IN (SELECT ID FROM Tab_Waermebedarf WHERE ID_Projekt = {0})"},
             {"Tab_StromganglinieDaten","ID_Ganglinie IN (SELECT ID FROM Tab_Stromganglinie WHERE ID_Projekt = {0})"},
             {"Tab_SolarganglinieDaten","ID_Ganglinie IN (SELECT ID FROM Tab_Solarganglinie WHERE ID_Projekt = {0})"},
+            {"Tab_PvGanglinieDaten",   "ID_Ganglinie IN (SELECT ID FROM Tab_PvGanglinie WHERE ID_Projekt = {0})"},
             {"Tab_Stromverbrauchertyp","ID_Stromverbraucher IN (SELECT ID FROM Tab_Stromverbraucher WHERE ID_Projekt = {0})"},
+            // KBP-4a: Die Matrixzelle traegt zwei Fremdschluessel auf Plantabellen (Typtag und Projektkopie); gefiltert wird
+            // ausdruecklich ueber die Projektkopie, versetzt werden beide (FK_MAP).
+            {KaeltetyptagSchema.TAB_MATRIX, "ID_Kaeltebedarf IN (SELECT ID FROM Tab_Kaeltebedarf WHERE ID_Projekt = {0})"},
 
             // S1 (Migrationsschritt 50): Die Senkenliste und der Parallelverbund
             // haengen an der ANLAGE und fuehren bewusst kein eigenes ID_Projekt.
@@ -266,6 +302,12 @@ namespace WindowsFormsApplication1
             // Zwischenstand, den ein Planer ablegen darf.
             {"Z_AnlageStrang",         "ID_Anlage IN (SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = {0})"},
 
+            // Sperrprofil der Waermepumpe (Schemaschritt WaermepumpeSperrprofilSchema): Die Fenster
+            // haengen an der ANLAGE und fuehren kein eigenes ID_Projekt - dasselbe Muster wie die
+            // Senkenliste. Ausdruecklich statt ueber die Auto-Erkennung, damit Kopie und Export sie
+            // auch ohne erkannte Beziehung sicher mitnehmen.
+            {"Tab_Sperrfenster",       "ID_Energieanlage IN (SELECT ID FROM Tab_Energieanlagen WHERE ID_Projekt = {0})"},
+
             // Q1 (Migrationsschritt 54): Die Wertzeilen eines Quellprofils haengen am
             // KOPF und fuehren bewusst kein eigenes ID_Projekt - dasselbe Muster wie
             // Tab_StromganglinieDaten eine Zeile hoeher. Ausdruecklich statt ueber die
@@ -281,6 +323,12 @@ namespace WindowsFormsApplication1
             // Erkennung braucht die deklarierte Beziehung, und ohne sie fuehre eine
             // Projektkopie mit Zonen, aber ohne Wohnungstypen.
             {"Tab_TwwWohnungstyp",     "ID_Zone IN (SELECT ID FROM Tab_TwwZone WHERE ID_Projekt = {0})"},
+
+            // Zapfprofilgenerator (Schemaschritt TwwZonenferienSchema, ZB-Q3 B): Die eigenen Ferienzeitraeume
+            // haengen an der ZONE und fuehren kein eigenes ID_Projekt - dasselbe Muster wie die Wohnungstabelle;
+            // ohne den Eintrag fuehre eine Projektkopie mit Zonen, aber ohne ihre Ferien. Der Versatz der Zone
+            // kommt ueber "ID_Zone" -> Tab_TwwZone (FK_MAP).
+            {"Tab_TwwZonenferien",     "ID_Zone IN (SELECT ID FROM Tab_TwwZone WHERE ID_Projekt = {0})"},
 
             // Zapfprofilgenerator (Schemaschritt T5, Anwenderentscheid ZU25): Die Zeilen des
             // Bedarfstag-Konstruktors haengen am AUSLEGUNGSSATZ Tab_TwwProjekt (eine Zeile je
@@ -314,6 +362,9 @@ namespace WindowsFormsApplication1
             // die Eintraege reiste ein importiertes Projekt still ohne seine Herkunft.
             {SchemaKatalog.TAB_IMPORTQUELLE,    "ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0})"},
             {SchemaKatalog.TAB_IMPORTZUORDNUNG, "ID_Importquelle IN (SELECT ID FROM Tab_Importquelle WHERE ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0}))"},
+            // HC-5 (RaumgrundrissSchema): der Grundriss je Raum zweistufig wie die Paarung - Gebaeude -> Importquelle ->
+            // Raumgrundriss; ID_Zone (nullbar) zeigt per FK_OVERRIDE auf die Zonenkopie.
+            {SchemaKatalog.TAB_RAUMGRUNDRISS,  "ID_Importquelle IN (SELECT ID FROM Tab_Importquelle WHERE ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0}))"},
 
             // Gebaeudesimulation G6b (Schritt S-G, Mehrzonenkonzept 4.4) - von Hand und DREISTUFIG
             // wie das Bauteil: Gebaeude -> Zone -> Luftstrom, gefiltert ueber die Zone A (beide Zonen
@@ -341,6 +392,10 @@ namespace WindowsFormsApplication1
             // sie gehoeren dem Katalog (P3 b, P11).
             {SchemaKatalog.TAB_KONDITIONIERUNGSKALENDER, "ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0})"},
             {SchemaKatalog.TAB_KONDITIONIERUNGSVORGABE,  "ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0})"},
+            // Benannte Wochen (Schemaschritt KalenderbedienungSchema) - dieselbe Eigentuemerregel wie der Kalender
+            // (ID_Gebaeude und ID_Zone), deshalb VON HAND und ueber das Gebaeude gefiltert. Der erzwungene Verweis ID_Woche
+            // der Periode setzt sie in der topologischen Sortierung davor und wird auf die Kopie umgeschluesselt.
+            {KalenderbedienungSchema.TAB_WOCHE,          "ID_Gebaeude IN (SELECT ID FROM Tab_Gebaeude WHERE ID_Projekt = {0})"},
 
             // Die Perioden haengen am Kalender - DREISTUFIG wie die Schicht am Bauteil
             // (Gebaeude -> Kalender -> Periode). Ausdruecklich, damit die Reihenfolge feststeht.

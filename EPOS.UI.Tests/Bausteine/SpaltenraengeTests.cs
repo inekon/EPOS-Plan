@@ -62,7 +62,7 @@ public class SpaltenraengeTests : EposBunitContext
                 .Select(a => Katalogfilterprofil.FuerZeitreihe(a)))
             .ToList();
 
-        Assert.Equal(14, profile.Count);
+        Assert.Equal(15, profile.Count);                             // KU3-1: + Kältemaschine
         Assert.All(profile, p =>
         {
             Assert.True(Spaltenraenge.HatRaenge(p), p.Schluessel);

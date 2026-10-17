@@ -122,10 +122,11 @@ namespace WindowsFormsApplication1
                 DateiWaehlen = q => Waehlen(q, MyResource.Resource.PVIMP_TITEL),
                 DateienWaehlen = q => WaehlenMehrere(q, MyResource.Resource.PVIMP_TITEL),
 
-                DateiLaden = (q, pfad) => Task.Run(() =>
+                // Eine Ausnahme beim Lesen wird benannt abgelehnt statt den Dialog zu beenden (IM-1).
+                DateiLaden = (q, pfad) => Importfang.Starten(pfad, () =>
                     q.Schluessel == ModulImportProfil.QuelleCecDatei
                         ? CecDatei(cec, pfad)
-                        : PanDatei(pan, pfad)),
+                        : PanDatei(pan, pfad), Abgelehnt),
 
                 Vorpruefen = satz => Task.Run(() => ModulVorpruefen((UnifiedModule)satz)),
                 Anlegen = (satz, name) => Task.Run(() => ModulAnlegen((UnifiedModule)satz, name)),
@@ -265,7 +266,7 @@ namespace WindowsFormsApplication1
                 DateiWaehlen = q => Waehlen(q, MyResource.Resource.WRK_IMP_TITEL),
                 DateienWaehlen = q => WaehlenMehrere(q, MyResource.Resource.WRK_IMP_TITEL),
 
-                DateiLaden = (q, pfad) => Task.Run(() =>
+                DateiLaden = (q, pfad) => Importfang.Starten(pfad, () =>
                 {
                     if (q.Schluessel == ModulImportProfil.QuelleCecDatei)
                     {
@@ -277,7 +278,7 @@ namespace WindowsFormsApplication1
                     return o.Erfolg
                         ? new ImportLeseErgebnis(true, ond.AlleGeraete.Cast<object>().ToList(), o.Meldung)
                         : new ImportLeseErgebnis(false, null, o.Meldung);
-                }),
+                }, Abgelehnt),
 
                 Vorpruefen = satz => Task.Run(() => WrVorpruefen(satz)),
                 Anlegen = (satz, name) => Task.Run(() => WrAnlegen(satz, name)),
@@ -431,6 +432,10 @@ namespace WindowsFormsApplication1
         /// Übersetzt einen Meldungsschlüssel der Dienste (CEC, PAN, OND) in den Satz des
         /// Ressourcenkatalogs; ein unbekannter Schlüssel bleibt stehen.
         /// </summary>
+        /// <summary>Die benannte Ablehnung einer Ausnahme beim Lesen (Fangstelle <see cref="Importfang"/>).</summary>
+        private static ImportLeseErgebnis Abgelehnt(Importablehnung a)
+            => new ImportLeseErgebnis(false, null, new CecFortschritt("IMP_MSG_UNERWARTET", a.Datei, a.Ursache));
+
         internal static string Meldungstext(CecFortschritt meldung)
         {
             string vorlage = MyResource.Resource.ResourceManager.GetString(meldung.Schluessel ?? "");

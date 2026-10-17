@@ -16,7 +16,7 @@ namespace EPOS.Kern.Tests
     /// <summary>
     /// <b>Der Vorlagenprüfer</b> (Konzept Berichtsvorlagen 6.8, Etappe BV-E1, Teil A3) — je Regel ein
     /// Fall; die Vorlagen entstehen im Test über das SDK (<see cref="Probevorlagen"/>), dazu die
-    /// Standard- und die Beispielvorlage aus dem Repository.
+    /// Standardvorlage aus dem Repository.
     ///
     /// <para>Regeln, deren Arten Katalog v1 noch nicht führt (Tabelle, Bild, Schalter, Werte je
     /// Variante oder Gebäude, Wirtschaftlichkeit), prüft der Test gegen eine eigene
@@ -98,26 +98,6 @@ namespace EPOS.Kern.Tests
                 Assert.Null(befund.Sprache);
                 Assert.Equal(Vorlagenpruefer.Pruefsumme(vorlage), befund.Pruefsumme);
             }
-        }
-
-        /// <summary>
-        /// Die Beispielvorlage (voller Aufbau) kennt Katalog v2 ganz: kein Fehler, keine Warnung, jedes
-        /// Kapitel bekannt; ihre Kommentare stehen als Hinweis. Die Platzhalter in den Kommentaren prüft niemand.
-        /// </summary>
-        [Fact]
-        public void Beispielvorlage_kennt_ihre_Kapitel_und_meldet_nur_die_Kommentare()
-        {
-            string pfad = BerichtsvorlageDateiWacheTests.Pfad(BerichtsvorlageDateiWacheTests.BEISPIEL);
-            if (pfad == null) return;
-            Pruefbefund befund = Voll(File.ReadAllBytes(pfad));
-
-            Assert.Equal(0, befund.Fehleranzahl);
-            Assert.Equal(0, befund.Warnungen);
-            Assert.Empty(befund.UnbekannteSchluessel);
-            Assert.Equal(befund.Kommentare > 0 ? 1 : 0, Probevorlagen.Mit(befund, "VF_PRUEF_KOMMENTARE").Count);
-            Assert.True(befund.HatKapitel);
-            Assert.Equal(7, befund.Bausteine.Count);
-            Assert.True(befund.AnzahlPlatzhalter >= 24, befund.AnzahlPlatzhalter.ToString());
         }
 
         // =====================================================================
@@ -913,6 +893,30 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// Ein Kapitel in einem Wiederholblock: Die Engine erweitert die Blöcke vor dem Sammeln der Kapitelstellen —
+        /// gefüllt wird nur die erste Wiederholung. Der Prüfer gibt je Stelle einen Hinweis mit dem Block; ein Kapitel
+        /// außerhalb und eine Bedingung um ein Kapitel bleiben ohne ihn.
+        /// </summary>
+        [Fact]
+        public void Ein_Kapitel_im_Wiederholblock_ist_ein_Hinweis()
+        {
+            Pruefbefund befund = Schnell(Probevorlagen.AusAbsaetzen("{{kapitel.projekt}}", "{{#je stand}}", "{{stand.anzeige}}",
+                                                                     "{{kapitel.anhang}}", "{{/je}}",
+                                                                     "{{#wenn baustein.ergebnisse}}", "{{kapitel.ergebnisse}}", "{{/wenn}}"));
+
+            Pruefmeldung m = Assert.Single(Probevorlagen.Mit(befund, "VF_PRUEF_KAPITEL_IM_BLOCK"));
+            Assert.Equal(Befundstufe.Hinweis, m.Stufe);
+            Assert.Equal("Kapitel {{kapitel.anhang}} steht im Block {{#je stand}} – gefüllt wird es nur in der ersten Wiederholung",
+                         m.Text);
+            Assert.Equal("Das Kapitel vor {{#je stand}} oder hinter {{/je}} setzen; im Block wiederholen sich Werte, Tabellen und Bilder.",
+                         m.WasTun);
+            Assert.Equal("{{kapitel.anhang}}", m.Marke);
+            Assert.StartsWith("Absatz 4", m.Fundort, StringComparison.Ordinal);
+            Assert.Equal(0, befund.Fehleranzahl);
+            Assert.Contains(KiMeldungskennung.VF_PRUEF_KAPITEL_IM_BLOCK, KiMeldungskennung.Berichtsvorlagen);
+        }
+
+        /// <summary>
         /// Katalog v2: Ein Schalter (<c>baustein.*</c>) außerhalb einer Bedingung ist ein Ortsfehler (ohne
         /// Hinweis „später“ — Bedingungen wertet die Engine aus); das Logo als getippter Text ist ein Fehler — die
         /// Engine füllt allein das Bild mit dem Schlüssel im Alternativtext, und das ohne Befund, auch wenn
@@ -966,6 +970,25 @@ namespace EPOS.Kern.Tests
 
             Assert.Empty(Probevorlagen.Mit(Schnell(Probevorlagen.AusAbsaetzen("{{kapitel.wirtschaftlichkeit}}")), "VF_PRUEF_ANHANG_E_STELLE"));
             Assert.Empty(Probevorlagen.Mit(Schnell(Probevorlagen.AusAbsaetzen("{{bericht.inhalt}}")), "VF_PRUEF_ANHANG_E_STELLE"));
+        }
+
+        /// <summary>
+        /// Ein eigenes Deckblatt trägt eine Vorlage nur mit dem Berichtstitel <c>{{bericht.titel}}</c> im Rumpf
+        /// (<see cref="Vorlagenfeldkatalog.Deckblattmerkmal"/>): ein Datum, der Kunde oder der Bearbeiter allein
+        /// genügen nicht, der Titel in der Kopfzeile auch nicht; der englische Alias zählt wie der Schlüssel.
+        /// </summary>
+        [Fact]
+        public void Das_eigene_Deckblatt_verlangt_den_Berichtstitel()
+        {
+            Assert.False(Schnell(Probevorlagen.AusAbsaetzen("{{bericht.datum}}", "{{kapitel.anhang}}")).DeckblattAusPlatzhaltern);
+            Assert.False(Schnell(Probevorlagen.AusAbsaetzen("{{projekt.kunde}}", "{{projekt.bearbeiter}}", "{{bericht.untertitel}}",
+                                                            "{{kapitel.anhang}}")).DeckblattAusPlatzhaltern);
+            Assert.True(Schnell(Probevorlagen.AusAbsaetzen("{{bericht.titel}}", "{{kapitel.anhang}}")).DeckblattAusPlatzhaltern);
+            Assert.True(Schnell(Probevorlagen.AusAbsaetzen("{{bericht.datum}}", "{{bericht.titel}}")).DeckblattAusPlatzhaltern);
+            Assert.True(Vorlagenfeldkatalog.IstDeckblattmerkmal("bericht.titel"));
+            Assert.False(Vorlagenfeldkatalog.IstDeckblattmerkmal("bericht.datum"));
+            Assert.False(Vorlagenfeldkatalog.IstDeckblattmerkmal(null));
+            Assert.Contains(Vorlagenfeldkatalog.Deckblattmerkmal, Vorlagenfeldkatalog.Deckblattangaben);
         }
 
         /// <summary>

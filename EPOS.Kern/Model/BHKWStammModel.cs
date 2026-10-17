@@ -32,9 +32,7 @@
 
         /// <summary>Der THERMISCHE Wirkungsgrad als Faktor; <c>null</c> = nicht gepflegt.</summary>
         public double? m_Wirkungsgrad_th;
-        public double m_Investition_KWel;
         public double m_Raumbedarf;
-        public double m_Wartungskosten_kWhel;
         /// <summary>
         /// Nutzungsdauer laut Gerätekatalog [a] — Gerätedaten, NICHT rechenwirksam; maßgeblich
         /// ist die Nutzungsdauertabelle (Etappe E10, Kennzeichnung A8, Empfehlung E10-Q4 a).
@@ -47,16 +45,32 @@
         public int m_Staub;
         public string m_szMotortyp;
         public double m_Grenzleistung;
-        public double m_Kosten_Modul;
-        public double m_Kosten_Schallschutzhaube;
-        public double m_Kosten_Lieferung;
-        public double m_Kosten_Montage;
-        public double m_Kosten_Abgasreinigung;
         public int m_Vorlauf;
         public int m_Ruecklauf;
 
         // NEU in der STAMM-Tabelle (Boolean NOT NULL): schreibgeschuetzter Datensatz
         public bool m_bReadOnly;
+
+        // Welle M4 (Schemaschritt ErzeugerTeillastSchema.SCHRITT): Teillastkennlinie (BH1) und
+        // Takten (BH2). Leer heißt „nicht gepflegt" - das Modul rechnet dann wie zuvor.
+
+        /// <summary>η_el bei 50 % elektrischer Last als Faktor (BH1); <c>null</c> = wie Volllast.</summary>
+        public double? m_Wirkungsgrad_el_Teillast50;
+
+        /// <summary>η_th bei 50 % elektrischer Last als Faktor (BH1); <c>null</c> = wie Volllast.</summary>
+        public double? m_Wirkungsgrad_th_Teillast50;
+
+        /// <summary>Anfahrverlust je Start [kWh Brennstoff] (BH2); <c>null</c> = nicht gepflegt.</summary>
+        public double? m_Anfahrverlust_kWh;
+
+        /// <summary>Mindestlaufzeit je Start [min] (BH2); <c>null</c> = nicht gepflegt.</summary>
+        public int? m_Mindestlaufzeit_min;
+
+        /// <summary>
+        /// <c>Ruecklauf_Max</c> [°C] — die Abschaltgrenze des Rücklaufs (UB‑E3, U‑3): darüber liefert das Modul nichts.
+        /// <c>null</c> = keine Grenze.
+        /// </summary>
+        public double? m_Ruecklauf_Max;
 
         public BHKWStammModel()
         {
@@ -70,9 +84,7 @@
             m_Wirkungsgrad = 0;
             m_Wirkungsgrad_el = null;
             m_Wirkungsgrad_th = null;
-            m_Investition_KWel = 0;
             m_Raumbedarf = 0;
-            m_Wartungskosten_kWhel = 0;
             m_Nutzungsdauer = 0;
             m_NOx = 0;
             m_SO2 = 0;
@@ -81,11 +93,6 @@
             m_Staub = 0;
             m_szMotortyp = "";
             m_Grenzleistung = 0;
-            m_Kosten_Modul = 0;
-            m_Kosten_Schallschutzhaube = 0;
-            m_Kosten_Lieferung = 0;
-            m_Kosten_Montage = 0;
-            m_Kosten_Abgasreinigung = 0;
             m_Vorlauf = 0;
             m_Ruecklauf = 0;
             m_bReadOnly = false;

@@ -31,7 +31,16 @@
         <button type="button" class="epos-knopf" @onclick="() => KostenOeffnen(false)">@InvestText</button>
         <button type="button" class="epos-knopf" @onclick="() => KostenOeffnen(true)">@BetriebText</button>
     }
-    @if (EnergiekostenOeffnen is not null)
+    @if (!string.IsNullOrEmpty(EnergieSperrgrund))
+    {
+        @* WEICHE SPERRE, kein disabled (Hausregel „Bedienung"): Der Knopf nennt seinen
+           Grund im Tooltip und MELDET den Versuch - ein disabled-Knopf zeigte den
+           Tooltip nie. Beide Bauarten stehen in EINER Stilregel
+           (.epos-knopf[aria-disabled="true"]), also sind sie sichtbar verschieden. *@
+        <button type="button" class="epos-knopf" aria-disabled="true" title="@EnergieSperrgrund"
+                @onclick="() => EnergieAbgelehnt.InvokeAsync(EnergieSperrgrund)">@EnergieText</button>
+    }
+    else if (EnergiekostenOeffnen is not null)
     {
         <button type="button" class="epos-knopf" @onclick="EnergiekostenOeffnen">@EnergieText</button>
     }
@@ -54,6 +63,18 @@
     /// Traeger. Ohne Delegat fehlt der Knopf.
     /// </summary>
     [Parameter] public Func<Task>? EnergiekostenOeffnen { get; set; }
+
+    /// <summary>
+    /// KD1 (Anwenderentscheid 13.10.2026): Der Grund, aus dem „Energiekosten…" NICHT
+    /// fuehrt - etwa eine Anlagenzeile ohne Traeger. Gesetzt steht der Knopf WEICH
+    /// gesperrt (<c>aria-disabled</c>, Tooltip, meldender Rueckruf) statt zu fehlen:
+    /// Ein Knopf, den der Anwender bei den Nachbarn kennt, erklaert hier, warum er
+    /// gerade nicht fuehrt. Leer = der Knopf fuehrt (oder fehlt ohne Delegat).
+    /// </summary>
+    [Parameter] public string EnergieSperrgrund { get; set; } = "";
+
+    /// <summary>Der Versuch am weich gesperrten Knopf - der Wirt MELDET den Grund.</summary>
+    [Parameter] public EventCallback<string> EnergieAbgelehnt { get; set; }
 
     /// <summary>
     /// Der rote Kurzhinweis rechts (<c>KDLG_FK8_KURZ</c>). Leer = keiner - so wie der

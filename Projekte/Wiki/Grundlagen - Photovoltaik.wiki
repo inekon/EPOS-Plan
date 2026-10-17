@@ -1,0 +1,67 @@
+<!-- EPOS-Plan Grundlagenseite | Wikititel: Grundlagen/Photovoltaik
+     Repo-Quelle dieser Seite: Projekte/Wiki/Grundlagen - Photovoltaik.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+'''Photovoltaik''' wandelt Sonneneinstrahlung unmittelbar in elektrischen Strom, ohne bewegte Teile und ohne Verbrennung. Wirtschaftlich entscheidend ist dabei weniger die Jahressumme des Ertrags als die Gleichzeitigkeit: wie viel des erzeugten Stroms im selben Augenblick im Objekt genutzt wird.
+
+== Funktionsprinzip ==
+{{Anker|funktionsprinzip|ertragsmodell}}
+
+Sonnenlicht löst in der Solarzelle einen Stromfluss aus; mehrere Zellen bilden ein Modul, mehrere Module einen Strang, mehrere Stränge ein Modulfeld. Der Ertrag folgt der Einstrahlung auf die geneigte Modulebene: {{Anker|ausrichtung-neigung-und-teilfelder}}Ausrichtung (Azimut) und Neigung bestimmen, zu welcher Tages- und Jahreszeit die Erträge anfallen. Eine Südausrichtung mit 30 bis 35 Grad Neigung liefert die höchste Jahressumme; eine Ost-West-Teilung verbreitert das Erzeugungsfenster auf Vormittag und Nachmittag. Flächen unterschiedlicher Ausrichtung lassen sich als getrennte Teilfelder rechnen. Mit steigender Zelltemperatur sinkt der Wirkungsgrad, üblich sind 0,3 bis 0,4 Prozent je Kelvin über der Referenztemperatur – heiße Sommertage liefern deshalb unterproportional viel. Der '''Wechselrichter''' wandelt den Gleichstrom der Module in netzkonformen Wechselstrom; sein Teillastverhalten und seine Grenzleistung mindern den nutzbaren Ertrag zusätzlich (Einzelheiten: [[Grundlagen/Wechselrichter|Wechselrichter]]).
+
+== Kennzahlen ==
+{{Anker|kennzahlen|eigenverbrauchsquote|autarkiegrad}}
+
+{| class="wikitable"
+! Kennzahl !! Bedeutung !! Typischer Bereich
+|-
+| Spezifischer Ertrag || Jahresertrag je installierter kWp || 850–1 050 kWh/kWp (Deutschland)
+|-
+| Performance Ratio || Verhältnis realer zu theoretischem Ertrag (Temperatur-, Verschattungs- und Wechselrichterverluste) || 0,80–0,90
+|-
+| Eigenverbrauchsquote || Anteil der Erzeugung, der direkt oder über den Speicher selbst genutzt wird || sinkt mit wachsender Anlage
+|-
+| Autarkiegrad || Anteil des Strombedarfs, der aus eigener Erzeugung gedeckt wird || steigt mit wachsender Anlage
+|-
+| Temperaturkoeffizient || Leistungsverlust je Kelvin über 25 °C Zelltemperatur || 0,3–0,4 %/K
+|}
+
+Eigenverbrauchsquote und Autarkiegrad laufen gegenläufig: Eine größere Anlage steigert die Autarkie, senkt aber die Eigenverbrauchsquote, weil ein wachsender Anteil des Ertrags über den Mittagsbedarf hinausgeht.
+
+== Typische Größen ==
+{{Anker|typische-groessen|auslegung-in-der-praxis}}
+
+{| class="wikitable"
+! Einsatzfall !! Anlagengröße !! Ausrichtung
+|-
+| Einfamilienhaus || 8–12 kWp || Süd oder Ost-West, ein bis zwei Teilfelder
+|-
+| Mehrfamilienhaus || 25–40 kWp || häufig mehrere Dachflächen, mehrere Teilfelder
+|-
+| Gewerbe / Hallendach || 60–150 kWp und mehr || meist Flachdach mit Aufständerung, oft Ost-West
+|}
+
+Bei Gewerbeanlagen mit hoher Grundlast lohnt häufig eine Auslegung auf den Eigenverbrauch ohne große Überdimensionierung, weil die Einspeisevergütung deutlich unter dem Bezugspreis liegt.
+
+== Einsatz und Grenzen ==
+{{Anker|einsatz-und-grenzen|zusammenspiel-mit-der-waermeseite|eigenverbrauch-autarkie-und-speicher}}
+
+Photovoltaik passt überall dort, wo eine geeignete Dach- oder Freifläche zur Verfügung steht und ein nennenswerter Tagstrombedarf besteht. Den größten Hebel für mehr Eigenverbrauch bieten oft flexible Verbraucher, die sich in die Mittagsstunden verschieben lassen – etwa eine Wärmepumpe mit Pufferspeicher als thermischem Puffer – vor einer größeren Batterie. Grenzen setzen Verschattung durch Nachbargebäude oder Bäume, Dachstatik und -ausrichtung sowie, bei sehr kleinem Tagstrombedarf, ein rasch sinkender Grenznutzen zusätzlicher Module.
+
+[[Datei:Einbindung_PV_Stromspeicher.svg|mini|zentriert|800px|Zwei Modulfelder an zwei MPP-Trackern, Hausnetz mit Haushalt und Wärmepumpe, AC-gekoppelter Stromspeicher und Netzanschluss; Nebenskizze DC-Kopplung. Prinzipbild.]]
+
+== In EPOS-Plan ==
+{{Anker|in-epos-plan}}
+
+Im Projekt legt die Kachel Photovoltaik der Startseite die Anlage im Dialog „Verwaltung Photovoltaik Module“ an; den Modulkatalog pflegt man unter Administration → Energiesysteme → Photovoltaik → PV Module. Statt der Module kann das Projekt auch eine importierte PV-Ganglinie rechnen, etwa eine gemessene Einspeisung; sie wird im Katalog unter Administration → Profile & Lastgänge → PV-Ganglinie gepflegt. Wie die Anlage im Einzelnen eingebunden und konfiguriert wird, ein Beispiel, das Zusammenspiel mit anderen Techniken und die Fallstricke stehen auf der Anwendungsseite: [[Programm Dokumentation/Photovoltaik#einbindung|Einbindung]], [[Programm Dokumentation/Photovoltaik#beispiel|Beispiel]], [[Programm Dokumentation/Photovoltaik#zusammenspiel|Zusammenspiel]], [[Programm Dokumentation/Photovoltaik#fallstricke|Fallstricke]]. Für den Wechselrichter gilt die eigene Seite [[Grundlagen/Wechselrichter|Wechselrichter]].
+
+== Siehe auch ==
+{{Anker|siehe-auch}}
+
+* [[Grundlagen/Wechselrichter|Wechselrichter]] – Teillastverhalten, Auslegung von Modul und Gerät
+* [[Grundlagen/Stromspeicher|Stromspeicher]] – Speicherung des Überschusses
+* [[Grundlagen/Vergleich Energiebilanz|Vergleich Energiebilanz]] – wie der Ertrag in die Gesamtbilanz eingeht
+* [[Grundlagen/Erlösrechnung|Erlösrechnung]] – Bewertung des selbst genutzten und eingespeisten Stroms
+
+{{Navigation Grundlagen}}
+
+[[Kategorie:Grundlagen]]

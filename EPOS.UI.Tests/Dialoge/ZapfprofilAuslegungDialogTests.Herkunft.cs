@@ -42,7 +42,7 @@ public partial class ZapfprofilAuslegungDialogTests
         Assert.Equal(new[] { "Auslegung.SpeicherC", "Auslegung.ErzeugerKw" },
                      zeilen.Select(z => z.GetAttribute("data-groesse")).ToArray());
         Assert.Contains("Schätzformel Kessel", zeilen[1].TextContent, StringComparison.Ordinal);
-        Assert.Equal(new[] { "Größe", "Wert", "Zone", "Stand", "Quelle", "Vermerk" },
+        Assert.Equal(new[] { "Größe", "Wert", "Bereich", "Stand", "Quelle", "Vermerk" },
                      karte.QuerySelectorAll("thead th").Select(t => t.TextContent.Trim()).ToArray());
     }
 

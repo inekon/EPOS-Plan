@@ -327,6 +327,22 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Deckblatt", lauf.VorlageName);
             Assert.False(lauf.IstRueckfall);
             Assert.Empty(daten.Wirtschaft.Nachgeholt);
+            Assert.Empty(lauf.Nachgeholt);
+            Assert.DoesNotContain(BerichtCtrl.Laufabschnitte(lauf, false), m => m.Kennung == KiMeldungskennung.BV_LAUF_NACHGEHOLT);
+
+            // Liest ein Schreiber nach dem Sammeln einen Teil, den der Sammler nicht gerechnet hat (hier einen
+            // Trägernamen), rechnet der Teil nach — der nächste Lauf übernimmt ihn, und die Laufmeldung nennt ihn in
+            // einer Hinweiszeile, in Word und Excel und in beiden Sprachen.
+            _ = daten.Wirtschaft.Traegername(0);
+            Assert.Equal(new[] { "Traegername 0" }, daten.Wirtschaft.Nachgeholt);
+            Berichtslauf nachgeholt = ctrl.ErzeugeWord(daten, konfig, start, Startweg.Gewaehlt);
+            Assert.Equal(new[] { "Traegername 0" }, nachgeholt.Nachgeholt);
+            Berichtsmeldung hinweis = BerichtCtrl.Laufabschnitte(nachgeholt, false).Single(m => m.Kennung == KiMeldungskennung.BV_LAUF_NACHGEHOLT);
+            Assert.Equal("Hinweis: 1 Teil(e) der Wirtschaftlichkeitsdaten fehlten nach der Datensammlung und wurden beim Schreiben " +
+                         "nachgerechnet – der Bericht ist vollständig.", hinweis.Text);
+            Assert.Equal(new[] { "Traegername 0" }, hinweis.Punkte);
+            Assert.Contains("recalculated while writing", BerichtCtrl.Laufmeldung(nachgeholt, true));
+            Assert.Contains("nachgerechnet", BerichtCtrl.LaufmeldungExcel(nachgeholt, false));
 
             // Die Standardvorlage mit allen Häkchen: Stundenreihen und Verlauf wie heute.
             BerichtsKonfiguration voll = Berichtsdatenproben.VolleKonfiguration();
@@ -357,6 +373,54 @@ namespace EPOS.Kern.Tests
             Assert.Empty(Validierungsfehler(laufStandard.Pfad));
             Assert.True(File.Exists(mappe));
             Assert.Empty(datenStandard.Wirtschaft.Nachgeholt);
+        }
+
+        // =====================================================================
+        //  (e2) VALERI-Darstellung (Etappe VB‑E1)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Die Regel der VALERI-Darstellung im Wertesatz</b> (VB‑Q3 a, VB‑Q4 a): Das Leitszenario ist fest Erwartet —
+        /// auch wenn die Konfiguration daneben Ungünstig trägt —, und kein Rückfall wird gemeldet. Je Stand trägt die
+        /// Tafel Ungünstig | Erwartet | Günstig; fehlt einem Stand Günstig oder Ungünstig, steht seine Tafel allein in
+        /// Erwartet und die fehlenden Szenarien sind benannt. Die Einzelwahl folgt unverändert der Regel E31.
+        /// </summary>
+        [Fact]
+        public void In_VALERI_Darstellung_ist_das_Leitszenario_Erwartet()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            BerichtsDaten daten = BerichtVorlagenMesslatteTests.Probe(BerichtVorlagenMesslatteTests.PROBE_GRUPPE);
+            VariantenDaten stamm = daten.Varianten.First(v => v.IstStamm);
+            Assert.Equal(1, daten.Wirtschaftlichkeit.RemoveAll(
+                e => e.IdProjekt == stamm.IdProjekt && e.Szenario == WirtschaftlichkeitSzenario.WORST));
+            WirtschaftsBerichtswerte werte = WirtschaftsBerichtswerte.Von(daten);
+
+            BerichtsKonfiguration valeri = Berichtsdatenproben.VolleKonfiguration();
+            valeri.Szenario = WirtschaftlichkeitSzenario.WORST;
+            valeri.Szenariodarstellung = BerichtsKonfiguration.DARSTELLUNG_VALERI;
+            Assert.True(WirtschaftsBerichtswerte.IstValeri(valeri));
+            Assert.Equal(WirtschaftlichkeitSzenario.ERWARTET, werte.Berichtsszenario(valeri, out List<string> ohne));
+            Assert.Empty(ohne);
+
+            // Einzelwahl: Rückfall wie bisher, mit dem fehlenden Stand benannt.
+            BerichtsKonfiguration einzeln = Berichtsdatenproben.VolleKonfiguration();
+            einzeln.Szenario = WirtschaftlichkeitSzenario.WORST;
+            Assert.False(WirtschaftsBerichtswerte.IstValeri(einzeln));
+            Assert.False(WirtschaftsBerichtswerte.IstValeri(null));
+            Assert.Equal(WirtschaftlichkeitSzenario.ERWARTET, werte.Berichtsszenario(einzeln, out ohne));
+            Assert.Equal(new[] { "Stamm" }, ohne);
+
+            // Je Stand die Spalten: der Stamm ohne Ungünstig fällt auf Erwartet, jede Variante trägt alle drei.
+            Assert.Equal(new[] { WirtschaftlichkeitSzenario.ERWARTET }, werte.ValeriSzenarien(stamm.IdProjekt, out List<string> fehlend));
+            Assert.Equal(new[] { WirtschaftlichkeitSzenario.WORST }, fehlend);
+            foreach (VariantenDaten v in daten.Varianten.Where(x => !x.IstStamm))
+            {
+                Assert.Equal(new[] { WirtschaftlichkeitSzenario.WORST, WirtschaftlichkeitSzenario.ERWARTET, WirtschaftlichkeitSzenario.BEST },
+                             werte.ValeriSzenarien(v.IdProjekt, out fehlend));
+                Assert.Empty(fehlend);
+            }
         }
 
         // =====================================================================

@@ -1633,6 +1633,10 @@ namespace EPOS.Kern.Tests
             z.Reihen[ZeitreihenSatz.STROMBEDARF] = Konstant(1.0);
             z.Reihen[ZeitreihenSatz.BHKW_STROM] = Konstant(3.0);
             z.Reihen[ZeitreihenSatz.NETZBEZUG] = Konstant(0.0);
+            // Die Einspeisung des Laufs, wie der Extraktor sie in den Satz legt: Bedarf 1 kW in jeder
+            // Viertelstunde, BHKW 3 kW stundenkonstant → Rest −2 kW je Viertel, Einspeisung
+            // max(0, −Rest) = 2 kWh/h, 8760 h × 2 kWh = 17,52 MWh/a (die Strommatrix liest sie aus dem Satz).
+            z.Reihen[ZeitreihenSatz.BHKW_UEBERSCHUSS] = Konstant(2.0);
             return z;
         }
 

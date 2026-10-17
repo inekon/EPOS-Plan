@@ -31,7 +31,9 @@ public class KatalogeinstiegTests : EposBunitContext
     {
         Seitenschluessel.BaustoffKatalog,
         Seitenschluessel.BauteilaufbauKatalog,
-        Seitenschluessel.BrauchwasserNutzungsarten
+        Seitenschluessel.BrauchwasserNutzungsarten,
+        // KU3-1: die Kaeltemaschinen - eine freie Ansicht der Wurzel wie die Kataloge der Gebaeudehuelle.
+        Seitenschluessel.KaeltemaschineKatalog
     };
 
     public KatalogeinstiegTests()
@@ -63,7 +65,7 @@ public class KatalogeinstiegTests : EposBunitContext
     {
         IReadOnlyList<Menuepunkt> alle = Menuetabelle.Kataloge(_ => true);
 
-        Assert.Equal(12, alle.Count);
+        Assert.Equal(13, alle.Count);                                // KU3-1: + Kältemaschinen
         Assert.All(alle, p => Assert.False(string.IsNullOrEmpty(p.Ziel)));
         Assert.All(alle, p => Assert.False(p.Klappt));
         Assert.Equal(alle.Count, alle.Select(p => p.Ziel).Distinct(StringComparer.Ordinal).Count());
@@ -192,12 +194,14 @@ public class KatalogeinstiegTests : EposBunitContext
     [Theory]
     [InlineData(Seitenschluessel.BaustoffKatalog, "epos-baustoff-admin")]
     [InlineData(Seitenschluessel.BauteilaufbauKatalog, "epos-bauteilaufbau-admin")]
+    [InlineData(Seitenschluessel.KaeltemaschineKatalog, "epos-kaeltemaschine-admin")]
     public void Die_Kataloge_der_Gebaeudehuelle_oeffnen_aus_dem_Einstieg(string ziel, string klasse)
     {
         var quelle = new TestProjektquelle(ZweiProjekte)
         {
             BaustoffKatalog = new Dictionary<string, object>(),
-            BauteilaufbauKatalog = new Dictionary<string, object>()
+            BauteilaufbauKatalog = new Dictionary<string, object>(),
+            KaeltemaschineKatalog = new Dictionary<string, object>()
         };
         var cut = Aufbauen(quelle);
 

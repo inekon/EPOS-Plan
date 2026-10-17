@@ -887,7 +887,8 @@ namespace EPOS.Kern.Tests
         public void Das_Anlagenschema_zeigt_den_Kaeltekreis_mit_seinem_Versorger()
         {
             if (!_db.Vorhanden) return;
-            string erzeuger = SchemaModell.PRAEFIX_ERZEUGER + ANLAGE_1045;
+            // Auftrag KS: Der Kälteerzeuger steht als eigener Kasten in der Kältebahn.
+            string erzeuger = SchemaModell.PRAEFIX_KAELTE_ERZEUGER + ANLAGE_1045;
 
             GebaeudeKuehlen(GEBAEUDE_1045, 24.0);
             Assert.True(KonfigurationCtrl.KuehlbetriebSchreiben(PROJEKT_WP, true));

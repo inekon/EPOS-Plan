@@ -44,6 +44,12 @@ public sealed class BauteilKiSicht
     public Func<double?>? PsiLLesen { get; init; }
     public Action<double?>? PsiLSetzen { get; init; }
 
+    public Func<double?>? AbsorptionLesen { get; init; }
+    public Action<double?>? AbsorptionSetzen { get; init; }
+
+    public Func<double?>? EmissionLesen { get; init; }
+    public Action<double?>? EmissionSetzen { get; init; }
+
     public Func<double?>? UWertLesen { get; init; }
     public Action<double?>? UWertSetzen { get; init; }
 
@@ -110,9 +116,24 @@ public sealed class BauteilKiSicht
     /// <summary>Wärmebrücke ψ·L [W/K].</summary>
     public double? PsiL { get => PsiLLesen?.Invoke(); set => PsiLSetzen?.Invoke(value); }
 
+    /// <summary>Absorptionsgrad solar der Außenfläche (0…1); leer = der des Aufbaus, sonst die Vorgabe.</summary>
+    public double? AbsorptionsgradSolar { get => AbsorptionLesen?.Invoke(); set => AbsorptionSetzen?.Invoke(value); }
+
+    /// <summary>Emissionsgrad (langwellig) der Außenfläche (0…1); leer = der des Aufbaus, sonst die Vorgabe.</summary>
+    public double? Emissionsgrad { get => EmissionLesen?.Invoke(); set => EmissionSetzen?.Invoke(value); }
+
     /// <summary>U-Wert [W/(m²K)]; leer = aus dem Aufbau.</summary>
     public double? UWert { get => UWertLesen?.Invoke(); set => UWertSetzen?.Invoke(value); }
 
     /// <summary>Der Aufbau des Projekts als Id (0 = ohne Aufbau).</summary>
     public int? Aufbau { get => AufbauLesen?.Invoke(); set => AufbauSetzen?.Invoke(value); }
+
+    /// <summary>MA-6b: liefert die Herkunft des U-Werts, wie das OK sie schriebe (Persistenzwert).</summary>
+    public Func<string?>? UHerkunftLesen { get; init; }
+
+    /// <summary>
+    /// MA-6b: Die Herkunft des U-Werts (<c>KATALOG</c>, <c>MANUELL</c>, <c>IFC</c>, <c>GBXML</c>, <c>SQPROJ</c>, <c>VORGABE</c>;
+    /// leer = unbekannt) — nur lesbar, der Kern leitet sie beim Schreiben ab.
+    /// </summary>
+    public string UHerkunft => UHerkunftLesen?.Invoke() ?? "";
 }

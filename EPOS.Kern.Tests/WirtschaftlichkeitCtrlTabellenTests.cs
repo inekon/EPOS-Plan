@@ -21,18 +21,19 @@ namespace EPOS.Kern.Tests
     /// Ergebnistabellen bekommen ihn in Schemaschritt 96 (<see cref="ProjektFremdschluessel"/>).
     /// Gemessen an der Testdatenbank: <c>PRAGMA foreign_key_list</c> liefert für jede der fünf
     /// genau eine Zeile <c>Tab_Projekt / ID_Projekt → ID / ON DELETE CASCADE</c>.
-    /// <see cref="WirtschaftlichkeitCtrl.StelleTabellenSicher"/> legt deshalb keine Tabelle an —
-    /// eine solche Anlage entstünde ohne Beziehung und ohne <c>STRICT</c>, und Schritt 96 bräche
-    /// an ihr ab (<see cref="ProjektFremdschluessel.Zieltext"/>) — und zieht nur noch die drei
-    /// Ergebnisspalten nach, die kein Schemaschritt führt.</para>
+    /// Der Controller legt deshalb keine Tabelle an — eine solche Anlage entstünde ohne Beziehung
+    /// und ohne <c>STRICT</c>, und Schritt 96 bräche an ihr ab
+    /// (<see cref="ProjektFremdschluessel.Zieltext"/>) — und zieht keine Spalte nach: Die vier
+    /// Ergebnisspalten ohne Grundschema legt der Schemaschritt
+    /// <see cref="ErgebnisWirtschaftlichkeitSpaltenSchema"/> an.</para>
     ///
     /// <para><b>Geprüft wird an einer Arbeitskopie:</b> das Schema der fünf Tabellen; dass
     /// Speichern und Laden ohne die Anlage-DDL laufen; dass nach dem Löschen eines Projekts in
     /// keiner der fünf Tabellen eine Zeile zurückbleibt — über den Löschweg der Anwendung
     /// (<see cref="ProjektCtrl.LoeschenMitVorarbeiten"/>, der diese Tabellen nicht von Hand
     /// leert) und, als Beleg dafür, dass die Kaskade allein genügt, über ein nacktes
-    /// <c>DELETE</c>; und dass die verbliebene Vorsorge weder eine fehlende Tabelle anlegt noch
-    /// eine entfernte Spalte zurückholt.</para>
+    /// <c>DELETE</c>; und dass der Ladeweg weder eine fehlende Tabelle anlegt noch eine
+    /// entfernte Spalte zurückholt und die Quelle des Controllers keine DDL mehr führt.</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class WirtschaftlichkeitCtrlTabellenTests
@@ -133,15 +134,16 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// DIE VORSORGE: <see cref="WirtschaftlichkeitCtrl.StelleTabellenSicher"/> legt eine
-        /// fehlende Tabelle NICHT an (sie entstünde ohne <c>STRICT</c> und ohne Beziehung, und
-        /// Schritt 96 bräche an ihr ab) und holt keine Spalte zurück, die ein Schemaschritt
-        /// entfernt hat — <c>Aufschlaege_Anwenden</c> steht noch in der Liste
-        /// <see cref="SchemaKatalog.Schritt21_Tarifmodell"/>, fiel aber mit Schritt 85. Was
-        /// bleibt, sind die drei Ergebnisspalten ohne Schemaschritt.
+        /// KEINE VORSORGE MEHR: Der Ladeweg (<see cref="WirtschaftlichkeitCtrl.LadeParameter"/>,
+        /// <see cref="WirtschaftlichkeitCtrl.LadeErgebnisse"/>) legt eine fehlende Tabelle NICHT an
+        /// (sie entstünde ohne <c>STRICT</c> und ohne Beziehung, und Schritt 96 bräche an ihr ab)
+        /// und holt keine Spalte zurück, die ein Schemaschritt entfernt hat —
+        /// <c>Aufschlaege_Anwenden</c> steht noch in der Liste
+        /// <see cref="SchemaKatalog.Schritt21_Tarifmodell"/>, fiel aber mit Schritt 85. Die vier
+        /// Ergebnisspalten ohne Grundschema stehen, weil der Schemaschritt sie anlegt.
         /// </summary>
         [Fact]
-        public void Die_Vorsorge_legt_keine_Tabelle_an_und_holt_keine_entfernte_Spalte_zurueck()
+        public void Der_Ladeweg_legt_keine_Tabelle_an_und_holt_keine_entfernte_Spalte_zurueck()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -155,22 +157,45 @@ namespace EPOS.Kern.Tests
             DataRepository.ExecuteNonQuery("DROP TABLE \"" + tabelle + "\"");
             Assert.False(StilleDb.TabelleVorhanden(tabelle), "DROP TABLE hat nicht gegriffen.");
 
-            new WirtschaftlichkeitCtrl().StelleTabellenSicher();
+            var ctrl = new WirtschaftlichkeitCtrl();
+            ctrl.LadeParameter(1030);
+            ctrl.LadeErgebnisse(new System.Collections.Generic.List<int> { 1030 });
+            ctrl.LadeSensitivitaet(new System.Collections.Generic.List<int> { 1030 });
 
             Assert.False(DataRepository.SpalteVorhanden(parameter, entfernt),
-                         "StelleTabellenSicher hat " + entfernt + " zurückgeholt " +
+                         "Der Ladeweg hat " + entfernt + " zurückgeholt " +
                          "(Nachzug aus SchemaKatalog.Schritt21_Tarifmodell).");
             Assert.False(StilleDb.TabelleVorhanden(tabelle),
-                         "StelleTabellenSicher hat " + tabelle + " angelegt — ohne STRICT und " +
+                         "Der Ladeweg hat " + tabelle + " angelegt — ohne STRICT und " +
                          "ohne Fremdschlüssel; Schemaschritt 96 bräche an dieser Tabelle ab.");
-            Assert.True(string.IsNullOrEmpty(WirtschaftlichkeitCtrl.Vorsorgewarnung),
-                        WirtschaftlichkeitCtrl.Vorsorgewarnung);
 
-            foreach (string spalte in new[] { WirtschaftlichkeitCtrl.SPALTE_STROMST_MODUS,
-                                              WirtschaftlichkeitCtrl.SPALTE_ERSATZ_BARWERT,
-                                              WirtschaftlichkeitCtrl.SPALTE_NACHWEIS_JSON })
-                Assert.True(DataRepository.SpalteVorhanden(WirtschaftlichkeitCtrl.TAB_ERGEBNIS, spalte),
-                            WirtschaftlichkeitCtrl.TAB_ERGEBNIS + "." + spalte + " fehlt.");
+            Assert.True(ErgebnisWirtschaftlichkeitSpaltenSchema.Vollstaendig(),
+                        "Die vier Ergebnisspalten des Schemaschritts fehlen in der Testdatenbank.");
+        }
+
+        /// <summary>
+        /// DIE QUELLE: <c>WirtschaftlichkeitCtrl.cs</c> führt keine Spalten-DDL mehr — kein
+        /// <c>ALTER TABLE</c>, kein <c>AlterTableAddColumn</c>, kein <c>SpalteSicher</c>, keine
+        /// <c>Vorsorgewarnung</c>. Ein neuer Nachzug gehört in einen Schemaschritt.
+        /// </summary>
+        [Fact]
+        public void Der_Controller_fuehrt_keine_Spalten_DDL()
+        {
+            string quelle = System.IO.File.ReadAllText(System.IO.Path.Combine(
+                Wurzel(), "EPOS.Kern", "Allgemein", "Wirtschaftlichkeit", "WirtschaftlichkeitCtrl.cs"));
+            foreach (string verboten in new[] { "ALTER TABLE", "AlterTableAddColumn", "SpalteSicher(",
+                                                "StelleTabellenSicher", "Vorsorgewarnung" })
+                Assert.False(quelle.Contains(verboten, StringComparison.Ordinal),
+                             "WirtschaftlichkeitCtrl.cs enthält wieder „" + verboten + "“.");
+        }
+
+        private static string Wurzel([System.Runtime.CompilerServices.CallerFilePath] string eigeneDatei = "")
+        {
+            string ordner = System.IO.Path.GetDirectoryName(eigeneDatei);
+            while (ordner != null && !System.IO.File.Exists(System.IO.Path.Combine(ordner, "WP-Plan.Kern.slnf")))
+                ordner = System.IO.Path.GetDirectoryName(ordner);
+            Assert.True(ordner != null, "Die Wurzel des Arbeitsbaums ist nicht zu finden.");
+            return ordner;
         }
 
         // =============================================================================

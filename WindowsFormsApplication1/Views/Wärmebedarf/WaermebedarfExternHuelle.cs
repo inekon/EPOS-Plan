@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -39,14 +40,17 @@ namespace WindowsFormsApplication1
         /// <c>Form_Start.pBox_WBedarfDaten_Click</c> und dem Kontextmenü.
         /// </summary>
         /// <returns><c>true</c>, wenn mit OK geschlossen wurde.</returns>
+        /// <param name="modus">K5a: <see cref="WaermebedarfExternModus.NurKuehlung"/> ist der Dialog „Kältebedarf extern“;
+        /// <paramref name="modelle"/> trägt dann nur die Kühlzeilen (<see cref="WaermebedarfExternAbbildung.Modelle"/>).</param>
         internal static bool Oeffnen(IWin32Window besitzer, int projektId, string projektName,
-                                     List<Z_ProjWaermebedarfModel> modelle)
+                                     List<Z_ProjWaermebedarfModel> modelle,
+                                     WaermebedarfExternModus modus = WaermebedarfExternModus.Alle)
         {
             bool ok = false;
             BlazorDialogForm<WaermebedarfExternDialog> dlg = null;
 
             var werte = new Dictionary<string, object>(
-                Gaben(besitzer, projektId, projektName, modelle, wizard: false))
+                Gaben(besitzer, projektId, projektName, modelle, wizard: false, modus))
             {
                 ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
                 {
@@ -55,7 +59,7 @@ namespace WindowsFormsApplication1
                 })
             };
 
-            dlg = new BlazorDialogForm<WaermebedarfExternDialog>(Titel(), MASS, werte);
+            dlg = new BlazorDialogForm<WaermebedarfExternDialog>(Titel(modus), MASS, werte);
             using (dlg)
             {
                 if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
@@ -74,29 +78,34 @@ namespace WindowsFormsApplication1
 
         internal static IReadOnlyDictionary<string, object> Gaben(
             IWin32Window besitzer, int projektId, string projektName,
-            List<Z_ProjWaermebedarfModel> modelle, bool wizard)
+            List<Z_ProjWaermebedarfModel> modelle, bool wizard,
+            WaermebedarfExternModus modus = WaermebedarfExternModus.Alle)
         {
+            bool kaelte = modus == WaermebedarfExternModus.NurKuehlung;
             // Der Kanal steht in der Zuordnung; die aufrufenden Wege bauen ihre Liste
             // teils ohne ihn. Nachtragen, wie es SetControls tat.
             Z_ProjektGebGanglinieCtrl.KanaeleNachladen(projektId, modelle);
 
-            var zeilen = new List<WaermebedarfExternZeile>();
-            foreach (Z_ProjWaermebedarfModel m in modelle) zeilen.Add(AusModell(m));
-
-            Action geaendert = () =>
-            {
-                modelle.Clear();
-                foreach (WaermebedarfExternZeile z in zeilen) modelle.Add(NachModell(z, projektId));
-            };
+            // Abbildung und Rueckweg plattformfrei in EPOS.UI.Daten (WaermebedarfExternAbbildung).
+            List<WaermebedarfExternZeile> zeilen = WaermebedarfExternAbbildung.Zeilen(modelle);
+            Action geaendert = WaermebedarfExternAbbildung.Rueckweg(zeilen, modelle, projektId);
 
             // iU9-W9-E-2: Der Vorrat gehoert zu DIESEM Dialog, nicht zur Klasse -
             // sonst hielten zwei nacheinander geoeffnete Dialoge dieselbe Reihe fest.
-            Grafikvorrat vorrat = new Grafikvorrat();
+            Grafikvorrat vorrat = new Grafikvorrat(kaelte);
 
             return new Dictionary<string, object>
             {
+                ["CsvSpeichern"] = Diagrammexportnaht.Fuer(projektId),
                 ["Zeilen"] = zeilen,
                 ["Wizard"] = wizard,
+                // K5a (Konzept Kaeltebedarf 3.2, 3.4): der Modus und die Stromtraeger des Projekts fuer den Kuehltraeger
+                // der Feldgruppe „Deckung".
+                ["Modus"] = modus,
+                ["Stromtraeger"] = (IReadOnlyList<(int Id, string Text)>)Kaeltestromabrechnung
+                    .StromtraegerDesProjekts(projektId).Select(t => (t.Key, t.Value)).ToList(),
+                // K6b (E34): der Stromtraeger des Projekts - der eigene Zaehler wirkt nur bei abweichendem Kuehltraeger.
+                ["ProjektStromtraeger"] = Kaeltestromabrechnung.Projekttraeger(projektId),
                 ["Geaendert"] = geaendert,
 
                 // iU9-W9-E-3: DIESELBE Katalogquelle wie die Verwaltung - samt
@@ -106,21 +115,23 @@ namespace WindowsFormsApplication1
                 // W14a-E-10 / S3.2: dieselbe Katalogliste wie in der Verwaltung, mit
                 // Jahresarbeit und Spitze aus EINER Gruppenabfrage - und der Spalte
                 // "im Projekt verwendet" (Q12), die es nur im Projektdialog gibt.
+                // SCHLOSS SETZEN / AUFHEBEN an der Katalogliste (AD-Q15) - derselbe Weg wie in
+                // der Verwaltung. Die Verwendung im Projekt sperrt nichts (eigene Kopie).
+                ["Schloss"] = Schlosswege.Aus((ids, gesperrt) =>
+                    ZeitreihenKatalogCtrl.SchlossSetzen(Zeitreihenart.Waermebedarf, ids, gesperrt)),
                 ["Katalogzeilen"] = new Func<Task<IReadOnlyList<Katalogfilterzeile>>>(
                     WaermebedarfAdminHuelle.KatalogLesen),
                 ["Katalogprofil"] = Katalogfilterprofil
                     .FuerZeitreihe(Zeitreihenart.Waermebedarf, BedarfAdminHuelle.Filtertext)
                     .MitVerwendungsspalte(BedarfAdminHuelle.Filtertext),
                 ["Aufnehmen"] = new Func<string, WaermebedarfExternZeile>(
-                    name => Aufnehmen(name, projektId)),
+                    name => Aufnehmen(name, projektId, kaelte)),
                 ["HatProjektzuordnung"] = new Func<string, bool>(
                     name => new WaermebedarfStammCtrl().HatProjektzuordnung(name)),
                 ["KatalogLoeschen"] = new Func<string, bool>(
                     name => new WaermebedarfStammCtrl().Delete(name)),
-                // iU9-W13.2: Die Ganglinienverwaltung ist selbst Blazor. Statt des
-                // Sprungs in ein WinForms-Fenster bekommt der Dialog ihren
-                // PARAMETERSATZ und zeigt sie als Ueberlagerung (Risiko R2).
-                ["VerwaltungGaben"] = WaermebedarfAdminHuelle.Gaben(),
+                // K5c (KA-E-23): Bearbeiten… oeffnet die Satz-Ueberlagerung des Dialogs; einen neuen Katalogsatz legt
+                // Neu… ueber die Importkette an. Die Ganglinienverwaltung haengt hier nicht mehr.
 
                 // iU9-W9-E-3: die Datenbankseite der neuen Knopfleiste. Import und
                 // Vorschau sind WOERTLICH die Wege der Verwaltung - damit es keinen
@@ -142,7 +153,9 @@ namespace WindowsFormsApplication1
                 ["Kennzahlen"] = new Func<GanglinienWahl, Task<GanglinienKennzahlen>>(
                     w => Task.FromResult(vorrat.Kennzahlen(w))),
                 ["Bildauftrag"] = new Func<GanglinienWahl, bool, Zeichenmodell>(
-                    (w, sortiert) => vorrat.Modell(w, sortiert)),
+                    (w, sortiert) => vorrat.Modell(w, sortiert, 0, 0)),
+                // DZ1-N2: dasselbe Modell in der gemessenen Groesse der Zeichenflaeche.
+                ["BildauftragMass"] = new Func<GanglinienWahl, bool, int, int, Zeichenmodell>(vorrat.Modell),
                 ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
                 ["FarbeZuruecksetzen"] = new Func<Farbrolle, Task>(FarbeZuruecksetzen),
 
@@ -153,8 +166,13 @@ namespace WindowsFormsApplication1
 
                 ["Kanaele"] = Kanaele(),
 
-                ["TitelText"] = Titel(),
-                ["KopfbandText"] = Text_("WBX_KOPFBAND", "Wärmebedarfsdaten (Ganglinien)"),
+                ["TitelText"] = Titel(modus),
+                ["KopfbandText"] = kaelte
+                    ? MyResource.Resource.WBX_KOPFBAND_KAELTE
+                    : Text_("WBX_KOPFBAND", "Wärmebedarfsdaten (Ganglinien)"),
+                ["Bildtext"] = kaelte
+                    ? MyResource.Resource.CHART_TITEL_KAELTELAST_JAHRESGANGLINIE
+                    : MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE,
                 ["LabelProjektliste"] = Text_("WBX_LBL_PROJEKTLISTE", "Ausgewählt im Projekt"),
                 ["LabelKatalog"] = Text_("WBX_LBL_KATALOG", "Wärmebedarf einlesen"),
                 ["KanalBezeichnung"] = MyResource.Resource.KANAL_LABEL,
@@ -200,14 +218,15 @@ namespace WindowsFormsApplication1
         /// „◀" — je Zuordnung ein EIGENES Modell mit der Stamm-Id der Ganglinie und dem
         /// Kanal Heizung (<c>btn_Hinzu_Click</c>:206-238).
         /// </summary>
-        private static WaermebedarfExternZeile Aufnehmen(string name, int projektId)
+        private static WaermebedarfExternZeile Aufnehmen(string name, int projektId, bool kaelte)
         {
             return new WaermebedarfExternZeile
             {
                 IdZ = 0,
                 IdGanglinie = new WaermebedarfStammCtrl().GetStammId(name),
                 Bezeichner = name ?? "",
-                Kanal = DbWerte.KANAL_HEIZUNG
+                // K5a: im Dialog „Kältebedarf extern“ steht eine neue Zeile auf Kühlung.
+                Kanal = kaelte ? DbWerte.KANAL_KUEHLUNG : DbWerte.KANAL_HEIZUNG
             };
         }
 
@@ -228,36 +247,11 @@ namespace WindowsFormsApplication1
             };
         }
 
-        // =================================================================================
-        // Abbildung Zeile <-> Modell
-        // =================================================================================
-
-        internal static WaermebedarfExternZeile AusModell(Z_ProjWaermebedarfModel m)
+        private static string Titel(WaermebedarfExternModus modus = WaermebedarfExternModus.Alle)
         {
-            return new WaermebedarfExternZeile
-            {
-                IdZ = m.m_ID_Z,
-                IdGanglinie = m.m_ID_Ganglinie,
-                Bezeichner = m.m_szBezeichner ?? "",
-                Kanal = Z_ProjektGebGanglinieCtrl.KanalOderHeizung(m.Kanal)
-            };
-        }
-
-        internal static Z_ProjWaermebedarfModel NachModell(WaermebedarfExternZeile z, int projektId)
-        {
-            return new Z_ProjWaermebedarfModel
-            {
-                m_ID_Z = z.IdZ,
-                m_ID_Projekt = projektId,
-                m_ID_Ganglinie = z.IdGanglinie,
-                m_szBezeichner = z.Bezeichner,
-                Kanal = Z_ProjektGebGanglinieCtrl.KanalOderHeizung(z.Kanal)
-            };
-        }
-
-        private static string Titel()
-        {
-            return Text_("WBX_TITEL", "Wärmebedarf Extern");
+            return modus == WaermebedarfExternModus.NurKuehlung
+                ? MyResource.Resource.WBX_TITEL_KAELTE
+                : Text_("WBX_TITEL", "Wärmebedarf Extern");
         }
 
         private static string Text_(string schluessel, string rueckfall)
@@ -313,6 +307,11 @@ namespace WindowsFormsApplication1
             private string _schluessel;
             private GanglinienAuswertung _stand;
 
+            /// <summary>K5a: im Dialog „Kältebedarf extern“ ist das Bild die Kälteganglinie (Titel und Achse Kältelast).</summary>
+            private readonly bool _kaelte;
+
+            internal Grafikvorrat(bool kaelte = false) => _kaelte = kaelte;
+
             /// <summary>Die drei Kennzahlen; <c>null</c> = keine brauchbare Reihe.</summary>
             internal GanglinienKennzahlen Kennzahlen(GanglinienWahl wahl)
             {
@@ -337,7 +336,9 @@ namespace WindowsFormsApplication1
             /// </summary>
             /// <param name="wahl">Katalogsatz oder Projektkopie.</param>
             /// <param name="sortiert">Dauerlinie statt Ganglinie.</param>
-            internal Zeichenmodell Modell(GanglinienWahl wahl, bool sortiert)
+            /// <param name="breite">Breite der Zeichenflaeche in px; 0 = Vorgabegroesse.</param>
+            /// <param name="hoehe">Hoehe der Zeichenflaeche in px; 0 = Vorgabegroesse.</param>
+            internal Zeichenmodell Modell(GanglinienWahl wahl, bool sortiert, int breite, int hoehe)
             {
                 GanglinienAuswertung a = Lesen(wahl);
                 if (a == null || !a.Erfolgreich) return null;
@@ -346,17 +347,21 @@ namespace WindowsFormsApplication1
 
                 var reihen = new List<ChartRenderer.Reihe>
                 {
-                    new ChartRenderer.Reihe(MyResource.Resource.CHART_ACHSE_WAERMELAST,
+                    new ChartRenderer.Reihe(Achse,
                                             Array.ConvertAll(werte, x => (double)x),
                                             Zeichnung.Farbrolle.BEDARF)
                 };
 
                 return ChartRenderer.GanglinieNormiertModell(
-                    MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE, reihen,
-                    MyResource.Resource.CHART_ACHSE_WAERMELAST,
+                    _kaelte ? MyResource.Resource.CHART_TITEL_KAELTELAST_JAHRESGANGLINIE
+                            : MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE, reihen,
+                    Achse,
                     sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
-                    sortiert);
+                    sortiert, breite: breite, hoehe: hoehe);
             }
+
+            private string Achse => _kaelte ? MyResource.Resource.CHART_ACHSE_KAELTELAST
+                                            : MyResource.Resource.CHART_ACHSE_WAERMELAST;
 
             /// <summary>Liest die Reihe — oder gibt die schon gelesene zurück.</summary>
             private GanglinienAuswertung Lesen(GanglinienWahl wahl)

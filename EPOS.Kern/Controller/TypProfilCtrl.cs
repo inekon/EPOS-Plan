@@ -97,6 +97,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return StromverbraucherStammCtrl.TypIsReadOnly(typ);
                 case BedarfsArt.Prozesswaerme:    return ProzesswaermeStammCtrl.TypIsReadOnly(typ);
+                case BedarfsArt.Kaelte:           return KaeltebedarfStammCtrl.TypIsReadOnly(typ);
                 default:                          return BrauchwasserStammCtrl.TypIsReadOnly(typ);
             }
         }
@@ -178,6 +179,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: return StromverbraucherStammCtrl.TypDelete(typ);
                 case BedarfsArt.Prozesswaerme:    return ProzesswaermeStammCtrl.TypDelete(typ);
+                case BedarfsArt.Kaelte:           return KaeltebedarfStammCtrl.TypDelete(typ);
                 default:                          return BrauchwasserStammCtrl.TypDelete(typ);
             }
         }
@@ -200,6 +202,7 @@ namespace WindowsFormsApplication1
             {
                 case BedarfsArt.Stromverbraucher: id = StromverbraucherStammCtrl.TypNew(name); break;
                 case BedarfsArt.Prozesswaerme:    id = ProzesswaermeStammCtrl.TypNew(name); break;
+                case BedarfsArt.Kaelte:           id = KaeltebedarfStammCtrl.TypNew(name); break;
                 default:                          id = BrauchwasserStammCtrl.TypNew(name); break;
             }
             if (id <= 0) return TypAnlageErgebnis.Fehlgeschlagen;

@@ -90,7 +90,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(Zapfkategoriensatz.KENNUNG_KATEGORIEN_FEHLEN, ex.Kennung);
             // Name und Katalogversion reisen getrennt und sprachfrei — den Satz baut die Hülle.
             Assert.Equal(new object[] { "Nutzung ohne Kategorien", "T1", "Zone A" }, ex.Argumente);
-            Assert.Contains("Für die Nutzungsart „Nutzung ohne Kategorien“ (Katalogversion T1) der Zone „Zone A“", ex.Message);
+            Assert.Contains("Für die Nutzungsart „Nutzung ohne Kategorien“ (Katalogversion T1) des Bereichs „Zone A“", ex.Message);
 
             ZapfAblehnung ab = ZapfAblehnung.Aus("Zone A", ex);
             Assert.Equal(ex.Kennung, ab.Kennung);
@@ -118,9 +118,9 @@ namespace EPOS.Kern.Tests
 
             CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
             Assert.Equal("Für die Nutzungsart „Nutzung ohne Kategorien“ (Katalogversion T1) "
-                         + "der Zone „Zone A“ stehen keine Zapfkategorien im Katalog.", ZapfprofilHuelle.Meldung(ab).Text);
+                         + "des Bereichs „Zone A“ stehen keine Zapfkategorien im Katalog.", ZapfprofilHuelle.Meldung(ab).Text);
             Assert.Equal("Für die Nutzungsart „Nutzung ohne Kategorien“ (Katalogversion T1) "
-                         + "der Zone „Zone A“ stehen keine Zapfkategorien im Katalog.", ZapfprofilHuelle.Warnung(hinweis).Text);
+                         + "des Bereichs „Zone A“ stehen keine Zapfkategorien im Katalog.", ZapfprofilHuelle.Warnung(hinweis).Text);
 
             CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
             string bilanz = ZapfprofilHuelle.Meldung(ab).Text, auslegung = ZapfprofilHuelle.Warnung(hinweis).Text;

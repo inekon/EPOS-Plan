@@ -9,7 +9,7 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// <b>Die Hülle der Stufen Erweitert und Experte</b> (Umsetzungskonzept Zapfprofilgenerator
+    /// <b>Die Hülle der Stufe Experte</b> (Umsetzungskonzept Zapfprofilgenerator
     /// 5.1, 5.3, 5.5; Stufe Z4, Gruppe 2a): die Angaben je Zone und die gebäudeweiten Größen hin und
     /// zurück, Ferien als Tag und Monat des Rechenjahrs, die Pflichtprüfung der höheren Stufen, der
     /// Stand beim Öffnen (Vorgaben, Tagesgangsätze, Ausstattungen, Gebäude) und die Spalten der
@@ -41,8 +41,7 @@ namespace EPOS.Kern.Tests
             WohnflaecheJeWeM2 = 70.0,
             Topologie = ZapfTopologie.Wohnungsstation,
             Zirkulation = false,
-            Ferienbeginn = new int?[] { 335, null, 182, 0 },
-            Ferienende = new int?[] { 31, null, 243, 366 },
+            Ferien = Zonenferienprobe.Liste(new int?[] { 335, null, 182, 0 }, new int?[] { 31, null, 243, 366 }),
             Jahresmesswert = 30000.0,
             JahresmesswertEinheit = ZapfMesswerteinheit.KwhJeJahr,
             JahresmesswertBilanzgrenze = ZapfBilanzgrenze.MitSpeicher,
@@ -106,12 +105,12 @@ namespace EPOS.Kern.Tests
             Assert.Equal(ZapfprofilBilanzgrenze.MitSpeicher, a.JahresmesswertBilanzgrenze);
             Assert.Equal("Wärmemengenzähler", a.JahresmesswertQuelle);
             Assert.False(a.TagesbedarfAuto);
-            // Ferien als Tag und Monat: 335 = 1. Dezember, 31 = 31. Januar; 0 und 366 = keine Angabe.
-            Assert.Equal((1, 12), (a.Ferien[0].BeginnTag.Value, a.Ferien[0].BeginnMonat.Value));
-            Assert.Equal((31, 1), (a.Ferien[0].EndeTag.Value, a.Ferien[0].EndeMonat.Value));
-            Assert.False(a.Ferien[1].Belegt);
-            Assert.Equal((1, 7), (a.Ferien[2].BeginnTag.Value, a.Ferien[2].BeginnMonat.Value));
-            Assert.False(a.Ferien[3].Belegt);
+            // Ferien als Jahrestage des Gemeinjahrs, je Zeitraum der Liste eine Zeile, ohne Auffüllen: 335 = 1. Dezember,
+            // 31 = 31. Januar; 0 und 366 = keine Angabe (der dritte Zeitraum bleibt leer).
+            Assert.Equal(3, a.Ferien.Count);
+            Assert.Equal((335, 31), (a.Ferien[0].Von!.Value, a.Ferien[0].Bis!.Value));
+            Assert.Equal((182, 243), (a.Ferien[1].Von!.Value, a.Ferien[1].Bis!.Value));
+            Assert.False(a.Ferien[2].Belegt);
             // Die Wohnungstabelle in ihrer Reihenfolge.
             Assert.Equal(new[] { 30, 31 }, a.Wohnungen.Select(w => w.Id).ToArray());
             Assert.Null(a.Wohnungen[0].Personen);
@@ -139,8 +138,7 @@ namespace EPOS.Kern.Tests
             ZonenStand r = Reich();
             Assert.Equal(r.IdGebaeude, z.IdGebaeude);
             Assert.Equal(r.Topologie, z.Topologie);
-            Assert.Equal(new int?[] { 335, null, 182, null }, z.Ferienbeginn);
-            Assert.Equal(new int?[] { 31, null, 243, null }, z.Ferienende);
+            Assert.Equal(Zonenferienprobe.Paare(new int?[] { 335, null, 182, null }, new int?[] { 31, null, 243, null }), Zonenferienprobe.Paare(z));
             Assert.Equal(r.Jahresmesswert, z.Jahresmesswert);
             Assert.Equal(r.JahresmesswertBilanzgrenze, z.JahresmesswertBilanzgrenze);
             Assert.Equal(r.SpeicherverlustKwhJeJahr, z.SpeicherverlustKwhJeJahr);
@@ -210,7 +208,7 @@ namespace EPOS.Kern.Tests
 
             ZapfprofilZonenangabenDaten a = e.Zonen[0].Angaben;
             a.Topologie = ZapfprofilTopologie.Speicher;
-            a.Ferien[1] = new ZapfprofilFerienDaten { BeginnTag = 1, BeginnMonat = 4, EndeTag = 14, EndeMonat = 4 };
+            a.Ferien[1] = new ZapfprofilFerienDaten { Von = 91, Bis = 104 };        // 01.04. bis 14.04.
             a.Wohnungen.RemoveAt(0);
             a.Wohnungen.Add(new ZapfprofilWohnungDaten { Anzahl = 2, Raumzahl = 4 });
             a.JahresmesswertQuelle = "  ";
@@ -224,8 +222,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal(p.Seed, zurueck.Projekt.Seed);
             ZonenStand z = zurueck.Zonen[0];
             Assert.Equal(ZapfTopologie.Speicher, z.Topologie);
-            Assert.Equal(91, z.Ferienbeginn[1]);   // 1. April im Rechenjahr ohne Schaltjahr
-            Assert.Equal(104, z.Ferienende[1]);
+            Assert.Equal(91, z.Ferien[1].Beginn);   // 1. April im Rechenjahr ohne Schaltjahr
+            Assert.Equal(104, z.Ferien[1].Ende);
             Assert.Null(z.JahresmesswertQuelle);
             Assert.Equal(new[] { 31, 0 }, z.Wohnungen.Select(w => w.Id).ToArray());
             Assert.Equal(new[] { 1, 2 }, z.Wohnungen.Select(w => w.Reihenfolge).ToArray());
@@ -285,9 +283,9 @@ namespace EPOS.Kern.Tests
             };
             a.Wohnungen.Add(new ZapfprofilWohnungDaten { Anzahl = 3 });
             a.Wohnungen.Add(new ZapfprofilWohnungDaten());
-            a.Ferien[0] = new ZapfprofilFerienDaten { BeginnTag = 1, BeginnMonat = 7 };
-            a.Ferien[1] = new ZapfprofilFerienDaten { EndeTag = 6, EndeMonat = 1 };        // über den Jahreswechsel — gültig
-            a.Ferien[2] = new ZapfprofilFerienDaten { BeginnTag = 30, BeginnMonat = 2, EndeTag = 5, EndeMonat = 3 };
+            a.Ferien.Add(new ZapfprofilFerienDaten { Von = 182 });                     // ohne Ende — ungültig
+            a.Ferien.Add(new ZapfprofilFerienDaten { Bis = 6 });                       // ohne Beginn ab 1. Januar — gültig
+            a.Ferien.Add(new ZapfprofilFerienDaten { Von = 400, Bis = 64 });          // kein Tag des Gemeinjahrs — ungültig
             var e = new ZapfprofilEingabeDaten
             {
                 Zonen = { new ZapfprofilZoneDaten { Name = "Wohnen", IdNutzungsart = 1, Bezugsmenge = 10, Angaben = a } }
@@ -509,12 +507,12 @@ namespace EPOS.Kern.Tests
             e.Zonen.Add(new ZapfprofilZoneDaten { Name = "Wohnen", IdNutzungsart = a, Bezugsmenge = 20 });
             e.Gebaeude.LadefensterH = 7.0;
             e.Gebaeude.SpeicherC = 61.0;
-            e.Stufe = ZapfprofilStufe.Erweitert;
+            e.Stufe = ZapfprofilStufe.Experte;
 
             var gaben = (Func<ZapfprofilEingabeDaten, bool, IReadOnlyDictionary<string, object>>)
                         ZapfprofilHuelle.Gaben(PROJEKT, ZapfprofilCtrl.Lies(PROJEKT))["AuslegungGaben"];
             var start = (ZapfprofilAuslegungStartDaten)gaben(e, false)["Daten"];
-            Assert.Equal(ZapfprofilStufe.Erweitert, start.Stufe);
+            Assert.Equal(ZapfprofilStufe.Experte, start.Stufe);
             Assert.Equal(7.0, start.Eingabe.LadefensterH);
             Assert.Equal(61.0, start.Eingabe.SpeicherC);
             Assert.NotNull(start.Ergebnis);

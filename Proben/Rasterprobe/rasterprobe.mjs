@@ -208,6 +208,8 @@ const ABLESEN = (bereich) => {
     echt: echteZeilen.length,
     zeilenhoehen: zeilen.slice(0, 6).map(z => +z.getBoundingClientRect().height.toFixed(3)),
     echtHoehe: echteZeilen.length ? +echteZeilen[0].getBoundingClientRect().height.toFixed(3) : null,
+    // Kompaktstufe (KB1): das Stilblatt skaliert das gesetzte Zeilenmass mit --epos-zeilenskala.
+    zeilenskala: huelle ? (parseFloat(getComputedStyle(huelle).getPropertyValue('--epos-zeilenskala')) || 1) : 1,
     platzhalterHoehe: platzhalterZeilen.length
       ? +platzhalterZeilen[0].getBoundingClientRect().height.toFixed(3) : null,
     abstandshalter: abstand.map(e => ({
@@ -288,11 +290,24 @@ async function fall(browser, f) {
   await seite.goto(adresse, { waitUntil: 'domcontentloaded' });
 
   // f.klick: der Schritt des Anwenders vor der Messung (etwa die Stufe
-  // "Erweitert" des Zapfprofils, erst mit ihr steht die Wohnungstabelle da).
+  // "Experte" des Zapfprofils, erst mit ihr steht die Karte "Belegung" da).
   for (const k of [].concat(f.klick || [])) {
     await seite.waitForSelector(k, { timeout: 20000 });
     await schlaf(500);
     await seite.click(k);
+  }
+
+  // f.aufklappen: die Klappgruppen (Baustein Klappgruppe), in denen das Raster
+  // steht - etwa die Karte "Belegung" des Zapfprofils, die beim Oeffnen zu ist.
+  // Erkannt an ihrer Klasse, nicht an einem Text; der Knopf im Kopf wird nur
+  // gedrueckt, wenn die Karte zu ist (aria-expanded), und danach muss sie offen
+  // stehen. Fehlt die Karte, bricht der Fall ab wie ein fehlendes Raster.
+  for (const karte of [].concat(f.aufklappen || [])) {
+    const knopf = `${karte} > .epos-klappgruppe-kopf button.epos-klappgruppe-knopf`;
+    await seite.waitForSelector(knopf, { timeout: 20000 });
+    await schlaf(300);
+    if (await seite.getAttribute(knopf, 'aria-expanded') !== 'true') await seite.click(knopf);
+    await seite.waitForSelector(`${knopf}[aria-expanded="true"]`, { timeout: 20000 });
   }
 
   // Auf den Aufbau der interaktiven Komponente warten (Blazor Server).
@@ -549,9 +564,9 @@ function pruefe(e) {
     const b = e.bei5000;
     if (!/epos-raster-huelle/.test(b.rollbehaelter || ''))
       maengel.push(`Rollbehaelter ist ${b.rollbehaelter}, nicht die Huelle der Liste`);
-    const soll = e.fall.zeile || 53;
+    const soll = +((e.fall.zeile || 53) * (b.zeilenskala || 1)).toFixed(2);
     if (b.echtHoehe !== null && Math.abs(b.echtHoehe - soll) > 0.5)
-      maengel.push(`Zeilenhoehe ${b.echtHoehe} px statt ${soll} (ItemSize)`);
+      maengel.push(`Zeilenhoehe ${b.echtHoehe} px statt ${soll} (ItemSize${b.zeilenskala !== 1 ? ' x Zeilenskala ' + b.zeilenskala : ''})`);
     if (b.platzhalterHoehe !== null && b.platzhalterHoehe !== undefined &&
         Math.abs(b.platzhalterHoehe - soll) > 0.5)
       maengel.push(`Platzhalterzeile ${b.platzhalterHoehe} px statt ${soll}`);
@@ -605,7 +620,7 @@ const FAELLE = [
   // ZAPFPROFILGENERATOR (Stufe Z4): der Katalog der Brauchwasser-Nutzungsarten
   // (Katalogliste, Zeile ist Wahl, 46 px) - virtualisiert (6 654 Zeilen) und im
   // Mass eines Katalogs unter der Schwelle (40); dazu die zwei Raster ohne eigene
-  // Hoechsthoehe: die Wohnungstabelle der Stufe Erweitert (Zapfprofil) und das
+  // Hoechsthoehe: die Wohnungstabelle der Stufe Experte (Zapfprofil) und das
   // Raster der Zapfkategorien, bearbeitbar und lesend.
   { name: 'T1_tww_6654_Dialog_1088x624', modus: 'sofort', zeilen: 6654, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
     pfad: '/katalogprobe?maske=tww&zeilen=6654', zeile: 46, tasten: true },
@@ -621,17 +636,19 @@ const FAELLE = [
   // ohne Eingrenzung rollte die Probe die falsche. GD3 hat das Mass der Testdatenbank
   // (269 Gebaeude, weiter virtualisiert).
   { name: 'GD1_gebaeude_6654_Dialog_1088x624', modus: 'sofort', zeilen: 6654, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
-    pfad: '/katalogprobe?maske=projekt-gebaeude&zeilen=6654', zeile: 53, bereich: '.epos-katalogliste' },
+    pfad: '/katalogprobe?maske=projekt-gebaeude&zeilen=6654', zeile: 46, bereich: '.epos-katalogliste' },
   { name: 'GD2_gebaeude_6654_Dialog_400x624',  modus: 'sofort', zeilen: 6654, takt: 0, breite: 400, hoehe: 624, dpr: 1,
-    pfad: '/katalogprobe?maske=projekt-gebaeude&zeilen=6654', zeile: 53, bereich: '.epos-katalogliste' },
+    pfad: '/katalogprobe?maske=projekt-gebaeude&zeilen=6654', zeile: 46, bereich: '.epos-katalogliste' },
   { name: 'GD3_gebaeude_269_Dialog_1088x624',  modus: 'sofort', zeilen: 269, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
-    pfad: '/katalogprobe?maske=projekt-gebaeude&zeilen=269', zeile: 53, bereich: '.epos-katalogliste' },
+    pfad: '/katalogprobe?maske=projekt-gebaeude&zeilen=269', zeile: 46, bereich: '.epos-katalogliste' },
   { name: 'Z1_wohnungen_12_1088x624',    modus: 'sofort', zeilen: 12, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
     pfad: '/katalogprobe?maske=wohnungen&zeilen=12', frei: true, bereich: '.epos-zapfprofil-wohnungen',
-    klick: 'fieldset[aria-label="Stufe"] label.epos-option:has-text("Erweitert")' },
+    klick: 'fieldset[aria-label="Stufe"] label.epos-option:has-text("Experte")',
+    aufklappen: '.epos-zapfprofil-karte--belegung' },
   { name: 'Z2_wohnungen_12_400x624',     modus: 'sofort', zeilen: 12, takt: 0, breite: 400, hoehe: 624, dpr: 1,
     pfad: '/katalogprobe?maske=wohnungen&zeilen=12', frei: true, bereich: '.epos-zapfprofil-wohnungen',
-    klick: 'fieldset[aria-label="Stufe"] label.epos-option:has-text("Erweitert")' },
+    klick: 'fieldset[aria-label="Stufe"] label.epos-option:has-text("Experte")',
+    aufklappen: '.epos-zapfprofil-karte--belegung' },
   { name: 'Z3_kategorien_10_1088x624',   modus: 'sofort', zeilen: 10, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
     pfad: '/katalogprobe?maske=kategorien&zeilen=10', frei: true, bereich: '.epos-zapfprofil-kategorienraster' },
   { name: 'Z4_kategorien_10_400x624',    modus: 'sofort', zeilen: 10, takt: 0, breite: 400, hoehe: 624, dpr: 1,

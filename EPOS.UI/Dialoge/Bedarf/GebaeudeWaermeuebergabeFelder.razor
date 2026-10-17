@@ -93,6 +93,13 @@
                                 Feldname="@Feld(U.LabelHeizkurveSteilheit)" FehlerZustand="FehlerMelden"
                                 Wert="@Arbeit.Stand.HeizkurveSteilheit"
                                 WertChanged="@(w => Setze(() => Arbeit.Stand.HeizkurveSteilheit = w))" />
+                    @* Anlagenkopplung AK3 (Festlegung 23): der Raumeinfluss k_R - leer oder 0 = aus; wirksam nur mit
+                       Stufe AK3, die Zeile darunter sagt es. *@
+                    <Zahlenfeld Bezeichnung="@U.LabelHeizkurveRaumeinfluss" Einheit="K/K"
+                                Min="0" Max="@Ak3Schema.RAUMEINFLUSS_MAX"
+                                Feldname="@Feld(U.LabelHeizkurveRaumeinfluss)" FehlerZustand="FehlerMelden"
+                                Wert="@Arbeit.Stand.HeizkurveRaumeinfluss"
+                                WertChanged="@(w => Setze(() => Arbeit.Stand.HeizkurveRaumeinfluss = w))" />
                 }
                 <Optionsgruppe Bezeichnung="@U.LabelProportionalband"
                                Eintraege="@GebaeudeArbeitsstand.Bandeintraege(Texte)"
@@ -118,6 +125,10 @@
         <Herleitungszeile Text="@Arbeit.UebergabeAussenZeile(Texte, _herleitung)" />
         <Herleitungszeile Text="@Arbeit.UebergabeNennleistungZeile(Texte, _herleitung)" />
         <Herleitungszeile Text="@Arbeit.UebergabeHeizkurveZeile(Texte, _herleitung)" />
+        @if (Arbeit.Stand.HeizkurveAktiv)
+        {
+            <Herleitungszeile Text="@string.Format(System.Globalization.CultureInfo.CurrentCulture, U.ZeileRaumeinfluss, Ak3Schema.RAUMEINFLUSS_MAX)" />
+        }
         <Herleitungszeile Text="@GebaeudeArbeitsstand.UebergabeBandZeile(Texte)" />
 
         @* Das Sollwert-Zeitprogramm (9.2) - ein Wochenraster, kein Zahlenfeld. *@
@@ -127,6 +138,16 @@
                       Min="@Waermeuebergabevorgaben.SOLLWERT_MIN" Max="@Waermeuebergabevorgaben.SOLLWERT_MAX"
                       Einheit="°C" Kennung="@Kennung" Texte="@U.Raster" Vorschau="@WochenVorschau"
                       FehlerZustand="FehlerMelden" />
+        @if (InDenKalender.HasDelegate && Arbeit.ProfilWerte is not null)
+        {
+            @* Teilkonzept 5.5 (Stufe KP2, Welle U3): das Zeitprogramm wird die Standardwoche des
+               Heizkalenders im Reiter "Konditionierung" - geschrieben mit OK. *@
+            <div class="epos-zeilenknoepfe">
+                <button type="button" class="epos-knopf epos-uebergabe-in-den-kalender" title="@KalenderHinweis"
+                        @onclick="InDenKalender">@KalenderKnopf</button>
+            </div>
+            <p class="epos-leisezeile">@KalenderHinweis</p>
+        }
         <Herleitungszeile Text="@Arbeit.UebergabeProfilZeile(Texte)" />
     }
     <Herleitungszeile Text="@U.ZeileProjekt" />
@@ -158,6 +179,18 @@
 
     /// <summary>Entprellung der Herleitung nach der letzten Eingabe [ms]; 0 = sofort (Prüfstand).</summary>
     [Parameter] public int EntprellungMs { get; set; } = 400;
+
+    /// <summary>
+    /// „In den Kalender übernehmen" (Teilkonzept 5.5): das Zeitprogramm wird die Standardwoche des
+    /// Heizkalenders; ohne Rückruf kein Knopf.
+    /// </summary>
+    [Parameter] public EventCallback InDenKalender { get; set; }
+
+    /// <summary>Die Beschriftung des Knopfs (<c>KOND_BTN_IN_DEN_KALENDER</c>).</summary>
+    [Parameter] public string KalenderKnopf { get; set; } = "In den Kalender übernehmen";
+
+    /// <summary>Die leise Zeile unter dem Knopf (<c>KOND_TXT_HINWEIS_IN_DEN_KALENDER</c>).</summary>
+    [Parameter] public string KalenderHinweis { get; set; } = "Das Zeitprogramm wird die Standardwoche des Heizkalenders.";
 
     /// <summary>Kennung des Wochenrasters auf dem Blatt.</summary>
     [Parameter] public string Kennung { get; set; } = "gebaeude-sollwertprofil";

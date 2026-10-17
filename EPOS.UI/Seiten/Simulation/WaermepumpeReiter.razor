@@ -63,8 +63,33 @@
                 <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARFSDECKUNG, Zahl(Daten.DeckungProzent), "%")
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF, Zahl(Daten.StufeneingangMwh), MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_WP, Zahl(Daten.WaermeproduktionMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_NUTZWAERME_WP, Zahl(Daten.GedecktMwh), MWH,
+                               titel: Resource.SIMERG_TIP_NUTZWAERME_WP)
+                    @foreach (var (text, wert) in Kanalzeilen.Davon(Daten.GedecktKanalMwh))
+                    {
+                        @Wertzeile(text, Zahl(wert), MWH)
+                    }
+                    @Wertzeile(Resource.SIMERG_LBL_DAVON_AUS_PUFFER_WP, Zahl(Daten.AusPufferMwh), MWH,
+                               titel: Resource.SIMERG_TIP_DAVON_AUS_PUFFER_WP)
                     @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, Zahl(Daten.RestwaermeMwh), MWH, betont: true)
+
+                    @* Die Herleitung der Nutzwärme als eigener Block: Produktion − Quellwärme
+                       + Heizstab − Speicherverluste = Nutzwärme, die Grundlage der Deckung. *@
+                    <div class="epos-simerg-zwischenkopf" role="heading" aria-level="4">@Resource.SIMERG_GRP_HERLEITUNG_NUTZWAERME</div>
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_WP, Zahl(Daten.WaermeproduktionMwh), MWH,
+                               titel: Resource.SIMERG_TIP_WAERMEPRODUKTION_WP, stufe: Zeilenstufe.Herleitung)
+                    @* Die Quellwärme nur, wenn ein Modul in einer Kaskade hängt. *@
+                    @if (Daten.MitKaskade)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_ABZUEGLICH_QUELLWAERME_KASKADE, Zahl(Daten.QuellwaermeKaskadeMwh), MWH,
+                                   titel: Resource.SIMERG_TIP_QUELLWAERME_KASKADE_WP, stufe: Zeilenstufe.Herleitung)
+                    }
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_HEIZSTAB, Zahl(Daten.HeizstabWaermeproduktionMwh), MWH,
+                               titel: Resource.SIMERG_TIP_WAERMEPRODUKTION_HEIZSTAB, stufe: Zeilenstufe.Herleitung)
+                    @Wertzeile(Resource.SIMERG_LBL_ABZUEGLICH_SPEICHERVERLUSTE, Zahl(Daten.SpeicherverlusteMwh), MWH,
+                               titel: Resource.SIMERG_TIP_SPEICHERVERLUSTE_WP, stufe: Zeilenstufe.Herleitung)
+                    @Wertzeile(Resource.SIMERG_LBL_NUTZWAERME_WP, Zahl(Daten.GedecktMwh), MWH,
+                               titel: Resource.SIMERG_TIP_NUTZWAERME_WP, stufe: Zeilenstufe.Ergebnis)
                 </dl>
 
             </section>
@@ -74,84 +99,80 @@
                 <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIMERG_LBL_STROMVERBRAUCH_WP, Zahl(Daten.StromverbrauchMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_STROMVERBRAUCH_HEIZSTAB, Zahl(Daten.HeizstabStromverbrauchMwh), MWH)
+                    @* Die zwei Jahresarbeitszahlen aus den Mengen darueber - gerechnet im Kern
+                       (Jahresarbeitszahl), hier nur angezeigt; ohne Strom ein Strich. Die mit
+                       Heizstab ist dieselbe Rechnung wie die Kennzahl eff.jaz des Berichts. *@
+                    @Wertzeile(Resource.SIMERG_LBL_JAZ_WP, Jaz(Daten.JazWaermepumpe), "",
+                               titel: Resource.SIMERG_TIP_JAZ_WP)
+                    @Wertzeile(Resource.SIMERG_LBL_JAZ_SYSTEM, Jaz(Daten.JazMitHeizstab), "",
+                               titel: Resource.SIMERG_TIP_JAZ_SYSTEM)
                 </dl>
             </section>
 
         </div>
 
-        @* ZWEITE RASTERZEILE: die Auslegung und darunter die Streuwolke. Die
-           Liste steht ALLEIN in ihrer Zeile und traegt deshalb weiter
-           .epos-simerg-kennzahlenzeile (W11b‑B‑20): In EINER Spalte des
-           auto-fit-Rasters (minmax(320px, 1fr)) schnitt
-           „durchschnittliche Vollbenutzungsstunden:“ die Einheitenspalte ab und
-           schob die Liste in einen Rollbalken. *@
-        <div class="epos-simerg-spalten">
-
-            <section class="epos-simerg-block epos-simerg-kennzahlenzeile">
-                <Gruppenkopf Titel="@Resource.SIMERG_GRP_AUSLEGUNG" />
-                <dl class="epos-simerg-werte">
-                    @* „-" statt einer Zahl, wenn der Lauf keinen Bivalenzpunkt kennt
-                       (woertlich :4374). *@
-                    @Wertzeile(Resource.SIMERG_LBL_BIVALENZPUNKT,
-                               Daten.BivalenzpunktVorhanden ? Zahl(Daten.Bivalenzpunkt) : "-", "°C")
-                    @Wertzeile(Resource.SIMERG_LBL_VOLLBENUTZUNGSSTUNDEN,
-                               Daten.Vollbenutzungsstunden.ToString("N0", Kultur), "h/a")
-                    @Wertzeile(Resource.SIMERG_LBL_MIN_SPK_LEISTUNG, Zahl(Daten.MinSpkLeistungKw), "kW")
-
-                    @* Ohne Speicherliste bleibt es beim Altausdruck der Rubrik
-                       (Volumen * 1,16) - woertlich uebernommen, W11a-O-1b. *@
-                    @if (Daten.Puffer.Count == 0)
+        @* UB-E4 (Fachkonzept Uebergabegrenze 7.1): die Kachelzeile „Betriebsbereiche“ - nur, wenn der Lauf
+           Bereichsdaten fuehrt (ein Modul mit Bivalenzobjekt). Je Bereich Stunden und Waerme der Waermepumpe,
+           dazu die zwei berechneten Bivalenzpunkte und die Uebergabegrenze. Die Zaehler der Spreizungs- und
+           Ruecklaufgrenze stehen leise darunter, nur wenn > 0. Die Vorwaermer-Stunden des Kessels bleiben im
+           Protokollhinweis (U-4). *@
+        @if (Daten.Bereiche is { } bereiche)
+        {
+            <div class="epos-simerg-spalten" data-kachel="betriebsbereiche">
+                <section class="epos-simerg-block epos-simerg-kennzahlenzeile">
+                    <Gruppenkopf Titel="@Resource.SIM_KACHEL_BETRIEBSBEREICHE" />
+                    <dl class="epos-simerg-werte">
+                        @for (int i = 0; i < 4; i++)
+                        {
+                            @Wertzeile(Bereichsname(i), Bereichswert(bereiche, i), MWH, titel: Resource.SIM_TIP_BEREICH_WERT)
+                        }
+                        @Wertzeile(Resource.SIM_LBL_BIVALENZPUNKT_1, Punkt(bereiche.Bivalenzpunkt_1), "°C")
+                        @Wertzeile(Resource.SIM_LBL_BIVALENZPUNKT_2, Punkt(bereiche.Bivalenzpunkt_2), "°C")
+                        @Wertzeile(Resource.SIM_LBL_UEBERGABE_MAX, Punkt(bereiche.Uebergabe_Max_kW), "kW")
+                    </dl>
+                    @if (bereiche.Spreizung_Unterschritten_h > 0)
                     {
-                        @Wertzeile(Resource.SIMERG_LBL_PUFFERKAPAZITAET,
-                                   Daten.PufferVolumenKwh.ToString(Kultur), "kWh")
+                        <p class="epos-simerg-hinweis" data-zeile="spreizung">@Resource.SIM_LBL_SPREIZUNG_UNTERSCHRITTEN: @bereiche.Spreizung_Unterschritten_h.Value.ToString("N0", Kultur) h</p>
                     }
-                </dl>
-
-            </section>
-
-            @* Die Streuwolke steht ueber BEIDE Spalten (Befund W11b-B-2). In der
-               halben Spalte lief sie rechts aus dem Fenster und legte sich ueber die
-               Modultabelle darunter. *@
-            <section class="epos-simerg-block epos-simerg-diagrammzeile">
-                @* W11b‑B‑17: die drei Punktreihen der Streuwolke, jede abwaehlbar. *@
-                <div class="epos-simerg-schalter">
-                    <Schalter Bezeichnung="@Resource.CHART_LEGENDE_WAERMEBEDARF"
-                              Wert="@_swBedarf" WertChanged="@(w => _swBedarf = w)" />
-                    <Schalter Bezeichnung="@Resource.CHART_SEGMENT_HEIZSTAB"
-                              Wert="@_swHeizstab" WertChanged="@(w => _swHeizstab = w)" />
-                    <Schalter Bezeichnung="@Resource.CHART_LEGENDE_WAERMEPRODUKTION"
-                              Wert="@_swProduktion" WertChanged="@(w => _swProduktion = w)" />
-                </div>
-
-                @* DIE STREUWOLKE ALS SVG (Etappe DG-E3, Gruppe (b)): Auf x steht
-                   die AUSSENTEMPERATUR statt der Stunde - das sagt die Achsenart
-                   ihres Modells, nicht ein Parameter hier (DG-E3-11). Gezoomt wird
-                   damit ueber der Temperatur, und die Punktwolke wird nie
-                   gebuendelt: Ihre Verdichtung IST ihre Aussage (DG-E3-5). *@
-                <DiagrammSvg Modell="@ModellStreuwolke" Kennung="simerg-wp-streuwolke"
-                             Vorlagenfeld="stand.bild.waermepumpe_streuwolke" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
-                             VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
-                             Bezeichnung="@Resource.CHART_TITEL_LEISTUNG_UEBER_AUSSENTEMPERATUR"
-                             Palette="@Farbpalette.Aktuell"
-                             FarbwahlErlaubt="@Farbwahl"
-                             FarbeGewaehlt="FarbeUebernehmen"
-                             FarbeZurueckgesetzt="FarbeVerwerfen" />
-            </section>
-
-        </div>
+                    @if (bereiche.Ruecklauf_Ueberschritten_h > 0)
+                    {
+                        <p class="epos-simerg-hinweis" data-zeile="ruecklauf">@Resource.SIM_LBL_RUECKLAUF_UEBERSCHRITTEN: @bereiche.Ruecklauf_Ueberschritten_h.Value.ToString("N0", Kultur) h</p>
+                    }
+                    <p class="epos-simerg-hinweis" data-zeile="stundenmodell">@Resource.BER_HINWEIS_STUNDENMODELL</p>
+                </section>
+            </div>
+        }
 
         @* ---- Die Modultabelle; Doppelklick oeffnet den Waermepumpendialog ---- *@
         @if (Daten.Module.Count > 0)
         {
-            <table class="epos-raster">
+            @* Der Schalter stellt die Spalte JAZ von „ohne Heizstab" (Vorgabe) auf „mit Heizstab"
+               des Moduls um; Kopf und Kurztext nennen die Bilanzgrenze, die gerade gilt. Der
+               Zustand gilt fuer die Ansicht und wird nicht gespeichert. *@
+            <div class="epos-simerg-schalter">
+                <Schalter Bezeichnung="@Resource.SIMERG_CHK_JAZ_HEIZSTAB"
+                          Wert="@_jazMitHeizstab" WertChanged="@(w => _jazMitHeizstab = w)" />
+            </div>
+            <table class="epos-raster epos-simerg-tabelle">
                 <thead>
                     <tr>
                         <th scope="col">@Resource.SIM_SPALTE_MODUL</th>
-                        <th scope="col">@Resource.SIM_SPALTE_LEISTUNG</th>
-                        <th scope="col">@Resource.SIM_SPALTE_WAERMEPRODUKTION</th>
-                        <th scope="col">@Resource.SIM_SPALTE_STROMVERBRAUCH</th>
-                        <th scope="col">@Resource.SIM_SPALTE_HEIZSTAB</th>
-                        <th scope="col">@Resource.SIM_SPALTE_BETRIEBSSTUNDEN</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_LEISTUNG</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_WAERMEPRODUKTION</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_STROMVERBRAUCH</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_HEIZSTAB</th>
+                        <th scope="col" class="epos-simerg-zahl"
+                            title="@(_jazMitHeizstab ? Resource.SIMERG_TIP_SPALTE_JAZ_HEIZSTAB : Resource.SIMERG_TIP_SPALTE_JAZ)">
+                            @(_jazMitHeizstab ? Resource.SIMERG_SPALTE_JAZ_HEIZSTAB : Resource.SIMERG_SPALTE_JAZ)
+                        </th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_BETRIEBSSTUNDEN</th>
+                        @* Welle M4 (WP1): Starts und Mehrstrom aus Taktverlust - nur, wenn ein
+                           Modul mit Mindestleistung rechnet; sonst bleibt die Tabelle, wie sie war. *@
+                        @if (MitTakt)
+                        {
+                            <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_STARTS</th>
+                            <th scope="col" class="epos-simerg-zahl">@Resource.SIM_SPALTE_TAKTSTROM</th>
+                        }
                     </tr>
                 </thead>
                 <tbody>
@@ -163,7 +184,13 @@
                             <td class="epos-simerg-zahl">@Zahl(m.WaermeproduktionMwh)</td>
                             <td class="epos-simerg-zahl">@Zahl(m.StrombedarfMwh)</td>
                             <td class="epos-simerg-zahl">@Zahl(m.HeizstabMwh)</td>
+                            <td class="epos-simerg-zahl">@Jaz(_jazMitHeizstab ? m.JazMitHeizstab : m.Jaz)</td>
                             <td class="epos-simerg-zahl">@Zahl(m.LaufzeitStunden)</td>
+                            @if (MitTakt)
+                            {
+                                <td class="epos-simerg-zahl">@(m.MitTakt ? m.Starts.ToString("N0", Kultur) : "—")</td>
+                                <td class="epos-simerg-zahl">@(m.MitTakt ? Zahl(m.TaktstromMwh) : "—")</td>
+                            }
                         </tr>
                     }
                 </tbody>
@@ -173,17 +200,17 @@
         @* ---- Die Pufferrubrik (Konzept 13.3): eine Zeile je Speicher ---- *@
         @if (Daten.Puffer.Count > 0)
         {
-            <table class="epos-raster">
+            <table class="epos-raster epos-simerg-tabelle">
                 <thead>
                     <tr>
                         <th scope="col">@Resource.PSP_BEZEICHNER_ERSATZ</th>
                         <th scope="col">@Resource.PSP_SPALTE_ROLLE</th>
-                        <th scope="col">@Resource.PSP_SPALTE_KAPAZITAET</th>
-                        <th scope="col">@Resource.PSP_SPALTE_LADUNG</th>
-                        <th scope="col">@Resource.PSP_SPALTE_ENTLADUNG</th>
-                        <th scope="col">@Resource.PSP_SPALTE_VERLUSTE</th>
-                        <th scope="col">@Resource.PSP_SPALTE_VOLLZYKLEN</th>
-                        <th scope="col">@Resource.PSP_SPALTE_FUELLSTAND_ENDE</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.PSP_SPALTE_KAPAZITAET</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.PSP_SPALTE_LADUNG</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.PSP_SPALTE_ENTLADUNG</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.PSP_SPALTE_VERLUSTE</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.PSP_SPALTE_VOLLZYKLEN</th>
+                        <th scope="col" class="epos-simerg-zahl">@Resource.PSP_SPALTE_FUELLSTAND_ENDE</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -209,6 +236,20 @@
                     }
                 </tbody>
             </table>
+
+            @* Welle M7 (Konzept Simulationsablauf 21): Bereitschaft nach Temperatur und die Stunden des
+               Frischwassermoduls ohne ausreichende Puffertemperatur - nur, wo die Option gilt. *@
+            @foreach (var sp in Daten.Puffer)
+            {
+                @if (sp.BereitschaftTemperatur)
+                {
+                    <Herleitungszeile Text="@string.Format(Kultur, Resource.PSP_ERG_BEREITSCHAFT_TEMPERATUR, sp.Bezeichner)" />
+                }
+                @if (sp.Nachheizstunden >= 0)
+                {
+                    <Herleitungszeile Text="@string.Format(Kultur, Resource.PSP_ERG_FWM_STUNDEN, sp.Bezeichner, sp.Nachheizstunden)" />
+                }
+            }
         }
 
         @* ---- Die VDI-4640-Auslegungspruefung (Konzept 4.5) ---- *@
@@ -249,7 +290,7 @@
                            eigenen Ausschnitt — sie stehen auf drei Unterblaettern
                            und zeigen verschiedene Groessen, und jedes traegt seine
                            eigene clipPath-Kennung. *@
-                        <DiagrammSvg Modell="@ModellProduktion" Kennung="simerg-wp-produktion"
+                        <DiagrammSvg Modell="@ModellProduktion" Kennung="simerg-wp-produktion" CsvExport="Csv"
                                      Vorlagenfeld="stand.bild.waermepumpe" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
                                      VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
                                      Bezeichnung="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
@@ -263,7 +304,13 @@
 
                 <Reiterblatt Schluessel="STROM" Titel="@Resource.SIMERG_TAB_WP_STROM">
                     <KindInhalt>
-                        <DiagrammSvg Modell="@ModellStrom" Kennung="simerg-wp-strom"
+                        @* Welle RZ: Wärmepumpe und Heizstab getrennt — ab Werk aus, dann bleibt es die eine
+                           Linie der Summe. An: beide als Stapel, die Summe als Kontur darüber. *@
+                        <div class="epos-simerg-schalter">
+                            <Schalter Bezeichnung="@Resource.SIMERG_CHK_WP_STROM_GETRENNT"
+                                      Wert="@_stromGetrennt" WertChanged="@(w => _stromGetrennt = w)" />
+                        </div>
+                        <DiagrammSvg Modell="@ModellStrom" Kennung="simerg-wp-strom" CsvExport="Csv"
                                      Vorlagenfeld="stand.bild.waermepumpe_strom" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
                                      VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
                                      Bezeichnung="@Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE"
@@ -279,6 +326,21 @@
                 {
                     <Reiterblatt Schluessel="TEMPERATUREN" Titel="@Resource.SIM_TAB_SPEICHERTEMPERATUR">
                         <KindInhalt>
+                            @* Welle RZ (Teil b): je Speicher ein Schalter - dieselbe Bauart wie die
+                               Reihen der Jahresganglinie (W11b‑B‑17). Ab Werk alle an; erst ab zwei
+                               Speichern, denn mit einem gibt es nichts zu waehlen. *@
+                            @if (Speicherwahl.Count >= 2)
+                            {
+                                <div class="epos-simerg-schalter">
+                                    @foreach (var sp in Speicherwahl)
+                                    {
+                                        string schluessel = sp.Schluessel;
+                                        <Schalter @key="schluessel" Bezeichnung="@sp.Name"
+                                                  Wert="@(!_speicherAus.Contains(schluessel))"
+                                                  WertChanged="@(w => SpeicherSchalten(schluessel, w))" />
+                                    }
+                                </div>
+                            }
                             <DiagrammSvg Modell="@ModellTemperaturen"
                                          Kennung="simerg-wp-temperaturen"
                                          Bezeichnung="@Resource.CHART_TITEL_SPEICHERTEMPERATUR"
@@ -297,11 +359,67 @@
             </KindInhalt>
         </Reiter>
 
-        @if (Csv.HasDelegate)
-        {
-            <button type="button" class="epos-simerg-knopf" @onclick="Csv"
-                    title="@Resource.SIM_TOOLTIP_CSV_WAERMEPUMPE">@Resource.SIM_BTN_CSV_EXPORT</button>
-        }
+        @* AM ENDE DES REITERS: die Auslegung und darunter die Streuwolke
+           (Anwenderwunsch 05.10.2026) - nach Kennzahlen, Modul- und
+           Speichertabellen und den Unterblaettern mit der Jahresganglinie.
+           Die Liste steht ALLEIN in ihrer Zeile und traegt deshalb weiter
+           .epos-simerg-kennzahlenzeile (W11b‑B‑20): In EINER Spalte des
+           auto-fit-Rasters (minmax(320px, 1fr)) schnitt
+           „durchschnittliche Vollbenutzungsstunden:“ die Einheitenspalte ab und
+           schob die Liste in einen Rollbalken. *@
+        <div class="epos-simerg-spalten">
+
+            <section class="epos-simerg-block epos-simerg-kennzahlenzeile">
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_AUSLEGUNG" />
+                <dl class="epos-simerg-werte">
+                    @* „-" statt einer Zahl, wenn der Lauf keinen Bivalenzpunkt kennt
+                       (woertlich :4374). *@
+                    @Wertzeile(Resource.SIMERG_LBL_BIVALENZPUNKT,
+                               Daten.BivalenzpunktVorhanden ? Zahl(Daten.Bivalenzpunkt) : "-", "°C")
+                    @Wertzeile(Resource.SIMERG_LBL_VOLLBENUTZUNGSSTUNDEN,
+                               Daten.Vollbenutzungsstunden.ToString("N0", Kultur), "h/a")
+                    @Wertzeile(Resource.SIMERG_LBL_MIN_SPK_LEISTUNG, Zahl(Daten.MinSpkLeistungKw), "kW")
+
+                    @* Ohne Speicherliste bleibt es beim Altausdruck der Rubrik
+                       (Volumen * 1,16) - woertlich uebernommen, W11a-O-1b. *@
+                    @if (Daten.Puffer.Count == 0)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_PUFFERKAPAZITAET,
+                                   Daten.PufferVolumenKwh.ToString(Kultur), "kWh")
+                    }
+                </dl>
+
+            </section>
+
+            @* Die Streuwolke steht ueber BEIDE Spalten (W11b-B-2): In der halben
+               Spalte lief sie rechts aus dem Fenster. *@
+            <section class="epos-simerg-block epos-simerg-diagrammzeile">
+                @* W11b‑B‑17: die drei Punktreihen der Streuwolke, jede abwaehlbar. *@
+                <div class="epos-simerg-schalter">
+                    <Schalter Bezeichnung="@Resource.CHART_LEGENDE_WAERMEBEDARF"
+                              Wert="@_swBedarf" WertChanged="@(w => _swBedarf = w)" />
+                    <Schalter Bezeichnung="@Resource.CHART_SEGMENT_HEIZSTAB"
+                              Wert="@_swHeizstab" WertChanged="@(w => _swHeizstab = w)" />
+                    <Schalter Bezeichnung="@Resource.CHART_LEGENDE_WAERMEPRODUKTION"
+                              Wert="@_swProduktion" WertChanged="@(w => _swProduktion = w)" />
+                </div>
+
+                @* DIE STREUWOLKE ALS SVG (Etappe DG-E3, Gruppe (b)): Auf x steht
+                   die AUSSENTEMPERATUR statt der Stunde - das sagt die Achsenart
+                   ihres Modells, nicht ein Parameter hier (DG-E3-11). Gezoomt wird
+                   damit ueber der Temperatur, und die Punktwolke wird nie
+                   gebuendelt: Ihre Verdichtung IST ihre Aussage (DG-E3-5). *@
+                <DiagrammSvg Modell="@ModellStreuwolke" Kennung="simerg-wp-streuwolke"
+                             Vorlagenfeld="stand.bild.waermepumpe_streuwolke" VorlagenfeldStufe="Vorlagenfeldstufe.Aehnlich"
+                             VorlagenfeldHinweis="@Resource.VF_ORT_ERGEBNISBILD"
+                             Bezeichnung="@Resource.CHART_TITEL_LEISTUNG_UEBER_AUSSENTEMPERATUR"
+                             Palette="@Farbpalette.Aktuell"
+                             FarbwahlErlaubt="@Farbwahl"
+                             FarbeGewaehlt="FarbeUebernehmen"
+                             FarbeZurueckgesetzt="FarbeVerwerfen" />
+            </section>
+
+        </div>
     }
 
 </div>
@@ -336,6 +454,13 @@
     [Parameter] public bool Speichertemperaturen { get; set; }
 
     /// <summary>
+    /// Welle RZ (Teil b): die Speicher des Temperaturbilds zur Auswahl (Schlüssel, Name); ab zwei
+    /// Speichern steht je Speicher ein Schalter. Leer = keine Wahl.
+    /// </summary>
+    [Parameter] public IReadOnlyList<(string Schluessel, string Name)> Speicherwahl { get; set; }
+        = Array.Empty<(string Schluessel, string Name)>();
+
+    /// <summary>
     /// BV-E6: der Platzhalter des Temperaturbilds (<c>stamm.bild.speichertemperaturen</c>, nur beim
     /// Stammprojekt, „ähnlich im Bericht“); leer = keine Marke. Die Hülle setzt ihn.
     /// </summary>
@@ -361,6 +486,9 @@
     /// <summary>Die gewaehlten Reihen der Jahresganglinie (Pruefhilfe).</summary>
     public IReadOnlyList<string> GewaehlteReihenProduktion => ReihenProduktion();
 
+    /// <summary>Die Reihenwahl des Stromverbrauchsbilds; <c>null</c> = die Vorgabe, eine Linie (Pruefhilfe).</summary>
+    public IReadOnlyList<string>? GewaehlteReihenStrom => ReihenStrom();
+
     private Reiter? _reiter;
     private string _blatt = "";
     private bool _sortiert;
@@ -373,6 +501,12 @@
     private bool _pgWarmwasser = true;
     private bool _pgProduktion = true;
     private bool _pgHeizstab = true;
+
+    // Welle RZ: Strom von Wärmepumpe und Heizstab getrennt - ab Werk AUS.
+    private bool _stromGetrennt;
+
+    // Die Spalte JAZ der Modultabelle: Vorgabe OHNE Heizstab; nur fuer die Ansicht.
+    private bool _jazMitHeizstab;
 
     private Task ModulGewaehlt() => ModulOeffnen.InvokeAsync();
 
@@ -408,11 +542,44 @@
     private Zeichenmodell? ModellProduktion =>
         Modell?.Invoke(new Bildauftrag(Bilder.WpProduktion, _sortiert, -1, ReihenProduktion()));
 
+    /// <summary>
+    /// Welle RZ: die Reihen des Stromverbrauchsbilds. Ohne „getrennt" KEINE Liste (<c>null</c>) — derselbe
+    /// Auftrag wie bisher, das Bild bleibt die eine Linie.
+    /// </summary>
+    private IReadOnlyList<string>? ReihenStrom()
+        => _stromGetrennt ? new[] { "WP_STROM", "HEIZSTAB_STROM", "WP_STROM_SUMME" } : null;
+
     private Zeichenmodell? ModellStrom =>
-        Modell?.Invoke(new Bildauftrag(Bilder.WpStromverbrauch));
+        Modell?.Invoke(new Bildauftrag(Bilder.WpStromverbrauch, false, -1, ReihenStrom()));
 
     private Zeichenmodell? ModellTemperaturen =>
-        Modell?.Invoke(new Bildauftrag(Bilder.Speichertemperaturen));
+        Modell?.Invoke(new Bildauftrag(Bilder.Speichertemperaturen, false, -1, ReihenTemperaturen()));
+
+    /// <summary>Welle RZ: die abgewählten Speicher des Temperaturbilds; ab Werk keiner.</summary>
+    private readonly HashSet<string> _speicherAus = new(StringComparer.Ordinal);
+
+    private void SpeicherSchalten(string schluessel, bool an)
+    {
+        if (an) _speicherAus.Remove(schluessel);
+        else _speicherAus.Add(schluessel);
+    }
+
+    /// <summary>Die gewählten Speicher des Temperaturbilds (Prüfhilfe); <c>null</c> = alle.</summary>
+    public IReadOnlyList<string>? GewaehlteReihenTemperaturen => ReihenTemperaturen();
+
+    /// <summary>
+    /// Welle RZ: die Speicherschlüssel des Temperaturbilds. Sind ALLE gewählt (ab Werk), bleibt die
+    /// Liste <c>null</c> — dann zeichnet die Hülle wie zuvor; eine leere Liste heißt „kein Speicher"
+    /// (die Quelltemperaturen bleiben).
+    /// </summary>
+    private IReadOnlyList<string>? ReihenTemperaturen()
+    {
+        if (_speicherAus.Count == 0) return null;
+        var liste = new List<string>();
+        foreach (var sp in Speicherwahl)
+            if (!_speicherAus.Contains(sp.Schluessel)) liste.Add(sp.Schluessel);
+        return liste;
+    }
 
     /// <summary>
     /// Eine Zahl der Kennzahlenliste. „N2" statt „F2" seit dem Anwenderwunsch
@@ -421,23 +588,47 @@
     /// </summary>
     private static string Zahl(double wert) => wert.ToString("N2", Kultur);
 
+    /// <summary>Der Name eines Betriebsbereichs (Reihenfolge wie <c>Bereichskennzahlen.Stunden</c>).</summary>
+    internal static string Bereichsname(int i) => i switch
+    {
+        0 => Resource.SIM_BEREICH_WP_ALLEIN,
+        1 => Resource.SIM_BEREICH_PARALLEL,
+        2 => Resource.SIM_BEREICH_VORWAERMUNG,
+        _ => Resource.SIM_BEREICH_NUR_KESSEL,
+    };
+
+    /// <summary>Stunden und Waerme eines Bereichs: „1.234 h · 12,35“ (Einheit MWh/a in der Spalte); fehlt ein Wert, ein Strich.</summary>
+    private static string Bereichswert(WindowsFormsApplication1.Bereichskennzahlen b, int i)
+        => (b.Stunden[i] is int h ? h.ToString("N0", Kultur) + " h" : "—") + " · "
+           + (b.Mwh[i] is double m ? Zahl(m) : "—");
+
+    /// <summary>Ein nullbarer Wert mit einer Nachkommastelle; <c>null</c> wird ein Strich.</summary>
+    private static string Punkt(double? wert) => wert.HasValue ? wert.Value.ToString("N1", Kultur) : "—";
+
+    /// <summary>
+    /// Eine Jahresarbeitszahl aus dem Kern mit zwei Nachkommastellen; <c>null</c> (kein Strom)
+    /// wird ein Strich — dasselbe Zeichen wie in den Taktspalten der Modultabelle.
+    /// </summary>
+    private static string Jaz(double? wert) => wert.HasValue ? Zahl(wert.Value) : "—";
+
+    /// <summary>Rechnet ein Modul den Taktverlust (Welle M4, WP1)? Dann stehen Starts und Mehrstrom in der Tabelle.</summary>
+    private bool MitTakt => Daten?.Module?.Any(m => m.MitTakt) == true;
+
     /// <summary>
     /// Eine Wertzeile der Kennzahlenliste. <paramref name="betont"/> kennzeichnet
     /// die ABSCHLUSSZEILE einer Gruppe — den Rest, der nach allen Erzeugern uebrig
     /// bleibt (W11b‑B‑15); ohne den Schalter bleibt das Markup unveraendert.
+    /// <paramref name="titel"/> ist der Kurztext an Beschriftung und Wert (die Formel einer
+    /// Jahresarbeitszahl); ohne ihn laesst Blazor das Attribut weg.
+    /// <paramref name="stufe"/> setzt eine Zeile des Herleitungsblocks ab (<see cref="Zeilenstufe"/>).
     /// </summary>
     private RenderFragment Wertzeile(string text, string wert, string einheit,
-                                     bool betont = false) => @<text>
-        <dt class="@Zeilenklasse(betont)">@text</dt>
-        <dd class="@Zeilenklasse(betont)">@wert</dd>
-        <dd class="@Einheitsklasse(betont)">@einheit</dd>
+                                     bool betont = false, string? titel = null,
+                                     Zeilenstufe stufe = Zeilenstufe.Normal) => @<text>
+        <dt class="@Zeilenstufen.Klasse(betont, stufe, beschriftung: true)" title="@titel">@text</dt>
+        <dd class="@Zeilenstufen.Klasse(betont, stufe)" title="@titel">@wert</dd>
+        <dd class="@Zeilenstufen.Einheitsklasse(betont, stufe)">@einheit</dd>
     </text>;
-
-    /// <summary><c>null</c> laesst Blazor das Attribut ganz weg — kein leeres class="".</summary>
-    private static string? Zeilenklasse(bool betont) => betont ? "epos-simerg-abschluss" : null;
-
-    private static string Einheitsklasse(bool betont) =>
-        betont ? "epos-simerg-einheit epos-simerg-abschluss" : "epos-simerg-einheit";
 
     // =====================================================================
     //  Der Hilfe-Assistent (Welle #458, Stufe 2): die Schalter der Anzeige
@@ -451,12 +642,18 @@
     {
         if (Daten is null) return Array.Empty<Anzeigeschalter>();
 
-        var liste = new List<Anzeigeschalter>
+        var liste = new List<Anzeigeschalter>();
+
+        // Die Bilanzgrenze der Spalte JAZ - nur, wo die Modultabelle steht.
+        if (Daten.Module.Count > 0)
+            liste.Add(Umschalter(Resource.SIMERG_CHK_JAZ_HEIZSTAB, () => _jazMitHeizstab, w => _jazMitHeizstab = w));
+
+        liste.AddRange(new[]
         {
             Umschalter(Resource.CHART_LEGENDE_WAERMEBEDARF, () => _swBedarf, w => _swBedarf = w),
             Umschalter(Resource.CHART_SEGMENT_HEIZSTAB, () => _swHeizstab, w => _swHeizstab = w),
             Umschalter(Resource.CHART_LEGENDE_WAERMEPRODUKTION, () => _swProduktion, w => _swProduktion = w)
-        };
+        });
 
         if (AktivesBlatt == "PRODUKTION")
         {
@@ -469,6 +666,9 @@
                                  w => _pgProduktion = w));
             liste.Add(Umschalter(Resource.CHART_SEGMENT_HEIZSTAB, () => _pgHeizstab, w => _pgHeizstab = w));
         }
+        if (AktivesBlatt == "STROM")
+            liste.Add(Umschalter(Resource.SIMERG_CHK_WP_STROM_GETRENNT, () => _stromGetrennt,
+                                 w => _stromGetrennt = w));
         return liste;
     }
 }

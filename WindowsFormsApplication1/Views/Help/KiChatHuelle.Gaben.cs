@@ -48,6 +48,8 @@ namespace WindowsFormsApplication1
                 // "Hilfe > Assistent" bringt keinen Hilfeschluessel mit.
                 ["Hilfeschluessel"] = _aufruf.Hilfeschluessel ?? "",
                 ["HilfeBetrieb"] = _hilfeBetrieb,
+                // Entwicklerbereich KI_WERKZEUGE: Werkzeuge und Protokoll.
+                ["Entwickler"] = Entwicklermodus.Aktiv,
                 ["Eingerichtet"] = KiChatService.IstEingerichtet,
                 ["AnfragenHeute"] = KiChatService.AnfragenHeute,
                 ["Tageslimit"] = KiChatService.Tageslimit,

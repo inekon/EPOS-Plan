@@ -986,6 +986,15 @@ def vorbereite(sql, fuellung="0"):
 # die Windows-Suite Referenzlauf/ liegt ausserhalb von WURZELN und wird nicht geprueft.)
 AUSGENOMMEN = ()
 
+# Dateien, deren SQL ein FREMDES Schema spricht (nicht die eigene Datenbank) - ihre Texte
+# werden nicht mit EXPLAIN gegen die Testdatenbank gehalten (dort gibt es die Tabellen
+# nicht), wohl aber gegen die Musterregeln der Verbotsliste; sie zaehlen als "fremd".
+# Wer die Liste erweitert, schreibt dazu, WELCHES Schema die Datei spricht. Die Liste
+# nennt ganze Pfade, keine Ordner.
+#   SqprojLeser.cs: die HottCAD-Projektdatei (.sqproj, SQLite), nur lesend, feste Texte
+#   (Datenaustauschkonzept 16.2).
+FREMDSCHEMA = ("EPOS.Kern/Allgemein/Import/Sqproj/SqprojLeser.cs",)
+
 WURZELN = ("EPOS.Kern", "WindowsFormsApplication1", "EPOS.UI.Daten")
 
 
@@ -1296,9 +1305,17 @@ def main():
         except Exception as ex:
             print("FEHLER beim Lesen von %s: %s" % (rel, ex), file=sys.stderr)
             continue
+        fremd_datei = rel in FREMDSCHEMA
         for zeile, sql, start, ende, _ in treffer:
             anzahl += 1
             dyn = (UNBEK in sql) or (LOCH in sql)
+
+            if fremd_datei:
+                # Fremdes Schema: nur die Musterregeln (Access-Schreibweisen) - kein EXPLAIN.
+                muster = pruefe_muster(sql, False, bool_ausnahmen)
+                grund = "MUSTER " + "; ".join("%s [%s]" % (a, b) for a, b in muster) if muster else ""
+                zeilen.append(("FUND" if muster else "fremd", rel, zeile, sql, grund))
+                continue
 
             fehler = explain(conn, vorbereite(sql, "0"))
             if fehler and dyn:
@@ -1347,6 +1364,7 @@ def main():
     zeilen.sort(key=lambda z: (z[1], z[2]))
     fund = [z for z in zeilen if z[0] == "FUND"]
     dynamisch = [z for z in zeilen if z[0] == "dynamisch"]
+    fremd = [z for z in zeilen if z[0] == "fremd"]
 
     if args.dynamisch:
         for art, rel, zeile, sql, info in dynamisch:
@@ -1358,8 +1376,8 @@ def main():
                       % (art, rel, zeile, _kurz(sql), info))
 
     print("\n%d SQL-Texte geprueft: %d Fundstellen, %d dynamisch (Syntax geprueft, "
-          "Objekte erst zur Laufzeit bekannt), %d in Ordnung."
-          % (anzahl, len(fund), len(dynamisch), anzahl - len(fund) - len(dynamisch)))
+          "Objekte erst zur Laufzeit bekannt), %d fremdes Schema (nur Musterregeln), %d in Ordnung."
+          % (anzahl, len(fund), len(dynamisch), len(fremd), anzahl - len(fund) - len(dynamisch) - len(fremd)))
 
     if args.csv:
         import csv

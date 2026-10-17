@@ -465,36 +465,32 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================
-        //  ETAPPE E13 (E7c3‑Q6 a) — die drei Gründe in der Oberfläche
+        //  ETAPPE E13 (E7c3‑Q6 a) — die zwei Gründe in der Oberfläche
         // =================================================================
 
         /// <summary>
         /// Die Zeilen der Oberfläche: je Grund eine, in der Reihenfolge Laden, Speichern,
-        /// Vorsorge, mit dem Text des Kerns; derselbe Grund aus zwei Quellen ergibt EINE
+        /// mit dem Text des Kerns; derselbe Grund aus zwei Quellen ergibt EINE
         /// Zeile, leere Gründe keine.
         /// </summary>
         [Fact]
         public void Die_Anzeigezeilen_nennen_jeden_Grund_einmal()
         {
-            Assert.Empty(Fehlergrund.Anzeigezeilen(null, null, null));
-            Assert.Empty(Fehlergrund.Anzeigezeilen(new[] { null, "", "  " }, "", null));
+            Assert.Empty(Fehlergrund.Anzeigezeilen(null, null));
+            Assert.Empty(Fehlergrund.Anzeigezeilen(new[] { null, "", "  " }, ""));
 
             List<string> zeilen = Fehlergrund.Anzeigezeilen(
                 new[] { "SqliteException: no such table", null, "SqliteException: no such table" },
-                "FormatException: kaputt",
-                "SqliteException: no such table");
+                "FormatException: kaputt");
             Assert.Equal(new[]
             {
                 "Gespeicherte Ergebnisse nicht vollständig gelesen: SqliteException: no such table",
                 "Speichern gescheitert: FormatException: kaputt"
             }, zeilen);
 
-            Assert.Equal(new[] { "Tabellenvorsorge unvollständig: IOException: gesperrt" },
-                         Fehlergrund.Anzeigezeilen(null, null, "IOException: gesperrt"));
-
             // Kein Stapel: Die Zeile trägt, was Fehlergrund.Text liefert.
             string grund = Fehlergrund.Text(new InvalidOperationException("Zeile 1\r\n   bei X.Y()"));
-            string zeile = Assert.Single(Fehlergrund.Anzeigezeilen(null, grund, null));
+            string zeile = Assert.Single(Fehlergrund.Anzeigezeilen(null, grund));
             Assert.DoesNotContain("\n", zeile);
             Assert.Equal(string.Format(Resource.WIRT_STATUS_SPEICHERFEHLER, grund), zeile);
         }
@@ -591,7 +587,7 @@ namespace EPOS.Kern.Tests
             var ctrl = new WirtschaftlichkeitCtrl();
             Rechne(ctrl.LadeParameter(PROJEKT));
             IReadOnlyDictionary<string, object> gaben = BhkwWirtschaftlichkeitHuelle.Gaben(PROJEKT, null, out _);
-            Assert.Equal("", gaben["Vorsorgewarnung"]);
+            Assert.False(gaben.ContainsKey("Vorsorgewarnung"), "Die Hülle reicht noch eine Vorsorgewarnung.");
 
             var laden = (Func<IReadOnlyList<int>, IReadOnlyList<WirtschaftlichkeitErgebnis>>)gaben["ErgebnisseLaden"];
             var ladefehler = (Func<string>)gaben["Ladefehler"];

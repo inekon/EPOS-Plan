@@ -51,10 +51,108 @@ namespace WindowsFormsApplication1
             return einheit.Length == 0 ? "€" : "€/" + einheit;
         }
 
+        // -----------------------------------------------------------------
+        // Welle KB-7c1: der Wasserträger in der Karte (Anwenderentscheide 16.10.2026, F1 und F5)
+        // -----------------------------------------------------------------
+
+        /// <summary>
+        /// Ist das Preismodell das des Wasserträgers (<c>WATER</c>)? Erkannt am Preismodell, nie am Namen.
+        /// Der Wasserträger führt einen Arbeitspreis je m³ (samt Abwasseranteil) und seine Szenariopreise —
+        /// keinen Heizwert, keine Umrechnung nach kWh, keinen Leistungs- und keinen Grundpreis, keine Emissionen.
+        /// </summary>
+        public static bool IstWasser(string preismodell) => Wasserkosten.IstWasserPreismodell(preismodell);
+
+        /// <summary>Führt die Karte einen Grundpreis? Nein am Wasserträger (F5), sonst ja.</summary>
+        public static bool MitGrundpreis(string preismodell) => !IstWasser(preismodell);
+
+        /// <summary>Führt die Karte den Emissionsblock? Nein am Wasserträger (Betriebsmittel), sonst ja.</summary>
+        public static bool MitEmissionen(string preismodell) => !IstWasser(preismodell);
+
+        /// <summary>
+        /// Gilt für den Träger die Einheitenkette bis zur kWh (Block „Einheiten und Umrechnung", Prüfung
+        /// beim Speichern)? Nein am Wasserträger: Er wird je m³ abgerechnet und erreicht nie kWh.
+        /// </summary>
+        public static bool MitKwhKette(string preismodell) => !IstWasser(preismodell);
+
+        /// <summary>
+        /// Die Abrechnungseinheit der Karte: am Wasserträger immer <c>m³</c> (F1 — Gasträger bleiben bei
+        /// <c>Nm³</c>), sonst die Einheit des Katalogs.
+        /// </summary>
+        public static string Abrechnungseinheit(string preismodell, string billingUnit)
+            => IstWasser(preismodell) ? WasserpreisTraegerkarteSchema.EINHEIT_WASSER : (billingUnit ?? "");
+
+        /// <summary>
+        /// Die Einheit des Arbeitspreises mit Blick auf das Preismodell: Der Wasserträger rechnet ohne Heizwert
+        /// unmittelbar je m³ ab (<c>€/m³</c>), jeder andere Träger wie <see cref="ArbeitspreisEinheit(string, bool)"/>.
+        /// </summary>
+        public static string ArbeitspreisEinheit(string preisbasis, bool mitHeizwert, string preismodell)
+            => IstWasser(preismodell)
+                ? "€/" + WasserpreisTraegerkarteSchema.EINHEIT_WASSER
+                : ArbeitspreisEinheit(preisbasis, mitHeizwert);
+
         /// <summary>Die Einheit des Leistungspreises — sie folgt dem Modus, nicht der Preisbasis.</summary>
         public static string LeistungspreisEinheit(bool monat)
         {
             return monat ? "€/(kW·Monat)" : "€/(kW·a)";
+        }
+
+        /// <summary>
+        /// Obergrenze eines Heizwerts je Abrechnungseinheit [kWh] für die kleinen Mengen-
+        /// einheiten (kg, l, Nm³, m³). Kein gebräuchlicher Brennstoff liegt darüber
+        /// (Wasserstoff 33,3 kWh/kg); ein größerer Wert steht erkennbar in einer anderen
+        /// Einheit (kWh/t, kWh/1000 l, MJ) und taugt nicht als Faktor nach €/kWh.
+        /// </summary>
+        public const double HEIZWERT_JE_EINHEIT_MAX = 50.0;
+
+        /// <summary>
+        /// Die VORGABE der Preisbasis am Arbeitspreis: Eine gemerkte Einheit bleibt —
+        /// ein bestehender Eintrag wird nie umgestellt. Nur wo keine gemerkt ist (neue
+        /// Auswahl, leerer Wert), steht der Arbeitspreis in €/kWh.
+        ///
+        /// <para><b>Umrechnung mit dem Heizwert.</b> Die Preisbasis kWh trägt den
+        /// Heizwert je Abrechnungseinheit als Faktor (<see cref="AnzeigeArbeitspreis"/>):
+        /// Erdgas 0,10 €/Nm³ bei 10 kWh/Nm³ zeigt 0,01 €/kWh, gespeichert bleibt der
+        /// Wert je Abrechnungseinheit. Ohne Heizwert (fehlt, 0, Träger ohne Heizwert im
+        /// Preismodell) gibt es keinen Faktor — dann bleibt die Abrechnungseinheit des
+        /// Katalogs, statt einen Preis je Mengeneinheit als €/kWh auszugeben. Dasselbe
+        /// gilt, wenn der Heizwert nicht in kWh je Abrechnungseinheit stehen kann
+        /// (<see cref="HeizwertPasstZurEinheit"/>).</para>
+        /// </summary>
+        /// <param name="gemerkt">Die gespeicherte Preisbasis; leer = keine.</param>
+        /// <param name="abrechnungseinheit">Die Mengeneinheit des Trägers (<c>billing_unit</c>).</param>
+        /// <param name="mitHeizwert">Führt das Preismodell einen Heizwert?</param>
+        /// <param name="heizwert">Heizwert je Abrechnungseinheit [kWh].</param>
+        public static string VorgabePreisbasis(string gemerkt, string abrechnungseinheit,
+                                               bool mitHeizwert, double heizwert)
+        {
+            string g = (gemerkt ?? "").Trim();
+            if (g.Length > 0) return g;
+
+            string einheit = (abrechnungseinheit ?? "").Trim();
+            if (!mitHeizwert || IstKwh(einheit) || !HeizwertPasstZurEinheit(einheit, heizwert))
+                return einheit;
+            return DbWerte.EINHEIT_KWH;
+        }
+
+        /// <summary>
+        /// Prüft die Einheit des Heizwerts: Er muss positiv sein und in kWh je
+        /// Abrechnungseinheit stehen können (<see cref="HeizwertEinheit"/>). Für kg, l,
+        /// Nm³ und m³ heißt das höchstens <see cref="HEIZWERT_JE_EINHEIT_MAX"/>; andere
+        /// Einheiten (t, MWh …) prüft nur das Vorzeichen.
+        /// </summary>
+        public static bool HeizwertPasstZurEinheit(string abrechnungseinheit, double heizwert)
+        {
+            if (!(heizwert > 0.0) || double.IsInfinity(heizwert)) return false;
+            switch (EnergietraegerPreisCtrl.EinheitSchluessel(abrechnungseinheit))
+            {
+                case "KG":
+                case "L":
+                case "NM3":
+                case "M3":
+                    return heizwert <= HEIZWERT_JE_EINHEIT_MAX;
+                default:
+                    return true;
+            }
         }
 
         /// <summary>Ist diese Einheit die Kilowattstunde? (Schreibweise egal.)</summary>

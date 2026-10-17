@@ -160,7 +160,8 @@ public class StromspeicherReiterTests : EposBunitContext
     /// <summary>Die Knöpfe DES BILDES (CSV, Vergleich) — nicht die des Parameterblocks.</summary>
     private static IReadOnlyList<AngleSharp.Dom.IElement> Bildknoepfe(
         IRenderedComponent<StromspeicherReiter> seite)
-        => seite.FindAll("section.epos-simerg-diagrammzeile button.epos-simerg-knopf");
+        => seite.FindAll("section.epos-simerg-diagrammzeile button.epos-diagramm-csv, "
+                         + "section.epos-simerg-diagrammzeile button.epos-simerg-knopf");
 
     /// <summary>Der letzte Auftrag des Betriebsbildes — der, den der Reiter gerade zeigt.</summary>
     private Bildauftrag Letzter => _auftraege.Last(a => a.Bild == Bilder.SpeicherBetrieb);
@@ -788,5 +789,79 @@ public class StromspeicherReiterTests : EposBunitContext
                      seite.FindComponent<DiagrammSvg>()
                           .FindAll("button.epos-diagramm-knopf")
                           .Select(k => k.TextContent.Trim()).ToArray());
+    }
+
+    /// <summary>
+    /// Anwenderentscheid 04.10.2026: Nach dem Lauf nennt der Reiter, welches Peak-Ziel gegolten
+    /// hat und woher es stammt — je Herkunft mit ihrem Text; ohne Flottenlauf keine Zeile.
+    /// </summary>
+    [Theory]
+    [InlineData(FlottenPeakZielHerkunft.Lastgang)]
+    [InlineData(FlottenPeakZielHerkunft.Gespeichert)]
+    [InlineData(FlottenPeakZielHerkunft.Rueckfall)]
+    public void Herkunft_des_Peak_Ziels_steht_nach_dem_Lauf(FlottenPeakZielHerkunft herkunft)
+    {
+        var daten = Daten();
+        daten.PeakZielKw = 42.5;
+        daten.PeakZielHerkunft = herkunft;
+
+        var seite = Zeichnen(daten);
+
+        var zeile = seite.Find("p.epos-simerg-peakherkunft");
+        Assert.Equal(herkunft.ToString(), zeile.GetAttribute("data-herkunft"));
+        Assert.Equal(StromspeicherReiter.PeakZielZeile(42.5, herkunft), zeile.TextContent.Trim());
+        string quelle = herkunft switch
+        {
+            FlottenPeakZielHerkunft.Lastgang => WindowsFormsApplication1.MyResource.Resource.SIMERG_SP_PEAKZIEL_LASTGANG,
+            FlottenPeakZielHerkunft.Gespeichert => WindowsFormsApplication1.MyResource.Resource.SIMERG_SP_PEAKZIEL_GESPEICHERT,
+            _ => WindowsFormsApplication1.MyResource.Resource.SIMERG_SP_PEAKZIEL_RUECKFALL
+        };
+        Assert.Contains(quelle, zeile.TextContent);
+        Assert.Contains(42.5.ToString("N1", CultureInfo.CurrentCulture), zeile.TextContent);
+
+        Assert.Empty(Zeichnen(Daten()).FindAll("p.epos-simerg-peakherkunft"));
+    }
+
+    // ---------------------------------------------------------------------
+    //  Auftrag TA: Kopf und Wert stehen übereinander
+    // ---------------------------------------------------------------------
+
+    /// <summary>Kennzahlentabelle: der Wertkopf (und der Vergleichskopf) rechts wie
+    /// die Werte, Kennzahl und Einheit links (Auftrag TA).</summary>
+    [Fact]
+    public void TA_Kennzahlentabelle_richtet_Kopf_und_Wert_gleich_aus()
+    {
+        var tabellen = Zeichnen(Daten(vergleich: true)).FindAll("table.epos-simerg-kennzahlen");
+        Assert.NotEmpty(tabellen);
+        Assert.All(Tabellenausrichtung.PruefeAlle(tabellen), n => Assert.Equal(2, n));
+        Tabellenausrichtung.TextkopfLinks(tabellen[0], 0);
+    }
+
+    /// <summary>
+    /// EB-2: Mit Standby des Speichersystems im Lauf steht ein fünfter Reihenschalter da — ab Werk AUS, das Bild
+    /// bleibt ohne Zuwahl, wie es war; zugeschaltet steht die Reihe im Bildauftrag. Ohne Standby kein Schalter.
+    /// </summary>
+    [Fact]
+    public void Der_Standby_ist_zuschaltbar_und_ab_Werk_aus()
+    {
+        var ohne = Zeichnen(Daten());
+        Assert.Equal(5, Bildschalter(ohne).Count);
+
+        var daten = Daten();
+        daten.MitStandby = true;
+        var seite = Zeichnen(daten);
+        Assert.Equal(6, Bildschalter(seite).Count);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.CHART_LEGENDE_SPEICHER_STANDBY,
+                        seite.FindAll("label.epos-schalter").Select(l => l.TextContent.Trim()));
+        Assert.DoesNotContain(StromspeicherReiter.REIHE_STANDBY, seite.Instance.GewaehlteReihen);
+        Assert.Equal(4, seite.Instance.GewaehlteReihen.Count);
+
+        _auftraege.Clear();
+        Bildschalter(seite)[5].Change(true);
+        Assert.Contains(StromspeicherReiter.REIHE_STANDBY, Letzter.Reihen!);
+        Assert.Equal(5, Letzter.Reihen!.Count);
+
+        Bildschalter(seite)[5].Change(false);
+        Assert.DoesNotContain(StromspeicherReiter.REIHE_STANDBY, Letzter.Reihen!);
     }
 }

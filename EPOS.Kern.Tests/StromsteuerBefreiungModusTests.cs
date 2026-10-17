@@ -342,7 +342,7 @@ namespace EPOS.Kern.Tests
         /// damit genau <see cref="BHKW_MWH"/>, und der erwartete Ausweisbetrag ist
         /// Regelsatz × diese Menge.</para>
         /// </summary>
-        private static ZeitreihenSatz Stundenreihen()
+        internal static ZeitreihenSatz Stundenreihen()
         {
             int n = ZeitreihenSatz.Stunden;
             var bedarf = new double[n];

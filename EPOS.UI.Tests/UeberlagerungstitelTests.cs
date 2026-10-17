@@ -44,13 +44,14 @@ namespace EPOS.UI.Tests;
 /// Komponente OHNE <c>TitelAnzeigen</c> wird eingebettet, ohne dass das Tag einen
 /// Parametersatz (<c>@attributes</c>) oder ein <c>TitelText</c> trägt — dann zeichnet
 /// sie ihren Kopf mit ihrer eigenen <c>TitelText</c>-Vorgabe, und die ist bei einem
-/// Dialog nie leer (<c>WaermepumpenKatalogDialog</c> in <c>WaermepumpeAnlageDialog</c>).
+/// Dialog nie leer (<c>WaermepumpenKatalogDialog</c> im damaligen Wärmepumpen-Anlagendialog,
+/// nachgestellt in der Probe unten).
 /// Auch das prüft <see cref="MarkupFunde"/> seither (Helfer
 /// <see cref="OhneSatzMitEigenerVorgabe"/>); Probe:
 /// <see cref="Die_Markup_Wache_findet_den_Modulkatalog_der_Detailansicht_vor_dem_Nachtrag"/>.
 /// Ein Tag MIT <c>@attributes</c> bleibt Handarbeit: Den Satz kann die Hülle leeren
 /// (#187), das sieht die Markup-Wache nicht — dafür stehen die bunit-Fälle im Wirt
-/// (<c>WaermepumpeAnlageDialogTests</c>, <c>WirtschaftlichkeitParameterDialogTests</c>).</para>
+/// (<c>WaermepumpenDialogTests</c>, <c>WirtschaftlichkeitParameterDialogTests</c>).</para>
 ///
 /// <para><b>Bauart B (neun Stellen, die Kosten-, Gesetzes-, Klimazonen- und
 /// Pufferspeicherdialoge):</b> die Überlagerung und die Komponente bekommen
@@ -69,7 +70,7 @@ namespace EPOS.UI.Tests;
 /// Umsetzungsbericht zu #187.</para>
 ///
 /// <para><b>Die Behebung, immer dieselbe Bauart</b> (Vorbild
-/// <c>WaermepumpeAnlageDialog.razor:96</c>, seit #187 auch
+/// <c>WaermepumpenDialog.razor</c>, seit #187 auch
 /// <c>NamensDialog</c>, <c>CaseEingabeDialog</c>, <c>VorlagenPositionDialog</c>,
 /// <c>KostenfaktorKatalogDialog</c>, <c>GesetzeskatalogDialog</c>):
 /// <c>&lt;div class="epos-dialog-kopf @(string.IsNullOrEmpty(TitelText) ? "epos-dialog-kopf--ohnetitel" : "")"&gt;</c>,

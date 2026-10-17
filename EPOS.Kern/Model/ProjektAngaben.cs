@@ -106,6 +106,14 @@ namespace WindowsFormsApplication1
         public string Klimaname { get; set; } = "";
 
         /// <summary>
+        /// Geplantes Jahr der Inbetriebnahme (<c>Tab_Projekt.Inbetriebnahmejahr</c>, KM4-E3-b); <c>null</c> = leer,
+        /// keine Zulässigkeitsprüfung der Kältemittel. Gültig ist 2000 bis 2100 wie der CHECK des Schemas; ein Wert
+        /// außerhalb steht hier, bis die Kopfregel ihn benannt meldet (<see cref="ProjektKopfBefund.JahrAusserhalb"/>) —
+        /// gekappt wird er nie.
+        /// </summary>
+        public int? Inbetriebnahmejahr { get; set; }
+
+        /// <summary>
         /// Darf der Projektname geaendert werden? Im Neu-Modus ja, im Bearbeiten-Modus
         /// nein — der Ersatz fuer <c>SetEditProjektName(bool)</c>. Gesetzt VOR
         /// <c>Bestuecken</c>.
@@ -132,7 +140,10 @@ namespace WindowsFormsApplication1
         Ok = 0,
         NameLeer,
         NameVorhanden,
-        KlimaLeer
+        KlimaLeer,
+
+        /// <summary>Das Inbetriebnahmejahr ist gesetzt, liegt aber nicht in 2000 bis 2100 (KM4-E3-b).</summary>
+        JahrAusserhalb
     }
 
     /// <summary>
@@ -151,8 +162,17 @@ namespace WindowsFormsApplication1
                     if (string.Equals((n ?? "").Trim(), daten.Name.Trim(), StringComparison.CurrentCultureIgnoreCase))
                         return ProjektKopfBefund.NameVorhanden;
             if (daten.IdKlimaregion <= 0 && string.IsNullOrWhiteSpace(daten.Klimaname)) return ProjektKopfBefund.KlimaLeer;
+            if (!JahrGueltig(daten.Inbetriebnahmejahr)) return ProjektKopfBefund.JahrAusserhalb;
             return ProjektKopfBefund.Ok;
         }
+
+        /// <summary>
+        /// Ist das Inbetriebnahmejahr zulässig? Leer ja (keine Prüfung), sonst 2000 bis 2100 — derselbe Bereich wie
+        /// der CHECK von <c>Tab_Projekt.Inbetriebnahmejahr</c> (<see cref="KaeltemittelSchema"/>).
+        /// </summary>
+        public static bool JahrGueltig(int? jahr)
+            => !jahr.HasValue || (jahr.Value >= KaeltemittelSchema.INBETRIEBNAHMEJAHR_MIN
+                                  && jahr.Value <= KaeltemittelSchema.INBETRIEBNAHMEJAHR_MAX);
     }
 
     public enum DuplizierBefund
@@ -271,4 +291,35 @@ namespace WindowsFormsApplication1
     /// <see cref="LoeschStand.NameLeer"/> 0.
     /// </param>
     public sealed record LoeschBefund(LoeschStand Stand, string Projektname, string Fehlertext = "", int Anzahl = 1);
+
+    /// <summary>
+    /// Der Steckbrief des in der Projektliste des Assistenten markierten Projekts
+    /// (Anwenderwunsch 06.10.2026): was die Datenbank zu einem Projekt
+    /// fuehrt, in EINER Abfrage gelesen. Ein Feld, das die Datenbank nicht fuehrt,
+    /// bleibt leer bzw. <c>null</c> — die Oberflaeche laesst es dann weg.
+    /// </summary>
+    /// <param name="Id"><c>Tab_Projekt.ID</c>.</param>
+    /// <param name="Name">Projektname.</param>
+    /// <param name="Beschreibung"><c>Tab_Projekt.Beschreibung</c>.</param>
+    /// <param name="Kunde"><c>Tab_Projekt.Kunde</c>.</param>
+    /// <param name="Bearbeiter"><c>Tab_Projekt.Bearbeiter</c>.</param>
+    /// <param name="Erstellt"><c>Tab_Projekt.Erstelldatum</c>.</param>
+    /// <param name="Geaendert"><c>Tab_Projekt.Aenderungsdatum</c>.</param>
+    /// <param name="Klimaregion">Name der Klimaregion (Stammname, ueber
+    /// <c>KlimaregionStammCtrl.NameZuProjektregion</c>).</param>
+    /// <param name="StammName">Ist das Projekt eine Variante: der Name ihres Stammprojekts.</param>
+    /// <param name="Varianten">Wie viele Varianten von diesem Projekt abgeleitet sind.</param>
+    /// <param name="LetzteSimulation">Juengster Zeitstempel in <c>Tab_Ergebnis</c>.</param>
+    public sealed record ProjektSteckbrief(
+        int Id,
+        string Name,
+        string Beschreibung = "",
+        string Kunde = "",
+        string Bearbeiter = "",
+        DateTime? Erstellt = null,
+        DateTime? Geaendert = null,
+        string Klimaregion = "",
+        string StammName = "",
+        int Varianten = 0,
+        DateTime? LetzteSimulation = null);
 }

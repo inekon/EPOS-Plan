@@ -22,7 +22,15 @@ namespace WindowsFormsApplication1
         public double m_k2;
         public double m_Kdir;
         public double m_Kdfu;
-        public double m_Kosten;
+        // HIER STAND m_Kosten (Spalte Investitionskosten) - mit Welle KB-4 entfallen
+        // (GeraetekostenEntfallSchema); die Geraetekosten traegt die Satzvorlage.
+
+        /// <summary>
+        /// Bezugsfläche der Kennwerte η₀, a₁, a₂ (ST6, Spalte <c>Bezugsflaeche</c>):
+        /// <see cref="DbWerte.SOLAR_BEZUGSFLAECHE_APERTUR"/> (Vorgabe) oder
+        /// <see cref="DbWerte.SOLAR_BEZUGSFLAECHE_BRUTTO"/>.
+        /// </summary>
+        public string m_Bezugsflaeche;
 
         public SolarkollektorenModel()
         {
@@ -39,7 +47,7 @@ namespace WindowsFormsApplication1
             m_k2 = 0;
             m_Kdir = 0;
             m_Kdfu = 0;
-            m_Kosten = 0;
+            m_Bezugsflaeche = DbWerte.SOLAR_BEZUGSFLAECHE_APERTUR;
         }
     }
 }

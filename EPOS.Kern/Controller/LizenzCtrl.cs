@@ -76,6 +76,57 @@ namespace WindowsFormsApplication1
         /// <summary>Anzeigename dieses Geräts (Rechnername bzw. Gerätename).</summary>
         internal static string GeraetName() => GeraeteId.Anzeigename();
 
+        // ==================================================================
+        //  Fernwartung (Administration und Support, Stufe 2; AS-Q8 Lesart b)
+        // ==================================================================
+
+        /// <summary>Lizenztyp der Testversion im Token.</summary>
+        internal const string TYP_DEMO = "demo";
+
+        /// <summary>Lizenztypen, die die Fernwartung freigeben (bezahlte Lizenz).</summary>
+        private static readonly string[] TYPEN_BEZAHLT = { "person", "firma" };
+
+        /// <summary>
+        /// Darf dieser Arbeitsplatz die Fernwartung anbieten? Erlaubt bei einem Token vom Typ
+        /// <c>person</c> oder <c>firma</c>, gleich ob gueltig, in Kulanz, Nachpruefung faellig
+        /// oder im Lesemodus; gesperrt in der Testversion (<c>FW_SPERRE_TEST</c>), ohne
+        /// Aktivierung und bei manipulierter Uhr (<c>FW_SPERRE_LIZENZ</c>).
+        ///
+        /// <para><b>Ohne Nebenwirkung</b> (wie <see cref="Diagnosedaten"/>): Der Zeitanker wird
+        /// gelesen, aber nie fortgeschrieben, und es gibt keinen Serverkontakt — die Frage darf
+        /// bei jedem Zuschnitt des Menues gestellt werden.</para>
+        /// </summary>
+        public static Fernwartungsfreigabe FernwartungErlaubt()
+        {
+            try
+            {
+                LizenzToken token = LizenzManager.Token;
+                string geraet = token == null ? "" : GeraeteId.Ermitteln();
+                LizenzStatus status = LizenzManager.Bewerten(token, geraet, DateTime.UtcNow.Date,
+                                                             LizenzManager.AnkerOhneSchreiben());
+                return FernwartungErlaubt(token, status);
+            }
+            catch
+            {
+                // Eine Supportfrage wirft nie; im Zweifel gesperrt mit dem Lizenzgrund.
+                return new Fernwartungsfreigabe(false, MyResource.Resource.FW_SPERRE_LIZENZ);
+            }
+        }
+
+        /// <summary>Die reine Regel zu Token und bewertetem Status (pruefbar ohne Ablage).</summary>
+        internal static Fernwartungsfreigabe FernwartungErlaubt(LizenzToken token, LizenzStatus status)
+        {
+            if (token != null && string.Equals(token.Typ, TYP_DEMO, StringComparison.OrdinalIgnoreCase))
+                return new Fernwartungsfreigabe(false, MyResource.Resource.FW_SPERRE_TEST);
+
+            bool bezahlt = token != null
+                           && Array.Exists(TYPEN_BEZAHLT, t => string.Equals(t, token.Typ, StringComparison.OrdinalIgnoreCase));
+            if (!bezahlt || status == LizenzStatus.NichtAktiviert || status == LizenzStatus.UhrManipuliert)
+                return new Fernwartungsfreigabe(false, MyResource.Resource.FW_SPERRE_LIZENZ);
+
+            return Fernwartungsfreigabe.Frei;
+        }
+
         /// <summary>Adresse des Lizenzportals.</summary>
         internal static string PortalUrl => LizenzManager.PORTAL_URL;
 

@@ -159,10 +159,6 @@ public class KlimadatenDialogTests : EposBunitContext
     private static void QuelleWaehlen(IRenderedComponent<KlimadatenDialog> cut, KlimaQuelle quelle)
         => cut.FindAll("input[type=radio]")[(int)quelle].Change(true);
 
-    /// <summary>Der Knopf der Regionsvorschau (Auftrag KL-3); null, wenn er fehlt.</summary>
-    private static AngleSharp.Dom.IElement? Regionsknopf(IRenderedComponent<KlimadatenDialog> cut)
-        => cut.FindAll("button").FirstOrDefault(b => b.TextContent.Trim() == "Region ermitteln");
-
     // =====================================================================
     //  Feldbestand (Feldkarte Form_Klimadaten)
     // =====================================================================
@@ -180,7 +176,8 @@ public class KlimadatenDialogTests : EposBunitContext
 
         // Zwei Reiter mit je einem Bild - in der Gruppe Jahresverlauf des Stammblatts.
         var reiter = cut.FindAll(".epos-stammblatt .epos-reiter-knopf").Select(e => e.TextContent.Trim()).ToList();
-        Assert.Equal(new[] { "Temperatur", "Sonnenwinkel" }, reiter);
+        // KD-8 Teil A (KD-Q13): dazu der dritte Reiter „Weitere Reihen“.
+        Assert.Equal(new[] { "Temperatur", "Sonnenwinkel", "Weitere Reihen" }, reiter);
 
         // Die Eingaben des Imports stehen NICHT im Dialog, sondern in der
         // Ueberlagerung hinter "Import..." (V14).
@@ -198,7 +195,7 @@ public class KlimadatenDialogTests : EposBunitContext
         // Zahlenfelder, Bezeichnung und "Daten einlesen".
         ImportOeffnen(cut);
         Assert.Single(cut.FindAll(".epos-ueberlagerung input[list=epos-klimaregion-orte]"));
-        Assert.Equal(2, cut.FindAll(".epos-ueberlagerung input[inputmode=decimal]").Count);
+        Assert.Equal(3, cut.FindAll(".epos-ueberlagerung input[inputmode=decimal]").Count);   // Longitude, Latitude, Hoehe (KD-3)
         Assert.Contains("Daten einlesen", cut.FindAll(".epos-ueberlagerung button").Select(b => b.TextContent.Trim()));
     }
 
@@ -428,7 +425,7 @@ public class KlimadatenDialogTests : EposBunitContext
         Assert.True(cut.FindAll("button").First(b => b.TextContent.Trim() == "Daten einlesen")
                        .HasAttribute("disabled"));
 
-        cut.FindAll("input[type=text]").Last().Input("Eigen");
+        cut.FindAll("input[type=text]:not([inputmode])").Last().Input("Eigen");
         cut.FindAll("button").First(b => b.TextContent.Trim() == "Daten einlesen").Click();
 
         // W16b-O-2 (Gate 10.09.2026): siehe Ein_Ortsname_reicht_fuer_den_Import -
@@ -821,7 +818,7 @@ public class KlimadatenDialogTests : EposBunitContext
 
             // Die Bezeichnung ist der Dateiname OHNE Endung.
             Assert.Equal(System.IO.Path.GetFileNameWithoutExtension(pfad),
-                         cut.FindAll("input[type=text]").Last().GetAttribute("value"));
+                         cut.FindAll("input[type=text]:not([inputmode])").Last().GetAttribute("value"));
 
             // Die Herkunftszeile nennt Rechts- und Hochwert und sagt, dass es änderbar ist.
             Assert.Contains("3929310", cut.Instance.Standortzeile);
@@ -923,141 +920,323 @@ public class KlimadatenDialogTests : EposBunitContext
     }
 
     // =====================================================================
-    //  Die REGIONSVORSCHAU (Auftrag KL-3, Anwenderentscheid 19.09.2026 b)
+    //  DATENSATZ SUCHEN und die VORSCHAUKARTE (Auftrag KD-3, Konzept
+    //  Klimadatenimport § 4, Entscheide KD-Q1, KD-Q3, KD-Q9)
     // =====================================================================
 
+    /// <summary>Der Knopf „Datensatz suchen"; null, wenn er fehlt.</summary>
+    private static AngleSharp.Dom.IElement? Suchknopf(IRenderedComponent<KlimadatenDialog> cut)
+        => cut.FindAll("button").FirstOrDefault(b => b.TextContent.Trim() == "Datensatz suchen");
+
+    /// <summary>Das Feld „Höhe des Ortes (m)" — das dritte Zahlenfeld des Standorts.</summary>
+    private static AngleSharp.Dom.IElement Hoehenfeld(IRenderedComponent<KlimadatenDialog> cut)
+        => cut.FindAll("input[inputmode=decimal]")[2];
+
     /// <summary>
-    /// <b>Der Knopf steht NUR im Regionaldaten-Zweig.</b> Bei PVGIS und bei einer
-    /// TRY-Datei gäbe es keine Region zu ermitteln — ein Knopf ohne Wirkung wäre eine
-    /// Behauptung, die nicht stimmt.
+    /// Eine Vorschau, wie sie der Kern liefert: TRY 2045 sommerwarm, Stuttgart-Vaihingen
+    /// gegen die Repräsentanzstation Stötten (Nachrechnung Konzept 1.2).
+    /// </summary>
+    private static KlimaVorschauErgebnis Treffer(double entfernungKm = 56, double? bezugHoeheM = 734,
+                                                 bool gefunden = true, double? standortHoeheM = null)
+    {
+        var kz = new KlimaKennzahlen
+        {
+            Stunden = 8760, Tage = 365, TemperaturMittel = 9.9, TemperaturMin = -12.4, TemperaturMax = 34.3,
+            GlobalstrahlungKwhM2 = 1147, GradtagzahlKdA = 3105, Heiztage = 209
+        };
+        for (int m = 0; m < 12; m++)
+        {
+            kz.MonatsmittelTemperatur[m] = 10 - 9 * Math.Cos(2 * Math.PI * (m + 0.5) / 12);
+            kz.MonatssummeGlobalstrahlungKwhM2[m] = 95 - 70 * Math.Cos(2 * Math.PI * (m + 0.5) / 12);
+        }
+        return new KlimaVorschauErgebnis
+        {
+            Ausgang = KlimaImportAusgang.Erfolg,
+            Quelle = KlimaQuelle.TryRegional,
+            Bezugsjahr = 2045,
+            Szenario = TrySzenario.Sommerwarm,
+            AusfuehrungGefunden = gefunden,
+            Grund = gefunden ? "" : "Das Paket führt für diese Region nur das mittlere Jahr.",
+            Ausfuehrungen = new List<TryAusfuehrung>
+            {
+                new() { Jahr = 2015, Szenario = TrySzenario.MittleresJahr },
+                new() { Jahr = 2045, Szenario = TrySzenario.MittleresJahr }
+            },
+            Standort = new KlimaStandort
+            {
+                Latitude = 48.7289, Longitude = 9.1085, Anzeigename = "Vaihingen, Stuttgart, Deutschland",
+                AusGeokodierung = true, HoeheM = standortHoeheM
+            },
+            Bezugspunkt = new KlimaBezugspunkt
+            {
+                Art = KlimaBezugspunktArt.Repraesentanzstation, Name = "Region 14 Stötten",
+                Latitude = 48.6536, Longitude = 9.8666, HoeheM = bezugHoeheM, EntfernungKm = entfernungKm
+            },
+            Kennzahlen = gefunden ? kz : null,
+            Parameterbestand = new List<KlimaParameterEintrag>
+            {
+                new() { Parameter = KlimaParameter.Lufttemperatur, Stand = KlimaParameterStand.Gefuehrt },
+                new() { Parameter = KlimaParameter.DirektstrahlungNormal, Stand = KlimaParameterStand.Gerechnet },
+                new() { Parameter = KlimaParameter.QualitaetStrahlung, Stand = KlimaParameterStand.Fehlt }
+            },
+            Repraesentanzhinweis = true,
+            Hinweise = new List<string> { WindowsFormsApplication1.MyResource.Resource.KLIMA_VORSCHAU_REPRAESENTANZ }
+        };
+    }
+
+    /// <summary>Der Dialog mit offenem Import, Regionaldaten 2045 sommerwarm und Ort „Stuttgart-Vaihingen".</summary>
+    private IRenderedComponent<KlimadatenDialog> ZeigeSuche(
+        Func<KlimaImportAuftrag, Task<KlimaVorschauErgebnis>> suche,
+        Func<KlimaImportAuftrag, IProgress<ImportFortschritt>, Task<KlimaImportErgebnis>>? importieren = null)
+    {
+        var cut = ZeigeImport(importieren: importieren, regionErmitteln: suche);
+        QuelleWaehlen(cut, KlimaQuelle.TryRegional);
+        cut.FindAll("select")[0].Change("2045");
+        cut.FindAll("select")[1].Change(((int)TrySzenario.Sommerwarm).ToString(CultureInfo.InvariantCulture));
+        cut.Find("input[list=epos-klimaregion-orte]").Input("Stuttgart-Vaihingen");
+        return cut;
+    }
+
+    /// <summary>Sucht und wartet, bis die Karte steht.</summary>
+    private static void Suchen(IRenderedComponent<KlimadatenDialog> cut)
+    {
+        Suchknopf(cut)!.Click();
+        cut.WaitForAssertion(() => Assert.NotNull(cut.Instance.Vorschau), TimeSpan.FromSeconds(10));
+    }
+
+    /// <summary>
+    /// <b>„Datensatz suchen" gilt für ALLE drei Quellen</b> (KD-3) — PVGIS, TRY-Datei und
+    /// Regionaldaten; bei der TRY-Datei erst mit Pfad.
     /// </summary>
     [Fact]
-    public void Der_Regionsknopf_steht_nur_bei_den_Regionaldaten()
+    public void Datensatz_suchen_steht_bei_allen_drei_Quellen()
     {
-        var cut = ZeigeImport(regionErmitteln: _ => Task.FromResult(new KlimaVorschauErgebnis()));
+        var cut = ZeigeImport(regionErmitteln: _ => Task.FromResult(Treffer()));
+        cut.Find("input[list=epos-klimaregion-orte]").Input("Geislingen");
 
-        Assert.Null(Regionsknopf(cut));                    // PVGIS
+        Assert.False(Suchknopf(cut)!.HasAttribute("disabled"));     // PVGIS
 
         QuelleWaehlen(cut, KlimaQuelle.TryDatei);
-        Assert.Null(Regionsknopf(cut));
+        Assert.True(Suchknopf(cut)!.HasAttribute("disabled"));      // ohne Datei
 
         QuelleWaehlen(cut, KlimaQuelle.TryRegional);
-        Assert.NotNull(Regionsknopf(cut));
+        Assert.False(Suchknopf(cut)!.HasAttribute("disabled"));
+        Assert.Null(cut.FindAll("button").FirstOrDefault(b => b.TextContent.Trim() == "Region ermitteln"));
+    }
+
+    /// <summary>Ohne Standort bleibt der Knopf gesperrt; ohne Delegat auch — und „Daten einlesen" ist dann frei.</summary>
+    [Fact]
+    public void Ohne_Standort_oder_Delegat_bleibt_der_Suchknopf_gesperrt()
+    {
+        var mit = ZeigeImport(regionErmitteln: _ => Task.FromResult(Treffer()));
+        Assert.True(Suchknopf(mit)!.HasAttribute("disabled"));
+
+        var ohne = ZeigeImport();
+        ohne.Find("input[list=epos-klimaregion-orte]").Input("Geislingen");
+        Assert.True(Suchknopf(ohne)!.HasAttribute("disabled"));
+        Assert.False(Einlesen(ohne).HasAttribute("disabled"));
+        Assert.False(Einlesen(ohne).HasAttribute("aria-disabled"));
     }
 
     /// <summary>
-    /// <b>Ohne Standort bleibt der Knopf gesperrt</b>, mit Ortsnamen ist er frei — und
-    /// er braucht, anders als „Daten einlesen", KEINE Bezeichnung: Die Vorschau legt
-    /// nichts an.
+    /// <b>Ein Treffer</b>: Kennzeichen „Datensatz gefunden: TRY 2045 · sommerwarm", Standort
+    /// und Bezugspunkt mit Entfernung und Höhe, Kennzahlen, Bild aus den Monatsreihen,
+    /// Parameterbestand — und Longitude, Latitude und Bezeichnung stehen in den Feldern.
+    /// „Daten einlesen" ist frei.
     /// </summary>
     [Fact]
-    public void Der_Regionsknopf_braucht_nur_einen_Standort()
-    {
-        var cut = ZeigeImport(regionErmitteln: _ => Task.FromResult(new KlimaVorschauErgebnis()));
-
-        QuelleWaehlen(cut, KlimaQuelle.TryRegional);
-        Assert.True(Regionsknopf(cut)!.HasAttribute("disabled"));
-
-        cut.Find("input[list=epos-klimaregion-orte]").Input("Geislingen");
-        Assert.False(Regionsknopf(cut)!.HasAttribute("disabled"));
-    }
-
-    /// <summary>Ohne Delegat bleibt der Knopf gesperrt — einlesen darf der Anwender
-    /// trotzdem; die Vorschau ist eine Auskunft, keine Bedingung.</summary>
-    [Fact]
-    public void Ohne_Delegat_bleibt_der_Regionsknopf_gesperrt()
-    {
-        var cut = ZeigeImport();
-
-        QuelleWaehlen(cut, KlimaQuelle.TryRegional);
-        cut.Find("input[list=epos-klimaregion-orte]").Input("Geislingen");
-
-        Assert.True(Regionsknopf(cut)!.HasAttribute("disabled"));
-        Assert.False(Einlesen(cut).HasAttribute("disabled"));
-    }
-
-    /// <summary>
-    /// <b>Die Ergebniszeile nennt Region, Station und Entfernung</b> — mit dem NAMEN
-    /// der Repräsentanzstation, denn „Region 14" allein sagt einem Anwender nichts.
-    /// </summary>
-    [Fact]
-    public void Die_Ergebniszeile_nennt_Region_Station_und_Entfernung()
+    public void Ein_Treffer_zeigt_die_Karte_und_befuellt_die_Felder()
     {
         KlimaImportAuftrag? gefragt = null;
-        var cut = ZeigeImport(regionErmitteln: a =>
-        {
-            gefragt = a;
-            return Task.FromResult(new KlimaVorschauErgebnis
-            {
-                Ausgang = KlimaImportAusgang.Erfolg,
-                Meldung = "Region 14 Stötten, Station 48,6600 / 9,8600, Entfernung 12 km"
-            });
-        });
+        var cut = ZeigeSuche(a => { gefragt = a; return Task.FromResult(Treffer()); });
+        Assert.Equal("true", Einlesen(cut).GetAttribute("aria-disabled"));
 
-        QuelleWaehlen(cut, KlimaQuelle.TryRegional);
-        cut.Find("input[list=epos-klimaregion-orte]").Input("Geislingen");
-        Regionsknopf(cut)!.Click();
+        Suchen(cut);
 
-        cut.WaitForAssertion(() => Assert.Contains("Stötten", cut.Instance.Regionsvorschau),
-                             TimeSpan.FromSeconds(10));
-
-        Assert.Contains("Region 14 Stötten", cut.Markup);
-        Assert.Contains("Entfernung 12 km", cut.Markup);
-
-        // Der Auftrag der Vorschau traegt die Quelle und das Bezugsjahr der Auswahl.
-        Assert.NotNull(gefragt);
         Assert.Equal(KlimaQuelle.TryRegional, gefragt!.Quelle);
-        Assert.Equal("Geislingen", gefragt.Ortsname);
-        Assert.Equal(KlimaImportAuftrag.TRY_JAHR_VORGABE, gefragt.TryJahr);
+        Assert.Equal(2045, gefragt.TryJahr);
+        Assert.Equal(TrySzenario.Sommerwarm, gefragt.Szenario);
+
+        string karte = cut.Find(".epos-klimavorschau").TextContent;
+        Assert.Contains("Datensatz gefunden: TRY 2045 · sommerwarm", karte);
+        Assert.Single(cut.FindAll(".epos-klimavorschau-treffer--ja"));
+        Assert.Contains("Region 14 Stötten", karte);
+        Assert.Contains("56 km", karte);
+        Assert.Contains("734 m", karte);
+        Assert.Contains("1.147 kWh/m²a", karte);
+        Assert.Contains("3.105 Kd/a", karte);
+        Assert.Contains("209", karte);
+        Assert.Contains("Temperatur", karte);
+        Assert.Contains("(gerechnet)", karte);
+        Assert.Contains("(fehlt)", karte);
+        Assert.NotEmpty(cut.FindAll(".epos-klimavorschau svg"));
+
+        // Die Felder: Vorschlag aus dem Standort, die Bezeichnung heisst wie der Ort.
+        var zahlen = cut.FindAll("input[inputmode=decimal]");
+        Assert.StartsWith("9,1085", zahlen[0].GetAttribute("value"));
+        Assert.StartsWith("48,7289", zahlen[1].GetAttribute("value"));
+        Assert.Equal("Stuttgart-Vaihingen", cut.FindAll("input[type=text]:not([inputmode])").Last().GetAttribute("value"));
+        Assert.Contains("aus der Suche vorbelegt", cut.Markup);
+
+        Assert.True(cut.Instance.VorschauGueltig);
+        Assert.False(Einlesen(cut).HasAttribute("aria-disabled"));
     }
 
     /// <summary>
-    /// <b>Ein Fehlschlag steht als Zeile da und sperrt nichts</b>: außerhalb der
-    /// 300-km-Grenze, kein Bereichsabruf, Ort unbekannt — einlesen darf der Anwender
-    /// weiterhin.
+    /// <b>Kein Treffer</b> (das Szenario fehlt im Paket): Kennzeichen „nicht im Paket" mit
+    /// Grund und den vorhandenen Ausführungen als Wahlknöpfen; ein Klick setzt Jahr und
+    /// Szenario und sucht neu. Ohne Treffer bleibt „Daten einlesen" weich gesperrt.
     /// </summary>
     [Fact]
-    public void Ein_Fehlschlag_der_Vorschau_steht_als_Zeile_da()
+    public void Kein_Treffer_bietet_die_vorhandenen_Ausfuehrungen()
     {
-        var cut = ZeigeImport(regionErmitteln: _ => Task.FromResult(new KlimaVorschauErgebnis
+        var auftraege = new List<KlimaImportAuftrag>();
+        var cut = ZeigeSuche(a =>
+        {
+            auftraege.Add(a);
+            return Task.FromResult(Treffer(gefunden: a.Szenario == TrySzenario.MittleresJahr));
+        });
+
+        Suchen(cut);
+
+        string karte = cut.Find(".epos-klimavorschau").TextContent;
+        Assert.Contains("TRY 2045 · sommerwarm ist nicht im Paket.", karte);
+        Assert.Contains("nur das mittlere Jahr", karte);
+        Assert.Single(cut.FindAll(".epos-klimavorschau-treffer--nein"));
+        Assert.Equal("true", Einlesen(cut).GetAttribute("aria-disabled"));
+        Assert.False(cut.Instance.VorschauGueltig);
+
+        cut.FindAll("button.epos-klimavorschau-wahl").First(b => b.TextContent.Trim() == "TRY 2015 · mittleres Jahr").Click();
+
+        cut.WaitForAssertion(() => Assert.Equal(2, auftraege.Count), TimeSpan.FromSeconds(10));
+        Assert.Equal(2015, auftraege[1].TryJahr);
+        Assert.Equal(TrySzenario.MittleresJahr, auftraege[1].Szenario);
+        cut.WaitForAssertion(() => Assert.True(cut.Instance.VorschauGueltig), TimeSpan.FromSeconds(10));
+        Assert.False(Einlesen(cut).HasAttribute("aria-disabled"));
+    }
+
+    /// <summary>
+    /// <b>Eine geänderte Eingabe lässt die Karte sichtbar VERFALLEN</b> — Ort, Quelle,
+    /// Jahr oder Szenario; „Daten einlesen" ist dann wieder weich gesperrt.
+    /// </summary>
+    [Fact]
+    public void Eine_geaenderte_Eingabe_laesst_die_Karte_verfallen()
+    {
+        var cut = ZeigeSuche(_ => Task.FromResult(Treffer()));
+        Suchen(cut);
+        Assert.True(cut.Instance.VorschauGueltig);
+
+        cut.FindAll("select")[1].Change(((int)TrySzenario.Winterkalt).ToString(CultureInfo.InvariantCulture));
+        Assert.True(cut.Instance.VorschauVerfallen);
+        Assert.Empty(cut.FindAll(".epos-klimavorschau"));
+        Assert.Contains("die Vorschau ist verfallen", cut.Markup);
+        Assert.Equal("true", Einlesen(cut).GetAttribute("aria-disabled"));
+
+        // Zurueck auf die gesuchte Eingabe: die Karte gilt wieder.
+        cut.FindAll("select")[1].Change(((int)TrySzenario.Sommerwarm).ToString(CultureInfo.InvariantCulture));
+        Assert.True(cut.Instance.VorschauGueltig);
+
+        cut.Find("input[list=epos-klimaregion-orte]").Input("Hamburg");
+        Assert.True(cut.Instance.VorschauVerfallen);
+
+        cut.Find("input[list=epos-klimaregion-orte]").Input("Stuttgart-Vaihingen");
+        QuelleWaehlen(cut, KlimaQuelle.PvgisTmy);
+        Assert.True(cut.Instance.VorschauVerfallen);
+    }
+
+    /// <summary>
+    /// <b>Ohne gültige Vorschau ist „Daten einlesen" WEICH gesperrt</b>: Der Knopf bleibt
+    /// anklickbar (aria-disabled, title), liest aber nicht — die Leiste nennt den Grund.
+    /// </summary>
+    [Fact]
+    public void Import_ohne_Vorschau_ist_weich_gesperrt()
+    {
+        int gelesen = 0;
+        var cut = ZeigeSuche(_ => Task.FromResult(Treffer()),
+                             (_, _) => { gelesen++; return Task.FromResult(new KlimaImportErgebnis()); });
+
+        var knopf = Einlesen(cut);
+        Assert.False(knopf.HasAttribute("disabled"));
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.Contains("Datensatz suchen", knopf.GetAttribute("title"));
+
+        knopf.Click();
+        Assert.Equal(0, gelesen);
+        Assert.Contains("ohne gültige Vorschau wird nichts übernommen", cut.Find(".epos-einlesen > .epos-leiste").TextContent);
+    }
+
+    /// <summary>
+    /// <b>Die Höhe des Ortes geht in den Auftrag</b> — in die Suche und in „Daten einlesen"
+    /// (<see cref="KlimaImportAuftrag.StandortHoeheM"/>); sie lässt die Karte nicht verfallen.
+    /// </summary>
+    [Fact]
+    public void Die_Hoehe_geht_in_den_Auftrag()
+    {
+        KlimaImportAuftrag? gesucht = null, gelesen = null;
+        var cut = ZeigeSuche(a => { gesucht = a; return Task.FromResult(Treffer()); },
+                             (a, _) => { gelesen = a; return Task.FromResult(new KlimaImportErgebnis
+                             {
+                                 Ausgang = KlimaImportAusgang.Erfolg, Bezeichner = "Stuttgart-Vaihingen"
+                             }); });
+
+        Hoehenfeld(cut).Input("450");
+        Suchen(cut);
+        Assert.Equal(450.0, gesucht!.StandortHoeheM);
+
+        Hoehenfeld(cut).Input("460");
+        Assert.True(cut.Instance.VorschauGueltig);
+
+        Einlesen(cut).Click();
+        cut.WaitForAssertion(() => Assert.NotNull(gelesen), TimeSpan.FromSeconds(10));
+        Assert.Equal(460.0, gelesen!.StandortHoeheM);
+        Assert.Equal(KlimaQuelle.TryRegional, gelesen.Quelle);
+    }
+
+    /// <summary>
+    /// <b>Der Hinweis „nicht ortstypisch" ab 50 km ODER 200 m</b> (KD-Q1, KD-Q9) — mit der
+    /// aktuellen Höhe des Ortes; die Zeile zur Repräsentanzstation steht im Regionalweg immer.
+    /// </summary>
+    [Fact]
+    public void Der_Hinweis_nicht_ortstypisch_steht_ab_50_km_oder_200_m()
+    {
+        const string HINWEIS = "Bezugspunkt nicht ortstypisch";
+
+        var weit = ZeigeSuche(_ => Task.FromResult(Treffer(entfernungKm: 56)));
+        Suchen(weit);
+        Assert.Contains(HINWEIS, weit.Markup);
+        Assert.Contains("Nächste Repräsentanzstation", weit.Markup);
+
+        var nah = ZeigeSuche(_ => Task.FromResult(Treffer(entfernungKm: 12, bezugHoeheM: 734)));
+        Suchen(nah);
+        Assert.DoesNotContain(HINWEIS, nah.Markup);          // Hoehe unbekannt
+
+        Hoehenfeld(nah).Input("700");                         // 34 m: kein Hinweis
+        Assert.DoesNotContain(HINWEIS, nah.Markup);
+        Assert.Contains("+34 m", nah.Find(".epos-klimavorschau").TextContent);
+
+        Hoehenfeld(nah).Input("534");                         // genau 200 m: Hinweis
+        Assert.Contains(HINWEIS, nah.Markup);
+    }
+
+    /// <summary>
+    /// <b>Ein Fehlschlag steht als Zeile da und sperrt nur weich</b>: außerhalb der
+    /// 300-km-Grenze, Ort unbekannt — der Knopf bleibt anklickbar.
+    /// </summary>
+    [Fact]
+    public void Ein_Fehlschlag_der_Suche_steht_als_Zeile_da()
+    {
+        var cut = ZeigeSuche(_ => Task.FromResult(new KlimaVorschauErgebnis
         {
             Ausgang = KlimaImportAusgang.Dateifehler,
             Meldung = "Der nächste TRY-Regionsmittelpunkt liegt 900 km entfernt (Grenze 300 km)."
         }));
 
-        QuelleWaehlen(cut, KlimaQuelle.TryRegional);
-        cut.Find("input[list=epos-klimaregion-orte]").Input("Madrid");
-        Regionsknopf(cut)!.Click();
-
-        cut.WaitForAssertion(() => Assert.Contains("900 km", cut.Instance.Regionsvorschau),
-                             TimeSpan.FromSeconds(10));
+        Suchen(cut);
 
         Assert.Contains("900 km", cut.Markup);
+        Assert.Empty(cut.FindAll(".epos-klimavorschau"));
         Assert.False(Einlesen(cut).HasAttribute("disabled"));
-    }
-
-    /// <summary>
-    /// <b>Eine geänderte Eingabe verwirft die Zeile</b> — sie gälte sonst für einen
-    /// Standort, den es im Dialog nicht mehr gibt.
-    /// </summary>
-    [Fact]
-    public void Eine_geaenderte_Eingabe_verwirft_die_Ergebniszeile()
-    {
-        var cut = ZeigeImport(regionErmitteln: _ => Task.FromResult(new KlimaVorschauErgebnis
-        {
-            Ausgang = KlimaImportAusgang.Erfolg,
-            Meldung = "Region 14 Stötten, Station 48,6600 / 9,8600, Entfernung 12 km"
-        }));
-
-        QuelleWaehlen(cut, KlimaQuelle.TryRegional);
-        cut.Find("input[list=epos-klimaregion-orte]").Input("Geislingen");
-        Regionsknopf(cut)!.Click();
-
-        cut.WaitForAssertion(() => Assert.Contains("Stötten", cut.Instance.Regionsvorschau),
-                             TimeSpan.FromSeconds(10));
-
-        cut.Find("input[list=epos-klimaregion-orte]").Input("Hamburg");
-        Assert.Equal("", cut.Instance.Regionsvorschau);
+        Assert.Equal("true", Einlesen(cut).GetAttribute("aria-disabled"));
     }
 
     // =====================================================================
@@ -1174,7 +1353,7 @@ public class KlimadatenDialogTests : EposBunitContext
                         .Select(e => e.TextContent.Trim()).ToList();
         // Der Schreibschutz ist keine Spalte mehr, sondern das Schloss hinter dem
         // Namen (Konzept Administrationsdialoge, V10) - ohne "Duplizieren" im Kurztext.
-        Assert.Equal(new[] { "Klimaregion", "Quelle", "Standort", "Longitude", "Latitude",
+        Assert.Equal(new[] { "Klimaregion", "Quelle", "Standort", "Longitude [°]", "Latitude [°]",
                              "Importdatum" }, koepfe);
         var schloss = cut.FindAll(".epos-katalogliste .epos-schloss");
         Assert.Single(schloss);
@@ -1325,10 +1504,10 @@ public class KlimadatenDialogTests : EposBunitContext
         // traegt die Hoechsthoehe (1,3 x --epos-listenhoehe, siehe KatalograhmenTests).
         Assert.Single(cut.FindAll(".epos-katalog-paar > .epos-katalog-liste .epos-raster-huelle"));
 
-        // Die Reiter mit den zwei Diagrammen stehen im STAMMBLATT (Stufe 4), in dessen
+        // Die Reiter mit den drei Diagrammen (KD-8: dazu „Weitere Reihen“) stehen im STAMMBLATT (Stufe 4), in dessen
         // Gruppe Jahresverlauf - nicht neben der Liste.
         Assert.Single(cut.FindAll(".epos-katalog-paar > .epos-katalog-stammblatt .epos-reiter-leiste"));
-        Assert.Equal(2, cut.FindAll(".epos-katalog-paar > .epos-katalog-stammblatt .epos-reiter-knopf").Count);
+        Assert.Equal(3, cut.FindAll(".epos-katalog-paar > .epos-katalog-stammblatt .epos-reiter-knopf").Count);
 
         // Die Fussleiste ist ein direktes Kind der Dialogwurzel und steht damit
         // UNTER dem Rahmen - nie in ihm.
@@ -1418,7 +1597,7 @@ public class KlimadatenDialogTests : EposBunitContext
         var herkunft = cut.FindAll(".epos-stammblattgruppe").Single(g => g.GetAttribute("aria-label") == "Herkunft");
         Assert.Empty(herkunft.QuerySelectorAll("input, textarea, select"));
         var namen = herkunft.QuerySelectorAll(".epos-stammblattwert dt").Select(e => e.TextContent).ToList();
-        Assert.Equal(new[] { "Quelle", "Importdatum", "Standort", "Longitude", "Latitude", "Herkunftsvermerk" }, namen);
+        Assert.Equal(new[] { "Quelle", "Importdatum", "Standort", "Longitude [°]", "Latitude [°]", "Herkunftsvermerk" }, namen);
         var werte = herkunft.QuerySelectorAll(".epos-stammblattwert dd").Select(e => e.TextContent).ToList();
         Assert.Equal("PVGIS-Testreferenzjahr (weltweit)", werte[0]);
         Assert.Equal("2026-09-18", werte[1]);
@@ -1680,7 +1859,8 @@ public class KlimadatenDialogTests : EposBunitContext
 
         cut.WaitForAssertion(() => Assert.Single(cut.FindAll("svg.epos-flaeche")),
                              TimeSpan.FromSeconds(10));
-        Assert.Equal(new[] { "Bereich", "1:1" },
+        // Die Leiste: Bereich, 1:1 und - am Jahresbild - die Wahl "Datum | Stunde im Jahr".
+        Assert.Equal(new[] { "Bereich", "1:1", "Datum", "Stunde im Jahr" },
                      cut.FindAll("button.epos-diagramm-knopf")
                         .Select(k => k.TextContent.Trim()).ToArray());
         Assert.Single(cut.FindAll(".epos-diagramm-zeigerzeile"));
@@ -1689,7 +1869,7 @@ public class KlimadatenDialogTests : EposBunitContext
 
         cut.WaitForAssertion(() => Assert.Single(cut.FindAll("svg.epos-flaeche")),
                              TimeSpan.FromSeconds(10));
-        Assert.Equal(new[] { "Bereich", "1:1" },
+        Assert.Equal(new[] { "Bereich", "1:1", "Datum", "Stunde im Jahr" },
                      cut.FindAll("button.epos-diagramm-knopf")
                         .Select(k => k.TextContent.Trim()).ToArray());
     }
@@ -1881,5 +2061,286 @@ public class KlimadatenDialogTests : EposBunitContext
         var loeschen = cut.FindAll(".epos-auswahlleiste button").First(b => b.TextContent.Trim() == "Löschen");
         Assert.Null(loeschen.GetAttribute("aria-disabled"));
         Assert.Equal("Schloss von „Auslieferung Nord“ aufgehoben.", cut.Instance.Status);
+    }
+
+    // =====================================================================
+    //  KD-8 Teil A: weitere Reihen in Vorschau und Jahresverlauf
+    // =====================================================================
+
+    /// <summary>Eine Region mit gespeicherten Rechenspalten: Feuchte und Bedeckung NULL (führt nicht).</summary>
+    private static KlimadatenDialog.Regionsansicht AnsichtMitReihen(string n)
+    {
+        var zeilen = Enumerable.Range(0, 8760).Select(i => new SolardatenModel
+        {
+            Außen_Temp = 5, Globalstrahlung = i % 24 * 10, Direktstrahlung = i % 24 * 6, Diffusstrahlung = i % 24 * 4,
+            Gegenstrahlung = 300, Sol_Sued = i % 24 * 5, Sol_West = i % 24 * 3, Sol_Ost = i % 24 * 2, Sol_Nord = i % 24
+        }).ToList();
+        return new KlimadatenDialog.Regionsansicht("Details " + n, 9.18, 48.77, MODELL, MODELL, "")
+        {
+            Reihenbestand = KlimaReihenkatalog.AusRechenspalten(zeilen)
+        };
+    }
+
+    private IRenderedComponent<KlimadatenDialog> ZeigeWeitere(
+        Func<Zeichenmodell, string, Zeitraster, Task>? csv = null)
+    {
+        IReadOnlyList<Katalogfilterzeile> liste = Regionen();
+        var cut = Render<KlimadatenDialog>(p => p
+            .Add(x => x.Regionen, () => Task.FromResult(liste))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Ansicht, n => Task.FromResult(AnsichtMitReihen(n)))
+            .Add(x => x.CsvSpeichern, csv)
+            .Add(x => x.Geschlossen, _ => { }));
+        cut.WaitForAssertion(() => Assert.Equal("Berlin", cut.Instance.Gewaehlt), TimeSpan.FromSeconds(10));
+        cut.FindAll(".epos-stammblatt .epos-reiter-knopf").First(e => e.TextContent.Trim() == "Weitere Reihen").Click();
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-kennung=klima-jahr] button.epos-reihenwahl-chip")));
+        return cut;
+    }
+
+    private static AngleSharp.Dom.IElement Chip(IRenderedComponent<KlimadatenDialog> cut, string kennung, string schluessel)
+        => cut.Find("[data-kennung=" + kennung + "] button.epos-reihenwahl-chip[data-schluessel=" + schluessel + "]");
+
+    private static DiagrammSvg Reihenbild(IRenderedComponent<KlimadatenDialog> cut)
+        => cut.FindComponents<DiagrammSvg>().Single(d => d.Instance.Kennung == "klima-reihen").Instance;
+
+    [Fact]
+    public void KD8_Weitere_Reihen_Vorgabe_Global_nicht_gefuehrte_Reihen_gesperrt()
+    {
+        var cut = ZeigeWeitere();
+
+        Assert.Equal("true", Chip(cut, "klima-jahr", KlimaReihenkatalog.R_GLOBAL).GetAttribute("aria-pressed"));
+        var feuchte = Chip(cut, "klima-jahr", KlimaReihenkatalog.R_LUFTFEUCHTE);
+        Assert.Equal("true", feuchte.GetAttribute("aria-disabled"));
+        Assert.Equal("Quelle führt die Größe nicht", feuchte.GetAttribute("title"));
+        // Temperatur und Sonnenwinkel haben eigene Reiter.
+        Assert.Empty(cut.FindAll("[data-kennung=klima-jahr] [data-schluessel=R_TEMPERATUR]"));
+        Assert.Empty(cut.FindAll("[data-kennung=klima-jahr] [data-schluessel=F_SONNENWINKEL]"));
+        Assert.Single(Reihenbild(cut).Modell!.Reihen);
+    }
+
+    [Fact]
+    public void KD8_Gleiche_Einheit_fuegt_hinzu_vierte_gesperrt_andere_Einheit_ersetzt()
+    {
+        var cut = ZeigeWeitere();
+
+        Assert.Equal("Reihe hinzufügen", Chip(cut, "klima-jahr", KlimaReihenkatalog.R_GEGENSTRAHLUNG).GetAttribute("title"));
+        Chip(cut, "klima-jahr", KlimaReihenkatalog.R_DIFFUS).Click();
+        Chip(cut, "klima-jahr", KlimaReihenkatalog.F_SUED).Click();
+        Assert.Equal(3, Reihenbild(cut).Modell!.Reihen.Count);
+        Assert.Equal("true", Chip(cut, "klima-jahr", KlimaReihenkatalog.F_NORD).GetAttribute("aria-disabled"));
+        Assert.Equal("Höchstens drei Reihen je Bild; erst eine abwählen.",
+                     Chip(cut, "klima-jahr", KlimaReihenkatalog.F_NORD).GetAttribute("title"));
+    }
+
+    [Fact]
+    public void KD8_Einheitenwechsel_wird_angesagt_und_zeigt_die_Reihe_allein()
+    {
+        // Eine Region mit Feuchte (%) neben der Globalstrahlung (W/m²).
+        IReadOnlyList<Katalogfilterzeile> liste = Regionen();
+        var zeilen = Enumerable.Range(0, 8760).Select(i => new SolardatenModel
+        {
+            Globalstrahlung = i % 24 * 10, Luftfeuchte = 70 + i % 5
+        }).ToList();
+        var cut2 = Render<KlimadatenDialog>(p => p
+            .Add(x => x.Regionen, () => Task.FromResult(liste))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Ansicht, n => Task.FromResult(new KlimadatenDialog.Regionsansicht("", null, null, MODELL, MODELL, "")
+            {
+                Reihenbestand = KlimaReihenkatalog.AusRechenspalten(zeilen)
+            }))
+            .Add(x => x.Geschlossen, _ => { }));
+        cut2.WaitForAssertion(() => Assert.Equal("Berlin", cut2.Instance.Gewaehlt), TimeSpan.FromSeconds(10));
+        cut2.FindAll(".epos-stammblatt .epos-reiter-knopf").First(e => e.TextContent.Trim() == "Weitere Reihen").Click();
+
+        var feuchte = Chip(cut2, "klima-jahr", KlimaReihenkatalog.R_LUFTFEUCHTE);
+        Assert.Equal("Andere Einheit: zeigt Relative Luftfeuchte allein", feuchte.GetAttribute("title"));
+        Assert.Null(feuchte.GetAttribute("aria-disabled"));
+        feuchte.Click();
+
+        Assert.Equal("true", Chip(cut2, "klima-jahr", KlimaReihenkatalog.R_LUFTFEUCHTE).GetAttribute("aria-pressed"));
+        Assert.Equal("false", Chip(cut2, "klima-jahr", KlimaReihenkatalog.R_GLOBAL).GetAttribute("aria-pressed"));
+        var bild = cut2.FindComponents<DiagrammSvg>().Single(d => d.Instance.Kennung == "klima-reihen").Instance;
+        Assert.Equal("Relative Luftfeuchte", Assert.Single(bild.Modell!.Reihen).Name);
+        Assert.Contains("jetzt: %", cut2.Find("[data-kennung=klima-jahr] .epos-reihenwahl-kopf").TextContent);
+    }
+
+    [Fact]
+    public async Task KD8_Neue_Wahl_neues_Modell_Zoom_kehrt_auf_x1_zurueck()
+    {
+        var cut = ZeigeWeitere();
+        var svg = cut.FindComponents<DiagrammSvg>().Single(d => d.Instance.Kennung == "klima-reihen");
+        Zeichenmodell vorher = svg.Instance.Modell!;
+        await cut.InvokeAsync(() => svg.Instance.ZoomGemeldet(4));
+        Assert.Equal(4, svg.Instance.Stufe);
+
+        Chip(cut, "klima-jahr", KlimaReihenkatalog.R_DIFFUS).Click();
+
+        Assert.NotSame(vorher, svg.Instance.Modell);
+        Assert.Equal(1, svg.Instance.Stufe);
+    }
+
+    [Fact]
+    public void KD8_CSV_schreibt_die_gewaehlten_Reihen()
+    {
+        Zeichenmodell? geschrieben = null;
+        var cut = ZeigeWeitere((m, _, _) => { geschrieben = m; return Task.CompletedTask; });
+        Chip(cut, "klima-jahr", KlimaReihenkatalog.R_DIFFUS).Click();
+
+        cut.FindAll("div.epos-diagramm-leiste button.epos-diagramm-csv")
+           .Single(b => b.Closest(".epos-reiterblatt, [role=tabpanel]") is { } blatt && blatt.QuerySelector("[data-kennung=klima-jahr]") is not null)
+           .Click();
+
+        cut.WaitForAssertion(() => Assert.NotNull(geschrieben));
+        Assert.Equal(new[] { "Globalstrahlung", "Diffusstrahlung" }, geschrieben!.Reihen.Select(r => r.Name));
+    }
+
+    // ---- Vorschau ----
+
+    private static KlimaVorschauErgebnis TrefferMitReihen()
+    {
+        KlimaVorschauErgebnis erg = Treffer();
+        var kz = erg.Kennzahlen!;
+        kz.Monatsreihen[KlimaReihenkatalog.R_TEMPERATUR] = kz.MonatsmittelTemperatur;
+        kz.Monatsreihen[KlimaReihenkatalog.R_GLOBAL] = kz.MonatssummeGlobalstrahlungKwhM2;
+        kz.Monatsreihen[KlimaReihenkatalog.R_DIFFUS] = kz.MonatssummeGlobalstrahlungKwhM2.Select(w => w / 2).ToArray();
+        kz.Monatsreihen[KlimaReihenkatalog.R_LUFTFEUCHTE] = Enumerable.Repeat(75.0, 12).ToArray();
+        kz.Monatsreihen[KlimaReihenkatalog.R_BEDECKUNG] = Enumerable.Repeat(5.0, 12).ToArray();
+        kz.Reihenstunden[KlimaReihenkatalog.R_BEDECKUNG] = 4000;
+        return erg;
+    }
+
+    private IRenderedComponent<KlimadatenDialog> ZeigeVorschau()
+    {
+        var cut = ZeigeSuche(_ => Task.FromResult(TrefferMitReihen()));
+        Suchen(cut);
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-kennung=klima-vorschau] button.epos-reihenwahl-chip")));
+        return cut;
+    }
+
+    private static Zeichenmodell Vorschaubild(IRenderedComponent<KlimadatenDialog> cut)
+        => cut.FindComponents<DiagrammSvg>().Single(d => d.Instance.Kennung == "klima-vorschau").Instance.Modell!;
+
+    [Fact]
+    public void KD8B_Rohwert_Chips_folgen_dem_Datenstand_mit_Marke_R()
+    {
+        // Teil B: Die fünf Rohwert-Größen mit Bild bekommen ihren Chip aus dem Datenstand - in der Vorschau, wenn der
+        // gelesene Satz die Rohwerte speichert (Schritt 238 steht), im Reiter „Weitere Reihen“, wenn die Hülle sie im
+        // Reihenbestand führt; eine Reihe ohne Werte bleibt weich gesperrt („Quelle führt die Größe nicht“).
+        string[] roh = KlimaReihenkatalog.Reihen.Where(r => r.IstRohwert && r.InVorschau).Select(r => r.Schluessel).ToArray();
+        Assert.Equal(5, roh.Length);
+        string druck = KlimaReihenkatalog.ROH_PREFIX + KlimaRohwerteSchema.SPALTE_LUFTDRUCK;
+        string dampf = KlimaReihenkatalog.ROH_PREFIX + KlimaRohwerteSchema.SPALTE_WASSERDAMPF;
+
+        IRenderedComponent<KlimadatenDialog> Vorschau(bool gespeichert)
+        {
+            var erg = TrefferMitReihen();
+            foreach (string k in roh) erg.Kennzahlen!.Monatsreihen[k] = Enumerable.Repeat(3.0, 12).ToArray();
+            erg.Parameterbestand = Enum.GetValues<KlimaParameter>()
+                .Select(p => new KlimaParameterEintrag { Parameter = p, Stand = KlimaParameterStand.Gefuehrt }).ToList();
+            erg.RohwerteGespeichert = gespeichert;
+            var cut = ZeigeSuche(_ => Task.FromResult(erg));
+            Suchen(cut);
+            cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-kennung=klima-vorschau] button.epos-reihenwahl-chip")));
+            return cut;
+        }
+
+        IRenderedComponent<KlimadatenDialog> Jahr(bool mitRohwerten)
+        {
+            IReadOnlyList<Katalogfilterzeile> liste = Regionen();
+            var cut = Render<KlimadatenDialog>(p => p
+                .Add(x => x.Regionen, () => Task.FromResult(liste))
+                .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+                .Add(x => x.Ansicht, n =>
+                {
+                    var a = AnsichtMitReihen(n);
+                    if (!mitRohwerten) return Task.FromResult(a);
+                    // Wie die Hülle nach dem Schritt 238: Luftdruck geführt, Wasserdampf nur NULL.
+                    var daten = new KlimaExportDaten { IdRegion = 1, Rohdaten = true };
+                    daten.Rohwerte[KlimaRohwerteSchema.SPALTE_LUFTDRUCK] = Enumerable.Repeat(1013.0, 8760).ToArray();
+                    var bestand = a.Reihenbestand.Concat(KlimaReihenkatalog.AusRohwerten(daten)).ToList();
+                    return Task.FromResult(a with { Reihenbestand = bestand });
+                })
+                .Add(x => x.Geschlossen, _ => { }));
+            cut.WaitForAssertion(() => Assert.Equal("Berlin", cut.Instance.Gewaehlt), TimeSpan.FromSeconds(10));
+            cut.FindAll(".epos-stammblatt .epos-reiter-knopf").First(e => e.TextContent.Trim() == "Weitere Reihen").Click();
+            cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll("[data-kennung=klima-jahr] button.epos-reihenwahl-chip")));
+            return cut;
+        }
+
+        int Rohchips(IRenderedComponent<KlimadatenDialog> cut, string kennung)
+            => cut.FindAll($"[data-kennung={kennung}] button.epos-reihenwahl-chip")
+                  .Count(c => c.GetAttribute("data-schluessel")!.StartsWith(KlimaReihenkatalog.ROH_PREFIX));
+
+        // Ohne Rohwerttabelle (der Satz speichert nicht, der Bestand führt keine Rohwerte): kein Chip.
+        Assert.Equal(0, Rohchips(Vorschau(false), "klima-vorschau"));
+        Assert.Equal(0, Rohchips(Jahr(false), "klima-jahr"));
+
+        // Mit dem Schritt 238: die fünf Chips in der Vorschau, frei schaltbar, mit Marke „R“.
+        var v = Vorschau(true);
+        Assert.Equal(5, Rohchips(v, "klima-vorschau"));
+        // Die Ausstrahlung teilt die Einheit der Strahlung und ist frei schaltbar; der Luftdruck wäre neben kWh/m² und °C
+        // die dritte Einheit und ist nach KD-Q10 weich gesperrt - beide tragen die Marke „R“ mit Titel.
+        var vAus = Chip(v, "klima-vorschau", KlimaReihenkatalog.ROH_PREFIX + KlimaRohwerteSchema.SPALTE_AUSSTRAHLUNG);
+        Assert.Null(vAus.GetAttribute("aria-disabled"));
+        Assert.Equal("Rohwert der Quelle aus der Rohwerttabelle (R)", vAus.QuerySelector(".epos-reihenwahl-marke")!.GetAttribute("title"));
+        var vDruck = Chip(v, "klima-vorschau", druck);
+        Assert.Equal("true", vDruck.GetAttribute("aria-disabled"));
+        Assert.NotNull(vDruck.QuerySelector(".epos-reihenwahl-marke"));
+
+        // Im Reiter „Weitere Reihen“: fünf Chips mit Marke; Luftdruck geführt, Wasserdampf weich gesperrt mit Grund.
+        var j = Jahr(true);
+        Assert.Equal(5, Rohchips(j, "klima-jahr"));
+        var jDruck = Chip(j, "klima-jahr", druck);
+        Assert.Null(jDruck.GetAttribute("aria-disabled"));
+        Assert.NotNull(jDruck.QuerySelector(".epos-reihenwahl-marke"));
+        var jDampf = Chip(j, "klima-jahr", dampf);
+        Assert.Equal("true", jDampf.GetAttribute("aria-disabled"));
+        Assert.Equal("Quelle führt die Größe nicht", jDampf.GetAttribute("title"));
+        Assert.NotNull(jDampf.QuerySelector(".epos-reihenwahl-marke"));
+        // Der Luftdruck lässt sich zuschalten (andere Einheit als W/m²: er steht dann allein).
+        jDruck.Click();
+        j.WaitForAssertion(() => Assert.Equal("true", Chip(j, "klima-jahr", druck).GetAttribute("aria-pressed")));
+    }
+
+    [Fact]
+    public void KD8_Vorschau_Vorgabe_Global_und_Temperatur_unter_dem_Bild()
+    {
+        var cut = ZeigeVorschau();
+
+        var chips = cut.FindAll("[data-kennung=klima-vorschau] button.epos-reihenwahl-chip")
+                       .Where(c => !c.GetAttribute("data-schluessel")!.StartsWith(KlimaReihenkatalog.ROH_PREFIX)).ToList();
+        Assert.Equal(new[] { "R_TEMPERATUR", "R_LUFTFEUCHTE", "R_GLOBAL", "R_DIFFUS", "R_BEDECKUNG" },
+                     chips.Select(c => c.GetAttribute("data-schluessel")));
+        Assert.Equal(new[] { "R_TEMPERATUR", "R_GLOBAL" },
+                     chips.Where(c => c.GetAttribute("aria-pressed") == "true").Select(c => c.GetAttribute("data-schluessel")));
+        Assert.Equal(2, Vorschaubild(cut).Reihen.Count);
+        Assert.Contains("4.000 von 8.760 Stunden", Chip(cut, "klima-vorschau", KlimaReihenkatalog.R_BEDECKUNG).GetAttribute("title"));
+        Assert.Empty(cut.FindAll("datalist[id^=epos-reihen]"));
+    }
+
+    [Fact]
+    public void KD8_Vorschau_Zuschalten_dritte_Einheit_gesperrt_letzte_bleibt_Vorgabe()
+    {
+        var cut = ZeigeVorschau();
+
+        Chip(cut, "klima-vorschau", KlimaReihenkatalog.R_DIFFUS).Click();
+        Assert.Equal(3, Vorschaubild(cut).Reihen.Count);
+
+        var feuchte = Chip(cut, "klima-vorschau", KlimaReihenkatalog.R_LUFTFEUCHTE);
+        Assert.Equal("true", feuchte.GetAttribute("aria-disabled"));
+        Assert.StartsWith("Höchstens zwei Einheiten zugleich (kWh/m², °C)", feuchte.GetAttribute("title"));
+        feuchte.Click();
+        Assert.Equal(3, Vorschaubild(cut).Reihen.Count);
+
+        Chip(cut, "klima-vorschau", KlimaReihenkatalog.R_TEMPERATUR).Click();
+        Chip(cut, "klima-vorschau", KlimaReihenkatalog.R_GLOBAL).Click();
+        Assert.Equal("Diffusstrahlung [kWh/m²]", Assert.Single(Vorschaubild(cut).Reihen).Name);
+        Chip(cut, "klima-vorschau", KlimaReihenkatalog.R_DIFFUS).Click();       // letzte bleibt
+        Assert.Single(Vorschaubild(cut).Reihen);
+        Assert.Equal("Mindestens eine Reihe bleibt gewählt.",
+                     cut.Find("[data-kennung=klima-vorschau] .epos-reihenwahl-leise").TextContent);
+
+        cut.Find("[data-kennung=klima-vorschau] .epos-reihenwahl-vorgabe").Click();
+        Assert.Equal(2, Vorschaubild(cut).Reihen.Count);
     }
 }

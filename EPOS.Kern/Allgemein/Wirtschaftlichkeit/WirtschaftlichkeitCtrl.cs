@@ -54,11 +54,11 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die beiden Nachschlagewerke des Heizöl-Ausschlusses (Nachtrag 2 zu E2), je
-        /// Berechne-Lauf einmal gelesen — sie sind projektunabhängige Katalogtabellen:
-        /// <c>Tab_Brennstoff_Stamm.ID → ID_Kategorie</c> und
+        /// Berechne-Lauf einmal gelesen: <c>Brennstoffart → ID_Kategorie</c> je Projekt aus der
+        /// Projektkopie (<see cref="ProjektBrennstoffe.Sicht"/>) und
         /// <c>energy_carrier.id → ID_Brennstoff</c>. <c>null</c> = noch nicht gelesen.
         /// </summary>
-        private Dictionary<int, int> _brennstoffKategorie;
+        private Dictionary<int, Dictionary<int, int>> _brennstoffKategorie;
 
         /// <inheritdoc cref="_brennstoffKategorie"/>
         private Dictionary<int, int> _carrierBrennstoff;
@@ -155,14 +155,10 @@ namespace WindowsFormsApplication1
         /// ETAPPE E4: die drei Steuergutschriften des ersten Betrachtungsjahres und die
         /// Herkunft der verwendeten Sätze in <see cref="TAB_ERGEBNIS"/>.
         ///
-        /// <para><b>Warum über <c>SpalteSicher</c> und nicht über einen
-        /// Migrationsschritt.</b> Dieses Modul führt seine ERGEBNIStabelle seit W1 selbst
-        /// und hat sie so schon zwanzigmal additiv nachgerüstet — zuletzt in E2 mit
-        /// <see cref="SPALTE_KWKG_VBH_EL"/>. Ein Migrationsschritt dafür wäre der dritte
-        /// Mechanismus für EINE Tabelle. Die PARAMETERtabelle geht denselben Weg
-        /// zusätzlich über Migrationsschritt 20 — dort verlangt der Auftrag den
-        /// Schemastand, und dort ist er auch fachlich richtig: Es sind Eingabedaten des
-        /// Anwenders, keine wiederherstellbaren Rechenergebnisse.</para>
+        /// <para><b>Die Ergebnisspalten legt das Schema an.</b> Die Ergebnistabelle steht im
+        /// Grundschema; ihre Spalten ohne Grundschema legt ein Schemaschritt an (die vier
+        /// jüngsten: <see cref="ErgebnisWirtschaftlichkeitSpaltenSchema"/>). Ein Ergebnis ist
+        /// wiederherstellbar, die Parametertabelle trägt dagegen Eingabedaten des Anwenders.</para>
         /// </summary>
         public const string SPALTE_ENERGIESTEUER = "EnergiesteuerErloes";
 
@@ -187,9 +183,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// ETAPPE E5: vermiedene Kosten (Arbeit, Leistung, Summe) und der Betrag der
-        /// berücksichtigten Aufschläge in <see cref="TAB_ERGEBNIS"/>. Über
-        /// <c>SpalteSicher</c> — dieselbe Begründung wie bei
-        /// <see cref="SPALTE_ENERGIESTEUER"/>.
+        /// berücksichtigten Aufschläge in <see cref="TAB_ERGEBNIS"/>.
         /// </summary>
         public const string SPALTE_VERMIEDEN_ARBEIT = "VermiedenArbeit";
 
@@ -204,16 +198,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// ETAPPE W5‑B‑10 (VALERI): Barwert der Ersatzbeschaffungen in
-        /// <see cref="TAB_ERGEBNIS"/> [€]. Über <c>SpalteSicher</c> — dieselbe
-        /// Begründung wie bei <see cref="SPALTE_ENERGIESTEUER"/>: Ergebnisspalten führt
-        /// dieses Modul selbst, Eingabespalten der Migrationskatalog.
+        /// <see cref="TAB_ERGEBNIS"/> [€].
         /// </summary>
         public const string SPALTE_ERSATZ_BARWERT = "ErsatzBarwert";
 
         /// <summary>
         /// ETAPPE E7: Aufschlüsselung des Einspeiseerlöses in PV-Überschuss und
-        /// KWK-Einspeisung in <see cref="TAB_ERGEBNIS"/>. Über <c>SpalteSicher</c> —
-        /// dieselbe Begründung wie bei <see cref="SPALTE_ENERGIESTEUER"/>. Die Summe der
+        /// KWK-Einspeisung in <see cref="TAB_ERGEBNIS"/>. Die Summe der
         /// beiden Spalten ist der bereits vorhandene <c>Einspeiseerloes</c>; sie sind
         /// Zerlegung, keine zusätzliche Zahlung.
         /// </summary>
@@ -224,8 +215,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// ETAPPE K5 (Konzept § 7.4, L7): der angesetzte Investitionszuschuss in
-        /// <see cref="TAB_ERGEBNIS"/> [€], positiv. Über <c>SpalteSicher</c> — dieselbe
-        /// Begründung wie bei <see cref="SPALTE_ENERGIESTEUER"/>.
+        /// <see cref="TAB_ERGEBNIS"/> [€], positiv.
         ///
         /// <para><b>Warum eine eigene Spalte und nicht die Differenz.</b> Ohne sie
         /// stünde in <c>Investition</c> entweder der Bruttobetrag (dann fehlte der
@@ -237,8 +227,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// ETAPPE P6 (PV-Konzept § 6.4): Ausweis des PV-Vergütungsdialogs in
-        /// <see cref="TAB_ERGEBNIS"/>. Über <c>SpalteSicher</c> — dieselbe
-        /// Begründung wie bei <see cref="SPALTE_ENERGIESTEUER"/>. Gefüllt nur bei
+        /// <see cref="TAB_ERGEBNIS"/>. Gefüllt nur bei
         /// aktivem Dialog (Form leer = Bestandsweg ohne Dialog).
         /// </summary>
         /// <summary>
@@ -247,8 +236,7 @@ namespace WindowsFormsApplication1
         /// (<see cref="ErgebnisNachweisUmschlag"/>), der die Zeilenlisten eines Laufs
         /// traegt — Modulnachweis, Energiekosten je Anlage, Betriebskostenpositionen,
         /// Kohaerenzzeilen — und die vier Skalare, die es bis B7P ebenfalls nur im
-        /// frischen Lauf gab. Ueber <c>SpalteSicher</c> — dieselbe Begruendung wie bei
-        /// <see cref="SPALTE_ENERGIESTEUER"/>.
+        /// frischen Lauf gab.
         ///
         /// <para><b>Warum ein Umschlag und nicht dreissig Spalten.</b> Es sind LISTEN
         /// mit je einem Dutzend Feldern, deren Laenge an der Zahl der Anlagen und
@@ -259,6 +247,15 @@ namespace WindowsFormsApplication1
         /// Unterzeilen.</para>
         /// </summary>
         public const string SPALTE_NACHWEIS_JSON = "Nachweis_Json";
+
+        /// <summary>
+        /// Anwenderentscheid 02.10.2026 (Register EZ‑19) — der <b>Laufvermerk</b> einer Zeile in
+        /// <see cref="TAB_ERGEBNIS"/>: die Stände des Laufs, aus dem sie stammt (Stamm, angehakte
+        /// Varianten, Referenz), aufsteigend mit Komma (<see cref="Laufvermerk.Schreiben"/>).
+        /// NULL heißt „Altbestand ohne Vermerk": Die Seite nimmt dann wie zuvor die Wahl beim
+        /// ersten Laden als Lauf der gespeicherten Ergebnisse.
+        /// </summary>
+        public const string SPALTE_LAUF_STAENDE = "Lauf_Staende";
 
         public const string SPALTE_PV_FORM = "PvVerguetungsform";
         /// <inheritdoc cref="SPALTE_PV_FORM"/>
@@ -322,122 +319,46 @@ namespace WindowsFormsApplication1
 
         // ------------------------------------------------------------- Tabellen
 
-        /// <summary>
-        /// Zieht die drei Ergebnisspalten nach, die kein Schemaschritt führt, und sät den
-        /// Katalog gesetzlicher Parameter. <b>Die Tabellen selbst legt sie nicht an.</b>
-        /// </summary>
-        /// <remarks>
-        /// <para><b>Warum die fünf Tabellen hier nicht entstehen.</b> <see cref="TAB_PARAMETER"/>,
-        /// <see cref="TAB_ERGEBNIS"/>, <see cref="TAB_SENS"/>, <see cref="TAB_TARIF"/> und
-        /// <see cref="TAB_MATRIX"/> stehen im Grundschema (<c>sql/schema/001_grundschema.sql</c>),
-        /// aus dem jede Datenbank hervorgeht — unter Windows über die Auslieferungsvorlage
-        /// (<see cref="Erstbereitstellung"/>), auf iOS über die Seed-Kopie, in Tests und
-        /// Referenzlauf über die Testdatenbank. Alle fünf sind dort <c>STRICT</c>; Parameter-
-        /// und Tariftabelle tragen ihren Fremdschlüssel auf <c>Tab_Projekt</c> mit
-        /// <c>ON DELETE CASCADE</c> seit dem Grundschema, die drei Ergebnistabellen bekommen ihn
-        /// in Schemaschritt 96 (<see cref="ProjektFremdschluessel"/>). Eine Anlage an dieser
-        /// Stelle entstünde ohne Fremdschlüssel und ohne <c>STRICT</c>, und Schritt 96 baute eine
-        /// solche Tabelle nicht um, sondern bräche an ihr ab
-        /// (<see cref="ProjektFremdschluessel.Zieltext"/>) — die Simulation bliebe gesperrt.
-        /// Fehlt eine Tabelle doch, nennen Laden und Speichern den Datenbankfehler
-        /// (<see cref="Ladefehler"/>, <see cref="Speicherfehler"/>).</para>
-        ///
-        /// <para><b>Warum die Eingabespalten hier nicht nachgezogen werden.</b> Jede Spalte, die
-        /// ein Schemaschritt anlegt (20, 21, 22, 23, 28, 61, 71, 72, 88, 89, 92, 93, 105, 116,
-        /// 118, 125), ist auf jeder Datenbank garantiert, auf der dieser Controller läuft: Die
-        /// Windows-Schale führt <c>SchemaMigration.Ausfuehren</c> bei jedem Start vor dem ersten
-        /// Fenster aus und sperrt bei Fehlschlag die Simulation
-        /// (<see cref="SchemaStand.SimulationGesperrt"/>); die Seed-Datenbank der iOS-Hülle und
-        /// die Testdatenbank stehen auf <see cref="SchemaStand.Zielversion"/>. Ein zweiter
-        /// DDL-Ort holte zudem Entferntes zurück: <see cref="SchemaKatalog.Schritt21_Tarifmodell"/>
-        /// führt <c>Aufschlaege_Anwenden</c>, das Schemaschritt 85 entfernt hat — ein Nachzug aus
-        /// dieser Liste legte die Spalte bei jedem Zugriff wieder an (Wache:
-        /// <c>WirtschaftlichkeitCtrlTabellenTests</c>).</para>
-        ///
-        /// <para><b>Was bleibt, und warum.</b> Drei Ergebnisspalten führt weder das Grundschema
-        /// noch ein Schemaschritt: <see cref="SPALTE_STROMST_MODUS"/> (Etappe B6),
-        /// <see cref="SPALTE_ERSATZ_BARWERT"/> (W5-B-10) und <see cref="SPALTE_NACHWEIS_JSON"/>
-        /// (B7P). Die Testdatenbank bekommt sie einzeln über <c>Werkzeuge/Testdatenbankschema</c>,
-        /// eine Anwenderdatenbank aus einer älteren Auslieferungsvorlage nur hier. Bis ein
-        /// Schemaschritt sie führt, bleibt dieser additive Nachzug (<see cref="SpalteSicher"/>:
-        /// <c>ALTER TABLE … ADD COLUMN</c> nur bei nachweislichem Fehlen, kein DML); ein
-        /// Fehlschlag steht in <see cref="Vorsorgewarnung"/>.</para>
-        /// </remarks>
-        public void StelleTabellenSicher()
-        {
-            // ETAPPE E13 (E7c3-Q6): Die Warnung gilt für DIESE Vorsorge — seit die
-            // Oberfläche sie zeigt, darf ein längst behobener Fehler nicht stehen bleiben.
-            Vorsorgewarnung = null;
-
-            SpalteSicher(TAB_ERGEBNIS, SPALTE_STROMST_MODUS, "TEXT(20)");   // B6
-            SpalteSicher(TAB_ERGEBNIS, SPALTE_ERSATZ_BARWERT, "DOUBLE");    // W5-B-10
-            SpalteSicher(TAB_ERGEBNIS, SPALTE_NACHWEIS_JSON, "LONGTEXT");   // B7P
-
-            // Katalog gesetzlicher Parameter (Etappe E1, Leitentscheidung L2). Eigene
-            // Verbindung, eigener Fang: Ein Fehlschlag darf die Spalten oben nicht
-            // gefährden, und umgekehrt.
-            GesetzKatalog.StelleKatalogSicher();
-        }
-
-        /// <summary>
-        /// ETAPPE E7c3 (Befund B‑6) — der letzte Fehler der Schemavorsorge
-        /// (<see cref="StelleTabellenSicher"/>, <see cref="SpalteSicher"/>); <c>null</c> =
-        /// keiner. Die Vorsorge bleibt still (kein Dialog beim Start), aber der Grund ist
-        /// abrufbar statt verschluckt; die Folgen nennen Laden und Speichern selbst.
-        /// ETAPPE E13: Jede Vorsorge setzt sie zu Beginn zurück; Statuszeile der
-        /// Ergebnisseite und BHKW-Dialog zeigen sie (<see cref="Fehlergrund.Anzeigezeilen"/>).
-        /// </summary>
-        public static string Vorsorgewarnung { get; private set; }
-
-        private static void Vorsorgefehler(Exception ex)
-        {
-            Vorsorgewarnung = Fehlergrund.Text(ex);
-        }
-
-        /// <summary>Fügt eine fehlende Spalte per ALTER TABLE hinzu (still, additiv).
-        /// Liefert true, wenn die Spalte JETZT neu angelegt wurde (Migrations-Anker).
-        ///
-        /// ARBEITSPAKET S4b: Schemaprobe über <see cref="StilleDb.SpaltenNamen"/> statt
-        /// <c>GetOleDbSchemaTable(Columns, …)</c>; die Access-Typangabe wird beim
-        /// Verbrauch nach SQLite übersetzt.</summary>
-        private static bool SpalteSicher(string tabelle, string spalte, string typ)
-        {
-            try
-            {
-                HashSet<string> vorhanden = StilleDb.SpaltenNamen(tabelle);
-
-                // Wie bisher: Nur ein NACHWEISLICHES Fehlen loest das ALTER aus. null
-                // hiess frueher "Schema nicht lesbar / Tabelle fehlt" - dann meldete
-                // GetOleDbSchemaTable keine Zeile und das ALTER lief in seinen catch.
-                if (vorhanden != null && vorhanden.Contains(spalte)) return false;
-
-                Ddl(StilleDb.AlterTableAddColumn(tabelle, spalte, typ));
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Vorsorgefehler(ex);   // E7c3 (B‑6): benannt — der Rückgabewert ist nur Migrationsanker
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Eine DDL-Anweisung, still. <see cref="StilleDb"/> wirft nicht; geworfen wird hier
-        /// von Hand, damit der Fang in <see cref="SpalteSicher"/> greift: Ein misslungenes
-        /// ALTER meldet „nicht neu angelegt" und nennt den Grund in
-        /// <see cref="Vorsorgewarnung"/>.
-        /// </summary>
-        private static void Ddl(string sql)
-        {
-            if (StilleDb.NonQuery(sql) < 0)
-                throw new InvalidOperationException("Anweisung fehlgeschlagen: " + sql);
-        }
+        // Tabellen und Spalten dieses Moduls legt allein die Schemamigration an; der Controller zieht keine Spalte nach.
+        // Vor Laden, Speichern und Rechnen sät er nur den Katalog gesetzlicher Parameter (GesetzKatalog.StelleKatalogSicher).
+        //
+        // Warum die fünf Tabellen hier nicht entstehen. TAB_PARAMETER,
+        // TAB_ERGEBNIS, TAB_SENS, TAB_TARIF und
+        // TAB_MATRIX stehen im Grundschema (sql/schema/001_grundschema.sql),
+        // aus dem jede Datenbank hervorgeht — unter Windows über die Auslieferungsvorlage
+        // (Erstbereitstellung), auf iOS über die Seed-Kopie, in Tests und
+        // Referenzlauf über die Testdatenbank. Alle fünf sind dort STRICT; Parameter-
+        // und Tariftabelle tragen ihren Fremdschlüssel auf Tab_Projekt mit
+        // ON DELETE CASCADE seit dem Grundschema, die drei Ergebnistabellen bekommen ihn
+        // in Schemaschritt 96 (ProjektFremdschluessel). Eine Anlage an dieser
+        // Stelle entstünde ohne Fremdschlüssel und ohne STRICT, und Schritt 96 baute eine
+        // solche Tabelle nicht um, sondern bräche an ihr ab
+        // (ProjektFremdschluessel.Zieltext) — die Simulation bliebe gesperrt.
+        // Fehlt eine Tabelle doch, nennen Laden und Speichern den Datenbankfehler
+        // (Ladefehler, Speicherfehler).
+        //
+        // Warum die Eingabespalten hier nicht nachgezogen werden. Jede Spalte, die
+        // ein Schemaschritt anlegt (20, 21, 22, 23, 28, 61, 71, 72, 88, 89, 92, 93, 105, 116,
+        // 118, 125), ist auf jeder Datenbank garantiert, auf der dieser Controller läuft: Die
+        // Windows-Schale führt SchemaMigration.Ausfuehren bei jedem Start vor dem ersten
+        // Fenster aus und sperrt bei Fehlschlag die Simulation
+        // (SchemaStand.SimulationGesperrt); die Seed-Datenbank der iOS-Hülle und
+        // die Testdatenbank stehen auf SchemaStand.Zielversion. Ein zweiter
+        // DDL-Ort holte zudem Entferntes zurück: SchemaKatalog.Schritt21_Tarifmodell
+        // führt Aufschlaege_Anwenden, das Schemaschritt 85 entfernt hat — ein Nachzug aus
+        // dieser Liste legte die Spalte bei jedem Zugriff wieder an (Wache:
+        // WirtschaftlichkeitCtrlTabellenTests).
+        //
+        // Die Ergebnisspalten. Auch die vier Ergebnisspalten ohne Grundschema - SPALTE_STROMST_MODUS (Etappe
+        // B6), SPALTE_ERSATZ_BARWERT (W5-B-10), SPALTE_NACHWEIS_JSON (B7P) und SPALTE_LAUF_STAENDE (Register EZ-19) - legt
+        // ein Schemaschritt an (ErgebnisWirtschaftlichkeitSpaltenSchema). Fehlt eine Spalte doch, nennen Laden und
+        // Speichern den Datenbankfehler.
 
         // ------------------------------------------------------------- Parameter
 
         public WirtschaftlichkeitParameter LadeParameter(int idStamm)
         {
-            StelleTabellenSicher();
+            GesetzKatalog.StelleKatalogSicher();
             var p = new WirtschaftlichkeitParameter { IdStamm = idStamm };
             try
             {
@@ -801,9 +722,11 @@ namespace WindowsFormsApplication1
                 bool oel = false;
                 if (idBrennstoff > 0)
                 {
+                    // Im Projekt die Projektkopie des Brennstoffs (ProjektBrennstoffe.Sicht).
+                    string quelle = ProjektBrennstoffe.Sicht(idStamm, out DbParam[] sicht);
                     DataTable bs = DataRepository.GetDataTable(
-                        "SELECT ID_Kategorie, Bezeichner FROM Tab_Brennstoff_Stamm WHERE ID = ?",
-                        new DbParam("@b", idBrennstoff));
+                        "SELECT b.ID_Kategorie, b.Bezeichner FROM " + quelle + " AS b WHERE b.ID = ?",
+                        ProjektBrennstoffe.Mit(sicht, new DbParam("@b", idBrennstoff)));
                     if (bs == null || bs.Rows.Count == 0)
                     {
                         // FK zeigt ins Leere (Träger gelöscht) — kein stiller Gas-Default
@@ -844,7 +767,7 @@ namespace WindowsFormsApplication1
         {
             Speicherfehler = null;   // ETAPPE E7c3 (B‑6)
             if (p == null || p.IdStamm <= 0) return false;
-            StelleTabellenSicher();
+            GesetzKatalog.StelleKatalogSicher();
             try
             {
                 int rows = DataRepository.ExecuteNonQuery(
@@ -1256,7 +1179,7 @@ namespace WindowsFormsApplication1
 
         public TarifParameter LadeTarif(int idStamm)
         {
-            StelleTabellenSicher();
+            GesetzKatalog.StelleKatalogSicher();
             var t = new TarifParameter { IdStamm = idStamm };
             try
             {
@@ -1321,7 +1244,7 @@ namespace WindowsFormsApplication1
         {
             Speicherfehler = null;   // ETAPPE E7c3 (B‑6)
             if (t == null || t.IdStamm <= 0) return false;
-            StelleTabellenSicher();
+            GesetzKatalog.StelleKatalogSicher();
             try
             {
                 // Spaltenliste und Werte entstehen aus EINER Quelle — bei 40 Spalten
@@ -1532,7 +1455,8 @@ namespace WindowsFormsApplication1
             sensitivitaet = sens;
             var matrizen = new Dictionary<int, StromMatrix>();   // W3: je Projekt (szenariounabhängig)
             if (daten == null || daten.Varianten.Count == 0 || p == null) return alle;
-            StelleTabellenSicher();
+            GesetzKatalog.StelleKatalogSicher();
+            ZuordnungenHeilen(daten);
             TarifParameter tarif = LadeTarif(daten.IdStamm);      // W3: gilt für die ganze Gruppe
             _staffelCache = null; _pelCache.Clear(); _oelCache.Clear();
             _refKesselCache.Clear();                                       // frischer Lauf
@@ -1592,6 +1516,16 @@ namespace WindowsFormsApplication1
                         matrizen[v.IdProjekt] = eingabe.Matrix;
                     WirtschaftlichkeitErgebnis erg = RechneProjekt(vs, ps, eingabe,
                         szenario, out KapitalwertRechner.Zahlungsbild bild);
+                    // 6b (Katalog v26): die Stromsteuer des Hilfsstroms im Erwartungsfall als Ausweis am
+                    // Stand und in seinen Kennzahlen — dieselbe Rechnung wie die Nachweiszeile.
+                    if (string.Equals(szenario, WirtschaftlichkeitSzenario.ERWARTET, StringComparison.Ordinal))
+                    {
+                        HilfsstromStromsteuer.Ergebnis st = eingabe.StromsteuerHilfsstrom;
+                        bool mitSatz = st != null && st.RegelsatzEurJeMWh.HasValue && st.RegelsatzEurJeMWh.Value > 0;
+                        v.HilfsstromStromsteuerGesondert = mitSatz ? st.GesondertEur : (double?)null;
+                        v.HilfsstromStromsteuerGesamt = mitSatz ? st.SteuerEur : (double?)null;
+                        KennzahlenKatalog.NachWirtschaftlichkeit(v);
+                    }
                     alle.Add(erg);
                     eingaben.Add(eingabe); bilder.Add(bild); ergebnisse.Add(erg);
                 }
@@ -1652,6 +1586,15 @@ namespace WindowsFormsApplication1
                 }
             }
 
+            // Anwenderentscheid 02.10.2026 (Register EZ‑19): der LAUFVERMERK — jedes Ergebnis
+            // trägt die Stände des Laufs, aus dem es stammt (Stamm, angehakte Varianten,
+            // Referenz: daten.Varianten). Persistiere schreibt ihn mit; so kennt die Seite den
+            // Lauf gespeicherter Ergebnisse auch nach einem Seitenwechsel.
+            var laufIds = new List<int>();
+            foreach (VariantenDaten v in daten.Varianten) if (v != null) laufIds.Add(v.IdProjekt);
+            string laufvermerk = Laufvermerk.Schreiben(laufIds);
+            foreach (WirtschaftlichkeitErgebnis e in alle) e.LaufStaende = laufvermerk;
+
             if (persistieren) Persistiere(alle, sens, matrizen, p);
             return alle;
         }
@@ -1666,6 +1609,24 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <param name="idReferenz">0 = die Gruppenreferenz (bzw. A in Sicht 2), und die
         /// wiederum 0 = Stamm — dieselbe Kette wie in <c>Berechne</c>.</param>
+        /// <summary>
+        /// Anwenderentscheid 07.10.2026: Die Anlagenzuordnung der Kostenpositionen wird
+        /// VOR dem Lesen geheilt (<see cref="KostenProjektPositionenCtrl.ZuordnungReparieren"/>,
+        /// bei gesundem Bestand ein COUNT je Projekt). Sonst hinge das Ergebnis davon ab, ob
+        /// die Kostenseite schon einmal geöffnet war: Ein Verweis auf eine gelöschte Anlage
+        /// rechnet anders als dieselbe Position „ohne Anlagenzuordnung".
+        /// </summary>
+        private static void ZuordnungenHeilen(BerichtsDaten daten)
+        {
+            var gesehen = new HashSet<int>();
+            foreach (VariantenDaten v in daten.Varianten)
+            {
+                if (v == null || v.IdProjekt <= 0 || !gesehen.Add(v.IdProjekt)) continue;
+                try { KostenProjektPositionenCtrl.ZuordnungReparieren(v.IdProjekt); }
+                catch (Exception ex) { Console.WriteLine("Zuordnung der Kostenpositionen (übergangen): " + ex.Message); }
+            }
+        }
+
         public WirtschaftlichkeitBandbreite BerechneBandbreite(BerichtsDaten daten,
             WirtschaftlichkeitParameter p, int idReferenz)
         {
@@ -1709,6 +1670,7 @@ namespace WindowsFormsApplication1
                 Szenario = szenario ?? WirtschaftlichkeitSzenario.ERWARTET
             };
             if (daten == null || daten.Varianten.Count == 0 || p == null) return verlauf;
+            ZuordnungenHeilen(daten);
 
             // ETAPPE W5-B-9: erst das Szenario, dann der Horizont. FuerSzenario gibt
             // fuer ERWARTET p selbst zurueck - die Kopie danach ist also unverzichtbar,
@@ -1934,6 +1896,11 @@ namespace WindowsFormsApplication1
             public double Erloes;           // €/a Einspeisevergütung (konstant)
             public double Behg;             // €/a BEHG-Abgabe Jahr 1 (steigt mit p_E)
 
+            /// <summary>Die Energiekosten je Träger dieses Laufs samt Anteil an der CO₂-Abgabe
+            /// des ersten Jahres (<see cref="EnergieTraegerNachweis.MitCo2Abgabe"/>) — Herleitung
+            /// unter „Energiekosten" und Grundlage der Wärmegestehungskosten.</summary>
+            public List<EnergieTraegerNachweis> EnergiekostenJeTraeger = new List<EnergieTraegerNachweis>();
+
             /// <summary>
             /// ETAPPE K6 (Konzept § 8.3, E5): die CO₂-Abgabe <b>jahresscharf</b> [€],
             /// Index 1…T, aus dem Preispfad des Gesetzeskatalogs. <c>null</c> = kein
@@ -2052,6 +2019,10 @@ namespace WindowsFormsApplication1
             /// <summary>Betriebskostenpositionen mit Kostenart und Herleitung (E3 → E7).</summary>
             public List<KostenPositionNachweis> Betriebskosten = new List<KostenPositionNachweis>();
 
+            /// <summary>6b: die Stromsteuer des Hilfsstroms (<see cref="HilfsstromStromsteuer"/>);
+            /// <c>null</c> ohne Hilfsstrom. Ihr gesonderter Betrag steht in <see cref="Endenergie"/>.</summary>
+            public HilfsstromStromsteuer.Ergebnis StromsteuerHilfsstrom;
+
             /// <summary>
             /// ETAPPE B2 — die Eingabe der Steuerrechnung dieses Laufs (Anlagen mit
             /// Träger, Heizwerten und Katalogschlüsseln, gewählte Norm, Netzbezug).
@@ -2065,6 +2036,18 @@ namespace WindowsFormsApplication1
             /// <summary>ETAPPE E9a (E9a‑Q7): true, wenn das Tarif-Rollenmodell den
             /// Stromanteil und den Einspeiseerlös dieses Laufs tatsächlich ersetzt hat.</summary>
             public bool RollenGerechnet;
+
+            /// <summary>
+            /// Anwenderentscheid 30.09.2026 (Register EZ‑18) — der Hinweis, dass der Rollentarif
+            /// an einem Stand ohne stromverwendenden Erzeuger (Kopie der Gruppenregel) den
+            /// Leistungspreis seines Reststromtarifs nicht ansetzt; <c>null</c> = kein solcher
+            /// Fall, der Tarif führt keinen, oder sein Leistungspreis ist dem des Stromträgers
+            /// gleich (<see cref="StromTarifRechner.TarifLeistungspreisWieTraeger"/>,
+            /// Anwenderentscheid 02.10.2026). Er steht ZUSÄTZLICH zum Hinweis zum Leistungspreis
+            /// des Stromträgers (<see cref="VariantenDaten.LeistungspreisNichtAngesetzt"/>) —
+            /// dieselbe Regel wie die Fußzeile unter der Kostentafel des Berichts.
+            /// </summary>
+            public string LeistungspreisTarifNichtAngesetzt;
 
             /// <summary>ETAPPE E9a: die Kohärenzzeilen des Szenariolaufs — gepflegte
             /// Szenariowerte, die in diesem Lauf ohne Wirkung bleiben. <b>Reine Ausgabe.</b></summary>
@@ -2162,6 +2145,59 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Ändert der Wechsel vom Lauf <paramref name="gerechnet"/> zum Lauf
+        /// <paramref name="gewaehlt"/> die Gruppenregel?</b> (Anwenderentscheid 30.09.2026,
+        /// Register EZ‑18) — die Frage der Ergebnisseite nach einem Haken oder einer
+        /// Referenzwahl, deren gespeicherte Ergebnisse bis zum nächsten „Berechnen" gelten.
+        ///
+        /// <para>Die Gruppenregel eines Laufs sind seine Stände mit Stromverwendung
+        /// (<see cref="ProjektEnergietraegerCtrl.GruppeVerwendetStrom"/>; leer, wenn der Lauf nur
+        /// einen Stand führt — dieselben Bedingungen wie <see cref="StromGruppenregel"/>). Sie hat
+        /// sich geändert, wenn diese Menge nicht mehr dieselbe ist UND ein Stand ohne
+        /// Stromverwendung, dessen Ergebnis zum gerechneten Lauf gehört, noch gewählt ist — nur
+        /// seine Zahlen hängen an der Regel. Ein Haken, der die Menge nicht ändert, und ein Lauf,
+        /// in dem jeder Stand Strom verwendet, ändern nichts.</para>
+        /// </summary>
+        internal static bool StromGruppenregelGeaendert(IEnumerable<int> gerechnet, IEnumerable<int> gewaehlt)
+        {
+            List<int> alt = LaufIds(gerechnet), neu = LaufIds(gewaehlt);
+            var beide = new List<int>(alt);
+            foreach (int id in neu) if (!beide.Contains(id)) beide.Add(id);
+
+            List<int> verwender;
+            if (!ProjektEnergietraegerCtrl.GruppeVerwendetStrom(beide, out verwender))
+                return false;   // kein Stand beider Läufe verwendet Strom — die Regel ruht in beiden
+
+            List<int> regelAlt = LaufVerwender(alt, verwender), regelNeu = LaufVerwender(neu, verwender);
+            bool gleich = regelAlt.Count == regelNeu.Count;
+            if (gleich) foreach (int id in regelAlt) if (!regelNeu.Contains(id)) { gleich = false; break; }
+            if (gleich) return false;
+
+            foreach (int id in neu)
+                if (alt.Contains(id) && !verwender.Contains(id)) return true;
+            return false;
+        }
+
+        /// <summary>Die Stände eines Laufs, je einmal, ohne ungültige Kennung.</summary>
+        private static List<int> LaufIds(IEnumerable<int> staende)
+        {
+            var ids = new List<int>();
+            if (staende != null)
+                foreach (int id in staende)
+                    if (id > 0 && !ids.Contains(id)) ids.Add(id);
+            return ids;
+        }
+
+        /// <summary>Die Stromverwender eines Laufs — leer, wenn der Lauf nur einen Stand führt.</summary>
+        private static List<int> LaufVerwender(List<int> lauf, List<int> alleVerwender)
+        {
+            var v = new List<int>();
+            if (lauf.Count < 2) return v;
+            foreach (int id in lauf) if (alleVerwender.Contains(id)) v.Add(id);
+            return v;
+        }
+
+        /// <summary>
         /// Die Standnamen für den Hinweis der Gruppenregel, je in den Anführungszeichen der
         /// Sprache — genommen aus der Vorlage selbst, die ihren Stand {0} schon so setzt
         /// (deutsch „…“, englisch "…"). Ohne Namen „?".
@@ -2210,6 +2246,27 @@ namespace WindowsFormsApplication1
             // Szenarios statt immer an der des Erwartungsfalls.
             BetriebsTopfe topfe = LiesBetriebskostenTopfe(v.IdProjekt, szenario, satz);
             if (topfe.Fehler != null) Stufenfehler(v.IdProjekt, STUFE_BETRIEBSKOSTEN, topfe.Fehler);   // E7c3 (B‑6)
+            // Welle KB-7b: die Wasserkosten des Rückkühlwerks — Menge des Laufs (dieser Stand ist bereits
+            // szenarioskaliert) × Arbeitspreis des Wasserträgers mit den Trägerpreisen dieses Szenarios
+            // (derselbe Schlüssel wie die Energiekosten in Szenariodaten). Genau eine Buchung: in den
+            // Betriebs-Topf, sofort wirksam, Steigerung p_B (Entscheid F3). Ohne Wasser bleibt der Topf
+            // unberührt — die Summe ist dann bitgenau die von vorher.
+            Wasserkosten.Ergebnis wasser = null;
+            try { wasser = Wasserkosten.Rechne(v.IdProjekt, v, satz != null ? szenario : null); }
+            catch (Exception ex) { Stufenfehler(v.IdProjekt, STUFE_BETRIEBSKOSTEN, Fehlergrund.Text(ex)); }
+            if (wasser != null && wasser.KostenEur > 0) topfe.BetriebSofort += wasser.KostenEur;
+            // 6b (Anwenderentscheid 16.10.2026): die Stromsteuer des Hilfsstroms — nur der Teil,
+            // den der Arbeitspreis des Netzträgers nicht schon enthält (HilfsstromStromsteuer), im
+            // Endenergie-Topf neben den Hilfsenergiekosten. Ohne Hilfsstrom bitgleich.
+            if (v.HilfsstromMWh > 0)
+            {
+                if (_gesetze == null) _gesetze = new GesetzKatalog();
+                e.StromsteuerHilfsstrom = HilfsstromStromsteuer.Rechne(v.HilfsstromMWh,
+                    _gesetze.Wert(DbWerte.GESETZ_STROMST_REGELSATZ, Foerderbeginn(p)),
+                    StromsteueranteilNetzEurJeMWh(v.IdProjekt, v.EnergiekostenJeTraeger));
+                if (e.StromsteuerHilfsstrom != null)
+                    topfe.EndenergieSofort += e.StromsteuerHilfsstrom.GesondertEur;
+            }
             e.Betrieb = topfe.BetriebSofort;
             e.BetriebAbJahr = topfe.BetriebAbJahr;
             e.Endenergie = topfe.EndenergieSofort;
@@ -2247,6 +2304,15 @@ namespace WindowsFormsApplication1
             // eine zweite, ausschließlich beschreibende Sicht, statt die Rechnung auf
             // einen neuen Leseweg umzustellen.
             e.Betriebskosten = LiesBetriebskostenPositionen(v.IdProjekt, szenario, satz);
+            // Welle KB-7b: die Nachweiszeile der Wasserkosten — die Gliederung trifft damit die Summe des
+            // Betriebs-Topfes; ohne Preis keine Kosten, aber ein Hinweis mit der Menge (benannt, KD‑Q8).
+            KostenPositionNachweis wasserZeile = Wasserkosten.Nachweis(wasser);
+            if (wasserZeile != null) e.Betriebskosten.Add(wasserZeile);
+            Melde(e, Wasserkosten.HinweisOhnePreis(wasser));
+            // 6b: die Nachweiszeile der Stromsteuer des Hilfsstroms — sie trifft den Endenergie-Topf.
+            KostenPositionNachweis steuerZeile = HilfsstromStromsteuer.Nachweis(e.StromsteuerHilfsstrom);
+            if (steuerZeile != null) e.Betriebskosten.Add(steuerZeile);
+            Melde(e, HilfsstromStromsteuer.HinweisOhneSatz(e.StromsteuerHilfsstrom));
             e.Energie = v.Energiekosten;   // KostenEmissionRechner (Phase 5)
 
             double pvUeberschussMWh = v.Ergebnis.Photovoltaik != null ? v.Ergebnis.Photovoltaik.Ueberschuss : 0;
@@ -2384,6 +2450,11 @@ namespace WindowsFormsApplication1
                                           : (p.CO2Preis > 0 ? behgBasisT * p.CO2Preis : 0);
             if (co2Hinweis != null && behgBasisT > 0)
                 e.Hinweis = Anhaengen(e.Hinweis, co2Hinweis);
+
+            // Die Aufstellung je Träger mit ihrem Anteil an der CO₂-Abgabe des ersten Jahres —
+            // aufgeteilt nach derselben abgabepflichtigen Menge, aus der e.Behg entstand.
+            e.EnergiekostenJeTraeger = EnergieTraegerNachweis.MitCo2Abgabe(
+                v.EnergiekostenJeTraeger, e.Behg, efOhneNachweis);
 
             // ETAPPE E2 (L6): die erreichten ELEKTRISCHEN Vollbenutzungsstunden — die
             // Bezugsgröße der KWKG-Deckelung. Sie wird UNABHÄNGIG davon geführt, ob ein
@@ -2533,8 +2604,28 @@ namespace WindowsFormsApplication1
                 LastBedarf = e.Matrix.LastBedarf,
                 LastRestbezug = e.Matrix.LastBezug
             };
+
+            // ---- DER LEISTUNGSPREIS DES TARIFS NUR BEI STROMVERWENDUNG (Anwenderentscheid
+            // 30.09.2026, Register EZ‑18; EZ‑17 gilt auch im Rollentarif) ----
+            //
+            // Die Kopie der Gruppenregel (StromImVergleichBepreisen, nur an Ständen OHNE
+            // stromverwendenden Erzeuger) setzt keinen Leistungsanteil an: Der Reststromtarif
+            // bepreist ihren Netzbezug mit Arbeits- und Grundpreis, den Leistungspreis seines
+            // Modells nicht — er ist an einem solchen Stand eine Größe der Lastoptimierung. Die
+            // Bezugsrolle rechnet ebenso ohne, damit die vermiedenen Kosten keinen
+            // Leistungsanteil ausweisen, den keine Anlage vermeidet. Führt der Reststromtarif
+            // einen Leistungspreis, der sich von dem des Stromträgers unterscheidet
+            // (StromTarifRechner.TarifLeistungspreisWieTraeger, Anwenderentscheid 02.10.2026),
+            // nennt ihn der Hinweis mit dem Klartext seines Modells — zusätzlich zum Hinweis zum
+            // Leistungspreis des Trägers (RechneProjekt), dieselbe Regel wie die Fußzeile unter
+            // der Kostentafel des Berichts. Den Monatssatz des Trägers hat der
+            // KostenEmissionRechner an dieser Kopie schon gesetzt (Szenariodaten). Stände mit
+            // Stromverwendung rechnen unverändert.
+            bool ohneLeistungspreis = v.StromImVergleichBepreisen;
+            TarifRolle bezug = ohneLeistungspreis ? StromTarifRechner.OhneLeistungspreis(tarif.Bezug) : tarif.Bezug;
+            TarifRolle reststrom = ohneLeistungspreis ? StromTarifRechner.OhneLeistungspreis(tarif.Reststrom) : tarif.Reststrom;
             StromErloesErgebnis r = StromTarifRechner.Rechne(
-                eingabe, tarif.Bezug, tarif.Reststrom, tarif.Einspeisung, BerichtTexte.Kultur);
+                eingabe, bezug, reststrom, tarif.Einspeisung, BerichtTexte.Kultur);
 
             // KU2 WELLE 3 (Entscheid E34, Kühlkonzept 6.1): Die Reststrommenge der Matrix ist der
             // ganze Netzbezug des Anschlusses - samt dem Anteil, den ein abweichender Kühlträger
@@ -2555,6 +2646,13 @@ namespace WindowsFormsApplication1
             e.Energie = v.Energiekosten.Value - v.StromkostenNetz.Value + r.Reststrom.SummeEur - kuehlAbzug;
             e.Erloes = r.EinspeiseerloesEur;   // ersetzt PV-/KWK-Bewertung über die Parameter
             e.RollenGerechnet = true;          // E9a (E9a‑Q7): Anlass der Kohärenzzeilen
+            e.LeistungspreisTarifNichtAngesetzt =
+                ohneLeistungspreis && StromTarifRechner.LeistungspreisGepflegt(tarif.Reststrom) &&
+                !StromTarifRechner.TarifLeistungspreisWieTraeger(tarif.Reststrom,
+                                                                 v.LeistungspreisNichtAngesetztMonatssatz)
+                    ? string.Format(BerichtTexte.Kultur, HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT,
+                                    Leistungsmodelltext(tarif.Reststrom))
+                    : null;
 
             // ETAPPE E7: Das Rollenmodell kennt EINEN Einspeisetarif für beide Mengen —
             // die Aufteilung kann deshalb nur MENGENPROPORTIONAL sein, und sie wird als
@@ -2580,6 +2678,43 @@ namespace WindowsFormsApplication1
                 e.VermiedenMengeMWh = r.VermiedenMengeMWh;   // B7
                 foreach (string h in r.Herleitung) Melde(e, h);
             }
+        }
+
+        /// <summary>
+        /// <b>Der Leistungspreis des Rollentarifs unter der Gruppenregel</b> (Anwenderentscheid
+        /// 30.09.2026, Register EZ‑18): Bepreist der Rollentarif den Netzbezug eines Standes ohne
+        /// stromverwendenden Erzeuger, setzt er Arbeits- und Grundpreis des Reststromtarifs an, den
+        /// Leistungspreis nicht. Führt der Reststromtarif einen, nennt ihn dieser Hinweis — das
+        /// Gegenstück zu <see cref="KostenEmissionRechner.HINWEIS_LEISTUNGSPREIS_NICHT_ANGESETZT"/>
+        /// mit dem Klartext des Leistungspreismodells an der Stelle des Satzes.
+        /// {0} = das Modell (<see cref="Leistungsmodelltext"/>).
+        /// </summary>
+        internal static string HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT
+        {
+            get
+            {
+                return T("WIRT_HINWEIS_LEISTUNGSPREIS_TARIF_NICHT_ANGESETZT",
+                    "Leistungspreis des Reststromtarifs nach dem Modell „{0}“ nicht angesetzt: Der Stand " +
+                    "führt keinen Erzeuger, der Strom verwendet; der Leistungspreis ist dann eine Größe " +
+                    "der Lastoptimierung.");
+            }
+        }
+
+        /// <summary>
+        /// Der Klartext des Leistungspreismodells einer Tarifrolle — dieselben Texte, mit denen die
+        /// Tarifstruktur das Modell zur Wahl stellt (<c>TARIF_LM_*</c>); ein leeres oder
+        /// unbekanntes Modell gilt wie in <see cref="StromTarifRechner.Leistungskosten"/> als
+        /// monatlich.
+        /// </summary>
+        internal static string Leistungsmodelltext(TarifRolle rolle)
+        {
+            string modell = rolle == null || string.IsNullOrEmpty(rolle.Leistungsmodell)
+                          ? DbWerte.LEISTUNGSMODELL_MONATLICH : rolle.Leistungsmodell;
+            if (string.Equals(modell, DbWerte.LEISTUNGSMODELL_STAFFEL, StringComparison.Ordinal))
+                return T("TARIF_LM_STAFFEL", "Staffel (Sommer- und Wintermaximum getrennt)");
+            if (string.Equals(modell, DbWerte.LEISTUNGSMODELL_JAHRESHOECHSTLAST, StringComparison.Ordinal))
+                return T("TARIF_LM_JAHR", "Jahreshöchstlast (Staffel mit Winterpreisen)");
+            return T("TARIF_LM_MONATLICH", "monatlich (Σ zwölf Monatsmaxima × €/kW·Monat)");
         }
 
         /// <summary>
@@ -4321,7 +4456,7 @@ namespace WindowsFormsApplication1
             // Der Träger der ERGEBNISZEILE hat Vorrang: Er ist der, mit dem der Lauf
             // gerechnet hat. Erst wenn er fehlt, gilt der Träger der Anlagenzeile.
             int carrier = modul != null && modul.CarrierId > 0 ? modul.CarrierId : idCarrierAnlage;
-            int brennstoff = carrier > 0 ? BrennstoffId(carrier, idBrennstoffAnlage)
+            int brennstoff = carrier > 0 ? BrennstoffId(idProjekt, carrier, idBrennstoffAnlage)
                                          : idBrennstoffAnlage;
 
             SteuerschluesselSetzen(idProjekt, a, carrier, brennstoff);
@@ -4343,7 +4478,7 @@ namespace WindowsFormsApplication1
             a.SchluesselSatz53a = EnergiesteuerSchluessel(brennstoff, true);
             a.SchluesselSatz54 = Energiesteuer54Schluessel(brennstoff);     // K6
             a.SchluesselCo2 = Co2Schluessel(brennstoff);
-            a.Fossil = FossilerBrennstoff(brennstoff);
+            a.Fossil = FossilerBrennstoff(idProjekt, brennstoff);
 
             TraegerEinheit t = Traeger(idProjekt, carrier);
             a.EffHi = t.EffHi;
@@ -4423,7 +4558,7 @@ namespace WindowsFormsApplication1
             }
 
             int carrier = modul != null && modul.CarrierId > 0 ? modul.CarrierId : idCarrierAnlage;
-            int brennstoff = carrier > 0 ? BrennstoffId(carrier, idBrennstoffAnlage)
+            int brennstoff = carrier > 0 ? BrennstoffId(idProjekt, carrier, idBrennstoffAnlage)
                                          : idBrennstoffAnlage;
             SteuerschluesselSetzen(idProjekt, a, carrier, brennstoff);
 
@@ -4742,11 +4877,11 @@ namespace WindowsFormsApplication1
         /// Sonstige), abzüglich Biogas — eine zweite Einstufung derselben Frage wäre eine
         /// doppelte Wahrheit.
         /// </summary>
-        private bool FossilerBrennstoff(int idBrennstoff)
+        private bool FossilerBrennstoff(int idProjekt, int idBrennstoff)
         {
             if (idBrennstoff <= 0) return false;
             if (idBrennstoff == 14) return false;               // Biogas
-            int k = BrennstoffKategorie(0, idBrennstoff);
+            int k = BrennstoffKategorie(idProjekt, 0, idBrennstoff);
             return k == 1 || k == 2 || k == 3 || k == 4 || k == 11;
         }
 
@@ -4758,7 +4893,7 @@ namespace WindowsFormsApplication1
         /// <c>KWKG_VBH_JAHRESDECKEL</c>, gelesen über <see cref="GesetzKatalog"/>. Die
         /// Alttabelle <c>Tab_KWKG_Staffel</c> wird seit Etappe K1 (19.08.2026) auch
         /// nicht mehr ANGELEGT: Konstante und DDL/Saat sind aus
-        /// <c>StelleTabellenSicher</c> entfernt (Konzept Kosten/Energieträger, HF1).
+        /// der früheren Tabellenvorsorge des Controllers entfernt (Konzept Kosten/Energieträger, HF1).
         /// Seit Etappe K6 ist sie ganz weg — Migrationsschritt 29 (M-E) droppt sie.
         /// </para>
         ///
@@ -5587,8 +5722,8 @@ namespace WindowsFormsApplication1
                     anl.IdCarrier = Ganzzahl(r, "ID_Carrier");
                     anl.IdAnlage = Ganzzahl(r, "ID");
                     anl.IdProjekt = Ganzzahl(r, "ID_Projekt");
-                    anl.IdBrennstoff = BrennstoffId(anl.IdCarrier, Ganzzahl(r, "Brennstoff"));
-                    anl.Heizoel = BrennstoffKategorie(anl.IdCarrier, Ganzzahl(r, "Brennstoff"))
+                    anl.IdBrennstoff = BrennstoffId(anl.IdProjekt, anl.IdCarrier, Ganzzahl(r, "Brennstoff"));
+                    anl.Heizoel = BrennstoffKategorie(anl.IdProjekt, anl.IdCarrier, Ganzzahl(r, "Brennstoff"))
                                   == BRENNSTOFF_KATEGORIE_OEL;
 
                     if (mitE6)
@@ -5757,11 +5892,27 @@ namespace WindowsFormsApplication1
         /// Gerätezeile. 0 = nicht ermittelbar (dann gilt die Anlage als nicht ölbetrieben,
         /// wie im Altstand: <c>BhkwMitHeizoel</c> zählte nur Zeilen mit gültigem Verbund).
         /// </summary>
-        private int BrennstoffKategorie(int idCarrier, int idBrennstoff)
+        private int BrennstoffKategorie(int idProjekt, int idCarrier, int idBrennstoff)
         {
-            int bs = BrennstoffId(idCarrier, idBrennstoff);
+            int bs = BrennstoffId(idProjekt, idCarrier, idBrennstoff);
             int kategorie;
-            return bs > 0 && _brennstoffKategorie.TryGetValue(bs, out kategorie) ? kategorie : 0;
+            return bs > 0 && KategorienDesProjekts(idProjekt).TryGetValue(bs, out kategorie) ? kategorie : 0;
+        }
+
+        /// <summary>
+        /// Brennstoffart → Kategorie in der Sicht des Projekts (Projektkopie, für eine dem Projekt
+        /// unbekannte Art der Katalog; <see cref="ProjektBrennstoffe.Sicht"/>), je Lauf einmal je Projekt.
+        /// </summary>
+        private Dictionary<int, int> KategorienDesProjekts(int idProjekt)
+        {
+            if (_brennstoffKategorie == null) _brennstoffKategorie = new Dictionary<int, Dictionary<int, int>>();
+            if (!_brennstoffKategorie.TryGetValue(idProjekt, out Dictionary<int, int> k))
+            {
+                string quelle = ProjektBrennstoffe.Sicht(idProjekt, out DbParam[] sicht);
+                k = LiesZuordnung("SELECT bs.ID, bs.ID_Kategorie FROM " + quelle + " AS bs", sicht);
+                _brennstoffKategorie[idProjekt] = k;
+            }
+            return k;
         }
 
         /// <summary>
@@ -5776,21 +5927,19 @@ namespace WindowsFormsApplication1
         /// Gerätezeile. Damit liefert <see cref="BrennstoffKategorie"/> Zeile für Zeile
         /// dasselbe wie vorher, und E4 kann zusätzlich den Brennstoff selbst verwenden.</para>
         /// </summary>
-        private int BrennstoffId(int idCarrier, int idBrennstoff)
+        private int BrennstoffId(int idProjekt, int idCarrier, int idBrennstoff)
         {
-            if (_brennstoffKategorie == null)
-            {
-                _brennstoffKategorie = LiesZuordnung("SELECT ID, ID_Kategorie FROM Tab_Brennstoff_Stamm");
+            Dictionary<int, int> kategorien = KategorienDesProjekts(idProjekt);
+            if (_carrierBrennstoff == null)
                 _carrierBrennstoff = LiesZuordnung("SELECT id, ID_Brennstoff FROM energy_carrier");
-            }
 
             int kategorie;
             int brennstoffAusTraeger;
             if (idCarrier > 0 && _carrierBrennstoff.TryGetValue(idCarrier, out brennstoffAusTraeger)
-                              && _brennstoffKategorie.TryGetValue(brennstoffAusTraeger, out kategorie))
+                              && kategorien.TryGetValue(brennstoffAusTraeger, out kategorie))
                 return brennstoffAusTraeger;
 
-            if (idBrennstoff > 0 && _brennstoffKategorie.ContainsKey(idBrennstoff))
+            if (idBrennstoff > 0 && kategorien.ContainsKey(idBrennstoff))
                 return idBrennstoff;
 
             return 0;
@@ -5801,12 +5950,12 @@ namespace WindowsFormsApplication1
         /// die Tabelle fehlt (alte Datenbank ohne <c>energy_carrier</c>) oder die Abfrage
         /// scheitert. Zeilen mit NULL in einer der beiden Spalten werden übergangen.
         /// </summary>
-        private static Dictionary<int, int> LiesZuordnung(string sql)
+        private static Dictionary<int, int> LiesZuordnung(string sql, params DbParam[] parameter)
         {
             var zuordnung = new Dictionary<int, int>();
             try
             {
-                DataTable dt = DataRepository.GetDataTable(sql);
+                DataTable dt = DataRepository.GetDataTable(sql, parameter);
                 if (dt == null) return zuordnung;
                 foreach (DataRow r in dt.Rows)
                 {
@@ -5901,11 +6050,13 @@ namespace WindowsFormsApplication1
             try
             {
                 // ETAPPE E7c3 (B‑6): der strenge Leseweg, damit der Fang unten greift.
+                // Im Projekt die Projektkopie des Brennstoffs (ProjektBrennstoffe.Sicht).
+                string quelle = ProjektBrennstoffe.Sicht(idProjekt, out DbParam[] sicht);
                 object o = StilleDb.ScalarStreng(
                     "SELECT COUNT(*) FROM Tab_BHKW AS b " +
-                    "INNER JOIN Tab_Brennstoff_Stamm AS bs ON b.Brennstoff = bs.ID " +
+                    "INNER JOIN " + quelle + " AS bs ON b.Brennstoff = bs.ID " +
                     "WHERE b.ID_Projekt = ? AND bs.ID_Kategorie = " + BRENNSTOFF_KATEGORIE_OEL,
-                    new DbParam("@p", idProjekt));
+                    ProjektBrennstoffe.Mit(sicht, new DbParam("@p", idProjekt)));
                 if (o != null && o != DBNull.Value) return Convert.ToInt32(o) > 0;
             }
             catch (Exception ex)
@@ -6500,6 +6651,10 @@ namespace WindowsFormsApplication1
             // gebucht (ErgebnisNachweisUmschlag).
             if (v.EnergiekostenJeAnlage != null)
                 erg.EnergiekostenJeAnlage = v.EnergiekostenJeAnlage;
+            // Die Energiekosten je Träger samt Anteil an der CO₂-Abgabe — die Herleitungszeilen
+            // „Menge × Preis" unter den Energiekosten; mit dem Lauf gebucht (Umschlag, Fassung 12).
+            if (eingabe.EnergiekostenJeTraeger != null)
+                erg.EnergiekostenJeTraeger = eingabe.EnergiekostenJeTraeger;
 
             // ETAPPE B7 (Konzept § 2.6, Klarstellung 1) — die § 9b-KORREKTUR des
             // AUSWEISES. Sie ruehrt den Kapitalwert nicht an: Angehaengt wird keine
@@ -6514,17 +6669,57 @@ namespace WindowsFormsApplication1
             // (SteuerGutschriftRechner.ProduzierendesGewerbe) — eine zweite Fassung
             // waere eine zweite Antwort auf dieselbe Frage.
             erg.VermiedenMengeMWh = eingabe.VermiedenMengeMWh;
+
+            // Der Stromsteueranteil des Netzträgers [€/MWh] — der Deckel des § 9b-Satzes, EINE
+            // Ermittlung für den Ausweis hier und den Abzug der Wärmegestehung (BaueWaermeEingabe,
+            // Register EZ‑22, EZ‑23). Gelesen wird er höchstens einmal je Ergebnis und nur, wenn eine
+            // der beiden Stellen ihn braucht.
+            double? anteil9b = null;
+            bool anteil9bGelesen = false;
+            Func<double?> stromsteueranteil9b = () =>
+            {
+                if (!anteil9bGelesen)
+                {
+                    anteil9b = StromsteueranteilNetzEurJeMWh(v.IdProjekt, eingabe.EnergiekostenJeTraeger);
+                    anteil9bGelesen = true;
+                }
+                return anteil9b;
+            };
+            string nachweisAusweis9b = null;
             if (eingabe.SteuerEingabe != null &&
                 SteuerGutschriftRechner.ProduzierendesGewerbe(eingabe.SteuerEingabe))
             {
                 erg.ProduzierendesGewerbe = true;
                 if (eingabe.VermiedenMengeMWh > 0)
                 {
+                    // Anwenderentscheid 02.10.2026 (EZ‑22): dieselbe Größe wie der § 9b-Abzug der
+                    // Wärmegestehung und dieselbe Funktion — die Differenz der Entlastung ohne und
+                    // mit der vermiedenen Menge, der Sockelbetrag gegen den Netzbezug, mit dem die
+                    // Entlastung des Projekts rechnet (§ 3.8). Trägt der Netzbezug den Sockel, ist
+                    // es Zeichen für Zeichen Satz × vermiedene Menge.
+                    //
+                    // Anwenderentscheid 02.10.2026 (EZ‑23, „Deckel"): derselbe Deckel wie im Abzug der
+                    // Gestehung — der wirksame Satz ist höchstens der Stromsteueranteil des Preises, mit
+                    // dem der Eigenstrom bewertet wird. Der Ausweis bewertet im Rollentarif mit der
+                    // Bezugsrolle; sie führt keinen eigenen Träger (Tab_ProjektTarif kennt keinen) und
+                    // ersetzt die Preise des Netzträgers (RechneRollentarif) — ihr Träger ist der
+                    // Netzträger, sein Anteil derselbe wie in der Gestehung. Ohne gepflegten Anteil
+                    // (Rückfallträger) der Regelsatz des Jahres als Obergrenze; eine abgeschaltete
+                    // Komponente ist Anteil 0, kein Abzug. Deckel ab dem Satz → bitgleich.
                     if (_gesetze == null) _gesetze = new GesetzKatalog();
-                    double? satz = _gesetze.Wert(DbWerte.GESETZ_STROMST_ENTLASTUNG_9B,
-                                                 Foerderbeginn(p));
+                    int jahr1 = Foerderbeginn(p);
+                    double? satz = _gesetze.Wert(DbWerte.GESETZ_STROMST_ENTLASTUNG_9B, jahr1);
+                    double? anteil = null, regelsatz = null;
                     if (satz.HasValue && satz.Value > 0)
-                        erg.VermiedenEntlastung9bJahr = satz.Value * eingabe.VermiedenMengeMWh;
+                    {
+                        anteil = stromsteueranteil9b();
+                        regelsatz = _gesetze.Wert(DbWerte.GESETZ_STROMST_REGELSATZ, jahr1);
+                    }
+                    erg.VermiedenEntlastung9bJahr = SteuerGutschriftRechner.Entgangene9bEur(
+                        eingabe.SteuerEingabe.NetzbezugMWh, eingabe.VermiedenMengeMWh, satz,
+                        _gesetze.Wert(DbWerte.GESETZ_STROMST_SOCKELBETRAG_9B, jahr1),
+                        anteil ?? regelsatz);
+                    nachweisAusweis9b = Nachweis9bAusweis(satz, anteil, regelsatz, BerichtTexte.Kultur);
                 }
             }
 
@@ -6548,6 +6743,9 @@ namespace WindowsFormsApplication1
             erg.VermiedenJeAnlage = VermiedenAufteilung(eingabe, erg);
 
             erg.Hinweis = eingabe.Hinweis;
+            // Der Nachweis des Deckels an der § 9b-Korrektur des Ausweises (EZ‑23) — Text am
+            // Laufhinweis, nur wenn er wirkt (wie der Nachweis des § 9b-Abzugs der Gestehung).
+            if (!string.IsNullOrEmpty(nachweisAusweis9b)) erg.Hinweis = Anhaengen(erg.Hinweis, nachweisAusweis9b);
 
             // Trägerzuordnungs-Etappe: Fiel die Emissionsrechnung mangels zugeordnetem
             // Strom-Energieträger auf den Strommix-Vorgabewert zurück (Flag aus
@@ -6612,6 +6810,21 @@ namespace WindowsFormsApplication1
                     v.StromGruppenregelMWh.Value.ToString("N1", BerichtTexte.Kultur)));
             }
 
+            // ANWENDERENTSCHEID 29.09.2026 (Register EZ‑17): Den Leistungspreis setzt die
+            // Gruppenregel an einem Stand ohne stromverwendenden Erzeuger nicht an — er ist dort
+            // eine Größe der Lastoptimierung. Führt der Träger einen, nennt ihn diese Zeile
+            // (Satz und Träger, gebildet vom KostenEmissionRechner); dieselbe Reise wie die
+            // Zeilen darüber (Warnband, Vergleichstabelle, Wort- und Excelbericht).
+            // EZ‑18 (Anwenderentscheid 02.10.2026): Den Leistungspreis des Trägers nennt die Zeile
+            // immer; hat der Rollentarif den Stromanteil ersetzt, dahinter zusätzlich den des
+            // Reststromtarifs (Modell), wenn er sich von dem des Trägers unterscheidet — gebildet
+            // in RechneRollentarif nach StromTarifRechner.TarifLeistungspreisWieTraeger. Dieselbe
+            // Regel wie die Fußzeile unter der Kostentafel des Berichts.
+            if (!string.IsNullOrEmpty(v.LeistungspreisNichtAngesetzt))
+                erg.Hinweis = Anhaengen(erg.Hinweis, v.LeistungspreisNichtAngesetzt);
+            if (eingabe.RollenGerechnet && !string.IsNullOrEmpty(eingabe.LeistungspreisTarifNichtAngesetzt))
+                erg.Hinweis = Anhaengen(erg.Hinweis, eingabe.LeistungspreisTarifNichtAngesetzt);
+
             // BEFUNDE B-1/N1 (Anwenderentscheid 30.08.2026): Hat ein Heizkessel Wärme
             // erzeugt, ohne dass sein Brennstoffverbrauch im Ergebnis steht, fehlt sein
             // Brennstoff still in Energiekosten, CO₂-Bilanz und BEHG-Menge (Fahne aus
@@ -6642,6 +6855,9 @@ namespace WindowsFormsApplication1
                     StromsteuerBefreiungEur = eingabe.StromsteuerBefreiungJahr1,
                     StromsteuerBefreiungAlsErloes = eingabe.StromsteuerBefreiungAlsErloes,   // B6
                     StromsteuerEntlastungEur = eingabe.StromsteuerEntlastungJahr1,
+                    // EZ‑18: Bepreist die Gruppenregel den Netzbezug dieses Standes, prüft die
+                    // Stromseite ohne zugeordneten Träger gegen den Rückfallträger.
+                    StromImVergleichBepreist = v.StromImVergleichBepreisen,
                     // ETAPPE E2 (R5): die gebuchte CO₂-Abgabe des Jahres 1 — sie ist der
                     // Betrag, der bei aktivem CO₂-Bestandteil im Arbeitspreis ZWEIMAL
                     // in den Energiekosten steht.
@@ -6718,13 +6934,254 @@ namespace WindowsFormsApplication1
             erg.ErsatzBarwert = ErsatzBarwert(bild, p.Zinssatz);
             erg.Kapitalwert = bild.Kapitalwert;
 
-            // Wärmegestehungskosten: annuisierte Nettokosten ÷ Jahreswärmebedarf.
+            // WÄRMEGESTEHUNGSKOSTEN „nur Wärmeerzeuger" (Anwenderentscheid 30.09.2026): die
+            // annuisierten Kosten der WÄRMEERZEUGUNG ÷ Jahreswärmebedarf. Bis hierher stand hier
+            // der Kapitalwert des GANZEN Projekts im Zähler — Haushaltsstrom, Photovoltaik,
+            // Stromspeicher und PV-Erlöse verschoben die Kennzahl, sobald ein Strombedarfsprofil
+            // angelegt war. Der Kapitalwert und alle übrigen Kennzahlen bleiben projektweit; nur
+            // diese eine Kennzahl rechnet mit dem Zahlungsgerüst der Wärmeerzeugung
+            // (Regel: Waermegestehung), durch denselben Rechenkern.
             if (eingabe.WaermeMWh > 0)
             {
-                double a = KapitalwertRechner.Annuitaet(p.Zinssatz / 100.0, p.Betrachtungszeitraum);
-                erg.Gestehungskosten = (-bild.Kapitalwert * a) / (eingabe.WaermeMWh * 1000.0);
+                double stromgutschrift, eigenstromOhnePreisMWh;
+                KapitalwertRechner.ErloesReihe entgangen9b;
+                string nachweis9b;
+                ProjektEingabe waerme = BaueWaermeEingabe(v, p, eingabe, szenario, stromsteueranteil9b,
+                                                          out stromgutschrift, out eigenstromOhnePreisMWh,
+                                                          out entgangen9b, out nachweis9b);
+                // Der Nachweis des § 9b-Abzugs (EZ‑22): Sockel und Deckel, wenn sie wirken, und die
+                // Obergrenze ohne gepflegten Stromsteueranteil — Text am Laufhinweis.
+                if (!string.IsNullOrEmpty(nachweis9b)) erg.Hinweis = Anhaengen(erg.Hinweis, nachweis9b);
+                // Kein stilles Weglassen: Fehlt dem im Projekt verbrauchten BHKW-Strom der
+                // Arbeitspreis, rechnet die Kennzahl ohne Stromgutschrift — und sagt es.
+                if (eigenstromOhnePreisMWh > 0)
+                    erg.Hinweis = Anhaengen(erg.Hinweis, string.Format(BerichtTexte.Kultur,
+                        MyResource.Resource.WIRT_GESTEHUNG_OHNE_STROMGUTSCHRIFT,
+                        eigenstromOhnePreisMWh.ToString("N1", BerichtTexte.Kultur)));
+                KapitalwertRechner.Zahlungsbild bildW = RechneBild(waerme, p, p.Zinssatz,
+                                                                  p.PreissteigerungEnergie, 1.0, 1.0);
+                erg.Gestehungskosten = Waermegestehung.Kennzahl(bildW.Kapitalwert, p.Zinssatz,
+                                                               p.Betrachtungszeitraum, eingabe.WaermeMWh);
+                erg.GestehungZerlegung = Waermegestehung.Zerlegung.Aus(
+                    Zahlungsgliederung.Aus(bildW, p.Zinssatz), eingabe.WaermeMWh, stromgutschrift, entgangen9b);
+                StufenfehlerAnhaengen(erg);   // eine gescheiterte Anlagenlesung (jede Zeile einmal)
             }
             return erg;
+        }
+
+        /// <summary>
+        /// <b>Das Zahlungsgerüst der Wärmeerzeugung</b> — die Grundlage der
+        /// Wärmegestehungskosten. Die Regel steht in <see cref="Waermegestehung"/>; hier werden
+        /// die Zahlen des Laufs danach ausgelesen:
+        /// <list type="bullet">
+        ///   <item><description>Investition, Zuschuss und Betriebskosten aus denselben Lesewegen
+        ///     wie das Projekt, beschränkt auf die Positionen, die
+        ///     <see cref="Waermegestehung.PositionZaehlt"/> der Wärme zuordnet;</description></item>
+        ///   <item><description>Energiekosten der Wärmeerzeuger aus der Aufstellung je Träger
+        ///     (<see cref="Waermegestehung.Energiekosten"/>) abzüglich der Stromgutschrift für den
+        ///     im Projekt verbrauchten BHKW-Strom; die CO₂-Abgabe ganz (sie hängt allein am
+        ///     Brennstoff von Kessel und BHKW);</description></item>
+        ///   <item><description>bei produzierendem Gewerbe die entgangene § 9b-Entlastung auf
+        ///     denselben Eigenstrom als negative, jahresscharfe Erlösreihe
+        ///     (<see cref="Waermegestehung.Entgangene9bReihe"/>) — sie mindert die
+        ///     Stromgutschrift;</description></item>
+        ///   <item><description>Erlöse: der eingespeiste BHKW-Strom und die Erlösreihen der
+        ///     Wärmeerzeuger (<see cref="Waermegestehung.ErloesReiheZaehlt"/>) — ohne die
+        ///     Stromsteuer-Befreiung des Modus ERLOES, die schon in der Stromgutschrift steht
+        ///     (Register EZ‑21);</description></item>
+        ///   <item><description>kein Risikoabzug — er bewertet die Unsicherheit des Standes, er ist
+        ///     keine Zahlung der Wärmeerzeugung.</description></item>
+        /// </list>
+        /// </summary>
+        private ProjektEingabe BaueWaermeEingabe(VariantenDaten v, WirtschaftlichkeitParameter p,
+                                                 ProjektEingabe gesamt, string szenario,
+                                                 Func<double?> stromsteueranteil9b,
+                                                 out double stromgutschrift,
+                                                 out double eigenstromOhnePreisMWh,
+                                                 out KapitalwertRechner.ErloesReihe entgangen9b,
+                                                 out string nachweis9b)
+        {
+            stromgutschrift = 0.0;
+            eigenstromOhnePreisMWh = 0.0;
+            entgangen9b = null;
+            nachweis9b = null;
+            SzenarioSatz satz = p.SatzFuer(szenario);
+            ErgebnisBHKWModel bhkw = v.Ergebnis != null ? v.Ergebnis.BHKW : null;
+            bool bhkwImProjekt = bhkw != null && bhkw.Module != null && bhkw.Module.Count > 0;
+            Dictionary<int, int> typen = AnlagentypenDesProjekts(v.IdProjekt);
+            Func<int, int, bool> zaehlt = (komponente, anlage) =>
+            {
+                int typ = 0;
+                if (anlage > 0) typen.TryGetValue(anlage, out typ);
+                return Waermegestehung.PositionZaehlt(komponente, typ, bhkwImProjekt);
+            };
+
+            var w = new ProjektEingabe();
+            double zuschuss;
+            w.Investitionen = LiesInvestitionen(v.IdProjekt, szenario, satz, zaehlt, out zuschuss);
+            w.Zuschuss = zuschuss;
+            BetriebsTopfe topfe = LiesBetriebskostenTopfe(v.IdProjekt, szenario, satz, zaehlt);
+            w.Betrieb = topfe.BetriebSofort;
+            w.BetriebAbJahr = topfe.BetriebAbJahr;
+            w.Endenergie = topfe.EndenergieSofort;
+            // 6b: die gesonderte Stromsteuer des Hilfsstroms gehört zur Wärmeerzeugung wie die
+            // Hilfsenergiekosten selbst (BHKW und Kessel zählen dort).
+            if (gesamt.StromsteuerHilfsstrom != null) w.Endenergie += gesamt.StromsteuerHilfsstrom.GesondertEur;
+            w.EndenergieAbJahr = topfe.EndenergieAbJahr;
+            w.InvestGekoppelt = topfe.InvestGekoppeltSofort;
+            w.InvestGekoppeltAbJahr = topfe.InvestGekoppeltAbJahr;
+            w.Wiederholt = topfe.Wiederholt;
+
+            double eigenstrom = Waermegestehung.BhkwEigenstromMWh(gesamt.Matrix, bhkw);
+            if (eigenstrom > 0)
+            {
+                double? preis = NetzArbeitspreis(gesamt.EnergiekostenJeTraeger)
+                                ?? StromArbeitspreisEurJeKwh(v.IdProjekt, szenario);
+                stromgutschrift = Waermegestehung.StromgutschriftEur(eigenstrom, preis);
+                if (!preis.HasValue) eigenstromOhnePreisMWh = eigenstrom;
+            }
+            w.Energie = (Waermegestehung.Energiekosten(gesamt.EnergiekostenJeTraeger) ?? 0.0) - stromgutschrift;
+            w.Behg = gesamt.Behg;
+            w.BehgJeJahr = gesamt.BehgJeJahr;
+            w.Erloes = gesamt.ErloesKwk;
+            // Die Stromsteuer zählt EINMAL (Register EZ‑21): Die Befreiungsreihe des Modus ERLOES
+            // (§ 9 Abs. 1 Nr. 3 StromStG) bleibt hier draußen — die Stromgutschrift oben bewertet
+            // den Eigenstrom zum Arbeitspreis samt Stromsteuer (Regel: ErloesReiheZaehlt).
+            foreach (KapitalwertRechner.ErloesReihe r in gesamt.ErloesReihen)
+                if (r != null && Waermegestehung.ErloesReiheZaehlt(r.Name)) w.ErloesReihen.Add(r);
+
+            // Anwenderentscheid 02.10.2026: Bei produzierendem Gewerbe (oder Land- und
+            // Forstwirtschaft) mindert die § 9b-Entlastung, die dem ersetzten Netzbezug ohnehin
+            // zustünde, die Stromgutschrift — angerechnet wird nur die zusätzliche Entlastung durch
+            // das BHKW. Dieselbe Unternehmensart und dieselbe Prüfung wie die § 9b-Korrektur des
+            // Ausweises (gesamt.SteuerEingabe), der Satz jahresscharf aus dem Gesetzeskatalog wie
+            // die Steuerreihen. Ohne Gewerbe, Gutschrift oder Satz entsteht keine Reihe (bitgleich).
+            // Anwenderentscheid 02.10.2026 (EZ‑22): dieselben Regeln wie die Entlastung des Projekts
+            // — der Sockelbetrag des Jahres gegen den Netzbezug der Steuereingabe, der Satz gedeckelt
+            // auf den Stromsteueranteil des Arbeitspreises, mit dem die Gutschrift rechnet (Netzträger,
+            // § 3.9); ohne gepflegten Anteil der Regelsatz der Stromsteuer des Jahres. Der Anteil wird
+            // nur gelesen, wenn der Abzug greifen kann.
+            if (_gesetze == null) _gesetze = new GesetzKatalog();
+            double? anteil9b = null;
+            bool kann9b = gesamt.SteuerEingabe != null &&
+                          SteuerGutschriftRechner.ProduzierendesGewerbe(gesamt.SteuerEingabe) &&
+                          eigenstrom > 0 && stromgutschrift > 0;
+            if (kann9b) anteil9b = stromsteueranteil9b();
+            entgangen9b = Waermegestehung.Entgangene9bReihe(gesamt.SteuerEingabe, eigenstrom, stromgutschrift,
+                p.Betrachtungszeitraum, Foerderbeginn(p),
+                jahr => _gesetze.Wert(DbWerte.GESETZ_STROMST_ENTLASTUNG_9B, jahr),
+                jahr => _gesetze.Wert(DbWerte.GESETZ_STROMST_SOCKELBETRAG_9B, jahr),
+                jahr => anteil9b ?? _gesetze.Wert(DbWerte.GESETZ_STROMST_REGELSATZ, jahr));
+            if (kann9b)
+            {
+                int jahr1 = Foerderbeginn(p);
+                nachweis9b = Waermegestehung.Nachweis9b(eigenstrom, gesamt.SteuerEingabe.NetzbezugMWh,
+                    _gesetze.Wert(DbWerte.GESETZ_STROMST_ENTLASTUNG_9B, jahr1),
+                    _gesetze.Wert(DbWerte.GESETZ_STROMST_SOCKELBETRAG_9B, jahr1), anteil9b,
+                    _gesetze.Wert(DbWerte.GESETZ_STROMST_REGELSATZ, jahr1), BerichtTexte.Kultur);
+            }
+            if (entgangen9b != null) w.ErloesReihen.Add(entgangen9b);
+            w.Risikoabzug = 0.0;
+            w.WaermeMWh = gesamt.WaermeMWh;
+            return w;
+        }
+
+        /// <summary>
+        /// <b>Der Nachweis des Deckels an der § 9b-Korrektur des Ausweises</b> der vermiedenen
+        /// Stromkosten (Konzept § 3.6, Register EZ‑23) — ein Text, nur wenn der Deckel wirkt
+        /// (wirksamer Satz unter dem § 9b-Satz): mit gepflegtem Anteil
+        /// <c>WIRT_VERMIEDEN_9B_DECKEL</c> (auch Anteil 0, die abgeschaltete Komponente), ohne ihn
+        /// <c>WIRT_VERMIEDEN_9B_REGELSATZ</c> (der Regelsatz als Obergrenze unter dem Satz).
+        /// <c>null</c>, wenn nichts wirkt oder kein Satz gepflegt ist.
+        /// </summary>
+        internal static string Nachweis9bAusweis(double? satzEurJeMWh, double? anteilEurJeMWh,
+                                                 double? regelsatzEurJeMWh,
+                                                 System.Globalization.CultureInfo kultur)
+        {
+            if (!satzEurJeMWh.HasValue || !(satzEurJeMWh.Value > 0)) return null;
+            double satz = satzEurJeMWh.Value;
+            double wirksam = SteuerGutschriftRechner.Satz9bWirksam(satz, anteilEurJeMWh ?? regelsatzEurJeMWh).Value;
+            if (!(wirksam < satz)) return null;
+            if (anteilEurJeMWh.HasValue)
+                return string.Format(kultur, MyResource.Resource.WIRT_VERMIEDEN_9B_DECKEL,
+                    wirksam.ToString("N2", kultur), satz.ToString("N2", kultur));
+            return string.Format(kultur, MyResource.Resource.WIRT_VERMIEDEN_9B_REGELSATZ,
+                wirksam.ToString("N2", kultur), satz.ToString("N2", kultur));
+        }
+
+        /// <summary>
+        /// <b>Der Stromsteueranteil des Netzträgers [€/MWh]</b> — der Deckel des § 9b-Abzugs der
+        /// Wärmegestehung (Konzept § 3.8, § 6.3 Nr. 41; Register EZ‑22) und der § 9b-Korrektur des
+        /// Ausweises der vermiedenen Stromkosten (§ 3.6, EZ‑23; der Träger der Bezugsrolle). Der
+        /// Träger ist der, dessen Arbeitspreis die Stromgutschrift trägt: der Netzeintrag der Aufstellung je Träger, ohne
+        /// ihn der Projektträger samt Rückfall (<see cref="Kaeltestromabrechnung.Projekttraeger"/>,
+        /// dieselbe Wahl wie <see cref="StromArbeitspreisEurJeKwh(int, string)"/>). Der Anteil ist
+        /// der in „Strompreis Details" gepflegte Wert (§ 3.9, <see cref="StrompreisZerlegungCtrl.StromsteuerRoh"/>)
+        /// in ct/kWh × 10; eine abgeschaltete Komponente heißt „der Preis enthält keine Stromsteuer"
+        /// → 0.
+        ///
+        /// <para><c>null</c> = kein Anteil gepflegt (kein Wert, keine Zeile — wie am Rückfallträger,
+        /// der keinen führt); dann gilt der Regelsatz des Jahres als Obergrenze. Ein Lesefehler wird
+        /// benannt (Rechenstufe Energieträger) und zählt wie „nicht gepflegt".</para>
+        /// </summary>
+        private double? StromsteueranteilNetzEurJeMWh(int idProjekt, IList<EnergieTraegerNachweis> traeger)
+        {
+            try
+            {
+                int carrier = 0;
+                if (traeger != null)
+                    foreach (EnergieTraegerNachweis t in traeger)
+                        if (t != null && t.Netzstrom) { carrier = t.CarrierId; break; }
+                if (carrier <= 0) carrier = Kaeltestromabrechnung.Projekttraeger(idProjekt);
+                if (carrier <= 0) return null;
+                double? roh = StrompreisZerlegungCtrl.StromsteuerRoh(idProjekt, carrier);
+                if (!roh.HasValue) return null;
+                bool aktiv = new StrompreisZerlegungCtrl().Read(idProjekt, carrier).Stromsteuer_Aktiv;
+                return aktiv ? Math.Max(0.0, roh.Value) * 10.0 : 0.0;
+            }
+            catch (Exception ex)
+            {
+                Stufenfehler(idProjekt, STUFE_TRAEGER, Fehlergrund.Text(ex));
+                return null;
+            }
+        }
+
+        /// <summary>Der Arbeitspreis [€/kWh] des Trägers, der den Netzbezug bepreist, aus der
+        /// Aufstellung je Träger; <c>null</c>, wenn sie keinen solchen Eintrag führt.</summary>
+        private static double? NetzArbeitspreis(IList<EnergieTraegerNachweis> traeger)
+        {
+            if (traeger == null) return null;
+            foreach (EnergieTraegerNachweis t in traeger)
+                if (t != null && t.Netzstrom) return t.PreisJeEinheit;
+            return null;
+        }
+
+        /// <summary>
+        /// Die Anlagen des Projekts mit ihrem Typ (<c>Tab_Energieanlagen.ID</c> →
+        /// <c>ID_Type</c>) — für die Zuordnung einer allgemeinen Kostenposition, die einer Anlage
+        /// zugeordnet ist (<see cref="Waermegestehung.PositionZaehlt"/>). Scheitert das Lesen,
+        /// bleibt die Tafel leer (die Position zählt dann nach ihrer Komponente), und die Stufe
+        /// wird benannt.
+        /// </summary>
+        private Dictionary<int, int> AnlagentypenDesProjekts(int idProjekt)
+        {
+            var typen = new Dictionary<int, int>();
+            try
+            {
+                DataTable dt = StilleDb.TabelleStreng(
+                    "SELECT ID, ID_Type FROM Tab_Energieanlagen WHERE ID_Projekt = ?",
+                    new DbParam("@p", idProjekt));
+                foreach (DataRow r in dt.Rows)
+                {
+                    int id = StilleDb.Zahl(r["ID"]);
+                    if (id > 0) typen[id] = StilleDb.Zahl(r["ID_Type"]);
+                }
+            }
+            catch (Exception ex)
+            {
+                Stufenfehler(idProjekt, STUFE_ANLAGEN, Fehlergrund.Text(ex));
+            }
+            return typen;
         }
 
         /// <summary>
@@ -6849,6 +7306,20 @@ namespace WindowsFormsApplication1
         internal static List<KapitalwertRechner.InvestPosition> LiesInvestitionen(
             int idProjekt, string szenario, SzenarioSatz satz, out double zuschuss)
         {
+            return LiesInvestitionen(idProjekt, szenario, satz, null, out zuschuss);
+        }
+
+        /// <summary>
+        /// Dieselbe Leselogik, beschränkt auf die Zeilen, die <paramref name="zaehlt"/> annimmt
+        /// (Kostenkomponente, Anlage) — der Weg der Wärmegestehungskosten
+        /// (<see cref="Waermegestehung.PositionZaehlt"/>). Zuschusszeilen gehen durch denselben
+        /// Filter: Ein Zuschuss auf die Photovoltaik mindert nicht die Wärmeerzeugung.
+        /// <c>null</c> = alle Zeilen, Zeichen für Zeichen der Weg ohne Filter.
+        /// </summary>
+        internal static List<KapitalwertRechner.InvestPosition> LiesInvestitionen(
+            int idProjekt, string szenario, SzenarioSatz satz, Func<int, int, bool> zaehlt,
+            out double zuschuss)
+        {
             var liste = new List<KapitalwertRechner.InvestPosition>();
             zuschuss = 0;
 
@@ -6861,6 +7332,7 @@ namespace WindowsFormsApplication1
             foreach (InvestKaskade.Zeile z in InvestKaskade.Lies(idProjekt, szenario))
             {
                 if (z.Betrag == 0) continue;
+                if (zaehlt != null && !zaehlt(z.Komponente, z.Anlage)) continue;
 
                 if (z.Zuschuss)
                 {
@@ -7263,6 +7735,20 @@ namespace WindowsFormsApplication1
         internal static BetriebsTopfe LiesBetriebskostenTopfe(int idProjekt, string szenario,
                                                              SzenarioSatz satz)
         {
+            return LiesBetriebskostenTopfe(idProjekt, szenario, satz, null);
+        }
+
+        /// <summary>
+        /// Dieselbe Leseschleife, beschränkt auf die Zeilen, die <paramref name="zaehlt"/>
+        /// annimmt (Kostenkomponente, Anlage) — der Weg der Wärmegestehungskosten
+        /// (<see cref="Waermegestehung.PositionZaehlt"/>). Eine Datenbank ohne die
+        /// Bemessungsspalten kennt keine Komponente; dort zählt jede Zeile. <c>null</c> = alle
+        /// Zeilen, Zeichen für Zeichen der Weg ohne Filter.
+        /// </summary>
+        internal static BetriebsTopfe LiesBetriebskostenTopfe(int idProjekt, string szenario,
+                                                             SzenarioSatz satz,
+                                                             Func<int, int, bool> zaehlt)
+        {
             var topfe = new BetriebsTopfe();
             double summe = 0;
             double summeEnde = 0;
@@ -7324,6 +7810,15 @@ namespace WindowsFormsApplication1
 
                 foreach (DataRow r in dt.Rows)
                 {
+                    if (zaehlt != null && mitBemessung)
+                    {
+                        int komponenteZ, anlageZ;
+                        KomponenteUndAnlage(r, out komponenteZ, out anlageZ);
+                        if (!zaehlt(komponenteZ, anlageZ)) continue;
+                    }
+                    // Welle KB-5: Die Verschleißposition des Stromspeichers bucht der Lauf (eine Quelle,
+                    // eine Buchung) — die Kostenrechnung zählt sie nicht ein zweites Mal.
+                    if (mitBemessung && VomLaufGebucht(r)) continue;
                     double wert = Szenariowert(r, szenario, "EingegebenerWert", "BestCase", "WorstCase");
                     int start = StartJahrDerZeile(r);
                     double beitrag;
@@ -7466,8 +7961,11 @@ namespace WindowsFormsApplication1
                 // Summationsreihenfolge der gelesenen Zeilen bleibt.
                 if (hilfsPlan != null)
                     foreach (HilfsenergieAusAnteil.Anlage a in hilfsPlan.OhneZeile)
+                    {
+                        if (zaehlt != null && !zaehlt(a.Komponente, a.IdAnlage)) continue;
                         summeEnde += HilfsenergieBetrag(idProjekt, a, ref endenergie,
                                                         ref endenergieVersucht, szenario, satz);
+                    }
             }
             catch (Exception ex)
             {
@@ -7521,11 +8019,10 @@ namespace WindowsFormsApplication1
             var liste = new List<KostenPositionNachweis>();
             bool mitBemessung = false;
             try { mitBemessung = KostenPositionCtrl.StelleSpaltenSicher(); }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // ETAPPE E7c3 (B‑6): benannt — ohne Bemessungsspalten keine Gliederung;
-                // die Summenrechnung (LiesBetriebskostenTopfe) nennt denselben Grund.
-                Vorsorgefehler(ex);
+                // ETAPPE E7c3 (B‑6): ohne Bemessungsspalten keine Gliederung; den Grund
+                // nennt die Summenrechnung (LiesBetriebskostenTopfe, topfe.Fehler).
             }
             if (!mitBemessung) return liste;   // ohne Schritt 19 gibt es nichts zu gliedern
 
@@ -7573,6 +8070,8 @@ namespace WindowsFormsApplication1
 
                 foreach (DataRow r in dt.Rows)
                 {
+                    // Welle KB-5: dieselbe Ausnahme wie in der Summenschleife — die Nachweisliste trifft deren Summe.
+                    if (VomLaufGebucht(r)) continue;
                     double wert = Szenariowert(r, szenario, "EingegebenerWert", "BestCase", "WorstCase");
                     string bem = Text(r, SchemaKatalog.SPALTE_PW_BEMESSUNG);
                     if (string.IsNullOrEmpty(bem)) bem = DbWerte.BEMESSUNG_BETRAG;
@@ -7917,6 +8416,30 @@ namespace WindowsFormsApplication1
         {
             return EndenergieAufloeser.FuerProjekt(idProjekt, szenario,
                                                   satz != null ? satz.MengeFaktor : 1.0);
+        }
+
+        /// <summary>
+        /// <b>Welle KB-5 — „vom Lauf gebucht"</b>: Die Betriebsposition des Stromspeichers „je entladener kWh"
+        /// (<c>EUR_PRO_KWH_ELEKTRISCH</c> an Komponente 5) ist die QUELLE des Verschleißsatzes c_ver; gebucht
+        /// wird der Verschleiß vom Lauf als eigene Betriebskostenzeile (<c>StromspeicherSimCtrl</c>,
+        /// c_ver × entladene kWh). Die Kostenrechnung bucht dieselbe Position deshalb nicht ein zweites Mal —
+        /// eine Quelle, eine Buchung. Ein Erlös ist kein Verschleiß und bleibt.
+        /// </summary>
+        internal static bool VomLaufGebucht(int komponente, int kategorie, string bemessung, bool erloes)
+            => komponente == EndenergieAufloeser.KOMPONENTE_STROMSPEICHER &&
+               kategorie == DbWerte.KOSTEN_KATEGORIE_BETRIEB && !erloes &&
+               string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, StringComparison.Ordinal);
+
+        /// <summary><see cref="VomLaufGebucht(int,int,string,bool)"/> für eine Betriebszeile aus <c>Tab_ProjektWerte</c>.</summary>
+        private static bool VomLaufGebucht(DataRow r)
+        {
+            if (!r.Table.Columns.Contains("KomponentenID") ||
+                !r.Table.Columns.Contains(SchemaKatalog.SPALTE_PW_BEMESSUNG)) return false;
+            int komponente, idAnlage;
+            KomponenteUndAnlage(r, out komponente, out idAnlage);
+            return VomLaufGebucht(komponente, DbWerte.KOSTEN_KATEGORIE_BETRIEB,
+                                  Text(r, SchemaKatalog.SPALTE_PW_BEMESSUNG),
+                                  B(r, SchemaKatalog.SPALTE_PW_IST_ERLOES));
         }
 
         /// <summary>Komponente und Anlage der Positionszeile (0 = nicht gesetzt bzw.
@@ -8532,6 +9055,17 @@ namespace WindowsFormsApplication1
             var projektIds = new HashSet<int>();
             foreach (WirtschaftlichkeitErgebnis e in ergebnisse) projektIds.Add(e.IdProjekt);
 
+            // DER ZEITSTEMPEL DES LAUFS ENTSTEHT HIER, AM ENDE DER RECHNUNG - nach jedem
+            // Schreibvorgang, den die Rechnung selbst auslöst (die Katalogsaat in
+            // GesetzKatalog.StelleKatalogSicher stempelt Tab_Gesetzesparameter). Bis dahin trug jede Zeile die
+            // Zeit, zu der ihr Ergebnisobjekt entstand; gegen die Änderungsstempel gehalten
+            // (KostenAenderungsstempel) hätte sich eine Rechnung damit selbst als veraltet
+            // gestempelt. Alle Zeilen eines Laufs tragen dieselbe Sekunde - die Auflösung, in der
+            // die Datei Zeitpunkte führt.
+            DateTime ende = KostenAenderungsstempel.Sekunde(DateTime.Now);
+            foreach (WirtschaftlichkeitErgebnis e in ergebnisse)
+                if (e != null) e.Zeitstempel = ende;
+
             try
             {
                 using (DbVorgang v = DataRepository.Vorgang())
@@ -8642,6 +9176,8 @@ namespace WindowsFormsApplication1
                                 pl.Add(new DbParam("@fg", (object)e.Fehlgrund ?? DBNull.Value));
                                 pl.Add(new DbParam("@erb", R(e.ErsatzBarwert)));   // W5-B-10
                                 pl.Add(new DbParam("@nw", (object)nwJson ?? DBNull.Value));   // B7P
+                                pl.Add(new DbParam("@lauf", string.IsNullOrEmpty(e.LaufStaende)   // EZ‑19
+                                    ? (object)DBNull.Value : e.LaufStaende));
                                 v.Ausfuehren("INSERT INTO " + TAB_ERGEBNIS + " (ID, ID_Projekt, ID_Ergebnis, Szenario, " +
                                 "IstStamm, Anzeige, Zeitstempel, " +
                                 "Zinssatz, Betrachtungszeitraum, Preissteigerung_Energie, Preissteigerung_Betrieb, " +
@@ -8661,8 +9197,9 @@ namespace WindowsFormsApplication1
                                 SPALTE_PV_AUSFALL_EUR + ", " + SPALTE_PV_51A + ", " +
                                 SPALTE_PV_KAPPUNG_KWH + ", " + SPALTE_PV_VERMIEDEN + ", " +
                                 "StromkostenTarif, HinweisText, Fehlgrund, " +
-                                SPALTE_ERSATZ_BARWERT + ", " + SPALTE_NACHWEIS_JSON + ") " +
-                                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", pl.ToArray());
+                                SPALTE_ERSATZ_BARWERT + ", " + SPALTE_NACHWEIS_JSON + ", " +
+                                SPALTE_LAUF_STAENDE + ") " +
+                                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", pl.ToArray());
                             }
                             naechsteId++;
                         }
@@ -8759,7 +9296,7 @@ namespace WindowsFormsApplication1
             var liste = new List<WirtschaftlichkeitErgebnis>();
             Ladefehler = null;   // ETAPPE E7c3 (B‑6)
             if (projektIds == null || projektIds.Count == 0) return liste;
-            StelleTabellenSicher();
+            GesetzKatalog.StelleKatalogSicher();
             try
             {
                 foreach (int idProjekt in projektIds)
@@ -8827,7 +9364,9 @@ namespace WindowsFormsApplication1
                             StromkostenTarif = D(r, "StromkostenTarif"),
                             Hinweis = r.Table.Columns.Contains("HinweisText") && r["HinweisText"] != DBNull.Value
                                       ? r["HinweisText"].ToString() : null,
-                            Fehlgrund = r["Fehlgrund"] != DBNull.Value ? r["Fehlgrund"].ToString() : null
+                            Fehlgrund = r["Fehlgrund"] != DBNull.Value ? r["Fehlgrund"].ToString() : null,
+                            // EZ‑19: der Laufvermerk; leer bei NULL (Altbestand) und ohne Spalte.
+                            LaufStaende = Text(r, SPALTE_LAUF_STAENDE)
                         };
                         if (r["Zeitstempel"] != DBNull.Value) e.Zeitstempel = Convert.ToDateTime(r["Zeitstempel"]);
 
@@ -8850,6 +9389,9 @@ namespace WindowsFormsApplication1
                         e.OhneNachweis = !r.Table.Columns.Contains(SPALTE_NACHWEIS_JSON) ||
                                          r[SPALTE_NACHWEIS_JSON] == DBNull.Value ||
                                          string.IsNullOrWhiteSpace(Convert.ToString(r[SPALTE_NACHWEIS_JSON]));
+                        // P646: Ohne Umschlag ist die Wärmegestehung die mit dem Kapitalwert des
+                        // ganzen Projekts; ein lesbarer Umschlag sagt es nach seiner Fassung (Uebernimm).
+                        e.GestehungAlteFormel = e.OhneNachweis;
 
                         if (r.Table.Columns.Contains(SPALTE_NACHWEIS_JSON) &&
                             r[SPALTE_NACHWEIS_JSON] != DBNull.Value)
@@ -8912,7 +9454,7 @@ namespace WindowsFormsApplication1
             var liste = new List<SensitivitaetZeile>();
             Ladefehler = null;   // ETAPPE E7c3 (B‑6): gilt für DIESES Laden
             if (projektIds == null || projektIds.Count == 0) return liste;
-            StelleTabellenSicher();
+            GesetzKatalog.StelleKatalogSicher();
             try
             {
                 foreach (int idProjekt in projektIds)
@@ -8967,7 +9509,7 @@ namespace WindowsFormsApplication1
             var map = new Dictionary<int, StromMatrix>();
             Ladefehler = null;   // ETAPPE E7c3 (B‑6): gilt für DIESES Laden
             if (projektIds == null || projektIds.Count == 0) return map;
-            StelleTabellenSicher();
+            GesetzKatalog.StelleKatalogSicher();
             try
             {
                 foreach (int idProjekt in projektIds)
@@ -9004,21 +9546,42 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// true, wenn ein gespeichertes Ergebnis zum aktuellen Simulationslauf passt.
+        /// true, wenn ein gespeichertes Ergebnis noch gilt: Es passt zum jüngsten
+        /// Simulationslauf seines Projekts, und seit seiner Rechnung hat sich an Kosten,
+        /// Preisen, Wirtschaftlichkeitsparametern der Gruppe und am Kostenkatalog nichts
+        /// geändert. Die Regel steht EINMAL in <see cref="Veraltung"/>; jeder Aufrufer —
+        /// Kosten- und Wirtschaftlichkeitsseite, Reiterzeile, Berichte, KI — bekommt
+        /// dieselbe Antwort.
         ///
-        /// <para><b>Die Frage ist NUR der Simulationsstand</b> (Anwenderbefund
+        /// <para><b>Die Frage ist NICHT, ob eine Kennzahl steht</b> (Anwenderbefund
         /// 22.09.2026). Bis dahin stand hier zusätzlich <c>Fehlgrund == null</c> — eine
         /// Zeile mit Fehlgrund galt damit als „veraltet“ und wurde von jedem Aufrufer,
         /// der beides zugleich prüfte, wieder herausgefiltert: Die Statuszeile
         /// „Gespeicherte Ergebnisse passen nicht mehr zum Simulationsstand“ erschien für
         /// solche Zeilen NIE. Ob eine Kennzahl fehlt, sagt der Fehlgrund; ob das
-        /// Ergebnis zum Lauf passt, sagt diese Methode. Wer beides braucht, fragt
+        /// Ergebnis noch gilt, sagt diese Methode. Wer beides braucht, fragt
         /// beides — die zwei Berichtsstellen tun das unverändert.</para>
         /// </summary>
         public bool ErgebnisAktuell(WirtschaftlichkeitErgebnis e)
         {
-            return e != null &&
-                   e.IdErgebnis > 0 && e.IdErgebnis == LiesErgebnisId(e.IdProjekt);
+            return e != null && Veraltung(e) == Ergebnisveraltung.Keine;
+        }
+
+        /// <summary>
+        /// <b>Warum</b> ein gespeichertes Ergebnis nicht mehr gilt — die Regel hinter
+        /// <see cref="ErgebnisAktuell"/>, nach Vorrang: Passt es nicht zum jüngsten
+        /// Simulationslauf seines Projekts, ist es <see cref="Ergebnisveraltung.Simulation"/>;
+        /// sonst urteilen die Änderungsstempel der Datenbank
+        /// (<see cref="KostenAenderungsstempel.Pruefe"/>: Kosten der Vergleichsgruppe, dann der
+        /// Kostenkatalog). Ohne Ergebnis <see cref="Ergebnisveraltung.Keine"/> — es fehlt, veraltet
+        /// ist nichts; <see cref="ErgebnisAktuell"/> bleibt dafür <c>false</c>.
+        /// </summary>
+        public Ergebnisveraltung Veraltung(WirtschaftlichkeitErgebnis e)
+        {
+            if (e == null) return Ergebnisveraltung.Keine;
+            if (e.IdErgebnis <= 0 || e.IdErgebnis != LiesErgebnisId(e.IdProjekt))
+                return Ergebnisveraltung.Simulation;
+            return KostenAenderungsstempel.Pruefe(e.IdProjekt, e.Zeitstempel);
         }
 
         // ------------------------------------------------------------- Hilfen

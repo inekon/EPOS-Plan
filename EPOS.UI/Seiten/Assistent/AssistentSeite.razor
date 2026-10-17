@@ -215,6 +215,15 @@
     [Parameter] public Action<int, string>? ProjektMarkiert { get; set; }
 
     /// <summary>
+    /// Der Steckbrief eines Projekts für den Block über den Kacheln (Anwenderwunsch
+    /// 06.10.2026; <c>ProjektCtrl.Steckbrief</c> über die Hülle). <c>null</c> = kein Block.
+    /// </summary>
+    [Parameter] public Func<int, ProjektSteckbrief?>? SteckbriefLaden { get; set; }
+
+    /// <summary>Die Beschriftungen des Steckbriefs (<c>WIZ_STECKBRIEF_*</c>).</summary>
+    [Parameter] public ProjektSteckbriefTexte SteckbriefTexte { get; set; } = new();
+
+    /// <summary>
     /// „Projekt öffnen" bzw. Doppelklick in der Liste — macht das markierte Projekt
     /// zum aktiven und schließt den Assistenten (Nutzerwunsch 30.08.2026).
     /// </summary>
@@ -381,6 +390,8 @@
 
     private int _schritt;
     private int _markiertId;
+    private int _steckbriefId;
+    private ProjektSteckbrief? _steckbrief;
     private string _markiertName = "";
     private string _meldung = "";
     private string _meldungTitel = "";
@@ -576,10 +587,22 @@
 
         if (gaben is not null)
         {
+            // DER STECKBRIEF DES MARKIERTEN PROJEKTS (Anwenderwunsch 06.10.2026) steht
+            // ueber den Kacheln, nicht im Band: Das Band ist 280 px schmal, und jede
+            // Zeile darin ginge der Projektliste ab - deren Groesse war der Wunsch.
+            // Nur dort, wo das Band steht (BEARBEITEN, Schritt 0).
+            bool mitSteckbrief = nr == 0 && Betriebsart == BEARBEITEN;
             _inhalt = builder =>
             {
-                builder.OpenComponent(0, Seitentyp(nr));
-                builder.AddMultipleAttributes(1, gaben!);
+                if (mitSteckbrief)
+                {
+                    builder.OpenComponent<ProjektSteckbriefBlock>(0);
+                    builder.AddComponentParameter(1, nameof(ProjektSteckbriefBlock.Steckbrief), MarkierterSteckbrief());
+                    builder.AddComponentParameter(2, nameof(ProjektSteckbriefBlock.Texte), SteckbriefTexte);
+                    builder.CloseComponent();
+                }
+                builder.OpenComponent(3, Seitentyp(nr));
+                builder.AddMultipleAttributes(4, gaben!);
                 builder.CloseComponent();
             };
         }
@@ -689,6 +712,20 @@
         builder.CloseElement();
         builder.CloseElement();
     };
+
+    /// <summary>
+    /// Der Steckbrief zur Markierung, je Projekt EINMAL geholt — der Zeichenlauf fragt
+    /// sonst bei jedem Tastendruck in der Suche erneut.
+    /// </summary>
+    private ProjektSteckbrief? MarkierterSteckbrief()
+    {
+        if (_steckbriefId != _markiertId)
+        {
+            _steckbriefId = _markiertId;
+            _steckbrief = _markiertId > 0 ? SteckbriefLaden?.Invoke(_markiertId) : null;
+        }
+        return _steckbrief;
+    }
 
     private void BeiMarkierung(ProjektKopfZeile? zeile)
     {
