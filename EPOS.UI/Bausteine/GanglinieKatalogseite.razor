@@ -7,7 +7,8 @@
    (GanglinienKatalogwege); die Fachlogik bleibt in deren Controllern.
 
    DIE FUSSLEISTE (Katalogauswahl V1, Stufe 4) sind drei Fragmente - Fuss (Vergleichen..., Schloss,
-   Loeschen auf der Auswahl), FussRechts (Import...); den Formathinweis (Infoknopf) reicht der Wirt. Mit
+   Loeschen auf der Auswahl; Vergleichen... beim Projektsatz des Wirts auf dessen angekreuzten Projektzeilen,
+   KA-E-19), FussRechts (Import...); den Formathinweis (Infoknopf) reicht der Wirt. Mit
    FussImWirt legt der Wirt sie in die Slots KatalogFuss, KatalogFussRechts und KatalogKopf der
    Zweispaltenauswahl und hoert ZustandGeaendert, um sie nachzuzeichnen; ohne (Katalogbetrieb)
    traegt die Seite sie in ihrer eigenen Leiste. Die Liste fuehrt Kaestchen (Mehrfachwahl, 4.5)
@@ -228,10 +229,25 @@
     /// <summary>
     /// AW3b (Knopfleiste am Satz): Steht im Wirt ein PROJEKTsatz, nennt der Wirt über diesen Rückruf den Grund
     /// (<c>AUSWAHL_SPERRE_KATALOGSATZ</c>) — Schloss… und Löschen sind dann weich gesperrt (Klick meldet, schreibt
-    /// nichts), Vergleichen… gesperrt (einen Vergleich der Projektzeilen gibt es nicht). <c>null</c> = wie bisher.
+    /// nichts); Vergleichen… vergleicht dann die Projektzeilen des Wirts (<see cref="Projektvergleichszahl"/>), ohne
+    /// diesen Rückruf ist es gesperrt. <c>null</c> = wie bisher.
     /// Ein Rückruf, kein Wert: Die Fragmente zeichnet der Wirt in seinen Slots, mit seinem Stand dieses Zuges.
     /// </summary>
     [Parameter] public Func<string?>? Sperrgrund { get; set; }
+
+    /// <summary>
+    /// „Vergleichen…" beim PROJEKTsatz (KA-E-19): Steht im Wirt ein Projektsatz, nennt der Rückruf die Zahl der
+    /// angekreuzten Projektzeilen (unter zwei ist der Knopf gesperrt); <c>null</c> als Ergebnis = kein Projektsatz,
+    /// der Knopf vergleicht die angekreuzten Katalogsätze. Ankreuzen wählt nicht (KA-E-17).
+    /// </summary>
+    [Parameter] public Func<int?>? Projektvergleichszahl { get; set; }
+
+    /// <summary>
+    /// Die Werte der angekreuzten Projektzeilen für den Vergleich (Name, Beschriftung und Wert je Satz) — die Liste
+    /// zeigt sie in ihrer Vergleichsansicht (<c>Katalogliste.VergleichenWerte</c>). Scheitert das Lesen, meldet der
+    /// Wirt den Grund und liefert keine Sätze.
+    /// </summary>
+    [Parameter] public Func<Task<IReadOnlyList<(string Name, IReadOnlyList<(string Beschriftung, string Wert)> Werte)>>>? Projektvergleichswerte { get; set; }
 
     /// <summary>
     /// Der Zustand der Fragmente hat sich geändert (Wahl, Kästchen, Löschen, Schloss): Der Wirt zeichnet
@@ -270,13 +286,14 @@
     // =====================================================================
 
     /// <summary>
-    /// Links in der Katalog-Fußleiste: Vergleichen… (ab zwei Sätzen), Nennleistung… (nur PV), Schloss
-    /// setzen/aufheben…, Löschen — sie wirken auf die Auswahl des Katalogs (Kästchen, sonst die Wahl).
+    /// Links in der Katalog-Fußleiste: Vergleichen… (ab zwei angekreuzten Sätzen im Bereich des gewählten Satzes),
+    /// Nennleistung… (nur PV), Schloss setzen/aufheben…, Löschen — sie wirken auf die Auswahl des Katalogs
+    /// (Kästchen, sonst die Wahl); Vergleichen… beim Projektsatz auf die angekreuzten Projektzeilen des Wirts.
     /// </summary>
     public RenderFragment Fuss => @<text>
         <button type="button" class="epos-knopf epos-knopf--vergleichen"
                 title="@Resource.AUSWAHL_BTN_VERGLEICHEN_HINWEIS"
-                disabled="@(Ziele().Count < 2 || _laeuft || Sperrgrund?.Invoke() is not null)" @onclick="BeiVergleichen">@Resource.AUSWAHL_BTN_VERGLEICHEN</button>
+                disabled="@(VergleichsZahl() < 2 || _laeuft)" @onclick="BeiVergleichen">@Resource.AUSWAHL_BTN_VERGLEICHEN</button>
         @if (Wege.NennleistungSchreiben is not null)
         {
             @* Nur die PV-Ganglinie: die Nennleistung des gewaehlten Katalogsatzes. Ein Auslieferungssatz
@@ -365,8 +382,28 @@
         _kaestchen = new List<string>();
     }
 
+    /// <summary>
+    /// Wie viele Sätze „Vergleichen…" vergleichen würde: beim Projektsatz des Wirts seine angekreuzten Projektzeilen,
+    /// sonst die Ziele des Katalogs; ein Projektsatz ohne Projektvergleich des Wirts vergleicht nichts.
+    /// </summary>
+    private int VergleichsZahl()
+    {
+        if (Projektvergleichszahl?.Invoke() is int projekt) return projekt;
+        return Sperrgrund?.Invoke() is not null ? 0 : Ziele().Count;
+    }
+
     private async Task BeiVergleichen()
     {
+        if (Projektvergleichszahl?.Invoke() is int)
+        {
+            if (Projektvergleichswerte is not null)
+            {
+                var saetze = await Projektvergleichswerte();
+                if (saetze.Count >= 2) _liste?.VergleichenWerte(saetze);
+            }
+            await Nachziehen();
+            return;
+        }
         IReadOnlyList<Katalogfilterzeile> ziele = Ziele();
         if (ziele.Count >= 2) _liste?.Vergleichen(ziele.Select(z => z.Schluessel).ToList());
         await Nachziehen();
