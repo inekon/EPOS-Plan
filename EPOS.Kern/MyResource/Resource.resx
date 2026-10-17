@@ -46444,6 +46444,9 @@ Chart</value>
   <data name="KM_ANL_MSG_VERWALTUNG_NICHT" xml:space="preserve">
     <value>Die Katalogverwaltung der Kältemaschinen lässt sich hier nicht öffnen.</value>
   </data>
+  <data name="KM_ANL_TYPKENNFELDER_ALLE" xml:space="preserve">
+    <value>Alle Typkennfelder sind geladen.</value>
+  </data>
   <data name="KM_ANL_MSG_UNGESPEICHERT" xml:space="preserve">
     <value>Es gibt ungespeicherte Änderungen. Übernehmen Sie sie mit OK oder verwerfen Sie sie mit Abbrechen, bevor Sie die Katalogverwaltung öffnen.</value>
   </data>

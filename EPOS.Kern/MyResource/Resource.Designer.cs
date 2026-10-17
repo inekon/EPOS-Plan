@@ -89364,6 +89364,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Typkennfelder sind geladen. ähnelt.
+        /// </summary>
+        public static string KM_ANL_TYPKENNFELDER_ALLE {
+            get {
+                return ResourceManager.GetString("KM_ANL_TYPKENNFELDER_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur ähnelt.
         /// </summary>
         public static string KM_AUSK_AUSSEN {
