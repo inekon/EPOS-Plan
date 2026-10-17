@@ -363,6 +363,42 @@ public class ZweispaltenauswahlTests : EposBunitContext
         Assert.False(gemeldet);
     }
 
+    /// <summary>Kuerzt die Satzzeile den Namen mit „…", steht er voll im title des Namens - auch neben den
+    /// Kopfknoepfen des Wirts; ohne Namen traegt der Leertext keinen title.</summary>
+    [Fact]
+    public void Der_Satzname_traegt_den_vollen_Namen_im_Title()
+    {
+        const string lang = "Kältemaschine Baureihe Nord 120 kW luftgekühlt mit Freikühlung";
+        var cut = Aufbauen(mehr: p => p.Add(x => x.SatzName, lang)
+                                       .Add(x => x.SatzKopfKnoepfe, (RenderFragment)(b => b.AddMarkupContent(0, "<button class=\"probe-info\">i</button>"))));
+
+        IElement name = cut.Find(".epos-zweispalten-satzname");
+        Assert.Equal(lang, name.TextContent);
+        Assert.Equal(lang, name.GetAttribute("title"));
+        Assert.Single(cut.FindAll(".epos-zweispalten-satzkopfknoepfe .probe-info"));
+
+        Assert.False(Aufbauen().Find(".epos-zweispalten-satzname").HasAttribute("title"));
+    }
+
+    /// <summary>Am Satz gibt der Name nach, sobald die Kenndaten ganz gekuerzt sind - er kuerzt mit „…", statt
+    /// hinter den Kopfknoepfen des Wirts angeschnitten zu werden (flex-shrink 1, min-width 0, text-overflow);
+    /// die Kenndaten geben zuerst nach. Gemessen im Browser: Kaeltemaschine 1024 x 768, Name 118 statt 200 px
+    /// breit, rechte Kante 264 px vor den Infoknoepfen bei 292 px.</summary>
+    [Fact]
+    public void Der_Satzname_kuerzt_am_Satz_mit_Auslassung_statt_abzuschneiden()
+    {
+        string css = Quelltextleser.Stilblatt();
+        string name = Block(css, ".epos-zweispalten--knopfleiste-am-satz .epos-zweispalten-satzname {");
+        Assert.Contains("flex: 0 1 auto !important", name);
+        Assert.Contains("min-width: 0", name);
+        Assert.Contains("max-width: 24ch", name);
+        Assert.Contains("flex-shrink: 1000000 !important",
+                        Block(css, ".epos-zweispalten--knopfleiste-am-satz .epos-zweispalten-satzkenndaten {"));
+        string grund = Block(css, ".epos-zweispalten-satzname {");
+        Assert.Contains("overflow: hidden", grund);
+        Assert.Contains("text-overflow: ellipsis", grund);
+    }
+
     /// <summary>Ohne Satzname sagt die Zeile „Kein Satz gewählt"; ohne Satz fehlt die Zeile.</summary>
     [Fact]
     public void Ohne_Satz_fehlt_die_Detailzeile()
