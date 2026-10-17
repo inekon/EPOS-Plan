@@ -46440,6 +46440,9 @@ chart</value>
   <data name="KM_ANL_TYPKENNFELDER_ALLE" xml:space="preserve">
     <value>All typical maps are loaded.</value>
   </data>
+  <data name="KM_ANL_TYPKENNFELDER_STATUS" xml:space="preserve">
+    <value>Typical maps: {0} added, {1} skipped.</value>
+  </data>
   <data name="KM_ANL_MSG_UNGESPEICHERT" xml:space="preserve">
     <value>There are unsaved changes. Apply them with OK or discard them with Cancel before opening the catalogue management.</value>
   </data>

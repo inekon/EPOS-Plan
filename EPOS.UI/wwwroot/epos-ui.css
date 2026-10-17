@@ -3842,6 +3842,24 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
     .epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste > .epos-knopf { flex: 0 0.000001 auto; min-width: 5.5rem; overflow: hidden; }
     .epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste > .epos-knopf > .epos-zweispalten-knopftext { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }
+/* KM-T1: Die Katalogwege der Kaeltemaschine („Typkennfelder laden…“, „Katalogverwaltung…“) zeigen in der Kompaktstufe
+   NUR ihr Sinnbild wie „Spalten…“ (4.10) - zu „Typkennfel…“/„Katalogver…“ gekuerzt sagten sie nichts mehr, und der
+   gewonnene Platz traegt die Statuszeile des Ladens. title und aria-label nennen den vollen Text. Die Statuszeile
+   (role="status") steht neben dem Knopf; sie gibt erst nach Suchfeld und Ueberschrift Breite ab (Faktor 0.00001, vor den
+   Knoepfen) und kuerzt dann mit Auslassung; ihr title nennt den ganzen Text. Gemessen: Proben/Rasterprobe/fensterprobe.mjs, Fall kaeltemaschine. */
+.epos-kaeltemaschine-sinnbild { display: none; flex: 0 0 auto; }
+.epos-zweispalten-kopfleiste > .epos-kaeltemaschine-typstatus {
+    flex: 0 0.00001 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    color: var(--epos-text-leise);
+}
+.epos-zweispalten-kopfleiste > .epos-kaeltemaschine-typstatus--fehler { color: var(--epos-warn-text); }
+@media not ((min-width: 1280px) and (min-height: 800px)) {
+    .epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste > .epos-knopf:is(.epos-kaeltemaschine-typkennfelder, .epos-kaeltemaschine-verwaltung) {
+        flex: 0 0 auto; min-width: var(--epos-touchziel); padding-inline: 8px;
+    }
+    .epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste > .epos-knopf:is(.epos-kaeltemaschine-typkennfelder, .epos-kaeltemaschine-verwaltung) > .epos-zweispalten-knopftext { display: none; }
+    .epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste > .epos-knopf:is(.epos-kaeltemaschine-typkennfelder, .epos-kaeltemaschine-verwaltung) > .epos-kaeltemaschine-sinnbild { display: block; }
+}
 .epos-zweispalten-kopfleiste .epos-katalog-suchbeschriftung {
     position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
 }

@@ -89373,6 +89373,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typkennfelder: {0} neu, {1} übersprungen. ähnelt.
+        /// </summary>
+        public static string KM_ANL_TYPKENNFELDER_STATUS {
+            get {
+                return ResourceManager.GetString("KM_ANL_TYPKENNFELDER_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur ähnelt.
         /// </summary>
         public static string KM_AUSK_AUSSEN {

@@ -106,14 +106,31 @@
         <KatalogKopf>
             @* KATALOGFUNKTIONEN OHNE SATZBEZUG (KA-E-27, KM-L1): in der Kopfzeile des Katalogs neben „Spalten…" -
                die Knopfleiste am Satz traegt nur Satzaktionen. *@
+            @* KM-T1: Fehlt kein Typkennfeld mehr (Gabe TypkennfelderFehlend = 0), ist der Knopf gesperrt und die Kopfzeile
+               sagt es; die Rueckmeldung des Ladens steht als Statuszeile NEBEN dem Knopf - dort, wo geklickt wurde (der
+               Banner oben rollt in der Ansicht der Wurzel aus dem Bild). In der Kompaktstufe tragen beide Knoepfe nur ihr
+               Sinnbild wie „Spalten…" (4.10); title und aria-label nennen den vollen Text. *@
             @if (TypkennfelderLaden is not null)
             {
                 <button type="button" class="epos-knopf epos-zweispalten-knopf epos-kaeltemaschine-typkennfelder"
-                        title="@Texte.KnopfTypkennfelder" @onclick="TypkennfelderEinspielen"><span class="epos-zweispalten-knopftext">@Texte.KnopfTypkennfelder</span></button>
+                        title="@(AlleTypkennfelderGeladen ? Texte.TypkennfelderAlleGeladen : Texte.KnopfTypkennfelder)"
+                        aria-label="@Texte.KnopfTypkennfelder" disabled="@AlleTypkennfelderGeladen"
+                        @onclick="TypkennfelderEinspielen"><svg class="epos-kaeltemaschine-sinnbild" viewBox="0 0 16 16" width="14" height="14"
+                        aria-hidden="true" focusable="false"><path d="M8 1.5 v8.5 M4.5 6.5 L8 10 L11.5 6.5 M2 11 v3 h12 v-3" fill="none"
+                        stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" /></svg><span
+                        class="epos-zweispalten-knopftext">@Texte.KnopfTypkennfelder</span></button>
+                @if (TypkennfelderStatus is string typStatus)
+                {
+                    <span class="epos-kaeltemaschine-typstatus@(_typStatusFehler ? " epos-kaeltemaschine-typstatus--fehler" : "")"
+                          role="status" title="@(_typStatus.Length > 0 ? _typStatusLang : typStatus)">@typStatus</span>
+                }
             }
-            @* Der Text steht in .epos-zweispalten-knopftext: In der Kompaktstufe kuerzt er mit Auslassung (Nach #968 c). *@
             <button type="button" class="epos-knopf epos-zweispalten-knopf epos-kaeltemaschine-verwaltung"
-                    title="@Texte.KnopfVerwaltung" @onclick="VerwaltungOeffnen"><span class="epos-zweispalten-knopftext">@Texte.KnopfVerwaltung</span></button>
+                    title="@Texte.KnopfVerwaltung" aria-label="@Texte.KnopfVerwaltung" @onclick="VerwaltungOeffnen"><svg
+                    class="epos-kaeltemaschine-sinnbild" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"
+                    focusable="false"><path d="M2 3.5 h12 M2 8 h12 M2 12.5 h7 M12.5 10.5 v4 M10.5 12.5 h4" fill="none"
+                    stroke="currentColor" stroke-width="1.4" stroke-linecap="round" /></svg><span
+                    class="epos-zweispalten-knopftext">@Texte.KnopfVerwaltung</span></button>
         </KatalogKopf>
 
         @* AW3b: „Bearbeiten…" steht nur noch EINMAL, in der Knopfleiste am gewaehlten Satz. *@
@@ -462,6 +479,13 @@
     /// <summary>Lädt die eingebauten Typkennfelder in den Katalog; ohne ihn kein Knopf „Typkennfelder laden…".</summary>
     [Parameter] public Func<KaeltemaschineTypkennfelderErgebnis>? TypkennfelderLaden { get; set; }
 
+    /// <summary>
+    /// KM-T1: wie viele eingebaute Typkennfelder noch nicht im Katalog stehen (Kern: <c>KaeltemaschinenTypkennfelder.Fehlend</c>).
+    /// 0 sperrt „Typkennfelder laden…" mit dem Hinweis „Alle Typkennfelder sind geladen."; ohne Gabe, bei einer negativen
+    /// Zahl oder einem Fehler bleibt der Knopf frei.
+    /// </summary>
+    [Parameter] public Func<int>? TypkennfelderFehlend { get; set; }
+
     /// <summary>KM-K1: die Projektwärmepumpen im Kühlbetrieb (eine Zeile je Projektkopie); <c>null</c> = keine.</summary>
     [Parameter] public Func<IReadOnlyList<KuehlWaermepumpeZeile>>? KuehlWaermepumpen { get; set; }
 
@@ -596,6 +620,13 @@
     private string _gewaehlt = "";
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
+    /// <summary>KM-T1: fehlende Typkennfelder laut Gabe; <c>null</c> = unbekannt (keine Gabe oder Fehler).</summary>
+    private int? _typFehlend;
+    /// <summary>KM-T1: die Rückmeldung des letzten Ladens in der Kopfzeile des Katalogs.</summary>
+    private string _typStatus = "";
+    private bool _typStatusFehler;
+    /// <summary>KM-T1: der volle Text der Rückmeldung — title der Statuszeile, wenn sie kürzen muss.</summary>
+    private string _typStatusLang = "";
     private string _listeFehler = "";
     private string _satzFehler = "";
 
@@ -747,6 +778,7 @@
         _filterstand = Profil.Schluessel.StartsWith("ANLAGE_", StringComparison.Ordinal)
             ? Katalogfilterregister.Stand(Profil.Art) : Katalogfilterregister.Stand(Profil.Schluessel);
         KatalogNeuLaden();
+        TypkennfelderFehlendLesen();
         if (_zeilen.FirstOrDefault() is Zeile erste) ProjektZeileWaehlen(erste);
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.KAELTEMASCHINE_ANLAGE, () => KiSicht(), KiHaken());
     }
@@ -1680,19 +1712,55 @@
         _meldungStufe = fehler ? WarnStufe.Warnung : WarnStufe.Hinweis;
     }
 
-    /// <summary>„Typkennfelder laden…": lädt über die Gabe, liest den Katalog neu und meldet im Banner.</summary>
+    /// <summary>KM-T1: Ist nichts mehr zu laden? Nur bei einer Gabe, die ausdrücklich 0 meldet.</summary>
+    public bool AlleTypkennfelderGeladen => _typFehlend == 0;
+
+    /// <summary>
+    /// KM-T1: der Text der Statuszeile neben dem Knopf — die Rückmeldung des letzten Ladens, sonst bei gesperrtem Knopf der
+    /// Hinweis „Alle Typkennfelder sind geladen."; <c>null</c> = keine Zeile.
+    /// </summary>
+    public string? TypkennfelderStatus => _typStatus.Length > 0 ? _typStatus
+        : AlleTypkennfelderGeladen ? Texte.TypkennfelderAlleGeladen : null;
+
+    /// <summary>KM-T1: fragt die Gabe nach den fehlenden Typkennfeldern; ein Fehler lässt den Knopf frei.</summary>
+    private void TypkennfelderFehlendLesen()
+    {
+        if (TypkennfelderFehlend is null) { _typFehlend = null; return; }
+        try
+        {
+            int n = TypkennfelderFehlend();
+            _typFehlend = n >= 0 ? n : null;
+        }
+        catch (Exception)
+        {
+            _typFehlend = null;
+        }
+    }
+
+    /// <summary>
+    /// „Typkennfelder laden…": lädt über die Gabe, liest den Katalog neu und meldet in der Statuszeile neben dem Knopf;
+    /// ein Fehler steht dort und zusätzlich im Banner. Danach fragt er die fehlenden Typkennfelder neu ab.
+    /// </summary>
     private void TypkennfelderEinspielen()
     {
-        if (TypkennfelderLaden is null) return;
+        if (TypkennfelderLaden is null || AlleTypkennfelderGeladen) return;
         KaeltemaschineTypkennfelderErgebnis e = Katalogladung.Schreiben(TypkennfelderLaden, Texte.Titel,
             g => new KaeltemaschineTypkennfelderErgebnis(false, 0, 0, g));
         if (!e.Ok)
         {
-            Melden(e.Meldung.Length > 0 ? e.Meldung : Texte.TypkennfelderFehler, true);
+            _typStatus = e.Meldung.Length > 0 ? e.Meldung : Texte.TypkennfelderFehler;
+            _typStatusLang = _typStatus;
+            _typStatusFehler = true;
+            Melden(_typStatus, true);
             return;
         }
-        Melden(string.Format(CultureInfo.CurrentCulture, Texte.TypkennfelderGeladen, e.Neu, e.Uebersprungen), false);
+        // Ein Fehler eines früheren Ladens im Banner ist mit dem Erfolg erledigt.
+        if (_typStatusFehler && _meldung == _typStatus) Melden("", false);
+        _typStatus = string.Format(CultureInfo.CurrentCulture, Texte.TypkennfelderStatus, e.Neu, e.Uebersprungen);
+        _typStatusLang = string.Format(CultureInfo.CurrentCulture, Texte.TypkennfelderGeladen, e.Neu, e.Uebersprungen);
+        _typStatusFehler = false;
         KatalogNeuLaden();
+        TypkennfelderFehlendLesen();
     }
 
     /// <summary>
