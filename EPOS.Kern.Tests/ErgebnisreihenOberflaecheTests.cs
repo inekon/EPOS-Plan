@@ -226,7 +226,7 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         [Fact]
-        public void Die_drei_Kennzahlen_stehen_in_der_Gruppe_Strom_seit_Katalog_v26()
+        public void Die_drei_Kennzahlen_stehen_in_der_Gruppe_Strom_seit_Katalog_v27()
         {
             foreach (string s in new[] { KennzahlenKatalog.SCHLUESSEL_BHKW_EINSPEISUNG,
                                          KennzahlenKatalog.SCHLUESSEL_PV_ABREGELUNG,
@@ -234,7 +234,7 @@ namespace EPOS.Kern.Tests
             {
                 Kennzahl k = K(s);
                 Assert.Equal(Energievergleich.GRUPPE_STROM, Energievergleich.Gruppe(k));
-                Assert.Equal(26, k.Seit);
+                Assert.Equal(27, k.Seit);   // EB-4: v26 ist der Hilfsstrom von origin, die Ergebnisreihen tragen v27
                 Assert.Contains(Energievergleich.Kennzahlen(), x => x.Schluessel == s);
             }
             Assert.Equal("kWh/a", K(KennzahlenKatalog.SCHLUESSEL_SPEICHER_STANDBY).Einheit);
