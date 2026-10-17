@@ -363,6 +363,23 @@ public class ZweispaltenauswahlTests : EposBunitContext
         Assert.False(gemeldet);
     }
 
+    /// <summary>Kuerzt die Satzzeile den Namen mit „…", steht er voll im title des Namens - auch neben den
+    /// Kopfknoepfen des Wirts; ohne Namen traegt der Leertext keinen title.</summary>
+    [Fact]
+    public void Der_Satzname_traegt_den_vollen_Namen_im_Title()
+    {
+        const string lang = "Kältemaschine Baureihe Nord 120 kW luftgekühlt mit Freikühlung";
+        var cut = Aufbauen(mehr: p => p.Add(x => x.SatzName, lang)
+                                       .Add(x => x.SatzKopfKnoepfe, (RenderFragment)(b => b.AddMarkupContent(0, "<button class=\"probe-info\">i</button>"))));
+
+        IElement name = cut.Find(".epos-zweispalten-satzname");
+        Assert.Equal(lang, name.TextContent);
+        Assert.Equal(lang, name.GetAttribute("title"));
+        Assert.Single(cut.FindAll(".epos-zweispalten-satzkopfknoepfe .probe-info"));
+
+        Assert.False(Aufbauen().Find(".epos-zweispalten-satzname").HasAttribute("title"));
+    }
+
     /// <summary>Ohne Satzname sagt die Zeile „Kein Satz gewählt"; ohne Satz fehlt die Zeile.</summary>
     [Fact]
     public void Ohne_Satz_fehlt_die_Detailzeile()
