@@ -165685,6 +165685,177 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus dem Zapfprofilgenerator ({0}) ähnelt.
+        /// </summary>
+        public static string ZPG_PS_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("ZPG_PS_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt rechnet sein Brauchwasser gerade über die Bestandsprofile; ein Profilsatz, der dem Projekt hinzugefügt wird, rechnet mit. ähnelt.
+        /// </summary>
+        public static string ZPG_PS_HINWEIS_WEG_BESTAND {
+            get {
+                return ResourceManager.GetString("ZPG_PS_HINWEIS_WEG_BESTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt rechnet sein Brauchwasser gerade über den Zapfprofilgenerator; ein abgelegter Profilsatz rechnet erst mit, wenn der Rechenweg auf Bestandsprofile steht. ähnelt.
+        /// </summary>
+        public static string ZPG_PS_HINWEIS_WEG_GENERATOR {
+            get {
+                return ResourceManager.GetString("ZPG_PS_HINWEIS_WEG_GENERATOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt rechnet auf dem Bestandsweg bereits eine Zirkulation. Mit Zirkulation im Profil zählt der Verlust doppelt — empfohlen: ohne Zirkulation. ähnelt.
+        /// </summary>
+        public static string ZPG_PS_HINWEIS_ZIRK_DOPPELT {
+            get {
+                return ResourceManager.GetString("ZPG_PS_HINWEIS_ZIRK_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zum Projekt hinzufügen ähnelt.
+        /// </summary>
+        public static string ZPG_PS_KNOPF_PROJEKT {
+            get {
+                return ResourceManager.GetString("ZPG_PS_KNOPF_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogsatz „{0}“ ist gespeichert. ähnelt.
+        /// </summary>
+        public static string ZPG_PS_MSG_KATALOG_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("ZPG_PS_MSG_KATALOG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist kein Zapfprofil gerechnet — ohne Ergebnis kein Profilsatz. ähnelt.
+        /// </summary>
+        public static string ZPG_PS_MSG_KEIN_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("ZPG_PS_MSG_KEIN_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen Namen für den Katalogsatz angeben. ähnelt.
+        /// </summary>
+        public static string ZPG_PS_MSG_NAME_LEER {
+            get {
+                return ResourceManager.GetString("ZPG_PS_MSG_NAME_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Katalogsatz „{0}“ ist schon vorhanden. ähnelt.
+        /// </summary>
+        public static string ZPG_PS_MSG_NAME_VORHANDEN {
+            get {
+                return ResourceManager.GetString("ZPG_PS_MSG_NAME_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Profilsatz wurde nicht gespeichert — {0} ähnelt.
+        /// </summary>
+        public static string ZPG_PS_MSG_NICHT_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("ZPG_PS_MSG_NICHT_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Zapfprofil trägt keinen Bedarf — es gibt nichts abzulegen. ähnelt.
+        /// </summary>
+        public static string ZPG_PS_MSG_OHNE_BEDARF {
+            get {
+                return ResourceManager.GetString("ZPG_PS_MSG_OHNE_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ steht als Brauchwasserprofil im Projekt. ähnelt.
+        /// </summary>
+        public static string ZPG_PS_MSG_PROJEKT_HINZUGEFUEGT {
+            get {
+                return ResourceManager.GetString("ZPG_PS_MSG_PROJEKT_HINZUGEFUEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Wochenprofil „{0}“ ist schon vorhanden — bitte einen anderen Typ angeben. ähnelt.
+        /// </summary>
+        public static string ZPG_PS_MSG_TYP_VORHANDEN {
+            get {
+                return ResourceManager.GetString("ZPG_PS_MSG_TYP_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfprofil {0} ähnelt.
+        /// </summary>
+        public static string ZPG_PS_NAME_PROJEKT {
+            get {
+                return ResourceManager.GetString("ZPG_PS_NAME_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} {1:00}–{2:00} Uhr: {3:N1} kW ähnelt.
+        /// </summary>
+        public static string ZPG_PS_SPITZE {
+            get {
+                return ResourceManager.GetString("ZPG_PS_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfwärme und Zirkulationsverlust ähnelt.
+        /// </summary>
+        public static string ZPG_PS_VARIANTE_MIT {
+            get {
+                return ResourceManager.GetString("ZPG_PS_VARIANTE_MIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Zapfwärme ähnelt.
+        /// </summary>
+        public static string ZPG_PS_VARIANTE_OHNE {
+            get {
+                return ResourceManager.GetString("ZPG_PS_VARIANTE_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Profil steht dann nur in diesem Projekt, nicht im Katalog. Es rechnet als Bestandsprofil ohne Ferien, Feiertage, Stochastik und Typtage. ähnelt.
+        /// </summary>
+        public static string ZPG_PS_WARNUNG_PROJEKT {
+            get {
+                return ResourceManager.GetString("ZPG_PS_WARNUNG_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mo,Di,Mi,Do,Fr,Sa,So ähnelt.
+        /// </summary>
+        public static string ZPG_PS_WOCHENTAGE {
+            get {
+                return ResourceManager.GetString("ZPG_PS_WOCHENTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonen haben sich geändert — der Auslegungspunkt ist überholt und wird beim Speichern verworfen. „Auslegung…“ öffnen und neu übernehmen. ähnelt.
         /// </summary>
         public static string ZPG_PUNKT_UEBERHOLT {
