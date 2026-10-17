@@ -15246,7 +15246,7 @@ Alle Eingaben überprüfen!</value>
     <value>Ergebnisse</value>
   </data>
   <data name="SIMERG_LBL_WAERMEBEDARF_NETZ" xml:space="preserve">
-    <value>Wärmebedarf des Nahwärmenetzes:</value>
+    <value>Gesamtwärmebedarf:</value>
   </data>
   <data name="SIMERG_LBL_STROMBEDARF" xml:space="preserve">
     <value>Strombedarf:</value>
@@ -15258,7 +15258,16 @@ Alle Eingaben überprüfen!</value>
     <value>Reststrombedarf:</value>
   </data>
   <data name="SIMERG_LBL_WAERMEPRODUKTION_WP" xml:space="preserve">
-    <value>Wärmeproduktion WP:</value>
+    <value>Wärmeproduktion Wärmepumpe:</value>
+  </data>
+  <data name="SIMERG_LBL_WAERMEPRODUKTION_HEIZSTAB" xml:space="preserve">
+    <value>Wärmeproduktion Heizstab:</value>
+  </data>
+  <data name="SIMERG_TIP_WAERMEPRODUKTION_WP" xml:space="preserve">
+    <value>Wärme, die die Wärmepumpen abgeben, je Modul gemessen am Erzeuger und ohne Heizstab. Bezieht eine Wärmepumpe ihre Quellwärme aus einem Puffer, den eine andere Wärmepumpe lädt (Booster), ist diese Wärme in beiden Modulen enthalten.</value>
+  </data>
+  <data name="SIMERG_TIP_WAERMEPRODUKTION_HEIZSTAB" xml:space="preserve">
+    <value>Wärme der Heizstäbe. Der Heizstab gibt so viel Wärme ab, wie er Strom aufnimmt.</value>
   </data>
   <data name="SIMERG_LBL_STROMVERBRAUCH_WP" xml:space="preserve">
     <value>Stromverbrauch WP:</value>
@@ -15273,10 +15282,10 @@ Alle Eingaben überprüfen!</value>
     <value>Jahresarbeitszahl mit Heizstab:</value>
   </data>
   <data name="SIMERG_TIP_JAZ_WP" xml:space="preserve">
-    <value>Jahresarbeitszahl der Wärmepumpe allein: Wärmeproduktion WP ÷ Stromverbrauch WP. Ohne Strom steht ein Strich.</value>
+    <value>Jahresarbeitszahl der Wärmepumpe allein: Wärmeproduktion Wärmepumpe ÷ Stromverbrauch WP. Ohne Strom steht ein Strich.</value>
   </data>
   <data name="SIMERG_TIP_JAZ_SYSTEM" xml:space="preserve">
-    <value>Jahresarbeitszahl des Systems mit Heizstab (Bilanzgrenze nach VDI 4650): (Wärmeproduktion WP + Wärme des Heizstabs) ÷ (Stromverbrauch WP + Stromverbrauch Heizstab); der Heizstab gibt so viel Wärme ab, wie er Strom aufnimmt. Dieselbe Rechnung wie die Kennzahl „Jahresarbeitszahl (JAZ) Wärmepumpe mit Heizstab“ im Bericht. Ohne Strom steht ein Strich.</value>
+    <value>Jahresarbeitszahl des Systems mit Heizstab (Bilanzgrenze nach VDI 4650): (Wärmeproduktion Wärmepumpe + Wärmeproduktion Heizstab) ÷ (Stromverbrauch WP + Stromverbrauch Heizstab); der Heizstab gibt so viel Wärme ab, wie er Strom aufnimmt. Dieselbe Rechnung wie die Kennzahl „Jahresarbeitszahl (JAZ) Wärmepumpe mit Heizstab“ im Bericht. Ohne Strom steht ein Strich.</value>
   </data>
   <data name="SIMERG_LBL_WAERMEPRODUKTION_SPK" xml:space="preserve">
     <value>Wärmeproduktion der Spitzenkessel:</value>
@@ -28990,7 +28999,34 @@ Möchten Sie das zulassen?</value>
     <value>Restwärmebedarf nach Kessel:</value>
   </data>
   <data name="SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG" xml:space="preserve">
-    <value>Restwärmebedarf (Stufeneingang):</value>
+    <value>Restwärmebedarf vor dem Kessel:</value>
+  </data>
+  <data name="SIMERG_LBL_GEDECKT" xml:space="preserve">
+    <value>Gedeckter Wärmebedarf:</value>
+  </data>
+  <data name="SIMERG_TIP_GEDECKT" xml:space="preserve">
+    <value>Der Teil des Wärmebedarfs, den dieser Erzeuger deckt: direkt abgegebene Wärme plus die ihm zugerechnete Entladung der Speicher, bei der Wärmepumpe samt Heizstab. Geladene Speicherwärme zählt erst, wenn sie entladen wird; Speicherverluste und Quellwärme eines Boosters zählen nicht.</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_HEIZUNG" xml:space="preserve">
+    <value>davon Heizung:</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_WARMWASSER" xml:space="preserve">
+    <value>davon Warmwasser:</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_PROZESS" xml:space="preserve">
+    <value>davon Prozesswärme:</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_QUELLWAERME_KASKADE" xml:space="preserve">
+    <value>davon Quellwärme aus Kaskade:</value>
+  </data>
+  <data name="SIMERG_TIP_QUELLWAERME_KASKADE_WP" xml:space="preserve">
+    <value>Wärme, die eine Wärmepumpe als Quelle aus einem Puffer bezieht, den ein anderer Erzeuger lädt (Booster). Sie ist in der Wärmeproduktion zweimal enthalten: beim Erzeuger, der den Puffer lädt, und bei der Wärmepumpe, die sie anhebt. Ohne Kaskade 0.</value>
+  </data>
+  <data name="SIMERG_LBL_GESAMTWAERMEBEDARF" xml:space="preserve">
+    <value>Gesamtwärmebedarf:</value>
+  </data>
+  <data name="SIMERG_TIP_RESTWAERMEBEDARF_STUFENEINGANG" xml:space="preserve">
+    <value>Wärmebedarf, der beim Kessel ankommt. Rechnen Erzeuger in der Kaskade vor dem Kessel, ist es der Rest nach ihnen; rechnet der Kessel mit ihnen in derselben Stufe, ist es der Gesamtwärmebedarf.</value>
   </data>
   <data name="CHART_LEGENDE_REST_NACH_KESSEL" xml:space="preserve">
     <value>übrige Erzeuger / ungedeckt</value>

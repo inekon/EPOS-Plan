@@ -63,7 +63,18 @@
                 <dl class="epos-simerg-werte">
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARFSDECKUNG, Zahl(Daten.DeckungProzent), "%")
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF, Zahl(Daten.StufeneingangMwh), MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_WP, Zahl(Daten.WaermeproduktionMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_WP, Zahl(Daten.WaermeproduktionMwh), MWH,
+                               titel: Resource.SIMERG_TIP_WAERMEPRODUKTION_WP)
+                    @Wertzeile(Resource.SIMERG_LBL_DAVON_QUELLWAERME_KASKADE, Zahl(Daten.QuellwaermeKaskadeMwh), MWH,
+                               titel: Resource.SIMERG_TIP_QUELLWAERME_KASKADE_WP)
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_HEIZSTAB, Zahl(Daten.HeizstabWaermeproduktionMwh), MWH,
+                               titel: Resource.SIMERG_TIP_WAERMEPRODUKTION_HEIZSTAB)
+                    @Wertzeile(Resource.SIMERG_LBL_GEDECKT, Zahl(Daten.GedecktMwh), MWH,
+                               titel: Resource.SIMERG_TIP_GEDECKT)
+                    @foreach (var (text, wert) in Kanalzeilen.Davon(Daten.GedecktKanalMwh))
+                    {
+                        @Wertzeile(text, Zahl(wert), MWH)
+                    }
                     @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF, Zahl(Daten.RestwaermeMwh), MWH, betont: true)
                 </dl>
 

@@ -224,8 +224,14 @@ public class WaermepumpeReiterTests : EposBunitContext
         Assert.Equal(3, listen.Count);
 
         Assert.Equal(
-            new[] { "Wärmebedarfsdeckung:", "Wärmebedarf:", "Wärmeproduktion WP:", "Restwärmebedarf:" },
+            new[] { "Wärmebedarfsdeckung:", "Wärmebedarf:", "Wärmeproduktion Wärmepumpe:",
+                    "davon Quellwärme aus Kaskade:", "Wärmeproduktion Heizstab:", "Gedeckter Wärmebedarf:", "davon Heizung:",
+                    "davon Warmwasser:", "Restwärmebedarf:" },
             listen[0].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+
+        // Die Wärme des Heizstabs steht neben der der Wärmepumpe: so viel, wie er Strom aufnimmt.
+        Assert.Equal("2,50", listen[0].QuerySelectorAll("dd")
+                                      .Select(z => z.TextContent.Trim()).ToArray()[4 * 2 + 0]);
         Assert.Equal(
             new[] { "Stromverbrauch WP:", "Stromverbrauch Heizstab:",
                     "Jahresarbeitszahl WP:", "Jahresarbeitszahl mit Heizstab:" },
@@ -234,6 +240,29 @@ public class WaermepumpeReiterTests : EposBunitContext
             new[] { "Bivalenzpunkt:", "durchschnittliche Vollbenutzungsstunden:",
                     "Minimale Spitzenkesselleistung:", "Kapazität des Pufferspeichers:" },
             listen[2].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+    }
+
+    /// <summary>
+    /// Der gedeckte Wärmebedarf steht mit seiner Aufteilung nach Bedarfsart in der
+    /// Wärmegruppe; Prozesswärme erscheint nur, wenn die Wärmepumpe welche gedeckt hat.
+    /// </summary>
+    [Fact]
+    public void Gedeckter_Waermebedarf_teilt_sich_nach_Bedarfsart()
+    {
+        var erg = Erg();
+        erg.GedecktMwh = 17.0;
+        erg.GedecktKanalMwh = new[] { 10.0, 5.0, 2.0, 0.0 };
+
+        var dl = Zeichnen(erg).FindAll("dl.epos-simerg-werte")[0];
+        string[] zeilen = dl.QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray();
+        string[] werte = dl.QuerySelectorAll("dd").Select(z => z.TextContent.Trim()).ToArray();
+
+        int i = Array.IndexOf(zeilen, "Gedeckter Wärmebedarf:");
+        Assert.Equal(new[] { "Gedeckter Wärmebedarf:", "davon Heizung:", "davon Warmwasser:",
+                             "davon Prozesswärme:", "Restwärmebedarf:" },
+                     zeilen.Skip(i).ToArray());
+        Assert.Equal(new[] { "17,00", "10,00", "5,00", "2,00" },
+                     Enumerable.Range(i, 4).Select(z => werte[2 * z]).ToArray());
     }
 
     /// <summary>Die Restwärme schliesst die Wärmegruppe betont ab (W11b‑B‑15).</summary>
