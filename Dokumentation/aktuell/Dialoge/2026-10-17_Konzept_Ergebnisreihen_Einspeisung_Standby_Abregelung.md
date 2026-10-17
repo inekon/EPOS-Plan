@@ -12,9 +12,10 @@ Sitzung Dialoge und Korrekturen, 17.10.2026. Anwenderentscheide vom 17.10.2026 (
    Rechenoption. Im Energieflussbild ist sie Teil der Bilanz (EB-Q1, unten); zuschaltbar ist sie dort, wo Reihen geschaltet
    werden (Zeitreihen-Grafiken).
 
-Schritt **EB-1** (dieses Papier, Kern, Schema 239, Basis R59) ist umgesetzt; Schritt **EB-2** (Oberfläche) folgt.
-Protokoll EB-1:
-[`2026-10-17_EB-1_Ergebnisreihen_Kern.md`](../../ueberholt/Protokolle/Views/2026-10-17_EB-1_Ergebnisreihen_Kern.md).
+Schritt **EB-1** (Kern, Schema 239, Basis R59) und Schritt **EB-2** (Oberfläche, Katalogfassung 26) sind umgesetzt.
+Protokolle:
+[`2026-10-17_EB-1_Ergebnisreihen_Kern.md`](../../ueberholt/Protokolle/Views/2026-10-17_EB-1_Ergebnisreihen_Kern.md),
+[`2026-10-17_EB-2_Ergebnisreihen_Oberflaeche.md`](../../ueberholt/Protokolle/Views/2026-10-17_EB-2_Ergebnisreihen_Oberflaeche.md).
 
 
 ## 1. Befund: wo der Lauf die drei Größen rechnet und wo sie bis EB-1 lagen
@@ -112,15 +113,15 @@ Lesewege für EB-2: `VariantenDaten.Ergebnis.BHKW.StromeinspeisungMwh`, `….Pho
 Reiterwerte `SimulationErgebnisCtrl.BhkwEinspeisungMwh(sim)`, `PvAbregelungMwh(sim)`, `sim.SpeichersystemEigenverbrauchKwh`;
 Reihen `ZeitreihenSatz.BHKW_UEBERSCHUSS`, `SPEICHER_EIGENVERBRAUCH`, `PV_ABREGELUNG`.
 
-| Ort | Umfang EB-2 |
+| Ort | Umfang EB-2 (umgesetzt) |
 |---|---|
-| Ergebnistabellen der Reiter BHKW, PV, Stromspeicher | je eine Zeile „Einspeisung“ [MWh/a] (BHKW), „Abregelung“ [MWh/a, nur mit Einspeisegrenze] (PV), „Standby Speichersystem“ [kWh/a bzw. Anzeigeeinheit] (Stromspeicher); Hüllen in `EPOS.UI.Daten`, Texte `SIMERG_*` in beiden Sprachen |
-| Zeitreihen-Grafiken des Ergebnisses (Stromproduktion/PV, Stromgang) | Reihe „eingespeister Strom“ (`BHKW_UEBERSCHUSS`, Entscheid 1) wählbar; „Abregelung“ (`PV_ABREGELUNG`) **zuschaltbar, Vorgabe aus**, nach dem Muster der RZ-a-Schalter `NETZBEZUG`/`NETZEINSPEISUNG` (EB-Q1); Standby (`SPEICHER_EIGENVERBRAUCH`) im Blatt Stromspeicher |
-| Übersicht „Ergebnisse – Energie“, Tabelle und Energieflussbild | Zeile Einspeisung BHKW aus der Ergebniszeile statt aus der Strommatrix; Bild steht (EB-1), Textalternative und Zeigerzeile nennen die neuen Bänder von selbst |
-| CSV-Export der Ergebnisreihen | die drei Reihen stehen schon im Satz (`Excelreihen`); prüfen, dass die Spaltenwahl „eingespeister Strom“ und „Abregelung“ anbietet |
-| KI-Sicht / Kennzahlen | `KennzahlenKatalog`: neue Kennzahl „Einspeisung BHKW“ (MWh/a) aus `StromeinspeisungMwh`, „PV-Abregelung“ nur mit Wert > 0; die Flussliste des Assistenten nennt die neuen Bänder bereits |
-| Bericht | Baustein BHKW: Zeile Einspeisung aus der Ergebniszeile (heute aus der Strommatrix, Rückfall bleibt); Energieflussbild des Berichts zeigt Standby und Abregelung nach derselben Regel — kein Vorlagenwechsel |
-| Wiki | Seiten „Varianten“ (Energieflussbild: Standby, abgeregelt) und die Reiter BHKW/PV/Stromspeicher; Logbuch-Eintrag je sichtbarer Änderung (ein Satz) |
+| Ergebnistabellen der Reiter BHKW, PV, Stromspeicher | standen schon vor EB-2 im Bestand: BHKW „Stromeinspeisung“ [MWh/a], PV „Abregelung“ [MWh/a, nur mit Wert], Stromspeicher „Eigenverbrauch Speichersystem“ samt „davon aus dem Netz“ [kWh/a, nur mit Standby]; unverändert |
+| Zeitreihen-Grafiken | BHKW-Reiter: Reihe „Stromeinspeisung“ war schon wählbar (Bestand, Bericht-Bild nutzt dieselbe Beschriftung — nicht umbenannt). Blatt Stromproduktion (Stromgang): „eingespeister Strom (BHKW-Anteil)“ (`BHKW_EINSPEISUNG`, der BHKW-Teil von `NETZEINSPEISUNG`, gestrichelt) und „PV-Abregelung“ (`PV_ABREGELUNG`, nur mit Abregelung) hinter den Netzreihen, **ab Werk aus**, CSV folgt der Wahl; Quelle `SimulationErgebnisCtrl.Netzreihen.BhkwEinspeisungKw`/`PvAbregelungKw`. Betriebsbild Stromspeicher: „Standby Speichersystem“ (nur mit Standby), **ab Werk aus**. PV-Reiter: die Abregelung steht schon als Schicht der aufgeteilten Erzeugung |
+| Übersicht „Ergebnisse – Energie“ | Kennzahlen `energie.bhkw_einspeisung` [MWh/a, N1] (Ergebniszeile, Rückfall Strommatrix, sonst „—“), `energie.pv_abregelung` [MWh/a, N1, nur > 0], `energie.speicher_standby` [kWh/a, N0, nur > 0] in der Gruppe Strom; Energieflussbild unverändert (EB-1) |
+| CSV-Export | Stromgang: die zwei Reihen als Spalten, nur gewählt; die Reiter-CSV des Stromspeichers bleibt fest (SoC, Ladung, Entladung, Geldwert) |
+| KI-Sicht / Kennzahlen | die drei Kennzahlen stehen im `KennzahlenKatalog` und damit in der Tabelle, die die KI-Sicht der Übersicht liest; Eingabebilanz unverändert (Standby läuft in der vorhandenen Schalterschleife) |
+| Bericht | die Kennzahlentafel führt die drei Zeilen (Katalogfassung 26, Vorlagen neu gebaut); Baustein BHKW und Strommatrix-Tafel unverändert |
+| Wiki | Seiten Simulation (Blatt Stromproduktion), Stromspeicher (Betriebsbild), Varianten (Gruppe Strom); BHKW und Photovoltaik ohne Änderung |
 
 
 ## 6. Offene Entscheide EB-Q
@@ -128,5 +129,5 @@ Reihen `ZeitreihenSatz.BHKW_UEBERSCHUSS`, `SPEICHER_EIGENVERBRAUCH`, `PV_ABREGEL
 | Nr. | Frage | Empfehlung / Entscheid |
 |---|---|---|
 | **EB-Q1** | Abregelung im Energieflussbild hinter einem Schalter oder als Teil der Bilanz? | **Entschieden 17.10.2026:** kein Schalter. Die Abregelung ist Teil der Bilanz und erscheint als grauer Abzweig „abgeregelt“ an der PV-Quelle nach der Kleinverlustregel (ab 1 % der Erzeugung als Band, darunter im Zeigertext); zuschaltbar (Vorgabe aus) ist sie in den Zeitreihen-Grafiken (EB-2). |
-| **EB-Q2** | Einheit der Standby-Zeile im Reiter Stromspeicher: kWh/a wie die Speicherzeile oder die Anzeigeeinheit des Projekts (MWh)? | Empfehlung: Anzeigeeinheit über `Energieeinheit` an der Anzeigekante (Hausregel „genau einmal umgerechnet“); die Spalte bleibt kWh/a wie ihre Nachbarn. |
-| **EB-Q3** | Soll die Übersicht die Einspeisung BHKW bei einem Altergebnis (NULL) weiter aus der Strommatrix zeigen oder „nicht erhoben“ melden? | Empfehlung: Strommatrix als Rückfall behalten (sie ist bei gerechneter Wirtschaftlichkeit exakt), sonst „—“; kein stiller Nullwert. |
+| **EB-Q2** | Einheit der Standby-Zeile im Reiter Stromspeicher: kWh/a wie die Speicherzeile oder die Anzeigeeinheit des Projekts (MWh)? | **Entschieden 17.10.2026 nach Empfehlung:** Anzeigeeinheit an der Anzeigekante, die Spalte bleibt kWh/a. Umsetzung EB-2: Der Kennzahlenblock des Reiters zeigt alle Energiezeilen in kWh/a; die Standby-Zeile folgt ihren Nachbarn, die Übersicht führt sie ebenfalls in kWh/a (ein Speichersystem verbraucht Hunderte kWh, in MWh stünde „0,4“). |
+| **EB-Q3** | Soll die Übersicht die Einspeisung BHKW bei einem Altergebnis (NULL) weiter aus der Strommatrix zeigen oder „nicht erhoben“ melden? | **Entschieden 17.10.2026 nach Empfehlung, umgesetzt in EB-2:** Strommatrix als Rückfall (`EnergievergleichCtrl.BhkwEinspeisungRueckfall`), sonst „—“; kein stiller Nullwert. |
