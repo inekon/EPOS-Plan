@@ -18,7 +18,7 @@ Das Papier führt den gültigen Stand und wird bei jedem Push nachgeführt.
 | Sitzungen | fortführend `session_01E52sMc6SB7AA3KC4X4AMMG` (Sitzungszweig `claude/wiki-help-assistant-docs-jllq1r`); `session_01NPHEwQvnQDiWMWnQbMmEou` ist stillgelegt |
 | Fertige Wellen | Runde 231–233 gebaut (#1110 DA-6, #1111 BK-5/BK-6, #1112 MA-6b; Zweig `r6`, Merge-Commits `42de7b173`, `5899125c9`), Push folgt; die Zweige `claude/gebaeudesimulation-da6` und `claude/gebaeudesimulation-bk5` sind erledigt. Danach BK-7 (#1114, `3fa37878d`/`048b485e3`, Merge `2b156e3ae`) und KIS (#1115, `842a462d1`/`cf42f7081`/`4180dc1fa`, Merge `3faa1a36d`) gebaut; Testkorrektur `aa5972ea0` (Lauf 38882648396 grün auf `9f4c6d3ce`); N6, BK-8c, SA4 und DA-8 (#1132 bis #1135, Schritt 237) gebaut und gemergt, Push folgt |
 | Laufende Wellen | **VS** (Farbmodus „Vollständigkeit“, E145, #1099), **N4** (Feiertagsperioden mit Wochenverweis, Gebäude-Höchsttemperatur im Austausch, #1097) und **N5** („Klimaregion wählen…“, Wochenvorschau nach Neulesen, #1098) sind gebaut und im Gate grün auf `7721492ff` (Integrationszweig `integ7`; Push folgt, CI-Vermerk folgt); **PAP** (Papierpflege) gepusht (`7c1bd049b`) |
-| Referenzbasis | **R57** `Referenzlaeufe/2026-10-16_R57_Schnellaufheizung`, 38 Projekte; nächste Basis R58; CI-Auswahl laut `CLAUDE.md` |
+| Referenzbasis | **R59** `Referenzlaeufe/2026-10-17_R59_Ergebnisreihen`, 38 Projekte; nächste Basis R60; CI-Auswahl laut `CLAUDE.md` |
 | Testdatenbank | Schemastand **237** (Git LFS, SHA-256 `75fb0a61…`, mit Referenzprojekt 1073); vor jedem Heben die origin-Fassung nehmen, nie die eigene Kopie |
 | Schemakette | 228 `GeraetekostenEntfallSchema` → 229 `StromspeicherKostenSchema` → 230 `KaeltebedarfsprofilVorlagenSchema` → 231 `RaumnutzungDinWerteSchema` (DA-6) → 232 `BauteilkatalogAbschnittSchema` (BK-5/BK-6) → 233 `BauteilUHerkunftSchema` (MA-6b, E149); 234 KBP-5, 235 KB-7 und 236 `KaeltetyptagSchema` (KBP-4) anderer Sitzungen sind gebaut; 237 `BauteilStrahlungSchema` (DA-8, E151, #1135) hängt an 236. Die Kette hängt immer über `+ 1` an der Vorgängerklasse |
 | Statuszeilen | höchste vergebene **#1135** (N6 #1132, BK-8c #1133, SA4 #1134, DA-8 #1135; BK-7b #1126, BK-8 #1127, BK-8b #1128, Papierpflege #1129); davor **#1115** (N4 #1097, N5 #1098, VS #1099, DA-6 #1110, BK-5/BK-6 #1111, MA-6b #1112, BK-7 #1114, KIS #1115; #1100–#1104 anderer Sitzungen); vor jeder neuen Zeile Tabelle und Kopf auf Reservierungen anderer Sitzungen prüfen. Entscheide bis **E159** |
@@ -101,6 +101,11 @@ Festlegungen, die Folgewellen kennen müssen:
   - Erledigt mit N8 (#1161): Die Regel X1 und der Einzonenweg mit Kalender sind behoben, die Meldungsliste trägt die Einzonenwarnung.
   - Windows-Probe N4c (EPOS Lokal, Postfach 11) bestanden: Einzonenweg beider Formate, X1 für die eigene gbXML-Datei und Meldungsliste wie erwartet, Windows-Tests 350/350 grün. Z6 fehlt bei abweichenden Raumtemperaturen gewollt (jede Gruppe ein Raum).
 - Wiki-Upload nur auf Zuruf (E144).
+- Aus der Übergabe IFC-Gebäudeimport vom 08.10.:
+  - Wiki-Upload „Programm Dokumentation – Gebäudeimport“: gehört zum gesammelten Upload (19.10., Freigabe des Anwenders); der Bedienbegriff „Befund“ kommt in Oberflächentexten und Wiki-Quelle des Imports nicht mehr vor (erledigt).
+  - Sichtabnahme Windows: Rückfrage „Welche Aufbauten gelten?“, Quellenwahl im Importdialog, zweiter Dateidialog bei „IFC + Projektdatei“, Wahlfeld „DIN-V-18599-Zonen | Simulationszonen“ (zur Sichtprüfungsliste des Anwenders).
+  - Sportheim-Anwenderdatei (optional): Kellerwänden Bestandsaufbau zuweisen, Baujahr 1970, IFC und Projektdatei neu exportieren; Datei per Google-Drive-Link (Host `drive.usercontent.google.com` freigeben), unversioniert unter `Quellen/`.
+  - Technische Verfeinerungen: Boden/Decke je Raumpolygon nur eine Quellfläche; 41 % der Raumdreiecke mit Ersatzkennung; 5,9 % der Bauteilkörper mit angenommener Bezugsebene; `KERBE_NICHT_EINFACH` nie aufgetreten; iOS-Grenze 100 MB messen (wie G4-8).
 
 Alle Entscheide des Anwenders vom 14.10.2026 (E144 bis E149) stehen mit Wortlaut im Register der Statusdatei Gebäudesimulation.
 

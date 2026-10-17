@@ -490,7 +490,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Ganglinientyp 3: Strombilanz im Monatsverlauf — gestapelte Deckung
-        /// (PV-Eigenverbrauch, BHKW, Netzbezug), Einspeisung als eigene Reihe,
+        /// (PV-Eigenverbrauch, BHKW, Netzbezug), die Einspeisung (ohne Flotte die PV-Einspeisung,
+        /// mit Flotte die Netzeinspeisung gesamt) als schmaler Nebenbalken,
         /// Strombedarf als Linie (Konzept Kap. 6.2 Nr. 3).
         /// </summary>
         public static byte[] StrombilanzMonate(ZeitreihenSatz z)
@@ -539,7 +540,7 @@ namespace WindowsFormsApplication1
             if (z.Hat(ZeitreihenSatz.NETZBEZUG))
                 serien.Add(new Reihe("Netzbezug", MonatsSummenMWh(z.Hole(ZeitreihenSatz.NETZBEZUG)), C_KESSEL));
             if (z.Hat(ZeitreihenSatz.NETZEINSPEISUNG))
-                serien.Add(new Reihe("Netzeinspeisung gesamt",
+                serien.Add(new Reihe(NETZEINSPEISUNG_GESAMT,
                     MonatsSummenMWh(z.Hole(ZeitreihenSatz.NETZEINSPEISUNG)), C_NETZ));
             else if (z.Hat(ZeitreihenSatz.PV_UEBERSCHUSS))
                 serien.Add(new Reihe("Einspeisung", MonatsSummenMWh(z.Hole(ZeitreihenSatz.PV_UEBERSCHUSS)), C_NETZ));
@@ -876,7 +877,7 @@ namespace WindowsFormsApplication1
             var rc = SKRect.Create(90f, 80f, W - 130f, H - 180f - mehr);
 
             // Einspeisung wird nicht gestapelt, sondern als schmaler Nebenbalken gezeigt.
-            Reihe einspeisung = serien.FirstOrDefault(s => s.Name == EINSPEISUNG_NEBENBALKEN);
+            Reihe einspeisung = serien.FirstOrDefault(IstEinspeisungNebenbalken);
             var stapel = serien.Where(s => s != einspeisung).ToList();
 
             var summe = new double[12];
@@ -6624,9 +6625,9 @@ namespace WindowsFormsApplication1
         /// <param name="fusszeile">Der Hinweis unter dem Bild; leer oder <c>null</c> = keine
         /// Zeile und ein Bild wie zuvor.</param>
         /// <param name="fusszeileZusatz">Ein ZWEITER Hinweis, der auf einer EIGENEN Zeile
-        /// unter <paramref name="fusszeile"/> steht; leer oder <c>null</c> = kein Zusatz und
-        /// ein Bild wie zuvor. Mit Zusatz wächst das Bild so weit, dass beide Texte
-        /// vollständig darin stehen (siehe <see cref="Fussblock"/>).</param>
+        /// unter <paramref name="fusszeile"/> steht; leer oder <c>null</c> = kein Zusatz.
+        /// Das Bild wächst nach dem gemessenen Fußblock so weit, dass alle Zeilen — mit und
+        /// ohne Zusatz — vollständig darin stehen (siehe <see cref="Fussblock"/>).</param>
         public static byte[] Optimierungsraster(string titel, string xTitel, string yTitel,
                                                 string skalaTitel,
                                                 IReadOnlyList<double> cRaten,
@@ -6683,12 +6684,16 @@ namespace WindowsFormsApplication1
             // UNTER dem Bildrand gezeichnet worden - sichtbar nur als Anschnitt und auf
             // manchen Schriftarten gar nicht. Deshalb wird der Block zuerst umgebrochen
             // und vermessen; das Bild bekommt danach die Hoehe, die er braucht.
+            // 28d: Das gilt auch OHNE Zusatz — der Hinweis allein wird ebenso vermessen, und das
+            // Bild wächst, sobald seine Zeilen auf einer Schrift mit hoher Zeile tiefer reichen.
             List<string> fussBlock = null;
             float fussZeilenhoehe = 0f;
-            if (!string.IsNullOrWhiteSpace(fusszeile) && !string.IsNullOrWhiteSpace(fusszeileZusatz))
+            if (!string.IsNullOrWhiteSpace(fusszeile))
                 using (var f = Schrift(13f))
                 {
-                    fussBlock = Fussblock(fusszeile, fusszeileZusatz, f, fussBreite);
+                    fussBlock = string.IsNullOrWhiteSpace(fusszeileZusatz)
+                        ? Umbruchzeilen(fusszeile, f, fussBreite, FUSS_ZEILEN_JE_TEIL)
+                        : Fussblock(fusszeile, fusszeileZusatz, f, fussBreite);
                     fussZeilenhoehe = TextHoehe(f) + FUSS_ZEILENABSTAND;
                     float unterkante = fussOben + (fussBlock.Count - 1) * fussZeilenhoehe
                                      + TextHoehe(f) + FUSS_UNTERRAND;
@@ -6816,19 +6821,14 @@ namespace WindowsFormsApplication1
                           min, max, skalaTitel));
 
             // DIE FUSSZEILE (SP-O-4): Sie steht unter der Achsenbeschriftung und
-            // bricht bei Bedarf um; ohne Text aendert sie nichts. MIT ZUSATZ ist der
-            // Block oben schon vermessen - er wird Zeile fuer Zeile gesetzt und passt
-            // in die dafuer gewachsene Bildhoehe. OHNE Zusatz bleibt es beim Bestand:
-            // zwei Zeilen im Bild von 860 x 560.
+            // bricht bei Bedarf um; ohne Text aendert sie nichts. Der Block ist oben
+            // schon vermessen - er wird Zeile fuer Zeile gesetzt und passt in die
+            // dafuer gewachsene Bildhoehe, mit und ohne Zusatz (28d).
             if (fussBlock != null)
                 using (var f = Schrift(13f))
                     for (int i = 0; i < fussBlock.Count; i++)
                         Text(z, fussBlock[i], f, Farbrolle.ACHSE,
                              rc.Left, fussOben + i * fussZeilenhoehe);
-            else if (!string.IsNullOrWhiteSpace(fusszeile))
-                using (var f = Schrift(13f))
-                    Umbruchtext(z, fusszeile, f, Farbrolle.ACHSE, rc.Left, fussOben,
-                                fussBreite);
 
             return z;
         }
@@ -6936,11 +6936,6 @@ namespace WindowsFormsApplication1
         /// nach Schriftart zwei bis drei.
         /// </summary>
         private const int FUSS_ZEILEN_JE_TEIL = 4;
-
-        /// <summary>
-        /// Zeilen der Fußzeile OHNE Zusatz — der Bestand: zwei Zeilen im Bild von 860 × 560.
-        /// </summary>
-        private const int FUSS_ZEILEN_BESTAND = 2;
 
         /// <summary>
         /// Die Zeilen eines zweiteiligen Fußtextes: erst der Grundtext, dann — auf einer
@@ -7065,6 +7060,9 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < zeilen.Count; i++)
                 Text(z, zeilen[i], f, rolle, x, y + i * (TextHoehe(f) + FUSS_ZEILENABSTAND));
         }
+
+        /// <summary>Höchstens so viele Zeilen setzt <see cref="Umbruchtext"/> (Kalenderteppich).</summary>
+        private const int FUSS_ZEILEN_BESTAND = 2;
 
         /// <summary>
         /// Die Dreifarbskala eines Rasterwerts: Rot für den schlechtesten, Gold für den
@@ -8878,6 +8876,18 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Name der Reihe, die die Strombilanz als schmalen Nebenbalken statt im Stapel zeigt.</summary>
         internal const string EINSPEISUNG_NEBENBALKEN = "Einspeisung";
+
+        /// <summary>Der Name der Einspeisereihe mit Speicherflotte (PV, BHKW und Batterie ins Netz).</summary>
+        internal const string NETZEINSPEISUNG_GESAMT = "Netzeinspeisung gesamt";
+
+        /// <summary>
+        /// 6a: Gehört die Reihe in den Nebenbalken der Einspeisung statt in den Stapel der Deckung? Eingespeister Strom
+        /// deckt keinen Bedarf — ohne Flotte die PV-Einspeisung, mit Flotte die Netzeinspeisung gesamt.
+        /// </summary>
+        internal static bool IstEinspeisungNebenbalken(Reihe r)
+        {
+            return r != null && (r.Name == EINSPEISUNG_NEBENBALKEN || r.Name == NETZEINSPEISUNG_GESAMT);
+        }
 
         // Erzeugerreihen Wärme in fester Stapelreihenfolge (Solar unten … Kessel oben).
         private static List<Reihe> WaermeErzeugerReihen(ZeitreihenSatz z, bool tagesmittel)

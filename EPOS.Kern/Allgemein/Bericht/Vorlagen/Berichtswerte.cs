@@ -206,6 +206,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         public System.Data.DataRow LaufendesGebaeude { get; private set; }
 
+        /// <summary>
+        /// Die Varianten der laufenden Gruppe in <c>{{#je variante|block n}}</c>; <c>null</c> außerhalb eines
+        /// Gruppenblocks. Die Datenschalter <c>hat.*</c> werten in der Gruppe über deren Varianten und das Stammprojekt.
+        /// </summary>
+        public IReadOnlyList<VariantenDaten> LaufendeGruppe { get; private set; }
+
         /// <summary>Innerhalb eines Standblocks?</summary>
         public bool ImStandblock { get { return LaufenderStand != null; } }
 
@@ -220,6 +226,20 @@ namespace WindowsFormsApplication1
         {
             var kopie = (Berichtswerte)MemberwiseClone();
             kopie.LaufenderStand = stand;
+            kopie.LaufendesGebaeude = null;
+            return kopie;
+        }
+
+        /// <summary>
+        /// Derselbe Wertesatz mit <paramref name="gruppe"/> als laufender Gruppe eines Blocks
+        /// <c>{{#je variante|block n}}</c>; Stand und Gebäude des äußeren Kontexts entfallen. Das Original bleibt
+        /// unverändert.
+        /// </summary>
+        public Berichtswerte MitGruppe(IReadOnlyList<VariantenDaten> gruppe)
+        {
+            var kopie = (Berichtswerte)MemberwiseClone();
+            kopie.LaufendeGruppe = gruppe;
+            kopie.LaufenderStand = null;
             kopie.LaufendesGebaeude = null;
             return kopie;
         }

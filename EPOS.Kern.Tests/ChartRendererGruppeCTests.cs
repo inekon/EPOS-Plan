@@ -451,6 +451,61 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// 6a: <b>Die Netzeinspeisung der Speicherflotte steht im Nebenbalken</b>, nicht im Stapel der Deckung — wie die
+        /// PV-Einspeisung ohne Flotte. Ihr Balken ist schmaler als die Stapelbalken und steht auf der Grundlinie; der Stapel
+        /// aus PV-Eigenverbrauch und Netzbezug endet bei deren Summe.
+        /// </summary>
+        [Fact]
+        public void DieFlotteneinspeisungStehtImNebenbalken()
+        {
+            ZeitreihenSatz z = Strombilanzsatz();
+            z.Reihen[ZeitreihenSatz.NETZEINSPEISUNG] = Stundenreihe(10.0);
+            Zeichenmodell m = ChartRenderer.StrombilanzMonateModell(z);
+
+            List<Rechteck> einspeisung = Alle(m.Befehle).OfType<Rechteck>()
+                .Where(r => r.Marke == "reihe:Netzeinspeisung gesamt").ToList();
+            List<Rechteck> netzbezug = Alle(m.Befehle).OfType<Rechteck>()
+                .Where(r => r.Marke == "reihe:Netzbezug").ToList();
+            List<Rechteck> pv = Alle(m.Befehle).OfType<Rechteck>()
+                .Where(r => r.Marke == "reihe:PV-Eigenverbrauch").ToList();
+            Assert.Equal(12, einspeisung.Count);
+            Assert.Equal(12, netzbezug.Count);
+
+            for (int i = 0; i < 12; i++)
+            {
+                Assert.True(einspeisung[i].Breite < netzbezug[i].Breite, "Monat " + i);
+                Assert.True(einspeisung[i].X > netzbezug[i].X, "Monat " + i);
+                // Auf der Grundlinie: Unterkante wie die des untersten Stapelbalkens.
+                Assert.Equal(pv[i].Y + pv[i].Hoehe, einspeisung[i].Y + einspeisung[i].Hoehe, 2);
+                // Der Netzbezug liegt direkt auf dem PV-Eigenverbrauch — nichts dazwischen, nichts darüber.
+                Assert.Equal(pv[i].Y, netzbezug[i].Y + netzbezug[i].Hoehe, 2);
+            }
+        }
+
+        /// <summary>
+        /// 28d: <b>Die Rasterkarte wächst nach der gemessenen Fußzeile</b> — auch ohne Zusatz. Ein Hinweis über
+        /// drei Zeilen steht ganz im Bild: Das Bild ist höher als 560, und die letzte Zeile endet über der Kante.
+        /// Ein kurzer Hinweis lässt das Maß 860 breit.
+        /// </summary>
+        [Fact]
+        public void DieRasterkarteWaechstNachDerFusszeile()
+        {
+            string lang = string.Join(" ", Enumerable.Repeat(
+                "Die Aussage gilt nur für das geprüfte endliche Raster; zwischen zwei Stützstellen ist nichts gerechnet.", 3))
+                + " Schlusswort.";
+            Zeichenmodell m = ChartRenderer.OptimierungsrasterModell("J", "C-Rate [1/h]", "Kapazität [kWh]",
+                "Kapitalwert [€]", CRATEN, KAPAZITAETEN, Rasterwerte(), 1, 2, null, lang);
+
+            Assert.Equal(860, m.Breite);
+            Assert.True(m.Hoehe > 560, "Höhe " + m.Hoehe);
+            List<Text> fuss = Alle(m.Befehle).OfType<Text>()
+                .Where(t => t.Y > 520f && lang.Contains(t.Inhalt, System.StringComparison.Ordinal)).ToList();   // unter dem Achsentitel
+            Assert.True(fuss.Count >= 3, "Fußzeilen " + fuss.Count);
+            Assert.EndsWith("Schlusswort.", fuss[^1].Inhalt, System.StringComparison.Ordinal);
+            Assert.True(fuss[^1].Y + 13f < m.Hoehe, "letzte Zeile bei " + fuss[^1].Y + " von " + m.Hoehe);
+        }
+
+        /// <summary>
         /// <b>Ein LOCH nennt seinen Grund, eine SPERRE ihre Sperre.</b> Beides sagt
         /// das Bild schon — das eine durch die Lochfarbe (#226), das andere durch die
         /// Schraffur (#193) —, und der Zeigetext sagt es in Worten. Die Schraffur

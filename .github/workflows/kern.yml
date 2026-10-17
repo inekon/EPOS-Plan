@@ -553,6 +553,8 @@ jobs:
       # R57 (16.10.2026): Referenzprojekt 1073 (Schnellaufheizung, Kopie von 1054 mit Vorheizzeit berechnet und
       # Raumsollwert-Ueberhoehung 3 K, SA4) in der CI-Auswahl - kein anderes CI-Projekt rechnet die Ueberhoehung im
       # Vorheizfenster; die achtzehn uebrigen bleiben byte-gleich.
+      # R58 (17.10.2026): Kaeltespalten der Ergebnistabellen ungerundet (8d); Kaelteproduktion_WP von 1017, 1047
+      # und 1058 ausserhalb der alten Toleranz, Stromverbrauch_Kuehlung innerhalb; die sechzehn uebrigen bleiben byte-gleich.
       - name: Kern-Referenzlauf 1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065, 1066-1071, 1073
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: >
@@ -565,29 +567,29 @@ jobs:
       # Suite (Betrag >= 1: rel. 1e-4, sonst abs. 0,01). Exit 1 bei FAIL macht den
       # Job rot. Der Byte-Diff danach ist nur Information - auf ARM64 sind
       # Gleitkomma-Abweichungen im Rahmen der Toleranz erwartbar (iF15).
-      - name: Vergleich mit Referenzbasis 2026-10-17_R59_Ergebnisreihen
+      - name: Vergleich mit Referenzbasis 2026-10-17_R58_Kaeltesummen
         if: hashFiles('Referenzlaeufe/Kenndaten_Test.sqlite') != ''
         run: |
           mkdir -p artifacts/reflauf/ref
-          cp -r Referenzlaeufe/2026-10-17_R59_Ergebnisreihen/Projekt_1030 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-17_R59_Ergebnisreihen/Projekt_1007 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-17_R59_Ergebnisreihen/Projekt_1017 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-17_R59_Ergebnisreihen/Projekt_1045 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-17_R59_Ergebnisreihen/Projekt_1046 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-17_R59_Ergebnisreihen/Projekt_1047 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-17_R59_Ergebnisreihen/Projekt_1049 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-17_R59_Ergebnisreihen/Projekt_1051 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-17_R59_Ergebnisreihen/Projekt_1058 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-17_R59_Ergebnisreihen/Projekt_1060 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-17_R59_Ergebnisreihen/Projekt_1063 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-17_R59_Ergebnisreihen/Projekt_1065 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-17_R59_Ergebnisreihen/Projekt_1066 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-17_R59_Ergebnisreihen/Projekt_1067 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-17_R59_Ergebnisreihen/Projekt_1068 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-17_R59_Ergebnisreihen/Projekt_1069 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-17_R59_Ergebnisreihen/Projekt_1070 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-17_R59_Ergebnisreihen/Projekt_1071 artifacts/reflauf/ref/
-          cp -r Referenzlaeufe/2026-10-17_R59_Ergebnisreihen/Projekt_1073 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-17_R58_Kaeltesummen/Projekt_1030 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-17_R58_Kaeltesummen/Projekt_1007 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-17_R58_Kaeltesummen/Projekt_1017 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-17_R58_Kaeltesummen/Projekt_1045 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-17_R58_Kaeltesummen/Projekt_1046 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-17_R58_Kaeltesummen/Projekt_1047 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-17_R58_Kaeltesummen/Projekt_1049 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-17_R58_Kaeltesummen/Projekt_1051 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-17_R58_Kaeltesummen/Projekt_1058 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-17_R58_Kaeltesummen/Projekt_1060 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-17_R58_Kaeltesummen/Projekt_1063 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-17_R58_Kaeltesummen/Projekt_1065 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-17_R58_Kaeltesummen/Projekt_1066 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-17_R58_Kaeltesummen/Projekt_1067 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-17_R58_Kaeltesummen/Projekt_1068 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-17_R58_Kaeltesummen/Projekt_1069 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-17_R58_Kaeltesummen/Projekt_1070 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-17_R58_Kaeltesummen/Projekt_1071 artifacts/reflauf/ref/
+          cp -r Referenzlaeufe/2026-10-17_R58_Kaeltesummen/Projekt_1073 artifacts/reflauf/ref/
           dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich artifacts/reflauf/ref artifacts/reflauf/${{ matrix.os }}_kern
           echo "--- Byte-Diff (nur Information) ---"
           for p in 1030 1007 1017 1045 1046 1047 1049 1051 1058 1060 1063 1065 1066 1067 1068 1069 1070 1071 1073; do

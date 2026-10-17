@@ -1083,6 +1083,9 @@
                                                         _katalogZeile?.Geschuetzt == true),
                 Gesetzt = () => _felderGeaendert = true
             },
+            // Anwenderentscheid 16.10.2026: Modul und Wechselrichter eines Strangs waehlt der
+            // Assistent ueber den Uebernahmeweg des Strangbausteins - ohne Baustein gar nicht.
+            Strangwahl = () => _straenge,
             KaltLesen = () => _straenge?.TKaltLebend ?? _tKalt,
             HeissLesen = () => _straenge?.THeissLebend ?? _tHeiss,
             KaltSetzen = wert =>

@@ -262,7 +262,7 @@ namespace Berichtsvorlage
             Console.WriteLine();
             Console.WriteLine("Beispiel:");
             Console.WriteLine("  dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- bereinigen WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx");
-            Console.WriteLine("  dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- beispiel WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Beispiel.docx");
+            Console.WriteLine("  dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- beispiel WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Standard.docx --standard");
             Console.WriteLine("  dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- kurzbericht WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Kurzbericht.docx --sprache de");
             Console.WriteLine("  dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- ausfuehrlich WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Ausfuehrlich.docx --sprache de");
             Console.WriteLine("  dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- bausteine WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Standard.docx WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Bausteine.dotx --sprache de");

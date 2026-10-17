@@ -58,10 +58,10 @@ gegen diese Datei.
 - **Warum alle Bilder und nicht nur die 51 Maßproben.** Was die Messlatte nicht nennt, kann
   sich beim Umbau unbemerkt ändern. Deshalb stehen auch die Bilder der Gegen- und
   Versatzproben darin, die im Bestand nur miteinander verglichen und nie geschrieben werden.
-- **Umfang.** Ein Lauf prüft **269 Bilder**; **238** davon zeichnen ein PNG — Maßproben, die
+- **Umfang.** Ein Lauf prüft **277 Bilder**; **250** davon zeichnen ein PNG — Maßproben, die
   beiden Bilder jeder Gegenprobe und die der Versatzprobe — und stehen als Zeilen in der Messlatte.
   Die SVG-Gegenproben und die Schriftproben der Bildgröße Stufe 2 (`stufe2_…_schrift`) zeichnen
-  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-10-16.sha256` nennt alle 238 Bilder
+  kein PNG und stehen deshalb nicht darin. `Messlatte_2026-10-16.sha256` nennt alle 250 Bilder
   aller Abschnitte unten.
 - **Die Messlatte gilt für die Vorgabe-Palette.** Die Farben der Diagramme sind eine
   Anwendungseinstellung (Rubrik „Diagramme"); die Probe setzt deshalb zu Beginn ausdrücklich
@@ -687,6 +687,18 @@ Druck-SVG zeichnen — ist dieselbe Instanz wie im Berichtsmodell. Deshalb ände
 Messlatte bleibt unberührt; der Nachweis ist ein leerer Diff der Hashlisten vor und nach dem Umbau auf demselben
 Rechner (`--hashes` zweimal, Windows wie Linux), dazu `EPOS.Kern.Tests/OberflaechenregelTests.Der_Berichtsweg_bleibt_unberuehrt`
 (Befehle referenzgleich, Drucktext byte-gleich). Keine Probe kommt hinzu.
+
+## Rasterkarte der Größensuche: die Höhe folgt der Fußzeile
+
+Die Rasterkarte (`ChartRenderer.OptimierungsrasterModell`) vermisst ihre Fußzeile — den SP‑O‑4-Hinweis, mit
+oder ohne Zusatz „bestes Ergebnis aus dem Feinraster“ — vor dem Zeichnen und wächst so weit, dass jede Zeile ganz
+im Bild steht (höchstens vier Zeilen je Teil). Die Breite bleibt 860; die Höhe hängt von der Schrift ab (auf
+Liberation Sans braucht der Hinweis zwei Zeilen und das Bild 584 Punkte). Die drei Maßproben
+`flottenraster_schraffur`, `flottenraster_leistung` und `flotte_stueckzahlraster` halten deshalb die Höhe, die das
+Zeichenmodell für denselben Hinweis nennt; ihre Bilder und `flottenraster_zusatzzeile_wirkt_a` stehen mit dem
+gewachsenen Maß in der Messlatte. Die Gegenprobe `flottenraster_fusszeile_letzte_zeile_steht_im_bild` zeichnet einen
+Hinweis über drei Zeilen ohne Zusatz zweimal, nur im letzten Wort verschieden — die zwei Bilder müssen sich
+unterscheiden, die letzte Zeile steht also im Bild.
 
 ---
 

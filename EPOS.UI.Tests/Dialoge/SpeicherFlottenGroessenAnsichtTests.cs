@@ -442,6 +442,28 @@ public sealed class SpeicherFlottenGroessenAnsichtTests : EposBunitContext
     }
 
     /// <summary>
+    /// 28d: Hat ein Feinpunkt den Lauf gewonnen, steht der Zusatz der Rasterfußzeile auch als
+    /// TEXTZEILE unter der Karte — schriftunabhängig lesbar, nicht nur im Bild.
+    /// </summary>
+    [Fact]
+    public void Der_Feinraster_Zusatz_steht_als_Textzeile_unter_der_Karte()
+    {
+        FlottenAuslegungErgebnis fein = MitFeinraster();
+        string zusatz = SpeicherFlottenAnzeigeCtrl.Rasterfusszusatz(fein);
+        Assert.False(string.IsNullOrEmpty(zusatz));
+
+        var mit = Render<SpeicherFlottenGroessenAnsicht>(p => p.Add(x => x.Ergebnis, fein));
+        Assert.Contains(mit.FindAll(".epos-flotte-groessen-spalte p.epos-flotte-hinweis"),
+                        p => p.TextContent == zusatz);
+
+        // Ohne Feinpunkt-Sieg kein Zusatz und keine Zeile.
+        var ohne = Render<SpeicherFlottenGroessenAnsicht>(p => p.Add(x => x.Ergebnis, Ergebnis()));
+        Assert.Null(SpeicherFlottenAnzeigeCtrl.Rasterfusszusatz(Ergebnis()));
+        Assert.DoesNotContain(ohne.FindAll(".epos-flotte-groessen-spalte p.epos-flotte-hinweis"),
+                              p => p.TextContent.Contains("Feinraster", StringComparison.Ordinal));
+    }
+
+    /// <summary>
     /// MIT zweiter Suchphase kommt ein viertes Bild dazu — und zwar in der LINKEN Spalte
     /// unter der Rasterkarte, nicht neben den zwei Gesamtschnitten.
     /// </summary>

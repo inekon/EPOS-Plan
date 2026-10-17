@@ -1504,25 +1504,25 @@ Projekt 1072 und `EPOS.Kern.Tests/SchnellaufheizungReferenzprojektWacheTests` di
 > `20c0a3fe4d7a399fe18ed20fc11725639c50b3eba10eb0ba704b8900399ebe35`**. Der Referenzlauf der 38 Projekte gegen R57 bleibt
 > PASS.
 
-> **Nachtrag — Schema 239 (EB-1 Ergebnisreihen, 17.10.2026, hängt an 238 `KlimaRohwerteSchema`), Basis R59.**
+> **Nachtrag — Schema 239 (EB-1/EB-4 Ergebnisreihen, 17.10.2026, hängt an 238 `KlimaRohwerteSchema`), Basis R59.**
 > `ErgebnisreihenSchema` (239 = `KlimaRohwerteSchema.SCHRITT + 1`) legt `Stromeinspeisung` an `Tab_ErgebnisBHKW` [MWh/a],
 > `Abregelung` an `Tab_ErgebnisPhotovoltaik` [MWh/a] und `Eigenverbrauch_System` an `Tab_ErgebnisStromspeicher` [kWh/a] an
-> (REAL, nullbar, `CHECK >= 0`, NULL = nicht erhoben); kein DML. Gehoben aus der origin-Fassung 238 (`20c0a3fe…`) mit
+> (REAL, nullbar, `CHECK >= 0`, NULL = nicht erhoben); kein DML. Gehoben aus der origin-Fassung 238 (`c8befb51…`, mit der Datenbereinigung 8e) mit
 > `Werkzeuge/Testdatenbankschema` (3 Spalten); Tabellen- und Indexliste (198 Tabellen) und die Zeilenzahl jeder Tabelle
 > bleiben gleich. Der Rechenweg bleibt unverändert, der Lauf schreibt nur zusätzlich, was er schon rechnet — deshalb
 > bekommt `aggregate.csv` die Schlüssel `BHKW.Stromeinspeisung` und `Photovoltaik.Abregelung` (34 Einträge in 38
 > Projekten), und die Basis ist als R59 neu eingefroren (Abschnitt „Aktuelle Basis“). Die Testdatenbank steht auf **239**
 > (`integrity_check` ok, `foreign_key_check` leer): **109 608 960 Byte, LFS-SHA-256
-> `2fb633f6da4fc4242d8b81b8dd82fd0ffc31c9fb129a171dd93faca2d7828433`**.
+> `5bfedf09beef9ccf636f6f0272b46d7fa632e66b22b044713cf717e20fbb1fa2`**.
 
-### Die Vorgängerbasis R57 (Schnellaufheizung)
+### Die Vorgängerbasis R58 (Kältesummen)
 
-Achtunddreißig Projekte, 1 233 CSV, 8 596 Skalare, auf Linux eingefroren gegen die Testdatenbank `75fb0a61…`
-(Schemastand 237), Nachtrag 238; mit R59 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Referenzprojekt 1073
-„Referenzprojekt Schnellaufheizung“, Stufe SA4) unter
+Achtunddreißig Projekte, 1 233 CSV, 8 596 Skalare, auf Linux eingefroren gegen die Testdatenbank `c8befb51…`
+(Schemastand 238, mit der Datenbereinigung 8e); mit R59 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Anwenderentscheid
+vom 16.10.2026, Punkt 8d: Kältesummen ungerundet gespeichert) unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R59
 nimmt allein die neuen Ergebnisschlüssel des Schemaschritts 239 auf (`BHKW.Stromeinspeisung`, `Photovoltaik.Abregelung`);
-alle Rechenwerte von R57 sind unverändert — 1 199 der 1 233 CSV byte-gleich, die 34 übrigen sind die `aggregate.csv`
+alle Rechenwerte von R58 sind unverändert — @@CSVGLEICH@@ der 1 233 CSV byte-gleich, die @@CSVNEU@@ übrigen sind die `aggregate.csv`
 mit den neuen Schlüsseln.
 
 ## Was hier liegt

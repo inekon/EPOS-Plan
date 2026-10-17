@@ -295,6 +295,10 @@
         internal static string PvStrangErl => MyResource.Resource.KI_DLG_PV_STRANG_ERL;
         internal static string PvStrangGeraetName => MyResource.Resource.PVS_SP_GERAET;
         internal static string PvStrangGeraetErl => MyResource.Resource.KI_DLG_PV_STRANG_GERAET_ERL;
+        internal static string PvStrangWrName => MyResource.Resource.PVS_SP_WECHSELRICHTER;
+        internal static string PvStrangWrErl => MyResource.Resource.KI_DLG_PV_STRANG_WR_ERL;
+        internal static string PvStrangModulName => MyResource.Resource.PVS_SP_MODUL;
+        internal static string PvStrangModulErl => MyResource.Resource.KI_DLG_PV_STRANG_MODUL_ERL;
         internal static string PvStrangMpptName => MyResource.Resource.PVS_SP_MPPT;
         internal static string PvStrangMpptErl => MyResource.Resource.KI_DLG_PV_STRANG_MPPT_ERL;
         internal static string PvStrangReiheName => MyResource.Resource.PVS_SP_REIHE;

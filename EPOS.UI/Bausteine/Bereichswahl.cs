@@ -10,7 +10,7 @@
         /// <summary>Der Bereich „Im Projekt“ (oben).</summary>
         Projekt,
 
-        /// <summary>Der Bereich „Katalog (Datenbank)“ (darunter).</summary>
+        /// <summary>Der Bereich „Katalog (DB)“ (darunter).</summary>
         Katalog
     }
 

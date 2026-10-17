@@ -267,7 +267,7 @@ namespace EPOS.Kern.Tests
 
             VariantenDaten mitReihen = zaehler.Rechne(true);
             Netzbezugsspitze eigene = mitReihen.Zeitreihen.Kaeltestromspitzen[Kaeltestromabrechnung.SchluesselKaeltemaschine(0)];
-            Assert.InRange(k, zaehler.Maschine.Stromverbrauch_MWh - 0.006, zaehler.Maschine.Stromverbrauch_MWh + 0.006);   // ganz aus dem Netz (gerundet gespeichert)
+            Assert.InRange(k, zaehler.Maschine.Stromverbrauch_MWh - 0.006, zaehler.Maschine.Stromverbrauch_MWh + 0.006);   // ganz aus dem Netz (8d: ungerundet gespeichert)
             Assert.Equal(k, mitReihen.KuehlzaehlerMWh, 9);
             Assert.Equal(k * 1000.0 * PREIS_KUEHLUNG + GRUND + LEISTUNG * eigene.JahrKW, mitReihen.StromkostenKuehltraeger, 6);
             Assert.Contains(mitReihen.EnergiekostenJeAnlage, z => z.Einheit == "kW" && z.Anlage.Contains("KM Halle"));

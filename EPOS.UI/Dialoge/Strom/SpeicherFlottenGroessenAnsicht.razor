@@ -180,6 +180,12 @@
                         <DiagrammSvg Modell="@_rastermodell" Kennung="@("flotte-raster-" + Einheitenkennung)"
                                      CsvExport="@CsvVergleich"
                                      Bezeichnung="@Rasterbeschreibung" />
+                        @* 28d: Der Zusatz der Fußzeile („bestes Ergebnis aus dem Feinraster") steht
+                           auch als Textzeile unter dem Bild - schriftunabhängig lesbar. *@
+                        @if (_rastermodell is not null && !string.IsNullOrEmpty(_rasterzusatz))
+                        {
+                            <p class="epos-flotte-hinweis">@_rasterzusatz</p>
+                        }
                     </section>
 
                     @* OHNE ZWEITE PHASE KEIN BLOCK: Ein leerer Rahmen mit
@@ -483,6 +489,9 @@
     /// </summary>
     private Zeichenmodell? _rastermodell, _spaltenmodell, _zeilenmodell;
 
+    /// <summary>28d: der Zusatz der Rasterfußzeile als Textzeile unter dem Bild; <c>null</c> ohne Feinpunkt-Sieg.</summary>
+    private string? _rasterzusatz;
+
     /// <summary>
     /// Der AUSSCHNITT um das Optimum (Auftrag #255); <c>null</c>, solange keine
     /// zweite Suchphase gelaufen ist — dann steht der Block gar nicht da.
@@ -609,6 +618,7 @@
         _schluessel = schluessel;
 
         _rastermodell = SpeicherFlottenAnzeigeCtrl.RasterModell(Ergebnis, _einheit, Einheitenname(_einheit));
+        _rasterzusatz = SpeicherFlottenAnzeigeCtrl.Rasterfusszusatz(Ergebnis, _einheit);
         _spaltenmodell = SpeicherFlottenAnzeigeCtrl.SchnittmodellBeiSpalte(
             Ergebnis, _raster.Spaltenwerte[_spalte], _einheit);
         _zeilenmodell = SpeicherFlottenAnzeigeCtrl.SchnittmodellBeiZeile(

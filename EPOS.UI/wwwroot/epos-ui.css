@@ -3799,6 +3799,21 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
 .epos-zweispalten-kopfleiste > .epos-katalog-suchzeile > * { flex: 0 0 auto; white-space: nowrap; }
 .epos-zweispalten-kopfleiste > .epos-katalog-suchzeile > .epos-leiste-fueller { display: none; }
 .epos-zweispalten-kopfleiste .epos-katalog-suchfeld { flex: 0 3 16rem !important; min-width: 7rem; width: 7rem; }   /* width = Untergrenze: so rechnet die Mindestbreite der Suchzeile das Feld mit 7rem (KA-E-27); gibt vor Trefferzahl und Legende nach (4.10); ausserhalb der Kompaktstufe siehe unten */
+/* (c) Nach #968: Suchplatzhalter ganz in der Kompaktstufe. In der Katalog-Kopfleiste gibt das Suchfeld
+   zuerst Breite ab, aber nur bis 11.25rem (180 px) - so steht der Platzhalter „Suchen – * und ? erlaubt“
+   (176 px, en-US 175 px) ganz. Die Suchzeile bleibt min-content (KA-E-27), die Leiste einzeilig (4.8).
+   REIHENFOLGE DES NACHGEBENS (Weg A+B1): 1. das Suchfeld bis 11.25rem (Suchzeile, Schrumpffaktor 1),
+   2. die Ueberschrift bis 3rem (Faktor 0.001), 3. die Knoepfe des Wirts und „In das Projekt uebernehmen“
+   (Faktor 0.000001 - sie geben praktisch erst nach, wenn die anderen an ihrer Untergrenze stehen). Ein Knopf
+   kuerzt seinen Text mit Auslassung bis 5.5rem; Pfeil (▲) und erste Silbe bleiben sichtbar, der title nennt
+   den vollen Text, der Name fuer die Sprachausgabe bleibt der ganze Knopftext. „Spalten…“ steht in der
+   Suchzeile und behaelt sein Sinnbild. Gemessen: Proben/Rasterprobe/kopfleistenprobe.mjs. */
+@media not ((min-width: 1280px) and (min-height: 800px)) {
+    .epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste > .epos-katalog-suchzeile > .epos-katalog-suchfeld { min-width: 11.25rem; width: 11.25rem; }
+    .epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste > .epos-zweispalten-titel { flex-shrink: 0.001 !important; }
+    .epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste > .epos-knopf { flex: 0 0.000001 auto; min-width: 5.5rem; overflow: hidden; }
+    .epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste > .epos-knopf > .epos-zweispalten-knopftext { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
 .epos-zweispalten-kopfleiste .epos-katalog-suchbeschriftung {
     position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
 }

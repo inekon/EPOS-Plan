@@ -78,6 +78,21 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Beschriftung der Kennzahl <c>em.co2_hilfsstrom</c> (6b, Katalog v26): die Emissionen des
+        /// Hilfsstroms von BHKW und Kesseln — im Modus des Laufs.
+        /// </summary>
+        public static string KennzahlHilfsstrom(string modus, bool englisch)
+        {
+            if (Gemischt(modus))
+                return englisch ? "CO₂ / CO₂ equivalent of auxiliary electricity, mode differs per variant"
+                                : "CO₂ bzw. CO₂-Äquivalent Hilfsstrom, Modus je Variante verschieden";
+            if (IstAequivalent(modus))
+                return englisch ? "CO₂ equivalent of auxiliary electricity, GWP₁₀₀"
+                                : "CO₂-Äquivalent Hilfsstrom, GWP₁₀₀";
+            return englisch ? "CO₂ emissions of auxiliary electricity" : "CO₂-Emissionen Hilfsstrom";
+        }
+
+        /// <summary>
         /// Beschriftung der Kennzahl <c>kaelte.co2</c> (Stufe KU2 Welle 3): die Emissionen des
         /// Kältestroms — im Modus des Laufs und mit der Grenze der Kältezahl (K5).
         /// </summary>

@@ -152,7 +152,7 @@ public sealed class WirtschaftlichkeitParameterTexte
     /// </summary>
     public string GBhkw { get; } = T("BHW_PARAM_GRUPPE", "BHKW — KWKG, Energie- und Stromsteuer");
     public string BhkwVerweis { get; } = T("BHW_PARAM_VERWEIS",
-        "Diese Angaben stehen seit Etappe B5 im eigenen Dialog „BHKW-Wirtschaftlichkeit“ — " +
+        "Diese Angaben stehen im eigenen Dialog „BHKW-Wirtschaftlichkeit“ — " +
         "dort zusammen mit den Werten je BHKW-Modul, den Herleitungen und der Vorschau.");
 
     // -------------------------------------------------------- Brennstoff

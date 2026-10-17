@@ -9,7 +9,6 @@ Etappen BV-E0 bis BV-E5, BV-E8-4 und BV-E9, Abschnitte 4.9, 5.6, 6.3, 7, Anhang 
 |---|---|
 | `Berichtsvorlage.docx` | Stilvorlage des heutigen `WordBerichtGenerator` (Seiteneinrichtung, Kopfzeile mit dem Firmenlogo, Fußzeile, Stile; der Rumpf wird beim Erzeugen geleert); ausgeliefert als Rückfall des Codes und Quelle der beiden anderen |
 | `Berichtsvorlage_Standard.docx` | Standardvorlage mit Platzhaltern; ausgeliefert. Ab BV-E2 im vollen Aufbau ohne Kommentare (`--standard`), in BV-E1 die Stufe mit dem Sammelanker `{{bericht.inhalt}}` (`--sammelanker`) |
-| `Berichtsvorlage_Beispiel.docx` | Beispielvorlage aus dem bisherigen Bericht im vollen Aufbau, erläutert in Word-Kommentaren (Lehrvorlage); Anschauung, nicht ausgeliefert |
 | `Berichtsvorlage_Kurzbericht.docx`, `Berichtsvorlage_Kurzbericht_en.docx` | Kurzbericht je Sprache (Konzept 6.3 Nr. 2, Anhang B.1): Lehrvorlage aus Einzelwerten, Blöcken, Strukturtabelle und Bildern, erläutert in Word-Kommentaren; ausgeliefert, nur als Kopie über „Neue Vorlage…“ wählbar |
 | `Berichtsvorlage_Bausteine.dotx`, `Berichtsvorlage_Bausteine_en.dotx` | Bausteinvorlage je Sprache (BV-E9): Dokumentvorlage mit dem Rumpf der Standardvorlage und jedem Platzhalter des Katalogs als Schnellbaustein; ausgeliefert, im Musterordner, nicht direkt wählbar |
 | `Berichtsvorlage_Ausfuehrlich.docx`, `Berichtsvorlage_Ausfuehrlich_en.docx` | ausführliche Vorlage je Sprache (Entscheid BV-E8-4): der volle Bericht in der Folge des Standardberichts, jeder Abschnitt aus Einzelelementen, frei umbaubar, erläutert in Word-Kommentaren; ausgeliefert, nur als Kopie über „Neue Vorlage…“ wählbar |
@@ -18,7 +17,7 @@ Etappen BV-E0 bis BV-E5, BV-E8-4 und BV-E9, Abschnitte 4.9, 5.6, 6.3, 7, Anhang 
 Das Werkzeug hat eine **eigene Projektmappe** `Berichtsvorlage.sln` und gehört bewusst **nicht** in
 `WP-Plan.sln` (Muster: `Werkzeuge/Auslieferungsvorlage`). Es verweist auf `EPOS.Kern`: Die Word-Modi außer `bausteine` lesen und schreiben
 nur das Word-Paket, die Bausteinvorlage und die ausführliche Excel-Vorlage baut der Kern aus dem Katalog, und der Sammelbefehl nimmt die
-Katalogfassungen aus dem Kern. Ob die Beispielvorlage zum Code passt (Kapitelfolge, Kapitelköpfe), prüft die Wache
+Katalogfassungen aus dem Kern. Ob die Standardvorlage zum Code passt (Kapitelfolge, Kapitelköpfe), prüft die Wache
 `EPOS.Kern.Tests/BerichtsvorlageDateiWacheTests`; ob **jede** mitgelieferte Vorlage aus dem aktuellen Katalog erzeugt ist,
 die Aktualitätswache `EPOS.Kern.Tests/AuslieferungsvorlagenAktualitaetWacheTests` — beide in jedem Kern-Lauf. Die
 Aktualitätswache verweist auf dieses Projekt und zieht dieselben Schritte wie `alle`.
@@ -39,11 +38,6 @@ dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- excel-ausfuehrlich 
 # Stilvorlage bereinigen — wiederholbar, ein zweiter Lauf findet nichts und schreibt nichts
 dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- bereinigen \
     WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx
-
-# Beispielvorlage (voller Aufbau, mit Kommentaren) aus der bereinigten Stilvorlage bauen
-dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- beispiel \
-    WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage.docx \
-    WindowsFormsApplication1/Allgemein/Bericht/Vorlagen/Berichtsvorlage_Beispiel.docx
 
 # Standardvorlage im vollen Aufbau ohne Kommentare bauen (ab BV-E2, ausgeliefert)
 dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- beispiel \
@@ -82,14 +76,13 @@ dotnet run --project Werkzeuge/Berichtsvorlage -c Release -- beispiel \
 
 | Schalter von `beispiel` | Wirkung | `EPOS.Vorlage` |
 |---|---|---|
-| — | Beispielvorlage: voller Aufbau, drei Kommentare | `beispiel` |
+| — | voller Aufbau mit drei Kommentaren (Lehrfassung für Proben; liegt nicht im Vorlagenordner) | `beispiel` |
 | `--standard` | Standardvorlage: voller Aufbau, keine Kommentare | `standard` |
 | `--sammelanker` | Standardvorlage in der Stufe mit Sammelanker: Rumpf nur `{{bericht.inhalt}}`, keine Kommentare | `standard-sammelanker` |
 | `--katalogfassung <n>` | `EPOS.Katalogfassung` in `custom.xml`, ganze Zahl ab 1; Vorgabe 4 (die laufende Fassung, Entscheid BV-E4-4: Katalog v4 führt Tabellen und Bilder, die Standardvorlage deckt sie über ihre Kapitel) | — |
 
 `--standard` und `--sammelanker` schließen einander aus. Der Name des Ziels muss zur Art passen:
-`Berichtsvorlage_Standard.docx` entsteht nur mit `--standard` oder `--sammelanker`, `Berichtsvorlage_Beispiel.docx`
-nur ohne beide — so trägt die ausgelieferte Standardvorlage nie die Kommentare der Lehrvorlage. Jedes andere Ziel,
+`Berichtsvorlage_Standard.docx` entsteht nur mit `--standard` oder `--sammelanker` — so trägt die ausgelieferte Standardvorlage nie die Kommentare der Lehrvorlage. Jedes andere Ziel,
 etwa eine Probe, nimmt jede Art.
 
 Beide Modi arbeiten auf einer Arbeitskopie im Temp-Ordner, prüfen sie und ersetzen das Ziel erst, wenn alles
@@ -113,7 +106,7 @@ grün ist. Die Ausgabe nennt den Befund vorher und nachher.
   in Rumpf, Kopf- und Fußzeile; im vollen Aufbau jeder Kapitelplatzhalter mit `|ohne titel` unmittelbar unter
   seinem Kapitelkopf `{{text.kapitel_<name>}}` und jeder Kapitelkopf über seinem Kapitel; in der Kopfzeile
   genau ein Bild, der Bildplatzhalter des Logos mit dem Platzhalterbild; drei Kommentare in der
-  Beispielvorlage, keiner in den Standardvorlagen; `EPOS.Katalogfassung` und `EPOS.Vorlage` mit den Werten
+  Fassung ohne Schalter, keiner in den Standardvorlagen; `EPOS.Katalogfassung` und `EPOS.Vorlage` mit den Werten
   des Laufs in `custom.xml`.
 
 ## bereinigen
@@ -167,7 +160,7 @@ Das Deckblatt ist Abschnitt 1 ohne Kopf- und Fußzeile. Ab Abschnitt 2 gilt die 
 `{{ersteller.firma}}` statt „INEKON GmbH“, in der Mitte `{{bericht.datum}}` an der Stelle des DATE-Felds, rechts
 `{{text.seite}}` mit den Feldern PAGE und NUMPAGES.
 
-Drei Word-Kommentare erläutern die Beispielvorlage: am Deckblatt Platzhalter, Formatangaben, Kopf- und Fußzeile
+Ohne Schalter erläutern drei Word-Kommentare die Vorlage: am Deckblatt Platzhalter, Formatangaben, Kopf- und Fußzeile
 samt Logo — Word erlaubt in Kopf- und Fußzeilen keine Kommentare — und den Zweck der Datei; am
 Inhaltsverzeichnis die Kapitelplatzhalter; am ersten Kapitelkopf, dass der Kapitelkopf ein Platzhalter für den
 Kapiteltitel in der Sprache des Berichts ist und durch eigenen Text ersetzt werden darf. Die Standardvorlagen
@@ -329,7 +322,7 @@ Ständen bleibt kein Platzhalter übrig, und jedes Diagramm des Standardberichts
 ## alle
 
 `alle <vorlagenordner>` — der **Sammelbefehl**: bereinigt die Stilvorlage `Berichtsvorlage.docx` (ein bereinigter Stand bleibt
-byte-gleich) und erzeugt danach jede mitgelieferte Vorlage aus dem aktuellen Katalog neu, in dieser Folge: Beispielvorlage,
+byte-gleich) und erzeugt danach jede mitgelieferte Vorlage aus dem aktuellen Katalog neu, in dieser Folge:
 Standardvorlage, Kurzbericht de/en, ausführliche Vorlage de/en (Word mit `KatalogfassungWord`), Bausteinvorlage de/en (`.dotx`, Word-Fassung),
 ausführliche Excel-Vorlage de/en (laufende Katalogfassung). Die Schritte stehen in `Sammellauf.Schritte` (`ExcelVorlage.cs`); eine weitere mitgelieferte
 Vorlage kommt dort als eigener Schritt hinzu, dann hält sie auch die Aktualitätswache. Der erste rote
@@ -338,8 +331,8 @@ Schritt bricht den Lauf mit seinem Rückgabewert ab. Zweimal gezogen, bleibt der
 ### Auslieferung und Wiederholbarkeit
 
 Stil- und Standardvorlage, der Kurzbericht, die ausführliche Vorlage, die Bausteinvorlage und die ausführliche Excel-Vorlage je Sprache werden in beiden Lieferwegen ausgeliefert (`WindowsFormsApplication1.csproj`,
-MauiAsset in `EPOS.iOS/EPOS.iOS.csproj`), die Beispielvorlage in keinem. **Nach jeder Änderung an
-`Berichtsvorlage.docx` — auch nach `bereinigen` — und am Werkzeug sind Standard- und Beispielvorlage neu zu
+MauiAsset in `EPOS.iOS/EPOS.iOS.csproj`). **Nach jeder Änderung an
+`Berichtsvorlage.docx` — auch nach `bereinigen` — und am Werkzeug ist die Standardvorlage neu zu
 erzeugen.** `beispiel` schreibt wiederholbar byte-gleich: Es ändert eine Kopie der Quelle, die Daten in
 `docProps/core.xml` stammen aus ihr, und zum Schluss bekommt jeder Eintrag des Pakets den Zeitstempel der Quelle —
 auch das neu angelegte Platzhalterbild, das die Paketbibliothek sonst mit der Laufzeit stempelte. Inhalt und
