@@ -54916,6 +54916,9 @@ chart</value>
   <data name="BKI_PROT_ANTEIL" xml:space="preserve">
     <value>Area fraction set to the remainder of 1 (section {0}: {1}): {2}</value>
   </data>
+  <data name="BKI_PROT_OHNE_BEITRAG" xml:space="preserve">
+    <value>Sections without contribution (area fraction 0) omitted ({0} section(s), {1} layers): {2}</value>
+  </data>
   <data name="BKI_PROT_GETEILT" xml:space="preserve">
     <value>Layers split at common layer boundaries ({0} → {1} layers): {2}</value>
   </data>

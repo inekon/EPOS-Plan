@@ -188,7 +188,7 @@ Version beim Anwender zu erfragen; die Wiki-Quellen (Prozesswärme, Brauchwasser
 
 ### Version 1.2.0.12 — Entwurf, Versionsnummer beim Anwender zu bestätigen — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
-Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1 bis DA-7, MA-1 bis MA-5, MA-7; Statuszeilen #1002 bis #1057, #1076 bis #1083, #1085, #1091, #1092, #1094, #1110, #1111, #1114, #1115, #1126 bis #1128, #1132 bis #1135, #1153, #1161). Die Wiki-Quellen (Gebäude, Gebäudeimport, Nutzungsprofile, Baustoffe und Bauteilaufbauten, Gebäudemodell VDI 6007, Programm Dokumentation - Simulation, Simulationsergebnisse, Datenexport, Index der Hilfeschlüssel) sind fortgeschrieben, ins Wiki geladen ist noch nichts. Nach dem Anwenderentscheid vom 13.10.2026 gilt die Nummer bis zum 16.10.2026 nur als Vorschlag; es gibt keinen Upload.
+Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1 bis DA-7, MA-1 bis MA-5, MA-7; Statuszeilen #1002 bis #1057, #1076 bis #1083, #1085, #1091, #1092, #1094, #1110, #1111, #1114, #1115, #1126 bis #1128, #1132 bis #1135, #1153, #1161, #1171). Die Wiki-Quellen (Gebäude, Gebäudeimport, Nutzungsprofile, Baustoffe und Bauteilaufbauten, Gebäudemodell VDI 6007, Programm Dokumentation - Simulation, Simulationsergebnisse, Datenexport, Index der Hilfeschlüssel) sind fortgeschrieben, ins Wiki geladen ist noch nichts. Nach dem Anwenderentscheid vom 13.10.2026 gilt die Nummer bis zum 16.10.2026 nur als Vorschlag; es gibt keinen Upload.
 
 - Seit 13.10.2026: Der Gebäudedialog prüft ein Gebäude mit „Modell prüfen…“ auf Rechenfähigkeit, zeigt je Prüfgruppe eine Ampel und übernimmt die Vorschläge mit einem Klick; nach einem Import öffnet die Prüfung von selbst.
 - Seit 13.10.2026: Die Modellprüfung meldet je Zone eine nicht geschlossene Hülle und schlägt das fehlende Dach, die fehlende Bodenplatte oder Geschossdecke mit passender Fläche vor.
@@ -230,6 +230,7 @@ Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1 bis DA-7, MA-1 bis MA-5
 - Seit 12.10.2026: „Normwerte einlesen…“ füllt die Profile der DIN/TS 18599-10 aus Ihrer eigenen CSV-Datei oder Projektdatei; neu ist die Außenluft je Person.
 - Seit 12.10.2026: Die leeren Kategorien SIA 2024 und VDI 2078 sind aus dem Katalog der Nutzungsprofile entfernt; vorhandene Profile bleiben in einer eigenen Kategorie.
 - Seit 11.10.2026: Saison, Ferien, Zeiträume und Einzeltage der Kalender nehmen Tag und Monat als „TT.MM.“ an und prüfen die Eingabe erst beim Verlassen des Feldes.
+- Seit 17.10.2026: Der Bauteilkatalog-Import übernimmt inhomogene Aufbauten, deren Abschnitte mit Flächenanteil 0 keinen Beitrag leisten, ohne diese Abschnitte.
 
 ### Version ‹Version› — Kältebedarf dezentral (Split) (Entwurf, Upload ausstehend) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
 
