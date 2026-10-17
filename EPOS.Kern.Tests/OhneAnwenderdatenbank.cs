@@ -20,7 +20,7 @@ namespace EPOS.Kern.Tests
     /// einlegt.</para>
     ///
     /// <para><b>Regel für die Fälle.</b> Wer eine Datenbank braucht, legt sie ein — <see cref="TestDatenbank"/>,
-    /// <see cref="TwwTestdatenbank"/>, <see cref="OhneDatenbankprobe"/> oder ein eigener Pfad — in der seriellen
+    /// <see cref="TwwTestdatenbank"/> oder ein eigener Pfad — in der seriellen
     /// Sammlung „Testdatenbank“ und stellt den Pfad danach zurück; die Vorrichtungen tun das selbst und stellen damit
     /// diesen Pfad wieder her. Der Wächter <see cref="OhneAnwenderdatenbankTests"/> hält beides. Der Hinweis CA2255
     /// (Modulinitialisierer in einer Bibliothek) trifft hier nicht: Diese Assembly wird nur vom Testlauf geladen.</para>
