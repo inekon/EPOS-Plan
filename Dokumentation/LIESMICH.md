@@ -184,7 +184,8 @@ Anordnung; die zugehörigen Bilder liegen beim Anwender, nicht im Repository —
 Projekt mit Kundennamen) sowie `Waermepumpe_Bivalenz_Uebergabe.html` (Konzept Übergabegrenze und Bivalenz:
 Gruppe „Bivalenz und Übergabe“ der Wärmepumpen-Konfiguration mit Herleitungszeile, Bivalenzdiagramm und Kacheln
 des Ergebnisreiters) sowie `Konditionierung_Kalender.html` (Befund Kalenderbedienung Konditionierung: V1 Jahreskalender und V2 Wochenprofile,
-umschaltbar, auf denselben Daten). Die Mockups überholter Konzepte liegen unter `ueberholt/Mockups/`
+umschaltbar, auf denselben Daten) sowie `Simulationsseite_Neuordnung.html` (Simulationsseite „Simulation durchführen“: Kopfband statt Spalte,
+einheitliches Reiterschema mit Auslegungskacheln, Energiebilanz, Energiefluss, Monatssäulen; Varianten A/B umschaltbar; Abzüge `_A.png`, `_B.png`). Die Mockups überholter Konzepte liegen unter `ueberholt/Mockups/`
 (Projektdialog_Katalogauswahl V1 bis V5 samt PNG und Übersicht, Kaeltebedarfsprofil_Mockup, Berichtsvorlagen_Platzhaltermarke, BerichteKosten_Navigation_B und _C, Klimadatenimport_Mockup, Klimadatenreihen_Mockup und Energieflussbild_Mockup).
 
 ---

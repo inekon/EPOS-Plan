@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulationsseite neu ordnen</title>
+<meta name="description" content="Mockup der Seite Simulation durchfuehren: Kopfband statt linker Spalte (A) oder schmale Seitenleiste mit senkrechten Reitern (B), einheitliches Reiterschema mit Auslegungskacheln, Energiebilanz, Energiefluss, Monatssaeulen und Ganglinie.">
+<!--
+  MOCKUP, kein Produktcode. Seite "Simulation durchfuehren" im Bereichsreiter Simulation.
+  Vorlage: EPOS.UI/Seiten/Start/SimulationReiter.razor (linke Spalte .epos-simreiter, 320-360 px)
+  und EPOS.UI/Seiten/Simulation/SimulationErgebnisSeite.razor (Reiter Uebersicht | Waerme-/Strombedarf |
+  Waermepumpe | Heizkessel | Solarthermie | BHKW | Photovoltaik | Stromspeicher | Ergebnis).
+
+  ANLASS: Sichtpruefung des Anwenders vom 17.10.2026 - die linke Spalte (Projektname, Waermebedarf,
+  Strombedarf, Technologien, "Simulation starten", "Simulation Konfiguration...") ist fuer ihren Inhalt
+  zu breit; die Auslegung (Leistungen in kW) steht in den Technologiereitern ganz unten (Heizkessel:
+  Block "Auslegung" in Zeile 319 von 468, Waermepumpe: Zeile 367 von 668). Gewuenscht: besseres Design,
+  Auslegung weiter oben, Grafiken zur Aufschluesselung der Energie, DASSELBE Schema fuer alle Reiter.
+
+  ZWEI VARIANTEN auf einem Datensatz, oben umschaltbar:
+    A "Kopfband" (Empfehlung): die Spalte entfaellt; Kontextband in einer Zeile ueber dem Ergebnis,
+      darunter Meldezeile (Erfolgsbanner | Laufband), Reiterleiste in voller Breite, Blatt.
+    B "Schmale Seitenleiste": Spalte 232 px, haftend, mit Kennzahlen, Knoepfen und senkrechten Reitern.
+  REITERSCHEMA (jedes Blatt, Reihenfolge fest): 1 Kennzahlkacheln (Auslegung zuerst) - 2 Energiebilanz
+  (Grafik | dl-Raster) - 3 Energiefluss (nur Uebersicht) - 4 Betrieb und Module - 5 Ganglinie.
+
+  ALLE ZAHLEN SIND BEISPIELWERTE, in sich stimmig (MWh/a, gerundet auf 0,01):
+    Waerme   Bedarf 103,55 = Heizung 88,20 + Warmwasser 15,35
+             Bedarf 103,55 = Waermepumpe ueber Puffer 65,67 + Heizkessel 12,23 + ungedeckt 25,65
+             Waermepumpe  66,90 Produktion + Heizstab 2,00 - Speicherverluste 3,23 = 65,67
+             Waermepumpe  66,90 = Umweltwaerme 44,97 + Strom 21,93 (JAZ 3,05)
+             Heizkessel   12,45 Produktion - Speicherverluste 0,22 = 12,23; Gas (Hi) 13,33 (93,4 %)
+    Strom    Bedarf  46,21 = Verbraucher 22,20 + Waermepumpe 21,93 + Heizstab 2,00 + Hilfsstrom Kessel 0,08
+             Bedarf  46,21 = PV direkt 19,78 + Netzbezug 26,43 (Deckung 42,8 %)
+             PV      48,20 = direkt 19,78 + Einspeisung 28,42; Abregelung 0,30 (0,6 % von 48,50)
+    Fluss    Quellen 158,58 = Gas 13,33 + PV 48,20 + Netz 26,43 + Umwelt 44,97 + ungedeckt 25,65
+             Nutzen  158,58 = Heizung 88,20 + Warmwasser 15,35 + Verbraucher 22,20 + Einspeisung 28,42
+                              + Verluste 4,41 (Puffer 3,23, Kesselspeicher 0,22, Kessel 0,96)
+  Die Monatswerte stehen unten im Feld DATEN des Skripts; jede Reihe summiert exakt auf ihren Jahreswert.
+  Keine Hersteller- oder Produktdaten; Namen neutral ("Kessel 1", "Modul 1", "WR 1").
+
+  BEDIENBAR: Umschalter A | B, die sechs Reiter (Ergebnis nur Platzhalter), Zoomleiste und Gruppenkoepfe
+  (klappen). Das Mockup RECHNET NICHTS und schreibt nichts; die Knoepfe melden nur.
+  EIGENSTAENDIG: kein CDN, keine Schriftdatei von aussen; Grafiken als inline-SVG aus dem Skript.
+  FARBEN: Token woertlich aus EPOS.UI/wwwroot/epos-ui.css (:root), Reihenfarben woertlich aus
+  EPOS.UI.Daten/Simulation/SimulationErgebnisHuelle.Bilder.cs (R_WP, R_KESSEL, R_HEIZSTAB, R_REST_GRAU);
+  keine neue Farbe. DARK MODE: die Seite aussen folgt dem Modus, das Fensterbild bleibt hell (es zeigt
+  die Anwendung in ihrem hellen Kleid).
+-->
+<style>
+/* Token woertlich aus EPOS.UI/wwwroot/epos-ui.css (:root) - keine neue Farbe. */
+:root {
+  --epos-schrift: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  --epos-schriftgroesse: 13px;
+  --epos-schriftgroesse-gruppenkopf: 13px;
+  --epos-schriftgroesse-kartentitel: 16px;
+  --epos-schriftgroesse-bereichsreiter: 15px;
+  --epos-rahmen: #b4b2a9;
+  --epos-rahmen-leise: #d9d7cf;
+  --epos-text: #2c2c2a;
+  --epos-text-leise: #5f5e5a;
+  --epos-text-sehr-leise: #888780;
+  --epos-flaeche: #f5f4ef;
+  --epos-quelle-rahmen: #378ADD;
+  --epos-quelle-text: #185FA5;
+  --epos-senke-rahmen: #D85A30;
+  --epos-senke-text: #993C1D;
+  --epos-warn-rahmen: rgb(200, 138, 0);
+  --epos-warn-flaeche: rgb(255, 246, 224);
+  --epos-warn-text: rgb(138, 91, 0);
+  --epos-schema-versorgung: #1D9E75;
+  --epos-ring-rest: #D9DEE5;
+  --epos-stufe-fehler: rgb(176, 0, 32);
+  --epos-ampel-gruen: #007800;
+  --epos-karte-rahmen: #D1D5DB;
+  --epos-karte-rahmen-hover: #3B82F6;
+  --epos-karte-flaeche: #ffffff;
+  --epos-karte-flaeche-hover: #EFF6FF;
+  --epos-karte-titel: #0F1F3D;
+  --epos-karte-text: #5A6270;
+  --epos-gruppenkopf-flaeche: #0F1F3D;
+  --epos-gruppenkopf-text: #ffffff;
+  --epos-gruppenkopf-summe: #93C5FD;
+  --epos-gruppenkopf-hoehe: 40px;
+  --epos-gruppenkopf-symbolbreite: 30px;
+  --epos-rand: 20px;
+  --epos-ecke: 6px;
+  --epos-karte-rand: 16px;
+  --epos-touchziel: 44px;
+  --epos-marke: #005aa0;
+  --epos-menue-flaeche: #f0f8ff;
+  --epos-menue-marke: #d9e8f7;
+  --epos-flaeche-gedaempft: #efefef;
+  --epos-start-kasten-rahmen: #b4becd;
+  --epos-start-leiste-flaeche: #f0f0f0;
+  --epos-start-reiter-aktiv: #005aa0;
+  --epos-start-text-leise: #696969;
+  --epos-start-zusammenfassung: #f9fafc;
+  /* Reihenfarben woertlich aus SimulationErgebnisHuelle.Bilder.cs */
+  --mk-reihe-wp: #2ECC71;        /* R_WP */
+  --mk-reihe-kessel: #95A5A6;    /* R_KESSEL */
+  --mk-reihe-heizstab: #F1C40F;  /* R_HEIZSTAB */
+  --mk-reihe-rest: #D9DEE5;      /* R_REST_GRAU */
+  /* Erfolgsfarben woertlich aus .epos-hinweisklappe--erfolg / .epos-warnbanner--erfolg */
+  --mk-erfolg-rahmen: rgb(34, 139, 34);
+  --mk-erfolg-flaeche: rgb(240, 250, 240);
+  --mk-erfolg-text: rgb(24, 98, 24);
+  /* Seite ausserhalb des Fensterbilds - folgt dem Modus */
+  --mk-seite: #e6e5e0;
+  --mk-seite-text: #2c2c2a;
+  --mk-seite-leise: #5f5e5a;
+  --mk-seite-karte: #ffffff;
+  --mk-seite-linie: #d9d7cf;
+  --mk-seite-titel: #0F1F3D;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --mk-seite: #10151E; --mk-seite-text: #E4E9F1; --mk-seite-leise: #A7B2C3;
+    --mk-seite-karte: #171E2A; --mk-seite-linie: #2A3444; --mk-seite-titel: #E4E9F1;
+  }
+}
+:root[data-theme="dark"] {
+  --mk-seite: #10151E; --mk-seite-text: #E4E9F1; --mk-seite-leise: #A7B2C3;
+  --mk-seite-karte: #171E2A; --mk-seite-linie: #2A3444; --mk-seite-titel: #E4E9F1;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--mk-seite); color: var(--mk-seite-text); font: var(--epos-schriftgroesse)/1.4 var(--epos-schrift); }
+button { font: inherit; }
+[hidden] { display: none !important; }
+.seite { width: 1312px; margin: 0 auto; padding: 16px; }
+.seite > h1 { font-size: 20px; margin: 0 0 4px; color: var(--mk-seite-titel); }
+.seite > p.unter { margin: 0 0 10px; color: var(--mk-seite-leise); max-width: 1120px; }
+
+/* ---- Mockup-Streifen (Umschalter) -------------------------------------- */
+.mk-streifen { display: flex; align-items: center; gap: 8px 14px; flex-wrap: wrap; padding: 6px 10px; margin-bottom: 10px;
+  border: 1px dashed var(--epos-stufe-fehler); border-radius: var(--epos-ecke); background: var(--mk-seite-karte); font-size: 12px; }
+.mk-streifen b { color: var(--epos-senke-rahmen); }
+.mk-variante { display: inline-flex; gap: 4px; }
+.mk-variante button { padding: 3px 12px; border: 1px dashed var(--epos-stufe-fehler); background: var(--epos-karte-flaeche);
+  color: var(--epos-text); border-radius: var(--epos-ecke); cursor: pointer; font-size: 12px; min-height: 28px; }
+.mk-variante button[aria-pressed="true"] { background: var(--epos-karte-titel); color: var(--epos-gruppenkopf-text); border-style: solid; }
+.mk-meldung { margin-left: auto; color: var(--mk-seite-leise); }
+
+/* ---- Fensterbild (bleibt hell) ----------------------------------------- */
+.fenster { width: 1280px; background: #fff; color: var(--epos-text); border: 1px solid #9a988f;
+  box-shadow: 0 2px 8px rgba(0,0,0,.12); overflow: hidden; }
+.app-kopf { display: flex; justify-content: space-between; align-items: center; padding: 6px 12px 4px; }
+.app-kopf .name { color: var(--epos-marke); font-weight: 700; font-size: 18px; line-height: 1; }
+.app-kopf .zeile { color: var(--epos-start-text-leise); font-size: 11px; }
+.app-kopf .pille { width: 28px; height: 28px; border: 1px solid var(--epos-rahmen); border-radius: 14px;
+  display: grid; place-items: center; font-weight: 700; color: var(--epos-quelle-text); }
+.band { display: flex; gap: 10px; padding: 4px 12px 8px; }
+.kasten { border: 1px solid var(--epos-start-kasten-rahmen); border-radius: 6px; padding: 6px 10px; display: flex; gap: 10px; align-items: center; }
+.kasten b { white-space: nowrap; }
+.kasten .feld { border: 1px solid var(--epos-rahmen-leise); padding: 5px 8px; min-width: 200px; }
+.kasten--breit { flex: 1 1 auto; }
+.leise { color: var(--epos-text-leise); }
+.ok { color: var(--epos-ampel-gruen); }
+.hauptleiste { display: flex; background: var(--epos-start-leiste-flaeche); padding: 0 8px; border-top: 1px solid var(--epos-rahmen-leise); }
+.hauptleiste span { min-height: 40px; padding: 0 14px; display: flex; align-items: center; font-weight: 600; font-size: var(--epos-schriftgroesse-bereichsreiter); }
+.hauptleiste .aktiv { background: var(--epos-start-reiter-aktiv); color: #fff; }
+
+/* ---- Knoepfe ----------------------------------------------------------- */
+.knopf { min-height: 36px; padding: 4px 12px; color: var(--epos-text); background: var(--epos-flaeche); border: 1px solid var(--epos-rahmen);
+  border-radius: var(--epos-ecke); cursor: pointer; white-space: nowrap; }
+.knopf:hover { border-color: var(--epos-quelle-rahmen); }
+.knopf--primaer { min-height: var(--epos-touchziel); padding: 4px 18px; color: #fff; background: var(--epos-karte-titel);
+  border-color: var(--epos-karte-titel); font-weight: 700; }
+.knopf--klein { min-height: 30px; padding: 2px 10px; }
+
+/* ---- Variante A: Kopfband ---------------------------------------------- */
+.kopfband { display: flex; align-items: center; gap: 6px; padding: 10px 12px; background: var(--epos-start-zusammenfassung);
+  border-bottom: 1px solid var(--epos-rahmen-leise); }
+.kopfband h2 { margin: 0 2px 0 0; font-size: 15px; color: var(--epos-karte-titel); white-space: nowrap;
+  flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.kopfband > .pille-k, .kopfband .knopfgruppe { flex: none; }
+.pille-k--chips { gap: 3px; padding: 3px 4px; }
+.pille-k--chips .chip { padding: 1px 5px; }
+.pille-k { display: inline-flex; align-items: baseline; gap: 5px; padding: 3px 8px; border: 1px solid var(--epos-karte-rahmen);
+  border-radius: 14px; background: #fff; white-space: nowrap; }
+.pille-k .t { color: var(--epos-karte-text); font-size: 11px; }
+.pille-k .w { font-weight: 700; color: var(--epos-karte-titel); font-variant-numeric: tabular-nums; }
+.pille-k .e { color: var(--epos-text-sehr-leise); font-size: 11px; }
+.chip { display: inline-block; padding: 1px 6px; border-radius: 10px; background: var(--epos-menue-marke); color: var(--epos-quelle-text); font-size: 12px; font-weight: 600; }
+.kopfband .knopfgruppe { margin-left: auto; display: flex; gap: 4px;
+}
+.kopfband .knopf { padding: 4px 10px; font-size: 12px; }
+.kopfband .knopf--primaer { padding: 4px 12px; align-items: center; }
+.meldezeile { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; padding: 8px 16px 0; }
+.erfolg { display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 4px 12px; border: 1px solid var(--mk-erfolg-rahmen);
+  background: var(--mk-erfolg-flaeche); color: var(--mk-erfolg-text); border-radius: var(--epos-ecke); white-space: nowrap; overflow: hidden; }
+.erfolg .zeit { margin-left: auto; color: var(--mk-erfolg-text); opacity: .85; font-size: 12px; }
+.laufband { display: flex; align-items: center; gap: 10px; min-height: 36px; padding: 4px 12px; border: 1px solid var(--epos-warn-rahmen);
+  background: var(--epos-warn-flaeche); color: var(--epos-warn-text); border-radius: var(--epos-ecke); cursor: pointer; text-align: left; width: 100%; }
+.laufband .zahl { min-width: 24px; padding: 0 8px; border: 1px solid currentColor; border-radius: 10px; font-weight: 700; text-align: center; }
+.laufband .rechts { margin-left: auto; text-decoration: underline; }
+.reiterleiste { display: flex; gap: 2px; border-bottom: 1px solid var(--epos-rahmen); padding: 0 16px; margin-top: 8px; }
+.reiterknopf { min-height: var(--epos-touchziel); padding: 0 16px; border: 1px solid transparent; border-bottom: 3px solid transparent;
+  background: transparent; color: var(--epos-text-leise); cursor: pointer; }
+.reiterknopf:hover { background: var(--epos-karte-flaeche-hover); color: var(--epos-text); }
+.reiterknopf--aktiv { color: var(--epos-quelle-text); border-bottom-color: var(--epos-quelle-rahmen); font-weight: 600; }
+.blattflaeche { padding: 14px 16px 18px; }
+
+/* ---- Variante B: schmale Seitenleiste ---------------------------------- */
+.mitleiste { display: grid; grid-template-columns: 232px minmax(0, 1fr); align-items: start; }
+.seitenleiste { position: sticky; top: 0; border-right: 1px solid var(--epos-karte-rahmen); background: var(--epos-start-zusammenfassung);
+  padding: 12px 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.seitenleiste h2 { margin: 0; font-size: 15px; color: var(--epos-karte-titel); }
+.sl-werte { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; font-size: 12px; margin: 0; }
+.sl-werte dt { color: var(--epos-karte-text); }
+.sl-werte dd { margin: 0; text-align: right; font-weight: 700; color: var(--epos-karte-titel); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sl-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.seitenleiste .knopf { width: 100%; }
+.sl-reiter { display: flex; flex-direction: column; margin-top: 6px; border-top: 1px solid var(--epos-rahmen-leise); padding-top: 6px; }
+.sl-reiter .reiterknopf { text-align: start; min-height: 40px; border: none; border-inline-end: 3px solid transparent; border-radius: 0; padding: 0 10px; }
+.sl-reiter .reiterknopf--aktiv { border-inline-end-color: var(--epos-quelle-rahmen); background: var(--epos-karte-flaeche-hover); }
+.mitleiste .meldezeile { padding: 12px 16px 0; }
+
+/* ---- Blatt: Kacheln ---------------------------------------------------- */
+.kacheln { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
+.kachel { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: var(--epos-karte-flaeche);
+  border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke); color: var(--epos-karte-text); min-width: 0; }
+.kachel--auslegung { border-top: 3px solid var(--epos-karte-titel); }
+.kachel .k-art { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--epos-text-sehr-leise); }
+.kachel .k-wert { font-size: 24px; line-height: 1.15; font-weight: 700; color: var(--epos-karte-titel); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.kachel .k-wert small { font-size: 13px; font-weight: 400; color: var(--epos-karte-text); margin-left: 3px; }
+.kachel .k-titel { font-size: 12px; color: var(--epos-karte-text); }
+.kachel--leer .k-wert { color: var(--epos-text-sehr-leise); }
+
+/* ---- Blatt: Gruppenkopf und Karte -------------------------------------- */
+.gruppe { border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke); margin-bottom: 14px; background: #fff; overflow: hidden; }
+.gruppenkopf { display: grid; grid-template-columns: var(--epos-gruppenkopf-symbolbreite) 1fr auto; column-gap: 8px; align-items: center;
+  min-height: var(--epos-gruppenkopf-hoehe); background: var(--epos-gruppenkopf-flaeche); color: var(--epos-gruppenkopf-text);
+  padding: 0 12px 0 4px; font-weight: 700; font-size: var(--epos-schriftgroesse-gruppenkopf); width: 100%; border: 0; text-align: left; cursor: pointer; }
+.gruppenkopf .sym { text-align: center; }
+.gruppenkopf .summe { color: var(--epos-gruppenkopf-summe); font-weight: 600; }
+.gruppe-inhalt { padding: 12px 14px 14px; }
+.gruppe.zu .gruppe-inhalt { display: none; }
+.zweispaltig { display: grid; grid-template-columns: minmax(0, 1fr) max-content; gap: 20px; align-items: start; }
+.unterteil + .unterteil { margin-top: 14px; }
+.unterkopf { font-weight: 700; color: var(--epos-karte-titel); margin: 0 0 4px; }
+.legende { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 4px 0 0; padding: 0; list-style: none; font-size: 12px; color: var(--epos-text-leise); }
+.legende li { display: inline-flex; align-items: center; gap: 5px; }
+.legende i { width: 12px; height: 12px; border-radius: 2px; display: inline-block; }
+.legende i.linie { height: 3px; border-radius: 0; }
+.legende .gedaempft { opacity: .55; }
+
+/* ---- dl-Raster (wie .epos-simerg-werte) -------------------------------- */
+.werte { display: grid; grid-template-columns: max-content minmax(7ch, max-content) max-content; gap: 0 16px; align-items: baseline; margin: 0; }
+.werte dt, .werte dd { padding: 4px 0 5px; border-bottom: 1px solid var(--epos-rahmen-leise); white-space: nowrap; }
+.werte dt { color: var(--epos-text); }
+.werte dd { margin: 0; font-variant-numeric: tabular-nums; text-align: right; }
+.werte .einheit { color: var(--epos-text-sehr-leise); text-align: left; }
+.werte .abschluss { font-weight: 700; border-top: 2px solid var(--epos-rahmen); padding-top: 6px; }
+.werte .eingerueckt { padding-left: 14px; color: var(--epos-text-leise); }
+.werte .blockkopf { grid-column: 1 / -1; font-weight: 700; color: var(--epos-karte-titel); border-bottom: 0; padding: 10px 0 2px; }
+.werte .blockkopf:first-child { padding-top: 0; }
+
+/* ---- Tabellen ---------------------------------------------------------- */
+table.raster { border-collapse: collapse; width: 100%; }
+.raster th, .raster td { padding: 4px 10px; border-bottom: 1px solid var(--epos-rahmen-leise); text-align: left; white-space: nowrap; height: 32px; }
+.raster th { background: var(--epos-flaeche); font-weight: 600; }
+.raster th small { color: var(--epos-text-sehr-leise); font-weight: 400; }
+.raster td.z, .raster th.z { text-align: right; font-variant-numeric: tabular-nums; }
+.raster tr.summe td { font-weight: 700; border-top: 2px solid var(--epos-rahmen); }
+.betrieb-raster { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+
+/* ---- Ringe, Ganglinie -------------------------------------------------- */
+.ringzeile { display: grid; grid-template-columns: 220px 220px minmax(0, 1fr); gap: 20px; align-items: center; }
+.ringlegende h4 { margin: 8px 0 2px; font-size: 13px; color: var(--epos-karte-titel); }
+.ringlegende h4:first-child { margin-top: 0; }
+.zoomleiste { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.zoomleiste .seg { display: inline-flex; border: 1px solid var(--epos-rahmen); border-radius: var(--epos-ecke); overflow: hidden; }
+.zoomleiste .seg button { border: 0; background: #fff; padding: 4px 12px; min-height: 30px; cursor: pointer; color: var(--epos-text); }
+.zoomleiste .seg button + button { border-left: 1px solid var(--epos-rahmen); }
+.zoomleiste .seg button[aria-pressed="true"] { background: var(--epos-karte-flaeche-hover); color: var(--epos-quelle-text); font-weight: 600; }
+.zoomleiste .fueller { flex: 1; }
+.platzhalter { padding: 40px; text-align: center; color: var(--epos-text-leise); border: 1px dashed var(--epos-rahmen); border-radius: var(--epos-ecke); }
+svg.grafik { display: block; width: 100%; height: auto; font-family: var(--epos-schrift); }
+svg.grafik text { fill: var(--epos-text); font-size: 12px; }
+svg.grafik .leise { fill: var(--epos-text-leise); }
+svg.grafik .fett { font-weight: 700; }
+svg.grafik .halo { paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
+.markierung { outline: 2px dashed var(--epos-senke-rahmen); outline-offset: -3px; }
+
+/* ---- Erlaeuterung (folgt dem Modus) ------------------------------------ */
+.erlaeuterung { margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.erlaeuterung section { background: var(--mk-seite-karte); border: 1px solid var(--mk-seite-linie); border-radius: 6px; padding: 10px 14px; }
+.erlaeuterung section.breit { grid-column: 1 / -1; }
+.erlaeuterung h2 { font-size: 14px; margin: 0 0 6px; color: var(--mk-seite-titel); }
+.erlaeuterung ul, .erlaeuterung ol { margin: 0; padding-left: 20px; }
+.erlaeuterung li { margin: 3px 0; }
+.erlaeuterung table { border-collapse: collapse; width: 100%; font-size: 12px; }
+.erlaeuterung th, .erlaeuterung td { text-align: left; vertical-align: top; padding: 4px 8px; border-bottom: 1px solid var(--mk-seite-linie); }
+.erlaeuterung th { font-weight: 600; }
+.erlaeuterung code { font-size: 11.5px; }
+</style>
+</head>
+<body>
+<div class="seite">
+<h1>Simulation durchführen — Kopfband und einheitliches Reiterschema</h1>
+<p class="unter">Die Projektzusammenfassung wandert aus der breiten linken Spalte in ein Kopfband (A) oder eine schmale Leiste (B). Jedes Blatt des Ergebnisses folgt demselben Schema: Kennzahlkacheln mit der Auslegung zuerst, Energiebilanz als Grafik neben den Zahlen, Betrieb und Module, Ganglinie zuletzt.</p>
+
+<div class="mk-streifen" role="toolbar" aria-label="Mockup">
+  <b>Mockup · Simulationsseite</b>
+  <span class="mk-variante" role="group" aria-label="Variante">
+    <button type="button" data-variante="a" aria-pressed="true">A Kopfband (Empfehlung)</button>
+    <button type="button" data-variante="b" aria-pressed="false">B Schmale Seitenleiste</button>
+  </span>
+  <span>Alle Zahlen sind Beispielwerte. Reiter, Zoomleiste und Gruppenköpfe sind bedienbar.</span>
+  <span class="mk-meldung" id="mk-meldung" aria-live="polite"></span>
+</div>
+
+<div class="fenster" id="fenster">
+  <div class="app-kopf">
+    <div><div class="name">EPOS-Plan</div><div class="zeile">Energieplanungs-Software · Energie · Planung · Optimierung · Simulation</div></div>
+    <div class="pille" aria-hidden="true">i</div>
+  </div>
+  <div class="band">
+    <div class="kasten kasten--breit"><b>Klimaregion auswählen:</b><span class="feld">Beispielort (TRY 2045)</span><span class="leise">Gilt für alle Berechnungen im Projekt</span></div>
+    <div class="kasten"><b class="ok">✓</b><b>Projekt:</b><span class="feld">Beispielprojekt Wohnanlage</span></div>
+  </div>
+  <nav class="hauptleiste" aria-label="Hauptreiter">
+    <span>Projekt</span><span>Wärmebedarf</span><span>Strombedarf</span><span>Energieerzeuger</span><span class="aktiv">Simulation</span><span>Berichte &amp; Kosten</span>
+  </nav>
+
+  <!-- ============================== Variante A ============================== -->
+  <div id="var-a">
+    <div class="kopfband markierung">
+      <h2>Beispielprojekt Wohnanlage</h2>
+      <span class="pille-k"><span class="t">Wärmebedarf</span><span class="w">103,55</span><span class="e">MWh/a</span></span>
+      <span class="pille-k"><span class="t">Strombedarf</span><span class="w">22,20</span><span class="e">MWh/a</span></span>
+      <span class="pille-k pille-k--chips" title="Technologien"><span class="chip">Wärmepumpe</span><span class="chip">Heizkessel</span><span class="chip">Photovoltaik</span></span>
+      <span class="knopfgruppe">
+        <button type="button" class="knopf knopf--primaer" data-meldung="Simulation gestartet (im Mockup ohne Rechnung).">Simulation starten ▶</button>
+        <button type="button" class="knopf" data-meldung="Öffnet den Dialog Simulation Konfiguration.">Konfiguration…</button>
+        <button type="button" class="knopf" data-meldung="Ergebnis gespeichert (im Mockup ohne Wirkung).">Ergebnis speichern</button>
+      </span>
+    </div>
+    <div class="meldezeile">
+      <div class="erfolg" role="status"><b>✓</b> Simulationsergebnis gespeichert<span class="zeit">17.10.2026 14:32 · 8&#8239;760 Stunden</span></div>
+      <button type="button" class="laufband" data-meldung="Klappt die 24 Hinweise zum Lauf auf."><span class="zahl">24</span> Hinweise zum Lauf<span class="rechts">anzeigen ▾</span></button>
+    </div>
+    <div class="reiterleiste" role="tablist" aria-label="Ergebnis" id="reiter-a"></div>
+    <div class="blattflaeche" id="blatt-a"></div>
+  </div>
+
+  <!-- ============================== Variante B ============================== -->
+  <div id="var-b" class="mitleiste" hidden>
+    <aside class="seitenleiste markierung" aria-label="Projekt und Reiter">
+      <h2>Beispielprojekt Wohnanlage</h2>
+      <dl class="sl-werte">
+        <dt>Wärmebedarf</dt><dd>103,55 MWh/a</dd>
+        <dt>Strombedarf</dt><dd>22,20 MWh/a</dd>
+      </dl>
+      <div class="sl-chips"><span class="chip">Wärmepumpe</span><span class="chip">Heizkessel</span><span class="chip">Photovoltaik</span></div>
+      <button type="button" class="knopf knopf--primaer" data-meldung="Simulation gestartet (im Mockup ohne Rechnung).">Simulation starten ▶</button>
+      <button type="button" class="knopf" data-meldung="Öffnet den Dialog Simulation Konfiguration.">Konfiguration…</button>
+      <button type="button" class="knopf" data-meldung="Ergebnis gespeichert (im Mockup ohne Wirkung).">Ergebnis speichern</button>
+      <nav class="sl-reiter" role="tablist" aria-orientation="vertical" aria-label="Ergebnis" id="reiter-b"></nav>
+    </aside>
+    <div>
+      <div class="meldezeile">
+        <div class="erfolg" role="status"><b>✓</b> Simulationsergebnis gespeichert<span class="zeit">17.10.2026 14:32</span></div>
+        <button type="button" class="laufband" data-meldung="Klappt die 24 Hinweise zum Lauf auf."><span class="zahl">24</span> Hinweise zum Lauf<span class="rechts">anzeigen ▾</span></button>
+      </div>
+      <div class="blattflaeche" id="blatt-b"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== Erlaeuterung ============================== -->
+<div class="erlaeuterung">
+<section>
+  <h2>Befund</h2>
+  <ul>
+    <li>Die linke Spalte der Seite (<code>.epos-simreiter</code>, Raster <code>minmax(320px, 360px) minmax(0, 1fr)</code>) trägt vier Zeilen Projektzusammenfassung und zwei Knöpfe; sie nimmt dem Ergebnis rund ein Viertel der Breite.</li>
+    <li>Die Auslegung steht in den Technologiereitern unten: Heizkessel Zeile 319 von 468 (nach Wärme, Herleitung, Strom, Brennstoff, Betrieb, Modultabelle, Ganglinie), Wärmepumpe Zeile 367 von 668.</li>
+    <li>Jeder Reiter ordnet seine Blöcke anders; Grafiken gibt es nur als Ringe (Übersicht) und Ganglinie.</li>
+  </ul>
+</section>
+<section>
+  <h2>Regeln des Schemas</h2>
+  <ol>
+    <li><b>Kennzahlkacheln</b> — eine Zeile, fünf bis sechs Kacheln; Auslegung (dunkle Oberkante) zuerst, dann Betrieb.</li>
+    <li><b>Energiebilanz</b> — Gruppenkopf, links Grafik (Bilanzbalken, Herleitung als Wasserfall, Monatssäulen mit dem Erzeuger des Blattes hervorgehoben), rechts das dl-Raster Beschriftung | Zahl | Einheit mit fetter Summenzeile.</li>
+    <li><b>Energiefluss</b> — nur auf der Übersicht: Sankey von den Quellen über Hausnetz und Wandler zum Nutzen, darunter die Ringe Wärme- und Stromdeckung.</li>
+    <li><b>Betrieb und Module</b> — Gruppenköpfe (einklappbar): Modultabelle, Brennstoff, Betrieb.</li>
+    <li><b>Ganglinie</b> — zuletzt, mit Zoomleiste Jahr | Monat | Woche | Tag und „CSV…“.</li>
+  </ol>
+</section>
+<section class="breit">
+  <h2>Variante A gegen B</h2>
+  <table>
+    <thead><tr><th>Merkmal</th><th>A Kopfband</th><th>B Schmale Seitenleiste</th></tr></thead>
+    <tbody>
+      <tr><td>Platz für das Ergebnis</td><td>volle Breite (1&#8239;248 px bei 1&#8239;280 px Fenster); Kopfband und Meldezeile kosten rund 100 px Höhe</td><td>1&#8239;016 px Breite; volle Höhe ab dem Fensterkopf</td></tr>
+      <tr><td>Wege zum Start</td><td>„Simulation starten ▶“ rechts im Kopfband, immer sichtbar über dem Blatt</td><td>„Simulation starten ▶“ in der haftenden Leiste, immer sichtbar</td></tr>
+      <tr><td>Reiterzahl bei 9 Blättern</td><td>9 Reiter à rund 120 px = 1&#8239;080 px, passt in eine Zeile; bei schmalem Fenster bricht die Leiste um</td><td>9 Zeilen à 40 px = 360 px unter Kennzahlen und Knöpfen; passt ab 720 px Fensterhöhe ohne Rollen</td></tr>
+      <tr><td>Umsetzungsaufwand</td><td>klein: <code>.epos-simreiter</code> wird einspaltig, Zusammenfassung als Band; Reiterleiste bleibt</td><td>mittel: Reiter wandern aus <code>SimulationErgebnisSeite</code> in die Leiste von <code>SimulationReiter</code> (<code>.epos-reiter--senkrecht</code>), Zustand über zwei Komponenten</td></tr>
+      <tr><td>Empfehlung</td><td><b>A</b> — dasselbe Muster wie Berichte &amp; Kosten (Reiterzeile), größter Gewinn bei kleinstem Umbau</td><td>nur, wenn die Leiste auch andere Bereichsseiten tragen soll</td></tr>
+    </tbody>
+  </table>
+</section>
+<section class="breit">
+  <h2>Zuordnung je Reiter</h2>
+  <table>
+    <thead><tr><th>Reiter</th><th>Kacheln</th><th>Grafiken</th><th>Datenquelle (<code>EPOS.Kern/Controller/SimulationErgebnisCtrl.cs</code>, <code>EPOS.UI/Seiten/Simulation/SimulationErgebnisDaten.cs</code>)</th></tr></thead>
+    <tbody>
+      <tr><td>Übersicht</td><td>Wärmebedarf, Wärmedeckung, Restwärme, Strombedarf, Stromdeckung, Reststrom</td><td>Energiefluss, Ringe, Bilanzbalken Wärme und Strom, Monatssäulen</td><td><code>UebersichtKennzahlen.WaermebedarfGesamtMwh</code>, <code>StrombedarfGesamtMwh</code>, <code>RestwaermeMwh</code>, <code>ReststromMwh</code>, <code>WpWaermeproduktionMwh</code>, <code>WpStromverbrauchMwh</code>, <code>KesselWaermeproduktionMwh</code>, <code>HeizstabStromverbrauchMwh</code>, <code>KesselStromverbrauchMwh</code>, <code>PvStromproduktionMwh</code>; Ringe aus <code>Ringanteil</code></td></tr>
+      <tr><td>Wärme-/Strombedarf</td><td>max. Wärmelast, Wärmebedarf, Vollbenutzungsstunden, max. Strombedarf, Strombedarf, max. Kältelast</td><td>Bilanzbalken nach Kanälen, Monatssäulen Heizung/Warmwasser</td><td><code>BedarfDaten.WaermelastMaxKw</code>, <code>WaermebedarfGesamtMwh</code>, <code>StrombedarfMaxKw</code>, <code>StrombedarfGesamtMwh</code>, <code>KanalMwh</code>, <code>Kanalnamen</code>, <code>Kaelte</code></td></tr>
+      <tr><td>Wärmepumpe</td><td>Heizleistung, JAZ, Bivalenzpunkt, Vollbenutzungsstunden, Deckungsanteil, Heizstab</td><td>Bilanzbalken, Wasserfall, Monatssäulen</td><td><code>WaermepumpeErgebnis.JazWaermepumpe</code>, <code>Bivalenzpunkt</code>, <code>Vollbenutzungsstunden</code>, <code>WaermeproduktionMwh</code>, <code>SpeicherverlusteMwh</code>, <code>HeizstabWaermeproduktionMwh</code>, <code>DeckungProzent</code>, Summe <code>Module[].GrenzleistungKw</code> (<code>WpModulZeile</code>)</td></tr>
+      <tr><td>Heizkessel</td><td>Wärmeleistung, Gasspitze (Hi), Deckungsanteil, Betriebsstunden, Starts, Wirkungsgrad</td><td>Bilanzbalken, Wasserfall, Monatssäulen</td><td><code>HeizkesselErgebnis.MaxKesselleistungKw</code>, <code>GasspitzeKw</code>, <code>DeckungProzent</code>, <code>GedecktMwh</code>, <code>AusPufferAndereMwh</code>, <code>RestwaermeMwh</code>, <code>Laufstunden</code>, <code>Starts</code>, <code>Module</code> (<code>KesselModulZeile</code>)</td></tr>
+      <tr><td>Photovoltaik</td><td>Modulleistung, Wechselrichter AC, Ertrag, Eigenverbrauchsanteil, Strombedarfsdeckung, Abregelung</td><td>zwei Bilanzbalken, Wasserfall, Monatssäulen Strom</td><td><code>PhotovoltaikErgebnis.StromproduktionMwh</code>, <code>GenutztMwh</code>, <code>UeberschussMwh</code>, <code>AbregelungProzent</code>, <code>DeckungProzent</code>, <code>Wechselrichter</code>; Monatsstapel Strom aus <code>AutarkieDaten</code></td></tr>
+      <tr><td>Solarthermie, BHKW, Stromspeicher, Ergebnis</td><td colspan="3">nach demselben Schema (im Mockup nicht gezeigt; „Ergebnis“ als Platzhalter)</td></tr>
+    </tbody>
+  </table>
+</section>
+<section>
+  <h2>Lücken in den Daten</h2>
+  <ul>
+    <li>Netzbezug und Einspeisung gesamt sowie Netzverluste sind heute keine eigenen Ergebnisgrößen; das Mockup leitet sie aus Strombedarf, <code>GenutztMwh</code> und <code>UeberschussMwh</code> her.</li>
+    <li>Die Leistung der Wärmepumpe gibt es nur als Summe der Modultabelle (<code>Module[].GrenzleistungKw</code>).</li>
+    <li>Monatswerte je Erzeuger: prüfen, ob <code>WaermegangDaten</code> und <code>StromgangDaten</code> sie liefern; sonst aus den Stundenreihen summieren. Der Strom-Monatsstapel der Photovoltaik liegt mit <code>AutarkieDaten</code> schon vor.</li>
+    <li>Der Energiefluss braucht die Verluste je Wandler (Umwandlung, Speicher) einzeln; heute stehen nur die Speicherverluste der Wärmepumpe und des Kessels getrennt.</li>
+    <li>Photovoltaik und Wärmepumpe tragen in der Anwendung dieselbe Reihenfarbe (<code>R_PV</code> = <code>R_WP</code> = <code>#2ECC71</code>); das Mockup zeichnet die Photovoltaik deshalb in <code>R_HEIZSTAB</code>-Gelb und den Heizstab in <code>--epos-senke-rahmen</code>.</li>
+  </ul>
+</section>
+<section>
+  <h2>Offene Entscheide</h2>
+  <ul>
+    <li><b>SD-Q1</b> Variante A (Kopfband) oder B (schmale Seitenleiste)? Empfehlung A.</li>
+    <li><b>SD-Q2</b> Kacheln je Reiter: die Auswahl oben bestätigen oder ändern (höchstens sechs).</li>
+    <li><b>SD-Q3</b> Energiefluss nur auf der Übersicht oder je Technologiereiter mit hervorgehobenem Erzeuger?</li>
+    <li><b>SD-Q4</b> Betriebsblöcke einklappbar, mit gemerktem Zustand je Anwender?</li>
+    <li><b>SD-Q5</b> Ganglinie unten im Blatt oder als eigener Unterreiter?</li>
+  </ul>
+</section>
+</div>
+</div>
+
+<script>
+"use strict";
+// ======================================================================= DATEN (Beispielwerte)
+const MONATE = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
+const DATEN = {
+  waerme: {
+    bedarf:   [16.82, 14.67, 12.30, 8.52, 4.96, 2.48, 2.16, 2.27, 3.67, 7.98, 12.30, 15.42], // 103,55
+    ww:       [1.43, 1.21, 1.32, 1.27, 1.27, 1.21, 1.22, 1.24, 1.23, 1.29, 1.25, 1.41],      // 15,35
+    wp:       [6.62, 6.57, 7.90, 6.82, 4.56, 2.48, 2.16, 2.27, 3.57, 6.58, 7.70, 8.44],      // 65,67
+    kessel:   [3.20, 2.60, 1.40, 0.50, 0.10, 0.00, 0.00, 0.00, 0.00, 0.40, 1.60, 2.43],      // 12,23
+    rest:     [7.00, 5.50, 3.00, 1.20, 0.30, 0.00, 0.00, 0.00, 0.10, 1.00, 3.00, 4.55]       // 25,65
+  },
+  strom: {
+    bedarf:   [4.41, 4.21, 4.81, 4.31, 3.51, 2.66, 2.51, 2.59, 3.12, 4.31, 4.74, 5.03],      // 46,21
+    pvErtrag: [1.50, 2.44, 3.94, 5.35, 6.19, 6.47, 6.56, 5.81, 4.31, 2.91, 1.59, 1.13],      // 48,20
+    pvDirekt: [0.71, 1.16, 1.87, 2.54, 2.74, 2.07, 1.95, 2.01, 2.05, 1.38, 0.76, 0.54],      // 19,78
+    netz:     [3.70, 3.05, 2.94, 1.77, 0.77, 0.59, 0.56, 0.58, 1.07, 2.93, 3.98, 4.49]       // 26,43
+  }
+};
+const F = {  // Farben: Token und Reihenfarben (siehe :root)
+  wp: "#2ECC71", kessel: "#95A5A6", heizstab: "#F1C40F", rest: "#D9DEE5",
+  pv: "#F1C40F", netz: "#378ADD", umwelt: "#1D9E75", gas: "#95A5A6", hs: "#D85A30",
+  verlust: "#D85A30", plus: "#1D9E75", titel: "#0F1F3D", ww: "#378ADD", heizung: "#D85A30",
+  einspeisung: "#F1C40F", verbraucher: "#185FA5", linie: "#2c2c2a", gitter: "#d9d7cf", pvlinie: "rgb(200, 138, 0)"
+};
+
+// ======================================================================= Format
+const NB = " ";
+function zahl(x, n) {
+  if (x === null || x === undefined) return "—";
+  const neg = x < 0; const s = Math.abs(x).toFixed(n);
+  let [g, k] = s.split(".");
+  if (g.length >= 4) g = g.replace(/\B(?=(\d{3})+(?!\d))/g, NB);
+  return (neg ? "−" : "") + g + (k ? "," + k : "");
+}
+const summe = a => a.reduce((s, v) => s + v, 0);
+const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+
+// ======================================================================= Bausteine
+function kacheln(liste) {
+  return '<div class="kacheln">' + liste.map(k =>
+    `<div class="kachel${k.a ? " kachel--auslegung" : ""}${k.w === null ? " kachel--leer" : ""}">` +
+    `<span class="k-art">${k.a ? "Auslegung" : "Betrieb"}</span>` +
+    `<span class="k-wert">${k.w === null ? "—" : k.w}<small>${k.e}</small></span>` +
+    `<span class="k-titel">${k.t}</span></div>`).join("") + "</div>";
+}
+function gruppe(titel, inhalt, summeText) {
+  return `<section class="gruppe"><button type="button" class="gruppenkopf" aria-expanded="true">` +
+    `<span class="sym">▾</span><span>${titel}</span><span class="summe">${summeText || ""}</span></button>` +
+    `<div class="gruppe-inhalt">${inhalt}</div></section>`;
+}
+function werte(bloecke) {
+  let h = '<dl class="werte">';
+  for (const b of bloecke) {
+    h += `<dt class="blockkopf">${b.kopf}</dt>`;
+    for (const z of b.zeilen) {
+      const c = z.s ? ' class="abschluss"' : (z.e ? ' class="eingerueckt"' : "");
+      const ce = z.s ? ' class="einheit abschluss"' : ' class="einheit"';
+      h += `<dt${c}>${z.t}</dt><dd${z.s ? ' class="abschluss"' : ""}>${z.w}</dd><dd${ce}>${z.u}</dd>`;
+    }
+  }
+  return h + "</dl>";
+}
+function legende(eintraege) {
+  return '<ul class="legende">' + eintraege.map(e =>
+    `<li${e.g ? ' class="gedaempft"' : ""}><i class="${e.l ? "linie" : ""}" style="background:${e.f}"></i>${e.t}</li>`).join("") + "</ul>";
+}
+function tabelle(kopf, zeilen, summenzeile) {
+  let h = '<table class="raster"><thead><tr>' + kopf.map((k, i) =>
+    `<th${i ? ' class="z"' : ""}>${k[0]}${k[1] ? " <small>" + k[1] + "</small>" : ""}</th>`).join("") + "</tr></thead><tbody>";
+  for (const z of zeilen) h += "<tr>" + z.map((c, i) => `<td${i ? ' class="z"' : ""}>${c}</td>`).join("") + "</tr>";
+  if (summenzeile) h += '<tr class="summe">' + summenzeile.map((c, i) => `<td${i ? ' class="z"' : ""}>${c}</td>`).join("") + "</tr>";
+  return h + "</tbody></table>";
+}
+
+// ---- Bilanzbalken: 100 % = Gesamtwert, Segmente mit Beschriftung -------------------------------
+function bilanzbalken(balken) {
+  const B = 720, passt = (seg, ges) => B * seg.w / ges > `${seg.t} ${zahl(seg.w, 2)}`.length * 6.6 + 12;
+  const zeilen = balken.map(b => b.teile.filter(seg => !passt(seg, b.gesamt)).length);
+  const hoehe = balken.reduce((h, b, i) => h + 58 + Math.max(zeilen[i], 1) * 15, 0);
+  let s = `<svg class="grafik" viewBox="0 0 ${B} ${hoehe}" role="img" aria-label="Bilanzbalken">`;
+  let y = 4;
+  balken.forEach((b, i) => {
+    const ges = b.gesamt;
+    s += `<text x="0" y="${y + 12}" class="fett">${b.titel}</text>`;
+    s += `<text x="${B}" y="${y + 12}" text-anchor="end" class="fett">${zahl(ges, 2)} MWh/a = 100 %</text>`;
+    let x = 0, zeile = 0;
+    for (const seg of b.teile) {
+      const w = B * seg.w / ges;
+      s += `<rect x="${x.toFixed(1)}" y="${y + 20}" width="${Math.max(w - 1.5, 0.8).toFixed(1)}" height="30" rx="2" fill="${seg.f}" opacity="${seg.g ? 0.4 : 1}"${seg.d ? ' stroke="#888780" stroke-dasharray="4 3"' : ""}/>`;
+      const txt = `${seg.t} ${zahl(seg.w, 2)}`;
+      if (passt(seg, ges)) {
+        s += `<text x="${(x + 8).toFixed(1)}" y="${y + 40}"${seg.hell ? ' style="fill:#fff"' : ""} class="${seg.g ? "" : "fett"}">${esc(txt)}</text>`;
+      } else {
+        const mx = x + w / 2, ty = y + 66 + zeile * 15, rechts = mx > B - txt.length * 3.6;
+        s += `<line x1="${mx.toFixed(1)}" x2="${mx.toFixed(1)}" y1="${y + 51}" y2="${ty - 10}" stroke="#888780"/>`;
+        s += `<text x="${(rechts ? Math.min(mx + 4, B - 1) : mx).toFixed(1)}" y="${ty}" text-anchor="${rechts ? "end" : "middle"}" class="leise">${esc(txt)}</text>`;
+        zeile++;
+      }
+      x += w;
+    }
+    y += 58 + Math.max(zeilen[i], 1) * 15;
+  });
+  return s + "</svg>";
+}
+
+// ---- Wasserfall: senkrechte Stufen ---------------------------------------------------------------
+function wasserfall(stufen, einheit) {
+  const B = 720, H = 186, unten = 156, oben = 28, n = stufen.length, spalte = B / n, bw = Math.min(86, spalte * 0.56);
+  let max = 0, lauf = 0;
+  for (const st of stufen) { if (st.art === "summe") lauf = st.w; else lauf += st.w; max = Math.max(max, lauf); }
+  const y = v => unten - (unten - oben) * v / max;
+  let s = `<svg class="grafik" viewBox="0 0 ${B} ${H}" role="img" aria-label="Herleitung">`;
+  s += `<line x1="0" x2="${B}" y1="${unten}" y2="${unten}" stroke="${F.gitter}"/>`;
+  lauf = 0; let vorX = null, vorY = null;
+  stufen.forEach((st, i) => {
+    const cx = spalte * i + spalte / 2, x = cx - bw / 2;
+    let y0, y1, farbe, wertTxt;
+    if (st.art === "summe") { y0 = y(st.w); y1 = unten; lauf = st.w; farbe = st.f || F.titel; wertTxt = zahl(st.w, 2); }
+    else { const a = lauf; lauf += st.w; y0 = y(Math.max(a, lauf)); y1 = y(Math.min(a, lauf)); farbe = st.w < 0 ? F.verlust : F.plus; wertTxt = (st.w < 0 ? "− " : st.w > 0 ? "+ " : "± ") + zahl(Math.abs(st.w), 2); }
+    const h = Math.max(y1 - y0, st.w === 0 ? 0 : 2);
+    if (vorX !== null) s += `<line x1="${vorX.toFixed(1)}" x2="${x.toFixed(1)}" y1="${vorY.toFixed(1)}" y2="${vorY.toFixed(1)}" stroke="#888780" stroke-dasharray="3 3"/>`;
+    s += `<rect x="${x.toFixed(1)}" y="${y0.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="2" fill="${farbe}"/>`;
+    if (st.w === 0) s += `<line x1="${x.toFixed(1)}" x2="${(x + bw).toFixed(1)}" y1="${y0.toFixed(1)}" y2="${y0.toFixed(1)}" stroke="#888780" stroke-width="2"/>`;
+    s += `<text x="${cx.toFixed(1)}" y="${(y0 - 6).toFixed(1)}" text-anchor="middle" class="fett">${wertTxt}</text>`;
+    s += `<text x="${cx.toFixed(1)}" y="${unten + 16}" text-anchor="middle" class="leise">${esc(st.t)}</text>`;
+    vorX = x + bw; vorY = y(lauf);
+  });
+  return s + `<text x="0" y="12" class="leise">${einheit}</text></svg>`;
+}
+
+// ---- Monatssaeulen: gestapelt, Bedarf als Linie -------------------------------------------------
+function monatssaeulen(reihen, linie, extraLinie) {
+  const B = 720, H = 246, l = 34, r = 8, oben = 22, unten = 222;
+  const sums = MONATE.map((_, m) => summe(reihen.map(rh => rh.d[m])));
+  const max = Math.ceil(Math.max(...sums, ...(linie || [0]), ...(extraLinie ? extraLinie.d : [0])) / 4) * 4;
+  const y = v => unten - (unten - oben) * v / max;
+  const sp = (B - l - r) / 12, bw = sp * 0.6;
+  let s = `<svg class="grafik" viewBox="0 0 ${B} ${H}" role="img" aria-label="Monatssäulen">`;
+  for (let i = 0; i <= 4; i++) {
+    const t = max * i / 4;
+    s += `<line x1="${l}" x2="${B - r}" y1="${y(t).toFixed(1)}" y2="${y(t).toFixed(1)}" stroke="${F.gitter}" stroke-width="${i ? 0.6 : 1}"/>`;
+    s += `<text x="${l - 6}" y="${(y(t) + 4).toFixed(1)}" text-anchor="end" class="leise">${zahl(t, 0)}</text>`;
+  }
+  MONATE.forEach((mn, m) => {
+    const x = l + sp * m + (sp - bw) / 2; let basis = 0;
+    for (const rh of reihen) {
+      const v = rh.d[m]; if (v <= 0) continue;
+      s += `<rect x="${x.toFixed(1)}" y="${y(basis + v).toFixed(1)}" width="${bw.toFixed(1)}" height="${(y(basis) - y(basis + v)).toFixed(1)}" fill="${rh.f}" opacity="${rh.g ? 0.35 : 1}"/>`;
+      basis += v;
+    }
+    s += `<text x="${(x + bw / 2).toFixed(1)}" y="${unten + 16}" text-anchor="middle" class="leise">${mn}</text>`;
+  });
+  const pfad = d => d.map((v, m) => `${m ? "L" : "M"}${(l + sp * m + sp / 2).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+  if (extraLinie) s += `<path d="${pfad(extraLinie.d)}" fill="none" stroke="${extraLinie.f}" stroke-width="2" stroke-dasharray="5 4"/>`;
+  if (linie) {
+    s += `<path d="${pfad(linie)}" fill="none" stroke="${F.linie}" stroke-width="2"/>`;
+    linie.forEach((v, m) => { s += `<circle cx="${(l + sp * m + sp / 2).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3" fill="#fff" stroke="${F.linie}" stroke-width="1.5"/>`; });
+  }
+  s += `<text x="${l}" y="11" class="leise">MWh je Monat</text>`;
+  return s + "</svg>";
+}
+
+// ---- Ring --------------------------------------------------------------------------------------
+function ring(teile, mitte, unter) {
+  const R = 78, r = 50, c = 100, ges = summe(teile.map(t => t.w));
+  let s = `<svg class="grafik" viewBox="0 0 200 200" role="img" aria-label="${unter}">`, a = -Math.PI / 2;
+  for (const t of teile) {
+    const b = a + 2 * Math.PI * t.w / ges, gross = b - a > Math.PI ? 1 : 0;
+    const p = (rad, w) => `${(c + rad * Math.cos(w)).toFixed(2)},${(c + rad * Math.sin(w)).toFixed(2)}`;
+    s += `<path d="M${p(R, a)} A${R},${R} 0 ${gross} 1 ${p(R, b)} L${p(r, b)} A${r},${r} 0 ${gross} 0 ${p(r, a)} Z" fill="${t.f}" stroke="#fff" stroke-width="1.5"/>`;
+    a = b;
+  }
+  s += `<text x="100" y="104" text-anchor="middle" style="font-size:22px" class="fett">${mitte}</text>`;
+  s += `<text x="100" y="122" text-anchor="middle" class="leise">${unter}</text>`;
+  return s + "</svg>";
+}
+
+// ---- Energiefluss (Sankey) -----------------------------------------------------------------------
+function energiefluss() {
+  const k = 2.05, gap = 16, nw = 14, X = [190, 450, 720, 1000], oben = 26;
+  const N = {
+    rest:  { c: 0, t: "Wärme ungedeckt", f: F.rest },
+    gas:   { c: 0, t: "Gas (Hi)", f: F.gas },
+    umw:   { c: 0, t: "Umweltwärme", f: F.umwelt },
+    pv:    { c: 0, t: "Photovoltaik", f: F.pv },
+    netz:  { c: 0, t: "Netzstrom", f: F.netz },
+    haus:  { c: 1, t: "Hausnetz", f: F.verbraucher },
+    kes:   { c: 2, t: "Heizkessel", f: F.kessel },
+    wp:    { c: 2, t: "Wärmepumpe", f: F.wp },
+    hs:    { c: 2, t: "Heizstab", f: F.hs },
+    heiz:  { c: 3, t: "Heizung", f: F.heizung },
+    ww:    { c: 3, t: "Warmwasser", f: F.ww },
+    verl:  { c: 3, t: "Verluste", f: "#888780" },
+    verb:  { c: 3, t: "Strom Verbraucher", f: F.verbraucher },
+    eins:  { c: 3, t: "Einspeisung", f: F.einspeisung }
+  };
+  const V = [ // Quelle, Ziel, MWh/a
+    ["rest", "heiz", 21.85], ["rest", "ww", 3.80],
+    ["gas", "kes", 13.33], ["umw", "wp", 44.97],
+    ["pv", "haus", 48.20], ["netz", "haus", 26.43],
+    ["haus", "kes", 0.08], ["haus", "wp", 21.93], ["haus", "hs", 2.00], ["haus", "verb", 22.20], ["haus", "eins", 28.42],
+    ["kes", "heiz", 10.42], ["kes", "ww", 1.81], ["kes", "verl", 1.18],
+    ["wp", "heiz", 54.31], ["wp", "ww", 9.45], ["wp", "verl", 3.14],
+    ["hs", "heiz", 1.62], ["hs", "ww", 0.29], ["hs", "verl", 0.09]
+  ];
+  for (const n of Object.values(N)) { n.ein = 0; n.aus = 0; }
+  for (const [a, b, w] of V) { N[a].aus += w; N[b].ein += w; }
+  for (const n of Object.values(N)) n.w = Math.max(n.ein, n.aus);
+  const ordnung = [["rest", "gas", "umw", "pv", "netz"], ["haus"], ["kes", "wp", "hs"], ["heiz", "ww", "verl", "verb", "eins"]];
+  ordnung.forEach(sp => { let y = oben; for (const id of sp) { N[id].y = y; N[id].h = N[id].w * k; y += N[id].h + gap; } });
+  // Hausnetz neben Photovoltaik und Netz, die Wandler neben Gas und Umweltwaerme
+  N.haus.y = N.pv.y + 8; N.kes.y = N.gas.y + 8; N.wp.y = N.kes.y + N.kes.h + gap + 6; N.hs.y = N.wp.y + N.wp.h + gap + 8;
+  const H = Math.max(...Object.values(N).map(n => n.y + n.h)) + 14;
+  for (const n of Object.values(N)) { n.oa = 0; n.oe = 0; }
+  const ausOff = new Map(), einOff = new Map();
+  for (const v of V.slice().sort((p, q) => (N[p[1]].y - N[q[1]].y))) { const a = N[v[0]]; ausOff.set(v, a.oa); a.oa += v[2] * k; }
+  for (const v of V.slice().sort((p, q) => (N[p[0]].y - N[q[0]].y))) { const b = N[v[1]]; einOff.set(v, b.oe); b.oe += v[2] * k; }
+  let s = `<svg class="grafik" viewBox="0 0 1200 ${H.toFixed(0)}" role="img" aria-label="Energiefluss">`;
+  for (const v of V) {
+    const a = N[v[0]], b = N[v[1]], h = v[2] * k;
+    const x0 = X[a.c] + nw, x1 = X[b.c], y0 = a.y + ausOff.get(v), y1 = b.y + einOff.get(v), xm = (x0 + x1) / 2;
+    const rest = v[0] === "rest";
+    s += `<path d="M${x0},${y0.toFixed(1)} C${xm},${y0.toFixed(1)} ${xm},${y1.toFixed(1)} ${x1},${y1.toFixed(1)} L${x1},${(y1 + h).toFixed(1)} C${xm},${(y1 + h).toFixed(1)} ${xm},${(y0 + h).toFixed(1)} ${x0},${(y0 + h).toFixed(1)} Z" fill="${a.f}" fill-opacity="${rest ? 0.5 : 0.45}"${rest ? ' stroke="#888780" stroke-dasharray="4 3" stroke-width="0.8"' : ""}/>`;
+  }
+  for (const [id, n] of Object.entries(N)) {
+    s += `<rect x="${X[n.c]}" y="${n.y.toFixed(1)}" width="${nw}" height="${Math.max(n.h, 2).toFixed(1)}" fill="${n.f}"${id === "rest" ? ' stroke="#888780" stroke-dasharray="3 2"' : ""}/>`;
+    const my = n.y + n.h / 2;
+    const txt = `<tspan class="fett">${n.t}</tspan> ${zahl(n.w, 2)}`;
+    if (n.c === 0) s += `<text x="${X[0] - 8}" y="${(my + 4).toFixed(1)}" text-anchor="end">${txt}</text>`;
+    else if (n.c === 3) s += `<text x="${X[3] + nw + 8}" y="${(my + 4).toFixed(1)}">${txt}</text>`;
+    else s += `<text x="${X[n.c] + nw + 6}" y="${(n.y - 5).toFixed(1)}" class="halo">${txt}</text>`;
+  }
+  ["Quellen", "Hausnetz", "Wandler", "Nutzen"].forEach((t, c) =>
+    s += `<text x="${c === 0 ? X[0] + nw : X[c]}" y="12" text-anchor="${c === 0 ? "end" : "start"}" class="leise">${t} · MWh/a</text>`);
+  return s + "</svg>";
+}
+
+// ---- Ganglinie -----------------------------------------------------------------------------------
+function ganglinie(art, farbe, maxKw) {
+  const B = 1160, H = 204, l = 40, oben = 22, unten = 180;
+  const achse = Math.ceil(maxKw / 20) * 20;
+  const y = v => unten - (unten - oben) * v / achse;
+  let d = "";
+  for (let t = 0; t < 365; t++) {
+    const winter = 0.5 + 0.5 * Math.cos(2 * Math.PI * (t - 15) / 365);
+    const rausch = 0.5 + 0.5 * Math.sin(t * 1.7) * Math.cos(t * 0.37);
+    let v;
+    if (art === "kessel") v = Math.max(0, winter - 0.55) / 0.45 * maxKw * (0.45 + 0.55 * rausch);
+    else if (art === "pv") v = maxKw * (0.15 + 0.6 * (1 - winter)) * (0.45 + 0.55 * rausch);
+    else if (art === "wp") v = maxKw * Math.min(0.92, 0.12 + 0.8 * winter * (0.7 + 0.3 * rausch));
+    else v = maxKw * (0.08 + 0.85 * winter * (0.75 + 0.25 * rausch));
+    d += `${t ? "L" : "M"}${(l + (B - l) * t / 364).toFixed(1)},${y(v).toFixed(1)} `;
+  }
+  let s = `<svg class="grafik" viewBox="0 0 ${B} ${H}" role="img" aria-label="Ganglinie">`;
+  for (let i = 0; i <= 4; i++) {
+    const v = achse * i / 4;
+    s += `<line x1="${l}" x2="${B}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" stroke="${F.gitter}" stroke-width="${i ? 0.6 : 1}"/><text x="${l - 6}" y="${(y(v) + 4).toFixed(1)}" text-anchor="end" class="leise">${zahl(v, 0)}</text>`;
+  }
+  MONATE.forEach((m, i) => s += `<text x="${(l + (B - l) * (i + 0.5) / 12).toFixed(0)}" y="${unten + 18}" text-anchor="middle" class="leise">${m}</text>`);
+  s += `<path d="${d}" fill="none" stroke="${farbe}" stroke-width="1.4"/>`;
+  return s + `<text x="${l}" y="11" class="leise">kW (Tageshöchstwert)</text></svg>`;
+}
+function ganglinienblock(titel, art, farbe, maxKw) {
+  const zoom = '<div class="zoomleiste"><span class="seg" role="group" aria-label="Zeitraum">' +
+    ["Jahr", "Monat", "Woche", "Tag"].map((z, i) => `<button type="button" data-zoom="${z}" aria-pressed="${i === 0}">${z}</button>`).join("") +
+    '</span><span class="fueller"></span><button type="button" class="knopf knopf--klein" data-meldung="Exportiert die Reihe als CSV.">CSV…</button></div>';
+  return gruppe("Ganglinie", zoom + ganglinie(art, farbe, maxKw) + legende([{ f: farbe, t: titel, l: true }]));
+}
+function energiebilanz(grafikHtml, werteHtml, summeText) {
+  return gruppe("Energiebilanz", `<div class="zweispaltig"><div>${grafikHtml}</div><div>${werteHtml}</div></div>`, summeText);
+}
+function teil(kopf, inhalt) { return `<div class="unterteil"><p class="unterkopf">${kopf}</p>${inhalt}</div>`; }
+
+// ======================================================================= Blaetter
+const W = DATEN.waerme, S = DATEN.strom;
+const waermeReihen = hervor => [
+  { d: W.wp, f: F.wp, g: hervor && hervor !== "wp" },
+  { d: W.kessel, f: F.kessel, g: hervor && hervor !== "kessel" },
+  { d: W.rest, f: F.rest }
+];
+const waermeLegende = hervor => legende([
+  { f: F.wp, t: "Wärmepumpe", g: hervor && hervor !== "wp" }, { f: F.kessel, t: "Heizkessel", g: hervor && hervor !== "kessel" },
+  { f: F.rest, t: "ungedeckt" }, { f: F.linie, t: "Wärmebedarf", l: true }]);
+const waermeBalken = hervor => ({
+  titel: "Gesamtwärmebedarf", gesamt: 103.55, teile: [
+    { t: "Wärmepumpe über Puffer", w: 65.67, f: F.wp, g: hervor && hervor !== "wp" },
+    { t: "Heizkessel", w: 12.23, f: F.kessel, g: hervor && hervor !== "kessel" },
+    { t: "ungedeckt", w: 25.65, f: F.rest, d: true }]
+});
+
+const BLAETTER = {
+  uebersicht: { t: "Übersicht", html: () =>
+    kacheln([
+      { a: 1, w: "103,55", e: "MWh/a", t: "Wärmebedarf" }, { w: "75,2", e: "%", t: "Wärmedeckung" },
+      { w: "25,65", e: "MWh/a", t: "Restwärme" }, { a: 1, w: "46,21", e: "MWh/a", t: "Strombedarf mit Wärmeerzeugern" },
+      { w: "42,8", e: "%", t: "Stromdeckung" }, { w: "26,43", e: "MWh/a", t: "Reststrom (Netzbezug)" }]) +
+    gruppe("Energiefluss", energiefluss() + legende([
+      { f: F.gas, t: "Gas" }, { f: F.umwelt, t: "Umweltwärme" }, { f: F.pv, t: "Photovoltaik" }, { f: F.netz, t: "Netzstrom" },
+      { f: F.verbraucher, t: "Hausnetz" }, { f: F.wp, t: "Wärmepumpe" }, { f: F.hs, t: "Heizstab" }, { f: F.rest, t: "Wärme ungedeckt (gestrichelt)" }]),
+      "158,58 MWh/a umgesetzt") +
+    gruppe("Deckung", `<div class="ringzeile">` +
+      ring([{ w: 65.67, f: F.wp }, { w: 12.23, f: F.kessel }, { w: 25.65, f: F.rest }], "75,2 %", "Wärmedeckung") +
+      ring([{ w: 19.78, f: F.pv }, { w: 26.43, f: F.rest }], "42,8 %", "Stromdeckung") +
+      `<div class="ringlegende"><h4>Wärme 103,55 MWh/a</h4>` +
+      legende([{ f: F.wp, t: "Wärmepumpe 65,67 (63,4 %)" }, { f: F.kessel, t: "Heizkessel 12,23 (11,8 %)" }, { f: F.rest, t: "ungedeckt 25,65 (24,8 %)" }]) +
+      `<h4>Strom 46,21 MWh/a</h4>` +
+      legende([{ f: F.pv, t: "Photovoltaik direkt 19,78 (42,8 %)" }, { f: F.rest, t: "Netzbezug 26,43 (57,2 %)" }]) + `</div></div>`) +
+    energiebilanz(
+      bilanzbalken([waermeBalken(null), { titel: "Strombedarf", gesamt: 46.21, teile: [
+        { t: "Photovoltaik direkt", w: 19.78, f: F.pv }, { t: "Netzbezug", w: 26.43, f: F.netz, hell: 1 }] }]) +
+      teil("Bedarf und Deckung je Monat · Wärme", monatssaeulen(waermeReihen(null), W.bedarf) + waermeLegende(null)),
+      werte([
+        { kopf: "Wärme", zeilen: [
+          { t: "Wärmepumpe über Puffer", w: "65,67", u: "MWh/a" }, { t: "Heizkessel", w: "12,23", u: "MWh/a" },
+          { t: "Restwärme (ungedeckt)", w: "25,65", u: "MWh/a" }, { t: "Gesamtwärmebedarf", w: "103,55", u: "MWh/a", s: 1 }] },
+        { kopf: "Strom", zeilen: [
+          { t: "Verbraucher", w: "22,20", u: "MWh/a" }, { t: "Wärmepumpe", w: "21,93", u: "MWh/a" },
+          { t: "Heizstab", w: "2,00", u: "MWh/a" }, { t: "Hilfsstrom Kessel", w: "0,08", u: "MWh/a" },
+          { t: "Strombedarf", w: "46,21", u: "MWh/a", s: 1 },
+          { t: "davon Photovoltaik direkt", w: "19,78", u: "MWh/a", e: 1 }, { t: "davon Netzbezug", w: "26,43", u: "MWh/a", e: 1 }] }]),
+      "103,55 MWh/a Wärme · 46,21 MWh/a Strom") +
+    gruppe("Erzeuger", tabelle(
+      [["Erzeuger"], ["Wärme", "MWh/a"], ["Strom", "MWh/a"], ["Brennstoff", "MWh/a"], ["Deckung", "%"]],
+      [["Wärmepumpe (2 Module, mit Heizstab)", "65,67", "23,93", "—", "63,4"],
+       ["Heizkessel", "12,23", "0,08", "13,33", "11,8"], ["Photovoltaik", "—", "48,20 erzeugt", "—", "42,8 (Strom)"]],
+      ["Summe Wärme", "77,90", "24,01", "13,33", "75,2"])) +
+    ganglinienblock("Wärmebedarf", "bedarf", F.heizung, 85) },
+
+  bedarf: { t: "Wärme-/Strombedarf", html: () =>
+    kacheln([
+      { a: 1, w: "82,0", e: "kW", t: "max. Wärmelast" }, { w: "103,55", e: "MWh/a", t: "Wärmebedarf" },
+      { w: "1" + NB + "263", e: "h/a", t: "Vollbenutzungsstunden Wärme" }, { a: 1, w: "6,4", e: "kW", t: "max. Strombedarf" },
+      { w: "22,20", e: "MWh/a", t: "Strombedarf Verbraucher" }, { a: 1, w: null, e: "", t: "max. Kältelast · nicht aktiv" }]) +
+    energiebilanz(
+      bilanzbalken([
+        { titel: "Wärmebedarf nach Kanälen", gesamt: 103.55, teile: [
+          { t: "Heizung", w: 88.20, f: F.heizung, hell: 1 }, { t: "Warmwasser", w: 15.35, f: F.ww, hell: 1 }] },
+        { titel: "Strombedarf mit Wärmeerzeugern", gesamt: 46.21, teile: [
+          { t: "Verbraucher", w: 22.20, f: F.verbraucher, hell: 1 }, { t: "Wärmepumpe", w: 21.93, f: F.wp, g: 1 },
+          { t: "Heizstab", w: 2.00, f: F.heizstab, g: 1 }, { t: "Kessel", w: 0.08, f: F.kessel, g: 1 }] }]) +
+      teil("Wärmebedarf je Monat", monatssaeulen([
+        { d: W.bedarf.map((v, m) => +(v - W.ww[m]).toFixed(2)), f: F.heizung }, { d: W.ww, f: F.ww }], null) +
+        legende([{ f: F.heizung, t: "Heizung 88,20" }, { f: F.ww, t: "Warmwasser 15,35" }])),
+      werte([
+        { kopf: "Wärme", zeilen: [
+          { t: "Heizung", w: "88,20", u: "MWh/a" }, { t: "Warmwasser", w: "15,35", u: "MWh/a" },
+          { t: "Prozesswärme", w: "—", u: "" }, { t: "Wärmebedarf", w: "103,55", u: "MWh/a", s: 1 }] },
+        { kopf: "Strom", zeilen: [
+          { t: "Verbraucher", w: "22,20", u: "MWh/a" }, { t: "Kälte", w: "nicht aktiv", u: "" },
+          { t: "Strombedarf", w: "22,20", u: "MWh/a", s: 1 }] }]),
+      "103,55 MWh/a Wärme · 22,20 MWh/a Strom") +
+    gruppe("Kanäle", tabelle(
+      [["Kanal"], ["Energie", "MWh/a"], ["Höchstlast", "kW"], ["Vollbenutzung", "h/a"]],
+      [["Heizung", "88,20", "74,5", "1" + NB + "184"], ["Warmwasser", "15,35", "7,5", "2" + NB + "047"], ["Strom Verbraucher", "22,20", "6,4", "3" + NB + "469"]])) +
+    ganglinienblock("Wärmebedarf", "bedarf", F.heizung, 85) },
+
+  wp: { t: "Wärmepumpe", html: () =>
+    kacheln([
+      { a: 1, w: "60,00", e: "kW", t: "Heizleistung (Summe Module)" }, { w: "3,05", e: "", t: "Jahresarbeitszahl" },
+      { a: 1, w: "−4,5", e: "°C", t: "Bivalenzpunkt" }, { w: "1" + NB + "095", e: "h/a", t: "Vollbenutzungsstunden" },
+      { w: "63,4", e: "%", t: "Deckungsanteil" }, { w: "2,00", e: "MWh/a", t: "Heizstab" }]) +
+    energiebilanz(
+      bilanzbalken([waermeBalken("wp"), { titel: "Wärmeproduktion der Wärmepumpe", gesamt: 66.90, teile: [
+        { t: "Umweltwärme", w: 44.97, f: F.umwelt, hell: 1 }, { t: "Strom", w: 21.93, f: F.netz, hell: 1 }] }]) +
+      teil("Herleitung der Nutzwärme", wasserfall([
+        { t: "Wärmeproduktion", w: 66.90, art: "summe", f: F.wp }, { t: "Quellwärme Kaskade", w: 0 },
+        { t: "Heizstab", w: 2.00 }, { t: "Speicherverluste", w: -3.23 }, { t: "Nutzwärme", w: 65.67, art: "summe" }], "MWh/a")) +
+      teil("Bedarf und Deckung je Monat", monatssaeulen(waermeReihen("wp"), W.bedarf) + waermeLegende("wp")),
+      werte([
+        { kopf: "Wärme", zeilen: [
+          { t: "Wärmeproduktion", w: "66,90", u: "MWh/a" }, { t: "− Quellwärme aus Kaskade", w: "0,00", u: "MWh/a", e: 1 },
+          { t: "+ Heizstab", w: "2,00", u: "MWh/a", e: 1 }, { t: "− Speicherverluste", w: "3,23", u: "MWh/a", e: 1 },
+          { t: "Nutzwärme", w: "65,67", u: "MWh/a", s: 1 }, { t: "Umweltwärme", w: "44,97", u: "MWh/a" },
+          { t: "Deckungsanteil", w: "63,4", u: "%" }] },
+        { kopf: "Strom", zeilen: [
+          { t: "Verdichter und Hilfsantriebe", w: "21,93", u: "MWh/a" }, { t: "Heizstab", w: "2,00", u: "MWh/a" },
+          { t: "Strom gesamt", w: "23,93", u: "MWh/a", s: 1 }] }]),
+      "65,67 MWh/a Nutzwärme") +
+    gruppe("Module", tabelle(
+      [["Modul"], ["Leistung", "kW"], ["Wärmeprod.", "MWh/a"], ["Stromverbr.", "MWh/a"], ["JAZ"], ["Betriebsstunden", "h/a"], ["Starts", "1/a"]],
+      [["Modul 1", "30,00", "33,45", "10,97", "3,05", "1" + NB + "140", "410"], ["Modul 2", "30,00", "33,45", "10,96", "3,05", "1" + NB + "090", "395"]],
+      ["Summe", "60,00", "66,90", "21,93", "3,05", "—", "805"])) +
+    gruppe("Betrieb", `<div class="betrieb-raster">` + werte([{ kopf: "Laufzeit", zeilen: [
+      { t: "Betriebsstunden Modul 1", w: "1" + NB + "140", u: "h/a" }, { t: "Taktstunden", w: "62", u: "h/a" }, { t: "Sperrstunden", w: "0", u: "h/a" }] }]) +
+      werte([{ kopf: "Temperaturen", zeilen: [
+      { t: "Bivalenzpunkt", w: "−4,5", u: "°C" }, { t: "mittlerer Vorlauf", w: "41,8", u: "°C" }, { t: "mittlere Quelltemperatur", w: "6,2", u: "°C" }] }]) + `</div>`) +
+    ganglinienblock("Wärmeleistung Wärmepumpe", "wp", F.wp, 60) },
+
+  kessel: { t: "Heizkessel", html: () =>
+    kacheln([
+      { a: 1, w: "120,00", e: "kW", t: "Wärmeleistung" }, { a: 1, w: "32,16", e: "kW", t: "Brennstoffleistung (Hi), Spitze" },
+      { w: "11,81", e: "%", t: "Deckungsanteil" }, { w: "520", e: "h/a", t: "Betriebsstunden" },
+      { w: "160", e: "1/a", t: "Starts" }, { w: "93,4", e: "%", t: "Wirkungsgrad im Betrieb" }]) +
+    energiebilanz(
+      bilanzbalken([waermeBalken("kessel"), { titel: "Brennstoff (Hi) des Heizkessels", gesamt: 13.33, teile: [
+        { t: "Wärmeproduktion", w: 12.45, f: F.kessel }, { t: "Umwandlung", w: 0.88, f: F.verlust }] }]) +
+      teil("Herleitung der Nutzwärme", wasserfall([
+        { t: "Wärmeproduktion", w: 12.45, art: "summe", f: F.kessel }, { t: "Speicherverluste", w: -0.22 },
+        { t: "Nutzwärme", w: 12.23, art: "summe" }], "MWh/a")) +
+      teil("Bedarf und Deckung je Monat", monatssaeulen(waermeReihen("kessel"), W.bedarf) + waermeLegende("kessel")),
+      werte([
+        { kopf: "Wärme", zeilen: [
+          { t: "Wärmepumpe über Puffer", w: "65,67", u: "MWh/a" }, { t: "Heizkessel", w: "12,23", u: "MWh/a" },
+          { t: "Restwärme (ungedeckt)", w: "25,65", u: "MWh/a" }, { t: "Gesamtwärmebedarf", w: "103,55", u: "MWh/a", s: 1 }] },
+        { kopf: "Herleitung", zeilen: [
+          { t: "Wärmeproduktion", w: "12,45", u: "MWh/a" }, { t: "− Speicherverluste", w: "0,22", u: "MWh/a", e: 1 },
+          { t: "Nutzwärme", w: "12,23", u: "MWh/a", s: 1 }] },
+        { kopf: "Strom", zeilen: [{ t: "Hilfsstrom", w: "0,08", u: "MWh/a" }] }]),
+      "12,23 MWh/a Nutzwärme") +
+    gruppe("Module", tabelle(
+      [["Name"], ["Gas", "MWh/a"], ["Jahresnutzungsgrad", "%"], ["Starts", "1/a"], ["η₃₀", "%"], ["Laststufe"], ["Rücklauf", "°C"]],
+      [["Kessel 1", "13,33", "91,7", "160", "97,0", "modulierend 30–100 %", "47,8"]])) +
+    gruppe("Brennstoff", werte([{ kopf: "Erdgas H", zeilen: [
+      { t: "Gasbezug (Hi)", w: "13,33", u: "MWh/a" }, { t: "Gasbezug (Hs)", w: "14,80", u: "MWh/a" }, { t: "CO₂", w: "2,69", u: "t/a" }] }])) +
+    gruppe("Betrieb", `<div class="betrieb-raster">` + werte([{ kopf: "Laufzeit", zeilen: [
+      { t: "Betriebsstunden", w: "520", u: "h/a" }, { t: "Bereitschaft", w: "2" + NB + "150", u: "h/a" }, { t: "Taktstunden", w: "38", u: "h/a" }] }]) +
+      werte([{ kopf: "Verluste und Temperatur", zeilen: [
+      { t: "Anfahrverlust", w: "0,05", u: "MWh/a" }, { t: "Umwandlungsverlust", w: "0,88", u: "MWh/a" }, { t: "mittlerer Rücklauf", w: "47,8", u: "°C" }] }]) + `</div>`) +
+    ganglinienblock("Wärmeleistung Heizkessel", "kessel", F.kessel, 40) },
+
+  pv: { t: "Photovoltaik", html: () =>
+    kacheln([
+      { a: 1, w: "49,5", e: "kWp", t: "Modulleistung" }, { a: 1, w: "45,0", e: "kW", t: "Wechselrichter AC" },
+      { w: "48,2", e: "MWh/a", t: "Ertrag" }, { w: "41", e: "%", t: "Eigenverbrauchsanteil" },
+      { w: "42,8", e: "%", t: "Strombedarfsdeckung" }, { w: "0,6", e: "%", t: "Abregelung" }]) +
+    energiebilanz(
+      bilanzbalken([
+        { titel: "Strombedarf", gesamt: 46.21, teile: [{ t: "PV direkt", w: 19.78, f: F.pv }, { t: "Netzbezug", w: 26.43, f: F.netz, g: 1 }] },
+        { titel: "PV-Ertrag", gesamt: 48.20, teile: [{ t: "direkt", w: 19.78, f: F.pv }, { t: "Überschuss (Einspeisung)", w: 28.42, f: F.pv, g: 1 }] }]) +
+      teil("Herleitung des Eigenverbrauchs", wasserfall([
+        { t: "Potenzial", w: 48.50, art: "summe", f: F.pv }, { t: "Abregelung", w: -0.30 }, { t: "Ertrag", w: 48.20, art: "summe", f: F.pv },
+        { t: "Einspeisung", w: -28.42 }, { t: "direkt genutzt", w: 19.78, art: "summe" }], "MWh/a")) +
+      teil("Strombedarf und Deckung je Monat", monatssaeulen([
+        { d: S.pvDirekt, f: F.pv }, { d: S.netz, f: F.netz, g: 1 }], S.bedarf, { d: S.pvErtrag, f: F.pvlinie }) +
+        legende([{ f: F.pv, t: "PV direkt" }, { f: F.netz, t: "Netzbezug", g: 1 }, { f: F.linie, t: "Strombedarf", l: true }, { f: F.pvlinie, t: "PV-Ertrag (gestrichelt)", l: true }])),
+      werte([
+        { kopf: "Ertrag", zeilen: [
+          { t: "PV direkt genutzt", w: "19,78", u: "MWh/a" }, { t: "Überschuss (Einspeisung)", w: "28,42", u: "MWh/a" },
+          { t: "PV-Ertrag", w: "48,20", u: "MWh/a", s: 1 }, { t: "Abregelung", w: "0,30", u: "MWh/a", e: 1 }] },
+        { kopf: "Strombedarf", zeilen: [
+          { t: "PV direkt", w: "19,78", u: "MWh/a" }, { t: "Netzbezug", w: "26,43", u: "MWh/a" },
+          { t: "Strombedarf", w: "46,21", u: "MWh/a", s: 1 }, { t: "Deckung", w: "42,8", u: "%" }] }]),
+      "48,20 MWh/a Ertrag") +
+    gruppe("Wechselrichter", tabelle(
+      [["Wechselrichter"], ["DC", "kWp"], ["AC", "kW"], ["Ertrag", "MWh/a"], ["Clipping", "MWh/a"], ["Volllaststunden", "h/a"]],
+      [["WR 1", "27,0", "25,0", "26,25", "0,18", "972"], ["WR 2", "22,5", "20,0", "21,95", "0,12", "976"]],
+      ["Summe", "49,5", "45,0", "48,20", "0,30", "974"])) +
+    ganglinienblock("Leistung Photovoltaik (AC)", "pv", F.pvlinie, 45) },
+
+  ergebnis: { t: "Ergebnis", html: () =>
+    '<div class="platzhalter">Blatt „Ergebnis“ — im Mockup nicht ausgeführt. Es folgt demselben Schema: Kacheln, Energiebilanz, Tabellen, Ganglinie.</div>' }
+};
+const REIHENFOLGE = ["uebersicht", "bedarf", "wp", "kessel", "pv", "ergebnis"];
+
+// ======================================================================= Zustand und Zeichnen
+const zustand = { variante: "a", reiter: "kessel" };
+try {
+  const p = new URLSearchParams(location.search);
+  if (p.get("v") === "a" || p.get("v") === "b") zustand.variante = p.get("v");
+  if (BLAETTER[p.get("r")]) zustand.reiter = p.get("r");
+} catch (e) { /* ohne Parameter */ }
+
+function zeichnen() {
+  const v = zustand.variante;
+  document.getElementById("var-a").hidden = v !== "a";
+  document.getElementById("var-b").hidden = v !== "b";
+  document.querySelectorAll(".mk-variante button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.variante === v)));
+  document.getElementById("reiter-" + v).innerHTML = REIHENFOLGE.map(id =>
+    `<button type="button" role="tab" class="reiterknopf${id === zustand.reiter ? " reiterknopf--aktiv" : ""}" aria-selected="${id === zustand.reiter}" data-reiter="${id}">${BLAETTER[id].t}</button>`).join("");
+  document.getElementById("blatt-a").innerHTML = "";
+  document.getElementById("blatt-b").innerHTML = "";
+  document.getElementById("blatt-" + v).innerHTML = BLAETTER[zustand.reiter].html();
+}
+function melde(t) { document.getElementById("mk-meldung").textContent = t; }
+
+document.addEventListener("click", ev => {
+  const b = ev.target.closest("button"); if (!b) return;
+  if (b.dataset.variante) { zustand.variante = b.dataset.variante; zeichnen(); return; }
+  if (b.dataset.reiter) { zustand.reiter = b.dataset.reiter; zeichnen(); return; }
+  if (b.dataset.zoom) { b.parentElement.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); melde("Zoom " + b.dataset.zoom + " (im Mockup nur die Jahresansicht)."); return; }
+  if (b.classList.contains("gruppenkopf")) {
+    const g = b.closest(".gruppe"); const zu = g.classList.toggle("zu");
+    b.setAttribute("aria-expanded", String(!zu)); b.querySelector(".sym").textContent = zu ? "▸" : "▾"; return;
+  }
+  if (b.dataset.meldung) melde(b.dataset.meldung);
+});
+zeichnen();
+</script>
+</body>
+</html>
