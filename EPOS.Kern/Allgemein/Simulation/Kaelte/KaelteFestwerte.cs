@@ -177,5 +177,14 @@
         /// eines Trockenkühlers (Lufteintritt um 25 °C, Fluid um 40/35 °C) erwärmt sich die Luft um rund 10 K.
         /// </summary>
         public const double RKW_LUFTERWAERMUNG_K = 10.0;
+
+        // ---- Kälte-Wärme-Kopplung (KWN-1a, Kühlkonzept 5.6.3 und 5.6.9) ----
+
+        /// <summary>
+        /// Grädigkeit des Übertragers zur Wärmesenke im Kopplungsbetrieb [K], wenn die Anlagenzeile keine pflegt
+        /// (<c>Kopplung_Graedigkeit_K</c> leer): Kondensatortemperatur = Vorlauf der Wärmesenke + 3 K. Wert aus dem
+        /// Rechenbeispiel des Kühlkonzepts 5.6.3 (Annahme, keine Produktangabe).
+        /// </summary>
+        public const double KOPPLUNG_GRAEDIGKEIT_K = 3.0;
     }
 }
