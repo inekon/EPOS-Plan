@@ -117,6 +117,11 @@ namespace WindowsFormsApplication1
         /// <summary>Abschnitte, deren fehlender Flächenanteil als Rest zu 1 eingesetzt wurde (BK-8).</summary>
         public int AnteilErgaenzt { get; internal set; }
         /// <summary>
+        /// Abschnitte mit Flächenanteil genau 0, die weggelassen wurden, weil die übrigen Anteile 1 ± Toleranz ergeben
+        /// (BK-10, DIN EN ISO 6946, 6.7.2: ein Abschnitt geht nur mit seinem Anteil ein); je Aufbau eine Protokollzeile.
+        /// </summary>
+        public int AbschnitteOhneBeitrag { get; internal set; }
+        /// <summary>
         /// Wiederimport (BK-8b): Aufbauten, die schon als Importsatz im Katalog stehen und durch die Teilung an gemeinsamen
         /// Schichtgrenzen andere Schichten bekämen; nur die Vorschau zählt sie (<see cref="BauteilkatalogImport.Vorschau"/>).
         /// </summary>
@@ -1005,6 +1010,17 @@ namespace WindowsFormsApplication1
                 List<Satz> teile = null;
                 List<Satz> streifen = a.Schichten.Where(s => s.Abschnitt != null).Select(s => s.Abschnitt).Distinct()
                                        .OrderBy(x => (int)x.Werte["Nummer"]).ToList();
+                if (!a.Schichten.Any(s => s.Abschnitt == null) && OhneBeitragWeglassen(p, v, a, streifen))
+                {
+                    streifen = a.Schichten.Select(s => s.Abschnitt).Distinct().OrderBy(x => (int)x.Werte["Nummer"]).ToList();
+                    if (streifen.Count == 1)
+                    {
+                        // Ein Abschnitt bleibt: der Aufbau ist homogen (Schichten ohne Abschnitt, wie ein Aufbau der Quelle ohne Abschnitte).
+                        p.Abschnitte.Remove(streifen[0]);
+                        foreach (Satz s in a.Schichten) s.Abschnitt = null;
+                        continue;
+                    }
+                }
                 if (a.Schichten.Any(s => s.Abschnitt == null))
                     grund = "inhomogen: durchgehende Schicht neben Abschnitten, Lage unbestimmt";
                 else
@@ -1044,6 +1060,32 @@ namespace WindowsFormsApplication1
                 p.Schichten.RemoveAll(x => x.Vertreter == a);
                 v.Protokoll.Add("Aufbau verworfen (" + grund + "): " + a.Kennung);
             }
+        }
+
+        /// <summary>
+        /// <b>Abschnitte ohne Beitrag</b> (BK-10, DIN EN ISO 6946, 6.7.2): Ein Abschnitt geht in den oberen und den unteren
+        /// Grenzwert nur mit seinem Flächenanteil ein; ein Anteil von genau 0 trägt nichts bei. Haben alle Abschnitte einen Anteil
+        /// (keiner leer), sind einige genau 0 und ergeben die übrigen 1 ± <see cref="InhomogeneSchichten.ANTEIL_TOLERANZ"/>,
+        /// werden die Abschnitte mit Anteil 0 samt ihren Schichten weggelassen (Rückgabe <c>true</c>, eine Protokollzeile).
+        /// Sonst bleibt alles, wie es ist, und die Anteilsprüfung entscheidet wie bisher.
+        /// </summary>
+        private static bool OhneBeitragWeglassen(Plan p, BauteilkatalogVorschau v, Satz a, List<Satz> streifen)
+        {
+            if (streifen.Any(x => x.W("Flaechenanteil") == null)) return false;
+            List<Satz> null0 = streifen.Where(x => x.W("Flaechenanteil").Value == 0.0).ToList();
+            if (null0.Count == 0 || null0.Count == streifen.Count) return false;
+            double summe = streifen.Except(null0).Sum(x => x.W("Flaechenanteil").Value);
+            if (Math.Abs(summe - 1.0) > InhomogeneSchichten.ANTEIL_TOLERANZ + 1e-12) return false;
+            var weg = null0.ToHashSet();
+            List<Satz> schichten = a.Schichten.Where(s => weg.Contains(s.Abschnitt)).ToList();
+            var wegSchichten = schichten.ToHashSet();
+            a.Schichten.RemoveAll(wegSchichten.Contains);
+            p.Schichten.RemoveAll(wegSchichten.Contains);
+            p.Abschnitte.RemoveAll(weg.Contains);
+            v.AbschnitteOhneBeitrag += weg.Count;
+            v.Protokoll.Add(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BKI_PROT_OHNE_BEITRAG,
+                                          Zahl(weg.Count), Zahl(schichten.Count), a.Kennung));
+            return true;
         }
 
         /// <summary>

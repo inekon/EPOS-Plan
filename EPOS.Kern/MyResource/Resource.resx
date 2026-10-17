@@ -54881,6 +54881,9 @@ Chart</value>
   <data name="BKI_PROT_ANTEIL" xml:space="preserve">
     <value>Flächenanteil als Rest zu 1 eingesetzt (Abschnitt {0}: {1}): {2}</value>
   </data>
+  <data name="BKI_PROT_OHNE_BEITRAG" xml:space="preserve">
+    <value>Abschnitte ohne Beitrag (Flächenanteil 0) weggelassen ({0} Abschnitt(e), {1} Schichten): {2}</value>
+  </data>
   <data name="BKI_PROT_GETEILT" xml:space="preserve">
     <value>Schichten an gemeinsamen Schichtgrenzen geteilt ({0} → {1} Schichten): {2}</value>
   </data>
