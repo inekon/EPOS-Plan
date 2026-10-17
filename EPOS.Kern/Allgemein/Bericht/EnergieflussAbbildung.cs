@@ -145,10 +145,11 @@ namespace WindowsFormsApplication1
             => filter == EnergieflussFilter.Alle ? Energiefluss.T(nameof(MyResource.Resource.EF_FILTER_ALLE), englisch)
                                                  : Legendentext(FormDesFilters(filter), englisch);
 
-        /// <summary>Der Name einer Darstellung für die Oberfläche: „Kette“ bzw. „Stufen“.</summary>
+        /// <summary>Der Name einer Darstellung für die Oberfläche: „Kette“, „Stufen“ bzw. „Zuordnung“.</summary>
         public static string Darstellungstext(EnergieflussDarstellung darstellung, bool englisch)
             => Energiefluss.T(darstellung == EnergieflussDarstellung.Stufen ? nameof(MyResource.Resource.EF_DARSTELLUNG_STUFEN)
-                                                                            : nameof(MyResource.Resource.EF_DARSTELLUNG_KETTE), englisch);
+                            : darstellung == EnergieflussDarstellung.Zuordnung ? nameof(MyResource.Resource.EF_DARSTELLUNG_ZUORDNUNG)
+                            : nameof(MyResource.Resource.EF_DARSTELLUNG_KETTE), englisch);
 
         // ---------------------------------------------------------------- Formfilter
 

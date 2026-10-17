@@ -120,6 +120,11 @@ namespace WindowsFormsApplication1
         /// <summary>Anzeigename der Version.</summary>
         public string Version = "";
         public bool Englisch;
+        /// <summary>
+        /// Die Darstellung, für die die Bilanz gebaut ist: <see cref="EnergieflussDarstellung.Zuordnung"/> führt die Wärmeseite
+        /// als Bänder Erzeuger → Verwendung, jede andere als Kette über den Wärmebus (Kette und Stufen teilen dieselbe Bilanz).
+        /// </summary>
+        public EnergieflussDarstellung Darstellung = EnergieflussDarstellung.Kette;
         /// <summary>Liegt ein gespeichertes Simulationsergebnis vor?</summary>
         public bool Simuliert;
         /// <summary>Benannter Grund, warum kein Bild entsteht (nicht simuliert, keine Flüsse); sonst leer.</summary>
@@ -214,7 +219,7 @@ namespace WindowsFormsApplication1
                             KUEHLUNG = "kuehlung", STROMBEDARF = "strombedarf", EINSPEISUNG_PV = "einspeisung_pv",
                             EINSPEISUNG_BHKW = "einspeisung_bhkw", NICHT_ZUGEORDNET = "nicht_zugeordnet",
                             VERLUST = "verlust:", FUELLSTAND = "fuellstand:", WEITERE = "weitere:",
-                            STANDBY = "standby:", ABREGELUNG_PV = "abregelung_pv";
+                            STANDBY = "standby:", ABREGELUNG_PV = "abregelung_pv", SPEICHERVERLUST = "speicherverlust:";
 
         internal const string GRUPPE_TRAEGER = "traeger", GRUPPE_SPLIT = "split", GRUPPE_PUFFER = "puffer";
         private const string BRENNSTOFF_STROM = "Strom";
@@ -255,21 +260,32 @@ namespace WindowsFormsApplication1
             return v.IdProjekt.ToString(CultureInfo.InvariantCulture);
         }
 
-        /// <summary>Die Energieflussbilanz einer Version aus den Daten des Energievergleichs.</summary>
-        public static EnergieflussBilanz Aus(VariantenDaten v, bool englisch, string version = null)
+        /// <summary>
+        /// Die Energieflussbilanz einer Version aus den Daten des Energievergleichs; <paramref name="darstellung"/> =
+        /// <see cref="EnergieflussDarstellung.Zuordnung"/> baut die Wärmeseite als Zuordnung Erzeuger → Verwendung.
+        /// </summary>
+        public static EnergieflussBilanz Aus(VariantenDaten v, bool englisch, string version = null,
+                                             EnergieflussDarstellung darstellung = EnergieflussDarstellung.Kette)
         {
             string name = version ?? Versionsname(v);
-            return Aus(v?.Ergebnis, v?.EnergiekostenJeTraeger, englisch, name, v?.IdProjekt ?? 0);
+            return Aus(v?.Ergebnis, v?.EnergiekostenJeTraeger, englisch, name, v?.IdProjekt ?? 0, darstellung);
         }
 
         /// <summary>
         /// Die Energieflussbilanz aus einem Ergebnisbaum; <paramref name="traeger"/> liefert die Namen der Brennstoffträger
-        /// (<see cref="VariantenDaten.EnergiekostenJeTraeger"/>), ohne sie gilt das Brennstoffwort des Moduls.
+        /// (<see cref="VariantenDaten.EnergiekostenJeTraeger"/>), ohne sie gilt das Brennstoffwort des Moduls. Mit
+        /// <paramref name="darstellung"/> = <see cref="EnergieflussDarstellung.Zuordnung"/> entsteht die Wärmeseite als
+        /// Zuordnung (siehe <c>Bau.WaermeZuordnen</c>); Kette und Stufen teilen die Bilanz der Kette.
         /// </summary>
         public static EnergieflussBilanz Aus(ErgebnisModel e, IReadOnlyList<EnergieTraegerNachweis> traeger, bool englisch,
-                                             string version, int idProjekt = 0)
+                                             string version, int idProjekt = 0,
+                                             EnergieflussDarstellung darstellung = EnergieflussDarstellung.Kette)
         {
-            var m = new EnergieflussBilanz { IdProjekt = idProjekt, Version = version ?? "", Englisch = englisch, Simuliert = e != null };
+            var m = new EnergieflussBilanz
+            {
+                IdProjekt = idProjekt, Version = version ?? "", Englisch = englisch, Simuliert = e != null,
+                Darstellung = darstellung == EnergieflussDarstellung.Zuordnung ? EnergieflussDarstellung.Zuordnung : EnergieflussDarstellung.Kette
+            };
             if (e == null)
             {
                 m.Grund = string.Format(Kultur(englisch), T(nameof(MyResource.Resource.EF_NICHT_SIMULIERT), englisch), m.Version);
@@ -308,10 +324,15 @@ namespace WindowsFormsApplication1
                 new Dictionary<ErgebnisPufferspeicherModel, double>();
             /// <summary>EB-1: die Einspeisung der BHKW-Ergebniszeile; <c>null</c> = nicht erhoben (dann bilanziert, SK-Q1).</summary>
             private double? _bhkwEinspeisungMwh;
+            /// <summary>Die Wärmeseite als Zuordnung Erzeuger → Verwendung (<see cref="EnergieflussDarstellung.Zuordnung"/>)?</summary>
+            private readonly bool _zuordnung;
+            /// <summary>Der Zufluss des Wärmebusses vor der Zuordnung — Bezug der Bündelung, die die Kette am Bus misst.</summary>
+            private double _waermeBezugMwh = double.NaN;
 
             public Bau(EnergieflussBilanz m, ErgebnisModel e, IReadOnlyList<EnergieTraegerNachweis> traeger, bool englisch)
             {
                 _m = m; _e = e; _traeger = traeger; _en = englisch; _k = Kultur(englisch);
+                _zuordnung = m.Darstellung == EnergieflussDarstellung.Zuordnung;
             }
 
             private string T(string s) => Energiefluss.T(s, _en);
@@ -442,6 +463,7 @@ namespace WindowsFormsApplication1
                 Waermeseite(eb);
                 Kaelteseite(eb);
                 Stromseite(eb);
+                if (_zuordnung) WaermeZuordnen(eb);
 
                 // ---- Bilanz der Busse (die Wandler und Speicher schließen schon) ----
                 BilanzStrom();
@@ -848,6 +870,85 @@ namespace WindowsFormsApplication1
             }
 
             // ---------------------------------------------------------------
+            //  Zuordnung: Erzeuger → Verwendung (Anwenderentscheid vom 17.10.2026)
+            // ---------------------------------------------------------------
+
+            /// <summary>
+            /// <b>Die Wärmeseite der Darstellung Zuordnung.</b> Aus der fertigen Kette werden Wärmebus und Wärmespeicher
+            /// herausgenommen; an ihre Stelle treten direkte Bänder Erzeuger → Verwendung. Die Menge je Band ist die Deckung des
+            /// Erzeugers je Kanal aus dem Ergebnis — <c>Deckung_Kanal[k]</c> in % des Projektwärmebedarfs, also
+            /// <c>Deckung_Kanal[k] / 100 · Waermebedarf_Gesamt</c> MWh (Aufschlüsselung der <c>Waermebedarfsdeckung</c>:
+            /// Direktdeckung + zugerechnete Speicherentladung, bei der Wärmepumpe samt Heizstab). Was ein Erzeuger netto an
+            /// den Wärmebus der Kette abgibt, ohne damit zu decken (Speicherverluste und Füllstand), steht als Band
+            /// „Speicherverlust“ an ihm. Netto ist das Band Erzeuger → Wärmebus der Kette — bei der Wärmepumpe schon ohne die
+            /// Quellentnahme der Booster-Kette (<see cref="QuellentnahmenAufrechnen"/>), die so nicht doppelt erscheint; der
+            /// Heizstab gibt seine Wärme an die Wärmepumpe, deren Deckung ihn einschließt. Die Deckung des Heizkessels teilen
+            /// Brennstoff- und Elektrokessel nach ihrer Wärmeabgabe. Ungedeckt, Eingangs-, Strom- und Kälteseite bleiben wie in
+            /// der Kette. Ein Erzeuger, der mehr deckt, als er netto abgibt, schließt nicht und bekommt wie jeder offene Knoten
+            /// sein Band „nicht zugeordnet“.
+            /// </summary>
+            private void WaermeZuordnen(ErgebnisEnergiebedarfModel eb)
+            {
+                _waermeBezugMwh = Zu(WAERME);
+                double basis = Math.Max(0.0, eb?.Waermebedarf_Gesamt ?? 0.0);
+                // Netto je Erzeuger: sein Band an den Wärmebus der Kette.
+                var netto = new Dictionary<string, double>(StringComparer.Ordinal);
+                foreach (EnergieflussFluss f in _fluesse.Where(f => f.Nach == WAERME))
+                    netto[f.Von] = (netto.TryGetValue(f.Von, out double n) ? n : 0.0) + f.Mwh;
+                double Netto(string id) => netto.TryGetValue(id, out double n) ? n : 0.0;
+
+                // Wärmebus und Wärmespeicher verlassen das Bild samt aller ihrer Bänder.
+                bool Weg(string id) => id == WAERME || id.StartsWith(PUFFER, StringComparison.Ordinal)
+                                       || id.StartsWith(VERLUST + PUFFER, StringComparison.Ordinal)
+                                       || id.StartsWith(FUELLSTAND + PUFFER, StringComparison.Ordinal);
+                _fluesse.RemoveAll(f => Weg(f.Von) || Weg(f.Nach));
+
+                // Die Wärmepumpe samt Heizstab ist EIN Erzeuger: Der Heizstab gibt seine Wärme an die Wärmepumpe.
+                string wp = netto.ContainsKey(WP_HEIZEN) ? WP_HEIZEN : netto.ContainsKey(HEIZSTAB) ? HEIZSTAB : null;
+                double wpNetto = Netto(WP_HEIZEN) + Netto(HEIZSTAB);
+                if (wp == WP_HEIZEN) F(HEIZSTAB, WP_HEIZEN, Netto(HEIZSTAB), EnergieflussForm.Waerme);
+
+                // Brennstoff- und Elektrokessel teilen die Deckung des Heizkessels nach ihrer Wärmeabgabe.
+                double kessel = Netto(HEIZKESSEL), ekessel = Netto(ELEKTROKESSEL), kesselSumme = kessel + ekessel;
+
+                if (wp != null) Zuordnen(wp, _e.Waermepumpe?.Deckung_Kanal, 1.0, wpNetto, basis);
+                if (netto.ContainsKey(BHKW)) Zuordnen(BHKW, _e.BHKW?.Deckung_Kanal, 1.0, Netto(BHKW), basis);
+                if (kesselSumme > 0.0)
+                {
+                    if (netto.ContainsKey(HEIZKESSEL)) Zuordnen(HEIZKESSEL, _e.Heizkessel?.Deckung_Kanal, kessel / kesselSumme, kessel, basis);
+                    if (netto.ContainsKey(ELEKTROKESSEL)) Zuordnen(ELEKTROKESSEL, _e.Heizkessel?.Deckung_Kanal, ekessel / kesselSumme, ekessel, basis);
+                }
+                if (netto.ContainsKey(SOLARTHERMIE)) Zuordnen(SOLARTHERMIE, _e.Solarthermie?.Deckung_Kanal, 1.0, Netto(SOLARTHERMIE), basis);
+            }
+
+            /// <summary>
+            /// Die Bänder eines Erzeugers in der Zuordnung: je Wärmekanal <c>Deckung_Kanal[k] / 100 · basis · anteil</c> in seine
+            /// Verwendung, der Rest seiner Nettoabgabe als Speicherverlust.
+            /// </summary>
+            private void Zuordnen(string erzeuger, double[] deckungKanal, double anteil, double nettoMwh, double basis)
+            {
+                if (!_knoten.TryGetValue(erzeuger, out EnergieflussKnoten k)) return;
+                double gedeckt = 0.0;
+                foreach (int kanal in Kanal.KANAELE_WAERME)
+                {
+                    double d = deckungKanal != null && kanal < deckungKanal.Length ? deckungKanal[kanal] : 0.0;
+                    if (!double.IsFinite(d) || d <= 0.0) continue;
+                    double mwh = d / 100.0 * basis * anteil;
+                    if (mwh < MINDEST_MWH) continue;
+                    var s = Senke(kanal);
+                    KR(s.id, s.name, s.kurz, EnergieflussKnotenart.Senke, SPALTE_SENKEN, s.rang, bedarf: true);
+                    F(erzeuger, s.id, mwh, EnergieflussForm.Waerme, EnergieflussHerkunft.Abgeleitet, T(nameof(MyResource.Resource.EF_FORMEL_DECKUNG)));
+                    gedeckt += mwh;
+                }
+                double verlust = nettoMwh - gedeckt;
+                if (verlust < MINDEST_MWH) return;
+                string vid = SPEICHERVERLUST + erzeuger;
+                KR(vid, nameof(MyResource.Resource.EF_KN_SPEICHERVERLUST), nameof(MyResource.Resource.EF_KK_SPEICHERVERLUST),
+                   EnergieflussKnotenart.Verlust, k.Spalte, k.Rang / 1000);
+                F(erzeuger, vid, verlust, EnergieflussForm.Verlust, EnergieflussHerkunft.Abgeleitet, T(nameof(MyResource.Resource.EF_FORMEL_SPEICHERVERLUST)));
+            }
+
+            // ---------------------------------------------------------------
             //  Bilanz
             // ---------------------------------------------------------------
 
@@ -937,7 +1038,7 @@ namespace WindowsFormsApplication1
                 {
                     List<EnergieflussKnoten> glieder = _knoten.Values.Where(k => k.Gruppe == gruppe && Hat(k.Id)).ToList();
                     string bus = gruppe == GRUPPE_SPLIT ? KAELTE : WAERME;
-                    double grenze = BUENDEL_ANTEIL * Zu(bus);
+                    double grenze = BUENDEL_ANTEIL * (bus == WAERME && double.IsFinite(_waermeBezugMwh) ? _waermeBezugMwh : Zu(bus));
                     double Menge(EnergieflussKnoten k) => Math.Max(Zu(k.Id), Ab(k.Id));
                     var klein = new List<EnergieflussKnoten>();
                     double summe = 0.0;

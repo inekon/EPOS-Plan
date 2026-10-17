@@ -25007,6 +25007,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnung ähnelt.
+        /// </summary>
+        public static string EF_DARSTELLUNG_ZUORDNUNG {
+            get {
+                return ResourceManager.GetString("EF_DARSTELLUNG_ZUORDNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Alle ähnelt.
         /// </summary>
         public static string EF_FILTER_ALLE {
@@ -25021,6 +25030,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string EF_FILTER_LEER {
             get {
                 return ResourceManager.GetString("EF_FILTER_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckung je Kanal × Wärmebedarf ähnelt.
+        /// </summary>
+        public static string EF_FORMEL_DECKUNG {
+            get {
+                return ResourceManager.GetString("EF_FORMEL_DECKUNG", resourceCulture);
             }
         }
         
@@ -25057,6 +25075,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string EF_FORMEL_KONDENSATION {
             get {
                 return ResourceManager.GetString("EF_FORMEL_KONDENSATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nettoabgabe − Deckung (Speicherverluste, Füllstand) ähnelt.
+        /// </summary>
+        public static string EF_FORMEL_SPEICHERVERLUST {
+            get {
+                return ResourceManager.GetString("EF_FORMEL_SPEICHERVERLUST", resourceCulture);
             }
         }
         
@@ -25345,6 +25372,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string EF_KK_SOLARTHERMIE {
             get {
                 return ResourceManager.GetString("EF_KK_SOLARTHERMIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sp.-Verl. ähnelt.
+        /// </summary>
+        public static string EF_KK_SPEICHERVERLUST {
+            get {
+                return ResourceManager.GetString("EF_KK_SPEICHERVERLUST", resourceCulture);
             }
         }
         
@@ -25687,6 +25723,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string EF_KN_SOLARTHERMIE {
             get {
                 return ResourceManager.GetString("EF_KN_SOLARTHERMIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicherverlust ähnelt.
+        /// </summary>
+        public static string EF_KN_SPEICHERVERLUST {
+            get {
+                return ResourceManager.GetString("EF_KN_SPEICHERVERLUST", resourceCulture);
             }
         }
         
