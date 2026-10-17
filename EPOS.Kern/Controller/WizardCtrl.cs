@@ -417,6 +417,15 @@ namespace WindowsFormsApplication1
                     }
                 }
 
+                // KV8 (Entscheid des Anwenders vom 17.10.2026): Eine neu uebernommene Zeile (noch ohne Zuordnung) ohne Kalender,
+                // deren Kopie Nutzungstage nach Norm traegt, bekommt den Normkalender vorgewaehlt - wie die Uebernahme im
+                // Dialog (KaeltebedarfsprofilAbbildung.Aufgenommen), auch wenn dort noch kein Projekt bestand (Assistent).
+                if (item.ID_Z == 0 && !(item.ID_Betriebskalender > 0) && KaeltebedarfStammCtrl.ProjektNutzungstage(kopie) > 0)
+                {
+                    int? norm = NormkalenderCtrl.Vorwahl(projektID, kopie);
+                    if (norm.HasValue) item.ID_Betriebskalender = norm;
+                }
+
                 int idZ = nextID++;
                 var ps = new List<DbParam>
                 {

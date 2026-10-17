@@ -261,4 +261,55 @@ public class BedarfsProfileKaeltegrafikTests : EposBunitContext
         Assert.Contains(cut.FindAll(".epos-kbp-tagesart"), e => e.ClassList.Contains("epos-kbp-tagesart--ausserhalb"));
         Assert.Contains(Resource.KBP_GRAFIK_HERLEITUNG_ARBEIT, cut.Find(".epos-kbp-grafik").TextContent);
     }
+
+    /// <summary>
+    /// KV8 (Entscheid des Anwenders vom 17.10.2026): Eine Zeile mit Normtagen und ohne gewählten Kalender rechnet mit dem
+    /// Normkalender als Vorgabe — die Herleitungszeile sagt es sichtbar, und die Kennzahlenzeile nennt die 230
+    /// Nutzungstage. Mit gewähltem Kalender nennt die Zeile wieder den Kalender; ohne Normtage keine fünfte Karte.
+    /// </summary>
+    [Fact]
+    public void KV8_Zeile_mit_Normtagen_ohne_Kalender_zeigt_den_Normkalender_als_Vorgabe()
+    {
+        var zeilen = new List<BedarfsProfilZeile>
+        {
+            new() { IdZ = 1, IdStamm = 3, Name = "Prozess", Summe = 20, Normtage = 230, Deckung = new DeckungsartDaten(),
+                    KaelteArt = DbWerte.KAELTE_ART_PROZESS },
+            new() { IdZ = 2, IdStamm = 4, Name = "Serverraum", Summe = 10, Deckung = new DeckungsartDaten(), KaelteArt = DbWerte.KAELTE_ART_RAUM },
+        };
+        var cut = Render<BedarfsProfileDialog>(p => p
+            .Add(x => x.Art, BedarfsArt.Kaelte)
+            .Add(x => x.TitelText, "Kältebedarf")
+            .Add(x => x.Zeilen, zeilen)
+            .Add(x => x.Katalogzeilen, () => new List<Katalogfilterzeile>())
+            .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerBedarf(BedarfsArt.Kaelte, s => s))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Info, n => new BedarfsProfilInfo(n, "", "Typ 1"))
+            .Add(x => x.Jahressumme, _ => 1.0)
+            .Add(x => x.KaelteArten, new[] { (DbWerte.KAELTE_ART_RAUM, "Raum"), (DbWerte.KAELTE_ART_PROZESS, "Prozess") })
+            .Add(x => x.Betriebskalender, (IReadOnlyList<(int, string)>)new List<(int, string)> { (5, "Werkskalender") })
+            // Der Weg der Hülle: Mit Normtagen nennt der Kern die Nutzungstage des wirksamen Kalenders.
+            .Add(x => x.KaelteGrafik, (m, alle) => Rechnen(m, alle) is { } b && m.Normtage is int
+                                                  ? b with { Nutzungstage = 230 } : null)
+            .Add(x => x.Einheit, Energieeinheit.MWh));
+
+        IElement satz = Ueberlagerung(cut);
+        string vorgabe = string.Format(CultureInfo.CurrentCulture, Resource.KBP_HINW_NORMKALENDER_VORGABE, 230);
+        Assert.Equal(vorgabe, cut.Instance.HinweisNormkalender);
+        Assert.Contains("230", vorgabe);
+        Assert.Contains(vorgabe, string.Concat(cut.Nodes.Select(n => n.TextContent)));
+
+        string[] titel = cut.FindAll(".epos-kbp-kennzahlen .epos-kennzahlkachel-titel").Select(e => e.TextContent).ToArray();
+        string[] werte = cut.FindAll(".epos-kbp-kennzahlen .epos-kennzahlkachel-wert").Select(e => e.TextContent).ToArray();
+        Assert.Equal(5, titel.Length);
+        Assert.Equal(Resource.KBP_KZ_NUTZUNGSTAGE, titel[4]);
+        Assert.Equal(230.ToString("N0", CultureInfo.CurrentCulture) + " " + Resource.KBP_KZ_NUTZUNGSTAGE_EINHEIT, werte[4]);
+
+        // Mit gewähltem Kalender nennt die Zeile ihn, nicht mehr die Vorgabe.
+        zeilen[0].KalenderId = 5;
+        Assert.NotEqual(vorgabe, cut.Instance.HinweisNormkalender);
+        // Eine Zeile ohne Normtage: keine Herleitungszeile.
+        zeilen[0].KalenderId = null;
+        zeilen[0].Normtage = null;
+        Assert.Null(cut.Instance.HinweisNormkalender);
+    }
 }

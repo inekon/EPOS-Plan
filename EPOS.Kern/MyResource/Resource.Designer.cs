@@ -58256,6 +58256,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Normkalender (Vorgabe): {0} Nutzungstage, Feiertage und Betriebsferien wie Sonntag — mit „Aus Gebäude übernehmen“ oder einer Kalenderwahl ersetzbar. ähnelt.
+        /// </summary>
+        public static string KBP_HINW_NORMKALENDER_VORGABE {
+            get {
+                return ResourceManager.GetString("KBP_HINW_NORMKALENDER_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Typtage stehen zur Verfügung, sobald die Datenbank auf den Stand mit Typtagen gehoben ist. ähnelt.
         /// </summary>
         public static string KBP_HINW_TYPTAG_FOLGT {
@@ -58360,6 +58369,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KBP_KZ_GRUNDLAST {
             get {
                 return ResourceManager.GetString("KBP_KZ_GRUNDLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungstage ähnelt.
+        /// </summary>
+        public static string KBP_KZ_NUTZUNGSTAGE {
+            get {
+                return ResourceManager.GetString("KBP_KZ_NUTZUNGSTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die d/a ähnelt.
+        /// </summary>
+        public static string KBP_KZ_NUTZUNGSTAGE_EINHEIT {
+            get {
+                return ResourceManager.GetString("KBP_KZ_NUTZUNGSTAGE_EINHEIT", resourceCulture);
             }
         }
         
