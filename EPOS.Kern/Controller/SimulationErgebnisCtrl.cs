@@ -412,6 +412,14 @@ namespace WindowsFormsApplication1
             public double[] GedecktKanalMwh = new double[Kanal.ANZAHL];
 
             /// <summary>
+            /// Speicherverluste der Wärmepumpe [MWh/a]: was sie netto erzeugt, aber nicht deckt
+            /// (Verluste und Füllstand am Jahresende). Schließt die Herleitung
+            /// Produktion − Quellwärme + Heizstab − Speicherverluste = <see cref="GedecktMwh"/>.
+            /// </summary>
+            public double SpeicherverlusteMwh =>
+                WaermeproduktionMwh - QuellwaermeKaskadeMwh + HeizstabWaermeproduktionMwh - GedecktMwh;
+
+            /// <summary>
             /// Die Jahresarbeitszahl der Wärmepumpe allein [–] = <see cref="WaermeproduktionMwh"/> ÷
             /// <see cref="StromverbrauchMwh"/>; <c>null</c> ohne Strom (<see cref="Jahresarbeitszahl.Waermepumpe"/>).
             /// </summary>
@@ -676,6 +684,13 @@ namespace WindowsFormsApplication1
             public double[] GedecktKanalMwh = new double[Kanal.ANZAHL];
             public double RestwaermeMwh;
             public double WaermeproduktionMwh;
+
+            /// <summary>
+            /// Die Speicherverluste der Kessel [MWh/a]: der Teil ihrer eigenen Produktion, der in
+            /// Speichern verloren geht oder am Jahresende noch darin steht. Die Herleitung im Reiter:
+            /// Produktion − Speicherverluste = <see cref="GedecktMwh"/>.
+            /// </summary>
+            public double SpeicherverlusteMwh => WaermeproduktionMwh - GedecktMwh;
             public double StrombedarfMwh;
             public double ReststrombedarfMwh;
             public double GasMwh;

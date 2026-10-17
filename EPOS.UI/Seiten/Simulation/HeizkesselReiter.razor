@@ -73,18 +73,7 @@
                                    : Resource.SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG,
                                Zahl(Daten.StufeneingangMwh), MWH,
                                hinweis: Resource.SIMERG_TIP_RESTWAERMEBEDARF_STUFENEINGANG)
-                    @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_SPK, Zahl(Daten.WaermeproduktionMwh), MWH)
-
-                    @* ETAPPE D4: Die Quellwaerme der Kaskade. Ohne Quellbezug steht dort
-                       0,00 - die Zeile bleibt sichtbar, denn „der Kessel bezieht nichts
-                       aus einem Puffer" ist die Antwort auf genau diese Frage.
-
-                       Die Einheit ist MWh/a wie in jeder anderen Waermezeile dieser
-                       Liste (W11b‑B‑23); SIM_KESSEL_QUELLWAERME_EINHEIT („MWh") war
-                       die Einheit des WinForms-Feldes und stand als einzige Zeile
-                       der Ergebnisseite ohne Zeitbezug da. *@
-                    @Wertzeile(Resource.SIM_KESSEL_QUELLWAERME, Zahl(Daten.QuellwaermeMwh), MWH)
-                    @Wertzeile(Resource.SIMERG_LBL_GEDECKT, Zahl(Daten.GedecktMwh), MWH,
+                    @Wertzeile(Resource.SIMERG_LBL_NUTZWAERME_SPK, Zahl(Daten.GedecktMwh), MWH,
                                hinweis: Resource.SIMERG_TIP_GEDECKT)
                     @foreach (var (text, wert) in Kanalzeilen.Davon(Daten.GedecktKanalMwh))
                     {
@@ -95,6 +84,27 @@
                        den der Puffer aus der Ladung der anderen Erzeuger deckt. *@
                     @Wertzeile(Resource.SIMERG_LBL_RESTWAERMEBEDARF_NACH_KESSEL, Zahl(Daten.RestwaermeMwh), MWH, betont: true)
                     @Wertzeile(Resource.SIMERG_LBL_DAVON_PUFFER_ANDERE, Zahl(Daten.AusPufferAndereMwh), MWH)
+
+                    @* ETAPPE D4: Die Quellwaerme der Kaskade. Ohne Quellbezug steht dort
+                       0,00 - die Zeile bleibt sichtbar, denn „der Kessel bezieht nichts
+                       aus einem Puffer" ist die Antwort auf genau diese Frage. Sie ist durchgereicht
+                       und nicht in der Produktion des Kessels enthalten.
+
+                       Die Einheit ist MWh/a wie in jeder anderen Waermezeile dieser
+                       Liste (W11b‑B‑23); SIM_KESSEL_QUELLWAERME_EINHEIT („MWh") war
+                       die Einheit des WinForms-Feldes und stand als einzige Zeile
+                       der Ergebnisseite ohne Zeitbezug da. *@
+                    @Wertzeile(Resource.SIM_KESSEL_QUELLWAERME, Zahl(Daten.QuellwaermeMwh), MWH)
+
+                    @* Die Herleitung der Nutzwärme wie im Wärmepumpenreiter: Produktion
+                       − Speicherverluste = Nutzwärme. *@
+                    <div class="epos-simerg-zwischenkopf" role="heading" aria-level="4">@Resource.SIMERG_GRP_HERLEITUNG_NUTZWAERME</div>
+                    @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_SPK, Zahl(Daten.WaermeproduktionMwh), MWH,
+                               stufe: Zeilenstufe.Herleitung)
+                    @Wertzeile(Resource.SIMERG_LBL_ABZUEGLICH_SPEICHERVERLUSTE, Zahl(Daten.SpeicherverlusteMwh), MWH,
+                               hinweis: Resource.SIMERG_TIP_SPEICHERVERLUSTE_SPK, stufe: Zeilenstufe.Herleitung)
+                    @Wertzeile(Resource.SIMERG_LBL_NUTZWAERME_SPK, Zahl(Daten.GedecktMwh), MWH,
+                               hinweis: Resource.SIMERG_TIP_GEDECKT, stufe: Zeilenstufe.Ergebnis)
                 </dl>
             </section>
 
@@ -430,17 +440,12 @@
     /// Markup unveraendert.
     /// </summary>
     private RenderFragment Wertzeile(string text, string wert, string einheit,
-                                     bool betont = false, string? hinweis = null) => @<text>
-        <dt class="@Zeilenklasse(betont)" title="@hinweis">@text</dt>
-        <dd class="@Zeilenklasse(betont)">@wert</dd>
-        <dd class="@Einheitsklasse(betont)">@einheit</dd>
+                                     bool betont = false, string? hinweis = null,
+                                     Zeilenstufe stufe = Zeilenstufe.Normal) => @<text>
+        <dt class="@Zeilenstufen.Klasse(betont, stufe, beschriftung: true)" title="@hinweis">@text</dt>
+        <dd class="@Zeilenstufen.Klasse(betont, stufe)">@wert</dd>
+        <dd class="@Zeilenstufen.Einheitsklasse(betont, stufe)">@einheit</dd>
     </text>;
-
-    /// <summary><c>null</c> laesst Blazor das Attribut ganz weg — kein leeres class="".</summary>
-    private static string? Zeilenklasse(bool betont) => betont ? "epos-simerg-abschluss" : null;
-
-    private static string Einheitsklasse(bool betont) =>
-        betont ? "epos-simerg-einheit epos-simerg-abschluss" : "epos-simerg-einheit";
 
     // =====================================================================
     //  Der Hilfe-Assistent (Welle #458, Stufe 2): die Schalter der Anzeige

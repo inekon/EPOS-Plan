@@ -1519,7 +1519,7 @@ Projekt 1072 und `EPOS.Kern.Tests/SchnellaufheizungReferenzprojektWacheTests` di
 
 > **Nachtrag — Quellentnahme der Booster-Kette (17.10.2026), Basis R59 nachgeführt.** Die Entnahme einer Wärmepumpe oder
 > eines Kessels aus ihrem Quellpuffer steht nicht mehr als Entladung in die Heizung in der Kanalzeile des Speichers,
-> sondern in `SimulationPufferspeicher.Quellentnahme_gesamt` (Physik, Schichtebene und `Entladung_gesamt` unverändert).
+> sondern in `SimulationPufferspeicher.QuellentnahmeGesamtKwh` (Physik, Schichtebene und `Entladung_gesamt` unverändert).
 > Anwenderentscheid 17.10.2026: Die Basis wird nachgeführt statt neu eingefroren. Einzige Abweichung im Lauf aller
 > achtunddreißig Projekte: Projekt 1042 `Pufferspeicher[0].Entladung_Heizung` 14053.96 → 0 (die Quellwärme des
 > Boosters aus „Puffer 3000Ltr“); die neunzehn Projekte der CI-Auswahl bleiben PASS.
