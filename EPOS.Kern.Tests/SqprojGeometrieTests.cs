@@ -205,6 +205,55 @@ namespace EPOS.Kern.Tests
             Assert.Contains("R2:Decke0", Raum(a, "R2").Koerper.Quellflaechen);
         }
 
+        /// <summary>Raum R4 (x 20 … 24, y 0 … 5, Höhe 2,5 m) neben dem Geometriehaus, ohne eigene Hüllflächen.</summary>
+        private static SqprojProbenErzeuger MitRaumVier()
+            => SqprojProbenErzeuger.Geometriehaus()
+                .Raum("R4", "Raum Vier", "FE", null, 20.0, heizung: 1, hoehe: 2.5)
+                .Raumgeometrie("R4", SqprojProbenErzeuger.RaumXml(20.0, 0.0, 24.0, 5.0, 0.0, 2.5));
+
+        private static double FlaecheJeQuelle(Dateikoerper k, string quelle)
+            => Enumerable.Range(0, k.Dreiecke.Count).Where(t => k.Quellflaechen[t] == quelle).Sum(t =>
+            {
+                double[] a = k.PunkteM[k.Dreiecke[t][0]], b = k.PunkteM[k.Dreiecke[t][1]], c = k.PunkteM[k.Dreiecke[t][2]];
+                double[] n = Polygonnetz.Kreuz(Polygonnetz.Minus(b, a), Polygonnetz.Minus(c, a));
+                return Math.Sqrt(Polygonnetz.Punkt(n, n)) / 2.0;
+            });
+
+        [Fact]
+        public void Boden_mit_zwei_Quellflaechen_traegt_beide_Teilflaechen()
+        {
+            // Der Boden von R4 liegt teils auf B4A (x 20 … 23), teils auf B4B (x 23 … 24, über einem unbeheizten Raum).
+            GebaeudeAbbild a = Lesen(MitRaumVier()
+                .Flaeche("B4A", 11, 5, 15.0, 15.0, null, 0.0).Bezug("E20", "R4", "B4A", 8)
+                .Geometrie("B4A", SqprojProbenErzeuger.GeoXml(null, ("DIN18599_2011", SqprojProbenErzeuger.RechteckZ(0.0, 20.0, 23.0, 0.0, 5.0))))
+                .Flaeche("B4B", 4, 2, 5.0, 5.0, null, 0.0).Bezug("E21", "R4", "B4B", 8)
+                .Geometrie("B4B", SqprojProbenErzeuger.GeoXml(null, ("DIN18599_2011", SqprojProbenErzeuger.RechteckZ(0.0, 23.0, 24.0, 0.0, 5.0)))));
+            Dateikoerper k = Raum(a, "R4").Koerper;
+            Assert.NotNull(k);
+            Geschlossen(k);
+            Assert.Equal(50.0, Volumen(k), 6);
+            Assert.Equal(15.0, FlaecheJeQuelle(k, "B4A"), 6);
+            Assert.Equal(5.0, FlaecheJeQuelle(k, "B4B"), 6);
+            Assert.DoesNotContain(k.Quellflaechen, q => q.StartsWith("R4:Boden", StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void Wand_und_Decke_mit_Bezugsebene_hinter_der_Aufbaudicke_tragen_ihre_Mantel_und_Deckenflaeche()
+        {
+            // Die Südwand S4 hat einen Aufbau von 30 cm, die Bezugsebene liegt aber um die gezeichnete Dicke (40 cm) vor dem
+            // Raum; die Decke D4 liegt 45 cm über der Raumdecke bei 20 cm Dicke an der Fläche (Hohlraum darüber).
+            GebaeudeAbbild a = Lesen(MitRaumVier()
+                .Flaeche("S4", 1, 3, 10.0, 10.0, 180.0, 90.0, aufbau: "{AAAA0001-0000-0000-0000-000000000001}", u: 0.5).Bezug("E22", "R4", "S4", 1)
+                .Geometrie("S4", SqprojProbenErzeuger.GeoXml(null, ("DIN18599_2011", SqprojProbenErzeuger.RechteckY(-0.40, 20.0, 24.0, 0.0, 2.5))), 0.40)
+                .Flaeche("D4", 5, 3, 20.0, 20.0, null, 0.0).Bezug("E23", "R4", "D4", 9)
+                .Geometrie("D4", SqprojProbenErzeuger.GeoXml(null, ("DIN18599_2011", SqprojProbenErzeuger.RechteckZ(2.95, 20.0, 24.0, 0.0, 5.0))), 0.20));
+            Dateikoerper k = Raum(a, "R4").Koerper;
+            Geschlossen(k);
+            Assert.Equal(10.0, FlaecheJeQuelle(k, "S4"), 6);
+            Assert.Equal(20.0, FlaecheJeQuelle(k, "D4"), 6);
+            Assert.DoesNotContain(Koerpervermerk.Bezugsebene_angenommen, Bauteil(a, "S4").Koerper.Vermerke);
+        }
+
         [Fact]
         public void Wand_mit_zwei_Abschnitten_teilt_die_Mantelflaeche()
         {

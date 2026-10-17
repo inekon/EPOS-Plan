@@ -26,6 +26,18 @@ namespace WindowsFormsApplication1
     {
         /// <summary>Je Raumkennung die gelesenen Polygone (Außenring mit Höhen je Punkt, Löcher); fehlt der Eintrag, keines.</summary>
         internal Dictionary<string, IReadOnlyList<Raumpolygon>> Raumpolygone { get; } = new Dictionary<string, IReadOnlyList<Raumpolygon>>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Die Zahl der Raumpolygone, deren nach Quellflächen geteilter Boden oder Decke den Körper nicht schloss und die deshalb
+        /// mit einer Quellfläche je Boden und Decke gebildet sind (Diagnose).
+        /// </summary>
+        internal int DeckelteilungZurueckgenommen { get; set; }
+
+        /// <summary>Die Zahl der Räume, deren Körper erst mit der engen Zuordnung (Dicke plus 2 cm, ohne Teilung) schloss (Diagnose).</summary>
+        internal int ZuordnungEng { get; set; }
+
+        /// <summary>Die Zahl der Räume, deren Körper erst mit engem Mantel (Boden und Decke erweitert) schloss (Diagnose).</summary>
+        internal int MantelEng { get; set; }
     }
 
     /// <summary>
@@ -370,6 +382,11 @@ namespace WindowsFormsApplication1
             internal bool Vorgabe;
             /// <summary>Die Dicke an der Fläche (<c>Thickness</c>), wenn sie nicht schon <see cref="Dicke"/> ist; <c>null</c> = keine.</summary>
             internal double? Flaechendicke;
+            /// <summary>
+            /// Die größere der beiden Dicken (Aufbau und gezeichnete Dicke an der Fläche): Die Bezugsebene liegt oft um die
+            /// gezeichnete Dicke vor der Innenoberfläche, auch wenn der Aufbau dünner ist (Befund an der Projektdatei).
+            /// </summary>
+            internal double Reichweite => Math.Max(Dicke, Flaechendicke ?? 0.0);
             internal List<string> Raeume = new List<string>();
             internal bool Wand => Math.Abs(Normale[2]) <= SIN_WAAGERECHT;
             internal bool Oeffnung => Bauteil.Art == Bauteilart.Fenster || Bauteil.Art == Bauteilart.Tuer;
@@ -429,7 +446,19 @@ namespace WindowsFormsApplication1
                 abbild.Raumpolygone[r.Kennung] = polygone;
                 List<Flaeche> eigene = flaechen.Where(f => !f.Oeffnung && f.Raeume.Contains(r.Kennung, StringComparer.OrdinalIgnoreCase)).ToList();
                 List<Raumpolygon> zugeordnet = polygone.Select((pg, i) => Zuordnen(pg, r.Kennung, i, eigene)).ToList();
-                Koerperergebnis e = Raumkoerper(zugeordnet);
+                Koerperergebnis e = Raumkoerper(zugeordnet, out int zurueck);
+                abbild.DeckelteilungZurueckgenommen += zurueck;
+                // Schließt der Körper mit der erweiterten Zuordnung nicht, zuerst der Mantel eng (Dicke plus 2 cm), dann auch
+                // Boden und Decke eng mit einer Quellfläche je Polygon, wie vor der Verfeinerung.
+                foreach (bool deckelEng in new[] { false, true })
+                {
+                    if (e.Gebildet) break;
+                    Koerperergebnis eng = Raumkoerper(polygone.Select((pg, i) => Zuordnen(pg, r.Kennung, i, eigene, true, deckelEng)).ToList(), out _);
+                    if (!eng.Gebildet) continue;
+                    e = eng;
+                    if (deckelEng) abbild.ZuordnungEng++;
+                    else abbild.MantelEng++;
+                }
                 if (e.Gebildet)
                 {
                     r.Koerper = e.Koerper;
@@ -557,11 +586,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Das Polygon mit den Kennungen seiner Hüllflächen: jede Kante an den Grenzen der parallelen Wandflächen des Raums
-        /// geteilt (Abstand höchstens Dicke + 2 cm), jedes Teilstück mit der Fläche der größten Überdeckung in der Höhe;
-        /// Boden und Decke mit der Fläche der größten Überdeckung im Grundriss.
+        /// geteilt (Abstand höchstens <see cref="Flaeche.Reichweite"/> + <see cref="SUCHWEITE_M"/>), jedes Teilstück mit der
+        /// Fläche, die nah liegt (Reichweite + 2 cm), dann der größten Überdeckung in der Höhe, dann dem kleinsten Abstand; Boden
+        /// und Decke nach <see cref="Deckel"/>, geteilt an weiteren Quellflächen. Rückfälle, wenn der Körper sonst nicht schließt:
+        /// <paramref name="mantelEng"/> — Mantel nur mit Flächen bis Dicke + 2 cm; <paramref name="deckelEng"/> — Boden und Decke
+        /// ebenso, mit einer Quellfläche je Polygon.
         /// </summary>
-        private static Raumpolygon Zuordnen(Raumpolygon pg, string raum, int nummer, List<Flaeche> eigene)
+        private static Raumpolygon Zuordnen(Raumpolygon pg, string raum, int nummer, List<Flaeche> eigene, bool mantelEng = false, bool deckelEng = false)
         {
+            double Reichweite(Flaeche f) => mantelEng ? f.Dicke + ZUSCHLAG_ZUORDNUNG_M : f.Reichweite + SUCHWEITE_M;
             List<Flaeche> waende = eigene.Where(f => f.Wand).ToList();
             string praefix = raum + ":";
             Raumring Teilen(Raumring ring, int r)
@@ -587,19 +620,19 @@ namespace WindowsFormsApplication1
                     }
                     double[] u = { lx / laenge, ly / laenge, 0.0 }, w = { u[1], -u[0], 0.0 };
                     double unten = Math.Min(ring.Boden[k], ring.Boden[j]), oben = Math.Max(ring.Decke[k], ring.Decke[j]);
-                    var kandidaten = new List<(Flaeche F, double Von, double Bis, double Abstand, double Hoehe)>();
+                    var kandidaten = new List<(Flaeche F, double Von, double Bis, double Abstand, double Hoehe, bool Nah)>();
                     foreach (Flaeche f in waende)
                     {
                         if (Math.Abs(f.Normale[0] * w[0] + f.Normale[1] * w[1]) < COS_PARALLEL) continue;
                         double abstand = Math.Abs((f.Aussen[0][0] - a[0]) * f.Normale[0] + (f.Aussen[0][1] - a[1]) * f.Normale[1]);
-                        if (abstand > f.Dicke + ZUSCHLAG_ZUORDNUNG_M) continue;
+                        if (abstand > Reichweite(f)) continue;   // Mantel
                         double hoehe = Math.Min(oben, f.ZMax) - Math.Max(unten, f.ZMin);
                         if (hoehe <= Koerperbildner.TOLERANZ_M) continue;
                         double von = f.Aussen.Min(q => (q[0] - a[0]) * u[0] + (q[1] - a[1]) * u[1]);
                         double bis = f.Aussen.Max(q => (q[0] - a[0]) * u[0] + (q[1] - a[1]) * u[1]);
                         von = Math.Max(0.0, von);
                         bis = Math.Min(laenge, bis);
-                        if (bis - von > Koerperbildner.TOLERANZ_M) kandidaten.Add((f, von, bis, abstand, hoehe));
+                        if (bis - von > Koerperbildner.TOLERANZ_M) kandidaten.Add((f, von, bis, abstand, hoehe, abstand <= f.Reichweite + ZUSCHLAG_ZUORDNUNG_M));
                     }
                     var stellen = new List<double> { 0.0, laenge };
                     foreach (var c in kandidaten) { stellen.Add(c.Von); stellen.Add(c.Bis); }
@@ -621,7 +654,7 @@ namespace WindowsFormsApplication1
                             decke.Add(ring.Decke[k] + (ring.Decke[j] - ring.Decke[k]) * v);
                         }
                         var traeger = kandidaten.Where(c => c.Von <= t0 + Koerperbildner.TOLERANZ_M && c.Bis >= t1 - Koerperbildner.TOLERANZ_M)
-                                                .OrderByDescending(c => Math.Round(c.Hoehe, 3)).ThenBy(c => c.Abstand)
+                                                .OrderByDescending(c => c.Nah).ThenByDescending(c => Math.Round(c.Hoehe, 3)).ThenBy(c => c.Abstand)
                                                 .ThenBy(c => c.F.Bauteil.Kennung, StringComparer.Ordinal).FirstOrDefault();
                         kennungen.Add(traeger.F?.Bauteil.Kennung ?? (teile > 1 ? ersatz + "." + Z(s) : ersatz));
                     }
@@ -631,16 +664,30 @@ namespace WindowsFormsApplication1
 
             Raumring aussen = Teilen(pg.Aussen, 0);
             var loecher = pg.Loecher.Select((l, i) => Teilen(l, i + 1)).ToList();
-            string bodenK = Deckel(pg, eigene, true) ?? praefix + "Boden" + Z(nummer);
-            string deckeK = Deckel(pg, eigene, false) ?? praefix + "Decke" + Z(nummer);
-            return new Raumpolygon { Kennung = pg.Kennung, Aussen = aussen, Loecher = loecher, BodenKennung = bodenK, DeckenKennung = deckeK };
+            List<Grundrissteil> boden = Deckel(pg, eigene, true, deckelEng), decke = Deckel(pg, eigene, false, deckelEng);
+            if (deckelEng)
+            {
+                boden = boden.Take(1).ToList();
+                decke = decke.Take(1).ToList();
+            }
+            return new Raumpolygon
+            {
+                Kennung = pg.Kennung, Aussen = aussen, Loecher = loecher,
+                BodenKennung = boden.Count > 0 ? boden[0].Kennung : praefix + "Boden" + Z(nummer),
+                DeckenKennung = decke.Count > 0 ? decke[0].Kennung : praefix + "Decke" + Z(nummer),
+                Bodenteile = boden.Skip(1).ToList(),
+                Deckenteile = decke.Skip(1).ToList(),
+            };
         }
 
         /// <summary>
-        /// Die Hüllfläche von Boden bzw. Decke eines Polygons: nicht senkrecht, höchstens Dicke + 2 cm von der Boden- bzw.
-        /// Deckenhöhe, mit den meisten Stichpunkten des Polygons (Raster 10 × 10) in ihrem Grundriss; <c>null</c> = keine.
+        /// Die Hüllflächen von Boden bzw. Decke eines Polygons: nicht senkrecht, höchstens <see cref="Flaeche.Reichweite"/> plus
+        /// <see cref="SUCHWEITE_M"/> von der Boden- bzw. Deckenhöhe, mit mindestens einem Stichpunkt des Polygons (Raster 10 × 10)
+        /// in ihrem Grundriss. Vorn steht die Fläche, die den Rest trägt: zuerst nah (höchstens Reichweite plus 2 cm), dann die
+        /// meisten Stichpunkte, dann der kleinste Abstand; die übrigen folgen in derselben Ordnung mit ihrem Ring im Grundriss —
+        /// der Körperbildner teilt Boden bzw. Decke an ihnen (eine Quellfläche je Teil). Leer = keine.
         /// </summary>
-        private static string Deckel(Raumpolygon pg, List<Flaeche> eigene, bool boden)
+        private static List<Grundrissteil> Deckel(Raumpolygon pg, List<Flaeche> eigene, bool boden, bool eng = false)
         {
             List<double[]> ring = pg.Aussen.Punkte.ToList();
             double xmin = ring.Min(q => q[0]), xmax = ring.Max(q => q[0]), ymin = ring.Min(q => q[1]), ymax = ring.Max(q => q[1]);
@@ -651,37 +698,48 @@ namespace WindowsFormsApplication1
                     double[] q = { xmin + (xmax - xmin) * (i + 0.5) / 10.0, ymin + (ymax - ymin) * (j + 0.5) / 10.0 };
                     if (Innen2D(ring, q) && !pg.Loecher.Any(l => Innen2D(l.Punkte.ToList(), q))) stich.Add(q);
                 }
-            if (stich.Count == 0) return null;
+            if (stich.Count == 0) return new List<Grundrissteil>();
             double hoehe = boden ? pg.Aussen.Boden.Average() : pg.Aussen.Decke.Average();
-            string beste = null;
-            int besteZahl = 0;
-            double besterAbstand = double.MaxValue;
-            foreach (Flaeche f in eigene.Where(x => !x.Wand).OrderBy(x => x.Bauteil.Kennung, StringComparer.Ordinal))
+            var treffer = new List<(Flaeche F, bool Nah, int Zahl, double Abstand)>();
+            foreach (Flaeche f in eigene.Where(x => !x.Wand))
             {
                 if (Math.Abs(f.Normale[2]) < 1e-6) continue;
                 double abstand = stich.Select(q => Math.Abs(f.Aussen[0][2] - (f.Normale[0] * (q[0] - f.Aussen[0][0]) + f.Normale[1] * (q[1] - f.Aussen[0][1])) / f.Normale[2] - hoehe)).Min();
-                if (abstand > f.Dicke + ZUSCHLAG_ZUORDNUNG_M) continue;
+                if (abstand > (eng ? f.Dicke + ZUSCHLAG_ZUORDNUNG_M : f.Reichweite + SUCHWEITE_M)) continue;
                 int zahl = stich.Count(q => Innen2D(f.Aussen, q));
-                if (zahl > besteZahl || (zahl == besteZahl && zahl > 0 && abstand < besterAbstand - 1e-9))
-                {
-                    beste = f.Bauteil.Kennung;
-                    besteZahl = zahl;
-                    besterAbstand = abstand;
-                }
+                if (zahl > 0) treffer.Add((f, abstand <= f.Reichweite + ZUSCHLAG_ZUORDNUNG_M, zahl, abstand));
             }
-            return besteZahl > 0 ? beste : null;
+            return treffer.OrderByDescending(t => t.Nah).ThenByDescending(t => t.Zahl).ThenBy(t => Math.Round(t.Abstand, 9))
+                          .ThenBy(t => t.F.Bauteil.Kennung, StringComparer.Ordinal)
+                          .Select(t => new Grundrissteil { Kennung = t.F.Bauteil.Kennung, Ring = t.F.Aussen.Select(q => new[] { q[0], q[1] }).ToList() })
+                          .ToList();
         }
 
         /// <summary>
         /// Der Raumkörper aus allen Polygonen: jedes Polygon (samt Löchern) als eigener geschlossener Bestandteil — zwei
-        /// aneinanderstoßende Polygone teilten sonst eine Kante unter vier Dreiecken —, danach zu einem Körper vereint.
+        /// aneinanderstoßende Polygone teilten sonst eine Kante unter vier Dreiecken —, danach zu einem Körper vereint. Schließt
+        /// ein Polygon mit geteiltem Boden oder geteilter Decke nicht, gilt es ohne Teilung (<paramref name="zurueckgenommen"/>).
         /// </summary>
-        private static Koerperergebnis Raumkoerper(List<Raumpolygon> polygone)
+        private static Koerperergebnis Raumkoerper(List<Raumpolygon> polygone, out int zurueckgenommen)
         {
             var teile = new List<Dateikoerper>();
+            zurueckgenommen = 0;
             foreach (Raumpolygon pg in polygone)
             {
                 Koerperergebnis e = Koerperbildner.Raumprisma(new[] { pg });
+                if (!e.Gebildet && (pg.Bodenteile.Count > 0 || pg.Deckenteile.Count > 0))
+                {
+                    // Die Teilung schließt nicht (etwa an Kanten unter der Toleranz): eine Quellfläche je Boden und Decke.
+                    Koerperergebnis ohne = Koerperbildner.Raumprisma(new[]
+                    {
+                        new Raumpolygon { Kennung = pg.Kennung, Aussen = pg.Aussen, Loecher = pg.Loecher, BodenKennung = pg.BodenKennung, DeckenKennung = pg.DeckenKennung },
+                    });
+                    if (ohne.Gebildet)
+                    {
+                        e = ohne;
+                        zurueckgenommen++;
+                    }
+                }
                 if (!e.Gebildet) return e;
                 teile.Add(e.Koerper);
             }
