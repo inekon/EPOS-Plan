@@ -3920,6 +3920,26 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt BetriebskalenderFerienlisteSchema.SCHRITT (Anwenderentscheid 17.10.2026): Tab_Betriebskalenderferien
+            //      (leer, STRICT, Kaskade am Kalender) samt Index. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_BetriebskalenderFerienliste. Wiederholbar.
+            //
+            //      REFERENZLAUF UNVERAENDERT: Die Liste entsteht leer, kein Referenzprojekt traegt einen Betriebskalender.
+            string nrBkf = BetriebskalenderFerienlisteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrBkf + " - Ferienliste des Betriebskalenders: " +
+                              (BetriebskalenderFerienlisteSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtBkf = new List<string>();
+                int objekteBkf = BetriebskalenderFerienlisteSchema.Ausfuehren(berichtBkf);
+                if (objekteBkf > 1) tabellen++;
+                foreach (string zeile in berichtBkf)
+                    Console.WriteLine("Schritt " + nrBkf + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrBkf + " - vollstaendig: " + BetriebskalenderFerienlisteSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

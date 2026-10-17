@@ -43067,7 +43067,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Der Ferienfaktor liegt zwischen 0 und 100 %.</value>
   </data>
   <data name="BKAL_MSG_FERIEN_ANZAHL" xml:space="preserve">
-    <value>Ein Betriebskalender führt höchstens vier Ferienzeiträume.</value>
+    <value>In den vier Feldern stehen höchstens vier Ferienzeiträume; weitere gehören in die Liste „Weitere Betriebsferien“.</value>
   </data>
   <data name="BKAL_MSG_FERIEN_DATUM" xml:space="preserve">
     <value>Ein Ferienzeitraum braucht Beginn und Ende als gültiges Datum (ohne 29. Februar).</value>
@@ -58180,5 +58180,41 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="KI_DLG_KMA_RKW_ERL" xml:space="preserve">
     <value>Katalogsatz des Rückkühlwerks der wassergekühlten Kältemaschine (Id); leer = keins, dann gelten die Festwerte der Rückkühlart. Mit OK bekommt die Anlage eine eigene Projektkopie.</value>
+  </data>
+  <data name="BKAL_MSG_FERIEN_UEBERSCHNEIDUNG" xml:space="preserve">
+    <value>Die Betriebsferien {0} und {1} überschneiden sich (gezählt werden die vier Felder, dann die Liste „Weitere Betriebsferien“).</value>
+  </data>
+  <data name="BKAL_MSG_FERIEN_NAME_LANG" xml:space="preserve">
+    <value>Der Name eines Ferienzeitraums hat höchstens 100 Zeichen.</value>
+  </data>
+  <data name="BKAL_LBL_FERIENLISTE" xml:space="preserve">
+    <value>Weitere Betriebsferien</value>
+  </data>
+  <data name="BKAL_LBL_LISTE_NAME" xml:space="preserve">
+    <value>Weitere Ferien {0} Name</value>
+  </data>
+  <data name="BKAL_LBL_LISTE_VON" xml:space="preserve">
+    <value>Weitere Ferien {0} von</value>
+  </data>
+  <data name="BKAL_LBL_LISTE_BIS" xml:space="preserve">
+    <value>Weitere Ferien {0} bis</value>
+  </data>
+  <data name="BKAL_BTN_ZEILE_HINZU" xml:space="preserve">
+    <value>Zeile hinzufügen</value>
+  </data>
+  <data name="BKAL_BTN_ZEILE_ENTFERNEN" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="BKAL_LISTE_LEER" xml:space="preserve">
+    <value>Keine weiteren Betriebsferien.</value>
+  </data>
+  <data name="BKAL_HRL_FERIENLISTE" xml:space="preserve">
+    <value>Die vier Felder und die Liste „Weitere Betriebsferien“ wirken gemeinsam; kein Ferientag darf in zwei Zeiträumen liegen.</value>
+  </data>
+  <data name="BKAL_MSG_UEBERNOMMEN_LISTE" xml:space="preserve">
+    <value>Feiertagsland und Ferien von „{0}“ übernommen: {1} Ferienzeiträume, die ersten vier in den Feldern, {2} in der Liste „Weitere Betriebsferien“; gespeichert wird mit „Speichern“ oder OK.</value>
+  </data>
+  <data name="KI_DLG_BKAL_FERIENLISTE_ERL" xml:space="preserve">
+    <value>Eine Zeile der Liste „Weitere Betriebsferien“: Name (wahlfrei), Beginn und Ende als Tag im Jahr (1 bis 365, ohne 29. Februar); Beginn nach Ende = über den Jahreswechsel. Zeilen fügt der Anwender mit „Zeile hinzufügen“ an.</value>
   </data>
 </root>

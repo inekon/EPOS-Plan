@@ -16489,6 +16489,22 @@ Dieselben Regeln wie beim Projektkopf. */
     min-width: 0;
 }
 
+/* Die Liste "Weitere Betriebsferien" des Betriebskalenders: dieselbe Zeilenform wie die Zonenferien. */
+.epos-kalender-ferienliste {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.epos-kalender-ferienzeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 6px;
+    min-width: 0;
+}
+
 /* Die Tage des Jahresrasters zum Ansehen (Baustein Jahresraster): dasselbe Mass wie die Tage des
    Jahresrasters im Gebaeudedialog, aber ohne Zeiger - sie sind keine Knoepfe. */
 .epos-jahresraster-tag {

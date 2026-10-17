@@ -5664,6 +5664,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_ERGEBNIS_WIRTSCHAFTLICHKEIT_SPALTEN = ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="BetriebskalenderFerienlisteSchema.SCHRITT"/> — <b>Ferienliste des Betriebskalenders</b>
+        ///: <c>Tab_Betriebskalenderferien</c>, beliebig viele weitere Betriebsferien je
+        /// Kalender neben den vier Spaltenpaaren. Schritt 241, hängt über + 1 an 240.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> Die Tabelle entsteht leer.</para>
+        /// </summary>
+        public const int SCHRITT_BETRIEBSKALENDER_FERIENLISTE = BetriebskalenderFerienlisteSchema.SCHRITT;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -8370,6 +8379,12 @@ namespace WindowsFormsApplication1
                         "der Schritt an, jede nur, wenn sie fehlt. KEIN Rechenergebnis aendert sich - kein DML, " +
                         "Bestandszeilen bleiben NULL.",
                         Schritt_ErgebnisWirtschaftlichkeitSpalten),
+            // Ferienliste des Betriebskalenders. Quelle ist BetriebskalenderFerienlisteSchema, die Nummer steht allein dort.
+            new Schritt(SCHRITT_BETRIEBSKALENDER_FERIENLISTE,
+                        "Tab_Betriebskalenderferien (neu): weitere Betriebsferien je Betriebskalender",
+                        "Ein Betriebskalender nahm nur vier Ferienzeitraeume auf, das Gebaeude fuehrt beliebig viele. " +
+                        "KEIN Rechenergebnis aendert sich - die Tabelle entsteht leer.",
+                        Schritt_BetriebskalenderFerienliste),
         };
 
         /// <summary>
@@ -16958,6 +16973,60 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Ergebnisspalten der Wirtschaftlichkeit - " +
                     (angelegt == 0 ? "standen bereits." : angelegt + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Ferienliste des Betriebskalenders" (Schritt <see cref="BetriebskalenderFerienlisteSchema.SCHRITT"/>) —
+        /// die Anweisungen bei <see cref="BetriebskalenderFerienlisteSchema"/>. <b>Wiederholbar, ergebnisneutral.</b>
+        /// </summary>
+        private static bool Schritt_BetriebskalenderFerienliste(Lauf l)
+        {
+            string nr = BetriebskalenderFerienlisteSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in BetriebskalenderFerienlisteSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int angelegt;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    angelegt = BetriebskalenderFerienlisteSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!BetriebskalenderFerienlisteSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Tab_Betriebskalenderferien oder ihr Index fehlt nach dem Schritt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Ferienliste des Betriebskalenders - " +
+                    (angelegt == 0 ? "stand bereits." : angelegt + " Objekt(e) angelegt.") +
                     " KEIN Rechenergebnis aendert sich.");
             return true;
         }

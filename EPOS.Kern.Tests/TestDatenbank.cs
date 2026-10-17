@@ -1106,6 +1106,9 @@ namespace EPOS.Kern.Tests
                 // Schritt ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT (KB-8): die vier Ergebnisspalten der
                 // Wirtschaftlichkeit, nur wenn sie fehlen. Wiederholbar, ergebnisneutral.
                 ErgebnisWirtschaftlichkeitSpaltenSchema.Ausfuehren(null);
+                // Schritt BetriebskalenderFerienlisteSchema.SCHRITT (Anwenderentscheid 17.10.2026): Tab_Betriebskalenderferien,
+                // leer, reines DDL. Wiederholbar, ergebnisneutral.
+                BetriebskalenderFerienlisteSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
