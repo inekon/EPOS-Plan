@@ -103,6 +103,11 @@ namespace EPOS.Kern.Tests
                 int kreuzungen = paare.Count;
                 _aus.WriteLine("Kreuzungen " + projekt + " " + name + ": " + kreuzungen + (kreuzungen > 0 ? " (" + string.Join("; ", paare.Select(p => p.A + " x " + p.B)) + ")" : "")
                                + (verbinder.Count > 0 ? " · Verbinder " + string.Join(", ", verbinder) : ""));
+                List<string> ueber = EnergieflussUeberdeckungTests.Ueberdeckungen(z, d);
+                _aus.WriteLine("Ueberdeckungen " + projekt + " " + name + ": " + ueber.Count + (ueber.Count > 0 ? " (" + string.Join("; ", ueber) + ")" : ""));
+                // In den Stufen überdeckt kein Stummel, kein Verlust und keine Beschriftung ein Band; die Kette ist dichter und
+                // wird nur ausgewiesen.
+                if (darstellung == EnergieflussDarstellung.Stufen) Assert.True(ueber.Count == 0, projekt + " " + name + ": " + string.Join("; ", ueber));
                 if (name == "breit") breit = kreuzungen;
                 if (name == "stufen") stufen = kreuzungen;
             }
