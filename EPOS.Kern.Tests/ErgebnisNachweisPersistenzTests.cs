@@ -224,10 +224,9 @@ namespace EPOS.Kern.Tests
         /// unverändert: Ergebniszeilen vollständig, keine Nachweise, <b>kein</b> Hinweis
         /// — das ist der alte Stand und keine Störung.
         ///
-        /// <para>Die Datei OHNE die Spalte durchläuft denselben Weg: <c>LadeErgebnisse</c>
-        /// ruft zuerst <c>StelleTabellenSicher</c>, die Spalte entsteht leer, und die
-        /// Zeile liest NULL. Der Fall wird deshalb hier mitgeprüft, indem die Spalte
-        /// tatsächlich entfernt wird.</para>
+        /// <para>Eine Datei OHNE die Spalte gibt es nach der Migration nicht: Der
+        /// Schemaschritt <see cref="ErgebnisWirtschaftlichkeitSpaltenSchema"/> legt sie leer
+        /// an, und die Zeile liest NULL. Geprüft wird deshalb die geleerte Spalte.</para>
         /// </summary>
         [Fact]
         public void Ein_Lauf_ohne_Umschlag_laedt_unveraendert()
@@ -238,19 +237,10 @@ namespace EPOS.Kern.Tests
             Rechne();
             int zeilenVorher = Zeilenzahl();
 
-            // Die Spalte wirklich entfernen — so sieht eine nie migrierte Datei aus.
-            try
-            {
-                DataRepository.ExecuteSQL(
-                    "ALTER TABLE " + WirtschaftlichkeitCtrl.TAB_ERGEBNIS +
-                    " DROP COLUMN [" + WirtschaftlichkeitCtrl.SPALTE_NACHWEIS_JSON + "]");
-            }
-            catch
-            {
-                DataRepository.ExecuteSQL(
-                    "UPDATE " + WirtschaftlichkeitCtrl.TAB_ERGEBNIS +
-                    " SET [" + WirtschaftlichkeitCtrl.SPALTE_NACHWEIS_JSON + "] = NULL");
-            }
+            // Die Spalte leeren — so sieht ein vor B7P gespeicherter Lauf aus.
+            DataRepository.ExecuteSQL(
+                "UPDATE " + WirtschaftlichkeitCtrl.TAB_ERGEBNIS +
+                " SET [" + WirtschaftlichkeitCtrl.SPALTE_NACHWEIS_JSON + "] = NULL");
 
             List<WirtschaftlichkeitErgebnis> alle =
                 new WirtschaftlichkeitCtrl().LadeErgebnisse(new List<int> { PROJEKT });

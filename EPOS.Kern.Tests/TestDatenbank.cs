@@ -1099,6 +1099,10 @@ namespace EPOS.Kern.Tests
                 // Schritt KlimaRohwerteSchema.SCHRITT (KD-4): Tab_Klimastunde_STAMM (leer) und die Herkunftsspalten der
                 // Klimaregion. Wiederholbar, ergebnisneutral.
                 KlimaRohwerteSchema.Ausfuehren(null);
+                // Schritt ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT (KB-8): die vier Ergebnisspalten der
+                // Wirtschaftlichkeit, nur wenn sie fehlen. Wiederholbar, ergebnisneutral.
+                // KETTE (KB-8): vorlaeufig ausserhalb des Zielstands; nach dem Umhaengen hinter Schritt 239.
+                ErgebnisWirtschaftlichkeitSpaltenSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
