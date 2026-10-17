@@ -1,7 +1,7 @@
 <!-- EPOS-Plan Grundlagenseite | Wikititel: Grundlagen/Brauchwasser-Zapfprofile
      Repo-Quelle dieser Seite: Projekte/Wiki/Grundlagen - Brauchwasser-Zapfprofile.wiki
      Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
-Ein '''Zapfprofil''' beschreibt, wann und wie viel warmes Trinkwasser in einem Gebäude gezapft wird – Stunde für Stunde über das Jahr. Der Zapfprofilgenerator von EPOS-Plan bildet es aus '''Nutzungszonen''' nach dem Ansatz der VDI 6002: Je Zone bestimmen Nutzungsart, Bezugsgröße und Bedarfsniveau die Tagesmenge, ein Tagesgang verteilt sie auf die Stunden, Wochen- und Monatsfaktoren auf das Jahr.
+Ein '''Zapfprofil''' beschreibt, wann und wie viel warmes Trinkwasser in einem Gebäude gezapft wird – Stunde für Stunde über das Jahr. Der Zapfprofilgenerator von EPOS-Plan bildet es aus '''Nutzungsbereichen''' nach dem Ansatz der VDI 6002: Je Bereich bestimmen Nutzungsart, Bezugsgröße und Bedarfsniveau die Tagesmenge, ein Tagesgang verteilt sie auf die Stunden, Wochen- und Monatsfaktoren auf das Jahr.
 
 == Worum es geht ==
 {{Anker|worum-es-geht}}
@@ -10,12 +10,12 @@ Der Warmwasserbedarf bestimmt den Sommerbetrieb der Wärmeerzeuger allein und en
 
 Die Energie einer Zapfung folgt aus Volumen und Temperaturhub: <math>Q = V \cdot \rho \cdot c_{\mathrm{p}} \cdot (\vartheta_{\mathrm{Zapf}} - \vartheta_{\mathrm{KW}})</math>. Weil das Kaltwasser im Sommer wärmer ist als im Winter, ändert sich die Energie bei gleichem Volumen über das Jahr; EPOS-Plan führt dafür einen Jahresgang des Kaltwassers mit Jahresmittel und Amplitude.
 
-[[Datei:Zapfprofil_Tagesgang.svg|mini|zentriert|800px|Prinzipbild: Tagesgang einer Wohnzone mit Morgen- und Abendspitze, Werktag und Sonntag; Feiertage tragen den Sonntagsgang.]]
+[[Datei:Zapfprofil_Tagesgang.svg|mini|zentriert|800px|Prinzipbild: Tagesgang einer Wohnbereich mit Morgen- und Abendspitze, Werktag und Sonntag; Feiertage tragen den Sonntagsgang.]]
 
 == So rechnet EPOS-Plan ==
 {{Anker|so-rechnet-epos-plan}}
 
-* {{Anker|zonen}}'''Nutzungszonen.''' Jede Zone trägt eine Nutzungsart aus dem Katalog (etwa Wohnen, Büro, Hotel) und eine Bezugsgröße in deren Einheit – Personen, Wohneinheiten, Zimmer, Betten, Beschäftigte oder Fläche. Das Bedarfsniveau ''niedrig'', ''mittel'' oder ''hoch'' wählt den spezifischen Bedarf.
+* {{Anker|zonen}}'''Nutzungsbereiche.''' Jeder Bereich trägt eine Nutzungsart aus dem Katalog (etwa Wohnen, Büro, Hotel) und eine Bezugsgröße in deren Einheit – Personen, Wohneinheiten, Zimmer, Betten, Beschäftigte oder Fläche. Das Bedarfsniveau ''niedrig'', ''mittel'' oder ''hoch'' wählt den spezifischen Bedarf.
 * {{Anker|deterministisch}}'''Deterministischer Weg.''' Die Stundenreihe entsteht aus Tagesgang, Wochenanteilen und zwölf Monatsfaktoren. Derselbe Eingabestand ergibt immer dieselbe Reihe.
 * {{Anker|stochastisch}}'''Stochastischer Weg.''' Für jede Nutzungseinheit werden einzelne Zapfereignisse gezogen – Kurzzapfung, Spüle, Dusche, Bad mit Volumenstrom, Dauer und Streuung – und nach dem Tagesgang verteilt. Die Gleichzeitigkeit vieler Einheiten entsteht dabei von selbst. Der '''Seed''' ist die Startzahl der Ziehung: Derselbe Seed liefert auf jedem Rechner dieselbe Reihe. Die '''Realisierungen''' sind die Zahl der gezogenen Jahre für die Konsistenzprobe; die Jahresenergie ist auf den deterministischen Weg abgeglichen.
 * {{Anker|kalender}}'''Kalender.''' Der Samstag trägt den Samstagsgang, Sonntage und Feiertage tragen den Sonntagsgang. Feiertage gelten bundeseinheitlich, mit dem Feiertagsland des Gebäudes kommen dessen Landesfeiertage hinzu. Wie Wochentage und bewegliche Feiertage im Jahr liegen, beschreibt [[Grundlagen/Gemeinjahr und Feiertage|Gemeinjahr und Feiertage]]. Ferienzeiträume senken den Bedarf.
@@ -27,7 +27,7 @@ Die Energie einer Zapfung folgt aus Volumen und Temperaturhub: <math>Q = V \cdot
 {| class="wikitable"
 ! Eingabe !! Wirkung
 |-
-| Nutzungsart, Bezugsgröße, Bedarfsniveau || Tagesmenge der Zone
+| Nutzungsart, Bezugsgröße, Bedarfsniveau || Tagesmenge des Bereichs
 |-
 | Tagesgang, Wochenanteile, Auslastungsgang || Lage der Spitzen im Tag, Unterschied Werktag – Wochenende, Saison
 |-
@@ -35,7 +35,7 @@ Die Energie einer Zapfung folgt aus Volumen und Temperaturhub: <math>Q = V \cdot
 |-
 | Rechenweg, Seed, Realisierungen || deterministische oder stochastische Jahresreihe, Wiederholbarkeit
 |-
-| Jahresmesswert || skaliert die Zone auf einen gemessenen Verbrauch
+| Jahresmesswert || skaliert den Bereich auf einen gemessenen Verbrauch
 |-
 | Zirkulation || eigener, nahezu gleichmäßiger Verlustposten
 |}
@@ -51,7 +51,7 @@ Die Energie einer Zapfung folgt aus Volumen und Temperaturhub: <math>Q = V \cdot
 == Weiterführend ==
 {{Anker|weiterfuehrend}}
 
-* [[Programm Dokumentation/Brauchwasser-Zapfprofil]] – Zonen, Stufen, Stochastik, Auslegung und Kalibrierung im Dialog
+* [[Programm Dokumentation/Brauchwasser-Zapfprofil]] – Bereiche, Stufen, Stochastik, Auslegung und Kalibrierung im Dialog
 * [[Programm Dokumentation/Betriebskalender]] – Feiertage und Ferien auf Wochenprofilen
 * [[Grundlagen/Wärmebedarfsrechnung#warmwasser-prozesswaerme-und-netzverluste|Wärmebedarfsrechnung: Warmwasser]] – Warmwasser im Wärmebedarf
 * [[Grundlagen/Pufferspeicher]] – Speicher und Bereitschaftsverluste

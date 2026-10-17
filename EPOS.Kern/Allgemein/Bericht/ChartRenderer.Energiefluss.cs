@@ -70,6 +70,18 @@ namespace WindowsFormsApplication1
         /// </summary>
         private const float EF_STUMMEL_VORRANG = 28f;
 
+        /// <summary>So weit [px] fächert ein Verbinderstummel zu seiner Beschriftung auf: am Bus nach unten, am Gerät nach oben.</summary>
+        private const float EF_STUMMEL_FAECHER = 6f;
+
+        /// <summary>Mehr [px] dürfen sich ein Stummel oder Verlust und ein Band, eine Beschriftung und ein Band nicht überdecken.</summary>
+        private const float EF_UEBERDECKUNG_RAND = 0.25f;
+
+        /// <summary>Weiter [px] weicht die Senkung eines Verlustabzweigs nicht von ihrer Vorgabe ab.</summary>
+        private const float EF_VERLUST_SENKUNG_MAX = 40f;
+
+        /// <summary>Was es kostet [px Fächerung], einen Stummel oder Verlust um eine Stelle gegen die Regel zu verschieben.</summary>
+        private const float EF_STELLENKOSTEN = 4f;
+
         /// <summary>Die Berichtsfassung [px] — Faktor 2 auf 620 × 245 pt.</summary>
         public static readonly Bildmass ENERGIEFLUSS_BERICHT = new Bildmass(1240, 490);
 
@@ -163,6 +175,8 @@ namespace WindowsFormsApplication1
             public int Index;
             public EfKnoten Von;
             public float D, Y0, X1, Y1;
+            /// <summary>Wie tief der Abzweig über seine Länge sinkt [px]; NaN = die Vorgabe max(4 px; 0,35 · Dicke).</summary>
+            public float S = float.NaN;
         }
 
         private readonly struct EfZeile
@@ -489,6 +503,15 @@ namespace WindowsFormsApplication1
                 float Ease(float t) => 3f * t * t - 2f * t * t * t;
                 float Senkung(EfVerlust v) => Math.Max(4f, v.D * 0.35f);
                 float VerlustZiel(EfKnoten k, EfVerlust v) => k.Y + k.H + Math.Max(12f, Senkung(v) / Math.Max(0.02f, Ease(verlustLaenge / Math.Max(1f, gap))));
+                // Am Fuß des Bildes sinkt ein Verlust in den Rand über der Legende, nicht in sie hinein.
+                string VerlustText(EfVerlust v)
+                    => (string.IsNullOrEmpty(v.Knoten.Name) ? v.Knoten.Kennung : v.Knoten.Name) + (knotenwerte ? " " + EfZahl(v.Daten.Mwh) : "");
+                float VerlustEnde(EfVerlust v) => Math.Min(v.Y0 + (float.IsNaN(v.S) ? Senkung(v) : v.S), H - EF_LEGENDE_HOEHE - 2f - v.D);
+                // Ein Verbinderstummel ist höchstens EF_STUMMEL_MAX lang und fächert um EF_STUMMEL_FAECHER zu seiner Beschriftung
+                // auf — am Bus nach unten, am Gerät nach oben —, soweit kein Band im Weg liegt.
+                float stummel = Math.Min(EF_STUMMEL_MAX, gap * 0.3f);
+                // Beschriftungen weichen in Schritten einer Zeile aus.
+                float schritt = lf.Hoehe + 2f;
                 // Ausgehend nach der Lage des Ziels; ein Verlustabzweig nach seinem Ziel unter dem Fuß des Knotens und liegt so
                 // über den Bändern, die weiter nach unten gehen (sonst kreuzte er sie). Die Verbinderstummel laufen fast
                 // waagerecht nach rechts: Sie stehen vor dem ersten Band, das in der Länge eines Stummels tiefer sinkt, als
@@ -514,6 +537,238 @@ namespace WindowsFormsApplication1
                     y = k.Y;
                     foreach (EfSegment s in k.EinS.OrderBy(s => s.Von.Mitte).ThenBy(s => s.Band.Index)) { s.Y1 = y; y += s.D; }
                 }
+
+                // Die Regel oben schätzt die Lage nach dem Ziel; ob ein Stummel oder ein Verlustabzweig dabei ein Band seines
+                // Knotens überdeckt, zeigt erst die gesetzte Lage — ein dicker Stummel schiebt die Bänder unter ihm so weit nach
+                // unten, dass sie zu ihrem Ziel steigen und ihn kreuzen. Deshalb wird an jedem Knoten mit Stummel oder Verlust
+                // die gesetzte Lage geprüft: Überdeckt etwas, rücken Stummel und Verluste an die nächste Stelle zwischen den
+                // Bändern, an der nichts überdeckt — gezählt über die Fläche, nicht über die Mittellinie.
+                (float O, float U)? SegBei(EfSegment s, float x)
+                {
+                    float xa = s.Von.X + s.Von.W, xb = s.Nach.X;
+                    if (x < xa || x > xb || xb - xa < 0.001f) return null;
+                    float o = s.Y0 + (s.Y1 - s.Y0) * Ease((x - xa) / (xb - xa));
+                    return (o, o + s.D);
+                }
+                (float O, float U)? VerlBei(EfVerlust v, float x)
+                {
+                    float xa = v.Von.X + v.Von.W;
+                    if (x < xa || x > xa + verlustLaenge) return null;
+                    float o = v.Y0 + (VerlustEnde(v) - v.Y0) * Ease((x - xa) / verlustLaenge);
+                    return (o, o + v.D);
+                }
+                // Der Stummel am Bus mit der Mitte ya seines Endes und der Pfeilspitze; der Stummel am Gerät mit der Mitte ye
+                // seines Anfangs und dem offenen Kreis davor.
+                (float O, float U)? AusBei(EfSegment s, float ya, float x)
+                {
+                    float xa = s.Von.X + s.Von.W, xs = xa + stummel;
+                    if (x >= xa && x <= xs)
+                    {
+                        float e = Ease((x - xa) / stummel);
+                        float o = s.Y0 + (ya - s.D / 2f - s.Y0) * e;
+                        return (o, o + s.D);
+                    }
+                    if (x > xs && x <= xs + 8f) { float h = 5f * (1f - (x - xs) / 8f); return (ya - h, ya + h); }
+                    return null;
+                }
+                (float O, float U)? EinBei(EfSegment s, float ye, float x)
+                {
+                    float xb = s.Nach.X, xs = xb - stummel;
+                    if (x >= xs && x <= xb)
+                    {
+                        float o0 = ye - s.D / 2f;
+                        float o = o0 + (s.Y1 - o0) * Ease((x - xs) / stummel);
+                        return (o, o + s.D);
+                    }
+                    if (x >= xs - 10f && x < xs) return (ye - 5f, ye + 5f);
+                    return null;
+                }
+                float AusX0(EfSegment s) => s.Von.X + s.Von.W;
+                float EinX0(EfSegment s) => s.Nach.X - stummel - 10f;
+                // Die größte Überdeckung [px] zweier Flächen im Bereich x0 … x1, abgetastet je Bildpunkt.
+                float Ueberdeckung(float x0, float x1, Func<float, (float O, float U)?> a, Func<float, (float O, float U)?> b)
+                {
+                    float max = 0f;
+                    for (float x = x0 + 0.5f; x <= x1 - 0.5f; x += 1f)
+                    {
+                        var ia = a(x);
+                        if (ia == null) continue;
+                        var ib = b(x);
+                        if (ib == null) continue;
+                        max = Math.Max(max, Math.Min(ia.Value.U, ib.Value.U) - Math.Max(ia.Value.O, ib.Value.O));
+                    }
+                    return max;
+                }
+                // Die Fächerungen eines Stummels, nach Abstand von der Vorgabe (zuerst in ihre Richtung).
+                IEnumerable<float> Faecherungen(float vorgabe, float weite)
+                {
+                    yield return vorgabe;
+                    float r = Math.Sign(vorgabe);
+                    for (float o = 1f; o <= weite; o += 1f) { yield return vorgabe + r * o; yield return vorgabe - r * o; }
+                }
+                // Die Zeile eines Stummels: „→ Gerät“ rechts der Pfeilspitze am Bus, die Kurzform des Busses links des Kreises am
+                // Gerät, mittig auf dem Ende des Stummels.
+                (string Text, float X, float W) StummelText(EfSegment st, bool amBus)
+                {
+                    string wert = knotenwerte ? " " + EfZahl(st.Band.Daten.Mwh) : "";
+                    string t = amBus ? "→ " + KnotenName(st.Band.Nach, schmal) + wert : KnotenName(st.Band.Von, true) + wert;
+                    float w = xf.MeasureText(t);
+                    return (t, amBus ? AusX0(st) + stummel + 11f : st.Nach.X - stummel - 12f - w, w + 4f);
+                }
+                float StummelX1(EfSegment st, bool amBus) => amBus ? AusX0(st) + stummel + 8f : st.Nach.X;
+                Func<float, (float O, float U)?> StummelForm(EfSegment st, bool amBus, float mitte)
+                    => amBus ? (x => AusBei(st, mitte, x)) : (x => EinBei(st, mitte, x));
+                // Die größte Überdeckung einer Fläche (im Bereich x0 … x1) oder eines Rahmens mit den Bändern, Verlusten und
+                // gesetzten Flächen.
+                float UeberAlle(float x0, float x1, Func<float, (float O, float U)?> form, List<EfSegment> baenderListe, List<EfVerlust> verl,
+                                List<(float X0, float X1, Func<float, (float O, float U)?> Bei)> gesetzt)
+                {
+                    float u = 0f;
+                    foreach (EfSegment n in baenderListe)
+                        u = Math.Max(u, Ueberdeckung(Math.Max(x0, n.Von.X + n.Von.W), Math.Min(x1, n.Nach.X), form, x => SegBei(n, x)));
+                    foreach (EfVerlust v in verl)
+                        u = Math.Max(u, Ueberdeckung(Math.Max(x0, v.Von.X + v.Von.W), Math.Min(x1, v.Von.X + v.Von.W + verlustLaenge), form, x => VerlBei(v, x)));
+                    foreach (var g in gesetzt) u = Math.Max(u, Ueberdeckung(Math.Max(x0, g.X0), Math.Min(x1, g.X1), form, g.Bei));
+                    return u;
+                }
+                // Die kleinste Abweichung der Fächerung, bei der weder der Stummel noch seine Zeile ein Band, einen Verlust oder
+                // einen schon gesetzten Stummel überdeckt und die Zeile mindestens eine Zeile unter der des Stummels darüber
+                // steht; sonst die kleinste Überdeckung. Dieselbe Suche trifft später die Beschriftung (StummelPlatz), dort auch
+                // gegen Knoten und andere Beschriftungen.
+                (float Ueber, float Abweichung, float Mitte) StummelPruefen(EfSegment st, bool amBus, List<EfSegment> nachbarn, List<EfVerlust> verl,
+                                                                            List<(float X0, float X1, Func<float, (float O, float U)?> Bei)> gesetzt, float untergrenze)
+                {
+                    float vorgabe = amBus ? EF_STUMMEL_FAECHER : -EF_STUMMEL_FAECHER;
+                    float basis = (amBus ? st.Y0 : st.Y1) + st.D / 2f;
+                    float x0 = amBus ? AusX0(st) : EinX0(st), x1 = StummelX1(st, amBus);
+                    var (_, tx, tw) = StummelText(st, amBus);
+                    float rest = float.MaxValue, besteMitte = basis + vorgabe;
+                    foreach (float f in Faecherungen(vorgabe, 3f * schritt))
+                    {
+                        float mitte = basis + f;
+                        if (mitte < untergrenze) continue;
+                        float u = UeberAlle(x0, x1, StummelForm(st, amBus, mitte), nachbarn, verl, gesetzt);
+                        float oben_ = mitte - xf.Hoehe / 2f, unten_ = mitte + xf.Hoehe / 2f;
+                        u = Math.Max(u, UeberAlle(tx, tx + tw, x => (oben_, unten_), nachbarn, verl, gesetzt));
+                        if (u <= EF_UEBERDECKUNG_RAND) return (0f, Math.Abs(f - vorgabe), mitte);
+                        if (u < rest) { rest = u; besteMitte = mitte; }
+                    }
+                    return (rest == float.MaxValue ? 0f : rest, 0f, besteMitte);
+                }
+                // Eine Anordnung: die Bänder in ihrer Reihenfolge, dazwischen je Sonderteil (Stummel, Verlust) eine Stelle.
+                // Zuerst fächern die Stummel (von oben nach unten), dann sinken die Verluste — so tief wie vorgegeben, wenn sie
+                // dabei weder ein Band noch einen Stummel überdecken, sonst so viel tiefer oder flacher wie nötig.
+                (float Ueber, float Kosten) Pruefen(EfKnoten k, bool aus)
+                {
+                    // Geprüft wird gegen alle Bänder des Bildes, nicht nur die des Knotens: Ein Stummel kann auch zwischen den
+                    // Bändern eines Nachbarn eingeklemmt sein.
+                    List<EfSegment> normal = segmente.Where(s => !s.Band.Verbinder).ToList();
+                    List<EfSegment> stummelSegs = (aus ? k.AusS : k.EinS).Where(s => s.Band.Verbinder)
+                                                  .OrderBy(s => aus ? s.Y0 : s.Y1).ThenBy(s => s.Band.Index).ToList();
+                    List<EfVerlust> verl = aus ? k.Verl : new List<EfVerlust>();
+                    List<EfVerlust> andere = verluste.Where(v => !verl.Contains(v)).ToList();
+                    foreach (EfVerlust v in verl) v.S = float.NaN;
+                    float rest = 0f, kosten = 0f;
+                    var gesetzt = new List<(float X0, float X1, Func<float, (float O, float U)?> Bei)>();
+                    float untergrenze = float.MinValue;
+                    foreach (EfSegment st in stummelSegs)
+                    {
+                        var (u, a, mitte) = StummelPruefen(st, aus, normal, andere, gesetzt, untergrenze);
+                        rest += u; kosten += a;
+                        gesetzt.Add((aus ? AusX0(st) : EinX0(st), StummelX1(st, aus), StummelForm(st, aus, mitte)));
+                        untergrenze = mitte + xf.Hoehe;
+                    }
+                    foreach (EfVerlust v in verl)
+                    {
+                        float x0 = v.Von.X + v.Von.W, x1 = x0 + verlustLaenge, vorgabe = Senkung(v), besteS = vorgabe, kleinste = float.MaxValue;
+                        bool frei = false;
+                        foreach (float sk in Faecherungen(vorgabe, EF_VERLUST_SENKUNG_MAX))
+                        {
+                            if (sk < 0f) continue;
+                            v.S = sk;
+                            float u = UeberAlle(x0, x1, x => VerlBei(v, x), normal, new List<EfVerlust>(), gesetzt);
+                            if (u <= EF_UEBERDECKUNG_RAND) { kosten += Math.Abs(sk - vorgabe); frei = true; break; }
+                            if (u < kleinste) { kleinste = u; besteS = sk; }
+                        }
+                        if (!frei) { v.S = besteS; rest += kleinste; }
+                        else if (v.S == vorgabe) v.S = float.NaN;
+                        EfVerlust t = v;
+                        gesetzt.Add((x0, x1, x => VerlBei(t, x)));
+                        // Unter dem Ende des Abzweigs muss in der Nähe Platz für seine Beschriftung sein.
+                        float lw = xf.MeasureText(VerlustText(v)) + 4f, lx = Math.Min(x1 + 2f, W - lw + 2f), ly = VerlustEnde(v) + v.D + 2f;
+                        float kleinsteZeile = float.MaxValue;
+                        foreach (float o in Faecherungen(1f, 5f * schritt))
+                        {
+                            float zo = ly + o - 1f, zu = zo + xf.Hoehe;
+                            if (zo < 0f || zu > H - EF_LEGENDE_HOEHE) continue;
+                            kleinsteZeile = Math.Min(kleinsteZeile, UeberAlle(lx, lx + lw, x => (zo, zu), normal, andere, gesetzt));
+                            if (kleinsteZeile <= EF_UEBERDECKUNG_RAND) break;
+                        }
+                        if (kleinsteZeile > EF_UEBERDECKUNG_RAND && kleinsteZeile < float.MaxValue) rest += kleinsteZeile;
+                    }
+                    return (rest, kosten);
+                }
+                void Anordnen(EfKnoten k, bool aus)
+                {
+                    List<EfSegment> alleS = aus ? k.AusS : k.EinS;
+                    var sonder = new List<(EfSegment Seg, EfVerlust Verl)>();
+                    foreach (EfSegment s in alleS) if (s.Band.Verbinder) sonder.Add((s, null));
+                    if (aus) foreach (EfVerlust v in k.Verl) sonder.Add((null, v));
+                    if (sonder.Count == 0) return;
+                    float Lage(EfSegment s, EfVerlust v) => s != null ? (aus ? s.Y0 : s.Y1) : v.Y0;
+                    // Die gesetzte Anordnung von oben nach unten.
+                    List<EfSegment> normal = alleS.Where(s => !s.Band.Verbinder).OrderBy(s => aus ? s.Y0 : s.Y1).ThenBy(s => s.Band.Index).ToList();
+                    sonder = sonder.OrderBy(t => Lage(t.Seg, t.Verl)).ThenBy(t => t.Seg != null ? t.Seg.Band.Index : 1000000 + t.Verl.Index).ToList();
+                    int[] ursprung = sonder.Select(t => normal.Count(n => Lage(n, null) < Lage(t.Seg, t.Verl))).ToArray();
+                    void Setzen(int[] stelle)
+                    {
+                        float y = k.Y;
+                        for (int i = 0; i <= normal.Count; i++)
+                        {
+                            for (int j = 0; j < sonder.Count; j++)
+                            {
+                                if (stelle[j] != i) continue;
+                                var (s, v) = sonder[j];
+                                if (s != null) { if (aus) s.Y0 = y; else s.Y1 = y; y += s.D; }
+                                else { v.Y0 = y; y += v.D; }
+                            }
+                            if (i < normal.Count) { EfSegment n = normal[i]; if (aus) n.Y0 = y; else n.Y1 = y; y += n.D; }
+                        }
+                    }
+                    Setzen(ursprung);
+                    var (rest0, kosten0) = Pruefen(k, aus);
+                    if (rest0 <= 0f && kosten0 <= 0f) return;                           // die Regel trifft: nichts zu tun
+                    int stellen = normal.Count + 1;
+                    double anzahl = Math.Pow(stellen, sonder.Count);
+                    if (anzahl > 4096) return;
+                    int[] beste = ursprung;
+                    (float Ueber, float Kosten) besterWert = (rest0, kosten0);
+                    var probe = new int[sonder.Count];
+                    for (int nr = 0; nr < (int)anzahl; nr++)
+                    {
+                        int z = nr, abweichung = 0;
+                        for (int j = 0; j < sonder.Count; j++) { probe[j] = z % stellen; z /= stellen; abweichung += Math.Abs(probe[j] - ursprung[j]); }
+                        if (abweichung == 0) continue;
+                        Setzen(probe);
+                        var (rest, kosten) = Pruefen(k, aus);
+                        kosten += EF_STELLENKOSTEN * abweichung;
+                        if (rest < besterWert.Ueber - 1e-3f || (Math.Abs(rest - besterWert.Ueber) <= 1e-3f && kosten < besterWert.Kosten - 1e-3f))
+                        {
+                            besterWert = (rest, kosten);
+                            beste = (int[])probe.Clone();
+                        }
+                    }
+                    Setzen(beste);
+                    Pruefen(k, aus);                                                    // setzt die Senkung der Verluste
+                }
+                // Zweimal: eine neue Lage an einem Ende ändert die Fläche, die das andere Ende geprüft hat.
+                for (int runde = 0; runde < 2; runde++)
+                    foreach (EfKnoten k in alle)
+                    {
+                        Anordnen(k, true);
+                        Anordnen(k, false);
+                    }
+
                 // Tönung: Bänder in einen Knoten wechseln nach ihrer Lage zwischen Grund- und hellerem Ton.
                 var hell = new HashSet<EfBand>();
                 foreach (EfKnoten k in sichtbar)
@@ -524,23 +779,52 @@ namespace WindowsFormsApplication1
                 foreach (EfVerlust v in verluste)
                 {
                     v.X1 = v.Von.X + v.Von.W + verlustLaenge;
-                    v.Y1 = Math.Min(v.Y0 + Senkung(v), oben + nutz - v.D);                 // sanfter Bogen: kreuzt kein Band, das tiefer geht
+                    v.Y1 = VerlustEnde(v);                                                 // sanfter Bogen: kreuzt kein Band, das tiefer geht
                 }
 
+                // Die Flächen der gezeichneten Bänder und Verluste: keine Beschriftung und kein Stummel darf sie überdecken.
+                var flaechen = new List<(float X0, float X1, Func<float, (float O, float U)?> Bei)>();
+                foreach (EfSegment s in segmente)
+                    if (!s.Band.Verbinder) { EfSegment t = s; flaechen.Add((t.Von.X + t.Von.W, t.Nach.X, x => SegBei(t, x))); }
+                foreach (EfVerlust v in verluste) { EfVerlust t = v; flaechen.Add((t.Von.X + t.Von.W, t.X1, x => VerlBei(t, x))); }
+                float RahmenUeber(Rahmen r)
+                {
+                    float u = 0f;
+                    foreach (var f in flaechen)
+                    {
+                        float x0 = Math.Max(r.X, f.X0), x1 = Math.Min(r.Rechts, f.X1);
+                        if (x1 - x0 < 1f) continue;
+                        u = Math.Max(u, Ueberdeckung(x0, x1, x => (r.Y, r.Unten), f.Bei));
+                    }
+                    return u;
+                }
+                bool RahmenFrei(Rahmen r) => RahmenUeber(r) <= EF_UEBERDECKUNG_RAND;
                 // ------------------------------------------------------------ Beschriftung planen
                 // Eine Beschriftung, die eine gesetzte überdeckte, weicht in Schritten nach unten bzw. oben aus; Kästen sind
                 // belegt; größere Knoten zuerst, Verluste zuletzt.
                 var belegt = new List<Rahmen>();
-                float schritt = lf.Hoehe + 2f;
-                float Platz(float x, float y, float w, float h, bool lieberOben)
+                float Platz(float x, float y, float w, float h, bool lieberOben, float fein = 0f, bool wenigstens = false)
                 {
                     float[] folge = lieberOben ? new[] { 0f, -1f, 1f, -2f, 2f, -3f, 3f } : new[] { 0f, 1f, -1f, 2f, -2f, 3f, -3f };
+                    // Fein: in Schritten von 1 px bis zur Weite fein [px], zuerst in die bevorzugte Richtung.
+                    // Die ganzen Zeilenschritte bleiben dabei Kandidaten.
+                    if (fein > 0f)
+                        folge = Faecherungen(lieberOben ? -1f : 1f, fein).Select(o => (o - (lieberOben ? -1f : 1f)) / schritt)
+                                .Concat(folge.Where(f => f != 0f && Math.Abs(f) * schritt <= fein))
+                                .Select((f, i) => (F: f, I: i)).OrderBy(t => Math.Abs(t.F)).ThenBy(t => t.I).Select(t => t.F).ToArray();
+                    // Ohne freie Stelle die Vorgabe — mit „wenigstens“ die Stelle, an der die Zeile am wenigsten Band überdeckt.
+                    Rahmen? beste = null;
+                    float wenigste = float.MaxValue;
                     foreach (float f in folge)
                     {
                         var r = new Rahmen(x, y + f * schritt, w, h);
                         if (r.Y < 0f || r.Unten > H - EF_LEGENDE_HOEHE) continue;
-                        if (!belegt.Any(o => Ueberlappt(r, o))) { belegt.Add(r); return r.Y; }
+                        if (belegt.Any(o => Ueberlappt(r, o))) continue;
+                        float u = RahmenUeber(r);
+                        if (u <= EF_UEBERDECKUNG_RAND) { belegt.Add(r); return r.Y; }
+                        if (wenigstens && u < wenigste - 0.5f) { wenigste = u; beste = r; }
                     }
+                    if (beste.HasValue && wenigste < RahmenUeber(new Rahmen(x, y, w, h)) - 0.5f) { belegt.Add(beste.Value); return beste.Value.Y; }
                     belegt.Add(new Rahmen(x, y, w, h));
                     return y;
                 }
@@ -565,7 +849,7 @@ namespace WindowsFormsApplication1
                         float hoehe = lf.Hoehe + (v != null ? vf.Hoehe : 0f);
                         float xT = links ? k.X - 7f - wT : k.X + k.W + 7f;
                         float xV = links ? k.X - 7f - wV : k.X + k.W + 7f;
-                        float y = Platz(Math.Min(xT, xV), k.Mitte - hoehe / 2f, Math.Max(wT, wV) + 4f, hoehe, false);
+                        float y = Platz(Math.Min(xT, xV), k.Mitte - hoehe / 2f, Math.Max(wT, wV) + 4f, hoehe, false, 3f * schritt, true);
                         liste.Add(new EfZeile(t, lf, Farbrolle.TEXT, xT, y));
                         if (v != null) liste.Add(new EfZeile(v, vf, Farbrolle.TEXT, xV, y + lf.Hoehe));
                     }
@@ -588,28 +872,48 @@ namespace WindowsFormsApplication1
                 // Verbinder: „→ Gerät“ rechts der Pfeilspitze am Bus, die Kurzform des Busses links des Kreises am Gerät. Die
                 // Stummel fächern zu ihren Beschriftungen auf (von oben nach unten geplant): Das Ende des Stummels liegt in der
                 // Mitte seiner Zeile, so bleiben auch drei dünne Stummel an einem Bus unterscheidbar.
-                float stummel = Math.Min(EF_STUMMEL_MAX, gap * 0.3f);
+                // Die Beschriftung zieht das Ende ihres Stummels mit: gesucht wird die Fächerung, die der Vorgabe am nächsten
+                // liegt, bei der weder die Zeile noch der Stummel ein Band, einen Verlust, einen Knoten oder eine andere
+                // Beschriftung überdeckt.
+                float StummelPlatz(EfSegment s, bool amBus, float x, float w)
+                {
+                    float h = xf.Hoehe;
+                    float basis = (amBus ? s.Y0 : s.Y1) + s.D / 2f;
+                    float vorgabe = amBus ? EF_STUMMEL_FAECHER : -EF_STUMMEL_FAECHER;
+                    float x0 = amBus ? AusX0(s) : EinX0(s), x1 = StummelX1(s, amBus);
+                    foreach (float f in Faecherungen(vorgabe, 3f * schritt))
+                    {
+                        float mitte = basis + f;
+                        var r = new Rahmen(x, mitte - h / 2f, w, h);
+                        if (r.Y < 0f || r.Unten > H - EF_LEGENDE_HOEHE) continue;
+                        if (belegt.Any(o => Ueberlappt(r, o)) || !RahmenFrei(r)) continue;
+                        Func<float, (float O, float U)?> form = StummelForm(s, amBus, mitte);
+                        if (flaechen.Any(fl => Ueberdeckung(Math.Max(x0, fl.X0), Math.Min(x1, fl.X1), form, fl.Bei) > EF_UEBERDECKUNG_RAND)) continue;
+                        if (belegt.Any(o => Ueberdeckung(Math.Max(x0, o.X), Math.Min(x1, o.Rechts), form, xx => (o.Y, o.Unten)) > EF_UEBERDECKUNG_RAND)) continue;
+                        belegt.Add(r);
+                        flaechen.Add((x0, x1, form));
+                        return r.Y;
+                    }
+                    return Platz(x, basis + vorgabe - h / 2f, w, h, !amBus);
+                }
                 var stummelzeilen = new Dictionary<EfBand, (EfZeile Aus, EfZeile Ein, float YA, float YE)>();
                 foreach (EfBand b in baender.Where(b => b.Verbinder).OrderBy(b => b.Segs[0].Y0).ThenBy(b => b.Index))
                 {
                     EfSegment s = b.Segs[0];
-                    string wert = knotenwerte ? " " + EfZahl(b.Daten.Mwh) : "";
-                    string tA = "→ " + KnotenName(b.Nach, schmal) + wert, tE = KnotenName(b.Von, true) + wert;
-                    float wA = xf.MeasureText(tA), wE = xf.MeasureText(tE);
-                    float xA = s.Von.X + s.Von.W + stummel + 11f, xE = s.Nach.X - stummel - 12f - wE;
-                    float yA = Platz(xA, s.Y0 + 6f + s.D / 2f - xf.Hoehe / 2f, wA + 4f, xf.Hoehe, false);
-                    float yE = Platz(xE, s.Y1 - 6f + s.D / 2f - xf.Hoehe / 2f, wE + 4f, xf.Hoehe, true);
+                    var (tA, xA, wA) = StummelText(s, true);
+                    var (tE, xE, wE) = StummelText(s, false);
+                    float yA = StummelPlatz(s, true, xA, wA);
+                    float yE = StummelPlatz(s, false, xE, wE);
                     stummelzeilen[b] = (new EfZeile(tA, xf, Farbrolle.TEXT, xA, yA), new EfZeile(tE, xf, Farbrolle.TEXT, xE, yE),
                                         yA + xf.Hoehe / 2f, yE + xf.Hoehe / 2f);
                 }
                 var verlustzeilen = new Dictionary<EfVerlust, EfZeile>();
                 foreach (EfVerlust v in verluste.OrderByDescending(v => v.D).ThenBy(v => v.Index))
                 {
-                    string name = string.IsNullOrEmpty(v.Knoten.Name) ? v.Knoten.Kennung : v.Knoten.Name;
-                    string t = name + (knotenwerte ? " " + EfZahl(v.Daten.Mwh) : "");
+                    string t = VerlustText(v);
                     float w = xf.MeasureText(t);
                     float x = Math.Min(v.X1 + 2f, W - w - 2f);
-                    float y = Platz(x, v.Y1 + v.D + 2f, w + 4f, xf.Hoehe, false);
+                    float y = Platz(x, v.Y1 + v.D + 2f, w + 4f, xf.Hoehe, false, 5f * schritt, true);
                     verlustzeilen[v] = new EfZeile(t, xf, Farbrolle.TEXT, x, y);
                 }
 

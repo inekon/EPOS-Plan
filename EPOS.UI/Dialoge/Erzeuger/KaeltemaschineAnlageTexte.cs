@@ -32,6 +32,10 @@ public sealed class KaeltemaschineAnlageTexte
     public string TypkennfelderGeladen { get; set; } = Resource.KM_MSG_TYPKENNFELDER;
     /// <summary>Das Laden der Typkennfelder ist gescheitert, ohne Grund des Kerns.</summary>
     public string TypkennfelderFehler { get; set; } = Resource.KM_MSG_FEHLER;
+    /// <summary>KM-T1: Hinweis neben dem gesperrten „Typkennfelder laden…" — alle stehen schon im Katalog.</summary>
+    public string TypkennfelderAlleGeladen { get; set; } = Resource.KM_ANL_TYPKENNFELDER_ALLE;
+    /// <summary>KM-T1: Kurzform des Ergebnisses für die Statuszeile neben dem Knopf; {0} = neu, {1} = übersprungen.</summary>
+    public string TypkennfelderStatus { get; set; } = Resource.KM_ANL_TYPKENNFELDER_STATUS;
     /// <summary>„Katalogverwaltung…" in der Katalogwahl.</summary>
     public string KnopfVerwaltung { get; set; } = Resource.KM_ANL_BTN_VERWALTUNG;
     /// <summary>Die Plattform öffnet die Verwaltung nicht.</summary>

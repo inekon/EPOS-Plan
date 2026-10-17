@@ -218,6 +218,7 @@ Alle Blöcke dieser Gruppe sind nicht hochgeladen; die Version erfragt die Sitzu
 
 - Seit 17.10.2026: Eine wassergekühlte Kältemaschine wählt in der Gruppe „Rückkühlung“ ihr Rückkühlwerk aus der Verwaltung „Rückkühlwerke“ und zeigt seine Daten samt Hinweisen.
 - Seit 17.10.2026: Der Bericht nennt unter der Tabelle „Kälteerzeuger“ je Kältemaschine mit Rückkühlwerk Bauart, Ventilatorstrom, Wasser, Teil-Freikühlung und mittlere Rückkühltemperatur.
+- Seit 17.10.2026: Im Dialog der Kältemaschinen ist „Typkennfelder laden…“ gesperrt, solange alle Typkennfelder im Katalog stehen; das Ergebnis des Ladens steht in einer zweiten Zeile der Katalogkopfzeile neben dem Knopf. (#1200)
 
 #### Version offen — Eingabearten und Normkalender der Bedarfsprofile (Entwurf, Upload ausstehend)
 

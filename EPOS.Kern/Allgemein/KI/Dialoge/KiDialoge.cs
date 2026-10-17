@@ -4394,7 +4394,7 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Das Brauchwasser-Zapfprofil — die Felder aus
         /// <c>EPOS.UI.Dialoge.Bedarf.ZapfprofilKiSicht</c>: fuenf SPALTEN der Zonenliste, vier der
-        /// Wohnungstabelle der gewaehlten Zone und die Angaben der Stufen Erweitert und Experte.
+        /// Wohnungstabelle der gewaehlten Zone und die Angaben der Stufe Experte.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -4414,7 +4414,7 @@ namespace WindowsFormsApplication1
         /// waehlt die Ansicht der Vorschau.
         /// </para>
         /// <para>
-        /// <b>Die Stufen Erweitert und Experte</b> (Rechenweg der Jahresreihe ab Erweitert,
+        /// <b>Die Stufe Experte</b> (Rechenweg der Jahresreihe ab Experte,
         /// Seed und Realisierungen, Belegung und Anlage, Schaetzhilfen, Fachwerte) sind nur
         /// setzbar, solange sie auf der Maske stehen; sonst nennt die Absage die Stufe, den
         /// Rechenweg, die Nutzungsart, die Einheit oder die Methode, die sie zeigt. Die Angaben
@@ -4502,7 +4502,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Felder der Stufen Erweitert und Experte des Zapfprofils (Stufe Z4, Gruppe 2a) — wie der
+        /// Die Felder der Stufe Experte des Zapfprofils (Stufe Z4, Gruppe 2a) — wie der
         /// Eingabeblock gelten sie der GEWÄHLTEN Zone (Satzwahl „zone") und dem Gebäude; die
         /// Wohnungstabelle der gewählten Zone steht als SPALTEN mit der Zeilennummer als Kennzeichen.
         /// Ein Feld, das die Stufe (oder die Nutzungsart, die Einheit des Messwerts, die Methode der
@@ -4510,7 +4510,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static IEnumerable<KiDialogFeld> ZapfprofilHoehereStufen()
         {
-            // ---- Die Wohnungstabelle der gewählten Zone (Erweitert, nur Wohnen) ----------------
+            // ---- Die Wohnungstabelle der gewählten Zone (Experte, nur Wohnen) ----------------
             yield return new KiDialogFeld("wohnung_anzahl", ZAPFPROFIL_SICHT + ".Wohnungen[].Anzahl",
                                           KiDialogTexte.ZpgWohnungAnzahlName, KiParameterTyp.Ganzzahl,
                                           KiDialogTexte.ZpgWohnungAnzahlErl, zeilenkennzeichen: "Kennzeichen", min: 1);
@@ -4527,7 +4527,7 @@ namespace WindowsFormsApplication1
                                           KiDialogTexte.ZpgWohnungAusstattungErl, leerErlaubt: true,
                                           zeilenkennzeichen: "Kennzeichen");
 
-            // ---- Belegung und Anlage der gewählten Zone (Erweitert) ------------------------------
+            // ---- Belegung und Anlage der gewählten Zone (Experte) ------------------------------
             yield return Zahl("personen_je_we", "PersonenJeWe", KiDialogTexte.ZpgPersonenJeWeName,
                               KiDialogTexte.ZpgPersonenJeWeErl, KiDialogTexte.ZpgEinheitPersonenJeWe, 0, null);
             yield return Zahl("wohnflaeche_je_we", "WohnflaecheJeWe", KiDialogTexte.ZpgWohnflaecheJeWeName,
@@ -4556,7 +4556,7 @@ namespace WindowsFormsApplication1
                                           KiDialogTexte.ZpgMesswertZeitraumName, KiParameterTyp.Text,
                                           KiDialogTexte.ZpgMesswertZeitraumErl, leerErlaubt: true);
 
-            // ---- Tagesbedarf der Zone, Ladeleistung und Zirkulation des Gebäudes (Erweitert) -----
+            // ---- Tagesbedarf der Zone, Ladeleistung und Zirkulation des Gebäudes (Experte) -----
             yield return Zahl("tagesbedarf_manuell", "TagesbedarfManuell", KiDialogTexte.ZpgTagesbedarfManuellName,
                               KiDialogTexte.ZpgTagesbedarfManuellErl, KiDialogTexte.EINHEIT_KWH_D, 0, null);
             yield return Zahl("ladeleistung_manuell", "LadeleistungManuell", KiDialogTexte.ZpgLadeleistungManuellName,

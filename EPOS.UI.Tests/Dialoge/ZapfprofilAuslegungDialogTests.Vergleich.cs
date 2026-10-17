@@ -85,7 +85,7 @@ public partial class ZapfprofilAuslegungDialogTests
                                      "Zuschlag", "Personen manuell" })
             Assert.NotNull(Feld(cut, f));
         Assert.Contains("Angesetzt: 9,5 kW (auto) · Ladeweg der Probe", cut.Markup);
-        Assert.Contains("auto = aus dem Mengengerüst der Zonen: 40,0; angesetzt: 40,0", cut.Markup);
+        Assert.Contains("auto = aus dem Mengengerüst der Bereiche: 40,0; angesetzt: 40,0", cut.Markup);
         Assert.Contains("Auf dieses Volumen beziehen sich Füllstandslinie und Kachel „Füllstand“; angesetzt: Nenninhalt des Punkts 400 l",
                         cut.Markup);
 

@@ -63,8 +63,8 @@ namespace EPOS.Kern.Tests
             Assert.Equal("T|20|B", gruppen["r7"]);
 
             (IReadOnlyList<string> regeln, string vorgabe, bool grenzen) = GebaeudeZonierung.Waehlbar(a, 0);
-            Assert.Equal(new[] { IfcImportProfil.ZONENREGEL_Z4, Z6, IfcImportProfil.ZONENREGEL_Z5 }, regeln);
-            Assert.Equal(IfcImportProfil.ZONENREGEL_Z5, vorgabe);   // M7 unverändert: ohne Grenzen und Bezüge Z5
+            Assert.Equal(new[] { IfcImportProfil.ZONENREGEL_Z4, Z6, IfcImportProfil.ZONENREGEL_Z7, IfcImportProfil.ZONENREGEL_Z5 }, regeln);   // Z7: Raumarten an vier Räumen
+            Assert.Equal(IfcImportProfil.ZONENREGEL_Z5, vorgabe);   // M7 unverändert: ohne Grenzen und Bezüge Z5; Z7 nicht Vorgabe, weil Flur und Teeküche ohne Raumart
             Assert.False(grenzen);
         }
 
@@ -240,7 +240,9 @@ namespace EPOS.Kern.Tests
             Assert.Empty(z.Zonen[1].Zugeschlagen);
             Assert.Equal("20 °C – Büro, Wohnen, Sanitär",
                          Assert.Single(z.Meldungen, m => m.Schluessel == I + GebaeudeZonierung.ZONE_ZUGESCHLAGEN).Werte[2]);
-            Assert.Equal(IfcImportProfil.ZONENREGEL_Z4, z.Vorgabe);   // M7: die Trenndecke aus den Raumbezügen koppelt die Geschosse
+            // Entwurf ZZ (F1): Raumart an allen beheizten Räumen, keine IfcZone → Vorgabe Z7; Z4 bleibt wählbar (die Trenndecke koppelt die Geschosse).
+            Assert.Equal(IfcImportProfil.ZONENREGEL_Z7, z.Vorgabe);
+            Assert.Contains(IfcImportProfil.ZONENREGEL_Z4, z.Regeln);
 
             // Übersteuerung: der Abstellraum beheizt → eigene beheizte 10-°C-Zone, der Lagerraum ohne Temperatur bleibt unbeheizt ohne Sollwert.
             string abstell = g.Raeume.Single(r => r.Name == "Abstellraum").Kennung;

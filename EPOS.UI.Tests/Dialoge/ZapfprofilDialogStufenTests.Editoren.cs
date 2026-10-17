@@ -11,7 +11,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// Zapfprofilgenerator 5.1, 5.3; Stufe Z4, Gruppe 2b): „Tagesgang bearbeiten…" und „Zapfkategorien
 /// und Streuung…" öffnen ihre Überlagerung zur Nutzungsart der gewählten Zone, Esc schließt nur
 /// sie, ein geschriebener Editor stellt die Zone auf die Nutzungsart, die jetzt die Werte trägt,
-/// und liest den Katalog neu; dazu der Vorschlag der Ladeleistung (4.7) am Feld der Stufe Erweitert.
+/// und liest den Katalog neu; dazu der Vorschlag der Ladeleistung (4.7) am Feld der Stufe Experte.
 ///
 /// <para>Alle Delegaten sind Prüfdelegaten — der Dialog rechnet und schreibt nicht. Kultur de-DE,
 /// Werte erfunden.</para>
@@ -133,7 +133,7 @@ public partial class ZapfprofilDialogStufenTests
         Assert.False(cut.Instance.TagesgangOffen);
         Assert.Equal(99, cut.Instance.Eingabe.Zonen[0].IdNutzungsart);
         Assert.Contains(cut.Instance.KatalogAktuell, n => n.Id == 99);
-        Assert.Equal("Tagesgang gespeichert — die Zone „Wohnen“ rechnet mit „Wohnen A · TEST-1-E1“.",
+        Assert.Equal("Tagesgang gespeichert — der Bereich „Wohnen“ rechnet mit „Wohnen A · TEST-1-E1“.",
                      cut.Find(".epos-zapfprofil-editorstatus").TextContent.Trim());
         // Die zweite Zone bleibt, wie sie war.
         Assert.Equal(2, cut.Instance.Eingabe.Zonen[1].IdNutzungsart);
@@ -175,7 +175,7 @@ public partial class ZapfprofilDialogStufenTests
 
         Assert.False(cut.Instance.KategorienOffen);
         Assert.Equal(99, cut.Instance.Eingabe.Zonen[0].IdNutzungsart);
-        Assert.Equal("Zapfkategorien gespeichert — die Zone „Wohnen“ rechnet mit „Wohnen A · TEST-1-E1“.",
+        Assert.Equal("Zapfkategorien gespeichert — der Bereich „Wohnen“ rechnet mit „Wohnen A · TEST-1-E1“.",
                      cut.Find(".epos-zapfprofil-editorstatus").TextContent.Trim());
     }
 
@@ -197,7 +197,7 @@ public partial class ZapfprofilDialogStufenTests
     }
 
     [Fact]
-    public void Der_Vorschlag_der_Ladeleistung_steht_ab_Erweitert_und_wird_der_manuelle_Wert()
+    public void Der_Vorschlag_der_Ladeleistung_steht_ab_Experte_und_wird_der_manuelle_Wert()
     {
         int gerufen = 0;
         var cut = MitEditoren(ladevorschlag: _ =>
@@ -206,7 +206,7 @@ public partial class ZapfprofilDialogStufenTests
             return new ZapfprofilSchaetzhilfeDaten { Auto = true, Vorschlag = 12.5, Angesetzt = 12.5, Einheit = "kW", Rechenweg = "Ladeweg der Probe" };
         });
         Assert.Equal(0, gerufen);                     // Einfach zeigt die Schätzhilfe nicht
-        Stufe(cut, "Erweitert");
+        Stufe(cut, "Experte");
         Assert.True(gerufen >= 1);
 
         // ZB4 (b): EIN Feld - der Vorschlag steht grau im leeren Feld, der Knopf daneben übernimmt ihn.
@@ -227,7 +227,7 @@ public partial class ZapfprofilDialogStufenTests
     public void Ohne_Delegat_des_Vorschlags_nennt_die_Ladeleistung_den_Grund()
     {
         var cut = MitEditoren();
-        Stufe(cut, "Erweitert");
+        Stufe(cut, "Experte");
         IElement knopf = cut.Find(".epos-zapfprofil-karte--ladeleistung .epos-zapfprofil-einwert-uebernehmen");
         Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
         Assert.Equal("Einen Vorschlag gibt es erst mit einer gerechneten Vorschau.", knopf.GetAttribute("title"));

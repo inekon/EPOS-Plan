@@ -1,6 +1,8 @@
 == Version 1.2.0.11 – Oktober 2026 ==
 {{Anker|version-1-2-0-11-oktober-2026|v1-2-0-11}}
 
+* Seit 17.10.2026: Der Gebäudeimport bildet die Zonen einer IFC-Datei auf Wunsch nach Nutzungsprofil (Regel „Z7 – nach Nutzungsprofil“) und ordnet jedem Raum ein Profil der DIN/TS 18599-10 zu, mit Vorschlägen aus Bezeichnung, Raumart und Raumname.
+* Seit 17.10.2026: Der neue Dialog „Nutzungsprofile zuordnen…“ im Gebäudeimport zeigt die Räume als Bündel mit Katalog der Normgruppen und lässt Profile einzeln, gebündelt oder als Sammelübernahme der Vorschläge zuordnen.
 * Seit 13.10.2026: Der Gebäudedialog prüft ein Gebäude mit „Modell prüfen…“ auf Rechenfähigkeit, zeigt je Prüfgruppe eine Ampel, schlägt fehlende Hüllflächen und Aufbauten nach Namen und Baualtersklasse vor und übernimmt die Vorschläge mit einem Klick; nach einem Import öffnet die Prüfung von selbst.
 * Seit 13.10.2026: Aus „Modell prüfen“ öffnet „Ansicht…“ die Gebäudeansicht mit den betroffenen Flächen und Zonen hervorgehoben; Zonen, Legendeneinträge und Bauteilgruppen lassen sich ein- und ausblenden, und der neue Farbmodus „Nutzung“ zeigt die Nutzungsprofile.
 * Seit 13.10.2026: Das neue Blatt „Nutzung und Kalender“ zeigt Nutzungsprofil, Kalender, Sollwerte, Ferien und Heizperiode aller Zonen eines Gebäudes mit einem Kurzbild der Woche und weist sie mehreren Zonen in einem Schritt zu.
@@ -25,6 +27,9 @@
 * Seit 13.10.2026: Der Katalogimport der Brauchwasser-Nutzungsarten spielt auch die Kennwerte nach DIN 4708 ein; für sie und für die Typtage nach VDI 4655 liegt je eine Paketvorlage bei.
 * Seit 14.10.2026: Die mitgelieferten Brauchwasser-Nutzungsarten rechnen im Zapfprofil-Dialog in der Stufe „Einfach“ ohne zusätzlichen Katalog.
 * Seit 16.10.2026: In der Stufe „Einfach“ empfiehlt die Speicherauslegung im Brauchwasser-Zapfprofil auch ohne externes Katalogpaket einen Speicher-Nenninhalt, gekennzeichnet als Schnellauslegung nach Vorlage V4.
+* Seit 17.10.2026: Im Brauchwasser-Zapfprofil stehen die Nutzungsbereiche als ein Block, in dessen Zeile Nutzungsart, Bezugsgröße und Bedarfsniveau stehen.
+* Seit 17.10.2026: Das Brauchwasser-Zapfprofil kennt nur noch die Stufen „Einfach“ und „Experte“.
+* Seit 17.10.2026: „Zapfprofil erzeugen“ legt das Profil auf Wunsch als Katalogsatz oder als Projektzeile ab.
 * Seit 13.10.2026: Der Reiter „Übersicht“ unter „Berichte & Kosten“ stellt die Komponenten je Gewerk mit ihren Kennwerten nebeneinander, hebt Abweichungen zum Stammprojekt hervor und vergleicht die Energie-Ergebnisse der Versionen als Tabelle oder Balkengrafik; über „Anzeige anpassen…“ wählt jeder Benutzer die Kennzahlen.
 * Seit 13.10.2026: Varianten werden über die Dialoge „Variante anlegen…“, „Umbenennen…“ und „Löschen…“ verwaltet; eine neue Variante entsteht aus dem Stammprojekt oder aus einer vorhandenen Variante.
 * Seit 13.10.2026: In den Zeitreihendiagrammen stehen Bedarfe als Linie über den Erzeugungsflächen, die Zeitachse der Jahresdiagramme ist zwischen Datum und Stunde im Jahr umschaltbar, und im Reiter Photovoltaik zeigt „PV aufteilen“ die Erzeugung als Stapel aus Eigenverbrauch, Einspeisung und Abregelung.

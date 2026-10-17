@@ -400,7 +400,7 @@ namespace EPOS.Kern.Tests
             Assert.True(v.Ok, v.Abbruch);
             ZapfprofilWarnDaten hinweis = Assert.Single(v.Hinweise,
                 h => h.Kennung == "ZPG_WARN_MESSVERGLEICH_SPREIZUNG_ZONEN");
-            Assert.Equal("Spreizung mehrerer Zonen", hinweis.Titel);
+            Assert.Equal("Spreizung mehrerer Bereiche", hinweis.Titel);
             Assert.Contains("42,5", hinweis.Text);
 
             // Gleiche Temperaturen: kein Hinweis - es gibt nichts zu mitteln.

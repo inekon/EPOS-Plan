@@ -617,11 +617,17 @@ public class KaeltemaschineAnlageKatalogwegeTests : EposBunitContext
         internal KaeltemaschineTypkennfelderErgebnis Laden()
         {
             Gefuellt = true;
+            Fehlt = 0;
             return new KaeltemaschineTypkennfelderErgebnis(true, 2, 0, "");
         }
+
+        /// <summary>KM-T1: die Gabe „fehlende Typkennfelder“ — vor dem Laden 2, danach 0.</summary>
+        internal int Fehlt = 2;
+        internal int Fehlend() => Fehlt;
     }
 
-    private IRenderedComponent<KaeltemaschineAnlageDialog> Aufbauen(Katalogstand k, bool mitTypkennfeldern = true)
+    private IRenderedComponent<KaeltemaschineAnlageDialog> Aufbauen(Katalogstand k, bool mitTypkennfeldern = true,
+                                                                    bool mitFehlend = false)
         => Render<KaeltemaschineAnlageDialog>(b =>
         {
             b.Add(x => x.Anlagen, k.Projekt.Lesen)
@@ -635,7 +641,14 @@ public class KaeltemaschineAnlageKatalogwegeTests : EposBunitContext
              .Add(x => x.Loeschen, k.Projekt.Loeschen)
              .Add(x => x.Geschlossen, ok => k.Projekt.Geschlossen = ok);
             if (mitTypkennfeldern) b.Add(x => x.TypkennfelderLaden, k.Laden);
+            if (mitFehlend) b.Add(x => x.TypkennfelderFehlend, k.Fehlend);
         });
+
+    private static IElement Typknopf(IRenderedComponent<KaeltemaschineAnlageDialog> cut)
+        => cut.Find(".epos-zweispalten-bereich--katalog .epos-kaeltemaschine-typkennfelder");
+
+    private static string Banner(IRenderedComponent<KaeltemaschineAnlageDialog> cut)
+        => string.Concat(cut.FindAll(".epos-warnbanner-text").Select(b => b.TextContent));
 
     private static IElement Knopf(IRenderedComponent<KaeltemaschineAnlageDialog> cut, string text)
         => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
@@ -644,14 +657,68 @@ public class KaeltemaschineAnlageKatalogwegeTests : EposBunitContext
         => cut.FindAll(".epos-kaeltemaschine-typkennfelder, .epos-kaeltemaschine-verwaltung").Select(b => b.TextContent.Trim()).ToArray();
 
     [Fact]
-    public void Typkennfelder_laden_fuellt_die_Liste_ueber_die_Gabe_und_meldet_im_Banner()
+    public void Typkennfelder_laden_fuellt_die_Liste_ueber_die_Gabe_und_meldet_neben_dem_Knopf()
     {
         var k = new Katalogstand();
         var cut = Aufbauen(k);
         Assert.Empty(Zeilenklick.Zeilen(cut));
+        Assert.Empty(cut.FindAll(".epos-kaeltemaschine-typstatus"));
         Knopf(cut, R.KM_BTN_TYPKENNFELDER).Click();
         Assert.Equal(2, Zeilenklick.Zeilen(cut).Count);
-        Assert.Contains(string.Format(System.Globalization.CultureInfo.CurrentCulture, R.KM_MSG_TYPKENNFELDER, 2, 0), cut.Markup);
+        string text = string.Format(System.Globalization.CultureInfo.CurrentCulture, R.KM_ANL_TYPKENNFELDER_STATUS, 2, 0);
+        // KM-T1: die Rückmeldung steht in der Kopfzeile des Katalogs neben dem Knopf, nicht im Banner oben.
+        var status = cut.Find(".epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste > .epos-kaeltemaschine-typstatus");
+        Assert.Equal("status", status.GetAttribute("role"));
+        Assert.Equal(text, status.TextContent.Trim());
+        Assert.Equal(string.Format(System.Globalization.CultureInfo.CurrentCulture, R.KM_MSG_TYPKENNFELDER, 2, 0), status.GetAttribute("title"));
+        Assert.Equal("", Banner(cut));
+        // Ohne Gabe „fehlend“ bleibt der Knopf frei wie bisher.
+        Assert.False(Typknopf(cut).HasAttribute("disabled"));
+    }
+
+    [Fact]
+    public void Fehlt_kein_Typkennfeld_ist_der_Knopf_gesperrt_und_die_Kopfzeile_sagt_es()
+    {
+        var k = new Katalogstand { Fehlt = 0 };
+        var cut = Aufbauen(k, mitFehlend: true);
+        IElement knopf = Typknopf(cut);
+        Assert.True(knopf.HasAttribute("disabled"));
+        Assert.Equal(R.KM_ANL_TYPKENNFELDER_ALLE, knopf.GetAttribute("title"));
+        Assert.Equal(R.KM_BTN_TYPKENNFELDER, knopf.GetAttribute("aria-label"));
+        var status = cut.Find(".epos-kaeltemaschine-typstatus");
+        Assert.Equal("status", status.GetAttribute("role"));
+        Assert.Equal(R.KM_ANL_TYPKENNFELDER_ALLE, status.TextContent.Trim());
+        Assert.Empty(Zeilenklick.Zeilen(cut));
+    }
+
+    [Fact]
+    public void Fehlen_Typkennfelder_ist_der_Knopf_frei_und_nach_dem_Laden_gesperrt()
+    {
+        var k = new Katalogstand();
+        var cut = Aufbauen(k, mitFehlend: true);
+        Assert.False(Typknopf(cut).HasAttribute("disabled"));
+        Assert.Equal(R.KM_BTN_TYPKENNFELDER, Typknopf(cut).GetAttribute("title"));
+        Assert.Empty(cut.FindAll(".epos-kaeltemaschine-typstatus"));
+
+        Typknopf(cut).Click();
+        Assert.Equal(2, Zeilenklick.Zeilen(cut).Count);
+        // Die Zahl wird neu abgefragt: nichts mehr zu laden - gesperrt, die Rückmeldung des Ladens bleibt stehen.
+        Assert.True(Typknopf(cut).HasAttribute("disabled"));
+        Assert.Equal(string.Format(System.Globalization.CultureInfo.CurrentCulture, R.KM_ANL_TYPKENNFELDER_STATUS, 2, 0),
+                     cut.Find(".epos-kaeltemaschine-typstatus").TextContent.Trim());
+    }
+
+    [Fact]
+    public void Eine_scheiternde_Gabe_fehlend_laesst_den_Knopf_frei()
+    {
+        var k = new Katalogstand();
+        var cut = Render<KaeltemaschineAnlageDialog>(b => b
+            .Add(x => x.Anlagen, k.Projekt.Lesen)
+            .Add(x => x.Katalogzeilen, k.Zeilen)
+            .Add(x => x.TypkennfelderLaden, k.Laden)
+            .Add(x => x.TypkennfelderFehlend, () => throw new InvalidOperationException("kaputt")));
+        Assert.False(Typknopf(cut).HasAttribute("disabled"));
+        Assert.Empty(cut.FindAll(".epos-kaeltemaschine-typstatus"));
     }
 
     [Fact]
@@ -664,6 +731,11 @@ public class KaeltemaschineAnlageKatalogwegeTests : EposBunitContext
             .Add(x => x.TypkennfelderLaden, () => new KaeltemaschineTypkennfelderErgebnis(false, 0, 0, "Grund des Kerns")));
         Knopf(cut, R.KM_BTN_TYPKENNFELDER).Click();
         Assert.Contains("Grund des Kerns", cut.Markup);
+        // KM-T1: der Fehler steht neben dem Knopf (als Fehler gezeichnet) und bleibt im Banner.
+        var status = cut.Find(".epos-kaeltemaschine-typstatus");
+        Assert.Contains("epos-kaeltemaschine-typstatus--fehler", status.ClassList);
+        Assert.Equal("Grund des Kerns", status.TextContent.Trim());
+        Assert.Contains("Grund des Kerns", Banner(cut));
     }
 
     [Fact]

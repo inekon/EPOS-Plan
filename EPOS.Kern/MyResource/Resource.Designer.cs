@@ -15049,7 +15049,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Rechenweg bestimmt, woraus der Wärmebedarf für Brauchwasser (Trinkwarmwasser) entsteht: aus den Bestandsprofilen dieser Liste oder aus dem Zapfprofil der Nutzungszonen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Rechenweg bestimmt, woraus der Wärmebedarf für Brauchwasser (Trinkwarmwasser) entsteht: aus den Bestandsprofilen dieser Liste oder aus dem Zapfprofil der Nutzungsbereiche. ähnelt.
         /// </summary>
         public static string BPF_HINW_RECHENWEG_BW {
             get {
@@ -48435,6 +48435,393 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Vorschläge übernehmen ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_ALLE_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_ALLE_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zurücknehmen ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_ALLE_ZURUECK {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_ALLE_ZURUECK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Räume tragen ein gesetztes Profil. ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_AMPEL_GRUEN {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_AMPEL_GRUEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume ohne eindeutiges Profil — bitte unter „Nutzungsprofile zuordnen…“ wählen. ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_AMPEL_RUECKFRAGE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_AMPEL_RUECKFRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume tragen einen unbestätigten Vorschlag — der Import ist möglich; bestätigen unter „Nutzungsprofile zuordnen…“. ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_AMPEL_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_AMPEL_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnung aufheben ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_AUFHEBEN {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_AUFHEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Räume einzeln ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_AUFKLAPPEN {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_AUFKLAPPEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Räume der Datei ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_BUENDEL_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_BUENDEL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonen mit Bezeichnung der Datei ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_DATEIZONEN_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_DATEIZONEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zuordnung bildet den Zonenbaum nach der Regel neu. {0} Schritte von Hand am Zonenbaum gehen dabei verloren. Fortfahren? ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_FRAGE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil zuordnen ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_FRAGE_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_FRAGE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gemischt ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_GEMISCHT {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_GEMISCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bündel gewählt ({1} Räume) ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_GEWAEHLT {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_GEWAEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bündel ankreuzen, dann im Katalog ein Profil anklicken. ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_HINWEIS_WAHL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_HINWEIS_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die in Zone „{0}“ ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_IN_ZONE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_IN_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_KATALOG {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Profil passt zur Suche. ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_KATALOG_LEER {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_KATALOG_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Nutzung ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_KEINE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein offenes Bündel. ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_KEIN_BUENDEL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_KEIN_BUENDEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} °C · {1}–{2} h ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_KENNWERTE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_KENNWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofile zuordnen… ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_KNOPF {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofile zuordnen… ({0} offen) ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_KNOPF_OFFEN {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_KNOPF_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur beheizte ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_NUR_BEHEIZTE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_NUR_BEHEIZTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur offene ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_NUR_OFFENE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_NUR_OFFENE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Vorschläge ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_NUR_VORSCHLAEGE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_NUR_VORSCHLAEGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumart {0} ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_RAUMART {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_RAUMART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Räume bleiben ohne Zone, bis ein Vorschlag oder Kandidat gewählt ist; die Zonen der Projektdatei bleiben unverändert. ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_RESTRAEUME_HINWEIS {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_RESTRAEUME_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Räume ohne Zone der Projektdatei ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_RESTRAEUME_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_RESTRAEUME_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kandidaten: ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_SCHNELLWAHL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_SCHNELLWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bündel ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_SP_BUENDEL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_SP_BUENDEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche [m²] ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_SP_FLAECHE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_SP_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Räume ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_SP_RAEUME {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_SP_RAEUME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_SP_STAND {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_SP_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil / Vorschlag ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_SP_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_SP_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eindeutig ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_STAND_EINDEUTIG {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_STAND_EINDEUTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die von Hand ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_STAND_HAND {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_STAND_HAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückfrage ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_STAND_OFFEN {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_STAND_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Kandidat ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_STAND_OHNE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_STAND_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_STAND_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_STAND_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil suchen (Nummer oder Name) ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_SUCHE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_SUCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofile zuordnen ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die übernehmen ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} eindeutig · {1} Vorschlag · {2} Rückfrage · {3} ohne · {4} von Hand ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_ZAEHLER {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_ZAEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die keine Angabe — als beheizt angenommen ähnelt.
         /// </summary>
         public static string GIMP_RAUM_GRUND_ANNAHME {
@@ -48642,11 +49029,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Z7 – nach Nutzungsprofil ähnelt.
+        /// </summary>
+        public static string GIMP_ZONENREGEL_Z7 {
+            get {
+                return ResourceManager.GetString("GIMP_ZONENREGEL_Z7", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ohne Außenfläche ähnelt.
         /// </summary>
         public static string GIMP_ZONE_OHNE_AUSSEN {
             get {
                 return ResourceManager.GetString("GIMP_ZONE_OHNE_AUSSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Nutzung ähnelt.
+        /// </summary>
+        public static string GIMP_ZONE_OHNE_NUTZUNG {
+            get {
+                return ResourceManager.GetString("GIMP_ZONE_OHNE_NUTZUNG", resourceCulture);
             }
         }
         
@@ -48665,6 +49070,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_ZONE_UNBEHEIZT {
             get {
                 return ResourceManager.GetString("GIMP_ZONE_UNBEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unbeheizt ähnelt.
+        /// </summary>
+        public static string GIMP_ZONE_UNBEHEIZT_Z7 {
+            get {
+                return ResourceManager.GetString("GIMP_ZONE_UNBEHEIZT_Z7", resourceCulture);
             }
         }
         
@@ -52377,6 +52791,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unbekanntes Profil „{0}“ – die Zuordnung wird nicht übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_PROFIL_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_PROFIL_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Raum {0} gehört nicht zu diesem Gebäude. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_PLAN_RAUM_UNBEKANNT {
@@ -54339,6 +54762,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unbekanntes Profil „{0}“ – die Zuordnung wird nicht übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_PROFIL_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_PROFIL_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Raum {0} gehört nicht zu diesem Gebäude. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_PLAN_RAUM_UNBEKANNT {
@@ -54398,6 +54830,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_PLATZIERUNGSART {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_PLATZIERUNGSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofile je Raum: {0} eindeutig zugeordnet, {1} mit Vorschlag, {2} offen (Rückfrage), {3} ohne Kandidaten; offen: {4}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PROFILE_ZUGEORDNET {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PROFILE_ZUGEORDNET", resourceCulture);
             }
         }
         
@@ -56495,6 +56936,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_SQ_PROT_RAUM_OHNE_TREFFER {
             get {
                 return ResourceManager.GetString("IMP_SQ_PROT_RAUM_OHNE_TREFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} beheizte Räume gehören keiner Zone der Projektdatei; für {1} schlägt die Rangfolge (Bezeichnung, Raumart, Raumname) ein Nutzungsprofil vor: {2}. Die Räume bleiben nicht zugeordnet, bis Sie sie einer Zone zuordnen. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_RAUM_OHNE_ZONE_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_RAUM_OHNE_ZONE_VORSCHLAG", resourceCulture);
             }
         }
         
@@ -79231,7 +79681,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bedarfstag der Summenlinie: Vorgaberegel, Stundenprofil der Zonen, DIN-4708-Profil, ein konstruierter Tag oder ein Tag aus dem Katalog. Gesperrte Quellen nennen ihren Grund; einen Tag konstruieren Sie mit dem Knopf darunter. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bedarfstag der Summenlinie: Vorgaberegel, Stundenprofil der Bereiche, DIN-4708-Profil, ein konstruierter Tag oder ein Tag aus dem Katalog. Gesperrte Quellen nennen ihren Grund; einen Tag konstruieren Sie mit dem Knopf darunter. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPGA_BEDARFSTAG_ERL {
             get {
@@ -79321,7 +79771,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Personen des Verfahrensvergleichs: auto = aus dem Mengengerüst der Zonen, manuell = eigener Wert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Personen des Verfahrensvergleichs: auto = aus dem Mengengerüst der Bereiche, manuell = eigener Wert. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPGA_PERSONEN_MODUS_ERL {
             get {
@@ -80005,7 +80455,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Für welche Ansicht die Vorschau ihre Bilder und Kennzahlen zeigt: die Summe aller Zonen oder eine Zone. Ändert nur die Anzeige. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für welche Ansicht die Vorschau ihre Bilder und Kennzahlen zeigt: die Summe aller Bereiche oder ein Bereich. Ändert nur die Anzeige. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_ANSICHT_ERL {
             get {
@@ -80014,7 +80464,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zwölf Monatsfaktoren der gewählten Zone; leer je Monat = Faktor des Katalogs. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zwölf Monatsfaktoren des gewählten Bereichs; leer je Monat = Faktor des Katalogs. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_AUSLASTUNGSGANG_ERL {
             get {
@@ -80023,7 +80473,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der spezifische Bedarf der gewählten Zone je Bezugseinheit und Tag; leer = Katalogwert des Niveaus. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der spezifische Bedarf des gewählten Bereichs je Bezugseinheit und Tag; leer = Katalogwert des Niveaus. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_BEDARF_SPEZ_ERL {
             get {
@@ -80032,7 +80482,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Menge der Zone in der Bezugsgröße ihrer Nutzungsart (Personen, Wohneinheiten, Betten, Fläche …); Pflichtfeld für OK, größer als 0. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Menge des Bereichs in der Bezugsgröße ihrer Nutzungsart (Personen, Wohneinheiten, Betten, Fläche …); Pflichtfeld für OK, größer als 0. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_BEZUGSMENGE_ERL {
             get {
@@ -80050,7 +80500,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ein eigener Ferienzeitraum der gewählten Zone: Name, von und bis als TT.MM. im Jahr ohne Schalttag; leer = keine Angabe. Die Zeile hinter dem letzten Zeitraum legt einen neuen an. Eigene Ferien gehen den Ferien eines Gebäudes vor. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein eigener Ferienzeitraum des gewählten Bereichs: Name, von und bis als TT.MM. im Jahr ohne Schalttag; leer = keine Angabe. Die Zeile hinter dem letzten Zeitraum legt einen neuen an. Eigene Ferien gehen den Ferien eines Gebäudes vor. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_FERIEN_ERL {
             get {
@@ -80086,7 +80536,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Jahresbedarf der Zapfung der Zone aus der aktuellen Vorschau; „–“ ohne gerechnete Vorschau. Nur lesbar. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Jahresbedarf der Zapfung des Bereichs aus der aktuellen Vorschau; „–“ ohne gerechnete Vorschau. Nur lesbar. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_JAHRESBEDARF_ERL {
             get {
@@ -80095,7 +80545,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ein gemessener Jahresverbrauch der gewählten Zone; er skaliert die Zone mit einem ausgewiesenen Faktor, leer = kein Messwert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein gemessener Jahresverbrauch des gewählten Bereichs; er skaliert den Bereich mit einem ausgewiesenen Faktor, leer = kein Messwert. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_JAHRESMESSWERT_ERL {
             get {
@@ -80104,7 +80554,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kalender der gewählten Zone: der der Nutzungsart oder die Ferien eines Gebäudes des Projekts, die nur vorbelegen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kalender des gewählten Bereichs: der der Nutzungsart oder die Ferien eines Gebäudes des Projekts, die nur vorbelegen. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_KALENDER_ERL {
             get {
@@ -80131,7 +80581,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Jahresmittel des Kaltwassers der gewählten Zone (nur Bilanz); leer = Konvention. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Jahresmittel des Kaltwassers des gewählten Bereichs (nur Bilanz); leer = Konvention. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_KALTWASSER_MITTEL_ERL {
             get {
@@ -80176,7 +80626,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die eingespielte Messreihe, gegen die der Reiter „Kennzahlen“ vergleicht (Wahl aus den Reihen des Projekts, ab der Stufe Erweitert); gerechnet wird der Vergleich auf Klick. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die eingespielte Messreihe, gegen die der Reiter „Kennzahlen“ vergleicht (Wahl aus den Reihen des Projekts, ab der Stufe Experte); gerechnet wird der Vergleich auf Klick. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_MESSREIHE_ERL {
             get {
@@ -80221,7 +80671,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Bedarfsniveau der Zone — niedrig, mittel oder hoch; es wählt den spezifischen Bedarf der Nutzungsart je Einheit und Tag. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Bedarfsniveau des Bereichs — niedrig, mittel oder hoch; es wählt den spezifischen Bedarf der Nutzungsart je Einheit und Tag. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_NIVEAU_ERL {
             get {
@@ -80239,7 +80689,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsart der Zone aus dem Katalog; sie bestimmt Bezugsgröße, Tagesgang und den spezifischen Bedarf je Niveau. Pflichtfeld für OK; eine gesperrte Nutzungsart nennt ihren Grund. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsart des Bereichs aus dem Katalog; sie bestimmt Bezugsgröße, Tagesgang und den spezifischen Bedarf je Niveau. Pflichtfeld für OK; eine gesperrte Nutzungsart nennt ihren Grund. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_NUTZUNGSART_ERL {
             get {
@@ -80248,7 +80698,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Personen je Wohneinheit der gewählten Zone; leer = Belegung nach der Wohnungsgröße aus dem Katalog. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Personen je Wohneinheit des gewählten Bereichs; leer = Belegung nach der Wohnungsgröße aus dem Katalog. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_PERSONEN_JE_WE_ERL {
             get {
@@ -80302,7 +80752,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Tiefe des Dialogs: „Einfach“ zeigt die Zonen, „Experte“ dazu die Stochastik der Jahresreihe. Die Stufe blendet nur ein und aus, eingegebene Werte bleiben; „Erweitert“ ist in dieser Fassung gesperrt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Tiefe des Dialogs: „Einfach“ zeigt die Nutzungsbereiche mit Vorschau und Auslegung, „Experte“ dazu alle weiteren Angaben (Belegung, Kalender, Messwert, Tagesbedarf, Fachwerte, Jahresreihe). Die Stufe blendet nur ein und aus, eingegebene Werte bleiben. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_STUFE_ERL {
             get {
@@ -80311,7 +80761,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesbedarf der gewählten Zone; leer = Vorschlag aus dem Katalog (auto), ein Wert gilt als manueller Tagesbedarf. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesbedarf des gewählten Bereichs; leer = Vorschlag aus dem Katalog (auto), ein Wert gilt als manueller Tagesbedarf. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_TAGESBEDARF_MANUELL_ERL {
             get {
@@ -80320,7 +80770,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesgangsatz der gewählten Zone; leer = der Satz der Nutzungsart. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesgangsatz des gewählten Bereichs; leer = der Satz der Nutzungsart. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_TAGESGANGSATZ_ERL {
             get {
@@ -80329,7 +80779,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wie die gewählte Zone Trinkwarmwasser erwärmt (Speicher, Frischwasserstation, Durchfluss, Wohnungsstation) — wirkt nur auf die Auslegung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie der gewählte Bereich Trinkwarmwasser erwärmt (Speicher, Frischwasserstation, Durchfluss, Wohnungsstation) — wirkt nur auf die Auslegung. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_TOPOLOGIE_ERL {
             get {
@@ -80347,7 +80797,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Rechnet der Jahresgang jeder Zone über die eingespielten Typtage statt über die Faktoren des Katalogs? Eine Angabe des Projekts, nur in der Stufe Experte; ohne eingespielte Typtage abgelehnt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechnet der Jahresgang jedes Bereichs über die eingespielten Typtage statt über die Faktoren des Katalogs? Eine Angabe des Projekts, nur in der Stufe Experte; ohne eingespielte Typtage abgelehnt. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_TYPTAGEWEG_ERL {
             get {
@@ -80365,7 +80815,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wohnfläche je Wohneinheit der gewählten Zone; leer = Annahme des Katalogs. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohnfläche je Wohneinheit des gewählten Bereichs; leer = Annahme des Katalogs. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_WOHNFLAECHE_JE_WE_ERL {
             get {
@@ -80374,7 +80824,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wie viele Wohnungen dieses Typs die gewählte Zone hat — eine Zeile der Wohnungstabelle, nur bei einer Nutzungsart „Wohnen“ in der Stufe Erweitert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie viele Wohnungen dieses Typs der gewählte Nutzungsbereich hat — eine Zeile der Wohnungstabelle, nur bei einer Nutzungsart „Wohnen“ in der Stufe Experte. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_WOHNUNG_ANZAHL_ERL {
             get {
@@ -80410,7 +80860,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapftemperatur der gewählten Zone; leer = Bezugstemperatur des Katalogs. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapftemperatur des gewählten Bereichs; leer = Bezugstemperatur des Katalogs. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_ZAPFTEMPERATUR_ERL {
             get {
@@ -80428,7 +80878,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ob die gewählte Zone an der Zirkulation hängt; „nein“ nimmt sie aus dem Zirkulationsanteil. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ob der gewählte Bereich an der Zirkulation hängt; „nein“ nimmt ihn aus dem Zirkulationsanteil. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_ZIRKULATION_VORHANDEN_ERL {
             get {
@@ -80518,7 +80968,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name der Zone; Pflichtfeld für OK. Er benennt die Zone in Liste, Vorschau und Meldungen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des Bereichs; Pflichtfeld für OK. Er benennt den Bereich in Liste, Vorschau und Meldungen. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_ZONENNAME_ERL {
             get {
@@ -80527,7 +80977,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Zone der Zonenliste, nach Nummer oder Name; ihr Eingabeblock steht unter der Liste. Die Werte jeder Zone lassen sich auch ohne Wahl über die Spalten setzen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der gewählte Bereich der Bereichsliste, nach Nummer oder Name; sein Eingabeblock steht unter der Liste. Die Werte jedes Bereichs lassen sich auch ohne Wahl über die Spalten setzen. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_ZONE_ERL {
             get {
@@ -89387,6 +89837,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KM_ANL_MSG_VERWALTUNG_NICHT {
             get {
                 return ResourceManager.GetString("KM_ANL_MSG_VERWALTUNG_NICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Typkennfelder sind geladen. ähnelt.
+        /// </summary>
+        public static string KM_ANL_TYPKENNFELDER_ALLE {
+            get {
+                return ResourceManager.GetString("KM_ANL_TYPKENNFELDER_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typkennfelder: {0} neu, {1} übersprungen. ähnelt.
+        /// </summary>
+        public static string KM_ANL_TYPKENNFELDER_STATUS {
+            get {
+                return ResourceManager.GetString("KM_ANL_TYPKENNFELDER_STATUS", resourceCulture);
             }
         }
         
@@ -116950,11 +117418,191 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beherbergung und Pflege ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_BEHERBERGUNG {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_BEHERBERGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildung ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_BILDUNG {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_BILDUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Büro und Verwaltung ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_BUERO {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_BUERO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gastronomie und Küche ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_GASTRONOMIE {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_GASTRONOMIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Labor und Gesundheit ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_GESUNDHEIT {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_GESUNDHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hallen und Produktion ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_HALLEN {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_HALLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Handel ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_HANDEL {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_HANDEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Veranstaltung und Kultur ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_KULTUR {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_KULTUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neben-, Verkehrs- und Lagerflächen ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_NEBENFLAECHEN {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_NEBENFLAECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parken ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_PARKEN {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_PARKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sport und Wellness ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_SPORT {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_SPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohnen ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_WOHNEN {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_WOHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} aus der Datei ähnelt.
         /// </summary>
         public static string RNP_IMP_AUS_DATEI {
             get {
                 return ResourceManager.GetString("RNP_IMP_AUS_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung der Datei „{0}“ ähnelt.
+        /// </summary>
+        public static string RNP_IMP_BEGR_DATEI {
+            get {
+                return ResourceManager.GetString("RNP_IMP_BEGR_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die von Hand ähnelt.
+        /// </summary>
+        public static string RNP_IMP_BEGR_HAND {
+            get {
+                return ResourceManager.GetString("RNP_IMP_BEGR_HAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Küchen ähnelt.
+        /// </summary>
+        public static string RNP_IMP_BEGR_KUECHEN {
+            get {
+                return ResourceManager.GetString("RNP_IMP_BEGR_KUECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} % der beheizten Fläche ähnelt.
+        /// </summary>
+        public static string RNP_IMP_BEGR_MEHRHEIT {
+            get {
+                return ResourceManager.GetString("RNP_IMP_BEGR_MEHRHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name „{0}“ ähnelt.
+        /// </summary>
+        public static string RNP_IMP_BEGR_NAME {
+            get {
+                return ResourceManager.GetString("RNP_IMP_BEGR_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nichtwohngebäude ähnelt.
+        /// </summary>
+        public static string RNP_IMP_BEGR_NICHTWOHN {
+            get {
+                return ResourceManager.GetString("RNP_IMP_BEGR_NICHTWOHN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumart {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_BEGR_RAUMART {
+            get {
+                return ResourceManager.GetString("RNP_IMP_BEGR_RAUMART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohngebäude ({0} % Wohnfläche) ähnelt.
+        /// </summary>
+        public static string RNP_IMP_BEGR_WOHNGEBAEUDE {
+            get {
+                return ResourceManager.GetString("RNP_IMP_BEGR_WOHNGEBAEUDE", resourceCulture);
             }
         }
         
@@ -117004,6 +117652,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil Nr. {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_PROFIL_NUMMER {
+            get {
+                return ResourceManager.GetString("RNP_IMP_PROFIL_NUMMER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die aus der Nutzung der Datei ähnelt.
         /// </summary>
         public static string RNP_IMP_QUELLE_DATEI {
@@ -117045,6 +117702,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string RNP_IMP_QUELLE_IFC {
             get {
                 return ResourceManager.GetString("RNP_IMP_QUELLE_IFC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_RAUMPROFIL {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_RAUMPROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag der Mehrheit – {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_RAUMPROFIL_MEHRHEIT {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_RAUMPROFIL_MEHRHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die offen – Auswahl: {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_RAUMPROFIL_OFFEN {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_RAUMPROFIL_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag – {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_RAUMPROFIL_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_RAUMPROFIL_VORSCHLAG", resourceCulture);
             }
         }
         
@@ -122942,6 +123635,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon aus Puffer: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_DAVON_AUS_PUFFER_WP {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_DAVON_AUS_PUFFER_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die davon Heizung: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_DAVON_HEIZUNG {
@@ -123955,6 +124657,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_TIP_BRENNWERT_SPK {
             get {
                 return ResourceManager.GetString("SIMERG_TIP_BRENNWERT_SPK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Teil der Nutzwärme, den die Speicher aus der Ladung der Wärmepumpen an den Bedarf abgegeben haben. Den Rest liefern die Wärmepumpen direkt. Im Heizkesselreiter ist dieser Wert in „davon aus Puffer (andere Erzeuger)“ enthalten. ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_DAVON_AUS_PUFFER_WP {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_DAVON_AUS_PUFFER_WP", resourceCulture);
             }
         }
         
@@ -159214,7 +159925,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die keine — die Tagesform kommt aus dem Tagesgangsatz der Zone ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine — die Tagesform kommt aus dem Tagesgangsatz des Bereichs ähnelt.
         /// </summary>
         public static string ZPGT_WERT_OHNE_GAENGE {
             get {
@@ -159277,7 +159988,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Summe aller Zonen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe aller Bereiche ähnelt.
         /// </summary>
         public static string ZPG_ANSICHT_SUMME {
             get {
@@ -160123,7 +160834,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · Zonen: {1} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · Bereiche: {1} ähnelt.
         /// </summary>
         public static string ZPG_AUS_GRP_TOPOLOGIE {
             get {
@@ -160267,7 +160978,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich ähnelt.
         /// </summary>
         public static string ZPG_AUS_HERKUNFT_SP_ZONE {
             get {
@@ -160366,7 +161077,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die auto = aus dem Mengengerüst der Zonen: {0}; angesetzt: {1} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die auto = aus dem Mengengerüst der Bereiche: {0}; angesetzt: {1} ähnelt.
         /// </summary>
         public static string ZPG_AUS_HERL_PERSONEN {
             get {
@@ -160690,7 +161401,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Summe aller Zonen · {0} Zonen · Stufe {1} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe aller Bereiche · {0} Bereiche · Stufe {1} ähnelt.
         /// </summary>
         public static string ZPG_AUS_KONTEXT {
             get {
@@ -161266,7 +161977,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist keine Zone angelegt — ohne Zone keine Auslegung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist kein Bereich angelegt — ohne Bereich keine Auslegung. ähnelt.
         /// </summary>
         public static string ZPG_AUS_MSG_KEINE_ZONE {
             get {
@@ -161392,7 +162103,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Stundenprofil der Zonen (Spitzen unterschätzt) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stundenprofil der Bereiche (Spitzen unterschätzt) ähnelt.
         /// </summary>
         public static string ZPG_AUS_OPT_STUNDENPROFIL {
             get {
@@ -161680,7 +162391,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungsgröße jeder Wohnungsstation; maßgebend ist die Zone „{0}“. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungsgröße jeder Wohnungsstation; maßgebend ist der Bereich „{0}“. ähnelt.
         /// </summary>
         public static string ZPG_AUS_SPITZE_JE_EINHEIT_ZONE {
             get {
@@ -162067,7 +162778,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“ fehlt in der Auslegung: {1} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich „{0}“ fehlt in der Auslegung: {1} ähnelt.
         /// </summary>
         public static string ZPG_AUS_ZONE_ABGELEHNT {
             get {
@@ -162355,7 +163066,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone hinzufügen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich hinzufügen ähnelt.
         /// </summary>
         public static string ZPG_BTN_ZONE_NEU {
             get {
@@ -162382,7 +163093,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone trägt 0 — keine Dauerlinie. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bereich trägt 0 — keine Dauerlinie. ähnelt.
         /// </summary>
         public static string ZPG_DAUERLINIE_OHNE {
             get {
@@ -162499,6 +163210,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Bereich {1} ähnelt.
+        /// </summary>
+        public static string ZPG_FELD_BEREICH {
+            get {
+                return ResourceManager.GetString("ZPG_FELD_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1} ähnelt.
         /// </summary>
         public static string ZPG_FELD_ZEILE {
@@ -162526,7 +163246,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Jahresmesswert der Zone „{0}“ wird aus der Messreihe „{1}“ gesetzt; ein vorhandener Wert fällt weg. Übernehmen? ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Jahresmesswert des Bereichs „{0}“ wird aus der Messreihe „{1}“ gesetzt; ein vorhandener Wert fällt weg. Übernehmen? ähnelt.
         /// </summary>
         public static string ZPG_FRAGE_KALIBRIEREN {
             get {
@@ -162535,7 +163255,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Aus der Messreihe „{0}“ entsteht die Nutzungsart „{1}“; die Zone rechnet danach mit ihr, die Vorlage bleibt unberührt. Übernehmen? ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus der Messreihe „{0}“ entsteht die Nutzungsart „{1}“; der Bereich rechnet danach mit ihr, die Vorlage bleibt unberührt. Übernehmen? ähnelt.
         /// </summary>
         public static string ZPG_FRAGE_VORSCHLAG {
             get {
@@ -162940,7 +163660,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation, Zonenanteil ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation, Bereichsanteil ähnelt.
         /// </summary>
         public static string ZPG_GROESSE_ZIRKULATION_ZONENANTEIL {
             get {
@@ -162949,7 +163669,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zonenfläche ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereichsfläche ähnelt.
         /// </summary>
         public static string ZPG_GROESSE_ZONENFLAECHE {
             get {
@@ -162967,7 +163687,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Fachwerte der Zone ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fachwerte des Bereichs ähnelt.
         /// </summary>
         public static string ZPG_GRP_FACHWERTE {
             get {
@@ -163048,7 +163768,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“ ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich „{0}“ ähnelt.
         /// </summary>
         public static string ZPG_GRP_ZONE {
             get {
@@ -163057,7 +163777,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungszonen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsbereiche ähnelt.
         /// </summary>
         public static string ZPG_GRP_ZONEN {
             get {
@@ -163075,7 +163795,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Dauerlinie zeigt die Stufe Erweitert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Dauerlinie zeigt die Stufe Experte. ähnelt.
         /// </summary>
         public static string ZPG_GRUND_DAUERLINIE {
             get {
@@ -163264,7 +163984,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich ähnelt.
         /// </summary>
         public static string ZPG_HERKUNFT_SP_ZONE {
             get {
@@ -163417,7 +164137,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eigene Ferien der Zone gehen vor: Trägt die Zone einen Zeitraum, gelten die Ferien des Gebäudes nicht. Ein Zeitraum zählt, sobald er ein Ende hat; über den Jahreswechsel beginnt er im Dezember, ohne Beginn läuft er vom 1. Januar an. Gerechnet wird im Jahr ohne Schalttag. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigene Ferien des Bereichs gehen vor: Trägt der Bereich einen Zeitraum, gelten die Ferien des Gebäudes nicht. Ein Zeitraum zählt, sobald er ein Ende hat; über den Jahreswechsel beginnt er im Dezember, ohne Beginn läuft er vom 1. Januar an. Gerechnet wird im Jahr ohne Schalttag. ähnelt.
         /// </summary>
         public static string ZPG_HINW_FERIEN {
             get {
@@ -163435,7 +164155,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Leer = kein Messwert. Ein Messwert skaliert die Zone mit einem ausgewiesenen Faktor; ein Volumen gilt an der Zapfstelle und wird über Zapf- und Kaltwassertemperatur umgerechnet. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leer = kein Messwert. Ein Messwert skaliert den Bereich mit einem ausgewiesenen Faktor; ein Volumen gilt an der Zapfstelle und wird über Zapf- und Kaltwassertemperatur umgerechnet. ähnelt.
         /// </summary>
         public static string ZPG_HINW_JAHRESMESSWERT {
             get {
@@ -163444,7 +164164,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Je Tag der Tagtyp, mit dem die Zone rechnet — aus Wochenende, Feiertagen und Ferien, wie die Vorschau sie liest. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Je Tag der Tagtyp, mit dem der Bereich rechnet — aus Wochenende, Feiertagen und Ferien, wie die Vorschau sie liest. ähnelt.
         /// </summary>
         public static string ZPG_HINW_JAHRESRASTER {
             get {
@@ -163480,7 +164200,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quelle bestimmt Wochenende, Feiertage und Ferien der Zone: der Kalender der Nutzungsart oder ein Gebäude des Projekts. Ein Gebäude belegt Ferien und Fläche nur vor. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quelle bestimmt Wochenende, Feiertage und Ferien des Bereichs: der Kalender der Nutzungsart oder ein Gebäude des Projekts. Ein Gebäude belegt Ferien und Fläche nur vor. ähnelt.
         /// </summary>
         public static string ZPG_HINW_KALENDER {
             get {
@@ -163525,7 +164245,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „OK“ legt die Nutzungsart unter dieser Katalogversion neu an (Status eigen) und stellt die Zone auf sie um; die gesperrte bleibt, wie sie ist. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die „OK“ legt die Nutzungsart unter dieser Katalogversion neu an (Status eigen) und stellt den Bereich auf sie um; die gesperrte bleibt, wie sie ist. ähnelt.
         /// </summary>
         public static string ZPG_HINW_KOPIE {
             get {
@@ -163660,7 +164380,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Angabe des Projekts: Der Jahresgang jeder Zone entsteht dann aus den Typtagen des eingespielten Pakets und dem Wetter der Klimaregion. Die Auslegung bleibt unberührt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Angabe des Projekts: Der Jahresgang jedes Bereichs entsteht dann aus den Typtagen des eingespielten Pakets und dem Wetter der Klimaregion. Die Auslegung bleibt unberührt. ähnelt.
         /// </summary>
         public static string ZPG_HINW_TYPTAGE {
             get {
@@ -163696,16 +164416,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Weitere Angaben stehen in der Stufe Erweitert. ähnelt.
-        /// </summary>
-        public static string ZPG_HINW_WEITERE_ERWEITERT {
-            get {
-                return ResourceManager.GetString("ZPG_HINW_WEITERE_ERWEITERT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Fachwerte, Tagesgänge und Zufallssaat stehen in der Stufe Experte. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weitere Angaben — Belegung, Kalender, Messwert, Fachwerte und Jahresreihe — stehen in der Stufe Experte. ähnelt.
         /// </summary>
         public static string ZPG_HINW_WEITERE_EXPERTE {
             get {
@@ -163732,7 +164443,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Statt einer Bezugsgröße die Wohnungen nach Typ angeben: Die Zone rechnet dann mit ihrer Summe, und die Auslegung bildet daraus die Bedarfskennzahl nach DIN 4708. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Statt einer Bezugsgröße die Wohnungen nach Typ angeben: Der Bereich rechnet dann mit ihrer Summe, und die Auslegung bildet daraus die Bedarfskennzahl nach DIN 4708. ähnelt.
         /// </summary>
         public static string ZPG_HINW_WOHNUNGEN {
             get {
@@ -163741,7 +164452,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Wohnungen angegeben — die Zone rechnet mit der Bezugsgröße. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Wohnungen angegeben — der Bereich rechnet mit der Bezugsgröße. ähnelt.
         /// </summary>
         public static string ZPG_HINW_WOHNUNGSTABELLE_LEER {
             get {
@@ -163768,7 +164479,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe · ja; „nein“ nimmt die Zone aus dem Zirkulationsanteil. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe · ja; „nein“ nimmt den Bereich aus dem Zirkulationsanteil. ähnelt.
         /// </summary>
         public static string ZPG_HINW_ZIRKULATION_VORHANDEN {
             get {
@@ -163930,7 +164641,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone trägt eigene Ferien; die Ferien des Gebäudes gelten nicht. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bereich trägt eigene Ferien; die Ferien des Gebäudes gelten nicht. ähnelt.
         /// </summary>
         public static string ZPG_KAL_FERIEN_ZONE_VOR {
             get {
@@ -164083,7 +164794,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zeile wählen setzt die Nutzungsart der Zone „{0}“. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zeile wählen setzt die Nutzungsart des Bereichs „{0}“. ähnelt.
         /// </summary>
         public static string ZPG_KATALOG_BLATT_HINWEIS {
             get {
@@ -164137,7 +164848,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zone benutzt die Nutzungsart — geänderte Kategorien entstehen als neue Katalogversion. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Bereich benutzt die Nutzungsart — geänderte Kategorien entstehen als neue Katalogversion. ähnelt.
         /// </summary>
         public static string ZPG_KATEG_GRUND_BENUTZT_GESPERRT {
             get {
@@ -164164,7 +164875,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die letzte Kategorie bleibt — ohne Kategorie rechnet die Zone nicht stochastisch. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die letzte Kategorie bleibt — ohne Kategorie rechnet der Bereich nicht stochastisch. ähnelt.
         /// </summary>
         public static string ZPG_KATEG_GRUND_LETZTE {
             get {
@@ -164380,7 +165091,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfkategorien gespeichert — die Zone „{0}“ rechnet mit „{1}“. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfkategorien gespeichert — der Bereich „{0}“ rechnet mit „{1}“. ähnelt.
         /// </summary>
         public static string ZPG_KATEG_STATUS_GESPEICHERT {
             get {
@@ -164992,7 +165703,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresraster der Zone ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresraster des Bereichs ähnelt.
         /// </summary>
         public static string ZPG_LBL_JAHRESRASTER {
             get {
@@ -165037,7 +165748,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eigene Ferien der Zone ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eigene Ferien des Bereichs ähnelt.
         /// </summary>
         public static string ZPG_LBL_KAL_EIGENE_FERIEN {
             get {
@@ -165451,7 +166162,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zonenname ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereichsname ähnelt.
         /// </summary>
         public static string ZPG_LBL_ZONENNAME {
             get {
@@ -165496,7 +166207,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Ein Faktor des Auslastungsgangs ist kleiner als 0. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich „{0}“: Ein Faktor des Auslastungsgangs ist kleiner als 0. ähnelt.
         /// </summary>
         public static string ZPG_MSG_AUSLASTUNG_NEGATIV {
             get {
@@ -165514,7 +166225,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Ferienzeitraum {1} braucht ein Ende („bis“); Beginn und Ende sind Tage des Jahres ohne Schalttag. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich „{0}“: Ferienzeitraum {1} braucht ein Ende („bis“); Beginn und Ende sind Tage des Jahres ohne Schalttag. ähnelt.
         /// </summary>
         public static string ZPG_MSG_FERIEN_UNGUELTIG {
             get {
@@ -165550,7 +166261,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist keine Zone angelegt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist kein Bereich angelegt. ähnelt.
         /// </summary>
         public static string ZPG_MSG_KEINE_ZONE {
             get {
@@ -165559,7 +166270,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Der Jahresmesswert muss größer 0 sein. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich „{0}“: Der Jahresmesswert muss größer 0 sein. ähnelt.
         /// </summary>
         public static string ZPG_MSG_MESSWERT_NICHT_POSITIV {
             get {
@@ -165568,7 +166279,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Bitte die Einheit des Jahresmesswerts wählen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich „{0}“: Bitte die Einheit des Jahresmesswerts wählen. ähnelt.
         /// </summary>
         public static string ZPG_MSG_MESSWERT_OHNE_EINHEIT {
             get {
@@ -165577,7 +166288,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Bitte die Bilanzgrenze des Jahresmesswerts wählen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich „{0}“: Bitte die Bilanzgrenze des Jahresmesswerts wählen. ähnelt.
         /// </summary>
         public static string ZPG_MSG_MESSWERT_OHNE_GRENZE {
             get {
@@ -165586,7 +166297,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Ein Messwert mit Speicherverlust braucht den Speicherverlust in kWh/a. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich „{0}“: Ein Messwert mit Speicherverlust braucht den Speicherverlust in kWh/a. ähnelt.
         /// </summary>
         public static string ZPG_MSG_MESSWERT_OHNE_SPEICHERVERLUST {
             get {
@@ -165640,7 +166351,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Bitte den manuellen Tagesbedarf (kWh/d, ≥ 0) angeben. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich „{0}“: Bitte den manuellen Tagesbedarf (kWh/d, ≥ 0) angeben. ähnelt.
         /// </summary>
         public static string ZPG_MSG_TAGESBEDARF_MANUELL_UNGUELTIG {
             get {
@@ -165658,7 +166369,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Wohnungstyp {1} braucht eine Anzahl größer 0. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich „{0}“: Wohnungstyp {1} braucht eine Anzahl größer 0. ähnelt.
         /// </summary>
         public static string ZPG_MSG_WOHNUNG_OHNE_ANZAHL {
             get {
@@ -165676,7 +166387,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: {1} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich „{0}“: {1} ähnelt.
         /// </summary>
         public static string ZPG_MSG_ZONE {
             get {
@@ -165685,7 +166396,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Der Name ist mehrfach vergeben — bitte jeder Zone einen eigenen Namen geben. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich „{0}“: Der Name ist mehrfach vergeben — bitte jedem Bereich einen eigenen Namen geben. ähnelt.
         /// </summary>
         public static string ZPG_MSG_ZONE_NAME_DOPPELT {
             get {
@@ -165694,7 +166405,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Bitte eine Bezugsgröße größer 0 eingeben. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich „{0}“: Bitte eine Bezugsgröße größer 0 eingeben. ähnelt.
         /// </summary>
         public static string ZPG_MSG_ZONE_OHNE_BEZUGSMENGE {
             get {
@@ -165703,7 +166414,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zone hat keinen Namen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Bereich hat keinen Namen. ähnelt.
         /// </summary>
         public static string ZPG_MSG_ZONE_OHNE_NAME {
             get {
@@ -165712,7 +166423,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Bitte eine Nutzungsart wählen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich „{0}“: Bitte eine Nutzungsart wählen. ähnelt.
         /// </summary>
         public static string ZPG_MSG_ZONE_OHNE_NUTZUNGSART {
             get {
@@ -165721,7 +166432,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“ trägt 0: {1} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich „{0}“ trägt 0: {1} ähnelt.
         /// </summary>
         public static string ZPG_MSG_ZONE_TRAEGT_NULL {
             get {
@@ -165820,7 +166531,277 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zonen haben sich geändert — der Auslegungspunkt ist überholt und wird beim Speichern verworfen. „Auslegung…“ öffnen und neu übernehmen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aus dem Zapfprofilgenerator ({0}) ähnelt.
+        /// </summary>
+        public static string ZPG_PS_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("ZPG_PS_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
+        /// </summary>
+        public static string ZPG_PS_BTN_SPEICHERN {
+            get {
+                return ResourceManager.GetString("ZPG_PS_BTN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weiter ähnelt.
+        /// </summary>
+        public static string ZPG_PS_BTN_WEITER {
+            get {
+                return ResourceManager.GetString("ZPG_PS_BTN_WEITER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst die Fehleingaben beheben — mit ihnen gibt es kein Profil zum Ablegen. ähnelt.
+        /// </summary>
+        public static string ZPG_PS_GRUND_FEHLEINGABE {
+            get {
+                return ResourceManager.GetString("ZPG_PS_GRUND_FEHLEINGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt rechnet sein Brauchwasser gerade über die Bestandsprofile; ein Profilsatz, der dem Projekt hinzugefügt wird, rechnet mit. ähnelt.
+        /// </summary>
+        public static string ZPG_PS_HINWEIS_WEG_BESTAND {
+            get {
+                return ResourceManager.GetString("ZPG_PS_HINWEIS_WEG_BESTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt rechnet sein Brauchwasser gerade über den Zapfprofilgenerator; ein abgelegter Profilsatz rechnet erst mit, wenn der Rechenweg auf Bestandsprofile steht. ähnelt.
+        /// </summary>
+        public static string ZPG_PS_HINWEIS_WEG_GENERATOR {
+            get {
+                return ResourceManager.GetString("ZPG_PS_HINWEIS_WEG_GENERATOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt rechnet auf dem Bestandsweg bereits eine Zirkulation. Mit Zirkulation im Profil zählt der Verlust doppelt — empfohlen: ohne Zirkulation. ähnelt.
+        /// </summary>
+        public static string ZPG_PS_HINWEIS_ZIRK_DOPPELT {
+            get {
+                return ResourceManager.GetString("ZPG_PS_HINWEIS_ZIRK_DOPPELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Als Katalogsatz speichern… ähnelt.
+        /// </summary>
+        public static string ZPG_PS_KNOPF_KATALOG {
+            get {
+                return ResourceManager.GetString("ZPG_PS_KNOPF_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zum Projekt hinzufügen ähnelt.
+        /// </summary>
+        public static string ZPG_PS_KNOPF_PROJEKT {
+            get {
+                return ResourceManager.GetString("ZPG_PS_KNOPF_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung ähnelt.
+        /// </summary>
+        public static string ZPG_PS_LBL_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("ZPG_PS_LBL_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahressumme ähnelt.
+        /// </summary>
+        public static string ZPG_PS_LBL_JAHRESSUMME {
+            get {
+                return ResourceManager.GetString("ZPG_PS_LBL_JAHRESSUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name ähnelt.
+        /// </summary>
+        public static string ZPG_PS_LBL_NAME {
+            get {
+                return ResourceManager.GetString("ZPG_PS_LBL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spitzenstunde der mittleren Woche ähnelt.
+        /// </summary>
+        public static string ZPG_PS_LBL_SPITZE {
+            get {
+                return ResourceManager.GetString("ZPG_PS_LBL_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ (Wochenprofil) ähnelt.
+        /// </summary>
+        public static string ZPG_PS_LBL_TYP {
+            get {
+                return ResourceManager.GetString("ZPG_PS_LBL_TYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mit Zirkulation ähnelt.
+        /// </summary>
+        public static string ZPG_PS_LBL_ZIRKULATION {
+            get {
+                return ResourceManager.GetString("ZPG_PS_LBL_ZIRKULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogsatz „{0}“ ist gespeichert. ähnelt.
+        /// </summary>
+        public static string ZPG_PS_MSG_KATALOG_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("ZPG_PS_MSG_KATALOG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist kein Zapfprofil gerechnet — ohne Ergebnis kein Profilsatz. ähnelt.
+        /// </summary>
+        public static string ZPG_PS_MSG_KEIN_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("ZPG_PS_MSG_KEIN_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte einen Namen für den Katalogsatz angeben. ähnelt.
+        /// </summary>
+        public static string ZPG_PS_MSG_NAME_LEER {
+            get {
+                return ResourceManager.GetString("ZPG_PS_MSG_NAME_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Katalogsatz „{0}“ ist schon vorhanden. ähnelt.
+        /// </summary>
+        public static string ZPG_PS_MSG_NAME_VORHANDEN {
+            get {
+                return ResourceManager.GetString("ZPG_PS_MSG_NAME_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Profilsatz wurde nicht gespeichert — {0} ähnelt.
+        /// </summary>
+        public static string ZPG_PS_MSG_NICHT_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("ZPG_PS_MSG_NICHT_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Zapfprofil trägt keinen Bedarf — es gibt nichts abzulegen. ähnelt.
+        /// </summary>
+        public static string ZPG_PS_MSG_OHNE_BEDARF {
+            get {
+                return ResourceManager.GetString("ZPG_PS_MSG_OHNE_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ steht als Brauchwasserprofil im Projekt. ähnelt.
+        /// </summary>
+        public static string ZPG_PS_MSG_PROJEKT_HINZUGEFUEGT {
+            get {
+                return ResourceManager.GetString("ZPG_PS_MSG_PROJEKT_HINZUGEFUEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Wochenprofil „{0}“ ist schon vorhanden — bitte einen anderen Typ angeben. ähnelt.
+        /// </summary>
+        public static string ZPG_PS_MSG_TYP_VORHANDEN {
+            get {
+                return ResourceManager.GetString("ZPG_PS_MSG_TYP_VORHANDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfprofil {0} ähnelt.
+        /// </summary>
+        public static string ZPG_PS_NAME_PROJEKT {
+            get {
+                return ResourceManager.GetString("ZPG_PS_NAME_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} {1:00}–{2:00} Uhr: {3:N1} kW ähnelt.
+        /// </summary>
+        public static string ZPG_PS_SPITZE {
+            get {
+                return ResourceManager.GetString("ZPG_PS_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Als Katalogsatz speichern ähnelt.
+        /// </summary>
+        public static string ZPG_PS_TITEL_KATALOG {
+            get {
+                return ResourceManager.GetString("ZPG_PS_TITEL_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zapfwärme und Zirkulationsverlust ähnelt.
+        /// </summary>
+        public static string ZPG_PS_VARIANTE_MIT {
+            get {
+                return ResourceManager.GetString("ZPG_PS_VARIANTE_MIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Zapfwärme ähnelt.
+        /// </summary>
+        public static string ZPG_PS_VARIANTE_OHNE {
+            get {
+                return ResourceManager.GetString("ZPG_PS_VARIANTE_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Profil steht dann nur in diesem Projekt, nicht im Katalog. Es rechnet als Bestandsprofil ohne Ferien, Feiertage, Stochastik und Typtage. ähnelt.
+        /// </summary>
+        public static string ZPG_PS_WARNUNG_PROJEKT {
+            get {
+                return ResourceManager.GetString("ZPG_PS_WARNUNG_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mo,Di,Mi,Do,Fr,Sa,So ähnelt.
+        /// </summary>
+        public static string ZPG_PS_WOCHENTAGE {
+            get {
+                return ResourceManager.GetString("ZPG_PS_WOCHENTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bereiche haben sich geändert — der Auslegungspunkt ist überholt und wird beim Speichern verworfen. „Auslegung…“ öffnen und neu übernehmen. ähnelt.
         /// </summary>
         public static string ZPG_PUNKT_UEBERHOLT {
             get {
@@ -165937,7 +166918,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kennzahl N = {0:0.##} deckt nur die Wohnzonen mit Speicher; außerhalb des Gültigkeitsbereichs: {1}. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kennzahl N = {0:0.##} deckt nur die Wohnbereiche mit Speicher; außerhalb des Gültigkeitsbereichs: {1}. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSHINWEIS_DIN4708_TEILGUELTIG {
             get {
@@ -165964,7 +166945,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bedarfstag „{0}“ ist linear auf {1:0.##} Wohneinheiten skaliert (mehr als {2:0}) — ohne Gleichzeitigkeit. Für große Zonen ist der stochastische Bedarfstag maßgeblich. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bedarfstag „{0}“ ist linear auf {1:0.##} Wohneinheiten skaliert (mehr als {2:0}) — ohne Gleichzeitigkeit. Für große Bereiche ist der stochastische Bedarfstag maßgeblich. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSHINWEIS_ECODESIGN_SKALIERT {
             get {
@@ -166009,7 +166990,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlage ist eine Großanlage, aber keine Zone nimmt an der Zirkulation teil. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlage ist eine Großanlage, aber kein Bereich nimmt an der Zirkulation teil. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSHINWEIS_GROSS_OHNE_ZIRKULATION {
             get {
@@ -166252,7 +167233,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wohnungsstation je Einheit: P{0} der Minutenspitze {1:0.###} kW (Zone „{2}“); die Summe der Gruppe P{0} {3:0.###} kW. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wohnungsstation je Einheit: P{0} der Minutenspitze {1:0.###} kW (Bereich „{2}“); die Summe der Gruppe P{0} {3:0.###} kW. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSHINWEIS_WOHNUNGSSTATION_JE_EINHEIT {
             get {
@@ -166279,7 +167260,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ausstattungsklasse {0} eines Wohnungstyps der Zone „{1}“ steht nicht im Katalog. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Ausstattungsklasse {0} eines Wohnungstyps des Bereichs „{1}“ steht nicht im Katalog. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_AUSSTATTUNG_FEHLT {
             get {
@@ -166306,7 +167287,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die DIN 4708: nicht rechenbar — die Zone „{0}“ trägt keine Wohnungstabelle. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die DIN 4708: nicht rechenbar — der Bereich „{0}“ trägt keine Wohnungstabelle. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_DIN_OHNE_WOHNUNGSTABELLE {
             get {
@@ -166324,7 +167305,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zone des Ensembles ist unvollständig (Kategorien, Dichte, Einheiten ≥ 1). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Bereich des Ensembles ist unvollständig (Kategorien, Dichte, Einheiten ≥ 1). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_ENSEMBLEZONE_UNVOLLSTAENDIG {
             get {
@@ -166333,7 +167314,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Ensemble hat keine Zone. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Ensemble hat keinen Bereich. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_ENSEMBLE_OHNE_ZONE {
             get {
@@ -166378,7 +167359,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogtag „{0}“ gilt je {1}, die Zonen der Gruppe tragen die Bezugsart {2}; er wird nicht skaliert — bitte einen passenden Tag wählen oder konstruieren. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogtag „{0}“ gilt je {1}, die Bereiche der Gruppe tragen die Bezugsart {2}; er wird nicht skaliert — bitte einen passenden Tag wählen oder konstruieren. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_KATALOGTAG_BEZUGSART {
             get {
@@ -166387,7 +167368,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogtag „{0}“ wird auf die Bezugsmenge skaliert, die Zonen der Gruppe tragen aber verschiedene Bezugsarten ({1}); Mengen verschiedener Bezugsarten werden nicht summiert — bitte einen Tag konstruieren. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogtag „{0}“ wird auf die Bezugsmenge skaliert, die Bereiche der Gruppe tragen aber verschiedene Bezugsarten ({1}); Mengen verschiedener Bezugsarten werden nicht summiert — bitte einen Tag konstruieren. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_KATALOGTAG_BEZUGSARTEN {
             get {
@@ -166396,7 +167377,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogtag „{0}“ gilt bei θ_KW,A {1:0.###} °C; die Zonen der Gruppe tragen verschiedene Zapftemperaturen, die Umrechnung auf {2:0.###} °C ist nicht eindeutig. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogtag „{0}“ gilt bei θ_KW,A {1:0.###} °C; die Bereiche der Gruppe tragen verschiedene Zapftemperaturen, die Umrechnung auf {2:0.###} °C ist nicht eindeutig. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_KATALOGTAG_ZAPFTEMPERATUREN {
             get {
@@ -166702,7 +167683,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wochenreihe hat keine Zone. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wochenreihe hat keinen Bereich. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_WOCHE_OHNE_ZONE {
             get {
@@ -166738,7 +167719,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zone der Wochenreihe trägt nicht 365 Tage. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Bereich der Wochenreihe trägt nicht 365 Tage. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSLEGUNG_WOCHE_ZONE_365 {
             get {
@@ -166972,7 +167953,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die DIN 4708: N = {0:0.###}, V_DIN = {1:0} l (nur Wohnzonen) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die DIN 4708: N = {0:0.###}, V_DIN = {1:0} l (nur Wohnbereiche) ähnelt.
         /// </summary>
         public static string ZPG_SATZ_AUSTEXT_NORMVERGLEICH_TEIL {
             get {
@@ -167863,7 +168844,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die die Spreizung der Zone „{0}“ ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Spreizung des Bereichs „{0}“ ähnelt.
         /// </summary>
         public static string ZPG_SATZ_BEGRIFF_SPREIZUNG_ZONE {
             get {
@@ -167971,7 +168952,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wohnungstabellen der Zonen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohnungstabellen der Bereiche ähnelt.
         /// </summary>
         public static string ZPG_SATZ_BEGRIFF_TABELLE_TWWWOHNUNGSTYP {
             get {
@@ -167989,7 +168970,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zonen des Zapfprofils ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereiche des Zapfprofils ähnelt.
         /// </summary>
         public static string ZPG_SATZ_BEGRIFF_TABELLE_TWWZONE {
             get {
@@ -168016,7 +168997,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die die Tagesmenge der Zone „{0}“ ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Tagesmenge des Bereichs „{0}“ ähnelt.
         /// </summary>
         public static string ZPG_SATZ_BEGRIFF_TAGESMENGE_ZONE {
             get {
@@ -168385,7 +169366,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der spezifische Bedarf der Zone „{0}“ ist negativ. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der spezifische Bedarf des Bereichs „{0}“ ist negativ. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_BEDARF_SPEZ_NEGATIV {
             get {
@@ -168394,7 +169375,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Belegung eines Wohnungstyps der Zone „{0}“ ist weder gesetzt noch aus dem Katalog bestimmbar. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Belegung eines Wohnungstyps des Bereichs „{0}“ ist weder gesetzt noch aus dem Katalog bestimmbar. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_BELEGUNG_FEHLT {
             get {
@@ -168403,7 +169384,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ hat keine positive Bezugsmenge. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bereich „{0}“ hat keine positive Bezugsmenge. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_BEZUGSMENGE_NICHT_POSITIV {
             get {
@@ -168412,7 +169393,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wohnfläche je WE der Zone „{0}“ ist nicht positiv; die Einheiten sind nicht bestimmbar. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wohnfläche je WE des Bereichs „{0}“ ist nicht positiv; die Einheiten sind nicht bestimmbar. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_EINHEITEN_FLAECHE {
             get {
@@ -168421,7 +169402,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der Einheiten der Zone „{0}“ ist nicht bestimmbar oder größer als {1}. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der Einheiten des Bereichs „{0}“ ist nicht bestimmbar oder größer als {1}. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_EINHEITEN_UNBESTIMMT {
             get {
@@ -168439,7 +169420,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kalender, Kaltwasserfaktor oder Spreizung der Zone „{0}“ haben nicht das Jahresraster. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalender, Kaltwasserfaktor oder Spreizung des Bereichs „{0}“ haben nicht das Jahresraster. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_JAHRESZONE_RASTER {
             get {
@@ -168448,7 +169429,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Der Typtageingang der gezogenen Jahresreihe trägt nicht 365 endliche, nicht negative Tagesmengen mit brauchbaren Tagesgängen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich „{0}“: Der Typtageingang der gezogenen Jahresreihe trägt nicht 365 endliche, nicht negative Tagesmengen mit brauchbaren Tagesgängen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_JAHRESZONE_TYPTAGE {
             get {
@@ -168457,7 +169438,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Auf dem Typtagweg zieht die Jahresreihe über die Tagesmengen der Typtage — die Entkopplung der Urlaube gilt dort nicht. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich „{0}“: Auf dem Typtagweg zieht die Jahresreihe über die Tagesmengen der Typtage — die Entkopplung der Urlaube gilt dort nicht. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_JAHRESZONE_TYPTAGE_URLAUB {
             get {
@@ -168466,7 +169447,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ der Jahresreihe ist unvollständig. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bereich „{0}“ der Jahresreihe ist unvollständig. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_JAHRESZONE_UNVOLLSTAENDIG {
             get {
@@ -168475,7 +169456,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das gezogene Jahr zum Seed der Zone „{0}“ trägt keine Zapfung; die Jahresmenge ist nicht darstellbar. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das gezogene Jahr zum Seed des Bereichs „{0}“ trägt keine Zapfung; die Jahresmenge ist nicht darstellbar. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_JAHR_ZUM_SEED_LEER {
             get {
@@ -168520,7 +169501,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Amplitude des Kaltwassers ist negativ (Zone „{0}“). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Amplitude des Kaltwassers ist negativ (Bereich „{0}“). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KALTWASSER_AMPLITUDE_NEGATIV {
             get {
@@ -168529,7 +169510,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Im Monat {0} liegt das Kaltwasser nicht unter der Zapftemperatur (Zone „{1}“). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Monat {0} liegt das Kaltwasser nicht unter der Zapftemperatur (Bereich „{1}“). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KALTWASSER_MONAT_UEBER_ZAPF {
             get {
@@ -168556,7 +169537,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anteile der Zapfkategorien der Zone „{0}“ summieren zu 0. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anteile der Zapfkategorien des Bereichs „{0}“ summieren zu 0. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KATEGORIEN_ANTEIL_NULL {
             get {
@@ -168565,7 +169546,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ der Zone „{1}“ trägt keinen gültigen Anteil. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ des Bereichs „{1}“ trägt keinen gültigen Anteil. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KATEGORIE_ANTEIL {
             get {
@@ -168574,7 +169555,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ der Zone „{1}“ trägt keine Dauer von 1 bis 1440 Minuten. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ des Bereichs „{1}“ trägt keine Dauer von 1 bis 1440 Minuten. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KATEGORIE_DAUER {
             get {
@@ -168583,7 +169564,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ der Zone „{1}“ trägt keine positive Kappung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ des Bereichs „{1}“ trägt keine positive Kappung. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KATEGORIE_KAPPUNG {
             get {
@@ -168592,7 +169573,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ der Zone „{1}“ hat kein positives gestutztes Mittel des Volumenstroms. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ des Bereichs „{1}“ hat kein positives gestutztes Mittel des Volumenstroms. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KATEGORIE_MITTEL {
             get {
@@ -168601,7 +169582,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ der Zone „{1}“ ergibt keine endliche Rate der Ereignisse. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ des Bereichs „{1}“ ergibt keine endliche Rate der Ereignisse. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KATEGORIE_RATE {
             get {
@@ -168610,7 +169591,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ der Zone „{1}“ trägt keine gültige Streuung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ des Bereichs „{1}“ trägt keine gültige Streuung. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KATEGORIE_STREUUNG {
             get {
@@ -168619,7 +169600,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ der Zone „{1}“ trägt keinen gültigen Volumenstrom. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapfkategorie „{0}“ des Bereichs „{1}“ trägt keinen gültigen Volumenstrom. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KATEGORIE_VOLUMENSTROM {
             get {
@@ -168628,7 +169609,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeitstruktur der Zone „{0}“ gibt keinem Tag ein Gewicht. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeitstruktur des Bereichs „{0}“ gibt keinem Tag ein Gewicht. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KEINE_VERTEILUNG {
             get {
@@ -168637,7 +169618,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kennwert trägt keine Bezugstemperaturen (Zone „{0}“). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kennwert trägt keine Bezugstemperaturen (Bereich „{0}“). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_KENNWERT_OHNE_BEZUGSTEMPERATUREN {
             get {
@@ -168655,7 +169636,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogwert der Zone „{0}“ ist 0; ein Messwert lässt sich nicht verteilen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogwert des Bereichs „{0}“ ist 0; ein Messwert lässt sich nicht verteilen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_MESSWERT_KATALOGWERT_NULL {
             get {
@@ -168664,7 +169645,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Jahresmesswert der Zone „{0}“ ist nicht positiv. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Jahresmesswert des Bereichs „{0}“ ist nicht positiv. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_MESSWERT_NICHT_POSITIV {
             get {
@@ -168673,7 +169654,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Jahresmesswert der Zone „{0}“ trägt keine Einheit (kWh/a oder m³/a). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Jahresmesswert des Bereichs „{0}“ trägt keine Einheit (kWh/a oder m³/a). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_MESSWERT_OHNE_EINHEIT {
             get {
@@ -168682,7 +169663,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Jahresmesswert der Zone „{0}“ in kWh/a nennt keine Bilanzgrenze (1, 2 oder 3). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Jahresmesswert des Bereichs „{0}“ in kWh/a nennt keine Bilanzgrenze (1, 2 oder 3). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_MESSWERT_OHNE_GRENZE {
             get {
@@ -168691,7 +169672,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Messwert der Zone „{0}“ schließt den Speicherverlust ein, der Speicherverlust fehlt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Messwert des Bereichs „{0}“ schließt den Speicherverlust ein, der Speicherverlust fehlt. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_MESSWERT_SPEICHERVERLUST_FEHLT {
             get {
@@ -168700,7 +169681,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Speicherverlust der Zone „{0}“ ist nicht kleiner als der Messwert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Speicherverlust des Bereichs „{0}“ ist nicht kleiner als der Messwert. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_MESSWERT_SPEICHERVERLUST_ZU_GROSS {
             get {
@@ -168709,7 +169690,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Volumenmesswert gilt an der Zapfstelle (Grenze 1); die Zone „{0}“ nennt eine andere Grenze. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Volumenmesswert gilt an der Zapfstelle (Grenze 1); der Bereich „{0}“ nennt eine andere Grenze. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_MESSWERT_VOLUMEN_GRENZE {
             get {
@@ -168718,7 +169699,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} der Zone „{1}“ ist keine endliche Zahl. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} des Bereichs „{1}“ ist keine endliche Zahl. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_NICHT_ENDLICH {
             get {
@@ -168727,7 +169708,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Unbekanntes Bedarfsniveau der Zone „{0}“. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unbekanntes Bedarfsniveau des Bereichs „{0}“. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_NIVEAU_UNBEKANNT {
             get {
@@ -168736,7 +169717,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsart Nr. {1} der Zone „{0}“ steht nicht (mehr) im Katalog — bitte eine Nutzungsart wählen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsart Nr. {1} des Bereichs „{0}“ steht nicht (mehr) im Katalog — bitte eine Nutzungsart wählen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_NUTZUNGSART_FEHLT {
             get {
@@ -168745,7 +169726,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Für die Zone „{0}“ ist noch keine Nutzungsart gewählt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für den Bereich „{0}“ ist noch keine Nutzungsart gewählt. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_NUTZUNGSART_NICHT_GEWAEHLT {
             get {
@@ -168790,7 +169771,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} tragen nicht {1} Werte (Zone „{2}“). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} tragen nicht {1} Werte (Bereich „{2}“). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_RASTER_LAENGE {
             get {
@@ -168799,7 +169780,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} der Zone „{1}“ enthält einen negativen oder nicht endlichen Wert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} des Bereichs „{1}“ enthält einen negativen oder nicht endlichen Wert. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_RASTER_NEGATIV {
             get {
@@ -168835,7 +169816,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Temperaturspreizung ({0}) ist nicht positiv (Zone „{1}“). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Temperaturspreizung ({0}) ist nicht positiv (Bereich „{1}“). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_SPREIZUNG_NICHT_POSITIV_ZONE {
             get {
@@ -168853,7 +169834,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Für die Nutzungsart „{0}“ (Katalogversion {1}) der Zone „{2}“ stehen keine Zapfkategorien im Katalog. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für die Nutzungsart „{0}“ (Katalogversion {1}) des Bereichs „{2}“ stehen keine Zapfkategorien im Katalog. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN {
             get {
@@ -168862,7 +169843,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Für die Nutzungsart der Zone „{0}“ stehen keine Zapfkategorien im Katalog. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für die Nutzungsart des Bereichs „{0}“ stehen keine Zapfkategorien im Katalog. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN_ID {
             get {
@@ -168871,7 +169852,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesbedarf der Zone „{0}“ steht auf manuell, der Wert fehlt oder ist negativ. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesbedarf des Bereichs „{0}“ steht auf manuell, der Wert fehlt oder ist negativ. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_TAGESBEDARF_MANUELL_UNGUELTIG {
             get {
@@ -168880,7 +169861,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesgangsatz {0} der Zone „{1}“ fehlt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesgangsatz {0} des Bereichs „{1}“ fehlt. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_TAGESGANGSATZ_FEHLT {
             get {
@@ -168889,7 +169870,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesgangsatz der Zone „{0}“ fehlt oder trägt nicht alle vier Tagtypen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesgangsatz des Bereichs „{0}“ fehlt oder trägt nicht alle vier Tagtypen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_TAGESGANGSATZ_UNVOLLSTAENDIG {
             get {
@@ -168925,7 +169906,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die die Einheiten der Zone ({0:0.###}) sind keine positive Zahl. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Einheiten des Bereichs ({0:0.###}) sind keine positive Zahl. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_TYPTAGE_EINHEITEN {
             get {
@@ -168961,7 +169942,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die die Typtage der Zone „{0}“ verteilen keine Zapfung: Jede Tagesmenge ist 0. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Typtage des Bereichs „{0}“ verteilen keine Zapfung: Jede Tagesmenge ist 0. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_TYPTAGE_KEINE_VERTEILUNG {
             get {
@@ -169060,7 +170041,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wohnfläche je WE der Zone „{0}“ ist nicht positiv. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wohnfläche je WE des Bereichs „{0}“ ist nicht positiv. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_WOHNFLAECHE_NICHT_POSITIV {
             get {
@@ -169069,7 +170050,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Wohnungstyp der Zone „{0}“ hat keine positive Anzahl. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Wohnungstyp des Bereichs „{0}“ hat keine positive Anzahl. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_WOHNUNGSTYP_ANZAHL {
             get {
@@ -169078,7 +170059,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapftemperatur liegt nicht über dem Kaltwassermittel (Zone „{0}“). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zapftemperatur liegt nicht über dem Kaltwassermittel (Bereich „{0}“). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_ZAPFTEMPERATUR_UNTER_KALTWASSER {
             get {
@@ -169150,7 +170131,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zone ohne Angaben. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Bereich ohne Angaben. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_EINGABE_ZONE_OHNE_ANGABEN {
             get {
@@ -169249,7 +170230,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wohnzonen ohne eigene Wohnfläche je WE tragen keine Fläche für die Zirkulation. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohnbereiche ohne eigene Wohnfläche je WE tragen keine Fläche für die Zirkulation. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_FOLGE_WOHNZONEN_OHNE_FLAECHE {
             get {
@@ -169348,7 +170329,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Auslastungsgang der Zone ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslastungsgang des Bereichs ähnelt.
         /// </summary>
         public static string ZPG_SATZ_HERKUNFT_AUSLASTUNGSGANG_ZONE {
             get {
@@ -169402,7 +170383,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Faktor der Zone ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Faktor des Bereichs ähnelt.
         /// </summary>
         public static string ZPG_SATZ_HERKUNFT_FAKTOR_DER_ZONE {
             get {
@@ -169663,7 +170644,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Summe der Flächen der Zonen in Z1, ohne α ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe der Flächen der Bereiche in Z1, ohne α ähnelt.
         /// </summary>
         public static string ZPG_SATZ_HERKUNFT_ZIRK_FLAECHE_ZONEN {
             get {
@@ -169726,7 +170707,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anzeigetemperatur ({1:0.#} °C) liegt nicht über dem Kaltwassermittel der Zone „{0}“ ({2:0.#} °C) — die Zone zeigt keine Liter. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anzeigetemperatur ({1:0.#} °C) liegt nicht über dem Kaltwassermittel des Bereichs „{0}“ ({2:0.#} °C) — der Bereich zeigt keine Liter. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_HINWEIS_ANZEIGETEMPERATUR_UNTER_KALTWASSER {
             get {
@@ -169735,7 +170716,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der spezifische Bedarf der Zone „{0}“ ({1:0.###} kWh je Einheit und Tag) liegt außerhalb der Bandbreite des Niveaus ({2:0.###} … {3:0.###}). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der spezifische Bedarf des Bereichs „{0}“ ({1:0.###} kWh je Einheit und Tag) liegt außerhalb der Bandbreite des Niveaus ({2:0.###} … {3:0.###}). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_HINWEIS_BEDARF_AUSSERHALB_BANDBREITE {
             get {
@@ -169744,7 +170725,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bezugsmenge der Zone „{0}“ ({1:0.##}) weicht von ihrer Wohnungstabelle ab ({2:0.##} {3}); es gilt die Wohnungstabelle. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bezugsmenge des Bereichs „{0}“ ({1:0.##}) weicht von ihrer Wohnungstabelle ab ({2:0.##} {3}); es gilt die Wohnungstabelle. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_HINWEIS_BEZUGSMENGE_WOHNUNGSTABELLE {
             get {
@@ -169762,7 +170743,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Jahresreihe der Zapfung ist stochastisch: je Zone das gezogene Jahr zum Seed {0}, auf die Jahresmenge des Mengengerüsts gebracht; die Konsistenzprobe prüft es an {1} gezogenen Jahren. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Jahresreihe der Zapfung ist stochastisch: je Bereich das gezogene Jahr zum Seed {0}, auf die Jahresmenge des Mengengerüsts gebracht; die Konsistenzprobe prüft es an {1} gezogenen Jahren. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_HINWEIS_JAHRESREIHE_STOCHASTISCH {
             get {
@@ -169771,7 +170752,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Messwert der Zone „{0}“ weicht um mehr als die Rückfrageschwelle vom Katalogwert ab (Faktor {1:0.###}, Schwelle ± {2:0.###}). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Messwert des Bereichs „{0}“ weicht um mehr als die Rückfrageschwelle vom Katalogwert ab (Faktor {1:0.###}, Schwelle ± {2:0.###}). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_HINWEIS_MESSWERT_ABWEICHUNG {
             get {
@@ -169780,7 +170761,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Vom Messwert der Zone „{0}“ ist der Speicherverlust ({1:0.#} kWh/a) abgezogen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vom Messwert des Bereichs „{0}“ ist der Speicherverlust ({1:0.#} kWh/a) abgezogen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_HINWEIS_MESSWERT_SPEICHERVERLUST {
             get {
@@ -169807,7 +170788,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Das Mittel der gezogenen Jahre ({1:0.#} kWh) weicht um mehr als die Toleranz {2:0.#} kWh von der Jahresmenge {3:0.#} kWh ab; das Jahr zum Seed ist auf die Jahresmenge gebracht. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich „{0}“: Das Mittel der gezogenen Jahre ({1:0.#} kWh) weicht um mehr als die Toleranz {2:0.#} kWh von der Jahresmenge {3:0.#} kWh ab; das Jahr zum Seed ist auf die Jahresmenge gebracht. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_HINWEIS_STOCHASTIK_ENERGIEPROBE {
             get {
@@ -169825,7 +170806,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} der Zone „{1}“ summiert zu {2:0.######} statt 1; vor dem Rechnen normiert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} des Bereichs „{1}“ summiert zu {2:0.######} statt 1; vor dem Rechnen normiert. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_HINWEIS_SUMME_NORMIERT {
             get {
@@ -169834,7 +170815,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesgang des Tagtyps {0} der Zone „{1}“ ist leer; diese Tage tragen keine Zapfung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Tagesgang des Tagtyps {0} des Bereichs „{1}“ ist leer; diese Tage tragen keine Zapfung. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_HINWEIS_TAGESGANG_LEER {
             get {
@@ -169843,7 +170824,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Das Wetter des Projekts ordnet {1} Typtagkategorie(n) anders zu als die eingespielte Tabelle; am weitesten „{2}“ mit {3} statt {4} Kalendertagen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich „{0}“: Das Wetter des Projekts ordnet {1} Typtagkategorie(n) anders zu als die eingespielte Tabelle; am weitesten „{2}“ mit {3} statt {4} Kalendertagen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_HINWEIS_TYPTAGE_ANZAHL {
             get {
@@ -169852,7 +170833,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Für {1} Typtag(e) und damit {2} Kalendertag(e) wäre der Tagesbedarf negativ — ihr Faktor ist auf 0 gesetzt, der Tag trägt den Jahresmittelwert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich „{0}“: Für {1} Typtag(e) und damit {2} Kalendertag(e) wäre der Tagesbedarf negativ — ihr Faktor ist auf 0 gesetzt, der Tag trägt den Jahresmittelwert. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_HINWEIS_TYPTAGE_FAKTOR_NULL {
             get {
@@ -169861,7 +170842,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Auf dem Typtagweg wirken die Ferienfenster nicht — ein Ferientag bleibt Werktag oder Sonntag seiner Jahreszeit. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich „{0}“: Auf dem Typtagweg wirken die Ferienfenster nicht — ein Ferientag bleibt Werktag oder Sonntag seiner Jahreszeit. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_HINWEIS_TYPTAGE_FERIEN {
             get {
@@ -169870,7 +170851,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die eingespielten Typtage führen zur Gebäudeart „{0}“ keine Tagesgänge — die Tagesform kommt aus dem Tagesgangsatz der Zone. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die eingespielten Typtage führen zur Gebäudeart „{0}“ keine Tagesgänge — die Tagesform kommt aus dem Tagesgangsatz des Bereichs. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_HINWEIS_TYPTAGE_OHNE_TAGESGANG {
             get {
@@ -169879,7 +170860,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Die Tagesmengen der Typtage wurden mit {1:0.######} auf die Jahresmenge skaliert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich „{0}“: Die Tagesmengen der Typtage wurden mit {1:0.######} auf die Jahresmenge skaliert. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_HINWEIS_TYPTAGE_SKALIERUNG {
             get {
@@ -169897,7 +170878,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ trägt keinen Zirkulationsanteil (Bilanzgrenze des Kennwerts oder Zirkulation „nein“). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bereich „{0}“ trägt keinen Zirkulationsanteil (Bilanzgrenze des Kennwerts oder Zirkulation „nein“). ähnelt.
         /// </summary>
         public static string ZPG_SATZ_HINWEIS_ZIRKULATION_NICHT_IN_Z1 {
             get {
@@ -169915,7 +170896,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Zone trägt einen Zirkulationsanteil; die Zirkulation ist gebäudeweit ausgewiesen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Bereich trägt einen Zirkulationsanteil; die Zirkulation ist gebäudeweit ausgewiesen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_HINWEIS_ZIRKULATION_OHNE_ZONE {
             get {
@@ -169924,7 +170905,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone „{0}“ gehört zur Zirkulation, trägt aber keine Fläche; A_N enthält sie nicht. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bereich „{0}“ gehört zur Zirkulation, trägt aber keine Fläche; A_N enthält sie nicht. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_HINWEIS_ZIRKULATION_ZONE_OHNE_FLAECHE {
             get {
@@ -170617,7 +171598,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Bezugsmenge der Zone lässt sich kein Tagesbedarf je Einheit vorschlagen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Bezugsmenge des Bereichs lässt sich kein Tagesbedarf je Einheit vorschlagen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_MESSKALIBRIERUNG_OHNE_BEZUGSMENGE {
             get {
@@ -171022,7 +172003,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Es tragen {0} Zonen ein Jahresensemble; die Spitzenstreuung ist daraus nicht zu bilden, weil jede Zone ihre Realisierungen für sich zieht und die Spitze der Summe nicht die Summe der Spitzen ist. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es tragen {0} Bereiche ein Jahresensemble; die Spitzenstreuung ist daraus nicht zu bilden, weil jeder Bereich seine Realisierungen für sich zieht und die Spitze der Summe nicht die Summe der Spitzen ist. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_MESSVERGLEICH_ENSEMBLE_ZONEN {
             get {
@@ -171058,7 +172039,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne die Einheitenzahl der Zonen bleibt die √N-Skalierung ohne Vergleich. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne die Einheitenzahl der Bereiche bleibt die √N-Skalierung ohne Vergleich. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_MESSVERGLEICH_OHNE_EINHEITEN {
             get {
@@ -171193,7 +172174,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die {0} Zonen führen verschiedene Temperaturen; die Volumenreihe wird mit der mengengewichteten Spreizung {1:0.###} K in Energie gerechnet. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die {0} Bereiche führen verschiedene Temperaturen; die Volumenreihe wird mit der mengengewichteten Spreizung {1:0.###} K in Energie gerechnet. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_MESSVERGLEICH_SPREIZUNG_ZONEN {
             get {
@@ -171742,7 +172723,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die die Ausstattungsklasse {0} eines Wohnungstyps der Zone „{1}“ steht nicht im Katalog. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Ausstattungsklasse {0} eines Wohnungstyps des Bereichs „{1}“ steht nicht im Katalog. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_SPEICHER_AUSSTATTUNG_FEHLT {
             get {
@@ -171778,7 +172759,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die das Gebäude {0} der Zone „{1}“ gibt es nicht. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die das Gebäude {0} des Bereichs „{1}“ gibt es nicht. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_SPEICHER_GEBAEUDE_FEHLT {
             get {
@@ -171787,7 +172768,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die das Gebäude {0} der Zone „{1}“ gehört zu einem anderen Projekt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die das Gebäude {0} des Bereichs „{1}“ gehört zu einem anderen Projekt. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_SPEICHER_GEBAEUDE_FREMD {
             get {
@@ -171805,7 +172786,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die die Nutzungsart der Zone „{0}“ steht nicht (mehr) im Katalog. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die die Nutzungsart des Bereichs „{0}“ steht nicht (mehr) im Katalog. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_SPEICHER_NUTZUNGSART_FEHLT {
             get {
@@ -171841,7 +172822,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die der Tagesgangsatz {0} der Zone „{1}“ steht nicht im Katalog. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die der Tagesgangsatz {0} des Bereichs „{1}“ steht nicht im Katalog. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_SPEICHER_TAGESGANGSATZ_FEHLT {
             get {
@@ -171859,7 +172840,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die ein Wohnungstyp der Zone „{0}“ hat keine positive Anzahl. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die ein Wohnungstyp des Bereichs „{0}“ hat keine positive Anzahl. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_SPEICHER_WOHNUNGSTYP_ANZAHL {
             get {
@@ -171868,7 +172849,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die ein Wohnungstyp der Zone „{0}“ gehört zu einer anderen Zone. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die ein Wohnungstyp des Bereichs „{0}“ gehört zu einem anderen Bereich. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_SPEICHER_WOHNUNGSTYP_FREMD {
             get {
@@ -171877,7 +172858,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die die Zone „{0}“ hat keine positive Bezugsmenge. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die der Bereich „{0}“ hat keine positive Bezugsmenge. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_SPEICHER_ZONE_BEZUGSMENGE {
             get {
@@ -171886,7 +172867,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die die Zone „{0}“ gehört zu einem anderen Projekt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die der Bereich „{0}“ gehört zu einem anderen Projekt. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_SPEICHER_ZONE_FREMD {
             get {
@@ -171895,7 +172876,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die eine Zone hat keinen Namen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die ein Bereich hat keinen Namen. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_SPEICHER_ZONE_OHNE_NAME {
             get {
@@ -171904,7 +172885,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die die Zone „{0}“ trägt einen Wert außerhalb seiner Wertemenge. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die der Bereich „{0}“ trägt einen Wert außerhalb seiner Wertemenge. ähnelt.
         /// </summary>
         public static string ZPG_SATZ_SPEICHER_ZONE_WERTEMENGE {
             get {
@@ -172093,6 +173074,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Niveau ähnelt.
+        /// </summary>
+        public static string ZPG_SP_NIVEAU {
+            get {
+                return ResourceManager.GetString("ZPG_SP_NIVEAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsart ähnelt.
         /// </summary>
         public static string ZPG_SP_NUTZUNGSART {
@@ -172174,7 +173164,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich ähnelt.
         /// </summary>
         public static string ZPG_SP_ZONE {
             get {
@@ -172426,7 +173416,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Summe {0} Zonen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe {0} Bereiche ähnelt.
         /// </summary>
         public static string ZPG_SUMME_ZONEN {
             get {
@@ -172561,7 +173551,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zone oder eine andere Nutzungsart benutzt den Tagesgang — ein geänderter Tagesgang entsteht als neue Katalogversion. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Bereich oder eine andere Nutzungsart benutzt den Tagesgang — ein geänderter Tagesgang entsteht als neue Katalogversion. ähnelt.
         /// </summary>
         public static string ZPG_TGE_GRUND_BENUTZT_GESPERRT {
             get {
@@ -172588,7 +173578,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zone rechnet einen anderen Tagesgangsatz als die Nutzungsart — ein geänderter Tagesgang entsteht als neue Katalogversion. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bereich rechnet einen anderen Tagesgangsatz als die Nutzungsart — ein geänderter Tagesgang entsteht als neue Katalogversion. ähnelt.
         /// </summary>
         public static string ZPG_TGE_GRUND_EXPERTENWAHL_ABWEICHEND {
             get {
@@ -172741,7 +173731,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesgang gespeichert — die Zone „{0}“ rechnet mit „{1}“. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesgang gespeichert — der Bereich „{0}“ rechnet mit „{1}“. ähnelt.
         /// </summary>
         public static string ZPG_TGE_STATUS_GESPEICHERT {
             get {
@@ -172921,7 +173911,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die mehrere stochastische Zonen — Stichprobe nicht bildbar ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die mehrere stochastische Bereiche — Stichprobe nicht bildbar ähnelt.
         /// </summary>
         public static string ZPG_VERGL_ENSEMBLE_ZONEN {
             get {
@@ -172957,7 +173947,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Vergleich mit einer Messreihe steht ab der Stufe Erweitert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Vergleich mit einer Messreihe steht ab der Stufe Experte. ähnelt.
         /// </summary>
         public static string ZPG_VERGL_NUR_ERWEITERT {
             get {
@@ -173074,7 +174064,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Übernahme legt eine eigene Nutzungsart an; die Vorlage bleibt unberührt, und die Zone rechnet danach mit der Kopie. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Übernahme legt eine eigene Nutzungsart an; die Vorlage bleibt unberührt, und der Bereich rechnet danach mit der Kopie. ähnelt.
         /// </summary>
         public static string ZPG_VORSCHLAG_HINWEIS {
             get {
@@ -173101,7 +174091,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Für diese Zone gibt es keinen Vorschlag: {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diesen Bereich gibt es keinen Vorschlag: {0} ähnelt.
         /// </summary>
         public static string ZPG_VORSCHLAG_OHNE {
             get {
@@ -173173,7 +174163,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht blockierend; die Hinweise einer Zone stehen auch an ihrem Eingabeblock. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht blockierend; die Hinweise eines Bereichs stehen auch an ihrem Eingabeblock. ähnelt.
         /// </summary>
         public static string ZPG_WARNLISTE_UNTER {
             get {
@@ -173344,7 +174334,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ensemble mehrerer Zonen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ensemble mehrerer Bereiche ähnelt.
         /// </summary>
         public static string ZPG_WARN_MESSVERGLEICH_ENSEMBLE_ZONEN {
             get {
@@ -173515,7 +174505,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Spreizung mehrerer Zonen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spreizung mehrerer Bereiche ähnelt.
         /// </summary>
         public static string ZPG_WARN_MESSVERGLEICH_SPREIZUNG_ZONEN {
             get {
@@ -173686,7 +174676,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone außerhalb der Zirkulation ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich außerhalb der Zirkulation ähnelt.
         /// </summary>
         public static string ZPG_WARN_ZIRKULATION_NICHT_IN_Z1 {
             get {
@@ -173704,7 +174694,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation ohne Zone ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation ohne Bereich ähnelt.
         /// </summary>
         public static string ZPG_WARN_ZIRKULATION_OHNE_ZONE {
             get {
@@ -173713,7 +174703,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone ohne Fläche ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich ohne Fläche ähnelt.
         /// </summary>
         public static string ZPG_WARN_ZIRKULATION_ZONE_OHNE_FLAECHE {
             get {
@@ -173776,7 +174766,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich {0} ähnelt.
         /// </summary>
         public static string ZPG_ZONE_NAME_VORGABE {
             get {

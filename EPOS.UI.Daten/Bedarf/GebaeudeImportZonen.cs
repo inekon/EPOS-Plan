@@ -173,6 +173,7 @@ namespace WindowsFormsApplication1
                 Schrittmeldung = schritt.Meldung == null ? null : GebaeudeImportHuelle.MeldungDaten(schritt.Meldung),
                 LetzterAbgelehnt = schritt.Abgelehnt,
                 Verworfen = schritt.Verworfen,
+                Profilzuordnung = GebaeudeImportProfilzuordnung.Daten(plan),
             };
         }
 
@@ -270,6 +271,11 @@ namespace WindowsFormsApplication1
             Profilquelle.HAND => MyResource.Resource.RNP_IMP_QUELLE_HAND,
             Zonenvorbesetzung.VORGABE_DIN => Formatieren(MyResource.Resource.RNP_IMP_QUELLE_VORGABE_DIN, q.Schluessel ?? ""),
             Zonenvorbesetzung.VORGABE_GEBAEUDEART => Formatieren(MyResource.Resource.RNP_IMP_QUELLE_VORGABE_ART, q.Schluessel ?? ""),
+            // Entwurf ZZ: die Profilzuordnung je Raum — gesetzt, Vorschlag (Marke, F2/F5), offen (Rückfrage, F3), Mehrheit (Z4/Z6, B4).
+            Raumprofilzuordnung.QUELLE => Formatieren(MyResource.Resource.RNP_IMP_QUELLE_RAUMPROFIL, q.Schluessel ?? ""),
+            Raumprofilzuordnung.QUELLE_VORSCHLAG => Formatieren(MyResource.Resource.RNP_IMP_QUELLE_RAUMPROFIL_VORSCHLAG, q.Schluessel ?? ""),
+            Raumprofilzuordnung.QUELLE_OFFEN => Formatieren(MyResource.Resource.RNP_IMP_QUELLE_RAUMPROFIL_OFFEN, q.Schluessel ?? ""),
+            Raumprofilzuordnung.QUELLE_MEHRHEIT => Formatieren(MyResource.Resource.RNP_IMP_QUELLE_RAUMPROFIL_MEHRHEIT, q.Schluessel ?? ""),
             _ => "",
         };
 

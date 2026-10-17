@@ -119,7 +119,7 @@ namespace WindowsFormsApplication1
         {
             eingabe ??= new ZapfprofilEingabeDaten();
             ZapfprofilAuslegungEingabeDaten anfang = eingabe.Auslegung?.Kopie() ?? AuslegungAusStand(basis);
-            // Ladeleistung, Ladefenster und Speichertemperatur führt auch der Dialog (Stufen Erweitert
+            // Ladeleistung, Ladefenster und Speichertemperatur führt auch der Dialog (Stufe Experte
             // und Experte, Z4): Die Überlagerung beginnt mit seinem Stand.
             eingabe.Gebaeude?.InAuslegung(anfang);
             anfang.Stochastisch = stochastisch;
@@ -127,7 +127,7 @@ namespace WindowsFormsApplication1
             {
                 Stufe = stufe,
                 Eingabe = anfang,
-                Kontext = Format(Text_("ZPG_AUS_KONTEXT", "Summe aller Zonen · {0} Zonen · Stufe {1}"),
+                Kontext = Format(Text_("ZPG_AUS_KONTEXT", "Summe aller Bereiche · {0} Bereiche · Stufe {1}"),
                                  eingabe.Zonen.Count.ToString(CultureInfo.CurrentCulture), Stufenname(stufe))
             };
 
@@ -299,7 +299,7 @@ namespace WindowsFormsApplication1
             rechenprojekt = null;
             if (eingabe == null || eingabe.Zonen.Count == 0)
                 return OhneAuslegung(ZapfprofilAuslegungZustand.NichtGerechnet, "ZPG_AUS_MSG_KEINE_ZONE",
-                    Text_("ZPG_AUS_MSG_KEINE_ZONE", "Es ist keine Zone angelegt — ohne Zone keine Auslegung."), "");
+                    Text_("ZPG_AUS_MSG_KEINE_ZONE", "Es ist kein Bereich angelegt — ohne Bereich keine Auslegung."), "");
 
             ZapfVerfuegbarkeit verfuegbar = ZapfprofilCtrl.Verfuegbar();
             if (!verfuegbar.Ja)
@@ -395,7 +395,7 @@ namespace WindowsFormsApplication1
 
             foreach (Auslegungsablehnung a in r.Ergebnis.Ablehnungen)
                 d.Meldungen.Add(new ZapfprofilMeldung("ZPG_AUS_ZONE_ABGELEHNT", a.Zone ?? "",
-                    MitZone(a.Zone, a.Satz, "ZPG_AUS_ZONE_ABGELEHNT", "Zone „{0}“ fehlt in der Auslegung: {1}"),
+                    MitZone(a.Zone, a.Satz, "ZPG_AUS_ZONE_ABGELEHNT", "Bereich „{0}“ fehlt in der Auslegung: {1}"),
                     ZapfprofilMeldungsart.Ablehnung, a.Klartext ?? ""));
             foreach (Auslegungshinweis h in r.Ergebnis.Hinweise)
             {
@@ -407,7 +407,7 @@ namespace WindowsFormsApplication1
             foreach (Auslegungsgruppe g in r.Ergebnis.Gruppen) d.Gruppen.Add(AlsGruppe(g, stufe));
 
             // Die Karte "Herkunft" (N19): Die Ueberlagerung fuehrt keine eigene Stufe, deshalb
-            // entscheidet die Huelle - ab Erweitert steht die Karte, in der Stufe Einfach nicht.
+            // entscheidet die Huelle - ab Experte steht die Karte, in der Stufe Einfach nicht.
             d.HerkunftSichtbar = stufe != ZapfprofilStufe.Einfach;
             if (d.HerkunftSichtbar) d.Herkunft.AddRange(Herkunftszeilen(r.Ergebnis.Herkunft));
             return d;
@@ -566,7 +566,7 @@ namespace WindowsFormsApplication1
         /// oder ohne Satz.
         /// </summary>
         private static string AblehnungsSatz(ZapfAblehnung a)
-            => a?.Satz == null ? null : MitZone(a.Zone, a.Satz, "ZPG_MSG_ZONE", "Zone „{0}“: {1}");
+            => a?.Satz == null ? null : MitZone(a.Zone, a.Satz, "ZPG_MSG_ZONE", "Bereich „{0}“: {1}");
 
         /// <summary>Der Verfahrensvergleich nach V4 als DTO samt Wochenbild; der größte Wert im Band ist markiert.</summary>
         private static ZapfprofilVergleichDaten Vergleich(Speicherauslegungsergebnis sa, Wochenreihe woche, Din4708Ergebnis din,
@@ -680,9 +680,8 @@ namespace WindowsFormsApplication1
         {
             switch (stufe)
             {
-                case ZapfprofilStufe.Erweitert: return Text_("ZPG_STUFE_ERWEITERT", "Erweitert");
-                case ZapfprofilStufe.Experte: return Text_("ZPG_STUFE_EXPERTE", "Experte");
-                default: return Text_("ZPG_STUFE_EINFACH", "Einfach");
+                case ZapfprofilStufe.Einfach: return Text_("ZPG_STUFE_EINFACH", "Einfach");
+                default: return Text_("ZPG_STUFE_EXPERTE", "Experte");
             }
         }
 

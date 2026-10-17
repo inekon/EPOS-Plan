@@ -216,6 +216,46 @@ namespace EPOS.Kern.Tests
         // -----------------------------------------------------------------------------
 
         /// <summary>Löscht die Typkennfelder samt Kennlinie und setzt den Marker auf 202 — der Stand vor dem Schritt.</summary>
+        /// <summary>
+        /// KM-T1: <see cref="KaeltemaschinenTypkennfelder.Fehlend"/> zählt mit derselben Zugehörigkeitsregel, mit der
+        /// <c>Einspielen</c> überspringt — auf der gelieferten Testdatenbank 0; nach dem Löschen zweier Typkennfelder 2,
+        /// ein eigener Satz unter dem Bezeichner eines dritten zählt als vorhanden; das Einspielen legt genau die
+        /// fehlenden an, danach ist es wieder 0.
+        /// </summary>
+        [Fact]
+        public void Fehlend_zaehlt_mit_der_Regel_des_Einspielens()
+        {
+            if (!_db.Vorhanden) return;
+
+            Assert.Equal(0, KaeltemaschinenTypkennfelder.Fehlend());
+
+            IReadOnlyList<KaeltemaschinenTypkennfelder.Typkennfeld> alle = KaeltemaschinenTypkennfelder.Lesen();
+            Assert.True(alle.Count >= 3);
+            foreach (KaeltemaschinenTypkennfelder.Typkennfeld t in alle.Take(2))
+                TypkennfeldLoeschen(t.Bezeichner);
+            // Der dritte verliert seinen Schlüssel, behält aber den Bezeichner: er steht nach der Regel im Katalog.
+            Assert.True(DataRepository.ExecuteSQL("UPDATE " + TAB + " SET " + Katalogfassung.SPALTE_SCHLUESSEL + " = NULL WHERE " +
+                                                  Katalogfassung.SPALTE_SCHLUESSEL + " = ?",
+                                                  new DbParam("?", KaeltemaschinenTypkennfelder.Schluessel(alle[2].Bezeichner))));
+            Assert.Equal(2, KaeltemaschinenTypkennfelder.Fehlend());
+
+            KaeltemaschinenTypkennfelder.Einspielergebnis e = KaeltemaschinenTypkennfelder.Einspielen();
+            Assert.True(e.Ok, e.Fehler);
+            Assert.Equal(2, e.Neu);
+            Assert.Equal(alle.Count - 2, e.Uebersprungen);
+            Assert.Equal(0, KaeltemaschinenTypkennfelder.Fehlend());
+        }
+
+        private static void TypkennfeldLoeschen(string bezeichner)
+        {
+            string schluessel = KaeltemaschinenTypkennfelder.Schluessel(bezeichner);
+            Assert.True(DataRepository.ExecuteSQL(
+                "DELETE FROM " + TAB_K + " WHERE " + KaeltemaschineSchema.SPALTE_ID_KAELTEMASCHINE + " IN (SELECT ID FROM " + TAB +
+                " WHERE " + Katalogfassung.SPALTE_SCHLUESSEL + " = ?)", new DbParam("?", schluessel)));
+            Assert.True(DataRepository.ExecuteSQL("DELETE FROM " + TAB + " WHERE " + Katalogfassung.SPALTE_SCHLUESSEL + " = ?",
+                                                  new DbParam("?", schluessel)));
+        }
+
         private static void Stand202Herstellen()
         {
             foreach (KaeltemaschinenTypkennfelder.Typkennfeld t in KaeltemaschinenTypkennfelder.Lesen())

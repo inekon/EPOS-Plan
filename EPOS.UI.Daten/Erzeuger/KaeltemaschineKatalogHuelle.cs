@@ -72,6 +72,17 @@ namespace WindowsFormsApplication1
             return new KaeltemaschineTypkennfelderErgebnis(e.Ok, e.Neu, e.Uebersprungen, e.Fehler ?? "");
         }
 
+        /// <summary>
+        /// KM-T1: Die Zahl der eingebauten Typkennfelder, die noch nicht im Katalog stehen
+        /// (<see cref="KaeltemaschinenTypkennfelder.Fehlend"/>); -1, wenn sie sich nicht bestimmen lässt — dann bleibt
+        /// „Typkennfelder laden…" frei und das Laden meldet den Grund.
+        /// </summary>
+        internal static int TypkennfelderFehlend()
+        {
+            try { return KaeltemaschinenTypkennfelder.Fehlend(); }
+            catch (Exception) { return -1; }
+        }
+
         /// <summary>Die Zahl der eingebauten Typkennfelder; 0, wenn die Ressource nicht lesbar ist.</summary>
         internal static int TypkennfelderAnzahl()
         {

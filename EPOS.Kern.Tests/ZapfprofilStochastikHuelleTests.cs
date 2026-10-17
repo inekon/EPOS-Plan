@@ -437,7 +437,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Probe", m.Zone);
             Assert.Equal(1, m.Position);
             Assert.Equal("Für die Nutzungsart „" + TESTNUTZUNG + "“ (Katalogversion " + VERSION
-                         + ") der Zone „Probe“ stehen keine Zapfkategorien im Katalog.", m.Text);
+                         + ") des Bereichs „Probe“ stehen keine Zapfkategorien im Katalog.", m.Text);
             Assert.True(v.Zonen[1].Abgelehnt);
             Assert.False(v.Zonen[0].Abgelehnt);
             Assert.Equal("Wohnen", Assert.Single(v.Summe.Konsistenzen).Zone);
