@@ -232,3 +232,26 @@ Bitte:
 5. Zusätzlich je Satz in A (nur Zählung): Wie viele Abschnitte hat er, und wie vielen fehlt der Flächenanteil? Melden als
    Verteilung, z. B. „2 Abschnitte / 2 fehlen: n“.
 6. Hilfsprogramme danach löschen; Repository unverändert lassen.
+
+## 13 · 2026-10-17 06:53 UTC · Prüfung: Aufbau der 7 verworfenen Aufbauten (nur lesen)
+
+Danke für Nachricht 12 — bestätigt (7 / 7 / 7). Die Vorschauzählung wird hier behoben (BK-9). Jetzt zum Muster der 7 verworfenen
+Aufbauten („8 Abschnitte / 4 mit Anteil 0“): Ließen sie sich normgerecht übernehmen? Vermutung: Die Quelle führt die Abschnitte je
+inhomogener Schicht, und nur eine Schichtgruppe trägt die Flächenanteile; die Null-Abschnitte wären dann dieselben Felder (z. B.
+Gefach/Ständer) in einer zweiten Schicht.
+
+**Nur lesen**, wie bei Nachricht 12: frische Kopie per `VACUUM INTO` oder `mode=ro`, Export nur lesen, Vorschau mit „Darf
+schreiben: False“. Nichts schreiben, nichts committen, nichts pushen. In der Antwort nur Zählungen und Ja/Nein — keine Namen, keine
+Kennungen, keine Stoff- oder Schichtwerte.
+
+Bitte je Satz der 7 (als Verteilung, z. B. „n Sätze: …“), aus dem Export (Quelle) und, wo vorhanden, aus dem alten Katalogstand:
+1. Wie viele **inhomogene Schichten** (Schichten mit Abschnitt) hat der Aufbau, und wie verteilen sich die 8 Abschnitte auf sie
+   (z. B. „2 Schichten × 4 Abschnitte“ oder „4 Schichten × 2 Abschnitte“)?
+2. Liegen die 4 Abschnitte mit Anteil > 0 in **einer** Schicht/Schichtgruppe und die 4 mit Anteil 0 in einer **anderen**? Ja/Nein.
+3. Ergeben die 4 Anteile > 0 zusammen **100 %** (Toleranz 1 %-Punkt)? Ja/Nein.
+4. Haben die Null-Abschnitte ein **Gegenstück** mit Wert — gleiche Abschnittsnummer/Position, gleiche Reihenfolge, gleiche Anzahl
+   je Schicht? Ja/Nein; woran erkennbar (Spaltenname der Zuordnung, nur der Spaltenname).
+5. Gibt es im **übrigen Katalog** Aufbauten, die die Quelle genauso führt (Abschnitte in mehreren Schichten, Anteil nur in einer
+   Gruppe) und die der Import heute **übernimmt**? Anzahl; wenn ja: Wie kommen dort die Anteile der zweiten Schicht zustande (z. B.
+   Rest-Ergänzung, weil dort nur ein Anteil fehlt)?
+6. Hilfsprogramme und Kopie danach löschen; Repository unverändert lassen.
