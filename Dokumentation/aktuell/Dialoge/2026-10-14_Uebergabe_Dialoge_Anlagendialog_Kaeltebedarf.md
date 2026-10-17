@@ -17,7 +17,7 @@ Stand 16.10.2026: Übernahme durch Sitzung `session_019JuX7JfD2tStDzd3CiStwf`; #
 - Wellen und Statuszeilen: KR1/KR1b runde Wahlkästchen (#1037); K6 Kältebedarf dezentral/Split mit Schemaschritt 223 und Referenzprojekt 1072 (#1056/#1057); K6d (#1066); K6d-N (#1078); K6c (#1089, `8bf550004`); K6c-N Laufmeldung nennt die Hauptzahl (#1090, `bd7abe18a`).
 - Basis R55 `Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral` (37 Projekte; die CI rechnet 18).
 - ChartProben-Messlatte `Proben/ChartProben/Messlatte_2026-10-14.sha256` mit 225 Zeilen; Vermerke #1089/#1090 in `683bc2cac` (Hashes aus Kern-Lauf 38532651105). `kern.yml` schreibt seit `b4b73a9b2` die vollständige Hashliste ins Protokoll (eingeklappte Gruppe „ChartProben-Hashliste ubuntu“); LIESMICH-Bildzahl 257 in `d40c38cd0`.
-- CI-Vermerke gesetzt mit `a4e2e2bb4` (#1056/#1057), `5215d8e22` (#1066), `5f5a0023d` (#1078), `683bc2cac` (#1089/#1090); #1180/#1181 ausstehend (Check-in).
+- CI-Vermerke gesetzt mit `a4e2e2bb4` (#1056/#1057), `5215d8e22` (#1066), `5f5a0023d` (#1078), `683bc2cac` (#1089/#1090); alle vermerkt (zuletzt #1180/#1181, Lauf 39029561373).
 - Frühere Wellen (11. bis 13.10.): Katalogauswahl V1 mit Knopfleiste am gewählten Satz (KA-E-17 bis KA-E-27), Wärmepumpen-Überlagerung, Kältemaschinen-Dialog, Vergleich Projekt/Katalog, Gerätesteckbrief, KAL1-Klappgruppe, Kältebedarf K1 bis K5; Einzelheiten im Papier vom 11.10.2026.
 - Schemakette und Basenfolge (nur beobachten): 224 Zapfprofil, 225, 226/227, 228 KB-4, 229 KB-5, 230 KBP-2, 231 DA-6, 232 BK-5/BK-6; Basen R56 KB-5, R57 SA4. Maßgeblich ist die Kopfzeile „Schemaschritt angemeldet“ der Statusdatei.
 
