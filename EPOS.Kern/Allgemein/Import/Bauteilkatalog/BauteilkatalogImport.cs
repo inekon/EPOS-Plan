@@ -779,24 +779,6 @@ namespace WindowsFormsApplication1
                 aufbauten[k] = s;
                 p.Aufbauten.Add(s);
             }
-            v.BaustoffeMitTeilkatalog = p.Baustoffe.Count(x => x.Teilkataloge.Count > 0);
-            v.AufbautenMitTeilkatalog = p.Aufbauten.Count(x => x.Teilkataloge.Count > 0);
-            v.Teilkataloge = p.Baustoffe.Concat(p.Aufbauten).SelectMany(x => x.Teilkataloge).Distinct(StringComparer.Ordinal).Count();
-            v.BaustoffeMitMehrerenTeilkatalogen = p.Baustoffe.Count(x => x.Teilkataloge.Count > 1);
-            v.AufbautenMitMehrerenTeilkatalogen = p.Aufbauten.Count(x => x.Teilkataloge.Count > 1);
-            v.BaustoffeOhneTeilkatalog = p.Baustoffe.Count - v.BaustoffeMitTeilkatalog;
-            v.AufbautenOhneTeilkatalog = p.Aufbauten.Count - v.AufbautenMitTeilkatalog;
-            if (v.Teilkataloge > 0)
-            {
-                v.Protokoll.Add("Teilkataloge: " + Zahl(v.Teilkataloge) + ", in der Quelle genannt an " + Zahl(v.BaustoffeMitTeilkatalog) +
-                                " Baustoffen und " + Zahl(v.AufbautenMitTeilkatalog) + " Aufbauten");
-                v.Protokoll.Add("Teilkataloge in " + BauteilkatalogQuelle.DATEI_KATALOG + ": " + Zahl(v.TeilkatalogeInQuelle) + "; aus " +
-                                (v.TeilkatalogeAusZuordnung ? BauteilkatalogQuelle.DATEI_KATALOG_ZUORDNUNG : BauteilkatalogQuelle.DATEI_KATALOG_INHALT) +
-                                "; mit zwei oder mehr Teilkatalogen " + Zahl(v.BaustoffeMitMehrerenTeilkatalogen) + " Baustoffe und " +
-                                Zahl(v.AufbautenMitMehrerenTeilkatalogen) + " Aufbauten; ohne Teilkatalog " + Zahl(v.BaustoffeOhneTeilkatalog) +
-                                " Baustoffe und " + Zahl(v.AufbautenOhneTeilkatalog) + " Aufbauten");
-            }
-
             // ---- Abschnitte ----
             var abschnitte = new Dictionary<string, Satz>(StringComparer.Ordinal);
             if (tx != null)
@@ -919,6 +901,24 @@ namespace WindowsFormsApplication1
             }
             if (luecken > 0) v.Protokoll.Add("Schichtgruppen neu nummeriert: " + Zahl(luecken));
             AbschnittePruefen(p, v);
+            // BK-9: die Teilkatalog-Zählungen erst nach dem Verwerfen - Vorschau und Übernahme zählen dieselben Sätze.
+            v.BaustoffeMitTeilkatalog = p.Baustoffe.Count(x => x.Teilkataloge.Count > 0);
+            v.AufbautenMitTeilkatalog = p.Aufbauten.Count(x => x.Teilkataloge.Count > 0);
+            v.Teilkataloge = p.Baustoffe.Concat(p.Aufbauten).SelectMany(x => x.Teilkataloge).Distinct(StringComparer.Ordinal).Count();
+            v.BaustoffeMitMehrerenTeilkatalogen = p.Baustoffe.Count(x => x.Teilkataloge.Count > 1);
+            v.AufbautenMitMehrerenTeilkatalogen = p.Aufbauten.Count(x => x.Teilkataloge.Count > 1);
+            v.BaustoffeOhneTeilkatalog = p.Baustoffe.Count - v.BaustoffeMitTeilkatalog;
+            v.AufbautenOhneTeilkatalog = p.Aufbauten.Count - v.AufbautenMitTeilkatalog;
+            if (v.Teilkataloge > 0)
+            {
+                v.Protokoll.Add("Teilkataloge: " + Zahl(v.Teilkataloge) + ", in der Quelle genannt an " + Zahl(v.BaustoffeMitTeilkatalog) +
+                                " Baustoffen und " + Zahl(v.AufbautenMitTeilkatalog) + " Aufbauten");
+                v.Protokoll.Add("Teilkataloge in " + BauteilkatalogQuelle.DATEI_KATALOG + ": " + Zahl(v.TeilkatalogeInQuelle) + "; aus " +
+                                (v.TeilkatalogeAusZuordnung ? BauteilkatalogQuelle.DATEI_KATALOG_ZUORDNUNG : BauteilkatalogQuelle.DATEI_KATALOG_INHALT) +
+                                "; mit zwei oder mehr Teilkatalogen " + Zahl(v.BaustoffeMitMehrerenTeilkatalogen) + " Baustoffe und " +
+                                Zahl(v.AufbautenMitMehrerenTeilkatalogen) + " Aufbauten; ohne Teilkatalog " + Zahl(v.BaustoffeOhneTeilkatalog) +
+                                " Baustoffe und " + Zahl(v.AufbautenOhneTeilkatalog) + " Aufbauten");
+            }
 
             // ---- Kennzeichen (allein der Kern) ----
             foreach (Satz a in p.Aufbauten)

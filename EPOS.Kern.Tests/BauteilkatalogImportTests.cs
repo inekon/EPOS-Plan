@@ -674,6 +674,39 @@ namespace EPOS.Kern.Tests
                                                  new[] { 101, 102, 103, 104, 105 }.Select(n => Gelesen("Tab_Bauteilaufbau_STAMM", n)))));
         }
 
+        [Fact]
+        public void Die_Vorschau_zaehlt_Teilkataloge_erst_nach_dem_Verwerfen_inhomogener_Aufbauten()
+        {
+            // BK-9: A5 (Teilkatalog B) hat zwei Abschnitte ohne Flächenanteil und wird verworfen; die Vorschau zählt ihn
+            // nicht unter "mit Teilkatalog", und die Übernahme schreibt genau so viele Aufbauten mit Teilkatalog.
+            Probe probe = ProbeZuordnung();
+            probe.X[0] = new[] { G(401), G(105), "1", "", "Gefach" };
+            probe.X[1] = new[] { G(402), G(105), "2", "", "Ständer" };
+            string o = Schreiben(probe);
+            BauteilkatalogImport.Plan p = BauteilkatalogImport.Planen(BauteilkatalogQuelle.Lesen(o), new BauteilkatalogStand());
+            BauteilkatalogVorschau v = p.Vorschau;
+            Assert.Null(v.Abgelehnt);
+            Assert.Equal(1, v.Aufbauten.Gruende["inhomogen: Abschnitt ohne Flächenanteil"]);
+            Assert.DoesNotContain(p.Aufbauten, a => a.Kennung == G(105));
+            Assert.Equal(2, v.AufbautenMitTeilkatalog);
+            Assert.Equal(0, v.AufbautenMitMehrerenTeilkatalogen);
+            Assert.Equal(2, v.AufbautenOhneTeilkatalog);
+            Assert.Equal(p.Aufbauten.Count, v.AufbautenMitTeilkatalog + v.AufbautenOhneTeilkatalog);
+            Assert.Equal(2, v.BaustoffeMitTeilkatalog);
+            Assert.Equal(2, v.Teilkataloge);
+            Assert.Contains(v.Protokoll, z => z.EndsWith("ohne Teilkatalog 2 Baustoffe und 2 Aufbauten", StringComparison.Ordinal));
+
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            BauteilkatalogVorschau ue = BauteilkatalogImport.Uebernehmen(o);
+            Assert.Null(ue.Fehler);
+            Assert.True(ue.Geschrieben);
+            Assert.Equal(v.AufbautenMitTeilkatalog, ue.AufbautenMitTeilkatalog);
+            long geschrieben = Zahl("SELECT COUNT(*) FROM \"Tab_Bauteilaufbau_STAMM\" WHERE substr(\"Quelle\", 1, ?) = ?",
+                                    new DbParam("@n", (long)(ue.Quelle.Length + 13)), new DbParam("@q", ue.Quelle + ", Teilkatalog"));
+            Assert.Equal(v.AufbautenMitTeilkatalog, geschrieben);
+        }
+
         // ---- Nachzug E134 (BK-3b) -----------------------------------------------------------
 
         [Fact]
