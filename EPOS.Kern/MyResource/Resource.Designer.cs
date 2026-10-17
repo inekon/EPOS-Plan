@@ -122834,11 +122834,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Heizung: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_DAVON_HEIZUNG {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_DAVON_HEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Prozesswärme: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_DAVON_PROZESS {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_DAVON_PROZESS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die davon aus Puffer (andere Erzeuger): ähnelt.
         /// </summary>
         public static string SIMERG_LBL_DAVON_PUFFER_ANDERE {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_DAVON_PUFFER_ANDERE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Quellwärme aus Kaskade: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_DAVON_QUELLWAERME_KASKADE {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_DAVON_QUELLWAERME_KASKADE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon Warmwasser: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_DAVON_WARMWASSER {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_DAVON_WARMWASSER", resourceCulture);
             }
         }
         
@@ -122875,6 +122911,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_LBL_ERZEUGERAUSWAHL {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_ERZEUGERAUSWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gedeckter Wärmebedarf: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_GEDECKT {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_GEDECKT", resourceCulture);
             }
         }
         
@@ -123806,6 +123851,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Teil des Wärmebedarfs, den dieser Erzeuger deckt: direkt abgegebene Wärme plus die ihm zugerechnete Entladung der Speicher, bei der Wärmepumpe samt Heizstab. Geladene Speicherwärme zählt erst, wenn sie entladen wird; Speicherverluste und Quellwärme eines Boosters zählen nicht. ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_GEDECKT {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_GEDECKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Jahresarbeitszahl des Systems mit Heizstab (Bilanzgrenze nach VDI 4650): (Wärmeproduktion Wärmepumpe + Wärmeproduktion Heizstab) ÷ (Stromverbrauch WP + Stromverbrauch Heizstab); der Heizstab gibt so viel Wärme ab, wie er Strom aufnimmt. Dieselbe Rechnung wie die Kennzahl „Jahresarbeitszahl (JAZ) Wärmepumpe mit Heizstab“ im Bericht. Ohne Strom steht ein Strich. ähnelt.
         /// </summary>
         public static string SIMERG_TIP_JAZ_SYSTEM {
@@ -123847,6 +123901,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_TIP_MAX_WAERMELAST {
             get {
                 return ResourceManager.GetString("SIMERG_TIP_MAX_WAERMELAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärme, die eine Wärmepumpe als Quelle aus einem Puffer bezieht, den ein anderer Erzeuger lädt (Booster). Sie ist in der Wärmeproduktion zweimal enthalten: beim Erzeuger, der den Puffer lädt, und bei der Wärmepumpe, die sie anhebt. Ohne Kaskade 0. ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_QUELLWAERME_KASKADE_WP {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_QUELLWAERME_KASKADE_WP", resourceCulture);
             }
         }
         

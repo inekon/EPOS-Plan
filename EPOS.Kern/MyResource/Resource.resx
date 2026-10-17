@@ -29001,6 +29001,27 @@ Möchten Sie das zulassen?</value>
   <data name="SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG" xml:space="preserve">
     <value>Restwärmebedarf vor dem Kessel:</value>
   </data>
+  <data name="SIMERG_LBL_GEDECKT" xml:space="preserve">
+    <value>Gedeckter Wärmebedarf:</value>
+  </data>
+  <data name="SIMERG_TIP_GEDECKT" xml:space="preserve">
+    <value>Der Teil des Wärmebedarfs, den dieser Erzeuger deckt: direkt abgegebene Wärme plus die ihm zugerechnete Entladung der Speicher, bei der Wärmepumpe samt Heizstab. Geladene Speicherwärme zählt erst, wenn sie entladen wird; Speicherverluste und Quellwärme eines Boosters zählen nicht.</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_HEIZUNG" xml:space="preserve">
+    <value>davon Heizung:</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_WARMWASSER" xml:space="preserve">
+    <value>davon Warmwasser:</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_PROZESS" xml:space="preserve">
+    <value>davon Prozesswärme:</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_QUELLWAERME_KASKADE" xml:space="preserve">
+    <value>davon Quellwärme aus Kaskade:</value>
+  </data>
+  <data name="SIMERG_TIP_QUELLWAERME_KASKADE_WP" xml:space="preserve">
+    <value>Wärme, die eine Wärmepumpe als Quelle aus einem Puffer bezieht, den ein anderer Erzeuger lädt (Booster). Sie ist in der Wärmeproduktion zweimal enthalten: beim Erzeuger, der den Puffer lädt, und bei der Wärmepumpe, die sie anhebt. Ohne Kaskade 0.</value>
+  </data>
   <data name="SIMERG_LBL_GESAMTWAERMEBEDARF" xml:space="preserve">
     <value>Gesamtwärmebedarf:</value>
   </data>

@@ -84,6 +84,12 @@
                        die Einheit des WinForms-Feldes und stand als einzige Zeile
                        der Ergebnisseite ohne Zeitbezug da. *@
                     @Wertzeile(Resource.SIM_KESSEL_QUELLWAERME, Zahl(Daten.QuellwaermeMwh), MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_GEDECKT, Zahl(Daten.GedecktMwh), MWH,
+                               hinweis: Resource.SIMERG_TIP_GEDECKT)
+                    @foreach (var (text, wert) in Kanalzeilen.Davon(Daten.GedecktKanalMwh))
+                    {
+                        @Wertzeile(text, Zahl(wert), MWH)
+                    }
 
                     @* #568: Was der Kessel NICHT selbst deckt, und getrennt davon der Teil,
                        den der Puffer aus der Ladung der anderen Erzeuger deckt. *@

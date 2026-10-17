@@ -28994,6 +28994,27 @@ Do you want to allow this?</value>
   <data name="SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG" xml:space="preserve">
     <value>Residual heat demand before boiler:</value>
   </data>
+  <data name="SIMERG_LBL_GEDECKT" xml:space="preserve">
+    <value>Covered heat demand:</value>
+  </data>
+  <data name="SIMERG_TIP_GEDECKT" xml:space="preserve">
+    <value>The part of the heat demand this generator covers: heat delivered directly plus the storage discharge attributed to it, for the heat pump including the heating element. Heat charged into storage counts only when it is discharged; storage losses and the source heat of a booster do not count.</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_HEIZUNG" xml:space="preserve">
+    <value>of which space heating:</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_WARMWASSER" xml:space="preserve">
+    <value>of which domestic hot water:</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_PROZESS" xml:space="preserve">
+    <value>of which process heat:</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_QUELLWAERME_KASKADE" xml:space="preserve">
+    <value>of which source heat from cascade:</value>
+  </data>
+  <data name="SIMERG_TIP_QUELLWAERME_KASKADE_WP" xml:space="preserve">
+    <value>Heat a heat pump draws as its source from a buffer charged by another generator (booster). It is contained twice in the heat production: at the generator charging the buffer and at the heat pump lifting it. 0 without a cascade.</value>
+  </data>
   <data name="SIMERG_LBL_GESAMTWAERMEBEDARF" xml:space="preserve">
     <value>Total heat demand:</value>
   </data>

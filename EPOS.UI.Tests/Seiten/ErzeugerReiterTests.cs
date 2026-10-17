@@ -267,6 +267,9 @@ public class ErzeugerReiterTests : EposBunitContext
                          Resource.SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG,
                          Resource.SIMERG_LBL_WAERMEPRODUKTION_SPK,
                          Resource.SIM_KESSEL_QUELLWAERME,
+                         Resource.SIMERG_LBL_GEDECKT,
+                         Resource.SIMERG_LBL_DAVON_HEIZUNG,
+                         Resource.SIMERG_LBL_DAVON_WARMWASSER,
                          Resource.SIMERG_LBL_RESTWAERMEBEDARF_NACH_KESSEL,
                          Resource.SIMERG_LBL_DAVON_PUFFER_ANDERE
                      },
@@ -490,6 +493,7 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.Equal(
             new[] { "Wärmebedarfsdeckung:", "Restwärmebedarf vor dem Kessel:",
                     "Wärmeproduktion der Spitzenkessel:", "Quellwärme aus Kaskade:",
+                    "Gedeckter Wärmebedarf:", "davon Heizung:", "davon Warmwasser:",
                     "Restwärmebedarf nach Kessel:", "davon aus Puffer (andere Erzeuger):" },
             listen[0].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
         Assert.Equal(
