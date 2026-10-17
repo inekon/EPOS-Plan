@@ -25,6 +25,8 @@ Oben steht die Auswahl ''Kalender'' mit den Knöpfen ''Neu'', ''Löschen'' und �
 |-
 | ''Betriebsferien 1 bis 4 von / bis'' || Bis zu vier Zeiträume als Datum ohne Jahr (TT.MM.). Liegt der Beginn nach dem Ende, reicht der Zeitraum über den Jahreswechsel. Der 29. Februar ist kein gültiges Datum.
 |-
+| ''Weitere Betriebsferien'' || Eine Liste beliebig vieler weiterer Zeiträume unter den vier Feldern; jede Zeile trägt einen wahlfreien Namen sowie ''von'' und ''bis'' als Datum ohne Jahr wie die Felder. ''Zeile hinzufügen'' hängt eine leere Zeile an, ''Entfernen'' nimmt die Zeile heraus, die übrigen rücken auf. Eine Zeile ohne beide Daten ist kein Zeitraum; eine Zeile mit nur Beginn oder nur Ende lehnt der Dialog beim Speichern mit einer Meldung ab. Die vier Felder und die Liste wirken gemeinsam, kein Ferientag darf in zwei Zeiträumen liegen.
+|-
 | ''Ferienfaktor'' || Anteil des Tagesmittels des Wochenprofils, den ein Ferientag je Stunde trägt; 0 % heißt Stillstand. Gesperrt, solange ''Ferien wie Sonntag'' gesetzt ist.
 |-
 | ''Ferien kürzen die Monatsmenge'' || Aus: Die Monatsmenge bleibt und verteilt sich auf die übrigen Tage des Monats. Ein: Die Monatsmenge sinkt im Verhältnis der Ferienstunden.
@@ -35,7 +37,7 @@ Unter den Feldern nennt eine Zeile, wie viele Feiertage und Ferientage der Kalen
 === Aus Gebäude übernehmen ===
 {{Anker|ausgebaeude}}
 
-''Aus Gebäude übernehmen…'' zeigt die Gebäude des Projekts mit Bundesland und Zahl ihrer Ferienzeiträume. Nach der Wahl eines Gebäudes und ''OK'' stehen dessen Bundesland und Ferien im Kalender – als Kopie: Ändert sich später das Gebäude, bleibt der Kalender, wie er ist. Der Kalender nimmt vier Zeiträume auf; führt das Gebäude mehr, kommen die ersten vier, und eine Meldung nennt, wie viele fehlen. Gespeichert wird wie jede Eingabe mit ''Speichern'' oder ''OK''. Hat das Projekt kein Gebäude, ist der Knopf gesperrt und nennt den Grund.
+''Aus Gebäude übernehmen…'' zeigt die Gebäude des Projekts mit Bundesland und Zahl ihrer Ferienzeiträume. Nach der Wahl eines Gebäudes und ''OK'' stehen dessen Bundesland und Ferien im Kalender – als Kopie: Ändert sich später das Gebäude, bleibt der Kalender, wie er ist. Alle Ferienzeiträume des Gebäudes kommen in den Kalender: die ersten vier in die Felder ''Betriebsferien 1 bis 4'', die übrigen in die Liste ''Weitere Betriebsferien''; eine Meldung nennt die Zahlen. Gespeichert wird wie jede Eingabe mit ''Speichern'' oder ''OK''. Hat das Projekt kein Gebäude, ist der Knopf gesperrt und nennt den Grund.
 
 == Einen Kalender zuordnen ==
 {{Anker|zuordnung}}
