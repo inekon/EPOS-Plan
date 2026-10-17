@@ -5820,10 +5820,10 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
     <value>{0} Versionen</value>
   </data>
   <data name="BK_ERG_ABSCHNITT_KOMPONENTEN" xml:space="preserve">
-    <value>Komponenten und Einstellungen</value>
+    <value>Übersicht Komponenten / Vergleich</value>
   </data>
   <data name="BK_ERG_ABSCHNITT_ERGEBNISSE" xml:space="preserve">
-    <value>Ergebnisse — Energie</value>
+    <value>Übersicht Energie</value>
   </data>
   <data name="BK_ERG_SP_KENNZAHL" xml:space="preserve">
     <value>Kennzahl</value>

@@ -5804,10 +5804,10 @@ It then feeds the overview and the overall simulation. The existing simulation r
     <value>{0} versions</value>
   </data>
   <data name="BK_ERG_ABSCHNITT_KOMPONENTEN" xml:space="preserve">
-    <value>Components and settings</value>
+    <value>Overview components / comparison</value>
   </data>
   <data name="BK_ERG_ABSCHNITT_ERGEBNISSE" xml:space="preserve">
-    <value>Results — energy</value>
+    <value>Overview energy</value>
   </data>
   <data name="BK_ERG_SP_KENNZAHL" xml:space="preserve">
     <value>Indicator</value>

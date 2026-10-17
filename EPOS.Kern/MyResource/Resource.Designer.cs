@@ -12293,7 +12293,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnisse — Energie ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übersicht Energie ähnelt.
         /// </summary>
         public static string BK_ERG_ABSCHNITT_ERGEBNISSE {
             get {
@@ -12302,7 +12302,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Komponenten und Einstellungen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übersicht Komponenten / Vergleich ähnelt.
         /// </summary>
         public static string BK_ERG_ABSCHNITT_KOMPONENTEN {
             get {

@@ -96,7 +96,7 @@ public class UebersichtErgebnisFlussTests : EposBunitContext
         {
             p.Add(x => x.Stand, Stand())
              .Add(x => x.Laden, h.Laden)
-             .Add(x => x.AnsichtLesen, () => ablage.TryGetValue("ansicht", out string? a) ? a : UebersichtErgebnisse.ANSICHT_TABELLE)
+             .Add(x => x.AnsichtLesen, () => ablage.TryGetValue("ansicht", out string? a) ? a : null)
              .Add(x => x.AnsichtGewechselt, a => ablage["ansicht"] = a)
              .Add(x => x.FlussTexte, UebersichtErgebnisGaben.FlussTexte());
             if (mitFluss)
@@ -120,10 +120,10 @@ public class UebersichtErgebnisFlussTests : EposBunitContext
     [Fact]
     public void Dritte_Stellung_Fluss_zeigt_das_Bild_und_merkt_die_Wahl()
     {
-        var ablage = new Dictionary<string, string>();
+        var ablage = new Dictionary<string, string> { ["ansicht"] = UebersichtErgebnisse.ANSICHT_TABELLE };
         var cut = Zeige(ablage);
 
-        var knoepfe = cut.FindAll(".epos-ergebnis-ansicht button[role=radio]");
+        var knoepfe = cut.FindAll(".epos-ergebnis-ansicht button[data-ansicht]");
         Assert.Equal(new[] { "Tabelle", "Grafik", "Fluss" }, knoepfe.Select(k => k.TextContent).ToArray());
         Assert.Equal(new[] { "tabelle", "grafik", "fluss" }, knoepfe.Select(k => k.GetAttribute("data-ansicht")).ToArray());
         Assert.Empty(cut.FindAll(".epos-ergebnis-fluss"));
@@ -152,7 +152,7 @@ public class UebersichtErgebnisFlussTests : EposBunitContext
     [Fact]
     public void Pfeiltasten_laufen_ueber_drei_Stellungen_Pos1_und_Ende_an_die_Raender()
     {
-        var ablage = new Dictionary<string, string>();
+        var ablage = new Dictionary<string, string> { ["ansicht"] = UebersichtErgebnisse.ANSICHT_TABELLE };
         var cut = Zeige(ablage);
         void Taste(string k) => cut.Find(".epos-ergebnis-ansicht").KeyDown(new KeyboardEventArgs { Key = k });
 
@@ -172,11 +172,15 @@ public class UebersichtErgebnisFlussTests : EposBunitContext
     }
 
     [Fact]
-    public void Alte_Werte_bleiben_gueltig_unbekannte_und_Fluss_ohne_Ladeweg_fallen_auf_die_Tabelle()
+    public void Alte_Werte_bleiben_gueltig_ohne_Wahl_oder_unbekannt_der_Fluss_ohne_Ladeweg_die_Tabelle()
     {
         Assert.Equal("grafik", Zeige(new() { ["ansicht"] = "grafik" }).Instance.Ansicht);
         Assert.Equal("tabelle", Zeige(new() { ["ansicht"] = "tabelle" }).Instance.Ansicht);
-        Assert.Equal("tabelle", Zeige(new() { ["ansicht"] = "sankey" }).Instance.Ansicht);
+        Assert.Equal("fluss", Zeige(new() { ["ansicht"] = "sankey" }).Instance.Ansicht);
+        // Beim ersten Öffnen (nichts gemerkt) steht das Energieflussbild vorn.
+        var erst = Zeige(new());
+        Assert.Equal("fluss", erst.Instance.Ansicht);
+        Assert.NotEmpty(erst.FindAll(".epos-ergebnis-fluss"));
 
         // Kein Delegat, kein Knopf: ohne FlussLaden zwei Stellungen, ein gespeichertes „fluss“ zeigt die Tabelle.
         var ohne = Zeige(Flussablage(), mitFluss: false);
