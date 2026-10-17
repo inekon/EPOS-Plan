@@ -1298,8 +1298,7 @@ Zum nächsten Sammel-Upload gehört alles, was nach dem Sammel-Upload vom 14.10.
 - Klimadialog-Banner ohne „erklären lassen“ (Kennung müsste bis zum Banner reisen); 20 Bereiche der Hilfe-Wissensliste leer (Textarbeit je Gewerk, Ausnahmeliste) (#370, 19.09.2026).
 - Vorlagenhinweis im Kostendialog vergleicht nur die Bemessung, nicht Satz und Kostenart (eigener Auftrag, falls gewünscht) (#366, 19.09.2026).
 - Bericht zeigt in Sicht 2 nur die Kennzahltafel; Verlaufs- und Differenzkurven im Bericht sind eine eigene Welle (#358, 19.09.2026).
-- Hülle der Kostenverwaltung bleibt in der Windows-Schale (1 107 Zeilen mit WinForms-Naht; Konzept § 6 B sah den Umzug nach `EPOS.UI.Daten` vor) — eigener Auftrag (#357, 18.09.2026).
-- Ergebnisansicht nach Konzept § 2.13 (Umschalter Kennzahlen/ValERI, Knopf „Verlauf…“ entfällt) nicht umgesetzt; Zeilenliste der Wirtschaftlichkeitsseite baut die Windows-Schale (Kandidat für einen Kern-Controller); keine Berichtsprobe für die Kennzahlentabelle des Word-Berichts (#346, 18.09.2026).
+- Keine Berichtsprobe für die Kennzahlentabelle des Word-Berichts (#346, 18.09.2026; die übrigen Teile des Punkts — Umschalter Kennzahlen/ValERI, Zeilenliste plattformfrei — sind mit #431 erledigt).
 - `energy_project_settings.ID_Umrechnung` merkt die Preisbasis als Kennung einer Umrechnungsregel (Altlast); sauber wäre eine eigene Spalte (Schemaschritt, nicht beauftragt) (#341, 18.09.2026).
 - Aufräumkandidat `energy_project_settings.Anteil_Modus` (Schemaschritt 60) ohne Leser und Schreiber (#318, 17.09.2026).
 - Wer eine Anlage im Dialog umbenennt, verliert ihre Stränge (Zuordnung über `ID_Type` und Bezeichner; dieselbe Grenze bei Senken- und Variantenrettung) (#308, 16.09.2026).
@@ -1310,7 +1309,6 @@ Zum nächsten Sammel-Upload gehört alles, was nach dem Sammel-Upload vom 14.10.
 - 332 `.cs` ohne BOM (Abweichung von `.editorconfig`), dazu 11 `.csproj`, 7 `.resx`, 1 `.sln`; Aufräumschritt; `.razor` ohne `charset`-Regel (Entscheid) (#287, #289, #290, 15.09.2026).
 - Datenbefund: zwei Pufferspeicher „test“ (2 Liter, 4 000 €) in 1007 und 1046 rechnen nicht mit; Bereinigung verschöbe Basis R8 (Anwenderentscheid) (#279, 15.09.2026).
 - Kostenverwaltung Stufe S3 (Rechenwirkung Instandsetzung/Wartung, `Instandsetzung_Prozent`/`Wartung_Prozent` angelegt, aber weder sichtbar noch gelesen; neue Referenzbasis) auf Zuruf; das Konzept wandert danach nach `ueberholt/` (#264, #269, 14.09.2026).
-- iOS kennt die Rubrik Kostenverwaltung insgesamt nicht (wie Energieträger) (#269, 14.09.2026).
 - iOS-Varianten-Anlegedialog: `IProjektQuelle.Energietraeger()` kennt keine Kategorie und bietet alle Träger an (Schnittstelle samt iOS-Adapter, gehört zu iU10) (#268, 14.09.2026).
 - Bestandsprojekte ohne gespeicherten Modus rechnen mit 0 statt 11,746 ct/kWh; auf Zuruf sichert ein Schemaschritt den alten Stand (dann Referenzbasis neu) (#266, 14.09.2026).
 - Kontextwechsel in der Kostenverwaltung (Komponente, Kategorie, Variante, Speichern unter, Löschen) verwirft ungespeicherte Eingaben still; eine `Rueckfrage` wäre der Weg (nur auf Zuruf) (#263, 14.09.2026).
