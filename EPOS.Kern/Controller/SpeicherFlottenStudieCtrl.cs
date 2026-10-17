@@ -130,6 +130,17 @@ public static partial class SpeicherFlottenStudieCtrl
     }
 
     /// <summary>Eine Flotteneinheit aus einem gelesenen Speicherparametersatz.</summary>
+    /// <remarks>
+    /// <para><b>Standby und Selbstentladung gehören dazu.</b> <c>LeseParameter</c> hat beide
+    /// geprüft (0 … 1 000 W, 0 … 20 %/Monat) und als <c>StandbyKw</c> und
+    /// <c>SelbstentladungProzentMonat</c> in den Satz gelegt; die Einheit trägt sie als
+    /// <see cref="FlottenEinheit.HilfsverbrauchKw"/> und
+    /// <see cref="FlottenEinheit.SelbstentladungProzentProMonat"/> — dieselbe Abbildung wie
+    /// <see cref="EinheitAusKatalogsatz"/>. Ohne sie rechnete die vorbelegte Flotte des
+    /// Laufs der Oberfläche (<c>SimulationControl.SpeicherflotteAusLaufVorbelegen</c>) den
+    /// Standby des Speichersystems stets mit 0, der Einzellauf derselben Anlage dagegen mit
+    /// ihrem Standby (Befund EB-2).</para>
+    /// </remarks>
     /// <param name="p">Der Parametersatz der Anlage.</param>
     /// <param name="kontext">Der Lesekontext mit Anlagenname und Anlagen-Id.</param>
     /// <param name="nummer">Laufende Nummer für den Namensrückfall.</param>
@@ -147,7 +158,9 @@ public static partial class SpeicherFlottenStudieCtrl
             KapazitaetKWh = p.CNomKwh, LadeleistungKw = p.PKw, EntladeleistungKw = p.PKw,
             Ladewirkungsgrad = p.EtaCh, Entladewirkungsgrad = p.EtaDis,
             SocMin = p.SoCMinKwh / p.CNomKwh, SocMax = p.SoCMaxKwh / p.CNomKwh,
-            SocStart = p.StartSoCEffektivKwh / p.CNomKwh
+            SocStart = p.StartSoCEffektivKwh / p.CNomKwh,
+            HilfsverbrauchKw = p.StandbyKw,
+            SelbstentladungProzentProMonat = p.SelbstentladungProzentMonat
         };
     }
 

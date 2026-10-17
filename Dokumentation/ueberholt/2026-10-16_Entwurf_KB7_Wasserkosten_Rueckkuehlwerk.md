@@ -6,7 +6,7 @@ Sitzung Dialoge und Korrekturen (Kostenbasis), Entwurf vom 16.10.2026. Schemasch
 (Frage KD‑Q8), Protokolle
 [`K-F1`](Protokolle/Kaelteanlagen/2026-10-10_K-F1_Rueckkuehlwerk_Glied.md) und
 [`K-F2`](Protokolle/Kaelteanlagen/2026-10-11_K-F2_Rueckkuehlwerk_Rechenweg.md), Übergabe
-[`KB-4/KB-5`](../aktuell/Dialoge/2026-10-14_Uebergabe_Dialoge_Kostenbasis_KB4_KB5.md).
+[`KB-4/KB-5`](2026-10-14_Uebergabe_Dialoge_Kostenbasis_KB4_KB5.md).
 
 ## 1 Ausgangslage
 

@@ -22,6 +22,11 @@
             <Kennzahlkachel Titel="@Resource.KBP_KZ_SPITZE" Wert="@Zahl(Bilder.Kennzahlen.SpitzeKw, "N1", "kW")" />
             <Kennzahlkachel Titel="@Resource.KBP_KZ_VBH" Wert="@Zahl(Bilder.Kennzahlen.VollbenutzungsstundenH, "N0", "h/a")" />
             <Kennzahlkachel Titel="@Resource.KBP_KZ_GRUNDLAST" Wert="@Zahl(Bilder.Kennzahlen.GrundlastAnteilProzent, "N1", "%")" />
+            @* KV8: bei einer Zeile mit Nutzungstagen nach Norm die Nutzungstage des wirksamen Kalenders. *@
+            @if (Bilder.Nutzungstage is int tage)
+            {
+                <Kennzahlkachel Titel="@Resource.KBP_KZ_NUTZUNGSTAGE" Wert="@Zahl(tage, "N0", Resource.KBP_KZ_NUTZUNGSTAGE_EINHEIT)" />
+            }
         </div>
 
         <Reiter Aktiv="@_reiter" AktivChanged="r => _reiter = r" Bezeichnung="@Resource.KBP_GRAFIK_GRUPPE" Kennung="kbp-grafik">

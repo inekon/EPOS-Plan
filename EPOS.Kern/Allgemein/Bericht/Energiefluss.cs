@@ -173,7 +173,11 @@ namespace WindowsFormsApplication1
     /// baut) Knoten, Bänder und die Bilanz je Knoten — ohne Datenbank, ohne Lauf. Endenergie-Sicht mit drei Bussen
     /// (Strom, Wärme, Kälte); Umweltanteil als Zufluss (SK-Q6), Speicher als Zwischenknoten (SK-Q9), Verluste in der
     /// Lücke (SK-Q7), Kondensationswärme beim Brennwertkessel (SK-Q4), Solarüberschuss nicht gezeichnet (SK-Q3),
-    /// BHKW-Einspeisung bilanziert (SK-Q1), ein nicht geschlossener Knoten mit Band „nicht zugeordnet“ (SK-Q5).
+    /// BHKW-Einspeisung direkt aus der Ergebniszeile (EB-1, <see cref="ErgebnisBHKWModel.StromeinspeisungMwh"/>; ein
+    /// Altergebnis ohne Wert wird am Stromknoten bilanziert, SK-Q1), Standby des Speichersystems als benanntes Verlustband
+    /// am Strombus (EB-1), PV-Abregelung als grauer Abzweig „abgeregelt“ an der PV-Quelle (EB-1, EB-Q1: die Quelle trägt
+    /// das erzeugbare Potenzial = abgegeben + abgeregelt; unter 1 % der Erzeugung nur im Zeigertext, SK-Q15), ein nicht
+    /// geschlossener Knoten mit Band „nicht zugeordnet“ (SK-Q5).
     /// Alle Mengen in MWh/a; die kWh der Speicherzeilen rechnet allein <see cref="AusKwh"/> um.
     /// </summary>
     public static class Energiefluss
@@ -209,7 +213,8 @@ namespace WindowsFormsApplication1
                             HEIZUNG = "heizung", WARMWASSER = "warmwasser", PROZESSWAERME = "prozesswaerme",
                             KUEHLUNG = "kuehlung", STROMBEDARF = "strombedarf", EINSPEISUNG_PV = "einspeisung_pv",
                             EINSPEISUNG_BHKW = "einspeisung_bhkw", NICHT_ZUGEORDNET = "nicht_zugeordnet",
-                            VERLUST = "verlust:", FUELLSTAND = "fuellstand:", WEITERE = "weitere:";
+                            VERLUST = "verlust:", FUELLSTAND = "fuellstand:", WEITERE = "weitere:",
+                            STANDBY = "standby:", ABREGELUNG_PV = "abregelung_pv";
 
         internal const string GRUPPE_TRAEGER = "traeger", GRUPPE_SPLIT = "split", GRUPPE_PUFFER = "puffer";
         private const string BRENNSTOFF_STROM = "Strom";
@@ -291,6 +296,8 @@ namespace WindowsFormsApplication1
             private readonly List<EnergieflussFluss> _fluesse = new List<EnergieflussFluss>();
             private int _folge;
             private double _bhkwStromMwh;
+            /// <summary>EB-1: die Einspeisung der BHKW-Ergebniszeile; <c>null</c> = nicht erhoben (dann bilanziert, SK-Q1).</summary>
+            private double? _bhkwEinspeisungMwh;
 
             public Bau(EnergieflussBilanz m, ErgebnisModel e, IReadOnlyList<EnergieTraegerNachweis> traeger, bool englisch)
             {
@@ -358,7 +365,16 @@ namespace WindowsFormsApplication1
                 if (_e.Photovoltaik != null)
                 {
                     KR(PHOTOVOLTAIK, nameof(MyResource.Resource.EF_KN_PHOTOVOLTAIK), nameof(MyResource.Resource.EF_KK_PHOTOVOLTAIK), EnergieflussKnotenart.Quelle, SPALTE_QUELLEN, R_PV);
-                    F(PHOTOVOLTAIK, STROM, _e.Photovoltaik.Stromproduktion, EnergieflussForm.Strom);
+                    // EB-1 (EB-Q1): Die Erzeugung der Module ist das erzeugbare Potenzial; die an der Einspeisegrenze
+                    // abgeregelte Menge verlässt die Quelle als grauer Abzweig „abgeregelt“, an den Strombus geht der Rest.
+                    // Ein Altergebnis ohne Wert (null) und ein Lauf ohne Grenze (0) zeichnen wie bisher.
+                    double abregelung = Math.Max(0.0, Math.Min(_e.Photovoltaik.AbregelungMwh ?? 0.0, _e.Photovoltaik.Stromproduktion));
+                    if (abregelung >= MINDEST_MWH)
+                    {
+                        KR(ABREGELUNG_PV, nameof(MyResource.Resource.EF_KN_ABREGELUNG), nameof(MyResource.Resource.EF_KK_ABREGELUNG), EnergieflussKnotenart.Verlust, SPALTE_QUELLEN, R_PV);
+                        F(PHOTOVOLTAIK, ABREGELUNG_PV, abregelung, EnergieflussForm.Verlust);
+                    }
+                    F(PHOTOVOLTAIK, STROM, _e.Photovoltaik.Stromproduktion - abregelung, EnergieflussForm.Strom);
                 }
 
                 // ---- Wandler I: BHKW ----
@@ -369,6 +385,7 @@ namespace WindowsFormsApplication1
                         if (mo != null && mo.Verbrauch >= MINDEST_MWH)
                             F(Traeger(mo.CarrierId, mo.Brennstoff), BHKW, mo.Verbrauch, EnergieflussForm.Brennstoff);
                     _bhkwStromMwh = _e.BHKW.Stromproduktion;
+                    _bhkwEinspeisungMwh = _e.BHKW.StromeinspeisungMwh;
                     F(BHKW, STROM, _e.BHKW.Stromproduktion, EnergieflussForm.Strom);
                     F(BHKW, WAERME, _e.BHKW.Waermeproduktion, EnergieflussForm.Waerme);
                     VerlustWandler(BHKW, SPALTE_WANDLER_I, R_BHKW);
@@ -754,6 +771,16 @@ namespace WindowsFormsApplication1
                     if (sp == null) continue;
                     speicher = true;
                     einspeisungMit += AusKwh(sp.Einspeisung_Mit);
+                    // EB-1: der Standby des Speichersystems (Standby aus PV und Netz, mit Flotte der Hilfsverbrauch der
+                    // Einheiten) verlässt den Strombus als benanntes Verlustband — er ist Verbrauch des Systems, nicht
+                    // Inhalt des Speichers (der Speicherknoten schließt über Ladung, Entladung, Verlust und Füllstand).
+                    double standby = AusKwh(sp.EigenverbrauchSystemKwh ?? 0.0);
+                    if (standby >= MINDEST_MWH)
+                    {
+                        string sid = STANDBY + i.ToString(CultureInfo.InvariantCulture);
+                        KR(sid, nameof(MyResource.Resource.EF_KN_STANDBY), nameof(MyResource.Resource.EF_KK_STANDBY), EnergieflussKnotenart.Verlust, SPALTE_SPEICHER, R_SSPEICHER);
+                        F(STROM, sid, standby, EnergieflussForm.Verlust);
+                    }
                     double ladung = AusKwh(sp.Ladung_Gesamt);
                     if (ladung < MINDEST_MWH) continue;
                     string id = STROMSPEICHER + i.ToString(CultureInfo.InvariantCulture);
@@ -790,9 +817,41 @@ namespace WindowsFormsApplication1
             //  Bilanz
             // ---------------------------------------------------------------
 
-            /// <summary>Stromknoten (2.4, Fall 1): Ein positiver Rest bis zum BHKW-Strom ist die bilanzierte Einspeisung.</summary>
+            /// <summary>
+            /// Stromknoten: Mit erhobener Einspeisung der BHKW-Ergebniszeile (EB-1) ist das Band „Einspeisung BHKW“ die Zeile
+            /// (Herkunft direkt). Die Zeile trägt den BHKW-Überschuss des Laufs — dieselbe Menge wie Reihe, Reiter und
+            /// KWK-Split; ein Stromspeicher ohne Flotte lädt daraus seine <c>Ladung_BHKW</c>, ins Netz geht der Rest
+            /// (Herkunft abgeleitet). Mit Flotte ist die Zeile schon die Netzeinspeisung der Flotte; welche der beiden
+            /// Lesarten gilt, sagt der Knoten selbst: genommen wird die, mit der er schließt (zuerst die Zeile). Danach wird
+            /// der Knoten wie jeder andere geprüft. Ohne Wert (Altergebnis, SK-Q1, 2.4 Fall 1) ist ein positiver Rest bis
+            /// zum BHKW-Strom die bilanzierte Einspeisung.
+            /// </summary>
             private void BilanzStrom()
             {
+                if (_bhkwStromMwh >= MINDEST_MWH && _bhkwEinspeisungMwh.HasValue)
+                {
+                    double zeile = Math.Max(0.0, _bhkwEinspeisungMwh.Value);
+                    double ladungBhkw = (_e.Stromspeicher ?? new List<ErgebnisStromspeicherModel>())
+                        .Where(sp => sp != null).Sum(sp => Math.Max(0.0, AusKwh(sp.Ladung_BHKW)));
+                    double offen = Zu(STROM) - Ab(STROM);
+                    double band = zeile;
+                    EnergieflussHerkunft herkunft = EnergieflussHerkunft.Direkt;
+                    string formel = "";
+                    if (ladungBhkw >= MINDEST_MWH && Math.Abs(offen - zeile) > Toleranz(Zu(STROM))
+                        && Math.Abs(offen - (zeile - ladungBhkw)) <= Toleranz(Zu(STROM)))
+                    {
+                        band = zeile - ladungBhkw;
+                        herkunft = EnergieflussHerkunft.Abgeleitet;
+                        formel = T(nameof(MyResource.Resource.EF_FORMEL_EINSPEISUNG_BHKW));
+                    }
+                    if (band >= MINDEST_MWH)
+                    {
+                        KR(EINSPEISUNG_BHKW, nameof(MyResource.Resource.EF_KN_EINSPEISUNG_BHKW), nameof(MyResource.Resource.EF_KK_EINSPEISUNG_BHKW), EnergieflussKnotenart.Senke, SPALTE_SENKEN, R_EINSP_BHKW);
+                        F(STROM, EINSPEISUNG_BHKW, band, EnergieflussForm.Strom, herkunft, formel);
+                    }
+                    Bilanz(STROM);
+                    return;
+                }
                 double rest = Zu(STROM) - Ab(STROM);
                 if (_bhkwStromMwh >= MINDEST_MWH && rest >= MINDEST_MWH && rest <= _bhkwStromMwh + Toleranz(Zu(STROM)))
                 {

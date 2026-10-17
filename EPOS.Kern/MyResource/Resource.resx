@@ -4360,6 +4360,9 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="SP_CSV_ENTLADUNG" xml:space="preserve">
     <value>Entladung [kWh]</value>
   </data>
+  <data name="SP_CSV_STANDBY" xml:space="preserve">
+    <value>Standby Speichersystem [kWh]</value>
+  </data>
   <data name="SP_CSV_GELDWERT" xml:space="preserve">
     <value>Geldwert [€]</value>
   </data>
@@ -56381,6 +56384,12 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="CHART_LEGENDE_PV_ABREGELUNG" xml:space="preserve">
     <value>PV-Abregelung</value>
   </data>
+  <data name="CHART_LEGENDE_BHKW_EINSPEISUNG" xml:space="preserve">
+    <value>Stromeinspeisung BHKW</value>
+  </data>
+  <data name="CHART_LEGENDE_SPEICHER_STANDBY" xml:space="preserve">
+    <value>Standby Speichersystem</value>
+  </data>
   <data name="SIM_CHK_PV_AUFTEILEN" xml:space="preserve">
     <value>PV aufteilen (Eigenverbrauch + Überschuss)</value>
   </data>
@@ -56821,6 +56830,15 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="KBP_MONATE_KURZ" xml:space="preserve">
     <value>Jan;Feb;Mär;Apr;Mai;Jun;Jul;Aug;Sep;Okt;Nov;Dez</value>
+  </data>
+  <data name="KBP_HINW_NORMKALENDER_VORGABE" xml:space="preserve">
+    <value>Normkalender (Vorgabe): {0} Nutzungstage, Feiertage und Betriebsferien wie Sonntag — mit „Aus Gebäude übernehmen“ oder einer Kalenderwahl ersetzbar.</value>
+  </data>
+  <data name="KBP_KZ_NUTZUNGSTAGE" xml:space="preserve">
+    <value>Nutzungstage</value>
+  </data>
+  <data name="KBP_KZ_NUTZUNGSTAGE_EINHEIT" xml:space="preserve">
+    <value>d/a</value>
   </data>
   <data name="ZPG_AUS_SCHNELLAUSLEGUNG_V4" xml:space="preserve">
     <value>Schnellauslegung V4</value>
@@ -57917,5 +57935,19 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="VF_ORT_ENERGIEFLUSS" xml:space="preserve">
     <value>im Bericht tragen die Knoten ihre Jahressumme (MWh/a); die Bänder bleiben ohne Zahl, die Werte stehen hier im Zeigertext</value>
   </data>
+  <data name="EF_KN_STANDBY" xml:space="preserve">
+    <value>Standby Speichersystem</value>
+  </data>
+  <data name="EF_KK_STANDBY" xml:space="preserve">
+    <value>Standby</value>
+  </data>
+  <data name="EF_KN_ABREGELUNG" xml:space="preserve">
+    <value>abgeregelt</value>
+  </data>
+  <data name="EF_KK_ABREGELUNG" xml:space="preserve">
+    <value>abgeregelt</value>
+  </data>
+  <data name="EF_FORMEL_EINSPEISUNG_BHKW" xml:space="preserve">
+    <value>BHKW-Überschuss des Laufs − BHKW-Ladung des Speichers</value>
+  </data>
 </root>
-

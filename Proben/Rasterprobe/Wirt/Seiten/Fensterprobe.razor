@@ -680,6 +680,8 @@
         .Select(i => new BedarfsProfilZeile
         {
             IdZ = i, IdStamm = 200 + i, Name = "Kälte " + i, Summe = 40 * i, Vorlauf = 16, Ruecklauf = 19,
+            // Deckungsgruppe (Fall kaeltedeckung): die Feldgruppe der Bearbeiten-Ueberlagerung braucht einen Feldsatz.
+            Deckung = new DeckungsartDaten(),
             // KBP-3a: Eingabeart, Monatsanteile und Wochenprofil der Projektkopie fuer die beiden Editoren.
             Eingabeart = WindowsFormsApplication1.DbWerte.KAELTE_EINGABE_JAHR,
             Monatsanteile = new double[] { 1, 2, 4, 7, 11, 15, 18, 17, 12, 7, 4, 2 },
