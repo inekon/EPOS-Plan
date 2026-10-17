@@ -3894,6 +3894,13 @@ html:has(> body > #app > .epos-fenstermarke):has(> body > #app > .epos-dialog:no
         row-gap: 4px;
     }
     .epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste .epos-katalog-suchfeld { flex: 0 0 12.5rem !important; min-width: 12.5rem; }
+    /* KM-T1: Die Statuszeile des Typkennfelder-Ladens erzwingt nie einen Umbruch - Grundmass 0 (sie zaehlt beim
+       Umbruch nicht), sie waechst nur in den freien Platz der Zeile (Vorrang vor dem Fueller, hoechstens bis zu ihrem
+       Text) und kuerzt sonst mit Auslassung; der title nennt den vollen Text. Der Abstand zum Knopf kostet ebenfalls
+       nichts: der negative Rand hebt das gap auf, der Einzug des Textes zeichnet den Abstand. */
+    .epos-zweispalten-bereich--katalog > .epos-zweispalten-kopfleiste > .epos-kaeltemaschine-typstatus {
+        flex: 1000 1 0; max-width: max-content; margin-inline-start: -8px; text-indent: 8px;
+    }
 }
 
 /* DER HINWEIS DER SPALTENWAHL (Konzept 4.10, DZ1): neben einer angehakten Spalte mit Rang, die bei
