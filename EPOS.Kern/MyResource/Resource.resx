@@ -58219,6 +58219,7 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="ZPG_SP_NIVEAU" xml:space="preserve">
     <value>Niveau</value>
+  </data>
   <data name="ZPG_PS_KNOPF_KATALOG" xml:space="preserve">
     <value>Als Katalogsatz speichern…</value>
   </data>

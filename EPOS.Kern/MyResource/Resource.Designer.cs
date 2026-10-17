@@ -165721,6 +165721,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Als Katalogsatz speichern… ähnelt.
+        /// </summary>
+        public static string ZPG_PS_KNOPF_KATALOG {
+            get {
+                return ResourceManager.GetString("ZPG_PS_KNOPF_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zum Projekt hinzufügen ähnelt.
         /// </summary>
         public static string ZPG_PS_KNOPF_PROJEKT {
