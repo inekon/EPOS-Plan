@@ -2086,4 +2086,62 @@ public class BedarfsProfileDialogTests : EposBunitContext
         Assert.Equal(1, neuGelesen);
         Assert.Null(cut.Instance.HinweisNormkalender);
     }
+
+    /// <summary>
+    /// ZC6: „Zum Projekt hinzufügen" im Zapfprofil-Blatt schreibt sofort eine Zuordnungszeile; der Wirt
+    /// nimmt sie beim Schließen des Blatts in seine Projektliste (sonst setzte sein OK die Zuordnungen
+    /// ohne sie neu) — auch auf dem Rückweg „‹ Wirtstitel", ohne OK des Zapfprofils.
+    /// </summary>
+    [Fact]
+    public void Nach_Zum_Projekt_hinzufuegen_nimmt_der_Wirt_die_neue_Zeile_beim_Schliessen_auf()
+    {
+        var gelesen = new List<int>();
+        int geaendert = 0;
+        var zeilen = new List<BedarfsProfilZeile> { Zeile(1) };
+        Func<IReadOnlyDictionary<string, object>> gaben = () =>
+        {
+            var satz = new Dictionary<string, object>(ZapfprofilSatz());
+            ((ZapfprofilDaten)satz["Daten"]).Vorschau = new ZapfprofilVorschauDaten { Zustand = ZapfprofilVorschauZustand.Gerechnet };
+            satz["ProfilsatzVorschau"] = new Func<ZapfprofilEingabeDaten, bool, ZapfprofilProfilsatzVorschauDaten>(
+                (_, mz) => new ZapfprofilProfilsatzVorschauDaten { Gerechnet = true, MitZirkulation = mz, JahressummeMwh = 8, WarnungProjekt = "Warnung" });
+            satz["ProfilsatzProjekt"] = new Func<ZapfprofilEingabeDaten, bool, ZapfprofilProfilsatzErgebnis>(
+                (_, _) => new ZapfprofilProfilsatzErgebnis { Erfolg = true, Id = 77, Name = "Zapfprofil Neu", Text = "hinzugefügt" });
+            return satz;
+        };
+        var cut = Render<BedarfsProfileDialog>(p => p
+            .Add(x => x.Art, BedarfsArt.Brauchwasser)
+            .Add(x => x.TitelText, "Brauchwasserwärme")
+            .Add(x => x.Zeilen, zeilen)
+            .Add(x => x.Katalogzeilen, Katalogzeilen)
+            .Add(x => x.Katalogprofil, Profil(BedarfsArt.Brauchwasser))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Jahressumme, _ => 42.0)
+            .Add(x => x.ZapfprofilGaben, gaben)
+            .Add(x => x.ZapfprofilUebernommen, _ => { })
+            .Add(x => x.RechenwegGesetzt, _ => { })
+            .Add(x => x.ZapfprofilProjektzeile, id => { gelesen.Add(id); return Zeile(id, "Zapfprofil Neu", 8); })
+            .Add(x => x.Geaendert, () => geaendert++)
+            .Add(x => x.Geschlossen, _ => { }));
+
+        ZapfprofilKnopf(cut)!.Click();
+        cut.Find("button.epos-zapfprofil-ablage-projekt").Click();
+        cut.Find("button.epos-zapfprofil-ablage-weiter").Click();
+
+        // Solange das Blatt steht, liest der Wirt nichts.
+        Assert.Empty(gelesen);
+        Assert.Single(zeilen);
+
+        cut.Find(".epos-blatt-zurueck").Click();
+
+        Assert.False(cut.Instance.ZapfprofilOffen);
+        Assert.Equal(new[] { 77 }, gelesen);
+        Assert.Equal(new[] { 1, 77 }, zeilen.Select(z => z.IdZ).ToArray());
+        Assert.Equal(1, geaendert);
+        Assert.Contains("Zapfprofil Neu", cut.Markup);
+
+        // Ein zweites Öffnen und Schließen ohne neue Zeile liest nicht noch einmal.
+        ZapfprofilKnopf(cut)!.Click();
+        cut.Find(".epos-blatt-zurueck").Click();
+        Assert.Single(gelesen);
+    }
 }

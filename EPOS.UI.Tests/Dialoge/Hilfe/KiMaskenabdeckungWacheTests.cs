@@ -695,13 +695,15 @@ public sealed class KiMaskenabdeckungWacheTests
         // und die neun Eingaben des Verfahrensvergleichs der Auslegung (lade_modus … fuellstand_bezug).
         new("ZapfkategorienEditor", 7),
         new("ZapfprofilAuslegungDialog", 20),
-        new("ZapfprofilDialog", 52, "Stufen Erweitert und Experte (Z4): die Angaben der gewählten Zone und des Gebäudes " +
+        new("ZapfprofilDialog", 56, "Stufen Erweitert und Experte (Z4): die Angaben der gewählten Zone und des Gebäudes " +
             "als Karten (ZB3); Tagesbedarf, Ladeleistung und Zirkulation je EIN Feld (ZB4 (b): leer = Vorschlag, ein Wert = " +
             "manuell; ein Baustein Einwertfeld zeichnet alle drei, Felder tagesbedarf_manuell, ladeleistung_manuell, zirk_manuell) " +
             "samt Wohnungstabelle in der Feldkarte; die Karte „Kalender“ (ZB5) führt Quelle und eigene Ferien (Name, von, bis) als " +
             "Feld kalender und Zeilen ferien_name/ferien_von/ferien_bis der Feldkarte, Quelle als Wahl oder Liste je Gebäudezahl. " +
             "Dazu die drei Eingaben der Wahl des Typtagwegs (Z4b): Schalter, Klimazone und Gebäudeart, und die Wahl " +
-            "der Messreihe des Vergleichs (Z5): Feld messreihe der Feldkarte")
+            "der Messreihe des Vergleichs (Z5): Feld messreihe der Feldkarte. " +
+            "Dazu die vier Eingaben der Ablage des Profils (ZC6): Name, Typ, Beschreibung und Schalter „mit Zirkulation“ — " +
+            "Angaben einer sofort schreibenden Handlung, kein Arbeitsstand der Maske; der Assistent legt kein Profil ab")
     };
 
     /// <summary>

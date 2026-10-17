@@ -21,6 +21,8 @@ public sealed class ZapfprofilProfilsatzVorschauDaten
     public bool MitZirkulation { get; set; }
     /// <summary>„Zapfwärme und Zirkulationsverlust" bzw. „nur Zapfwärme".</summary>
     public string Variante { get; set; } = "";
+    /// <summary>Die Vorgabe der Beschreibung eines Katalogsatzes zu <see cref="MitZirkulation"/>.</summary>
+    public string Beschreibung { get; set; } = "";
 
     public double JahressummeMwh { get; set; }
     public List<double> MonatssummenMwh { get; set; } = new List<double>();

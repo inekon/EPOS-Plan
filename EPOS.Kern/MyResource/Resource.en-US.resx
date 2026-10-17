@@ -58273,4 +58273,34 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="ZPG_PS_HINWEIS_ZIRK_DOPPELT" xml:space="preserve">
     <value>The project already calculates a circulation on the standard-profile path. With circulation in the profile the loss is counted twice — recommended: without circulation.</value>
   </data>
+  <data name="ZPG_PS_TITEL_KATALOG" xml:space="preserve">
+    <value>Save as catalogue set</value>
+  </data>
+  <data name="ZPG_PS_LBL_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="ZPG_PS_LBL_TYP" xml:space="preserve">
+    <value>Type (weekly profile)</value>
+  </data>
+  <data name="ZPG_PS_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="ZPG_PS_LBL_ZIRKULATION" xml:space="preserve">
+    <value>with circulation</value>
+  </data>
+  <data name="ZPG_PS_LBL_JAHRESSUMME" xml:space="preserve">
+    <value>Annual total</value>
+  </data>
+  <data name="ZPG_PS_LBL_SPITZE" xml:space="preserve">
+    <value>Peak hour of the mean week</value>
+  </data>
+  <data name="ZPG_PS_BTN_SPEICHERN" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="ZPG_PS_BTN_WEITER" xml:space="preserve">
+    <value>Continue</value>
+  </data>
+  <data name="ZPG_PS_GRUND_FEHLEINGABE" xml:space="preserve">
+    <value>Correct the invalid entries first — while they stand there is no profile to store.</value>
+  </data>
 </root>

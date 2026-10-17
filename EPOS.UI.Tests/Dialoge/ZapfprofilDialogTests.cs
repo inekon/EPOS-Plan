@@ -23,7 +23,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <para>Die Vorschau kommt aus einem Prüfdelegaten — der Dialog rechnet nicht; die
 /// Entprellung steht auf 0, damit jede Eingabe sofort rechnet. Kultur de-DE.</para>
 /// </summary>
-public class ZapfprofilDialogTests : EposBunitContext
+public partial class ZapfprofilDialogTests : EposBunitContext
 {
     public ZapfprofilDialogTests()
     {

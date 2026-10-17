@@ -165694,6 +165694,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
+        /// </summary>
+        public static string ZPG_PS_BTN_SPEICHERN {
+            get {
+                return ResourceManager.GetString("ZPG_PS_BTN_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weiter ähnelt.
+        /// </summary>
+        public static string ZPG_PS_BTN_WEITER {
+            get {
+                return ResourceManager.GetString("ZPG_PS_BTN_WEITER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erst die Fehleingaben beheben — mit ihnen gibt es kein Profil zum Ablegen. ähnelt.
+        /// </summary>
+        public static string ZPG_PS_GRUND_FEHLEINGABE {
+            get {
+                return ResourceManager.GetString("ZPG_PS_GRUND_FEHLEINGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt rechnet sein Brauchwasser gerade über die Bestandsprofile; ein Profilsatz, der dem Projekt hinzugefügt wird, rechnet mit. ähnelt.
         /// </summary>
         public static string ZPG_PS_HINWEIS_WEG_BESTAND {
@@ -165735,6 +165762,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_PS_KNOPF_PROJEKT {
             get {
                 return ResourceManager.GetString("ZPG_PS_KNOPF_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung ähnelt.
+        /// </summary>
+        public static string ZPG_PS_LBL_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("ZPG_PS_LBL_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahressumme ähnelt.
+        /// </summary>
+        public static string ZPG_PS_LBL_JAHRESSUMME {
+            get {
+                return ResourceManager.GetString("ZPG_PS_LBL_JAHRESSUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name ähnelt.
+        /// </summary>
+        public static string ZPG_PS_LBL_NAME {
+            get {
+                return ResourceManager.GetString("ZPG_PS_LBL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spitzenstunde der mittleren Woche ähnelt.
+        /// </summary>
+        public static string ZPG_PS_LBL_SPITZE {
+            get {
+                return ResourceManager.GetString("ZPG_PS_LBL_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ (Wochenprofil) ähnelt.
+        /// </summary>
+        public static string ZPG_PS_LBL_TYP {
+            get {
+                return ResourceManager.GetString("ZPG_PS_LBL_TYP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mit Zirkulation ähnelt.
+        /// </summary>
+        public static string ZPG_PS_LBL_ZIRKULATION {
+            get {
+                return ResourceManager.GetString("ZPG_PS_LBL_ZIRKULATION", resourceCulture);
             }
         }
         
@@ -165825,6 +165906,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_PS_SPITZE {
             get {
                 return ResourceManager.GetString("ZPG_PS_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Als Katalogsatz speichern ähnelt.
+        /// </summary>
+        public static string ZPG_PS_TITEL_KATALOG {
+            get {
+                return ResourceManager.GetString("ZPG_PS_TITEL_KATALOG", resourceCulture);
             }
         }
         
