@@ -4580,8 +4580,12 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 .epos-zweispalten-inhalt--zeilenwahl table.epos-raster > tbody > tr > td.epos-zelle-wahl { padding: 0; }
 /* Die Namensspalte nimmt die Breite, Kaestchen und Stift bleiben schmal; Kopf und Name stehen links. */
 .epos-zweispalten-inhalt--zeilenwahl table.epos-raster .epos-spalte-zeilenzelle { width: 100%; text-align: start; }
-/* Am Satz geht der Name den Kenndaten vor: er kuerzt erst ab 24 Zeichen, die Kenndaten zuerst. */
-.epos-zweispalten--knopfleiste-am-satz .epos-zweispalten-satzname { flex: 0 0 auto !important; max-width: 24ch; }
+/* Am Satz geht der Name den Kenndaten vor: er kuerzt erst ab 24 Zeichen, die Kenndaten zuerst. Reicht die Zeile auch
+   ohne Kenndaten nicht (Kopfknoepfe des Wirts, Kaeltemaschine 36ch), kuerzt der Name mit „…" - er gibt nach (flex-shrink 1,
+   min-width 0), statt hinter den Infoknoepfen angeschnitten zu werden; der volle Name steht im title. Die Kenndaten geben
+   so viel staerker nach, dass der Name erst kuerzt, wenn sie ganz verschwunden sind. */
+.epos-zweispalten--knopfleiste-am-satz .epos-zweispalten-satzname { flex: 0 1 auto !important; min-width: 0; max-width: 24ch; }
+.epos-zweispalten--knopfleiste-am-satz .epos-zweispalten-satzkenndaten { flex-shrink: 1000000 !important; }
 
 /* DIE GANGLINIE IN DER SATZFLAECHE (DZ1, Konzept 4.9; verdichtet DZ1-N1): Der Baustein GanglinienGrafik
    fuellt die Satzflaeche. Der Kopf ist hoechstens zwei schmale Zeilen hoch: die Kopfzeile des Wirts (Name,
