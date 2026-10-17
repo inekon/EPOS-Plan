@@ -138,10 +138,16 @@ namespace WindowsFormsApplication1
         /// <summary>EER des Kopplungsanteils [—] (Q_K / P_el); 0 ohne Kopplung.</summary>
         public double Eer { get; init; }
 
-        /// <summary>Kondensatortemperatur [°C] = Vorlauf der Wärmesenke + Grädigkeit.</summary>
+        /// <summary>Kondensatoraustritt [°C] = Vorlauf der Wärmesenke + Grädigkeit — Bezug der Hubgrenze.</summary>
         public double KondensatorC { get; init; }
 
-        /// <summary>Hub [K] = Kondensatortemperatur − Kaltwasservorlauf.</summary>
+        /// <summary>
+        /// Kondensatoreintritt [°C] = max(Rücklauf der Wärmesenke; Vorlauf − <see cref="KaelteFestwerte.KOPPLUNG_KONDENSATOR_SPREIZUNG_K"/>)
+        /// + Grädigkeit — der Lesepunkt der Rückkühlachse der Kennlinie.
+        /// </summary>
+        public double KondensatorEintrittC { get; init; }
+
+        /// <summary>Hub [K] = Kondensatoraustritt − Kaltwasservorlauf.</summary>
         public double HubK { get; init; }
 
         /// <summary>Grund ohne Kopplung (<c>KaelteWaermeKopplung.GRUND_*</c>); <c>null</c> = gekoppelt.</summary>
@@ -239,10 +245,11 @@ namespace WindowsFormsApplication1
     /// <b>Die Kälte-Wärme-Kopplung an einer Kältemaschine</b> (KWN‑1a; Kühlkonzept 5.6.3, 5.6.4, 5.6.8; Entscheid E127).
     /// Rein, ohne Datenbank und ohne Dienste, deterministisch und ohne Iteration.
     ///
-    /// <para><b>Temperaturen:</b> Kondensatortemperatur = Vorlauf der Wärmesenke + Grädigkeit (leer
-    /// <see cref="KaelteFestwerte.KOPPLUNG_GRAEDIGKEIT_K"/>); der Verdampfer steht am Kaltwasservorlauf der Kältesenke. Die
-    /// Kennlinie der Maschine wird an der Kondensatortemperatur als Rückkühlachse und am Kaltwasservorlauf gelesen — über
-    /// die Wege der <see cref="Kaeltemaschine"/> (Randwert bzw. Gütegrad, Teillast und Takt nach KM3).</para>
+    /// <para><b>Temperaturen:</b> Die Rückkühlachse der Kennlinie ist wie im Einzelbetrieb der Kühlwassereintritt in den
+    /// Kondensator. Er ist max(Rücklauf der Wärmesenke; Vorlauf − <see cref="KaelteFestwerte.KOPPLUNG_KONDENSATOR_SPREIZUNG_K"/>)
+    /// + Grädigkeit (leer <see cref="KaelteFestwerte.KOPPLUNG_GRAEDIGKEIT_K"/>); der Kondensatoraustritt Vorlauf + Grädigkeit
+    /// ist Bezug von Hub und Hubgrenze. Der Verdampfer steht am Kaltwasservorlauf der Kältesenke. Gelesen wird über die Wege
+    /// der <see cref="Kaeltemaschine"/> (Randwert bzw. Gütegrad, Teillast und Takt nach KM3).</para>
     ///
     /// <para><b>Grenzen:</b> Die Kondensatortemperatur darf <c>Kopplung_Kond_Vorlauf_Max</c> nicht übersteigen, ohne ihn
     /// den Rand der Kennlinie (mit <c>GUETEGRAD</c> um <see cref="KaeltemaschinenRand.EXTRAPOLATIONSWEITE_K"/> darüber);
@@ -395,9 +402,10 @@ namespace WindowsFormsApplication1
             double tVerd = e.KaltwasserVorlaufC;
             double tKond = e.WaermeVorlaufC + GraedigkeitK;
             double hub = tKond - tVerd;
+            double tEin = KondensatoreintrittC(e.WaermeVorlaufC, e.WaermeRuecklaufC);
 
             KaeltemaschinenRandpunkt p = default;
-            string grund = Pruefen(kBed, wBed, tVerd, tKond, ref p);
+            string grund = Pruefen(kBed, wBed, tVerd, tKond, tEin, ref p);
             int anzahl = Math.Max(1, Maschine.Anzahl);
             double kap = p.LeistungKw * anzahl;
 
@@ -407,7 +415,7 @@ namespace WindowsFormsApplication1
             {
                 Kopplungsaufteilung a = Aufteilen(Fuehrung, kBed, wBed, p.Eer, kap);
                 anGrenze = a.AnGrenze;
-                KaeltemaschinenStunde s = Maschine.VerdichterstundeBei(a.KaelteErzeugtKwh, tVerd, tKond);
+                KaeltemaschinenStunde s = Maschine.VerdichterstundeBei(a.KaelteErzeugtKwh, tVerd, tEin);
                 if (!(s.KaelteKwh > 0) || !(s.VerdichterKwh > 0))
                 {
                     grund = GRUND_GRENZE;
@@ -485,6 +493,7 @@ namespace WindowsFormsApplication1
                 KapazitaetKw = kap,
                 Eer = pel > 0 ? qK / pel : 0.0,
                 KondensatorC = tKond,
+                KondensatorEintrittC = tEin,
                 HubK = hub,
                 Grund = grund,
                 Randwert = p.Randwert,
@@ -550,7 +559,7 @@ namespace WindowsFormsApplication1
         /// Prüft die Stunde in fester Reihenfolge: Luftgerät, Führung, Bedarf, Hub; danach den Kennlinienpunkt
         /// <paramref name="p"/> (Grenze). <c>null</c> = die Stunde koppelt.
         /// </summary>
-        private string Pruefen(double kBed, double wBed, double tVerd, double tKond, ref KaeltemaschinenRandpunkt p)
+        private string Pruefen(double kBed, double wBed, double tVerd, double tKond, double tEin, ref KaeltemaschinenRandpunkt p)
         {
             if (Maschine.Rueckkuehlart == KaeltemaschineSchema.RUECKKUEHLART_LUFT) return GRUND_LUFTGERAET;
             if (Fuehrung == KopplungsFuehrung.Waermegefuehrt) return GRUND_FUEHRUNG;
@@ -562,13 +571,25 @@ namespace WindowsFormsApplication1
                 return GRUND_HUB;
             KaeltemaschinenKennlinie k = Maschine.Kennlinie;
             if (k == null || k.Leer) return GRUND_GRENZE;
-            double grenze = !double.IsNaN(KondensatorVorlaufMaxC)
-                ? KondensatorVorlaufMaxC
-                : k.RueckkuehlMax + (Maschine.GuetegradWirksam ? KaeltemaschinenRand.EXTRAPOLATIONSWEITE_K : 0.0);
-            if (!Rechenrand.SchwelleErreicht(grenze, tKond)) return GRUND_HUB;
-            p = Maschine.PunktBei(tKond, tVerd);
+            // Die Einsatzgrenze gilt am Austritt, der Rand der Kennlinie an ihrem Lesepunkt, dem Eintritt.
+            if (!double.IsNaN(KondensatorVorlaufMaxC) && !Rechenrand.SchwelleErreicht(KondensatorVorlaufMaxC, tKond))
+                return GRUND_HUB;
+            double rand = k.RueckkuehlMax + (Maschine.GuetegradWirksam ? KaeltemaschinenRand.EXTRAPOLATIONSWEITE_K : 0.0);
+            if (double.IsNaN(KondensatorVorlaufMaxC) && !Rechenrand.SchwelleErreicht(rand, tEin)) return GRUND_HUB;
+            p = Maschine.PunktBei(tEin, tVerd);
             if (!(p.LeistungKw > 0) || !(p.Eer > 0)) return GRUND_GRENZE;
             return null;
+        }
+
+        /// <summary>
+        /// Der Kondensatoreintritt [°C]: max(Rücklauf; Vorlauf − Δθ_Kond) + Grädigkeit — ein fehlender Rücklauf zählt als
+        /// Vorlauf − Δθ_Kond. So liegt der Austritt (Eintritt + Δθ_Kond) nie unter Vorlauf + Grädigkeit.
+        /// </summary>
+        internal double KondensatoreintrittC(double vorlaufC, double ruecklaufC)
+        {
+            double ein = vorlaufC - KaelteFestwerte.KOPPLUNG_KONDENSATOR_SPREIZUNG_K;
+            if (!double.IsNaN(ruecklaufC) && !double.IsInfinity(ruecklaufC) && ruecklaufC > ein) ein = ruecklaufC;
+            return ein + GraedigkeitK;
         }
 
         private static double Positiv(double x) => x > 0 && !double.IsInfinity(x) ? x : 0.0;

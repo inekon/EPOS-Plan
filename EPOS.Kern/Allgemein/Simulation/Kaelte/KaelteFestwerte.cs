@@ -186,5 +186,12 @@
         /// Rechenbeispiel des Kühlkonzepts 5.6.3 (Annahme, keine Produktangabe).
         /// </summary>
         public const double KOPPLUNG_GRAEDIGKEIT_K = 3.0;
+
+        /// <summary>
+        /// Spreizung des Kondensators im Kopplungsbetrieb [K]: Der Kühlwassereintritt — die Rückkühlachse der Kennlinie —
+        /// liegt höchstens so weit unter dem Vorlauf der Wärmesenke (Eintritt = max(Rücklauf; Vorlauf − 5 K) + Grädigkeit).
+        /// Quelle: Normpunkt „Kühlwasser 30/35 °C“ der DIN EN 14511-2 — nicht am Wortlaut geprüft (vorläufig).
+        /// </summary>
+        public const double KOPPLUNG_KONDENSATOR_SPREIZUNG_K = 5.0;
     }
 }

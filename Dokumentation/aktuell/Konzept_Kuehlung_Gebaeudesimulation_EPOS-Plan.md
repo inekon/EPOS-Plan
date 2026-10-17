@@ -1754,14 +1754,21 @@ Enthitzer einer luftgekühlten Maschine sind spätere Gegenstände (KWN‑Q9).
 **Gebaut (KWN‑1a) — Festlegungen an der Kältemaschine** (`EPOS.Kern/Allgemein/Simulation/Kaelte/KaelteWaermeKopplung.cs`,
 rein, ohne Datenbank; Proben `KaelteWaermeKopplungTests`):
 
-- **Kennlinienpunkt:** Die Kennlinie wird an der **Kondensatortemperatur** `θ_W,VL + ΔT_Gr` als Rückkühlachse und am
-  **Kaltwasservorlauf** der Kältesenke gelesen (kein Grädigkeitsabzug am Verdampfer: die Kältesenke hängt wie im
-  Einzelbetrieb am Kaltwasserkreis der Maschine, die Grädigkeit gilt dem Übertrager zur Wärmesenke). Gegenüber dem
-  Rücklauf der Wärmesenke ist das die vorsichtige Lesart; Kapazität, EER, Randweg (Randwert bzw. Gütegrad) und Teillast
-  samt Takt kommen über die Wege der `Kaeltemaschine` (`PunktBei`, `VerdichterstundeBei`), nicht aus einer Kopie.
+- **Kennlinienpunkt:** Die Rückkühlachse der Kennlinie ist wie im Einzelbetrieb der **Kühlwassereintritt** in den
+  Kondensator (Bezug + Annäherung; Achse wie der Normpunkt 30/35 °C, Eintritt 30). Gelesen wird am
+  **Kondensatoreintritt** `max(θ_W,RL ; θ_W,VL − Δθ_Kond) + ΔT_Gr` mit `Δθ_Kond` = 5 K
+  (`KaelteFestwerte.KOPPLUNG_KONDENSATOR_SPREIZUNG_K`, Normpunkt der DIN EN 14511-2, nicht am Wortlaut geprüft,
+  vorläufig), und am **Kaltwasservorlauf** der Kältesenke (kein Grädigkeitsabzug am Verdampfer: die Kältesenke hängt wie
+  im Einzelbetrieb am Kaltwasserkreis der Maschine, die Grädigkeit gilt dem Übertrager zur Wärmesenke). Beispiele mit
+  ΔT_Gr: Senke 60/50 °C liest bei 55 + ΔT_Gr, 45/40 °C bei 40 + ΔT_Gr, 35/34 °C bei 34 + ΔT_Gr. **Abweichung von der
+  Rücklauf-Lesart oben:** Der Rücklauf allein wäre zu optimistisch, wenn die Senke stärker spreizt als die Maschine — der
+  Kondensator muss ja den Vorlauf erreichen; das Lesen am Vorlauf unterschätzte den EER um die ganze Spreizung der Senke.
+  Der **Kondensatoraustritt** `θ_W,VL + ΔT_Gr` ist Bezug von Hub (`HubK` = Austritt − Kaltwasservorlauf) und Einsatzgrenze;
+  der Eintritt + `Δθ_Kond` liegt nie darunter. Kapazität, EER, Randweg (Randwert bzw. Gütegrad) und Teillast samt Takt
+  kommen über die Wege der `Kaeltemaschine` (`PunktBei`, `VerdichterstundeBei`), nicht aus einer Kopie.
 - **Grädigkeit:** leer `KaelteFestwerte.KOPPLUNG_GRAEDIGKEIT_K` = 3 K (Rechenbeispiel oben).
-- **Hubgrenze:** Grund `HUB`, wenn die Kondensatortemperatur `Kopplung_Kond_Vorlauf_Max` übersteigt — leer den Rand der
-  Kennlinie, mit Randweg `GUETEGRAD` um die Extrapolationsweite 10 K darüber —, wenn das Kaltwasser unter
+- **Hubgrenze:** Grund `HUB`, wenn der Kondensatoraustritt `Kopplung_Kond_Vorlauf_Max` übersteigt — leer, wenn der
+  Kondensatoreintritt über dem Rand der Kennlinie liegt, mit Randweg `GUETEGRAD` um die Extrapolationsweite 10 K darüber —, wenn das Kaltwasser unter
   `Kaltwasser_Vorlauf_Min` liegt oder der Hub nicht positiv ist; Vergleiche über `Rechenrand.SchwelleErreicht`.
 - **Prüfreihenfolge** je Stunde: `LUFTGERAET` (Rückkühlart `LUFT`), `FUEHRUNG` (wärmegeführt, siehe 5.6.4),
   `KEIN_BEDARF`, `HUB`, `GRENZE` (keine Leistung oder kein EER im Kopplungspunkt). Ohne Kopplung rechnet die Maschine

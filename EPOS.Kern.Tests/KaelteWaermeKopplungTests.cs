@@ -88,13 +88,34 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Schnittmenge_mit_fallender_Kennlinie_trifft_die_Handrechnung()
         {
-            // Kondensator 53 °C: EER = 5 − 4 · 28/40 = 2,2; Q_K = 50 · 2,2/3,2 = 34,375; P = 15,625.
+            // Senke 50/40 °C: Eintritt max(40; 45) + 3 = 48 °C, EER = 5 − 4 · 23/40 = 2,7; Q_K = 50 · 2,7/3,7; P = Rest.
             KopplungsStunde s = Kopplung(Maschine(Fallend())).Stunde(Eingabe(100.0, 50.0));
-            Assert.Equal(2.2, s.Eer, 9);
-            Assert.Equal(34.375, s.KaelteGekoppeltKwh, TOL);
-            Assert.Equal(15.625, s.StromGekoppeltKwh, TOL);
+            Assert.Equal(48.0, s.KondensatorEintrittC, 12);
+            Assert.Equal(53.0, s.KondensatorC, 12);
+            Assert.Equal(2.7, s.Eer, 9);
+            Assert.Equal(50.0 * 2.7 / 3.7, s.KaelteGekoppeltKwh, TOL);
+            Assert.Equal(50.0 / 3.7, s.StromGekoppeltKwh, TOL);
             Assert.Equal(50.0, s.WaermeGenutztKwh, TOL);
-            Assert.Equal(2.0 * 2.2 + 1.0, s.Gesamtleistungszahl, 9);
+            Assert.Equal(2.0 * 2.7 + 1.0, s.Gesamtleistungszahl, 9);
+        }
+
+        [Theory]
+        [InlineData(60.0, 50.0, 55.0)]
+        [InlineData(45.0, 40.0, 40.0)]
+        [InlineData(35.0, 34.0, 34.0)]
+        public void Kennlinie_wird_am_Kondensatoreintritt_gelesen(double vorlauf, double ruecklauf, double eintrittOhneGr)
+        {
+            var e = new KopplungsEingabe(60.0, 6.0, 12.0, 40.0, vorlauf, ruecklauf, 30.0);
+            KopplungsStunde s = Kopplung(Maschine(Fallend())).Stunde(e);
+            double ein = eintrittOhneGr + KaelteFestwerte.KOPPLUNG_GRAEDIGKEIT_K;
+            Assert.Null(s.Grund);
+            Assert.Equal(ein, s.KondensatorEintrittC, 12);
+            Assert.Equal(vorlauf + KaelteFestwerte.KOPPLUNG_GRAEDIGKEIT_K, s.KondensatorC, 12);
+            Assert.Equal(s.KondensatorC - 6.0, s.HubK, 12);
+            // Fallende Kennlinie: EER = 5 − 0,1 · (Eintritt − 25).
+            Assert.Equal(5.0 - 0.1 * (ein - 25.0), s.Eer, 9);
+            // Der Austritt Eintritt + Δθ_Kond liegt nie unter Vorlauf + Grädigkeit.
+            Assert.True(ein + KaelteFestwerte.KOPPLUNG_KONDENSATOR_SPREIZUNG_K >= s.KondensatorC - 1e-12);
         }
 
         [Fact]
@@ -168,19 +189,19 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Ohne_Hubgrenze_gilt_der_Rand_der_Kennlinie_mit_Guetegrad_um_die_Extrapolationsweite_darueber()
         {
-            // 63 + 3 = 66 °C liegt über dem Kennlinienrand 65 °C.
+            // Eintritt max(58; 63) + 3 = 66 °C liegt über dem Kennlinienrand 65 °C.
             Assert.Equal(KaelteWaermeKopplung.GRUND_HUB,
-                         Kopplung(Maschine(Fallend())).Stunde(Eingabe(60.0, 40.0, wVl: 63.0)).Grund);
+                         Kopplung(Maschine(Fallend())).Stunde(Eingabe(60.0, 40.0, wVl: 68.0)).Grund);
             var guete = Kaeltemaschinenteillast.Bilden(null, null, null, null, null, null, null,
                                                        KaeltemaschineTeillastSchema.RANDWEG_GUETEGRAD, 0.0);
-            KopplungsStunde s = Kopplung(Maschine(Fallend(), teillast: guete)).Stunde(Eingabe(60.0, 40.0, wVl: 63.0));
+            KopplungsStunde s = Kopplung(Maschine(Fallend(), teillast: guete)).Stunde(Eingabe(60.0, 40.0, wVl: 68.0));
             Assert.Null(s.Grund);
             Assert.True(s.Extrapoliert);
             Assert.True(s.Randwert);
             Assert.True(s.Eer > 0 && s.Eer < 1.0);
-            // 73 + 3 = 76 °C liegt auch über 65 + 10 °C.
+            // Eintritt 73 + 3 = 76 °C liegt auch über 65 + 10 °C.
             Assert.Equal(KaelteWaermeKopplung.GRUND_HUB,
-                         Kopplung(Maschine(Fallend(), teillast: guete)).Stunde(Eingabe(60.0, 40.0, wVl: 73.0)).Grund);
+                         Kopplung(Maschine(Fallend(), teillast: guete)).Stunde(Eingabe(60.0, 40.0, wVl: 78.0)).Grund);
         }
 
         [Fact]
