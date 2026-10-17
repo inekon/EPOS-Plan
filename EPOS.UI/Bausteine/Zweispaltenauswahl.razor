@@ -108,7 +108,7 @@
     <section class="epos-zweispalten-bereich epos-zweispalten-bereich--katalog epos-zweispalten-spalte epos-zweispalten-spalte--unten"
              role="group" aria-label="@RechtsTitel" data-mehrfach="@(KatalogWahl is null ? null : "1")">
         <div class="epos-zweispalten-kopfleiste">
-            <span class="epos-zweispalten-marke epos-zweispalten-marke--katalog">@KatalogMarke</span>
+            <span class="epos-zweispalten-marke epos-zweispalten-marke--katalog" title="@Resource.AUSWAHL_MARKE_KATALOG_HINWEIS">@KatalogMarke</span>
             <h2 class="epos-untergruppe epos-zweispalten-titel" title="@RechtsTitel">@RechtsTitel</h2>
             @if (Wahltext(KatalogWahl, KatalogSichtbar) is string kz)
             {
