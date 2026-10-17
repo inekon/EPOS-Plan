@@ -160501,6 +160501,69 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} l · {1} kW ähnelt.
+        /// </summary>
+        public static string ZPG_AUSKURZ_HAUPT_SPEICHER {
+            get {
+                return ResourceManager.GetString("ZPG_AUSKURZ_HAUPT_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} kW ähnelt.
+        /// </summary>
+        public static string ZPG_AUSKURZ_HAUPT_SPITZE {
+            get {
+                return ResourceManager.GetString("ZPG_AUSKURZ_HAUPT_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: nicht rechenbar — {1} ähnelt.
+        /// </summary>
+        public static string ZPG_AUSKURZ_NICHT {
+            get {
+                return ResourceManager.GetString("ZPG_AUSKURZ_NICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Nenninhalt {1} l · Ladeleistung {2} kW ähnelt.
+        /// </summary>
+        public static string ZPG_AUSKURZ_SPEICHER {
+            get {
+                return ResourceManager.GetString("ZPG_AUSKURZ_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Volumen {1} l · Ladeleistung {2} kW ähnelt.
+        /// </summary>
+        public static string ZPG_AUSKURZ_SPEICHER_VOLUMEN {
+            get {
+                return ResourceManager.GetString("ZPG_AUSKURZ_SPEICHER_VOLUMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Minutenspitze {1} kW ähnelt.
+        /// </summary>
+        public static string ZPG_AUSKURZ_SPITZE {
+            get {
+                return ResourceManager.GetString("ZPG_AUSKURZ_SPITZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Minutenspitze {1} kW (Summe) ähnelt.
+        /// </summary>
+        public static string ZPG_AUSKURZ_SPITZE_SUMME {
+            get {
+                return ResourceManager.GetString("ZPG_AUSKURZ_SPITZE_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eingaben ohne Punkt ähnelt.
         /// </summary>
         public static string ZPG_AUSLEGUNG_OHNE_PUNKT {
@@ -164686,6 +164749,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresbedarf je Tagtyp ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_LBL_VERTEILUNG {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_LBL_VERTEILUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Messreihe {0} ähnelt.
         /// </summary>
         public static string ZPG_KAL_QUELLE {
@@ -164740,6 +164812,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Ferientage ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_SUM_FERIENTAGE {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_SUM_FERIENTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die 1 Ferienzeitraum ähnelt.
         /// </summary>
         public static string ZPG_KAL_SUM_FERIEN_EINS {
@@ -164781,6 +164862,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_KAL_SUM_NUTZUNGSART {
             get {
                 return ResourceManager.GetString("ZPG_KAL_SUM_NUTZUNGSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Werktage · {1} Samstage · {2} Sonn- und Feiertage ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_SUM_TAGTYPEN {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_SUM_TAGTYPEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kalender verteilt den Jahresbedarf um, er ändert die Summe nicht. ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_VERTEILUNG_SATZ {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_VERTEILUNG_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} {1} kWh ({2} %) ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_VERTEILUNG_TEIL {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_VERTEILUNG_TEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ferientage ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_VERT_FERIENTAGE {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_VERT_FERIENTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Samstage ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_VERT_SAMSTAGE {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_VERT_SAMSTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sonn- und Feiertage ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_VERT_SONNTAGE {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_VERT_SONNTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Werktage ähnelt.
+        /// </summary>
+        public static string ZPG_KAL_VERT_WERKTAGE {
+            get {
+                return ResourceManager.GetString("ZPG_KAL_VERT_WERKTAGE", resourceCulture);
             }
         }
         

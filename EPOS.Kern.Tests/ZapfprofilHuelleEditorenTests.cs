@@ -526,6 +526,82 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================================
+        // ZC4: Tagtypen der Vorschau, Ergebnis je Topologiegruppe
+        // =================================================================================
+
+        [Fact]
+        public void Die_Vorschau_traegt_je_Bereich_Tage_und_Zapfwaerme_je_Tagtyp()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            ZapfprofilVorschauDaten v = ZapfprofilHuelle.Vorschau(PROJEKT, Zonen(), ZapfprofilCtrl.Lies(PROJEKT));
+            Assert.Equal(ZapfprofilVorschauZustand.Gerechnet, v.Zustand);
+
+            ZapfprofilAnsichtDaten zone = v.Ansichten[1];
+            Assert.Equal(4, zone.TageJeTagtypJahr!.Length);
+            Assert.Equal(365, zone.TageJeTagtypJahr.Sum());
+            // Dieselbe Zählung wie das Jahresraster: aus den Tagtypen der Ansicht.
+            Assert.Equal(zone.Tagtypen!.Count(t => t == 1), zone.TageJeTagtypJahr[0]);
+            Assert.Equal(zone.Tagtypen!.Count(t => t == 3), zone.TageJeTagtypJahr[2]);
+            // Der Kalender verteilt um: die Summe der Tagtypen ist der Jahresbedarf der Zapfung des Bereichs.
+            Assert.Equal(v.Zonen[0].JahresbedarfZapfungKwh, zone.ZapfungJeTagtypKwh!.Sum(), 6);
+            Assert.True(zone.ZapfungJeTagtypKwh[0] > zone.ZapfungJeTagtypKwh[1]);
+        }
+
+        [Fact]
+        public void Die_Kurzauslegung_liefert_Ladeleistung_und_das_Ergebnis_je_Topologiegruppe()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            AuslegungTestbau.ParameterEinspielen(VERSION);
+            ZapfprofilStand stand = ZapfprofilCtrl.Lies(PROJEKT);
+
+            Assert.Null(ZapfprofilHuelle.Auslegungskurz(PROJEKT, new ZapfprofilEingabeDaten(), null));
+            ZapfprofilAuslegungKurzDaten k = ZapfprofilHuelle.Auslegungskurz(PROJEKT, Zonen(), stand);
+            Assert.NotNull(k);
+            Assert.Equal(ZapfprofilHuelle.Ladevorschlag(PROJEKT, Zonen(), stand).Vorschlag, k.Ladeleistung.Vorschlag);
+            ZapfprofilGruppenergebnisDaten speicher = Assert.Single(k.Gruppen);
+            Assert.Equal(ZapfprofilTopologie.Speicher, speicher.Topologie);
+            // Der Probebereich hat keinen rechenbaren Bedarfstag: die Zeile nennt den Grund wie der Gruppenkopf des Blatts,
+            // der Vorschlag der Ladeleistung kommt weiter aus dem Verfahrensvergleich.
+            Assert.StartsWith("Speicher: nicht rechenbar — ", speicher.Zeile);
+            Assert.Equal("", speicher.Hauptergebnis);
+
+            ZapfprofilEingabeDaten frisch = Zonen();
+            frisch.Zonen[0].Angaben = new ZapfprofilZonenangabenDaten { Topologie = ZapfprofilTopologie.Frischwasserstation };
+            ZapfprofilGruppenergebnisDaten f = Assert.Single(ZapfprofilHuelle.Auslegungskurz(PROJEKT, frisch, stand).Gruppen);
+            Assert.Equal(ZapfprofilTopologie.Frischwasserstation, f.Topologie);
+            Assert.StartsWith("Frischwasserstation: ", f.Zeile);
+            Assert.Equal("", f.Hinweis);
+
+            var gaben = ZapfprofilHuelle.Gaben(PROJEKT, null);
+            var kurz = (Func<ZapfprofilEingabeDaten, ZapfprofilAuslegungKurzDaten>)gaben["Auslegungskurz"];
+            Assert.Equal(speicher.Zeile, Assert.Single(kurz(Zonen()).Gruppen).Zeile);
+        }
+
+        [Fact]
+        public void Die_Kurzauslegung_des_Referenzprojekts_1071_rechnet_die_vier_Topologien()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            const int projekt = 1071;
+            var daten = (ZapfprofilDaten)ZapfprofilHuelle.Gaben(projekt, null)["Daten"];
+            var uhr = System.Diagnostics.Stopwatch.StartNew();
+            ZapfprofilAuslegungKurzDaten k = ZapfprofilHuelle.Auslegungskurz(projekt, daten.Eingabe, ZapfprofilCtrl.Lies(projekt));
+            uhr.Stop();
+            Assert.NotNull(k);
+            Assert.Equal(4, k.Gruppen.Select(g => g.Topologie).Distinct().Count());
+            Assert.All(k.Gruppen, g => Assert.NotEqual("", g.Zeile));
+            Assert.NotEqual("", k.Gruppen.Single(g => g.Topologie == ZapfprofilTopologie.Wohnungsstation).Hinweis);
+            ZapfprofilGruppenergebnisDaten speicher = k.Gruppen.Single(g => g.Topologie == ZapfprofilTopologie.Speicher);
+            Assert.Contains("Ladeleistung", speicher.Zeile);
+            Assert.Contains(" l · ", speicher.Hauptergebnis);
+            Assert.Contains("Minutenspitze", k.Gruppen.Single(g => g.Topologie == ZapfprofilTopologie.Frischwasserstation).Zeile);
+            // Die Laufzeit (Bericht W9b): ein deterministischer Lauf, ohne Ensemble.
+            Assert.True(uhr.ElapsedMilliseconds < 60000, "Laufzeit " + uhr.ElapsedMilliseconds + " ms");
+        }
+
+        // =================================================================================
         // Hilfen
         // =================================================================================
 

@@ -111,6 +111,25 @@ namespace WindowsFormsApplication1
     }
 
     /// <summary>
+    /// Die Verteilung des Jahresbedarfs der Zapfung auf die Tagtypen eines Kalenders: je Tagtyp die Zahl der
+    /// Tage und die Summe der Zapfwärme, Index 0 Werktag, 1 Samstag, 2 Sonn- und Feiertag, 3 Ferientag
+    /// (<see cref="Zapfkalender.Spalte"/>). Die Summe der vier Energien ist die Jahressumme der Reihe.
+    /// </summary>
+    internal sealed record Tagtypverteilung(IReadOnlyList<int> Tage, IReadOnlyList<double> ZapfungKwh)
+    {
+        /// <summary>Die Jahressumme der Zapfung über alle Tagtypen.</summary>
+        public double SummeKwh
+        {
+            get
+            {
+                double s = 0.0;
+                foreach (double w in ZapfungKwh) s += w;
+                return s;
+            }
+        }
+    }
+
+    /// <summary>
     /// <b>Die Auswertung der Bilanzreihen für die Vorschau</b> (Umsetzungskonzept
     /// Zapfprofilgenerator 5.1, 5.6; Stufe Z1, Gruppe 3; Stufe Z4): größter Monat, mittlerer
     /// Tagesgang je Tagtyp, Woche mit dem größten Tagesbedarf, Dauerlinie und Auslastung. Sie liest
@@ -337,6 +356,27 @@ namespace WindowsFormsApplication1
                     if (z[d] == ZapfTagtyp.Ruhetag) kalender[d] = ZapfTagtyp.Ruhetag;
             }
             return kalender;
+        }
+
+        /// <summary>
+        /// <b>Die Verteilung je Tagtyp</b> (ZC4 (a)): die Zapfwärme der Jahresreihe je Tagtyp des Kalenders, mit dem
+        /// sie gerechnet ist, samt der Zahl der Tage (<see cref="Zapfkalender.Zaehlen"/>). Keine neue Rechnung — nur
+        /// die Summe der Tagessummen je Tagtyp; der Kalender verteilt um, er ändert die Jahressumme nicht.
+        /// </summary>
+        internal static Tagtypverteilung Verteilung(Bilanzreihe zapfung, IReadOnlyList<ZapfTagtyp> kalender)
+        {
+            if (zapfung == null) throw new ArgumentNullException(nameof(zapfung));
+            int[] tage = Zapfkalender.Zaehlen(kalender);
+            var summe = new double[4];
+            IReadOnlyList<double> zapf = zapfung.StundenKwh;
+            for (int d = 1; d <= Zapfkalender.TAGE; d++)
+            {
+                int von = (d - 1) * Zapfkalender.STUNDEN_TAG;
+                double tag = 0.0;
+                for (int s = 0; s < Zapfkalender.STUNDEN_TAG; s++) tag += zapf[von + s];
+                summe[Zapfkalender.Spalte(kalender[d - 1])] += tag;
+            }
+            return new Tagtypverteilung(Array.AsReadOnly(tage), Array.AsReadOnly(summe));
         }
 
         /// <summary>Der Index eines Tagtyps in den drei Tagesgängen; −1 für den Ruhetag.</summary>

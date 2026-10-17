@@ -140,6 +140,7 @@ namespace WindowsFormsApplication1
                 ["VorschlagUebernehmen"] = new Func<ZapfprofilEingabeDaten, string, int, ZapfprofilVorschlagErgebnisDaten>(
                     (e, r, zone) => VorschlagUebernehmen(idProjekt, e, basis, r, zone)),
                 ["Ladevorschlag"] = new Func<ZapfprofilEingabeDaten, ZapfprofilSchaetzhilfeDaten>(e => Ladevorschlag(idProjekt, e, basis)),
+                ["Auslegungskurz"] = new Func<ZapfprofilEingabeDaten, ZapfprofilAuslegungKurzDaten>(e => Auslegungskurz(idProjekt, e, basis)),
                 // Profil ablegen (ZC6): Vorschau des Profilsatzes, Katalogsatz und Projektzeile. Beide Schreibwege
                 // schreiben SOFORT in einem eigenen Vorgang und ändern den Rechenweg nicht; die Projektzeile nimmt
                 // der Wirt danach in seine Liste (ZapfprofilProjektzeile).
@@ -1207,6 +1208,13 @@ namespace WindowsFormsApplication1
                 MonateZirkulationKwh = zirkulation.MonatssummenKwh.ToArray(),
                 Tagtypen = kalender?.Select(t => (int)t).ToArray()
             };
+            // ZC4 (a): Tage und Zapfwärme je Tagtyp aus demselben Kalender — gezählt im Kern, keine zweite Regel.
+            if (kalender != null && kalender.Count == Zapfkalender.TAGE)
+            {
+                Tagtypverteilung v = Zapfauswertung.Verteilung(zapfung, kalender);
+                a.TageJeTagtypJahr = v.Tage.ToArray();
+                a.ZapfungJeTagtypKwh = v.ZapfungKwh.ToArray();
+            }
 
             string monatsname = Monatsname(monat);
             a.TagesgangModell = ZapfprofilBilder.TagesgangModell(monatsname, a.WerktagKw, a.SamstagKw, a.SonnFeiertagKw,
@@ -2138,6 +2146,15 @@ namespace WindowsFormsApplication1
             t.LabelJahresraster = Text_("ZPG_LBL_JAHRESRASTER", t.LabelJahresraster);
             t.TagtypFerien = Text_("ZPG_TAGTYP_FERIEN", t.TagtypFerien);
             t.HinweisJahresraster = Text_("ZPG_HINW_JAHRESRASTER", t.HinweisJahresraster);
+            t.SummeTagtypen = Text_("ZPG_KAL_SUM_TAGTYPEN", t.SummeTagtypen);
+            t.SummeFerientage = Text_("ZPG_KAL_SUM_FERIENTAGE", t.SummeFerientage);
+            t.SatzVerteilung = Text_("ZPG_KAL_VERTEILUNG_SATZ", t.SatzVerteilung);
+            t.LabelVerteilung = Text_("ZPG_KAL_LBL_VERTEILUNG", t.LabelVerteilung);
+            t.VerteilungTeil = Text_("ZPG_KAL_VERTEILUNG_TEIL", t.VerteilungTeil);
+            t.VerteilungWerktage = Text_("ZPG_KAL_VERT_WERKTAGE", t.VerteilungWerktage);
+            t.VerteilungSamstage = Text_("ZPG_KAL_VERT_SAMSTAGE", t.VerteilungSamstage);
+            t.VerteilungSonntage = Text_("ZPG_KAL_VERT_SONNTAGE", t.VerteilungSonntage);
+            t.VerteilungFerientage = Text_("ZPG_KAL_VERT_FERIENTAGE", t.VerteilungFerientage);
             t.HinweisJahresrasterOhne = Text_("ZPG_HINW_JAHRESRASTER_OHNE", t.HinweisJahresrasterOhne);
             t.PlatzhalterFerienVon = Text_("ZPG_PLATZHALTER_FERIEN_VON", t.PlatzhalterFerienVon);
             t.PlatzhalterFerienBis = Text_("ZPG_PLATZHALTER_FERIEN_BIS", t.PlatzhalterFerienBis);

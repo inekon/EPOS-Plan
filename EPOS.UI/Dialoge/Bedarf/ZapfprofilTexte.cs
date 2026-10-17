@@ -699,6 +699,33 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_HINW_JAHRESRASTER</c></summary>
     public string HinweisJahresraster { get; set; } = "Je Tag der Tagtyp, mit dem der Bereich rechnet — aus Wochenende, Feiertagen und Ferien, wie die Vorschau sie liest.";
 
+    /// <summary><c>ZPG_KAL_SUM_TAGTYPEN</c></summary>
+    public string SummeTagtypen { get; set; } = "{0} Werktage · {1} Samstage · {2} Sonn- und Feiertage";
+
+    /// <summary><c>ZPG_KAL_SUM_FERIENTAGE</c></summary>
+    public string SummeFerientage { get; set; } = "{0} Ferientage";
+
+    /// <summary><c>ZPG_KAL_VERTEILUNG_SATZ</c></summary>
+    public string SatzVerteilung { get; set; } = "Der Kalender verteilt den Jahresbedarf um, er ändert die Summe nicht.";
+
+    /// <summary><c>ZPG_KAL_LBL_VERTEILUNG</c></summary>
+    public string LabelVerteilung { get; set; } = "Jahresbedarf je Tagtyp";
+
+    /// <summary><c>ZPG_KAL_VERTEILUNG_TEIL</c></summary>
+    public string VerteilungTeil { get; set; } = "{0} {1} kWh ({2} %)";
+
+    /// <summary><c>ZPG_KAL_VERT_WERKTAGE</c></summary>
+    public string VerteilungWerktage { get; set; } = "Werktage";
+
+    /// <summary><c>ZPG_KAL_VERT_SAMSTAGE</c></summary>
+    public string VerteilungSamstage { get; set; } = "Samstage";
+
+    /// <summary><c>ZPG_KAL_VERT_SONNTAGE</c></summary>
+    public string VerteilungSonntage { get; set; } = "Sonn- und Feiertage";
+
+    /// <summary><c>ZPG_KAL_VERT_FERIENTAGE</c></summary>
+    public string VerteilungFerientage { get; set; } = "Ferientage";
+
     /// <summary><c>ZPG_HINW_JAHRESRASTER_OHNE</c></summary>
     public string HinweisJahresrasterOhne { get; set; } = "Das Jahresraster erscheint mit der Vorschau.";
 

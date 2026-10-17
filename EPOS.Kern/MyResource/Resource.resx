@@ -58652,4 +58652,52 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="ZPG_HINW_NUR_ENSEMBLE" xml:space="preserve">
     <value>Wirkt hier nur auf das Ensemble der Auslegung.</value>
   </data>
+  <data name="ZPG_KAL_SUM_TAGTYPEN" xml:space="preserve">
+    <value>{0} Werktage · {1} Samstage · {2} Sonn- und Feiertage</value>
+  </data>
+  <data name="ZPG_KAL_SUM_FERIENTAGE" xml:space="preserve">
+    <value>{0} Ferientage</value>
+  </data>
+  <data name="ZPG_KAL_VERTEILUNG_SATZ" xml:space="preserve">
+    <value>Der Kalender verteilt den Jahresbedarf um, er ändert die Summe nicht.</value>
+  </data>
+  <data name="ZPG_KAL_LBL_VERTEILUNG" xml:space="preserve">
+    <value>Jahresbedarf je Tagtyp</value>
+  </data>
+  <data name="ZPG_KAL_VERTEILUNG_TEIL" xml:space="preserve">
+    <value>{0} {1} kWh ({2} %)</value>
+  </data>
+  <data name="ZPG_KAL_VERT_WERKTAGE" xml:space="preserve">
+    <value>Werktage</value>
+  </data>
+  <data name="ZPG_KAL_VERT_SAMSTAGE" xml:space="preserve">
+    <value>Samstage</value>
+  </data>
+  <data name="ZPG_KAL_VERT_SONNTAGE" xml:space="preserve">
+    <value>Sonn- und Feiertage</value>
+  </data>
+  <data name="ZPG_KAL_VERT_FERIENTAGE" xml:space="preserve">
+    <value>Ferientage</value>
+  </data>
+  <data name="ZPG_AUSKURZ_NICHT" xml:space="preserve">
+    <value>{0}: nicht rechenbar — {1}</value>
+  </data>
+  <data name="ZPG_AUSKURZ_SPEICHER" xml:space="preserve">
+    <value>{0}: Nenninhalt {1} l · Ladeleistung {2} kW</value>
+  </data>
+  <data name="ZPG_AUSKURZ_SPEICHER_VOLUMEN" xml:space="preserve">
+    <value>{0}: Volumen {1} l · Ladeleistung {2} kW</value>
+  </data>
+  <data name="ZPG_AUSKURZ_HAUPT_SPEICHER" xml:space="preserve">
+    <value>{0} l · {1} kW</value>
+  </data>
+  <data name="ZPG_AUSKURZ_SPITZE" xml:space="preserve">
+    <value>{0}: Minutenspitze {1} kW</value>
+  </data>
+  <data name="ZPG_AUSKURZ_SPITZE_SUMME" xml:space="preserve">
+    <value>{0}: Minutenspitze {1} kW (Summe)</value>
+  </data>
+  <data name="ZPG_AUSKURZ_HAUPT_SPITZE" xml:space="preserve">
+    <value>{0} kW</value>
+  </data>
 </root>

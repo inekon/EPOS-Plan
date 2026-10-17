@@ -203,4 +203,86 @@ public partial class ZapfprofilDialogStufenTests
         Assert.Equal("Das Jahresraster erscheint mit der Vorschau.",
                      cut.Find(".epos-zapfprofil-jahresraster-ohne").TextContent.Trim());
     }
+
+    // ---- ZC4 (a): der Kalender wirkt — Tagtypen und Verteilung -----------------------------------------------
+
+    /// <summary>Die Vorschau der Probe mit Zählung und Verteilung je Tagtyp, wie der Kern sie je Bereich liefert.</summary>
+    private static ZapfprofilVorschauDaten VorschauMitVerteilung(ZapfprofilEingabeDaten e)
+        => MitVerteilung(Vorschau(e));
+
+    /// <summary>Die Daten der Probe, deren Vorschau beim Öffnen schon Zählung und Verteilung trägt.</summary>
+    private static ZapfprofilDaten DatenMitVerteilung()
+    {
+        ZapfprofilDaten d = Daten();
+        MitVerteilung(d.Vorschau!);
+        return d;
+    }
+
+    private static ZapfprofilVorschauDaten MitVerteilung(ZapfprofilVorschauDaten v)
+    {
+        foreach (ZapfprofilAnsichtDaten a in v.Ansichten.Skip(1))
+        {
+            a.TageJeTagtypJahr = new[] { 251, 52, 57, 5 };
+            a.ZapfungJeTagtypKwh = new[] { 900.0, 60.0, 40.0, 0.0 };
+        }
+        return v;
+    }
+
+    [Fact]
+    public void ZC4a_Die_Zusammenfassung_nennt_die_Tagtypen_des_Bereichs_aus_der_Vorschau()
+    {
+        var cut = Aufbauen(DatenMitVerteilung(), VorschauMitVerteilung);
+        Stufe(cut, "Experte", aufklappen: false);
+
+        Assert.Equal("Kalender der Nutzungsart · keine eigenen Ferien · 251 Werktage · 52 Samstage · 57 Sonn- und Feiertage · 5 Ferientage",
+                     Zusammenfassung(cut));
+    }
+
+    [Fact]
+    public void ZC4a_Ohne_Ferientage_fehlt_ihr_Teil_in_Zusammenfassung_und_Verteilung()
+    {
+        static ZapfprofilVorschauDaten OhneFerien(ZapfprofilVorschauDaten v)
+        {
+            foreach (ZapfprofilAnsichtDaten a in v.Ansichten.Skip(1)) a.TageJeTagtypJahr = new[] { 256, 52, 57, 0 };
+            return v;
+        }
+        ZapfprofilDaten daten = DatenMitVerteilung();
+        OhneFerien(daten.Vorschau!);
+        var cut = Aufbauen(daten, e => OhneFerien(VorschauMitVerteilung(e)));
+        Stufe(cut, "Experte");
+
+        Assert.EndsWith("· 256 Werktage · 52 Samstage · 57 Sonn- und Feiertage", Zusammenfassung(cut));
+        Assert.Equal("Werktage 900 kWh (90 %) · Samstage 60 kWh (6 %) · Sonn- und Feiertage 40 kWh (4 %)",
+                     cut.Find(".epos-zapfprofil-tagtypverteilung-werte").TextContent.Trim());
+    }
+
+    [Fact]
+    public void ZC4a_Aufgeklappt_stehen_unter_dem_Jahresraster_der_Satz_und_die_Verteilung()
+    {
+        var cut = Aufbauen(DatenMitVerteilung(), VorschauMitVerteilung);
+        Stufe(cut, "Experte");
+        Aufklappen(cut);
+
+        IElement block = cut.Find(".epos-zapfprofil-kalender .epos-zapfprofil-tagtypverteilung");
+        Assert.Equal("Der Kalender verteilt den Jahresbedarf um, er ändert die Summe nicht.",
+                     block.QuerySelector(".epos-zapfprofil-tagtypverteilung-satz")!.TextContent.Trim());
+        Assert.Equal("Werktage 900 kWh (90 %) · Samstage 60 kWh (6 %) · Sonn- und Feiertage 40 kWh (4 %) · Ferientage 0 kWh (0 %)",
+                     block.QuerySelector(".epos-zapfprofil-tagtypverteilung-werte")!.TextContent.Trim());
+        // Die Zeilen folgen dem Jahresraster, sie stehen nicht darin.
+        Assert.Null(block.Closest(".epos-zapfprofil-jahresraster"));
+        Assert.Contains("epos-leisezeile", block.QuerySelector("p")!.ClassName);
+    }
+
+    [Fact]
+    public void ZC4a_Ohne_gerechnete_Vorschau_bleiben_Verteilung_und_Tagtypen_leer()
+    {
+        ZapfprofilDaten daten = Daten();
+        daten.Vorschau = null;
+        var cut = Aufbauen(daten, _ => new ZapfprofilVorschauDaten { Zustand = ZapfprofilVorschauZustand.NichtGerechnet });
+        Stufe(cut, "Experte");
+
+        Assert.Empty(cut.FindAll(".epos-zapfprofil-tagtypverteilung"));
+        Assert.Equal("Kalender der Nutzungsart · keine eigenen Ferien", Zusammenfassung(cut));
+        Assert.DoesNotContain(" kWh (", cut.Find(".epos-zapfprofil-kalender").TextContent);
+    }
 }

@@ -209,6 +209,32 @@ namespace WindowsFormsApplication1
             return kalender;
         }
 
+        /// <summary>
+        /// <b>Die Zählung der Tagtypen</b> eines Kalenders (<see cref="Bilden"/>): je Tagtyp die Zahl der Tage,
+        /// Index 0 Werktag, 1 Samstag, 2 Sonn- und Feiertag, 3 Ferien- bzw. Ruhetag; die Summe ist 365. Keine neue
+        /// Rechnung — der Kalender ist derselbe, mit dem der Bereich zapft.
+        /// </summary>
+        internal static int[] Zaehlen(IReadOnlyList<ZapfTagtyp> kalender)
+        {
+            if (kalender == null || kalender.Count != TAGE)
+                throw new ArgumentException("Der Kalender trägt nicht 365 Tagtypen.", nameof(kalender));
+            var tage = new int[4];
+            foreach (ZapfTagtyp t in kalender) tage[Spalte(t)]++;
+            return tage;
+        }
+
+        /// <summary>Die Spalte eines Tagtyps in <see cref="Zaehlen"/>: 0 Werktag … 3 Ruhetag.</summary>
+        internal static int Spalte(ZapfTagtyp typ)
+        {
+            switch (typ)
+            {
+                case ZapfTagtyp.Samstag: return 1;
+                case ZapfTagtyp.SonnFeiertag: return 2;
+                case ZapfTagtyp.Ruhetag: return 3;
+                default: return 0;
+            }
+        }
+
         /// <summary>Prüft Wochentag und Kennzeichen des Klimakalenders; benannte Ablehnung bei Fehlern.</summary>
         internal static void Pruefen(int wochentagJan1, bool[] we)
         {

@@ -292,14 +292,71 @@ namespace WindowsFormsApplication1
         /// Ensemble. <c>null</c> ohne Zone, ohne Speichergruppe oder wenn die Auslegung nicht rechnet.
         /// </summary>
         internal static ZapfprofilSchaetzhilfeDaten Ladevorschlag(int idProjekt, ZapfprofilEingabeDaten eingabe, ZapfprofilStand basis)
+            => Ladeleistung(AuslegungZumStand(idProjekt, eingabe, basis));
+
+        /// <summary>
+        /// <b>Die Auslegung zum Arbeitsstand in Kurzform</b> (ZC4 (c)): EIN deterministischer Lauf der Auslegung wie
+        /// <see cref="Ladevorschlag"/> — daraus der Vorschlag der Ladeleistung und je Topologiegruppe das Ergebnis, wie
+        /// das Blatt „Auslegung…" es im Gruppenkopf zeigt (Speicher: Nenninhalt und Ladeleistung über die Summenlinie;
+        /// Frischwasserstation und Durchfluss: Minutenspitze; Wohnungsstation: die Summe samt Hinweis). <c>null</c> ohne
+        /// Zone oder wenn die Auslegung nicht rechnet.
+        /// </summary>
+        internal static ZapfprofilAuslegungKurzDaten Auslegungskurz(int idProjekt, ZapfprofilEingabeDaten eingabe, ZapfprofilStand basis)
+        {
+            ZapfprofilAuslegungDaten d = AuslegungZumStand(idProjekt, eingabe, basis);
+            if (d == null) return null;
+            var k = new ZapfprofilAuslegungKurzDaten { Ladeleistung = Ladeleistung(d) };
+            foreach (ZapfprofilAuslegungsgruppeDaten g in d.Gruppen) k.Gruppen.Add(Gruppenergebnis(g));
+            return k;
+        }
+
+        /// <summary>Das Ergebnis einer Topologiegruppe als Kurzzeile — aus der Empfehlung der Gruppe, ohne neue Rechnung.</summary>
+        internal static ZapfprofilGruppenergebnisDaten Gruppenergebnis(ZapfprofilAuslegungsgruppeDaten g)
+        {
+            ZapfprofilEmpfehlungDaten e = g.Empfehlung;
+            string topo = g.Topologie ?? "";
+            if (e == null || !e.Rechenbar)
+                return new ZapfprofilGruppenergebnisDaten(g.Topologieart,
+                    Format(Text_("ZPG_AUSKURZ_NICHT", "{0}: nicht rechenbar — {1}"), topo, e?.Grund ?? ""), "", "");
+            if (g.Speicher)
+            {
+                double? volumen = e.NenninhaltL ?? e.VolumenL;
+                string l = ZahlOderStrich(volumen, "N0"), kw = ZahlOderStrich(e.LeistungKw, "N1");
+                string zeile = e.NenninhaltL.HasValue
+                    ? Format(Text_("ZPG_AUSKURZ_SPEICHER", "{0}: Nenninhalt {1} l · Ladeleistung {2} kW"), topo, l, kw)
+                    : Format(Text_("ZPG_AUSKURZ_SPEICHER_VOLUMEN", "{0}: Volumen {1} l · Ladeleistung {2} kW"), topo, l, kw);
+                return new ZapfprofilGruppenergebnisDaten(g.Topologieart, zeile, "",
+                    Format(Text_("ZPG_AUSKURZ_HAUPT_SPEICHER", "{0} l · {1} kW"), l, kw));
+            }
+            string spitze = ZahlOderStrich(e.LeistungKw, "N1");
+            bool wohnung = g.Topologieart == ZapfprofilTopologie.Wohnungsstation;
+            string hinweis = wohnung
+                ? Text_("ZPG_SATZ_AUSHINWEIS_WOHNUNGSSTATION_SUMME",
+                        "Die Spitze je Wohnungsstation kommt aus dem Auslegungsensemble („Stochastisch rechnen“); angegeben ist die Summe.")
+                : "";
+            return new ZapfprofilGruppenergebnisDaten(g.Topologieart,
+                Format(Text_(wohnung ? "ZPG_AUSKURZ_SPITZE_SUMME" : "ZPG_AUSKURZ_SPITZE",
+                             wohnung ? "{0}: Minutenspitze {1} kW (Summe)" : "{0}: Minutenspitze {1} kW"), topo, spitze),
+                hinweis, Format(Text_("ZPG_AUSKURZ_HAUPT_SPITZE", "{0} kW"), spitze));
+        }
+
+        /// <summary>Eine Zahl in der Kultur der Oberfläche; ohne Wert „–".</summary>
+        private static string ZahlOderStrich(double? wert, string format)
+            => wert is double w ? w.ToString(format, CultureInfo.CurrentCulture) : "–";
+
+        /// <summary>Der deterministische Lauf der Auslegung zum Arbeitsstand; <c>null</c> ohne Zone oder ungerechnet.</summary>
+        private static ZapfprofilAuslegungDaten AuslegungZumStand(int idProjekt, ZapfprofilEingabeDaten eingabe, ZapfprofilStand basis)
         {
             if (eingabe == null || eingabe.Zonen.Count == 0) return null;
             ZapfprofilAuslegungEingabeDaten a = eingabe.Auslegung?.Kopie() ?? AuslegungAusStand(basis);
             eingabe.Gebaeude?.InAuslegung(a);
             a.Stochastisch = false;
             ZapfprofilAuslegungDaten d = Auslegung(idProjekt, eingabe, a, basis, eingabe.Stufe);
-            if (d.Zustand != ZapfprofilAuslegungZustand.Gerechnet) return null;
-            return d.Gruppen.FirstOrDefault(g => g.Speicher && g.Vergleich?.Ladeleistung != null)?.Vergleich.Ladeleistung;
+            return d.Zustand == ZapfprofilAuslegungZustand.Gerechnet ? d : null;
         }
+
+        /// <summary>Die Schätzhilfe der Ladeleistung der ersten Speichergruppe eines Laufs; <c>null</c> = keine.</summary>
+        private static ZapfprofilSchaetzhilfeDaten Ladeleistung(ZapfprofilAuslegungDaten d)
+            => d?.Gruppen.FirstOrDefault(g => g.Speicher && g.Vergleich?.Ladeleistung != null)?.Vergleich.Ladeleistung;
     }
 }

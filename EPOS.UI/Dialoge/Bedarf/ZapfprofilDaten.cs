@@ -813,6 +813,18 @@ public sealed class ZapfprofilAnsichtDaten
     /// </summary>
     public int[]? Tagtypen { get; set; }
 
+    /// <summary>
+    /// Die Zahl der Tage je Tagtyp im Kalender der Ansicht (ZC4 (a)), Index 0 Werktag, 1 Samstag, 2 Sonn- und
+    /// Feiertag, 3 Ferientag — gezählt im Kern aus demselben Kalender wie <see cref="Tagtypen"/>; <c>null</c> = keiner.
+    /// </summary>
+    public int[]? TageJeTagtypJahr { get; set; }
+
+    /// <summary>
+    /// Die Zapfwärme der Jahresreihe je Tagtyp in kWh, Index wie <see cref="TageJeTagtypJahr"/>; die Summe ist der
+    /// Jahresbedarf der Zapfung der Ansicht. <c>null</c> = keine Reihe.
+    /// </summary>
+    public double[]? ZapfungJeTagtypKwh { get; set; }
+
     /// <summary>Die Kennzahlen der Ansicht.</summary>
     public ZapfprofilKennzahlenDaten Kennzahlen { get; set; } = new();
 
@@ -1730,6 +1742,9 @@ public sealed record ZapfprofilHerkunftZeile(string Groesse, string Zone, string
 /// <summary>Das Ergebnis einer Topologiegruppe (Zonen gleicher Topologie).</summary>
 public sealed class ZapfprofilAuslegungsgruppeDaten
 {
+    /// <summary>Die Topologie der Gruppe als Wahl des Dialogs (dieselbe Zahl wie im Kern).</summary>
+    public ZapfprofilTopologie Topologieart { get; set; }
+
     /// <summary>Die Topologie in der Oberflächensprache.</summary>
     public string Topologie { get; set; } = "";
 
@@ -2298,4 +2313,27 @@ public sealed class ZapfprofilVorschlagErgebnisDaten
     /// Übernahme weiter in der Warnliste; die Vorschau ist dann längst zu.
     /// </summary>
     public List<ZapfprofilWarnDaten> Hinweise { get; set; } = new();
+}
+
+/// <summary>
+/// Das Auslegungsergebnis einer Topologiegruppe in Kurzform (ZC4 (c)) — die Zeilen unter der Topologie-Wahl der
+/// Gruppe „Auslegung": dieselbe deterministische Auslegung zum Arbeitsstand wie das Blatt „Auslegung…", ohne es zu öffnen.
+/// </summary>
+/// <param name="Topologie">Die Topologie der Gruppe.</param>
+/// <param name="Zeile">„Speicher: Nenninhalt 300 l · Ladeleistung 12 kW" bzw. „Frischwasserstation: Minutenspitze 48 kW".</param>
+/// <param name="Hinweis">Ein Hinweis zur Zeile (Wohnungsstation: die Summe); leer = keiner.</param>
+/// <param name="Hauptergebnis">Das Hauptergebnis für die Zusammenfassung („300 l · 12 kW", „48 kW"); leer = nicht rechenbar.</param>
+public sealed record ZapfprofilGruppenergebnisDaten(ZapfprofilTopologie Topologie, string Zeile, string Hinweis, string Hauptergebnis);
+
+/// <summary>
+/// Die Auslegung zum Arbeitsstand in Kurzform (ZC4 (c)): der Vorschlag der Ladeleistung und je Topologiegruppe das
+/// Ergebnis. Ein Lauf der Auslegung liefert beides — der Dialog rechnet ihn entprellt mit der Vorschau.
+/// </summary>
+public sealed class ZapfprofilAuslegungKurzDaten
+{
+    /// <summary>Der Vorschlag der Ladeleistung der ersten Speichergruppe; <c>null</c> = keiner.</summary>
+    public ZapfprofilSchaetzhilfeDaten? Ladeleistung { get; set; }
+
+    /// <summary>Je Topologiegruppe das Ergebnis.</summary>
+    public List<ZapfprofilGruppenergebnisDaten> Gruppen { get; set; } = new();
 }

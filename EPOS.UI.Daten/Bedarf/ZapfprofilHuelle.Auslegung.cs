@@ -420,6 +420,7 @@ namespace WindowsFormsApplication1
             var d = new ZapfprofilAuslegungsgruppeDaten
             {
                 Topologie = Text_("ZPG_AUS_TOPOLOGIE_" + Gross(g.Topologie.ToString()), g.Topologie.ToString()),
+                Topologieart = (ZapfprofilTopologie)(int)g.Topologie,
                 Speicher = speicher,
                 Zonen = g.Zonen.ToList(),
                 Bedarfstag = g.Bedarfstag?.Bezeichner ?? "",
