@@ -836,4 +836,32 @@ public class StromspeicherReiterTests : EposBunitContext
         Assert.All(Tabellenausrichtung.PruefeAlle(tabellen), n => Assert.Equal(2, n));
         Tabellenausrichtung.TextkopfLinks(tabellen[0], 0);
     }
+
+    /// <summary>
+    /// EB-2: Mit Standby des Speichersystems im Lauf steht ein fünfter Reihenschalter da — ab Werk AUS, das Bild
+    /// bleibt ohne Zuwahl, wie es war; zugeschaltet steht die Reihe im Bildauftrag. Ohne Standby kein Schalter.
+    /// </summary>
+    [Fact]
+    public void Der_Standby_ist_zuschaltbar_und_ab_Werk_aus()
+    {
+        var ohne = Zeichnen(Daten());
+        Assert.Equal(5, Bildschalter(ohne).Count);
+
+        var daten = Daten();
+        daten.MitStandby = true;
+        var seite = Zeichnen(daten);
+        Assert.Equal(6, Bildschalter(seite).Count);
+        Assert.Contains(WindowsFormsApplication1.MyResource.Resource.CHART_LEGENDE_SPEICHER_STANDBY,
+                        seite.FindAll("label.epos-schalter").Select(l => l.TextContent.Trim()));
+        Assert.DoesNotContain(StromspeicherReiter.REIHE_STANDBY, seite.Instance.GewaehlteReihen);
+        Assert.Equal(4, seite.Instance.GewaehlteReihen.Count);
+
+        _auftraege.Clear();
+        Bildschalter(seite)[5].Change(true);
+        Assert.Contains(StromspeicherReiter.REIHE_STANDBY, Letzter.Reihen!);
+        Assert.Equal(5, Letzter.Reihen!.Count);
+
+        Bildschalter(seite)[5].Change(false);
+        Assert.DoesNotContain(StromspeicherReiter.REIHE_STANDBY, Letzter.Reihen!);
+    }
 }

@@ -4344,6 +4344,9 @@ Please run the simulation with photovoltaics first.</value>
   <data name="SP_CSV_ENTLADUNG" xml:space="preserve">
     <value>Discharging [kWh]</value>
   </data>
+  <data name="SP_CSV_STANDBY" xml:space="preserve">
+    <value>Storage system standby [kWh]</value>
+  </data>
   <data name="SP_CSV_GELDWERT" xml:space="preserve">
     <value>Monetary value [EUR]</value>
   </data>
@@ -29387,9 +29390,6 @@ Do you want to allow this?</value>
   <data name="WIRT_STATUS_SPEICHERFEHLER" xml:space="preserve">
     <value>Saving failed: {0}</value>
   </data>
-  <data name="WIRT_STATUS_VORSORGE" xml:space="preserve">
-    <value>Table provisioning incomplete: {0}</value>
-  </data>
   <data name="ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE" xml:space="preserve">
     <value>The stochastic annual series would draw {0} unit-days (realisations × units × 365); at most {1} are permitted — please choose fewer realisations.</value>
   </data>
@@ -52716,10 +52716,10 @@ chart</value>
     <value>The design of the heat rejection unit is unknown.</value>
   </data>
   <data name="RKW_MSG_AUSWAHL_UNGUELTIG" xml:space="preserve">
-    <value>A selection of the heat rejection unit (approach, fan control or free cooling arrangement) is unknown.</value>
+    <value>{0}: The selection “{1}” is unknown.</value>
   </data>
   <data name="RKW_MSG_WERT_UNGUELTIG" xml:space="preserve">
-    <value>A value of the heat rejection unit is out of range.</value>
+    <value>{0}: The value is outside its range ({1}).</value>
   </data>
   <data name="RKW_MSG_AUSGELIEFERT" xml:space="preserve">
     <value>This heat rejection unit belongs to the delivered catalogue and is not overwritten. Create a copy.</value>
@@ -52732,6 +52732,201 @@ chart</value>
   </data>
   <data name="RKW_MSG_SCHEMA_FEHLT" xml:space="preserve">
     <value>The database does not know the heat rejection unit yet (schema step {0} is missing).</value>
+  </data>
+  <data name="RKW_BAUART_TROCKEN" xml:space="preserve">
+    <value>Dry cooler</value>
+  </data>
+  <data name="RKW_BAUART_ADIABAT" xml:space="preserve">
+    <value>Adiabatic cooler</value>
+  </data>
+  <data name="RKW_BAUART_HYBRID" xml:space="preserve">
+    <value>Hybrid cooler</value>
+  </data>
+  <data name="RKW_BAUART_KUEHLTURM_OFFEN" xml:space="preserve">
+    <value>Cooling tower, open</value>
+  </data>
+  <data name="RKW_BAUART_KUEHLTURM_GESCHLOSSEN" xml:space="preserve">
+    <value>Cooling tower, closed</value>
+  </data>
+  <data name="RKW_WEG_FEST" xml:space="preserve">
+    <value>fixed</value>
+  </data>
+  <data name="RKW_WEG_LASTABHAENGIG" xml:space="preserve">
+    <value>load-dependent</value>
+  </data>
+  <data name="RKW_REGELUNG_EIN_AUS" xml:space="preserve">
+    <value>On/off</value>
+  </data>
+  <data name="RKW_REGELUNG_STUFEN" xml:space="preserve">
+    <value>Staged</value>
+  </data>
+  <data name="RKW_REGELUNG_DREHZAHL" xml:space="preserve">
+    <value>Variable speed</value>
+  </data>
+  <data name="RKW_SCHALTUNG_PARALLEL" xml:space="preserve">
+    <value>parallel</value>
+  </data>
+  <data name="RKW_SCHALTUNG_REIHE" xml:space="preserve">
+    <value>in series</value>
+  </data>
+  <data name="RKW_BEREICH_GROESSER" xml:space="preserve">
+    <value>greater than {0}</value>
+  </data>
+  <data name="RKW_BEREICH_AB" xml:space="preserve">
+    <value>at least {0}</value>
+  </data>
+  <data name="RKW_BEREICH_VON_BIS" xml:space="preserve">
+    <value>{0} to {1}</value>
+  </data>
+  <data name="RKW_BEREICH_UEBER_BIS" xml:space="preserve">
+    <value>above {0} up to {1}</value>
+  </data>
+  <data name="RKW_MSG_VERWENDET" xml:space="preserve">
+    <value>The heat rejection unit is still selected in {0} project unit(s) and cannot be deleted; select another one there first.</value>
+  </data>
+  <data name="RKW_SP_BAUART" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="RKW_SP_NENNLEISTUNG" xml:space="preserve">
+    <value>Rated capacity</value>
+  </data>
+  <data name="RKW_SP_ANNAEHERUNG" xml:space="preserve">
+    <value>Approach</value>
+  </data>
+  <data name="RKW_SP_VENTILATOR" xml:space="preserve">
+    <value>Fan</value>
+  </data>
+  <data name="RKW_SP_FREIKUEHLUNG" xml:space="preserve">
+    <value>Free cooling</value>
+  </data>
+  <data name="RKW_TITEL" xml:space="preserve">
+    <value>Heat rejection units</value>
+  </data>
+  <data name="RKW_MENUE" xml:space="preserve">
+    <value>Heat rejection units…</value>
+  </data>
+  <data name="RKW_NICHT_VERFUEGBAR" xml:space="preserve">
+    <value>The heat rejection units are not yet available on this device.</value>
+  </data>
+  <data name="RKW_LEER" xml:space="preserve">
+    <value>The catalogue does not contain a heat rejection unit yet – “New…” creates one.</value>
+  </data>
+  <data name="RKW_TITEL_NEU" xml:space="preserve">
+    <value>New heat rejection unit</value>
+  </data>
+  <data name="RKW_FRAGE_LOESCHEN" xml:space="preserve">
+    <value>Delete the heat rejection unit “{0}”?</value>
+  </data>
+  <data name="RKW_AW_LOESCHEN_VERWENDET" xml:space="preserve">
+    <value>Selected in {0} project unit(s) – deletion blocked; select another one there first.</value>
+  </data>
+  <data name="RKW_LOESCHEN_BLEIBEN_VERWENDET" xml:space="preserve">
+    <value>Kept (selected in projects): {0}</value>
+  </data>
+  <data name="RKW_MSG_ANGELEGT" xml:space="preserve">
+    <value>“{0}” created.</value>
+  </data>
+  <data name="RKW_MSG_GELOESCHT" xml:space="preserve">
+    <value>“{0}” deleted.</value>
+  </data>
+  <data name="RKW_MSG_FEHLER" xml:space="preserve">
+    <value>The heat rejection unit could not be written.</value>
+  </data>
+  <data name="RKW_MSG_NAME_BELEGT" xml:space="preserve">
+    <value>The catalogue already contains this name.</value>
+  </data>
+  <data name="RKW_MSG_NAME_LEER" xml:space="preserve">
+    <value>The heat rejection unit needs a name.</value>
+  </data>
+  <data name="RKW_GRUPPE_NENNPUNKT" xml:space="preserve">
+    <value>Type and rating point</value>
+  </data>
+  <data name="RKW_GRUPPE_ANNAEHERUNG" xml:space="preserve">
+    <value>Approach</value>
+  </data>
+  <data name="RKW_GRUPPE_VENTILATOR" xml:space="preserve">
+    <value>Fan</value>
+  </data>
+  <data name="RKW_GRUPPE_WASSER" xml:space="preserve">
+    <value>Humidification and water</value>
+  </data>
+  <data name="RKW_GRUPPE_FREIKUEHLUNG" xml:space="preserve">
+    <value>Free cooling</value>
+  </data>
+  <data name="RKW_LBL_VERWENDUNG" xml:space="preserve">
+    <value>Use</value>
+  </data>
+  <data name="RKW_VERWENDUNG" xml:space="preserve">
+    <value>selected in {0} project unit(s)</value>
+  </data>
+  <data name="RKW_VERWENDUNG_KEINE" xml:space="preserve">
+    <value>not selected in any project</value>
+  </data>
+  <data name="RKW_VORGABE" xml:space="preserve">
+    <value>Default: {0}</value>
+  </data>
+  <data name="RKW_VORGABE_VENTILATOR" xml:space="preserve">
+    <value>Default: auxiliary power of heat rejection at the chiller</value>
+  </data>
+  <data name="RKW_HINWEIS_BIMSCHV" xml:space="preserve">
+    <value>Evaporative cooling system within the meaning of the 42nd BImSchV: observe the operator's notification, inspection and hygiene duties.</value>
+  </data>
+  <data name="RKW_HINWEIS_KOSTEN" xml:space="preserve">
+    <value>The unit price is maintained in the cost administration.</value>
+  </data>
+  <data name="KI_DLG_MASKE_RKW" xml:space="preserve">
+    <value>Heat rejection units administration</value>
+  </data>
+  <data name="KI_RKW_ERL_SATZ" xml:space="preserve">
+    <value>The selected record of the list (key = id).</value>
+  </data>
+  <data name="KI_RKW_ERL_BEZEICHNER" xml:space="preserve">
+    <value>Name of the heat rejection unit, unique in the catalogue.</value>
+  </data>
+  <data name="KI_RKW_ERL_BESCHREIBUNG" xml:space="preserve">
+    <value>Free text about the heat rejection unit.</value>
+  </data>
+  <data name="KI_RKW_ERL_BAUART" xml:space="preserve">
+    <value>Type: dry, adiabatic, hybrid or cooling tower open/closed; empty = dry.</value>
+  </data>
+  <data name="KI_RKW_ERL_NENNLEISTUNG" xml:space="preserve">
+    <value>Heat to be rejected at the rating point in kW, greater than 0.</value>
+  </data>
+  <data name="KI_RKW_ERL_ANNAEHERUNG_NENN" xml:space="preserve">
+    <value>Approach at the rating point in K (0 to 30); empty = fixed value of the matching heat rejection type.</value>
+  </data>
+  <data name="KI_RKW_ERL_ANNAEHERUNG_WEG" xml:space="preserve">
+    <value>Approach method: fixed or load-dependent; empty = fixed.</value>
+  </data>
+  <data name="KI_RKW_ERL_VENTILATOR_NENN" xml:space="preserve">
+    <value>Fan power at the rating point in kW; empty = auxiliary power of heat rejection at the chiller.</value>
+  </data>
+  <data name="KI_RKW_ERL_VENTILATOR_REGELUNG" xml:space="preserve">
+    <value>Fan control: on/off, staged or variable speed.</value>
+  </data>
+  <data name="KI_RKW_ERL_VENTILATOR_STUFEN" xml:space="preserve">
+    <value>Number of stages for staged control, at least 2.</value>
+  </data>
+  <data name="KI_RKW_ERL_VENTILATOR_DREHZAHL_MIN" xml:space="preserve">
+    <value>Minimum speed as a fraction of rated speed (0 to 1) for variable speed control.</value>
+  </data>
+  <data name="KI_RKW_ERL_BEFEUCHTUNG_WIRKUNGSGRAD" xml:space="preserve">
+    <value>Humidification efficiency adiabatic/hybrid (0 to 1).</value>
+  </data>
+  <data name="KI_RKW_ERL_BEFEUCHTUNG_AB" xml:space="preserve">
+    <value>Outdoor temperature in °C from which humidification starts (−30 to 50).</value>
+  </data>
+  <data name="KI_RKW_ERL_VERDUNSTUNG_FAKTOR" xml:space="preserve">
+    <value>Factor on the calculated evaporation (above 0 up to 3).</value>
+  </data>
+  <data name="KI_RKW_ERL_EINDICKUNG" xml:space="preserve">
+    <value>Concentration cycles of the circulating water (above 1 up to 20).</value>
+  </data>
+  <data name="KI_RKW_ERL_DRIFT_ANTEIL" xml:space="preserve">
+    <value>Drift loss as a fraction of circulation (0 to 1).</value>
+  </data>
+  <data name="KI_RKW_ERL_FREIKUEHLUNG_SCHALTUNG" xml:space="preserve">
+    <value>Free cooling arrangement: parallel or in series; empty = parallel.</value>
   </data>
   <data name="SIMKONF_AUFH_LBL_VERFAHREN" xml:space="preserve">
     <value>Method</value>
@@ -54922,6 +55117,9 @@ chart</value>
   <data name="BKI_PROT_GETEILT" xml:space="preserve">
     <value>Layers split at common layer boundaries ({0} → {1} layers): {2}</value>
   </data>
+  <data name="BKI_AKTUALISIERT" xml:space="preserve">
+    <value>Updated: the import changes {0} of {1} recognised constructions (layers, sections or source including sub-catalogue).</value>
+  </data>
   <data name="BKI_WIEDERIMPORT" xml:space="preserve">
     <value>Re-import: {0} constructions in the catalogue get different layers from the split at common layer boundaries; compared {1}, of which {2} change their U-value by more than 1 % (largest change {3} %); without a reference value {4}.</value>
   </data>
@@ -56371,6 +56569,12 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="CHART_LEGENDE_PV_ABREGELUNG" xml:space="preserve">
     <value>PV curtailment</value>
   </data>
+  <data name="CHART_LEGENDE_BHKW_EINSPEISUNG" xml:space="preserve">
+    <value>CHP grid feed-in</value>
+  </data>
+  <data name="CHART_LEGENDE_SPEICHER_STANDBY" xml:space="preserve">
+    <value>Storage system standby</value>
+  </data>
   <data name="SIM_CHK_PV_AUFTEILEN" xml:space="preserve">
     <value>Split PV (self-consumption + surplus)</value>
   </data>
@@ -56811,6 +57015,15 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="KBP_MONATE_KURZ" xml:space="preserve">
     <value>Jan;Feb;Mar;Apr;May;Jun;Jul;Aug;Sep;Oct;Nov;Dec</value>
+  </data>
+  <data name="KBP_HINW_NORMKALENDER_VORGABE" xml:space="preserve">
+    <value>Standard calendar (default): {0} days of use, public holidays and company holidays like Sunday — replaceable via “Copy from building” or a calendar choice.</value>
+  </data>
+  <data name="KBP_KZ_NUTZUNGSTAGE" xml:space="preserve">
+    <value>Days of use</value>
+  </data>
+  <data name="KBP_KZ_NUTZUNGSTAGE_EINHEIT" xml:space="preserve">
+    <value>d/a</value>
   </data>
   <data name="ZPG_AUS_SCHNELLAUSLEGUNG_V4" xml:space="preserve">
     <value>Quick design V4</value>
@@ -57907,5 +58120,58 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="VF_ORT_ENERGIEFLUSS" xml:space="preserve">
     <value>in the report the nodes carry their annual total (MWh/a); the bands carry no number, here the values are in the tooltip</value>
   </data>
+  <data name="EF_KN_STANDBY" xml:space="preserve">
+    <value>Storage system standby</value>
+  </data>
+  <data name="EF_KK_STANDBY" xml:space="preserve">
+    <value>Standby</value>
+  </data>
+  <data name="EF_KN_ABREGELUNG" xml:space="preserve">
+    <value>curtailed</value>
+  </data>
+  <data name="EF_KK_ABREGELUNG" xml:space="preserve">
+    <value>curtailed</value>
+  </data>
+  <data name="EF_FORMEL_EINSPEISUNG_BHKW" xml:space="preserve">
+    <value>CHP surplus of the run − CHP charging of the storage</value>
+  </data>
+  <data name="KMK_RKW_GRUPPE" xml:space="preserve">
+    <value>Heat rejection</value>
+  </data>
+  <data name="KMK_RKW_LABEL" xml:space="preserve">
+    <value>Heat rejection unit</value>
+  </data>
+  <data name="KMK_RKW_KEINS" xml:space="preserve">
+    <value>— none (fixed values of the heat rejection type) —</value>
+  </data>
+  <data name="KMK_RKW_PROJEKTKOPIE" xml:space="preserve">
+    <value>{0} (project copy)</value>
+  </data>
+  <data name="KMK_RKW_HINWEIS_LUFT" xml:space="preserve">
+    <value>Air-cooled chiller: it carries its own condenser and gets no heat rejection unit.</value>
+  </data>
+  <data name="KMK_RKW_HINWEIS_KEINS" xml:space="preserve">
+    <value>Without a heat rejection unit the chiller uses the fixed values of its heat rejection type.</value>
+  </data>
+  <data name="KMK_RKW_HINWEIS_WAHL" xml:space="preserve">
+    <value>The choice is written with OK; the plant then gets its own project copy of the catalogue record.</value>
+  </data>
+  <data name="KMK_RKW_HINWEIS_FEUCHTE" xml:space="preserve">
+    <value>Humidity missing: the project climate carries no relative humidity – the unit is then calculated dry, without humidification and without water consumption.</value>
+  </data>
+  <data name="KMK_RKW_HINWEIS_VENTILATOR" xml:space="preserve">
+    <value>The fan of the heat rejection unit ({0} kW) replaces the auxiliary power of heat rejection of the chiller – it is not counted twice.</value>
+  </data>
+  <data name="KMK_RKW_MSG_VERWALTUNG_NICHT" xml:space="preserve">
+    <value>The heat rejection unit management cannot be opened here.</value>
+  </data>
+  <data name="KMK_RKW_MSG_UNGESPEICHERT" xml:space="preserve">
+    <value>There are unsaved changes. Apply them with OK or discard them with Cancel before opening the heat rejection units.</value>
+  </data>
+  <data name="KI_DLG_KMA_RKW_NAME" xml:space="preserve">
+    <value>Heat rejection unit</value>
+  </data>
+  <data name="KI_DLG_KMA_RKW_ERL" xml:space="preserve">
+    <value>Catalogue record of the heat rejection unit of the water-cooled chiller (id); empty = none, then the fixed values of the heat rejection type apply. With OK the plant gets its own project copy.</value>
+  </data>
 </root>
-

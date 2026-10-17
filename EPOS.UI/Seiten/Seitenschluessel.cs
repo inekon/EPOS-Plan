@@ -463,6 +463,17 @@ public static class Seitenschluessel
     public const string Kaeltemittel = "KAELTEMITTEL";
 
     /// <summary>
+    /// Menue „Administration -> Daten &amp; Import -> Rückkühlwerke…" (<c>RueckkuehlwerkDialog</c>, K-F5a; Entwurf
+    /// Split/VRF/Rückkühlwerk 8; <c>KiMaskenziele.RUECKKUEHLWERK</c>).
+    /// </summary>
+    /// <remarks>
+    /// Unter Windows oeffnet die Huelle (<c>HauptfensterHuelle.Weg</c>) ein modales Fenster; auf iOS zeigt
+    /// <see cref="AppWurzel"/> den Dialog aus <c>IProjektQuelle.RueckkuehlwerkGaben</c>. Benannt, damit ein Knopf
+    /// „Rückkühlwerke…" (Rückkühlgruppe der Kältemaschine) dieselbe Ansicht öffnet.
+    /// </remarks>
+    public const string Rueckkuehlwerk = "RUECKKUEHLWERK";
+
+    /// <summary>
     /// Menue „Administration -> Daten &amp; Import -> Katalog aktualisieren…"
     /// (<c>KatalogabgleichDialog</c>, Entscheidungsvorlage Modellgrenzen KU1 Stufe 1).
     /// </summary>
@@ -555,7 +566,7 @@ public static class Seitenschluessel
         ProjektLoeschen, ProjektTransfer, ProjektAlsVariante, Klimadaten,
         BaustoffKatalog, BauteilaufbauKatalog, BauteilkatalogImport, Betriebskalender, KaeltemaschineKatalog, KaeltemaschineAnlage,
         Kostenverwaltung, EnergietraegerVerwaltung, ProjektBrennstoffe, NutzungsdauerVerwaltung, Einstellungen,
-        Gesetzeskatalog, Kaeltemittel, KatalogDubletten, Katalogabgleich, LizenzVerwaltung, Lizenztext,
+        Gesetzeskatalog, Kaeltemittel, Rueckkuehlwerk, KatalogDubletten, Katalogabgleich, LizenzVerwaltung, Lizenztext,
         Version, Dokumentation, Fernwartung, SpracheDeutsch, SpracheEnglisch,
         EntwAusnahmeprotokoll, EntwProtokollordner, EntwDatenbankordner, EntwDiagnosedaten,
         EntwWebWerkzeuge, EntwModusAus

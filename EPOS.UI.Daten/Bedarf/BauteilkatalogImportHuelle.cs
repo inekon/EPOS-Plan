@@ -79,6 +79,11 @@ namespace WindowsFormsApplication1
                                                                        // BK-8c: ohne Vergleich keine Zahl, sondern ein Strich.
                                                                        v.WiederimportUMaxProzent?.ToString("0.0", CultureInfo.CurrentCulture) ?? "–",
                                                                        Zahl(v.WiederimportOhneVergleichswert))
+                                                       : null,
+                                                   // BK-11: wie viele wiedererkannte Aufbauten die Übernahme ändert.
+                                                   v.Aufbauten.Wiedererkannt > 0
+                                                       ? string.Format(CultureInfo.CurrentCulture, R.BKI_AKTUALISIERT, Zahl(v.AufbautenAktualisiert),
+                                                                       Zahl(v.Aufbauten.Wiedererkannt))
                                                        : null);
         }
 

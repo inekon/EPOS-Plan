@@ -397,6 +397,14 @@ namespace WindowsFormsApplication1
             { "Stromträger", "Electricity carrier" },
             // KM4-E2 (Konzept Kältemittel als Stammdatum 5.3): Spalte und Fußnote der Kälteerzeugertabelle.
             { "Kältemittel", "Refrigerant" },
+            // K-F5b (Entwurf Split/VRF/Rückkühlwerk 5.8): die Zeile „Rückkühlwerk“ unter der Kälteerzeugertabelle samt Bauarten.
+            { Berichtstabellen.MUSTER_RUECKKUEHLWERK,
+              "Heat rejection unit at “{0}” ({1}): fan electricity {2} MWh/a · water {3} m³/a · partial free cooling {4} MWh/a · mean heat rejection temperature {5} °C" },
+            { "Trockenkühler", "Dry cooler" },
+            { "Adiabatischer Kühler", "Adiabatic cooler" },
+            { "Hybridkühler", "Hybrid cooler" },
+            { "Kühlturm, offen", "Cooling tower, open" },
+            { "Kühlturm, geschlossen", "Cooling tower, closed" },
             { Berichtstabellen.FUSSNOTE_KAELTEMITTEL,
               "* For the planned year of commissioning, under Annex IV of Regulation (EU) 2024/573 only remaining stock or an exemption; see warnings. The check only warns, it never blocks." },
             { "Die Emissionen des Kältestroms sind betriebsbedingt über den Strom gerechnet; Kältemittelverluste sind nicht enthalten.",

@@ -542,7 +542,7 @@ Verlauf und Sensitivität gehen alle dort durch.
 Gelesen und geschrieben werden die vier Spalten im vorhandenen Weg (`LadeParameter`,
 `LiesSatz`, UPDATE und INSERT von `SpeichereParameter`); der Freitext geht als
 `LongVarWChar` (MEMO) und nicht als `VarWChar` — sonst schnitte ihn der Access-Rückweg
-bei 255 Zeichen ab. `StelleTabellenSicher` legt weder die Tabelle an noch zieht sie
+bei 255 Zeichen ab. Der `WirtschaftlichkeitCtrl` legt weder die Tabelle an noch zieht er
 diese Spalten nach; Schemaschritt 72 ist ihr einziger DDL-Ort.
 
 > **Grenze, bewusst gezogen:** `Tab_ErgebnisWirtschaftlichkeit` bekommt **keine**

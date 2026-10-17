@@ -422,6 +422,9 @@ public static class Menuetabelle
                 // globales Stammdatum, das Import und Kataloge der Kälteanlagen nachschlagen; vor der
                 // Pflege der eingelesenen Kataloge, weil es selbst ein Katalog ist.
                 new Menuepunkt("MenuItem_Kaeltemittel", "KMT_MENUE", Seitenschluessel.Kaeltemittel),
+                // K-F5a (Entwurf Split/VRF/Rückkühlwerk 8): die Verwaltung der Rückkühlwerke - ein Gerätekatalog der
+                // Kälteseite wie die Kältemittel, deshalb gleich dahinter.
+                new Menuepunkt("MenuItem_Rueckkuehlwerk", "RKW_MENUE", Seitenschluessel.Rueckkuehlwerk),
                 // MN-1 (19.09.2026): aus der obersten Ebene des Kopfes hierher.
                 // Dubletten entstehen BEIM Einlesen; die Pruefung gehoert ans
                 // Ende derselben Rubrik. Ihr Bild hatte sie nie.

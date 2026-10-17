@@ -1183,6 +1183,20 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die PV-Abregelung des Laufs [MWh/a] an der Einspeisegrenze (PV3, EB-1): nach der Speicherladung (Laden vor
+        /// Abregeln), im Flottenpfad die Abregelung der Flotte — dieselbe Menge wie die Laufreihe <c>PV_ABREGELUNG</c>.
+        /// 0 ohne Photovoltaik oder ohne Grenze. Eine Formel für Reiter, Ergebniszeile und Referenzlauf.
+        /// </summary>
+        internal static double PvAbregelungMwh(SimulationControl sim)
+        {
+            if (sim == null || !sim.bSimulationPV || sim.simulation_pv == null) return 0.0;
+            if (sim.Speicherflottennetzbilanz != null)
+                return sim.Speicherflottennetzbilanz.PvAbregelungKwh / 1000.0;
+            sim.PvEinspeisungAufteilen(out _, out double[] abregelungKw);
+            return SimulationPV.ViertelstundenKwh(abregelungKw) / 1000.0;
+        }
+
+        /// <summary>
         /// Die BHKW-Einspeisung des Laufs [MWh/a] (E29 #536): mit Speicherflotte deren
         /// BHKW-Einspeisung (Entscheid E29‑Q3 a, dieselbe Quelle wie die Reihe
         /// <c>BHKW_UEBERSCHUSS</c>), sonst die Viertelstundenbilanz des Laufs
@@ -1312,6 +1326,21 @@ namespace WindowsFormsApplication1
             /// Flotte führt.
             /// </summary>
             public double[] EinspeisungKw;
+
+            /// <summary>
+            /// EB-2: der BHKW-Anteil der Netzeinspeisung („Stromeinspeisung BHKW“) — mit Speicherflotte deren
+            /// BHKW-Einspeisung, sonst die BHKW-Einspeisung der Viertelstundenbilanz; dieselbe Menge wie
+            /// <see cref="BhkwEinspeisungMwh"/>. Ein Anteil von <see cref="EinspeisungKw"/>, keine weitere Einspeisung.
+            /// <c>null</c> ohne BHKW.
+            /// </summary>
+            public double[] BhkwEinspeisungKw;
+
+            /// <summary>
+            /// EB-2: die PV-Abregelung an der Einspeisegrenze — mit Speicherflotte deren Abregelung, sonst die Abregelung
+            /// nach der Speicherladung (<see cref="SimulationControl.PvEinspeisungAufteilen"/>); dieselbe Menge wie
+            /// <see cref="PvAbregelungMwh"/>. Nicht Teil der Einspeisung. <c>null</c> ohne Photovoltaik.
+            /// </summary>
+            public double[] PvAbregelungKw;
         }
 
         /// <summary>Die Netzreihen des Laufs (<see cref="Netzreihen"/>); <c>null</c> ohne Lauf.</summary>
@@ -1321,14 +1350,21 @@ namespace WindowsFormsApplication1
             var r = new Netzreihen { NetzbezugKw = sim.Rest_Strombedarf_viertelstuendlich };
             if (sim.Speicherflottennetzbilanz != null)
             {
-                r.EinspeisungKw = sim.Speicherflottennetzbilanz.NetzeinspeisungKw;
+                SpeicherFlottenNetzbilanz f = sim.Speicherflottennetzbilanz;
+                r.EinspeisungKw = f.NetzeinspeisungKw;
+                r.BhkwEinspeisungKw = sim.bSimulationBHKW ? f.BhkwNetzeinspeisungKw : null;
+                r.PvAbregelungKw = sim.bSimulationPV ? f.PvAbregelungKw : null;
                 return r;
             }
 
             double[] pv = null;
             if (sim.bSimulationPV && sim.simulation_pv != null)
-                sim.PvEinspeisungAufteilen(out pv, out _);
+            {
+                sim.PvEinspeisungAufteilen(out pv, out double[] abregelung);
+                r.PvAbregelungKw = abregelung;
+            }
             double[] bhkw = sim.bSimulationBHKW ? sim.BhkwEinspeisung_viertelstuendlich : null;
+            r.BhkwEinspeisungKw = bhkw;
             if (pv == null && bhkw == null) return r;
 
             int n = Math.Max(pv?.Length ?? 0, bhkw?.Length ?? 0);
@@ -1490,18 +1526,16 @@ namespace WindowsFormsApplication1
             if (sim.Speicherflottennetzbilanz != null)
             {
                 e.UeberschussMwh = sim.Speicherflottennetzbilanz.PvNetzeinspeisungKwh / 1000.0;
-                e.AbregelungMwh = sim.Speicherflottennetzbilanz.PvAbregelungKwh / 1000.0;
             }
             else
             {
                 // Der Reiter zeigt den Überschuss VOR der Speicherladung (die Einspeisung mit
-                // Speicher steht im Reiter „Stromspeicher"). PV3: die Abregelung je Viertelstunde
-                // nach der Speicherladung (Laden vor Abregeln) - dieselbe Aufteilung wie
-                // SimulationRunner.
+                // Speicher steht im Reiter „Stromspeicher").
                 e.UeberschussMwh = pv.Ueberschuss.Sum() / 1000.0;
-                sim.PvEinspeisungAufteilen(out _, out double[] abregelungKw);
-                e.AbregelungMwh = SimulationPV.ViertelstundenKwh(abregelungKw) / 1000.0;
             }
+            // PV3: die Abregelung je Viertelstunde nach der Speicherladung (Laden vor Abregeln) - EINE Formel für
+            // Reiter, Ergebniszeile (SimulationRunner, EB-1) und Referenzlauf.
+            e.AbregelungMwh = PvAbregelungMwh(sim);
             e.AbregelungProzent = erzeugungKwh > 0 ? e.AbregelungMwh * 1000.0 / erzeugungKwh * 100.0 : 0.0;
             e.DeckungProzent = bedarfKwh > 0 ? genutztKwh * 100.0 / bedarfKwh : 0.0;
             // E28 (#535, E28‑Q3 a): dieselbe Klemme wie die Ergebniszeile (SimulationRunner).

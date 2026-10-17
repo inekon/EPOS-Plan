@@ -158,6 +158,14 @@ namespace WindowsFormsApplication1
         /// <summary>Kompletter Ergebnisbaum des letzten Simulationslaufs (null = keiner).</summary>
         public ErgebnisModel Ergebnis;
 
+        /// <summary>
+        /// EB-2 (EB-Q3): die KWK-Einspeisung der gespeicherten Strommatrix [MWh/a] — der Rückfall der Kennzahl
+        /// „Einspeisung BHKW“ für ein Ergebnis, das die Einspeisung noch nicht führt
+        /// (<see cref="ErgebnisBHKWModel.StromeinspeisungMwh"/> = <c>null</c>). <c>null</c> ohne Matrix; dann zeigt die
+        /// Kennzahl „—“, nie eine stille Null.
+        /// </summary>
+        public double? BhkwEinspeisungStrommatrixMwh;
+
         /// <summary>Zeitstempel des Simulationslaufs (null = kein Ergebnis).</summary>
         public DateTime? SimulationsStand;
 
@@ -176,6 +184,12 @@ namespace WindowsFormsApplication1
         /// Zulässigkeitsprüfung (<see cref="KaeltemittelProjektpruefung"/>); <c>null</c> = nicht gesammelt.
         /// </summary>
         public List<KaeltemittelBerichtszeile> Kaeltemittel;
+
+        /// <summary>
+        /// K-F5b (Entwurf Split/VRF/Rückkühlwerk 5.8): je Kältemaschinen-Anlage mit Rückkühlwerk dessen Name und Bauart —
+        /// für die Zeile „Rückkühlwerk“ der Tafel der Kälteerzeuger; <c>null</c> = nicht gesammelt.
+        /// </summary>
+        public List<RueckkuehlwerkBerichtszeile> Rueckkuehlwerke;
 
         /// <summary>Detail-Daten (Klimaregion, Gebäude, Anlage, Komponenten) für
         /// Projektbeschreibung, Kenndaten-Tabellen und Abweichungserkennung (Phase 2).</summary>

@@ -180,6 +180,182 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        /// <summary>
+        /// KV8-N: Der Schreibweg (<see cref="WizardCtrl.Add_Projekt_Kaelte"/>) speichert die Kalenderwahl des Dialogs, wie sie
+        /// ist — eine neue Zeile der Vorlage 8 mit „keiner“ bleibt NULL (sie rechnet mit dem Normkalender als Vorgabe), eine
+        /// Zeile mit dem vorgewählten Normkalender behält ihn. Die Vorwahl trifft allein die Übernahme im Dialog
+        /// (<c>KaeltebedarfsprofilAbbildung.Aufgenommen</c>); einen Assistentenweg ohne Dialog gibt es für die Kälte nicht.
+        /// </summary>
+        [Fact]
+        public void KV8N_Schreibweg_speichert_die_Kalenderwahl_des_Dialogs()
+        {
+            if (!_db.Vorhanden) return;
+            var wiz = new WizardCtrl();
+            Assert.True(wiz.Del_Projekt_Kaelte(PROJEKT, 0));
+            Assert.True(wiz.Add_Projekt_Kaelte(PROJEKT, new List<Z_ProjektKaeltebedarfModel>
+            {
+                new Z_ProjektKaeltebedarfModel { ID_Kaeltebedarf = Stamm(VORLAGE_8), Bezeichner = VORLAGE_8, Summe = 30 },
+                new Z_ProjektKaeltebedarfModel { ID_Kaeltebedarf = Stamm(BUERO), Bezeichner = BUERO, Summe = 10 },
+            }));
+            List<Z_ProjektKaeltebedarfModel> gelesen = Z_ProjektKaeltebedarfCtrl.LiesProjekt(PROJEKT);
+            Z_ProjektKaeltebedarfModel keiner = gelesen.Single(z => z.Bezeichner == VORLAGE_8);
+            Assert.Null(keiner.ID_Betriebskalender);
+            Assert.Null(gelesen.Single(z => z.Bezeichner == BUERO).ID_Betriebskalender);
+            // „keiner“ rechnet mit dem Normkalender als Vorgabe.
+            Betriebskalender vorgabe = NormkalenderCtrl.Wirksam(PROJEKT, keiner.ID_Kaeltebedarf, null);
+            Assert.NotNull(vorgabe);
+            Assert.Equal(230, NormkalenderCtrl.Nutzungstage(vorgabe, Konditionierungdatenweg.Raster(PROJEKT)));
+
+            // Ein zweites Speichern (Wiederöffnen, OK) lässt „keiner“ stehen.
+            Assert.True(wiz.Del_Projekt_Kaelte(PROJEKT, 0));
+            Assert.True(wiz.Add_Projekt_Kaelte(PROJEKT, gelesen));
+            Assert.Null(Z_ProjektKaeltebedarfCtrl.LiesProjekt(PROJEKT).Single(z => z.Bezeichner == VORLAGE_8).ID_Betriebskalender);
+
+            // Die Vorwahl des Dialogs (der Normkalender) bleibt gespeichert.
+            int norm = NormkalenderCtrl.Vorwahl(PROJEKT, keiner.ID_Kaeltebedarf)!.Value;
+            Assert.True(wiz.Del_Projekt_Kaelte(PROJEKT, 0));
+            Assert.True(wiz.Add_Projekt_Kaelte(PROJEKT, new List<Z_ProjektKaeltebedarfModel>
+            {
+                new Z_ProjektKaeltebedarfModel { ID_Kaeltebedarf = Stamm(VORLAGE_8), Bezeichner = VORLAGE_8, Summe = 30,
+                                                 ID_Betriebskalender = norm }
+            }));
+            Z_ProjektKaeltebedarfModel gewaehlt = Z_ProjektKaeltebedarfCtrl.LiesProjekt(PROJEKT).Single();
+            Assert.Equal(norm, gewaehlt.ID_Betriebskalender);
+            Assert.Equal(NormkalenderCtrl.Name(230, NormkalenderCtrl.Feiertagsland(PROJEKT)),
+                         BetriebskalenderCtrl.Lies(norm).Bezeichner);
+        }
+
+        /// <summary>
+        /// KV8 (Entscheid des Anwenders vom 17.10.2026): Eine Zeile mit Normtagen ohne Kalender rechnet mit dem Normkalender als
+        /// Vorgabe — dieselbe Jahresreihe wie mit dem vorgewählten Normkalender, in Rechnung und Grafik (samt den 230
+        /// Nutzungstagen der Kennzahlenzeile). Eine Zeile ohne Normtage bleibt ohne Kalender (alle Werktage).
+        /// </summary>
+        [Fact]
+        public void KV8_Zeile_ohne_Kalender_rechnet_mit_dem_Normkalender_als_Vorgabe()
+        {
+            if (!_db.Vorhanden) return;
+            var wiz = new WizardCtrl();
+            Assert.True(wiz.Del_Projekt_Kaelte(PROJEKT, 0));
+            Assert.True(wiz.Add_Projekt_Kaelte(PROJEKT, new List<Z_ProjektKaeltebedarfModel>
+            {
+                new Z_ProjektKaeltebedarfModel { ID_Kaeltebedarf = Stamm(VORLAGE_8), Bezeichner = VORLAGE_8, Summe = 30 }
+            }));
+            Z_ProjektKaeltebedarfModel zeile = Z_ProjektKaeltebedarfCtrl.LiesProjekt(PROJEKT).Single();
+            int kopie = zeile.ID_Kaeltebedarf;
+            // KV8-N: Der Schreibweg wählt nicht mehr vor — der Normkalender wird hier gesetzt wie die Vorwahl des Dialogs.
+            int kalender = NormkalenderCtrl.Vorwahl(PROJEKT, kopie)!.Value;
+            KalenderSetzen(zeile.ID_Z, kalender);
+            double[] mit = Jahresreihe();
+
+            KalenderSetzen(zeile.ID_Z, null);
+            Betriebskalender vorgabe = NormkalenderCtrl.Vorgabe(PROJEKT, kopie);
+            Assert.NotNull(vorgabe);
+            Assert.Equal(0, vorgabe.ID);
+            Assert.Equal(230, NormkalenderCtrl.Nutzungstage(vorgabe, Konditionierungdatenweg.Raster(PROJEKT)));
+            Assert.Equal(vorgabe.Ferien, NormkalenderCtrl.Wirksam(PROJEKT, kopie, null).Ferien);
+            Assert.Equal(kalender, NormkalenderCtrl.Wirksam(PROJEKT, kopie, kalender).ID);
+            double[] ohne = Jahresreihe();
+            Assert.Equal(30000.0, ohne.Sum(), 6);
+            for (int h = 0; h < 8760; h++) Assert.Equal(mit[h], ohne[h], 9);
+
+            // Die Grafik (Vorschau und Kennzahlenzeile) nimmt denselben Weg.
+            var grafik = new Kaeltegrafikzeile(VORLAGE_8, 30, null, IdKopie: kopie);
+            Kaelteprofilbilder bilder = KaelteprofilgrafikCtrl.Rechnen(PROJEKT, new[] { grafik }, grafik);
+            Assert.NotNull(bilder);
+            Assert.Equal(230, bilder.Nutzungstage);
+            var gewaehlt = new Kaeltegrafikzeile(VORLAGE_8, 30, kalender, IdKopie: kopie);
+            Kaelteprofilbilder mitKalender = KaelteprofilgrafikCtrl.Rechnen(PROJEKT, new[] { gewaehlt }, gewaehlt);
+            Assert.Equal(230, mitKalender.Nutzungstage);
+            for (int h = 0; h < 8760; h++) Assert.Equal(mitKalender.StundeKwh[h], bilder.StundeKwh[h], 9);
+
+            // Ohne Normtage: kein Kalender, keine Nutzungstage in der Kennzahlenzeile.
+            Assert.True(wiz.Del_Projekt_Kaelte(PROJEKT, 0));
+            Assert.True(wiz.Add_Projekt_Kaelte(PROJEKT, new List<Z_ProjektKaeltebedarfModel>
+            {
+                new Z_ProjektKaeltebedarfModel { ID_Kaeltebedarf = Stamm(BUERO), Bezeichner = BUERO, Summe = 10 }
+            }));
+            Z_ProjektKaeltebedarfModel buero = Z_ProjektKaeltebedarfCtrl.LiesProjekt(PROJEKT).Single();
+            Assert.Null(buero.ID_Betriebskalender);
+            Assert.Null(NormkalenderCtrl.Vorgabe(PROJEKT, buero.ID_Kaeltebedarf));
+            Assert.Null(NormkalenderCtrl.Wirksam(PROJEKT, buero.ID_Kaeltebedarf, null));
+            var bueroGrafik = new Kaeltegrafikzeile(BUERO, 10, null, IdKopie: buero.ID_Kaeltebedarf);
+            Assert.Null(KaelteprofilgrafikCtrl.Rechnen(PROJEKT, new[] { bueroGrafik }, bueroGrafik)?.Nutzungstage);
+        }
+
+        /// <summary>
+        /// KV8-N: Kältevorschau und Kältegrafik eines Projekts rechnen im Wochentagsraster des Projekts — demselben w₀ wie der
+        /// Lauf (in der Testdatenbank ist der 1. Januar ein Donnerstag) —: Die Vorschaureihe ist die Laufreihe, die Grafik
+        /// zeigt ihre Tagesarten in diesem Raster und zählt 230 Nutzungstage. Die Katalogvorschau ohne Projekt bleibt bei
+        /// der Altkonvention (1. Januar ein Sonntag).
+        /// </summary>
+        [Fact]
+        public void KV8N_Vorschau_und_Grafik_rechnen_im_Wochentagsraster_des_Projekts()
+        {
+            if (!_db.Vorhanden) return;
+            var wiz = new WizardCtrl();
+            Assert.True(wiz.Del_Projekt_Kaelte(PROJEKT, 0));
+            Assert.True(wiz.Add_Projekt_Kaelte(PROJEKT, new List<Z_ProjektKaeltebedarfModel>
+            {
+                new Z_ProjektKaeltebedarfModel { ID_Kaeltebedarf = Stamm(VORLAGE_8), Bezeichner = VORLAGE_8, Summe = 30 }
+            }));
+            Z_ProjektKaeltebedarfModel zeile = Z_ProjektKaeltebedarfCtrl.LiesProjekt(PROJEKT).Single();
+            int w0 = Konditionierungdatenweg.Raster(PROJEKT).W0;
+            Assert.Equal(3, w0);
+            double[] lauf = Jahresreihe();
+
+            BedarfsVorschau vorschau = BedarfsVorschauCtrl.ProjektVorschau(BedarfsArt.Kaelte, PROJEKT, new[] { VORLAGE_8 });
+            Assert.True(vorschau.Erfolgreich);
+            for (int h = 0; h < 8760; h++) Assert.Equal(lauf[h], vorschau.KaelteStunde[h], 9);
+
+            var grafik = new Kaeltegrafikzeile(VORLAGE_8, 30, zeile.ID_Betriebskalender, IdKopie: zeile.ID_Kaeltebedarf);
+            Kaelteprofilbilder bilder = KaelteprofilgrafikCtrl.Rechnen(PROJEKT, new[] { grafik }, grafik);
+            Assert.NotNull(bilder);
+            Assert.Equal(w0, bilder.WochentagJan1);
+            Assert.Equal(230, bilder.Nutzungstage);
+            for (int h = 0; h < 8760; h++) Assert.Equal(lauf[h], bilder.StundeKwh[h], 9);
+            Betriebskalender wirksam = NormkalenderCtrl.Wirksam(PROJEKT, zeile.ID_Kaeltebedarf, zeile.ID_Betriebskalender);
+            Assert.Equal(Kaelteprofilgrafik.Tagesklassen(w0, wirksam.Tagesarten(Konditionierungdatenweg.Raster(PROJEKT))),
+                         bilder.Tagesklassen);
+            // Werktage der Grafik: genau die 230 Nutzungstage des Normkalenders im Projektraster.
+            Assert.Equal(230, bilder.Tagesklassen.Count(k => k == Kaelteprofilgrafik.WERKTAG));
+
+            // Die Katalogvorschau kennt kein Projekt: Altkonvention, unverändert.
+            var a = new int[12];
+            var e = new int[12];
+            new WindowsFormsApplication1.Classes.Simulation.Init().Monatswerte_berechnen(a, e);
+            var alt = new double[8760];
+            ProfilBedarf.Rechnen(ProfilQuelle.Kaelte(ProfilQuellmodus.Katalogvorschau), 0, new List<string> { VORLAGE_8 },
+                                 ProfilBedarf.WOCHENTAG_ALTKONVENTION, a, e, alt, new double[12]);
+            BedarfsVorschau katalog = BedarfsVorschauCtrl.Rechnen(BedarfsArt.Kaelte, 0, VORLAGE_8);
+            Assert.True(katalog.Erfolgreich);
+            for (int h = 0; h < 8760; h++) Assert.Equal(alt[h], katalog.KaelteStunde[h], 9);
+        }
+
+        /// <summary>Die Katalog-ID einer Kältevorlage.</summary>
+        private static int Stamm(string vorlage)
+            => Convert.ToInt32(DataRepository.ExecuteScalar("SELECT ID FROM Tab_Kaeltebedarf_STAMM WHERE Bezeichner = ?",
+                                                            new DbParam("?", vorlage)), CultureInfo.InvariantCulture);
+
+        /// <summary>Setzt den Kalender einer Kältezuordnung.</summary>
+        private static void KalenderSetzen(int idZ, int? kalender)
+            => DataRepository.ExecuteNonQuery("UPDATE Z_Projekt_Kaeltebedarf SET ID_Betriebskalender = ? WHERE ID = ?",
+                                              new DbParam("?", (object)kalender ?? DBNull.Value), new DbParam("?", idZ));
+
+        /// <summary>Die Kältereihe des Projekts [kWh je Stunde] über die Profilroutine der Projektrechnung.</summary>
+        private static double[] Jahresreihe()
+        {
+            var a = new int[12];
+            var e = new int[12];
+            int h = 0;
+            for (int m = 0; m < 12; m++) { a[m] = h; h += Feiertage.TageJeMonat[m] * 24; e[m] = h - 1; }
+            int klimaregion = Convert.ToInt32(DataRepository.ExecuteScalar("SELECT ID_Klimaregion FROM Tab_Projekt WHERE ID = ?",
+                                                                           new DbParam("?", PROJEKT)), CultureInfo.InvariantCulture);
+            var ziel = new double[8760];
+            ProfilBedarf.Rechnen(ProfilQuelle.Kaelte(ProfilQuellmodus.Projektrechnung), PROJEKT, null,
+                                 ProfilBedarf.WochentagJan1AusKlimaregion(klimaregion), a, e, ziel);
+            return ziel;
+        }
+
         /// <summary>Setzt das Feiertagsland aller Gebäude eines Projekts.</summary>
         private static void LandSetzen(int projekt, string land)
             => DataRepository.ExecuteNonQuery(

@@ -570,6 +570,29 @@ namespace WindowsFormsApplication1
             return pMin > 0 ? Math.Min(1.0, s.KaelteKwh / laufend / pMin) : 1.0;
         }
 
+        /// <summary>
+        /// KWN-1a (Kühlkonzept 5.6.3): der Kennlinienpunkt EINER Maschine bei der Rückkühlachse <paramref name="rueckkuehlC"/>
+        /// und dem Kaltwasser <paramref name="kaltwasserC"/> [°C] — mit Randweg <c>GUETEGRAD</c> über
+        /// <see cref="KaeltemaschinenRand.Auswerten"/>, sonst die Kennlinie mit Randwert; derselbe Punkt, den
+        /// <see cref="StundeEinzeln"/> und <see cref="StundeMitWeg"/> lesen. Ohne Kennlinie leer.
+        /// </summary>
+        internal KaeltemaschinenRandpunkt PunktBei(double rueckkuehlC, double kaltwasserC)
+        {
+            if (Kennlinie == null || Kennlinie.Leer) return default;
+            if (GuetegradWirksam) return KaeltemaschinenRand.Auswerten(Kennlinie, rueckkuehlC, kaltwasserC, Teillast.Randweg);
+            KaeltemaschinenPunkt p = Kennlinie.Auswerten(rueckkuehlC, kaltwasserC);
+            return new KaeltemaschinenRandpunkt(p.LeistungKw, p.Eer, p.Randwert, false);
+        }
+
+        /// <summary>
+        /// KWN-1a (Kühlkonzept 5.6.3): eine Verdichterstunde der Anlagenzeile bei der Rückkühlachse
+        /// <paramref name="rueckkuehlC"/> [°C] — derselbe Weg wie der Einzelbetrieb (Teilung auf die Maschinen, Teillast und
+        /// Takt, mit <c>Teillast_Weg</c> bzw. <c>GUETEGRAD</c> der Weg von KM3), aber ohne freie Kühlung und ohne Bilanz eines
+        /// Rückkühlwerks: Die Kälte-Wärme-Kopplung setzt die Rückkühlachse selbst.
+        /// </summary>
+        internal KaeltemaschinenStunde VerdichterstundeBei(double lastKwh, double kaltwasserC, double rueckkuehlC) =>
+            StundeBei(-1, lastKwh, kaltwasserC, rueckkuehlC);
+
         /// <summary>Eine Stunde EINER Maschine der Anlagenzeile.</summary>
         private KaeltemaschinenStunde StundeEinzeln(int h, double lastKwh, double kaltwasserC, double rk)
         {
@@ -733,7 +756,7 @@ namespace WindowsFormsApplication1
             {
                 Id = m.Id,
                 Bezeichner = string.IsNullOrEmpty(m.Bezeichner) ? m.Id.ToString(System.Globalization.CultureInfo.CurrentCulture) : m.Bezeichner,
-                Rueckkuehlart = string.IsNullOrEmpty(m.Rueckkuehlart) ? KaeltemaschineSchema.RUECKKUEHLART_LUFT : m.Rueckkuehlart,
+                Rueckkuehlart = KaeltemaschineSchema.IstLuftgekuehlt(m.Rueckkuehlart) ? KaeltemaschineSchema.RUECKKUEHLART_LUFT : m.Rueckkuehlart,
                 NennleistungKw = nenn,
                 Mindestteillast = Math.Max(0.0, Math.Min(100.0, m.Mindestteillast_Prozent ?? 0.0)) / 100.0,
                 HilfsstromRueckkuehlungKw = Math.Max(0.0, m.Hilfsstrom_Rueckkuehlung_kW ?? 0.0),

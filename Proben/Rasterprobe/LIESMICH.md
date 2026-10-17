@@ -1150,6 +1150,16 @@ Tagesart tragen (`--epos-kalb-saison`, `-grundwoche`, `-wochenende`, `-feiertag`
 Bildpunkte je Fenster in der Farbe ihrer Tagesart), Gegenprobe ohne Hintergrund rot (5 Verstöße — der Werktag bleibt
 weiß wie `--epos-kalb-grundwoche`); `kaelteprofile` in der Katalogauswahl 0 Verstöße in drei Fenstern.
 
+**Fall `kaeltedeckung`** (`--nur kaeltedeckung`, bei **1 088 × 624**, **520 × 624** und **1 194 × 834** samt iPad): in
+`?fall=kaelteprofile` die Bearbeiten-Überlagerung der ersten Kältezeile mit aufgeklappter Deckungsgruppe (Baustein
+`DeckungsartFelder`, Klasse `.epos-deckung`; die Wirtszeilen tragen dazu einen `DeckungsartDaten`-Satz). Gemessen bei
+Rollstand oben, Mitte, Ende des Körpers und mit der Gruppe am unteren Körperrand: Kopf und Schlussleiste wandern nicht und
+stehen im Bild; die Gruppe liegt im rollenden Körper und lässt sich ganz hineinrollen; Körper, Gruppe und Dokument rollen
+nicht waagerecht; „Abbrechen“ und „OK“ stehen im Bild und werden nicht überdeckt (`elementFromPoint`). Foto
+`kaeltedeckung_*`. Gegenprobe: ein Körper ohne Rollen (`overflow: visible`) muss rot sein. **Ergebnis vom 17.10.2026:**
+alle drei Fenster erfüllt (Rollweg 1 494, 1 730 und 1 353 px im Körper von 483, 483 und 649 px; Gruppe 95, 132 und 95 px
+hoch), Gegenprobe 22 Verstöße, Rückgabe 0.
+
 **Fall `klimaimport`** (`--nur klimaimport`, bei **1 088 × 624**, **520 × 624**, **1 194 × 834** mit sicheren
 Abständen und **787 × 520** — das Fenstermaß 1 180 × 780 bei 150 % Anzeigeskalierung; KD-1, Anwenderbefund
 16.10.2026 „Schlussleiste des Klimadaten-Imports abgeschnitten“): `?fall=klimaimport`, „Import…“, dann (KD-3) Ort
@@ -1788,6 +1798,27 @@ rot mit 103 Verstößen** (Rückgabe 0).
 | 480 voll | 478 / 478 / 478 px | unter | 1,27 Zeilen | 13 |
 | 360 voll | 358 / 358 / 358 px | unter | 2,00 Zeilen | 15 |
 
+## Fensterprobe, Fall `bedarfgrafik` (Grafik des Ergebnisdialogs in der Überlagerung)
+
+**Wozu.** Im Dialog „Standard Stromprofil“ → „Simulation…“ steht der `BedarfErgebnisDialog` als `Ueberlagerung`; sein
+Reiter „Grafik“ zeigt das Bild in einem `.epos-reiter-blatt` (`overflow: auto`). Die Zeigerzeile unter dem Bild haftet in
+Überlagerungen mit dem Fußabstand der Schlussleiste (`--epos-ueberlagerung-fuss`) — `sticky` bezieht sich aber auf den
+nächsten Rollbehälter, hier das Reiterblatt, dessen Unterkante mit der des Bildes zusammenfällt. Die Zeile stand so mit
+ihrer Fläche über Achsenlinie, Tick-Beschriftung und Säulenfuß. Die Seite `/fensterprobe?fall=bedarfgrafik` stellt den
+Dialog mit echten Modellen des Kerns (Jahresgang, Säulenstapel) über einen Fensterdialog.
+
+```bash
+node fensterprobe.mjs --url http://127.0.0.1:5299 --nur bedarfgrafik [--fotos <ordner außerhalb des Repositorys>]
+```
+
+**Sollwerte** je Raster Jahr | Monat | Woche | Tag, in 1 088 × 624 und 1 600 × 1 000: Die Zeigerzeile beginnt nicht über
+der untersten Textzeile des SVG, und nach dem Rollen ans Ende steht diese Textzeile ganz im sichtbaren Rollbereich über
+der Schlussleiste. **Gegenprobe:** die Zeigerzeile im Reiterblatt mit dem Fußabstand der Überlagerung muss rot sein.
+
+**Ergebnis vom 17.10.2026** (Linux-Container, Chromium headless): vorher 8 Verstöße (alle vier Raster in beiden Fenstern,
+etwa Monat 1 600 × 1 000: Zeile ab 662,8 px über Text bis 683,7 px); nachher 0 Verstöße (Zeile ab 715,8 px unter Text bis
+683,7 px), Gegenprobe je Fenster 4 Verstöße (richtig).
+
 ## Diagrammprobe (Zeigerbalken im Zoom, Auftrag GX) — Seite `/diagrammsvg`
 
 **Wozu.** Der senkrechte Balken an der Mausstelle eines Diagramms (`DiagrammSvg`) soll der Maus im selben Bild
@@ -1806,6 +1837,12 @@ node diagrammprobe.mjs --url http://127.0.0.1:5299 [--fotos <ordner außerhalb d
 unmittelbar nach der Bewegung: Balken sichtbar und **|Balkenmitte − Maus x| ≤ 1 px**; nach dem nächsten Bildaufbau
 nennt die Zeile **Stunde und Datum**. Über die ganze Bewegung: die Pfade der Reihen sind **dieselben Elemente** mit
 unverändertem `d`, **0 Mutationen** (MutationObserver auf der Datenfläche).
+
+**Zeigertext unter dem Zeiger (Befund 17.10.2026).** Je Schritt außerdem: Der Zeigertext (`.epos-diagramm-zeigertext`)
+steht in der Zeile **unter** dem Bild (nicht über Tick-Beschriftung und Achsentitel), ganz in der Zeile, und mittig unter
+der Maus (**|Textmitte − Maus x| ≤ 1 px**) — wo er sonst aus der Zeile liefe, bündig an ihrem linken bzw. rechten Rand.
+Ergebnis vom 17.10.2026: mittig 22, links geklemmt 8, rechts geklemmt 11 von 41 Schritten; die Gegenprobe ohne Tafel
+verfehlt auch hier (0 von 41). Vorher gab es kein eigenes Element: Die Zeile stand linksbündig unter dem Bild.
 
 **Gegenprobe** (läuft mit): Die Probe liefert das Modul so aus, dass es die Tafel ablehnt — dann zeichnet der Baustein
 Linie und Zeile nach einem Rundlauf selbst, und die Linie steht nicht im Bild der Maus. Sie muss verfehlen.

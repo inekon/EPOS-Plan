@@ -1123,10 +1123,20 @@ namespace WindowsFormsApplication1
         /// Danach, mit den ROHWERTEN DES KLIMAIMPORTS (KD-4), steht das Ziel auf <see cref="KlimaRohwerteSchema.SCHRITT"/>:
         /// <c>Tab_Klimastunde_STAMM</c> (leer, nur Katalog) und die Herkunftsspalten an <c>Tab_Klimaregion(_STAMM)</c>
         /// (<see cref="KlimaRohwerteSchema"/>). <b>Ergebnisneutral:</b> Bestandsregionen bleiben ohne Rohwerte, kein
-        /// Rechenweg liest die Rohtabelle. Das Ziel ist das Ende der Kette; umgehängt wird allein am Vorgänger
-        /// <see cref="BauteilStrahlungSchema.SCHRITT"/>.
+        /// Rechenweg liest die Rohtabelle.
+        /// Danach, mit den ERGEBNISREIHEN (EB-1), steht das Ziel auf <see cref="ErgebnisreihenSchema.SCHRITT"/>:
+        /// <c>Stromeinspeisung</c> an <c>Tab_ErgebnisBHKW</c>, <c>Abregelung</c> an <c>Tab_ErgebnisPhotovoltaik</c>,
+        /// <c>Eigenverbrauch_System</c> an <c>Tab_ErgebnisStromspeicher</c> (<see cref="ErgebnisreihenSchema"/>).
+        /// <b>Ergebnisneutral:</b> Der Rechenweg bleibt, der Lauf schreibt nur zusätzlich, was er schon rechnet;
+        /// Altergebnisse bleiben leer.
+        /// Danach, mit den ERGEBNISSPALTEN DER WIRTSCHAFTLICHKEIT (KB-8), steht das Ziel auf
+        /// <see cref="ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT"/>: <c>StromsteuerBefreiungModus</c>, <c>ErsatzBarwert</c>,
+        /// <c>Nachweis_Json</c> und <c>Lauf_Staende</c> an <c>Tab_ErgebnisWirtschaftlichkeit</c>, jede nur, wenn sie fehlt
+        /// (<see cref="ErgebnisWirtschaftlichkeitSpaltenSchema"/>). <b>Ergebnisneutral:</b> kein DML, Bestandszeilen bleiben
+        /// leer. Das Ziel ist das Ende der Kette; umgehängt wird allein am Vorgänger
+        /// <see cref="ErgebnisreihenSchema.SCHRITT"/>.
         /// </summary>
-        public const int Zielversion = KlimaRohwerteSchema.SCHRITT;
+        public const int Zielversion = ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

@@ -39,19 +39,17 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// ETAPPE E13 (E7c3‑Q6 a) — die Zeilen, mit denen die Oberfläche die drei Gründe des
+        /// ETAPPE E13 (E7c3‑Q6 a) — die Zeilen, mit denen die Oberfläche die zwei Gründe des
         /// Kerns zeigt: <c>WirtschaftlichkeitCtrl.Ladefehler</c> („Gespeicherte Ergebnisse
-        /// nicht vollständig gelesen: …"), <c>Speicherfehler</c> („Speichern gescheitert: …")
-        /// und <c>Vorsorgewarnung</c> („Tabellenvorsorge unvollständig: …"). Statuszeile der
-        /// Ergebnisseite und BHKW-Dialog lesen dieselben Zeilen.
+        /// nicht vollständig gelesen: …") und <c>Speicherfehler</c> („Speichern gescheitert: …").
+        /// Statuszeile der Ergebnisseite und BHKW-Dialog lesen dieselben Zeilen.
         ///
         /// <para><b>Ein Grund erscheint einmal.</b> Derselbe Grund aus zwei Quellen (etwa
-        /// eine fehlende Tabelle, an der Vorsorge und Laden scheitern) ergibt EINE Zeile, in
-        /// der Reihenfolge Laden, Speichern, Vorsorge; leere Gründe ergeben keine. Der Text
+        /// eine fehlende Tabelle, an der mehrere Ladewege scheitern) ergibt EINE Zeile, in
+        /// der Reihenfolge Laden, Speichern; leere Gründe ergeben keine. Der Text
         /// ist der des Kerns (<see cref="Text"/>: Art und Meldung, ohne Stapel).</para>
         /// </summary>
-        public static List<string> Anzeigezeilen(IEnumerable<string> ladefehler, string speicherfehler,
-                                                 string vorsorgewarnung)
+        public static List<string> Anzeigezeilen(IEnumerable<string> ladefehler, string speicherfehler)
         {
             var zeilen = new List<string>();
             var gesehen = new HashSet<string>(StringComparer.Ordinal);
@@ -64,7 +62,6 @@ namespace WindowsFormsApplication1
             if (ladefehler != null)
                 foreach (string g in ladefehler) Neu(MyResource.Resource.WIRT_STATUS_LADEFEHLER, g);
             Neu(MyResource.Resource.WIRT_STATUS_SPEICHERFEHLER, speicherfehler);
-            Neu(MyResource.Resource.WIRT_STATUS_VORSORGE, vorsorgewarnung);
             return zeilen;
         }
     }

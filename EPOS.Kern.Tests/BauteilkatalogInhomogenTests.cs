@@ -55,7 +55,7 @@ namespace EPOS.Kern.Tests
         private string Ordner(double? f1, double? f2, params Lage[] lagen) => Ordner(new[] { f1, f2 }, lagen);
 
         /// <summary>Wie oben mit beliebig vielen Abschnitten (Anteile in Prozent, leer = <c>null</c>; BK-10).</summary>
-        private string Ordner(double?[] anteile, Lage[] lagen)
+        private string Ordner(double?[] anteile, Lage[] lagen, string teilkatalog = null)
         {
             string o = Path.Combine(Path.GetTempPath(), "epos-bk8-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(o);
@@ -79,6 +79,14 @@ namespace EPOS.Kern.Tests
             File.WriteAllText(Path.Combine(o, "Schichten_Abschnitte.csv"), KOPF_X + "\r\n" + string.Join("\r\n", x) + "\r\n", utf8);
             File.WriteAllText(Path.Combine(o, "Fenster.csv"), "UId;DimensionUId;GlazingUValue;GlazingGValue\r\n", utf8);
             File.WriteAllText(Path.Combine(o, "Basis_Auszug.csv"), "UId;GroupType;SubType;MaterialUId\r\n" + G(901) + ";1;0;\r\n", utf8);
+            if (teilkatalog != null)
+            {
+                // BK-11: ein Teilkatalog, dem der Aufbau über Katalog_Zuordnung.csv (DimensionUId) angehört.
+                File.WriteAllText(Path.Combine(o, "Katalog.csv"), "UId;ShortDesc\r\n" + G(801) + ";" + teilkatalog + "\r\n", utf8);
+                File.WriteAllText(Path.Combine(o, "Katalog_Zuordnung.csv"),
+                                  "UId;CatalogContentUId;CatalogUId;BasisUId;DimensionUId;StateType;SortNum\r\n" +
+                                  G(861) + ";;" + G(801) + ";;" + G(101) + ";0;1\r\n", utf8);
+            }
             return o;
         }
 
@@ -671,6 +679,123 @@ namespace EPOS.Kern.Tests
             Assert.Equal(4, nachher.Schichten.Count);
             Assert.Equal(2, nachher.Abschnitte.Count);
             Assert.Equal(BauteilaufbauCtrl.Kennwerte(vorher).U_WM2K!.Value, BauteilaufbauCtrl.Kennwerte(nachher).U_WM2K!.Value, 12);
+        }
+
+        // ---- Übernahme wiedererkannter Aufbauten (BK-11) ----------------------------------------
+
+        private const string TEILKATALOG = "Teil A";
+
+        /// <summary>
+        /// Die Lage eines Aufbaus aus einem Importlauf vor BK-10 nachgebildet: importiert ohne Teilkatalog, dazu die Abschnitte 3
+        /// und 4 mit Flächenanteil 0 samt je zwei Schichten (Kopien der Schichten von Abschnitt 1) — vier Abschnitte, acht
+        /// Schichten, <c>Quelle</c> ohne Teilkatalog. Liefert die ID des Katalogsatzes.
+        /// </summary>
+        private long AltbestandAnlegen(string herkunft = null)
+        {
+            BauteilkatalogVorschau e = BauteilkatalogImport.Uebernehmen(Ordner(new double?[] { 50, 50, 0, 0 }, VIER));
+            Assert.True(e.Geschrieben, e.Fehler);
+            long id = Convert.ToInt64(DataRepository.ExecuteScalar(
+                "SELECT \"ID\" FROM \"Tab_Bauteilaufbau_STAMM\" WHERE \"Quellkennung\" = ?", new DbParam("@k", G(101))), CultureInfo.InvariantCulture);
+            long ab1 = Convert.ToInt64(DataRepository.ExecuteScalar(
+                "SELECT \"ID\" FROM \"Tab_Bauteilabschnitt_STAMM\" WHERE \"ID_Aufbau\" = ? AND \"Nummer\" = 1", new DbParam("@a", id)),
+                CultureInfo.InvariantCulture);
+            List<string> spalten = DataRepository.GetDataTable("PRAGMA table_info(\"Tab_Bauteilschicht_STAMM\")").Rows
+                .Cast<System.Data.DataRow>().Select(r => (string)r["name"]).Where(n => n != "ID" && n != "ID_Abschnitt").ToList();
+            string liste = string.Join(", ", spalten.Select(n => "\"" + n + "\""));
+            foreach (int nr in new[] { 3, 4 })
+            {
+                DataRepository.ExecuteNonQuery(
+                    "INSERT INTO \"Tab_Bauteilabschnitt_STAMM\" (\"ID_Aufbau\", \"Nummer\", \"Flaechenanteil\", \"Text\", \"Quellkennung\") VALUES (?, ?, 0, ?, ?)",
+                    new DbParam("@a", id), new DbParam("@n", nr), new DbParam("@t", "Abschnitt " + nr.ToString(CultureInfo.InvariantCulture)),
+                    new DbParam("@k", G(400 + nr)));
+                long abId = Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT \"ID\" FROM \"Tab_Bauteilabschnitt_STAMM\" WHERE \"ID_Aufbau\" = ? AND \"Nummer\" = ?",
+                    new DbParam("@a", id), new DbParam("@n", nr)), CultureInfo.InvariantCulture);
+                DataRepository.ExecuteNonQuery(
+                    "INSERT INTO \"Tab_Bauteilschicht_STAMM\" (" + liste + ", \"ID_Abschnitt\") SELECT " + liste +
+                    ", ? FROM \"Tab_Bauteilschicht_STAMM\" WHERE \"ID_Abschnitt\" = ?", new DbParam("@neu", abId), new DbParam("@alt", ab1));
+            }
+            if (herkunft != null)
+                DataRepository.ExecuteNonQuery("UPDATE \"Tab_Bauteilaufbau_STAMM\" SET \"Herkunft\" = ? WHERE \"ID\" = ?",
+                                               new DbParam("@h", herkunft), new DbParam("@id", id));
+            BauteilaufbauModel alt = new BauteilaufbauCtrl().LesenKatalogsatz((int)id);
+            Assert.Equal(4, alt.Abschnitte.Count);
+            Assert.Equal(8, alt.Schichten.Count);
+            Assert.DoesNotContain("Teilkatalog", Quelle(id));
+            return id;
+        }
+
+        private static string Quelle(long id) => Convert.ToString(DataRepository.ExecuteScalar(
+            "SELECT \"Quelle\" FROM \"Tab_Bauteilaufbau_STAMM\" WHERE \"ID\" = ?", new DbParam("@id", id)), CultureInfo.InvariantCulture);
+
+        private static int AufbautenMitTeilkatalogImKatalog() => Convert.ToInt32(DataRepository.ExecuteScalar(
+            "SELECT COUNT(*) FROM \"Tab_Bauteilaufbau_STAMM\" WHERE \"Quellkennung\" IS NOT NULL AND \"Quelle\" LIKE ?",
+            new DbParam("@q", "%Teilkatalog%")), CultureInfo.InvariantCulture);
+
+        [Fact]
+        public void Ein_wiedererkannter_Importaufbau_wird_ersetzt_bekommt_den_Teilkatalog_und_konvergiert()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            long id = AltbestandAnlegen();
+            string o = Ordner(new double?[] { 50, 50, 0, 0 }, VIER, TEILKATALOG);
+
+            // Vorschau: wiedererkannt und aktualisiert; die Abschnitte und Schichten ohne Beitrag zählen nicht als wiedererkannt.
+            BauteilkatalogVorschau v1 = BauteilkatalogImport.Vorschau(o);
+            Assert.Null(v1.Abgelehnt);
+            Assert.Equal(0, v1.Aufbauten.Neu);
+            Assert.Equal(1, v1.Aufbauten.Wiedererkannt);
+            Assert.Equal(1, v1.AufbautenAktualisiert);
+            Assert.Equal(2, v1.AbschnitteOhneBeitrag);
+            Assert.Equal(2, v1.Abschnitte.Wiedererkannt);
+            Assert.Equal(4, v1.Schichten.Wiedererkannt);
+            Assert.Equal(0, v1.Abschnitte.Neu + v1.Schichten.Neu);
+            Assert.Equal(1, v1.AufbautenMitTeilkatalog);
+            Assert.Equal(0, AufbautenMitTeilkatalogImKatalog());
+            Assert.Contains("1", BauteilkatalogImportHuelle.AlsDaten(v1).Aktualisiert);
+
+            // Übernahme: Schichten und Abschnitte vollständig ersetzt, die Quelle nennt den Teilkatalog.
+            BauteilkatalogVorschau e = BauteilkatalogImport.Uebernehmen(o);
+            Assert.True(e.Geschrieben, e.Fehler);
+            Assert.Equal(1, e.AufbautenAktualisiert);
+            BauteilaufbauModel nachher = new BauteilaufbauCtrl().LesenKatalogsatz((int)id);
+            Assert.Equal(new[] { 1, 2 }, nachher.Abschnitte.Select(x => x.Nummer).OrderBy(n => n).ToArray());
+            Assert.Equal(4, nachher.Schichten.Count);
+            Assert.EndsWith(", Teilkatalog " + TEILKATALOG, Quelle(id));
+            Assert.Equal(1, AufbautenMitTeilkatalogImKatalog());
+
+            // Konvergenz: die zweite Vorschau findet nichts mehr zu tun.
+            BauteilkatalogVorschau v2 = BauteilkatalogImport.Vorschau(o);
+            Assert.Equal(0, v2.Aufbauten.Neu + v2.Aufbauten.MitKatalog + v2.Aufbauten.InQuelle);
+            Assert.Equal(0, v2.Baustoffe.Neu + v2.Baustoffe.MitKatalog + v2.Baustoffe.InQuelle);
+            Assert.Equal(1, v2.Aufbauten.Wiedererkannt);
+            Assert.Equal(0, v2.AufbautenAktualisiert);
+            Assert.Equal(2, v2.Abschnitte.Wiedererkannt);
+            Assert.Equal(v2.AufbautenMitTeilkatalog, AufbautenMitTeilkatalogImKatalog());
+            Assert.Equal(0, v2.WiederimportGeteilt + v2.WiederimportUGeaendert);
+        }
+
+        [Fact]
+        public void Ein_eigener_Aufbau_mit_derselben_Quellkennung_behaelt_seine_Schichten_und_bekommt_nur_den_Teilkatalog()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            long id = AltbestandAnlegen(BauteilkatalogSchema.HERKUNFT_EIGEN);
+            string o = Ordner(new double?[] { 50, 50, 0, 0 }, VIER, TEILKATALOG);
+
+            BauteilkatalogVorschau v1 = BauteilkatalogImport.Vorschau(o);
+            Assert.Equal(1, v1.Aufbauten.Wiedererkannt);
+            Assert.Equal(1, v1.AufbautenAktualisiert);
+            BauteilkatalogVorschau e = BauteilkatalogImport.Uebernehmen(o);
+            Assert.True(e.Geschrieben, e.Fehler);
+            BauteilaufbauModel nachher = new BauteilaufbauCtrl().LesenKatalogsatz((int)id);
+            Assert.Equal(4, nachher.Abschnitte.Count);
+            Assert.Equal(8, nachher.Schichten.Count);
+            Assert.EndsWith(", Teilkatalog " + TEILKATALOG, Quelle(id));
+
+            BauteilkatalogVorschau v2 = BauteilkatalogImport.Vorschau(o);
+            Assert.Equal(0, v2.AufbautenAktualisiert);
+            Assert.Equal(v2.AufbautenMitTeilkatalog, AufbautenMitTeilkatalogImKatalog());
         }
     }
 }

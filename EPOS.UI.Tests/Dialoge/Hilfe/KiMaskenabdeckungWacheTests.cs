@@ -267,6 +267,14 @@ public sealed class KiMaskenabdeckungWacheTests
         new("KaeltemittelDialog", 12),
         // ---- Ende KM4-E3-c ----
 
+        // ---- K-F5a (Verwaltung „Rückkühlwerke") ----
+        // Das Stammblatt: Name und Beschreibung (Textfeld), Bauart, Weg der Annäherung, Ventilatorregelung und Schaltung
+        // der freien Kühlung (Auswahlfeld), Nennleistung, Annäherung, Ventilatorleistung, kleinste Drehzahl, die zwei
+        // Felder der Befeuchtung und die drei der Wasserbilanz (Zahlenfeld), die Stufen (Ganzzahlfeld). Die Feldkarte
+        // (KiDialoge, Maske Rueckkuehlwerk) führt alle sechzehn, dazu die Satzwahl.
+        new("RueckkuehlwerkDialog", 16),
+        // ---- Ende K-F5a ----
+
         // ---- ETAPPE E17 (V-G11, nicht monetarisierbare Wirkungen) ----
         // Der Freitext der Seite (ein mehrzeiliges Textfeld) weicht der Liste im Baustein
         // WirkungenListe: je Zeile Kategorie, Beschreibung, Dauer und drei Wirkungsgrade -
@@ -298,7 +306,7 @@ public sealed class KiMaskenabdeckungWacheTests
         // Stammblatt und „Neu…" (Rueckkuehlart als Auswahlfeld) und das Kennlinienraster mit vier
         // Zahlen je Punkt (die Spalten punkt_* der Feldkarte).
         // KM3-E3-a: dazu die acht Felder der Gruppe „Teillast und Takten“ (drei Auswahlen, fünf Zahlen).
-        new("KaeltemaschineKonfiguration", 6, "die Betriebseingaben der Kältemaschine (KB-B) - im Dialog unter der Karte „KaeltemaschineAnlage“, im Bereich „Kälte“ der Simulationskonfiguration als Überlagerung derselben Felder"),
+        new("KaeltemaschineKonfiguration", 7, "die Betriebseingaben der Kältemaschine (KB-B) samt Wahl des Rückkühlwerks (K-F5b, KI-Feld „rueckkuehlwerk“) - im Dialog unter der Karte „KaeltemaschineAnlage“, im Bereich „Kälte“ der Simulationskonfiguration als Überlagerung derselben Felder"),
         new("KaeltemaschineKatalogDialog", 34, "der Werkzeugschalter „Typkennfelder ausblenden“ setzt den Filter der Liste; die Typkennfeldwahl der Schnellwahlen (eine Auswahl, Nennkälteleistung und Nenn-EER der Skalierung) und die Paare der Auskunft „Teillastpunkte prüfen…“ sind Eingaben einer Rechnung ohne Speicherung, keine Werte der Maske"),
         // KU3-4c: der Erzeugerdialog der Kaeltemaschinen - Name, Anzahl, Kaltwasservorlauf, Hilfsstrom,
         // Kuehltraeger und eigener Zaehler der gewaehlten Anlage (die Felder der Feldkarte); die Katalogliste

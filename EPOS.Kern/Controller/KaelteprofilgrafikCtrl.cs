@@ -7,10 +7,12 @@ namespace WindowsFormsApplication1
     /// Betriebskalender (<c>null</c> = keiner) und, sofern im Dialog bearbeitet, Monatsanteile [%] und Wochenprofil
     /// (168 Werte, Montag 0 Uhr zuerst); <c>null</c> = der Stand der Projektkopie. KBP-4b: dazu die Eingabeart des Dialogs
     /// (<c>null</c> = die gespeicherte) und, sofern bearbeitet, die Typtage samt Matrix (<c>null</c> = die der Projektkopie).
+    /// KV8: dazu die ID der Projektkopie (0 = unbekannt) — ohne gewählten Kalender gilt für eine Kopie mit Normtagen der
+    /// Normkalender als Vorgabe (<see cref="NormkalenderCtrl.Wirksam"/>), auch für Tagesarten und Nutzungstage der Grafik.
     /// </summary>
     public sealed record Kaeltegrafikzeile(string Name, double SummeMwh, int? KalenderId,
                                            double[] Monatsanteile = null, double[] Wochenprofil = null,
-                                           string Eingabeart = null, KaeltetyptagEingabe Typtage = null);
+                                           string Eingabeart = null, KaeltetyptagEingabe Typtage = null, int IdKopie = 0);
 
     /// <summary>
     /// <b>Die Grafik einer Kältezeile im Dialog der Bedarfsprofile</b> (Konzept Kältebedarfsprofile, Abschnitt 5; Welle
@@ -54,12 +56,21 @@ namespace WindowsFormsApplication1
             }
             if (reiheMarkiert == null) return null;
 
-            Gemeinjahrkalender raster = Konditionierungdatenweg.Raster(idProjekt, ProfilBedarf.WOCHENTAG_ALTKONVENTION);
-            byte[] arten = null;
-            if (markiert.KalenderId is int id && id > 0)
-                arten = BetriebskalenderCtrl.Lies(id)?.Tagesarten(raster);
+            // KV8-N: das Wochentagsraster des Projekts — dasselbe, in dem Vorschau und Lauf die Reihe rechnen.
+            Gemeinjahrkalender raster = Konditionierungdatenweg.Raster(idProjekt);
+            // KV8: der wirksame Kalender — der gewählte, sonst der Normkalender als Vorgabe (derselbe Weg wie die Rechnung).
+            Betriebskalender kalender = markiert.IdKopie > 0
+                ? NormkalenderCtrl.Wirksam(idProjekt, markiert.IdKopie, markiert.KalenderId)
+                : markiert.KalenderId is int id && id > 0 ? BetriebskalenderCtrl.Lies(id) : null;
+            byte[] arten = kalender?.Tagesarten(raster);
 
-            return Kaelteprofilgrafik.Bilder(reiheMarkiert, reihen, raster.W0, arten);
+            Kaelteprofilbilder bilder = Kaelteprofilgrafik.Bilder(reiheMarkiert, reihen, raster.W0, arten);
+            // KV8: Trägt die Kopie Nutzungstage nach Norm, nennt die Kennzahlenzeile die Nutzungstage des wirksamen Kalenders
+            // — gezählt im Wochentagsraster des Projekts, in dem der Normkalender gebildet ist und die Rechnung läuft.
+            if (bilder != null && kalender != null && markiert.IdKopie > 0 &&
+                KaeltebedarfStammCtrl.ProjektNutzungstage(markiert.IdKopie) is int norm && norm > 0)
+                bilder = bilder with { Nutzungstage = NormkalenderCtrl.Nutzungstage(kalender, raster) };
+            return bilder;
         }
 
         /// <summary>

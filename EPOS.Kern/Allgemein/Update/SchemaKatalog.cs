@@ -4612,8 +4612,8 @@ namespace WindowsFormsApplication1
         /// das Anhängen hinten ist folgenlos.
         ///
         /// <b>Eine Schema-Wahrheit.</b> Dieser Schritt ist die einzige Quelle der vier
-        /// Spalten; <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c> legt weder die
-        /// Tabelle an noch zieht sie Eingabespalten nach.
+        /// Spalten; der <c>WirtschaftlichkeitCtrl</c> legt weder die Tabelle an noch zieht
+        /// er Spalten nach.
         /// </summary>
         public static readonly SchemaSpalte[] Schritt28_KwkgTatbestand =
         {

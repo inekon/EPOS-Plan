@@ -417,6 +417,11 @@ namespace WindowsFormsApplication1
                     }
                 }
 
+                // KV8-N: Der Kalender ist die Wahl des Dialogs, auch „keiner“ (NULL). Die Vorwahl des Normkalenders trifft
+                // allein die Übernahme im Dialog (KaeltebedarfsprofilAbbildung.Aufgenommen); einen Assistentenweg ohne
+                // Dialog gibt es für die Kälte nicht. Eine Zeile mit Normtagen ohne Kalender rechnet mit dem Normkalender
+                // als Vorgabe (NormkalenderCtrl.Wirksam).
+
                 int idZ = nextID++;
                 var ps = new List<DbParam>
                 {

@@ -506,6 +506,14 @@ namespace WindowsFormsApplication1
             // leere Rohtabelle und die Herkunftsspalten am Ziel an (Bestandsregionen bleiben Rohdaten = 0).
             new Stufe(KlimaRohwerteSchema.SCHRITT, Art.Ddl,
                       "Rohwerte des Klimaimports und Herkunft der Klimaregion (KD-4)"),
+            // EB-1: Ein älteres Paket bringt Ergebniszeilen ohne die drei Reihen; der Schritt legt die Spalten leer an
+            // (leer heißt nicht erhoben).
+            new Stufe(ErgebnisreihenSchema.SCHRITT, Art.Ddl,
+                      "Ergebnisreihen: BHKW-Einspeisung, Standby des Speichersystems, PV-Abregelung (EB-1)"),
+            // KB-8: Ein älteres Paket bringt Ergebniszeilen der Wirtschaftlichkeit ohne die vier Spalten; der Schritt legt
+            // sie leer an (kein DML).
+            new Stufe(ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT, Art.Ddl,
+                      "Die vier Ergebnisspalten der Wirtschaftlichkeit (KB-8)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

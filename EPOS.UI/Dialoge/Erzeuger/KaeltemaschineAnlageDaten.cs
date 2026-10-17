@@ -1,4 +1,7 @@
-﻿namespace EPOS.UI.Dialoge.Erzeuger;
+﻿using System;
+using System.Collections.Generic;
+
+namespace EPOS.UI.Dialoge.Erzeuger;
 
 /// <summary>
 /// <b>Eine Kältemaschinen-Anlage des Projekts</b> im Erzeugerdialog (KU3-4c) — der Feldsatz, in den Maske und
@@ -44,6 +47,23 @@ public sealed class KaeltemaschineAnlageDaten
     /// </summary>
     public string Zulaessigkeit { get; set; } = "";
 
+    /// <summary>
+    /// K-F5b: die Wahl des Rückkühlwerks — <c>null</c> = keins (Festwerte der Rückkühlart), &gt; 0 = Katalogsatz
+    /// (<c>Tab_Rueckkuehlwerk_STAMM.ID</c>), aus dem die Anlage beim OK eine eigene Projektkopie bekommt,
+    /// <see cref="RUECKKUEHLWERK_PROJEKTKOPIE"/> = die gespeicherte Projektkopie ohne Katalogsatz (bleibt, wie sie ist).
+    /// Geschrieben wird erst im OK-Weg über <c>KaeltemaschineAnlageCtrl.RueckkuehlwerkWaehlen</c>.
+    /// </summary>
+    public int? RueckkuehlwerkWahl { get; set; }
+
+    /// <summary>
+    /// K-F5b: die Lesezeilen der GESPEICHERTEN Projektkopie des Rückkühlwerks, fertig von der Hülle; <c>null</c> = keins
+    /// gewählt. Nur lesend — zählt nicht zu <see cref="GleicheEingaben"/>.
+    /// </summary>
+    public RueckkuehlwerkLesung? Rueckkuehlwerk { get; set; }
+
+    /// <summary>Der Wahlwert der gespeicherten Projektkopie, deren Katalogsatz es nicht (mehr) gibt.</summary>
+    public const int RUECKKUEHLWERK_PROJEKTKOPIE = -1;
+
     /// <summary>Eine unabhängige Kopie (die Kennwerte werden geteilt, sie sind nur zu lesen).</summary>
     public KaeltemaschineAnlageDaten Kopie() => (KaeltemaschineAnlageDaten)MemberwiseClone();
 
@@ -51,7 +71,47 @@ public sealed class KaeltemaschineAnlageDaten
     public bool GleicheEingaben(KaeltemaschineAnlageDaten? b)
         => b is not null && Bezeichner == b.Bezeichner && Anzahl == b.Anzahl && KuehlVorlauf == b.KuehlVorlauf
            && KuehlHilfsstromanteil == b.KuehlHilfsstromanteil && KuehlCarrierId == b.KuehlCarrierId
-           && KuehlEigenerZaehler == b.KuehlEigenerZaehler;
+           && KuehlEigenerZaehler == b.KuehlEigenerZaehler && RueckkuehlwerkWahl == b.RueckkuehlwerkWahl;
+}
+
+/// <summary>
+/// <b>Die Lesezeilen eines Rückkühlwerks</b> (K-F5b) — Katalogsatz oder Projektkopie, fertig für die Gruppe
+/// „Rückkühlung“ der <c>KaeltemaschineKonfiguration</c>: Bauart, Nennleistung, Annäherung samt Weg, Ventilator samt
+/// Regelung, Schaltung der freien Kühlung, je mit „Vorgabe: …“ bei leeren Feldern. Die Einordnung (Verdunstungs-
+/// kühlanlage, Ventilator gepflegt) trägt die Hinweise; ein Steuerwert ist hier nie ein Anzeigetext.
+/// </summary>
+public sealed class RueckkuehlwerkLesung
+{
+    /// <summary>Name des Satzes.</summary>
+    public string Bezeichner { get; init; } = "";
+
+    /// <summary>Der Katalogsatz, aus dem eine Projektkopie stammt (am Katalogsatz seine eigene Id); <c>null</c> = keiner.</summary>
+    public int? StammId { get; init; }
+
+    /// <summary>Die Lesezeilen (Bezeichnung, Wert) in Anzeigefolge.</summary>
+    public IReadOnlyList<(string Bezeichnung, string Wert)> Zeilen { get; init; } = Array.Empty<(string, string)>();
+
+    /// <summary>Nasse oder befeuchtende Bauart — Verdunstungskühlanlage (42. BImSchV), braucht die Luftfeuchte.</summary>
+    public bool Verdunstungskuehlanlage { get; init; }
+
+    /// <summary>Gepflegte Ventilatorleistung [kW]; <c>null</c> = der Hilfsstrom der Rückkühlung an der Maschine gilt.</summary>
+    public double? VentilatorKw { get; init; }
+}
+
+/// <summary>Ein Katalogsatz der Klappliste „Rückkühlwerk“ (K-F5b): Id, Anzeigetext und seine Lesezeilen.</summary>
+public sealed record RueckkuehlwerkEintrag(int Id, string Text, RueckkuehlwerkLesung Lesung);
+
+/// <summary>
+/// <b>Die Gaben der Gruppe „Rückkühlung“</b> (K-F5b) — projektweit: die Katalogsätze der Rückkühlwerke und ob das Klima
+/// des Projekts eine Luftfeuchte führt. Die Hülle baut sie aus dem Kern; <c>null</c> = keine Gruppe.
+/// </summary>
+public sealed class RueckkuehlungGaben
+{
+    /// <summary>Die Katalogsätze, nach Bezeichner.</summary>
+    public IReadOnlyList<RueckkuehlwerkEintrag> Katalog { get; init; } = Array.Empty<RueckkuehlwerkEintrag>();
+
+    /// <summary>Führt jede Stunde des Projektklimas eine Luftfeuchte? Sonst rechnet ein nasses Rückkühlwerk trocken.</summary>
+    public bool KlimaMitFeuchte { get; init; }
 }
 
 /// <summary>
@@ -103,4 +163,10 @@ public sealed class KaeltemaschineGeraetwerte
     /// <c>null</c> ohne Vorlage. Gepflegt werden sie in der Kostenverwaltung.
     /// </summary>
     public double? Geraetekosten { get; init; }
+
+    /// <summary>
+    /// K-F5b: Ist die Maschine luftgekühlt (Rückkühlart <c>LUFT</c> oder leer — so rechnet der Lauf)? Dann trägt sie
+    /// ihren Verflüssiger selbst und bekommt kein Rückkühlwerk.
+    /// </summary>
+    public bool Luftgekuehlt { get; init; } = true;
 }
