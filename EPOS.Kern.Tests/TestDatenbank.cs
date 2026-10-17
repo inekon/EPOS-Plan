@@ -1099,6 +1099,9 @@ namespace EPOS.Kern.Tests
                 // Schritt KlimaRohwerteSchema.SCHRITT (KD-4): Tab_Klimastunde_STAMM (leer) und die Herkunftsspalten der
                 // Klimaregion. Wiederholbar, ergebnisneutral.
                 KlimaRohwerteSchema.Ausfuehren(null);
+                // Schritt BetriebskalenderFerienlisteSchema.SCHRITT (Anwenderentscheid 17.10.2026): Tab_Betriebskalenderferien,
+                // leer, reines DDL. Wiederholbar, ergebnisneutral.
+                BetriebskalenderFerienlisteSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

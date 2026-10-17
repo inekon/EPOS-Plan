@@ -1123,10 +1123,13 @@ namespace WindowsFormsApplication1
         /// Danach, mit den ROHWERTEN DES KLIMAIMPORTS (KD-4), steht das Ziel auf <see cref="KlimaRohwerteSchema.SCHRITT"/>:
         /// <c>Tab_Klimastunde_STAMM</c> (leer, nur Katalog) und die Herkunftsspalten an <c>Tab_Klimaregion(_STAMM)</c>
         /// (<see cref="KlimaRohwerteSchema"/>). <b>Ergebnisneutral:</b> Bestandsregionen bleiben ohne Rohwerte, kein
-        /// Rechenweg liest die Rohtabelle. Das Ziel ist das Ende der Kette; umgehängt wird allein am Vorgänger
-        /// <see cref="BauteilStrahlungSchema.SCHRITT"/>.
+        /// Rechenweg liest die Rohtabelle.
+        /// Danach, mit der FERIENLISTE DES BETRIEBSKALENDERS (Anwenderentscheid 17.10.2026), steht das Ziel auf
+        /// <see cref="BetriebskalenderFerienlisteSchema.SCHRITT"/>: <c>Tab_Betriebskalenderferien</c>, leer
+        /// (<see cref="BetriebskalenderFerienlisteSchema"/>). <b>Ergebnisneutral:</b> Kein Referenzprojekt trägt einen
+        /// Betriebskalender. Das Ziel ist das Ende der Kette; umgehängt wird allein am Vorgänger.
         /// </summary>
-        public const int Zielversion = KlimaRohwerteSchema.SCHRITT;
+        public const int Zielversion = BetriebskalenderFerienlisteSchema.SCHRITT;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

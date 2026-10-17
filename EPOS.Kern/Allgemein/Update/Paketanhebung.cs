@@ -506,6 +506,9 @@ namespace WindowsFormsApplication1
             // leere Rohtabelle und die Herkunftsspalten am Ziel an (Bestandsregionen bleiben Rohdaten = 0).
             new Stufe(KlimaRohwerteSchema.SCHRITT, Art.Ddl,
                       "Rohwerte des Klimaimports und Herkunft der Klimaregion (KD-4)"),
+            // Ein älteres Paket bringt keine Ferienliste der Betriebskalender; der Schritt legt die leere Tabelle an.
+            new Stufe(BetriebskalenderFerienlisteSchema.SCHRITT, Art.Ddl,
+                      "Ferienliste des Betriebskalenders (Tab_Betriebskalenderferien)"),
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>
