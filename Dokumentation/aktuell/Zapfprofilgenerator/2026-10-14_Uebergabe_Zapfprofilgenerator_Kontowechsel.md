@@ -25,7 +25,7 @@ CI-grün.
 | W3b (ZB5) | Karte „Kalender“ mit Ferienliste und Jahresraster | #1063 | `2026-10-13_ZB5_Kalenderkarte.md` |
 | W4 (ZB3, ZB4 b, ZB8, ZB9) | Karten mit Zusammenfassung, Gruppe „Gebäude und Anlage“, haftende Vorschau, ein Feld je Wert | #1064 | `2026-10-13_ZB3_ZB4b_ZB8_ZB9_Karten.md` |
 | W7 (ZB12) | Referenzprojekte 1066–1071 je Zapfprofil-Option, Saatskript, Wache, CI auf achtzehn Projekte | #1065 | `2026-10-13_ZB12_Referenzprojekte_Optionen.md` |
-| W8/W11/ZC1 | Nutzungsbereiche, zwei Stufen, Profilablage | #1194 | `2026-10-17_W8_W11_ZC1_Bereiche_Stufen_Profilablage.md` |
+| W8/W11/ZC1 | Nutzungsbereiche, zwei Stufen, Profilablage | #1201 | `2026-10-17_W8_W11_ZC1_Bereiche_Stufen_Profilablage.md` |
 | **W6** | **Wiki-Seite „Brauchwasser-Zapfprofil“ und Logbuch 1.2.0.11** | — | Seite und Logbuch am 14.10.2026 im Sammel-Upload veröffentlicht (Revisionen 1000/1023); **offen der Nachtrag**, Abschnitt 4 |
 
 - **Letzte Stände dieser Sitzung auf origin:** Integration `5f06ee8a1` (W3a, W3b, W4, W7, Testdatenbank 224
@@ -120,7 +120,7 @@ notwendig und sinnvoll.“ K5 (eigene Messobjekte) ruht.
    „gesäte Zapfprofil-Eingaben“ vorher prüfen). In `Referenzlaeufe/LIESMICH.md` endet die Liste
    „Entfernte Basen“ bei R47.~~
 
-4. **Anwenderentscheide ZC‑Q1–ZC‑Q6** ([Konzept Bereiche und Methoden](../Konzept_Zapfprofil_Bereiche_und_Methoden_EPOS-Plan.md)), bis dahin Annahmen nach Empfehlung (umgesetzt mit #1194).
+4. **Anwenderentscheide ZC‑Q1–ZC‑Q6** ([Konzept Bereiche und Methoden](../Konzept_Zapfprofil_Bereiche_und_Methoden_EPOS-Plan.md)), bis dahin Annahmen nach Empfehlung (umgesetzt mit #1201).
 
 5. **Aus der Zeit davor** gelten die offenen Entscheide in Abschnitt 17.2 des Papiers vom 23.09.2026 weiter.
 

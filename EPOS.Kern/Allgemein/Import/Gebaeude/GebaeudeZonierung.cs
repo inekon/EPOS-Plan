@@ -89,6 +89,12 @@ namespace WindowsFormsApplication1
         /// <summary>Die Konditionierung aus der HottCAD-Projektdatei (Stufe SQ-1); <c>null</c> = keine.</summary>
         internal Zonenkonditionierung Projektdatei { get; set; }
 
+        /// <summary>
+        /// Das Raumprofil der Zone (Entwurf ZZ): unter Z7 der gemeinsame Befund ihrer Räume, unter Z4/Z6 die flächengewichtete
+        /// Mehrheit (<see cref="Raumprofilzuordnung.Mehrheit"/>); <c>null</c> = keins (unbeheizt, andere Formate).
+        /// </summary>
+        internal Raumprofilgruppe Raumprofil { get; set; }
+
         public override string ToString() => Name + " (" + Raeume.Count.ToString(CultureInfo.InvariantCulture) + " Räume)";
     }
 
@@ -394,6 +400,15 @@ namespace WindowsFormsApplication1
         /// <summary>Der Zonenplan, aus dem gebildet ist; <c>null</c> = der Regelvorschlag.</summary>
         internal Zonenplan Plan { get; private set; }
 
+        /// <summary>Die Befunde der Profilzuordnung je Raum (IFC, Entwurf ZZ 5.3) in Dateireihenfolge; leer für andere Formate.</summary>
+        internal IReadOnlyList<Raumprofilbefund> Raumprofile { get; private set; } = Array.Empty<Raumprofilbefund>();
+
+        /// <summary>Die Gebäudeart der Profilzuordnung (Wohn-/Nichtwohngebäude, F4); <c>null</c> für andere Formate.</summary>
+        internal Gebaeudeartbefund Gebaeudeart { get; private set; }
+
+        private Raumnutzungsvorbelegung _vorbelegung = Raumnutzungsvorbelegung.Vorgabe;
+        private IReadOnlyDictionary<string, string> _profilwahl;
+
         /// <summary>Die Namen der Zonen des Plans ohne Raum, in Planreihenfolge — in der Bilanz mit 0 m².</summary>
         internal List<string> LeereZonen { get; } = new List<string>();
 
@@ -451,9 +466,14 @@ namespace WindowsFormsApplication1
                                                                     .Distinct(StringComparer.Ordinal).Count();
                     if (gruppen > 1 && gruppen < g.Raeume.Count) regeln.Add(IfcImportProfil.ZONENREGEL_Z6);
                 }
+                // Z7 (Entwurf ZZ 5.1, F1): nach Nutzungsprofil — die Befunde ohne Katalog genügen für Wählbarkeit und Vorgabe.
+                bool z7 = Z7Waehlbar(g, out bool alleMitRaumart);
+                if (z7) regeln.Add(IfcImportProfil.ZONENREGEL_Z7);
                 regeln.Add(IfcImportProfil.ZONENREGEL_Z5);
-                string vorgabe = (grenzen || g.GeschosseGekoppelt || g.KoerperflaechenGekoppelt) && geschosse > 1
-                    ? IfcImportProfil.ZONENREGEL_Z4 : IfcImportProfil.ZONENREGEL_Z5;
+                string vorgabe = z7 && alleMitRaumart && !regeln.Contains(IfcImportProfil.ZONENREGEL_Z1)
+                    ? IfcImportProfil.ZONENREGEL_Z7
+                    : (grenzen || g.GeschosseGekoppelt || g.KoerperflaechenGekoppelt) && geschosse > 1
+                        ? IfcImportProfil.ZONENREGEL_Z4 : IfcImportProfil.ZONENREGEL_Z5;
                 return (regeln, vorgabe, grenzen);
             }
             // Die Projektdatei (SQPROJ) läuft über die X-Regeln wie gbXML: Ihre Zonen (Simulationszone vor Nutzungszone, vom Leser
@@ -476,6 +496,23 @@ namespace WindowsFormsApplication1
         {
             int i = klassifikation?.IndexOf('|') ?? -1;
             return i < 0 ? "" : klassifikation.Substring(0, i);
+        }
+
+        /// <summary>
+        /// <b>Ist Z7 wählbar</b> (Entwurf ZZ 5.1): mehr als ein Raum, mindestens ein beheizter Raum mit Raumart oder eigener
+        /// Nutzungsangabe, und die Gruppen (Profilschlüssel und Beheizung) sind mindestens zwei und weniger als die Räume.
+        /// <paramref name="alleMitRaumart"/>: Jeder beheizte Raum trägt eine Raumart oder eigene Angabe — die Bedingung der Vorgabe (F1).
+        /// </summary>
+        internal static bool Z7Waehlbar(AbbildGebaeude g, out bool alleMitRaumart)
+        {
+            alleMitRaumart = false;
+            if (g == null || g.Raeume.Count < 2) return false;
+            IReadOnlyList<Raumprofilbefund> befunde = Raumprofilzuordnung.Befunde(g, r => r.Beheizt, Raumnutzungsvorbelegung.Vorgabe);
+            List<Raumprofilbefund> beheizt = befunde.Where(b => b.Raum.Beheizt).ToList();
+            if (beheizt.Count == 0 || !beheizt.Any(b => b.Raumart.Length > 0 || b.EigeneAngabe)) return false;
+            alleMitRaumart = beheizt.All(b => b.Raumart.Length > 0 || b.EigeneAngabe);
+            int gruppen = befunde.Select(b => b.Raum.Beheizt ? "B|" + b.Gruppenschluessel : "U").Distinct(StringComparer.Ordinal).Count();
+            return gruppen > 1 && gruppen < g.Raeume.Count;
         }
 
         /// <summary>Die Nutzung eines Raumnamens (Z3): klein, ohne angehängte Nummer („Büro 2" → „büro").</summary>
@@ -505,13 +542,19 @@ namespace WindowsFormsApplication1
         /// <param name="umhaengungen">Die Zuordnungen von Hand in ihrer Reihenfolge (Welle D); <c>null</c> = keine.</param>
         /// <param name="plan">Der Zonenplan (Mehrzonenkonzept 6.4): Zonen, Namen, Nutzung und Räume kommen allein aus ihm;
         /// Regel und Umhängungen wirken dann nicht, die Mindestgröße M8 schlägt nichts zu. <c>null</c> = der Regelvorschlag.</param>
+        /// <param name="vorbelegung">Der Katalog für die Profilzuordnung je Raum (Z7, Zonennamen aus Profilnamen); <c>null</c> = die Vorgabe im Code.</param>
+        /// <param name="profilwahl">Die Wahl von Hand je Raum (Raumkennung → Profilschlüssel, leer = „keine“; Zuordnungsdialog ZZ-B); <c>null</c> = keine.</param>
         internal static GebaeudeZonierung Bilden(GebaeudeAbbild abbild, int index, string regel = null,
                                                  IReadOnlyDictionary<string, bool> beheiztUebersteuert = null,
                                                  IReadOnlyList<Raumumhaengung> umhaengungen = null,
-                                                 Zonenplan plan = null)
+                                                 Zonenplan plan = null,
+                                                 Raumnutzungsvorbelegung vorbelegung = null,
+                                                 IReadOnlyDictionary<string, string> profilwahl = null)
         {
             var z = new GebaeudeZonierung();
             if (abbild == null || index < 0 || index >= abbild.Gebaeude.Count) return z;
+            z._vorbelegung = vorbelegung ?? Raumnutzungsvorbelegung.Vorgabe;
+            z._profilwahl = profilwahl;
             z._abbild = abbild;
             z._index = index;
             z._uebersteuert = beheiztUebersteuert;
@@ -545,6 +588,17 @@ namespace WindowsFormsApplication1
                 return z;
             }
             z.Einzonig = plan == null && IstEinzonig(z.Regel);
+            // Entwurf ZZ 5.3 Nr. 7: die Profilzuordnung je Raum einer IFC-Datei — eine Meldung je Gebäude mit den Zahlen
+            // eindeutig / Vorschlag / offen / ohne und Beispielen der Rückfragen; Z7 und die Mehrheitsregel lesen die Befunde.
+            if (string.Equals(z.Format, GebaeudeQuelle.FORMAT_IFC, StringComparison.Ordinal))
+            {
+                z.Raumprofile = Raumprofilzuordnung.Befunde(z.Gebaeude, z._beheizt, z._vorbelegung, profilwahl);
+                z.Gebaeudeart = Raumprofilzuordnung.Gebaeudeart(z.Gebaeude, z._beheizt);
+                Raumprofilzaehlung n = Raumprofilzuordnung.Zaehlen(z.Raumprofile);
+                z.Melden(PruefStufe.Info, Raumprofilzuordnung.PROFILE_ZUGEORDNET, Ganz(n.Eindeutig + n.Hand), Ganz(n.Vorschlag), Ganz(n.Offen), Ganz(n.Ohne),
+                         Liste(z.Raumprofile.Where(b => b.Stand == Raumprofilstand.Offen || b.Stand == Raumprofilstand.Ohne)
+                                            .Select(b => Zonenplan.Raumname(b.Raum)).ToList()));
+            }
 
             double gesamt = z.Gebaeude.Raeume.Where(r => r.FlaecheM2 > 0.0).Sum(r => r.FlaecheM2.Value);
             z.MindestflaecheM2 = Math.Max(MINDESTFLAECHE_M2, MINDESTANTEIL * gesamt);
@@ -692,6 +746,7 @@ namespace WindowsFormsApplication1
         private void Gruppieren()
         {
             if (Regel == IfcImportProfil.ZONENREGEL_Z6) { Z6Gruppieren(); return; }
+            if (Regel == IfcImportProfil.ZONENREGEL_Z7) { Z7Gruppieren(); return; }
             var jeSchluessel = new Dictionary<string, Importzone>(StringComparer.Ordinal);
             foreach (AbbildRaum r in Gebaeude.Raeume)
             {
@@ -1353,6 +1408,78 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Solltemperatur je Zonenschlüssel (Z6); <c>null</c> = ohne Sollwert.</summary>
         private readonly Dictionary<string, double?> _z6Temperatur = new Dictionary<string, double?>(StringComparer.Ordinal);
+
+        // ------------------------------------------------------------------
+        //  Regel Z7: nach Nutzungsprofil (Entwurf ZZ 5.1)
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Die Zonen der Regel Z7: die beheizten Räume je Gruppenschlüssel ihres Befunds (<see cref="Raumprofilbefund.Gruppenschluessel"/>:
+        /// Profil, offene Kandidatenmenge oder „ohne“), die unbeheizten Räume in einer Zone. Name: der Profilname des Katalogs
+        /// (ohne Katalog „Profil Nr. n“), bei offenen Gruppen der häufigste Raumname ohne Nummer, „ohne Nutzung“ bzw.
+        /// „unbeheizt“; gleiche Namen bekommen „ 2“, „ 3“. Ordnung: gesetzte und vorgeschlagene Profile nach Fläche absteigend,
+        /// dann offene, dann ohne, zuletzt die unbeheizte Zone; die Räume einer Zone in Dateireihenfolge.
+        /// </summary>
+        private void Z7Gruppieren()
+        {
+            var jeSchluessel = new Dictionary<string, Importzone>(StringComparer.Ordinal);
+            var befundJeZone = new Dictionary<string, List<Raumprofilbefund>>(StringComparer.Ordinal);
+            var zonen = new List<Importzone>();
+            Dictionary<string, Raumprofilbefund> befunde = Raumprofile.Where(b => b.Raum != null).GroupBy(b => b.Raum.Kennung, StringComparer.Ordinal)
+                                                                      .ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
+            foreach (AbbildRaum r in Gebaeude.Raeume)
+            {
+                bool warm = _beheizt(r);
+                Raumprofilbefund b = befunde.TryGetValue(r.Kennung, out Raumprofilbefund x) ? x
+                                   : Raumprofilzuordnung.Zuordnen(r, Gebaeudeart, _vorbelegung);
+                string kennung = warm ? b.Gruppenschluessel : "U";
+                string schluessel = Regel + "|" + kennung + "|" + (warm ? "B" : "U");
+                if (!jeSchluessel.TryGetValue(schluessel, out Importzone zone))
+                {
+                    zone = new Importzone { Schluessel = schluessel, IstBeheizt = warm, Quellkennung = Gebaeude.Kennung };
+                    if (warm) zone.Raumprofil = Raumprofilgruppe.Aus(b);
+                    jeSchluessel[schluessel] = zone;
+                    befundJeZone[schluessel] = new List<Raumprofilbefund>();
+                    zonen.Add(zone);
+                }
+                zone.Raeume.Add(r);
+                befundJeZone[schluessel].Add(b);
+            }
+            var vergeben = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (Importzone zone in zonen.OrderBy(Z7Rang).ThenByDescending(z => z.FlaecheM2 ?? 0.0).ThenBy(z => z.Schluessel, StringComparer.Ordinal))
+            {
+                string basis = Z7Name(zone, befundJeZone[zone.Schluessel]);
+                string name = basis;
+                for (int n = 2; !vergeben.Add(name); n++) name = basis + " " + Ganz(n);
+                zone.Name = name;
+                Zonen.Add(zone);
+            }
+            ZuordnungNeu();
+        }
+
+        private static int Z7Rang(Importzone z)
+        {
+            if (!z.IstBeheizt) return 3;
+            return z.Raumprofil?.Stand switch
+            {
+                Raumprofilstand.Offen => 1,
+                Raumprofilstand.Ohne => 2,
+                _ => z.Raumprofil?.Vorschlag == null ? 2 : 0,
+            };
+        }
+
+        private string Z7Name(Importzone zone, List<Raumprofilbefund> befunde)
+        {
+            if (!zone.IstBeheizt) return Ressource("GIMP_ZONE_UNBEHEIZT_Z7") ?? "unbeheizt";
+            Raumprofilgruppe p = zone.Raumprofil;
+            if (p?.Vorschlag != null) return Raumprofilschluessel.Anzeigename(_vorbelegung, p.Vorschlag);
+            if (p != null && p.Kandidaten.Count > 0)
+            {
+                string stamm = Raumprofilzuordnung.Anzeigename(befunde);
+                return stamm.Length > 0 ? stamm : Raumprofilzuordnung.Kandidatentext(_vorbelegung, p.Kandidaten);
+            }
+            return Ressource("GIMP_ZONE_OHNE_NUTZUNG") ?? "ohne Nutzung";
+        }
 
         /// <summary>
         /// Die Zonen der Regel Z6: gebäudeweit je Gruppe, in fester Ordnung — absteigend nach Solltemperatur (ohne Sollwert

@@ -1,7 +1,7 @@
 # Zapfprofil: Nutzungsbereiche, zwei Stufen, Profilablage (W8, W11, ZC1, 17.10.2026)
 
 Protokoll der Wellen **W8** (ZC2, ZC3), **W11** (ZC6) und des Vorschlags **ZC1** des
-[Konzepts Zapfprofil — Bereiche und Methoden](../../../aktuell/Konzept_Zapfprofil_Bereiche_und_Methoden_EPOS-Plan.md) (Statuszeile #1194).
+[Konzepts Zapfprofil — Bereiche und Methoden](../../../aktuell/Konzept_Zapfprofil_Bereiche_und_Methoden_EPOS-Plan.md) (Statuszeile #1201).
 
 **Rahmen.** Sitzung Zapfprofilgenerator Cloud, drei Worktree-Agenten, Integration auf dem Arbeitszweig
 (Merges `1b7e7b02c`, `1c315f961`, `7dc8c2bcb`, `e9eb79aa2` von origin; Ressourcenkonflikte als Vereinigung).
@@ -78,7 +78,7 @@ Grundlagen ohne „Erweitert“, der Block als eine Zeile je Bereich beschrieben
 
 Vorprüfung auf dem Integrationsstand: 433 UI-Tests (Zapfprofil, Stilblatt, BedarfsProfile, KiMasken) und 761
 Kern-Tests (Zapfprofil, Tww, Brauchwasser, Ressource) grün; nach ZC1 354 UI- und 836 Kern-Tests grün. Rasterprobe
-Z1–Z8 erfüllt. Gate: Gate #1194 (Linux, 17.10.2026, auf `e9eb79aa2`): Kern-Filter 0 Fehler; EPOS.UI.Tests 9775/9775, KiKern 553, SpeicherEngine 397, SpeicherPlanung 27 (1 übersprungen), Dokumentationswachen 35; EPOS.Kern.Tests 14870 grün, 2 rot — `KiMaskenwegTests` en-US (ZC1 hatte `ZPG_LBL_TYPTAGE_ZONE` en kleingeschrieben, behoben mit `39719f53d`, danach 92/93 grün) und `ZahlungsgliederungTests.Die_Bruecke_stapelt_die_Differenzspalte` (610 ≠ 611: Bildhöhe aus Textmaßen der Containerschrift Inter, Umgebungsbefund, auf origin grün); Referenzlauf gegen R58 GESAMT PASS (13 025 990 Werte, 1233/1233 CSV byte-gleich), Plattformnachweis PASS; ChartProben: die zwölf Zapfprofil-Bilder weichen in diesem Container von `Messlatte_2026-10-16` ab, der reine origin-Stand liefert hier dieselben 250 Hashes — Umgebungsbefund, Nachweis ist der CI-Lauf. Kein Rechenwegeingriff, deshalb kein neuer Referenzlauf.
+Z1–Z8 erfüllt. Gate: Gate #1201 (Linux, 17.10.2026, auf `e9eb79aa2`): Kern-Filter 0 Fehler; EPOS.UI.Tests 9775/9775, KiKern 553, SpeicherEngine 397, SpeicherPlanung 27 (1 übersprungen), Dokumentationswachen 35; EPOS.Kern.Tests 14870 grün, 2 rot — `KiMaskenwegTests` en-US (ZC1 hatte `ZPG_LBL_TYPTAGE_ZONE` en kleingeschrieben, behoben mit `39719f53d`, danach 92/93 grün) und `ZahlungsgliederungTests.Die_Bruecke_stapelt_die_Differenzspalte` (610 ≠ 611: Bildhöhe aus Textmaßen der Containerschrift Inter, Umgebungsbefund, auf origin grün); Referenzlauf gegen R58 GESAMT PASS (13 025 990 Werte, 1233/1233 CSV byte-gleich), Plattformnachweis PASS; ChartProben: die zwölf Zapfprofil-Bilder weichen in diesem Container von `Messlatte_2026-10-16` ab, der reine origin-Stand liefert hier dieselben 250 Hashes — Umgebungsbefund, Nachweis ist der CI-Lauf. Kein Rechenwegeingriff, deshalb kein neuer Referenzlauf.
 
 ## 5 Offen
 

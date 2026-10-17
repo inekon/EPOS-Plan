@@ -31,6 +31,12 @@ namespace WindowsFormsApplication1
         internal List<string> LeereZonen { get; } = new List<string>();
         internal List<PruefMeldung> Meldungen { get; } = new List<PruefMeldung>();
 
+        /// <summary>
+        /// Die Vorschläge der Rangfolge für die beheizten Räume ohne Zone der Projektdatei (Anwenderentscheid F7,
+        /// <see cref="Zonenplan.Restvorschlaege"/>) — nur Vorschlag, die Räume bleiben nicht zugeordnet.
+        /// </summary>
+        internal IReadOnlyList<Raumprofilbefund> Raumvorschlaege { get; set; } = Array.Empty<Raumprofilbefund>();
+
         /// <summary>Die wirksame Zonierung der Übernahme (die gewählte, sonst die vorhandene).</summary>
         internal SqprojZonierung Zonierung { get; set; }
 
@@ -120,6 +126,14 @@ namespace WindowsFormsApplication1
                 e.Meldungen.AddRange(k.Meldungen);
                 e.Zonen.Add(new SqprojPlanzone(pz.Schluessel, z, profil, k));
             }
+            // F7: Räume ohne Zone der Projektdatei bekommen die Rangfolge als Vorschlag — nie automatisch, die Zonen bleiben.
+            e.Raumvorschlaege = plan.Restvorschlaege();
+            List<Raumprofilbefund> mitVorschlag = e.Raumvorschlaege.Where(x => x.Vorschlag != null).ToList();
+            if (e.Raumvorschlaege.Count > 0)
+                e.Meldungen.Add(new PruefMeldung(PruefStufe.Info, SqprojProtokoll.RAUM_OHNE_ZONE_VORSCHLAG,
+                    e.Raumvorschlaege.Count.ToString(CultureInfo.InvariantCulture), mitVorschlag.Count.ToString(CultureInfo.InvariantCulture),
+                    string.Join(", ", mitVorschlag.Take(5).Select(x => Zonenplan.Raumname(x.Raum) + " → "
+                                                                      + Raumprofilschluessel.Anzeigename(plan.Vorbelegung, x.Vorschlag)))));
             return e;
         }
 

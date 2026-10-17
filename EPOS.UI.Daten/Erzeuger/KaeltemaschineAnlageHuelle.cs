@@ -42,6 +42,8 @@ namespace WindowsFormsApplication1
                 ["Loeschen"] = new Action<int>(KaeltemaschineAnlageCtrl.Loeschen),
                 // KT: "Typkennfelder laden..." in der Katalogwahl - derselbe Weg wie in der Verwaltung.
                 ["TypkennfelderLaden"] = new Func<KaeltemaschineTypkennfelderErgebnis>(KaeltemaschineKatalogHuelle.TypkennfelderLaden),
+                // KM-T1: wie viele davon noch fehlen - 0 sperrt den Knopf (dieselbe Zugehörigkeitsregel wie das Laden).
+                ["TypkennfelderFehlend"] = new Func<int>(KaeltemaschineKatalogHuelle.TypkennfelderFehlend),
                 // KM-K1 (KA-E-26): Wärmepumpen mit Kühlfunktion — Projektliste, Übernehmen (Kopie und Anlage über den
                 // Anlegeweg der Erzeuger, Kühlbetrieb allein über WPCtrl.KuehlkonfigurationSchreiben), Ausschalten,
                 // Zurücknehmen und die Ränge der Kältefolge.

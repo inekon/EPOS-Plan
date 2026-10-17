@@ -197,10 +197,12 @@ Release-Anwendung, auch beim Kunden.
 | **Geste im Dialog „Über EPOS-Plan"** (Abschnitt 5) | am Kundenrechner ohne Verknüpfung, am iPad | Dialog öffnen, **Strg+Umschalt+F12** (iOS: fünfmal auf die Versionszeile tippen), Rückfrage „Entwicklermodus einschalten? Er gilt bis zum Ausschalten.", wahlweise mit Kennwort (AS-Q2) | Menü *Entwicklung* → „Entwicklermodus ausschalten" oder dieselbe Geste im Dialog (löscht die Einstellung) |
 | **Umgebungsvariable** `EPOS_ENTWICKLER=1` | Entwicklerrechner dauerhaft, CI, Rasterprobe, Referenzlauf | einmal im System setzen | Variable entfernen |
 
-Die Geste wirkt nur im geöffneten Dialog „Über EPOS-Plan“, nicht im Hauptfenster. Der Dialog erkennt
-die Folge selbst (Tastencode F12 mit Strg und Umschalt) und ruft die Plattform; unter Windows fängt zusätzlich
-das Fenster (`UeberFenster`) dieselbe Folge über `BlazorDialogForm.Befehlstaste` ab, bevor die WebView
-sie sieht, und schaltet eine Nachricht später: Ist der Modus aus, nach der Rückfrage ein (bei Sperre
+Die Geste wirkt nur im geöffneten Dialog „Über EPOS-Plan“, nicht im Hauptfenster. Unter Windows fängt
+das Fenster (`UeberFenster`) die Folge über `BlazorDialogForm.Befehlstaste` ab, unabhängig vom Fokus: Liegt
+er im Browserfenster der WebView2, kommt die Taste über das Tastenereignis der WebView2 (AcceleratorKeyPressed,
+`KeyDown` des Steuerelements), sonst über `ProcessCmdKey`. Der Dialog erkennt sie zusätzlich selbst
+(Tastencode F12 mit Strg und Umschalt), solange der Fokus in seiner Wurzel liegt, und ruft denselben Weg der
+Plattform; eine Sperre lässt je Tastendruck nur ein Schalten zu. Das Fenster schaltet eine Nachricht später: Ist der Modus aus, nach der Rückfrage ein (bei Sperre
 des Administrators eine Meldung), ist er an, aus — läuft er über Umgebung oder Startargument, nennt
 die Meldung den Grund. Danach zeigt der Dialog den neuen Diagnoseblock, und das Hauptfenster versorgt
 Menü, Marke und Titel neu (`HauptfensterHuelle.FreigabeNeuVersorgen`). Das Tippen auf die

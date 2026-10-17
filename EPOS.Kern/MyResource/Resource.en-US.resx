@@ -5804,10 +5804,10 @@ It then feeds the overview and the overall simulation. The existing simulation r
     <value>{0} versions</value>
   </data>
   <data name="BK_ERG_ABSCHNITT_KOMPONENTEN" xml:space="preserve">
-    <value>Components and settings</value>
+    <value>Overview components / comparison</value>
   </data>
   <data name="BK_ERG_ABSCHNITT_ERGEBNISSE" xml:space="preserve">
-    <value>Results — energy</value>
+    <value>Overview energy</value>
   </data>
   <data name="BK_ERG_SP_KENNZAHL" xml:space="preserve">
     <value>Indicator</value>
@@ -46434,6 +46434,12 @@ chart</value>
   <data name="KM_ANL_MSG_VERWALTUNG_NICHT" xml:space="preserve">
     <value>The chiller catalogue management cannot be opened here.</value>
   </data>
+  <data name="KM_ANL_TYPKENNFELDER_ALLE" xml:space="preserve">
+    <value>All typical maps are loaded.</value>
+  </data>
+  <data name="KM_ANL_TYPKENNFELDER_STATUS" xml:space="preserve">
+    <value>Typical maps: {0} added, {1} skipped.</value>
+  </data>
   <data name="KM_ANL_MSG_UNGESPEICHERT" xml:space="preserve">
     <value>There are unsaved changes. Apply them with OK or discard them with Cancel before opening the catalogue management.</value>
   </data>
@@ -47003,6 +47009,9 @@ chart</value>
   </data>
   <data name="IMP_SQ_PROT_RAUM_BEHEIZUNG" xml:space="preserve">
     <value>The room {0} does not match the heating of zone {1} and stays unassigned.</value>
+  </data>
+  <data name="IMP_SQ_PROT_RAUM_OHNE_ZONE_VORSCHLAG" xml:space="preserve">
+    <value>{0} heated rooms belong to no zone of the project file; for {1} the ranking (designation, room type, room name) suggests a usage profile: {2}. The rooms stay unassigned until you assign them to a zone.</value>
   </data>
   <data name="IMP_SQ_PROT_NUTZUNG_OHNE_ABBILDUNG" xml:space="preserve">
     <value>The zone {0} carries usage profile no. {1} without a counterpart — it stays without use.</value>
@@ -51916,6 +51925,15 @@ chart</value>
   </data>
   <data name="BED_GRAFIK_ACHSE_STUNDE" xml:space="preserve">
     <value>Hour</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_STROM" xml:space="preserve">
+    <value>Electricity requirement [{0}]</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_WAERME" xml:space="preserve">
+    <value>Heat requirement [{0}]</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_KAELTE" xml:space="preserve">
+    <value>Cooling demand [{0}]</value>
   </data>
   <data name="BED_GRAFIK_ACHSE_VIERTELSTUNDE" xml:space="preserve">
     <value>Quarter hour</value>
@@ -58318,6 +58336,228 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="ZPG_PS_GRUND_FEHLEINGABE" xml:space="preserve">
     <value>Correct the invalid entries first — while they stand there is no profile to store.</value>
   </data>
+  <data name="GIMP_ZONENREGEL_Z7" xml:space="preserve">
+    <value>Z7 – by usage profile</value>
+  </data>
+  <data name="GIMP_ZONE_UNBEHEIZT_Z7" xml:space="preserve">
+    <value>unheated</value>
+  </data>
+  <data name="GIMP_ZONE_OHNE_NUTZUNG" xml:space="preserve">
+    <value>without use</value>
+  </data>
+  <data name="IMP_IFC_PROT_PROFILE_ZUGEORDNET" xml:space="preserve">
+    <value>Usage profiles per room: {0} assigned unambiguously, {1} with proposal, {2} open (query), {3} without candidates; open: {4}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_PROFIL_UNBEKANNT" xml:space="preserve">
+    <value>Unknown profile “{0}” – the assignment is not applied.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_PROFIL_UNBEKANNT" xml:space="preserve">
+    <value>Unknown profile “{0}” – the assignment is not applied.</value>
+  </data>
+  <data name="RNP_IMP_PROFIL_NUMMER" xml:space="preserve">
+    <value>Profile no. {0}</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_RAUMPROFIL" xml:space="preserve">
+    <value>from {0}</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_RAUMPROFIL_VORSCHLAG" xml:space="preserve">
+    <value>proposal – {0}</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_RAUMPROFIL_OFFEN" xml:space="preserve">
+    <value>open – choice: {0}</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_RAUMPROFIL_MEHRHEIT" xml:space="preserve">
+    <value>majority proposal – {0}</value>
+  </data>
+  <data name="RNP_IMP_BEGR_DATEI" xml:space="preserve">
+    <value>designation in file “{0}”</value>
+  </data>
+  <data name="RNP_IMP_BEGR_RAUMART" xml:space="preserve">
+    <value>room type {0}</value>
+  </data>
+  <data name="RNP_IMP_BEGR_NAME" xml:space="preserve">
+    <value>name “{0}”</value>
+  </data>
+  <data name="RNP_IMP_BEGR_WOHNGEBAEUDE" xml:space="preserve">
+    <value>residential building ({0} % living area)</value>
+  </data>
+  <data name="RNP_IMP_BEGR_NICHTWOHN" xml:space="preserve">
+    <value>non-residential building</value>
+  </data>
+  <data name="RNP_IMP_BEGR_KUECHEN" xml:space="preserve">
+    <value>{0} kitchens</value>
+  </data>
+  <data name="RNP_IMP_BEGR_HAND" xml:space="preserve">
+    <value>by hand</value>
+  </data>
+  <data name="RNP_IMP_BEGR_MEHRHEIT" xml:space="preserve">
+    <value>{0} % of the heated area</value>
+  </data>
+  <data name="RNP_GRUPPE_BUERO" xml:space="preserve">
+    <value>Office and administration</value>
+  </data>
+  <data name="RNP_GRUPPE_HANDEL" xml:space="preserve">
+    <value>Retail</value>
+  </data>
+  <data name="RNP_GRUPPE_BILDUNG" xml:space="preserve">
+    <value>Education</value>
+  </data>
+  <data name="RNP_GRUPPE_BEHERBERGUNG" xml:space="preserve">
+    <value>Accommodation and care</value>
+  </data>
+  <data name="RNP_GRUPPE_GASTRONOMIE" xml:space="preserve">
+    <value>Catering and kitchen</value>
+  </data>
+  <data name="RNP_GRUPPE_NEBENFLAECHEN" xml:space="preserve">
+    <value>Ancillary, circulation and storage areas</value>
+  </data>
+  <data name="RNP_GRUPPE_HALLEN" xml:space="preserve">
+    <value>Halls and production</value>
+  </data>
+  <data name="RNP_GRUPPE_KULTUR" xml:space="preserve">
+    <value>Events and culture</value>
+  </data>
+  <data name="RNP_GRUPPE_SPORT" xml:space="preserve">
+    <value>Sports and wellness</value>
+  </data>
+  <data name="RNP_GRUPPE_PARKEN" xml:space="preserve">
+    <value>Parking</value>
+  </data>
+  <data name="RNP_GRUPPE_GESUNDHEIT" xml:space="preserve">
+    <value>Laboratory and health</value>
+  </data>
+  <data name="RNP_GRUPPE_WOHNEN" xml:space="preserve">
+    <value>Residential</value>
+  </data>
+  <data name="GIMP_PZ_TITEL" xml:space="preserve">
+    <value>Assign usage profiles</value>
+  </data>
+  <data name="GIMP_PZ_KNOPF" xml:space="preserve">
+    <value>Assign usage profiles…</value>
+  </data>
+  <data name="GIMP_PZ_KNOPF_OFFEN" xml:space="preserve">
+    <value>Assign usage profiles… ({0} open)</value>
+  </data>
+  <data name="GIMP_PZ_KATALOG" xml:space="preserve">
+    <value>Catalogue</value>
+  </data>
+  <data name="GIMP_PZ_SUCHE" xml:space="preserve">
+    <value>Search profile (number or name)</value>
+  </data>
+  <data name="GIMP_PZ_KATALOG_LEER" xml:space="preserve">
+    <value>No profile matches the search.</value>
+  </data>
+  <data name="GIMP_PZ_BUENDEL_TITEL" xml:space="preserve">
+    <value>Rooms of the file</value>
+  </data>
+  <data name="GIMP_PZ_SP_BUENDEL" xml:space="preserve">
+    <value>Group</value>
+  </data>
+  <data name="GIMP_PZ_SP_RAEUME" xml:space="preserve">
+    <value>Rooms</value>
+  </data>
+  <data name="GIMP_PZ_SP_FLAECHE" xml:space="preserve">
+    <value>Area [m²]</value>
+  </data>
+  <data name="GIMP_PZ_SP_STAND" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="GIMP_PZ_SP_VORSCHLAG" xml:space="preserve">
+    <value>Profile / proposal</value>
+  </data>
+  <data name="GIMP_PZ_STAND_EINDEUTIG" xml:space="preserve">
+    <value>unambiguous</value>
+  </data>
+  <data name="GIMP_PZ_STAND_VORSCHLAG" xml:space="preserve">
+    <value>Proposal</value>
+  </data>
+  <data name="GIMP_PZ_STAND_OFFEN" xml:space="preserve">
+    <value>Query</value>
+  </data>
+  <data name="GIMP_PZ_STAND_OHNE" xml:space="preserve">
+    <value>no candidate</value>
+  </data>
+  <data name="GIMP_PZ_STAND_HAND" xml:space="preserve">
+    <value>manual</value>
+  </data>
+  <data name="GIMP_PZ_GEMISCHT" xml:space="preserve">
+    <value>mixed</value>
+  </data>
+  <data name="GIMP_PZ_KEINE" xml:space="preserve">
+    <value>no usage</value>
+  </data>
+  <data name="GIMP_PZ_NUR_OFFENE" xml:space="preserve">
+    <value>open only</value>
+  </data>
+  <data name="GIMP_PZ_ALLE_UEBERNEHMEN" xml:space="preserve">
+    <value>Accept all proposals</value>
+  </data>
+  <data name="GIMP_PZ_ALLE_ZURUECK" xml:space="preserve">
+    <value>Revert</value>
+  </data>
+  <data name="GIMP_PZ_UEBERNEHMEN" xml:space="preserve">
+    <value>accept</value>
+  </data>
+  <data name="GIMP_PZ_AUFHEBEN" xml:space="preserve">
+    <value>Remove assignment</value>
+  </data>
+  <data name="GIMP_PZ_SCHNELLWAHL" xml:space="preserve">
+    <value>Candidates:</value>
+  </data>
+  <data name="GIMP_PZ_HINWEIS_WAHL" xml:space="preserve">
+    <value>Tick groups, then click a profile in the catalogue.</value>
+  </data>
+  <data name="GIMP_PZ_GEWAEHLT" xml:space="preserve">
+    <value>{0} groups selected ({1} rooms)</value>
+  </data>
+  <data name="GIMP_PZ_ZAEHLER" xml:space="preserve">
+    <value>{0} unambiguous · {1} proposal · {2} query · {3} none · {4} manual</value>
+  </data>
+  <data name="GIMP_PZ_KEIN_BUENDEL" xml:space="preserve">
+    <value>No open group.</value>
+  </data>
+  <data name="GIMP_PZ_RAUMART" xml:space="preserve">
+    <value>Room type {0}</value>
+  </data>
+  <data name="GIMP_PZ_KENNWERTE" xml:space="preserve">
+    <value>{0} °C · {1}–{2} h</value>
+  </data>
+  <data name="GIMP_PZ_AMPEL_VORSCHLAG" xml:space="preserve">
+    <value>{0} rooms carry an unconfirmed proposal — the import is possible; confirm under “Assign usage profiles…”.</value>
+  </data>
+  <data name="GIMP_PZ_AMPEL_RUECKFRAGE" xml:space="preserve">
+    <value>{0} rooms without an unambiguous profile — please choose under “Assign usage profiles…”.</value>
+  </data>
+  <data name="GIMP_PZ_AMPEL_GRUEN" xml:space="preserve">
+    <value>All rooms carry a set profile.</value>
+  </data>
+  <data name="GIMP_PZ_NUR_VORSCHLAEGE" xml:space="preserve">
+    <value>proposals only</value>
+  </data>
+  <data name="GIMP_PZ_NUR_BEHEIZTE" xml:space="preserve">
+    <value>heated only</value>
+  </data>
+  <data name="GIMP_PZ_AUFKLAPPEN" xml:space="preserve">
+    <value>Single rooms</value>
+  </data>
+  <data name="GIMP_PZ_DATEIZONEN_TITEL" xml:space="preserve">
+    <value>Zones named by the file</value>
+  </data>
+  <data name="GIMP_PZ_RESTRAEUME_TITEL" xml:space="preserve">
+    <value>Rooms without a zone of the project file</value>
+  </data>
+  <data name="GIMP_PZ_RESTRAEUME_HINWEIS" xml:space="preserve">
+    <value>The rooms stay without a zone until a proposal or candidate is chosen; the zones of the project file remain unchanged.</value>
+  </data>
+  <data name="GIMP_PZ_IN_ZONE" xml:space="preserve">
+    <value>into zone “{0}”</value>
+  </data>
+  <data name="GIMP_PZ_FRAGE_TITEL" xml:space="preserve">
+    <value>Assign profile</value>
+  </data>
+  <data name="GIMP_PZ_FRAGE" xml:space="preserve">
+    <value>The assignment rebuilds the zone tree by its rule. {0} manual steps on the zone tree will be lost. Continue?</value>
+  </data>
   <data name="SIMERG_LBL_ABZUEGLICH_SPEICHERVERLUSTE" xml:space="preserve">
     <value>less storage losses:</value>
   </data>
@@ -58338,5 +58578,11 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="SIMERG_TIP_SPEICHERVERLUSTE_SPK" xml:space="preserve">
     <value>Boiler heat that is lost in storage or still stored at the end of the year and so covers no demand. Calculated as heat production minus useful heat.</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_AUS_PUFFER_WP" xml:space="preserve">
+    <value>of which from buffer:</value>
+  </data>
+  <data name="SIMERG_TIP_DAVON_AUS_PUFFER_WP" xml:space="preserve">
+    <value>The part of the useful heat that the storage tanks delivered to the demand from the heat pumps' charge. The heat pumps deliver the rest directly. In the boiler tab this value is part of “of which from buffer (other generators)”.</value>
   </data>
 </root>

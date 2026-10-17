@@ -92,7 +92,7 @@ public class UebersichtErgebnisseTests : EposBunitContext
             .Add(x => x.Laden, Huelle().Laden)
             .Add(x => x.Titel, WindowsFormsApplication1.MyResource.Resource.BK_ERG_ABSCHNITT_ERGEBNISSE));
 
-        Assert.Equal("Ergebnisse — Energie", cut.Find("h2.epos-uebersicht-abschnitt").TextContent);
+        Assert.Equal("Übersicht Energie", cut.Find("h2.epos-uebersicht-abschnitt").TextContent);
         string[] gruppen = cut.FindAll("tr.epos-ergebnis-gruppe th").Select(t => t.TextContent).ToArray();
         Assert.Equal("Bedarf", gruppen.First());
         Assert.Contains("Endenergie", gruppen);
@@ -315,16 +315,18 @@ public class UebersichtErgebnisseTests : EposBunitContext
             .Add(x => x.LabelAbschnittKomponenten, WindowsFormsApplication1.MyResource.Resource.BK_ERG_ABSCHNITT_KOMPONENTEN));
 
         string[] abschnitte = cut.FindAll("h2.epos-uebersicht-abschnitt").Select(h => h.TextContent).ToArray();
-        Assert.Equal(new[] { "Komponenten und Einstellungen", "Ergebnisse — Energie" }, abschnitte);
+        Assert.Equal(new[] { "Übersicht Komponenten / Vergleich", "Übersicht Energie" }, abschnitte);
         // Mit dem Parametersatz der Hülle hat der Umschalter drei Stellungen (Konzept Energieflussbild 4.1).
         Assert.Equal(new[] { "tabelle", "grafik", "fluss" },
-                     cut.FindAll(".epos-ergebnis-ansicht button[role=radio]").Select(k => k.GetAttribute("data-ansicht")).ToArray());
+                     cut.FindAll(".epos-ergebnis-ansicht button[data-ansicht]").Select(k => k.GetAttribute("data-ansicht")).ToArray());
+        // Ohne gemerkte Wahl öffnet der Bereich „Übersicht Energie“ mit dem Energieflussbild.
+        Assert.Equal("fluss", cut.Find(".epos-ergebnis-ansicht button[aria-checked=true]").GetAttribute("data-ansicht"));
 
         KiFeldzugang feld = KiMaskenbruecke.Feldzugang(KiMaskennamen.BERICHTE_UEBERSICHT, "ergebnisse");
         Assert.NotNull(feld);
         Assert.False(feld.Setzbar);
         string text = (string)feld.Lesen();
-        Assert.StartsWith("Ansicht: Tabelle\n", text);
+        Assert.StartsWith("Ansicht: Fluss", text);
         Assert.Contains("Bedarf · Wärmebedarf gesamt [MWh/a]: Stamm = 100; WP klein = 110 (+10,0 %)"
                         + " — weicht vom Stammprojekt ab", text);
         // Alle Gruppen als Text, auch die zugeklappten, mit Gruppenkennung.

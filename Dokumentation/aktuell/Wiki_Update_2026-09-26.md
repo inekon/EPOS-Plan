@@ -218,6 +218,7 @@ Alle Blöcke dieser Gruppe sind nicht hochgeladen; die Version erfragt die Sitzu
 
 - Seit 17.10.2026: Eine wassergekühlte Kältemaschine wählt in der Gruppe „Rückkühlung“ ihr Rückkühlwerk aus der Verwaltung „Rückkühlwerke“ und zeigt seine Daten samt Hinweisen.
 - Seit 17.10.2026: Der Bericht nennt unter der Tabelle „Kälteerzeuger“ je Kältemaschine mit Rückkühlwerk Bauart, Ventilatorstrom, Wasser, Teil-Freikühlung und mittlere Rückkühltemperatur.
+- Seit 17.10.2026: Im Dialog der Kältemaschinen ist „Typkennfelder laden…“ gesperrt, solange alle Typkennfelder im Katalog stehen; das Ergebnis des Ladens steht in einer zweiten Zeile der Katalogkopfzeile neben dem Knopf. (#1200)
 
 #### Version offen — Eingabearten und Normkalender der Bedarfsprofile (Entwurf, Upload ausstehend)
 
@@ -268,6 +269,7 @@ Der Sammel-Upload 1.2.0.11 lief am 14.10.2026 (Seite Brauchwasser-Zapfprofil Rev
 - Seit 17.10.2026: Die Vorschau „Simulation…“ der Bedarfsprofile rechnet mit dem im Dialog gewählten Betriebskalender.
 - Seit 17.10.2026: Diagramme in Reiterblättern zeigen Achsenbeschriftung und Zeigertext vollständig; der Zeigertext steht mittig unter dem Zeiger.
 - Seit 17.10.2026: In der Übersicht Berichte & Kosten ist die Reiterleiste deutlicher hervorgehoben.
+- Seit 17.10.2026: Die Jahresganglinie im Reiter „Grafik“ der Bedarfssimulation folgt der gewählten Einheit und zeigt bei MWh MW, bei kWh kW.
 
 *Wiki-Quellen dieses Nachtrags (Upload ausstehend):* `Projekte/Wiki/Programm Dokumentation - Pufferspeicher auslegen.wiki`, „Grundlagen - Anlagenkopplung und Regelung“, „Simulation konfigurieren und starten“, `Projekte/Wiki/Dateien/Diagramm_Bivalenz.png`, `Projekte/Wiki/Dateien/Diagramm_Kapitalwert_Bruecke.png`.
 

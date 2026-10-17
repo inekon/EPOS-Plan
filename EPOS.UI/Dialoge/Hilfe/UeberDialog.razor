@@ -204,6 +204,9 @@
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
 
+    /// <summary>Nach dem Schalten den Fokus erneut auf die Wurzel setzen (nächster Render).</summary>
+    private bool _fokusNachSchalten;
+
     /// <summary>Der Haken „KI-Protokoll beilegen" — Vorgabe aus.</summary>
     private bool _mitKiProtokoll;
 
@@ -229,9 +232,13 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // Der Fokus auf den Dialog, damit @onkeydown die Geste und Escape sieht.
-        if (!firstRender || !_ersterAufbau) return;
+        // Der Fokus auf den Dialog, damit @onkeydown die Geste und Escape sieht: beim ersten
+        // Aufbau und erneut nach jedem Schalten der Geste (der Hinweis und der neue Block
+        // zeichnen neu; der Fokus soll für den naechsten Druck in der Wurzel bleiben).
+        bool erst = firstRender && _ersterAufbau;
+        if (!erst && !_fokusNachSchalten) return;
         _ersterAufbau = false;
+        _fokusNachSchalten = false;
         try { await _wurzel.FocusAsync(preventScroll: true); }
         catch (Exception) { /* ohne Browser (Vorabdarstellung): kein Fokus, kein Fehler */ }
     }
@@ -320,6 +327,7 @@
     private void BeiGeste()
     {
         if (EntwicklermodusSchalten is null) return;
+        _fokusNachSchalten = true;
         try
         {
             string? neu = EntwicklermodusSchalten();

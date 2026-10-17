@@ -4884,6 +4884,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf [{0}] ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_ACHSE_KAELTE {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_ACHSE_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf [{0}] ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_ACHSE_STROM {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_ACHSE_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stunde ähnelt.
         /// </summary>
         public static string BED_GRAFIK_ACHSE_STUNDE {
@@ -4898,6 +4916,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BED_GRAFIK_ACHSE_VIERTELSTUNDE {
             get {
                 return ResourceManager.GetString("BED_GRAFIK_ACHSE_VIERTELSTUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf [{0}] ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_ACHSE_WAERME {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_ACHSE_WAERME", resourceCulture);
             }
         }
         
@@ -12293,7 +12320,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnisse — Energie ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übersicht Energie ähnelt.
         /// </summary>
         public static string BK_ERG_ABSCHNITT_ERGEBNISSE {
             get {
@@ -12302,7 +12329,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Komponenten und Einstellungen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übersicht Komponenten / Vergleich ähnelt.
         /// </summary>
         public static string BK_ERG_ABSCHNITT_KOMPONENTEN {
             get {
@@ -48408,6 +48435,393 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Vorschläge übernehmen ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_ALLE_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_ALLE_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zurücknehmen ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_ALLE_ZURUECK {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_ALLE_ZURUECK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Räume tragen ein gesetztes Profil. ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_AMPEL_GRUEN {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_AMPEL_GRUEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume ohne eindeutiges Profil — bitte unter „Nutzungsprofile zuordnen…“ wählen. ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_AMPEL_RUECKFRAGE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_AMPEL_RUECKFRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Räume tragen einen unbestätigten Vorschlag — der Import ist möglich; bestätigen unter „Nutzungsprofile zuordnen…“. ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_AMPEL_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_AMPEL_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnung aufheben ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_AUFHEBEN {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_AUFHEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Räume einzeln ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_AUFKLAPPEN {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_AUFKLAPPEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Räume der Datei ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_BUENDEL_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_BUENDEL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonen mit Bezeichnung der Datei ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_DATEIZONEN_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_DATEIZONEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zuordnung bildet den Zonenbaum nach der Regel neu. {0} Schritte von Hand am Zonenbaum gehen dabei verloren. Fortfahren? ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_FRAGE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil zuordnen ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_FRAGE_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_FRAGE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gemischt ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_GEMISCHT {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_GEMISCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Bündel gewählt ({1} Räume) ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_GEWAEHLT {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_GEWAEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bündel ankreuzen, dann im Katalog ein Profil anklicken. ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_HINWEIS_WAHL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_HINWEIS_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die in Zone „{0}“ ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_IN_ZONE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_IN_ZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_KATALOG {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Profil passt zur Suche. ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_KATALOG_LEER {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_KATALOG_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Nutzung ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_KEINE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein offenes Bündel. ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_KEIN_BUENDEL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_KEIN_BUENDEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} °C · {1}–{2} h ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_KENNWERTE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_KENNWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofile zuordnen… ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_KNOPF {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofile zuordnen… ({0} offen) ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_KNOPF_OFFEN {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_KNOPF_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur beheizte ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_NUR_BEHEIZTE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_NUR_BEHEIZTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur offene ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_NUR_OFFENE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_NUR_OFFENE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Vorschläge ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_NUR_VORSCHLAEGE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_NUR_VORSCHLAEGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumart {0} ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_RAUMART {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_RAUMART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Räume bleiben ohne Zone, bis ein Vorschlag oder Kandidat gewählt ist; die Zonen der Projektdatei bleiben unverändert. ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_RESTRAEUME_HINWEIS {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_RESTRAEUME_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Räume ohne Zone der Projektdatei ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_RESTRAEUME_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_RESTRAEUME_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kandidaten: ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_SCHNELLWAHL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_SCHNELLWAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bündel ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_SP_BUENDEL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_SP_BUENDEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fläche [m²] ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_SP_FLAECHE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_SP_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Räume ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_SP_RAEUME {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_SP_RAEUME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_SP_STAND {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_SP_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil / Vorschlag ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_SP_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_SP_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eindeutig ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_STAND_EINDEUTIG {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_STAND_EINDEUTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die von Hand ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_STAND_HAND {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_STAND_HAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückfrage ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_STAND_OFFEN {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_STAND_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Kandidat ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_STAND_OHNE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_STAND_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_STAND_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_STAND_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil suchen (Nummer oder Name) ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_SUCHE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_SUCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofile zuordnen ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die übernehmen ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} eindeutig · {1} Vorschlag · {2} Rückfrage · {3} ohne · {4} von Hand ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_ZAEHLER {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_ZAEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die keine Angabe — als beheizt angenommen ähnelt.
         /// </summary>
         public static string GIMP_RAUM_GRUND_ANNAHME {
@@ -48615,11 +49029,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Z7 – nach Nutzungsprofil ähnelt.
+        /// </summary>
+        public static string GIMP_ZONENREGEL_Z7 {
+            get {
+                return ResourceManager.GetString("GIMP_ZONENREGEL_Z7", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ohne Außenfläche ähnelt.
         /// </summary>
         public static string GIMP_ZONE_OHNE_AUSSEN {
             get {
                 return ResourceManager.GetString("GIMP_ZONE_OHNE_AUSSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ohne Nutzung ähnelt.
+        /// </summary>
+        public static string GIMP_ZONE_OHNE_NUTZUNG {
+            get {
+                return ResourceManager.GetString("GIMP_ZONE_OHNE_NUTZUNG", resourceCulture);
             }
         }
         
@@ -48638,6 +49070,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_ZONE_UNBEHEIZT {
             get {
                 return ResourceManager.GetString("GIMP_ZONE_UNBEHEIZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unbeheizt ähnelt.
+        /// </summary>
+        public static string GIMP_ZONE_UNBEHEIZT_Z7 {
+            get {
+                return ResourceManager.GetString("GIMP_ZONE_UNBEHEIZT_Z7", resourceCulture);
             }
         }
         
@@ -52350,6 +52791,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unbekanntes Profil „{0}“ – die Zuordnung wird nicht übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_GBXML_PROT_PLAN_PROFIL_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_GBXML_PROT_PLAN_PROFIL_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Raum {0} gehört nicht zu diesem Gebäude. ähnelt.
         /// </summary>
         public static string IMP_GBXML_PROT_PLAN_RAUM_UNBEKANNT {
@@ -54312,6 +54762,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unbekanntes Profil „{0}“ – die Zuordnung wird nicht übernommen. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PLAN_PROFIL_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PLAN_PROFIL_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Raum {0} gehört nicht zu diesem Gebäude. ähnelt.
         /// </summary>
         public static string IMP_IFC_PROT_PLAN_RAUM_UNBEKANNT {
@@ -54371,6 +54830,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_IFC_PROT_PLATZIERUNGSART {
             get {
                 return ResourceManager.GetString("IMP_IFC_PROT_PLATZIERUNGSART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsprofile je Raum: {0} eindeutig zugeordnet, {1} mit Vorschlag, {2} offen (Rückfrage), {3} ohne Kandidaten; offen: {4}. ähnelt.
+        /// </summary>
+        public static string IMP_IFC_PROT_PROFILE_ZUGEORDNET {
+            get {
+                return ResourceManager.GetString("IMP_IFC_PROT_PROFILE_ZUGEORDNET", resourceCulture);
             }
         }
         
@@ -56468,6 +56936,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_SQ_PROT_RAUM_OHNE_TREFFER {
             get {
                 return ResourceManager.GetString("IMP_SQ_PROT_RAUM_OHNE_TREFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} beheizte Räume gehören keiner Zone der Projektdatei; für {1} schlägt die Rangfolge (Bezeichnung, Raumart, Raumname) ein Nutzungsprofil vor: {2}. Die Räume bleiben nicht zugeordnet, bis Sie sie einer Zone zuordnen. ähnelt.
+        /// </summary>
+        public static string IMP_SQ_PROT_RAUM_OHNE_ZONE_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("IMP_SQ_PROT_RAUM_OHNE_ZONE_VORSCHLAG", resourceCulture);
             }
         }
         
@@ -89364,6 +89841,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Typkennfelder sind geladen. ähnelt.
+        /// </summary>
+        public static string KM_ANL_TYPKENNFELDER_ALLE {
+            get {
+                return ResourceManager.GetString("KM_ANL_TYPKENNFELDER_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typkennfelder: {0} neu, {1} übersprungen. ähnelt.
+        /// </summary>
+        public static string KM_ANL_TYPKENNFELDER_STATUS {
+            get {
+                return ResourceManager.GetString("KM_ANL_TYPKENNFELDER_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur ähnelt.
         /// </summary>
         public static string KM_AUSK_AUSSEN {
@@ -116923,11 +117418,191 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beherbergung und Pflege ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_BEHERBERGUNG {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_BEHERBERGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildung ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_BILDUNG {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_BILDUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Büro und Verwaltung ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_BUERO {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_BUERO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gastronomie und Küche ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_GASTRONOMIE {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_GASTRONOMIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Labor und Gesundheit ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_GESUNDHEIT {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_GESUNDHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hallen und Produktion ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_HALLEN {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_HALLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Handel ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_HANDEL {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_HANDEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Veranstaltung und Kultur ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_KULTUR {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_KULTUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neben-, Verkehrs- und Lagerflächen ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_NEBENFLAECHEN {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_NEBENFLAECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parken ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_PARKEN {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_PARKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sport und Wellness ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_SPORT {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_SPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohnen ähnelt.
+        /// </summary>
+        public static string RNP_GRUPPE_WOHNEN {
+            get {
+                return ResourceManager.GetString("RNP_GRUPPE_WOHNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} aus der Datei ähnelt.
         /// </summary>
         public static string RNP_IMP_AUS_DATEI {
             get {
                 return ResourceManager.GetString("RNP_IMP_AUS_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung der Datei „{0}“ ähnelt.
+        /// </summary>
+        public static string RNP_IMP_BEGR_DATEI {
+            get {
+                return ResourceManager.GetString("RNP_IMP_BEGR_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die von Hand ähnelt.
+        /// </summary>
+        public static string RNP_IMP_BEGR_HAND {
+            get {
+                return ResourceManager.GetString("RNP_IMP_BEGR_HAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Küchen ähnelt.
+        /// </summary>
+        public static string RNP_IMP_BEGR_KUECHEN {
+            get {
+                return ResourceManager.GetString("RNP_IMP_BEGR_KUECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} % der beheizten Fläche ähnelt.
+        /// </summary>
+        public static string RNP_IMP_BEGR_MEHRHEIT {
+            get {
+                return ResourceManager.GetString("RNP_IMP_BEGR_MEHRHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name „{0}“ ähnelt.
+        /// </summary>
+        public static string RNP_IMP_BEGR_NAME {
+            get {
+                return ResourceManager.GetString("RNP_IMP_BEGR_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nichtwohngebäude ähnelt.
+        /// </summary>
+        public static string RNP_IMP_BEGR_NICHTWOHN {
+            get {
+                return ResourceManager.GetString("RNP_IMP_BEGR_NICHTWOHN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumart {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_BEGR_RAUMART {
+            get {
+                return ResourceManager.GetString("RNP_IMP_BEGR_RAUMART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohngebäude ({0} % Wohnfläche) ähnelt.
+        /// </summary>
+        public static string RNP_IMP_BEGR_WOHNGEBAEUDE {
+            get {
+                return ResourceManager.GetString("RNP_IMP_BEGR_WOHNGEBAEUDE", resourceCulture);
             }
         }
         
@@ -116977,6 +117652,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil Nr. {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_PROFIL_NUMMER {
+            get {
+                return ResourceManager.GetString("RNP_IMP_PROFIL_NUMMER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die aus der Nutzung der Datei ähnelt.
         /// </summary>
         public static string RNP_IMP_QUELLE_DATEI {
@@ -117018,6 +117702,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string RNP_IMP_QUELLE_IFC {
             get {
                 return ResourceManager.GetString("RNP_IMP_QUELLE_IFC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die aus {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_RAUMPROFIL {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_RAUMPROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag der Mehrheit – {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_RAUMPROFIL_MEHRHEIT {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_RAUMPROFIL_MEHRHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die offen – Auswahl: {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_RAUMPROFIL_OFFEN {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_RAUMPROFIL_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag – {0} ähnelt.
+        /// </summary>
+        public static string RNP_IMP_QUELLE_RAUMPROFIL_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("RNP_IMP_QUELLE_RAUMPROFIL_VORSCHLAG", resourceCulture);
             }
         }
         
@@ -122915,6 +123635,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon aus Puffer: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_DAVON_AUS_PUFFER_WP {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_DAVON_AUS_PUFFER_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die davon Heizung: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_DAVON_HEIZUNG {
@@ -123928,6 +124657,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_TIP_BRENNWERT_SPK {
             get {
                 return ResourceManager.GetString("SIMERG_TIP_BRENNWERT_SPK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Teil der Nutzwärme, den die Speicher aus der Ladung der Wärmepumpen an den Bedarf abgegeben haben. Den Rest liefern die Wärmepumpen direkt. Im Heizkesselreiter ist dieser Wert in „davon aus Puffer (andere Erzeuger)“ enthalten. ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_DAVON_AUS_PUFFER_WP {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_DAVON_AUS_PUFFER_WP", resourceCulture);
             }
         }
         

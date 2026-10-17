@@ -130,7 +130,7 @@ public class UebersichtErgebnisGrafikTests : EposBunitContext
     public void Die_Huelle_legt_die_Ansicht_ueber_die_Einstellungsnaht_ab()
         => MitAblage(ablage =>
         {
-            Assert.Equal(UebersichtErgebnisse.ANSICHT_TABELLE, UebersichtErgebnisGaben.AnsichtLesen());
+            Assert.Null(UebersichtErgebnisGaben.AnsichtLesen());   // ohne gemerkte Wahl gilt die Vorgabe der Komponente
             IReadOnlyDictionary<string, object> gaben = new UebersichtErgebnisGaben((id, s) => new VariantenDaten()).Gaben();
             ((Action<string>)gaben["AnsichtGewechselt"])(UebersichtErgebnisse.ANSICHT_GRAFIK);
             Assert.Equal("grafik", ablage.Lies("Uebersicht.Ergebnisse.Ansicht"));

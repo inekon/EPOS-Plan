@@ -52,6 +52,9 @@ Wiki-Quellen (`Projekte/Wiki/Programm Dokumentation - Gebäude.wiki`, `… - Geb
 | 22 | Rückfrage „Welche Aufbauten gelten?“ | Drei Knöpfe sind sichtbar und eindeutig beschriftet. | Jeder Knopf führt zur genannten Wirkung; Abbrechen übernimmt nichts. | |
 | 23 | Rückfrage „Welche Aufbauten gelten?“ bei schmalem Fenster (Fensterbreite verkleinern) | Die Tabellen der Rückfrage bleiben lesbar. | Kein abgeschnittener Text, kein waagerechtes Rollen der ganzen Seite. | |
 | 24 | Importdialog › Einzonen- und Mehrzonenweg mit Kalendern in den Räumen (N7/N8) | Die Zonen übernehmen ihre Kalender auch ohne gespeicherten Zonenplan. | Trägt jeder beheizte Raum denselben Kalender, übernimmt die eine Zone ihn; sonst steht eine Warnung in der Meldungsliste mit Hinweis auf eine Zonenregel. | |
+| 24a | Importdialog › IFC mit Raumarten einlesen › Knopf „Nutzungsprofile zuordnen…“ über dem Zonenbaum | Der Knopf steht da; die Zahl in Klammern nennt die Bündel mit Rückfrage; der Hinweis darunter ist gelb bei Vorschlägen, rot bei Räumen ohne eindeutiges Profil. | Die Überlagerung öffnet mit den Räumen als Bündel gleicher Raumart und Name (offene zuerst), links steht der Katalog nach Normgruppen. | |
+| 24b | Zuordnungsdialog › Bündel ankreuzen › im Katalog ein Profil anklicken (oder Schnellwahl der Kandidaten) | Die Wahl gilt für alle Räume der gewählten Bündel; „Räume einzeln“ klappt die Räume auf; die Filter „nur offene“, „nur Vorschläge“, „nur beheizte“ wirken zusammen. | Nach jeder Aktion bildet sich der Zonenbaum neu; die Ampel wechselt von rot über gelb nach grün, sobald alle Räume ein Profil tragen. | |
+| 24c | Zuordnungsdialog › „übernehmen“ in einer Zeile › „Alle Vorschläge übernehmen“ › „Zurücknehmen“ › danach „Zuordnung aufheben“; zuvor einen Schritt von Hand im Zonenplan setzen | Vorschläge lassen sich einzeln und gesammelt bestätigen und zurücknehmen; nach Handschritten fragt der Dialog vor einer Profiloperation zurück (Vorgabe „Nein“). | „Ja“ führt den Schritt aus und verwirft die Handschritte, „Nein“ und Esc lassen den Plan; Kreuz oder Esc schließen die Überlagerung, der Import schließt mit OK ab. | |
 
 ### 1.4 Bauteilkatalog einlesen
 
@@ -75,7 +78,9 @@ Anwenders, nicht im Repositorium):
 Die Prüfliste hat **29 Zeilen**. Entscheidungsfrage in Zeile 17 beantwortet der Anwender bei der Sichtabnahme (Stand
 IFC-Übergabe vom 09.10.2026).
 
-## 2. Auftrag an Epos Lokal: Übernahme der 7 Aufbauten
+## 2. Auftrag an Epos Lokal: Übernahme der 7 Aufbauten (erledigt am 17.10.2026)
+
+Erledigt am 17.10.2026 durch EPOS Lokal (der Anwender startete den Schreibschritt): Teilkatalog 7 913 / 7 913, Konvergenz 0 neu, integrity ok, FK 0. Der Auftrag steht als Nachweis unverändert darunter.
 
 **Hintergrund.** Bei der Übernahme des Bauteilkatalogs am 16.10.2026 (E159) hat die Datenbank des Anwenders 7 Aufbauten nicht
 übernommen: Die Vorschau zählte 7 913 Aufbauten mit Teilkatalog, die Datenbank 7 906 (Statuszeile #1171, BK-9/BK-10). Ursache

@@ -131,12 +131,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die gewählte Ansicht aus derselben Ablage wie die Anzeigeeinstellung (<paramref name="ablage"/>, sonst
-        /// <c>Dienste.Einstellungen</c>); ohne Ablage oder bei einem Fehler die Tabelle.
+        /// <c>Dienste.Einstellungen</c>); ohne gemerkte Wahl oder bei einem Fehler <c>null</c>, dann gilt die Vorgabe
+        /// der Komponente (das Energieflussbild).
         /// </summary>
         internal static string AnsichtLesen(IEinstellungen ablage = null)
         {
-            try { return (ablage ?? Dienste.Einstellungen).Lies(EINSTELLUNG_ANSICHT, UebersichtErgebnisse.ANSICHT_TABELLE) ?? UebersichtErgebnisse.ANSICHT_TABELLE; }
-            catch (Exception) { return UebersichtErgebnisse.ANSICHT_TABELLE; }
+            try { return (ablage ?? Dienste.Einstellungen).Lies(EINSTELLUNG_ANSICHT, null); }
+            catch (Exception) { return null; }
         }
 
         /// <summary>Die gemerkte Darstellung des Energieflussbilds; ohne Ablage, bei einem Fehler oder unbekanntem Wert die Kette.</summary>

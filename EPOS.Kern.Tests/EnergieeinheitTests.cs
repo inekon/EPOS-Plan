@@ -128,6 +128,35 @@ namespace EPOS.Kern.Tests
             Assert.Equal(12500, Energieeinheit.MWh.NachKWh(12.5), 10);
         }
 
+        // ============================================================ Leistung
+
+        [Fact]
+        public void Leistungstext_gehoert_zur_Energieeinheit()
+        {
+            Assert.Equal("MW", Energieeinheit.MWh.Leistungstext);
+            Assert.Equal("kW", Energieeinheit.KWh.Leistungstext);
+        }
+
+        [Fact]
+        public void Leistung_in_MW_teilt_durch_tausend()
+        {
+            Assert.Equal(0.25, Energieeinheit.MWh.LeistungAusKW(250.0), 12);
+            Assert.Equal(new[] { 0.0, 0.25, 1.5 },
+                         Energieeinheit.MWh.LeistungAusKW(new[] { 0.0, 250.0, 1500.0 }));
+        }
+
+        [Fact]
+        public void Leistung_in_kW_bleibt_BITGLEICH_und_kopiert_die_Reihe()
+        {
+            double wert = 0.1 + 0.2;
+            Assert.Equal(wert, Energieeinheit.KWh.LeistungAusKW(wert));
+            var reihe = new[] { wert, 7.0 };
+            double[] aus = Energieeinheit.KWh.LeistungAusKW(reihe);
+            Assert.Equal(reihe, aus);
+            Assert.NotSame(reihe, aus);
+            Assert.Null(Energieeinheit.MWh.LeistungAusKW((double[])null));
+        }
+
         [Fact]
         public void Aus_ohne_Quelle_laesst_den_Wert_stehen()
         {
