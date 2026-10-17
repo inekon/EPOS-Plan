@@ -23,14 +23,11 @@ public partial class ZapfprofilDialogStufenTests
         Assert.Empty(Kartentitel(cut));
         Assert.True(HatFeld(cut, "Nutzungsart"));
 
-        Stufe(cut, "Erweitert", aufklappen: false);
-        Assert.Equal(new[] { "Belegung", "Kalender", "Messwert", "Tagesbedarf", "Zirkulation", "Ladeleistung und Ladefenster",
-                             "Leitungsinhalt", "Stochastik · Jahresreihe" }, Kartentitel(cut));
+        // ZC3: Es gibt nur Einfach und Experte — Experte bringt alle Karten auf einmal.
+        Stufe(cut, "Experte", aufklappen: false);
         // „Nutzung" hat keine Klappe: Ihre Felder stehen in jeder Stufe.
         Assert.Empty(cut.FindAll(".epos-zapfprofil-karte--nutzung .epos-klappgruppe-knopf"));
         Assert.True(HatFeld(cut, "Bezugsgröße"));
-
-        Stufe(cut, "Experte", aufklappen: false);
         Assert.Equal(new[] { "Belegung", "Kalender", "Messwert", "Tagesbedarf", "Fachwerte der Zone", "Zirkulation",
                              "Ladeleistung und Ladefenster", "Leitungsinhalt", "Fachwerte · Gebäude", "Stochastik · Jahresreihe" },
                      Kartentitel(cut));
@@ -43,7 +40,7 @@ public partial class ZapfprofilDialogStufenTests
     public void ZB3_Auf_und_Zu_jeder_Karte_bleibt_beim_Zonenwechsel_und_beim_Stufenwechsel()
     {
         var cut = Aufbauen();
-        Stufe(cut, "Erweitert", aufklappen: false);
+        Stufe(cut, "Experte", aufklappen: false);
 
         ZapfprofilKarten.Knopf(cut, "messwert").Click();
         ZapfprofilKarten.Knopf(cut, "ladeleistung").Click();
@@ -52,7 +49,7 @@ public partial class ZapfprofilDialogStufenTests
         Assert.False(HatFeld(cut, "Anlagentopologie"));
 
         // Zonenwechsel: Die Karten der neuen Zone stehen wie zuvor - offen, was offen war.
-        cut.FindAll("table.epos-zapfprofil-zonen tbody tr")[1].QuerySelector("button")!.Click();
+        cut.FindAll("table.epos-zapfprofil-zonen tbody tr.epos-zapfprofil-bereich")[1].QuerySelector("button")!.Click();
         Assert.Equal("Zone „Büro“", Gruppen(cut)[1]);
         Assert.Equal("true", ZapfprofilKarten.Knopf(cut, "messwert").GetAttribute("aria-expanded"));
         Assert.Equal("false", ZapfprofilKarten.Knopf(cut, "belegung").GetAttribute("aria-expanded"));
@@ -61,13 +58,13 @@ public partial class ZapfprofilDialogStufenTests
 
         // Zuklappen wirkt ebenso über den Wechsel hinweg.
         ZapfprofilKarten.Knopf(cut, "messwert").Click();
-        cut.FindAll("table.epos-zapfprofil-zonen tbody tr")[0].QuerySelector("button")!.Click();
+        cut.FindAll("table.epos-zapfprofil-zonen tbody tr.epos-zapfprofil-bereich")[0].QuerySelector("button")!.Click();
         Assert.Equal("false", ZapfprofilKarten.Knopf(cut, "messwert").GetAttribute("aria-expanded"));
         Assert.False(HatFeld(cut, "Jahresmesswert"));
 
         // Über Einfach und zurück bleibt die Ladeleistung offen.
         Stufe(cut, "Einfach", aufklappen: false);
-        Stufe(cut, "Erweitert", aufklappen: false);
+        Stufe(cut, "Experte", aufklappen: false);
         Assert.Equal("true", ZapfprofilKarten.Knopf(cut, "ladeleistung").GetAttribute("aria-expanded"));
     }
 
@@ -106,7 +103,7 @@ public partial class ZapfprofilDialogStufenTests
 
     // ---- ZB8: Hinweise der Stufe Einfach --------------------------------------------------------
 
-    /// <summary>Eine Vorschau mit je einem Hinweis, den Einfach beheben kann, und einem, der erst ab Erweitert steht.</summary>
+    /// <summary>Eine Vorschau mit je einem Hinweis, den Einfach beheben kann, und einem, der erst ab Experte steht.</summary>
     private static ZapfprofilVorschauDaten VorschauMitHinweisen(ZapfprofilEingabeDaten e)
     {
         ZapfprofilVorschauDaten v = Vorschau(e);
@@ -114,11 +111,11 @@ public partial class ZapfprofilDialogStufenTests
         v.Warnliste.Add(new ZapfprofilWarnDaten("ZPG_WARN_BEDARF_AUSSERHALB_BANDBREITE", "Bedarf außerhalb der Bandbreite",
                                                 "Der Bedarf liegt außerhalb der Bandbreite.", ZapfprofilWarnstufe.Hinweis, 0));
         v.Warnliste.Add(new ZapfprofilWarnDaten("ZPG_WARN_ZIRKULATION_OHNE_FLAECHE", "Zirkulation ohne Fläche",
-                                                "Keine Fläche für den Flächenkennwert.", ZapfprofilWarnstufe.Hinweis) { AbErweitert = true });
+                                                "Keine Fläche für den Flächenkennwert.", ZapfprofilWarnstufe.Hinweis) { AbExperte = true });
         v.Meldungen.Add(new ZapfprofilMeldung("ZPG_SATZ_BAND", "Wohnen", "Bandbreite am Block.", ZapfprofilMeldungsart.Hinweis, "", 0));
         v.Meldungen.Add(new ZapfprofilMeldung("ZPG_SATZ_ZONE_OHNE_FLAECHE", "Wohnen", "Zone außerhalb der Zirkulation am Block.",
-                                              ZapfprofilMeldungsart.Hinweis, "", 0) { AbErweitert = true });
-        v.Meldungen.Add(new ZapfprofilMeldung("ZPG_SATZ_NETZ", "", "Netzverlust allgemein.", ZapfprofilMeldungsart.Hinweis) { AbErweitert = true });
+                                              ZapfprofilMeldungsart.Hinweis, "", 0) { AbExperte = true });
+        v.Meldungen.Add(new ZapfprofilMeldung("ZPG_SATZ_NETZ", "", "Netzverlust allgemein.", ZapfprofilMeldungsart.Hinweis) { AbExperte = true });
         return v;
     }
 
@@ -136,7 +133,7 @@ public partial class ZapfprofilDialogStufenTests
         Assert.DoesNotContain("Zone außerhalb der Zirkulation am Block.", cut.Markup);
         Assert.DoesNotContain("Netzverlust allgemein.", cut.Markup);
 
-        Stufe(cut, "Erweitert", aufklappen: false);
+        Stufe(cut, "Experte", aufklappen: false);
         Assert.Equal(new[] { "ZPG_WARN_BEDARF_AUSSERHALB_BANDBREITE", "ZPG_WARN_ZIRKULATION_OHNE_FLAECHE" }, Warnungen());
         Assert.Contains("Zone außerhalb der Zirkulation am Block.", cut.Markup);
     }
@@ -147,7 +144,7 @@ public partial class ZapfprofilDialogStufenTests
     public void ZB9_Katalog_oeffnet_das_Blatt_die_Zeile_waehlt_und_fuehrt_zurueck()
     {
         var cut = Aufbauen();
-        Stufe(cut, "Erweitert", aufklappen: false);
+        Stufe(cut, "Experte", aufklappen: false);
 
         Knopf(cut, "Katalog…").Click();
         Assert.True(cut.Instance.KatalogOffen);
@@ -175,7 +172,7 @@ public partial class ZapfprofilDialogStufenTests
         ZapfprofilErgebnisDaten? ergebnis = null;
         bool geschlossen = false;
         var zwei = Aufbauen(geschlossen: x => { ergebnis = x; geschlossen = true; });
-        Stufe(zwei, "Erweitert", aufklappen: false);
+        Stufe(zwei, "Experte", aufklappen: false);
         Knopf(zwei, "Katalog…").Click();
         zwei.Find(".epos-blatt").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.False(zwei.Instance.KatalogOffen);

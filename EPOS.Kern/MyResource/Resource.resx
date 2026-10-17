@@ -24295,7 +24295,7 @@ Möchten Sie das zulassen?</value>
     <value>„{0}“ ist gesperrt.</value>
   </data>
   <data name="KI_DLG_ZPG_STUFE_ERL" xml:space="preserve">
-    <value>Die Tiefe des Dialogs: „Einfach“ zeigt die Zonen, „Experte“ dazu die Stochastik der Jahresreihe. Die Stufe blendet nur ein und aus, eingegebene Werte bleiben; „Erweitert“ ist in dieser Fassung gesperrt.</value>
+    <value>Die Tiefe des Dialogs: „Einfach“ zeigt die Nutzungsbereiche mit Vorschau und Auslegung, „Experte“ dazu alle weiteren Angaben (Belegung, Kalender, Messwert, Tagesbedarf, Fachwerte, Jahresreihe). Die Stufe blendet nur ein und aus, eingegebene Werte bleiben.</value>
   </data>
   <data name="KI_DLG_ZPG_ZONE_ERL" xml:space="preserve">
     <value>Die gewählte Zone der Zonenliste, nach Nummer oder Name; ihr Eingabeblock steht unter der Liste. Die Werte jeder Zone lassen sich auch ohne Wahl über die Spalten setzen.</value>
@@ -26305,7 +26305,7 @@ Möchten Sie das zulassen?</value>
     <value>Entfernen</value>
   </data>
   <data name="ZPG_ZONE_NAME_VORGABE" xml:space="preserve">
-    <value>Zone {0}</value>
+    <value>Bereich {0}</value>
   </data>
   <data name="ZPG_ZONE_KOPIE" xml:space="preserve">
     <value>{0} (Kopie)</value>
@@ -30888,9 +30888,6 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_BILD_PERZENTIL" xml:space="preserve">
     <value>P{0}</value>
   </data>
-  <data name="ZPG_HINW_WEITERE_ERWEITERT" xml:space="preserve">
-    <value>Weitere Angaben stehen in der Stufe Erweitert.</value>
-  </data>
   <data name="ZPG_KATEG_MSG_NICHT_GESPEICHERT" xml:space="preserve">
     <value>Die Zapfkategorien wurden nicht gespeichert — {0}</value>
   </data>
@@ -31666,10 +31663,10 @@ Möchten Sie das zulassen?</value>
     <value>Bitte die manuelle Zirkulationsleistung (kW, ≥ 0) angeben.</value>
   </data>
   <data name="ZPG_HINW_WEITERE_EXPERTE" xml:space="preserve">
-    <value>Fachwerte, Tagesgänge und Zufallssaat stehen in der Stufe Experte.</value>
+    <value>Weitere Angaben — Belegung, Kalender, Messwert, Fachwerte und Jahresreihe — stehen in der Stufe Experte.</value>
   </data>
   <data name="ZPG_GRUND_DAUERLINIE" xml:space="preserve">
-    <value>Die Dauerlinie zeigt die Stufe Erweitert.</value>
+    <value>Die Dauerlinie zeigt die Stufe Experte.</value>
   </data>
   <data name="ZPG_VORGABE_EINTRAG" xml:space="preserve">
     <value>Vorgabe · {0}</value>
@@ -32182,7 +32179,7 @@ Möchten Sie das zulassen?</value>
     <value>Keine Hinweise.</value>
   </data>
   <data name="KI_DLG_ZPG_WOHNUNG_ANZAHL_ERL" xml:space="preserve">
-    <value>Wie viele Wohnungen dieses Typs die gewählte Zone hat — eine Zeile der Wohnungstabelle, nur bei einer Nutzungsart „Wohnen“ in der Stufe Erweitert.</value>
+    <value>Wie viele Wohnungen dieses Typs der gewählte Nutzungsbereich hat — eine Zeile der Wohnungstabelle, nur bei einer Nutzungsart „Wohnen“ in der Stufe Experte.</value>
   </data>
   <data name="KI_DLG_ZPG_WOHNUNG_RAUMZAHL_ERL" xml:space="preserve">
     <value>Die Raumzahl des Wohnungstyps; ohne Personenangabe folgt aus ihr die Belegung nach dem Katalog.</value>
@@ -36553,7 +36550,7 @@ Möchten Sie das zulassen?</value>
     <value>Wählen Sie die Messreihe, gegen die verglichen werden soll.</value>
   </data>
   <data name="ZPG_VERGL_NUR_ERWEITERT" xml:space="preserve">
-    <value>Der Vergleich mit einer Messreihe steht ab der Stufe Erweitert.</value>
+    <value>Der Vergleich mit einer Messreihe steht ab der Stufe Experte.</value>
   </data>
   <data name="ZPG_VERGL_LEER" xml:space="preserve">
     <value>Noch kein Vergleich gerechnet.</value>
@@ -36823,7 +36820,7 @@ Möchten Sie das zulassen?</value>
     <value>Wochentag ohne Messtag</value>
   </data>
   <data name="KI_DLG_ZPG_MESSREIHE_ERL" xml:space="preserve">
-    <value>Die eingespielte Messreihe, gegen die der Reiter „Kennzahlen“ vergleicht (Wahl aus den Reihen des Projekts, ab der Stufe Erweitert); gerechnet wird der Vergleich auf Klick.</value>
+    <value>Die eingespielte Messreihe, gegen die der Reiter „Kennzahlen“ vergleicht (Wahl aus den Reihen des Projekts, ab der Stufe Experte); gerechnet wird der Vergleich auf Klick.</value>
   </data>
   <data name="ZPG_MESSDATEN_TITEL" xml:space="preserve">
     <value>Messdaten</value>
@@ -58216,5 +58213,11 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="KI_DLG_KMA_RKW_ERL" xml:space="preserve">
     <value>Katalogsatz des Rückkühlwerks der wassergekühlten Kältemaschine (Id); leer = keins, dann gelten die Festwerte der Rückkühlart. Mit OK bekommt die Anlage eine eigene Projektkopie.</value>
+  </data>
+  <data name="ZPG_FELD_BEREICH" xml:space="preserve">
+    <value>{0}, Bereich {1}</value>
+  </data>
+  <data name="ZPG_SP_NIVEAU" xml:space="preserve">
+    <value>Niveau</value>
   </data>
 </root>

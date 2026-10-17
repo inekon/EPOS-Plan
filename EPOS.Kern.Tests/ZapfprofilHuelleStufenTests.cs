@@ -9,7 +9,7 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// <b>Die Hülle der Stufen Erweitert und Experte</b> (Umsetzungskonzept Zapfprofilgenerator
+    /// <b>Die Hülle der Stufe Experte</b> (Umsetzungskonzept Zapfprofilgenerator
     /// 5.1, 5.3, 5.5; Stufe Z4, Gruppe 2a): die Angaben je Zone und die gebäudeweiten Größen hin und
     /// zurück, Ferien als Tag und Monat des Rechenjahrs, die Pflichtprüfung der höheren Stufen, der
     /// Stand beim Öffnen (Vorgaben, Tagesgangsätze, Ausstattungen, Gebäude) und die Spalten der
@@ -507,12 +507,12 @@ namespace EPOS.Kern.Tests
             e.Zonen.Add(new ZapfprofilZoneDaten { Name = "Wohnen", IdNutzungsart = a, Bezugsmenge = 20 });
             e.Gebaeude.LadefensterH = 7.0;
             e.Gebaeude.SpeicherC = 61.0;
-            e.Stufe = ZapfprofilStufe.Erweitert;
+            e.Stufe = ZapfprofilStufe.Experte;
 
             var gaben = (Func<ZapfprofilEingabeDaten, bool, IReadOnlyDictionary<string, object>>)
                         ZapfprofilHuelle.Gaben(PROJEKT, ZapfprofilCtrl.Lies(PROJEKT))["AuslegungGaben"];
             var start = (ZapfprofilAuslegungStartDaten)gaben(e, false)["Daten"];
-            Assert.Equal(ZapfprofilStufe.Erweitert, start.Stufe);
+            Assert.Equal(ZapfprofilStufe.Experte, start.Stufe);
             Assert.Equal(7.0, start.Eingabe.LadefensterH);
             Assert.Equal(61.0, start.Eingabe.SpeicherC);
             Assert.NotNull(start.Ergebnis);

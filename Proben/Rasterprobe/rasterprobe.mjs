@@ -290,7 +290,7 @@ async function fall(browser, f) {
   await seite.goto(adresse, { waitUntil: 'domcontentloaded' });
 
   // f.klick: der Schritt des Anwenders vor der Messung (etwa die Stufe
-  // "Erweitert" des Zapfprofils, erst mit ihr steht die Karte "Belegung" da).
+  // "Experte" des Zapfprofils, erst mit ihr steht die Karte "Belegung" da).
   for (const k of [].concat(f.klick || [])) {
     await seite.waitForSelector(k, { timeout: 20000 });
     await schlaf(500);
@@ -620,7 +620,7 @@ const FAELLE = [
   // ZAPFPROFILGENERATOR (Stufe Z4): der Katalog der Brauchwasser-Nutzungsarten
   // (Katalogliste, Zeile ist Wahl, 46 px) - virtualisiert (6 654 Zeilen) und im
   // Mass eines Katalogs unter der Schwelle (40); dazu die zwei Raster ohne eigene
-  // Hoechsthoehe: die Wohnungstabelle der Stufe Erweitert (Zapfprofil) und das
+  // Hoechsthoehe: die Wohnungstabelle der Stufe Experte (Zapfprofil) und das
   // Raster der Zapfkategorien, bearbeitbar und lesend.
   { name: 'T1_tww_6654_Dialog_1088x624', modus: 'sofort', zeilen: 6654, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
     pfad: '/katalogprobe?maske=tww&zeilen=6654', zeile: 46, tasten: true },
@@ -643,11 +643,11 @@ const FAELLE = [
     pfad: '/katalogprobe?maske=projekt-gebaeude&zeilen=269', zeile: 46, bereich: '.epos-katalogliste' },
   { name: 'Z1_wohnungen_12_1088x624',    modus: 'sofort', zeilen: 12, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
     pfad: '/katalogprobe?maske=wohnungen&zeilen=12', frei: true, bereich: '.epos-zapfprofil-wohnungen',
-    klick: 'fieldset[aria-label="Stufe"] label.epos-option:has-text("Erweitert")',
+    klick: 'fieldset[aria-label="Stufe"] label.epos-option:has-text("Experte")',
     aufklappen: '.epos-zapfprofil-karte--belegung' },
   { name: 'Z2_wohnungen_12_400x624',     modus: 'sofort', zeilen: 12, takt: 0, breite: 400, hoehe: 624, dpr: 1,
     pfad: '/katalogprobe?maske=wohnungen&zeilen=12', frei: true, bereich: '.epos-zapfprofil-wohnungen',
-    klick: 'fieldset[aria-label="Stufe"] label.epos-option:has-text("Erweitert")',
+    klick: 'fieldset[aria-label="Stufe"] label.epos-option:has-text("Experte")',
     aufklappen: '.epos-zapfprofil-karte--belegung' },
   { name: 'Z3_kategorien_10_1088x624',   modus: 'sofort', zeilen: 10, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
     pfad: '/katalogprobe?maske=kategorien&zeilen=10', frei: true, bereich: '.epos-zapfprofil-kategorienraster' },

@@ -80104,7 +80104,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die eingespielte Messreihe, gegen die der Reiter „Kennzahlen“ vergleicht (Wahl aus den Reihen des Projekts, ab der Stufe Erweitert); gerechnet wird der Vergleich auf Klick. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die eingespielte Messreihe, gegen die der Reiter „Kennzahlen“ vergleicht (Wahl aus den Reihen des Projekts, ab der Stufe Experte); gerechnet wird der Vergleich auf Klick. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_MESSREIHE_ERL {
             get {
@@ -80230,7 +80230,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Tiefe des Dialogs: „Einfach“ zeigt die Zonen, „Experte“ dazu die Stochastik der Jahresreihe. Die Stufe blendet nur ein und aus, eingegebene Werte bleiben; „Erweitert“ ist in dieser Fassung gesperrt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Tiefe des Dialogs: „Einfach“ zeigt die Nutzungsbereiche mit Vorschau und Auslegung, „Experte“ dazu alle weiteren Angaben (Belegung, Kalender, Messwert, Tagesbedarf, Fachwerte, Jahresreihe). Die Stufe blendet nur ein und aus, eingegebene Werte bleiben. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_STUFE_ERL {
             get {
@@ -80302,7 +80302,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wie viele Wohnungen dieses Typs die gewählte Zone hat — eine Zeile der Wohnungstabelle, nur bei einer Nutzungsart „Wohnen“ in der Stufe Erweitert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie viele Wohnungen dieses Typs der gewählte Nutzungsbereich hat — eine Zeile der Wohnungstabelle, nur bei einer Nutzungsart „Wohnen“ in der Stufe Experte. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPG_WOHNUNG_ANZAHL_ERL {
             get {
@@ -162364,6 +162364,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Bereich {1} ähnelt.
+        /// </summary>
+        public static string ZPG_FELD_BEREICH {
+            get {
+                return ResourceManager.GetString("ZPG_FELD_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1} ähnelt.
         /// </summary>
         public static string ZPG_FELD_ZEILE {
@@ -162940,7 +162949,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Dauerlinie zeigt die Stufe Erweitert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Dauerlinie zeigt die Stufe Experte. ähnelt.
         /// </summary>
         public static string ZPG_GRUND_DAUERLINIE {
             get {
@@ -163561,16 +163570,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Weitere Angaben stehen in der Stufe Erweitert. ähnelt.
-        /// </summary>
-        public static string ZPG_HINW_WEITERE_ERWEITERT {
-            get {
-                return ResourceManager.GetString("ZPG_HINW_WEITERE_ERWEITERT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Fachwerte, Tagesgänge und Zufallssaat stehen in der Stufe Experte. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weitere Angaben — Belegung, Kalender, Messwert, Fachwerte und Jahresreihe — stehen in der Stufe Experte. ähnelt.
         /// </summary>
         public static string ZPG_HINW_WEITERE_EXPERTE {
             get {
@@ -171958,6 +171958,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Niveau ähnelt.
+        /// </summary>
+        public static string ZPG_SP_NIVEAU {
+            get {
+                return ResourceManager.GetString("ZPG_SP_NIVEAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsart ähnelt.
         /// </summary>
         public static string ZPG_SP_NUTZUNGSART {
@@ -172822,7 +172831,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Vergleich mit einer Messreihe steht ab der Stufe Erweitert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Vergleich mit einer Messreihe steht ab der Stufe Experte. ähnelt.
         /// </summary>
         public static string ZPG_VERGL_NUR_ERWEITERT {
             get {
@@ -173641,7 +173650,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich {0} ähnelt.
         /// </summary>
         public static string ZPG_ZONE_NAME_VORGABE {
             get {

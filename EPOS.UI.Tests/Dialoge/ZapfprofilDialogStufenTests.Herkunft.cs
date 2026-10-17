@@ -10,7 +10,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// Die Karte „Herkunft" des Ergebnisbereichs (Umsetzungskonzept Zapfprofilgenerator N19): das
 /// Herkunftsprotokoll des Kerns als Zeilen — eine je Eintrag, in der Reihenfolge des Rechenwegs.
 ///
-/// <para>Drei Fälle: die Karte steht <b>ab Stufe Erweitert</b> und trägt je Eintrag eine Zeile; ohne
+/// <para>Drei Fälle: die Karte steht <b>ab Stufe Experte</b> und trägt je Eintrag eine Zeile; ohne
 /// Eintrag sagt sie benannt „nichts zu vermerken"; in englischer Kultur stehen ihre Beschriftungen
 /// englisch. Die Zeilen kommen fertig aus der Hülle — der Dialog übersetzt nichts.</para>
 /// </summary>
@@ -26,11 +26,11 @@ public partial class ZapfprofilDialogStufenTests
     };
 
     /// <summary>
-    /// Die Karte steht nicht in der Stufe Einfach und ab Erweitert mit einer Zeile je Eintrag —
+    /// Die Karte steht nicht in der Stufe Einfach und ab Experte mit einer Zeile je Eintrag —
     /// Größe, Wert, Zone, Stand, Quelle und Vermerk in der Reihenfolge des Protokolls.
     /// </summary>
     [Fact]
-    public void Die_Herkunftskarte_steht_ab_Erweitert_mit_einer_Zeile_je_Eintrag()
+    public void Die_Herkunftskarte_steht_ab_Experte_mit_einer_Zeile_je_Eintrag()
     {
         ZapfprofilDaten d = Daten();
         d.Vorschau!.Herkunft.AddRange(Protokoll());
@@ -44,7 +44,7 @@ public partial class ZapfprofilDialogStufenTests
         // Stufe Einfach: keine Karte - das Protokoll traegt je Zone ein Dutzend Zeilen.
         Assert.Empty(cut.FindAll("details.epos-zapfprofil-herkunft"));
 
-        Stufe(cut, "Erweitert");
+        Stufe(cut, "Experte");
         IElement karte = cut.Find("details.epos-zapfprofil-herkunft");
         Assert.Equal("Herkunft", karte.QuerySelector("summary")!.TextContent.Trim());
         Assert.Empty(cut.FindAll(".epos-zapfprofil-herkunft-leer"));
@@ -76,7 +76,7 @@ public partial class ZapfprofilDialogStufenTests
     public void Ohne_Eintrag_nennt_die_Herkunftskarte_dass_nichts_zu_vermerken_ist()
     {
         var cut = Aufbauen();
-        Stufe(cut, "Erweitert");
+        Stufe(cut, "Experte");
 
         Assert.Single(cut.FindAll("details.epos-zapfprofil-herkunft"));
         Assert.Empty(cut.FindAll("table.epos-zapfprofil-herkunftliste"));

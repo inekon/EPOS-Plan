@@ -24288,7 +24288,7 @@ Do you want to allow this?</value>
     <value>“{0}” is locked.</value>
   </data>
   <data name="KI_DLG_ZPG_STUFE_ERL" xml:space="preserve">
-    <value>The depth of the dialog: “Basic” shows the zones, “Expert” also the stochastics of the annual series. The level only shows and hides fields, entered values are kept; “Extended” is locked in this version.</value>
+    <value>The depth of the dialog: “Basic” shows the usage areas with preview and sizing, “Expert” also all further inputs (occupancy, calendar, measured value, daily demand, technical values, annual series). The level only shows and hides fields, entered values are kept.</value>
   </data>
   <data name="KI_DLG_ZPG_ZONE_ERL" xml:space="preserve">
     <value>The selected zone of the zone list, by number or name; its input block is shown below the list. The values of every zone can also be set via the columns without selecting it.</value>
@@ -26298,7 +26298,7 @@ Do you want to allow this?</value>
     <value>Remove</value>
   </data>
   <data name="ZPG_ZONE_NAME_VORGABE" xml:space="preserve">
-    <value>Zone {0}</value>
+    <value>Area {0}</value>
   </data>
   <data name="ZPG_ZONE_KOPIE" xml:space="preserve">
     <value>{0} (copy)</value>
@@ -30881,9 +30881,6 @@ Do you want to allow this?</value>
   <data name="ZPG_BILD_PERZENTIL" xml:space="preserve">
     <value>P{0}</value>
   </data>
-  <data name="ZPG_HINW_WEITERE_ERWEITERT" xml:space="preserve">
-    <value>Further inputs are available at the Extended level.</value>
-  </data>
   <data name="ZPG_KATEG_MSG_NICHT_GESPEICHERT" xml:space="preserve">
     <value>The draw-off categories were not saved — {0}</value>
   </data>
@@ -31659,10 +31656,10 @@ Do you want to allow this?</value>
     <value>Please enter the manual circulation power (kW, ≥ 0).</value>
   </data>
   <data name="ZPG_HINW_WEITERE_EXPERTE" xml:space="preserve">
-    <value>Technical values, daily profiles and seed are available at the Expert level.</value>
+    <value>Further inputs — occupancy, calendar, measured value, technical values and annual series — are available at the Expert level.</value>
   </data>
   <data name="ZPG_GRUND_DAUERLINIE" xml:space="preserve">
-    <value>The duration curve is shown at the Extended level.</value>
+    <value>The duration curve is shown at the Expert level.</value>
   </data>
   <data name="ZPG_VORGABE_EINTRAG" xml:space="preserve">
     <value>Default · {0}</value>
@@ -32175,7 +32172,7 @@ Do you want to allow this?</value>
     <value>No notes.</value>
   </data>
   <data name="KI_DLG_ZPG_WOHNUNG_ANZAHL_ERL" xml:space="preserve">
-    <value>How many dwellings of this type the selected zone has — a row of the dwelling table, only for a residential type of use at the Extended level.</value>
+    <value>How many dwellings of this type the selected usage area has — a row of the dwelling table, only for a residential type of use at the Expert level.</value>
   </data>
   <data name="KI_DLG_ZPG_WOHNUNG_RAUMZAHL_ERL" xml:space="preserve">
     <value>The number of rooms of the dwelling type; without persons it gives the occupancy from the catalogue.</value>
@@ -36546,7 +36543,7 @@ Do you want to allow this?</value>
     <value>Choose the measured series to compare against.</value>
   </data>
   <data name="ZPG_VERGL_NUR_ERWEITERT" xml:space="preserve">
-    <value>The comparison with a measured series is available from level Advanced.</value>
+    <value>The comparison with a measured series is available at the Expert level.</value>
   </data>
   <data name="ZPG_VERGL_LEER" xml:space="preserve">
     <value>No comparison computed yet.</value>
@@ -36816,7 +36813,7 @@ Do you want to allow this?</value>
     <value>Weekday without a measured day</value>
   </data>
   <data name="KI_DLG_ZPG_MESSREIHE_ERL" xml:space="preserve">
-    <value>The imported measured series the “Key figures” tab compares against (a choice among the project's series, from level Advanced); the comparison itself is computed on click.</value>
+    <value>The imported measured series the “Key figures” tab compares against (a choice among the project's series, at the Expert level); the comparison itself is computed on click.</value>
   </data>
   <data name="ZPG_MESSDATEN_TITEL" xml:space="preserve">
     <value>Measured data</value>
@@ -58209,5 +58206,11 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="KI_DLG_KMA_RKW_ERL" xml:space="preserve">
     <value>Catalogue record of the heat rejection unit of the water-cooled chiller (id); empty = none, then the fixed values of the heat rejection type apply. With OK the plant gets its own project copy.</value>
+  </data>
+  <data name="ZPG_FELD_BEREICH" xml:space="preserve">
+    <value>{0}, area {1}</value>
+  </data>
+  <data name="ZPG_SP_NIVEAU" xml:space="preserve">
+    <value>Level</value>
   </data>
 </root>
