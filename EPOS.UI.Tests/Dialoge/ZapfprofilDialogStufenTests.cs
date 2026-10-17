@@ -399,7 +399,7 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
         // ZC2: Der Block bleibt fünfspaltig; Topologie, Anteil und Rechenweg stehen bis W9 (ZC5) als leise
         // Zeile in der Detailzeile der markierten Zeile.
         IElement tabelle = cut.Find("table.epos-zapfprofil-zonen");
-        Assert.Equal(new[] { "Zone", "Nutzungsart", "Bezugsgröße", "Bedarfsniveau", "MWh/a" },
+        Assert.Equal(new[] { "Zone", "Nutzungsart", "Bezugsgröße", "Niveau", "MWh/a" },
                      tabelle.QuerySelectorAll("thead th").Select(t => t.TextContent.Trim()).ToArray());
         string kennzeile = tabelle.QuerySelector(".epos-zapfprofil-bereichkennzeile")!.TextContent;
         Assert.Contains("Topologie Speicher", kennzeile);

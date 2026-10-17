@@ -2047,6 +2047,7 @@ namespace WindowsFormsApplication1
             t.OptionNein = Text_("ZPG_OPT_NEIN", t.OptionNein);
             t.FeldZeile = Text_("ZPG_FELD_ZEILE", t.FeldZeile);
             t.FeldBereich = Text_("ZPG_FELD_BEREICH", t.FeldBereich);
+            t.SpalteNiveau = Text_("ZPG_SP_NIVEAU", t.SpalteNiveau);
             t.SpalteTopologie = Text_("ZPG_SP_TOPOLOGIE", t.SpalteTopologie);
             t.SpalteAnteil = Text_("ZPG_SP_ANTEIL", t.SpalteAnteil);
             t.SpalteRechenweg = Text_("ZPG_SP_RECHENWEG", t.SpalteRechenweg);

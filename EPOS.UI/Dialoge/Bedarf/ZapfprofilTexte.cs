@@ -136,6 +136,9 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_SP_JAHRESBEDARF</c></summary>
     public string SpalteJahresbedarf { get; set; } = "MWh/a";
 
+    /// <summary><c>ZPG_SP_NIVEAU</c></summary>
+    public string SpalteNiveau { get; set; } = "Niveau";
+
     /// <summary><c>ZPG_SUMME_ZONEN</c></summary>
     public string SummeZonen { get; set; } = "Summe {0} Zonen";
 

@@ -58181,4 +58181,7 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="ZPG_FELD_BEREICH" xml:space="preserve">
     <value>{0}, Bereich {1}</value>
   </data>
+  <data name="ZPG_SP_NIVEAU" xml:space="preserve">
+    <value>Niveau</value>
+  </data>
 </root>

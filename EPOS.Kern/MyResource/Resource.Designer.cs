@@ -171850,6 +171850,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Niveau ähnelt.
+        /// </summary>
+        public static string ZPG_SP_NIVEAU {
+            get {
+                return ResourceManager.GetString("ZPG_SP_NIVEAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsart ähnelt.
         /// </summary>
         public static string ZPG_SP_NUTZUNGSART {

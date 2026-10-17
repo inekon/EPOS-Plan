@@ -58174,4 +58174,7 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="ZPG_FELD_BEREICH" xml:space="preserve">
     <value>{0}, area {1}</value>
   </data>
+  <data name="ZPG_SP_NIVEAU" xml:space="preserve">
+    <value>Level</value>
+  </data>
 </root>

@@ -16322,7 +16322,9 @@ Dieselben Regeln wie beim Projektkopf. */
    der Hausregel "Tabelle mit Feldern" fuellt sie die Breite ihres Blocks mit festen Spaltenanteilen
    (table-layout: fixed), jedes Feld nimmt die Breite seiner Zelle statt seiner Eigenbreite (rund
    165 px), Koepfe und Werte brechen um statt quer zu rollen. Die Wahlspalte ist ein Touchziel breit,
-   die Spalte MWh/a bekommt den Rest. */
+   die Spalte MWh/a traegt "1 234,5" und "unvollstaendig" (4,5em), Bezugsgroesse und Niveau haben
+   feste Anteile, die Nutzungsart bekommt den Rest (Rasterprobe: 478 px Block bei 1 088 px Fenster,
+   326 px bei 400 px). */
 .epos-zapfprofil-zonen {
     table-layout: fixed;
     width: 100%;
@@ -16338,16 +16340,16 @@ Dieselben Regeln wie beim Projektkopf. */
     width: calc(var(--epos-touchziel) + 12px);
 }
 
-.epos-zapfprofil-zonen .epos-zapfprofil-zonen-art {
-    width: 36%;
-}
-
 .epos-zapfprofil-zonen .epos-zapfprofil-zonen-bezug {
     width: 24%;
 }
 
 .epos-zapfprofil-zonen .epos-zapfprofil-zonen-niveau {
     width: 20%;
+}
+
+.epos-zapfprofil-zonen .epos-zapfprofil-zonen-wert {
+    width: 4.5em;
 }
 
 /* Jedes Feld einer Zeile traegt seine Beschriftung ("Nutzungsart, Bereich 2") fuer Sprachausgabe und
@@ -16380,6 +16382,12 @@ Dieselben Regeln wie beim Projektkopf. */
     min-width: 0;
     min-height: var(--epos-touchziel);
     text-overflow: ellipsis;
+}
+
+/* Das Zahlenfeld zeigt seine Zahl; die Einheit rueckt unter das Feld, wo die Zelle zu schmal ist. */
+.epos-zapfprofil-bereich input.epos-eingabe {
+    flex-basis: 3.5em;
+    min-width: min(3.5em, 100%);
 }
 
 /* Bei Wohnungstabelle steht die wirksame Bezugsgroesse als grauer TEXT, nicht als gesperrtes Feld. */
