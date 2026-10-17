@@ -46644,6 +46644,9 @@ chart</value>
   <data name="SIMWARN_KAELTESPEICHER_OHNE_ERZEUGER" xml:space="preserve">
     <value>Cold storage “{0}”: no cooling generator (heat pump in cooling mode or chiller) charges it — it is not calculated.</value>
   </data>
+  <data name="SIMWARN_KAELTE_KM_SORPTION_ELEKTRISCH" xml:space="preserve">
+    <value>Chiller “{0}”: device type absorption is not yet calculated as sorption cooling, but like an electric chiller (rated values and performance map of the record).</value>
+  </data>
   <data name="SIMWARN_KAELTESPEICHER_OHNE_KUEHLUNG" xml:space="preserve">
     <value>Cold storage “{0}”: cooling is switched off for the project — it is not calculated.</value>
   </data>

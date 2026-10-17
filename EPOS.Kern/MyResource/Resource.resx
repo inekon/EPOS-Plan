@@ -46651,6 +46651,9 @@ Chart</value>
   <data name="SIMWARN_KAELTESPEICHER_OHNE_ERZEUGER" xml:space="preserve">
     <value>Kältespeicher „{0}“: Kein Kälteerzeuger (Wärmepumpe im Kühlbetrieb oder Kältemaschine) lädt ihn — er wird nicht gerechnet.</value>
   </data>
+  <data name="SIMWARN_KAELTE_KM_SORPTION_ELEKTRISCH" xml:space="preserve">
+    <value>Kältemaschine „{0}“: Geräteart Absorption wird noch nicht als Sorptionskälte gerechnet, sondern wie eine elektrische Kältemaschine (Nennwerte und Kennlinie des Satzes).</value>
+  </data>
   <data name="SIMWARN_KAELTESPEICHER_OHNE_KUEHLUNG" xml:space="preserve">
     <value>Kältespeicher „{0}“: Die Kühlung des Projekts ist ausgeschaltet — er wird nicht gerechnet.</value>
   </data>

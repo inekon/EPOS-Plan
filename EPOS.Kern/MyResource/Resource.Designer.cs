@@ -128267,6 +128267,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine „{0}“: Geräteart Absorption wird noch nicht als Sorptionskälte gerechnet, sondern wie eine elektrische Kältemaschine (Nennwerte und Kennlinie des Satzes). ähnelt.
+        /// </summary>
+        public static string SIMWARN_KAELTE_KM_SORPTION_ELEKTRISCH {
+            get {
+                return ResourceManager.GetString("SIMWARN_KAELTE_KM_SORPTION_ELEKTRISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf „{0}&quot; ist dezentral (Split) gedeckt, aber ohne gültigen EER ({1}) — der Lauf bricht ab. Bitte die Deckung der Zeile pflegen. ähnelt.
         /// </summary>
         public static string SIMWARN_KAELTE_SPLIT_OHNE_EER {
