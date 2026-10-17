@@ -662,7 +662,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("ErgebnisAnpassenDialog", 3, "Gruppenzustände, Kennzahlenhaken und „ohne Wert“ sind eine Benutzereinstellung der Ansicht, kein Einstellwert der Seite"),
         // SK-3: die Versionswahl über dem Energieflussbild ist ein Anzeigezustand je Sitzung (welche Version das Bild zeigt),
         // kein Einstellwert der Seite und kein Katalogfeld; das Bild selbst liest der Assistent als Flussliste.
-        // SK-2d-2: die Knopfgruppen „Kette | Stufen“ (je Benutzer gemerkt) und „Alle | Strom | Wärme | Kälte“ (je Sitzung)
+        // SK-2d-2: die Knopfgruppen „Kette | Stufen | Zuordnung“ (je Benutzer gemerkt) und „Alle | Strom | Wärme | Kälte“ (je Sitzung)
         // sind Anzeigezustände wie die Versionswahl, keine Eingabefelder (Knöpfe, role="radio") — die Zahl bleibt 1; der
         // Assistent liest beide in der Ansichtszeile („Darstellung …; Energieform …“).
         new("UebersichtErgebnisFluss", 1, "die Versionswahl ist ein Anzeigezustand der Ansicht „Fluss“ je Sitzung, kein Einstellwert der Seite; "

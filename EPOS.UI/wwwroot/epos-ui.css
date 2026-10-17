@@ -7190,6 +7190,24 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     padding-top: 6px;
 }
 
+/* DER HERLEITUNGSBLOCK einer Gruppe: ein Zwischenkopf ueber alle drei Spalten,
+   eingerueckte Zeilen der Rechnung und ihr Ergebnis unter einem Summenstrich -
+   leiser als die Abschlusszeile, denn das Ergebnis steht oben schon einmal. */
+.epos-simerg-werte .epos-simerg-zwischenkopf {
+    grid-column: 1 / -1;
+    padding: 14px 0 4px;
+    font-weight: 600;
+    color: var(--epos-text-leise);
+    border-bottom: 1px solid var(--epos-rahmen);
+}
+
+.epos-simerg-werte .epos-simerg-eingerueckt { padding-left: 1.5em; }
+
+.epos-simerg-werte .epos-simerg-zwischensumme {
+    font-weight: 600;
+    border-top: 1px solid var(--epos-rahmen);
+}
+
 .epos-simerg-block { display: flex; flex-direction: column; gap: 6px; }
 
 .epos-simerg-spalten {

@@ -47,11 +47,16 @@ namespace WindowsFormsApplication1
     /// (Spalten nach Bedarf, Vorgabe, auch im Wortbericht); <see cref="Stufen"/> ist Variante B „Einsatz | Anlagen |
     /// Energieform | Nutzen“ — vier feste Spalten mit Titeln (<see cref="EnergieflussBildDaten.Stufentitel"/>) und Verbindern
     /// für den Strom an die Wärme- und Kälteerzeuger. Dieselben Bilddaten tragen beide Darstellungen; die Abbildung kennt keine.
+    /// <see cref="Zuordnung"/> (Anwenderentscheid vom 17.10.2026, nur in der Oberfläche wählbar) zeichnet wie die Kette, ihre
+    /// Bilddaten entstehen aber aus einer eigenen Bilanz (<c>Energiefluss.Aus(…, EnergieflussDarstellung.Zuordnung)</c>): Die
+    /// Wärmeseite führt statt des Wärmebusses direkte Bänder Erzeuger → Verwendung aus der Deckung je Kanal, und was ein
+    /// Erzeuger netto abgibt, ohne zu decken, steht als Speicherverlust an ihm.
     /// </summary>
     public enum EnergieflussDarstellung
     {
         Kette = 0,
-        Stufen = 1
+        Stufen = 1,
+        Zuordnung = 2
     }
 
     /// <summary>
