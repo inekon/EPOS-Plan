@@ -14,12 +14,14 @@ schreibt beides nicht ab.
 
 ## 1 Stand
 
+**Nachtrag 17.10.2026.** Der Sitzungszweig ist mit Freigabe des Anwenders in `ios_migration_september` übernommen (Merge-Commits `1b999339` auf `73d7f513` und `74f20fa6` auf `6bef4ff6`; Gate und Befund in der Statuszeile #1197). Die Übergabezeile trägt #1197 (vorher #1033, dort inzwischen vergeben). Sechs gemergte Zweige wurden auf origin gelöscht (`sync/windows-2026-10-11b`, `claude/jolly-shannon-eufd98`, `kb5`, `claude/zapfprofilgenerator-cloud-tetz98`, `claude/gebaeudesimulation-bk5`, `claude/gebaeudesimulation-da6`). Push-SHA und CI-Lauf des 17.10.: siehe Statuszeile.
+
 - **Zweige:** Arbeitszweig `ios_migration_september`; Sitzungszweig `claude/gracious-brown-qx5kb2`
   (altes Konto). Dessen Code-Stand ist der Merge `6f348bdb` von `origin/ios_migration_september`
   (`97f72a67`, #1032) in EG3 und Quick Assist; die Zweigspitze ist der Commit dieses Papiers. Der
   Arbeitszweig trägt den Quick-Assist-Stand bereits (Merge `d31d5192` der Sitzung
   „Gebäudesimulation“ vom 12.10., 01:20 UTC, dort als #1012 eingeordnet); **EG3 (#1003), der
-  CI-Vermerk zu #1012 und dieses Papier fehlen ihm noch** — sie kommen mit dem Sitzungszweig
+  CI-Vermerk zu #1012 und dieses Papier fehlen ihm noch** (überholt: am 17.10.2026 übernommen) — sie kommen mit dem Sitzungszweig
   (Abschnitt 4 c). Keine laufenden Agenten, keine Worktrees, keine Routinen.
 - **Kennung** der Statuszeilen: `Sitzung „Administration und Support“`.
 - **Statuszeilen dieser Sitzung** (11./12.10.2026): #972 Konzept (Erstfassung), #973 Konzept mit den
@@ -174,7 +176,7 @@ Keine Zugangsdaten ins Repositorium. **Antworten:** auf Deutsch, knapp; Tabellen
 | Sichtabnahme unter Windows nach einem Neubau des Sitzungszweigs: die sieben Fälle aus dem Statuspunkt „Nach #1003“ (Geste sofort nach dem Öffnen des Über-Dialogs, nach Klick auf die freie Fläche, nach Klick auf „Kopieren“; Escape; F12 allein nur im Debug-Build; F1 im Hauptfenster bei Fokus im Eingabefeld genau einmal; kein Rollbalken bei kurzem Inhalt), dazu „Quick Assist starten“ mit und ohne Quick Assist, Menüsperre je Lizenzstatus, Rubrik „Zapfprofil“ ohne Entwicklermodus, Supportpaket-ZIP (Inhalt, kein `.sqlite`), „Diagnosedaten kopieren“ | Der Anwender prüft; Befunde als eigener Auftrag |
 | Microsoft-Konto des Supports für Quick Assist (Konzept 4.8) | Anwender/INEKON; bis dahin „Fernwartungsseite öffnen“ |
 | Fernwartungsseite `https://epos-plan.de/support/fernwartung` als Anleitung (Schritte mit Bildern, Telefon 0711 9959 826 50, werktags 9–16 Uhr, kein Download) | INEKON; der Dialog und das Wiki verweisen schon darauf |
-| Wiki-Sammelupload: Fernwartung (neu), Einstellungen (Reiter Zapfprofil), Über EPOS-Plan, Installation und Update; Logbuch-Sätze aus Konzept 8 | Nur auf Zuruf, Versionsnummer erfragen; vorher Live-Stand gegen die Repo-Quelle lesen (`Werkzeuge/WikiUpload/LIESMICH.md`) |
+| Wiki-Sammelupload: Fernwartung (neu), Einstellungen (Reiter Zapfprofil), Über EPOS-Plan, Installation und Update; Logbuch-Sätze aus Konzept 8 (laut Statusdatei 4.2 ist der Stand bis 14.10.2026 hochgeladen, nichts Offenes) | Nur auf Zuruf, Versionsnummer erfragen; vorher Live-Stand gegen die Repo-Quelle lesen (`Werkzeuge/WikiUpload/LIESMICH.md`) |
 | Entscheid: deutscher Produktname „Remotehilfe“ neben „Quick Assist“ in Dialog und Wiki | Empfehlung: „Quick Assist (Remotehilfe)“ in Knopf-Hinweis und Wiki ergänzen — kleine Welle, beide Sprachen |
 | Entscheid: Schlussleiste des Über-Dialogs steht bei kurzem Inhalt unter dem Inhalt, nicht am Fensterrand (`margin-top` 10 px; gilt für alle Dialoge im eigenen Fenster) | Empfehlung: belassen, bis die Sichtabnahme es als störend zeigt; sonst `margin-top: auto` mit Fensterprobe |
 | AS-Q6 (a), Rest: `ki_aktionen.txt` neben die übrigen Protokolle nach `Logs\` mit `%TEMP%`-Rückfall | Auf Zuruf; das Supportpaket liest die Datei schon an beiden Orten |
@@ -191,14 +193,14 @@ Keine Zugangsdaten ins Repositorium. **Antworten:** auf Deutsch, knapp; Tabellen
 
 **(c) Nächste Arbeit der neuen Sitzung**
 
-1. Umgebung prüfen (SDK, LFS, `gh` oder GitHub-MCP, Modul `docx`); den Sitzungszweig der neuen
+~~1. Umgebung prüfen (SDK, LFS, `gh` oder GitHub-MCP, Modul `docx`); den Sitzungszweig der neuen
    Umgebung auf `origin/claude/gracious-brown-qx5kb2` aufsetzen (Merge, kein Rebase) und ab dann
-   mitziehen.
-2. Kern-Lauf (kern.yml) des alten Sitzungszweigs auf seiner Zweigspitze prüfen; grün → CI-Vermerk in
-   Zeile #1197 (b) mit `[skip ci]`; rot → nach Dateien aufschlüsseln, Eigenes beheben, Fremdes melden.
-3. Mit Freigabe des Anwenders den Stand per Merge in `ios_migration_september` nehmen und pushen —
+   mitziehen.~~ erledigt 17.10.2026 (diese Sitzung)
+~~2. Kern-Lauf (kern.yml) des alten Sitzungszweigs auf seiner Zweigspitze prüfen; grün → CI-Vermerk in
+   Zeile #1197 (b) mit `[skip ci]`; rot → nach Dateien aufschlüsseln, Eigenes beheben, Fremdes melden.~~ erledigt 17.10.2026 (diese Sitzung)
+~~3. Mit Freigabe des Anwenders den Stand per Merge in `ios_migration_september` nehmen und pushen —
    vorher die Statusnummern gegen origin messen (#1003 ist eine Lücke der Tabelle und bleibt; #1197
-   zieht um, wenn vergeben).
+   zieht um, wenn vergeben).~~ erledigt 17.10.2026 (diese Sitzung)
 4. Die offenen Punkte aus (a) gesammelt mit Empfehlung vorlegen; dann auf Zuruf: „Remotehilfe“,
    Schlussleiste, `ki_aktionen.txt`, Stufe 4, Wiki-Upload.
 
@@ -212,21 +214,13 @@ Dokumentation/aktuell/Status_iOS_Migration.md nur den Kopf und die Zeilen #974, 
 #1003, #1012 und #1197 samt den Punkten „Nach #…“ am Ende von Abschnitt 4; Konzept und
 Entwicklerhandbuch nur gezielt (Überschriften mit grep -n '^#').
 
-Stand: Der alte Sitzungszweig claude/gracious-brown-qx5kb2 trägt den Merge des Arbeitszweigs
-(#1032) in EG3 und Quick Assist (6f348bdb, Gate grün) und das Übergabepapier; er ist noch nicht im
-Arbeitszweig. Setze deinen Sitzungszweig (den die Umgebung vorgibt) darauf auf:
-git fetch origin claude/gracious-brown-qx5kb2 ios_migration_september &&
-git checkout -B <dein Zweig> origin/claude/gracious-brown-qx5kb2; danach LFS-Testdatenbank holen.
+Stand: Der Stand der Sitzung liegt vollständig in ios_migration_september (Merge 17.10.2026, Statuszeile #1197). Setze deinen Sitzungszweig (den die Umgebung vorgibt) darauf auf: git fetch origin ios_migration_september && git checkout -B <dein Zweig> origin/ios_migration_september; danach LFS-Testdatenbank holen.
 
 Erste Schritte: (1) Umgebung prüfen: dotnet --version (global.json verlangt 10.0.400/latestFeature;
 reicht das SDK nicht, Abschnitt 3 „Cloud-Umgebung“ des Papiers), LFS-Datenbank rund 96 MB (kein
 130-Byte-Zeiger), Node-Modul docx für Werkzeuge/Entwicklerhandbuch/erzeugen.js. (2) Mit
 git log --format='%h %<(72,trunc)%s' -n 20 origin/ios_migration_september prüfen, was seit dem
-Papier hinzukam, und die Statusnummern gegen origin messen (#1003 bleibt, #1197 zieht um, wenn
-vergeben). (3) Den Kern-Lauf (kern.yml) des alten Sitzungszweigs auf seiner Spitze prüfen und den
-CI-Vermerk in Zeile #1197 (b) setzen — bei Rot zuerst beheben. (4) Mit meiner Freigabe den Stand per
-Merge in ios_migration_september nehmen und beide Zweige pushen; reine Papier-Pushes mit [skip ci].
-(5) Den Stand in höchstens fünf Zeilen melden und die offenen Punkte aus Abschnitt 4 (a) mit
+Papier hinzukam, und die Statusnummern gegen origin messen (#1003 bleibt). (3) Den Stand in höchstens fünf Zeilen melden und die offenen Punkte aus Abschnitt 4 (a) mit
 Empfehlung vorlegen.
 
 Arbeitsweise und Grenzen: Fable orchestriert nur; Umsetzung opus-umsetzung, Mechanik
