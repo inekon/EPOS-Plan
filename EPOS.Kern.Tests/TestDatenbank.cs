@@ -1099,6 +1099,9 @@ namespace EPOS.Kern.Tests
                 // Schritt KlimaRohwerteSchema.SCHRITT (KD-4): Tab_Klimastunde_STAMM (leer) und die Herkunftsspalten der
                 // Klimaregion. Wiederholbar, ergebnisneutral.
                 KlimaRohwerteSchema.Ausfuehren(null);
+                // Schritt ErgebnisreihenSchema.SCHRITT (EB-1): Stromeinspeisung, Abregelung und Eigenverbrauch_System an
+                // den Ergebniszeilen, leer, reines DDL. Wiederholbar, ergebnisneutral.
+                ErgebnisreihenSchema.Ausfuehren(null);
 
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }

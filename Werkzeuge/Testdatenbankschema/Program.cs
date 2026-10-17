@@ -3916,6 +3916,24 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt ErgebnisreihenSchema.SCHRITT (EB-1): Stromeinspeisung an Tab_ErgebnisBHKW, Abregelung an
+            //      Tab_ErgebnisPhotovoltaik, Eigenverbrauch_System an Tab_ErgebnisStromspeicher. Aus DERSELBEN Quelle wie
+            //      SchemaMigration.Schritt_Ergebnisreihen. Wiederholbar.
+            //      REFERENZLAUF: Der Rechenweg bleibt gleich; aggregate.csv bekommt die neuen Schluessel (Basis R59).
+            string nrEb1 = ErgebnisreihenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            Console.WriteLine();
+            Console.WriteLine("Schritt " + nrEb1 + " - Ergebnisreihen (BHKW-Einspeisung, Standby, PV-Abregelung): " +
+                              (ErgebnisreihenSchema.Vollstaendig() ? "steht bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var berichtEb1 = new List<string>();
+                angelegt += ErgebnisreihenSchema.Ausfuehren(berichtEb1);
+                foreach (string zeile in berichtEb1)
+                    Console.WriteLine("Schritt " + nrEb1 + " - " + zeile + ".");
+                Console.WriteLine("Schritt " + nrEb1 + " - vollstaendig: " + ErgebnisreihenSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

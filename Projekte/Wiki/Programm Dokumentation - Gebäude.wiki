@@ -232,7 +232,7 @@ Der '''Bauteildialog''' erscheint als Überlagerung über dem Zonendialog und be
 * '''Azimut''' in Grad – 0° = Nord, 90° = Ost, 180° = Süd, 270° = West.
 * '''Neigung''' in Grad – leer gilt die Vorgabe der Bauteilart: Wand 90°, Dach und Decke 0°, Bodenplatte 180°.
 * '''Randbedingung''' – Außenluft, Erdreich, unbeheizter Raum und, ab zwei Zonen, Nachbarzone. Leer gilt Außenluft, an Innenwand und Decke „innerhalb der Zone". Mit ''Nachbarzone'' wählen Sie die Zone, an die das Bauteil grenzt, und unter ''Trennfläche rechnen'' ''automatisch (4-K-Regel)'', ''wie Innenbauteil'' oder ''wie Außenbauteil'' (siehe [[Programm Dokumentation/Mehrzonenmodell#trennflaechen|Mehrzonenmodell]]).
-* '''g-Wert''', '''Rahmenanteil''' und '''Verschattungsfaktor''' – nur bei Fenster und Vorhangfassade; leer gilt der Wert des Gebäudes.
+* '''g-Wert''', '''Rahmenanteil''' und '''Verschattungsfaktor''' – nur bei Fenster und Vorhangfassade; leer gilt der Wert des Gebäudes. Wählen Sie einen Fensteraufbau, übernimmt das Bauteil dessen g-Wert und Rahmenanteil und als U-Wert das aus U_g, U_f, Rahmenanteil und ψ_g gerechnete U_w (siehe [[Programm Dokumentation/Baustoffe und Bauteilaufbauten#fensteraufbau|Fensteraufbau]]); die Felder bleiben von Hand änderbar.
 * '''Wärmebrücke <math>\psi \cdot L</math>''' in W/K.
 * '''Absorptionsgrad solar''' und '''Emissionsgrad''' der Außenfläche, je 0 bis 1 – leer gilt der Wert des Aufbaus, ohne ihn die Vorgabe 0,6 bzw. 0,9 (siehe [[Programm Dokumentation/Gebäudemodell VDI 6007#strahlung|Strahlung auf die Außenbauteile]]).
 * '''U-Wert''' in W/(m²·K) – leer gilt der U-Wert des Aufbaus.

@@ -176,6 +176,9 @@ namespace WindowsFormsApplication1
             ["energie.bhkw_strom"] = GRUPPE_STROM,
             ["energie.pv_strom"] = GRUPPE_STROM,
             ["energie.einspeisung"] = GRUPPE_STROM,
+            [KennzahlenKatalog.SCHLUESSEL_BHKW_EINSPEISUNG] = GRUPPE_STROM,
+            [KennzahlenKatalog.SCHLUESSEL_PV_ABREGELUNG] = GRUPPE_STROM,
+            [KennzahlenKatalog.SCHLUESSEL_SPEICHER_STANDBY] = GRUPPE_STROM,
             ["eff.pv_eigen"] = GRUPPE_STROM,
             ["eff.autarkie"] = GRUPPE_STROM,
 

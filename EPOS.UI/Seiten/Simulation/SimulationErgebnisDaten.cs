@@ -768,6 +768,12 @@ public sealed class StromgangDaten
 /// </summary>
 public sealed class SpeicherErgebnisDaten
 {
+    /// <summary>
+    /// EB-2: Führt der Lauf einen Standby des Speichersystems als Reihe? Nur dann bietet das Betriebsbild die
+    /// zuschaltbare Reihe „Standby Speichersystem“ an (ab Werk aus).
+    /// </summary>
+    public bool MitStandby;
+
     /// <summary>Übernommene Projektflotte und tatsächlicher letzter Flottenlauf.</summary>
     public bool FlotteImProjektAktiv;
     public SpeicherEngine.FlottenStudieKonfiguration? AktiveFlotte;

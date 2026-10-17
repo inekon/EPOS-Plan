@@ -4344,6 +4344,9 @@ Please run the simulation with photovoltaics first.</value>
   <data name="SP_CSV_ENTLADUNG" xml:space="preserve">
     <value>Discharging [kWh]</value>
   </data>
+  <data name="SP_CSV_STANDBY" xml:space="preserve">
+    <value>Storage system standby [kWh]</value>
+  </data>
   <data name="SP_CSV_GELDWERT" xml:space="preserve">
     <value>Monetary value [EUR]</value>
   </data>
@@ -56371,6 +56374,12 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="CHART_LEGENDE_PV_ABREGELUNG" xml:space="preserve">
     <value>PV curtailment</value>
   </data>
+  <data name="CHART_LEGENDE_BHKW_EINSPEISUNG" xml:space="preserve">
+    <value>CHP grid feed-in</value>
+  </data>
+  <data name="CHART_LEGENDE_SPEICHER_STANDBY" xml:space="preserve">
+    <value>Storage system standby</value>
+  </data>
   <data name="SIM_CHK_PV_AUFTEILEN" xml:space="preserve">
     <value>Split PV (self-consumption + surplus)</value>
   </data>
@@ -57916,5 +57925,19 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="VF_ORT_ENERGIEFLUSS" xml:space="preserve">
     <value>in the report the nodes carry their annual total (MWh/a); the bands carry no number, here the values are in the tooltip</value>
   </data>
+  <data name="EF_KN_STANDBY" xml:space="preserve">
+    <value>Storage system standby</value>
+  </data>
+  <data name="EF_KK_STANDBY" xml:space="preserve">
+    <value>Standby</value>
+  </data>
+  <data name="EF_KN_ABREGELUNG" xml:space="preserve">
+    <value>curtailed</value>
+  </data>
+  <data name="EF_KK_ABREGELUNG" xml:space="preserve">
+    <value>curtailed</value>
+  </data>
+  <data name="EF_FORMEL_EINSPEISUNG_BHKW" xml:space="preserve">
+    <value>CHP surplus of the run − CHP charging of the storage</value>
+  </data>
 </root>
-

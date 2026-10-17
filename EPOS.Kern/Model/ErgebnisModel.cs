@@ -1028,6 +1028,13 @@ namespace WindowsFormsApplication1
         public double Waermeproduktion;             // MWh/a
         public double Waermeueberschuss;            // MWh/a
         public double Stromproduktion;              // MWh/a
+
+        /// <summary>
+        /// EB-1: die Einspeisung des BHKW-Stroms ins Netz [MWh/a] (<c>Tab_ErgebnisBHKW.Stromeinspeisung</c>, Schemaschritt
+        /// 239) — dieselbe Menge wie die Laufreihe <c>BHKW_UEBERSCHUSS</c> (<c>SimulationErgebnisCtrl.BhkwEinspeisungMwh</c>).
+        /// <c>null</c> = nicht erhoben (Ergebnis vor Schritt 239): das Energieflussbild bilanziert sie dann am Stromknoten.
+        /// </summary>
+        public double? StromeinspeisungMwh;
         // ETAPPE E2 - WAS DIESE BEIDEN FELDER SIND (und was nicht):
         // Betriebsstunden_Gesamt ist die SUMME der THERMISCHEN Vollbenutzungsstunden
         // ueber alle Module (SimulationBHKW.Laufzeiten[] = Waerme / Waermeleistung),
@@ -1243,6 +1250,14 @@ namespace WindowsFormsApplication1
         public double Ueberschuss;           // MWh/a
         public double MaxSolareLeistung;     // W/m^2
 
+        /// <summary>
+        /// EB-1: die an der Einspeisegrenze abgeregelte PV-Energie [MWh/a] (<c>Tab_ErgebnisPhotovoltaik.Abregelung</c>,
+        /// Schemaschritt 239) — dieselbe Menge wie die Laufreihe <c>PV_ABREGELUNG</c>; sie steckt in
+        /// <see cref="Stromproduktion"/> (Erzeugung der Module) und fehlt in <see cref="Ueberschuss"/>. 0 ohne Grenze,
+        /// <c>null</c> = nicht erhoben (Ergebnis vor Schritt 239).
+        /// </summary>
+        public double? AbregelungMwh;
+
         public List<ErgebnisPhotovoltaikModulModel> Module = new List<ErgebnisPhotovoltaikModulModel>();
     }
 
@@ -1300,6 +1315,14 @@ namespace WindowsFormsApplication1
         public double Einspeisung_Ohne;      // kWh/a ohne Speicher
         public double Eigenverbrauchsquote;  // % (mit Speicher)
         public double Autarkiegrad;          // % (mit Speicher)
+
+        /// <summary>
+        /// EB-1: der Standby (Eigenverbrauch) des Speichersystems [kWh/a] (<c>Tab_ErgebnisStromspeicher.Eigenverbrauch_System</c>,
+        /// Schemaschritt 239) — <c>SimulationControl.SpeichersystemEigenverbrauchKwh</c>, dieselbe Menge wie die Laufreihe
+        /// <c>SPEICHER_EIGENVERBRAUCH</c>; eine Zeile je Lauf. 0 ohne Standby, <c>null</c> = nicht erhoben (Ergebnis vor
+        /// Schritt 239).
+        /// </summary>
+        public double? EigenverbrauchSystemKwh;
 
         // --- Speicher (7.1, Block 2) ---
 

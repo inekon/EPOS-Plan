@@ -1,7 +1,8 @@
 # Übergabe der Sitzung „Zapfprofilgenerator Cloud“ (14.10.2026)
 
 Dieses Papier übergibt die Sitzung „Zapfprofilgenerator Cloud“ (`session_017jJMrbTBmVq3vxUtLN4evQ`,
-Sitzungszweig `claude/zapfprofilgenerator-cloud-tetz98`) an eine Sitzung auf einem anderen Konto. Es nennt
+Sitzungszweig `claude/zapfprofilgenerator-cloud-tetz98`) an eine Sitzung auf einem anderen Konto; übernommen am
+17.10.2026 von `session_01WykTm7Rg6RigbgJG19p5Dr` (Sitzungszweig `claude/cool-davinci-hcijct`). Es nennt
 den Stand, die geltenden Entscheide, die Regeln der Sitzung über `CLAUDE.md` hinaus und die offenen Punkte;
 der Einstiegs-Prompt steht in Abschnitt 5. Regelquelle bleibt `CLAUDE.md`. Den Fachstand des Generators
 (Stufen Z0–Z5, Folgeposten, Bestände außerhalb des Repositoriums, offene Entscheide aus der Zeit davor)
@@ -24,14 +25,15 @@ CI-grün.
 | W3b (ZB5) | Karte „Kalender“ mit Ferienliste und Jahresraster | #1063 | `2026-10-13_ZB5_Kalenderkarte.md` |
 | W4 (ZB3, ZB4 b, ZB8, ZB9) | Karten mit Zusammenfassung, Gruppe „Gebäude und Anlage“, haftende Vorschau, ein Feld je Wert | #1064 | `2026-10-13_ZB3_ZB4b_ZB8_ZB9_Karten.md` |
 | W7 (ZB12) | Referenzprojekte 1066–1071 je Zapfprofil-Option, Saatskript, Wache, CI auf achtzehn Projekte | #1065 | `2026-10-13_ZB12_Referenzprojekte_Optionen.md` |
-| **W6** | **Wiki-Seite „Brauchwasser-Zapfprofil“ und Logbuch 1.2.0.11** | — | **offen**, Abschnitt 4 |
+| **W6** | **Wiki-Seite „Brauchwasser-Zapfprofil“ und Logbuch 1.2.0.11** | — | Seite und Logbuch am 14.10.2026 im Sammel-Upload veröffentlicht (Revisionen 1000/1023); **offen der Nachtrag**, Abschnitt 4 |
 
 - **Letzte Stände dieser Sitzung auf origin:** Integration `5f06ee8a1` (W3a, W3b, W4, W7, Testdatenbank 224
   mit 1066–1071), Anmeldezeilen `a953f0454`, CI-Vermerk `8b90dc5e0`. CI-Nachweis: Kern-Lauf 38465767292 grün
   auf `5f06ee8a1` (Sitzungszweig).
-- **Seither bei den Nachbarn:** 225 `ZonenLastfelderSchema` hängt an 224; die Basen R54 (Dachflächen) und R55
-  (Kältebedarf dezentral, Projekt 1072) sind eingefroren, R53 liegt unter `ueberholt/Referenzbasen/`. Die
-  CI-Auswahl bleibt bei achtzehn Projekten, darunter 1066–1071.
+- **Seither bei den Nachbarn (Stand 17.10.2026, `26c01427c`):** die Schemakette läuft bis 238, 239 ist angemeldet,
+  240 frei; die Basis ist R58 `2026-10-17_R58_Kaeltesummen` (38 Projekte, Testdatenbank 238), R53 liegt unter
+  `ueberholt/Referenzbasen/`. Die CI-Auswahl umfasst neunzehn Projekte, darunter 1066–1071; der Referenzlauf
+  vergleicht gegen R58.
 - **Lokal:** keine Worktrees, keine laufenden Agenten, keine Routinen dieser Sitzung.
 
 ## 2 Geltende Entscheide des Anwenders (13./14.10.2026)
@@ -85,21 +87,31 @@ notwendig und sinnvoll.“ K5 (eigene Messobjekte) ruht.
 - **Statuszeilen:** Nummern unmittelbar vor dem Commit gegen origin messen; je Welle eine Zeile, der
   Nach-Block „Nach #… (Zapfprofil …)“ mit Sichtabnahme, Wiki und CI-Vermerk, der Vermerk als eine Zeile mit
   Lauf-Kennung und Commit.
-- **Umgebung:** .NET 10.0.400 unter `$HOME/.dotnet` (`export PATH="$HOME/.dotnet:$PATH"`); `rm -rf` mit einer
+- **Umgebung:** .NET 10.0.4xx unter `$HOME/.dotnet` (`export PATH="$HOME/.dotnet:$PATH"`). Sperrt die
+  Netzrichtlinie `builds.dotnet.microsoft.com` und `download.visualstudio.microsoft.com`, kommt das SDK aus
+  conda-forge (`conda.anaconda.org`, Pakete `dotnet-sdk-10.0.401`, `dotnet-runtime-10.0.12`,
+  `dotnet-aspnetcore-10.0.12`, `.conda` = Zip mit `pkg-*.tar.zst`, entpackt mit Python `zstandard`, Inhalt von
+  `lib/dotnet/` nach `$HOME/.dotnet`); `global.json` ist damit erfüllt. `git lfs pull --include
+  Referenzlaeufe/Kenndaten_Test.sqlite` holt die Testdatenbank; `wiki.epos-plan.de` ist erreichbar, der Upload
+  braucht `WIKI_BOT_USER`/`WIKI_BOT_PASS` als Umgebungsvariablen der Cloud-Umgebung. `rm -rf` mit einer
   Shell-Variable sperrt die Sicherheitsprüfung — wörtliche Pfade nehmen.
 
 ## 4 Offene Punkte (mit Empfehlung)
 
-1. **W6 — Wiki am 20.10.2026.** Seite `Projekte/Wiki/Programm Dokumentation - Brauchwasser-Zapfprofil.wiki`
-   (die einzige Wiki-Quelle, die die Wellen geändert haben) und der Logbuch-Abschnitt
-   „Version 1.2.0.11 — Brauchwasser-Zapfprofil“ (sieben Sätze) in
-   [`Wiki_Update_2026-09-26.md`](../Wiki_Update_2026-09-26.md), Abschnitt 2. Vorher mit dem Muster aus
-   `CLAUDE.md` gegenlesen und `WikiProduktdatenWacheTests` ziehen. **Mit dem Anwender klären:** nur das
-   Zapfprofil laden oder den Sammel-Upload aller ausstehenden Blöcke (dort stehen weitere Entwürfe anderer
-   Sitzungen ohne Version; Regel „höchstens einmal je Woche“). Danach: Statusdatei „Nach #1043–#1045“ (b)
-   als erledigt mit Revision, Logbuch-Block als veröffentlicht, das Konzept Benutzerführung per `git mv` nach
-   `ueberholt/` samt Indexzeile. Der WordPress-Zugang der alten Sitzung meldete einen Verbindungsfehler (502);
-   ohne Zugang gibt es keinen Upload.
+1. **W6 — Nachtrag zum Wiki, Sammel-Upload in der Woche ab 19.10.2026.** Seite und Logbuch 1.2.0.11 sind
+   seit dem 14.10.2026 live. Offen ist der Nachtrag: in `Projekte/Wiki/Programm Dokumentation -
+   Brauchwasser-Zapfprofil.wiki` der berichtigte Absatz `katalog-frei` und die Schnellauslegung V4 (Trockenlauf
+   17.10.2026: Seite ERSATZ, `Grundlagen/Brauchwasser-Zapfprofile` GLEICH, `Bildschirmfoto_Zapfprofil.png` NEU),
+   dazu zwei Logbuch-Sätze (#1096, #1107), die seit dem 17.10.2026 in `Werkzeuge/WikiUpload/logbuch.wiki` stehen.
+   Gegenlesen mit dem Muster aus `CLAUDE.md` und `WikiProduktdatenWacheTests` sind am 17.10.2026 grün.
+   **Vor dem Upload zu klären (Anwender):** die Versionsnummer des Sammel-Uploads und der Wiki-Zugang
+   (`WIKI_BOT_USER`/`WIKI_BOT_PASS` in der Cloud-Umgebung, oder der Anwender lädt über `upload_start.ps1`).
+   **Vor dem Upload zu tun (alle Sitzungen):** `logbuch.wiki` führt unter „Version 1.2.0.11“ die 23 am
+   14.10.2026 veröffentlichten Sätze weiter; `wiki_upload.py --logbuch` lädt mit derselben Version nichts und
+   mit einer neuen Version alle Sätze doppelt — die veröffentlichten Sätze entfernen und die Überschrift auf
+   die neue Version setzen (Vergleich: Live-Abschnitt 1.2.0.11 gegen die Datei). Danach: Logbuch-Block in
+   [`Wiki_Update_2026-09-26.md`](../Wiki_Update_2026-09-26.md) als veröffentlicht, Statusdatei 4.2 bereinigen,
+   das Konzept Benutzerführung per `git mv` nach `ueberholt/` samt Indexzeile.
 2. **Sichtabnahme unter Windows** beim Anwender; Prüfpunkte in der Statusdatei unter „Nach #1043–#1045“ und
    „Nach #1062–#1065“.
 3. **Erledigt mit #1113 (16.10.2026):** ~~**Klein, ohne Auftrag:** In der Testdatenbank trägt `DIN4708.p_b` die Einheit „Personen“,

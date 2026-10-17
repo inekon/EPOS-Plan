@@ -140,13 +140,57 @@ namespace WindowsFormsApplication1
             return werte.Count == 0 ? (double?)null : werte.Sum();
         }
         private static ErgebnisBHKWModel BH(VariantenDaten v) { return v?.Ergebnis?.BHKW; }
+
+        /// <summary>EB-2: Schlüssel der Kennzahl „Einspeisung BHKW“ [MWh/a].</summary>
+        public const string SCHLUESSEL_BHKW_EINSPEISUNG = "energie.bhkw_einspeisung";
+
+        /// <summary>EB-2: Schlüssel der Kennzahl „Abregelung PV“ [MWh/a].</summary>
+        public const string SCHLUESSEL_PV_ABREGELUNG = "energie.pv_abregelung";
+
+        /// <summary>EB-2: Schlüssel der Kennzahl „Standby Speichersystem“ [kWh/a].</summary>
+        public const string SCHLUESSEL_SPEICHER_STANDBY = "energie.speicher_standby";
+
+        /// <summary>
+        /// Die BHKW-Einspeisung [MWh/a]: die Ergebniszeile (<see cref="ErgebnisBHKWModel.StromeinspeisungMwh"/>), bei
+        /// einem Ergebnis ohne Wert die KWK-Einspeisung der Strommatrix (<see cref="VariantenDaten.BhkwEinspeisungStrommatrixMwh"/>,
+        /// EB-Q3), ohne beide <c>null</c> („—“). <c>null</c> ohne BHKW.
+        /// </summary>
+        internal static double? BhkwEinspeisungMwh(VariantenDaten v)
+        {
+            ErgebnisBHKWModel b = BH(v);
+            if (b == null) return null;
+            return b.StromeinspeisungMwh ?? v.BhkwEinspeisungStrommatrixMwh;
+        }
+
+        /// <summary>
+        /// Der Standby des Speichersystems [kWh/a] über alle Speicherzeilen des Laufs; <c>null</c> ohne Wert über 0 oder
+        /// bei einem Ergebnis, das ihn nicht erhoben hat.
+        /// </summary>
+        internal static double? SpeicherStandbyKwh(VariantenDaten v)
+        {
+            var liste = v?.Ergebnis?.Stromspeicher;
+            if (liste == null) return null;
+            double summe = 0.0;
+            bool erhoben = false;
+            foreach (ErgebnisStromspeicherModel s in liste)
+            {
+                if (s?.EigenverbrauchSystemKwh is double w) { summe += w; erhoben = true; }
+            }
+            return erhoben && summe > 0.0 ? summe : (double?)null;
+        }
         private static ErgebnisHeizkesselModel HK(VariantenDaten v) { return v?.Ergebnis?.Heizkessel; }
         private static ErgebnisSolarthermieModel SO(VariantenDaten v) { return v?.Ergebnis?.Solarthermie; }
         private static ErgebnisPhotovoltaikModel PV(VariantenDaten v) { return v?.Ergebnis?.Photovoltaik; }
 
-        /// <summary>Die abgeregelte PV-Energie des Laufs [MWh/a] aus den Zeitreihen; 0 ohne Reihe.</summary>
+        /// <summary>
+        /// Die abgeregelte PV-Energie des Laufs [MWh/a]: die gespeicherte Jahressumme der Ergebniszeile
+        /// (<see cref="ErgebnisPhotovoltaikModel.AbregelungMwh"/>, EB-1); ein Altergebnis ohne Wert nimmt die Zeitreihe
+        /// <c>PV_ABREGELUNG</c>, ohne Reihe 0.
+        /// </summary>
         private static double AbregelungMwh(VariantenDaten v)
         {
+            double? gespeichert = PV(v)?.AbregelungMwh;
+            if (gespeichert.HasValue) return gespeichert.Value;
             double[] r = v?.Zeitreihen?.Hole(ZeitreihenSatz.PV_ABREGELUNG);
             if (r == null) return 0.0;
             double summe = 0.0;
@@ -736,6 +780,24 @@ namespace WindowsFormsApplication1
                 { Seit = Vorlagenfeldkatalog.FASSUNG_HILFSSTROM });
             l.Add(new Kennzahl("energie.einspeisung", "Netzeinspeisung PV", "PV grid export", "MWh/a", GR_ENERGIE, "N0", true,
                 v => PV(v) == null ? (double?)null : PV(v).Ueberschuss));
+            // EB-2: die drei Ergebnisreihen des Laufs (Schemaschritt 239). Die Einspeisung BHKW aus der Ergebniszeile, bei
+            // einem Ergebnis ohne Wert aus der Strommatrix (EB-Q3), sonst „—“; die Abregelung nur mit Wert über 0; der
+            // Standby des Speichersystems nur mit Wert über 0, in kWh/a wie die Speicherzeile.
+            // Katalog v26.
+            {
+                Kennzahl R(Kennzahl k) { k.Seit = Vorlagenfeldkatalog.FASSUNG_ERGEBNISREIHEN; return k; }
+                l.Add(R(new Kennzahl(SCHLUESSEL_BHKW_EINSPEISUNG, "Einspeisung BHKW", "CHP grid export", "MWh/a", GR_ENERGIE,
+                    "N1", true, BhkwEinspeisungMwh)));
+                l.Add(R(new Kennzahl(SCHLUESSEL_PV_ABREGELUNG, "Abregelung PV", "PV curtailment", "MWh/a", GR_ENERGIE, "N1",
+                    true, v =>
+                    {
+                        if (PV(v) == null) return null;
+                        double a = AbregelungMwh(v);
+                        return a > 0.0 ? a : (double?)null;
+                    })));
+                l.Add(R(new Kennzahl(SCHLUESSEL_SPEICHER_STANDBY, "Standby Speichersystem", "Storage system standby", "kWh/a",
+                    GR_ENERGIE, "N0", true, SpeicherStandbyKwh)));
+            }
             l.Add(new Kennzahl("energie.waermerest", "Wärmerestbedarf (ungedeckt)", "Uncovered heat demand", "MWh/a", GR_ENERGIE, "N0", true,
                 v => E(v) == null ? (double?)null : E(v).Waermerestbedarf));
 
@@ -825,8 +887,8 @@ namespace WindowsFormsApplication1
                 {
                     var p = PV(v);
                     if (p == null || p.Stromproduktion <= 0) return null;
-                    // PV3 (Welle M5): Abgeregelte Energie ist kein Eigenverbrauch. Sie steht nur in den
-                    // Zeitreihen des Laufs (PV_ABREGELUNG); ohne Reihe ist sie 0.
+                    // PV3 (Welle M5): Abgeregelte Energie ist kein Eigenverbrauch. Seit EB-1 steht sie als
+                    // Jahressumme in der Ergebniszeile; ein Altergebnis nimmt die Reihe PV_ABREGELUNG, ohne Reihe 0.
                     return (p.Stromproduktion - p.Ueberschuss - AbregelungMwh(v)) / p.Stromproduktion * 100.0;
                 }));
             // PAKET P2 (Konzept 7.4): die Temperaturen der obersten Speicherschicht. Sie
