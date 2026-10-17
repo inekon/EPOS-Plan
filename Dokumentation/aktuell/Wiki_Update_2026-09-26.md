@@ -170,6 +170,8 @@ online; ihre späteren Änderungen der Hauptlinie bleiben ausstehend. Nicht hoch
 unverändert ausstehend sind Simulationsergebnisse, Wirtschaftlichkeit, Gebäude,
 Brauchwasser-Zapfprofil, Berichtsvorlagen, Mehrzonenmodell und Projekttransfer.
 
+**K‑F5b — Rückkühlung an der Kältemaschine (Upload ausstehend):** Kälteerzeugung (neuer Abschnitt „Rückkühlwerk“, Anker `rueckkuehlwerk`: Gruppe „Rückkühlung“ mit Wahl, Lesezeilen, Hinweisen, Knopf „Rückkühlwerke…“, Ergebnissen und Kennzahlen; Punkt „Bericht“ der Ergebnisse um die Zeile „Rückkühlwerk an …“ ergänzt), Gerätekataloge (Punkt „Wahl an der Kältemaschine“ im Abschnitt „Rückkühlwerke“).
+
 ## 2 Logbuch-Einträge für die Wiki-Seite „Update-Logbuch“
 
 Die Abschnitte 1.2.6 und 1.2.0.5 stehen seit dem 29.09.2026 im Wiki (Revision 723). Die Blöcke 1.2.0.6 bis 1.2.0.9 und "Version offen" sind am 10.10.2026 (#889, Revision 827) veröffentlicht, zusammengefasst nach Regel 13.4 (70 Sätze) und unter den Versionsnummern laut Anwenderentscheid 10.10.2026 "letzte Stelle um eins erhöhen": 1.2.0.10 (29 Sätze aus den Blöcken 1.2.0.9 und „Version offen“), 1.2.0.9 (1 Satz: BDEW-Standardlastprofile Strom 2025), 1.2.0.8 (4 Sätze: Berichtsseite mit vier Karten, Wirtschaftlichkeitsbericht mit drei Szenarien, Pufferspeicher-Auslegung, Sperrfenster der Wärmepumpe), 1.2.0.7 (36 Sätze: Block 1.2.0.6 und die nie veröffentlichten Sätze aus 1.2.0.5). Die Entwürfe unten bleiben als Geschichte stehen. Ein neuer Satz gehört in einen
@@ -212,6 +214,11 @@ Sammel-Upload vom 14.10.2026 21:20 UTC (Brauchwasser-Zapfprofil Revision 1000, U
 
 Alle Blöcke dieser Gruppe sind nicht hochgeladen; die Version erfragt die Sitzung beim Anwender.
 
+#### Version offen — Rückkühlung an der Kältemaschine (Entwurf, Upload ausstehend)
+
+- Seit 17.10.2026: Eine wassergekühlte Kältemaschine wählt in der Gruppe „Rückkühlung“ ihr Rückkühlwerk aus der Verwaltung „Rückkühlwerke“ und zeigt seine Daten samt Hinweisen.
+- Seit 17.10.2026: Der Bericht nennt unter der Tabelle „Kälteerzeuger“ je Kältemaschine mit Rückkühlwerk Bauart, Ventilatorstrom, Wasser, Teil-Freikühlung und mittlere Rückkühltemperatur.
+
 #### Version offen — Eingabearten und Normkalender der Bedarfsprofile (Entwurf, Upload ausstehend)
 
 Version beim Anwender zu erfragen; die Wiki-Quellen (Prozesswärme, Brauchwasser, Kältebedarf) sind fortgeschrieben, ins Wiki geladen ist noch nichts.
@@ -221,6 +228,7 @@ Version beim Anwender zu erfragen; die Wiki-Quellen (Prozesswärme, Brauchwasser
 - Seit 16.10.2026: Wer die Kältevorlage „Prozesskälte einschichtig“ übernimmt, bekommt den Betriebskalender „Norm 230 Tage“ mit dem Bundesland im Namen und 230 Nutzungstagen vorgewählt. (#1117, #1118)
 - Seit 16.10.2026: Der Betriebskalender hat den Schalter „Ferien wie Sonntag“; ein Ferientag rechnet dann mit Tagesmenge und Stundengang des Sonntags, der Ferienfaktor ist gesperrt. (#1119)
 - Seit 17.10.2026: Kältebedarfsprofile mit Normtagen rechnen ohne gewählten Kalender mit dem Normkalender (230 Nutzungstage); die Kennzahlen nennen die Nutzungstage. (#1181)
+- Seit 17.10.2026: Vorschau und Grafik der Kältebedarfsprofile rechnen im Wochentagsraster der Klimaregion des Projekts wie die Simulation; die Kalenderwahl „keiner“ bleibt nach dem Speichern erhalten. (#1188)
 
 #### Gebäudesimulation und weitere Dialoge — Sätze nach dem Sammel-Upload 14.10.2026 (Entwurf, Upload ausstehend)
 
@@ -257,6 +265,9 @@ Der Sammel-Upload 1.2.0.11 lief am 14.10.2026 (Seite Brauchwasser-Zapfprofil Rev
 - Seit 16.10.2026: Jahressummen und Jahresarbeit in MWh stehen in Auswahllisten, Katalog und Satzzeile einheitlich als ganze Zahl mit Tausendertrennzeichen. (#1156)
 - Seit 16.10.2026: Achsenbeschriftungen und Texte der Ganglinien in den Bedarfs- und Ganglinien-Dialogen stehen in der Schriftgröße der Oberfläche, auch im Projektassistenten. (#1157)
 - Seit 17.10.2026: Auch Strom-, Solar- und PV-Ganglinie stellen mit „Vergleichen…“ zwei oder mehr angekreuzte Ganglinien des Projekts oder des Katalogs nebeneinander. (#1168)
+- Seit 17.10.2026: Die Vorschau „Simulation…“ der Bedarfsprofile rechnet mit dem im Dialog gewählten Betriebskalender.
+- Seit 17.10.2026: Diagramme in Reiterblättern zeigen Achsenbeschriftung und Zeigertext vollständig; der Zeigertext steht mittig unter dem Zeiger.
+- Seit 17.10.2026: In der Übersicht Berichte & Kosten ist die Reiterleiste deutlicher hervorgehoben.
 
 *Wiki-Quellen dieses Nachtrags (Upload ausstehend):* `Projekte/Wiki/Programm Dokumentation - Pufferspeicher auslegen.wiki`, „Grundlagen - Anlagenkopplung und Regelung“, „Simulation konfigurieren und starten“, `Projekte/Wiki/Dateien/Diagramm_Bivalenz.png`, `Projekte/Wiki/Dateien/Diagramm_Kapitalwert_Bruecke.png`.
 

@@ -742,6 +742,11 @@ public sealed class StilblattTests
         Assert.Contains("position: sticky", zeiger, StringComparison.Ordinal);
         Assert.Contains("bottom: var(--epos-ueberlagerung-fuss)", zeiger, StringComparison.Ordinal);
 
+        // Befund 17.10.2026: Im Reiterblatt (overflow: auto) ist DAS der Bezug von sticky; der Fussabstand
+        // der Ueberlagerung hob die Zeile dort ueber Achse und Tick-Beschriftung (fensterprobe.mjs, bedarfgrafik).
+        string imReiter = Regelblock(".epos-ueberlagerung-inhalt .epos-reiter-blatt .epos-diagramm-zeigerzeile {");
+        Assert.Contains("bottom: 0", imReiter, StringComparison.Ordinal);
+
         Assert.Contains("--epos-ueberlagerung-fuss: 0px", Regelblock(".epos-ueberlagerung {"), StringComparison.Ordinal);
         Assert.Contains("--epos-ueberlagerung-fuss: calc(", Regelblock(
             ".epos-ueberlagerung:has(> .epos-ueberlagerung-inhalt > .epos-dialog > .epos-leiste > .epos-status) {"),

@@ -13,11 +13,11 @@ ab, dessen Entscheide weitergelten (Abschnitt 2). Die parallelen Sitzungen führ
 
 Stand 16.10.2026: Übernahme durch Sitzung `session_019JuX7JfD2tStDzd3CiStwf`; #1105/#1106 gepusht, CI grün (Lauf 38863988800). Aufräumen #1109 (Konzept Kältebedarf und Katalogauswahl-Mockups nach `ueberholt/`). Die Basis R56 `2026-10-16_R56_Wasserkosten` (KB-7) ist eingefroren und enthält die zwei Kälteschlüssel von #1105; das `--ohne` der Gate-Skripte ist gestrichen.
 
-- Zweig: Arbeitszweig `ios_migration_september`; alle Wellen dieser Sitzung sind gepusht und mit CI-Vermerk versehen, keine Agenten, keine offenen Worktrees. Letzter Push: Merge `54689b556` (Statuszeilen #1180 WK2/WK3, #1181 KV8), Statuscommit folgt.
+- Zweig: Arbeitszweig `ios_migration_september`; alle Wellen dieser Sitzung sind gepusht und mit CI-Vermerk versehen, keine Agenten, keine offenen Worktrees. Letzter Push: Merge `kv8n` + Statuscommit `1229764` (#1188 KV8-N), gepusht auf beide Zweige.
 - Wellen und Statuszeilen: KR1/KR1b runde Wahlkästchen (#1037); K6 Kältebedarf dezentral/Split mit Schemaschritt 223 und Referenzprojekt 1072 (#1056/#1057); K6d (#1066); K6d-N (#1078); K6c (#1089, `8bf550004`); K6c-N Laufmeldung nennt die Hauptzahl (#1090, `bd7abe18a`).
 - Basis R55 `Referenzlaeufe/2026-10-14_R55_KaeltebedarfDezentral` (37 Projekte; die CI rechnet 18).
 - ChartProben-Messlatte `Proben/ChartProben/Messlatte_2026-10-14.sha256` mit 225 Zeilen; Vermerke #1089/#1090 in `683bc2cac` (Hashes aus Kern-Lauf 38532651105). `kern.yml` schreibt seit `b4b73a9b2` die vollständige Hashliste ins Protokoll (eingeklappte Gruppe „ChartProben-Hashliste ubuntu“); LIESMICH-Bildzahl 257 in `d40c38cd0`.
-- CI-Vermerke gesetzt mit `a4e2e2bb4` (#1056/#1057), `5215d8e22` (#1066), `5f5a0023d` (#1078), `683bc2cac` (#1089/#1090); #1180/#1181 ausstehend (Check-in).
+- CI-Vermerke gesetzt mit `a4e2e2bb4` (#1056/#1057), `5215d8e22` (#1066), `5f5a0023d` (#1078), `683bc2cac` (#1089/#1090); alle vermerkt bis #1181 (Lauf 39029561373); #1188 ausstehend (Check-in).
 - Frühere Wellen (11. bis 13.10.): Katalogauswahl V1 mit Knopfleiste am gewählten Satz (KA-E-17 bis KA-E-27), Wärmepumpen-Überlagerung, Kältemaschinen-Dialog, Vergleich Projekt/Katalog, Gerätesteckbrief, KAL1-Klappgruppe, Kältebedarf K1 bis K5; Einzelheiten im Papier vom 11.10.2026.
 - Schemakette und Basenfolge (nur beobachten): 224 Zapfprofil, 225, 226/227, 228 KB-4, 229 KB-5, 230 KBP-2, 231 DA-6, 232 BK-5/BK-6; Basen R56 KB-5, R57 SA4. Maßgeblich ist die Kopfzeile „Schemaschritt angemeldet“ der Statusdatei.
 
@@ -45,6 +45,7 @@ Stand 16.10.2026: Übernahme durch Sitzung `session_019JuX7JfD2tStDzd3CiStwf`; #
 - Anwenderentscheid 16.10.: Kein Kern-Lauf für Pull Requests aus dem eigenen Repository.
 - Anwenderentscheid 16.10.: Wiki-Sammel-Upload in der Woche ab 19.10.
 - Anwenderentscheid 16.10.: Modellregel — Fable 5 nur für sehr komplexe Aufgaben, sonst Opus 5.5 bzw. Sonnet/Haiku je nach Aufgabe.
+- Anwenderentscheid 17.10.: KBP-3b-Rest „Woche als Reihen statt Hintergrund“ geschlossen — Hintergrund nach Konzept (#1108) bleibt; die Nennung als Rest war ein Lesefehler.
 - Anwenderentscheid 17.10.: Wiki-Quellen für Seiten ohne Quelle nicht in dieser Sitzung; Übergabepapiere Kontowechsel, Kostenbasis KB4/KB5 und KB5-Inventar nach `ueberholt/`; Kältevorlage 8 auf 230 Nutzungstage nach DIN/TS 18599‑10.
 
 ## 3 Hinweis
@@ -58,13 +59,13 @@ Die Regeln der Sitzung über `CLAUDE.md` hinaus stehen im Einstiegs-Prompt (Absc
 3. Erledigt: Hauptzahl in `aggregate.csv` (#1105) und CI-Kern-Lauf in parallelen Jobs (#1106), Wandzeit rund 19,5 statt 84 min.
 4. Beobachten (R56 eingefroren, siehe Abschnitt 1): Schemakette 228 KB-4, 229 KB-5 (Stromspeicher/Speicherflotte bei der Sitzung „Dialoge und Korrekturen (Konto Übernahme)“/Kältemaschinen), 230 KBP-2, 231 DA-6, 232 BK-5/BK-6; Basen R56 KB-5, R57 SA4. Die Sitzung „Dialoge Cloud“ arbeitet am Konzept Kältebedarfsprofile (KBP) mit unseren drei Bitten: Deckungsgruppe und Naht `SimulationPlattformwege.KaelteDezentralBearbeiten` unverändert, neue Vorlagen nur als neue Katalogzeilen, Kalenderhinweis als Baustein.
 5. Erledigt: ~~Kältebedarf K6~~ erledigt (#1056/#1057, #1066, #1078, #1089, #1090); ~~Sichtabnahme der Katalogauswahl-Wirte~~ in Punkt 2 aufgegangen; ~~Nachzüge Katalogauswahl, KM-K2, Kostenbasis KB-2/KB-3~~ erledigt (Statuszeilen #1034, #1038, #1079, #1080).
-6. KBP‑3b: mit #1108 erledigt — die Grafik folgt dem Arbeitsstand (Monatswerte, Wochenprofil, Kalender), die Kalenderwoche ist wählbar, die Tagesarten stehen als Hintergrund. Offen bleibt nur „Woche als Reihen statt Hintergrund“ (Anwenderentscheid).
+6. KBP‑3b: erledigt (#1108), Anwenderentscheid 17.10.: Hintergrund bleibt, kein Rest.
 7. Kern-Test Betriebskalender mit mehr als vier Ferienzeiträumen, sobald die Testdatenbank eine Ferienliste führt.
 8. Gemessene Kälte-Lastgänge für Richtwerte der Vorlagen (beim Anwender).
 9. Wiki-Bilder neu ziehen: erledigt mit WK3 (#1180).
 10. Sichtabnahme Windows Dialoge #1034–#1042 und Kostenmasken KB‑4 (beim Anwender).
 11. Setup-Skript der Cloud-Umgebung (beim Anwender).
-12. Kältevorlage 8: umgesetzt mit KV8 (#1181): Normkalender als Vorgabe, Schreibweg wählt ihn vor; zwei Befunde als eigene Aufträge (Vorschau-Raster Wochentag 6; Kalenderwahl „keiner“).
+12. Kältevorlage 8: umgesetzt mit KV8 (#1181): Normkalender als Vorgabe, Schreibweg wählt ihn vor; zwei Befunde als eigene Aufträge (Vorschau-Raster Wochentag 6; Kalenderwahl „keiner“). Nachzüge KV8-N (#1188) umgesetzt: Projektraster für Vorschau und Grafik, Kalenderwahl „keiner“ bleibt. Offen als eigener Auftrag: Projektvorschau Brauchwasser/Prozesswärme (Altkonvention nach F3) und Strom bei Preisreihe mit Jahr.
 
 ## 5 Einstiegs-Prompt für die Übernahme (14.10.2026)
 
@@ -88,7 +89,7 @@ Du übernimmst die Sitzung „Dialoge und Korrekturen — Anlagendialog, Kälteb
 - Agenten arbeiten im eigenen Worktree `.claude/worktrees/<name>` (Zweig von `origin/ios_migration_september`) mit eigenem Scratchpad-Unterordner; dort `git lfs install --local` und `git lfs pull --include=Referenzlaeufe/Kenndaten_Test.sqlite` (Datei > 1 MB, sonst Zeiger). Sofort committen, nicht pushen, bin/obj nicht committen. Vor Hauptbaumarbeit `AGENT_LAEUFT` anlegen, danach löschen. Push nur über den Hauptbaum per `--ff-only`.
 - Gate im Container: SDK ist 10.0.112, `global.json` verlangt 10.0.400 → vorübergehend `"version": "10.0.100"`, vor jedem Commit `git checkout global.json`. Das Vollgate `gate_linux.sh` läuft ins Zeitlimit; stattdessen `Werkzeuge/Gate/kern_bloecke.sh <wurzel> <ablage> AB CD EF GH IJ K` und `… LM NO PQ R S TUVWXYZ` parallel (~35 min) plus `gate_rest_linux.sh <wurzel> <ablage>` (~20 min), je als genau ein wartender Hintergrundbefehl. Wer die Windows-Schale berührt, baut sie zusätzlich auf Linux (`-p:EnableWindowsTargeting=true`).
 - Ressourcen immer de und en (`EPOS.Kern/MyResource/Resource.resx`, `Resource.en-US.resx`), parallele Agenten an verschiedenen Stellen der Datei, Designer nach jedem Merge mit `designer_neu.py schreiben` neu; nach Merges die .resx als XML prüfen.
-- Wellenfolge: Merge origin → Gate → Statuszeile (Nummer unmittelbar vor dem Commit gegen origin messen: höchste `**#N**` + 1; Muster `| **#N** | TT.MM. | **Titel** | Text … CI-Kern-Lauf: ausstehend (Vermerk folgt). |`) und Logbuchsatz (nur wesentliche, sichtbare Änderungen) → Push (am Ende jeder Welle freigegeben) → CI-Vermerk allein mit `[skip ci]` nach dem Muster „CI-Kern-Lauf [<id>](https://github.com/inekon/EPOS-Plan/actions/runs/<id>) grün auf `<sha7>` (enthält `<push7>`).“
+- Wellenfolge: Merge origin → Gate → Statuszeile (Nummer unmittelbar vor dem Commit gegen origin messen: höchste `**#N**` + 1; Muster `| **#N** | TT.MM. | **Titel** | Text … CI-Kern-Lauf: ausstehend (Vermerk folgt). |`) und Logbuchsatz (nur wesentliche, sichtbare Änderungen) → Push (am Ende jeder Welle freigegeben) → CI-Vermerk allein mit `[skip ci]` nach dem Muster „CI-Kern-Lauf [<id>](https://github.com/inekon/EPOS-Plan/actions/runs/<id>) grün auf `1229764` (enthält `<push7>`).“
 - Nie ohne Rückfrage: macOS-/iOS-/Setup-Läufe, Wiki-Upload, Pull Requests, Force-Push, Tags. Stop-Hook-Meldungen „uncommitted/unpushed“ sind kein Auftrag.
 - Commit-Trailer: `Co-Authored-By: Claude <arbeitendes Modell> <noreply@anthropic.com>` und `Claude-Session: <URL dieser neuen Sitzung>`.
 - Fallen: `pkill -f` tötet die eigene Shell — Probenwirte nur über `pgrep -f '[W]irt'` und eigene PID beenden; Statusnummern doppelt vergeben, wenn nicht gegen origin gemessen; Zähltests werden rot, wenn die Testdatenbank wächst (Zählklassen nachziehen).

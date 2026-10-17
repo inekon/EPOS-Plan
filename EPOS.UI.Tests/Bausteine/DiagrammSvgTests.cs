@@ -452,6 +452,80 @@ public class DiagrammSvgTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Befund 17.10.2026: der Zeigertext steht unter dem Zeiger.</b> Er steht als eigenes Element
+    /// in der Zeile UNTER dem Bild, mit <c>left: p%</c> und <c>translate: −p%</c>, p = Anteil der
+    /// Zeigerstelle an der Bildbreite: mittig bei 50 %, bündig an den Rändern, nie außerhalb der
+    /// Zeile. Eine Stelle jenseits der Daten wird an deren Rand geklemmt.
+    /// </summary>
+    [Fact]
+    public async Task Befund_Der_Zeigertext_steht_mittig_unter_dem_Zeiger_und_geklemmt()
+    {
+        var modell = Modell();
+        var cut = Zeige(modell: modell, einheit: "°C");
+        Assert.Empty(cut.FindAll(".epos-diagramm-zeigertext"));
+
+        Rahmen r = modell.Flaeche!.Bild;
+        Datenfenster d = modell.Flaeche.Daten;
+        double Erwartet(double stelle)
+            => (r.X + Math.Clamp((stelle - d.XVon) / (d.XBis - d.XVon), 0.0, 1.0) * r.Breite) / modell.Breite * 100.0;
+
+        async Task<double> Lage(double stelle)
+        {
+            await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(stelle));
+            IElement text = cut.Find(".epos-diagramm-zeigerzeile > .epos-diagramm-zeigertext");
+            string stil = text.GetAttribute("style") ?? "";
+            var m = System.Text.RegularExpressions.Regex.Match(stil, @"^left: ([0-9.]+)%; translate: -([0-9.]+)% 0$");
+            Assert.True(m.Success, stil);
+            // Anker und Verschiebung sind DERSELBE Anteil - das haelt den Text ueber der Stelle und in der Zeile.
+            Assert.Equal(m.Groups[1].Value, m.Groups[2].Value);
+            return double.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture);
+        }
+
+        double mitte = (d.XVon + d.XBis) / 2.0;
+        Assert.Equal(Erwartet(mitte), await Lage(mitte), 2);
+        Assert.Equal(Erwartet(0), await Lage(0), 2);
+        Assert.Equal(Erwartet(d.XBis), await Lage(d.XBis), 2);
+        // Geklemmt: links und rechts jenseits der Daten steht der Text an deren Rand, nie ausserhalb 0 … 100 %.
+        Assert.Equal(Erwartet(d.XVon), await Lage(d.XVon - 5000), 2);
+        Assert.Equal(Erwartet(d.XBis), await Lage(d.XBis + 5000), 2);
+        Assert.InRange(await Lage(d.XBis + 5000), 0.0, 100.0);
+
+        // Die Zeile steht UNTER dem Bild: sie ist ein Geschwister NACH der Zeichenflaeche.
+        IElement zeile = cut.Find(".epos-diagramm-zeigerzeile");
+        Assert.Contains("epos-diagramm-svg-flaeche", zeile.PreviousElementSibling!.ClassName);
+
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(null));
+        Assert.Empty(cut.FindAll(".epos-diagramm-zeigertext"));
+    }
+
+    /// <summary>
+    /// <b>Befund 17.10.2026: die Achse des Bildes liegt in seiner viewBox.</b> Die nachgezeichnete
+    /// Tick-Zeile und der Achsentitel (im Ausschnitt) enden über der unteren Kante der viewBox des
+    /// äußeren SVG — der Zeichenbereich trägt sie ganz, nichts davon fällt unter das Bild.
+    /// </summary>
+    [Fact]
+    public async Task Befund_Die_viewBox_traegt_Tick_Zeile_und_Achsentitel()
+    {
+        var cut = Zeige();
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(3000, 3400));
+
+        IElement svg = cut.Find(".epos-diagramm-svg-flaeche > svg");
+        string[] vb = svg.GetAttribute("viewBox")!.Split(' ');
+        double hoehe = double.Parse(vb[3], CultureInfo.InvariantCulture);
+
+        var ticks = cut.FindAll(".epos-diagramm-ticks text");
+        Assert.NotEmpty(ticks);
+        Assert.NotEmpty(cut.FindAll(".epos-diagramm-ticks text.epos-diagramm-achsentitel"));
+        foreach (IElement t in ticks)
+        {
+            // dominant-baseline text-before-edge: der Text reicht von y bis y + Schriftgroesse.
+            double y = double.Parse(t.GetAttribute("y")!, CultureInfo.InvariantCulture);
+            double groesse = double.Parse(t.GetAttribute("font-size")!.Replace("px", ""), CultureInfo.InvariantCulture);
+            Assert.True(y + groesse <= hoehe, $"{t.TextContent}: {y} + {groesse} > {hoehe}");
+        }
+    }
+
+    /// <summary>
     /// <b>Auftrag GX: der Zeiger läuft ohne Rundlauf.</b> Der Baustein gibt dem Modul die
     /// Zeigertafel EINMAL je Zeichnen — die Reihen beim ersten Mal, danach nur den
     /// geänderten Zustand —, und nimmt das Modul sie an, führt ES Balken und Zeile: Der

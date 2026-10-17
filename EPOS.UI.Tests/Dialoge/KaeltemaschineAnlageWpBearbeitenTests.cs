@@ -85,6 +85,7 @@ public class KaeltemaschineAnlageWpBearbeitenTests : EposBunitContext
                  stamm => new KuehlWpUebernahme(true, ID_WP, "WP Bestand", true, null, null, _hinweis))
             .Add(x => x.WpKuehlbetriebSetzen, (_, _) => null)
             .Add(x => x.WaermepumpeKopien, kopien)
+            .Add(x => x.Rueckkuehlung, () => KaeltemaschineRueckkuehlungTests.Gaben())
             .Add(x => x.WaermepumpeAnlageGaben, mitNaht ? Naht : (Func<int, WaermepumpeAnlagegaben?>?)null));
     }
 
@@ -115,6 +116,19 @@ public class KaeltemaschineAnlageWpBearbeitenTests : EposBunitContext
         Ueberlagerungsknopf(cut, new KaeltemaschineAnlageTexte().Abbrechen);
         Assert.False(cut.Instance.WpUeberlagerungOffen);
         Assert.Equal(0, _geschrieben);
+    }
+
+    [Fact]
+    public void Eine_Waermepumpen_Zeile_zeigt_keine_Gruppe_Rueckkuehlung()
+    {
+        // K-F5b (Konzept Katalogauswahl 5.10a): die Gruppe gehört allein der Kältemaschine.
+        var cut = Aufbauen();
+        Projektzeile(cut, 0);
+        Bearbeiten(cut);
+        Assert.True(cut.Instance.WpUeberlagerungOffen);
+        Assert.Empty(cut.FindAll(".epos-kaeltemaschine-rueckkuehlung"));
+        Assert.DoesNotContain(R.KMK_RKW_GRUPPE, cut.Markup);
+        Assert.DoesNotContain(R.KMK_RKW_HINWEIS_LUFT, cut.Markup);
     }
 
     [Fact]

@@ -59,5 +59,48 @@ namespace EPOS.Kern.Tests
             Assert.Equal("HE", q.Feiertagsland);
             Assert.Equal(new[] { 357, 213, 300 }, q.Ferien.Select(f => f.Von));
         }
+
+        [Fact]
+        public void Gebaeude_mit_sechs_Ferienzeitraeumen_liest_Spalten_und_Liste()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden || !KonditionierungSchema.Lesbar() || !Kalendergemeinschaft.SchrittSteht()) return;
+            long gebaeude = Assert.Single(BetriebskalenderGebaeudeCtrl.Quellen(1051)).IdGebaeude;
+
+            // Sechs Zeiträume über den Schreibweg der Kalenderbedienung: die ersten vier landen in den Spalten
+            // Ferienbeginn/-ende_1…4, die übrigen zwei in der Ferienliste des gemeinsamen Kalenders (ab Rang 204).
+            var ctrl = new KonditionierungCtrl();
+            Konditionierungsarbeitsstand a = ctrl.ArbeitsstandLesen(gebaeude, null, out string meldung);
+            Assert.True(a != null, meldung);
+            Konditionierungsschritt s = Kalenderbedienung.FerienlisteSetzen(a, new[]
+            {
+                new Ferienzeile("Winter", 10, 12), new Ferienzeile("Ostern", 60, 62), new Ferienzeile("Pfingsten", 150, 152),
+                new Ferienzeile("Sommer", 200, 210), new Ferienzeile("Herbst", 290, 295), new Ferienzeile("Weihnachten", 355, 5),
+            });
+            Assert.True(s.Ok, s.Meldung);
+            using (DbVorgang v = DataRepository.Vorgang())
+            using (Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(v))
+            {
+                KonditionierungCtrl.Ergebnis e = ctrl.StandSchreiben(v, KonditionierungCtrl.Eigner.Gebaeude(gebaeude), s.Stand.Gebaeude, true, out _);
+                Assert.True(e.Ok, e.Meldung);
+                v.Commit();
+            }
+
+            // Der Leser hängt die Liste hinter die vier Spalten: sechs Zeiträume, keine Dublette, keine Kürzung.
+            var erwartet = new[]
+            {
+                new Ferienzeitraum(10, 12), new Ferienzeitraum(60, 62), new Ferienzeitraum(150, 152),
+                new Ferienzeitraum(200, 210), new Ferienzeitraum(290, 295), new Ferienzeitraum(355, 5),
+            };
+            BetriebskalenderGebaeudequelle q = Assert.Single(BetriebskalenderGebaeudeCtrl.Quellen(1051));
+            Assert.Equal(gebaeude, q.IdGebaeude);
+            Assert.Equal(erwartet, q.Ferien);
+
+            // Jeder Tag der sechs Zeiträume ist im Tagesraster ein Ferientag, jeder andere nicht.
+            byte[] arten = new Betriebskalender { FeiertagWieSonntag = false, Ferien = q.Ferien.ToList() }.Tagesarten(default);   // ohne Feiertage wirkt das Raster nicht
+            for (int t = 1; t <= 365; t++)
+                Assert.True((arten[t - 1] == Betriebskalender.TAG_FERIEN) == erwartet.Any(f => f.Enthaelt(t)), "Jahrestag " + t);
+            Assert.Equal(3 + 3 + 3 + 11 + 6 + 16, arten.Count(x => x == Betriebskalender.TAG_FERIEN));
+        }
     }
 }

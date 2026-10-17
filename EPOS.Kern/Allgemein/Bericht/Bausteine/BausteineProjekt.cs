@@ -529,7 +529,7 @@ namespace WindowsFormsApplication1
             k.Ueberschrift2(UEBERSCHRIFT_KAELTE);
             k.Eigenschaften(paare.ToArray());
             // Schritt 223: die Split-Zeilen stehen in derselben Tafel - auch ohne Kälteerzeuger.
-            if (mitKaeltestrom) KaelteerzeugerSchreiben(k, wp, traegername, km, stamm?.Kaeltemittel, split);
+            if (mitKaeltestrom) KaelteerzeugerSchreiben(k, wp, traegername, km, stamm?.Kaeltemittel, split, stamm?.Rueckkuehlwerke);
             k.HinweisRoh(!(jahr > 0) ? MyResource.Resource.SIMERG_HRL_KAELTE_LEER
                          : mitErzeugung ? string.Format(k.Kultur, MyResource.Resource.SIMERG_HRL_KAELTE_GEDECKT,
                                                         k.F(wp.Kaelteproduktion_WP.Value, 2),
@@ -604,12 +604,13 @@ namespace WindowsFormsApplication1
                                                     Func<int, string> traegername,
                                                     IReadOnlyList<ErgebnisKaeltemaschineModel> maschinen = null,
                                                     IReadOnlyList<KaeltemittelBerichtszeile> kaeltemittel = null,
-                                                    IReadOnlyList<ErgebnisKaelteDezentralModel> dezentral = null)
+                                                    IReadOnlyList<ErgebnisKaelteDezentralModel> dezentral = null,
+                                                    IReadOnlyList<RueckkuehlwerkBerichtszeile> rueckkuehlwerke = null)
         {
             // BV-E5: dieselbe Tafel wie {{tabelle.kaelteerzeuger}} - KU3-4 samt Kältemaschinen, KM4-E2 samt Kältemittel,
             // Schritt 223 samt Split-Zeilen.
             Berichtstabelle t = Berichtstabellen.Kaelteerzeuger(wp, traegername, BerichtTexte.Englisch, k.Kultur, maschinen, kaeltemittel,
-                                                                dezentral);
+                                                                dezentral, rueckkuehlwerke);
             if (t.IstLeer) return;
 
             k.Ueberschrift3(UEBERSCHRIFT_KAELTEERZEUGER);

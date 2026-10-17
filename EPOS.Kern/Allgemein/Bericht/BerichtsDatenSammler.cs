@@ -596,6 +596,10 @@ namespace WindowsFormsApplication1
             try { v.Kaeltemittel = KaeltemittelBerichtszeile.Aus(KaeltemittelProjektpruefung.Pruefen(v.IdProjekt, mitCodes: true)); }
             catch { v.Kaeltemittel = null; }
 
+            // K-F5b: das Rückkühlwerk je Kältemaschinen-Anlage (Name, Bauart) für die Tafel der Kälteerzeuger (best effort).
+            try { v.Rueckkuehlwerke = RueckkuehlwerkBerichtszeile.Sammeln(v.IdProjekt); }
+            catch { v.Rueckkuehlwerke = null; }
+
             // 4. Brennstoffmengen (best effort — fehlendes Kostenmodul stoppt nichts).
             try { v.Brennstoffmengen = EnergieMengen.BaueBrennstoffmengen(v.IdProjekt); }
             catch { v.Brennstoffmengen = null; }

@@ -185,6 +185,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         public List<KaeltemittelBerichtszeile> Kaeltemittel;
 
+        /// <summary>
+        /// K-F5b (Entwurf Split/VRF/Rückkühlwerk 5.8): je Kältemaschinen-Anlage mit Rückkühlwerk dessen Name und Bauart —
+        /// für die Zeile „Rückkühlwerk“ der Tafel der Kälteerzeuger; <c>null</c> = nicht gesammelt.
+        /// </summary>
+        public List<RueckkuehlwerkBerichtszeile> Rueckkuehlwerke;
+
         /// <summary>Detail-Daten (Klimaregion, Gebäude, Anlage, Komponenten) für
         /// Projektbeschreibung, Kenndaten-Tabellen und Abweichungserkennung (Phase 2).</summary>
         public ProjektDetails Details;

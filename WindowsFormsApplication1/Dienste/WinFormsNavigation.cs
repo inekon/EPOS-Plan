@@ -303,6 +303,7 @@ namespace WindowsFormsApplication1
                 case Seitenschluessel.EnergietraegerVerwaltung:
                 case Seitenschluessel.NutzungsdauerVerwaltung:
                 case Seitenschluessel.Kaeltemittel:
+                case Seitenschluessel.Rueckkuehlwerk:
                 case Seitenschluessel.Gesetzeskatalog:
                 case Seitenschluessel.ProjektAlsVariante:
                 // Welle #458, Stufe 2: die Programmeinstellungen (KiMaskenziele.EINSTELLUNGEN).

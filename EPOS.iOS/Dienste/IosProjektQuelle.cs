@@ -569,6 +569,13 @@ public sealed class IosProjektQuelle : IProjektQuelle
     }
 
     /// <inheritdoc />
+    public IReadOnlyDictionary<string, object>? RueckkuehlwerkGaben()
+    {
+        try { return new RueckkuehlwerkHuelle().Gaben(); }
+        catch (Exception ex) { Console.WriteLine("Rückkühlwerke: " + ex.Message); return null; }
+    }
+
+    /// <inheritdoc />
     public IReadOnlyDictionary<string, object>? GesetzeskatalogGaben()
     {
         try { return GesetzeskatalogHuelle.Gaben(""); }

@@ -65,6 +65,114 @@ namespace WindowsFormsApplication1
             return o != null && o != DBNull.Value && Convert.ToInt32(o, CultureInfo.InvariantCulture) > 0;
         }
 
+        /// <summary>
+        /// Die Verwendung eines Katalogsatzes (K-F5a): die Zahl seiner Projektkopien (<c>Tab_Rueckkuehlwerk.ID_Stamm</c>).
+        /// Eine Anlage (<c>Tab_Energieanlagen.ID_Rueckkuehlwerk</c>) zeigt immer auf eine solche Kopie; 0 vor dem Schritt.
+        /// </summary>
+        public static int Verwendungen(int id)
+        {
+            if (!DataRepository.TabelleVorhanden(RueckkuehlwerkSchema.TAB_PROJEKT)) return 0;
+            object o = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM " + RueckkuehlwerkSchema.TAB_PROJEKT + " WHERE " + RueckkuehlwerkSchema.SPALTE_ID_STAMM + " = ?",
+                new DbParam("?", id));
+            return o == null || o == DBNull.Value ? 0 : Convert.ToInt32(o, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>Id des Katalogsatzes → Zahl seiner Projektkopien; nur verwendete Sätze stehen darin.</summary>
+        public static IReadOnlyDictionary<int, int> KatalogVerwendung()
+        {
+            var d = new Dictionary<int, int>();
+            if (!DataRepository.TabelleVorhanden(RueckkuehlwerkSchema.TAB_PROJEKT)) return d;
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT " + RueckkuehlwerkSchema.SPALTE_ID_STAMM + " AS Stamm, COUNT(*) AS Anzahl FROM " + RueckkuehlwerkSchema.TAB_PROJEKT +
+                " WHERE " + RueckkuehlwerkSchema.SPALTE_ID_STAMM + " IS NOT NULL GROUP BY " + RueckkuehlwerkSchema.SPALTE_ID_STAMM);
+            if (dt == null) return d;
+            foreach (DataRow r in dt.Rows) d[Ganz(r["Stamm"])] = Ganz(r["Anzahl"]);
+            return d;
+        }
+
+        /// <summary>
+        /// Die Zeilen der Verwaltung „Rückkühlwerke" (K-F5a, Profil <see cref="Katalogfilterprofil.FuerRueckkuehlwerk"/>):
+        /// Bezeichner, Bauart, Nennleistung, Annäherung, Ventilator, Freikühlung; der Schlüssel ist die Id. Leere Auswahlen
+        /// zeigen die Vorgabe (Bauart trocken, Regelung Ein/Aus, Schaltung parallel).
+        /// </summary>
+        public static IReadOnlyList<Katalogfilterzeile> Katalogfilterzeilen()
+        {
+            var liste = new List<Katalogfilterzeile>();
+            if (!DataRepository.TabelleVorhanden(TABLE)) return liste;
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT ID, Bezeichner, " + RueckkuehlwerkSchema.SPALTE_BAUART + ", " + RueckkuehlwerkSchema.SPALTE_NENNLEISTUNG + ", " +
+                RueckkuehlwerkSchema.SPALTE_ANNAEHERUNG_NENN + ", " + RueckkuehlwerkSchema.SPALTE_VENTILATOR_REGELUNG + ", " +
+                RueckkuehlwerkSchema.SPALTE_VENTILATOR_NENN + ", " + RueckkuehlwerkSchema.SPALTE_FREIKUEHLUNG_SCHALTUNG +
+                ", ReadOnly FROM " + TABLE + " ORDER BY Bezeichner");
+            if (dt == null) return liste;
+            foreach (DataRow r in dt.Rows)
+            {
+                int id = Ganz(r["ID"]);
+                string name = Text(r["Bezeichner"]) ?? "";
+                string regelung = RegelungText(Text(r[RueckkuehlwerkSchema.SPALTE_VENTILATOR_REGELUNG]));
+                double? pVent = Zahl(r[RueckkuehlwerkSchema.SPALTE_VENTILATOR_NENN]);
+                string ventilator = pVent.HasValue
+                    ? regelung + " · " + pVent.Value.ToString("0.##", CultureInfo.CurrentCulture) + " kW"
+                    : regelung;
+                var zeile = new Katalogfilterzeile(id, name)
+                {
+                    Geschuetzt = Ganz(r["ReadOnly"]) == 1,
+                    Schluessel = id.ToString(CultureInfo.InvariantCulture)
+                };
+                liste.Add(zeile
+                    .MitText(Katalogfilterprofil.SpBezeichner, name)
+                    .MitText(Katalogfilterprofil.SpBauart, BauartText(Text(r[RueckkuehlwerkSchema.SPALTE_BAUART])))
+                    .MitZahl(Katalogfilterprofil.SpNennleistung, Zahl(r[RueckkuehlwerkSchema.SPALTE_NENNLEISTUNG]), 1)
+                    .MitZahl(Katalogfilterprofil.SpAnnaeherung, Zahl(r[RueckkuehlwerkSchema.SPALTE_ANNAEHERUNG_NENN]), 1)
+                    .MitText(Katalogfilterprofil.SpVentilator, ventilator)
+                    .MitText(Katalogfilterprofil.SpFreikuehlung, SchaltungText(Text(r[RueckkuehlwerkSchema.SPALTE_FREIKUEHLUNG_SCHALTUNG]))));
+            }
+            return liste;
+        }
+
+        // =================================================================
+        //  Anzeigetexte der Wertemengen (Steuerwert ≠ Anzeigetext)
+        // =================================================================
+
+        /// <summary>Der Anzeigetext einer Bauart; leer = trocken (die Vorgabe), ein unbekannter Wert bleibt, wie er ist.</summary>
+        public static string BauartText(string bauart)
+        {
+            switch (bauart ?? RueckkuehlwerkSchema.BAUART_TROCKEN)
+            {
+                case RueckkuehlwerkSchema.BAUART_TROCKEN: return MyResource.Resource.RKW_BAUART_TROCKEN;
+                case RueckkuehlwerkSchema.BAUART_ADIABAT: return MyResource.Resource.RKW_BAUART_ADIABAT;
+                case RueckkuehlwerkSchema.BAUART_HYBRID: return MyResource.Resource.RKW_BAUART_HYBRID;
+                case RueckkuehlwerkSchema.BAUART_KUEHLTURM_OFFEN: return MyResource.Resource.RKW_BAUART_KUEHLTURM_OFFEN;
+                case RueckkuehlwerkSchema.BAUART_KUEHLTURM_GESCHLOSSEN: return MyResource.Resource.RKW_BAUART_KUEHLTURM_GESCHLOSSEN;
+                default: return bauart;
+            }
+        }
+
+        /// <summary>Der Anzeigetext eines Annäherungswegs; leer = fest (die Vorgabe).</summary>
+        public static string WegText(string weg)
+            => (weg ?? RueckkuehlwerkSchema.WEG_FEST) == RueckkuehlwerkSchema.WEG_FEST ? MyResource.Resource.RKW_WEG_FEST
+             : weg == RueckkuehlwerkSchema.WEG_LASTABHAENGIG ? MyResource.Resource.RKW_WEG_LASTABHAENGIG
+             : weg;
+
+        /// <summary>Der Anzeigetext einer Ventilatorregelung; leer = Ein/Aus (die Vorgabe des Rechenwegs).</summary>
+        public static string RegelungText(string regelung)
+        {
+            switch (regelung ?? RueckkuehlwerkSchema.REGELUNG_EIN_AUS)
+            {
+                case RueckkuehlwerkSchema.REGELUNG_EIN_AUS: return MyResource.Resource.RKW_REGELUNG_EIN_AUS;
+                case RueckkuehlwerkSchema.REGELUNG_STUFEN: return MyResource.Resource.RKW_REGELUNG_STUFEN;
+                case RueckkuehlwerkSchema.REGELUNG_DREHZAHL: return MyResource.Resource.RKW_REGELUNG_DREHZAHL;
+                default: return regelung;
+            }
+        }
+
+        /// <summary>Der Anzeigetext einer Schaltung der freien Kühlung; leer = parallel (die Vorgabe).</summary>
+        public static string SchaltungText(string schaltung)
+            => (schaltung ?? RueckkuehlwerkSchema.SCHALTUNG_PARALLEL) == RueckkuehlwerkSchema.SCHALTUNG_PARALLEL ? MyResource.Resource.RKW_SCHALTUNG_PARALLEL
+             : schaltung == RueckkuehlwerkSchema.SCHALTUNG_REIHE ? MyResource.Resource.RKW_SCHALTUNG_REIHE
+             : schaltung;
+
         // =================================================================
         //  Prüfen
         // =================================================================
@@ -80,24 +188,52 @@ namespace WindowsFormsApplication1
                 return MyResource.Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG;
             if (m.Bauart != null && !RueckkuehlwerkSchema.BAUARTEN.Contains(m.Bauart))
                 return MyResource.Resource.RKW_MSG_BAUART_UNGUELTIG;
-            if ((m.Annaeherung_Weg != null && !RueckkuehlwerkSchema.ANNAEHERUNG_WEGE.Contains(m.Annaeherung_Weg)) ||
-                (m.Ventilator_Regelung != null && !RueckkuehlwerkSchema.VENTILATOR_REGELUNGEN.Contains(m.Ventilator_Regelung)) ||
-                (m.Freikuehlung_Schaltung != null && !RueckkuehlwerkSchema.FREIKUEHLUNG_SCHALTUNGEN.Contains(m.Freikuehlung_Schaltung)))
-                return MyResource.Resource.RKW_MSG_AUSWAHL_UNGUELTIG;
-            if (Ausserhalb(m.Nennleistung_kW, v => v > 0) ||
-                Ausserhalb(m.Annaeherung_Nenn_K, v => v >= 0 && v <= RueckkuehlwerkSchema.ANNAEHERUNG_MAX_K) ||
-                Ausserhalb(m.Ventilator_Nenn_kW, v => v >= 0) ||
-                (m.Ventilator_Stufen.HasValue && m.Ventilator_Stufen.Value < 2) ||
-                Ausserhalb(m.Ventilator_Drehzahl_Min, v => v >= 0 && v <= 1) ||
-                Ausserhalb(m.Befeuchtung_Wirkungsgrad, v => v >= 0 && v <= 1) ||
-                Ausserhalb(m.Befeuchtung_Ab_C, v => v >= RueckkuehlwerkSchema.BEFEUCHTUNG_AB_MIN_C && v <= RueckkuehlwerkSchema.BEFEUCHTUNG_AB_MAX_C) ||
-                Ausserhalb(m.Verdunstung_Faktor, v => v > 0 && v <= RueckkuehlwerkSchema.VERDUNSTUNG_FAKTOR_MAX) ||
-                Ausserhalb(m.Eindickung, v => v > 1 && v <= RueckkuehlwerkSchema.EINDICKUNG_MAX) ||
-                Ausserhalb(m.Drift_Anteil, v => v >= 0 && v <= 1) ||
-                Ausserhalb(m.Modulkosten, v => v >= 0))
-                return MyResource.Resource.RKW_MSG_WERT_UNGUELTIG;
+            // K-F5a: Eine verletzte Wertemenge oder ein Bereich nennt das Feld und - beim Bereich - die Grenzen.
+            string wahl = Auswahlbefund(MyResource.Resource.RKW_LBL_ANNAEHERUNG_WEG, m.Annaeherung_Weg, RueckkuehlwerkSchema.ANNAEHERUNG_WEGE)
+                       ?? Auswahlbefund(MyResource.Resource.RKW_LBL_VENTILATOR_REGELUNG, m.Ventilator_Regelung, RueckkuehlwerkSchema.VENTILATOR_REGELUNGEN)
+                       ?? Auswahlbefund(MyResource.Resource.RKW_LBL_FREIKUEHLUNG_SCHALTUNG, m.Freikuehlung_Schaltung, RueckkuehlwerkSchema.FREIKUEHLUNG_SCHALTUNGEN);
+            if (wahl != null) return wahl;
+            if (Ausserhalb(m.Nennleistung_kW, v => v > 0))
+                return Bereichsbefund(MyResource.Resource.RKW_LBL_NENNLEISTUNG, Groesser(0));
+            if (Ausserhalb(m.Annaeherung_Nenn_K, v => v >= 0 && v <= RueckkuehlwerkSchema.ANNAEHERUNG_MAX_K))
+                return Bereichsbefund(MyResource.Resource.RKW_LBL_ANNAEHERUNG_NENN, VonBis(0, RueckkuehlwerkSchema.ANNAEHERUNG_MAX_K));
+            if (Ausserhalb(m.Ventilator_Nenn_kW, v => v >= 0))
+                return Bereichsbefund(MyResource.Resource.RKW_LBL_VENTILATOR_NENN, Ab(0));
+            if (m.Ventilator_Stufen.HasValue && m.Ventilator_Stufen.Value < 2)
+                return Bereichsbefund(MyResource.Resource.RKW_LBL_VENTILATOR_STUFEN, Ab(2));
+            if (Ausserhalb(m.Ventilator_Drehzahl_Min, v => v >= 0 && v <= 1))
+                return Bereichsbefund(MyResource.Resource.RKW_LBL_VENTILATOR_DREHZAHL_MIN, VonBis(0, 1));
+            if (Ausserhalb(m.Befeuchtung_Wirkungsgrad, v => v >= 0 && v <= 1))
+                return Bereichsbefund(MyResource.Resource.RKW_LBL_BEFEUCHTUNG_WIRKUNGSGRAD, VonBis(0, 1));
+            if (Ausserhalb(m.Befeuchtung_Ab_C, v => v >= RueckkuehlwerkSchema.BEFEUCHTUNG_AB_MIN_C && v <= RueckkuehlwerkSchema.BEFEUCHTUNG_AB_MAX_C))
+                return Bereichsbefund(MyResource.Resource.RKW_LBL_BEFEUCHTUNG_AB,
+                                      VonBis(RueckkuehlwerkSchema.BEFEUCHTUNG_AB_MIN_C, RueckkuehlwerkSchema.BEFEUCHTUNG_AB_MAX_C));
+            if (Ausserhalb(m.Verdunstung_Faktor, v => v > 0 && v <= RueckkuehlwerkSchema.VERDUNSTUNG_FAKTOR_MAX))
+                return Bereichsbefund(MyResource.Resource.RKW_LBL_VERDUNSTUNG_FAKTOR, UeberBis(0, RueckkuehlwerkSchema.VERDUNSTUNG_FAKTOR_MAX));
+            if (Ausserhalb(m.Eindickung, v => v > 1 && v <= RueckkuehlwerkSchema.EINDICKUNG_MAX))
+                return Bereichsbefund(MyResource.Resource.RKW_LBL_EINDICKUNG, UeberBis(1, RueckkuehlwerkSchema.EINDICKUNG_MAX));
+            if (Ausserhalb(m.Drift_Anteil, v => v >= 0 && v <= 1))
+                return Bereichsbefund(MyResource.Resource.RKW_LBL_DRIFT_ANTEIL, VonBis(0, 1));
+            if (Ausserhalb(m.Modulkosten, v => v >= 0))
+                return Bereichsbefund(MyResource.Resource.RKW_LBL_MODULKOSTEN, Ab(0));
             return null;
         }
+
+        /// <summary>Ein gesetzter Steuerwert außerhalb seiner Wertemenge — benannt mit Feld und Wert; sonst <c>null</c>.</summary>
+        private static string Auswahlbefund(string feld, string wert, IReadOnlyList<string> menge)
+            => wert != null && !menge.Contains(wert)
+                ? string.Format(CultureInfo.CurrentCulture, MyResource.Resource.RKW_MSG_AUSWAHL_UNGUELTIG, feld, wert)
+                : null;
+
+        /// <summary>Ein Wert außerhalb seines Bereichs — benannt mit Feld und Grenzen.</summary>
+        private static string Bereichsbefund(string feld, string bereich)
+            => string.Format(CultureInfo.CurrentCulture, MyResource.Resource.RKW_MSG_WERT_UNGUELTIG, feld, bereich);
+
+        private static string Z(double d) => d.ToString("0.##", CultureInfo.CurrentCulture);
+        private static string Groesser(double a) => string.Format(CultureInfo.CurrentCulture, MyResource.Resource.RKW_BEREICH_GROESSER, Z(a));
+        private static string Ab(double a) => string.Format(CultureInfo.CurrentCulture, MyResource.Resource.RKW_BEREICH_AB, Z(a));
+        private static string VonBis(double a, double b) => string.Format(CultureInfo.CurrentCulture, MyResource.Resource.RKW_BEREICH_VON_BIS, Z(a), Z(b));
+        private static string UeberBis(double a, double b) => string.Format(CultureInfo.CurrentCulture, MyResource.Resource.RKW_BEREICH_UEBER_BIS, Z(a), Z(b));
 
         /// <summary>Ein gesetzter Wert, der nicht endlich ist oder die Bedingung verletzt.</summary>
         private static bool Ausserhalb(double? wert, Func<double, bool> gueltig)
@@ -146,8 +282,9 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Löscht einen Katalogsatz; ein ausgelieferter Satz bleibt. Projektkopien bleiben und verlieren nur ihren
-        /// Katalogverweis (<c>ID_Stamm</c> → NULL über den Fremdschlüssel).
+        /// Löscht einen Katalogsatz — nur einen eigenen und nur ohne Verwendung (K-F5a): Ein ausgelieferter Satz bleibt,
+        /// ebenso einer, aus dem eine Projektkopie stammt (<see cref="Verwendungen"/>). Der Fremdschlüssel
+        /// (<c>ID_Stamm</c> → NULL) bleibt der Rückweg für Kopien, deren Katalogsatz auf anderem Weg verschwindet.
         /// </summary>
         public static SpeicherErgebnis Loeschen(int id)
         {
@@ -155,6 +292,10 @@ namespace WindowsFormsApplication1
             {
                 if (Gesperrt(id))
                     return new SpeicherErgebnis(false, MyResource.Resource.RKW_MSG_AUSGELIEFERT, id);
+                int verwendet = Verwendungen(id);
+                if (verwendet > 0)
+                    return new SpeicherErgebnis(false,
+                        string.Format(CultureInfo.CurrentCulture, MyResource.Resource.RKW_MSG_VERWENDET, verwendet), id);
                 int n = DataRepository.ExecuteNonQuery("DELETE FROM " + TABLE + " WHERE ID = ?", new DbParam("?", id));
                 return n > 0
                     ? new SpeicherErgebnis(true, "", id)
@@ -230,19 +371,30 @@ namespace WindowsFormsApplication1
             new DbParam("?", Wert(m.Freikuehlung_Schaltung)), new DbParam("?", Wert(m.Modulkosten)),
         };
 
-        /// <summary>Schreibt einen Satz; <paramref name="projekt"/> ≠ <c>null</c> schreibt eine Projektkopie (ID_Projekt, ID_Stamm).</summary>
-        internal static int KopfSchreiben(DbVorgang v, string tabelle, RueckkuehlwerkModel m, bool neu, int? projekt)
+        /// <summary>
+        /// Schreibt einen Satz; <paramref name="projekt"/> ≠ <c>null</c> schreibt eine Projektkopie (ID_Projekt, ID_Stamm).
+        /// <paramref name="festeId"/> legt einen neuen Satz unter dieser ID an (Wiederherstellen einer Projektkopie, K-F5c).
+        /// </summary>
+        internal static int KopfSchreiben(DbVorgang v, string tabelle, RueckkuehlwerkModel m, bool neu, int? projekt, int? festeId = null)
         {
             string[] spalten = RueckkuehlwerkSchema.Fachspalten;
             if (neu)
             {
-                string zusatz = projekt.HasValue ? ", \"ID_Projekt\", \"" + RueckkuehlwerkSchema.SPALTE_ID_STAMM + "\"" : "";
-                string marken = string.Join(", ", spalten.Select(_ => "?")) + (projekt.HasValue ? ", ?, ?" : "");
+                string zusatz = (projekt.HasValue ? ", \"ID_Projekt\", \"" + RueckkuehlwerkSchema.SPALTE_ID_STAMM + "\"" : "")
+                              + (festeId.HasValue ? ", \"ID\"" : "");
+                string marken = string.Join(", ", spalten.Select(_ => "?")) + (projekt.HasValue ? ", ?, ?" : "")
+                              + (festeId.HasValue ? ", ?" : "");
                 var p = Fachwerte(m).ToList();
                 if (projekt.HasValue)
                 {
                     p.Add(new DbParam("?", projekt.Value));
                     p.Add(new DbParam("?", Wert(m.IdStamm)));
+                }
+                if (festeId.HasValue)
+                {
+                    v.Ausfuehren("INSERT INTO " + tabelle + " (" + string.Join(", ", spalten.Select(s => "\"" + s + "\"")) + zusatz +
+                                 ") VALUES (" + marken + ")", p.Append(new DbParam("?", festeId.Value)).ToArray());
+                    return festeId.Value;
                 }
                 v.Ausfuehren("INSERT INTO " + tabelle + " (" + string.Join(", ", spalten.Select(s => "\"" + s + "\"")) + zusatz +
                              ") VALUES (" + marken + ")", p.ToArray());
