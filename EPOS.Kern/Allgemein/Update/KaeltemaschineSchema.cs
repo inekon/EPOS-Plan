@@ -118,6 +118,14 @@ namespace WindowsFormsApplication1
         };
 
         /// <summary>
+        /// <b>Die eine Regel „ist luftgekühlt“</b> (K-F5c): <see cref="RUECKKUEHLART_LUFT"/> oder eine leere Rückkühlart —
+        /// leer rechnet der Lauf luftgekühlt (<c>Kaeltemaschine.AusModell</c>). Lauf, Hülle (Gruppe „Rückkühlung“) und die
+        /// Verträglichkeitsprüfung des Rückkühlwerks (<c>KaeltemaschineAnlageCtrl.RueckkuehlwerkPruefen</c>) nehmen sie.
+        /// </summary>
+        public static bool IstLuftgekuehlt(string rueckkuehlart) =>
+            string.IsNullOrEmpty(rueckkuehlart) || string.Equals(rueckkuehlart, RUECKKUEHLART_LUFT, System.StringComparison.Ordinal);
+
+        /// <summary>
         /// Die Fachspalten von Katalog und Projektkopie in Schemareihenfolge — die EINE Liste, an der
         /// Projektkopie, Schreibwege und Katalogfassung hängen (ohne <c>ID</c>, <c>ID_Projekt</c>,
         /// <c>ID_Stamm</c>, <c>ReadOnly</c> und die Katalogspalten).
