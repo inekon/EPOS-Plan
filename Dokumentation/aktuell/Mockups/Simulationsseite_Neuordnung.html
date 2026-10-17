@@ -21,8 +21,10 @@
     A "Kopfband" (Empfehlung): die Spalte entfaellt; Kontextband in einer Zeile ueber dem Ergebnis,
       darunter Meldezeile (Erfolgsbanner | Laufband), Reiterleiste in voller Breite, Blatt.
     B "Schmale Seitenleiste": Spalte 232 px, haftend, mit Kennzahlen, Knoepfen und senkrechten Reitern.
-  REITERSCHEMA (jedes Blatt, Reihenfolge fest): 1 Kennzahlkacheln (Auslegung zuerst) - 2 Energiebilanz
-  (Grafik | dl-Raster) - 3 Energiefluss (nur Uebersicht) - 4 Betrieb und Module - 5 Ganglinie.
+  REITERSCHEMA (jedes Blatt, Reihenfolge fest): 1 Kennzahlkacheln (Auslegung zuerst, rund 64 px hoch) -
+  2 Energiebilanz (dl-Raster links | Grafik rechts, rund 55 % der Kartenbreite) - 3 Energiefluss (nur
+  Uebersicht, eingeklappt als Vorgabe) - 4 Betrieb und Module - 5 Ganglinie (Kennwerte links | Bild rechts).
+  Rueckmeldung des Anwenders 17.10.2026: Tabellen links, Grafiken schmaler, Kacheln kleiner, Energiefluss klappbar.
 
   ALLE ZAHLEN SIND BEISPIELWERTE, in sich stimmig (MWh/a, gerundet auf 0,01):
     Waerme   Bedarf 103,55 = Heizung 88,20 + Warmwasser 15,35
@@ -40,7 +42,7 @@
   Keine Hersteller- oder Produktdaten; Namen neutral ("Kessel 1", "Modul 1", "WR 1").
 
   BEDIENBAR: Umschalter A | B, die sechs Reiter (Ergebnis nur Platzhalter), Zoomleiste und Gruppenkoepfe
-  (klappen). Das Mockup RECHNET NICHTS und schreibt nichts; die Knoepfe melden nur.
+  (klappen). Adresszusatz ?v=a|b&r=<reiter>&f=auf waehlt Variante, Reiter und den offenen Energiefluss. Das Mockup RECHNET NICHTS und schreibt nichts; die Knoepfe melden nur.
   EIGENSTAENDIG: kein CDN, keine Schriftdatei von aussen; Grafiken als inline-SVG aus dem Skript.
   FARBEN: Token woertlich aus EPOS.UI/wwwroot/epos-ui.css (:root), Reihenfarben woertlich aus
   EPOS.UI.Daten/Simulation/SimulationErgebnisHuelle.Bilder.cs (R_WP, R_KESSEL, R_HEIZSTAB, R_REST_GRAU);
@@ -218,14 +220,14 @@ button { font: inherit; }
 .mitleiste .meldezeile { padding: 12px 16px 0; }
 
 /* ---- Blatt: Kacheln ---------------------------------------------------- */
-.kacheln { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; }
-.kachel { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: var(--epos-karte-flaeche);
+.kacheln { display: grid; grid-template-columns: repeat(6, minmax(0, 170px)); gap: 8px; margin-bottom: 14px; }
+.kachel { display: flex; flex-direction: column; gap: 0; height: 64px; justify-content: center; padding: 4px 10px; background: var(--epos-karte-flaeche);
   border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke); color: var(--epos-karte-text); min-width: 0; }
 .kachel--auslegung { border-top: 3px solid var(--epos-karte-titel); }
-.kachel .k-art { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--epos-text-sehr-leise); }
-.kachel .k-wert { font-size: 24px; line-height: 1.15; font-weight: 700; color: var(--epos-karte-titel); font-variant-numeric: tabular-nums; white-space: nowrap; }
-.kachel .k-wert small { font-size: 13px; font-weight: 400; color: var(--epos-karte-text); margin-left: 3px; }
-.kachel .k-titel { font-size: 12px; color: var(--epos-karte-text); }
+.kachel .k-art { font-size: 10px; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: uppercase; letter-spacing: .04em; color: var(--epos-text-sehr-leise); }
+.kachel .k-wert { font-size: 20px; line-height: 1.15; font-weight: 700; color: var(--epos-karte-titel); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.kachel .k-wert small { font-size: 12px; font-weight: 400; color: var(--epos-karte-text); margin-left: 3px; }
+.kachel .k-titel { font-size: 11.5px; line-height: 1.3; color: var(--epos-karte-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .kachel--leer .k-wert { color: var(--epos-text-sehr-leise); }
 
 /* ---- Blatt: Gruppenkopf und Karte -------------------------------------- */
@@ -237,7 +239,8 @@ button { font: inherit; }
 .gruppenkopf .summe { color: var(--epos-gruppenkopf-summe); font-weight: 600; }
 .gruppe-inhalt { padding: 12px 14px 14px; }
 .gruppe.zu .gruppe-inhalt { display: none; }
-.zweispaltig { display: grid; grid-template-columns: minmax(0, 1fr) max-content; gap: 20px; align-items: start; }
+.zweispaltig { display: grid; grid-template-columns: minmax(0, 45fr) minmax(0, 55fr); gap: 20px; align-items: start; }
+.zweispaltig > .grafikspalte { border-left: 1px solid var(--epos-rahmen-leise); padding-left: 20px; min-width: 0; }
 .unterteil + .unterteil { margin-top: 14px; }
 .unterkopf { font-weight: 700; color: var(--epos-karte-titel); margin: 0 0 4px; }
 .legende { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 4px 0 0; padding: 0; list-style: none; font-size: 12px; color: var(--epos-text-leise); }
@@ -267,7 +270,7 @@ table.raster { border-collapse: collapse; width: 100%; }
 .betrieb-raster { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
 
 /* ---- Ringe, Ganglinie -------------------------------------------------- */
-.ringzeile { display: grid; grid-template-columns: 220px 220px minmax(0, 1fr); gap: 20px; align-items: center; }
+.ringpaar { display: grid; grid-template-columns: minmax(0, 190px) minmax(0, 190px); gap: 16px; justify-content: center; }
 .ringlegende h4 { margin: 8px 0 2px; font-size: 13px; color: var(--epos-karte-titel); }
 .ringlegende h4:first-child { margin-top: 0; }
 .zoomleiste { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
@@ -383,11 +386,11 @@ svg.grafik .halo { paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-
 <section>
   <h2>Regeln des Schemas</h2>
   <ol>
-    <li><b>Kennzahlkacheln</b> — eine Zeile, fünf bis sechs Kacheln; Auslegung (dunkle Oberkante) zuerst, dann Betrieb.</li>
-    <li><b>Energiebilanz</b> — Gruppenkopf, links Grafik (Bilanzbalken, Herleitung als Wasserfall, Monatssäulen mit dem Erzeuger des Blattes hervorgehoben), rechts das dl-Raster Beschriftung | Zahl | Einheit mit fetter Summenzeile.</li>
-    <li><b>Energiefluss</b> — nur auf der Übersicht: Sankey von den Quellen über Hausnetz und Wandler zum Nutzen, darunter die Ringe Wärme- und Stromdeckung.</li>
+    <li><b>Kennzahlkacheln</b> — eine Zeile, fünf bis sechs Kacheln, je höchstens 170 × 64 px (Zahl 20 px, Rubrik und Beschriftung einzeilig); Auslegung (dunkle Oberkante) zuerst, dann Betrieb.</li>
+    <li><b>Energiebilanz</b> — Gruppenkopf, links das dl-Raster Beschriftung | Zahl | Einheit mit fetter Summenzeile (rund 45 %), rechts die Grafik (rund 55 %: Bilanzbalken, Herleitung als Wasserfall, Monatssäulen mit dem Erzeuger des Blattes hervorgehoben). Dieselbe Teilung gilt für jede Karte mit Grafik: Zahlen links, Bild rechts.</li>
+    <li><b>Energiefluss</b> — nur auf der Übersicht, eigener Gruppenkopf, als Vorgabe eingeklappt (Kopfzeile mit Kurzsumme „Quellen 132,93 MWh/a → Nutzen“); aufgeklappt links Quellen und Nutzen als Raster, rechts das Sankey über Hausnetz und Wandler. Darunter, immer sichtbar, die Ringe Wärme- und Stromdeckung und die Bilanz.</li>
     <li><b>Betrieb und Module</b> — Gruppenköpfe (einklappbar): Modultabelle, Brennstoff, Betrieb.</li>
-    <li><b>Ganglinie</b> — zuletzt, mit Zoomleiste Jahr | Monat | Woche | Tag und „CSV…“.</li>
+    <li><b>Ganglinie</b> — zuletzt; links Kennwerte der Reihe, rechts das Bild mit Zoomleiste Jahr | Monat | Woche | Tag und „CSV…“.</li>
   </ol>
 </section>
 <section class="breit">
@@ -432,7 +435,7 @@ svg.grafik .halo { paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-
   <ul>
     <li><b>SD-Q1</b> Variante A (Kopfband) oder B (schmale Seitenleiste)? Empfehlung A.</li>
     <li><b>SD-Q2</b> Kacheln je Reiter: die Auswahl oben bestätigen oder ändern (höchstens sechs).</li>
-    <li><b>SD-Q3</b> Energiefluss nur auf der Übersicht oder je Technologiereiter mit hervorgehobenem Erzeuger?</li>
+    <li><b>SD-Q3</b> Energiefluss: in der Übersicht als eigener Gruppenkopf, eingeklappt als Vorgabe (Vorschlag nach Rückmeldung des Anwenders). Offen bleibt, ob er auch je Technologiereiter mit hervorgehobenem Erzeuger erscheint.</li>
     <li><b>SD-Q4</b> Betriebsblöcke einklappbar, mit gemerktem Zustand je Anwender?</li>
     <li><b>SD-Q5</b> Ganglinie unten im Blatt oder als eigener Unterreiter?</li>
   </ul>
@@ -481,14 +484,14 @@ const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
 // ======================================================================= Bausteine
 function kacheln(liste) {
   return '<div class="kacheln">' + liste.map(k =>
-    `<div class="kachel${k.a ? " kachel--auslegung" : ""}${k.w === null ? " kachel--leer" : ""}">` +
+    `<div class="kachel${k.a ? " kachel--auslegung" : ""}${k.w === null ? " kachel--leer" : ""}" title="${k.t}">` +
     `<span class="k-art">${k.a ? "Auslegung" : "Betrieb"}</span>` +
     `<span class="k-wert">${k.w === null ? "—" : k.w}<small>${k.e}</small></span>` +
     `<span class="k-titel">${k.t}</span></div>`).join("") + "</div>";
 }
-function gruppe(titel, inhalt, summeText) {
-  return `<section class="gruppe"><button type="button" class="gruppenkopf" aria-expanded="true">` +
-    `<span class="sym">▾</span><span>${titel}</span><span class="summe">${summeText || ""}</span></button>` +
+function gruppe(titel, inhalt, summeText, zu) {
+  return `<section class="gruppe${zu ? " zu" : ""}"><button type="button" class="gruppenkopf" aria-expanded="${!zu}">` +
+    `<span class="sym">${zu ? "▸" : "▾"}</span><span>${titel}</span><span class="summe">${summeText || ""}</span></button>` +
     `<div class="gruppe-inhalt">${inhalt}</div></section>`;
 }
 function werte(bloecke) {
@@ -517,7 +520,7 @@ function tabelle(kopf, zeilen, summenzeile) {
 
 // ---- Bilanzbalken: 100 % = Gesamtwert, Segmente mit Beschriftung -------------------------------
 function bilanzbalken(balken) {
-  const B = 720, passt = (seg, ges) => B * seg.w / ges > `${seg.t} ${zahl(seg.w, 2)}`.length * 6.6 + 12;
+  const B = 600, passt = (seg, ges) => B * seg.w / ges > `${seg.t} ${zahl(seg.w, 2)}`.length * 6.6 + 12;
   const zeilen = balken.map(b => b.teile.filter(seg => !passt(seg, b.gesamt)).length);
   const hoehe = balken.reduce((h, b, i) => h + 58 + Math.max(zeilen[i], 1) * 15, 0);
   let s = `<svg class="grafik" viewBox="0 0 ${B} ${hoehe}" role="img" aria-label="Bilanzbalken">`;
@@ -548,7 +551,7 @@ function bilanzbalken(balken) {
 
 // ---- Wasserfall: senkrechte Stufen ---------------------------------------------------------------
 function wasserfall(stufen, einheit) {
-  const B = 720, H = 186, unten = 156, oben = 28, n = stufen.length, spalte = B / n, bw = Math.min(86, spalte * 0.56);
+  const B = 600, H = 190, unten = 160, oben = 36, n = stufen.length, spalte = B / n, bw = Math.min(86, spalte * 0.56);
   let max = 0, lauf = 0;
   for (const st of stufen) { if (st.art === "summe") lauf = st.w; else lauf += st.w; max = Math.max(max, lauf); }
   const y = v => unten - (unten - oben) * v / max;
@@ -573,7 +576,7 @@ function wasserfall(stufen, einheit) {
 
 // ---- Monatssaeulen: gestapelt, Bedarf als Linie -------------------------------------------------
 function monatssaeulen(reihen, linie, extraLinie) {
-  const B = 720, H = 246, l = 34, r = 8, oben = 22, unten = 222;
+  const B = 600, H = 236, l = 30, r = 4, oben = 22, unten = 212;
   const sums = MONATE.map((_, m) => summe(reihen.map(rh => rh.d[m])));
   const max = Math.ceil(Math.max(...sums, ...(linie || [0]), ...(extraLinie ? extraLinie.d : [0])) / 4) * 4;
   const y = v => unten - (unten - oben) * v / max;
@@ -620,9 +623,9 @@ function ring(teile, mitte, unter) {
 
 // ---- Energiefluss (Sankey) -----------------------------------------------------------------------
 function energiefluss() {
-  const k = 2.05, gap = 16, nw = 14, X = [190, 450, 720, 1000], oben = 26;
+  const k = 1.7, gap = 14, nw = 12, X = [112, 248, 380, 512], oben = 26, BREITE = 640;
   const N = {
-    rest:  { c: 0, t: "Wärme ungedeckt", f: F.rest },
+    rest:  { c: 0, t: "ungedeckt", f: F.rest },
     gas:   { c: 0, t: "Gas (Hi)", f: F.gas },
     umw:   { c: 0, t: "Umweltwärme", f: F.umwelt },
     pv:    { c: 0, t: "Photovoltaik", f: F.pv },
@@ -658,7 +661,7 @@ function energiefluss() {
   const ausOff = new Map(), einOff = new Map();
   for (const v of V.slice().sort((p, q) => (N[p[1]].y - N[q[1]].y))) { const a = N[v[0]]; ausOff.set(v, a.oa); a.oa += v[2] * k; }
   for (const v of V.slice().sort((p, q) => (N[p[0]].y - N[q[0]].y))) { const b = N[v[1]]; einOff.set(v, b.oe); b.oe += v[2] * k; }
-  let s = `<svg class="grafik" viewBox="0 0 1200 ${H.toFixed(0)}" role="img" aria-label="Energiefluss">`;
+  let s = `<svg class="grafik" viewBox="0 0 ${BREITE} ${H.toFixed(0)}" role="img" aria-label="Energiefluss">`;
   for (const v of V) {
     const a = N[v[0]], b = N[v[1]], h = v[2] * k;
     const x0 = X[a.c] + nw, x1 = X[b.c], y0 = a.y + ausOff.get(v), y1 = b.y + einOff.get(v), xm = (x0 + x1) / 2;
@@ -668,19 +671,21 @@ function energiefluss() {
   for (const [id, n] of Object.entries(N)) {
     s += `<rect x="${X[n.c]}" y="${n.y.toFixed(1)}" width="${nw}" height="${Math.max(n.h, 2).toFixed(1)}" fill="${n.f}"${id === "rest" ? ' stroke="#888780" stroke-dasharray="3 2"' : ""}/>`;
     const my = n.y + n.h / 2;
-    const txt = `<tspan class="fett">${n.t}</tspan> ${zahl(n.w, 2)}`;
-    if (n.c === 0) s += `<text x="${X[0] - 8}" y="${(my + 4).toFixed(1)}" text-anchor="end">${txt}</text>`;
-    else if (n.c === 3) s += `<text x="${X[3] + nw + 8}" y="${(my + 4).toFixed(1)}">${txt}</text>`;
-    else s += `<text x="${X[n.c] + nw + 6}" y="${(n.y - 5).toFixed(1)}" class="halo">${txt}</text>`;
+    const zwei = (x, y, anker) => `<text x="${x}" y="${(y - 2).toFixed(1)}" text-anchor="${anker}" class="fett">${n.t}</text>` +
+      `<text x="${x}" y="${(y + 11).toFixed(1)}" text-anchor="${anker}" class="leise">${zahl(n.w, 2)}</text>`;
+    if (n.c === 0) s += zwei(X[0] - 6, my, "end");
+    else if (n.c === 3) s += zwei(X[3] + nw + 6, my, "start");
+    else s += `<text x="${n.c === 2 ? X[n.c] + nw : X[n.c] + nw + 4}" y="${(n.y - 5).toFixed(1)}" text-anchor="${n.c === 2 ? "end" : "start"}" class="halo"><tspan class="fett">${n.t}</tspan> ${zahl(n.w, 2)}</text>`;
   }
   ["Quellen", "Hausnetz", "Wandler", "Nutzen"].forEach((t, c) =>
-    s += `<text x="${c === 0 ? X[0] + nw : X[c]}" y="12" text-anchor="${c === 0 ? "end" : "start"}" class="leise">${t} · MWh/a</text>`);
+    s += `<text x="${c === 0 ? X[0] + nw : X[c]}" y="12" text-anchor="${c === 0 ? "end" : "start"}" class="leise">${t}</text>`);
+  s += `<text x="${BREITE}" y="12" text-anchor="end" class="leise">MWh/a</text>`;
   return s + "</svg>";
 }
 
 // ---- Ganglinie -----------------------------------------------------------------------------------
-function ganglinie(art, farbe, maxKw) {
-  const B = 1160, H = 204, l = 40, oben = 22, unten = 180;
+function ganglinie(art, farbe, maxKw, kenn) {
+  const B = 600, H = 200, l = 32, oben = 22, unten = 176;
   const achse = Math.ceil(maxKw / 20) * 20;
   const y = v => unten - (unten - oben) * v / achse;
   let d = "";
@@ -692,6 +697,7 @@ function ganglinie(art, farbe, maxKw) {
     else if (art === "pv") v = maxKw * (0.15 + 0.6 * (1 - winter)) * (0.45 + 0.55 * rausch);
     else if (art === "wp") v = maxKw * Math.min(0.92, 0.12 + 0.8 * winter * (0.7 + 0.3 * rausch));
     else v = maxKw * (0.08 + 0.85 * winter * (0.75 + 0.25 * rausch));
+    kenn.max = Math.max(kenn.max || 0, v); if (v > 0.5) { kenn.tage = (kenn.tage || 0) + 1; kenn.summe = (kenn.summe || 0) + v; }
     d += `${t ? "L" : "M"}${(l + (B - l) * t / 364).toFixed(1)},${y(v).toFixed(1)} `;
   }
   let s = `<svg class="grafik" viewBox="0 0 ${B} ${H}" role="img" aria-label="Ganglinie">`;
@@ -707,11 +713,17 @@ function ganglinienblock(titel, art, farbe, maxKw) {
   const zoom = '<div class="zoomleiste"><span class="seg" role="group" aria-label="Zeitraum">' +
     ["Jahr", "Monat", "Woche", "Tag"].map((z, i) => `<button type="button" data-zoom="${z}" aria-pressed="${i === 0}">${z}</button>`).join("") +
     '</span><span class="fueller"></span><button type="button" class="knopf knopf--klein" data-meldung="Exportiert die Reihe als CSV.">CSV…</button></div>';
-  return gruppe("Ganglinie", zoom + ganglinie(art, farbe, maxKw) + legende([{ f: farbe, t: titel, l: true }]));
+  const kenn = {}, bild = ganglinie(art, farbe, maxKw, kenn);
+  const links = werte([{ kopf: "Kennwerte der Reihe", zeilen: [
+    { t: "größter Tageshöchstwert", w: zahl(kenn.max, 1), u: "kW" },
+    { t: "Mittel an Tagen mit Last", w: zahl(kenn.summe / kenn.tage, 1), u: "kW" },
+    { t: "Tage mit Last", w: String(kenn.tage), u: "d/a" }] }]);
+  return gruppe("Ganglinie", zweispaltig(links, zoom + bild + legende([{ f: farbe, t: titel, l: true }])));
 }
 function energiebilanz(grafikHtml, werteHtml, summeText) {
-  return gruppe("Energiebilanz", `<div class="zweispaltig"><div>${grafikHtml}</div><div>${werteHtml}</div></div>`, summeText);
+  return gruppe("Energiebilanz", zweispaltig(werteHtml, grafikHtml), summeText);
 }
+function zweispaltig(links, rechts) { return `<div class="zweispaltig"><div>${links}</div><div class="grafikspalte">${rechts}</div></div>`; }
 function teil(kopf, inhalt) { return `<div class="unterteil"><p class="unterkopf">${kopf}</p>${inhalt}</div>`; }
 
 // ======================================================================= Blaetter
@@ -735,19 +747,33 @@ const BLAETTER = {
   uebersicht: { t: "Übersicht", html: () =>
     kacheln([
       { a: 1, w: "103,55", e: "MWh/a", t: "Wärmebedarf" }, { w: "75,2", e: "%", t: "Wärmedeckung" },
-      { w: "25,65", e: "MWh/a", t: "Restwärme" }, { a: 1, w: "46,21", e: "MWh/a", t: "Strombedarf mit Wärmeerzeugern" },
+      { w: "25,65", e: "MWh/a", t: "Restwärme" }, { a: 1, w: "46,21", e: "MWh/a", t: "Strombedarf mit Erzeugern" },
       { w: "42,8", e: "%", t: "Stromdeckung" }, { w: "26,43", e: "MWh/a", t: "Reststrom (Netzbezug)" }]) +
-    gruppe("Energiefluss", energiefluss() + legende([
+    gruppe("Energiefluss", zweispaltig(werte([
+        { kopf: "Quellen", zeilen: [
+          { t: "Gas (Hi)", w: "13,33", u: "MWh/a" }, { t: "Umweltwärme", w: "44,97", u: "MWh/a" },
+          { t: "Photovoltaik", w: "48,20", u: "MWh/a" }, { t: "Netzstrom", w: "26,43", u: "MWh/a" },
+          { t: "Quellen", w: "132,93", u: "MWh/a", s: 1 }] },
+        { kopf: "Nutzen", zeilen: [
+          { t: "Wärme gedeckt", w: "77,90", u: "MWh/a" }, { t: "Strom Verbraucher", w: "22,20", u: "MWh/a" },
+          { t: "Einspeisung", w: "28,42", u: "MWh/a" }, { t: "Verluste", w: "4,41", u: "MWh/a" },
+          { t: "Nutzen", w: "132,93", u: "MWh/a", s: 1 },
+          { t: "Wärme ungedeckt (keine Quelle)", w: "25,65", u: "MWh/a", e: 1 }] }]),
+      energiefluss() + legende([
       { f: F.gas, t: "Gas" }, { f: F.umwelt, t: "Umweltwärme" }, { f: F.pv, t: "Photovoltaik" }, { f: F.netz, t: "Netzstrom" },
-      { f: F.verbraucher, t: "Hausnetz" }, { f: F.wp, t: "Wärmepumpe" }, { f: F.hs, t: "Heizstab" }, { f: F.rest, t: "Wärme ungedeckt (gestrichelt)" }]),
-      "158,58 MWh/a umgesetzt") +
-    gruppe("Deckung", `<div class="ringzeile">` +
+      { f: F.verbraucher, t: "Hausnetz" }, { f: F.wp, t: "Wärmepumpe" }, { f: F.hs, t: "Heizstab" }, { f: F.rest, t: "Wärme ungedeckt" }])),
+      "Quellen 132,93 MWh/a → Nutzen", !zustand.flussAuf) +
+    gruppe("Deckung", zweispaltig(werte([
+        { kopf: "Wärme 103,55 MWh/a", zeilen: [
+          { t: "Wärmepumpe", w: "63,4", u: "%" }, { t: "Heizkessel", w: "11,8", u: "%" },
+          { t: "ungedeckt", w: "24,8", u: "%" }, { t: "Wärmedeckung", w: "75,2", u: "%", s: 1 }] },
+        { kopf: "Strom 46,21 MWh/a", zeilen: [
+          { t: "Photovoltaik direkt", w: "42,8", u: "%" }, { t: "Netzbezug", w: "57,2", u: "%" },
+          { t: "Stromdeckung", w: "42,8", u: "%", s: 1 }] }]),
+      `<div class="ringpaar">` +
       ring([{ w: 65.67, f: F.wp }, { w: 12.23, f: F.kessel }, { w: 25.65, f: F.rest }], "75,2 %", "Wärmedeckung") +
-      ring([{ w: 19.78, f: F.pv }, { w: 26.43, f: F.rest }], "42,8 %", "Stromdeckung") +
-      `<div class="ringlegende"><h4>Wärme 103,55 MWh/a</h4>` +
-      legende([{ f: F.wp, t: "Wärmepumpe 65,67 (63,4 %)" }, { f: F.kessel, t: "Heizkessel 12,23 (11,8 %)" }, { f: F.rest, t: "ungedeckt 25,65 (24,8 %)" }]) +
-      `<h4>Strom 46,21 MWh/a</h4>` +
-      legende([{ f: F.pv, t: "Photovoltaik direkt 19,78 (42,8 %)" }, { f: F.rest, t: "Netzbezug 26,43 (57,2 %)" }]) + `</div></div>`) +
+      ring([{ w: 19.78, f: F.pv }, { w: 26.43, f: F.rest }], "42,8 %", "Stromdeckung") + `</div>` +
+      legende([{ f: F.wp, t: "Wärmepumpe" }, { f: F.kessel, t: "Heizkessel" }, { f: F.pv, t: "Photovoltaik direkt" }, { f: F.rest, t: "ungedeckt / Netzbezug" }]))) +
     energiebilanz(
       bilanzbalken([waermeBalken(null), { titel: "Strombedarf", gesamt: 46.21, teile: [
         { t: "Photovoltaik direkt", w: 19.78, f: F.pv }, { t: "Netzbezug", w: 26.43, f: F.netz, hell: 1 }] }]) +
@@ -772,7 +798,7 @@ const BLAETTER = {
   bedarf: { t: "Wärme-/Strombedarf", html: () =>
     kacheln([
       { a: 1, w: "82,0", e: "kW", t: "max. Wärmelast" }, { w: "103,55", e: "MWh/a", t: "Wärmebedarf" },
-      { w: "1" + NB + "263", e: "h/a", t: "Vollbenutzungsstunden Wärme" }, { a: 1, w: "6,4", e: "kW", t: "max. Strombedarf" },
+      { w: "1" + NB + "263", e: "h/a", t: "Vollbenutzung Wärme" }, { a: 1, w: "6,4", e: "kW", t: "max. Strombedarf" },
       { w: "22,20", e: "MWh/a", t: "Strombedarf Verbraucher" }, { a: 1, w: null, e: "", t: "max. Kältelast · nicht aktiv" }]) +
     energiebilanz(
       bilanzbalken([
@@ -799,14 +825,14 @@ const BLAETTER = {
 
   wp: { t: "Wärmepumpe", html: () =>
     kacheln([
-      { a: 1, w: "60,00", e: "kW", t: "Heizleistung (Summe Module)" }, { w: "3,05", e: "", t: "Jahresarbeitszahl" },
+      { a: 1, w: "60,00", e: "kW", t: "Heizleistung der Module" }, { w: "3,05", e: "", t: "Jahresarbeitszahl" },
       { a: 1, w: "−4,5", e: "°C", t: "Bivalenzpunkt" }, { w: "1" + NB + "095", e: "h/a", t: "Vollbenutzungsstunden" },
       { w: "63,4", e: "%", t: "Deckungsanteil" }, { w: "2,00", e: "MWh/a", t: "Heizstab" }]) +
     energiebilanz(
       bilanzbalken([waermeBalken("wp"), { titel: "Wärmeproduktion der Wärmepumpe", gesamt: 66.90, teile: [
         { t: "Umweltwärme", w: 44.97, f: F.umwelt, hell: 1 }, { t: "Strom", w: 21.93, f: F.netz, hell: 1 }] }]) +
       teil("Herleitung der Nutzwärme", wasserfall([
-        { t: "Wärmeproduktion", w: 66.90, art: "summe", f: F.wp }, { t: "Quellwärme Kaskade", w: 0 },
+        { t: "Wärmeproduktion", w: 66.90, art: "summe", f: F.wp }, { t: "Kaskade", w: 0 },
         { t: "Heizstab", w: 2.00 }, { t: "Speicherverluste", w: -3.23 }, { t: "Nutzwärme", w: 65.67, art: "summe" }], "MWh/a")) +
       teil("Bedarf und Deckung je Monat", monatssaeulen(waermeReihen("wp"), W.bedarf) + waermeLegende("wp")),
       werte([
@@ -831,7 +857,7 @@ const BLAETTER = {
 
   kessel: { t: "Heizkessel", html: () =>
     kacheln([
-      { a: 1, w: "120,00", e: "kW", t: "Wärmeleistung" }, { a: 1, w: "32,16", e: "kW", t: "Brennstoffleistung (Hi), Spitze" },
+      { a: 1, w: "120,00", e: "kW", t: "Wärmeleistung" }, { a: 1, w: "32,16", e: "kW", t: "Brennstoff (Hi), Spitze" },
       { w: "11,81", e: "%", t: "Deckungsanteil" }, { w: "520", e: "h/a", t: "Betriebsstunden" },
       { w: "160", e: "1/a", t: "Starts" }, { w: "93,4", e: "%", t: "Wirkungsgrad im Betrieb" }]) +
     energiebilanz(
@@ -859,7 +885,7 @@ const BLAETTER = {
       { t: "Betriebsstunden", w: "520", u: "h/a" }, { t: "Bereitschaft", w: "2" + NB + "150", u: "h/a" }, { t: "Taktstunden", w: "38", u: "h/a" }] }]) +
       werte([{ kopf: "Verluste und Temperatur", zeilen: [
       { t: "Anfahrverlust", w: "0,05", u: "MWh/a" }, { t: "Umwandlungsverlust", w: "0,88", u: "MWh/a" }, { t: "mittlerer Rücklauf", w: "47,8", u: "°C" }] }]) + `</div>`) +
-    ganglinienblock("Wärmeleistung Heizkessel", "kessel", F.kessel, 40) },
+    ganglinienblock("Wärmeleistung Heizkessel", "kessel", F.kessel, 30) },
 
   pv: { t: "Photovoltaik", html: () =>
     kacheln([
@@ -896,11 +922,12 @@ const BLAETTER = {
 const REIHENFOLGE = ["uebersicht", "bedarf", "wp", "kessel", "pv", "ergebnis"];
 
 // ======================================================================= Zustand und Zeichnen
-const zustand = { variante: "a", reiter: "kessel" };
+const zustand = { variante: "a", reiter: "kessel", flussAuf: false };
 try {
   const p = new URLSearchParams(location.search);
   if (p.get("v") === "a" || p.get("v") === "b") zustand.variante = p.get("v");
   if (BLAETTER[p.get("r")]) zustand.reiter = p.get("r");
+  if (p.get("f") === "auf") zustand.flussAuf = true;
 } catch (e) { /* ohne Parameter */ }
 
 function zeichnen() {
