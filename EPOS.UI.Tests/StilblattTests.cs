@@ -1166,6 +1166,53 @@ public sealed class StilblattTests
     }
 
     /// <summary>
+    /// <b>SK-3: das Energieflussbild breit und schmal</b> (Konzept Energieflussbild 4.3, SK-Q8): beide Modelle stehen im Baum,
+    /// das schmale ist ausgeblendet und tauscht unter 900 px mit dem breiten — eine Regel, kein JS. Keine sichtbare
+    /// Wertetabelle (SK-Q12): die Textalternative nimmt die Sprachausgabe-Klasse, das Stilblatt kennt keine Wertetabelle
+    /// des Flusses. Keine Farbe als Rückfall.
+    /// </summary>
+    [Fact]
+    public void SK3_Das_Energieflussbild_tauscht_unter_900_px_das_schmale_Modell_ein()
+    {
+        Assert.Contains("display: none", Regelblock(".epos-ergebnis-fluss-mass--schmal {"), StringComparison.Ordinal);
+        Assert.Contains("max-width: 1180px", Regelblock(".epos-ergebnis-fluss-bild {"), StringComparison.Ordinal);
+
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+        int regel = css.IndexOf("\n.epos-ergebnis-fluss {", StringComparison.Ordinal);
+        Assert.True(regel > 0);
+        string schmal = Abfrageblock(css.Substring(regel), "@media (max-width: 899.98px) {");
+        Assert.Contains(".epos-ergebnis-fluss-mass--breit {\n        display: none;", schmal, StringComparison.Ordinal);
+        Assert.Contains(".epos-ergebnis-fluss-mass--schmal {\n        display: block;", schmal, StringComparison.Ordinal);
+        Assert.DoesNotContain("epos-ergebnis-fluss-wertetabelle", css, StringComparison.Ordinal);
+        foreach (string r in new[] { ".epos-ergebnis-fluss {", ".epos-ergebnis-fluss-kopf {", ".epos-ergebnis-fluss-bild {",
+                                     ".epos-ergebnis-fluss-mass--schmal {" })
+            Assert.DoesNotContain("#", Regelblock(r), StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    /// <b>SK-2d-2: Knopfgruppen und Abblendregel des Energieflussbilds.</b> Der Kopf hat keine Höchstbreite mehr (Version,
+    /// „Kette | Stufen“ und Filter stehen nebeneinander und brechen um); die Hervorhebung blendet über die Deckkraft ab — nur
+    /// Bänder und Knoten ohne <c>epos-fluss-an</c>, solange die figure markiert ist; keine Farbe, Legende und Stufentitel
+    /// bleiben unberührt (die Regel nennt nur <c>fluss:</c> und <c>knoten:</c>).
+    /// </summary>
+    [Fact]
+    public void SK2d2_Die_Hervorhebung_blendet_nur_Baender_und_Knoten_ab()
+    {
+        Assert.DoesNotContain("max-width", Regelblock(".epos-ergebnis-fluss-kopf {"), StringComparison.Ordinal);
+        Assert.Contains("flex-wrap: wrap", Regelblock(".epos-ergebnis-fluss-wahl {"), StringComparison.Ordinal);
+        string css = File.ReadAllText(Path.Combine(Wwwroot(), "epos-ui.css")).Replace("\r\n", "\n");
+        const string kopf = ".epos-ergebnis-fluss-bild--hervor [data-marke^=\"fluss:\"]:not(.epos-fluss-an),\n"
+                          + ".epos-ergebnis-fluss-bild--hervor [data-marke^=\"knoten:\"]:not(.epos-fluss-an) {";
+        int i = css.IndexOf(kopf, StringComparison.Ordinal);
+        Assert.True(i > 0, "Abblendregel fehlt");
+        string regel = css.Substring(i, css.IndexOf('}', i) - i);
+        Assert.Contains("opacity: 0.18", regel, StringComparison.Ordinal);
+        Assert.DoesNotContain("#", regel, StringComparison.Ordinal);
+        Assert.DoesNotContain("legende", regel, StringComparison.Ordinal);
+        Assert.DoesNotContain("stufe:", regel, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     /// <b>Kästchen und Kopfhäkchen der Projektliste im Schema des runden Wahlknopfs</b> (KA‑E‑28): ein Kreis mit
     /// Rand, angekreuzt — auch ▣, eine Teilwahl — in den Farben des Primärknopfs, Schwebe und Fokus eigen, im
     /// Hochkontrast die Systemfarben der Wahl. Die Zeile trägt die Berührungsgröße, das Kopfhäkchen ist kleiner

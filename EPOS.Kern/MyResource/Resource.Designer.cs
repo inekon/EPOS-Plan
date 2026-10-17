@@ -12410,6 +12410,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fluss ähnelt.
+        /// </summary>
+        public static string BK_ERG_ANSICHT_FLUSS {
+            get {
+                return ResourceManager.GetString("BK_ERG_ANSICHT_FLUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Grafik ähnelt.
         /// </summary>
         public static string BK_ERG_ANSICHT_GRAFIK {
@@ -12460,6 +12469,114 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BK_ERG_ENDENERGIE_TRAEGER {
             get {
                 return ResourceManager.GetString("BK_ERG_ENDENERGIE_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieflussbild der Version {0} ähnelt.
+        /// </summary>
+        public static string BK_ERG_FLUSS_BILD {
+            get {
+                return ResourceManager.GetString("BK_ERG_FLUSS_BILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Darstellung des Energieflussbilds ähnelt.
+        /// </summary>
+        public static string BK_ERG_FLUSS_DARSTELLUNG {
+            get {
+                return ResourceManager.GetString("BK_ERG_FLUSS_DARSTELLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieform ähnelt.
+        /// </summary>
+        public static string BK_ERG_FLUSS_FILTER {
+            get {
+                return ResourceManager.GetString("BK_ERG_FLUSS_FILTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} kleine Knoten zusammengefasst ähnelt.
+        /// </summary>
+        public static string BK_ERG_FLUSS_HINWEIS_GEBUENDELT {
+            get {
+                return ResourceManager.GetString("BK_ERG_FLUSS_HINWEIS_GEBUENDELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umweltwärme und Umweltkälte sind als Umweltanteil gezeigt: Nutzenergie des Erzeugers abzüglich seines Stroms. ähnelt.
+        /// </summary>
+        public static string BK_ERG_FLUSS_HINWEIS_UMWELT {
+            get {
+                return ResourceManager.GetString("BK_ERG_FLUSS_HINWEIS_UMWELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Zufluss {1} · Abfluss {2} · Rest {3} MWh/a ähnelt.
+        /// </summary>
+        public static string BK_ERG_FLUSS_KNOTEN {
+            get {
+                return ResourceManager.GetString("BK_ERG_FLUSS_KNOTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für diese Version liegt kein Simulationsergebnis vor. Starten Sie die Simulation, um ihr Energieflussbild zu sehen. ähnelt.
+        /// </summary>
+        public static string BK_ERG_FLUSS_NICHT_SIMULIERT {
+            get {
+                return ResourceManager.GetString("BK_ERG_FLUSS_NICHT_SIMULIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieflüsse ähnelt.
+        /// </summary>
+        public static string BK_ERG_FLUSS_TEXT_FLUESSE {
+            get {
+                return ResourceManager.GetString("BK_ERG_FLUSS_TEXT_FLUESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bilanz je Knoten ähnelt.
+        /// </summary>
+        public static string BK_ERG_FLUSS_TEXT_KNOTEN {
+            get {
+                return ResourceManager.GetString("BK_ERG_FLUSS_TEXT_KNOTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Version ähnelt.
+        /// </summary>
+        public static string BK_ERG_FLUSS_VERSION {
+            get {
+                return ResourceManager.GetString("BK_ERG_FLUSS_VERSION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Werte erscheinen beim Überfahren oder Antippen eines Bandes oder Knotens, sein Umfeld wird hervorgehoben; die Zahlen stehen im Reiter „Tabelle“. ähnelt.
+        /// </summary>
+        public static string BK_ERG_FLUSS_ZEIGER {
+            get {
+                return ResourceManager.GetString("BK_ERG_FLUSS_ZEIGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} → {1}: {2} MWh/a ({3} %) · {4} ähnelt.
+        /// </summary>
+        public static string BK_ERG_FLUSS_ZEILE {
+            get {
+                return ResourceManager.GetString("BK_ERG_FLUSS_ZEILE", resourceCulture);
             }
         }
         
@@ -24053,6 +24170,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzjahr ähnelt.
         /// </summary>
         public static string DGF_ROLLE_ERSATZJAHR {
@@ -24107,11 +24233,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälte ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_KAELTE {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kälte dezentral (Split) ähnelt.
         /// </summary>
         public static string DGF_ROLLE_KAELTE_DEZENTRAL {
             get {
                 return ResourceManager.GetString("DGF_ROLLE_KAELTE_DEZENTRAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Knoten (Energiefluss) ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_KNOTEN {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_KNOTEN", resourceCulture);
             }
         }
         
@@ -24413,6 +24557,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strom (Energiefluss) ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_STROM {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die BHKW-Strom ähnelt.
         /// </summary>
         public static string DGF_ROLLE_STROM_BHKW {
@@ -24467,11 +24620,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umweltwärme ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_UMWELTWAERME {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_UMWELTWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Summe Stromverbrauch ähnelt.
         /// </summary>
         public static string DGF_ROLLE_VERBRAUCH_GESAMT {
             get {
                 return ResourceManager.GetString("DGF_ROLLE_VERBRAUCH_GESAMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verlust ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_VERLUST {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_VERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärme (Energiefluss) ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_WAERME {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_WAERME", resourceCulture);
             }
         }
         
@@ -24742,6 +24922,1068 @@ namespace WindowsFormsApplication1.MyResource {
         public static string DIAG_UNBEFRISTET {
             get {
                 return ResourceManager.GetString("DIAG_UNBEFRISTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiefluss (Jahresbilanz Strom, Wärme, Kälte; Umweltanteil nach Jahresarbeitszahl) ähnelt.
+        /// </summary>
+        public static string EF_BER_BESCHRIFTUNG {
+            get {
+                return ResourceManager.GetString("EF_BER_BESCHRIFTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Energieflussbild — {0} ähnelt.
+        /// </summary>
+        public static string EF_BER_OHNE_BILD {
+            get {
+                return ResourceManager.GetString("EF_BER_OHNE_BILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kette ähnelt.
+        /// </summary>
+        public static string EF_DARSTELLUNG_KETTE {
+            get {
+                return ResourceManager.GetString("EF_DARSTELLUNG_KETTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufen ähnelt.
+        /// </summary>
+        public static string EF_DARSTELLUNG_STUFEN {
+            get {
+                return ResourceManager.GetString("EF_DARSTELLUNG_STUFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle ähnelt.
+        /// </summary>
+        public static string EF_FILTER_ALLE {
+            get {
+                return ResourceManager.GetString("EF_FILTER_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: keine Flüsse in dieser Version ähnelt.
+        /// </summary>
+        public static string EF_FILTER_LEER {
+            get {
+                return ResourceManager.GetString("EF_FILTER_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarf − Speicherentladung − ungedeckt ähnelt.
+        /// </summary>
+        public static string EF_FORMEL_DIREKT {
+            get {
+                return ResourceManager.GetString("EF_FORMEL_DIREKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ladung − Entladung − Verlust ähnelt.
+        /// </summary>
+        public static string EF_FORMEL_FUELLSTAND {
+            get {
+                return ResourceManager.GetString("EF_FORMEL_FUELLSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärme − Brennstoff (Heizwert) ähnelt.
+        /// </summary>
+        public static string EF_FORMEL_KONDENSATION {
+            get {
+                return ResourceManager.GetString("EF_FORMEL_KONDENSATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälte − Strom ähnelt.
+        /// </summary>
+        public static string EF_FORMEL_UMWELT_KAELTE {
+            get {
+                return ResourceManager.GetString("EF_FORMEL_UMWELT_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärme − Strom ähnelt.
+        /// </summary>
+        public static string EF_FORMEL_UMWELT_WAERME {
+            get {
+                return ResourceManager.GetString("EF_FORMEL_UMWELT_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restbedarf anteilig nach Bedarf ähnelt.
+        /// </summary>
+        public static string EF_FORMEL_UNGEDECKT {
+            get {
+                return ResourceManager.GetString("EF_FORMEL_UNGEDECKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zufluss − Abfluss ähnelt.
+        /// </summary>
+        public static string EF_FORMEL_VERLUST {
+            get {
+                return ResourceManager.GetString("EF_FORMEL_VERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die abgeleitet ähnelt.
+        /// </summary>
+        public static string EF_HERKUNFT_ABGELEITET {
+            get {
+                return ResourceManager.GetString("EF_HERKUNFT_ABGELEITET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bilanziert ähnelt.
+        /// </summary>
+        public static string EF_HERKUNFT_BILANZIERT {
+            get {
+                return ResourceManager.GetString("EF_HERKUNFT_BILANZIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die direkt ähnelt.
+        /// </summary>
+        public static string EF_HERKUNFT_DIREKT {
+            get {
+                return ResourceManager.GetString("EF_HERKUNFT_DIREKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bilanz am Knoten {0} schließt nicht: {1} MWh/a nicht zugeordnet ähnelt.
+        /// </summary>
+        public static string EF_HINWEIS_BILANZ {
+            get {
+                return ResourceManager.GetString("EF_HINWEIS_BILANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die [fluss] Energiefluss — {0} ähnelt.
+        /// </summary>
+        public static string EF_KI_KOPF {
+            get {
+                return ResourceManager.GetString("EF_KI_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW ähnelt.
+        /// </summary>
+        public static string EF_KK_BHKW {
+            get {
+                return ResourceManager.GetString("EF_KK_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennst. ähnelt.
+        /// </summary>
+        public static string EF_KK_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("EF_KK_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einsp. BHKW ähnelt.
+        /// </summary>
+        public static string EF_KK_EINSPEISUNG_BHKW {
+            get {
+                return ResourceManager.GetString("EF_KK_EINSPEISUNG_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einsp. PV ähnelt.
+        /// </summary>
+        public static string EF_KK_EINSPEISUNG_PV {
+            get {
+                return ResourceManager.GetString("EF_KK_EINSPEISUNG_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die E-Kessel ähnelt.
+        /// </summary>
+        public static string EF_KK_ELEKTROKESSEL {
+            get {
+                return ResourceManager.GetString("EF_KK_ELEKTROKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die frei ähnelt.
+        /// </summary>
+        public static string EF_KK_FREIE_KUEHLUNG {
+            get {
+                return ResourceManager.GetString("EF_KK_FREIE_KUEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ΔFüllst. ähnelt.
+        /// </summary>
+        public static string EF_KK_FUELLSTAND {
+            get {
+                return ResourceManager.GetString("EF_KK_FUELLSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kessel ähnelt.
+        /// </summary>
+        public static string EF_KK_HEIZKESSEL {
+            get {
+                return ResourceManager.GetString("EF_KK_HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizstab ähnelt.
+        /// </summary>
+        public static string EF_KK_HEIZSTAB {
+            get {
+                return ResourceManager.GetString("EF_KK_HEIZSTAB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizung ähnelt.
+        /// </summary>
+        public static string EF_KK_HEIZUNG {
+            get {
+                return ResourceManager.GetString("EF_KK_HEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälte ähnelt.
+        /// </summary>
+        public static string EF_KK_KAELTE {
+            get {
+                return ResourceManager.GetString("EF_KK_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KM ähnelt.
+        /// </summary>
+        public static string EF_KK_KAELTEMASCHINE {
+            get {
+                return ResourceManager.GetString("EF_KK_KAELTEMASCHINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die K-Speicher ähnelt.
+        /// </summary>
+        public static string EF_KK_KAELTESPEICHER {
+            get {
+                return ResourceManager.GetString("EF_KK_KAELTESPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kond. ähnelt.
+        /// </summary>
+        public static string EF_KK_KONDENSATION {
+            get {
+                return ResourceManager.GetString("EF_KK_KONDENSATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältestrom ähnelt.
+        /// </summary>
+        public static string EF_KK_KUEHLSTROM_EIGEN {
+            get {
+                return ResourceManager.GetString("EF_KK_KUEHLSTROM_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung ähnelt.
+        /// </summary>
+        public static string EF_KK_KUEHLUNG {
+            get {
+                return ResourceManager.GetString("EF_KK_KUEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netz ähnelt.
+        /// </summary>
+        public static string EF_KK_NETZBEZUG {
+            get {
+                return ResourceManager.GetString("EF_KK_NETZBEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die n. zug. ähnelt.
+        /// </summary>
+        public static string EF_KK_NICHT_ZUGEORDNET {
+            get {
+                return ResourceManager.GetString("EF_KK_NICHT_ZUGEORDNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV ähnelt.
+        /// </summary>
+        public static string EF_KK_PHOTOVOLTAIK {
+            get {
+                return ResourceManager.GetString("EF_KK_PHOTOVOLTAIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozess ähnelt.
+        /// </summary>
+        public static string EF_KK_PROZESSWAERME {
+            get {
+                return ResourceManager.GetString("EF_KK_PROZESSWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Puffer ähnelt.
+        /// </summary>
+        public static string EF_KK_PUFFERSPEICHER {
+            get {
+                return ResourceManager.GetString("EF_KK_PUFFERSPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solar ähnelt.
+        /// </summary>
+        public static string EF_KK_SOLARTHERMIE {
+            get {
+                return ResourceManager.GetString("EF_KK_SOLARTHERMIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Split ähnelt.
+        /// </summary>
+        public static string EF_KK_SPLIT {
+            get {
+                return ResourceManager.GetString("EF_KK_SPLIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strom ähnelt.
+        /// </summary>
+        public static string EF_KK_STROM {
+            get {
+                return ResourceManager.GetString("EF_KK_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombed. ähnelt.
+        /// </summary>
+        public static string EF_KK_STROMBEDARF {
+            get {
+                return ResourceManager.GetString("EF_KK_STROMBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Batterie ähnelt.
+        /// </summary>
+        public static string EF_KK_STROMSPEICHER {
+            get {
+                return ResourceManager.GetString("EF_KK_STROMSPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umw. K. ähnelt.
+        /// </summary>
+        public static string EF_KK_UMWELTKAELTE {
+            get {
+                return ResourceManager.GetString("EF_KK_UMWELTKAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umwelt ähnelt.
+        /// </summary>
+        public static string EF_KK_UMWELTWAERME {
+            get {
+                return ResourceManager.GetString("EF_KK_UMWELTWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ungedeckt ähnelt.
+        /// </summary>
+        public static string EF_KK_UNGEDECKT {
+            get {
+                return ResourceManager.GetString("EF_KK_UNGEDECKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verl. ähnelt.
+        /// </summary>
+        public static string EF_KK_VERLUST {
+            get {
+                return ResourceManager.GetString("EF_KK_VERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärme ähnelt.
+        /// </summary>
+        public static string EF_KK_WAERME {
+            get {
+                return ResourceManager.GetString("EF_KK_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die WP ähnelt.
+        /// </summary>
+        public static string EF_KK_WAERMEPUMPE {
+            get {
+                return ResourceManager.GetString("EF_KK_WAERMEPUMPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die WW ähnelt.
+        /// </summary>
+        public static string EF_KK_WARMWASSER {
+            get {
+                return ResourceManager.GetString("EF_KK_WARMWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die weit. ({0}) ähnelt.
+        /// </summary>
+        public static string EF_KK_WEITERE {
+            get {
+                return ResourceManager.GetString("EF_KK_WEITERE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die WP Heizen ähnelt.
+        /// </summary>
+        public static string EF_KK_WP_HEIZEN {
+            get {
+                return ResourceManager.GetString("EF_KK_WP_HEIZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die WP Kühlen ähnelt.
+        /// </summary>
+        public static string EF_KK_WP_KUEHLEN {
+            get {
+                return ResourceManager.GetString("EF_KK_WP_KUEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW ähnelt.
+        /// </summary>
+        public static string EF_KN_BHKW {
+            get {
+                return ResourceManager.GetString("EF_KN_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff ähnelt.
+        /// </summary>
+        public static string EF_KN_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("EF_KN_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisung BHKW ähnelt.
+        /// </summary>
+        public static string EF_KN_EINSPEISUNG_BHKW {
+            get {
+                return ResourceManager.GetString("EF_KN_EINSPEISUNG_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisung PV ähnelt.
+        /// </summary>
+        public static string EF_KN_EINSPEISUNG_PV {
+            get {
+                return ResourceManager.GetString("EF_KN_EINSPEISUNG_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Elektrokessel ähnelt.
+        /// </summary>
+        public static string EF_KN_ELEKTROKESSEL {
+            get {
+                return ResourceManager.GetString("EF_KN_ELEKTROKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die freie Kühlung ähnelt.
+        /// </summary>
+        public static string EF_KN_FREIE_KUEHLUNG {
+            get {
+                return ResourceManager.GetString("EF_KN_FREIE_KUEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Füllstandsänderung ähnelt.
+        /// </summary>
+        public static string EF_KN_FUELLSTAND {
+            get {
+                return ResourceManager.GetString("EF_KN_FUELLSTAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel ähnelt.
+        /// </summary>
+        public static string EF_KN_HEIZKESSEL {
+            get {
+                return ResourceManager.GetString("EF_KN_HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizstab ähnelt.
+        /// </summary>
+        public static string EF_KN_HEIZSTAB {
+            get {
+                return ResourceManager.GetString("EF_KN_HEIZSTAB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizung ähnelt.
+        /// </summary>
+        public static string EF_KN_HEIZUNG {
+            get {
+                return ResourceManager.GetString("EF_KN_HEIZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälte ähnelt.
+        /// </summary>
+        public static string EF_KN_KAELTE {
+            get {
+                return ResourceManager.GetString("EF_KN_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältemaschine ähnelt.
+        /// </summary>
+        public static string EF_KN_KAELTEMASCHINE {
+            get {
+                return ResourceManager.GetString("EF_KN_KAELTEMASCHINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältespeicher ähnelt.
+        /// </summary>
+        public static string EF_KN_KAELTESPEICHER {
+            get {
+                return ResourceManager.GetString("EF_KN_KAELTESPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kondensationswärme ähnelt.
+        /// </summary>
+        public static string EF_KN_KONDENSATION {
+            get {
+                return ResourceManager.GetString("EF_KN_KONDENSATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältestrom (eigener Zähler) ähnelt.
+        /// </summary>
+        public static string EF_KN_KUEHLSTROM_EIGEN {
+            get {
+                return ResourceManager.GetString("EF_KN_KUEHLSTROM_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlung ähnelt.
+        /// </summary>
+        public static string EF_KN_KUEHLUNG {
+            get {
+                return ResourceManager.GetString("EF_KN_KUEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzbezug ähnelt.
+        /// </summary>
+        public static string EF_KN_NETZBEZUG {
+            get {
+                return ResourceManager.GetString("EF_KN_NETZBEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht zugeordnet ähnelt.
+        /// </summary>
+        public static string EF_KN_NICHT_ZUGEORDNET {
+            get {
+                return ResourceManager.GetString("EF_KN_NICHT_ZUGEORDNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Photovoltaik ähnelt.
+        /// </summary>
+        public static string EF_KN_PHOTOVOLTAIK {
+            get {
+                return ResourceManager.GetString("EF_KN_PHOTOVOLTAIK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme ähnelt.
+        /// </summary>
+        public static string EF_KN_PROZESSWAERME {
+            get {
+                return ResourceManager.GetString("EF_KN_PROZESSWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher ähnelt.
+        /// </summary>
+        public static string EF_KN_PUFFERSPEICHER {
+            get {
+                return ResourceManager.GetString("EF_KN_PUFFERSPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermie ähnelt.
+        /// </summary>
+        public static string EF_KN_SOLARTHERMIE {
+            get {
+                return ResourceManager.GetString("EF_KN_SOLARTHERMIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Split-Gerät ähnelt.
+        /// </summary>
+        public static string EF_KN_SPLIT {
+            get {
+                return ResourceManager.GetString("EF_KN_SPLIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strom ähnelt.
+        /// </summary>
+        public static string EF_KN_STROM {
+            get {
+                return ResourceManager.GetString("EF_KN_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf ähnelt.
+        /// </summary>
+        public static string EF_KN_STROMBEDARF {
+            get {
+                return ResourceManager.GetString("EF_KN_STROMBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromspeicher ähnelt.
+        /// </summary>
+        public static string EF_KN_STROMSPEICHER {
+            get {
+                return ResourceManager.GetString("EF_KN_STROMSPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umwelt (Kälte) ähnelt.
+        /// </summary>
+        public static string EF_KN_UMWELTKAELTE {
+            get {
+                return ResourceManager.GetString("EF_KN_UMWELTKAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umweltwärme ähnelt.
+        /// </summary>
+        public static string EF_KN_UMWELTWAERME {
+            get {
+                return ResourceManager.GetString("EF_KN_UMWELTWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ungedeckt ähnelt.
+        /// </summary>
+        public static string EF_KN_UNGEDECKT {
+            get {
+                return ResourceManager.GetString("EF_KN_UNGEDECKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verlust ähnelt.
+        /// </summary>
+        public static string EF_KN_VERLUST {
+            get {
+                return ResourceManager.GetString("EF_KN_VERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärme ähnelt.
+        /// </summary>
+        public static string EF_KN_WAERME {
+            get {
+                return ResourceManager.GetString("EF_KN_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe ähnelt.
+        /// </summary>
+        public static string EF_KN_WAERMEPUMPE {
+            get {
+                return ResourceManager.GetString("EF_KN_WAERMEPUMPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Warmwasser ähnelt.
+        /// </summary>
+        public static string EF_KN_WARMWASSER {
+            get {
+                return ResourceManager.GetString("EF_KN_WARMWASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die weitere ({0}) ähnelt.
+        /// </summary>
+        public static string EF_KN_WEITERE {
+            get {
+                return ResourceManager.GetString("EF_KN_WEITERE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe (Heizen) ähnelt.
+        /// </summary>
+        public static string EF_KN_WP_HEIZEN {
+            get {
+                return ResourceManager.GetString("EF_KN_WP_HEIZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe (Kühlen) ähnelt.
+        /// </summary>
+        public static string EF_KN_WP_KUEHLEN {
+            get {
+                return ResourceManager.GetString("EF_KN_WP_KUEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Version „{0}“ hat keine Energieflüsse. ähnelt.
+        /// </summary>
+        public static string EF_LEER {
+            get {
+                return ResourceManager.GetString("EF_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoff ähnelt.
+        /// </summary>
+        public static string EF_LEG_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("EF_LEG_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälte ähnelt.
+        /// </summary>
+        public static string EF_LEG_KAELTE {
+            get {
+                return ResourceManager.GetString("EF_LEG_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht zugeordnet / ungedeckt ähnelt.
+        /// </summary>
+        public static string EF_LEG_REST {
+            get {
+                return ResourceManager.GetString("EF_LEG_REST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strom ähnelt.
+        /// </summary>
+        public static string EF_LEG_STROM {
+            get {
+                return ResourceManager.GetString("EF_LEG_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umweltwärme / Umwelt (Kälte) ähnelt.
+        /// </summary>
+        public static string EF_LEG_UMWELT {
+            get {
+                return ResourceManager.GetString("EF_LEG_UMWELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verlust ähnelt.
+        /// </summary>
+        public static string EF_LEG_VERLUST {
+            get {
+                return ResourceManager.GetString("EF_LEG_VERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärme ähnelt.
+        /// </summary>
+        public static string EF_LEG_WAERME {
+            get {
+                return ResourceManager.GetString("EF_LEG_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für die Version „{0}“ liegt kein Simulationsergebnis vor. ähnelt.
+        /// </summary>
+        public static string EF_NICHT_SIMULIERT {
+            get {
+                return ResourceManager.GetString("EF_NICHT_SIMULIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher ähnelt.
+        /// </summary>
+        public static string EF_SP_SPEICHER {
+            get {
+                return ResourceManager.GetString("EF_SP_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagen ähnelt.
+        /// </summary>
+        public static string EF_ST_ANLAGEN {
+            get {
+                return ResourceManager.GetString("EF_ST_ANLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einsatz ähnelt.
+        /// </summary>
+        public static string EF_ST_EINSATZ {
+            get {
+                return ResourceManager.GetString("EF_ST_EINSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieform ähnelt.
+        /// </summary>
+        public static string EF_ST_ENERGIEFORM {
+            get {
+                return ResourceManager.GetString("EF_ST_ENERGIEFORM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzen ähnelt.
+        /// </summary>
+        public static string EF_ST_NUTZEN {
+            get {
+                return ResourceManager.GetString("EF_ST_NUTZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die abgeleitet: {0} ähnelt.
+        /// </summary>
+        public static string EF_ZEIGER_ABGELEITET {
+            get {
+                return ResourceManager.GetString("EF_ZEIGER_ABGELEITET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die bilanziert aus der Strombilanz des Laufs ähnelt.
+        /// </summary>
+        public static string EF_ZEIGER_BILANZIERT {
+            get {
+                return ResourceManager.GetString("EF_ZEIGER_BILANZIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} → {1}: {2} MWh/a ({3} %) ähnelt.
+        /// </summary>
+        public static string EF_ZEIGER_FLUSS {
+            get {
+                return ResourceManager.GetString("EF_ZEIGER_FLUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gebündelt: {0} ähnelt.
+        /// </summary>
+        public static string EF_ZEIGER_GEBUENDELT {
+            get {
+                return ResourceManager.GetString("EF_ZEIGER_GEBUENDELT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} {1} MWh/a (unter 1 %, nicht gezeichnet) ähnelt.
+        /// </summary>
+        public static string EF_ZEIGER_KLEINVERLUST {
+            get {
+                return ResourceManager.GetString("EF_ZEIGER_KLEINVERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Zufluss {1} · Abfluss {2} MWh/a ähnelt.
+        /// </summary>
+        public static string EF_ZEIGER_KNOTEN {
+            get {
+                return ResourceManager.GetString("EF_ZEIGER_KNOTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} MWh/a ähnelt.
+        /// </summary>
+        public static string EF_ZEIGER_MENGE {
+            get {
+                return ResourceManager.GetString("EF_ZEIGER_MENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bilanzrest am Knoten {0} ähnelt.
+        /// </summary>
+        public static string EF_ZEIGER_NICHT_ZUGEORDNET {
+            get {
+                return ResourceManager.GetString("EF_ZEIGER_NICHT_ZUGEORDNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht nutzbarer Überschuss {0} MWh/a (nicht gezeichnet) ähnelt.
+        /// </summary>
+        public static string EF_ZEIGER_SOLARUEBERSCHUSS {
+            get {
+                return ResourceManager.GetString("EF_ZEIGER_SOLARUEBERSCHUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Ladung {1} · Entladung {2} MWh/a ähnelt.
+        /// </summary>
+        public static string EF_ZEIGER_SPEICHER_AM_BUS {
+            get {
+                return ResourceManager.GetString("EF_ZEIGER_SPEICHER_AM_BUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verlust {0} · Füllstandsänderung {1} MWh/a ähnelt.
+        /// </summary>
+        public static string EF_ZEIGER_SPEICHER_VERLUST {
+            get {
+                return ResourceManager.GetString("EF_ZEIGER_SPEICHER_VERLUST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Entladung deckt den Rest des Anschlusses; eine Zuordnung zu einzelnen Verbrauchern gibt es nicht. ähnelt.
+        /// </summary>
+        public static string EF_ZEIGER_STROMSPEICHER {
+            get {
+                return ResourceManager.GetString("EF_ZEIGER_STROMSPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die davon {0} MWh/a über {1} ähnelt.
+        /// </summary>
+        public static string EF_ZEIGER_UEBER_SPEICHER {
+            get {
+                return ResourceManager.GetString("EF_ZEIGER_UEBER_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Umweltanteil nach Jahresarbeitszahl ähnelt.
+        /// </summary>
+        public static string EF_ZEIGER_UMWELT {
+            get {
+                return ResourceManager.GetString("EF_ZEIGER_UMWELT", resourceCulture);
             }
         }
         
@@ -49965,7 +51207,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Die Datei trägt Zeitpläne bzw. Kalender je Raum; die Übernahme als eine Zone nimmt sie nicht, die Kalender kommen aus dem Nutzungsprofil. Mit einer Zonenregel für mehrere Zonen kommen sie je Zone an. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Die Räume der Datei tragen verschiedene Zeitpläne bzw. Kalender; die Übernahme als eine Zone nimmt keinen davon, die Kalender kommen aus dem Nutzungsprofil. Wählen Sie eine Zonenregel für mehrere Zonen, dann kommen sie je Zone an. ähnelt.
         /// </summary>
         public static string IMP_BAUTEIL_PROT_EINZONE_ZEITPLAENE {
             get {
@@ -136833,6 +138075,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Energieflussbild (Stand bzw. irgendein Stand)? ähnelt.
+        /// </summary>
+        public static string VF_HAT__BILD__ENERGIEFLUSS {
+            get {
+                return ResourceManager.GetString("VF_HAT__BILD__ENERGIEFLUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bildschalter: Gibt es das Bild der Heizkessel (Stand bzw. irgendein Stand)? ähnelt.
         /// </summary>
         public static string VF_HAT__BILD__HEIZKESSEL {
@@ -138152,6 +139403,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_ORT_AUTARKIE_MONATE {
             get {
                 return ResourceManager.GetString("VF_ORT_AUTARKIE_MONATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die im Bericht tragen die Knoten ihre Jahressumme (MWh/a); die Bänder bleiben ohne Zahl, die Werte stehen hier im Zeigertext ähnelt.
+        /// </summary>
+        public static string VF_ORT_ENERGIEFLUSS {
+            get {
+                return ResourceManager.GetString("VF_ORT_ENERGIEFLUSS", resourceCulture);
             }
         }
         
@@ -140024,6 +141284,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string VF_STAND__BILD__DECKUNG_WAERME {
             get {
                 return ResourceManager.GetString("VF_STAND__BILD__DECKUNG_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bild je Stand: Energieflussbild — Jahresbilanz von Strom, Wärme und Kälte von den Quellen über die Erzeuger zu den Bedarfen; die Knoten tragen ihre Jahressumme (MWh/a), die Bänder keine Zahl; nur Word. ähnelt.
+        /// </summary>
+        public static string VF_STAND__BILD__ENERGIEFLUSS {
+            get {
+                return ResourceManager.GetString("VF_STAND__BILD__ENERGIEFLUSS", resourceCulture);
             }
         }
         

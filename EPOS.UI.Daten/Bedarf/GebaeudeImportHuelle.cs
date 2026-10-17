@@ -887,7 +887,9 @@ namespace WindowsFormsApplication1
                 Raeume = _ablauf.Raeume(anfrage.Gebaeudeindex, haken).Select(RaumDaten).ToList(),
                 Zeilen = satz.Zeilen.Select(ZeileDaten).ToList(),
                 // Die Verwendung, die die Datei hergibt, mit Herleitung (Anwenderwunsch 08.10.2026) - als letzte Meldung.
+                // N8: Die Einzonenwarnung zu den Kalendern der Datei steht auch hier, nicht nur im Zonierungsstand und bei den Bauteilen.
                 Meldungen = satz.Meldungen.Concat(satz.Verwendung?.Herleitung is PruefMeldung vm ? new[] { vm } : Array.Empty<PruefMeldung>())
+                                .Concat(Uebernahmemeldungen(_vorschlag))
                                 .Select(MeldungDaten).ToList(),
                 ManuellHerkunftText = GebaeudeZuordnungsModell.HerkunftText(Importherkunft.Manuell),
                 Bauteile = BauteileDaten(_vorschlag),
@@ -1362,6 +1364,14 @@ namespace WindowsFormsApplication1
                 r.BeheiztLautDatei,
                 GebaeudeZuordnungsModell.RaumGrundText(r),
                 r.Uebersteuert);
+
+        /// <summary>
+        /// Die Meldungen des Bauteilvorschlags, die die ganze Übernahme betreffen und deshalb auch in der allgemeinen Meldungsliste
+        /// des Imports stehen (Nachzug N8): die Einzonenwarnung zu den Kalendern der Datei.
+        /// </summary>
+        internal static IEnumerable<PruefMeldung> Uebernahmemeldungen(GebaeudeBauteilvorschlag v)
+            => v == null ? Enumerable.Empty<PruefMeldung>()
+             : v.Meldungen.Where(m => m.Schluessel == GebaeudeBauteilvorschlag.EINZONE_ZEITPLAENE);
 
         internal static GebaeudeImportMeldung MeldungDaten(PruefMeldung m)
             => new GebaeudeImportMeldung(

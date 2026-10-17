@@ -1114,12 +1114,19 @@ namespace WindowsFormsApplication1
                 // Welle DA-4: Vorheizzeit, Höchstleistungen und Übergabe aus den Restdaten; die eine Zone trägt keinen Luftstrom.
                 GebaeudeRestdaten.Setzen(_v.Zone, _g.Raeume.Where(IstBeheizt));
                 _v._zonenreste.Clear();
-                _v._zonenreste.Add(GebaeudeRestdaten.Rest(_g.Raeume.Where(IstBeheizt)));
-                // N7: Die eine Zone nimmt die Zeitpläne der Datei nicht (Kalender kommen aus dem Profil bzw. der Projektdatei) —
-                // benannt statt still, mit dem Weg, auf dem sie ankommen.
-                if (_g.Raeume.Where(IstBeheizt).Any(r => r.Konditionierung != null ||
-                                                         (r.GbxmlLasten is { AusIfc: false } l && l.Plaene.Any())))
+                // N8 (E160): Tragen alle beheizten Räume mit Kalendern denselben, nimmt die eine Zone ihn (Konditionierung und Rest der
+                // Datei wie eine Zone des Mehrzonenwegs); weichen sie ab, nimmt sie keinen — benannt, mit dem Hinweis auf eine
+                // Zonenregel für mehrere Zonen —, und auch die Wochen und das Zeilenbild eines einzelnen Raums bleiben draußen.
+                List<AbbildRaum> warm = _g.Raeume.Where(IstBeheizt).ToList();
+                Zonenkonditionierung datei = GebaeudeZonierung.Einzonenkonditionierung(_v.Zone.Bezeichner, warm, out bool abweichend);
+                _v._projektdatei.Clear();
+                _v._projektdatei.Add(datei);
+                AbbildZonenrest rest = GebaeudeRestdaten.Rest(warm);
+                _v._zonenreste.Add(abweichend ? GebaeudeRestdaten.OhneKonditionierung(rest) : rest);
+                if (abweichend)
                     Warnung(EINZONE_ZEITPLAENE, _v.Zone.Bezeichner);
+                else if (datei?.AusGbxml == true || datei?.AusIfcStandard == true)
+                    _v._meldungen.AddRange(datei.Meldungen);
             }
 
             /// <summary>

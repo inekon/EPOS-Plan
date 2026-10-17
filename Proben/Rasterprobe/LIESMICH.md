@@ -1822,6 +1822,53 @@ dasselbe Modell ohne die Regel (das Bild des Berichts). Die Probe misst den Zeig
 der Regel zählt sie je Reihe zwei Pfade (Band und Kern), und auch die Bänder bleiben über die Bewegung dieselben
 Elemente.
 
+**Fall `fluss` (`--fall fluss`, Energieflussbild der Übersicht) — Seite `/uebersichtprobe?ansicht=fluss`.** Das
+Energieflussbild ist ein Bild **ohne** Zeichenfläche: Die Zeigerzeile nennt den Zeigertext des Bandes oder Knotens
+unter der Maus (Werte nur im Zeigertext, keine Zahlen im Bild). Die Seite stellt den Abschnitt „Ergebnisse — Energie“
+mit der echten Hülle `UebersichtErgebnisGaben` und synthetischen Ergebnissen (`?version=<id>` wählt die Version,
+Vorgabe Stamm). Die Probe tastet das breite Bild in einem Raster von 80 × 40 Punkten ab und nimmt je getroffenem Band
+oder Knoten einen Punkt; je Element: Maus auf einen freien Punkt des Bildes — die Zeile ist leer; Maus auf das
+Element — die Zeile nennt binnen 2 s einen Text mit „MWh/a“, ein Band („Von → Nach“) steht bis „%)“ wortgleich in
+der verborgenen Textalternative, ein Knoten mit seinem Namen. Sollwerte: jedes Element mit Zeigertext, mindestens
+3 Bänder und 3 Knoten, das erste Element nennt beim zweiten Mal denselben Text. Abgetastet werden nur Elemente mit der
+Marke `fluss:` oder `knoten:` — Farbfelder der Legende und Stufentitel tragen keinen Zeigertext. **Gegenprobe:**
+dieselben Punkte mit `pointer-events: none` auf den Elementen des Bildes — die Zeile bleibt leer, die Probe muss verfehlen.
+
+```bash
+node diagrammprobe.mjs --url http://127.0.0.1:5299 --fall fluss [--fotos <ordner außerhalb des Repositorys>]
+```
+
+**Ergebnis vom 16.10.2026** (Linux-Container, Chromium headless, Wirt Blazor Server): 24 Elemente, **12 Bänder und
+12 Knoten** mit Zeigertext, alle in der Textalternative (24 Zeilen) — Rückgabe 0. Gegenprobe: 24 von 24 Elementen
+ohne Zeigertext (verfehlt, richtig). Der Fall `zoom` (Vorgabe) am selben Stand unverändert: ×12, 41 Schritte,
+größter Abstand 0,50 px, Zeile mit Datum 41/41, 0 Mutationen; Gegenprobe verfehlt.
+
+**Fall `hervorhebung` (`--fall hervorhebung`, Konzept Energieflussbild 3.3) — dieselbe Seite.** Das Modul
+`EPOS.UI/wwwroot/epos-energiefluss.js` hebt beim Überfahren oder Antippen das Umfeld eines Knotens hervor (bis zum
+nächsten Bus) und blendet den Rest über die Stilregel ab. Die Seite legt in der Ansicht „fluss“ das Soll verborgen ab
+(`#uep-umfeld-soll`: je Knoten des Stamms Art und `EnergieflussAbbildung.Umfeld` des Kerns). Die Probe fährt auf den
+Wandler mit dem größten Umfeld und auf einen Bus und vergleicht die Menge der Bandmarken mit `epos-fluss-an` mit dem
+Soll (soweit gezeichnet); jedes Band außerhalb hat eine Deckkraft unter 0,5, jedes hervorgehobene 1, Legende und
+Stufentitel bleiben voll. Danach schaltet sie auf „Stufen“ und fährt auf ein Verbinderband (eine Marke, mehrere Pfade):
+genau diese Marke leuchtet, mit allen ihren Pfaden. Maus aus dem Bild — nichts bleibt abgeblendet. **Gegenproben:** ohne
+das Modul (Abruf verweigert) und ohne die Abblendregel (Deckkraft per Stilblatt auf 1 gezwungen) — beide müssen verfehlen.
+
+**Fall `wahl` (`--fall wahl`) — dieselbe Seite.** Die Knopfgruppen über dem Bild: Vorgabe Kette und „Alle“ ohne
+Stufentitel; „Stufen“ zeichnet vier Titel; „Strom“ behält weniger Bänder als „Alle“; „Kälte“ (die Probe kennt keine
+Kälte) zeigt den Hinweis im Bild (Marke `hinweis`) und als leise Zeile `.epos-ergebnis-fluss-filterhinweis`; Pfeil
+links wechselt auf „Wärme“ und lässt den Fokus auf dem Knopf. `?darstellung=stufen` und `?filter=…` stellen beide Wahlen
+beim Laden; der Wirt setzt sie je Seitenaufruf zurück.
+
+```bash
+node diagrammprobe.mjs --url http://127.0.0.1:5299 --fall hervorhebung [--fotos <ordner außerhalb des Repositorys>]
+node diagrammprobe.mjs --url http://127.0.0.1:5299 --fall wahl
+```
+
+**Ergebnis vom 16.10.2026 (SK-2d-2):** `hervorhebung` — Wandler `wp_heizen` 3/3 Bänder, Bus `strom` 6/6 Bänder,
+Verbinder `fluss:strom:wp_heizen` 3/3 Pfade, Rückgabe 0; Gegenproben ohne Modul und ohne Regel verfehlt (richtig).
+`wahl` — Kette 12 Bänder, Stufen 4 Titel, Strom 6 Bänder, Kälte mit Hinweis, Rückgabe 0. `fluss` 24 Elemente
+(12 Bänder, 12 Knoten), `zoom` unverändert erfüllt.
+
 ---
 
 ## Tabellenprobe (Ergebnistabellen der Simulation, Auftrag TA) — Seite `/tabellenprobe`

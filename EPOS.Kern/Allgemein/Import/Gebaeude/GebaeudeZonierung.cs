@@ -460,8 +460,11 @@ namespace WindowsFormsApplication1
             // als Zone des Raums gesetzt) sind die Vorgabe, sobald es eine gibt — auch wenn jeder Raum seine eigene Zone ist.
             bool sqproj = string.Equals(abbild.Format, GebaeudeQuelle.FORMAT_SQPROJ, StringComparison.Ordinal);
             int zonen = g.Raeume.Select(r => r.ZonenKennung).Where(z => z != null).Distinct(StringComparer.Ordinal).Count();
+            // N8 (E161): X1 steht zur Wahl, sobald ein Raum auf eine Zone der Datei zeigt — auch je Zone ein Raum (so schreibt
+            // EPOS-Plan jede Zone), wie Z1 einer IFC-Datei mit Zonen. Vorgabe wird X1 nur, wenn die Zonen die Räume gliedern (D13: 1:1
+            // ist oft ein Begleitobjekt des CAD-Programms) oder die Datei eine Projektdatei ist; die IFC-Vorgabe folgt den Zonen nie.
             bool x1 = zonen >= 1 && (zonen < g.Raeume.Count || sqproj);
-            if (x1) regeln.Add(GebaeudeImportProfil.ZONENREGEL_X1);
+            if (zonen >= 1) regeln.Add(GebaeudeImportProfil.ZONENREGEL_X1);
             if (geschosse > 1) regeln.Add(GebaeudeImportProfil.ZONENREGEL_X2);
             if (g.Raeume.Count > 1) regeln.Add(GebaeudeImportProfil.ZONENREGEL_X3);
             regeln.Add(GebaeudeImportProfil.ZONENREGEL_X4);
@@ -601,6 +604,84 @@ namespace WindowsFormsApplication1
             if (iz.Raeume.Select(r => r.Konditionierung).FirstOrDefault(k => k != null) is AbbildKonditionierung k)
                 return k.AlsZonenkonditionierung(zone);
             return GbxmlKonditionierung.Bilden(zone, iz.Raeume, iz.FlaecheM2, iz.VolumenM3);
+        }
+
+        /// <summary>Trägt der Raum Kalender der Datei — EPOS_*-Sätze (IFC) oder gbXML-Zeitpläne (nicht die IFC-Standardsätze)?</summary>
+        internal static bool TraegtDateikalender(AbbildRaum r)
+            => r != null && (r.Konditionierung != null || (r.GbxmlLasten is { AusIfc: false } l && l.Plaene.Any()));
+
+        /// <summary>
+        /// <b>Die Konditionierung der einen Zone im Einzonenweg</b> (Nachzug N8, Anwenderentscheid E160): Tragen alle beheizten
+        /// Räume mit Kalendern der Datei denselben Vergleichsschlüssel (<see cref="Kalenderschluessel"/>), nimmt die eine Zone ihre
+        /// Konditionierung (<see cref="Dateikonditionierung"/>). Räume ohne Kalender werden übergangen — sie sagen nichts über den
+        /// Kalender aus, und die Zonierung mit mehreren Zonen gibt ihnen ebenfalls keinen eigenen —, mindestens einer muss einen
+        /// tragen. <paramref name="abweichend"/> = mindestens zwei Räume tragen verschiedene Kalender; dann <c>null</c>.
+        /// </summary>
+        internal static Zonenkonditionierung Einzonenkonditionierung(string zone, IReadOnlyList<AbbildRaum> beheizt, out bool abweichend)
+        {
+            abweichend = false;
+            List<AbbildRaum> mit = (beheizt ?? Array.Empty<AbbildRaum>()).Where(TraegtDateikalender).ToList();
+            if (mit.Count == 0) return null;
+            if (mit.Select(Kalenderschluessel).Distinct(StringComparer.Ordinal).Count() > 1)
+            {
+                abweichend = true;
+                return null;
+            }
+            var iz = new Importzone { Name = zone ?? "", IstBeheizt = true };
+            iz.Raeume.AddRange(beheizt);
+            return Dateikonditionierung(iz.Name, iz);
+        }
+
+        /// <summary>
+        /// <b>Der Vergleichsschlüssel der Konditionierung eines Raums</b> (E160): je Größe Herkunft, Kalender (Grundangabe, Perioden
+        /// mit Rang, Art, Bezeichner, Beginn, Ende, Feiertagsregel und Angabe) und die Zellen der Vorgabematrix, dazu Nutzung und
+        /// DIN-Nummer; aus den Restdaten die benannten Wochen, die Verweise der Perioden (auch der Feiertage) und das Zeilenbild.
+        /// Nicht im Schlüssel stehen die Nennwerte (sie wachsen mit der Fläche des Raums und werden über die Zone summiert) und die
+        /// Bemerkungen. Sprach- und kulturfrei (Zahlen „R“, invariant).
+        /// </summary>
+        internal static string Kalenderschluessel(AbbildRaum r)
+        {
+            var sb = new System.Text.StringBuilder();
+            Zonenkonditionierung k = r.Konditionierung is AbbildKonditionierung a
+                ? a.AlsZonenkonditionierung("")
+                : GbxmlKonditionierung.Bilden("", new[] { r }, r.FlaecheM2, r.VolumenM3);
+            sb.Append("N=").Append(k?.Nutzung).Append("|D=").Append(r.Konditionierung?.DinNummer?.ToString(CultureInfo.InvariantCulture));
+            foreach (Groessenkonditionierung g in k?.Groessen ?? Array.Empty<Groessenkonditionierung>())
+            {
+                if (g.Herkunft == Konditionierungsherkunft.Vorlage) continue;
+                sb.Append("\nG=").Append(Konditionierungsgroessen.Kennwort(g.Groesse)).Append('/').Append(g.Herkunft);
+                foreach (Vorgabebeleg v in g.Vorgaben.OrderBy(x => x.Zeile, StringComparer.Ordinal))
+                    sb.Append("\n V=").Append(v.Zeile).Append(':').Append(Zelle(v.Zelle));
+                if (g.Kalender is not Konditionierungskalender kal) continue;
+                sb.Append("\n K=").Append(Angabe(kal.Grundangabe));
+                foreach (Kalenderregel p in kal.Perioden)
+                    sb.Append("\n P=").Append(Ganz(p.Rang)).Append(';').Append(p.Art).Append(';').Append(p.Bezeichner).Append(';')
+                      .Append(Ganz(p.Beginn)).Append(';').Append(Ganz(p.Ende)).Append(';').Append(p.Feiertagsregel).Append(';').Append(Angabe(p.Angabe));
+            }
+            if (r.Rest is AbbildZonenrest rest)
+            {
+                foreach (BenannteWoche w in rest.Wochen.OrderBy(x => x.Groesse).ThenBy(x => x.Name, StringComparer.Ordinal))
+                    sb.Append("\nW=").Append(Konditionierungsgroessen.Kennwort(w.Groesse)).Append(';').Append(w.Name).Append(';').Append(Reihe(w.Werte));
+                foreach (AbbildPeriodenwoche p in rest.Periodenwochen.OrderBy(x => x.Groesse).ThenBy(x => x.Beginn).ThenBy(x => x.Ende)
+                                                     .ThenBy(x => x.Feiertagsregel, StringComparer.Ordinal).ThenBy(x => x.Bezeichner, StringComparer.Ordinal))
+                    sb.Append("\nV=").Append(Konditionierungsgroessen.Kennwort(p.Groesse)).Append(';').Append(Ganz(p.Beginn)).Append(';')
+                      .Append(Ganz(p.Ende)).Append(';').Append(p.Feiertagsregel).Append(';').Append(p.Bezeichner).Append(';').Append(p.Woche);
+                foreach (string z in rest.Zeilenbild.Select(x => x.Groesse + ";" + x.Zeile + ";" + Nz(x.Wert) + ";" + (x.Aus ? "1" : "0") + ";" +
+                                                                 x.Von?.ToString(CultureInfo.InvariantCulture) + ";" +
+                                                                 x.Bis?.ToString(CultureInfo.InvariantCulture) + ";" + Nz(x.BedingtK))
+                                                    .OrderBy(x => x, StringComparer.Ordinal))
+                    sb.Append("\nZ=").Append(z);
+            }
+            return sb.ToString();
+
+            static string Nz(double? w) => w?.ToString("R", CultureInfo.InvariantCulture) ?? "";
+            static string Reihe(IEnumerable<double> werte)
+                => werte == null ? "" : string.Join(",", werte.Select(w => w.ToString("R", CultureInfo.InvariantCulture)));
+            static string Angabe(Kalenderangabe x)
+                => x == null ? "" : x.Art + ":" + Nz(x.Wert) + ":" + x.WieWochentag.ToString(CultureInfo.InvariantCulture) + ":" + Reihe(x.Woche);
+            static string Zelle(Matrixzelle z)
+                => z == null ? "" : (z.Belegt ? "1" : "0") + (z.Aus ? "1" : "0") + ":" + Nz(z.Wert) + ":" + z.Von?.ToString(CultureInfo.InvariantCulture) + ":" +
+                                    z.Bis?.ToString(CultureInfo.InvariantCulture) + ":" + Nz(z.BedingtK);
         }
 
         // ------------------------------------------------------------------

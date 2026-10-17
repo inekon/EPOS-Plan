@@ -15,7 +15,11 @@
     Komponentenvergleich. Die Wahl im Feld wirkt auch von Hand.
 
     Darunter der Abschnitt "Ergebnisse — Energie" (Anwenderauftrag 13.10.2026) aus der echten
-    Huelle UebersichtErgebnisGaben mit synthetischen Ergebnissen: Variante 1 ist simuliert und
+    Huelle UebersichtErgebnisGaben mit synthetischen Ergebnissen (?ansicht=grafik|fluss stellt den Umschalter,
+    ?version=<id> die Version des Energieflussbilds - diagrammprobe.mjs --fall fluss; ?darstellung=stufen und
+    ?filter=strom|waerme|kaelte stellen die Wahlen ueber dem Bild, beide je Seitenaufruf neu; in der Ansicht "fluss"
+    steht das Soll der Hervorhebung als JSON verborgen in #uep-umfeld-soll: je Knoten des Stamms seine Art und
+    EnergieflussAbbildung.Umfeld des Kerns - diagrammprobe.mjs --fall hervorhebung): Variante 1 ist simuliert und
     weicht ab, weitere Varianten sind nicht simuliert. ?offen=alle klappt alle zugeklappten
     Gruppen auf, ?offen=<schluessel,...> die genannten (Gruppenschluessel des Kerns, etwa
     emissionen). ?anpassen=1 oeffnet den Dialog "Anzeige anpassen..." beim Laden;
@@ -46,6 +50,11 @@
     </Reiter>
 </div>
 
+@if (s_ansicht == "fluss")
+{
+    <div id="uep-umfeld-soll" hidden data-soll="@UmfeldSoll()"></div>
+}
+
 <style>
     body { margin: 0; padding: 8px 16px; font-family: var(--epos-schrift); font-size: var(--epos-schriftgroesse);
            background: var(--epos-flaeche); }
@@ -66,6 +75,9 @@
     /// <summary>Die Einstellungsablage der Probe (Attrappe der Naht, je Seitenaufruf geleert).</summary>
     private static readonly WindowsFormsApplication1.FluechtigeEinstellungen s_ablage = new();
     private static string s_ansicht = "tabelle";
+    private static int? s_flussVersion;
+    private static string s_flussDarstellung = "kette";
+    private static string s_flussFilter = "alle";
 
     protected override void OnInitialized()
     {
@@ -75,7 +87,11 @@
         s_nurUnterschiede = abfrage.TryGetValue("nurunterschiede", out var u) && u.ToString() == "1";
         s_markiert = abfrage.TryGetValue("variante", out var w) && int.TryParse(w, out int i) && i >= 1 && i <= s_varianten
             ? 1 + i : 1;
-        s_ansicht = abfrage.TryGetValue("ansicht", out var a) && a.ToString() == "grafik" ? "grafik" : "tabelle";
+        s_ansicht = abfrage.TryGetValue("ansicht", out var a) && (a.ToString() == "grafik" || a.ToString() == "fluss")
+            ? a.ToString() : "tabelle";
+        s_flussVersion = abfrage.TryGetValue("version", out var fv) && int.TryParse(fv, out int fid) ? fid : null;
+        s_flussDarstellung = ErgebnisFlussWahl.Darstellung(abfrage.TryGetValue("darstellung", out var fd) ? fd.ToString() : null);
+        s_flussFilter = ErgebnisFlussWahl.Filter(abfrage.TryGetValue("filter", out var ff) ? ff.ToString() : null);
         s_offen.Clear();
         s_anpassen = abfrage.TryGetValue("anpassen", out var anp) && anp.ToString() == "1";
         s_ablage.Loesche(EPOS.UI.Seiten.Berichte.UebersichtErgebnisAnzeige.SCHLUESSEL_GRUPPEN);
@@ -139,12 +155,36 @@
 
     private static readonly WindowsFormsApplication1.UebersichtErgebnisGaben s_ergebnisHuelle = new(Ergebnis, s_ablage);
 
+    /// <summary>
+    /// Das Soll der Hervorhebung für die Browserprobe: je Knoten der ungefilterten Bilddaten des Stamms seine Art und
+    /// sein Umfeld nach der Referenz des Kerns (EnergieflussAbbildung.Umfeld) — derselbe Weg wie die Hülle
+    /// (Energiefluss.Aus → EnergieflussAbbildung.Bild).
+    /// </summary>
+    private static string UmfeldSoll()
+    {
+        WindowsFormsApplication1.EnergieflussBildDaten d = WindowsFormsApplication1.EnergieflussAbbildung.Bild(
+            WindowsFormsApplication1.Energiefluss.Aus(Ergebnis(1, true), false, "Stamm"));
+        var soll = d.Knoten.ToDictionary(k => k.Kennung, k => new
+        {
+            art = k.Art.ToString(),
+            umfeld = WindowsFormsApplication1.EnergieflussAbbildung.Umfeld(d, k.Kennung)
+        });
+        return System.Text.Json.JsonSerializer.Serialize(soll);
+    }
+
     private static IReadOnlyDictionary<string, object> ErgebnisSatz()
     {
         var satz = new Dictionary<string, object>(s_ergebnisHuelle.Gaben())
         {
             ["AnpassenOffen"] = s_anpassen,
-            // ?ansicht=grafik zeigt die Grafik; die Wahl gilt im Wirt je Sitzung statt in der Einstellungsnaht.
+            // ?ansicht=grafik zeigt die Grafik, ?ansicht=fluss das Energieflussbild (SK-3; ?version=<id> waehlt die
+            // Version, Vorgabe Stamm); die Wahl gilt im Wirt je Sitzung statt in der Einstellungsnaht.
+            ["FlussVersionLesen"] = new Func<int?>(() => s_flussVersion),
+            ["FlussVersionGewechselt"] = new Action<int>(id => s_flussVersion = id),
+            ["FlussDarstellungLesen"] = new Func<string>(() => s_flussDarstellung),
+            ["FlussDarstellungGewechselt"] = new Action<string>(d => s_flussDarstellung = d),
+            ["FlussFilterLesen"] = new Func<string>(() => s_flussFilter),
+            ["FlussFilterGewechselt"] = new Action<string>(f => s_flussFilter = f),
             ["AnsichtLesen"] = new Func<string>(() => s_ansicht),
             ["AnsichtGewechselt"] = new Action<string>(a => s_ansicht = a),
             ["KlappgruppeOffenLesen"] = new Func<string, bool>(g => s_offen.Contains(g)),

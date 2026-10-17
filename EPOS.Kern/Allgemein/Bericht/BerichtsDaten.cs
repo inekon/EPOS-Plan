@@ -192,6 +192,13 @@ namespace WindowsFormsApplication1
         public BivalenzBerichtswerte Bivalenz;
 
         /// <summary>
+        /// SK‑4 (Konzept Energieflussbild 5): die Energieflussbilanz des Stands, beim Sammeln in der Berichtssprache gebaut
+        /// (<see cref="Energiefluss.Aus(VariantenDaten, bool, string)"/>) für Bild und Schalter <c>stand.bild.energiefluss</c>;
+        /// <c>null</c> = nicht gesammelt (dann baut <see cref="Berichtsbilder.Energiefluss"/> sie aus dem Ergebnisbaum).
+        /// </summary>
+        public EnergieflussBilanz Energieflussbilanz;
+
+        /// <summary>
         /// KM3‑E3‑b: die Lesewerte der Teillastrechnung je Projektkopie einer Kältemaschine (<c>ID_Kaeltemaschine</c>) für
         /// die Tafel „Teillast und Takten der Kältemaschinen“; leer ohne Kältemaschine.
         /// </summary>

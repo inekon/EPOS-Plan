@@ -42,6 +42,13 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal const int FASSUNG_KM_TEILLAST = 18;
 
+        /// <summary>
+        /// Die Fassung des Energieflussbilds (Katalog v25, SK‑4, Konzept Energieflussbild 5): das Bild
+        /// <c>stand.bild.energiefluss</c> und sein Schalter <c>hat.bild.energiefluss</c> — nur Word (ein Sankey ist kein
+        /// Excel-Diagrammtyp).
+        /// </summary>
+        internal const int FASSUNG_ENERGIEFLUSS = 25;
+
         /// <summary>Vorsilbe der Bildschalter.</summary>
         public const string PRAEFIX_BILDSCHALTER = "hat.bild.";
 
@@ -139,6 +146,11 @@ namespace WindowsFormsApplication1
             l.AddRange(Bild("stand.bild.wp_bivalenz", S, Vorlagenbedarf.Keiner, true,
                 w => MitStand(w, v => Bivalenzbild(w, v)), FASSUNG_BIVALENZ));
             _bildgroessen["stand.bild.wp_bivalenz"] = (FAKTOR_BREIT, Bildmass.MIN_BREITE);
+
+            // ---- je Stand, Katalog v25 (SK-4): das Energieflussbild, Word als Bild; braucht keine Zeitreihen ----
+            l.AddRange(Bild("stand.bild.energiefluss", S, Vorlagenbedarf.Keiner, true,
+                w => MitStand(w, v => Energieflussbild(w, v)), FASSUNG_ENERGIEFLUSS));
+            _bildgroessen["stand.bild.energiefluss"] = (FAKTOR_BREIT, Bildmass.MIN_BREITE);
 
             // ---- Stammprojekt ----
             l.AddRange(Bild("stamm.bild.speichertemperaturen", Vorlagenfeldkontext.Stamm, Vorlagenbedarf.Zeitreihen, false,
@@ -272,6 +284,21 @@ namespace WindowsFormsApplication1
             IReadOnlyList<BivalenzStundenpunkt> punkte = BivalenzBerichtswerte.Stundenpunkte(v.Zeitreihen);
             return new Diagrammbild(m => ChartRenderer.BivalenzdiagrammZeichnung(b.Diagramm(punkte)), FAKTOR_BREIT,
                                     Bildmass.MIN_BREITE, w.Text(nameof(R.BV_GRUND_BILD_OHNE_DATEN)));
+        }
+
+        /// <summary>
+        /// Das Energieflussbild eines Stands (SK‑4): aus der beim Sammeln gebauten Bilanz (<see cref="VariantenDaten.Energieflussbilanz"/>)
+        /// in der Sprache des Berichts. Ohne Ergebnis oder ohne Fluss der benannte Grund der Bilanz.
+        /// </summary>
+        private static object Energieflussbild(Berichtswerte w, VariantenDaten v)
+        {
+            if (v.Ergebnis == null) return Grund(w, nameof(R.BV_GRUND_KEIN_ERGEBNIS));
+            bool englisch = w.Englisch;
+            EnergieflussBilanz b = Berichtsbilder.EnergieflussbilanzDes(v, englisch);
+            if (b == null || b.Leer)
+                return new Leergrund(b != null && !string.IsNullOrEmpty(b.Grund) ? b.Grund : w.Text(nameof(R.BV_GRUND_BILD_OHNE_DATEN)));
+            return new Diagrammbild(m => Berichtsbilder.Energiefluss(v, m, englisch), FAKTOR_BREIT, Bildmass.MIN_BREITE,
+                                    w.Text(nameof(R.BV_GRUND_BILD_OHNE_DATEN)));
         }
 
         /// <summary>Der Deckungskuchen eines Stands (Wärme oder Strom); ohne Ergebnis oder Anteil mit Grund.</summary>

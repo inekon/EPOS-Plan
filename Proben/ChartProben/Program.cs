@@ -1398,6 +1398,10 @@ namespace ChartProben
             // Last je Ruecklauf: Mass-, Gegen- und SVG-Proben in Program.Kesselkennlinie.cs.
             KesselkennlinieProben(ziel);
 
+            // SK-2 - das Energieflussbild (Sankey) mit Strom, Waerme und Kaelte: Mass-, Gegen- und
+            // SVG-Proben in Program.Energiefluss.cs.
+            EnergieflussProben(ziel);
+
             // DIE STROMLAST DES BHKW - das zweite Bild des BHKW-Reiters unter der Waermelast:
             // Mass-, Gegen- und SVG-Proben in Program.BhkwStrom.cs.
             BhkwStromProben(ziel);

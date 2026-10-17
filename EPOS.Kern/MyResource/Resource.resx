@@ -5933,6 +5933,45 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
   <data name="BK_ERG_GRAFIK_HINWEIS" xml:space="preserve">
     <value>Randstrich: weicht vom Stammprojekt ab; am Balken Wert und Abweichung zum Stammprojekt in Prozent</value>
   </data>
+  <data name="BK_ERG_ANSICHT_FLUSS" xml:space="preserve">
+    <value>Fluss</value>
+  </data>
+  <data name="BK_ERG_FLUSS_VERSION" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="BK_ERG_FLUSS_NICHT_SIMULIERT" xml:space="preserve">
+    <value>Für diese Version liegt kein Simulationsergebnis vor. Starten Sie die Simulation, um ihr Energieflussbild zu sehen.</value>
+  </data>
+  <data name="BK_ERG_FLUSS_BILD" xml:space="preserve">
+    <value>Energieflussbild der Version {0}</value>
+  </data>
+  <data name="BK_ERG_FLUSS_ZEILE" xml:space="preserve">
+    <value>{0} → {1}: {2} MWh/a ({3} %) · {4}</value>
+  </data>
+  <data name="BK_ERG_FLUSS_KNOTEN" xml:space="preserve">
+    <value>{0}: Zufluss {1} · Abfluss {2} · Rest {3} MWh/a</value>
+  </data>
+  <data name="BK_ERG_FLUSS_TEXT_FLUESSE" xml:space="preserve">
+    <value>Energieflüsse</value>
+  </data>
+  <data name="BK_ERG_FLUSS_TEXT_KNOTEN" xml:space="preserve">
+    <value>Bilanz je Knoten</value>
+  </data>
+  <data name="BK_ERG_FLUSS_ZEIGER" xml:space="preserve">
+    <value>Die Werte erscheinen beim Überfahren oder Antippen eines Bandes oder Knotens, sein Umfeld wird hervorgehoben; die Zahlen stehen im Reiter „Tabelle“.</value>
+  </data>
+  <data name="BK_ERG_FLUSS_DARSTELLUNG" xml:space="preserve">
+    <value>Darstellung des Energieflussbilds</value>
+  </data>
+  <data name="BK_ERG_FLUSS_FILTER" xml:space="preserve">
+    <value>Energieform</value>
+  </data>
+  <data name="BK_ERG_FLUSS_HINWEIS_UMWELT" xml:space="preserve">
+    <value>Umweltwärme und Umweltkälte sind als Umweltanteil gezeigt: Nutzenergie des Erzeugers abzüglich seines Stroms.</value>
+  </data>
+  <data name="BK_ERG_FLUSS_HINWEIS_GEBUENDELT" xml:space="preserve">
+    <value>{0}: {1} kleine Knoten zusammengefasst</value>
+  </data>
   <data name="BK_STATUS_SIMULIERT" xml:space="preserve">
     <value>{0} · simuliert</value>
   </data>
@@ -40463,7 +40502,7 @@ Hier liegen die Standardvorlage, der Kurzbericht, die ausführliche Vorlage (der
     <value>Die Zonierung ergibt {0} Zonen — mehr als {1} rechnet das Gebäude nicht; nichts übernommen. Vorschlag: Regel {2}.</value>
   </data>
   <data name="IMP_BAUTEIL_PROT_EINZONE_ZEITPLAENE" xml:space="preserve">
-    <value>Zone „{0}“: Die Datei trägt Zeitpläne bzw. Kalender je Raum; die Übernahme als eine Zone nimmt sie nicht, die Kalender kommen aus dem Nutzungsprofil. Mit einer Zonenregel für mehrere Zonen kommen sie je Zone an.</value>
+    <value>Zone „{0}“: Die Räume der Datei tragen verschiedene Zeitpläne bzw. Kalender; die Übernahme als eine Zone nimmt keinen davon, die Kalender kommen aus dem Nutzungsprofil. Wählen Sie eine Zonenregel für mehrere Zonen, dann kommen sie je Zone an.</value>
   </data>
   <data name="GEXP_PROT_FEIERTAGE_EIN_BILD" xml:space="preserve">
     <value>{0} Kalender führen Feiertage mit verschiedenen Tagesverläufen; gbXML kennt nur den einen Tagtyp „Holiday“ je Wochenplan und trägt das Bild des ranghöchsten Feiertags (die übrigen Feiertage kommen mit diesem Bild zurück, IFC trägt jeden einzeln): {1}</value>
@@ -55169,6 +55208,21 @@ Chart</value>
   <data name="DGF_ROLLE_KAELTE_DEZENTRAL" xml:space="preserve">
     <value>Kälte dezentral (Split)</value>
   </data>
+  <data name="DGF_ROLLE_KNOTEN" xml:space="preserve">
+    <value>Knoten (Energiefluss)</value>
+  </data>
+  <data name="DGF_ROLLE_BRENNSTOFF" xml:space="preserve">
+    <value>Brennstoff</value>
+  </data>
+  <data name="DGF_ROLLE_UMWELTWAERME" xml:space="preserve">
+    <value>Umweltwärme</value>
+  </data>
+  <data name="DGF_ROLLE_KAELTE" xml:space="preserve">
+    <value>Kälte</value>
+  </data>
+  <data name="DGF_ROLLE_VERLUST" xml:space="preserve">
+    <value>Verlust</value>
+  </data>
   <data name="CHART_LEGENDE_KAELTE_DEZENTRAL" xml:space="preserve">
     <value>dezentral (Split)</value>
   </data>
@@ -57484,6 +57538,375 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="KI_DLG_PEAK_SCHWELLE_ERL" xml:space="preserve">
     <value>Zeigt die erreichte Schwelle als waagerechte Linie im Diagramm.</value>
+  </data>
+  <data name="EF_KN_NETZBEZUG" xml:space="preserve">
+    <value>Netzbezug</value>
+  </data>
+  <data name="EF_KK_NETZBEZUG" xml:space="preserve">
+    <value>Netz</value>
+  </data>
+  <data name="EF_KN_PHOTOVOLTAIK" xml:space="preserve">
+    <value>Photovoltaik</value>
+  </data>
+  <data name="EF_KK_PHOTOVOLTAIK" xml:space="preserve">
+    <value>PV</value>
+  </data>
+  <data name="EF_KN_BRENNSTOFF" xml:space="preserve">
+    <value>Brennstoff</value>
+  </data>
+  <data name="EF_KK_BRENNSTOFF" xml:space="preserve">
+    <value>Brennst.</value>
+  </data>
+  <data name="EF_KN_UMWELTWAERME" xml:space="preserve">
+    <value>Umweltwärme</value>
+  </data>
+  <data name="EF_KK_UMWELTWAERME" xml:space="preserve">
+    <value>Umwelt</value>
+  </data>
+  <data name="EF_KN_UMWELTKAELTE" xml:space="preserve">
+    <value>Umwelt (Kälte)</value>
+  </data>
+  <data name="EF_KK_UMWELTKAELTE" xml:space="preserve">
+    <value>Umw. K.</value>
+  </data>
+  <data name="EF_KN_KONDENSATION" xml:space="preserve">
+    <value>Kondensationswärme</value>
+  </data>
+  <data name="EF_KK_KONDENSATION" xml:space="preserve">
+    <value>Kond.</value>
+  </data>
+  <data name="EF_KN_SOLARTHERMIE" xml:space="preserve">
+    <value>Solarthermie</value>
+  </data>
+  <data name="EF_KK_SOLARTHERMIE" xml:space="preserve">
+    <value>Solar</value>
+  </data>
+  <data name="EF_KN_KUEHLSTROM_EIGEN" xml:space="preserve">
+    <value>Kältestrom (eigener Zähler)</value>
+  </data>
+  <data name="EF_KK_KUEHLSTROM_EIGEN" xml:space="preserve">
+    <value>Kältestrom</value>
+  </data>
+  <data name="EF_KN_UNGEDECKT" xml:space="preserve">
+    <value>ungedeckt</value>
+  </data>
+  <data name="EF_KK_UNGEDECKT" xml:space="preserve">
+    <value>ungedeckt</value>
+  </data>
+  <data name="EF_KN_NICHT_ZUGEORDNET" xml:space="preserve">
+    <value>nicht zugeordnet</value>
+  </data>
+  <data name="EF_KK_NICHT_ZUGEORDNET" xml:space="preserve">
+    <value>n. zug.</value>
+  </data>
+  <data name="EF_KN_BHKW" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="EF_KK_BHKW" xml:space="preserve">
+    <value>BHKW</value>
+  </data>
+  <data name="EF_KN_HEIZKESSEL" xml:space="preserve">
+    <value>Heizkessel</value>
+  </data>
+  <data name="EF_KK_HEIZKESSEL" xml:space="preserve">
+    <value>Kessel</value>
+  </data>
+  <data name="EF_KN_STROM" xml:space="preserve">
+    <value>Strom</value>
+  </data>
+  <data name="EF_KK_STROM" xml:space="preserve">
+    <value>Strom</value>
+  </data>
+  <data name="EF_KN_WAERMEPUMPE" xml:space="preserve">
+    <value>Wärmepumpe</value>
+  </data>
+  <data name="EF_KK_WAERMEPUMPE" xml:space="preserve">
+    <value>WP</value>
+  </data>
+  <data name="EF_KN_WP_HEIZEN" xml:space="preserve">
+    <value>Wärmepumpe (Heizen)</value>
+  </data>
+  <data name="EF_KK_WP_HEIZEN" xml:space="preserve">
+    <value>WP Heizen</value>
+  </data>
+  <data name="EF_KN_WP_KUEHLEN" xml:space="preserve">
+    <value>Wärmepumpe (Kühlen)</value>
+  </data>
+  <data name="EF_KK_WP_KUEHLEN" xml:space="preserve">
+    <value>WP Kühlen</value>
+  </data>
+  <data name="EF_KN_HEIZSTAB" xml:space="preserve">
+    <value>Heizstab</value>
+  </data>
+  <data name="EF_KK_HEIZSTAB" xml:space="preserve">
+    <value>Heizstab</value>
+  </data>
+  <data name="EF_KN_ELEKTROKESSEL" xml:space="preserve">
+    <value>Elektrokessel</value>
+  </data>
+  <data name="EF_KK_ELEKTROKESSEL" xml:space="preserve">
+    <value>E-Kessel</value>
+  </data>
+  <data name="EF_KN_KAELTEMASCHINE" xml:space="preserve">
+    <value>Kältemaschine</value>
+  </data>
+  <data name="EF_KK_KAELTEMASCHINE" xml:space="preserve">
+    <value>KM</value>
+  </data>
+  <data name="EF_KN_FREIE_KUEHLUNG" xml:space="preserve">
+    <value>freie Kühlung</value>
+  </data>
+  <data name="EF_KK_FREIE_KUEHLUNG" xml:space="preserve">
+    <value>frei</value>
+  </data>
+  <data name="EF_KN_SPLIT" xml:space="preserve">
+    <value>Split-Gerät</value>
+  </data>
+  <data name="EF_KK_SPLIT" xml:space="preserve">
+    <value>Split</value>
+  </data>
+  <data name="EF_KN_WAERME" xml:space="preserve">
+    <value>Wärme</value>
+  </data>
+  <data name="EF_KK_WAERME" xml:space="preserve">
+    <value>Wärme</value>
+  </data>
+  <data name="EF_KN_KAELTE" xml:space="preserve">
+    <value>Kälte</value>
+  </data>
+  <data name="EF_KK_KAELTE" xml:space="preserve">
+    <value>Kälte</value>
+  </data>
+  <data name="EF_KN_PUFFERSPEICHER" xml:space="preserve">
+    <value>Pufferspeicher</value>
+  </data>
+  <data name="EF_KK_PUFFERSPEICHER" xml:space="preserve">
+    <value>Puffer</value>
+  </data>
+  <data name="EF_KN_KAELTESPEICHER" xml:space="preserve">
+    <value>Kältespeicher</value>
+  </data>
+  <data name="EF_KK_KAELTESPEICHER" xml:space="preserve">
+    <value>K-Speicher</value>
+  </data>
+  <data name="EF_KN_STROMSPEICHER" xml:space="preserve">
+    <value>Stromspeicher</value>
+  </data>
+  <data name="EF_KK_STROMSPEICHER" xml:space="preserve">
+    <value>Batterie</value>
+  </data>
+  <data name="EF_KN_HEIZUNG" xml:space="preserve">
+    <value>Heizung</value>
+  </data>
+  <data name="EF_KK_HEIZUNG" xml:space="preserve">
+    <value>Heizung</value>
+  </data>
+  <data name="EF_KN_WARMWASSER" xml:space="preserve">
+    <value>Warmwasser</value>
+  </data>
+  <data name="EF_KK_WARMWASSER" xml:space="preserve">
+    <value>WW</value>
+  </data>
+  <data name="EF_KN_PROZESSWAERME" xml:space="preserve">
+    <value>Prozesswärme</value>
+  </data>
+  <data name="EF_KK_PROZESSWAERME" xml:space="preserve">
+    <value>Prozess</value>
+  </data>
+  <data name="EF_KN_KUEHLUNG" xml:space="preserve">
+    <value>Kühlung</value>
+  </data>
+  <data name="EF_KK_KUEHLUNG" xml:space="preserve">
+    <value>Kühlung</value>
+  </data>
+  <data name="EF_KN_STROMBEDARF" xml:space="preserve">
+    <value>Strombedarf</value>
+  </data>
+  <data name="EF_KK_STROMBEDARF" xml:space="preserve">
+    <value>Strombed.</value>
+  </data>
+  <data name="EF_KN_EINSPEISUNG_PV" xml:space="preserve">
+    <value>Einspeisung PV</value>
+  </data>
+  <data name="EF_KK_EINSPEISUNG_PV" xml:space="preserve">
+    <value>Einsp. PV</value>
+  </data>
+  <data name="EF_KN_EINSPEISUNG_BHKW" xml:space="preserve">
+    <value>Einspeisung BHKW</value>
+  </data>
+  <data name="EF_KK_EINSPEISUNG_BHKW" xml:space="preserve">
+    <value>Einsp. BHKW</value>
+  </data>
+  <data name="EF_KN_VERLUST" xml:space="preserve">
+    <value>Verlust</value>
+  </data>
+  <data name="EF_KK_VERLUST" xml:space="preserve">
+    <value>Verl.</value>
+  </data>
+  <data name="EF_KN_FUELLSTAND" xml:space="preserve">
+    <value>Füllstandsänderung</value>
+  </data>
+  <data name="EF_KK_FUELLSTAND" xml:space="preserve">
+    <value>ΔFüllst.</value>
+  </data>
+  <data name="EF_KN_WEITERE" xml:space="preserve">
+    <value>weitere ({0})</value>
+  </data>
+  <data name="EF_KK_WEITERE" xml:space="preserve">
+    <value>weit. ({0})</value>
+  </data>
+  <data name="EF_ZEIGER_FLUSS" xml:space="preserve">
+    <value>{0} → {1}: {2} MWh/a ({3} %)</value>
+  </data>
+  <data name="EF_ZEIGER_KNOTEN" xml:space="preserve">
+    <value>{0}: Zufluss {1} · Abfluss {2} MWh/a</value>
+  </data>
+  <data name="EF_ZEIGER_MENGE" xml:space="preserve">
+    <value>{0}: {1} MWh/a</value>
+  </data>
+  <data name="EF_ZEIGER_BILANZIERT" xml:space="preserve">
+    <value>bilanziert aus der Strombilanz des Laufs</value>
+  </data>
+  <data name="EF_ZEIGER_ABGELEITET" xml:space="preserve">
+    <value>abgeleitet: {0}</value>
+  </data>
+  <data name="EF_ZEIGER_NICHT_ZUGEORDNET" xml:space="preserve">
+    <value>Bilanzrest am Knoten {0}</value>
+  </data>
+  <data name="EF_FORMEL_UMWELT_WAERME" xml:space="preserve">
+    <value>Wärme − Strom</value>
+  </data>
+  <data name="EF_FORMEL_UMWELT_KAELTE" xml:space="preserve">
+    <value>Kälte − Strom</value>
+  </data>
+  <data name="EF_FORMEL_KONDENSATION" xml:space="preserve">
+    <value>Wärme − Brennstoff (Heizwert)</value>
+  </data>
+  <data name="EF_FORMEL_VERLUST" xml:space="preserve">
+    <value>Zufluss − Abfluss</value>
+  </data>
+  <data name="EF_FORMEL_DIREKT" xml:space="preserve">
+    <value>Bedarf − Speicherentladung − ungedeckt</value>
+  </data>
+  <data name="EF_FORMEL_UNGEDECKT" xml:space="preserve">
+    <value>Restbedarf anteilig nach Bedarf</value>
+  </data>
+  <data name="EF_FORMEL_FUELLSTAND" xml:space="preserve">
+    <value>Ladung − Entladung − Verlust</value>
+  </data>
+  <data name="EF_ZEIGER_SPEICHER_VERLUST" xml:space="preserve">
+    <value>Verlust {0} · Füllstandsänderung {1} MWh/a</value>
+  </data>
+  <data name="EF_ZEIGER_STROMSPEICHER" xml:space="preserve">
+    <value>Die Entladung deckt den Rest des Anschlusses; eine Zuordnung zu einzelnen Verbrauchern gibt es nicht.</value>
+  </data>
+  <data name="EF_ZEIGER_SOLARUEBERSCHUSS" xml:space="preserve">
+    <value>nicht nutzbarer Überschuss {0} MWh/a (nicht gezeichnet)</value>
+  </data>
+  <data name="EF_ZEIGER_UMWELT" xml:space="preserve">
+    <value>Umweltanteil nach Jahresarbeitszahl</value>
+  </data>
+  <data name="EF_ZEIGER_GEBUENDELT" xml:space="preserve">
+    <value>gebündelt: {0}</value>
+  </data>
+  <data name="EF_HINWEIS_BILANZ" xml:space="preserve">
+    <value>Bilanz am Knoten {0} schließt nicht: {1} MWh/a nicht zugeordnet</value>
+  </data>
+  <data name="EF_NICHT_SIMULIERT" xml:space="preserve">
+    <value>Für die Version „{0}“ liegt kein Simulationsergebnis vor.</value>
+  </data>
+  <data name="EF_LEER" xml:space="preserve">
+    <value>Die Version „{0}“ hat keine Energieflüsse.</value>
+  </data>
+  <data name="EF_KI_KOPF" xml:space="preserve">
+    <value>[fluss] Energiefluss — {0}</value>
+  </data>
+  <data name="EF_HERKUNFT_DIREKT" xml:space="preserve">
+    <value>direkt</value>
+  </data>
+  <data name="EF_HERKUNFT_ABGELEITET" xml:space="preserve">
+    <value>abgeleitet</value>
+  </data>
+  <data name="EF_HERKUNFT_BILANZIERT" xml:space="preserve">
+    <value>bilanziert</value>
+  </data>
+  <data name="EF_SP_SPEICHER" xml:space="preserve">
+    <value>Speicher</value>
+  </data>
+  <data name="DGF_ROLLE_STROM" xml:space="preserve">
+    <value>Strom (Energiefluss)</value>
+  </data>
+  <data name="DGF_ROLLE_WAERME" xml:space="preserve">
+    <value>Wärme (Energiefluss)</value>
+  </data>
+  <data name="EF_LEG_STROM" xml:space="preserve">
+    <value>Strom</value>
+  </data>
+  <data name="EF_LEG_WAERME" xml:space="preserve">
+    <value>Wärme</value>
+  </data>
+  <data name="EF_LEG_KAELTE" xml:space="preserve">
+    <value>Kälte</value>
+  </data>
+  <data name="EF_LEG_BRENNSTOFF" xml:space="preserve">
+    <value>Brennstoff</value>
+  </data>
+  <data name="EF_LEG_UMWELT" xml:space="preserve">
+    <value>Umweltwärme / Umwelt (Kälte)</value>
+  </data>
+  <data name="EF_LEG_VERLUST" xml:space="preserve">
+    <value>Verlust</value>
+  </data>
+  <data name="EF_LEG_REST" xml:space="preserve">
+    <value>nicht zugeordnet / ungedeckt</value>
+  </data>
+  <data name="EF_ZEIGER_SPEICHER_AM_BUS" xml:space="preserve">
+    <value>{0}: Ladung {1} · Entladung {2} MWh/a</value>
+  </data>
+  <data name="EF_ZEIGER_UEBER_SPEICHER" xml:space="preserve">
+    <value>davon {0} MWh/a über {1}</value>
+  </data>
+  <data name="EF_ZEIGER_KLEINVERLUST" xml:space="preserve">
+    <value>{0} {1} MWh/a (unter 1 %, nicht gezeichnet)</value>
+  </data>
+  <data name="EF_ST_EINSATZ" xml:space="preserve">
+    <value>Einsatz</value>
+  </data>
+  <data name="EF_ST_ANLAGEN" xml:space="preserve">
+    <value>Anlagen</value>
+  </data>
+  <data name="EF_ST_ENERGIEFORM" xml:space="preserve">
+    <value>Energieform</value>
+  </data>
+  <data name="EF_ST_NUTZEN" xml:space="preserve">
+    <value>Nutzen</value>
+  </data>
+  <data name="EF_FILTER_ALLE" xml:space="preserve">
+    <value>Alle</value>
+  </data>
+  <data name="EF_FILTER_LEER" xml:space="preserve">
+    <value>{0}: keine Flüsse in dieser Version</value>
+  </data>
+  <data name="EF_DARSTELLUNG_KETTE" xml:space="preserve">
+    <value>Kette</value>
+  </data>
+  <data name="EF_DARSTELLUNG_STUFEN" xml:space="preserve">
+    <value>Stufen</value>
+  </data>
+  <data name="VF_STAND__BILD__ENERGIEFLUSS" xml:space="preserve">
+    <value>Bild je Stand: Energieflussbild — Jahresbilanz von Strom, Wärme und Kälte von den Quellen über die Erzeuger zu den Bedarfen; die Knoten tragen ihre Jahressumme (MWh/a), die Bänder keine Zahl; nur Word.</value>
+  </data>
+  <data name="VF_HAT__BILD__ENERGIEFLUSS" xml:space="preserve">
+    <value>Bildschalter: Gibt es das Energieflussbild (Stand bzw. irgendein Stand)?</value>
+  </data>
+  <data name="EF_BER_BESCHRIFTUNG" xml:space="preserve">
+    <value>Energiefluss (Jahresbilanz Strom, Wärme, Kälte; Umweltanteil nach Jahresarbeitszahl)</value>
+  </data>
+  <data name="EF_BER_OHNE_BILD" xml:space="preserve">
+    <value>Kein Energieflussbild — {0}</value>
+  </data>
+  <data name="VF_ORT_ENERGIEFLUSS" xml:space="preserve">
+    <value>im Bericht tragen die Knoten ihre Jahressumme (MWh/a); die Bänder bleiben ohne Zahl, die Werte stehen hier im Zeigertext</value>
   </data>
 </root>
 

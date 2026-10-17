@@ -105,6 +105,8 @@
     <!-- Konzept Kesselkennlinie 5: die kleine Kurve des Kesseleditors (Wirkungsgrad ueber der Last je
          Ruecklauf) - Mass-, Gegen- und SVG-Proben. -->
     <Compile Include="Program.Kesselkennlinie.cs" />
+    <!-- SK-2: das Energieflussbild (Sankey) mit Strom, Waerme und Kaelte. -->
+    <Compile Include="Program.Energiefluss.cs" />
 
     <!-- Die Stromlast des BHKW: das zweite Bild des BHKW-Reiters - Mass-, Gegen- und SVG-Proben. -->
     <Compile Include="Program.BhkwStrom.cs" />

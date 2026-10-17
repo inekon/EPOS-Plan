@@ -316,6 +316,9 @@ public class UebersichtErgebnisseTests : EposBunitContext
 
         string[] abschnitte = cut.FindAll("h2.epos-uebersicht-abschnitt").Select(h => h.TextContent).ToArray();
         Assert.Equal(new[] { "Komponenten und Einstellungen", "Ergebnisse — Energie" }, abschnitte);
+        // Mit dem Parametersatz der Hülle hat der Umschalter drei Stellungen (Konzept Energieflussbild 4.1).
+        Assert.Equal(new[] { "tabelle", "grafik", "fluss" },
+                     cut.FindAll(".epos-ergebnis-ansicht button[role=radio]").Select(k => k.GetAttribute("data-ansicht")).ToArray());
 
         KiFeldzugang feld = KiMaskenbruecke.Feldzugang(KiMaskennamen.BERICHTE_UEBERSICHT, "ergebnisse");
         Assert.NotNull(feld);

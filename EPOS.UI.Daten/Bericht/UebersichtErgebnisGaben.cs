@@ -34,6 +34,24 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static readonly HashSet<string> s_offeneKlappgruppen = new HashSet<string>();
 
+        /// <summary>
+        /// Die gewählte Version des Energieflussbilds (Projekt-Id) — je Sitzung wie die Klappgruppen, nicht je Benutzer
+        /// (Konzept Energieflussbild 4.2); <c>null</c> = Vorgabe Stamm.
+        /// </summary>
+        private static int? s_flussVersion;
+
+        /// <summary>
+        /// Der Formfilter des Energieflussbilds („alle“, „strom“, „waerme“, „kaelte“; <see cref="ErgebnisFlussWahl"/>) — je
+        /// Sitzung wie die Versionswahl, nicht je Benutzer.
+        /// </summary>
+        private static string s_flussFilter = ErgebnisFlussWahl.ALLE;
+
+        /// <summary>
+        /// Der Einstellungsschlüssel der Darstellung des Energieflussbilds („kette“ | „stufen“, SK-Q17) — je Benutzer über die
+        /// Naht des Kerns wie die Ansicht; ein unbekannter Wert gilt als Kette.
+        /// </summary>
+        internal const string EINSTELLUNG_FLUSS_DARSTELLUNG = "Uebersicht.Ergebnisse.Fluss.Darstellung";
+
         /// <summary>Der Einstellungsschlüssel der Ansicht „Tabelle | Grafik“ — je Benutzer über die Naht des Kerns.</summary>
         internal const string EINSTELLUNG_ANSICHT = "Uebersicht.Ergebnisse.Ansicht";
 
@@ -42,6 +60,14 @@ namespace WindowsFormsApplication1
             new Dictionary<int, (string, VariantenDaten)>();
 
         private readonly IEinstellungen _einstellungen;
+
+        /// <summary>Die Versionen des zuletzt geladenen Standes je Projekt-Id (Zeile und Spaltenname) — der Weg der Versionswahl.</summary>
+        private readonly Dictionary<int, (VarianteZeile Zeile, string Name)> _flussVersionen =
+            new Dictionary<int, (VarianteZeile, string)>();
+
+        /// <summary>Das Energieflussbild je Version, solange ihr Simulationsstand und die Sprache dieselben sind.</summary>
+        private readonly Dictionary<int, (string Stand, bool Englisch, string Name, ErgebnisFlussStand Fluss)> _flussPuffer =
+            new Dictionary<int, (string, bool, string, ErgebnisFlussStand)>();
 
         /// <summary>Mit dem Ladeweg des Kerns.</summary>
         internal UebersichtErgebnisGaben() : this(EnergievergleichCtrl.Lade) { }
@@ -82,6 +108,14 @@ namespace WindowsFormsApplication1
                 ["AnsichtText"] = MyResource.Resource.BK_ERG_ANSICHT,
                 ["AnsichtTabelleText"] = MyResource.Resource.BK_ERG_ANSICHT_TABELLE,
                 ["AnsichtGrafikText"] = MyResource.Resource.BK_ERG_ANSICHT_GRAFIK,
+                ["FlussTexte"] = FlussTexte(),
+                ["FlussLaden"] = new Func<int, ErgebnisFlussStand>(FlussLaden),
+                ["FlussVersionLesen"] = new Func<int?>(() => s_flussVersion),
+                ["FlussVersionGewechselt"] = new Action<int>(id => s_flussVersion = id),
+                ["FlussDarstellungLesen"] = new Func<string>(() => FlussDarstellungLesen(Ablage)),
+                ["FlussDarstellungGewechselt"] = new Action<string>(d => FlussDarstellungSchreiben(d, Ablage)),
+                ["FlussFilterLesen"] = new Func<string>(() => s_flussFilter),
+                ["FlussFilterGewechselt"] = new Action<string>(f => s_flussFilter = ErgebnisFlussWahl.Filter(f)),
                 ["GrafikLegendeText"] = MyResource.Resource.BK_ERG_GRAFIK_LEGENDE,
                 ["GrafikHinweisText"] = MyResource.Resource.BK_ERG_GRAFIK_HINWEIS,
                 ["AnsichtLesen"] = new Func<string>(() => AnsichtLesen(Ablage)),
@@ -103,6 +137,20 @@ namespace WindowsFormsApplication1
         {
             try { return (ablage ?? Dienste.Einstellungen).Lies(EINSTELLUNG_ANSICHT, UebersichtErgebnisse.ANSICHT_TABELLE) ?? UebersichtErgebnisse.ANSICHT_TABELLE; }
             catch (Exception) { return UebersichtErgebnisse.ANSICHT_TABELLE; }
+        }
+
+        /// <summary>Die gemerkte Darstellung des Energieflussbilds; ohne Ablage, bei einem Fehler oder unbekanntem Wert die Kette.</summary>
+        internal static string FlussDarstellungLesen(IEinstellungen ablage = null)
+        {
+            try { return ErgebnisFlussWahl.Darstellung((ablage ?? Dienste.Einstellungen).Lies(EINSTELLUNG_FLUSS_DARSTELLUNG, ErgebnisFlussWahl.KETTE)); }
+            catch (Exception) { return ErgebnisFlussWahl.KETTE; }
+        }
+
+        /// <summary>Legt die Darstellung je Benutzer ab; ein Fehler der Ablage lässt die Wahl für diese Sitzung stehen.</summary>
+        internal static void FlussDarstellungSchreiben(string darstellung, IEinstellungen ablage = null)
+        {
+            try { (ablage ?? Dienste.Einstellungen).Schreib(EINSTELLUNG_FLUSS_DARSTELLUNG, ErgebnisFlussWahl.Darstellung(darstellung)); }
+            catch (Exception) { /* Die Wahl gilt dann nur für diese Sitzung. */ }
         }
 
         /// <summary>Legt die gewählte Ansicht je Benutzer ab; ein Fehler der Ablage lässt die Anzeige stehen.</summary>
@@ -136,6 +184,15 @@ namespace WindowsFormsApplication1
                     : string.Format(MyResource.Resource.BK_LBL_SIMULIERT_AM, v.SimZeitpunkt)
             }).ToList();
 
+            _flussVersionen.Clear();
+            for (int i = 0; i < versionen.Count; i++) _flussVersionen[versionen[i].IdProjekt] = (versionen[i], erg.Versionsspalten[i].Name);
+            erg.FlussVersionen = versionen.Select((v, i) => new ErgebnisFlussVersion
+            {
+                IdProjekt = v.IdProjekt,
+                Name = erg.Versionsspalten[i].Name,
+                Simuliert = !string.IsNullOrEmpty(v.SimZeitpunkt)
+            }).ToList();
+
             List<VariantenDaten> daten = versionen.Select(Daten).ToList();
             EnergievergleichErgebnis vergleich = Energievergleich.Vergleiche(daten, Sprache.Englisch, CultureInfo.CurrentCulture);
             erg.KeineSimulation = vergleich.KeineSimuliert;
@@ -147,6 +204,160 @@ namespace WindowsFormsApplication1
             erg.Anpassbar = Anpassbar(vergleich, modus);
             return erg;
         }
+
+        // ---- Energieflussbild (Konzept Energieflussbild, Abschnitt 4) ---------------------------------------------
+
+        /// <summary>Die Beschriftungen der Ansicht „Fluss“ aus den Ressourcen.</summary>
+        internal static ErgebnisFlussTexte FlussTexte() => new ErgebnisFlussTexte
+        {
+            Ansicht = MyResource.Resource.BK_ERG_ANSICHT_FLUSS,
+            Version = MyResource.Resource.BK_ERG_FLUSS_VERSION,
+            NichtSimuliertZusatz = MyResource.Resource.BK_LBL_NICHT_SIMULIERT,
+            NichtSimuliert = MyResource.Resource.BK_ERG_FLUSS_NICHT_SIMULIERT,
+            Bild = MyResource.Resource.BK_ERG_FLUSS_BILD,
+            Zeile = MyResource.Resource.BK_ERG_FLUSS_ZEILE,
+            Knoten = MyResource.Resource.BK_ERG_FLUSS_KNOTEN,
+            TextFluesse = MyResource.Resource.BK_ERG_FLUSS_TEXT_FLUESSE,
+            TextKnoten = MyResource.Resource.BK_ERG_FLUSS_TEXT_KNOTEN,
+            Zeiger = MyResource.Resource.BK_ERG_FLUSS_ZEIGER,
+            Darstellung = MyResource.Resource.BK_ERG_FLUSS_DARSTELLUNG,
+            Filter = MyResource.Resource.BK_ERG_FLUSS_FILTER,
+            Darstellungen = ErgebnisFlussWahl.DARSTELLUNGEN.ToDictionary(d => d,
+                d => EnergieflussAbbildung.Darstellungstext(KernDarstellung(d), Sprache.Englisch), StringComparer.Ordinal),
+            Filterknoepfe = ErgebnisFlussWahl.FILTER.ToDictionary(f => f,
+                f => EnergieflussAbbildung.Filtertext(KernFilter(f), Sprache.Englisch), StringComparer.Ordinal)
+        };
+
+        /// <summary>Die Darstellung des Kerns zu einem Ablagewert (<see cref="ErgebnisFlussWahl"/>).</summary>
+        internal static EnergieflussDarstellung KernDarstellung(string wert)
+            => ErgebnisFlussWahl.Darstellung(wert) == ErgebnisFlussWahl.STUFEN ? EnergieflussDarstellung.Stufen : EnergieflussDarstellung.Kette;
+
+        /// <summary>Der Formfilter des Kerns zu einem Ablagewert (<see cref="ErgebnisFlussWahl"/>).</summary>
+        internal static EnergieflussFilter KernFilter(string wert)
+            => ErgebnisFlussWahl.Filter(wert) switch
+            {
+                ErgebnisFlussWahl.STROM => EnergieflussFilter.Strom,
+                ErgebnisFlussWahl.WAERME => EnergieflussFilter.Waerme,
+                ErgebnisFlussWahl.KAELTE => EnergieflussFilter.Kaelte,
+                _ => EnergieflussFilter.Alle
+            };
+
+        /// <summary>
+        /// Das Energieflussbild der Version <paramref name="idProjekt"/> des zuletzt geladenen Standes: Kennzahlen aus
+        /// demselben Puffer wie die Tabelle → <see cref="Energiefluss.Aus(VariantenDaten, bool, string)"/> (Bilanz) →
+        /// <see cref="EnergieflussAbbildung.Bild"/> → <see cref="ChartRenderer.EnergieflussModell"/> breit und schmal, ohne
+        /// Knotenwerte (SK-Q12: Werte nur im Zeigertext). Je Version, Simulationsstand und Sprache zwischengespeichert —
+        /// dieselbe Referenz, solange sich nichts ändert, damit die Komponente ihren Baum nicht neu baut. Eine Version außerhalb
+        /// des Standes oder ohne Lauf liefert einen benannten Stand ohne Bild.
+        /// </summary>
+        internal ErgebnisFlussStand FlussLaden(int idProjekt)
+        {
+            if (!_flussVersionen.TryGetValue(idProjekt, out var eintrag))
+                return new ErgebnisFlussStand { IdProjekt = idProjekt, NichtSimuliert = true };
+            VarianteZeile v = eintrag.Zeile;
+            string stand = v.SimZeitpunkt ?? "";
+            bool englisch = Sprache.Englisch;
+            if (_flussPuffer.TryGetValue(idProjekt, out var p) && p.Stand == stand && p.Englisch == englisch && p.Name == eintrag.Name)
+                return p.Fluss;
+
+            ErgebnisFlussStand fluss;
+            if (stand.Length == 0)
+                fluss = new ErgebnisFlussStand { IdProjekt = idProjekt, Version = eintrag.Name, NichtSimuliert = true };
+            else
+            {
+                EnergieflussBilanz b = Energiefluss.Aus(Daten(v), englisch, eintrag.Name);
+                fluss = FlussStand(b, englisch);
+            }
+            _flussPuffer[idProjekt] = (stand, englisch, eintrag.Name, fluss);
+            return fluss;
+        }
+
+        /// <summary>Bildet eine Bilanz des Kerns auf den Stand der Komponente ab (reine Funktion, auch für Proben).</summary>
+        internal static ErgebnisFlussStand FlussStand(EnergieflussBilanz b, bool englisch)
+        {
+            if (b == null) return new ErgebnisFlussStand { NichtSimuliert = true };
+            if (b.Leer)
+                return new ErgebnisFlussStand
+                {
+                    IdProjekt = b.IdProjekt, Version = b.Version, NichtSimuliert = !b.Simuliert, Grund = b.Grund ?? "",
+                    KiText = b.KiText().Replace("\r\n", "\n").TrimEnd()
+                };
+
+            CultureInfo k = Energiefluss.Kultur(englisch);
+            EnergieflussBildDaten d = EnergieflussAbbildung.Bild(b);
+            string Name(string id) => b.KnotenMit(id)?.Name ?? id;
+
+            var hinweise = new List<string>(b.Hinweise);
+            foreach (EnergieflussKnoten kn in b.Knoten.Where(x => x.Gebuendelt.Count > 0))
+                hinweise.Add(string.Format(CultureInfo.CurrentCulture, MyResource.Resource.BK_ERG_FLUSS_HINWEIS_GEBUENDELT, kn.Name, kn.Gebuendelt.Count));
+            if (b.Knoten.Any(x => x.Id == Energiefluss.UMWELTWAERME || x.Id == Energiefluss.UMWELTKAELTE))
+                hinweise.Add(MyResource.Resource.BK_ERG_FLUSS_HINWEIS_UMWELT);
+
+            // Die übrigen Bilder (Stufen, Formfilter; Konzept 3.5) entstehen beim ersten Bedarf und bleiben im Stand,
+            // der selbst je Version und Simulationsstand im Puffer liegt — nie je Rendern.
+            ErgebnisFlussBild Bildbau(string darstellung, string filter)
+            {
+                EnergieflussBildDaten df = EnergieflussAbbildung.Gefiltert(d, KernFilter(filter), englisch);
+                EnergieflussDarstellung art = KernDarstellung(darstellung);
+                return new ErgebnisFlussBild
+                {
+                    Breit = ChartRenderer.EnergieflussModell(df, ChartRenderer.ENERGIEFLUSS_BREIT, false, art),
+                    Schmal = ChartRenderer.EnergieflussModell(df, ChartRenderer.ENERGIEFLUSS_SCHMAL, false, art),
+                    Hinweis = df.Hinweis ?? ""
+                };
+            }
+
+            return new ErgebnisFlussStand
+            {
+                IdProjekt = b.IdProjekt,
+                Version = b.Version,
+                Breit = ChartRenderer.EnergieflussModell(d, ChartRenderer.ENERGIEFLUSS_BREIT, knotenwerte: false),
+                Schmal = ChartRenderer.EnergieflussModell(d, ChartRenderer.ENERGIEFLUSS_SCHMAL, knotenwerte: false),
+                Bildbau = Bildbau,
+                KantenJson = KantenJson(d),
+                BusseJson = BusseJson(d),
+                Fluesse = b.Fluesse.Select(f => new ErgebnisFlussZeile
+                {
+                    Von = Name(f.Von),
+                    Nach = Name(f.Nach),
+                    Wert = Energiefluss.Zahl(f.Mwh, k),
+                    Anteil = Energiefluss.Prozent(f.AnteilProzent, k),
+                    Herkunft = Energiefluss.HerkunftText(f.Herkunft, englisch)
+                }).ToList(),
+                Knoten = b.Knoten.Where(x => x.ZuflussMwh != 0 || x.AbflussMwh != 0).Select(x => new ErgebnisFlussKnotenzeile
+                {
+                    Name = x.Name,
+                    Zufluss = Energiefluss.Zahl(x.ZuflussMwh, k),
+                    Abfluss = Energiefluss.Zahl(x.AbflussMwh, k),
+                    Rest = Energiefluss.Zahl(Math.Abs(x.RestMwh) < 0.005 ? 0.0 : x.RestMwh, k)
+                }).ToList(),
+                Hinweise = hinweise,
+                KiText = b.KiText().Replace("\r\n", "\n").TrimEnd()
+            };
+        }
+
+        /// <summary>
+        /// Die Kanten der Hervorhebung aus den ungefilterten Bilddaten (Konzept 3.3): je Band Marke
+        /// <c>"fluss:" + Von + ":" + Nach</c>, Von, Nach — als JSON, damit das Modul die Marke nicht zerlegen muss.
+        /// </summary>
+        internal static string KantenJson(EnergieflussBildDaten d)
+        {
+            // Wie die Referenz EnergieflussAbbildung.Umfeld: nur Bänder zwischen zwei bekannten, verschiedenen Knoten.
+            var bekannt = new HashSet<string>((d?.Knoten ?? Array.Empty<EnergieflussBildKnoten>())
+                .Where(k => k != null && !string.IsNullOrEmpty(k.Kennung)).Select(k => k.Kennung), StringComparer.Ordinal);
+            return System.Text.Json.JsonSerializer.Serialize(
+                (d?.Baender ?? Array.Empty<EnergieflussBildBand>())
+                    .Where(x => x != null && x.Von != null && x.Nach != null && x.Von != x.Nach
+                                && bekannt.Contains(x.Von) && bekannt.Contains(x.Nach))
+                    .Select(x => new[] { "fluss:" + x.Von + ":" + x.Nach, x.Von, x.Nach }));
+        }
+
+        /// <summary>Die Kennungen der Busse aus den ungefilterten Bilddaten als JSON — ein Bus beendet den Weg der Hervorhebung.</summary>
+        internal static string BusseJson(EnergieflussBildDaten d)
+            => System.Text.Json.JsonSerializer.Serialize(
+                (d?.Knoten ?? Array.Empty<EnergieflussBildKnoten>())
+                    .Where(k => k != null && k.Art == EnergieflussKnotenart.Bus && !string.IsNullOrEmpty(k.Kennung))
+                    .Select(k => k.Kennung).Distinct(StringComparer.Ordinal));
 
         // ---- Anzeige anpassen -------------------------------------------------------------------------------------
 

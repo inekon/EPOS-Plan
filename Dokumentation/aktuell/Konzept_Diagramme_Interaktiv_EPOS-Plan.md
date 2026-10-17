@@ -312,9 +312,30 @@ Aus DG-Q7 wird eine Bedienung: **Die Farbe einer Größe ist anwendungsweit eins
 
 **Rolle.** Ein Zeichenbefehl trägt keine Farbzahl, sondern einen `Farbton` — eine
 `Farbrolle` (`WAERME_WP`, `STROM_PV`, `SPEICHER_3`, `RASTER`, …) und wahlweise eine Abwandlung
-(andere Deckung, oder eine im Layout gerechnete Farbe mit ihrer Herkunftsrolle). Vierundfünfzig
+(andere Deckung, oder eine im Layout gerechnete Farbe mit ihrer Herkunftsrolle). Zweiundsechzig
 Rollen in sechs Gruppen: Allgemein, Erzeuger und Bedarf, Varianten, Speicher, Profile und
 Temperaturen, Rasterkarte.
+
+**Rollen des Energieflussbilds.** Das Energieflussbild (Übersicht, Abschnitt „Ergebnisse –
+Energie“, Stellung „Fluss“, und der Wortbericht) färbt nach der **Energieform des Bandes**, nicht
+nach Quelle oder Verwendung, und trägt dafür sieben eigene Rollen, dazu `REST` für „ungedeckt“
+und „nicht zugeordnet“ (gestrichelt):
+
+| Rolle | Energieform | Hausfarbe |
+|---|---|---|
+| `STROM` | Strom: Netz, Photovoltaik, BHKW-Strom, Strom in Wärmepumpe, Heizstab, Elektrokessel, Kälteerzeuger, Strombedarf, Einspeisung | #E9A825 |
+| `WAERME` | Wärme der Erzeuger in den Bus, aus dem Bus in Heizung, Warmwasser, Prozesswärme | #E2573D |
+| `KAELTE` | Kälte der Erzeuger (auch Split) in den Bus Kälte und in die Kühlung | #2A7FA6 |
+| `BRENNSTOFF` | Brennstoffträger in die Wandler | #8B6F47 |
+| `UMWELTWAERME` | Umweltwärme, Umwelt (Kälte), Kondensationswärme | #7FB8A4 |
+| `VERLUST` | Verlustabzweige an Wandlern und Speichern | #B8B8B8 |
+| `KNOTEN` | Kästen, Busse, Quellen und Senken (Senken mit Deckung 0,59); Kastenbeschriftung in `HINTERGRUND` | #4A5769 |
+
+`STROM` und `WAERME` stehen in der Gruppe „Erzeuger und Bedarf“, die übrigen am Ende ihrer
+Gruppen; die Legende unter dem Bild ist dieselbe Bedienfläche wie bei jedem SVG-Bild. Die
+feineren Rollen (`STROM_NETZ`, `WAERME_WP`, `HEIZWAERME` …) bleiben den übrigen Bildern.
+`ChartRendererRollenTests` hält unter einer Tauschpalette jede dieser Rollen an Band, Knoten und
+Legende, `FarbpaletteTests` zählt die Rollen.
 
 **Palette.** `Farbpalette.Vorgabe` trägt die Hausfarben Wert für Wert — sie ist zugleich die
 Messlatte der ChartProben, die ausdrücklich mit ihr rechnen. `Farbpalette.Aktuell` ist die

@@ -128,7 +128,7 @@ namespace WindowsFormsApplication1.Zeichnung
             new Rollengruppe("ALLGEMEIN", () => MyResource.Resource.DGF_GRUPPE_ALLGEMEIN, new List<Farbrolle>
             {
                 Farbrolle.HINTERGRUND, Farbrolle.TEXT, Farbrolle.ACHSE,
-                Farbrolle.RASTER, Farbrolle.RAHMEN, Farbrolle.LEGENDENRAHMEN
+                Farbrolle.RASTER, Farbrolle.RAHMEN, Farbrolle.LEGENDENRAHMEN, Farbrolle.KNOTEN
             }),
             new Rollengruppe("ERZEUGER", () => MyResource.Resource.DGF_GRUPPE_ERZEUGER, new List<Farbrolle>
             {
@@ -137,7 +137,9 @@ namespace WindowsFormsApplication1.Zeichnung
                 Farbrolle.REST, Farbrolle.BEDARF, Farbrolle.STAMM,
                 Farbrolle.HEIZSTAB, Farbrolle.HEIZWAERME, Farbrolle.WARMWASSER,
                 Farbrolle.PROZESSWAERME, Farbrolle.STROM_BHKW, Farbrolle.UEBERSCHUSS,
-                Farbrolle.ERZEUGUNG_GESAMT, Farbrolle.VERBRAUCH_GESAMT, Farbrolle.KAELTE_DEZENTRAL
+                Farbrolle.ERZEUGUNG_GESAMT, Farbrolle.VERBRAUCH_GESAMT, Farbrolle.KAELTE_DEZENTRAL,
+                Farbrolle.BRENNSTOFF, Farbrolle.UMWELTWAERME, Farbrolle.KAELTE, Farbrolle.VERLUST,
+                Farbrolle.STROM, Farbrolle.WAERME
             }),
             new Rollengruppe("VARIANTEN", () => MyResource.Resource.DGF_GRUPPE_VARIANTEN, new List<Farbrolle>
             {
@@ -529,6 +531,7 @@ namespace WindowsFormsApplication1.Zeichnung
                 { Farbrolle.RASTER,           () => MyResource.Resource.DGF_ROLLE_RASTER },
                 { Farbrolle.RAHMEN,           () => MyResource.Resource.DGF_ROLLE_RAHMEN },
                 { Farbrolle.LEGENDENRAHMEN,   () => MyResource.Resource.DGF_ROLLE_LEGENDENRAHMEN },
+                { Farbrolle.KNOTEN,           () => MyResource.Resource.DGF_ROLLE_KNOTEN },
 
                 { Farbrolle.WAERME_WP,        () => MyResource.Resource.DGF_ROLLE_WAERME_WP },
                 { Farbrolle.WAERME_BHKW,      () => MyResource.Resource.DGF_ROLLE_WAERME_BHKW },
@@ -548,6 +551,12 @@ namespace WindowsFormsApplication1.Zeichnung
                 { Farbrolle.ERZEUGUNG_GESAMT, () => MyResource.Resource.DGF_ROLLE_ERZEUGUNG_GESAMT },
                 { Farbrolle.VERBRAUCH_GESAMT, () => MyResource.Resource.DGF_ROLLE_VERBRAUCH_GESAMT },
                 { Farbrolle.KAELTE_DEZENTRAL, () => MyResource.Resource.DGF_ROLLE_KAELTE_DEZENTRAL },
+                { Farbrolle.BRENNSTOFF,       () => MyResource.Resource.DGF_ROLLE_BRENNSTOFF },
+                { Farbrolle.UMWELTWAERME,     () => MyResource.Resource.DGF_ROLLE_UMWELTWAERME },
+                { Farbrolle.KAELTE,           () => MyResource.Resource.DGF_ROLLE_KAELTE },
+                { Farbrolle.VERLUST,          () => MyResource.Resource.DGF_ROLLE_VERLUST },
+                { Farbrolle.STROM,            () => MyResource.Resource.DGF_ROLLE_STROM },
+                { Farbrolle.WAERME,           () => MyResource.Resource.DGF_ROLLE_WAERME },
 
                 { Farbrolle.SERIE_1,          () => MyResource.Resource.DGF_ROLLE_SERIE_1 },
                 { Farbrolle.SERIE_2,          () => MyResource.Resource.DGF_ROLLE_SERIE_2 },
