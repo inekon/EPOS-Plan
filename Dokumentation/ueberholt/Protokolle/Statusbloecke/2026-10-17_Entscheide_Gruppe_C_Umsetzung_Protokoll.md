@@ -80,3 +80,14 @@ Innerhalb der Toleranz liegen `Stromverbrauch_Kuehlung` und `Deckung_Kuehlung` b
 
 - Wiki-Upload mit dem nächsten Sammel-Upload: Seiten Berichtsvorlagen, Ergebnisdarstellung, Stromspeicher, Emissionen, Kosten, Varianten, Photovoltaik, Gerätekataloge; acht Logbuch-Sätze vom 17.10.2026 in `Werkzeuge/WikiUpload/logbuch.wiki` (Status 4.2).
 - Version für das Update-Logbuch beim Anwender erfragen.
+
+## Nachschub: Kältespalten einheitlich ungerundet
+
+Anwenderentscheid 17.10.2026 „Für Einheitlichkeit ungerundet speichern“, Commit `be851c1f0` (`EPOS.Kern/Controller/ErgebnisCtrl.cs`, 14 Stellen):
+
+- `Tab_ErgebnisKaeltemaschine`: `FreieKuehlung_MWh`, `Unterdeckung_MWh`, `TeilFreikuehlung_MWh`.
+- `Tab_ErgebnisKaelteDezentral`: `Kaelte_MWh`, `Strom_MWh`, `Kaelte_Spitze_kW`, `Kaeltestrom_Netzbezug_MWh`, `Stromspitze_kW`.
+- Modulzeile der Wärmepumpe: `Kaelteproduktion`, `Stromverbrauch_Kuehlung`, `Kaeltestrom_Netzbezug`, `FreieKuehlung_MWh`; Summenzeile `FreieKuehlung_MWh`; Pufferzeile der Kältespeicher `Entladung_Kuehlung`.
+- Gerundet bleibt die Bedarfsseite (`Waermebedarf_Kuehlung`, `Kaeltebedarf_Gesamt` und die übrigen Bedarfssummen), weil sie zu `Kaeltebedarf_Gesamt` passen muss.
+
+R58 im selben Ordner nachgeführt: Der Referenzlauf liest Modul- und Pufferzeile aus der Datenbank zurück; 12 `aggregate.csv` byte-verschieden, außerhalb der Toleranz nur `WaermepumpeModul[0].Kaelteproduktion` bei 1017, 1047, 1056, 1058, 1060, 1061, 1062, 1064 (dieselben Werte wie `Waermepumpe.Kaelteproduktion_WP`). Tests: Kern-Filter 1705/1705, UI 1271/1271.

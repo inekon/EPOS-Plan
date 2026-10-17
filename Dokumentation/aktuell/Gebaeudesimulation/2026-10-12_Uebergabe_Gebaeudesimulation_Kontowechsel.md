@@ -89,6 +89,7 @@ Festlegungen, die Folgewellen kennen müssen:
 8. N7 (#1153): erledigt — die Kalender der Zonen aus gbXML und IFC kommen auch ohne gespeicherten Zonenplan an; gbXML trägt je Wochenplan nur einen Feiertagstyp (Grenze in der Exportvorschau und im Wiki „Datenexport“); Testklasse `GebaeudeImportZonenkalenderDialogwegTests` ([Protokoll N7](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-16_N7_Import_Zonenkalender.md)).
 9. Testschutz (#1154): erledigt — `EPOS.Kern.Tests` sieht nie die Anwenderdatenbank des Rechners (Modulinitialisierer `OhneAnwenderdatenbank.cs`, Wache `OhneAnwenderdatenbankTests`).
 10. N8 (#1161): erledigt — der Einzonenweg übernimmt den gemeinsamen Kalender der Räume (E160), die Regel X1 steht für gbXML mit Zonen zur Wahl und die Einzonenwarnung steht in der Meldungsliste (E161); Testklasse `GebaeudeImportZonenkalenderDialogwegTests` ([Protokoll N8](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-17_N8_Einzone_Zonenregel.md)).
+11. BK-9/BK-10 (#1171): erledigt — Vorschauzählung der Teilkataloge (7 913 gegen 7 906: die 7 verworfenen Aufbauten) und Abschnitte mit Flächenanteil 0 ohne Beitrag werden mit Protokollzeile weggelassen (E162); Protokolle [BK-9](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-17_BK-9_Vorschauzaehlung_Teilkatalog.md), [BK-10](../../ueberholt/Protokolle/Gebaeudesimulation/2026-10-17_BK-10_Abschnitte_ohne_Beitrag.md).
 
 ## 5. Offen beim Anwender
 
@@ -100,6 +101,8 @@ Festlegungen, die Folgewellen kennen müssen:
   - Ergebnis der Windows-Probe: die obere Raumtemperatur reist; die Zonenkalender fehlten auf dem Dialogweg, behoben mit N7 (#1153). Die Probe wird über EPOS Lokal wiederholt.
   - Erledigt mit N8 (#1161): Die Regel X1 und der Einzonenweg mit Kalender sind behoben, die Meldungsliste trägt die Einzonenwarnung.
   - Windows-Probe N4c (EPOS Lokal, Postfach 11) bestanden: Einzonenweg beider Formate, X1 für die eigene gbXML-Datei und Meldungsliste wie erwartet, Windows-Tests 350/350 grün. Z6 fehlt bei abweichenden Raumtemperaturen gewollt (jede Gruppe ein Raum).
+- Erledigt mit BK-9/BK-10 (#1171): die 7 abgelehnten Aufbauten und die Teilkatalog-Abweichung 7 (Vorschau 7 913, Datenbank 7 906).
+- Neu offen (auf Zuruf): Übernahme der 7 Aufbauten in die Datenbank des Anwenders über EPOS Lokal.
 - Wiki-Upload nur auf Zuruf (E144).
 - Aus der Übergabe IFC-Gebäudeimport vom 08.10.:
   - Wiki-Upload „Programm Dokumentation – Gebäudeimport“: gehört zum gesammelten Upload (19.10., Freigabe des Anwenders); der Bedienbegriff „Befund“ kommt in Oberflächentexten und Wiki-Quelle des Imports nicht mehr vor (erledigt).

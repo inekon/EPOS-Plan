@@ -104,7 +104,7 @@ public class KataloglisteTrefferUndHinweisTests : EposBunitContext
     [Fact]
     public void Das_Stilblatt_kuerzt_die_Trefferzahl_nicht_und_zeigt_den_Hinweis_je_Stufe()
     {
-        string css = File.ReadAllText(Path.Combine(Wurzel(), "EPOS.UI", "wwwroot", "epos-ui.css"));
+        string css = Quelltextleser.Stilblatt();
         int a = css.IndexOf(".epos-zweispalten-kopfleiste .epos-katalog-treffer {", StringComparison.Ordinal);
         Assert.True(a >= 0);
         string block = css.Substring(a, css.IndexOf('}', a) - a);
@@ -119,12 +119,5 @@ public class KataloglisteTrefferUndHinweisTests : EposBunitContext
             Assert.Contains($"@container zweispaltenbereich (max-width: {g}px) {{ .epos-weicht-ab-{stufe} {{ display: inline; }} }}", css);
             Assert.Contains($"@container epos-katalogliste (max-width: {g}px) {{ .epos-spalte-ab-{stufe} {{ display: none; }} }}", css);
         }
-    }
-
-    private static string Wurzel()
-    {
-        string? d = AppContext.BaseDirectory;
-        while (d is not null && !File.Exists(Path.Combine(d, "WP-Plan.sln"))) d = Path.GetDirectoryName(d);
-        return d ?? throw new InvalidOperationException("Repowurzel nicht gefunden");
     }
 }

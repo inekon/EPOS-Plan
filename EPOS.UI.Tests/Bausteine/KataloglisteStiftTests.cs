@@ -129,7 +129,7 @@ public class KataloglisteStiftTests : EposBunitContext
     [Fact]
     public void Die_Stiftregel_haelt_das_Beruehrungsziel_und_die_Zeilenhoehe()
     {
-        string css = System.IO.File.ReadAllText(System.IO.Path.Combine(Wurzel(), "EPOS.UI", "wwwroot", "epos-ui.css"));
+        string css = Quelltextleser.Stilblatt();
         int i = css.IndexOf(".epos-zeilenstift {", System.StringComparison.Ordinal);
         Assert.True(i > 0);
         string regel = css.Substring(i, css.IndexOf('}', i) - i);
@@ -137,12 +137,5 @@ public class KataloglisteStiftTests : EposBunitContext
         Assert.Contains("height: var(--epos-touchziel);", regel);
         Assert.Contains("td.epos-spalte-stift", css);
         Assert.Contains("@media (forced-colors: active) {\n    .epos-zeilenstift", css);
-    }
-
-    private static string Wurzel()
-    {
-        var d = new System.IO.DirectoryInfo(System.AppContext.BaseDirectory);
-        while (d is not null && !System.IO.File.Exists(System.IO.Path.Combine(d.FullName, "EPOS.UI", "wwwroot", "epos-ui.css"))) d = d.Parent;
-        return d!.FullName;
     }
 }

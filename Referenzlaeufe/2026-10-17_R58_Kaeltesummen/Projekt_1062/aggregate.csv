@@ -185,9 +185,9 @@ WaermepumpeModul[0].Waermeproduktion;56.42
 WaermepumpeModul[0].Stromverbrauch;13.22
 WaermepumpeModul[0].Heizstab;0
 WaermepumpeModul[0].Betriebsstunden;1490.77
-WaermepumpeModul[0].Kaelteproduktion;3.91
-WaermepumpeModul[0].Stromverbrauch_Kuehlung;0.77
-WaermepumpeModul[0].Kaeltestrom_Netzbezug;0.77
+WaermepumpeModul[0].Kaelteproduktion;3.90538151
+WaermepumpeModul[0].Stromverbrauch_Kuehlung;0.771574905
+WaermepumpeModul[0].Kaeltestrom_Netzbezug;0.771574905
 WaermepumpeModul[0].Vorlaufwahl_Stunden;35:1506,45:2017,55:151
 WaermepumpeModul[0].Vorlauf_Darueber_Stunden;0
 WaermepumpeModul[0].Vorlauf_Darunter_Stunden;1890
