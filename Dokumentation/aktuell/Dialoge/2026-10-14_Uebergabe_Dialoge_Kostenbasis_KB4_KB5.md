@@ -10,6 +10,12 @@ dieses Papier nennt nur, was die neue Sitzung darüber hinaus wissen muss. Absch
 KB-5b und die KB-5-Merge-Welle (Abschnitte 5.3 und 5.4). Scratchpad-Dateien der alten Sitzung sind verloren; alles Nötige steht in
 diesem Papier und im Inventar [`2026-10-14_Uebergabe_KB5_Inventar.md`](2026-10-14_Uebergabe_KB5_Inventar.md).
 
+**Zweiter Kontowechsel (17.10.2026, 10:30 UTC):** Die Sitzung läuft jetzt als `session_01WfQYw1Tdo2bWMtXzQcPLMA` (Nachfolger von
+`session_01LxWpn8bgrFYtFBXppoeoCL`; die Kennung steht im Trailer `Claude-Session` dieses Commits). Übernommener Stand auf origin:
+Statuszeile #1174, Testdatenbank 238, Basis R58; die Aufträge der Abschnitte 5.1 bis 5.4 sind erledigt (Abschnitt 4), kein Agent
+läuft, kein Sitzungszweig offen. Die Nachbarsitzungen sind per Nachricht aus diesem Konto nicht erreichbar — es gilt die
+Kopfzeilen-Konvention (Abschnitt 3).
+
 
 ## 1 Stand (14.10.2026, 07:30 UTC)
 
