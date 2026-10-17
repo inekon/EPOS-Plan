@@ -4,7 +4,7 @@ namespace EPOS.UI.Dialoge.Bedarf;
 
 // =====================================================================================
 //  Die DATENSEITE des Dialogs „Brauchwasser-Zapfprofil" (Umsetzungskonzept
-//  Zapfprofilgenerator 5.1–5.3; Stufe Z1, Gruppe 3; die Angaben der Stufen Erweitert und
+//  Zapfprofilgenerator 5.1–5.3; Stufe Z1, Gruppe 3; die Angaben der Stufe Experte und
 //  Experte mit Stufe Z4, Gruppe 2a). Nur Daten: keine Datenbank, keine
 //  Fachklasse des Kerns. Die Hülle (EPOS.UI.Daten/Bedarf/ZapfprofilHuelle.cs) ist die
 //  einzige Stelle, die den Arbeitsstand des Kerns (ZapfprofilStand) in diese Typen
@@ -15,6 +15,7 @@ namespace EPOS.UI.Dialoge.Bedarf;
 public enum ZapfprofilStufe
 {
     Einfach = 0,
+    /// <summary>Nicht mehr angeboten (ZC3): bleibt für alte Stände lesbar und gilt wie Experte.</summary>
     Erweitert = 1,
     Experte = 2
 }
@@ -40,7 +41,7 @@ public enum ZapfprofilNiveau
     Hoch = 3
 }
 
-/// <summary>Die Topologie der Trinkwassererwärmung einer Zone (Stufe Erweitert); die Zahlen des Kerns (1 … 4).</summary>
+/// <summary>Die Topologie der Trinkwassererwärmung einer Zone (Stufe Experte); die Zahlen des Kerns (1 … 4).</summary>
 public enum ZapfprofilTopologie
 {
     Speicher = 1,
@@ -150,11 +151,11 @@ public sealed record ZapfprofilMeldung(string Kennung, string Zone, string Text,
                                        string Klartext = "", int? Position = null)
 {
     /// <summary>
-    /// Steht der Hinweis erst ab der Stufe Erweitert (ZB8)? Die Hülle setzt es nach EINER Regel
-    /// (<c>ZapfprofilHuelle.ErstAbErweitert</c>): In der Stufe Einfach stehen nur Hinweise, die der
+    /// Steht der Hinweis erst ab der Stufe Experte (ZB8)? Die Hülle setzt es nach EINER Regel
+    /// (<c>ZapfprofilHuelle.ErstAbExperte</c>): In der Stufe Einfach stehen nur Hinweise, die der
     /// Anwender dort beheben kann. Eine Ablehnung steht immer; ohne Angabe steht der Hinweis in jeder Stufe.
     /// </summary>
-    public bool AbErweitert { get; init; }
+    public bool AbExperte { get; init; }
 }
 
 /// <summary>
@@ -200,7 +201,7 @@ public sealed class ZapfprofilNutzungsartDaten
     /// <summary>Warum die Nutzungsart nicht wählbar ist; leer, solange sie es ist.</summary>
     public string Sperrgrund { get; set; } = "";
 
-    // ---- Stufe Erweitert und Experte (Z4): Vorgaben am Feld, nie Normtabellen -------
+    // ---- Stufe Experte und Experte (Z4): Vorgaben am Feld, nie Normtabellen -------
 
     /// <summary>Die Kalenderart als Zahl des Kerns (1 Wohnen … 5 Auslastungsgang).</summary>
     public int Kalenderart { get; set; }
@@ -244,7 +245,7 @@ public sealed class ZapfprofilKatalogeintragDaten
 }
 
 /// <summary>
-/// Die Vorgaben des Parametersatzes für die Felder der Stufen Erweitert und Experte (Platzhalter
+/// Die Vorgaben des Parametersatzes für die Felder der Stufe Experte (Platzhalter
 /// „leer = Vorgabe"): <c>null</c> = der Parametersatz führt den Wert nicht. Nur Anzeige — der
 /// Rechenweg liest den Parametersatz selbst.
 /// </summary>
@@ -340,7 +341,7 @@ public sealed class ZapfprofilGebaeudekalenderDaten
 }
 
 /// <summary>
-/// <b>Die Angaben einer Zone in den Stufen Erweitert und Experte</b> (5.3) — jede nullbare Größe
+/// <b>Die Angaben einer Zone in den Stufe Experte</b> (5.3) — jede nullbare Größe
 /// heißt <c>null</c> = Vorgabe; die Einheit steht im Namen. Die Stufe blendet nur ein und aus: Die
 /// Angaben bleiben, auch wenn der Anwender zurück auf Einfach schaltet.
 /// </summary>
@@ -437,7 +438,7 @@ public sealed class ZapfprofilZonenangabenDaten
 }
 
 /// <summary>
-/// <b>Die gebäudeweiten Größen</b> der Stufen Erweitert und Experte (5.3): Zirkulation,
+/// <b>Die gebäudeweiten Größen</b> der Stufe Experte (5.3): Zirkulation,
 /// Leitungsinhalt, Ladeleistung samt Ladefenster, Speichertemperatur und Kaltwasser der Auslegung —
 /// Größen des Projekts (<c>Tab_TwwProjekt</c>), nicht einer Zone. Jede nullbare Größe heißt
 /// <c>null</c> = Vorgabe.
@@ -538,7 +539,7 @@ public sealed class ZapfprofilGebaeudeDaten
 
 /// <summary>
 /// Eine Zone (5.3): die vier Felder der Stufe Einfach — Zonenname, Nutzungsart, Bezugsmenge,
-/// Bedarfsniveau — und die Angaben der Stufen Erweitert und Experte
+/// Bedarfsniveau — und die Angaben der Stufe Experte
 /// (<see cref="Angaben"/>). Fehlen die Angaben (<c>null</c>), behält die Hülle die Größen des
 /// Arbeitsstands des Kerns (bzw. der Vorlage eines Duplikats) und setzt nur die vier Felder
 /// zurück — die Stufe behält Überschreibungen in beiden Fällen.
@@ -574,7 +575,7 @@ public sealed class ZapfprofilZoneDaten
     public int Ueberschrieben { get; set; }
 
     /// <summary>
-    /// Die Angaben der Stufen Erweitert und Experte; <c>null</c> = der Arbeitsstand des Kerns
+    /// Die Angaben der Stufe Experte; <c>null</c> = der Arbeitsstand des Kerns
     /// bleibt, wie er ist (die Hülle füllt sie beim Öffnen immer).
     /// </summary>
     public ZapfprofilZonenangabenDaten? Angaben { get; set; }
@@ -675,7 +676,7 @@ public sealed class ZapfprofilEingabeDaten
     public double? SchwelleKw { get; set; }
 
     /// <summary>
-    /// Die gebäudeweiten Größen der Stufen Erweitert und Experte (Zirkulation, Leitungsinhalt,
+    /// Die gebäudeweiten Größen der Stufe Experte (Zirkulation, Leitungsinhalt,
     /// Ladeleistung, Speichertemperatur, Kaltwasser der Auslegung); <c>null</c> = die Projektzeile
     /// des Arbeitsstands bleibt, wie sie ist.
     /// </summary>
@@ -840,7 +841,7 @@ public sealed class ZapfprofilAnsichtDaten
     /// </summary>
     public List<ZapfprofilKonsistenzDaten> Konsistenzen { get; set; } = new();
 
-    /// <summary>Die Schätzhilfe des Tagesbedarfs (Stufe Erweitert, 5.3) — nur in der Ansicht einer gerechneten Zone.</summary>
+    /// <summary>Die Schätzhilfe des Tagesbedarfs (Stufe Experte, 5.3) — nur in der Ansicht einer gerechneten Zone.</summary>
     public ZapfprofilSchaetzhilfeDaten? Tagesbedarf { get; set; }
 
     /// <summary>Die Auslastung nach Monat, Wochentag und Tagesstunde (Mittel 1) — nur in der Ansicht einer gerechneten Zone.</summary>
@@ -1010,7 +1011,7 @@ public sealed class ZapfprofilVorschauDaten
     /// </summary>
     public List<ZapfprofilHerkunftZeile> Herkunft { get; set; } = new();
 
-    /// <summary>Die Schätzhilfe der Zirkulation (Stufe Erweitert, 5.3); <c>null</c>, wenn die Zirkulation abgelehnt ist.</summary>
+    /// <summary>Die Schätzhilfe der Zirkulation (Stufe Experte, 5.3); <c>null</c>, wenn die Zirkulation abgelehnt ist.</summary>
     public ZapfprofilSchaetzhilfeDaten? Zirkulation { get; set; }
 
     /// <summary>Der Statustext der Fußleiste.</summary>
@@ -1088,7 +1089,7 @@ public sealed class ZapfprofilDaten
     /// <summary>Die Obergrenze der Realisierungen der Jahresreihe (Kern); <c>null</c> = keine bekannt.</summary>
     public int? RealisierungenHoechstens { get; set; }
 
-    // ---- Stufen Erweitert und Experte (Z4) ------------------------------------------
+    // ---- Stufe Experte (Z4) ------------------------------------------
 
     /// <summary>Die gebäudeweiten Größen einer Projektzeile ohne Eingabe (DDL); <c>null</c> = unbekannt.</summary>
     public ZapfprofilGebaeudeDaten? GebaeudeVorgabe { get; set; }
@@ -1705,10 +1706,10 @@ public sealed record ZapfprofilWarnDaten(string Kennung, string Titel, string Te
                                          int? Position = null)
 {
     /// <summary>
-    /// Steht der Eintrag erst ab der Stufe Erweitert (ZB8)? Dieselbe Regel wie
-    /// <see cref="ZapfprofilMeldung.AbErweitert"/>; ohne Angabe steht er in jeder Stufe.
+    /// Steht der Eintrag erst ab der Stufe Experte (ZB8)? Dieselbe Regel wie
+    /// <see cref="ZapfprofilMeldung.AbExperte"/>; ohne Angabe steht er in jeder Stufe.
     /// </summary>
-    public bool AbErweitert { get; init; }
+    public bool AbExperte { get; init; }
 }
 
 /// <summary>
@@ -1905,7 +1906,7 @@ public sealed class ZapfprofilAuslegungDaten
 
     /// <summary>
     /// Steht die Karte „Herkunft"? Die Überlagerung führt keine eigene Stufe, deshalb entscheidet
-    /// die Hülle: ab Stufe Erweitert ja, in der Stufe Einfach nein (N19). Leer und sichtbar heißt
+    /// die Hülle: ab Stufe Experte ja, in der Stufe Einfach nein (N19). Leer und sichtbar heißt
     /// „nichts zu vermerken" — benannt, nicht still.
     /// </summary>
     public bool HerkunftSichtbar { get; set; }
@@ -2051,7 +2052,7 @@ public sealed record ZapfprofilFormabgleichDaten(string Tagtyp, int TageGemessen
 /// <summary>
 /// <b>Der Vergleichsbericht „synthetisch gegen gemessen“</b> (Umsetzungskonzept
 /// Zapfprofilgenerator 4.8 und Kapitel 7 Zeile Z5; Stufe Z5, Gruppe 3) — was der Reiter
-/// „Kennzahlen“ ab der Stufe Erweitert zeigt.
+/// „Kennzahlen“ ab der Stufe Experte zeigt.
 ///
 /// <para><b>Nur Verhältniszahlen</b> (Konzept Kapitel 9 K5): Jede Zahl ist ein Verhältnis oder ein
 /// Anteil — keine gemessene Menge, keine gemessene Leistung. So verlässt nichts die Anlage, was

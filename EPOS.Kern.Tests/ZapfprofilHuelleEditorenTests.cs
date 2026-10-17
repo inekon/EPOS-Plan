@@ -242,7 +242,7 @@ namespace EPOS.Kern.Tests
             // Zwei Nutzungsarten teilen den Satz: ein geänderter Tagesgang braucht eine Kopie.
             ZapfprofilTagesgangDaten d = ZapfprofilHuelle.TagesgangLaden(eins, satzB);
             Assert.True(d.Kopie);
-            Assert.StartsWith("Eine Zone oder eine andere Nutzungsart benutzt den Tagesgang", d.Sperrgrund);
+            Assert.StartsWith("Ein Bereich oder eine andere Nutzungsart benutzt den Tagesgang", d.Sperrgrund);
             Assert.Equal(satzB, d.Satz.Id);
             Assert.Equal("", d.Satz.Herkunft[2]);
             ZapfprofilTagesgangsatzDaten halb = Assert.Single(d.Vorlagen, v => v.Id == satzB);
@@ -271,7 +271,7 @@ namespace EPOS.Kern.Tests
             ZapfprofilTagesgangDaten d = ZapfprofilHuelle.TagesgangLaden(id, satzX);
             Assert.True(d.Kopie);
             Assert.Equal(satzX, d.Satz.Id);
-            Assert.Equal("Die Zone rechnet einen anderen Tagesgangsatz als die Nutzungsart — ein geänderter Tagesgang entsteht als neue Katalogversion.",
+            Assert.Equal("Der Bereich rechnet einen anderen Tagesgangsatz als die Nutzungsart — ein geänderter Tagesgang entsteht als neue Katalogversion.",
                          d.Sperrgrund);
             Assert.Equal("T1" + TwwNutzungsartCtrl.KOPIEVERSION_ZUSATZ + "1", d.KatalogversionVorschlag);
 

@@ -6,6 +6,8 @@ Entscheidungsfragen ZC‑Q1 bis ZC‑Q6, Abschnitt 5 die Wellen. Es setzt das
 [Konzept Zapfprofil — Benutzerführung](Konzept_Zapfprofil_Benutzerfuehrung_EPOS-Plan.md) (ZB1–ZB12,
 umgesetzt) fort; dessen Zielbild L1–L7 gilt weiter.
 
+**Umsetzungsstand:** W8 (ZC2, ZC3), W11 (ZC6) und ZC1 umgesetzt mit #1201; offen W9 (ZC5, ZC4 a/c), W10 (ZC4 b), W12.
+
 **Anlass:** Auftrag des Anwenders vom 17.10.2026 nach Sichtprobe unter Windows (drei Bildschirmfotos:
 Zonenblock der Stufe Einfach, Katalogsatz eines Brauchwasserprofils, Dialog Brauchwasserwärme):
 

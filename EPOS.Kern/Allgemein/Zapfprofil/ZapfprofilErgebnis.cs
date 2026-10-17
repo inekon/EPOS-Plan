@@ -76,7 +76,7 @@ namespace WindowsFormsApplication1
         public IReadOnlyList<ZapfTagtyp> Kalender { get; init; }
 
         /// <summary>
-        /// Die Schätzhilfe des Tagesbedarfs der Zone (Stufe Erweitert, 5.3): Vorschlag des Katalogs
+        /// Die Schätzhilfe des Tagesbedarfs der Zone (Stufe Experte, 5.3): Vorschlag des Katalogs
         /// (Mengengerüst vor der Kalibrierung), manueller Wert, angesetzter Wert, Rechenweg;
         /// <c>null</c> bei einer abgelehnten Zone.
         /// </summary>
@@ -196,7 +196,7 @@ namespace WindowsFormsApplication1
         public Zapfdauerlinie Dauerlinie { get; init; }
 
         /// <summary>
-        /// Die Schätzhilfe der Zirkulation (Stufe Erweitert, 5.3): Vorschlag der Methode, manueller
+        /// Die Schätzhilfe der Zirkulation (Stufe Experte, 5.3): Vorschlag der Methode, manueller
         /// Wert, angesetzte Leistung, Rechenweg; <c>null</c>, wenn die Zirkulation abgelehnt ist.
         /// </summary>
         public Schaetzhilfe SchaetzhilfeZirkulation { get; init; }

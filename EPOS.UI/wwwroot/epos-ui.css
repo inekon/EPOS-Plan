@@ -16415,6 +16415,107 @@ Dieselben Regeln wie beim Projektkopf. */
     white-space: normal;
 }
 
+/* DER BLOCK DER NUTZUNGSBEREICHE (Konzept Zapfprofil Bereiche und Methoden, ZC2): EINE Tabelle,
+   jede Zeile traegt Nutzungsart, Bezugsgroesse und Bedarfsniveau als Felder und den Jahreswert. Nach
+   der Hausregel "Tabelle mit Feldern" fuellt sie die Breite ihres Blocks mit festen Spaltenanteilen
+   (table-layout: fixed), jedes Feld nimmt die Breite seiner Zelle statt seiner Eigenbreite (rund
+   165 px), Koepfe und Werte brechen um statt quer zu rollen. Die Wahlspalte ist ein Touchziel breit,
+   die Spalte MWh/a traegt "1 234,5" und "unvollstaendig" (4,5em), Bezugsgroesse und Niveau haben
+   feste Anteile, die Nutzungsart bekommt den Rest (Rasterprobe: 478 px Block bei 1 088 px Fenster,
+   326 px bei 400 px). */
+.epos-zapfprofil-zonen {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.epos-zapfprofil-zonen th,
+.epos-zapfprofil-zonen td {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.epos-zapfprofil-zonen .epos-zapfprofil-zonen-wahl {
+    width: calc(var(--epos-touchziel) + 12px);
+}
+
+.epos-zapfprofil-zonen .epos-zapfprofil-zonen-bezug {
+    width: 24%;
+}
+
+.epos-zapfprofil-zonen .epos-zapfprofil-zonen-niveau {
+    width: 20%;
+}
+
+.epos-zapfprofil-zonen .epos-zapfprofil-zonen-wert {
+    width: 4.5em;
+}
+
+/* Jedes Feld einer Zeile traegt seine Beschriftung ("Nutzungsart, Bereich 2") fuer Sprachausgabe und
+   Sammelmeldung; sichtbar steht sie einmal im Tabellenkopf - und bleibt in ihrer Zelle. */
+.epos-zapfprofil-bereich .epos-feld-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.epos-zapfprofil-bereich .epos-feld {
+    position: relative;
+    min-width: 0;
+}
+
+.epos-zapfprofil-bereich .epos-feld-zeile {
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+/* Die Klappliste ist in der Zelle gekuerzt: Sie nimmt die Zellbreite, ein langer Eintrag endet mit
+   Auslassung; das Berührungsziel bleibt 44 px hoch. */
+.epos-zapfprofil-bereich input.epos-eingabe,
+.epos-zapfprofil-bereich select.epos-eingabe {
+    flex: 1 1 2.5em;
+    width: 2.5em;
+    min-width: 0;
+    min-height: var(--epos-touchziel);
+    text-overflow: ellipsis;
+}
+
+/* Das Zahlenfeld zeigt seine Zahl; die Einheit rueckt unter das Feld, wo die Zelle zu schmal ist. */
+.epos-zapfprofil-bereich input.epos-eingabe {
+    flex-basis: 3.5em;
+    min-width: min(3.5em, 100%);
+}
+
+/* Bei Wohnungstabelle steht die wirksame Bezugsgroesse als grauer TEXT, nicht als gesperrtes Feld. */
+.epos-zapfprofil-wirksam {
+    color: var(--epos-text-leise);
+}
+
+/* Die Detailzeile unter der markierten Zeile: Name und "Katalog..." in einer Zeile, darunter
+   Herleitung, naechster Schritt und Meldungen; sie gehoert sichtbar zur markierten Zeile. */
+.epos-zapfprofil-bereichdetail > td {
+    outline: 2px solid var(--epos-quelle-rahmen);
+    outline-offset: -2px;
+}
+
+.epos-zapfprofil-bereichdetail-zeile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--epos-rand);
+}
+
+.epos-zapfprofil-bereichdetail-zeile .epos-feld {
+    flex: 1 1 12em;
+    min-width: 0;
+}
+
+.epos-zapfprofil-bereichdetail .epos-leisezeile {
+    margin-block: 4px 0;
+}
+
 /* DIE KARTE „KALENDER" DER ZONE (Konzept Zapfprofil-Benutzerfuehrung ZB5): eine Klappgruppe im
    Zonenblock. Die Werte eines gebundenen Gebaeudes stehen als Liste aus Begriff und Wert, die
    eigenen Ferien wie im Gebaeudedialog je Zeile Name, von, bis und „Entfernen", umbrechend statt

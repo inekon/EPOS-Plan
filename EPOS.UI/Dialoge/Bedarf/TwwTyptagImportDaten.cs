@@ -161,7 +161,7 @@ public sealed class TwwTyptagImportTexte
     public string WertOhne { get; set; } = "ohne Angabe";
 
     /// <summary><c>ZPGT_WERT_OHNE_GAENGE</c></summary>
-    public string WertOhneGaenge { get; set; } = "keine — die Tagesform kommt aus dem Tagesgangsatz der Zone";
+    public string WertOhneGaenge { get; set; } = "keine — die Tagesform kommt aus dem Tagesgangsatz des Bereichs";
 
     /// <summary><c>ZPGT_BTN_PAKET</c></summary>
     public string KnopfPaket { get; set; } = "Paket wählen…";

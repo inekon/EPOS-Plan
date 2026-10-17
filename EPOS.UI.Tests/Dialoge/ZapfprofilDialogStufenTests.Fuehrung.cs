@@ -24,10 +24,10 @@ public partial class ZapfprofilDialogStufenTests
             ZapfprofilZoneDaten z = e.Zonen[i];
             if (z.IdNutzungsart <= 0)
                 m.Add(new ZapfprofilMeldung("ZPG_MSG_ZONE_OHNE_NUTZUNGSART", z.Name,
-                    "Zone „" + z.Name + "“: Bitte eine Nutzungsart wählen.", ZapfprofilMeldungsart.Fehler, Position: i));
+                    "Bereich „" + z.Name + "“: Bitte eine Nutzungsart wählen.", ZapfprofilMeldungsart.Fehler, Position: i));
             if (!(z.Bezugsmenge > 0))
                 m.Add(new ZapfprofilMeldung("ZPG_MSG_ZONE_OHNE_BEZUGSMENGE", z.Name,
-                    "Zone „" + z.Name + "“: Bitte eine Bezugsgröße größer 0 eingeben.", ZapfprofilMeldungsart.Fehler, Position: i));
+                    "Bereich „" + z.Name + "“: Bitte eine Bezugsgröße größer 0 eingeben.", ZapfprofilMeldungsart.Fehler, Position: i));
         }
         return m;
     }
@@ -45,10 +45,10 @@ public partial class ZapfprofilDialogStufenTests
             v.Zonen[i].Abgelehnt = true;
             v.Zonen[i].Rechenweg = ZapfprofilZonenrechenweg.Abgelehnt;
             v.Meldungen.Add(new ZapfprofilMeldung("ZPG_SATZ_EINGABE_NUTZUNGSART_NICHT_GEWAEHLT", e.Zonen[i].Name,
-                "Zone „" + e.Zonen[i].Name + "“ trägt 0: Für die Zone ist noch keine Nutzungsart gewählt.",
+                "Bereich „" + e.Zonen[i].Name + "“ trägt 0: Für den Bereich ist noch keine Nutzungsart gewählt.",
                 ZapfprofilMeldungsart.Ablehnung, Position: i));
-            v.Warnliste.Add(new ZapfprofilWarnDaten("ZPG_WARN_ZIRKULATION_OHNE_ZONE", "Zirkulation ohne Zone",
-                "Die Zone „" + e.Zonen[i].Name + "“ trägt keinen Zirkulationsanteil.", ZapfprofilWarnstufe.Hinweis, Position: i));
+            v.Warnliste.Add(new ZapfprofilWarnDaten("ZPG_WARN_ZIRKULATION_OHNE_ZONE", "Zirkulation ohne Bereich",
+                "Der Bereich „" + e.Zonen[i].Name + "“ trägt keinen Zirkulationsanteil.", ZapfprofilWarnstufe.Hinweis, Position: i));
         }
         return v;
     }
@@ -78,10 +78,10 @@ public partial class ZapfprofilDialogStufenTests
         Assert.Empty(cut.FindAll(".epos-zapfprofil-unvollstaendig"));
         int fokusVorher = Fokusaufrufe();
 
-        Knopf(cut, "Zone hinzufügen").Click();
+        Knopf(cut, "Bereich hinzufügen").Click();
 
         // Die Liste nennt die neue Zone „unvollständig“ statt „0,0 · trägt 0“.
-        IElement[] zeilen = cut.FindAll("table.epos-zapfprofil-zonen tbody tr").ToArray();
+        IElement[] zeilen = cut.FindAll("table.epos-zapfprofil-zonen tbody tr.epos-zapfprofil-bereich").ToArray();
         Assert.Equal(3, zeilen.Length);
         IElement zelle = zeilen[2].QuerySelector("td.epos-zapfprofil-unvollstaendig")!;
         Assert.Equal("unvollständig", zelle.TextContent.Trim());
@@ -89,14 +89,14 @@ public partial class ZapfprofilDialogStufenTests
 
         // Der Block nennt leise den ersten Satz der Pflichtprüfung — keine Warnung.
         IElement schritt = cut.Find(".epos-zapfprofil-naechsterschritt");
-        Assert.Equal("Zone „Zone 3“: Bitte eine Nutzungsart wählen.", schritt.TextContent.Trim());
+        Assert.Equal("Bereich „Bereich 3“: Bitte eine Nutzungsart wählen.", schritt.TextContent.Trim());
         Assert.Equal("ZPG_MSG_ZONE_OHNE_NUTZUNGSART", schritt.GetAttribute("data-kennung"));
         Assert.DoesNotContain("trägt 0", cut.Markup);
-        Assert.DoesNotContain("Für die Zone ist noch keine Nutzungsart gewählt", cut.Markup);
+        Assert.DoesNotContain("Für den Bereich ist noch keine Nutzungsart gewählt", cut.Markup);
 
         // Die Hinweise der Bilanz tragen die unvollständige Zone nicht.
         IElement warnliste = cut.Find(".epos-zapfprofil-warnliste");
-        Assert.DoesNotContain("Zone 3", warnliste.TextContent);
+        Assert.DoesNotContain("Bereich 3", warnliste.TextContent);
         Assert.Contains("Zirkulation groß", warnliste.TextContent);
 
         // Der Fokus steht auf der Klappliste Nutzungsart.
@@ -107,10 +107,10 @@ public partial class ZapfprofilDialogStufenTests
     public void ZB2_Der_naechste_Schritt_folgt_der_Eingabe_und_verschwindet_mit_der_letzten_Luecke()
     {
         var cut = AufbauenGefuehrt();
-        Knopf(cut, "Zone hinzufügen").Click();
+        Knopf(cut, "Bereich hinzufügen").Click();
 
         Auswahl(cut, "Nutzungsart").Change("2");
-        Assert.Equal("Zone „Zone 3“: Bitte eine Bezugsgröße größer 0 eingeben.",
+        Assert.Equal("Bereich „Bereich 3“: Bitte eine Bezugsgröße größer 0 eingeben.",
                      cut.Find(".epos-zapfprofil-naechsterschritt").TextContent.Trim());
         Assert.Equal("unvollständig", cut.Find("td.epos-zapfprofil-unvollstaendig").TextContent.Trim());
 
@@ -128,7 +128,7 @@ public partial class ZapfprofilDialogStufenTests
             ZapfprofilVorschauDaten v = Vorschau(e);
             v.Zonen[0].Abgelehnt = true;
             v.Meldungen.Add(new ZapfprofilMeldung("ZPG_SATZ_EINGABE_NUTZUNGSART_FEHLT", "Wohnen",
-                "Zone „Wohnen“ trägt 0: Die Nutzungsart steht nicht (mehr) im Katalog.", ZapfprofilMeldungsart.Ablehnung, Position: 0));
+                "Bereich „Wohnen“ trägt 0: Die Nutzungsart steht nicht (mehr) im Katalog.", ZapfprofilMeldungsart.Ablehnung, Position: 0));
             return v;
         }
         ZapfprofilDaten daten = Daten();
@@ -151,7 +151,7 @@ public partial class ZapfprofilDialogStufenTests
         IElement[] gruppen = cut.FindAll("fieldset.epos-optionsgruppe[role=radiogroup]").ToArray();
         Assert.True(gruppen.Length >= 5, "Nur " + gruppen.Length + " Optionsgruppen");
         Assert.All(gruppen, g => Assert.NotNull(g.QuerySelector(":scope > .epos-optionsgruppe-zeile")));
-        foreach (string name in new[] { "Stufe", "Bedarfsniveau", "Zirkulation vorhanden", "Rechenweg der Jahresreihe" })
+        foreach (string name in new[] { "Stufe", "Zirkulation vorhanden", "Rechenweg der Jahresreihe" })
             Assert.Contains(gruppen, g => g.GetAttribute("aria-label") == name);
         // ZB4 (b): Tagesbedarf, Ladeleistung und Zirkulation tragen keinen Umschalter auto/manuell mehr.
         Assert.DoesNotContain(gruppen, g => g.GetAttribute("aria-label") is "Tagesbedarf" or "Ladeleistung (Gebäude)" or "Zirkulation (Gebäude)");
@@ -166,7 +166,7 @@ public partial class ZapfprofilDialogStufenTests
     public void ZB6_Die_Wohnungstabelle_erklaert_sich_und_nennt_die_Summe_des_Kerns()
     {
         var cut = AufbauenGefuehrt();
-        Stufe(cut, "Erweitert");
+        Stufe(cut, "Experte");
 
         Assert.Equal("Wohnungen (wahlweise)", cut.Find(".epos-zapfprofil-untertitel").TextContent.Trim());
         Assert.StartsWith("Statt einer Bezugsgröße die Wohnungen nach Typ angeben",
@@ -195,7 +195,7 @@ public partial class ZapfprofilDialogStufenTests
         ZapfprofilDaten daten = Daten();
         daten.Ausstattungen.Clear();
         var cut = AufbauenGefuehrt(daten);
-        Stufe(cut, "Erweitert");
+        Stufe(cut, "Experte");
         Knopf(cut, "Wohnungstyp hinzufügen").Click();
 
         Assert.DoesNotContain(cut.FindAll(".epos-zapfprofil-wohnungen thead th"), t => t.TextContent.Contains("Ausstattungsklasse"));

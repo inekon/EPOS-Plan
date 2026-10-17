@@ -135,7 +135,7 @@ public sealed class ZapfprofilEinstiegTexte
 
     /// <summary><c>BPF_HINW_RECHENWEG_BW</c> — die eine Stelle, die „Trinkwarmwasser" ausschreibt.</summary>
     public string HinweisRechenweg { get; set; }
-        = "Der Rechenweg bestimmt, woraus der Wärmebedarf für Brauchwasser (Trinkwarmwasser) entsteht: aus den Bestandsprofilen dieser Liste oder aus dem Zapfprofil der Nutzungszonen.";
+        = "Der Rechenweg bestimmt, woraus der Wärmebedarf für Brauchwasser (Trinkwarmwasser) entsteht: aus den Bestandsprofilen dieser Liste oder aus dem Zapfprofil der Nutzungsbereiche.";
 
     /// <summary><c>BPF_HINW_ZAPFPROFILWEG</c></summary>
     public string HinweisZapfprofilweg { get; set; }

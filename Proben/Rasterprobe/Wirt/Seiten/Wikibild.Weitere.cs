@@ -315,7 +315,7 @@ public partial class Wikibild
         double zapfung = monateZapf.Sum(), verlust = monateZirk.Sum();
         var a = new ZapfprofilAnsichtDaten
         {
-            Titel = "Summe aller Zonen", Monat = 1,
+            Titel = "Summe aller Bereiche", Monat = 1,
             WerktagKw = werktag, SamstagKw = samstag, SonnFeiertagKw = sonntag, TageJeTagtyp = new[] { 21, 5, 5 },
             ZirkulationTagKw = zirk, WochenStarttag = 5, WocheZapfungKw = woche, WocheZirkulationKw = wocheZirk,
             MonateZapfungKwh = monateZapf, MonateZirkulationKwh = monateZirk,

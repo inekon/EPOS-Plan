@@ -14,7 +14,7 @@ schreibt beides nicht ab.
 
 ## 1 Stand
 
-**Nachtrag 17.10.2026.** Der Sitzungszweig ist mit Freigabe des Anwenders in `ios_migration_september` übernommen (Merge-Commits `1b999339` auf `73d7f513` und `74f20fa6` auf `6bef4ff6`; Gate und Befund in der Statuszeile #1197). Die Übergabezeile trägt #1197 (vorher #1033, dort inzwischen vergeben). Sechs gemergte Zweige wurden auf origin gelöscht (`sync/windows-2026-10-11b`, `claude/jolly-shannon-eufd98`, `kb5`, `claude/zapfprofilgenerator-cloud-tetz98`, `claude/gebaeudesimulation-bk5`, `claude/gebaeudesimulation-da6`). Push-SHA und CI-Lauf des 17.10.: siehe Statuszeile.
+**Nachtrag 17.10.2026.** Der Sitzungszweig ist mit Freigabe des Anwenders in `ios_migration_september` übernommen (Merge-Commits `1b999339` auf `73d7f513` und `74f20fa6` auf `6bef4ff6`; Gate und Befund in der Statuszeile #1197). Die Übergabezeile trägt #1197 (vorher #1033, dort inzwischen vergeben). Sechs gemergte Zweige wurden auf origin gelöscht (`sync/windows-2026-10-11b`, `claude/jolly-shannon-eufd98`, `kb5`, `claude/zapfprofilgenerator-cloud-tetz98`, `claude/gebaeudesimulation-bk5`, `claude/gebaeudesimulation-da6`). Push `e32fede6` am 17.10.2026 19:04 UTC auf beide Zweige, Kern-Lauf 39060851868 (kern.yml, ubuntu) grün, abgeschlossen 19:24 UTC.
 
 - **Zweige:** Arbeitszweig `ios_migration_september`; Sitzungszweig `claude/gracious-brown-qx5kb2`
   (altes Konto). Dessen Code-Stand ist der Merge `6f348bdb` von `origin/ios_migration_september`

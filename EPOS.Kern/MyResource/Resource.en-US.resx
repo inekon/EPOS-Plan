@@ -24288,28 +24288,28 @@ Do you want to allow this?</value>
     <value>“{0}” is locked.</value>
   </data>
   <data name="KI_DLG_ZPG_STUFE_ERL" xml:space="preserve">
-    <value>The depth of the dialog: “Basic” shows the zones, “Expert” also the stochastics of the annual series. The level only shows and hides fields, entered values are kept; “Extended” is locked in this version.</value>
+    <value>The depth of the dialog: “Basic” shows the usage areas with preview and sizing, “Expert” also all further inputs (occupancy, calendar, measured value, daily demand, technical values, annual series). The level only shows and hides fields, entered values are kept.</value>
   </data>
   <data name="KI_DLG_ZPG_ZONE_ERL" xml:space="preserve">
-    <value>The selected zone of the zone list, by number or name; its input block is shown below the list. The values of every zone can also be set via the columns without selecting it.</value>
+    <value>The selected area of the area list, by number or name; its input block is shown below the list. The values of every area can also be set via the columns without selecting it.</value>
   </data>
   <data name="KI_DLG_ZPG_ZONENNAME_ERL" xml:space="preserve">
-    <value>The name of the zone; required for OK. It names the zone in the list, the preview and the messages.</value>
+    <value>The name of the area; required for OK. It names the area in the list, the preview and the messages.</value>
   </data>
   <data name="KI_DLG_ZPG_NUTZUNGSART_ERL" xml:space="preserve">
-    <value>The type of use of the zone from the catalogue; it determines the reference quantity, the daily profile and the specific demand per level. Required for OK; a locked type of use names its reason.</value>
+    <value>The type of use of the area from the catalogue; it determines the reference quantity, the daily profile and the specific demand per level. Required for OK; a locked type of use names its reason.</value>
   </data>
   <data name="KI_DLG_ZPG_BEZUGSMENGE_ERL" xml:space="preserve">
-    <value>The quantity of the zone in the reference quantity of its type of use (persons, dwellings, beds, area …); required for OK, greater than 0.</value>
+    <value>The quantity of the area in the reference quantity of its type of use (persons, dwellings, beds, area …); required for OK, greater than 0.</value>
   </data>
   <data name="KI_DLG_ZPG_NIVEAU_ERL" xml:space="preserve">
-    <value>The demand level of the zone — low, medium or high; it selects the specific demand of the type of use per unit and day.</value>
+    <value>The demand level of the area — low, medium or high; it selects the specific demand of the type of use per unit and day.</value>
   </data>
   <data name="KI_DLG_ZPG_JAHRESBEDARF_ERL" xml:space="preserve">
-    <value>The annual draw-off demand of the zone from the current preview; “–” without a calculated preview. Read-only.</value>
+    <value>The annual draw-off demand of the area from the current preview; “–” without a calculated preview. Read-only.</value>
   </data>
   <data name="KI_DLG_ZPG_ANSICHT_ERL" xml:space="preserve">
-    <value>Which view the preview shows its charts and key figures for: the sum of all zones or one zone. Only changes the display.</value>
+    <value>Which view the preview shows its charts and key figures for: the sum of all areas or one area. Only changes the display.</value>
   </data>
   <data name="KI_DLG_ZPG_RECHENWEG_ERL" xml:space="preserve">
     <value>Which annual series enters the balance: the deterministic one or the stochastically drawn year for the seed, scaled to the annual amount. Appears from level “Expert”; the preview stays deterministic.</value>
@@ -24321,7 +24321,7 @@ Do you want to allow this?</value>
     <value>How many years the stochastic run draws to check consistency; empty = default. Appears in level “Expert” with the “stochastic” method.</value>
   </data>
   <data name="KI_DLG_ZPGA_BEDARFSTAG_ERL" xml:space="preserve">
-    <value>The design day of the cumulative curve: default rule, hourly profile of the zones, DIN 4708 profile, a constructed day or a day from the catalogue. Locked sources name their reason; a day is constructed with the button below.</value>
+    <value>The design day of the cumulative curve: default rule, hourly profile of the areas, DIN 4708 profile, a constructed day or a day from the catalogue. Locked sources name their reason; a day is constructed with the button below.</value>
   </data>
   <data name="KI_DLG_ZPGA_SPEICHERTEMPERATUR_ERL" xml:space="preserve">
     <value>The storage temperature; empty = default of the catalogue.</value>
@@ -26208,13 +26208,13 @@ Do you want to allow this?</value>
     <value>Not yet available in this version.</value>
   </data>
   <data name="ZPG_GRP_ZONEN" xml:space="preserve">
-    <value>Usage zones</value>
+    <value>Usage areas</value>
   </data>
   <data name="ZPG_GRP_ZONEN_SUMME" xml:space="preserve">
     <value>{0} MWh/a draw-off</value>
   </data>
   <data name="ZPG_GRP_ZONE" xml:space="preserve">
-    <value>Zone “{0}”</value>
+    <value>Area “{0}”</value>
   </data>
   <data name="ZPG_GRP_GEBAEUDE_ANLAGE" xml:space="preserve">
     <value>Building and system</value>
@@ -26271,10 +26271,10 @@ Do you want to allow this?</value>
     <value>Catalogue…</value>
   </data>
   <data name="ZPG_KATALOG_BLATT_HINWEIS" xml:space="preserve">
-    <value>Selecting a row sets the use type of zone “{0}”.</value>
+    <value>Selecting a row sets the use type of area “{0}”.</value>
   </data>
   <data name="ZPG_SP_ZONE" xml:space="preserve">
-    <value>Zone</value>
+    <value>Area</value>
   </data>
   <data name="ZPG_SP_NUTZUNGSART" xml:space="preserve">
     <value>Type of use</value>
@@ -26286,10 +26286,10 @@ Do you want to allow this?</value>
     <value>MWh/a</value>
   </data>
   <data name="ZPG_SUMME_ZONEN" xml:space="preserve">
-    <value>Total of {0} zones</value>
+    <value>Total of {0} areas</value>
   </data>
   <data name="ZPG_BTN_ZONE_NEU" xml:space="preserve">
-    <value>Add zone</value>
+    <value>Add area</value>
   </data>
   <data name="ZPG_BTN_ZONE_DUPLIZIEREN" xml:space="preserve">
     <value>Duplicate</value>
@@ -26298,13 +26298,13 @@ Do you want to allow this?</value>
     <value>Remove</value>
   </data>
   <data name="ZPG_ZONE_NAME_VORGABE" xml:space="preserve">
-    <value>Zone {0}</value>
+    <value>Area {0}</value>
   </data>
   <data name="ZPG_ZONE_KOPIE" xml:space="preserve">
     <value>{0} (copy)</value>
   </data>
   <data name="ZPG_LBL_ZONENNAME" xml:space="preserve">
-    <value>Zone name</value>
+    <value>Area name</value>
   </data>
   <data name="ZPG_LBL_NUTZUNGSART" xml:space="preserve">
     <value>Type of use</value>
@@ -26439,7 +26439,7 @@ Do you want to allow this?</value>
     <value>Show for</value>
   </data>
   <data name="ZPG_ANSICHT_SUMME" xml:space="preserve">
-    <value>Sum of all zones</value>
+    <value>Sum of all areas</value>
   </data>
   <data name="ZPG_REITER_TAGESGANG" xml:space="preserve">
     <value>Daily profile</value>
@@ -26583,22 +26583,22 @@ Do you want to allow this?</value>
     <value>No preview — {0}</value>
   </data>
   <data name="ZPG_MSG_KEINE_ZONE" xml:space="preserve">
-    <value>No zone has been created.</value>
+    <value>No area has been created.</value>
   </data>
   <data name="ZPG_MSG_ZONE_OHNE_NAME" xml:space="preserve">
-    <value>A zone has no name.</value>
+    <value>An area has no name.</value>
   </data>
   <data name="ZPG_MSG_ZONE_OHNE_NUTZUNGSART" xml:space="preserve">
-    <value>Zone “{0}”: please select a type of use.</value>
+    <value>Area “{0}”: please select a type of use.</value>
   </data>
   <data name="ZPG_MSG_ZONE_OHNE_BEZUGSMENGE" xml:space="preserve">
-    <value>Zone “{0}”: please enter a reference quantity greater than 0.</value>
+    <value>Area “{0}”: please enter a reference quantity greater than 0.</value>
   </data>
   <data name="ZPG_MSG_ZONE_NAME_DOPPELT" xml:space="preserve">
-    <value>Zone “{0}”: the name is used more than once — please give each zone a name of its own.</value>
+    <value>Area “{0}”: the name is used more than once — please give each area a name of its own.</value>
   </data>
   <data name="ZPG_MSG_ZONE_TRAEGT_NULL" xml:space="preserve">
-    <value>Zone “{0}” contributes 0: {1}</value>
+    <value>Area “{0}” contributes 0: {1}</value>
   </data>
   <data name="ZPG_MSG_ANTEIL_TRAEGT_NULL" xml:space="preserve">
     <value>The circulation contributes 0: {0}</value>
@@ -26622,7 +26622,7 @@ Do you want to allow this?</value>
     <value>The project's DHW profiles were not saved — {0}</value>
   </data>
   <data name="ZPG_MSG_ZONE" xml:space="preserve">
-    <value>Zone “{0}”: {1}</value>
+    <value>Area “{0}”: {1}</value>
   </data>
   <data name="BPF_BTN_ZAPFPROFIL_BW" xml:space="preserve">
     <value>Generate draw-off profile…</value>
@@ -26649,7 +26649,7 @@ Do you want to allow this?</value>
     <value>Level</value>
   </data>
   <data name="BPF_HINW_RECHENWEG_BW" xml:space="preserve">
-    <value>The calculation method determines the source of the heat demand for domestic hot water: the existing profiles in this list or the draw-off profile of the usage zones.</value>
+    <value>The calculation method determines the source of the heat demand for domestic hot water: the existing profiles in this list or the draw-off profile of the usage areas.</value>
   </data>
   <data name="BPF_HINW_ZAPFPROFIL_OHNE_ZONEN" xml:space="preserve">
     <value>There is no draw-off profile yet – “Generate draw-off profile…” creates one.</value>
@@ -27255,7 +27255,7 @@ Do you want to allow this?</value>
     <value>Default rule (residential: DIN 4708 profile, otherwise constructor)</value>
   </data>
   <data name="ZPG_AUS_OPT_STUNDENPROFIL" xml:space="preserve">
-    <value>Hourly profile of the zones (peaks underestimated)</value>
+    <value>Hourly profile of the areas (peaks underestimated)</value>
   </data>
   <data name="ZPG_AUS_OPT_DIN4708" xml:space="preserve">
     <value>DIN 4708 profile from the dwelling table</value>
@@ -27342,7 +27342,7 @@ Do you want to allow this?</value>
     <value>empty = catalogue default</value>
   </data>
   <data name="ZPG_AUS_GRP_TOPOLOGIE" xml:space="preserve">
-    <value>{0} · zones: {1}</value>
+    <value>{0} · areas: {1}</value>
   </data>
   <data name="ZPG_AUS_BEDARFSTAG_GRUPPE" xml:space="preserve">
     <value>Design day: {0}</value>
@@ -27672,10 +27672,10 @@ Do you want to allow this?</value>
     <value>Storage [kWh]</value>
   </data>
   <data name="ZPG_AUS_KONTEXT" xml:space="preserve">
-    <value>Sum of all zones · {0} zones · level {1}</value>
+    <value>Sum of all areas · {0} areas · level {1}</value>
   </data>
   <data name="ZPG_AUS_ZONE_ABGELEHNT" xml:space="preserve">
-    <value>Zone “{0}” is missing from the design: {1}</value>
+    <value>Area “{0}” is missing from the design: {1}</value>
   </data>
   <data name="ZPG_AUS_HINWEIS" xml:space="preserve">
     <value>Note</value>
@@ -27747,7 +27747,7 @@ Do you want to allow this?</value>
     <value>Design calculated · deterministic · percentile only with “Calculate stochastically”</value>
   </data>
   <data name="ZPG_AUS_MSG_KEINE_ZONE" xml:space="preserve">
-    <value>No zone has been created — no design without a zone.</value>
+    <value>No area has been created — no design without an area.</value>
   </data>
   <data name="ZPG_AUS_MSG_UNERWARTET" xml:space="preserve">
     <value>The design could not be calculated: {0}</value>
@@ -27909,7 +27909,7 @@ Do you want to allow this?</value>
     <value>inputs without point</value>
   </data>
   <data name="ZPG_PUNKT_UEBERHOLT" xml:space="preserve">
-    <value>The zones have changed — the design point is outdated and will be discarded on saving. Open “Design…” and take it over again.</value>
+    <value>The areas have changed — the design point is outdated and will be discarded on saving. Open “Design…” and take it over again.</value>
   </data>
   <data name="ZPG_GRP_STOCHASTIK" xml:space="preserve">
     <value>Stochastics · annual series</value>
@@ -29463,7 +29463,7 @@ Do you want to allow this?</value>
     <value>Minute peak P{0} per apartment station</value>
   </data>
   <data name="ZPG_AUS_SPITZE_JE_EINHEIT_ZONE" xml:space="preserve">
-    <value>Design value of each apartment station; the governing zone is “{0}”.</value>
+    <value>Design value of each apartment station; the governing area is “{0}”.</value>
   </data>
   <data name="ZPG_AUS_ENTFAELLT" xml:space="preserve">
     <value>not applicable</value>
@@ -29658,28 +29658,28 @@ Do you want to allow this?</value>
     <value>The freely available catalogue data of the draw-off profile generator could not be loaded ({0}) — nothing changed.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_ZONE_OHNE_ANGABEN" xml:space="preserve">
-    <value>A zone without data.</value>
+    <value>An area without data.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_NUTZUNGSART_FEHLT" xml:space="preserve">
-    <value>Type of use no. {1} of zone “{0}” is not (or no longer) in the catalogue — please choose a type of use.</value>
+    <value>Type of use no. {1} of area “{0}” is not (or no longer) in the catalogue — please choose a type of use.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_NUTZUNGSART_NICHT_GEWAEHLT" xml:space="preserve">
-    <value>No type of use has been chosen for zone “{0}” yet.</value>
+    <value>No type of use has been chosen for area “{0}” yet.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_TAGESGANGSATZ_FEHLT" xml:space="preserve">
-    <value>Daily profile set {0} of zone “{1}” is missing.</value>
+    <value>Daily profile set {0} of area “{1}” is missing.</value>
   </data>
   <data name="ZPG_SATZ_FOLGE_MESSWERT_NICHT_GEPRUEFT" xml:space="preserve">
     <value>The deviation of the measured values from the catalogue value is not checked.</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_MESSWERT_SPEICHERVERLUST" xml:space="preserve">
-    <value>The storage loss ({1:0.#} kWh/a) has been deducted from the measured value of zone “{0}”.</value>
+    <value>The storage loss ({1:0.#} kWh/a) has been deducted from the measured value of area “{0}”.</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_MESSWERT_ABWEICHUNG" xml:space="preserve">
-    <value>The measured value of zone “{0}” deviates from the catalogue value by more than the query threshold (factor {1:0.###}, threshold ± {2:0.###}).</value>
+    <value>The measured value of area “{0}” deviates from the catalogue value by more than the query threshold (factor {1:0.###}, threshold ± {2:0.###}).</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_JAHRESREIHE_STOCHASTISCH" xml:space="preserve">
-    <value>The annual draw-off series is stochastic: per zone the year drawn for seed {0}, scaled to the annual quantity of the quantity framework; the consistency check tests it against {1} drawn years.</value>
+    <value>The annual draw-off series is stochastic: per area the year drawn for seed {0}, scaled to the annual quantity of the quantity framework; the consistency check tests it against {1} drawn years.</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_NETZVERLUST_UND_ZIRKULATION" xml:space="preserve">
     <value>The project has network losses, and the draw-off profile calculates a circulation ({0:0} kWh/a). If the network losses already contain the circulation losses, they are counted twice – then adjust the network losses or the circulation.</value>
@@ -29691,7 +29691,7 @@ Do you want to allow this?</value>
     <value>The holiday offset is not a whole number from 0 to 364 days.</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_STOCHASTIK_ENERGIEPROBE" xml:space="preserve">
-    <value>Zone “{0}”: the mean of the drawn years ({1:0.#} kWh) deviates by more than the tolerance {2:0.#} kWh from the annual quantity {3:0.#} kWh; the year for the seed has been scaled to the annual quantity.</value>
+    <value>Area “{0}”: the mean of the drawn years ({1:0.#} kWh) deviates by more than the tolerance {2:0.#} kWh from the annual quantity {3:0.#} kWh; the year for the seed has been scaled to the annual quantity.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_VOLUMENUMRECHNUNG" xml:space="preserve">
     <value>volume conversion</value>
@@ -29706,7 +29706,7 @@ Do you want to allow this?</value>
     <value>volume conversion (new)</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KENNWERT_OHNE_BEZUGSTEMPERATUREN" xml:space="preserve">
-    <value>The characteristic value has no reference temperatures (zone “{0}”).</value>
+    <value>The characteristic value has no reference temperatures (area “{0}”).</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_BEZUGSTEMPERATUREN_KATALOG" xml:space="preserve">
     <value>reference temperatures of the catalogue</value>
@@ -29730,37 +29730,37 @@ Do you want to allow this?</value>
     <value>cold water amplitude</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KALTWASSER_AMPLITUDE_NEGATIV" xml:space="preserve">
-    <value>The cold water amplitude is negative (zone “{0}”).</value>
+    <value>The cold water amplitude is negative (area “{0}”).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KALTWASSER_MONAT_UNGUELTIG" xml:space="preserve">
     <value>The month of the cold water maximum is not a month number 1 … 12.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_WOHNUNGSTYP_ANZAHL" xml:space="preserve">
-    <value>A dwelling type of zone “{0}” has no positive number.</value>
+    <value>A dwelling type of area “{0}” has no positive number.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_BEZUGSMENGE_NICHT_POSITIV" xml:space="preserve">
-    <value>Zone “{0}” has no positive reference quantity.</value>
+    <value>Area “{0}” has no positive reference quantity.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_TAGESBEDARF_MANUELL_UNGUELTIG" xml:space="preserve">
-    <value>The daily demand of zone “{0}” is set to manual, the value is missing or negative.</value>
+    <value>The daily demand of area “{0}” is set to manual, the value is missing or negative.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_BEDARFSUEBERSCHREIBUNG" xml:space="preserve">
     <value>demand override</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_BEDARF_SPEZ_NEGATIV" xml:space="preserve">
-    <value>The specific demand of zone “{0}” is negative.</value>
+    <value>The specific demand of area “{0}” is negative.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_WOHNFLAECHE_JE_WE" xml:space="preserve">
     <value>living area per dwelling</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_WOHNFLAECHE_NICHT_POSITIV" xml:space="preserve">
-    <value>The living area per dwelling of zone “{0}” is not positive.</value>
+    <value>The living area per dwelling of area “{0}” is not positive.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_NUTZUNGSART_OHNE_NIVEAUS" xml:space="preserve">
     <value>Type of use “{0}” does not have three demand levels.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_NIVEAU_UNBEKANNT" xml:space="preserve">
-    <value>Unknown demand level of zone “{0}”.</value>
+    <value>Unknown demand level of area “{0}”.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_KATALOGBEDARF" xml:space="preserve">
     <value>catalogue demand</value>
@@ -29769,43 +29769,43 @@ Do you want to allow this?</value>
     <value>The catalogue demand of type of use “{0}” is negative.</value>
   </data>
   <data name="ZPG_SATZ_FOLGE_WOHNZONEN_OHNE_FLAECHE" xml:space="preserve">
-    <value>Residential zones without their own living area per dwelling carry no area for the circulation.</value>
+    <value>Residential areas without their own living area per dwelling carry no area for the circulation.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_MESSWERT_NICHT_POSITIV" xml:space="preserve">
-    <value>The annual measured value of zone “{0}” is not positive.</value>
+    <value>The annual measured value of area “{0}” is not positive.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_MESSWERT_OHNE_EINHEIT" xml:space="preserve">
-    <value>The annual measured value of zone “{0}” has no unit (kWh/a or m³/a).</value>
+    <value>The annual measured value of area “{0}” has no unit (kWh/a or m³/a).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_MESSWERT_VOLUMEN_GRENZE" xml:space="preserve">
-    <value>A measured volume applies at the draw-off point (boundary 1); zone “{0}” states another boundary.</value>
+    <value>A measured volume applies at the draw-off point (boundary 1); area “{0}” states another boundary.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_MESSWERT_OHNE_GRENZE" xml:space="preserve">
-    <value>The annual measured value of zone “{0}” in kWh/a states no balance boundary (1, 2 or 3).</value>
+    <value>The annual measured value of area “{0}” in kWh/a states no balance boundary (1, 2 or 3).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_MESSWERT_SPEICHERVERLUST_FEHLT" xml:space="preserve">
-    <value>The measured value of zone “{0}” includes the storage loss, but the storage loss is missing.</value>
+    <value>The measured value of area “{0}” includes the storage loss, but the storage loss is missing.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_MESSWERT_SPEICHERVERLUST_ZU_GROSS" xml:space="preserve">
-    <value>The storage loss of zone “{0}” is not smaller than the measured value.</value>
+    <value>The storage loss of area “{0}” is not smaller than the measured value.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_MESSWERT_KATALOGWERT_NULL" xml:space="preserve">
-    <value>The catalogue value of zone “{0}” is 0; a measured value cannot be distributed.</value>
+    <value>The catalogue value of area “{0}” is 0; a measured value cannot be distributed.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_BELEGUNG_FEHLT" xml:space="preserve">
-    <value>The occupancy of a dwelling type of zone “{0}” is neither set nor determinable from the catalogue.</value>
+    <value>The occupancy of a dwelling type of area “{0}” is neither set nor determinable from the catalogue.</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_BEDARF_AUSSERHALB_BANDBREITE" xml:space="preserve">
-    <value>The specific demand of zone “{0}” ({1:0.###} kWh per unit and day) lies outside the range of the level ({2:0.###} … {3:0.###}).</value>
+    <value>The specific demand of area “{0}” ({1:0.###} kWh per unit and day) lies outside the range of the level ({2:0.###} … {3:0.###}).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_NICHT_ENDLICH" xml:space="preserve">
-    <value>{0} of zone “{1}” is not a finite number.</value>
+    <value>{0} of area “{1}” is not a finite number.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_SPREIZUNG_NICHT_POSITIV" xml:space="preserve">
     <value>The temperature difference ({0}) is not positive.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_SPREIZUNG_NICHT_POSITIV_ZONE" xml:space="preserve">
-    <value>The temperature difference ({0}) is not positive (zone “{1}”).</value>
+    <value>The temperature difference ({0}) is not positive (area “{1}”).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_PROJEKTGROESSEN_FEHLEN" xml:space="preserve">
     <value>The project quantities of the draw-off profile are missing.</value>
@@ -29817,10 +29817,10 @@ Do you want to allow this?</value>
     <value>The cold water profile does not have twelve monthly values.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_ZAPFTEMPERATUR_UNTER_KALTWASSER" xml:space="preserve">
-    <value>The draw-off temperature is not above the cold water mean (zone “{0}”).</value>
+    <value>The draw-off temperature is not above the cold water mean (area “{0}”).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KALTWASSER_MONAT_UEBER_ZAPF" xml:space="preserve">
-    <value>In month {0} the cold water is not below the draw-off temperature (zone “{1}”).</value>
+    <value>In month {0} the cold water is not below the draw-off temperature (area “{1}”).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_WOCHENTAG_UNGUELTIG" xml:space="preserve">
     <value>The weekday of 1 January is not within 0 … 6.</value>
@@ -29829,61 +29829,61 @@ Do you want to allow this?</value>
     <value>The calendar of the climate region does not have 365 days.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_JAHR_ZUM_SEED_LEER" xml:space="preserve">
-    <value>The year drawn for the seed of zone “{0}” has no draw-off; the annual quantity cannot be represented.</value>
+    <value>The year drawn for the seed of area “{0}” has no draw-off; the annual quantity cannot be represented.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_REALISIERUNGEN_JAHRESREIHE" xml:space="preserve">
     <value>The number of realisations of the annual series is not within 1 … {0}.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_JAHRESZONE_UNVOLLSTAENDIG" xml:space="preserve">
-    <value>Zone “{0}” of the annual series is incomplete.</value>
+    <value>Area “{0}” of the annual series is incomplete.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_JAHRESZONE_RASTER" xml:space="preserve">
-    <value>Calendar, cold water factor or temperature difference of zone “{0}” do not have the annual grid.</value>
+    <value>Calendar, cold water factor or temperature difference of area “{0}” do not have the annual grid.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_JAHRESZONE_TYPTAGE" xml:space="preserve">
-    <value>Zone “{0}”: the type-day input of the drawn annual series does not carry 365 finite, non-negative daily amounts with usable daily profiles.</value>
+    <value>Area “{0}”: the type-day input of the drawn annual series does not carry 365 finite, non-negative daily amounts with usable daily profiles.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_JAHRESZONE_TYPTAGE_URLAUB" xml:space="preserve">
-    <value>Zone “{0}”: on the type-day path the annual series draws over the daily amounts of the type days — decoupling of holidays does not apply there.</value>
+    <value>Area “{0}”: on the type-day path the annual series draws over the daily amounts of the type days — decoupling of holidays does not apply there.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_URLAUBSVERSATZ_BEREICH" xml:space="preserve">
     <value>The holiday offset is not within 0 … 364 days.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN" xml:space="preserve">
-    <value>The catalogue holds no draw-off categories for type of use “{0}” (catalogue version {1}) of zone “{2}”.</value>
+    <value>The catalogue holds no draw-off categories for type of use “{0}” (catalogue version {1}) of area “{2}”.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN_ID" xml:space="preserve">
-    <value>The catalogue holds no draw-off categories for the type of use of zone “{0}”.</value>
+    <value>The catalogue holds no draw-off categories for the type of use of area “{0}”.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATEGORIE_VOLUMENSTROM" xml:space="preserve">
-    <value>Draw-off category “{0}” of zone “{1}” has no valid flow rate.</value>
+    <value>Draw-off category “{0}” of area “{1}” has no valid flow rate.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATEGORIE_STREUUNG" xml:space="preserve">
-    <value>Draw-off category “{0}” of zone “{1}” has no valid spread.</value>
+    <value>Draw-off category “{0}” of area “{1}” has no valid spread.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATEGORIE_DAUER" xml:space="preserve">
-    <value>Draw-off category “{0}” of zone “{1}” has no duration of 1 to 1440 minutes.</value>
+    <value>Draw-off category “{0}” of area “{1}” has no duration of 1 to 1440 minutes.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATEGORIE_ANTEIL" xml:space="preserve">
-    <value>Draw-off category “{0}” of zone “{1}” has no valid share.</value>
+    <value>Draw-off category “{0}” of area “{1}” has no valid share.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATEGORIE_KAPPUNG" xml:space="preserve">
-    <value>Draw-off category “{0}” of zone “{1}” has no positive cap.</value>
+    <value>Draw-off category “{0}” of area “{1}” has no positive cap.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATEGORIEN_ANTEIL_NULL" xml:space="preserve">
-    <value>The shares of the draw-off categories of zone “{0}” sum to 0.</value>
+    <value>The shares of the draw-off categories of area “{0}” sum to 0.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATEGORIE_MITTEL" xml:space="preserve">
-    <value>Draw-off category “{0}” of zone “{1}” has no positive truncated mean flow rate.</value>
+    <value>Draw-off category “{0}” of area “{1}” has no positive truncated mean flow rate.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_EINHEITEN_FLAECHE" xml:space="preserve">
-    <value>The living area per dwelling of zone “{0}” is not positive; the units cannot be determined.</value>
+    <value>The living area per dwelling of area “{0}” is not positive; the units cannot be determined.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_EINHEITEN_UNBESTIMMT" xml:space="preserve">
-    <value>The number of units of zone “{0}” cannot be determined or is greater than {1}.</value>
+    <value>The number of units of area “{0}” cannot be determined or is greater than {1}.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KATEGORIE_RATE" xml:space="preserve">
-    <value>Draw-off category “{0}” of zone “{1}” gives no finite rate of events.</value>
+    <value>Draw-off category “{0}” of area “{1}” gives no finite rate of events.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_ENSEMBLE_EINHEITSTAGE" xml:space="preserve">
     <value>The ensemble would draw {0} unit-days (realisations × units); at most {1} are permitted.</value>
@@ -29910,13 +29910,13 @@ Do you want to allow this?</value>
     <value>holiday factor</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_TAGESGANGSATZ_UNVOLLSTAENDIG" xml:space="preserve">
-    <value>The daily profile set of zone “{0}” is missing or does not have all four day types.</value>
+    <value>The daily profile set of area “{0}” is missing or does not have all four day types.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_TAGESGANG" xml:space="preserve">
     <value>daily profile</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_TAGESGANG_LEER" xml:space="preserve">
-    <value>The daily profile of day type {0} of zone “{1}” is empty; these days carry no draw-off.</value>
+    <value>The daily profile of day type {0} of area “{1}” is empty; these days carry no draw-off.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_TAGESGANG_TAGTYP" xml:space="preserve">
     <value>daily profile {0}</value>
@@ -29940,16 +29940,16 @@ Do you want to allow this?</value>
     <value>The cold water factor does not have twelve months.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_KEINE_VERTEILUNG" xml:space="preserve">
-    <value>The time structure of zone “{0}” gives no day a weight.</value>
+    <value>The time structure of area “{0}” gives no day a weight.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_RASTER_LAENGE" xml:space="preserve">
-    <value>{0} do not have {1} values (zone “{2}”).</value>
+    <value>{0} do not have {1} values (area “{2}”).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_RASTER_NEGATIV" xml:space="preserve">
-    <value>{0} of zone “{1}” contains a negative or non-finite value.</value>
+    <value>{0} of area “{1}” contains a negative or non-finite value.</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_SUMME_NORMIERT" xml:space="preserve">
-    <value>{0} of zone “{1}” sums to {2:0.######} instead of 1; normalised before calculating.</value>
+    <value>{0} of area “{1}” sums to {2:0.######} instead of 1; normalised before calculating.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_ZIRKULATION_PROJEKT_FEHLT" xml:space="preserve">
     <value>The project quantities of the circulation are missing.</value>
@@ -29964,7 +29964,7 @@ Do you want to allow this?</value>
     <value>area of the circulation</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_ZIRKULATION_ZONE_OHNE_FLAECHE" xml:space="preserve">
-    <value>Zone “{0}” belongs to the circulation but has no area; A_N does not include it.</value>
+    <value>Area “{0}” belongs to the circulation but has no area; A_N does not include it.</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_ZIRKULATION_OHNE_FLAECHE" xml:space="preserve">
     <value>No area for the area-specific value of the circulation; calculated with the share method.</value>
@@ -29988,10 +29988,10 @@ Do you want to allow this?</value>
     <value>Unknown circulation method.</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_ZIRKULATION_OHNE_ZONE" xml:space="preserve">
-    <value>No zone carries a circulation share; the circulation is shown for the whole building.</value>
+    <value>No area carries a circulation share; the circulation is shown for the whole building.</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_ZIRKULATION_NICHT_IN_Z1" xml:space="preserve">
-    <value>Zone “{0}” carries no circulation share (balance boundary of the characteristic value or circulation “no”).</value>
+    <value>Area “{0}” carries no circulation share (balance boundary of the characteristic value or circulation “no”).</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_ZIRKULATION_LAGE" xml:space="preserve">
     <value>The pipe location parameter is neither 1 nor 2.</value>
@@ -30027,7 +30027,7 @@ Do you want to allow this?</value>
     <value>DIN 4708: N = {0:0.###}, V_DIN = {1:0} l</value>
   </data>
   <data name="ZPG_SATZ_AUSTEXT_NORMVERGLEICH_TEIL" xml:space="preserve">
-    <value>DIN 4708: N = {0:0.###}, V_DIN = {1:0} l (residential zones only)</value>
+    <value>DIN 4708: N = {0:0.###}, V_DIN = {1:0} l (residential areas only)</value>
   </data>
   <data name="ZPG_SATZ_AUSTEXT_DIN_AUSSERHALB" xml:space="preserve">
     <value>DIN 4708: outside the scope of validity</value>
@@ -30147,7 +30147,7 @@ Do you want to allow this?</value>
     <value>The temperature difference of the storage is not positive.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_AUSSTATTUNG_FEHLT" xml:space="preserve">
-    <value>Equipment class {0} of a dwelling type of zone “{1}” is not in the catalogue.</value>
+    <value>Equipment class {0} of a dwelling type of area “{1}” is not in the catalogue.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_AUSSTATTUNG_WERT" xml:space="preserve">
     <value>Σ v·w_v of equipment “{0}”</value>
@@ -30156,13 +30156,13 @@ Do you want to allow this?</value>
     <value>DIN 4708: outside the scope of validity — the index applies only to residential use with storage.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_DIN_OHNE_WOHNUNGSTABELLE" xml:space="preserve">
-    <value>DIN 4708: not computable — zone “{0}” has no dwelling table.</value>
+    <value>DIN 4708: not computable — area “{0}” has no dwelling table.</value>
   </data>
   <data name="ZPG_SATZ_AUSHINWEIS_DIN4708_WAERMEPUMPE" xml:space="preserve">
     <value>The demand index according to DIN 4708 is hardly meaningful for the flow temperatures of a heat pump.</value>
   </data>
   <data name="ZPG_SATZ_AUSHINWEIS_DIN4708_TEILGUELTIG" xml:space="preserve">
-    <value>The index N = {0:0.##} covers only the residential zones with storage; outside the scope of validity: {1}.</value>
+    <value>The index N = {0:0.##} covers only the residential areas with storage; outside the scope of validity: {1}.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_LEITUNGSINHALT" xml:space="preserve">
     <value>the pipe content</value>
@@ -30186,7 +30186,7 @@ Do you want to allow this?</value>
     <value>Small system according to DVGW W 551.</value>
   </data>
   <data name="ZPG_SATZ_AUSHINWEIS_GROSS_OHNE_ZIRKULATION" xml:space="preserve">
-    <value>The system is a large system, but no zone takes part in the circulation.</value>
+    <value>The system is a large system, but no area takes part in the circulation.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_WOCHE_168" xml:space="preserve">
     <value>The weekly series does not have 168 hours.</value>
@@ -30207,10 +30207,10 @@ Do you want to allow this?</value>
     <value>draw-off temperature − cold water mean</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_WOCHE_OHNE_ZONE" xml:space="preserve">
-    <value>The weekly series has no zone.</value>
+    <value>The weekly series has no area.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_WOCHE_ZONE_365" xml:space="preserve">
-    <value>A zone of the weekly series does not have 365 days.</value>
+    <value>An area of the weekly series does not have 365 days.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_PERZENTIL_OHNE_REALISIERUNG" xml:space="preserve">
     <value>A percentile needs at least one realisation.</value>
@@ -30222,16 +30222,16 @@ Do you want to allow this?</value>
     <value>The multiple of the realisations of the design day is not positive.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_ENSEMBLE_OHNE_ZONE" xml:space="preserve">
-    <value>The ensemble has no zone.</value>
+    <value>The ensemble has no area.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_ENSEMBLEZONE_UNVOLLSTAENDIG" xml:space="preserve">
-    <value>A zone of the ensemble is incomplete (categories, density, units ≥ 1).</value>
+    <value>An area of the ensemble is incomplete (categories, density, units ≥ 1).</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_TAGESMENGE_ZONE" xml:space="preserve">
-    <value>the daily quantity of zone “{0}”</value>
+    <value>the daily quantity of area “{0}”</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_SPREIZUNG_ZONE" xml:space="preserve">
-    <value>the temperature difference of zone “{0}”</value>
+    <value>the temperature difference of area “{0}”</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_PHI_N" xml:space="preserve">
     <value>the power Φ_N of the cumulative curve point</value>
@@ -30573,7 +30573,7 @@ Do you want to allow this?</value>
     <value>Minute peak P{0} of the ensemble {1:0.###} kW; the single statistics of the units give per minute μ + z·σ/√N = {2:0.###} kW (z = {3:0.###}).</value>
   </data>
   <data name="ZPG_SATZ_AUSHINWEIS_WOHNUNGSSTATION_JE_EINHEIT" xml:space="preserve">
-    <value>The apartment station per unit: P{0} of the minute peak {1:0.###} kW (zone “{2}”); the sum of the group P{0} {3:0.###} kW.</value>
+    <value>The apartment station per unit: P{0} of the minute peak {1:0.###} kW (area “{2}”); the sum of the group P{0} {3:0.###} kW.</value>
   </data>
   <data name="ZPG_SATZ_FOLGE_KONSISTENZ_ENTFAELLT" xml:space="preserve">
     <value>The consistency note (stochastic peak against the power of the cumulative curve point) is omitted.</value>
@@ -30606,19 +30606,19 @@ Do you want to allow this?</value>
     <value>The value pair curve of the cumulative curve is omitted.</value>
   </data>
   <data name="ZPG_SATZ_AUSHINWEIS_ECODESIGN_SKALIERT" xml:space="preserve">
-    <value>The design day “{0}” is scaled linearly to {1:0.##} dwelling units (more than {2:0}) — without simultaneity. For large zones the stochastic design day is decisive.</value>
+    <value>The design day “{0}” is scaled linearly to {1:0.##} dwelling units (more than {2:0}) — without simultaneity. For large areas the stochastic design day is decisive.</value>
   </data>
   <data name="ZPG_SATZ_AUSHINWEIS_MEHRSPEICHER_PUNKT" xml:space="preserve">
     <value>The recommended point {0:0} l lies above the largest nominal capacity {1:0} l — check a multi-storage system.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_KATALOGTAG_BEZUGSARTEN" xml:space="preserve">
-    <value>Catalogue day “{0}” is scaled to the reference quantity, but the zones of the group have different reference types ({1}); quantities of different reference types are not summed — please construct a day.</value>
+    <value>Catalogue day “{0}” is scaled to the reference quantity, but the areas of the group have different reference types ({1}); quantities of different reference types are not summed — please construct a day.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_KATALOGTAG_BEZUGSART" xml:space="preserve">
-    <value>Catalogue day “{0}” applies per {1}, the zones of the group have reference type {2}; it is not scaled — please select a suitable day or construct one.</value>
+    <value>Catalogue day “{0}” applies per {1}, the areas of the group have reference type {2}; it is not scaled — please select a suitable day or construct one.</value>
   </data>
   <data name="ZPG_SATZ_AUSLEGUNG_KATALOGTAG_ZAPFTEMPERATUREN" xml:space="preserve">
-    <value>Catalogue day “{0}” applies at θ_KW,A {1:0.###} °C; the zones of the group have different draw-off temperatures, the conversion to {2:0.###} °C is ambiguous.</value>
+    <value>Catalogue day “{0}” applies at θ_KW,A {1:0.###} °C; the areas of the group have different draw-off temperatures, the conversion to {2:0.###} °C is ambiguous.</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_SPREIZUNG_ZAPF_KATALOGTAG" xml:space="preserve">
     <value>draw-off temperature − cold water of the catalogue day</value>
@@ -30690,37 +30690,37 @@ Do you want to allow this?</value>
     <value>{0} lies outside the range of values.</value>
   </data>
   <data name="ZPG_SATZ_SPEICHER_ZONE_OHNE_NAME" xml:space="preserve">
-    <value>a zone has no name.</value>
+    <value>an area has no name.</value>
   </data>
   <data name="ZPG_SATZ_SPEICHER_ZONE_BEZUGSMENGE" xml:space="preserve">
-    <value>zone “{0}” has no positive reference quantity.</value>
+    <value>area “{0}” has no positive reference quantity.</value>
   </data>
   <data name="ZPG_SATZ_SPEICHER_ZONE_WERTEMENGE" xml:space="preserve">
-    <value>zone “{0}” has a value outside its range of values.</value>
+    <value>area “{0}” has a value outside its range of values.</value>
   </data>
   <data name="ZPG_SATZ_SPEICHER_ZONE_FREMD" xml:space="preserve">
-    <value>zone “{0}” belongs to another project.</value>
+    <value>area “{0}” belongs to another project.</value>
   </data>
   <data name="ZPG_SATZ_SPEICHER_NUTZUNGSART_FEHLT" xml:space="preserve">
-    <value>the type of use of zone “{0}” is not (or no longer) in the catalogue.</value>
+    <value>the type of use of area “{0}” is not (or no longer) in the catalogue.</value>
   </data>
   <data name="ZPG_SATZ_SPEICHER_TAGESGANGSATZ_FEHLT" xml:space="preserve">
-    <value>daily profile set {0} of zone “{1}” is not in the catalogue.</value>
+    <value>daily profile set {0} of area “{1}” is not in the catalogue.</value>
   </data>
   <data name="ZPG_SATZ_SPEICHER_GEBAEUDE_FEHLT" xml:space="preserve">
-    <value>building {0} of zone “{1}” does not exist.</value>
+    <value>building {0} of area “{1}” does not exist.</value>
   </data>
   <data name="ZPG_SATZ_SPEICHER_GEBAEUDE_FREMD" xml:space="preserve">
-    <value>building {0} of zone “{1}” belongs to another project.</value>
+    <value>building {0} of area “{1}” belongs to another project.</value>
   </data>
   <data name="ZPG_SATZ_SPEICHER_WOHNUNGSTYP_ANZAHL" xml:space="preserve">
-    <value>a dwelling type of zone “{0}” has no positive number.</value>
+    <value>a dwelling type of area “{0}” has no positive number.</value>
   </data>
   <data name="ZPG_SATZ_SPEICHER_WOHNUNGSTYP_FREMD" xml:space="preserve">
-    <value>a dwelling type of zone “{0}” belongs to another zone.</value>
+    <value>a dwelling type of area “{0}” belongs to another area.</value>
   </data>
   <data name="ZPG_SATZ_SPEICHER_AUSSTATTUNG_FEHLT" xml:space="preserve">
-    <value>equipment class {0} of a dwelling type of zone “{1}” is not in the catalogue.</value>
+    <value>equipment class {0} of a dwelling type of area “{1}” is not in the catalogue.</value>
   </data>
   <data name="ZPG_SATZ_AUSHINWEIS_NENNINHALTE_EINSTELLUNG" xml:space="preserve">
     <value>The setting “{0}” is not a valid list ({1}) — the catalogue default applies.</value>
@@ -30816,7 +30816,7 @@ Do you want to allow this?</value>
     <value>No proposal of the method — applied: {0:0.###} kW ({1}).</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_BEZUGSMENGE_WOHNUNGSTABELLE" xml:space="preserve">
-    <value>The reference quantity of zone “{0}” ({1:0.##}) differs from its dwelling table ({2:0.##} {3}); the dwelling table applies.</value>
+    <value>The reference quantity of area “{0}” ({1:0.##}) differs from its dwelling table ({2:0.##} {3}); the dwelling table applies.</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_EINSTELLUNG_UNGUELTIG" xml:space="preserve">
     <value>The setting “{0}” is not a valid number (“{1}”) — it does not apply.</value>
@@ -30855,16 +30855,16 @@ Do you want to allow this?</value>
     <value>Energy check of the stochastics</value>
   </data>
   <data name="ZPG_WARN_ZIRKULATION_ZONE_OHNE_FLAECHE" xml:space="preserve">
-    <value>Zone without area</value>
+    <value>Area without area</value>
   </data>
   <data name="ZPG_WARN_ZIRKULATION_OHNE_FLAECHE" xml:space="preserve">
     <value>Circulation without area</value>
   </data>
   <data name="ZPG_WARN_ZIRKULATION_OHNE_ZONE" xml:space="preserve">
-    <value>Circulation without zone</value>
+    <value>Circulation without area</value>
   </data>
   <data name="ZPG_WARN_ZIRKULATION_NICHT_IN_Z1" xml:space="preserve">
-    <value>Zone outside the circulation</value>
+    <value>Area outside the circulation</value>
   </data>
   <data name="ZPG_WARN_EINSTELLUNG_UNGUELTIG" xml:space="preserve">
     <value>Invalid setting</value>
@@ -30881,9 +30881,6 @@ Do you want to allow this?</value>
   <data name="ZPG_BILD_PERZENTIL" xml:space="preserve">
     <value>P{0}</value>
   </data>
-  <data name="ZPG_HINW_WEITERE_ERWEITERT" xml:space="preserve">
-    <value>Further inputs are available at the Extended level.</value>
-  </data>
   <data name="ZPG_KATEG_MSG_NICHT_GESPEICHERT" xml:space="preserve">
     <value>The draw-off categories were not saved — {0}</value>
   </data>
@@ -30894,7 +30891,7 @@ Do you want to allow this?</value>
     <value>The type of use belongs to the delivery — changed categories are created as a new catalogue version.</value>
   </data>
   <data name="ZPG_KATEG_GRUND_BENUTZT_GESPERRT" xml:space="preserve">
-    <value>A zone uses the type of use — changed categories are created as a new catalogue version.</value>
+    <value>An area uses the type of use — changed categories are created as a new catalogue version.</value>
   </data>
   <data name="ZPG_KATEG_GRUND_NAME_BELEGT" xml:space="preserve">
     <value>the type of use already exists in this catalogue version.</value>
@@ -30981,10 +30978,10 @@ Do you want to allow this?</value>
     <value>catalogue of DIN 4708 values</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWZONE" xml:space="preserve">
-    <value>zones of the draw-off profile</value>
+    <value>areas of the draw-off profile</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWWOHNUNGSTYP" xml:space="preserve">
-    <value>dwelling tables of the zones</value>
+    <value>dwelling tables of the areas</value>
   </data>
   <data name="ZPG_SATZ_BEGRIFF_TABELLE_TWWPROJEKT" xml:space="preserve">
     <value>project data of the draw-off profile</value>
@@ -31080,10 +31077,10 @@ Do you want to allow this?</value>
     <value>{0}, line {1}: the factor is not a finite number.</value>
   </data>
   <data name="ZPG_SATZ_NORMVEKTOR_SUMME_TAGE" xml:space="preserve">
-    <value>Climate zone {0}, building type "{1}": the type days count {2} calendar days instead of {3}.</value>
+    <value>climate zone {0}, building type "{1}": the type days count {2} calendar days instead of {3}.</value>
   </data>
   <data name="ZPG_SATZ_NORMVEKTOR_UNVOLLSTAENDIG" xml:space="preserve">
-    <value>Climate zone {0}, building type "{1}": an entry is missing for these type days: {2}.</value>
+    <value>climate zone {0}, building type "{1}": an entry is missing for these type days: {2}.</value>
   </data>
   <data name="ZPG_SATZ_NORMVEKTOR_OHNE_TYPTAGE" xml:space="preserve">
     <value>The package names no type day.</value>
@@ -31134,10 +31131,10 @@ Do you want to allow this?</value>
     <value>The package names no tolerance "{0}" — the check sum of the factors remains unchecked.</value>
   </data>
   <data name="ZPG_SATZ_NORMVEKTOR_PRUEFSUMME" xml:space="preserve">
-    <value>Climate zone {0}, building type "{1}": the check sum of the factors is {2:0.###E+0} instead of 0 (tolerance {3:0.###E+0}).</value>
+    <value>climate zone {0}, building type "{1}": the check sum of the factors is {2:0.###E+0} instead of 0 (tolerance {3:0.###E+0}).</value>
   </data>
   <data name="ZPG_SATZ_NORMVEKTOR_ZONE_OHNE_WERTE" xml:space="preserve">
-    <value>Climate zone {0} is in the package but carries no values.</value>
+    <value>climate zone {0} is in the package but carries no values.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_TYPTAGE_NICHT_VERFUEGBAR" xml:space="preserve">
     <value>the annual profile from type days is not available: no type days are imported.</value>
@@ -31176,25 +31173,25 @@ Do you want to allow this?</value>
     <value>the annual profile from type days applies to residential buildings only — it does not carry the reference quantity {0}.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_TYPTAGE_EINHEITEN" xml:space="preserve">
-    <value>the units of the zone ({0:0.###}) are not a positive number.</value>
+    <value>the units of the area ({0:0.###}) are not a positive number.</value>
   </data>
   <data name="ZPG_SATZ_EINGABE_TYPTAGE_KEINE_VERTEILUNG" xml:space="preserve">
-    <value>the type days of zone "{0}" distribute no draw-off: every daily amount is 0.</value>
+    <value>the type days of area "{0}" distribute no draw-off: every daily amount is 0.</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_TYPTAGE_ANZAHL" xml:space="preserve">
-    <value>Zone "{0}": the project's weather assigns {1} type-day categor(y/ies) differently than the imported table; furthest "{2}" with {3} instead of {4} calendar days.</value>
+    <value>Area "{0}": the project's weather assigns {1} type-day categor(y/ies) differently than the imported table; furthest "{2}" with {3} instead of {4} calendar days.</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_TYPTAGE_FAKTOR_NULL" xml:space="preserve">
-    <value>Zone "{0}": for {1} type day(s) and thus {2} calendar day(s) the daily demand would be negative — their factor is set to 0 and the day carries the annual mean.</value>
+    <value>Area "{0}": for {1} type day(s) and thus {2} calendar day(s) the daily demand would be negative — their factor is set to 0 and the day carries the annual mean.</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_TYPTAGE_SKALIERUNG" xml:space="preserve">
-    <value>Zone "{0}": the daily amounts of the type days were scaled by {1:0.######} to the annual amount.</value>
+    <value>Area "{0}": the daily amounts of the type days were scaled by {1:0.######} to the annual amount.</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_TYPTAGE_FERIEN" xml:space="preserve">
-    <value>Zone "{0}": on the type-day path the holiday windows have no effect — a holiday remains a working day or Sunday of its season.</value>
+    <value>Area "{0}": on the type-day path the holiday windows have no effect — a holiday remains a working day or Sunday of its season.</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_TYPTAGE_OHNE_TAGESGANG" xml:space="preserve">
-    <value>The imported type days carry no daily profiles for the building type "{0}" — the daily shape comes from the zone's daily profile set.</value>
+    <value>The imported type days carry no daily profiles for the building type "{0}" — the daily shape comes from the area's daily profile set.</value>
   </data>
   <data name="ZPG_SATZ_TYPTAGIMPORT_TABELLE_FEHLT" xml:space="preserve">
     <value>This database does not carry {0} — the type days cannot be imported.</value>
@@ -31260,7 +31257,7 @@ Do you want to allow this?</value>
     <value>not stated</value>
   </data>
   <data name="ZPGT_WERT_OHNE_GAENGE" xml:space="preserve">
-    <value>none — the daily shape comes from the daily profile set of the zone</value>
+    <value>none — the daily shape comes from the daily profile set of the area</value>
   </data>
   <data name="ZPGT_BTN_PAKET" xml:space="preserve">
     <value>Choose package…</value>
@@ -31338,7 +31335,7 @@ Do you want to allow this?</value>
     <value>What the check of the chosen package returned — the rejection with file and line, or the summary. Display only; empty = nothing was checked.</value>
   </data>
   <data name="KI_DLG_ZPG_TYPTAGEWEG_ERL" xml:space="preserve">
-    <value>Does the annual profile of every zone use the imported type days instead of the factors of the catalogue? A setting of the project, expert level only; rejected without imported type days.</value>
+    <value>Does the annual profile of every area use the imported type days instead of the factors of the catalogue? A setting of the project, expert level only; rejected without imported type days.</value>
   </data>
   <data name="KI_DLG_ZPG_TYPTAGZONE_ERL" xml:space="preserve">
     <value>The climate zone of the imported package the project computes with. Only a number carried by the package; expert level.</value>
@@ -31368,7 +31365,7 @@ Do you want to allow this?</value>
     <value>type days without daily profile</value>
   </data>
   <data name="ZPG_SATZ_HINWEIS_ANZEIGETEMPERATUR_UNTER_KALTWASSER" xml:space="preserve">
-    <value>The display temperature ({1:0.#} °C) is not above the mean cold-water temperature of zone “{0}” ({2:0.#} °C) — the zone shows no litres.</value>
+    <value>The display temperature ({1:0.#} °C) is not above the mean cold-water temperature of area “{0}” ({2:0.#} °C) — the area shows no litres.</value>
   </data>
   <data name="ZPG_SATZ_HERKUNFT_PARAMETER" xml:space="preserve">
     <value>Parameter {0}</value>
@@ -31380,7 +31377,7 @@ Do you want to allow this?</value>
     <value>Parameter {0} (quick sizing)</value>
   </data>
   <data name="ZPG_SATZ_HERKUNFT_AUSLASTUNGSGANG_ZONE" xml:space="preserve">
-    <value>Load profile of the zone</value>
+    <value>Load profile of the area</value>
   </data>
   <data name="ZPG_SATZ_HERKUNFT_SUMME_VOR_NORMIERUNG" xml:space="preserve">
     <value>Sum before normalisation</value>
@@ -31443,7 +31440,7 @@ Do you want to allow this?</value>
     <value>Factor {0:0.######}</value>
   </data>
   <data name="ZPG_SATZ_HERKUNFT_FAKTOR_DER_ZONE" xml:space="preserve">
-    <value>Factor of the zone</value>
+    <value>Factor of the area</value>
   </data>
   <data name="ZPG_SATZ_HERKUNFT_UEBERTRAGER_SCHAETZFORMEL_WP" xml:space="preserve">
     <value>Estimate formula NA.2 (heat pump)</value>
@@ -31479,7 +31476,7 @@ Do you want to allow this?</value>
     <value>whole building, with α</value>
   </data>
   <data name="ZPG_SATZ_HERKUNFT_ZIRK_FLAECHE_ZONEN" xml:space="preserve">
-    <value>Sum of the areas of the zones in Z1, without α</value>
+    <value>Sum of the areas of the areas in Z1, without α</value>
   </data>
   <data name="ZPG_SATZ_HERKUNFT_ZIRK_METHODE_LEITUNGSLAENGE" xml:space="preserve">
     <value>Method pipe length</value>
@@ -31632,37 +31629,37 @@ Do you want to allow this?</value>
     <value>Utilisation profile</value>
   </data>
   <data name="ZPG_MSG_WOHNUNG_OHNE_ANZAHL" xml:space="preserve">
-    <value>Zone “{0}”: dwelling type {1} needs a number greater than 0.</value>
+    <value>Area “{0}”: dwelling type {1} needs a number greater than 0.</value>
   </data>
   <data name="ZPG_MSG_FERIEN_UNGUELTIG" xml:space="preserve">
-    <value>Zone “{0}”: holiday period {1} needs an end (“to”); start and end are days of the year without leap day.</value>
+    <value>Area “{0}”: holiday period {1} needs an end (“to”); start and end are days of the year without leap day.</value>
   </data>
   <data name="ZPG_MSG_MESSWERT_NICHT_POSITIV" xml:space="preserve">
-    <value>Zone “{0}”: the measured annual value must be greater than 0.</value>
+    <value>Area “{0}”: the measured annual value must be greater than 0.</value>
   </data>
   <data name="ZPG_MSG_MESSWERT_OHNE_EINHEIT" xml:space="preserve">
-    <value>Zone “{0}”: please select the unit of the measured annual value.</value>
+    <value>Area “{0}”: please select the unit of the measured annual value.</value>
   </data>
   <data name="ZPG_MSG_MESSWERT_OHNE_GRENZE" xml:space="preserve">
-    <value>Zone “{0}”: please select the balance boundary of the measured annual value.</value>
+    <value>Area “{0}”: please select the balance boundary of the measured annual value.</value>
   </data>
   <data name="ZPG_MSG_MESSWERT_OHNE_SPEICHERVERLUST" xml:space="preserve">
-    <value>Zone “{0}”: a measured value including storage loss needs the storage loss in kWh/a.</value>
+    <value>Area “{0}”: a measured value including storage loss needs the storage loss in kWh/a.</value>
   </data>
   <data name="ZPG_MSG_AUSLASTUNG_NEGATIV" xml:space="preserve">
-    <value>Zone “{0}”: a factor of the utilisation profile is less than 0.</value>
+    <value>Area “{0}”: a factor of the utilisation profile is less than 0.</value>
   </data>
   <data name="ZPG_MSG_TAGESBEDARF_MANUELL_UNGUELTIG" xml:space="preserve">
-    <value>Zone “{0}”: please enter the manual daily demand (kWh/d, ≥ 0).</value>
+    <value>Area “{0}”: please enter the manual daily demand (kWh/d, ≥ 0).</value>
   </data>
   <data name="ZPG_MSG_ZIRKULATION_MANUELL_UNGUELTIG" xml:space="preserve">
     <value>Please enter the manual circulation power (kW, ≥ 0).</value>
   </data>
   <data name="ZPG_HINW_WEITERE_EXPERTE" xml:space="preserve">
-    <value>Technical values, daily profiles and seed are available at the Expert level.</value>
+    <value>Further inputs — occupancy, calendar, measured value, technical values and annual series — are available at the Expert level.</value>
   </data>
   <data name="ZPG_GRUND_DAUERLINIE" xml:space="preserve">
-    <value>The duration curve is shown at the Extended level.</value>
+    <value>The duration curve is shown at the Expert level.</value>
   </data>
   <data name="ZPG_VORGABE_EINTRAG" xml:space="preserve">
     <value>Default · {0}</value>
@@ -31710,7 +31707,7 @@ Do you want to allow this?</value>
     <value>Dwellings (optional)</value>
   </data>
   <data name="ZPG_HINW_WOHNUNGEN" xml:space="preserve">
-    <value>Instead of a reference quantity, enter the dwellings by type: the zone then uses their total, and the sizing derives the demand index according to DIN 4708 from it.</value>
+    <value>Instead of a reference quantity, enter the dwellings by type: the area then uses their total, and the sizing derives the demand index according to DIN 4708 from it.</value>
   </data>
   <data name="ZPG_SP_WOHNUNG_ANZAHL" xml:space="preserve">
     <value>Number [DU]</value>
@@ -31767,7 +31764,7 @@ Do you want to allow this?</value>
     <value>Default class</value>
   </data>
   <data name="ZPG_HINW_WOHNUNGSTABELLE_LEER" xml:space="preserve">
-    <value>No dwellings entered — the zone uses the reference quantity.</value>
+    <value>No dwellings entered — the area uses the reference quantity.</value>
   </data>
   <data name="ZPG_LBL_PERSONEN_JE_WE" xml:space="preserve">
     <value>Persons per dwelling unit</value>
@@ -31794,7 +31791,7 @@ Do you want to allow this?</value>
     <value>Circulation present</value>
   </data>
   <data name="ZPG_HINW_ZIRKULATION_VORHANDEN" xml:space="preserve">
-    <value>Default · yes; “no” takes the zone out of the circulation share.</value>
+    <value>Default · yes; “no” takes the area out of the circulation share.</value>
   </data>
   <data name="ZPG_LBL_KALENDER" xml:space="preserve">
     <value>Calendar</value>
@@ -31806,13 +31803,13 @@ Do you want to allow this?</value>
     <value>Building “{0}”</value>
   </data>
   <data name="ZPG_HINW_KALENDER" xml:space="preserve">
-    <value>The source determines weekend, public holidays and holidays of the zone: the calendar of the type of use or a building of the project. A building only presets holidays and area.</value>
+    <value>The source determines weekend, public holidays and holidays of the area: the calendar of the type of use or a building of the project. A building only presets holidays and area.</value>
   </data>
   <data name="ZPG_LBL_FERIEN" xml:space="preserve">
     <value>Holidays {0}</value>
   </data>
   <data name="ZPG_HINW_FERIEN" xml:space="preserve">
-    <value>The zone's own holidays take precedence: if the zone has a period, the holidays of the building do not apply. A period counts once it has an end; over the turn of the year it starts in December, without a start it runs from 1 January. Calculated in a year without leap day.</value>
+    <value>The area's own holidays take precedence: if the area has a period, the holidays of the building do not apply. A period counts once it has an end; over the turn of the year it starts in December, without a start it runs from 1 January. Calculated in a year without leap day.</value>
   </data>
   <data name="ZPG_LBL_KAL_QUELLE" xml:space="preserve">
     <value>Source</value>
@@ -31836,7 +31833,7 @@ Do you want to allow this?</value>
     <value>none</value>
   </data>
   <data name="ZPG_KAL_FERIEN_ZONE_VOR" xml:space="preserve">
-    <value>The zone has its own holidays; the holidays of the building do not apply.</value>
+    <value>The area has its own holidays; the holidays of the building do not apply.</value>
   </data>
   <data name="ZPG_KAL_FERIENTEXT" xml:space="preserve">
     <value>{0}: {1} – {2}</value>
@@ -31872,7 +31869,7 @@ Do you want to allow this?</value>
     <value>nationwide public holidays</value>
   </data>
   <data name="ZPG_LBL_KAL_EIGENE_FERIEN" xml:space="preserve">
-    <value>Own holidays of the zone</value>
+    <value>Own holidays of the area</value>
   </data>
   <data name="ZPG_LBL_FERIEN_NAME" xml:space="preserve">
     <value>Name</value>
@@ -31890,13 +31887,13 @@ Do you want to allow this?</value>
     <value>Remove</value>
   </data>
   <data name="ZPG_LBL_JAHRESRASTER" xml:space="preserve">
-    <value>Year grid of the zone</value>
+    <value>Year grid of the area</value>
   </data>
   <data name="ZPG_TAGTYP_FERIEN" xml:space="preserve">
     <value>Holidays</value>
   </data>
   <data name="ZPG_HINW_JAHRESRASTER" xml:space="preserve">
-    <value>For each day the day type the zone calculates with — from weekend, public holidays and holidays, as the preview reads them.</value>
+    <value>For each day the day type the area calculates with — from weekend, public holidays and holidays, as the preview reads them.</value>
   </data>
   <data name="ZPG_HINW_JAHRESRASTER_OHNE" xml:space="preserve">
     <value>The year grid appears with the preview.</value>
@@ -31959,7 +31956,7 @@ Do you want to allow this?</value>
     <value>Period of the measured value</value>
   </data>
   <data name="ZPG_HINW_JAHRESMESSWERT" xml:space="preserve">
-    <value>Empty = no measured value. A measured value scales the zone with a stated factor; a volume applies at the draw-off point and is converted via draw-off and cold water temperature.</value>
+    <value>Empty = no measured value. A measured value scales the area with a stated factor; a volume applies at the draw-off point and is converted via draw-off and cold water temperature.</value>
   </data>
   <data name="ZPG_LBL_TAGESBEDARF" xml:space="preserve">
     <value>Daily demand</value>
@@ -32058,7 +32055,7 @@ Do you want to allow this?</value>
     <value>Water content of the pipes between heater and most remote draw-off point; it helps decide a large system according to DVGW W 551.</value>
   </data>
   <data name="ZPG_GRP_FACHWERTE" xml:space="preserve">
-    <value>Technical values of the zone</value>
+    <value>Technical values of the area</value>
   </data>
   <data name="ZPG_LBL_BEDARF_SPEZ" xml:space="preserve">
     <value>Specific demand</value>
@@ -32103,7 +32100,7 @@ Do you want to allow this?</value>
     <value>Building type</value>
   </data>
   <data name="ZPG_HINW_TYPTAGE" xml:space="preserve">
-    <value>A setting of the project: the annual profile of every zone then arises from the type days of the imported package and the weather of the climate region. The sizing stays untouched.</value>
+    <value>A setting of the project: the annual profile of every area then arises from the type days of the imported package and the weather of the climate region. The sizing stays untouched.</value>
   </data>
   <data name="ZPG_HINW_TYPTAGE_OHNE" xml:space="preserve">
     <value>Without imported type days this path is not available — “VDI 4655 type days…” imports a package.</value>
@@ -32163,19 +32160,19 @@ Do you want to allow this?</value>
     <value>{0} hours above {1} kW</value>
   </data>
   <data name="ZPG_DAUERLINIE_OHNE" xml:space="preserve">
-    <value>The zone carries 0 — no duration curve.</value>
+    <value>The area carries 0 — no duration curve.</value>
   </data>
   <data name="ZPG_GRP_WARNLISTE" xml:space="preserve">
     <value>Notes of the balance</value>
   </data>
   <data name="ZPG_WARNLISTE_UNTER" xml:space="preserve">
-    <value>Not blocking; the notes of a zone are also shown at its input block.</value>
+    <value>Not blocking; the notes of an area are also shown at its input block.</value>
   </data>
   <data name="ZPG_WARNLISTE_LEER" xml:space="preserve">
     <value>No notes.</value>
   </data>
   <data name="KI_DLG_ZPG_WOHNUNG_ANZAHL_ERL" xml:space="preserve">
-    <value>How many dwellings of this type the selected zone has — a row of the dwelling table, only for a residential type of use at the Extended level.</value>
+    <value>How many dwellings of this type the selected usage area has — a row of the dwelling table, only for a residential type of use at the Expert level.</value>
   </data>
   <data name="KI_DLG_ZPG_WOHNUNG_RAUMZAHL_ERL" xml:space="preserve">
     <value>The number of rooms of the dwelling type; without persons it gives the occupancy from the catalogue.</value>
@@ -32187,25 +32184,25 @@ Do you want to allow this?</value>
     <value>The equipment class of the dwelling type for the demand index; empty = default class.</value>
   </data>
   <data name="KI_DLG_ZPG_PERSONEN_JE_WE_ERL" xml:space="preserve">
-    <value>Persons per dwelling unit of the selected zone; empty = occupancy by dwelling size from the catalogue.</value>
+    <value>Persons per dwelling unit of the selected area; empty = occupancy by dwelling size from the catalogue.</value>
   </data>
   <data name="KI_DLG_ZPG_WOHNFLAECHE_JE_WE_ERL" xml:space="preserve">
-    <value>Living area per dwelling unit of the selected zone; empty = assumption of the catalogue.</value>
+    <value>Living area per dwelling unit of the selected area; empty = assumption of the catalogue.</value>
   </data>
   <data name="KI_DLG_ZPG_TOPOLOGIE_ERL" xml:space="preserve">
-    <value>How the selected zone heats domestic hot water (storage, fresh water station, instantaneous, apartment station) — affects only the design.</value>
+    <value>How the selected area heats domestic hot water (storage, fresh water station, instantaneous, apartment station) — affects only the design.</value>
   </data>
   <data name="KI_DLG_ZPG_ZIRKULATION_VORHANDEN_ERL" xml:space="preserve">
-    <value>Whether the selected zone is connected to the circulation; “no” takes it out of the circulation share.</value>
+    <value>Whether the selected area is connected to the circulation; “no” takes it out of the circulation share.</value>
   </data>
   <data name="KI_DLG_ZPG_KALENDER_ERL" xml:space="preserve">
-    <value>The calendar of the selected zone: that of the type of use or the holidays of a building of the project, which only preset.</value>
+    <value>The calendar of the selected area: that of the type of use or the holidays of a building of the project, which only preset.</value>
   </data>
   <data name="KI_DLG_ZPG_FERIEN_ERL" xml:space="preserve">
-    <value>An own holiday period of the selected zone: name, from and to as DD.MM. in a year without leap day; empty = no entry. The row after the last period creates a new one. Own holidays take precedence over the holidays of a building.</value>
+    <value>An own holiday period of the selected area: name, from and to as DD.MM. in a year without leap day; empty = no entry. The row after the last period creates a new one. Own holidays take precedence over the holidays of a building.</value>
   </data>
   <data name="KI_DLG_ZPG_JAHRESMESSWERT_ERL" xml:space="preserve">
-    <value>A measured annual consumption of the selected zone; it scales the zone with a stated factor, empty = no measured value.</value>
+    <value>A measured annual consumption of the selected area; it scales the area with a stated factor, empty = no measured value.</value>
   </data>
   <data name="KI_DLG_ZPG_MESSWERT_EINHEIT_ERL" xml:space="preserve">
     <value>The unit of the measured annual value: kWh/a or m³/a; a volume applies at the draw-off point.</value>
@@ -32223,7 +32220,7 @@ Do you want to allow this?</value>
     <value>The period of the measured value — note only.</value>
   </data>
   <data name="KI_DLG_ZPG_TAGESBEDARF_MANUELL_ERL" xml:space="preserve">
-    <value>The daily demand of the selected zone; empty = proposal from the catalogue (auto), a value counts as manual daily demand.</value>
+    <value>The daily demand of the selected area; empty = proposal from the catalogue (auto), a value counts as manual daily demand.</value>
   </data>
   <data name="KI_DLG_ZPG_LADELEISTUNG_MANUELL_ERL" xml:space="preserve">
     <value>The charging power of the building; empty = proposal of the sizing (auto), a value counts as manual charging power — affects only the sizing.</value>
@@ -32256,22 +32253,22 @@ Do you want to allow this?</value>
     <value>The water content of the pipes; it helps decide a large system.</value>
   </data>
   <data name="KI_DLG_ZPG_BEDARF_SPEZ_ERL" xml:space="preserve">
-    <value>The specific demand of the selected zone per reference unit and day; empty = catalogue value of the level.</value>
+    <value>The specific demand of the selected area per reference unit and day; empty = catalogue value of the level.</value>
   </data>
   <data name="KI_DLG_ZPG_ZAPFTEMPERATUR_ERL" xml:space="preserve">
-    <value>The draw-off temperature of the selected zone; empty = reference temperature of the catalogue.</value>
+    <value>The draw-off temperature of the selected area; empty = reference temperature of the catalogue.</value>
   </data>
   <data name="KI_DLG_ZPG_KALTWASSER_MITTEL_ERL" xml:space="preserve">
-    <value>The annual mean cold water temperature of the selected zone (balance only); empty = convention.</value>
+    <value>The annual mean cold water temperature of the selected area (balance only); empty = convention.</value>
   </data>
   <data name="KI_DLG_ZPG_KALTWASSER_AMPLITUDE_ERL" xml:space="preserve">
     <value>The variation of the cold water over the year; empty = convention.</value>
   </data>
   <data name="KI_DLG_ZPG_AUSLASTUNGSGANG_ERL" xml:space="preserve">
-    <value>Twelve monthly factors of the selected zone; empty per month = catalogue factor.</value>
+    <value>Twelve monthly factors of the selected area; empty per month = catalogue factor.</value>
   </data>
   <data name="KI_DLG_ZPG_TAGESGANGSATZ_ERL" xml:space="preserve">
-    <value>The daily profile set of the selected zone; empty = the set of the type of use.</value>
+    <value>The daily profile set of the selected area; empty = the set of the type of use.</value>
   </data>
   <data name="KI_DLG_ZPG_KALTWASSER_AUSLEGUNG_ERL" xml:space="preserve">
     <value>The cold water of the design, the same for all days; empty = default.</value>
@@ -32355,7 +32352,7 @@ Do you want to allow this?</value>
     <value>Select a daily profile set first.</value>
   </data>
   <data name="ZPG_TGE_STATUS_GESPEICHERT" xml:space="preserve">
-    <value>Daily profile saved — zone “{0}” calculates with “{1}”.</value>
+    <value>Daily profile saved — area “{0}” calculates with “{1}”.</value>
   </data>
   <data name="ZPG_BTN_ZURUECKSETZEN" xml:space="preserve">
     <value>Reset</value>
@@ -32367,7 +32364,7 @@ Do you want to allow this?</value>
     <value>Catalogue version of the copy</value>
   </data>
   <data name="ZPG_HINW_KOPIE" xml:space="preserve">
-    <value>“OK” creates the type of use anew under this catalogue version (status own) and switches the zone to it; the locked one stays as it is.</value>
+    <value>“OK” creates the type of use anew under this catalogue version (status own) and switches the area to it; the locked one stays as it is.</value>
   </data>
   <data name="ZPG_HINW_FREI" xml:space="preserve">
     <value>“OK” writes in place into the catalogue — in one transaction; the approval note of the type of use is dropped.</value>
@@ -32424,7 +32421,7 @@ Do you want to allow this?</value>
     <value>Move down</value>
   </data>
   <data name="ZPG_KATEG_GRUND_LETZTE" xml:space="preserve">
-    <value>The last category remains — without categories the zone does not calculate stochastically.</value>
+    <value>The last category remains — without categories the area does not calculate stochastically.</value>
   </data>
   <data name="ZPG_KATEG_GRUND_RAND" xml:space="preserve">
     <value>The category is already at the edge of the list.</value>
@@ -32445,7 +32442,7 @@ Do you want to allow this?</value>
     <value>The type of use has no draw-off categories — “Load default set” or “Add category”.</value>
   </data>
   <data name="ZPG_KATEG_STATUS_GESPEICHERT" xml:space="preserve">
-    <value>Draw-off categories saved — zone “{0}” calculates with “{1}”.</value>
+    <value>Draw-off categories saved — area “{0}” calculates with “{1}”.</value>
   </data>
   <data name="ZPG_AUS_GRP_VERGLEICH_EINGABEN" xml:space="preserve">
     <value>Inputs of the method comparison</value>
@@ -32502,7 +32499,7 @@ Do you want to allow this?</value>
     <value>empty = catalogue default; the same values as “Charging window” in the draw-off profile</value>
   </data>
   <data name="ZPG_AUS_HERL_PERSONEN" xml:space="preserve">
-    <value>auto = from the quantity framework of the zones: {0}; applied: {1}</value>
+    <value>auto = from the quantity framework of the areas: {0}; applied: {1}</value>
   </data>
   <data name="ZPG_AUS_HERL_ANGESETZT" xml:space="preserve">
     <value>empty = catalogue default; applied: {0}</value>
@@ -32553,10 +32550,10 @@ Do you want to allow this?</value>
     <value>The type of use or its daily profile set belongs to the delivery — a changed daily profile is created as a new catalogue version.</value>
   </data>
   <data name="ZPG_TGE_GRUND_BENUTZT_GESPERRT" xml:space="preserve">
-    <value>A zone or another type of use uses the daily profile — a changed daily profile is created as a new catalogue version.</value>
+    <value>An area or another type of use uses the daily profile — a changed daily profile is created as a new catalogue version.</value>
   </data>
   <data name="ZPG_TGE_GRUND_EXPERTENWAHL_ABWEICHEND" xml:space="preserve">
-    <value>The zone uses a different daily profile set than the type of use — a changed daily profile is created as a new catalogue version.</value>
+    <value>The area uses a different daily profile set than the type of use — a changed daily profile is created as a new catalogue version.</value>
   </data>
   <data name="ZPG_TGE_GRUND_NAME_BELEGT" xml:space="preserve">
     <value>the type of use or its daily profile set already exists in this catalogue version.</value>
@@ -32634,7 +32631,7 @@ Do you want to allow this?</value>
     <value>The surcharge on the volume of the methods (≥ 0, 0.1 = 10 %); empty = default.</value>
   </data>
   <data name="KI_DLG_ZPGA_PERSONEN_MODUS_ERL" xml:space="preserve">
-    <value>The persons of the method comparison: auto = from the quantity framework of the zones, manual = own value.</value>
+    <value>The persons of the method comparison: auto = from the quantity framework of the areas, manual = own value.</value>
   </data>
   <data name="KI_DLG_ZPGA_PERSONEN_MANUELL_ERL" xml:space="preserve">
     <value>The manual number of persons — it acts only with “manual”.</value>
@@ -36207,7 +36204,7 @@ Do you want to allow this?</value>
     <value>The calendar of the calculated series must carry {0} day types.</value>
   </data>
   <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_EINHEITEN" xml:space="preserve">
-    <value>Without the number of units of the zones the √N scaling stays without comparison.</value>
+    <value>Without the number of units of the areas the √N scaling stays without comparison.</value>
   </data>
   <data name="ZPG_SATZ_MESSVERGLEICH_OHNE_ENSEMBLE" xml:space="preserve">
     <value>Without hourly peaks of an ensemble the scatter of the realisation peaks stays undetermined.</value>
@@ -36261,10 +36258,10 @@ Do you want to allow this?</value>
     <value>A volume series needs a temperature difference θ_tap − θ_cold greater than 0; {0:0.###} K was given.</value>
   </data>
   <data name="ZPG_SATZ_MESSVERGLEICH_SPREIZUNG_ZONEN" xml:space="preserve">
-    <value>The {0} zones hold different temperatures; the volume series is converted to energy with the quantity-weighted temperature difference of {1:0.###} K.</value>
+    <value>The {0} areas hold different temperatures; the volume series is converted to energy with the quantity-weighted temperature difference of {1:0.###} K.</value>
   </data>
   <data name="ZPG_SATZ_MESSVERGLEICH_ENSEMBLE_ZONEN" xml:space="preserve">
-    <value>{0} zones hold a yearly ensemble; the peak spread cannot be formed from them, because each zone draws its own realisations and the peak of the sum is not the sum of the peaks.</value>
+    <value>{0} areas hold a yearly ensemble; the peak spread cannot be formed from them, because each area draws its own realisations and the peak of the sum is not the sum of the peaks.</value>
   </data>
   <data name="ZPG_SATZ_MESSVERGLEICH_TAGTYP_FEHLT" xml:space="preserve">
     <value>Only one of the two sides carries the day type {0}; it is left out of the shape comparison.</value>
@@ -36276,7 +36273,7 @@ Do you want to allow this?</value>
     <value>The series covers {0:0.#} of {1} days and has been scaled up with the annual profile of the calculation ({2:0.0%} of the year); the annual value assumes the computed behaviour for the unmeasured time and is not a measurement.</value>
   </data>
   <data name="ZPG_SATZ_MESSKALIBRIERUNG_OHNE_BEZUGSMENGE" xml:space="preserve">
-    <value>Without the reference quantity of the zone no daily demand per unit can be proposed.</value>
+    <value>Without the reference quantity of the area no daily demand per unit can be proposed.</value>
   </data>
   <data name="ZPG_SATZ_MESSKALIBRIERUNG_OHNE_MENGE" xml:space="preserve">
     <value>The measured series carries no quantity; there is nothing to calibrate.</value>
@@ -36546,7 +36543,7 @@ Do you want to allow this?</value>
     <value>Choose the measured series to compare against.</value>
   </data>
   <data name="ZPG_VERGL_NUR_ERWEITERT" xml:space="preserve">
-    <value>The comparison with a measured series is available from level Advanced.</value>
+    <value>The comparison with a measured series is available at the Expert level.</value>
   </data>
   <data name="ZPG_VERGL_LEER" xml:space="preserve">
     <value>No comparison computed yet.</value>
@@ -36621,7 +36618,7 @@ Do you want to allow this?</value>
     <value>not decidable without an ensemble</value>
   </data>
   <data name="ZPG_VERGL_ENSEMBLE_ZONEN" xml:space="preserve">
-    <value>several stochastic zones — no sample can be formed</value>
+    <value>several stochastic areas — no sample can be formed</value>
   </data>
   <data name="ZPG_VERGL_OHNE_WERT" xml:space="preserve">
     <value>not decided</value>
@@ -36648,7 +36645,7 @@ Do you want to allow this?</value>
     <value>The annual measured value comes from the measured series named on the “Key figures” tab; a partial year is extrapolated over the annual profile of the calculation, and a note states the bias.</value>
   </data>
   <data name="ZPG_FRAGE_KALIBRIEREN" xml:space="preserve">
-    <value>The annual measured value of zone “{0}” is set from the measured series “{1}”; an existing value is discarded. Adopt?</value>
+    <value>The annual measured value of area “{0}” is set from the measured series “{1}”; an existing value is discarded. Adopt?</value>
   </data>
   <data name="ZPG_STATUS_KALIBRIERT" xml:space="preserve">
     <value>Annual measured value adopted from “{0}”</value>
@@ -36687,16 +36684,16 @@ Do you want to allow this?</value>
     <value>Hour</value>
   </data>
   <data name="ZPG_VORSCHLAG_HINWEIS" xml:space="preserve">
-    <value>Adopting creates a usage type of your own; the template stays untouched, and the zone afterwards computes with the copy.</value>
+    <value>Adopting creates a usage type of your own; the template stays untouched, and the area afterwards computes with the copy.</value>
   </data>
   <data name="ZPG_BTN_VORSCHLAG_UEBERNEHMEN" xml:space="preserve">
     <value>Adopt</value>
   </data>
   <data name="ZPG_FRAGE_VORSCHLAG" xml:space="preserve">
-    <value>From the measured series “{0}” the usage type “{1}” is created; the zone afterwards computes with it, the template stays untouched. Adopt?</value>
+    <value>From the measured series “{0}” the usage type “{1}” is created; the area afterwards computes with it, the template stays untouched. Adopt?</value>
   </data>
   <data name="ZPG_VORSCHLAG_OHNE" xml:space="preserve">
-    <value>There is no proposal for this zone: {0}</value>
+    <value>There is no proposal for this area: {0}</value>
   </data>
   <data name="ZPG_KAL_QUELLE" xml:space="preserve">
     <value>Measured series {0}</value>
@@ -36774,10 +36771,10 @@ Do you want to allow this?</value>
     <value>Temperature difference missing</value>
   </data>
   <data name="ZPG_WARN_MESSVERGLEICH_SPREIZUNG_ZONEN" xml:space="preserve">
-    <value>Temperature difference across zones</value>
+    <value>Temperature difference across areas</value>
   </data>
   <data name="ZPG_WARN_MESSVERGLEICH_ENSEMBLE_ZONEN" xml:space="preserve">
-    <value>Ensemble across zones</value>
+    <value>Ensemble across areas</value>
   </data>
   <data name="ZPG_WARN_MESSVERGLEICH_TAGTYP_FEHLT" xml:space="preserve">
     <value>Day type missing</value>
@@ -36816,7 +36813,7 @@ Do you want to allow this?</value>
     <value>Weekday without a measured day</value>
   </data>
   <data name="KI_DLG_ZPG_MESSREIHE_ERL" xml:space="preserve">
-    <value>The imported measured series the “Key figures” tab compares against (a choice among the project's series, from level Advanced); the comparison itself is computed on click.</value>
+    <value>The imported measured series the “Key figures” tab compares against (a choice among the project's series, at the Expert level); the comparison itself is computed on click.</value>
   </data>
   <data name="ZPG_MESSDATEN_TITEL" xml:space="preserve">
     <value>Measured data</value>
@@ -38287,7 +38284,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Value</value>
   </data>
   <data name="ZPG_HERKUNFT_SP_ZONE" xml:space="preserve">
-    <value>Zone</value>
+    <value>Area</value>
   </data>
   <data name="ZPG_HERKUNFT_SP_STAND" xml:space="preserve">
     <value>State</value>
@@ -38314,7 +38311,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Value</value>
   </data>
   <data name="ZPG_AUS_HERKUNFT_SP_ZONE" xml:space="preserve">
-    <value>Zone</value>
+    <value>Area</value>
   </data>
   <data name="ZPG_AUS_HERKUNFT_SP_STAND" xml:space="preserve">
     <value>State</value>
@@ -38815,7 +38812,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Living area per dwelling</value>
   </data>
   <data name="ZPG_GROESSE_ZONENFLAECHE" xml:space="preserve">
-    <value>Zone area</value>
+    <value>Area area</value>
   </data>
   <data name="ZPG_GROESSE_ZIRKULATION_METHODE" xml:space="preserve">
     <value>Circulation, method</value>
@@ -38848,7 +38845,7 @@ This folder holds the standard template, the short report, the detailed template
     <value>Circulation, weighting</value>
   </data>
   <data name="ZPG_GROESSE_ZIRKULATION_ZONENANTEIL" xml:space="preserve">
-    <value>Circulation, zone share</value>
+    <value>Circulation, area share</value>
   </data>
   <data name="ZPG_GROESSE_ZIRKULATION_JAHRESVERLUST" xml:space="preserve">
     <value>Circulation, annual loss</value>
@@ -58278,6 +58275,102 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="KI_DLG_BKAL_FERIENLISTE_ERL" xml:space="preserve">
     <value>A row of the list "Further company holidays": name (optional), start and end as day of the year (1 to 365, without 29 February); start after end = across the turn of the year. The user adds rows with "Add row".</value>
+  </data>
+  <data name="ZPG_FELD_BEREICH" xml:space="preserve">
+    <value>{0}, area {1}</value>
+  </data>
+  <data name="ZPG_SP_NIVEAU" xml:space="preserve">
+    <value>Level</value>
+  </data>
+  <data name="ZPG_PS_KNOPF_KATALOG" xml:space="preserve">
+    <value>Save as catalogue set…</value>
+  </data>
+  <data name="ZPG_PS_KNOPF_PROJEKT" xml:space="preserve">
+    <value>Add to project</value>
+  </data>
+  <data name="ZPG_PS_WARNUNG_PROJEKT" xml:space="preserve">
+    <value>The profile will then exist only in this project, not in the catalogue. It is calculated as a standard profile without holidays, public holidays, stochastics and typical days.</value>
+  </data>
+  <data name="ZPG_PS_HINWEIS_WEG_GENERATOR" xml:space="preserve">
+    <value>The project currently calculates its domestic hot water with the draw-off profile generator; a stored profile set only counts once the calculation method is set to standard profiles.</value>
+  </data>
+  <data name="ZPG_PS_HINWEIS_WEG_BESTAND" xml:space="preserve">
+    <value>The project currently calculates its domestic hot water with the standard profiles; a profile set added to the project counts.</value>
+  </data>
+  <data name="ZPG_PS_NAME_PROJEKT" xml:space="preserve">
+    <value>Draw-off profile {0}</value>
+  </data>
+  <data name="ZPG_PS_VARIANTE_MIT" xml:space="preserve">
+    <value>draw-off heat and circulation loss</value>
+  </data>
+  <data name="ZPG_PS_VARIANTE_OHNE" xml:space="preserve">
+    <value>draw-off heat only</value>
+  </data>
+  <data name="ZPG_PS_BESCHREIBUNG" xml:space="preserve">
+    <value>From the draw-off profile generator ({0})</value>
+  </data>
+  <data name="ZPG_PS_SPITZE" xml:space="preserve">
+    <value>{0} {1:00}–{2:00} h: {3:N1} kW</value>
+  </data>
+  <data name="ZPG_PS_MSG_KEIN_ERGEBNIS" xml:space="preserve">
+    <value>No draw-off profile has been calculated — without a result there is no profile set.</value>
+  </data>
+  <data name="ZPG_PS_MSG_OHNE_BEDARF" xml:space="preserve">
+    <value>The draw-off profile carries no demand — there is nothing to store.</value>
+  </data>
+  <data name="ZPG_PS_MSG_NAME_LEER" xml:space="preserve">
+    <value>Please enter a name for the catalogue set.</value>
+  </data>
+  <data name="ZPG_PS_MSG_NAME_VORHANDEN" xml:space="preserve">
+    <value>A catalogue set “{0}” already exists.</value>
+  </data>
+  <data name="ZPG_PS_MSG_TYP_VORHANDEN" xml:space="preserve">
+    <value>A weekly profile “{0}” already exists — please enter a different type.</value>
+  </data>
+  <data name="ZPG_PS_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The profile set was not saved — {0}</value>
+  </data>
+  <data name="ZPG_PS_MSG_KATALOG_GESPEICHERT" xml:space="preserve">
+    <value>The catalogue set “{0}” has been saved.</value>
+  </data>
+  <data name="ZPG_PS_MSG_PROJEKT_HINZUGEFUEGT" xml:space="preserve">
+    <value>“{0}” is now a domestic hot water profile of the project.</value>
+  </data>
+  <data name="ZPG_PS_WOCHENTAGE" xml:space="preserve">
+    <value>Mon,Tue,Wed,Thu,Fri,Sat,Sun</value>
+  </data>
+  <data name="ZPG_PS_HINWEIS_ZIRK_DOPPELT" xml:space="preserve">
+    <value>The project already calculates a circulation on the standard-profile path. With circulation in the profile the loss is counted twice — recommended: without circulation.</value>
+  </data>
+  <data name="ZPG_PS_TITEL_KATALOG" xml:space="preserve">
+    <value>Save as catalogue set</value>
+  </data>
+  <data name="ZPG_PS_LBL_NAME" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="ZPG_PS_LBL_TYP" xml:space="preserve">
+    <value>Type (weekly profile)</value>
+  </data>
+  <data name="ZPG_PS_LBL_BESCHREIBUNG" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="ZPG_PS_LBL_ZIRKULATION" xml:space="preserve">
+    <value>with circulation</value>
+  </data>
+  <data name="ZPG_PS_LBL_JAHRESSUMME" xml:space="preserve">
+    <value>Annual total</value>
+  </data>
+  <data name="ZPG_PS_LBL_SPITZE" xml:space="preserve">
+    <value>Peak hour of the mean week</value>
+  </data>
+  <data name="ZPG_PS_BTN_SPEICHERN" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="ZPG_PS_BTN_WEITER" xml:space="preserve">
+    <value>Continue</value>
+  </data>
+  <data name="ZPG_PS_GRUND_FEHLEINGABE" xml:space="preserve">
+    <value>Correct the invalid entries first — while they stand there is no profile to store.</value>
   </data>
   <data name="GIMP_ZONENREGEL_Z7" xml:space="preserve">
     <value>Z7 – by usage profile</value>

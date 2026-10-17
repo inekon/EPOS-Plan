@@ -68,7 +68,7 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
                 IdZone = e.Zonen[i].Id, Position = i, Zone = e.Zonen[i].Name,
                 JahresbedarfZapfungKwh = (e.Zonen[i].Bezugsmenge ?? 0) * 1000
             });
-        v.Ansichten.Add(Ansicht("Summe aller Zonen"));
+        v.Ansichten.Add(Ansicht("Summe aller Bereiche"));
         for (int i = 0; i < e.Zonen.Count; i++) v.Ansichten.Add(Ansicht(e.Zonen[i].Name));
         return v;
     }
@@ -273,10 +273,10 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
     private static IElement Option(IRenderedComponent<ZapfprofilDialog> cut, string text)
         => cut.FindAll("label.epos-option").First(l => l.TextContent.Trim() == text).QuerySelector("input")!;
 
-    /// <summary>Stellt den Dialog auf Erweitert und öffnet den Reiter Kennzahlen.</summary>
-    private static void Erweitert(IRenderedComponent<ZapfprofilDialog> cut)
+    /// <summary>Stellt den Dialog auf Experte und öffnet den Reiter Kennzahlen.</summary>
+    private static void AufExperte(IRenderedComponent<ZapfprofilDialog> cut)
     {
-        Option(cut, "Erweitert").Change("1");
+        Option(cut, "Experte").Change("2");
         ZapfprofilKarten.AlleAuf(cut);
         cut.FindAll("[role=tab]").First(b => b.TextContent.Trim() == "Kennzahlen").Click();
     }
@@ -318,7 +318,7 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
     {
         var p = new Pruefstand();
         var cut = Aufbauen(p, messdaten: () => new Dictionary<string, object>());
-        Erweitert(cut);
+        AufExperte(cut);
         Wahl(cut, 1);
         Knopf(cut, "Vergleich rechnen").Click();
         cut.WaitForAssertion(() => Assert.NotNull(cut.Instance.Vergleichsergebnis), Frist);
@@ -344,10 +344,10 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
         var cut = Aufbauen(new Pruefstand());
         cut.FindAll("[role=tab]").First(b => b.TextContent.Trim() == "Kennzahlen").Click();
 
-        Assert.Contains("steht ab der Stufe Erweitert", cut.Find(".epos-zapfprofil-vergleich-leer").TextContent);
+        Assert.Contains("steht ab der Stufe Experte", cut.Find(".epos-zapfprofil-vergleich-leer").TextContent);
         IElement rechnen = cut.Find("button.epos-zapfprofil-vergleich-rechnen");
         Assert.Equal("true", rechnen.GetAttribute("aria-disabled"));
-        Assert.Contains("steht ab der Stufe Erweitert", rechnen.GetAttribute("title") ?? "");
+        Assert.Contains("steht ab der Stufe Experte", rechnen.GetAttribute("title") ?? "");
     }
 
     [Fact]
@@ -355,7 +355,7 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
     {
         var p = new Pruefstand { Stand = new TwwMessreihenstandDaten { TabelleDa = true, Grund = "Es ist keine Messreihe eingespielt." } };
         var cut = Aufbauen(p);
-        Erweitert(cut);
+        AufExperte(cut);
 
         Assert.Contains("keine Messreihe eingespielt", cut.Find(".epos-zapfprofil-vergleich-leer").TextContent);
         Assert.Equal("true", cut.Find("button.epos-zapfprofil-vergleich-rechnen").GetAttribute("aria-disabled"));
@@ -366,7 +366,7 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
     {
         var p = new Pruefstand();
         var cut = Aufbauen(p);
-        Erweitert(cut);
+        AufExperte(cut);
 
         IElement rechnen = cut.Find("button.epos-zapfprofil-vergleich-rechnen");
         Assert.Equal("true", rechnen.GetAttribute("aria-disabled"));
@@ -384,7 +384,7 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
     {
         var p = new Pruefstand();
         var cut = Aufbauen(p);
-        Erweitert(cut);
+        AufExperte(cut);
         Wahl(cut, 1);
 
         Knopf(cut, "Vergleich rechnen").Click();
@@ -436,7 +436,7 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
 
         var p = new Pruefstand { Ergebnis = v };
         var cut = Aufbauen(p);
-        Erweitert(cut);
+        AufExperte(cut);
         Wahl(cut, 1);
 
         Knopf(cut, "Vergleich rechnen").Click();
@@ -472,7 +472,7 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
 
         var p = new Pruefstand { Ergebnis = v };
         var cut = Aufbauen(p);
-        Erweitert(cut);
+        AufExperte(cut);
         Wahl(cut, 1);
 
         Knopf(cut, "Vergleich rechnen").Click();
@@ -481,7 +481,7 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
         string[] zeilen = cut.FindAll(".epos-zapfprofil-vergleichzeile").Select(z => z.TextContent.Trim()).ToArray();
         Assert.Equal(8, zeilen.Length);
         string streuung = Assert.Single(zeilen, z => z.StartsWith("Streuung der Realisierungsspitzen"));
-        Assert.Contains("mehrere stochastische Zonen", streuung);
+        Assert.Contains("mehrere stochastische Bereiche", streuung);
         Assert.DoesNotContain("ohne Ensemble", streuung);
         // Ein Strich statt Zahlen — geschaetzt wird nichts.
         Assert.Contains("–", streuung);
@@ -491,14 +491,14 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
         ohne.Hinweise.Clear();
         var p2 = new Pruefstand { Ergebnis = ohne };
         var cut2 = Aufbauen(p2);
-        Erweitert(cut2);
+        AufExperte(cut2);
         Wahl(cut2, 1);
         Knopf(cut2, "Vergleich rechnen").Click();
         cut2.WaitForAssertion(() => Assert.True(cut2.Instance.Vergleichsergebnis?.Ok), Frist);
         string leer = Assert.Single(cut2.FindAll(".epos-zapfprofil-vergleichzeile").Select(z => z.TextContent.Trim()),
                                     z => z.StartsWith("Streuung der Realisierungsspitzen"));
         Assert.Contains("ohne Ensemble", leer);
-        Assert.DoesNotContain("mehrere stochastische Zonen", leer);
+        Assert.DoesNotContain("mehrere stochastische Bereiche", leer);
     }
 
     [Fact]
@@ -506,7 +506,7 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
     {
         var p = new Pruefstand { Ergebnis = Vergleich(imRahmen: false) };
         var cut = Aufbauen(p);
-        Erweitert(cut);
+        AufExperte(cut);
         Wahl(cut, 1);
         Knopf(cut, "Vergleich rechnen").Click();
         cut.WaitForAssertion(() => Assert.True(cut.Instance.Vergleichsergebnis?.Ok), Frist);
@@ -536,7 +536,7 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
 
         var p = new Pruefstand { Ergebnis = v };
         var cut = Aufbauen(p);
-        Erweitert(cut);
+        AufExperte(cut);
         Wahl(cut, 1);
         Knopf(cut, "Vergleich rechnen").Click();
         cut.WaitForAssertion(() => Assert.True(cut.Instance.Vergleichsergebnis?.Ok), Frist);
@@ -557,7 +557,7 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
         // Gegenprobe: ein bewertetes Band trägt keine Ampel.
         var p2 = new Pruefstand();
         var cut2 = Aufbauen(p2);
-        Erweitert(cut2);
+        AufExperte(cut2);
         Wahl(cut2, 1);
         Knopf(cut2, "Vergleich rechnen").Click();
         cut2.WaitForAssertion(() => Assert.True(cut2.Instance.Vergleichsergebnis?.Ok), Frist);
@@ -577,7 +577,7 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
             }
         };
         var cut = Aufbauen(p);
-        Erweitert(cut);
+        AufExperte(cut);
         Wahl(cut, 1);
         Knopf(cut, "Vergleich rechnen").Click();
         cut.WaitForAssertion(() => Assert.NotNull(cut.Instance.Vergleichsergebnis), Frist);
@@ -593,7 +593,7 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
     {
         var p = new Pruefstand { Sperre = new TaskCompletionSource() };
         var cut = Aufbauen(p);
-        Erweitert(cut);
+        AufExperte(cut);
         Wahl(cut, 1);
 
         Knopf(cut, "Vergleich rechnen").Click();
@@ -611,7 +611,7 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
     {
         var p = new Pruefstand();
         var cut = Aufbauen(p);
-        Erweitert(cut);
+        AufExperte(cut);
         Wahl(cut, 1);
         Knopf(cut, "Vergleich rechnen").Click();
         cut.WaitForAssertion(() => Assert.NotNull(cut.Instance.Vergleichsergebnis), Frist);
@@ -627,7 +627,7 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
     {
         var p = new Pruefstand();
         var cut = Aufbauen(p);
-        Erweitert(cut);
+        AufExperte(cut);
         Wahl(cut, 1);
         Knopf(cut, "Vergleich rechnen").Click();
         cut.WaitForAssertion(() => Assert.NotNull(cut.Instance.Vergleichsergebnis), Frist);
@@ -647,7 +647,7 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
     {
         var p = new Pruefstand();
         var cut = Aufbauen(p);
-        Erweitert(cut);
+        AufExperte(cut);
         Wahl(cut, 1);
         Knopf(cut, "Vergleich rechnen").Click();
         cut.WaitForAssertion(() => Assert.NotNull(cut.Instance.Vergleichsergebnis), Frist);
@@ -667,7 +667,7 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
     {
         var p = new Pruefstand();
         var cut = Aufbauen(p);
-        Option(cut, "Erweitert").Change("1");
+        Option(cut, "Experte").Change("2");
         ZapfprofilKarten.Auf(cut, "messwert");
 
         IElement knopf = cut.Find("button.epos-zapfprofil-kalibrieren");
@@ -683,9 +683,9 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
     {
         var p = new Pruefstand();
         var cut = Aufbauen(p);
-        Erweitert(cut);
+        AufExperte(cut);
         Wahl(cut, 1);
-        Option(cut, "Erweitert").Change("1");
+        Option(cut, "Experte").Change("2");
 
         cut.Find("button.epos-zapfprofil-kalibrieren").Click();
         Assert.True(cut.Instance.FrageOffen);
@@ -714,9 +714,9 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
     {
         var p = new Pruefstand();
         var cut = Aufbauen(p);
-        Erweitert(cut);
+        AufExperte(cut);
         Wahl(cut, 1);
-        Option(cut, "Erweitert").Change("1");
+        Option(cut, "Experte").Change("2");
 
         cut.Find("button.epos-zapfprofil-kalibrieren").Click();
         Knopf(cut, "Ja").Click();
@@ -736,9 +736,9 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
     {
         var p = new Pruefstand { Kalibriersperre = new TaskCompletionSource() };
         var cut = Aufbauen(p);
-        Erweitert(cut);
+        AufExperte(cut);
         Wahl(cut, 1);
-        Option(cut, "Erweitert").Change("1");
+        Option(cut, "Experte").Change("2");
 
         cut.Find("button.epos-zapfprofil-kalibrieren").Click();
         Knopf(cut, "Ja").Click();
@@ -769,9 +769,9 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
             }
         };
         var cut = Aufbauen(p);
-        Erweitert(cut);
+        AufExperte(cut);
         Wahl(cut, 1);
-        Option(cut, "Erweitert").Change("1");
+        Option(cut, "Experte").Change("2");
 
         cut.Find("button.epos-zapfprofil-kalibrieren").Click();
         Knopf(cut, "Ja").Click();
@@ -787,9 +787,9 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
     {
         var p = new Pruefstand();
         var cut = Aufbauen(p);
-        Erweitert(cut);
+        AufExperte(cut);
         Wahl(cut, 1);
-        Option(cut, "Erweitert").Change("1");
+        Option(cut, "Experte").Change("2");
 
         cut.Find("button.epos-zapfprofil-vorschlag").Click();
         Assert.Equal(new[] { (REIHE_A, 0) }, p.Vorgeschlagen.ToArray());
@@ -828,9 +828,9 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
             }
         };
         var cut = Aufbauen(p);
-        Erweitert(cut);
+        AufExperte(cut);
         Wahl(cut, 1);
-        Option(cut, "Erweitert").Change("1");
+        Option(cut, "Experte").Change("2");
 
         cut.Find("button.epos-zapfprofil-vorschlag").Click();
         Assert.Contains("keinen Vorschlag", cut.Find(".epos-zapfprofil-vorschlagvorschau").TextContent);
@@ -853,9 +853,9 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
     {
         var p = new Pruefstand();
         var cut = Aufbauen(p);
-        Erweitert(cut);
+        AufExperte(cut);
         Wahl(cut, 1);
-        Option(cut, "Erweitert").Change("1");
+        Option(cut, "Experte").Change("2");
 
         cut.Find("button.epos-zapfprofil-vorschlag").Click();
         IElement zeile = Assert.Single(cut.FindAll(".epos-zapfausl-warnliste li"),
@@ -886,7 +886,7 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
     {
         var p = new Pruefstand { Sperre = new TaskCompletionSource() };
         var cut = Aufbauen(p);
-        Erweitert(cut);
+        AufExperte(cut);
         Wahl(cut, 1);
 
         Knopf(cut, "Vergleich rechnen").Click();
@@ -926,9 +926,9 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
                                                          ZapfprofilWarnstufe.Hinweis));
         var p = new Pruefstand { Kalibrierung = kalibrierung };
         var cut = Aufbauen(p);
-        Erweitert(cut);
+        AufExperte(cut);
         Wahl(cut, 1);
-        Option(cut, "Erweitert").Change("1");
+        Option(cut, "Experte").Change("2");
 
         cut.Find("button.epos-zapfprofil-kalibrieren").Click();
         Knopf(cut, "Ja").Click();
@@ -955,7 +955,7 @@ public class ZapfprofilVergleichDialogTests : EposBunitContext
         using var _ = new Kulturvorrichtung("en-US");
         var p = new Pruefstand();
         var cut = Aufbauen(p);
-        Erweitert(cut);
+        AufExperte(cut);
         Wahl(cut, 1);
         Knopf(cut, "Vergleich rechnen").Click();
         cut.WaitForAssertion(() => Assert.NotNull(cut.Instance.Vergleichsergebnis), Frist);
