@@ -88,6 +88,12 @@ public sealed class GebaeudeProfilzuordnungHuelleTests : EposBunitContext
         int ersteNichtOffene = vor.Buendel.ToList().FindIndex(b => !b.Offen);
         Assert.All(vor.Buendel.Skip(ersteNichtOffene), b => Assert.False(b.Offen));
         Assert.Contains(vor.Katalog, k => k.Kinder.Count > 0);
+        // Einzelraum: jedes Bündel trägt seine Räume als Zeilen; ohne Projektdatei keine Restraeume.
+        Assert.All(vor.Buendel, b => Assert.Equal(b.Raeume, b.Raumzeilen.Select(r => r.Kennung)));
+        Assert.Contains(vor.Buendel, b => b.Beheizt);
+        Assert.Empty(vor.Restraeume);
+        Assert.Equal(vor.Vorschlag, vor.Buendel.Where(b => b.Stand == GebaeudeProfilstand.VORSCHLAG).Sum(b => b.Raeume.Count)
+                                    + vor.Dateizonen.Sum(z => z.Raeume.Count));
 
         // Alle Vorschläge übernehmen: die Vorschläge werden Wahlen von Hand, die Rückfragen bleiben.
         GebaeudeZuordnungsanfrage alle = anfrage.MitPlanschritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.VORSCHLAEGE));
@@ -116,6 +122,15 @@ public sealed class GebaeudeProfilzuordnungHuelleTests : EposBunitContext
             .Zonierung!.Plan!.Profilzuordnung!;
         Assert.Equal((vor.Eindeutig, vor.Vorschlag, vor.Rueckfrage, vor.Ohne, vor.Hand),
                      (zurueck.Eindeutig, zurueck.Vorschlag, zurueck.Rueckfrage, zurueck.Ohne, zurueck.Hand));
+
+        // Einzelraum: ein Raum eines Bündels bekommt ein anderes Profil, das Bündel ist danach gemischt.
+        GebaeudeProfilbuendelDaten mehr = nach.Buendel.First(b => b.Raeume.Count > 1 && b.Kandidaten.Count > 1);
+        GebaeudeProfilzuordnungDaten einzeln = zuordnen(alle
+                .MitPlanschritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.PROFIL, mehr.Raeume, Nutzung: mehr.Kandidaten[0].Schluessel))
+                .MitPlanschritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.PROFIL, mehr.Raeume.Take(1).ToList(), Nutzung: mehr.Kandidaten[1].Schluessel)))
+            .Zonierung!.Plan!.Profilzuordnung!;
+        Assert.Contains(einzeln.Buendel, b => b.Gemischt && b.Raumzeilen.Select(r => r.ProfilText).Distinct().Count() > 1);
+        Assert.Equal(113, Summe(einzeln));
 
         // Ein unbekannter Profilschlüssel wird abgelehnt.
         GebaeudeZonenplanDaten ab = zuordnen(anfrage.MitPlanschritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.PROFIL,
@@ -170,5 +185,36 @@ public sealed class GebaeudeProfilzuordnungHuelleTests : EposBunitContext
         Assert.Equal(offen - 1, int.Parse(cut.Find("button.epos-gebimport-profilzuordnung-oeffnen").GetAttribute("data-offen")!));
         Assert.NotEmpty(cut.FindAll(".epos-gebimport-zonenbaum tr.epos-gebimport-planzone"));
         _aus.WriteLine("Zonen vorher " + zonenVorher + ", nachher " + cut.FindAll(".epos-gebimport-zonenbaum tr.epos-gebimport-planzone").Count);
+
+        // Rest 1: ein Schritt von Hand nach der Neubildung — die nächste Profiloperation fragt erst; „Nein“ lässt alles.
+        cut.FindAll("input.epos-gebimport-zonenname").First().WechselAbgewartet("Umbenannt von Hand");
+        Assert.Equal(GebaeudePlanschrittArt.UMBENENNEN, cut.Instance.Planschritte.Last().Art);
+        int vorFrage = cut.Instance.Planschritte.Count;
+        cut.Find("button.epos-gebimport-pz-zurueck").KlickAbgewartet();
+        Assert.True(cut.Instance.ProfilFrageOffen);
+        Assert.Contains("1", cut.Find(".epos-rueckfrage-text").TextContent);
+        cut.FindAll("button").First(k => k.TextContent == "Nein").KlickAbgewartet();
+        Assert.False(cut.Instance.ProfilFrageOffen);
+        Assert.Equal(vorFrage, cut.Instance.Planschritte.Count);
+        Assert.True(cut.Instance.ProfilzuordnungOffen);
+        cut.Find("button.epos-gebimport-pz-zurueck").KlickAbgewartet();
+        cut.FindAll("button").First(k => k.TextContent == "Ja").KlickAbgewartet();
+        Assert.Equal(GebaeudePlanschrittArt.VORSCHLAEGE_ZURUECK, cut.Instance.Planschritte.Last().Art);
+        // Danach steht kein Schritt von Hand mehr nach der Neubildung: keine Rückfrage.
+        cut.Find("button.epos-gebimport-pz-alle").KlickAbgewartet();
+        Assert.False(cut.Instance.ProfilFrageOffen);
+        Assert.Equal(GebaeudePlanschrittArt.VORSCHLAEGE, cut.Instance.Planschritte.Last().Art);
+    }
+
+    [Fact]
+    public void Gefaehrdet_zaehlt_die_Schritte_von_Hand_nach_der_letzten_Neubildung_ohne_Haken()
+    {
+        GebaeudePlanschritt S(string art) => new GebaeudePlanschritt(art);
+        Assert.Equal(0, GebaeudePlanschrittArt.Gefaehrdet(Array.Empty<GebaeudePlanschritt>()));
+        Assert.Equal(2, GebaeudePlanschrittArt.Gefaehrdet(new[] { S(GebaeudePlanschrittArt.ANLEGEN), S(GebaeudePlanschrittArt.HAKEN), S(GebaeudePlanschrittArt.ZUORDNEN) }));
+        Assert.Equal(0, GebaeudePlanschrittArt.Gefaehrdet(new[] { S(GebaeudePlanschrittArt.ANLEGEN), S(GebaeudePlanschrittArt.PROFIL) }));
+        Assert.Equal(1, GebaeudePlanschrittArt.Gefaehrdet(new[] { S(GebaeudePlanschrittArt.UMBENENNEN), S(GebaeudePlanschrittArt.VORSCHLAEGE), S(GebaeudePlanschrittArt.RESTPROFIL) }));
+        Assert.Equal(1, GebaeudePlanschrittArt.Gefaehrdet(new[] { S(GebaeudePlanschrittArt.PROJEKTDATEI) }));
+        Assert.Equal(0, GebaeudePlanschrittArt.Gefaehrdet(new[] { S(GebaeudePlanschrittArt.PROFIL_ZURUECK), S(GebaeudePlanschrittArt.HAKEN) }));
     }
 }

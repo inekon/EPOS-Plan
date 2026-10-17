@@ -11,6 +11,13 @@
    Schnellwahl. Je Zeile "uebernehmen" (Vorschlag bestaetigen) bzw. "Zuordnung aufheben" (Wahl von
    Hand zuruecknehmen); oben "Alle Vorschlaege uebernehmen" und "Zuruecknehmen".
 
+   EINZELRAUM. Der Knopf "Raeume einzeln" klappt ein Buendel auf; jeder Raum ist einzeln waehlbar und
+   bekommt mit dem naechsten Profilklick sein eigenes Profil. Gemischte Buendel stehen aufgeklappt.
+   Filter "nur offene", "nur Vorschlaege", "nur beheizte" wirken zusammen.
+
+   HINWEISBLOECKE. Zonen mit der Bezeichnung der Datei als Vorschlag (F2) und die Raeume ohne Zone der
+   Projektdatei (F7) stehen unter der Tabelle; uebernommen wird nur auf Klick, nie automatisch.
+
    KEIN ZUSTAND DES PLANS. Jede Aktion geht als Ereignis an den Wirt, der sie als Schritt am Zonenplan
    anhaengt; die neuen Daten kommen als Parameter zurueck. Die Auswahl der Buendel bleibt stehen,
    solange ihre Schluessel bestehen. *@
@@ -26,6 +33,16 @@
                    @onchange="e => _nurOffene = e.Value is true" />
             @Texte.NurOffene
         </label>
+        <label class="epos-gebimport-pz-filter">
+            <input type="checkbox" class="epos-gebimport-pz-nurvorschlaege" checked="@_nurVorschlaege"
+                   @onchange="e => _nurVorschlaege = e.Value is true" />
+            @Texte.NurVorschlaege
+        </label>
+        <label class="epos-gebimport-pz-filter">
+            <input type="checkbox" class="epos-gebimport-pz-nurbeheizte" checked="@_nurBeheizte"
+                   @onchange="e => _nurBeheizte = e.Value is true" />
+            @Texte.NurBeheizte
+        </label>
         <button type="button" class="epos-knopf epos-gebimport-pz-alle" disabled="@(Gesperrt || Daten.Vorschlag == 0)"
                 @onclick="() => AlleUebernehmen.InvokeAsync()">@Texte.AlleUebernehmen</button>
         <button type="button" class="epos-knopf epos-gebimport-pz-zurueck" disabled="@(Gesperrt || Daten.Hand == 0)"
@@ -34,16 +51,16 @@
 
     @{
         IReadOnlyList<GebaeudeProfilbuendelDaten> gewaehlt = Gewaehlte();
-        IReadOnlyList<GebaeudeZonenregelDaten> kandidaten = Schnellwahl(gewaehlt);
+        IReadOnlyList<GebaeudeZonenregelDaten> kandidaten = Schnellwahl(Beruehrte());
     }
     <div class="epos-zeilenknoepfe epos-gebimport-pz-wahl">
-        @if (gewaehlt.Count == 0)
+        @if (gewaehlt.Count == 0 && _raumwahl.Count == 0)
         {
             <span class="epos-leisezeile epos-gebimport-pz-hinweis">@Texte.HinweisWahl</span>
         }
         else
         {
-            <span class="epos-gebimport-pz-gewaehlt">@Format(Texte.Gewaehlt, gewaehlt.Count, gewaehlt.Sum(b => b.Raeume.Count))</span>
+            <span class="epos-gebimport-pz-gewaehlt">@Format(Texte.Gewaehlt, gewaehlt.Count, GewaehlteRaeume().Count)</span>
             @if (kandidaten.Count > 0)
             {
                 <span class="epos-gebimport-pz-schnellwahl-titel">@Texte.Schnellwahl</span>
@@ -56,7 +73,7 @@
             <button type="button" class="epos-knopf epos-gebimport-pz-keine" disabled="@Gesperrt"
                     @onclick='() => ZuordnenGewaehlt("")'>@Texte.Keine</button>
             <button type="button" class="epos-knopf epos-gebimport-pz-aufheben" disabled="@Gesperrt"
-                    @onclick="() => Aufheben(gewaehlt)">@Texte.Aufheben</button>
+                    @onclick="Aufheben">@Texte.Aufheben</button>
         }
     </div>
 
@@ -74,7 +91,9 @@
         <div class="epos-gebimport-pz-buendel">
             <h3 class="epos-gebimport-pz-titel">@Texte.BuendelTitel</h3>
             @{
-                List<GebaeudeProfilbuendelDaten> zeilen = Daten.Buendel.Where(b => !_nurOffene || b.Offen).ToList();
+                List<GebaeudeProfilbuendelDaten> zeilen = Daten.Buendel.Where(b => (!_nurOffene || b.Offen)
+                                                                                  && (!_nurVorschlaege || b.Stand == GebaeudeProfilstand.VORSCHLAG)
+                                                                                  && (!_nurBeheizte || b.Beheizt)).ToList();
             }
             @if (zeilen.Count == 0)
             {
@@ -105,6 +124,11 @@
                                                aria-label="@b.Anzeigename" disabled="@Gesperrt" @onchange="e => BeiWahl(b, e)" />
                                     </td>
                                     <td>
+                                        @if (b.Raumzeilen.Count > 1)
+                                        {
+                                            <button type="button" class="epos-knopf epos-gebimport-pz-aufklappen" aria-expanded="@(Aufgeklappt(b) ? "true" : "false")"
+                                                    title="@Texte.Aufklappen" aria-label="@Texte.Aufklappen" @onclick="() => Umschalten(b)">@(Aufgeklappt(b) ? "▾" : "▸")</button>
+                                        }
                                         @b.Anzeigename
                                         @if (b.Raumart.Length > 0)
                                         {
@@ -140,10 +164,81 @@
                                         }
                                     </td>
                                 </tr>
+                                @if (b.Raumzeilen.Count > 1 && Aufgeklappt(b))
+                                {
+                                    @foreach (GebaeudeProfilraumDaten r in b.Raumzeilen)
+                                    {
+                                        <tr @key="@("R:" + r.Kennung)" class="epos-gebimport-pz-raumzeile" data-raum="@r.Kennung" data-stand="@r.Stand">
+                                            <td></td>
+                                            <td>
+                                                <input type="checkbox" class="epos-gebimport-pz-raumwahl" checked="@_raumwahl.Contains(r.Kennung)"
+                                                       aria-label="@r.Name" disabled="@(Gesperrt || _wahl.Contains(b.Schluessel))"
+                                                       @onchange="e => BeiRaumwahl(r.Kennung, e)" />
+                                                @r.Name
+                                            </td>
+                                            <td></td>
+                                            <td class="epos-gebimport-zahl">@r.Flaeche</td>
+                                            <td><span class="epos-gebimport-pz-stand" data-stand="@r.Stand">@r.StandText</span></td>
+                                            <td><span class="epos-gebimport-pz-profil">@r.ProfilText</span></td>
+                                            <td></td>
+                                        </tr>
+                                    }
+                                }
                             }
                         </tbody>
                     </table>
                 </div>
+            }
+            @if (Daten.Dateizonen.Count > 0)
+            {
+                <h3 class="epos-gebimport-pz-titel">@Texte.DateizonenTitel</h3>
+                <ul class="epos-gebimport-pz-hinweisblock epos-gebimport-pz-dateizonen">
+                    @foreach (GebaeudeProfilhinweisDaten z in Daten.Dateizonen)
+                    {
+                        <li @key="z.Schluessel" class="epos-gebimport-pz-dateizone" data-zone="@z.Schluessel">
+                            <span>@z.Name</span>
+                            <span class="epos-leisezeile"> · @z.Raeume.Count · @z.Flaeche</span>
+                            <span class="epos-gebimport-pz-profil"> → @z.ProfilText</span>
+                            @if (z.Begruendung.Length > 0)
+                            {
+                                <Herleitungszeile Text="@z.Begruendung" />
+                            }
+                            @if (z.Profil is string dp && z.Raeume.Count > 0)
+                            {
+                                <button type="button" class="epos-knopf epos-gebimport-pz-dateizone-uebernehmen" disabled="@Gesperrt"
+                                        @onclick="() => Zuordnen.InvokeAsync(new GebaeudeProfilwahl(z.Raeume, dp))">@Texte.Uebernehmen</button>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+            @if (Daten.Restraeume.Count > 0)
+            {
+                <h3 class="epos-gebimport-pz-titel">@Texte.RestraeumeTitel</h3>
+                <p class="epos-leisezeile">@Texte.RestraeumeHinweis</p>
+                <ul class="epos-gebimport-pz-hinweisblock epos-gebimport-pz-restraeume">
+                    @foreach (GebaeudeProfilhinweisDaten r in Daten.Restraeume)
+                    {
+                        <li @key="r.Schluessel" class="epos-gebimport-pz-restraum" data-raum="@r.Schluessel">
+                            <span>@r.Name</span>
+                            <span class="epos-leisezeile"> · @r.Flaeche</span>
+                            @if (r.Profil is string rp)
+                            {
+                                <button type="button" class="epos-knopf epos-gebimport-pz-restvorschlag" data-profil="@rp" disabled="@Gesperrt"
+                                        @onclick="() => InZoneZuordnen.InvokeAsync(new GebaeudeProfilwahl(r.Raeume, rp))">@Format(Texte.InZone, r.ProfilText)</button>
+                            }
+                            @foreach (GebaeudeZonenregelDaten k in r.Kandidaten)
+                            {
+                                <button type="button" class="epos-knopf epos-gebimport-pz-restkandidat" data-profil="@k.Schluessel" disabled="@Gesperrt"
+                                        @onclick="() => InZoneZuordnen.InvokeAsync(new GebaeudeProfilwahl(r.Raeume, k.Schluessel))">@Format(Texte.InZone, k.Text)</button>
+                            }
+                            @if (r.Begruendung.Length > 0)
+                            {
+                                <Herleitungszeile Text="@r.Begruendung" />
+                            }
+                        </li>
+                    }
+                </ul>
             }
         </div>
     </div>
@@ -165,6 +260,9 @@
     /// <summary>Die Wahl von Hand für Räume zurücknehmen.</summary>
     [Parameter] public EventCallback<IReadOnlyList<string>> Zuruecknehmen { get; set; }
 
+    /// <summary>Räume ohne Zone der Zone eines Profils zuordnen (F7, ohne Neubildung).</summary>
+    [Parameter] public EventCallback<GebaeudeProfilwahl> InZoneZuordnen { get; set; }
+
     /// <summary>Alle Vorschläge übernehmen.</summary>
     [Parameter] public EventCallback AlleUebernehmen { get; set; }
 
@@ -177,7 +275,15 @@
     /// <summary>Die aufgeklappten Knoten des Katalogs ohne Suche.</summary>
     private HashSet<string> _offen = new(StringComparer.Ordinal);
 
+    /// <summary>Die einzeln gewählten Räume aufgeklappter Bündel (Kennungen).</summary>
+    private readonly HashSet<string> _raumwahl = new(StringComparer.Ordinal);
+
+    /// <summary>Die Bündel, deren Aufklappzustand vom Vorgabezustand abweicht (gemischte stehen offen).</summary>
+    private readonly HashSet<string> _umgeschaltet = new(StringComparer.Ordinal);
+
     private bool _nurOffene;
+    private bool _nurVorschlaege;
+    private bool _nurBeheizte;
     private string _suche = string.Empty;
     private string? _profilwahl;
     private IReadOnlyList<GebaeudeProfilknotenDaten>? _katalogGesehen;
@@ -185,9 +291,30 @@
     /// <summary>Die gewählten Bündel — Prüfhilfe für die Tests.</summary>
     public IReadOnlyCollection<string> Auswahl => _wahl;
 
+    /// <summary>Die einzeln gewählten Räume — Prüfhilfe für die Tests.</summary>
+    public IReadOnlyCollection<string> Raumauswahl => _raumwahl;
+
+    private bool Aufgeklappt(GebaeudeProfilbuendelDaten b) => b.Gemischt != _umgeschaltet.Contains(b.Schluessel);
+
+    private void Umschalten(GebaeudeProfilbuendelDaten b)
+    {
+        if (!_umgeschaltet.Remove(b.Schluessel)) _umgeschaltet.Add(b.Schluessel);
+    }
+
+    private void BeiRaumwahl(string raum, ChangeEventArgs e)
+    {
+        if (e.Value is true) _raumwahl.Add(raum);
+        else _raumwahl.Remove(raum);
+    }
+
+    /// <summary>Die Räume der gewählten Bündel und die einzeln gewählten, ohne Doppel.</summary>
+    private IReadOnlyList<string> GewaehlteRaeume()
+        => Gewaehlte().SelectMany(b => b.Raeume).Concat(_raumwahl).Distinct(StringComparer.Ordinal).ToList();
+
     protected override void OnParametersSet()
     {
         _wahl.RemoveWhere(s => Daten.Buendel.All(b => b.Schluessel != s));
+        _raumwahl.RemoveWhere(r => Daten.Buendel.All(b => !b.Raeume.Contains(r)));
         if (!ReferenceEquals(_katalogGesehen, Daten.Katalog) && _katalogGesehen is null)
             foreach (GebaeudeProfilknotenDaten k in Daten.Katalog) _offen.Add(k.Schluessel);   // die Kategorien offen, die Gruppen zu
         _katalogGesehen = Daten.Katalog;
@@ -198,6 +325,10 @@
 
     private IReadOnlyList<GebaeudeProfilbuendelDaten> Gewaehlte()
         => Daten.Buendel.Where(b => _wahl.Contains(b.Schluessel)).ToList();
+
+    /// <summary>Die Bündel, aus denen etwas gewählt ist (ganz oder einzelne Räume) — Quelle der Schnellwahl.</summary>
+    private IReadOnlyList<GebaeudeProfilbuendelDaten> Beruehrte()
+        => Daten.Buendel.Where(b => _wahl.Contains(b.Schluessel) || b.Raeume.Any(_raumwahl.Contains)).ToList();
 
     /// <summary>Die Kandidaten der gewählten Bündel mit Rückfrage, in der Folge ihres ersten Auftretens.</summary>
     private static IReadOnlyList<GebaeudeZonenregelDaten> Schnellwahl(IReadOnlyList<GebaeudeProfilbuendelDaten> gewaehlt)
@@ -212,18 +343,20 @@
 
     private async Task ZuordnenGewaehlt(string profil)
     {
-        IReadOnlyList<string> raeume = Gewaehlte().SelectMany(b => b.Raeume).ToList();
+        IReadOnlyList<string> raeume = GewaehlteRaeume();
         if (raeume.Count == 0 || Gesperrt) return;
         await Zuordnen.InvokeAsync(new GebaeudeProfilwahl(raeume, profil));
         _wahl.Clear();
+        _raumwahl.Clear();
     }
 
-    private async Task Aufheben(IReadOnlyList<GebaeudeProfilbuendelDaten> gewaehlt)
+    private async Task Aufheben()
     {
-        IReadOnlyList<string> raeume = gewaehlt.SelectMany(b => b.Raeume).ToList();
+        IReadOnlyList<string> raeume = GewaehlteRaeume();
         if (raeume.Count == 0 || Gesperrt) return;
         await Zuruecknehmen.InvokeAsync(raeume);
         _wahl.Clear();
+        _raumwahl.Clear();
     }
 
     /// <summary>
@@ -233,7 +366,7 @@
     private async Task BeiProfil(string? schluessel)
     {
         string? profil = schluessel is null ? null : Profilschluessel(Daten.Katalog, schluessel);
-        if (profil is not null && _wahl.Count > 0 && !Gesperrt)
+        if (profil is not null && (_wahl.Count > 0 || _raumwahl.Count > 0) && !Gesperrt)
         {
             _profilwahl = null;
             await ZuordnenGewaehlt(profil);

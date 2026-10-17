@@ -75,8 +75,48 @@ public sealed record GebaeudeProfilbuendelDaten
     /// <summary>Die Kandidaten (Profilschlüssel, Anzeigetext) in Normreihenfolge — die Schnellwahl einer Rückfrage.</summary>
     public IReadOnlyList<GebaeudeZonenregelDaten> Kandidaten { get; init; } = Array.Empty<GebaeudeZonenregelDaten>();
 
+    /// <summary>Die Räume des Bündels einzeln, mit Stand und Profil — das Aufklappen (Einzelraum, „gemischt“).</summary>
+    public IReadOnlyList<GebaeudeProfilraumDaten> Raumzeilen { get; init; } = Array.Empty<GebaeudeProfilraumDaten>();
+
+    /// <summary>Ist mindestens ein Raum des Bündels beheizt (Filter „nur beheizte“)?</summary>
+    public bool Beheizt { get; init; } = true;
+
     /// <summary>Braucht das Bündel eine Rückfrage (offen oder ohne Kandidat)?</summary>
     public bool Offen => Stand is GebaeudeProfilstand.OFFEN or GebaeudeProfilstand.OHNE;
+}
+
+/// <summary>Ein Raum eines aufgeklappten Bündels: Kennung, Name, Fläche, Stand und Profil als fertige Texte.</summary>
+public sealed record GebaeudeProfilraumDaten(string Kennung, string Name, string Flaeche, string Stand, string StandText, string ProfilText);
+
+/// <summary>
+/// <b>Eine Zeile eines Hinweisblocks</b> (ZZ-B Nachzug): eine Zone mit der Bezeichnung der Datei als Vorschlag (F2) oder ein
+/// Raum ohne Zone der Projektdatei (F7) — mit Vorschlag, Begründung und Kandidaten; übernommen wird nur auf Klick.
+/// </summary>
+public sealed record GebaeudeProfilhinweisDaten
+{
+    /// <summary>Der Schlüssel der Zeile (Zonen- bzw. Raumkennung).</summary>
+    public string Schluessel { get; init; } = "";
+
+    /// <summary>Der Anzeigename (Zone bzw. Raum).</summary>
+    public string Name { get; init; } = "";
+
+    /// <summary>Die Raumkennungen — das Ziel des Schritts.</summary>
+    public IReadOnlyList<string> Raeume { get; init; } = Array.Empty<string>();
+
+    /// <summary>Die Fläche ohne Einheit.</summary>
+    public string Flaeche { get; init; } = "";
+
+    /// <summary>Der Profilschlüssel des Vorschlags; <c>null</c> = keiner.</summary>
+    public string? Profil { get; init; }
+
+    /// <summary>Der Vorschlag als Anzeigetext; leer = keiner.</summary>
+    public string ProfilText { get; init; } = "";
+
+    /// <summary>Die Begründung als Text.</summary>
+    public string Begruendung { get; init; } = "";
+
+    /// <summary>Die Kandidaten ohne Vorschlag (Profilschlüssel, Anzeigetext).</summary>
+    public IReadOnlyList<GebaeudeZonenregelDaten> Kandidaten { get; init; } = Array.Empty<GebaeudeZonenregelDaten>();
 }
 
 /// <summary>Ein Knoten des Katalogbaums: Kategorie → Gruppe der Norm → Profil; ein Profil trägt seinen Profilschlüssel.</summary>
@@ -129,6 +169,12 @@ public sealed record GebaeudeProfilzuordnungDaten
 
     /// <summary>Der Hinweis zur Ampel.</summary>
     public string Ampeltext { get; init; } = "";
+
+    /// <summary>Die Zonen mit der Bezeichnung der Datei als unbestätigtem Vorschlag (F2) — sie zählen als Vorschlag.</summary>
+    public IReadOnlyList<GebaeudeProfilhinweisDaten> Dateizonen { get; init; } = Array.Empty<GebaeudeProfilhinweisDaten>();
+
+    /// <summary>Die beheizten Räume ohne Zone der Projektdatei mit dem Befund der Rangfolge (F7) — nie automatisch übernommen.</summary>
+    public IReadOnlyList<GebaeudeProfilhinweisDaten> Restraeume { get; init; } = Array.Empty<GebaeudeProfilhinweisDaten>();
 }
 
 /// <summary>Die Beschriftungen des Zuordnungsdialogs (Präfix <c>GIMP_PZ_</c>).</summary>
@@ -180,4 +226,22 @@ public sealed class GebaeudeProfilzuordnungTexte
     public string Gewaehlt { get; set; } = Resource.GIMP_PZ_GEWAEHLT;
     /// <summary>GIMP_PZ_KEIN_BUENDEL</summary>
     public string KeinBuendel { get; set; } = Resource.GIMP_PZ_KEIN_BUENDEL;
+    /// <summary>GIMP_PZ_NUR_VORSCHLAEGE</summary>
+    public string NurVorschlaege { get; set; } = Resource.GIMP_PZ_NUR_VORSCHLAEGE;
+    /// <summary>GIMP_PZ_NUR_BEHEIZTE</summary>
+    public string NurBeheizte { get; set; } = Resource.GIMP_PZ_NUR_BEHEIZTE;
+    /// <summary>GIMP_PZ_AUFKLAPPEN</summary>
+    public string Aufklappen { get; set; } = Resource.GIMP_PZ_AUFKLAPPEN;
+    /// <summary>GIMP_PZ_DATEIZONEN_TITEL</summary>
+    public string DateizonenTitel { get; set; } = Resource.GIMP_PZ_DATEIZONEN_TITEL;
+    /// <summary>GIMP_PZ_RESTRAEUME_TITEL</summary>
+    public string RestraeumeTitel { get; set; } = Resource.GIMP_PZ_RESTRAEUME_TITEL;
+    /// <summary>GIMP_PZ_RESTRAEUME_HINWEIS</summary>
+    public string RestraeumeHinweis { get; set; } = Resource.GIMP_PZ_RESTRAEUME_HINWEIS;
+    /// <summary>GIMP_PZ_IN_ZONE</summary>
+    public string InZone { get; set; } = Resource.GIMP_PZ_IN_ZONE;
+    /// <summary>GIMP_PZ_FRAGE_TITEL</summary>
+    public string FrageTitel { get; set; } = Resource.GIMP_PZ_FRAGE_TITEL;
+    /// <summary>GIMP_PZ_FRAGE — {0} = Zahl der Schritte von Hand, die verloren gingen.</summary>
+    public string Frage { get; set; } = Resource.GIMP_PZ_FRAGE;
 }

@@ -238,6 +238,27 @@ public static class GebaeudePlanschrittArt
     public const string VORSCHLAEGE = "VORSCHLAEGE";
     /// <summary>Alle Wahlen von Hand zurücknehmen — der Plan zeigt wieder die Vorschläge.</summary>
     public const string VORSCHLAEGE_ZURUECK = "VORSCHLAEGE_ZURUECK";
+    /// <summary>
+    /// Räume ohne Zone der Zone eines Profils zuordnen (Räume, Nutzung = Profilschlüssel; F7, Projektdatei-Weg): ohne
+    /// Neubildung — die Zonen und die Schritte von Hand bleiben; fehlt eine Zone mit dem Profil, wird sie angelegt.
+    /// </summary>
+    public const string RESTPROFIL = "RESTPROFIL";
+
+    /// <summary>Bildet die Art den Plan nach seiner Regel neu (die vier Schritte der Profilzuordnung)?</summary>
+    public static bool BildetNeu(string? art) => art is PROFIL or PROFIL_ZURUECK or VORSCHLAEGE or VORSCHLAEGE_ZURUECK;
+
+    /// <summary>
+    /// <b>Die Schritte von Hand, die eine Profiloperation verwürfe</b> (ZZ-B Rest 1): alle nach der letzten Neubildung, außer
+    /// den Haken „beheizt" (der Plan trägt sie durch die Neubildung) und den Zuordnungen in die Zone eines Profils
+    /// (<see cref="RESTPROFIL"/>) — sie gehen ebenfalls verloren und zählen deshalb mit. Frühere Schritte sind schon verworfen.
+    /// </summary>
+    public static int Gefaehrdet(IReadOnlyList<GebaeudePlanschritt> schritte)
+    {
+        int n = 0;
+        for (int i = schritte.Count - 1; i >= 0 && !BildetNeu(schritte[i].Art); i--)
+            if (schritte[i].Art != HAKEN) n++;
+        return n;
+    }
 }
 
 /// <summary>

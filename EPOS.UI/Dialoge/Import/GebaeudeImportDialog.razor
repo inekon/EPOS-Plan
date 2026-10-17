@@ -1019,16 +1019,22 @@
 </Ueberlagerung>
 @* ZZ-B: die Profilzuordnung je Raum als Überlagerung des Zonenbaums; jede Aktion ist ein Schritt am Zonenplan. *@
 <Ueberlagerung Offen="@(_profilzuordnung && Plan?.Profilzuordnung is not null)" Titel="@ProfilzuordnungTexte.Titel"
-               Zusatzklasse="epos-gebimport-profilzuordnung" Geschlossen="() => _profilzuordnung = false">
+               Zusatzklasse="epos-gebimport-profilzuordnung" Geschlossen="ProfilzuordnungSchliessen">
     <KindInhalt>
         @if (_profilzuordnung && Plan?.Profilzuordnung is GebaeudeProfilzuordnungDaten pzDaten)
         {
             <GebaeudeProfilzuordnung Daten="@pzDaten" Texte="@ProfilzuordnungTexte" Gesperrt="@Beschaeftigt"
                                      Zuordnen="BeiProfilZuordnen" Zuruecknehmen="BeiProfilZuruecknehmen"
-                                     AlleUebernehmen="BeiVorschlaegeUebernehmen" AlleZuruecknehmen="BeiVorschlaegeZuruecknehmen" />
+                                     AlleUebernehmen="BeiVorschlaegeUebernehmen" AlleZuruecknehmen="BeiVorschlaegeZuruecknehmen"
+                                     InZoneZuordnen="BeiInZoneZuordnen" />
         }
     </KindInhalt>
 </Ueberlagerung>
+@* ZZ-B Rest 1: Eine Profiloperation bildet den Plan nach seiner Regel neu - stehen danach Schritte von Hand, erst nach
+   Rueckfrage (wie vor dem Regelwechsel), Vorgabe "Nein". *@
+<Rueckfrage Offen="@(_profilFrage is not null)" TitelText="@ProfilzuordnungTexte.FrageTitel"
+            Frage="@Format(ProfilzuordnungTexte.Frage, GebaeudePlanschrittArt.Gefaehrdet(_planschritte))" VorgabeNein="true"
+            Beantwortet="ProfilBeantwortet" JaText="@Texte.Ja" NeinText="@Texte.Nein" />
 @code {
     // =====================================================================
     // Gaben — die Datenseite liegt in der Huelle
@@ -1165,14 +1171,52 @@
 
     // Jede Aktion der Profilzuordnung ist ein Schritt am Zonenplan; der Zonenbaum zeigt danach den neu gebildeten Plan.
     private void BeiProfilZuordnen(GebaeudeProfilwahl wahl)
-        => Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.PROFIL, wahl.Raeume, Nutzung: wahl.Profil));
+        => Profilschritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.PROFIL, wahl.Raeume, Nutzung: wahl.Profil));
 
     private void BeiProfilZuruecknehmen(IReadOnlyList<string> raeume)
-        => Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.PROFIL_ZURUECK, raeume));
+        => Profilschritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.PROFIL_ZURUECK, raeume));
 
-    private void BeiVorschlaegeUebernehmen() => Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.VORSCHLAEGE));
+    private void BeiVorschlaegeUebernehmen() => Profilschritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.VORSCHLAEGE));
 
-    private void BeiVorschlaegeZuruecknehmen() => Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.VORSCHLAEGE_ZURUECK));
+    private void BeiVorschlaegeZuruecknehmen() => Profilschritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.VORSCHLAEGE_ZURUECK));
+
+    // F7: Räume ohne Zone der Projektdatei in die Zone ihres Profils — ohne Neubildung, deshalb ohne Rückfrage.
+    private void BeiInZoneZuordnen(GebaeudeProfilwahl wahl)
+        => Schritt(new GebaeudePlanschritt(GebaeudePlanschrittArt.RESTPROFIL, wahl.Raeume, Nutzung: wahl.Profil));
+
+    /// <summary>Der Schritt, der auf die Rückfrage vor der Neubildung wartet; <c>null</c> = keine Rückfrage.</summary>
+    private GebaeudePlanschritt? _profilFrage;
+
+    /// <summary>Steht die Rückfrage vor einer Profiloperation? Prüfhilfe für die Tests.</summary>
+    public bool ProfilFrageOffen => _profilFrage is not null;
+
+    /// <summary>
+    /// Eine Profiloperation bildet den Plan nach seiner Regel neu (Kern): Schritte von Hand seit der letzten Neubildung gingen
+    /// verloren — dann erst nach Rückfrage, sonst sofort.
+    /// </summary>
+    private void Profilschritt(GebaeudePlanschritt schritt)
+    {
+        if (GebaeudePlanschrittArt.Gefaehrdet(_planschritte) > 0)
+        {
+            _profilFrage = schritt;
+            return;
+        }
+        Schritt(schritt);
+    }
+
+    /// <summary>Die Antwort: „Ja“ führt den Schritt aus, „Nein“ und Esc lassen den Plan, wie er ist.</summary>
+    private void ProfilBeantwortet(bool? antwort)
+    {
+        GebaeudePlanschritt? schritt = _profilFrage;
+        _profilFrage = null;
+        if (antwort == true && schritt is not null) Schritt(schritt);
+    }
+
+    /// <summary>Kreuz oder Esc an der Überlagerung — nicht, solange die Rückfrage steht (sie antwortet selbst).</summary>
+    private void ProfilzuordnungSchliessen()
+    {
+        if (_profilFrage is null) _profilzuordnung = false;
+    }
 
     /// <summary>
     /// Das Schließen der Überlagerung „Nutzungsprofile": Der Katalog hat sofort geschrieben (NP-F3); der Plan liest

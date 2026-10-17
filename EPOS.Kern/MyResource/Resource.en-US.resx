@@ -58408,4 +58408,31 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="GIMP_PZ_AMPEL_GRUEN" xml:space="preserve">
     <value>All rooms carry a set profile.</value>
   </data>
+  <data name="GIMP_PZ_NUR_VORSCHLAEGE" xml:space="preserve">
+    <value>proposals only</value>
+  </data>
+  <data name="GIMP_PZ_NUR_BEHEIZTE" xml:space="preserve">
+    <value>heated only</value>
+  </data>
+  <data name="GIMP_PZ_AUFKLAPPEN" xml:space="preserve">
+    <value>Single rooms</value>
+  </data>
+  <data name="GIMP_PZ_DATEIZONEN_TITEL" xml:space="preserve">
+    <value>Zones named by the file</value>
+  </data>
+  <data name="GIMP_PZ_RESTRAEUME_TITEL" xml:space="preserve">
+    <value>Rooms without a zone of the project file</value>
+  </data>
+  <data name="GIMP_PZ_RESTRAEUME_HINWEIS" xml:space="preserve">
+    <value>The rooms stay without a zone until a proposal or candidate is chosen; the zones of the project file remain unchanged.</value>
+  </data>
+  <data name="GIMP_PZ_IN_ZONE" xml:space="preserve">
+    <value>into zone “{0}”</value>
+  </data>
+  <data name="GIMP_PZ_FRAGE_TITEL" xml:space="preserve">
+    <value>Assign profile</value>
+  </data>
+  <data name="GIMP_PZ_FRAGE" xml:space="preserve">
+    <value>The assignment rebuilds the zone tree by its rule. {0} manual steps on the zone tree will be lost. Continue?</value>
+  </data>
 </root>

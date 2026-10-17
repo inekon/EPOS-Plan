@@ -18,6 +18,7 @@ public sealed class GebaeudeProfilzuordnungDialogTests : EposBunitContext
         public List<IReadOnlyList<string>> Ruecknahmen { get; } = new();
         public int Alle { get; set; }
         public int AlleZurueck { get; set; }
+        public List<GebaeudeProfilwahl> InZone { get; } = new();
     }
 
     private static GebaeudeProfilbuendelDaten Buendel(string schluessel, string name, string stand, string? profil, params string[] raeume)
@@ -72,7 +73,8 @@ public sealed class GebaeudeProfilzuordnungDialogTests : EposBunitContext
             .Add(x => x.Zuordnen, (GebaeudeProfilwahl w) => p.Zuordnungen.Add(w))
             .Add(x => x.Zuruecknehmen, (IReadOnlyList<string> r) => p.Ruecknahmen.Add(r))
             .Add(x => x.AlleUebernehmen, () => p.Alle++)
-            .Add(x => x.AlleZuruecknehmen, () => p.AlleZurueck++));
+            .Add(x => x.AlleZuruecknehmen, () => p.AlleZurueck++)
+            .Add(x => x.InZoneZuordnen, (GebaeudeProfilwahl w) => p.InZone.Add(w)));
 
     private static IReadOnlyList<string?> Zeilen(IRenderedComponent<GebaeudeProfilzuordnung> cut)
         => cut.FindAll("tr.epos-gebimport-pz-zeile").Select(z => z.GetAttribute("data-buendel")).ToList();
@@ -165,6 +167,86 @@ public sealed class GebaeudeProfilzuordnungDialogTests : EposBunitContext
         Assert.True(cut.Find("button.epos-gebimport-pz-alle").HasAttribute("disabled"));
         cut.Find("button.epos-gebimport-pz-zurueck").KlickAbgewartet();
         Assert.Equal(1, p.AlleZurueck);
+    }
+
+    private static GebaeudeProfilraumDaten Raum(string k, string profil) => new(k, "Raum " + k, "12", GebaeudeProfilstand.HAND, "von Hand", profil);
+
+    [Fact]
+    public void Einzelraum_im_aufgeklappten_Buendel_und_gemischte_Buendel_stehen_offen()
+    {
+        var p = new Probe();
+        GebaeudeProfilzuordnungDaten d = Daten() with
+        {
+            Buendel = new[]
+            {
+                Buendel("Office|büroraum", "Büroraum", GebaeudeProfilstand.OFFEN, null, "R1", "R2", "R3")
+                    with { Raumzeilen = new[] { Raum("R1", ""), Raum("R2", ""), Raum("R3", "") } },
+                Buendel("Storage|lager", "Lager", GebaeudeProfilstand.HAND, "20", "R4", "R5")
+                    with { Gemischt = true, Raumzeilen = new[] { Raum("R4", "20 Lager"), Raum("R5", "1 Einzelbüro") } },
+            },
+        };
+        IRenderedComponent<GebaeudeProfilzuordnung> cut = Zeichnen(p, d);
+        // Das gemischte Bündel steht offen und zeigt seine Räume mit Profil; das andere ist zu.
+        Assert.Equal(new[] { "R4", "R5" }, cut.FindAll("tr.epos-gebimport-pz-raumzeile").Select(z => z.GetAttribute("data-raum")));
+        Assert.Contains("1 Einzelbüro", cut.Find("tr[data-raum='R5']").TextContent);
+
+        // Aufklappen, einen Raum wählen, Schnellwahl des offenen Bündels: nur dieser Raum.
+        cut.Find("tr[data-buendel='Office|büroraum'] button.epos-gebimport-pz-aufklappen").KlickAbgewartet();
+        Assert.Equal(5, cut.FindAll("tr.epos-gebimport-pz-raumzeile").Count);
+        cut.Find("tr[data-raum='R2'] input.epos-gebimport-pz-raumwahl").WechselAbgewartet(true);
+        Assert.Contains("(1 Räume)", cut.Find(".epos-gebimport-pz-gewaehlt").TextContent);
+        cut.Find("button.epos-gebimport-pz-kandidat[data-profil='2']").KlickAbgewartet();
+        GebaeudeProfilwahl w = Assert.Single(p.Zuordnungen);
+        Assert.Equal(new[] { "R2" }, w.Raeume);
+        Assert.Equal("2", w.Profil);
+        Assert.Empty(cut.Instance.Raumauswahl);
+
+        // Zuklappen des gemischten Bündels.
+        cut.Find("tr[data-buendel='Storage|lager'] button.epos-gebimport-pz-aufklappen").KlickAbgewartet();
+        Assert.Empty(cut.FindAll("tr[data-raum='R4']"));
+    }
+
+    [Fact]
+    public void Filter_nur_Vorschlaege_und_nur_beheizte()
+    {
+        var p = new Probe();
+        GebaeudeProfilzuordnungDaten d = Daten();
+        d = d with { Buendel = d.Buendel.Select(b => b.Schluessel == "Corridor|flur" ? b with { Beheizt = false } : b).ToList() };
+        IRenderedComponent<GebaeudeProfilzuordnung> cut = Zeichnen(p, d);
+        cut.Find("input.epos-gebimport-pz-nurvorschlaege").WechselAbgewartet(true);
+        Assert.Equal(new[] { "Storage|lager" }, Zeilen(cut));
+        cut.Find("input.epos-gebimport-pz-nurvorschlaege").WechselAbgewartet(false);
+        cut.Find("input.epos-gebimport-pz-nurbeheizte").WechselAbgewartet(true);
+        Assert.Equal(new[] { "Office|büroraum", "Storage|lager" }, Zeilen(cut));
+    }
+
+    [Fact]
+    public void Hinweisbloecke_Dateizonen_und_Raeume_ohne_Zone_nur_auf_Klick()
+    {
+        var p = new Probe();
+        GebaeudeProfilzuordnungDaten d = Daten() with
+        {
+            Dateizonen = new[] { new GebaeudeProfilhinweisDaten { Schluessel = "Z:1", Name = "Zone A", Raeume = new[] { "R1" }, Profil = "1", ProfilText = "Einzelbüro", Begruendung = "Bezeichnung der Datei „DIN 1“" } },
+            Restraeume = new[]
+            {
+                new GebaeudeProfilhinweisDaten { Schluessel = "R8", Name = "Raum X", Raeume = new[] { "R8" }, Profil = "4", ProfilText = "Besprechung", Begruendung = "Raumart" },
+                new GebaeudeProfilhinweisDaten { Schluessel = "R9", Name = "Raum C", Raeume = new[] { "R9" },
+                    Kandidaten = new[] { new GebaeudeZonenregelDaten("1", "Einzelbüro"), new GebaeudeZonenregelDaten("2", "Gruppenbüro") } },
+            },
+        };
+        IRenderedComponent<GebaeudeProfilzuordnung> cut = Zeichnen(p, d);
+        Assert.Empty(p.Zuordnungen);
+        Assert.Empty(p.InZone);
+        Assert.Contains("Bezeichnung der Datei", cut.Find("li[data-zone='Z:1']").TextContent);
+        cut.Find("button.epos-gebimport-pz-dateizone-uebernehmen").KlickAbgewartet();
+        Assert.Equal(new GebaeudeProfilwahl(new[] { "R1" }, "1").Profil, Assert.Single(p.Zuordnungen).Profil);
+
+        Assert.Equal(2, cut.FindAll("li.epos-gebimport-pz-restraum").Count);
+        cut.Find("li[data-raum='R8'] button.epos-gebimport-pz-restvorschlag").KlickAbgewartet();
+        Assert.Equal(("4", "R8"), (p.InZone.Last().Profil, p.InZone.Last().Raeume.Single()));
+        Assert.Equal(2, cut.FindAll("li[data-raum='R9'] button.epos-gebimport-pz-restkandidat").Count);
+        cut.Find("li[data-raum='R9'] button.epos-gebimport-pz-restkandidat[data-profil='2']").KlickAbgewartet();
+        Assert.Equal(("2", "R9"), (p.InZone.Last().Profil, p.InZone.Last().Raeume.Single()));
     }
 
     [Fact]

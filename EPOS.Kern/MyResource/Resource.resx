@@ -58415,4 +58415,31 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="GIMP_PZ_AMPEL_GRUEN" xml:space="preserve">
     <value>Alle Räume tragen ein gesetztes Profil.</value>
   </data>
+  <data name="GIMP_PZ_NUR_VORSCHLAEGE" xml:space="preserve">
+    <value>nur Vorschläge</value>
+  </data>
+  <data name="GIMP_PZ_NUR_BEHEIZTE" xml:space="preserve">
+    <value>nur beheizte</value>
+  </data>
+  <data name="GIMP_PZ_AUFKLAPPEN" xml:space="preserve">
+    <value>Räume einzeln</value>
+  </data>
+  <data name="GIMP_PZ_DATEIZONEN_TITEL" xml:space="preserve">
+    <value>Zonen mit Bezeichnung der Datei</value>
+  </data>
+  <data name="GIMP_PZ_RESTRAEUME_TITEL" xml:space="preserve">
+    <value>Räume ohne Zone der Projektdatei</value>
+  </data>
+  <data name="GIMP_PZ_RESTRAEUME_HINWEIS" xml:space="preserve">
+    <value>Die Räume bleiben ohne Zone, bis ein Vorschlag oder Kandidat gewählt ist; die Zonen der Projektdatei bleiben unverändert.</value>
+  </data>
+  <data name="GIMP_PZ_IN_ZONE" xml:space="preserve">
+    <value>in Zone „{0}“</value>
+  </data>
+  <data name="GIMP_PZ_FRAGE_TITEL" xml:space="preserve">
+    <value>Profil zuordnen</value>
+  </data>
+  <data name="GIMP_PZ_FRAGE" xml:space="preserve">
+    <value>Die Zuordnung bildet den Zonenbaum nach der Regel neu. {0} Schritte von Hand am Zonenbaum gehen dabei verloren. Fortfahren?</value>
+  </data>
 </root>

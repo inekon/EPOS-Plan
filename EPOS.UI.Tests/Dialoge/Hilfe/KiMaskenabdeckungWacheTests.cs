@@ -486,7 +486,7 @@ public sealed class KiMaskenabdeckungWacheTests
             "kein Einstellwert der Maske; er gilt nur für den einen Vormerkvorgang"),
         // ZZ-B: Suche im Katalog, Filter „nur offene“ und der Haken je Bündel sind Bedienhilfen der Überlagerung (Mengenwahl
         // für eine Zuordnung), keine Einstellwerte; jede Zuordnung ist ein Schritt am Zonenplan des Importdialogs.
-        new("GebaeudeProfilzuordnung", 3, "Suche, Filter und der Haken je Bündel sind Bedienhilfen der Mengenwahl, keine Einstellwerte; " +
+        new("GebaeudeProfilzuordnung", 6, "Suche, die drei Filter und die Haken je Bündel und je Raum sind Bedienhilfen der Mengenwahl, keine Einstellwerte; " +
             "die Zuordnung selbst ist ein Schritt am Zonenplan des Importdialogs"),
         new("AufheizzeitManuellFeld", 1),
         // KP2 U2: die Auswahlliste der Vorlagen je Kalenderkarte - die Feldkarte führt sie als

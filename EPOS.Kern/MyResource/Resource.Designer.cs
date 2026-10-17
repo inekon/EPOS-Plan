@@ -48417,11 +48417,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Räume einzeln ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_AUFKLAPPEN {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_AUFKLAPPEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Räume der Datei ähnelt.
         /// </summary>
         public static string GIMP_PZ_BUENDEL_TITEL {
             get {
                 return ResourceManager.GetString("GIMP_PZ_BUENDEL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonen mit Bezeichnung der Datei ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_DATEIZONEN_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_DATEIZONEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zuordnung bildet den Zonenbaum nach der Regel neu. {0} Schritte von Hand am Zonenbaum gehen dabei verloren. Fortfahren? ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_FRAGE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profil zuordnen ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_FRAGE_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_FRAGE_TITEL", resourceCulture);
             }
         }
         
@@ -48449,6 +48485,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GIMP_PZ_HINWEIS_WAHL {
             get {
                 return ResourceManager.GetString("GIMP_PZ_HINWEIS_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die in Zone „{0}“ ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_IN_ZONE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_IN_ZONE", resourceCulture);
             }
         }
         
@@ -48516,6 +48561,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur beheizte ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_NUR_BEHEIZTE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_NUR_BEHEIZTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nur offene ähnelt.
         /// </summary>
         public static string GIMP_PZ_NUR_OFFENE {
@@ -48525,11 +48579,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Vorschläge ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_NUR_VORSCHLAEGE {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_NUR_VORSCHLAEGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Raumart {0} ähnelt.
         /// </summary>
         public static string GIMP_PZ_RAUMART {
             get {
                 return ResourceManager.GetString("GIMP_PZ_RAUMART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Räume bleiben ohne Zone, bis ein Vorschlag oder Kandidat gewählt ist; die Zonen der Projektdatei bleiben unverändert. ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_RESTRAEUME_HINWEIS {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_RESTRAEUME_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Räume ohne Zone der Projektdatei ähnelt.
+        /// </summary>
+        public static string GIMP_PZ_RESTRAEUME_TITEL {
+            get {
+                return ResourceManager.GetString("GIMP_PZ_RESTRAEUME_TITEL", resourceCulture);
             }
         }
         

@@ -19,15 +19,19 @@ namespace WindowsFormsApplication1
         /// <summary>Die Profilzuordnung des Plans; <c>null</c>, wenn der Plan keine Raumprofile trägt (andere Formate, Proben ohne Raumart).</summary>
         internal static GebaeudeProfilzuordnungDaten Daten(Zonenplan plan)
         {
-            if (plan == null || plan.Raumprofile.Count == 0) return null;
+            if (plan == null) return null;
+            List<Planzone> dateizonen = plan.Zonen.Where(z => z.Dateivorschlag != null).ToList();
+            bool mitProjektdatei = plan.Zonen.Any(z => z.Projektdatei?.Zonierung != null);
+            IReadOnlyList<Raumprofilbefund> rest = mitProjektdatei ? plan.Restvorschlaege() : Array.Empty<Raumprofilbefund>();
+            if (plan.Raumprofile.Count == 0 && dateizonen.Count == 0 && rest.Count == 0) return null;
             Raumnutzungsvorbelegung v = plan.Vorbelegung;
             IReadOnlyList<Raumprofilbuendel> buendel = plan.Buendel();
-            Raumprofilzaehlung n = Raumprofilzuordnung.Zaehlen(plan.Raumprofile);
+            Raumprofilzaehlung n = Zaehlung(plan, dateizonen);
             string ampel = n.Rueckfrage > 0 ? GebaeudeProfilampel.ROT : n.Vorschlag > 0 ? GebaeudeProfilampel.GELB : GebaeudeProfilampel.GRUEN;
             string ampeltext = ampel == GebaeudeProfilampel.ROT ? Formatieren(MyResource.Resource.GIMP_PZ_AMPEL_RUECKFRAGE, n.Rueckfrage)
                              : ampel == GebaeudeProfilampel.GELB ? Formatieren(MyResource.Resource.GIMP_PZ_AMPEL_VORSCHLAG, n.Vorschlag)
                              : MyResource.Resource.GIMP_PZ_AMPEL_GRUEN;
-            List<GebaeudeProfilbuendelDaten> zeilen = buendel.Select(b => Buendeldaten(v, b)).ToList();
+            List<GebaeudeProfilbuendelDaten> zeilen = buendel.Select(b => Buendeldaten(plan, b)).ToList();
             return new GebaeudeProfilzuordnungDaten
             {
                 Buendel = zeilen,
@@ -41,8 +45,62 @@ namespace WindowsFormsApplication1
                 Zaehlertext = Formatieren(MyResource.Resource.GIMP_PZ_ZAEHLER, n.Eindeutig, n.Vorschlag, n.Offen, n.Ohne, n.Hand),
                 Ampel = ampel,
                 Ampeltext = ampeltext,
+                Dateizonen = dateizonen.Select(z => Dateizone(plan, z)).ToList(),
+                Restraeume = rest.Select(b => Restraum(v, b)).ToList(),
             };
         }
+
+        /// <summary>
+        /// <b>Die Zählung samt den Vorschlägen aus der Bezeichnung der Datei</b> (F2, ZZ-B Nachzug): ein beheizter Raum einer
+        /// Zone mit unbestätigtem <see cref="Planzone.Dateivorschlag"/> zählt als Vorschlag, solange er keine Wahl von Hand trägt
+        /// — auch ohne Befund je Raum (gbXML). „Alle Vorschläge übernehmen“ bestätigt ihn (Kern).
+        /// </summary>
+        internal static Raumprofilzaehlung Zaehlung(Zonenplan plan, IReadOnlyList<Planzone> dateizonen)
+        {
+            var datei = new HashSet<string>(dateizonen.SelectMany(z => plan.RaeumeVon(z.Schluessel)).Where(plan.Beheizt).Select(r => r.Kennung),
+                                            StringComparer.Ordinal);
+            Raumprofilzaehlung n = Raumprofilzuordnung.Zaehlen(plan.Raumprofile.Where(b => b.Raum == null || !datei.Contains(b.Raum.Kennung)));
+            int hand = 0, vorschlag = 0;
+            var gesehen = new HashSet<string>(StringComparer.Ordinal);
+            foreach (Raumprofilbefund b in plan.Raumprofile.Where(b => b.Raum != null && datei.Contains(b.Raum.Kennung)))
+            {
+                gesehen.Add(b.Raum.Kennung);
+                if (b.Stand == Raumprofilstand.Hand) hand++; else vorschlag++;
+            }
+            vorschlag += datei.Count(k => !gesehen.Contains(k));
+            return n with { Vorschlag = n.Vorschlag + vorschlag, Hand = n.Hand + hand };
+        }
+
+        private static GebaeudeProfilhinweisDaten Dateizone(Zonenplan plan, Planzone z)
+        {
+            List<AbbildRaum> raeume = plan.RaeumeVon(z.Schluessel).Where(plan.Beheizt).ToList();
+            return new GebaeudeProfilhinweisDaten
+            {
+                Schluessel = z.Schluessel,
+                Name = z.Name,
+                Raeume = raeume.Select(r => r.Kennung).ToList(),
+                Flaeche = Flaechentext(raeume.Sum(r => r.FlaecheM2 ?? 0.0)),
+                Profil = z.Dateivorschlag,
+                ProfilText = Raumprofilschluessel.Anzeigename(plan.Vorbelegung, z.Dateivorschlag),
+                Begruendung = z.Quelle?.Schluessel ?? "",
+            };
+        }
+
+        private static GebaeudeProfilhinweisDaten Restraum(Raumnutzungsvorbelegung v, Raumprofilbefund b) => new GebaeudeProfilhinweisDaten
+        {
+            Schluessel = b.Raum.Kennung,
+            Name = Zonenplan.Raumname(b.Raum),
+            Raeume = new[] { b.Raum.Kennung },
+            Flaeche = Flaechentext(b.Raum.FlaecheM2 ?? 0.0),
+            Profil = b.Vorschlag,
+            ProfilText = b.Vorschlag == null ? "" : Raumprofilschluessel.Anzeigename(v, b.Vorschlag),
+            Begruendung = b.Begruendungstext,
+            Kandidaten = b.Vorschlag != null ? Array.Empty<GebaeudeZonenregelDaten>()
+                       : b.Kandidaten.Select(k => new GebaeudeZonenregelDaten(k, Raumprofilschluessel.Anzeigename(v, k))).ToList(),
+        };
+
+        private static string Flaechentext(double m2)
+            => m2 <= 0.0 ? MyResource.Resource.GIMP_WERT_LEER : m2.ToString("0", CultureInfo.CurrentCulture);
 
         /// <summary>Der Stand als sprachneutraler Schlüssel.</summary>
         internal static string Stand(Raumprofilstand s) => s switch
@@ -77,12 +135,14 @@ namespace WindowsFormsApplication1
                 GebaeudePlanschrittArt.PROFIL_ZURUECK => plan.ProfilzuordnungZuruecknehmen(raeume),
                 GebaeudePlanschrittArt.VORSCHLAEGE => plan.VorschlaegeUebernehmen(),
                 GebaeudePlanschrittArt.VORSCHLAEGE_ZURUECK => plan.VorschlaegeZuruecknehmen(),
+                GebaeudePlanschrittArt.RESTPROFIL => plan.InProfilzoneZuordnen(raeume, s.Nutzung ?? ""),
                 _ => null,
             };
         }
 
-        private static GebaeudeProfilbuendelDaten Buendeldaten(Raumnutzungsvorbelegung v, Raumprofilbuendel b)
+        private static GebaeudeProfilbuendelDaten Buendeldaten(Zonenplan plan, Raumprofilbuendel b)
         {
+            Raumnutzungsvorbelegung v = plan.Vorbelegung;
             string min = b.FlaecheMinM2.ToString("0", CultureInfo.CurrentCulture);
             string max = b.FlaecheMaxM2.ToString("0", CultureInfo.CurrentCulture);
             return new GebaeudeProfilbuendelDaten
@@ -100,6 +160,11 @@ namespace WindowsFormsApplication1
                                                        : Raumprofilschluessel.Anzeigename(v, b.Vorschlag),
                 Begruendung = Raumprofilzuordnung.Begruendungstext(b.Begruendung),
                 Kandidaten = b.Kandidaten.Select(k => new GebaeudeZonenregelDaten(k, Raumprofilschluessel.Anzeigename(v, k))).ToList(),
+                Raumzeilen = b.Raeume.Where(r => r.Raum != null).Select(r => new GebaeudeProfilraumDaten(
+                    r.Raum.Kennung, Zonenplan.Raumname(r.Raum), Flaechentext(r.Raum.FlaecheM2 ?? 0.0), Stand(r.Stand), Standtext(r.Stand),
+                    r.Vorschlag == null ? "" : r.Vorschlag.Length == 0 ? MyResource.Resource.GIMP_PZ_KEINE : Raumprofilschluessel.Anzeigename(v, r.Vorschlag)))
+                    .ToList(),
+                Beheizt = b.Raeume.Any(r => r.Raum != null && plan.Beheizt(r.Raum)),
             };
         }
 

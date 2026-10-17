@@ -66,6 +66,18 @@ namespace EPOS.Kern.Tests
             Assert.Equal(PruefStufe.Info, m.Stufe);
             Assert.Equal(new[] { "4", "2" }, m.Werte.Take(2));
             Assert.Equal(e.Raumvorschlaege.Select(b => b.Raum.Kennung), plan.Restvorschlaege().Select(b => b.Raum.Kennung));
+
+            // ZZ-B Nachzug: die Hülle zeigt sie als Hinweisblock (nie übernommen); der Schritt RESTPROFIL ordnet einen zu.
+            EPOS.UI.Dialoge.Import.GebaeudeProfilzuordnungDaten pz = GebaeudeImportProfilzuordnung.Daten(plan);
+            Assert.NotNull(pz);
+            Assert.Equal(e.Raumvorschlaege.Select(b => b.Raum.Kennung), pz.Restraeume.Select(r => r.Schluessel));
+            Assert.Equal("4", pz.Restraeume.Single(r => r.Name == "Raum X").Profil);
+            Assert.Equal(new[] { "1", "2", "3" }, pz.Restraeume.Single(r => r.Name == "Raum C").Kandidaten.Select(k => k.Schluessel));
+            Planschritt s = GebaeudeImportProfilzuordnung.Schritt(plan, new EPOS.UI.Dialoge.Import.GebaeudePlanschritt(
+                EPOS.UI.Dialoge.Import.GebaeudePlanschrittArt.RESTPROFIL, new[] { x.Raum.Kennung }, Nutzung: "4"));
+            Assert.True(s.Ok);
+            Assert.Equal(3, GebaeudeImportProfilzuordnung.Daten(plan).Restraeume.Count);
+            Assert.Equal("Simulation", plan.Zonen[0].Name);
         }
 
         /// <summary>
