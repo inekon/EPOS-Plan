@@ -1788,6 +1788,27 @@ rot mit 103 Verstößen** (Rückgabe 0).
 | 480 voll | 478 / 478 / 478 px | unter | 1,27 Zeilen | 13 |
 | 360 voll | 358 / 358 / 358 px | unter | 2,00 Zeilen | 15 |
 
+## Fensterprobe, Fall `bedarfgrafik` (Grafik des Ergebnisdialogs in der Überlagerung)
+
+**Wozu.** Im Dialog „Standard Stromprofil“ → „Simulation…“ steht der `BedarfErgebnisDialog` als `Ueberlagerung`; sein
+Reiter „Grafik“ zeigt das Bild in einem `.epos-reiter-blatt` (`overflow: auto`). Die Zeigerzeile unter dem Bild haftet in
+Überlagerungen mit dem Fußabstand der Schlussleiste (`--epos-ueberlagerung-fuss`) — `sticky` bezieht sich aber auf den
+nächsten Rollbehälter, hier das Reiterblatt, dessen Unterkante mit der des Bildes zusammenfällt. Die Zeile stand so mit
+ihrer Fläche über Achsenlinie, Tick-Beschriftung und Säulenfuß. Die Seite `/fensterprobe?fall=bedarfgrafik` stellt den
+Dialog mit echten Modellen des Kerns (Jahresgang, Säulenstapel) über einen Fensterdialog.
+
+```bash
+node fensterprobe.mjs --url http://127.0.0.1:5299 --nur bedarfgrafik [--fotos <ordner außerhalb des Repositorys>]
+```
+
+**Sollwerte** je Raster Jahr | Monat | Woche | Tag, in 1 088 × 624 und 1 600 × 1 000: Die Zeigerzeile beginnt nicht über
+der untersten Textzeile des SVG, und nach dem Rollen ans Ende steht diese Textzeile ganz im sichtbaren Rollbereich über
+der Schlussleiste. **Gegenprobe:** die Zeigerzeile im Reiterblatt mit dem Fußabstand der Überlagerung muss rot sein.
+
+**Ergebnis vom 17.10.2026** (Linux-Container, Chromium headless): vorher 8 Verstöße (alle vier Raster in beiden Fenstern,
+etwa Monat 1 600 × 1 000: Zeile ab 662,8 px über Text bis 683,7 px); nachher 0 Verstöße (Zeile ab 715,8 px unter Text bis
+683,7 px), Gegenprobe je Fenster 4 Verstöße (richtig).
+
 ## Diagrammprobe (Zeigerbalken im Zoom, Auftrag GX) — Seite `/diagrammsvg`
 
 **Wozu.** Der senkrechte Balken an der Mausstelle eines Diagramms (`DiagrammSvg`) soll der Maus im selben Bild

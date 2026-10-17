@@ -2597,6 +2597,18 @@ html:has(.epos-ueberlagerung) {
     background: var(--epos-karte-flaeche);
 }
 
+/* IM REITERBLATT HAFTET SIE AM REITERBLATT, NICHT UEBER DER ACHSE (Befund 17.10.2026,
+   Grafik des Ergebnisdialogs "Simulation..."). sticky bezieht sich auf den NAECHSTEN
+   Rollbehaelter, und das ist hier .epos-reiter-blatt (overflow: auto), nicht die
+   Ueberlagerung. Dessen Unterkante faellt mit der Unterkante des Bildes zusammen; der
+   Fussabstand der Ueberlagerung hob die Zeile deshalb um die Hoehe der Schlussleiste
+   ueber Achsenlinie, Tick-Beschriftung und Achsentitel - in jedem Raster und jedem
+   Reiter. Mit Abstand 0 bleibt sie unter dem Bild und haftet nur, wenn das Reiterblatt
+   selbst rollt. */
+.epos-ueberlagerung-inhalt .epos-reiter-blatt .epos-diagramm-zeigerzeile {
+    bottom: 0;
+}
+
 /* EIN HILFEKNOPF (#572). Solange eine Ueberlagerung steht, zeigt nur die
    innerste ihre Hilfepillen; der Wirt und jede aeussere Ueberlagerung
    verstecken ihre - sonst standen zwei gleiche Knoepfe uebereinander, und
