@@ -15261,7 +15261,7 @@ Alle Eingaben überprüfen!</value>
     <value>Wärmeproduktion Wärmepumpe:</value>
   </data>
   <data name="SIMERG_LBL_WAERMEPRODUKTION_HEIZSTAB" xml:space="preserve">
-    <value>Wärmeproduktion Heizstab:</value>
+    <value>zuzüglich Wärmeproduktion Heizstab:</value>
   </data>
   <data name="SIMERG_TIP_WAERMEPRODUKTION_WP" xml:space="preserve">
     <value>Wärme, die die Wärmepumpen abgeben, je Modul gemessen am Erzeuger und ohne Heizstab. Bezieht eine Wärmepumpe ihre Quellwärme aus einem Puffer, den eine andere Wärmepumpe lädt (Booster), ist diese Wärme in beiden Modulen enthalten.</value>
@@ -29016,8 +29016,8 @@ Möchten Sie das zulassen?</value>
   <data name="SIMERG_LBL_DAVON_PROZESS" xml:space="preserve">
     <value>davon Prozesswärme:</value>
   </data>
-  <data name="SIMERG_LBL_DAVON_QUELLWAERME_KASKADE" xml:space="preserve">
-    <value>davon Quellwärme aus Kaskade:</value>
+  <data name="SIMERG_LBL_ABZUEGLICH_QUELLWAERME_KASKADE" xml:space="preserve">
+    <value>abzüglich Quellwärme aus Kaskade:</value>
   </data>
   <data name="SIMERG_TIP_QUELLWAERME_KASKADE_WP" xml:space="preserve">
     <value>Wärme, die eine Wärmepumpe als Quelle aus einem Puffer bezieht, den ein anderer Erzeuger lädt (Booster). Sie ist in der Wärmeproduktion zweimal enthalten: beim Erzeuger, der den Puffer lädt, und bei der Wärmepumpe, die sie anhebt. Ohne Kaskade 0.</value>
@@ -58216,5 +58216,17 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="KI_DLG_KMA_RKW_ERL" xml:space="preserve">
     <value>Katalogsatz des Rückkühlwerks der wassergekühlten Kältemaschine (Id); leer = keins, dann gelten die Festwerte der Rückkühlart. Mit OK bekommt die Anlage eine eigene Projektkopie.</value>
+  </data>
+  <data name="SIMERG_LBL_ABZUEGLICH_SPEICHERVERLUSTE" xml:space="preserve">
+    <value>abzüglich Speicherverluste:</value>
+  </data>
+  <data name="SIMERG_TIP_SPEICHERVERLUSTE_WP" xml:space="preserve">
+    <value>Wärme der Wärmepumpe, die in Speichern verloren geht oder am Jahresende noch darin steht, also keinen Bedarf deckt. Gerechnet als Wärmeproduktion minus Quellwärme aus Kaskade plus Heizstab minus Nutzwärme.</value>
+  </data>
+  <data name="SIMERG_LBL_NUTZWAERME_WP" xml:space="preserve">
+    <value>Erzeugte Nutzwärme Wärmepumpe:</value>
+  </data>
+  <data name="SIMERG_TIP_NUTZWAERME_WP" xml:space="preserve">
+    <value>Der Teil des Wärmebedarfs, den die Wärmepumpe deckt: direkt abgegebene Wärme plus die ihr zugerechnete Entladung der Speicher, samt Heizstab. Jede Kilowattstunde zählt einmal, auch wenn ein Booster sie ein zweites Mal angehoben hat. Grundlage der Wärmebedarfsdeckung.</value>
   </data>
 </root>

@@ -15254,7 +15254,7 @@ Please check all entries!</value>
     <value>Heat production heat pump:</value>
   </data>
   <data name="SIMERG_LBL_WAERMEPRODUKTION_HEIZSTAB" xml:space="preserve">
-    <value>Heat production heating element:</value>
+    <value>plus heat production heating element:</value>
   </data>
   <data name="SIMERG_TIP_WAERMEPRODUKTION_WP" xml:space="preserve">
     <value>Heat delivered by the heat pumps, measured per module at the generator and without the heating element. If a heat pump draws its source heat from a buffer charged by another heat pump (booster), that heat is contained in both modules.</value>
@@ -29009,8 +29009,8 @@ Do you want to allow this?</value>
   <data name="SIMERG_LBL_DAVON_PROZESS" xml:space="preserve">
     <value>of which process heat:</value>
   </data>
-  <data name="SIMERG_LBL_DAVON_QUELLWAERME_KASKADE" xml:space="preserve">
-    <value>of which source heat from cascade:</value>
+  <data name="SIMERG_LBL_ABZUEGLICH_QUELLWAERME_KASKADE" xml:space="preserve">
+    <value>less source heat from cascade:</value>
   </data>
   <data name="SIMERG_TIP_QUELLWAERME_KASKADE_WP" xml:space="preserve">
     <value>Heat a heat pump draws as its source from a buffer charged by another generator (booster). It is contained twice in the heat production: at the generator charging the buffer and at the heat pump lifting it. 0 without a cascade.</value>
@@ -58209,5 +58209,17 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="KI_DLG_KMA_RKW_ERL" xml:space="preserve">
     <value>Catalogue record of the heat rejection unit of the water-cooled chiller (id); empty = none, then the fixed values of the heat rejection type apply. With OK the plant gets its own project copy.</value>
+  </data>
+  <data name="SIMERG_LBL_ABZUEGLICH_SPEICHERVERLUSTE" xml:space="preserve">
+    <value>less storage losses:</value>
+  </data>
+  <data name="SIMERG_TIP_SPEICHERVERLUSTE_WP" xml:space="preserve">
+    <value>Heat pump heat lost in storage or still stored at year end, so it covers no demand. Computed as heat production minus source heat from cascade plus heating element minus useful heat.</value>
+  </data>
+  <data name="SIMERG_LBL_NUTZWAERME_WP" xml:space="preserve">
+    <value>Useful heat produced by heat pump:</value>
+  </data>
+  <data name="SIMERG_TIP_NUTZWAERME_WP" xml:space="preserve">
+    <value>The part of the heat demand covered by the heat pump: heat delivered directly plus the storage discharge attributed to it, including the heating element. Each kilowatt hour counts once, even if a booster lifted it a second time. Basis of the heat demand coverage.</value>
   </data>
 </root>

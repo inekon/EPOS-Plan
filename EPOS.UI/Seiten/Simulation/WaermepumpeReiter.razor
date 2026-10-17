@@ -65,12 +65,16 @@
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEBEDARF, Zahl(Daten.StufeneingangMwh), MWH)
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_WP, Zahl(Daten.WaermeproduktionMwh), MWH,
                                titel: Resource.SIMERG_TIP_WAERMEPRODUKTION_WP)
-                    @Wertzeile(Resource.SIMERG_LBL_DAVON_QUELLWAERME_KASKADE, Zahl(Daten.QuellwaermeKaskadeMwh), MWH,
+                    @* Eine aufgehende Herleitung: Produktion − Quellwärme + Heizstab
+                       − Speicherverluste = Nutzwärme, die Grundlage der Deckung. *@
+                    @Wertzeile(Resource.SIMERG_LBL_ABZUEGLICH_QUELLWAERME_KASKADE, Zahl(Daten.QuellwaermeKaskadeMwh), MWH,
                                titel: Resource.SIMERG_TIP_QUELLWAERME_KASKADE_WP)
                     @Wertzeile(Resource.SIMERG_LBL_WAERMEPRODUKTION_HEIZSTAB, Zahl(Daten.HeizstabWaermeproduktionMwh), MWH,
                                titel: Resource.SIMERG_TIP_WAERMEPRODUKTION_HEIZSTAB)
-                    @Wertzeile(Resource.SIMERG_LBL_GEDECKT, Zahl(Daten.GedecktMwh), MWH,
-                               titel: Resource.SIMERG_TIP_GEDECKT)
+                    @Wertzeile(Resource.SIMERG_LBL_ABZUEGLICH_SPEICHERVERLUSTE, Zahl(Daten.SpeicherverlusteMwh), MWH,
+                               titel: Resource.SIMERG_TIP_SPEICHERVERLUSTE_WP)
+                    @Wertzeile(Resource.SIMERG_LBL_NUTZWAERME_WP, Zahl(Daten.GedecktMwh), MWH,
+                               titel: Resource.SIMERG_TIP_NUTZWAERME_WP)
                     @foreach (var (text, wert) in Kanalzeilen.Davon(Daten.GedecktKanalMwh))
                     {
                         @Wertzeile(text, Zahl(wert), MWH)
