@@ -58220,4 +58220,64 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="ZPG_SP_NIVEAU" xml:space="preserve">
     <value>Niveau</value>
   </data>
+  <data name="ZPG_PS_KNOPF_KATALOG" xml:space="preserve">
+    <value>Als Katalogsatz speichern…</value>
+  </data>
+  <data name="ZPG_PS_KNOPF_PROJEKT" xml:space="preserve">
+    <value>Zum Projekt hinzufügen</value>
+  </data>
+  <data name="ZPG_PS_WARNUNG_PROJEKT" xml:space="preserve">
+    <value>Das Profil steht dann nur in diesem Projekt, nicht im Katalog. Es rechnet als Bestandsprofil ohne Ferien, Feiertage, Stochastik und Typtage.</value>
+  </data>
+  <data name="ZPG_PS_HINWEIS_WEG_GENERATOR" xml:space="preserve">
+    <value>Das Projekt rechnet sein Brauchwasser gerade über den Zapfprofilgenerator; ein abgelegter Profilsatz rechnet erst mit, wenn der Rechenweg auf Bestandsprofile steht.</value>
+  </data>
+  <data name="ZPG_PS_HINWEIS_WEG_BESTAND" xml:space="preserve">
+    <value>Das Projekt rechnet sein Brauchwasser gerade über die Bestandsprofile; ein Profilsatz, der dem Projekt hinzugefügt wird, rechnet mit.</value>
+  </data>
+  <data name="ZPG_PS_NAME_PROJEKT" xml:space="preserve">
+    <value>Zapfprofil {0}</value>
+  </data>
+  <data name="ZPG_PS_VARIANTE_MIT" xml:space="preserve">
+    <value>Zapfwärme und Zirkulationsverlust</value>
+  </data>
+  <data name="ZPG_PS_VARIANTE_OHNE" xml:space="preserve">
+    <value>nur Zapfwärme</value>
+  </data>
+  <data name="ZPG_PS_BESCHREIBUNG" xml:space="preserve">
+    <value>Aus dem Zapfprofilgenerator ({0})</value>
+  </data>
+  <data name="ZPG_PS_SPITZE" xml:space="preserve">
+    <value>{0} {1:00}–{2:00} Uhr: {3:N1} kW</value>
+  </data>
+  <data name="ZPG_PS_MSG_KEIN_ERGEBNIS" xml:space="preserve">
+    <value>Es ist kein Zapfprofil gerechnet — ohne Ergebnis kein Profilsatz.</value>
+  </data>
+  <data name="ZPG_PS_MSG_OHNE_BEDARF" xml:space="preserve">
+    <value>Das Zapfprofil trägt keinen Bedarf — es gibt nichts abzulegen.</value>
+  </data>
+  <data name="ZPG_PS_MSG_NAME_LEER" xml:space="preserve">
+    <value>Bitte einen Namen für den Katalogsatz angeben.</value>
+  </data>
+  <data name="ZPG_PS_MSG_NAME_VORHANDEN" xml:space="preserve">
+    <value>Ein Katalogsatz „{0}“ ist schon vorhanden.</value>
+  </data>
+  <data name="ZPG_PS_MSG_TYP_VORHANDEN" xml:space="preserve">
+    <value>Ein Wochenprofil „{0}“ ist schon vorhanden — bitte einen anderen Typ angeben.</value>
+  </data>
+  <data name="ZPG_PS_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Der Profilsatz wurde nicht gespeichert — {0}</value>
+  </data>
+  <data name="ZPG_PS_MSG_KATALOG_GESPEICHERT" xml:space="preserve">
+    <value>Der Katalogsatz „{0}“ ist gespeichert.</value>
+  </data>
+  <data name="ZPG_PS_MSG_PROJEKT_HINZUGEFUEGT" xml:space="preserve">
+    <value>„{0}“ steht als Brauchwasserprofil im Projekt.</value>
+  </data>
+  <data name="ZPG_PS_WOCHENTAGE" xml:space="preserve">
+    <value>Mo,Di,Mi,Do,Fr,Sa,So</value>
+  </data>
+  <data name="ZPG_PS_HINWEIS_ZIRK_DOPPELT" xml:space="preserve">
+    <value>Das Projekt rechnet auf dem Bestandsweg bereits eine Zirkulation. Mit Zirkulation im Profil zählt der Verlust doppelt — empfohlen: ohne Zirkulation.</value>
+  </data>
 </root>
