@@ -1,7 +1,7 @@
 # SK-2c — Energieflussbild nach Variante A „Gestraffte Kette“
 
 Welle SK, Schritt SK-2c, 16.10.2026, Zweig `sk2c` (von `sk3`, Kopf `de315c615`). Konzept:
-[`2026-10-16_Konzept_Energieflussbild_Sankey.md`](../../../aktuell/Dialoge/2026-10-16_Konzept_Energieflussbild_Sankey.md)
+[`2026-10-16_Konzept_Energieflussbild_Sankey.md`](../../2026-10-16_Konzept_Energieflussbild_Sankey.md)
 (Abschnitte 2.2, 2.3, 3, 5, 8, 10 mit SK-Q13 bis SK-Q17, Anhang 12 mit der Recherche). Vorgänger:
 [`2026-10-16_SK-12_Abbildung_Energiefluss.md`](2026-10-16_SK-12_Abbildung_Energiefluss.md),
 [`2026-10-16_SK-3_Oberflaeche_Energiefluss.md`](2026-10-16_SK-3_Oberflaeche_Energiefluss.md).

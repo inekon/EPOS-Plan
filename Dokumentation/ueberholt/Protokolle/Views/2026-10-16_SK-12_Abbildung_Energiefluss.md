@@ -2,7 +2,7 @@
 
 Welle SK, Schritt SK-12, 16.10.2026, Zweig `sk12` (von `origin/ios_migration_september`; `sk1` und `sk2` mit `--no-ff`
 gemergt, beide ohne Konflikt). Konzept:
-[`2026-10-16_Konzept_Energieflussbild_Sankey.md`](../../../aktuell/Dialoge/2026-10-16_Konzept_Energieflussbild_Sankey.md)
+[`2026-10-16_Konzept_Energieflussbild_Sankey.md`](../../2026-10-16_Konzept_Energieflussbild_Sankey.md)
 (Abschnitte 2, 3, 4.3, 5, 8, 10; SK-Q12). Vorgänger:
 [`2026-10-16_SK-1_Flussmodell.md`](2026-10-16_SK-1_Flussmodell.md),
 [`2026-10-16_SK-2_Renderer_Energiefluss.md`](2026-10-16_SK-2_Renderer_Energiefluss.md). Ergebnis ist die Grundlage,

@@ -1,7 +1,7 @@
 # SK-3 — Oberfläche des Energieflussbilds in „Ergebnisse – Energie“
 
 Welle SK, Schritt SK-3, 16.10.2026, Zweig `sk3` (von `sk12`, Kopf `695cac7ee`). Konzept:
-[`2026-10-16_Konzept_Energieflussbild_Sankey.md`](../../../aktuell/Dialoge/2026-10-16_Konzept_Energieflussbild_Sankey.md)
+[`2026-10-16_Konzept_Energieflussbild_Sankey.md`](../../2026-10-16_Konzept_Energieflussbild_Sankey.md)
 (Abschnitte 4, 7, 8, 10). Vorgänger: [`2026-10-16_SK-12_Abbildung_Energiefluss.md`](2026-10-16_SK-12_Abbildung_Energiefluss.md).
 Anwenderentscheide 16.10.2026: dritte Stellung „Fluss“, ein Bild für eine gewählte Version, SK-Q1 bis SK-Q11 nach
 Empfehlung, SK-Q12 Werte nur im Zeigertext (keine sichtbare Wertetabelle, keine Zahlen im Bild, verborgene

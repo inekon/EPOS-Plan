@@ -1,7 +1,7 @@
 # SK-2 — Renderer des Energieflussbilds (Sankey) im Kern
 
 Stand: 16.10.2026, Zweig `sk2` (von `origin/ios_migration_september` samt Zweig `sk`). Grundlage:
-[`2026-10-16_Konzept_Energieflussbild_Sankey.md`](../../../aktuell/Dialoge/2026-10-16_Konzept_Energieflussbild_Sankey.md)
+[`2026-10-16_Konzept_Energieflussbild_Sankey.md`](../../2026-10-16_Konzept_Energieflussbild_Sankey.md)
 Abschnitte 2.2, 2.3, 2.5, 3, 6 und 8 (Zeile SK-2); Anwenderentscheide 16.10.2026: ein Bild mit Strom, Wärme und
 Kälte, SK-Q1 bis SK-Q11 nach Empfehlung, SK-Q12 (Bildschirm: Werte nur im Zeigertext, Knoten nur mit Namen;
 Bericht: Knoten mit Jahressumme, Bänder ohne Zahlen).

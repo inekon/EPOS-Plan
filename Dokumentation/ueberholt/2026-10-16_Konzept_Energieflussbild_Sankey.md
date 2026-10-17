@@ -18,10 +18,10 @@ und Schritte fest. Kein Produktcode ist Teil dieses Auftrags.
 | **SK-4** | Der Wortbericht bekommt das Bild in derselben Welle (Vorlagenfeld mit Katalogfassung, Bausteinweg). |
 
 **Abgrenzung.** Zeichenmodell, SVG-Weg, Zeigerzeile und Farbrollen sind in
-[`Konzept_Diagramme_Interaktiv_EPOS-Plan.md`](../Konzept_Diagramme_Interaktiv_EPOS-Plan.md)
+[`Konzept_Diagramme_Interaktiv_EPOS-Plan.md`](../aktuell/Konzept_Diagramme_Interaktiv_EPOS-Plan.md)
 festgelegt (Abschnitte 6 und 9); dieses Papier nimmt sie als gegeben. Die Kennzahlen des
 Abschnitts und ihre Gruppen stehen im Kern (`Energievergleich`, `KennzahlenKatalog`) und bleiben
-unverändert. Mockup: `Dokumentation/aktuell/Mockups/Energieflussbild_Mockup.html` (Umschalter,
+unverändert. Mockup: `Dokumentation/ueberholt/Mockups/Energieflussbild_Mockup.html` (Umschalter,
 Versionswahl, Bild mit Strom, Wärme und Kälte, Speicher mit Verlustband, Zeigertext, verborgene Textalternative,
 schmale Ansicht). Ist das Bild umgesetzt, wandert dieses Papier nach `ueberholt/`; der gültige
 Stand steht dann im Code, in der Wiki-Quelle „Varianten“ und im Konzept Diagramme (Abschnitt 9,
@@ -630,7 +630,7 @@ dem Merge. Kein Schemaschritt (Abschnitt 1.7).
 | **SK-2d-1** Stufen, schmale Fassung, Filter (Kern) | Darstellung Stufen (Variante B, SK-Q17): vier feste Spalten Einsatz \| Anlagen \| Energieform \| Nutzen mit Titeln (`EF_ST_*`), Verbinder (Stummel „→ Gerät“ am Bus, „Strom“ am Gerät, gemeinsame Marke, Pfeilspitze und Kreis) über die Naht `Verbinderregel` und `EfBand.Verbinder`; dieselbe Verbinderregel für die schmale Fassung und als Rückfall der Kette über sechs Spalten; Formfilter als eigene Bilddaten (`EnergieflussFilter`, `EnergieflussAbbildung.Gefiltert`, leerer Filter benannt); Hervorhebungsregel als Vertrag (3.3) mit Referenz `EnergieflussAbbildung.Umfeld`; Schnittstelle 3.5; `EF_SP_QUELLEN/WANDLER/BEDARF` entfernt | `EnergieflussModellTests` (Stufen, Verbinder, schmal, Rückfall, Hinweis), `EnergieflussAbbildungTests` (Titel, Filter, Umfeld), `EnergieflussReferenzprojektWacheTests` (Stufen kreuzungsfrei, Verbinder schmal, Filter), ChartProben (Stufen, Filter, Gegenproben, SVG), Messlatte `energiefluss*` 22 Zeilen |
 | **SK-2d-2** Oberfläche: Schalter, Filter, Hervorhebung | Schalter „Kette \| Stufen“ in der Ansicht Fluss (Vorgabe Kette, je Benutzer gemerkt unter `Uebersicht.Ergebnisse.Fluss.Darstellung`, der Bericht zeigt die Kette), Filterknöpfe Alle \| Strom \| Wärme \| Kälte (je Sitzung), der Stand im Puffer der Hülle hält die 16 Modelle je Version, gebaut beim ersten Bedarf (4.3a), Hinweiszeile des leeren Filters; Pfad-Hervorhebung bis zum nächsten Bus im eigenen Modul `epos-energiefluss.js` der Komponente aus Kanten und Bussen der Hülle (Vertrag 3.3, `DiagrammSvg` unberührt), Stilblatt, KI-Ansichtszeile, Wiki-Quelle „Varianten“ | `UebersichtErgebnisFlussTests`, `StilblattTests`, `KiMaskenabdeckungWacheTests`; `diagrammprobe.mjs` Fälle `fluss`, `hervorhebung` (gegen `Umfeld`, Gegenproben ohne Modul und ohne Regel) und `wahl`, `zoom` unverändert; Windows-Schale mit `EnableWindowsTargeting=true` gebaut |
 | **SK-4** Bericht | `Berichtsbilder.Energiefluss`, Vorlagenfeld und Schalter, Katalogfassung 25 mit Messlatte v25, Baustein „Ergebnisse je Variante“, Wiki-Quelle Bericht | `VorlagenfeldkatalogWacheTests`, `VorlagenprueferTests`, `WordBaukastenTests`, Wortbericht eines Referenzprojekts mit Bild (Sichtprobe) |
-| **SK-5** Abschluss | Statuszeile, Protokoll unter `ueberholt/Protokolle/`, Logbuch-Entwurf, Konzept Diagramme Abschnitt 9 um die fünf Rollen ergänzt, dieses Papier nach `ueberholt/` mit Indexzeile | `DokumentationLinkWacheTests`, `RepositoryOrdnungWacheTests` |
+| **SK-5** Abschluss | Statuszeile, Protokoll unter `ueberholt/Protokolle/`, Logbuch-Entwurf, Konzept Diagramme Abschnitt 9 um die sieben Rollen des Bildes ergänzt, dieses Papier nach `ueberholt/` mit Indexzeile | `DokumentationLinkWacheTests`, `RepositoryOrdnungWacheTests` |
 
 SK-1 und SK-2 sind unabhängig und laufen parallel (der Renderer arbeitet auf seinem eigenen
 Eingabetyp `EnergieflussBildDaten`); SK-12 führt beide zusammen, vereinheitlicht die Namen und baut
@@ -770,3 +770,21 @@ schmal, C vorgemerkt.
   <https://dataviz.unhcr.org/chart-types/flow>, <https://ctl.duke.edu/blog/2015/11/using-sankey-diagrams-tell-story-data/>
 - Pfad-Hervorhebung: ApexSankey <https://apexcharts.com/apexsankey/docs/path-highlighting/>, MUI X Charts <https://next.mui.com/x/react-charts/sankey>,
   amCharts <https://www.amcharts.com/demos/traceable-sankey-diagram/>
+
+---
+
+## 13. Offene Punkte beim Abschluss (SK-5)
+
+Die Welle SK ist mit SK-5 abgeschlossen; Bild, Schalter „Kette \| Stufen“, Formfilter,
+Hervorhebung und Bericht sind gebaut. Der gültige Stand steht im Code, in der Wiki-Quelle
+„Varianten“, in der Berichts-Wiki-Quelle (Platzhalter `stand.bild.energiefluss`) und im Konzept
+Diagramme (Abschnitt 9, Rollen des Energieflussbilds). Offen bleibt, nicht Teil dieser Welle:
+
+- **Variante C „Bilanzbalken“ je Energieform (SK-Q16):** vorgemerkt als spätere vierte Stellung
+  „Bilanz“ am Umschalter „Tabelle \| Grafik \| Fluss“ bzw. als Berichtstafel; sie löst den exakten
+  Vergleich ähnlicher Mengen, den ein Sankey nicht kann. Vormerkung auch in der Statusdatei (4.3,
+  Sitzung Dialoge und Korrekturen).
+- **Optionale Ergebnisspalten (Abschnitt 1.7, SK-Q1 b):** `Tab_ErgebnisBHKW.Stromeinspeisung`,
+  `Tab_ErgebnisStromspeicher.Eigenverbrauch_System`, `Tab_ErgebnisPhotovoltaik.Abregelung` als
+  Schemaschritt mit neuer Referenzbasis, falls der Anwender Standby und Abregelung exakt statt als
+  Band „nicht zugeordnet“ ausgewiesen haben will.

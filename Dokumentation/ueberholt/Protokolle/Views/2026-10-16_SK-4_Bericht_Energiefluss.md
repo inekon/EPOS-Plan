@@ -2,7 +2,7 @@
 
 Welle SK, Schritt SK-4, 16.10.2026, Zweig `sk4` (von `sk3`, Kopf `de315c615`, dazu `origin/ios_migration_september`
 hineingemerged). Konzept:
-[`2026-10-16_Konzept_Energieflussbild_Sankey.md`](../../../aktuell/Dialoge/2026-10-16_Konzept_Energieflussbild_Sankey.md)
+[`2026-10-16_Konzept_Energieflussbild_Sankey.md`](../../2026-10-16_Konzept_Energieflussbild_Sankey.md)
 (Abschnitte 5 und 8). Vorgänger: [`2026-10-16_SK-3_Oberflaeche_Energiefluss.md`](2026-10-16_SK-3_Oberflaeche_Energiefluss.md).
 Anwenderentscheide: SK-4 „gleich mit Bericht“, SK-Q10 Bild im Baustein „Ergebnisse je Variante“, SK-Q12 im Bericht
 tragen die Knoten ihre Jahressumme (MWh/a), Bänder ohne Zahl, SK-Q14 Legende im Bild, SK-Q17 der Bericht zeigt immer

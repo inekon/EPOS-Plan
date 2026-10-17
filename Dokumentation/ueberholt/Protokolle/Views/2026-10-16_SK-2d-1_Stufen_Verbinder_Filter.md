@@ -1,7 +1,7 @@
 # SK-2d-1 — Energieflussbild: Stufen, Verbinder, Formfilter (Kern)
 
 Welle SK, Schritt SK-2d-1, 16.10.2026, Zweig `sk2d` (von `sk2c`, Kopf `a71d1ec02`). Konzept:
-[`2026-10-16_Konzept_Energieflussbild_Sankey.md`](../../../aktuell/Dialoge/2026-10-16_Konzept_Energieflussbild_Sankey.md)
+[`2026-10-16_Konzept_Energieflussbild_Sankey.md`](../../2026-10-16_Konzept_Energieflussbild_Sankey.md)
 (Abschnitte 3.1, 3.3, 3.5, 8, 10 mit SK-Q13 und SK-Q17, Anhang 12). Vorgänger:
 [`2026-10-16_SK-2c_Variante_A.md`](2026-10-16_SK-2c_Variante_A.md). Die Oberfläche (Schalter „Kette | Stufen“,
 Filterknöpfe, Hervorhebung im Modul von `DiagrammSvg`, Browserprobe) folgt als SK-2d-2.

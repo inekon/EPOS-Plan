@@ -2,7 +2,7 @@
 
 Welle SK, Schritt SK-1, 16.10.2026, Zweig `sk1` (von `origin/ios_migration_september`, Zweig `sk` mit Konzept und
 Mockup gemergt). Konzept:
-[`2026-10-16_Konzept_Energieflussbild_Sankey.md`](../../../aktuell/Dialoge/2026-10-16_Konzept_Energieflussbild_Sankey.md)
+[`2026-10-16_Konzept_Energieflussbild_Sankey.md`](../../2026-10-16_Konzept_Energieflussbild_Sankey.md)
 (Abschnitte 1, 2, 3.3, 6, 8, 10). Anwenderentscheide 16.10.2026: ein Bild mit Strom, Wärme und Kälte, dritte Stellung
 „Fluss“, eine gewählte Version, Wortbericht in derselben Welle, SK-Q1 bis SK-Q11 nach Empfehlung, SK-Q12 Werte am
 Bildschirm nur im Zeigertext (keine Wertetabelle), im Bericht Knoten mit Jahressumme.

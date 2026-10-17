@@ -1,7 +1,7 @@
 # SK-2d-2 — Energieflussbild: Darstellung, Formfilter, Hervorhebung (Oberfläche)
 
 Welle SK, Schritt SK-2d-2, 16.10.2026, Zweig `sk2d2` (von `sk2d`, Kopf `42f9438f2`). Konzept:
-[`2026-10-16_Konzept_Energieflussbild_Sankey.md`](../../../aktuell/Dialoge/2026-10-16_Konzept_Energieflussbild_Sankey.md)
+[`2026-10-16_Konzept_Energieflussbild_Sankey.md`](../../2026-10-16_Konzept_Energieflussbild_Sankey.md)
 (Abschnitte 3.3, 3.5, 4.3a, 8). Vorgänger:
 [`2026-10-16_SK-2d-1_Stufen_Verbinder_Filter.md`](2026-10-16_SK-2d-1_Stufen_Verbinder_Filter.md) und
 [`2026-10-16_SK-3_Oberflaeche_Energiefluss.md`](2026-10-16_SK-3_Oberflaeche_Energiefluss.md).
