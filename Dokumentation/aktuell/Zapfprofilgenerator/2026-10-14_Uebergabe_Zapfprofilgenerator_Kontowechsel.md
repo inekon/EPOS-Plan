@@ -26,6 +26,7 @@ CI-grün.
 | W4 (ZB3, ZB4 b, ZB8, ZB9) | Karten mit Zusammenfassung, Gruppe „Gebäude und Anlage“, haftende Vorschau, ein Feld je Wert | #1064 | `2026-10-13_ZB3_ZB4b_ZB8_ZB9_Karten.md` |
 | W7 (ZB12) | Referenzprojekte 1066–1071 je Zapfprofil-Option, Saatskript, Wache, CI auf achtzehn Projekte | #1065 | `2026-10-13_ZB12_Referenzprojekte_Optionen.md` |
 | W8/W11/ZC1 | Nutzungsbereiche, zwei Stufen, Profilablage | #1201 | `2026-10-17_W8_W11_ZC1_Bereiche_Stufen_Profilablage.md` |
+| W9 | Methoden als Bereiche, Tagtypen, Topologie-Ergebnis | #1205 | `2026-10-17_W9_Methoden_Tagtypen_Topologie.md` |
 | **W6** | **Wiki-Seite „Brauchwasser-Zapfprofil“ und Logbuch 1.2.0.11** | — | Seite und Logbuch am 14.10.2026 im Sammel-Upload veröffentlicht (Revisionen 1000/1023); **offen der Nachtrag**, Abschnitt 4 |
 
 - **Letzte Stände dieser Sitzung auf origin:** Integration `5f06ee8a1` (W3a, W3b, W4, W7, Testdatenbank 224
