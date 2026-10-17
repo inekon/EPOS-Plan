@@ -444,6 +444,9 @@ namespace WindowsFormsApplication1
                 if (m == null) continue;
                 Kaeltemaschine k = Kaeltemaschine.AusModell(m, out bool angehoben);
                 if (!string.IsNullOrWhiteSpace(a.Bezeichner)) k.Bezeichner = a.Bezeichner;
+                // SOK-0 (SOK-Q10, E168): Geräteart Absorption rechnet bis zum Bau von SOK elektrisch - nur gemeldet.
+                if (Warnkriterien.SorptionAlsElektrisch(m.Geraeteart))
+                    Protokoll.HinweisEinmal("kuehl-km-sorption-" + id, Warnkriterien.SorptionAlsElektrischText(k.Bezeichner));
                 k.Anzahl = Math.Max(1, a.Anzahl);
                 // KM3: eine gewählte, aber verworfene Teillastkurve rechnet linear mit Taktverlust - einmal je Maschine gemeldet.
                 if (k.Teillast != null && k.Teillast.Herkunft == KaeltemaschinenKurvenherkunft.Verworfen)

@@ -3805,6 +3805,10 @@ Mehrzonen 12):
   [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.25. Dieses Papier beschreibt
   allein, was daraus **für die Kühlung** folgt.
 - **Die Entscheidung, ob und wann KU1 bis KU3 beauftragt werden.** Dieses Papier legt vor.
+- **Sorptionskälte** (Absorption und Adsorption) — die thermisch angetriebene Kälte mit Antrieb aus BHKW,
+  Solarthermie, Fernwärme oder Abwärme, das Spiegelbild der Kälte-Wärme-Kopplung (5.6):
+  [Konzept Sorptionskälte](Kälteanlagen/2026-10-17_Konzept_Sorptionskaelte.md) (Stufenplan SOK anstelle von K-G,
+  zur Entscheidung).
 
 ---
 
