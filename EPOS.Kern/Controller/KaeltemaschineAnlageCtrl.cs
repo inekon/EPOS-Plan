@@ -195,12 +195,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <b>Verträglichkeit</b> von Kältemaschine und Rückkühlwerk — ohne Datenbank: Eine luftgekühlte Maschine
-        /// (Rückkühlart <c>LUFT</c>) trägt ihren Verflüssiger selbst und bekommt kein Rückkühlwerk. <c>null</c> = verträglich,
-        /// sonst der Meldungstext.
+        /// (Rückkühlart <c>LUFT</c> oder leer, <see cref="KaeltemaschineSchema.IstLuftgekuehlt"/> — wie der Lauf) trägt ihren
+        /// Verflüssiger selbst und bekommt kein Rückkühlwerk. <c>null</c> = verträglich, sonst der Meldungstext.
         /// </summary>
         public static string RueckkuehlwerkPruefen(string rueckkuehlart, bool mitRueckkuehlwerk)
         {
-            if (mitRueckkuehlwerk && string.Equals(rueckkuehlart, KaeltemaschineSchema.RUECKKUEHLART_LUFT, StringComparison.Ordinal))
+            if (mitRueckkuehlwerk && KaeltemaschineSchema.IstLuftgekuehlt(rueckkuehlart))
                 return MyResource.Resource.RKW_MSG_LUFT_UNVERTRAEGLICH;
             return null;
         }

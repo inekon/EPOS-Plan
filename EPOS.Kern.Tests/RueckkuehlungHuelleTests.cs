@@ -100,6 +100,21 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Eine_leere_Rueckkuehlart_gilt_in_Huelle_und_Pruefung_als_luftgekuehlt()
+        {
+            if (!_db.Vorhanden) return;
+            int anlage = KaeltemaschineAnlageCtrl.Anlegen(PROJEKT, StammKm(TROCKENKUEHLER), "KM leer Hülle");
+            int geraet = KaeltemaschineAnlageCtrl.Laden(anlage).IdKaeltemaschine.Value;
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Kaeltemaschine SET Rueckkuehlart = NULL WHERE ID = ?", new DbParam("?", geraet));
+
+            KaeltemaschineAnlageDaten d = Lies(anlage);
+            Assert.True(d.Geraet.Luftgekuehlt);
+            d.RueckkuehlwerkWahl = 1;
+            Assert.Equal(R.RKW_MSG_LUFT_UNVERTRAEGLICH, KaeltemaschineAnlageHuelle.Pruefen(d));
+            KaeltemaschineAnlageCtrl.Loeschen(anlage);
+        }
+
+        [Fact]
         public void Die_Gaben_tragen_die_Katalogsaetze_mit_Vorgaben_und_die_Luftfeuchte_des_Klimas()
         {
             if (!_db.Vorhanden) return;

@@ -733,7 +733,7 @@ namespace WindowsFormsApplication1
             {
                 Id = m.Id,
                 Bezeichner = string.IsNullOrEmpty(m.Bezeichner) ? m.Id.ToString(System.Globalization.CultureInfo.CurrentCulture) : m.Bezeichner,
-                Rueckkuehlart = string.IsNullOrEmpty(m.Rueckkuehlart) ? KaeltemaschineSchema.RUECKKUEHLART_LUFT : m.Rueckkuehlart,
+                Rueckkuehlart = KaeltemaschineSchema.IstLuftgekuehlt(m.Rueckkuehlart) ? KaeltemaschineSchema.RUECKKUEHLART_LUFT : m.Rueckkuehlart,
                 NennleistungKw = nenn,
                 Mindestteillast = Math.Max(0.0, Math.Min(100.0, m.Mindestteillast_Prozent ?? 0.0)) / 100.0,
                 HilfsstromRueckkuehlungKw = Math.Max(0.0, m.Hilfsstrom_Rueckkuehlung_kW ?? 0.0),

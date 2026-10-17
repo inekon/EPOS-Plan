@@ -381,9 +381,8 @@ namespace WindowsFormsApplication1
                 Kaeltemittel = m.Kaeltemittel ?? "",
                 Gwp = m.Kaeltemittel_GWP,
                 Geraetekosten = m.Geraetekosten,
-                // K-F5b: wie der Lauf - eine leere Rückkühlart rechnet luftgekühlt.
-                Luftgekuehlt = string.IsNullOrEmpty(m.Rueckkuehlart)
-                               || m.Rueckkuehlart == KaeltemaschineSchema.RUECKKUEHLART_LUFT,
+                // Die eine Regel des Kerns - wie der Lauf rechnet eine leere Rückkühlart luftgekühlt.
+                Luftgekuehlt = KaeltemaschineSchema.IstLuftgekuehlt(m.Rueckkuehlart),
                 Kaltwasserstuetzstellen = (m.Kennlinie ?? new List<KaeltemaschineKenndatenModel>())
                     .Select(k => k.Kaltwassertemperatur).Distinct().OrderBy(t => t).ToList()
             };

@@ -143,8 +143,19 @@ namespace EPOS.Kern.Tests
         {
             Assert.Equal(WindowsFormsApplication1.MyResource.Resource.RKW_MSG_LUFT_UNVERTRAEGLICH, KaeltemaschineAnlageCtrl.RueckkuehlwerkPruefen("LUFT", true));
             Assert.Null(KaeltemaschineAnlageCtrl.RueckkuehlwerkPruefen("LUFT", false));
-            foreach (string art in new[] { "WASSER", "TROCKENKUEHLER", "NASSKUEHLER", null })
+            foreach (string art in new[] { "WASSER", "TROCKENKUEHLER", "NASSKUEHLER" })
                 Assert.Null(KaeltemaschineAnlageCtrl.RueckkuehlwerkPruefen(art, true));
+            // K-F5c: leer rechnet der Lauf luftgekühlt - die Prüfung lehnt dann mit derselben Meldung ab.
+            foreach (string leer in new[] { null, "" })
+            {
+                Assert.True(KaeltemaschineSchema.IstLuftgekuehlt(leer));
+                Assert.Equal(WindowsFormsApplication1.MyResource.Resource.RKW_MSG_LUFT_UNVERTRAEGLICH,
+                             KaeltemaschineAnlageCtrl.RueckkuehlwerkPruefen(leer, true));
+                Assert.Null(KaeltemaschineAnlageCtrl.RueckkuehlwerkPruefen(leer, false));
+            }
+            Assert.True(KaeltemaschineSchema.IstLuftgekuehlt("LUFT"));
+            foreach (string art in new[] { "WASSER", "TROCKENKUEHLER", "NASSKUEHLER" })
+                Assert.False(KaeltemaschineSchema.IstLuftgekuehlt(art));
             Assert.Contains("Rückkühlwerk", WindowsFormsApplication1.MyResource.Resource.RKW_MSG_LUFT_UNVERTRAEGLICH, StringComparison.Ordinal);
         }
 
@@ -297,6 +308,26 @@ namespace EPOS.Kern.Tests
             Assert.Equal(WindowsFormsApplication1.MyResource.Resource.RKW_MSG_LUFT_UNVERTRAEGLICH, KaeltemaschineAnlageCtrl.RueckkuehlwerkWaehlen(anlage, stamm));
             Assert.Null(KaeltemaschineAnlageCtrl.Laden(anlage).IdRueckkuehlwerk);
             Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Rueckkuehlwerk"));
+        }
+
+        [Fact]
+        public void Eine_Anlage_mit_leerer_Rueckkuehlart_lehnt_das_Rueckkuehlwerk_ab_wie_eine_luftgekuehlte()
+        {
+            if (!_db.Vorhanden) return;
+            int stamm = RueckkuehlwerkStammCtrl.Speichern(new RueckkuehlwerkModel { Bezeichner = "RK leer" }).Id;
+            int anlage = KaeltemaschineAnlageCtrl.Anlegen(PROJEKT, StammKm(TROCKENKUEHLER), "KM ohne Rückkühlart");
+            int geraet = KaeltemaschineAnlageCtrl.Laden(anlage).IdKaeltemaschine.Value;
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Kaeltemaschine SET Rueckkuehlart = NULL WHERE ID = ?", new DbParam("?", geraet));
+
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.RKW_MSG_LUFT_UNVERTRAEGLICH, KaeltemaschineAnlageCtrl.RueckkuehlwerkWaehlen(anlage, stamm));
+            Assert.Null(KaeltemaschineAnlageCtrl.Laden(anlage).IdRueckkuehlwerk);
+            Assert.Equal(0L, Zahl("SELECT COUNT(*) FROM Tab_Rueckkuehlwerk"));
+
+            // Die wassergekühlte Art bleibt zugelassen.
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Kaeltemaschine SET Rueckkuehlart = ? WHERE ID = ?",
+                new DbParam("?", KaeltemaschineSchema.RUECKKUEHLART_WASSER), new DbParam("?", geraet));
+            Assert.Null(KaeltemaschineAnlageCtrl.RueckkuehlwerkWaehlen(anlage, stamm));
+            Assert.True(KaeltemaschineAnlageCtrl.Laden(anlage).IdRueckkuehlwerk.HasValue);
         }
 
         [Fact]
