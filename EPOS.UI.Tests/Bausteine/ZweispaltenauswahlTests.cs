@@ -130,6 +130,17 @@ public class ZweispaltenauswahlTests : EposBunitContext
                      cut.Find(".epos-zweispalten-bereich--satz .epos-zweispalten-marke--satz").TextContent);
     }
 
+    /// <summary>Die Katalogmarke trägt den Hinweis als Mouse-over (<c>title</c>).</summary>
+    [Fact]
+    public void Katalogmarke_traegt_den_Hinweis_als_title()
+    {
+        var cut = Aufbauen();
+
+        IElement marke = cut.Find(".epos-zweispalten-marke--katalog");
+
+        Assert.Equal(Resource.AUSWAHL_MARKE_KATALOG_HINWEIS, marke.GetAttribute("title"));
+    }
+
     /// <summary>
     /// Jeder Knopf steht in der Kopfleiste des Bereichs, auf den er wirkt (KA‑E‑1):
     /// „Entfernen" beim Projekt, „Übernehmen" beim Katalog — Zeichen plus Klartext,
