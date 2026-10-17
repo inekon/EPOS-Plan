@@ -37,6 +37,8 @@ namespace WindowsFormsApplication1
         internal const string ZONE_ABGELEHNT = PRAEFIX + "ZONE_ABGELEHNT";
         internal const string RAUM_BEHEIZUNG = PRAEFIX + "RAUM_BEHEIZUNG";
         internal const string NUTZUNG_OHNE_ABBILDUNG = PRAEFIX + "NUTZUNG_OHNE_ABBILDUNG";
+        /// <summary>F7: beheizte Räume ohne Zone der Projektdatei, davon mit Vorschlag der Rangfolge, Beispiele (Info).</summary>
+        internal const string RAUM_OHNE_ZONE_VORSCHLAG = PRAEFIX + "RAUM_OHNE_ZONE_VORSCHLAG";
         internal const string WERT_BEGRENZT = PRAEFIX + "WERT_BEGRENZT";
         /// <summary>Standprüfung: IFC und Projektdatei stammen vermutlich aus verschiedenen Projektständen (Warnung).</summary>
         internal const string STAND_ABWEICHEND = PRAEFIX + "STAND_ABWEICHEND";

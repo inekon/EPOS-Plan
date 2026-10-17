@@ -51,6 +51,13 @@ namespace WindowsFormsApplication1
         /// <summary>Hat der Schritt „Rest platzieren“ die Zone angelegt (Restzone „unbeheizt“ bzw. je Geschoss)?</summary>
         internal bool AusPlatzierung { get; set; }
 
+        /// <summary>
+        /// Der Profilschlüssel, den die <b>Bezeichnung der Datei</b> für diese Zone vorschlägt (Anwenderentscheid F2:
+        /// <c>EPOS_Zone.DinNummer</c>/<c>EPOS_Zone.Nutzung</c> der IFC-Datei, DIN-Nummer des gbXML-Raumtyps) — vorbelegt, aber
+        /// nicht still gesetzt; <c>null</c> = keiner oder bestätigt.
+        /// </summary>
+        internal string Dateivorschlag { get; set; }
+
         internal Planzone Kopie() => (Planzone)MemberwiseClone();
 
         public override string ToString() => Schluessel + " " + Name + (Nutzung == null ? "" : " [" + Nutzung + "]");
@@ -323,6 +330,7 @@ namespace WindowsFormsApplication1
                 }
                 DinNummerAnwenden(z, iz);
                 MehrheitAnwenden(z, iz, zon);
+                DateibezeichnungAlsVorschlag(z, iz);
             }
             foreach (AbbildRaum r in Gebaeude.Raeume)
                 if (!_zoneJeRaum.ContainsKey(r.Kennung)) _ausserhalb.Add(r.Kennung);
@@ -380,6 +388,43 @@ namespace WindowsFormsApplication1
             Planprofil p = Vorbelegung.DinTreffer(n);
             z.Profil = p == null || p.NichtImKatalog ? null : p;
             z.Quelle = new Profilquelle(RaumnutzungSchema.ZUORDNUNG_DIN, n.ToString(CultureInfo.InvariantCulture));
+        }
+
+        /// <summary>
+        /// <b>Die Bezeichnung der Datei ist ein Vorschlag</b> (Anwenderentscheid F2, Entwurf ZZ 5.3 Stufe 0): Trägt eine Zone ihr
+        /// Profil aus der eigenen Angabe der Datei — <c>EPOS_Zone.Nutzung</c> mit Katalogtreffer (<see cref="Profilquelle.DATEI"/>)
+        /// oder der DIN-Nummer aus <c>EPOS_Zone.DinNummer</c> bzw. dem gbXML-Raumtyp (<c>DIN_NUMMER</c>) —, bleibt das Profil
+        /// vorbelegt (der Rechenweg ändert sich nicht), die Quelle wird aber ein Vorschlag mit Herkunft „Bezeichnung der Datei“
+        /// (<see cref="Raumprofilzuordnung.QUELLE_VORSCHLAG"/>, Ampel gelb), bis der Anwender ihn bestätigt: Tragen alle
+        /// beheizten Räume der Zone die Wahl von Hand mit demselben Schlüssel (<see cref="VorschlaegeUebernehmen"/>,
+        /// <see cref="ProfilZuordnen"/>), ist er gesetzt (<see cref="Raumprofilzuordnung.QUELLE"/>). Eine DIN-Nummer ohne
+        /// Katalogtreffer behält ihre Quelle (die Modellprüfung schlägt das nächstliegende DIN-Profil vor); die Zonen der
+        /// Projektdatei (<see cref="SqprojZonen"/>) laufen nicht hier durch.
+        /// </summary>
+        private void DateibezeichnungAlsVorschlag(Planzone z, Importzone iz)
+        {
+            z.Dateivorschlag = null;
+            if (z.Profil == null || z.Profil.NichtImKatalog || z.Quelle == null) return;
+            string bezeichnung;
+            string schluessel;
+            if (string.Equals(z.Quelle.Art, RaumnutzungSchema.ZUORDNUNG_DIN, StringComparison.Ordinal)
+                && int.TryParse(z.Quelle.Schluessel, NumberStyles.Integer, CultureInfo.InvariantCulture, out int n))
+            {
+                bezeichnung = "DIN " + n.ToString(CultureInfo.InvariantCulture);
+                schluessel = Raumprofilschluessel.Din(n);
+            }
+            else if (string.Equals(z.Quelle.Art, Profilquelle.DATEI, StringComparison.Ordinal))
+            {
+                bezeichnung = iz.Raeume.Select(r => r.Konditionierung?.Nutzung).FirstOrDefault(t => !string.IsNullOrWhiteSpace(t))?.Trim() ?? z.Profil.Name;
+                schluessel = Raumprofilschluessel.AusProfil(Vorbelegung, z.Profil);
+            }
+            else return;
+            string text = Raumprofilzuordnung.Begruendungstext(new[] { new Raumprofilgrund(Raumprofilstufe.Datei, bezeichnung) });
+            List<AbbildRaum> beheizt = iz.Raeume.Where(Beheizt).ToList();
+            bool bestaetigt = schluessel != null && beheizt.Count > 0
+                              && beheizt.All(r => _profilwahl.TryGetValue(r.Kennung, out string w) && string.Equals(w, schluessel, StringComparison.Ordinal));
+            z.Quelle = new Profilquelle(bestaetigt ? Raumprofilzuordnung.QUELLE : Raumprofilzuordnung.QUELLE_VORSCHLAG, text);
+            if (!bestaetigt) z.Dateivorschlag = schluessel;
         }
 
         /// <summary>
@@ -545,8 +590,26 @@ namespace WindowsFormsApplication1
         {
             foreach (Raumprofilbefund b in _raumprofile.Where(b => b.Stand == Raumprofilstand.Vorschlag && b.Vorschlag != null && b.Raum != null))
                 _profilwahl[b.Raum.Kennung] = b.Vorschlag;
+            // F2: die Vorschläge aus der Bezeichnung der Datei je Zone (auch gbXML, das keine Befunde je Raum trägt).
+            foreach (Planzone z in _zonen.Where(z => z.Dateivorschlag != null))
+                foreach (AbbildRaum r in RaeumeVon(z.Schluessel).Where(Beheizt))
+                    _profilwahl[r.Kennung] = z.Dateivorschlag;
             AusRegelBilden(Regel, null);
             return new Planschritt(true);
+        }
+
+        /// <summary>
+        /// <b>Die Vorschläge für die Räume ohne Zone</b> (Anwenderentscheid F7, Weg mit Projektdatei, Regel X1): je beheiztem,
+        /// nicht zugeordnetem Raum der Befund der Rangfolge (eigene Angabe, Raumart, Raumname, Gebäudeart aus allen Räumen) —
+        /// nur als Vorschlag, nie automatisch: Der Plan ordnet keinen Raum zu und lässt die Zonen unberührt; der Stand des
+        /// Befunds nennt allein, wie sicher die Rangfolge führt. Leer, wenn jeder beheizte Raum eine Zone hat.
+        /// </summary>
+        internal IReadOnlyList<Raumprofilbefund> Restvorschlaege()
+        {
+            var offen = new HashSet<string>(NichtZugeordnet.Where(Beheizt).Select(r => r.Kennung), StringComparer.Ordinal);
+            if (offen.Count == 0) return Array.Empty<Raumprofilbefund>();
+            return Raumprofilzuordnung.Befunde(Gebaeude, Beheizt, Vorbelegung, _profilwahl)
+                                      .Where(b => b.Raum != null && offen.Contains(b.Raum.Kennung)).ToList();
         }
 
         /// <summary><b>Nimmt alle Wahlen von Hand zurück</b> — der Plan zeigt wieder die Vorschläge der Rangfolge.</summary>
