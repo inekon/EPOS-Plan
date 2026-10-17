@@ -5820,10 +5820,10 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
     <value>{0} Versionen</value>
   </data>
   <data name="BK_ERG_ABSCHNITT_KOMPONENTEN" xml:space="preserve">
-    <value>Komponenten und Einstellungen</value>
+    <value>Übersicht Komponenten / Vergleich</value>
   </data>
   <data name="BK_ERG_ABSCHNITT_ERGEBNISSE" xml:space="preserve">
-    <value>Ergebnisse — Energie</value>
+    <value>Übersicht Energie</value>
   </data>
   <data name="BK_ERG_SP_KENNZAHL" xml:space="preserve">
     <value>Kennzahl</value>
@@ -47020,6 +47020,9 @@ Chart</value>
   <data name="IMP_SQ_PROT_RAUM_BEHEIZUNG" xml:space="preserve">
     <value>Der Raum {0} passt in der Beheizung nicht zur Zone {1} und bleibt nicht zugeordnet.</value>
   </data>
+  <data name="IMP_SQ_PROT_RAUM_OHNE_ZONE_VORSCHLAG" xml:space="preserve">
+    <value>{0} beheizte Räume gehören keiner Zone der Projektdatei; für {1} schlägt die Rangfolge (Bezeichnung, Raumart, Raumname) ein Nutzungsprofil vor: {2}. Die Räume bleiben nicht zugeordnet, bis Sie sie einer Zone zuordnen.</value>
+  </data>
   <data name="IMP_SQ_PROT_NUTZUNG_OHNE_ABBILDUNG" xml:space="preserve">
     <value>Die Zone {0} trägt das Nutzungsprofil Nr. {1} ohne Entsprechung — sie bleibt ohne Nutzung.</value>
   </data>
@@ -51932,6 +51935,15 @@ Chart</value>
   </data>
   <data name="BED_GRAFIK_ACHSE_STUNDE" xml:space="preserve">
     <value>Stunde</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_STROM" xml:space="preserve">
+    <value>Strombedarf [{0}]</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_WAERME" xml:space="preserve">
+    <value>Wärmebedarf [{0}]</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_KAELTE" xml:space="preserve">
+    <value>Kältebedarf [{0}]</value>
   </data>
   <data name="BED_GRAFIK_ACHSE_VIERTELSTUNDE" xml:space="preserve">
     <value>Viertelstunde</value>
@@ -58238,6 +58250,228 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="KI_DLG_KMA_RKW_ERL" xml:space="preserve">
     <value>Katalogsatz des Rückkühlwerks der wassergekühlten Kältemaschine (Id); leer = keins, dann gelten die Festwerte der Rückkühlart. Mit OK bekommt die Anlage eine eigene Projektkopie.</value>
   </data>
+  <data name="GIMP_ZONENREGEL_Z7" xml:space="preserve">
+    <value>Z7 – nach Nutzungsprofil</value>
+  </data>
+  <data name="GIMP_ZONE_UNBEHEIZT_Z7" xml:space="preserve">
+    <value>unbeheizt</value>
+  </data>
+  <data name="GIMP_ZONE_OHNE_NUTZUNG" xml:space="preserve">
+    <value>ohne Nutzung</value>
+  </data>
+  <data name="IMP_IFC_PROT_PROFILE_ZUGEORDNET" xml:space="preserve">
+    <value>Nutzungsprofile je Raum: {0} eindeutig zugeordnet, {1} mit Vorschlag, {2} offen (Rückfrage), {3} ohne Kandidaten; offen: {4}.</value>
+  </data>
+  <data name="IMP_IFC_PROT_PLAN_PROFIL_UNBEKANNT" xml:space="preserve">
+    <value>Unbekanntes Profil „{0}“ – die Zuordnung wird nicht übernommen.</value>
+  </data>
+  <data name="IMP_GBXML_PROT_PLAN_PROFIL_UNBEKANNT" xml:space="preserve">
+    <value>Unbekanntes Profil „{0}“ – die Zuordnung wird nicht übernommen.</value>
+  </data>
+  <data name="RNP_IMP_PROFIL_NUMMER" xml:space="preserve">
+    <value>Profil Nr. {0}</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_RAUMPROFIL" xml:space="preserve">
+    <value>aus {0}</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_RAUMPROFIL_VORSCHLAG" xml:space="preserve">
+    <value>Vorschlag – {0}</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_RAUMPROFIL_OFFEN" xml:space="preserve">
+    <value>offen – Auswahl: {0}</value>
+  </data>
+  <data name="RNP_IMP_QUELLE_RAUMPROFIL_MEHRHEIT" xml:space="preserve">
+    <value>Vorschlag der Mehrheit – {0}</value>
+  </data>
+  <data name="RNP_IMP_BEGR_DATEI" xml:space="preserve">
+    <value>Bezeichnung der Datei „{0}“</value>
+  </data>
+  <data name="RNP_IMP_BEGR_RAUMART" xml:space="preserve">
+    <value>Raumart {0}</value>
+  </data>
+  <data name="RNP_IMP_BEGR_NAME" xml:space="preserve">
+    <value>Name „{0}“</value>
+  </data>
+  <data name="RNP_IMP_BEGR_WOHNGEBAEUDE" xml:space="preserve">
+    <value>Wohngebäude ({0} % Wohnfläche)</value>
+  </data>
+  <data name="RNP_IMP_BEGR_NICHTWOHN" xml:space="preserve">
+    <value>Nichtwohngebäude</value>
+  </data>
+  <data name="RNP_IMP_BEGR_KUECHEN" xml:space="preserve">
+    <value>{0} Küchen</value>
+  </data>
+  <data name="RNP_IMP_BEGR_HAND" xml:space="preserve">
+    <value>von Hand</value>
+  </data>
+  <data name="RNP_IMP_BEGR_MEHRHEIT" xml:space="preserve">
+    <value>{0} % der beheizten Fläche</value>
+  </data>
+  <data name="RNP_GRUPPE_BUERO" xml:space="preserve">
+    <value>Büro und Verwaltung</value>
+  </data>
+  <data name="RNP_GRUPPE_HANDEL" xml:space="preserve">
+    <value>Handel</value>
+  </data>
+  <data name="RNP_GRUPPE_BILDUNG" xml:space="preserve">
+    <value>Bildung</value>
+  </data>
+  <data name="RNP_GRUPPE_BEHERBERGUNG" xml:space="preserve">
+    <value>Beherbergung und Pflege</value>
+  </data>
+  <data name="RNP_GRUPPE_GASTRONOMIE" xml:space="preserve">
+    <value>Gastronomie und Küche</value>
+  </data>
+  <data name="RNP_GRUPPE_NEBENFLAECHEN" xml:space="preserve">
+    <value>Neben-, Verkehrs- und Lagerflächen</value>
+  </data>
+  <data name="RNP_GRUPPE_HALLEN" xml:space="preserve">
+    <value>Hallen und Produktion</value>
+  </data>
+  <data name="RNP_GRUPPE_KULTUR" xml:space="preserve">
+    <value>Veranstaltung und Kultur</value>
+  </data>
+  <data name="RNP_GRUPPE_SPORT" xml:space="preserve">
+    <value>Sport und Wellness</value>
+  </data>
+  <data name="RNP_GRUPPE_PARKEN" xml:space="preserve">
+    <value>Parken</value>
+  </data>
+  <data name="RNP_GRUPPE_GESUNDHEIT" xml:space="preserve">
+    <value>Labor und Gesundheit</value>
+  </data>
+  <data name="RNP_GRUPPE_WOHNEN" xml:space="preserve">
+    <value>Wohnen</value>
+  </data>
+  <data name="GIMP_PZ_TITEL" xml:space="preserve">
+    <value>Nutzungsprofile zuordnen</value>
+  </data>
+  <data name="GIMP_PZ_KNOPF" xml:space="preserve">
+    <value>Nutzungsprofile zuordnen…</value>
+  </data>
+  <data name="GIMP_PZ_KNOPF_OFFEN" xml:space="preserve">
+    <value>Nutzungsprofile zuordnen… ({0} offen)</value>
+  </data>
+  <data name="GIMP_PZ_KATALOG" xml:space="preserve">
+    <value>Katalog</value>
+  </data>
+  <data name="GIMP_PZ_SUCHE" xml:space="preserve">
+    <value>Profil suchen (Nummer oder Name)</value>
+  </data>
+  <data name="GIMP_PZ_KATALOG_LEER" xml:space="preserve">
+    <value>Kein Profil passt zur Suche.</value>
+  </data>
+  <data name="GIMP_PZ_BUENDEL_TITEL" xml:space="preserve">
+    <value>Räume der Datei</value>
+  </data>
+  <data name="GIMP_PZ_SP_BUENDEL" xml:space="preserve">
+    <value>Bündel</value>
+  </data>
+  <data name="GIMP_PZ_SP_RAEUME" xml:space="preserve">
+    <value>Räume</value>
+  </data>
+  <data name="GIMP_PZ_SP_FLAECHE" xml:space="preserve">
+    <value>Fläche [m²]</value>
+  </data>
+  <data name="GIMP_PZ_SP_STAND" xml:space="preserve">
+    <value>Stand</value>
+  </data>
+  <data name="GIMP_PZ_SP_VORSCHLAG" xml:space="preserve">
+    <value>Profil / Vorschlag</value>
+  </data>
+  <data name="GIMP_PZ_STAND_EINDEUTIG" xml:space="preserve">
+    <value>eindeutig</value>
+  </data>
+  <data name="GIMP_PZ_STAND_VORSCHLAG" xml:space="preserve">
+    <value>Vorschlag</value>
+  </data>
+  <data name="GIMP_PZ_STAND_OFFEN" xml:space="preserve">
+    <value>Rückfrage</value>
+  </data>
+  <data name="GIMP_PZ_STAND_OHNE" xml:space="preserve">
+    <value>ohne Kandidat</value>
+  </data>
+  <data name="GIMP_PZ_STAND_HAND" xml:space="preserve">
+    <value>von Hand</value>
+  </data>
+  <data name="GIMP_PZ_GEMISCHT" xml:space="preserve">
+    <value>gemischt</value>
+  </data>
+  <data name="GIMP_PZ_KEINE" xml:space="preserve">
+    <value>keine Nutzung</value>
+  </data>
+  <data name="GIMP_PZ_NUR_OFFENE" xml:space="preserve">
+    <value>nur offene</value>
+  </data>
+  <data name="GIMP_PZ_ALLE_UEBERNEHMEN" xml:space="preserve">
+    <value>Alle Vorschläge übernehmen</value>
+  </data>
+  <data name="GIMP_PZ_ALLE_ZURUECK" xml:space="preserve">
+    <value>Zurücknehmen</value>
+  </data>
+  <data name="GIMP_PZ_UEBERNEHMEN" xml:space="preserve">
+    <value>übernehmen</value>
+  </data>
+  <data name="GIMP_PZ_AUFHEBEN" xml:space="preserve">
+    <value>Zuordnung aufheben</value>
+  </data>
+  <data name="GIMP_PZ_SCHNELLWAHL" xml:space="preserve">
+    <value>Kandidaten:</value>
+  </data>
+  <data name="GIMP_PZ_HINWEIS_WAHL" xml:space="preserve">
+    <value>Bündel ankreuzen, dann im Katalog ein Profil anklicken.</value>
+  </data>
+  <data name="GIMP_PZ_GEWAEHLT" xml:space="preserve">
+    <value>{0} Bündel gewählt ({1} Räume)</value>
+  </data>
+  <data name="GIMP_PZ_ZAEHLER" xml:space="preserve">
+    <value>{0} eindeutig · {1} Vorschlag · {2} Rückfrage · {3} ohne · {4} von Hand</value>
+  </data>
+  <data name="GIMP_PZ_KEIN_BUENDEL" xml:space="preserve">
+    <value>Kein offenes Bündel.</value>
+  </data>
+  <data name="GIMP_PZ_RAUMART" xml:space="preserve">
+    <value>Raumart {0}</value>
+  </data>
+  <data name="GIMP_PZ_KENNWERTE" xml:space="preserve">
+    <value>{0} °C · {1}–{2} h</value>
+  </data>
+  <data name="GIMP_PZ_AMPEL_VORSCHLAG" xml:space="preserve">
+    <value>{0} Räume tragen einen unbestätigten Vorschlag — der Import ist möglich; bestätigen unter „Nutzungsprofile zuordnen…“.</value>
+  </data>
+  <data name="GIMP_PZ_AMPEL_RUECKFRAGE" xml:space="preserve">
+    <value>{0} Räume ohne eindeutiges Profil — bitte unter „Nutzungsprofile zuordnen…“ wählen.</value>
+  </data>
+  <data name="GIMP_PZ_AMPEL_GRUEN" xml:space="preserve">
+    <value>Alle Räume tragen ein gesetztes Profil.</value>
+  </data>
+  <data name="GIMP_PZ_NUR_VORSCHLAEGE" xml:space="preserve">
+    <value>nur Vorschläge</value>
+  </data>
+  <data name="GIMP_PZ_NUR_BEHEIZTE" xml:space="preserve">
+    <value>nur beheizte</value>
+  </data>
+  <data name="GIMP_PZ_AUFKLAPPEN" xml:space="preserve">
+    <value>Räume einzeln</value>
+  </data>
+  <data name="GIMP_PZ_DATEIZONEN_TITEL" xml:space="preserve">
+    <value>Zonen mit Bezeichnung der Datei</value>
+  </data>
+  <data name="GIMP_PZ_RESTRAEUME_TITEL" xml:space="preserve">
+    <value>Räume ohne Zone der Projektdatei</value>
+  </data>
+  <data name="GIMP_PZ_RESTRAEUME_HINWEIS" xml:space="preserve">
+    <value>Die Räume bleiben ohne Zone, bis ein Vorschlag oder Kandidat gewählt ist; die Zonen der Projektdatei bleiben unverändert.</value>
+  </data>
+  <data name="GIMP_PZ_IN_ZONE" xml:space="preserve">
+    <value>in Zone „{0}“</value>
+  </data>
+  <data name="GIMP_PZ_FRAGE_TITEL" xml:space="preserve">
+    <value>Profil zuordnen</value>
+  </data>
+  <data name="GIMP_PZ_FRAGE" xml:space="preserve">
+    <value>Die Zuordnung bildet den Zonenbaum nach der Regel neu. {0} Schritte von Hand am Zonenbaum gehen dabei verloren. Fortfahren?</value>
+  </data>
   <data name="SIMERG_LBL_ABZUEGLICH_SPEICHERVERLUSTE" xml:space="preserve">
     <value>abzüglich Speicherverluste:</value>
   </data>
@@ -58258,5 +58492,11 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="SIMERG_TIP_SPEICHERVERLUSTE_SPK" xml:space="preserve">
     <value>Wärme der Kessel, die in Speichern verloren geht oder am Jahresende noch darin steht, also keinen Bedarf deckt. Gerechnet als Wärmeproduktion minus Nutzwärme.</value>
+  </data>
+  <data name="SIMERG_LBL_DAVON_AUS_PUFFER_WP" xml:space="preserve">
+    <value>davon aus Puffer:</value>
+  </data>
+  <data name="SIMERG_TIP_DAVON_AUS_PUFFER_WP" xml:space="preserve">
+    <value>Der Teil der Nutzwärme, den die Speicher aus der Ladung der Wärmepumpen an den Bedarf abgegeben haben. Den Rest liefern die Wärmepumpen direkt. Im Heizkesselreiter ist dieser Wert in „davon aus Puffer (andere Erzeuger)“ enthalten.</value>
   </data>
 </root>

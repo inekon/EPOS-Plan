@@ -20,17 +20,17 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Die Geste.</b> Strg+Umschalt+F12 (ohne Alt, damit AltGr der deutschen Tastatur nicht
     /// stört) fängt das Fenster über
-    /// <see cref="BlazorDialogForm{TKomponente}.Befehlstaste"/> ab, bevor die WebView die Taste
-    /// sieht. Eine Nachricht später — nicht mitten in der Tastenverarbeitung und nicht im
+    /// <see cref="BlazorDialogForm{TKomponente}.Befehlstaste"/> ab, unabhängig vom Fokus: Liegt er im
+    /// Browserfenster der WebView2, kommt die Taste über deren Tastenereignis (AcceleratorKeyPressed
+    /// → <c>KeyDown</c> des Steuerelements, als behandelt zurückgemeldet), sonst über
+    /// <see cref="Form.ProcessCmdKey"/>. Eine Nachricht später — nicht mitten in der Tastenverarbeitung und nicht im
     /// Blazor-Verteiler, denn die Rückfrage ist modal — schaltet
     /// <see cref="EntwicklungHuelle.GesteUmschalten"/> den Modus; danach versorgt das Hauptfenster
     /// Menü, Marke und Titel neu, und der Anstoß lässt den Dialog den neuen Diagnoseblock holen.</para>
     ///
-    /// <para><b>Zweiter Weg der Geste.</b> <see cref="Form.ProcessCmdKey"/> sieht den Tastendruck nur,
-    /// wenn die WebView2 ihn als Beschleuniger an das Fenster weiterreicht. Mit dem Fokus im
-    /// Browserfenster (ein Kindfenster des WebView2-Prozesses) kann die WebView den Druck behalten.
-    /// Deshalb erkennt der Razor-Dialog die Geste zusätzlich selbst an der physischen Taste und
-    /// ruft <c>GesteAusgeloest</c>, das hier denselben Weg nimmt. Eine Sperre lässt je Tastendruck nur
+    /// <para><b>Zweiter Weg der Geste.</b> Der Razor-Dialog erkennt die Geste zusätzlich selbst an der
+    /// physischen Taste, solange der Fokus in seiner Wurzel liegt, und ruft <c>GesteAusgeloest</c>, das
+    /// hier denselben Weg nimmt — ein Rückfallweg, falls das Tastenereignis der WebView2 ausbleibt. Eine Sperre lässt je Tastendruck nur
     /// EIN Schalten zu, auch wenn beide Wege ihn sehen.</para>
     ///
     /// <para>Was einen Modaldialog öffnen kann (Protokollordner mit Meldung, Fernwartung), läuft
@@ -42,8 +42,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Tastenfolge der Geste: Strg+Umschalt+F12. F12 allein öffnet bei freigegebenem
         /// Entwicklerbereich <c>WEBVIEW_WERKZEUGE</c> die Entwicklerwerkzeuge der WebView; mit Strg+Umschalt
-        /// ist es kein Beschleuniger der WebView, und <see cref="Form.ProcessCmdKey"/> meldet die Geste als
-        /// behandelt, bevor die WebView sie sieht.
+        /// ist es kein Beschleuniger der WebView. Das Fenster meldet die Geste über das Tastenereignis der
+        /// WebView2 (Fokus im Browser) bzw. <see cref="Form.ProcessCmdKey"/> (Fokus auf der WinForms-Seite)
+        /// als behandelt.
         /// </summary>
         internal const Keys GESTE = Keys.Control | Keys.Shift | Keys.F12;
 

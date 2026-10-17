@@ -55,7 +55,13 @@ public class UebersichtErgebnisAnpassenTests : EposBunitContext
         GewaehlteVarianten = new[] { 1030, 1031 }
     };
 
-    private UebersichtErgebnisGaben Huelle() => new(Daten, _ablage);
+    /// <summary>Die Hülle über der Ablage der Klasse; die Ansicht steht auf der Tabelle, denn „Anzeige anpassen…“ wirkt auf sie.</summary>
+    private UebersichtErgebnisGaben Huelle()
+    {
+        if (_ablage.Lies(UebersichtErgebnisGaben.EINSTELLUNG_ANSICHT) is null)
+            _ablage.Schreib(UebersichtErgebnisGaben.EINSTELLUNG_ANSICHT, UebersichtErgebnisse.ANSICHT_TABELLE);
+        return new(Daten, _ablage);
+    }
 
     /// <summary>Der Abschnitt mit dem vollen Parametersatz der Hülle (wie die Seite ihn splattet).</summary>
     private IRenderedComponent<UebersichtErgebnisse> Zeige(UebersichtErgebnisGaben? huelle = null)
