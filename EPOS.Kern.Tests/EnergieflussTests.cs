@@ -142,6 +142,47 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Wärmepumpe", m.KnotenMit(Energiefluss.WP_HEIZEN).Name);
         }
 
+        /// <summary>
+        /// Booster-Kette: Die erste Wärmepumpe lädt Puffer A, der Booster entnimmt daraus 19 MWh
+        /// Quellwärme (Entladung ohne Kanalzeile) und lädt den Kombispeicher B. Die Quellwärme
+        /// läuft im Kreis: Sie wird gegen die Wärme der Wärmepumpe und die Ladung von A
+        /// aufgerechnet, statt als „nicht zugeordnet“ am Wärmebus übrig zu bleiben.
+        /// </summary>
+        [Fact]
+        public void Quellentnahme_eines_Boosters_wird_aufgerechnet_statt_nicht_zugeordnet()
+        {
+            ErgebnisModel e = Baum(strombedarf: 0.0, netz: 28.0, heizung: 50.0, warmwasser: 30.0);
+            e.Waermepumpe = new ErgebnisWaermepumpeModel { Waermeproduktion_WP = 97.0, Stromverbrauch_WP = 28.0 };
+            e.Heizkessel = new ErgebnisHeizkesselModel();
+            e.Heizkessel.Module.Add(new ErgebnisHeizkesselModulModel { Brennstoff = "Gas", CarrierId = 7, Verbrauch = 4.4, Waermeproduktion = 4.0 });
+            var a = new ErgebnisPufferspeicherModel
+            {
+                ID_Pufferspeicher = 1, Bezeichner = "Puffer A", Verwendung = DbWerte.PSP_VERWENDUNG_HEIZUNG,
+                Ladung_gesamt = 20000.0, Entladung_gesamt = 19000.0, Verluste_gesamt = 1000.0,
+            };
+            var b = new ErgebnisPufferspeicherModel
+            {
+                ID_Pufferspeicher = 2, Bezeichner = "Kombi B", Verwendung = DbWerte.PSP_VERWENDUNG_BRAUCHWASSER,
+                Ladung_gesamt = 27000.0, Entladung_gesamt = 26000.0, Verluste_gesamt = 1000.0,
+            };
+            b.Entladung_Kanal[Kanal.BRAUCHWASSER] = 26000.0;
+            e.Pufferspeicher.Add(a);
+            e.Pufferspeicher.Add(b);
+
+            EnergieflussBilanz m = Aus(e);
+
+            Assert.Equal(78.0, m.Fluss(Energiefluss.WP_HEIZEN, Energiefluss.WAERME), 9);
+            Assert.Equal(50.0, m.Fluss(Energiefluss.UMWELTWAERME, Energiefluss.WP_HEIZEN), 9);
+            string pa = Energiefluss.PUFFER + "1:0";
+            Assert.Equal(1.0, m.Fluss(Energiefluss.WAERME, pa), 9);
+            Assert.Equal(0.0, m.Fluss(pa, Energiefluss.HEIZUNG), 9);
+            Assert.Equal(26.0, m.Fluss(Energiefluss.PUFFER + "2:0", Energiefluss.WARMWASSER), 9);
+            Assert.Equal(50.0, m.Fluss(Energiefluss.WAERME, Energiefluss.HEIZUNG), 9);
+            Assert.Null(m.KnotenMit(Energiefluss.NICHT_ZUGEORDNET));
+            Assert.Null(m.KnotenMit(Energiefluss.NICHT_ZUGEORDNET_QUELLE));
+            AlleKnotenGeschlossen(m);
+        }
+
         [Fact]
         public void Fuellstandsaenderung_ab_einem_Prozent_der_Ladung_bekommt_ein_eigenes_Band()
         {

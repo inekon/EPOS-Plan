@@ -328,7 +328,7 @@ public class UebersichtErgebnisFlussTests : EposBunitContext
         var gruppe = cut.Find(".epos-ergebnis-fluss-wahl[data-gruppe=darstellung]");
         Assert.Equal("radiogroup", gruppe.GetAttribute("role"));
         Assert.Equal("Darstellung des Energieflussbilds", gruppe.GetAttribute("aria-label"));
-        Assert.Equal(new[] { "Kette", "Stufen" }, gruppe.QuerySelectorAll("button").Select(b => b.TextContent).ToArray());
+        Assert.Equal(new[] { "Kette", "Stufen", "Zuordnung" }, gruppe.QuerySelectorAll("button").Select(b => b.TextContent).ToArray());
         Assert.Equal("true", gruppe.QuerySelector("button[data-wahl=kette]")!.GetAttribute("aria-checked"));
         Assert.Same(fluss.Stand!.Breit, fluss.Bild!.Breit);
 
@@ -433,11 +433,12 @@ public class UebersichtErgebnisFlussTests : EposBunitContext
         Assert.Same(stufenStrom, huelle.FlussLaden(1).Bild("stufen", "strom"));
         Assert.Equal(geladen, _geladen);
 
-        // Alle 16 Bilder je Version entstehen höchstens einmal.
+        // Alle 12 Bilder je Version (drei Darstellungen, vier Filter) entstehen höchstens einmal.
         foreach (string d in ErgebnisFlussWahl.DARSTELLUNGEN)
             foreach (string f in ErgebnisFlussWahl.FILTER)
                 Assert.Same(stand.Bild(d, f), stand.Bild(d, f));
-        Assert.Equal(8, stand.GebauteBilder);
+        Assert.Equal(12, stand.GebauteBilder);
+        Assert.Equal(geladen, _geladen);
     }
 
     [Fact]
@@ -473,6 +474,8 @@ public class UebersichtErgebnisFlussTests : EposBunitContext
         cut.Find(".epos-ergebnis-fluss-wahl[data-gruppe=darstellung]").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
         Assert.Equal("stufen", ablage["darstellung"]);
         cut.Find(".epos-ergebnis-fluss-wahl[data-gruppe=darstellung]").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+        Assert.Equal("zuordnung", ablage["darstellung"]);
+        cut.Find(".epos-ergebnis-fluss-wahl[data-gruppe=darstellung]").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
         Assert.Equal("kette", ablage["darstellung"]);
         cut.Find(".epos-ergebnis-fluss-wahl[data-gruppe=filter]").KeyDown(new KeyboardEventArgs { Key = "End" });
         Assert.Equal("kaelte", ablage["filter"]);
@@ -494,6 +497,59 @@ public class UebersichtErgebnisFlussTests : EposBunitContext
         Assert.StartsWith("Ansicht: Fluss (Energieflussbild der Version Stamm; Darstellung Stufen; Energieform Wärme)\n", cut.Instance.Text());
         // Die Flussliste bleibt die der ganzen Version (die Zahlen hängen nicht an der Darstellung).
         Assert.Contains("[fluss] Energiefluss — Stamm", cut.Instance.Text());
+    }
+
+    /// <summary>Die Probendaten mit der Deckung je Kanal: Wärmepumpe deckt Heizung und Warmwasser, der Kessel nur Heizung.</summary>
+    private VariantenDaten DatenMitDeckung(int id, bool stamm)
+    {
+        VariantenDaten v = Daten(id, stamm);
+        double basis = v.Ergebnis!.Energiebedarf.Waermebedarf_Gesamt;
+        double kessel = v.Ergebnis.Heizkessel.Waermeproduktion, wp = v.Ergebnis.Waermepumpe.Waermeproduktion_WP;
+        double ww = v.Ergebnis.Energiebedarf.Waermebedarf_Kanal[1];
+        v.Ergebnis.Waermepumpe.Deckung_Kanal[0] = (wp - ww) / basis * 100.0;
+        v.Ergebnis.Waermepumpe.Deckung_Kanal[1] = ww / basis * 100.0;
+        v.Ergebnis.Heizkessel.Deckung_Kanal[0] = kessel / basis * 100.0;
+        return v;
+    }
+
+    [Fact]
+    public void Zuordnung_dritter_Knopf_zeigt_Baender_Erzeuger_zu_Verwendung_mit_eigenen_Kanten_und_Textalternative()
+    {
+        var ablage = Flussablage();
+        var huelle = new UebersichtErgebnisGaben(DatenMitDeckung, new FluechtigeEinstellungen());
+        var cut = Zeige(ablage, huelle);
+        var gruppe = cut.Find(".epos-ergebnis-fluss-wahl[data-gruppe=darstellung]");
+        Assert.Equal(3, gruppe.QuerySelectorAll("button").Length);
+        Assert.Equal("false", gruppe.QuerySelector("button[data-wahl=zuordnung]")!.GetAttribute("aria-checked"));
+        // Die Kette führt den Wärmebus.
+        Assert.NotEmpty(cut.FindAll(".epos-ergebnis-fluss-mass--breit svg [data-marke='knoten:waerme']"));
+
+        Knopf(cut, "darstellung", "zuordnung");
+        Assert.Equal("zuordnung", ablage["darstellung"]);
+        UebersichtErgebnisFluss fluss = cut.Instance.Fluss!;
+        Assert.Equal(ErgebnisFlussWahl.ZUORDNUNG, fluss.Darstellung);
+        Assert.Equal("Zuordnung", fluss.DarstellungName);
+        Assert.Equal("true", cut.Find(".epos-ergebnis-fluss-wahl[data-gruppe=darstellung] button[data-wahl=zuordnung]").GetAttribute("aria-checked"));
+        IElement figur = cut.Find("figure.epos-ergebnis-fluss-bild");
+        Assert.Equal("zuordnung", figur.GetAttribute("data-darstellung"));
+        // Kein Wärmebus, direkte Bänder Erzeuger → Verwendung, keine Stufentitel.
+        Assert.Empty(cut.FindAll(".epos-ergebnis-fluss-mass--breit svg [data-marke='knoten:waerme']"));
+        Assert.NotEmpty(cut.FindAll(".epos-ergebnis-fluss-mass--breit svg [data-marke='fluss:wp_heizen:warmwasser']"));
+        Assert.NotEmpty(cut.FindAll(".epos-ergebnis-fluss-mass--breit svg [data-marke='fluss:heizkessel:heizung']"));
+        Assert.Empty(cut.FindAll(".epos-ergebnis-fluss-mass--breit svg [data-marke^='stufe:']"));
+        // Kanten und Textalternative kommen aus der Bilanz der Zuordnung.
+        Assert.Contains("fluss:wp_heizen:heizung", figur.GetAttribute("data-kanten"));
+        Assert.DoesNotContain("\"waerme\"", figur.GetAttribute("data-busse"));
+        Assert.Contains(cut.FindAll(".epos-ergebnis-fluss-text li"), li => li.TextContent.StartsWith("Wärmepumpe → Warmwasser: 31,4 MWh/a"));
+        // Die Wärmepumpe schließt (die Probendaten lassen Strom und Kessel ohne Brennstoffzeile offen, wie in der Kette).
+        Assert.DoesNotContain(cut.FindAll(".epos-ergebnis-fluss-text li"), li => li.TextContent.Contains("nicht zugeordnet")
+                              && li.TextContent.Contains("Wärmepumpe"));
+
+        // Gemerkt wie die Stufen; der Rückweg zur Kette stellt deren Kanten wieder her.
+        Assert.Equal(ErgebnisFlussWahl.ZUORDNUNG, Zeige(ablage, huelle).Instance.Fluss!.Darstellung);
+        Knopf(cut, "darstellung", "kette");
+        Assert.Equal(fluss.Stand!.KantenJson, cut.Find("figure.epos-ergebnis-fluss-bild").GetAttribute("data-kanten"));
+        Assert.Equal("zuordnung", ErgebnisFlussWahl.Darstellung("zuordnung"));
     }
 
     [Fact]

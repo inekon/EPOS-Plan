@@ -1533,6 +1533,13 @@ Projekt 1072 und `EPOS.Kern.Tests/SchnellaufheizungReferenzprojektWacheTests` di
 > (38/38 GESAMT PASS, 1 233 von 1 233 CSV byte-gleich). Die Testdatenbank steht auf **241** (`integrity_check` ok, `foreign_key_check` leer): **109 621 248 Byte,
 > LFS-SHA-256 `0f80eaf47491ff576cddcd7fda439f5933632b82d32da13e8de3ca65cd5aeb8c`**.
 
+> **Nachtrag — Quellentnahme der Booster-Kette (17.10.2026), Basis R59 nachgeführt.** Die Entnahme einer Wärmepumpe oder
+> eines Kessels aus ihrem Quellpuffer steht nicht mehr als Entladung in die Heizung in der Kanalzeile des Speichers,
+> sondern in `SimulationPufferspeicher.QuellentnahmeGesamtKwh` (Physik, Schichtebene und `Entladung_gesamt` unverändert).
+> Anwenderentscheid 17.10.2026: Die Basis wird nachgeführt statt neu eingefroren. Einzige Abweichung im Lauf aller
+> achtunddreißig Projekte: Projekt 1042 `Pufferspeicher[0].Entladung_Heizung` 14053.96 → 0 (die Quellwärme des
+> Boosters aus „Puffer 3000Ltr“); die neunzehn Projekte der CI-Auswahl bleiben PASS.
+
 ### Die Vorgängerbasis R58 (Kältesummen)
 
 Achtunddreißig Projekte, 1 233 CSV, 8 596 Skalare, auf Linux eingefroren gegen die Testdatenbank `c8befb51…`
