@@ -58141,6 +58141,21 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="EF_DARSTELLUNG_STUFEN" xml:space="preserve">
     <value>Stages</value>
   </data>
+  <data name="EF_DARSTELLUNG_ZUORDNUNG" xml:space="preserve">
+    <value>Allocation</value>
+  </data>
+  <data name="EF_KN_SPEICHERVERLUST" xml:space="preserve">
+    <value>Storage loss</value>
+  </data>
+  <data name="EF_KK_SPEICHERVERLUST" xml:space="preserve">
+    <value>Stor. loss</value>
+  </data>
+  <data name="EF_FORMEL_DECKUNG" xml:space="preserve">
+    <value>coverage per channel × heat demand</value>
+  </data>
+  <data name="EF_FORMEL_SPEICHERVERLUST" xml:space="preserve">
+    <value>net output − coverage (storage losses, state of charge)</value>
+  </data>
   <data name="VF_STAND__BILD__ENERGIEFLUSS" xml:space="preserve">
     <value>Image per state: energy flow diagram — annual balance of electricity, heat and cooling from the sources via the generators to the demands; the nodes carry their annual total (MWh/a), the bands no number; Word only.</value>
   </data>
