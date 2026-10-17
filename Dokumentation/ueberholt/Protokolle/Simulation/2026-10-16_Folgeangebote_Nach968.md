@@ -23,6 +23,10 @@ Volles Gate (`gate_linux.sh`) auf dem Stand vor R57: Kern 14 515 bestanden, 5 Ro
 - **Proben:** Kopfleistenprobe 38/38, Gegenprobe 48 Verstöße; Raster- und Fensterprobe grün mit Gegenproben; Katalogprobe 21/70 wie vorher (darunter N08b, N22b bei 400 × 624, schon vorher rot); Rollbereich rot nur in der Kompaktstufe 1024 × 700/768; UI-Tests 1 805/0 (gefiltert).
 - **Offen in der Kompaktstufe:** KA-E-27 (Kältemaschine „Spalten…“ über „Katalogverwaltung…“), Satzfläche der pv-/solarganglinie, gekürzter Suchplatzhalter der Projektauswahl.
 
+## Nachtrag Kompaktstufe (17.10.2026, Status #1167)
+
+Die drei offenen Punkte der Kompaktstufe sind erledigt: KA-E-27 und der Satzkopf der pv-/solarganglinie durch die Sitzung „Anlagendialog“ (`ad70aa9fb`), der gekürzte Suchplatzhalter mit Weg A+B1 (Anwenderentscheid 17.10.2026). In der Katalog-Kopfleiste gibt unter 1280 × 800 zuerst das Suchfeld bis 11.25rem nach, dann die Überschrift bis 3rem, zuletzt die Knöpfe mit Auslassung bis 5.5rem (Pfeil bleibt, title nennt den vollen Text). Platzhalter bei 1024 × 700 und 1024 × 768 178/178 px statt 110/176 px; Kopfleistenprobe mit Kompaktmessung 76/76 grün, Gegenprobe rot; Rollbereichprobe 2 030 Zustände ohne Verstoß.
+
 ## Offen
 
 Wiki-Upload der Seite „Pufferspeicher auslegen“, zweier Grundlagenseiten und zweier Diagrammbilder mit dem Sammel-Upload (Entwurf „Nachtrag zu Version 1.2.0.11“ in `Dokumentation/aktuell/Wiki_Update_2026-09-26.md`).

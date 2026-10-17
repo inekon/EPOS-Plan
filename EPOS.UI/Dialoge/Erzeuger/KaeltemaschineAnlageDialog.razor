@@ -109,10 +109,11 @@
             @if (TypkennfelderLaden is not null)
             {
                 <button type="button" class="epos-knopf epos-zweispalten-knopf epos-kaeltemaschine-typkennfelder"
-                        title="@Texte.KnopfTypkennfelder" @onclick="TypkennfelderEinspielen">@Texte.KnopfTypkennfelder</button>
+                        title="@Texte.KnopfTypkennfelder" @onclick="TypkennfelderEinspielen"><span class="epos-zweispalten-knopftext">@Texte.KnopfTypkennfelder</span></button>
             }
+            @* Der Text steht in .epos-zweispalten-knopftext: In der Kompaktstufe kuerzt er mit Auslassung (Nach #968 c). *@
             <button type="button" class="epos-knopf epos-zweispalten-knopf epos-kaeltemaschine-verwaltung"
-                    title="@Texte.KnopfVerwaltung" @onclick="VerwaltungOeffnen">@Texte.KnopfVerwaltung</button>
+                    title="@Texte.KnopfVerwaltung" @onclick="VerwaltungOeffnen"><span class="epos-zweispalten-knopftext">@Texte.KnopfVerwaltung</span></button>
         </KatalogKopf>
 
         @* AW3b: „Bearbeiten…" steht nur noch EINMAL, in der Knopfleiste am gewaehlten Satz. *@
