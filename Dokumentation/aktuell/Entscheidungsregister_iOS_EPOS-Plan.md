@@ -928,7 +928,7 @@ in seiner neuen Fassung Teil des Migrationspfads und sinnvollerweise mit (a) zus
 
 ## 5 Entscheide 16.10.2026 zur Entscheidungsvorlage Gruppe C
 
-Der Anwender hat die 41 Punkte der Gruppe C aus Status 4.5 am 16.10.2026 im Gespräch einzeln beschieden. Die Kennung ist Nummer und Teil der Vorlage; der Bezug nennt die Statuszeile des Befunds. Die 16 umzusetzenden Aufträge sind umgesetzt (Status #1166); die Nachentscheide vom 17.10.2026 stehen unter der Tabelle.
+Der Anwender hat die 41 Punkte der Gruppe C aus Status 4.5 am 16.10.2026 im Gespräch einzeln beschieden. Die Kennung ist Nummer und Teil der Vorlage; der Bezug nennt die Statuszeile des Befunds. Die 16 umzusetzenden Aufträge sind umgesetzt (Status #1167); die Nachentscheide vom 17.10.2026 stehen unter der Tabelle.
 
 | Kennung | Entscheid | Weg | Bezug |
 |---|---|---|---|
@@ -961,6 +961,6 @@ Der Anwender hat die 41 Punkte der Gruppe C aus Status 4.5 am 16.10.2026 im Gesp
 
 | Kennung | Nachentscheid | Umsetzungsstand |
 |---|---|---|
-| **29c** | geändert: „alles wie vorher + BHKW“ — keine Einschränkung der Leistungsarten im Betriebsraster; Wärmepumpe und BHKW behalten ihre Leistungsarten, das BHKW bietet zusätzlich „je kW elektrisch“ (Test: 12 €/kW·a × 50 kW = 600 €/a); löst die Einschränkung „nur beim BHKW, Wärmepumpe nicht“ ab | umgesetzt #1166 |
-| **8a** | „Stamm zählt mit“: `hat.*` im Gruppenblock fragt in jeder Variantengruppe auch das Stammprojekt | umgesetzt #1166 |
-| **6b** | „Kennzahlen nachziehen“: Vorlagenfeldkatalog Fassung 26 mit den Kennzahlen `energie.hilfsstrom`, `em.co2_hilfsstrom`, `ko.stromsteuer_hilfsstrom` und `ko.stromsteuer_hilfsstrom_gesamt`; neun Vorlagen neu gebaut | umgesetzt #1166 |
+| **29c** | geändert: „alles wie vorher + BHKW“ — keine Einschränkung der Leistungsarten im Betriebsraster; Wärmepumpe und BHKW behalten ihre Leistungsarten, das BHKW bietet zusätzlich „je kW elektrisch“ (Test: 12 €/kW·a × 50 kW = 600 €/a); löst die Einschränkung „nur beim BHKW, Wärmepumpe nicht“ ab | umgesetzt #1167 |
+| **8a** | „Stamm zählt mit“: `hat.*` im Gruppenblock fragt in jeder Variantengruppe auch das Stammprojekt | umgesetzt #1167 |
+| **6b** | „Kennzahlen nachziehen“: Vorlagenfeldkatalog Fassung 26 mit den Kennzahlen `energie.hilfsstrom`, `em.co2_hilfsstrom`, `ko.stromsteuer_hilfsstrom` und `ko.stromsteuer_hilfsstrom_gesamt`; neun Vorlagen neu gebaut | umgesetzt #1167 |

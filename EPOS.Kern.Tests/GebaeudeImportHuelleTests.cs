@@ -243,8 +243,7 @@ namespace EPOS.Kern.Tests
             // Projekt fragt.
             IDatenzugriff vorherZugriff = DataRepository.Zugriff;
             IDateiDienst vorherDatei = Dienste.Datei;
-            // Ohne Datenbank wie der Wirt — auch auf einem Rechner mit Anwenderdatenbank.
-            using var ohneDb = new OhneDatenbankprobe();
+            // Ohne Datenbank wie der Wirt: Der Modulschutz (OhneAnwenderdatenbank) gilt auf jedem Rechner.
             var zugriffe = new Zaehlzugriff(vorherZugriff);
             try
             {
