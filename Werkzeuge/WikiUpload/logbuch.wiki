@@ -11,6 +11,10 @@
 * Seit 14.10.2026: Der Gebäudeexport in gbXML und IFC nimmt die Kalender, Lasten, Vorheizzeit, Übergabe, Luftströme und Erdreichangaben der Zonen mit, der Import liest sie wieder ein.
 * Seit 13.10.2026: Im Gebäudedialog lassen sich alle oder die gewählten Gebäude des Projekts aus der Kopfleiste simulieren, und die Zusammenfassung zeigt den Jahreswärmebedarf des letzten Laufs.
 * Seit 12.10.2026: „Administration › Gebäude › Bauteilkatalog einlesen…“ liest einen Bauteilkatalog aus CSV-Dateien in den Baustoff- und Aufbaukatalog ein; ein erneuter Import erkennt zusammengeführte Baustoffe wieder.
+* Seit 16.10.2026: Ein Bauteilaufbau kann inhomogene Schichten mit Abschnitten und Flächenanteilen führen; der U-Wert folgt dem oberen und unteren Grenzwert nach DIN EN ISO 6946, und der Bauteilkatalog-Import teilt solche Aufbauten normgerecht.
+* Seit 16.10.2026: Ein Fensteraufbau führt U_g, U_f, g-Wert, Rahmenanteil und ψ_g; im Bauteildialog übernimmt das Fenster g-Wert, Rahmenanteil und das daraus nach DIN EN ISO 10077-1 gerechnete U_w.
+* Seit 16.10.2026: Die Nutzungsprofile der DIN/TS 18599-10 sind mit den Normwerten der Ausgabe 2025-10 ausgeliefert, das Wochenmuster folgt aus den Nutzungstagen je Jahr.
+* Seit 16.10.2026: „Bauteilkatalog einlesen…“ nennt die Teilkataloge der Quelle und liest auch den Unterordner „Export“ des Katalogexports.
 * Seit 12.10.2026: „Normwerte einlesen…“ füllt die Profile der DIN/TS 18599-10 aus Ihrer eigenen CSV-Datei oder Projektdatei; die leeren Kategorien SIA 2024 und VDI 2078 entfallen im Katalog der Nutzungsprofile.
 * Seit 11.10.2026: Saison, Ferien, Zeiträume und Einzeltage der Kalender nehmen Tag und Monat als „TT.MM.“ an und prüfen die Eingabe erst beim Verlassen des Feldes.
 * Seit 11.10.2026: Die Gruppe „Aufheizen vor Nutzungsbeginn“ in der Simulationskonfiguration bietet drei Verfahren (Sollwertrampe, Vorheizzeit vorgeben, Vorheizzeit berechnen); Sprung, Regelgenauigkeit und Geltung sind je Gebäude oder Zone einstellbar, jede Zone kann eine eigene Vorheizzeit haben.
