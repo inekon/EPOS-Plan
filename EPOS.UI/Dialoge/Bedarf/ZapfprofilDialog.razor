@@ -443,6 +443,11 @@
                                                             FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte)" />
                                     </KindInhalt>
                                 </Formularraster>
+                                <div class="epos-zapfprofil-gruppenhilfe">
+                                    <h5 class="epos-zapfprofil-kalender-titel">@Texte.LabelTagesbedarf</h5>
+                                    <InfoKnopf Schluessel="@HILFE_SCHAETZHILFEN" StandardKurztext="@Texte.LabelTagesbedarf"
+                                               Dialogname="@Texte.Titel" MitAssistent="false" />
+                                </div>
                                     @Einwertfeld(new Einwert(Texte.LabelTagesbedarf, "kWh/d", a.TagesbedarfAuto ? null : a.TagesbedarfManuellKwh,
                                                              Tagesbedarfshilfe, w => TagesbedarfSetzen(zone, w),
                                                              v => TagesbedarfUebernehmen(zone, v), true, "", ""))
@@ -452,7 +457,7 @@
                 </Klappgruppe>
 
                 <Klappgruppe Titel="@Texte.LabelKalender" Zusatz="@KalenderZusammenfassung(art, a)"
-                             Klasse="epos-zapfprofil-karte epos-zapfprofil-methode epos-zapfprofil-karte--kalender"
+                             Klasse="epos-zapfprofil-karte epos-zapfprofil-methode epos-zapfprofil-karte--kalender epos-zapfprofil-kalender"
                              Offen="@KarteOffen(METHODE_KALENDER)" OffenChanged="o => KarteSetzen(METHODE_KALENDER, o)">
                     <Kopfhandlungen>
                         @Wirkungsmarke(Texte.WirkungVerteilung)
@@ -642,7 +647,7 @@
                              Offen="@KarteOffen(METHODE_JAHRESREIHE)" OffenChanged="o => KarteSetzen(METHODE_JAHRESREIHE, o)">
                     <Kopfhandlungen>
                         @Wirkungsmarke(Texte.WirkungJahresreihe)
-                        <InfoKnopf Schluessel="@HILFE_TYPTAGE" StandardKurztext="@Texte.MethodeJahresreihe"
+                        <InfoKnopf Schluessel="@HILFE_FACHWERTE" StandardKurztext="@Texte.MethodeJahresreihe"
                                    Dialogname="@Texte.Titel" MitAssistent="false" />
                     </Kopfhandlungen>
                     <ChildContent>
@@ -735,6 +740,11 @@
                                         }
                                     </KindInhalt>
                                 </Formularraster>
+                                        <div class="epos-zapfprofil-gruppenhilfe">
+                                            <h5 class="epos-zapfprofil-kalender-titel">@Texte.GruppeTyptage</h5>
+                                            <InfoKnopf Schluessel="@HILFE_TYPTAGE" StandardKurztext="@Texte.GruppeTyptage"
+                                                       Dialogname="@Texte.Titel" MitAssistent="false" />
+                                        </div>
                                         <Herleitungszeile Text="@(TyptageDa ? Texte.HinweisTyptage : Texte.HinweisTyptageOhne)" />
                                         @if (TyptagGaben is not null)
                                         {
@@ -4069,11 +4079,13 @@
         return null;
     }
 
-    /// <summary>Der Seed — Stufe Experte, ganze Zahl ab 0; leer = Vorgabe.</summary>
+    /// <summary>Der Seed — Stufe Experte beim Rechenweg „stochastisch" (ZC5: nur dort steht das Feld), ganze Zahl ab 0; leer = Vorgabe.</summary>
     private string? KiSeed(int? wert)
     {
         if (_stufe != ZapfprofilStufe.Experte)
             return ZapfprofilKiRegeln.NurMit(Texte.LabelSeed, Texte.StufeExperte);
+        if (!_eingabe.JahresreiheStochastisch)
+            return ZapfprofilKiRegeln.NurMit(Texte.LabelSeed, Texte.OptionStochastisch);
         string? grund = ZapfprofilKiRegeln.Bereich(Texte.LabelSeed, wert, 0, null);
         if (grund is not null) return grund;
         SeedSetzen(wert);

@@ -16595,8 +16595,8 @@ Dieselben Regeln wie beim Projektkopf. */
 
 /* Das Blatt „Katalog der Nutzungsarten" (ZB9): Die Tabelle nimmt die Breite des Blattes und rollt nur in
    ihrer Huelle. */
-/* Der Titel des Typtagwegs steht links, seine Hilfepille rechts. */
-.epos-zapfprofil-typtage .epos-zapfprofil-gruppenhilfe > h5 {
+/* Der Titel einer Teilgruppe der Methoden (Tagesbedarf, Typtagweg) steht links, seine Hilfepille rechts. */
+.epos-zapfprofil-methodenteil .epos-zapfprofil-gruppenhilfe > h5 {
     margin-inline-end: auto;
 }
 

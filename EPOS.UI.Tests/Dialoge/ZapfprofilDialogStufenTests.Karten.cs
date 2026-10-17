@@ -28,12 +28,12 @@ public partial class ZapfprofilDialogStufenTests
         // „Nutzung" hat keine Klappe: Ihre Felder stehen in jeder Stufe.
         Assert.Empty(cut.FindAll(".epos-zapfprofil-karte--nutzung .epos-klappgruppe-knopf"));
         Assert.True(HatFeld(cut, "Bezugsgröße"));
-        Assert.Equal(new[] { "Belegung", "Kalender", "Messwert", "Tagesbedarf", "Fachwerte des Bereichs", "Zirkulation",
-                             "Ladeleistung und Ladefenster", "Leitungsinhalt", "Fachwerte · Gebäude", "Stochastik · Jahresreihe" },
+        // ZC5: Die Karten sind die sechs Methoden.
+        Assert.Equal(new[] { "Bedarf", "Kalender", "Messwert", "Jahresreihe", "Zirkulation und Anlage", "Auslegung" },
                      Kartentitel(cut));
-        // Der Typtagweg ist eine Angabe des Projekts: Er steht bei der Jahresreihe, nicht bei den Fachwerten der Zone.
+        // Der Typtagweg ist eine Angabe des Projekts: ein Eintrag der Wahl des Rechenwegs in der Methode „Jahresreihe".
         ZapfprofilKarten.Auf(cut, "jahresreihe");
-        Assert.NotNull(cut.Find(".epos-zapfprofil-karte--jahresreihe .epos-zapfprofil-typtage"));
+        Assert.NotNull(cut.Find(".epos-zapfprofil-karte--jahresreihe .epos-zapfprofil-methodenteil--projekt fieldset[aria-label='Rechenweg der Jahresreihe']"));
     }
 
     [Fact]
@@ -43,16 +43,16 @@ public partial class ZapfprofilDialogStufenTests
         Stufe(cut, "Experte", aufklappen: false);
 
         ZapfprofilKarten.Knopf(cut, "messwert").Click();
-        ZapfprofilKarten.Knopf(cut, "ladeleistung").Click();
+        ZapfprofilKarten.Knopf(cut, "auslegung").Click();
         Assert.True(cut.Instance.KarteIstOffen("messwert"));
         Assert.True(HatFeld(cut, "Jahresmesswert"));
-        Assert.False(HatFeld(cut, "Anlagentopologie"));
+        Assert.False(HatFeld(cut, "Personen je Wohneinheit"));
 
         // Zonenwechsel: Die Karten der neuen Zone stehen wie zuvor - offen, was offen war.
         cut.FindAll("table.epos-zapfprofil-zonen tbody tr.epos-zapfprofil-bereich")[1].QuerySelector("button")!.Click();
-        Assert.Equal("Bereich „Büro“", Gruppen(cut)[1]);
+        Assert.Equal("Bereich „Büro“", cut.Find(".epos-zapfprofil-karte--messwert .epos-zapfprofil-teilmarke").TextContent.Trim());
         Assert.Equal("true", ZapfprofilKarten.Knopf(cut, "messwert").GetAttribute("aria-expanded"));
-        Assert.Equal("false", ZapfprofilKarten.Knopf(cut, "belegung").GetAttribute("aria-expanded"));
+        Assert.Equal("false", ZapfprofilKarten.Knopf(cut, "bedarf").GetAttribute("aria-expanded"));
         Assert.True(HatFeld(cut, "Jahresmesswert"));
         Assert.True(HatFeld(cut, "Ladezeitfenster"));
 
@@ -62,10 +62,10 @@ public partial class ZapfprofilDialogStufenTests
         Assert.Equal("false", ZapfprofilKarten.Knopf(cut, "messwert").GetAttribute("aria-expanded"));
         Assert.False(HatFeld(cut, "Jahresmesswert"));
 
-        // Über Einfach und zurück bleibt die Ladeleistung offen.
+        // Über Einfach und zurück bleibt die Auslegung offen.
         Stufe(cut, "Einfach", aufklappen: false);
         Stufe(cut, "Experte", aufklappen: false);
-        Assert.Equal("true", ZapfprofilKarten.Knopf(cut, "ladeleistung").GetAttribute("aria-expanded"));
+        Assert.Equal("true", ZapfprofilKarten.Knopf(cut, "auslegung").GetAttribute("aria-expanded"));
     }
 
     [Fact]
@@ -86,19 +86,19 @@ public partial class ZapfprofilDialogStufenTests
         var cut = Aufbauen(Daten(e));
         Stufe(cut, "Experte", aufklappen: false);
 
-        Assert.Equal("24 WE aus der Wohnungstabelle · Durchfluss · Zirkulation nein", ZapfprofilKarten.Zusatz(cut, "belegung"));
-        Assert.Equal("12.000 kWh/a", ZapfprofilKarten.Zusatz(cut, "messwert"));
-        Assert.Equal("4,5 l", ZapfprofilKarten.Zusatz(cut, "leitungsinhalt"));
-        Assert.Equal("auto · Ladefenster 6 h ab 22 Uhr", ZapfprofilKarten.Zusatz(cut, "ladeleistung"));
-        Assert.Equal("1 eigener Wert", ZapfprofilKarten.Zusatz(cut, "fachwerte-gebaeude"));
+        Assert.StartsWith("24 WE aus der Wohnungstabelle · ", ZapfprofilKarten.Zusatz(cut, "bedarf"));
+        Assert.StartsWith("12.000 kWh/a", ZapfprofilKarten.Zusatz(cut, "messwert"));
+        Assert.StartsWith("Zirkulation nein · ", ZapfprofilKarten.Zusatz(cut, "zirkulation"));
+        Assert.EndsWith(" · Leitungsinhalt 4,5 l", ZapfprofilKarten.Zusatz(cut, "zirkulation"));
+        Assert.Equal("Durchfluss · auto · Ladefenster 6 h ab 22 Uhr", ZapfprofilKarten.Zusatz(cut, "auslegung"));
         Assert.Equal("stochastisch · 20 Jahre · Seed 1", ZapfprofilKarten.Zusatz(cut, "jahresreihe"));
 
         // Ohne Wohnungstabelle nennt die Belegung die Personen je WE, wo sie eingetragen sind.
-        ZapfprofilKarten.Auf(cut, "belegung");
+        ZapfprofilKarten.Auf(cut, "bedarf");
         cut.FindAll(".epos-zapfprofil-wohnung-entfernen")[0].Click();
         cut.FindAll(".epos-zapfprofil-wohnung-entfernen")[0].Click();
         Feld(cut, "Personen je Wohneinheit").Input("2,2");
-        Assert.Equal("2,2 Personen je WE · Durchfluss · Zirkulation nein", ZapfprofilKarten.Zusatz(cut, "belegung"));
+        Assert.StartsWith("2,2 Personen je WE · ", ZapfprofilKarten.Zusatz(cut, "bedarf"));
     }
 
     // ---- ZB8: Hinweise der Stufe Einfach --------------------------------------------------------

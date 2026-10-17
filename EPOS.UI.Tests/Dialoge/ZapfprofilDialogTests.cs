@@ -391,13 +391,13 @@ public partial class ZapfprofilDialogTests : EposBunitContext
 
         Option(cut, "Experte").Change("2");
         ZapfprofilKarten.AlleAuf(cut);
-        Assert.Contains("Stochastik · Jahresreihe", cut.Markup);
-        Assert.Equal(new[] { "deterministisch", "stochastisch" },
+        // ZC5: der Rechenweg ist EINE Wahl in der Methode „Jahresreihe"; darunter nur die Felder des gewählten Wegs.
+        Assert.NotNull(cut.Find(".epos-zapfprofil-karte--jahresreihe fieldset[aria-label='Rechenweg der Jahresreihe']"));
+        Assert.Equal(new[] { "Norm-Jahresgang", "stochastisch", "Typtage VDI 4655" },
                      cut.FindAll("fieldset[aria-label='Rechenweg der Jahresreihe'] .epos-feld-text").Select(x => x.TextContent).ToArray());
-        Assert.True(Option(cut, "deterministisch").HasAttribute("checked"));
+        Assert.True(Option(cut, "Norm-Jahresgang").HasAttribute("checked"));
         Assert.Contains("Wählt nur, welche Reihe in die Bilanz geht", cut.Markup);
-        Assert.True(HatFeld(cut, "Zufallssaat (Seed)"));                  // der Seed auch deterministisch
-        Assert.Contains("— für die Jahresreihe und das Ensemble der Auslegung.", cut.Markup);
+        Assert.False(HatFeld(cut, "Zufallssaat (Seed)"));                 // Seed und Realisierungen gehören zu „stochastisch"
         Assert.False(HatFeld(cut, "Realisierungen"));
         Assert.Empty(cut.FindAll(".epos-zapfprofil-vorschau-deterministisch"));
 
@@ -477,11 +477,11 @@ public partial class ZapfprofilDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// Umschalten leert nur die eigenen Fehlfelder: „deterministisch" nimmt die Realisierungen samt
-    /// Fehleingabe weg, der Seed bleibt stehen — seine Fehleingabe hält das OK weiter an.
+    /// Umschalten leert die Fehlfelder des verlassenen Wegs (ZC5): „Norm-Jahresgang" nimmt Seed und
+    /// Realisierungen samt Fehleingabe weg — das OK geht durch und trägt den letzten gültigen Seed.
     /// </summary>
     [Fact]
-    public void Der_Rechenweg_leert_nur_die_Fehleingabe_der_Realisierungen()
+    public void Der_Rechenweg_Norm_nimmt_Seed_und_Realisierungen_samt_Fehleingabe_mit()
     {
         ZapfprofilErgebnisDaten? ergebnis = null;
         var cut = Aufbauen(geschlossen: x => ergebnis = x);
@@ -491,17 +491,13 @@ public partial class ZapfprofilDialogTests : EposBunitContext
         Feld(cut, "Zufallssaat (Seed)").Input("-1");
         Feld(cut, "Realisierungen").Input("5000");
 
-        Option(cut, "deterministisch").Change("0");
-        Assert.True(HatFeld(cut, "Zufallssaat (Seed)"));
-        Assert.Contains("epos-fehleingabe", Feld(cut, "Zufallssaat (Seed)").ClassName);
-        Knopf(cut, "OK").Click();
-        Assert.Null(ergebnis);
-        Assert.Equal("Bitte die markierten Felder berichtigen: Zufallssaat (Seed).", cut.Instance.OkMeldung);
-
-        Feld(cut, "Zufallssaat (Seed)").Input("4");
+        Option(cut, "Norm-Jahresgang").Change("0");
+        Assert.False(HatFeld(cut, "Zufallssaat (Seed)"));
+        Assert.False(HatFeld(cut, "Realisierungen"));
         Knopf(cut, "OK").Click();
         Assert.NotNull(ergebnis);
-        Assert.Equal(4, ergebnis!.Eingabe.Seed);
+        Assert.False(ergebnis!.Eingabe.JahresreiheStochastisch);
+        Assert.Null(ergebnis.Eingabe.Realisierungen);
     }
 
     /// <summary>
@@ -667,7 +663,7 @@ public partial class ZapfprofilDialogTests : EposBunitContext
         Knopf(cut, "Stochastisch rechnen").Click();
         cut.WaitForAssertion(() => Assert.Contains(SATZ, cut.Find(".epos-blockspalte:first-child .epos-warnbanner").TextContent));
 
-        Option(cut, "deterministisch").Change("0");
+        Option(cut, "Norm-Jahresgang").Change("0");
         Assert.Null(cut.Instance.StochastikErgebnis);
         Assert.Empty(cut.FindAll(".epos-warnbanner"));
     }
@@ -1380,16 +1376,18 @@ public partial class ZapfprofilDialogTests : EposBunitContext
         cut.Render();
         Assert.Equal(ZapfprofilStufe.Experte, cut.Instance.Stufe);
 
-        Setze("seed", "42");
-        Assert.Equal(42, cut.Instance.Eingabe.Seed);
-        Assert.Throws<InvalidOperationException>(() => Zugang("seed").Setzen(-1));
-
+        // ZC5: Seed und Realisierungen stehen nur beim Rechenweg „stochastisch" — der Assistent ebenso.
+        var seedOhne = Assert.Throws<InvalidOperationException>(() => Zugang("seed").Setzen(42));
+        Assert.Contains(texte.OptionStochastisch, seedOhne.Message, StringComparison.Ordinal);
         var ohneStochastik = Assert.Throws<InvalidOperationException>(() => Zugang("realisierungen").Setzen(20));
         Assert.Contains(texte.OptionStochastisch, ohneStochastik.Message, StringComparison.Ordinal);
 
         Setze("rechenweg_jahresreihe", "stochastisch");
         cut.Render();
         Assert.True(cut.Instance.Eingabe.JahresreiheStochastisch);
+        Setze("seed", "42");
+        Assert.Equal(42, cut.Instance.Eingabe.Seed);
+        Assert.Throws<InvalidOperationException>(() => Zugang("seed").Setzen(-1));
 
         var zuViel = Assert.Throws<InvalidOperationException>(() => Zugang("realisierungen").Setzen(5000));
         Assert.Contains("1000", zuViel.Message, StringComparison.Ordinal);

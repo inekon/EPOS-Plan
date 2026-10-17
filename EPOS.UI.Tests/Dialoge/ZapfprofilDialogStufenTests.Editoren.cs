@@ -210,11 +210,11 @@ public partial class ZapfprofilDialogStufenTests
         Assert.True(gerufen >= 1);
 
         // ZB4 (b): EIN Feld - der Vorschlag steht grau im leeren Feld, der Knopf daneben übernimmt ihn.
-        IElement karte = cut.Find(".epos-zapfprofil-karte--ladeleistung");
+        IElement karte = cut.Find(".epos-zapfprofil-karte--auslegung");
         Assert.Equal("(12,5)", Feld(cut, "Ladeleistung").GetAttribute("placeholder"));
         Assert.Contains("Rechenweg: Ladeweg der Probe", karte.QuerySelector("details.epos-zapfprofil-rechenweg")!.TextContent);
         Assert.Contains("Angesetzt: 12,5 kW (auto)", karte.TextContent);
-        Assert.StartsWith("12,5 kW (auto)", ZapfprofilKarten.Zusatz(cut, "ladeleistung"));
+        Assert.Contains(" · 12,5 kW (auto)", ZapfprofilKarten.Zusatz(cut, "auslegung"));
         IElement knopf = karte.QuerySelector(".epos-zapfprofil-einwert-uebernehmen")!;
         Assert.Equal("Vorschlag: 12,5 kW", knopf.GetAttribute("title"));
         knopf.Click();
@@ -228,7 +228,7 @@ public partial class ZapfprofilDialogStufenTests
     {
         var cut = MitEditoren();
         Stufe(cut, "Experte");
-        IElement knopf = cut.Find(".epos-zapfprofil-karte--ladeleistung .epos-zapfprofil-einwert-uebernehmen");
+        IElement knopf = cut.Find(".epos-zapfprofil-karte--auslegung .epos-zapfprofil-einwert-uebernehmen");
         Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
         Assert.Equal("Einen Vorschlag gibt es erst mit einer gerechneten Vorschau.", knopf.GetAttribute("title"));
         knopf.Click();
