@@ -10482,6 +10482,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abschnitte ohne Beitrag (Flächenanteil 0) weggelassen ({0} Abschnitt(e), {1} Schichten): {2} ähnelt.
+        /// </summary>
+        public static string BKI_PROT_OHNE_BEITRAG {
+            get {
+                return ResourceManager.GetString("BKI_PROT_OHNE_BEITRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Quelle der Sätze: {0} ähnelt.
         /// </summary>
         public static string BKI_QUELLE {

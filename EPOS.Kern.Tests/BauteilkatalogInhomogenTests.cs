@@ -52,21 +52,21 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>Schreibt die Probe in einen frischen Ordner und liefert ihn.</summary>
-        private string Ordner(double? f1, double? f2, params Lage[] lagen)
+        private string Ordner(double? f1, double? f2, params Lage[] lagen) => Ordner(new[] { f1, f2 }, lagen);
+
+        /// <summary>Wie oben mit beliebig vielen Abschnitten (Anteile in Prozent, leer = <c>null</c>; BK-10).</summary>
+        private string Ordner(double?[] anteile, Lage[] lagen)
         {
             string o = Path.Combine(Path.GetTempPath(), "epos-bk8-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(o);
             _ordner.Add(o);
             var utf8 = new UTF8Encoding(false);
             var a = new List<string> { string.Join(";", G(101), G(901), "Probewand", "", "", "0.2", "", "", "", "", "", "", ST) };
-            var x = new List<string>
-            {
-                string.Join(";", G(401), G(101), "1", f1.HasValue ? Z(f1.Value) : "", "Abschnitt eins"),
-                string.Join(";", G(402), G(101), "2", f2.HasValue ? Z(f2.Value) : "", "Abschnitt zwei")
-            };
+            var x = anteile.Select((f, i) => string.Join(";", G(401 + i), G(101), (i + 1).ToString(CultureInfo.InvariantCulture),
+                                                          f.HasValue ? Z(f.Value) : "", "Abschnitt " + (i + 1).ToString(CultureInfo.InvariantCulture))).ToList();
             var s = new List<string>();
             int nr = 200;
-            foreach (int ab in new[] { 1, 2 })
+            foreach (int ab in Enumerable.Range(1, anteile.Length))
             {
                 int seq = 0;
                 foreach (Lage l in lagen.Where(l => l.Abschnitt == ab))
@@ -90,12 +90,12 @@ namespace EPOS.Kern.Tests
             {
                 Bezeichner = "Probewand",
                 Bauteilart = (string)a.Werte["Bauteilart"],
-                Schichten = a.Schichten.OrderBy(s => (int)s.Werte["Reihenfolge"]).ThenBy(s => (int)s.Abschnitt.Werte["Nummer"])
+                Schichten = a.Schichten.OrderBy(s => (int)s.Werte["Reihenfolge"]).ThenBy(s => s.Abschnitt == null ? 0 : (int)s.Abschnitt.Werte["Nummer"])
                                        .Select(s => new BauteilschichtModel
                                        {
                                            Reihenfolge = (int)s.Werte["Reihenfolge"], Dicke = s.W("Dicke").Value, Lambda = s.Lambda,
                                            Rho = s.Rho, Cp = s.Cp, IstLuftschicht = (int)s.Werte["IstLuftschicht"] == 1,
-                                           Abschnitt = (int)s.Abschnitt.Werte["Nummer"]
+                                           Abschnitt = s.Abschnitt == null ? null : (int)s.Abschnitt.Werte["Nummer"]
                                        }).ToList(),
                 Abschnitte = p.Abschnitte.Where(x => x.Vertreter == a).Select(x => new BauteilabschnittModel
                 {
@@ -244,7 +244,7 @@ namespace EPOS.Kern.Tests
             const string GRUND = "inhomogen: Abschnitt ohne Flächenanteil";
             Verworfen(Planen(null, null, new Lage(1, 0.2, 0.04), new Lage(2, 0.2, 0.13)), GRUND);    // zwei fehlen
             Verworfen(Planen(100, null, new Lage(1, 0.2, 0.04), new Lage(2, 0.2, 0.13)), GRUND);    // nichts offen
-            Verworfen(Planen(99.5, 0, new Lage(1, 0.2, 0.04), new Lage(2, 0.2, 0.13)), GRUND);      // nur die Toleranz offen
+            Verworfen(Planen(99.5, null, new Lage(1, 0.2, 0.04), new Lage(2, 0.2, 0.13)), GRUND);   // nur die Toleranz offen
             // Ein gesetzter Anteil über 1 bleibt die Summenablehnung.
             Verworfen(Planen(80, 30, new Lage(1, 0.2, 0.04), new Lage(2, 0.2, 0.13)), "inhomogen: Flächenanteile ergeben nicht 1 ± 0,01");
         }
@@ -577,6 +577,100 @@ namespace EPOS.Kern.Tests
             Assert.Equal(bauteileVorher, Bauteile());
             Assert.Equal(DbWerte.HERKUNFT_MANUELL, Convert.ToString(DataRepository.ExecuteScalar(
                 "SELECT \"U_Herkunft\" FROM \"Tab_Bauteil\" WHERE \"ID\" = ?", new DbParam("@id", bauteil)), CultureInfo.InvariantCulture));
+        }
+
+        // ---- Abschnitte ohne Beitrag (BK-10) -----------------------------------------------
+
+        /// <summary>
+        /// Vier Abschnitte × zwei Schichten: 1 und 2 mit Grenzen übereinander, 3 und 4 mit einem anderen Stapel; die Anteile gibt
+        /// der Aufruf vor.
+        /// </summary>
+        private static readonly Lage[] VIER =
+        {
+            new Lage(1, 0.1, 0.04), new Lage(1, 0.1, 0.04), new Lage(2, 0.1, 0.5), new Lage(2, 0.1, 0.13),
+            new Lage(3, 0.05, 1.0), new Lage(3, 0.15, 0.2), new Lage(4, 0.05, 1.0), new Lage(4, 0.15, 0.2)
+        };
+
+        [Fact]
+        public void Abschnitte_mit_Flaechenanteil_0_werden_samt_Schichten_weggelassen_und_rechnen_nach_6_7()
+        {
+            BauteilkatalogImport.Plan p = BauteilkatalogImport.Planen(BauteilkatalogQuelle.Lesen(Ordner(new double?[] { 50, 50, 0, 0 }, VIER)),
+                                                                      new BauteilkatalogStand());
+            BauteilkatalogVorschau v = p.Vorschau;
+            Assert.Null(v.Abgelehnt);
+            Assert.Equal(1, v.Aufbauten.Neu);
+            Assert.Equal(0, v.Aufbauten.Abgelehnt);
+            Assert.Equal(2, v.AbschnitteOhneBeitrag);
+            Assert.Equal(0, v.SchichtzahlAngeglichen + v.AnteilErgaenzt);
+            Assert.Equal(new[] { 1, 2 }, p.Abschnitte.Select(x => (int)x.Werte["Nummer"]).OrderBy(n => n).ToArray());
+            Assert.Equal(4, p.Schichten.Count);
+            Assert.Equal(4, p.Aufbauten.Single().Schichten.Count);
+            Assert.Contains(v.Protokoll, z => z == string.Format(CultureInfo.CurrentCulture, R.BKI_PROT_OHNE_BEITRAG, "2", "4", G(101)));
+
+            // Handrechnung nach DIN EN ISO 6946, 6.7 ohne die Abschnitte 3 und 4: R_si 0,13, R_se 0,04.
+            double r11 = 0.1 / 0.04, r12 = 0.1 / 0.04, r21 = 0.1 / 0.5, r22 = 0.1 / 0.13;
+            double oben = 1.0 / (0.5 / (0.13 + r11 + r12 + 0.04) + 0.5 / (0.13 + r21 + r22 + 0.04));
+            double unten = 0.13 + 1.0 / (0.5 / r11 + 0.5 / r21) + 1.0 / (0.5 / r12 + 0.5 / r22) + 0.04;
+            BauteilaufbauModel m = Modell(p);
+            Assert.Null(InhomogeneSchichten.Pruefen(m));
+            BauteilaufbauKennwerte k = BauteilaufbauCtrl.Kennwerte(m);
+            Assert.True(k.Gerechnet, k.Grund);
+            Assert.Equal(oben, k.RT_Oben_M2KW!.Value, 9);
+            Assert.Equal(unten, k.RT_Unten_M2KW!.Value, 9);
+            Assert.Equal(2.0 / (oben + unten), k.U_WM2K!.Value, 9);
+        }
+
+        [Fact]
+        public void Bleibt_nach_dem_Weglassen_ein_Abschnitt_wird_der_Aufbau_homogen()
+        {
+            BauteilkatalogImport.Plan p = Planen(100, 0, new Lage(1, 0.1, 0.04), new Lage(1, 0.1, 0.04), new Lage(2, 0.2, 0.5));
+            Assert.Equal(1, p.Vorschau.Aufbauten.Neu);
+            Assert.Equal(1, p.Vorschau.AbschnitteOhneBeitrag);
+            Assert.Empty(p.Abschnitte);
+            Assert.Equal(2, p.Schichten.Count);
+            Assert.All(p.Schichten, s => Assert.Null(s.Abschnitt));
+            BauteilaufbauKennwerte k = BauteilaufbauCtrl.Kennwerte(Modell(p));
+            Assert.True(k.Gerechnet, k.Grund);
+            Assert.Equal(1.0 / (0.13 + 0.1 / 0.04 + 0.1 / 0.04 + 0.04), k.U_WM2K!.Value, 9);
+        }
+
+        [Fact]
+        public void Anteil_0_neben_leerem_Anteil_oder_mit_falscher_Restsumme_bleibt_eine_Ablehnung()
+        {
+            const string GRUND = "inhomogen: Abschnitt ohne Flächenanteil";
+            BauteilkatalogImport.Plan Vier(params double?[] f) =>
+                BauteilkatalogImport.Planen(BauteilkatalogQuelle.Lesen(Ordner(f, VIER)), new BauteilkatalogStand());
+            Verworfen(Vier(50, 50, 0, null), GRUND);   // 0 gemischt mit leer
+            Verworfen(Vier(50, 40, 0, 0), GRUND);      // die übrigen ergeben 0,9
+            Assert.Equal(0, Vier(50, 40, 0, 0).Vorschau.AbschnitteOhneBeitrag);
+        }
+
+        [Fact]
+        public void Der_Wiederimport_mit_weggelassenen_Abschnitten_bleibt_konvergent()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            string o = Ordner(new double?[] { 50, 50, 0, 0 }, VIER);
+            BauteilkatalogVorschau e1 = BauteilkatalogImport.Uebernehmen(o);
+            Assert.True(e1.Geschrieben, e1.Fehler);
+            long id = Convert.ToInt64(DataRepository.ExecuteScalar(
+                "SELECT \"ID\" FROM \"Tab_Bauteilaufbau_STAMM\" WHERE \"Quellkennung\" = ?", new DbParam("@k", G(101))), CultureInfo.InvariantCulture);
+            BauteilaufbauModel vorher = new BauteilaufbauCtrl().LesenKatalogsatz((int)id);
+            Assert.Equal(4, vorher.Schichten.Count);
+            Assert.Equal(2, vorher.Abschnitte.Count);
+
+            BauteilkatalogVorschau v = BauteilkatalogImport.Vorschau(o);
+            Assert.Null(v.Abgelehnt);
+            Assert.Equal(0, v.Aufbauten.Neu);
+            Assert.Equal(1, v.Aufbauten.Wiedererkannt);
+            Assert.Equal(0, v.WiederimportGeteilt);
+            Assert.Equal(0, v.WiederimportUGeaendert);
+            BauteilkatalogVorschau e2 = BauteilkatalogImport.Uebernehmen(o);
+            Assert.True(e2.Geschrieben, e2.Fehler);
+            BauteilaufbauModel nachher = new BauteilaufbauCtrl().LesenKatalogsatz((int)id);
+            Assert.Equal(4, nachher.Schichten.Count);
+            Assert.Equal(2, nachher.Abschnitte.Count);
+            Assert.Equal(BauteilaufbauCtrl.Kennwerte(vorher).U_WM2K!.Value, BauteilaufbauCtrl.Kennwerte(nachher).U_WM2K!.Value, 12);
         }
     }
 }
