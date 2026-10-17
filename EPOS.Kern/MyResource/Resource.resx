@@ -24328,7 +24328,7 @@ Möchten Sie das zulassen?</value>
     <value>Wie viele Jahre der stochastische Lauf zieht, um die Konsistenz zu prüfen; leer = Vorgabe. Steht in der Stufe „Experte“ beim Rechenweg „stochastisch“.</value>
   </data>
   <data name="KI_DLG_ZPGA_BEDARFSTAG_ERL" xml:space="preserve">
-    <value>Der Bedarfstag der Summenlinie: Vorgaberegel, Stundenprofil der Zonen, DIN-4708-Profil, ein konstruierter Tag oder ein Tag aus dem Katalog. Gesperrte Quellen nennen ihren Grund; einen Tag konstruieren Sie mit dem Knopf darunter.</value>
+    <value>Der Bedarfstag der Summenlinie: Vorgaberegel, Stundenprofil der Bereiche, DIN-4708-Profil, ein konstruierter Tag oder ein Tag aus dem Katalog. Gesperrte Quellen nennen ihren Grund; einen Tag konstruieren Sie mit dem Knopf darunter.</value>
   </data>
   <data name="KI_DLG_ZPGA_SPEICHERTEMPERATUR_ERL" xml:space="preserve">
     <value>Die Temperatur des Speichers; leer = Vorgabe des Katalogs.</value>
@@ -31264,7 +31264,7 @@ Möchten Sie das zulassen?</value>
     <value>ohne Angabe</value>
   </data>
   <data name="ZPGT_WERT_OHNE_GAENGE" xml:space="preserve">
-    <value>keine — die Tagesform kommt aus dem Tagesgangsatz der Zone</value>
+    <value>keine — die Tagesform kommt aus dem Tagesgangsatz des Bereichs</value>
   </data>
   <data name="ZPGT_BTN_PAKET" xml:space="preserve">
     <value>Paket wählen…</value>
@@ -32638,7 +32638,7 @@ Möchten Sie das zulassen?</value>
     <value>Der Zuschlag auf das Volumen der Verfahren (≥ 0, 0,1 = 10 %); leer = Vorgabe.</value>
   </data>
   <data name="KI_DLG_ZPGA_PERSONEN_MODUS_ERL" xml:space="preserve">
-    <value>Die Personen des Verfahrensvergleichs: auto = aus dem Mengengerüst der Zonen, manuell = eigener Wert.</value>
+    <value>Die Personen des Verfahrensvergleichs: auto = aus dem Mengengerüst der Bereiche, manuell = eigener Wert.</value>
   </data>
   <data name="KI_DLG_ZPGA_PERSONEN_MANUELL_ERL" xml:space="preserve">
     <value>Die manuelle Personenzahl — sie wirkt nur bei „manuell“.</value>

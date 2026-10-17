@@ -79159,7 +79159,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bedarfstag der Summenlinie: Vorgaberegel, Stundenprofil der Zonen, DIN-4708-Profil, ein konstruierter Tag oder ein Tag aus dem Katalog. Gesperrte Quellen nennen ihren Grund; einen Tag konstruieren Sie mit dem Knopf darunter. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bedarfstag der Summenlinie: Vorgaberegel, Stundenprofil der Bereiche, DIN-4708-Profil, ein konstruierter Tag oder ein Tag aus dem Katalog. Gesperrte Quellen nennen ihren Grund; einen Tag konstruieren Sie mit dem Knopf darunter. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPGA_BEDARFSTAG_ERL {
             get {
@@ -79249,7 +79249,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Personen des Verfahrensvergleichs: auto = aus dem Mengengerüst der Zonen, manuell = eigener Wert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Personen des Verfahrensvergleichs: auto = aus dem Mengengerüst der Bereiche, manuell = eigener Wert. ähnelt.
         /// </summary>
         public static string KI_DLG_ZPGA_PERSONEN_MODUS_ERL {
             get {
@@ -159079,7 +159079,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die keine — die Tagesform kommt aus dem Tagesgangsatz der Zone ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine — die Tagesform kommt aus dem Tagesgangsatz des Bereichs ähnelt.
         /// </summary>
         public static string ZPGT_WERT_OHNE_GAENGE {
             get {

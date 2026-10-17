@@ -24321,7 +24321,7 @@ Do you want to allow this?</value>
     <value>How many years the stochastic run draws to check consistency; empty = default. Appears in level “Expert” with the “stochastic” method.</value>
   </data>
   <data name="KI_DLG_ZPGA_BEDARFSTAG_ERL" xml:space="preserve">
-    <value>The design day of the cumulative curve: default rule, hourly profile of the zones, DIN 4708 profile, a constructed day or a day from the catalogue. Locked sources name their reason; a day is constructed with the button below.</value>
+    <value>The design day of the cumulative curve: default rule, hourly profile of the areas, DIN 4708 profile, a constructed day or a day from the catalogue. Locked sources name their reason; a day is constructed with the button below.</value>
   </data>
   <data name="KI_DLG_ZPGA_SPEICHERTEMPERATUR_ERL" xml:space="preserve">
     <value>The storage temperature; empty = default of the catalogue.</value>
@@ -31257,7 +31257,7 @@ Do you want to allow this?</value>
     <value>not stated</value>
   </data>
   <data name="ZPGT_WERT_OHNE_GAENGE" xml:space="preserve">
-    <value>none — the daily shape comes from the daily profile set of the zone</value>
+    <value>none — the daily shape comes from the daily profile set of the area</value>
   </data>
   <data name="ZPGT_BTN_PAKET" xml:space="preserve">
     <value>Choose package…</value>
@@ -32631,7 +32631,7 @@ Do you want to allow this?</value>
     <value>The surcharge on the volume of the methods (≥ 0, 0.1 = 10 %); empty = default.</value>
   </data>
   <data name="KI_DLG_ZPGA_PERSONEN_MODUS_ERL" xml:space="preserve">
-    <value>The persons of the method comparison: auto = from the quantity framework of the zones, manual = own value.</value>
+    <value>The persons of the method comparison: auto = from the quantity framework of the areas, manual = own value.</value>
   </data>
   <data name="KI_DLG_ZPGA_PERSONEN_MANUELL_ERL" xml:space="preserve">
     <value>The manual number of persons — it acts only with “manual”.</value>
