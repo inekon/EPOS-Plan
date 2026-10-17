@@ -167,25 +167,28 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Contains("Klimaregion Mitte", cut.Find(".epos-kontextzeile").TextContent);
         Assert.Contains("2 Werte überschrieben", cut.Markup);
 
-        // Die Zonenliste: zwei Zeilen, Summenzeile, eigene Listenleiste.
+        // ZC2: Der Block der Nutzungsbereiche - zwei Zeilen mit Feldern, eine Detailzeile unter der markierten,
+        // Summenzeile, eigene Listenleiste.
         IElement tabelle = cut.Find("table.epos-zapfprofil-zonen");
-        Assert.Equal(2, tabelle.QuerySelectorAll("tbody tr").Length);
+        Assert.Equal(2, tabelle.QuerySelectorAll("tbody tr.epos-zapfprofil-bereich").Length);
+        Assert.Single(tabelle.QuerySelectorAll("tbody tr.epos-zapfprofil-bereichdetail"));
         Assert.Contains("Summe 2 Zonen", tabelle.QuerySelector("tfoot")!.TextContent);
         Assert.Contains("70,0", tabelle.QuerySelector("tfoot")!.TextContent);   // 20 + 50 MWh/a aus der Prüfvorschau
         Assert.Contains("Wohnen A", tabelle.TextContent);
-        Assert.Contains("20 Wohneinheiten", tabelle.TextContent);
+        Assert.Equal("20", Feld(cut, "Bezugsgröße, Bereich 1").GetAttribute("value"));
+        Assert.Contains("Wohneinheiten", tabelle.QuerySelector("tbody tr.epos-zapfprofil-bereich")!.TextContent);
         Assert.NotNull(Knopf(cut, "Zone hinzufügen"));
         Assert.NotNull(Knopf(cut, "Duplizieren"));
         Assert.NotNull(Knopf(cut, "Entfernen"));
 
-        // Der Eingabeblock der gewählten Zone: Zonenname, Nutzungsart, Bezugsgröße, Niveau.
-        Assert.Contains("Zone „Zone 1“", cut.Markup);
-        Assert.Single(cut.FindAll("input[inputmode=decimal]"));
-        Assert.Contains("Zonenname", cut.Markup);
+        // Je Zeile Nutzungsart, Bezugsgröße und Niveau als Felder; der Name steht in der Detailzeile (ZC-Q3 B).
+        Assert.DoesNotContain("Zone „Zone 1“", cut.Markup);
+        Assert.Equal(2, cut.FindAll("input[inputmode=decimal]").Count);
+        Assert.Equal("Zone 1", Feld(cut, "Zonenname").GetAttribute("value"));
+        Assert.NotNull(cut.Find(".epos-zapfprofil-bereichdetail").QuerySelector("input"));
         Assert.Contains("Nutzungsart", cut.Markup);
-        Assert.Contains("Bedarfsniveau", cut.Markup);
         Assert.Equal(new[] { "niedrig", "mittel", "hoch" },
-                     cut.FindAll("fieldset[aria-label='Bedarfsniveau'] .epos-feld-text").Select(e => e.TextContent).ToArray());
+                     Niveau(cut).QuerySelectorAll("option").Select(e => e.TextContent.Trim()).ToArray());
 
         // Herkunft und Status der Nutzungsart, die Vorgabe des Niveaus am Feld.
         Assert.Contains("Katalog · Eigenkonstruktion · Testquelle · Auslieferung · TEST-1", cut.Markup);
@@ -724,7 +727,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         await Knopf(cut, "Stochastisch rechnen").ClickAsync(new());
         Assert.Equal(2, laeufe.Count);
         Assert.True(cut.Instance.JahresreiheLaeuft);
-        await Option(cut, "hoch").ChangeAsync("3");
+        await Niveau(cut).ChangeAsync("3");
         Assert.True(laeufe[1].Marke.IsCancellationRequested);
         Assert.False(cut.Instance.JahresreiheLaeuft);
         Assert.Null(cut.Instance.StochastikErgebnis);
@@ -916,8 +919,20 @@ public class ZapfprofilDialogTests : EposBunitContext
     }
 
     private static IElement Feld(IRenderedComponent<ZapfprofilDialog> cut, string bezeichnung)
-        => cut.FindAll("label").First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == bezeichnung)
-              .QuerySelector("input")!;
+        => (cut.FindAll("label").FirstOrDefault(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == bezeichnung)
+            ?? Zeilenlabel(cut, bezeichnung)).QuerySelector("input")!;
+
+    /// <summary>
+    /// ZC2: Ein Feld einer Zeile des Blocks heißt „Bezugsgröße, Bereich 2" — der bloße Spaltenname meint
+    /// das Feld der MARKIERTEN Zeile.
+    /// </summary>
+    private static IElement Zeilenlabel(IRenderedComponent<ZapfprofilDialog> cut, string spalte)
+        => cut.Find("tr.epos-zeile--markiert").QuerySelectorAll("label")
+              .First(l => (l.QuerySelector(".epos-feld-text")?.TextContent.Trim() ?? "").StartsWith(spalte + ", ", StringComparison.Ordinal));
+
+    /// <summary>Die Klappliste Bedarfsniveau der markierten Zeile (ZC2).</summary>
+    private static IElement Niveau(IRenderedComponent<ZapfprofilDialog> cut)
+        => Zeilenlabel(cut, "Bedarfsniveau").QuerySelector("select")!;
 
     [Fact]
     public void Eine_Zonenaenderung_macht_den_uebernommenen_Punkt_ueberholt()
@@ -954,7 +969,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         Knopf(cut, "Zone hinzufügen").Click();
         Assert.True(cut.Instance.Eingabe.PunktUeberholt);
         Feld(cut, "Bezugsgröße").Input("10");
-        Option(cut, "hoch").Change("3");
+        Niveau(cut).Change("3");
         Knopf(cut, "OK").Click();
         Assert.True(ergebnis!.Eingabe.PunktUeberholt);
         Assert.Null(ergebnis.Eingabe.Auslegung!.PunktVolumenL);
@@ -968,14 +983,14 @@ public class ZapfprofilDialogTests : EposBunitContext
         var cut = Aufbauen(mitPunkt);
         Assert.Empty(cut.FindAll(".epos-zapfprofil-punktueberholt"));
 
-        Option(cut, "hoch").Change("3");
+        Niveau(cut).Change("3");
         Assert.True(cut.Instance.Eingabe.PunktUeberholt);
         Assert.Null(cut.Instance.Eingabe.Auslegung);                        // die Auslegung selbst bleibt unberührt
         Assert.Contains("beim Speichern verworfen", cut.Find(".epos-zapfprofil-punktueberholt").TextContent);
 
         // Ohne Punkt beim Öffnen ist nichts zu überholen.
         var ohne = Aufbauen();
-        Option(ohne, "hoch").Change("3");
+        Niveau(ohne).Change("3");
         Assert.False(ohne.Instance.Eingabe.PunktUeberholt);
         Assert.Empty(ohne.FindAll(".epos-zapfprofil-punktueberholt"));
     }
@@ -1052,7 +1067,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Contains("Hinweis ohne Position.", cut.Markup);
 
         // Die zweite Zone gewählt: ihr Hinweis steht an ihrem Feld, der ohne Position nicht.
-        cut.FindAll(".epos-zapfprofil-zonen tbody tr")[1].QuerySelector("button, input")!.Click();
+        cut.FindAll(".epos-zapfprofil-zonen tbody tr.epos-zapfprofil-bereich")[1].QuerySelector("button, input")!.Click();
         string[] feld = cut.FindAll(".epos-blockspalte:first-child .epos-zapfprofil-feldhinweis")
                            .Select(x => x.TextContent.Trim()).ToArray();
         Assert.Equal(new[] { "Hinweis der zweiten Zone." }, feld);
@@ -1106,7 +1121,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Contains("80,0", cut.Find("table.epos-zapfprofil-zonen tfoot").TextContent);
 
         // Das Niveau ist eine Wahl im Arbeitsstand.
-        Option(cut, "hoch").Change("3");
+        Niveau(cut).Change("3");
         Assert.Equal(ZapfprofilNiveau.Hoch, cut.Instance.Eingabe.Zonen[0].Niveau);
         Assert.Equal(2, gerechnet.Count);
     }
@@ -1118,8 +1133,9 @@ public class ZapfprofilDialogTests : EposBunitContext
 
         Knopf(cut, "Zone hinzufügen").Click();
         Assert.Equal(3, cut.Instance.Eingabe.Zonen.Count);
-        Assert.Equal("Zone 3", cut.Instance.Eingabe.Zonen[2].Name);
-        Assert.Contains("Zone „Zone 3“", cut.Markup);
+        // ZC-Q3 B: Der Name ist automatisch „Bereich n" und steht in der Detailzeile der neuen, markierten Zeile.
+        Assert.Equal("Bereich 3", cut.Instance.Eingabe.Zonen[2].Name);
+        Assert.Equal("Bereich 3", Feld(cut, "Zonenname").GetAttribute("value"));
 
         cut.FindAll("table.epos-zapfprofil-zonen tbody button")[0].Click();
         Knopf(cut, "Duplizieren").Click();
@@ -1129,7 +1145,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         Assert.Equal(11, kopie.IdVorlage);
 
         Knopf(cut, "Entfernen").Click();
-        Assert.Equal(new[] { "Zone 1", "Zone 2", "Zone 3" }, cut.Instance.Eingabe.Zonen.Select(z => z.Name).ToArray());
+        Assert.Equal(new[] { "Zone 1", "Zone 2", "Bereich 3" }, cut.Instance.Eingabe.Zonen.Select(z => z.Name).ToArray());
     }
 
     // =================================================================================
@@ -1207,7 +1223,7 @@ public class ZapfprofilDialogTests : EposBunitContext
         var cut = Render<ZapfprofilDialog>();
 
         Assert.Contains("Brauchwasser-Zapfprofil", cut.Markup);
-        Assert.Empty(cut.FindAll("table.epos-zapfprofil-zonen tbody tr"));
+        Assert.Empty(cut.FindAll("table.epos-zapfprofil-zonen tbody tr.epos-zapfprofil-bereich"));
         Assert.NotNull(cut.Find(".epos-zapfprofil-ohnevorschau"));
         Assert.NotNull(Knopf(cut, "Zone hinzufügen"));
     }

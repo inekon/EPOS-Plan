@@ -149,7 +149,7 @@ public sealed class ZapfprofilTexte
     public string KnopfZoneEntfernen { get; set; } = "Entfernen";
 
     /// <summary><c>ZPG_ZONE_NAME_VORGABE</c></summary>
-    public string ZoneNameVorgabe { get; set; } = "Zone {0}";
+    public string ZoneNameVorgabe { get; set; } = "Bereich {0}";
 
     /// <summary><c>ZPG_ZONE_KOPIE</c></summary>
     public string ZoneKopie { get; set; } = "{0} (Kopie)";
@@ -451,6 +451,9 @@ public sealed class ZapfprofilTexte
 
     /// <summary><c>ZPG_FELD_ZEILE</c></summary>
     public string FeldZeile { get; set; } = "{0}, Zeile {1}";
+
+    /// <summary><c>ZPG_FELD_BEREICH</c></summary>
+    public string FeldBereich { get; set; } = "{0}, Bereich {1}";
 
     // ------------------------------------------------------------ Zonenliste ab Experte
 

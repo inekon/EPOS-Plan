@@ -26289,7 +26289,7 @@ Do you want to allow this?</value>
     <value>Remove</value>
   </data>
   <data name="ZPG_ZONE_NAME_VORGABE" xml:space="preserve">
-    <value>Zone {0}</value>
+    <value>Area {0}</value>
   </data>
   <data name="ZPG_ZONE_KOPIE" xml:space="preserve">
     <value>{0} (copy)</value>
@@ -58170,5 +58170,8 @@ Replace these holidays with the project default? With “No” these zones remai
   </data>
   <data name="KI_DLG_KMA_RKW_ERL" xml:space="preserve">
     <value>Catalogue record of the heat rejection unit of the water-cooled chiller (id); empty = none, then the fixed values of the heat rejection type apply. With OK the plant gets its own project copy.</value>
+  </data>
+  <data name="ZPG_FELD_BEREICH" xml:space="preserve">
+    <value>{0}, area {1}</value>
   </data>
 </root>

@@ -49,14 +49,15 @@
    eingeschaltetem Schalter; ihr Ensemble laeuft dort ebenso nebenlaeufig. Eine Fehleingabe in
    Seed oder Realisierungen haelt das OK an und wird benannt.
 
-   STUFEN ERWEITERT UND EXPERTE (Stufe Z4, Gruppe 2a; 5.3). Die Stufe blendet nur ein und aus
-   - alle Angaben bleiben im Arbeitsstand, der Zaehler "n Werte ueberschrieben" zaehlt sie in
-   jeder Stufe (ZapfprofilDaten.UeberschriebenIn).
+   ZWEI STUFEN, EINFACH UND EXPERTE (Konzept Zapfprofil - Bereiche und Methoden, ZC3). Die Stufe
+   blendet nur ein und aus - alle Angaben bleiben im Arbeitsstand, der Zaehler "n Werte
+   ueberschrieben" zaehlt sie in jeder Stufe (ZapfprofilDaten.UeberschriebenIn).
 
-   ZWEI EBENEN IN KARTEN (Konzept Zapfprofil-Benutzerfuehrung ZB3, Entscheid ZB-Q1 A). Unter der
-   Zonenliste der Block der markierten Zone: die Karte "Nutzung" (immer offen; Zonenname,
-   Nutzungsart, Bezugsgroesse, Niveau; ab Experte der Knopf "Katalog..." - ZB9: der Katalog als
-   BLATT, nur lesend, die Zeile waehlt) und ab Experte die aufklappbaren Karten Belegung
+   EIN BLOCK DER NUTZUNGSBEREICHE (ZC2). Jede Zeile traegt Nutzungsart, Bezugsgroesse und
+   Bedarfsniveau als Felder und den Jahreswert; unter der markierten Zeile die Detailzeile mit Name,
+   ab Experte dem Knopf "Katalog..." (ZB9: der Katalog als BLATT, nur lesend, die Zeile waehlt),
+   Herleitung, naechstem Schritt und Meldungen. ZWEI EBENEN IN KARTEN (ZB3): ab Experte unter dem
+   Block die aufklappbaren Karten der markierten Zone, Belegung
    (Wohnungstabelle nur bei Wohnen, Personen und Wohnflaeche je WE, Topologie, Zirkulation ja/nein),
    Kalender (ZB5), Messwert (samt Kalibrierung) und Tagesbedarf, in Experte "Fachwerte der Zone"
    (mit den Editoren). Darunter die Gruppe "Gebaeude und Anlage": Zirkulation, Ladeleistung samt
@@ -176,27 +177,24 @@
 
     <div class="epos-blockspalten">
 
-        @* ------------------------------------------------ links: die Zonen ---- *@
+        @* ------------------------------------------------ links: die Nutzungsbereiche ---- *@
         <div class="epos-blockspalte">
+            @* ZC2: EIN Block der Nutzungsbereiche - jede Zeile traegt ihre drei Werte als Felder (Nutzungsart,
+               Bezugsgroesse, Bedarfsniveau) und ihren Jahreswert; unter der MARKIERTEN Zeile eine schmale
+               Detailzeile mit Name, "Katalog...", Herleitung, naechstem Schritt und Meldungen. Die Karte
+               "Nutzung" gibt es nicht mehr. Die Zeilen tragen @key = die Zone selbst (Referenz), damit ein
+               Feld beim Einfuegen oder Entfernen einer Zeile seinen Text behaelt. *@
             <Gruppenkopf Titel="@Texte.GruppeZonen" Summe="@ZonensummeKopf">
                 <KindInhalt>
-                    <div class="epos-raster-huelle">
+                    <div class="epos-raster-huelle epos-zapfprofil-bereichhuelle" @ref="_zonenfelder">
                         <table class="epos-raster epos-zapfprofil-zonen">
                             <thead>
                                 <tr>
-                                    <th>@Texte.SpalteZone</th>
-                                    <th>@Texte.SpalteNutzungsart</th>
-                                    <th>@Texte.SpalteBezugsgroesse</th>
-                                    @if (AbExperte)
-                                    {
-                                        <th>@Texte.SpalteTopologie</th>
-                                    }
-                                    <th>@Texte.SpalteJahresbedarf</th>
-                                    @if (AbExperte)
-                                    {
-                                        <th>@Texte.SpalteAnteil</th>
-                                        <th>@Texte.SpalteRechenweg</th>
-                                    }
+                                    <th class="epos-zapfprofil-zonen-wahl">@Texte.SpalteZone</th>
+                                    <th class="epos-zapfprofil-zonen-art">@Texte.SpalteNutzungsart</th>
+                                    <th class="epos-zapfprofil-zonen-bezug">@Texte.SpalteBezugsgroesse</th>
+                                    <th class="epos-zapfprofil-zonen-niveau">@Texte.LabelNiveau</th>
+                                    <th class="epos-zapfprofil-zonen-wert">@Texte.SpalteJahresbedarf</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -204,37 +202,99 @@
                                 {
                                     int index = i;
                                     ZapfprofilZoneDaten z = _eingabe.Zonen[i];
-                                    <tr @key="index" class="@(index == _wahl ? "epos-zeile--markiert" : null)">
+                                    ZapfprofilNutzungsartDaten? zart = Nutzungsart(z.IdNutzungsart);
+                                    <tr @key="z" class="@(index == _wahl ? "epos-zapfprofil-bereich epos-zeile--markiert" : "epos-zapfprofil-bereich")">
                                         <td>
-                                            <Zeilenwahl Gewaehlt="@(index == _wahl)" Kurztext="@Texte.SpalteZone"
-                                                        Beschriftung="@z.Name" Gewaehltwerden="() => ZoneWaehlen(index)" />
+                                            <Zeilenwahl Gewaehlt="@(index == _wahl)" Kurztext="@z.Name"
+                                                        Gewaehltwerden="() => ZoneWaehlen(index)" />
                                         </td>
-                                        <td>@NutzungsartName(z.IdNutzungsart)</td>
-                                        <td>@Bezugstext(z)</td>
-                                        @if (AbExperte)
-                                        {
-                                            <td>@Topologiename(z.Angaben?.Topologie ?? ZapfprofilTopologie.Speicher)</td>
-                                        }
+                                        <td>
+                                            <Auswahlfeld Bezeichnung="@BereichFeld(Texte.LabelNutzungsart, index)" Eintraege="@Nutzungsarten"
+                                                         Auswahl="@(z.IdNutzungsart > 0 ? z.IdNutzungsart : (int?)null)"
+                                                         AuswahlChanged="id => ZeileNutzungsartSetzen(index, id)"
+                                                         Platzhalter="@Texte.KatalogKeineAuswahl"
+                                                         Titel="@(zart is null ? "" : Format(Texte.HinweisNutzungsartKatalog, Herkunftstext(zart)))"
+                                                         GesperrteEintraege="@GesperrteNutzungsarten"
+                                                         GesperrtHinweis="@SperrhinweisNutzungsart" />
+                                        </td>
+                                        <td>
+                                            @if (WirksameMenge(z, zart) is double wirksam)
+                                            {
+                                                @* Bei Wohnungstabelle: die wirksame Menge als TEXT, grau - die Tabelle bestimmt sie. *@
+                                                <span class="epos-zapfprofil-wirksam" data-feld="@BereichFeld(Texte.LabelBezugsmenge, index)"
+                                                      title="@Format(Texte.HinweisBezugsmengeWohnungstabelle, Zahl(wirksam, "0.##"), zart!.Bezugsgroesse)">@Zahl(wirksam, "0.##") @(zart!.Bezugsgroesse)</span>
+                                            }
+                                            else
+                                            {
+                                                <Zahlenfeld Bezeichnung="@BereichFeld(Texte.LabelBezugsmenge, index)"
+                                                            Feldname="@BereichFeld(Texte.LabelBezugsmenge, index)"
+                                                            Einheit="@(zart?.Bezugsgroesse ?? "")" Wert="@z.Bezugsmenge"
+                                                            Titel="@Texte.HinweisBezugsmengeEinheit"
+                                                            WertChanged="w => ZeileBezugsmengeSetzen(index, w)"
+                                                            FehlerZustand="f => ZeilenfeldMelden(z, f.Fehlerhaft)" />
+                                            }
+                                        </td>
+                                        <td>
+                                            <Auswahlfeld Bezeichnung="@BereichFeld(Texte.LabelNiveau, index)" Eintraege="@Niveaus"
+                                                         Auswahl="@((int)z.Niveau)"
+                                                         Titel="@(zart is null ? "" : NiveauHinweis(z, zart))"
+                                                         AuswahlChanged="id => ZeileNiveauSetzen(index, id)" />
+                                        </td>
                                         <td class="@(IstUnvollstaendig(index) ? "epos-zahl epos-zapfprofil-unvollstaendig" : "epos-zahl")">@Zonenwert(index)</td>
-                                        @if (AbExperte)
-                                        {
-                                            <td class="epos-zahl">@Zonenanteil(index)</td>
-                                            <td>@Zonenrechenweg(index)</td>
-                                        }
                                     </tr>
+                                    if (index == _wahl)
+                                    {
+                                        <tr @key="_detailSchluessel" class="epos-zapfprofil-bereichdetail">
+                                            <td colspan="5">
+                                                <div class="epos-zapfprofil-bereichdetail-zeile">
+                                                    <Textfeld Bezeichnung="@Texte.LabelZonenname" Wert="@z.Name"
+                                                              WertChanged="NameSetzen" />
+                                                    @* ZB9: der Katalog der Nutzungsarten als Blatt, nur lesend - die Zeile waehlt. *@
+                                                    @if (AbExperte)
+                                                    {
+                                                        <button type="button" class="epos-knopf epos-zapfprofil-katalogknopf"
+                                                                @onclick="KatalogOeffnen">@Texte.KnopfKatalog</button>
+                                                    }
+                                                </div>
+                                                @if (WirksameMenge(z, zart) is double hergeleitet)
+                                                {
+                                                    <Herleitungszeile Text="@Format(Texte.HinweisBezugsmengeWohnungstabelle, Zahl(hergeleitet, "0.##"), zart!.Bezugsgroesse)" />
+                                                }
+                                                @if (AbExperte)
+                                                {
+                                                    @* Die Spalten Topologie, Anteil und Rechenweg der Zonenliste stehen hier, bis sie in
+                                                       W9 in die Methoden wandern (ZC5): der Block bleibt fuenfspaltig. *@
+                                                    <p class="epos-leisezeile epos-zapfprofil-bereichkennzeile">@Bereichkennzeile(index, z)</p>
+                                                }
+                                                @* ZB2: Eine unvollstaendige Zone nennt leise ihren naechsten Schritt - den ersten Satz der
+                                                   Pflichtpruefung des OK; ihre Ablehnung aus der Vorschau steht dann nicht als Warnung da. *@
+                                                @if (Unvollstaendige.TryGetValue(_wahl, out ZapfprofilMeldung? schritt))
+                                                {
+                                                    <p class="epos-leisezeile epos-zapfprofil-naechsterschritt" role="status"
+                                                       data-kennung="@schritt.Kennung">@schritt.Text</p>
+                                                }
+                                                @foreach (ZapfprofilMeldung m in ZonenMeldungen(_wahl))
+                                                {
+                                                    if (m.Art == ZapfprofilMeldungsart.Hinweis)
+                                                    {
+                                                        <p class="epos-leisezeile epos-zapfprofil-feldhinweis" data-kennung="@m.Kennung">@m.Text</p>
+                                                    }
+                                                    else
+                                                    {
+                                                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@m.Text" Kennung="@m.Kennung" />
+                                                    }
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
                                 }
                             </tbody>
                             @if (_eingabe.Zonen.Count > 0)
                             {
                                 <tfoot>
                                     <tr>
-                                        <th scope="row" colspan="@(AbExperte ? 4 : 3)">@Format(Texte.SummeZonen, _eingabe.Zonen.Count)</th>
+                                        <th scope="row" colspan="4">@Format(Texte.SummeZonen, _eingabe.Zonen.Count)</th>
                                         <td class="epos-zahl">@Zonensumme</td>
-                                        @if (AbExperte)
-                                        {
-                                            <td class="epos-zahl">@Zonenanteilsumme</td>
-                                            <td></td>
-                                        }
                                     </tr>
                                 </tfoot>
                             }
@@ -247,76 +307,24 @@
                         <button type="button" class="epos-knopf" disabled="@(Gewaehlte is null)"
                                 @onclick="ZoneEntfernen">@Texte.KnopfZoneEntfernen</button>
                     </div>
+                    @* N9 (c): die leise Zeile verweist auf die Stufe Experte. *@
+                    @if (_stufe == ZapfprofilStufe.Einfach)
+                    {
+                        <p class="epos-leisezeile epos-zapfprofil-weitere">@Texte.HinweisWeitereExperte</p>
+                    }
                 </KindInhalt>
             </Gruppenkopf>
 
-            @if (Gewaehlte is { } zone)
+            @if (AbExperte && Gewaehlte is { } zone)
             {
                 ZapfprofilNutzungsartDaten? art = Nutzungsart(zone.IdNutzungsart);
                 ZapfprofilZonenangabenDaten a = AngabenVon(zone);
-                @* ZB3: der Block der markierten Zone in zwei Ebenen - die Karte „Nutzung" steht immer offen, die
-                   übrigen Karten klappen auf und nennen zugeklappt ihre wirksamen Werte. Welche Karte offen steht,
-                   hält der Dialog (_karten), nicht die Karte: Der Stand bleibt beim Zonenwechsel. *@
+                @* ZB3: die Karten der markierten Zone (Stufe Experte) klappen auf und nennen zugeklappt ihre
+                   wirksamen Werte. Welche Karte offen steht, haelt der Dialog (_karten), nicht die Karte: Der
+                   Stand bleibt beim Zonenwechsel. *@
                 <Gruppenkopf Titel="@Format(Texte.GruppeZone, zone.Name)" Summe="@ZonenKopfSumme">
                     <KindInhalt>
                         <div class="epos-zapfprofil-zonenblock" @key="_wahl">
-                        <section class="epos-zapfprofil-karte epos-zapfprofil-karte--nutzung" aria-label="@Texte.KarteNutzung">
-                            <div class="epos-zapfprofil-kartenkopf">
-                                <h4 class="epos-zapfprofil-kartentitel">@Texte.KarteNutzung</h4>
-                                @* ZB9: der Katalog der Nutzungsarten als Blatt, nur lesend - die Zeile wählt. *@
-                                @if (AbExperte)
-                                {
-                                    <button type="button" class="epos-knopf epos-zapfprofil-katalogknopf"
-                                            @onclick="KatalogOeffnen">@Texte.KnopfKatalog</button>
-                                }
-                            </div>
-                            @* Die Felder der Zone; ihre erste Klappliste ist die Nutzungsart — Fokusziel nach „Zone hinzufügen" (ZB2). *@
-                            <div class="epos-zapfprofil-zonenfelder" @ref="_zonenfelder">
-                            <Formularraster>
-                                <KindInhalt>
-                                    <Textfeld Bezeichnung="@Texte.LabelZonenname" Wert="@zone.Name"
-                                              WertChanged="NameSetzen" />
-                                    <Auswahlfeld Bezeichnung="@Texte.LabelNutzungsart" Eintraege="@Nutzungsarten"
-                                                 Auswahl="@(zone.IdNutzungsart > 0 ? zone.IdNutzungsart : (int?)null)"
-                                                 AuswahlChanged="NutzungsartSetzen"
-                                                 Platzhalter="@Texte.KatalogKeineAuswahl"
-                                                 Titel="@(art is null ? "" : Format(Texte.HinweisNutzungsartKatalog, Herkunftstext(art)))"
-                                                 GesperrteEintraege="@GesperrteNutzungsarten"
-                                                 GesperrtHinweis="@SperrhinweisNutzungsart" />
-                                    <Zahlenfeld Bezeichnung="@Texte.LabelBezugsmenge" Feldname="@Texte.LabelBezugsmenge"
-                                                Einheit="@(art?.Bezugsgroesse ?? "")" Wert="@zone.Bezugsmenge"
-                                                Titel="@Texte.HinweisBezugsmengeEinheit"
-                                                WertChanged="BezugsmengeSetzen" />
-                                    @if (WirksameMenge(zone, art) is double wirksam)
-                                    {
-                                        <Herleitungszeile Text="@Format(Texte.HinweisBezugsmengeWohnungstabelle, Zahl(wirksam, "0.##"), art!.Bezugsgroesse)" />
-                                    }
-                                    <Optionsgruppe Bezeichnung="@Texte.LabelNiveau" Eintraege="@Niveaus" Waagerecht="true"
-                                                   Titel="@(art is null ? "" : NiveauHinweis(zone, art))"
-                                                   Auswahl="@((int)zone.Niveau)" AuswahlChanged="NiveauSetzen" />
-                                </KindInhalt>
-                            </Formularraster>
-                            </div>
-
-                            @* ZB2: Eine unvollstaendige Zone nennt leise ihren naechsten Schritt — den ersten Satz der
-                               Pflichtpruefung des OK; ihre Ablehnung aus der Vorschau steht dann nicht als Warnung da. *@
-                            @if (Unvollstaendige.TryGetValue(_wahl, out ZapfprofilMeldung? schritt))
-                            {
-                                <p class="epos-leisezeile epos-zapfprofil-naechsterschritt" role="status"
-                                   data-kennung="@schritt.Kennung">@schritt.Text</p>
-                            }
-                            @foreach (ZapfprofilMeldung m in ZonenMeldungen(_wahl))
-                            {
-                                if (m.Art == ZapfprofilMeldungsart.Hinweis)
-                                {
-                                    <p class="epos-leisezeile epos-zapfprofil-feldhinweis" data-kennung="@m.Kennung">@m.Text</p>
-                                }
-                                else
-                                {
-                                    <Warnbanner Stufe="WarnStufe.Warnung" Text="@m.Text" Kennung="@m.Kennung" />
-                                }
-                            }
-                        </section>
 
                         @if (AbExperte)
                         {
@@ -683,12 +691,6 @@
                             }
                         }
                         </div>
-
-                        @* N9 (c): die leise Zeile verweist auf die naechste Stufe. *@
-                        @if (_stufe == ZapfprofilStufe.Einfach)
-                        {
-                            <p class="epos-leisezeile epos-zapfprofil-weitere">@Texte.HinweisWeitereExperte</p>
-                        }
                     </KindInhalt>
                 </Gruppenkopf>
             }
@@ -1588,8 +1590,21 @@
     private ElementReference _wurzel;
     private bool _ersterAufbau = true;
 
-    /// <summary>Die Felder des Zonenblocks; ihre erste Klappliste (Nutzungsart) ist das Fokusziel nach „Zone hinzufügen" (ZB2).</summary>
+    /// <summary>
+    /// Der Block der Nutzungsbereiche; die Klappliste Nutzungsart der MARKIERTEN Zeile ist das Fokusziel
+    /// nach „hinzufügen" (ZB2, ZC2).
+    /// </summary>
     private ElementReference _zonenfelder;
+
+    /// <summary>Der Schlüssel der Detailzeile — eine, immer unter der markierten Zeile (ZC2).</summary>
+    private readonly object _detailSchluessel = new();
+
+    /// <summary>
+    /// Die Zeilen, deren Bezugsgröße gerade einen ungültigen Text trägt (ZC2): je Zone über ihre Referenz,
+    /// damit die Meldung beim Einfügen oder Entfernen einer Zeile bei ihrer Zeile bleibt; der Feldname der
+    /// Sammelmeldung („Bezugsgröße, Bereich 2") entsteht erst beim OK aus der Position.
+    /// </summary>
+    private readonly HashSet<ZapfprofilZoneDaten> _zeilenfehler = new(ReferenceEqualityComparer.Instance);
 
     /// <summary>Nach dem nächsten Zeichnen den Fokus auf die Nutzungsart setzen (ZB2)?</summary>
     private bool _fokusNutzungsart;
@@ -1775,7 +1790,7 @@
         try
         {
             IJSObjectReference modul = await Js.InvokeAsync<IJSObjectReference>("import", "./_content/EPOS.UI/epos-sprung.js");
-            if (modul is not null) await modul.InvokeVoidAsync("feldFokus", _zonenfelder, "select:not([disabled])");
+            if (modul is not null) await modul.InvokeVoidAsync("feldFokus", _zonenfelder, "tr.epos-zeile--markiert select:not([disabled])");
         }
         catch (Exception)
         {
@@ -3275,6 +3290,7 @@
     {
         if (Gewaehlte is null) return;
         FehlfelderRaeumen(art => art.Zone);
+        _zeilenfehler.Remove(_eingabe.Zonen[_wahl]);
         _eingabe.Zonen.RemoveAt(_wahl);
         if (_wahl >= _eingabe.Zonen.Count) _wahl = _eingabe.Zonen.Count - 1;
         PunktUeberholen();
@@ -3285,6 +3301,54 @@
     {
         if (Gewaehlte is { } z) ZonennameSetzen(z, name);
     }
+
+    // Die Felder einer ZEILE des Blocks (ZC2): Wer in einer Zeile etwas eingibt, markiert sie auch -
+    // die Detailzeile und die Karten folgen der Zeile, in der gearbeitet wird.
+
+    private void ZeileNutzungsartSetzen(int index, int? id)
+    {
+        if (index < 0 || index >= _eingabe.Zonen.Count) return;
+        ZeileMarkieren(index);
+        ZonenNutzungsartSetzen(_eingabe.Zonen[index], id);
+    }
+
+    private void ZeileBezugsmengeSetzen(int index, double? wert)
+    {
+        if (index < 0 || index >= _eingabe.Zonen.Count) return;
+        ZeileMarkieren(index);
+        ZonenBezugsmengeSetzen(_eingabe.Zonen[index], wert);
+    }
+
+    private void ZeileNiveauSetzen(int index, int? id)
+    {
+        if (index < 0 || index >= _eingabe.Zonen.Count) return;
+        ZeileMarkieren(index);
+        ZonenNiveauSetzen(_eingabe.Zonen[index], id);
+    }
+
+    private void ZeileMarkieren(int index)
+    {
+        if (index != _wahl) ZoneWaehlen(index);
+    }
+
+    /// <summary>Die Bezugsgröße einer Zeile meldet ihre Fehleingabe — sie sperrt das OK wie jedes andere Feld.</summary>
+    private void ZeilenfeldMelden(ZapfprofilZoneDaten z, bool fehlerhaft)
+    {
+        if (fehlerhaft) _zeilenfehler.Add(z);
+        else _zeilenfehler.Remove(z);
+    }
+
+    /// <summary>Der Name eines Feldes einer Zeile für Sprachausgabe und Sammelmeldung: „Bezugsgröße, Bereich 2".</summary>
+    private string BereichFeld(string spalte, int index) => Format(Texte.FeldBereich, spalte, index + 1);
+
+    /// <summary>Topologie, Anteil und Rechenweg der Zeile (Stufe Experte) als eine leise Zeile der Detailzeile.</summary>
+    private string Bereichkennzeile(int index, ZapfprofilZoneDaten z)
+        => string.Join(" · ", new[]
+        {
+            Texte.SpalteTopologie + " " + Topologiename(z.Angaben?.Topologie ?? ZapfprofilTopologie.Speicher),
+            Texte.SpalteAnteil + " " + Zonenanteil(index),
+            Texte.SpalteRechenweg + " " + Zonenrechenweg(index)
+        });
 
     private void NutzungsartSetzen(int? id)
     {
@@ -3519,8 +3583,13 @@
     private (string Text, string? Kennung) OkBefund()
     {
         // Ein Feld mit ungültigem Text (Seed, Realisierungen) hielte sonst still den alten Wert.
-        if (_fehlfelder.Count > 0)
-            return (Format(Texte.MeldungFehleingabe, string.Join(", ", _fehlfelder)), "ZPG_MSG_FEHLEINGABE");
+        _zeilenfehler.RemoveWhere(z => !_eingabe.Zonen.Contains(z));
+        if (_fehlfelder.Count > 0 || _zeilenfehler.Count > 0)
+        {
+            IEnumerable<string> zeilen = _eingabe.Zonen.Select((z, i) => (z, i)).Where(p => _zeilenfehler.Contains(p.z))
+                                                 .Select(p => BereichFeld(Texte.LabelBezugsmenge, p.i));
+            return (Format(Texte.MeldungFehleingabe, string.Join(", ", zeilen.Concat(_fehlfelder))), "ZPG_MSG_FEHLEINGABE");
+        }
 
         IReadOnlyList<ZapfprofilMeldung> fehler = (Pruefen?.Invoke(_eingabe) ?? Array.Empty<ZapfprofilMeldung>())
             .Where(m => m.Art == ZapfprofilMeldungsart.Fehler).ToList();

@@ -162256,6 +162256,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Bereich {1} ähnelt.
+        /// </summary>
+        public static string ZPG_FELD_BEREICH {
+            get {
+                return ResourceManager.GetString("ZPG_FELD_BEREICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1} ähnelt.
         /// </summary>
         public static string ZPG_FELD_ZEILE {
@@ -173524,7 +173533,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone {0} ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereich {0} ähnelt.
         /// </summary>
         public static string ZPG_ZONE_NAME_VORGABE {
             get {

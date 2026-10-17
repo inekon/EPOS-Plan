@@ -26296,7 +26296,7 @@ Möchten Sie das zulassen?</value>
     <value>Entfernen</value>
   </data>
   <data name="ZPG_ZONE_NAME_VORGABE" xml:space="preserve">
-    <value>Zone {0}</value>
+    <value>Bereich {0}</value>
   </data>
   <data name="ZPG_ZONE_KOPIE" xml:space="preserve">
     <value>{0} (Kopie)</value>
@@ -58177,5 +58177,8 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="KI_DLG_KMA_RKW_ERL" xml:space="preserve">
     <value>Katalogsatz des Rückkühlwerks der wassergekühlten Kältemaschine (Id); leer = keins, dann gelten die Festwerte der Rückkühlart. Mit OK bekommt die Anlage eine eigene Projektkopie.</value>
+  </data>
+  <data name="ZPG_FELD_BEREICH" xml:space="preserve">
+    <value>{0}, Bereich {1}</value>
   </data>
 </root>

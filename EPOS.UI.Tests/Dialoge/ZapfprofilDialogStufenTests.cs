@@ -213,8 +213,15 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
         => cut.Find("fieldset[aria-label='" + gruppe + "']").QuerySelectorAll("label.epos-option")
               .First(l => l.TextContent.Trim() == eintrag).QuerySelector("input")!.Change(wert);
 
+    /// <summary>
+    /// Das Feld mit der Beschriftung <paramref name="bezeichnung"/>. ZC2: Ein Feld einer Zeile des Blocks heißt
+    /// „Bezugsgröße, Bereich 2" — der bloße Spaltenname meint das Feld der MARKIERTEN Zeile.
+    /// </summary>
     private static IElement? Beschriftet(IRenderedComponent<ZapfprofilDialog> cut, string bezeichnung, string tag)
-        => cut.FindAll("label").FirstOrDefault(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == bezeichnung)
+        => (cut.FindAll("label").FirstOrDefault(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == bezeichnung)
+            ?? cut.FindAll("tr.epos-zeile--markiert label")
+                  .FirstOrDefault(l => (l.QuerySelector(".epos-feld-text")?.TextContent.Trim() ?? "")
+                                        .StartsWith(bezeichnung + ", ", StringComparison.Ordinal)))
               ?.QuerySelector(tag);
 
     private static IElement Feld(IRenderedComponent<ZapfprofilDialog> cut, string bezeichnung)
@@ -224,7 +231,8 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
         => Beschriftet(cut, bezeichnung, "select") ?? throw new InvalidOperationException("Keine Auswahl „" + bezeichnung + "“.");
 
     private static bool HatFeld(IRenderedComponent<ZapfprofilDialog> cut, string bezeichnung)
-        => cut.FindAll(".epos-feld-text").Any(t => t.TextContent.Trim() == bezeichnung);
+        => cut.FindAll(".epos-feld-text").Any(t => t.TextContent.Trim() == bezeichnung
+                                                   || t.TextContent.Trim().StartsWith(bezeichnung + ", Bereich ", StringComparison.Ordinal));
 
     private static IElement Knopf(IRenderedComponent<ZapfprofilDialog> cut, string text)
         => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
@@ -242,19 +250,20 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
         var cut = Aufbauen();
 
         // ZB3: in Einfach nur die Karte „Nutzung" (ohne Klappe), keine Gruppe „Gebäude und Anlage", kein Katalogknopf.
-        Assert.Equal(new[] { "Nutzungszonen", "Zone „Wohnen“", "Vorschau" }, Gruppen(cut));
-        Assert.Equal("Nutzung", cut.Find(".epos-zapfprofil-karte--nutzung .epos-zapfprofil-kartentitel").TextContent.Trim());
+        // ZC2: Einfach zeigt den Block der Nutzungsbereiche und die Vorschau; die Karte „Nutzung" gibt es nicht mehr.
+        Assert.Equal(new[] { "Nutzungszonen", "Vorschau" }, Gruppen(cut));
+        Assert.Empty(cut.FindAll(".epos-zapfprofil-karte--nutzung"));
         Assert.Empty(cut.FindAll(".epos-zapfprofil .epos-klappgruppe"));
         Assert.Empty(cut.FindAll(".epos-zapfprofil-katalogknopf"));
         Assert.False(HatFeld(cut, "Anlagentopologie"));
         Assert.Empty(cut.FindAll(".epos-zapfprofil-katalog"));
         Assert.Equal("Weitere Angaben — Belegung, Kalender, Messwert, Fachwerte und Jahresreihe — stehen in der Stufe Experte.",
                      cut.Find(".epos-zapfprofil-weitere").TextContent.Trim());
-        Assert.Equal(4, cut.FindAll("table.epos-zapfprofil-zonen thead th").Count);
+        Assert.Equal(5, cut.FindAll("table.epos-zapfprofil-zonen thead th").Count);
         // ZB8: Herkunft und Einheit stehen im title des Felds, nicht als Dauerzeile.
         Assert.Equal("Einheit aus dem Katalog der Nutzungsart", Feld(cut, "Bezugsgröße").Closest("label")!.GetAttribute("title"));
         Assert.Contains("Katalog · fiktiv (Testdaten)", Auswahl(cut, "Nutzungsart").Closest("label")!.GetAttribute("title"));
-        Assert.DoesNotContain("Einheit aus dem Katalog der Nutzungsart", cut.Find(".epos-zapfprofil-karte--nutzung").TextContent);
+        Assert.DoesNotContain("Einheit aus dem Katalog der Nutzungsart", cut.Find("table.epos-zapfprofil-zonen").TextContent);
     }
 
     [Fact]
@@ -382,19 +391,21 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
     // =================================================================================
 
     [Fact]
-    public void Die_Zonenliste_fuehrt_ab_Experte_Topologie_Anteil_und_Rechenweg_mit_Summenfuss()
+    public void Der_Block_bleibt_in_Experte_fuenfspaltig_und_nennt_Topologie_Anteil_und_Rechenweg_in_der_Detailzeile()
     {
         var cut = Aufbauen();
         Stufe(cut, "Experte");
 
+        // ZC2: Der Block bleibt fünfspaltig; Topologie, Anteil und Rechenweg stehen bis W9 (ZC5) als leise
+        // Zeile in der Detailzeile der markierten Zeile.
         IElement tabelle = cut.Find("table.epos-zapfprofil-zonen");
-        Assert.Equal(new[] { "Zone", "Nutzungsart", "Bezugsgröße", "Topologie", "MWh/a", "Anteil", "Rechenweg" },
+        Assert.Equal(new[] { "Zone", "Nutzungsart", "Bezugsgröße", "Bedarfsniveau", "MWh/a" },
                      tabelle.QuerySelectorAll("thead th").Select(t => t.TextContent.Trim()).ToArray());
-        IElement[] zeilen = tabelle.QuerySelectorAll("tbody tr").ToArray();
-        Assert.Contains("Speicher", zeilen[0].TextContent);
-        Assert.Contains("29 %", zeilen[0].TextContent);   // 20 von 70 MWh/a
-        Assert.Contains("Katalog", zeilen[0].TextContent);
-        Assert.Contains("100 %", tabelle.QuerySelector("tfoot")!.TextContent);
+        string kennzeile = tabelle.QuerySelector(".epos-zapfprofil-bereichkennzeile")!.TextContent;
+        Assert.Contains("Topologie Speicher", kennzeile);
+        Assert.Contains("Anteil 29 %", kennzeile);   // 20 von 70 MWh/a
+        Assert.Contains("Rechenweg Katalog", kennzeile);
+        Assert.Single(tabelle.QuerySelectorAll(".epos-zapfprofil-bereichkennzeile"));
         Assert.Contains("Summe 2 Zonen", tabelle.QuerySelector("tfoot")!.TextContent);
 
         // Zone hinzufügen und entfernen: die Summe zählt mit.
@@ -406,8 +417,9 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
 
         // Tagesbedarf manuell (die gewählte Zone ist nach dem Entfernen „Büro"): Die Liste nennt den Rechenweg der Zone.
         Feld(cut, "Tagesbedarf").Input("50");
-        Assert.Contains("manuell", cut.FindAll("table.epos-zapfprofil-zonen tbody tr")[1].TextContent);
-        Assert.Contains("Katalog", cut.FindAll("table.epos-zapfprofil-zonen tbody tr")[0].TextContent);
+        Assert.Contains("Rechenweg manuell", cut.Find(".epos-zapfprofil-bereichkennzeile").TextContent);
+        cut.FindAll("table.epos-zapfprofil-zonen tbody tr.epos-zapfprofil-bereich")[0].QuerySelector("button")!.Click();
+        Assert.Contains("Rechenweg Katalog", cut.Find(".epos-zapfprofil-bereichkennzeile").TextContent);
     }
 
     // =================================================================================
@@ -445,7 +457,7 @@ public partial class ZapfprofilDialogStufenTests : EposBunitContext
         // Bei einer Nutzungsart ohne Wohnen gibt es keine Wohnungstabelle.
         var zwei = Aufbauen();
         Stufe(zwei, "Experte");
-        zwei.FindAll("table.epos-zapfprofil-zonen tbody tr")[1].QuerySelector("button")!.Click();
+        zwei.FindAll("table.epos-zapfprofil-zonen tbody tr.epos-zapfprofil-bereich")[1].QuerySelector("button")!.Click();
         Assert.Empty(zwei.FindAll(".epos-zapfprofil-untertitel"));
         Assert.DoesNotContain("Wohnungstyp hinzufügen", zwei.Markup);
     }

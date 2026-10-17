@@ -81,7 +81,7 @@ public partial class ZapfprofilDialogStufenTests
         Knopf(cut, "Zone hinzufügen").Click();
 
         // Die Liste nennt die neue Zone „unvollständig“ statt „0,0 · trägt 0“.
-        IElement[] zeilen = cut.FindAll("table.epos-zapfprofil-zonen tbody tr").ToArray();
+        IElement[] zeilen = cut.FindAll("table.epos-zapfprofil-zonen tbody tr.epos-zapfprofil-bereich").ToArray();
         Assert.Equal(3, zeilen.Length);
         IElement zelle = zeilen[2].QuerySelector("td.epos-zapfprofil-unvollstaendig")!;
         Assert.Equal("unvollständig", zelle.TextContent.Trim());
@@ -89,14 +89,14 @@ public partial class ZapfprofilDialogStufenTests
 
         // Der Block nennt leise den ersten Satz der Pflichtprüfung — keine Warnung.
         IElement schritt = cut.Find(".epos-zapfprofil-naechsterschritt");
-        Assert.Equal("Zone „Zone 3“: Bitte eine Nutzungsart wählen.", schritt.TextContent.Trim());
+        Assert.Equal("Zone „Bereich 3“: Bitte eine Nutzungsart wählen.", schritt.TextContent.Trim());
         Assert.Equal("ZPG_MSG_ZONE_OHNE_NUTZUNGSART", schritt.GetAttribute("data-kennung"));
         Assert.DoesNotContain("trägt 0", cut.Markup);
         Assert.DoesNotContain("Für die Zone ist noch keine Nutzungsart gewählt", cut.Markup);
 
         // Die Hinweise der Bilanz tragen die unvollständige Zone nicht.
         IElement warnliste = cut.Find(".epos-zapfprofil-warnliste");
-        Assert.DoesNotContain("Zone 3", warnliste.TextContent);
+        Assert.DoesNotContain("Bereich 3", warnliste.TextContent);
         Assert.Contains("Zirkulation groß", warnliste.TextContent);
 
         // Der Fokus steht auf der Klappliste Nutzungsart.
@@ -110,7 +110,7 @@ public partial class ZapfprofilDialogStufenTests
         Knopf(cut, "Zone hinzufügen").Click();
 
         Auswahl(cut, "Nutzungsart").Change("2");
-        Assert.Equal("Zone „Zone 3“: Bitte eine Bezugsgröße größer 0 eingeben.",
+        Assert.Equal("Zone „Bereich 3“: Bitte eine Bezugsgröße größer 0 eingeben.",
                      cut.Find(".epos-zapfprofil-naechsterschritt").TextContent.Trim());
         Assert.Equal("unvollständig", cut.Find("td.epos-zapfprofil-unvollstaendig").TextContent.Trim());
 
@@ -151,7 +151,7 @@ public partial class ZapfprofilDialogStufenTests
         IElement[] gruppen = cut.FindAll("fieldset.epos-optionsgruppe[role=radiogroup]").ToArray();
         Assert.True(gruppen.Length >= 5, "Nur " + gruppen.Length + " Optionsgruppen");
         Assert.All(gruppen, g => Assert.NotNull(g.QuerySelector(":scope > .epos-optionsgruppe-zeile")));
-        foreach (string name in new[] { "Stufe", "Bedarfsniveau", "Zirkulation vorhanden", "Rechenweg der Jahresreihe" })
+        foreach (string name in new[] { "Stufe", "Zirkulation vorhanden", "Rechenweg der Jahresreihe" })
             Assert.Contains(gruppen, g => g.GetAttribute("aria-label") == name);
         // ZB4 (b): Tagesbedarf, Ladeleistung und Zirkulation tragen keinen Umschalter auto/manuell mehr.
         Assert.DoesNotContain(gruppen, g => g.GetAttribute("aria-label") is "Tagesbedarf" or "Ladeleistung (Gebäude)" or "Zirkulation (Gebäude)");

@@ -49,7 +49,7 @@ public partial class ZapfprofilDialogStufenTests
         Assert.False(HatFeld(cut, "Anlagentopologie"));
 
         // Zonenwechsel: Die Karten der neuen Zone stehen wie zuvor - offen, was offen war.
-        cut.FindAll("table.epos-zapfprofil-zonen tbody tr")[1].QuerySelector("button")!.Click();
+        cut.FindAll("table.epos-zapfprofil-zonen tbody tr.epos-zapfprofil-bereich")[1].QuerySelector("button")!.Click();
         Assert.Equal("Zone „Büro“", Gruppen(cut)[1]);
         Assert.Equal("true", ZapfprofilKarten.Knopf(cut, "messwert").GetAttribute("aria-expanded"));
         Assert.Equal("false", ZapfprofilKarten.Knopf(cut, "belegung").GetAttribute("aria-expanded"));
@@ -58,7 +58,7 @@ public partial class ZapfprofilDialogStufenTests
 
         // Zuklappen wirkt ebenso über den Wechsel hinweg.
         ZapfprofilKarten.Knopf(cut, "messwert").Click();
-        cut.FindAll("table.epos-zapfprofil-zonen tbody tr")[0].QuerySelector("button")!.Click();
+        cut.FindAll("table.epos-zapfprofil-zonen tbody tr.epos-zapfprofil-bereich")[0].QuerySelector("button")!.Click();
         Assert.Equal("false", ZapfprofilKarten.Knopf(cut, "messwert").GetAttribute("aria-expanded"));
         Assert.False(HatFeld(cut, "Jahresmesswert"));
 
