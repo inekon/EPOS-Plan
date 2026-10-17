@@ -184,3 +184,26 @@ Bitte:
 4. Optional, nur Zählung: Bietet der Importdialog für die von EPOS-Plan geschriebene gbXML-Datei die Zonenregel „nach Zone“ (X1) an?
    Wenn nein: Trägt die Datei Zonen-Elemente mit Zuordnung der Räume (Anzahl `Zone`-Elemente, Anzahl Räume mit `zoneIdRef`)?
 5. Kopie und Dateien in `C:\Temp\N4\` liegen lassen. Nichts committen, nichts pushen; nur Zählungen und Ja/Nein.
+
+## 11 · 2026-10-17 00:05 UTC · Probe N4c: Einzonenweg, Zonenregel X1, Meldungsliste (N8)
+
+Die beiden Restpunkte aus der Antwort auf Nachricht 10 sind behoben und liegen auf `origin/ios_migration_september` mit `261d5c101`
+(Testdatenbank Schritt 238, unverändert):
+- **Einzonenweg (E160):** Mit der Regel „eine Zone“ (gbXML X4, IFC Z5) übernimmt die Zone den Kalender der Datei, wenn alle beheizten
+  Räume mit Kalender denselben tragen; weichen sie ab, bleibt es bei der Warnung, jetzt mit dem Hinweis, eine Zonenregel für mehrere
+  Zonen zu wählen.
+- **Regel X1 (E161):** „X1 – eine Zone je Zone der Datei“ steht zur Wahl, sobald ein Raum auf eine Zone der Datei zeigt (auch je Zone
+  ein Raum, wie EPOS-Plan schreibt). Die Vorbelegung bleibt wie bisher.
+- **Meldungsliste:** Die Einzonenwarnung steht auch in der allgemeinen Meldungsliste des Imports.
+
+Bitte:
+1. Klon per Fast-Forward auf mindestens `261d5c101`, Bau wie gewohnt (`-p:OutDir` außerhalb, falls EPOS-Plan läuft).
+2. **Tests unter Windows**, Filter wie bei Nachricht 10 — Zahl bestanden/rot melden.
+3. **Probe** auf einer **neuen** Kopie der Testdatenbank (`C:\Temp\N4\Kenndaten_N4c.sqlite`), Projekt 1045 mit den Kalendern aus
+   Nachricht 9; Export gbXML und IFC über die Export-Hülle, Import über die Hüllenfolge des Dialogs ohne Planvorlage. Melden je Format:
+   - **Einzonenweg** (gbXML X4, IFC Z5), Ausgangsgebäude mit **gleichem** Kalender in allen Zonen: Zonenperioden an der einen Zone
+     (Anzahl), Verweis auf die benannte Woche ja/nein, Warnung ja/nein;
+   - **Einzonenweg** mit **abweichenden** Kalendern (eine Zone vor dem Export von Hand anders): Warnung bei den Bauteilen ja/nein, in der
+     allgemeinen Meldungsliste ja/nein (wie oft), Zonenperioden aus der Datei an der Zone (erwartet 0);
+   - nur gbXML: Wird **X1** angeboten? Mit X1: Zonenzahl gleich dem Ausgangsgebäude ja/nein, Zonenperioden je Zone (Anzahl).
+4. Kopie und Dateien in `C:\Temp\N4\` liegen lassen. Nichts committen, nichts pushen; nur Zählungen und Ja/Nein.
