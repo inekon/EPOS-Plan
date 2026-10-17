@@ -142,10 +142,11 @@ public class StromganglinieDialogTests : EposBunitContext
                      cut.FindAll(".epos-zweispalten-knopf--entfernen")[0].QuerySelector(".epos-zweispalten-knopftext")!.TextContent);
 
         // "Bearbeiten..." steht am gewaehlten Satz (AW3b; dort ausserdem „Vergrößern"), OK und Abbrechen im Fuss.
-        // OHNE die Gaben der Katalogpflege (W12-E-1) ist es der EINZIGE Knopf dort —
-        // kein Delegat, kein Knopf.
-        Assert.Single(Katalogknoepfe(cut));
-        Assert.Contains("Bearbeiten", Katalogknoepfe(cut)[0].TextContent);
+        // OHNE die Gaben der Katalogpflege (W12-E-1) steht dort nur noch „Vergleichen…" (KA-E-19, braucht keinen
+        // Delegaten) davor — kein Delegat, kein Knopf.
+        Assert.Equal(2, Katalogknoepfe(cut).Length);
+        Assert.Contains("Vergleichen", Katalogknoepfe(cut)[0].TextContent);
+        Assert.Contains("Bearbeiten", Katalogknoepfe(cut)[1].TextContent);
         Assert.Equal(2, cut.FindAll(".epos-dialog > .epos-leiste button").Count);
 
         Assert.Contains("Ausgewählt im Projekt", Spalte(cut, 0).QuerySelector("h2")!.TextContent);
@@ -428,16 +429,16 @@ public class StromganglinieDialogTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// Der Anwenderwunsch im Bild: unter der Katalogliste stehen VIER Knöpfe, in
-    /// dieser Reihenfolge. Vorher war „Bearbeiten…" der einzige.
+    /// Der Anwenderwunsch im Bild: an der Katalogliste stehen Vergleichen… (KA-E-19, vorn) und die VIER Knöpfe
+    /// der Katalogpflege, in dieser Reihenfolge.
     /// </summary>
     [Fact]
-    public void Die_Katalog_Fussleiste_traegt_vier_Knoepfe()
+    public void Die_Katalog_Fussleiste_traegt_Vergleichen_und_vier_Knoepfe()
     {
         var cut = ZeigeMitKatalogpflege();
 
         string[] texte = Katalogknoepfe(cut).Select(b => b.TextContent.Trim()).ToArray();
-        Assert.Equal(new[] { "Speichern unter...", "Löschen", "Bearbeiten...", "CSV-Datei importieren..." },
+        Assert.Equal(new[] { "Vergleichen…", "Speichern unter...", "Löschen", "Bearbeiten...", "CSV-Datei importieren..." },
                      texte);
     }
 
@@ -1248,5 +1249,45 @@ public class StromganglinieDialogTests : EposBunitContext
                                                 WindowsFormsApplication1.MyResource.Resource.IMPORT_BTN_ABBRECHEN);
         KnopfleisteAmSatzPruefung.AmSatz(cut, "epos-knopf--bearbeiten-katalog").Click();   // ungesperrt: die Verwaltung
         Assert.NotEmpty(cut.FindAll("[role='dialog']"));
+    }
+
+    // =================================================================================
+    // KA-E-19: Vergleichen… am gewaehlten Satz
+    // =================================================================================
+
+    /// <summary>Vergleichen… steht vorn, auch vor „Vergrößern".</summary>
+    [Fact]
+    public void Vergleichen_steht_vorn_in_der_Knopfleiste_am_Satz()
+    {
+        var cut = ZeigeMitKatalogpflege();
+        GanglinienVergleichPruefung.StehtVorn(cut);
+    }
+
+    /// <summary>Projektsatz: zwei angekreuzte Projektzeilen mit Jahresarbeit, Spitze und Vollbenutzungsstunden.</summary>
+    [Fact]
+    public void Vergleichen_beim_Projektsatz_stellt_die_angekreuzten_Projektzeilen_nebeneinander()
+    {
+        var cut = ZeigeMitGrafik(zeilen: new List<GanglinienProjektZeile>
+        {
+            new(7, 1, "Werk Nord"), new(8, 2, "Auslieferung")
+        });
+        GanglinienVergleichPruefung.Projektseite(cut, () => cut.FindComponent<Katalogliste>().Instance,
+            Ganglinienvergleich.Beschriftung(WindowsFormsApplication1.MyResource.Resource.STROMGL_LBL_SPITZE),
+            "2070 kW", "500 kW");
+        var vergleich = cut.FindComponent<Katalogliste>().Instance.Vergleich;
+        Assert.Equal(new[]
+        {
+            Ganglinienvergleich.Beschriftung(WindowsFormsApplication1.MyResource.Resource.STROMGL_LBL_JAHRESARBEIT),
+            Ganglinienvergleich.Beschriftung(WindowsFormsApplication1.MyResource.Resource.STROMGL_LBL_SPITZE),
+            Ganglinienvergleich.Beschriftung(WindowsFormsApplication1.MyResource.Resource.GEBB_LBL_VOLLBENUTZUNG)
+        }, vergleich.Select(z => z.Name));
+    }
+
+    /// <summary>Katalogsatz: zwei angekreuzte Katalogsätze mit den Spalten des Katalogs.</summary>
+    [Fact]
+    public void Vergleichen_beim_Katalogsatz_stellt_die_angekreuzten_Katalogsaetze_nebeneinander()
+    {
+        var cut = ZeigeMitKatalogpflege();
+        GanglinienVergleichPruefung.Katalogseite(cut, () => cut.FindComponent<Katalogliste>().Instance);
     }
 }

@@ -17064,7 +17064,10 @@ Please go through the project page again so that the data of the selected projec
     <value>In project</value>
   </data>
   <data name="AUSWAHL_MARKE_KATALOG" xml:space="preserve">
-    <value>Catalogue (database)</value>
+    <value>Catalogue (DB)</value>
+  </data>
+  <data name="AUSWAHL_MARKE_KATALOG_HINWEIS" xml:space="preserve">
+    <value>Catalogue from the database – shared by all projects</value>
   </data>
   <data name="AUSWAHL_MARKE_SATZ" xml:space="preserve">
     <value>Selected record</value>
@@ -52845,7 +52848,7 @@ chart</value>
     <value>Chillers in the project:</value>
   </data>
   <data name="KMA_LISTE_KATALOG" xml:space="preserve">
-    <value>Chillers in the database:</value>
+    <value>Chillers</value>
   </data>
   <data name="KMA_SUMME" xml:space="preserve">
     <value>Total rated cooling capacity [kW]:</value>
