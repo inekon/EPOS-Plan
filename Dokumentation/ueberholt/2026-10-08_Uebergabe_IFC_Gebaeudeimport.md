@@ -2,10 +2,10 @@
 
 Übergabe auf ein anderes Konto. Dieses Papier nennt den Stand, die geltenden Entscheide, die
 Regeln der Sitzung, die offenen Punkte und am Ende den Einstiegs-Prompt für die neue Sitzung.
-Regelquelle bleibt [`CLAUDE.md`](../../../CLAUDE.md); dieses Papier ergänzt nur, was die Sitzung
-darüber hinaus vereinbart hat. Dauerhafter Stand: [Statusdatei](../Status_iOS_Migration.md),
-Entscheidungsregister in der [Statusdatei Gebäudesimulation](../Status_Gebaeudesimulation_VDI6007.md),
-Abstimmung mit der Sitzung Gebäudesimulation: [Abstimmung G5](../../ueberholt/2026-10-07_Abstimmung_G5_IFC.md).
+Regelquelle bleibt [`CLAUDE.md`](../../CLAUDE.md); dieses Papier ergänzt nur, was die Sitzung
+darüber hinaus vereinbart hat. Dauerhafter Stand: [Statusdatei](../aktuell/Status_iOS_Migration.md),
+Entscheidungsregister in der [Statusdatei Gebäudesimulation](../aktuell/Status_Gebaeudesimulation_VDI6007.md),
+Abstimmung mit der Sitzung Gebäudesimulation: [Abstimmung G5](2026-10-07_Abstimmung_G5_IFC.md).
 
 ## 1. Stand
 
@@ -108,14 +108,14 @@ Abstimmung mit der Sitzung Gebäudesimulation: [Abstimmung G5](../../ueberholt/2
      fragt EPOS-Plan, welche gelten sollen.“
 
    **Stand 09.10.2026:** Version 1.2.0.6 bestätigt; die sechs Sätze stehen im
-   [Logbuchpapier](../Wiki_Update_2026-09-26.md) (Abschnitt 2, Version 1.2.0.6), dazu ein Entwurf
+   [Logbuchpapier](../aktuell/Wiki_Update_2026-09-26.md) (Abschnitt 2, Version 1.2.0.6), dazu ein Entwurf
    zum gemeinsamen Import von IFC- und Projektdatei, dessen Version der Anwender beim Upload
    bestätigt.
 2. **Wiki-Upload** der Seite „Programm Dokumentation – Gebäudeimport“ (Repo-Quelle fortgeschrieben,
    gebündelt mit dem Logbuch); der WordPress-Connector des alten Kontos verband sich nicht.
 
    **Stand 09.10.2026:** Upload vom Anwender zurückgestellt; vor dem Upload ist der Bedienbegriff
-   „Befund“ zu klären ([Logbuchpapier](../Wiki_Update_2026-09-26.md), Abschnitt 3).
+   „Befund“ zu klären ([Logbuchpapier](../aktuell/Wiki_Update_2026-09-26.md), Abschnitt 3).
 3. **Sichtabnahme unter Windows** nach den „Nach“-Blöcken von #813 bis #816, #821 bis #825 —
    besonders die Rückfrage „Welche Aufbauten gelten?“ (Länge, drei Knöpfe, Tabellen bei schmalem
    Fenster), die Quellenwahl im Importdialog und ob sich bei „IFC + Projektdatei“ der zweite
@@ -144,7 +144,7 @@ Abstimmung mit der Sitzung Gebäudesimulation: [Abstimmung G5](../../ueberholt/2
 - iOS-Grenze 100 MB messen wie G4-8 (Größengrenze der Projektdatei auf iOS, #736; aus dem Übergabepapier
   HottCAD-Verbund übernommen).
 - Aufräumen: Das Übergabepapier
-  [HottCAD-Verbund](../../ueberholt/2026-10-05_Uebergabe_HottCAD_Verbund.md) ist erledigt (HC-1 #740,
+  [HottCAD-Verbund](2026-10-05_Uebergabe_HottCAD_Verbund.md) ist erledigt (HC-1 #740,
   HC-2 #746, HC-4 #754) und mit diesem Auftrag (Stand 09.10.2026) nach `Dokumentation/ueberholt/`
   verschoben; Verweise und Indexzeile sind nachgezogen.
 
@@ -153,7 +153,7 @@ Abstimmung mit der Sitzung Gebäudesimulation: [Abstimmung G5](../../ueberholt/2
 ```
 Du übernimmst die Sitzung „IFC / Gebäudeimport“ für EPOS-Plan (Repo inekon/EPOS-Plan,
 Arbeitszweig ios_migration_september). Lies zuerst CLAUDE.md und
-Dokumentation/aktuell/Gebaeudesimulation/2026-10-08_Uebergabe_IFC_Gebaeudeimport.md, dann den
+Dokumentation/ueberholt/2026-10-08_Uebergabe_IFC_Gebaeudeimport.md, dann den
 Kopf und die letzten zwanzig Zeilen der Tabelle in Dokumentation/aktuell/Status_iOS_Migration.md
 und `git log --format='%h %<(72,trunc)%s' -n 20 origin/ios_migration_september`.
 
