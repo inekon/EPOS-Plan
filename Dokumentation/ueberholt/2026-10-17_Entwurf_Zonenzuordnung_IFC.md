@@ -14,12 +14,12 @@ Gemeint sind die Nutzungsprofile der Kategorie „DIN/TS 18599-10“ des Nutzung
 (`Tab_Raumnutzungsprofil`, Welle DA-6, Schemaschritt 231 `RaumnutzungDinWerteSchema`: 43 nummerierte Profile und
 zwei Wohnprofile, mit Werten).
 
-**Bezugspapiere:** [Konzept Nutzungsprofile](../Konzept_Nutzungsprofile_EPOS-Plan.md) (4.4 Einbau, 5.4 Zuordnung,
-6.2 Zugänge), [Konzept DA — Datenaustausch der Simulationsdaten](2026-10-12_Konzept_Datenaustausch_Simulationsdaten.md)
+**Bezugspapiere:** [Konzept Nutzungsprofile](../aktuell/Konzept_Nutzungsprofile_EPOS-Plan.md) (4.4 Einbau, 5.4 Zuordnung,
+6.2 Zugänge), [Konzept DA — Datenaustausch der Simulationsdaten](../aktuell/Gebaeudesimulation/2026-10-12_Konzept_Datenaustausch_Simulationsdaten.md)
 (4.3 Prüfung und Zuordnung des DIN-Profils je Zone, E135; Welle DA-5 noch offen),
-[Mehrzonenkonzept](../Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) (6.1 Zonierungsregeln, 6.4 Zuordnungsdialog),
-[Entwurf GD — Gebäudedialog Mehrzonen](2026-10-11_Entwurf_Gebaeudedialog_Mehrzonen.md),
-[Entwurf MA — Geführter Modellaufbau](2026-10-12_Entwurf_Gefuehrter_Modellaufbau.md). Statuszeilen N7 (#1153) und
+[Mehrzonenkonzept](../aktuell/Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) (6.1 Zonierungsregeln, 6.4 Zuordnungsdialog),
+[Entwurf GD — Gebäudedialog Mehrzonen](../aktuell/Gebaeudesimulation/2026-10-11_Entwurf_Gebaeudedialog_Mehrzonen.md),
+[Entwurf MA — Geführter Modellaufbau](../aktuell/Gebaeudesimulation/2026-10-12_Entwurf_Gefuehrter_Modellaufbau.md). Statuszeilen N7 (#1153) und
 N8 (#1161) zu den Zonenkalendern.
 
 

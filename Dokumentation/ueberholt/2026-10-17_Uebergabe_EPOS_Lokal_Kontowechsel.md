@@ -3,10 +3,10 @@
 Dieses Papier hält, was eine neue lokale Sitzung auf einem anderen Konto braucht, um die Rolle „EPOS Lokal“ auf dem
 Rechner des Anwenders ohne Verlust fortzuführen: Aufgabe und Reichweite, Stand von Rechner und Datenbank, erledigte und
 offene Aufträge, die Arbeitsweise vor Ort und am Ende den Einstiegs-Prompt. Regelquelle bleibt
-[`CLAUDE.md`](../../../CLAUDE.md); die fachliche Lage der Wellen steht in der
-[Übergabe der Cloud-Sitzung „Gebäudesimulation“](2026-10-12_Uebergabe_Gebaeudesimulation_Kontowechsel.md), der
-dauerhafte Stand in der [Statusdatei iOS-Migration](../Status_iOS_Migration.md) und im Entscheidungsregister der
-[Statusdatei Gebäudesimulation](../Status_Gebaeudesimulation_VDI6007.md). Das Papier wandert nach
+[`CLAUDE.md`](../../CLAUDE.md); die fachliche Lage der Wellen steht in der
+[Übergabe der Cloud-Sitzung „Gebäudesimulation“](../aktuell/Gebaeudesimulation/2026-10-12_Uebergabe_Gebaeudesimulation_Kontowechsel.md), der
+dauerhafte Stand in der [Statusdatei iOS-Migration](../aktuell/Status_iOS_Migration.md) und im Entscheidungsregister der
+[Statusdatei Gebäudesimulation](../aktuell/Status_Gebaeudesimulation_VDI6007.md). Das Papier wandert nach
 `Dokumentation/ueberholt/`, sobald die Nachfolgesitzung das Postfach abgeholt und den ersten Auftrag abgeschlossen hat.
 
 Grund der Übergabe: Das Wochenkontingent des bisherigen Kontos steht am 17.10.2026 um 10:00 Uhr bei 100 % (alle Modelle)
@@ -124,7 +124,7 @@ Lokale Sitzung „EPOS Lokal“ (EPOS-Plan, inekon/EPOS-Plan) auf neuem Konto fo
 Zweig ios_migration_september; die Sitzung bitte „EPOS Lokal“ nennen und Remote Control einschalten, damit die Cloud-Sitzungen sie
 in ListAgents sehen.
 
-1. Lies CLAUDE.md und das Übergabepapier Dokumentation/aktuell/Gebaeudesimulation/2026-10-17_Uebergabe_EPOS_Lokal_Kontowechsel.md
+1. Lies CLAUDE.md und das Übergabepapier Dokumentation/ueberholt/2026-10-17_Uebergabe_EPOS_Lokal_Kontowechsel.md
    ganz; aus der Übergabe der Cloud-Sitzung (2026-10-12_Uebergabe_Gebaeudesimulation_Kontowechsel.md) nur Abschnitt 1, 4 und 5.
    Weitere Papiere nur gezielt (grep -n '^#').
 2. Stand prüfen: git fetch, git status --short --branch, git merge --ff-only origin/ios_migration_september, git lfs pull

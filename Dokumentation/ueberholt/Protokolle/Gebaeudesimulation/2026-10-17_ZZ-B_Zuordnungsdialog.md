@@ -1,6 +1,6 @@
 # Protokoll ZZ-B — Zuordnungsdialog „Nutzungsprofile zuordnen…“ (Hülle und Dialog)
 
-Grundlage: [Entwurf Zonenzuordnung IFC](../../../aktuell/Gebaeudesimulation/2026-10-17_Entwurf_Zonenzuordnung_IFC.md),
+Grundlage: [Entwurf Zonenzuordnung IFC](../../2026-10-17_Entwurf_Zonenzuordnung_IFC.md),
 Abschnitt 6 (Zuordnungsdialog) und Abschnitt 10 (F2, F3, F6); Kernschnittstelle aus
 [ZZ-A](2026-10-17_ZZ-A_Zonenregel_Profilzuordnung.md). Zweig `zonb`, abgezweigt von `zon` bei `9043c10f0`. Kein Schema, keine
 Änderung am Kern außer Ressourcen.

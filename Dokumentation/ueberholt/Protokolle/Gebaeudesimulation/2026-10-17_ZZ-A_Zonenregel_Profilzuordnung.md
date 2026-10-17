@@ -1,7 +1,7 @@
 # Protokoll ZZ-A — Zonenregel Z7 und Profilzuordnung je Raum (Kern, ohne Schema)
 
 **Datum:** 17.10.2026 · **Zweig:** `zon` (Worktree, umbasiert auf `0dd20072c`) · **Modell:** Claude Fable 5.1 ·
-**Grundlage:** [Entwurf ZZ](../../../aktuell/Gebaeudesimulation/2026-10-17_Entwurf_Zonenzuordnung_IFC.md) nach Empfehlung
+**Grundlage:** [Entwurf ZZ](../../2026-10-17_Entwurf_Zonenzuordnung_IFC.md) nach Empfehlung
 (F1, F4 bis F7 „ja“) mit den **Anwenderentscheiden vom 17.10.2026 zu F2 und F3** (unten). Kein Schemaschritt, Testdatenbank
 unverändert (Stand 240); Schritt 244 bleibt angemeldet, siehe Empfehlung.
 
