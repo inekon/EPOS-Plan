@@ -255,6 +255,32 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Bezugsebene_aus_Spalt_Ueberlappung_und_Raumhoehe_abgeleitet()
+        {
+            GebaeudeAbbild a = Lesen(MitRaumVier()
+                // Spalt: Aufbau 30 cm, gezeichnet 40 cm, der Raum liegt 50 cm hinter der Bezugsebene.
+                .Flaeche("S5", 1, 3, 10.0, 10.0, 180.0, 90.0, aufbau: "{AAAA0001-0000-0000-0000-000000000001}", u: 0.5).Bezug("E24", "R4", "S5", 1)
+                .Geometrie("S5", SqprojProbenErzeuger.GeoXml(null, ("DIN18599_2011", SqprojProbenErzeuger.RechteckY(-0.50, 20.0, 24.0, 0.0, 2.5))), 0.40)
+                // Überlappung: die Ostwand reicht von 2,2 bis 4,6 m, kein Stichpunkt trifft den Raum (bis 2,5 m).
+                .Flaeche("O5", 1, 3, 12.0, 12.0, 90.0, 90.0).Bezug("E25", "R4", "O5", 1)
+                .Geometrie("O5", SqprojProbenErzeuger.GeoXml(null, ("DIN18599_2011", SqprojProbenErzeuger.RechteckX(24.30, 0.0, 5.0, 2.2, 4.6))), 0.30)
+                // Raumhöhe: eine Decke des Raums neben seinem Grundriss, 20 cm über seiner Decke.
+                .Flaeche("H5", 5, 3, 4.0, 4.0, null, 0.0).Bezug("E26", "R4", "H5", 9)
+                .Geometrie("H5", SqprojProbenErzeuger.GeoXml(null, ("DIN18599_2011", SqprojProbenErzeuger.RechteckZ(2.70, 25.0, 27.0, 0.0, 2.0))), 0.20));
+            foreach (string k in new[] { "S5", "O5", "H5" })
+                Assert.DoesNotContain(Koerpervermerk.Bezugsebene_angenommen, Bauteil(a, k).Koerper.Vermerke);
+            (double y0, double y1) = Spanne(Bauteil(a, "S5").Koerper, 1);
+            Assert.Equal(-0.50, y0, 6);
+            Assert.Equal(-0.10, y1, 6);
+            (double x0, double x1) = Spanne(Bauteil(a, "O5").Koerper, 0);
+            Assert.Equal(24.00, x0, 6);
+            Assert.Equal(24.30, x1, 6);
+            (double z0, double z1) = Spanne(Bauteil(a, "H5").Koerper, 2);
+            Assert.Equal(2.50, z0, 6);
+            Assert.Equal(2.70, z1, 6);
+        }
+
+        [Fact]
         public void Wand_mit_zwei_Abschnitten_teilt_die_Mantelflaeche()
         {
             GebaeudeAbbild a = Lesen(SqprojProbenErzeuger.Geometriehaus()

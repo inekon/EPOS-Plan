@@ -117,6 +117,9 @@ namespace WindowsFormsApplication1
         /// <summary>Zuschlag auf die Dicke beim Suchen der Hüllfläche einer Raumfläche (17.4: Dicke plus 2 cm).</summary>
         internal const double ZUSCHLAG_ZUORDNUNG_M = 0.02;
 
+        /// <summary>Die kleinste Überlappung in der Ebene einer Wand, mit der eine Raumfläche als ihr Gegenüber gilt [m²].</summary>
+        internal const double UEBERLAPPUNG_M2 = 1e-4;
+
         /// <summary>Wie weit hinter der Dicke eine Raumfläche noch als Gegenüber einer Bauteilfläche gilt [m].</summary>
         internal const double SUCHWEITE_M = 0.30;
 
@@ -778,7 +781,10 @@ namespace WindowsFormsApplication1
         /// Die Lage der Fläche gegen die Raumkörper ihrer Räume: je Stichpunkt (Schwerpunkt und die Ecken halb zum Schwerpunkt)
         /// längs der Normale auf ein paralleles Dreieck eines Raumkörpers projiziert; der kleinste Abstand zählt. Daraus die
         /// Richtung (<see cref="Richtung"/>) und die Raumseite (Gegenrichtung der Dreiecksnormale, die nach außen zeigt). Ohne
-        /// Treffer: die Raumseite zum Schwerpunkt des Raumpolygons, die Achse mit Vermerk.
+        /// Treffer: die nächste parallele Raumfläche, die sich mit der Fläche überlappt (Wände) bzw. die nächste parallele Ebene des
+        /// Raums (Decken, Böden, Dächer: Raumhöhe), jeweils der Ebenenabstand; sonst die Raumseite zum
+        /// Schwerpunkt des Raumpolygons, die Achse mit Vermerk. Liegt der Raum hinter der Dicke, aber innerhalb der Suchweite,
+        /// gilt „zum Raum hin“ (Spalt).
         /// </summary>
         private static void Messen(Flaeche f, Dictionary<string, Dateikoerper> koerper, Dictionary<string, IReadOnlyList<Raumpolygon>> polygone)
         {
@@ -800,10 +806,40 @@ namespace WindowsFormsApplication1
                     {
                         double weg = Polygonnetz.Punkt(Polygonnetz.Minus(a, s), tn) / cos;
                         double abstand = Math.Abs(weg);
-                        if (abstand > f.Dicke + SUCHWEITE_M || abstand >= bester - 1e-9) continue;
+                        if (abstand > f.Reichweite + SUCHWEITE_M || abstand >= bester - 1e-9) continue;
                         if (!ImDreieck(Polygonnetz.Plus(s, Polygonnetz.Mal(f.Normale, weg)), a, b, d, tn)) continue;
                         bester = abstand;
                         zumRaum = Polygonnetz.Mal(tn, -1.0);
+                    }
+                }
+            }
+            if (zumRaum == null)
+            {
+                // Kein Stichpunkt trifft ein Dreieck (der Raumkörper überdeckt die Fläche nur teilweise, etwa am Rand oder bei
+                // einem Giebel): die nächste parallele Raumfläche, die sich in der Ebene der Fläche mit ihr überlappt — bei
+                // Decken, Böden und Dächern genügt die Höhe —; ihr Ebenenabstand vom Schwerpunkt zählt.
+                (double[] o, double[] e1, double[] e2) = Ebene(f.Aussen);
+                if (e1 != null)
+                {
+                    List<double[]> flach = Flach(f.Aussen, o, e1, e2);
+                    foreach (string raum in f.Raeume.OrderBy(x => x, StringComparer.Ordinal))
+                    {
+                        if (!koerper.TryGetValue(raum, out Dateikoerper k)) continue;
+                        for (int t = 0; t < k.Dreiecke.Count; t++)
+                        {
+                            double[] tn = k.Normalen[t];
+                            double cos = Polygonnetz.Punkt(tn, f.Normale);
+                            if (Math.Abs(cos) < COS_PARALLEL) continue;
+                            double[][] dreieck = k.Dreiecke[t].Select(i => k.PunkteM[i]).ToArray();
+                            double abstand = Math.Abs(Polygonnetz.Punkt(Polygonnetz.Minus(dreieck[0], c), tn) / cos);
+                            if (abstand > f.Reichweite + SUCHWEITE_M || abstand >= bester - 1e-9) continue;
+                            List<double[]> dreieckFlach = Flach(dreieck, o, e1, e2);
+                            // Wände nur mit Überlappung; Decken, Böden und Dächer auch über die Höhe allein (Raumhöhe: Boden- bzw.
+                            // Deckenebene des Raums), weil eine waagerechte Ebene des Raums nur Boden oder Decke sein kann.
+                            if (f.Wand && Grundrissueberlappung.Ueberlappung(flach, dreieckFlach) <= UEBERLAPPUNG_M2) continue;
+                            bester = abstand;
+                            zumRaum = Polygonnetz.Mal(tn, -1.0);
+                        }
                     }
                 }
             }
@@ -819,6 +855,18 @@ namespace WindowsFormsApplication1
                     f.Dicke = fd;
                     f.Vorgabe = false;
                     (f.Richtung, f.Angenommen) = Richtung(bester, fd);
+                }
+                // Liegt der Raum hinter der Dicke (bis zur Suchweite), reicht der Körper von der Bezugsebene zum Raum hin; der
+                // Rest ist ein Spalt (Putz, Hohlraum), den die Datei nicht als Schicht führt. Gilt die gezeichnete Dicke.
+                if (f.Angenommen && bester > f.Reichweite && bester <= f.Reichweite + SUCHWEITE_M)
+                {
+                    if (f.Flaechendicke is double fs && fs > f.Dicke)
+                    {
+                        f.Dicke = fs;
+                        f.Vorgabe = false;
+                    }
+                    f.Richtung = Extrusionsrichtung.NachInnen;
+                    f.Angenommen = false;
                 }
                 return;
             }

@@ -259,6 +259,8 @@ namespace EPOS.Kern.Tests
                 befunde[text] = befunde.TryGetValue(text, out int z) ? z + 1 : 1;
             }
             foreach (var bf in befunde) _aus.WriteLine("  Angenommen " + bf.Key + " = " + bf.Value);
+            // Punkt 3: höchstens 3 % der Bauteilkörper mit angenommener Bezugsebene (Ausgang 5,9 %).
+            Assert.True(angenommen <= 0.03 * koerper.Count, "Bezugsebene angenommen " + P((double)angenommen / koerper.Count));
             foreach (var g in koerper.Where(b => b.Koerper.Vermerke.Contains(Koerpervermerk.Bezugsebene_angenommen)).GroupBy(b => b.Art).OrderBy(g => g.Key))
                 _aus.WriteLine("  " + g.Key + ": " + g.Count() + ", davon Vorgabedicke " + g.Count(b => b.Koerper.Vermerke.Contains(Koerpervermerk.Vorgabedicke)));
         }
