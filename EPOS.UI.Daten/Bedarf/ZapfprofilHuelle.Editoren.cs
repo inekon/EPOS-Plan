@@ -92,7 +92,7 @@ namespace WindowsFormsApplication1
             d.Sperrgrund = !d.Kopie ? ""
                 : sperre != TwwKatalogAusgang.Ausgefuehrt ? Tagesganggrund(sperre)
                 : Text_("ZPG_TGE_GRUND_EXPERTENWAHL_ABWEICHEND",
-                        "Die Zone rechnet einen anderen Tagesgangsatz als die Nutzungsart — ein geänderter Tagesgang entsteht als neue Katalogversion.");
+                        "Der Bereich rechnet einen anderen Tagesgangsatz als die Nutzungsart — ein geänderter Tagesgang entsteht als neue Katalogversion.");
             d.KatalogversionVorschlag = d.Kopie ? TwwNutzungsartCtrl.FreieKopieversion(idNutzungsart) : "";
             return d;
         }

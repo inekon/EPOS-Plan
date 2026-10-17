@@ -99,7 +99,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Zone A", a.Zone);
             Assert.False(a.Warnung);
             Assert.Equal(new object[] { "Zone A", 12.0, 12.0 }, a.Satz.Werte.ToArray());
-            Assert.Equal("Die Anzeigetemperatur (12 °C) liegt nicht über dem Kaltwassermittel der Zone „Zone A“ (12 °C) — die Zone zeigt keine Liter.",
+            Assert.Equal("Die Anzeigetemperatur (12 °C) liegt nicht über dem Kaltwassermittel des Bereichs „Zone A“ (12 °C) — der Bereich zeigt keine Liter.",
                          a.Text);
 
             foreach (double falsch in new[] { -0.5, double.NaN })

@@ -444,8 +444,8 @@ namespace EPOS.Kern.Tests
             ZapfAblehnung alt = Zonenvorpruefung.Pruefen(ZapfprofilTestbau.Zone("Büro", idArt: 17), e, Katalog);
             Assert.Equal(ZapfEingabefehler.NutzungsartFehlt, neu.Grund);
             Assert.Equal(ZapfEingabefehler.NutzungsartFehlt, alt.Grund);
-            Assert.Equal("Für die Zone „Zone 3“ ist noch keine Nutzungsart gewählt.", neu.Klartext);
-            Assert.Equal("Die Nutzungsart Nr. 17 der Zone „Büro“ steht nicht (mehr) im Katalog — bitte eine Nutzungsart wählen.",
+            Assert.Equal("Für den Bereich „Zone 3“ ist noch keine Nutzungsart gewählt.", neu.Klartext);
+            Assert.Equal("Die Nutzungsart Nr. 17 des Bereichs „Büro“ steht nicht (mehr) im Katalog — bitte eine Nutzungsart wählen.",
                          alt.Klartext);
         }
     }

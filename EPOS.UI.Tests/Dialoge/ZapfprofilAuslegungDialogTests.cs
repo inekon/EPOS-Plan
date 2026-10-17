@@ -103,7 +103,7 @@ public partial class ZapfprofilAuslegungDialogTests : EposBunitContext
 
     private static ZapfprofilAuslegungStartDaten Start(ZapfprofilAuslegungDaten? ergebnis = null, ZapfprofilAuslegungEingabeDaten? eingabe = null) => new()
     {
-        Kontext = "Summe aller Zonen · 2 Zonen · Stufe Einfach",
+        Kontext = "Summe aller Bereiche · 2 Bereiche · Stufe Einfach",
         Eingabe = eingabe ?? new ZapfprofilAuslegungEingabeDaten { SpeicherC = 60, ErzeugerKw = 25 },
         Bedarfstage =
         {
@@ -153,7 +153,7 @@ public partial class ZapfprofilAuslegungDialogTests : EposBunitContext
         var cut = Aufbauen(Start(Ergebnis(Speichergruppe(mitWoche: true))));
 
         Assert.Equal("Auslegung Brauchwasser", cut.Find("h1.epos-dialog-titel").TextContent);
-        Assert.Contains("2 Zonen", cut.Find(".epos-kontextzeile").TextContent);
+        Assert.Contains("2 Bereiche", cut.Find(".epos-kontextzeile").TextContent);
 
         // Drei Karten: Summenlinie, Perzentil, Normvergleich.
         IReadOnlyList<IElement> karten = cut.FindAll(".epos-zapfausl-karte");
@@ -1036,7 +1036,7 @@ public partial class ZapfprofilAuslegungDialogTests : EposBunitContext
         IElement zeile = b.QuerySelector(".epos-zapfausl-je-einheit")!;
         Assert.Equal("Minutenspitze P99 je Wohnungsstation", zeile.QuerySelector("span")!.TextContent);
         Assert.Equal("21,5 kW", zeile.QuerySelector("b")!.TextContent);
-        Assert.Equal("Auslegungsgröße jeder Wohnungsstation; maßgebend ist die Zone „Zone Nord“.",
+        Assert.Equal("Auslegungsgröße jeder Wohnungsstation; maßgebend ist der Bereich „Zone Nord“.",
                      b.QuerySelector(".epos-zapfausl-je-einheit-zone")!.TextContent);
 
         // Ohne Wert (jede andere Topologie) keine Zeile.
@@ -1138,7 +1138,7 @@ public partial class ZapfprofilAuslegungDialogTests : EposBunitContext
         g.Perzentil = new ZapfprofilKarteDaten
         {
             Stand = ZapfprofilKartenstand.NichtRechenbar,
-            Text = "Nicht rechenbar — für die Nutzungsart „Wohnen A“ der Zone „Zone 1“ stehen keine Zapfkategorien im Katalog."
+            Text = "Nicht rechenbar — für die Nutzungsart „Wohnen A“ des Bereichs „Zone 1“ stehen keine Zapfkategorien im Katalog."
         };
         var cut = Aufbauen(StartMitStochastik(Ergebnis(g)));
 
@@ -1359,7 +1359,7 @@ public partial class ZapfprofilAuslegungDialogTests : EposBunitContext
         Setze("bedarfstag", "Tag A");
         Assert.Equal(5, cut.Instance.Eingabe.IdBedarfstag);
         Assert.Equal(ZapfprofilBedarfstagquelle.Konstruktor, cut.Instance.Eingabe.Quelle);
-        Setze("bedarfstag", "Stundenprofil der Zonen");
+        Setze("bedarfstag", "Stundenprofil der Bereiche");
         Assert.Equal(ZapfprofilBedarfstagquelle.Stundenprofil, cut.Instance.Eingabe.Quelle);
         Assert.Null(cut.Instance.Eingabe.IdBedarfstag);
 

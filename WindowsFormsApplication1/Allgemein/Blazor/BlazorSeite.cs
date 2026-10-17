@@ -137,6 +137,11 @@ namespace WindowsFormsApplication1
             try { _web.WebView.DefaultBackgroundColor = Themaflaeche; }
             catch { /* aeltere WebView2-Laufzeit: Schoenheitsfehler, kein Fehlschlag */ }
 
+            // FENSTER-WEG DES BEFEHLSTASTENHAKENS (wie in der Dialoghuelle): Bei Fokus im
+            // Browserfenster erreicht keine Taste ProcessCmdKey des Rahmens; sie kommt ueber
+            // das KeyDown des WebView2-Steuerelements (aus AcceleratorKeyPressed).
+            _web.WebView.KeyDown += WebViewTasteGedrueckt;
+
             // FEHLERSCHRANKE (Befund W13-B-1, 05.09.2026): dasselbe Zwischenglied
             // wie in der Dialoghuelle - EPOS.UI.Bausteine.Wurzel<T> ist eine
             // ErrorBoundary mit T darin. Eine Ausnahme aus einem Ereignis oder aus
@@ -186,6 +191,25 @@ namespace WindowsFormsApplication1
         /// Stellt die Seite auf ein anderes Projekt ein - OHNE die WebView neu zu
         /// bauen. Die Komponente erfaehrt es ueber <see cref="SeitenZustand.Geaendert"/>.
         /// </summary>
+        /// <summary>
+        /// Ein BEFEHLSTASTENHAKEN des Besitzers (Hauptfensterrahmen: F1): bekommt jede Taste,
+        /// die bei Fokus im Browserfenster ueber das Tastenereignis der WebView2
+        /// (AcceleratorKeyPressed -> <c>KeyDown</c> des Steuerelements) zurueckkommt;
+        /// <c>true</c> = behandelt, der Browser sieht sie nicht mehr. Liegt der Fokus auf der
+        /// WinForms-Seite, kommt die Taste ueber <c>ProcessCmdKey</c> des Rahmens. Der Haken
+        /// darf nichts Blockierendes tun - der Browserprozess wartet auf die Antwort.
+        /// </summary>
+        public Func<Keys, bool> Befehlstaste { get; set; }
+
+        private void WebViewTasteGedrueckt(object sender, KeyEventArgs e)
+        {
+            if (Befehlstaste != null && !DesignMode && Befehlstaste(e.KeyData))
+            {
+                e.Handled = true;
+                e.SuppressKeyPress = true;
+            }
+        }
+
         /// <summary>
         /// Oeffnet die Entwicklerwerkzeuge (DevTools) der WebView2 dieser Seite — der Weg des
         /// Menuepunkts „Entwicklung -> Entwicklerwerkzeuge der Oberflaeche". <c>false</c>, solange

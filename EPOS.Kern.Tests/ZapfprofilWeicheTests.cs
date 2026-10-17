@@ -270,7 +270,7 @@ namespace EPOS.Kern.Tests
             Assert.Empty(SimulationProtokoll.Aktuell.Fehler);
             string warnung = Assert.Single(SimulationProtokoll.Aktuell.Warnungen,
                                            w => w.StartsWith(SimulationWaermebedarf.ZAPFPROFIL_PRAEFIX));
-            Assert.Contains("Zone „Zone Probe“ trägt 0", warnung);
+            Assert.Contains("Bereich „Zone Probe“ trägt 0", warnung);
             Assert.Contains(ZapfParameter.KALTWASSER_MITTEL, warnung);
 
             ZapfprofilErgebnis e = waerme.Zapfprofil;
@@ -288,7 +288,7 @@ namespace EPOS.Kern.Tests
             BedarfsVorschau v = BedarfsVorschauCtrl.ProjektVorschau(BedarfsArt.Brauchwasser, PROJEKT, new List<string>());
             Assert.True(v.Zapfprofilweg);
             Assert.True(v.Erfolgreich);
-            Assert.Contains("Zone „Zone Probe“ trägt 0", v.Meldung);
+            Assert.Contains("Bereich „Zone Probe“ trägt 0", v.Meldung);
             Assert.Contains(ZapfParameter.KALTWASSER_MITTEL, v.Meldung);
             Assert.Equal(waerme.Waermebedarf_Brauchwasser, v.Waerme.Waermebedarf_Brauchwasser);
         }
@@ -412,7 +412,7 @@ namespace EPOS.Kern.Tests
             Assert.Empty(SimulationProtokoll.Aktuell.Fehler);
             string warnung = Assert.Single(SimulationProtokoll.Aktuell.Warnungen,
                                            w => w.StartsWith(SimulationWaermebedarf.ZAPFPROFIL_PRAEFIX));
-            Assert.Contains("Zone „Zone Probe“ trägt 0", warnung);
+            Assert.Contains("Bereich „Zone Probe“ trägt 0", warnung);
             Assert.Contains("keine Zapfkategorien", warnung);
             Assert.Contains("„" + NUTZUNG + "“", warnung);
             ZapfprofilErgebnis e = waerme.Zapfprofil;

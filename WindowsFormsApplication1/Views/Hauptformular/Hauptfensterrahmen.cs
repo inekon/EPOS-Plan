@@ -13,8 +13,8 @@ namespace WindowsFormsApplication1
     /// <c>Application.Run</c>), Fenstergeometrie und Titel, EINE
     /// <see cref="BlazorSeite{T}"/> mit <c>EPOS.UI/Seiten/Hauptfenster.razor</c>,
     /// der Besitzer für jede <see cref="BlazorDialogForm{T}"/>, <c>ProcessCmdKey</c>
-    /// samt F1 (der Weg, der die Taste auch AUS der WebView2 erreicht — Befund
-    /// KI‑D‑B‑3) und die stille Lizenz-Nachprüfung beim Start.</para>
+    /// samt F1 (bei Fokus auf der WinForms-Seite; bei Fokus im Browserfenster kommt F1 über
+    /// das Tastenereignis der WebView2, <see cref="BlazorSeite{T}.Befehlstaste"/>) und die stille Lizenz-Nachprüfung beim Start.</para>
     ///
     /// <para><b>Was hier NICHT mehr steht:</b> die 45 Menüpunkte, die 34
     /// Ereignishandler, die acht <c>Init*</c>-Methoden (Kopfband, KI-Hilfe,
@@ -80,8 +80,8 @@ namespace WindowsFormsApplication1
 
             // F1 auch unabhängig vom Menü: Der Menüpunkt allein wäre in einer
             // Razor-Oberfläche kein Tastenkürzel mehr (im Bestand InitKiHilfe
-            // :357-374). Die Taste fängt seit Befund KI-D-B-3 ProcessCmdKey ab
-            // und nicht mehr KeyPreview/KeyDown — Begründung dort.
+            // :357-374). Die Taste fangen ProcessCmdKey (Fokus auf der WinForms-Seite)
+            // und der Befehlstastenhaken der BlazorSeite (Fokus im Browser) — Begründung dort.
             Load += BeimLaden;
 
             // ANWENDERENTSCHEID 62b-E-1 (11.09.2026), Festlegung 4: Auch das
@@ -166,14 +166,14 @@ namespace WindowsFormsApplication1
         /// Tastenmeldungen gehen an das Browserfenster, ein natives Kindfenster,
         /// dessen <c>WndProc</c> kein WinForms-Steuerelement ist. Das
         /// <c>KeyDown</c> des Rahmens wurde damit nie ausgelöst.</para>
-        /// <para><see cref="Form.ProcessCmdKey"/> erreicht der Tastendruck
-        /// dagegen: <c>Application.ThreadContext.PreTranslateMessage</c> sucht
-        /// über <c>Control.FromChildHandle</c> das nächste verwaltete
-        /// Steuerelement — das ist die <c>WebView2</c>, deren Kindfenster das
-        /// Browserfenster ist —, ruft dort <c>PreProcessMessage</c>, und das
-        /// reicht <c>ProcessCmdKey</c> die Elternkette hinauf bis zu diesem
-        /// Fenster. Dieser Weg deckt den bisherigen mit ab: Er läuft auch, wenn
-        /// ein gewöhnliches WinForms-Kind den Zeiger hat.</para>
+        /// <para>Auch <see cref="Form.ProcessCmdKey"/> erreicht der Tastendruck
+        /// nur, solange der Zeiger auf der WinForms-Seite liegt: Die Meldungen des
+        /// Browserfensters laufen im eigenen WebView2-Prozess und nie durch
+        /// <c>PreTranslateMessage</c> dieses Threads. Was der Browser zurückgibt,
+        /// meldet die WebView2 über <c>AcceleratorKeyPressed</c>; das Steuerelement
+        /// macht daraus sein <c>KeyDown</c>, und daran hängt
+        /// <see cref="BlazorSeite{T}.Befehlstaste"/> (im Konstruktor gesetzt). Beide
+        /// Wege zusammen decken F1 unabhängig vom Fokus.</para>
         /// <para><c>true</c> hält die Taste an — es gibt keinen zweiten Empfänger,
         /// und ein zweites <c>Oeffnen</c> wäre ohnehin nur ein Nach-vorn-Holen.</para>
         /// </remarks>
@@ -232,6 +232,15 @@ namespace WindowsFormsApplication1
             TitelSetzen();
             _bild = new BlazorSeite<EPOS.UI.Seiten.Hauptfenster>(
                 new Dictionary<string, object>(_huelle.Gaben()));
+            // F1 auch bei Fokus im Browserfenster der WebView2: Dann erreicht die Taste
+            // ProcessCmdKey nicht, sie kommt ueber das Tastenereignis der WebView2.
+            // BeginInvoke - der Browserprozess wartet auf die Antwort des Ereignisses.
+            _bild.Befehlstaste = taste =>
+            {
+                if (taste != Keys.F1) return false;
+                BeginInvoke(new Action(() => KiChatHuelle.Oeffnen(this)));
+                return true;
+            };
             Controls.Add(_bild);
             _bild.BringToFront();
 

@@ -33,7 +33,7 @@ public partial class ZapfprofilDialogStufenTests
     public void Die_Karte_Kalender_ist_zugeklappt_und_nennt_die_Lage_der_Nutzungsart()
     {
         var cut = Aufbauen();
-        Stufe(cut, "Erweitert", aufklappen: false);
+        Stufe(cut, "Experte", aufklappen: false);
 
         Assert.Equal("false", cut.Find(".epos-zapfprofil-kalender .epos-klappgruppe-knopf").GetAttribute("aria-expanded"));
         Assert.Equal("Kalender der Nutzungsart · keine eigenen Ferien", Zusammenfassung(cut));
@@ -48,14 +48,14 @@ public partial class ZapfprofilDialogStufenTests
                      quelle.QuerySelectorAll("label.epos-option").Select(l => l.TextContent.Trim()).ToArray());
         Assert.Empty(cut.FindAll(".epos-zapfprofil-kalender-gebaeude"));
         // ZB8: Format und Vorrang der eigenen Ferien stehen im title, nicht als Dauerzeile.
-        Assert.Contains("Eigene Ferien der Zone gehen vor", Karte(cut).QuerySelector(".epos-zapfprofil-ferien-neu")!.GetAttribute("title"));
+        Assert.Contains("Eigene Ferien des Bereichs gehen vor", Karte(cut).QuerySelector(".epos-zapfprofil-ferien-neu")!.GetAttribute("title"));
     }
 
     [Fact]
     public void Ein_gebundenes_Gebaeude_zeigt_Wochenende_Feiertage_und_Ferien_aus_dem_Gebaeude()
     {
         var cut = Aufbauen();
-        Stufe(cut, "Erweitert");
+        Stufe(cut, "Experte");
         Aufklappen(cut);
 
         Option(cut, "Quelle", "Gebäude „Haus Nord“", "10614");
@@ -74,7 +74,7 @@ public partial class ZapfprofilDialogStufenTests
         Knopf(cut, "+ Ferien").Click();
         Datumsfelder(cut, "bis")[0].Change("06.01.");
         Assert.Equal("wie Gebäude „Haus Nord“ · 1 eigener Ferienzeitraum · Feiertage Baden-Württemberg", Zusammenfassung(cut));
-        Assert.Contains("Die Zone trägt eigene Ferien; die Ferien des Gebäudes gelten nicht.", cut.Markup);
+        Assert.Contains("Der Bereich trägt eigene Ferien; die Ferien des Gebäudes gelten nicht.", cut.Markup);
 
         // Zurück auf den Kalender der Nutzungsart löst die Bindung.
         Option(cut, "Quelle", "Kalender der Nutzungsart · Wohnen", "0");
@@ -89,7 +89,7 @@ public partial class ZapfprofilDialogStufenTests
         daten.Gebaeude.Add(new ZapfprofilKatalogeintragDaten { Id = 20, Name = "Haus Süd" });
         daten.Gebaeudekalender.Add(new ZapfprofilGebaeudekalenderDaten { Id = 20, Name = "Haus Süd", Wochenende = "So" });
         var cut = Aufbauen(daten);
-        Stufe(cut, "Erweitert");
+        Stufe(cut, "Experte");
         Aufklappen(cut);
 
         Auswahl(cut, "Quelle").Change("20");
@@ -103,7 +103,7 @@ public partial class ZapfprofilDialogStufenTests
     public void Eigene_Ferien_ohne_Obergrenze_mit_Namen_Datum_und_Entfernen()
     {
         var cut = Aufbauen();
-        Stufe(cut, "Erweitert");
+        Stufe(cut, "Experte");
         Aufklappen(cut);
         Assert.Empty(Angaben(cut).Ferien);
 
@@ -143,7 +143,7 @@ public partial class ZapfprofilDialogStufenTests
     {
         ZapfprofilErgebnisDaten? ergebnis = null;
         var cut = Aufbauen(geschlossen: e => ergebnis = e);
-        Stufe(cut, "Erweitert");
+        Stufe(cut, "Experte");
         Aufklappen(cut);
 
         // Den 30. Februar gibt es im Gemeinjahr nicht: Das Feld färbt und meldet, das OK hält an.
@@ -163,7 +163,7 @@ public partial class ZapfprofilDialogStufenTests
     public void Das_Jahresraster_zeigt_die_Tagtypen_der_Vorschau_mit_Legende()
     {
         var cut = Aufbauen();
-        Stufe(cut, "Erweitert");
+        Stufe(cut, "Experte");
         Aufklappen(cut);
 
         IElement[] tage = cut.FindAll(".epos-zapfprofil-kalender .epos-jahresraster-tag").ToArray();
@@ -196,7 +196,7 @@ public partial class ZapfprofilDialogStufenTests
             foreach (ZapfprofilAnsichtDaten a in v.Ansichten) a.Tagtypen = null;
             return v;
         });
-        Stufe(cut, "Erweitert");
+        Stufe(cut, "Experte");
         Aufklappen(cut);
 
         Assert.Empty(cut.FindAll(".epos-jahresraster-tag"));

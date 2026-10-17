@@ -179,6 +179,9 @@ public sealed class KiMaskenabdeckungWacheTests
         new("ZonenNutzungsblatt",                "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
         // MA-6: die Vorschau des Wiederimports steht im Importdialog nach dem ersten OK.
         new("WiederimportVorschau",              "GebaeudeImportDialog",     KiMaskennamen.GEBAEUDE_IMPORT),
+        // ZZ-B: „Nutzungsprofile zuordnen…" als Überlagerung am Zonenbaum — Suche, Filter und Mengenwahl der Bündel; jede
+        // Zuordnung ist ein Schritt am Zonenplan des Wirts.
+        new("GebaeudeProfilzuordnung",           "GebaeudeImportDialog",     KiMaskennamen.GEBAEUDE_IMPORT),
         // NP4a (Konzept Nutzungsprofile 6.1, 6.4): CSV-Import und -Export im Kopf des Blatts — ein Baustein darin.
         new("RaumnutzungCsvAustausch",           "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
         // NP7b (Konzept Nutzungsprofile 6.5): der Dialog „Normwerte einlesen" als Überlagerung im Blatt.
@@ -481,6 +484,10 @@ public sealed class KiMaskenabdeckungWacheTests
         // MA-6: der Haken „Entfallende Zonen und Bauteile entfernen" der Wiederimportvorschau ist die Wahl vor dem zweiten OK.
         new("WiederimportVorschau", 1, "der Haken „Entfallende entfernen“ ist die Wahl des Wiederimports vor dem zweiten OK, " +
             "kein Einstellwert der Maske; er gilt nur für den einen Vormerkvorgang"),
+        // ZZ-B: Suche im Katalog, Filter „nur offene“ und der Haken je Bündel sind Bedienhilfen der Überlagerung (Mengenwahl
+        // für eine Zuordnung), keine Einstellwerte; jede Zuordnung ist ein Schritt am Zonenplan des Importdialogs.
+        new("GebaeudeProfilzuordnung", 6, "Suche, die drei Filter und die Haken je Bündel und je Raum sind Bedienhilfen der Mengenwahl, keine Einstellwerte; " +
+            "die Zuordnung selbst ist ein Schritt am Zonenplan des Importdialogs"),
         new("AufheizzeitManuellFeld", 1),
         // KP2 U2: die Auswahlliste der Vorlagen je Kalenderkarte - die Feldkarte führt sie als
         // kond_<größe>_vorlage mit der Aktion des Knopfs „Übernehmen“ (Entwurf KP2 D9); dazu Name,
@@ -695,13 +702,15 @@ public sealed class KiMaskenabdeckungWacheTests
         // und die neun Eingaben des Verfahrensvergleichs der Auslegung (lade_modus … fuellstand_bezug).
         new("ZapfkategorienEditor", 7),
         new("ZapfprofilAuslegungDialog", 20),
-        new("ZapfprofilDialog", 52, "Stufen Erweitert und Experte (Z4): die Angaben der gewählten Zone und des Gebäudes " +
+        new("ZapfprofilDialog", 56, "Stufen Erweitert und Experte (Z4): die Angaben der gewählten Zone und des Gebäudes " +
             "als Karten (ZB3); Tagesbedarf, Ladeleistung und Zirkulation je EIN Feld (ZB4 (b): leer = Vorschlag, ein Wert = " +
             "manuell; ein Baustein Einwertfeld zeichnet alle drei, Felder tagesbedarf_manuell, ladeleistung_manuell, zirk_manuell) " +
             "samt Wohnungstabelle in der Feldkarte; die Karte „Kalender“ (ZB5) führt Quelle und eigene Ferien (Name, von, bis) als " +
             "Feld kalender und Zeilen ferien_name/ferien_von/ferien_bis der Feldkarte, Quelle als Wahl oder Liste je Gebäudezahl. " +
             "Dazu die drei Eingaben der Wahl des Typtagwegs (Z4b): Schalter, Klimazone und Gebäudeart, und die Wahl " +
-            "der Messreihe des Vergleichs (Z5): Feld messreihe der Feldkarte")
+            "der Messreihe des Vergleichs (Z5): Feld messreihe der Feldkarte. " +
+            "Dazu die vier Eingaben der Ablage des Profils (ZC6): Name, Typ, Beschreibung und Schalter „mit Zirkulation“ — " +
+            "Angaben einer sofort schreibenden Handlung, kein Arbeitsstand der Maske; der Assistent legt kein Profil ab")
     };
 
     /// <summary>

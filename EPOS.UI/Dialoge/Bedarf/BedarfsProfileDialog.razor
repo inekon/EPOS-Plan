@@ -528,6 +528,7 @@
             @if (_zapfprofilGaben is not null)
             {
                 <ZapfprofilDialog @attributes="_zapfprofilGaben" TitelAnzeigen="false"
+                                  ProjektzeileAngelegt="ZapfprofilProjektzeileVormerken"
                                   Geschlossen="ZapfprofilGeschlossen" />
             }
         </KindInhalt>
@@ -891,6 +892,13 @@
 
     /// <summary>Nimmt das OK des Zapfprofils in den Arbeitsstand der Hülle (nur DTO; geschrieben wird mit dem OK hier).</summary>
     [Parameter] public Action<ZapfprofilErgebnisDaten>? ZapfprofilUebernommen { get; set; }
+
+    /// <summary>
+    /// Liest die Zuordnungszeile, die „Zum Projekt hinzufügen" im Zapfprofil-Blatt angelegt hat (ZC6,
+    /// <c>ZapfprofilHuelle.Projektzeile</c>); <c>null</c> = es gibt sie nicht. Der Dialog nimmt sie beim
+    /// Schließen des Blatts in seine Projektliste — sonst setzte sein OK die Zuordnungen ohne sie neu.
+    /// </summary>
+    [Parameter] public Func<int, BedarfsProfilZeile?>? ZapfprofilProjektzeile { get; set; }
 
     /// <summary>
     /// Warum es den Weg nicht gibt (kein gespeichertes Projekt, ZU10; Plattform, A11). Ohne
@@ -2420,6 +2428,8 @@
     {
         _zapfprofilGaben = null;
         _fokusZurueckNoetig = true;
+        // ZC6: Die Zeilen, die das Blatt schon geschrieben hat, gelten auf jedem Rückweg - auch nach Abbrechen.
+        ZapfprofilProjektzeilenAufnehmen();
         if (ergebnis is null) return;
 
         ZapfprofilUebernommen?.Invoke(ergebnis);
@@ -2433,6 +2443,38 @@
     /// „der Wirt schließt dafür selbst"): kein Übernehmen, kein Rechenweg-Wechsel.
     /// </summary>
     private void ZapfprofilZurueck() => ZapfprofilGeschlossen(null);
+
+    /// <summary>Die Marken der Zeilen, die „Zum Projekt hinzufügen" angelegt hat (ZC6), bis das Blatt schließt.</summary>
+    private readonly List<int> _zapfprofilProjektzeilen = new();
+
+    /// <summary>Merkt die neue Zuordnungszeile; gelesen wird beim Schließen des Blatts.</summary>
+    private void ZapfprofilProjektzeileVormerken(ZapfprofilProfilsatzErgebnis ergebnis)
+    {
+        if (ergebnis is { Erfolg: true, Id: > 0 }) _zapfprofilProjektzeilen.Add(ergebnis.Id);
+    }
+
+    /// <summary>
+    /// Nimmt die vorgemerkten Zeilen in die Projektliste — wie eine Katalogübernahme: die letzte ist
+    /// gewählt, Verwendung und Summen ziehen nach, die Hülle erfährt die Änderung.
+    /// </summary>
+    private void ZapfprofilProjektzeilenAufnehmen()
+    {
+        if (_zapfprofilProjektzeilen.Count == 0) return;
+        var neue = new List<BedarfsProfilZeile>();
+        foreach (int id in _zapfprofilProjektzeilen)
+        {
+            if (Zeilen.Any(z => z.IdZ == id)) continue;
+            if (ZapfprofilProjektzeile?.Invoke(id) is not { } neu) continue;
+            Zeilen.Add(neu);
+            neue.Add(neu);
+        }
+        _zapfprofilProjektzeilen.Clear();
+        if (neue.Count == 0) return;
+        _projektWahl.Leeren();
+        ProjektzeileWaehlen(neue[^1]);
+        VerwendungStempeln();
+        Geaendert?.Invoke();
+    }
 
     /// <summary>
     /// KBP-1: „Betriebskalender…“ des Bausteins — der Dialog tauscht seinen Inhalt gegen das Blatt; die Liste davor

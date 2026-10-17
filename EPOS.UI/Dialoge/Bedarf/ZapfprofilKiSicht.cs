@@ -26,7 +26,7 @@ namespace EPOS.UI.Dialoge.Bedarf;
 /// wählen. <see cref="Zone"/> wählt trotzdem, welche Zone ihren Eingabeblock zeigt.</para>
 ///
 /// <para><b>Was nicht auf der Maske steht, ist nicht setzbar</b>: Der Rechenweg und die Angaben
-/// der Stufe „Erweitert" stehen ab dieser Stufe, Seed, Realisierungen (nur beim Rechenweg
+/// der Stufe „Experte" stehen ab dieser Stufe, Seed, Realisierungen (nur beim Rechenweg
 /// „stochastisch") und die Fachwerte erst in der Stufe „Experte"; die Wohnungstabelle nur bei
 /// einer Nutzungsart „Wohnen", die Felder einer Zirkulationsmethode nur bei ihr. Davor nennt die
 /// Absage, was sie sichtbar macht. Die Angaben der höheren Stufen gelten der GEWÄHLTEN Zone —
@@ -87,7 +87,7 @@ public sealed class ZapfprofilKiSicht
     //  Die Wahllisten (KI‑D‑Q6)
     // =====================================================================
 
-    /// <summary>Die drei Stufen Einfach, Erweitert und Experte — alle wählbar.</summary>
+    /// <summary>Die zwei Stufen Einfach und Experte (ZC3).</summary>
     public IReadOnlyList<KiWahleintrag> StufeWahl => Liste(StufeEintraege);
 
     /// <summary>Die Zonen nach ihrer Nummer in der Liste (ab 1), mit dem Namen als Text.</summary>
@@ -109,7 +109,7 @@ public sealed class ZapfprofilKiSicht
     //  Die Felder der Maske
     // =====================================================================
 
-    /// <summary>Die Stufe des Dialogs (Einfach, Erweitert, Experte).</summary>
+    /// <summary>Die Stufe des Dialogs (Einfach, Experte).</summary>
     public int? Stufe
     {
         get => StufeLesen?.Invoke();
@@ -206,7 +206,7 @@ public sealed class ZapfprofilKiSicht
     }
 
     // =====================================================================
-    //  Stufen Erweitert und Experte (Z4): die GEWÄHLTE Zone und das Gebäude
+    //  Stufe Experte (Z4): die GEWÄHLTE Zone und das Gebäude
     // =====================================================================
     //
     // Die Angaben der höheren Stufen stehen — wie auf der Maske — für die gewählte Zone
@@ -226,13 +226,13 @@ public sealed class ZapfprofilKiSicht
     /// <summary>Die Wohnungstabelle der gewählten Zone — je Wohnungstyp eine Zeile.</summary>
     public Func<IReadOnlyList<ZapfprofilWohnungKiZeile>>? WohnungenLesen { get; init; }
 
-    /// <summary>Die Zeilen der Wohnungstabelle der gewählten Zone (nur Wohnen, Stufe Erweitert).</summary>
+    /// <summary>Die Zeilen der Wohnungstabelle der gewählten Zone (nur Wohnen, Stufe Experte).</summary>
     public IReadOnlyList<ZapfprofilWohnungKiZeile> Wohnungen
         => WohnungenLesen?.Invoke() ?? Array.Empty<ZapfprofilWohnungKiZeile>();
 
     public IReadOnlyList<KiWahleintrag> AusstattungWahl => Wahl(nameof(ZapfprofilWohnungKiZeile.Ausstattung));
 
-    // ---- Belegung und Anlage (Erweitert) --------------------------------------------
+    // ---- Belegung und Anlage (Experte) --------------------------------------------
 
     public double? PersonenJeWe { get => Zahl(nameof(PersonenJeWe)); set => Setze(nameof(PersonenJeWe), value); }
     public double? WohnflaecheJeWe { get => Zahl(nameof(WohnflaecheJeWe)); set => Setze(nameof(WohnflaecheJeWe), value); }
@@ -259,7 +259,7 @@ public sealed class ZapfprofilKiSicht
     public string MesswertQuelle { get => Text(nameof(MesswertQuelle)); set => Setze(nameof(MesswertQuelle), value); }
     public string MesswertZeitraum { get => Text(nameof(MesswertZeitraum)); set => Setze(nameof(MesswertZeitraum), value); }
 
-    // ---- Tagesbedarf, Ladeleistung, Zirkulation (Erweitert) --------------------------
+    // ---- Tagesbedarf, Ladeleistung, Zirkulation (Experte) --------------------------
 
     public double? TagesbedarfManuell { get => Zahl(nameof(TagesbedarfManuell)); set => Setze(nameof(TagesbedarfManuell), value); }
     public double? LadeleistungManuell { get => Zahl(nameof(LadeleistungManuell)); set => Setze(nameof(LadeleistungManuell), value); }
@@ -309,7 +309,7 @@ public sealed class ZapfprofilKiSicht
 
 /// <summary>
 /// Ein eigener Ferienzeitraum der gewählten Zone als ZEILE der Sichtklasse <see cref="ZapfprofilKiSicht"/>
-/// (Stufe Erweitert, Karte „Kalender") — Name, von und bis als „TT.MM." im Gemeinjahr wie die Felder der Maske; das
+/// (Stufe Experte, Karte „Kalender") — Name, von und bis als „TT.MM." im Gemeinjahr wie die Felder der Maske; das
 /// Kennzeichen ist die Nummer des Zeitraums. Die Zeile hinter dem letzten Zeitraum ist leer und legt beim Setzen einen
 /// neuen an.
 /// </summary>
@@ -339,7 +339,7 @@ public sealed class ZapfprofilFerienKiZeile
 
 /// <summary>
 /// Ein Wohnungstyp der Wohnungstabelle der gewählten Zone als ZEILE der Sichtklasse
-/// <see cref="ZapfprofilKiSicht"/> (Stufe Erweitert, nur Wohnen). Sie hält die Zeile selbst — ist
+/// <see cref="ZapfprofilKiSicht"/> (Stufe Experte, nur Wohnen). Sie hält die Zeile selbst — ist
 /// sie weg, lehnt der Setzer benannt ab.
 /// </summary>
 public sealed class ZapfprofilWohnungKiZeile
