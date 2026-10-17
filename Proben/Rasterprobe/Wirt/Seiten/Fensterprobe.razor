@@ -165,6 +165,7 @@
                                         Anlegen="@((_, _) => -1)" Speichern="@(_ => null)" Loeschen="@(_ => { })"
                                         KatalogLoeschen="@(_ => "")" Kostensumme="@(_ => (1000.0, 50.0))"
                                         KostenOeffnen="@((_, _) => Task.CompletedTask)"
+                                        TypkennfelderLaden="@KmTypkennfelderLaden" TypkennfelderFehlend="@(() => _kmTypFehlend)"
                                         Geschlossen="@(b => Beendet(b))" />
             break;
 
@@ -442,6 +443,7 @@
         if (abfrage.TryGetValue("meldung", out var g)) { _meldung = g.ToString() == "1"; _meldungListe = g.ToString() == "liste"; }
         if (abfrage.TryGetValue("lizenz", out var l)) _lizenz = l.ToString() == "1";
         if (abfrage.TryGetValue("zeilen", out var z) && int.TryParse(z, out int n)) _anzahl = n;
+        if (abfrage.TryGetValue("typfehlend", out var tf) && int.TryParse(tf, out int tfn)) _kmTypFehlend = tfn;
         if (abfrage.TryGetValue("verwendet", out var v)) _verwendet = v.ToString() == "1";
         if (abfrage.TryGetValue("summe", out var s)) _summe = s.ToString();
         if (abfrage.TryGetValue("aufnahme", out var u)) _aufnahme = u.ToString() == "1";
@@ -567,6 +569,19 @@
 
     private IReadOnlyList<Katalogfilterzeile>? _kmKatalog;
     private IReadOnlyList<Katalogfilterzeile> KmKatalog => _kmKatalog ??= Zeilenbau.Voll(KmProfil, _anzahl);
+
+    /// <summary>
+    /// KM-T1: die Typkennfelder ohne Datenbank — <c>&amp;typfehlend=&lt;n&gt;</c> setzt, wie viele noch fehlen (Vorgabe 3);
+    /// das Laden legt sie an und meldet 20 übersprungene, danach fehlt keines mehr.
+    /// </summary>
+    private int _kmTypFehlend = 3;
+
+    private KaeltemaschineTypkennfelderErgebnis KmTypkennfelderLaden()
+    {
+        int neu = _kmTypFehlend;
+        _kmTypFehlend = 0;
+        return new KaeltemaschineTypkennfelderErgebnis(true, neu, 20, "");
+    }
 
     private static readonly KaeltemaschineGeraetwerte KmGeraet = new()
     {

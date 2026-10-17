@@ -26,9 +26,10 @@
 
    EINE EINHEIT FUER ALLE DREI REITER (Anwenderentscheid W8-O-5 vom 04.09.2026):
    MWh als Vorgabe, kWh waehlbar. Das Wahlfeld steht ueber der Reiterleiste, weil
-   Kennzahlen, Monatstabelle und Saeulenbild gemeinsam folgen. Umgerechnet wird
-   nur, was die Huelle als ZAHL samt Quelleneinheit mitgibt - die beiden
-   Leistungen in kW und die Ganglinie bleiben unberuehrt. Das Saeulenbild
+   Kennzahlen, Monatstabelle, Saeulenbild und Ganglinie gemeinsam folgen. Umgerechnet
+   wird nur, was die Huelle als ZAHL samt Quelleneinheit mitgibt - die beiden
+   Leistungen der Kennzahlen bleiben in kW. Die Ganglinie des Grafikreiters zeigt
+   Leistung in der Leistungseinheit der Wahl: MW bei MWh, kW bei kWh. Das Saeulenbild
    kommt in zwei Fassungen herein; auch ein Zeichenmodell traegt seine Achsen- und
    Zeigetexte fertig formatiert, laesst sich also nicht umrechnen, und die
    Komponente ruft keinen Renderer.
@@ -39,7 +40,7 @@
    Woche | Tag -, darunter das Bild. "Jahr" ist die Ganglinie ueber alle
    Stuetzstellen mit Zoomleiste, eine Linie je Bedarfsart; Monat, Woche und Tag
    sind die Summen als gestapelte Saeulen (12, 52, 365; der 365. Tag gehoert zur
-   52. Woche) in der gewaehlten Einheit. Jedes Bild traegt "CSV...": die Ganglinie
+   52. Woche) in der gewaehlten Einheit, die Ganglinie in deren Leistungseinheit. Jedes Bild traegt "CSV...": die Ganglinie
    ueber den Ganglinienexport der Kaskade, die Saeulen ueber den eigenen Export
    mit den Summenspalten der Huelle. Bilder und Summen kommen auf Zuruf aus der
    Huelle (Bedarfsgrafikquelle); die Komponente haelt sie nur zwischen.
@@ -502,8 +503,11 @@
     /// <summary>Die Quelle, zu der der Bildvorrat gehört.</summary>
     private Bedarfsgrafikquelle? _bildquelle;
 
-    /// <summary>Die Einheit der Summen; die Ganglinie ist eine Leistung und folgt ihr nicht.</summary>
-    private Energieeinheit Grafikeinheitwahl => _raster == Bedarfsraster.Jahr ? Energieeinheit.Vorgabe : _einheit;
+    /// <summary>
+    /// Die Einheitenwahl des Bildes: die Summen in ihr, die Ganglinie in ihrer Leistungseinheit —
+    /// ein Wechsel holt in jedem Raster ein neues Bild.
+    /// </summary>
+    private Energieeinheit Grafikeinheitwahl => _einheit;
 
     private string Bildschluessel
         => string.Join(",", _reihen) + "|" + (int)_raster + "|" + Grafikeinheitwahl.Text;
@@ -530,8 +534,11 @@
     /// <summary>Die Kennung des Bildes: eine je Raster (sie bildet die clipPath-Namen).</summary>
     private string Grafikkennung => "bedarf-grafik-" + _raster.ToString().ToLowerInvariant();
 
-    /// <summary>Die Einheit am Zeiger: kW an der Ganglinie, die gewählte Energieeinheit an den Säulen.</summary>
-    private string Grafikeinheit => _raster == Bedarfsraster.Jahr ? "kW" : _einheit.Text;
+    /// <summary>
+    /// Die Einheit am Zeiger: an der Ganglinie die Leistungseinheit der Wahl (MW bzw. kW), an den
+    /// Säulen die gewählte Energieeinheit.
+    /// </summary>
+    private string Grafikeinheit => _raster == Bedarfsraster.Jahr ? _einheit.Leistungstext : _einheit.Text;
 
     /// <summary>Titel des gezeigten Bildes — Dateistamm des CSV-Exports.</summary>
     private string Grafiktitel => Daten.Grafik?.Titel?.Invoke(_reihen.ToList(), _raster) ?? Bildtext;

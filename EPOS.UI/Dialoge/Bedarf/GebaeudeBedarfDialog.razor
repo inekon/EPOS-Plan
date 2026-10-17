@@ -24,7 +24,8 @@
    liegt in BedarfEinheitWahl, also derselben Ablage wie im Bedarfsprofil- und im
    Bedarfsergebnisdialog. Umgerechnet werden nur die ENERGIEMENGEN - die Hoechstlast
    ist eine Leistung in kW, die Vollbenutzungsstunden sind Stunden, und das Bild zeigt
-   Prozent des Jahreshoechstwertes.
+   Prozent des Jahreshoechstwertes - der Zeiger an Waerme- und Kaeltelast nennt
+   deshalb "%", die Einheit der Werte im Bild.
 
    ER ERSCHEINT ALS UEBERLAGERUNG im Gebaeudedialog, nicht als zweites Fenster
    (Risiko R2) - wie die drei Unterdialoge, die dort schon stehen.
@@ -399,7 +400,7 @@
        viewBox der Zeichenflaeche, „1:1" holt das ganze Jahr zurueck. Mit der Zonenwahl
        wandert die Zone in die Kennung - jedes Bild fuehrt seinen Ausschnitt selbst. *@
     <DiagrammSvg Modell="@Modell" Kennung="@("gebaeude-bedarf" + Zonenzusatz)" Bezeichnung="@Bildtext"
-                 PlatzhalterText="@PlatzhalterLast" Einheit="kW"
+                 PlatzhalterText="@PlatzhalterLast" Einheit="%"
                  Palette="@Farbpalette.Aktuell"
                  FarbwahlErlaubt="@Farbwahl"
                  FarbeGewaehlt="FarbeUebernehmen"
@@ -543,7 +544,7 @@
             @if (BildauftragKaelte is not null)
             {
                 <DiagrammSvg Modell="@Kaeltemodell" Kennung="gebaeude-kaelte" Bezeichnung="@BildtextKaelte"
-                             PlatzhalterText="@PlatzhalterBild" Einheit="kW"
+                             PlatzhalterText="@PlatzhalterBild" Einheit="%"
                              Palette="@Farbpalette.Aktuell"
                              FarbwahlErlaubt="@Farbwahl"
                              FarbeGewaehlt="FarbeUebernehmen"

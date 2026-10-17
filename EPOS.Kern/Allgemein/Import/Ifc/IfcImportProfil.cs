@@ -45,6 +45,15 @@
         /// </summary>
         public const string ZONENREGEL_Z6 = "Z6";
 
+        /// <summary>
+        /// Zonenregel Z7: nach Nutzungsprofil (Entwurf ZZ 5.1) — Räume gleichen zugeordneten Profils der DIN/TS 18599-10
+        /// (<see cref="Raumprofilzuordnung"/>: eigene Angabe der Datei, Raumart, Raumname, Gebäudeart) und gleicher Beheizung
+        /// bilden eine Zone; die unbeheizten Räume eine Zone. Wählbar ohne Raumgrenzen, sobald ein beheizter Raum eine Raumart
+        /// oder eigene Nutzungsangabe trägt und mindestens zwei Gruppen entstehen; Vorgabe für IFC ohne Zonen mit Raumart an
+        /// allen beheizten Räumen (F1). Die Regel steht als <c>Z7</c> in <c>Tab_Importquelle.Zonenregel</c> (TEXT ohne CHECK).
+        /// </summary>
+        public const string ZONENREGEL_Z7 = "Z7";
+
         /// <summary>Zonenregel Z5: eine Zone je Gebäude — der Einzonen-Weg auf <c>Tab_Gebaeude</c>, die einzige Regel in G4a.</summary>
         public const string ZONENREGEL_Z5 = "Z5";
 
