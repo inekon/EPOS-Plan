@@ -3,7 +3,7 @@
 namespace EPOS.UI.Dialoge.Import;
 
 // =====================================================================================
-//  Die DTO des Zuordnungsdialogs „Nutzungsprofile zuordnen…“ (Entwurf Zonenzuordnung IFC,
+//  Die DTO des Zuordnungsdialogs „Nutzungsprofile zuordnen…“ (Entwurf Zonenzuordnung,
 //  Abschnitt 6; Auftrag ZZ-B). Fertige Anzeigetexte und sprachneutrale Schlüssel — die
 //  Komponente kennt weder Raumprofilbefund noch Katalogknoten des Kerns.
 // =====================================================================================

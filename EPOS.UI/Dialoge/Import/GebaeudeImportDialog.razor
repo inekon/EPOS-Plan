@@ -532,7 +532,7 @@
                 <div class="epos-zeilenknoepfe epos-gebimport-nutzungsprofile">
                     @if (plan.Profilzuordnung is GebaeudeProfilzuordnungDaten pz)
                     {
-                        @* ZZ-B (Entwurf Zonenzuordnung IFC 6): die Profilzuordnung je Raum als Überlagerung; der Knopf nennt die
+                        @* ZZ-B (Entwurf Zonenzuordnung, Abschnitt 6): die Profilzuordnung je Raum als Überlagerung; der Knopf nennt die
                            offenen Bündel (Rückfrage). *@
                         <button type="button" class="epos-knopf epos-gebimport-profilzuordnung-oeffnen" data-offen="@pz.OffeneBuendel"
                                 disabled="@Beschaeftigt" @onclick="() => _profilzuordnung = true">@(pz.OffeneBuendel > 0

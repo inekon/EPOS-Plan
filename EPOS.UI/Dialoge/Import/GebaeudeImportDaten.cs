@@ -229,7 +229,7 @@ public static class GebaeudePlanschrittArt
     public const string RUECKNAHME = "RUECKNAHME";
     /// <summary>
     /// Ein Nutzungsprofil Räumen von Hand zuordnen (Räume, Nutzung = Profilschlüssel des Katalogbaums; leer = „keine“); der Plan
-    /// bildet sich nach seiner Regel neu (Zuordnungsdialog, Entwurf Zonenzuordnung IFC 6).
+    /// bildet sich nach seiner Regel neu (Zuordnungsdialog, Entwurf Zonenzuordnung, Abschnitt 6).
     /// </summary>
     public const string PROFIL = "PROFIL";
     /// <summary>Die Wahl von Hand für Räume zurücknehmen (Räume) — sie bekommen wieder den Befund der Rangfolge.</summary>

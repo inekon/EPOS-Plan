@@ -179,6 +179,9 @@ public sealed class KiMaskenabdeckungWacheTests
         new("ZonenNutzungsblatt",                "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
         // MA-6: die Vorschau des Wiederimports steht im Importdialog nach dem ersten OK.
         new("WiederimportVorschau",              "GebaeudeImportDialog",     KiMaskennamen.GEBAEUDE_IMPORT),
+        // ZZ-B: „Nutzungsprofile zuordnen…" als Überlagerung am Zonenbaum — Suche, Filter und Mengenwahl der Bündel; jede
+        // Zuordnung ist ein Schritt am Zonenplan des Wirts.
+        new("GebaeudeProfilzuordnung",           "GebaeudeImportDialog",     KiMaskennamen.GEBAEUDE_IMPORT),
         // NP4a (Konzept Nutzungsprofile 6.1, 6.4): CSV-Import und -Export im Kopf des Blatts — ein Baustein darin.
         new("RaumnutzungCsvAustausch",           "GebaeudeKatalogDialog",    KiMaskennamen.GEBAEUDE_KATALOG),
         // NP7b (Konzept Nutzungsprofile 6.5): der Dialog „Normwerte einlesen" als Überlagerung im Blatt.
@@ -481,6 +484,10 @@ public sealed class KiMaskenabdeckungWacheTests
         // MA-6: der Haken „Entfallende Zonen und Bauteile entfernen" der Wiederimportvorschau ist die Wahl vor dem zweiten OK.
         new("WiederimportVorschau", 1, "der Haken „Entfallende entfernen“ ist die Wahl des Wiederimports vor dem zweiten OK, " +
             "kein Einstellwert der Maske; er gilt nur für den einen Vormerkvorgang"),
+        // ZZ-B: Suche im Katalog, Filter „nur offene“ und der Haken je Bündel sind Bedienhilfen der Überlagerung (Mengenwahl
+        // für eine Zuordnung), keine Einstellwerte; jede Zuordnung ist ein Schritt am Zonenplan des Importdialogs.
+        new("GebaeudeProfilzuordnung", 3, "Suche, Filter und der Haken je Bündel sind Bedienhilfen der Mengenwahl, keine Einstellwerte; " +
+            "die Zuordnung selbst ist ein Schritt am Zonenplan des Importdialogs"),
         new("AufheizzeitManuellFeld", 1),
         // KP2 U2: die Auswahlliste der Vorlagen je Kalenderkarte - die Feldkarte führt sie als
         // kond_<größe>_vorlage mit der Aktion des Knopfs „Übernehmen“ (Entwurf KP2 D9); dazu Name,
