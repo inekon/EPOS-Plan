@@ -149,6 +149,7 @@ Die Verwaltung ''Rückkühlwerke'' (Administration → Daten & Import → ''Rüc
 * '''Nasse Bauarten''' (adiabat, hybrid, Kühlturm) sind Verdunstungskühlanlagen im Sinn der 42. BImSchV; das Stammblatt weist darauf hin.
 * '''Ausgelieferte Sätze''' tragen das Schloss und sind nur lesbar; ''Duplizieren…'' legt eine eigene Kopie an, ''Schloss aufheben…'' macht den Satz zu einem eigenen.
 * '''Löschen''' geht nur für einen Satz, den kein Projekt gewählt hat; sonst nennt die Verwaltung die Zahl der Projektanlagen.
+* '''Wahl an der Kältemaschine''' – gewählt wird ein Rückkühlwerk in der Gruppe ''Rückkühlung'' der Kältemaschine; die Anlage bekommt eine eigene Projektkopie ([[Programm Dokumentation/Kälteerzeugung#rueckkuehlwerk|Kälteerzeugung: Rückkühlwerk]]).
 
 == PV-Module ==
 {{Anker|pv-module}}
