@@ -928,7 +928,7 @@ in seiner neuen Fassung Teil des Migrationspfads und sinnvollerweise mit (a) zus
 
 ## 5 Entscheide 16.10.2026 zur Entscheidungsvorlage Gruppe C
 
-Der Anwender hat die 41 Punkte der Gruppe C aus Status 4.5 am 16.10.2026 im Gespräch einzeln beschieden. Die Kennung ist Nummer und Teil der Vorlage; der Bezug nennt die Statuszeile des Befunds. Die 16 umzusetzenden Aufträge stehen in Status 4.6.
+Der Anwender hat die 41 Punkte der Gruppe C aus Status 4.5 am 16.10.2026 im Gespräch einzeln beschieden. Die Kennung ist Nummer und Teil der Vorlage; der Bezug nennt die Statuszeile des Befunds. Die 16 umzusetzenden Aufträge sind umgesetzt (Status #1166); die Nachentscheide vom 17.10.2026 stehen unter der Tabelle.
 
 | Kennung | Entscheid | Weg | Bezug |
 |---|---|---|---|
@@ -953,6 +953,14 @@ Der Anwender hat die 41 Punkte der Gruppe C aus Status 4.5 am 16.10.2026 im Gesp
 | **28b** | Import legt eine eigene Vergütungszeile mit den Stammwerten an | abweichend (Empfehlung: belassen) | #360 |
 | **28c** | Klappliste der Variantenwahl in der Katalogübernahme belassen | nach Empfehlung | #363 |
 | **29b** | Herleitungszeile beim Kollektorfeld belassen | nach Empfehlung | #350 |
-| **29c** | Betriebskosten je kW und Jahr nur beim BHKW (je kW elektrisch), Wärmepumpe nicht | abweichend (Empfehlung: belassen) | #350 |
+| **29c** | Betriebskosten je kW und Jahr nur beim BHKW (je kW elektrisch), Wärmepumpe nicht — am 17.10.2026 geändert, siehe Nachentscheide | abweichend (Empfehlung: belassen) | #350 |
 | **35b** | Vermerk „seit Etappe B5“ streichen (beide Sprachen) | nach Empfehlung | #292 |
 | **Sammelzeile** | 18 als erledigt belegte Punkte bestätigt und aus Status 4.5 gestrichen: 38, 26, 9, 20a, 20b, 18, 33a, 33b, 40a, 16, 14, 41, 28a, 29a, 30, 35a, 37, 12 | nach Empfehlung | Status 4.5 |
+
+**Nachentscheide 17.10.2026** (nach der ersten Umsetzung, im Gespräch):
+
+| Kennung | Nachentscheid | Umsetzungsstand |
+|---|---|---|
+| **29c** | geändert: „alles wie vorher + BHKW“ — keine Einschränkung der Leistungsarten im Betriebsraster; Wärmepumpe und BHKW behalten ihre Leistungsarten, das BHKW bietet zusätzlich „je kW elektrisch“ (Test: 12 €/kW·a × 50 kW = 600 €/a); löst die Einschränkung „nur beim BHKW, Wärmepumpe nicht“ ab | umgesetzt #1166 |
+| **8a** | „Stamm zählt mit“: `hat.*` im Gruppenblock fragt in jeder Variantengruppe auch das Stammprojekt | umgesetzt #1166 |
+| **6b** | „Kennzahlen nachziehen“: Vorlagenfeldkatalog Fassung 26 mit den Kennzahlen `energie.hilfsstrom`, `em.co2_hilfsstrom`, `ko.stromsteuer_hilfsstrom` und `ko.stromsteuer_hilfsstrom_gesamt`; neun Vorlagen neu gebaut | umgesetzt #1166 |
