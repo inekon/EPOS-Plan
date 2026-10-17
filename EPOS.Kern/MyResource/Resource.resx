@@ -57869,5 +57869,16 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="VF_ORT_ENERGIEFLUSS" xml:space="preserve">
     <value>im Bericht tragen die Knoten ihre Jahressumme (MWh/a); die Bänder bleiben ohne Zahl, die Werte stehen hier im Zeigertext</value>
   </data>
+  <data name="EF_KN_STANDBY" xml:space="preserve">
+    <value>Standby Speichersystem</value>
+  </data>
+  <data name="EF_KK_STANDBY" xml:space="preserve">
+    <value>Standby</value>
+  </data>
+  <data name="EF_KN_ABREGELUNG" xml:space="preserve">
+    <value>abgeregelt</value>
+  </data>
+  <data name="EF_KK_ABREGELUNG" xml:space="preserve">
+    <value>abgeregelt</value>
+  </data>
 </root>
-

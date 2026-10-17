@@ -144,9 +144,15 @@ namespace WindowsFormsApplication1
         private static ErgebnisSolarthermieModel SO(VariantenDaten v) { return v?.Ergebnis?.Solarthermie; }
         private static ErgebnisPhotovoltaikModel PV(VariantenDaten v) { return v?.Ergebnis?.Photovoltaik; }
 
-        /// <summary>Die abgeregelte PV-Energie des Laufs [MWh/a] aus den Zeitreihen; 0 ohne Reihe.</summary>
+        /// <summary>
+        /// Die abgeregelte PV-Energie des Laufs [MWh/a]: die gespeicherte Jahressumme der Ergebniszeile
+        /// (<see cref="ErgebnisPhotovoltaikModel.AbregelungMwh"/>, EB-1); ein Altergebnis ohne Wert nimmt die Zeitreihe
+        /// <c>PV_ABREGELUNG</c>, ohne Reihe 0.
+        /// </summary>
         private static double AbregelungMwh(VariantenDaten v)
         {
+            double? gespeichert = PV(v)?.AbregelungMwh;
+            if (gespeichert.HasValue) return gespeichert.Value;
             double[] r = v?.Zeitreihen?.Hole(ZeitreihenSatz.PV_ABREGELUNG);
             if (r == null) return 0.0;
             double summe = 0.0;
@@ -792,8 +798,8 @@ namespace WindowsFormsApplication1
                 {
                     var p = PV(v);
                     if (p == null || p.Stromproduktion <= 0) return null;
-                    // PV3 (Welle M5): Abgeregelte Energie ist kein Eigenverbrauch. Sie steht nur in den
-                    // Zeitreihen des Laufs (PV_ABREGELUNG); ohne Reihe ist sie 0.
+                    // PV3 (Welle M5): Abgeregelte Energie ist kein Eigenverbrauch. Seit EB-1 steht sie als
+                    // Jahressumme in der Ergebniszeile; ein Altergebnis nimmt die Reihe PV_ABREGELUNG, ohne Reihe 0.
                     return (p.Stromproduktion - p.Ueberschuss - AbregelungMwh(v)) / p.Stromproduktion * 100.0;
                 }));
             // PAKET P2 (Konzept 7.4): die Temperaturen der obersten Speicherschicht. Sie

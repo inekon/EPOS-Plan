@@ -57862,5 +57862,16 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="VF_ORT_ENERGIEFLUSS" xml:space="preserve">
     <value>in the report the nodes carry their annual total (MWh/a); the bands carry no number, here the values are in the tooltip</value>
   </data>
+  <data name="EF_KN_STANDBY" xml:space="preserve">
+    <value>Storage system standby</value>
+  </data>
+  <data name="EF_KK_STANDBY" xml:space="preserve">
+    <value>Standby</value>
+  </data>
+  <data name="EF_KN_ABREGELUNG" xml:space="preserve">
+    <value>curtailed</value>
+  </data>
+  <data name="EF_KK_ABREGELUNG" xml:space="preserve">
+    <value>curtailed</value>
+  </data>
 </root>
-

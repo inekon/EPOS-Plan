@@ -99,6 +99,7 @@ namespace WindowsFormsApplication1
             StelleKuehlSpaltenSicher();     // Ergebnisspalten des Kuehlkanals (Schritt 110, KU-S4)
             StelleKaelteerzeugerSpaltenSicher(); // Kaelteseite der Waermepumpe (Schritt 119, E34)
             bool gebaeudeTabelle = ErgebnisGebaeudeSchema.Vorhanden();   // E30 - vor der Transaktion gefragt
+            bool reihen = ErgebnisreihenSchema.Lesbar();                 // EB-1 - die drei Spalten des Schritts 239
             // EQ1: die Erdreichpruefung - nur, wo der Schemaschritt der Katalogfassung die Tabelle
             // angelegt hat; ebenso vor der Transaktion gefragt.
             bool erdreichTabelle = ErdreichErgebnisSpeicher.Vorhanden();
@@ -592,8 +593,9 @@ namespace WindowsFormsApplication1
                             SchemaKatalog.SPALTE_DECKUNG_HEIZUNG + ", " +
                             SchemaKatalog.SPALTE_DECKUNG_BRAUCHWASSER + ", " +
                             SchemaKatalog.SPALTE_DECKUNG_PROZESS + ", " +
-                            KuehlungSchema.SPALTE_DECKUNG_KUEHLUNG + ") " +
-                            "VALUES (?,?,?,?,?,?, ?,?,?,?, ?,?,?, ?,?,?,?,?,?, ?,?,?, ?, ?,?,?, ?)";
+                            KuehlungSchema.SPALTE_DECKUNG_KUEHLUNG +
+                            (reihen ? ", " + ErgebnisreihenSchema.SPALTE_BHKW_STROMEINSPEISUNG : "") + ") " +
+                            "VALUES (?,?,?,?,?,?, ?,?,?,?, ?,?,?, ?,?,?,?,?,?, ?,?,?, ?, ?,?,?, ?" + (reihen ? ", ?" : "") + ")";
                         {
                             List<DbParam> p = new List<DbParam>();
                             p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = bId });
@@ -621,6 +623,8 @@ namespace WindowsFormsApplication1
                             // ETAPPE E2: leistungsgewichtete elektrische Vollbenutzungsstunden.
                             p.Add(new DbParam("@a21", DbParamTyp.Double) { Wert = R(m.BHKW.VbhElektrisch) });
                             KanalParameter(p, m.BHKW.Deckung_Kanal, kaelteErhoben);
+                            // EB-1: die Einspeisung des Laufs [MWh/a]; NULL = nicht erhoben.
+                            if (reihen) p.Add(RN("@a22", m.BHKW.StromeinspeisungMwh));
                             v.Ausfuehren(sql, p.ToArray());
                         }
 
@@ -870,8 +874,9 @@ namespace WindowsFormsApplication1
                     {
                         int pId = NextId(v, TAB_PV);
                         string sql = "INSERT INTO " + TAB_PV + " (" +
-                            "ID, ID_Ergebnis, Strombedarf, Reststrombedarf, Stromproduktion, Strombedarfsdeckung, Ueberschuss, MaxSolareLeistung) " +
-                            "VALUES (?,?,?,?,?,?,?,?)";
+                            "ID, ID_Ergebnis, Strombedarf, Reststrombedarf, Stromproduktion, Strombedarfsdeckung, Ueberschuss, MaxSolareLeistung" +
+                            (reihen ? ", " + ErgebnisreihenSchema.SPALTE_PV_ABREGELUNG : "") + ") " +
+                            "VALUES (?,?,?,?,?,?,?,?" + (reihen ? ", ?" : "") + ")";
                         {
                             List<DbParam> p = new List<DbParam>();
                             p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = pId });
@@ -882,6 +887,8 @@ namespace WindowsFormsApplication1
                             p.Add(new DbParam("@a4", DbParamTyp.Double) { Wert = R(m.Photovoltaik.Strombedarfsdeckung) });
                             p.Add(new DbParam("@a5", DbParamTyp.Double) { Wert = R(m.Photovoltaik.Ueberschuss) });
                             p.Add(new DbParam("@a6", DbParamTyp.Double) { Wert = R(m.Photovoltaik.MaxSolareLeistung) });
+                            // EB-1: die Abregelung an der Einspeisegrenze [MWh/a]; NULL = nicht erhoben.
+                            if (reihen) p.Add(RN("@a7", m.Photovoltaik.AbregelungMwh));
                             v.Ausfuehren(sql, p.ToArray());
                         }
 
@@ -997,9 +1004,10 @@ namespace WindowsFormsApplication1
                             "Ertrag_Bezugsersparnis, Ertrag_Verguetung_Entgangen, Ertrag_Netzerloes, " +
                             "Kosten_Ladung, Ertrag_Leistungspreis, Verschleisskosten, " +
                             "Investition, Annuitaet, Jahresueberschuss, Ertrag_Jahr1, Ertrag_Aequivalent, " +
-                            "Amortisation_Statisch, Amortisation_Dynamisch, Kapitalwert, Preisversion) " +
+                            "Amortisation_Statisch, Amortisation_Dynamisch, Kapitalwert, Preisversion" +
+                            (reihen ? ", " + ErgebnisreihenSchema.SPALTE_SPEICHER_EIGENVERBRAUCH : "") + ") " +
                             "VALUES (?,?,?,?,?,?, ?,?,?,?,?,?, ?,?,?,?, ?,?, ?,?,?,?, ?,?,?, " +
-                            "?,?,?,?,?,?, ?,?,?,?,?, ?,?,?,?)";
+                            "?,?,?,?,?,?, ?,?,?,?,?, ?,?,?,?" + (reihen ? ", ?" : "") + ")";
                         foreach (ErgebnisStromspeicherModel es in m.Stromspeicher)
                         {
                             {
@@ -1047,6 +1055,8 @@ namespace WindowsFormsApplication1
                                 p.Add(new DbParam("@w13", DbParamTyp.Double) { Wert = R(es.Amortisation_Dynamisch) });
                                 p.Add(new DbParam("@w14", DbParamTyp.Double) { Wert = R(es.Kapitalwert) });
                                 p.Add(new DbParam("@w15", DbParamTyp.VarWChar) { Wert = (object)(es.Preisversion ?? "") });
+                                // EB-1: der Standby des Speichersystems [kWh/a]; NULL = nicht erhoben.
+                                if (reihen) p.Add(RN("@e13", es.EigenverbrauchSystemKwh));
                                 v.Ausfuehren(sqlS, p.ToArray());
                             }
                         }
@@ -1421,6 +1431,7 @@ namespace WindowsFormsApplication1
                 b.Waermeproduktion = D(rb, "Waermeproduktion");
                 b.Waermeueberschuss = D(rb, "Waermeueberschuss");
                 b.Stromproduktion = D(rb, "Stromproduktion");
+                b.StromeinspeisungMwh = DN(rb, ErgebnisreihenSchema.SPALTE_BHKW_STROMEINSPEISUNG);   // EB-1, NULL = nicht erhoben
                 b.Betriebsstunden_Gesamt = D(rb, "Betriebsstunden_Gesamt");
                 b.Betriebsstunden_Durchschnitt = D(rb, "Betriebsstunden_Durchschnitt");
                 b.Waermebedarfsdeckung = D(rb, "Waermebedarfsdeckung");
@@ -1566,6 +1577,7 @@ namespace WindowsFormsApplication1
                 p.Strombedarfsdeckung = D(rp, "Strombedarfsdeckung");
                 p.Ueberschuss = D(rp, "Ueberschuss");
                 p.MaxSolareLeistung = D(rp, "MaxSolareLeistung");
+                p.AbregelungMwh = DN(rp, ErgebnisreihenSchema.SPALTE_PV_ABREGELUNG);              // EB-1, NULL = nicht erhoben
 
                 DataTable dmodp = DataRepository.GetDataTable(
                     "SELECT * FROM " + TAB_PV_MODUL + " WHERE ID_ErgebnisPhotovoltaik = ? ORDER BY ID",
@@ -1655,6 +1667,7 @@ namespace WindowsFormsApplication1
                     es.Einspeisung_Ohne = D(res, "Einspeisung_Ohne");
                     es.Eigenverbrauchsquote = D(res, "Eigenverbrauchsquote");
                     es.Autarkiegrad = D(res, "Autarkiegrad");
+                    es.EigenverbrauchSystemKwh = DN(res, ErgebnisreihenSchema.SPALTE_SPEICHER_EIGENVERBRAUCH);   // EB-1, NULL = nicht erhoben
 
                     es.Vollzyklen = D(res, "Vollzyklen");
                     es.SoC_Min = D(res, "SoC_Min");
@@ -2441,6 +2454,10 @@ namespace WindowsFormsApplication1
         // Rundet Ergebniswerte auf max. 2 Nachkommastellen (kaufmaennisch).
         private static double R(double v)
         { return Math.Round(v, 2, MidpointRounding.AwayFromZero); }
+
+        /// <summary>EB-1: ein nullbarer Zahlenwert, kaufmännisch gerundet wie <see cref="R"/>; <c>null</c> wird NULL (nicht erhoben).</summary>
+        private static DbParam RN(string name, double? v)
+        { return new DbParam(name, DbParamTyp.Double) { Wert = v.HasValue ? (object)R(v.Value) : DBNull.Value }; }
 
         // ---------------------------------------------------------------------------
         // PAKET E1 (Konzept 4.4) - die drei Kanalspalten, einmal geschrieben

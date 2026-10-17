@@ -25070,6 +25070,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die abgeregelt ähnelt.
+        /// </summary>
+        public static string EF_KK_ABREGELUNG {
+            get {
+                return ResourceManager.GetString("EF_KK_ABREGELUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die BHKW ähnelt.
         /// </summary>
         public static string EF_KK_BHKW {
@@ -25277,6 +25286,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standby ähnelt.
+        /// </summary>
+        public static string EF_KK_STANDBY {
+            get {
+                return ResourceManager.GetString("EF_KK_STANDBY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strom ähnelt.
         /// </summary>
         public static string EF_KK_STROM {
@@ -25390,6 +25408,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string EF_KK_WP_KUEHLEN {
             get {
                 return ResourceManager.GetString("EF_KK_WP_KUEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die abgeregelt ähnelt.
+        /// </summary>
+        public static string EF_KN_ABREGELUNG {
+            get {
+                return ResourceManager.GetString("EF_KN_ABREGELUNG", resourceCulture);
             }
         }
         
@@ -25597,6 +25624,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string EF_KN_SPLIT {
             get {
                 return ResourceManager.GetString("EF_KN_SPLIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standby Speichersystem ähnelt.
+        /// </summary>
+        public static string EF_KN_STANDBY {
+            get {
+                return ResourceManager.GetString("EF_KN_STANDBY", resourceCulture);
             }
         }
         
