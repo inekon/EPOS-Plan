@@ -58346,4 +58346,61 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="SIMERG_TIP_SPEICHERVERLUSTE_SPK" xml:space="preserve">
     <value>Wärme der Kessel, die in Speichern verloren geht oder am Jahresende noch darin steht, also keinen Bedarf deckt. Gerechnet als Wärmeproduktion minus Nutzwärme.</value>
   </data>
+  <data name="ZPG_GRP_METHODEN" xml:space="preserve">
+    <value>Methoden</value>
+  </data>
+  <data name="ZPG_MTH_BEDARF" xml:space="preserve">
+    <value>Bedarf</value>
+  </data>
+  <data name="ZPG_MTH_JAHRESREIHE" xml:space="preserve">
+    <value>Jahresreihe</value>
+  </data>
+  <data name="ZPG_MTH_ZIRKULATION" xml:space="preserve">
+    <value>Zirkulation und Anlage</value>
+  </data>
+  <data name="ZPG_MTH_AUSLEGUNG" xml:space="preserve">
+    <value>Auslegung</value>
+  </data>
+  <data name="ZPG_WIRKUNG_SUMME" xml:space="preserve">
+    <value>Summe</value>
+  </data>
+  <data name="ZPG_WIRKUNG_VERTEILUNG" xml:space="preserve">
+    <value>Verteilung</value>
+  </data>
+  <data name="ZPG_WIRKUNG_JAHRESREIHE" xml:space="preserve">
+    <value>Jahresreihe</value>
+  </data>
+  <data name="ZPG_WIRKUNG_SIMULATION" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="ZPG_WIRKUNG_AUSLEGUNG" xml:space="preserve">
+    <value>nur Auslegung</value>
+  </data>
+  <data name="ZPG_WIRKUNG_TITEL" xml:space="preserve">
+    <value>Wirkt auf: {0}</value>
+  </data>
+  <data name="ZPG_MTH_SATZ_BEDARF" xml:space="preserve">
+    <value>Belegung und Tagesbedarf bestimmen, wie viel Warmwasser der Bereich im Jahr zapft – sie ändern die Jahressumme.</value>
+  </data>
+  <data name="ZPG_MTH_SATZ_KALENDER" xml:space="preserve">
+    <value>Der Kalender legt Werktage, Ruhetage und Ferien fest und verteilt den Jahresbedarf um – die Summe bleibt gleich.</value>
+  </data>
+  <data name="ZPG_MTH_SATZ_MESSWERT" xml:space="preserve">
+    <value>Ein Jahresmesswert kalibriert den Bedarf des Bereichs auf die gemessene Menge – er ändert die Summe, nicht die Verteilung.</value>
+  </data>
+  <data name="ZPG_MTH_SATZ_JAHRESREIHE" xml:space="preserve">
+    <value>Der Rechenweg bildet aus dem Tagesbedarf die Stundenreihe des Jahres; Tagesgang, Auslastung und Kaltwasser formen sie, die Summe bleibt.</value>
+  </data>
+  <data name="ZPG_MTH_SATZ_ZIRKULATION" xml:space="preserve">
+    <value>Zirkulation und Leitungsinhalt gehen als Verlust in die Simulation ein; die Zapfmenge ändern sie nicht.</value>
+  </data>
+  <data name="ZPG_MTH_SATZ_AUSLEGUNG" xml:space="preserve">
+    <value>Topologie, Ladeleistung, Ladefenster und Speichertemperatur wirken allein auf die Auslegung von Speicher und Station, nicht auf die Simulation.</value>
+  </data>
+  <data name="ZPG_OPT_NORM_JAHRESGANG" xml:space="preserve">
+    <value>Norm-Jahresgang</value>
+  </data>
+  <data name="ZPG_OPT_TYPTAGE" xml:space="preserve">
+    <value>Typtage VDI 4655</value>
+  </data>
 </root>

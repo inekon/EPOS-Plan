@@ -58339,4 +58339,61 @@ Replace these holidays with the project default? With “No” these zones remai
   <data name="SIMERG_TIP_SPEICHERVERLUSTE_SPK" xml:space="preserve">
     <value>Boiler heat that is lost in storage or still stored at the end of the year and so covers no demand. Calculated as heat production minus useful heat.</value>
   </data>
+  <data name="ZPG_GRP_METHODEN" xml:space="preserve">
+    <value>Methods</value>
+  </data>
+  <data name="ZPG_MTH_BEDARF" xml:space="preserve">
+    <value>Demand</value>
+  </data>
+  <data name="ZPG_MTH_JAHRESREIHE" xml:space="preserve">
+    <value>Annual series</value>
+  </data>
+  <data name="ZPG_MTH_ZIRKULATION" xml:space="preserve">
+    <value>Circulation and system</value>
+  </data>
+  <data name="ZPG_MTH_AUSLEGUNG" xml:space="preserve">
+    <value>Sizing</value>
+  </data>
+  <data name="ZPG_WIRKUNG_SUMME" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="ZPG_WIRKUNG_VERTEILUNG" xml:space="preserve">
+    <value>Distribution</value>
+  </data>
+  <data name="ZPG_WIRKUNG_JAHRESREIHE" xml:space="preserve">
+    <value>Annual series</value>
+  </data>
+  <data name="ZPG_WIRKUNG_SIMULATION" xml:space="preserve">
+    <value>Simulation</value>
+  </data>
+  <data name="ZPG_WIRKUNG_AUSLEGUNG" xml:space="preserve">
+    <value>sizing only</value>
+  </data>
+  <data name="ZPG_WIRKUNG_TITEL" xml:space="preserve">
+    <value>Affects: {0}</value>
+  </data>
+  <data name="ZPG_MTH_SATZ_BEDARF" xml:space="preserve">
+    <value>Occupancy and daily demand determine how much hot water the area draws per year – they change the annual total.</value>
+  </data>
+  <data name="ZPG_MTH_SATZ_KALENDER" xml:space="preserve">
+    <value>The calendar sets working days, rest days and holidays and redistributes the annual demand – the total stays the same.</value>
+  </data>
+  <data name="ZPG_MTH_SATZ_MESSWERT" xml:space="preserve">
+    <value>An annual measured value calibrates the area's demand to the measured quantity – it changes the total, not the distribution.</value>
+  </data>
+  <data name="ZPG_MTH_SATZ_JAHRESREIHE" xml:space="preserve">
+    <value>The method turns the daily demand into the hourly series of the year; daily profile, utilisation and cold water shape it, the total stays.</value>
+  </data>
+  <data name="ZPG_MTH_SATZ_ZIRKULATION" xml:space="preserve">
+    <value>Circulation and pipe content enter the simulation as losses; they do not change the draw-off quantity.</value>
+  </data>
+  <data name="ZPG_MTH_SATZ_AUSLEGUNG" xml:space="preserve">
+    <value>Topology, charging power, charging window and storage temperature only affect the sizing of storage and station, not the simulation.</value>
+  </data>
+  <data name="ZPG_OPT_NORM_JAHRESGANG" xml:space="preserve">
+    <value>Standard annual profile</value>
+  </data>
+  <data name="ZPG_OPT_TYPTAGE" xml:space="preserve">
+    <value>Type days VDI 4655</value>
+  </data>
 </root>

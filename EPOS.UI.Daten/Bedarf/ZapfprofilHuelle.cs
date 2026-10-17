@@ -2307,6 +2307,25 @@ namespace WindowsFormsApplication1
             t.ProfilGrundFehleingabe = Text_("ZPG_PS_GRUND_FEHLEINGABE", t.ProfilGrundFehleingabe);
             t.ProfilHinweisWegGenerator = Text_("ZPG_PS_HINWEIS_WEG_GENERATOR", t.ProfilHinweisWegGenerator);
             t.ProfilHinweisWegBestand = Text_("ZPG_PS_HINWEIS_WEG_BESTAND", t.ProfilHinweisWegBestand);
+            t.GruppeMethoden = Text_("ZPG_GRP_METHODEN", t.GruppeMethoden);
+            t.MethodeBedarf = Text_("ZPG_MTH_BEDARF", t.MethodeBedarf);
+            t.MethodeJahresreihe = Text_("ZPG_MTH_JAHRESREIHE", t.MethodeJahresreihe);
+            t.MethodeZirkulation = Text_("ZPG_MTH_ZIRKULATION", t.MethodeZirkulation);
+            t.MethodeAuslegung = Text_("ZPG_MTH_AUSLEGUNG", t.MethodeAuslegung);
+            t.WirkungSumme = Text_("ZPG_WIRKUNG_SUMME", t.WirkungSumme);
+            t.WirkungVerteilung = Text_("ZPG_WIRKUNG_VERTEILUNG", t.WirkungVerteilung);
+            t.WirkungJahresreihe = Text_("ZPG_WIRKUNG_JAHRESREIHE", t.WirkungJahresreihe);
+            t.WirkungSimulation = Text_("ZPG_WIRKUNG_SIMULATION", t.WirkungSimulation);
+            t.WirkungAuslegung = Text_("ZPG_WIRKUNG_AUSLEGUNG", t.WirkungAuslegung);
+            t.WirkungTitel = Text_("ZPG_WIRKUNG_TITEL", t.WirkungTitel);
+            t.SatzBedarf = Text_("ZPG_MTH_SATZ_BEDARF", t.SatzBedarf);
+            t.SatzKalender = Text_("ZPG_MTH_SATZ_KALENDER", t.SatzKalender);
+            t.SatzMesswert = Text_("ZPG_MTH_SATZ_MESSWERT", t.SatzMesswert);
+            t.SatzJahresreihe = Text_("ZPG_MTH_SATZ_JAHRESREIHE", t.SatzJahresreihe);
+            t.SatzZirkulation = Text_("ZPG_MTH_SATZ_ZIRKULATION", t.SatzZirkulation);
+            t.SatzAuslegung = Text_("ZPG_MTH_SATZ_AUSLEGUNG", t.SatzAuslegung);
+            t.OptionNormJahresgang = Text_("ZPG_OPT_NORM_JAHRESGANG", t.OptionNormJahresgang);
+            t.OptionTyptage = Text_("ZPG_OPT_TYPTAGE", t.OptionTyptage);
             return t;
         }
 

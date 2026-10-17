@@ -269,9 +269,8 @@
                                                 }
                                                 @if (AbExperte)
                                                 {
-                                                    @* Die Spalten Topologie, Anteil und Rechenweg der Zonenliste stehen hier, bis sie in
-                                                       W9 in die Methoden wandern (ZC5): der Block bleibt fuenfspaltig. *@
-                                                    <p class="epos-leisezeile epos-zapfprofil-bereichkennzeile">@Bereichkennzeile(index, z)</p>
+                                                    @* Anteil und Rechenweg der Zeile; die Topologie steht in der Methode „Auslegung" (ZC5). *@
+                                                    <p class="epos-leisezeile epos-zapfprofil-bereichkennzeile">@Bereichkennzeile(index)</p>
                                                 }
                                                 @* ZB2: Eine unvollstaendige Zone nennt leise ihren naechsten Schritt - den ersten Satz der
                                                    Pflichtpruefung des OK; ihre Ablehnung aus der Vorschau steht dann nicht als Warnung da. *@
@@ -322,28 +321,33 @@
                 </KindInhalt>
             </Gruppenkopf>
 
-            @if (AbExperte && Gewaehlte is { } zone)
+            @* ZC5: die METHODEN als Bereiche (Stufe Experte) - sechs Klappgruppen unter dem Block der Bereiche, jede mit
+               Wirkungsmarke im Kopf, einem Satz, was sie tut, und der Zusammenfassung zugeklappt. Felder je Bereich
+               stehen unter der Marke des markierten Bereichs, Felder je Projekt darunter unter „Gebäude und Anlage".
+               Welche Gruppe offen steht, haelt der Dialog (_offeneKarten): Der Stand bleibt beim Bereichswechsel. *@
+            @if (AbExperte)
             {
-                ZapfprofilNutzungsartDaten? art = Nutzungsart(zone.IdNutzungsart);
-                ZapfprofilZonenangabenDaten a = AngabenVon(zone);
-                @* ZB3: die Karten der markierten Zone (Stufe Experte) klappen auf und nennen zugeklappt ihre
-                   wirksamen Werte. Welche Karte offen steht, haelt der Dialog (_karten), nicht die Karte: Der
-                   Stand bleibt beim Zonenwechsel. *@
-                <Gruppenkopf Titel="@Format(Texte.GruppeZone, zone.Name)" Summe="@ZonenKopfSumme">
+                ZapfprofilZoneDaten? zone = Gewaehlte;
+                ZapfprofilNutzungsartDaten? art = zone is null ? null : Nutzungsart(zone.IdNutzungsart);
+                ZapfprofilZonenangabenDaten a = zone is null ? new ZapfprofilZonenangabenDaten() : AngabenVon(zone);
+                <Gruppenkopf Titel="@Texte.GruppeMethoden" Summe="@(zone is null ? "" : BereichMarke(zone))">
                     <KindInhalt>
-                        <div class="epos-zapfprofil-zonenblock" @key="_wahl">
+                        <div class="epos-zapfprofil-methoden" @key="_wahl">
 
-                        @if (AbExperte)
+                <Klappgruppe Titel="@Texte.MethodeBedarf" Zusatz="@BedarfZusammenfassung(zone, art, a)"
+                             Klasse="epos-zapfprofil-karte epos-zapfprofil-methode epos-zapfprofil-karte--bedarf"
+                             Offen="@KarteOffen(METHODE_BEDARF)" OffenChanged="o => KarteSetzen(METHODE_BEDARF, o)">
+                    <Kopfhandlungen>
+                        @Wirkungsmarke(Texte.WirkungSumme)
+                        <InfoKnopf Schluessel="@HILFE_BELEGUNG" StandardKurztext="@Texte.MethodeBedarf"
+                                   Dialogname="@Texte.Titel" MitAssistent="false" />
+                    </Kopfhandlungen>
+                    <ChildContent>
+                        <p class="epos-leisezeile epos-zapfprofil-methodensatz">@Texte.SatzBedarf</p>
+                        @if (zone is not null)
                         {
-                            @* ---- Belegung (5.3, Stufe Experte) ---------------------------------------- *@
-                            <Klappgruppe Titel="@Texte.GruppeBelegung" Zusatz="@BelegungZusammenfassung(zone, art, a)"
-                                         Klasse="epos-zapfprofil-karte epos-zapfprofil-karte--belegung"
-                                         Offen="@KarteOffen(KARTE_BELEGUNG)" OffenChanged="o => KarteSetzen(KARTE_BELEGUNG, o)">
-                                <Kopfhandlungen>
-                                    <InfoKnopf Schluessel="@HILFE_BELEGUNG" StandardKurztext="@Texte.GruppeBelegung"
-                                               Dialogname="@Texte.Titel" MitAssistent="false" />
-                                </Kopfhandlungen>
-                                <ChildContent>
+                            <section class="epos-zapfprofil-methodenteil epos-zapfprofil-methodenteil--bereich" aria-label="@BereichMarke(zone)">
+                                <p class="epos-zapfprofil-teilmarke">@BereichMarke(zone)</p>
                                     @if (art?.Wohnen == true)
                                     {
                                         <p class="epos-zapfprofil-untertitel">@Texte.LabelWohnungstabelle</p>
@@ -415,8 +419,8 @@
                                             <p class="epos-leisezeile epos-zapfprofil-ausstattung-fehlt">@Texte.HinweisAusstattungOhneKatalog</p>
                                         }
                                     }
-                                    <Formularraster>
-                                        <KindInhalt>
+                                <Formularraster>
+                                    <KindInhalt>
                                             <Zahlenfeld Bezeichnung="@Texte.LabelPersonenJeWe" Feldname="@Texte.LabelPersonenJeWe"
                                                         Einheit="@Texte.EinheitPersonenJeWe" Min="0" Wert="@a.PersonenJeWe"
                                                         Titel="@Texte.HinweisPersonenJeWe"
@@ -427,25 +431,38 @@
                                                         Titel="@Format(Texte.HinweisWohnflaecheJeWe, Wert(Daten.Vorgaben.WohnflaecheJeWeM2))"
                                                         WertChanged="w => Angabe(zone, x => x.WohnflaecheJeWeM2 = w)"
                                                         FehlerZustand="f => FeldMelden(f, ZapfprofilStufe.Experte)" />
-                                            <Auswahlfeld Bezeichnung="@Texte.LabelTopologie" Eintraege="@Topologien" Titel="@Texte.HinweisTopologie"
-                                                         Auswahl="@((int)a.Topologie)" AuswahlChanged="id => TopologieSetzen(zone, id)" />
-                                            <Optionsgruppe Bezeichnung="@Texte.LabelZirkulationVorhanden" Eintraege="@JaNein" Waagerecht="true"
-                                                           Titel="@Texte.HinweisZirkulationVorhanden"
-                                                           Auswahl="@(a.Zirkulation ? JA : NEIN)"
-                                                           AuswahlChanged="id => Angabe(zone, x => x.Zirkulation = id != NEIN)" />
-                                        </KindInhalt>
-                                    </Formularraster>
-                                </ChildContent>
-                            </Klappgruppe>
+                                                <Zahlenfeld Bezeichnung="@Texte.LabelBedarfSpez" Feldname="@Texte.LabelBedarfSpez"
+                                                            Einheit="@BedarfEinheit(art)" Min="0" Wert="@a.BedarfSpezKwhJeEinheitTag" Platzhalter="@Vorgabe(Katalogbedarf(zone, art))"
+                                                            Titel="@Format(Texte.HinweisBedarfSpez, Wert(Katalogbedarf(zone, art)), art?.Einheit ?? "")"
+                                                            WertChanged="w => Angabe(zone, x => x.BedarfSpezKwhJeEinheitTag = w)"
+                                                            FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte)" />
+                                                <Zahlenfeld Bezeichnung="@Texte.LabelZapftemperatur" Feldname="@Texte.LabelZapftemperatur"
+                                                            Einheit="°C" Wert="@a.ZapftemperaturC" Platzhalter="@Vorgabe(art?.ZapftemperaturC)"
+                                                            Titel="@Format(Texte.HinweisZapftemperatur, Wert(art?.ZapftemperaturC))"
+                                                            WertChanged="w => Angabe(zone, x => x.ZapftemperaturC = w)"
+                                                            FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte)" />
+                                    </KindInhalt>
+                                </Formularraster>
+                                    @Einwertfeld(new Einwert(Texte.LabelTagesbedarf, "kWh/d", a.TagesbedarfAuto ? null : a.TagesbedarfManuellKwh,
+                                                             Tagesbedarfshilfe, w => TagesbedarfSetzen(zone, w),
+                                                             v => TagesbedarfUebernehmen(zone, v), true, "", ""))
+                            </section>
+                        }
+                    </ChildContent>
+                </Klappgruppe>
 
-                            @* ZB5: der Kalender der Zone als aufklappbare Karte wie im Gebaeudedialog. Zugeklappt nennt
-                               die Kopfzeile die wirksame Lage; aufgeklappt stehen die Quelle, bei gebundenem Gebaeude
-                               dessen Wochenende, Feiertage und Ferien (nur Anzeige, gelesen beim Oeffnen), die eigenen
-                               Ferien der Zone als Liste und das Jahresraster aus dem Rechenweg der Vorschau. *@
-                            <Klappgruppe Titel="@Texte.LabelKalender" Zusatz="@KalenderZusammenfassung(art, a)"
-                                         Klasse="epos-zapfprofil-karte epos-zapfprofil-karte--kalender epos-zapfprofil-kalender"
-                                         Offen="@KarteOffen(KARTE_KALENDER)" OffenChanged="o => KarteSetzen(KARTE_KALENDER, o)">
-                                <ChildContent>
+                <Klappgruppe Titel="@Texte.LabelKalender" Zusatz="@KalenderZusammenfassung(art, a)"
+                             Klasse="epos-zapfprofil-karte epos-zapfprofil-methode epos-zapfprofil-karte--kalender"
+                             Offen="@KarteOffen(METHODE_KALENDER)" OffenChanged="o => KarteSetzen(METHODE_KALENDER, o)">
+                    <Kopfhandlungen>
+                        @Wirkungsmarke(Texte.WirkungVerteilung)
+                    </Kopfhandlungen>
+                    <ChildContent>
+                        <p class="epos-leisezeile epos-zapfprofil-methodensatz">@Texte.SatzKalender</p>
+                        @if (zone is not null)
+                        {
+                            <section class="epos-zapfprofil-methodenteil epos-zapfprofil-methodenteil--bereich" aria-label="@BereichMarke(zone)">
+                                <p class="epos-zapfprofil-teilmarke">@BereichMarke(zone)</p>
                                     @{
                                         IReadOnlyList<(int Id, string Text)> quellen = Kalenderwahl(art, a);
                                     }
@@ -543,14 +560,24 @@
                                             <p class="epos-leisezeile epos-zapfprofil-jahresraster-ohne">@Texte.HinweisJahresrasterOhne</p>
                                         }
                                     </section>
-                                </ChildContent>
-                            </Klappgruppe>
+                                @* W9b: hier folgt die Zeile der Tagtypen (ZC4 (a)). *@
+                            </section>
+                        }
+                    </ChildContent>
+                </Klappgruppe>
 
-                            @* ---- Messwert der Zone (Stufe Experte, Z5: Kalibrierung) -------------------- *@
-                            <Klappgruppe Titel="@Texte.KarteMesswert" Zusatz="@MesswertZusammenfassung(a)"
-                                         Klasse="epos-zapfprofil-karte epos-zapfprofil-karte--messwert"
-                                         Offen="@KarteOffen(KARTE_MESSWERT)" OffenChanged="o => KarteSetzen(KARTE_MESSWERT, o)">
-                                <ChildContent>
+                <Klappgruppe Titel="@Texte.KarteMesswert" Zusatz="@MesswertZusammenfassung(a)"
+                             Klasse="epos-zapfprofil-karte epos-zapfprofil-methode epos-zapfprofil-karte--messwert"
+                             Offen="@KarteOffen(METHODE_MESSWERT)" OffenChanged="o => KarteSetzen(METHODE_MESSWERT, o)">
+                    <Kopfhandlungen>
+                        @Wirkungsmarke(Texte.WirkungSumme)
+                    </Kopfhandlungen>
+                    <ChildContent>
+                        <p class="epos-leisezeile epos-zapfprofil-methodensatz">@Texte.SatzMesswert</p>
+                        @if (zone is not null)
+                        {
+                            <section class="epos-zapfprofil-methodenteil epos-zapfprofil-methodenteil--bereich" aria-label="@BereichMarke(zone)">
+                                <p class="epos-zapfprofil-teilmarke">@BereichMarke(zone)</p>
                                     <Formularraster>
                                         <KindInhalt>
                                             <Zahlenfeld Bezeichnung="@Texte.LabelJahresmesswert" Feldname="@Texte.LabelJahresmesswert"
@@ -605,47 +632,27 @@
                                             <p class="epos-leisezeile epos-zapfprofil-kalibrierstatus" role="status">@_kalibrierstatus</p>
                                         }
                                     }
-                                </ChildContent>
-                            </Klappgruppe>
+                            </section>
+                        }
+                    </ChildContent>
+                </Klappgruppe>
 
-                            @* ---- Tagesbedarf der Zone (ZB4 (b): EIN Feld - leer = Vorschlag, ein Wert = manuell) ---- *@
-                            <Klappgruppe Titel="@Texte.LabelTagesbedarf" Zusatz="@TagesbedarfZusammenfassung(a)"
-                                         Klasse="epos-zapfprofil-karte epos-zapfprofil-karte--tagesbedarf"
-                                         Offen="@KarteOffen(KARTE_TAGESBEDARF)" OffenChanged="o => KarteSetzen(KARTE_TAGESBEDARF, o)">
-                                <Kopfhandlungen>
-                                    <InfoKnopf Schluessel="@HILFE_SCHAETZHILFEN" StandardKurztext="@Texte.LabelTagesbedarf"
-                                               Dialogname="@Texte.Titel" MitAssistent="false" />
-                                </Kopfhandlungen>
-                                <ChildContent>
-                                    @Einwertfeld(new Einwert(Texte.LabelTagesbedarf, "kWh/d", a.TagesbedarfAuto ? null : a.TagesbedarfManuellKwh,
-                                                             Tagesbedarfshilfe, w => TagesbedarfSetzen(zone, w),
-                                                             v => TagesbedarfUebernehmen(zone, v), true, "", ""))
-                                </ChildContent>
-                            </Klappgruppe>
-
-                            @* ---- Fachwerte der Zone (5.3, Stufe Experte) -------------------------------------- *@
-                            @if (_stufe == ZapfprofilStufe.Experte)
-                            {
-                                <Klappgruppe Titel="@Texte.GruppeFachwerte" Zusatz="@FachwerteZusammenfassung(a)"
-                                             Klasse="epos-zapfprofil-karte epos-zapfprofil-karte--fachwerte"
-                                             Offen="@KarteOffen(KARTE_FACHWERTE)" OffenChanged="o => KarteSetzen(KARTE_FACHWERTE, o)">
-                                    <Kopfhandlungen>
-                                        <InfoKnopf Schluessel="@HILFE_FACHWERTE" StandardKurztext="@Texte.GruppeFachwerte"
-                                                   Dialogname="@Texte.Titel" MitAssistent="false" />
-                                    </Kopfhandlungen>
-                                    <ChildContent>
-                                        <Formularraster>
-                                            <KindInhalt>
-                                                <Zahlenfeld Bezeichnung="@Texte.LabelBedarfSpez" Feldname="@Texte.LabelBedarfSpez"
-                                                            Einheit="@BedarfEinheit(art)" Min="0" Wert="@a.BedarfSpezKwhJeEinheitTag" Platzhalter="@Vorgabe(Katalogbedarf(zone, art))"
-                                                            Titel="@Format(Texte.HinweisBedarfSpez, Wert(Katalogbedarf(zone, art)), art?.Einheit ?? "")"
-                                                            WertChanged="w => Angabe(zone, x => x.BedarfSpezKwhJeEinheitTag = w)"
-                                                            FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte)" />
-                                                <Zahlenfeld Bezeichnung="@Texte.LabelZapftemperatur" Feldname="@Texte.LabelZapftemperatur"
-                                                            Einheit="°C" Wert="@a.ZapftemperaturC" Platzhalter="@Vorgabe(art?.ZapftemperaturC)"
-                                                            Titel="@Format(Texte.HinweisZapftemperatur, Wert(art?.ZapftemperaturC))"
-                                                            WertChanged="w => Angabe(zone, x => x.ZapftemperaturC = w)"
-                                                            FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte)" />
+                <Klappgruppe Titel="@Texte.MethodeJahresreihe" Zusatz="@JahresreiheZusammenfassung(a)"
+                             Klasse="epos-zapfprofil-karte epos-zapfprofil-methode epos-zapfprofil-karte--jahresreihe"
+                             Offen="@KarteOffen(METHODE_JAHRESREIHE)" OffenChanged="o => KarteSetzen(METHODE_JAHRESREIHE, o)">
+                    <Kopfhandlungen>
+                        @Wirkungsmarke(Texte.WirkungJahresreihe)
+                        <InfoKnopf Schluessel="@HILFE_TYPTAGE" StandardKurztext="@Texte.MethodeJahresreihe"
+                                   Dialogname="@Texte.Titel" MitAssistent="false" />
+                    </Kopfhandlungen>
+                    <ChildContent>
+                        <p class="epos-leisezeile epos-zapfprofil-methodensatz">@Texte.SatzJahresreihe</p>
+                        @if (zone is not null)
+                        {
+                            <section class="epos-zapfprofil-methodenteil epos-zapfprofil-methodenteil--bereich" aria-label="@BereichMarke(zone)">
+                                <p class="epos-zapfprofil-teilmarke">@BereichMarke(zone)</p>
+                                <Formularraster>
+                                    <KindInhalt>
                                                 <Zahlenfeld Bezeichnung="@Texte.LabelKaltwasserMittel" Feldname="@Texte.LabelKaltwasserMittel"
                                                             Einheit="°C" Wert="@a.KaltwasserMittelC" Platzhalter="@Vorgabe(Daten.Vorgaben.KaltwasserMittelC)"
                                                             Titel="@Format(Texte.HinweisKaltwasser, Wert(Daten.Vorgaben.KaltwasserMittelC), Wert(Daten.Vorgaben.KaltwasserAmplitudeK))"
@@ -674,8 +681,8 @@
                                                         }
                                                     </KindInhalt>
                                                 </Formulargruppe>
-                                            </KindInhalt>
-                                        </Formularraster>
+                                    </KindInhalt>
+                                </Formularraster>
                                         @* Die Editoren der Stufe Experte (Z4, Gruppe 2b): Tagesgang und Zapfkategorien der
                                            Nutzungsart der Zone - Katalog, nicht Arbeitsstand; ohne Delegat oder ohne
                                            Nutzungsart weich gesperrt mit Grund. *@
@@ -693,27 +700,77 @@
                                         {
                                             <p class="epos-leisezeile epos-zapfprofil-editorstatus" role="status">@_editorStatus</p>
                                         }
-                                    </ChildContent>
-                                </Klappgruppe>
-                            }
+                            </section>
                         }
-                        </div>
-                    </KindInhalt>
-                </Gruppenkopf>
-            }
+                        <section class="epos-zapfprofil-methodenteil epos-zapfprofil-methodenteil--projekt" aria-label="@Texte.GruppeGebaeudeAnlage">
+                            <p class="epos-zapfprofil-teilmarke">@Texte.GruppeGebaeudeAnlage</p>
+                                <Formularraster>
+                                    <KindInhalt>
+                                        <Optionsgruppe Bezeichnung="@Texte.LabelRechenwegJahresreihe" Eintraege="@Jahresreihewege" Waagerecht="true"
+                                                       Titel="@Texte.HinweisRechenwegJahresreihe"
+                                                       Auswahl="@JahresreihewegWahl" AuswahlChanged="JahresreihewegSetzen"
+                                                       WeichGesperrt="@JahresreihewegSperren" />
+                                        @if (_eingabe.JahresreiheStochastisch)
+                                        {
+                                                <Ganzzahlfeld Bezeichnung="@Texte.LabelSeed" Feldname="@Texte.LabelSeed" Min="0"
+                                                              Wert="@_eingabe.Seed" WertChanged="SeedSetzen"
+                                                              Titel="@Format(Texte.HinweisSeed, Ganz(Daten.SeedVorgabe))"
+                                                              Platzhalter="@Klammer(Daten.SeedVorgabe)" FehlerZustand="FehlerZustandMelden" />
+                                                <Ganzzahlfeld Bezeichnung="@Texte.LabelRealisierungen" Feldname="@Texte.LabelRealisierungen"
+                                                              Einheit="@Texte.EinheitJahre" Min="@Daten.RealisierungenMindestens"
+                                                              Max="@Daten.RealisierungenHoechstens"
+                                                              Titel="@Format(Texte.HinweisRealisierungen, Ganz(Daten.RealisierungenMindestens), Ganz(Daten.RealisierungenHoechstens), Ganz(Daten.RealisierungenVorgabe))"
+                                                              Wert="@_eingabe.Realisierungen" WertChanged="RealisierungenSetzen"
+                                                              Platzhalter="@Klammer(Daten.RealisierungenVorgabe)" FehlerZustand="FehlerZustandMelden" />
+                                                <Herleitungszeile Text="@Texte.HinweisKonsistenzOrt" />
+                                        }
+                                        @if (_eingabe.TyptageAktiv)
+                                        {
+                                                    <Auswahlfeld Bezeichnung="@Texte.LabelTyptageZone" Eintraege="@Typtagzonen"
+                                                                 Auswahl="@_eingabe.TyptageKlimazone" Platzhalter="@Texte.KatalogKeineAuswahl"
+                                                                 AuswahlChanged="TyptagzoneSetzen" />
+                                                    <Auswahlfeld Bezeichnung="@Texte.LabelTyptageGebaeudeart" Eintraege="@Typtagarten"
+                                                                 Auswahl="@TyptagartWahl" Platzhalter="@Texte.KatalogKeineAuswahl"
+                                                                 AuswahlChanged="TyptagartSetzen" />
+                                        }
+                                    </KindInhalt>
+                                </Formularraster>
+                                        <Herleitungszeile Text="@(TyptageDa ? Texte.HinweisTyptage : Texte.HinweisTyptageOhne)" />
+                                        @if (TyptagGaben is not null)
+                                        {
+                                            <div class="epos-leiste epos-zapfprofil-typtagleiste">
+                                                <button type="button" class="epos-knopf epos-zapfprofil-typtagknopf"
+                                                        @onclick="TyptageOeffnen">@Texte.KnopfTyptage</button>
+                                            </div>
+                                        }
+                        </section>
+                    </ChildContent>
+                </Klappgruppe>
 
-            @* ZB3: die Gruppe „Gebäude und Anlage" - Grössen des Projekts, nicht der Zone, als Karten mit
-               Zusammenfassung unter dem Zonenblock (ab Experte). *@
-            @if (AbExperte)
-            {
-                <Gruppenkopf Titel="@Texte.GruppeGebaeudeAnlage" Summe="@Stufenname">
-                    <KindInhalt>
-                        <div class="epos-zapfprofil-gebaeudeblock">
-                        @* ---- Zirkulation (Gebäude) - ein Feld für die Leistung, die Methode bestimmt den Vorschlag ---- *@
-                        <Klappgruppe Titel="@Texte.LabelZirkulation" Zusatz="@ZirkulationZusammenfassung"
-                                     Klasse="epos-zapfprofil-karte epos-zapfprofil-karte--zirkulation"
-                                     Offen="@KarteOffen(KARTE_ZIRKULATION)" OffenChanged="o => KarteSetzen(KARTE_ZIRKULATION, o)">
-                            <ChildContent>
+                <Klappgruppe Titel="@Texte.MethodeZirkulation" Zusatz="@ZirkulationsgruppeZusammenfassung(a)"
+                             Klasse="epos-zapfprofil-karte epos-zapfprofil-methode epos-zapfprofil-karte--zirkulation"
+                             Offen="@KarteOffen(METHODE_ZIRKULATION)" OffenChanged="o => KarteSetzen(METHODE_ZIRKULATION, o)">
+                    <Kopfhandlungen>
+                        @Wirkungsmarke(Texte.WirkungSimulation)
+                    </Kopfhandlungen>
+                    <ChildContent>
+                        <p class="epos-leisezeile epos-zapfprofil-methodensatz">@Texte.SatzZirkulation</p>
+                        @if (zone is not null)
+                        {
+                            <section class="epos-zapfprofil-methodenteil epos-zapfprofil-methodenteil--bereich" aria-label="@BereichMarke(zone)">
+                                <p class="epos-zapfprofil-teilmarke">@BereichMarke(zone)</p>
+                                <Formularraster>
+                                    <KindInhalt>
+                                            <Optionsgruppe Bezeichnung="@Texte.LabelZirkulationVorhanden" Eintraege="@JaNein" Waagerecht="true"
+                                                           Titel="@Texte.HinweisZirkulationVorhanden"
+                                                           Auswahl="@(a.Zirkulation ? JA : NEIN)"
+                                                           AuswahlChanged="id => Angabe(zone, x => x.Zirkulation = id != NEIN)" />
+                                    </KindInhalt>
+                                </Formularraster>
+                            </section>
+                        }
+                        <section class="epos-zapfprofil-methodenteil epos-zapfprofil-methodenteil--projekt" aria-label="@Texte.GruppeGebaeudeAnlage">
+                            <p class="epos-zapfprofil-teilmarke">@Texte.GruppeGebaeudeAnlage</p>
                                 <Formularraster>
                                     <KindInhalt>
                                         <Auswahlfeld Bezeichnung="@Texte.LabelZirkMethode" Eintraege="@Zirkulationsmethoden"
@@ -749,14 +806,54 @@
                                 </Formularraster>
                                 @Einwertfeld(new Einwert(Texte.LabelZirkManuell, "kW", G.ZirkAuto ? null : G.ZirkManuellKw,
                                                          Zirkulationshilfe, ZirkulationSetzen, ZirkulationUebernehmen, false, "", ""))
-                            </ChildContent>
-                        </Klappgruppe>
+                                <Formularraster>
+                                    <KindInhalt>
+                                            <Zahlenfeld Bezeichnung="@Texte.LabelZirkKennwert" Feldname="@Texte.LabelZirkKennwert"
+                                                        Einheit="kWh/(m²·a)" Min="0" Wert="@G.ZirkKennwert" Platzhalter="@Vorgabe(Kennwertvorgabe)"
+                                                        Titel="@ZirkExperteHinweis"
+                                                        WertChanged="w => Gebaeudeangabe(x => x.ZirkKennwert = w)"
+                                                        FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte, zone: false)" />
+                                            <Zahlenfeld Bezeichnung="@Texte.LabelZirkFlaeche" Feldname="@Texte.LabelZirkFlaeche"
+                                                        Einheit="m²" Min="0" Wert="@G.ZirkFlaecheM2" Titel="@ZirkExperteHinweis"
+                                                        WertChanged="w => Gebaeudeangabe(x => x.ZirkFlaecheM2 = w)"
+                                                        FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte, zone: false)" />
+                                            <Zahlenfeld Bezeichnung="@Texte.LabelZirkLaufzeit" Feldname="@Texte.LabelZirkLaufzeit"
+                                                        Einheit="h/d" Min="0" Max="24" Wert="@G.ZirkLaufzeitH" Platzhalter="@Vorgabe(Daten.Vorgaben.ZirkLaufzeitH)"
+                                                        Titel="@ZirkExperteHinweis"
+                                                        WertChanged="w => Gebaeudeangabe(x => x.ZirkLaufzeitH = w)"
+                                                        FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte, zone: false)" />
+                                        <Zahlenfeld Bezeichnung="@Texte.LabelLeitungsinhalt" Feldname="@Texte.LabelLeitungsinhalt"
+                                                    Einheit="l" Min="0" Wert="@G.LeitungsinhaltL" Titel="@Texte.HinweisLeitungsinhalt"
+                                                    WertChanged="w => Gebaeudeangabe(x => x.LeitungsinhaltL = w)"
+                                                    FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte, zone: false)" />
+                                    </KindInhalt>
+                                </Formularraster>
+                        </section>
+                    </ChildContent>
+                </Klappgruppe>
 
-                        @* ---- Ladeleistung samt Ladefenster (wirkt nur auf die Auslegung) ---- *@
-                        <Klappgruppe Titel="@Texte.LabelLadeleistung" Zusatz="@LadeZusammenfassung"
-                                     Klasse="epos-zapfprofil-karte epos-zapfprofil-karte--ladeleistung"
-                                     Offen="@KarteOffen(KARTE_LADUNG)" OffenChanged="o => KarteSetzen(KARTE_LADUNG, o)">
-                            <ChildContent>
+                <Klappgruppe Titel="@Texte.MethodeAuslegung" Zusatz="@AuslegungZusammenfassung(a)"
+                             Klasse="epos-zapfprofil-karte epos-zapfprofil-methode epos-zapfprofil-karte--auslegung"
+                             Offen="@KarteOffen(METHODE_AUSLEGUNG)" OffenChanged="o => KarteSetzen(METHODE_AUSLEGUNG, o)">
+                    <Kopfhandlungen>
+                        @Wirkungsmarke(Texte.WirkungAuslegung)
+                    </Kopfhandlungen>
+                    <ChildContent>
+                        <p class="epos-leisezeile epos-zapfprofil-methodensatz">@Texte.SatzAuslegung</p>
+                        @if (zone is not null)
+                        {
+                            <section class="epos-zapfprofil-methodenteil epos-zapfprofil-methodenteil--bereich" aria-label="@BereichMarke(zone)">
+                                <p class="epos-zapfprofil-teilmarke">@BereichMarke(zone)</p>
+                                <Formularraster>
+                                    <KindInhalt>
+                                            <Auswahlfeld Bezeichnung="@Texte.LabelTopologie" Eintraege="@Topologien" Titel="@Texte.HinweisTopologie"
+                                                         Auswahl="@((int)a.Topologie)" AuswahlChanged="id => TopologieSetzen(zone, id)" />
+                                    </KindInhalt>
+                                </Formularraster>
+                            </section>
+                        }
+                        <section class="epos-zapfprofil-methodenteil epos-zapfprofil-methodenteil--projekt" aria-label="@Texte.GruppeGebaeudeAnlage">
+                            <p class="epos-zapfprofil-teilmarke">@Texte.GruppeGebaeudeAnlage</p>
                                 @* Der Vorschlag der Ladeleistung (4.7): aus dem Verfahrensvergleich der
                                    deterministischen Auslegung zum Arbeitsstand, entprellt mit der Vorschau. *@
                                 @Einwertfeld(new Einwert(Texte.LabelLadeleistungManuell, "kW", G.LadeAuto ? null : G.LadeManuellKw,
@@ -776,38 +873,8 @@
                                                     FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte, zone: false)" />
                                     </KindInhalt>
                                 </Formularraster>
-                            </ChildContent>
-                        </Klappgruppe>
-
-                        @* ---- Leitungsinhalt (Großanlage nach DVGW W 551) ---- *@
-                        <Klappgruppe Titel="@Texte.LabelLeitungsinhalt" Zusatz="@LeitungsinhaltZusammenfassung"
-                                     Klasse="epos-zapfprofil-karte epos-zapfprofil-karte--leitungsinhalt"
-                                     Offen="@KarteOffen(KARTE_LEITUNG)" OffenChanged="o => KarteSetzen(KARTE_LEITUNG, o)">
-                            <ChildContent>
                                 <Formularraster>
                                     <KindInhalt>
-                                        <Zahlenfeld Bezeichnung="@Texte.LabelLeitungsinhalt" Feldname="@Texte.LabelLeitungsinhalt"
-                                                    Einheit="l" Min="0" Wert="@G.LeitungsinhaltL" Titel="@Texte.HinweisLeitungsinhalt"
-                                                    WertChanged="w => Gebaeudeangabe(x => x.LeitungsinhaltL = w)"
-                                                    FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte, zone: false)" />
-                                    </KindInhalt>
-                                </Formularraster>
-                            </ChildContent>
-                        </Klappgruppe>
-
-                        @* ---- Fachwerte des Gebaeudes (5.3, Stufe Experte) ---- *@
-                        @if (_stufe == ZapfprofilStufe.Experte)
-                        {
-                            <Klappgruppe Titel="@Texte.GruppeFachwerteGebaeude" Zusatz="@FachwerteGebaeudeZusammenfassung"
-                                         Klasse="epos-zapfprofil-karte epos-zapfprofil-karte--fachwerte-gebaeude"
-                                         Offen="@KarteOffen(KARTE_FACHWERTE_GEBAEUDE)" OffenChanged="o => KarteSetzen(KARTE_FACHWERTE_GEBAEUDE, o)">
-                                <Kopfhandlungen>
-                                    <InfoKnopf Schluessel="@HILFE_FACHWERTE" StandardKurztext="@Texte.GruppeFachwerteGebaeude"
-                                               Dialogname="@Texte.Titel" MitAssistent="false" />
-                                </Kopfhandlungen>
-                                <ChildContent>
-                                    <Formularraster>
-                                        <KindInhalt>
                                             <Zahlenfeld Bezeichnung="@Texte.LabelKaltwasserAuslegung" Feldname="@Texte.LabelKaltwasserAuslegung"
                                                         Einheit="°C" Wert="@G.KaltwasserAuslegungC" Platzhalter="@Vorgabe(Daten.Vorgaben.KaltwasserAuslegungC)"
                                                         Titel="@Format(Texte.HinweisKaltwasserAuslegung, Wert(Daten.Vorgaben.KaltwasserAuslegungC))"
@@ -818,101 +885,29 @@
                                                         Titel="@Format(Texte.HinweisSpeichertemperatur, Wert(Daten.Vorgaben.SpeicherC))"
                                                         WertChanged="w => Gebaeudeangabe(x => x.SpeicherC = w)"
                                                         FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte, zone: false)" />
-                                            <Zahlenfeld Bezeichnung="@Texte.LabelZirkKennwert" Feldname="@Texte.LabelZirkKennwert"
-                                                        Einheit="kWh/(m²·a)" Min="0" Wert="@G.ZirkKennwert" Platzhalter="@Vorgabe(Kennwertvorgabe)"
-                                                        Titel="@ZirkExperteHinweis"
-                                                        WertChanged="w => Gebaeudeangabe(x => x.ZirkKennwert = w)"
-                                                        FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte, zone: false)" />
-                                            <Zahlenfeld Bezeichnung="@Texte.LabelZirkFlaeche" Feldname="@Texte.LabelZirkFlaeche"
-                                                        Einheit="m²" Min="0" Wert="@G.ZirkFlaecheM2" Titel="@ZirkExperteHinweis"
-                                                        WertChanged="w => Gebaeudeangabe(x => x.ZirkFlaecheM2 = w)"
-                                                        FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte, zone: false)" />
-                                            <Zahlenfeld Bezeichnung="@Texte.LabelZirkLaufzeit" Feldname="@Texte.LabelZirkLaufzeit"
-                                                        Einheit="h/d" Min="0" Max="24" Wert="@G.ZirkLaufzeitH" Platzhalter="@Vorgabe(Daten.Vorgaben.ZirkLaufzeitH)"
-                                                        Titel="@ZirkExperteHinweis"
-                                                        WertChanged="w => Gebaeudeangabe(x => x.ZirkLaufzeitH = w)"
-                                                        FehlerZustand="e => FeldMelden(e, ZapfprofilStufe.Experte, zone: false)" />
-                                        </KindInhalt>
-                                    </Formularraster>
+                                    </KindInhalt>
+                                </Formularraster>
                                     @* ZB10: Literanzeige und Stundenschwelle sind Anzeigeeinstellungen — sie stehen nur in der
                                        Rubrik „Zapfprofil" der Einstellungen; die Rechnung liest sie dort (Laufangabe → Einstellung → Vorgabe). *@
                                     <p class="epos-leisezeile epos-zapfprofil-anzeigeeinstellung">@Texte.HinweisAnzeigeEinstellung</p>
-                                </ChildContent>
-                            </Klappgruppe>
-                        }
-
-                        @* ---- Stochastik · Jahresreihe (5.3; Grössen des Projekts) samt Typtagweg (Experte, Z4b) ---- *@
-                        <Klappgruppe Titel="@Texte.GruppeStochastik" Zusatz="@JahresreiheZusammenfassung"
-                                     Klasse="epos-zapfprofil-karte epos-zapfprofil-karte--jahresreihe"
-                                     Offen="@KarteOffen(KARTE_JAHRESREIHE)" OffenChanged="o => KarteSetzen(KARTE_JAHRESREIHE, o)">
-                            <ChildContent>
-                                <div class="epos-zapfprofil-stochastik-felder">
-                                    <Formularraster>
-                                        <KindInhalt>
-                                            <Optionsgruppe Bezeichnung="@Texte.LabelRechenwegJahresreihe" Eintraege="@Rechenwege" Waagerecht="true"
-                                                           Titel="@Texte.HinweisRechenwegJahresreihe"
-                                                           Auswahl="@(_eingabe.JahresreiheStochastisch ? RECHENWEG_STOCHASTISCH : RECHENWEG_DETERMINISTISCH)"
-                                                           AuswahlChanged="RechenwegSetzen" />
-                                            @* Der Seed gilt auch für das Ensemble der Auslegung — in Experte immer sichtbar;
-                                               nur die Jahre der Jahresreihe hängen am Rechenweg „stochastisch". *@
-                                            @if (_stufe == ZapfprofilStufe.Experte)
-                                            {
-                                                <Ganzzahlfeld Bezeichnung="@Texte.LabelSeed" Feldname="@Texte.LabelSeed" Min="0"
-                                                              Wert="@_eingabe.Seed" WertChanged="SeedSetzen"
-                                                              Titel="@Format(Texte.HinweisSeed, Ganz(Daten.SeedVorgabe))"
-                                                              Platzhalter="@Klammer(Daten.SeedVorgabe)" FehlerZustand="FehlerZustandMelden" />
-                                            }
-                                            @if (_eingabe.JahresreiheStochastisch && _stufe == ZapfprofilStufe.Experte)
-                                            {
-                                                <Ganzzahlfeld Bezeichnung="@Texte.LabelRealisierungen" Feldname="@Texte.LabelRealisierungen"
-                                                              Einheit="@Texte.EinheitJahre" Min="@Daten.RealisierungenMindestens"
-                                                              Max="@Daten.RealisierungenHoechstens"
-                                                              Titel="@Format(Texte.HinweisRealisierungen, Ganz(Daten.RealisierungenMindestens), Ganz(Daten.RealisierungenHoechstens), Ganz(Daten.RealisierungenVorgabe))"
-                                                              Wert="@_eingabe.Realisierungen" WertChanged="RealisierungenSetzen"
-                                                              Platzhalter="@Klammer(Daten.RealisierungenVorgabe)" FehlerZustand="FehlerZustandMelden" />
-                                                <Herleitungszeile Text="@Texte.HinweisKonsistenzOrt" />
-                                            }
-                                        </KindInhalt>
-                                    </Formularraster>
-                                </div>
-                                @* DIE WAHL DES TYPTAGWEGS (4.2, 5.3; Stufe Z4b) - eine Angabe des GANZEN PROJEKTS, die
-                                   den Jahres- und Tagesgang jeder Zone bestimmt; darum bei der Jahresreihe. Ohne
-                                   eingespielte Typtage ist der Schalter gesperrt, und der Grund steht darunter. *@
-                                @if (_stufe == ZapfprofilStufe.Experte)
+                            @* „Auslegung…" steht auch hier, am Ort der Angaben, die allein auf sie wirken; der Knopf der
+                               Schlussleiste bleibt. Beide nehmen denselben Weg. *@
+                            <div class="epos-leiste epos-zapfprofil-auslegungleiste">
+                                @if (AuslegungGaben is not null)
                                 {
-                                    <section class="epos-zapfprofil-typtage" aria-label="@Texte.GruppeTyptage">
-                                        <div class="epos-zapfprofil-gruppenhilfe">
-                                            <h5 class="epos-zapfprofil-kalender-titel">@Texte.GruppeTyptage</h5>
-                                            <InfoKnopf Schluessel="@HILFE_TYPTAGE" StandardKurztext="@Texte.GruppeTyptage"
-                                                       Dialogname="@Texte.Titel" MitAssistent="false" />
-                                        </div>
-                                        <Formularraster>
-                                            <KindInhalt>
-                                                <Schalter Bezeichnung="@Texte.LabelTyptageAktiv" Wert="@_eingabe.TyptageAktiv"
-                                                          Aktiv="@TyptageDa" WertChanged="TyptageAktivSetzen" />
-                                                @if (_eingabe.TyptageAktiv)
-                                                {
-                                                    <Auswahlfeld Bezeichnung="@Texte.LabelTyptageZone" Eintraege="@Typtagzonen"
-                                                                 Auswahl="@_eingabe.TyptageKlimazone" Platzhalter="@Texte.KatalogKeineAuswahl"
-                                                                 AuswahlChanged="TyptagzoneSetzen" />
-                                                    <Auswahlfeld Bezeichnung="@Texte.LabelTyptageGebaeudeart" Eintraege="@Typtagarten"
-                                                                 Auswahl="@TyptagartWahl" Platzhalter="@Texte.KatalogKeineAuswahl"
-                                                                 AuswahlChanged="TyptagartSetzen" />
-                                                }
-                                            </KindInhalt>
-                                        </Formularraster>
-                                        <Herleitungszeile Text="@(TyptageDa ? Texte.HinweisTyptage : Texte.HinweisTyptageOhne)" />
-                                        @if (TyptagGaben is not null)
-                                        {
-                                            <div class="epos-leiste epos-zapfprofil-typtagleiste">
-                                                <button type="button" class="epos-knopf epos-zapfprofil-typtagknopf"
-                                                        @onclick="TyptageOeffnen">@Texte.KnopfTyptage</button>
-                                            </div>
-                                        }
-                                    </section>
+                                    <button type="button" class="epos-knopf epos-zapfprofil-auslegung-methode"
+                                            @onclick="AuslegungOeffnen">@Texte.KnopfAuslegung</button>
                                 }
-                            </ChildContent>
-                        </Klappgruppe>
+                                else
+                                {
+                                    <button type="button" class="epos-knopf epos-zapfprofil-auslegung-methode" aria-disabled="true"
+                                            title="@Texte.GrundNochNicht" @onclick="NochNicht">@Texte.KnopfAuslegung</button>
+                                }
+                            </div>
+                        </section>
+                    </ChildContent>
+                </Klappgruppe>
+
                         </div>
                     </KindInhalt>
                 </Gruppenkopf>
@@ -2078,23 +2073,19 @@
             _ => "–"
         };
 
-    // --- ZB3: die Karten des Zonenblocks und der Gruppe „Gebäude und Anlage" -----------------
+    // --- ZC5: die Methoden als Bereiche (Stufe Experte) ----------------------------------------
 
-    /// <summary>Die Schlüssel der Karten — Offen-Zustand je Karte im Arbeitsstand des Dialogs.</summary>
-    private const string KARTE_BELEGUNG = "belegung";
-    private const string KARTE_KALENDER = "kalender";
-    private const string KARTE_MESSWERT = "messwert";
-    private const string KARTE_TAGESBEDARF = "tagesbedarf";
-    private const string KARTE_FACHWERTE = "fachwerte";
-    private const string KARTE_ZIRKULATION = "zirkulation";
-    private const string KARTE_LADUNG = "ladeleistung";
-    private const string KARTE_LEITUNG = "leitungsinhalt";
-    private const string KARTE_FACHWERTE_GEBAEUDE = "fachwerte-gebaeude";
-    private const string KARTE_JAHRESREIHE = "jahresreihe";
+    /// <summary>Die Schlüssel der sechs Methoden — Offen-Zustand je Gruppe im Arbeitsstand des Dialogs.</summary>
+    private const string METHODE_BEDARF = "bedarf";
+    private const string METHODE_KALENDER = "kalender";
+    private const string METHODE_MESSWERT = "messwert";
+    private const string METHODE_JAHRESREIHE = "jahresreihe";
+    private const string METHODE_ZIRKULATION = "zirkulation";
+    private const string METHODE_AUSLEGUNG = "auslegung";
 
     /// <summary>
-    /// Welche Karte offen steht — beim Öffnen alle zugeklappt (außer „Nutzung", die keine Klappe hat). Der Stand
-    /// gehört dem Dialog, nicht der Karte: Er bleibt beim Wechsel der Zone und der Stufe erhalten.
+    /// Welche Gruppe offen steht — beim Öffnen alle zugeklappt. Der Stand gehört dem Dialog, nicht der Gruppe: Er
+    /// bleibt beim Wechsel des Bereichs und der Stufe erhalten.
     /// </summary>
     private readonly HashSet<string> _offeneKarten = new(StringComparer.Ordinal);
 
@@ -2106,44 +2097,49 @@
         else _offeneKarten.Remove(karte);
     }
 
-    /// <summary>Steht die Karte <paramref name="karte"/> offen? Prüfhilfe für die Tests.</summary>
+    /// <summary>Steht die Gruppe <paramref name="karte"/> offen? Prüfhilfe für die Tests.</summary>
     public bool KarteIstOffen(string karte) => KarteOffen(karte);
 
-    /// <summary>Die Summe im Kopf des Zonenblocks: „5,0 MWh/a Zapfung", „unvollständig" oder der Wert samt Ablehnung.</summary>
-    private string ZonenKopfSumme
-        => !IstUnvollstaendig(_wahl) && Zonenwertdaten(_wahl) is { Abgelehnt: false } w
-            ? Format(Texte.GruppeZonenSumme, Mwh(w.JahresbedarfZapfungKwh)) : Zonenwert(_wahl);
+    /// <summary>Die Marke der Felder je Bereich: „Bereich „Wohnen““ — der Name des markierten Bereichs.</summary>
+    private string BereichMarke(ZapfprofilZoneDaten zone) => Format(Texte.GruppeZone, zone.Name);
 
-    /// <summary>Der Name der gewählten Stufe (Summe im Kopf der Gruppe „Gebäude und Anlage").</summary>
-    private string Stufenname => _stufe switch
-    {
-        ZapfprofilStufe.Einfach => Texte.StufeEinfach,
-        _ => Texte.StufeExperte
-    };
+    /// <summary>Die Wirkungsmarke rechts im Kopf einer Methode: worauf sie wirkt (Summe, Verteilung, …).</summary>
+    private RenderFragment Wirkungsmarke(string wirkung) => @<span class="epos-zapfprofil-wirkung"
+                                                                 title="@Format(Texte.WirkungTitel, wirkung)">@wirkung</span>;
 
-    /// <summary>„1 eigener Wert", „n eigene Werte" oder „Vorgaben" — die Zusammenfassung einer Karte mit Fachwerten.</summary>
+    /// <summary>„1 eigener Wert", „n eigene Werte" oder „Vorgaben" — die Zusammenfassung einer Gruppe mit Fachwerten.</summary>
     private string EigeneWerte(int anzahl)
         => anzahl == 0 ? Texte.SummeVorgaben : anzahl == 1 ? Texte.SummeEigenerWert : Format(Texte.SummeEigeneWerte, anzahl);
 
     /// <summary>
-    /// „Belegung · 24 WE aus der Wohnungstabelle · Speicher · Zirkulation ja": die Wohnungen (Summe der eingetragenen
-    /// Anzahlen) oder die Personen je WE, die Topologie und die Zirkulation der Zone — die Eingaben, kein Rechenweg.
+    /// „Bedarf · 24 WE aus der Wohnungstabelle · 13,7 kWh/d (auto) · 1 eigener Wert": die Wohnungen (Summe der
+    /// eingetragenen Anzahlen) oder die Personen je WE, der angesetzte Tagesbedarf und die eigenen Fachwerte (Bedarf
+    /// spezifisch, Zapftemperatur) des markierten Bereichs.
     /// </summary>
-    private string BelegungZusammenfassung(ZapfprofilZoneDaten zone, ZapfprofilNutzungsartDaten? art, ZapfprofilZonenangabenDaten a)
+    private string BedarfZusammenfassung(ZapfprofilZoneDaten? zone, ZapfprofilNutzungsartDaten? art, ZapfprofilZonenangabenDaten a)
     {
+        if (zone is null) return "";
         var teile = new List<string>();
         if (art?.Wohnen == true && a.Wohnungen.Count > 0)
             teile.Add(Format(Texte.SummeWohnungen, a.Wohnungen.Sum(w => w.Anzahl ?? 0).ToString(CultureInfo.CurrentCulture)));
         else if (a.PersonenJeWe is double p)
             teile.Add(Format(Texte.SummePersonenJeWe, Wert(p)));
-        teile.Add(Topologiename(a.Topologie));
-        teile.Add(a.Zirkulation ? Texte.SummeZirkJa : Texte.SummeZirkNein);
+        teile.Add(Ansatz(Tagesbedarfshilfe, a.TagesbedarfAuto, a.TagesbedarfManuellKwh, "kWh/d"));
+        int eigene = new[] { a.BedarfSpezKwhJeEinheitTag, a.ZapftemperaturC }.Count(w => w.HasValue);
+        if (eigene > 0) teile.Add(EigeneWerte(eigene));
         return string.Join(" · ", teile.Where(t => t.Length > 0));
     }
 
-    /// <summary>„Messwert · 12.000 kWh/a" oder „Messwert · keiner".</summary>
+    /// <summary>
+    /// „Messwert · 12.000 kWh/a" oder „keiner"; setzt der Messwert den Tagesbedarf an, folgt „kalibriert auf den
+    /// Jahresmesswert". Einen Kalibrierfaktor gegenüber der Norm liefert die Hülle nicht — er steht nicht da.
+    /// </summary>
     private string MesswertZusammenfassung(ZapfprofilZonenangabenDaten a)
-        => a.Jahresmesswert is double w ? Zahl(w, "N0") + " " + Messwerteinheit(a) : Texte.SummeKeiner;
+    {
+        if (a.Jahresmesswert is not double w) return Texte.SummeKeiner;
+        string text = Zahl(w, "N0") + " " + Messwerteinheit(a);
+        return Tagesbedarfshilfe is { Kalibriert: true } ? text + " · " + Texte.AngesetztKalibriert : text;
+    }
 
     /// <summary>Wie der Wert angesetzt ist: kalibriert, manuell oder auto — die Zahlen sagt die Schätzhilfe des Kerns.</summary>
     private string Ansatzart(ZapfprofilSchaetzhilfeDaten h)
@@ -2158,22 +2154,10 @@
          : !auto && manuell is double m ? Format(Texte.SummeAngesetzt, Zahl(m, "N1"), einheit, Texte.OptionManuell)
          : Texte.OptionAuto;
 
-    private string TagesbedarfZusammenfassung(ZapfprofilZonenangabenDaten a)
-        => Ansatz(Tagesbedarfshilfe, a.TagesbedarfAuto, a.TagesbedarfManuellKwh, "kWh/d");
-
-    /// <summary>Die Fachwerte der Zone: wie viele eigene Werte die Zone trägt (der Auslastungsgang zählt einmal).</summary>
-    private string FachwerteZusammenfassung(ZapfprofilZonenangabenDaten a)
-    {
-        int n = new[] { a.BedarfSpezKwhJeEinheitTag, a.ZapftemperaturC, a.KaltwasserMittelC, a.KaltwasserAmplitudeK }.Count(w => w.HasValue)
-              + (a.IdTagesgangsatz.HasValue ? 1 : 0)
-              + (a.Auslastung?.Any(w => w.HasValue) == true ? 1 : 0);
-        return EigeneWerte(n);
-    }
-
     private string Zirkulationsmethodenname
         => Zirkulationsmethoden.FirstOrDefault(e => e.Id == (int)G.ZirkMethode).Text ?? "";
 
-    /// <summary>„Zirkulation · 1,5 kW (auto) · Fläche × Kennwert" — mit manuellem Wert ohne die Methode.</summary>
+    /// <summary>„1,5 kW (auto) · Fläche × Kennwert" — mit manuellem Wert ohne die Methode.</summary>
     private string ZirkulationZusammenfassung
     {
         get
@@ -2183,34 +2167,87 @@
         }
     }
 
-    /// <summary>„Ladeleistung und Ladefenster · 12,0 kW (auto) · Ladefenster 10 h ab 22 Uhr".</summary>
+    /// <summary>
+    /// „Zirkulation ja · 1,5 kW (auto) · Fläche × Kennwert · Leitungsinhalt 4,5 l": die Zirkulation des markierten
+    /// Bereichs, die Leistung des Gebäudes und der Leitungsinhalt, wo er eingetragen ist.
+    /// </summary>
+    private string ZirkulationsgruppeZusammenfassung(ZapfprofilZonenangabenDaten a)
+    {
+        var teile = new List<string>();
+        if (Gewaehlte is not null) teile.Add(a.Zirkulation ? Texte.SummeZirkJa : Texte.SummeZirkNein);
+        teile.Add(ZirkulationZusammenfassung);
+        if (G.LeitungsinhaltL is double l) teile.Add(Texte.LabelLeitungsinhalt + " " + Zahl(l, "0.##") + " l");
+        return string.Join(" · ", teile.Where(t => t.Length > 0));
+    }
+
+    /// <summary>„12,0 kW (auto) · Ladefenster 10 h ab 22 Uhr".</summary>
     private string LadeZusammenfassung
         => Ansatz(Ladehilfe, G.LadeAuto, G.LadeManuellKw, "kW") + " · "
            + Format(Texte.SummeLadefenster, Wert(G.LadefensterH ?? Daten.Vorgaben.LadefensterH),
                     Wert(G.LadefensterBeginnH ?? Daten.Vorgaben.LadefensterBeginnH));
 
-    private string LeitungsinhaltZusammenfassung
-        => G.LeitungsinhaltL is double l ? Zahl(l, "0.##") + " l" : Texte.SummeKeineAngabe;
+    /// <summary>„Speicher · auto · Ladefenster 10 h ab 22 Uhr": die Topologie des markierten Bereichs und die Ladung.</summary>
+    private string AuslegungZusammenfassung(ZapfprofilZonenangabenDaten a)
+        => (Gewaehlte is null ? "" : Topologiename(a.Topologie) + " · ") + LadeZusammenfassung;
 
-    private string FachwerteGebaeudeZusammenfassung
-        => EigeneWerte(new[] { G.KaltwasserAuslegungC, G.SpeicherC, G.ZirkKennwert, G.ZirkFlaecheM2, G.ZirkLaufzeitH }.Count(w => w.HasValue));
+    // --- ZC5: der Rechenweg der Jahresreihe als EINE Wahl ---------------------------------------
 
-    /// <summary>„Stochastik · Jahresreihe · stochastisch · 10 Jahre · Seed 7 · Typtage".</summary>
-    private string JahresreiheZusammenfassung
+    private const int JAHRESREIHE_NORM = 0;
+    private const int JAHRESREIHE_STOCHASTISCH = 1;
+    private const int JAHRESREIHE_TYPTAGE = 2;
+
+    /// <summary>Die drei Wege der Jahresreihe: Norm-Jahresgang, stochastisch, Typtage nach VDI 4655.</summary>
+    private IReadOnlyList<(int Id, string Text)> Jahresreihewege => new[]
     {
-        get
+        (JAHRESREIHE_NORM, Texte.OptionNormJahresgang),
+        (JAHRESREIHE_STOCHASTISCH, Texte.OptionStochastisch),
+        (JAHRESREIHE_TYPTAGE, Texte.OptionTyptage)
+    };
+
+    /// <summary>Der gewählte Weg: Typtage gehen vor (ein Altstand mit Typtagen UND Stochastik zeigt Typtage).</summary>
+    private int JahresreihewegWahl
+        => _eingabe.TyptageAktiv ? JAHRESREIHE_TYPTAGE
+         : _eingabe.JahresreiheStochastisch ? JAHRESREIHE_STOCHASTISCH : JAHRESREIHE_NORM;
+
+    /// <summary>Ohne eingespielte Typtage ist „Typtage" weich gesperrt, der Grund steht am Eintrag.</summary>
+    private IReadOnlyDictionary<int, string>? JahresreihewegSperren
+        => TyptageDa || _eingabe.TyptageAktiv ? null : new Dictionary<int, string> { [JAHRESREIHE_TYPTAGE] = Texte.HinweisTyptageOhne };
+
+    /// <summary>
+    /// Die Wahl des Wegs: Norm schaltet Stochastik und Typtage aus, „stochastisch" die Typtage, „Typtage" die
+    /// Stochastik. Die Felder des verlassenen Wegs verschwinden und nehmen ihre Fehleingabe mit.
+    /// </summary>
+    private void JahresreihewegSetzen(int? id)
+    {
+        int weg = id ?? JAHRESREIHE_NORM;
+        if (weg == JahresreihewegWahl && !(_eingabe.TyptageAktiv && _eingabe.JahresreiheStochastisch)) return;
+        if (weg == JAHRESREIHE_TYPTAGE && !TyptageDa) return;
+        if (weg != JAHRESREIHE_TYPTAGE && _eingabe.TyptageAktiv) TyptageAktivSetzen(false);
+        RechenwegSetzen(weg == JAHRESREIHE_STOCHASTISCH ? RECHENWEG_STOCHASTISCH : RECHENWEG_DETERMINISTISCH);
+        if (weg != JAHRESREIHE_STOCHASTISCH) _fehlfelder.Remove(Texte.LabelSeed);
+        if (weg == JAHRESREIHE_TYPTAGE) TyptageAktivSetzen(true);
+    }
+
+    /// <summary>
+    /// „stochastisch · 10 Jahre · Seed 7 · 1 eigener Wert": der Weg der Jahresreihe samt seinen Feldern und die eigenen
+    /// Fachwerte des markierten Bereichs (Tagesgangsatz, Auslastung je Monat, Kaltwassergang).
+    /// </summary>
+    private string JahresreiheZusammenfassung(ZapfprofilZonenangabenDaten a)
+    {
+        var teile = new List<string> { Jahresreihewege.First(e => e.Id == JahresreihewegWahl).Text };
+        if (_eingabe.JahresreiheStochastisch)
         {
-            var teile = new List<string>
-            {
-                _eingabe.JahresreiheStochastisch ? Texte.OptionStochastisch : Texte.OptionDeterministisch
-            };
-            if (_eingabe.JahresreiheStochastisch)
-                teile.Add(Ganz(_eingabe.Realisierungen ?? Daten.RealisierungenVorgabe) + " " + Texte.EinheitJahre);
-            if (_stufe == ZapfprofilStufe.Experte)
-                teile.Add(Format(Texte.SummeSeed, Ganz(_eingabe.Seed ?? Daten.SeedVorgabe)));
-            if (_eingabe.TyptageAktiv) teile.Add(Texte.SummeTyptage);
-            return string.Join(" · ", teile.Where(t => t.Length > 0));
+            teile.Add(Ganz(_eingabe.Realisierungen ?? Daten.RealisierungenVorgabe) + " " + Texte.EinheitJahre);
+            teile.Add(Format(Texte.SummeSeed, Ganz(_eingabe.Seed ?? Daten.SeedVorgabe)));
         }
+        if (Gewaehlte is not null)
+        {
+            int eigene = new[] { a.KaltwasserMittelC, a.KaltwasserAmplitudeK }.Count(w => w.HasValue)
+                       + (a.IdTagesgangsatz.HasValue ? 1 : 0)
+                       + (a.Auslastung?.Any(w => w.HasValue) == true ? 1 : 0);
+            if (eigene > 0) teile.Add(EigeneWerte(eigene));
+        }
+        return string.Join(" · ", teile.Where(t => t.Length > 0));
     }
 
     /// <summary>Der Hinweis der Zirkulationsfachwerte als <c>title</c> (Formeln und Normbezug nicht in der Grundansicht).</summary>
@@ -3454,11 +3491,13 @@
     /// <summary>Der Name eines Feldes einer Zeile für Sprachausgabe und Sammelmeldung: „Bezugsgröße, Bereich 2".</summary>
     private string BereichFeld(string spalte, int index) => Format(Texte.FeldBereich, spalte, index + 1);
 
-    /// <summary>Topologie, Anteil und Rechenweg der Zeile (Stufe Experte) als eine leise Zeile der Detailzeile.</summary>
-    private string Bereichkennzeile(int index, ZapfprofilZoneDaten z)
+    /// <summary>
+    /// Anteil und Rechenweg der Zeile (Stufe Experte) als eine leise Zeile der Detailzeile; die Topologie steht in
+    /// der Methode „Auslegung" (ZC5).
+    /// </summary>
+    private string Bereichkennzeile(int index)
         => string.Join(" · ", new[]
         {
-            Texte.SpalteTopologie + " " + Topologiename(z.Angaben?.Topologie ?? ZapfprofilTopologie.Speicher),
             Texte.SpalteAnteil + " " + Zonenanteil(index),
             Texte.SpalteRechenweg + " " + Zonenrechenweg(index)
         });

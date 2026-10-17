@@ -162985,6 +162985,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Methoden ähnelt.
+        /// </summary>
+        public static string ZPG_GRP_METHODEN {
+            get {
+                return ResourceManager.GetString("ZPG_GRP_METHODEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stochastik · Jahresreihe ähnelt.
         /// </summary>
         public static string ZPG_GRP_STOCHASTIK {
@@ -165712,6 +165721,96 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegung ähnelt.
+        /// </summary>
+        public static string ZPG_MTH_AUSLEGUNG {
+            get {
+                return ResourceManager.GetString("ZPG_MTH_AUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarf ähnelt.
+        /// </summary>
+        public static string ZPG_MTH_BEDARF {
+            get {
+                return ResourceManager.GetString("ZPG_MTH_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresreihe ähnelt.
+        /// </summary>
+        public static string ZPG_MTH_JAHRESREIHE {
+            get {
+                return ResourceManager.GetString("ZPG_MTH_JAHRESREIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Topologie, Ladeleistung, Ladefenster und Speichertemperatur wirken allein auf die Auslegung von Speicher und Station, nicht auf die Simulation. ähnelt.
+        /// </summary>
+        public static string ZPG_MTH_SATZ_AUSLEGUNG {
+            get {
+                return ResourceManager.GetString("ZPG_MTH_SATZ_AUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Belegung und Tagesbedarf bestimmen, wie viel Warmwasser der Bereich im Jahr zapft – sie ändern die Jahressumme. ähnelt.
+        /// </summary>
+        public static string ZPG_MTH_SATZ_BEDARF {
+            get {
+                return ResourceManager.GetString("ZPG_MTH_SATZ_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Rechenweg bildet aus dem Tagesbedarf die Stundenreihe des Jahres; Tagesgang, Auslastung und Kaltwasser formen sie, die Summe bleibt. ähnelt.
+        /// </summary>
+        public static string ZPG_MTH_SATZ_JAHRESREIHE {
+            get {
+                return ResourceManager.GetString("ZPG_MTH_SATZ_JAHRESREIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kalender legt Werktage, Ruhetage und Ferien fest und verteilt den Jahresbedarf um – die Summe bleibt gleich. ähnelt.
+        /// </summary>
+        public static string ZPG_MTH_SATZ_KALENDER {
+            get {
+                return ResourceManager.GetString("ZPG_MTH_SATZ_KALENDER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Jahresmesswert kalibriert den Bedarf des Bereichs auf die gemessene Menge – er ändert die Summe, nicht die Verteilung. ähnelt.
+        /// </summary>
+        public static string ZPG_MTH_SATZ_MESSWERT {
+            get {
+                return ResourceManager.GetString("ZPG_MTH_SATZ_MESSWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation und Leitungsinhalt gehen als Verlust in die Simulation ein; die Zapfmenge ändern sie nicht. ähnelt.
+        /// </summary>
+        public static string ZPG_MTH_SATZ_ZIRKULATION {
+            get {
+                return ResourceManager.GetString("ZPG_MTH_SATZ_ZIRKULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zirkulation und Anlage ähnelt.
+        /// </summary>
+        public static string ZPG_MTH_ZIRKULATION {
+            get {
+                return ResourceManager.GetString("ZPG_MTH_ZIRKULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die hoch ähnelt.
         /// </summary>
         public static string ZPG_NIVEAU_HOCH {
@@ -165766,11 +165865,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Norm-Jahresgang ähnelt.
+        /// </summary>
+        public static string ZPG_OPT_NORM_JAHRESGANG {
+            get {
+                return ResourceManager.GetString("ZPG_OPT_NORM_JAHRESGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die stochastisch ähnelt.
         /// </summary>
         public static string ZPG_OPT_STOCHASTISCH {
             get {
                 return ResourceManager.GetString("ZPG_OPT_STOCHASTISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typtage VDI 4655 ähnelt.
+        /// </summary>
+        public static string ZPG_OPT_TYPTAGE {
+            get {
+                return ResourceManager.GetString("ZPG_OPT_TYPTAGE", resourceCulture);
             }
         }
         
@@ -173970,6 +174087,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_WARN_ZIRKULATION_ZONE_OHNE_FLAECHE {
             get {
                 return ResourceManager.GetString("ZPG_WARN_ZIRKULATION_ZONE_OHNE_FLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nur Auslegung ähnelt.
+        /// </summary>
+        public static string ZPG_WIRKUNG_AUSLEGUNG {
+            get {
+                return ResourceManager.GetString("ZPG_WIRKUNG_AUSLEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahresreihe ähnelt.
+        /// </summary>
+        public static string ZPG_WIRKUNG_JAHRESREIHE {
+            get {
+                return ResourceManager.GetString("ZPG_WIRKUNG_JAHRESREIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulation ähnelt.
+        /// </summary>
+        public static string ZPG_WIRKUNG_SIMULATION {
+            get {
+                return ResourceManager.GetString("ZPG_WIRKUNG_SIMULATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe ähnelt.
+        /// </summary>
+        public static string ZPG_WIRKUNG_SUMME {
+            get {
+                return ResourceManager.GetString("ZPG_WIRKUNG_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkt auf: {0} ähnelt.
+        /// </summary>
+        public static string ZPG_WIRKUNG_TITEL {
+            get {
+                return ResourceManager.GetString("ZPG_WIRKUNG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verteilung ähnelt.
+        /// </summary>
+        public static string ZPG_WIRKUNG_VERTEILUNG {
+            get {
+                return ResourceManager.GetString("ZPG_WIRKUNG_VERTEILUNG", resourceCulture);
             }
         }
         

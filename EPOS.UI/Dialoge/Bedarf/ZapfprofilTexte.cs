@@ -1397,4 +1397,63 @@ public sealed class ZapfprofilTexte
 
     /// <summary><c>ZPG_PS_HINWEIS_WEG_BESTAND</c></summary>
     public string ProfilHinweisWegBestand { get; set; } = "Das Projekt rechnet sein Brauchwasser gerade über die Bestandsprofile; ein Profilsatz, der dem Projekt hinzugefügt wird, rechnet mit.";
+
+    // --- ZC5: die Methoden als Bereiche (Stufe Experte) ---
+
+    /// <summary><c>ZPG_GRP_METHODEN</c></summary>
+    public string GruppeMethoden { get; set; } = "Methoden";
+
+    /// <summary><c>ZPG_MTH_BEDARF</c></summary>
+    public string MethodeBedarf { get; set; } = "Bedarf";
+
+    /// <summary><c>ZPG_MTH_JAHRESREIHE</c></summary>
+    public string MethodeJahresreihe { get; set; } = "Jahresreihe";
+
+    /// <summary><c>ZPG_MTH_ZIRKULATION</c></summary>
+    public string MethodeZirkulation { get; set; } = "Zirkulation und Anlage";
+
+    /// <summary><c>ZPG_MTH_AUSLEGUNG</c></summary>
+    public string MethodeAuslegung { get; set; } = "Auslegung";
+
+    /// <summary><c>ZPG_WIRKUNG_SUMME</c></summary>
+    public string WirkungSumme { get; set; } = "Summe";
+
+    /// <summary><c>ZPG_WIRKUNG_VERTEILUNG</c></summary>
+    public string WirkungVerteilung { get; set; } = "Verteilung";
+
+    /// <summary><c>ZPG_WIRKUNG_JAHRESREIHE</c></summary>
+    public string WirkungJahresreihe { get; set; } = "Jahresreihe";
+
+    /// <summary><c>ZPG_WIRKUNG_SIMULATION</c></summary>
+    public string WirkungSimulation { get; set; } = "Simulation";
+
+    /// <summary><c>ZPG_WIRKUNG_AUSLEGUNG</c></summary>
+    public string WirkungAuslegung { get; set; } = "nur Auslegung";
+
+    /// <summary><c>ZPG_WIRKUNG_TITEL</c></summary>
+    public string WirkungTitel { get; set; } = "Wirkt auf: {0}";
+
+    /// <summary><c>ZPG_MTH_SATZ_BEDARF</c></summary>
+    public string SatzBedarf { get; set; } = "Belegung und Tagesbedarf bestimmen, wie viel Warmwasser der Bereich im Jahr zapft – sie ändern die Jahressumme.";
+
+    /// <summary><c>ZPG_MTH_SATZ_KALENDER</c></summary>
+    public string SatzKalender { get; set; } = "Der Kalender legt Werktage, Ruhetage und Ferien fest und verteilt den Jahresbedarf um – die Summe bleibt gleich.";
+
+    /// <summary><c>ZPG_MTH_SATZ_MESSWERT</c></summary>
+    public string SatzMesswert { get; set; } = "Ein Jahresmesswert kalibriert den Bedarf des Bereichs auf die gemessene Menge – er ändert die Summe, nicht die Verteilung.";
+
+    /// <summary><c>ZPG_MTH_SATZ_JAHRESREIHE</c></summary>
+    public string SatzJahresreihe { get; set; } = "Der Rechenweg bildet aus dem Tagesbedarf die Stundenreihe des Jahres; Tagesgang, Auslastung und Kaltwasser formen sie, die Summe bleibt.";
+
+    /// <summary><c>ZPG_MTH_SATZ_ZIRKULATION</c></summary>
+    public string SatzZirkulation { get; set; } = "Zirkulation und Leitungsinhalt gehen als Verlust in die Simulation ein; die Zapfmenge ändern sie nicht.";
+
+    /// <summary><c>ZPG_MTH_SATZ_AUSLEGUNG</c></summary>
+    public string SatzAuslegung { get; set; } = "Topologie, Ladeleistung, Ladefenster und Speichertemperatur wirken allein auf die Auslegung von Speicher und Station, nicht auf die Simulation.";
+
+    /// <summary><c>ZPG_OPT_NORM_JAHRESGANG</c></summary>
+    public string OptionNormJahresgang { get; set; } = "Norm-Jahresgang";
+
+    /// <summary><c>ZPG_OPT_TYPTAGE</c></summary>
+    public string OptionTyptage { get; set; } = "Typtage VDI 4655";
 }
