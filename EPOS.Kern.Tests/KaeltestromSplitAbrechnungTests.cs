@@ -339,7 +339,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(2, lauf.Protokoll.Hinweise.Count(Mengenmeldung));
             Assert.Contains(lauf.Protokoll.Hinweise, h => Mengenmeldung(h) && h.Contains(KUEHLRAUM));
 
-            // Rundweg über Tab_ErgebnisKaelteDezentral (gerundet gespeichert wie jede Ergebnisspalte).
+            // Rundweg über Tab_ErgebnisKaelteDezentral (8d: Mengen und Spitzen ungerundet, Jahres-EER gerundet).
             Assert.Equal(2, erg.KaelteDezentral.Count);
             for (int i = 0; i < 2; i++)
             {
@@ -350,14 +350,14 @@ namespace EPOS.Kern.Tests
                 Assert.True(z.IdZuordnung > 0);
                 Assert.Equal(z.IdZuordnung, d.ID_Zuordnung);
                 Assert.Equal(z.Bezeichner, d.Bezeichner);
-                Assert.Equal(Math.Round(z.KaelteKwh / 1000.0, 2), d.Kaelte_MWh, 9);
-                Assert.Equal(Math.Round(z.StromKwh / 1000.0, 2), d.Strom_MWh, 9);
-                Assert.Equal(Math.Round(z.KaelteMaxKw, 2), d.Kaelte_Spitze_kW.Value, 9);
+                Assert.Equal(z.KaelteKwh / 1000.0, d.Kaelte_MWh, 9);
+                Assert.Equal(z.StromKwh / 1000.0, d.Strom_MWh, 9);
+                Assert.Equal(z.KaelteMaxKw, d.Kaelte_Spitze_kW.Value, 9);
                 Assert.Equal(Math.Round(z.JahresEer, 2), d.Jahres_EER.Value, 9);
-                Assert.Equal(Math.Round(z.NetzbezugKwh / 1000.0, 2), d.Kaeltestrom_Netzbezug_MWh.Value, 9);
+                Assert.Equal(z.NetzbezugKwh / 1000.0, d.Kaeltestrom_Netzbezug_MWh.Value, 9);
                 Assert.Equal(kuehl, d.Kuehl_CarrierId);
                 Assert.Equal(z.EigenerZaehler, d.Kuehl_EigenerZaehler);
-                Assert.Equal(Math.Round(Kaeltestromabrechnung.Stundenspitze(z.Strom_stuendlich).Value, 2), d.Stromspitze_kW.Value, 9);
+                Assert.Equal(Kaeltestromabrechnung.Stundenspitze(z.Strom_stuendlich).Value, d.Stromspitze_kW.Value, 9);
             }
             Assert.Equal(KaeltebedarfSplitAbrechnungSchema.QUELLE_LASTGANG, erg.KaelteDezentral[0].Quelle);
 

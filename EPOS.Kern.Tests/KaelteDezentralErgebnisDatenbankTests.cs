@@ -163,7 +163,7 @@ namespace EPOS.Kern.Tests
             SimulationKaeltebedarf k = lauf.simulation_Kaeltebedarf;
             Assert.True(k.MitDezentral);
             // Rundweg über ErgebnisCtrl mit der echten Tabelle: je Split-Zeile eine gespeicherte Zeile am Lauf, gelesen in
-            // derselben Folge (gerundet gespeichert wie jede Ergebnisspalte).
+            // derselben Folge (8d: Mengen ungerundet gespeichert).
             Assert.Equal(2L, Convert.ToInt64(DataRepository.ExecuteScalar(
                 "SELECT COUNT(*) FROM " + KaeltebedarfSplitAbrechnungSchema.TAB_ERGEBNIS + " d JOIN Tab_Ergebnis e ON e.ID = d.ID_Ergebnis " +
                 "WHERE e.ID_Projekt = ?", new DbParam("@p", PROJEKT)), CultureInfo.InvariantCulture));
@@ -177,8 +177,8 @@ namespace EPOS.Kern.Tests
                              gespeichert.Quelle);
                 Assert.Equal(gerechnet.IdZuordnung, gespeichert.ID_Zuordnung);
                 Assert.Equal(gerechnet.Bezeichner, gespeichert.Bezeichner);
-                Assert.Equal(Math.Round(gerechnet.KaelteKwh / 1000.0, 2), gespeichert.Kaelte_MWh, 9);
-                Assert.Equal(Math.Round(gerechnet.StromKwh / 1000.0, 2), gespeichert.Strom_MWh, 9);
+                Assert.Equal(gerechnet.KaelteKwh / 1000.0, gespeichert.Kaelte_MWh, 9);
+                Assert.Equal(gerechnet.StromKwh / 1000.0, gespeichert.Strom_MWh, 9);
                 Assert.Equal(kuehl, gespeichert.Kuehl_CarrierId);
                 Assert.Equal(gerechnet.EigenerZaehler, gespeichert.Kuehl_EigenerZaehler);
             }

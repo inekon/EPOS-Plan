@@ -125,9 +125,9 @@ WaermepumpeModul[0].Waermeproduktion;0.01
 WaermepumpeModul[0].Stromverbrauch;0
 WaermepumpeModul[0].Heizstab;0
 WaermepumpeModul[0].Betriebsstunden;0.33
-WaermepumpeModul[0].Kaelteproduktion;4.05
-WaermepumpeModul[0].Stromverbrauch_Kuehlung;0.77
-WaermepumpeModul[0].Kaeltestrom_Netzbezug;0.77
+WaermepumpeModul[0].Kaelteproduktion;4.05051694
+WaermepumpeModul[0].Stromverbrauch_Kuehlung;0.773280506
+WaermepumpeModul[0].Kaeltestrom_Netzbezug;0.773280506
 BHKW.Waermebedarf;75.39
 BHKW.Restwaermebedarf;14.83
 BHKW.Strombedarf;15

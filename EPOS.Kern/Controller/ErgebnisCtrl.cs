@@ -406,10 +406,10 @@ namespace WindowsFormsApplication1
                                 new DbParam("@k", DbParamTyp.Double) { Wert = km.Kaelteproduktion_MWh },
                                 new DbParam("@s", DbParamTyp.Double) { Wert = km.Stromverbrauch_MWh },
                                 new DbParam("@h", DbParamTyp.Double) { Wert = km.Hilfsstrom_MWh },
-                                new DbParam("@f", DbParamTyp.Double) { Wert = R(km.FreieKuehlung_MWh) },
+                                new DbParam("@f", DbParamTyp.Double) { Wert = km.FreieKuehlung_MWh }, // 8d: ungerundet
                                 new DbParam("@fs", DbParamTyp.Integer) { Wert = km.FreieKuehlung_Stunden },
                                 new DbParam("@t", DbParamTyp.Integer) { Wert = km.Taktstunden },
-                                new DbParam("@u", DbParamTyp.Double) { Wert = R(km.Unterdeckung_MWh) },
+                                new DbParam("@u", DbParamTyp.Double) { Wert = km.Unterdeckung_MWh }, // 8d: ungerundet
                                 new DbParam("@l", DbParamTyp.Integer) { Wert = km.Stunden_Leistungsgrenze },
                             };
                             // KU3-4d (Schritt 184): Netzbezug, abweichender Kuehltraeger samt Abrechnungsart, Stromspitze.
@@ -440,7 +440,7 @@ namespace WindowsFormsApplication1
                                 pk.Add(new DbParam("@rn", DbParamTyp.Integer) { Wert = GanzOderDbNull(km.Stunden_Nass) });
                                 pk.Add(new DbParam("@rt", DbParamTyp.Double) { Wert = WertOderNull(km.Rueckkuehltemperatur_Mittel) });
                                 // K-F3: ohne Rueckkuehlwerk in Reihe NULL.
-                                pk.Add(new DbParam("@rf", DbParamTyp.Double) { Wert = WertOderNull(km.TeilFreikuehlung_MWh) });
+                                pk.Add(new DbParam("@rf", DbParamTyp.Double) { Wert = UngerundetOderNull(km.TeilFreikuehlung_MWh) }); // 8d: ungerundet
                                 pk.Add(new DbParam("@rs", DbParamTyp.Integer) { Wert = GanzOderDbNull(km.TeilFreikuehlung_Stunden) });
                             }
                             v.Ausfuehren(sqlKm, pk.ToArray());
@@ -464,14 +464,14 @@ namespace WindowsFormsApplication1
                                     ? KaeltebedarfSplitAbrechnungSchema.QUELLE_LASTGANG : KaeltebedarfSplitAbrechnungSchema.QUELLE_PROFIL) },
                                 new DbParam("@z", DbParamTyp.Integer) { Wert = kd.ID_Zuordnung.HasValue ? (object)kd.ID_Zuordnung.Value : DBNull.Value },
                                 new DbParam("@b", DbParamTyp.VarWChar) { Wert = (object)(kd.Bezeichner ?? "") },
-                                new DbParam("@k", DbParamTyp.Double) { Wert = R(kd.Kaelte_MWh) },
-                                new DbParam("@s", DbParamTyp.Double) { Wert = R(kd.Strom_MWh) },
-                                new DbParam("@ks", DbParamTyp.Double) { Wert = kd.Kaelte_Spitze_kW.HasValue ? (object)R(kd.Kaelte_Spitze_kW.Value) : DBNull.Value },
+                                new DbParam("@k", DbParamTyp.Double) { Wert = kd.Kaelte_MWh }, // 8d: ungerundet (alle Mengen und Spitzen der Split-Zeile)
+                                new DbParam("@s", DbParamTyp.Double) { Wert = kd.Strom_MWh },
+                                new DbParam("@ks", DbParamTyp.Double) { Wert = UngerundetOderNull(kd.Kaelte_Spitze_kW) },
                                 new DbParam("@j", DbParamTyp.Double) { Wert = WertOderNull(kd.Jahres_EER) },
-                                new DbParam("@nb", DbParamTyp.Double) { Wert = kd.Kaeltestrom_Netzbezug_MWh.HasValue ? (object)R(kd.Kaeltestrom_Netzbezug_MWh.Value) : DBNull.Value },
+                                new DbParam("@nb", DbParamTyp.Double) { Wert = UngerundetOderNull(kd.Kaeltestrom_Netzbezug_MWh) },
                                 new DbParam("@kc", DbParamTyp.Integer) { Wert = traeger ? (object)kd.Kuehl_CarrierId.Value : DBNull.Value },
                                 new DbParam("@kz", DbParamTyp.Integer) { Wert = traeger && kd.Kuehl_EigenerZaehler.HasValue ? (object)(kd.Kuehl_EigenerZaehler.Value ? 1 : 0) : DBNull.Value },
-                                new DbParam("@sp", DbParamTyp.Double) { Wert = kd.Stromspitze_kW.HasValue ? (object)R(kd.Stromspitze_kW.Value) : DBNull.Value });
+                                new DbParam("@sp", DbParamTyp.Double) { Wert = UngerundetOderNull(kd.Stromspitze_kW) });
                         }
                     }
 
@@ -514,7 +514,7 @@ namespace WindowsFormsApplication1
                             // Schritt 187 (KU3-6a): die freie Kuehlung - NULL, solange sie nicht erhoben ist.
                             if (freieKuehlungWp)
                             {
-                                p.Add(new DbParam("@f1", DbParamTyp.Double) { Wert = WertOderNull(m.Waermepumpe.FreieKuehlung_MWh) });
+                                p.Add(new DbParam("@f1", DbParamTyp.Double) { Wert = UngerundetOderNull(m.Waermepumpe.FreieKuehlung_MWh) }); // 8d: ungerundet
                                 p.Add(new DbParam("@f2", DbParamTyp.Integer) { Wert = GanzOderDbNull(m.Waermepumpe.FreieKuehlung_Stunden) });
                             }
                             if (bereicheWp) BereichsParameter(p, m.Waermepumpe.Bereiche, false);
@@ -552,9 +552,10 @@ namespace WindowsFormsApplication1
                                     p.Add(new DbParam("@s", DbParamTyp.Double) { Wert = R(mo.Stromverbrauch) });
                                     p.Add(new DbParam("@h", DbParamTyp.Double) { Wert = R(mo.Heizstab) });
                                     p.Add(new DbParam("@b", DbParamTyp.Double) { Wert = R(mo.Betriebsstunden) });
-                                    p.Add(new DbParam("@k1", DbParamTyp.Double) { Wert = WertOderNull(mo.Kaelteproduktion) });
-                                    p.Add(new DbParam("@k2", DbParamTyp.Double) { Wert = WertOderNull(mo.Stromverbrauch_Kuehlung) });
-                                    p.Add(new DbParam("@k3", DbParamTyp.Double) { Wert = WertOderNull(mo.Kaeltestrom_Netzbezug) });
+                                    // 8d: ungerundet - die Kaeltespalten der Modulzeile wie die Summenzeile der Waermepumpe.
+                                    p.Add(new DbParam("@k1", DbParamTyp.Double) { Wert = UngerundetOderNull(mo.Kaelteproduktion) });
+                                    p.Add(new DbParam("@k2", DbParamTyp.Double) { Wert = UngerundetOderNull(mo.Stromverbrauch_Kuehlung) });
+                                    p.Add(new DbParam("@k3", DbParamTyp.Double) { Wert = UngerundetOderNull(mo.Kaeltestrom_Netzbezug) });
                                     p.Add(new DbParam("@k4", DbParamTyp.Integer)
                                         { Wert = mo.Kuehl_CarrierId.HasValue && mo.Kuehl_CarrierId.Value > 0
                                                      ? (object)mo.Kuehl_CarrierId.Value : DBNull.Value });
@@ -563,7 +564,7 @@ namespace WindowsFormsApplication1
                                                      ? (object)(mo.Kuehl_EigenerZaehler == true ? 1 : 0) : DBNull.Value });
                                     if (freieKuehlungWp)
                                     {
-                                        p.Add(new DbParam("@f1", DbParamTyp.Double) { Wert = WertOderNull(mo.FreieKuehlung_MWh) });
+                                        p.Add(new DbParam("@f1", DbParamTyp.Double) { Wert = UngerundetOderNull(mo.FreieKuehlung_MWh) }); // 8d: ungerundet
                                         p.Add(new DbParam("@f2", DbParamTyp.Integer) { Wert = GanzOderDbNull(mo.FreieKuehlung_Stunden) });
                                     }
                                     if (vorlaufwahlWp)
@@ -968,7 +969,7 @@ namespace WindowsFormsApplication1
                                 p.Add(new DbParam("@kue", DbParamTyp.Double)
                                 {
                                     Wert = WaermesenkeClass.IstKaelteVerwendung(sp.Verwendung)
-                                        ? (object)R(sp.Entladung_Kanal[Kanal.KUEHLUNG]) : DBNull.Value
+                                        ? (object)sp.Entladung_Kanal[Kanal.KUEHLUNG] : DBNull.Value // 8d: ungerundet
                                 });
 
                                 v.Ausfuehren(sqlP, p.ToArray());

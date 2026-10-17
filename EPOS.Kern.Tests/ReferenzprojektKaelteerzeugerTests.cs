@@ -223,11 +223,11 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(stunden, e.StundenMitKaelte);
                 Assert.True(kaelte <= kaskade.BedarfGesamtKwh + 1e-6);
 
-                // Gespeichert: die Modulspalten mit zwei Stellen.
+                // Gespeichert: die Kaeltespalten der Modulzeile ungerundet (8d).
                 ErgebnisModel erg = new ErgebnisCtrl().Load(PROJEKT);
                 ErgebnisWaermepumpeModulModel mo = Assert.Single(erg.Waermepumpe.Module);
-                Assert.Equal(Math.Round(kaelte / 1000.0, 2, MidpointRounding.AwayFromZero), mo.Kaelteproduktion.Value, 9);
-                Assert.Equal(Math.Round(strom / 1000.0, 2, MidpointRounding.AwayFromZero), mo.Stromverbrauch_Kuehlung.Value, 9);
+                Assert.Equal(kaelte / 1000.0, mo.Kaelteproduktion.Value, 9);
+                Assert.Equal(strom / 1000.0, mo.Stromverbrauch_Kuehlung.Value, 9);
                 Assert.True(mo.Kaeltestrom_Netzbezug.Value <= mo.Stromverbrauch_Kuehlung.Value + 1e-9);
                 Assert.Null(mo.Kuehl_CarrierId);
 

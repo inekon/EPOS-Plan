@@ -232,7 +232,7 @@ Pufferspeicher[0].Durchsatz_Entladen;0
 Pufferspeicher[0].ID_Anlage;
 Pufferspeicher[0].T_oben_Mittel;
 Pufferspeicher[0].T_oben_Min;
-Pufferspeicher[0].Entladung_Kuehlung;2375.77
+Pufferspeicher[0].Entladung_Kuehlung;2375.77492
 Vektor.waermebedarf.Summe;75385.1431
 Vektor.waermebedarf_gebaeude.Summe;75385143.1
 Vektor.waermebedarf_brauchwasser.Summe;0
