@@ -42,8 +42,8 @@ namespace WindowsFormsApplication1
     public static class BetriebskalenderFerienlisteSchema
     {
         /// <summary><b>Die Nummer des Schemaschritts</b> — die EINE Stelle, an der sie steht.</summary>
-        // KETTE: 241 haengt ueber + 1 an 240 (ErgebnisWirtschaftlichkeitSpaltenSchema, KB-8) — vorlaeufig + 3 an 238 (KlimaRohwerteSchema), bis 239 und 240 auf origin liegen; dann umhaengen.
-        public const int SCHRITT = KlimaRohwerteSchema.SCHRITT + 3;
+        // KETTE: 241 haengt ueber + 1 an 240 (ErgebnisWirtschaftlichkeitSpaltenSchema, KB-8).
+        public const int SCHRITT = ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT + 1;
 
         /// <summary>Die Tabelle der weiteren Betriebsferien.</summary>
         public const string TAB_FERIEN = "Tab_Betriebskalenderferien";

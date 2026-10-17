@@ -26,10 +26,9 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Nummer_Kette_und_Register()
         {
-            // KETTE: 241 haengt ueber + 1 an 240 (ErgebnisWirtschaftlichkeitSpaltenSchema, KB-8) — vorlaeufig + 3 an 238
-            // (KlimaRohwerteSchema), bis 239 und 240 auf origin liegen; dann umhaengen.
+            // KETTE: 241 haengt ueber + 1 an 240 (ErgebnisWirtschaftlichkeitSpaltenSchema, KB-8).
             Assert.Equal(241, BetriebskalenderFerienlisteSchema.SCHRITT);
-            Assert.Equal(KlimaRohwerteSchema.SCHRITT + 3, BetriebskalenderFerienlisteSchema.SCHRITT);
+            Assert.Equal(ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT + 1, BetriebskalenderFerienlisteSchema.SCHRITT);
             Assert.True(SchemaStand.Zielversion >= BetriebskalenderFerienlisteSchema.SCHRITT);
             Assert.Contains(Paketanhebung.Stufen,
                             s => s.Nr == BetriebskalenderFerienlisteSchema.SCHRITT && s.Wirkung == Paketanhebung.Art.Ddl);
