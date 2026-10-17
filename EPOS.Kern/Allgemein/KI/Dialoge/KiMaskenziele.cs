@@ -215,6 +215,12 @@ namespace WindowsFormsApplication1
         public const string KAELTEMITTEL = "KAELTEMITTEL";
 
         /// <summary>
+        /// Der Seitenschluessel der Verwaltung „Rückkühlwerke" (K-F5a, Menü „Daten &amp; Import") —
+        /// <c>Seitenschluessel.Rueckkuehlwerk</c>, dieselbe Zeichenkette.
+        /// </summary>
+        public const string RUECKKUEHLWERK = "RUECKKUEHLWERK";
+
+        /// <summary>
         /// Der Seitenschluessel des Erzeugerdialogs „Kältemaschinen im Projekt" (KU3-4c) — eine freie Ansicht
         /// der Wurzel fuer das offene Projekt (<c>Seitenschluessel.KaeltemaschineAnlage</c>, dieselbe Zeichenkette).
         /// </summary>
@@ -420,6 +426,7 @@ namespace WindowsFormsApplication1
                 { KiMaskennamen.BAUTEILAUFBAU, BAUTEILAUFBAU_KATALOG },
                 { KiMaskennamen.KAELTEMASCHINE_KATALOG, KAELTEMASCHINE_KATALOG },
                 { KiMaskennamen.KAELTEMITTEL, KAELTEMITTEL },
+                { KiMaskennamen.RUECKKUEHLWERK, RUECKKUEHLWERK },
                 { KiMaskennamen.KAELTEMASCHINE_ANLAGE, KAELTEMASCHINE_ANLAGE },
 
                 // Die Betriebskalender der Bedarfsprofile (PW2, BW2) - eine freie Ansicht wie die

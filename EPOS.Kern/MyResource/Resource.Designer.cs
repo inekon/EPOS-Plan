@@ -70465,6 +70465,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogsatz des Rückkühlwerks der wassergekühlten Kältemaschine (Id); leer = keins, dann gelten die Festwerte der Rückkühlart. Mit OK bekommt die Anlage eine eigene Projektkopie. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_RKW_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_RKW_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückkühlwerk ähnelt.
+        /// </summary>
+        public static string KI_DLG_KMA_RKW_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KMA_RKW_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Teillastrechnung der Projektkopie samt Herkunft der Kurve (wie bisher, linear, Kurve, Vorgabekurve, verworfen) — nur zu lesen, gepflegt in der Verwaltung „Kältemaschinen“. ähnelt.
         /// </summary>
         public static string KI_DLG_KMA_TEILLAST_WEG_ERL {
@@ -71964,6 +71982,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_QPUF {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_QPUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwaltung Rückkühlwerke ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_RKW {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_RKW", resourceCulture);
             }
         }
         
@@ -85456,6 +85483,159 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grädigkeit im Nennpunkt in K (0 bis 30); leer = Festwert der passenden Rückkühlart. ähnelt.
+        /// </summary>
+        public static string KI_RKW_ERL_ANNAEHERUNG_NENN {
+            get {
+                return ResourceManager.GetString("KI_RKW_ERL_ANNAEHERUNG_NENN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weg der Annäherung: fest oder lastabhängig; leer = fest. ähnelt.
+        /// </summary>
+        public static string KI_RKW_ERL_ANNAEHERUNG_WEG {
+            get {
+                return ResourceManager.GetString("KI_RKW_ERL_ANNAEHERUNG_WEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauart: trocken, adiabat, hybrid oder Kühlturm offen/geschlossen; leer = trocken. ähnelt.
+        /// </summary>
+        public static string KI_RKW_ERL_BAUART {
+            get {
+                return ResourceManager.GetString("KI_RKW_ERL_BAUART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur in °C, ab der befeuchtet wird (−30 bis 50). ähnelt.
+        /// </summary>
+        public static string KI_RKW_ERL_BEFEUCHTUNG_AB {
+            get {
+                return ResourceManager.GetString("KI_RKW_ERL_BEFEUCHTUNG_AB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Befeuchtungswirkungsgrad adiabat/hybrid (0 bis 1). ähnelt.
+        /// </summary>
+        public static string KI_RKW_ERL_BEFEUCHTUNG_WIRKUNGSGRAD {
+            get {
+                return ResourceManager.GetString("KI_RKW_ERL_BEFEUCHTUNG_WIRKUNGSGRAD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Freitext zum Rückkühlwerk. ähnelt.
+        /// </summary>
+        public static string KI_RKW_ERL_BESCHREIBUNG {
+            get {
+                return ResourceManager.GetString("KI_RKW_ERL_BESCHREIBUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name des Rückkühlwerks, im Katalog eindeutig. ähnelt.
+        /// </summary>
+        public static string KI_RKW_ERL_BEZEICHNER {
+            get {
+                return ResourceManager.GetString("KI_RKW_ERL_BEZEICHNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Driftverlust als Anteil des Umlaufs (0 bis 1). ähnelt.
+        /// </summary>
+        public static string KI_RKW_ERL_DRIFT_ANTEIL {
+            get {
+                return ResourceManager.GetString("KI_RKW_ERL_DRIFT_ANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eindickung des Umlaufwassers (über 1 bis 20). ähnelt.
+        /// </summary>
+        public static string KI_RKW_ERL_EINDICKUNG {
+            get {
+                return ResourceManager.GetString("KI_RKW_ERL_EINDICKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schaltung der freien Kühlung: parallel oder in Reihe; leer = parallel. ähnelt.
+        /// </summary>
+        public static string KI_RKW_ERL_FREIKUEHLUNG_SCHALTUNG {
+            get {
+                return ResourceManager.GetString("KI_RKW_ERL_FREIKUEHLUNG_SCHALTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abzuführende Wärme im Nennpunkt in kW, größer 0. ähnelt.
+        /// </summary>
+        public static string KI_RKW_ERL_NENNLEISTUNG {
+            get {
+                return ResourceManager.GetString("KI_RKW_ERL_NENNLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der gewählte Satz der Liste (Schlüssel = Id). ähnelt.
+        /// </summary>
+        public static string KI_RKW_ERL_SATZ {
+            get {
+                return ResourceManager.GetString("KI_RKW_ERL_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kleinste Drehzahl als Anteil der Nenndrehzahl (0 bis 1) bei Regelung Drehzahl. ähnelt.
+        /// </summary>
+        public static string KI_RKW_ERL_VENTILATOR_DREHZAHL_MIN {
+            get {
+                return ResourceManager.GetString("KI_RKW_ERL_VENTILATOR_DREHZAHL_MIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ventilatorleistung im Nennpunkt in kW; leer = Hilfsstrom der Rückkühlung an der Kältemaschine. ähnelt.
+        /// </summary>
+        public static string KI_RKW_ERL_VENTILATOR_NENN {
+            get {
+                return ResourceManager.GetString("KI_RKW_ERL_VENTILATOR_NENN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Regelung des Ventilators: Ein/Aus, Stufen oder Drehzahl. ähnelt.
+        /// </summary>
+        public static string KI_RKW_ERL_VENTILATOR_REGELUNG {
+            get {
+                return ResourceManager.GetString("KI_RKW_ERL_VENTILATOR_REGELUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahl der Stufen bei Regelung Stufen, mindestens 2. ähnelt.
+        /// </summary>
+        public static string KI_RKW_ERL_VENTILATOR_STUFEN {
+            get {
+                return ResourceManager.GetString("KI_RKW_ERL_VENTILATOR_STUFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Faktor auf die rechnerische Verdunstung (über 0 bis 3). ähnelt.
+        /// </summary>
+        public static string KI_RKW_ERL_VERDUNSTUNG_FAKTOR {
+            get {
+                return ResourceManager.GetString("KI_RKW_ERL_VERDUNSTUNG_FAKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0} ist eine Katalogtabelle der Auslieferung. Katalogpflege gehört nicht zu den Aufgaben des Assistenten. ähnelt.
         /// </summary>
         public static string KI_SCHUTZ_KATALOG {
@@ -88487,6 +88667,105 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KMK_GERAET_ZEILE {
             get {
                 return ResourceManager.GetString("KMK_GERAET_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückkühlung ähnelt.
+        /// </summary>
+        public static string KMK_RKW_GRUPPE {
+            get {
+                return ResourceManager.GetString("KMK_RKW_GRUPPE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftfeuchte fehlt: Das Klima des Projekts führt keine Luftfeuchte – das Rückkühlwerk rechnet dann trocken, ohne Befeuchtung und ohne Wasserverbrauch. ähnelt.
+        /// </summary>
+        public static string KMK_RKW_HINWEIS_FEUCHTE {
+            get {
+                return ResourceManager.GetString("KMK_RKW_HINWEIS_FEUCHTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ohne Rückkühlwerk rechnet die Maschine mit den Festwerten ihrer Rückkühlart. ähnelt.
+        /// </summary>
+        public static string KMK_RKW_HINWEIS_KEINS {
+            get {
+                return ResourceManager.GetString("KMK_RKW_HINWEIS_KEINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftgekühlte Maschine: Sie trägt ihren Verflüssiger selbst und bekommt kein Rückkühlwerk. ähnelt.
+        /// </summary>
+        public static string KMK_RKW_HINWEIS_LUFT {
+            get {
+                return ResourceManager.GetString("KMK_RKW_HINWEIS_LUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Ventilator des Rückkühlwerks ({0} kW) ersetzt den Hilfsstrom der Rückkühlung der Kältemaschine – er wird nicht doppelt gezählt. ähnelt.
+        /// </summary>
+        public static string KMK_RKW_HINWEIS_VENTILATOR {
+            get {
+                return ResourceManager.GetString("KMK_RKW_HINWEIS_VENTILATOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wahl wird mit OK geschrieben; die Anlage bekommt dann eine eigene Projektkopie des Katalogsatzes. ähnelt.
+        /// </summary>
+        public static string KMK_RKW_HINWEIS_WAHL {
+            get {
+                return ResourceManager.GetString("KMK_RKW_HINWEIS_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die — keins (Festwerte der Rückkühlart) — ähnelt.
+        /// </summary>
+        public static string KMK_RKW_KEINS {
+            get {
+                return ResourceManager.GetString("KMK_RKW_KEINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückkühlwerk ähnelt.
+        /// </summary>
+        public static string KMK_RKW_LABEL {
+            get {
+                return ResourceManager.GetString("KMK_RKW_LABEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt ungespeicherte Änderungen. Übernehmen Sie sie mit OK oder verwerfen Sie sie mit Abbrechen, bevor Sie die Rückkühlwerke öffnen. ähnelt.
+        /// </summary>
+        public static string KMK_RKW_MSG_UNGESPEICHERT {
+            get {
+                return ResourceManager.GetString("KMK_RKW_MSG_UNGESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Verwaltung der Rückkühlwerke lässt sich hier nicht öffnen. ähnelt.
+        /// </summary>
+        public static string KMK_RKW_MSG_VERWALTUNG_NICHT {
+            get {
+                return ResourceManager.GetString("KMK_RKW_MSG_VERWALTUNG_NICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Projektkopie) ähnelt.
+        /// </summary>
+        public static string KMK_RKW_PROJEKTKOPIE {
+            get {
+                return ResourceManager.GetString("KMK_RKW_PROJEKTKOPIE", resourceCulture);
             }
         }
         
@@ -114754,6 +115033,168 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In {0} Projektanlage(n) gewählt – Löschen gesperrt; dort zuerst ein anderes wählen. ähnelt.
+        /// </summary>
+        public static string RKW_AW_LOESCHEN_VERWENDET {
+            get {
+                return ResourceManager.GetString("RKW_AW_LOESCHEN_VERWENDET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Adiabatischer Kühler ähnelt.
+        /// </summary>
+        public static string RKW_BAUART_ADIABAT {
+            get {
+                return ResourceManager.GetString("RKW_BAUART_ADIABAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hybridkühler ähnelt.
+        /// </summary>
+        public static string RKW_BAUART_HYBRID {
+            get {
+                return ResourceManager.GetString("RKW_BAUART_HYBRID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlturm, geschlossen ähnelt.
+        /// </summary>
+        public static string RKW_BAUART_KUEHLTURM_GESCHLOSSEN {
+            get {
+                return ResourceManager.GetString("RKW_BAUART_KUEHLTURM_GESCHLOSSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlturm, offen ähnelt.
+        /// </summary>
+        public static string RKW_BAUART_KUEHLTURM_OFFEN {
+            get {
+                return ResourceManager.GetString("RKW_BAUART_KUEHLTURM_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trockenkühler ähnelt.
+        /// </summary>
+        public static string RKW_BAUART_TROCKEN {
+            get {
+                return ResourceManager.GetString("RKW_BAUART_TROCKEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ab {0} ähnelt.
+        /// </summary>
+        public static string RKW_BEREICH_AB {
+            get {
+                return ResourceManager.GetString("RKW_BEREICH_AB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die größer {0} ähnelt.
+        /// </summary>
+        public static string RKW_BEREICH_GROESSER {
+            get {
+                return ResourceManager.GetString("RKW_BEREICH_GROESSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die über {0} bis {1} ähnelt.
+        /// </summary>
+        public static string RKW_BEREICH_UEBER_BIS {
+            get {
+                return ResourceManager.GetString("RKW_BEREICH_UEBER_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} bis {1} ähnelt.
+        /// </summary>
+        public static string RKW_BEREICH_VON_BIS {
+            get {
+                return ResourceManager.GetString("RKW_BEREICH_VON_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soll das Rückkühlwerk „{0}“ gelöscht werden? ähnelt.
+        /// </summary>
+        public static string RKW_FRAGE_LOESCHEN {
+            get {
+                return ResourceManager.GetString("RKW_FRAGE_LOESCHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Annäherung ähnelt.
+        /// </summary>
+        public static string RKW_GRUPPE_ANNAEHERUNG {
+            get {
+                return ResourceManager.GetString("RKW_GRUPPE_ANNAEHERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Freikühlung ähnelt.
+        /// </summary>
+        public static string RKW_GRUPPE_FREIKUEHLUNG {
+            get {
+                return ResourceManager.GetString("RKW_GRUPPE_FREIKUEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauart und Nennpunkt ähnelt.
+        /// </summary>
+        public static string RKW_GRUPPE_NENNPUNKT {
+            get {
+                return ResourceManager.GetString("RKW_GRUPPE_NENNPUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ventilator ähnelt.
+        /// </summary>
+        public static string RKW_GRUPPE_VENTILATOR {
+            get {
+                return ResourceManager.GetString("RKW_GRUPPE_VENTILATOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Befeuchtung und Wasser ähnelt.
+        /// </summary>
+        public static string RKW_GRUPPE_WASSER {
+            get {
+                return ResourceManager.GetString("RKW_GRUPPE_WASSER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verdunstungskühlanlage im Sinn der 42. BImSchV: Anzeige-, Prüf- und Hygienepflichten des Betreibers beachten. ähnelt.
+        /// </summary>
+        public static string RKW_HINWEIS_BIMSCHV {
+            get {
+                return ResourceManager.GetString("RKW_HINWEIS_BIMSCHV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Den Gerätepreis pflegt die Kostenverwaltung. ähnelt.
+        /// </summary>
+        public static string RKW_HINWEIS_KOSTEN {
+            get {
+                return ResourceManager.GetString("RKW_HINWEIS_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Annäherung im Nennpunkt ähnelt.
         /// </summary>
         public static string RKW_LBL_ANNAEHERUNG_NENN {
@@ -114907,6 +115348,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwendung ähnelt.
+        /// </summary>
+        public static string RKW_LBL_VERWENDUNG {
+            get {
+                return ResourceManager.GetString("RKW_LBL_VERWENDUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog führt noch kein Rückkühlwerk – „Neu…“ legt eines an. ähnelt.
+        /// </summary>
+        public static string RKW_LEER {
+            get {
+                return ResourceManager.GetString("RKW_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stehen bleiben (in Projekten gewählt): {0} ähnelt.
+        /// </summary>
+        public static string RKW_LOESCHEN_BLEIBEN_VERWENDET {
+            get {
+                return ResourceManager.GetString("RKW_LOESCHEN_BLEIBEN_VERWENDET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückkühlwerke… ähnelt.
+        /// </summary>
+        public static string RKW_MENUE {
+            get {
+                return ResourceManager.GetString("RKW_MENUE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ angelegt. ähnelt.
+        /// </summary>
+        public static string RKW_MSG_ANGELEGT {
+            get {
+                return ResourceManager.GetString("RKW_MSG_ANGELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Dieses Rückkühlwerk gehört zur Auslieferung und wird nicht überschrieben. Legen Sie eine Kopie an. ähnelt.
         /// </summary>
         public static string RKW_MSG_AUSGELIEFERT {
@@ -114916,7 +115402,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Auswahl des Rückkühlwerks (Annäherung, Ventilatorregelung oder Schaltung der freien Kühlung) ist unbekannt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Auswahl „{1}“ ist unbekannt. ähnelt.
         /// </summary>
         public static string RKW_MSG_AUSWAHL_UNGUELTIG {
             get {
@@ -114934,11 +115420,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Rückkühlwerk konnte nicht geschrieben werden. ähnelt.
+        /// </summary>
+        public static string RKW_MSG_FEHLER {
+            get {
+                return ResourceManager.GetString("RKW_MSG_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ gelöscht. ähnelt.
+        /// </summary>
+        public static string RKW_MSG_GELOESCHT {
+            get {
+                return ResourceManager.GetString("RKW_MSG_GELOESCHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eine luftgekühlte Kältemaschine (Rückkühlart Luft) trägt ihren Verflüssiger selbst und bekommt kein Rückkühlwerk. ähnelt.
         /// </summary>
         public static string RKW_MSG_LUFT_UNVERTRAEGLICH {
             get {
                 return ResourceManager.GetString("RKW_MSG_LUFT_UNVERTRAEGLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diesen Namen führt der Katalog bereits. ähnelt.
+        /// </summary>
+        public static string RKW_MSG_NAME_BELEGT {
+            get {
+                return ResourceManager.GetString("RKW_MSG_NAME_BELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Rückkühlwerk braucht einen Namen. ähnelt.
+        /// </summary>
+        public static string RKW_MSG_NAME_LEER {
+            get {
+                return ResourceManager.GetString("RKW_MSG_NAME_LEER", resourceCulture);
             }
         }
         
@@ -114961,11 +115483,191 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Wert des Rückkühlwerks liegt außerhalb seines Bereichs. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Rückkühlwerk ist noch in {0} Projektanlage(n) gewählt und kann nicht gelöscht werden; dort zuerst ein anderes wählen. ähnelt.
+        /// </summary>
+        public static string RKW_MSG_VERWENDET {
+            get {
+                return ResourceManager.GetString("RKW_MSG_VERWENDET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Der Wert liegt außerhalb seines Bereichs ({1}). ähnelt.
         /// </summary>
         public static string RKW_MSG_WERT_UNGUELTIG {
             get {
                 return ResourceManager.GetString("RKW_MSG_WERT_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Rückkühlwerke stehen auf diesem Gerät noch nicht zur Verfügung. ähnelt.
+        /// </summary>
+        public static string RKW_NICHT_VERFUEGBAR {
+            get {
+                return ResourceManager.GetString("RKW_NICHT_VERFUEGBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Drehzahl ähnelt.
+        /// </summary>
+        public static string RKW_REGELUNG_DREHZAHL {
+            get {
+                return ResourceManager.GetString("RKW_REGELUNG_DREHZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein/Aus ähnelt.
+        /// </summary>
+        public static string RKW_REGELUNG_EIN_AUS {
+            get {
+                return ResourceManager.GetString("RKW_REGELUNG_EIN_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stufen ähnelt.
+        /// </summary>
+        public static string RKW_REGELUNG_STUFEN {
+            get {
+                return ResourceManager.GetString("RKW_REGELUNG_STUFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die parallel ähnelt.
+        /// </summary>
+        public static string RKW_SCHALTUNG_PARALLEL {
+            get {
+                return ResourceManager.GetString("RKW_SCHALTUNG_PARALLEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die in Reihe ähnelt.
+        /// </summary>
+        public static string RKW_SCHALTUNG_REIHE {
+            get {
+                return ResourceManager.GetString("RKW_SCHALTUNG_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Annäherung ähnelt.
+        /// </summary>
+        public static string RKW_SP_ANNAEHERUNG {
+            get {
+                return ResourceManager.GetString("RKW_SP_ANNAEHERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauart ähnelt.
+        /// </summary>
+        public static string RKW_SP_BAUART {
+            get {
+                return ResourceManager.GetString("RKW_SP_BAUART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Freikühlung ähnelt.
+        /// </summary>
+        public static string RKW_SP_FREIKUEHLUNG {
+            get {
+                return ResourceManager.GetString("RKW_SP_FREIKUEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennleistung ähnelt.
+        /// </summary>
+        public static string RKW_SP_NENNLEISTUNG {
+            get {
+                return ResourceManager.GetString("RKW_SP_NENNLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ventilator ähnelt.
+        /// </summary>
+        public static string RKW_SP_VENTILATOR {
+            get {
+                return ResourceManager.GetString("RKW_SP_VENTILATOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rückkühlwerke ähnelt.
+        /// </summary>
+        public static string RKW_TITEL {
+            get {
+                return ResourceManager.GetString("RKW_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neues Rückkühlwerk ähnelt.
+        /// </summary>
+        public static string RKW_TITEL_NEU {
+            get {
+                return ResourceManager.GetString("RKW_TITEL_NEU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die in {0} Projektanlage(n) gewählt ähnelt.
+        /// </summary>
+        public static string RKW_VERWENDUNG {
+            get {
+                return ResourceManager.GetString("RKW_VERWENDUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die in keinem Projekt gewählt ähnelt.
+        /// </summary>
+        public static string RKW_VERWENDUNG_KEINE {
+            get {
+                return ResourceManager.GetString("RKW_VERWENDUNG_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe: {0} ähnelt.
+        /// </summary>
+        public static string RKW_VORGABE {
+            get {
+                return ResourceManager.GetString("RKW_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe: Hilfsstrom der Rückkühlung an der Kältemaschine ähnelt.
+        /// </summary>
+        public static string RKW_VORGABE_VENTILATOR {
+            get {
+                return ResourceManager.GetString("RKW_VORGABE_VENTILATOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die fest ähnelt.
+        /// </summary>
+        public static string RKW_WEG_FEST {
+            get {
+                return ResourceManager.GetString("RKW_WEG_FEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die lastabhängig ähnelt.
+        /// </summary>
+        public static string RKW_WEG_LASTABHAENGIG {
+            get {
+                return ResourceManager.GetString("RKW_WEG_LASTABHAENGIG", resourceCulture);
             }
         }
         

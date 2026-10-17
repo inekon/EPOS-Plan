@@ -372,6 +372,12 @@ public interface IProjektQuelle
     IReadOnlyDictionary<string, object>? KaeltemittelGaben() => null;
 
     /// <summary>
+    /// Der fertige PARAMETERSATZ der Verwaltung RÜCKKÜHLWERKE (<c>Dialoge.Erzeuger.RueckkuehlwerkDialog</c>, K-F5a);
+    /// <c>null</c> = diese Hülle führt sie nicht.
+    /// </summary>
+    IReadOnlyDictionary<string, object>? RueckkuehlwerkGaben() => null;
+
+    /// <summary>
     /// Der fertige PARAMETERSATZ des GESETZESKATALOGS
     /// (<c>Dialoge.Wirtschaftlichkeit.GesetzeskatalogDialog</c>); <c>null</c> =
     /// diese Hülle führt ihn nicht.

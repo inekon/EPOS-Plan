@@ -1407,7 +1407,9 @@ namespace WindowsFormsApplication1
                 Daten = daten,
                 Stromtraeger = Kaeltestromabrechnung.StromtraegerDesProjekts(m_ID_Projekt)
                     .Select(t => (t.Key, t.Value)).ToList(),
-                ProjektStromtraeger = Kaeltestromabrechnung.Projekttraeger(m_ID_Projekt)
+                ProjektStromtraeger = Kaeltestromabrechnung.Projekttraeger(m_ID_Projekt),
+                // K-F5b: dieselbe Gruppe „Rückkühlung“ wie im Dialog „Kältemaschinen im Projekt“ (ohne „Rückkühlwerke…“).
+                Rueckkuehlung = KaeltemaschineAnlageHuelle.Rueckkuehlung(m_ID_Projekt)
             };
         }
 

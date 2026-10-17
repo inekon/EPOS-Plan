@@ -1281,6 +1281,53 @@ namespace WindowsFormsApplication1
             };
         }
 
+        // ==================================================================
+        // K-F5a - die Verwaltung der Rueckkuehlwerke
+        // ==================================================================
+
+        /// <summary>Der Schluessel des Filterstands der Verwaltung „Rückkühlwerke" (Registerschluessel <c>RUECKKUEHLWERK</c>).</summary>
+        public const string SCHLUESSEL_RUECKKUEHLWERK = "RUECKKUEHLWERK";
+
+        /// <summary>Die Bauart eines Rückkühlwerks (Anzeigetext; leer = trocken).</summary>
+        public const string SpBauart = "BAUART";
+
+        /// <summary>Die Annäherung im Nennpunkt [K]; leer = Festwert der passenden Rückkühlart.</summary>
+        public const string SpAnnaeherung = "ANNAEHERUNG";
+
+        /// <summary>Regelung und Nennleistung des Ventilators (Anzeigetext).</summary>
+        public const string SpVentilator = "VENTILATOR";
+
+        /// <summary>Die Schaltung der freien Kühlung (Anzeigetext; leer = parallel).</summary>
+        public const string SpFreikuehlung = "FREIKUEHLUNG";
+
+        /// <summary>
+        /// <b>Die Verwaltung „Rückkühlwerke"</b> (K-F5a) — Bezeichner, Bauart, Nennleistung, Annäherung, Ventilator und
+        /// Freikühlung. Die Zeilen liefert <c>RueckkuehlwerkStammCtrl.Katalogfilterzeilen</c>; ein Satz der Auslieferung
+        /// trägt das Schloss.
+        ///
+        /// <para><b>Rang:</b> Name, Bauart und Nennleistung stehen immer — nach ihnen wählt der Anwender; Annäherung und
+        /// Ventilator bei Platz; die Freikühlung weicht als erste.</para>
+        /// </summary>
+        public static Katalogfilterprofil FuerRueckkuehlwerk(Func<string, string> text = null)
+        {
+            Func<string, string> t = text ?? (s => s);
+
+            return new Katalogfilterprofil
+            {
+                Schluessel = SCHLUESSEL_RUECKKUEHLWERK,
+                Spalten = new[]
+                {
+                    new Katalogspalte(SpBezeichner, t("KFLT_SP_NAME")),
+                    new Katalogspalte(SpBauart, t("RKW_SP_BAUART")),
+                    new Katalogspalte(SpNennleistung, t("RKW_SP_NENNLEISTUNG"), "kW", Katalogspaltenart.Zahl),
+                    new Katalogspalte(SpAnnaeherung, t("RKW_SP_ANNAEHERUNG"), "K", Katalogspaltenart.Zahl,
+                                      rang: Katalogspaltenrang.BeiPlatz),
+                    new Katalogspalte(SpVentilator, t("RKW_SP_VENTILATOR"), rang: Katalogspaltenrang.BeiPlatz),
+                    new Katalogspalte(SpFreikuehlung, t("RKW_SP_FREIKUEHLUNG"), rang: Katalogspaltenrang.Breit)
+                }
+            };
+        }
+
         /// <summary>
         /// <b>Ein Profil aus freien Spalten</b> (Stufe <b>S3.4</b>) — der Weg der zwei
         /// IMPORTMASKEN, deren Spalten schon als Daten dastehen

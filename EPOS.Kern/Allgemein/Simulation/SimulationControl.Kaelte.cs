@@ -536,7 +536,7 @@ namespace WindowsFormsApplication1
             if (!a.IdRueckkuehlwerk.HasValue) return;
             Rueckkuehlwerk r = Rueckkuehlwerk.AusModell(RueckkuehlwerkCtrl.LadenStill(a.IdRueckkuehlwerk.Value));
             if (r == null) return;
-            if (string.Equals(k.Rueckkuehlart, KaeltemaschineSchema.RUECKKUEHLART_LUFT, StringComparison.Ordinal))
+            if (KaeltemaschineSchema.IstLuftgekuehlt(k.Rueckkuehlart))
             {
                 Protokoll.HinweisEinmal("kuehl-rkw-luft-" + a.AnlagenId,
                     string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KAELTE_RKW_LUFT_IGNORIERT,

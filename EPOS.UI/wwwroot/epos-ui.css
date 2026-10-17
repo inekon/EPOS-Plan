@@ -2226,6 +2226,22 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     font-variant-numeric: tabular-nums;
 }
 
+/* DER ZEIGERTEXT STEHT UNTER DEM ZEIGER (Befund 17.10.2026). Er steht in der eigenen Zeile
+   UNTER dem Bild - unter Tick-Beschriftung und Achsentitel, nie darueber - und rueckt
+   (position: relative, left) unter die Zeigerstelle: Das Modul setzt left auf den Bildpunkt
+   genau (Mitte unter dem Balken, an den Raendern in die Zeile geklemmt), ohne Modul setzt der
+   Baustein left p % mit translate -p %. Ein langer Text bricht in der Zeile um, statt aus
+   dem Bild zu laufen. Die eigene Flaeche trennt ihn von allem, was darunter liegt. */
+.epos-diagramm-zeigertext {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    padding: 0 4px;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-karte-flaeche);
+}
+
 /* DER FARBWAEHLER AM BILD - eine kleine Ueberlagerung am Legendeneintrag.
    Die Lage kommt als Prozentwert vom Aufrufer (das SVG skaliert mit seiner
    Breite), das Mass steht hier. */
@@ -2595,6 +2611,18 @@ html:has(.epos-ueberlagerung) {
     bottom: var(--epos-ueberlagerung-fuss);
     z-index: 1;
     background: var(--epos-karte-flaeche);
+}
+
+/* IM REITERBLATT HAFTET SIE AM REITERBLATT, NICHT UEBER DER ACHSE (Befund 17.10.2026,
+   Grafik des Ergebnisdialogs "Simulation..."). sticky bezieht sich auf den NAECHSTEN
+   Rollbehaelter, und das ist hier .epos-reiter-blatt (overflow: auto), nicht die
+   Ueberlagerung. Dessen Unterkante faellt mit der Unterkante des Bildes zusammen; der
+   Fussabstand der Ueberlagerung hob die Zeile deshalb um die Hoehe der Schlussleiste
+   ueber Achsenlinie, Tick-Beschriftung und Achsentitel - in jedem Raster und jedem
+   Reiter. Mit Abstand 0 bleibt sie unter dem Bild und haftet nur, wenn das Reiterblatt
+   selbst rollt. */
+.epos-ueberlagerung-inhalt .epos-reiter-blatt .epos-diagramm-zeigerzeile {
+    bottom: 0;
 }
 
 /* EIN HILFEKNOPF (#572). Solange eine Ueberlagerung steht, zeigt nur die
@@ -4566,6 +4594,7 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 /* Der Geraetesteckbrief der Kaeltemaschine (KA-E-25): links neben den Feldern der Satz-Ueberlagerung, schmal unter 900 px. */
 .epos-kaeltemaschine-satz--steckbrief { display: grid; grid-template-columns: minmax(220px, 280px) minmax(0, 1fr); gap: var(--epos-rand); align-items: start; }
 .epos-kaeltemaschine-satzfelder { min-width: 0; }
+.epos-kaeltemaschine-rueckkuehlung-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 @media (max-width: 900px) { .epos-kaeltemaschine-satz--steckbrief { grid-template-columns: minmax(0, 1fr); } }
 /* Die Zeile ist die Wahl auch in der Projektliste (AW1): die Klickflaeche fuellt die Namenszelle. */
 .epos-zweispalten-inhalt--zeilenwahl table.epos-raster.quickgrid > tbody > tr > td.epos-spalte-zeilenzelle { padding: 0; }
@@ -4725,6 +4754,15 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
 }
 :is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-zeigerzeile:empty {
     display: none;
+}
+/* In der Kennzahlenecke steht der Zeigertext als Kasten oben rechts im Bild, nicht unter dem
+   Zeiger: Lage und Flaeche der Zeile gelten, die Lage des Moduls bzw. Bausteins nicht. */
+:is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-zeigerzeile > .epos-diagramm-zeigertext {
+    position: static !important;
+    translate: none !important;
+    padding: 0;
+    border: 0;
+    background: none;
 }
 :is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-diagramm-svg > .epos-diagramm-svg-flaeche,
 :is(:is(#app, .epos-ueberlagerung-inhalt, .epos-assistent-inhalt) > .epos-dialog > .epos-zweispalten .epos-zweispalten-satz, .epos-satzueberlagerung-koerper) .epos-ganglinie-grafik > .epos-chartbild-platzhalter {
@@ -5203,6 +5241,42 @@ table.epos-raster > tbody > tr.epos-zeile--verwendet > td {
     display: flex;
     flex-direction: column;
     min-height: 100%;
+}
+
+/* Die Unterleiste (Uebersicht, Kosten, Wirtschaftlichkeit, Bericht) hebt sich
+   vom Rahmen ab: Titel in Kachelgroesse und Textfarbe statt leise, der aktive
+   Reiter auf getoenter Flaeche mit abgerundeter Zunge, die Linie darunter
+   kraeftiger. Die Statuszeile darunter bleibt leise. Nur dieser Rahmen,
+   damit die Reiter der Dialoge ihr ruhiges Bild behalten. */
+.epos-berichtekosten > .epos-reiter > .epos-reiter-kopfzeile {
+    border-bottom: 2px solid var(--epos-quelle-rahmen);
+}
+
+.epos-berichtekosten > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leiste {
+    gap: 4px;
+}
+
+.epos-berichtekosten > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leiste > .epos-reiter-knopf {
+    color: var(--epos-text);
+    border-radius: var(--epos-ecke) var(--epos-ecke) 0 0;
+}
+
+.epos-berichtekosten > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leiste .epos-reiter-titel {
+    font-size: var(--epos-schriftgroesse-kartentitel);
+    font-weight: 600;
+}
+
+.epos-berichtekosten > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leiste > .epos-reiter-knopf--aktiv {
+    color: var(--epos-quelle-text);
+    background: var(--epos-karte-flaeche-hover);
+    border-color: var(--epos-quelle-rahmen);
+    border-bottom-color: var(--epos-quelle-rahmen);
+}
+
+.epos-berichtekosten > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leiste > .epos-reiter-knopf:disabled,
+.epos-berichtekosten > .epos-reiter > .epos-reiter-kopfzeile > .epos-reiter-leiste > .epos-reiter-knopf[aria-disabled="true"] {
+    color: var(--epos-text-sehr-leise);
+    background: transparent;
 }
 
 /* Der Stammname im Leistenende: fett in der Titelfarbe der Karten, die

@@ -226,6 +226,12 @@ namespace WindowsFormsApplication1
         public const string KAELTEMITTEL = "Kaeltemittel";
 
         /// <summary>
+        /// Die Verwaltung „Rückkühlwerke" (<c>RueckkuehlwerkDialog</c>, K-F5a) — eine neue Maske ohne WinForms-Vorlaeufer
+        /// und deshalb ohne <c>Form_</c>-Vorsilbe; zugleich die Vorsilbe ihres Hilfeschluessels.
+        /// </summary>
+        public const string RUECKKUEHLWERK = "Rueckkuehlwerk";
+
+        /// <summary>
         /// Der Erzeugerdialog „Kältemaschinen im Projekt" (<c>KaeltemaschineAnlageDialog</c>, KU3-4c) — eine neue
         /// Maske ohne WinForms-Vorlaeufer und deshalb ohne <c>Form_</c>-Vorsilbe; zugleich die Vorsilbe ihres
         /// Hilfeschluessels.
@@ -896,6 +902,7 @@ namespace WindowsFormsApplication1
                 BaustoffKatalog(),
                 KaeltemaschineKatalog(),
                 Kaeltemittel(),
+                Rueckkuehlwerk(),
                 KaeltemaschineAnlage(),
                 Bauteilaufbau(),
                 Zone(),
@@ -5692,6 +5699,71 @@ namespace WindowsFormsApplication1
         /// Auslieferungszeile ist schreibgeschützt; Anlegen, Löschen und das Schloss bleiben Klicks des Anwenders.
         /// Geschrieben wird mit „Speichern", dieselbe Prüfung wie am Knopf (<c>KaeltemittelCtrl.Pruefen</c>).
         /// </remarks>
+        /// <summary>
+        /// Die Verwaltung „Rückkühlwerke" (K-F5a) — die Satzwahl und die sechzehn Felder des Stammblatts aus
+        /// <c>EPOS.UI.Dialoge.Erzeuger.RueckkuehlwerkKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// Bauart, Weg der Annäherung, Ventilatorregelung und Schaltung der freien Kühlung sind WAHLEN über den
+        /// Persistenzwert (<c>RueckkuehlwerkSchema</c>), nie über den Anzeigetext; leer heißt Vorgabe. Ein Auslieferungssatz
+        /// ist schreibgeschützt; Anlegen, Duplizieren, Löschen und das Schloss bleiben Klicks des Anwenders. Geschrieben
+        /// wird mit „Speichern", dieselbe Prüfung wie am Knopf (<c>RueckkuehlwerkStammCtrl.Pruefen</c>).
+        /// </remarks>
+        private static KiDialog Rueckkuehlwerk()
+        {
+            const string SICHT = "RueckkuehlwerkKiSicht.";
+            return new KiDialog(
+                maskenname: KiMaskennamen.RUECKKUEHLWERK,
+                anzeigename: KiDialogTexte.MaskeRueckkuehlwerk,
+                felder: new[]
+                {
+                    new KiDialogFeld("rueckkuehlwerk", SICHT + "Rueckkuehlwerk", KiDialogTexte.RkwSatzName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.RkwSatzErl, leerErlaubt: true, satzwahl: true),
+                    new KiDialogFeld("bezeichner", SICHT + "Bezeichner", KiDialogTexte.RkwBezeichnerName,
+                                     KiParameterTyp.Text, KiDialogTexte.RkwBezeichnerErl),
+                    new KiDialogFeld("beschreibung", SICHT + "Beschreibung", KiDialogTexte.RkwBeschreibungName,
+                                     KiParameterTyp.Text, KiDialogTexte.RkwBeschreibungErl, leerErlaubt: true),
+                    new KiDialogFeld("bauart", SICHT + "Bauart", KiDialogTexte.RkwBauartName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.RkwBauartErl, leerErlaubt: true),
+                    new KiDialogFeld("nennleistung", SICHT + "Nennleistung", KiDialogTexte.RkwNennleistungName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.RkwNennleistungErl, einheit: "kW", leerErlaubt: true),
+                    new KiDialogFeld("annaeherung_nenn", SICHT + "AnnaeherungNenn", KiDialogTexte.RkwAnnaeherungNennName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.RkwAnnaeherungNennErl, einheit: "K", leerErlaubt: true,
+                                     min: 0, max: RueckkuehlwerkSchema.ANNAEHERUNG_MAX_K),
+                    new KiDialogFeld("annaeherung_weg", SICHT + "AnnaeherungWeg", KiDialogTexte.RkwAnnaeherungWegName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.RkwAnnaeherungWegErl, leerErlaubt: true),
+                    new KiDialogFeld("ventilator_nenn", SICHT + "VentilatorNenn", KiDialogTexte.RkwVentilatorNennName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.RkwVentilatorNennErl, einheit: "kW", leerErlaubt: true, min: 0),
+                    new KiDialogFeld("ventilator_regelung", SICHT + "VentilatorRegelung", KiDialogTexte.RkwVentilatorRegelungName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.RkwVentilatorRegelungErl, leerErlaubt: true),
+                    new KiDialogFeld("ventilator_stufen", SICHT + "VentilatorStufen", KiDialogTexte.RkwVentilatorStufenName,
+                                     KiParameterTyp.Ganzzahl, KiDialogTexte.RkwVentilatorStufenErl, leerErlaubt: true, min: 2),
+                    new KiDialogFeld("ventilator_drehzahl_min", SICHT + "VentilatorDrehzahlMin", KiDialogTexte.RkwVentilatorDrehzahlMinName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.RkwVentilatorDrehzahlMinErl, leerErlaubt: true, min: 0, max: 1),
+                    new KiDialogFeld("befeuchtung_wirkungsgrad", SICHT + "BefeuchtungWirkungsgrad", KiDialogTexte.RkwBefeuchtungWirkungsgradName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.RkwBefeuchtungWirkungsgradErl, leerErlaubt: true, min: 0, max: 1),
+                    new KiDialogFeld("befeuchtung_ab", SICHT + "BefeuchtungAb", KiDialogTexte.RkwBefeuchtungAbName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.RkwBefeuchtungAbErl, einheit: "°C", leerErlaubt: true,
+                                     min: RueckkuehlwerkSchema.BEFEUCHTUNG_AB_MIN_C, max: RueckkuehlwerkSchema.BEFEUCHTUNG_AB_MAX_C),
+                    new KiDialogFeld("verdunstung_faktor", SICHT + "VerdunstungFaktor", KiDialogTexte.RkwVerdunstungFaktorName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.RkwVerdunstungFaktorErl, leerErlaubt: true,
+                                     max: RueckkuehlwerkSchema.VERDUNSTUNG_FAKTOR_MAX),
+                    new KiDialogFeld("eindickung", SICHT + "Eindickung", KiDialogTexte.RkwEindickungName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.RkwEindickungErl, leerErlaubt: true,
+                                     max: RueckkuehlwerkSchema.EINDICKUNG_MAX),
+                    new KiDialogFeld("drift_anteil", SICHT + "DriftAnteil", KiDialogTexte.RkwDriftAnteilName,
+                                     KiParameterTyp.Zahl, KiDialogTexte.RkwDriftAnteilErl, leerErlaubt: true, min: 0, max: 1),
+                    new KiDialogFeld("freikuehlung_schaltung", SICHT + "FreikuehlungSchaltung", KiDialogTexte.RkwFreikuehlungSchaltungName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.RkwFreikuehlungSchaltungErl, leerErlaubt: true),
+                    Ladestandfeld(SICHT)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
+        }
+
         private static KiDialog Kaeltemittel()
         {
             const string SICHT = "KaeltemittelKiSicht.";
@@ -5857,6 +5929,9 @@ namespace WindowsFormsApplication1
                                      KiParameterTyp.Wahl, KiDialogTexte.KmaTraegerErl, leerErlaubt: true),
                     new KiDialogFeld("eigener_zaehler", SICHT + "EigenerZaehler", KiDialogTexte.KmaZaehlerName,
                                      KiParameterTyp.Wahrheitswert, KiDialogTexte.KmaZaehlerErl),
+                    // K-F5b: das Rückkühlwerk der Gruppe „Rückkühlung“ - eine WAHL über die Id des Katalogsatzes, leer = keins.
+                    new KiDialogFeld("rueckkuehlwerk", SICHT + "Rueckkuehlwerk", KiDialogTexte.KmaRueckkuehlwerkName,
+                                     KiParameterTyp.Wahl, KiDialogTexte.KmaRueckkuehlwerkErl, leerErlaubt: true),
                     // KM3-E3-b (Fachkonzept Teillast und Takten 7.3): die Lesewerte der Projektkopie, Spaltennamen als Schluessel.
                     new KiDialogFeld("teillast_weg", SICHT + "TeillastWeg", KiDialogTexte.KmaTeillastWegName,
                                      KiParameterTyp.Text, KiDialogTexte.KmaTeillastWegErl, leerErlaubt: true, nurLesen: true),

@@ -155,6 +155,9 @@ public class KiDialogkatalogTests : IDisposable
         // KM4-E3-c: die Verwaltung der Kältemittel.
         { KiMaskennamen.KAELTEMITTEL,
           typeof(EPOS.UI.Dialoge.Admin.KaeltemittelKiSicht) },
+        // K-F5a: die Verwaltung der Rückkühlwerke.
+        { KiMaskennamen.RUECKKUEHLWERK,
+          typeof(EPOS.UI.Dialoge.Erzeuger.RueckkuehlwerkKiSicht) },
         { KiMaskennamen.KAELTEMASCHINE_ANLAGE,
           typeof(EPOS.UI.Dialoge.Erzeuger.KaeltemaschineAnlageKiSicht) },
         { KiMaskennamen.BAUTEILAUFBAU,
@@ -513,7 +516,7 @@ public class KiDialogkatalogTests : IDisposable
         // Welle M3b (PW2, BW2): die Verwaltung der Betriebskalender. Stufe P2 der
         // Pufferspeicher-Auslegung: ihre Ansicht.
         // KM4-E3-c: + Kältemittel.
-        Assert.Equal(105, katalog.Anzahl);  // KD-5: + Klimaexport                            // K5b: + Kältebedarf-Katalog;                            // KU3-1: + Kältemaschinen; KU3-4c: + Kältemaschinen im Projekt; PVG: + PV-Ganglinien; Importoptionen: + 4; Teil C: + 4; Teil B: + Gebäudeimport
+        Assert.Equal(106, katalog.Anzahl);  // K-F5a: + Rückkühlwerke; KD-5: + Klimaexport                            // K5b: + Kältebedarf-Katalog;                            // KU3-1: + Kältemaschinen; KU3-4c: + Kältemaschinen im Projekt; PVG: + PV-Ganglinien; Importoptionen: + 4; Teil C: + 4; Teil B: + Gebäudeimport
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -936,6 +939,8 @@ public class KiDialogkatalogTests : IDisposable
         Assert.Equal(KiMaskenziele.KAELTEMASCHINE_KATALOG, KiMaskenziele.Ziel(KiMaskennamen.KAELTEMASCHINE_KATALOG));
         Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.Kaeltemittel, KiMaskenziele.KAELTEMITTEL);
         Assert.Equal(KiMaskenziele.KAELTEMITTEL, KiMaskenziele.Ziel(KiMaskennamen.KAELTEMITTEL));
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.Rueckkuehlwerk, KiMaskenziele.RUECKKUEHLWERK);
+        Assert.Equal(KiMaskenziele.RUECKKUEHLWERK, KiMaskenziele.Ziel(KiMaskennamen.RUECKKUEHLWERK));
         Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.KaeltemaschineAnlage, KiMaskenziele.KAELTEMASCHINE_ANLAGE);
         Assert.Equal(KiMaskenziele.KAELTEMASCHINE_ANLAGE, KiMaskenziele.Ziel(KiMaskennamen.KAELTEMASCHINE_ANLAGE));
         Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.Betriebskalender, KiMaskenziele.BETRIEBSKALENDER);
@@ -1774,6 +1779,9 @@ public class KiDialogkatalogTests : IDisposable
         [KiMaskennamen.BAUSTOFF_KATALOG] =
             "bindet über die Sichtklasse BaustoffKatalogKiSicht auf die Satzwahl und den " +
             "Arbeitsstand des Stammblatts; Zeuge ist BaustoffKatalogDialogTests",
+        [KiMaskennamen.RUECKKUEHLWERK] =
+            "bindet über die Sichtklasse RueckkuehlwerkKiSicht auf die Satzwahl und den Arbeitsstand des Stammblatts " +
+            "(sechzehn Felder, Wahlen über den Persistenzwert); Zeuge ist RueckkuehlwerkDialogTests",
         [KiMaskennamen.KAELTEMITTEL] =
             "bindet über die Sichtklasse KaeltemittelKiSicht auf die Satzwahl und den privaten Arbeitsstand des " +
             "Satzbereichs (zwölf Felder, Wahlen über den Persistenzwert); Zeuge ist KaeltemittelDialogTests",
