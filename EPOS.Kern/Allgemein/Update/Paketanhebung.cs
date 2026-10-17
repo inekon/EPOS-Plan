@@ -510,6 +510,9 @@ namespace WindowsFormsApplication1
             // (leer heißt nicht erhoben).
             new Stufe(ErgebnisreihenSchema.SCHRITT, Art.Ddl,
                       "Ergebnisreihen: BHKW-Einspeisung, Standby des Speichersystems, PV-Abregelung (EB-1)"),
+            // KETTE (KB-8): Die Stufe des Schritts ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT (240, Art Ddl, "Die vier
+            // Ergebnisspalten der Wirtschaftlichkeit (KB-8)") kommt erst mit dem Umhaengen hinter die Stufe 239 - das Register
+            // muss lueckenlos bis zum Zielstand stehen.
         };
 
         /// <summary>Das Register, aufsteigend nach Schrittnummer.</summary>

@@ -1725,7 +1725,7 @@ seine Zahlen hängen an der Regel. Ein Haken ohne Wirkung auf die Regel meldet n
 Zuruf. **Den Lauf gespeicherter Ergebnisse nennt ihr Laufvermerk** (→ Register R‑EZ, EZ‑19): Jede Zeile von
 `Tab_ErgebnisWirtschaftlichkeit` trägt die Stände des Laufs, aus dem sie stammt — Stamm, angehakte Varianten,
 Referenz —, aufsteigend mit Komma in der Spalte `Lauf_Staende` (`WirtschaftlichkeitCtrl.SPALTE_LAUF_STAENDE`, eine
-Ergebnisspalte ohne Schemaschritt, die `StelleTabellenSicher` nachzieht; `WirtschaftlichkeitErgebnis.LaufStaende`).
+Ergebnisspalte, die der Schemaschritt `ErgebnisWirtschaftlichkeitSpaltenSchema` anlegt; `WirtschaftlichkeitErgebnis.LaufStaende`).
 Die Seite prüft deshalb gegen den Lauf jedes gewählten Standes, auch nach einem Wechsel zu „Übersicht" oder
 „Kosten" und für einen neu angehakten Stand aus einem älteren Lauf; tragen die gewählten Stände verschiedene
 Vermerke, wird jeder dieser Läufe gegen die Wahl geprüft, und ein Band steht, sobald einer die Gruppenregel ändert
@@ -2955,16 +2955,16 @@ weiterreicht (E7c3‑Q4, → Register R‑E7c3). Die Emissionsbilanz nennt eine 
 („Emissionsbilanz — Stufe „X" nicht ausführbar: ‹Grund›"), die Herkunft eines Emissionsfaktors einen Lesefehler
 („… — Brennstoffkatalog nicht lesbar: ‹Grund›"). Gründe ohne eigene Zeile tragen die Eigenschaften `Lesefehler`
 (Parametersatz, Tarif, Emissionsfaktoren, Gesetzeskatalog), `LetzterFehler` (Pflegewege des Gesetzeskatalogs),
-`Katalogfehler` (Kraftwerksparks), `Ladefehler`, `Speicherfehler` und `Vorsorgewarnung` (Wirtschaftlichkeit). Die
-letzten drei zeigt die Oberfläche (E7c3‑Q6 a, gebaut #474, → Register R‑E7c3): `Fehlergrund.Anzeigezeilen` bildet je
-Grund eine Zeile — Laden, Speichern, Vorsorge —, derselbe Grund aus zwei Quellen ist eine Zeile, der Text ist der des
+`Katalogfehler` (Kraftwerksparks), `Ladefehler` und `Speicherfehler` (Wirtschaftlichkeit). Die
+letzten zwei zeigt die Oberfläche (E7c3‑Q6 a, gebaut #474, → Register R‑E7c3): `Fehlergrund.Anzeigezeilen` bildet je
+Grund eine Zeile — Laden, Speichern —, derselbe Grund aus zwei Quellen ist eine Zeile, der Text ist der des
 Kerns ohne Stapel und ohne „neu berechnen"-Hinweis. Die **Statuszeile der Ergebnisseite** nennt beim Laden den
-`Ladefehler` von `LadeErgebnisse`/`LadeSensitivitaet` und die `Vorsorgewarnung`, einen Speicherfehler der Referenzwahl
+`Ladefehler` von `LadeErgebnisse`/`LadeSensitivitaet`, einen Speicherfehler der Referenzwahl
 einmal beim folgenden Laden und den der nicht monetären Wirkungen beim Schreiben; der **Dialog BHKW-Wirtschaftlichkeit**
-zeigt Lade- und Vorsorgegrund als Warnband (es entfällt, wenn eine Kohärenzzeile denselben Grund nennt) und hängt einen
+zeigt den Ladegrund als Warnband (es entfällt, wenn eine Kohärenzzeile denselben Grund nennt) und hängt einen
 Speicherfehler an die Fehlermeldung von „OK". Einen Datenbankfehler beim Schreiben meldet `DataRepository` selbst,
 einmal; `Speicherfehler` trägt nur Fehler außerhalb der Datenbankanweisung, und nach einem gescheiterten UPDATE folgt
-kein INSERT mehr. `StelleTabellenSicher` setzt die `Vorsorgewarnung` zu Beginn zurück. Ein nicht lesbarer Tarif gilt
+kein INSERT mehr. Ein nicht lesbarer Tarif gilt
 als nicht aktiv. Ohne
 Fehler steht keine dieser Zeilen; die dreizehn Basisprojekte sind Zeile für Zeile unverändert.
 
@@ -3311,8 +3311,8 @@ Stromverwender nicht ansetzt — Satz, Staffel am zugeordneten Träger, Satz je 
 Hinweisliste —, EZ‑17; der Rollentarif ohne Leistungsanteil samt Hinweis mit dem Modell, die Kohärenz der § 9b-Entlastung
 am Rückfallträger und das Veraltet-Band nach einem Haken samt Referenzwahl und „Berechnen", EZ‑18; der Laufvermerk
 ohne Datenbank, seine Rundreise durch `Persistiere` und `LadeErgebnisse`, die Prüfung je Lauf und das Band nach einem
-Seitenwechsel, EZ‑19), `WirtschaftlichkeitCtrlTabellenTests` (die Vorsorge legt `Lauf_Staende` an, ein zweiter Lauf
-ändert nichts), dazu
+Seitenwechsel, EZ‑19), `ErgebnisWirtschaftlichkeitSpaltenSchemaTests` (der Schemaschritt legt `Lauf_Staende` und die
+drei übrigen Ergebnisspalten an, ein zweiter Lauf ändert nichts), dazu
 `SzenarioAbdeckungTests` (56, der Rückfallträger von 1018 zählt wie ein zugeordneter Stromträger),
 `EnergiekostenGrundTests` (die Stromseite der Kohärenz am Rückfallträger, auch unter der Gruppenregel) und bUnit
 `WirtschaftlichkeitErgebnisansichtTests` (das Band am Haken der einzigen Stromvariante, „Neu berechnen" räumt es; neu
@@ -3591,7 +3591,7 @@ Es gilt heute nur noch, was hier ohne Einschränkung steht:
 | Stromsteuersatz an zwei Orten — Katalog `STROMST_REGELSATZ` und `STROMST_REDUZIERT_SATZ` gegen die `const double` in `StrompreisZerlegungModel` | wertgleich und **gekoppelt durch zwei Wachen** (E18, #492): `StrompreisZerlegungTests` hält die Konstanten gegen die älteste Zeile je Schlüssel in der Saat (`GesetzKatalog.Vorbelegung`) und im Katalog der Testdatenbank (`Tab_Gesetzesparameter`: `STROMST_REGELSATZ`, `STROMST_REDUZIERT_SATZ`, dazu die drei Umlagen); rot nennt die Meldung die drei nachzuziehenden Orte. Eine Novelle ist eine spätere Jahreszeile und lässt die Rückfallebene stehen; die Konstante greift nur für Jahre vor 2026 oder ohne Katalogzeile (§ 6.3 Nr. 14) |
 | „Energieintensiv" an drei Orten — Unternehmensart, Schnellwahl im Trägerdialog, Katalogsatz | seit B4 liest die Schnellwahl den Katalog und die Unternehmensart hebt den passenden Knopf hervor; umgekehrt zeigt der Dialog „BHKW-Wirtschaftlichkeit" den erfassten Stromsteueranteil gegen die gewählte Unternehmensart (E18, #492, § 2.2 Gruppe 4) — ein Hinweis ohne Sperre; ohne BHKW steht die Unternehmensart mit derselben Anzeige im Parameterdialog, Gruppe Strom (E19, #498, § 2.4) — je Projektlage eine Pflegestelle; gekoppelt ist weiterhin nichts |
 | BHKW-Einspeisevergütung an **drei** Orten | aktiver Tarif (`Tab_ProjektTarif.Einsp_Arbeit`) · Projektparameter (`Einspeiseverguetung_KWK`) · Anlage (`KWKG_Satz_Einspeisung`); Vorrang eindeutig (aktiver Tarif schlägt Parameterwert). Der vierte Ort (`energy_project_settings.Verguetung_BHKW`) ist mit Schritt 84/85 entfallen |
-| Zwei Migrationsmechanismen — `SchemaMigration` gegen Selbst-DDL in `WirtschaftlichkeitCtrl` | aufgelöst mit #501 (Cloud-Sitzung, 25.09.2026: „Ad-hoc-DDL der fünf Tabellen entfernt“) bis auf vier Ergebnisspalten: die fünf Tabellen stehen im Grundschema (STRICT, Fremdschlüssel auf `Tab_Projekt`), jede Eingabespalte allein in ihrem Schemaschritt; `StelleTabellenSicher` zieht nur noch `StromsteuerBefreiungModus`, `ErsatzBarwert`, `Nachweis_Json` und `Lauf_Staende` nach, bis ein Schemaschritt sie führt (Wache `WirtschaftlichkeitCtrlTabellenTests`). Neue Eingabespalten gehören allein in den Schemaschritt |
+| Zwei Migrationsmechanismen — `SchemaMigration` gegen Selbst-DDL in `WirtschaftlichkeitCtrl` | **aufgelöst** (#501, KB-8): die fünf Tabellen stehen im Grundschema (STRICT, Fremdschlüssel auf `Tab_Projekt`), jede Eingabespalte allein in ihrem Schemaschritt, die vier Ergebnisspalten `StromsteuerBefreiungModus`, `ErsatzBarwert`, `Nachweis_Json` und `Lauf_Staende` im Schemaschritt `ErgebnisWirtschaftlichkeitSpaltenSchema`; der Controller führt keine DDL (Wache `WirtschaftlichkeitCtrlTabellenTests`). Neue Spalten gehören allein in einen Schemaschritt |
 | Zwei Lesewege auf die Kostenposition | der direkte Zugriff ist der Normalfall; daneben die gespeicherte **Sicht** `Abfrage_Kostenfaktoren` (`sql/schema/002_views.sql`) — kein Access-Artefakt mehr, sie liegt im Repo, kennt die neuen Spalten nicht und ließe sich erweitern; beim Tabellenumbau wird sie eigens behandelt (`ProjektWerteLoeschschutz`) |
 | ~~Komponenten-IDs hart verdrahtet gegen dynamisch gelesen (`Form_Kosten` gegen `UcBkKosten`)~~ | **gegenstandslos** — beide Klassen gibt es nicht mehr: Die Unterscheidung liegt im Kern (`KostenVorlagenCtrl.IstErfassungsgruppe`), die Oberfläche in `EPOS.UI/Dialoge/Kosten/` |
 | Vorrang Projekt vor Katalog in **zwei** Implementierungen | `KostenEmissionRechner`, `StromPreisCtrl`; dazu die Sicht `Abfrage_Energietraeger_Effektiv` (`sql/schema/002_views.sql:26`) |

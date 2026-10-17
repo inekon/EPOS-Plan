@@ -148164,15 +148164,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Tabellenvorsorge unvollständig: {0} ähnelt.
-        /// </summary>
-        public static string WIRT_STATUS_VORSORGE {
-            get {
-                return ResourceManager.GetString("WIRT_STATUS_VORSORGE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Netzbezug mit dem Energieträger „{0}“ bepreist — dem Projekt ist kein Stromträger zugeordnet. Ausweg: unter „Berichte &amp; Kosten › Energieträger“ zuordnen. ähnelt.
         /// </summary>
         public static string WIRT_STROMTRAEGER_RUECKFALL {

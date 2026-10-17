@@ -1103,6 +1103,11 @@ namespace EPOS.Kern.Tests
                 // den Ergebniszeilen, leer, reines DDL. Wiederholbar, ergebnisneutral.
                 ErgebnisreihenSchema.Ausfuehren(null);
 
+                // Schritt ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT (KB-8): die vier Ergebnisspalten der
+                // Wirtschaftlichkeit, nur wenn sie fehlen. Wiederholbar, ergebnisneutral.
+                // KETTE (KB-8): vorlaeufig ausserhalb des Zielstands; nach dem Umhaengen hinter Schritt 239.
+                ErgebnisWirtschaftlichkeitSpaltenSchema.Ausfuehren(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

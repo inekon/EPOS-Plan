@@ -465,11 +465,10 @@ namespace WindowsFormsApplication1
             if (sichtWarnung != null) stand.Statuszeile += " " + sichtWarnung;
             if (paarLaufFehlt) stand.Statuszeile += " " + MyResource.Resource.WIRT_SICHT_LAUF_NOETIG;
 
-            // ETAPPE E13 (E7c3‑Q6 a): Ladefehler, Speicherfehler und Vorsorgewarnung des
+            // ETAPPE E13 (E7c3‑Q6 a): Ladefehler und Speicherfehler des
             // Kerns — jeder Grund einmal, mit dem Text des Kerns. Der Speicherfehler stammt
             // aus dem Schreibweg, der dieses Laden auslöste (Referenzwahl), und gilt einmal.
-            foreach (string zeile in Fehlergrund.Anzeigezeilen(ladefehler, _speicherfehler,
-                                                                WirtschaftlichkeitCtrl.Vorsorgewarnung))
+            foreach (string zeile in Fehlergrund.Anzeigezeilen(ladefehler, _speicherfehler))
                 stand.Statuszeile += " " + zeile;
             _speicherfehler = null;
 
@@ -812,7 +811,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         private string Speicherfehlerzeile()
         {
-            List<string> zeilen = Fehlergrund.Anzeigezeilen(null, _speicherfehler, null);
+            List<string> zeilen = Fehlergrund.Anzeigezeilen(null, _speicherfehler);
             _speicherfehler = null;
             return zeilen.Count > 0 ? zeilen[0] : "";
         }

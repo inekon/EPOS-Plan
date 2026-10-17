@@ -91,14 +91,12 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         IReadOnlyList<string>? kwkSzenarioHinweise = null,
         Func<string>? ladefehler = null,
         Func<string>? speicherfehler = null,
-        string vorsorgewarnung = "",
         StromsteueranteilStand? stromsteueranteil = null)
     {
         return Render<BhkwWirtschaftlichkeitDialog>(p => p
             .Add(x => x.Stromsteueranteil, stromsteueranteil)
             .Add(x => x.Ladefehler, ladefehler)
             .Add(x => x.Speicherfehler, speicherfehler)
-            .Add(x => x.Vorsorgewarnung, vorsorgewarnung)
             .Add(x => x.IdStamm, STAMM)
             .Add(x => x.StammName, "Musterprojekt")
             .Add(x => x.Anlagen, anlagen ?? ZweiAnlagen())
@@ -2275,7 +2273,7 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
     }
 
     // =====================================================================
-    // ETAPPE E13 (E7c3‑Q6 a) — Ladefehler, Speicherfehler, Vorsorgewarnung
+    // ETAPPE E13 (E7c3‑Q6 a) — Ladefehler, Speicherfehler
     // =====================================================================
 
     /// <summary>Die Texte aller Warnbänder des Dialogs.</summary>
@@ -2340,12 +2338,13 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         Assert.Single(Baender(cut), t => t.Contains(grund, StringComparison.Ordinal));
     }
 
-    /// <summary>Die Warnung der Tabellenvorsorge steht als Warnband im Dialog.</summary>
+    /// <summary>Der Dialog kennt keine Tabellenvorsorge mehr: ohne Lade- und Speicherfehler kein Band.</summary>
     [Fact]
-    public void Die_Vorsorgewarnung_steht_im_Dialog()
+    public void Ohne_Grund_des_Kerns_steht_kein_Warnband()
     {
-        var cut = Aufbauen(vorsorgewarnung: "SqliteException: database is locked");
-        Assert.Single(Baender(cut), t => t == "Tabellenvorsorge unvollständig: SqliteException: database is locked");
+        var cut = Aufbauen();
+        Assert.DoesNotContain(Baender(cut), t => t.StartsWith("Tabellenvorsorge", StringComparison.Ordinal));
+        Assert.Null(typeof(BhkwWirtschaftlichkeitDialog).GetProperty("Vorsorgewarnung"));
     }
 
     /// <summary>

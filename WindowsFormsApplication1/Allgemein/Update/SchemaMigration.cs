@@ -5655,6 +5655,16 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_ERGEBNISREIHEN = ErgebnisreihenSchema.SCHRITT;
 
+        /// <summary>
+        /// Schritt <see cref="ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT"/> — <b>die vier Ergebnisspalten der
+        /// Wirtschaftlichkeit</b> (KB-8): <c>StromsteuerBefreiungModus</c>, <c>ErsatzBarwert</c>, <c>Nachweis_Json</c> und
+        /// <c>Lauf_Staende</c> an <c>Tab_ErgebnisWirtschaftlichkeit</c>, jede nur, wenn sie fehlt. Schritt 240.
+        ///
+        /// <para><b>Wiederholbar, ergebnisneutral:</b> kein DML, Bestandszeilen bleiben NULL.</para>
+        /// </summary>
+        // KETTE (KB-8): Die Konstante und Schritt_ErgebnisWirtschaftlichkeitSpalten stehen bereit; den Eintrag in der
+        // Schrittliste (hinter dem Schritt 239) und den Zielstand setzt erst die Merge-Welle, wenn 239 auf origin liegt.
+        public const int SCHRITT_ERGEBNIS_WIRTSCHAFTLICHKEIT_SPALTEN = ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -16886,6 +16896,61 @@ namespace WindowsFormsApplication1
 
             l.Notiz(nr + ": Ergebnisreihen an BHKW, Photovoltaik und Stromspeicher - " +
                     (handgriffe == 0 ? "stand bereits." : "Spalten angelegt.") + " KEIN Rechenergebnis aendert sich.");
+            return true;
+        }
+
+        /// <summary>
+        /// Der Schritt „Ergebnisspalten der Wirtschaftlichkeit" (KB-8) — Anlass und Wirkung stehen bei
+        /// <see cref="SCHRITT_ERGEBNIS_WIRTSCHAFTLICHKEIT_SPALTEN"/>, die Anweisungen bei
+        /// <see cref="ErgebnisWirtschaftlichkeitSpaltenSchema"/>. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_ErgebnisWirtschaftlichkeitSpalten(Lauf l)
+        {
+            string nr = ErgebnisWirtschaftlichkeitSpaltenSchema.SCHRITT.ToString(CultureInfo.InvariantCulture);
+            foreach (string tabelle in ErgebnisWirtschaftlichkeitSpaltenSchema.Voraussetzungen())
+            {
+                if (SqliteTabelleVorhanden(tabelle)) continue;
+                l.LetzterFehler = "Die Tabelle " + tabelle + " fehlt.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            var bericht = new List<string>();
+            int angelegt;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    angelegt = ErgebnisWirtschaftlichkeitSpaltenSchema.Ausfuehren(bericht);
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz(nr + ": FEHLER - " + text + " (der Schritt ist wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz(nr + ": " + zeile);
+
+            if (!ErgebnisWirtschaftlichkeitSpaltenSchema.Vollstaendig())
+            {
+                l.LetzterFehler = "Die Ergebnisspalten der Wirtschaftlichkeit stehen nach dem Schritt nicht vollstaendig.";
+                l.Notiz(nr + ": FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            l.Notiz(nr + ": Ergebnisspalten der Wirtschaftlichkeit - " +
+                    (angelegt == 0 ? "standen bereits." : angelegt + " Spalte(n) angelegt.") +
+                    " KEIN Rechenergebnis aendert sich.");
             return true;
         }
 

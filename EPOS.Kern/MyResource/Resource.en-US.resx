@@ -29390,9 +29390,6 @@ Do you want to allow this?</value>
   <data name="WIRT_STATUS_SPEICHERFEHLER" xml:space="preserve">
     <value>Saving failed: {0}</value>
   </data>
-  <data name="WIRT_STATUS_VORSORGE" xml:space="preserve">
-    <value>Table provisioning incomplete: {0}</value>
-  </data>
   <data name="ZPG_EINGABE_STOCHASTIK_EINHEITSTAGE" xml:space="preserve">
     <value>The stochastic annual series would draw {0} unit-days (realisations × units × 365); at most {1} are permitted — please choose fewer realisations.</value>
   </data>
