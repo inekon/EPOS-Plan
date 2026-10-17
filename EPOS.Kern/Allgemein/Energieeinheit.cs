@@ -34,23 +34,30 @@ namespace WindowsFormsApplication1
     /// (<c>F2</c>, der Bestand), kWh keine (<c>F0</c>) — 594,30 kWh sind nicht
     /// genauer als 594, und drei Stellen mehr vor dem Komma brauchen keine zwei
     /// dahinter.</para>
+    ///
+    /// <para><b>Zu jeder Energieeinheit gehört eine Leistungseinheit.</b> Eine
+    /// Ganglinie zeigt Leistung, keine Menge; sie folgt der Wahl trotzdem — MWh
+    /// zeigt MW, kWh zeigt kW (<see cref="Leistungstext"/>,
+    /// <see cref="LeistungAusKW"/>). Die Rechnung ist dieselbe wie bei der Menge,
+    /// auch hier ist die Identität bitgleich.</para>
     /// </summary>
     public sealed record Energieeinheit
     {
-        private Energieeinheit(string text, string format)
+        private Energieeinheit(string text, string format, string leistungstext)
         {
             Text = text;
             Format = format;
+            Leistungstext = leistungstext;
         }
 
         /// <summary>Megawattstunden — die VORGABE beider Bedarfsansichten.</summary>
-        public static readonly Energieeinheit MWh = new Energieeinheit("MWh", "F2");
+        public static readonly Energieeinheit MWh = new Energieeinheit("MWh", "F2", "MW");
 
         /// <summary>
         /// Kilowattstunden. Heißt in C# <c>KWh</c> und trägt „kWh" als
         /// <see cref="Text"/>; ein Bezeichner fängt hier groß an.
         /// </summary>
-        public static readonly Energieeinheit KWh = new Energieeinheit("kWh", "F0");
+        public static readonly Energieeinheit KWh = new Energieeinheit("kWh", "F0", "kW");
 
         private static readonly Energieeinheit[] ALLE = { MWh, KWh };
 
@@ -71,6 +78,31 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Formatangabe der Anzeige: <c>F2</c> bei MWh, <c>F0</c> bei kWh.</summary>
         public string Format { get; }
+
+        /// <summary>
+        /// Das Kürzel der zugehörigen LEISTUNGSEINHEIT: „MW" zu MWh, „kW" zu kWh —
+        /// die Achse einer Ganglinie in dieser Wahl.
+        /// </summary>
+        public string Leistungstext { get; }
+
+        /// <summary>
+        /// Eine Leistung in KILOWATT, ausgedrückt in der Leistungseinheit dieser
+        /// Einheit (<see cref="Leistungstext"/>); bei <see cref="KWh"/> bitgleich.
+        /// </summary>
+        public double LeistungAusKW(double kW)
+        {
+            return ReferenceEquals(this, KWh) ? kW : kW / 1000.0;
+        }
+
+        /// <summary>Eine Reihe von Leistungen in KILOWATT, Wert für Wert wie <see cref="LeistungAusKW"/>.</summary>
+        public double[] LeistungAusKW(double[] kW)
+        {
+            if (kW == null) return null;
+            if (ReferenceEquals(this, KWh)) return (double[])kW.Clone();
+            var aus = new double[kW.Length];
+            for (int i = 0; i < kW.Length; i++) aus[i] = kW[i] / 1000.0;
+            return aus;
+        }
 
         /// <summary>Ein Wert in KILOWATTSTUNDEN, ausgedrückt in dieser Einheit.</summary>
         public double AusKWh(double kWh)

@@ -153,7 +153,7 @@ Pufferspeicher[0].SOC_Ende;0
 Pufferspeicher[0].SOC_Mittel;18.96
 Pufferspeicher[0].SOC_Max;32.74
 Pufferspeicher[0].Vollzyklen;423.01
-Pufferspeicher[0].Entladung_Heizung;14053.96
+Pufferspeicher[0].Entladung_Heizung;0
 Pufferspeicher[0].Entladung_Brauchwasser;0
 Pufferspeicher[0].Entladung_Prozess;0
 Pufferspeicher[0].Durchsatz_Geladen;0

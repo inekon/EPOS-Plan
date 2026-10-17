@@ -29,10 +29,10 @@ schreibt beides nicht ab.
   Einstellungsdialog ohne Entwicklermodus), #987 Stufe 3 (Dialog „Über EPOS-Plan“, Diagnosedaten,
   Geste, Supportpaket), #1003 EG3 (Geste Strg+Umschalt+F12 bei Fokus in der WebView2, F1 im
   Hauptfenster), #1012 Nachzug Quick Assist (Fernwartung über das Windows-Bordmittel statt RustDesk),
-  #1194 diese Übergabe. Die Geste selbst (EG/EG2, #997) kam aus der Sitzung „Gebäudesimulation“.
+  #1197 diese Übergabe. Die Geste selbst (EG/EG2, #997) kam aus der Sitzung „Gebäudesimulation“.
 - **CI-Vermerke:** gesetzt für #974 (Lauf 38134668642), #985 (38140084461), #986/#987 (38150657481),
   #1003/#1012 (38183856323 auf `0636dcef`). **Offen:** der Lauf des Sitzungszweigs auf der
-  Zweigspitze mit diesem Papier (Vermerk in Zeile #1194, Punkt b).
+  Zweigspitze mit diesem Papier (Vermerk in Zeile #1197, Punkt b).
 - **Gate dieses Stands** (Hauptbaum, nach dem Merge `6f348bdb`): Kern-Filter 0 Fehler, Windows-Schale auf Linux 0 Fehler, `EPOS.UI.Tests` 9323/9323, `KiKern.Tests` 553/553, `SpeicherEngine.Tests` 397/397, `SpeicherPlanung.Tests` 27/28 (1 übersprungen, Bestand), `EPOS.Kern.Tests` nach Filter 2524/2524 (12.10.2026, 13:33–13:55 UTC); der volle Kern-Lauf ist die CI.
 - **Basis** R52 `2026-10-11_R52_Vorheizen`, unberührt; kein Schemaschritt dieser Sitzung; die
   Kopfzeile „Schemaschritt angemeldet“ ist von dieser Sitzung nicht belegt.
@@ -195,9 +195,9 @@ Keine Zugangsdaten ins Repositorium. **Antworten:** auf Deutsch, knapp; Tabellen
    Umgebung auf `origin/claude/gracious-brown-qx5kb2` aufsetzen (Merge, kein Rebase) und ab dann
    mitziehen.
 2. Kern-Lauf (kern.yml) des alten Sitzungszweigs auf seiner Zweigspitze prüfen; grün → CI-Vermerk in
-   Zeile #1194 (b) mit `[skip ci]`; rot → nach Dateien aufschlüsseln, Eigenes beheben, Fremdes melden.
+   Zeile #1197 (b) mit `[skip ci]`; rot → nach Dateien aufschlüsseln, Eigenes beheben, Fremdes melden.
 3. Mit Freigabe des Anwenders den Stand per Merge in `ios_migration_september` nehmen und pushen —
-   vorher die Statusnummern gegen origin messen (#1003 ist eine Lücke der Tabelle und bleibt; #1194
+   vorher die Statusnummern gegen origin messen (#1003 ist eine Lücke der Tabelle und bleibt; #1197
    zieht um, wenn vergeben).
 4. Die offenen Punkte aus (a) gesammelt mit Empfehlung vorlegen; dann auf Zuruf: „Remotehilfe“,
    Schlussleiste, `ki_aktionen.txt`, Stufe 4, Wiki-Upload.
@@ -209,7 +209,7 @@ Du übernimmst die Sitzung „Administration und Support“ für EPOS-Plan (Repo
 Arbeitszweig ios_migration_september) in einem neuen Konto. Lies zuerst CLAUDE.md und
 Dokumentation/aktuell/2026-10-12_Uebergabe_Administration_Support_Kontowechsel.md ganz; aus
 Dokumentation/aktuell/Status_iOS_Migration.md nur den Kopf und die Zeilen #974, #985, #986, #987,
-#1003, #1012 und #1194 samt den Punkten „Nach #…“ am Ende von Abschnitt 4; Konzept und
+#1003, #1012 und #1197 samt den Punkten „Nach #…“ am Ende von Abschnitt 4; Konzept und
 Entwicklerhandbuch nur gezielt (Überschriften mit grep -n '^#').
 
 Stand: Der alte Sitzungszweig claude/gracious-brown-qx5kb2 trägt den Merge des Arbeitszweigs
@@ -222,9 +222,9 @@ Erste Schritte: (1) Umgebung prüfen: dotnet --version (global.json verlangt 10.
 reicht das SDK nicht, Abschnitt 3 „Cloud-Umgebung“ des Papiers), LFS-Datenbank rund 96 MB (kein
 130-Byte-Zeiger), Node-Modul docx für Werkzeuge/Entwicklerhandbuch/erzeugen.js. (2) Mit
 git log --format='%h %<(72,trunc)%s' -n 20 origin/ios_migration_september prüfen, was seit dem
-Papier hinzukam, und die Statusnummern gegen origin messen (#1003 bleibt, #1194 zieht um, wenn
+Papier hinzukam, und die Statusnummern gegen origin messen (#1003 bleibt, #1197 zieht um, wenn
 vergeben). (3) Den Kern-Lauf (kern.yml) des alten Sitzungszweigs auf seiner Spitze prüfen und den
-CI-Vermerk in Zeile #1194 (b) setzen — bei Rot zuerst beheben. (4) Mit meiner Freigabe den Stand per
+CI-Vermerk in Zeile #1197 (b) setzen — bei Rot zuerst beheben. (4) Mit meiner Freigabe den Stand per
 Merge in ios_migration_september nehmen und beide Zweige pushen; reine Papier-Pushes mit [skip ci].
 (5) Den Stand in höchstens fünf Zeilen melden und die offenen Punkte aus Abschnitt 4 (a) mit
 Empfehlung vorlegen.

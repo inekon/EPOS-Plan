@@ -5820,10 +5820,10 @@ Sie speist danach Übersichtsanzeige und Gesamtsimulation. Der vorliegende Simul
     <value>{0} Versionen</value>
   </data>
   <data name="BK_ERG_ABSCHNITT_KOMPONENTEN" xml:space="preserve">
-    <value>Komponenten und Einstellungen</value>
+    <value>Übersicht Komponenten / Vergleich</value>
   </data>
   <data name="BK_ERG_ABSCHNITT_ERGEBNISSE" xml:space="preserve">
-    <value>Ergebnisse — Energie</value>
+    <value>Übersicht Energie</value>
   </data>
   <data name="BK_ERG_SP_KENNZAHL" xml:space="preserve">
     <value>Kennzahl</value>
@@ -15261,7 +15261,7 @@ Alle Eingaben überprüfen!</value>
     <value>Wärmeproduktion Wärmepumpe:</value>
   </data>
   <data name="SIMERG_LBL_WAERMEPRODUKTION_HEIZSTAB" xml:space="preserve">
-    <value>Wärmeproduktion Heizstab:</value>
+    <value>zuzüglich Wärmeproduktion Heizstab:</value>
   </data>
   <data name="SIMERG_TIP_WAERMEPRODUKTION_WP" xml:space="preserve">
     <value>Wärme, die die Wärmepumpen abgeben, je Modul gemessen am Erzeuger und ohne Heizstab. Bezieht eine Wärmepumpe ihre Quellwärme aus einem Puffer, den eine andere Wärmepumpe lädt (Booster), ist diese Wärme in beiden Modulen enthalten.</value>
@@ -29016,8 +29016,8 @@ Möchten Sie das zulassen?</value>
   <data name="SIMERG_LBL_DAVON_PROZESS" xml:space="preserve">
     <value>davon Prozesswärme:</value>
   </data>
-  <data name="SIMERG_LBL_DAVON_QUELLWAERME_KASKADE" xml:space="preserve">
-    <value>davon Quellwärme aus Kaskade:</value>
+  <data name="SIMERG_LBL_ABZUEGLICH_QUELLWAERME_KASKADE" xml:space="preserve">
+    <value>abzüglich Quellwärme aus Kaskade:</value>
   </data>
   <data name="SIMERG_TIP_QUELLWAERME_KASKADE_WP" xml:space="preserve">
     <value>Wärme, die eine Wärmepumpe als Quelle aus einem Puffer bezieht, den ein anderer Erzeuger lädt (Booster). Sie ist in der Wärmeproduktion zweimal enthalten: beim Erzeuger, der den Puffer lädt, und bei der Wärmepumpe, die sie anhebt. Ohne Kaskade 0.</value>
@@ -51927,6 +51927,15 @@ Chart</value>
   <data name="BED_GRAFIK_ACHSE_STUNDE" xml:space="preserve">
     <value>Stunde</value>
   </data>
+  <data name="BED_GRAFIK_ACHSE_STROM" xml:space="preserve">
+    <value>Strombedarf [{0}]</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_WAERME" xml:space="preserve">
+    <value>Wärmebedarf [{0}]</value>
+  </data>
+  <data name="BED_GRAFIK_ACHSE_KAELTE" xml:space="preserve">
+    <value>Kältebedarf [{0}]</value>
+  </data>
   <data name="BED_GRAFIK_ACHSE_VIERTELSTUNDE" xml:space="preserve">
     <value>Viertelstunde</value>
   </data>
@@ -58148,6 +58157,21 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   <data name="EF_DARSTELLUNG_STUFEN" xml:space="preserve">
     <value>Stufen</value>
   </data>
+  <data name="EF_DARSTELLUNG_ZUORDNUNG" xml:space="preserve">
+    <value>Zuordnung</value>
+  </data>
+  <data name="EF_KN_SPEICHERVERLUST" xml:space="preserve">
+    <value>Speicherverlust</value>
+  </data>
+  <data name="EF_KK_SPEICHERVERLUST" xml:space="preserve">
+    <value>Sp.-Verl.</value>
+  </data>
+  <data name="EF_FORMEL_DECKUNG" xml:space="preserve">
+    <value>Deckung je Kanal × Wärmebedarf</value>
+  </data>
+  <data name="EF_FORMEL_SPEICHERVERLUST" xml:space="preserve">
+    <value>Nettoabgabe − Deckung (Speicherverluste, Füllstand)</value>
+  </data>
   <data name="VF_STAND__BILD__ENERGIEFLUSS" xml:space="preserve">
     <value>Bild je Stand: Energieflussbild — Jahresbilanz von Strom, Wärme und Kälte von den Quellen über die Erzeuger zu den Bedarfen; die Knoten tragen ihre Jahressumme (MWh/a), die Bänder keine Zahl; nur Word.</value>
   </data>
@@ -58216,5 +58240,26 @@ Sollen diese Ferien durch die Projektvorgabe ersetzt werden? Mit „Nein“ blei
   </data>
   <data name="KI_DLG_KMA_RKW_ERL" xml:space="preserve">
     <value>Katalogsatz des Rückkühlwerks der wassergekühlten Kältemaschine (Id); leer = keins, dann gelten die Festwerte der Rückkühlart. Mit OK bekommt die Anlage eine eigene Projektkopie.</value>
+  </data>
+  <data name="SIMERG_LBL_ABZUEGLICH_SPEICHERVERLUSTE" xml:space="preserve">
+    <value>abzüglich Speicherverluste:</value>
+  </data>
+  <data name="SIMERG_TIP_SPEICHERVERLUSTE_WP" xml:space="preserve">
+    <value>Wärme der Wärmepumpe, die in Speichern verloren geht oder am Jahresende noch darin steht, also keinen Bedarf deckt. Gerechnet als Wärmeproduktion minus Quellwärme aus Kaskade plus Heizstab minus Nutzwärme.</value>
+  </data>
+  <data name="SIMERG_LBL_NUTZWAERME_WP" xml:space="preserve">
+    <value>Erzeugte Nutzwärme Wärmepumpe:</value>
+  </data>
+  <data name="SIMERG_TIP_NUTZWAERME_WP" xml:space="preserve">
+    <value>Der Teil des Wärmebedarfs, den die Wärmepumpe deckt: direkt abgegebene Wärme plus die ihr zugerechnete Entladung der Speicher, samt Heizstab. Jede Kilowattstunde zählt einmal, auch wenn ein Booster sie ein zweites Mal angehoben hat. Grundlage der Wärmebedarfsdeckung.</value>
+  </data>
+  <data name="SIMERG_GRP_HERLEITUNG_NUTZWAERME" xml:space="preserve">
+    <value>Herleitung der Nutzwärme</value>
+  </data>
+  <data name="SIMERG_LBL_NUTZWAERME_SPK" xml:space="preserve">
+    <value>Erzeugte Nutzwärme Heizkessel:</value>
+  </data>
+  <data name="SIMERG_TIP_SPEICHERVERLUSTE_SPK" xml:space="preserve">
+    <value>Wärme der Kessel, die in Speichern verloren geht oder am Jahresende noch darin steht, also keinen Bedarf deckt. Gerechnet als Wärmeproduktion minus Nutzwärme.</value>
   </data>
 </root>

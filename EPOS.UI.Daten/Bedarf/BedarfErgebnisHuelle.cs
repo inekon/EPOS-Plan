@@ -103,7 +103,7 @@ namespace WindowsFormsApplication1
                 },
                 Grafik = Grafikquelle(new[] { StromReihe(simulation) },
                                       Text_("BERG_OPT_STROM", "Strombedarf"),
-                                      Text_("BERG_ACHSE_STROMBEDARF", "Strombedarf [kW]"))
+                                      Text_("BED_GRAFIK_ACHSE_STROM", "Strombedarf [{0}]"))
             };
         }
 
@@ -135,12 +135,15 @@ namespace WindowsFormsApplication1
         /// Sichten und Raster ein Bild — die Jahresganglinie (<c>JahresgangModell</c>, eine Linie je
         /// Sicht, Zeitachse mit Zoom) oder die Summen je Monat, Woche und Tag
         /// (<c>SaeulenstapelModell</c>, eine Schicht je Sicht). Die Summen rechnet der Kern
-        /// (<see cref="Zeitsummen"/>); umgerechnet wird über <see cref="Energieeinheit"/>.
+        /// (<see cref="Zeitsummen"/>); umgerechnet wird über <see cref="Energieeinheit"/>. Die
+        /// Ganglinie folgt der gewählten Einheit über ihre Leistungseinheit (MWh → MW, kWh → kW),
+        /// Achsentitel und CSV-Spalten ebenso.
         /// <paramref name="reihen"/> steht Index für Index neben den Sichten; <c>null</c> = keine Sicht
-        /// hat ein volles Jahr.
+        /// hat ein volles Jahr. <paramref name="achsenformat"/> trägt den Platzhalter <c>{0}</c> für
+        /// die Leistungseinheit.
         /// </summary>
         private static Bedarfsgrafikquelle Grafikquelle(IReadOnlyList<Grafikreihe> reihen,
-                                                        string sammelname, string yTitel)
+                                                        string sammelname, string achsenformat)
         {
             var mit = new List<int>();
             for (int i = 0; i < reihen.Count; i++)
@@ -176,16 +179,17 @@ namespace WindowsFormsApplication1
                 {
                     List<Grafikreihe> g = Gewaehlt(wahl);
                     if (g.Count == 0) return null;
+                    Energieeinheit e = einheit ?? Energieeinheit.Vorgabe;
                     if (raster == Bedarfsraster.Jahr)
                     {
                         string xTitel = g[0].Werte.Length > 8760
                             ? Text_("BED_GRAFIK_ACHSE_VIERTELSTUNDE", "Viertelstunde")
                             : Text_("BED_GRAFIK_ACHSE_STUNDE", "Stunde");
+                        string yTitel = string.Format(CultureInfo.CurrentCulture, achsenformat, e.Leistungstext);
                         return ChartRenderer.JahresgangModell(Titel(g, raster),
-                            g.Select(r => new ChartRenderer.Reihe(r.Name, r.Werte, r.Rolle)).ToList(),
+                            g.Select(r => new ChartRenderer.Reihe(r.Name, e.LeistungAusKW(r.Werte), r.Rolle)).ToList(),
                             xTitel, yTitel, minimumNull: true);
                     }
-                    Energieeinheit e = einheit ?? Energieeinheit.Vorgabe;
                     (string[] namen, string[] achse) = Faecher(raster);
                     return ChartRenderer.SaeulenstapelModell(Titel(g, raster), e.Text,
                         g.Select(r => new ChartRenderer.Reihe(r.Name, Summen(r.Werte, raster, e), r.Rolle)).ToList(),
@@ -194,9 +198,9 @@ namespace WindowsFormsApplication1
                 Spalten = (wahl, raster, einheit) =>
                 {
                     List<Grafikreihe> g = Gewaehlt(wahl);
-                    if (raster == Bedarfsraster.Jahr)
-                        return g.Select(r => new ZeitreihenSpalte(r.Name, EINHEIT_KW, r.Werte)).ToList();
                     Energieeinheit e = einheit ?? Energieeinheit.Vorgabe;
+                    if (raster == Bedarfsraster.Jahr)
+                        return g.Select(r => new ZeitreihenSpalte(r.Name, e.Leistungstext, e.LeistungAusKW(r.Werte))).ToList();
                     return g.Select(r => new ZeitreihenSpalte(r.Name, e.Text, Summen(r.Werte, raster, e))).ToList();
                 }
             };
@@ -310,7 +314,7 @@ namespace WindowsFormsApplication1
                 StartReiter = startReiter,
                 TitelZusatz = titelZusatz ?? "",
                 Grafik = Grafikquelle(reihen, Text_("BED_GRAFIK_WAERMEBEDARF", "Wärmebedarf"),
-                                      Text_("BERG_ACHSE_WAERMEBEDARF", "Wärmebedarf [kW]")),
+                                      Text_("BED_GRAFIK_ACHSE_WAERME", "Wärmebedarf [{0}]")),
                 Kennzahlen = new[]
                 {
                     // DIESELBE GLIEDERUNG WIE BEIM STROM (Anwenderwunsch W8-E-2, hier
@@ -529,7 +533,7 @@ namespace WindowsFormsApplication1
                     Sicht(name, monatMwh ?? new double[12], name, ROLLE_KAELTE)
                 },
                 Grafik = Grafikquelle(new[] { new Grafikreihe(name, reihe, ROLLE_KAELTE) }, name,
-                                      Text_("BERG_ACHSE_KAELTEBEDARF", "Kältebedarf [kW]"))
+                                      Text_("BED_GRAFIK_ACHSE_KAELTE", "Kältebedarf [{0}]"))
             };
         }
 

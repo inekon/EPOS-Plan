@@ -296,6 +296,14 @@ namespace WindowsFormsApplication1
         public double Verluste_gesamt = 0;
 
         /// <summary>
+        /// Der Teil von <see cref="Entladung_gesamt"/> [kWh], den eine Wärmepumpe als
+        /// QUELLWÄRME aus diesem Speicher entnommen hat (Booster-Kette). Er deckt keinen
+        /// Bedarf und steht deshalb in keiner Kanalzeile: Σ <see cref="Entladung_Kanal"/>
+        /// + QuellentnahmeGesamtKwh = Entladung_gesamt.
+        /// </summary>
+        public double QuellentnahmeGesamtKwh = 0;
+
+        /// <summary>
         /// PAKET E1 (Konzept 4.4): dieselbe Jahressumme wie
         /// <see cref="Entladung_gesamt"/>, aber KANALINDIZIERT
         /// (<see cref="Kanal.HEIZUNG"/>/<c>BRAUCHWASSER</c>/<c>PROZESS</c>) [kWh].
@@ -503,6 +511,7 @@ namespace WindowsFormsApplication1
             SOC = 0;
             Ladung_gesamt = 0;
             Entladung_gesamt = 0;
+            QuellentnahmeGesamtKwh = 0;
             Verluste_gesamt = 0;
             SOC_Mittel = 0;
             SOC_Max = 0;
@@ -639,15 +648,16 @@ namespace WindowsFormsApplication1
         /// KANALZEILE <see cref="Entladung_Kanal"/>; an der Speicherphysik und an
         /// <see cref="Entladung_gesamt"/> ändert er nichts.
         ///
-        /// <para>VORBELEGUNG <see cref="Kanal.HEIZUNG"/>: Die Entnahme eines Moduls aus
-        /// seinem QUELLpuffer trägt keinen Bedarfskanal — sie wird auf dem Heizkanal
-        /// gebucht, genau wie in
-        /// <c>Kaskadenschleife.Anteil_Entladen(sp, gedeckt)</c> (altverhaltenserhaltende
-        /// Vorbelegung des Kanalmodells, Konzept 4.2/F18). Ohne diese eine Konvention
-        /// wäre die Summenzusage „Σ Entladung_Kanal = Entladung_gesamt" für
-        /// Quellspeicherzeilen nicht einlösbar.</para>
+        /// <para>VORBELEGUNG <see cref="Kanal.HEIZUNG"/>. Die Entnahme eines Erzeugers aus
+        /// seinem QUELLpuffer trägt keinen Bedarfskanal; sie kommt mit
+        /// <c>quellentnahme: true</c> und steht in <see cref="QuellentnahmeGesamtKwh"/>.</para>
         /// </param>
-        public double Entladen(double energieKWh, int stunde, int kanal = Kanal.HEIZUNG)
+        /// <param name="quellentnahme">
+        /// Die Entnahme einer Wärmepumpe aus ihrem Quellpuffer: Physik und Schichtebene wie
+        /// über <paramref name="kanal"/>, gebucht aber in <see cref="QuellentnahmeGesamtKwh"/>
+        /// statt in einer Kanalzeile.
+        /// </param>
+        public double Entladen(double energieKWh, int stunde, int kanal = Kanal.HEIZUNG, bool quellentnahme = false)
         {
             if (energieKWh <= 0 || Q_max <= 0) return 0;
 
@@ -680,11 +690,16 @@ namespace WindowsFormsApplication1
             // aufsummiert — er ist der führende Wert der Ergebniszeile und soll sich
             // durch die Aufteilung nicht um die Rundung einer Summe verschieben (dieselbe
             // Regel wie bei Kaskadenschleife._entladungJeArt).
-            if (kanal >= 0 && kanal < Kanal.ANZAHL) Entladung_Kanal[kanal] += umsatz;
+            // Eine Quellentnahme deckt keinen Bedarf und steht in keiner Kanalzeile.
+            if (quellentnahme) QuellentnahmeGesamtKwh += umsatz;
+            else
+            {
+                if (kanal >= 0 && kanal < Kanal.ANZAHL) Entladung_Kanal[kanal] += umsatz;
 
-            // PAKET E2: dieselbe Menge, dieselbe Zeile — nur zusätzlich mit der Stunde
-            // indiziert (Nachtrag zu Konzept 4.4).
-            Entladung_KanalStuendlich.Buchen(kanal, stunde, umsatz);
+                // PAKET E2: dieselbe Menge, dieselbe Zeile — nur zusätzlich mit der Stunde
+                // indiziert (Nachtrag zu Konzept 4.4).
+                Entladung_KanalStuendlich.Buchen(kanal, stunde, umsatz);
+            }
 
             if (stunde >= 0 && stunde < 8760)
             {

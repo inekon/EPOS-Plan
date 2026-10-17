@@ -744,6 +744,61 @@ public class BedarfErgebnisDialogTests : EposBunitContext
     }
 
     /// <summary>
+    /// Die Jahresganglinie folgt der gewählten Energieeinheit über ihre Leistungseinheit: Bei MWh holt
+    /// der Dialog das Bild in MWh (die Hülle rechnet die Reihen in MW) und zeigt MW am Zeiger, bei kWh
+    /// kW.
+    /// </summary>
+    [Theory]
+    [InlineData("MWh", "MW")]
+    [InlineData("kWh", "kW")]
+    public void Die_Ganglinie_zeigt_die_Leistungseinheit_der_Wahl(string wahl, string leistung)
+    {
+        Energieeinheit e = Energieeinheit.AusText(wahl);
+        var ruf = new List<(IReadOnlyList<int> Wahl, Bedarfsraster Raster, Energieeinheit Einheit)>();
+        var cut = Aufbauen(WaermeMitGrafik(ruf), einheit: e);
+
+        DiagrammSvg jahr = cut.FindComponent<DiagrammSvg>().Instance;
+        Assert.Equal(Bedarfsraster.Jahr, cut.Instance.Raster);
+        Assert.Equal(leistung, jahr.Einheit);
+        Assert.Equal(Bedarfsraster.Jahr, ruf[^1].Raster);
+        Assert.Same(e, ruf[^1].Einheit);
+    }
+
+    /// <summary>
+    /// Der Wechsel der Einheit im Raster „Jahr“ holt ein neues Bild in der neuen Einheit — die
+    /// Modellreferenz wechselt, der Zeiger zeigt die neue Leistungseinheit; der Rückweg nimmt das
+    /// schon geholte Bild.
+    /// </summary>
+    [Fact]
+    public void Der_Einheitenwechsel_holt_die_Ganglinie_neu()
+    {
+        var ruf = new List<(IReadOnlyList<int> Wahl, Bedarfsraster Raster, Energieeinheit Einheit)>();
+        BedarfErgebnisDaten daten = WaermeMitEinheiten();                     // mit Wahlfeld
+        daten.Grafik = Grafikquelle(ruf);
+        var cut = Aufbauen(daten);
+        Reiterknopf(cut, "Grafik").Click();
+        Assert.Equal(Bedarfsraster.Jahr, cut.Instance.Raster);
+        Zeichenmodell? inMw = cut.FindComponent<DiagrammSvg>().Instance.Modell;
+        Assert.Equal("MW", cut.FindComponent<DiagrammSvg>().Instance.Einheit);
+        int vorher = ruf.Count;
+
+        Einheitenfeld(cut).Change("1");
+
+        DiagrammSvg nachher = cut.FindComponent<DiagrammSvg>().Instance;
+        Assert.Equal(vorher + 1, ruf.Count);
+        Assert.Same(Energieeinheit.KWh, ruf[^1].Einheit);
+        Assert.Equal(Bedarfsraster.Jahr, ruf[^1].Raster);
+        Assert.NotSame(inMw, nachher.Modell);
+        Assert.Equal("kW", nachher.Einheit);
+
+        Einheitenfeld(cut).Change("0");
+
+        Assert.Same(inMw, cut.FindComponent<DiagrammSvg>().Instance.Modell);
+        Assert.Equal("MW", cut.FindComponent<DiagrammSvg>().Instance.Einheit);
+        Assert.Equal(vorher + 1, ruf.Count);
+    }
+
+    /// <summary>
     /// Die Bilder werden je Wahl, Raster und Einheit EINMAL geholt: Zurück auf ein schon gezeigtes Raster
     /// bekommt der Baustein dieselbe Modellreferenz — Zoom und Zeigerstelle bleiben.
     /// </summary>

@@ -135,7 +135,8 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
 
     /// <summary>
     /// <b>Die Ganglinie steht als SVG im Baum</b> (Etappe DG-E3, Gruppe (a)) — unter
-    /// der Kennung <c>gebaeude-bedarf</c> und mit der Einheit <c>kW</c>.
+    /// der Kennung <c>gebaeude-bedarf</c> und mit der Einheit <c>%</c> — der Zeiger nennt die
+    /// Einheit der Werte im Bild, und die normierte Ganglinie zeigt Prozent der Jahresspitze.
     /// </summary>
     /// <summary>
     /// geb3 (Konzept Katalogauswahl 7.7): Kopf, Kontextzeile und Fußleiste stehen außerhalb des EINEN Rollkörpers; jede
@@ -168,7 +169,7 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
 
         Assert.Single(cut.FindComponents<DiagrammSvg>());
         Assert.Equal("gebaeude-bedarf", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
-        Assert.Equal("kW", cut.FindComponent<DiagrammSvg>().Instance.Einheit);
+        Assert.Equal("%", cut.FindComponent<DiagrammSvg>().Instance.Einheit);
     }
 
     /// <summary>

@@ -265,13 +265,15 @@ public class ErzeugerReiterTests : EposBunitContext
                      {
                          Resource.SIMERG_LBL_WAERMEBEDARFSDECKUNG,
                          Resource.SIMERG_LBL_RESTWAERMEBEDARF_STUFENEINGANG,
-                         Resource.SIMERG_LBL_WAERMEPRODUKTION_SPK,
-                         Resource.SIM_KESSEL_QUELLWAERME,
-                         Resource.SIMERG_LBL_GEDECKT,
+                         Resource.SIMERG_LBL_NUTZWAERME_SPK,
                          Resource.SIMERG_LBL_DAVON_HEIZUNG,
                          Resource.SIMERG_LBL_DAVON_WARMWASSER,
                          Resource.SIMERG_LBL_RESTWAERMEBEDARF_NACH_KESSEL,
-                         Resource.SIMERG_LBL_DAVON_PUFFER_ANDERE
+                         Resource.SIMERG_LBL_DAVON_PUFFER_ANDERE,
+                         Resource.SIM_KESSEL_QUELLWAERME,
+                         Resource.SIMERG_LBL_WAERMEPRODUKTION_SPK,
+                         Resource.SIMERG_LBL_ABZUEGLICH_SPEICHERVERLUSTE,
+                         Resource.SIMERG_LBL_NUTZWAERME_SPK
                      },
                      seite.FindAll("dl.epos-simerg-werte")[0]
                           .QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
@@ -492,9 +494,10 @@ public class ErzeugerReiterTests : EposBunitContext
 
         Assert.Equal(
             new[] { "Wärmebedarfsdeckung:", "Restwärmebedarf vor dem Kessel:",
-                    "Wärmeproduktion der Spitzenkessel:", "Quellwärme aus Kaskade:",
-                    "Gedeckter Wärmebedarf:", "davon Heizung:", "davon Warmwasser:",
-                    "Restwärmebedarf nach Kessel:", "davon aus Puffer (andere Erzeuger):" },
+                    "Erzeugte Nutzwärme Heizkessel:", "davon Heizung:", "davon Warmwasser:",
+                    "Restwärmebedarf nach Kessel:", "davon aus Puffer (andere Erzeuger):",
+                    "Quellwärme aus Kaskade:", "Wärmeproduktion der Spitzenkessel:",
+                    "abzüglich Speicherverluste:", "Erzeugte Nutzwärme Heizkessel:" },
             listen[0].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
         Assert.Equal(
             new[] { "Strombedarf:", "Reststrombedarf:" },

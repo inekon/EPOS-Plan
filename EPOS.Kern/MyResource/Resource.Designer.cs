@@ -4884,6 +4884,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf [{0}] ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_ACHSE_KAELTE {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_ACHSE_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf [{0}] ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_ACHSE_STROM {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_ACHSE_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stunde ähnelt.
         /// </summary>
         public static string BED_GRAFIK_ACHSE_STUNDE {
@@ -4898,6 +4916,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BED_GRAFIK_ACHSE_VIERTELSTUNDE {
             get {
                 return ResourceManager.GetString("BED_GRAFIK_ACHSE_VIERTELSTUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf [{0}] ähnelt.
+        /// </summary>
+        public static string BED_GRAFIK_ACHSE_WAERME {
+            get {
+                return ResourceManager.GetString("BED_GRAFIK_ACHSE_WAERME", resourceCulture);
             }
         }
         
@@ -12293,7 +12320,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnisse — Energie ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übersicht Energie ähnelt.
         /// </summary>
         public static string BK_ERG_ABSCHNITT_ERGEBNISSE {
             get {
@@ -12302,7 +12329,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Komponenten und Einstellungen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übersicht Komponenten / Vergleich ähnelt.
         /// </summary>
         public static string BK_ERG_ABSCHNITT_KOMPONENTEN {
             get {
@@ -25007,6 +25034,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zuordnung ähnelt.
+        /// </summary>
+        public static string EF_DARSTELLUNG_ZUORDNUNG {
+            get {
+                return ResourceManager.GetString("EF_DARSTELLUNG_ZUORDNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Alle ähnelt.
         /// </summary>
         public static string EF_FILTER_ALLE {
@@ -25021,6 +25057,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string EF_FILTER_LEER {
             get {
                 return ResourceManager.GetString("EF_FILTER_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckung je Kanal × Wärmebedarf ähnelt.
+        /// </summary>
+        public static string EF_FORMEL_DECKUNG {
+            get {
+                return ResourceManager.GetString("EF_FORMEL_DECKUNG", resourceCulture);
             }
         }
         
@@ -25057,6 +25102,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string EF_FORMEL_KONDENSATION {
             get {
                 return ResourceManager.GetString("EF_FORMEL_KONDENSATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nettoabgabe − Deckung (Speicherverluste, Füllstand) ähnelt.
+        /// </summary>
+        public static string EF_FORMEL_SPEICHERVERLUST {
+            get {
+                return ResourceManager.GetString("EF_FORMEL_SPEICHERVERLUST", resourceCulture);
             }
         }
         
@@ -25345,6 +25399,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string EF_KK_SOLARTHERMIE {
             get {
                 return ResourceManager.GetString("EF_KK_SOLARTHERMIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sp.-Verl. ähnelt.
+        /// </summary>
+        public static string EF_KK_SPEICHERVERLUST {
+            get {
+                return ResourceManager.GetString("EF_KK_SPEICHERVERLUST", resourceCulture);
             }
         }
         
@@ -25687,6 +25750,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string EF_KN_SOLARTHERMIE {
             get {
                 return ResourceManager.GetString("EF_KN_SOLARTHERMIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicherverlust ähnelt.
+        /// </summary>
+        public static string EF_KN_SPEICHERVERLUST {
+            get {
+                return ResourceManager.GetString("EF_KN_SPEICHERVERLUST", resourceCulture);
             }
         }
         
@@ -122584,6 +122656,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herleitung der Nutzwärme ähnelt.
+        /// </summary>
+        public static string SIMERG_GRP_HERLEITUNG_NUTZWAERME {
+            get {
+                return ResourceManager.GetString("SIMERG_GRP_HERLEITUNG_NUTZWAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kälte ähnelt.
         /// </summary>
         public static string SIMERG_GRP_KAELTE {
@@ -122722,6 +122803,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_LAUF_LAEUFT {
             get {
                 return ResourceManager.GetString("SIMERG_LAUF_LAEUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die abzüglich Quellwärme aus Kaskade: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_ABZUEGLICH_QUELLWAERME_KASKADE {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_ABZUEGLICH_QUELLWAERME_KASKADE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die abzüglich Speicherverluste: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_ABZUEGLICH_SPEICHERVERLUSTE {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_ABZUEGLICH_SPEICHERVERLUSTE", resourceCulture);
             }
         }
         
@@ -122866,15 +122965,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_LBL_DAVON_PUFFER_ANDERE {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_DAVON_PUFFER_ANDERE", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die davon Quellwärme aus Kaskade: ähnelt.
-        /// </summary>
-        public static string SIMERG_LBL_DAVON_QUELLWAERME_KASKADE {
-            get {
-                return ResourceManager.GetString("SIMERG_LBL_DAVON_QUELLWAERME_KASKADE", resourceCulture);
             }
         }
         
@@ -123145,6 +123235,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_LBL_NETZ_DEZENTRAL {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_NETZ_DEZENTRAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erzeugte Nutzwärme Heizkessel: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_NUTZWAERME_SPK {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_NUTZWAERME_SPK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erzeugte Nutzwärme Wärmepumpe: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_NUTZWAERME_WP {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_NUTZWAERME_WP", resourceCulture);
             }
         }
         
@@ -123554,7 +123662,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeproduktion Heizstab: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die zuzüglich Wärmeproduktion Heizstab: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_WAERMEPRODUKTION_HEIZSTAB {
             get {
@@ -123914,6 +124022,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Teil des Wärmebedarfs, den die Wärmepumpe deckt: direkt abgegebene Wärme plus die ihr zugerechnete Entladung der Speicher, samt Heizstab. Jede Kilowattstunde zählt einmal, auch wenn ein Booster sie ein zweites Mal angehoben hat. Grundlage der Wärmebedarfsdeckung. ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_NUTZWAERME_WP {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_NUTZWAERME_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärme, die eine Wärmepumpe als Quelle aus einem Puffer bezieht, den ein anderer Erzeuger lädt (Booster). Sie ist in der Wärmeproduktion zweimal enthalten: beim Erzeuger, der den Puffer lädt, und bei der Wärmepumpe, die sie anhebt. Ohne Kaskade 0. ähnelt.
         /// </summary>
         public static string SIMERG_TIP_QUELLWAERME_KASKADE_WP {
@@ -123946,6 +124063,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_TIP_SPALTE_JAZ_HEIZSTAB {
             get {
                 return ResourceManager.GetString("SIMERG_TIP_SPALTE_JAZ_HEIZSTAB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärme der Kessel, die in Speichern verloren geht oder am Jahresende noch darin steht, also keinen Bedarf deckt. Gerechnet als Wärmeproduktion minus Nutzwärme. ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_SPEICHERVERLUSTE_SPK {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_SPEICHERVERLUSTE_SPK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärme der Wärmepumpe, die in Speichern verloren geht oder am Jahresende noch darin steht, also keinen Bedarf deckt. Gerechnet als Wärmeproduktion minus Quellwärme aus Kaskade plus Heizstab minus Nutzwärme. ähnelt.
+        /// </summary>
+        public static string SIMERG_TIP_SPEICHERVERLUSTE_WP {
+            get {
+                return ResourceManager.GetString("SIMERG_TIP_SPEICHERVERLUSTE_WP", resourceCulture);
             }
         }
         
