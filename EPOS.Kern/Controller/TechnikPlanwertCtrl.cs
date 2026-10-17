@@ -1031,32 +1031,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal static bool KenntBaugroesse(int komponentenID, string bemessung, bool investition)
         {
-            if (!investition && IstGesperrteBetriebsleistung(komponentenID, bemessung)) return false;
             if (IstWpElektrischeLeistung(komponentenID, bemessung, investition)) return true;
             if (IstPvLeistungsart(komponentenID, bemessung)) return true;
             if (IstSolarLeistungsart(komponentenID, bemessung)) return true;
 
             bool egal;
             return Geraetespalte(komponentenID, bemessung, out egal) != null;
-        }
-
-        /// <summary>
-        /// 29c (Anwenderentscheid 16.10.2026): Betriebskosten je kW und Jahr gibt es an
-        /// der Wärmepumpe nicht und am BHKW allein „je kW elektrisch" (<c>Pel</c>) — im
-        /// BETRIEBSRASTER führt die Landkarte dort keine Leistungsgröße. Die
-        /// Investitionsseite bleibt unberührt. Eine Bestandszeile bleibt über „benutzt"
-        /// wählbar und rechnet weiter: Ihre Menge kommt aus <see cref="BaugroesseSumme"/>,
-        /// die diese Frage nicht stellt.
-        /// </summary>
-        internal static bool IstGesperrteBetriebsleistung(int komponentenID, string bemessung)
-        {
-            bool elektrisch = string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH, StringComparison.Ordinal);
-            bool leistung = elektrisch ||
-                string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG, StringComparison.Ordinal) ||
-                string.Equals(bemessung, DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG, StringComparison.Ordinal);
-            if (!leistung) return false;
-            if (komponentenID == KOMPONENTE_WAERMEPUMPE) return true;
-            return komponentenID == 7 && !elektrisch;            // BHKW: nur je kW elektrisch
         }
 
         /// <summary>

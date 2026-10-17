@@ -242,23 +242,20 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            // Je Raster (29c): Die Landkarte unterscheidet Investitions- und Betriebsraster.
-            foreach (bool invest in new[] { true, false })
             foreach (BemessungKatalog.Info i in BemessungKatalog.Alle)
                 for (int k = 1; k <= 10; k++)
                 {
-                    if (BemessungKatalog.PasstZuGewerk(i.Persistenz, k, invest)) continue;
-                    string kategorie = (invest ? " = " : " <> ") + DbWerte.KOSTEN_KATEGORIE_INVESTITION;
+                    if (BemessungKatalog.PasstZuGewerk(i.Persistenz, k)) continue;
 
                     Assert.Equal(0, Zahl(
                         "SELECT COUNT(*) FROM \"Tab_KostenVorlagePosition\" AS p " +
                         "INNER JOIN \"Tab_KostenVorlage\" AS v ON v.\"ID\" = p.\"VorlageID\" " +
-                        "WHERE v.\"KomponentenID\" = " + k + " AND v.\"KategorieID\"" + kategorie +
+                        "WHERE v.\"KomponentenID\" = " + k +
                         " AND p.\"Bemessung\" = '" + i.Persistenz + "'"));
 
                     Assert.Equal(0, Zahl(
                         "SELECT COUNT(*) FROM \"Tab_ProjektWerte\" " +
-                        "WHERE \"KomponentenID\" = " + k + " AND \"KategorieID\"" + kategorie +
+                        "WHERE \"KomponentenID\" = " + k +
                         " AND \"Bemessung\" = '" + i.Persistenz + "'"));
                 }
         }

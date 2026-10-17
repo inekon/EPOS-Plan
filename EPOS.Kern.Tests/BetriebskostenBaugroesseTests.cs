@@ -415,7 +415,7 @@ namespace EPOS.Kern.Tests
         [InlineData(5, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG)]
         [InlineData(5, DbWerte.BEMESSUNG_EUR_PRO_KWH_KAPAZITAET)]
         [InlineData(3, DbWerte.BEMESSUNG_EUR_PRO_KWP)]
-        [InlineData(2, DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG)]   // 29c: nicht mehr die WP
+        [InlineData(1, DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG)]
         [InlineData(2, DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG)]
         [InlineData(4, DbWerte.BEMESSUNG_EUR_PRO_M2_KOLLEKTOR)]
         [InlineData(7, DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH)]

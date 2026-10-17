@@ -7,14 +7,13 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// <b>29c (Anwenderentscheid 16.10.2026): Betriebskosten je kW und Jahr nur beim
-    /// BHKW, und dort je kW ELEKTRISCH.</b> Im Betriebsraster führt die Wärmepumpe keine
-    /// Leistungsart, das BHKW allein „je kW elektrisch" auf <c>Pel</c>. Die
-    /// Investitionsseite bleibt unverändert; eine Bestandszeile bleibt wählbar und
-    /// rechnet weiter.
+    /// <b>29c (Anwenderentscheid 17.10.2026, „alles wie vorher + BHKW"): die
+    /// Leistungsarten im Betriebsraster.</b> Die Wärmepumpe führt dort „je kW Leistung"
+    /// und „je kW Heizleistung" (je kW elektrisch nur auf der Investitionsseite), das BHKW
+    /// alle drei Leistungsarten — darunter „je kW elektrisch" auf <c>Pel</c> in €/kW·a.
     /// </summary>
     [Collection("Testdatenbank")]
-    public class BetriebLeistungNurBhkwTests : IDisposable
+    public class BetriebLeistungBhkwTests : IDisposable
     {
         private const int K_WAERMEPUMPE = 1;
         private const int K_BHKW = 7;
@@ -45,43 +44,31 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         [Fact]
-        public void Die_Waermepumpe_bietet_im_Betriebsraster_keine_Leistungsart()
+        public void Die_Waermepumpe_bietet_im_Betriebsraster_ihre_Leistungsarten()
         {
             List<string> betrieb = Werte(K_WAERMEPUMPE, false, null);
-            foreach (string art in LEISTUNGSARTEN)
-            {
-                Assert.DoesNotContain(art, betrieb);
-                Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_GEWERK,
-                             WirtschaftlichkeitCtrl.BasisGrund(art, K_WAERMEPUMPE, false, false));
-            }
+            Assert.Contains(DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG, betrieb);
+            Assert.Contains(DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG, betrieb);
+            Assert.DoesNotContain(DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH, betrieb);
 
-            // Investitionsseite unberührt: alle drei, „je kW elektrisch" nach E20.
+            // Investitionsseite: alle drei, „je kW elektrisch" nach E20.
             List<string> invest = Werte(K_WAERMEPUMPE, true, null);
             foreach (string art in LEISTUNGSARTEN) Assert.Contains(art, invest);
         }
 
         [Fact]
-        public void Das_Bhkw_bietet_im_Betriebsraster_allein_je_kW_elektrisch()
+        public void Das_Bhkw_bietet_im_Betriebsraster_alle_drei_Leistungsarten()
         {
             List<string> betrieb = Werte(K_BHKW, false, null);
-            Assert.Contains(DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH, betrieb);
-            Assert.DoesNotContain(DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG, betrieb);
-            Assert.DoesNotContain(DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG, betrieb);
-            Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_GERAET,
-                         WirtschaftlichkeitCtrl.BasisGrund(DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH,
-                                                           K_BHKW, false, false));
+            foreach (string art in LEISTUNGSARTEN)
+            {
+                Assert.Contains(art, betrieb);
+                Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_GERAET,
+                             WirtschaftlichkeitCtrl.BasisGrund(art, K_BHKW, false, false));
+            }
 
             List<string> invest = Werte(K_BHKW, true, null);
             foreach (string art in LEISTUNGSARTEN) Assert.Contains(art, invest);
-        }
-
-        [Fact]
-        public void Eine_Bestandszeile_bleibt_in_der_Liste()
-        {
-            Assert.Contains(DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG,
-                Werte(K_WAERMEPUMPE, false, new[] { DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG }));
-            Assert.Contains(DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG,
-                Werte(K_BHKW, false, new[] { DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG }));
         }
 
         [Fact]

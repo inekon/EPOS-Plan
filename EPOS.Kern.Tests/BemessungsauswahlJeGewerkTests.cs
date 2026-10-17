@@ -71,10 +71,7 @@ namespace EPOS.Kern.Tests
         /// Wärmepumpe werden nicht je kWh bemessen — weder „je kWh elektrisch" („Strom-kWh
         /// sind Energiekosten") noch „je kWh thermisch". Beide fehlen im Betriebsraster
         /// mit dem Grund GEWERK; Bestandszeilen hält
-        /// <see cref="WaermepumpeBetriebKwhSperreTests"/>.</para>
-        /// <para>29c (Anwenderentscheid 16.10.2026): Auch je kW und Jahr werden die
-        /// Betriebskosten der Wärmepumpe nicht bemessen — im Betriebsraster steht keine
-        /// Leistungsart.</para></summary>
+        /// <see cref="WaermepumpeBetriebKwhSperreTests"/>.</para></summary>
         [Fact]
         public void Waermepumpe_bietet_die_Heizleistung_und_die_Laufgroessen()
         {
@@ -94,7 +91,8 @@ namespace EPOS.Kern.Tests
                     DbWerte.BEMESSUNG_PROZENT_INVESTITION,
                     DbWerte.BEMESSUNG_PROZENT_ENDENERGIEKOSTEN,
                     DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF,
-                    // E23: keine kWh-Art mehr; 29c: auch keine Leistungsart
+                    DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG,       // E23: keine kWh-Art mehr
+                    DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG,
                 });
         }
 
@@ -261,8 +259,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>BHKW: das Gewerk mit den meisten Größen — <c>Pel</c> und
         /// <c>Ptherm</c>, dazu beide Energieseiten aus dem Lauf. „je kW Leistung" meint
-        /// dort die ELEKTRISCHE Leistung. 29c (Anwenderentscheid 16.10.2026): Im
-        /// Betriebsraster steht allein „je kW elektrisch" (€/kW·a auf <c>Pel</c>).</summary>
+        /// dort die ELEKTRISCHE Leistung.</summary>
         [Fact]
         public void Bhkw_bietet_beide_Leistungen_und_beide_Energieseiten()
         {
@@ -284,7 +281,9 @@ namespace EPOS.Kern.Tests
                     DbWerte.BEMESSUNG_PROZENT_ENDENERGIEBEDARF,
                     DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH,
                     DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH,
-                    DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH,     // 29c: allein je kW elektrisch
+                    DbWerte.BEMESSUNG_EUR_PRO_KW_LEISTUNG,
+                    DbWerte.BEMESSUNG_EUR_PRO_KW_HEIZLEISTUNG,
+                    DbWerte.BEMESSUNG_EUR_PRO_KW_ELEKTRISCH,
                 });
         }
 
