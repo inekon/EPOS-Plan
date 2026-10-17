@@ -816,7 +816,7 @@ lehnt die Prüfung sie benannt ab; `EPOS.Kern.Tests/TwwTyptagVorlageTests` hält
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
-Basen aufräumt, lässt `2026-10-16_R57_Schnellaufheizung`, `Kenndaten_Test.sqlite`,
+Basen aufräumt, lässt `2026-10-17_R58_Kaeltesummen`, `Kenndaten_Test.sqlite`,
 `Importproben`, `Katalogpaket_frei`, `Katalogpaket_Vorlage_A100`, `Katalogpaket_Vorlage_DIN4708`,
 `Typtagpaket_Vorlage_VDI4655`, `Messreihen_INEKON`, `Normzahlen`, `Schemakopien`, `Skripte` und `LIESMICH.md`
 stehen.**
@@ -832,11 +832,11 @@ gefallen, `2026-09-16_R8_Heizkessel_Kaskade` am 18.09.2026,
 `2026-09-26_R22_Solarthermie` am 26.09.2026, `2026-09-26_R23_KesselBereitschaft`, `2026-09-27_R24_Heizgrenze` und `2026-09-29_R25_Plattformrand` am 29.09.2026,
 `2026-09-29_R26_Kesselrest`, `2026-09-30_R27_Kesselteillast`, `2026-09-30_R28_Kesselbrennwert` und
 `2026-09-30_R29_Kesseltakten` am 30.09.2026, `2026-09-30_R30_Stromverbraucher`,
-`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich`, `2026-10-04_R35_Zonenuebergabe`, die Basis R36 (Kältemaschine) und `2026-10-05_R37_Fahrplan` am 05.10.2026, die Basis R38 (Vorlaufwahl) am 06.10.2026, die Basis R39 (Auslegungsheizlast), die Basis R40 (Erdreichquellen), die Basis R41 (Erdreichprüfung) und die Basis R42 (Vorlaufinterpolation AK3) am 07.10.2026, die Basis R43 (Kälteseite AK3K) am 08.10.2026, die Basis R44 (Kühlkurve), die Basis R45 (Übergabegrenze), die Basis R46 (Gerätegrenzen) und die Basis R47 (Zapffeiertage) am 09.10.2026, die Basis R48 (Gemeinjahr), die Basis R49 (Kältemaschine Teillast) und die Basis R50 (Wochentagsraster) am 10.10.2026, die Basis R51 (freie Kühlung) am 11.10.2026, die Basis R52 (Vorheizen) am 13.10.2026, die Basis R53 (Zapfprofiloptionen) und die Basis R54 (Dachflächen) am 14.10.2026, die Basis R55 (Kältebedarf dezentral) und die Basis R56 (Wasserkosten) am 16.10.2026**
-(73 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
+`2026-10-02_R31_Rechenwegbefunde` und `2026-10-02_R32_Solarthermie` am 02.10.2026, `2026-10-02_R33_Viertelstunden` am 03.10.2026, `2026-10-03_R34_Erdreich`, `2026-10-04_R35_Zonenuebergabe`, die Basis R36 (Kältemaschine) und `2026-10-05_R37_Fahrplan` am 05.10.2026, die Basis R38 (Vorlaufwahl) am 06.10.2026, die Basis R39 (Auslegungsheizlast), die Basis R40 (Erdreichquellen), die Basis R41 (Erdreichprüfung) und die Basis R42 (Vorlaufinterpolation AK3) am 07.10.2026, die Basis R43 (Kälteseite AK3K) am 08.10.2026, die Basis R44 (Kühlkurve), die Basis R45 (Übergabegrenze), die Basis R46 (Gerätegrenzen) und die Basis R47 (Zapffeiertage) am 09.10.2026, die Basis R48 (Gemeinjahr), die Basis R49 (Kältemaschine Teillast) und die Basis R50 (Wochentagsraster) am 10.10.2026, die Basis R51 (freie Kühlung) am 11.10.2026, die Basis R52 (Vorheizen) am 13.10.2026, die Basis R53 (Zapfprofiloptionen) und die Basis R54 (Dachflächen) am 14.10.2026, die Basis R55 (Kältebedarf dezentral) und die Basis R56 (Wasserkosten) am 16.10.2026, die Basis R57 (Schnellaufheizung) am 17.10.2026**
+(74 Basen, alle Protokolle gesichert). Kein Test, kein Gate, keine CI liest
 eine entfernte Basis. **Die Messdaten sind endgültig weg** (rund 8 000 CSV-Dateien) — eine
 alte Zahl steht nur noch im Protokoll.
-Erhalten sind die **Protokolle** aller 73 Basen samt der Tabelle Basis → Datum → Zweck →
+Erhalten sind die **Protokolle** aller 74 Basen samt der Tabelle Basis → Datum → Zweck →
 Protokoll unter
 [`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md);
 **welche Basis wann von welcher abgelöst wurde und warum**, steht ebendort — bis zum 12.09.2026
@@ -846,10 +846,10 @@ danach im Wegweiser desselben Ordners.
 
 ## Aktuelle Basis
 
-**`2026-10-16_R57_Schnellaufheizung/`** — **achtunddreißig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
+**`2026-10-17_R58_Kaeltesummen/`** — **achtunddreißig Projekte** (1007, 1008, 1017, 1018, 1023, 1024, 1030, 1039,
 1040, 1041, 1042, 1045, 1046, 1047, 1049, 1050, 1051, 1052, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063, 1064, 1065, 1066, 1067, 1068, 1069, 1070, 1071, 1072, 1073), **1 233 CSV**, **8 596 Skalare**, gerechnet mit dem
-plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 16.10.2026, Stand `18a3d1d72`)
-gegen `Kenndaten_Test.sqlite` (Schemastand **237**, 109 617 152 Byte, LFS-SHA-256 `75fb0a61…`, mit den Projekten 1053 bis 1073,
+plattformfreien `EPOS.Referenzlauf` **auf Linux** (x64, Kultur de-DE, eingefroren am 17.10.2026, Stand `3d08644b4`)
+gegen `Kenndaten_Test.sqlite` (Schemastand **238**, 109 604 864 Byte, LFS-SHA-256 `c8befb51…`, mit den Projekten 1053 bis 1073,
 dem erfundenen Typtagsatz und den Satteldächern von 1052 und 1054; die Nachträge der Schemaschritte unten sind darin
 enthalten). Gegen diese Basis hält
 `.github/workflows/kern.yml` (1030, 1007, 1017, 1045, 1046, 1047, 1049, 1051, 1058, 1060, 1063, 1065, 1066 bis 1071 und 1073) jeden Push und rechnet dieselben Projekte
@@ -887,22 +887,37 @@ Projekt 1065 und `EPOS.Kern.Tests/ZapfprofilOptionenReferenzprojekteWacheTests` 
 Projekt 1072 und `EPOS.Kern.Tests/SchnellaufheizungReferenzprojektWacheTests` die Schnellaufheizung von Projekt 1073. 1050, 1052, 1054, 1055, 1056, 1057, 1059, 1061, 1062, 1064 und 1072 stehen nicht in der CI-Auswahl;
 `Werkzeuge/Gate/gate_linux.sh` rechnet alle achtunddreißig. Sie ist die **einzige** Basis im Arbeitsbaum.
 
-> **Anlass: Referenzprojekt 1073 „Referenzprojekt Schnellaufheizung“ (Stufe SA4, E128, E153).** Neu ist allein das
-> Projekt 1073, die Kopie von 1054 mit „Vorheizzeit berechnet“ und Schnellaufheizung um 3 K (Abschnitt „Das
-> Referenzprojekt 1073“ unten). Der Referenzlauf der siebenunddreißig Projekte von R56 gegen R56 ist PASS (37 von 37,
-> 12 736 541 Werte) und byte-gleich (1 205/1 205 CSV); 1073 bringt 28 CSV und 335 Skalare dazu. Zwei Läufe sind
-> byte-gleich (1 233/1 233 CSV), der gestörte Lauf von 1073 (`--stoerung ulp`) ist gegen den ungestörten PASS.
-> Neu eingefroren auf der Testdatenbank 237 (Fassung 236 von origin, Schritt 237 und die Saat 1073 nachgezogen): die
-> siebenunddreißig Projekte von R56 sind gegen R56 PASS (12 736 541 Werte) und byte-gleich, 1073 ist gegen die erste
-> Fassung von R57 byte-gleich (1 233/1 233 CSV gleich, allein `protokoll.txt` neu); die Schritte 236 und 237 wirken auf
-> kein Rechenergebnis.
+> **Anlass: Kältespalten ungerundet (Anwenderentscheid vom 16.10.2026, Punkt 8d).** Die Kältespalten der
+> Ergebnistabellen — `Deckung_Kuehlung` der Erzeugerzeilen, `Kaelteproduktion_WP`, `Stromverbrauch_Kuehlung`, Kälte und
+> Strom der Kältemaschinen — werden ungerundet gespeichert (`Waermebedarf_Kuehlung` bleibt gerundet), damit Übersicht und
+> Kennzahlenkatalog Deckungsgrad und Jahresarbeitszahl der Kälte aus einer Rechnung zeigen. Der Referenzlauf der
+> achtunddreißig Projekte gegen R57 ist für 30 Projekte PASS; die acht Projekte mit Kühlbetrieb der Wärmepumpe weichen je
+> in `aggregate.csv`, Schlüssel `Waermepumpe.Kaelteproduktion_WP`, außerhalb der Toleranz ab:
+>
+> | Projekt | R57 | R58 | Faktor der Toleranz |
+> |---|---|---|---|
+> | 1017 | 4,05 | 4,05051694 | 1,276 |
+> | 1047 | 3,83 | 3,82939092 | 1,590 |
+> | 1056 | 3,77 | 3,76627292 | 9,886 |
+> | 1058 | 3,81 | 3,80818165 | 4,773 |
+> | 1060 | 3,83 | 3,82873151 | 3,312 |
+> | 1061 | 3,83 | 3,83047193 | 1,232 |
+> | 1062 | 3,91 | 3,90538151 | 11,812 |
+> | 1064 | 4,05 | 4,05051694 | 1,276 |
+>
+> Innerhalb der Toleranz ändern sich in denselben Dateien `Waermepumpe.Stromverbrauch_Kuehlung` (alle acht) und
+> `Waermepumpe.Deckung_Kuehlung` (1056 98,39 → 98,3947398, 1061 100 → 99,9999998, dazu 1072 50,25 → 50,2513151).
+> Byte-verschieden sind allein diese neun `aggregate.csv`; die übrigen 1 224 CSV sind gegen R57 byte-gleich, Zahl der
+> CSV (1 233) und der Skalare (8 596) bleibt. Kein anderer Schlüssel ändert sich; die Bereinigung der
+> Wirtschaftlichkeitsergebnisse 1029, 1043 und 1044 der Testdatenbank (8e) berührt kein Referenzprojekt. Herleitung im
+> `protokoll.txt` der Basis.
 >
 > ```bash
 > dotnet build EPOS.Referenzlauf/EPOS.Referenzlauf.csproj -c Release
 > dotnet run --project EPOS.Referenzlauf -c Release --no-build -- lauf \
 >   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
 >   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046,1047,1049,1050,1051,1052,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063,1064,1065,1066,1067,1068,1069,1070,1071,1072,1073 \
->   --ziel Referenzlaeufe/2026-10-16_R57_Schnellaufheizung
+>   --ziel Referenzlaeufe/2026-10-17_R58_Kaeltesummen
 > ```
 
 
@@ -1502,13 +1517,13 @@ Projekt 1072 und `EPOS.Kern.Tests/SchnellaufheizungReferenzprojektWacheTests` di
 > `20c0a3fe4d7a399fe18ed20fc11725639c50b3eba10eb0ba704b8900399ebe35`**. Der Referenzlauf der 38 Projekte gegen R57 bleibt
 > PASS.
 
-### Die Vorgängerbasis R56 (Wasserkosten)
+### Die Vorgängerbasis R57 (Schnellaufheizung)
 
-Siebenunddreißig Projekte, 1 205 CSV, 8 261 Skalare, auf Linux eingefroren gegen die Testdatenbank `3478881f…`
-(Schemastand 235); mit R57 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Schemaschritt 235, KB-7, und die zwei
-Schlüssel des Kältedeckungsgrads von 1072) unter
-[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R57
-nimmt allein das Referenzprojekt 1073 auf; alle Rechenwerte von R56 sind unverändert.
+Achtunddreißig Projekte, 1 233 CSV, 8 596 Skalare, auf Linux eingefroren gegen die Testdatenbank `75fb0a61…`
+(Schemastand 237); mit R58 aus dem Arbeitsbaum gefallen, Protokoll und Anlass (Referenzprojekt 1073, Stufe SA4) unter
+[`Dokumentation/ueberholt/Referenzbasen/`](../Dokumentation/ueberholt/Referenzbasen/LIESMICH.md). Der Wechsel zu R58
+ändert allein die ungerundet gespeicherten Kältesummen der Wärmepumpe (Anlass oben); alle übrigen Rechenwerte von R57 sind
+unverändert.
 
 ## Was hier liegt
 
