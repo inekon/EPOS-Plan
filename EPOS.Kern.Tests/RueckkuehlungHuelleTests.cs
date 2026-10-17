@@ -99,6 +99,128 @@ namespace EPOS.Kern.Tests
             KaeltemaschineAnlageCtrl.Loeschen(anlage);
         }
 
+        // =================================================================
+        //  K-F5c: Abbrechen nach einer Zwischenspeicherung stellt den Stand beim Öffnen exakt her
+        // =================================================================
+
+        private static long Waisen() => Convert.ToInt64(DataRepository.ExecuteScalar(
+            "SELECT COUNT(*) FROM Tab_Rueckkuehlwerk r WHERE NOT EXISTS " +
+            "(SELECT 1 FROM Tab_Energieanlagen a WHERE a.ID_Rueckkuehlwerk = r.ID)"), CultureInfo.InvariantCulture);
+
+        private static int Satz(string name) => RueckkuehlwerkStammCtrl.Speichern(new RueckkuehlwerkModel
+        {
+            Bezeichner = name, Bauart = "TROCKEN", Nennleistung_kW = 100
+        }).Id;
+
+        /// <summary>Zwischenspeichern mit <paramref name="wahl"/>, dann Abbrechen (der Dialog schreibt den Stand beim Öffnen).</summary>
+        private static void ZwischenspeichernUndAbbrechen(int anlage, int? wahl, Func<KaeltemaschineAnlageDaten, string> speichern)
+        {
+            KaeltemaschineAnlageDaten original = Lies(anlage);
+            KaeltemaschineAnlageDaten arbeit = Lies(anlage);
+            arbeit.RueckkuehlwerkWahl = wahl;
+            Assert.Null(speichern(arbeit));
+            Assert.Null(speichern(original));
+        }
+
+        [Fact]
+        public void Abbrechen_stellt_die_Projektkopie_mit_ihren_eigenen_Werten_wieder_her()
+        {
+            if (!_db.Vorhanden) return;
+            int s = Satz("RK Start"), t = Satz("RK Wechsel");
+            int anlage = KaeltemaschineAnlageCtrl.Anlegen(PROJEKT, StammKm(TROCKENKUEHLER), "KM Abbrechen eigen");
+            Assert.Null(KaeltemaschineAnlageCtrl.RueckkuehlwerkWaehlen(anlage, s));
+            int kopie = KaeltemaschineAnlageCtrl.Laden(anlage).IdRueckkuehlwerk.Value;
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Rueckkuehlwerk SET Nennleistung_kW = 123.5, Beschreibung = 'eigen', " +
+                                           "Annaeherung_Nenn_K = 4.5 WHERE ID = ?", new DbParam("?", kopie));
+
+            var sitzung = new KaeltemaschineAnlageHuelle.Rueckkuehlwerksitzung();
+            KaeltemaschineAnlageDaten original = Lies(anlage);
+            KaeltemaschineAnlageDaten arbeit = Lies(anlage);
+            arbeit.RueckkuehlwerkWahl = t;
+            Assert.Null(KaeltemaschineAnlageHuelle.Speichern(arbeit, sitzung));
+            int wechsel = KaeltemaschineAnlageCtrl.Laden(anlage).IdRueckkuehlwerk.Value;
+            Assert.NotEqual(kopie, wechsel);
+            Assert.Null(RueckkuehlwerkCtrl.Laden(kopie));
+
+            Assert.Null(KaeltemaschineAnlageHuelle.Speichern(original, sitzung));
+            Assert.Equal(kopie, KaeltemaschineAnlageCtrl.Laden(anlage).IdRueckkuehlwerk);
+            RueckkuehlwerkModel m = RueckkuehlwerkCtrl.Laden(kopie);
+            Assert.Equal((123.5, "eigen", 4.5, (int?)s, (int?)PROJEKT, "RK Start"),
+                         (m.Nennleistung_kW.Value, m.Beschreibung, m.Annaeherung_Nenn_K.Value, m.IdStamm, m.IdProjekt, m.Bezeichner));
+            Assert.Null(RueckkuehlwerkCtrl.Laden(wechsel));
+            Assert.Equal(0L, Waisen());
+            Assert.Equal(s, Lies(anlage).RueckkuehlwerkWahl);
+            KaeltemaschineAnlageCtrl.Loeschen(anlage);
+            Assert.Equal(0L, Waisen());
+        }
+
+        [Fact]
+        public void Abbrechen_stellt_eine_Projektkopie_ohne_Katalogsatz_wieder_her()
+        {
+            if (!_db.Vorhanden) return;
+            int s = Satz("RK ohne Satz"), t = Satz("RK Wechsel 2");
+            int anlage = KaeltemaschineAnlageCtrl.Anlegen(PROJEKT, StammKm(TROCKENKUEHLER), "KM Abbrechen ohne Satz");
+            Assert.Null(KaeltemaschineAnlageCtrl.RueckkuehlwerkWaehlen(anlage, s));
+            int kopie = KaeltemaschineAnlageCtrl.Laden(anlage).IdRueckkuehlwerk.Value;
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Rueckkuehlwerk SET ID_Stamm = NULL, Nennleistung_kW = 77 WHERE ID = ?",
+                                           new DbParam("?", kopie));
+            Assert.Equal(KaeltemaschineAnlageDaten.RUECKKUEHLWERK_PROJEKTKOPIE, Lies(anlage).RueckkuehlwerkWahl);
+
+            // Wechsel auf einen Katalogsatz, dann auf „keins“ - jedes Mal abgebrochen.
+            foreach (int? wahl in new int?[] { t, null })
+            {
+                var sitzung = new KaeltemaschineAnlageHuelle.Rueckkuehlwerksitzung();
+                ZwischenspeichernUndAbbrechen(anlage, wahl, d => KaeltemaschineAnlageHuelle.Speichern(d, sitzung));
+                Assert.Equal(kopie, KaeltemaschineAnlageCtrl.Laden(anlage).IdRueckkuehlwerk);
+                RueckkuehlwerkModel m = RueckkuehlwerkCtrl.Laden(kopie);
+                Assert.Null(m.IdStamm);
+                Assert.Equal(77.0, m.Nennleistung_kW);
+                Assert.Equal(0L, Waisen());
+            }
+            KaeltemaschineAnlageCtrl.Loeschen(anlage);
+        }
+
+        [Fact]
+        public void Abbrechen_stellt_keins_wieder_her_und_laesst_keine_Waise()
+        {
+            if (!_db.Vorhanden) return;
+            int s = Satz("RK Neu");
+            int anlage = KaeltemaschineAnlageCtrl.Anlegen(PROJEKT, StammKm(TROCKENKUEHLER), "KM Abbrechen keins");
+            Assert.Null(Lies(anlage).RueckkuehlwerkWahl);
+
+            var sitzung = new KaeltemaschineAnlageHuelle.Rueckkuehlwerksitzung();
+            ZwischenspeichernUndAbbrechen(anlage, s, d => KaeltemaschineAnlageHuelle.Speichern(d, sitzung));
+            Assert.Null(KaeltemaschineAnlageCtrl.Laden(anlage).IdRueckkuehlwerk);
+            Assert.Equal(0L, Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM Tab_Rueckkuehlwerk"), CultureInfo.InvariantCulture));
+            KaeltemaschineAnlageCtrl.Loeschen(anlage);
+        }
+
+        [Fact]
+        public void Der_Speicherweg_der_Gaben_fuehrt_die_Sitzung_je_Dialog()
+        {
+            if (!_db.Vorhanden) return;
+            int s = Satz("RK Gaben"), t = Satz("RK Gaben 2");
+            int anlage = KaeltemaschineAnlageCtrl.Anlegen(PROJEKT, StammKm(TROCKENKUEHLER), "KM Gaben");
+            Assert.Null(KaeltemaschineAnlageCtrl.RueckkuehlwerkWaehlen(anlage, s));
+            int kopie = KaeltemaschineAnlageCtrl.Laden(anlage).IdRueckkuehlwerk.Value;
+            DataRepository.ExecuteNonQuery("UPDATE Tab_Rueckkuehlwerk SET Beschreibung = 'Gaben' WHERE ID = ?", new DbParam("?", kopie));
+
+            var speichern = (Func<KaeltemaschineAnlageDaten, string>)KaeltemaschineAnlageHuelle.Gaben(PROJEKT)["Speichern"];
+            ZwischenspeichernUndAbbrechen(anlage, t, speichern);
+            Assert.Equal(kopie, KaeltemaschineAnlageCtrl.Laden(anlage).IdRueckkuehlwerk);
+            Assert.Equal("Gaben", RueckkuehlwerkCtrl.Laden(kopie).Beschreibung);
+            Assert.Equal(0L, Waisen());
+
+            // Ohne Sitzung (Konfiguration im Bereich Kälte, einmaliges Schreiben) bleibt der Weg über den Katalogsatz.
+            KaeltemaschineAnlageDaten d = Lies(anlage);
+            d.RueckkuehlwerkWahl = t;
+            Assert.Null(KaeltemaschineAnlageHuelle.Speichern(d));
+            Assert.Equal(t, Lies(anlage).RueckkuehlwerkWahl);
+            Assert.Null(RueckkuehlwerkCtrl.Laden(kopie));
+            KaeltemaschineAnlageCtrl.Loeschen(anlage);
+            Assert.Equal(0L, Waisen());
+        }
+
         [Fact]
         public void Eine_leere_Rueckkuehlart_gilt_in_Huelle_und_Pruefung_als_luftgekuehlt()
         {

@@ -371,19 +371,30 @@ namespace WindowsFormsApplication1
             new DbParam("?", Wert(m.Freikuehlung_Schaltung)), new DbParam("?", Wert(m.Modulkosten)),
         };
 
-        /// <summary>Schreibt einen Satz; <paramref name="projekt"/> ≠ <c>null</c> schreibt eine Projektkopie (ID_Projekt, ID_Stamm).</summary>
-        internal static int KopfSchreiben(DbVorgang v, string tabelle, RueckkuehlwerkModel m, bool neu, int? projekt)
+        /// <summary>
+        /// Schreibt einen Satz; <paramref name="projekt"/> ≠ <c>null</c> schreibt eine Projektkopie (ID_Projekt, ID_Stamm).
+        /// <paramref name="festeId"/> legt einen neuen Satz unter dieser ID an (Wiederherstellen einer Projektkopie, K-F5c).
+        /// </summary>
+        internal static int KopfSchreiben(DbVorgang v, string tabelle, RueckkuehlwerkModel m, bool neu, int? projekt, int? festeId = null)
         {
             string[] spalten = RueckkuehlwerkSchema.Fachspalten;
             if (neu)
             {
-                string zusatz = projekt.HasValue ? ", \"ID_Projekt\", \"" + RueckkuehlwerkSchema.SPALTE_ID_STAMM + "\"" : "";
-                string marken = string.Join(", ", spalten.Select(_ => "?")) + (projekt.HasValue ? ", ?, ?" : "");
+                string zusatz = (projekt.HasValue ? ", \"ID_Projekt\", \"" + RueckkuehlwerkSchema.SPALTE_ID_STAMM + "\"" : "")
+                              + (festeId.HasValue ? ", \"ID\"" : "");
+                string marken = string.Join(", ", spalten.Select(_ => "?")) + (projekt.HasValue ? ", ?, ?" : "")
+                              + (festeId.HasValue ? ", ?" : "");
                 var p = Fachwerte(m).ToList();
                 if (projekt.HasValue)
                 {
                     p.Add(new DbParam("?", projekt.Value));
                     p.Add(new DbParam("?", Wert(m.IdStamm)));
+                }
+                if (festeId.HasValue)
+                {
+                    v.Ausfuehren("INSERT INTO " + tabelle + " (" + string.Join(", ", spalten.Select(s => "\"" + s + "\"")) + zusatz +
+                                 ") VALUES (" + marken + ")", p.Append(new DbParam("?", festeId.Value)).ToArray());
+                    return festeId.Value;
                 }
                 v.Ausfuehren("INSERT INTO " + tabelle + " (" + string.Join(", ", spalten.Select(s => "\"" + s + "\"")) + zusatz +
                              ") VALUES (" + marken + ")", p.ToArray());

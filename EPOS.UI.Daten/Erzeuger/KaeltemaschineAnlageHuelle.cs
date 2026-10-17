@@ -24,6 +24,8 @@ namespace WindowsFormsApplication1
             if (projektId <= 0) return null;
             var traeger = Kaeltestromabrechnung.StromtraegerDesProjekts(projektId)
                 .Select(t => (t.Key, t.Value)).ToList();
+            // K-F5c: der Stand des Rückkühlwerks je Anlage vor dem ersten Schreiben dieser Dialogsitzung.
+            var sitzung = new Rueckkuehlwerksitzung();
             return new Dictionary<string, object>
             {
                 ["Anlagen"] = new Func<IReadOnlyList<KaeltemaschineAnlageDaten>>(() => Liste(projektId)),
@@ -36,7 +38,7 @@ namespace WindowsFormsApplication1
                 ["KuehltraegerVorauswahl"] = (int?)Vorauswahl(projektId),
                 ["Pruefen"] = new Func<KaeltemaschineAnlageDaten, string>(Pruefen),
                 ["Anlegen"] = new Func<int, string, int>((stammId, name) => KaeltemaschineAnlageCtrl.Anlegen(projektId, stammId, name)),
-                ["Speichern"] = new Func<KaeltemaschineAnlageDaten, string>(Speichern),
+                ["Speichern"] = new Func<KaeltemaschineAnlageDaten, string>(d => Speichern(d, sitzung)),
                 ["Loeschen"] = new Action<int>(KaeltemaschineAnlageCtrl.Loeschen),
                 // KT: "Typkennfelder laden..." in der Katalogwahl - derselbe Weg wie in der Verwaltung.
                 ["TypkennfelderLaden"] = new Func<KaeltemaschineTypkennfelderErgebnis>(KaeltemaschineKatalogHuelle.TypkennfelderLaden),
@@ -192,24 +194,54 @@ namespace WindowsFormsApplication1
             return d.Geraet is { Luftgekuehlt: true } ? MyResource.Resource.RKW_MSG_LUFT_UNVERTRAEGLICH : null;
         }
 
-        /// <summary>Schreibt eine gespeicherte Anlage; liefert den Prüftext oder <c>null</c>.</summary>
-        internal static string Speichern(KaeltemaschineAnlageDaten d)
+        /// <summary>
+        /// K-F5c: die Sitzung eines Dialogs „Kältemaschinen im Projekt“ (je Aufruf von <see cref="Gaben"/> eine) — je Anlage
+        /// der Stand des Rückkühlwerks vor dem ersten Schreiben der Sitzung samt der Wahl, die ihm entspricht. Abbrechen
+        /// schreibt den Stand beim Öffnen über <see cref="Speichern(KaeltemaschineAnlageDaten, Rueckkuehlwerksitzung)"/>
+        /// zurück; mit dieser Wahl stellt die Hülle die Projektkopie exakt wieder her.
+        /// </summary>
+        internal sealed class Rueckkuehlwerksitzung
+        {
+            internal readonly Dictionary<int, (int? Wahl, KaeltemaschineAnlageCtrl.RueckkuehlwerkStand Stand)> Staende = new();
+        }
+
+        /// <summary>Schreibt eine gespeicherte Anlage ohne Dialogsitzung; liefert den Prüftext oder <c>null</c>.</summary>
+        internal static string Speichern(KaeltemaschineAnlageDaten d) => Speichern(d, null);
+
+        /// <summary>
+        /// Schreibt eine gespeicherte Anlage; liefert den Prüftext oder <c>null</c>. Mit <paramref name="sitzung"/> hält das
+        /// erste Schreiben einer Anlage den Stand ihres Rückkühlwerks fest (K-F5c).
+        /// </summary>
+        internal static string Speichern(KaeltemaschineAnlageDaten d, Rueckkuehlwerksitzung sitzung)
         {
             KaeltemaschineAnlageModel gelesen = d == null ? null : KaeltemaschineAnlageCtrl.Laden(d.AnlagenId);
             if (gelesen == null) return MyResource.Resource.KM_ANLAGE_FEHLT;
+            (int? Wahl, KaeltemaschineAnlageCtrl.RueckkuehlwerkStand Stand) start = default;
+            if (sitzung != null && !sitzung.Staende.TryGetValue(gelesen.AnlagenId, out start))
+            {
+                start = (GelesenWahl(gelesen), KaeltemaschineAnlageCtrl.RueckkuehlwerkSchnappschuss(gelesen.AnlagenId));
+                sitzung.Staende[gelesen.AnlagenId] = start;
+            }
             string grund = KaeltemaschineAnlageCtrl.Speichern(AlsModell(d, gelesen));
             if (!string.IsNullOrEmpty(grund)) return grund;
-            return RueckkuehlwerkSchreiben(d, gelesen);
+            return RueckkuehlwerkSchreiben(d, gelesen, start.Stand, start.Wahl);
         }
 
         /// <summary>
         /// K-F5b: der Schreibschritt der Wahl des Rückkühlwerks im OK-Weg — nur, wenn die Wahl von der gespeicherten
         /// abweicht (ein zweites OK wiederholt nichts, die Projektkopie bleibt mit ihren Werten stehen). Der Kernweg
         /// <see cref="KaeltemaschineAnlageCtrl.RueckkuehlwerkWaehlen"/> legt die Projektkopie an bzw. löst sie.
+        /// K-F5c: Ist die Wahl wieder die des festgehaltenen Stands (<paramref name="start"/>, Abbrechen nach einer
+        /// Zwischenspeicherung oder Rückkehr zur Wahl beim Öffnen), die Anlage führt aber eine andere Kopie, schreibt
+        /// <see cref="KaeltemaschineAnlageCtrl.RueckkuehlwerkWiederherstellen"/> den Stand exakt zurück — dieselbe Kopie
+        /// mit allen Feldern, auch ohne Katalogsatz, oder „keins“.
         /// </summary>
-        internal static string RueckkuehlwerkSchreiben(KaeltemaschineAnlageDaten d, KaeltemaschineAnlageModel gelesen)
+        internal static string RueckkuehlwerkSchreiben(KaeltemaschineAnlageDaten d, KaeltemaschineAnlageModel gelesen,
+                                                       KaeltemaschineAnlageCtrl.RueckkuehlwerkStand start = null, int? startWahl = null)
         {
             if (d == null || gelesen == null) return null;
+            if (start != null && d.RueckkuehlwerkWahl == startWahl && gelesen.IdRueckkuehlwerk != start.KopieId)
+                return KaeltemaschineAnlageCtrl.RueckkuehlwerkWiederherstellen(start);
             if (d.RueckkuehlwerkWahl == KaeltemaschineAnlageDaten.RUECKKUEHLWERK_PROJEKTKOPIE && gelesen.IdRueckkuehlwerk.HasValue)
                 return null;
             if (d.RueckkuehlwerkWahl == GelesenWahl(gelesen)) return null;

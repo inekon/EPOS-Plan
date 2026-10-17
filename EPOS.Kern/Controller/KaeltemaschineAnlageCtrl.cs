@@ -244,6 +244,70 @@ namespace WindowsFormsApplication1
             return null;
         }
 
+        /// <summary>
+        /// Der Stand des Rückkühlwerks einer Anlage (K-F5c): die Projektkopie, auf die sie zeigt, mit allen Feldern
+        /// (<see cref="RueckkuehlwerkModel"/> samt <c>ID</c>, <c>ID_Projekt</c>, <c>ID_Stamm</c>); <c>KopieId</c> und
+        /// <c>Kopie</c> <c>null</c> = keins gewählt.
+        /// </summary>
+        public sealed record RueckkuehlwerkStand(int AnlagenId, int? KopieId, RueckkuehlwerkModel Kopie);
+
+        /// <summary>
+        /// Hält den Stand des Rückkühlwerks einer Anlage fest (K-F5c) — der Dialog nimmt ihn vor dem ersten Schreiben einer
+        /// Sitzung, damit Abbrechen ihn mit <see cref="RueckkuehlwerkWiederherstellen"/> exakt zurückschreibt. <c>null</c> vor
+        /// dem Schritt oder ohne Anlage. Ein Verweis auf eine fehlende Kopie gilt als „keins“.
+        /// </summary>
+        public static RueckkuehlwerkStand RueckkuehlwerkSchnappschuss(int anlagenId)
+        {
+            if (!RueckkuehlwerkSchema.AnlagenspaltenVorhanden()) return null;
+            KaeltemaschineAnlageModel a = Laden(anlagenId);
+            if (a == null) return null;
+            RueckkuehlwerkModel kopie = a.IdRueckkuehlwerk is int id ? RueckkuehlwerkCtrl.Laden(id) : null;
+            return new RueckkuehlwerkStand(anlagenId, kopie?.Id, kopie);
+        }
+
+        /// <summary>
+        /// Schreibt einen festgehaltenen Stand zurück (K-F5c, Abbrechen nach einer Zwischenspeicherung): dieselbe Projektkopie
+        /// unter ihrer ID mit allen Feldern — auch ohne Katalogsatz — oder „keins“. Ist die Kopie noch da, bekommt sie ihre Felder
+        /// zurück; sonst entsteht sie unter ihrer alten ID neu. Die Kopie, die die Anlage bis dahin
+        /// führte, geht, wenn keine Anlagenzeile sie mehr führt — es bleibt keine Waise. Keine Verträglichkeitsprüfung: Der
+        /// Stand beim Öffnen gilt. Ein Katalogsatz, den es nicht mehr gibt, wird als <c>ID_Stamm</c> nicht wieder gesetzt.
+        /// Liefert <c>null</c> oder den Meldungstext.
+        /// </summary>
+        public static string RueckkuehlwerkWiederherstellen(RueckkuehlwerkStand stand)
+        {
+            if (stand == null) return null;
+            if (!RueckkuehlwerkSchema.AnlagenspaltenVorhanden())
+                return string.Format(CultureInfo.CurrentCulture, MyResource.Resource.RKW_MSG_SCHEMA_FEHLT, RueckkuehlwerkSchema.SCHRITT);
+            KaeltemaschineAnlageModel a = Laden(stand.AnlagenId);
+            if (a == null) return MyResource.Resource.KM_ANLAGE_FEHLT;
+            int? alt = a.IdRueckkuehlwerk;
+            RueckkuehlwerkModel kopie = stand.Kopie;
+            if (kopie != null && kopie.IdStamm is int stamm && RueckkuehlwerkStammCtrl.Laden(stamm) == null) kopie.IdStamm = null;
+            bool vorhanden = kopie != null && RueckkuehlwerkCtrl.Laden(kopie.Id) != null;
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    int? ziel = null;
+                    if (kopie != null)
+                        ziel = RueckkuehlwerkStammCtrl.KopfSchreiben(v, RueckkuehlwerkCtrl.TABLE, kopie, !vorhanden,
+                                                                     vorhanden ? null : kopie.IdProjekt ?? a.IdProjekt,
+                                                                     vorhanden ? (int?)null : kopie.Id);
+                    v.Ausfuehren("UPDATE Tab_Energieanlagen SET ID_Rueckkuehlwerk = ? WHERE ID = ? AND ID_Type = ?",
+                        new DbParam("?", ziel.HasValue ? (object)ziel.Value : DBNull.Value), new DbParam("?", stand.AnlagenId),
+                        new DbParam("?", KaeltemaschineAnlageSchema.TYP_KAELTEMASCHINE));
+                    if (alt.HasValue && alt != ziel) RueckkuehlwerkAufraeumen(v, alt.Value);
+                    v.Commit();
+                }
+                catch
+                {
+                    v.Rollback();
+                    throw;
+                }
+            }
+            return null;
+        }
+
         /// <summary>Löscht die Projektkopie eines Rückkühlwerks, wenn keine Anlagenzeile sie mehr führt.</summary>
         private static void RueckkuehlwerkAufraeumen(DbVorgang v, int idRueckkuehlwerk)
         {
