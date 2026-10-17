@@ -8943,6 +8943,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Entfernen ähnelt.
+        /// </summary>
+        public static string BKAL_BTN_ZEILE_ENTFERNEN {
+            get {
+                return ResourceManager.GetString("BKAL_BTN_ZEILE_ENTFERNEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeile hinzufügen ähnelt.
+        /// </summary>
+        public static string BKAL_BTN_ZEILE_HINZU {
+            get {
+                return ResourceManager.GetString("BKAL_BTN_ZEILE_HINZU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die nur bundeseinheitliche Feiertage ähnelt.
         /// </summary>
         public static string BKAL_BUNDESLAND_KEINES {
@@ -9002,6 +9020,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BKAL_HRL_FEIERTAG {
             get {
                 return ResourceManager.GetString("BKAL_HRL_FEIERTAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die vier Felder und die Liste „Weitere Betriebsferien“ wirken gemeinsam; kein Ferientag darf in zwei Zeiträumen liegen. ähnelt.
+        /// </summary>
+        public static string BKAL_HRL_FERIENLISTE {
+            get {
+                return ResourceManager.GetString("BKAL_HRL_FERIENLISTE", resourceCulture);
             }
         }
         
@@ -9231,6 +9258,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weitere Betriebsferien ähnelt.
+        /// </summary>
+        public static string BKAL_LBL_FERIENLISTE {
+            get {
+                return ResourceManager.GetString("BKAL_LBL_FERIENLISTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsferien {0} bis ähnelt.
         /// </summary>
         public static string BKAL_LBL_FERIEN_BIS {
@@ -9276,11 +9312,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weitere Ferien {0} bis ähnelt.
+        /// </summary>
+        public static string BKAL_LBL_LISTE_BIS {
+            get {
+                return ResourceManager.GetString("BKAL_LBL_LISTE_BIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weitere Ferien {0} Name ähnelt.
+        /// </summary>
+        public static string BKAL_LBL_LISTE_NAME {
+            get {
+                return ResourceManager.GetString("BKAL_LBL_LISTE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weitere Ferien {0} von ähnelt.
+        /// </summary>
+        public static string BKAL_LBL_LISTE_VON {
+            get {
+                return ResourceManager.GetString("BKAL_LBL_LISTE_VON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die noch kein Kalender angelegt ähnelt.
         /// </summary>
         public static string BKAL_LEER {
             get {
                 return ResourceManager.GetString("BKAL_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine weiteren Betriebsferien. ähnelt.
+        /// </summary>
+        public static string BKAL_LISTE_LEER {
+            get {
+                return ResourceManager.GetString("BKAL_LISTE_LEER", resourceCulture);
             }
         }
         
@@ -9303,7 +9375,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Betriebskalender führt höchstens vier Ferienzeiträume. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die In den vier Feldern stehen höchstens vier Ferienzeiträume; weitere gehören in die Liste „Weitere Betriebsferien“. ähnelt.
         /// </summary>
         public static string BKAL_MSG_FERIEN_ANZAHL {
             get {
@@ -9326,6 +9398,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BKAL_MSG_FERIEN_FEHLEN {
             get {
                 return ResourceManager.GetString("BKAL_MSG_FERIEN_FEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name eines Ferienzeitraums hat höchstens 100 Zeichen. ähnelt.
+        /// </summary>
+        public static string BKAL_MSG_FERIEN_NAME_LANG {
+            get {
+                return ResourceManager.GetString("BKAL_MSG_FERIEN_NAME_LANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Betriebsferien {0} und {1} überschneiden sich (gezählt werden die vier Felder, dann die Liste „Weitere Betriebsferien“). ähnelt.
+        /// </summary>
+        public static string BKAL_MSG_FERIEN_UEBERSCHNEIDUNG {
+            get {
+                return ResourceManager.GetString("BKAL_MSG_FERIEN_UEBERSCHNEIDUNG", resourceCulture);
             }
         }
         
@@ -9407,6 +9497,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BKAL_MSG_UEBERNOMMEN {
             get {
                 return ResourceManager.GetString("BKAL_MSG_UEBERNOMMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feiertagsland und Ferien von „{0}“ übernommen: {1} Ferienzeiträume, die ersten vier in den Feldern, {2} in der Liste „Weitere Betriebsferien“; gespeichert wird mit „Speichern“ oder OK. ähnelt.
+        /// </summary>
+        public static string BKAL_MSG_UEBERNOMMEN_LISTE {
+            get {
+                return ResourceManager.GetString("BKAL_MSG_UEBERNOMMEN_LISTE", resourceCulture);
             }
         }
         
@@ -65925,6 +66024,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_BKAL_BUNDESLAND_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_BKAL_BUNDESLAND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zeile der Liste „Weitere Betriebsferien“: Name (wahlfrei), Beginn und Ende als Tag im Jahr (1 bis 365, ohne 29. Februar); Beginn nach Ende = über den Jahreswechsel. Zeilen fügt der Anwender mit „Zeile hinzufügen“ an. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKAL_FERIENLISTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKAL_FERIENLISTE_ERL", resourceCulture);
             }
         }
         
