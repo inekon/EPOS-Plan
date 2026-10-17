@@ -78,6 +78,18 @@ public class BauteilkatalogImportDialogTests : BauteilkatalogImportProbe
     }
 
     [Fact]
+    public void Die_Vorschau_zeigt_die_Zahl_der_aktualisierten_Aufbauten_nur_wenn_die_Huelle_sie_nennt()
+    {
+        var z = new Zaehler();
+        IRenderedComponent<BauteilkatalogImportDialog> ohne = Dialog(z);
+        Knopf(ohne, "Vorschau").Click();
+        Assert.Empty(ohne.FindAll("p.epos-bki-aktualisiert"));
+        IRenderedComponent<BauteilkatalogImportDialog> mit = Dialog(z, Probe() with { Aktualisiert = "Aktualisiert: 7 von 8 427" });
+        Knopf(mit, "Vorschau").Click();
+        Assert.Equal("Aktualisiert: 7 von 8 427", mit.Find("p.epos-bki-aktualisiert").TextContent);
+    }
+
+    [Fact]
     public void Die_Vorschau_nennt_den_gelesenen_Ordner_und_die_Teilkataloge_nur_wenn_vorhanden()
     {
         var z = new Zaehler();

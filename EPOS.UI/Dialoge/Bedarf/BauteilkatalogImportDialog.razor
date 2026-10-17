@@ -82,6 +82,10 @@
                             }
                         </tbody>
                     </table>
+                    @if (!string.IsNullOrEmpty(_vorschau.Aktualisiert))
+                    {
+                        <p class="epos-bki-aktualisiert">@_vorschau.Aktualisiert</p>
+                    }
                     <p class="epos-bki-gekennzeichnet">@string.Format(CultureInfo.CurrentCulture, Texte.Gekennzeichnet, Z(_vorschau.Gekennzeichnet))</p>
                     <p>@string.Format(CultureInfo.CurrentCulture, Texte.MitBaustoff, Z(_vorschau.SchichtenMitBaustoff))</p>
                     @if (_vorschau.LambdaSkaliert > 0)

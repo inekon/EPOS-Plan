@@ -54922,6 +54922,9 @@ chart</value>
   <data name="BKI_PROT_GETEILT" xml:space="preserve">
     <value>Layers split at common layer boundaries ({0} → {1} layers): {2}</value>
   </data>
+  <data name="BKI_AKTUALISIERT" xml:space="preserve">
+    <value>Updated: the import changes {0} of {1} recognised constructions (layers, sections or source including sub-catalogue).</value>
+  </data>
   <data name="BKI_WIEDERIMPORT" xml:space="preserve">
     <value>Re-import: {0} constructions in the catalogue get different layers from the split at common layer boundaries; compared {1}, of which {2} change their U-value by more than 1 % (largest change {3} %); without a reference value {4}.</value>
   </data>
