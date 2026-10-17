@@ -14,7 +14,7 @@ Der Dialog '''Emissionsfaktor-Katalog''' verwaltet die Emissionsarten und die Fa
 * '''Übernehmen''' – kopiert den markierten Katalogwert als geltenden Wert des Energieträgers und vermerkt die Herkunft; eine spätere Katalogänderung wirkt nicht auf das Projekt zurück.
 * '''Neu…''' und '''Bearbeiten…''' – für eigene Arten und eigene Werte; ein Wert ohne Trägerbindung gilt als Vorlage für alle Energieträger.
 * {{Anker|ausgeliefert}}'''Ausgelieferte Einträge''' – sind unveränderlich. ''Bearbeiten…'' und ''Löschen'' sind frei, sobald ein Wert markiert ist; bei einem ausgelieferten Wert erklärt der Klick, dass ausgelieferte Katalogwerte über neue Jahreszeilen fortgeschrieben werden und daneben ein eigener Wert anzulegen ist. Eigene Werte lassen sich ändern und löschen. Passt eine ganze Art nicht, wird sie abgewählt statt gelöscht.
-* {{Anker|hilfsstrom}}'''Hilfsstrom''' – der Hilfsstrom von BHKW und Heizkesseln mit Brennstoff, den der Hilfsenergieanteil der Anlage festlegt, geht mit dem Emissionsfaktor des Netzstroms in die CO₂-Bilanz ein – im Modus CO₂-Äquivalent mit dessen Äquivalent. '''Beispiel:''' 20 MWh Hilfsstrom und ein Faktor von 400 g/kWh ergeben 8 t/a.
+* {{Anker|hilfsstrom}}'''Hilfsstrom''' – der Hilfsstrom von BHKW und Heizkesseln mit Brennstoff, den der Hilfsenergieanteil der Anlage festlegt, geht mit dem Emissionsfaktor des Netzstroms in die CO₂-Bilanz ein – im Modus CO₂-Äquivalent mit dessen Äquivalent. '''Beispiel:''' 20 MWh Hilfsstrom und ein Faktor von 400 g/kWh ergeben 8 t/a. Im Bericht stehen der Hilfsstrom und seine Emissionen als eigene Kennzahlen (''Hilfsstrom BHKW und Kessel'', ''CO₂-Emissionen Hilfsstrom'').
 
 == Siehe auch ==
 

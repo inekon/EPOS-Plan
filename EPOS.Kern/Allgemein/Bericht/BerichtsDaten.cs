@@ -690,6 +690,22 @@ namespace WindowsFormsApplication1
         public double HilfsstromCO2t;
 
         /// <summary>
+        /// 6b (Katalog v26): die Stromsteuer des Hilfsstroms [€/a], die die Wirtschaftlichkeit im
+        /// Erwartungsfall GESONDERT ansetzt — der Teil des Regelsatzes, den der Arbeitspreis des
+        /// Netzträgers nicht schon enthält (<c>HilfsstromStromsteuer.Ergebnis.GesondertEur</c>).
+        /// <c>null</c> ohne Hilfsstrom, ohne Regelsatz oder solange die Wirtschaftlichkeit nicht
+        /// gerechnet ist.
+        /// </summary>
+        public double? HilfsstromStromsteuerGesondert;
+
+        /// <summary>
+        /// 6b (Katalog v26): die Stromsteuer des Hilfsstroms zum Regelsatz [€/a], enthaltener und
+        /// gesonderter Teil zusammen (<c>HilfsstromStromsteuer.Ergebnis.SteuerEur</c>); <c>null</c>
+        /// wie <see cref="HilfsstromStromsteuerGesondert"/>.
+        /// </summary>
+        public double? HilfsstromStromsteuerGesamt;
+
+        /// <summary>
         /// Die Wasserkosten der Rückkühlwerke [€/a] im ersten Betrachtungsjahr (KB-7c2): Wasser des Laufs ×
         /// Arbeitspreis des Wasserträgers mit den Trägerpreisen des gerechneten Szenarios — dieselbe Rechnung
         /// (<c>Wasserkosten.Rechne</c>) wie die Nachweiszeile der Wirtschaftlichkeit. Ein AUSWEIS: Die Kosten

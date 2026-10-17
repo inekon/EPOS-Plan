@@ -1607,6 +1607,16 @@ namespace WindowsFormsApplication1
                         matrizen[v.IdProjekt] = eingabe.Matrix;
                     WirtschaftlichkeitErgebnis erg = RechneProjekt(vs, ps, eingabe,
                         szenario, out KapitalwertRechner.Zahlungsbild bild);
+                    // 6b (Katalog v26): die Stromsteuer des Hilfsstroms im Erwartungsfall als Ausweis am
+                    // Stand und in seinen Kennzahlen — dieselbe Rechnung wie die Nachweiszeile.
+                    if (string.Equals(szenario, WirtschaftlichkeitSzenario.ERWARTET, StringComparison.Ordinal))
+                    {
+                        HilfsstromStromsteuer.Ergebnis st = eingabe.StromsteuerHilfsstrom;
+                        bool mitSatz = st != null && st.RegelsatzEurJeMWh.HasValue && st.RegelsatzEurJeMWh.Value > 0;
+                        v.HilfsstromStromsteuerGesondert = mitSatz ? st.GesondertEur : (double?)null;
+                        v.HilfsstromStromsteuerGesamt = mitSatz ? st.SteuerEur : (double?)null;
+                        KennzahlenKatalog.NachWirtschaftlichkeit(v);
+                    }
                     alle.Add(erg);
                     eingaben.Add(eingabe); bilder.Add(bild); ergebnisse.Add(erg);
                 }

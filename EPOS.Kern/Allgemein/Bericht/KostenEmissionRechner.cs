@@ -345,6 +345,7 @@ namespace WindowsFormsApplication1
                 v.EnergieLeistungsanteil = null;
                 v.CO2Gesamt = null; v.CO2Spezifisch = null; v.CO2Brennstoff = null;
                 v.HilfsstromMWh = 0; v.HilfsstromCO2t = 0;   // 6b
+                v.HilfsstromStromsteuerGesondert = null; v.HilfsstromStromsteuerGesamt = null;
                 v.BiogenMengeMWh = 0; v.BiogenBehgMengeMWh = 0;
                 v.EmissionsModus = DbWerte.EMISSION_MODUS_CO2;
                 v.CO2StrommixRueckfall = false;
@@ -377,6 +378,8 @@ namespace WindowsFormsApplication1
             v.CO2TraegerRueckfall = null;        // Auftrag #293
             v.HilfsstromMWh = 0;                 // 6b
             v.HilfsstromCO2t = 0;
+            v.HilfsstromStromsteuerGesondert = null;   // 6b: setzt die Wirtschaftlichkeit
+            v.HilfsstromStromsteuerGesamt = null;
             v.StrombedarfOhneVerwendungMWh = null;   // Anwenderentscheid 22.09.2026
             v.StromGruppenregelMWh = null;           // Gruppenregel (nur im Vergleich gesetzt)
             v.LeistungspreisOhneSpitze = null;
