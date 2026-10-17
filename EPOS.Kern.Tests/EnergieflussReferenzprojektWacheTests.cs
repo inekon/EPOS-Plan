@@ -166,28 +166,31 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void Projekt_1018_BHKW_Kessel_Puffer_schliesst_mit_bilanzierter_Einspeisung()
+        public void Projekt_1018_BHKW_Kessel_Puffer_schliesst_mit_direkter_Einspeisung()
         {
             if (!_db.Vorhanden) return;
-            var (m, _) = Rechne(1018, 0, kaelte: false);
+            var (m, v) = Rechne(1018, 0, kaelte: false);
             Nahe(53.890, m.KnotenMit(Energiefluss.WAERME).ZuflussMwh, "Wärme Zufluss");
             string p = Id(m, Energiefluss.PUFFER);
             Nahe(38.949, m.Fluss(Energiefluss.WAERME, p), "Puffer Ladung");
             Nahe(37.781, m.Fluss(p, Energiefluss.HEIZUNG), "Puffer Entladung");
             Nahe(1.158 + 0.011, m.Fluss(p, Energiefluss.VERLUST + p), "Puffer Verlust samt Füllstand");
             Nahe(52.720, m.KnotenMit(Energiefluss.HEIZUNG).ZuflussMwh, "Heizung");
+            // EB-1: die Einspeisung kommt aus der Ergebniszeile (Tab_ErgebnisBHKW.Stromeinspeisung, kaufmännisch auf
+            // 0,01 MWh gerundet), nicht mehr aus dem Rest am Stromknoten; der Knoten schließt ohne Ausgleichsband.
             EnergieflussFluss e = m.FlussMit(Energiefluss.STROM, Energiefluss.EINSPEISUNG_BHKW);
             Nahe(18.070, e.Mwh, "Einspeisung BHKW");
-            Assert.Equal(EnergieflussHerkunft.Bilanziert, e.Herkunft);
+            Assert.Equal(EnergieflussHerkunft.Direkt, e.Herkunft);
+            Assert.Equal(v.Ergebnis.BHKW.StromeinspeisungMwh.Value, e.Mwh, 9);
             Assert.Null(m.KnotenMit(Energiefluss.STROMBEDARF));
             AlleGeschlossen(m);
         }
 
         [Fact]
-        public void Projekt_1046_Waermepumpe_Flotte_zeigt_den_Eigenverbrauch_als_nicht_zugeordnet()
+        public void Projekt_1046_Waermepumpe_Flotte_zeigt_den_Standby_als_benanntes_Verlustband()
         {
             if (!_db.Vorhanden) return;
-            var (m, _) = Rechne(1046, 0, kaelte: false);
+            var (m, v) = Rechne(1046, 0, kaelte: false);
             Nahe(71.410, m.KnotenMit(Energiefluss.WAERME).ZuflussMwh, "Wärme Zufluss");
             Nahe(37.810, m.Fluss(Energiefluss.HEIZSTAB, Energiefluss.WAERME), "Heizstab 1:1");
             Nahe(37.810, m.Fluss(Energiefluss.STROM, Energiefluss.HEIZSTAB), "Heizstab Strom");
@@ -199,14 +202,24 @@ namespace EPOS.Kern.Tests
             Nahe(0.148, m.Fluss(s, Energiefluss.VERLUST + s), "Stromspeicher Verlust");
             Nahe(0.014, m.Fluss(s, Energiefluss.FUELLSTAND + s), "Stromspeicher Füllstand");
             Nahe(0.903, m.Fluss(Energiefluss.STROM, Energiefluss.EINSPEISUNG_PV), "Einspeisung PV");
-            // Der Eigenverbrauch des Speichersystems (0,438) steht nicht im Ergebnisbaum: Band „nicht zugeordnet“.
-            EnergieflussFluss nz = m.FlussMit(Energiefluss.STROM, Energiefluss.NICHT_ZUGEORDNET);
-            Assert.NotNull(nz);
-            Nahe(0.44, nz.Mwh, "nicht zugeordnet");
-            Assert.False(m.KnotenMit(Energiefluss.STROM).Geschlossen);
-            Assert.Equal("Bilanz am Knoten Strom schließt nicht: 0,44 MWh/a nicht zugeordnet", Assert.Single(m.Hinweise));
+            // EB-1: Der Standby des Speichersystems (0,438 MWh/a) steht in der Speicherzeile
+            // (Tab_ErgebnisStromspeicher.Eigenverbrauch_System) und verlässt den Strombus als benanntes Verlustband —
+            // kein „nicht zugeordnet“, kein Hinweis, der Stromknoten schließt.
+            ErgebnisStromspeicherModel sp = Assert.Single(v.Ergebnis.Stromspeicher);
+            Assert.True(sp.EigenverbrauchSystemKwh.HasValue);
+            Nahe(0.438, Energiefluss.AusKwh(sp.EigenverbrauchSystemKwh.Value), "Standby der Speicherzeile");
+            string sb = Id(m, Energiefluss.STANDBY);
+            EnergieflussFluss standby = m.FlussMit(Energiefluss.STROM, sb);
+            Assert.NotNull(standby);
+            Nahe(0.438, standby.Mwh, "Standby");
+            Assert.Equal(EnergieflussForm.Verlust, standby.Form);
+            Assert.Equal(EnergieflussHerkunft.Direkt, standby.Herkunft);
+            Assert.Equal(EnergieflussKnotenart.Verlust, m.KnotenMit(sb).Art);
+            Assert.Equal("Standby Speichersystem", m.KnotenMit(sb).Name);
+            Assert.Null(m.FlussMit(Energiefluss.STROM, Energiefluss.NICHT_ZUGEORDNET));
             Assert.Null(m.KnotenMit(Energiefluss.EINSPEISUNG_BHKW));
-            Assert.True(m.KnotenMit(Energiefluss.WAERME).Geschlossen);
+            Assert.Null(m.KnotenMit(Energiefluss.ABREGELUNG_PV));
+            AlleGeschlossen(m);
         }
 
         [Fact]
@@ -229,8 +242,12 @@ namespace EPOS.Kern.Tests
             Nahe(3.810, m.KnotenMit(Energiefluss.KUEHLUNG).ZuflussMwh, "Kühlung");
             Assert.Equal("Wärmepumpe (Kühlen)", m.KnotenMit(Energiefluss.WP_KUEHLEN).Name);
             Nahe(35.140, m.KnotenMit(Energiefluss.STROM).ZuflussMwh, "Strom Zufluss");
+            // EB-1: Die Ergebniszeile trägt den BHKW-Überschuss des Laufs (5,32); der Speicher lädt daraus Ladung_BHKW,
+            // ins Netz geht der Rest — Herkunft abgeleitet, gleich der Einspeisung mit Speicher der Speicherzeile.
             EnergieflussFluss e = m.FlussMit(Energiefluss.STROM, Energiefluss.EINSPEISUNG_BHKW);
-            Assert.Equal(EnergieflussHerkunft.Bilanziert, e.Herkunft);
+            Assert.Equal(EnergieflussHerkunft.Abgeleitet, e.Herkunft);
+            ErgebnisStromspeicherModel sp = Assert.Single(v.Ergebnis.Stromspeicher);
+            Nahe(v.Ergebnis.BHKW.StromeinspeisungMwh.Value - Energiefluss.AusKwh(sp.Ladung_BHKW), e.Mwh, "Einspeisung BHKW gegen Ergebniszeile");
             Nahe(Energiefluss.AusKwh(Assert.Single(v.Ergebnis.Stromspeicher).Einspeisung_Mit), e.Mwh, "Einspeisung BHKW gegen Speicherzeile");
             AlleGeschlossen(m);
         }
@@ -255,7 +272,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.0, m.Fluss(Energiefluss.STROM, km));
             Nahe(42.000, m.KnotenMit(Energiefluss.STROM).ZuflussMwh, "Strom Zufluss");
             EnergieflussFluss e = m.FlussMit(Energiefluss.STROM, Energiefluss.EINSPEISUNG_BHKW);
-            Assert.Equal(EnergieflussHerkunft.Bilanziert, e.Herkunft);
+            Assert.Equal(EnergieflussHerkunft.Abgeleitet, e.Herkunft);   // EB-1: Zeile minus BHKW-Ladung des Speichers
+            ErgebnisStromspeicherModel sp = Assert.Single(v.Ergebnis.Stromspeicher);
+            Nahe(v.Ergebnis.BHKW.StromeinspeisungMwh.Value - Energiefluss.AusKwh(sp.Ladung_BHKW), e.Mwh, "Einspeisung BHKW gegen Ergebniszeile");
             Nahe(Energiefluss.AusKwh(Assert.Single(v.Ergebnis.Stromspeicher).Einspeisung_Mit), e.Mwh, "Einspeisung BHKW gegen Speicherzeile");
             AlleGeschlossen(m);
         }

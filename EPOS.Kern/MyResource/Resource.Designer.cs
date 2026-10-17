@@ -23288,6 +23288,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromeinspeisung BHKW ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_BHKW_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_BHKW_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Eigenverbrauch (Direkt) ähnelt.
         /// </summary>
         public static string CHART_LEGENDE_EIGENVERBRAUCH_DIREKT {
@@ -23473,6 +23482,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_LEGENDE_SOLAR_SPEICHER {
             get {
                 return ResourceManager.GetString("CHART_LEGENDE_SOLAR_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standby Speichersystem ähnelt.
+        /// </summary>
+        public static string CHART_LEGENDE_SPEICHER_STANDBY {
+            get {
+                return ResourceManager.GetString("CHART_LEGENDE_SPEICHER_STANDBY", resourceCulture);
             }
         }
         
@@ -25007,6 +25025,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW-Überschuss des Laufs − BHKW-Ladung des Speichers ähnelt.
+        /// </summary>
+        public static string EF_FORMEL_EINSPEISUNG_BHKW {
+            get {
+                return ResourceManager.GetString("EF_FORMEL_EINSPEISUNG_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ladung − Entladung − Verlust ähnelt.
         /// </summary>
         public static string EF_FORMEL_FUELLSTAND {
@@ -25102,6 +25129,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string EF_KI_KOPF {
             get {
                 return ResourceManager.GetString("EF_KI_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die abgeregelt ähnelt.
+        /// </summary>
+        public static string EF_KK_ABREGELUNG {
+            get {
+                return ResourceManager.GetString("EF_KK_ABREGELUNG", resourceCulture);
             }
         }
         
@@ -25313,6 +25349,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standby ähnelt.
+        /// </summary>
+        public static string EF_KK_STANDBY {
+            get {
+                return ResourceManager.GetString("EF_KK_STANDBY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Strom ähnelt.
         /// </summary>
         public static string EF_KK_STROM {
@@ -25426,6 +25471,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string EF_KK_WP_KUEHLEN {
             get {
                 return ResourceManager.GetString("EF_KK_WP_KUEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die abgeregelt ähnelt.
+        /// </summary>
+        public static string EF_KN_ABREGELUNG {
+            get {
+                return ResourceManager.GetString("EF_KN_ABREGELUNG", resourceCulture);
             }
         }
         
@@ -25633,6 +25687,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string EF_KN_SPLIT {
             get {
                 return ResourceManager.GetString("EF_KN_SPLIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standby Speichersystem ähnelt.
+        /// </summary>
+        public static string EF_KN_STANDBY {
+            get {
+                return ResourceManager.GetString("EF_KN_STANDBY", resourceCulture);
             }
         }
         
@@ -58256,6 +58319,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Normkalender (Vorgabe): {0} Nutzungstage, Feiertage und Betriebsferien wie Sonntag — mit „Aus Gebäude übernehmen“ oder einer Kalenderwahl ersetzbar. ähnelt.
+        /// </summary>
+        public static string KBP_HINW_NORMKALENDER_VORGABE {
+            get {
+                return ResourceManager.GetString("KBP_HINW_NORMKALENDER_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Typtage stehen zur Verfügung, sobald die Datenbank auf den Stand mit Typtagen gehoben ist. ähnelt.
         /// </summary>
         public static string KBP_HINW_TYPTAG_FOLGT {
@@ -58360,6 +58432,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KBP_KZ_GRUNDLAST {
             get {
                 return ResourceManager.GetString("KBP_KZ_GRUNDLAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungstage ähnelt.
+        /// </summary>
+        public static string KBP_KZ_NUTZUNGSTAGE {
+            get {
+                return ResourceManager.GetString("KBP_KZ_NUTZUNGSTAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die d/a ähnelt.
+        /// </summary>
+        public static string KBP_KZ_NUTZUNGSTAGE_EINHEIT {
+            get {
+                return ResourceManager.GetString("KBP_KZ_NUTZUNGSTAGE_EINHEIT", resourceCulture);
             }
         }
         
@@ -132021,6 +132111,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SP_CSV_SOC {
             get {
                 return ResourceManager.GetString("SP_CSV_SOC", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Standby Speichersystem [kWh] ähnelt.
+        /// </summary>
+        public static string SP_CSV_STANDBY {
+            get {
+                return ResourceManager.GetString("SP_CSV_STANDBY", resourceCulture);
             }
         }
         

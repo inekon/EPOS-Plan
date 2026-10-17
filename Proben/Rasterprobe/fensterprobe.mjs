@@ -102,6 +102,12 @@
 //    unterste Textzeile des SVG (Tick-Beschriftung, Achsentitel) ganz im sichtbaren Rollbereich ueber der Schlussleiste.
 //    Gegenprobe: die Zeigerzeile im Reiterblatt mit dem Fussabstand der Ueberlagerung (der Befund) muss rot sein.
 //
+//  KAELTEDECKUNG (Fall "kaeltedeckung"): /fensterprobe?fall=kaelteprofile, Bearbeiten-Ueberlagerung der ersten
+//    Kaeltezeile, Deckungsgruppe (DeckungsartFelder, .epos-deckung) aufgeklappt. Kopf und Schlussleiste haften bei
+//    Rollstand oben, Mitte, Ende; die Gruppe liegt im rollenden Koerper und laesst sich ganz hineinrollen; nichts
+//    rollt waagerecht; Abbrechen und OK sind im Bild und nicht ueberdeckt, in allen drei Fenstern samt iPad.
+//    Gegenprobe: ein Koerper ohne Rollen (overflow: visible) muss die Messung rot machen.
+//
 //  GEGENPROBE (laeuft mit, abschaltbar mit --ohne-gegenprobe): dieselben
 //  Fensterdialoge OHNE Fenstermarke (?marke=0) muessen die Haft-Kriterien
 //  verfehlen, und MIT Marke, aber ohne scroll-padding muss der Tabulator
@@ -430,6 +436,72 @@ async function bedarfgrafik(browser, f, stil = '') {
   }
   await seite.close();
   return { fehler, n: fehler.length, zahlen };
+}
+
+/**
+ * Fall kaeltedeckung: Deckungsgruppe (Baustein DeckungsartFelder, .epos-deckung) in der Bearbeiten-Ueberlagerung der
+ * ersten Kaeltezeile, aufgeklappt. Kopf und Schlussleiste haften bei Rollstand oben, Mitte und Ende des Koerpers, die
+ * Gruppe liegt im rollenden Koerper, nichts rollt waagerecht, Abbrechen und OK sind erreichbar (im Bild, nicht
+ * ueberdeckt). Liefert { n, fehler, zahlen }.
+ */
+async function kaeltedeckung(browser, f, stil = '') {
+  const seite = await oeffnen(browser, 'kaelteprofile', f);
+  if (stil) await seite.addStyleTag({ content: stil });
+  const fehler = [];
+  await seite.locator('.epos-zweispalten-satzknoepfe .epos-knopf--bearbeiten-projekt').first().click();
+  await seite.waitForSelector('.epos-satzueberlagerung-koerper .epos-deckung', { timeout: 10000 });
+  const knopf = seite.locator('.epos-satzueberlagerung-koerper .epos-deckung .epos-klappgruppe-knopf').first();
+  if ((await knopf.getAttribute('aria-expanded')) !== 'true') await knopf.click();
+  await seite.waitForSelector('.epos-satzueberlagerung-koerper .epos-deckung .epos-klappgruppe-inhalt', { timeout: 10000 });
+  await seite.waitForTimeout(300);
+  const messen = (y) => seite.evaluate((y) => {
+    const koerper = document.querySelector('.epos-satzueberlagerung-koerper');
+    if (y === 'deckung') document.querySelector('.epos-satzueberlagerung-koerper .epos-deckung').scrollIntoView({ block: 'end' });
+    else koerper.scrollTop = y === 'ende' ? 1e6 : y === 'mitte' ? Math.round((koerper.scrollHeight - koerper.clientHeight) / 2) : 0;
+    const r = e => { const b = e.getBoundingClientRect(); return { top: b.top, bottom: b.bottom, left: b.left, right: b.right }; };
+    const gruppe = koerper.querySelector('.epos-deckung');
+    const kopf = document.querySelector('.epos-ueberlagerung-kopf');
+    const fuss = document.querySelector('.epos-satzueberlagerung-fuss');
+    const knopfInfo = sel => {
+      const e = fuss.querySelector(sel);
+      if (!e) return null;
+      const b = e.getBoundingClientRect();
+      const o = document.elementFromPoint((b.left + b.right) / 2, (b.top + b.bottom) / 2);
+      return { ...r(e), frei: !!o && (o === e || e.contains(o)) };
+    };
+    return {
+      y: koerper.scrollTop, hoch: koerper.scrollHeight, sicht: koerper.clientHeight, breit: koerper.scrollWidth, sichtBreit: koerper.clientWidth,
+      innen: innerHeight, innenBreite: innerWidth,
+      koerper: r(koerper), gruppe: r(gruppe), kopf: r(kopf), fuss: r(fuss),
+      imKoerper: koerper.contains(gruppe), kopfPos: getComputedStyle(kopf).position,
+      dokumentRollt: document.documentElement.scrollWidth > innerWidth + 1,
+      abbrechen: knopfInfo('.epos-satzueberlagerung-abbrechen'), ok: knopfInfo('.epos-satzueberlagerung-ok')
+    };
+  }, y);
+  const stande = {};
+  for (const s of [0, 'mitte', 'ende', 'deckung']) stande[s] = await messen(s);
+  const o = stande[0];
+  if (!o.imKoerper) fehler.push('die Deckungsgruppe liegt nicht im rollenden Koerper');
+  if (o.hoch <= o.sicht + 1) fehler.push(`der Koerper rollt nicht (${o.hoch} <= ${o.sicht} px) - die Probe misst nichts`);
+  if (o.breit > o.sichtBreit + 1) fehler.push(`der Koerper rollt waagerecht (${o.breit} > ${o.sichtBreit} px)`);
+  for (const [name, m] of Object.entries(stande)) {
+    if (Math.abs(m.kopf.top - o.kopf.top) > TOL || Math.abs(m.fuss.bottom - o.fuss.bottom) > TOL)
+      fehler.push(`${name}: Kopf (${zahl(m.kopf.top)}) oder Schlussleiste (${zahl(m.fuss.bottom)}) wandert gegen oben (${zahl(o.kopf.top)}/${zahl(o.fuss.bottom)})`);
+    if (m.kopf.top < -TOL || m.fuss.bottom > m.innen + TOL) fehler.push(`${name}: Kopf oder Schlussleiste ausserhalb des Bildes`);
+    if (m.dokumentRollt) fehler.push(`${name}: das Dokument rollt waagerecht`);
+    if (m.gruppe.left < m.koerper.left - 1 || m.gruppe.right > m.koerper.right + 1) fehler.push(`${name}: die Gruppe ragt seitlich aus dem Koerper`);
+    for (const k of ['abbrechen', 'ok']) {
+      const b = m[k];
+      if (!b) { fehler.push(`${name}: ${k} fehlt`); continue; }
+      if (b.top < 0 || b.bottom > m.innen + TOL || b.left < 0 || b.right > m.innenBreite + TOL) fehler.push(`${name}: ${k} nicht ganz im Bild`);
+      if (!b.frei) fehler.push(`${name}: ${k} ist ueberdeckt`);
+    }
+  }
+  const d = stande.deckung;
+  if (d.gruppe.top < d.koerper.top - 1 || d.gruppe.bottom > d.koerper.bottom + 1) fehler.push('die Gruppe laesst sich nicht ganz in den Koerper rollen');
+  if (FOTOS && !stil) await seite.screenshot({ path: `${FOTOS}/kaeltedeckung_${f.breite}.png` });
+  await seite.close();
+  return { n: fehler.length, fehler, zahlen: { rollweg: Math.round(o.hoch - o.sicht), koerper: Math.round(o.sicht), gruppe: Math.round(d.gruppe.bottom - d.gruppe.top) } };
 }
 
 /** Die Haft-Kriterien; liefert die Zahl der Verstoesse (fuer die Gegenprobe). */
@@ -1310,6 +1382,17 @@ try {
     }
   }
 
+  // ------------------------------------------- Deckungsgruppe der Kaeltezeile in der Bearbeiten-Ueberlagerung
+  if (!NUR || NUR === 'kaeltedeckung') {
+    for (const f of FENSTER) {
+      const name = `kaeltedeckung ${f.breite}x${f.hoehe}`;
+      console.log(`- ${name}`);
+      const r = await kaeltedeckung(browser, f);
+      for (const t of r.fehler) melde(name, t);
+      console.log(`    Rollweg ${r.zahlen.rollweg} px im Koerper von ${r.zahlen.koerper} px; Deckungsgruppe ${r.zahlen.gruppe} px hoch`);
+    }
+  }
+
   // -------------------------------------------------------------- Gegenprobe
   let gegenGruen = 0;
   if (MIT_GEGENPROBE && (!NUR || NUR === 'kaeltetyptage')) {
@@ -1326,6 +1409,12 @@ try {
       console.log(`    Gegenprobe bedarfgrafik mit Fussabstand ${f.breite}x${f.hoehe}: ${g.n} Verstoesse`);
       if (g.n === 0) gegenGruen++;
     }
+  }
+  if (MIT_GEGENPROBE && (!NUR || NUR === 'kaeltedeckung')) {
+    // Rollt der Koerper nicht (overflow: visible), schiebt die Deckungsgruppe die Schlussleiste aus dem Bild: rot.
+    const g = await kaeltedeckung(browser, FENSTER[0], '.epos-satzueberlagerung-koerper { overflow: visible !important; flex: 0 0 auto !important; }');
+    console.log(`    Gegenprobe kaeltedeckung Koerper ohne Rollen: ${g.n} Verstoesse`);
+    if (g.n === 0) gegenGruen++;
   }
   if (MIT_GEGENPROBE && (!NUR || NUR === 'kaeltegrafik')) {
     // Ohne den Hintergrund der Tagesarten muss die Woche rot sein.

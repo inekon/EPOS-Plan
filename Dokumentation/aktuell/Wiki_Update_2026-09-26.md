@@ -61,6 +61,8 @@ vom 24.09.2026 bestätigt.
 
 *Stand 10.10.2026: Die unten als „ausstehend“ vermerkten Änderungen sind mit dem Sammel-Upload #889 (Revisionen 728–828) veröffentlicht, die Seite Gebäudeimport als Revision 828. Der Wortlaut der Tafel bleibt als Geschichte stehen.*
 
+*Stand 17.10.2026: Die Tafel führt keine Spalte „Stand“. Veröffentlicht mit dem Sammel-Upload #889 (10.10.2026, Revisionen 728–828) sind alle Zeilen; Hilfe-Assistent und Kühlung sind seither unverändert. Bei den Quellen der übrigen Zeilen (Klimadaten, Simulationsergebnisse, Stromspeicher, Wirtschaftlichkeit, Kosten, Pufferspeicher, Gebäudemodell VDI 6007, Gerätekataloge, Simulation, Photovoltaik, Varianten, Gebäude, Baustoffe und Bauteilaufbauten, Gebäudeimport, Nutzungsprofile, Brauchwasser-Zapfprofil, Berichtsvorlagen, Kälteerzeugung, Wärmepumpe, Kurzanleitung, Prozesswärme, Brauchwasser, Kältebedarf) ist die Repo-Quelle seit dem Sammel-Upload 1.2.0.11 vom 14.10.2026 (21:20 UTC) erneut geändert und ihr Stand ausstehend; die Liste der Seiten dazu führt die Statusdatei (Zeile zum nächsten Sammel-Upload).*
+
 | Wiki-Seite | Repo-Quelle | Was sich geändert hat | Quelle |
 |---|---|---|---|
 | Programm Dokumentation/Klimadaten | `Projekte/Wiki/Programm Dokumentation - Klimadaten.wiki` | neue Seite: Quellenwahl PVGIS/DWD-Testreferenzjahr, Standort aus dem Dateikopf, Regionsvorschau, durchsuchbare Liste mit Quelle/Bezugsjahr/Szenario, Diagrammzoom; die vier Anker der Live-Seite (`bezeichnung`, `daten-einlesen`, `koordinaten`, `region`) bleiben als Zweitnamen erhalten (#507); mit #527 ein Satz zur Auswahl im Projektassistenten (dieselbe durchsuchbare Liste wie auf der Übersicht) | Statuszeilen #367, #368, #369, #371, #382, #396, #404, #413 |
@@ -177,7 +179,40 @@ Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
 ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
-### Version offen — Eingabearten und Normkalender der Bedarfsprofile (Entwurf, Upload ausstehend)
+### Version 1.2.0.11 — veröffentlicht 14.10.2026
+
+Sammel-Upload vom 14.10.2026 21:20 UTC (Brauchwasser-Zapfprofil Revision 1000, Update-Logbuch Revision 1023). Die 24 Sätze stehen im Wortlaut der hochgeladenen Fassung (`Werkzeuge/WikiUpload/logbuch.wiki`, Stand `c6f294f40`); die einzelnen Entwurfsblöcke (Gebäudesimulation, Kältebedarf dezentral, Brauchwasser-Zapfprofil, Dialoge mit Katalogauswahl, Übersicht unter Berichte & Kosten, Kältemittel, Aufheizen vor Nutzungsbeginn) sind in diesem Block aufgegangen, ihre Langfassungen stehen in der Git-Geschichte dieser Datei.
+
+- Seit 13.10.2026: Der Gebäudedialog prüft ein Gebäude mit „Modell prüfen…“ auf Rechenfähigkeit, zeigt je Prüfgruppe eine Ampel, schlägt fehlende Hüllflächen und Aufbauten nach Namen und Baualtersklasse vor und übernimmt die Vorschläge mit einem Klick; nach einem Import öffnet die Prüfung von selbst.
+- Seit 13.10.2026: Aus „Modell prüfen“ öffnet „Ansicht…“ die Gebäudeansicht mit den betroffenen Flächen und Zonen hervorgehoben; Zonen, Legendeneinträge und Bauteilgruppen lassen sich ein- und ausblenden, und der neue Farbmodus „Nutzung“ zeigt die Nutzungsprofile.
+- Seit 13.10.2026: Das neue Blatt „Nutzung und Kalender“ zeigt Nutzungsprofil, Kalender, Sollwerte, Ferien und Heizperiode aller Zonen eines Gebäudes mit einem Kurzbild der Woche und weist sie mehreren Zonen in einem Schritt zu.
+- Seit 13.10.2026: Im Gebäudeeditor übernimmt „Vorgaben der Baualtersklasse übernehmen…“ U-Werte, Wärmebrücken, Fensterdurchlassgrad, Bauart und Nutzungsprofil nach Vorschau mit einem Klick, auch im Stammblatt der Gebäudeverwaltung.
+- Seit 12.10.2026: Der Gebäudeeditor trennt „Beschreibung und Einordnung“ von den „Rechengrößen“ und kennzeichnet an jedem Wert, woher er kommt oder dass der Rechenweg ihn nicht liest.
+- Seit 13.10.2026: Der Gebäudeimport liest aus gbXML-Dateien Lasten, Sollwerte und Zeitpläne und legt daraus die Konditionierungskalender der Zonen an; mit einer Profilnummer oder einem Raumtyp ordnet er das Nutzungsprofil der DIN/TS 18599-10 zu.
+- Seit 12.10.2026: Der Import aus einer Projektdatei übernimmt Verwendung, Gebäudeart, Energiestandard und Bauweise, platziert Räume ohne Zone selbst, und bei einem erneuten Import bleiben Änderungen an den Zonen erhalten.
+- Seit 14.10.2026: Der Gebäudeexport in gbXML und IFC nimmt die Kalender, Lasten, Vorheizzeit, Übergabe, Luftströme und Erdreichangaben der Zonen mit, der Import liest sie wieder ein.
+- Seit 13.10.2026: Im Gebäudedialog lassen sich alle oder die gewählten Gebäude des Projekts aus der Kopfleiste simulieren, und die Zusammenfassung zeigt den Jahreswärmebedarf des letzten Laufs.
+- Seit 12.10.2026: „Administration › Gebäude › Bauteilkatalog einlesen…“ liest einen Bauteilkatalog aus CSV-Dateien in den Baustoff- und Aufbaukatalog ein; ein erneuter Import erkennt zusammengeführte Baustoffe wieder.
+- Seit 12.10.2026: „Normwerte einlesen…“ füllt die Profile der DIN/TS 18599-10 aus Ihrer eigenen CSV-Datei oder Projektdatei; die leeren Kategorien SIA 2024 und VDI 2078 entfallen im Katalog der Nutzungsprofile.
+- Seit 11.10.2026: Saison, Ferien, Zeiträume und Einzeltage der Kalender nehmen Tag und Monat als „TT.MM.“ an und prüfen die Eingabe erst beim Verlassen des Feldes.
+- Seit 11.10.2026: Die Gruppe „Aufheizen vor Nutzungsbeginn“ in der Simulationskonfiguration bietet drei Verfahren (Sollwertrampe, Vorheizzeit vorgeben, Vorheizzeit berechnen); Sprung, Regelgenauigkeit und Geltung sind je Gebäude oder Zone einstellbar, jede Zone kann eine eigene Vorheizzeit haben.
+- Seit 11.10.2026: Bericht, Kurzbericht, Kennzahlen, Variantenvergleich und Datenexport zeigen die Vorheizgrößen; die Berichtsvorlagen kennen dazu neue Platzhalter.
+- Seit 13.10.2026: Kältebedarf, der dezentral über Split-Geräte gedeckt wird, erscheint im Kältegang, in der Kältelast, in der Strombilanz, im Deckungsgrad Kälte, im Anlagenschema und im Bericht; der Strom wird je Kühlträger und Zähler abgerechnet.
+- Seit 11.10.2026: Kältemaschine und Wärmepumpe wählen ihr Kältemittel aus einer Kältemitteltabelle mit GWP und Kennzeichen, die sich unter „Daten & Import → Kältemittel…“ pflegen lässt; mit einem Inbetriebnahmejahr weist EPOS-Plan auf Stichtage der F-Gas-Verordnung hin.
+- Seit 13.10.2026: Im Dialog Brauchwasser-Zapfprofil sind die Eingaben in aufklappbare Karten gegliedert; die Karte „Kalender“ nimmt beliebig viele eigene Ferienzeiträume auf, und leere Felder für Tagesbedarf, Ladeleistung, Zirkulationsleistung und Leitungsinhalt rechnen mit dem Vorschlag des Programms.
+- Seit 13.10.2026: Der Katalogimport der Brauchwasser-Nutzungsarten spielt auch die Kennwerte nach DIN 4708 ein; für sie und für die Typtage nach VDI 4655 liegt je eine Paketvorlage bei.
+- Seit 14.10.2026: Die mitgelieferten Brauchwasser-Nutzungsarten rechnen im Zapfprofil-Dialog in der Stufe „Einfach“ ohne zusätzlichen Katalog.
+- Seit 13.10.2026: Der Reiter „Übersicht“ unter „Berichte & Kosten“ stellt die Komponenten je Gewerk mit ihren Kennwerten nebeneinander, hebt Abweichungen zum Stammprojekt hervor und vergleicht die Energie-Ergebnisse der Versionen als Tabelle oder Balkengrafik; über „Anzeige anpassen…“ wählt jeder Benutzer die Kennzahlen.
+- Seit 13.10.2026: Varianten werden über die Dialoge „Variante anlegen…“, „Umbenennen…“ und „Löschen…“ verwaltet; eine neue Variante entsteht aus dem Stammprojekt oder aus einer vorhandenen Variante.
+- Seit 13.10.2026: In den Zeitreihendiagrammen stehen Bedarfe als Linie über den Erzeugungsflächen, die Zeitachse der Jahresdiagramme ist zwischen Datum und Stunde im Jahr umschaltbar, und im Reiter Photovoltaik zeigt „PV aufteilen“ die Erzeugung als Stapel aus Eigenverbrauch, Einspeisung und Abregelung.
+- Seit 13.10.2026: Der Arbeitspreis eines Energieträgers wird bei neuer Auswahl in €/kWh angezeigt und mit dem Heizwert umgerechnet.
+- Seit 13.10.2026: In den Dialogen mit Katalogauswahl sind die Kästchen der Liste „Im Projekt“ runde Knöpfe, angekreuzt dunkelblau mit weißem Haken.
+
+### Entwürfe für die nächste Version (Versionsnummer vom Anwender)
+
+Alle Blöcke dieser Gruppe sind nicht hochgeladen; die Version erfragt die Sitzung beim Anwender.
+
+#### Version offen — Eingabearten und Normkalender der Bedarfsprofile (Entwurf, Upload ausstehend)
 
 Version beim Anwender zu erfragen; die Wiki-Quellen (Prozesswärme, Brauchwasser, Kältebedarf) sind fortgeschrieben, ins Wiki geladen ist noch nichts.
 
@@ -185,21 +220,12 @@ Version beim Anwender zu erfragen; die Wiki-Quellen (Prozesswärme, Brauchwasser
 - Seit 16.10.2026: Kältebedarfsprofile lassen sich auch über bis zu sechs Typtage mit einer Zuordnung nach Monat und Tagesart eingeben.
 - Seit 16.10.2026: Wer die Kältevorlage „Prozesskälte einschichtig“ übernimmt, bekommt den Betriebskalender „Norm 230 Tage“ mit dem Bundesland im Namen und 230 Nutzungstagen vorgewählt. (#1117, #1118)
 - Seit 16.10.2026: Der Betriebskalender hat den Schalter „Ferien wie Sonntag“; ein Ferientag rechnet dann mit Tagesmenge und Stundengang des Sonntags, der Ferienfaktor ist gesperrt. (#1119)
+- Seit 17.10.2026: Kältebedarfsprofile mit Normtagen rechnen ohne gewählten Kalender mit dem Normkalender (230 Nutzungstage); die Kennzahlen nennen die Nutzungstage. (#1181)
 
-### Version 1.2.0.12 — Entwurf, Versionsnummer beim Anwender zu bestätigen — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
+#### Gebäudesimulation und weitere Dialoge — Sätze nach dem Sammel-Upload 14.10.2026 (Entwurf, Upload ausstehend)
 
-Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1 bis DA-7, MA-1 bis MA-5, MA-7; Statuszeilen #1002 bis #1057, #1076 bis #1083, #1085, #1091, #1092, #1094, #1110, #1111, #1114, #1115, #1126 bis #1128, #1132 bis #1135, #1153, #1161, #1171). Die Wiki-Quellen (Gebäude, Gebäudeimport, Nutzungsprofile, Baustoffe und Bauteilaufbauten, Gebäudemodell VDI 6007, Programm Dokumentation - Simulation, Simulationsergebnisse, Datenexport, Index der Hilfeschlüssel) sind fortgeschrieben, ins Wiki geladen ist noch nichts. Nach dem Anwenderentscheid vom 13.10.2026 gilt die Nummer bis zum 16.10.2026 nur als Vorschlag; es gibt keinen Upload.
+Aus den zusammengeführten Entwurfsblöcken die Sätze, die nach dem Upload vom 14.10.2026 entstanden sind.
 
-- Seit 13.10.2026: Der Gebäudedialog prüft ein Gebäude mit „Modell prüfen…“ auf Rechenfähigkeit, zeigt je Prüfgruppe eine Ampel und übernimmt die Vorschläge mit einem Klick; nach einem Import öffnet die Prüfung von selbst.
-- Seit 13.10.2026: Die Modellprüfung meldet je Zone eine nicht geschlossene Hülle und schlägt das fehlende Dach, die fehlende Bodenplatte oder Geschossdecke mit passender Fläche vor.
-- Seit 13.10.2026: Die Modellprüfung schlägt Aufbauten nach Namen und Baualtersklasse vor; Bauteile ohne U-Wert erhalten U-Wert und Aufbau in einem Schritt.
-- Seit 13.10.2026: Das neue Blatt „Nutzung und Kalender“ zeigt Nutzungsprofil, Kalender, Sollwerte, Ferien und Heizperiode aller Zonen eines Gebäudes und weist sie mehreren Zonen in einem Schritt zu.
-- Seit 13.10.2026: Im Gebäudeeditor übernimmt „Vorgaben der Baualtersklasse übernehmen…“ U-Werte, Wärmebrücken, Fensterdurchlassgrad, Bauart und das Nutzungsprofil der Gebäudeart nach Vorschau mit einem Klick.
-- Seit 13.10.2026: Aus „Modell prüfen“ öffnet „Ansicht…“ die Gebäudeansicht mit den betroffenen Flächen und Zonen hervorgehoben, Vorschläge lassen sich an der Legende übernehmen oder verwerfen, und der neue Farbmodus „Nutzung“ zeigt die Nutzungsprofile der Zonen.
-- Seit 13.10.2026: In der Gebäudeansicht lassen sich Zonen, Legendeneinträge und Bauteilgruppen ein- und ausblenden.
-- Seit 13.10.2026: Der gbXML-Import liest je Raum Lasten, Sollwerte und Zeitpläne und legt daraus die Konditionierungskalender der Zonen an; Werte der Datei gehen dem Nutzungsprofil vor.
-- Seit 13.10.2026: Der gbXML-Export schreibt die Kalender der Zonen als Zeitpläne sowie Personen, Geräte, Licht, Außenluft und Luftwechsel je Zone, der IFC-Export dieselben Lasten, Auslegungstemperaturen, den Glasanteil der Fenster und thermische Zonen in den IFC-Standardsätzen; der Import beider Formate liest sie wieder ein.
-- Seit 14.10.2026: Der Gebäudeexport in gbXML und IFC nimmt Vorheizzeit, Höchstleistungen, Wärmeübergabe je Zone, Luftströme zwischen Zonen, Erdreichangaben sowie Zeilenbild und benannte Wochen der Kalender, die Zuordnung von Kalenderzeiträumen zu benannten Wochen und die Höchsttemperatur der Zonen mit, der Import liest sie wieder ein. Die Anreicherung einer IFC-Datei schreibt auch Vorheizzeit, Übergabe, Luftströme und Erdreichangaben.
 - Seit 16.10.2026: Der Gebäudeexport in gbXML und IFC nimmt die obere Raumtemperatur des Gebäudes und die Zuordnung von Feiertagen zu benannten Wochen mit, der Import liest sie wieder ein.
 - Seit 16.10.2026: Im Blatt „Modell prüfen“ lässt sich die Klimaregion des Projekts direkt wählen.
 - Seit 16.10.2026: Bauteilaufbauten können inhomogene Schichten mit Abschnitten und Flächenanteilen führen; der Wärmedurchgang rechnet aus oberem und unterem Grenzwert nach DIN EN ISO 6946.
@@ -215,82 +241,29 @@ Gebäudesimulation (Wellen GD, AB, NP6/NP7, KS, BK, DA-1 bis DA-7, MA-1 bis MA-5
 - Seit 16.10.2026: Absorptions- und Emissionsgrad lassen sich je Bauteilaufbau und Bauteil eintragen und reisen mit gbXML und IFC.
 - Seit 16.10.2026: Beim Gebäudeimport kommen die Kalender der Zonen aus einer gbXML- oder IFC-Datei auch ohne gespeicherten Zonenplan an.
 - Entwurf (Version beim Anwender erfragen; gehört zur Veröffentlichung von SA3): Die Aufheizoptimierung kann im Vorheizfenster die Heizkurve anheben (Schnellaufheizung).
-- Seit 14.10.2026: Beim Gebäudeimport ordnet EPOS-Plan jeder Zone das Nutzungsprofil der DIN/TS 18599-10 zu, wenn die Datei eine Profilnummer oder einen gbXML-Raumtyp trägt, und die Modellprüfung zeigt mit einer Ampel, woher das Profil jeder Zone kommt.
-- Seit 14.10.2026: Im Reiter „Zonen“ des Gebäudeeditors zeigt eine Ampelleiste den Stand der Modellprüfung; ein Klick öffnet die Prüfung auf der Gruppe.
-- Seit 14.10.2026: Das Blatt „Nutzung und Kalender“ zeigt je Zone ein Kurzbild der Woche; „Sollwerte setzen…“ wirkt auch auf den Heizkalender einer Zone.
-- Seit 14.10.2026: Die Vorgaben der Baualtersklasse lassen sich auch im Stammblatt der Gebäudeverwaltung übernehmen.
-- Seit 14.10.2026: Änderungen an Kalendern und Werten einer Zone im Zonendialog bleiben bei einem erneuten Gebäudeimport erhalten.
-- Seit 13.10.2026: Im Gebäudedialog lassen sich alle oder die gewählten Gebäude des Projekts aus der Kopfleiste simulieren; die Baustoff-Zuordnungen stehen im Gebäudeimport und im Gebäudeeditor.
-- Seit 13.10.2026: Beim erneuten Mehrzonenimport wird der gespeicherte Zonenplan vorgelegt und die Projektdatei mitgeprüft, die Zusammenfassung des Gebäudedialogs zeigt den Jahreswärmebedarf des letzten Laufs, und die Kachel Gebäudekühlung springt auf das zuletzt gewählte Gebäude.
-- Seit 13.10.2026: Der Bauteilkatalog-Import ordnet Stoffgruppen nach der Code-Tafel zu, führt Haustechnik-Werkstoffe und Luftdurchlässe in einer eigenen Klasse und korrigiert Skalenfehler der Wärmeleitfähigkeit.
-- Seit 14.10.2026: Der Wiederimport des Bauteilkatalogs erkennt zusammengeführte Baustoffe schon im ersten Lauf wieder; die Vorschau zählt namensgleiche Sätze.
-- Seit 12.10.2026: „Administration › Gebäude › Bauteilkatalog einlesen…“ liest einen Bauteilkatalog aus CSV-Dateien in Baustoff- und Aufbaukatalog ein; Gruppe, Klasse und Herkunft gliedern die Sätze, und für die Gebäudesimulation meist ungeeignete Aufbauten sind gekennzeichnet.
-- Seit 12.10.2026: Der Gebäudeeditor trennt „Beschreibung und Einordnung“ von den „Rechengrößen“ und kennzeichnet an jedem Wert, woher er kommt oder dass der Rechenweg ihn nicht liest.
-- Seit 12.10.2026: Der Import aus einer Projektdatei übernimmt Verwendung, Gebäudeart, Energiestandard und Bauweise, platziert Räume ohne Zone selbst und belegt die Zonen mit dem Profil der DIN-Nummer oder der Gebäudeart vor.
-- Seit 12.10.2026: „Normwerte einlesen…“ füllt die Profile der DIN/TS 18599-10 aus Ihrer eigenen CSV-Datei oder Projektdatei; neu ist die Außenluft je Person.
-- Seit 12.10.2026: Die leeren Kategorien SIA 2024 und VDI 2078 sind aus dem Katalog der Nutzungsprofile entfernt; vorhandene Profile bleiben in einer eigenen Kategorie.
-- Seit 11.10.2026: Saison, Ferien, Zeiträume und Einzeltage der Kalender nehmen Tag und Monat als „TT.MM.“ an und prüfen die Eingabe erst beim Verlassen des Feldes.
 - Seit 17.10.2026: Der Bauteilkatalog-Import übernimmt inhomogene Aufbauten, deren Abschnitte mit Flächenanteil 0 keinen Beitrag leisten, ohne diese Abschnitte.
-
-### Version ‹Version› — Kältebedarf dezentral (Split) (Entwurf, Upload ausstehend) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
-
-Version beim Anwender zu erfragen (Empfehlung: Sammelversion mit K4/K5); Wiki-Quelle „Programm Dokumentation - Kältebedarf“ fortgeschrieben, Upload ausstehend.
-
-- Seit 13.10.2026: Kältebedarf, der dezentral über Split-Geräte gedeckt wird, erscheint im Kältegang, in der Kältelast, in der Strombilanz als „Kühlung dezentral“, im Deckungsgrad Kälte, im Anlagenschema, in der Simulationskonfiguration und im Bericht; der Strom wird je Kühlträger und Zähler abgerechnet.
-- Seit 13.10.2026: Die Berichtsvorlagen bieten Platzhalter für den Kältebedarf aus Profilen und die dezentrale Kühlung mit Split-Geräten (Kälte, Strom, Jahres-EER, Deckungsgrad gesamt und Anteil der Kälteerzeuger).
-
-### Version 1.2.0.11 — Brauchwasser-Zapfprofil (veröffentlicht am 14.10.2026, Sammel-Upload) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
-
-Version laut Anwender (13.10.2026); die Wiki-Quellen (Programm Dokumentation/Brauchwasser-Zapfprofil, Brauchwasser) sind fortgeschrieben, ins Wiki (wiki.epos-plan.de) wird am 20.10.2026 geladen.
-
-- Seit 13.10.2026: Im Dialog Brauchwasser-Zapfprofil führt „Zone hinzufügen“ ohne Abbruch zur Wahl der Nutzungsart; eine Zone mit fehlender Angabe steht in der Liste als „unvollständig“ und nennt den nächsten Schritt.
-- Seit 13.10.2026: Der Dialog Brauchwasser-Zapfprofil gliedert die Eingaben in aufklappbare Karten, die zugeklappt ihre Werte nennen, und in die Gruppe „Gebäude und Anlage“; die Vorschau bleibt beim Rollen stehen.
-- Seit 13.10.2026: Die Karte „Kalender“ einer Zone nimmt beliebig viele eigene Ferienzeiträume auf und zeigt das Jahresraster der Zone mit den Tagtypen.
-- Seit 13.10.2026: Tagesbedarf, Ladeleistung, Zirkulationsleistung und Leitungsinhalt haben je ein Feld; leer rechnet das Programm mit seinem Vorschlag.
-- Seit 13.10.2026: Temperatur der Literanzeige und Schwelle der Stundenzählung stehen nur noch in den Einstellungen, Rubrik „Zapfprofil“.
-- Seit 13.10.2026: Der Katalogimport der Brauchwasser-Nutzungsarten spielt auch die Kennwerte nach DIN 4708 ein (Belegung je Raumzahl, Ausstattungsklassen); eine Paketvorlage liegt im Ordner „Vorlage\Katalogpaket_DIN4708“ bei.
-- Seit 13.10.2026: Für die Typtage nach VDI 4655 liegt eine Paketvorlage im Ordner „Vorlage\Typtagpaket_VDI4655“ bei.
-
-### Version ‹Version› — Dialoge mit Katalogauswahl (Entwurf, Upload ausstehend) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
-
-Version beim Anwender zu erfragen; keine Wiki-Quelle geändert (die Quellen beschreiben nur die Funktion, sie stimmt).
-
-- Seit 13.10.2026: In den Dialogen mit Katalogauswahl sind die Kästchen der Liste „Im Projekt“ und das Kästchen im Spaltenkopf runde Knöpfe, angekreuzt dunkelblau mit weißem Haken.
 - Seit 17.10.2026: Beim Gebäudeimport als eine Zone übernimmt die Zone den Kalender der Datei, wenn alle Räume denselben tragen; für eine mit EPOS-Plan geschriebene gbXML-Datei steht die Zonenregel „X1 – eine Zone je Zone der Datei“ zur Wahl.
 
-### Version 1.2.0.9 (laut Auftrag; die Version ist schon veröffentlicht, beim Anwender bestätigen) — Übersicht unter Berichte & Kosten (Entwurf, Upload ausstehend) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
+#### Nachtrag zu Version 1.2.0.11 (Entwurf, Upload ausstehend, Version beim Anwender erfragen)
 
-Die Wiki-Quelle (Programm Dokumentation/Varianten) ist fortgeschrieben, ins Wiki geladen ist noch nichts.
+Der Sammel-Upload 1.2.0.11 lief am 14.10.2026 (Seite Brauchwasser-Zapfprofil Revision 1000, Update-Logbuch Revision 1023) vor dem Push von #1096; deshalb fehlen live der berichtigte Absatz `katalog-frei` der Zapfprofil-Seite und der folgende Satz. Quelle der Seite: `Projekte/Wiki/Programm Dokumentation - Brauchwasser-Zapfprofil.wiki`.
 
-- Seit 13.10.2026: Der Reiter „Übersicht“ unter „Berichte & Kosten“ stellt die Komponenten je Gewerk mit ihren Kennwerten nebeneinander, hebt Abweichungen zum Stammprojekt hervor und blendet mit „nur Unterschiede“ gleiche Gewerke aus.
-- Seit 13.10.2026: Die Tafel „Komponenten im Vergleich“ im Reiter „Übersicht“ führt die Kältemaschine als eigenes Gewerk mit Anzahl und Kälteleistung.
-- Seit 13.10.2026: Im Reiter Übersicht von Berichte & Kosten enthält die Liste ‚Detail-Unterschiede für Variante‘ nur noch Varianten; ohne Auswahl zeigt die Übersicht den Komponentenvergleich.
-- Seit 13.10.2026: Varianten werden über die Dialoge ‚Variante anlegen…‘, ‚Umbenennen…‘ und ‚Löschen…‘ verwaltet; eine neue Variante entsteht aus dem Stammprojekt oder aus einer vorhandenen Variante.
-- Seit 13.10.2026: Das Umbenennen einer Variante legt keine Kopie mehr an.
-- Seit 13.10.2026: Die Übersicht vergleicht die Energie-Ergebnisse der Versionen (Bedarf, Erzeugung, Strom, Endenergie, Deckung, Effizienz; Kälte, Gebäude und Emissionen zum Aufklappen).
-- Seit 13.10.2026: Über ‚Anzeige anpassen…‘ legt jeder Benutzer fest, welche Gruppen und Kennzahlen die Übersicht zeigt.
-- Seit 13.10.2026: Die Ergebnisse der Übersicht lassen sich als Tabelle oder als Balkengrafik anzeigen.
-- Seit 13.10.2026: In den Zeitreihendiagrammen stehen Bedarfe als Linie über den Erzeugungsflächen; die Jahresansicht zeigt je Reihe ein Tagesband mit Tagesmittel.
-- Seit 13.10.2026: Die Zeitachse aller Jahresdiagramme ist zwischen Datum und Stunde im Jahr umschaltbar.
-- Seit 13.10.2026: Im Reiter Photovoltaik zeigt der Schalter ‚PV aufteilen‘ die Erzeugung als Stapel aus Eigenverbrauch, Einspeisung und Abregelung.
-- Seit 13.10.2026: Der Arbeitspreis eines Energieträgers wird bei neuer Auswahl in €/kWh angezeigt und mit dem Heizwert umgerechnet; gespeicherte Einheiten bleiben erhalten.
+- Seit 14.10.2026: Die mitgelieferten Brauchwasser-Nutzungsarten rechnen im Zapfprofil-Dialog in der Stufe „Einfach“ ohne zusätzlichen Katalog. (#1096)
+- Seit 16.10.2026: In der Stufe Einfach empfiehlt die Speicherauslegung im Brauchwasser-Zapfprofil auch ohne externes Katalogpaket einen Speicher-Nenninhalt, gekennzeichnet als Schnellauslegung nach Vorlage V4. (#1112)
+- Seit 16.10.2026: Die Übernahme aus der Pufferauslegung setzt beim Kombipuffer jetzt auch die Zonenanteile und legt die Entnahme der Heizung unter die Brauchwasserzone. (#1140)
+- Seit 16.10.2026: Die Stufen der Anlagenkopplung heißen in der Oberfläche „ohne Kopplung“, „Heizkreis“, „Fahrplan“ und „geschlossener Kreis“; die Kataloge zeigen „Nennleistung“, „Nennkälteleistung“ und „Wirkungsgrad Laden/Entladen“ statt Formelzeichen. (#1142)
+- Seit 16.10.2026: Die Jahresdauerlinien ordnen die Stunden nach dem Gesamtbedarf und zeigen die Erzeuger darunter gestapelt; das Bivalenzdiagramm beschriftet seine Bivalenzpunkte mit „Kessel hilft unter …“ und „Kessel allein unter …“. (#1143)
+- Seit 16.10.2026: In den Bedarfsprofilen vergleicht „Vergleichen…“ zwei bis drei Projektzeilen und Katalogsätze nebeneinander; Kopfzeile und Knöpfe folgen den übrigen Dialogen mit Katalogauswahl. (#1155)
+- Seit 16.10.2026: Jahressummen und Jahresarbeit in MWh stehen in Auswahllisten, Katalog und Satzzeile einheitlich als ganze Zahl mit Tausendertrennzeichen. (#1156)
+- Seit 16.10.2026: Achsenbeschriftungen und Texte der Ganglinien in den Bedarfs- und Ganglinien-Dialogen stehen in der Schriftgröße der Oberfläche, auch im Projektassistenten. (#1157)
+- Seit 17.10.2026: Auch Strom-, Solar- und PV-Ganglinie stellen mit „Vergleichen…“ zwei oder mehr angekreuzte Ganglinien des Projekts oder des Katalogs nebeneinander. (#1168)
 
-### Version ‹Version› — Kältemittel als Stammdatum (Entwurf, Upload ausstehend) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
+*Wiki-Quellen dieses Nachtrags (Upload ausstehend):* `Projekte/Wiki/Programm Dokumentation - Pufferspeicher auslegen.wiki`, „Grundlagen - Anlagenkopplung und Regelung“, „Simulation konfigurieren und starten“, `Projekte/Wiki/Dateien/Diagramm_Bivalenz.png`, `Projekte/Wiki/Dateien/Diagramm_Kapitalwert_Bruecke.png`.
 
-Version beim Anwender zu erfragen; die Wiki-Quellen (Gerätekataloge, Kälteerzeugung, Wärmepumpe, Kurzanleitung) sind fortgeschrieben, ins Wiki geladen ist noch nichts.
+#### Entwurf, Version offen (Klimadaten-Import, Einlesen-Dialoge)
 
-- Seit 11.10.2026: Kältemaschine und Wärmepumpe wählen ihr Kältemittel aus einer Kältemitteltabelle mit GWP und Kennzeichen, die sich unter „Daten & Import → Kältemittel…“ pflegen lässt.
-- Seit 11.10.2026: Mit einem Inbetriebnahmejahr im Projekt weist EPOS-Plan hin, wenn ein Stichtag der F-Gas-Verordnung Geräteart und Kältemittel betrifft.
-
-### Version offen — Aufheizen vor Nutzungsbeginn (Entwurf, Upload ausstehend) — zusammengeführt in Version 1.2.0.11 (Sammel-Upload 14.10.2026, `Werkzeuge/WikiUpload/logbuch.wiki`)
-
-Version beim Anwender zu erfragen; die Wiki-Quellen (Simulation, Gebäude, Mehrzonenmodell, Einstellungen, Gebäudemodell VDI 6007, Simulationsergebnisse, Berichtsvorlagen) sind fortgeschrieben, ins Wiki geladen ist noch nichts.
-
-- Seit 11.10.2026: Die Gruppe „Aufheizen vor Nutzungsbeginn“ in der Simulationskonfiguration bietet drei Verfahren: Sollwertrampe nach Aufheizleistung, Vorheizzeit vorgeben und Vorheizzeit berechnen.
-- Seit 11.10.2026: Für das Vorheizen lassen sich der zulässige Sprung zum Nutzungsbeginn (in % oder kW), die Regelgenauigkeit und die Geltung je Gebäude oder je Zone einstellen.
-- Seit 11.10.2026: Im Zonendialog kann jede Zone eine eigene Vorheizzeit haben.
-- Seit 11.10.2026: In den Programmeinstellungen lässt sich der zulässige Sprung beim Vorheizen für neue Projekte vorbelegen.
-- Seit 11.10.2026: Bericht, Kurzbericht, Kennzahlen, Variantenvergleich und Datenexport zeigen die Vorheizgrößen (Vorheizzeit, Vorheizleistung, Tage ohne Ankunft, Mehrwärme); die Berichtsvorlagen kennen dazu neue Platzhalter.
+- Seit 16.10.2026: Der Klimadaten-Import zeigt vor dem Einlesen den gefundenen Datensatz mit Treffer, Standort und Kennzahlen. (#1123, #1124)
+- Seit 16.10.2026: Die Knöpfe der Einlesen-Dialoge bleiben am unteren Fensterrand sichtbar. (#1122)
 
 ### Version offen (Vorschlag 1.2.1) — veröffentlicht 10.10.2026 (Revision 827)
 
@@ -1112,27 +1085,6 @@ mehr abgeschnitten) lag in der Statusdatei kein ausformulierter Satz vor — der
 vorgeschlagenen Wortlaut, damit ist die frühere Rückfrage an den Anwender erledigt.
 *Zurückgestellt:* der engere Klimadiagramm-Satz aus #396 — er geht in der Sache im Satz zu
 #404/#413 (oben) auf.
-
-### Nachtrag zu Version 1.2.0.11 (Entwurf, Upload ausstehend, Version beim Anwender erfragen)
-
-Der Sammel-Upload 1.2.0.11 lief am 14.10.2026 (Seite Brauchwasser-Zapfprofil Revision 1000, Update-Logbuch Revision 1023) vor dem Push von #1096; deshalb fehlen live der berichtigte Absatz `katalog-frei` der Zapfprofil-Seite und der folgende Satz. Quelle der Seite: `Projekte/Wiki/Programm Dokumentation - Brauchwasser-Zapfprofil.wiki`.
-
-- Seit 14.10.2026: Die mitgelieferten Brauchwasser-Nutzungsarten rechnen im Zapfprofil-Dialog in der Stufe „Einfach“ ohne zusätzlichen Katalog. (#1096)
-- Seit 16.10.2026: In der Stufe Einfach empfiehlt die Speicherauslegung im Brauchwasser-Zapfprofil auch ohne externes Katalogpaket einen Speicher-Nenninhalt, gekennzeichnet als Schnellauslegung nach Vorlage V4. (#1112)
-- Seit 16.10.2026: Die Übernahme aus der Pufferauslegung setzt beim Kombipuffer jetzt auch die Zonenanteile und legt die Entnahme der Heizung unter die Brauchwasserzone. (#1140)
-- Seit 16.10.2026: Die Stufen der Anlagenkopplung heißen in der Oberfläche „ohne Kopplung“, „Heizkreis“, „Fahrplan“ und „geschlossener Kreis“; die Kataloge zeigen „Nennleistung“, „Nennkälteleistung“ und „Wirkungsgrad Laden/Entladen“ statt Formelzeichen. (#1142)
-- Seit 16.10.2026: Die Jahresdauerlinien ordnen die Stunden nach dem Gesamtbedarf und zeigen die Erzeuger darunter gestapelt; das Bivalenzdiagramm beschriftet seine Bivalenzpunkte mit „Kessel hilft unter …“ und „Kessel allein unter …“. (#1143)
-- Seit 16.10.2026: In den Bedarfsprofilen vergleicht „Vergleichen…“ zwei bis drei Projektzeilen und Katalogsätze nebeneinander; Kopfzeile und Knöpfe folgen den übrigen Dialogen mit Katalogauswahl. (#1155)
-- Seit 16.10.2026: Jahressummen und Jahresarbeit in MWh stehen in Auswahllisten, Katalog und Satzzeile einheitlich als ganze Zahl mit Tausendertrennzeichen. (#1156)
-- Seit 16.10.2026: Achsenbeschriftungen und Texte der Ganglinien in den Bedarfs- und Ganglinien-Dialogen stehen in der Schriftgröße der Oberfläche, auch im Projektassistenten. (#1157)
-- Seit 17.10.2026: Auch Strom-, Solar- und PV-Ganglinie stellen mit „Vergleichen…“ zwei oder mehr angekreuzte Ganglinien des Projekts oder des Katalogs nebeneinander. (#1168)
-
-*Wiki-Quellen dieses Nachtrags (Upload ausstehend):* `Projekte/Wiki/Programm Dokumentation - Pufferspeicher auslegen.wiki`, „Grundlagen - Anlagenkopplung und Regelung“, „Simulation konfigurieren und starten“, `Projekte/Wiki/Dateien/Diagramm_Bivalenz.png`, `Projekte/Wiki/Dateien/Diagramm_Kapitalwert_Bruecke.png`.
-
-### Entwurf, Version offen (Klimadaten-Import, Einlesen-Dialoge)
-
-- Seit 16.10.2026: Der Klimadaten-Import zeigt vor dem Einlesen den gefundenen Datensatz mit Treffer, Standort und Kennzahlen. (#1123, #1124)
-- Seit 16.10.2026: Die Knöpfe der Einlesen-Dialoge bleiben am unteren Fensterrand sichtbar. (#1122)
 
 ## 3 Offene Punkte
 

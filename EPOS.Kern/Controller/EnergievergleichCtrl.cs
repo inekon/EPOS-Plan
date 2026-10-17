@@ -28,9 +28,26 @@ namespace WindowsFormsApplication1
             // Kennzahl bleibt „—“.
             try { v.Brennstoffmengen = EnergieMengen.BaueBrennstoffmengen(idProjekt); }
             catch { v.Brennstoffmengen = null; }
+            v.BhkwEinspeisungStrommatrixMwh = BhkwEinspeisungRueckfall(v.Ergebnis, idProjekt);
             KostenEmissionRechner.Berechne(v);
             KennzahlenKatalog.Berechne(v);
             return v;
+        }
+
+        /// <summary>
+        /// EB-2 (EB-Q3): Führt das Ergebnis ein BHKW ohne gespeicherte Einspeisung (Ergebnis vor Schemaschritt 239), gilt
+        /// die KWK-Einspeisung der gespeicherten Strommatrix — sie ist bei gerechneter Wirtschaftlichkeit exakt. Ohne Matrix
+        /// <c>null</c>: Die Kennzahl zeigt „—“, keine stille Null.
+        /// </summary>
+        internal static double? BhkwEinspeisungRueckfall(ErgebnisModel ergebnis, int idProjekt)
+        {
+            if (ergebnis?.BHKW == null || ergebnis.BHKW.StromeinspeisungMwh.HasValue) return null;
+            try
+            {
+                Dictionary<int, StromMatrix> m = new WirtschaftlichkeitCtrl().LadeStromMatrix(new List<int> { idProjekt });
+                return m.TryGetValue(idProjekt, out StromMatrix sm) ? sm.KwkEinspeisungGesamtMWh : (double?)null;
+            }
+            catch { return null; }
         }
 
         /// <summary>Lädt die Versionen (der Stamm zuerst) und stellt sie gegenüber.</summary>

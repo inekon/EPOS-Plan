@@ -524,10 +524,11 @@ namespace WindowsFormsApplication1
                 gaben["KaelteGrafik"] = new Func<BedarfsProfilZeile, IReadOnlyList<BedarfsProfilZeile>, Kaelteprofilbilder>(
                     (markiert, alle) =>
                     {
-                        // KBP-4b: dazu Eingabeart und bearbeitete Typtage des Arbeitsstands.
+                        // KBP-4b: dazu Eingabeart und bearbeitete Typtage des Arbeitsstands; KV8: die Projektkopie fuer den
+                        // Normkalender als Vorgabe (Zeile mit Normtagen ohne gewaehlten Kalender).
                         var zeilenDesDialogs = alle.Select(z => new Kaeltegrafikzeile(z.Name, z.Summe, z.KalenderId,
                             z.ProfilGeaendert ? z.Monatsanteile : null, z.ProfilGeaendert ? z.Wochenprofil : null,
-                            z.Eingabeart, z.TyptageGeaendert ? z.Typtage : null)).ToList();
+                            z.Eingabeart, z.TyptageGeaendert ? z.Typtage : null, z.IdStamm)).ToList();
                         int platz = alle.ToList().IndexOf(markiert);
                         return platz < 0 ? null : KaelteprofilgrafikCtrl.Rechnen(projektId, zeilenDesDialogs, zeilenDesDialogs[platz]);
                     });

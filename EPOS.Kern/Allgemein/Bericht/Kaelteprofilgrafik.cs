@@ -32,6 +32,12 @@ namespace WindowsFormsApplication1
         /// <summary>Die Stundenreihe der markierten Zeile [kWh je Stunde], aus der die Wochen geschnitten werden.</summary>
         public double[] StundeKwh { get; init; }
 
+        /// <summary>
+        /// KV8: die Nutzungstage des wirksamen Kalenders einer Zeile mit Nutzungstagen nach Norm (Werktage ohne Feiertage
+        /// und Ferien, <see cref="NormkalenderCtrl.Nutzungstage"/>); <c>null</c> = keine Angabe in der Kennzahlenzeile.
+        /// </summary>
+        public int? Nutzungstage { get; init; }
+
         /// <summary>Die Tagesart jedes der 365 Tage (<see cref="Kaelteprofilgrafik.Tagesklassen"/>).</summary>
         public byte[] Tagesklassen { get; init; }
 
